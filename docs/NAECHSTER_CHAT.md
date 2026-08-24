@@ -1,20 +1,46 @@
-# Für den nächsten Chat — Stand 24.08.2026, abends
+# Für den nächsten Chat — Stand 25.08.2026, nachts
 
-> **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
+## In drei Sätzen
+
+Das Projekt hieß bis zum 24.08.2026 **MySuno** und heißt jetzt
+**KlangTresor**; es steht seit dem 25.08. öffentlich unter
+[github.com/CasparDavi/klangtresor](https://github.com/CasparDavi/klangtresor)
+unter MIT-Lizenz. Der Ordner auf der Platte heißt weiterhin
+`SunoArchive` — das stört nichts, kein Skript nimmt einen Namen an.
+Die alte git-Historie ist **nicht** mitgegangen: Sie liegt hier als
+`.git-alt-20260824/` und als Bundle in `../SunoArchive-privat/`.
 
 **Das Neueste steht ganz unten.** Dieses Dokument wächst nach hinten;
-wer eilig ist, liest den letzten Abschnitt und docs/OFFEN.md.
+wer eilig ist, liest diesen Kopf, den letzten Abschnitt und
+docs/OFFEN.md.
 
 ZUERST LESEN: docs/OFFEN.md (was falsch ist und was entschieden werden
 muss), dann docs/HAUSREGELN.md, dann docs/TONSTUDIO.md.
 
-**Laufend** (Stand 24.08. abends): Stemtrennung bei 188 von 321
-(`bin/stems.js --still`, mit `caffeinate -i` gegen den Schlaf),
-danach `bin/toene.js` über alles. Whisper ist durch — 256 Songs.
+## Was gerade läuft
 
-**Das Archiv liegt seit heute auf GitHub-Kurs**: Historie bereinigt,
-Repo von 3,4 GB auf 64 MB, README für Fremde neu. Der erste Push ist
-noch nicht erfolgt, die Lizenzdatei fehlt. Einzelheiten unten.
+Zwei Läufe, beide abgekoppelt (PPID 1), beide unter `caffeinate -i`:
+
+- **`bin/stems.js --still`** — am 25.08. um 00:45 neu gestartet, 133
+  Songs vor sich, rund sieben Stunden. Protokoll:
+  `library/nachtlauf.log`.
+- **`bin/toene.js --still --neu`** — läuft parallel und ungestört.
+
+**Warum neu gestartet:** Der Lauf vom 24.08. blieb nach 113 Songs
+stehen — letzte Spur 16:00:06, danach 8½ Stunden bei 0,0 % CPU mit
+10,4 GB im Speicher. Nicht angehalten (dann stünde `T` im Status),
+sondern schlafend. Ein Song war **mitten in der Trennung** stecken-
+geblieben: `9d375ce4…` hatte `bass`, `drums`, `other`, es fehlten
+`vocals`, `guitar`, `piano`. Die 70 MB wurden verworfen.
+
+Zeitlich fällt der Stillstand mit Arbeiten auf derselben Platte
+zusammen (Umbenennung 16:02, Historie-Bundle 16:20, `git gc`,
+`._`-Beifang löschen). Beweisen lässt sich das nicht.
+
+**Wenn es wieder passiert:** `pgrep -fl stems.js`, dann `ps -o stat,%cpu`
+— `SN` bei 0,0 % über Stunden heißt hängend. Danach jeden `stems/`-Ordner
+auf sechs `.flac` prüfen; `stems.js` erkennt Fertiges nur an
+`piano.flac`, ein Ordner mit drei Spuren fällt sonst durch.
 
 # Übergabetext für den nächsten Chat
 
@@ -734,3 +760,176 @@ muß den Vergleichspunkt in der *alten* Zählung suchen.
 - **Farben zeigen, nicht als Hexzahl nennen.** Caspar_D: „menschen
   können hexadizimalzahlen im Hirn relativ selten eine farbe zuordnen"
   — „zeige sie doch einfach."
+
+
+---
+
+## Nachtrag 25.08.2026, nachts — der Tag der Veröffentlichung
+
+78 Commits an einem Tag. Was davon bleibt:
+
+### Der Name
+
+**KlangTresor** statt MySuno. Der Grund ist nicht Geschmack: **SUNO ist
+seit dem 06.01.2026 eingetragene US-Wortmarke** (Reg. 8096778, Suno
+Inc.), Klasse 9 wörtlich für *„downloadable software to enable users to
+edit and playback of audio content"* — also für genau diese Art
+Programm. Die internationale Registrierung IR 1930809 vom 22.05.2026
+benennt Deutschland und die EU. Beides an den Amtsquellen nachgeprüft
+(USPTO TSDR, WIPO Madrid Monitor), nicht bloß recherchiert.
+
+Der Präzedenzfall, der am nächsten liegt: Apple gegen Podcast Ready
+wegen **„myPodder"** (2006) — kostenlose Medienverwaltungs-Software,
+ausdrücklich gegen den *Produktnamen*. Und ein Präfix rettet nicht: Das
+EuG hielt 2017 Xiaomis „MI PAD" gegen Apples „IPAD" für verwechselbar.
+
+**Klangtresor war geprüft:** null Markentreffer weltweit (TMview über
+alle Ämter, DPMAregister mit Platzhaltern), GitHub und npm frei,
+`.org`/`.com`/`.net`/`.app` frei, nur `.de` geparkt. Tresor Berlin
+steht nicht im Weg — die Hegemann-Marken decken in Klasse 9 nur
+Tonträger und in Klasse 41 Veranstaltungen; eine Anmeldung „TRESOR"
+für Software wurde 2010 zurückgenommen.
+
+**Klangraum wäre schlechter gewesen** (auch geprüft): identische
+deutsche Wortmarke seit 2000 im Musikbereich, sechs weitere aktive
+Kennzeichen, fünf besetzte Domains, 244 Wikipedia-Treffer. Er bleibt,
+wo er ist — als Name der Sternenkarte.
+
+**Was NICHT umbenannt wurde und warum:** die 52 localStorage-Schlüssel
+`mysuno-*`, die IndexedDB `mysuno-morgens`, die CSS-Klasse
+`.sunoanalyzer`, `window.SunoAnalyzer`. Sie umzubenennen hätte bei
+jedem Nutzer alle Einstellungen weggeworfen, und nach außen
+kennzeichnen sie nichts. Ebenso bleiben Zitate und docs/HISTORY.md.
+
+### Die Lizenz: MIT
+
+Entschieden nach einer Prüfung von zwölf Lizenzen. Der Kern:
+
+**Zwei Bedingungen, nur eine ist eine Lizenzfrage.** „Erwähnung immer"
+kann eine Lizenz leisten. „Ich habe das letzte Wort" kann keine — das
+folgt daraus, wem das Repositorium gehört, und gilt unter jeder Lizenz.
+
+**Gegen AGPL sprach die Durchsetzbarkeit.** Ihr Abschnitt 7b könnte die
+Nennung bis auf den Bildschirm eines Forks tragen — aber jeder Weg
+dorthin (Abmahnung wie DMCA-Meldung) verlangt Klarnamen und Anschrift.
+Ein Pseudonym hält das nicht aus. Eine Lizenz, die man nie in die Hand
+nimmt, ist ein Schwert an der Wand.
+
+**Ein Fund erzwang eine Entscheidung:** `web/fremd/audioMotion-analyzer.js`
+stand unter **AGPL-3.0-or-later** und wurde geladen. Beim Push wäre das
+Verbreitung gewesen — AGPL §5(c): *„This License gives no permission to
+license the work in any other way."* Entweder das ganze Projekt unter
+AGPL oder die Datei raus. Caspar_D: *„spektrum visualisierer fliegen
+wieder raus."*
+
+**Der GPL-Verdacht beim CB Audio Analyzer ist ausgeräumt** — nachgebaut,
+nicht übernommen; CB ist PySide6/numpy, dies ist JavaScript, kein
+Python-Rest im Code.
+
+**Die Essentia-Modelle stehen unter CC BY-NC-ND 4.0**, nicht unter MIT
+und nicht unter SA. Das war im Repo `suno-analyzer` falsch angegeben.
+Sie dürfen gespiegelt werden (unverändert, mit Nennung), aber nicht
+kommerziell benutzt.
+
+### Der erste Push
+
+`github.com/CasparDavi/klangtresor`, MIT, fünf Commits.
+
+**Der Login ist `CasparDavi`** — `CasparDavid` ist nur der Anzeigename.
+URLs benutzen den Login; `github.com/CasparDavid/…` liefert 404.
+
+**Frisches Repo statt bereinigter Historie.** Grund: 19 Commit-
+Betreffzeilen nannten den Vornamen (GitHub zeigt sie in der Liste, ohne
+dass jemand einen Commit öffnet), zwei Aufräum-Commits nannten den
+vollen Namen im Fließtext, und der Branch `vor-tonart-ausbau` trug ihn
+im Dateistand.
+
+**Beim Anlegen fast danebengegangen:** Der erste `git add -A` merkte
+**233 Dateien** statt 86 vor — `.git-alt-20260824` ist für git kein
+versteckter Ordner. Steht jetzt in der `.gitignore`.
+
+**Und die Lizenz war zuerst „Other".** GitHubs Erkennung vergleicht
+LICENSE mit den Standardtexten und gibt auf, sobald etwas danebensteht.
+Mein Geltungsbereich-Zusatz musste heraus; er steht jetzt in
+`web/fremd/LIZENZEN.md`.
+
+### Was am Programm geschah
+
+- **Stemspuren nach Zuverlässigkeit**: `STEM_RANG` ist die einzige
+  Quelle für Farbe, Name und Platz. Reihenfolge nach der
+  Trenngenauigkeit von htdemucs_6s, Farben nach der Auffälligkeit
+  (warm vor kalt vor unbunt). Das Markup musste **physisch** umgestellt
+  werden — die Schleifenreihenfolge ändert nichts, das DOM entscheidet.
+- **Der Klangraum filtert mit**: `karteAnflug`. Anfliegbar ist, was im
+  Album sichtbar ist; ausgefilterte Sterne verblassen, statt zu
+  verschwinden. Der laufende Song bleibt immer in der Liste, sonst löst
+  `spielenNachId` alle Filter.
+- **`seit:` und `bis:`** als gewöhnliche Suchschlüssel — zusammen
+  ergeben sie die Spanne, jede Hälfte ist für sich vollständig.
+- **Das Wurmloch** bei rückwärts laufender Zeitspanne, der
+  **Borg-Würfel** in Zentralperspektive, die **Supernova** mit
+  Refraktionskreuz in Clusterfarbe.
+
+### Drei Lehren, die Zeit gekostet haben
+
+**1 · Wer Zeichenkosten misst, misst die BILDRATE auf der ANGEZEIGTEN
+Leinwand.** Der Weichzeichner ließ den Klangraum von 60,7 auf 9 Bilder
+je Sekunde einbrechen. Zwei Messungen zeigten nichts: eine losgelöste
+Leinwand (die darf der Browser optimieren) und eine Zeitmessung nur des
+Zeichnens. Der Einbruch kommt vom **Zusammensetzen** — ein Canvas, auf
+dem `g.filter` benutzt wurde, verliert seine GPU-Beschleunigung.
+Ersetzt durch übereinandergelegte Züge; kein `g.filter` mehr im
+Klangraum.
+
+**2 · Ein halber Ausbau ist schlimmer als keiner.** `new
+AudioMotionAnalyzer(...)` war ein blanker Bezeichner ohne
+`window.`-Prüfung. Nur die Datei zu löschen hätte einen ReferenceError
+geworfen, der aus `darstellungAufbauen()` fliegt — und in
+`buehneOeffnen()` steht der Aufruf **vor** `classList.add('auf')`. Die
+Bühne hätte sich nicht mehr geöffnet.
+
+**3 · Suchen und Ersetzen ist fallabhängig.** Nach der Umbenennung
+stand der Klarname noch dreimal in Großbuchstaben im Code. Gegenprobe
+immer mit `git grep -i`.
+
+### Was die Prüfungen gefunden haben
+
+Vier Workflows liefen: Lizenzwahl, Namensfrage, Fremdgut, Update-Wege,
+Endabnahme, Funktionstest. Die wichtigsten Funde, die **noch nicht
+erledigt** sind, stehen in docs/OFFEN.md. Erledigt und erwähnenswert:
+
+- **Die Sicherungsanweisung war gefährlich falsch.** README und
+  START-HIER sagten „Nur `library/roh/` sichern". Der Ordner wird von
+  `aufbereiten.js` geleert, sobald der Inhalt im Katalog steht. Wer dem
+  folgte, sicherte zwei Dateien und hätte `katalog.json.gz` verloren —
+  47 MB mit 257 Lyrics, 291 Zeitmarken, 134 Kommentarsätzen.
+- **`wiederherstellen.js` log.** Es sagte „Fertig", während zwei
+  Drittel fehlten: WAV (17,9 GB) und Stems (18 GB) holt kein Schritt.
+  Jetzt zählt es nach und nennt die Befehle.
+- **Die Einrichtungsskripte prüfen jetzt den Ort** — auch die
+  Nachbarordner. Wer den ausgepackten Ordner neben sein Archiv legt,
+  bekommt den Pfad genannt und einen Abbruch. Durchgespielt mit
+  Attrappen für node/npm/ffmpeg, je macOS und Windows (pwsh).
+- **`bin/pruefe-skripte.js` nimmt jetzt `.cmd` mit.** Dort gelten
+  umgekehrte Regeln: BOM ist schädlich, CRLF Pflicht, ein einzelnes `%`
+  frisst cmd.exe.
+
+### Offen — und wer es beantworten muss
+
+**Tarja fragen:** Sie meldete „die VODs werden z.B. nicht geschrieben".
+Unklar, was gemeint ist — Video-Artworks (`artwork.mp4`, 83 Stück)?
+Ohne ihre Antwort ist die Suche Raten.
+
+**Tarja und Casto fragen:** In `docs/BACKLOG.md` stehen wörtliche
+Zitate aus einem privaten Discord-Gespräch mit Tarja, ihre
+Rechnerausstattung und dreimal „Tarja musste fragen". Castos
+„1000 Fehlermeldungen" stehen mit Datum und Kanal in
+`bin/pruefe-skripte.js`. Alles trifft zu, beide stehen als Mitstreiter
+im Fenster — aber das eine ist Anerkennung, das andere sind ihre Worte.
+
+**docs/OFFEN.md 2.5** (Piano-Stem) ist entscheidbar, sobald die
+Stemkette durch ist: Dann liegen 321 statt vier Songs zum Nachrechnen
+bereit. Der Rechenweg steht dort.
+
+**docs/OFFEN.md 2.9**: ~210 Zeilen toter Analyzer-Code. Mit Warnung vor
+zwei Fallen.
