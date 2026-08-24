@@ -19,14 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Diese Lizenz gilt fuer den Code dieses Projekts. Nicht dafuer gelten:
-
-* Die Dateien unter web/fremd/. Sie stammen von anderen und tragen ihre
-  eigenen Lizenzen - siehe web/fremd/LIZENZEN.md.
-* Die KI-Modelle. Sie liegen nicht in diesem Repositorium und werden beim
-  Einrichten geholt; ihre Lizenzen stehen ebenfalls in web/fremd/LIZENZEN.md.
-* Die Songs, Texte und Artworks in einem damit gebauten Archiv. Sie gehoeren
-  ihren Urhebern und sind nicht Teil dieses Repositoriums.
