@@ -1,0 +1,62 @@
+# Das Archiv selbst gehört NICHT in git — versioniert wird nur das Programm.
+#
+# Grund: Das Repo soll jederzeit weitergegeben werden können, ohne dass
+# die Songs, Lyrics, Rohdaten und Statistiken darin stecken. Was einmal
+# committet ist, bleibt in der Historie — deshalb von Anfang an draußen.
+#
+# Die Daten verlieren dadurch nichts: library/backup/ hält die letzten zehn
+# Katalogfassungen, und aus library/roh/ baut bin/aufbereiten.js den Katalog
+# vollständig neu. Datensicherung ist eine eigene Aufgabe und gehört auf eine
+# zweite Platte — ein git-Repo auf derselben SSD ist keine.
+library/
+
+# Das Profilbild gehört dem Konto, nicht dem Programm. Es wird von
+# bin/laden.js nach library/avatar.<endung> geholt und vom Server
+# unter /avatar ausgeliefert - so zeigt jedes Archiv das Bild seines
+# eigenen Urhebers.
+web/bilder/
+
+# Von Skripten erzeugte Dateien. Sie tragen den eigenen Handle und die
+# eigenen Song-IDs und gehören deshalb nicht in ein Repo, das
+# weitergegeben wird. bin/sammelskript.js bzw. bin/farbvergleich.js
+# erzeugen sie jederzeit neu.
+browser/02-sammeln-aktuell.js
+web/farbvergleich.html
+
+# Zugangsdaten
+.env
+*.token
+# Weitergabepakete - bin/paket.js legt sie eine Ebene hoeher ab, aber
+# von Hand erzeugte landen sonst hier.
+*.zip
+
+# macOS
+.DS_Store
+._*
+
+# ======================================================================
+# GEHEIM — NIEMALS WEITERGEBEN
+# ======================================================================
+# geheim/ enthält den Zugang zum Suno-Konto: das Cookie, mit dem
+# sich der Server selbst einen Token holt (bin/token.js). Wer diese
+# Datei hat, ist als Caspar_D angemeldet.
+#
+# Der Eintrag steht ABSICHTLICH GETRENNT von library/, obwohl library/
+# schon draußen ist: Sollte jemand library/ jemals wieder hineinnehmen
+# (etwa um Rohdaten zu teilen), bleibt der Schlüssel trotzdem draußen.
+# Und weil das Weitergabe-ZIP mit `git archive` entsteht, kommt dort nie
+# hinein, was git nicht kennt — bin/paket.js prüft das zusätzlich und
+# bricht ab, wenn ein Schlüssel im Paket läge.
+#
+# Verfällt das Cookie, einfach neu aus dem Browser kopieren (Anleitung
+# in bin/token.js). Es gibt keinen Grund, es je zu committen.
+geheim/
+
+# Pakete (npm install holt sie neu; nur onnxruntime-node fuer bin/klang.js)
+node_modules/
+
+# Die alte Historie, beiseitegelegt beim Neuanfang am 24.08.2026.
+# Sie liegt zusaetzlich als Bundle in ../SunoArchive-privat/.
+# NICHT mit veroeffentlichen: sie enthaelt den Klarnamen des Autors in
+# 19 Commit-Betreffzeilen und in aelteren Dateistaenden.
+.git-alt-*/

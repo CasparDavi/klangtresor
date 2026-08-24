@@ -1,0 +1,36 @@
+# KlangTresor im Heimnetz. Einmal `docker compose up -d --build`, danach
+# startet der Container mit Docker automatisch nach jedem Systemboot
+# (restart: unless-stopped). Erreichbar unter http://<dieser-Rechner>:8788
+#
+# Vor dem ersten Start, falls die Ordner noch fehlen:
+#   mkdir -p library geheim
+#
+# Beenden:  docker compose down
+# Logs:     docker compose logs -f
+
+services:
+  klangtresor:
+    build: .
+    container_name: klangtresor
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8788:8788"
+    volumes:
+      # Das Archiv bleibt auf der Platte, nicht im Image.
+      - ./library:/app/library
+      # Cookie für den Morgenlauf / das Lesezeichen, falls du eines hast.
+      - ./geheim:/app/geheim
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:8788/',r=>process.exit(r.statusCode>=500?1:0)).on('error',()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    stop_grace_period: 10s

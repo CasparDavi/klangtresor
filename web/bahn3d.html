@@ -1,0 +1,179 @@
+<!doctype html><meta charset="utf-8"><title>Bahnebenenwechsel — Schautafel</title>
+<!-- KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE -->
+<style>
+body{margin:0;background:#000;color:#ddd;font:13px -apple-system,Helvetica Neue,sans-serif;overflow:hidden}
+canvas{display:block}
+#t{position:fixed;left:16px;top:12px;line-height:1.5;max-width:560px}
+#s{position:fixed;left:16px;bottom:14px;color:#9a9a9a}
+#p{position:fixed;right:16px;top:12px;margin:0;font:11px/1.5 Menlo,monospace;color:#bbb;white-space:pre;max-height:60vh;overflow:hidden}
+#r{position:fixed;right:16px;bottom:14px;display:grid;grid-template-columns:auto auto;gap:4px 10px;align-items:center;font-size:12px;color:#bbb}
+#r input{width:140px}
+b{color:#fff}
+</style>
+<div id="t"><b>Bahnebenenwechsel — Schautafel (ohne Musik).</b><br>
+Vier Sterne als Tetraeder, Reise 1 → 2 → 3 → 4 → 1. Die Orbitschale ist die Kugel (graue Breitenkreise). Die <b>Knotenlinie</b> (weiß gestrichelt) ist die Verbindung zum Ziel — beide Bahnebenen enthalten sie. Die Zielebene entsteht wie im KlangTresor aus „Ziel → dessen nächstes Ziel + Herkunft", der Kippwinkel ist Ergebnis, kein Regler.
+An jedem Knotendurchgang ein Kipp-Impuls (≤ Deckel), verteilt von der ersten halben Runde bis zum letzten Knoten vor dem Absprung. Dann liegen beide Kreise in einer Ebene: Absprung auf der äußeren Tangente, Transit gerade, Ankunft tangential <b>auf der Zielschale</b> — das Schiff verlässt die Schalen nie außer im Transit.<br>
+Ziehen = Raum drehen · Rad = Zoom · <b>Leertaste</b> = Pause</div>
+<div id="s"></div><pre id="p"></pre>
+<div id="r">
+<label>Deckel je Knoten (Grad)</label><input id="cap" type="range" min="1" max="45" value="6">
+<label>Runden je Station</label><input id="runden" type="range" min="2" max="14" value="8"><label>Tempo</label><input id="tempo" type="range" min="1" max="8" value="3">
+</div>
+<canvas id="c"></canvas>
+<script>
+'use strict';
+const c = document.getElementById('c'), g = c.getContext('2d');
+let W = c.width = innerWidth, H = c.height = innerHeight;
+const $ = id => document.getElementById(id);
+
+/* ---- Vektorkram ------------------------------------------------------ */
+const add = (a, b) => a.map((v, i) => v + b[i]), sub = (a, b) => a.map((v, i) => v - b[i]), mul = (a, k) => a.map(v => v * k);
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], norm = a => Math.hypot(...a), unit = a => mul(a, 1 / (norm(a) || 1));
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const rotAxis = (v, ax, al) => { const c = Math.cos(al), s = Math.sin(al), k = unit(ax); return add(add(mul(v, c), mul(cross(k, v), s)), mul(k, dot(k, v) * (1 - c))); };
+const sstep = w => w <= 0 ? 0 : w >= 1 ? 1 : w * w * w * (w * (w * 6 - 15) + 10);
+
+/* ---- Kamera (Trackball) ---------------------------------------------- */
+let rotX = -0.55, rotY = 0.6, zoom = 1;
+const KAM = 6;
+function proj(p){ let v = rotAxis(p, [0, 1, 0], rotY); v = rotAxis(v, [1, 0, 0], rotX); const f = KAM / (KAM - v[2]); const S = 0.42 * Math.min(W, H) * zoom; return [W / 2 + S * f * v[0], H / 2 - S * f * v[1], f, v[2]]; }
+let drag = null;
+c.addEventListener('mousedown', e => { drag = { x: e.clientX, y: e.clientY, rx: rotX, ry: rotY }; });
+addEventListener('mousemove', e => { if (!drag) return; rotY = drag.ry + (e.clientX - drag.x) * 0.006; rotX = drag.rx + (e.clientY - drag.y) * 0.006; });
+addEventListener('mouseup', () => drag = null);
+c.addEventListener('wheel', e => { zoom = Math.max(0.4, Math.min(6, zoom * (e.deltaY < 0 ? 1.1 : 0.9))); e.preventDefault(); }, { passive: false });
+let pause = false; addEventListener('keydown', e => { if (e.code === 'Space'){ pause = !pause; e.preventDefault(); } });
+
+/* ---- Szene ------------------------------------------------------------ */
+const sterne = [
+  { p: [ 0.55,  0.45,  0.45], R: 0.22, fang: 0.07, farbe: [255, 140, 90],  name: '1 Orange' },
+  { p: [ 0.55, -0.45, -0.45], R: 0.20, fang: 0.065, farbe: [120, 170, 255], name: '2 Blau' },
+  { p: [-0.55,  0.45, -0.45], R: 0.24, fang: 0.075, farbe: [120, 220, 160], name: '3 Gruen' },
+  { p: [-0.55, -0.45,  0.45], R: 0.19, fang: 0.06, farbe: [230, 200, 90],  name: '4 Gelb' }];
+const folge = i => (i + 1) % sterne.length;
+let nr = 0; const protokoll = [];
+function log(art, d){ nr++; protokoll.push({ nr, art, ...d }); $('p').textContent = protokoll.slice(-14).map(e => `#${e.nr} ${e.art} ` + Object.entries(e).filter(([k]) => !['nr', 'art'].includes(k)).map(([k, v]) => k + '=' + (typeof v === 'number' ? v.toFixed(2) : v)).join(' ')).join('\n'); }
+
+/* Station: Schiff kreist um stern[hier] in Ebene (e1, e2), e1 = Richtung zum Ziel.
+   Zielebene: (f1, f2) am Ziel aus Ziel->Folgeziel (hier: zurueck zum anderen Stern, d.h. e1 negativ) + Herkunftsrichtung.
+   Fuer die Schautafel ist die Zielebene frei waehlbar: Kippwinkel phi (Regler) um e1. */
+let hier = 0, th = 0, sinn = 1, spur = [], modus = 'orbit', T = null, station = null, zeit = 0;
+/* Ebene aus Mittelpunkt, Zielrichtung und Herkunft (wie orbitBasis in KlangTresor) */
+function basis(hierP, zielP, vorherP){ const e1 = unit(sub(zielP, hierP)); let e2 = null;
+  if (vorherP){ const h = sub(vorherP, hierP); const o = sub(h, mul(e1, dot(h, e1))); if (norm(o) > 1e-4) e2 = unit(o); }
+  if (!e2){ const hf = Math.abs(e1[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0]; e2 = unit(cross(e1, hf)); }
+  return { e1, e2, n: cross(e1, e2) }; }
+function neueStation(einDir, psi0, sinn0, vorherP){
+  const A = sterne[hier], B = sterne[folge(hier)], C = sterne[folge(folge(hier))];
+  psi0 = psi0 || 0; sinn0 = sinn0 || 1;
+  const e1 = unit(sub(B.p, A.p));
+  /* eigene Ebene: enthaelt e1 und die Ankunftsrichtung (Herkunft) */
+  let e2 = einDir ? unit(sub(einDir, mul(e1, dot(einDir, e1)))) : null;
+  if (!e2 || !(norm(e2) > 0.5)){ const h = Math.abs(e1[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0]; e2 = unit(cross(e1, h)); }
+  const e3 = cross(e1, e2);
+  /* Zielebene wie in KlangTresor: am Ziel aus Ziel -> dessen naechstes Ziel (C) + Herkunft (A); sie enthaelt A. g2 = nZ x e1 */
+  const bz = basis(B.p, C.p, A.p), nZ = bz.n;
+  const g2 = unit(cross(nZ, e1));
+  const phi = Math.atan2(dot(e3, g2), dot(e2, g2));
+  const cap = +$('cap').value * Math.PI / 180, runden = +$('runden').value;
+  /* Knoten: psi = 0 (zum Ziel) und psi = pi; Impulse vom ersten Knoten nach dem Einfang (halbe Runde) bis zum letzten Knoten vor dem Absprung */
+  const nKnotenMax = Math.max(1, Math.floor((runden - 1.25) * 2));
+  const nImp = Math.max(1, Math.min(nKnotenMax, Math.ceil(Math.abs(phi) / cap)));
+  let dphi = phi / nImp;
+  /* Knoten = Durchgaenge durch die Verbindungslinie (psi = k*pi); Fortschritt fort = sinn*(psi - psi0).
+     Erster Impuls nach einer halben Runde (Einfang), dann jeder Durchgang, bis nImp erreicht. */
+  let knoten = []; for (let k = -60; k <= 60; k++){ const f = sinn0 * (k * Math.PI - psi0); if (f >= Math.PI / 2) knoten.push(f); } knoten.sort((a, b) => a - b); knoten = knoten.slice(0, nImp); dphi = phi / knoten.length;
+  station = { A, B, e1, e2, e3, g2, phi, nImp, dphi, runden, R: A.R, rT: B.R, gemacht: 0, s: 0, psi0, sinn: sinn0, knoten };   // Ankunft direkt auf der Zielschale (Caspar_D, 22.08.)
+  th = psi0; sinn = sinn0; modus = 'orbit'; zeit = 0;
+  log('STATION', { stern: A.name, ziel: B.name, kippwinkel: phi * 180 / Math.PI, impulse: knoten.length, 'grad/knoten': (phi / knoten.length) * 180 / Math.PI });
+}
+/* Kippgrad als Funkion des Bahnwinkels: Stufen an den Knoten, jede Stufe ueber +-20 Grad Bogen geglaettet */
+const BOGEN = 20 * Math.PI / 180;                                   // Brenndauer: +-20 Grad Bogen um den Knoten
+function kipp(psi){ const S = station; let s = 0; const fort = S.sinn * (psi - S.psi0);
+  for (const kn of S.knoten){ const w = (fort - (kn - BOGEN)) / (2 * BOGEN); s += sstep(w); }
+  return s / S.knoten.length; }
+/* Radius: Eintritt auf dem Fangkreis rT des Sterns, Spirale auf R ueber die erste Runde (wie in KlangTresor) */
+function radius(psi){ const S = station; if (!S.vonFang) return S.R; const fort = S.sinn * (psi - S.psi0); const w = sstep(fort / (2 * Math.PI)); return S.A.fang + (S.R - S.A.fang) * w; }
+function lageRaum(psi){ const S = station; const b2 = add(mul(S.e2, Math.cos(S.phi * kipp(psi))), mul(S.e3, Math.sin(S.phi * kipp(psi)))); return add(S.A.p, mul(add(mul(S.e1, Math.cos(psi)), mul(b2, Math.sin(psi))), radius(psi))); }
+neueStation(null);
+
+let letzt = performance.now() / 1000;
+function frame(){
+  const now = performance.now() / 1000; let dt = Math.min(0.05, now - letzt); letzt = now; if (pause) dt = 0;
+  W = c.width = innerWidth; H = c.height = innerHeight; g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  const S = station, A = S.A, B = S.B, tempo = +$('tempo').value, umlauf = 6 / tempo;      // Sekunden je Runde
+  /* Sterne, Schalen, Knotenlinie */
+  for (const st of sterne){ const q = proj(st.p); const [rr, gg, bb] = st.farbe; const gr = g.createRadialGradient(q[0], q[1], 0, q[0], q[1], 18 * q[2]); gr.addColorStop(0, '#fff'); gr.addColorStop(0.3, `rgba(${rr},${gg},${bb},.9)`); gr.addColorStop(1, `rgba(${rr},${gg},${bb},0)`); g.fillStyle = gr; g.fillRect(q[0] - 20, q[1] - 20, 40, 40);
+    g.fillStyle = `rgb(${rr},${gg},${bb})`; g.textAlign = 'center'; g.fillText(st.name, q[0], q[1] + 28);
+    /* Schale: Breitenkreise */
+    g.strokeStyle = `rgba(${rr},${gg},${bb},.10)`; g.lineWidth = 1;
+    for (let lat = -60; lat <= 60; lat += 30){ g.beginPath(); const r = st.R * Math.cos(lat * Math.PI / 180), y = st.R * Math.sin(lat * Math.PI / 180); for (let k = 0; k <= 48; k++){ const a = k / 48 * 2 * Math.PI; const q2 = proj([st.p[0] + r * Math.cos(a), st.p[1] + y, st.p[2] + r * Math.sin(a)]); k ? g.lineTo(q2[0], q2[1]) : g.moveTo(q2[0], q2[1]); } g.stroke(); } }
+  { const a = proj(A.p), b = proj(B.p); g.strokeStyle = 'rgba(255,255,255,.35)'; g.setLineDash([4, 6]); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); g.setLineDash([]);
+    /* Tetraeder-Kanten schwach */
+    g.strokeStyle = 'rgba(255,255,255,.06)'; for (let i = 0; i < sterne.length; i++) for (let j = i + 1; j < sterne.length; j++){ const p1 = proj(sterne[i].p), p2 = proj(sterne[j].p); g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p2[0], p2[1]); g.stroke(); } }
+  /* Zielkreis (Orbitschale des Ziels) in der Zielebene: Ebene (e1, g2) um B */
+  { g.strokeStyle = `rgba(${B.farbe.join(',')},.6)`; g.setLineDash([3, 5]); g.beginPath(); for (let k = 0; k <= 64; k++){ const a = k / 64 * 2 * Math.PI; const q = proj(add(B.p, mul(add(mul(S.e1, Math.cos(a)), mul(S.g2, Math.sin(a))), S.rT))); k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); g.setLineDash([]); }
+  /* Spur */
+  if (spur.length > 1){ g.strokeStyle = 'rgba(255,200,120,.85)'; g.lineWidth = 1.6; g.beginPath(); for (let i = 0; i < spur.length; i++){ if (!spur[i]){ continue; } const q = proj(spur[i]); (i === 0 || !spur[i - 1]) ? g.moveTo(q[0], q[1]) : g.lineTo(q[0], q[1]); } g.stroke(); }
+  let P, dir, status;
+  if (modus === 'orbit'){
+    const psi = th;
+    P = lageRaum(psi); dir = unit(sub(lageRaum(psi + 0.01 * sinn), P));
+    /* aktueller Ring (Ebene beim momentanen Kippgrad) */
+    { const s = kipp(psi); const b2 = add(mul(S.e2, Math.cos(S.phi * s)), mul(S.e3, Math.sin(S.phi * s))); g.strokeStyle = `rgba(${A.farbe.join(',')},.7)`; g.lineWidth = 1.2; g.beginPath(); for (let k = 0; k <= 72; k++){ const a = k / 72 * 2 * Math.PI; const q = proj(add(A.p, mul(add(mul(S.e1, Math.cos(a)), mul(b2, Math.sin(a))), S.R))); k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); } g.stroke(); }
+    /* Knoten-Impulse protokollieren */
+    const fort = S.sinn * (psi - S.psi0);
+    while (S.gemacht < S.knoten.length && fort >= S.knoten[S.gemacht] + BOGEN){ S.gemacht++; log('KNOTEN-IMPULS', { nr: S.gemacht + '/' + S.knoten.length, 'grad': S.dphi * 180 / Math.PI, runde: fort / (2 * Math.PI) }); }
+    /* Absprung: aeussere Tangente, sobald alle Impulse gesetzt sind */
+    const d = norm(sub(B.p, A.p)), cth = (S.R - S.rT) / d;
+    const thetaAb = -sinn * Math.acos(Math.max(-1, Math.min(1, cth)));
+    const psiAb = ((thetaAb % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    if (S.gemacht >= S.knoten.length){
+      const rest = ((sinn * (psiAb - psi) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);   // Bogen bis zum Absprungwinkel in Fahrtrichtung
+      if (rest < 0.03 || (frame.restVor != null && frame.restVor < rest && frame.restVor < 0.2)){
+        const rich = [Math.cos(thetaAb), Math.sin(thetaAb)];
+        const Pab = add(A.p, mul(add(mul(S.e1, rich[0]), mul(S.g2, rich[1])), S.R));
+        const Tp = add(B.p, mul(add(mul(S.e1, rich[0]), mul(S.g2, rich[1])), S.rT));
+        const tang = unit(sub(lageRaum(psi + 0.01 * sinn), lageRaum(psi)));
+        const w = Math.acos(Math.max(-1, Math.min(1, dot(tang, unit(sub(Tp, Pab)))))) * 180 / Math.PI;
+        T = { von: Pab, nach: Tp, u: 0, len: norm(sub(Tp, Pab)) }; modus = 'transit';
+        log('ABSPRUNG', { theta: thetaAb * 180 / Math.PI, 'knick(grad)': w, runden: fort / (2 * Math.PI) });
+      }
+      frame.restVor = rest;
+    }
+    th += sinn * (2 * Math.PI / umlauf) * dt;
+    status = `Orbit um ${A.name} · Runde ${(fort / (2 * Math.PI)).toFixed(2)} · Kippgrad ${(kipp(psi) * 100).toFixed(0)} % · Impulse ${S.gemacht}/${S.knoten.length}`;
+    if (dt > 0) spur.push(P);
+  } else {
+    const V = 2 * Math.PI * S.R / umlauf; T.u += V * 1.3 * dt / T.len; const u = Math.min(1, T.u);
+    P = add(T.von, mul(sub(T.nach, T.von), u)); dir = unit(sub(T.nach, T.von));
+    g.strokeStyle = 'rgba(255,255,255,.3)'; g.beginPath(); const a = proj(T.von), b = proj(T.nach); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+    status = `Transit ${Math.round(u * 100)} %`;
+    if (dt > 0) spur.push(P);
+    if (u >= 1){
+      /* Ankunft: Eintritt tangential am Zielkreis, neue Station; Ebene der neuen Station = (e1', e2') mit e2' aus der Ankunftsrichtung */
+      const dT = sub(T.nach, B.p); const einDir = dir;
+      const vorherP = A.p; hier = folge(hier); spur.push(null);
+      /* Ebene der neuen Station: e1' zum naechsten Ziel, e2' aus der Ankunftsrichtung - Startwinkel = Ankunftspunkt, Sinn aus der Fahrtrichtung */
+      const An = sterne[hier], Bn = sterne[folge(hier)]; const e1n = unit(sub(Bn.p, An.p)); let e2n = unit(sub(einDir, mul(e1n, dot(einDir, e1n))));
+      const v = unit(dT); const psi0 = Math.atan2(dot(v, e2n), dot(v, e1n));
+      const tang0 = add(mul(e1n, -Math.sin(psi0)), mul(e2n, Math.cos(psi0)));
+      const sinn0 = dot(tang0, einDir) >= 0 ? 1 : -1;
+      neueStation(einDir, psi0, sinn0, vorherP);
+      const tang = unit(sub(lageRaum(psi0 + 0.01 * sinn0), lageRaum(psi0)));
+      const w = Math.acos(Math.max(-1, Math.min(1, dot(tang, einDir)))) * 180 / Math.PI;
+      log('ANKUNFT', { stern: sterne[hier].name, 'knick(grad)': w, sinn });
+      modus = 'orbit'; frame.restVor = null;
+    }
+  }
+  /* Schiff */
+  { const q = proj(P), q2 = proj(add(P, mul(dir, 0.05))); const ang = Math.atan2(q2[1] - q[1], q2[0] - q[0]); g.save(); g.translate(q[0], q[1]); g.rotate(ang); g.scale(1.5, 1.5); g.fillStyle = '#fff'; g.beginPath(); g.moveTo(7, 0); g.quadraticCurveTo(2, -2.6, -4, -2); g.lineTo(-4.5, 0); g.lineTo(-4, 2); g.quadraticCurveTo(2, 2.6, 7, 0); g.closePath(); g.fill(); g.restore();
+    g.fillStyle = '#fff'; g.font = '600 12px -apple-system,Helvetica Neue,sans-serif'; g.textAlign = 'left'; g.fillText('#' + nr, q[0] + 12, q[1] - 10); g.font = '13px -apple-system,Helvetica Neue,sans-serif'; }
+  /* Abstand zur Schale (muss 0 sein, solange Orbit) */
+  const schale = modus === 'orbit' ? norm(sub(P, A.p)) - radius(th) : 0;
+  $('s').textContent = status + ` · Abstand zur Schale ${(schale * 1000).toFixed(2)} ‰ · Ereignis #${nr}`;
+  requestAnimationFrame(frame);
+}
+for (const id of ['cap', 'runden']) $(id).addEventListener('input', () => { spur = []; neueStation(null, 0, 1); });
+frame();
+</script>

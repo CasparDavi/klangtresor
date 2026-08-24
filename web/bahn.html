@@ -1,0 +1,83 @@
+<!doctype html><meta charset="utf-8"><title>Bahngeometrie</title>
+<!-- KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE -->
+<style>body{margin:0;background:#000;color:#ddd;font:13px -apple-system,Helvetica Neue,sans-serif;overflow:hidden}canvas{display:block}#t{position:fixed;left:16px;top:12px;line-height:1.5}#s{position:fixed;left:16px;bottom:14px;color:#9a9a9a}#p{position:fixed;right:16px;top:12px;margin:0;font:11px/1.5 Menlo,monospace;color:#bbb;white-space:pre}</style>
+<div id="t"><b>Bahngeometrie — ohne Musik.</b> Kreisbahnen, konstantes Tempo (Caspar_D, 21.08.2026).<br>
+Absprung: sobald die Runde voll ist, Schub (Tempo → 1,5×), Absprung wo die Fahrtrichtung auf den Tangentenpunkt zeigt, Transit geradeaus, nie langsamer. Eintritt auf einem engen <b>Fangkreis</b> nah am Stern
+(Tangente vom Absprungpunkt — <span style="color:#4dff88">grün</span> / <span style="color:#ff4d4d">rot</span> = die zwei Seiten), danach spiralt der Orbit mit jeder Runde nach außen, das Tempo pendelt sich ein.</div>
+<div id="s"></div><pre id="p"></pre>
+<canvas id="c"></canvas>
+<script>
+const c=document.getElementById('c'),g=c.getContext('2d');
+let W=c.width=innerWidth,H=c.height=innerHeight;
+const sterne=[{p:[W*0.3,H*0.55],Rmax:120,Rfang:40,farbe:[255,140,90],name:'Orange'},{p:[W*0.72,H*0.42],Rmax:85,Rfang:30,farbe:[120,170,255],name:'Blau'}];
+const V=140;                 // Bahngeschwindigkeit px/s
+const SCHUB=1.5;             // Tempo im Transit (relativ)
+const WACHSTUM=14;           // px Radius je Runde (Spirale nach aussen)
+
+/* Protokoll */
+let nr=0;const protokoll=[];window.protokoll=protokoll;
+function log(art,d){nr++;const z={nr,art,...d};protokoll.push(z);document.getElementById('p').textContent=protokoll.slice(-8).map(e=>`#${e.nr} ${e.art} `+Object.entries(e).filter(([k])=>!['nr','art'].includes(k)).map(([k,v])=>k+'='+(typeof v==='number'?v.toFixed(2):Array.isArray(v)?v.map(x=>(+x).toFixed(1)).join('/'):v)).join(' ')).join('\n');}
+
+/* Tangentenpunkte vom Punkt P an den Kreis (B, R): genau zwei (links/rechts). seite waehlt. */
+function tangente(P,B,R,seite){const dx=P[0]-B[0],dy=P[1]-B[1],d=Math.hypot(dx,dy);const th=Math.atan2(dy,dx),al=Math.acos(Math.min(1,R/d));const a=th+seite*al;
+  const T=[B[0]+R*Math.cos(a),B[1]+R*Math.sin(a)];const rad=[Math.cos(a),Math.sin(a)];
+  /* Umlaufsinn nach dem Eintritt: weiter in Richtung der Sehne P->T */
+  const an=[T[0]-P[0],T[1]-P[1]];const sinn=Math.sign(rad[0]*an[1]-rad[1]*an[0])||1;   // cross(rad, an)
+  return {T,a,sinn};}
+
+/* Zustand */
+let hier=0, th=0, r=sterne[0].Rmax, sinn=1, tempo=1, runden=0, modus='orbit', plan=null, transit=null;
+const spuren=[];let letzt=performance.now()/1000;
+function planen(){const seite=Math.random()<0.5?1:-1;return {seite,farbe:seite>0?'#4dff88':'#ff4d4d'};}
+plan=planen();
+function frame(){
+  const now=performance.now()/1000,dt=Math.min(0.05,now-letzt);letzt=now;W=c.width=innerWidth;H=c.height=innerHeight;
+  g.fillStyle='#000';g.fillRect(0,0,W,H);
+  const A=sterne[hier].p,B=sterne[1-hier].p;
+  for(const [i,S] of sterne.entries()){const [rr,gg,bb]=S.farbe;const gr=g.createRadialGradient(S.p[0],S.p[1],0,S.p[0],S.p[1],26);gr.addColorStop(0,'#fff');gr.addColorStop(0.25,`rgba(${rr},${gg},${bb},.9)`);gr.addColorStop(1,`rgba(${rr},${gg},${bb},0)`);g.fillStyle=gr;g.fillRect(S.p[0]-26,S.p[1]-26,52,52);
+    g.fillStyle=`rgb(${rr},${gg},${bb})`;g.font='12px -apple-system,Helvetica Neue,sans-serif';g.textAlign='center';g.fillText(S.name,S.p[0],S.p[1]+40);
+    g.strokeStyle=`rgba(${rr},${gg},${bb},.35)`;g.lineWidth=1;g.setLineDash([3,5]);g.beginPath();g.arc(S.p[0],S.p[1],S.Rfang,0,2*Math.PI);g.stroke();g.setLineDash([]);
+    g.strokeStyle=`rgba(${rr},${gg},${bb},.12)`;g.beginPath();g.arc(S.p[0],S.p[1],S.Rmax,0,2*Math.PI);g.stroke();}
+  for(const sp of spuren){g.strokeStyle=sp.farbe;g.globalAlpha=sp.a;g.lineWidth=1.5;g.beginPath();g.moveTo(sp.von[0],sp.von[1]);g.lineTo(sp.nach[0],sp.nach[1]);g.stroke();sp.a*=0.995;}g.globalAlpha=1;
+  let P,ang,status;
+  if(modus==='orbit'){
+    P=[A[0]+r*Math.cos(th),A[1]+r*Math.sin(th)];const tang=[-Math.sin(th)*sinn,Math.cos(th)*sinn];ang=Math.atan2(tang[1],tang[0]);
+    /* aktuelle Bahn (Kreis mit r) */
+    const [rr,gg,bb]=sterne[hier].farbe;g.strokeStyle=`rgba(${rr},${gg},${bb},.8)`;g.lineWidth=1.2;g.beginPath();g.arc(A[0],A[1],r,0,2*Math.PI);g.stroke();
+    /* Ziel: Tangentenpunkt vom aktuellen Ort an den Fangkreis des anderen Sterns (geplante Seite) */
+    const tp=tangente(P,B,sterne[1-hier].Rfang,plan.seite);const z=[tp.T[0]-P[0],tp.T[1]-P[1]];
+    const cr=tang[0]*z[1]-tang[1]*z[0], dot=tang[0]*z[0]+tang[1]*z[1];
+    const bereit=runden>=1;
+    if(bereit&&frame.crVor!==undefined&&Math.sign(cr)!==Math.sign(frame.crVor)&&dot>0){
+      modus='transit';transit={von:P,nach:tp.T,sinnNeu:tp.sinn,len:Math.hypot(...z),s:0};
+      log('AUSTRITT',{stern:sterne[hier].name,seite:plan.seite>0?'gruen':'rot',tempo,r,theta:th,P,winkel:Math.abs(Math.atan2(cr,dot))*180/Math.PI});}
+    frame.crVor=cr;
+    /* Schub: sobald die Runde voll ist, Tempo hochfahren (Fluchtgeschwindigkeit) */
+    const tempoZiel=bereit?SCHUB:1;tempo+=(tempoZiel-tempo)*Math.min(1,dt*1.2);
+    /* Bahn: konstante Bahngeschwindigkeit V*tempo, Spirale nach aussen */
+    const dth=(V*tempo*dt)/r;th+=sinn*dth;r=Math.min(sterne[hier].Rmax,r+WACHSTUM*dth/(2*Math.PI));
+    frame.rundenAkk=(frame.rundenAkk||0)+dth;if(frame.rundenAkk>=2*Math.PI){frame.rundenAkk-=2*Math.PI;runden++;}
+    status=`im Orbit um ${sterne[hier].name} · Runde ${runden} · r=${r.toFixed(0)} · Tempo ${tempo.toFixed(2)}× · Sinn ${sinn>0?'↻':'↺'} · naechste Route ${plan.seite>0?'gruen':'rot'}`;
+    g.strokeStyle=plan.farbe;g.globalAlpha=0.25;g.setLineDash([4,6]);g.beginPath();g.moveTo(P[0],P[1]);g.lineTo(tp.T[0],tp.T[1]);g.stroke();g.setLineDash([]);g.globalAlpha=1;
+  }else{
+    transit.s+=V*tempo*dt;const u=Math.min(1,transit.s/transit.len);P=[transit.von[0]+(transit.nach[0]-transit.von[0])*u,transit.von[1]+(transit.nach[1]-transit.von[1])*u];
+    ang=Math.atan2(transit.nach[1]-transit.von[1],transit.nach[0]-transit.von[0]);
+    g.strokeStyle=plan.farbe;g.lineWidth=2;g.beginPath();g.moveTo(transit.von[0],transit.von[1]);g.lineTo(P[0],P[1]);g.stroke();
+    status=`Transit (${plan.seite>0?'gruen':'rot'}) · ${Math.round(u*100)} % · Tempo ${tempo.toFixed(2)}×`;
+    if(u>=1){spuren.push({von:transit.von,nach:transit.nach,farbe:plan.farbe,a:0.6});
+      hier=1-hier;const Bn=sterne[hier].p;r=sterne[hier].Rfang;th=Math.atan2(transit.nach[1]-Bn[1],transit.nach[0]-Bn[0]);sinn=transit.sinnNeu;runden=0;frame.rundenAkk=0;frame.crVor=undefined;
+      const tang=[-Math.sin(th)*sinn,Math.cos(th)*sinn],dir=[transit.nach[0]-transit.von[0],transit.nach[1]-transit.von[1]];
+      const w=Math.acos(Math.max(-1,Math.min(1,(tang[0]*dir[0]+tang[1]*dir[1])/(Math.hypot(...tang)*Math.hypot(...dir)))))*180/Math.PI;
+      log('EINTRITT',{stern:sterne[hier].name,seite:plan.seite>0?'gruen':'rot',r,theta:th,sinn,tempo,winkelZurTangente:w});
+      modus='orbit';plan=planen();}
+  }
+  g.save();g.translate(P[0],P[1]);g.rotate(ang);g.scale(1.6,1.6);
+  const schub=Math.max(0,(tempo-1)/(SCHUB-1));
+  if(schub>0.05){const L=10+22*schub;const sch=g.createLinearGradient(-2,0,-L,0);sch.addColorStop(0,'#c9c9cd');sch.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=sch;g.beginPath();g.moveTo(-2,-1.6);g.lineTo(-L,0);g.lineTo(-2,1.6);g.closePath();g.fill();}
+  g.fillStyle='#fff';g.beginPath();g.moveTo(7,0);g.quadraticCurveTo(2,-2.6,-4,-2);g.lineTo(-4.5,0);g.lineTo(-4,2);g.quadraticCurveTo(2,2.6,7,0);g.closePath();g.fill();g.restore();
+  g.fillStyle='#fff';g.font='600 12px -apple-system,Helvetica Neue,sans-serif';g.textAlign='left';g.fillText('#'+nr,P[0]+12,P[1]-10);
+  document.getElementById('s').textContent=status+`   ·   Ereignis #${nr}`;
+  requestAnimationFrame(frame);
+}
+frame();
+</script>

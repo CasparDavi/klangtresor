@@ -1,0 +1,6 @@
+# Vom Weitergabe-Archiv ausgenommen, aber im Repo behalten:
+# NAECHSTER_CHAT.md ist der Übergabetext für die nächste eigene
+# Arbeitssitzung. Für andere Nutzer ist er ohne Sinn, für den Autor
+# aber wichtig - deshalb export-ignore statt löschen.
+docs/NAECHSTER_CHAT.md export-ignore
+.gitattributes         export-ignore

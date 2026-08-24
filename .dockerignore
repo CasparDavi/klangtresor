@@ -1,0 +1,36 @@
+# Was NICHT in den Build-Kontext gehört.
+#
+# Ohne diese Datei schickt Docker den ganzen Projektordner an den Daemon -
+# also auch library/ mit dem gesamten Archiv (viele Gigabyte). Und auf
+# exFAT-Platten scheitert der Build sogar ganz: macOS legt dort neben jeder
+# Datei eine "._"-Datei an, deren erweiterte Attribute Docker nicht lesen
+# darf ("failed to xattr ... operation not permitted", gefunden 23.08.2026
+# beim ersten Probelauf).
+#
+# Was das Abbild wirklich braucht, holt sich das Dockerfile mit COPY:
+# package.json, package-lock.json, bin/, browser/, server/, web/.
+
+# macOS-Beifang, besonders auf exFAT
+._*
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Geschichte und Geheimnisse
+.git
+.gitignore
+geheim/
+
+# Das Archiv liegt als Volume daneben, nicht im Abbild
+library/
+
+# Wird im Abbild frisch installiert (npm ci)
+node_modules/
+
+# Dokumentation, Pakete, Werkzeuge — für den Betrieb nicht nötig
+docs/
+*.zip
+*.md
+Dockerfile
+docker-compose.yml
+.dockerignore

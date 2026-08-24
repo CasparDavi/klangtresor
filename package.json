@@ -1,0 +1,20 @@
+{
+  "name": "klangtresor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KlangTresor — lokales Archiv. Einzige Abhängigkeit: onnxruntime-node für bin/klang.js (Musikstil). Alles andere ist reines Node.",
+  "dependencies": {
+    "onnxruntime-node": "1.20.1",
+    "umap-js": "^1.4.0"
+  },
+  "scripts": {
+    "start": "node server/server.js",
+    "modelle": "node bin/modelle-holen.js",
+    "klang": "node bin/klang.js",
+    "karte": "node bin/karte.js",
+    "paket": "node bin/paket.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

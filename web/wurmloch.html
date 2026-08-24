@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<!-- KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE -->
+<meta charset="utf-8">
+<title>Wurmloch — Schautafel</title>
+<style>
+  :root{ --grund:#07080d; --schrift:#c9cdd6; --matt:#7d8494; --akzent:#4b93f0; }
+  *{ box-sizing:border-box }
+  body{ margin:0; background:var(--grund); color:var(--schrift);
+        font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; }
+  header{ padding:18px 22px 12px }
+  h1{ margin:0 0 4px; font-size:19px; font-weight:600; letter-spacing:.2px }
+  header p{ margin:0; color:var(--matt); max-width:76ch }
+  #feld{ position:relative; margin:14px 22px; border:1px solid #191d27; border-radius:6px;
+         overflow:hidden; background:#000 }
+  canvas{ display:block; width:100%; height:auto }
+  #pult{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:0 22px 8px }
+  button{ background:#141821; color:var(--schrift); border:1px solid #262c3a; border-radius:5px;
+          padding:7px 14px; font:inherit; cursor:pointer }
+  button:hover{ border-color:#3c4658 }
+  button.an{ background:var(--akzent); border-color:var(--akzent); color:#04070e; font-weight:600 }
+  label{ color:var(--matt); display:flex; align-items:center; gap:7px }
+  input[type=range]{ width:150px; accent-color:var(--akzent) }
+  #uhr{ font-variant-numeric:tabular-nums; color:var(--matt); min-width:11ch }
+  .phase{ color:var(--akzent) }
+  footer{ padding:6px 22px 26px; color:var(--matt); max-width:86ch }
+  code{ background:#12151d; padding:1px 5px; border-radius:3px; color:#a8b0c0 }
+</style>
+
+<header>
+  <h1>Wurmloch — was passiert, wenn die Zeitspanne rückwärts läuft</h1>
+  <p>Wer <code>seit:</code> später setzt als <code>bis:</code>, verlangt einen Song, der nach dem
+     Ende und vor dem Anfang liegt. Den kann es nicht geben. Statt einer leeren Fläche
+     verlässt das Sound-Schiff den Raum, der keiner mehr ist.</p>
+</header>
+
+<div id="pult">
+  <button id="ausloesen">Zeitspanne verkehren</button>
+  <button id="zurueck">Spanne richtigstellen</button>
+  <label>Ablauf <input type="range" id="schieber" min="0" max="6200" value="0" step="10"></label>
+  <span id="uhr">— läuft normal</span>
+</div>
+
+<div id="feld"><canvas id="c" width="1200" height="560"></canvas></div>
+
+<footer id="notiz"></footer>
+
+<script>
+const c = document.getElementById('c'), g = c.getContext('2d');
+const W = c.width, H = c.height;
+
+/* ---- Hintergrund: ein Himmel wie im Klangraum ------------------- */
+function saat(n){ let s = n >>> 0; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+const STERNE = (() => {
+  const z = saat(20260824), a = [];
+  for (let i = 0; i < 260; i++){
+    const gr = z();
+    a.push({ x: z() * W, y: z() * H,
+             r: 0.5 + 1.9 * gr * gr,
+             h: 0.10 + 0.34 * z(),
+             ton: [[255,150,140],[255,205,150],[255,255,235],[190,215,255],[150,190,255]][Math.floor(z()*5)],
+             fl: z() < 0.16 ? 0.5 + z() : 0 });
+  }
+  return a;
+})();
+
+/* ---- Zustand ---------------------------------------------------- */
+let wurmloch = null;            // { t0, x, y }
+let handbetrieb = false;        // Schieber führt die Zeit
+let handzeit = 0;
+const WURMLOCH_DAUER = 5900;
+const MITTE = { x: W * 0.5, y: H * 0.5 };
+
+/* Das Schiff im Normalbetrieb: eine ruhige Bahn um die Mitte. */
+const SCHIFF_R = Math.min(W, H) * 0.34, SCHIFF_TEMPO = 0.42;
+function schiffNormal(t){
+  const w = t / 1000 * SCHIFF_TEMPO;
+  return { x: MITTE.x + Math.cos(w) * SCHIFF_R, y: MITTE.y + Math.sin(w) * SCHIFF_R * 0.42 };
+}
+
+/* WO DAS LOCH AUFGEHT (Caspar_D, 24.08.2026: "das loch muss an einer
+   position aufgehen, dass das Schiff genau tangential auf den rand der
+   groessten Ausdehnung geraet und dann in den Strudel spiralig gezogen
+   wird").
+
+   Also nicht dort, wo das Schiff gerade steht, sondern so, dass seine
+   Bahn den Lochrand STREIFT. Das macht den Uebergang stetig: Das Schiff
+   faehrt weiter wie bisher, beruehrt den Rand - und ab da zieht es der
+   Strudel nach innen, ohne Knick und ohne Sprung.
+
+   Gerechnet wird rueckwaerts: Wo ist das Schiff, wenn das Loch seine
+   volle Weite hat? Dort seine Flugrichtung nehmen, senkrecht dazu um
+   den Lochradius versetzen - das ist die Mitte. Die Tangente wird
+   numerisch aus zwei nahen Punkten genommen, weil die Bahn wegen der
+   Stauchung (y mal 0,42) keine Kreisbahn ist, sondern eine Ellipse. */
+function lochLage(tAusloesung, R, tTreffer){
+  const t1 = tAusloesung + tTreffer;
+  const A = schiffNormal(t1 - 8), B = schiffNormal(t1 + 8);
+  const P = schiffNormal(t1);
+  let tx = B.x - A.x, ty = B.y - A.y;
+  const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+  /* Zwei Normalen - die zur Bildmitte hin nehmen, damit das Loch im
+     Bild bleibt und nicht halb ueber den Rand haengt. */
+  const n1 = [-ty, tx], n2 = [ty, -tx];
+  const dm1 = Math.hypot(P.x + n1[0] * R - MITTE.x, P.y + n1[1] * R - MITTE.y);
+  const dm2 = Math.hypot(P.x + n2[0] * R - MITTE.x, P.y + n2[1] * R - MITTE.y);
+  const n = dm1 <= dm2 ? n1 : n2;
+  return { x: P.x + n[0] * R, y: P.y + n[1] * R,
+           /* Der Beruehrpunkt, von der Lochmitte aus gesehen: dort setzt
+              die Spirale an, damit sie ohne Knick anschliesst. */
+           w0: Math.atan2(-n[1], -n[0]) };
+}
+
+/* ---- Der Effekt -------------------------------------------------
+
+   Die Choreographie (Caspar_D, 24.08.2026): "erst blitzt ein helles
+   licht mit refraktionskreuz auf, dann geht langsam das schwarze
+   wurmloch auf, aber um den Kreis stroemen kreisfoermig blau/
+   magentafarbene Nebel rundherum, dann geht das Raumschiff rein, die
+   nebel konzentrieren sich wieder um den Lochrand, das loch zieht sich
+   zusammen und mit dem aufblitzenden Lichtpunkt bleibt der Raum dann
+   schwarz."
+
+   Sechs Bilder, in dieser Reihenfolge:
+
+     0,00-0,50 s   Blitz mit Refraktionskreuz
+     0,40-2,20 s   das schwarze Loch geht auf
+     0,60-3,80 s   Nebel stroemen kreisfoermig darum
+     2,20-3,80 s   das Schiff faehrt hinein
+     3,80-4,80 s   die Nebel ziehen sich an den Lochrand
+     4,60-5,50 s   das Loch zieht sich zusammen
+     5,40-5,90 s   Schlussblitz - danach schwarz
+------------------------------------------------------------------- */
+const WL = { blitz:500, aufAb:400, aufBis:2200, nebelAb:600,
+             schiffAb:2200, schiffBis:3800, sammelnAb:3800, sammelnBis:4800,
+             engAb:4600, engBis:5500, endeAb:5400, endeBis:5900 };
+
+const sanft = (u) => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+
+/* WIE DAS SCHIFF IN DEN STRUDEL FAELLT (Caspar_D: "das schiff muss
+   langsamer schneller werden").
+
+   Vorher lief die Einfahrt auf einer Sanftkurve: in der Mitte am
+   schnellsten, zum Schluss wieder langsam. Das ist die Bewegung einer
+   Tuer, die zufaellt - nicht die eines Koerpers, den es hineinzieht.
+
+   Ein Strudel beschleunigt bis zuletzt, und die Drehung wird dabei
+   ueberproportional schnell: Der Drehimpuls bleibt erhalten, also ist
+   r*r*omega konstant. Bei halbem Radius dreht es sich viermal so
+   schnell. Genau das sieht man bei einem Abfluss, und genau das fehlte.
+
+   Der Radius faellt nach r = 1 - u^2.4: anfangs kaum, dann immer
+   steiler. Der Winkel wird daraus numerisch aufsummiert - analytisch
+   waere das Integral von du/(1-u^2.4)^2, und das ist keine Formel, die
+   man in eine Zeile schreibt. 240 Stuetzstellen genuegen; die Tabelle
+   entsteht einmal beim Laden und wird danach nur nachgeschlagen. */
+const STRUDEL = (() => {
+  const N = 240, r = new Float64Array(N + 1), w = new Float64Array(N + 1);
+  let summe = 0;
+  for (let i = 0; i <= N; i++){
+    const u = i / N;
+    /* Der Radius laeuft NICHT auf null: Das Schiff verschwindet im
+       Schlund, es erreicht den Mittelpunkt nie. Ohne diese Grenze geht
+       1/r^2 gegen unendlich, und 94 % der Drehung faenden im letzten
+       Zehntel statt - das saehe aus wie ein Zucken, nicht wie ein Sog. */
+    r[i] = 0.14 + 0.86 * (1 - Math.pow(u, 2.0));
+    if (i > 0){
+      /* omega ~ 1/r^2, ueber die Mitte des Schritts gemittelt */
+      const rm = (r[i] + r[i-1]) / 2;
+      summe += (1 / N) / (rm * rm);
+    }
+    w[i] = summe;
+  }
+  const gesamt = w[N] || 1;
+  return { r, w, N, gesamt };
+})();
+/* Liefert [Radiusanteil 0..1, Drehung in Umlaeufen 0..1] zum Fortschritt u. */
+function strudelOrt(u){
+  u = Math.max(0, Math.min(1, u));
+  const f = u * STRUDEL.N, i = Math.min(STRUDEL.N - 1, Math.floor(f)), a = f - i;
+  return [ STRUDEL.r[i] + (STRUDEL.r[i+1] - STRUDEL.r[i]) * a,
+           (STRUDEL.w[i] + (STRUDEL.w[i+1] - STRUDEL.w[i]) * a) / STRUDEL.gesamt ];
+}
+const spanne = (t, a, b) => sanft((t - a) / (b - a));
+
+/* Ein Blitz mit Refraktionskreuz: der Kern, ein Hof, und vier Strahlen
+   wie sie eine Blende erzeugt - zwei lange waagerecht, zwei kurze
+   senkrecht, dazu ein feines Diagonalpaar. */
+function blitzMalen(g, x, y, kraft, W, H){
+  if (kraft <= 0.002) return;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  const kern = Math.min(W, H) * 0.055 * kraft;
+
+  g.filter = `blur(${(kern * 0.55).toFixed(1)}px)`;
+  const hof = g.createRadialGradient(x, y, 0, x, y, kern * 9);
+  hof.addColorStop(0,    `rgba(255,255,255,${(0.95 * kraft).toFixed(3)})`);
+  hof.addColorStop(0.22, `rgba(205,225,255,${(0.42 * kraft).toFixed(3)})`);
+  hof.addColorStop(0.6,  `rgba(150,120,255,${(0.13 * kraft).toFixed(3)})`);
+  hof.addColorStop(1,    'rgba(90,60,180,0)');
+  g.fillStyle = hof;
+  g.beginPath(); g.arc(x, y, kern * 9, 0, Math.PI * 2); g.fill();
+
+  /* Die Strahlen bekommen nur einen Hauch Weichzeichner - sie sollen
+     ein KREUZ sein, kein Schimmer. Der Hof darueber ist weich, der
+     Strahl darin bleibt scharf. */
+  g.filter = `blur(${(kern * 0.12).toFixed(1)}px)`;
+  const strahl = (winkel, laenge, dicke, deck) => {
+    g.save(); g.translate(x, y); g.rotate(winkel);
+    const lg = g.createLinearGradient(-laenge, 0, laenge, 0);
+    lg.addColorStop(0,    'rgba(255,255,255,0)');
+    lg.addColorStop(0.32, `rgba(190,215,255,${(deck * kraft * 0.35).toFixed(3)})`);
+    lg.addColorStop(0.5,  `rgba(255,255,255,${(deck * kraft).toFixed(3)})`);
+    lg.addColorStop(0.68, `rgba(190,215,255,${(deck * kraft * 0.35).toFixed(3)})`);
+    lg.addColorStop(1,    'rgba(255,255,255,0)');
+    g.fillStyle = lg;
+    g.beginPath();
+    g.moveTo(-laenge, 0); g.lineTo(0, -dicke); g.lineTo(laenge, 0); g.lineTo(0, dicke);
+    g.closePath(); g.fill();
+    g.restore();
+  };
+  const L = Math.min(W, H) * 1.15 * kraft;
+  strahl(0,            L,        kern * 0.16, 1.00);   // waagerecht, weit
+  strahl(Math.PI / 2,  L * 0.55, kern * 0.13, 0.85);   // senkrecht
+  strahl(Math.PI / 4,  L * 0.30, kern * 0.07, 0.45);   // Diagonalpaar
+  strahl(-Math.PI / 4, L * 0.30, kern * 0.07, 0.45);
+
+  g.filter = 'none';
+  g.fillStyle = `rgba(255,255,255,${kraft.toFixed(3)})`;
+  g.beginPath(); g.arc(x, y, kern * 0.85, 0, Math.PI * 2); g.fill();
+  g.restore();
+}
+
+/* Die Nebel: Schwaden, die um das Loch kreisen. Jede Schwade ist ein
+   Bogen mit weichen Enden; sie liegen auf verschiedenen Radien und
+   laufen verschieden schnell, damit sich das Bild nie wiederholt.
+   Blau aussen, Magenta innen - beide Haustoene. */
+const SCHWADEN = (() => {
+  const z = saat(20260825), a = [];
+  for (let i = 0; i < 26; i++){
+    a.push({ r:    0.62 + 0.85 * z(),      // Vielfaches des Lochradius
+             a0:   z() * Math.PI * 2,
+             bogen:0.5 + 1.5 * z(),
+             tempo:(0.32 + 0.62 * z()) * (z() < 0.22 ? -1 : 1),
+             dick: 0.10 + 0.30 * z(),
+             ton:  z(),                     // 0 = blau, 1 = magenta
+             kraft:0.35 + 0.65 * z() });
+  }
+  return a;
+})();
+
+function nebelMalen(g, x, y, R, t, dichte, enge){
+  if (dichte <= 0.004) return;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  /* Weichzeichner: aus Stricharbeit werden Schwaden. Canvas kann das
+     selbst - kein zweites Bild, kein Nachbearbeiten. Der Radius waechst
+     mit dem Loch, damit die Weichheit im Verhaeltnis bleibt, und faellt
+     beim Sammeln, weil sich die Nebel dann verdichten. */
+  g.filter = `blur(${(R * (0.13 - 0.07 * enge)).toFixed(1)}px)`;
+  for (const sw of SCHWADEN){
+    /* enge = 1 heisst: alle Schwaden liegen am Lochrand. */
+    const rBasis = sw.r;
+    const r = R * (rBasis * (1 - enge) + 1.06 * enge);
+    const w0 = sw.a0 + t / 1000 * sw.tempo * (1 + enge * 2.2);
+    const bogen = sw.bogen * (1 - enge * 0.55);
+    const dicke = R * sw.dick * (1 - enge * 0.45);
+    /* Die Farbe haengt am RADIUS, nicht am Zufall: innen Magenta, aussen
+       Blau. Nur so bleiben beide Toene sichtbar - wuerde jede Schwade
+       ihre eigene Farbe wuerfeln, mischte das additive Malen alles zu
+       einem gleichmaessigen Violett, und man saehe die Stroemung nicht.
+       Der Zufall verschiebt jede Schwade nur ein Stueck auf dieser
+       Skala, damit es nicht wie ein Farbverlauf aussieht. */
+    const nah = Math.max(0, Math.min(1, (1.5 - rBasis) / 0.95 + (sw.ton - 0.5) * 0.35));
+    const rot   = Math.round(60 + 195 * nah);
+    const gruen = Math.round(130 - 118 * nah);
+    const blau  = Math.round(255 - 20 * nah);
+    /* Der Bogen wird aus mehreren versetzten Strichen gebaut - das gibt
+       ihm weiche Raender, ohne einen Weichzeichner zu brauchen. */
+    for (let lage = 0; lage < 4; lage++){
+      const f = 1 - lage / 4;
+      g.beginPath();
+      for (let k = 0; k <= 22; k++){
+        const u = k / 22;
+        const w = w0 + (u - 0.5) * bogen;
+        const rr = r + Math.sin(u * Math.PI) * dicke * (lage - 1.5) * 0.5;
+        const px = x + Math.cos(w) * rr, py = y + Math.sin(w) * rr;
+        k ? g.lineTo(px, py) : g.moveTo(px, py);
+      }
+      const deck = Math.pow(sw.kraft, 1.6) * dichte * 0.085 * f;
+      g.strokeStyle = `rgba(${rot},${gruen},${blau},${deck.toFixed(4)})`;
+      g.lineWidth = dicke * (0.5 + lage * 0.55);
+      g.lineCap = 'round';
+      g.stroke();
+    }
+  }
+  g.restore();
+}
+
+function wurmlochMalen(g, W, H, t, x, y, w0Treffer, wurmlochT0){
+  if (t > WL.endeBis) return;                 // danach: schwarz, nichts mehr
+
+  const R = Math.min(W, H) * 0.26;
+
+  /* --- 1. Der Blitz am Anfang ------------------------------------- */
+  if (t < WL.blitz){
+    const u = t / WL.blitz;
+    blitzMalen(g, x, y, Math.pow(1 - u, 1.6) * (u < 0.12 ? u / 0.12 : 1), W, H);
+  }
+
+  /* --- 2. Das Loch geht auf, spaeter zieht es sich zusammen -------- */
+  const auf = spanne(t, WL.aufAb, WL.aufBis);
+  const eng = 1 - spanne(t, WL.engAb, WL.engBis);
+  const weite = R * auf * eng;
+
+  /* --- 3. Die Nebel ----------------------------------------------- */
+  const dichte = spanne(t, WL.nebelAb, WL.nebelAb + 700) * eng;
+  const sammeln = spanne(t, WL.sammelnAb, WL.sammelnBis);
+  if (weite > 0.5) nebelMalen(g, x, y, weite, t, dichte, sammeln);
+
+  /* --- 4. Der Schlund: ein Loch, kein Leuchten --------------------- */
+  if (weite > 0.5){
+    g.save();
+    /* Ein schmaler Saum, der das Schwarz gegen den Nebel absetzt */
+    g.globalCompositeOperation = 'lighter';
+    g.filter = `blur(${(weite * 0.05).toFixed(1)}px)`;
+    const saum = g.createRadialGradient(x, y, weite * 0.86, x, y, weite * 1.12);
+    saum.addColorStop(0,   'rgba(120,90,255,0)');
+    saum.addColorStop(0.5, `rgba(190,150,255,${(0.32 * eng).toFixed(3)})`);
+    saum.addColorStop(1,   'rgba(90,140,255,0)');
+    g.fillStyle = saum;
+    g.beginPath(); g.arc(x, y, weite * 1.12, 0, Math.PI * 2); g.fill();
+
+    g.globalCompositeOperation = 'source-over';
+    g.filter = 'none';                       /* der Schlund bleibt scharf */
+    const kern = g.createRadialGradient(x, y, 0, x, y, weite);
+    kern.addColorStop(0,    'rgba(0,0,0,1)');
+    kern.addColorStop(0.82, 'rgba(0,0,0,1)');
+    kern.addColorStop(1,    'rgba(0,0,0,0)');
+    g.fillStyle = kern;
+    g.beginPath(); g.arc(x, y, weite, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+
+  /* --- 5. Das Schiff: erst die eigene Bahn, dann der Strudel -------
+     Bis zum Beruehrpunkt faehrt es weiter, als waere nichts. Ab da
+     uebernimmt die Spirale - sie beginnt genau dort, mit genau dem
+     Radius, den das Loch hat, und mit dem Winkel des Beruehrpunkts.
+     Deshalb gibt es keinen Sprung. */
+  if (t < WL.schiffBis + 200){
+    let sx, sy, sk = 1, spur = [];
+    const wMax = Math.min(W, H) * 0.26;          // Weite bei voller Oeffnung
+    const DREHUNG = Math.PI * 2 * 2.6;           // gut zweieinhalb Umlaeufe bis ganz innen
+
+    const ort = (tt) => {
+      if (tt <= WL.schiffAb){
+        const p = schiffNormal(wurmlochT0 + tt);
+        return [p.x, p.y, 1];
+      }
+      const u = (tt - WL.schiffAb) / (WL.schiffBis - WL.schiffAb);
+      const [k, dreh] = strudelOrt(u);
+      const rr = wMax * k;
+      const ww = w0Treffer + dreh * DREHUNG;
+      return [x + Math.cos(ww) * rr, y + Math.sin(ww) * rr, k];
+    };
+
+    [sx, sy, sk] = ort(t);
+    g.save();
+    g.globalCompositeOperation = 'lighter';
+    g.filter = 'blur(2.2px)';
+    g.beginPath();
+    for (let k = 0; k < 60; k++){
+      const tk = t - k * 14; if (tk < 0) break;
+      const [px, py] = ort(tk);
+      k ? g.lineTo(px, py) : g.moveTo(px, py);
+    }
+    g.strokeStyle = `rgba(215,230,255,${(0.5 * Math.max(0.25, sk)).toFixed(3)})`;
+    g.lineWidth = 2.4 * sk + 0.6; g.lineCap = 'round'; g.stroke();
+    g.filter = 'none';
+    const gl = g.createRadialGradient(sx, sy, 0, sx, sy, 12 * sk + 2);
+    gl.addColorStop(0, `rgba(255,255,255,${(0.98 * Math.max(0.1, sk)).toFixed(3)})`);
+    gl.addColorStop(1, 'rgba(170,205,255,0)');
+    g.fillStyle = gl;
+    g.beginPath(); g.arc(sx, sy, 12 * sk + 2, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+
+  /* --- 6. Der Schlussblitz - danach ist der Raum schwarz ----------- */
+  if (t >= WL.endeAb){
+    const u = (t - WL.endeAb) / (WL.endeBis - WL.endeAb);
+    blitzMalen(g, x, y, Math.pow(1 - u, 2.2) * (u < 0.16 ? u / 0.16 : 1), W, H);
+  }
+}
+
+/* ---- Bild ------------------------------------------------------- */
+function bild(now){
+  const t = wurmloch ? (handbetrieb ? handzeit : now - wurmloch.t0) : 0;
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+
+  /* Die Sterne verloeschen, waehrend das Loch aufgeht. Am Ende ist der
+     Raum schwarz - und bleibt es. */
+  const weg = wurmloch ? sanft((t - 300) / 1500) : 0;
+  if (weg < 0.995){
+    g.globalCompositeOperation = 'lighter';
+    g.filter = 'blur(0.7px)';
+    for (const s of STERNE){
+      let h = s.h * (1 - weg);
+      if (s.fl) h *= 0.75 + 0.25 * Math.sin(now / 420 * s.fl + s.x);
+      if (h <= 0.004) continue;
+      const gl = g.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 4.2);
+      gl.addColorStop(0, `rgba(${s.ton[0]},${s.ton[1]},${s.ton[2]},${h.toFixed(3)})`);
+      gl.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gl;
+      g.beginPath(); g.arc(s.x, s.y, s.r * 4.2, 0, Math.PI * 2); g.fill();
+    }
+    g.filter = 'none';
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  if (!wurmloch){
+    const p = schiffNormal(now);
+    g.globalCompositeOperation = 'lighter';
+    const gl = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, 11);
+    gl.addColorStop(0, 'rgba(255,255,255,0.98)');
+    gl.addColorStop(1, 'rgba(160,200,255,0)');
+    g.fillStyle = gl;
+    g.beginPath(); g.arc(p.x, p.y, 11, 0, Math.PI * 2); g.fill();
+    g.globalCompositeOperation = 'source-over';
+    uhr.textContent = '— läuft normal';
+  } else {
+    wurmlochMalen(g, W, H, t, wurmloch.x, wurmloch.y, wurmloch.w0, wurmloch.t0);
+    const phase = t < WL.blitz      ? 'Blitz'
+                : t < WL.schiffAb   ? 'das Loch geht auf, Nebel strömen'
+                : t < WL.sammelnAb  ? 'das Schiff fährt hinein'
+                : t < WL.engAb      ? 'die Nebel sammeln sich am Rand'
+                : t < WL.endeAb     ? 'das Loch zieht sich zusammen'
+                : t < WL.endeBis    ? 'Schlussblitz'
+                :                     'der Raum ist schwarz';
+    uhr.innerHTML = `${(t/1000).toFixed(1)} s · <span class="phase">${phase}</span>`;
+    if (!handbetrieb) schieber.value = Math.min(6200, Math.round(t));
+  }
+  requestAnimationFrame(bild);
+}
+
+/* ---- Bedienung -------------------------------------------------- */
+const uhr = document.getElementById('uhr'), schieber = document.getElementById('schieber');
+document.getElementById('ausloesen').onclick = () => {
+  const jetzt = performance.now();
+  const L = lochLage(jetzt, Math.min(W, H) * 0.26, WL.schiffAb);
+  wurmloch = { t0: jetzt, x: L.x, y: L.y, w0: L.w0 };
+  handbetrieb = false; schieber.value = 0;
+};
+document.getElementById('zurueck').onclick = () => { wurmloch = null; handbetrieb = false; schieber.value = 0; };
+schieber.oninput = () => {
+  if (!wurmloch){ const jetzt = performance.now();
+    const L = lochLage(jetzt, Math.min(W, H) * 0.26, WL.schiffAb);
+    wurmloch = { t0: jetzt, x: L.x, y: L.y, w0: L.w0 }; }
+  handbetrieb = true; handzeit = +schieber.value;
+};
+
+document.getElementById('notiz').innerHTML =
+  'Die Zeichenfunktion in dieser Tafel ist Zeile für Zeile dieselbe wie <code>wurmlochMalen()</code> ' +
+  'in <code>web/index.html</code> — was hier zu sehen ist, ist auch dort zu sehen. ' +
+  'Der Ablauf: <b>0–1,2 s</b> das Loch öffnet sich und die Sterne verlöschen · ' +
+  '<b>0,7–2,8 s</b> das Schiff spiralt hinein und wird kleiner · ' +
+  '<b>2,8–4,2 s</b> das Loch schließt sich · danach bleibt der Raum leer, ' +
+  'bis die Zeitspanne wieder stimmt.';
+
+requestAnimationFrame(bild);
+</script>
