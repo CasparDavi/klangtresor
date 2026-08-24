@@ -281,15 +281,40 @@ Platzhalter ersetzt worden.
    analyzeFile()"). Die zeigen nach dem Ausbau ins Leere und gehören
    mitgeschrieben — nach der Regel „Wer ersetzt, räumt ab".
 
-Nicht vor dem Push angefasst: Es ist kein Blocker, toter Code schadet
-nur dem nächsten Leser. Und wenn beim Ausbau etwas bricht, soll es nicht
-am Tag der Veröffentlichung brechen.
+**Erledigt am 25.08.2026.** Ausgebaut sind 267 Zeilen: `analyze()` (134),
+`exportForLLM()` (64), `runStems()` (42), `downloadAudio()` (15),
+`currentMeta` samt Rückfall, `#sa-kopf` (22 Zeilen Markup) und drei tote
+Knöpfe. Die Datei ist von 8118 auf 7856 Zeilen geschrumpft.
+
+Beide Fallen waren echt und sind abgeräumt:
+
+- Zu Falle 1: `_chartData`, `_audioSamples` und `songDuration` setzt auf
+  dem Bühnenweg `startWorkerAnalysis()` — dort steht seit dem 19.08.2026
+  der Kommentar, der genau davor warnt. `analyzeFile()` bleibt deshalb
+  stehen; sie ist der Bühnenweg ([index.html:11391](../web/index.html)).
+  `currentMeta` war wieder nur Rückfall hinter `_katalogDaten`.
+- Zu Falle 2: Die sieben Kommentare sind mitgeschrieben, nicht gelöscht —
+  die Lehre („dieselbe Lücke ein drittes Mal") gilt weiter, nur heißt der
+  Verursacher jetzt „der Suno-Weg" statt `analyze()`. Auch die tote
+  CSS-Regel für `#sa-kopf` ist raus.
+
+Beim Test fiel ein **älterer** Fehler auf, der nichts mit dem Ausbau zu
+tun hatte: `totLegen()` fehlte der Null-Schutz, den sein Nachbar
+`leereKartenAus()` hat. Schließt man die Bühne, während der Nachlauf noch
+tickt (sechs Runden à 800 ms), greift er auf die abgeräumte Fläche zu und
+wirft. Jetzt prüft er auf `null`, und `abraeumen()` bestellt den Nachlauf ab.
+
+Geprüft im Browser an *Monolith*: 22 Karten sichtbar, 19 Leinwände
+gezeichnet, alle sechs Stems geladen, Tonart E und Stimme männlich aus
+`toene.json` angekommen, Pillen in der neuen Rangfolge und in den Farben
+aus `STEM_RANG`. Keine Konsolenfehler — auch nicht beim Abräumen.
 
 ## 3. Bewusst liegengelassen
 
-- **Fünf Panels** im Analyzer sind versteckt, aber nicht entfernt:
-  Kommentar-Generator, beide Instrument-Erkennungen, Stem-Trennung,
-  Standalone-Kopf. Sie erscheinen situativ, deshalb nicht angetastet.
+- **Zwei Panels** im Analyzer sind versteckt, aber nicht entfernt: die
+  beiden Instrument-Erkennungen. Sie erscheinen situativ, deshalb nicht
+  angetastet. Kommentar-Generator, Stem-Trennung und Standalone-Kopf sind
+  am 25.08.2026 ganz ausgebaut (siehe 2.9).
 - **Zwei der drei Instrument-Erkennungen** laden Modelle von
   `caspardavi.github.io` — die letzte Fremdadresse im Analyzer. Läge nahe,
   sie mit zu entfernen.

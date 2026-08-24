@@ -43,7 +43,6 @@
    Beschlossen am 18.08.2026: Stem-Trennung und Instrumenterkennung sind
    in der Bühne nicht sinnvoll.
    --------------------------------------------------------------------- */
-.sunoanalyzer.eingebettet #sa-kopf,
 .sunoanalyzer.eingebettet #export-section,
 .sunoanalyzer.eingebettet #instruments-section,
 .sunoanalyzer.eingebettet #essentia-section,
@@ -545,28 +544,22 @@
   const MARKUP = `<h1>Suno Audio Analyzer <span style="font-size:10px;color:#444;font-weight:400">v4.4 · Essentia+Demucs</span></h1>
 <div id="tt"></div>
 
-<div class="section" id="sa-kopf">
-  <label>Suno Song URL oder UUID</label>
-  <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-    <input type="text" id="url-input" placeholder="https://suno.com/song/…" style="margin-bottom:0;flex:1">
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:#555;white-space:nowrap;flex-shrink:0">
-      <input type="radio" name="fmt" id="fmt-mp3" checked style="accent-color:#4b93f0">MP3
-    </label>
-    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px;color:#555;white-space:nowrap;flex-shrink:0" title="WAV = bessere Qualität, ~10× größer">
-      <input type="radio" name="fmt" id="fmt-wav" style="accent-color:#4b93f0">WAV
-    </label>
-  </div>
-  <div class="row" style="margin:0">
-    <button class="p" onclick="__SA.analyze()">Analysieren</button>
-    <label style="cursor:pointer;color:#4b93f0;font-size:12px;border:1px solid #333;padding:4px 10px;border-radius:4px">
-      Datei öffnen
-      <input type="file" id="file-input" accept="audio/*" style="display:none" onchange="__SA.analyzeFile(this)">
-    </label>
-    <span id="status"></span>
-    <button id="dl-btn" onclick="__SA.downloadAudio()" style="display:none;margin-left:auto;font-size:12px;padding:3px 8px;background:#073d1e;border:1px solid #119347;border-radius:4px;color:#4b93f0;cursor:pointer">⬇ Speichern</button>
-  </div>
-  <div id="progress-wrap"><div id="progress-bar"></div></div>
-</div>
+<!-- Hier stand der Kopfbereich: ein Eingabefeld fuer eine Suno-Adresse,
+     die Wahl zwischen MP3 und WAV, ein Knopf "Analysieren", einer fuer
+     eine lokale Datei, ein Fortschrittsbalken. Er gehoerte zum
+     eigenstaendigen Analyzer, der sich seinen Ton selbst holte.
+
+     Seit dem Einbetten in die Buehne war er ausgeblendet (siehe die
+     CSS-Regel .sunoanalyzer.eingebettet #sa-kopf), am 25.08.2026 ist er
+     entfernt worden - mit ihm analyze(), downloadAudio(), runStems()
+     und der Kommentar-Generator exportForLLM(), zusammen rund 250
+     Zeilen (Caspar_D: "auch die analyzer zeile mit dem voreingestellten
+     song gibt es nicht mehr").
+
+     Was BLEIBT und bleiben muss: analyzeFile(). Der Buehnenweg laeuft
+     durch sie - er baut aus der Adresse /media/<id>/audio.wav ein
+     File-Objekt und reicht es hinein, damit Aufraeumen, Anzeige und die
+     drei Analyseschritte nicht verdoppelt werden. -->
 
 <div id="meta" style="display:none;margin-bottom:10px">
   <div style="display:flex;gap:14px;align-items:stretch">
@@ -607,9 +600,6 @@
         <option value="en">English</option>
       </select>
     </label>
-    <button onclick="__SA.exportForLLM(this)" style="padding:5px 14px;font-size:12px;border:1px solid transparent;border-radius:4px;background:#09356d;color:#4b93f0;cursor:pointer;margin-left:auto" id="export-btn">
-      Prompt kopieren
-    </button>
     <span id="export-status" style="font-size:11px;color:#555"></span>
   </div>
   <!-- Persona snippet -->
@@ -772,11 +762,6 @@
       style="position:absolute;left:0;top:0;height:100%;width:44px;
       border:none;border-right:1px solid #4b93f044;background:#4b93f022;
       color:#4b93f0;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center">▶</button>
-    <!-- Download button right -->
-    <button id="dl-btn-wave" onclick="event.stopPropagation();__SA.downloadAudio()"
-      style="position:absolute;right:0;top:0;height:100%;width:32px;display:none;
-      border:none;border-left:1px solid #4b93f033;background:#4b93f011;
-      color:#4b93f0;font-size:13px;cursor:pointer;align-items:center;justify-content:center">↓</button>
     <!-- Hidden prog-bar/fill for compat -->
     <div id="prog-bar" style="position:absolute;inset:0;pointer-events:none;opacity:0">
       <div id="prog-fill" style="height:100%;background:#4b93f0;width:0%"></div>
@@ -932,9 +917,6 @@
     </div>
     <!-- Action row -->
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <button id="stems-btn" onclick="__SA.runStems()" style="padding:6px 14px;font-size:12px;border:1px solid transparent;border-radius:4px;background:#09356d;color:#4b93f0;cursor:pointer">
-        Stems trennen
-      </button>
       <span id="stems-status" style="font-size:11px;color:#555"></span>
     </div>
     <div id="stems-players"></div>
@@ -1120,6 +1102,10 @@
   }
 
   function totLegen(flaeche){
+    /* Der Nachlauf unten tickt bis zu sechs Runden weiter. Schliesst man
+       die Buehne dazwischen, ist die Flaeche schon abgeraeumt. Derselbe
+       Schutz wie in leereKartenAus (25.08.2026 in der Konsole gefunden). */
+    if (!flaeche) return 0;
     let n = 0;
     for (const [id, grund] of Object.entries(SA_TOT)){
       const el = flaeche.querySelector('#' + id); if (!el) continue;
@@ -1190,6 +1176,7 @@
     if (!kern) return;
     try { kern.anhalten(); } catch(e){ console.warn('Analyzer: Abräumen', e); }
     if (flaecheJetzt){ flaecheJetzt.innerHTML = ''; flaecheJetzt.classList.remove(KLASSE); }
+    clearTimeout(leerLauf);   // der Nachlauf hat nichts mehr zu putzen
     kern = null; flaecheJetzt = null;
     delete window.__SA;
   }
@@ -1277,72 +1264,7 @@
     var _laufendeId = null;
 
     var audioCtx=null, mp3Cache={}, songDuration=0;
-    var currentMeta=null; // stores song metadata for export
 
-    function exportForLLM(btn){
-      var len=document.getElementById('export-length').value;
-      var lang=document.getElementById('export-lang').value;
-      var langLabel=lang==='de'?'Deutsch':'English';
-      var charTarget=len==='250'?'ca. 250 Zeichen':len==='350'?'ca. 350 Zeichen':'400–500 Zeichen';
-
-      // Song data
-      var title=currentMeta&&currentMeta.title?currentMeta.title.replace(/\s+by\s+[^|]+$/i,'').trim():'Unbekannt';
-      var author=currentMeta&&currentMeta.author?currentMeta.author:'';
-      var prompt=currentMeta&&currentMeta.prompt?currentMeta.prompt:'';
-      var styles=currentMeta&&currentMeta.tags?currentMeta.tags.join(', '):'';
-      var lyrics=currentMeta&&currentMeta.lyrics?currentMeta.lyrics:'';
-
-      // Key analysis values only
-      function v(id){var el=document.getElementById(id);return el?el.textContent.trim():'';}
-      var bpm=v('v-bpm'), key=v('v-key');
-      var voice=v('v-vocal'), dyn=v('v-dyn'), shape=v('v-symmetry');
-      var tilt=v('v-tilt'), centroid=v('v-centroid');
-
-      var text='';
-      text+='Schreibe einen Kommentar für diesen Suno-Song.\n';
-      text+='Sprache: '+langLabel+'. Länge: '+charTarget+'.\n\n';
-
-      text+='=== SONG ===\n';
-      text+='Titel: '+title+'\n';
-      if(author)text+='Erstellt von: '+author+'\n';
-      if(styles)text+='Style: '+styles+'\n';
-      if(prompt)text+='Generierungs-Prompt: '+prompt+'\n';
-      text+='\n';
-
-      text+='=== ANALYSE ===\n';
-      text+='BPM: '+bpm+' | Tonart: '+key+'\n';
-      text+='Stimme: '+voice+'\n';
-      text+='Dynamik: '+dyn+' dB | Energieform: '+shape+'\n';
-      text+='Frequenzgewicht: '+tilt+' | Spektralcentroid: '+centroid+' Hz\n';
-      text+='\n';
-
-      if(lyrics){
-        text+='=== TEXT ===\n'+lyrics+'\n\n';
-      }
-
-      text+='=== MEINE PERSPEKTIVE ===\n';
-      var personaEl=document.getElementById('export-persona');
-      var persona=personaEl?personaEl.value.trim():'';
-      if(persona)text+=persona+'\n';
-
-      // Copy
-      try{
-        navigator.clipboard.writeText(text).then(function(){
-          document.getElementById('export-status').textContent='✓ Kopiert';
-          setTimeout(function(){document.getElementById('export-status').textContent='';},2000);
-        }).catch(fallback);
-      }catch(e){fallback();}
-
-      function fallback(){
-        var ta=document.createElement('textarea');
-        ta.value=text;ta.style.cssText='position:fixed;left:-9999px';
-        document.body.appendChild(ta);ta.select();
-        try{document.execCommand('copy');}catch(e){}
-        document.body.removeChild(ta);
-        document.getElementById('export-status').textContent='✓ Kopiert';
-        setTimeout(function(){document.getElementById('export-status').textContent='';},2000);
-      }
-    }
     var phIds=['befundspur','chromaspur','chromataktspur','stereospur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro','essentia'];
 
     /* Der Knopf auf der Wellenform schaltet den Player der Buehne -
@@ -1403,8 +1325,18 @@
        weiter unten. Eine zweite waere derselbe Fehler wie ein zweiter
        Player, nur billiger. */
 
-    function setStatus(msg){document.getElementById('status').textContent=msg;}
-    function setProgress(pct){document.getElementById('progress-bar').style.width=pct+'%';}
+    /* Beide schrieben in den Kopfbereich - das Eingabefeld fuer eine
+       Suno-Adresse samt Fortschrittsbalken. Den gibt es seit dem
+       25.08.2026 nicht mehr: Der Analyzer laeuft nur noch eingebettet,
+       und dort war der ganze Bereich ohnehin ausgeblendet, seine
+       Meldungen also unsichtbar.
+
+       Die Funktionen bleiben, weil 38 Stellen sie rufen - sie laufen
+       jetzt ins Leere statt auf ein fehlendes Element. Wer den Analyzer
+       wieder eigenstaendig betreiben will, legt die zwei Elemente an,
+       und die Meldungen erscheinen von selbst wieder. */
+    function setStatus(msg){var e=document.getElementById('status'); if(e) e.textContent=msg;}
+    function setProgress(pct){var e=document.getElementById('progress-bar'); if(e) e.style.width=pct+'%';}
     function extractUUID(s){var m=s.trim().match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);return m?m[0]:null;}
     function fmt(s){var m=Math.floor(s/60),ss=Math.round(s%60);return m+':'+(ss<10?'0':'')+ss;}
 
@@ -2375,11 +2307,11 @@
 
       /* Die Abschnittsbahn steht OBEN: Sie ist der Bezugsrahmen, in
          dem die Befunde darunter gelesen werden. */
-      /* Die Wort-Zeitmarken stehen im KATALOG-Objekt, nicht in
-         currentMeta: Das wird nur im Suno-Weg gesetzt (analyze), nicht
-         auf dem Weg, den KlangTresor benutzt. Der vierte Fund derselben
-         Luecke - wer im Analyzer etwas vermisst, sollte zuerst pruefen,
-         ob es nur im Suno-Weg gefuellt wird. */
+      /* Die Worte kommen aus _katalogDaten. Bis zum 25.08.2026 stand hier
+         ein Rueckfall auf currentMeta - das war der vierte Fund derselben
+         Luecke: currentMeta wurde NUR im Suno-Weg gesetzt (analyze), und
+         den gibt es nicht mehr. Der Rueckfall lief also ohnehin ins
+         Leere; jetzt ist er fort. */
       /* LAUTHEIT ÜBER DEM ZIEL: Wo die Kurzzeitlautheit (3 s) über dem Ziel
          der gewählten Plattform liegt, wird beim Abspielen leiser geregelt -
          das ist eine Fundstelle wie jede andere (23.08.2026). */
@@ -2410,7 +2342,7 @@
         bahnen.push({name:'Stehende Töne — aus dem Glockenstuhl (2,7 Hz Auflösung)', strecken:st6});
       }
 
-      var quelleWorte=(_katalogDaten&&_katalogDaten.worte)||(currentMeta&&currentMeta.worte);
+      var quelleWorte=(_katalogDaten&&_katalogDaten.worte)||null;
       var abs=abschnitteAusText(quelleWorte, dauer);
       /* DER TAKT, wie Suno ihn selbst erkannt hat: [Sekunde, Zählzeit 1..4].
          Kein geschätzter Verlauf, sondern das gemessene Raster - deshalb steht
@@ -4882,48 +4814,6 @@
       return false;
     }
 
-    async function runStems(){
-      var btn=document.getElementById('stems-btn');
-      var st=document.getElementById('stems-status');
-      var uuid=extractUUID(document.getElementById('url-input').value);
-      var useWav=document.getElementById('fmt-wav')&&document.getElementById('fmt-wav').checked;
-      var cacheKey=uuid+(useWav?'_wav':'_mp3');
-      var arrayBuf=mp3Cache[cacheKey];
-      if(!arrayBuf){if(st)st.textContent='Bitte zuerst analysieren';return;}
-      // Warn for long songs
-      if(songDuration>360){
-        var mins=Math.round(songDuration/60);
-        if(!confirm('Der Song ist '+mins+' Minuten lang. Stems-Berechnung kann 10-20 Minuten dauern. Fortfahren?')){
-          return;
-        }
-      }
-      btn.disabled=true;
-      if(st)st.textContent='Sende Audio...';
-      try{
-        var blob=new Blob([arrayBuf],{type:useWav?'audio/wav':'audio/mpeg'});
-        var fd=new FormData();
-        fd.append('audio',blob,uuid+(useWav?'.wav':'.mp3'));
-        if(st)st.textContent='Demucs rechnet...';
-        // Start elapsed timer
-        var t0=Date.now();
-        var timerInterval=setInterval(function(){
-          var s=Math.floor((Date.now()-t0)/1000);
-          var m=Math.floor(s/60);
-          if(st)st.textContent='Demucs rechnet... '+m+':'+(s%60<10?'0':'')+(s%60);
-        },1000);
-        var r=await fetch(DEMUCS_URL+'/separate',{method:'POST',body:fd});
-        clearInterval(timerInterval);
-        if(!r.ok){var err=await r.json();if(st)st.textContent='Fehler: '+(err.error||r.status);btn.disabled=false;return;}
-        var data=await r.json();
-        _stemsCache=data.stems;
-        _stemNames=stemsNachRang(data.stem_names||Object.keys(data.stems));
-        if(st)st.textContent='Fertig ·'+Math.round((Date.now()-t0)/1000)+'s';
-        await buildStemPlayers(data.stems,_stemNames);
-      }catch(e){
-        if(st)st.textContent='Fehler: '+e.message;
-      }
-      btn.disabled=false;
-    }
 
     async function buildStemPlayers(stems,names){
       var el=document.getElementById('stems-players');
@@ -5763,26 +5653,11 @@
       }catch(e){return null;}
     }
 
-    function downloadAudio(){
-      var uuid=extractUUID(document.getElementById('url-input').value);
-      if(!uuid)return;
-      var useWav=document.getElementById('fmt-wav')&&document.getElementById('fmt-wav').checked;
-      var cacheKey=uuid+(useWav?'_wav':'_mp3');
-      var buf=window.mp3Cache&&window.mp3Cache[cacheKey];
-      if(!buf){setStatus('Nicht im Cache — bitte zuerst analysieren');return;}
-      var ext=useWav?'wav':'mp3';
-      var blob=new Blob([buf],{type:useWav?'audio/wav':'audio/mpeg'});
-      var a=document.createElement('a');
-      a.href=URL.createObjectURL(blob);
-      a.download=uuid+'.'+ext;
-      a.click();
-      setTimeout(function(){URL.revokeObjectURL(a.href);},5000);
-    }
 
     /* ------------------------------------------------------------------
        ZUSATZ FÜR MYSUNO (nicht im Original, siehe docs/VISUALIZER.md)
 
-       Dritter Einstieg neben analyze() und analyzeFile(): Der Ton wird
+       Zweiter Einstieg neben analyzeFile(): Der Ton wird
        über eine fertige Adresse geholt, etwa /media/<id>/audio.wav aus
        dem lokalen Archiv.
 
@@ -6004,8 +5879,9 @@
       /* Benennen, bevor gerechnet wird. Ohne das stünde hier eine
          namenlose Analyse - analyzeFile() schreibt zwar einen Namen, aber
          in Elemente (#song-title, #song-sub), die es in dieser Fassung
-         gar nicht gibt. Angezeigt wird der Kopfbereich, den sonst
-         analyze() füllt. Die übrigen Felder bleiben leer statt falsch. */
+         gar nicht gibt. Gefüllt wird stattdessen die Titelzeile
+         (#title, #meta, #meta-sub), die den Ausbau vom 25.08.2026
+         überlebt hat. Die übrigen Felder bleiben leer statt falsch. */
       if(titel){
         var mEl = document.getElementById('meta');
         var tEl = document.getElementById('title');
@@ -6044,7 +5920,7 @@
       if(!input.files||!input.files[0])return;
       var file=input.files[0];
 
-      // cleanup same as analyze()
+      // aufraeumen vor jeder neuen Analyse
       if(window._activeWorker){window._activeWorker.terminate();window._activeWorker=null;}
       window._chartData={};
       window._attackComputed=false;
@@ -6107,146 +5983,12 @@
       }
     }
 
-    async function analyze(){
-      var uuid=extractUUID(document.getElementById('url-input').value);
-      if(!uuid){setStatus('Keine gültige UUID');return;}
-
-      // --- CLEANUP ---
-      if(window._activeWorker){window._activeWorker.terminate();window._activeWorker=null;}
-      var dlBtn=document.getElementById('dl-btn');if(dlBtn)dlBtn.style.display='none';
-      window._chartData={};
-      window._attackComputed=false;
-      songDuration=0;zoomLevel=1;viewStart=0;viewEnd=1;window._spectroPerc=null;window._stereoP95=null;window._essentiaRunning=false;
-      _densityHist=null;_densityMaxCount=0;_densityAnalyser=null;
-      document.getElementById('zoom-slider').value=0;
-      document.getElementById('zoom-label').textContent='1×';
-      liveSpektrumLoesen();
-      // reset card values
-      ['v-plays','v-likes','v-comments','v-ratio','v-age','v-ppd','v-model',
-       'v-bpm','v-dur','v-loud','v-dyn','v-centroid','v-rolloff','v-key','v-stereo',
-       'v-chord-rate','v-entropy','v-texture','v-inharm','v-attack','v-symmetry','v-note-stab',
-       'v-tilt','v-harmdense','v-vocal'].forEach(function(id){
-        var el=document.getElementById(id);if(el)el.textContent='—';
-      });
-      ['gm-bpm','gm-loud','gm-dyn','gm-centroid','gm-rolloff','gm-stereo',
-       'gm-chord-rate','gm-entropy','gm-texture','gm-inharm','gm-attack','gm-note-stab',
-       'gm-tilt','gm-harmdense'].forEach(function(id){
-        var el=document.getElementById(id);if(el)el.style.left='-10px';
-      });
-      document.getElementById('tags').innerHTML='';
-      // reset all charts to pending (skeleton) state
-      document.querySelectorAll('canvas.chart-ready').forEach(function(c){
-        c.classList.remove('chart-ready');
-        c.classList.add('chart-pending');
-        var ctx=c.getContext('2d');
-        if(ctx){ctx.clearRect(0,0,c.width,c.height);}
-      });
-      setProgress(0);
-      setStatus('Metadaten laden…');setProgress(5);
-      var meta=await fetchMeta(uuid);
-      if(meta){
-        currentMeta=meta;
-        document.getElementById('meta').style.display='block';
-        document.getElementById('title').textContent=meta.title||uuid;
-        document.getElementById('meta-sub').textContent=(meta.author||'')+(meta.created_at?' · '+new Date(meta.created_at).toLocaleDateString('de-DE'):'');
-        if(meta.artwork){var img=document.getElementById('artwork');img.src=meta.artwork;img.style.display='block';
-          img.onload=function(){
-            var ml=document.getElementById('meta-left');
-            if(ml){
-              var h=ml.offsetHeight;
-              document.getElementById('meta').style.setProperty('--meta-left-h',h+'px');
-            }
-          };
-        }
-        document.getElementById('tags').innerHTML=meta.tags.map(function(t){return '<span class="tag">'+t+'</span>';}).join('');
-        document.getElementById('v-model').textContent=meta.model||'—';
-        if(meta.lyrics||meta.prompt){
-          var lw=document.getElementById('lyrics-wrap');
-          var lb=document.getElementById('lyrics-body');
-          if(lw&&lb){lw.style.display='block';lb.textContent=meta.lyrics||meta.prompt;}
-        }
-        if(meta.plays!==null){
-          document.getElementById('v-plays').textContent=meta.plays.toLocaleString('de-DE');
-          document.getElementById('v-likes').textContent=meta.likes!==null?meta.likes.toLocaleString('de-DE'):'—';
-          document.getElementById('v-comments').textContent=meta.comments!==null?meta.comments.toLocaleString('de-DE'):'—';
-          document.getElementById('v-ratio').textContent=meta.likes>0?Math.round(meta.plays/meta.likes):'—';
-        }
-        if(meta.created_at){
-          var ageDays=Math.floor((Date.now()-new Date(meta.created_at))/(1000*86400));
-          document.getElementById('v-age').textContent=ageDays>365?Math.floor(ageDays/365)+'J '+(ageDays%365)+'d':ageDays+'d';
-          if(meta.plays!==null&&ageDays>0)document.getElementById('v-ppd').textContent=Math.round(meta.plays/ageDays).toLocaleString('de-DE');
-        }
-      }
-      setProgress(10);setStatus('Audio laden…');
-      var useWav=document.getElementById('fmt-wav')&&document.getElementById('fmt-wav').checked;
-      var audioUrl='https://cdn1.suno.ai/'+uuid+(useWav?'.wav':'.mp3');
-      try{
-        var arrayBuf;
-        var cacheKey=uuid+(useWav?'_wav':'_mp3');
-        if(mp3Cache[cacheKey]){setStatus('Aus Cache…');arrayBuf=mp3Cache[cacheKey];}
-        else{
-          setStatus((useWav?'WAV':'MP3')+' laden…');
-          var resp=await fetch(audioUrl);
-          if(!resp.ok){
-            if(useWav){
-              // fallback to MP3 if WAV not available
-              setStatus('WAV nicht verfügbar, lade MP3…');
-              audioUrl='https://cdn1.suno.ai/'+uuid+'.mp3';
-              resp=await fetch(audioUrl);
-              if(!resp.ok){setStatus('Audio nicht verfügbar ('+resp.status+')');return;}
-            } else {
-              setStatus('MP3 nicht verfügbar ('+resp.status+')');return;
-            }
-          }
-          setStatus('Dekodiere…');setProgress(20);
-          arrayBuf=await resp.arrayBuffer();
-          mp3Cache[cacheKey]=arrayBuf;
-        }
-        // show download button now that audio is cached
-        var dlBtn=document.getElementById('dl-btn');
-        if(dlBtn)dlBtn.style.display='inline-block';
-        var dlBtnW=document.getElementById('dl-btn-wave');
-        if(dlBtnW)dlBtnW.style.display='flex';
-        if(!audioCtx||audioCtx.state==='closed')audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-        if(audioCtx.state==='suspended')await audioCtx.resume();
-        // slice() before decode — decodeAudioData detaches the buffer in some browsers
-        // re-store the original so the cache stays valid for subsequent calls
-        var decodeSlice=arrayBuf.slice(0);
-        mp3Cache[cacheKey]=arrayBuf;
-        var buf=await audioCtx.decodeAudioData(decodeSlice);
-        songDuration=buf.duration;
-        currentSR=buf.sampleRate;
-        // store samples for high-zoom rendering
-        window._audioSamples=new Float32Array(buf.getChannelData(0));
-        /* BEIDE KANAELE, nicht nur der linke (Caspar_D, 24.08.2026: "den
-           Käse machen wir nicht, nur in einem Kanal zu rechnen, wenn
-           dann beide und dann addieren"). Was hart rechts liegt, fehlte
-           sonst vollstaendig - die Analyzer-Pruefung hatte das schon
-           gefunden: Kanaele tauschen aenderte die gemeldete Tonart. */
-        window._audioSamplesR = buf.numberOfChannels > 1
-          ? new Float32Array(buf.getChannelData(1)) : null;
-        window._audioSR=buf.sampleRate;
-        drawMainWaveform();
-        document.getElementById('v-dur').textContent=fmt(buf.duration);
-        setProgress(30);setStatus('Starte Analyse…');
-        startWorkerAnalysis(buf);
-        /* Stillgelegt (Caspar_D, 18.08.2026): Instrumenterkennung und
-           Stem-Trennung. Mit ihnen fallen ALLE Fremdadressen des
-           Analyzers weg - ONNX von jsdelivr, die Modelle von github.io,
-           der Demucs-Server auf Port 5001. Wieder einschaltbar über
-           aufbauen(…, {essentia:true, demucs:true}). */
-        if (OPT.essentia) runEssentia(buf);
-        if (OPT.demucs)   checkDemucsServer();
-        /* drawSpectrum steht jetzt in startWorkerAnalysis - dort
-           kommen beide Wege durch. */
-      }catch(e){setStatus('Fehler: '+e.message);}
-    }
 
     function startWorkerAnalysis(buf){
       /* Dauer und Abtastrate hier setzen, nicht beim Aufrufer.
 
-         Im Original tat das nur analyze() - der Weg über die
-         Suno-Songseite. analyzeFile() setzte allein die ANZEIGE der
+         Im Original tat das nur der Suno-Weg (analyze(), am 25.08.2026
+         ausgebaut). analyzeFile() setzte allein die ANZEIGE der
          Dauer, nicht songDuration selbst. Auf diesem Weg, und das ist
          genau der von KlangTresor, blieben damit alle 17 Spielköpfe und der
          Zoom tot: Beide brechen bei songDuration === 0 sofort ab.
@@ -6257,7 +5999,7 @@
       _aufnahme={ id:_laufendeId, nachrichten:[], fertig:false,
                   sr:buf.sampleRate, dauer:buf.duration };
       /* Und dieselbe Lücke ein zweites Mal: Die Abtastwerte für die
-         Wellenform setzte ebenfalls nur analyze(). Auf dem Dateiweg
+         Wellenform setzte ebenfalls nur der Suno-Weg. Auf dem Dateiweg
          brach drawMainWaveform() deshalb sofort ab und die Wellenform
          blieb leer - genau die Anzeige, an der der Spielkopf hängt. */
       window._audioSamples=new Float32Array(buf.getChannelData(0));
@@ -6267,7 +6009,7 @@
       drawMainWaveform();
 
       /* Und dieselbe Luecke ein DRITTES Mal, gefunden am 19.08.2026:
-         Das Live-Spektrum richtete allein analyze() ein. Auf dem
+         Das Live-Spektrum richtete allein der Suno-Weg ein. Auf dem
          Katalogweg wurde drawSpectrum() nie gerufen, die Flaeche blieb
          in ihrer Voreinstellung von 300x150 stehen und war schwarz.
 
@@ -6275,7 +6017,7 @@
          und wer dort etwas einbaut, sieht den Dateiweg nicht. Deshalb
          steht es jetzt hier - an der Stelle, an der BEIDE Wege
          durchkommen. Wer kuenftig etwas ergaenzt, das den dekodierten
-         Puffer braucht, setzt es hierher, nicht in analyze(). */
+         Puffer braucht, setzt es hierher - in startWorkerAnalysis(). */
       drawSpectrum(buf,'freq-canvas');
 
       var ch0=buf.getChannelData(0);
@@ -8060,15 +7802,11 @@
       /* 'player' gab das eigene Audioelement heraus. Es gibt keines
          mehr - wer den Ton steuern will, steuert den der Buehne. */
       seekStart: typeof seekStart === 'function' ? seekStart : function(){},
-      analyze: typeof analyze === 'function' ? analyze : function(){},
       analyzeFile: typeof analyzeFile === 'function' ? analyzeFile : function(){},
-      downloadAudio: typeof downloadAudio === 'function' ? downloadAudio : function(){},
-      exportForLLM: typeof exportForLLM === 'function' ? exportForLLM : function(){},
       togglePlay: typeof togglePlay === 'function' ? togglePlay : function(){},
       resetZoom: typeof resetZoom === 'function' ? resetZoom : function(){},
       stemsConfigChanged: typeof stemsConfigChanged === 'function' ? stemsConfigChanged : function(){},
       stemsRestart: typeof stemsRestart === 'function' ? stemsRestart : function(){},
-      runStems: typeof runStems === 'function' ? runStems : function(){},
       stemTogglePlay: typeof stemTogglePlay === 'function' ? stemTogglePlay : function(){},
       stemTimeSeek: typeof stemTimeSeek === 'function' ? stemTimeSeek : function(){},
       stemToggleMute: typeof stemToggleMute === 'function' ? stemToggleMute : function(){},
