@@ -199,12 +199,27 @@ Nach dem Aktualisieren den Server einmal neu starten.
 
 ## Was gesichert werden muß
 
-**Nur `library/roh/`** — rund 11 MB. Das sind die unveränderten
-Suno-Antworten, und sie entstehen ausschließlich im Browser.
+**`library/katalog.json.gz`** — rund 47 MB. Dort steckt alles, was
+nicht aus einer Datei zurückkommt: Lyrics, Wort-Zeitmarken, Kommentare
+mit ihren Antworten, der Zählerverlauf über Monate, die Playlists.
 
-Alles andere — Katalog, Medien, Artworks, Kacheln, Paletten, je nach
-Sammlung viele Gigabyte — baut `node bin/wiederherstellen.js` daraus
-ohne jede Anmeldung neu auf.
+Dazu `library/roh/`, falls dort gerade etwas liegt.
+
+> **Achtung, diese Anweisung stand hier lange falsch.** Sie nannte
+> `library/roh/` als das einzig Unersetzliche. Das stimmte einmal —
+> heute räumt `aufbereiten.js` die verarbeiteten Rohdaten weg, sobald
+> ihr Inhalt im Katalog steht (so gewollt: „wozu das mitführen und
+> Speicherplatz vergeuden"). Der Ordner ist im gesunden Betrieb also
+> fast leer, und wer nur ihn sichert, sichert nichts.
+
+Alles Übrige — Medien, Artworks, Kacheln, Paletten, Analysen — baut
+`node bin/wiederherstellen.js` neu auf, ohne jede Anmeldung.
+
+**Zwei Dinge holt es aber nicht zurück:** die WAV-Originale
+(`node bin/wav.js`, sofern Suno sie noch vorhält) und die
+Instrumentspuren (`node bin/stems.js`, rund vier Minuten je Song). Wer
+die behalten will, sichert `library/songs/` gleich mit — das sind dann
+allerdings zig Gigabyte.
 
 ---
 

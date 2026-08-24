@@ -1,5 +1,11 @@
 # Prüfung des SunoAnalyzers (23.08.2026)
 
+> **Die Zeilennummern in diesem Dokument stimmen nicht mehr.** Sie
+> stammen aus einem älteren Stand; `web/fremd/analyzer.js` ist seither
+> von rund 7 000 auf über 8 000 Zeilen gewachsen. Die genannten
+> Funktions- und Variablennamen stimmen weiterhin — danach suchen, nicht
+> nach der Zeile. (Festgestellt beim Funktionstest am 25.08.2026.)
+
 > **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
 
 Caspar_D: „der Analyzer macht offensichtlich falsche Dinge — auch die Stimmerkennung

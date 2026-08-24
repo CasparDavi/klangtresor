@@ -25,10 +25,15 @@ Zeile für dein System und deinen Weg:
 |---|---|---|
 | **macOS** | `einrichten-macos.command` doppelklicken | `einrichten-docker.command` doppelklicken |
 | **Linux** | `./einrichten-linux.sh` | `./einrichten-docker.sh` |
-| **Windows** | Rechtsklick auf `einrichten-windows.ps1` → „Mit PowerShell ausführen" | Rechtsklick auf `einrichten-docker.ps1` → „Mit PowerShell ausführen" |
+| **Windows** | Doppelklick auf `KlangTresor-einrichten.cmd` | Rechtsklick auf `einrichten-docker.ps1` → „Mit PowerShell ausführen" |
 
 Beim ersten Doppelklick auf dem Mac fragt das System, ob du der Datei traust —
 dann einmal Rechtsklick → Öffnen wählen.
+
+Unter Windows **nicht** die `.ps1` direkt anklicken: Viele Rechner lehnen
+Skripte ab, und das Fenster schließt sich, bevor man die Meldung lesen
+kann — man hält das Programm dann für kaputt. Der `.cmd`-Starter umgeht
+beides. (Beigesteuert von Casto, der genau darüber gestolpert ist.)
 
 **Der übliche Weg** prüft, was fehlt (Node ab 20, ffmpeg) und sagt dir für dein
 System, wie du es bekommst. Dann holt er die Pakete und die KI-Modelle, fragt
@@ -351,14 +356,11 @@ Ein Klick setzt sie ins Feld; mehrere lassen sich kombinieren.
 
 ## Was du sichern solltest
 
-**Den Ordner `library/roh/`** — meist wenige Megabyte, die
-unveränderten Antworten von Suno — **und die Datei
-`library/reaktionen.ndjson`**, deine Kommentare und Likes. Beides
-zusammen paßt auf einen Stick.
-
-Alles andere, auch die vielen Gigabyte Musik, baut
-`node bin/wiederherstellen.js` daraus jederzeit neu auf. Dafür braucht
-es keine Anmeldung: Die Mediendateien liegen offen auf Sunos Servern.
+**`library/katalog.json.gz`** — rund 47 MB. Dort steckt alles, was
+nicht aus einer Datei zurückkommt: Lyrics, Zeitmarken, Kommentare, der
+Zählerverlauf, die Playlists. Dazu `library/roh/`, falls dort gerade
+etwas liegt — der Ordner ist meist leer, weil `aufbereiten.js` die
+verarbeiteten Rohdaten wegräumt, sobald ihr Inhalt im Katalog steht.
 
 ---
 

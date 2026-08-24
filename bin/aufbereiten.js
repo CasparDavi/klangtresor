@@ -453,11 +453,19 @@ const profilInfoDatei = neuesteRohdatei('profilinfo');
 const profil = lies(profilInfoDatei) || (alt && alt.profil) || null;
 if (profilInfoDatei) console.log('  Profilangaben: ', path.basename(profilInfoDatei));
 
-/* Fuer die Archivierung unten: welche Dateien dieser Lauf gelesen
-   hat. Erst NACH erfolgreichem Schreiben des Katalogs wandern sie
-   nach roh/verarbeitet/ - ihr Inhalt steckt dann im Katalog, sie
-   bleiben als Rohdaten-Tagebuch erhalten, aber der aktive Ordner
-   zeigt nur noch, was wirklich unverarbeitet ist. */
+/* Welche Dateien dieser Lauf gelesen hat. Sie werden weiter unten
+   GELOESCHT, erst nach erfolgreichem Schreiben des Katalogs.
+
+   Der Kommentar hier sagte bis zum 25.08.2026 etwas anderes: sie
+   wanderten nach roh/verarbeitet/ und blieben als Tagebuch erhalten.
+   Das war einmal so und ist seit dem 20.08.2026 nicht mehr wahr
+   (Caspar_D: "wozu das mitfuehren und Speicherplatz vergeuden"). Der
+   Code darunter loescht, der Kommentar behauptete das Gegenteil - und
+   aus dieser Behauptung ist eine falsche Sicherungsanweisung in README
+   und START-HIER gewachsen: "Nur library/roh/ sichern". Wer dem folgte,
+   sicherte einen fast leeren Ordner und haette den Katalog verloren.
+
+   Unersetzlich ist library/katalog.json.gz. */
 const verarbeitet = ['profil','privat','timing','playlists','profilinfo','feed']
   .flatMap(alleRohdateien);
 

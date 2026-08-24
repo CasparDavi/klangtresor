@@ -2029,7 +2029,15 @@ positioniert sich selbst.
 
 ---
 
-## Fertige Visualizer — die ersten Fremddateien
+## Fertige Visualizer
+
+> **audioMotion ist am 24.08.2026 ausgebaut worden** — die Datei stand
+> unter AGPL und verträgt sich nicht mit der MIT-Lizenz des Projekts.
+> Wo dieses Kapitel sie noch im Präsens beschreibt, beschreibt es den
+> Stand davor. Was bleibt, ist Butterchurn; die fünf Darstellungsarten
+> sind fort, und wer eine davon eingestellt hatte, wird beim nächsten
+> Start auf *Spektrum* umgeschrieben. Einzelheiten in
+> `web/fremd/LIZENZEN.md`. — die ersten Fremddateien
 
 In `web/fremd/` liegen seit dem 18.08.2026 drei Bibliotheken. Es sind
 die **ersten Abhängigkeiten** des Projekts, das bis dahin aus einer
@@ -2037,7 +2045,6 @@ einzigen Datei ohne Fremdcode bestand.
 
 | Datei | Größe | |
 |---|---|---|
-| `audioMotion-analyzer.js` | 93 KB | 4.5.4, UMD → `window.AudioMotionAnalyzer` |
 | `butterchurn.min.js` | 188 KB | 2.6.7 |
 | `butterchurnPresetsExtra.min.js` | 824 KB | 2.4.7 |
 | `butterchurnPresetsExtra2.min.js` | 595 KB | 2.4.7 |
@@ -2096,7 +2103,6 @@ Das Auswahlfeld führt **41 Einträge in drei Gruppen**:
 | Gruppe | Anzahl |
 |---|---|
 | Eigene Visualisierungen | 7 |
-| audioMotion | 5 — Balken · Balken fein · LED-Balken · Gespiegelt · Linienzug |
 | Butterchurn (MilkDrop) | 29 Presets |
 
 Die Kennung trägt die Variante hinter einem Doppelpunkt:

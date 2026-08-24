@@ -6,12 +6,20 @@ anderen. Diese Datei nennt sie und ihre Lizenzen.
 Der eigene Code steht unter der **MIT-Lizenz** — siehe
 [LICENSE](../../LICENSE). Sie gilt **nicht** für:
 
-* Die Dateien in diesem Ordner. Sie stammen von anderen und tragen ihre
-  eigenen Lizenzen — unten steht, welche.
+* Die **Butterchurn-Dateien** in diesem Ordner (`butterchurn*.min.js`).
+  Sie stammen von anderen und tragen ihre eigene Lizenz — unten steht,
+  welche.
 * Die KI-Modelle. Sie liegen nicht im Repositorium und werden beim
   Einrichten geholt; auch sie stehen unten.
 * Die Songs, Texte und Artworks in einem damit gebauten Archiv. Sie
   gehören ihren Urhebern und sind nicht Teil dieses Repositoriums.
+
+**Vier Dateien in diesem Ordner sind trotz seines Namens eigener Code**
+und stehen unter MIT wie alles andere: `analyzer.js`,
+`analyzer-worker.js`, `analyse-ablage.js` und `gradation-worklet.js`.
+Sie liegen hier, weil der Ordner ursprünglich für ausgelagerte Module
+gedacht war — nicht, weil sie fremd wären. Ihre Dateiköpfe sagen es
+selbst.
 
 > Der Hinweis stand zunächst unter dem Lizenztext selbst. Er ist
 > hierher gewandert, weil GitHub eine LICENSE mit Zusatz nicht mehr als
