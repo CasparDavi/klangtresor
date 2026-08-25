@@ -7794,6 +7794,43 @@ function karteSchiffFrame(){
             && !beschuss.some(b => b.id === aktuellId))
           beschuss.push({ id: aktuellId, t0: jetzt, nova: false });    // Schub faehrt im Anlauf hoch
         const glut = warpt ? Math.max(0, 1 - rest / 3) : 0;                                           // Warpkern laedt in den letzten 3 s
+        /* DER FUNKELNDE RING DES RABEN (Caspar_D, 25.08.2026: "Das Funkeln
+           der Rabenspur soll um den ganzen Stern reichen und dort vor sich
+           hin funkeln - erst wenn der Rabe das System verlaesst,
+           verschwindet der funkelnde Ring.")
+
+           Der Ring liegt auf dem aktuellen Bahnradius und in der echten
+           Bahnebene - kreis() projiziert sie, in 3-D wird er also zur
+           Ellipse wie die Bahn selbst. Er schliesst die Runde des Raben,
+           bevor der sie selbst geflogen ist. Violett bis weiss, nie die
+           Akzentfarbe (Hausregel Rabe). Er lebt nur in der Orbitphase:
+           mit dem Absprung ist er fort. */
+        if (gestalt === 'rabe'){
+          const NR = 120, auf = Math.min(1, zeit / 1.2);   // 1,2 s Aufblenden nach Ankunft
+          const gcoV = gVorn.globalCompositeOperation, gcoH = gHinten.globalCompositeOperation;
+          gVorn.globalCompositeOperation = 'lighter'; gHinten.globalCompositeOperation = 'lighter';
+          for (let k = 0; k < NR; k++){
+            const th = k / NR * 2 * Math.PI;
+            const q0 = kreis(th, a.rp), q1 = kreis(th + 2 * Math.PI / NR, a.rp);
+            const gz = q0.roh && hinterStern(q0.roh) ? gHinten : gVorn;
+            /* zarter geschlossener Saum, damit der Ring auch zwischen den
+               Funken als Ring lesbar bleibt */
+            gz.strokeStyle = `rgba(180,77,255,${(0.10 * auf).toFixed(3)})`; gz.lineWidth = 3;
+            gz.beginPath(); gz.moveTo(q0[0], q0[1]); gz.lineTo(q1[0], q1[1]); gz.stroke();
+            gz.strokeStyle = `rgba(200,120,255,${(0.14 * auf).toFixed(3)})`; gz.lineWidth = 1;
+            gz.beginPath(); gz.moveTo(q0[0], q0[1]); gz.lineTo(q1[0], q1[1]); gz.stroke();
+            /* der Funke dazu: atmet in eigenem Takt zwischen Violett und
+               Weiss; unter der Schwelle ruht er - so glitzert es, statt zu
+               leuchten. Deterministisch (sin), kein Zufall - das Muster
+               steht still im Raum und flimmert nur in der Zeit. */
+            const f = 0.5 + 0.5 * Math.sin(jetzt / (140 + (k * 37) % 90) + k * 2.399);
+            if (f < 0.45) continue;
+            const e = (f - 0.45) / 0.55;
+            gz.fillStyle = `rgba(${Math.round(180 + 75 * e)},${Math.round(77 + 178 * e)},255,${((0.22 + 0.6 * e) * auf).toFixed(2)})`;
+            gz.beginPath(); gz.arc(q0[0], q0[1], 0.5 + 1.2 * e, 0, 2 * Math.PI); gz.fill();
+          }
+          gVorn.globalCompositeOperation = gcoV; gHinten.globalCompositeOperation = gcoH;
+        }
         Object.assign(karteSchiffFrame.diag, { P: [P[0], P[1]], roh: P.roh, einfang: !!(bahn.vonFang && bahn.einRel && zeit < tEinfang) });
         zeichneSchiff(P, ang, glut, schub);
         g.globalAlpha = 1; g = gVorn;                                   // Transponder immer vorn (lesbar)
