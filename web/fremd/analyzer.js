@@ -4921,12 +4921,33 @@
        bekommt die tonreine Messung nachgereicht. */
     async function abtastwerteNachladen(tonUrl){
       if(!tonUrl) return;
-      if(window._audioSamples && window._audioSamples.length) return;
+      /* WESSEN ABTASTWERTE LIEGEN DA? (Caspar_D, 25.08.2026: "das darf
+         nicht sein, dass die weg ist")
+
+         Hier stand bis heute nur die Frage, OB Werte vorliegen - nicht,
+         zu welchem Song sie gehoeren. Beim Songwechsel in der offenen
+         Buehne blieben die alten liegen, die Wache kehrte um, und
+         drawMainWaveform() wurde nie erreicht: Der Analyzer baut sein
+         Markup bei jedem Aufbau neu, die Wellenformflaeche war also
+         frisch und leer und blieb es. Sichtbar wurde es an Moissanit
+         (4:14), in dessen Anzeige 4:37 Abtastwerte des Vorgaengers
+         lagen. Nur der erste Song nach dem Seitenladen hatte deshalb
+         eine Gesamthuellkurve.
+
+         Jetzt traegt der Vorrat den Namen seines Songs. Gehoert er zum
+         laufenden, wird nicht neu geladen - aber gezeichnet, denn die
+         Flaeche kann trotzdem neu und leer sein. */
+      if(window._audioSamples && window._audioSamples.length
+         && window._audioSamplesFuer === _laufendeId){
+        if(typeof drawMainWaveform==='function') drawMainWaveform();
+        return;
+      }
       try{
         var ab=await (await fetch(tonUrl)).arrayBuffer();
         var ctx2=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,44100);
         var dec=await ctx2.decodeAudioData(ab);
         window._audioSamples=new Float32Array(dec.getChannelData(0));
+        window._audioSamplesFuer=_laufendeId;
         window._audioSR=dec.sampleRate;
         try{ ctx2.close(); }catch(e){}
         var d=window._chartData;
@@ -5212,6 +5233,7 @@
          brach drawMainWaveform() deshalb sofort ab und die Wellenform
          blieb leer - genau die Anzeige, an der der Spielkopf hängt. */
       window._audioSamples=new Float32Array(buf.getChannelData(0));
+      window._audioSamplesFuer=_laufendeId;
       window._audioSR=buf.sampleRate;
       drawMainWaveform();
 
