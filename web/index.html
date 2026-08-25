@@ -8266,6 +8266,20 @@ function zeichnePlaylistInhalt(){
   const p = playlistVonId.get(offenePlaylist);
   if (!p){ offenePlaylist = null; return zeichnePlaylistUebersicht(); }
 
+  /* DIE ALBUMANSICHT BRACH BEIM ÖFFNEN AB (25.08.2026, Caspar_D: „schau
+     mal kurz, warum die Albumwiedergabe nicht mehr funktioniert").
+
+     Die Kartendarstellung unten ist aus der Werke-Ansicht übernommen,
+     und dort steht imText() als LOKALE Hilfe in zeichneTracks — hier
+     gab es sie nie. Der Aufruf warf „imText is not defined", der ganze
+     Rasteraufbau brach ab, und das Album blieb leer. Der Fehler steckt
+     seit dem ersten Commit drin: Er tritt nur auf, wenn man ein Album
+     wirklich öffnet.
+
+     Hier wird nicht gesucht — in einem geöffneten Album gibt es kein
+     Suchfeld —, also ist die Antwort immer nein. */
+  const imText = () => false;
+
   $('plZurueck').hidden = false;
   // Reihenfolge kommt von Suno (relative_index) und wird NICHT
   // umsortiert - sie ist Teil der Aussage einer Playlist.
