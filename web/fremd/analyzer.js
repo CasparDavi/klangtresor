@@ -2216,8 +2216,13 @@
        ZEILE steht und in den Kopf gehoert. */
     var TEILEN_AB=4;
 
-    function tabelleMehrspaltig(klasse, kopf, zeilen){
-      var spalten=zeilen.length>=TEILEN_AB ? 2 : 1;
+    /* Der vierte Parameter erzwingt eine Gruppenzahl. Der Plattform-
+       Vergleich laeuft seit dem 25.08.2026 DREIGETEILT zu je zwei Zeilen
+       (Caspar_D: "dreiteile die tabelle zu a 2 Zeilen") - so füllt er
+       die Breite mit Inhalt statt mit gestreckten Spalten. Die
+       Schimmerfunde behalten die alte Zweiteilungs-Regel. */
+    function tabelleMehrspaltig(klasse, kopf, zeilen, wunsch){
+      var spalten=wunsch || (zeilen.length>=TEILEN_AB ? 2 : 1);
       var proSpalte=Math.ceil(zeilen.length/spalten), aus='';
       for(var i=0;i<spalten;i++){
         var stueck=zeilen.slice(i*proSpalte,(i+1)*proSpalte);
@@ -2305,7 +2310,7 @@
 
       if(isFinite(msg.grenzHz)) v('obere Grenze','—', (msg.grenzHz/1000).toFixed(1)+' kHz', 0, '');
       document.getElementById('sa-vergleich').innerHTML=
-        tabelleMehrspaltig('bf-vergleich', KOPF, zeilenV);
+        tabelleMehrspaltig('bf-vergleich', KOPF, zeilenV, 3);
 
       /* ---- Strecken je Plattform ----------------------------------- */
       var bahnen=[];
