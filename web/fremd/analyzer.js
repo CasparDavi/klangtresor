@@ -1005,6 +1005,18 @@
   <div class="chart-text">Die Verteilung der Frequenzbänder über das Stereobild — oben die Höhen und unten der Bass. Was nach oben ragt, liegt <span style="color:#f97b14">links</span>, was nach unten ragt, <span style="color:#4b93f0">rechts</span>; jedes Band ist auf sein eigenes 95. Perzentil normiert. Ein Bass, der nicht in der Mitte sitzt, fällt hier sofort auf.</div>
 </div>
 
+<!-- DIE KORRELATIONSSPUR (25.08.2026, Review Block 6). korrVerlauf wird
+     seit jeher im Worker gerechnet (400-ms-Fenster, NaN fuer stille) und
+     lag in jeder Ablage - sichtbar war davon nur die Befundbahn fuer
+     Strecken unter -0,10. Der VERLAUF ist aber die Auskunft: wie eng ein
+     Modell mischt, ob die Breite ueber Strophen und Refrains atmet, ob
+     v4.5 breiter generiert als v2. Rechenkosten null, die Daten sind da. -->
+<div class="section sa-spur" id="spur-korr" style="display:none">
+  <div class="slbl"><span class="spur-titel"></span></div>
+  <div class="chart-outer" style="height:56px"><div id="korrspur-canvas" class="spur-flaeche" style="height:56px"></div><div class="playhead" id="ph-korrspur"></div></div>
+  <div class="chart-text">Wie ähnlich linker und rechter Kanal klingen, über die Zeit: <b>+1</b> heißt beide spielen dasselbe (schmal, aber mono-fest), <b>0</b> heißt völlig unabhängig (breit), und <b>unter null</b> heißt gegenphasig — beim Zusammenrechnen auf Mono löscht sich dort etwas aus. Die gestrichelte Linie markiert die Schwelle, ab der die Befundbahn oben eine Auslöschung meldet.</div>
+</div>
+
 <div class="section"><div class="slbl"><span><span class="nam">Klangveränderung (Spektrale Fluktuation)</span> — <span class="erkl">Helligkeit = Änderungsrate pro Frequenzband · Bass unten · Höhen oben</span></span></div>
   <div class="chart-outer"><canvas id="flux-canvas" style="height:160px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-flux"></div></div>
   <div class="chart-text">Momentane Änderung des Spektrums, aufgelöst nach Frequenzbändern. Helle Stellen bedeuten Bewegung, dunkle Stillstand: Ein liegender Akkord erscheint dunkel, ein Trommelwirbel hell. Die Abbildung zeigt also nicht, was lange klingt oder still ist, sondern in welchem Frequenzband sich etwas stark ändert. Die acht Bänder sind am linken Rand beschriftet und reichen von 20–40 Hz ganz unten bis 2500–20000 Hz ganz oben; jedes ist auf sein eigenes 95. Perzentil normiert, sodass auch leise Bänder ihre Bewegung zeigen.</div>
@@ -1311,7 +1323,7 @@
 
     var audioCtx=null, mp3Cache={}, songDuration=0;
 
-    var phIds=['befundspur','chromaspur','chromataktspur','stereospur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro','essentia'];
+    var phIds=['befundspur','chromaspur','chromataktspur','stereospur','korrspur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro','essentia'];
 
     /* Der Knopf auf der Wellenform schaltet den Player der Buehne -
        er hat keinen eigenen mehr zu schalten. */
@@ -2713,7 +2725,7 @@
            Stand und blieb unsichtbar (23.08.2026 beim Nachmessen gefunden). */
         namenAusrichten();
       }
-      ['momentanspur','kurzspur','abweichungspur','stapelspur','befundspur','chromaspur','stereospur','chromataktspur','taktrasterspur','main-waveform','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur'].concat(SPUREN.map(function(s){return s.id+'spur';})).forEach(function(id){
+      ['momentanspur','kurzspur','abweichungspur','korrspur','stapelspur','befundspur','chromaspur','stereospur','chromataktspur','taktrasterspur','main-waveform','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur'].concat(SPUREN.map(function(s){return s.id+'spur';})).forEach(function(id){
         var svg=document.querySelector('#'+id+'-canvas svg');
         if(!svg) return;
         /* Die Befundspur ist unterschiedlich hoch - so viele Bahnen, wie
@@ -2724,6 +2736,7 @@
                 : id==='stereospur' ? 192
                 : id==='main-waveform' ? 48
                 : id==='abweichungspur' ? 56
+                : id==='korrspur' ? 56
                 : /^stem/.test(id) ? 44
                 : id==='stapelspur' ? 120 : 44;
         svg.setAttribute('viewBox', x+' 0 '+w+' '+hoehe);
@@ -3955,6 +3968,63 @@
         + '<span style="color:'+OBEN+'">oben: ragt heraus</span> · '
         + '<span style="color:'+UNTEN+'">unten: fällt ab</span> · '
         + '<span style="opacity:.9">' + lo.toFixed(1) + ' bis +' + hi.toFixed(1) + ' LU</span>';
+    }
+
+    /* DIE KORRELATIONSSPUR (25.08.2026, Review Block 6). Dieselbe Bauart
+       wie die Abweichung darueber - bipolar um eine Mittellinie, das
+       Vorzeichen als Farbe -, aber mit FESTER Skala -1..+1: Die
+       Korrelation ist eine absolute Groesse, ein Song mit engem Mono-Mix
+       soll auch eng aussehen und nicht auf die volle Hoehe gestreckt
+       werden. Oben (gleichphasig) das Haus-Gruen, unten (gegenphasig)
+       das Warnrot; die gestrichelte Linie bei -0,1 ist die Schwelle, ab
+       der die Befundbahn eine Ausloeschung meldet - Schwellen stehen IM
+       Bild, nicht daneben (Hausform). */
+    function korrSpurZeichnen(msg){
+      var rahmen=document.getElementById('spur-korr');
+      var host=document.getElementById('korrspur-canvas');
+      if(!rahmen||!host) return;
+      var kv=msg&&msg.korrVerlauf;
+      if(!kv||!kv.length){ rahmen.style.display='none'; return; }
+      rahmen.style.display='';
+
+      var n=kv.length, H=56, pad=3, mitte=H/2;
+      var y=function(v){ return mitte - Math.max(-1,Math.min(1,v))*(mitte-pad); };
+      var punkte=Math.min(SPUR_W, n);
+      var dP='', dA='M0 '+mitte+' ';
+      for(var p2=0;p2<punkte;p2++){
+        var a=Math.floor(p2*n/punkte), b=Math.max(a+1,Math.floor((p2+1)*n/punkte));
+        var s=0,z=0;
+        for(var k=a;k<b&&k<n;k++) if(isFinite(kv[k])){ s+=kv[k]; z++; }
+        if(!z) continue;
+        var px=(p2/(punkte-1||1)*SPUR_W).toFixed(1), py=y(s/z).toFixed(1);
+        dP+=(dP?'L':'M')+px+' '+py+' ';
+        dA+='L'+px+' '+py+' ';
+      }
+      dA+='L'+SPUR_W+' '+mitte+' Z';
+
+      var OBEN='#16be5c', UNTEN='#e31c79', ySchwelle=y(-0.1).toFixed(1);
+      host.innerHTML=
+        '<svg viewBox="0 0 '+SPUR_W+' '+H+'" preserveAspectRatio="none" data-h="'+H+'">'
+        + '<defs><clipPath id="sa-clipKO"><rect x="0" y="0" width="'+SPUR_W+'" height="'+mitte+'"/></clipPath>'
+        + '<clipPath id="sa-clipKU"><rect x="0" y="'+mitte+'" width="'+SPUR_W+'" height="'+mitte+'"/></clipPath></defs>'
+        + '<path d="'+dA+'" fill="'+OBEN+'" opacity="0.15" clip-path="url(#sa-clipKO)"/>'
+        + '<path d="'+dA+'" fill="'+UNTEN+'" opacity="0.20" clip-path="url(#sa-clipKU)"/>'
+        + '<line x1="0" y1="'+mitte+'" x2="'+SPUR_W+'" y2="'+mitte+'" stroke="rgba(255,255,255,.28)"'
+        +   ' stroke-width="0.7" vector-effect="non-scaling-stroke"/>'
+        + '<line x1="0" y1="'+ySchwelle+'" x2="'+SPUR_W+'" y2="'+ySchwelle+'" stroke="'+UNTEN+'"'
+        +   ' stroke-width="0.7" stroke-dasharray="6 5" opacity="0.55" vector-effect="non-scaling-stroke"/>'
+        + '<path d="'+dP+'" fill="none" stroke="'+OBEN+'" stroke-width="1.3" vector-effect="non-scaling-stroke" clip-path="url(#sa-clipKO)"/>'
+        + '<path d="'+dP+'" fill="none" stroke="'+UNTEN+'" stroke-width="1.3" vector-effect="non-scaling-stroke" clip-path="url(#sa-clipKU)"/>'
+        + '</svg>';
+
+      var titel=document.querySelector('#spur-korr .spur-titel');
+      if(titel) titel.innerHTML=
+          '<span class="nam">Verträgt er Mono?</span> — <span class="erkl">Stereo-Korrelation über die Zeit</span> · '
+        + '<span style="color:'+OBEN+'">+1 gleich</span> · '
+        + '<span style="color:'+UNTEN+'">−1 gegenphasig</span>'
+        + (isFinite(msg.korr) ? ' · <span style="opacity:.9">Mittel '+msg.korr.toFixed(2)+'</span>' : '')
+        + (isFinite(msg.negPhase) && msg.negPhase>=0.5
+            ? ' · <span style="color:'+UNTEN+'">'+msg.negPhase.toFixed(0)+' % unter −0,1</span>' : '');
     }
 
     /* ==================================================================
@@ -6300,6 +6370,7 @@
             } else setzN('v-grenz','—');
             window._normwerte=msg;
             befundeZeigen(msg);
+            korrSpurZeichnen(msg);
             leereKartenNachlauf();             /* Karten ohne Wert verschwinden - erst, wenn alles da ist */
             lautheitSpurenZeichnen();
             funkenZeichnen();
