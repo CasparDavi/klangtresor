@@ -309,6 +309,44 @@ gezeichnet, alle sechs Stems geladen, Tonart E und Stimme männlich aus
 `toene.json` angekommen, Pillen in der neuen Rangfolge und in den Farben
 aus `STEM_RANG`. Keine Konsolenfehler — auch nicht beim Abräumen.
 
+### 2.10 Der Trennlauf hängt reproduzierbar nach der dritten Spur
+
+Zweimal in zwei Nächten, und beide Male an derselben Stelle:
+
+| | 24.08. | 25.08. |
+|---|---|---|
+| stehengeblieben nach | 113 Songs | 9 Songs |
+| betroffener Song | `9d375ce4…` | `91e5814b…` („Kerze") |
+| vorhandene Spuren | `drums`, `bass`, `other` | `drums`, `bass`, `other` |
+| fehlende Spuren | `vocals`, `guitar`, `piano` | `vocals`, `guitar`, `piano` |
+| Zustand | `SN`, 0,0 % CPU, 10,4 GB | `SN`, 0,0 % CPU, ~9 GB |
+| Stillstand | 8½ Stunden | 50 Minuten bis zum Fund |
+
+Die Ausgabereihenfolge in [bin/stems.js:95](../bin/stems.js) ist
+`['drums', 'bass', 'other', 'vocals', 'guitar', 'piano']` — es bricht also
+**exakt nach dem dritten Eintrag** ab. Zweimal derselbe Punkt ist kein
+Zufall.
+
+**Was gesichert ist:** Am 25.08. um 03:03 stand ein `ffmpeg` seit 1 h 58 min
+bei 0,0 % CPU und wartete auf `pipe:0`. Kein Trenner lief mehr. Im
+Protokoll steht keine Fehlermeldung — `spawnSync` blockiert, statt zu
+scheitern, deshalb merkt `stems.js` nichts und wartet mit.
+
+**Verdacht, nicht bewiesen:** `flacSchreiben()` schiebt die Rohdaten per
+`spawnSync` mit `input:` durch eine Pipe in ffmpeg — bei fünf Minuten
+Musik rund 105 MB (`n × 2 Kanäle × 4 Byte`). Klemmt dieser Transfer, warten
+beide Seiten unbegrenzt aufeinander.
+
+**Naheliegende Härtung:** Die Rohdaten in eine temporäre Datei schreiben
+und ffmpeg daraus lesen lassen, statt durch eine Pipe. Dann gibt es nichts,
+was klemmen kann. Kostet einen Schreibvorgang je Spur — auf der SSD
+belanglos gegen einen Lauf, der über Nacht steht.
+
+**Bis dahin:** Nach `pgrep -fl stems.js` den Status prüfen (`SN` bei 0,0 %
+über Stunden heißt hängend), jeden `stems/`-Ordner auf sechs `.flac`
+prüfen und halbfertige verwerfen — `stems.js` erkennt Fertiges nur an
+`piano.flac`, ein Ordner mit drei Spuren fällt sonst durch.
+
 ## 3. Bewusst liegengelassen
 
 - **Zwei Panels** im Analyzer sind versteckt, aber nicht entfernt: die

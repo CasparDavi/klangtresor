@@ -21,9 +21,13 @@ muss), dann docs/HAUSREGELN.md, dann docs/TONSTUDIO.md.
 
 Zwei Läufe, beide abgekoppelt (PPID 1), beide unter `caffeinate -i`:
 
-- **`bin/stems.js --still`** — am 25.08. um 00:45 neu gestartet, 133
-  Songs vor sich, rund sieben Stunden. Protokoll:
-  `library/nachtlauf.log`.
+- **`bin/stems.js --still`** — am 25.08. um **03:05** neu gestartet, 124
+  Songs vor sich. Protokoll: `library/nachtlauf.log`. Der Lauf davor
+  (00:45) blieb schon nach neun Songs stehen, wieder mitten in der
+  Trennung: „Kerze" hatte `drums`, `bass`, `other`, es fehlten `vocals`,
+  `guitar`, `piano` — **dieselben drei wie beim Mal davor**. Der halbe
+  Ordner ist verworfen. Das Muster steht jetzt in docs/OFFEN.md 2.10,
+  samt Verdacht (die Pipe in `flacSchreiben`) und Härtungsvorschlag.
 - **`bin/toene.js --still --neu`** — läuft parallel und ungestört.
 
 **Warum neu gestartet:** Der Lauf vom 24.08. blieb nach 113 Songs
