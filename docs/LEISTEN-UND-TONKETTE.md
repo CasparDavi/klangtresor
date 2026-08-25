@@ -19,8 +19,10 @@ sich mit jeder Änderung — die Suchwörter daneben halten länger.
 
 ## 0. Der Anlass hinter dem Anlass: die fehlende Gesamthüllkurve
 
-> **Behoben am 25.08.2026.** Der Befund bleibt hier stehen, weil er die
-> Bauart erklärt. Was geändert wurde, steht am Ende des Abschnitts.
+> **Behoben am 25.08.2026 — aber in zwei Anläufen.** Der erste Fund
+> (falsche Abtastwerte) war echt, erklärte aber NICHT, was Caspar_D
+> vermisste. Die eigentliche Ursache stand woanders. Beide Wege sind
+> unten festgehalten, weil beide etwas über die Bauart sagen.
 
 Während der Analyse fiel auf, dass bei *Moissanit* die große Wellenform
 ganz oben im Analyzer fehlt. **Das ist ein eigener Fehler und hat mit den
@@ -95,6 +97,65 @@ Dauer jetzt überein:
 | Moissanit | 255 s | 255 s | **da** |
 
 Vorher lagen in Moissanits Anzeige 277 s — die des Vorgängers.
+
+### Aber das war nicht, was fehlte
+
+`main-waveform-canvas` ist im Bühnenbetrieb **immer** unsichtbar:
+`#buehne.text-analyzer #custom-player{display:none}` ([index.html:676]).
+Der Fix oben war also richtig und folgenlos zugleich — er heilt die
+Datenlage (auch das Notenzonen-Chroma liest `_audioSamples`), aber er
+bringt kein Bild zurück.
+
+**Gemeint war die bunte Wellenform unter „Track-Struktur"** — eine ganz
+andere Anzeige. Sie liegt in der Befundspur und wird aus Sunos eigener
+Hüllkurve (`welle`, rund 1700 Werte im Katalog) gezeichnet, eingefärbt
+nach den Abschnitten des Liedtexts.
+
+**Die echte Ursache:**
+
+```js
+var abs = abschnitteAusText(quelleWorte, dauer);
+if (abs.length) bahnen.unshift({ name:'Track-Struktur', ..., welle: ... });
+```
+
+Die Bahn entstand nur, wenn Abschnitte gefunden wurden — und weil die
+Hüllkurve in derselben Bahn liegt, fiel sie mit ihnen weg.
+`abschnitteAusText()` suchte ausschließlich nach `[Verse 1]` in eckigen
+Klammern. Moissanits Text gliedert auf Deutsch und ohne Klammern:
+„Strophe 1", „Refrain", „Bridge".
+
+**Die Lage im Bestand:**
+
+| | Songs |
+|---|---|
+| mit `[Klammer]`-Marken | 251 |
+| ohne Marken, aber mit deutscher Gliederung | 1 (Moissanit) |
+| ohne Marken (Whisper-Transkripte) | 39 |
+| ohne `welle` im Katalog | 68 |
+
+Die 39 sind Whisper-Transkripte — erkennbar an „Thank you.", an
+singhalesischen Zeichen und ähnlichen Halluzinationen über
+Instrumentalstellen. Whisper hört den Gesang und kennt keine
+Abschnittsmarken.
+
+**Zwei Änderungen:**
+
+1. **`abschnitteAusText()` erkennt Namen ohne Klammern** — am
+   Zeilenanfang und am Eintragsende, damit ein „Refrain" im Fließtext
+   keine falsche Marke setzt. Bei wortweisen Zeitmarken hängt das
+   Satzende des vorigen Abschnitts noch davor (`".\n\nStrophe"`),
+   deshalb `(^|\n)` statt nur `^`; steht Text davor, beginnt der neue
+   Abschnitt erst am Eintragsende. `art` und `kuerzel` kannten die
+   deutschen Namen längst — nur das Finden kannte sie nicht.
+2. **Die Bahn entsteht auch ohne Gliederung**, sobald eine Hüllkurve da
+   ist. Sie heißt dann „Hüllkurve — aus dem Katalog": „Track-Struktur"
+   verspricht eine Gliederung, die es dann nicht gibt.
+
+**Nachgemessen:** Moissanit bekommt 10 Abschnitte (Strophe 1–6,
+Refrain ×2, Bridge, dazu Pre-Intro/Outro), seine Befundspur wächst von
+123 auf 246 px. Staub bleibt exakt bei 280 px mit unveränderten
+Abschnitten — der neue Zweig läuft nur, wenn keine Klammer gefunden
+wurde (`if(!m)`), die 251 Klammer-Songs sind unberührt.
 
 ---
 

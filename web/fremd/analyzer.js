@@ -1493,7 +1493,9 @@
     var TAKT_EINS='#e31c79';         /* die Eins des Takts - das Haus-Rot */
     var TAKT_REST='#ffffff';         /* die Zählzeiten 2-3-4 */
     var BF_ABSCHNITT=Math.round(BF_BAHN*5/3*5/3*2);  /* zweimal um zwei Drittel, dann verdoppelt (Caspar_D, 23.08.2026) */
-    var bahnInhalt=function(bahn){ return bahn && bahn.abschnitte ? BF_KUERZEL+BF_ABSCHNITT : BF_BAHN; };
+    /* Auch eine Bahn mit blosser Huellkurve braucht die volle Hoehe -
+       sonst waere sie ein Strich (25.08.2026). */
+    var bahnInhalt=function(bahn){ return bahn && (bahn.abschnitte || bahn.welle) ? BF_KUERZEL+BF_ABSCHNITT : BF_BAHN; };
     var bahnHoehe=function(bahn){ return BF_KOPF+bahnInhalt(bahn); };
 
     /* Abschnitte aus dem KARAOKETEXT, nicht aus der Strukturerkennung.
@@ -1521,7 +1523,51 @@
         var von = Array.isArray(w) ? w[0] : (w.start!==undefined?w.start:w.start_s);
         var txt = String(Array.isArray(w) ? w[2] : (w.text||w.word||''));
         var m = txt.match(/\[([^\]]+)\]/);
-        if(m && isFinite(von)) marken.push({ von:von, name:m[1].trim() });
+        /* ABSCHNITTE OHNE KLAMMERN (Caspar_D, 25.08.2026: "wieso betrifft
+           es nur den einen track").
+
+           Nicht jeder Liedtext schreibt [Verse 1]. "Moissanit" gliedert
+           auf Deutsch und ohne Klammern - "Strophe 1", "Strophe 2" -,
+           und weil nur nach der Klammer gesucht wurde, fand sich keine
+           einzige Marke. Ohne Marken legt die Bahn sich nicht an, und
+           mit ihr fehlte die ganze Huellkurve: 40 von 321 Songs standen
+           ohne, Moissanit als einziger davon mit einer Gliederung, die
+           bloss anders geschrieben ist.
+
+           Verlangt wird, dass der Eintrag NUR aus dem Namen besteht
+           (plus Nummer) - so kann ein "Refrain" im Fliesstext keine
+           falsche Marke setzen. Die Nummer steht bei wortweisen
+           Zeitmarken oft im naechsten Eintrag ("Strophe" + " 1\nMein"),
+           deshalb wird dort nachgesehen.
+
+           art und kuerzel weiter unten kennen die deutschen Namen
+           laengst - nur das Finden kannte sie nicht. */
+        var zeit = von;
+        if(!m){
+          /* Der Name steht am ZEILENANFANG und am Eintragsende - bei
+             wortweisen Zeitmarken haengt das Satzende des vorigen
+             Abschnitts noch davor: ".\n\nStrophe". Deshalb (^|\n) statt
+             nur ^, und kein Wegnormalisieren der Zeilenumbrueche: sie
+             sind gerade das Kennzeichen. */
+          var dm = txt.match(/(?:^|\n)[ \t]*(Strophe|Refrain|Kehrvers|Vers|Verse|Chorus|Bridge|Bruecke|Brücke|Intro|Vorspiel|Outro|Nachspiel|Hook|Break|Zwischenspiel|Überleitung|Ueberleitung)[ \t]*(\d*)[ \t]*$/i);
+          if(dm){
+            var nr = dm[2];
+            if(!nr && i+1<worte.length){
+              var nx = String(Array.isArray(worte[i+1]) ? worte[i+1][2]
+                            : (worte[i+1].text||worte[i+1].word||''));
+              var nm = nx.match(/^\s*(\d+)/);
+              if(nm) nr = nm[1];
+            }
+            m = [null, dm[1] + (nr ? ' ' + nr : '')];
+            /* Steht noch Text VOR dem Namen, gehoert der zum vorigen
+               Abschnitt - dann beginnt der neue erst am Eintragsende. */
+            if(!/^[ \t]*(Strophe|Refrain|Kehrvers|Vers|Verse|Chorus|Bridge|Bruecke|Brücke|Intro|Vorspiel|Outro|Nachspiel|Hook|Break|Zwischenspiel|Überleitung|Ueberleitung)/i.test(txt)){
+              var bis0 = Array.isArray(w) ? w[1] : (w.ende!==undefined?w.ende:w.end_s);
+              if(isFinite(bis0)) zeit = bis0;
+            }
+          }
+        }
+        if(m && isFinite(zeit)) marken.push({ von:zeit, name:m[1].trim() });
       }
       if(!marken.length) return [];
 
@@ -2313,9 +2359,25 @@
         bahnen.unshift({name:'Takt — Sunos Schlagraster'+(med>0?' · '+Math.round(60/med)+' BPM':''),
                         strecken:[], schlaege:schl});
       }
-      if(abs.length) bahnen.unshift({name:'Track-Struktur', strecken:[], abschnitte:abs,
-        welle:(_katalogDaten&&_katalogDaten.welle)||null,
-        welleDauer:(_katalogDaten&&_katalogDaten.dauer)||null});
+      /* DIE HUELLKURVE HAENGT NICHT AN DER GLIEDERUNG (Caspar_D,
+         25.08.2026: "das darf nicht sein, dass die weg ist").
+
+         Bis heute wurde die Bahn nur angelegt, wenn Abschnitte gefunden
+         waren - und weil Sunos Huellkurve in derselben Bahn liegt, fiel
+         sie mit ihnen weg. Betroffen waren 40 von 321 Songs, die
+         meisten davon mit Whisper-Zeitmarken: Whisper hoert den Gesang
+         und kennt keine Abschnittsmarken.
+
+         Die Huellkurve ist aber fuer sich schon eine Aussage - wo laut,
+         wo leise, wo Pausen. Sie steht jetzt auch allein, dann unter
+         ihrem eigenen Namen: "Track-Struktur" verspricht eine
+         Gliederung, die es ohne Abschnitte nicht gibt. */
+      var welleRoh=(_katalogDaten&&_katalogDaten.welle)||null;
+      if(abs.length || (welleRoh && welleRoh.length))
+        bahnen.unshift({name: abs.length ? 'Track-Struktur' : 'Hüllkurve — aus dem Katalog',
+          strecken:[], abschnitte: abs.length?abs:null,
+          welle: welleRoh,
+          welleDauer:(_katalogDaten&&_katalogDaten.dauer)||null});
 
       befundspurZeichnen(bahnen, dauer);
 
