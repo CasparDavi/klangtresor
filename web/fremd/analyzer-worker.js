@@ -542,56 +542,33 @@ function hoehenkante(binMittel, sr, N){
    Er muss live raten, ob eine Spitze bleibt, und behilft sich mit
    gleitendem Mittel und einem Zähler. Wir haben die ganze Datei und
    können es genau sagen: Anteil der Rahmen, in denen das Band
-   heraussticht - und wann genau. */
-function schimmerFinden(bv){
-  var HERVOR=7.8, MIND_HZ=450, MIND_ANTEIL=0.25;
-  var befunde=[];
-  for(var b=0;b<BAENDER;b++){
-    if(bv.mitten[b]<MIND_HZ) continue;
-    var treffer=0, von=-1, letzte=-1, laeufe=[], hervorSum=0;
-    for(var r=0;r<bv.rahmen;r++){
-      var nach=[];
-      for(var d=-6;d<=6;d++){
-        if(Math.abs(d)<=1) continue;              // Spitze selbst ausblenden
-        var q=b+d; if(q<0||q>=BAENDER) continue;
-        nach.push(bv.werte[r*BAENDER+q]);
-      }
-      var umfeld=medianVon(nach);
-      var wert=bv.werte[r*BAENDER+b];
-      var hervor=wert-umfeld;
-      var verdaechtig=(hervor>HERVOR)&&(wert>-77);
-      if(verdaechtig){
-        treffer++; hervorSum+=hervor;
-        if(von<0) von=r;
-        letzte=r;
-      } else if(von>=0){
-        if((letzte-von)*bv.hop>=1.0) laeufe.push([von,letzte]);
-        von=-1;
-      }
-    }
-    if(von>=0&&(letzte-von)*bv.hop>=1.0) laeufe.push([von,letzte]);
-    var anteil=treffer/bv.rahmen;
-    if(anteil<MIND_ANTEIL||!laeufe.length) continue;
-    var laengster=laeufe.reduce(function(a,c){return (c[1]-c[0])>(a[1]-a[0])?c:a;});
-    var hervorMittel=hervorSum/treffer;
-    /* Schweregrad wie beim Vorbild: Hervorstand und Dauer je zur Hälfte. */
-    var schwere=Math.min(1,Math.max(0,(hervorMittel-5.2)/12*0.58+anteil*0.42*2));
-    befunde.push({hz:bv.mitten[b], hervorDb:hervorMittel, anteil:anteil,
-                  von:laengster[0]*bv.hop, bis:laengster[1]*bv.hop, schwere:schwere});
-  }
-  /* Benachbarte Bänder gehören zum selben Ton - nur den stärksten je
-     Gruppe behalten, sonst meldet ein Pfeifton dreimal. */
-  befunde.sort(function(a,b2){return b2.schwere-a.schwere;});
-  var behalten=[];
-  for(var i=0;i<befunde.length;i++){
-    var nah=false;
-    for(var j=0;j<behalten.length;j++)
-      if(Math.abs(Math.log2(befunde[i].hz/behalten[j].hz))<0.12) nah=true;
-    if(!nah) behalten.push(befunde[i]);
-    if(behalten.length>=8) break;
-  }
-  return behalten;
-}
+/* HIER STAND schimmerFinden(), 49 Zeilen. Geloescht am 25.08.2026.
+
+   Es suchte "stehende Toene" - Frequenzen, die dauerhaft aus ihrer
+   Nachbarschaft herausragen - und fand statt dessen die Melodie. Vier
+   Fehler wirkten zusammen (Befunde 14-17 in docs/ANALYZER-PRUEFUNG.md):
+
+   Das Bandraster verduennte schmale Toene um 10*log10(Binzahl), also
+   oben viel staerker als unten. Die gemeldete dB-Zahl war ein
+   Mittelwert ueber genau die Rahmen, die die Schwelle schon
+   ueberschritten hatten, und konnte nie klein werden - angezeigt +16,6
+   im Mittel, tatsaechlich +4,1. Ein Test, der Musik von Stoerung
+   trennt, fehlte ganz: von 139 Befunden lagen 137 auf einem Halbton,
+   bis 6 kHz alle. Und die Sortierung nach "schwere" baute auf ebendem
+   bedingten Mittelwert, so dass bei acht Eintraegen genau die
+   Musiktoene oben standen - der einzige echte Stoerton in "Wiese mit
+   Insekten" lag auf Rang 13.
+
+   Die Anzeige war seit dem 23.08.2026 aus (SA_SCHIMMER_TOT), gerechnet
+   wurde trotzdem weiter. Ersatz ist bin/stoerfrequenz.js: 2,7 Hz
+   Aufloesung, Median ueber alle Rahmen, Halbwertsbreite, Obertonreihe
+   und Intervallpruefung. Es laeuft als Schritt der Morgenroutine und
+   hat alle 321 Songs vermessen; seine Funde stehen im Glockenstuhl des
+   Tonstudios.
+
+   bandVerlauf() bleibt: Es traegt auch die Grenzfrequenz, und dort
+   stoert das grobe Raster nicht - gesucht wird ein breitbandiger
+   Abfall, kein schmaler Ton. */
 
 onmessage=function(e){
       left=e.data.left; right=e.data.right; sr=e.data.sr;
@@ -684,11 +661,10 @@ onmessage=function(e){
       _tk("bandverlauf");
       var GF=grenzfrequenz(BV);
       var HK=hoehenkante(BV.binMittel, sr, BV.fftN);
-      var SCH=schimmerFinden(BV);
       _tk("schimmer");
 
       postMessage({type:'norm', grenzHz:GF.hz,
-        kanteHz:HK.hz, kanteSteil:HK.steil, schimmer:SCH,
+        kanteHz:HK.hz, kanteSteil:HK.steil,
         lufs:LN.integriert, lra:LN.schwankung,
         momentanMax:LN.momentanMax, kurzMax:LN.kurzMax,
         truePeak:tpDb, abtastSpitze:20*Math.log10(Math.max(TP.abtast,1e-10)),

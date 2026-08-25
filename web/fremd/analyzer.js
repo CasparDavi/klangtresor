@@ -658,8 +658,7 @@
     </div>
   </div>
   <div id="sa-urteil"></div>
-  <div id="sa-schimmer"></div>
-  <div class="chart-text">Oben werden die Abschnitte aus dem Lyricsprompt gezeigt, darunter die Hüllkurve des Songs (Lautheit), die Schläge (BPM) und die Blockdiagramme mit geprüften Befunden zu Abschnitten, in denen sich die Stereosignale auslöschen können, in denen der Pegel über dem Standard liegt und in denen störende oder stehende Töne detektiert wurden. Sie dient der Orientierung vor dem detaillierten Blick auf die Einzelmessungen — der Spielkopf (senkrechte weiße Linie) läuft zugleich durch alle Bahnen, die den Track über den Zeitverlauf beschreiben, sodass jede Beobachtung sofort einer Stelle im Stück zugeordnet werden kann.</div>
+  <div class="chart-text">Oben werden die Abschnitte aus dem Lyricsprompt gezeigt, darunter die Hüllkurve des Songs (Lautheit), die Schläge (BPM) und die Blockdiagramme mit geprüften Befunden zu Abschnitten, in denen sich die Stereosignale auslöschen können und in denen der Pegel über dem Standard liegt. Sie dient der Orientierung vor dem detaillierten Blick auf die Einzelmessungen — der Spielkopf (senkrechte weiße Linie) läuft zugleich durch alle Bahnen, die den Track über den Zeitverlauf beschreiben, sodass jede Beobachtung sofort einer Stelle im Stück zugeordnet werden kann.</div>
 </div>
 
 <div id="sa-karten">
@@ -1092,12 +1091,15 @@
      mehr sehen"), deshalb ist von der Liste nichts uebrig - nur die
      Karten unten werden weiter verborgen statt geloescht. */
 
-  /* Die "Stehenden Töne" (Schimmer) im Befund-Teil: Sie finden Musik, keine
-     Störung - 137 von 137 Befunden bis 6 kHz liegen auf einer Note, und die
-     gemeldeten dB sind ein Rechenartefakt (ein Ton wird über bis zu 63 Bins
-     verschmiert). Ersatz ist bin/stoerfrequenz.js mit 2,7 Hz Auflösung; seine
-     Funde stehen im Glockenstuhl des Tonstudios. */
-  const SA_SCHIMMER_TOT = true;
+  /* Die "Stehenden Toene" (Schimmer) standen hier: eine Bahn in der
+     Befundspur, eine Tabelle darunter und das Feld dazu. Am 23.08.2026
+     wurden sie ausgeblendet, am 25.08.2026 samt Rechnung geloescht
+     (Befunde 14-17). Sie fanden Musik statt Stoerung - 137 von 137
+     Befunden bis 6 kHz lagen auf einer Note, und die gemeldeten dB
+     waren ein Rechenartefakt. Ersatz ist bin/stoerfrequenz.js mit
+     2,7 Hz Aufloesung; seine Funde stehen im Glockenstuhl des
+     Tonstudios. Die Begruendung im Einzelnen steht an der Stelle, wo
+     schimmerFinden() im Rechenkern stand. */
 
   /* Karten ohne Wert ausblenden. Nach der Stilllegung blieben einzelne
      Karten leer zurück ("Dauer —"), und eine Karte, die nichts sagt, ist
@@ -2485,17 +2487,7 @@
         if(st3.length) bahnen.push({name:'Teilweise Stereoauslöschung — Phase negativ', strecken:st3});
       }
 
-      /* Die Bahn "stehende Töne" ist mit dem Schimmer stillgelegt (23.08.2026).
-         Sie hier stehenzulassen, während der Text darunter die Stilllegung
-         erklärt, wäre genau die Art Widerspruch, die die Hausregel verbietet:
-         nichts darf lügen. Die Rechnung läuft weiter, nur die Bahn entfällt. */
-      if(!SA_SCHIMMER_TOT && msg.schimmer&&msg.schimmer.length){
-        var st4=msg.schimmer.map(function(x){
-          return { von:x.von, bis:x.bis, stufe:x.schwere>=0.70?2:x.schwere>=0.38?1:0,
-                   titel:Math.round(x.hz)+' Hz, '+x.hervorDb.toFixed(1)+' dB über der Nachbarschaft' }; });
-        bahnen.push({name:'stehende Töne', strecken:st4});
-      }
-
+      
       /* Die Abschnittsbahn steht OBEN: Sie ist der Bezugsrahmen, in
          dem die Befunde darunter gelesen werden. */
       /* Die Worte kommen aus _katalogDaten. Bis zum 25.08.2026 stand hier
@@ -2653,52 +2645,7 @@
         +'<span class="tipp">'+tipp+'</span></div>'];
       document.getElementById('sa-urteil').innerHTML=zeilen.join('');
 
-      /* Als Tabelle mit Kopfzeile, nicht als sieben gleichlautende
-         Saetze. "steht ... dB ueber der Nachbarschaft, in ... % des
-         Songs" stand vorher in JEDER Zeile - die Worte gehoeren einmal
-         in den Spaltenkopf, die Zeilen tragen nur noch die Zahlen.
-         (Caspar_D: "du hast grade gesagt, redundanz vermeiden.") */
-      var stem=function(f){
-        return f<120?'Bass/Drums':f<350?'Bass/Instrumental':f<1800?'Gesang/Instrumental'
-             :f<6000?'Gesang/Lead':'Hi-Hat/Luft'; };
-      var funde=(msg.schimmer||[]);
-      if(funde.length){
-        var kopf='<span class="kopf"></span><span class="kopf">Zeit</span>'
-          +'<span class="kopf" style="text-align:right">Frequenz</span>'
-          +'<span class="kopf" style="text-align:right">über Nachbarn</span>'
-          +'<span class="kopf" style="text-align:right">Anteil</span>'
-          +'<span class="kopf">Lage · Rat</span>';
-        var reihen=funde.map(function(x){
-          var stufe2=x.schwere>=0.70?2:x.schwere>=0.38?1:0;
-          var gain=stufe2===2?'−2 bis −3 dB':stufe2===1?'−1 bis −2 dB':'−0,5 bis −1 dB';
-          return '<span class="ampel" style="background:'+AMPEL[stufe2]+'"></span>'
-            +'<span class="wo" data-t="'+Math.max(0,x.von-2)+'">'+zeitTxt(x.von)+'–'+zeitTxt(x.bis)+'</span>'
-            +'<span class="zahl">'+Math.round(x.hz)+' Hz</span>'
-            +'<span class="zahl">'+x.hervorDb.toFixed(1)+' dB</span>'
-            +'<span class="zahl">'+Math.round(x.anteil*100)+' %</span>'
-            +'<span class="rat">'+stem(x.hz)+' · '+gain+'</span>';
-        });
-        /* Ueberschrift: Ohne sie stand da eine Tabelle aus Zahlen, und
-           nirgends, worum es geht. Der Name gehoert dazu und ebenso,
-           wann etwas ueberhaupt als Fund gilt. */
-        /* Kein Hinweistext mehr: Die Bahn "Stehende Töne — aus dem
-           Glockenstuhl" zeigt die geprüften Befunde jetzt selbst. Ein Text,
-           der eine Abwesenheit erklärt, die es nicht mehr gibt, ist Lärm
-           (Caspar_D, 23.08.2026). */
-        if (SA_SCHIMMER_TOT){ document.getElementById('sa-schimmer').innerHTML=''; } else
-        document.getElementById('sa-schimmer').innerHTML=
-          '<div class="bf-ueber"><b>Stehende Töne</b> (Schimmer) — Frequenzen, die dauerhaft aus '
-          +'ihrer Nachbarschaft herausragen: Pfeiftöne, metallische Resonanzen, typische '
-          +'Erzeugungsartefakte. Ein gehaltener Gesangston fällt heraus, ein stehender Ton nicht: '
-          +'Gefordert sind mindestens <b>25 % des Songs</b>.</div>'
-          +tabelleMehrspaltig('bf-tab', kopf, reihen);
-      } else if (!SA_SCHIMMER_TOT) {
-        document.getElementById('sa-schimmer').innerHTML=
-          '<div class="bf gut"><span class="ampel" style="background:'+AMPEL[0]+'"></span>'
-          +'<span class="wo">Stehende Töne</span><span class="was">Keine Frequenz ragt dauerhaft aus '
-          +'ihrer Nachbarschaft heraus.</span></div>';
-      } else { document.getElementById('sa-schimmer').innerHTML=''; }
-
+      
       document.querySelectorAll('#sa-befunde .wo[data-t]').forEach(function(el){
         el.onclick=function(){ SPRUNG(parseFloat(el.dataset.t)); };
       });
