@@ -695,30 +695,20 @@
 <div class="kartenblock">
 <div class="karten-kopf">Klang und Form</div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-bpm">—</div><div class="lbl">BPM</div><div class="gauge" id="g-bpm"><div class="gauge-track"></div><div class="gauge-marker" id="gm-bpm"></div></div></div>
   <div class="card"><div class="val" id="v-dur">—</div><div class="lbl">Dauer</div></div>
   <div class="card"><div class="val" id="v-loud">—</div><div class="lbl">Wie kräftig im Schnitt? <i>dB</i></div><div class="gauge" id="g-loud"><div class="gauge-track"></div><div class="gauge-marker" id="gm-loud"></div></div></div>
   <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl">Laut-leise-Abstand <i>Dynamik dB</i></div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-centroid">—</div><div class="lbl">Centroid Hz</div><div class="gauge" id="g-centroid"><div class="gauge-track"></div><div class="gauge-marker" id="gm-centroid"></div></div></div>
-  <div class="card"><div class="val" id="v-rolloff">—</div><div class="lbl">Rolloff Hz</div><div class="gauge" id="g-rolloff"><div class="gauge-track"></div><div class="gauge-marker" id="gm-rolloff"></div></div></div>
   <div class="card"><div class="val" id="v-stereo">—</div><div class="lbl">Wie breit ist das Stereo? <i>Breite</i></div><div class="gauge" id="g-stereo"><div class="gauge-track"></div><div class="gauge-marker" id="gm-stereo"></div></div></div>
-  <div class="card"><div class="val" id="v-attack">—</div><div class="lbl">Attack ms</div><div class="gauge" id="g-attack"><div class="gauge-track"></div><div class="gauge-marker" id="gm-attack"></div></div></div>
 </div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-key">—</div><div class="lbl">Welche Tonart?</div></div>
-  <div class="card"><div class="val" id="v-chord-rate">—</div><div class="lbl">Akkordwechsel/s</div><div class="gauge" id="g-chord-rate"><div class="gauge-track"></div><div class="gauge-marker" id="gm-chord-rate"></div></div></div>
-  <div class="card"><div class="val" id="v-note-stab">—</div><div class="lbl">Noten-Stabilität</div><div class="gauge" id="g-note-stab"><div class="gauge-track"></div><div class="gauge-marker" id="gm-note-stab"></div></div></div>
 </div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl">Dicht oder aufgeräumt? <i>Spektr. Entropie</i></div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
-  <div class="card"><div class="val" id="v-inharm">—</div><div class="lbl">Inharmonizität</div><div class="gauge" id="g-inharm"><div class="gauge-track"></div><div class="gauge-marker" id="gm-inharm"></div></div></div>
-  <div class="card"><div class="val" id="v-harmdense">—</div><div class="lbl">Harm. Dichte</div><div class="gauge" id="g-harmdense"><div class="gauge-track"></div><div class="gauge-marker" id="gm-harmdense"></div></div></div>
-  <div class="card"><div class="val" id="v-tilt">—</div><div class="lbl">Spektral Tilt</div><div class="gauge" id="g-tilt"><div class="gauge-track"></div><div class="gauge-marker" id="gm-tilt"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-texture">—</div><div class="lbl">Textur-Index</div><div class="gauge" id="g-texture"><div class="gauge-track"></div><div class="gauge-marker" id="gm-texture"></div></div></div>
   <div class="card"><div class="val" id="v-symmetry">—</div><div class="lbl">Wohin entwickelt er sich? <i>Energie-Form</i></div></div>
   <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl">Welche Stimmlage? <i>Stimme</i></div></div>
 </div>
@@ -1057,34 +1047,28 @@
      (Die Datei stammt ursprünglich aus ../SunoAnalyzer/. Das dortige
      Original ist seit Mai 2025 eingefroren und hat eigenen Code — hier
      gepflegte Änderungen gehören NICHT mehr dorthin zurück.) */
-  const SA_TOT = {
-    'v-bpm':        'Autokorrelationsgipfel ohne Prüfung auf halbes/doppeltes Tempo; 33 % auf falscher metrischer Ebene. Ersatz: Sunos Schlagzeiten (taktBpm im Katalog).',
-    /* v-key und v-vocal standen hier einmal: die Tonart, weil sie "an
-       echter Musik 1 von 20" traf, und die Stimme, weil ihr Tor im
-       Vollmix nur nach Mitten fragte und 64 stummen Stuecken eine
-       Stimmlage gab. Beide kommen seit dem 24.08.2026 aus bin/toene.js
-       und werden auf den getrennten Stems gemessen - Grundton aus dem
-       Bass auf Sunos Eins, Stimmlage per YIN auf dem vocals-Stem.
-       Deshalb sind sie wieder zu sehen. */
-    'v-centroid':   'Stammt aus einem einzigen 43-ms-Fenster bei 30 % der Spieldauer.',
-    'v-rolloff':    'Summiert Amplituden statt Leistung; unter dem gemeldeten Wert liegen 94-99 % der Energie.',
-    'v-attack':     'Bleibt bei 297 von 321 Songs leer; die gefüllten Werte gehen bis 19 Sekunden.',
-    'v-chord-rate': 'Zählt Rahmenflimmern und hängt an der Schrittweite der FFT-Runde.',
-    'v-note-stab':  'Wird durch den längsten Lauf DESSELBEN Songs geteilt und ist deshalb zwischen Songs nicht vergleichbar.',
-    'v-inharm':     'Das Suchfenster ist immer genau ein Bin breit - die Größe kann nicht messen, was sie heißt.',
-    'v-harmdense':  'Antwortet umgekehrt: weißes Rauschen 15,8, reiner Sinus 5,0.',
-    'v-tilt':       'Stellt 10 Baß-Bins gegen 469 Höhen-Bins; rosa Rauschen gilt als höhenlastig.',
-    'v-texture':    'Steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt.',
-    /* v-grenz stand hier einmal: "Bei 19,57 kHz gedeckelt und nur 12
-       verschiedene Werte über die ganze Sammlung." Die Ursache war das
-       160-Logband-Raster - oberhalb 16 kHz ist ein Band 700-900 Hz
-       breit, und die Bandmitte wurde als Messwert ausgegeben. Seit dem
-       25.08.2026 rechnet hoehenkante() im Worker auf dem mittleren
-       Leistungsspektrum je FFT-Bin (~11,7 Hz Aufloesung) samt
-       Flankensteilheit; die Karte ist wieder zu sehen. Alte Ablagen
-       kennen das Feld nicht - dort bleibt die Karte leer und wird von
-       leereKartenAus verborgen, bis das Vorrechnen den Song neu fasst. */
-  };
+  /* HIER STAND SA_TOT: zehn Karten, die verborgen wurden, weil ihre
+     Zahlen nachweislich falsch sind. Am 25.08.2026 sind sie samt
+     Rechnung geloescht (Caspar_D: "wir legen nichts mehr tot ohne den
+     Code mitzuloeschen"). Gerechnet wurden sie bis dahin weiter - in
+     jedem Rahmen, bei fuenf Minuten Musik ueber 55.000 mal - obwohl
+     ihr letzter Leser, die Instrument-Erkennung, schon weg war.
+
+     Was an ihnen falsch war, Zeile fuer Zeile:
+
+    bpm: Autokorrelationsgipfel ohne Prüfung auf halbes/doppeltes Tempo; 33 % auf falscher metrischer Ebene. Ersatz: Sunos Schlagzeiten (taktBpm im Katalog).
+    centroid: Stammt aus einem einzigen 43-ms-Fenster bei 30 % der Spieldauer.
+    rolloff: Summiert Amplituden statt Leistung; unter dem gemeldeten Wert liegen 94-99 % der Energie.
+    attack: Bleibt bei 297 von 321 Songs leer; die gefüllten Werte gehen bis 19 Sekunden.
+    chord-rate: Zählt Rahmenflimmern und hängt an der Schrittweite der FFT-Runde.
+    note-stab: Wird durch den längsten Lauf DESSELBEN Songs geteilt und ist deshalb zwischen Songs nicht vergleichbar.
+    inharm: Das Suchfenster ist immer genau ein Bin breit - die Größe kann nicht messen, was sie heißt.
+    harmdense: Antwortet umgekehrt: weißes Rauschen 15,8, reiner Sinus 5,0.
+    tilt: Stellt 10 Baß-Bins gegen 469 Höhen-Bins; rosa Rauschen gilt als höhenlastig.
+    texture: Steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt.
+
+     Belege und Messreihen stehen in docs/ANALYZER-PRUEFUNG.md.
+     v-entropy war NICHT dabei und bleibt. */
   /* Die totgelegten Bildabschnitte wurden hier einmal nach ihrer
      Beschriftung ausgeblendet. Sie sind inzwischen ganz entfernt
      (Caspar_D, 23.08.2026: "entferne alle canvas und kurven, die wir nicht
@@ -1115,7 +1099,6 @@
       /* Auch die Abschnitte noch einmal: Die Verlaufsbilder entstehen erst
          nach der Analyse und trugen ihre Stilllegung sonst nicht mit
          (23.08.2026 im Durchsehen gefunden). */
-      totLegen(flaecheJetzt);
       if (++n < 6) leerLauf = setTimeout(runde, 800); };
     leerLauf = setTimeout(runde, 800);
   }
@@ -1123,7 +1106,6 @@
   function leereKartenAus(flaeche){
     if (!flaeche) return;
     for (const karte of flaeche.querySelectorAll('.card')){
-      if (karte.dataset.totgelegt) continue;
       const v = karte.querySelector('.val'); if (!v) continue;
       const t = (v.textContent || '').trim();
       const leer = t === '' || t === '—' || t === '–' || t === '-';
@@ -1132,19 +1114,6 @@
     }
   }
 
-  function totLegen(flaeche){
-    /* Der Nachlauf unten tickt bis zu sechs Runden weiter. Schliesst man
-       die Buehne dazwischen, ist die Flaeche schon abgeraeumt. Derselbe
-       Schutz wie in leereKartenAus (25.08.2026 in der Konsole gefunden). */
-    if (!flaeche) return 0;
-    let n = 0;
-    for (const [id, grund] of Object.entries(SA_TOT)){
-      const el = flaeche.querySelector('#' + id); if (!el) continue;
-      const karte = el.closest('.card') || el.parentElement;
-      if (karte){ karte.style.display = 'none'; karte.dataset.totgelegt = grund; n++; }
-    }
-    if (n) console.log('SunoAnalyzer: ' + n + ' Anzeigen totgelegt (docs/ANALYZER-PRUEFUNG.md) - gerechnet wird weiter, gezeigt wird nur, was geprüft ist.');
-  }
 
   function aufbauen(flaeche, opt){
     if (kern) abraeumen();
@@ -1156,7 +1125,6 @@
     if (opt && opt.eingebettet) flaeche.classList.add('eingebettet');
     flaeche.innerHTML = MARKUP;
     kartenSortieren(flaeche);   // erst jetzt gibt es Karten
-    totLegen(flaeche);          // was nachweislich falsch misst, wird nicht gezeigt
     flaecheJetzt = flaeche;
     kern = starten(flaeche, opt || {});
     return kern;
@@ -1182,16 +1150,13 @@
     // Fehlersuche
     'v-clip', 'v-dc', 'v-korr', 'v-ende', 'v-grenz',
     // Zeit und Form
-    'v-dur', 'v-bpm', 'v-chord-rate', 'v-symmetry',
+    'v-dur', 'v-symmetry',
     // Pegel und Dynamik
-    'v-loud', 'v-dyn', 'v-attack',
-    // Harmonik
-    'v-key', 'v-note-stab', 'v-inharm',
-    // Klangfarbe
-    'v-centroid', 'v-rolloff', 'v-tilt', 'v-harmdense', 'v-entropy',
+    'v-loud', 'v-dyn', // Harmonik
+    'v-key', // Klangfarbe
+    'v-entropy',
     // Raum und Stimme
-    'v-stereo', 'v-vocal', 'v-texture',
-    // Zuletzt: was nicht aus dem Ton stammt
+    'v-stereo', 'v-vocal', // Zuletzt: was nicht aus dem Ton stammt
     'v-model', 'v-plays', 'v-likes', 'v-comments', 'v-ratio', 'v-age', 'v-ppd',
   ];
 
@@ -1421,21 +1386,14 @@
          Noten-Stabilität = eigener Anteilswert.
        Deshalb bekommen nur die sechs die blaue Farbe des Mittelwerts.
        Ein Median wurde nirgends gebildet - er entsteht erst hier. */
-    const MITTELWERT_KARTEN = ['v-centroid','v-rolloff','v-entropy','v-inharm',
-                               'v-tilt','v-harmdense'];
+    const MITTELWERT_KARTEN = ['v-entropy'];
 
     const FUNKEN = {
       'v-lufs':     d => d.momentan,
       'v-lra':      d => d.kurz,
       'v-loud':     d => d.lufs,
       'v-dyn':      d => d.crest,
-      'v-centroid': d => d.fft && d.fft.centroidCurve,
-      'v-rolloff':  d => d.fft && d.fft.rolloffCurve,
-      'v-tilt':     d => d.fft && d.fft.tilt,
-      'v-harmdense':d => d.fft && d.fft.harmDens,
       'v-entropy':  d => d.fft && d.fft.entropy,
-      'v-inharm':   d => d.fft && d.fft.inharm,
-      'v-note-stab':d => d.fft && d.fft.noteStab,
     };
 
     /* ------------------------------------------------------------------
@@ -5299,9 +5257,8 @@
 
       // reset cards
       ['v-plays','v-likes','v-comments','v-ratio','v-age','v-ppd','v-model',
-       'v-bpm','v-dur','v-loud','v-dyn','v-centroid','v-rolloff','v-key','v-stereo',
-       'v-chord-rate','v-entropy','v-texture','v-inharm','v-attack','v-symmetry','v-note-stab',
-       'v-tilt','v-harmdense','v-vocal'].forEach(function(id){
+       'v-dur','v-loud','v-dyn','v-key','v-stereo',
+       'v-entropy','v-symmetry','v-vocal'].forEach(function(id){
         var el=document.getElementById(id);if(el)el.textContent='—';
       });
       document.getElementById('tags').innerHTML='';
@@ -5480,17 +5437,11 @@
             });
             break;
           case 'scalars':
-            document.getElementById('v-bpm').textContent=Math.round(msg.bpm);
             document.getElementById('v-loud').textContent=msg.loudness.toFixed(1);
             document.getElementById('v-dyn').textContent=msg.dynamic.toFixed(1);
-            document.getElementById('v-centroid').textContent=Math.round(msg.centroid).toLocaleString('de-DE');
-            document.getElementById('v-rolloff').textContent=Math.round(msg.rolloff).toLocaleString('de-DE');
             document.getElementById('v-stereo').textContent=(msg.stereoWidth*100).toFixed(0)+'%';
-            updateGauge('bpm',msg.bpm);
             updateGauge('loud',msg.loudness);
             updateGauge('dyn',msg.dynamic);
-            updateGauge('centroid',msg.centroid);
-            updateGauge('rolloff',msg.rolloff);
             updateGauge('stereo',msg.stereoWidth*100);
             break;
           case 'norm': {
@@ -5636,8 +5587,6 @@
                 }
                 if(t10>=0&&t90>t10){
                   var ams=Math.round((t90-t10)*50);
-                  document.getElementById('v-attack').textContent=ams+'ms';
-                  updateGauge('attack',ams);
                   window._attackComputed=true;
                 }
               }
@@ -5700,27 +5649,17 @@
               if(stabArr.length>0){
                 var meanStab=stabArr.reduce(function(a,b){return a+b;},0)/stabArr.length;
                 var stabPct=Math.round(meanStab*100);
-                document.getElementById('v-note-stab').textContent=stabPct+'%';
-                updateGauge('note-stab',stabPct);
               }
             }
             // update scalar cards from FFT
             if(msg.scalars){
               var sc=msg.scalars;
-              if(sc.centroid){document.getElementById('v-centroid').textContent=Math.round(sc.centroid).toLocaleString('de-DE');updateGauge('centroid',sc.centroid);}
-              if(sc.rolloff){document.getElementById('v-rolloff').textContent=Math.round(sc.rolloff).toLocaleString('de-DE');updateGauge('rolloff',sc.rolloff);}
               if(sc.entropy!==undefined){var ev=sc.entropy*100;document.getElementById('v-entropy').textContent=ev.toFixed(0)+'%';updateGauge('entropy',ev);}
-              if(sc.inharm!==undefined){var iv=sc.inharm*1000;document.getElementById('v-inharm').textContent=iv.toFixed(1);updateGauge('inharm',Math.min(100,iv*5));}
-              if(sc.tilt!==undefined){var tv=((sc.tilt+1)/2*100).toFixed(0);document.getElementById('v-tilt').textContent=(sc.tilt>0?'+':'')+sc.tilt.toFixed(2);updateGauge('tilt',sc.tilt*100);}
-              if(sc.harmDens!==undefined){document.getElementById('v-harmdense').textContent=sc.harmDens.toFixed(1);updateGauge('harmdense',sc.harmDens);}
-              if(sc.chordRate!==undefined){document.getElementById('v-chord-rate').textContent=sc.chordRate.toFixed(2);updateGauge('chord-rate',sc.chordRate);}
               // texture index
               var harm=window._chartData.fft&&window._chartData.fft.harm?Array.from(window._chartData.fft.harm):[];
               var meanHarm=harm.length?harm.reduce(function(a,b){return a+b;},0)/harm.length:0.5;
               var texture=Math.round((sc.entropy*0.4+(1-meanHarm)*0.4+sc.chordRate/2*0.2)*100);
               texture=Math.min(100,texture);
-              document.getElementById('v-texture').textContent=texture+'%';
-              updateGauge('texture',texture);
               // energy symmetry from lufs
               var lufsArr=window._chartData.lufs?Array.from(window._chartData.lufs):[];
               if(lufsArr.length>6){
@@ -6934,25 +6873,15 @@
       'v-age':'Alter des Songs seit Veröffentlichung.',
       'v-ppd':'Durchschnittliche Plays pro Tag seit Veröffentlichung.',
       'v-model':'Suno-Modellversion mit der der Song generiert wurde.',
-      'v-bpm':'Globales Tempo — Median der IOI-Werte (Inter-Onset-Intervall). Robustester der drei Algorithmen. Normalbereich 75–145 BPM.',
       'v-dur':'Gesamtdauer des Songs.',
       'v-loud':'RMS-Lautheit in dB. Streaming-Standard ca. -14 dB. Normalbereich -18 bis -10 dB.',
       'v-dyn':'Dynamikumfang: Peak-dB minus RMS-dB. Normalbereich 6–16 dB.',
-      'v-centroid':'Spektraler Schwerpunkt aller Frames gemittelt. Normalbereich 1000–4500 Hz.',
-      'v-rolloff':'Frequenz unterhalb derer 85% der Spektralenergie liegt, gemittelt. Normalbereich 4–14 kHz.',
       'v-key':'Grundton aus dem Bass auf Sunos Eins - dort spielt er fast immer den Grundton des Akkords. Das Tongeschlecht aus der gezählten Terz in den melodischen Spuren; fehlt sie (bei Powerchords die Regel), steht nur der Grundton da.',
       'v-stereo':'Stereobreite als L–R-Differenz. Normalbereich 15–70%.',
-      'v-chord-rate':'Akkordwechsel pro Sekunde aus Chroma-Frames. Niedrig = harmonisch statisch / Drone. Hoch = schnelle Progressionen.',
       'v-entropy':'Spektrale Entropie: wie gleichmäßig ist Energie über alle Frequenzen verteilt. Niedrig = tonal/klar, hoch = noisig/dicht.',
-      'v-texture':'Textur-Index: kombiniert Entropie (40%) + Inharmonizität (40%) + Akkordrate (20%). 0% = klar/minimal, 100% = dicht/chaotisch.',
-      'v-inharm':'Inharmonizität: Abweichung der Obertöne von ganzzahligen Vielfachen der Grundfrequenz. Niedrig = rein/synthetisch, hoch = FM-artig/verstimmt.',
-      'v-attack':'Erster 10%→90% Energie-Anstieg im Song. Kurz = perkussiv/aggressiv, lang = weich/Pad-artig.',
       'v-symmetry':'Energie-Form des Songs aus drittel-Segmenten der LUFS-Kurve. Crescendo ↑ / Decrescendo ↓ / Arch ∧ / Gleichmäßig ─.',
-      'v-tilt':'Spektral Tilt: Verhältnis Bass-Energie (20–500 Hz) zu Höhen-Energie (2–16 kHz). Positiv = bassig/warm, negativ = hell/luftig. Ergänzt Centroid durch direkten Bass/Treble-Quotienten.',
-      'v-harmdense':'Harmonische Dichte: Anzahl aktiver Partialtöne über Rauschgrenze (10% der Grundfrequenz-Energie). Sinuston = 1, Orgel = 8+, weißes Rauschen ≈ 0.',
-      'v-note-stab':'Noten-Stabilität: wie lange Pitch-Werte gehalten werden vor einem Halbtonsprung. Hoch = lange Noten, niedrig = viele Ornamente/Glissandi.'
     };
-    var gaugeIds={'v-bpm':'bpm','v-loud':'loud','v-dyn':'dyn','v-centroid':'centroid','v-rolloff':'rolloff','v-stereo':'stereo','v-chord-rate':'chord-rate','v-entropy':'entropy','v-texture':'texture','v-inharm':'inharm','v-attack':'attack','v-note-stab':'note-stab','v-tilt':'tilt','v-harmdense':'harmdense'};
+    var gaugeIds={'v-loud':'loud','v-dyn':'dyn','v-stereo':'stereo','v-entropy':'entropy',};
 
     Object.keys(cardTips).forEach(function(id){
       var el=document.getElementById(id);
