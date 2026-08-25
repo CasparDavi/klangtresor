@@ -400,6 +400,32 @@ und trägt weiterhin Hüllkurve, Anschläge und Energierahmen) und Befund
 **61** (Stereobreite richtig gerechnet, aber als Prozentwert
 beschriftet).
 
+## Mit den ausgebauten Verfahren gegenstandslos
+
+Zwölf weitere Befunde beschreiben Rechnungen, die es nicht mehr gibt.
+Geprüft am 25.08.2026: `hpsF0`, `vocalGender`, `autokorr`, `IOI`,
+`bpmKandidat`, `schaetzeTonart`, `keyDisplay`, `Krumhansl`, `MIND_HZ`,
+`MIND_ANTEIL`, `HERVOR`, `wert>-77` und `befunde.push` — kein einziger
+Treffer mehr im Code.
+
+**Die alte Stimmerkennung** (29, 30)
+Sie ist am 25.08.2026 ausgebaut. Die Suchgrenze lag faktisch bei 93,75 statt 80 Hz — Caspar_Ds eigene Stimmlage sitzt genau an dieser Kante —, und die Schwellen 0,42/0,58 waren nie auf die Verteilung geeicht, die das Verfahren erzeugt. Stimmlage kommt heute per YIN aus dem getrennten vocals-Stem.
+
+**Die alte Temposchätzung** (32, 33, 51, 54)
+Ebenfalls am 25.08.2026 ausgebaut. Das Lagraster ließ nur 68 verschiedene BPM-Werte zu, die Bereichsgrenze wurde als Meßwert ausgegeben, und ein zweiter Kandidat wurde gerechnet, erreichte die Karte aber nie. Das Tempo kommt heute aus Sunos Schlagzeiten.
+
+**Die alte Tonart** (36, 37, 55)
+Gefallen am 24.08.2026 mit b69e898. Der Modus kam aus genau dem Chroma, das die Daten selbst ausschließen, die Tonart wurde nur aus dem linken Kanal geschätzt, und der Hinweistext beschrieb Krumhansl-Schmuckler, das gar nicht mehr lief. Der heutige Text nennt das echte Verfahren: Grundton aus dem Baß auf Sunos Eins.
+
+**Der Schimmer** (38, 40, 56)
+Mit schimmerFinden() am 25.08.2026 gefallen. MIND_HZ=450 schloß 72 der 160 Bänder aus — genau den Bereich, in dem Netzbrummen sitzt. Gemeldet wurde die Bandmitte statt der gemessenen Frequenz, im Median 17 Cent daneben. Und das Tor „wert>-77" war kein Hörbarkeitstor, weil bandVerlauf() die FFT nicht auf dBFS normiert.
+
+**Was von Befund 56 bleibt:** `bandVerlauf()` normiert die FFT weiterhin
+nicht auf dBFS. Für seine verbliebenen Leser — Grenzfrequenz und
+Höhenkante — ist das unschädlich, denn beide vergleichen *relativ*
+(„Bezug minus 50 dB"), nicht gegen einen absoluten Pegel. Es wäre erst
+wieder ein Fehler, wenn dort eine absolute Schwelle einzöge.
+
 ## Alle Funde, nach Schwere
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
@@ -412,50 +438,6 @@ beschriftet).
 **Vorschlag:** Der Weg ist kurz, weil die Bildmathematik schon geteilt ist: `bin/vorrechnen.js` lädt `web/fremd/analyzer-worker.js` mit `new Function` und rechnet dieselben Bildpunkte, die der Browser rechnen würde — es gibt keine zweite Fassung, die auseinanderlaufen könnte. Zwei weitere Bilder je Song, `<id>.rechts.webp` und `<id>.summe.webp`, und der Analyzer lädt sie wie die anderen beiden. Eigene Meßreihen braucht es dafür nicht: Aus dem linken Kanal und der Seitenlage `p` folgt `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`, bei einer Auflösung von 1/127 für p mit einem Fehler unter 0,2 dB. Kosten: rund 5 MB je Song mehr in `library/analyse/`.
 
 **Berichtigung (25.08.2026):** Hier stand zuerst, die Spektrogramm-Rahmen seien nach dem Zeichnen weg und deshalb liefe der Zoom ins Leere. Das erste stimmt — `window._chartData.fft.frames` ist bei aus der Ablage geladenen Songs undefiniert —, das zweite nicht: Genau für diesen Fall gibt es den `ohneRoh`-Zweig in `_drawSpectrogramFromFrames` (`analyzer.js`:6801). Er zeichnet aus `window._pufferFlaechen`, den Flächen aus den gespeicherten Bildern, und zwar ausschnittweise nach `viewStart`/`viewEnd` — der Zoom arbeitet also über die Bilder, in mehreren Auflösungsstufen bis 16383 px Breite. Daß die Rohdaten nach dem Zeichnen fallen, ist Absicht und kein Fehler.
-
-### 29. Die untere Suchgrenze liegt faktisch bei 93,75 Hz statt bei den beabsichtigten 80 Hz
-**mittel** · `analyzer-worker.js`:779
-
-**Fehler:** Math.ceil(80·2048/48000) = ceil(3,413) = 4, und Bin 4 entspricht 93,75 Hz. Die Schleife kann also nie einen Wert unter 93,75 Hz liefern, obwohl im Quelltext 80 steht. Am oberen Ende dasselbe Muster: k < floor(500·2048/48000) = 21, höchster erreichbarer Wert 468,75 Hz — die Prüfung hpsF0<500 in Zeile 790 ist dadurch wirkungslos.
-
-**Beleg:** Über alle 321 Songs ist 94 Hz der kleinste je aufgetretene Wert (37 Songs), und kein Wert liegt darüber hinaus über 305 Hz. Rechnerisch nachgeprüft: die erreichbare Wertemenge im Bereich 80–500 Hz ist 93,75 / 117,19 / 140,63 / … / 468,75.
-
-**Wirkung:** Ein tiefer Bariton kann grundsätzlich nicht richtig gemessen werden: G2 = 98 Hz liegt gerade eben im Raster, F2 = 87 Hz und E2 = 82 Hz sind unerreichbar und werden nach oben auf 93,75 Hz gezogen. Caspar_Ds eigene Stimmlage sitzt genau an dieser Kante.
-
-**Vorschlag:** Die Grenze aus der gewünschten Frequenz herunterrechnen und abrunden statt aufrunden, oder — wirksamer — das Fenster vergrößern, damit 80 Hz überhaupt auf einem Bin liegt. Bei 2048 Punkten und 48 kHz gibt es unterhalb von 100 Hz nur vier Stützstellen; für Tonhöhe in Stimmlage ist das zu wenig.
-
-### 30. Die Schwellen 0,42 und 0,58 sind nicht auf die Verteilung geeicht, die das Verfahren tatsächlich erzeugt
-**mittel** · `analyzer-worker.js`:813
-
-**Fehler:** ratio = femaleScoreSum/(male+female) wird in Zeile 812 gebildet und in Zeile 813/814 an 0,58 und 0,42 geschnitten. Die Schwellen sind symmetrisch um 0,5 gesetzt, als läge die Verteilung dort. Sie tut es nicht: die Punktevergabe in Zeile 789–795 ist durch den Bandterm nach unten verschoben. Damit trennt 0,42 nicht „männlich von unentschieden", sondern schneidet mitten durch die Häufung.
-
-**Beleg:** Über alle 321 Songs: ratio-Median 0,430 — also praktisch auf der unteren Schwelle. 10 %-Punkt 0,341, 90 %-Punkt 0,546, Maximum 0,666. Nur 20 Songs überschreiten 0,58. Nach Sollwert getrennt: Songs mit weiblicher Stimmangabe haben ratio-Median 0,494, Songs mit männlicher 0,422 — der Abstand beträgt 0,072, das mittlere Fenster „gemischt" ist mit 0,16 mehr als doppelt so breit. Folge: 159 von 321 Songs landen in „gemischt", darunter 55 von 109 eindeutig männlichen.
-
-**Wirkung:** Die Kategorie „gemischt" ist keine Aussage über ein Duett, sondern der Auffangbehälter für die Mitte der Verteilung. Von 6 Songs, deren Stilangabe ausdrücklich ein Duett nennt, wird keiner deswegen erkannt.
-
-**Vorschlag:** Solange kein tragfähiges Merkmal darunterliegt, keine Schwellen nachjustieren — das verschöbe nur den Fehler. Wenn das Merkmal steht, die Schwellen an den 33 weiblichen und 109 männlichen Stücken des Archivs ablesen statt setzen. „Gemischt" sollte aus zwei getrennt gefundenen Stimmen entstehen, nicht aus einem unentschiedenen Punktestand.
-
-### 32. Das Ergebnis ist auf ein 10-ms-Lagraster gequantelt: nur 68 verschiedene BPM-Werte sind überhaupt möglich
-**mittel** · `analyzer-worker.js`:699
-
-**Fehler:** Die Hüllkurve hat 10 ms Schrittweite (envStep = floor(sr/100)), der Gipfel wird als GANZZAHLIGER Lag genommen, und bpm = 6000/bestL. Damit sind im ganzen Suchbereich nur die 68 Werte 6000/33 ... 6000/100 darstellbar. Der Scheitel wird nicht interpoliert (weder parabolisch noch durch eine feinere Hüllkurve), obwohl die Nachbarwerte der Kurve dafür bereits vorliegen.
-
-**Beleg:** 321 Songs benutzen 67 verschiedene BPM-Werte (Skript batch.js). Rasterweite: 0,61 BPM bei 60, 2,45 BPM bei 120, 5,35 BPM bei 180. Bei den 171 als richtig geltenden Songs beträgt der Betragsfehler im Median 0,34 BPM, im Größtfall 4,97 BPM — reiner Rasterfehler. Der von Caspar_D genannte Wert 122,4 für "Mutterns Hände" ist exakt 6000/49, keine gerundete Messung.
-
-**Wirkung:** Auch eine im Kern richtige Messung kann am oberen Ende des Bereichs um bis zu 2,7 BPM danebenliegen. Die Anzeige rundet auf ganze BPM und verbirgt, daß dazwischen nichts darstellbar ist.
-
-**Vorschlag:** Den Scheitel parabolisch aus den drei Werten um bestL interpolieren; das kostet drei Zeilen und bringt die Auflösung auf deutlich unter 0,5 BPM.
-
-### 33. Die Bereichsgrenze wird als Meßwert ausgegeben, und die obere Grenze ist nicht die beabsichtigte
-**mittel** · `analyzer-worker.js`:697
-
-**Fehler:** minL = Math.floor(6000/180) = 33 ergibt als schnellstes Tempo 6000/33 = 181,8 BPM, nicht die im Ausdruck genannten 180. Vor allem aber: Liegt das Maximum auf dem Rand des Suchfensters, wird der Randwert ausgegeben, als wäre er ein Gipfel — es gibt keine Prüfung, ob die Kurve dort noch steigt. Der Bereich ist damit das einzige, was die metrische Ebene festlegt, und er tut es stumm.
-
-**Beleg:** Bei 11 von 321 Songs liegt bestL genau auf dem Rand: 9 mal Lag 100 (Ausgabe exakt 60,0 BPM) und 2 mal Lag 33 (181,8 BPM). "Stars of the deep" ist einer davon: Ausgabe 60,0 bei Suno 120,5; die Gipfel bei Lag 39, 25, 199, 98, 47 liegen mit 0,93 bis 0,97 fast gleichauf — die Entscheidung fällt an der Grenze, nicht an der Musik. Ein Song des Archivs ("Rosaroter Frühling", Suno 184,1 BPM = Lag 32,6) liegt vollständig außerhalb des darstellbaren Bereichs; der Kern gibt 122,4 aus, das sind 1,5 Schläge.
-
-**Wirkung:** Neun Songs tragen den Wert 60,0 BPM, der nichts gemessen hat, sondern nur den Rand des Suchfensters benennt. Songs über 181,8 BPM sind grundsätzlich nicht darstellbar.
-
-**Vorschlag:** Den Suchbereich weiter fassen (etwa 30..300 BPM) und die metrische Ebene ausdrücklich entscheiden, statt sie dem Fensterrand zu überlassen; einen Gipfel auf dem Rand verwerfen oder kennzeichnen.
 
 ### 34. Die gesamte Hüllkurve entsteht allein aus dem linken Kanal
 **mittel** · `analyzer-worker.js`:576
@@ -479,39 +461,6 @@ beschriftet).
 
 **Vorschlag:** diff aus log(env+eps) bilden, oder die Hüllkurve in wenige Bänder teilen und die gleichgerichteten Anstiege summieren (spektraler Fluß). Beides ist wenige Zeilen und ändert am Rest des Wegs nichts.
 
-### 36. Der Modus wird aus genau dem Chroma gebildet, das die Datei selbst für unbrauchbar erklärt
-**mittel** · `analyzer-worker.js`:1137
-
-**Fehler:** chromaSum kommt aus chromaFlat (Zeile 1091-1099), und das wird mit fftSize2 = 1024 gerechnet (Zeile 960). Der Kommentar direkt darunter, Zeile 1154-1158, sagt ausdrücklich: 'das 1024er-Chroma traegt ein Bin-Raster-Artefakt' und die Tonart dürfe deshalb NICHT daraus genommen werden. Genau dieses Chroma ist aber die einzige Grundlage des Modus-Zweigs zwölf Zeilen darüber. Die erkannte Schwäche wurde für die Tonart umgangen und für den Modus stehengelassen.
-
-**Beleg:** Bei 48 kHz sind 1024 Fächer 46,9 Hz breit. Ein Fach entspricht einem Halbton erst ab 788 Hz; bei 80 Hz ist ein einziges Fach 9,9 Halbtöne breit. Von den rund 65 Halbtönen zwischen 80 und 4000 Hz werden überhaupt nur 44 verschiedene je getroffen. Die Fächerzahlen je Tonklasse schwanken von 4 (C, D) bis 9 (F#, A#). Das nackte Raster allein — ohne jeden Ton — ergibt im Modus-Zweig 'D# Äolisch' bei 48 kHz und 'E Lokrisch' bei 44,1 kHz.
-
-**Wirkung:** Dass 265 von 321 Songs denselben Tonvorrat (B-Dur/g#-Moll) zugeschrieben bekommen, ist keine Eigenschaft des Archivs, sondern dieses Rasters. Der Modus wäre auch dann noch falsch, wenn der Schleifenfehler behoben würde.
-
-**Vorschlag:** Den Modus aus demselben, sauber gebildeten Chroma rechnen wie die Tonart (4096 oder größer, Gipfel statt aller Fächer) statt aus dem 1024er-Verlaufschroma, das für die Spektrogramme gedacht ist.
-
-### 37. Die Tonart wird nur aus dem linken Kanal geschätzt
-**mittel** · `analyzer-worker.js`:576
-
-**Fehler:** Zeile 576 setzt 'var ch=left', und Zeile 719 reicht dieses ch an schaetzeTonart(). Der rechte Kanal geht in die Tonart nicht ein. Bei breit aufgestellten Mischungen — und Suno stellt breit auf — trägt jede Seite eine andere Auswahl der Instrumente. Ein nach rechts gelegtes Instrument fehlt in der Harmonieauswertung ganz.
-
-**Beleg:** An 16 Songs bei 44,1 kHz gemessen: bei 5 von 16 liefert der linke Kanal eine andere Tonart als die Mitte (L+R)/2, bei 2 von 16 unterscheiden sich linker und rechter Kanal direkt. Mutterns Hände: L=G Dur, R=D Dur, Mitte=D Dur. Stumm: L=A Moll, R=F Dur, Mitte=F Dur. Okkultation und Roßtrappe v2: L=A Moll, Mitte=F Dur. Belsazar: L=D Dur, Mitte=D Moll.
-
-**Wirkung:** Rund ein Drittel der Tonartwerte hängt daran, welchen Kanal man nimmt. Das ist keine Eigenschaft der Musik, und es ist auch keine bewusste Entscheidung — 'ch=left' ist eine Abkürzung, die überall im Kern mitläuft.
-
-**Vorschlag:** Für die Tonart die Mitte (left+right)/2 bilden. Das kostet einen Durchlauf und nimmt beide Seiten mit.
-
-### 38. Alles unter 450 Hz ist unsichtbar — auch Netzbrummen bei Vollaussteuerung
-**mittel** · `analyzer-worker.js`:528
-
-**Fehler:** 'if(bv.mitten[b]<MIND_HZ) continue;' mit MIND_HZ=450 (Zeile 525) schließt 72 der 160 Bänder von der Suche aus. Damit fällt genau der Bereich weg, in dem der klassische stehende Ton sitzt: 50/60 Hz Netzbrummen und seine Vielfachen, Trittschall, Raumresonanzen. bin/stoerfrequenz.js sucht ab 30 Hz und hat eigens eine Brummen-Erkennung auf 50/60 Hz.
-
-**Beleg:** Echter Song 'Morgen' (Referenz: sauber), ein durchgehender Sinus zugemischt und der Pegel in 3-dB-Schritten von −60 dBFS bis 0 dBFS hochgefahren: bei 50 Hz, 100 Hz, 200 Hz und 400 Hz wird auch bei 0 dBFS (Vollaussteuerung, also lauter als die Musik) NICHTS gemeldet. Ab 500 Hz greift der Kern bei −39 dBFS. 67 der 189 Kandidaten aus library/stoerfrequenzen.json liegen unter 450 Hz.
-
-**Wirkung:** Die Anzeige meldet 'Keine Frequenz ragt dauerhaft aus ihrer Nachbarschaft heraus' (analyzer.js:1957) auch dann, wenn ein voll ausgesteuertes Brummen im Song steht.
-
-**Vorschlag:** MIND_HZ auf etwa 30 Hz senken. Das setzt Befund 1 voraus: mit N=4096 sind die Bänder unter 250 Hz schmaler als ein Bin (siehe Befund 9), erst eine feinere FFT macht den Tiefton überhaupt messbar.
-
 ### 39. An einer Spektrumskante mittelt medianVon zwei Welten — ein Phantomton bei 15106 Hz
 **mittel** · `analyzer-worker.js`:489
 
@@ -522,17 +471,6 @@ beschriftet).
 **Wirkung:** Auf verlustbehaftetem Material erzeugt das Verfahren einen Spitzenbefund, wo kein Ton ist — und zwar mit dem höchsten Schweregrad, also ganz oben in der Liste. Reichweite: bin/vorrechnen.js liest audio.wav, wenn vorhanden (alle 321 Songs haben eine), dort fehlt die Kante und der Phantomton bleibt aus; im Browser trifft es jede eingeworfene MP3-Datei. Zur Kontrolle nachgerechnet: derselbe Song über audio.wav meldet 15106 Hz nicht, über audio.mp3 sowohl bei 44,1 als auch bei 48 kHz.
 
 **Vorschlag:** Die Nachbarschaft auf eine ungerade Anzahl bringen (echter Median statt Mittelwert zweier Werte) und Bänder oberhalb der ermittelten Grenzfrequenz — grenzfrequenz() rechnet sie ohnehin, Zeile 497 — aus der Nachbarschaft ausschließen.
-
-### 40. Gemeldet wird die Bandmitte, nicht die gemessene Frequenz — bis 63 Cent daneben
-**mittel** · `analyzer-worker.js`:557
-
-**Fehler:** 'befunde.push({hz:bv.mitten[b], ...})' schreibt die geometrische Mitte des Bandes in den Befund. Ein Band ist 4,4 % breit (0,75 Halbtöne); die tatsächliche Lage der Linie im Band bleibt ungemessen. Die Oberfläche druckt die Zahl gerundet in Hertz (analyzer.js:1941) und gibt dazu einen Filterrat ('−2 bis −3 dB', analyzer.js:1945) — eine Genauigkeit, die die Messung nicht hat.
-
-**Beleg:** 139 Befunde gegen das Feinspektrum: Abweichung der Bandmitte von der wirklichen Linie im Median 17 Cent, im 90.-Perzentil 44 Cent, größte 63 Cent — mehr als ein halber Halbton. 'Points of Light': angezeigt 675 Hz, tatsächlich 659,5 Hz (E5). 'Erste Regentropfen': angezeigt 478 Hz, tatsächlich 465,7 Hz. 'Die Gedanken ...': angezeigt 802 Hz, tatsächlich 786,0 Hz.
-
-**Wirkung:** Ein schmaler Filter auf die angezeigte Frequenz träfe den Ton nicht — bei 675 statt 659,5 Hz liegt er um mehr als die halbe Bandbreite daneben. Der Rat, der neben der Zahl steht, ist damit nicht ausführbar.
-
-**Vorschlag:** Die Linie im Band durch Interpolation der drei stärksten FFT-Bins bestimmen und diese Frequenz melden (bin/stoerfrequenz.js meldet den Bin auf 0,1 Hz und dazu Notennamen und Cent-Abweichung).
 
 ### 41. Schwankungsbreite: Kurzzeitwerte nur einmal je Sekunde statt zehnmal
 **mittel** · `analyzer-worker.js`:283
@@ -592,6 +530,8 @@ beschriftet).
 ### 47. Grenzfrequenz ist bei 19,57 kHz gedeckelt und kennt nur 12 verschiedene Werte; 242 von 321 Songs liegen am Deckel
 **mittel** · `analyzer-worker.js`:508
 
+**Betrifft seit dem 25.08.2026 nur noch die Grenzfrequenz.** Der Schimmer, der dieselben Bänder las, ist gefallen — dieser Befund wiegt damit leichter, gilt aber weiter.
+
 **Fehler:** Gesucht wird das oberste der 160 logarithmischen Bänder, das noch über 'Bezug minus 50 dB' liegt, und zurückgegeben wird die MITTENFREQUENZ dieses Bandes ('var grenze=bv.mitten[BAENDER-1]' als Startwert). Weil BAND_BIS in Zeile 444 auf 20000 festgelegt ist, ist die oberste Bandmitte 19572,9 Hz - mehr kann die Funktion nie melden, auch wenn das Signal bis zur halben Abtastrate reicht. Bei 48 kHz Abtastrate wären das 24 kHz. Der Deckel liegt also unter dem, was das Material tatsächlich enthält.
 
 **Beleg:** Über alle 321 Songs gibt es nur 12 verschiedene Werte (10694, 11659, 12710, 13271, 14468, 15106, 15773, 16469, 17195, 17954, 18746, 19573 Hz), und 242 davon (75 %) melden exakt 19572,9 Hz - den Höchstwert. Prüfung mit selbst erzeugten MP3s aus demselben Song: bei 64 kbit/s meldet der Kern 11,2 kHz (echte Kante 11,2), bei 96 kbit/s 15,1 (echt 14,9), bei 128 kbit/s 16,5 (echt 16,0) - das funktioniert. Bei 320 kbit/s meldet er 19,6 kHz (echte Kante 20,1) und beim unkomprimierten WAV ebenfalls 19,6 kHz (echte Kante 24,0). Über 19,6 kHz kann er MP3 und WAV nicht mehr unterscheiden.
@@ -611,17 +551,6 @@ beschriftet).
 
 **Vorschlag:** 'var ch' aus der Mitte bilden: ch[i] = (left[i]+right[i])/2. Das ist eine Zeile und ändert nichts an den geprüften Normwerten, weil die ohnehin beide Kanäle nehmen.
 
-### 51. Die BPM-Autokorrelation kennt nur 68 mögliche Ergebnisse und ist nicht auf die Überlappungslänge normiert
-**mittel** · `analyzer-worker.js`:697
-
-**Fehler:** Gerechnet wird auf einer Hüllkurve mit 100 Werten je Sekunde, die Verschiebung läuft ganzzahlig von 33 bis 100, und das Tempo ist bpm=6000/bestL. Damit gibt es genau 68 darstellbare Tempi zwischen 60,0 und 181,8 BPM; bei 180 BPM liegen die Nachbarwerte 5,4 BPM auseinander. Außerdem summiert 'for(var i=0;i<diff.length-lag;i++)' bei großen Verschiebungen über weniger Glieder als bei kleinen, ohne durch die Anzahl zu teilen - das bevorzugt systematisch kurze Verschiebungen, also hohe Tempi.
-
-**Beleg:** Alle 321 BPM-Werte in library/analyse-index.json sind exakt 6000/ganze Zahl; es kommen nur 67 verschiedene Werte vor. Gegen Sunos Schlagzeiten (306 taktfeste Songs): 165 richtig (53,9 %), 56 im halben Tempo, 21 im doppelten, 47 auf einem anderen Bruchteil, 17 völlig daneben. Beispiel für die Rasterwirkung: 'Das Bild - Ich komme' hat laut Suno 141,4 BPM; das Raster kennt nur 142,86 (Lag 42) und 146,34 (Lag 41), gemeldet wird 146,3.
-
-**Wirkung:** Selbst wo das Verfahren den richtigen Schlag findet, ist der Wert auf ein grobes Raster gerundet; eine Sortierung nach Tempo bringt Songs mit 3 BPM Unterschied in dieselbe Stufe.
-
-**Vorschlag:** Den Gipfel der Autokorrelation zwischen den ganzzahligen Verschiebungen interpolieren und die Summe durch die Anzahl der Glieder teilen. Beides zusammen ist ein Dutzend Zeichen und behebt Raster und Schieflage.
-
 ### 53. Die Onset-Reihe zählt mit einer absoluten Schwelle und mißt damit Pegel, nicht Anschläge
 **niedrig** · `analyzer-worker.js`:692
 
@@ -633,41 +562,10 @@ beschriftet).
 
 **Vorschlag:** Auf Gipfel prüfen statt auf Anstiege, und die Schwelle relativ setzen (etwa Median plus ein Vielfaches der Streuung der diff-Reihe des Stücks).
 
-### 54. Der zweite Kandidat wird gerechnet, erreicht die Karte aber nie — und seine Schwelle ist eine Verhältnisschwelle auf einem Korrelationswert
-**niedrig** · `analyzer-worker.js`:721
-
-**Fehler:** Zeile 721 setzt tonartZweiteNah = (zweiteScore > score*0.9), Zeile 1159-1160 baut daraus 'X / Y' und schickt es als fft_partial.key. Die Karte schreibt die Tonart aber ausschließlich aus dem scalars-Zweig (analyzer.js Zeile 5592), und der trägt bestKey ohne Zusatz — der Kommentar in analyzer.js Zeile 5715-5722 verbietet die zweite Schreibstelle ausdrücklich. Der zweite Kandidat ist damit toter Code. Unabhängig davon ist die Schwelle schief: score ist eine Pearson-Korrelation, also eine Intervallskala. Ein Zehntel davon bedeutet bei score=0,25 einen Abstand von 0,025 und bei score=0,89 einen von 0,089 — dieselbe Bedingung heißt je nach Song etwas anderes.
-
-**Beleg:** An 40 Songs gemessen liegt der zweite Kandidat bei 16 von 40 innerhalb der 10 %; die Spanne von score reicht von 0,25 bis 0,89. In keiner der 321 abgelegten Analysen steht ein Wert mit '/'. Beispiele aus dem Nachrechnen: S-Bahn - Ausstieg rechts F# Dur r=0,85 gegen C# Dur r=0,80; Digitale ID D# Moll r=0,52 gegen G# Moll r=0,51.
-
-**Wirkung:** Bei jedem dritten Song stehen zwei Tonarten praktisch gleichauf, und die Karte zeigt trotzdem eine einzelne Zahl, als sei sie sicher. Die Unsicherheit ist bekannt und wird verschwiegen.
-
-**Vorschlag:** Entweder die Ausgabe des zweiten Kandidaten löschen oder ihn im scalars-Zweig mitschicken und anzeigen — und den Abstand als Differenz (score - zweiteScore < 0,05) statt als Verhältnis prüfen.
-
-### 55. Der Hinweistext auf der Karte beschreibt ein Verfahren, das es nicht gibt
-**niedrig** · `analyzer.js`:7559
-
-**Fehler:** Der Text lautet: 'Tonart via Krumhansl-Schmuckler über akkumulierte Chroma-Frames. Wird nach jeder FFT-Runde verfeinert.' Beides trifft nicht zu. Die Tonart kommt aus einem eigenen 4096er-Durchlauf, der genau einmal läuft (analyzer-worker.js Zeile 719), nicht aus den akkumulierten Chroma-Frames — der Kommentar in Zeile 1154-1158 sagt ausdrücklich, dass sie NICHT aus chromaSum stammt. Und verfeinert wird nichts: Zeile 1159 reicht denselben Wert in jeder der fünf Runden unverändert durch.
-
-**Beleg:** analyzer-worker.js Zeile 719 (einmaliger Aufruf), Zeile 1159 'var keyDisplay=tonartGueltig' innerhalb der Rundenschleife ohne Neuberechnung, Zeile 1154-1158 (Kommentar, der die Chroma-Frames für die Tonart ausschließt).
-
-**Wirkung:** Wer den Hinweis liest, hält den Wert für über den ganzen Song akkumuliert und mehrfach nachgebessert. Tatsächlich stammt er aus jedem zweiten 4096er-Fenster der mittleren 70 % des linken Kanals und wird nie wieder angefaßt. Das ist der Hinweis, der einen Leser davon abhält, an der richtigen Stelle zu suchen.
-
-**Vorschlag:** Text auf das tatsächliche Verfahren umschreiben, sobald das Verfahren steht — sonst wandert der Fehler beim nächsten Mal wieder in die falsche Ecke.
-
-### 56. Das absolute Tor 'wert>-77' ist kein Hörbarkeitstor — es liegt 36 dB unter dem 16-Bit-Rauschen
-**niedrig** · `analyzer-worker.js`:540
-
-**Fehler:** bandVerlauf() normiert die FFT nicht (Zeile 477-479: Summe der Betragsquadrate, geteilt nur durch die Binzahl). Die dB-Skala hängt damit an N und an der Fensterfunktion und hat keinen Bezug zu dBFS. Die Zahl −77 in Zeile 540 ist gegen diese unnormierte Skala gesetzt und soll ersichtlich stille Stellen aussperren — tut es aber nicht.
-
-**Beleg:** Nachgemessen mit Sinus bekannten Pegels durch bandVerlauf(): 0 dBFS → Bandwert +55,4 · −40 dBFS → +15,4 · −80 dBFS → −24,6 · −120 dBFS → −64,6. Die Schwelle −77 entspricht also etwa −132 dBFS, rund 36 dB UNTER dem Rauschteppich einer 16-Bit-Datei. In 'Remix Mich' liegen 1,36 % aller Band/Zeit-Werte darunter (5.-Perzentil −8,8 · Median +11,6 · 95.-Perzentil +38,9).
-
-**Wirkung:** Der 'Anteil', auf dem die Entscheidung 'stehender Ton' beruht, wird über Intro, Ausblendung und Fast-Stille mitgezählt, als wäre dort Musik. Außerdem verschiebt sich die Bedeutung der Schwelle stumm, sobald jemand N ändert — genau die Falle, gegen die bin/pruefe-lautheit.js im Kommentar warnt.
-
-**Vorschlag:** Den Bandpegel auf dBFS normieren (durch Fenstersumme und N teilen) und das Tor relativ zur Lautheit des Songs setzen, z. B. 'Rahmen zählt nur, wenn er lauter ist als LUFS − 30'.
-
 ### 57. 37 der 160 Bänder sind Dubletten — unter 193 Hz lesen benachbarte Bänder denselben FFT-Bin
 **niedrig** · `analyzer-worker.js`:476
+
+**Betrifft seit dem 25.08.2026 nur noch die Grenzfrequenz und Höhenkante.** Der Schimmer, der dieselben Bänder las, ist gefallen — dieser Befund wiegt damit leichter, gilt aber weiter.
 
 **Fehler:** Die Bandgrenzen werden auf ganze Bins gerundet (Zeile 464). Unter etwa 243 Hz ist ein Band schmaler als ein Bin (10,8 Hz bei 44,1 kHz), die gerundeten Grenzen fallen zusammen, und 'obn=Math.max(von+1,grenzen[b+1])' (Zeile 476) sorgt dafür, dass das Band trotzdem einen Bin bekommt — denselben wie sein Nachbar. Die Kurve gibt im Tiefton eine Auflösung vor, die die FFT nicht liefert.
 
