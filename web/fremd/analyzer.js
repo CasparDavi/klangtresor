@@ -1019,13 +1019,19 @@
   <div class="slbl"><span class="spur-titel"><span class="nam">Spektrogramm</span> — <span class="erkl">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
   <div class="bf-register" id="spektro-register">
     <button type="button" data-spektro="l" class="an">FFT(L)</button>
+    <button type="button" data-spektro="r">FFT(R)</button>
+    <button type="button" data-spektro="summe">|L|+|R|</button>
     <button type="button" data-spektro="pan">(|L|−|R|)/(|L|+|R|)</button>
   </div>
   <div style="position:relative;height:180px">
     <div class="chart-outer" id="spektro-feld-l" style="position:absolute;left:0;right:0;top:0;margin:0"><canvas id="spectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-spectro"></div></div>
+    <div class="chart-outer" id="spektro-feld-r" style="position:absolute;left:0;right:0;top:0;margin:0;visibility:hidden"><canvas id="rechtsspectro-canvas" style="height:180px;background:#0a0a0a"></canvas><div class="playhead" id="ph-rechtsspectro"></div></div>
+    <div class="chart-outer" id="spektro-feld-summe" style="position:absolute;left:0;right:0;top:0;margin:0;visibility:hidden"><canvas id="summespectro-canvas" style="height:180px;background:#0a0a0a"></canvas><div class="playhead" id="ph-summespectro"></div></div>
     <div class="chart-outer" id="spektro-feld-pan" style="position:absolute;left:0;right:0;top:0;margin:0;visibility:hidden"><canvas id="stereospectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-stereospectro"></div></div>
   </div>
   <div id="spektro-text-l"><div class="chart-text">Die Frequenzen über die Zeit: waagerecht die Zeit, senkrecht die Frequenz, die Farbrampe (<span style="color:#78787d">schwarz</span> – <span style="color:#9a9aa2">grau</span> – <span style="color:#e6e6e6">weiß</span> – <span style="color:#f9531c">orangerot</span>) codiert die Signalstärke. Normiert wird lokal, damit auch leise Passagen ihre Struktur zeigen — die Helligkeit ist deshalb kein absolutes Maß und zwischen zwei Songs nicht vergleichbar. Ein Band am oberen Rand markiert Stellen, an denen das Signal abgeschnitten ist. Die elf waagerechten Linien bilden ein Notensystem: unten die fünf Linien des Bassschlüssels (G2 bis A3), oben die des Violinschlüssels (E4 bis F5) und dazwischen, dünner gezeichnet, die Hilfslinie C4 für das eingestrichene C. An ihnen lässt sich ablesen, in welcher Lage ein Klang liegt.</div></div>
+  <div id="spektro-text-r" style="display:none"><div class="chart-text">Dasselbe Bild für den <b>rechten</b> Kanal. Nebeneinander gelesen zeigen die beiden, wie die Mischung aufgeteilt ist: Was nur in einem der Bilder steht, liegt hart auf einer Seite; was in beiden gleich aussieht, steht in der Mitte. Jedes Band ist auf sein <i>eigenes</i> Rauschen gestreckt — auch hier, mit den Perzentilen des rechten Kanals, denn die des linken würden das Bild systematisch zu hell oder zu dunkel zeichnen, je nachdem wohin gemischt wurde.</div></div>
+  <div id="spektro-text-summe" style="display:none"><div class="chart-text">Beide Kanäle zusammen — und zwar die <b>Beträge</b> addiert, nicht die Signale. Der Unterschied ist wesentlich: Zwei gegenphasige Anteile löschen sich beim Mischen aus und wären in einem echten L+R verschwunden, obwohl beide Lautsprecher sie spielen. Hier bleiben sie stehen. Deshalb heißt die Lasche |L|+|R| und nicht FFT(L+R). Dies ist das Bild, das dem am nächsten kommt, was insgesamt klingt.</div></div>
   <div id="spektro-text-pan" style="display:none"><div class="chart-text">Dasselbe Bild, doch die Farbe trägt hier die Stereolage statt der Stärke: <span style="color:#f97b14">Orange</span> steht für links, <span style="color:#4b93f0">Blau</span> für rechts, <span style="color:#9a9aa2">Grau</span> für die Mitte. So wird erkennbar, welche Frequenzbereiche breit gemischt sind und welche in der Mitte zusammenlaufen. Das Notensystem der elf Linien ist dasselbe wie im Spektrogramm darüber.</div></div>
 </div>
 `;
@@ -1293,7 +1299,7 @@
 
     var audioCtx=null, songDuration=0;
 
-    var phIds=['befundspur','chromaspur','chromataktspur','stereospur','korrspur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro'];
+    var phIds=['befundspur','chromaspur','chromataktspur','stereospur','korrspur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro','rechtsspectro','summespectro'];
 
     /* Der Knopf auf der Wellenform schaltet den Player der Buehne -
        er hat keinen eigenen mehr zu schalten. */
@@ -3651,16 +3657,64 @@
        Seitenlage, die keine Differenz ist, sondern ein Anteil: Sie sagt,
        WIE WEIT links oder rechts ein Frequenzfach sitzt, unabhaengig
        davon, wie laut es ist. */
+    /* Die vier Laschen und was hinter jeder steckt: das Bildfeld, der
+       Erklaertext, der Puffer aus der Ablage und der Canvas. */
+    var SPEKTRO_LASCHEN=[
+      {schl:'l',     feld:'spektro-feld-l',     text:'spektro-text-l',     puffer:'spectro',       canvas:'spectro-canvas'},
+      {schl:'r',     feld:'spektro-feld-r',     text:'spektro-text-r',     puffer:'rechtsspectro', canvas:'rechtsspectro-canvas'},
+      {schl:'summe', feld:'spektro-feld-summe', text:'spektro-text-summe', puffer:'summespectro',  canvas:'summespectro-canvas'},
+      {schl:'pan',   feld:'spektro-feld-pan',   text:'spektro-text-pan',   puffer:'stereospectro', canvas:'stereospectro-canvas'}
+    ];
     var _spektroOffen='l';
+
+    /* Ein Kanalbild aus seinem Puffer zeichnen. Dieselbe Rechnung wie im
+       ohneRoh-Zweig von _drawSpectrogramFromFrames, nur fuer die beiden
+       Bilder, die es nur als Ablage gibt: Der Browser rechnet sie nicht
+       selbst, sie entstehen in bin/vorrechnen.js. */
+    function kanalBildZeigen(l){
+      var p=(window._pufferFlaechen||{})[l.puffer];
+      var c=document.getElementById(l.canvas);
+      if(!p||!c||!c.offsetWidth) return false;
+      c.width=c.offsetWidth; c.height=c.offsetHeight||180;
+      var ctx=c.getContext('2d');
+      pufferZeigen(ctx, p, viewStart, viewEnd, c.width, c.height);
+      var sr2=(window._chartData&&window._chartData.fft&&window._chartData.fft.sr)||currentSR||48000;
+      spektroAchsenZeichnen(ctx,c.width,c.height,sr2,Math.log10(20),Math.log10(sr2/2));
+      var d=(window._chartData&&window._chartData.fft)||{};
+      if(d.dur) drawTimeAxis(ctx,c.width,c.height,d.dur);
+      return true;
+    }
+
+    /* Welche Laschen ueberhaupt zu sehen sind: die beiden alten immer,
+       die beiden neuen nur, wenn ihr Bild vorliegt. */
+    function spektroLaschenPruefen(){
+      var reg=document.getElementById('spektro-register');
+      if(!reg) return;
+      var pf=window._pufferFlaechen||{};
+      var weg=false;
+      SPEKTRO_LASCHEN.forEach(function(l){
+        var da = (l.schl==='l'||l.schl==='pan') ? true : !!pf[l.puffer];
+        var b=reg.querySelector('[data-spektro="'+l.schl+'"]');
+        if(b) b.style.display = da ? '' : 'none';
+        if(!da && _spektroOffen===l.schl) weg=true;
+      });
+      if(weg) spektroLascheWaehlen('l');
+    }
+
     function spektroLascheWaehlen(welche){
       _spektroOffen=welche;
-      var f={l:document.getElementById('spektro-feld-l'), pan:document.getElementById('spektro-feld-pan')};
-      var x={l:document.getElementById('spektro-text-l'), pan:document.getElementById('spektro-text-pan')};
-      for(var k in f){ if(f[k]) f[k].style.visibility = (k===welche?'visible':'hidden');
-                       if(x[k]) x[k].style.display    = (k===welche?'':'none'); }
+      SPEKTRO_LASCHEN.forEach(function(l){
+        var f=document.getElementById(l.feld), x=document.getElementById(l.text);
+        if(f) f.style.visibility = (l.schl===welche?'visible':'hidden');
+        if(x) x.style.display    = (l.schl===welche?'':'none');
+      });
       var reg=document.getElementById('spektro-register');
       if(reg) Array.prototype.forEach.call(reg.querySelectorAll('button'), function(b){
         b.classList.toggle('an', b.getAttribute('data-spektro')===welche); });
+      /* Die zwei Ablagebilder zeichnen erst beim Aufschlagen - anders als
+         die beiden alten, die beim Empfang der Rohdaten entstehen. */
+      var l=SPEKTRO_LASCHEN.find(function(z){ return z.schl===welche; });
+      if(l && (welche==='r'||welche==='summe')) kanalBildZeigen(l);
       spektroTitelSetzen();
     }
     document.addEventListener('click', function(e){
@@ -5279,14 +5333,20 @@
            (canvas.toBlob kann das), Node schreibt PNG - das ffmpeg auf
            diesem Rechner hat keinen WebP-Encoder. Welches Format
            dasteht, ist dem Bild egal; createImageBitmap liest beide. */
-        var paare=[['spectro','spektro'],['stereospectro','stereo']];
+        /* Die letzten beiden kamen am 25.08.2026 dazu (vier Register).
+           Wer vorher gerechnet wurde, hat sie noch nicht - deshalb sind
+           sie NICHT Bedingung: fehlen sie, wird ihre Lasche schlicht
+           nicht gezeigt. node bin/vorrechnen.js --nur-bilder holt sie
+           nach. */
+        var paare=[['spectro','spektro',true],['stereospectro','stereo',true],
+                   ['rechtsspectro','rechts',false],['summespectro','summe',false]];
         for(var j=0;j<paare.length;j++){
           var b=null;
           for(var e=0;e<2;e++){
             var versuch=await fetch('/analyse/'+id+'.'+paare[j][1]+(e?'.png':'.webp'));
             if(versuch.ok){ b=versuch; break; }
           }
-          if(!b) return false;
+          if(!b){ if(paare[j][2]) return false; else continue; }
           await pufferAusBild(paare[j][0], await b.blob(), Math.min(bildzahl, PUFFER_MAX));
         }
       }
@@ -5302,6 +5362,10 @@
          Gespeichert werden diese Felder ausdruecklich NICHT - sie
          aendern sich mit jedem Sammellauf, die Messung nicht. Sie
          gehoeren beim Anzeigen frisch aus dem Katalog geholt. */
+      /* Jetzt stehen die Puffer - erst hier weiss man, welche der vier
+         Laschen ueberhaupt ein Bild hat. */
+      spektroLaschenPruefen();
+
       if(_katalogDaten) kopfFuellen(_katalogDaten);
 
       /* Denselben Zustand herstellen, den startWorkerAnalysis setzt. */
@@ -6434,6 +6498,14 @@
       var c=document.getElementById('spectro-canvas');
       var t=c&&c.closest('.section')&&c.closest('.section').querySelector('.slbl');
       if(!t) return;
+      if(_spektroOffen==='r'){
+        t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">rechter Kanal · lokal Z-normiert · dunkel=Stille · hell=Signal</span></span>';
+        return;
+      }
+      if(_spektroOffen==='summe'){
+        t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">beide Kanäle, Beträge addiert · lokal Z-normiert · dunkel=Stille · hell=Signal</span></span>';
+        return;
+      }
       if(_spektroOffen==='pan'){
         t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">'
           + 'Seitenlage je Frequenzfach · <span style="color:#f97b14">orange = links</span> · '

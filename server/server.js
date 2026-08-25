@@ -189,11 +189,14 @@ function sicherer(basis, teil) {
    schreibt PNG - das ffmpeg hier hat keinen WebP-Encoder. Vollstaendig
    heisst deshalb: die Reihen plus JE EIN Bild beider Sorten. */
 const ANALYSE_ENDUNGEN = ['bin', 'spektro.webp', 'stereo.webp',
-                          'spektro.png', 'stereo.png'];
+                          'spektro.png', 'stereo.png',
+                          /* rechter Kanal und Summe, seit 25.08.2026 */
+                          'rechts.webp', 'summe.webp',
+                          'rechts.png', 'summe.png'];
 const ANALYSE_MAX = 32 * 1024 * 1024;
 
 function analyseName(rest) {
-  const m = /^([0-9a-f-]{36})\.(bin|spektro\.(?:webp|png)|stereo\.(?:webp|png))$/.exec(rest);
+  const m = /^([0-9a-f-]{36})\.(bin|(?:spektro|stereo|rechts|summe)\.(?:webp|png))$/.exec(rest);
   return m ? { id: m[1], endung: m[2] } : null;
 }
 
