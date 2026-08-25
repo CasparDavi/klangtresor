@@ -217,6 +217,35 @@ was bleibt, ist die Begründung: als Kommentar an Ort und Stelle oder als
 Absatz hier. Das Löschen-ist-nicht-gut aus derselben Sitzung meint die
 **Befunde** in diesem Dokument, nicht den Code.
 
+**13 + 23 · Die Kirchentonart, zweimal notiert.** Beide Befunde
+beschreiben denselben Fehler: Die Bewertung addierte die sieben
+Leitertöne und zog die übrigen fünf halb ab — sie hing also
+ausschließlich am TONVORRAT und nie am Grundton. C-Ionisch, D-Dorisch,
+E-Phrygisch, F-Lydisch, G-Mixolydisch, A-Äolisch und B-Lokrisch haben
+denselben Tonvorrat und bekamen deshalb exakt dieselbe Zahl; die 84
+Paare (Grundton, Modus) ergaben nur 12 verschiedene Mengen. Weil der
+Vergleich ein strenges Größer war, gewann, wer zuerst drankam. Die
+sieben besten Lesungen eines echten Chroma-Vektors lagen bei
+4,055000000000001 gegen 4,055000000000000 — ein Tonvorrat, Unterschied
+in der 15. Stelle. In der Sammlung standen 265 von 321 Songs auf
+„C# Dorisch", und kein einziger auf Ionisch oder Äolisch, also nie
+normales Dur oder Moll — während der Erklärungstext genau das
+versprach. Caspar_D hat es am 25.08.2026 aus dem Gedächtnis genau so
+zusammengefaßt: *„die Kirchentonarten unterscheiden sich nicht, die
+erste gewinnt immer."*
+
+> **Gelöst:** Die Rechnung gibt es nicht mehr. Gesucht am 25.08.2026 im
+> ganzen Projekt nach Ionisch, Dorisch, Phrygisch, Lydisch,
+> Mixolydisch, Äolisch, Lokrisch, `modeName`, `MODE_`, `bestModeScore`:
+> **null Treffer**. Der Rechenkern liefert in `scalars` weder Tonart
+> noch Modus (`analyzer-worker.js`:1118), die Modus-Karte steht nicht
+> mehr im Aufbau, und keine abgelegte `.bin` trägt ein solches Feld.
+> Wann genau sie fiel, sagt die Historie dieses Repos nicht — sie war
+> schon vor dem ersten Commit weg, denn `analyzer.js` kam als Kopie aus
+> `../SunoAnalyzer/`, und dort ist das Original seit Mai 2025
+> eingefroren. Der Grundton kommt heute aus `bin/toene.js`, gemessen am
+> Baß auf Sunos Eins; eine Modusangabe macht das Archiv gar nicht mehr.
+
 ## Alle Funde, nach Schwere
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
@@ -229,17 +258,6 @@ Absatz hier. Das Löschen-ist-nicht-gut aus derselben Sitzung meint die
 **Vorschlag:** Der Weg ist kurz, weil die Bildmathematik schon geteilt ist: `bin/vorrechnen.js` lädt `web/fremd/analyzer-worker.js` mit `new Function` und rechnet dieselben Bildpunkte, die der Browser rechnen würde — es gibt keine zweite Fassung, die auseinanderlaufen könnte. Zwei weitere Bilder je Song, `<id>.rechts.webp` und `<id>.summe.webp`, und der Analyzer lädt sie wie die anderen beiden. Eigene Meßreihen braucht es dafür nicht: Aus dem linken Kanal und der Seitenlage `p` folgt `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`, bei einer Auflösung von 1/127 für p mit einem Fehler unter 0,2 dB. Kosten: rund 5 MB je Song mehr in `library/analyse/`.
 
 **Berichtigung (25.08.2026):** Hier stand zuerst, die Spektrogramm-Rahmen seien nach dem Zeichnen weg und deshalb liefe der Zoom ins Leere. Das erste stimmt — `window._chartData.fft.frames` ist bei aus der Ablage geladenen Songs undefiniert —, das zweite nicht: Genau für diesen Fall gibt es den `ohneRoh`-Zweig in `_drawSpectrogramFromFrames` (`analyzer.js`:6801). Er zeichnet aus `window._pufferFlaechen`, den Flächen aus den gespeicherten Bildern, und zwar ausschnittweise nach `viewStart`/`viewEnd` — der Zoom arbeitet also über die Bilder, in mehreren Auflösungsstufen bis 16383 px Breite. Daß die Rohdaten nach dem Zeichnen fallen, ist Absicht und kein Fehler.
-
-### 13. Die Kirchentonart ist die Reihenfolge zweier Schleifen, keine Messung
-**hoch** · `analyzer-worker.js`:1144
-
-**Fehler:** Die Bewertung in Zeile 1147-1149 addiert die sieben Leitertöne und zieht die übrigen fünf halb ab. Beides hängt ausschließlich am TONVORRAT, nicht daran, welcher Ton der Grundton ist. C-Ionisch, D-Dorisch, E-Phrygisch, F-Lydisch, G-Mixolydisch, A-Äolisch und B-Lokrisch haben denselben Tonvorrat und bekommen deshalb exakt dieselbe Zahl. Der Vergleich in Zeile 1150 ist ein strenges Größer, also gewinnt, wer zuerst drankommt: der tiefste im Vorrat enthaltene Grundton, C vor C# vor D. Ein Name wie 'C Mixolydisch' ist damit nur eine andere Schreibweise für 'der Tonvorrat von F-Dur bzw. d-Moll' und sagt nichts über den Grundton der Musik.
-
-**Beleg:** Wortgleiche Übernahme des Codes, gefüttert mit makellosen Leiterchromas: bei jedem der sieben Modi liegen exakt 7 Kandidaten gleichauf. Ein reines C-Dur-Chroma ergibt 'C Ionisch', ein reines G-Dur-Chroma 'C Lydisch', ein reines F-Dur-Chroma 'C Mixolydisch', ein reines B-Dur-Chroma 'C# Dorisch'. In der Ablage stehen für 321 Songs genau vier verschiedene Antworten: 265x C# Dorisch, 23x C Mixolydisch, 22x C# Mixolydisch, 11x C Lokrisch — der Grundton ist immer C oder C#, nie etwas anderes.
-
-**Wirkung:** Das Feld 'Modus' auf der Karte (analyzer.js Zeile 663) ist wertlos, und es widerspricht dem Feld 'Tonart' daneben. Der Export in analyzer.js Zeile 1122 schreibt beides in eine Zeile: 'Tonart: E Dur C# Dorisch' — E Dur hat vier Kreuze, C# Dorisch fünf. Von den 265 Songs mit 'C# Dorisch' hat kein einziger tatsächlich C# als Grundton.
-
-**Vorschlag:** Den Grundton nicht aus dem Tonvorrat holen — der enthält ihn nicht. Entweder den Grundton aus der Tonartschätzung übernehmen und nur noch das Geschlecht/die Alteration bestimmen (dann ist 'Mixolydisch' die Aussage 'Dur mit kleiner Septime'), oder gewichtete Profile je Modus benutzen, in denen Grundton und Quinte schwerer wiegen als die übrigen Stufen. So wie es dasteht, sollte das Feld eher verschwinden als falsche Namen liefern.
 
 ### 14. Frequenzauflösung: ein Ton wird über bis zu 63 FFT-Bins verschmiert — die gemessene Hervorhebung hängt an der Frequenz, nicht am Ton
 **hoch** · `analyzer-worker.js`:459
@@ -339,17 +357,6 @@ Absatz hier. Das Löschen-ist-nicht-gut aus derselben Sitzung meint die
 **Wirkung:** Die Karte 'Inharmonizität' liefert für jeden Song eine Zahl um 75 und einen Zeiger am rechten Anschlag mit dem Text 'extrem inharmonisch'. Die Größe entscheidet außerdem in der Instrumentenerkennung (analyzer.js ab 4720: 'if(inharmMed>0.03&&inharmMed<0.12) guitarScore+=2') über Gitarre/Klavier/Synthesizer, obwohl sie nur die Tonhöhenlage kennt.
 
 **Vorschlag:** Ohne feinere Frequenzauflösung ist die Größe nicht zu retten. Entweder mit deutlich größerer FFT und Parabel-Interpolation des Gipfels rechnen (dann wird die Abweichung ein Bruchteil eines Bins statt 0 oder 1), oder die Karte streichen, bis das da ist.
-
-### 23. Kirchentonart: die sieben Modi sind punktgleich, der Gewinner entscheidet sich in der letzten Nachkommastelle
-**hoch** · `analyzer-worker.js`:1150
-
-**Fehler:** Die Bewertung addiert nur die Chroma-Werte der sieben Stufen und zieht die übrigen fünf zur Hälfte ab. Damit bewertet sie ausschließlich den TONVORRAT. C-Ionisch, D-Dorisch, E-Phrygisch, F-Lydisch, G-Mixolydisch, A-Äolisch und B-Lokrisch haben aber denselben Tonvorrat - die 84 Paare (Grundton, Modus) ergeben nur 12 verschiedene Mengen. Was einen Modus ausmacht, ist der Grundton, und der geht in die Rechnung überhaupt nicht ein. Weil 'if(score>bestModeScore)' echt größer verlangt, gewinnt bei Gleichstand, wer zuerst drankommt; und weil die sieben Summen in verschiedener Reihenfolge addiert werden, entscheidet die Fließkomma-Rundung.
-
-**Beleg:** Nachgebaut und geprüft: 84 Paare ergeben 12 verschiedene Tonvorräte. Ein eindeutiges A-Moll-Chroma wird als 'C Ionisch' gemeldet. Die sieben besten Lesungen eines echten Chroma-Vektors: C Ionisch 4,055000000000001 / D Dorisch 4,055000000000001 / G Mixolydisch 4,055000000000001 / A Äolisch 4,055000000000001 / E Phrygisch 4,055000000000000 / F Lydisch 4,055000000000000 / B Lokrisch 4,055000000000000 - ein Tonvorrat, Unterschied in der 15. Stelle. In der Sammlung: 265 von 321 Songs 'Dorisch', 45 'Mixolydisch', 11 'Lokrisch' - und kein einziger Ionisch oder Äolisch, also nie normales Dur oder Moll.
-
-**Wirkung:** Die Karte 'Modus' behauptet bei 82 % der Songs 'Dorisch'. Das ist keine Aussage über die Musik, sondern über die Schleifenreihenfolge in Zeile 1144. Der Erklärungstext (analyzer.js:7561) verspricht ausdrücklich 'Ionisch = normales Dur, Äolisch = normales Moll' - beides kommt nie vor.
-
-**Vorschlag:** Den Grundton mitbewerten - z. B. Korrelation mit einem Profil je Modus, wie es schaetzeTonart mit den Krumhansl-Profilen für Dur/Moll schon richtig macht - statt nur die Stufenmenge zu summieren. Bis dahin ist die Karte irreführend.
 
 ### 24. Harmonische Dichte antwortet umgekehrt: weißes Rauschen 15,8 statt ~0, reiner Sinus 5,0 statt 1
 **hoch** · `analyzer-worker.js`:1086
