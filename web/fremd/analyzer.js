@@ -215,6 +215,13 @@
    Alternative - ein einziges Raster mit acht Spalten - koennte nicht
    umbrechen. */
 .sunoanalyzer .bf-paare{display:flex;flex-wrap:wrap;gap:0 34px;margin:0 0 10px}
+/* DIE GRUPPEN TEILEN SICH DIE BREITE (Caspar_D, 25.08.2026: "dort rechts
+   so ein grosser Schwarzraum"). Vorher waren beide Spaltengruppen so
+   schmal wie ihr Inhalt und klebten links - die rechte Haelfte des
+   Panels blieb leer. Jetzt wachsen sie in den Platz hinein; flex-basis
+   bleibt auto, damit die zweite Gruppe bei schmalem Fenster weiterhin
+   unter die erste rutscht statt sich zu quetschen. */
+.sunoanalyzer .bf-paare > *{flex:1 1 auto}
 
 /* Alle Spalten auto und justify-content:start - die Tabelle ist damit
    nur so breit wie ihr Inhalt, und der freie Platz bleibt rechts als
@@ -242,7 +249,10 @@
 .sunoanalyzer .bf-vergleich > *,.sunoanalyzer .bf-tab > *{
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sunoanalyzer .bf-vergleich{display:grid;justify-content:start;
-  grid-template-columns:auto auto auto auto;gap:0 14px;
+  /* Die letzte Spalte (das Urteil) nimmt den Rest der Gruppe - Name und
+     Zahlen bleiben kompakt beieinander, und der freie Raum gehoert dem
+     Text, der ihn brauchen kann. */
+  grid-template-columns:auto auto auto 1fr;gap:0 14px;
   font-size:12px}
 .sunoanalyzer .bf-vergleich .gr{color:#8a8a8a}
 .sunoanalyzer .bf-vergleich .soll{color:#8a8a8a;font-variant-numeric:tabular-nums;text-align:right}
