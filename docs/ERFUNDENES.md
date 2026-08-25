@@ -12,6 +12,27 @@ Gemessen über den ganzen Bestand (321 Songs), nicht geschätzt.
 
 ---
 
+> ## ✔ BEHOBEN am 25.08.2026 — Abschnitt 1 und der Text-Teil von 2
+>
+> Caspar_D: *„nimm bitte alle Instrumentals von den Analysen aus, die
+> Text generieren/analysieren, und lösche Text-Items, die von diesen
+> Stücken abgeleitet wurden."*
+>
+> **Gelöscht:** die halluzinierten Wort-Zeitmarken bei 35 Stücken; alle
+> 64 Instrumentals tragen jetzt `instrumental: true`. Gegenprobe: kein
+> einziger Song im Bestand trägt noch ein Halluzinationsmuster.
+>
+> **Gesperrt, damit es nicht wiederkommt** — an zwei Stellen, weil die
+> vorhandene Erkennung das Gegenteil prüft (`worte.length < 5` sucht ZU
+> WENIG Text, eine Halluzination hat zu viel):
+> - `bin/whisper.js` rechnet Stücke ohne Liedtext gar nicht erst
+> - `bin/aufbereiten.js` übernimmt nichts für sie, falls doch Daten da sind
+>
+> **Gesichert:** `library/backup/vor-instrumental-bereinigung-*`
+>
+> Offen bleibt die **Stimmlage** (Abschnitt 2) — sie ist kein Text-Item
+> und steht weiter bei allen 64.
+
 ## 1. Erfundener Liedtext — 19 Songs
 
 Whisper hört auf Naturklang Sprache, wo keine ist. Die Ausgabe steht als

@@ -304,6 +304,29 @@ function rechnen(s, tmp) {
   else {
     liste = liste.filter(s => !(s.playlists || []).some(p => OHNE_PLAYLISTS.has(p)));
     liste = liste.filter(s => !INSTRUMENTAL_TITEL.test(s.titel || ''));
+    /* KEIN LIEDTEXT, KEIN TRANSKRIPT (Caspar_D, 25.08.2026: "nimm bitte
+       alle instrumentals von den Analysen aus, die Text
+       generieren/analysieren").
+
+       Hat Suno fuer ein Stueck keinen Text geschrieben, gibt es nichts
+       zu hoeren - und Whisper schweigt dann nicht, sondern erfindet:
+       "Thank you. Thank you.", Danksagungen aus Video-Abspaennen,
+       singhalesische Wortketten ueber Wind und Regen. 19 solcher
+       Faelle standen nachweisbar im Bestand (docs/ERFUNDENES.md),
+       35 Stuecke trugen halluzinierte Zeitmarken.
+
+       Die eigene Erkennung weiter unten (worte.length < 5) faengt das
+       NICHT: Sie prueft auf ZU WENIG Text, und eine Halluzination hat
+       zu viel. Der Katalog weiss es besser - er kennt Sunos eigenen
+       Text, und wo der fehlt, ist das Stueck instrumental.
+
+       Der Titelfilter darueber erwischt nur die Serien mit roemischen
+       Ziffern; die Naturklaenge (Morgendaemmerung, Wind im Wald) haben
+       solche nicht. */
+    const OHNE_TEXT = s => !((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()));
+    const instrumentale = liste.filter(OHNE_TEXT).length;
+    liste = liste.filter(s => !OHNE_TEXT(s));
+    if (instrumentale) console.log(`  ${instrumentale} Instrumentalstücke übersprungen (kein Liedtext im Katalog)`);
     if (alleModus) liste = liste.filter(s => !fertig.has(s.id));
     else liste = liste.filter(s => !(s.worte && s.worte.length) && !fertig.has(s.id));
   }

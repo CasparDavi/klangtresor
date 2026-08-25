@@ -344,6 +344,17 @@ for (const timingDatei of alleRohdateien('timing')) {
           && JSON.stringify(s.worte) === JSON.stringify(e.worte)) s.worteQuelle = 'whisper';
       if (e.schleife) continue;                          // Whisper hat sich verhaspelt - nicht uebernehmen
       if (e.instrumental) { instrumental++; if (!s.worte || !s.worte.length) s.whisperInstrumental = true; continue; }
+      /* ZWEITE SPERRE, am Katalog statt am Erkenner (Caspar_D,
+         25.08.2026). Whispers eigene Instrumental-Erkennung prueft auf
+         ZU WENIG Text (worte.length < 5); eine Halluzination hat aber zu
+         viel - "Thank you. Thank you." ueber Regen, singhalesische
+         Wortketten ueber Wind. Deshalb hier die Gegenprobe an Sunos
+         eigenem Text: Wo der fehlt, ist das Stueck instrumental, und
+         dann wird nichts uebernommen. So kamen 35 Stuecke zu
+         halluzinierten Zeitmarken (docs/ERFUNDENES.md). */
+      if (!((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()))) {
+        instrumental++; s.instrumental = true; s.whisperInstrumental = true; continue;
+      }
       if (!(s.worte && s.worte.length) || s.worteQuelle === 'whisper') {
         s.worte = e.worte; s.worteQuelle = 'whisper'; mitWorten++;
       }
