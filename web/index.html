@@ -266,12 +266,29 @@ select,.knopf{
   border-radius:11px;padding:13px 15px}
 .wert b{display:block;font-size:21px;line-height:1.2}
 .wert span{color:var(--schwach);font-size:12px}
-/* Der Anschluss-Knopf: still, wenn er aus ist; in Akzentfarbe, wenn er an
-   ist; und nur dann hell, wenn wirklich eine Naht bereitsteht - eine Lampe
-   leuchtet nur, wenn der Effekt eingreift (Hausregel). */
-#anschlussknopf.an{color:var(--akzent)}
-#anschlussknopf.arbeitet{color:var(--text)}
-#anschlussknopf.arbeitet .ico{filter:drop-shadow(0 0 5px var(--akzent))}
+/* WIE EIN KNOPF ZEIGT, DASS ER AN IST (Caspar_D, 26.08.2026):
+   „aktive Knoepfe haben einen Umriss in Akzentfarbe und ihr Symbol wird
+   farbig. Ausgeschaltete Knoepfe haben keinen Rand, das Symbol ist
+   weiss - geschwaecht."
+
+   Vorher war es uneinheitlich: Zufall und Schleife faerbten per
+   style.color, der Anschluss ueber eine Klasse, Stumm gar nicht, und
+   der Abspielknopf trug im Buehnenpult eine volle Akzentflaeche, in der
+   Albumleiste nichts - „mal hat der Playbutton Akzentfarbe, mal nicht".
+
+   Der Rand ist IMMER da, nur durchsichtig, wenn der Knopf aus ist.
+   Sonst spraenge das Bild bei jedem Schalten um zwei Pixel. */
+.schaltknopf{border:1px solid transparent !important;
+  color:rgba(255,255,255,.62);transition:color .12s,border-color .12s}
+.schaltknopf:hover{color:rgba(255,255,255,.92)}
+.schaltknopf.an{border-color:var(--akzent) !important;color:var(--akzent)}
+.schaltknopf.an:hover{color:var(--akzent)}
+
+/* Die dritte Stufe bleibt dem Anschluss: Er leuchtet erst, wenn
+   wirklich eine Naht bereitsteht - eine Lampe leuchtet nur, wenn der
+   Effekt eingreift (Hausregel). */
+#anschlussknopf.arbeitet .ico,#banschluss.arbeitet .ico{
+  filter:drop-shadow(0 0 5px var(--akzent))}
 .fussnote{color:var(--schwach);font-size:12px;margin-top:11px;line-height:1.6}
 /* Diagramme im Profil: Balken liegend, Saeulen stehend */
 .diagitter{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px 22px;margin-top:10px}
@@ -683,8 +700,9 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 /* Dieselben Verhältnisse wie im Pult der anderen Modi und in der
    Playerleiste: der Abspielknopf bleibt der größte. Nur maßstäblich
    kleiner, damit die Zeile eine Zeile bleibt (46/60 wird zu 38/50). */
-#buehne.text-analyzer .bsteuer button{width:38px;height:38px;font-size:16px}
-#buehne.text-analyzer .bsteuer .gross{width:50px;height:50px;font-size:21px}
+#buehne.text-analyzer .bsteuer button,
+#buehne.text-analyzer #bstumm{width:38px;height:38px;min-width:38px;font-size:16px}
+#buehne.text-analyzer .bsteuer .gross{width:50px;height:50px;min-width:50px;font-size:21px}
 #buehne.text-analyzer .bsteuer .ico{width:16px;height:16px}
 #buehne.text-analyzer .bsteuer .gross .ico{width:21px;height:21px}
 
@@ -924,10 +942,31 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 .bzeit{color:var(--schwach);font-size:13px;margin-top:8px;
   display:flex;justify-content:space-between}
 .bsteuer{display:flex;gap:10px;align-items:center;margin-top:16px}
-.bsteuer button{background:rgba(255,255,255,.09);border:none;border-radius:50%;
-  width:46px;height:46px;font-size:19px;cursor:pointer;color:var(--text)}
-.bsteuer button:hover{background:rgba(255,255,255,.2)}
-.bsteuer .gross{width:60px;height:60px;font-size:26px;background:var(--akzent)}
+/* EINE FORM FUER BEIDE LEISTEN (Caspar_D, 26.08.2026). Vorher trugen
+   die Buehnenknoepfe eine graue Kreisflaeche und waren 46 px gross, die
+   der Albumleiste standen flach und waren 40 - und einer davon war
+   40x37, also nicht einmal rund. Jetzt beide flach: Auf einer gefuellten
+   Flaeche waere der Umriss, der das Eingeschaltetsein zeigt, kaum zu
+   sehen. Die Flaeche kommt erst beim Ueberfahren. */
+.bsteuer button,.psteuer button,.pextra button,
+#stummknopf,#bstumm{
+  background:none;border:none;border-radius:50%;
+  width:40px;height:40px;min-width:40px;padding:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:17px;cursor:pointer;color:rgba(255,255,255,.62)}
+.bsteuer button:hover,.psteuer button:hover,.pextra button:hover,
+#stummknopf:hover,#bstumm:hover{
+  background:rgba(255,255,255,.14);color:rgba(255,255,255,.92)}
+/* Zusammengehoeriges steht zusammen, zwischen den Gruppen ist Luft. */
+.knopfgruppe,.psteuer,.pextra{display:inline-flex;gap:2px;align-items:center}
+.bsteuer{gap:14px}
+/* Der Abspielknopf ist groesser als die anderen - aber nicht anders
+   gefaerbt. Bis zum 26.08.2026 trug er hier eine volle Akzentflaeche
+   mit dunklem Symbol, in der Albumleiste dagegen nichts; Caspar_D sah
+   „mal hat der Playbutton Akzentfarbe, mal nicht". Jetzt gilt fuer ihn
+   dieselbe Regel wie fuer alle: Umriss und Symbol in Akzentfarbe,
+   solange gespielt wird. */
+.bsteuer .gross,.psteuer .gross{width:52px;height:52px;min-width:52px;font-size:22px}
 /* Versatz für die Textanzeige - Bluetooth-Kopfhörer geben verzögert
    wieder, der Text muss dann später kommen. */
 .versatz{display:flex;align-items:center;gap:9px;margin-top:14px;
@@ -1072,7 +1111,8 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    konstruierte Komplementärfarbe. */
 .bfort{background:linear-gradient(90deg,
   var(--bakzent,var(--akzent)), var(--bakzent2,var(--akzent2)))}
-.bsteuer .gross{background:var(--bakzent,var(--akzent));color:#0a0c10}
+/* In der Buehne nimmt der Umriss die Coverfarbe auf, nicht die Flaeche. */
+.bsteuer .schaltknopf.an{border-color:var(--bakzent,var(--akzent));color:var(--bakzent,var(--akzent))}
 .blinks h2{color:var(--btext,var(--text))}
 /* Abschnittsmarken wie [Intro] oder [Chorus].
    Nicht "marke" nennen - so heißt schon das Modell-Abzeichen auf
@@ -1147,8 +1187,9 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    Haarlinie, Buehnenzugriff. Links von der Linie alles, was die
    Wiedergabe betrifft, rechts davon die Ansicht. */
 .psteuer{order:-1}
-.psteuer button,.pextra button{background:none;border:none;font-size:19px;cursor:pointer;
-  padding:8px;border-radius:50%;line-height:1;min-width:40px}
+/* Form und Groesse stehen seit dem 26.08.2026 gemeinsam mit .bsteuer
+   weiter oben - beide Leisten tragen dieselben Knoepfe. Hier bleibt
+   nur, was die Albumleiste eigen hat. */
 .psteuer button:hover,.pextra button:hover{background:var(--flaeche2)}
 /* Fluechtiger Abhoer-Zustand im Studio (Original, Solo, Stufe stumm, Tempo): Lampe am EQ-Knopf (22.08.2026) */
 #studioknopf{position:relative}
@@ -1193,8 +1234,9 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 .laut input{width:84px;accent-color:var(--akzent);cursor:pointer}
 /* background:none ist Pflicht - ein <button> hat sonst den hellen
    Standardhintergrund des Browsers und erscheint als weißer Kasten. */
-.laut button{background:none;border:none;color:inherit;cursor:pointer;
-  font-size:16px;min-width:30px;padding:5px;border-radius:50%}
+/* Der Stummknopf traegt seit dem 26.08.2026 dieselbe Form wie die
+   uebrigen (weiter oben); hier bleibt nur, was die Lautstaerkegruppe
+   eigen hat. */
 .laut button:hover{background:var(--flaeche2)}
 .leer{text-align:center;color:var(--schwach);padding:70px 20px}
 @media (max-width:520px){
@@ -1242,7 +1284,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
      schrumpfen steht hier EIN Mikrofonknopf, der die drei nach oben
      aufklappt - 32 px statt 100. Damit bleiben den uebrigen Zielen
      36 px, statt sie auf 30 zu druecken. */
-  .psteuer button,.pextra button{min-width:36px; padding:7px}
+  .bsteuer button,.psteuer button,.pextra button{width:36px;height:36px;min-width:36px}
   #abspielen{font-size:24px}
   /* display:contents loest die Box der .pinfo auf - ihre Kinder
      rutschen damit ins Raster der Eltern, und Titel und Zeit koennen
@@ -2526,17 +2568,27 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
       <h2 id="btitel"></h2>
       <div class="bmeta" id="bmeta"></div>
       <div class="bzeit"><span id="bjetzt">0:00</span><span id="bganz">0:00</span></div>
+      <!-- DIESELBEN GRUPPEN WIE IN DER ALBUMLEISTE (Caspar_D, 26.08.2026:
+           „Knöpfe bitte auch immer in gleicher Form und in gleicher
+           logischer Gruppe"). Bis dahin standen hier alle sechs in einer
+           Reihe, während unten drei Gruppen getrennt waren: Steuerung,
+           Schalter, Ton. Und der Studio-Knopf fehlte ganz - aus der
+           Bühne kam man nicht an den Equalizer. -->
       <div class="bsteuer">
+        <span class="knopfgruppe">
         <button onclick="vor(-1)" title="Zurück"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-prev"/></svg></button>
-        <button class="gross" onclick="umschalten()" id="babspielen" title="Abspielen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
+        <button class="schaltknopf gross" onclick="umschalten()" id="babspielen" title="Abspielen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
         <button onclick="vor(1)" title="Weiter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-next"/></svg></button>
-        <button onclick="mischen()" id="bmisch" title="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
-        <button onclick="anschlussSchalten()" id="banschluss" title="Anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
-        <button onclick="schleifen()" id="bschleif" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+        </span>
+        <span class="knopfgruppe">
+        <button class="schaltknopf" onclick="mischen()" id="bmisch" title="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
+        <button class="schaltknopf" onclick="anschlussSchalten()" id="banschluss" title="Anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
+        <button class="schaltknopf" onclick="schleifen()" id="bschleif" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+        <button class="schaltknopf" onclick="studioAuf()" id="bstudio" title="Tonstudio — Equalizer">EQ</button>
+        </span>
       </div>
       <label class="versatz" id="blautgruppe" title="Lautstärke">
-        <button type="button" onclick="stumm()" id="bstumm" title="Stumm (m)"
-                style="padding:4px 6px"></button>
+        <button class="schaltknopf" type="button" onclick="stumm()" id="bstumm" title="Stumm (m)"></button>
         <input type="range" id="blautstaerke" min="0" max="100" step="1" value="100">
         <b id="blautText">100 %</b>
       </label>
@@ -2575,17 +2627,17 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
     <div class="pknoepfe">
     <div class="psteuer">
       <button onclick="vor(-1)" title="Zurück"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-prev"/></svg></button>
-      <button onclick="umschalten()" id="abspielen" title="Abspielen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
+      <button class="schaltknopf gross" onclick="umschalten()" id="abspielen" title="Abspielen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-play"/></svg></button>
       <button onclick="vor(1)" title="Weiter"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-next"/></svg></button>
     </div>
     <div class="pextra">
-      <button onclick="mischen()" id="mischknopf" title="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
-      <button onclick="anschlussSchalten()" id="anschlussknopf" title="Anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
-      <button onclick="schleifen()" id="schleifknopf" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
-      <button onclick="studioAuf()" id="studioknopf" title="Tonstudio — Equalizer">EQ</button>
+      <button class="schaltknopf" onclick="mischen()" id="mischknopf" title="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
+      <button class="schaltknopf" onclick="anschlussSchalten()" id="anschlussknopf" title="Anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
+      <button class="schaltknopf" onclick="schleifen()" id="schleifknopf" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+      <button class="schaltknopf" onclick="studioAuf()" id="studioknopf" title="Tonstudio — Equalizer">EQ</button>
     </div>
     <div class="laut nuranbreit">
-      <button onclick="stumm()" id="stummknopf" title="Stumm (m)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg></button>
+      <button class="schaltknopf" onclick="stumm()" id="stummknopf" title="Stumm (m)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg></button>
       <input type="range" id="lautstaerke" min="0" max="100" step="1" value="100"
              title="Lautstärke">
     </div>
@@ -3543,6 +3595,7 @@ function studioLasche(name){
 }
 
 async function studioAuf(){
+  for (const id of ['studioknopf','bstudio']){ const k = $(id); if (k) k.classList.add('an'); }
   if (hörer && hörer.ctx && hörer.ctx.state === 'suspended') hörer.ctx.resume().catch(() => {});   /* Autoplay-Regel: ein Klick darf wecken */
   if (!eqProfil) {
     try { eqProfil = await (await fetch('/api/eq-profil', { cache: 'no-store' })).json(); } catch (e) { eqProfil = { songs: {}, mittel: null }; }   /* no-store: der HTTP-Cache hielt die Datei ohne Histogramme fest (21.08.2026) */
@@ -3668,7 +3721,8 @@ async function studioAuf(){
   studioSongLaden();
   studioSpitze(true);
 }
-function studioZu(){ $('studio').style.display = 'none'; blasterLcd(false); kompAnzeige(false); parSpektrum(false); studioSpitze(false); studioMarke(); }
+function studioZu(){ $('studio').style.display = 'none'; blasterLcd(false);
+  for (const id of ['studioknopf','bstudio']){ const k = $(id); if (k) k.classList.remove('an'); } kompAnzeige(false); parSpektrum(false); studioSpitze(false); studioMarke(); }
 /* Was FLUECHTIG wirkt (nicht je Song gemerkt, nach dem Schliessen unsichtbar):
    A/B Original, Solo, eine stumme Stufe, Tempo. Eine Wahrheitsquelle; der
    EQ-Knopf im Player traegt dafuer eine Lampe (Review 22.08.2026: "Solo und
@@ -8837,7 +8891,7 @@ function anschlussLampe(){
   /* Der Zwilling im Bühnenpult trägt dasselbe (23.08.2026). */
   const b = $('banschluss');
   if (b){ b.classList.toggle('an', !!anAnschluss); b.classList.toggle('arbeitet', !!bereit);
-          b.style.color = anAnschluss ? 'var(--akzent)' : ''; b.title = k.title; }
+          b.title = k.title; }
 }
 
 function anschlussSchalten(){
@@ -9229,7 +9283,7 @@ function vor(richtung, uebernahme){
 
 function mischen(){
   zufall = !zufall;
-  for (const id of ['mischknopf', 'bmisch']){ const k = $(id); if (k) k.style.color = zufall ? 'var(--akzent)' : ''; }
+  for (const id of ['mischknopf', 'bmisch']){ const k = $(id); if (k) k.classList.toggle('an', zufall); }
 }
 
 /* Schleife: DIESER Song wiederholt sich.
@@ -9247,7 +9301,7 @@ let schleife = false;
 function schleifen(){
   schleife = !schleife;
   audio.loop = schleife;
-  for (const id of ['schleifknopf', 'bschleif']){ const k = $(id); if (k) k.style.color = schleife ? 'var(--akzent)' : ''; }
+  for (const id of ['schleifknopf', 'bschleif']){ const k = $(id); if (k) k.classList.toggle('an', schleife); }
 }
 
 /**
@@ -13291,7 +13345,9 @@ function buehneTakt(){
   $('bfort').style.width = d ? (echt/d*100)+'%' : '0';
   $('bjetzt').textContent = zeit(echt);
   $('bganz').textContent = zeit(d);
-  $('babspielen').innerHTML = SYM(audio.paused ? 'play' : 'pause');
+  const bab = $('babspielen');
+  if (bab){ bab.innerHTML = SYM(audio.paused ? 'play' : 'pause');
+            bab.classList.toggle('an', !audio.paused); }
 
   const feld = $('btext');
   const kasten = feld.parentElement;
@@ -13409,6 +13465,9 @@ function lautstaerkeSetzen(prozent, merken = true){
   for (const n of STEM_NAMEN){ const el = document.getElementById('stem-' + n);
     if (el) el.volume = audio.volume; }
   bStumm = anteil === 0;
+  /* Stumm ist ein eingeschalteter Zustand wie Zufall oder Schleife. */
+  for (const id of ['stummknopf','bstumm']){
+    const k = $(id); if (k) k.classList.toggle('an', bStumm); }
   const sym = SYM(anteil === 0 ? 'stumm' : (anteil < 0.5 ? 'leise' : 'laut'));
 
   // Beide Regler gleichziehen - Player und Bühne zeigen denselben Wert
@@ -13478,8 +13537,14 @@ function deckMelder(el){
      blieb er auf dem Pausensymbol stehen und behauptete, es liefe noch.
      Zwei Anzeigen für einen Zustand müssen an derselben Quelle hängen. */
   const beideKnoepfe = (art) => {
-    $('abspielen').innerHTML = SYM(art);
-    const b = $('babspielen'); if (b) b.innerHTML = SYM(art);
+    /* 'pause' als Symbol heisst: es LAEUFT gerade - dann ist der Knopf
+       an (Caspar_D, 26.08.2026: Umriss in Akzentfarbe, Symbol farbig). */
+    const laeuft = art === 'pause';
+    for (const id of ['abspielen','babspielen']){
+      const k = $(id); if (!k) continue;
+      k.innerHTML = SYM(art);
+      k.classList.toggle('an', laeuft);
+    }
   };
   el.onplay  = ()=>{ if (el !== audio) return; beideKnoepfe('pause'); markieren(); stemsMitlaufen(); };
   el.onpause = ()=>{ if (el !== audio) return; beideKnoepfe('play');  markieren(); stemsMitlaufen(); };
