@@ -13382,7 +13382,25 @@ async function latenzMessen(){
     strom = await navigator.mediaDevices.getUserMedia({ audio: {
       echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
 
+    /* DER CHIRP MUSS DENSELBEN WEG NEHMEN WIE DIE MUSIK (Caspar_D,
+       26.08.2026: „es kommt immer aus den iMac-Lautsprechern, wie krieg
+       ich den Chirp in die HomePods").
+
+       Web Audio kennt AirPlay nicht. macOS leitet auf Element-Ebene um:
+       Was ein <audio> spielt, geht zu den HomePods; was ein
+       AudioContext an seine destination schickt, bleibt beim
+       eingebauten Lautsprecher. Deshalb kam der Chirp aus dem iMac,
+       waehrend die Musik aus den HomePods lief - und heraus kamen
+       111 ms statt der ein bis zwei Sekunden, die AirPlay 2 puffert.
+
+       Also wird der Chirp als WAV zusammengesetzt und ueber ein
+       <audio>-Element gespielt, genau wie ein Song. Nur so misst man
+       die Strecke, die auch die Musik nimmt.
+
+       Aufgenommen wird weiter ueber Web Audio - das ist ein Eingang und
+       hat mit der Ausgabe nichts zu tun. */
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') await ctx.resume();
     const sr = ctx.sampleRate;
     const AUF_S = 4, VOR_MS = 500;
 
@@ -13399,7 +13417,12 @@ async function latenzMessen(){
       for (let i = 0; i < d.length && schreib < puffer.length; i++) puffer[schreib++] = d[i];
     };
     quelle.connect(knoten);
-    knoten.connect(ctx.destination);   /* Safari laeuft sonst nicht an */
+    /* Der Knoten braucht ein Ziel, sonst laeuft er in manchen Browsern
+       gar nicht an - aber NICHT den Ausgang: Seit der Chirp durch den
+       Hoerer-Graphen geht, laege dort das Mikrofon auf den Lautsprechern
+       und es pfiffe. Ein Regler auf null ist das Ziel. */
+    const still = ctx.createGain(); still.gain.value = 0;
+    knoten.connect(still); still.connect(ctx.destination);
 
     /* Der Chirp, als Muster und als Klang - beide aus derselben Formel,
        damit die Korrelation genau das sucht, was hinausging. */
@@ -13411,19 +13434,36 @@ async function latenzMessen(){
       const fen = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (cn - 1));
       muster[i] = Math.sin(2 * Math.PI * (F0 * tt + k * tt * tt / 2)) * fen;
     }
-    const ab = ctx.createBuffer(1, cn, sr);
-    ab.getChannelData(0).set(muster);
+    /* Ein winziges WAV aus dem Muster - 16 Bit, ein Kanal. Der Kopf ist
+       44 Byte und von Hand geschrieben; eine Bibliothek dafuer waere
+       mehr Aufwand als die Sache. */
+    const bau = (x) => {
+      const n = x.length, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+      const txt = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      txt(0,'RIFF'); v.setUint32(4, 36 + n*2, true); txt(8,'WAVEfmt ');
+      v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+      v.setUint32(24,sr,true); v.setUint32(28,sr*2,true);
+      v.setUint16(32,2,true); v.setUint16(34,16,true);
+      txt(36,'data'); v.setUint32(40, n*2, true);
+      for (let i = 0; i < n; i++){
+        const w = Math.max(-1, Math.min(1, x[i] * 0.6));
+        v.setInt16(44 + i*2, w < 0 ? w*0x8000 : w*0x7FFF, true);
+      }
+      return new Blob([b], {type:'audio/wav'});
+    };
+    const url = URL.createObjectURL(bau(muster));
+    const klick = new Audio(url);
+    klick.volume = 1;
+    await new Promise((f,x) => { klick.oncanplaythrough = f; klick.onerror = x; klick.load(); });
 
     sagen('messe…');
     await new Promise(r => setTimeout(r, VOR_MS));
-    const q2 = ctx.createBufferSource(); q2.buffer = ab;
-    const laut = ctx.createGain(); laut.gain.value = 0.35;
-    q2.connect(laut); laut.connect(ctx.destination);
     const losT = schreib;                       /* Stand der Aufnahme beim Losschicken */
-    q2.start();
+    await klick.play();
     await new Promise(r => setTimeout(r, (AUF_S * 1000) - VOR_MS));
+    URL.revokeObjectURL(url);
 
-    knoten.disconnect(); quelle.disconnect();
+    knoten.disconnect(); quelle.disconnect(); still.disconnect();
 
     /* Kreuzkorrelation ab dem Punkt, an dem losgeschickt wurde. */
     let best = -Infinity, bestI = -1;
@@ -13457,7 +13497,9 @@ async function latenzMessen(){
     console.warn('Latenzmessung fehlgeschlagen:', e.message);
   } finally {
     if (strom) strom.getTracks().forEach(s => s.stop());
-    if (ctx) try { await ctx.close(); } catch(_){}
+    /* Nur einen selbst erzeugten Kontext schliessen - der Hoerer-Graph
+       traegt die Musik und muss stehen bleiben. */
+    if (ctx && !(hörer && hörer.ok && ctx === hörer.ctx)) try { await ctx.close(); } catch(_){}
     if (knopf){ knopf.disabled = false; knopf.classList.remove('an'); }
     if (liefMusik) audio.play().catch(()=>{});
   }
