@@ -680,27 +680,68 @@ onmessage=function(e){
          wiederkommt. */
 
       postMessage({type:'progress',label:'Hüllkurve…',pct:32});
+      /* BEIDE KANAELE, ABER NICHT GEMISCHT (26.08.2026, Caspar_D: "haben
+         wir nicht gerade die FFT fuer rechts berechnet, haette man da
+         nicht einiges mit erschlagen koennen"). Bis hierher lief alles
+         auf ch=left allein - ein hart rechts gelegtes Schlagzeug wirkte
+         gar nicht auf die Huellkurve ein (Befund 34, 49).
+
+         NICHT (L+R)/2. Eine Signalsumme loescht gegenphasige Anteile
+         aus, und die stehen in Sunos Mischungen reichlich: Was beide
+         Lautsprecher spielen, verschwaende aus dem Bild. Statt dessen
+         wird kanalweise gerechnet und erst das Ergebnis gemittelt -
+         Betraege bei der Huellkurve, Leistungen bei Energie, Lautheit
+         und Scheitelfaktor. Das ist dieselbe Entscheidung wie bei
+         |L|+|R| im Spektrogramm und in bin/toene.js, und es ist auch
+         das, was BS.1770 tut: Kanalleistungen addieren, nicht Signale.
+
+         Die Spitze ist der groessere der beiden Kanaele, nicht ihr
+         Mittel - eine Uebersteuerung rechts bleibt eine Uebersteuerung. */
+      var hatR = right && right.length===n;
+
       // --- ENVELOPE (shared) ---
       var envStep=Math.floor(sr/100);
       var env=[], envLen=Math.floor(n/envStep);
-      for(var i=0;i<envLen;i++){var s=0;for(var j=i*envStep;j<(i+1)*envStep&&j<n;j++)s+=Math.abs(ch[j]);env.push(s/envStep);}
+      for(var i=0;i<envLen;i++){
+        var s=0;
+        for(var j=i*envStep;j<(i+1)*envStep&&j<n;j++)
+          s += hatR ? (Math.abs(ch[j])+Math.abs(right[j]))/2 : Math.abs(ch[j]);
+        env.push(s/envStep);
+      }
 
       // global loudness & dynamic
       var sumSq=0,peak=0;
-      for(var i=0;i<n;i++){sumSq+=ch[i]*ch[i];var a=Math.abs(ch[i]);if(a>peak)peak=a;}
+      for(var i=0;i<n;i++){
+        var a=Math.abs(ch[i]);
+        if(hatR){ var b=Math.abs(right[i]);
+                  sumSq+=(ch[i]*ch[i]+right[i]*right[i])/2;
+                  if(b>a) a=b; }
+        else      sumSq+=ch[i]*ch[i];
+        if(a>peak)peak=a;
+      }
       var rms=Math.sqrt(sumSq/n),loudness=20*Math.log10(rms+1e-10),dynamic=20*Math.log10(peak+1e-10)-loudness;
 
       // energy frames 50ms
       var eStep=Math.floor(sr*0.05),eFrames=Math.floor(n/eStep),energy=new Float32Array(eFrames);
-      for(var i=0;i<eFrames;i++){var s=0;for(var j=i*eStep;j<(i+1)*eStep;j++)s+=ch[j]*ch[j];energy[i]=s/eStep;}
+      for(var i=0;i<eFrames;i++){var s=0;
+        for(var j=i*eStep;j<(i+1)*eStep;j++) s += hatR ? (ch[j]*ch[j]+right[j]*right[j])/2 : ch[j]*ch[j];
+        energy[i]=s/eStep;}
 
       // lufs frames 400ms
       var lStep=Math.floor(sr*0.4),lFrames=Math.floor(n/lStep),lufs=new Float32Array(lFrames);
-      for(var i=0;i<lFrames;i++){var s=0;for(var j=i*lStep;j<(i+1)*lStep;j++)s+=ch[j]*ch[j];var r=Math.sqrt(s/lStep);lufs[i]=r>0?20*Math.log10(r):-60;}
+      for(var i=0;i<lFrames;i++){var s=0;
+        for(var j=i*lStep;j<(i+1)*lStep;j++) s += hatR ? (ch[j]*ch[j]+right[j]*right[j])/2 : ch[j]*ch[j];
+        var r=Math.sqrt(s/lStep);lufs[i]=r>0?20*Math.log10(r):-60;}
 
       // crest frames 500ms
       var cStep=Math.floor(sr*0.5),cFrames=Math.floor(n/cStep),crest=new Float32Array(cFrames);
-      for(var i=0;i<cFrames;i++){var s=0,pk=0;for(var j=i*cStep;j<(i+1)*cStep;j++){var a=Math.abs(ch[j]);s+=a*a;if(a>pk)pk=a;}var r=Math.sqrt(s/cStep);crest[i]=r>0?pk/r:0;}
+      for(var i=0;i<cFrames;i++){var s=0,pk=0;
+        for(var j=i*cStep;j<(i+1)*cStep;j++){
+          var a=Math.abs(ch[j]);
+          if(hatR){ var b=Math.abs(right[j]); s+=(a*a+b*b)/2; if(b>a) a=b; }
+          else      s+=a*a;
+          if(a>pk)pk=a;}
+        var r=Math.sqrt(s/cStep);crest[i]=r>0?pk/r:0;}
 
       // onsets from envelope diff
       var diff=[];for(var i=1;i<env.length;i++)diff.push(Math.max(0,env[i]-env[i-1]));
@@ -832,14 +873,19 @@ onmessage=function(e){
       var fps2=[];
       var bands=[[20,100],[100,250],[250,500],[500,1000],[1000,2000],[2000,4000],[4000,8000],[8000,16000]];
       var segFftSize=512;
+      /* Auch hier beide Kanaele (26.08.2026): Die Abschnittsgrenzen
+         entstehen aus dem Klangprofil je Zwei-Sekunden-Fenster, und ein
+         Instrument, das nur rechts steht, gehoert zu diesem Profil.
+         Betraege addiert, wie ueberall sonst. */
       for(var f=0;f<numSeg;f++){
         var magS=rfft(ch,f*frameLen,segFftSize);
+        var magS2=(right&&right.length===n)?rfft(right,f*frameLen,segFftSize):null;
         var fp=new Float32Array(bands.length);
         for(var b=0;b<bands.length;b++){
           var en=0,cnt=0;
           for(var k=1;k<magS.length;k++){
             var freq=k*sr/segFftSize;if(freq<bands[b][0]||freq>bands[b][1])continue;
-            en+=magS[k];cnt++;
+            en+=magS2?(magS[k]+magS2[k]):magS[k];cnt++;
           }
           fp[b]=cnt>0?en/cnt:0;
         }
@@ -918,6 +964,16 @@ onmessage=function(e){
           var mag=rfft(ch,frame*hop,fftSize2);
           var magR=rfft(right,frame*hop,fftSize2);
 
+          /* BETRAEGE BEIDER KANAELE, fuer alles, was den ganzen Klang
+             meint (26.08.2026). mag allein ist der linke Kanal - damit
+             fehlte in Chroma, Fluss und Entropie alles, was hart rechts
+             liegt. Addiert werden die BETRAEGE, nicht die Signale: eine
+             komplexe Summe wuerde gegenphasige Anteile ausloeschen.
+             Die beiden Spektrogramm-Bilder nehmen weiter mag und magR
+             einzeln - sie SOLLEN je einen Kanal zeigen. */
+          var magB=new Float32Array(bins2);
+          for(var k=0;k<bins2;k++) magB[k]=mag[k]+magR[k];
+
           /* spectro: LINKER Kanal, nicht mono - ch ist left (Befund 34).
              Der rechte gleich daneben, dieselbe Kennlinie. */
           for(var k=0;k<bins2;k++){
@@ -938,7 +994,7 @@ onmessage=function(e){
           // flux — global and per-band
           if(prevMag){
             var fl=0;
-            for(var k=0;k<bins2;k++){var d=mag[k]-prevMag[k];fl+=d*d;}
+            for(var k=0;k<bins2;k++){var d=magB[k]-prevMag[k];fl+=d*d;}
             fluxArr[frame]=Math.sqrt(fl);
             // per-band flux
             if(prevMagBands){
@@ -947,13 +1003,15 @@ onmessage=function(e){
                 var kHi2=Math.min(Math.round(fluxBands[fb][1]/sr*fftSize2),bins2);
                 if(kHi2<=kLo2)kHi2=kLo2+1;
                 var bfl=0;
-                for(var k=kLo2;k<kHi2;k++){var d=mag[k]-prevMagBands[k];bfl+=d*d;}
+                for(var k=kLo2;k<kHi2;k++){var d=magB[k]-prevMagBands[k];bfl+=d*d;}
                 bandFluxArr[fb][frame]=Math.sqrt(bfl/(kHi2-kLo2));
               }
             }
           }
-          prevMag=mag;
-          prevMagBands=mag;
+          /* magB, nicht mag: Der Fluss vergleicht Rahmen gegen Rahmen,
+             und beide Seiten des Vergleichs muessen dasselbe messen. */
+          prevMag=magB;
+          prevMagBands=magB;
 
           /* Nur noch totalE - es traegt die Entropie. Hier standen bis zum
              25.08.2026 die Grundtonsuche (hpsPitch), die Harmonizitaet, die
@@ -962,11 +1020,11 @@ onmessage=function(e){
              waren, und deren letzter Leser - die Instrument-Erkennung - war
              schon geloescht. Die Grundtonsuche war dabei der teuerste
              Posten der ganzen Schleife. */
-          var totalE=0;for(var k=0;k<bins2;k++)totalE+=mag[k]*mag[k];
+          var totalE=0;for(var k=0;k<bins2;k++)totalE+=magB[k]*magB[k];
 
           // spectral entropy
           var entropyVal=0;
-          if(totalE>0){for(var k=0;k<bins2;k++){var p=mag[k]*mag[k]/totalE;if(p>0)entropyVal-=p*Math.log(p);}entropyVal/=Math.log(bins2);}
+          if(totalE>0){for(var k=0;k<bins2;k++){var p=magB[k]*magB[k]/totalE;if(p>0)entropyVal-=p*Math.log(p);}entropyVal/=Math.log(bins2);}
 
 
           entropyArr[frame]=entropyVal;
@@ -976,7 +1034,7 @@ onmessage=function(e){
           for(var k=1;k<bins2;k++){
             var freq=k*sr/fftSize2;if(freq<80||freq>4000)continue;
             var midi=Math.round(12*Math.log2(freq/440)+69);
-            ch12[((midi%12)+12)%12]+=mag[k];
+            ch12[((midi%12)+12)%12]+=magB[k];
           }
           var cmx2=Math.max.apply(null,Array.prototype.slice.call(ch12));
           if(cmx2>0)for(var i=0;i<12;i++)chromaFlat[frame*12+i]=ch12[i]/cmx2;
