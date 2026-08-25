@@ -5055,7 +5055,6 @@
        Rechnen - nachrichtVerarbeiten() bekommt dieselben Nachrichten,
        nur aus einer Datei statt aus dem Worker. */
     async function ablageSpielen(id, d){
-      window._quellname=null;   /* Quelle der Ablage unbekannt - kein MP3-Vermerk */
       var t0=performance.now();
       var r=await fetch('/analyse/'+id+'.bin');
       if(!r.ok) return false;
@@ -5241,7 +5240,6 @@
       /* Fuer die Hoehenkante: aus einem MP3 gemessen ist sie die
          Encoderkante, nicht die des Modells. Der Ablageweg setzt das
          Feld auf null - die Ablage traegt ihre Quelle (noch) nicht. */
-      window._quellname=file.name||null;
 
       // aufraeumen vor jeder neuen Analyse
       if(window._activeWorker){window._activeWorker.terminate();window._activeWorker=null;}
@@ -5517,10 +5515,18 @@
                die des Modells - das steht dann dabei. Alte Ablagen ohne
                kanteHz lassen die Karte leer; leereKartenAus verbirgt
                sie dann (nicht gerechnet = nicht da). */
+            /* Der MP3-Vermerk stand hier bis zum 26.08.2026 und war tot:
+               Er prüfte window._quellname auf die Endung .mp3, aber der
+               Bühnenweg setzt dort den SONGTITEL ein, nie einen
+               Dateinamen (Zeile 5226). Ein Dateifeld zum Hineinziehen
+               gibt es seit dem Ausbau der Standalone-Reste nicht mehr
+               (Caspar_D, 26.08.2026: „man kann keine Datei mehr in den
+               Analyzer ziehen"), und gemessen wird ohnehin nur noch aus
+               der WAV. Woraus eine Ablage stammt, steht seit dem
+               26.08. in ihrem Kopf: das Feld `quelle`. */
             if(isFinite(msg.kanteHz)){
-              var mp3Quelle=/\.mp3$/i.test(window._quellname||'');
               setzN('v-grenz', (msg.kanteHz/1000).toFixed(1)+' kHz · '
-                +(msg.kanteSteil>=20?'scharf':'weich')+(mp3Quelle?' (MP3)':''));
+                +(msg.kanteSteil>=20?'scharf':'weich'));
             } else setzN('v-grenz','—');
             window._normwerte=msg;
             befundeZeigen(msg);
@@ -6875,6 +6881,7 @@
       'v-loud':'RMS-Lautheit in dB. Streaming-Standard ca. -14 dB. Normalbereich -18 bis -10 dB.',
       'v-dyn':'Dynamikumfang: Peak-dB minus RMS-dB. Normalbereich 6–16 dB.',
       'v-key':'Grundton aus dem Bass auf Sunos Eins - dort spielt er fast immer den Grundton des Akkords. Das Tongeschlecht aus der gezählten Terz in den melodischen Spuren; fehlt sie (bei Powerchords die Regel), steht nur der Grundton da.',
+      'v-grenz':'Bis wohin die Höhen reichen, und WIE sie enden. Die Frequenz ist die Stelle, ab der der Pegel dauerhaft rund 30 dB unter der 1–8-kHz-Referenz bleibt. Der Zusatz sagt, ob dort geschnitten wurde: \u00bbscharf\u00ab ab 20 dB/kHz Flanke ist ein Schnitt \u2013 ein Codec oder das Modell selbst; \u00bbweich\u00ab ist natürliches Auslaufen. Gemessen am 26.08.2026 an fünf Suno-WAVs: der Abfall von 17 auf 21 kHz betrug 8,5 bis 19,6 dB, also durchweg WEICH. Sunos WAVs tragen keine Codec-Kante; ein 192-kbps-MP3 macht dort über 40 dB auf einem einzigen Kilohertz. Aus einem MP3 gemessen tr\u00fcge der Wert dessen Encoderkante statt der des Modells \u2013 deshalb wird seit dem 26.08.2026 nur noch aus der WAV gerechnet.',
       'v-stereo':'Stereobreite als L–R-Differenz. Normalbereich 15–70%.',
       'v-entropy':'Spektrale Entropie: wie gleichmäßig ist Energie über alle Frequenzen verteilt. Niedrig = tonal/klar, hoch = noisig/dicht.',
       'v-symmetry':'Energie-Form des Songs aus drittel-Segmenten der LUFS-Kurve. Crescendo ↑ / Decrescendo ↓ / Arch ∧ / Gleichmäßig ─.',

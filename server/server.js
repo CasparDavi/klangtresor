@@ -141,9 +141,27 @@ function liefere(req, res, datei) {
      sondern "vor der Benutzung nachfragen". Mit Last-Modified antwortet
      der Server dann meist mit 304 und schickt keine Daten - die 1,9 MB
      Butterchurn wandern also weiterhin nur einmal über die Leitung.
-     Medien und Bilder behalten das Jahr; sie ändern sich nie unter
-     derselben Adresse. */
-  const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript');
+     Medien behalten das Jahr; ein audio.wav ändert sich nie unter
+     derselben Adresse.
+
+     DIE ANALYSEN NICHT (26.08.2026). Für library/analyse/ galt dieselbe
+     Regel — und dort ist sie falsch: Jeder Lauf von bin/vorrechnen.js
+     überschreibt .bin und die vier Bilder unter derselben Adresse. Der
+     Browser hielt sie ein Jahr fest und zeigte weiter die alten Werte.
+     Gefunden, als eine frisch gerechnete Ablage im Browser noch das
+     `schimmer`-Feld trug, das im Rechenkern längst gelöscht war; die
+     Höhenkanten-Karte blieb leer, weil ihr Feld in der alten Fassung
+     nicht existierte. Ohne diese Kur wäre der nächste Neulauf über alle
+     321 Songs unsichtbar geblieben.
+
+     Sie bekommen deshalb dieselbe Behandlung wie Programmdateien:
+     no-cache heißt NICHT „nicht speichern", sondern „vor der Benutzung
+     nachfragen". Mit Last-Modified antwortet der Server meist mit 304
+     und schickt keine Daten — die 5 MB je Bild wandern also weiterhin
+     nur einmal über die Leitung, aber nach einem Neulauf eben noch
+     einmal. */
+  const analyse  = datei.startsWith(ANALYSE);
+  const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
   const stempel  = stat.mtime.toUTCString();
 
   if (programm && req.headers['if-modified-since'] === stempel) {

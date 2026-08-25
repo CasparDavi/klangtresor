@@ -102,6 +102,20 @@ Entropie und Abschnittserkennung; eine eigene Chroma-Rechnung mit 8192
 Punkten, Gipfelauswahl und parabolisch verfeinerter Scheitelfrequenz.
 Belege in den Commits `031a315`, `a735f90`, `3352a99`.
 
+**Ein Fund nebenbei: der Browser hielt die Analysen ein Jahr fest.**
+`server/server.js` gab für alles außer HTML und JavaScript
+`Cache-Control: public, max-age=31536000` — mit der Begründung, Medien
+und Bilder änderten sich nie unter derselben Adresse. Für `/media/`
+stimmt das; für `library/analyse/` nicht: Jeder Lauf von
+`bin/vorrechnen.js` überschreibt `.bin` und die vier Bilder unter
+derselben Adresse. Aufgefallen, weil eine frisch gerechnete Ablage im
+Browser noch das `schimmer`-Feld trug, das im Rechenkern längst
+gelöscht war, und die Höhenkanten-Karte deshalb leer blieb. **Ohne
+diese Kur wäre der nächste Neulauf über alle 321 Songs unsichtbar
+geblieben.** Analysen bekommen jetzt `no-cache` mit `Last-Modified` wie
+die Programmdateien: Der Browser fragt nach, bekommt meist 304 und
+lädt nur bei echter Änderung neu. Die WAVs behalten ihr Jahr.
+
 **Abschnitt 5, Punkt 4 — verworfen (26.08.2026).** Die zwei
 Artefakt-Näherungen setzen eine scharfe Tiefpasskante voraus, über der
 ein Codec Artefakte streut. Die gibt es in den Suno-WAVs nicht.
