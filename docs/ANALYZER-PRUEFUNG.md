@@ -138,47 +138,86 @@ Effektivwert mit einem Mittelquadrat verglich und deshalb nie sperrte.
 Beide Altrechnungen werden ausgebaut — *„wenn es noch alten Code gibt,
 der dieses Zeug macht, weg damit."*
 
-**11 · Das FFT-Chroma addierte jeden Rauschboden mit.** Die Schleife
-nahm JEDEN Betrag zwischen 80 und 4000 Hz, rundete seine Mittenfrequenz
-auf den nächsten Halbton und schlug ihn dort auf — ein Fach ohne Ton
-trug genauso bei wie der Gipfel eines Grundtons. Gemessen an 14 Songs
-standen nur 29 bis 32 % der aufaddierten Beträge überhaupt auf einem
-Spektralgipfel. Gegen Caspar_Ds eigene Tonartangabe im Stil-Prompt traf
-der Kern 1 von 20 Songs — Zufall wäre etwa 1.
+**11 + 12 · Das Chroma, das alles nimmt.** Beide Befunde
+beschreiben dasselbe Verfahren (`analyzer-worker.js`:1044). **11:** Die
+Schleife nimmt JEDEN Betrag zwischen 80 und 4000 Hz, rundet seine
+Mittenfrequenz auf den nächsten Halbton und schlägt ihn dort auf — ein
+Fach ohne Ton trägt genauso bei wie der Gipfel eines Grundtons; nur 29
+bis 32 % der Beträge stehen überhaupt auf einem Spektralgipfel.
+**12:** Die Fächer liegen in gleichen Hz-Abständen, die Halbtöne in
+gleichen Verhältnissen — also bekommen die zwölf Tonklassen ungleich
+viele Fächer, und wie ungleich, hängt allein an der Abtastrate.
+Dieselbe Musik, anders abgetastet, ergab bei 12 von 12 Songs eine
+andere Tonart. Gegen Caspar_Ds eigene Angabe im Stil-Prompt traf der
+Kern 1 von 20 — Zufall wäre etwa 1.
 
-> **Gelöst (25.08.2026):** Es hängt keine Entscheidung mehr daran. Der
-> Grundton kommt aus `bin/toene.js` — häufigster Basston auf Sunos Eins
-> —, die Tonart-Karte ist totgelegt, mit genau diesem Befund als
-> Begründung. Auch die Notenzonen der Takt-Spur werden dort **tonrein**
-> gemessen: `chromaVektor()` geht Note für Note durch und legt auf jede
-> Notenfrequenz einen Goertzel-Filter, dessen Fenster zur Tonhöhe paßt
-> (`bin/toene.js`:236). Es wird also gar nichts erst aufgesammelt, wo
-> kein Ton gesucht wird. Liegen die Zonen noch nicht vor, zeigt die
-> Takt-Spur nichts, statt selbst zu rechnen.
+> **Gelöst (25.08.2026):** An diesem Chroma hängt keine Zahl mehr.
 >
-> **Was bleibt:** ein einziger Verbraucher — die Chroma-Spur, das Bild
-> der Tonklassen über die Zeit (`analyzer-worker.js`:1044). Dort ist
-> der Bodensatz sichtbar, aber er lügt nicht: die Energie *ist* da, sie
-> ist nur nicht tonhaltig. Nachgemessen an „Vanille-Eis" (25.08.2026)
-> liegt die schwächste Tonklasse bei 0,10 bis 0,12 des Maximums, nicht
-> bei den im Befund genannten 0,39 — ein Song ist keine Stichprobe,
-> aber ein Bild trägt auch keine Entscheidung. Wer die Spur
-> kontrastreicher will, nimmt nur Spektralgipfel auf (Fach größer als
-> beide Nachbarn und über einer Schwelle zum lautesten Fach des
-> Rahmens) und normiert je Rahmen.
+> *Die Tonart* kommt aus `bin/toene.js` — häufigster Basston auf Sunos
+> Eins —, die Karte ist totgelegt, mit genau diesen Befunden als
+> Begründung.
+>
+> *Die Harmonien und die Teilung* kommen aus dem **zweiten** Chroma
+> (Caspar_D, 25.08.2026: *„chroma gibt es ja zwei … der andere, der nur
+> Zwischenschlag-Areale mittelt. Das sollte dazu dienen, die Harmonien
+> rauszuholen. Zum Tonart-Holen ungeeignet, aber zum Viertel-, Achtel-,
+> Sechzehntel-Schätzen geeignet."*). Das mißt **tonrein**:
+> `chromaVektor()` legt auf jede Notenfrequenz einen Goertzel-Filter,
+> dessen Fenster zur Tonhöhe paßt (`bin/toene.js`:236). Kein Fach, kein
+> Raster, kein Bodensatz — beide Befunde greifen dort nicht. Auf diesem
+> Vektor läuft die hierarchische Frage „ändert sich zwischen den
+> Hälften etwas? und innerhalb einer Hälfte?" und daraus die Teilung in
+> Viertel, Achtel oder Sechzehntel (`bin/toene.js`:298-305). Liegen die
+> Zonen noch nicht vor, zeigt die Takt-Spur nichts, statt selbst zu
+> rechnen.
+
+**Die Chroma-Spur bleibt stehen wie sie ist.** Ein Verbraucher hängt
+noch am ersten Chroma — das Bild der Tonklassen über die Zeit. Es zeigt
+größtenteils das Raster. Caspar_D hat es an der Spur selbst gesehen:
+*„sieh, daß F# ein einziger Match ohne Variation ist"* und, am
+44,1-kHz-Song, *„hier ist F völlig variationslos."* Nachgemessen am
+25.08.2026:
+
+*Immer dieselben Töne oben.* Sechs verstreute Songs, verschiedene
+Tonarten: fünf beginnen mit **F# C# A#**, vier davon mit G# an vierter
+Stelle. Das nackte Raster — wie viele Fächer jede Tonklasse abbekommt,
+ganz ohne Musik — lautet bei 48 kHz F# (9), A# (9), C# (8), G# (8) oben
+und C (4), D (4) unten. Die Rangkorrelation zwischen Raster und
+gemessenem Chroma beträgt 0,86.
+
+*Der sechste Song beweist es.* „Komm noch näher" wurde mit 44,1 kHz
+gerechnet und beginnt mit **F C A** — und das Raster lautet dort A (12),
+F (9), A# (9), C (8) oben, C# (4) unten. C# steht bei 48 kHz auf Platz 2
+und bei 44,1 kHz auf Platz 11. Derselbe Ton, nur eine andere Rechnung.
+
+*Die hellste Zeile trägt die wenigste Information.* Bei „Komm noch
+näher" ist F zugleich die hellste (Mittel 0,847) und die ruhigste Zeile
+(Schwankung 0,27 — Streuung geteilt durch Mittel). Die drei hellsten
+sind die drei ruhigsten; die dunkelste, D#, schwankt am stärksten
+(1,04). Der Sockel steht still, die Musik bewegt sich — und die Spur
+zeigt den Sockel am deutlichsten.
+
+*Der Befund unterschätzte die Sache doppelt.* Die FFT ist 1024 groß,
+nicht 4096: ein Fach ist 46,9 Hz breit, unterhalb von rund 800 Hz sitzt
+kein Halbton mehr allein in seinem Fach. Und die Abtastrate kommt nicht
+aus der Datei — alle 321 WAVs im Archiv sind 48 kHz, gemessen wurde
+dieser Song trotzdem mit 44,1 kHz. Sie stammt vom Audiokontext des
+Browsers zum Zeitpunkt der Messung. Dieselbe Datei kann deshalb an
+verschiedenen Tagen ein anderes Chroma-Bild ergeben.
+
+> **Entschieden (Caspar_D, 25.08.2026):** *„wir lassen es stehen wie es
+> ist."* Kein Umbau, kein Totlegen. Die Spur bleibt, und wer sie liest,
+> weiß jetzt, was er sieht: F# beziehungsweise F als durchgehender
+> Balken ist das Raster, nicht die Musik.
+
+**Neue Hausregel aus derselben Entscheidung:** *„wir legen nichts mehr
+tot ohne den Code mitzulöschen, das macht nur Probleme."* Die alte Regel
+— abklemmen, nicht löschen — gilt nicht mehr. Was wegfällt, kommt weg;
+was bleibt, ist die Begründung: als Kommentar an Ort und Stelle oder als
+Absatz hier. Das Löschen-ist-nicht-gut aus derselben Sitzung meint die
+**Befunde** in diesem Dokument, nicht den Code.
 
 ## Alle Funde, nach Schwere
-
-### 12. Die gemessene Tonart hängt an der Abtastrate der Datei, nicht an der Musik
-**hoch** · `analyzer-worker.js`:223
-
-**Fehler:** Die Fächer der FFT liegen in gleichen Hz-Abständen, die Halbtöne aber in gleichen Verhältnissen. Die Rundung auf den nächsten Halbton in Zeile 224 verteilt deshalb ungleich viele Fächer auf die zwölf Tonklassen, und wie ungleich, hängt allein von sr/4096 ab. Der Kommentar in Zeile 202-203 behauptet, 4096 sei 'fein genug, dass ab 80 Hz jeder Halbton seinen eigenen Bin hat'. Das stimmt nicht: ein Fach entspricht einem Halbton erst ab 181 Hz (44,1 kHz) bzw. 197 Hz (48 kHz). Darunter — also im Bass und dort, wo die Grundtöne liegen — ist das Raster gröber als die Musik.
-
-**Beleg:** Dieselbe Musik, nur anders abgetastet: 12 von 12 geprüften Songs bekommen bei 44100, 48000, 32000 und 22050 Hz jeweils eine ANDERE Tonart. Beispiel Erlkönig: D Moll / E Dur / A# Moll / D Dur. Beispiel Herr von Ribbeck: D Dur / F# Moll / B Moll / G Dur. Fächerzahl je Tonklasse bei 48 kHz: C:19 C#:23 D:22 D#:24 E:25 F:28 F#:28 G:31 G#:32 A:35 A#:35 B:33 — Verhältnis 1,84 zwischen größter und kleinster. Zwischen 80 und 197 Hz bekommen 5 von 16 Halbtönen gar kein eigenes Fach. Dieses nackte Raster, ganz ohne Ton, korreliert am besten mit G# Moll (r=0,30) und E Dur (r=0,21). Reines Rauschen, das keine Tonart hat, ordnet der Kern trotzdem eine zu: weißes Rauschen 6 von 8 Durchgängen 'A Moll', rosa Rauschen 7 von 8 'A Moll' (r=0,58), braunes Rauschen 8 von 8 'F Dur' (r=0,77).
-
-**Wirkung:** Alle 321 abgelegten Analysen sind mit den 48-kHz-WAVs gerechnet (bin/vorrechnen.js Zeile 168-173 nimmt die WAV, wenn sie da ist). Genau dort zieht das Raster nach E Dur — und E Dur ist mit 58 von 321 die häufigste Antwort im Archiv, gefolgt von G Moll (36). Würde derselbe Song aus der MP3 gerechnet, käme oft etwas anderes heraus; die Zahl beschreibt die Containerdatei, nicht die Musik.
-
-**Vorschlag:** Nicht auf Fächer runden, sondern das Chroma über eine logarithmische Frequenzachse bilden — je Halbton ein Fenster mit weicher Gewichtung über die darin liegenden Fächer, unten mit größerer FFT (16384) oder aus Gipfelfrequenzen statt Fachmitten. Dann ist die Zuordnung von der Abtastrate unabhängig. Als Selbstprüfung in bin/pruefe-lautheit.js: derselbe Song bei zwei Abtastraten muß dieselbe Tonart ergeben.
 
 ### 13. Die Kirchentonart ist die Reihenfolge zweier Schleifen, keine Messung
 **hoch** · `analyzer-worker.js`:1144
