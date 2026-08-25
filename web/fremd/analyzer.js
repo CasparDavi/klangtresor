@@ -1495,7 +1495,12 @@
     var BF_ABSCHNITT=Math.round(BF_BAHN*5/3*5/3*2);  /* zweimal um zwei Drittel, dann verdoppelt (Caspar_D, 23.08.2026) */
     /* Auch eine Bahn mit blosser Huellkurve braucht die volle Hoehe -
        sonst waere sie ein Strich (25.08.2026). */
-    var bahnInhalt=function(bahn){ return bahn && (bahn.abschnitte || bahn.welle || bahn.wechsel) ? BF_KUERZEL+BF_ABSCHNITT : BF_BAHN; };
+    /* Nur Abschnitte und Huellkurve fuellen eine hohe Bahn. Sunos
+       Wechsel tun es NICHT (Caspar_D, 25.08.2026: "die suno wechsel
+       sollen die kleinen ticks bleiben, wir wissen nichts ueber sie,
+       ausser dass sie da sind") - eine hohe Bahn wuerde Gewicht
+       versprechen, das die Daten nicht haben. */
+    var bahnInhalt=function(bahn){ return bahn && (bahn.abschnitte || bahn.welle) ? BF_KUERZEL+BF_ABSCHNITT : BF_BAHN; };
     var bahnHoehe=function(bahn){ return BF_KOPF+bahnInhalt(bahn); };
 
     /* Abschnitte aus dem KARAOKETEXT, nicht aus der Strukturerkennung.
@@ -1955,7 +1960,7 @@
            Der Tooltip nennt Sunos Buchstaben - er sagt nicht, WAS der
            Abschnitt ist, aber welchem anderen er gleicht. */
         if(bahn.wechsel && bahn.wechsel.length){
-          var yTickU=y+BH, yTickO=yTickU-6;
+          var yTickU=y+BH, yTickO=Math.max(y+2, yTickU-6);
           bahn.wechsel.forEach(function(t9, i9){
             if(!isFinite(t9) || t9<0 || t9>dauer) return;
             var xw=x(t9);
@@ -2069,9 +2074,14 @@
            nichts zu kennzeichnen ist - eine Kennfarbe waere eine
            Behauptung. */
         if(!(bahn.welle&&bahn.welle.length) && (bahn.wechsel||bahn.abschnitte)){
-          teile.push('<rect x="0" y="'+yFlaeche+'" width="'+SPUR_W+'" height="'+hFlaeche
+          /* Ohne Abschnitte gibt es keine Kuerzelzeile - dann faengt die
+             Flaeche gleich unter dem Kopf an und fuellt die schmale Bahn
+             ganz aus. */
+          var yG = bahn.abschnitte ? yFlaeche : y+1;
+          var hG = bahn.abschnitte ? hFlaeche : BH-1;
+          teile.push('<rect x="0" y="'+yG+'" width="'+SPUR_W+'" height="'+hG
             +'" fill="'+TASTE_DUNKEL+'" opacity="0.30"/>');
-          teile.push(spurTopline(TASTE_HELL, yFlaeche));
+          teile.push(spurTopline(TASTE_HELL, yG));
         }
 
         bahn.strecken.forEach(function(f){
@@ -2447,13 +2457,30 @@
       var sunoAbs=(_katalogDaten&&_katalogDaten.abschnitte)||null;
       var wechsel=(sunoAbs && sunoAbs.state==='complete' && Array.isArray(sunoAbs.peak_times))
                   ? sunoAbs.peak_times : null;
-      if(abs.length || (welleRoh && welleRoh.length) || (wechsel && wechsel.length))
-        bahnen.unshift({name: abs.length ? 'Track-Struktur'
-                            : (welleRoh && welleRoh.length) ? 'Hüllkurve · Suno-Wechsel'
-                            : 'Suno-Wechsel',
+      /* DIE HUELLKURVE RECHNEN WIR SELBST (Caspar_D, 25.08.2026: "und ne
+         huellkurve muss es ja geben, das kann jeder Player, wo kommt die
+         denn her").
+
+         Stimmt - und unsere ist die bessere. Sunos welle liegt im
+         Katalog mit rund 5 Werten je Sekunde und fehlt bei 68 Songs;
+         _chartData.energy kommt aus dem eigenen Rechenkern, hat 20
+         Werte je Sekunde und gibt es fuer JEDEN Song. Sunos Kurve
+         behaelt den Vortritt, weil sie die Katalogdauer abdeckt und
+         damit zu den Abschnitten passt - fehlt sie, springt die eigene
+         ein.
+
+         Sie kommt allerdings SPAETER als diese Bahn: norm baut die
+         Befundspur, envelope liefert die Energie erst danach. Deshalb
+         traegt huellkurveNachtragen() sie nach, sobald sie da ist. */
+      var eigene = (window._chartData && window._chartData.energy) || null;
+      var welleJetzt = (welleRoh && welleRoh.length) ? welleRoh : (eigene && eigene.length ? eigene : null);
+      bahnen.unshift({name: abs.length ? 'Track-Struktur' : 'Hüllkurve',
           strecken:[], abschnitte: abs.length?abs:null,
-          welle: welleRoh,
-          welleDauer:(_katalogDaten&&_katalogDaten.dauer)||null,
+          welle: welleJetzt,
+          welleEigen: !(welleRoh && welleRoh.length),
+          welleDauer: (welleRoh && welleRoh.length)
+                      ? ((_katalogDaten&&_katalogDaten.dauer)||null)
+                      : ((window._chartData&&window._chartData.dur)||dauer),
           wechsel: wechsel,
           wechselNamen: (sunoAbs && sunoAbs.segment_labels) || null});
 
@@ -2717,6 +2744,28 @@
     /* Nur die Sicht verschieben. Läuft je Einzelbild und muss deshalb
        so billig wie möglich sein. */
     var _letzteBahnen=null, _letzteDauer=0, _letzteSicht=-1;
+
+    /* DIE EIGENE HUELLKURVE NACHTRAGEN.
+
+       Die Befundspur entsteht im norm-Handler; die Energiekurve kommt
+       erst mit envelope, also danach. Statt die ganze Bahn zu
+       verschieben - sie haengt an einem Dutzend Befunde, die alle bei
+       norm feststehen - wird die Kurve nachgereicht und einmal neu
+       gezeichnet. Wer hinschaut, sieht die Bahn zuerst ohne und einen
+       Wimpernschlag spaeter mit Kurve.
+
+       Nur wenn sie fehlt: Sunos welle behaelt den Vortritt (sie deckt
+       die Katalogdauer ab und passt damit zu den Abschnitten). */
+    function huellkurveNachtragen(){
+      if(!_letzteBahnen || !_letzteBahnen.length) return;
+      var b=_letzteBahnen[0];                       /* die Strukturbahn steht vorn (unshift) */
+      if(!b || (b.welle && b.welle.length)) return;
+      var e=window._chartData && window._chartData.energy;
+      if(!e || !e.length) return;
+      b.welle=e; b.welleEigen=true;
+      b.welleDauer=(window._chartData&&window._chartData.dur)||_letzteDauer;
+      befundspurZeichnen(_letzteBahnen, _letzteDauer);
+    }
     function spurSichtSetzen(){
       var x=(viewStart*SPUR_W).toFixed(1), w=((viewEnd-viewStart)*SPUR_W).toFixed(1);
       /* Die TAKTBAHN hängt an der Sicht: Sie entscheidet nach dem Platz auf
@@ -5632,6 +5681,7 @@
             window._chartData.crest=msg.crest;window._chartData.onsets=msg.onsets;
             setTimeout(renderInstruments,100);
             window._chartData.dur=msg.dur;window._chartData.sr=sr;
+            huellkurveNachtragen();   /* die Bahn stand schon, bevor die Energie kam */
             drawLufsHist(msg.lufs);   /* drawEnvelope war nur noch diese eine Zeile (Rest 25.08. ausgebaut) */
             /* Die Reihen sind erst HIER da. Beim Zeichnen der großen
                Diagramme war _chartData noch leer - deshalb blieben die
