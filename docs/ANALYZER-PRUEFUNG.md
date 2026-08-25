@@ -138,18 +138,36 @@ Effektivwert mit einem Mittelquadrat verglich und deshalb nie sperrte.
 Beide Altrechnungen werden ausgebaut — *„wenn es noch alten Code gibt,
 der dieses Zeug macht, weg damit."*
 
+**11 · Das FFT-Chroma addierte jeden Rauschboden mit.** Die Schleife
+nahm JEDEN Betrag zwischen 80 und 4000 Hz, rundete seine Mittenfrequenz
+auf den nächsten Halbton und schlug ihn dort auf — ein Fach ohne Ton
+trug genauso bei wie der Gipfel eines Grundtons. Gemessen an 14 Songs
+standen nur 29 bis 32 % der aufaddierten Beträge überhaupt auf einem
+Spektralgipfel. Gegen Caspar_Ds eigene Tonartangabe im Stil-Prompt traf
+der Kern 1 von 20 Songs — Zufall wäre etwa 1.
+
+> **Gelöst (25.08.2026):** Es hängt keine Entscheidung mehr daran. Der
+> Grundton kommt aus `bin/toene.js` — häufigster Basston auf Sunos Eins
+> —, die Tonart-Karte ist totgelegt, mit genau diesem Befund als
+> Begründung. Auch die Notenzonen der Takt-Spur werden dort **tonrein**
+> gemessen: `chromaVektor()` geht Note für Note durch und legt auf jede
+> Notenfrequenz einen Goertzel-Filter, dessen Fenster zur Tonhöhe paßt
+> (`bin/toene.js`:236). Es wird also gar nichts erst aufgesammelt, wo
+> kein Ton gesucht wird. Liegen die Zonen noch nicht vor, zeigt die
+> Takt-Spur nichts, statt selbst zu rechnen.
+>
+> **Was bleibt:** ein einziger Verbraucher — die Chroma-Spur, das Bild
+> der Tonklassen über die Zeit (`analyzer-worker.js`:1044). Dort ist
+> der Bodensatz sichtbar, aber er lügt nicht: die Energie *ist* da, sie
+> ist nur nicht tonhaltig. Nachgemessen an „Vanille-Eis" (25.08.2026)
+> liegt die schwächste Tonklasse bei 0,10 bis 0,12 des Maximums, nicht
+> bei den im Befund genannten 0,39 — ein Song ist keine Stichprobe,
+> aber ein Bild trägt auch keine Entscheidung. Wer die Spur
+> kontrastreicher will, nimmt nur Spektralgipfel auf (Fach größer als
+> beide Nachbarn und über einer Schwelle zum lautesten Fach des
+> Rahmens) und normiert je Rahmen.
+
 ## Alle Funde, nach Schwere
-
-### 11. Das Chroma addiert jedes FFT-Fach — 70 % davon ist Grundrauschen, kein Ton
-**hoch** · `analyzer-worker.js`:222
-
-**Fehler:** Die Schleife in Zeile 222-226 nimmt JEDEN Betrag zwischen 80 und 4000 Hz, rundet seine Mittenfrequenz auf den nächsten Halbton und addiert ihn dort auf. Ein FFT-Fach, in dem gar kein Ton steht, trägt genauso bei wie der Gipfel eines Grundtons. In dichter, komprimierter Musik ist der Bodensatz zwischen den Teiltönen größer als die Teiltöne selbst. Gedacht ist es als 'Energie je Tonklasse', gemessen wird aber 'Energie je Fächergruppe', und die Fächergruppen haben mit Musik nichts zu tun.
-
-**Beleg:** Gemessen an 14 Songs: nur 29,0 bis 32,2 % der aufaddierten Beträge stehen überhaupt auf einem Spektralgipfel (Fach höher als beide Nachbarn und mindestens 5 % des lautesten Fachs); die restlichen rund 70 % sind Rauschboden und Fensterausschmierung. Folge im Chroma, hier drei Songs, die Caspar_D ausdrücklich als E-Moll angelegt hat — Terz gegen Terz, G gegen G#: Stumm 0,65/0,78 im Kern, aber 0,69/0,38 in der Referenz; Roßtrappe v2 0,69/0,84 gegen 0,62/0,39; Moissanit 0,89/0,92 gegen 0,83/0,44. Der Kern dreht die Terz um und meldet dreimal E Dur. Im Kern-Chroma liegt kein einziger Wert unter 0,39 — der Boden hebt alle zwölf Tonklassen an und frißt den Unterschied zwischen vorhandenen und fehlenden Tönen. Gegenprobe mit sonst wortgleichem Code: nimmt man statt aller Fächer nur die Gipfel, steigt die Trefferzahl von 1/14 auf 5/14, mit zusätzlicher Normierung je Rahmen auf 6/14.
-
-**Wirkung:** Die Tonart im ganzen Archiv ist unbrauchbar. Gegen Caspar_Ds eigene Tonartangabe im Stil-Prompt trifft der Kern 1 von 20 Songs (Zufall wäre etwa 1). Bei den sieben Songs, bei denen der Prompt UND alle drei Literaturprofile übereinstimmen (Enzian, Mutterns Hände, Stumm, Herr von Ribbeck, Wenn Du da bist, Roßtrappe v2, Moissanit), liegt der Kern 7 mal daneben.
-
-**Vorschlag:** Nur Spektralgipfel ins Chroma nehmen (Fach größer als beide Nachbarn und über einer Schwelle relativ zum lautesten Fach des Rahmens), die genaue Frequenz durch parabolische Verfeinerung bestimmen und je Rahmen normieren, damit kein lauter Refrain den ganzen Song überstimmt.
 
 ### 12. Die gemessene Tonart hängt an der Abtastrate der Datei, nicht an der Musik
 **hoch** · `analyzer-worker.js`:223
