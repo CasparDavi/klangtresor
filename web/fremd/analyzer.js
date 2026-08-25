@@ -926,20 +926,37 @@
 
 <div id="sa-linien"></div>
 
-<div class="section sa-spur" id="spur-momentan">
-  <div class="slbl"><span class="spur-titel"></span></div>
-  <div class="chart-outer" style="height:44px"><div id="momentanspur-canvas" class="spur-flaeche"></div><div class="playhead" id="ph-momentanspur"></div></div>
-  <div class="chart-text">Die Lautheit nach EBU R 128 in einem sehr kleinen Fenster von 400 Millisekunden. Sie folgt dem Stück beinahe augenblicklich und so schnell wie das Gehör und macht einzelne Einsätze und Pausen sichtbar. Die durchgezogene Linie markiert die integrierte Lautheit des ganzen Stücks.</div>
-</div>
-<div class="section sa-spur" id="spur-kurz">
-  <div class="slbl"><span class="spur-titel"></span></div>
-  <div class="chart-outer" style="height:44px"><div id="kurzspur-canvas" class="spur-flaeche"></div><div class="playhead" id="ph-kurzspur"></div></div>
-  <div class="chart-text">Dieselbe Größe über ein Fenster von drei Sekunden. Sie glättet Einzelereignisse weg und zeigt, wie laut ein Abschnitt empfunden wird — an dieser Größe orientieren sich die Zielwerte der Streamingdienste, die als gestrichelte Linie eingezeichnet sind.</div>
-</div>
-<div class="section sa-spur" id="spur-abweichung">
-  <div class="slbl"><span class="spur-titel"></span></div>
-  <div class="chart-outer" style="height:56px"><div id="abweichungspur-canvas" class="spur-flaeche" style="height:56px"></div><div class="playhead" id="ph-abweichungspur"></div></div>
-  <div class="chart-text">Die Differenz zwischen Momentan- und Kurzzeitlautheit. Wo der Augenblick über seiner Umgebung liegt, ragt die Fläche <span style="color:#f97b14">nach oben</span>, wo er <span style="color:#4b93f0">darunter</span> bleibt, nach unten. Damit wird sichtbar, was in den beiden Kurven darüber nur im Vergleich zu erkennen wäre: Akzente und Einbrüche.</div>
+<!-- EIN PANEL FUER DIE DREI LAUTHEITSVERLAEUFE (Caspar_D, 25.08.2026:
+     "fasse bitte im analyzer Fenster folgende 3 charts in einem Panel
+     zusammen und gib ihm nur eine Bildunterschrift").
+
+     Die drei gehoeren zusammen: dieselbe Groesse in zwei Fenstern und
+     ihre Differenz. Als drei Abschnitte mit drei Unterschriften stand
+     dreimal fast dasselbe da, und der Zusammenhang - die dritte Kurve
+     IST die Differenz der beiden darueber - musste aus den Texten
+     erschlossen werden. Jede Kurve behaelt ihren eigenen Titel mit
+     Fenstergroesse und Wertebereich; nur der erklaerende Text ist
+     einer geworden und sagt jetzt, was die drei miteinander zu tun
+     haben.
+
+     Die inneren IDs bleiben, wie sie waren: spurMalen() und
+     abweichungSpurZeichnen() sprechen sie an, ebenso die Playheads
+     und die Sichtbarkeitsschleife. -->
+<div class="section" id="spur-lautheit">
+  <div class="slbl"><span><span class="nam">Lautheitsverläufe</span> — <span class="erkl">derselbe Song in zwei Zeitfenstern und ihre Differenz</span></span></div>
+  <div class="sa-spur" id="spur-momentan">
+    <div class="slbl"><span class="spur-titel"></span></div>
+    <div class="chart-outer" style="height:44px"><div id="momentanspur-canvas" class="spur-flaeche"></div><div class="playhead" id="ph-momentanspur"></div></div>
+  </div>
+  <div class="sa-spur" id="spur-kurz">
+    <div class="slbl"><span class="spur-titel"></span></div>
+    <div class="chart-outer" style="height:44px"><div id="kurzspur-canvas" class="spur-flaeche"></div><div class="playhead" id="ph-kurzspur"></div></div>
+  </div>
+  <div class="sa-spur" id="spur-abweichung">
+    <div class="slbl"><span class="spur-titel"></span></div>
+    <div class="chart-outer" style="height:56px"><div id="abweichungspur-canvas" class="spur-flaeche" style="height:56px"></div><div class="playhead" id="ph-abweichungspur"></div></div>
+  </div>
+  <div class="chart-text">Dieselbe Größe nach EBU R 128, dreimal betrachtet. <b>Oben</b> ein Fenster von 400 Millisekunden: es folgt dem Stück beinahe augenblicklich und so schnell wie das Gehör, macht also einzelne Einsätze und Pausen sichtbar; die durchgezogene Linie markiert die integrierte Lautheit des ganzen Stücks. <b>In der Mitte</b> dasselbe über drei Sekunden — Einzelereignisse sind weggeglättet, und es zeigt sich, wie laut ein Abschnitt empfunden wird. An dieser Größe orientieren sich die Zielwerte der Streamingdienste, die als gestrichelte Linie eingezeichnet sind. <b>Unten</b> die Differenz der beiden: Wo der Augenblick über seiner Umgebung liegt, ragt die Fläche nach oben, wo er darunter bleibt, nach unten. Damit wird sichtbar, was in den Kurven darüber nur im Vergleich zu erkennen wäre — Akzente und Einbrüche.</div>
 </div>
 
 

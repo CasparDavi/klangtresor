@@ -20,6 +20,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');   /* fuer die Syntaxprobe unten */
 const WURZEL = path.join(__dirname, '..');
 const K = require('./katalog.js');
 
@@ -29,6 +30,23 @@ let analyse = {};
 try { analyse = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'analyse-index.json'), 'utf8')).songs || {}; } catch (e) {}
 const katalog = K.lesen();
 const konfig = (() => { try { return JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'konfig.json'), 'utf8')); } catch (e) { return {}; } })();
+
+/* DER NAME DES SCHIFFS (25.08.2026). Hier stand bis dahin ein festes
+   SCHIFF_NAME = 'Caspar' in der Vorbelegung unten - aus der Zeit, als die
+   Seite ihn ebenfalls als Konstante fuehrte. Seit sie ihn aus dem
+   Suno-Profil ableitet, rufen die herausgeschnittenen Funktionen
+   schiffName() und matrixKennung(). Im Export gab es beide nicht: das
+   Schiff waere beim ersten Zeichnen mit einem ReferenceError
+   stehengeblieben, und mit ihm der ganze Himmel.
+
+   Der Export nimmt keinen Katalog mit, der Name wird also eingebrannt -
+   nach derselben Regel wie in der Seite: der erste Teil des Alias vor -,
+   . oder _, erster Buchstabe gross; die Kennung der Musik-Matrix ist sein
+   erster Buchstabe. Fehlt der Alias, bleiben beide leer - der Export
+   steigt weiter unten ohnehin aus. */
+const SCHIFF_KOPF = String((konfig && konfig.handle) || '').split(/[-._]/)[0] || '';
+const SCHIFF_TEXT = SCHIFF_KOPF ? SCHIFF_KOPF[0].toUpperCase() + SCHIFF_KOPF.slice(1) : '';
+const MATRIX_TEXT = (konfig && konfig.handle) ? String(konfig.handle)[0].toUpperCase() : '';
 
 /* Eine Funktion samt Rumpf aus index.html schneiden (Klammern zaehlen). */
 function funktion(name) {
@@ -40,6 +58,23 @@ function funktion(name) {
   return html.slice(start, i + 1);
 }
 function konstante(re) { const m = html.match(re); if (!m) throw new Error('nicht gefunden: ' + re); return m[0]; }
+/* Eine mehrzeilige Deklaration schneiden - konstante() nimmt nur eine
+   Zeile, und WL, STRUDEL und SCHWADEN gehen ueber drei bis zwanzig.
+   Geklammert wird gezaehlt, wie bei funktion(); Schluss ist, wenn die
+   Klammern wieder aufgehen und die Zeile auf ein Semikolon endet. */
+function deklaration(name) {
+  const m = html.match(new RegExp('\\n(const|let|var) ' + name + '\\b'));
+  if (!m) throw new Error('nicht gefunden: ' + name);
+  const start = m.index + 1;
+  const zeilen = html.slice(start).split('\n');
+  let tiefe = 0, aus = [];
+  for (const z of zeilen) {
+    for (const c of z) { if ('({['.includes(c)) tiefe++; else if (')}]'.includes(c)) tiefe--; }
+    aus.push(z);
+    if (tiefe === 0 && z.trimEnd().endsWith(';')) break;
+  }
+  return aus.join('\n');
+}
 
 const code = [
   konstante(/const NEBEL = \[[^\n]*\];/),
@@ -55,11 +90,40 @@ const code = [
   'let karteSpot = null;', funktion('karteKennwerte'),
   funktion('karteLayout'), funktion('karteSteckbrief'), funktion('karteHimmel'),
   konstante(/const ORBIT_EXZ = [^\n]*;/), konstante(/\{ let a = 0; for \(let k = 0; k < KEPLER_N[^\n]*\}/), konstante(/const KEPLER_GES = [^\n]*;/), funktion('keplerPhase'),
-  "let reise = false; const reiseBesucht = new Set(); let reiseWeg = []; const reiseSpuren = { '2d': [], '3d': [] }; let reiseSpur = reiseSpuren['3d'], reiseSpurArt = '3d'; let schiffLauf = 0; const SCHIFF_NAME = 'Caspar'; let zufall = false; let schiffArt = 'orbit'; let schiffLetzteId = null, warpT0 = 0, warpVon = null, warpNach = null; let schiffKamVon = null; let probeflug = false, probeT0 = 0; const PROBE_UMLAUF = 1.0, PROBE_RUNDEN = 3; let borg = false; const assimiliert = new Set(); let supernovae = []; const ZWILLING = 0.17;",
+  "let reise = false; const reiseBesucht = new Set(); let reiseWeg = []; const reiseSpuren = { '2d': [], '3d': [] }; let reiseSpur = reiseSpuren['3d'], reiseSpurArt = '3d'; let schiffLauf = 0; let zufall = false; let karteAnflug = null; function schiffName(){ return " + JSON.stringify(SCHIFF_TEXT) + "; } function matrixKennung(){ return " + JSON.stringify(MATRIX_TEXT) + "; } let schiffArt = 'orbit'; let schiffLetzteId = null, warpT0 = 0, warpVon = null, warpNach = null; let schiffKamVon = null; let probeflug = false, probeT0 = 0; const PROBE_UMLAUF = 1.0, PROBE_RUNDEN = 3; let kubus = false; const assimiliert = new Set(); let supernovae = []; const ZWILLING = 0.17;",
   funktion('reiseNaechster'), funktion('reiseToggle'), funktion('probeflugToggle'), funktion('probeflugWeiter'), funktion('karteZielId'), 'let karteNachlaufT = 0, karteNachlaufAus = false;', funktion('karteNachlauf'), funktion('karteFlugkamera'), funktion('karteSchiff'), funktion('karteSchiffFrame'), konstante(/const titelStamm = [^\n]*;/), funktion('zwillinge'),
   konstante(/const karteArtAbleiten = [^\n]*;/),
   konstante(/const LADEN_ICON = \{[\s\S]*?\n\};/), "let karteLaden = { einstellungen: false, legende: true, werk: true };", funktion('ladeHtml'), funktion('ladenDran'), funktion('ladenLeiste'), 'let karteDrawerOffen = false;',
   funktion('karteLesarten'), funktion('kartePanelHtml'), funktion('kartePanelDran'),
+  /* NACHGETRAGEN AM 25.08.2026. Diese fuenf rief der herausgeschnittene
+     Code bereits, ohne dass sie mitkamen - der Export lief durch, aber die
+     erzeugte Datei stieg beim ersten Flug mit einem ReferenceError aus
+     ("anschlussPlanen is not defined"). Gefunden, indem alle Bezeichner
+     der Exportdatei gegen die Deklarationen der Seite geprueft wurden;
+     diese Pruefung laeuft jetzt bei jedem Export mit (ganz unten in
+     dieser Datei), damit die naechste Luecke nicht erst beim
+     Verschicken auffaellt.
+
+     Es sind genau die Sachen, die nach dem letzten Abgleich entstanden
+     sind: der Kubus, das Wurmloch, der Blitz der Supernova und die
+     Anschlussplanung der Reise. */
+  funktion('karteZielDanach'),
+  /* Der ANSCHLUSS bleibt draussen. anschlussHolen() fragt /api/song/<id> -
+     den Server, den die Exportdatei gerade nicht hat. Ein nahtloser
+     Uebergang zwischen zwei Songs ist eine Sache des lokalen Archivs, nicht
+     der Demo; hier stuende sonst eine ganze Familie von sieben Funktionen,
+     die nur ins Leere greifen. Ein leerer Platzhalter genuegt: reiseToggle()
+     ruft sie, und mehr will sie hier nicht koennen. */
+  'async function anschlussPlanen(){}',
+  /* Das Wurmloch, der Kubus und der Beschuss bringen eigene Konstanten
+     und Zustaende mit. Ohne sie stiegen die Zeichenfunktionen genau dann
+     aus, wenn sie gebraucht werden - beim Ende einer Reise. */
+  konstante(/const sanft = [^\n]*;/), konstante(/const spanne = [^\n]*;/),
+  deklaration('WL'), deklaration('STRUDEL'), deklaration('SCHWADEN'),
+  konstante(/const SPUR_DECK = [^\n]*;/),
+  'let wurmloch = null; let wurmlochSpur = null; let beschuss = [];',
+  funktion('strudelOrt'), funktion('nebelMalen'),
+  funktion('blitzMalen'), funktion('wuerfelZeichnen'), funktion('wurmlochMalen'),
   'let karteTippUhr = 0;', funktion('karteTipp'), funktion('karteTippWeg'),
 ].join('\n\n')
   .replace(/\/media\/\$\{s\.id\}\/cover\.jpg/g, '${s.bild || \'\'}')   // Cover von Sunos CDN
@@ -260,7 +324,7 @@ function zeichnen(){
     const erd = [e.bpm && \`\${e.bpm} BPM\`, e.lufs != null && \`\${String(e.lufs).replace('.', ',')} LUFS\`, e.mollAnteil != null && \`\${Math.round(e.mollAnteil * 100)} % Moll\`].filter(Boolean).join(' · ');
     return \`<div class="gruppe"><span class="farbe" style="background:\${karteFarbe(g.nr)}"></span><span><b>\${g.name}</b><small>\${g.anzahl} Songs\${erd ? ' — ' + erd : ''}</small></span></div>\`;
   }).join('') + '</div></div>' + karteLesarten() + '</div>';
-  const panelSig = JSON.stringify([karteDim, karteVerf, schiffArt, reise, probeflug, borg, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0]]);
+  const panelSig = JSON.stringify([karteDim, karteVerf, schiffArt, reise, probeflug, kubus, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0]]);
   if (leg.dataset.sig !== panelSig){
     leg.dataset.sig = panelSig;
     { const sb0 = $('kartesteckbrief'); if (sb0 && sb0.parentElement !== $('karterechts')) $('karterechts').appendChild(sb0); }
@@ -303,4 +367,93 @@ const ordner = path.join(WURZEL, 'library', 'export');
 fs.mkdirSync(ordner, { recursive: true });
 const ziel = path.join(ordner, 'sternenhimmel.html');
 fs.writeFileSync(ziel, seite);
+
+/* ------------------------------------------------------------------
+   SELBSTPRUEFUNG: greift der Ausschnitt ins Leere?
+
+   Der Export schneidet Funktionen aus der Seite heraus. Waechst dort eine
+   neue Abhaengigkeit, kommt sie nicht von selbst mit - und der Export
+   laeuft trotzdem sauber durch. Der Schaden zeigt sich erst beim
+   Empfaenger, als ReferenceError beim ersten Zeichnen, und dort sieht ihn
+   niemand, der ihn beheben koennte. Genau so war es am 25.08.2026: fuenf
+   Funktionen und eine Variable fehlten, seit Kubus, Wurmloch und
+   Anschlussplanung dazugekommen waren. Aufgefallen ist es nur, weil die
+   Datei zufaellig einmal im Browser geoeffnet wurde.
+
+   Geprueft wird, was die Seite auf OBERSTER Ebene deklariert - also ohne
+   Einrueckung. Alles Eingerueckte ist lokal und gehoert einer Funktion;
+   naehme man es mit, meldete die Pruefung jede Schleifenvariable.
+   ------------------------------------------------------------------ */
+{
+  const ohneBeiwerk = (t) => t
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ')
+    .replace(/`(?:\\.|[^`\\])*`/g, ' ')
+    .replace(/"(?:\\.|[^"\\])*"/g, ' ')
+    .replace(/'(?:\\.|[^'\\])*'/g, ' ');
+
+  const global = new Set();
+  for (const zeile of html.split('\n')) {
+    if (/^\s/.test(zeile)) continue;                    /* eingerueckt = lokal */
+    const m = zeile.match(/^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/)
+           || zeile.match(/^(?:const|let|var)\s+([A-Za-z_$][\w$]*)/);
+    if (m) global.add(m[1]);
+  }
+
+  const drin = ohneBeiwerk(seite.slice(seite.indexOf('<script'), seite.lastIndexOf('</script>')));
+  const erklaert = new Set();
+  for (const r of [/\bfunction\s+([A-Za-z_$][\w$]*)/g,
+                   /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g,
+                   /[,(]\s*([A-Za-z_$][\w$]*)\s*=(?!=)/g,     /* zweiter Name einer Mehrfachdeklaration */
+                   /\bcatch\s*\(\s*([A-Za-z_$][\w$]*)/g,
+                   /\bfor\s*\(\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g])
+    for (const x of drin.matchAll(r)) erklaert.add(x[1]);
+  /* Und die Parameter: sie binden den Namen ebenso. Ohne sie meldete die
+     Pruefung 'zeit', das in karteSchiff als zweiter Name einer
+     const-Zeile steht und nirgends fehlt. */
+  for (const x of drin.matchAll(/(?:function\s*[A-Za-z_$\w]*\s*|\b)\(([^()]{0,200}?)\)\s*(?:=>|\{)/g))
+    for (const t of x[1].split(',')) {
+      const nm = t.trim().replace(/[=:][\s\S]*$/, '').replace(/^\.\.\./, '');
+      if (/^[A-Za-z_$][\w$]*$/.test(nm)) erklaert.add(nm);
+    }
+
+  const fehlt = [];
+  for (const name of global) {
+    if (erklaert.has(name)) continue;
+    if (new RegExp('(?:^|[^\\w$.])' + name + '(?![\\w$])').test(drin)) fehlt.push(name);
+  }
+  /* Und die Gegenrichtung - Doppeldeklarationen. Dafuer braucht es keine
+     Heuristik: der Parser weiss es genau. Eine eigene Zaehlung waere hier
+     sogar falsch, denn dieselbe const in zwei Funktionsruempfen ist voellig
+     erlaubt; nur auf derselben Ebene ist sie ein Fehler.
+
+     Der Anlass: 'register' steckte im Export als dritter Name in
+     "let aktuellId = null, karteGruppeAn = null, register = 'karte';" und
+     fiel beim Nachtragen durch. Die Folge war ein SyntaxError, und der legt
+     die GANZE Datei still - kein Himmel, kein Panel, eine Zeile Konsole. */
+  {
+    const os = require('node:os');
+    const probe = path.join(os.tmpdir(), 'himmel-probe-' + process.pid + '.js');
+    const skript = seite.slice(seite.indexOf('>', seite.indexOf('<script')) + 1,
+                               seite.lastIndexOf('</script>'));
+    fs.writeFileSync(probe, skript);
+    const pruef = spawnSync(process.execPath, ['--check', probe], { encoding: 'utf8' });
+    fs.unlinkSync(probe);
+    if (pruef.status !== 0) {
+      console.error('\n  ACHTUNG: die Exportdatei ist syntaktisch kaputt.');
+      console.error('  ' + String(pruef.stderr || '').split('\n').filter(Boolean).slice(0, 4).join('\n  '));
+      console.error('');
+      process.exitCode = 1;
+    }
+  }
+  if (fehlt.length) {
+    console.error('\n  ACHTUNG: der Ausschnitt greift ins Leere.');
+    console.error('  Diese Namen benutzt die Exportdatei, ohne sie zu kennen:');
+    console.error('    ' + fehlt.sort().join(', '));
+    console.error('  Entweder oben in die Liste aufnehmen oder einen Platzhalter setzen');
+    console.error('  (wie bei anschlussPlanen, das ohne Server nichts holen kann).\n');
+    process.exitCode = 1;
+  }
+}
+
 console.log(`  Sternenhimmel exportiert: ${songs.length} öffentliche Songs → ${path.relative(WURZEL, ziel)} (${(fs.statSync(ziel).size / 1024).toFixed(0)} KB)`);
