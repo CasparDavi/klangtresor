@@ -2535,7 +2535,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
         <button onclick="schleifen()" id="bschleif" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
       </div>
       <label class="versatz" id="blautgruppe" title="Lautstärke">
-        <button type="button" onclick="stumm()" id="bstumm"
+        <button type="button" onclick="stumm()" id="bstumm" title="Stumm (m)"
                 style="padding:4px 6px"></button>
         <input type="range" id="blautstaerke" min="0" max="100" step="1" value="100">
         <b id="blautText">100 %</b>
@@ -2922,6 +2922,12 @@ function eqFrequenzenAnwenden(){
 let eqProfil = null;                 // /api/eq-profil, einmal geladen
 let studioHinweis = '';              // Zeile ueber der EQ-Legende (z. B. Stilgruppe des Presets)
 let eqJeSong = {};                   // gemerkte Einstellungen je Song
+/* FRÜH LADEN, nicht erst beim Öffnen des Tonstudios (25.08.2026). Der
+   Zweig für das geschlossene Studio liest beim Songwechsel aus dieser
+   Sammlung; war sie leer, setzte er stumpf auf neutral. Wer über die
+   Bühne einstieg und das Studio nie öffnete, bekam seine gespeicherten
+   Einstellungen nie zu hören. */
+fetch('/api/eq').then(r => r.json()).then(d => { eqJeSong = d || {}; }).catch(() => {});
 let eqGains  = [0,0,0,0,0,0,0,0];
 let eqAus    = false;                // A/B: true = Original
 let eqReferenz = localStorage.getItem('mysuno-eq-referenz') || null;
@@ -13131,12 +13137,14 @@ async function buehneAuf(id){
 
   $('bhintergrund').style.backgroundImage = `url('/media/${bSong.id}/cover.jpg')`;
   $('btitel').textContent = bSong.titel;
-  $('bmeta').textContent = [
-    bSong.modell,
-    (bSong.erstellt||'').slice(0,10),
-    `${bSong.plays||0} Plays`,
-    `${bSong.likes||0} Likes`,
-  ].filter(Boolean).join('  ·  ');
+  /* #bmeta wurde hier bei jedem Bühnenaufbau mit Modell, Datum, Plays
+     und Likes gefüllt — und war nie zu sehen: Die Regel
+     '#buehne .bpult .bmeta{display:none}' trifft es immer, weil es nur
+     an dieser einen Stelle im Baum steht. Das Pult soll flach bleiben
+     (Beschluss beim Umbau), und dieselben Zahlen stehen im Analyzer
+     unter „Aus dem Katalog". Also nicht sichtbar machen, sondern die
+     Arbeit sparen (25.08.2026). Das Element bleibt stehen, falls es je
+     einen Platz bekommt. */
 
   /* Zeitmarken-Quellen: Standard sind die Woerter des Katalogs (Suno,
      oder Whisper wo Suno fehlt). Liegen fuer den Song MEHRERE Spuren
@@ -13179,6 +13187,13 @@ function buehneZu(){
   // Der Analyzer bringt einen Worker und eigene Zeichenschleifen mit -
   // ohne Abräumen rechnen sie hinter der geschlossenen Bühne weiter.
   analyzerAbraeumen();
+  /* Dasselbe gilt fürs Tonstudio, nur andersherum: Es liegt auf
+     z-index 56, die Bühne auf 60 - ein offenes Studio verschwindet
+     also unter ihr, ist nicht mehr erreichbar (sein × liegt darunter,
+     Escape kennt es nicht) und rechnet mit 100 ms weiter. Beim
+     Schließen der Bühne holen wir es nicht zurück, sondern räumen es
+     ab; beim Öffnen ebenso (25.08.2026). */
+  if (typeof studioZu === 'function' && $('studio') && $('studio').style.display !== 'none') studioZu();
   $('buehne').classList.remove('auf');
   pmodiAufbauen();          // kein Segment mehr gefüllt: die Bühne ist zu
   if (bTakt) { cancelAnimationFrame(bTakt); bTakt = null; }
@@ -13420,8 +13435,17 @@ $('plZurueck').onclick = () => {
 /* Beide Decks tragen dieselben Melder; nur das AKTIVE steuert die
    Oberflaeche - das andere spielt waehrend der Naht bloss mit. */
 function deckMelder(el){
-  el.onplay  = ()=>{ if (el !== audio) return; $('abspielen').innerHTML=SYM('pause'); markieren(); stemsMitlaufen(); };
-  el.onpause = ()=>{ if (el !== audio) return; $('abspielen').innerHTML=SYM('play');  markieren(); stemsMitlaufen(); };
+  /* BEIDE Abspielknöpfe, nicht nur der untere (25.08.2026). Der im
+     Bühnenpult hing allein an buehneTakt(), und das läuft an
+     ontimeupdate — beim Pausieren hören die Zeitmeldungen auf, also
+     blieb er auf dem Pausensymbol stehen und behauptete, es liefe noch.
+     Zwei Anzeigen für einen Zustand müssen an derselben Quelle hängen. */
+  const beideKnoepfe = (art) => {
+    $('abspielen').innerHTML = SYM(art);
+    const b = $('babspielen'); if (b) b.innerHTML = SYM(art);
+  };
+  el.onplay  = ()=>{ if (el !== audio) return; beideKnoepfe('pause'); markieren(); stemsMitlaufen(); };
+  el.onpause = ()=>{ if (el !== audio) return; beideKnoepfe('play');  markieren(); stemsMitlaufen(); };
   /* Nach einem Sprung sofort nachziehen - die Stems stehen sonst noch
      an der alten Stelle, und wer waehrend des Solos spult, hoert die
      falsche Stelle. */
@@ -13510,7 +13534,18 @@ document.addEventListener('dblclick', (e)=>{
 });
 
 document.addEventListener('keydown',(e)=>{
-  if (e.target.tagName === 'INPUT') return;
+  /* Auch AUSWAHLFELDER in Ruhe lassen: Die Bedienzeile der Bühne
+     besteht aus fünf davon (Bildebene, Visualizer, Text, Zeitmarken,
+     Tonquelle). Mit Fokus darin blätterte Pfeil hoch/runter nicht das
+     Feld, sondern verstellte die Lautstärke — preventDefault sperrte
+     das Feld zusätzlich (25.08.2026).
+
+     Und Browserbefehle durchlassen: Ohne die Prüfung löste Cmd+F
+     zusätzlich Vollbild aus, Cmd+M schaltete stumm, Cmd+Pfeil sprang
+     den Song. Wer die Befehlstaste hält, meint den Browser. */
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT'
+      || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === ' ')        { e.preventDefault(); umschalten(); }
   if (e.key === 'ArrowRight') vor(1);
   if (e.key === 'ArrowLeft')  vor(-1);
