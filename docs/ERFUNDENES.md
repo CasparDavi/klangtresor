@@ -195,6 +195,56 @@ Paaren die plausiblere ist.
   die ALTE Tonartmessung zu Fall (12 von 12 Songs bekamen verschiedene
   Tonarten) und ist auf die heutige noch nicht angewandt.
 
+### Warum ein geschulter Mensch es kann und der Rechner nicht
+
+Caspar_D: *„jeder geschulte Mensch kann die Tonart bestimmen, warum
+können Computer das nicht?"*
+
+Die unbequeme Antwort: **Es liegt nicht an unserem Verfahren.** Drei
+verschiedene Ansätze, auf denselben Daten gerechnet, gegen denselben
+prompt-freien Maßstab (14 Fassungspaare, die dieselbe Tonart geben
+müssen):
+
+| Verfahren | einig |
+|---|---|
+| häufigster Baßton auf der Eins (heute im Einsatz) | **71 %** |
+| Krumhansl-Schmuckler auf dem Tonvorrat | 64 % |
+| Schlußton der letzten drei Zonen | 21 % |
+
+Krumhansl-Schmuckler ist das Standardverfahren der Musikpsychologie —
+gemessene Tonprofile, gegen die der Tonvorrat korreliert wird. Es ist
+hier **schlechter** als unser einfacher Baßzähler. Und untereinander
+sind die beiden sich nur bei **54 %** der 257 Songs einig.
+
+**Was der Mensch anders macht.** Er zählt keine Töne. Er hört, wo es zur
+Ruhe kommt: Spannung, die sich auflöst — die Dominante, die zur Tonika
+fällt. Das ist eine Aussage über den zeitlichen *Verlauf* und über
+*Erwartung*, nicht über Häufigkeit. Unsere Verfahren zählen dagegen
+Statistik über das ganze Stück, so als wollte man die Hauptfigur eines
+Romans dadurch bestimmen, welcher Name am häufigsten vorkommt.
+
+Genau daher der **Quintenfehler**: Der Baß spielt die fünfte Stufe
+häufig und betont — für die Statistik sieht sie aus wie der Grundton,
+fürs Ohr ist sie das Gegenteil, nämlich die Spannung, die noch aufgelöst
+werden will.
+
+**Und KI-Musik macht es besonders schwer.** Der naheliegende
+menschliche Griff — auf den Schluß hören — versagt hier am gründlichsten
+(21 %), weil Suno-Stücke oft ausblenden, im Instrumentalen enden oder
+mitten in der Phrase aufhören, statt zu kadenzieren. Nur **32 %** der
+Songs enden überhaupt auf dem Ton, den wir als Grundton führen.
+
+**Können Computer es also?** Ja — der Stand der Technik liegt bei
+70–85 % für klassische Popmusik, mit trainierten Netzen, die
+Akkordfolgen und Kadenzen lernen statt Töne zu zählen. Das ist eine
+andere Größenordnung von Aufwand als eine Häufigkeitszählung, und es
+setzt Material voraus, das sich an Konventionen hält.
+
+**Wichtig für die Einordnung:** Die 71 % oben sind *Konsistenz*, nicht
+*Richtigkeit*. Ein Verfahren kann verläßlich dasselbe Falsche sagen.
+Einen Maßstab für Richtigkeit haben wir nicht — der Prompt taugt nicht
+(siehe oben), und niemand hat die 321 Stücke von Hand bestimmt.
+
 ---
 
 ## Was alle vier gemeinsam haben
