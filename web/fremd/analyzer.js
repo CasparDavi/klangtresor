@@ -44,8 +44,6 @@
    in der Bühne nicht sinnvoll.
    --------------------------------------------------------------------- */
 .sunoanalyzer.eingebettet #instruments-section,
-.sunoanalyzer.eingebettet #essentia-section,
-.sunoanalyzer.eingebettet #stems-section,
 .sunoanalyzer.eingebettet #sa-transport,
 .sunoanalyzer.eingebettet #pp-btn,
 .sunoanalyzer.eingebettet #meta,
@@ -535,9 +533,6 @@
 .sunoanalyzer .gauge-track{position:absolute;left:0;right:0;top:0;height:100%;border-radius:3px}
 .sunoanalyzer .gauge-marker{position:absolute;top:-3px;width:2px;height:12px;border-radius:1px;background:#fff;transform:translateX(-50%);transition:left 0.4s}
 .sunoanalyzer canvas{width:100%;border-radius:4px;display:block}
-.sunoanalyzer #status{font-size:12px;color:#666;margin:4px 0}
-.sunoanalyzer #progress-wrap{height:3px;background:#222;border-radius:2px;margin:6px 0;overflow:hidden}
-.sunoanalyzer #progress-bar{height:100%;width:0%;background:#4b93f0;transition:width 0.3s}
 .sunoanalyzer #artwork{width:25%;max-width:200px;min-width:80px;border-radius:10px;object-fit:cover;display:none;flex-shrink:0;height:auto}
 .sunoanalyzer #meta{margin-bottom:10px;overflow:hidden}
 .sunoanalyzer #meta h2{font-size:15px;font-weight:500;margin-bottom:3px}
@@ -554,7 +549,7 @@
 .sunoanalyzer .section-status{font-size:9px;color:#444;margin-left:8px;vertical-align:middle}
 .sunoanalyzer #tt{position:fixed;background:#1e1e1e;border:0.5px solid #444;border-radius:6px;padding:6px 10px;font-size:12px;color:#eee;pointer-events:none;opacity:0;max-width:280px;line-height:1.5;z-index:9999;transition:opacity 0.1s;width:auto;height:auto}
 `;
-  const MARKUP = `<h1>Suno Audio Analyzer <span style="font-size:10px;color:#444;font-weight:400">v4.4 · Essentia+Demucs</span></h1>
+  const MARKUP = `<h1>Suno Audio Analyzer <span style="font-size:10px;color:#444;font-weight:400">v5 · offline</span></h1>
 <div id="tt"></div>
 
 <!-- Hier stand der Kopfbereich: ein Eingabefeld fuer eine Suno-Adresse,
@@ -849,76 +844,7 @@
   <div id="instruments-wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
 </div>
 
-<div class="section" id="essentia-section" style="display:none">
-  <div class="slbl">
-    <span><span class="nam">Instrument-Erkennung (Essentia MTG)</span> — <span class="erkl">Jamendo 40 Klassen</span></span>
-    <span style="display:flex;align-items:center;gap:8px">
-      <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:4px;cursor:pointer">
-        <input type="checkbox" id="essentia-toggle" checked style="accent-color:#4b93f0">aktiv
-      </label>
-      <span id="essentia-status" style="font-size:10px;color:#555"></span>
-    </span>
-  </div>
-  <div id="essentia-summary" style="font-size:11px;color:#888;margin:4px 0 6px;min-height:16px">Essentia noch nicht geladen.</div>
-  <div class="chart-outer" style="height:160px;max-height:160px;overflow-y:auto">
-    <canvas id="essentia-canvas" style="height:160px;background:#0a0a0a" class="chart-pending">berechne...</canvas>
-    <div class="playhead" id="ph-essentia"></div>
-  </div>
-</div>
 
-<div class="section" id="stems-section">
-  <div class="slbl">
-    <span><span class="nam">Stem-Trennung</span> — <span class="erkl">Demucs lokal</span></span>
-    <span style="display:flex;align-items:center;gap:8px">
-      <span id="stems-server-status" style="font-size:10px;color:#555">· prüfe Server...</span>
-    </span>
-  </div>
-  <div id="stems-unavailable" style="font-size:11px;color:#555;margin:4px 0 8px">
-    Server nicht verfügbar — starte:<br>
-    <code style="color:#4b93f0;font-size:10px">bash ~/demucs_watchdog.sh</code>
-    <span style="color:#444;font-size:10px"> oder </span>
-    <code style="color:#4b93f0;font-size:10px">source ~/demucs-env/bin/activate &amp;&amp; python3 ~/demucs_server.py</code>
-  </div>
-  <div id="stems-ui" style="display:none">
-    <!-- Settings row -->
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;padding:6px 8px;background:#0d0d0d;border-radius:6px">
-      <div style="display:flex;align-items:center;gap:5px">
-        <span style="font-size:10px;color:#555">Modell</span>
-        <select id="stems-model" onchange="__SA.stemsConfigChanged()" style="background:#111;color:#aaa;border:1px solid #333;border-radius:3px;font-size:10px;padding:2px 4px">
-          <option value="htdemucs">htdemucs (4 Stems)</option>
-          <option value="htdemucs_ft">htdemucs_ft (4 Stems, besser)</option>
-          <option value="htdemucs_6s">htdemucs_6s (6 Stems)</option>
-          <option value="mdx_extra">mdx_extra (4 Stems, Vocals++)</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <span style="font-size:10px;color:#555">Shifts</span>
-        <select id="stems-shifts" onchange="__SA.stemsConfigChanged()" style="background:#111;color:#aaa;border:1px solid #333;border-radius:3px;font-size:10px;padding:2px 4px">
-          <option value="0">0 (schnell)</option>
-          <option value="5">5 (besser)</option>
-          <option value="10">10 (langsam)</option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px">
-        <span style="font-size:10px;color:#555">Overlap</span>
-        <select id="stems-overlap" onchange="__SA.stemsConfigChanged()" style="background:#111;color:#aaa;border:1px solid #333;border-radius:3px;font-size:10px;padding:2px 4px">
-          <option value="0.25">0.25 (Standard)</option>
-          <option value="0.5">0.5</option>
-          <option value="0.75">0.75 (weniger Artefakte)</option>
-        </select>
-      </div>
-      <button id="stems-restart-btn" onclick="__SA.stemsRestart()" style="padding:3px 10px;font-size:10px;border:1px solid #555;border-radius:3px;background:#1a1a1a;color:#aaa;cursor:pointer;margin-left:auto">
-        ↺ Neu starten
-      </button>
-      <span id="stems-restart-status" style="font-size:10px;color:#555"></span>
-    </div>
-    <!-- Action row -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span id="stems-status" style="font-size:11px;color:#555"></span>
-    </div>
-    <div id="stems-players"></div>
-  </div>
-</div>
 
 
 <div id="sa-linien"></div>
@@ -1302,7 +1228,7 @@
 
     var audioCtx=null, songDuration=0;
 
-    var phIds=['befundspur','chromaspur','chromataktspur','stereospur','korrspur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro','essentia'];
+    var phIds=['befundspur','chromaspur','chromataktspur','stereospur','korrspur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro'];
 
     /* Der Knopf auf der Wellenform schaltet den Player der Buehne -
        er hat keinen eigenen mehr zu schalten. */
@@ -1360,18 +1286,11 @@
        weiter unten. Eine zweite waere derselbe Fehler wie ein zweiter
        Player, nur billiger. */
 
-    /* Beide schrieben in den Kopfbereich - das Eingabefeld fuer eine
-       Suno-Adresse samt Fortschrittsbalken. Den gibt es seit dem
-       25.08.2026 nicht mehr: Der Analyzer laeuft nur noch eingebettet,
-       und dort war der ganze Bereich ohnehin ausgeblendet, seine
-       Meldungen also unsichtbar.
-
-       Die Funktionen bleiben, weil 38 Stellen sie rufen - sie laufen
-       jetzt ins Leere statt auf ein fehlendes Element. Wer den Analyzer
-       wieder eigenstaendig betreiben will, legt die zwei Elemente an,
-       und die Meldungen erscheinen von selbst wieder. */
-    function setStatus(msg){var e=document.getElementById('status'); if(e) e.textContent=msg;}
-    function setProgress(pct){var e=document.getElementById('progress-bar'); if(e) e.style.width=pct+'%';}
+    /* Statuszeile und Fortschrittsbalken des Standalone sind mitsamt
+       ihrem Rueckweg aufgegeben (Caspar_D, 25.08.2026): setStatus und
+       setProgress geloescht, ihre CSS-Regeln auch. Was fertig ist,
+       zeigen die Karten selbst - chart-pending faellt, wenn ein Bild
+       bereitsteht. */
     /* Math.floor, nicht Math.round: Bei 59,6 s ergab round "0:60"
        (Review, 25.08.2026). zeitTxt unten ist derselbe Formatierer. */
     function fmt(s){var m=Math.floor(s/60),ss=Math.floor(s%60);return m+':'+(ss<10?'0':'')+ss;}
@@ -1409,31 +1328,6 @@
 
     document.getElementById('zoom-slider').oninput=updateZoom;
 
-    // redraw all charts with current view
-
-
-
-
-    function mixToMono(buf){
-      var ch0=buf.getChannelData(0);
-      var ch1=buf.numberOfChannels>1?buf.getChannelData(1):ch0;
-      var mono=new Float32Array(ch0.length);
-      for(var i=0;i<mono.length;i++)mono[i]=0.5*(ch0[i]+ch1[i]);
-      return mono;
-    }
-
-    function resampleLinear(input,srcRate,dstRate){
-      if(srcRate===dstRate)return new Float32Array(input);
-      var ratio=srcRate/dstRate;
-      var outLen=Math.max(1,Math.round(input.length/ratio));
-      var out=new Float32Array(outLen);
-      for(var i=0;i<outLen;i++){
-        var pos=i*ratio;
-        var lo=Math.floor(pos),hi=Math.min(lo+1,input.length-1);
-        out[i]=input[lo]+(pos-lo)*(input[hi]-input[lo]);
-      }
-      return out;
-    }
 
     /* ------------------------------------------------------------------
        Sparklines für die Karten.
@@ -1896,8 +1790,7 @@
         var farbe=eins?TAKT_EINS:TAKT_REST;
         t.push('<rect x="'+(xb-bx/2).toFixed(1)+'" y="'+oben.toFixed(1)+'" width="'+bx.toFixed(1)
           +'" height="'+h+'" fill="'+farbe+'" opacity="0.5"/>');
-        if(h>2) t.push('<rect x="'+(xb-bx/2).toFixed(1)+'" y="'+oben.toFixed(1)+'" width="'+bx.toFixed(1)
-          +'" height="1" fill="'+farbe+'"/>');
+        if(h>2) t.push(spurTopline(farbe, oben.toFixed(1), bx.toFixed(1), (xb-bx/2).toFixed(1)));
       }
       return t.join('');
     }
@@ -2112,8 +2005,7 @@
             teile.push('<rect x="'+x1.toFixed(1)+'" y="'+(y+1)+'" width="'+(x2-x1).toFixed(1)
               +'" height="'+(BF_BAHN-2)+'" fill="'+farbe+'" opacity="0.5" '
               +'data-t="'+t+'" class="bf-tref"><title>'+f.titel+'</title></rect>');
-            teile.push('<rect x="'+x1.toFixed(1)+'" y="'+y+'" width="'+(x2-x1).toFixed(1)
-              +'" height="1" fill="'+farbe+'"/>');
+            teile.push(spurTopline(farbe, y, (x2-x1).toFixed(1), x1.toFixed(1)));
           }
         });
       });
@@ -2555,9 +2447,12 @@
     var SPUR_DECKUNG=0.66;      /* Füllung unter der Kurve */
     var SPUR_KONTUR=1;          /* Strichstärke der Kurve in Bildpunkten */
 
-    /* Die Topline einer Bahn. y ist ihr oberer Rand. */
-    function spurTopline(farbe, y, breite){
-      return '<rect x="0" y="'+(y||0)+'" width="'+(breite||SPUR_W)+'" height="1" fill="'+farbe+'"/>';
+    /* Die Topline einer Bahn oder eines Blocks. y ist ihr oberer Rand;
+       x und breite grenzen sie ein (ohne beides: volle Spurbreite).
+       deckung nur, wo sie gedimmt liegen muss (Chroma-Zellen). */
+    function spurTopline(farbe, y, breite, x, deckung){
+      return '<rect x="'+(x||0)+'" y="'+(y||0)+'" width="'+(breite||SPUR_W)
+        +'" height="1" fill="'+farbe+'"'+(deckung?' opacity="'+deckung+'"':'')+'/>';
     }
     /* Fläche + Kontur eines Kurvenzugs in der Hausfarbe. */
     function spurZug(pfade, farbe, opt){
@@ -2573,7 +2468,7 @@
     /* Ein ganzes Spurbild: Rahmen, Topline, Inhalt. */
     function spurBild(H, farbe, inhalt, opt){
       opt=opt||{};
-      return '<svg viewBox="0 0 '+SPUR_W+' '+H+'" preserveAspectRatio="none">'
+      return '<svg viewBox="0 0 '+SPUR_W+' '+H+'" preserveAspectRatio="none" data-h="'+H+'">'
         + (opt.vor||'')
         + (opt.ohneTopline ? '' : spurTopline(farbe, 0))
         + inhalt
@@ -3318,13 +3213,11 @@
           var farbe=WEISSE_TASTE[n]?TASTE_HELL:TASTE_DUNKEL;
           t.push('<rect x="'+xa.toFixed(1)+'" y="'+(cy-hw).toFixed(2)+'" width="'+(xb-xa).toFixed(1)
             +'" height="'+(hw*2).toFixed(2)+'" fill="'+farbe+'" opacity="0.45"/>');
-          t.push('<rect x="'+xa.toFixed(1)+'" y="'+(cy-hw).toFixed(2)+'" width="'+(xb-xa).toFixed(1)
-            +'" height="1" fill="'+farbe+'" opacity="0.85"/>');
+          t.push(spurTopline(farbe, (cy-hw).toFixed(2), (xb-xa).toFixed(1), xa.toFixed(1), 0.85));
         }
         rt.push('<rect x="'+xa.toFixed(1)+'" y="2" width="'+(xb-xa).toFixed(1)
           +'" height="7" fill="'+TEIL_FARBE[z[2]]+'" opacity="0.55"/>');
-        rt.push('<rect x="'+xa.toFixed(1)+'" y="2" width="'+(xb-xa).toFixed(1)
-          +'" height="1" fill="'+TEIL_FARBE[z[2]]+'" opacity="0.9"/>');
+        rt.push(spurTopline(TEIL_FARBE[z[2]], 2, (xb-xa).toFixed(1), xa.toFixed(1), 0.9));
       }
       t.push('</svg>'); rt.push('</svg>');
       host.innerHTML=t.join('');
@@ -3399,10 +3292,14 @@
         }
         return Math.sqrt(Math.max(0, s1*s1 + s2*s2 - cw*s1*s2))/N;
       }
-      /* Beide Kanaele, und zwar die BETRAEGE addiert - nicht die Signale
-         vorher zusammenmischen. Gegenphasiges loescht sich beim Mischen
-         aus, und genau solche Stellen meldet die Befundspur als
-         Ausloeschung; sie duerfen im Chroma nicht verschwinden. */
+      /* Beide Kanaele, die BETRAEGE addiert - nicht vorher mischen:
+         Gegenphasiges loescht sich beim Mischen aus, und genau solche
+         Stellen duerfen im Chroma nicht verschwinden. Seit dem
+         25.08.2026 haelt die Seite den rechten Kanal allerdings nicht
+         mehr vor (53 MB je Song, und die massgebliche Zonen-Messung
+         kommt laengst aus bin/toene.js, das beide Kanaele aus der WAV
+         liest). Dieses Werkzeug misst dann mono; wer die Stereo-Summe
+         braucht, setzt window._audioSamplesR von Hand und ruft neu. */
       function goertzel(von, N, f){
         var e=goertzelKanal(roh, von, N, f);
         if(rohR) e+=goertzelKanal(rohR, von, N, f);
@@ -3577,8 +3474,7 @@
           teile2.push('<rect x="'+xa.toFixed(1)+'" y="'+(cy-hw).toFixed(2)
             +'" width="'+(xb-xa).toFixed(1)+'" height="'+(hw*2).toFixed(2)
             +'" fill="'+farbe+'" opacity="0.45"/>');
-          teile2.push('<rect x="'+xa.toFixed(1)+'" y="'+(cy-hw).toFixed(2)
-            +'" width="'+(xb-xa).toFixed(1)+'" height="1" fill="'+farbe+'" opacity="0.85"/>');
+          teile2.push(spurTopline(farbe, (cy-hw).toFixed(2), (xb-xa).toFixed(1), xa.toFixed(1), 0.85));
         }
       }
       teile2.push('</svg>');
@@ -3599,8 +3495,7 @@
           if(rxb<=rxa) continue;
           rt.push('<rect x="'+rxa.toFixed(1)+'" y="2" width="'+(rxb-rxa).toFixed(1)
             +'" height="7" fill="'+TEIL_FARBE[zz.teil]+'" opacity="0.55"/>');
-          rt.push('<rect x="'+rxa.toFixed(1)+'" y="2" width="'+(rxb-rxa).toFixed(1)
-            +'" height="1" fill="'+TEIL_FARBE[zz.teil]+'" opacity="0.9"/>');
+          rt.push(spurTopline(TEIL_FARBE[zz.teil], 2, (rxb-rxa).toFixed(1), rxa.toFixed(1), 0.9));
         }
         rt.push('</svg>');
         rhost.innerHTML=rt.join('');
@@ -4522,770 +4417,8 @@
         +'</svg>';
     }
 
-    // ===== ESSENTIA MTG INSTRUMENT RECOGNITION (ONNX) =====
-    var _essentiaEffnetSession=null, _essentiaInstrSession=null, _essentiaRunning=false;
 
-    // MTG Jamendo 40 instrument classes
-    var ESSENTIA_CLASSES=[
-      'accordion','acousticbassguitar','acousticguitar','bass','beat',
-      'bell','bongo','brass','cello','clarinet',
-      'classicalguitar','computer','doublebass','drummachine','drums',
-      'electricguitar','electricpiano','flute','guitar','harmonica',
-      'harp','horn','keyboard','male_opera','mandolin',
-      'oboe','orchestra','organ','pad','percussion',
-      'piano','pizzicato','sampler','saxophone','strings',
-      'synthesizer','trombone','trumpet','viola','violin'
-    ];
 
-    // Base URL for models on GitHub Pages
-    var ESSENTIA_MODEL_BASE='https://caspardavi.github.io/suno-analyzer/models/';
-
-    async function ensureEssentiaModels(){
-      var st=document.getElementById('essentia-status');
-      if(!_essentiaEffnetSession){
-        if(st)st.textContent='· lade Effnet...';
-        _essentiaEffnetSession=await ort.InferenceSession.create(
-          ESSENTIA_MODEL_BASE+'discogs-effnet-bsdynamic-1.onnx',
-          {executionProviders:['wasm']}
-        );
-      }
-      if(!_essentiaInstrSession){
-        if(st)st.textContent='· lade Instrument-Modell...';
-        _essentiaInstrSession=await ort.InferenceSession.create(
-          ESSENTIA_MODEL_BASE+'mtg_jamendo_instrument-discogs-effnet-1.onnx',
-          {executionProviders:['wasm']}
-        );
-      }
-      if(st)st.textContent='';
-    }
-
-    // Essentia Effnet Mel Spectrogram
-    // Params: sr=16000, frameSize=512, hopSize=256, melBands=128,
-    //         patchFrames=96, lowFreq=0, highFreq=8000, normalize=unit_sum
-    // Slaney mel scale, hann window, log(x+1e-6)
-
-    function hannWindow(n){
-      var w=new Float32Array(n);
-      for(var i=0;i<n;i++) w[i]=0.5*(1-Math.cos(2*Math.PI*i/(n-1)));
-      return w;
-    }
-
-    function stftMagnitude(frame, fftSize){
-      // Radix-2 Cooley-Tukey FFT
-      var N=fftSize;
-      var re=new Float32Array(N);
-      var im=new Float32Array(N);
-      for(var i=0;i<Math.min(frame.length,N);i++) re[i]=frame[i];
-
-      // Bit-reversal permutation
-      var bits=Math.log2(N);
-      for(var i=0;i<N;i++){
-        var j=0;
-        for(var b=0;b<bits;b++) j=(j<<1)|((i>>b)&1);
-        if(j>i){var t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}
-      }
-
-      // FFT butterfly
-      for(var len=2;len<=N;len<<=1){
-        var ang=-2*Math.PI/len;
-        var wRe=Math.cos(ang),wIm=Math.sin(ang);
-        for(var i=0;i<N;i+=len){
-          var curRe=1,curIm=0;
-          for(var j=0;j<len/2;j++){
-            var uRe=re[i+j],uIm=im[i+j];
-            var vRe=re[i+j+len/2]*curRe-im[i+j+len/2]*curIm;
-            var vIm=re[i+j+len/2]*curIm+im[i+j+len/2]*curRe;
-            re[i+j]=uRe+vRe;im[i+j]=uIm+vIm;
-            re[i+j+len/2]=uRe-vRe;im[i+j+len/2]=uIm-vIm;
-            var newRe=curRe*wRe-curIm*wIm;
-            curIm=curRe*wIm+curIm*wRe;curRe=newRe;
-          }
-        }
-      }
-
-      // Magnitude of positive frequencies only
-      var bins=N/2+1;
-      var mag=new Float32Array(bins);
-      for(var k=0;k<bins;k++) mag[k]=Math.sqrt(re[k]*re[k]+im[k]*im[k]);
-      return mag;
-    }
-
-    function buildSlaneyMelFilterbank(sr, fftSize, nMels, fMin, fMax){
-      // Slaney mel scale (used by librosa default and Essentia)
-      function hzToMel(hz){
-        var f0=700, sp=1/1127;
-        return (hz<=1000) ? hz/100 : (1+Math.log(hz/1000)/Math.log(6.4))*15;
-      }
-      // Actually use HTK mel (simpler, also used):
-      function hzToMelHTK(hz){ return 2595*Math.log10(1+hz/700); }
-      function melToHzHTK(mel){ return 700*(Math.pow(10,mel/2595)-1); }
-
-      var melMin=hzToMelHTK(fMin), melMax=hzToMelHTK(fMax);
-      var melPoints=new Float32Array(nMels+2);
-      for(var i=0;i<nMels+2;i++) melPoints[i]=melMin+i*(melMax-melMin)/(nMels+1);
-
-      var freqPoints=new Float32Array(nMels+2);
-      for(var i=0;i<nMels+2;i++) freqPoints[i]=melToHzHTK(melPoints[i]);
-
-      var bins=fftSize/2+1;
-      var fftFreqs=new Float32Array(bins);
-      for(var i=0;i<bins;i++) fftFreqs[i]=i*sr/fftSize;
-
-      // Build filterbank [nMels x bins]
-      var fb=[];
-      for(var m=0;m<nMels;m++){
-        var filt=new Float32Array(bins);
-        var fLow=freqPoints[m], fCenter=freqPoints[m+1], fHigh=freqPoints[m+2];
-        var norm=2/(fHigh-fLow); // unit_sum normalization
-        for(var i=0;i<bins;i++){
-          var f=fftFreqs[i];
-          if(f>=fLow&&f<=fCenter) filt[i]=norm*(f-fLow)/(fCenter-fLow);
-          else if(f>fCenter&&f<=fHigh) filt[i]=norm*(fHigh-f)/(fHigh-fCenter);
-        }
-        fb.push(filt);
-      }
-      return fb;
-    }
-
-    var _melFB=null, _hannWin=null;
-
-    function computeMelSpectrogram(audio, sr){
-      var SR=16000, FRAME=512, HOP=256, MELS=128, PATCH=96;
-      var fLow=0, fHigh=8000;
-
-      // Build filterbank once
-      if(!_melFB){
-        _melFB=buildSlaneyMelFilterbank(SR,FRAME,MELS,fLow,fHigh);
-        _hannWin=hannWindow(FRAME);
-      }
-
-      var bins=FRAME/2+1;
-      var patches=[];
-      var melFrames=[];
-
-      // Compute mel frames for entire audio
-      for(var i=0;i+FRAME<=audio.length;i+=HOP){
-        // Apply hann window
-        var frame=new Float32Array(FRAME);
-        for(var j=0;j<FRAME;j++) frame[j]=audio[i+j]*_hannWin[j];
-
-        // FFT magnitude
-        var mag=stftMagnitude(frame,FRAME);
-
-        // Apply mel filterbank
-        var melFrame=new Float32Array(MELS);
-        for(var m=0;m<MELS;m++){
-          var s=0;
-          for(var k=0;k<bins;k++) s+=mag[k]*_melFB[m][k];
-          melFrame[m]=Math.log(s+1e-6); // log compression
-        }
-        melFrames.push(melFrame);
-      }
-
-      // Slice into patches of PATCH frames
-      var patchHop=Math.floor(PATCH/4); // 75% overlap = 4x temporal resolution, better for transients
-      for(var i=0;i+PATCH<=melFrames.length;i+=patchHop){
-        // Shape: [128, 96] — melBands x frames
-        var patch=new Float32Array(MELS*PATCH);
-        for(var t=0;t<PATCH;t++){
-          for(var m=0;m<MELS;m++){
-            patch[m*PATCH+t]=melFrames[i+t][m];
-          }
-        }
-        patches.push(patch);
-      }
-      return patches;
-    }
-
-    async function runEssentiaFrame(melPatch){
-      // Input shape: [1, 128, 96]
-      var tensor=new ort.Tensor('float32', melPatch, [1,128,96]); // [batch, melBands, frames]
-      var inputName=_essentiaEffnetSession.inputNames[0];
-      var effnetOut=await _essentiaEffnetSession.run({[inputName]:tensor});
-      // Get embeddings (second output, shape [1,1280])
-      var embName=_essentiaEffnetSession.outputNames[1]||_essentiaEffnetSession.outputNames[0];
-      var embeddings=effnetOut[embName].data;
-
-      // Run instrument head
-      var embTensor=new ort.Tensor('float32',embeddings,[1,embeddings.length]);
-      var instrInputName=_essentiaInstrSession.inputNames[0];
-      var instrOut=await _essentiaInstrSession.run({[instrInputName]:embTensor});
-      var instrName=_essentiaInstrSession.outputNames[0];
-      return Array.from(instrOut[instrName].data);
-    }
-
-    async function runEssentia(buf){
-      var enabled=document.getElementById('essentia-toggle');
-      if(enabled&&!enabled.checked)return;
-      if(_essentiaRunning)return;
-      _essentiaRunning=true;
-      var section=document.getElementById('essentia-section');
-      var status=document.getElementById('essentia-status');
-      var summary=document.getElementById('essentia-summary');
-      if(section)section.style.display='block';
-      if(summary)summary.textContent='Lade Essentia-Modelle...';
-      try{
-        if(typeof ort==='undefined'){
-          if(summary)summary.textContent='ONNX Runtime nicht geladen';
-          _essentiaRunning=false;return;
-        }
-        await ensureEssentiaModels();
-        if(status)status.textContent='· verarbeite Audio...';
-
-        // Resample to 16kHz
-        var mono=mixToMono(buf);
-        var audio16=resampleLinear(mono,buf.sampleRate,16000);
-
-        // Compute mel patches and run inference
-        var patches=computeMelSpectrogram(audio16,16000);
-        var timeline=[];
-        var accumulated=new Float32Array(ESSENTIA_CLASSES.length);
-
-        for(var i=0;i<patches.length;i++){
-          var scores=await runEssentiaFrame(patches[i]);
-          timeline.push(Array.from(scores));
-          for(var j=0;j<scores.length;j++) accumulated[j]+=scores[j];
-          if(i%5===0){
-            var pct=Math.round(100*(i+1)/patches.length);
-            if(status)status.textContent='· '+pct+'%';
-            await new Promise(function(r){setTimeout(r,0);});
-          }
-        }
-
-        // Mean scores
-        var mean=Array.from(accumulated).map(function(v){return v/patches.length;});
-        var top=mean.map(function(v,i){return {name:ESSENTIA_CLASSES[i],score:v};})
-          .sort(function(a,b){return b.score-a.score;})
-          .slice(0,8);
-
-        if(summary)summary.innerHTML='<span style="color:#4b93f0">Top Instrumente:</span> '+
-          top.filter(function(x){return x.score>0.1;})
-            .map(function(x){return x.name+' '+(x.score*100).toFixed(0)+'%';})
-            .join(' · ');
-
-        window._chartData.essentia={timeline:timeline,duration:buf.duration,classes:ESSENTIA_CLASSES,mean:mean};
-        if(section)section.style.display='block';
-        drawEssentiaTimeline(timeline,buf.duration);
-        if(status)status.textContent='';
-      }catch(e){
-        console.error('Essentia error',e);
-        if(summary)summary.textContent='Essentia Fehler: '+e.message;
-      }
-      _essentiaRunning=false;
-    }
-
-    function drawEssentiaTimeline(timeline,duration){
-      var c=document.getElementById('essentia-canvas');
-      if(!c||!timeline||!timeline.length)return;
-
-      // Sum signal over all time points per class, sort descending, take top 10
-      var sums=ESSENTIA_CLASSES.map(function(cls,r){
-        var sum=0;
-        for(var i=0;i<timeline.length;i++) sum+=timeline[i][r]||0;
-        return {name:cls,idx:r,sum:sum};
-      });
-      sums.sort(function(a,b){return b.sum-a.sum;});
-      var top10=sums.slice(0,10);
-
-      var dpr=devicePixelRatio||1;
-      var rowH=16;
-      var h=top10.length*rowH;
-      c.style.height=h+'px';
-      var w=c.clientWidth||c.offsetWidth||820;
-      c.width=w*dpr;c.height=h*dpr;
-      var ctx=c.getContext('2d');
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      ctx.clearRect(0,0,w,h);
-      var view=getView?getView():{start:0,end:1};
-      var s=Math.max(0,Math.floor(view.start*timeline.length));
-      var e=Math.min(timeline.length,Math.max(s+1,Math.ceil(view.end*timeline.length)));
-      var slice=timeline.slice(s,e);
-      var colW=Math.max(1,w/slice.length+0.5);
-
-      top10.forEach(function(item,row){
-        var r=item.idx; // original class index — preserves color
-        var y=row*rowH;
-        ctx.fillStyle=row%2===0?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.1)';
-        ctx.fillRect(0,y,w,rowH-1);
-        slice.forEach(function(frame,i){
-          var val=Math.min(1,Math.max(0,(frame[r]||0)*5));
-          if(val<0.05)return;
-          var alpha=Math.min(0.97,0.1+val*0.87);
-          var hue=r/ESSENTIA_CLASSES.length*240; // color from original index
-          ctx.fillStyle='hsla('+hue+',70%,65%,'+alpha.toFixed(2)+')';
-          ctx.fillRect(Math.floor(i/slice.length*w),y,colW,rowH-1);
-        });
-        ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(0,y,86,rowH-1);
-        ctx.fillStyle='#9aa6b2';ctx.font='9px system-ui';
-        ctx.fillText(item.name,3,y+rowH-4);
-      });
-      markReady('essentia-canvas');
-      drawTimeAxis(ctx,w,h,duration);
-      var outer=c.parentElement;
-      if(outer)outer.style.height=h+'px';
-    }
-    // ===== END ESSENTIA =====
-
-
-    // ===== DEMUCS STEM SEPARATION =====
-    // Try https first (Safari), fall back to http (Chrome)
-    var DEMUCS_URL='http://localhost:5001';
-    async function detectDemucsURL(){
-      for(var proto of ['https','http']){
-        try{
-          var r=await fetch(proto+'://localhost:5001/status',{signal:AbortSignal.timeout(2000)});
-          if(r.ok){DEMUCS_URL=proto+'://localhost:5001';return;}
-        }catch(e){}
-      }
-    }
-    /* Lief bisher bei jedem Aufbau und fragte Port 5001 in zwei
-       Protokollen ab - auch mit stillgelegter Stem-Trennung. Damit war
-       der Analyzer trotz allem nicht netzfrei. */
-    if (OPT.demucs) detectDemucsURL();
-    var _stemsCache=null;
-    var _stemBuffers={};
-    var _stemNodes={};
-    var _stemCtx=null;
-    var _stemPlaying=false;
-    var _stemStartTime=0;
-    var _stemOffset=0;
-    var _stemMuted={};
-    var _stemNames=[];
-    /* ======================================================================
-       DIE SECHS SPUREN, NACH ZUVERLAESSIGKEIT GEORDNET
-
-       Diese Reihenfolge bestimmt dreierlei: die Farbe, den Platz in der
-       Anzeige und den Platz im Abspieler. Sie steht hier einmal, damit
-       nicht wieder zwei Tabellen mit verschiedenen Farben nebeneinander
-       laufen - genau das war bis zum 24.08.2026 der Fall.
-
-       WIE ZUVERLAESSIG - die Reihenfolge selbst:
-
-       Schlagzeug und Bass trennt htdemucs_6s am sichersten. Beide haben
-       eine unverwechselbare Signatur: das eine breitbandig und kurz, das
-       andere tief und dauerhaft. Der Gesang folgt dicht dahinter; er ist
-       gut trennbar, aber Atmer, Chorstimmen und Hall wandern gelegentlich
-       ab.
-
-       Gitarre und Klavier hat erst das Sechs-Spur-Modell hinzugewonnen,
-       und sie sind die schwaechsten. Beide sind angeschlagene Saiten im
-       selben Tonbereich, das Modell verwechselt sie untereinander. Das
-       Klavier ist das unsicherste von beiden; der Verdacht steht in
-       docs/OFFEN.md - bei "Okkultation" klingt es in 95 % des Stuecks,
-       was eher nach aufgefangener Restenergie aussieht.
-
-       Der Rest ist zuletzt, weil er per Definition alles ist, was uebrig
-       blieb. Keine Aussage, sondern ein Rest.
-
-       WIE AUFFAELLIG - die Farben dazu:
-
-       (Caspar_D, 24.08.2026: "warme farben sind die auffaelligsten farben,
-       nahe rot fuehrt, mit gelb am ende, dann kommen die kalten, blau am
-       start, gruene am ende, dann kommen unbunte farben, grau am ende.")
-
-       Das ist die Rangfolge aus den Untersuchungen zur Farbwirkung auf
-       Websites, und sie passt hier genau: Die sicherste Spur bekommt die
-       auffaelligste Farbe, die unsicherste die zurueckhaltendste. Wer auf
-       die Analyse schaut, sieht am Farbton, wie sehr er der Spur trauen
-       kann, ohne eine Legende zu lesen.
-
-         warm   Rot . Orange . Gelb
-         kalt   Blau . Gruen
-         unbunt Grau
-
-       Waeren mehr als sechs Spuren zu vergeben, kaemen zwischen kalt und
-       unbunt noch Violett und Braun.
-
-       Nachgemessen im OKLab-Raum: das engste Paar der sechs liegt bei
-       0,152 - ueber der Schwelle von 0,10, ab der zwei Farben
-       nebeneinander noch zu unterscheiden sind. Die Hexzahlen tragen
-       ihren Namen dabei; aus "#4b93f0" liest niemand ein Blau. */
-    var STEM_RANG = [
-      { id:'drums',  farbe:'#e31c79', name:'Schlagzeug' },  /* Rot    */
-      { id:'bass',   farbe:'#fba04f', name:'Bass'       },  /* Orange */
-      { id:'vocals', farbe:'#d8d81c', name:'Gesang'     },  /* Gelb   */
-      { id:'guitar', farbe:'#4b93f0', name:'Gitarre'    },  /* Blau   */
-      { id:'piano',  farbe:'#16be5c', name:'Klavier'    },  /* Gruen  */
-      { id:'other',  farbe:'#b0b0b6', name:'Rest'       }   /* Grau   */
-    ];
-    var STEM_FARBE = {}, STEM_NAME = {}, STEM_PLATZ = {};
-    STEM_RANG.forEach(function(s, i){
-      STEM_FARBE[s.id] = s.farbe; STEM_NAME[s.id] = s.name; STEM_PLATZ[s.id] = i;
-    });
-    /* Unbekannte Spuren haengen hinten an, in der Reihenfolge, in der sie
-       ankamen - sie verlieren ihren Platz nicht, sie bekommen nur keinen
-       vorderen. */
-    function stemsNachRang(namen){
-      return namen.slice().sort(function(a, b){
-        var pa = STEM_PLATZ[a], pb = STEM_PLATZ[b];
-        if (pa === undefined && pb === undefined) return namen.indexOf(a) - namen.indexOf(b);
-        if (pa === undefined) return 1;
-        if (pb === undefined) return -1;
-        return pa - pb;
-      });
-    }
-    var _stemColors = STEM_FARBE;
-    var _stemLabels = STEM_NAME;
-
-    async function checkDemucsServer(){
-      var statusEl=document.getElementById('stems-server-status');
-      var unavailEl=document.getElementById('stems-unavailable');
-      var uiEl=document.getElementById('stems-ui');
-      try{
-        var r=await fetch(DEMUCS_URL+'/status',{signal:AbortSignal.timeout(2000)});
-        if(r.ok){
-          var d=await r.json();
-          var stemCount=d.stems?d.stems.length:4;
-          if(statusEl){statusEl.textContent='· '+d.model+' ('+stemCount+' Stems)';statusEl.style.color='#3a7';}
-          if(unavailEl)unavailEl.style.display='none';
-          if(uiEl)uiEl.style.display='block';
-          stemsUpdateSelects(d);
-          showDummyStems(d.stems||['vocals','drums','bass','other']);
-          return true;
-        }
-      }catch(e){}
-      if(statusEl){statusEl.textContent='· Server nicht erreichbar';statusEl.style.color='#a55';}
-      if(unavailEl)unavailEl.style.display='block';
-      if(uiEl)uiEl.style.display='none';
-      return false;
-    }
-
-
-    async function buildStemPlayers(stems,names){
-      var el=document.getElementById('stems-players');
-      if(!el)return;
-
-      // Decode all stems into AudioBuffers
-      if(!_stemCtx||_stemCtx.state==='closed')
-        _stemCtx=new(window.AudioContext||window.webkitAudioContext)();
-
-      _stemBuffers={};
-      _stemMuted={};
-      await Promise.all(names.map(async function(name){
-        if(!stems[name])return;
-        var bin=atob(stems[name]);
-        var ab=new ArrayBuffer(bin.length);
-        var v=new Uint8Array(ab);
-        for(var i=0;i<bin.length;i++)v[i]=bin.charCodeAt(i);
-        _stemBuffers[name]=await _stemCtx.decodeAudioData(ab);
-        _stemMuted[name]=false;
-      }));
-
-      var dur=Object.values(_stemBuffers)[0]?Object.values(_stemBuffers)[0].duration:0;
-      var hasDummy=!!document.getElementById('stem-canvas-'+names[0]);
-
-      // Only rebuild HTML if no dummy exists yet
-      if(!hasDummy) el.innerHTML='<div style="background:#0a0a0a;border-radius:8px;padding:10px 12px;border:1px solid #1a1a1a">'
-        // Transport
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<button id="stems-pp" onclick="stemTogglePlay()" style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:12px;cursor:pointer">▶</button>'
-        +'<button onclick="stemStop()" style="width:28px;height:28px;border-radius:50%;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:12px;cursor:pointer">■</button>'
-        +'<span id="stems-cur-time" style="font-size:10px;color:#555;min-width:36px">0:00</span>'
-        +'<span style="font-size:10px;color:#333">/ '+fmt(dur)+'</span>'
-        +'</div>'
-        // Waveform rows — mute button and download float over canvas
-        +names.filter(function(n){return _stemBuffers[n];}).map(function(name){
-          var col=_stemColors[name]||'#888';
-          var lbl=_stemLabels[name]||name;
-          var dlUrl='data:audio/mpeg;base64,'+stems[name];
-          return '<div style="margin-bottom:3px">'
-            +'<div class="chart-outer" style="height:44px;cursor:pointer" onclick="stemSeekClick(event,this)">'
-            +'<canvas id="stem-canvas-'+name+'" style="height:44px;background:#0a0a0a"></canvas>'
-            +'<div class="playhead" id="ph-stem-'+name+'"></div>'
-            +'<button id="stem-mute-'+name+'" onclick="event.stopPropagation();stemToggleMute(\''+name+'\')" '
-            +'title="'+lbl+' — klicken zum Stumm schalten" '
-            +'style="position:absolute;left:0;top:0;height:100%;min-width:58px;border:none;'
-            +'border-right:1px solid '+col+'44;background:'+col+'33;color:'+col+';'
-            +'font-size:10px;font-weight:600;cursor:pointer;letter-spacing:0.5px">'+lbl+'</button>'
-            +'<a id="stem-dl-'+name+'" href="'+dlUrl+'" download="'+name+'.mp3" onclick="event.stopPropagation()" '
-            +'style="position:absolute;right:0;top:0;height:100%;width:28px;display:flex;'
-            +'align-items:center;justify-content:center;border-left:1px solid #1a1a1a;'
-            +'background:#0d0d0d;color:#555;font-size:12px;text-decoration:none">↓</a>'
-            +'</div>'
-            +'</div>';
-        }).join('')
-        +'</div>';
-
-      // Draw waveforms — fills dummy canvases or newly created ones
-      // Update time display with real duration
-      var timeEl=document.getElementById('stems-cur-time');
-      if(timeEl)timeEl.nextSibling&&(timeEl.nextSibling.textContent='/ '+fmt(dur));
-      // Re-enable mute buttons
-      names.forEach(function(name){
-        var btn=document.getElementById('stem-mute-'+name);
-        if(btn){
-          var col=_stemColors[name]||'#888';
-          btn.style.color=col;
-          btn.style.cursor='pointer';
-          btn.onclick=function(){stemToggleMute(name);};
-        }
-        var dlBtn=document.getElementById('stem-dl-'+name);
-        if(dlBtn&&stems&&stems[name]){
-          dlBtn.href='data:audio/mpeg;base64,'+stems[name];
-          dlBtn.style.color='#555';
-        }
-      });
-      names.forEach(function(name){
-        if(_stemBuffers[name])drawStemWaveform(name,_stemBuffers[name]);
-      });
-
-      _stemOffset=0;_stemPlaying=false;
-      stemVuLoop();
-    }
-
-    function drawStemWaveform(name,buf){
-      var c=document.getElementById('stem-canvas-'+name);
-      if(!c)return;
-      var col=_stemColors[name]||'#888';
-      var dpr=devicePixelRatio||1;
-      var w=c.clientWidth||c.offsetWidth||800;
-      var h=40;
-      c.width=w*dpr;c.height=h*dpr;
-      var ctx=c.getContext('2d');
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      ctx.clearRect(0,0,w,h);
-
-      var data=buf.getChannelData(0);
-      var view=getView?getView():{start:0,end:1};
-      var s=Math.floor(view.start*data.length);
-      var e=Math.ceil(view.end*data.length);
-      var slice=data.subarray(s,e);
-      var step=Math.max(1,Math.floor(slice.length/w));
-      var mid=h/2;
-
-      // Fill background with dark tint
-      ctx.fillStyle='#0d0d0d';
-      ctx.fillRect(0,0,w,h);
-
-      // Waveform fill
-      ctx.beginPath();
-      ctx.moveTo(0,mid);
-      for(var i=0;i<w;i++){
-        var idx=Math.floor(i*slice.length/w);
-        var max=0;
-        for(var j=0;j<step&&idx+j<slice.length;j++)max=Math.max(max,Math.abs(slice[idx+j]));
-        ctx.lineTo(i,mid-max*mid*0.9);
-      }
-      for(var i=w-1;i>=0;i--){
-        var idx=Math.floor(i*slice.length/w);
-        var max=0;
-        for(var j=0;j<step&&idx+j<slice.length;j++)max=Math.max(max,Math.abs(slice[idx+j]));
-        ctx.lineTo(i,mid+max*mid*0.9);
-      }
-      ctx.closePath();
-      ctx.fillStyle=col+'cc';
-      ctx.fill();
-
-      // Center line
-      ctx.strokeStyle=col+'33';
-      ctx.lineWidth=0.5;
-      ctx.beginPath();ctx.moveTo(0,mid);ctx.lineTo(w,mid);ctx.stroke();
-
-      markReady('stem-canvas-'+name);
-    }
-
-    function stemCreateNodes(offset){
-      Object.values(_stemNodes).forEach(function(n){try{n.source.stop();}catch(e){}});
-      _stemNodes={};
-      Object.keys(_stemBuffers).forEach(function(name){
-        var source=_stemCtx.createBufferSource();
-        source.buffer=_stemBuffers[name];
-        var gain=_stemCtx.createGain();
-        gain.gain.value=_stemMuted[name]?0:1;
-        source.connect(gain);
-        gain.connect(_stemCtx.destination);
-        _stemNodes[name]={source:source,gain:gain};
-      });
-      var when=_stemCtx.currentTime+0.05;
-      Object.values(_stemNodes).forEach(function(n){n.source.start(when,offset);});
-      _stemStartTime=when-offset;
-    }
-
-    function stemTogglePlay(){
-      if(!Object.keys(_stemBuffers).length)return;
-      if(_stemCtx.state==='suspended')_stemCtx.resume();
-      if(_stemPlaying){
-        _stemOffset=_stemCtx.currentTime-_stemStartTime;
-        Object.values(_stemNodes).forEach(function(n){try{n.source.stop();}catch(e){}});
-        _stemNodes={};
-        _stemPlaying=false;
-        document.getElementById('stems-pp').textContent='▶';
-      } else {
-        /* Hier hielt der Analyzer seinen eigenen Player an. Es gibt
-           nur noch einen, und der gehoert der Buehne - die Stems sind
-           ohnehin stillgelegt (1.4). */
-        stemCreateNodes(_stemOffset);
-        _stemPlaying=true;
-        document.getElementById('stems-pp').textContent='⏸';
-      }
-    }
-
-    function stemStop(){
-      Object.values(_stemNodes).forEach(function(n){try{n.source.stop();}catch(e){}});
-      _stemNodes={};
-      _stemPlaying=false;
-      _stemOffset=0;
-      var pp=document.getElementById('stems-pp');
-      if(pp)pp.textContent='▶';
-      updateStemPlayheads(0);
-    }
-
-    function stemToggleMute(name){
-      _stemMuted[name]=!_stemMuted[name];
-      var btn=document.getElementById('stem-mute-'+name);
-      if(btn){btn.style.opacity=_stemMuted[name]?'0.3':'1';btn.style.textDecoration=_stemMuted[name]?'line-through':'none';}
-      if(_stemNodes[name])_stemNodes[name].gain.gain.setTargetAtTime(_stemMuted[name]?0:1,_stemCtx.currentTime,0.02);
-    }
-
-    function stemSeekClick(e,outer){
-      if(!Object.keys(_stemBuffers).length)return;
-      var rect=outer.getBoundingClientRect();
-      var pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-      var dur=Object.values(_stemBuffers)[0].duration;
-      _stemOffset=pct*dur;
-      if(_stemPlaying){
-        Object.values(_stemNodes).forEach(function(n){try{n.source.stop();}catch(e){}});
-        stemCreateNodes(_stemOffset);
-      }
-      updateStemPlayheads(pct);
-    }
-
-    function updateStemPlayheads(pct){
-      _stemNames.forEach(function(name){
-        var ph=document.getElementById('ph-stem-'+name);
-        var c=document.getElementById('stem-canvas-'+name);
-        if(!ph||!c)return;
-        ph.style.display='block';
-        ph.style.left=Math.round(pct*c.offsetWidth)+'px';
-      });
-      var t=document.getElementById('stems-cur-time');
-      var dur=Object.values(_stemBuffers).length?Object.values(_stemBuffers)[0].duration:0;
-      if(t)t.textContent=fmt(pct*dur);
-    }
-
-    function stemVuLoop(){
-      requestAnimationFrame(stemVuLoop);
-      if(!_stemPlaying||!_stemCtx||!Object.keys(_stemBuffers).length)return;
-      var pos=_stemCtx.currentTime-_stemStartTime;
-      var dur=Object.values(_stemBuffers)[0].duration;
-      if(!dur)return;
-      var pct=Math.min(1,Math.max(0,pos/dur));
-      updateStemPlayheads(pct);
-      if(pos>=dur)stemStop();
-    }
-
-    // Redraw stem waveforms on zoom
-    var _origRedrawAllCharts=null;
-    document.addEventListener('DOMContentLoaded',function(){
-      // Hook into zoom redraws
-
-    });
-    function redrawStemWaveforms(){
-      _stemNames.forEach(function(name){
-        if(_stemBuffers[name])drawStemWaveform(name,_stemBuffers[name]);
-      });
-    }
-
-
-    function showDummyStems(names){
-      // Show empty waveform rows before Demucs runs
-      if(Object.keys(_stemBuffers).length)return; // already have real stems
-      var el=document.getElementById('stems-players');
-      if(!el||el.innerHTML)return;
-      var dur=songDuration||0;
-      el.innerHTML='<div style="background:#0a0a0a;border-radius:8px;padding:10px 12px;border:1px solid #1a1a1a">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<button id="stems-pp" onclick="stemTogglePlay()" style="width:28px;height:28px;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center">▶</button>'
-        +'<span id="stems-cur-time" style="font-size:10px;color:#555;min-width:36px">0:00</span>'
-        +'<span style="font-size:10px;color:#333">/ '+(dur?fmt(dur):'-:--')+'</span>'
-        +'</div>'
-        +names.map(function(name){
-          var col=_stemColors[name]||'#888';
-          var lbl=_stemLabels[name]||name;
-          return '<div style="margin-bottom:3px">'
-            +'<div class="chart-outer" style="height:44px">'
-            +'<canvas id="stem-canvas-'+name+'" style="height:44px;background:#0a0a0a"></canvas>'
-            +'<div class="playhead" id="ph-stem-'+name+'"></div>'
-            +'<button id="stem-mute-'+name+'" style="position:absolute;left:0;top:0;height:100%;min-width:58px;'
-            +'border:none;border-right:1px solid '+col+'44;background:'+col+'22;color:'+col+'55;'
-            +'font-size:10px;font-weight:600;cursor:default">'+lbl+'</button>'
-            +'<a id="stem-dl-'+name+'" href="#" download="'+name+'.mp3" onclick="event.stopPropagation()" '
-            +'style="position:absolute;right:0;top:0;height:100%;width:28px;display:flex;'
-            +'align-items:center;justify-content:center;border-left:1px solid #1a1a1a;'
-            +'background:#0d0d0d;color:#333;font-size:12px;text-decoration:none">↓</a>'
-            +'</div></div>';
-        }).join('')
-        +'</div>';
-      _stemNames=names;
-    }
-
-    // Config management
-    var _stemsConfigDirty=false;
-
-    function stemsConfigChanged(){
-      _stemsConfigDirty=true;
-      var rs=document.getElementById('stems-restart-status');
-      if(rs)rs.textContent='· Config geändert — Neustart nötig';
-    }
-
-    async function stemsRestart(){
-      var model=document.getElementById('stems-model').value;
-      var shifts=parseInt(document.getElementById('stems-shifts').value);
-      var overlap=parseFloat(document.getElementById('stems-overlap').value);
-      var rs=document.getElementById('stems-restart-status');
-
-      // Write config via server endpoint
-      if(rs)rs.textContent='· schreibe Config...';
-      try{
-        var r=await fetch(DEMUCS_URL+'/config',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({model:model,shifts:shifts,overlap:overlap,port:5001})
-        });
-        if(!r.ok)throw new Error('Config-Write fehlgeschlagen');
-      }catch(e){
-        // Config-Write via server nicht möglich — nur Shutdown
-      }
-
-      // Shutdown — Watchdog startet neu mit neuer Config
-      if(rs)rs.textContent='· fahre Server herunter...';
-      try{
-        await fetch(DEMUCS_URL+'/shutdown',{method:'POST',signal:AbortSignal.timeout(2000)});
-      }catch(e){} // Verbindungsabbruch ist erwartet
-
-      _stemsConfigDirty=false;
-      if(rs)rs.textContent='· warte auf Neustart...';
-
-      // Poll bis Server wieder da
-      var attempts=0;
-      var poll=setInterval(async function(){
-        attempts++;
-        if(attempts>30){clearInterval(poll);if(rs)rs.textContent='· Neustart-Timeout';return;}
-        var ok=await checkDemucsServer();
-        if(ok){
-          clearInterval(poll);
-          if(rs)rs.textContent='· neugestartet ✓';
-          setTimeout(function(){if(rs)rs.textContent='';},3000);
-        }
-      },2000);
-    }
-
-    function stemsUpdateSelects(serverData){
-      // Sync selects to current server config
-      var modelEl=document.getElementById('stems-model');
-      var shiftsEl=document.getElementById('stems-shifts');
-      var overlapEl=document.getElementById('stems-overlap');
-      if(modelEl&&serverData.model)modelEl.value=serverData.model;
-      if(shiftsEl&&serverData.shifts!==undefined)shiftsEl.value=String(serverData.shifts);
-      if(overlapEl&&serverData.overlap!==undefined)overlapEl.value=String(serverData.overlap);
-    }
-
-    // Check server on load
-    /* Auch dieser Zeitzünder fragte eine Sekunde nach dem Aufbau bei
-       Port 5001 an - unabhängig von allen anderen Aufrufen. Es war der
-       dritte und letzte Weg nach draußen. */
-    if (OPT.demucs) setTimeout(checkDemucsServer,1000);
-    // ===== END DEMUCS =====
 
 
     // ===== CUMULATIVE FREQUENCY DENSITY SPECTRUM =====
@@ -5688,8 +4821,6 @@
         }
         drawFluxFromFrames(d.fft.flux,d.fft.bandFlux,d.fft.dur);
       }
-      if(d.essentia)drawEssentiaTimeline(d.essentia.timeline,d.essentia.duration);
-      redrawStemWaveforms();
       /* Wellenform, Chroma, Stereo, Stimme und die Funken stehen nicht
          mehr hier - siehe die Begruendung am Kopf der Funktion. Die
          Funken sind ueberhaupt nie zoomabhaengig gewesen: sie zeigen
@@ -5796,8 +4927,6 @@
         var ctx2=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,44100);
         var dec=await ctx2.decodeAudioData(ab);
         window._audioSamples=new Float32Array(dec.getChannelData(0));
-        window._audioSamplesR = dec.numberOfChannels>1
-          ? new Float32Array(dec.getChannelData(1)) : null;
         window._audioSR=dec.sampleRate;
         try{ ctx2.close(); }catch(e){}
         var d=window._chartData;
@@ -5901,8 +5030,6 @@
       for(var n=0;n<kopf.nachrichten.length;n++)
         nachrichtVerarbeiten(kopf.nachrichten[n], false);
 
-      setStatus('Aus der Ablage · '+Math.round(performance.now()-t0)+' ms');
-      setProgress(100);
       return true;
     }
 
@@ -5972,7 +5099,6 @@
     }
 
     async function analyzeUrl(src, titel, bild){
-      setStatus('Lade ' + (titel || src) + ' …'); setProgress(3);
       /* Benennen, bevor gerechnet wird. Ohne das stünde hier eine
          namenlose Analyse - analyzeFile() schreibt zwar einen Namen, aber
          in Elemente (#song-title, #song-sub), die es in dieser Fassung
@@ -5999,7 +5125,7 @@
       }
       try{
         var resp = await fetch(src);
-        if(!resp.ok){ setStatus('Audio nicht erreichbar (' + resp.status + ')'); return; }
+        if(!resp.ok){ console.warn('Audio nicht erreichbar (' + resp.status + ')'); return; }
         var blob = await resp.blob();
         var name = titel || decodeURIComponent(src.split('/').pop());
         /* Der Typ muss stimmen: Ein Blob mit application/octet-stream
@@ -6010,7 +5136,7 @@
           typ = /\.wav(\?|$)/i.test(src) ? 'audio/wav' : 'audio/mpeg';
         var file = new File([blob], name, {type: typ});
         await analyzeFile({files:[file]});
-      }catch(e){ setStatus('Fehler: ' + e.message); console.error(e); }
+      }catch(e){ console.error(e); }
     }
 
     async function analyzeFile(input){
@@ -6025,7 +5151,7 @@
       if(window._activeWorker){window._activeWorker.terminate();window._activeWorker=null;}
       window._chartData={};
       window._attackComputed=false;
-      songDuration=0;zoomLevel=1;viewStart=0;viewEnd=1;window._spectroPerc=null;window._stereoP95=null;window._essentiaRunning=false;
+      songDuration=0;zoomLevel=1;viewStart=0;viewEnd=1;window._spectroPerc=null;window._stereoP95=null;
       _densityHist=null;_densityMaxCount=0;_densityAnalyser=null;
       document.getElementById('zoom-slider').value=0;
       document.getElementById('zoom-label').textContent='1×';
@@ -6044,29 +5170,24 @@
         var ctx=c.getContext('2d');if(ctx)ctx.clearRect(0,0,c.width,c.height);
       });
 
-      setStatus('Datei wird geladen…');setProgress(5);
 
       /* Ab hier ist zurückgesetzt - jetzt darf der Kopf gefüllt werden. */
       if(_katalogDaten) kopfFuellen(_katalogDaten);
 
       try{
         var arrayBuf=await file.arrayBuffer();
-        setProgress(20);setStatus('Dekodiere Audio…');
         if(!audioCtx||audioCtx.state==='closed')audioCtx=new(window.AudioContext||window.webkitAudioContext)();
         if(audioCtx.state==='suspended')await audioCtx.resume();
         var buf=await audioCtx.decodeAudioData(arrayBuf.slice(0));
         document.getElementById('v-dur').textContent=fmt(buf.duration);
-        setProgress(30);setStatus('Starte Analyse…');
         startWorkerAnalysis(buf);
-        /* Stillgelegt (Caspar_D, 18.08.2026): Instrumenterkennung und
-           Stem-Trennung. Mit ihnen fallen ALLE Fremdadressen des
-           Analyzers weg - ONNX von jsdelivr, die Modelle von github.io,
-           der Demucs-Server auf Port 5001. Wieder einschaltbar über
-           aufbauen(…, {essentia:true, demucs:true}). */
-        if (OPT.essentia) runEssentia(buf);
-        if (OPT.demucs)   checkDemucsServer();
+        /* Ausgebaut (Caspar_D, 25.08.2026): Instrumenterkennung
+           (Essentia) und Stem-Trennung (Demucs) sind geloescht -
+           stillgelegt waren sie seit dem 18.08., jetzt ist der Code weg.
+           Damit ist der Analyzer endgueltig netzfrei: keine einzige
+           Fremdadresse mehr. Die Einzelspuren im Befund kommen aus dem
+           Trennlauf (bin/stems.js), nicht von hier. */
       }catch(e){
-        setStatus('Fehler: '+e.message);
         console.error(e);
       }
     }
@@ -6091,8 +5212,6 @@
          brach drawMainWaveform() deshalb sofort ab und die Wellenform
          blieb leer - genau die Anzeige, an der der Spielkopf hängt. */
       window._audioSamples=new Float32Array(buf.getChannelData(0));
-      window._audioSamplesR = buf.numberOfChannels > 1
-        ? new Float32Array(buf.getChannelData(1)) : null;
       window._audioSR=buf.sampleRate;
       drawMainWaveform();
 
@@ -6202,7 +5321,6 @@
         switch(msg.type){
           case 'progress':
             (window._phasen=window._phasen||[]).push([msg.label, Date.now()]);
-            setStatus(msg.label);setProgress(msg.pct);
             // dim completed sections, highlight active
             var pct=msg.pct;
             document.querySelectorAll('.slbl').forEach(function(el){
@@ -6408,8 +5526,6 @@
             window._chartData.dur=msg.dur;
             stereoSpurZeichnen(msg.lBands,msg.rBands,msg.dur);break;
           case 'fft_partial':
-            setProgress(msg.pct);
-            setStatus('Runde '+msg.round+'/'+msg.totalRounds+(msg.isFinal?' (final)':'')+'…');
             /* NICHT die Tonart aus fft_partial auf die Karte schreiben.
                Sie stand hier und ueberschrieb die richtige aus 'scalars'
                - und in 298 von 321 abgelegten Songs traegt fft_partial
@@ -6487,7 +5603,7 @@
                  wortgleich - die eine lebende Fassung sitzt im
                  envelope-Zweig (25.08.2026, Review). */
             }
-            if(msg.isFinal){setProgress(100);setStatus('Fertig');
+            if(msg.isFinal){
               if(live){ _aufnahme.fertig=true; ablageVielleichtSchreiben(); }}
             break;
         }
@@ -7811,13 +6927,46 @@
       }
     }
 
+    /* WELCHE SPUR IST WIE VERLAESSLICH - die Farben dazu:
+
+       (Caspar_D, 24.08.2026: "warme farben sind die auffaelligsten farben,
+       nahe rot fuehrt, mit gelb am ende, dann kommen die kalten, blau am
+       start, gruene am ende, dann kommen unbunte farben, grau am ende.")
+
+       Die sicherste Spur bekommt die auffaelligste Farbe, die
+       unsicherste die zurueckhaltendste. Wer auf die Analyse schaut,
+       sieht am Farbton, wie sehr er der Spur trauen kann, ohne eine
+       Legende zu lesen.
+
+         warm   Rot . Orange . Gelb
+         kalt   Blau . Gruen
+         unbunt Grau
+
+       Nachgemessen im OKLab-Raum: das engste Paar der sechs liegt bei
+       0,152 - ueber der Schwelle von 0,10, ab der zwei Farben
+       nebeneinander noch zu unterscheiden sind.
+
+       Der Block stand frueher bei der Demucs-Sektion und waere am
+       25.08.2026 fast mit ihr gefallen - er gehoert aber den
+       Einzelspuren hier, deshalb steht er jetzt bei ihnen. */
+    var STEM_RANG = [
+      { id:'drums',  farbe:'#e31c79', name:'Schlagzeug' },  /* Rot    */
+      { id:'bass',   farbe:'#fba04f', name:'Bass'       },  /* Orange */
+      { id:'vocals', farbe:'#d8d81c', name:'Gesang'     },  /* Gelb   */
+      { id:'guitar', farbe:'#4b93f0', name:'Gitarre'    },  /* Blau   */
+      { id:'piano',  farbe:'#16be5c', name:'Klavier'    },  /* Gruen  */
+      { id:'other',  farbe:'#b0b0b6', name:'Rest'       }   /* Grau   */
+    ];
+    var STEM_FARBE = {}, STEM_NAME = {};
+    STEM_RANG.forEach(function(s){
+      STEM_FARBE[s.id] = s.farbe; STEM_NAME[s.id] = s.name;
+    });
+
     /* DIE SECHS STEMS als Huellkurven. Gezeichnet wird ueber die GANZE
        Laenge (0..SPUR_W); den Ausschnitt schneidet spurSichtSetzen()
        spaeter mit der viewBox heraus - deshalb muss beim Zoomen nichts
        neu gerechnet werden. Hausform wie ueberall: halb deckende Flaeche
        auf der Grundlinie, darauf die Kontur in voller Staerke. */
-    /* Farben, Namen und Reihenfolge stehen weiter oben bei STEM_RANG -
-       eine Quelle fuer Anzeige und Abspieler. */
     function stemSpurenZeichnen(t){
       var H = 44, pad = 2, gezeigt = 0;
       for (var stem in STEM_FARBE){
@@ -7843,9 +6992,9 @@
            faehrt ihre Kontur ringsum, weil sie allein steht - hier liegen
            sechs Spuren dicht uebereinander, und eine Kontur ringsum
            verdoppelt jede Linie, bis der Block zuwaechst. */
-        host.innerHTML = '<svg viewBox="0 0 ' + SPUR_W + ' ' + H + '" preserveAspectRatio="none" data-h="' + H + '">'
-          + spurZug({ flaeche: oben + unten + 'Z', linie: oben }, farbe, { deckung: 0.45 })
-          + '</svg>';
+        host.innerHTML = spurBild(H, farbe,
+          spurZug({ flaeche: oben + unten + 'Z', linie: oben }, farbe, { deckung: 0.45 }),
+          { ohneTopline: true });
 
         /* Wieviel vom Stueck traegt diese Spur ueberhaupt? Ein Klavier,
            das nur im Refrain spielt, sieht man sonst erst beim Suchen. */
@@ -7967,11 +7116,6 @@
       analyzeFile: typeof analyzeFile === 'function' ? analyzeFile : function(){},
       togglePlay: typeof togglePlay === 'function' ? togglePlay : function(){},
       resetZoom: typeof resetZoom === 'function' ? resetZoom : function(){},
-      stemsConfigChanged: typeof stemsConfigChanged === 'function' ? stemsConfigChanged : function(){},
-      stemsRestart: typeof stemsRestart === 'function' ? stemsRestart : function(){},
-      stemTogglePlay: typeof stemTogglePlay === 'function' ? stemTogglePlay : function(){},
-      stemTimeSeek: typeof stemTimeSeek === 'function' ? stemTimeSeek : function(){},
-      stemToggleMute: typeof stemToggleMute === 'function' ? stemToggleMute : function(){},
     };
 
     return {

@@ -39,22 +39,49 @@ Live-Spektrum ruht bei Pause; fmt/zeitTxt sind eine Uhr (floor statt
 round); kaskadeName ersetzt seine zwei Inline-Kopien; das Chroma-P95
 rechnet einmal je Datenstand; data-h hat Vorrang vor der Höhenliste.
 
-**Nicht umgesetzt, mit Grund:**
+**Nachtrag (25.08.2026, spät): Caspar_D hat die Entscheidungsfragen
+entschieden** — „1 wegwerfen / 2 wegwerfen / 3 umstellen / 4 Rückweg
+aufgeben / 5+6 wenn wir keine Daten dabei verlieren, die nicht effizient
+wiederzubeschaffen wären, weg damit." Alles umgesetzt:
 
-- Die vier **Entscheidungsfragen** aus Abschnitt 6 (stems-/
-  essentia-Sektionen, spurBild-Hausregelwiderspruch, #status-CSS) —
-  sie gehören Caspar_D.
-- **Worker-Puffer nullen** und **rechter Kanal im Nachladeweg**: beide
-  würden das vorgehaltene Werkzeug chromaTaktZeichnen brechen bzw.
-  brauchen erst Klarheit über die Nachrichtenreihenfolge — „abklemmen,
-  nicht löschen" schützt sie. Bei Bedarf einzeln wieder aufnehmen.
+- **Essentia-Sektion gelöscht** (Block, Markup, CSS, phIds, mixToMono/
+  resampleLinear): damit fiel die letzte Fremdadresse
+  (caspardavi.github.io) — der Analyzer ist endgültig netzfrei. Titel
+  jetzt „v5 · offline".
+- **Demucs-Sektion gelöscht** (Server-Anbindung, Player, Markup, CSS,
+  __SA-Einträge). Der STEM_RANG-Farbblock (Hausbeschluss 24.08.) wohnte
+  versehentlich dort und wäre fast mitgefallen — er steht jetzt bei den
+  Einzelspuren, zu denen er gehört. Die Einzelspuren selbst kommen
+  weiter aus dem Trennlauf (bin/stems.js), der am 25.08. alle
+  321 Songs × 6 Stems fertiggestellt hat.
+- **spurBild/spurTopline umgestellt**: spurTopline kann jetzt x-Versatz
+  und Deckung, und alle Hand-Toplines (Taktmarken, Befundspur-Blöcke,
+  Chroma-Zellen in beiden Bildern) rufen es; der Einzelspuren-Zeichner
+  baut sein SVG über spurBild. Die Hausregel „Nichts von Hand
+  nachbauen" stimmt wieder.
+- **Rückweg aufgegeben**: setStatus/setProgress samt aller Rufstellen
+  und der #status/#progress-CSS gelöscht; Fehlermeldungen gehen in die
+  Konsole, den Fortschritt zeigen die Karten (chart-pending) selbst.
+- **Worker-Puffer**: left/right werden nach der letzten
+  fft_partial-Nachricht genullt (~115 MB frei; die Nachrichtenreihen-
+  folge ist geprüft, fft_partial isFinal ist die letzte). **Rechter
+  Kanal**: wird auf keinem Weg mehr vorgehalten (~53 MB je Song);
+  goertzelKanal misst dann mono, die maßgebliche Zonen-Messung kommt
+  ohnehin stereo aus bin/toene.js. Bedingung erfüllt: alles ist aus
+  audio.wav jederzeit neu dekodierbar, verloren geht nichts.
+- Geprüft: Ablage-Weg und Frischanalyse liefern identische Werte
+  (LUFS −13,9 am Prüfsong), Zoom/Playheads laufen, Export-Selbst-
+  prüfung Exit 0.
+
+**Weiterhin offen, mit Grund:**
+
 - **zahl-Doppel** und **Höhenkarten-Doppel**: in der heutigen Fassung
   nicht mehr vorhanden (vermutlich mit früheren Umbauten gefallen).
 - Der **linienSpuren-Doppelaufruf** fiel bereits beim Bau des
   Lautheits-Panels.
 - **chromaZonen/chromaTakt-Zusammenlegung** und **Goertzel-sr**: hängen
-  am abgeklemmten Werkzeug-Cluster; lohnt erst, wenn über dessen
-  Zukunft entschieden ist.
+  am vorgehaltenen Werkzeug-Cluster (chromaTaktZeichnen bleibt
+  Werkzeug); lohnt erst, wenn über dessen Zukunft entschieden ist.
 
 ---
 

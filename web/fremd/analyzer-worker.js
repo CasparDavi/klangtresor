@@ -1235,5 +1235,13 @@ onmessage=function(e){
         }
         postMessage(msg,transferList);
       }
+
+      /* Rohdaten freigeben (Caspar_D, 25.08.2026): Nach der letzten
+         fft_partial-Nachricht braucht kein Rechenschritt die
+         Abtastwerte mehr - der Worker lebt aber weiter, bis die
+         naechste Analyse ihn beendet, und hielt so ~115 MB fest.
+         Verloren geht nichts: alles ist aus audio.wav jederzeit neu
+         dekodierbar. */
+      left=null; right=null;
     };
     

@@ -370,13 +370,12 @@ durch.
 
 ## 3. Bewusst liegengelassen
 
-- **Zwei Panels** im Analyzer sind versteckt, aber nicht entfernt: die
-  beiden Instrument-Erkennungen. Sie erscheinen situativ, deshalb nicht
-  angetastet. Kommentar-Generator, Stem-Trennung und Standalone-Kopf sind
-  am 25.08.2026 ganz ausgebaut (siehe 2.9).
-- **Zwei der drei Instrument-Erkennungen** laden Modelle von
-  `caspardavi.github.io` — die letzte Fremdadresse im Analyzer. Läge nahe,
-  sie mit zu entfernen.
+- ~~Zwei Panels / Fremdadresse~~ **Erledigt am 25.08.2026 (abends):**
+  Caspar_D hat entschieden — Essentia-Erkennung und Demucs-Sektion sind
+  ganz gelöscht, mit ihnen die letzte Fremdadresse
+  (`caspardavi.github.io`). Der Analyzer ist netzfrei („v5 · offline").
+  Die regelbasierte Instrument-Erkennung (ohne Modelle, ohne Netz)
+  bleibt. Details in docs/ANALYZER-REVIEW.md, „Stand der Umsetzung".
 
 ---
 
