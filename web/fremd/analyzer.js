@@ -2215,6 +2215,39 @@
       teile.push('</svg>');
       host.innerHTML=teile.join('');
 
+      /* DER LESEKOPF SETZT AUS, WO KEINE DATEN STEHEN (Caspar_D,
+         25.08.2026: "im Panel Lautheitsverläufe läuft der Lesekopf schön
+         einzeln über jedes Einzeldiagramm, im Panel Datenbasierte
+         Vorschläge mäht ein einziger Lesekopf auch über
+         Teilüberschriften - nur die Visualisierungen von Daten sollen
+         betroffen sein").
+
+         Dort ist es einfach: jedes Diagramm hat seinen eigenen Kopf.
+         Hier stecken alle Bahnen in EINEM SVG, also gibt es auch nur
+         einen Kopf, und der lief ueber die volle Hoehe - quer durch die
+         14 px Teilueberschrift jeder Bahn und die 3 px Luft dazwischen.
+
+         Statt ihn in Stuecke zu zerlegen (dann muesste updatePlayheads
+         viele Elemente schieben statt einem) bekommt das eine Element
+         einen Verlauf mit harten Kanten: sichtbar genau ueber _y bis
+         _y+_h jeder Bahn, durchsichtig ueber Kopf und Luecke. Die Lagen
+         stehen ohnehin schon fest, sie wurden eben beim Zeichnen
+         gesetzt. */
+      var ph=document.getElementById('ph-befundspur');
+      if(ph){
+        var FARBE='rgba(255,255,255,0.55)', halte=[];
+        bahnen.forEach(function(b){
+          if(!(b._h>0)) return;
+          var o=b._y, u=b._y+b._h;
+          halte.push('transparent '+o+'px', FARBE+' '+o+'px',
+                     FARBE+' '+u+'px',     'transparent '+u+'px');
+        });
+        /* Ohne Bahn mit Inhalt bleibt der durchgehende Strich aus dem
+           Stylesheet - besser ein Kopf zuviel als gar keiner. */
+        ph.style.background = halte.length
+          ? 'linear-gradient(to bottom,'+halte.join(',')+')' : '';
+      }
+
       /* Namen als HTML darueber - im SVG wuerden sie mitgestreckt. */
       /* In ANTEILEN, nicht in Pixeln.
 
