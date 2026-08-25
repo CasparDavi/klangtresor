@@ -1180,6 +1180,26 @@ const server = http.createServer((req, res) => {
          Was geloescht wird, meldet die Antwort - der Nutzer soll sehen,
          was sein Haken bewirkt hat. */
       const weg = [];
+      /* ZURUECKNEHMEN MUSS AUFRAEUMEN (25.08.2026, beim Testen gefunden:
+         ein Haken wurde gesetzt und wieder geloescht - das Flag im
+         Katalog blieb stehen, und der Song galt weiter als instrumental,
+         obwohl die Handmarkierung fort war). Wer den Haken loest, will
+         den Zustand von vorher zurueck. Was geloescht wurde, kommt damit
+         nicht wieder - dafuer gibt es die Neurechnung. */
+      if (wert !== true) {
+        try {
+          const zlib = require('node:zlib');
+          const kf = path.join(WURZEL, 'library', 'katalog.json.gz');
+          const kd = JSON.parse(zlib.gunzipSync(fs.readFileSync(kf)));
+          const s = kd.songs && kd.songs[id];
+          if (s && s.instrumental) {
+            delete s.instrumental;
+            if ((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim())) s.hatGesang = true;
+            fs.writeFileSync(kf, zlib.gzipSync(Buffer.from(JSON.stringify(kd))));
+            weg.push('Instrumental-Vermerk zurückgenommen');
+          }
+        } catch (e) { console.error('Katalog nicht zurückgesetzt:', e.message); }
+      }
       if (wert === true) {
         // 1. Stimmlage aus toene.json
         const tf = path.join(WURZEL, 'library', 'toene.json');

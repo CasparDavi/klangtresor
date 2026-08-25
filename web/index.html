@@ -11182,8 +11182,11 @@ function textSetzen(art){
 
 /** Layout-Klasse setzen und das Karaokeband neu aufbauen. */
 function textEbeneAnwenden(){
-  const karaokeMoeglich = !!(bSong && bSong.worte && bSong.worte.length);
-  if (bText === 'karaoke' && !karaokeMoeglich) bText = 'aus';
+  /* Bei instrumentalen Stücken fallen beide Textmodi weg - es gibt
+     nichts mitzulesen (25.08.2026). */
+  const karaokeMoeglich = !!(bSong && bSong.worte && bSong.worte.length) && !istInstrumental(bSong);
+  if ((bText === 'karaoke' || bText === 'lyrics') && istInstrumental(bSong)) bText = 'aus';
+  else if (bText === 'karaoke' && !karaokeMoeglich) bText = 'aus';
 
   // Fremde Songs liegen nicht im Archiv - dort fällt der Analysemodus
   // auf "aus" zurück, wie Karaoke ohne Zeitmarken.
@@ -12154,7 +12157,11 @@ function promptsFuellen(){
           : '')
       + '</div></div>');
   }
-  if (bSong.lyrics){
+  /* Der Stil-Prompt bleibt sichtbar - er beschreibt den Klang und gilt
+     auch ohne Gesang. Der Lyricsblock nicht: Bei instrumentalen Stücken
+     ist Sunos Textfeld eine Anweisung ans Modell, kein Liedtext
+     (Caspar_D, 25.08.2026). Gelöscht wird davon nichts. */
+  if (bSong.lyrics && !istInstrumental(bSong)){
     teile.push('<div class="stueck">'
       + '<div id="promptregz">'
       +   '<button class="preg" data-preg="lyrics">Lyrics</button>'
@@ -12167,7 +12174,13 @@ function promptsFuellen(){
       + '<div class="pseite" data-pseite="vergleich" hidden></div>'
       + '</div>');
   }
-  $('bprompts').innerHTML = teile.join('') || '<div class="stueck">Kein Text hinterlegt.</div>';
+  /* Bei instrumentalen Stücken ausdrücklich sagen, warum hier nichts
+     steht - die alte Ausweichzeile war ohnehin unerreichbar, weil
+     teile[] immer mit dem Coverbild beginnt (Lückenprüfung 25.08.). */
+  if (istInstrumental(bSong))
+    teile.push('<div class="stueck"><div class="prompt" style="opacity:.6">'
+      + 'Ohne Gesang — als instrumental geführt.</div></div>');
+  $('bprompts').innerHTML = teile.join('');
   if (bSong.lyrics){
     document.querySelectorAll('#promptregz .preg').forEach(b => {
       b.onclick = () => promptLasche(b.dataset.preg);
@@ -12697,6 +12710,19 @@ function absaetzeAusLyrics(zeilen, lyrics){
 }
 
 function buehnenTextAufbauen(){
+  /* INSTRUMENTAL HEISST: NICHTS ANZEIGEN (Caspar_D, 25.08.2026: "der
+     instrumental tag sorgt aber dafür, dass davon nichts angezeigt
+     wird").
+
+     Sunos Daten bleiben liegen — sein Lyricsfeld ist Quelldatum und
+     wird nicht angetastet. Aber wo kein Gesang ist, gehört auch kein
+     Text auf die Bühne: Was Suno in den Prompt geschrieben hat, ist
+     dann eine Anweisung an das Modell, kein Liedtext. */
+  if (istInstrumental(bSong)){
+    bZeilen = []; bAktiv = -1;
+    $('btext').innerHTML = '<div class="zeile abschnitt">ohne Gesang</div>';
+    return;
+  }
   const worte = bWorte();
   bZeilen = worte.length ? inZeilen(worte) : [];
   bAktiv = -1;
