@@ -102,15 +102,34 @@ Entropie und Abschnittserkennung; eine eigene Chroma-Rechnung mit 8192
 Punkten, Gipfelauswahl und parabolisch verfeinerter Scheitelfrequenz.
 Belege in den Commits `031a315`, `a735f90`, `3352a99`.
 
-**Aus Abschnitt 5 („Was fehlt") noch offen:**
+**Abschnitt 5, Punkt 4 — verworfen (26.08.2026).** Die zwei
+Artefakt-Näherungen setzen eine scharfe Tiefpasskante voraus, über der
+ein Codec Artefakte streut. Die gibt es in den Suno-WAVs nicht.
+Gemessen mit ffmpeg-Bandpässen an fünf Songs, Abfall von 17 auf 21 kHz:
+8,5 · 19,6 · 18,2 · 11,8 · 14,0 dB — ein allmählicher Rolloff über vier
+Kilohertz. Ein MP3-Tiefpass macht dort über 40 dB auf einem Kilohertz.
+Ohne Kante gibt es kein „oberhalb der Kante"; man würde Rauschen messen
+und Artefakte nennen. Der Rauschteppich läge bei allen Songs um −90 dB.
+Was zwischen den Songs wirklich schwankt, ist der Höhenanteil — bei
+17 kHz von −50,8 bis −82,5 dB —, und das zeigt die schon gebaute
+Höhenkante samt Flankensteilheit bereits. (Caspar_D: *„ist es sinnvoll,
+diese zwei Artefakt-Näherungen noch zu implementieren?"* — nach dieser
+Messung: nein.)
 
-- **Punkt 4 — die zwei Artefakt-Näherungen** (Energie oberhalb der
-  gemessenen Kante, Rauschteppich aus den leisesten 5 % der Fenster).
-  Nicht gebaut. Ein Vorschlag, kein Fehler.
-- **Punkt 5 — MP3-Rückfall kennzeichnen.** Halb gebaut: Es gibt einen
-  MP3-Vermerk (`_quellname`), aber die Ablage stempelt die Quelldatei
-  nicht als Feld ein. Ein aus MP3 gerechneter Lauf ist danach nicht mehr
-  von einem WAV-Lauf zu unterscheiden.
+**Abschnitt 5, Punkt 5 — erledigt (26.08.2026).** Caspar_D: *„MP3 sollte
+gar nicht genutzt werden, immer vom WAV ausgehen, es sind ja alle da."*
+Der Analyzer nahm schon immer das WAV, unabhängig von der Hörwahl; was
+fehlte, war der stille Rückfall für Songs ohne WAV und die
+Kennzeichnung. Beides gemacht:
+
+- Fehlt das WAV, wird **nicht mehr gemessen**, sondern übersprungen und
+  in die Konsole geschrieben. Lieber keine Messung als eine, die anders
+  heißt, als sie ist. Geprüft: alle 321 Songs haben ihre WAV, der Fall
+  tritt derzeit nicht ein.
+- Der Ablagekopf trägt jetzt `quelle` neben `stand` und `messweg`.
+- **`MESSWEG` steht auf 3** — die Zählung war seit dem 25.08. überholt,
+  weil das Verfahren sich geändert hat (beide Kanäle im Zeitbereich,
+  eigene Chroma-FFT). Die Begründung steht bei der Zählung.
 
 ---
 

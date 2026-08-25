@@ -12099,7 +12099,21 @@ async function analyzerAufbauen(){
      fuer dieselbe Zahl.
      Die WIEDERGABE bleibt davon unberuehrt - was Caspar_D hoert, waehlt
      weiterhin das Pult. */
-  const datei = bSong.wav ? 'audio.wav' : 'audio.mp3';
+  /* KEIN STILLER RUECKFALL AUFS MP3 (Caspar_D, 26.08.2026: „MP3 sollte
+     gar nicht genutzt werden, immer vom WAV ausgehen, es sind ja alle
+     da"). Fehlte das WAV, wurde bisher das 192-kbps-MP3 gemessen und
+     sein Ergebnis war in der Ablage von einem WAV-Lauf nicht zu
+     unterscheiden. Aus MP3 sind LUFS, Struktur und Chroma noch
+     brauchbar; Tiefpasskante, True Peak und Clipping nicht - das MP3
+     traegt seine eigene Encoderkante. Lieber keine Messung als eine,
+     die anders heisst, als sie ist. Geprueft am 26.08.2026: alle 321
+     Songs haben ihre WAV, der Fall tritt derzeit nicht ein. */
+  if (!bSong.wav) {
+    console.warn('Analyse übersprungen: für "' + (bSong.titel || bSong.id)
+      + '" liegt keine WAV vor. Aus dem MP3 wird nicht gemessen.');
+    return;
+  }
+  const datei = 'audio.wav';
   /* Die STEHENDEN TÖNE kommen aus dem geprüften Detektor (bin/stoerfrequenz.js,
      FFT 16384 = 2,7 Hz), nicht aus dem Schimmer des Analyzers - der fand
      durchweg Musiktöne (Caspar_D, 23.08.2026: "die Suche nach stehenden Tönen

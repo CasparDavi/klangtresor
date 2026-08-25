@@ -52,6 +52,14 @@ var ABLAGE_STAND = 1;          // hochzaehlen, wenn sich Reihen aendern
  *
  *   1  Tonart, Schwerpunkt und Rolloff aus dem LINKEN Kanal allein
  *   2  aus beiden Kanaelen, Betraege im Spektrum addiert
+ *   3  (26.08.2026) Huellkurve, Energie, Lautheit, Scheitelfaktor,
+ *      Chroma, Fluss, Entropie und Abschnittserkennung ebenfalls aus
+ *      beiden Kanaelen - kanalweise gerechnet, erst das Ergebnis
+ *      gemittelt, damit sich gegenphasige Anteile nicht ausloeschen.
+ *      Das Chroma bekam dabei eine eigene FFT mit 8192 Punkten,
+ *      Gipfelauswahl statt aller Faecher und parabolisch verfeinerte
+ *      Scheitelfrequenz: Bei 1024 Punkten landete ein 220-Hz-Ton in
+ *      A# statt in A.
  *
  * Der Stempel wird geschrieben und derzeit von niemandem gelesen: Der
  * Waechter, der ihn auswertete, ist am 24.08.2026 mit dem alten
@@ -61,7 +69,7 @@ var ABLAGE_STAND = 1;          // hochzaehlen, wenn sich Reihen aendern
  * anzufassen, also das Format, an dem 4 GB haengen - fuer nichts. Wer
  * kuenftig einen Messweg aendert, findet hier eine Zaehlung vor,
  * statt eine erfinden zu muessen. */
-var MESSWEG = 2;
+var MESSWEG = 3;
 var ABLAGE_OHNE  = ['frames','framesR','stereoFrames'];   // kommen als Bild
 
 var TYPEN = {Float32Array:Float32Array, Float64Array:Float64Array,
@@ -157,7 +165,15 @@ function ablageVerpacken(auf){
     }
     return flach;
   });
+  /* WORAUS gemessen wurde. Ohne dieses Feld war eine aus dem MP3
+     gerechnete Ablage von einer aus dem WAV nicht zu unterscheiden -
+     und aus dem MP3 sind Tiefpasskante, True Peak und Clipping wertlos,
+     weil es seine eigene Encoderkante mitbringt (Caspar_D, 26.08.2026:
+     „MP3 sollte gar nicht genutzt werden, immer vom WAV ausgehen").
+     Der Weg dorthin ist seit demselben Tag versperrt; der Stempel sagt
+     trotzdem, was vorliegt. */
   var kopf=JSON.stringify({stand:ABLAGE_STAND, messweg:MESSWEG, id:auf.id, sr:auf.sr,
+                           quelle:auf.quelle||'audio.wav',
                            dauer:auf.dauer, reihen:reihen,
                            nachrichten:kopfNachrichten});
   var kopfBytes=IST_NODE ? Buffer.from(kopf,'utf8') : new TextEncoder().encode(kopf);
