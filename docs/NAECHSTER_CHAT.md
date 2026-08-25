@@ -937,3 +937,18 @@ bereit. Der Rechenweg steht dort.
 
 **docs/OFFEN.md 2.9**: ~210 Zeilen toter Analyzer-Code. Mit Warnung vor
 zwei Fallen.
+
+## Nachtrag 25.08. spät (Commits 6e528e7, e10ecf7, 1036c23)
+
+- Analyzer: die fünf Entscheidungen umgesetzt — Essentia+Demucs ganz
+  raus (netzfrei, „v5 · offline"), spurTopline/spurBild echte Nutzer,
+  Rückweg weg, Worker-Puffer + rechter Kanal freigegeben. Details in
+  ANALYZER-REVIEW.md „Stand der Umsetzung".
+- Trennlauf FERTIG: 321 Songs × 6 Stems, Pipe-Fix hat gehalten.
+- Rabe: Funken aus dem Flug (Jitter, ein Bahnumfang Lebensdauer),
+  Rabenmagie = globales Violett samt Cover-Schleier (uiFaerben-Vorfahrt,
+  Klasse .rabenmagie, rabenmagieAnwenden()).
+- Offen: Rabenmagie gilt nicht im Sternenhimmel-Export (uiFaerben ist
+  Bühnen-Code; Handler dort per typeof abgesichert) — falls gewünscht,
+  dort nachziehen. Adversarial-Review der Rabe-Änderungen wurde wegen
+  Guthaben-Ende abgebrochen; Browser-Tests waren aber vollständig.
