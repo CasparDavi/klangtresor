@@ -345,17 +345,56 @@ function rabeZeichnen(g, P, sc, jetzt, ang, glut, schub, opt){
   /* ---- Halo: ohne etwas Licht dahinter verschwindet Schwarz im Schwarz.
      Je kleiner der Vogel, desto noetiger - deshalb waechst er nach unten. */
   if (RABE.halo > 0){
-    /* Die AURA (Caspar_D, 25.08.2026): zwei Schichten - ein weiter,
-       weicher Hof und ein enger, satter Kernschein, der leicht atmet. */
+    /* DIE AURA ALS GLUEHENDE WOLKE (Caspar_D, 25.08.2026: "der Rabe soll
+       eine violette Aura tragen ... so wie ein glowing cloud rundherum
+       oder wie ein Energiefeld").
+
+       Vorher war es EIN glatter Radialverlauf - sauber, aber ein Hof ist
+       keine Wolke: Ein Kreis mit gleichmaessigem Abfall sieht immer nach
+       Lampe aus. Eine Wolke braucht Unregelmaessigkeit, und ein Feld
+       braucht Bewegung. Beides kommt hier aus sechs versetzten Blasen,
+       die einzeln um den Vogel kreisen - jede mit eigener Umlaufzeit,
+       eigenem Atem und eigener Groesse. Weil sich nie zwei Perioden
+       treffen, wiederholt sich das Bild praktisch nicht.
+
+       Der goldene Winkel (2,399 rad) verteilt die Startlagen: Er ist zu
+       keiner Zahl kommensurabel, also klumpen die Blasen nie zu einem
+       Muster zusammen - dieselbe Regel, nach der Pflanzen ihre Blaetter
+       stellen.
+
+       Additiv (lighter): Wo Blasen ueberlappen, wird es heller - das
+       ergibt den dichten Kern von selbst, ohne ihn zu zeichnen. */
     const r = 15 * s * (1 + 0.8 * (1 - det));
     const atme = 0.9 + 0.1 * Math.sin(jetzt / 640);
     const a = RABE.halo * (0.18 + 0.12 * (1 - det)) * atme;
-    const gr = g.createRadialGradient(P[0], P[1], 0, P[0], P[1], r);
-    gr.addColorStop(0,    `rgba(${akzRgb},${a.toFixed(3)})`);
-    gr.addColorStop(0.45, `rgba(${akzRgb},${(a * 0.35).toFixed(3)})`);
-    gr.addColorStop(1,    `rgba(${akzRgb},0)`);
     g.save(); g.globalCompositeOperation = 'lighter';
-    g.fillStyle = gr; g.fillRect(P[0] - r, P[1] - r, 2 * r, 2 * r);
+
+    /* Der weite Grundschleier - er haelt die Wolke zusammen, damit sie
+       zwischen den Blasen nicht ausfranst. */
+    const gr = g.createRadialGradient(P[0], P[1], 0, P[0], P[1], r * 1.25);
+    gr.addColorStop(0,    `rgba(${akzRgb},${(a * 0.45).toFixed(3)})`);
+    gr.addColorStop(0.5,  `rgba(${akzRgb},${(a * 0.18).toFixed(3)})`);
+    gr.addColorStop(1,    `rgba(${akzRgb},0)`);
+    g.fillStyle = gr; g.fillRect(P[0] - r * 1.25, P[1] - r * 1.25, 2.5 * r, 2.5 * r);
+
+    /* Die Blasen: jede driftet auf einer eigenen kleinen Bahn. */
+    const BLASEN = 6;
+    for (let i = 0; i < BLASEN; i++){
+      const ph = i * 2.399;                                             // goldener Winkel
+      const w  = jetzt / (1100 + i * 190) + ph;                         // Umlauf der Blase
+      const dr = r * 0.30 * (0.55 + 0.45 * Math.sin(jetzt / (760 + i * 110) + ph));   // Abstand atmet
+      const bx = P[0] + Math.cos(w) * dr, by = P[1] + Math.sin(w) * dr;
+      const rb = r * (0.42 + 0.20 * Math.sin(jetzt / (540 + i * 83) + ph * 1.7));     // Groesse atmet
+      const ab = a * (0.30 + 0.16 * Math.sin(jetzt / (620 + i * 97) + ph * 0.6));     // Dichte atmet
+      const gb = g.createRadialGradient(bx, by, 0, bx, by, rb);
+      gb.addColorStop(0,   `rgba(${akzRgb},${Math.max(0, ab).toFixed(3)})`);
+      gb.addColorStop(0.6, `rgba(${akzRgb},${Math.max(0, ab * 0.30).toFixed(3)})`);
+      gb.addColorStop(1,   `rgba(${akzRgb},0)`);
+      g.fillStyle = gb; g.fillRect(bx - rb, by - rb, 2 * rb, 2 * rb);
+    }
+
+    /* Der Kernschein zuletzt: heller, enger, damit der Vogel selbst im
+       Feld steht und nicht darin verschwindet. */
     const rk = r * 0.42;
     const gk = g.createRadialGradient(P[0], P[1], 0, P[0], P[1], rk);
     gk.addColorStop(0,    `rgba(214,140,255,${(a * 0.9).toFixed(3)})`);

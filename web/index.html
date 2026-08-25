@@ -7837,30 +7837,67 @@ function karteSchiffFrame(){
              in Raumeinheiten gerechnet, damit es mit der Karte lebt. */
           const einheit = pxJeEinheit || karteZoom.k || 1;
           const dRoh = RF.letzt ? Math.hypot(...P.roh.map((v, i) => v - RF.letzt[i])) : Infinity;
-          if (dRoh >= 6 / einheit){
-            const streu = 3.2 / einheit;
+          if (dRoh >= 3.2 / einheit){
+            const streu = 7.5 / einheit;
             RF.liste.push({ roh: P.roh.map(v => v + (Math.random() * 2 - 1) * streu),
                             t0: jetzt,
                             leben: 2 * Math.PI * a.rp / V * 1000,   // ein Umfang auf dem jetzigen Radius, in ms
                             takt: 90 + Math.random() * 160, seed: Math.random() * 6.28 });
             RF.letzt = P.roh.slice();
-            if (RF.liste.length > 900) RF.liste.splice(0, RF.liste.length - 900);
+            if (RF.liste.length > 1600) RF.liste.splice(0, RF.liste.length - 1600);
           }
-          /* Zeichnen und Ausmisten in einem Zug. Jeder Funke atmet in
-             eigenem Takt zwischen Violett und Weiss; unter der Schwelle
-             ruht er - so glitzert es, statt zu leuchten. */
+          /* Zeichnen und Ausmisten in einem Zug.
+
+             DIE FARBRAMPE (Caspar_D, 25.08.2026: "es sind zu viele weisse,
+             und kaum violette. Bei Funkeln vielleicht schwarz dunkelviolett
+             violett weiss violett dunkelviolett schwarz, also nie gleich
+             auf weiss"): Der Sinus laeuft hin UND zurueck, der Weg ist
+             also von selbst symmetrisch - schwarz, dunkelviolett, violett,
+             weiss und denselben Weg zurueck. Entscheidend sind die
+             Stuetzstellen: Weiss beginnt erst bei 92 %, Violett bekommt
+             die breite Mitte. Vorher lag es umgekehrt (eine gerade Linie
+             von Violett nach Weiss), und weil ein Sinus die meiste Zeit
+             nahe seinen Umkehrpunkten steht, war fast jeder Funke weiss.
+
+             Schwarz muss nicht ausgespart werden: unter 'lighter' addiert
+             rgb(0,0,0) nichts - der Funke ist dann einfach fort. */
           const gcoV = gVorn.globalCompositeOperation, gcoH = gHinten.globalCompositeOperation;
           gVorn.globalCompositeOperation = 'lighter'; gHinten.globalCompositeOperation = 'lighter';
+          /* Beim Herauszoomen ruecken die Funken zusammen und der Schwarm
+             wirkt als heller Klumpen (Caspar_D: "bei zoom out werden die
+             Partikel scheinbar immer groesser, schwaech sie einfach etwas
+             ab"). Also mit der Wurzel des Zooms daempfen - dieselbe Regel,
+             nach der die Sterne wachsen (ZK weiter unten). Nach oben
+             gedeckelt: hineinzoomen soll sie nicht aufblasen. */
+          const zk = Math.min(1, Math.sqrt(karteZoom.k));
           RF.liste = RF.liste.filter(s => {
             const u = (jetzt - s.t0) / s.leben;
             if (u >= 1) return false;                               // ein Bahnumfang ist um: geloescht
-            const f = 0.5 + 0.5 * Math.sin(jetzt / s.takt + s.seed);
-            if (f < 0.35) return true;                              // Ruhephase: bleibt, glitzert nur gerade nicht
+            /* ZWEI TAKTE, MULTIPLIZIERT. Mit einem einzigen Sinus blieb
+               Weiss bei 20 %, obwohl sein Fenster nur 8 % breit war: Ein
+               Sinus steht die meiste Zeit nahe seinen Umkehrpunkten, und
+               der Gipfel ist einer davon. Eine Potenz macht nur das Tal
+               breiter, nicht den Gipfel schmaler - gemessen.
+
+               Zwei Takte im Verhaeltnis 1:0,37 loesen es: Weiss entsteht
+               nur, wenn BEIDE zugleich oben stehen, und das ist selten
+               und kurz. Nachgerechnet ueber 400 000 Proben liegt die
+               Verteilung jetzt bei 29 % aus, 25 % dunkelviolett, 30 %
+               violett, 10 % hell und 6 % weiss - Violett traegt, Weiss
+               ist der Blitz (Caspar_D: "nie gleich auf weiss"). */
+            const a1 = 0.5 + 0.5 * Math.sin(jetzt / s.takt + s.seed);
+            const a2 = 0.5 + 0.5 * Math.sin(jetzt / (s.takt * 0.37) + s.seed * 2.7);
+            const f = a1 * a2;
+            if (f < 0.03) return true;                              // ganz unten: schwarz, also unsichtbar
+            let cr, cg, cb;
+            if (f < 0.16){        const t = (f - 0.03) / 0.13; cr =  60 * t; cg =  16 * t; cb = 105 * t; }        // schwarz → dunkelviolett
+            else if (f < 0.58){   const t = (f - 0.16) / 0.42; cr =  60 + 120 * t; cg =  16 +  61 * t; cb = 105 + 150 * t; }  // → violett
+            else if (f < 0.82){   const t = (f - 0.58) / 0.24; cr = 180 +  34 * t; cg =  77 +  63 * t; cb = 255; }            // → helles Violett
+            else {                const t = (f - 0.82) / 0.18; cr = 214 +  41 * t; cg = 140 + 115 * t; cb = 255; }            // → weiss, nur die Spitze
             const rand = Math.min(1, (jetzt - s.t0) / 250) * Math.min(1, (1 - u) / 0.12);  // kurz auf-, am Ende abblenden
             const q = projRoh(s.roh), gz = hinterStern(s.roh) ? gHinten : gVorn;
-            const e = (f - 0.35) / 0.65;
-            gz.fillStyle = `rgba(${Math.round(180 + 75 * e)},${Math.round(77 + 178 * e)},255,${((0.20 + 0.62 * e) * rand).toFixed(2)})`;
-            gz.beginPath(); gz.arc(q[0], q[1], 0.5 + 1.3 * e, 0, 2 * Math.PI); gz.fill();
+            gz.fillStyle = `rgba(${Math.round(cr)},${Math.round(cg)},${Math.round(cb)},${(0.85 * rand * zk).toFixed(2)})`;
+            gz.beginPath(); gz.arc(q[0], q[1], (0.30 + 0.80 * f) * zk, 0, 2 * Math.PI); gz.fill();
             return true;
           });
           gVorn.globalCompositeOperation = gcoV; gHinten.globalCompositeOperation = gcoH;
