@@ -5607,7 +5607,7 @@ function kartePanelHtml(){
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>` +
       `<button class="pille" id="karteexport" title="Den Klangraum als eine HTML-Datei erzeugen (nur öffentliche Songs, jeder Stern führt zu seiner Suno-Seite) — zum Verschicken">Export</button>`) +
-    zeile(`Sound-Schiff <b>${SCHIFF_NAME}</b>`,
+    zeile(borg ? `Musik-Matrix <b>${matrixKennung()}</b>` : `Sound-Schiff <b>${schiffName()}</b>`,
       `<button class="pille ${probeflug ? 'an' : ''}" id="probeknopf" title="Probeflug ohne Musik: zwei Runden à 1 s um jeden Stern, dann Transit zum nächsten Klangnachbarn — zum Prüfen der Bahnen">Probeflug</button>` +
       `<button class="pille ${borg ? 'an' : ''}" id="borgknopf" title="Borg-Schiff: jeder verlassene Stern verlischt in einer Supernova und bleibt ein dunkler Rest">Borg</button>` +
       `<select id="schiffart" title="Flugart des Sound-Schiffs"><option value="direkt" ${schiffArt === 'direkt' ? 'selected' : ''}>Direkte Route</option><option value="orbit" ${schiffArt === 'orbit' ? 'selected' : ''}>Orbiter</option><option value="warp" ${schiffArt === 'warp' ? 'selected' : ''}>Warpsprung</option></select>` +
@@ -6000,6 +6000,14 @@ function nebelMalen(g, x, y, R, t, dichte, enge){
   g.restore();
 }
 
+/* Die Spur des Wuerfels: zwei Zahlen, an Reglern gefunden und dann
+   festgeschrieben (Caspar_D, 25.08.2026: "deckkraft auf 2 und
+   fragmentierung auf 3"). Sie gelten fuer die liegengelassenen Wolken der
+   Bahn UND fuer die Antriebsfahne am Rumpf, damit beide zusammenpassen.
+   Ueberschreibbar zur Laufzeit ueber window.__spur - so laesst sich das
+   ohne Neuladen nachstellen, ohne dass ein Regler im Bedienfeld landet. */
+const SPUR_DECK = 2, SPUR_FETZ = 3;
+
 /* DER BORG-WUERFEL
 
    Ein richtiger Koerper, keine gezeichnete Andeutung: acht Ecken,
@@ -6053,8 +6061,8 @@ function wuerfelZeichnen(g, P, sc, jetzt, ang, glut, schub){
   g.save(); g.translate(P[0], P[1]); g.scale(sc, sc);
 
   /* Die Spur liegt HINTER dem Wuerfel und folgt der Flugrichtung - als
-     einziges Teil dreht sie sich mit. Drei Schwaden, jede kuerzer und
-     blasser; zusammen kaum drei Wuerfelbreiten. */
+     einziges Teil dreht sie sich mit. Fuenf Schwaden, jede breiter und
+     blasser als die vorige. */
   if (schub > 0){
     g.save(); g.rotate(ang);
     g.globalCompositeOperation = 'lighter';
@@ -6062,21 +6070,67 @@ function wuerfelZeichnen(g, P, sc, jetzt, ang, glut, schub){
        nebelspur(): filter kostet die GPU-Beschleunigung des ganzen
        Canvas). Stattdessen fuenf statt drei Schwaden, jede breiter und
        blasser: uebereinandergelegt ergibt das denselben weichen Rand. */
-    for (let i = 0; i < 5; i++){
-      const f = 1 - i / 5;
-      const laenge = A * (1.5 + 1.4 * f);
+    /* SCHMAL, DANN AUFLOESEND (Caspar_D, 25.08.2026: "zu intensiv und zu
+       dreieckig" - dann praeziser: "schmaler und wolkiger, als wenn sich
+       Wolken am Ende ab- und aufloesen").
+
+       Zwei Teile, weil eine einzige Form beides nicht kann. Vorn ein
+       schmaler Streif, der am Wuerfel ansetzt und nach hinten leicht
+       einzieht - kein Keil mehr, aber auch keine Fahne. Und dort, wo er
+       aufhoert, uebernehmen einzelne Schwaden: sie treiben quer weg,
+       werden groesser und dabei durchsichtig. Genau das tun Wolken, die
+       sich aufloesen - sie werden nicht kuerzer, sie zerfallen.
+
+       Der Streif endet nie sichtbar: seine Deckkraft ist schon null, wo
+       die erste Schwade steht. Was man als Ende liest, sind die Schwaden,
+       und die haben keine Kante. */
+    const st = window.__spur || {};
+    const DECK = st.deck   != null ? +st.deck   : SPUR_DECK;
+    const FETZ = st.fetzen != null ? +st.fetzen : SPUR_FETZ;
+    for (let i = 0; i < 4; i++){
+      const f = 1 - i / 4;
+      const laenge = A * (1.2 + 0.9 * f);
       const puls = 0.82 + 0.18 * Math.sin(jetzt / (210 + i * 90));
       const sp = g.createLinearGradient(-A, 0, -A - laenge, 0);
-      sp.addColorStop(0,    `rgba(150,255,155,${(0.13 * f * puls).toFixed(3)})`);
-      sp.addColorStop(0.45, `rgba(90,220,110,${(0.06 * f * puls).toFixed(3)})`);
-      sp.addColorStop(1,    'rgba(40,160,70,0)');
+      sp.addColorStop(0,    `rgba(202,252,123,${(0.140 * f * puls * DECK).toFixed(3)})`);
+      sp.addColorStop(0.45, `rgba(172,228,86,${(0.060 * f * puls * DECK).toFixed(3)})`);
+      sp.addColorStop(1,    'rgba(124,176,47,0)');
       g.fillStyle = sp;
-      const breit = A * (0.55 + 0.30 * i);
+      const breit  = A * (0.26 + 0.13 * i);           // schmal: gut ein Viertel Wuerfelbreite
+      const hinten = breit * 0.78;                    // zieht leicht ein, laeuft aber nicht spitz zu
       g.beginPath();
       g.moveTo(-A, -breit);
-      g.quadraticCurveTo(-A - laenge * 0.55, -breit * 0.5, -A - laenge, 0);
-      g.quadraticCurveTo(-A - laenge * 0.55,  breit * 0.5, -A,  breit);
+      g.quadraticCurveTo(-A - laenge * 0.5, -breit * 0.95, -A - laenge, -hinten);
+      g.lineTo(-A - laenge, hinten);
+      g.quadraticCurveTo(-A - laenge * 0.5,  breit * 0.95, -A,  breit);
       g.closePath(); g.fill();
+    }
+    /* Die Schwaden. Ein einziger Radialverlauf auf dem Einheitskreis, per
+       Transformation vervielfaeltigt - so kostet der weiche Rand nichts,
+       und g.filter bleibt aussen vor (siehe nebelspur()). */
+    const schwade = g.createRadialGradient(0, 0, 0, 0, 0, 1);
+    schwade.addColorStop(0,    'rgba(184,241,122,0.270)');
+    schwade.addColorStop(0.45, 'rgba(155,213,82,0.130)');
+    schwade.addColorStop(1,    'rgba(124,176,47,0)');
+    g.fillStyle = schwade;
+    /* Neun Ballen, dicht genug, dass sie sich ueberlappen - einzeln stehende
+       Punkte lesen sich als Perlenkette, nicht als Wolke. */
+    for (let i = 0; i < 9; i++){
+      const u = i / 8;                                       // 0 = noch am Streif, 1 = fast weg
+      const drift = Math.sin(jetzt / (760 + i * 240) + i * 2.1);
+      const x = -A * (1.5 + 2.7 * u);
+      const y = drift * A * 0.85 * u;                        // quer weg, je weiter hinten desto mehr
+      const r = A * (0.42 + 0.72 * u);                       // und dabei groesser
+      /* Jede Schwade hat ihr eigenes Gewicht und ihren eigenen Takt - sonst
+         zerfaellt der Streif in eine gleichmaessige Perlenkette statt in
+         Fetzen. Nach hinten wird der Unterschied groesser. */
+      const eigen = 1 - u * 0.8 * FETZ * (0.5 + 0.5 * Math.sin(i * 2.399 + jetzt / (900 + i * 310)));
+      g.save();
+      g.globalAlpha = Math.max(0, (1 - u) * (1 - u) * eigen * DECK
+                                 * (0.72 + 0.28 * Math.sin(jetzt / (430 + i * 150))));
+      g.translate(x, y); g.scale(r, r * 0.78);
+      g.beginPath(); g.arc(0, 0, 1, 0, 2 * Math.PI); g.fill();
+      g.restore();
     }
     g.restore();
     g.globalCompositeOperation = 'source-over';
@@ -6429,7 +6483,31 @@ function zwillinge(p){
 let borg = (() => { try { return localStorage.getItem('mysuno-borg') === 'an'; } catch (e) { return false; } })();
 const assimiliert = new Set();          // Song-IDs, die schon verloschen sind
 let supernovae = [];                    // { id, t0 }
-const SCHIFF_NAME = 'Caspar';               // Transponder (Caspar_D, 21.08.2026)
+let beschuss = [];                      // { id, t0, nova } - Laser, Pulsieren, dann Supernova
+/* DER TRANSPONDER KOMMT VOM SUNO-PROFIL (Caspar_D, 25.08.2026: "der Name
+   des Raumschiffs wird vom Sunonamen uebernommen, aber nur der erste Teil
+   vor - . _ als Trennzeichen, Musik Matrix bekommt den ersten Buchstaben
+   des SunoAlias").
+
+   Aus "Caspar_D" wird also "Caspar", aus "castobyte" wird "Castobyte" -
+   und die Musik-Matrix fuehrt nur das "C". Das ist nicht bloss eine
+   Abkuerzung: Drohnen tragen im Kollektiv keine Namen, sondern Kennungen.
+
+   Ohne Profil bleibt das Schild namenlos. Einen Namen zu erfinden waere
+   schlimmer als keiner - derselbe Grund, aus dem himmel-export.js ohne
+   Handle abbricht, statt zu raten. */
+function sunoAlias(){
+  const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || null;
+  return ((p && (p.display_name || p.handle)) || '').trim();
+}
+function schiffName(){
+  const kopf = sunoAlias().split(/[-._\s]/)[0];
+  return kopf ? kopf.charAt(0).toUpperCase() + kopf.slice(1) : '';
+}
+function matrixKennung(){
+  const a = sunoAlias();
+  return a ? a.charAt(0).toUpperCase() : '';
+}
 function karteZielId(){
   if (!aktuellId) return null;
   if (reise) return reiseNaechster();
@@ -6611,7 +6689,7 @@ function karteSchiffFrame(){
            Bildrate von 60,7 auf 9 Bilder je Sekunde ein (siehe
            nebelspur()). */
         for (const [br, dk] of [[19,0.040],[13,0.050],[8,0.065],[4,0.085],[1.4,0.22]]){
-          g.strokeStyle = `rgba(110,235,140,${dk})`;
+          g.strokeStyle = `rgba(173,237,108,${dk})`;   // zieht mit der Spur mit, siehe nebelspur()
           g.lineWidth = br; g.stroke();
         }
       g.globalCompositeOperation = 'source-over';
@@ -6722,7 +6800,7 @@ function karteSchiffFrame(){
       g.fillStyle = blink ? '#ff4d4d' : 'rgba(255,77,77,0.25)'; g.beginPath(); g.arc(-3.2, -2.1, 0.35, 0, 2 * Math.PI); g.fill();
       g.fillStyle = blink ? '#4dff88' : 'rgba(77,255,136,0.25)'; g.beginPath(); g.arc(-3.2, 2.1, 0.35, 0, 2 * Math.PI); g.fill();
       /* bei sehr nahem Zoom: Schriftzug auf dem Rumpf */
-      if (detail > 0.7){ g.fillStyle = '#2b2d33'; g.font = '600 1.1px -apple-system, Helvetica Neue, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(SCHIFF_NAME.toUpperCase(), 0, -1.1); }
+      if (detail > 0.7){ g.fillStyle = '#2b2d33'; g.font = '600 1.1px -apple-system, Helvetica Neue, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(schiffName().toUpperCase(), 0, -1.1); }
     }
     g.restore();
   };
@@ -6732,9 +6810,11 @@ function karteSchiffFrame(){
     g.beginPath(); g.moveTo(P[0] + 5, P[1] - 5); g.lineTo(lx - 3, ly + 3); g.stroke();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     g.font = '600 9px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.6)';
-    g.fillText('SOUND-SCHIFF', lx, ly - 6);
+    g.fillText(borg ? 'MUSIK-MATRIX' : 'SOUND-SCHIFF', lx, ly - 6);
     g.font = '600 12px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = '#fff';
-    g.fillText(SCHIFF_NAME, lx, ly + 7);
+    /* Assimiliert traegt das Schiff keinen Namen mehr, sondern eine
+       Kennung - so wie Picard zu Locutus wurde (Caspar_D, 25.08.2026). */
+    g.fillText(borg ? matrixKennung() : schiffName(), lx, ly + 7);
     if (status){ g.font = '9px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.55)'; g.fillText(status, lx, ly + 19); }
   };
   /* Kubische Hermite-Kurve: Start/Ende mit Position UND Tangente -
@@ -6771,7 +6851,12 @@ function karteSchiffFrame(){
     schiffKamVon = schiffLetzteId;
     karteSchiffFrame.wechselT = jetzt;              // Wanduhr des Wechsels (ueberbrueckt die Ladeluecke)
     karteNachlaufAus = false;                       // neuer Song: Kamera folgt wieder
-    if (borg && schiffLetzteId && !assimiliert.has(schiffLetzteId)){ supernovae.push({ id: schiffLetzteId, t0: jetzt }); assimiliert.add(schiffLetzteId); if (karteDaten) karteHimmel(karteDaten); }
+    /* Die Supernova wird nicht mehr hier ausgeloest (Caspar_D, 25.08.2026:
+       "ja, Explosion vorziehn"). Frueher ging der verlassene Stern erst
+       hoch, wenn das Schiff am naechsten ankam - also hinter dem Ruecken,
+       Sekunden nach dem Absprung, ohne sichtbaren Zusammenhang. Jetzt
+       beschiesst der Wuerfel ihn noch im Orbit, und die Explosion folgt
+       dem Schuss. Siehe beschuss[] weiter unten. */
     if (schiffArt === 'warp' && schiffLetzteId && von >= 0 && !istNachbar(schiffLetzteId, aktuellId)){
       const iv = karteDaten.songs.findIndex(p => p.id === schiffLetzteId);
       warpVon = iv >= 0 ? karteXY(L, iv) : (schiffPos || karteXY(L, von)); warpNach = karteXY(L, von); warpT0 = jetzt;
@@ -6818,6 +6903,74 @@ function karteSchiffFrame(){
     gl.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
     g.fillStyle = gl;
     g.fillRect(P[0] - 46, P[1] - 46, 92, 92);
+    g.globalCompositeOperation = 'source-over';
+  }
+
+  /* ---- Der Beschuss: Treffer, Pulsieren, Auseinanderfliegen -------------
+     Caspar_D, 25.08.2026: "der stern wird getroffen / faengt an zu
+     pulsieren / fliegt auseinander".
+
+     Drei Bilder, die ineinander uebergehen. Der Strahl kommt vom Wuerfel
+     und schlaegt am Stern auf; noch waehrend er verglueht, faengt der Stern
+     an zu schlagen - erst langsam, dann immer schneller, weil der Takt mit
+     dem Quadrat der Zeit laeuft. Am Ende steht die Supernova, die es
+     schon gab; sie wird hier ausgeloest statt beim Ankommen am naechsten
+     Stern.
+
+     Warum das Pulsieren ein Auflegen ist und kein Eingriff in den Stern:
+     Die Sterne werden an anderer Stelle gezeichnet, in einer Schleife ueber
+     alle Songs. Ein Sonderfall darin haette jeden der 321 Sterne verteuert,
+     um einen einzigen zu aendern. Ein Schein darueber kostet nur den einen. */
+  const BESCHUSS = { strahlBis: 320, pulsAb: 200, pulsBis: 980 };
+  beschuss = beschuss.filter(b => !b.nova || jetzt - b.t0 < 1200);
+  for (const b of beschuss){
+    const i = karteDaten.songs.findIndex(p => p.id === b.id); if (i < 0) continue;
+    const Z = karteXY(L, i), t = jetzt - b.t0;
+    const fh = karteFarbe(karteDaten.songs[i].gruppe);
+    const fm = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(fh);
+    const rgb = fm ? [parseInt(fm[1],16), parseInt(fm[2],16), parseInt(fm[3],16)] : [255,200,120];
+    g.globalCompositeOperation = 'lighter';
+
+    /* 1. Der Strahl - vom Wuerfel zum Stern, in 320 ms verglueht. Er liegt
+       in der Farbe der Spur, weil er zum Wuerfel gehoert und nicht zum
+       Archiv: derselbe Grund, aus dem die Bahn nicht die Songfarbe traegt. */
+    const S = karteSchiffFrame && karteSchiffFrame.diag && karteSchiffFrame.diag.P;
+    if (t < BESCHUSS.strahlBis && S){
+      const a = 1 - t / BESCHUSS.strahlBis;
+      for (const [br, dk] of [[7, 0.10], [3.4, 0.20], [1.3, 0.75]]){
+        g.strokeStyle = `rgba(199,253,136,${(dk * a).toFixed(3)})`;
+        g.lineWidth = br;
+        g.beginPath(); g.moveTo(S[0], S[1]); g.lineTo(Z[0], Z[1]); g.stroke();
+      }
+      /* Der Aufschlag am Stern, hart und kurz */
+      const auf = g.createRadialGradient(Z[0], Z[1], 0, Z[0], Z[1], 6 + 26 * (1 - a));
+      auf.addColorStop(0, `rgba(255,255,255,${(0.9 * a).toFixed(3)})`);
+      auf.addColorStop(0.4, `rgba(199,253,136,${(0.5 * a).toFixed(3)})`);
+      auf.addColorStop(1, 'rgba(124,176,47,0)');
+      g.fillStyle = auf; g.fillRect(Z[0] - 34, Z[1] - 34, 68, 68);
+    }
+
+    /* 2. Das Pulsieren - der Takt zieht an, der Stern wird heller und
+       unruhiger, bis er es nicht mehr haelt. */
+    if (t >= BESCHUSS.pulsAb && t < BESCHUSS.pulsBis){
+      const pu = (t - BESCHUSS.pulsAb) / (BESCHUSS.pulsBis - BESCHUSS.pulsAb);
+      const takt = 0.5 + 0.5 * Math.sin(pu * pu * 44);          // wird schneller
+      const kraft = (0.25 + 0.75 * pu) * (0.35 + 0.65 * takt);
+      const r = 7 + 13 * pu + 7 * takt;
+      const pl = g.createRadialGradient(Z[0], Z[1], 0, Z[0], Z[1], r);
+      pl.addColorStop(0,   `rgba(255,255,255,${(0.75 * kraft).toFixed(3)})`);
+      pl.addColorStop(0.4, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(0.55 * kraft).toFixed(3)})`);
+      pl.addColorStop(1,   `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
+      g.fillStyle = pl; g.fillRect(Z[0] - r - 2, Z[1] - r - 2, 2 * r + 4, 2 * r + 4);
+    }
+
+    /* 3. Auseinanderfliegen - ab hier uebernimmt die Supernova. */
+    if (t >= BESCHUSS.pulsBis && !b.nova){
+      b.nova = true;
+      supernovae.push({ id: b.id, t0: jetzt });
+      assimiliert.add(b.id);
+      if (karteDaten) karteHimmel(karteDaten);     // der Stern verlischt im Himmel
+    }
     g.globalCompositeOperation = 'source-over';
   }
 
@@ -7016,39 +7169,70 @@ function karteSchiffFrame(){
       const nebelspur = (pts) => {
         const n = pts.length - 1; if (n < 1) return;
         const sc = Math.sqrt(karteZoom.k);
+        /* Zwei Stellschrauben, damit sich das ohne Neuladen einstellen laesst.
+           Sie stehen hier und nicht im Bedienfeld: was einmal richtig steht,
+           bleibt richtig, und ein Regler dafuer waere Ballast. */
+        const st = window.__spur || {};
+        const DECK = st.deck   != null ? +st.deck   : SPUR_DECK;
+        const FETZ = st.fetzen != null ? +st.fetzen : SPUR_FETZ;
+
+        /* WOLKEN, DIE LIEGENBLEIBEN (Caspar_D, 25.08.2026: "die Spur laesst
+           Wolken liegen, die dann sukzessive immer schwaecher werden").
+
+           Vorher war die Spur ein Band: Zuege von Punkt zu Punkt, die als
+           Ganzes mit dem Schiff wanderten. Ein Band kann nicht liegenbleiben.
+           Jetzt sitzt an jedem Bahnpunkt eine eigene Wolke, die von dem
+           Augenblick an, in dem das Schiff dort war, groesser und schwaecher
+           wird - sie bleibt, wo sie abgelegt wurde, und das Schiff faehrt
+           davon.
+
+           Entscheidend ist, woran das Muster haengt: an der BAHNZEIT des
+           Punktes (p.t), nicht an seinem Platz in der Liste. Der Platz
+           wandert naemlich - im naechsten Bild ist derselbe Ort der Bahn
+           einen Index weiter hinten. Haenge das Muster daran, und die
+           Fetzen fliegen mit dem Schiff mit, statt zu stehen.
+
+           Ein Radialverlauf auf dem Einheitskreis, per Transformation
+           vervielfaeltigt: weiche Raender ohne g.filter, das die
+           GPU-Beschleunigung des ganzen Canvas kosten wuerde (siehe unten).
+           41 Kreise sind dabei billiger als die 246 Zuege vorher. */
         g.save();
-        g.lineCap = 'round'; g.lineJoin = 'round';
         g.globalCompositeOperation = 'lighter';
-        /* KEIN WEICHZEICHNER (Caspar_D, 24.08.2026: "das macht den rechner
-           irre langsam mit dem weichzeichnen").
-
-           Gemessen an der echten Bildrate, nicht am Zeichnen: mit
-           g.filter brach der Klangraum von 60,7 auf 9 Bilder je Sekunde
-           ein - 85 Prozent. Der Grund liegt nicht im Filter selbst (der
-           kostet 0,2 ms), sondern darin, dass ein Canvas, auf dem
-           filter benutzt wurde, seine GPU-Beschleunigung beim
-           Zusammensetzen verliert. Danach laeuft das ganze Bild auf der
-           CPU.
-
-           Merke fuers naechste Mal: Wer Zeichenkosten messen will, muss
-           auf der ANGEZEIGTEN Leinwand messen und die Bildrate zaehlen.
-           Eine losgeloeste Leinwand misst etwas anderes und sagt nichts.
-
-           Weich wird es trotzdem - durch uebereinandergelegte Zuege:
-           sechs Lagen, jede breiter und blasser als die vorige. Das ist
-           derselbe Trick wie beim Nebel im Wurmloch, und er kostet
-           nichts, weil er nur gewoehnliche Striche zeichnet. */
-        const LAGEN = 6;
-        for (let k = 0; k < n; k++){
-          const u = (k + 1) / n, e = u * u;          // zum Schiff hin dichter
-          const alt = 1 - u;                          // je aelter, desto breiter verzogen
-          for (let l = LAGEN - 1; l >= 0; l--){
-            const w = (2 + l * 5.5 * (0.8 + 0.9 * alt)) * (0.5 + 0.9 * e) * sc;
-            const d = 0.085 / (l * 0.75 + 1) * (0.35 + 0.65 * e);
-            g.strokeStyle = `rgba(${Math.round(70 + 90 * e)},${Math.round(200 + 45 * e)},${Math.round(95 + 70 * e)},${d.toFixed(3)})`;
-            g.lineWidth = w;
-            g.beginPath(); g.moveTo(pts[k][0], pts[k][1]); g.lineTo(pts[k + 1][0], pts[k + 1][1]); g.stroke();
-          }
+        const wolke = g.createRadialGradient(0, 0, 0, 0, 0, 1);
+        /* Gelbgruen statt Gruen (Caspar_D, 25.08.2026: "den Gruenton 20 Prozent
+           heller mit Gelb"). Gerechnet in OKLCH, nicht in RGB: dort sind
+           Helligkeit und Farbton getrennt, also laesst sich der Ton drehen,
+           ohne dass die Helligkeit mitwandert. Farbton 147 -> 129 Grad, und
+           die Helligkeit 20 Prozent des Wegs zum Weiss. Nicht mal 1,2: der
+           Kern liegt schon bei L 0,91, multipliziert waere er gekappt und
+           laege mit der Mitte auf demselben Wert - der Verlauf waere flach. */
+        wolke.addColorStop(0,    'rgba(199,253,136,0.130)');
+        wolke.addColorStop(0.45, 'rgba(162,221,92,0.058)');
+        wolke.addColorStop(1,    'rgba(124,176,47,0)');
+        g.fillStyle = wolke;
+        for (let k = 0; k <= n; k++){
+          const q = pts[k]; if (!q) continue;
+          const u = k / n;                       // 1 = beim Schiff, eben abgelegt
+          const alter = 1 - u;                   // 0 = frisch, 1 = aelteste Wolke
+          const bz = q.t != null ? q.t : k * 0.37;
+          /* Zwei Wellen unterschiedlicher Laenge ueber der Bahnzeit. Eine
+             allein ergibt ein regelmaessiges Muster, das man als Streifen
+             liest; zwei ergeben Fetzen. Aufgerissen wird erst nach hinten -
+             frisch abgelegte Wolken haengen noch zusammen. */
+          const streu = (0.5 + 0.5 * Math.sin(bz * 5.3 + 1.7))
+                      * (0.5 + 0.5 * Math.sin(bz * 11.9 - 0.6));
+          const fetzen = Math.max(0, 1 - alter * alter * (1 - streu) * 1.25 * FETZ);
+          /* Sukzessive schwaecher: weiche Blende statt linear - linear sieht
+             man den Ansatz noch. Und breiter, waehrend sie verblasst. */
+          const blende = u * u * (3 - 2 * u);
+          const d = 0.9 * blende * fetzen * DECK;
+          if (d <= 0.004) continue;
+          const r = (2.4 + 8.5 * alter) * sc;
+          g.save();
+          g.globalAlpha = d;
+          g.translate(q[0], q[1]); g.scale(r, r * 0.85);
+          g.beginPath(); g.arc(0, 0, 1, 0, 2 * Math.PI); g.fill();
+          g.restore();
         }
         g.restore();
         g.globalAlpha = 1;
@@ -7337,14 +7521,27 @@ function karteSchiffFrame(){
         g = hinterStern(P.roh) ? gHinten : gVorn;                       // hinter dem Stern: auf die Schicht hinter dem Himmel (der Schweif entscheidet gleich mit)
         /* zurueckgelegte Spur bis zur Position (letzte halbe Runde) */
         { const tHalb = Math.PI * a.rp / V, t0 = Math.max(0, zeit - tHalb), pts = [];   // letzte halbe Runde, aus derselben Lagefunktion wie das Schiff
-          for (let k = 0; k <= 40; k++) pts.push(einfangLage(t0 + (zeit - t0) * k / 40));
-          pts[pts.length - 1] = P; schweif(pts); }
-        const schub = ab && zeit > tAb - ANLAUF ? Math.min(1, (zeit - (tAb - ANLAUF)) / ANLAUF) : 0;    // Schub faehrt im Anlauf hoch
+          for (let k = 0; k <= 40; k++){
+            /* Die Bahnzeit mitgeben. Ohne sie kann die Nebelspur ihre Wolken
+               nur am Index festmachen - und der wandert mit dem Schiff, also
+               wanderte auch das Muster mit, statt liegenzubleiben. */
+            const tk = t0 + (zeit - t0) * k / 40;
+            const q = einfangLage(tk); q.t = tk; pts.push(q);
+          }
+          P.t = zeit; pts[pts.length - 1] = P; schweif(pts); }
+        const schub = ab && zeit > tAb - ANLAUF ? Math.min(1, (zeit - (tAb - ANLAUF)) / ANLAUF) : 0;
+        /* Der Schuss faellt, sobald der Schub anfaehrt - das Schiff ist dann
+           noch im Orbit, der Strahl trifft also aus der Naehe. Einmal je
+           Stern: assimiliert.has() faengt Wiederholungen ab, sobald die
+           Supernova gelaufen ist, beschuss.some() in der Zeit davor. */
+        if (borg && schub > 0 && aktuellId && !assimiliert.has(aktuellId)
+            && !beschuss.some(b => b.id === aktuellId))
+          beschuss.push({ id: aktuellId, t0: jetzt, nova: false });    // Schub faehrt im Anlauf hoch
         const glut = warpt ? Math.max(0, 1 - rest / 3) : 0;                                           // Warpkern laedt in den letzten 3 s
         Object.assign(karteSchiffFrame.diag, { P: [P[0], P[1]], roh: P.roh, einfang: !!(bahn.vonFang && bahn.einRel && zeit < tEinfang) });
         zeichneSchiff(P, ang, glut, schub);
         g.globalAlpha = 1; g = gVorn;                                   // Transponder immer vorn (lesbar)
-        zeichneLabel(P, glut > 0 ? 'Warpkern lädt … ' + Math.ceil(rest) + ' s' : schub > 0 ? 'Schub · Absprung in ' + Math.ceil(tAb - zeit) + ' s' : 'im Orbit · ' + mmss(zeit) + (a.rp < Rmax - 0.5 ? ' · spiralt' : ''));
+        zeichneLabel(P, glut > 0 ? 'Warpkern lädt … ' + Math.ceil(rest) + ' s' : schub > 0 ? 'Schub · Absprung in ' + Math.ceil(tAb - zeit) + ' s' : (borg ? 'Assimilation · ' : 'im Orbit · ') + mmss(zeit) + (a.rp < Rmax - 0.5 ? ' · spiralt' : ''));
       }
     }
   }
