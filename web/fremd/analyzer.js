@@ -780,7 +780,10 @@
 <div class="section" id="spur-spektrum">
   <div class="slbl"><span id="sa-spektrum-titel"><span class="nam">Frequenzspektrum</span> — <span class="erkl">live</span></span></div>
   <div class="chart-outer"><canvas id="freq-canvas" style="height:150px;background:#0a0a0a"></canvas></div>
-  <div class="chart-text">Momentane Verteilung der hörbaren Frequenzen im Track. Waagerecht sind die Frequenzen von tief nach hoch sortiert, senkrecht wird die Stärke abgebildet. Durch die Spiegelung von <span style="color:#f97b14">linkem Kanal</span> und <span style="color:#4b93f0">rechtem Kanal</span> können Unterschiede als <span style="color:#ffffff">Asymmetrie</span> sofort erkannt werden.</div>
+  <!-- Der Text wird mit dem Modus umgeschrieben, siehe
+       spektrumTexteSetzen() - die Kanalfarben gelten nur in der
+       gespiegelten Ansicht. -->
+  <div class="chart-text" id="sa-spektrum-text"></div>
   <!-- Der Umschalter steht UNTER dem Diagramm, wie die Profilwahl der
        Spuren. Symbole statt Woerter: die eine Form zeigt Balken auf
        einer Grundlinie, die andere Balken beiderseits einer Mittellinie
@@ -6915,11 +6918,31 @@
           raster();
         }
       }
-      spektrumTitelSetzen();
+      spektrumTexteSetzen();
       draw();
     }
 
-    function spektrumTitelSetzen(){
+    /* Titel UND Bildunterschrift haengen am Modus (Caspar_D,
+       25.08.2026: "bei kanalunabhaengigem display steht immer noch
+       links orange rechts blau unter dem bild - das ist so falsch").
+
+       Der Titel schaltete schon um, die Unterschrift stand fest im
+       Markup und erklaerte weiter die Spiegelung - auch dann, wenn
+       beide Kanaele zusammengefasst sind und es gar keine Seiten mehr
+       gibt. Jetzt schreiben beide dasselbe Bild. */
+    function spektrumTexteSetzen(){
+      var u=document.getElementById('sa-spektrum-text');
+      if(u) u.innerHTML =
+        'Momentane Verteilung der hörbaren Frequenzen im Track. Waagerecht sind die '
+        + 'Frequenzen von tief nach hoch sortiert, senkrecht wird die Stärke abgebildet. '
+        + (_spektrumModus==='gespiegelt'
+            ? 'Durch die Spiegelung von <span style="color:#f97b14">linkem Kanal</span> und '
+              + '<span style="color:#4b93f0">rechtem Kanal</span> können Unterschiede als '
+              + '<span style="color:#ffffff">Asymmetrie</span> sofort erkannt werden.'
+            : 'Beide Kanäle sind zu einer Kurve zusammengefasst — Seitenunterschiede sind '
+              + 'in dieser Ansicht also nicht zu sehen. Die Farbe trägt hier die Tonhöhe: '
+              + '<span style="color:#f97b14">orange</span> tief, '
+              + '<span style="color:#4b93f0">blau</span> hoch.');
       var t=document.getElementById('sa-spektrum-titel');
       if(!t) return;
       t.innerHTML = _spektrumModus==='gespiegelt'
@@ -6943,7 +6966,7 @@
       g.dataset.wert=k.dataset.m;
       [].forEach.call(g.children, function(b){ b.classList.toggle('an', b===k); });
       _spektrumModus=k.dataset.m;
-      spektrumTitelSetzen();
+      spektrumTexteSetzen();
     });
     // ---- GAUGE SYSTEM ----
     // min/max = absolute range
