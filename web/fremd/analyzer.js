@@ -1495,7 +1495,7 @@
     var BF_ABSCHNITT=Math.round(BF_BAHN*5/3*5/3*2);  /* zweimal um zwei Drittel, dann verdoppelt (Caspar_D, 23.08.2026) */
     /* Auch eine Bahn mit blosser Huellkurve braucht die volle Hoehe -
        sonst waere sie ein Strich (25.08.2026). */
-    var bahnInhalt=function(bahn){ return bahn && (bahn.abschnitte || bahn.welle) ? BF_KUERZEL+BF_ABSCHNITT : BF_BAHN; };
+    var bahnInhalt=function(bahn){ return bahn && (bahn.abschnitte || bahn.welle || bahn.wechsel) ? BF_KUERZEL+BF_ABSCHNITT : BF_BAHN; };
     var bahnHoehe=function(bahn){ return BF_KOPF+bahnInhalt(bahn); };
 
     /* Abschnitte aus dem KARAOKETEXT, nicht aus der Strukturerkennung.
@@ -1940,6 +1940,36 @@
         /* Die Kürzelzeile bleibt frei (HTML), darunter die Topline, darunter
            die abgedunkelte Fläche mit der Hüllkurve. */
         var yLinie=y+BF_KUERZEL, yFlaeche=yLinie+1, hFlaeche=BH-BF_KUERZEL-1;
+
+        /* SUNOS WECHSEL als Striche UNTER der Huellkurve. Unten, weil
+           oben die Kuerzelzeile der Textabschnitte steht - so kommen
+           sich die zwei Quellen nicht ins Gehege, und wo es beide gibt,
+           liest man sie uebereinander wie zwei Zeilen einer Partitur.
+
+           non-scaling-stroke: Die Striche bleiben einen Bildpunkt
+           breit, egal wie weit gezoomt ist - dieselbe Regel wie bei
+           allen Konturen im Haus. Unbunt (TASTE_HELL), weil sie keine
+           Bedeutung tragen, nur einen Ort: Jede Kennfarbe waere hier
+           eine Behauptung ueber den Inhalt.
+
+           Der Tooltip nennt Sunos Buchstaben - er sagt nicht, WAS der
+           Abschnitt ist, aber welchem anderen er gleicht. */
+        if(bahn.wechsel && bahn.wechsel.length){
+          var yTickU=y+BH, yTickO=yTickU-6;
+          bahn.wechsel.forEach(function(t9, i9){
+            if(!isFinite(t9) || t9<0 || t9>dauer) return;
+            var xw=x(t9);
+            teile.push('<line x1="'+xw.toFixed(1)+'" y1="'+yTickO+'" x2="'+xw.toFixed(1)+'" y2="'+yTickU
+              +'" stroke="'+TASTE_HELL+'" stroke-width="1" opacity="0.85" vector-effect="non-scaling-stroke"/>');
+            /* Trefferflaeche zum Springen und Nachlesen - dieselbe
+               Bauart wie bei den Textabschnitten. */
+            var lab=bahn.wechselNamen||[];
+            var vor=lab[i9], nach=lab[i9+1];
+            var wie=(vor&&nach) ? ' · '+vor+' → '+nach : '';
+            teile.push('<rect x="'+(xw-14).toFixed(1)+'" y="'+yTickO+'" width="28" height="6" fill="transparent" '
+              +'data-t="'+t9.toFixed(2)+'" class="bf-tref"><title>Suno-Wechsel · '+zeitTxt(t9)+wie+'</title></rect>');
+          });
+        }
         /* KEIN HINTERGRUND MEHR und keine eigene Topline (Caspar_D, 23.08.2026:
            "der Hintergrund der Hüllkurve kommt weg, inklusive seiner Topline;
            die obere Hüllkurvenbegrenzung wird zur Topline"). Die Kurve trägt
@@ -2373,11 +2403,38 @@
          ihrem eigenen Namen: "Track-Struktur" verspricht eine
          Gliederung, die es ohne Abschnitte nicht gibt. */
       var welleRoh=(_katalogDaten&&_katalogDaten.welle)||null;
-      if(abs.length || (welleRoh && welleRoh.length))
-        bahnen.unshift({name: abs.length ? 'Track-Struktur' : 'Hüllkurve — aus dem Katalog',
+      /* SUNOS EIGENE WECHSEL (Caspar_D, 25.08.2026: "wir schreiben ticks
+         ueber oder unter die huellkurve fuer jeden wechsel, weil wir ja
+         keine Namen haben. Suno-Wechsel oder so aehnlich kann die
+         heissen").
+
+         Suno erkennt die Abschnittsgrenzen AKUSTISCH und unabhaengig vom
+         Text - /api/gen/<id>/novelty-sections, im Katalog als
+         'abschnitte'. Die Daten liegen fuer alle 321 Songs im Archiv und
+         wurden bis heute nirgends gelesen.
+
+         Benannt sind sie nicht: segment_labels sagt nur A, B, C - welche
+         Teile einander AEHNELN, nicht was sie sind. Deshalb Striche und
+         keine Namen; erfundene Namen waeren schlechter als keine.
+
+         Gegenprobe an "Moissanit": Sechs von zehn Textabschnitten liegen
+         innerhalb von zwei Sekunden an einem Suno-Wechsel. Wo der Text
+         "Strophe 2 - Strophe 3" sagt, hoert Suno keinen: Es klingt
+         gleich. Umgekehrt findet Suno drei Wechsel, die kein Wort nennt.
+         Beide Quellen messen also Verschiedenes - deshalb stehen sie
+         nebeneinander und nicht anstelle voneinander. */
+      var sunoAbs=(_katalogDaten&&_katalogDaten.abschnitte)||null;
+      var wechsel=(sunoAbs && sunoAbs.state==='complete' && Array.isArray(sunoAbs.peak_times))
+                  ? sunoAbs.peak_times : null;
+      if(abs.length || (welleRoh && welleRoh.length) || (wechsel && wechsel.length))
+        bahnen.unshift({name: abs.length ? 'Track-Struktur'
+                            : (welleRoh && welleRoh.length) ? 'Hüllkurve · Suno-Wechsel'
+                            : 'Suno-Wechsel',
           strecken:[], abschnitte: abs.length?abs:null,
           welle: welleRoh,
-          welleDauer:(_katalogDaten&&_katalogDaten.dauer)||null});
+          welleDauer:(_katalogDaten&&_katalogDaten.dauer)||null,
+          wechsel: wechsel,
+          wechselNamen: (sunoAbs && sunoAbs.segment_labels) || null});
 
       befundspurZeichnen(bahnen, dauer);
 
