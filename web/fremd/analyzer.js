@@ -7327,8 +7327,14 @@
         vEl.textContent = lage;
         /* Dieselben Farben wie im Stereobild: orange fuer die eine
            Seite, blau fuer die andere, grau fuer "weiss ich nicht". */
+        /* 'instrumental' ist kein Meswert, sondern ein Urteil - es
+           bekommt deshalb die unbunte Farbe, nicht die einer Seite
+           (Caspar_D, 25.08.2026). */
         vEl.style.color = lage === 'weiblich' ? '#f97b14'
                         : lage === 'männlich' ? '#4b93f0' : '#9a9aa2';
+        vEl.title = lage === 'instrumental'
+          ? 'Ohne Gesang — hier wird keine Stimme gemessen'
+          : (t && t.stimme && t.stimme.n) ? t.stimme.n + ' gemessene Tonhöhen' : '';
       }
     }
 

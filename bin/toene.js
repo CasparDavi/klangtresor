@@ -469,6 +469,20 @@ function zonenAblegen(id, nz) {
 }
 
 /* ---- Ein Lied -------------------------------------------------------- */
+/* Gilt das Stueck als instrumental? Handmarkierung schlaegt Automatik -
+   dieselbe Regel wie in der Buehne (istInstrumental in index.html). */
+let _handMarken = null;
+function instrumentalGefuehrt(s) {
+  if (_handMarken === null) {
+    try { _handMarken = JSON.parse(fs.readFileSync(
+      path.join(WURZEL, 'library', 'instrumental.json'), 'utf8')); }
+    catch (e) { _handMarken = {}; }
+  }
+  const h = _handMarken[s.id];
+  if (h && typeof h.wert === 'boolean') return h.wert;
+  return !!s.instrumental || !((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()));
+}
+
 function vermessen(s) {
   const ordner = path.join(SONGS, s.id, 'stems');
   const huellen = {};
@@ -491,7 +505,20 @@ function vermessen(s) {
     zonenRaster: nz ? nz.raster : null,
     zonenSchlaege: nz ? nz.schlaege : null,
     tonart: tonart(noten, s.schlaege || []),
-    stimme: stimme(s.id, s.schlaege || []),
+    /* KEINE STIMMMESSUNG BEI INSTRUMENTALEN STUECKEN (Caspar_D,
+       25.08.2026: "dann weiss Klangtresor sofort, hier keine
+       Stimm-Analysen machen").
+
+       Der Waechter in stimme() verlangt 20 gemessene Tonhoehen und
+       greift bei Naturklang nie: Demucs' vocals-Spur enthaelt dort kein
+       Schweigen, sondern Uebersprechen, und YIN findet darin tausende.
+       Alle 64 textlosen Stuecke bekamen so eine Lage zugeschrieben,
+       durchweg "maennlich" - "Wind im Wald" aus 5631 Tonhoehen im
+       Rauschen (docs/ERFUNDENES.md).
+
+       Gefragt wird die Handmarkierung zuerst, dann der Katalog. */
+    stimme: instrumentalGefuehrt(s) ? { lage: 'instrumental', grund: 'als instrumental geführt' }
+                                    : stimme(s.id, s.schlaege || []),
     stand: new Date().toISOString(),
   };
 }

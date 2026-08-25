@@ -455,6 +455,12 @@ select,.knopf{
 .karte:hover .capmarke.leer{display:block}
 #cap textarea{width:100%;min-height:70px;background:var(--flaeche2);border:1px solid var(--rand);
   border-radius:8px;color:var(--text);font:inherit;font-size:13px;line-height:1.5;padding:8px;resize:vertical}
+/* Der Instrumental-Haken im Notizfenster: eine Zeile, kein Kasten -
+   er steht gleichrangig neben der Notiz, beides ist Caspar_Ds Urteil. */
+#cap .capinstr{display:flex;align-items:center;gap:6px;margin-top:10px;
+  font-size:12px;color:var(--schwach);cursor:pointer;user-select:none}
+#cap .capinstr input{accent-color:var(--akzent);cursor:pointer}
+#cap .capinstr .fussnote{margin-left:auto;font-size:10px;opacity:.7}
 #cap textarea:focus{outline:none;border-color:var(--akzent)}
 #cap{position:fixed;z-index:82;display:none;max-width:min(480px,86vw);
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
@@ -11303,6 +11309,33 @@ function reaktZu(){ $('reakt').classList.remove('auf'); }
 let notizen = {};
 fetch('/api/notizen').then(r => r.json()).then(d => { notizen = d || {}; zeichnen(); }).catch(() => {});
 
+/* INSTRUMENTAL VON HAND (Caspar_D, 25.08.2026: "es sollte in KlangTresor
+   möglich sein, Songs einen Instrumental Tag zu verpassen. Dann weiß
+   Klangtresor sofort, hier keine Stimm-Analysen machen").
+
+   DREI Zustände, nicht zwei. Fehlt der Eintrag, entscheidet die
+   Automatik: kein Liedtext heißt instrumental. Ein Haken übersteuert
+   sie in beide Richtungen — ein Stück mit Regieanweisungen im
+   Lyricsfeld kann instrumental gemeint sein, ein Naturklang mit
+   Refrain nicht. */
+let instrumentalHand = {};
+fetch('/api/instrumental').then(r => r.json()).then(d => { instrumentalHand = d || {}; }).catch(() => {});
+/** Gilt dieser Song als instrumental? Hand schlägt Automatik.
+ *
+ *  ZWEI OBJEKTFORMEN, und die eine trägt den Liedtext nicht: Der Index
+ *  (/api/index, songVonId) hält ihn aus Größengründen zurück und meldet
+ *  statt dessen hatLyrics und lyricsWorte; erst /api/song/<id> liefert
+ *  ihn ganz. Wer nur auf s.lyrics prüft, hält im Raster JEDEN Song für
+ *  instrumental — gemessen 321 von 321 statt 64 (25.08.2026). */
+function istInstrumental(s){
+  if (!s) return false;
+  const h = instrumentalHand[s.id];
+  if (h && typeof h.wert === 'boolean') return h.wert;
+  if (s.instrumental) return true;
+  if (typeof s.hatLyrics === 'boolean') return !s.hatLyrics;      // Index
+  return !((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()));   // Songobjekt
+}
+
 /* Die Marke auf der Kachel: 'Cap' wenn Suno-Caption, 'Notiz' wenn
    (auch) eine eigene da ist; sonst ein '+', das nur beim Ueberfahren
    der Kachel erscheint - 321 leere Marken waeren Laerm. */
@@ -11326,7 +11359,14 @@ function capAuf(id, x, y){
     + (s.beschriftung ? `<div class="captext">${esc(s.beschriftung)}</div>` : '')
     + `<h4 style="margin-top:${s.beschriftung ? 12 : 0}px">Meine Notiz <small style="text-transform:none;letter-spacing:0">— bleibt lokal</small></h4>`
     + `<textarea id="capnotiz" placeholder="Was du dir zu diesem Song merken willst …">${esc(n ? n.text : '')}</textarea>`
-    + `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`;
+    + `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`
+    /* Der Instrumental-Haken sitzt bei der Notiz, weil beides dasselbe
+       ist: Caspar_Ds Urteil über den Song, nicht Sunos Angabe. */
+    + `<label class="capinstr" title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">`
+    +   `<input type="checkbox" id="capinstr"${istInstrumental(s) ? ' checked' : ''}> instrumental`
+    +   `<span class="fussnote" id="capinstrstand">${
+            instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
+    + `</label>`;
   c.style.display = 'block';
   const b = c.getBoundingClientRect();
   c.style.left = Math.max(8, Math.min(x + 10, innerWidth - b.width - 8)) + 'px';
@@ -11342,6 +11382,27 @@ function capAuf(id, x, y){
           zeichnen(); } catch (e) {}
   };
   feld.onblur = sichern;
+
+  const haken = c.querySelector('#capinstr');
+  if (haken) haken.onchange = async () => {
+    const wert = haken.checked;
+    const stand = c.querySelector('#capinstrstand');
+    if (stand) stand.textContent = 'wird gesetzt …';
+    try {
+      const a = await (await fetch('/api/instrumental/' + id, {
+        method: 'PUT', body: JSON.stringify({ wert })
+      })).json();
+      instrumentalHand[id] = { wert, stand: new Date().toISOString() };
+      /* Was gelöscht wurde, wird benannt - wer einen Haken setzt, soll
+         sehen, was er bewirkt hat. */
+      if (stand) stand.textContent = (a.geloescht && a.geloescht.length)
+        ? 'gelöscht: ' + a.geloescht.join(', ')
+        : 'von Hand';
+      const so = songVonId.get(id);
+      if (so) { so.instrumental = wert; if (wert) so.hatGesang = false; }
+      zeichnen();
+    } catch (e) { if (stand) stand.textContent = 'ging nicht'; }
+  };
   const zu = (ev) => { if (!c.contains(ev.target)) { sichern(); c.style.display = 'none'; removeEventListener('click', zu, true); } };
   setTimeout(() => addEventListener('click', zu, true), 0);
 }
@@ -12021,7 +12082,26 @@ async function analyzerAufbauen(){
   SunoAnalyzer.song({ ...bSong,
     tonUrl: '/media/' + bSong.id + '/' + datei,
     bild:   '/media/' + bSong.id + '/cover.jpg',
-    toene:  (toeneDaten && toeneDaten.songs && toeneDaten.songs[bSong.id]) || null,
+    /* Bei instrumentalen Stücken die Stimmlage gar nicht erst
+       durchreichen (Caspar_D, 25.08.2026) - sie ist dort erfunden:
+       Demucs' vocals-Spur trägt bei Naturklang Übersprechen statt
+       Schweigen, und YIN findet darin hunderte Tonhöhen. Die
+       Hüllkurven der sechs Spuren bleiben, die sind gemessen. */
+    /* Bei instrumentalen Stücken die gemessene Stimmlage durch das
+       Urteil ersetzen (Caspar_D, 25.08.2026: "da könnte instrumental
+       stehen statt männlich oder weiblich"). Weglassen wäre die
+       schwächere Antwort: Ein Strich hieße „nicht gemessen",
+       „instrumental" sagt, warum es nichts zu messen gibt.
+
+       Nötig ist es, weil die Messung dort erfindet — Demucs' vocals-Spur
+       trägt bei Naturklang Übersprechen statt Schweigen, und YIN findet
+       darin hunderte Tonhöhen. Die sechs Hüllkurven bleiben, die sind
+       gemessen. */
+    toene:  (() => {
+      const t = (toeneDaten && toeneDaten.songs && toeneDaten.songs[bSong.id]) || null;
+      if (!t || !istInstrumental(bSong)) return t;
+      return { ...t, stimme: { lage: 'instrumental', grund: 'als instrumental geführt' } };
+    })(),
     stehendeToene: (stoerfrequenzen && stoerfrequenzen.songs && stoerfrequenzen.songs[bSong.id]) || null });
 
   // Die Zoomzeile des Moduls gehört nach oben zur Bedienung, nicht in

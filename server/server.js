@@ -1143,6 +1143,96 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  /* INSTRUMENTAL VON HAND (Caspar_D, 25.08.2026: "es sollte in
+     KlangTresor moeglich sein, Songs einen Instrumental Tag zu
+     verpassen. Dann weiss Klangtresor sofort, hier keine
+     Stimm-Analysen machen").
+
+     Eine eigene Datei, wie die Notizen - Caspar_Ds Urteil gehoert nicht
+     in Sunos Daten. Drei Zustaende, nicht zwei: fehlt der Eintrag, gilt
+     die Automatik (kein Liedtext = instrumental); 'true' und 'false'
+     uebersteuern sie in beide Richtungen. Ein Stueck mit gesprochenem
+     Text kann instrumental gemeint sein, ein Naturklang mit Refrain
+     nicht.
+
+     PUT mit {wert:true|false|null} - null loescht den Eintrag und gibt
+     die Entscheidung an die Automatik zurueck. */
+  if (p === '/api/instrumental') {
+    const f = path.join(WURZEL, 'library', 'instrumental.json');
+    try { return jsonAntwort(res, JSON.parse(fs.readFileSync(f, 'utf8'))); }
+    catch (e) { return jsonAntwort(res, {}); }
+  }
+  if (p.startsWith('/api/instrumental/') && req.method === 'PUT') {
+    const id = p.slice('/api/instrumental/'.length);
+    if (!/^[0-9a-f-]{36}$/.test(id)) { res.writeHead(400); return res.end(); }
+    let roh = '';
+    req.on('data', c => { roh += c; if (roh.length > 4096) req.destroy(); });
+    req.on('end', () => {
+      const f = path.join(WURZEL, 'library', 'instrumental.json');
+      let alle = {}; try { alle = JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) {}
+      let wert = null; try { wert = JSON.parse(roh).wert; } catch (e) {}
+      if (wert === true || wert === false) alle[id] = { wert, stand: new Date().toISOString() };
+      else delete alle[id];
+      fs.writeFileSync(f, JSON.stringify(alle, null, 1));
+      /* AUFRAEUMEN, wenn instrumental gesetzt wird (Caspar_D: "es sollte
+         dann auch zur Folge haben, dass alles geloescht wird, was mit
+         vocals zu tun hat, falls doch schon Analysen gelaufen sind").
+         Was geloescht wird, meldet die Antwort - der Nutzer soll sehen,
+         was sein Haken bewirkt hat. */
+      const weg = [];
+      if (wert === true) {
+        // 1. Stimmlage aus toene.json
+        const tf = path.join(WURZEL, 'library', 'toene.json');
+        try {
+          const t = JSON.parse(fs.readFileSync(tf, 'utf8'));
+          if (t.songs && t.songs[id] && t.songs[id].stimme) {
+            delete t.songs[id].stimme;
+            fs.writeFileSync(tf, JSON.stringify(t, null, 0));
+            weg.push('Stimmlage');
+          }
+        } catch (e) {}
+        // 2. Whisper-Eintrag aus whisper.ndjson
+        const wf = path.join(WURZEL, 'library', 'whisper.ndjson');
+        try {
+          const zeilen = fs.readFileSync(wf, 'utf8').split('\n');
+          const behalten = zeilen.filter(z => {
+            if (!z.trim()) return false;
+            try { return JSON.parse(z).id !== id; } catch (e) { return true; }
+          });
+          if (behalten.length < zeilen.filter(z => z.trim()).length) {
+            fs.writeFileSync(wf, behalten.join('\n') + '\n');
+            weg.push('Whisper-Transkript');
+          }
+        } catch (e) {}
+        // 3. Was im Katalog aus einer Analyse stammt - NICHT Sunos eigene
+        //    Angaben. Ein instrumentales Stueck darf einen Lyrics-Prompt
+        //    haben (Regieanweisungen, [Intro - instrumental]); der ist
+        //    Quelldatum, kein Messergebnis. Gemessen ist, was Whisper
+        //    beigesteuert hat.
+        try {
+          const zlib = require('node:zlib');
+          const kf = path.join(WURZEL, 'library', 'katalog.json.gz');
+          const kd = JSON.parse(zlib.gunzipSync(fs.readFileSync(kf)));
+          const s = kd.songs && kd.songs[id];
+          if (s) {
+            let geaendert = false;
+            if (s.worte && s.worteQuelle === 'whisper') {
+              delete s.worte; delete s.worteQuelle; geaendert = true; weg.push('Wort-Zeitmarken (Whisper)');
+            }
+            if (s.lyrics && s.lyricsQuelle === 'whisper') {
+              delete s.lyrics; delete s.lyricsQuelle; geaendert = true; weg.push('Liedtext (Whisper)');
+            }
+            if (s.hatGesang !== false) { s.hatGesang = false; geaendert = true; }
+            if (!s.instrumental) { s.instrumental = true; geaendert = true; }
+            if (geaendert) fs.writeFileSync(kf, zlib.gzipSync(Buffer.from(JSON.stringify(kd))));
+          }
+        } catch (e) { console.error('Katalog nicht aufgeräumt:', e.message); }
+      }
+      jsonAntwort(res, { ok: true, wert, geloescht: weg, anzahl: Object.keys(alle).length });
+    });
+    return;
+  }
+
   /* Lyrics aller Songs, klein und flach, fuer die Suche im Suchfeld:
      { id: "text in kleinbuchstaben ohne [anweisungen]" }. Wird erst
      geladen, wenn jemand Freitext tippt, und dann im Browser behalten.
