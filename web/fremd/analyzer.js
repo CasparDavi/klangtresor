@@ -3510,55 +3510,37 @@
 
 
     /* ==================================================================
-       CHROMA JE NOTENZONE statt je Rechenfenster.
+       CHROMA JE NOTENZONE statt je Rechenfenster — DIE BEGRUENDUNG.
 
-       Das bestehende Bild zeichnet eine Spalte je FFT-Fenster - bei
-       sechs Minuten rund 3500. Weil jede Note ueber viele Fenster laeuft
-       UND die Uebergaenge mit hineingeraten, verschmiert alles (Caspar_D,
+       Der Code dazu stand bis zum 25.08.2026 hier: 275 Zeilen
+       chromaTaktZeichnen mit eigenem Goertzel, dazu ein Lader fuer den
+       Bass-Stem. Er war seit dem 25.08. abgeklemmt und ist jetzt weg
+       (Caspar_D: "wir legen nichts mehr tot ohne den Code
+       mitzuloeschen, das macht nur Probleme"). Gerechnet wird in
+       bin/toene.js, gezeigt wird das Ergebnis in chromaZonenZeichnen.
+
+       WARUM es diese zweite Messung ueberhaupt gibt: Das Bild aus dem
+       ganzen Signal zeichnet eine Spalte je FFT-Fenster - bei sechs
+       Minuten rund 3500. Weil jede Note ueber viele Fenster laeuft UND
+       die Uebergaenge mit hineingeraten, verschmiert alles (Caspar_D,
        24.08.2026: "sonst ist das ein einziger Matsch").
 
-       Hier gibt Sunos Takt die Fenster vor. Gemessen wird ZWISCHEN den
-       Schlaegen, nicht auf ihnen: Der Anschlag ist transient und traegt
-       keinen stabilen Toninhalt.
+       Statt dessen gibt Sunos Takt die Fenster vor. Gemessen wird
+       ZWISCHEN den Schlaegen, nicht auf ihnen: Der Anschlag ist
+       transient und traegt keinen stabilen Toninhalt.
 
        ADAPTIV, weil Noten nicht nur auf Vierteln wechseln: Erst das
-       ganze Viertel, dann halbiert, dann geviertelt. Die feinere Teilung
-       wird nur genommen, wenn sich der Toninhalt zwischen den Teilen
-       wirklich unterscheidet - gemessen als Winkel zwischen den beiden
-       Zwoelfervektoren. Bleibt er gleich, war es eine Note, und dann ist
-       das lange Fenster das genauere.
+       ganze Viertel, dann halbiert, dann geviertelt. Die feinere
+       Teilung wird nur genommen, wenn sich der Toninhalt zwischen den
+       Teilen wirklich unterscheidet - gemessen als Winkel zwischen den
+       beiden Zwoelfervektoren. Bleibt er gleich, war es eine Note, und
+       dann ist das lange Fenster das genauere.
+
+       Der Bass-Stem gab dabei die Zonengrenzen vor: Akkordwechsel
+       traegt der Bass, nicht die Melodie. bin/toene.js haelt es genauso
+       (alle 321 Songs tragen raster:"bass").
        ================================================================== */
-    /* Der Bass-Stem, einmal je Song geholt. Er gibt die Zonengrenzen
-       vor: Akkordwechsel traegt der Bass, nicht die Melodie. */
-    var _bassRoh=null, _bassFuer=null, _bassLaeuft=null;
-    /* Das laufende Versprechen merken: Ohne das kehrte ein zweiter
-       Aufruf waehrend des Ladens sofort mit null zurueck, weil _bassFuer
-       schon gesetzt war - und dann zeichnete der Aufrufer ohne Bass
-       weiter, obwohl er gewartet zu haben glaubte (24.08.2026). */
-    function bassHolen(id){
-      if(!id) return Promise.resolve(null);
-      if(_bassFuer===id) return _bassLaeuft || Promise.resolve(_bassRoh);
-      _bassFuer=id; _bassRoh=null;
-      _bassLaeuft=bassLaden(id);
-      return _bassLaeuft;
-    }
-    async function bassLaden(id){
-      window._bassStand='laden '+String(id).slice(0,8);
-      try{
-        var a=await fetch('/media/'+id+'/stems/bass.flac');
-        if(!a.ok){ window._bassStand='HTTP '+a.status; return null; }
-        var ab=await a.arrayBuffer();
-        var c2=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1,1,44100);
-        var d2=await c2.decodeAudioData(ab);
-        _bassRoh={ l:new Float32Array(d2.getChannelData(0)),
-                   r:d2.numberOfChannels>1?new Float32Array(d2.getChannelData(1)):null,
-                   sr:d2.sampleRate };
-        try{ c2.close(); }catch(e){}
-        window._bassStand='da: '+_bassRoh.l.length+' Werte, '+(_bassRoh.r?2:1)+' Kanal/Kanäle';
-      }catch(e){ _bassRoh=null; window._bassStand='Fehler: '+e.message; }
-      _bassLaeuft=null;
-      return _bassRoh;
-    }
+
 
     /* Erst alles holen, dann zeichnen. Beide Quellen sind traege - die
        Abtastwerte muessen dekodiert werden, der Bass-Stem geladen -, und
@@ -3704,8 +3686,10 @@
          Hauptfaden, und heraus kam die schlechtere Messung ohne
          Stem-Raster. Jetzt ist das Bild schlicht nicht da, bis
          bin/toene.js den Song vermessen hat - wie beim
-         Einzelspuren-Panel. chromaTaktZeichnen bleibt als Werkzeug
-         stehen (Hausregel: abklemmen, nicht loeschen). */
+         Einzelspuren-Panel. Die Selbstrechnung stand danach noch einen
+         Tag lang abgeklemmt da und ist am 25.08.2026 geloescht worden
+         (Caspar_D: "wir legen nichts mehr tot ohne den Code
+         mitzuloeschen"). */
       var rahmen=document.getElementById('spur-chroma-takt');
       if(rahmen) rahmen.style.display='none';
     }
@@ -3773,281 +3757,6 @@
       notenTitelSetzen();
     }
 
-    function chromaTaktZeichnen(chromaFlat, dur, schlaege){
-      var host=document.getElementById('chromataktspur-canvas');
-      var rahmen=document.getElementById('spur-chroma-takt');
-      if(!host||!rahmen) return;
-      if(!chromaFlat||!chromaFlat.length||!schlaege||schlaege.length<8||!dur){
-        rahmen.style.display='none'; return; }
-      rahmen.style.display='';
-
-      var rahmenAnz=chromaFlat.length/12;
-      var H=160, zeilenH=H/12;
-
-      /* ==============================================================
-         BEI DEN TOENEN MESSEN, NICHT AUF SIE RUNDEN.
-
-         Das bestehende Chroma legt ein lineares FFT-Raster ueber die
-         logarithmische Tonleiter und rundet jeden Bin auf den naechsten
-         Halbton. Bei fftSize 1024 ist ein Bin 43 Hz breit - bei C2, wo
-         ein Halbton 3,9 Hz misst, deckt ein einziger Bin eLF Halbtoene
-         ab. Im Bass wird dort nicht gemessen, sondern geraten (Caspar_D,
-         24.08.2026: "wir kennen die tonfrequencen, also müssen wir die
-         bins accordingly anpassen").
-
-         Hier wird stattdessen fuer JEDE Halbtonfrequenz einzeln
-         gemessen - mit Goertzel, der genau eine Frequenz auswertet und
-         dafuer einen Durchlauf braucht. Die Fensterlaenge richtet sich
-         nach der Frequenz (konstante Guete Q): tiefe Toene brauchen
-         lange Fenster, hohe kurze. C2 misst ueber 260 ms, C7 ueber 8.
-
-         Das Fenster liegt MITTIG in der Zone und darf ueber sie
-         hinausragen: Ein Basston haelt laenger als ein Sechzehntel, und
-         ohne das waere er in kurzen Zonen nicht messbar.
-         ============================================================== */
-      var roh=window._audioSamples, rohR=window._audioSamplesR, rohSR=window._audioSR||44100;
-      var GUETE=17, TON_VON=36, TON_BIS=95;    /* C2 bis H6 in MIDI */
-
-      function goertzelKanal(x, von, N, f){
-        if(!x||von<0||von+N>x.length||N<8) return 0;
-        var w=2*Math.PI*f/rohSR, cw=2*Math.cos(w);
-        var s1=0,s2=0,s0;
-        for(var i=0;i<N;i++){
-          /* Hann-Fenster gegen Leckeffekte - ohne das schmiert ein
-             kraeftiger Nachbarton in die gemessene Frequenz. */
-          var fen=0.5-0.5*Math.cos(2*Math.PI*i/(N-1));
-          s0=x[von+i]*fen + cw*s1 - s2; s2=s1; s1=s0;
-        }
-        return Math.sqrt(Math.max(0, s1*s1 + s2*s2 - cw*s1*s2))/N;
-      }
-      /* Beide Kanaele, die BETRAEGE addiert - nicht vorher mischen:
-         Gegenphasiges loescht sich beim Mischen aus, und genau solche
-         Stellen duerfen im Chroma nicht verschwinden. Seit dem
-         25.08.2026 haelt die Seite den rechten Kanal allerdings nicht
-         mehr vor (53 MB je Song, und die massgebliche Zonen-Messung
-         kommt laengst aus bin/toene.js, das beide Kanaele aus der WAV
-         liest). Dieses Werkzeug misst dann mono; wer die Stereo-Summe
-         braucht, setzt window._audioSamplesR von Hand und ruft neu. */
-      function goertzel(von, N, f){
-        var e=goertzelKanal(roh, von, N, f);
-        if(rohR) e+=goertzelKanal(rohR, von, N, f);
-        return e;
-      }
-
-      /* DAS RASTER KOMMT AUS DEM BASS (Caspar_D, 24.08.2026). Im Vollmix
-         gemessen lautete die Antwort auf "aendert sich hier etwas?" fast
-         immer ja - spielt die Gitarre Achtel, waehrend der Bass eine
-         Ganze haelt, wurde alles bis auf Sechzehntel zerteilt, obwohl
-         die Harmonie stillstand. Der Bass traegt den Akkordwechsel.
-
-         EINE Oktave und groebere Guete: Fuer die Frage "wechselt hier
-         der Akkord?" genuegt das und kostet ein Zwoelftel - mit zwei
-         Oktaven und Q=17 waren es 1018 Millionen Operationen je Song,
-         so sind es 85. */
-      var BASS_VON=40, BASS_BIS=51, BASS_GUETE=6;   /* E2 bis D#3 */
-      function bassVektor(t0,t1){
-        if(!_bassRoh) return null;
-        var sr2=_bassRoh.sr, mitte=Math.round((t0+t1)/2*sr2);
-        var v=new Float64Array(12), traf=0;
-        for(var midi=BASS_VON;midi<=BASS_BIS;midi++){
-          var f=440*Math.pow(2,(midi-69)/12);
-          var N=Math.round(BASS_GUETE*sr2/f);
-          if(N<16) continue;
-          var von=mitte-(N>>1);
-          if(von<0) von=0;
-          if(von+N>_bassRoh.l.length) von=_bassRoh.l.length-N;
-          if(von<0) continue;
-          var w=2*Math.PI*f/sr2, cw=2*Math.cos(w), e=0;
-          for(var kan=0;kan<2;kan++){
-            var x=kan?_bassRoh.r:_bassRoh.l; if(!x) continue;
-            var s1=0,s2=0,s0;
-            for(var i2=0;i2<N;i2++){
-              var fen=0.5-0.5*Math.cos(2*Math.PI*i2/(N-1));
-              s0=x[von+i2]*fen + cw*s1 - s2; s2=s1; s1=s0;
-            }
-            e+=Math.sqrt(Math.max(0,s1*s1+s2*s2-cw*s1*s2))/N;
-          }
-          v[((midi%12)+12)%12]+=e; traf++;
-        }
-        return traf?v:null;
-      }
-
-      /* Der Zwoelfervektor einer Zone: je Halbton gemessen, dann ueber
-         die Oktaven gefaltet. */
-      /* Ohne Rohsamples bleibt nur der alte Weg ueber die fertigen
-         Chromarahmen - ungenauer, aber besser als nichts. */
-      function mittelAusRahmen(t0,t1){
-        var a=Math.max(0,Math.floor(t0/dur*rahmenAnz)), b=Math.min(rahmenAnz,Math.ceil(t1/dur*rahmenAnz));
-        if(b<=a) return null;
-        var v=new Float64Array(12), z=0;
-        for(var f2=a;f2<b;f2++){ for(var n=0;n<12;n++){ var x=chromaFlat[f2*12+n]; if(isFinite(x)) v[n]+=x; } z++; }
-        if(!z) return null;
-        for(var n2=0;n2<12;n2++) v[n2]/=z;
-        return v;
-      }
-      var direktGemessen = !!(roh && roh.length);
-
-      function mittel(t0,t1){
-        if(!direktGemessen) return mittelAusRahmen(t0,t1);
-        var mitte=Math.round((t0+t1)/2*rohSR);
-        var v=new Float64Array(12), traf=0;
-        for(var midi=TON_VON;midi<=TON_BIS;midi++){
-          var f=440*Math.pow(2,(midi-69)/12);
-          var N=Math.round(GUETE*rohSR/f);
-          if(N<16) continue;
-          var von=mitte-(N>>1);
-          if(von<0) von=0;
-          if(von+N>roh.length) von=roh.length-N;
-          if(von<0) continue;                 /* Datei kuerzer als das Fenster */
-          var e=goertzel(von,N,f);
-          v[((midi%12)+12)%12]+=e; traf++;
-        }
-        if(!traf) return null;
-        return v;
-      }
-      /* Winkel zwischen zwei Vektoren - 1 heisst gleich, 0 heisst voellig
-         anders. Unabhaengig von der Lautstaerke, und genau das wollen wir:
-         gefragt ist, ob dieselben TOENE klingen, nicht wie laut. */
-      function aehnlich(a,b){
-        var z=0,na=0,nb=0;
-        for(var i=0;i<12;i++){ z+=a[i]*b[i]; na+=a[i]*a[i]; nb+=b[i]*b[i]; }
-        return z/(Math.sqrt(na*nb)||1e-9);
-      }
-
-      var zonen=[], aehnWerte=[], zaehlSchlag={1:0,2:0,4:0};
-      /* 0,88 - dieselbe Schwelle wie in bin/toene.js, damit das live
-         gerechnete Bild und das vorgerechnete uebereinstimmen. */
-      var SCHWELLE = (window._chromaSchwelle!=null) ? window._chromaSchwelle : 0.88;
-      for(var i=0;i+1<schlaege.length;i++){
-        var t0=schlaege[i][0], t1=schlaege[i+1][0], L=t1-t0;
-        if(!(L>0)||L>2) continue;
-        var von=t0+L*0.15, bis=t1-L*0.08;
-        if(bis<=von) continue;
-        /* von fein nach grob: die feinste Teilung nehmen, deren Teile
-           sich noch unterscheiden */
-        /* Schritt 1: WO wechselt etwas - aus den fertigen Chromarahmen.
-           Fuer diese Frage genuegt grobe Aufloesung, und die Rahmen
-           liegen ohnehin vor. Die tonreine Messung waere hier absurd
-           teuer: Sie kostete 1018 der 1277 Millionen Operationen je Song
-           (gemessen 24.08.2026), weil tiefe Toene lange Fenster
-           brauchen - E1 bei 41 Hz verlangt 19.900 Abtastwerte je
-           Messung, und geprueft wird sechsmal je Schlag.
-           Gemessen wird tonrein erst in Schritt 2, und nur einmal. */
-        /* HIERARCHISCH, NICHT VON FEIN NACH GROB. Vorher wurde zuerst
-           auf Viertelung geprueft, und dort genuegte EIN abweichendes
-           Paar von dreien - die feinste Stufe gewann fast immer, obwohl
-           die Aehnlichkeiten hoch lagen (Median 0,976, und trotzdem
-           81 % Sechzehntel, gemessen an "Noch lachst Du").
-           Richtig ist die Frage in zwei Stufen: Aendert sich zwischen
-           den HAELFTEN etwas? Wenn nein, ist es eine Note. Wenn ja,
-           aendert sich auch INNERHALB einer Haelfte etwas? Erst dann
-           sind es Sechzehntel. */
-        var teilung=1;
-        var vgl=function(n){
-          var br=(bis-von)/n, t=[];
-          for(var k=0;k<n;k++){
-            var m=_bassRoh ? bassVektor(von+k*br, von+(k+1)*br)
-                           : mittelAusRahmen(von+k*br, von+(k+1)*br);
-            if(!m) return null; t.push(m);
-          }
-          return t;
-        };
-        var h=vgl(2);
-        if(h){
-          var aeH=aehnlich(h[1],h[0]);
-          aehnWerte.push(aeH);
-          if(aeH<SCHWELLE){
-            teilung=2;
-            var v4=vgl(4);
-            if(v4){
-              /* Nur INNERHALB der Haelften vergleichen - der Sprung in
-                 der Mitte ist ja schon durch die Halbierung erfasst. */
-              if(aehnlich(v4[1],v4[0])<SCHWELLE || aehnlich(v4[3],v4[2])<SCHWELLE) teilung=4;
-            }
-          }
-        }
-        /* Schritt 2: nur die gewaehlten Zonen im Vollmix messen. */
-        zaehlSchlag[teilung]=(zaehlSchlag[teilung]||0)+1;
-        var brf=(bis-von)/teilung;
-        for(var tf=0;tf<teilung;tf++){
-          var mv=mittel(von+tf*brf, von+(tf+1)*brf);
-          if(!mv) continue;
-          zonen.push({a:von+tf*brf, b:von+(tf+1)*brf, v:mv, teil:teilung});
-        }
-      }
-      if(!zonen.length){ rahmen.style.display='none'; return; }
-
-      /* Bezug ueber ALLE Zonen, damit die Blocke vergleichbar sind. */
-      var alle=[];
-      for(var zi=0;zi<zonen.length;zi++) for(var n3=0;n3<12;n3++) alle.push(zonen[zi].v[n3]);
-      alle.sort(function(x,y){return x-y;});
-      var p95=alle[Math.floor(alle.length*0.95)]||1;
-
-      var teile2=['<svg viewBox="'+(viewStart*SPUR_W).toFixed(1)+' 0 '
-        +((viewEnd-viewStart)*SPUR_W).toFixed(1)+' '+H+'" preserveAspectRatio="none" data-h="'+H+'">'];
-      for(var t4=0;t4<12;t4++){
-        if(!WEISSE_TASTE[t4]) continue;
-        teile2.push('<rect x="0" y="'+(H-(t4+1)*zeilenH).toFixed(1)+'" width="'+SPUR_W
-          +'" height="'+zeilenH.toFixed(1)+'" fill="#ffffff" opacity="0.035"/>');
-      }
-      for(var zj=0;zj<zonen.length;zj++){
-        var z2=zonen[zj];
-        var xa=(z2.a/dur*SPUR_W), xb=(z2.b/dur*SPUR_W);
-        if(xb<=xa) continue;
-        for(var n4=0;n4<12;n4++){
-          var w=Math.pow(Math.min(1,z2.v[n4]/p95),0.5);
-          if(w<0.06) continue;
-          var cy=H-(n4+0.5)*zeilenH, hw=w*zeilenH*0.85*0.5;
-          var farbe=WEISSE_TASTE[n4]?TASTE_HELL:TASTE_DUNKEL;
-          teile2.push('<rect x="'+xa.toFixed(1)+'" y="'+(cy-hw).toFixed(2)
-            +'" width="'+(xb-xa).toFixed(1)+'" height="'+(hw*2).toFixed(2)
-            +'" fill="'+farbe+'" opacity="0.45"/>');
-          teile2.push(spurTopline(farbe, (cy-hw).toFixed(2), (xb-xa).toFixed(1), xa.toFixed(1), 0.85));
-        }
-      }
-      teile2.push('</svg>');
-      host.innerHTML=teile2.join('');
-
-      /* Die Teilungsbahn darueber. Die Farben steigern sich von ruhig
-         nach bewegt - blau fuer ganze Viertel, gruen fuer Achtel,
-         orangerot fuer Sechzehntel. Wer nur diese Bahn ansieht, liest
-         daran ab, wo das Stueck kleinteilig wird. */
-      var TEIL_FARBE={1:'#4b93f0',2:'#45e989',4:'#f9531c'};
-      var rhost=document.getElementById('taktrasterspur-canvas');
-      if(rhost){
-        var rt=['<svg viewBox="'+(viewStart*SPUR_W).toFixed(1)+' 0 '
-          +((viewEnd-viewStart)*SPUR_W).toFixed(1)+' 11" preserveAspectRatio="none" data-h="11">'];
-        for(var zr=0;zr<zonen.length;zr++){
-          var zz=zonen[zr];
-          var rxa=(zz.a/dur*SPUR_W), rxb=(zz.b/dur*SPUR_W);
-          if(rxb<=rxa) continue;
-          rt.push('<rect x="'+rxa.toFixed(1)+'" y="2" width="'+(rxb-rxa).toFixed(1)
-            +'" height="7" fill="'+TEIL_FARBE[zz.teil]+'" opacity="0.55"/>');
-          rt.push(spurTopline(TEIL_FARBE[zz.teil], 2, (rxb-rxa).toFixed(1), rxa.toFixed(1), 0.9));
-        }
-        rt.push('</svg>');
-        rhost.innerHTML=rt.join('');
-      }
-
-      window._chromaAehnlich=aehnWerte;
-      var zaehl=zaehlSchlag;
-      var su=(zaehl[1]||0)+(zaehl[2]||0)+(zaehl[4]||0) || 1;
-      var titel=document.querySelector('#spur-chroma-takt .spur-titel');
-      if(titel) titel.innerHTML=
-          '<span class="nam" style="color:'+TASTE_HELL+'">Tonverteilung je Notenzone</span> — '
-        + '<span class="erkl">'
-        + (direktGemessen ? 'bei den Halbtonfrequenzen gemessen · ' : 'aus den Rechenfenstern gemittelt · ')
-        + 'Raster ' + (_bassRoh ? 'aus dem Bass' : 'aus dem Mix') + ' · '
-        /* Die Anteile in den Farben der Bahn darunter - dann braucht sie
-           keine eigene Legende. */
-        /* Gezaehlt werden Taktschlaege, nicht Zonen - ein geviertelter
-           Schlag ergibt vier Zonen und ein ganzer eine, was die feine
-           Teilung um den Faktor vier ueberzeichnete. */
-        + '<span style="color:#4b93f0">Taktschläge mit Vierteln ' + Math.round(100*zaehl[1]/su) + ' %</span> · '
-        + '<span style="color:#45e989">mit Achteln ' + Math.round(100*zaehl[2]/su) + ' %</span> · '
-        + '<span style="color:#f9531c">mit Sechzehnteln ' + Math.round(100*zaehl[4]/su) + ' %</span>'
-        + '</span>';
-    }
 
     function chromaSpurZeichnen(chromaFlat, dur){
       var host=document.getElementById('chromaspur-canvas');
