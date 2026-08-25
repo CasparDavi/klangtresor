@@ -2464,23 +2464,34 @@
          Stimmt - und unsere ist die bessere. Sunos welle liegt im
          Katalog mit rund 5 Werten je Sekunde und fehlt bei 68 Songs;
          _chartData.energy kommt aus dem eigenen Rechenkern, hat 20
-         Werte je Sekunde und gibt es fuer JEDEN Song. Sunos Kurve
-         behaelt den Vortritt, weil sie die Katalogdauer abdeckt und
-         damit zu den Abschnitten passt - fehlt sie, springt die eigene
-         ein.
+         Werte je Sekunde und gibt es fuer JEDEN Song.
 
-         Sie kommt allerdings SPAETER als diese Bahn: norm baut die
-         Befundspur, envelope liefert die Energie erst danach. Deshalb
-         traegt huellkurveNachtragen() sie nach, sobald sie da ist. */
-      var eigene = (window._chartData && window._chartData.energy) || null;
-      var welleJetzt = (welleRoh && welleRoh.length) ? welleRoh : (eigene && eigene.length ? eigene : null);
+         IMMER DIE EIGENE (Caspar_D, 25.08.2026: "warum nehmen wir die
+         nicht immer und legen nur sunos abschnitte und farbgebung
+         drueber"). Zuerst hatte Sunos Kurve den Vortritt, weil sie die
+         KATALOGDAUER abdeckt - aber genau das spricht dagegen: Die
+         Abschnitte stammen aus den Wort-Zeitmarken der Aufnahme, und
+         alle Bahnen darunter liegen auf der Dauer der analysierten
+         Datei. Die eigene Kurve teilt diese Zeitachse; Sunos musste
+         gegen sie gestreckt werden. Eine Quelle fuer alle 321 Songs,
+         viermal feiner, und keine zwei Zeitachsen mehr im selben Bild.
+
+         Von Suno bleiben die Abschnitte und ihre Farbgebung - die
+         liegen ohnehin im Text, nicht in der Kurve.
+
+         Die Energie kommt SPAETER als diese Bahn: norm baut die
+         Befundspur, envelope liefert sie erst danach. Deshalb traegt
+         huellkurveNachtragen() sie nach, sobald sie da ist. Sunos welle
+         bleibt nur noch Rueckfall, falls gar keine Energie kommt. */
+      var eigene = wurzelKurve((window._chartData && window._chartData.energy) || null);
+      var welleJetzt = (eigene && eigene.length) ? eigene : ((welleRoh && welleRoh.length) ? welleRoh : null);
       bahnen.unshift({name: abs.length ? 'Track-Struktur' : 'Hüllkurve',
           strecken:[], abschnitte: abs.length?abs:null,
           welle: welleJetzt,
-          welleEigen: !(welleRoh && welleRoh.length),
-          welleDauer: (welleRoh && welleRoh.length)
-                      ? ((_katalogDaten&&_katalogDaten.dauer)||null)
-                      : ((window._chartData&&window._chartData.dur)||dauer),
+          welleEigen: !!(eigene && eigene.length),
+          welleDauer: (eigene && eigene.length)
+                      ? ((window._chartData&&window._chartData.dur)||dauer)
+                      : ((_katalogDaten&&_katalogDaten.dauer)||null),
           wechsel: wechsel,
           wechselNamen: (sunoAbs && sunoAbs.segment_labels) || null});
 
@@ -2745,6 +2756,34 @@
        so billig wie möglich sein. */
     var _letzteBahnen=null, _letzteDauer=0, _letzteSicht=-1;
 
+    /* LEISTUNG IST KEINE WELLENFORM (Caspar_D, 25.08.2026: "die sieht
+       feiner aus, die andere hatte ne wurzelfunktion, oder").
+
+       Richtig gesehen. Der Rechenkern legt in energy die mittlere
+       QUADRIERTE Amplitude ab - energy[i] = Summe(ch*ch)/Fenster, also
+       Leistung. Wer die ungewandelt zeichnet, bekommt eine Kurve, die
+       Leises nach unten druckt und nur die Spitzen zeigt: viele duenne
+       Nadeln statt einer Huellkurve.
+
+       Die Wurzel macht daraus den Effektivwert - eine Amplitude, und
+       genau das zeigt eine Wellenform. Nachgemessen an "De
+       Machandelbohm", Werte als Anteil vom Maximum:
+
+         roh (Leistung)   Median 0,178   Viertel 0,049 / 0,307
+         mit Wurzel       Median 0,422   Viertel 0,220 / 0,554
+         Sunos welle      Median 0,532   Viertel 0,289 / 0,711
+
+       Mit Wurzel liegen wir bei Sunos Verteilung; der kleine Rest
+       spricht dafuer, dass Suno je Fenster den Spitzenwert nimmt und
+       nicht den Effektivwert - eine Frage des Geschmacks, keine der
+       Richtigkeit. */
+    function wurzelKurve(e){
+      if(!e || !e.length) return null;
+      var a=new Float32Array(e.length);
+      for(var i=0;i<e.length;i++){ var v=e[i]; a[i]=v>0?Math.sqrt(v):0; }
+      return a;
+    }
+
     /* DIE EIGENE HUELLKURVE NACHTRAGEN.
 
        Die Befundspur entsteht im norm-Handler; die Energiekurve kommt
@@ -2759,8 +2798,8 @@
     function huellkurveNachtragen(){
       if(!_letzteBahnen || !_letzteBahnen.length) return;
       var b=_letzteBahnen[0];                       /* die Strukturbahn steht vorn (unshift) */
-      if(!b || (b.welle && b.welle.length)) return;
-      var e=window._chartData && window._chartData.energy;
+      if(!b || b.welleEigen) return;                /* die eigene liegt schon drin */
+      var e=wurzelKurve(window._chartData && window._chartData.energy);
       if(!e || !e.length) return;
       b.welle=e; b.welleEigen=true;
       b.welleDauer=(window._chartData&&window._chartData.dur)||_letzteDauer;
