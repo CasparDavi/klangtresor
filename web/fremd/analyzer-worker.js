@@ -968,20 +968,6 @@ onmessage=function(e){
           var entropyVal=0;
           if(totalE>0){for(var k=0;k<bins2;k++){var p=mag[k]*mag[k]/totalE;if(p>0)entropyVal-=p*Math.log(p);}entropyVal/=Math.log(bins2);}
 
-          /* Schwerpunkt und Rolloff je Bild - aus BEIDEN Kanaelen,
-             Betraege addiert. Das kostet hier keine einzige FFT mehr:
-             magR wird ohnehin gerechnet (fuers Stereo-Spektrogramm)
-             und lag bisher nur ungenutzt daneben.
-             Diese Kurven sind es, die im Bild landen - die Karten
-             zeigen ihren Median, nicht den Skalar aus der einen
-             43-ms-Probe weiter oben. */
-          var cnum2=0,cden2=0;
-          for(var k=0;k<bins2;k++){
-            var f2=k*sr/fftSize2, m2=mag[k]+magR[k];
-            cnum2+=f2*m2;cden2+=m2;
-          }
-          var rolloffFrame=sr/2,tot2=cden2,cum2=0,thr3=tot2*0.85;
-          for(var k=0;k<bins2;k++){cum2+=mag[k]+magR[k];if(cum2>=thr3){rolloffFrame=k*sr/fftSize2;break;}}
 
           entropyArr[frame]=entropyVal;
 
