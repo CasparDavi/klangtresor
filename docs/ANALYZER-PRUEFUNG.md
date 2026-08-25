@@ -219,6 +219,18 @@ Absatz hier. Das Löschen-ist-nicht-gut aus derselben Sitzung meint die
 
 ## Alle Funde, nach Schwere
 
+### 12. Die Spektrogramm-Rahmen sind nach dem Zeichnen weg — R und L+R lassen sich nicht nachrüsten
+**hoch** · `analyzer.js`:6024, 5285
+
+**Fehler:** Der Rechenkern schickt die schweren Spektrogrammdaten nur in der letzten Runde und überträgt dabei die Puffer. Der Analyzer legt sie in `window._chartData.fft.frames` ab und zeichnet damit sofort beide Bilder. Danach steht dort `undefined` — an drei nacheinander geprüften Songs (25.08.2026: „Tomatensalat", „Abend im Park", „Synchronisation") war `frames` und `stereoFrames` jedesmal undefiniert, obwohl beide Bilder gezeichnet waren. Wer später noch einmal zeichnen will, hat nichts mehr.
+
+**Wirkung:** Zwei Dinge hängen daran. Erstens greift der Neuaufbau beim Zoomen (Zeile 5285) genau auf `d.fft.frames` zu — ob das Spektrogramm dem Zoom tatsächlich nicht folgt, ist noch nicht sauber nachgemessen, der Zugriff geht aber ins Leere. Zweitens ließ sich deshalb Caspar_Ds Wunsch nach vier Registern (L, R, L+R, Seitenlage) nicht umsetzen: Eine Lasche, die beim Aufschlagen zeichnen müßte, findet keine Daten mehr, und ein Canvas, der beim Empfang verborgen ist, hat die Breite null und bleibt leer.
+
+**Dazu kommt:** R und L+R gibt es überhaupt nicht. Der Kern rechnet `magR` (`analyzer-worker.js`:943), wirft es aber weg — gespeichert werden nur der linke Kanal und die Seitenlage. Und der Kommentar „spectro (mono)" an Zeile 945 stimmt nicht: `var ch = left` (Befund 34), es ist der linke Kanal allein.
+
+**Vorschlag:** Die Rahmen dauerhaft halten, statt sie an `_chartData` zu hängen, das bei jeder Teilnachricht neu geschrieben wird — dann folgt auch der Zoom wieder. R braucht kein eigenes Feld: Aus dem linken Kanal und der Seitenlage `p=(|L|−|R|)/(|L|+|R|)` ergibt sich `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`; bei einer Auflösung von 1/127 für p bleibt der Fehler unter 0,2 dB. Vier Register kosten dann kein zusätzliches Byte.
+
+
 ### 13. Die Kirchentonart ist die Reihenfolge zweier Schleifen, keine Messung
 **hoch** · `analyzer-worker.js`:1144
 

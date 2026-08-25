@@ -998,13 +998,35 @@
       Archivs ohne Ausnahme.</div>
   </div>
 </div>
-<div class="section"><div class="slbl"><span><span class="nam">Spektrogramm</span> — <span class="erkl">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
-  <div class="chart-outer"><canvas id="spectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-spectro"></div></div>
-  <div class="chart-text">Die Frequenzen über die Zeit: waagerecht die Zeit, senkrecht die Frequenz, die Farbrampe (<span style="color:#78787d">schwarz</span> – <span style="color:#9a9aa2">grau</span> – <span style="color:#e6e6e6">weiß</span> – <span style="color:#f9531c">orangerot</span>) codiert die Signalstärke. Normiert wird lokal, damit auch leise Passagen ihre Struktur zeigen — die Helligkeit ist deshalb kein absolutes Maß und zwischen zwei Songs nicht vergleichbar. Ein Band am oberen Rand markiert Stellen, an denen das Signal abgeschnitten ist. Die elf waagerechten Linien bilden ein Notensystem: unten die fünf Linien des Bassschlüssels (G2 bis A3), oben die des Violinschlüssels (E4 bis F5) und dazwischen, dünner gezeichnet, die Hilfslinie C4 für das eingestrichene C. An ihnen lässt sich ablesen, in welcher Lage ein Klang liegt.</div>
-</div>
-<div class="section"><div class="slbl"><span><span class="nam">Stereo-Spektrogramm</span> — <span class="erkl">orange=links dominant · blau=rechts dominant · grau=zentral</span></span></div>
-  <div class="chart-outer"><canvas id="stereospectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-stereospectro"></div></div>
-  <div class="chart-text">Dasselbe Bild, doch die Farbe trägt hier die Stereolage statt der Stärke: <span style="color:#f97b14">Orange</span> steht für links, <span style="color:#4b93f0">Blau</span> für rechts, <span style="color:#9a9aa2">Grau</span> für die Mitte. So wird erkennbar, welche Frequenzbereiche breit gemischt sind und welche in der Mitte zusammenlaufen. Das Notensystem der elf Linien ist dasselbe wie im Spektrogramm darüber.</div>
+<!-- ZWEI SPEKTROGRAMME, EIN ABSCHNITT (Caspar_D, 25.08.2026: "wir packen
+     erstmal das, was wir haben, in ein Registerpanel"). Gewuenscht waren
+     vier Laschen - L, R, L+R und die Seitenlage -, aber R und L+R gibt es
+     im Rechenkern nicht: magR wird gerechnet und weggeworfen, und die
+     Rahmen sind nach dem Zeichnen nicht mehr greifbar (Befund 12 in
+     docs/ANALYZER-PRUEFUNG.md). Bis das behoben ist, sind es die zwei
+     vorhandenen Bilder.
+
+     BEIDE BILDER LIEGEN UEBEREINANDER, die zugeklappte Lasche wird mit
+     visibility ausgeblendet, NICHT mit display:none. Der Grund ist
+     handfest: Die Zeichenfunktionen setzen c.width=c.offsetWidth, und bei
+     display:none ist die null - der Canvas bliebe leer, und nachzeichnen
+     kann man nicht, weil die Rahmen dann schon weg sind. Mit visibility
+     behaelt er seine Breite, zeichnet beim Empfang mit, und der Lesekopf
+     rechnet ebenfalls weiter richtig (er nimmt dieselbe offsetWidth).
+     Nebenbei kann so nichts huepfen: Beide Bilder haben dieselbe Hoehe
+     und stehen an derselben Stelle. -->
+<div class="section" id="spur-spektro">
+  <div class="slbl"><span class="spur-titel"><span class="nam">Spektrogramm</span> — <span class="erkl">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
+  <div class="bf-register" id="spektro-register">
+    <button type="button" data-spektro="l" class="an">FFT(L)</button>
+    <button type="button" data-spektro="pan">(|L|−|R|)/(|L|+|R|)</button>
+  </div>
+  <div style="position:relative;height:180px">
+    <div class="chart-outer" id="spektro-feld-l" style="position:absolute;left:0;right:0;top:0;margin:0"><canvas id="spectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-spectro"></div></div>
+    <div class="chart-outer" id="spektro-feld-pan" style="position:absolute;left:0;right:0;top:0;margin:0;visibility:hidden"><canvas id="stereospectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-stereospectro"></div></div>
+  </div>
+  <div id="spektro-text-l"><div class="chart-text">Die Frequenzen über die Zeit: waagerecht die Zeit, senkrecht die Frequenz, die Farbrampe (<span style="color:#78787d">schwarz</span> – <span style="color:#9a9aa2">grau</span> – <span style="color:#e6e6e6">weiß</span> – <span style="color:#f9531c">orangerot</span>) codiert die Signalstärke. Normiert wird lokal, damit auch leise Passagen ihre Struktur zeigen — die Helligkeit ist deshalb kein absolutes Maß und zwischen zwei Songs nicht vergleichbar. Ein Band am oberen Rand markiert Stellen, an denen das Signal abgeschnitten ist. Die elf waagerechten Linien bilden ein Notensystem: unten die fünf Linien des Bassschlüssels (G2 bis A3), oben die des Violinschlüssels (E4 bis F5) und dazwischen, dünner gezeichnet, die Hilfslinie C4 für das eingestrichene C. An ihnen lässt sich ablesen, in welcher Lage ein Klang liegt.</div></div>
+  <div id="spektro-text-pan" style="display:none"><div class="chart-text">Dasselbe Bild, doch die Farbe trägt hier die Stereolage statt der Stärke: <span style="color:#f97b14">Orange</span> steht für links, <span style="color:#4b93f0">Blau</span> für rechts, <span style="color:#9a9aa2">Grau</span> für die Mitte. So wird erkennbar, welche Frequenzbereiche breit gemischt sind und welche in der Mitte zusammenlaufen. Das Notensystem der elf Linien ist dasselbe wie im Spektrogramm darüber.</div></div>
 </div>
 `;
 
@@ -3599,6 +3621,36 @@
     document.addEventListener('click', function(e){
       var b=e.target.closest && e.target.closest('#noten-register button');
       if(b) notenLascheWaehlen(b.getAttribute('data-lasche'));
+    });
+
+    /* DIE LASCHEN DER SPEKTROGRAMME (Caspar_D, 25.08.2026). Anders als
+       beim Chroma wird hier beim Umschalten NICHT nachgezeichnet: Beide
+       Bilder stehen schon, weil beide Canvas beim Empfang ihre volle
+       Breite haben (siehe der Kommentar am Abschnitt). Es wechselt nur,
+       welches man sieht - und damit auch der Lesekopf, denn der laeuft
+       ohnehin fuer beide weiter.
+
+       Die Laschen tragen Caspar_Ds Schreibweise: FFT(L) fuer das linke
+       Bild - es ist wirklich nur der linke Kanal, "mono" im alten
+       Kommentar war falsch (Befund 34) - und die Formel fuer die
+       Seitenlage, die keine Differenz ist, sondern ein Anteil: Sie sagt,
+       WIE WEIT links oder rechts ein Frequenzfach sitzt, unabhaengig
+       davon, wie laut es ist. */
+    var _spektroOffen='l';
+    function spektroLascheWaehlen(welche){
+      _spektroOffen=welche;
+      var f={l:document.getElementById('spektro-feld-l'), pan:document.getElementById('spektro-feld-pan')};
+      var x={l:document.getElementById('spektro-text-l'), pan:document.getElementById('spektro-text-pan')};
+      for(var k in f){ if(f[k]) f[k].style.visibility = (k===welche?'visible':'hidden');
+                       if(x[k]) x[k].style.display    = (k===welche?'':'none'); }
+      var reg=document.getElementById('spektro-register');
+      if(reg) Array.prototype.forEach.call(reg.querySelectorAll('button'), function(b){
+        b.classList.toggle('an', b.getAttribute('data-spektro')===welche); });
+      spektroTitelSetzen();
+    }
+    document.addEventListener('click', function(e){
+      var b=e.target.closest && e.target.closest('#spektro-register button');
+      if(b) spektroLascheWaehlen(b.getAttribute('data-spektro'));
     });
 
     async function chromaTaktBereitZeichnen(chromaFlat, dur, schlaege, tonUrl, id){
@@ -6628,13 +6680,28 @@
       return gab;
     }
 
+    /* Seit dem 25.08.2026 teilen sich zwei Bilder diesen Abschnitt, und
+       der Titel gehoert beiden. Ohne Argument gerufen behaelt er, was er
+       ueber die Uebersteuerungsspitzen weiss, und wechselt nur den Text
+       zur offenen Lasche. "linker Kanal" steht jetzt dabei: Das Bild war
+       nie eine Monosumme, auch wenn der Kommentar im Rechenkern das
+       behauptet (Befund 34). */
+    var _spektroSpitzen=false;
     function spektroTitelSetzen(gabSpitzen){
+      if(gabSpitzen!==undefined) _spektroSpitzen=gabSpitzen;
       var c=document.getElementById('spectro-canvas');
       var t=c&&c.closest('.section')&&c.closest('.section').querySelector('.slbl');
       if(!t) return;
-      t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">lokal Z-normiert · '
+      if(_spektroOffen==='pan'){
+        t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">'
+          + 'Seitenlage je Frequenzfach · <span style="color:#f97b14">orange = links</span> · '
+          + '<span style="color:#4b93f0">blau = rechts</span> · '
+          + '<span style="color:#9a9aa2">grau = zentral</span></span></span>';
+        return;
+      }
+      t.innerHTML='<span><span class="nam">Spektrogramm</span> — <span class="erkl">linker Kanal · lokal Z-normiert · '
         + 'dunkel=Stille · hell=Signal</span>'
-        + (gabSpitzen
+        + (_spektroSpitzen
             ? ' · <span style="opacity:.82">Band oben: '
               + '<span style="color:#ffffff">weiß = abgeschnitten</span>, '
               + '<span style="color:#e31c79">pink = unter 1 dB Luft</span></span>'
