@@ -294,6 +294,29 @@ ffmpeg-Bandpaß belegt) erschien in 0 % der Rahmen.
 > an, weil zum Zeitpunkt der Prüfung der Nachrechnungslauf für die
 > Spektrogramme auf genau diesem Rechenkern lief.
 
+## Wartet auf den Rechenkern
+
+Zwei Schnitte sind fällig, aber nicht gemacht: Am 25.08.2026 lief der
+Nachrechnungslauf für die Spektrogramme (`node bin/vorrechnen.js
+--nur-bilder`) auf genau diesem Rechenkern, und seine Kindprozesse lesen
+`analyzer-worker.js` bei jedem Song neu. Eine Änderung mittendrin gäbe
+Bilder aus zwei verschiedenen Fassungen.
+
+**1 · `schimmerFinden()`** rechnet bei jeder Analyse, obwohl seit dem
+23.08. niemand das Ergebnis mehr liest (`SA_SCHIMMER_TOT`, Befund 14).
+Wichtig beim Schneiden: `bandVerlauf()` bleibt — es trägt auch die
+Grenzfrequenz. Nur der Schimmer und was ausschließlich an ihm hängt.
+
+**2 · Die zehn Größen aus `SA_TOT`.** Ihre Karten sind verborgen, weil
+die Zahlen nachweislich falsch sind — aber gerechnet werden sie weiter,
+in jedem Rahmen, bei fünf Minuten Musik über 55.000 mal. Ihr letzter
+Leser war die Instrument-Erkennung, und die ist am 25.08.2026 gelöscht.
+Seither sind `attackMs`, `pitchStab`, `harmDensMed` und `tiltMed` im
+Analyzer verwaist; `centroid` und `rolloff` haben noch ihre eigenen
+(verborgenen) Karten. Zu prüfen ist je Größe, ob wirklich niemand mehr
+liest — der Analyse-Index tut es nicht, seine Felder sind lufs, lra,
+truePeak, clip, dynamik, stereo, korrelation, dauer, stand.
+
 ## Alle Funde, nach Schwere
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
