@@ -1378,7 +1378,6 @@
       'v-lra':      d => d.kurz,
       'v-loud':     d => d.lufs,
       'v-dyn':      d => d.crest,
-      'v-bpm':      d => d.bpmsMedian,
       'v-centroid': d => d.fft && d.fft.centroidCurve,
       'v-rolloff':  d => d.fft && d.fft.rolloffCurve,
       'v-tilt':     d => d.fft && d.fft.tilt,
@@ -5854,6 +5853,12 @@
             window._chartData.crest=msg.crest;window._chartData.onsets=msg.onsets;
             setTimeout(renderInstruments,100);
             window._chartData.dur=msg.dur;window._chartData.sr=sr;
+            /* Die Dauer-Karte wurde nur im Frischanalyse-Weg gefüllt
+               (aus buf.duration) - beim Abspielen aus der Ablage blieb
+               sie auf "—" stehen, obwohl die Zahl in der Nachricht
+               steht (25.08.2026). */
+            if(isFinite(msg.dur)){ var dEl=document.getElementById('v-dur');
+              if(dEl && (!dEl.textContent || dEl.textContent==='—')) dEl.textContent=fmt(msg.dur); }
             huellkurveNachtragen();   /* die Bahn stand schon, bevor die Energie kam */
             drawLufsHist(msg.lufs);   /* drawEnvelope war nur noch diese eine Zeile (Rest 25.08. ausgebaut) */
             /* Die Reihen sind erst HIER da. Beim Zeichnen der großen
@@ -5881,29 +5886,18 @@
               }
             }
             break;
-          case 'bpm_curve':
-            window._chartData.bpms=msg.bpms;
-            window._chartData.bpmsIOI=msg.bpmsIOI;
-            window._chartData.bpmsMedian=msg.bpmsMedian;
-            window._chartData.dur=msg.dur;
-            // update global BPM card with median of IOI-median values (most robust)
-            if(msg.bpmsMedian&&msg.bpmsMedian.length){
-              var validBPM=Array.from(msg.bpmsMedian).filter(function(v){return !isNaN(v)&&v>0;});
-              if(validBPM.length){
-                validBPM.sort(function(a,b){return a-b;});
-                var medBPM=validBPM[Math.floor(validBPM.length/2)];
-                document.getElementById('v-bpm').textContent=Math.round(medBPM);
-                updateGauge('bpm',medBPM);
-              }
-            }
-            break;
-          case 'vocal_analysis':
-            window._chartData.vocalAnalysis=msg;
-            /* Die Stimmkarte NICHT mehr von hier fuellen: Das Tor im Kern
-               fragt "hat dieses Fenster Mitten?" und gab 64 stummen
-               Stuecken eine Stimmlage. Der Wert kommt jetzt aus
-               bin/toene.js, gemessen auf dem getrennten vocals-Stem. */
-            break;
+          /* 'bpm_curve' gibt es nicht mehr - die eigene Temposchaetzung
+             ist am 25.08.2026 ausgebaut. Sie nahm den hoechsten
+             Autokorrelationsgipfel ohne Pruefung auf halbes oder
+             doppeltes Tempo; das Tempo kommt aus Sunos Schlagraster.
+             Alte Ablagen tragen die Nachricht noch und laufen jetzt
+             durch den default-Zweig. */
+          /* 'vocal_analysis' gibt es nicht mehr - die alte Stimmerkennung
+             ist am 25.08.2026 aus dem Rechenkern ausgebaut worden. Sie
+             mass den Mix statt der Stimme; der Ersatz steht in
+             bin/toene.js (YIN auf dem getrennten vocals-Stem). Alte
+             Ablagen tragen die Nachricht noch - sie laeuft jetzt
+             durch den default-Zweig und wird ignoriert. */
           case 'stereo_curve':
             window._chartData.lBands=msg.lBands;
             window._chartData.rBands=msg.rBands;

@@ -103,117 +103,42 @@ Und: fast alles wird nur aus dem linken Kanal gerechnet. Tauscht man die Kanäle
 
 Der kürzeste Weg nach vorn ist der, den bin/pruefe-lautheit.js schon vorzeichnet: für jede Messgröße ein Prüfsignal mit bekannter Antwort. Sinus, Sägezahn, weißes und rosa Rauschen, eine bandbegrenzte Datei, eine Tonleiter — damit fallen sieben der zehn schweren Befunde beim ersten Lauf auf.
 
+## Gelöst — und wodurch
+
+Die Befunde 1–10 stehen nicht mehr einzeln hier, weil ihre Verfahren
+ersetzt sind. Was sie beschrieben, gilt weiterhin — nur rechnet es
+niemand mehr:
+
+**1–6 · Die alte Stimmerkennung** maß auf dem rohen Mix und lieferte
+die Basstonhöhe statt der Stimme: Das Gesangs-Tor war ein Mitten-Tor
+(„instrumental" kam nie heraus, auch bei Regen und Wind nicht), die
+Bänder 80–165/165–350 Hz messen Kick und Baß, f0 lag auf einem
+23,4-Hz-Raster mit den Schwellen dazwischen, die Harmonischen-Suche war
+unnormiert. Gemessen an Sunos Stilangaben traf sie 40 %, wer immer
+„männlich" sagte, träfe 77 %.
+
+> **Gelöst (Caspar_D, 25.08.2026):** *„für Stimme haben wir eine
+> Lösung, wir nehmen die Vocal-Spur aus der Stem-Zerlegung."* Die
+> Stimmlage kommt aus `bin/toene.js` — YIN auf dem getrennten
+> vocals-Stem, unteres Viertel. Instrumentale Stücke tragen seit dem
+> 25.08. den Vermerk „instrumental" statt einer erfundenen Lage.
+
+**7–10 · Die Tempo-Schätzung** nahm den höchsten Autokorrelationsgipfel
+ohne Prüfung auf halbes oder doppeltes Tempo (33 % lagen auf der
+falschen metrischen Ebene), zeigte statt der Messung ein Mittel über
+Fenster, rechnete ohne Normierung auf die Zahl der Summanden (17 %
+Vorteil für schnelle Tempi) und hatte ein Energietor, das einen
+Effektivwert mit einem Mittelquadrat verglich und deshalb nie sperrte.
+
+> **Gelöst (Caspar_D, 25.08.2026):** *„für Tempo nehmen wir Sunos
+> Daten, brauchen wir also auch nie wieder."* Die Taktspur zeigt Sunos
+> Schlagraster; die BPM-Karte ist totgelegt, mit genau diesem Befund
+> als Begründung.
+
+Beide Altrechnungen werden ausgebaut — *„wenn es noch alten Code gibt,
+der dieses Zeug macht, weg damit."*
+
 ## Alle Funde, nach Schwere
-
-### 1. Das Tor „hat dieses Fenster Gesang?" ist ein Mitten-Tor, kein Stimm-Tor — „instrumental" kommt nie heraus
-**hoch** · `analyzer-worker.js`:766
-
-**Fehler:** Ob ein Fenster überhaupt Gesang enthält, entscheidet allein formantRatio = (E[400–900 Hz] + E[900–2800 Hz]) / E[gesamt] < 0,03 (Zeile 763/766). Das ist kein Formantmaß. Ein Formant ist eine schmale Resonanzspitze an einer bestimmten Stelle; hier werden zwei 500 bzw. 1900 Hz breite Bänder gegen das Gesamtspektrum gerechnet. Gemessen wird also nur: „hat dieses Fenster überhaupt Mitten?". Gitarre, Becken, Streicher, Regen erfüllen das genauso wie eine Stimme. Dahinter (Zeile 805) steht vocalWindowCount<3, also „weniger als drei Sekunden des ganzen Songs haben Mitten".
-
-**Beleg:** Alle 321 Songs des Archivs durch den Kern gerechnet: kein einziger bekam „instrumental" — auch die 64 Stücke ohne eine Textzeile nicht. Waldesrauschen → „weiblich", f0=305 Hz, 288 von 290 Fenstern als Gesang gezählt. Landregen → „weiblich", f0=258 Hz. Wind im Wald → „gemischt", f0=258 Hz. Wiese mit Insekten → „männlich", f0=117 Hz. Kleinste je gezählte Fensterzahl über alle 321 Songs: 86 — die Schwelle steht bei 3, also 29-fach darunter. Kunstsignale durch den echten Kern (onmessage): rosa Rauschen → „gemischt", f0=117 Hz; Streicherakkord C-Moll ohne Gesang → „männlich", f0=141 Hz. Nur ein Signal aus reinem Bass+Kick, das fast keine Mitten hat, fällt durch das Tor.
-
-**Wirkung:** Für 64 stumme Stücke im Archiv zeigt der Analyzer eine Stimmlage und eine Grundfrequenz an, und das Panel „Stimmanalyse" zeichnet für eine Regenaufnahme eine volle Gesangskurve. Die Antwort „instrumental" ist praktisch tot.
-
-**Vorschlag:** Gesang braucht ein eigenes Merkmal, nicht ein Energieverhältnis: Harmonizität (Anteil der Energie auf ganzzahligen Vielfachen eines gefundenen f0) plus Stimmhaftigkeit über die Zeit — eine Stimme hält eine Tonhöhe 100–300 ms und wackelt dabei (Vibrato/Portamento), ein Streicherakkord nicht. Und die Schwelle muß an echten Instrumentals geeicht werden, nicht geraten; die 64 textlosen Stücke im Archiv sind eine fertige Probe.
-
-### 2. f0 und Stimmlage werden auf dem ganzen Mix gemessen — was herauskommt, ist die Basstonhöhe
-**hoch** · `analyzer-worker.js`:576
-
-**Fehler:** Zeile 576 setzt ch=left; die gesamte Stimmanalyse (Zeile 728–816) läuft auf dem unbearbeiteten linken Kanal. Es gibt keine Mitte-Bildung, keine Bandbegrenzung auf den Stimmbereich, keine Trennung von Begleitung. Ein Mix ohne Stimmtrennung liefert bei einem Verfahren, das das energiereichste tieffrequente Muster sucht, die Tonhöhe des Basses.
-
-**Beleg:** Bandbegrenzungsprobe an fünf Songs, jeweils voller Mix gegen dasselbe Stück ohne alles unter 200 Hz (dreifacher Hochpaß, ffmpeg). Unter 200 Hz kann kein Vokalformant liegen — der Gesang bleibt vollständig erhalten, nur Baß und Kick fallen weg. Monolith („German deep male baritone" laut Stilangabe): voller Mix männlich/f0=94 Hz → ohne Baß weiblich/f0=234 Hz. Unerreicht („deep melancholic male vocals"): männlich/117 → weiblich/234. Okkultation („Female lead"): männlich/94 → weiblich/328. Vanille-Eis: gemischt/164 → weiblich/258. In allen fünf Fällen kippt das Urteil auf „weiblich", sobald der Baß fehlt, obwohl die Stimme unverändert im Signal steht. Umgekehrt: nur der Anteil unter 200 Hz allein (keine Stimme möglich) ergibt genau dieselben f0-Werte wie der volle Mix. Über alle 321 Songs: f0-Median der Stücke, deren Stilangabe nur eine weibliche Stimme nennt = 141 Hz; der mit nur männlicher Stimme = 117 Hz; der 64 Stücke ganz ohne Gesang = 117 Hz. Die Stücke ohne jede Stimme liegen also auf demselben Wert wie die mit männlicher — die Zahl trägt keine Stimminformation.
-
-**Wirkung:** Das Feld f0 mißt nicht die Stimme, sondern die untere Kante dessen, was gerade im Spektrum steht. Der ganze nachfolgende Punktestand (Zeile 788–801) urteilt damit über das Arrangement, nicht über den Sänger.
-
-**Vorschlag:** Vor der Stimmanalyse aus links/rechts die Mitte bilden (Gesang steht fast immer mittig) und das Signal für die f0-Suche auf den Stimmbereich begrenzen — nicht durch einen Hochpaß, der den Grundton wegnimmt, sondern indem die Tonhöhe aus dem Obertonabstand geschätzt wird (Autokorrelation/YIN oder Cepstrum auf 200–3000 Hz). Dann bleibt ein Bariton bei 110 Hz, auch wenn 110 Hz gar nicht mehr im Signal steht.
-
-### 3. Die Bänder „männlich 80–165 Hz" und „weiblich 165–350 Hz" messen Kick und Baß, nicht Stimmen
-**hoch** · `analyzer-worker.js`:758
-
-**Fehler:** Zeile 758/759 teilt 80–350 Hz in ein „männliches" und ein „weibliches" Band, Zeile 789 macht daraus den ersten Punkt des Urteils. Bei einer isolierten Stimme wäre das ein grober, aber vertretbarer Gedanke. Auf einem Mix ist 80–165 Hz der Bereich, in dem Baßgitarre und Kick ihre Grundtöne haben — in fast jeder Produktion der lauteste Teil des Spektrums. Der Term ist damit ein Baßanteil-Messer, der als Geschlechtsmerkmal verrechnet wird. Zweitens überlappen die Stimmlagen real (Mann ~85–180 Hz, Frau ~165–255 Hz); eine harte Grenze bei 165 Hz kann sie grundsätzlich nicht trennen.
-
-**Beleg:** Kunstsignal durch den echten Kern, Quelle-Filter-Modell einer Singstimme (Sägezahn plus drei Formantresonanzen, Vibrato, Silbenhüllkurve): Frauenstimme 260 Hz allein → „weiblich". Dieselbe Stimme unverändert, dazu eine Baßlinie auf 65 Hz und ein Kick → „männlich". Die f0-Schätzung blieb dabei richtig (258 Hz) — gekippt hat allein der Bandterm. Über alle 321 Songs liegt der Bandanteil 80–165 Hz an 80–350 Hz im Median bei 0,558, bei 193 von 321 Songs über 0,5: der Term zieht also bei zwei Dritteln des Archivs nach „männlich", unabhängig davon, wer singt.
-
-**Wirkung:** Ein leiser Mix mit wenig Baß wird eher „weiblich", ein Metalstück mit stehender Baßwand fast zwangsläufig „männlich". Genau das zeigt das Archiv: von 33 Stücken, deren Stilangabe nur eine weibliche Stimme nennt, wurden 26 mit f0 unter 165 Hz gemessen.
-
-**Vorschlag:** Den Bandterm ersatzlos streichen. Nach einer brauchbaren f0-Schätzung auf der Mitte trägt er nichts bei, was f0 nicht besser sagt; solange die f0-Schätzung nicht trägt, ersetzt er nur einen Fehler durch einen zweiten.
-
-### 4. f0 liegt auf einem 23,4-Hz-Raster — die Entscheidungsschwellen 160 und 200 Hz fallen zwischen die Rasterpunkte
-**hoch** · `analyzer-worker.js`:785
-
-**Fehler:** vFftSize=2048 (Zeile 729) ergibt bei 48 kHz eine Auflösung von 48000/2048 = 23,4375 Hz. Zeile 785 rechnet f0 = bestHpsK·sr/vFftSize, ohne Schwerpunkt- oder Parabelinterpolation über die Nachbarbins. f0 kann deshalb nur diese Werte annehmen: 93,75 · 117,19 · 140,63 · 164,06 · 187,5 · 210,94 · 234,38 · 257,81 · 281,25 · 304,69 … Zeile 791 entscheidet an 160 Hz und 200 Hz. Zwischen diesen Schwellen liegen genau zwei erreichbare Werte (164,06 und 187,5); ein einziger Bin Abstand — 23 Hz, in der Stimmlage rund drei Halbtöne — kippt das Urteil von „männlich" auf „neutral" auf „weiblich".
-
-**Beleg:** Über alle 321 Songs traten genau zehn verschiedene f0-Werte auf: 94 Hz (37×), 117 (172×), 141 (55×), 164 (29×), 188 (10×), 211 (6×), 234 (6×), 258 (4×), 281 (1×), 305 (1×) — jeder davon ein exaktes Vielfaches von 23,4375. 65 % des Archivs liegen auf nur zwei Rasterpunkten (94 und 117 Hz). Ein Halbton bei 200 Hz sind 12 Hz; das Raster ist doppelt so grob wie der kleinste musikalische Schritt.
-
-**Wirkung:** Die angezeigte Grundfrequenz ist keine Messung, sondern eine Bin-Nummer. Zwei Sängerinnen, die eine Quarte auseinanderliegen, können denselben Wert bekommen; zwei Rahmen desselben Tons können um drei Halbtöne auseinanderliegen.
-
-**Vorschlag:** Entweder das Fenster deutlich vergrößern (8192 → 5,9 Hz) oder — billiger und genauer — den gefundenen Bin mit einer Parabel über die beiden Nachbarn interpolieren. Bei Tonhöhe ist ohnehin die Autokorrelation im Zeitbereich das passendere Werkzeug: ihre Auflösung wächst nicht mit dem Fenster, sondern mit der Abtastrate.
-
-### 5. Die harmonische Produktspektrum-Suche ist nicht normiert und greift systematisch die falsche Harmonische
-**hoch** · `analyzer-worker.js`:780
-
-**Fehler:** Zeile 780–783 bildet hv = |X(k)| · |X(2k)| · |X(3k)| aus den rohen Beträgen und nimmt das Maximum. Zwei Denkfehler stecken darin. Erstens: Musikspektren fallen zu hohen Frequenzen hin ab; ein Produkt roher Beträge wird deshalb dort am größten, wo die Beträge selbst am größten sind — also bei kleinem k. Ohne Normierung (etwa auf die Summe der beteiligten Bins oder im Logarithmus) ist das Verfahren systematisch zum tiefsten Kandidaten hin verzerrt. Zweitens: das Produkt wird auch dann groß, wenn 2k und 3k zufällig auf Formanten oder auf andere Instrumente fallen — dann findet HPS eine Harmonische der Stimme statt ihres Grundtons.
-
-**Beleg:** Kunstsignal durch den echten Kern, nackte Männerstimme 110 Hz, Vokal /a/ (F1=730, F2=1090, F3=2440), kein weiteres Instrument im Signal: der Kern meldet f0=328 Hz — das ist 3×110, denn 2k und 3k dieser Harmonischen landen auf 660 und 990 Hz, also mitten in F1 und F2. Das Urteil lautet folgerichtig „weiblich" für eine reine Männerstimme. Nackte Frauenstimme 220 Hz → f0=445 Hz (2×220). Frau 175 Hz → 352 Hz (2×175). Im Mix kippt derselbe Mechanismus in die andere Richtung: dort gewinnt der Baß, siehe die Rasterverteilung mit 65 % auf 94/117 Hz.
-
-**Wirkung:** Die f0-Schätzung ist in beide Richtungen oktav- bzw. quintverschoben: allein stehende Stimmen werden zu hoch, Stimmen im Mix zu tief gemessen. Damit ist der mit 1,5 Punkten schwerstgewichtete Term des Urteils (Zeile 791) unbrauchbar.
-
-**Vorschlag:** HPS im Logarithmus rechnen (Summe der log-Beträge statt Produkt) und die gefundene Spitze gegen ihre Subharmonischen prüfen: liegt bei f0/2 ebenfalls Energie mit passenden Vielfachen, ist f0/2 der Grundton. Besser noch: YIN/Autokorrelation, die diese Oktavprüfung eingebaut hat.
-
-### 6. Das Verfahren trifft seltener zu als eine feste Antwort
-**hoch** · `analyzer-worker.js`:813
-
-**Fehler:** Die Kette aus Bandanteil, gerasterter f0, Spektralschwerpunkt und F1/F2-Verhältnis (Zeile 789–795) und die Schwellen in Zeile 813/814 ergeben zusammen kein Urteil, das mehr Auskunft trägt als ein konstanter Wert. Das ist kein Feinschliff-Problem, sondern die Summe der Punkte oben: alle vier Terme messen Eigenschaften des Arrangements.
-
-**Beleg:** Als Sollwert dient Sunos eigene Stilangabe im Katalog (stilPrompt/stilAusschluss). 142 Songs nennen eindeutig entweder nur eine weibliche oder nur eine männliche Stimme. Der Kern trifft davon 57 = 40 %. Wer immer „männlich" sagte, träfe 109 = 77 %. Von den 33 eindeutig weiblichen Stücken erkennt der Kern 6. Über alle 321 Songs lautet das Urteil 142× männlich, 159× gemischt, 20× weiblich — und unter den 20 „weiblichen" sind eine Regenaufnahme (Landregen), Waldesrauschen und Wind im Wald.
-
-**Wirkung:** Das Feld „Stimme" in der Oberfläche sieht aus wie eine Messung, ist aber im Mittel irreführender als gar keine Angabe.
-
-**Vorschlag:** Bis das Verfahren steht: die Anzeige an eine Vertrauensangabe binden und im Zweifel nichts behaupten. Und eine Selbstprüfung nach dem Vorbild von bin/pruefe-lautheit.js anlegen — Kunstsignale mit bekanntem Ergebnis (Stimme allein, Stimme über Baß, Baß ohne Stimme, Rauschen), die beim Bauen mitlaufen. Die vier Signale, mit denen die Fehler hier gefunden wurden, reichen dafür schon aus.
-
-### 7. Der Autokorrelationsgipfel wird ohne jede Oktav- oder Metrumsprüfung als Tempo genommen
-**hoch** · `analyzer-worker.js`:698
-
-**Fehler:** Zeile 697-699 sucht das Maximum der Autokorrelation über die Lags 33..100 und gibt 6000/bestL zurück. Es gibt keinen Vergleich der Gipfelhöhen bei T, T/2 und 2T, keine Kammbewertung über die Vielfachen (r(L)+r(2L)+r(3L)...), keine Phasenprüfung gegen die Anschläge, keine Tempovorliebe. Das ist die Annahme, der höchste Gipfel der Autokorrelation sei der Taktschlag. Diese Annahme ist in dieser Musik meistens falsch: Die Autokorrelation einer Hüllkurve mißt den häufigsten Abstand zwischen Ereignissen, und der ist bei Popmusik der Zweier oder der ganze Takt, weil die Basstrommel auf 1 und 3 lauter ist als alles dazwischen.
-
-**Beleg:** An allen 321 Songs nachgerechnet (Skript batch.js): Der Suno-Schlag ist nur bei 75 von 321 der HÖCHSTE Gipfel der Autokorrelation. Bei 103 Songs liegt der höchste Gipfel auf 2 Schlägen, bei 57 auf 4 Schlägen (ein Takt), bei 18 auf dem halben Schlag, bei 21 auf 1,5 und bei 22 auf 0,75 Schlägen. Der Suno-Schlag steht als Gipfel auf Rang 1 bei 75, Rang 2 bei 67, Rang 3 bei 65, Rang 4-5 bei 48, Rang 6-10 bei 38, jenseits Rang 10 bei 28 Songs. Beispiel "Mutterns Hände" (80d81627): Suno 101,2 BPM (Lag 59,3; Raster über 429 Schläge und 255 s vollkommen gleichmäßig). Die stärksten Gipfel sind L237 = 4 Schläge (1,00), L118 = 2 Schläge (0,82), L49 (0,79). Der Schlag selbst hat nur 0,66 und ist Rang 26. Der Kern nimmt L49 = 122,4 BPM — das sind 0,83 Schläge, also gar keine metrische Ebene. Beispiel "Stars of the deep" (6250449b): Suno 120,5, Kern 60,0.
-
-**Wirkung:** Von 321 Songs sind 58 genau eine Oktave zu langsam und 23 eine Oktave zu schnell. Von den 69 übrigen Fehlmessungen sind 21 bei genau 2/3 (Gipfel auf 1,5 Schlägen) und 32 bei genau 4/3 (0,75 Schläge) — zusammen also 134 von 321 Songs, deren Tempo eine falsche metrische Ebene benennt.
-
-**Vorschlag:** Nach dem Gipfelsuchen eine Ebenenentscheidung einziehen: die Kandidaten T, T/2, 2T (und 3T/2, 2T/3) gegeneinander bewerten, indem die Autokorrelation an allen Vielfachen aufsummiert wird, und die Ebene mit einer Tempovorliebe um 120 BPM festlegen. Eine Probe dieses Verfahrens (variante.js) hat im Versuch drei der Oktavfehler (Stars of the deep, Emma, Das Geschenk) auf Anhieb geheilt, ohne einen richtigen Wert zu verderben.
-
-### 8. Angezeigt wird nicht die gemessene Autokorrelation, sondern ein arithmetisches Mittel über Fenster — das erzeugt Tempi, die im Stück nicht vorkommen
-**hoch** · `analyzer.js`:5689
-
-**Fehler:** Zeile 5587 setzt das Feld "BPM" zunächst auf msg.bpm (den AKF-Skalar). Sobald die Nachricht bpm_curve eintrifft, überschreibt Zeile 5689 es mit dem Median von bpmsMedian. Diese Reihe ist im Kern zweimal arithmetisch gemittelt worden: Zeile 872 nimmt je 8-s-Fenster den Median der Anschlagabstände, Zeile 879 mittelt diese Mediane über ±4 Fenster arithmetisch. Ein arithmetisches Mittel über BPM-Werte verschiedener metrischer Ebenen ist keine Ebene mehr: Der Mittelwert aus 100 und 150 ist 125, ein Tempo, das nirgends im Stück steht. Derselbe Fehler noch einmal in Zeile 871, wo bpmsIOI das arithmetische Mittel der Abstände in BPM bildet.
-
-**Beleg:** Aus den abgelegten Analysen aller 321 Songs (Skript angezeigt.js): Der angezeigte Wert trifft den Suno-Takt bei 98 von 321 Songs (31 %), der überschriebene AKF-Skalar bei 171 (53 %). Abstand zur nächstgelegenen metrischen Stufe (1/4,1/3,1/2,2/3,3/4,1,4/3,3/2,2,3,4 des Suno-Schlags): der AKF-Skalar liegt bei 304 von 321 Songs innerhalb 60 Cent auf einer Stufe, mittlerer Abstand 16 Cent. Der angezeigte Wert liegt bei 160 von 321 dazwischen, mittlerer Abstand 84 Cent. Beispiel "Waifu with White Hair" (98f74c73): Suno 91,2, AKF 90,9 richtig, angezeigt 125,9. Beispiel "Erste Regentropfen" (c66edee5): Suno 82,6, AKF 83,3 richtig, angezeigt 122,9. Rohe Fenstermediane dieses Songs springen zwischen 176, 167, 136, 120, 143, 130, 167 — die Glättung macht daraus 122,9.
-
-**Wirkung:** Der Wert im BPM-Feld ist bei zwei Dritteln der Songs falsch, und anders als beim Skalarwert ist der Fehler nicht mehr als Oktavverwechslung erkennbar: Es steht eine Zahl da, die zu keiner Zählebene des Stücks gehört. Die bessere Messung (53 %) wird von der schlechteren (31 %) überschrieben.
-
-**Vorschlag:** Den AKF-Skalar stehen lassen, statt ihn zu überschreiben; und wenn über Fenster zusammengefaßt wird, dann über die PERIODEN (Sekunden je Schlag) und mit Median statt arithmetischem Mittel, nach vorheriger Faltung aller Fenster auf dieselbe metrische Ebene.
-
-### 9. Autokorrelation ohne Normierung auf die Zahl der Summanden — in der 5-Sekunden-Kurve ein systematischer Vorteil von 17 % für schnelle Tempi
-**hoch** · `analyzer-worker.js`:836
-
-**Fehler:** Die Summe in Zeile 836 läuft über diff2.length-lag Glieder und wird nicht durch diese Zahl geteilt. Bei einem 5-Sekunden-Fenster hat diff2 498 Werte; bei Lag 33 werden 465 Produkte addiert, bei Lag 100 nur 398. Der kurze Lag bekommt also allein durch die Fensterlänge 17 % mehr Summe geschenkt. Verglichen werden dadurch keine Autokorrelationskoeffizienten, sondern Summen unterschiedlicher Länge. (Beim globalen Wert in Zeile 698 ist derselbe Fehler vorhanden, fällt aber nicht ins Gewicht, weil diff dort einige Zehntausend Werte lang ist.)
-
-**Beleg:** Für alle 321 Songs die 5-s-Kurve zweimal gerechnet, einmal wortgleich wie im Kern und einmal durch (N-lag) geteilt (Skript batch.js, Felder kurveMedRoh/kurveMedNorm): Der Median der Kurve verschiebt sich bei 211 von 321 Songs, im Mittel um 17,75 BPM, und zwar durchweg nach oben — die ungeteilte Fassung mißt zu schnell.
-
-**Wirkung:** Die BPM-Kurve, die unter dem Spielkopf mitläuft, zeigt in der oberen Hälfte des Suchbereichs systematisch zu hohe Werte. Der Fehler ist keine Streuung, sondern eine Neigung: Er verschwindet nicht durch Mitteln über die Zeit.
-
-**Vorschlag:** Die Summe durch (diff2.length - lag) teilen, bevor verglichen wird.
-
-### 10. Das Energietor vergleicht einen Effektivwert mit einem Mittelquadrat und sperrt deshalb praktisch nie
-**hoch** · `analyzer-worker.js`:830
-
-**Fehler:** Zeile 726 bildet die Schwelle aus dem Feld energy, und energy[i] ist ein MITTELQUADRAT (Zeile 680: s += ch[j]*ch[j], dann s/eStep). Zeile 829 bildet aus dem Fenster dagegen einen EFFEKTIVWERT (Math.sqrt). In Zeile 830 wird dann Amplitude mit Amplitude-zum-Quadrat verglichen. Da alle Werte unter 1 liegen, ist das Mittelquadrat viel kleiner als der Effektivwert, und die Bedingung wird fast nie wahr. Dieselbe Verwechslung noch einmal in Zeile 854/855 für die IOI-Kurve.
-
-**Beleg:** Aus den abgelegten Analysen aller 321 Songs gezählt (Skript onsets.js): Von 92 852 Fenstern der BPM-Kurve sind 10 durch das Tor gesperrt (NaN). Mit einheitenrichtigem Vergleich (Fenster-Mittelquadrat gegen Schwelle) wären es 7141, also 7,7 % (Skript batch.js, Feld gesperrtRichtig). Einzelmessung (Skript tor.js): "Stars of the deep" Schwelle 5,00e-3, kleinster Fenster-Effektivwert 5,15e-2 — gesperrt 0 von 303 Fenstern; einheitenrichtig läge die Schwelle bei 7,07e-2 und das leiseste Fenster wäre gesperrt. Bei "Lichtpunkte" Schwelle 3,57e-4 gegen kleinsten Fensterwert 4,67e-3 — gesperrt 0 von 227.
-
-**Wirkung:** Stille Fenster und Ausblendungen bekommen ein Tempo zugewiesen statt NaN. Da diese Fenster keinen Takt haben, liefert die Autokorrelation dort Zufallswerte, und die Glättung trägt sie in die Nachbarschaft hinein. Das im Kommentar angekündigte Tor ist wirkungslos.
-
-**Vorschlag:** Entweder beide Seiten als Mittelquadrat vergleichen oder beide als Effektivwert (Math.sqrt(energyP5)). Danach den Faktor 3 neu prüfen — er wurde nie an einer wirksamen Schwelle erprobt.
 
 ### 11. Das Chroma addiert jedes FFT-Fach — 70 % davon ist Grundrauschen, kein Ton
 **hoch** · `analyzer-worker.js`:222

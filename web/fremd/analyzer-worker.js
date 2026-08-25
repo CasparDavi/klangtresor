@@ -736,10 +736,9 @@ onmessage=function(e){
 
       postMessage({type:'progress',label:'Skalare…',pct:38});
 
-      // BPM global (autocorrelation on envelope diff)
-      var minL=Math.floor(6000/180),maxL=Math.floor(6000/60),best=0,bestL=minL;
-      for(var lag=minL;lag<=maxL;lag++){var s=0;for(var i=0;i<diff.length-lag;i++)s+=diff[i]*diff[i+lag];if(s>best){best=s;bestL=lag;}}
-      var bpm=6000/bestL;
+      /* Auch der globale BPM-Wert ist fort - derselbe
+         Autokorrelationsgipfel, dieselbe Schwaeche. Sunos Schlagraster
+         steht im Katalog (25.08.2026). */
 
       // Mid/Side stereo width
       var stereoWidth=computeStereoWidth(left,right);
@@ -776,159 +775,53 @@ onmessage=function(e){
       var p5idx=Math.floor(energySorted.length*0.05);
       var energyP5=energySorted[p5idx]*3;
 
-      // --- VOCAL ANALYSIS — sliding window, 2s hop, small FFT ---
-      var vFftSize=2048; // small enough for O(n log n) radix2
-      var vHalf=vFftSize/2;
-      var vHopSize=Math.floor(sr*1);   // 1s hop
-      var vNumFrames=Math.floor((n-vFftSize)/vHopSize)+1;
-      var vHann=new Float32Array(vFftSize);
-      for(var i=0;i<vFftSize;i++)vHann[i]=0.5*(1-Math.cos(2*Math.PI*i/vFftSize));
-      var vRe=new Float32Array(vFftSize),vIm=new Float32Array(vFftSize);
+      /* DIE ALTE STIMMERKENNUNG IST AUSGEBAUT (Caspar_D, 25.08.2026:
+         "für Stimme haben wir eine Lösung, wir nehmen die Vocal-Spur
+         aus der Stem-Zerlegung ... wenn es noch alten Code gibt, der
+         dieses Zeug macht, weg damit").
 
-      var vocalMale=new Float32Array(vNumFrames);
-      var vocalFemale=new Float32Array(vNumFrames);
-      var vocalFormant=new Float32Array(vNumFrames);
-      var maleScoreSum=0,femaleScoreSum=0,vocalWindowCount=0;
-      var detectedF0s=[];
+         Sie stand hier als 89 Zeilen: gleitendes Fenster, eigene FFT,
+         Formantverhältnis als Gesangs-Tor, Bänder 80-165 und 165-350 Hz,
+         HPS-Tonhoehe, Geschlecht aus dem Verhaeltnis zweier Summen.
 
-      for(var vw=0;vw<vNumFrames;vw++){
-        var vPos=vw*vHopSize;
-        if(vPos+vFftSize>n)break;
+         Sie maß den Mix, nicht die Stimme - und lieferte deshalb die
+         Basstonhoehe: Nimmt man einem Song alles unter 200 Hz weg (der
+         Gesang bleibt vollstaendig erhalten), kippt das Urteil bei allen
+         geprueften Stuecken auf "weiblich". Kein einziger der 321 Songs
+         bekam je "instrumental", auch Regen und Wind nicht. Gegen Sunos
+         Stilangaben traf sie 40 %; wer immer "maennlich" saegte, traefe
+         77 %. Die ganze Herleitung steht in docs/ANALYZER-PRUEFUNG.md
+         unter "Geloest - und wodurch".
 
-        // FFT via radix2
-        for(var i=0;i<vFftSize;i++){vRe[i]=ch[vPos+i]*vHann[i];vIm[i]=0;}
-        fftRadix2(vRe,vIm,vFftSize);
-        var vMag=new Float32Array(vHalf);
-        for(var k=1;k<vHalf;k++)vMag[k]=Math.sqrt(vRe[k]*vRe[k]+vIm[k]*vIm[k])/vFftSize;
+         Der Ersatz rechnet in bin/toene.js: YIN auf dem getrennten
+         vocals-Stem, unteres Viertel. Dort ist die Stimme allein, und
+         die Frage "welche Lage?" ist ueberhaupt erst beantwortbar. */
 
-        // Band energies
-        var maleE=0,femaleE=0,totalE=0,f1E=0,f2E=0;
-        for(var k=1;k<vHalf;k++){
-          var freq=k*sr/vFftSize,e=vMag[k]*vMag[k];
-          totalE+=e;
-          if(freq>=80&&freq<=165)maleE+=e;
-          if(freq>=165&&freq<=350)femaleE+=e;
-          if(freq>=400&&freq<=900)f1E+=e;
-          if(freq>=900&&freq<=2800)f2E+=e;
-        }
-        var formantRatio=totalE>0?(f1E+f2E)/totalE:0;
-        vocalFormant[vw]=formantRatio;
-
-        if(formantRatio<0.03){vocalMale[vw]=0;vocalFemale[vw]=0;continue;}
-
-        // spectral centroid in vocal band
-        var vcNum=0,vcDen=0;
-        for(var k=1;k<vHalf;k++){
-          var freq=k*sr/vFftSize;
-          if(freq>=80&&freq<=2000){vcNum+=freq*vMag[k];vcDen+=vMag[k];}
-        }
-        var vCentroid=vcDen>0?vcNum/vcDen:0;
-
-        // HPS F0
-        var hpsLen=Math.floor(vHalf/3);
-        var bestHpsK=0,bestHpsVal=0;
-        for(var k=Math.ceil(80*vFftSize/sr);k<Math.min(hpsLen,Math.floor(500*vFftSize/sr));k++){
-          var hv=vMag[k];
-          if(k*2<vHalf)hv*=vMag[k*2];
-          if(k*3<vHalf)hv*=vMag[k*3];
-          if(hv>bestHpsVal){bestHpsVal=hv;bestHpsK=k;}
-        }
-        var hpsF0=bestHpsK>0?bestHpsK*sr/vFftSize:0;
-
-        // Score
-        var mScore=0,fScore=0;
-        if(maleE+femaleE>0){mScore+=maleE/(maleE+femaleE);fScore+=femaleE/(maleE+femaleE);}
-        if(hpsF0>0&&hpsF0<500){
-          if(hpsF0<160)mScore+=1.5; else if(hpsF0>200)fScore+=1.5; else{mScore+=0.5;fScore+=0.5;}
-          detectedF0s.push(hpsF0);
-        }
-        if(vCentroid>0){if(vCentroid<350)mScore+=0.5; else if(vCentroid>500)fScore+=0.5;}
-        if(f2E>f1E*1.5)fScore+=0.3; else if(f1E>f2E)mScore+=0.3;
-
-        vocalMale[vw]=mScore;
-        vocalFemale[vw]=fScore;
-        maleScoreSum+=mScore;
-        femaleScoreSum+=fScore;
-        vocalWindowCount++;
-      }
-
-      var f0Median=0,vocalGender;
-      if(vocalWindowCount<3){
-        vocalGender='instrumental';
-      } else {
-        if(detectedF0s.length>0){
-          detectedF0s.sort(function(a,b){return a-b;});
-          f0Median=detectedF0s[Math.floor(detectedF0s.length/2)];
-        }
-        var ratio=femaleScoreSum/(maleScoreSum+femaleScoreSum+0.001);
-        if(ratio>0.58)vocalGender='weiblich';
-        else if(ratio<0.42)vocalGender='männlich';
-        else vocalGender='gemischt';
-      }
-
-      postMessage({type:'scalars',bpm:bpm,loudness:loudness,dynamic:dynamic,centroid:centroid,rolloff:rolloff,stereoWidth:stereoWidth,vocalGender:vocalGender,f0:Math.round(f0Median)});
-      postMessage({type:'vocal_analysis',male:vocalMale,female:vocalFemale,formant:vocalFormant,gender:vocalGender,f0:Math.round(f0Median),dur:dur,hopSize:vHopSize,winSize:vFftSize});
+      postMessage({type:'scalars',loudness:loudness,dynamic:dynamic,centroid:centroid,rolloff:rolloff,stereoWidth:stereoWidth});
       postMessage({type:'envelope',energy:energy,lufs:lufs,crest:crest,onsets:onsets,dur:dur});
 
-      postMessage({type:'progress',label:'BPM-Kurve…',pct:48});
+      /* DIE EIGENE TEMPOSCHAETZUNG IST AUSGEBAUT (Caspar_D, 25.08.2026:
+         "für Tempo nehmen wir Sunos Daten, brauchen wir also auch nie
+         wieder").
 
-      // BPM curve with energy mask — autocorrelation
-      var bwinLen=Math.floor(sr*5),bstepLen=Math.floor(sr*1),bnumW=Math.floor((n-bwinLen)/bstepLen),bpms=[];
-      for(var w=0;w<bnumW;w++){
-        var wStart=w*bstepLen;
-        var wEnergy=0;for(var i=0;i<bwinLen;i++)wEnergy+=ch[wStart+i]*ch[wStart+i];
-        wEnergy=Math.sqrt(wEnergy/bwinLen);
-        if(wEnergy<energyP5){bpms.push(NaN);continue;}
-        var sl=ch.subarray(wStart,wStart+bwinLen);
-        var step2=Math.floor(sr/100),env2=[],diff2=[];
-        for(var i=0;i<sl.length-step2;i+=step2){var s=0;for(var j=0;j<step2;j++)s+=Math.abs(sl[i+j]);env2.push(s/step2);}
-        for(var i=1;i<env2.length;i++)diff2.push(Math.max(0,env2[i]-env2[i-1]));
-        var minL2=Math.floor(6000/180),maxL2=Math.floor(6000/60),best2=0,bestL2=minL2;
-        for(var lag=minL2;lag<=maxL2;lag++){var s=0;for(var i=0;i<diff2.length-lag;i++)s+=diff2[i]*diff2[i+lag];if(s>best2){best2=s;bestL2=lag;}}
-        bpms.push(6000/bestL2);
-      }
-      bpms=bpms.map(function(v,i){
-        if(isNaN(v))return NaN;
-        var s=0,c=0;for(var j=Math.max(0,i-6);j<=Math.min(bpms.length-1,i+6);j++){if(!isNaN(bpms[j])){s+=bpms[j];c++;}}
-        return c>0?s/c:NaN;
-      });
+         Hier standen 59 Zeilen: Autokorrelation der Huellkurve ueber
+         5-s-Fenster, dazu eine Schaetzung aus den Anschlagsabstaenden.
 
-      // IOI BPM curve with energy mask
-      var ioiWinLen=Math.floor(sr*8),ioiStepLen=Math.floor(sr*1);
-      var ioiNumW=Math.floor((n-ioiWinLen)/ioiStepLen);
-      var bpmsIOI=new Float32Array(ioiNumW);
-      var bpmsMedian=new Float32Array(ioiNumW);
-      var eStep2=Math.floor(sr*0.02);
-      for(var w=0;w<ioiNumW;w++){
-        var wStart=w*ioiStepLen,wEnd=wStart+ioiWinLen;
-        var wEnergy2=0;for(var i=wStart;i<wEnd;i++)wEnergy2+=ch[i]*ch[i];
-        wEnergy2=Math.sqrt(wEnergy2/ioiWinLen);
-        if(wEnergy2<energyP5){bpmsIOI[w]=NaN;bpmsMedian[w]=NaN;continue;}
-        var eFrames2=[];
-        for(var i=wStart;i<wEnd-eStep2;i+=eStep2){
-          var s=0;for(var j=0;j<eStep2;j++)s+=ch[i+j]*ch[i+j];
-          eFrames2.push(Math.sqrt(s/eStep2));
-        }
-        var eMean=0;for(var i=0;i<eFrames2.length;i++)eMean+=eFrames2[i];eMean/=eFrames2.length;
-        var thr2=eMean*1.3;
-        var peaks2=[],minDist=10,lastPeak=-minDist;
-        for(var i=1;i<eFrames2.length-1;i++){
-          if(eFrames2[i]>eFrames2[i-1]&&eFrames2[i]>eFrames2[i+1]&&eFrames2[i]>thr2&&i-lastPeak>=minDist){peaks2.push(i);lastPeak=i;}
-        }
-        if(peaks2.length<2){bpmsIOI[w]=NaN;bpmsMedian[w]=NaN;continue;}
-        var iois=[];
-        for(var i=1;i<peaks2.length;i++){var sec=(peaks2[i]-peaks2[i-1])*eStep2/sr;var bpmVal=60/sec;if(bpmVal>=50&&bpmVal<=200)iois.push(bpmVal);}
-        if(!iois.length){bpmsIOI[w]=NaN;bpmsMedian[w]=NaN;continue;}
-        var sum=0;for(var i=0;i<iois.length;i++)sum+=iois[i];bpmsIOI[w]=sum/iois.length;
-        iois.sort(function(a,b){return a-b;});bpmsMedian[w]=iois[Math.floor(iois.length/2)];
-      }
-      function smArr2(arr,w2){return Array.prototype.slice.call(arr).map(function(v,i){
-        if(isNaN(v))return NaN;
-        var s=0,c=0;for(var j=Math.max(0,i-w2);j<=Math.min(arr.length-1,i+w2);j++){if(!isNaN(arr[j])){s+=arr[j];c++;}}
-        return c>0?s/c:NaN;
-      });}
-      bpmsIOI=smArr2(bpmsIOI,4);bpmsMedian=smArr2(bpmsMedian,4);
-      postMessage({type:'bpm_curve',bpms:bpms,bpmsIOI:bpmsIOI,bpmsMedian:bpmsMedian,dur:dur});
+         Sie nahm den hoechsten Gipfel ohne Pruefung auf halbes oder
+         doppeltes Tempo - 33 % der Songs landeten auf der falschen
+         metrischen Ebene, weil die Basstrommel auf 1 und 3 lauter ist
+         als alles dazwischen. Angezeigt wurde ausserdem nicht die
+         Messung, sondern ein Mittel ueber Fenster (das erzeugt Tempi,
+         die im Stueck nicht vorkommen), die Autokorrelation war nicht
+         auf die Zahl der Summanden normiert (17 % Vorteil fuer schnelle
+         Tempi), und das Energietor verglich einen Effektivwert mit
+         einem Mittelquadrat und sperrte deshalb nie. Herleitung in
+         docs/ANALYZER-PRUEFUNG.md unter "Geloest - und wodurch".
+
+         Der Ersatz ist keine Rechnung, sondern eine Auskunft: Sunos
+         Schlagraster (schlaege im Katalog, /api/gen/<id>/downbeats).
+         Es nennt die Schlaege mit Zaehlzeit, nicht ein geschaetztes
+         Tempo - die Taktbahn zeigt sie direkt. */
 
       postMessage({type:'progress',label:'Stereo…',pct:52});
       var nn=Math.min(left.length,right.length);
