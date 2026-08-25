@@ -1,5 +1,11 @@
 # Morgenroutine II — Plan vom 21.08.2026 (Bauauftrag für den nächsten Chat)
 
+> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
+> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
+> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
+> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
+> gibt (Hausregel).
+
 Caspar_Ds Bild, am Morgen des 21.08. im Gespräch entwickelt („ja, das ist
 mein Bild"). NOCH NICHTS GEBAUT. Kontext: Tonstudio ist fertig (siehe
 TONSTUDIO.md, HAUSREGELN.md); das nächste Projekt ist das musikalische

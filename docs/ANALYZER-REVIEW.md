@@ -1,5 +1,11 @@
 # Analyzer-Review vom 25.08.2026
 
+> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
+> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
+> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
+> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
+> gibt (Hausregel).
+
 Auftrag (Caspar_D): „Codereview für den Analyzer … Was kann noch an
 Altlasten weg. Was kann optimiert werden, gibt es Redundanz und was ist
 für den audiophilen Klanganalysierer sinnvoll, was nicht und was sollte

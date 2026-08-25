@@ -1,5 +1,11 @@
 # Für den nächsten Chat — Stand 25.08.2026, nachts
 
+> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
+> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
+> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
+> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
+> gibt (Hausregel).
+
 ## In drei Sätzen
 
 Das Projekt hieß bis zum 24.08.2026 **MySuno** und heißt jetzt

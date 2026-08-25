@@ -1,5 +1,11 @@
 # Datenextraktion
 
+> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
+> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
+> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
+> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
+> gibt (Hausregel).
+
 Wie die Daten aus Suno herauskommen. Stand August 2026 — Suno ändert seine
 Schnittstellen gelegentlich, die Erkundung unten hilft beim Nachziehen.
 

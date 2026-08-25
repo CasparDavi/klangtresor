@@ -1,5 +1,11 @@
 # Prüfung des SunoAnalyzers (23.08.2026)
 
+> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
+> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
+> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
+> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
+> gibt (Hausregel).
+
 > **Die Zeilennummern in diesem Dokument stimmen nicht mehr.** Sie
 > stammen aus einem älteren Stand; `web/fremd/analyzer.js` ist seither
 > von rund 7 000 auf über 8 000 Zeilen gewachsen. Die genannten
