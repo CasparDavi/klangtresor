@@ -1,11 +1,5 @@
 # Wo die Software still etwas erfindet
 
-> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
-> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
-> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
-> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
-> gibt (Hausregel).
-
 **Protokoll vom 25.08.2026.** Caspar_D: *„den Befund, daß still Dinge
 erfunden werden, muß aber protokolliert werden."*
 

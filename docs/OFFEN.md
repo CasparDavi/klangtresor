@@ -1,11 +1,5 @@
 # Offen
 
-> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
-> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
-> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
-> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
-> gibt (Hausregel).
-
 > **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
 
 Stand 24.08.2026. Aufgeschrieben, weil Caspar_D Aufträge mehrfach geben

@@ -8868,8 +8868,16 @@ async function stemsLaden(id){
      Buehnenaufbau geholt - also NACH spielen(), und dann waeren die
      Quellen leer geblieben (24.08.2026 beim ersten Probelauf gefunden). */
   if (!toeneDaten){
-    try { toeneDaten = await (await fetch('/api/toene', { cache: 'no-store' })).json(); }
-    catch(e){ toeneDaten = { songs: {} }; }
+    /* Eine LEERE Antwort nicht als geladen verbuchen (25.08.2026): Der
+       Server liefert { stand:null, songs:{} }, solange toene.json fehlt.
+       Das ist ein wahres Objekt — die Wache 'if (!toeneDaten)' griff
+       danach nie wieder, und ein zweiter Versuch fand nicht statt.
+       Trifft ein frisches Archiv, in dem der Tonlauf noch läuft. */
+    try {
+      const d = await (await fetch('/api/toene', { cache: 'no-store' })).json();
+      toeneDaten = (d && d.songs && Object.keys(d.songs).length) ? d : null;
+    }
+    catch(e){ toeneDaten = null; }
   }
   if (stemGeladenFuer !== id) return;      /* inzwischen weitergeschaltet */
   if (!stemInspektionAn) return leeren();  /* Bilder ja, Ton nein */
@@ -12086,7 +12094,8 @@ async function analyzerAufbauen(){
      Sitzung geholt und dann nur noch nachgeschlagen. Fehlt die Datei,
      bleibt es bei null und die Anzeigen zeigen nichts; das ist der
      Normalfall, solange bin/stems.js noch rechnet. */
-  if (!toeneDaten){ try { toeneDaten = await (await fetch('/api/toene', { cache: 'no-store' })).json(); }
+  if (!toeneDaten){ try { const d = await (await fetch('/api/toene', { cache: 'no-store' })).json();
+                          toeneDaten = (d && d.songs && Object.keys(d.songs).length) ? d : null; }
                     catch(e){ toeneDaten = { songs: {} }; } }
   SunoAnalyzer.song({ ...bSong,
     tonUrl: '/media/' + bSong.id + '/' + datei,

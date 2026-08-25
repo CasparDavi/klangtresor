@@ -1,11 +1,5 @@
 # Die zwei Bedienleisten und die Tonkette — Bestandsaufnahme
 
-> **Die Arbeitsliste steht in [WAS-OFFEN-IST.md](WAS-OFFEN-IST.md).**
-> Dieses Dokument ist der Bericht dazu — Messungen, Begründungen,
-> Herleitung. Was noch zu TUN ist, steht seit dem 25.08.2026 nur noch an
-> der einen Stelle, damit es nicht zwei Antworten auf dieselbe Frage
-> gibt (Hausregel).
-
 **Erhoben am 25.08.2026** auf Caspar_Ds Frage *„kannst du mal die ganzen
 Playbars synchronisieren, ich seh gerade, dass im Analysierer kein EQ
 drin ist"* — mit dem ausdrücklichen Zusatz **„keine Änderungen"**.
