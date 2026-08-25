@@ -43,7 +43,6 @@
    Beschlossen am 18.08.2026: Stem-Trennung und Instrumenterkennung sind
    in der Bühne nicht sinnvoll.
    --------------------------------------------------------------------- */
-.sunoanalyzer.eingebettet #export-section,
 .sunoanalyzer.eingebettet #instruments-section,
 .sunoanalyzer.eingebettet #essentia-section,
 .sunoanalyzer.eingebettet #stems-section,
@@ -595,35 +594,11 @@
   </div>
 </div>
 
-<div class="section" id="export-section" style="margin-top:10px">
-  <div class="slbl"><span class="nam">Kommentar-Generator</span></div>
-  <!-- Controls row -->
-  <div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:8px;align-items:center">
-    <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:5px">
-      Länge
-      <select id="export-length" style="padding:3px 6px;font-size:11px;border:1px solid #333;border-radius:4px;background:#0a0a0a;color:#eee">
-        <option value="250">~250 Zeichen</option>
-        <option value="350">~350 Zeichen</option>
-        <option value="500">400–500 Zeichen</option>
-      </select>
-    </label>
-    <label style="font-size:11px;color:#555;display:flex;align-items:center;gap:5px">
-      Sprache
-      <select id="export-lang" style="padding:3px 6px;font-size:11px;border:1px solid #333;border-radius:4px;background:#0a0a0a;color:#eee">
-        <option value="de">Deutsch</option>
-        <option value="en">English</option>
-      </select>
-    </label>
-    <span id="export-status" style="font-size:11px;color:#555"></span>
-  </div>
-  <!-- Persona snippet -->
-  <div style="margin-top:4px">
-    <div style="font-size:10px;color:#444;margin-bottom:3px">Persona (wird in den Prompt eingebettet)</div>
-    <textarea id="export-persona" rows="3"
-      style="width:100%;font-size:11px;color:#888;background:#0a0a0a;border:1px solid #222;border-radius:4px;padding:6px 8px;resize:vertical;font-family:system-ui;line-height:1.5"
-    >Ich bin selbst Songwriter und Produzent auf Suno, vor allem im Bereich NDH/Industrial und Quiet Storm, höre aber auch gern Sachen, die stilistisch ganz woanders liegen. Ich schreibe keine Technik-Kommentare, sondern kurze Reaktionen die zeigen, was bei mir angekommen ist. Direkt und unaufgeregt, aber offen und ehrlich interessiert.</textarea>
-  </div>
-</div>
+<!-- Hier stand der Kommentar-Generator (#export-section): 29 Zeilen
+     Markup samt einer Persona-Textarea mit persoenlichem Klartext, die
+     seit dem Ausbau von exportForLLM() am 25.08.2026 nichts mehr las.
+     In einem oeffentlichen Repo hat so ein Text ohne Funktion nichts
+     verloren (Review, bestaetigt). -->
 
 <!-- HIER STAND EIN ZWEITES <audio>.
 
@@ -1035,7 +1010,10 @@
        eine andere Frage als das Bild darunter: nicht WAS klingt, sondern
        WIE FEIN dort gemessen werden musste - und damit, wo sich im Stück
        viel bewegt. -->
-  <div class="chart-outer" style="height:11px"><div id="taktrasterspur-canvas" class="spur-flaeche" style="height:11px"></div></div>
+  <!-- 4 px Luft zur Piano-Roll (Caspar_D, 25.08.2026: "mit etwas Abstand
+       zur Piano-Roll") - die Bahn beantwortet eine andere Frage und soll
+       nicht wie deren oberste Zeile lesen. -->
+  <div class="chart-outer" style="height:11px;margin-bottom:4px"><div id="taktrasterspur-canvas" class="spur-flaeche" style="height:11px"></div></div>
   <div class="chart-outer" style="height:160px"><div id="chromataktspur-canvas" class="spur-flaeche" style="height:160px"></div>
     <div class="playhead" id="ph-chromataktspur"></div></div>
   <div class="chart-text">Nicht je Rechenfenster gemittelt, sondern je Notenzone
@@ -1322,7 +1300,7 @@
        Mitschnitt weiss, wozu er gehoert. */
     var _laufendeId = null;
 
-    var audioCtx=null, mp3Cache={}, songDuration=0;
+    var audioCtx=null, songDuration=0;
 
     var phIds=['befundspur','chromaspur','chromataktspur','stereospur','korrspur','momentanspur','kurzspur','abweichungspur','stapelspur','stemdrumsspur','stembassspur','stemotherspur','stemvocalsspur','stemguitarspur','stempianospur','flux','spectro','stereospectro','essentia'];
 
@@ -1344,14 +1322,12 @@
       var pp=document.getElementById('pp-btn');
       if(pp){ var z=LAEUFT()?'⏸':'▶'; if(pp.textContent!==z) pp.textContent=z; }
     }
-    // RAF loop for smooth progress bar — runs independently of timeupdate
-    (function rafProgress(){
-      requestAnimationFrame(rafProgress);
-      /* Die frühere Bedingung "nur wenn nicht pausiert" ist entfallen:
-         Bei fremdem Zeitgeber ändert sich die Stelle auch im Stillstand,
-         nämlich wenn in der Bühne gesprungen wird. */
-      if(songDuration>0)updatePlayerUI();
-    })();
+    /* Die rafProgress-Schleife stand hier als eigene RAF-Kette - sie
+       trieb dieselbe Abspielanzeige wie updatePlayheads. Seit dem
+       25.08.2026 (Review) ruft updatePlayheads updatePlayerUI() mit:
+       eine Uhr statt zwei. Die Bedingung "nur wenn nicht pausiert"
+       bleibt entfallen - bei fremdem Zeitgeber aendert sich die Stelle
+       auch im Stillstand, wenn in der Buehne gesprungen wird. */
     var _seeking=false;
     function seekStart(e){
       _seeking=true;seekMove(e);
@@ -1380,7 +1356,7 @@
       updatePlayerUI();
     }
     /* Die Anzeige haengt an der fremden Uhr statt an eigenen
-       Ereignissen. Die Schleife dafuer gibt es schon: rafProgress,
+       Ereignissen. Die Schleife dafuer gibt es schon: updatePlayheads,
        weiter unten. Eine zweite waere derselbe Fehler wie ein zweiter
        Player, nur billiger. */
 
@@ -1396,8 +1372,9 @@
        und die Meldungen erscheinen von selbst wieder. */
     function setStatus(msg){var e=document.getElementById('status'); if(e) e.textContent=msg;}
     function setProgress(pct){var e=document.getElementById('progress-bar'); if(e) e.style.width=pct+'%';}
-    function extractUUID(s){var m=s.trim().match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);return m?m[0]:null;}
-    function fmt(s){var m=Math.floor(s/60),ss=Math.round(s%60);return m+':'+(ss<10?'0':'')+ss;}
+    /* Math.floor, nicht Math.round: Bei 59,6 s ergab round "0:60"
+       (Review, 25.08.2026). zeitTxt unten ist derselbe Formatierer. */
+    function fmt(s){var m=Math.floor(s/60),ss=Math.floor(s%60);return m+':'+(ss<10?'0':'')+ss;}
 
     // zoom state
     var zoomLevel=1; // 1x to 16x
@@ -1546,7 +1523,7 @@
     var AMPEL=['#16be5c','#d8d81c','#e31c79'];
     var ZIEL_AKTIV='streaming';
 
-    function zeitTxt(s){ var m=Math.floor(s/60); return m+':'+String(Math.round(s%60)).padStart(2,'0'); }
+    function zeitTxt(s){ return fmt(s); }   /* eine Uhr, ein Format (25.08.2026) */
 
     /* Registerlaschen bauen und, wenn sie nicht mehr nebeneinander
        passen, gegen das Klappfeld tauschen. Gemessen wird die
@@ -2731,7 +2708,11 @@
         if(!svg) return;
         /* Die Befundspur ist unterschiedlich hoch - so viele Bahnen, wie
            es Befundarten gibt. Sie trägt ihre Höhe deshalb selbst. */
-        var hoehe=id==='befundspur' ? (+svg.dataset.h||BF_BAHN)
+        /* EINE Quelle je Hoehe (Review, 25.08.2026): Wer sein data-h
+           mitbringt, wird daran gemessen; die Liste darunter ist nur noch
+           der Rueckfall fuer die Zeichner, die es (noch) nicht tun. */
+        var hoehe=+svg.dataset.h
+                || (id==='befundspur' ? BF_BAHN
                 : id==='taktrasterspur' ? 11
                 : id==='chromaspur' || id==='chromataktspur' ? 160
                 : id==='stereospur' ? 192
@@ -2739,7 +2720,7 @@
                 : id==='abweichungspur' ? 56
                 : id==='korrspur' ? 56
                 : /^stem/.test(id) ? 44
-                : id==='stapelspur' ? 120 : 44;
+                : id==='stapelspur' ? 120 : 44);
         svg.setAttribute('viewBox', x+' 0 '+w+' '+hoehe);
       });
     }
@@ -3655,11 +3636,17 @@
       var H=160, zeilenH=H/12, maxBreite=zeilenH*0.85;
 
       /* Bezug ist das 95. Perzentil ueber ALLE Toene und Zeitpunkte -
-         ein einzelner Ausreisser soll nicht alles kleinrechnen. */
-      var alle=[];
-      for(var i=0;i<chromaFlat.length;i++) if(isFinite(chromaFlat[i])) alle.push(chromaFlat[i]);
-      alle.sort(function(a,b){return a-b;});
-      var p95=alle[Math.floor(alle.length*0.95)]||1;
+         ein einzelner Ausreisser soll nicht alles kleinrechnen. Einmal
+         je Datenstand gerechnet, nicht je FFT-Runde: die Endrunde hat
+         ~675.000 Werte, und die Kopie samt Sort lief vorher fuenfmal
+         (Review, 25.08.2026). */
+      if(!window._chromaP95||window._chromaP95.stand!==chromaFlat.length){
+        var alle=[];
+        for(var i=0;i<chromaFlat.length;i++) if(isFinite(chromaFlat[i])) alle.push(chromaFlat[i]);
+        alle.sort(function(a,b){return a-b;});
+        window._chromaP95={stand:chromaFlat.length, wert:alle[Math.floor(alle.length*0.95)]||1};
+      }
+      var p95=window._chromaP95.wert;
 
       var punkte=Math.min(SPUR_W, Math.max(2, Math.round(rahmenAnz)));
       var teile=['<svg viewBox="'+(viewStart*SPUR_W).toFixed(1)+' 0 '
@@ -4283,37 +4270,27 @@
         for(var i=0;i<geglaettet.length;i++){ var v=geglaettet[i];
           if(isFinite(v)){ if(v<lo)lo=v; if(v>hi)hi=v; } }
         if(!isFinite(lo)) return;
-        if(s.bipolar){ var b=Math.max(Math.abs(lo),Math.abs(hi)); lo=-b; hi=b; }
         if(hi-lo<1e-9) hi=lo+1;
 
         var H=44, pad=3;
         var host=document.getElementById(s.id+'spur-canvas');
         if(!host) return;
-        var p=spurPfad(geglaettet, 0, true, H, pad, lo, hi, undefined, s.bipolar);
+        var p=spurPfad(geglaettet, 0, true, H, pad, lo, hi, undefined);
         if(!p) return;
 
         /* ABSICHTLICH IM ALTEN STAND: Die neue Formensprache gilt bis zum
            Frequenzspektrum (Track-Struktur und Befundbahnen). Was danach
            kommt, war Caspar_D so recht (23.08.2026: "danach war alles von der
            Designsprache in Ordnung"). */
-        var svg;
-        if(s.bipolar){
-          var mitte=(p.y(0)).toFixed(1);
-          svg='<svg viewBox="0 0 '+SPUR_W+' '+H+'" preserveAspectRatio="none">'
-            + '<defs><clipPath id="cl-'+s.id+'-o"><rect x="0" y="0" width="'+SPUR_W+'" height="'+mitte+'"/></clipPath>'
-            + '<clipPath id="cl-'+s.id+'-u"><rect x="0" y="'+mitte+'" width="'+SPUR_W+'" height="'+(H-mitte)+'"/></clipPath></defs>'
-            + '<path d="'+p.flaeche+'" fill="'+s.farbe+'" opacity="0.16" clip-path="url(#cl-'+s.id+'-o)"/>'
-            + '<path d="'+p.flaeche+'" fill="'+s.unten+'" opacity="0.16" clip-path="url(#cl-'+s.id+'-u)"/>'
-            + '<line x1="0" y1="'+mitte+'" x2="'+SPUR_W+'" y2="'+mitte+'" stroke="rgba(255,255,255,.25)" stroke-width="0.7" vector-effect="non-scaling-stroke"/>'
-            + '<path d="'+p.linie+'" fill="none" stroke="'+s.farbe+'" stroke-width="1.3" vector-effect="non-scaling-stroke" clip-path="url(#cl-'+s.id+'-o)"/>'
-            + '<path d="'+p.linie+'" fill="none" stroke="'+s.unten+'" stroke-width="1.3" vector-effect="non-scaling-stroke" clip-path="url(#cl-'+s.id+'-u)"/>'
-            + '</svg>';
-        } else {
-          svg='<svg viewBox="0 0 '+SPUR_W+' '+H+'" preserveAspectRatio="none">'
-            + '<path d="'+p.flaeche+'" fill="'+s.farbe+'" opacity="0.15"/>'
-            + '<path d="'+p.linie+'" fill="none" stroke="'+s.farbe+'" stroke-width="1.3" vector-effect="non-scaling-stroke"/>'
-            + '</svg>';
-        }
+        /* Der bipolar-Zweig stand hier - unerreichbar, seit keine der
+           Sequenzspuren mehr bipolar definiert ist, und zugleich ein
+           Duplikat der Bauart von abweichungSpurZeichnen und
+           korrSpurZeichnen. Wer je wieder eine zweiseitige Sequenzspur
+           braucht, nimmt die als Vorlage (Review, 25.08.2026). */
+        var svg='<svg viewBox="0 0 '+SPUR_W+' '+H+'" preserveAspectRatio="none">'
+          + '<path d="'+p.flaeche+'" fill="'+s.farbe+'" opacity="0.15"/>'
+          + '<path d="'+p.linie+'" fill="none" stroke="'+s.farbe+'" stroke-width="1.3" vector-effect="non-scaling-stroke"/>'
+          + '</svg>';
         host.innerHTML=svg;
 
         var pr=PROFILE[profil]||PROFILE.kuppel;
@@ -4324,10 +4301,10 @@
           + ' — <span class="erkl">'+zahl(lo)+' bis '+zahl(hi)+s.einheit+'</span>'
           + (breite>1
               ? ' · <span style="opacity:.82">'+pr.name+', wirksam '
-                + (function(ms){ return ms>=1000 ? (ms/1000).toFixed(1)+' s' : Math.round(ms)+' ms'; })(breite*schrittMs*pr.wirksam)
+                + (function(ms){ return kaskadeName(Math.round(ms)); })(breite*schrittMs*pr.wirksam)
                 + '</span>'
               : ' · <span style="opacity:.78">ohne Glättung, '
-                + (schrittMs>=1000?(schrittMs/1000).toFixed(1)+' s':Math.round(schrittMs)+' ms')
+                + kaskadeName(Math.round(schrittMs))
                 + ' je Punkt</span>');
       });
       spurSichtSetzen();
@@ -4380,6 +4357,11 @@
         var wert = document.getElementById(id);
         var karte = wert && wert.closest('.card');
         if (!karte) return;
+        /* 7 der 12 Funken-Karten sind totgelegt (SA_TOT) - fuer eine
+           unsichtbare Karte die volle Reihe zu sortieren ist Verschwendung
+           (Review, 25.08.2026). Beim Zurueckholen aus SA_TOT faellt das
+           Attribut, und der Funke kommt von selbst wieder. */
+        if (karte.dataset.totgelegt) return;
         var reihe;
         try { reihe = FUNKEN[id](daten); } catch(e){ return; }
         if (!reihe || !reihe.length) return;
@@ -5373,6 +5355,12 @@
 
     function densityLoop(){
       requestAnimationFrame(densityLoop);
+      /* Eingebettet liegt #density-canvas in #meta und ist doppelt
+         unsichtbar (CSS !important, OPT.kopf:false) - vorher rechnete
+         und malte die Schleife trotzdem in jedem Bild (Review,
+         25.08.2026). Hausregel: abklemmen, damit es keine Rechenzeit
+         kostet. */
+      if(!sichtbar('density-canvas'))return;
       if(!_densityAnalyser||!LAEUFT())return;
       var raw=new Uint8Array(_densityAnalyser.frequencyBinCount);
       _densityAnalyser.getByteFrequencyData(raw);
@@ -5632,6 +5620,12 @@
     }
 
     function renderInstruments(){
+      /* Eingebettet ist #instruments-section per !important verborgen -
+         als einzige Sektion OHNE OPT-Waechter lief die Erkennung mit
+         fuenf Sortierungen ueber bis ~56.000 Werte trotzdem bei jeder
+         Analyse mehrfach (Review, 25.08.2026). Abklemmen, nicht
+         loeschen - Markup und Funktion bleiben. */
+      if(!sichtbar('instruments-section'))return;
       if(!window._chartData)return;
       var data=window._chartData;
       var fft=data.fft;
@@ -5711,6 +5705,7 @@
     function updatePlayheads(){
       requestAnimationFrame(updatePlayheads);
       if(!songDuration)return;
+      updatePlayerUI();   /* uebernommen aus der frueheren rafProgress-Schleife */
       var pos=ZEIT()/songDuration;
 
       // auto-scroll when playing and zoomed
@@ -5749,64 +5744,11 @@
     }
     updatePlayheads();
 
-    async function fetchMeta(uuid){
-      try{
-        // Nutze lokalen Proxy wenn verfügbar (GitHub Pages CORS-Workaround)
-        var sunoUrl='https://suno.com/song/'+uuid;
-        var proxyUrl=DEMUCS_URL+'/proxy?url='+encodeURIComponent(sunoUrl);
-        var r;
-        try{
-          var proxyTest=await fetch(proxyUrl,{signal:AbortSignal.timeout(3000)});
-          if(proxyTest.ok){r=proxyTest;}
-        }catch(e){}
-        if(!r)r=await fetch(sunoUrl);
-        var html=await r.text();
-        var res={title:'',author:'',artwork:'',tags:[],plays:null,likes:null,comments:null,created_at:'',model:'',lyrics:'',prompt:''};
-        var tm=html.match(/<title>([^<|]+)/);if(tm)res.title=tm[1].trim();
-        var am=html.match(/cdn2\.suno\.ai\/[^"]+\.jpeg/);if(am)res.artwork='https://'+am[0];
-        var dn=html.match(/\\"display_name\\":\\"([^\\\\]+)\\"/);if(!dn)dn=html.match(/"display_name":"([^"]+)"/);if(dn)res.author=dn[1];
-        var tg=html.match(/\\"tags\\":\\"([^\\\\]+)\\"/);if(!tg)tg=html.match(/"tags":"([^"]+)"/);if(tg)res.tags=tg[1].split(',').map(function(t){return t.trim();}).filter(Boolean);
-        var pc=html.match(/\\"play_count\\":(\d+)/);if(pc)res.plays=parseInt(pc[1]);
-        var uc=html.match(/\\"upvote_count\\":(\d+)/);if(uc)res.likes=parseInt(uc[1]);
-        var cc=html.match(/\\"comment_count\\":(\d+)/);if(cc)res.comments=parseInt(cc[1]);
-        var ca=html.match(/\\"created_at\\":\\"([^\\\\]+)\\"/);if(ca)res.created_at=ca[1];
-        var mv=html.match(/\\"major_model_version\\":\\"([^\\\\]+)\\"/);if(mv)res.model=mv[1];
-        // Lyrics: T-chunk split variant (Suno default since ~2025)
-        // Header: push([1,"40:T72e,"]) then content: push([1,"<lyrics>"])
-        var thi=html.search(/self\.__next_f\.push\(\[1,"[0-9a-f]+:T[0-9a-f]+,"\]\)/);
-        if(thi>=0){
-          var ahi=html.indexOf('self.__next_f.push([1,"',thi+10);
-          if(ahi>=0){
-            var cs=ahi+23,ce=html.indexOf('"]);',cs);
-            if(ce<0)ce=html.indexOf('"])',cs);
-            if(ce>cs){
-              var raw=html.slice(cs,ce);
-              if(raw.indexOf('\\n')>=0||raw.indexOf('[')>=0){
-                try{res.lyrics=JSON.parse('"'+raw+'"');}
-                catch(ex){res.lyrics=raw.replace(/\\n/g,'\n').replace(/\\"/g,'"');}
-                res.prompt=res.lyrics;
-              }
-            }
-          }
-        }
-        // Combined T-chunk variant: push([1,"40:T72e,<lyrics>"])
-        if(!res.lyrics){
-          var lm2=html.match(/self\.__next_f\.push\(\[1,"[0-9a-f]+:T[^,]+,([\s\S]+?)"\]\)/);
-          if(lm2&&lm2[1].trim()){
-            try{res.lyrics=JSON.parse('"'+lm2[1]+'"');}
-            catch(ex){res.lyrics=lm2[1].replace(/\\n/g,'\n').replace(/\\"/g,'"');}
-            res.prompt=res.lyrics;
-          }
-        }
-        // __NEXT_DATA__ fallback (older Suno format)
-        if(!res.lyrics){
-          var nd=html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-          if(nd){try{var jd=JSON.parse(nd[1]);var clip=jd&&jd.props&&jd.props.pageProps&&jd.props.pageProps.clip;if(clip){if(clip.lyric)res.lyrics=clip.lyric;else if(clip.lyrics)res.lyrics=clip.lyrics;if(clip.metadata&&clip.metadata.prompt&&clip.metadata.prompt[0]!=='$')res.prompt=clip.metadata.prompt;}}catch(ex){}}
-        }
-        return res;
-      }catch(e){return null;}
-    }
-
+    /* Hier stand fetchMeta() - 57 Zeilen, die die suno.com-Songseite
+       herunterluden und mit regulaeren Ausdruecken durchsuchten. Der
+       einzige Rufer war analyze(); seit dessen Ausbau am 25.08.2026 war
+       die Funktion tot, und mit ihr faellt die letzte tote Fremdadresse
+       dieses Weges (Review, bestaetigt). */
 
     /* ------------------------------------------------------------------
        ZUSATZ FÜR MYSUNO (nicht im Original, siehe docs/VISUALIZER.md)
@@ -5831,7 +5773,6 @@
       }catch(e){ _ablageListe = new Set(); }
       return _ablageListe;
     }
-    function ablageVorhanden(id){ return _ablageListe ? _ablageListe.has(id) : false; }
 
     /* ==================================================================
        ABTASTWERTE NACHLADEN, WENN AUS DER ABLAGE GESPIELT WURDE.
@@ -6089,7 +6030,6 @@
       document.getElementById('zoom-slider').value=0;
       document.getElementById('zoom-label').textContent='1×';
       liveSpektrumLoesen();
-      if(window._blobURL){URL.revokeObjectURL(window._blobURL);}
 
       // reset cards
       ['v-plays','v-likes','v-comments','v-ratio','v-age','v-ppd','v-model',
@@ -6108,18 +6048,6 @@
 
       /* Ab hier ist zurückgesetzt - jetzt darf der Kopf gefüllt werden. */
       if(_katalogDaten) kopfFuellen(_katalogDaten);
-
-      // show file info
-      var infoEl=document.getElementById('song-info');
-      if(infoEl){
-        infoEl.style.display='flex';
-        var img=document.getElementById('song-thumb');if(img)img.style.display='none';
-        var titleEl=document.getElementById('song-title');
-        if(titleEl)titleEl.textContent=file.name;
-        var subEl=document.getElementById('song-sub');
-        if(subEl)subEl.textContent=(file.size/1024/1024).toFixed(1)+' MB · lokal';
-        var tagsEl=document.getElementById('tags');if(tagsEl)tagsEl.innerHTML='';
-      }
 
       try{
         var arrayBuf=await file.arrayBuffer();
@@ -6414,7 +6342,9 @@
                Derselbe Fallstrick wie bei der Dauer: Was die Befunde
                brauchen, trifft in mehreren Nachrichten nacheinander
                ein. */
-            window._struktur={segments:msg.segments,dur:msg.duration};
+            /* window._struktur stand hier - gesetzt, aber nirgends im
+               Projekt gelesen (25.08.2026, Review). Der Neuaufruf darunter
+               ist das Wirksame. */
             if(window._normwerte) befundeZeigen(window._normwerte);
             break;
           case 'envelope':
@@ -6422,7 +6352,7 @@
             window._chartData.crest=msg.crest;window._chartData.onsets=msg.onsets;
             setTimeout(renderInstruments,100);
             window._chartData.dur=msg.dur;window._chartData.sr=sr;
-            drawEnvelope(msg.energy,msg.lufs,msg.crest,msg.onsets,msg.dur,sr);
+            drawLufsHist(msg.lufs);   /* drawEnvelope war nur noch diese eine Zeile (Rest 25.08. ausgebaut) */
             /* Die Reihen sind erst HIER da. Beim Zeichnen der großen
                Diagramme war _chartData noch leer - deshalb blieben die
                Sparklines beim ersten Versuch aus. */
@@ -6553,31 +6483,9 @@
                 else sym='gleichmäßig ─';
                 document.getElementById('v-symmetry').textContent=sym;
               }
-              // attack time — only compute once when energy data available
-              if(!window._attackComputed){
-                var energyArr=window._chartData.energy?Array.from(window._chartData.energy):[];
-                if(energyArr.length>10){
-                  // loop instead of Math.max.apply (stack overflow on large arrays)
-                  var peak=0;
-                  for(var i=0;i<energyArr.length;i++){if(energyArr[i]>peak)peak=energyArr[i];}
-                  if(peak>0){
-                    var thr10=peak*0.1,thr90=peak*0.9;
-                    var startF=0;
-                    for(var i=0;i<energyArr.length;i++){if(energyArr[i]>peak*0.01){startF=i;break;}}
-                    var t10=-1,t90=-1;
-                    for(var i=startF;i<Math.min(startF+400,energyArr.length);i++){
-                      if(t10<0&&energyArr[i]>=thr10)t10=i;
-                      if(t10>=0&&t90<0&&energyArr[i]>=thr90){t90=i;break;}
-                    }
-                    if(t10>=0&&t90>t10){
-                      var attackMs=Math.round((t90-t10)*50);
-                      document.getElementById('v-attack').textContent=attackMs+'ms';
-                      updateGauge('attack',attackMs);
-                      window._attackComputed=true;
-                    }
-                  }
-                }
-              }
+              /* Die Attack-Rechnung stand hier ein zweites Mal, fast
+                 wortgleich - die eine lebende Fassung sitzt im
+                 envelope-Zweig (25.08.2026, Review). */
             }
             if(msg.isFinal){setProgress(100);setStatus('Fertig');
               if(live){ _aufnahme.fertig=true; ablageVielleichtSchreiben(); }}
@@ -6748,7 +6656,6 @@
       markReady(id);
       drawTimeAxis(ctx,c.width,h,dur);
     }
-    function drawEnvelope(){var _t=performance.now();var _r=_drawEnvelope.apply(null,arguments);(window._zeit=window._zeit||{})["drawEnvelope"]=((window._zeit&&window._zeit["drawEnvelope"])||0)+(performance.now()-_t);return _r;}
     /* Lautheitshistogramm (Caspar_D, 21.08.2026): die Verteilung der
        RMS-Lautheit - wie laut ist wieviel Prozent des Liedes. Keine
        Zeitachse, darum kein Playhead. */
@@ -6796,18 +6703,14 @@
       ctx.textAlign='left'; ctx.fillStyle='#9a9a9a';
       ctx.fillText('häufigste Lautheit: '+(-60+spitze)+' bis '+(-59+spitze)+' dB — '+Math.round(mx/n*100)+' % des Liedes', L, 10);
     }
-    function _drawEnvelope(energy,lufs,crest,onsets,dur,sr){
-      drawLufsHist(lufs);
-      // lufs with dB grid
-      // crest with energy mask, fixed scale 1..15
-      // onsets with energy mask + dynamic Y labels
-    }
 
 
 
 
 
-    function drawFluxFromFrames(flux,bandFlux,dur){
+
+    function drawFluxFromFrames(){var _t=performance.now();var _r=_drawFluxFromFrames.apply(null,arguments);(window._zeit=window._zeit||{})["drawFluxFromFrames"]=((window._zeit["drawFluxFromFrames"]||0)+(performance.now()-_t));return _r;}
+    function _drawFluxFromFrames(flux,bandFlux,dur){
       storeChartData('flux-canvas',flux);
       var c=document.getElementById('flux-canvas');
       var nBands=8;
@@ -6874,7 +6777,7 @@
         for(var b=0;b<nBands;b++){
           var drawRow=nBands-1-b;               /* Band 0 = Bass = unten */
           var yTop=Math.round(drawRow*bandHp);
-          var hinterA=drawRow%2===0?4:0;        /* alternierender Grund, wie 0.015 weiss */
+          var hinterA=0;                        /* kein grauer Wechselgrund mehr - Schwarz ist die Null (25.08.2026) */
           for(var x=0;x<bw;x++){
             var a0=Math.floor(x*schritt), a1=Math.max(a0+1,Math.floor((x+1)*schritt));
             var maxv=0;
@@ -6882,7 +6785,12 @@
             var v=Math.min(1,maxv/bandP95[b]);
             var vLog=v<0.02?0:Math.log(v*9+1)/Math.log(10);
             var alpha=Math.min(1,vLog*1.2);
-            var bl=(180*vLog+40)*0.78;
+            /* VON SCHWARZ NACH BLAU (Caspar_D, 25.08.2026: "das blau bleibt
+               so, das grau wird schwarz"). Der 40er-Sockel machte das
+               untere Ende graublau; jetzt laeuft er proportional mit -
+               am oberen Ende (vLog=1) exakt dieselbe Farbe wie vorher
+               (220*0,78), am unteren Schwarz. */
+            var bl=220*vLog*0.78;
             var zr=Math.round(bl*0.294), zg=Math.round(bl*0.576), zb=Math.round(bl*0.941);
             var zA=Math.round(alpha*0.85*255);
             for(var y=yTop;y<yTop+bandHp&&y<bh;y++){
@@ -7247,7 +7155,7 @@
       spektroTitelSetzen(gabSpitzen);
       markReady('spectro-canvas');
       ablageVielleichtSchreiben();
-            renderInstruments();;
+            renderInstruments();
       drawTimeAxis(ctx,W,H,dur);
     }
     function drawStereoSpectro(){var _t=performance.now();var _r=_drawStereoSpectro.apply(null,arguments);(window._zeit=window._zeit||{})["drawStereoSpectro"]=((window._zeit&&window._zeit["drawStereoSpectro"])||0)+(performance.now()-_t);return _r;}
@@ -7473,8 +7381,16 @@
         });
       }
 
+      var _spektrumLetzte=-1;
       function draw(){
         window._animFrame=requestAnimationFrame(draw);
+        /* Bei Pause liefert der Analyser eingefrorene Daten - trotzdem
+           wurde 60-mal je Sekunde die volle Flaeche neu gemalt (Review,
+           25.08.2026). Einmal nach dem Anhalten oder Springen zeichnen
+           genuegt. */
+        var _z=ZEIT();
+        if(!LAEUFT() && _z===_spektrumLetzte) return;
+        _spektrumLetzte=_z;
         aL.getByteFrequencyData(fdL); aR.getByteFrequencyData(fdR);
         ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,c.width,c.height);
 
@@ -7861,12 +7777,10 @@
     /* ---------------------------------------------------------------
        Der Kopfbereich aus Katalogdaten.
 
-       Der Analyzer holte diese Angaben bisher, indem er die
-       suno.com-Songseite herunterlud und mit regulären Ausdrücken
-       durchsuchte (fetchMeta). Für eigene Songs ist das überflüssig:
-       /api/song/<id> hat alles - vollständiger, schneller und ohne Netz.
-       Fremde Songs aus Playlists behalten den alten Weg, sie liegen
-       nicht im Archiv.
+       Der Analyzer holte diese Angaben einst von der suno.com-Songseite
+       (fetchMeta, am 25.08.2026 entfernt). Heute ist der Katalogweg der
+       einzige: /api/song/<id> hat alles - vollstaendiger, schneller und
+       ohne Netz.
        --------------------------------------------------------------- */
     var _katalogDaten = null;
 
@@ -8080,8 +7994,6 @@
            abgelegt. */
         return ablageSpielenOderRechnen(d);
       },
-      /* Fuer das Vorrechnen im Hintergrund: Was liegt schon da? */
-      abgelegt(id){ return ablageVorhanden(id); },
       /* Die Beschriftungen des Stemblocks neu setzen - dort haengen die
          Pille und die Solokreise, und beide haengen an einem Zustand,
          den die Buehne kennt, nicht der Analyzer. */
@@ -8091,7 +8003,6 @@
         for (const id of bilder) window.cancelAnimationFrame(id);
         bilder.clear();
         if (window._activeWorker){ window._activeWorker.terminate(); window._activeWorker = null; }
-        if (window._blobURL){ URL.revokeObjectURL(window._blobURL); window._blobURL = null; }
         /* Den Analyser vom fremden Graphen lösen. Bliebe er hängen,
            sammelten sich bei jedem Moduswechsel weitere an - und alle
            zögen weiter Rechenzeit am Ton der Bühne. */

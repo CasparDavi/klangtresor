@@ -22,6 +22,42 @@ Codeeingriff.
 
 ---
 
+## Stand der Umsetzung (25.08.2026, Abend)
+
+**Umgesetzt und einzeln belegt** (Commits vom 25.08.): die drei
+Streaming-Texte und die Clipping-Läufe (1); beide Bugs und beide
+Histogramm-Kuren (2, 3); die Fragenkarten samt Gesundheitscheck; die
+Höhenkante (neu, ersetzt v-grenz); die Korrelationsspur; PSR samt
+kurzMax-Heilung; die Pufferflächen-Kur fürs Flux-Bild; sämtliche
+Löschungen aus Abschnitt 1 (Standalone-Reste, fetchMeta, export-section
+mit der Persona-Textarea, kern.abgelegt, _blobURL, extractUUID,
+mp3Cache, _struktur, Attack-Kopie, bipolar-Zweig, Byte-Tabelle war
+bereits fort); die Maßstabsreihe fährt nicht mehr in die Ablagen; die
+Wachen für densityLoop, renderInstruments und die totgelegten
+Funken-Karten; rafProgress ging in updatePlayheads auf; das
+Live-Spektrum ruht bei Pause; fmt/zeitTxt sind eine Uhr (floor statt
+round); kaskadeName ersetzt seine zwei Inline-Kopien; das Chroma-P95
+rechnet einmal je Datenstand; data-h hat Vorrang vor der Höhenliste.
+
+**Nicht umgesetzt, mit Grund:**
+
+- Die vier **Entscheidungsfragen** aus Abschnitt 6 (stems-/
+  essentia-Sektionen, spurBild-Hausregelwiderspruch, #status-CSS) —
+  sie gehören Caspar_D.
+- **Worker-Puffer nullen** und **rechter Kanal im Nachladeweg**: beide
+  würden das vorgehaltene Werkzeug chromaTaktZeichnen brechen bzw.
+  brauchen erst Klarheit über die Nachrichtenreihenfolge — „abklemmen,
+  nicht löschen" schützt sie. Bei Bedarf einzeln wieder aufnehmen.
+- **zahl-Doppel** und **Höhenkarten-Doppel**: in der heutigen Fassung
+  nicht mehr vorhanden (vermutlich mit früheren Umbauten gefallen).
+- Der **linienSpuren-Doppelaufruf** fiel bereits beim Bau des
+  Lautheits-Panels.
+- **chromaZonen/chromaTakt-Zusammenlegung** und **Goertzel-sr**: hängen
+  am abgeklemmten Werkzeug-Cluster; lohnt erst, wenn über dessen
+  Zukunft entschieden ist.
+
+---
+
 ## 1. Sicher löschbar (bestätigt, zusammen rund 300 Zeilen)
 
 - **~185 Zeilen Standalone-Reste ohne Aufrufer** — Nachzügler des

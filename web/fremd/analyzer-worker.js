@@ -699,8 +699,12 @@ onmessage=function(e){
         spitzeVerlauf:TP.verlauf, spitzeSchritt:TP.schritt,
         clipVerlauf:clipVerlauf,  clipSchritt:SPITZE_FENSTER,
         korrVerlauf:korrVerlauf,  korrSchritt:0.4,
-        momentan:LN.momentan, kurz:LN.kurz, zeiten:_T,
-        massstab:LN.massstab, massstabFenster:LN.massstabFenster});
+        momentan:LN.momentan, kurz:LN.kurz, zeiten:_T});
+      /* massstab/massstabFenster fahren seit dem 25.08.2026 nicht mehr
+         mit: die Anzeige ist seit dem 18.08. abgeklemmt, und die sieben
+         Kurven kosteten ~420 KB je Ablage - ueber den Bestand ~135 MB
+         (Review, bestaetigt). Die Rechnung bleibt, falls die Reihe je
+         wiederkommt. */
 
       postMessage({type:'progress',label:'Hüllkurve…',pct:32});
       // --- ENVELOPE (shared) ---
