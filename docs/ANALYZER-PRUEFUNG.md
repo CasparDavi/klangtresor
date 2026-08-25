@@ -234,17 +234,35 @@ versprach. Caspar_D hat es am 25.08.2026 aus dem Gedächtnis genau so
 zusammengefaßt: *„die Kirchentonarten unterscheiden sich nicht, die
 erste gewinnt immer."*
 
-> **Gelöst:** Die Rechnung gibt es nicht mehr. Gesucht am 25.08.2026 im
-> ganzen Projekt nach Ionisch, Dorisch, Phrygisch, Lydisch,
-> Mixolydisch, Äolisch, Lokrisch, `modeName`, `MODE_`, `bestModeScore`:
-> **null Treffer**. Der Rechenkern liefert in `scalars` weder Tonart
-> noch Modus (`analyzer-worker.js`:1118), die Modus-Karte steht nicht
-> mehr im Aufbau, und keine abgelegte `.bin` trägt ein solches Feld.
-> Wann genau sie fiel, sagt die Historie dieses Repos nicht — sie war
-> schon vor dem ersten Commit weg, denn `analyzer.js` kam als Kopie aus
-> `../SunoAnalyzer/`, und dort ist das Original seit Mai 2025
-> eingefroren. Der Grundton kommt heute aus `bin/toene.js`, gemessen am
-> Baß auf Sunos Eins; eine Modusangabe macht das Archiv gar nicht mehr.
+> **Gelöst am 24.08.2026, Commit `b69e898`** („Altes Tonartverfahren,
+> Schritte 5–6: Anzeige und Rechenkern"). Gefallen sind: die Karte
+> `v-mode` samt Schreibstelle, ihr `SA_TOT`-Eintrag, Anzeigereihenfolge,
+> beide Rücksetzlisten und der Tooltip — und im Rechenkern die
+> Modus-Erkennung, `keyDisplay`, die Felder `key:` und `mode:` aus
+> beiden Nachrichten, die Fortschrittsmeldung „Tonart…" und zuletzt
+> `schaetzeTonart()` selbst samt den drei Krumhansl-Tabellen, 67 Zeilen.
+>
+> **Die Stelle, die niemand auf dem Zettel hatte:** `exportForLLM()` las
+> `v('v-mode')`. Die Karte war unsichtbar, ihr Textinhalt aber lesbar —
+> die tote Kirchentonart stand damit bis zum 24.08. in JEDEM
+> Kommentar-Prompt, den Caspar_D kopiert hat.
+>
+> Nachgeprüft am 25.08.2026: Suche im ganzen Projekt nach Ionisch,
+> Dorisch, Phrygisch, Lydisch, Mixolydisch, Äolisch, Lokrisch,
+> `modeName`, `MODE_`, `bestModeScore` — **null Treffer**. Der
+> Rechenkern liefert in `scalars` weder Tonart noch Modus
+> (`analyzer-worker.js`:1118), und keine abgelegte `.bin` trägt ein
+> solches Feld. Der Grundton kommt heute aus `bin/toene.js`, gemessen
+> am Baß auf Sunos Eins; eine Modusangabe macht das Archiv gar nicht
+> mehr.
+>
+> *Berichtigung:* Hier stand zuerst, die Rechnung sei schon vor dem
+> ersten Commit dieses Repos weg gewesen. Das stimmt nicht — sie fiel
+> am 24.08. Sichtbar wird das nur in der **alten Historie**: Dieses
+> Repo beginnt bei 62 Commits, das Vorprojekt („MySuno", ab dem
+> 17.08.2026) hat 636. Es liegt als git-Bundle in
+> `../SunoArchive-privat/`, mit einem eigenen Zweig `vor-tonart-ausbau`
+> für den Stand davor.
 
 ## Alle Funde, nach Schwere
 
