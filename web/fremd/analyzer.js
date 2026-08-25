@@ -2053,6 +2053,27 @@
           }
         }
 
+        /* KEINE HUELLKURVE IM KATALOG? Dann eine graue Flaeche auf
+           Schwarz (Caspar_D, 25.08.2026: "bei dem Naturding war keine
+           Bahn da, trotz Ticks" - "mach sie grau auf schwarz, wenn
+           nichts da ist").
+
+           68 Songs haben keine welle, fast alle Naturklaenge und
+           Ambient-Stuecke ohne Liedtext. Ihre Bahn stand bis eben leer
+           da: ein paar Striche unten, sonst nichts - das liest sich wie
+           ein Fehler, nicht wie eine Aussage. Die graue Flaeche sagt
+           "hier laeuft der Song", die Ticks sagen, wo er sich wendet.
+
+           Hausform wie ueberall: Topline in vollem Ton, ein Bildpunkt
+           dick, darunter die Flaeche mit Teildeckung. Unbunt, weil hier
+           nichts zu kennzeichnen ist - eine Kennfarbe waere eine
+           Behauptung. */
+        if(!(bahn.welle&&bahn.welle.length) && (bahn.wechsel||bahn.abschnitte)){
+          teile.push('<rect x="0" y="'+yFlaeche+'" width="'+SPUR_W+'" height="'+hFlaeche
+            +'" fill="'+TASTE_DUNKEL+'" opacity="0.30"/>');
+          teile.push(spurTopline(TASTE_HELL, yFlaeche));
+        }
+
         bahn.strecken.forEach(function(f){
           var x1=x(f.von), x2=x(f.bis), farbe=AMPEL[f.stufe];
           var t=Math.max(0,f.von-1).toFixed(2);
