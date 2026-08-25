@@ -13402,7 +13402,11 @@ async function latenzMessen(){
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state === 'suspended') await ctx.resume();
     const sr = ctx.sampleRate;
-    const AUF_S = 4, VOR_MS = 500;
+    /* Sieben Sekunden Aufnahme: eine halbe bis zum Start, anderthalb
+       Stille in der Datei, dann muss noch Platz fuer bis zu drei
+       Sekunden Verzoegerung sein - AirPlay 2 puffert ein bis zwei. Mit
+       vier Sekunden lag die Ankunft genau am Rand. */
+    const AUF_S = 7, VOR_MS = 500;
 
     /* Aufnehmen: roh, ueber einen ScriptProcessor. Ein MediaRecorder
        gaebe komprimierte Daten, die erst wieder dekodiert werden
@@ -13451,15 +13455,42 @@ async function latenzMessen(){
       }
       return new Blob([b], {type:'audio/wav'});
     };
-    const url = URL.createObjectURL(bau(muster));
+    /* MIT VORLAUF (Caspar_D, 26.08.2026: „die Zahl ist grösser, er kommt
+       aber immer noch aus dem Computer").
+
+       Ein Stream von 20 ms ist vorbei, bevor AirPlay ihn uebernimmt -
+       macOS gibt ihn dann auf dem eingebauten Lautsprecher aus. Der
+       Chirp sitzt deshalb jetzt in einer Datei von zweieinhalb
+       Sekunden: anderthalb Sekunden Stille davor, damit die Umleitung
+       greift, dann der Chirp, dann Ausklang.
+
+       DER BEZUGSPUNKT ist nicht mehr der Aufruf von play() - der kehrt
+       je nach Weg frueher oder spaeter zurueck und truege die Latenz
+       schon in sich. Statt dessen wird klick.currentTime beobachtet:
+       Steht die Datei bei anderthalb Sekunden, ist der Chirp gerade
+       hinausgegangen. Was danach bis zum Mikrofon vergeht, ist die
+       gesuchte Strecke. */
+    const STILLE_S = 1.5;
+    const ganz = new Float32Array(Math.round(sr * (STILLE_S + 1.0)));
+    ganz.set(muster, Math.round(sr * STILLE_S));
+    const url = URL.createObjectURL(bau(ganz));
     const klick = new Audio(url);
     klick.volume = 1;
-    await new Promise((f,x) => { klick.oncanplaythrough = f; klick.onerror = x; klick.load(); });
+    await new Promise((f,x) => { klick.oncanplaythrough = f;
+      klick.onerror = () => x(new Error('Prüfton nicht ladbar')); klick.load(); });
 
     sagen('messe…');
     await new Promise(r => setTimeout(r, VOR_MS));
-    const losT = schreib;                       /* Stand der Aufnahme beim Losschicken */
     await klick.play();
+
+    /* Warten, bis der Chirp die Datei verlassen hat, und in DIESEM
+       Augenblick den Stand der Aufnahme merken. */
+    let losT = -1;
+    while (losT < 0 && !klick.ended){
+      if (klick.currentTime >= STILLE_S) losT = schreib;
+      else await new Promise(r => setTimeout(r, 4));
+    }
+    if (losT < 0) losT = schreib;
     await new Promise(r => setTimeout(r, (AUF_S * 1000) - VOR_MS));
     URL.revokeObjectURL(url);
 
