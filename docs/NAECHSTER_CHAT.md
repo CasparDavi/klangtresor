@@ -952,3 +952,22 @@ zwei Fallen.
   Bühnen-Code; Handler dort per typeof abgesichert) — falls gewünscht,
   dort nachziehen. Adversarial-Review der Rabe-Änderungen wurde wegen
   Guthaben-Ende abgebrochen; Browser-Tests waren aber vollständig.
+
+
+## Nachtrag 25.08. Nacht (Commits b2fb760 … 1aa082c)
+
+- **Tonlauf fertig**: 321/321 mit Hüllkurven, Notenzonen, Tonart,
+  Stimmlage. Keine Ausfälle.
+- **Hüllkurve** kommt jetzt aus dem eigenen Rechenkern (energy, 20
+  Werte/s) statt aus Sunos welle (5/s, fehlte bei 68 Songs) — und als
+  Amplitude, nicht als Leistung (Wurzel). Drei Formen zur Wahl:
+  x² · x · √x, als mathematische Zeichen an der Kurve.
+- **Sunos novelty-sections angezapft**: peak_times als Ticks unter der
+  Hüllkurve, für alle 321 Songs. Lag ungenutzt im Katalog.
+- **Track-Struktur** erkennt Abschnitte auch ohne eckige Klammern
+  („Strophe 1" statt „[Verse 1]").
+- **Piano-Verdacht entschieden** (OFFEN.md 2.5): Die Spur mißt kein
+  Klavier. Songs mit *no piano* im Prompt haben 99,5 % Median.
+- **Offene Arbeitsliste**: OFFEN.md Abschnitt 6 — Hüllkurven-Skalierung
+  bei x², grobes Sampling von Crest/Lautheit, v3-Marken bei zwei Songs,
+  die Leisten-Punkte.

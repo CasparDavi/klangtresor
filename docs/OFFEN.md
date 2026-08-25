@@ -177,7 +177,53 @@ bis 13 bei einer Taktlänge von 0,45 s und einem Schlagabstand von
 statt Viertel. Weitere 22 melden Zählzeiten bis 21.
 </details>
 
-### 2.5 Piano-Stem auf Verdacht prüfen — erhärtet, n = 4
+### 2.5 Piano-Stem auf Verdacht prüfen — ENTSCHIEDEN 25.08.2026, n = 321
+
+> **Der Verdacht stimmt. Die Spur mißt kein Klavier.**
+>
+> Sobald alle 321 Songs Hüllkurven hatten (Tonlauf 25.08. abends), war
+> die Frage in einer Minute beantwortet. Der Rechenweg ist der unten
+> beschriebene, samt dem Fallstrick: Verneinungen (`no|without|kein|
+> ohne` vor dem Instrument) und das Feld `stilAusschluss` zählen als
+> Ausschluß, nicht als Wunsch.
+>
+> | Gruppe | n | Median | über 80 % | über 90 % |
+> |---|---|---|---|---|
+> | Klavier im Prompt erwähnt | 139 | 25,0 % | 20 | 18 |
+> | nicht erwähnt | 177 | 6,1 % | 26 | 25 |
+> | **ausdrücklich ausgeschlossen** | **5** | **99,5 %** | **4** | **4** |
+>
+> Songs, deren Prompt *no piano* sagt, haben die **lauteste**
+> Klavierspur im ganzen Archiv: Koffein v2 99,9 %, Koffein 99,7 %,
+> Hey Tarja 99,5 %, Kein Shutdown 99,2 %. Mißt die Spur Klavier, kann
+> das nicht sein.
+>
+> **Wie sie kippt** — der Zwischenstand vom 24.08. vermutete es richtig,
+> die Spur ist nicht immer voll, sondern gespalten. 47 Songs liegen über
+> 90 %, 274 darunter. Der Vergleich der Mediane zeigt, was die 47
+> gemeinsam haben:
+>
+> | Spur | bei den 47 | bei den übrigen | Differenz |
+> |---|---|---|---|
+> | Schlagzeug | 66,5 % | 46,2 % | **+20,3** |
+> | Gitarre | 57,5 % | 46,2 % | +11,3 |
+> | Gesang | 66,9 % | 59,9 % | +7,0 |
+> | Bass | 88,0 % | 81,7 % | +6,3 |
+> | Klavier | 99,0 % | 8,0 % | +91,0 |
+> | **Rest** | **63,2 %** | **73,8 %** | **−10,6** |
+>
+> Alle Spuren sind voller — nur der **Rest ist leerer**. Bei dichten,
+> lauten Stücken verteilt htdemucs_6s die Energie breiter, statt sie im
+> Rest zu sammeln, und die schwächste Spur fängt auf, was übrigbleibt.
+>
+> **Was daraus folgt, ist noch offen:** die Klavierspur bei diesen
+> Songs ausblenden? kennzeichnen („mißt hier keinen Klang")? oder die
+> Trennung mit einem anderen Modell wiederholen? Das gehört Caspar_D.
+> Der Befund selbst ist gesichert.
+
+<details><summary>Der Weg dorthin (Stand 24.08., n = 4)</summary>
+
+#### Piano-Stem auf Verdacht prüfen — erhärtet, n = 4
 Bei Okkultation klingt die Klavierspur in 95 % des Stücks. Das kann
 stimmen — oder die schwächste Spur von htdemucs_6s fängt Restenergie ein.
 
@@ -217,6 +263,8 @@ vor dem Instrument) und das eigene Feld `stilAusschluss` gehören dazu.
 Die Frage an den Bestand lautet dann: Wie viele Songs haben eine
 Klavierspur über 80 %, obwohl der Prompt Klavier ausschließt oder nicht
 erwähnt? Sind es viele, mißt die Spur nicht Klavier.
+
+</details>
 
 ### 2.6 Akkordfolge aus den Notenzonen
 Steht je Zone ein stabiler Tonvorrat, ist der Dreiklang ableitbar und die
@@ -550,3 +598,101 @@ Dateien.
 **In der git-Historie liegt die Datei weiter** — in zwei Commits
 (0769902 baute sie ein, 4df4d84 entfernte sie), dazwischen als Blob in
 jedem. Das ist beim ersten Push zu entscheiden.
+
+---
+
+## 6. Offen aus dem Abend des 25.08.2026
+
+Caspar_D: *„alles notieren, müssen wir bearbeiten."* Alles unten ist
+gemessen, nichts davon ist entschieden.
+
+### 6.1 Die Hüllkurve fällt bei x² in sich zusammen
+
+Die drei Kurvenformen (√x · x · x²) sind gebaut und wirken. Die
+**Spiegelung ist exakt** — punktweise nachgemessen, Abweichung 0,000 in
+allen drei Formen. Das Problem liegt woanders: bei der **Skalierung**.
+
+Normalisiert wird auf das Maximum. Beim Quadrieren wird der lauteste
+Punkt so dominant, daß alles andere verschwindet — gemessen an einem
+Song, Auslenkung als Anteil der halben Bahnhöhe:
+
+| | Median | oberes Viertel | p95 | p99 |
+|---|---|---|---|---|
+| x² | **3,5 %** | 8,7 % | 25,2 % | 54 % |
+
+Die Kurve ist die meiste Zeit ein Strich auf der Mittellinie. Gewollt
+war *„bei quadrieren kann man die spitzen sehr schön rausarbeiten"* —
+dafür müssen die Spitzen aber sichtbar bleiben und der Rest darf nicht
+ganz verschwinden.
+
+**Vorschlag:** nach der Umformung nicht auf das Maximum normalisieren,
+sondern auf ein hohes Perzentil (etwa p98) und darüber kappen. Dann
+füllt jede der drei Formen den Raum ähnlich gut, und x² zeigt die
+Spitzen als das, was herausragt. **Zu prüfen:** ob das Kappen bei √x
+sichtbar stört.
+
+### 6.2 Dynamikumfang und Lautheit sind grob gesampelt
+
+Caspar_D: *„wieso ist das nicht dicht gesampelt."* Der Rechenkern
+schneidet in **nicht überlappende Blöcke** und gibt je Block einen Wert:
+
+```js
+// crest frames 500ms
+var cStep = Math.floor(sr*0.5), cFrames = Math.floor(n/cStep);
+```
+
+| Kurve | Blocklänge | Werte/s |
+|---|---|---|
+| Hüllkurve (`env`) | 10 ms | 100 |
+| Signalenergie | 50 ms | 20 |
+| Lautheit (`lufs`) | 400 ms | 2,5 |
+| **Dynamikumfang** | **500 ms** | **2** |
+
+Der Crest **braucht** ein Fenster — Spitze durch Effektivwert ist für
+einen Einzelwert sinnlos. Was fehlt, ist die Überlappung: dasselbe
+500-ms-Fenster alle 50 ms ausgewertet gäbe **20 Werte je Sekunde bei
+unveränderter Messung**.
+
+**Der Preis:** Änderung im Rechenkern — damit stimmen die 321
+abgelegten Analysen nicht mehr mit dem Code überein. Für den vollen
+Nutzen ein Neulauf über den ganzen Bestand, Größenordnung eine Stunde
+(wie der Tonlauf). Momentan- und Kurzzeitlautheit sind **nicht**
+betroffen, die kommen aus dem normgerechten Zweig
+(`fensterEnergienMitte`).
+
+**Sichtbare Folge heute:** Glättungsfenster unter 1 s sind beim
+Dynamikumfang wirkungslos und deshalb seit dem 25.08. gesperrt (siehe
+Commit „keine toten Fenster mehr"). Mit dichterem Sampling würden sie
+wieder etwas tun.
+
+### 6.3 Zwei Songs haben Abschnittsmarken in v3, die niemand nutzt
+
+Der Katalog nimmt die Wort-Zeitmarken aus v2; fehlt v2, greift er zu
+Whisper — und Whisper kennt keine Abschnittsmarken. Bei zwei Songs
+liegt in **v3** eine Gliederung, die dadurch verlorengeht:
+
+| Song | v2 | v3 |
+|---|---|---|
+| Ich dreh mich nicht um! (ft. …) | leer | **11 Marken**, 203 Worte |
+| Erste Liebe | leer | 1 Marke, 95 Worte |
+
+**Zu klären:** ob v3 vor Whisper kommen soll, wenn v2 fehlt. Der
+Beschluss vom 20.08. (*„v2 darf Whisper nicht ersetzen — Whisper kennt
+die Zeitpunkte genau, da schlampt Suno"*) gilt für v2 gegen Whisper; er
+sagt nichts über den Fall, daß Whisper **gar keine Gliederung** hat.
+
+### 6.4 Aus der Leisten-Bestandsaufnahme
+
+Die vollständige Liste steht in [LEISTEN-UND-TONKETTE.md](LEISTEN-UND-TONKETTE.md).
+Die Punkte mit dem meisten Gewicht:
+
+- **Der Abspielknopf im Bühnenpult hängt am Fortschritt statt am
+  Play-Ereignis** — beim Pausieren bleibt er auf „Pause" stehen und
+  behauptet, es liefe noch.
+- **Das Tonstudio verschwindet unter der Bühne** (z-index 56 gegen 60)
+  und rechnet dort mit 100 ms weiter; `buehneAuf`/`buehneZu` fassen es
+  nicht an.
+- **Gemerkte EQ-Einstellungen greifen erst, nachdem das Studio einmal
+  offen war** — wer über die Bühne einsteigt, hört sie nie.
+- **Der EQ-Knopf fehlt im Pult** — die ursprüngliche Frage. Sinnvoll
+  erst, wenn das Studio über die Bühne kommt.
