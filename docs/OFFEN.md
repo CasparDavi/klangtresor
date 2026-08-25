@@ -709,3 +709,72 @@ Die Punkte mit dem meisten Gewicht:
   offen war** — wer über die Bühne einsteigt, hört sie nie.
 - **Der EQ-Knopf fehlt im Pult** — die ursprüngliche Frage. Sinnvoll
   erst, wenn das Studio über die Bühne kommt.
+
+
+---
+
+## 7. Lückenfestigkeit — geprüft am 25.08.2026
+
+Caspar_D: *„prüfe bitte, daß nichts abstürzt, wenn Daten nicht da
+sind."* Zweimal geprüft: empirisch im laufenden Browser und statisch
+mit vier Prüfblicken über beide Dateien. 35 Befunde, davon 23
+ausdrücklich als **abgesichert** bestätigt.
+
+**Der Bestand hat Lücken bei 68 von 321 Songs** — `welle` bei 68,
+`lyrics` und Whisper bei je 64, `worte` bei 30. Fast alle sind
+Naturklang- und Ambient-Stücke ohne Gesang.
+
+### 7.1 Ein echter Absturz — BEHOBEN
+
+`whisperEinsetzen()` las nach dem `await` auf `bSong.id`. Wird die Bühne
+während des laufenden Abrufs geschlossen, setzt `buehneZu()` `bSong` auf
+`null` — läßt `#bprompts` aber stehen, weshalb der vorhandene Wächter
+`!$('promptregz')` nicht griff.
+
+Nachgestellt und bestätigt: *„Cannot read properties of null (reading
+'id')"*. Behoben durch `!bSong ||` im Wächter, Gegenprobe sauber.
+
+**Theoretisch dieselbe Bauart, nicht nachgewiesen:** `analyzerAufbauen()`
+und `buehneAuf()` greifen nach späteren `await`s ebenfalls auf `bSong`
+zu. Ihr Zeitfenster ist deutlich kleiner (ein einmaliger Abruf je
+Sitzung), und beide prüfen `bSong` am Anfang. Wer dort aufräumt, zieht
+den Schutz hinter **jedes** `await`.
+
+### 7.2 Was still etwas Falsches zeigt (kein Absturz)
+
+- **Karaoke wird verweigert, obwohl Zeitmarken da sind.**
+  `karaokeMoeglich` fragt `bSong.worte` (Katalog-Hauptspur), der Text
+  kommt aber aus `bWorte()` (gewählte Spur v2/v3/Whisper). Bei
+  „Kartoffeln mit Dip" fehlt `worte`, `worteV3` hat 391 Wörter: Steht
+  die Spurwahl auf v3, läuft der Text wortgenau mit — und daneben
+  steht „Karaoke (keine Zeitmarken)". Richtig wäre `bWorte().length`.
+- **35 Songs zeigen Whisper-Halluzinationen als Text.** Auf Naturklang
+  hört Whisper „Thank you. Thank you.", „Terima kasih telah menonton!"
+  und singhalesische Wortketten. Sie stehen als Wort-Zeitmarken im
+  Katalog und werden angezeigt.
+- **Stimmlage wird bei Naturklang erkannt.** Der Wächter „weniger als
+  20 gemessene Tonhöhen = zu wenig Gesang" greift nicht: Demucs'
+  vocals-Spur enthält bei Naturklang kein Schweigen, sondern
+  Übersprechen, und YIN findet darin hunderte Tonhöhen.
+- **Eine Stem-Spur mit bloßem Übersprechen sieht aus wie eine
+  tragende.** `huelle()` normiert jede Spur auf ihren eigenen
+  Spitzenwert und legt die absolute Spitze nicht ab — der Browser kann
+  beide nicht unterscheiden. (Verwandt mit 2.5, dem Piano-Befund.)
+- **`toeneDaten` wird nie nachgeladen**, wenn der erste Abruf ein leeres
+  `{songs:{}}` lieferte (so antwortet der Server, solange `toene.json`
+  fehlt). Der Wächter `if (!toeneDaten)` sieht danach ein wahres Objekt.
+  Trifft nur ein frisches Archiv.
+
+### 7.3 Kosmetisch
+
+- **„Kein Text hinterlegt." ist in `#bprompts` unerreichbar** —
+  `teile[]` beginnt immer mit dem Paßfoto, also ist `join('')` nie leer.
+  Für die 64 Songs ohne Text bleibt die rechte Spalte im Analysemodus
+  stumm, statt die Abwesenheit zu benennen. (In `#btext` erscheint der
+  Satz korrekt — dort wurde er im Test gesehen.)
+- **Eine Hüllkurve aus lauter Nullen fällt durch beide Netze** — weder
+  Kurve noch grauer Rückfall, es bliebe eine leere schwarze Bahn.
+- **„Tonverteilung je Notenzone" steht kurz sichtbar da**, bevor sie
+  sich ausblendet; das Einzelspuren-Panel startet dagegen versteckt.
+- Der Eintrag „Lyrics" im Pult trägt als einziger kein Sperrflag,
+  während die Fußzeile ihn über `s.hatLyrics` ausgraut.

@@ -12119,7 +12119,13 @@ async function whisperEinsetzen(id){
   let w = null;
   try { w = await (await fetch('/api/whisper/' + id, { cache: 'no-store' })).json(); }
   catch (e) { w = null; }
-  if (!$('promptregz') || bSong.id !== id) return;      // Song schon gewechselt
+  /* DREI GRUENDE ABZUBRECHEN, und der mittlere fehlte (25.08.2026,
+     Lueckenpruefung): Die Buehne kann waehrend des Abrufs geschlossen
+     worden sein - buehneZu() setzt bSong auf null, laesst #bprompts
+     aber stehen. Der erste Waechter griff deshalb nicht, und bSong.id
+     warf einen TypeError. Nachgestellt und bestaetigt:
+     "Cannot read properties of null (reading 'id')". */
+  if (!$('promptregz') || !bSong || bSong.id !== id) return;
 
   const tk = document.querySelector('#bprompts .pseite[data-pseite="transkript"]');
   const vg = document.querySelector('#bprompts .pseite[data-pseite="vergleich"]');
