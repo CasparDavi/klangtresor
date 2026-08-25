@@ -43,7 +43,6 @@
    Beschlossen am 18.08.2026: Stem-Trennung und Instrumenterkennung sind
    in der Bühne nicht sinnvoll.
    --------------------------------------------------------------------- */
-.sunoanalyzer.eingebettet #instruments-section,
 .sunoanalyzer.eingebettet #sa-transport,
 .sunoanalyzer.eingebettet #pp-btn,
 .sunoanalyzer.eingebettet #meta,
@@ -856,10 +855,6 @@
     ausgeschaltet bleiben. Die Hüllkurven sind davon unabhängig und immer zu sehen.</div>
 </div>
 
-<div class="section" id="instruments-section" style="display:none">
-  <div class="slbl"><span><span class="nam">Instrument-Erkennung</span> — <span class="erkl">regelbasiert · heuristisch</span></span></div>
-  <div id="instruments-wrap" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
-</div>
 
 
 
@@ -4927,179 +4922,30 @@
 
     // ===== END DENSITY SPECTRUM =====
 
-    function detectInstruments(data){
-      // Rule-based instrument detection from spectral features
-      // Uses: bpm, centroid, rolloff, stereoWidth, inharm, harmDens, tilt,
-      //       attack, onsets, energy, crest, pitch, fft features
-      var instruments=[];
-      var fft=data.fft||{};
+    /* HIER STANDEN detectInstruments UND renderInstruments, 172 Zeilen.
+       Geloescht am 25.08.2026 (Caspar_D: "die Instrumenterkennungs-
+       heuristik war scheisse und deswegen haben wir sie auch totgelegt
+       und zum Loeschen vorgesehen"). BACKLOG 1.5 hatte sie stillgelegt,
+       damals noch nach der alten Regel "abklemmen, nicht loeschen".
 
-      // Helper: median of typed array
-      function med(arr){
-        if(!arr||!arr.length)return 0;
-        var a=Array.from(arr).filter(function(x){return !isNaN(x);}).sort(function(a,b){return a-b;});
-        return a.length?a[Math.floor(a.length/2)]:0;
-      }
-      function mean(arr){
-        if(!arr||!arr.length)return 0;
-        var s=0,n=0;
-        for(var i=0;i<arr.length;i++){if(!isNaN(arr[i])){s+=arr[i];n++;}}
-        return n?s/n:0;
-      }
+       WARUM SIE NICHT TAUGTE: Sie bewertete neun Instrumente mit
+       Punktregeln ueber genau die Groessen, deren Karten wegen
+       erwiesener Fehler verborgen sind (SA_TOT) - Centroid aus einem
+       einzigen 43-ms-Fenster, Rolloff ueber Amplituden statt Leistung,
+       Attack bei 297 von 321 Songs leer, Akkordrate als Rahmenflimmern,
+       Inharmonizitaet mit einem Suchfenster von genau einem Bin,
+       harmonische Dichte, die bei Rauschen 15,8 und bei einem reinen
+       Sinus 5,0 meldet. Zwei Beispiele stehen in ANALYZER-PRUEFUNG.md
+       ausdruecklich: "if(inharmMed>0.03&&inharmMed<0.12) guitarScore+=2"
+       entscheidet ueber Gitarre gegen Klavier gegen Synthesizer,
+       obwohl die Groesse nur die Tonhoehenlage kennt; die harmonische
+       Dichte verdreht die Entscheidung zwischen Schlagzeug, Orgel und
+       Sinusflaechen. Aus falschen Zahlen kann keine Punktregel etwas
+       Richtiges machen.
 
-      var centroid=parseFloat((document.getElementById('v-centroid')||{}).textContent)||0;
-      var rolloff=parseFloat((document.getElementById('v-rolloff')||{}).textContent)||0;
-      var bpm=parseFloat((document.getElementById('v-bpm')||{}).textContent)||0;
-      var stereo=parseFloat((document.getElementById('v-stereo')||{}).textContent)||0; // %
-      var attackMs=parseFloat((document.getElementById('v-attack')||{}).textContent)||0;
-      var inharm=parseFloat((document.getElementById('v-inharm')||{}).textContent)||0;
-      var harmDense=parseFloat((document.getElementById('v-harmdense')||{}).textContent)||0;
-      var tilt=parseFloat((document.getElementById('v-tilt')||{}).textContent)||0;
-      var dyn=parseFloat((document.getElementById('v-dyn')||{}).textContent)||0;
-      var vocalText=(document.getElementById('v-vocal')||{}).textContent||'';
-
-      var onsetRate=mean(data.onsets); // onsets/s
-      var harmMed=med(fft.harm);       // 0=noise, 1=tonal
-      var pitchStab=med(fft.noteStab); // 0..1
-      var harmDensMed=med(fft.harmDens)||harmDense;
-      var tiltMed=med(fft.tilt)||tilt;
-      var inharmMed=med(fft.inharm)||inharm;
-
-      // Score each instrument family
-      var scores={};
-
-      // --- DRUMS / PERCUSSION ---
-      // Short attack, high onset rate, low harmonicity, low pitch stability
-      var drumScore=0;
-      if(attackMs>0&&attackMs<40) drumScore+=2;
-      if(onsetRate>3) drumScore+=2;
-      if(onsetRate>6) drumScore+=1;
-      if(harmMed<0.4) drumScore+=2;
-      if(pitchStab<0.3) drumScore+=1;
-      if(harmDensMed<3) drumScore+=1;
-      scores['Drums/Percussion']=drumScore;
-
-      // --- BASS ---
-      // Low centroid, low rolloff, high harmonicity, low onset rate
-      var bassScore=0;
-      if(centroid>0&&centroid<600) bassScore+=3;
-      else if(centroid<900) bassScore+=1;
-      if(rolloff>0&&rolloff<1200) bassScore+=2;
-      if(harmMed>0.5) bassScore+=1;
-      if(tiltMed>0.2) bassScore+=2; // bass-heavy spectrum
-      scores['Bass']=bassScore;
-
-      // --- VOCALS ---
-      // Formant region 500-3000Hz, pitch stable, harmonic, vocal detection
-      var vocalScore=0;
-      if(vocalText&&!vocalText.includes('—')) vocalScore+=3;
-      if(centroid>500&&centroid<2500) vocalScore+=1;
-      if(pitchStab>0.5) vocalScore+=2;
-      if(harmMed>0.6) vocalScore+=1;
-      if(harmDensMed>3&&harmDensMed<10) vocalScore+=1;
-      scores['Gesang']=vocalScore;
-
-      // --- GUITAR (electric/acoustic) ---
-      // Medium attack, medium-high onset, inharmonic attack, mid centroid
-      var guitarScore=0;
-      if(attackMs>5&&attackMs<80) guitarScore+=1;
-      if(inharmMed>0.03&&inharmMed<0.12) guitarScore+=2;
-      if(centroid>800&&centroid<3500) guitarScore+=1;
-      if(harmDensMed>4&&harmDensMed<12) guitarScore+=1;
-      if(onsetRate>1&&onsetRate<8) guitarScore+=1;
-      scores['Gitarre']=guitarScore;
-
-      // --- PIANO / KEYS ---
-      // Fast attack, wide frequency range, harmonic, medium-high onset
-      var pianoScore=0;
-      if(attackMs>0&&attackMs<30) pianoScore+=2;
-      if(harmDensMed>6) pianoScore+=2;
-      if(inharmMed>0.01&&inharmMed<0.06) pianoScore+=1;
-      if(centroid>300&&centroid<4000) pianoScore+=1;
-      if(rolloff>2000) pianoScore+=1;
-      scores['Piano/Keys']=pianoScore;
-
-      // --- STRINGS / PAD ---
-      // Slow attack, high sustain, tonal, medium harm density, stable pitch
-      var stringScore=0;
-      if(attackMs>60) stringScore+=2;
-      if(harmMed>0.7) stringScore+=2;
-      if(pitchStab>0.6) stringScore+=1;
-      if(harmDensMed>5&&harmDensMed<14) stringScore+=1;
-      if(inharmMed<0.04) stringScore+=1;
-      if(dyn<8) stringScore+=1; // compressed/sustained
-      scores['Streicher/Pad']=stringScore;
-
-      // --- SYNTH LEAD ---
-      // Very tonal, stable pitch, could be any centroid, low inharmonicity
-      var synthScore=0;
-      if(harmMed>0.75) synthScore+=2;
-      if(inharmMed<0.02) synthScore+=3; // very pure = synth
-      if(pitchStab>0.7) synthScore+=1;
-      scores['Synth Lead']=synthScore;
-
-      // --- BRASS / WIND ---
-      // Mid-high centroid, harmonic, medium onset
-      var brassScore=0;
-      if(centroid>800&&centroid<3000) brassScore+=1;
-      if(harmDensMed>6&&harmDensMed<14) brassScore+=1;
-      if(harmMed>0.6) brassScore+=1;
-      if(inharmMed>0.02&&inharmMed<0.08) brassScore+=1;
-      if(attackMs>10&&attackMs<100) brassScore+=1;
-      scores['Bläser']=brassScore;
-
-      // --- CHOIR ---
-      // Tonal, very stable pitch, high harmDens, formant-like
-      var choirScore=0;
-      if(harmMed>0.7) choirScore+=1;
-      if(pitchStab>0.65) choirScore+=2;
-      if(harmDensMed>7) choirScore+=1;
-      if(centroid>300&&centroid<2000) choirScore+=1;
-      if(stereo>40) choirScore+=1; // choirs tend wide stereo
-      scores['Chor']=choirScore;
-
-      // Normalize: only show instruments above threshold, sort by score
-      var threshold=3;
-      var result=Object.keys(scores)
-        .filter(function(k){return scores[k]>=threshold;})
-        .sort(function(a,b){return scores[b]-scores[a];});
-
-      // Cap at top 5
-      return result.slice(0,5).map(function(k){return {name:k,score:scores[k]};});
-    }
-
-    function renderInstruments(){
-      /* Eingebettet ist #instruments-section per !important verborgen -
-         als einzige Sektion OHNE OPT-Waechter lief die Erkennung mit
-         fuenf Sortierungen ueber bis ~56.000 Werte trotzdem bei jeder
-         Analyse mehrfach (Review, 25.08.2026). Abklemmen, nicht
-         loeschen - Markup und Funktion bleiben. */
-      if(!sichtbar('instruments-section'))return;
-      if(!window._chartData)return;
-      var data=window._chartData;
-      var fft=data.fft;
-      if(!fft)return;
-
-      var instruments=detectInstruments(data);
-      var wrap=document.getElementById('instruments-wrap');
-      var section=document.getElementById('instruments-section');
-      if(!wrap||!section)return;
-
-      if(!instruments.length){section.style.display='none';return;}
-      section.style.display='block';
-
-      var maxScore=instruments[0]?instruments[0].score:1;
-      wrap.innerHTML=instruments.map(function(inst){
-        var pct=Math.round(inst.score/maxScore*100);
-        return '<div style="display:flex;align-items:center;gap:8px;background:#111;border-radius:6px;padding:6px 10px;min-width:140px">'
-          +'<div style="flex:1">'
-          +'<div style="font-size:12px;color:#ccc;margin-bottom:3px">'+inst.name+'</div>'
-          +'<div style="height:3px;background:#222;border-radius:2px">'
-          +'<div style="height:100%;width:'+pct+'%;background:#4b93f0;border-radius:2px"></div>'
-          +'</div></div>'
-          +'</div>';
-      }).join('');
-    }
+       Wer Instrumente wissen will, hat seit dem 24.08.2026 die
+       Stem-Zerlegung: sechs getrennte Spuren mit gemessenen Anteilen
+       statt geratener Punkte. */
 
     function redrawAllCharts(){
       /* NUR DIE SICHT, NICHT DER INHALT.
@@ -5816,7 +5662,6 @@
           case 'envelope':
             window._chartData.energy=msg.energy;window._chartData.lufs=msg.lufs;
             window._chartData.crest=msg.crest;window._chartData.onsets=msg.onsets;
-            setTimeout(renderInstruments,100);
             window._chartData.dur=msg.dur;window._chartData.sr=sr;
             /* Die Dauer-Karte wurde nur im Frischanalyse-Weg gefüllt
                (aus buf.duration) - beim Abspielen aus der Ablage blieb
@@ -6638,7 +6483,6 @@
       spektroTitelSetzen(gabSpitzen);
       markReady('spectro-canvas');
       ablageVielleichtSchreiben();
-            renderInstruments();
       drawTimeAxis(ctx,W,H,dur);
     }
     function drawStereoSpectro(){var _t=performance.now();var _r=_drawStereoSpectro.apply(null,arguments);(window._zeit=window._zeit||{})["drawStereoSpectro"]=((window._zeit&&window._zeit["drawStereoSpectro"])||0)+(performance.now()-_t);return _r;}

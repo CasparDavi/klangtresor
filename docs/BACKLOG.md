@@ -424,12 +424,21 @@ der Bühne — **genau eine Kollision**, `player`. Sie verschwindet mit
 1.4 **Stem-Trennung stillgelegt** (Caspar_D, 18.08.2026): keine Demucs-Abfrage,
     kein Stems-Abschnitt. Sie dauert Minuten und braucht einen zweiten
     Server — in der Bühne vorerst nicht sinnvoll
-1.5 **Instrumenterkennung stillgelegt**, beide Fassungen: die
-    regelbasierte und die über Essentia/ONNX
-    **Stillgelegt heißt nicht gelöscht:** Der Code bleibt im Modul,
-    wird nur nicht aufgerufen und baut seine Abschnitte nicht auf.
-    „Erstmal" soll umkehrbar bleiben — das Wiedereinschalten ist dann
-    ein Aufruf, keine Archäologie
+1.5 ✅ **erledigt — und am 25.08.2026 gelöscht.** Die regelbasierte
+    Instrumenterkennung ist weg, 172 Zeilen (Caspar_D: „die
+    Instrumenterkennungsheuristik war scheisse und deswegen haben wir
+    sie auch totgelegt und zum Löschen vorgesehen"). Die Fassung über
+    Essentia/ONNX fiel schon vorher mit Essentia.
+    Sie bewertete neun Instrumente mit Punktregeln über genau die
+    Größen, deren Karten wegen erwiesener Fehler verborgen sind — aus
+    falschen Zahlen kann keine Punktregel etwas Richtiges machen. Die
+    Begründung steht ausführlich im Kommentar an ihrer Stelle in
+    `analyzer.js`. Wer Instrumente wissen will, hat seit dem 24.08.2026
+    die Stem-Zerlegung: sechs getrennte Spuren mit gemessenen Anteilen
+    statt geratener Punkte.
+    Das „stillgelegt heißt nicht gelöscht" von damals gilt nicht mehr —
+    seit dem 25.08.2026 wird nichts mehr totgelegt, ohne den Code
+    mitzulöschen. Erhalten bleibt die Begründung, nicht der tote Code.
 
 **2 · Ein Ton, ein Spielkopf**
 2.1 ✅ **erledigt.** Zehn Stellen waren es. Die Spielköpfe und das
