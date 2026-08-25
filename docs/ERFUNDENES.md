@@ -200,50 +200,81 @@ Paaren die plausiblere ist.
 Caspar_D: *„jeder geschulte Mensch kann die Tonart bestimmen, warum
 können Computer das nicht?"*
 
-Die unbequeme Antwort: **Es liegt nicht an unserem Verfahren.** Drei
-verschiedene Ansätze, auf denselben Daten gerechnet, gegen denselben
-prompt-freien Maßstab (14 Fassungspaare, die dieselbe Tonart geben
-müssen):
+**Vorbemerkung — ein zweiter verworfener Weg.** Der erste Anlauf dieser
+Antwort verglich das heutige Verfahren mit **Krumhansl-Schmuckler**.
+Auch das ist erledigte Sache: Am **19.08.2026** wurde die
+Tonartbestimmung genau deshalb ersetzt — *„Baß auf Sunos Eins statt
+Krumhansl über den Vollmix"* (HAUSREGELN.md) —, weil das Verfahren
+massiv E-Moll überrepräsentierte. `schaetzeTonart()` samt
+Krumhansl-Tabellen ist ausgebaut (BACKLOG.md).
 
-| Verfahren | einig |
+Daneben steht die Hausregel, gegen die ich verstoßen habe: *„Ein
+Verfahren gilt nicht als ersetzt, solange sein Vorgänger noch irgendwo
+steht."*
+
+Auf Nachfrage geprüft, worauf meine Rechnung eigentlich lief — und die
+Antwort ist: **auf dem Vollmix**, also genau der verworfenen
+Kombination. Der Baß liefert in den Notenzonen nur das *Raster* (wo die
+Zonengrenzen liegen), der Inhalt kommt aus dem Mix:
+
+```js
+const v = chromaVektor(mix, SR_ZONE, …);   // bin/toene.js:310
+```
+
+Ein Unterschied bleibt, und er ist der interessante Teil: Die alte
+Messung zog ihr Chroma aus der **FFT**, meine aus **Goertzel**. Die
+E-Häufung war ein Artefakt des Fächerrasters — *„bei 48 kHz klingt das
+nackte Fächerraster nach E-Dur; daher stehen 58 mal E Dur im Archiv"*
+(ANALYZER-PRUEFUNG.md). Mit Goertzel gemessen tritt sie nicht auf
+(C-Moll 41, E-Moll 35, G-Moll 30; Streuung 3,25 von 3,58 möglichen).
+
+**Das ändert am Urteil nichts:** besser war es trotzdem nicht (64 %
+gegen 71 %), und ein ausgebautes Verfahren ist kein Maßstab. Es
+verschiebt nur die Schuldzuweisung — die Verzerrung lag an der
+Frequenzanalyse, nicht an der Korrelation.
+
+### Was bleibt — und es reicht für die Antwort
+
+Zwei Messungen, die ohne jedes verworfene Verfahren und ohne
+Prompt-Angabe auskommen:
+
+| Beobachtung | Wert |
 |---|---|
-| häufigster Baßton auf der Eins (heute im Einsatz) | **71 %** |
-| Krumhansl-Schmuckler auf dem Tonvorrat | 64 % |
-| Schlußton der letzten drei Zonen | 21 % |
-
-Krumhansl-Schmuckler ist das Standardverfahren der Musikpsychologie —
-gemessene Tonprofile, gegen die der Tonvorrat korreliert wird. Es ist
-hier **schlechter** als unser einfacher Baßzähler. Und untereinander
-sind die beiden sich nur bei **54 %** der 257 Songs einig.
+| Fassungspaare, die dieselbe Tonart bekommen | 10 von 14 = **71 %** |
+| Songs, die auf dem gemessenen Grundton **enden** | 83 von 257 = **32 %** |
+| davon statt dessen auf der **Quinte** endend | 38 von 257 = **15 %** |
 
 **Was der Mensch anders macht.** Er zählt keine Töne. Er hört, wo es zur
 Ruhe kommt: Spannung, die sich auflöst — die Dominante, die zur Tonika
 fällt. Das ist eine Aussage über den zeitlichen *Verlauf* und über
-*Erwartung*, nicht über Häufigkeit. Unsere Verfahren zählen dagegen
-Statistik über das ganze Stück, so als wollte man die Hauptfigur eines
-Romans dadurch bestimmen, welcher Name am häufigsten vorkommt.
+*Erwartung*, nicht über Häufigkeit. Unser Verfahren rechnet Statistik
+über das ganze Stück, so als wollte man die Hauptfigur eines Romans
+dadurch bestimmen, welcher Name am häufigsten vorkommt.
 
 Genau daher der **Quintenfehler**: Der Baß spielt die fünfte Stufe
 häufig und betont — für die Statistik sieht sie aus wie der Grundton,
-fürs Ohr ist sie das Gegenteil, nämlich die Spannung, die noch aufgelöst
-werden will.
+fürs Ohr ist sie das Gegenteil, nämlich die Spannung, die noch
+aufgelöst werden will. Die 15 % oben sind derselbe Befund von der
+anderen Seite gesehen.
 
 **Und KI-Musik macht es besonders schwer.** Der naheliegende
-menschliche Griff — auf den Schluß hören — versagt hier am gründlichsten
-(21 %), weil Suno-Stücke oft ausblenden, im Instrumentalen enden oder
-mitten in der Phrase aufhören, statt zu kadenzieren. Nur **32 %** der
-Songs enden überhaupt auf dem Ton, den wir als Grundton führen.
+menschliche Griff — auf den Schluß hören — ist hier am wenigsten
+verläßlich: Als Grundtonquelle geprüft, liefert der Schluß bei den
+Fassungspaaren nur **21 %** Übereinstimmung, weil Suno-Stücke
+ausblenden, im Instrumentalen enden oder mitten in der Phrase aufhören,
+statt zu kadenzieren.
 
 **Können Computer es also?** Ja — der Stand der Technik liegt bei
 70–85 % für klassische Popmusik, mit trainierten Netzen, die
 Akkordfolgen und Kadenzen lernen statt Töne zu zählen. Das ist eine
-andere Größenordnung von Aufwand als eine Häufigkeitszählung, und es
-setzt Material voraus, das sich an Konventionen hält.
+andere Größenordnung von Aufwand, und es setzt Material voraus, das
+sich an Konventionen hält.
 
-**Wichtig für die Einordnung:** Die 71 % oben sind *Konsistenz*, nicht
+**Wichtig für die Einordnung:** Die 71 % sind *Konsistenz*, nicht
 *Richtigkeit*. Ein Verfahren kann verläßlich dasselbe Falsche sagen.
-Einen Maßstab für Richtigkeit haben wir nicht — der Prompt taugt nicht
-(siehe oben), und niemand hat die 321 Stücke von Hand bestimmt.
+Einen Maßstab für Richtigkeit haben wir nicht — der Prompt taugt nicht,
+Krumhansl ist ausgebaut, und niemand hat die 321 Stücke von Hand
+bestimmt.
 
 ---
 
