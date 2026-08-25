@@ -6840,74 +6840,70 @@
       var bandNames=['20–40Hz','40–80Hz','80–160Hz','160–315Hz','315–630Hz','630–1250Hz','1250–2500Hz','2500–20kHz'];
       var bandH=c.height/nBands;
       var nFrames=bandFlux[0].length;
-      var i0=Math.floor(vs*nFrames),i1=Math.ceil(ve*nFrames);
-      var visFrames=i1-i0;if(visFrames<1)return;
 
-      // compute p95 per band for normalization
-      var bandP95=new Float32Array(nBands);
-      for(var b=0;b<nBands;b++){
-        var vals=[];
-        for(var i=i0;i<i1&&i<nFrames;i++)if(bandFlux[b][i]>0)vals.push(bandFlux[b][i]);
-        if(!vals.length){bandP95[b]=1;continue;}
-        vals.sort(function(a,b){return a-b;});
-        bandP95[b]=vals[Math.floor(vals.length*0.95)]||1;
-      }
-
-      var barW=Math.max(1,c.width/visFrames);
-
-      for(var b=0;b<nBands;b++){
-        // band 0=bass at bottom, band 7=treble at top
-        var drawRow=nBands-1-b;
-        var yTop=drawRow*bandH;
-
-        // alternating background
-        ctx.fillStyle=drawRow%2===0?'rgba(255,255,255,0.015)':'rgba(0,0,0,0)';
-        ctx.fillRect(0,yTop,c.width,bandH);
-
-        for(var col=0;col<visFrames;col++){
-          var fi=i0+col;if(fi>=nFrames)break;
-          var v=bandFlux[b][fi]/bandP95[b];
-          v=Math.min(1,v);
-          if(v<0.02)continue;
-          // log scale for better visual range
-          var vLog=Math.log(v*9+1)/Math.log(10);
-          var x=col/visFrames*c.width;
-          // cyan color — distinct from orange/blue of other charts
-          var alpha=Math.min(1,vLog*1.2);
-          var brightness=Math.round(180*vLog+40);
-          /* SUNO-BLAU STATT TUERKIS, UND DUNKLER.
-
-             Hier stand ein Tuerkis (r = 0,6·b, g = b, b = b), das mit
-             voller Helligkeit ueber die ganze Flaeche lief - das
-             hellste Panel der Seite und in keiner Reihe des Hauses.
-             Jetzt die Anteile von #4b93f0 (75/147/240), zusaetzlich auf
-             78 % gedimmt: Das Bild zeigt Aenderungsraten, nicht Pegel,
-             und braucht dafuer keine Leuchtkraft. */
-          var bl=brightness*0.78;
-          /* Die Datenfläche - etwas zurückgenommen, damit die Kante darüber
-             sich abhebt. Sie beginnt drei Punkte unter dem Bandanfang: einen
-             für die Topline, zwei als Luft zur Lane darüber (Caspar_D,
-             23.08.2026). */
-          ctx.fillStyle='rgba('+Math.round(bl*0.294)+','+Math.round(bl*0.576)+','
-            +Math.round(bl*0.941)+','+(alpha*0.85).toFixed(2)+')';
-          ctx.fillRect(x,yTop+3,barW,Math.max(1,bandH-3));
-          /* DIE TOPLINE FOLGT DEN DATEN (Caspar_D, 23.08.2026: "heller als die
-             Daten, aber dem Datenverlauf in Helligkeitsschwankung folgen").
-             Volles, gesättigtes Blau; wie kräftig es steht, sagt derselbe
-             Wert, der die Fläche färbt - dadurch zeichnet die Kante den
-             Verlauf nach, statt ihn zu überdecken. */
-          ctx.fillStyle='rgba(90,180,255,'+Math.min(1,alpha*1.35).toFixed(2)+')';
-          ctx.fillRect(x,yTop+2,barW,1);
+      /* DIE PUFFERFLAECHEN-KUR, zuletzt auch hier (25.08.2026, Review).
+         Vorher malte jeder Sichtwechsel bis ~450.000 fillRects auf 800
+         Bildpunkte - rund siebzigfache Ueberzeichnung, bei der der
+         LETZTE Frame gewann - und sortierte die Normierung je Sicht neu.
+         Jetzt: P95 einmal ueber ALLE Frames (am Datenstand gecacht), das
+         Bild einmal in den Puffer, jeder Sichtwechsel ein drawImage aus
+         der passenden Mip-Stufe. Die Buendelung je Pufferspalte nimmt
+         das MAXIMUM der Frames - Ereignisse duerfen nicht wegmitteln.
+         Topline und Grundlinie liegen IM Puffer: die Stufen skalieren
+         nur die Breite, nicht die Hoehe, ein 1-px-Strich bleibt also in
+         jeder Stufe 1 px scharf, und horizontal wird seine Helligkeit
+         gemittelt - genau "dem Datenverlauf folgend" (Beschluss
+         23.08.2026). Das Suno-Blau und seine Daempfung auf 78 % sind der
+         Beschluss vom 24.08. ("in keiner Reihe des Hauses" war das
+         Tuerkis davor). */
+      if(!window._fluxP95||window._fluxP95.stand!==nFrames){
+        var w95=new Float32Array(nBands);
+        for(var b=0;b<nBands;b++){
+          var vals=[];
+          for(var i=0;i<nFrames;i++) if(bandFlux[b][i]>0) vals.push(bandFlux[b][i]);
+          if(!vals.length){ w95[b]=1; continue; }
+          vals.sort(function(x,y){return x-y;});
+          w95[b]=vals[Math.floor(vals.length*0.95)]||1;
         }
+        window._fluxP95={stand:nFrames, werte:w95};
       }
+      var bandP95=window._fluxP95.werte;
 
-      /* Eine ganz schwache Grundlinie je Band - sie hält die Zeile auch
-         dort, wo gar keine Änderung stattfindet. Die eigentliche Kante
-         zeichnen die Daten selbst (siehe oben). */
-      for(var b=0;b<nBands;b++){
-        ctx.fillStyle='rgba(90,180,255,0.13)';
-        ctx.fillRect(0,b*bandH+2,c.width,1);
-      }
+      var pF=pufferFlaeche('flux', nFrames, c.height, function(data,bw,bh){
+        var bandHp=bh/nBands, schritt=nFrames/bw;
+        for(var b=0;b<nBands;b++){
+          var drawRow=nBands-1-b;               /* Band 0 = Bass = unten */
+          var yTop=Math.round(drawRow*bandHp);
+          var hinterA=drawRow%2===0?4:0;        /* alternierender Grund, wie 0.015 weiss */
+          for(var x=0;x<bw;x++){
+            var a0=Math.floor(x*schritt), a1=Math.max(a0+1,Math.floor((x+1)*schritt));
+            var maxv=0;
+            for(var fi=a0;fi<a1&&fi<nFrames;fi++){ var wv=bandFlux[b][fi]; if(wv>maxv) maxv=wv; }
+            var v=Math.min(1,maxv/bandP95[b]);
+            var vLog=v<0.02?0:Math.log(v*9+1)/Math.log(10);
+            var alpha=Math.min(1,vLog*1.2);
+            var bl=(180*vLog+40)*0.78;
+            var zr=Math.round(bl*0.294), zg=Math.round(bl*0.576), zb=Math.round(bl*0.941);
+            var zA=Math.round(alpha*0.85*255);
+            for(var y=yTop;y<yTop+bandHp&&y<bh;y++){
+              var idx=(y*bw+x)*4, zeileImBand=y-yTop;
+              if(zeileImBand===2){
+                /* Topline: volles Blau, Staerke folgt den Daten; 0.13 als
+                   Grundlinie, damit die Zeile auch ohne Bewegung steht. */
+                data[idx]=90; data[idx+1]=180; data[idx+2]=255;
+                data[idx+3]=Math.round(Math.max(0.13,Math.min(1,vLog*1.35))*255);
+              } else if(zeileImBand>=3&&vLog>0){
+                data[idx]=zr; data[idx+1]=zg; data[idx+2]=zb; data[idx+3]=zA;
+              } else if(hinterA&&zeileImBand>=3){
+                data[idx]=255; data[idx+1]=255; data[idx+2]=255; data[idx+3]=hinterA;
+              } else {
+                data[idx+3]=0;
+              }
+            }
+          }
+        }
+      }, (_laufendeId||'')+':'+nFrames);
+      pufferZeigen(ctx, pF, vs, ve, c.width, c.height);
 
       /* DIE BANDNAMEN. Caspar_D hat sie mehrfach angefordert, und sie
          standen auch im Code - nur im falschen Ast: im Rueckfallzweig
