@@ -337,15 +337,36 @@ scheitern, deshalb merkt `stems.js` nichts und wartet mit.
 Musik rund 105 MB (`n × 2 Kanäle × 4 Byte`). Klemmt dieser Transfer, warten
 beide Seiten unbegrenzt aufeinander.
 
-**Naheliegende Härtung:** Die Rohdaten in eine temporäre Datei schreiben
-und ffmpeg daraus lesen lassen, statt durch eine Pipe. Dann gibt es nichts,
-was klemmen kann. Kostet einen Schreibvorgang je Spur — auf der SSD
-belanglos gegen einen Lauf, der über Nacht steht.
+**Am 25.08.2026 um 08:05 behoben — nach dem dritten Mal.** Ein weiterer
+Lauf blieb nach 43 Songs bei „Erste Liebe" stehen, wieder mit `drums`,
+`bass`, `other`, und der hängende ffmpeg schrieb wieder `other.flac`.
+Damit ist es dreimal derselbe Punkt.
 
-**Bis dahin:** Nach `pgrep -fl stems.js` den Status prüfen (`SN` bei 0,0 %
-über Stunden heißt hängend), jeden `stems/`-Ordner auf sechs `.flac`
-prüfen und halbfertige verwerfen — `stems.js` erkennt Fertiges nur an
-`piano.flac`, ein Ordner mit drei Spuren fällt sonst durch.
+`flacSchreiben()` schreibt die Rohdaten jetzt in eine Datei neben dem Ziel
+und lässt ffmpeg daraus lesen; die Datei fällt danach weg (auch wenn
+ffmpeg scheitert — `finally`). Ein Schreibvorgang je Spur, dafür gibt es
+keine Pipe mehr, die klemmen kann.
+
+**Gegengeprüft:** Beide Wege liefern bitidentische Dateien — gleiche
+SHA-Summe der `.flac` und gleicher PCM-MD5. Am Ton ändert sich nichts.
+
+**Zwei Ursachen ausgeschlossen** (Caspar_D fragte danach: „gibt es ein
+Speicherplatzproblem, müllt er die Disk mit zu kleinen Dateien zu und weil
+jede 1 MB belegt reicht der Platz nicht?"):
+
+- **Platz:** 973 GB frei von 1,8 TB. Die Allocation Block Size ist
+  tatsächlich 1 MB, aber von 4087 Dateien liegen nur 917 darunter, und der
+  Verschnitt daraus beträgt 2,4 GB (44,5 GB echte Größe → 46,9 GB belegt).
+- **Speicher:** 64 GB im Rechner, der Lauf hielt 10 GB, System 89 % frei.
+
+Die genaue Ursache des Deadlocks ist damit **nicht** geklärt — nur der Weg
+drumherum. Wenn es trotz Datei wieder passiert, war die Pipe nicht schuld.
+
+**Erkennung, falls es wiederkommt:** Nach `pgrep -fl stems.js` den Status
+prüfen (`SN` bei 0,0 % über Stunden heißt hängend), jeden `stems/`-Ordner
+auf sechs `.flac` prüfen und halbfertige verwerfen — `stems.js` erkennt
+Fertiges nur an `piano.flac`, ein Ordner mit drei Spuren fällt sonst
+durch.
 
 ## 3. Bewusst liegengelassen
 

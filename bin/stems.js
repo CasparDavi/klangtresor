@@ -122,14 +122,43 @@ function pcmLaden(datei) {
 }
 
 /* ---- Eine Spur schreiben -------------------------------------------- */
+/* KEINE PIPE (25.08.2026, nach dem dritten Stillstand in drei Naechten).
+   Die Rohdaten gingen vorher als `input:` durch pipe:0 an ffmpeg - bei
+   fuenf Minuten Musik rund 105 MB. Dreimal blieb der Lauf genau dabei
+   stehen:
+
+     24.08.   9d375ce4...    drums, bass, other da    8,5 h still
+     25.08.   "Kerze"        drums, bass, other da    1:58 h still
+     25.08.   "Erste Liebe"  drums, bass, other da    3:19 h still
+
+   Jedes Mal stand ein ffmpeg bei 0,0 Prozent CPU an pipe:0 und schrieb
+   other.flac - die dritte Spur. Kein Fehler im Protokoll, denn spawnSync
+   blockiert, statt zu scheitern: der Aufrufer merkt nichts und wartet mit.
+
+   Geprueft und ausgeschlossen (Caspar_D fragte danach): kein Platzmangel -
+   973 GB frei, und der exFAT-Verschnitt aus 917 kleinen Dateien betraegt
+   2,4 GB. Kein Speichermangel - 64 GB im Rechner, der Lauf hielt 10.
+
+   Die genaue Ursache des Deadlocks kenne ich nicht. Der Weg drumherum ist
+   billig: die Rohdaten in eine Datei neben dem Ziel, ffmpeg liest daraus,
+   die Datei faellt danach weg. Ein Schreibvorgang je Spur, auf der SSD
+   belanglos gegen einen Lauf, der ueber Nacht steht. Und es gibt nichts
+   mehr, was klemmen kann. */
 function flacSchreiben(links, rechts, n, ziel) {
   const verschraenkt = Buffer.allocUnsafe(n * 2 * 4);
   const sicht = new Float32Array(verschraenkt.buffer, verschraenkt.byteOffset, n * 2);
   for (let i = 0; i < n; i++) { sicht[i * 2] = links[i]; sicht[i * 2 + 1] = rechts[i]; }
-  const ff = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR),
-    '-ac', '2', '-i', 'pipe:0', '-c:a', 'flac', '-sample_fmt', 's16', ziel],
-    { input: verschraenkt, maxBuffer: 1 << 28 });
-  if (ff.status !== 0) throw new Error('ffmpeg (schreiben): ' + String(ff.stderr || '').trim().slice(0, 160));
+  const roh = ziel + '.f32';
+  fs.writeFileSync(roh, verschraenkt);
+  try {
+    const ff = spawnSync('ffmpeg', ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR),
+      '-ac', '2', '-i', roh, '-c:a', 'flac', '-sample_fmt', 's16', ziel],
+      { maxBuffer: 1 << 24 });
+    if (ff.status !== 0) throw new Error('ffmpeg (schreiben): ' + String(ff.stderr || '').trim().slice(0, 160));
+  } finally {
+    /* Auch wenn ffmpeg scheitert: die 105 MB bleiben nicht liegen. */
+    try { fs.unlinkSync(roh); } catch (e) {}
+  }
 }
 
 /* ---- Ein Lied -------------------------------------------------------- */
