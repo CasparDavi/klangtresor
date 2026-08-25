@@ -219,17 +219,16 @@ Absatz hier. Das Löschen-ist-nicht-gut aus derselben Sitzung meint die
 
 ## Alle Funde, nach Schwere
 
-### 12. Die Spektrogramm-Rahmen sind nach dem Zeichnen weg — R und L+R lassen sich nicht nachrüsten
-**hoch** · `analyzer.js`:6024, 5285
+### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
+**mittel** · `analyzer-worker.js`:943, `bin/vorrechnen.js`
 
-**Fehler:** Der Rechenkern schickt die schweren Spektrogrammdaten nur in der letzten Runde und überträgt dabei die Puffer. Der Analyzer legt sie in `window._chartData.fft.frames` ab und zeichnet damit sofort beide Bilder. Danach steht dort `undefined` — an drei nacheinander geprüften Songs (25.08.2026: „Tomatensalat", „Abend im Park", „Synchronisation") war `frames` und `stereoFrames` jedesmal undefiniert, obwohl beide Bilder gezeichnet waren. Wer später noch einmal zeichnen will, hat nichts mehr.
+**Fehler:** Der Rechenkern bildet in jedem Rahmen `magR`, das Spektrum des rechten Kanals (`analyzer-worker.js`:943), benutzt es aber nur für die Seitenlage und wirft es dann weg. Abgelegt werden je Song genau zwei Bilder: `<id>.spektro.webp` (linker Kanal) und `<id>.stereo.webp` (Seitenlage). Der rechte Kanal für sich und die Summe beider gibt es nirgends. Dazu stimmt der Kommentar „spectro (mono)" an Zeile 945 nicht: `var ch = left` (Befund 34), es ist der linke Kanal allein — die Beschriftung im Analyzer sagt das seit dem 25.08.2026 auch so.
 
-**Wirkung:** Zwei Dinge hängen daran. Erstens greift der Neuaufbau beim Zoomen (Zeile 5285) genau auf `d.fft.frames` zu — ob das Spektrogramm dem Zoom tatsächlich nicht folgt, ist noch nicht sauber nachgemessen, der Zugriff geht aber ins Leere. Zweitens ließ sich deshalb Caspar_Ds Wunsch nach vier Registern (L, R, L+R, Seitenlage) nicht umsetzen: Eine Lasche, die beim Aufschlagen zeichnen müßte, findet keine Daten mehr, und ein Canvas, der beim Empfang verborgen ist, hat die Breite null und bleibt leer.
+**Wirkung:** Caspar_Ds Wunsch nach vier Registern (L, R, L+R, Seitenlage) ließ sich am 25.08.2026 nur zur Hälfte erfüllen. Es sind die zwei vorhandenen Bilder geworden.
 
-**Dazu kommt:** R und L+R gibt es überhaupt nicht. Der Kern rechnet `magR` (`analyzer-worker.js`:943), wirft es aber weg — gespeichert werden nur der linke Kanal und die Seitenlage. Und der Kommentar „spectro (mono)" an Zeile 945 stimmt nicht: `var ch = left` (Befund 34), es ist der linke Kanal allein.
+**Vorschlag:** Der Weg ist kurz, weil die Bildmathematik schon geteilt ist: `bin/vorrechnen.js` lädt `web/fremd/analyzer-worker.js` mit `new Function` und rechnet dieselben Bildpunkte, die der Browser rechnen würde — es gibt keine zweite Fassung, die auseinanderlaufen könnte. Zwei weitere Bilder je Song, `<id>.rechts.webp` und `<id>.summe.webp`, und der Analyzer lädt sie wie die anderen beiden. Eigene Meßreihen braucht es dafür nicht: Aus dem linken Kanal und der Seitenlage `p` folgt `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`, bei einer Auflösung von 1/127 für p mit einem Fehler unter 0,2 dB. Kosten: rund 5 MB je Song mehr in `library/analyse/`.
 
-**Vorschlag:** Die Rahmen dauerhaft halten, statt sie an `_chartData` zu hängen, das bei jeder Teilnachricht neu geschrieben wird — dann folgt auch der Zoom wieder. R braucht kein eigenes Feld: Aus dem linken Kanal und der Seitenlage `p=(|L|−|R|)/(|L|+|R|)` ergibt sich `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`; bei einer Auflösung von 1/127 für p bleibt der Fehler unter 0,2 dB. Vier Register kosten dann kein zusätzliches Byte.
-
+**Berichtigung (25.08.2026):** Hier stand zuerst, die Spektrogramm-Rahmen seien nach dem Zeichnen weg und deshalb liefe der Zoom ins Leere. Das erste stimmt — `window._chartData.fft.frames` ist bei aus der Ablage geladenen Songs undefiniert —, das zweite nicht: Genau für diesen Fall gibt es den `ohneRoh`-Zweig in `_drawSpectrogramFromFrames` (`analyzer.js`:6801). Er zeichnet aus `window._pufferFlaechen`, den Flächen aus den gespeicherten Bildern, und zwar ausschnittweise nach `viewStart`/`viewEnd` — der Zoom arbeitet also über die Bilder, in mehreren Auflösungsstufen bis 16383 px Breite. Daß die Rohdaten nach dem Zeichnen fallen, ist Absicht und kein Fehler.
 
 ### 13. Die Kirchentonart ist die Reihenfolge zweier Schleifen, keine Messung
 **hoch** · `analyzer-worker.js`:1144
