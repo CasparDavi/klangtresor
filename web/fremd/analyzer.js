@@ -396,6 +396,13 @@
   cursor:pointer;color:#6a6a6a;line-height:0;display:flex}
 .sunoanalyzer .spur-profil button:hover{color:#b0b0b6}
 .sunoanalyzer .spur-profil button.an{color:#4b93f0}
+/* Die Kurvenformwahl liegt ueber dem Bild, unten rechts in der ersten
+   Bahn - dort ist bei jeder Huellkurve am wenigsten los. Die Zeichen
+   sind Mathematik, keine Symbole, deshalb etwas Luft und tabulare
+   Ziffernbreite. */
+.sunoanalyzer #sa-kurvenwahl{position:absolute;right:14px;z-index:3;display:flex;gap:2px}
+.sunoanalyzer #sa-kurvenwahl button{font-size:12px;line-height:1;padding:2px 5px;
+  background:rgba(10,10,10,.62);border-radius:3px}
 
 /* Die Zeitangabe reitet auf dem Spielkopf der Wellenform. */
 .sunoanalyzer #sa-zeitmarke{position:absolute;top:2px;transform:translateX(-50%);
@@ -642,6 +649,13 @@
       <div id="befundspur-canvas" class="spur-flaeche"></div>
       <div class="playhead" id="ph-befundspur"></div>
       <div id="sa-spur-namen"></div>
+      <!-- Die Kurvenform sitzt AN der Huellkurve, nicht am Fuss der
+           Sektion (Caspar_D, 25.08.2026: "die schaltflaechen muessen
+           direkt unter der Huellkurve sein, nicht unter den
+           Blockdiagrammen"). Alle Bahnen stecken in EINEM SVG - die
+           Leiste wird deshalb ueber das Bild gelegt und beim Zeichnen
+           auf die Unterkante der ersten Bahn gesetzt. -->
+      <div class="spur-wahl" id="sa-kurvenwahl"></div>
     </div>
   </div>
   <div id="sa-urteil"></div>
@@ -1901,6 +1915,7 @@
         +((viewEnd-viewStart)*SPUR_W).toFixed(1)+' '+H+'" preserveAspectRatio="none" data-h="'+H+'">'];
 
       _letzteBahnen=bahnen; _letzteDauer=dauer;   /* fuer das Neuzeichnen beim Zoom */
+      kurvenwahlSetzen(bahnen);
       var yLauf=0;
       bahnen.forEach(function(bahn, r){
         var yKopf=yLauf, BH=bahnInhalt(bahn), y=yKopf+BF_KOPF;
@@ -2483,11 +2498,13 @@
          Befundspur, envelope liefert sie erst danach. Deshalb traegt
          huellkurveNachtragen() sie nach, sobald sie da ist. Sunos welle
          bleibt nur noch Rueckfall, falls gar keine Energie kommt. */
-      var eigene = wurzelKurve((window._chartData && window._chartData.energy) || null);
+      var eigeneRoh = (window._chartData && window._chartData.energy) || null;
+      var eigene = kurveFormen(eigeneRoh);
       var welleJetzt = (eigene && eigene.length) ? eigene : ((welleRoh && welleRoh.length) ? welleRoh : null);
       bahnen.unshift({name: abs.length ? 'Track-Struktur' : 'Hüllkurve',
           strecken:[], abschnitte: abs.length?abs:null,
           welle: welleJetzt,
+          welleRoh: (eigene && eigene.length) ? eigeneRoh : welleRoh,
           welleEigen: !!(eigene && eigene.length),
           welleDauer: (eigene && eigene.length)
                       ? ((window._chartData&&window._chartData.dur)||dauer)
@@ -2756,6 +2773,34 @@
        so billig wie möglich sein. */
     var _letzteBahnen=null, _letzteDauer=0, _letzteSicht=-1;
 
+    /* Die Wahlleiste erscheint nur, wenn es eine Kurve zu formen gibt -
+       ohne Huellkurve waere sie ein Schalter ohne Wirkung. */
+    function kurvenwahlSetzen(bahnen){
+      var w=document.getElementById('sa-kurvenwahl');
+      if(!w) return;
+      var b=bahnen && bahnen.length ? bahnen[0] : null;
+      var hat=!!(b && b.welleRoh && b.welleRoh.length);
+      w.style.display = hat ? '' : 'none';
+      if(!hat){ w.innerHTML=''; return; }
+      /* Unterkante der ersten Bahn, minus Knopfhoehe: die Leiste sitzt
+         im unteren Rand der Huellkurve, nicht unter dem ganzen Stapel. */
+      w.style.top = Math.max(0, bahnHoehe(b) - 20) + 'px';
+      if(w._gebaut) return;
+      w.innerHTML=kurvenKnoepfe();
+      w.addEventListener('click', function(e){
+        var k=e.target.closest('#sa-kurvenform button'); if(!k) return;
+        _kurvenForm=k.dataset.k;
+        [].forEach.call(k.parentElement.children, function(x){ x.classList.toggle('an', x===k); });
+        /* Neu formen aus den Rohwerten - kein Rechengang im Kern, nur
+           eine andere Abbildung derselben Zahlen. */
+        if(_letzteBahnen && _letzteBahnen[0] && _letzteBahnen[0].welleRoh){
+          _letzteBahnen[0].welle=kurveFormen(_letzteBahnen[0].welleRoh);
+          befundspurZeichnen(_letzteBahnen, _letzteDauer);
+        }
+      });
+      w._gebaut=true;
+    }
+
     /* LEISTUNG IST KEINE WELLENFORM (Caspar_D, 25.08.2026: "die sieht
        feiner aus, die andere hatte ne wurzelfunktion, oder").
 
@@ -2776,12 +2821,42 @@
        Mit Wurzel liegen wir bei Sunos Verteilung; der kleine Rest
        spricht dafuer, dass Suno je Fenster den Spitzenwert nimmt und
        nicht den Effektivwert - eine Frage des Geschmacks, keine der
-       Richtigkeit. */
-    function wurzelKurve(e){
+       Richtigkeit.
+       DREI FORMEN ZUR WAHL (Caspar_D, 25.08.2026: "bei quadrieren kann
+       man die spitzen sehr schoen rausarbeiten, beim Wurzeln das Volumen
+       und bei x=x die echten Werte"). Genau so stehen sie in den
+       Knoepfen - Symbole, keine Woerter, wie bei den Fensterprofilen
+       der Signalenergie (Hausbeschluss 18.08.2026: "nur die Form, kein
+       Wort"). */
+    /* Mathematische Zeichen, nicht Kurvenbildchen (Caspar_D,
+       25.08.2026: "mir waeren mathematisch Zeichen lieber - xhoch2; x;
+       Wurzelx"). Bei den Fensterprofilen sagt die Form alles, hier sagt
+       es die Rechnung kuerzer. Reihenfolge wie angesagt: von der
+       spitzesten Abbildung zur vollsten. */
+    var KURVE_HOCH={ quadrat:2, echt:1, wurzel:0.5 };
+    var KURVE_ZEICHEN={ quadrat:'x²', echt:'x', wurzel:'√x' };
+    var KURVE_NAME={ quadrat:'x² — arbeitet die Spitzen heraus',
+                     echt:'x — die echten Werte',
+                     wurzel:'√x — zeigt das Volumen' };
+    var _kurvenForm='wurzel';    /* ueberlebt den Neuaufbau des Markups */
+
+    function kurveFormen(e, form){
       if(!e || !e.length) return null;
+      var h=KURVE_HOCH[form||_kurvenForm]; if(!h) h=0.5;
       var a=new Float32Array(e.length);
-      for(var i=0;i<e.length;i++){ var v=e[i]; a[i]=v>0?Math.sqrt(v):0; }
+      if(h===1){ for(var j=0;j<e.length;j++) a[j]=e[j]>0?e[j]:0; return a; }
+      if(h===0.5){ for(var k=0;k<e.length;k++){ var w=e[k]; a[k]=w>0?Math.sqrt(w):0; } return a; }
+      for(var i=0;i<e.length;i++){ var v=e[i]; a[i]=v>0?v*v:0; }
       return a;
+    }
+
+    function kurvenKnoepfe(){
+      return '<span class="spur-profil" id="sa-kurvenform">'
+        + Object.keys(KURVE_ZEICHEN).map(function(k){
+            return '<button data-k="'+k+'" class="'+(k===_kurvenForm?'an':'')+'" title="'+KURVE_NAME[k]+'">'
+              + KURVE_ZEICHEN[k] + '</button>';
+          }).join('')
+        + '</span>';
     }
 
     /* DIE EIGENE HUELLKURVE NACHTRAGEN.
@@ -2799,9 +2874,10 @@
       if(!_letzteBahnen || !_letzteBahnen.length) return;
       var b=_letzteBahnen[0];                       /* die Strukturbahn steht vorn (unshift) */
       if(!b || b.welleEigen) return;                /* die eigene liegt schon drin */
-      var e=wurzelKurve(window._chartData && window._chartData.energy);
+      var roh=window._chartData && window._chartData.energy;
+      var e=kurveFormen(roh);
       if(!e || !e.length) return;
-      b.welle=e; b.welleEigen=true;
+      b.welle=e; b.welleRoh=roh; b.welleEigen=true;
       b.welleDauer=(window._chartData&&window._chartData.dur)||_letzteDauer;
       befundspurZeichnen(_letzteBahnen, _letzteDauer);
     }
@@ -4388,6 +4464,30 @@
         var schrittMs=dauer>0 ? dauer*1000/reihe.length : 0;
         var breite=(wunschMs>0&&schrittMs>0) ? Math.round(wunschMs/schrittMs) : 0;
         var geglaettet=breite>1 ? glaetten(reihe, breite, profil) : reihe;
+
+        /* WAS NICHT WIRKT, WIRD NICHT ANGEBOTEN (Caspar_D, 25.08.2026:
+           "Dynamikumfang - wenn ich hier die Knoepfe durchprobiere oder
+           die Windowsgroesse aendere passiert gar nichts").
+
+           Er hatte recht, und es war kein Fehler, sondern eine Grenze:
+           Ein Glaettungsfenster, das kuerzer ist als der Abstand zweier
+           Datenpunkte, enthaelt genau einen Punkt - es kann nichts
+           mitteln. Beim Dynamikumfang liegen die Punkte 501 ms
+           auseinander, also blieben 50 bis 400 ms wirkungslos, waehrend
+           die Oberflaeche sie weiter anbot. Bei der Signalenergie (50 ms
+           je Punkt) faellt das nie auf.
+
+           Jetzt sperrt die Liste, was rechnerisch nichts tut, und die
+           Profilknoepfe dimmen mit, solange gar nicht geglaettet wird -
+           sie waehlen dann die Form von nichts. */
+        var fensterWahl=abschnitt.querySelector('.spur-fenster');
+        if(fensterWahl && schrittMs>0){
+          [].forEach.call(fensterWahl.options, function(o){
+            var ms=parseInt(o.value,10);
+            o.disabled = ms>0 && Math.round(ms/schrittMs)<2;
+          });
+        }
+        if(pw) pw.style.opacity = breite>1 ? '' : '0.35';
 
         var lo=Infinity, hi=-Infinity;
         for(var i=0;i<geglaettet.length;i++){ var v=geglaettet[i];
