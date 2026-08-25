@@ -741,7 +741,7 @@ an." Zwei Bedingungen, beide eingelöst:
 **Was am Repo geschah:** Historie bereinigt (3,4 GB → 64 MB), Autorendaten
 auf `Caspar_D` umgeschrieben (`git filter-branch --env-filter`),
 Klarnamen und Vorname aus README, START-HIER.md, docs/UEBERGABE.md und
-`.gitignore` entfernt, Werkstattpfade aus docs/ANALYZER-PRUEFUNG.md,
+`.gitignore` entfernt, Werkstattpfade aus docs/ANALYZER-REVIEW.md,
 `*.zip` in die `.gitignore`. Eine Bündelsicherung der alten Historie
 liegt außerhalb des Repos unter `SunoArchive-privat/`.
 

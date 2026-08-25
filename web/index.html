@@ -4991,7 +4991,7 @@ function filterAufbauen(){
     for (const [k, f] of Object.entries(FILTER)){
       /* Kategorien ohne einen einzigen Wert gar nicht erst anbieten: seit der
          Prüfung vom 23.08.2026 sind Tonart und Stimme totgelegt (Belege in
-         docs/ANALYZER-PRUEFUNG.md), ihre Felder stehen nicht mehr im Index.
+         docs/ANALYZER-REVIEW.md), ihre Felder stehen nicht mehr im Index.
          Ein Filter, der nur „keine Werte" anzeigen kann, ist eine Falle. */
       if (!f.laden && !f.mehrere && !alle.some(s => { const w = f.wert(s); return w != null && w !== ''; })) continue;
       const z = document.createElement('div'); z.className = 'fw';
@@ -5912,7 +5912,7 @@ async function karteZeichnen(){
   const gruppenHtml = `<div class="legende2"><div class="lblock"><h4>Stilgruppen</h4><div class="lgrid">` + d.gruppen.map(g => {
     const e = g.erdung || {};
     const erd = [e.bpm && `${e.bpm} BPM`, e.lufs != null && `${String(e.lufs).replace('.', ',')} LUFS`,
-      /* Moll-Anteil und Stimme sind totgelegt (docs/ANALYZER-PRUEFUNG.md) und
+      /* Moll-Anteil und Stimme sind totgelegt (docs/ANALYZER-REVIEW.md) und
          stehen nicht mehr in der Karte - der Ausdruck bleibt stehen und ist
          schlicht leer, falls eine alte karte.json geladen wird. */
       e.mollAnteil != null && `${Math.round(e.mollAnteil * 100)} % Moll`, e.stimme && e.stimme].filter(Boolean).join(' · ');

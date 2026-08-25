@@ -148,7 +148,7 @@ jeder zweiten Eins.
 
 Der erste Anlauf maß gegen die **Tonartangabe im Prompt** (28 Songs
 nennen eine) und kam auf 57 % Treffer. **Dieser Maßstab ist am
-23.08.2026 ausdrücklich verworfen worden** (ANALYZER-PRUEFUNG.md,
+23.08.2026 ausdrücklich verworfen worden** (ANALYZER-REVIEW.md,
 Caspar_Ds Einwand):
 
 > *„niemand garantiert, daß Suno die Prompt-Tonart auch wirklich
@@ -211,7 +211,7 @@ Paaren die plausiblere ist.
 - **Einen echten Maßstab bauen, falls die Frage je wichtig wird.** Der
   Fassungsvergleich prüft nur Konsistenz, nicht Richtigkeit. Belastbar
   wäre eine unabhängige Nachrechnung mit einem anderen Verfahren — oder
-  der Abtastraten-Test aus ANALYZER-PRUEFUNG.md: Dieselbe Aufnahme bei
+  der Abtastraten-Test aus ANALYZER-REVIEW.md: Dieselbe Aufnahme bei
   44,1 / 48 / 32 / 22,05 kHz muß dieselbe Tonart ergeben. Der brachte
   die ALTE Tonartmessung zu Fall (12 von 12 Songs bekamen verschiedene
   Tonarten) und ist auf die heutige noch nicht angewandt.
@@ -246,7 +246,7 @@ Ein Unterschied bleibt, und er ist der interessante Teil: Die alte
 Messung zog ihr Chroma aus der **FFT**, meine aus **Goertzel**. Die
 E-Häufung war ein Artefakt des Fächerrasters — *„bei 48 kHz klingt das
 nackte Fächerraster nach E-Dur; daher stehen 58 mal E Dur im Archiv"*
-(ANALYZER-PRUEFUNG.md). Mit Goertzel gemessen tritt sie nicht auf
+(ANALYZER-REVIEW.md). Mit Goertzel gemessen tritt sie nicht auf
 (C-Moll 41, E-Moll 35, G-Moll 30; Streuung 3,25 von 3,58 möglichen).
 
 **Das ändert am Urteil nichts:** besser war es trotzdem nicht (64 %

@@ -40,7 +40,7 @@ function kopfLesen(datei) {
 
 const rund = (v, n) => (typeof v === 'number' && isFinite(v)) ? +v.toFixed(n) : null;
 
-/* TOTGELEGT — 23.08.2026, Belege in docs/ANALYZER-PRUEFUNG.md
+/* TOTGELEGT — 23.08.2026, Belege in docs/ANALYZER-REVIEW.md
    ------------------------------------------------------------------
    Diese Größen messen nachweislich etwas anderes, als ihr Name sagt.
    Sie werden weiter GERECHNET und liegen weiter in der Ablage

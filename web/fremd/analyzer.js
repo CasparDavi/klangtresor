@@ -985,7 +985,7 @@
      vier Laschen - L, R, L+R und die Seitenlage -, aber R und L+R gibt es
      im Rechenkern nicht: magR wird gerechnet und weggeworfen, und die
      Rahmen sind nach dem Zeichnen nicht mehr greifbar (Befund 12 in
-     docs/ANALYZER-PRUEFUNG.md). Bis das behoben ist, sind es die zwei
+     docs/ANALYZER-REVIEW.md). Bis das behoben ist, sind es die zwei
      vorhandenen Bilder.
 
      BEIDE BILDER LIEGEN UEBEREINANDER, die zugeklappte Lasche wird mit
@@ -1030,7 +1030,7 @@
     document.head.appendChild(s);
   }
 
-  /* TOTGELEGT — Prüfung vom 23.08.2026, Belege in docs/ANALYZER-PRUEFUNG.md
+  /* TOTGELEGT — Prüfung vom 23.08.2026, Belege in docs/ANALYZER-REVIEW.md
      ------------------------------------------------------------------------
      Sechs Prüfer haben jede Messgröße gegen Referenzen nachgerechnet (Sunos
      Schlagzeiten, ffmpeg/EBU R128, ein Feinspektrum mit 2,7 Hz, Kunstsignale
@@ -1065,7 +1065,7 @@
     tilt: Stellt 10 Baß-Bins gegen 469 Höhen-Bins; rosa Rauschen gilt als höhenlastig.
     texture: Steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt.
 
-     Belege und Messreihen stehen in docs/ANALYZER-PRUEFUNG.md.
+     Belege und Messreihen stehen in docs/ANALYZER-REVIEW.md.
      v-entropy war NICHT dabei und bleibt. */
   /* Die totgelegten Bildabschnitte wurden hier einmal nach ihrer
      Beschriftung ausgeblendet. Sie sind inzwischen ganz entfernt
@@ -4214,7 +4214,7 @@
        als Verlauf auch - vier davon sind die Zeitform totgelegter Karten.
        Dazu die Impulsdichte, die mit einer ABSOLUTEN Schwelle zählt und damit
        Pegel misst statt Anschläge, und das Tempo, das den schlechtesten der
-       drei Schätzer zeigt. Belege in docs/ANALYZER-PRUEFUNG.md.
+       drei Schätzer zeigt. Belege in docs/ANALYZER-REVIEW.md.
        Es bleiben Signalenergie und Dynamikumfang: einfache, nachvollziehbare
        Größen, die den geprüften Lautheitsteil ergänzen. */
     /* Was unter den beiden Spuren steht. Sie entstehen dynamisch, also
@@ -4838,7 +4838,7 @@
        Attack bei 297 von 321 Songs leer, Akkordrate als Rahmenflimmern,
        Inharmonizitaet mit einem Suchfenster von genau einem Bin,
        harmonische Dichte, die bei Rauschen 15,8 und bei einem reinen
-       Sinus 5,0 meldet. Zwei Beispiele stehen in ANALYZER-PRUEFUNG.md
+       Sinus 5,0 meldet. Zwei Beispiele stehen in ANALYZER-REVIEW.md
        ausdruecklich: "if(inharmMed>0.03&&inharmMed<0.12) guitarScore+=2"
        entscheidet ueber Gitarre gegen Klavier gegen Synthesizer,
        obwohl die Groesse nur die Tonhoehenlage kennt; die harmonische
