@@ -62,7 +62,7 @@ var ABLAGE_STAND = 1;          // hochzaehlen, wenn sich Reihen aendern
  * kuenftig einen Messweg aendert, findet hier eine Zaehlung vor,
  * statt eine erfinden zu muessen. */
 var MESSWEG = 2;
-var ABLAGE_OHNE  = ['frames','stereoFrames'];   // kommen als Bild
+var ABLAGE_OHNE  = ['frames','framesR','stereoFrames'];   // kommen als Bild
 
 var TYPEN = {Float32Array:Float32Array, Float64Array:Float64Array,
              Uint8Array:Uint8Array, Int8Array:Int8Array,
@@ -247,6 +247,28 @@ var AMP = (function(){
    Genau deshalb steht es hier: bin/vorrechnen.js rechnet dieselben
    Bilder in Node und schiebt sie an ffmpeg.
    -------------------------------------------------------------------- */
+/* DIE SUMME BEIDER KANAELE, aus den beiden Halbbildern.
+
+   Beide Reihen tragen dB auf 0..255: db = (20·log10(a)+80)/80. Addieren
+   darf man erst, nachdem man das rueckgaengig gemacht hat - dB sind
+   Verhaeltnisse, und Verhaeltnisse addieren sich nicht.
+
+   Addiert werden die BETRAEGE, nicht die Signale. Das ist dieselbe
+   Entscheidung wie in bin/toene.js: Gegenphasige Anteile wuerden sich
+   sonst gegenseitig ausloeschen, und ein Ton, der in beiden Kanaelen
+   steht, verschwaende aus dem Bild. Es ist also nicht FFT(L+R), sondern
+   |L|+|R| - deshalb heisst die Lasche auch so. */
+function summeAusKanaelen(framesL, framesR){
+  var n=framesL.length, aus=new Uint8Array(n);
+  for(var i=0;i<n;i++){
+    var l=Math.pow(10,(framesL[i]/255*80-80)/20);
+    var r=Math.pow(10,(framesR[i]/255*80-80)/20);
+    var db=(20*Math.log10(l+r+1e-9)+80)/80;
+    aus[i]=Math.max(0,Math.min(255,Math.round(db*255)));
+  }
+  return aus;
+}
+
 function spektroBildFuellen(data, bw, bh, o){
   var frames=o.frames, numFrames=o.numFrames, bins=o.bins, fftSize=o.fftSize,
       sr=o.sr, logMin=o.logMin, logMax=o.logMax,

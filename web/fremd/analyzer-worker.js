@@ -915,6 +915,16 @@ onmessage=function(e){
         postMessage({type:'progress',label:'FFT Runde '+(round+1)+'/'+totalRounds+'…',pct:Math.round(pctStart)});
 
         var spectroData=new Uint8Array(numFrames*bins2);
+        /* Der RECHTE Kanal als eigenes Bild (Caspar_D, 25.08.2026: vier
+           Register - L, R, L+R und die Seitenlage). Er liesse sich zwar
+           aus dem linken und der Seitenlage zurueckrechnen -
+           |R| = |L|(1-p)/(1+p) -, aber nur in der Mitte genau: bei
+           p = 0 sind es 0,14 dB Fehler, bei p = 0,9 schon 0,69 und bei
+           p = 0,99 volle 5 dB, weil 1-p² gegen null geht. Hart gepanntes
+           Material - und davon lebt das Bild - waere also genau dort
+           falsch, wo man hinsieht. Ein eigenes Byte je Fach ist der
+           ehrlichere Preis. */
+        var spectroDataR=new Uint8Array(numFrames*bins2);
         var stereoSpectroData=new Int8Array(numFrames*bins2);
         var fluxArr=new Float32Array(numFrames);
         // 8-band flux arrays (same bands as stereo panorama)
@@ -942,10 +952,13 @@ onmessage=function(e){
           var mag=rfft(ch,frame*hop,fftSize2);
           var magR=rfft(right,frame*hop,fftSize2);
 
-          // spectro (mono)
+          /* spectro: LINKER Kanal, nicht mono - ch ist left (Befund 34).
+             Der rechte gleich daneben, dieselbe Kennlinie. */
           for(var k=0;k<bins2;k++){
             var db=(20*Math.log10(mag[k]+1e-9)+80)/80;
             spectroData[frame*bins2+k]=Math.max(0,Math.min(255,Math.round(db*255)));
+            var dbR=(20*Math.log10(magR[k]+1e-9)+80)/80;
+            spectroDataR[frame*bins2+k]=Math.max(0,Math.min(255,Math.round(dbR*255)));
           }
 
           // stereo spectro: L-R normalised to -127..+127
@@ -1110,8 +1123,9 @@ onmessage=function(e){
         // only send heavy spectro data on final round (saves ~200MB transfer)
         if(isFinal){
           msg.frames=spectroData;
+          msg.framesR=spectroDataR;
           msg.stereoFrames=stereoSpectroData;
-          transferList.push(spectroData.buffer,stereoSpectroData.buffer);
+          transferList.push(spectroData.buffer,spectroDataR.buffer,stereoSpectroData.buffer);
         } else {
           // send small downsampled spectro for early preview
           var previewStep=Math.max(1,Math.floor(numFrames/2000));

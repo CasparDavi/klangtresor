@@ -71,7 +71,8 @@ function kernLaden(){
     'var postMessage = function(m){ return self.postMessage(m); };\n' +
     ablage + '\n' + kern +
     '\nreturn { onmessage: onmessage, ablageVerpacken: ablageVerpacken, ablageEntpacken: ablageEntpacken,' +
-    ' spektroBildFuellen: spektroBildFuellen, stereoBildFuellen: stereoBildFuellen };');
+    ' spektroBildFuellen: spektroBildFuellen, stereoBildFuellen: stereoBildFuellen,' +
+    ' summeAusKanaelen: summeAusKanaelen };');
   /* postMessage muss den Kern erreichen - er ruft es als freie
      Variable. Ueber 'self' mit einem Getter, der auf das Feld zeigt,
      das wir spaeter umhaengen. */
@@ -165,7 +166,7 @@ function alsPng(rgba, breite, hoehe, ziel){
 /* ------------------------------------------------------------------
    Ein Song.
 ------------------------------------------------------------------ */
-async function einenRechnen(kern, id, titel){
+async function einenRechnen(kern, id, titel, nurBilder){
   const wav = path.join(SONGS, id, 'audio.wav');
   const mp3 = path.join(SONGS, id, 'audio.mp3');
   const datei = fs.existsSync(wav) ? wav : mp3;
@@ -200,19 +201,35 @@ async function einenRechnen(kern, id, titel){
      hier muß es davor geschehen. Dieselbe Einteilung: p5 als Tor gegen
      das Grundrauschen, das obere Quartil als Mitte, p95 als Klippe. */
   const P_MITTE = 0.75;
-  const p5 = new Float32Array(bins), pM = new Float32Array(bins), p95 = new Float32Array(bins);
-  for (let k=0;k<bins;k++){
+  /* JE BILD EIGENE PERZENTILE. Sie strecken jedes Band auf seinen
+     eigenen Rauschboden - der ist im rechten Kanal ein anderer als im
+     linken und in der Summe wieder ein anderer. Mit den Werten des
+     linken gerechnet saehe das rechte Bild systematisch zu dunkel oder
+     zu hell aus, je nachdem, wohin gemischt wurde. */
+  const perzentile = (reihe) => {
+    const p5 = new Float32Array(bins), pM = new Float32Array(bins), p95 = new Float32Array(bins);
     const v = new Float32Array(fft.numFrames);
-    for (let f=0;f<fft.numFrames;f++) v[f] = fft.frames[f*bins+k]/255;
-    v.sort();
-    p5[k]  = v[Math.floor(fft.numFrames*0.05)];
-    pM[k]  = v[Math.floor(fft.numFrames*P_MITTE)];
-    p95[k] = v[Math.floor(fft.numFrames*0.95)];
-  }
+    for (let k=0;k<bins;k++){
+      for (let f=0;f<fft.numFrames;f++) v[f] = reihe[f*bins+k]/255;
+      v.sort();
+      p5[k]  = v[Math.floor(fft.numFrames*0.05)];
+      pM[k]  = v[Math.floor(fft.numFrames*P_MITTE)];
+      p95[k] = v[Math.floor(fft.numFrames*0.95)];
+    }
+    return { p5, pM, p95 };
+  };
 
-  const bildA = new Uint8ClampedArray(bw*bh*4);
-  kern.spektroBildFuellen(bildA, bw, bh, { frames:fft.frames, numFrames:fft.numFrames,
-    bins, fftSize:fft.fftSize, sr, logMin, logMax, p5, pM, p95 });
+  /* Ein Helligkeitsbild aus einer Reihe von dB-Bytes - dieselbe Rechnung
+     fuer alle drei Kanalbilder, nur die Reihe wechselt. */
+  const kanalBild = (reihe) => {
+    const bild = new Uint8ClampedArray(bw*bh*4);
+    const pz = perzentile(reihe);
+    kern.spektroBildFuellen(bild, bw, bh, { frames:reihe, numFrames:fft.numFrames,
+      bins, fftSize:fft.fftSize, sr, logMin, logMax, p5:pz.p5, pM:pz.pM, p95:pz.p95 });
+    return bild;
+  };
+
+  const bildA = kanalBild(fft.frames);
 
   let bildB = null;
   if (fft.stereoFrames){
@@ -229,16 +246,32 @@ async function einenRechnen(kern, id, titel){
       scale: p95s>0 ? 127/p95s : 1 });
   }
 
+  /* --- Der rechte Kanal und die Summe (Caspar_D, 25.08.2026: vier
+         Register). Beide sind Helligkeitsbilder wie das linke, nur mit
+         einer anderen Reihe. Die Summe wird aus beiden Kanaelen exakt
+         gebildet - Betraege addiert, nicht Signale, sonst loeschen sich
+         gegenphasige Anteile aus. --- */
+  let bildC = null, bildD = null;
+  if (fft.framesR){
+    bildC = kanalBild(fft.framesR);
+    bildD = kanalBild(kern.summeAusKanaelen(fft.frames, fft.framesR));
+  }
+
   /* --- Schreiben, erst wenn alles steht --- */
   fs.mkdirSync(ANALYSE, { recursive: true });
   const ziel = e => path.join(ANALYSE, `${id}.${e}`);
   const endung = HAT_CWEBP ? '.webp' : '.png';
-  await alsBild(bildA, bw, bh, path.join(ANALYSE, `${id}.spektro`));
-  if (bildB) await alsBild(bildB, bw, bh, path.join(ANALYSE, `${id}.stereo`));
-  fs.writeFileSync(ziel('bin'), paket);
+  const groesse = e => { try { return fs.statSync(ziel(e+endung)).size; } catch(_) { return 0; } };
+  if (!nurBilder){
+    await alsBild(bildA, bw, bh, path.join(ANALYSE, `${id}.spektro`));
+    if (bildB) await alsBild(bildB, bw, bh, path.join(ANALYSE, `${id}.stereo`));
+  }
+  if (bildC) await alsBild(bildC, bw, bh, path.join(ANALYSE, `${id}.rechts`));
+  if (bildD) await alsBild(bildD, bw, bh, path.join(ANALYSE, `${id}.summe`));
+  if (!nurBilder) fs.writeFileSync(ziel('bin'), paket);
 
-  return { bytes: paket.length + fs.statSync(ziel('spektro'+endung)).size
-                 + (bildB ? fs.statSync(ziel('stereo'+endung)).size : 0) };
+  return { bytes: paket.length + groesse('spektro') + groesse('stereo')
+                 + groesse('rechts') + groesse('summe') };
 }
 
 /** Liegt der Song vollständig da? Eine halbe Analyse ist keine. */
@@ -248,6 +281,72 @@ function fertig(id){
   const da = e => fs.existsSync(path.join(ANALYSE, `${id}.${e}`));
   return da('bin') && (da('spektro.webp')||da('spektro.png'))
                    && (da('stereo.webp') ||da('stereo.png'));
+}
+
+/* NACHZUEGLER: Die Bilder fuer den rechten Kanal und die Summe kamen am
+   25.08.2026 dazu (Caspar_D: vier Register). Wer vorher gerechnet wurde,
+   hat sie nicht - und weil die Rohrahmen bewusst NICHT in der .bin
+   liegen (ABLAGE_OHNE, das Bild ersetzt sie), muss dafuer die FFT noch
+   einmal laufen.
+
+   Solche Songs gelten NICHT als offen: Ein normaler Lauf wuerde sonst
+   die ganze Analyse neu schreiben, obwohl nur zwei Bilder fehlen. Sie
+   bekommen einen eigenen Durchgang, der ausschliesslich die fehlenden
+   Dateien anlegt und .bin, .spektro und .stereo nicht anruehrt.
+   (Caspar_D: "das sollte die Vorrechnungspipeline machen und nicht
+   irgendein Skript jetzt mal schnell hier.") */
+function bilderVollstaendig(id){
+  const da = e => fs.existsSync(path.join(ANALYSE, `${id}.${e}`));
+  return (da('rechts.webp')||da('rechts.png')) && (da('summe.webp')||da('summe.png'));
+}
+
+/* PARALLEL UEBER DIE SONGS. Unabhaengige Arbeiten; jeder Kern der
+   Maschine nimmt sich den naechsten. Nicht mehr als Kerne minus eins,
+   damit der Server und die Oberflaeche atmen koennen. (Caspar_D,
+   19.08.2026: "das kann man doch super parallelisieren.") Ein Arbeiter
+   = ein Kindprozess mit diesem Skript und einer ID; so bleibt der
+   Speicher je Song getrennt und ein Absturz reisst nicht alle mit.
+
+   `zusatz` reicht Schalter an die Kinder weiter - so laeuft das
+   Nachrechnen der fehlenden Bilder ueber denselben Weg wie ein voller
+   Lauf, statt daneben noch einmal gebaut zu werden. */
+function arbeiterZahl(){
+  const os = require('node:os');
+  return Math.max(1, Math.min(6, os.cpus().length - 1));
+}
+async function parallelRechnen(aufgaben, zusatz){
+  const PARALLEL = arbeiterZahl();
+  console.log(`  ${PARALLEL} Arbeiter parallel.\n`);
+  const warteschlange = aufgaben.slice();
+  const beginn = Date.now();
+  let getan = 0, schief = 0, laufend = 0;
+  await new Promise((fertigAlle) => {
+    const naechster = () => {
+      if (!warteschlange.length) { if (!laufend) fertigAlle(); return; }
+      const s = warteschlange.shift(); laufend++;
+      const t0 = Date.now();
+      const kind = require('node:child_process').spawn(process.execPath,
+        [__filename, s.id, ...zusatz, '--still'], { cwd: WURZEL, stdio: ['ignore','pipe','pipe'] });
+      let aus = '';
+      kind.stdout.on('data', d => aus += d); kind.stderr.on('data', d => aus += d);
+      kind.on('close', (c) => {
+        laufend--;
+        if (c === 0) getan++; else schief++;
+        /* Wanduhr je FERTIGEM Song, und die ist durch die Parallelitaet
+           schon geteilt - wer hier noch einmal teilt, zeigt 932 min
+           fuer acht. Rest = offene Songs mal Wanduhr je Song. */
+        const proSongWanduhr = (Date.now()-beginn)/Math.max(1,getan+schief)/1000;
+        const rest = Math.round((warteschlange.length + laufend) * proSongWanduhr / 60);
+        console.log(`  ${String(getan+schief).padStart(3)}/${aufgaben.length}  ` +
+          `${((Date.now()-t0)/1000).toFixed(0).padStart(3)} s  ` +
+          `${(s.titel||s.id).slice(0,44).padEnd(44)}  ${c===0?'':'\u2717 '}noch rund ${rest} min`);
+        if (c !== 0 && aus.trim()) console.log('      ' + aus.trim().split('\n').pop().slice(0,90));
+        naechster();
+      });
+    };
+    for (let i = 0; i < PARALLEL; i++) naechster();
+  });
+  console.log(`\n  Fertig: ${getan} gerechnet, ${schief} übersprungen.\n`);
 }
 
 (async function(){
@@ -268,53 +367,49 @@ function fertig(id){
   let liste = Object.values(katalog.songs).filter(s => !s.fremd);
   if (nur) liste = liste.filter(s => s.id === nur);
   const offen = neu ? liste : liste.filter(s => !fertig(s.id));
+  /* Fertige, denen nur die beiden neuen Bilder fehlen. --nur-bilder
+     rechnet ausschliesslich diese und schreibt nichts Vorhandenes um. */
+  const nachzuegler = liste.filter(s => fertig(s.id) && !bilderVollstaendig(s.id));
+  const nurBilder = args.includes('--nur-bilder');
 
-  if (!args.includes('--still'))
-    console.log(`\n  ${liste.length - offen.length} liegen vor, ${offen.length} offen.\n`);
+  if (!args.includes('--still')){
+    console.log(`\n  ${liste.length - offen.length} liegen vor, ${offen.length} offen.`);
+    if (nachzuegler.length)
+      console.log(`  ${nachzuegler.length} davon ohne die Bilder für rechts und Summe`
+        + (nurBilder ? ' — die werden jetzt nachgerechnet.' : ' (node bin/vorrechnen.js --nur-bilder).'));
+    console.log('');
+  }
+
+  if (nurBilder){
+    if (!nachzuegler.length){ console.log('  Nichts nachzurechnen.\n'); return; }
+    if (!nur && nachzuegler.length > 1 && !args.includes('--seriell')){
+      await parallelRechnen(nachzuegler, ['--nur-bilder']);
+      return;
+    }
+    const kern2 = kernLaden();
+    const t00 = Date.now(); let n=0, schief2=0;
+    for (const s of nachzuegler){
+      const t0 = Date.now();
+      try {
+        await einenRechnen(kern2, s.id, s.titel, true);
+        n++;
+        const rest = Math.round((nachzuegler.length-n)*((Date.now()-t00)/n/1000)/60);
+        console.log(`  ${String(n).padStart(3)}/${nachzuegler.length}  `
+          + `${((Date.now()-t0)/1000).toFixed(0).padStart(3)} s  `
+          + `${(s.titel||s.id).slice(0,44).padEnd(44)}  noch rund ${rest} min`);
+      } catch (e){
+        schief2++;
+        console.log(`  ---/${nachzuegler.length}  übersprungen: ${(s.titel||s.id).slice(0,40)} — ${e.message}`);
+      }
+    }
+    console.log(`\n  Fertig: ${n} nachgerechnet, ${schief2} übersprungen.\n`);
+    return;
+  }
 
   if (!offen.length) return;
 
-  /* PARALLEL UEBER DIE SONGS. 321 unabhaengige Arbeiten; jeder Kern
-     der Maschine nimmt sich den naechsten. Nicht mehr als Kerne minus
-     eins, damit der Server und die Oberflaeche atmen koennen. (Caspar_D,
-     19.08.2026: "das kann man doch super parallelisieren.") Ein
-     Arbeiter = ein Kindprozess mit diesem Skript und einer ID; so
-     bleibt der Speicher je Song getrennt und ein Absturz reisst nicht
-     alle mit. */
-  const os = require('node:os');
-  const PARALLEL = Math.max(1, Math.min(6, os.cpus().length - 1));
   if (!nur && offen.length > 1 && !args.includes('--seriell')) {
-    console.log(`  ${PARALLEL} Arbeiter parallel.\n`);
-    const warteschlange = offen.slice();
-    const beginn = Date.now();
-    let getan = 0, schief = 0, laufend = 0;
-    await new Promise((fertigAlle) => {
-      const naechster = () => {
-        if (!warteschlange.length) { if (!laufend) fertigAlle(); return; }
-        const s = warteschlange.shift(); laufend++;
-        const t0 = Date.now();
-        const kind = require('node:child_process').spawn(process.execPath,
-          [__filename, s.id, '--still'], { cwd: WURZEL, stdio: ['ignore','pipe','pipe'] });
-        let aus = '';
-        kind.stdout.on('data', d => aus += d); kind.stderr.on('data', d => aus += d);
-        kind.on('close', (c) => {
-          laufend--;
-          if (c === 0) getan++; else schief++;
-          /* Wanduhr je FERTIGEM Song, und die ist durch die Parallelitaet
-             schon geteilt - wer hier noch einmal teilt, zeigt 932 min
-             fuer acht. Rest = offene Songs mal Wanduhr je Song. */
-          const proSongWanduhr = (Date.now()-beginn)/Math.max(1,getan+schief)/1000;
-          const rest = Math.round((warteschlange.length + laufend) * proSongWanduhr / 60);
-          console.log(`  ${String(getan+schief).padStart(3)}/${offen.length}  ` +
-            `${((Date.now()-t0)/1000).toFixed(0).padStart(3)} s  ` +
-            `${(s.titel||s.id).slice(0,44).padEnd(44)}  ${c===0?'':'✗ '}noch rund ${rest} min`);
-          if (c !== 0 && aus.trim()) console.log('      ' + aus.trim().split('\n').pop().slice(0,90));
-          naechster();
-        });
-      };
-      for (let i = 0; i < PARALLEL; i++) naechster();
-    });
-    console.log(`\n  Fertig: ${getan} gerechnet, ${schief} übersprungen.\n`);
+    await parallelRechnen(offen, []);
     return;
   }
 
