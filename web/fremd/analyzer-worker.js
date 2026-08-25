@@ -422,10 +422,20 @@ function bandVerlauf(left,right,sr){
 
   var aus=new Float32Array(rahmen*BAENDER);
   var re=new Float64Array(N), im=new Float64Array(N);
+  /* NEBENBEI DAS FEINE SPEKTRUM (25.08.2026, Review). Die FFT ist hier
+     ohnehin gerechnet - je Bin die Leistung aufsummiert kostet einen
+     Akkumulator und liefert das, woran die 160 Logbaender scheitern:
+     oberhalb 16 kHz ist ein Logband 700-900 Hz breit, ein Bin aber nur
+     sr/N (~11,7 Hz bei 48 kHz). Daraus rechnet hoehenkante() unten die
+     Tiefpasskante, an der die alte Grenzfrequenz-Karte zu Recht
+     gestorben war (SA_TOT: Deckel 19,57 kHz, nur 12 verschiedene
+     Werte). */
+  var binSumme=new Float64Array(N/2);
   for(var r=0;r<rahmen;r++){
     var off=r*hop;
     for(var i=0;i<N;i++){ var v=(left[off+i]+right[off+i])*0.5; re[i]=v*fenster[i]; im[i]=0; }
     fft(re,im);
+    for(var k2=0;k2<N/2;k2++) binSumme[k2]+=re[k2]*re[k2]+im[k2]*im[k2];
     for(var b=0;b<BAENDER;b++){
       var von=grenzen[b], obn=Math.max(von+1,grenzen[b+1]), s=0;
       for(var k=von;k<obn;k++) s+=re[k]*re[k]+im[k]*im[k];
@@ -433,7 +443,8 @@ function bandVerlauf(left,right,sr){
       aus[r*BAENDER+b]=10*Math.log10(s+1e-20);
     }
   }
-  return {werte:aus, rahmen:rahmen, mitten:mitten, hop:hop/sr};
+  for(var k3=0;k3<N/2;k3++) binSumme[k3]/=rahmen;
+  return {werte:aus, rahmen:rahmen, mitten:mitten, hop:hop/sr, binMittel:binSumme, fftN:N};
 }
 
 function medianVon(a){
@@ -462,6 +473,54 @@ function grenzfrequenz(bv){
   var grenze=bv.mitten[BAENDER-1];
   for(var b=BAENDER-1;b>=0;b--){ if(mittelBand[b]>schwelle){ grenze=bv.mitten[b]; break; } }
   return {hz:grenze, bezugDb:bezug};
+}
+
+/* DIE HOEHENKANTE: bis wohin reichen die Hoehen wirklich (25.08.2026).
+
+   Jedes Suno-Modell und jede Kodierkette schneidet die Hoehen woanders
+   ab, und WIE scharf die Kante faellt, unterscheidet Codec-Tiefpass
+   (steil) von natuerlichem Auslaufen (flach). Gerechnet auf dem
+   mittleren Leistungsspektrum je FFT-Bin (aus bandVerlauf):
+
+   - Bezug ist der Median zwischen 1 und 8 kHz - der Bereich, in dem
+     Musik immer Energie traegt.
+   - Die Kante ist die hoechste Frequenz, deren GEGLAETTETER Pegel noch
+     ueber Bezug - 30 dB liegt. Geglaettet mit einem Median ueber fuenf
+     Bins (~58 Hz), damit nicht ein einzelner stehender Ton (Schimmer,
+     15,7-kHz-Pfeifen) als "Hoehen" durchgeht.
+   - Die Steilheit ist der Pegelabfall im Kilohertz OBERHALB der Kante,
+     in dB/kHz. Ab etwa 20 dB/kHz ist es ein Schnitt, kein Auslaufen.
+
+   Traegt der Bezug selbst fast nichts (unter -80 dB), gibt es keine
+   Aussage - hz bleibt NaN, und die Karte bleibt leer statt falsch. */
+function hoehenkante(binMittel, sr, N){
+  var bins=N/2, proBin=sr/N;
+  var db=new Float64Array(bins);
+  for(var k=0;k<bins;k++) db[k]=10*Math.log10(binMittel[k]+1e-20);
+  /* Median ueber 5 - klein genug, um von Hand zu sortieren */
+  var glatt=new Float64Array(bins);
+  for(var k=0;k<bins;k++){
+    var a=[]; for(var j=Math.max(0,k-2);j<=Math.min(bins-1,k+2);j++) a.push(db[j]);
+    a.sort(function(x,y){return x-y;});
+    glatt[k]=a[a.length>>1];
+  }
+  var bez=[];
+  for(var k=0;k<bins;k++){ var f=k*proBin; if(f>=1000&&f<=8000) bez.push(db[k]); }
+  var bezug=medianVon(bez);
+  if(!isFinite(bezug)||bezug<-80) return {hz:NaN, steil:NaN, bezugDb:bezug};
+  var schwelle=bezug-30, deckel=Math.min(bins-1,Math.floor(sr/2*0.98/proBin));
+  var kante=-1;
+  for(var k=deckel;k>=1;k--){ if(glatt[k]>schwelle){ kante=k; break; } }
+  if(kante<0) return {hz:NaN, steil:NaN, bezugDb:bezug};
+  /* Steilheit: wie tief faellt es im Kilohertz hinter der Kante? */
+  var bisK=Math.min(deckel,kante+Math.round(1000/proBin));
+  var steil=0;
+  if(bisK>kante){
+    var tiefst=glatt[kante];
+    for(var k=kante+1;k<=bisK;k++) if(glatt[k]<tiefst) tiefst=glatt[k];
+    steil=(glatt[kante]-tiefst)/((bisK-kante)*proBin/1000);
+  }
+  return {hz:kante*proBin, steil:steil, bezugDb:bezug};
 }
 
 /* Schimmer: dauerhafte schmale Spitzen.
@@ -615,10 +674,12 @@ onmessage=function(e){
       var BV=bandVerlauf(left,right,sr);
       _tk("bandverlauf");
       var GF=grenzfrequenz(BV);
+      var HK=hoehenkante(BV.binMittel, sr, BV.fftN);
       var SCH=schimmerFinden(BV);
       _tk("schimmer");
 
-      postMessage({type:'norm', grenzHz:GF.hz, schimmer:SCH,
+      postMessage({type:'norm', grenzHz:GF.hz,
+        kanteHz:HK.hz, kanteSteil:HK.steil, schimmer:SCH,
         lufs:LN.integriert, lra:LN.schwankung,
         momentanMax:LN.momentanMax, kurzMax:LN.kurzMax,
         truePeak:tpDb, abtastSpitze:20*Math.log10(Math.max(TP.abtast,1e-10)),

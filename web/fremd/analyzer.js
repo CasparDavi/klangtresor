@@ -706,7 +706,7 @@
   <div class="card"><div class="val" id="v-dc">—</div><div class="lbl">Sitzt die Welle mittig? <i>Gleichspannung</i></div></div>
   <div class="card"><div class="val" id="v-korr">—</div><div class="lbl">Stereo verträglich? <i>Phasenkorrelation</i></div></div>
   <div class="card"><div class="val" id="v-ende">—</div><div class="lbl">Endet er weich? <i>Ende</i></div></div>
-  <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl">Grenzfrequenz</div></div>
+  <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl">Bis wohin reichen die Höhen? <i>Tiefpasskante</i></div></div>
 </div>
 </div>
 <div class="kartenblock">
@@ -1093,7 +1093,15 @@
     'v-harmdense':  'Antwortet umgekehrt: weißes Rauschen 15,8, reiner Sinus 5,0.',
     'v-tilt':       'Stellt 10 Baß-Bins gegen 469 Höhen-Bins; rosa Rauschen gilt als höhenlastig.',
     'v-texture':    'Steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt.',
-    'v-grenz':      'Bei 19,57 kHz gedeckelt und nur 12 verschiedene Werte über die ganze Sammlung.',
+    /* v-grenz stand hier einmal: "Bei 19,57 kHz gedeckelt und nur 12
+       verschiedene Werte über die ganze Sammlung." Die Ursache war das
+       160-Logband-Raster - oberhalb 16 kHz ist ein Band 700-900 Hz
+       breit, und die Bandmitte wurde als Messwert ausgegeben. Seit dem
+       25.08.2026 rechnet hoehenkante() im Worker auf dem mittleren
+       Leistungsspektrum je FFT-Bin (~11,7 Hz Aufloesung) samt
+       Flankensteilheit; die Karte ist wieder zu sehen. Alte Ablagen
+       kennen das Feld nicht - dort bleibt die Karte leer und wird von
+       leereKartenAus verborgen, bis das Vorrechnen den Song neu fasst. */
   };
   /* Die totgelegten Bildabschnitte wurden hier einmal nach ihrer
      Beschriftung ausgeblendet. Sie sind inzwischen ganz entfernt
@@ -2308,7 +2316,9 @@
       v('Phase','positiv', msg.negPhase.toFixed(0)+'% negativ', msg.negPhase>5?1:0,
         msg.negPhase>5?'löscht sich stellenweise':'');
 
-      if(isFinite(msg.grenzHz)) v('obere Grenze','—', (msg.grenzHz/1000).toFixed(1)+' kHz', 0, '');
+      /* Neue Kante, wenn gerechnet; alte Ablagen liefern nur grenzHz. */
+      var obereK=isFinite(msg.kanteHz)?msg.kanteHz:msg.grenzHz;
+      if(isFinite(obereK)) v('obere Grenze','—', (obereK/1000).toFixed(1)+' kHz', 0, '');
       document.getElementById('sa-vergleich').innerHTML=
         tabelleMehrspaltig('bf-vergleich', KOPF, zeilenV, 3);
 
@@ -5818,6 +5828,7 @@
        Rechnen - nachrichtVerarbeiten() bekommt dieselben Nachrichten,
        nur aus einer Datei statt aus dem Worker. */
     async function ablageSpielen(id, d){
+      window._quellname=null;   /* Quelle der Ablage unbekannt - kein MP3-Vermerk */
       var t0=performance.now();
       var r=await fetch('/analyse/'+id+'.bin');
       if(!r.ok) return false;
@@ -5993,6 +6004,10 @@
     async function analyzeFile(input){
       if(!input.files||!input.files[0])return;
       var file=input.files[0];
+      /* Fuer die Hoehenkante: aus einem MP3 gemessen ist sie die
+         Encoderkante, nicht die des Modells. Der Ablageweg setzt das
+         Feld auf null - die Ablage traegt ihre Quelle (noch) nicht. */
+      window._quellname=file.name||null;
 
       // aufraeumen vor jeder neuen Analyse
       if(window._activeWorker){window._activeWorker.terminate();window._activeWorker=null;}
@@ -6271,9 +6286,18 @@
             })();
             window._chartData.momentan=msg.momentan;
             window._chartData.kurz=msg.kurz;
-            /* Merken für die Datenbank und für den MP3/WAV-Vergleich. */
-            setzN('v-grenz', msg.grenzHz>=1000 ? (msg.grenzHz/1000).toFixed(1)+' kHz'
-                                                 : Math.round(msg.grenzHz)+' Hz');
+            /* DIE HOEHENKANTE (25.08.2026): Frequenz plus Charakter.
+               "scharf" ab 20 dB/kHz heisst Schnitt (Codec oder Modell),
+               "weich" heisst natuerliches Auslaufen. Aus einem MP3
+               gemessen traegt der Wert die Encoderkante des MP3s, nicht
+               die des Modells - das steht dann dabei. Alte Ablagen ohne
+               kanteHz lassen die Karte leer; leereKartenAus verbirgt
+               sie dann (nicht gerechnet = nicht da). */
+            if(isFinite(msg.kanteHz)){
+              var mp3Quelle=/\.mp3$/i.test(window._quellname||'');
+              setzN('v-grenz', (msg.kanteHz/1000).toFixed(1)+' kHz · '
+                +(msg.kanteSteil>=20?'scharf':'weich')+(mp3Quelle?' (MP3)':''));
+            } else setzN('v-grenz','—');
             window._normwerte=msg;
             befundeZeigen(msg);
             leereKartenNachlauf();             /* Karten ohne Wert verschwinden - erst, wenn alles da ist */
