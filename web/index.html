@@ -13376,7 +13376,7 @@ async function latenzMessen(){
   const liefMusik = !audio.paused;
   if (liefMusik) audio.pause();
 
-  let strom = null, ctx = null;
+  let strom = null, ctx = null, merkQuelle = null, merkStelle = 0;
   try {
     sagen('Mikrofon…');
     strom = await navigator.mediaDevices.getUserMedia({ audio: {
@@ -13474,8 +13474,24 @@ async function latenzMessen(){
     const ganz = new Float32Array(Math.round(sr * (STILLE_S + 1.0)));
     ganz.set(muster, Math.round(sr * STILLE_S));
     const url = URL.createObjectURL(bau(ganz));
-    const klick = new Audio(url);
-    klick.volume = 1;
+
+    /* DURCH DENSELBEN KANAL WIE DIE MUSIK (Caspar_D, 26.08.2026: „wieso
+       speist du es nicht in den Musikaudiokanal ein und dimmst die
+       Musik für den Augenblick").
+
+       Einspeisen im Sinne von Mischen geht nicht: Dazu muesste die
+       Musik durch einen Web-Audio-Graphen, und der kennt AirPlay nicht
+       - sie kaeme dann selbst aus dem iMac. Die Absicht dahinter
+       stimmt aber, und es gibt einen Weg: DAS ELEMENT, das die Musik
+       spielt, nimmt fuer einen Augenblick den Pruefton. Ein zweites
+       <audio> half nicht - AirPlay haengt an dem einen Element, das der
+       Benutzer gestartet hat, nicht an der App.
+
+       Stelle und Quelle werden vorher gemerkt und danach wieder
+       hergestellt; die Musik war ohnehin angehalten. */
+    merkQuelle = audio.src; merkStelle = audio.currentTime;
+    const klick = audio;
+    audio.src = url;
     await new Promise((f,x) => { klick.oncanplaythrough = f;
       klick.onerror = () => x(new Error('Prüfton nicht ladbar')); klick.load(); });
 
@@ -13527,6 +13543,14 @@ async function latenzMessen(){
     sagen('ging nicht');
     console.warn('Latenzmessung fehlgeschlagen:', e.message);
   } finally {
+    /* Die Musik zurueck an ihre Stelle - erst die Quelle, dann die
+       Position, sonst setzt das Element sie beim Laden auf null. */
+    if (typeof merkQuelle === 'string' && merkQuelle && audio.src !== merkQuelle){
+      audio.src = merkQuelle;
+      await new Promise(f => { const g = () => { audio.removeEventListener('loadedmetadata', g); f(); };
+        audio.addEventListener('loadedmetadata', g); audio.load(); setTimeout(f, 2000); });
+      try { audio.currentTime = merkStelle; } catch(_){}
+    }
     if (strom) strom.getTracks().forEach(s => s.stop());
     /* Nur einen selbst erzeugten Kontext schliessen - der Hoerer-Graph
        traegt die Musik und muss stehen bleiben. */
