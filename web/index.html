@@ -13366,7 +13366,15 @@ let bVersatz = parseInt(localStorage.getItem('mysuno-versatz'), 10) || 0;
    Ausgabeton aus dem Mikrofonsignal zu entfernen - also das, was wir
    suchen. Mit ihr an misst man nichts.
 
-   NUR MIT LAUTSPRECHERN. Bei Kopfhoerern hoert das Mikrofon nichts. */
+   NUR MIT LAUTSPRECHERN. Bei Kopfhoerern hoert das Mikrofon nichts.
+
+   GEMESSEN AM 26.08.2026, an Caspar_Ds Aufbau:
+     ueber die HomePods (AirPlay 2)      2079 ms
+     ueber den eingebauten Lautsprecher   111 ms
+   Die Differenz, 1968 ms, ist die reine Funkverzoegerung; die 111 ms
+   sind der Eigenanteil des Messwegs - Mikrofoneingang, Schallweg,
+   lokale Ausgabe. Wer es genau will, misst zweimal und zieht ab. Fuer
+   die Anzeige genuegte der volle Wert: „funktioniert prima." */
 async function latenzMessen(){
   const knopf = $('bmessen');
   const sagen = (txt) => { const a=$('versatzText'); if(a) a.textContent = txt; };
