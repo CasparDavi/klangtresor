@@ -264,6 +264,36 @@ erste gewinnt immer."*
 > `../SunoArchive-privat/`, mit einem eigenen Zweig `vor-tonart-ausbau`
 > für den Stand davor.
 
+**14 · Der Schimmer maß das Bandraster, nicht den Ton.** `bandVerlauf()`
+legt 160 logarithmische Bänder über eine FFT mit 4096 Punkten und nimmt
+je Band die MITTLERE Leistung aller enthaltenen Bins. Ein Bin ist 10,8 Hz
+breit, ein Band aber 4,4 % — also 1 Bin bei 450 Hz, 4 bei 1 kHz, 31 bei
+8 kHz, 63 bei 16 kHz. Ein schmaler Ton wird um 10·log10(Binzahl)
+verdünnt, sein Nachbarschaftspegel nicht. Kunstsignal mit überall +32 dB
+echter Hervorhebung: gemeldet wurden 500 Hz +22,6 · 2000 Hz +18,5 ·
+4000 Hz +15,2 · 8000 Hz +12,4 · 12000 Hz +10,4 dB. Der echte Dauerton in
+„Remix Mich" bei 7999,6 Hz (+12,2 dB in 88 % des Songs, unabhängig mit
+ffmpeg-Bandpaß belegt) erschien in 0 % der Rahmen.
+
+> **Gelöst (23.08.2026):** `SA_SCHIMMER_TOT = true`. Die Begründung steht
+> im Code selbst: *„Sie finden Musik, keine Störung — 137 von 137
+> Befunden bis 6 kHz liegen auf einer Note, und die gemeldeten dB sind
+> ein Rechenartefakt."* Ersatz ist `bin/stoerfrequenz.js` mit 2,7 Hz
+> Auflösung; es läuft als Schritt der Morgenroutine, hat alle 321 Songs
+> vermessen, und seine Funde stehen im Glockenstuhl des Tonstudios.
+>
+> **Die Bandrechnung selbst bleibt.** Sie trägt außerdem die
+> Grenzfrequenz (`grenzfrequenz()` mittelt über `bv.werte`), und dort
+> stört das grobe Raster nicht: Gesucht wird ein breitbandiger Abfall,
+> kein schmaler Ton. Die Höhenkante nimmt ohnehin die feinen Bins
+> (`bv.binMittel`).
+>
+> **Rest:** `schimmerFinden()` rechnet weiter bei jeder Analyse, obwohl
+> niemand das Ergebnis mehr liest — nach der Regel vom 25.08.2026 („nichts
+> mehr totlegen ohne den Code mitzulöschen") gehört es weg. Steht noch
+> an, weil zum Zeitpunkt der Prüfung der Nachrechnungslauf für die
+> Spektrogramme auf genau diesem Rechenkern lief.
+
 ## Alle Funde, nach Schwere
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
@@ -276,17 +306,6 @@ erste gewinnt immer."*
 **Vorschlag:** Der Weg ist kurz, weil die Bildmathematik schon geteilt ist: `bin/vorrechnen.js` lädt `web/fremd/analyzer-worker.js` mit `new Function` und rechnet dieselben Bildpunkte, die der Browser rechnen würde — es gibt keine zweite Fassung, die auseinanderlaufen könnte. Zwei weitere Bilder je Song, `<id>.rechts.webp` und `<id>.summe.webp`, und der Analyzer lädt sie wie die anderen beiden. Eigene Meßreihen braucht es dafür nicht: Aus dem linken Kanal und der Seitenlage `p` folgt `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`, bei einer Auflösung von 1/127 für p mit einem Fehler unter 0,2 dB. Kosten: rund 5 MB je Song mehr in `library/analyse/`.
 
 **Berichtigung (25.08.2026):** Hier stand zuerst, die Spektrogramm-Rahmen seien nach dem Zeichnen weg und deshalb liefe der Zoom ins Leere. Das erste stimmt — `window._chartData.fft.frames` ist bei aus der Ablage geladenen Songs undefiniert —, das zweite nicht: Genau für diesen Fall gibt es den `ohneRoh`-Zweig in `_drawSpectrogramFromFrames` (`analyzer.js`:6801). Er zeichnet aus `window._pufferFlaechen`, den Flächen aus den gespeicherten Bildern, und zwar ausschnittweise nach `viewStart`/`viewEnd` — der Zoom arbeitet also über die Bilder, in mehreren Auflösungsstufen bis 16383 px Breite. Daß die Rohdaten nach dem Zeichnen fallen, ist Absicht und kein Fehler.
-
-### 14. Frequenzauflösung: ein Ton wird über bis zu 63 FFT-Bins verschmiert — die gemessene Hervorhebung hängt an der Frequenz, nicht am Ton
-**hoch** · `analyzer-worker.js`:459
-
-**Fehler:** bandVerlauf() rechnet mit N=4096 (Zeile 459) und legt 160 logarithmische Bänder darüber (Zeile 444). Je Band wird die MITTLERE Leistung aller enthaltenen Bins genommen (Zeile 476-478: 's/=(obn-von)'). Bei 44,1 kHz ist ein Bin 10,8 Hz breit, ein Band aber 4,4 %: 1 Bin bei 450 Hz, 4 bei 1 kHz, 31 bei 8 kHz, 63 bei 16 kHz. Die Energie eines schmalen Tons wird also mit 10·log10(Binzahl) verdünnt, der Nachbarschaftspegel dagegen nicht. Was der Kern 'Hervorhebung' nennt, ist damit zu einem großen Teil eine Eigenschaft des Bandrasters.
-
-**Beleg:** Kunstsignal (weißes Rauschen + Sinus fester Amplitude, 40 s, 44,1 kHz): die echte schmalbandige Hervorhebung ist überall +32 dB. Der Kern meldet: 500 Hz +22,6 dB · 2000 Hz +18,5 dB · 4000 Hz +15,2 dB · 8000 Hz +12,4 dB · 12000 Hz +10,4 dB. Gemessene Bandbreiten: 2 / 8 / 16 / 31 / 49 Bins. Im echten Song ('Morgen', Referenz sauber, Sinus zugemischt) muss ein Dauerton erreichen: +14 dB bei 500 Hz, +16 dB bei 1 kHz, +19 dB bei 3150 Hz, +22 dB bei 8 kHz, +26 dB bei 12,5 kHz, bevor er überhaupt gemeldet wird.
-
-**Wirkung:** Der echte Dauerton in 'Remix Mich' (7999,6 Hz) ist unsichtbar: Referenz +12,2 dB in 88 % des Songs, im Bandverfahren liegt er in Band 7905 Hz mit 0 % der Rahmen. Ebenso in 'Die Gedanken ...' (7999,6 Hz, +13,2 dB, 84 % → 1 %). Der Ton ist echt und unabhängig belegt: ffmpeg-Bandpass (20 Hz breit) über audio.wav ergibt 7999,6 Hz = −48,6 dB gegen −53,0/−52,2/−56,4/−57,3 dB bei 7400/7700/8300/8600 Hz; im MP3 dasselbe Bild. Er steckt also im Material, nicht im Kodierer.
-
-**Vorschlag:** Für die Schimmersuche eine eigene, feine FFT rechnen (16384 Punkte = 2,7 Hz, wie bin/stoerfrequenz.js) statt das 160-Band-Raster mitzubenutzen. Ersatzweise je Band den SPITZENWERT statt des Mittelwerts nehmen — dann bleibt wenigstens die Verdünnung aus, die Frequenzangabe bleibt aber grob.
 
 ### 15. Die angezeigte dB-Zahl ist ein bedingter Mittelwert und kann strukturell nie klein werden
 **hoch** · `analyzer-worker.js`:542
