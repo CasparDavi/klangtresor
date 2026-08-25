@@ -364,6 +364,42 @@ gerechnet werden.
 `bandVerlauf` mit Grenzfrequenz und Höhenkante, die ganze
 Lautheitsrechnung nach EBU R128.
 
+## Mit dem Rechenkern-Schnitt gegenstandslos geworden
+
+Fünfzehn Befunde beschreiben Größen, die es seit dem 25.08.2026 nicht
+mehr gibt. Sie sind nicht repariert worden — sie sind mit ihren Karten
+und ihrer Rechnung gefallen, weil aus falschen Zahlen nichts Richtiges
+zu machen war und niemand sie mehr las:
+
+  **18** · Centroid im Index stammt aus einem einzigen 43-ms-Fenster bei 30 % der Spieldauer
+  **19** · Rolloff summiert Amplituden statt Leistung - unter dem gemeldeten Wert liegen 94 bis 99 % der Energie, nicht 85 %
+  **20** · Akkordwechsel/s zählt Rahmenflimmern und hängt an der Schrittweite der FFT-Runde
+  **21** · Textur-Index steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt
+  **22** · Inharmonizität kann nicht messen, was sie heißt: das Suchfenster ist immer genau ein Bin breit
+  **24** · Harmonische Dichte antwortet umgekehrt: weißes Rauschen 15,8 statt ~0, reiner Sinus 5,0 statt 1
+  **25** · Attack bleibt bei 297 von 321 Songs leer; die 24 gefüllten Werte gehen bis 19 Sekunden auf einer 0-500-ms-Skala
+  **26** · Die Tempo-Karte zeigt den schlechtesten der drei Schätzer, der Erklärungstext nennt ihn den robustesten
+  **27** · Tonhöhe wird auf ein Raster von 23,4 Hz gerundet - nur 15 verschiedene f0-Werte für 321 Songs
+  **28** · Der f0-Median wird über alle Fenster gebildet, auch über die rein instrumentalen
+  **31** · Die Tonhöhenspur hat 46,9 Hz Auflösung, und der Hilfetext beschreibt eine Funktion, die es nicht gibt
+  **46** · Spektral-Tilt stellt 10 Bass-Bins gegen 469 Höhen-Bins - rosa Rauschen gilt als treblelastig
+  **48** · Noten-Stabilität wird durch den längsten Lauf DESSELBEN Songs geteilt und ist deshalb zwischen Songs nicht vergleichbar
+  **50** · Harmonizität ist mit Faktor 4 überstreckt und steht bei 70 % der Rahmen am Anschlag
+  **52** · Lücken in der Tonhöhenspur werden mit erfundenen Werten gefüllt
+
+Die Belege stehen weiter in der Historie (Commits `4518334` für die
+Anzeigeseite und `fcc9354` für den Rechenkern) und, wo sie eine
+Entscheidung tragen, als Kommentar an der Stelle, wo die Rechnung stand.
+Der Sammelkommentar an der Stelle von `SA_TOT` nennt für jede der zehn
+Karten in einer Zeile, was an ihr falsch war.
+
+**Ausdrücklich NICHT erledigt** sind zwei, die in derselben Suche
+auftauchten: Befund **49** (fast alles wird nur aus dem linken Kanal
+gerechnet — `var ch = left` steht unverändert in `analyzer-worker.js`:572
+und trägt weiterhin Hüllkurve, Anschläge und Energierahmen) und Befund
+**61** (Stereobreite richtig gerechnet, aber als Prozentwert
+beschriftet).
+
 ## Alle Funde, nach Schwere
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
@@ -376,116 +412,6 @@ Lautheitsrechnung nach EBU R128.
 **Vorschlag:** Der Weg ist kurz, weil die Bildmathematik schon geteilt ist: `bin/vorrechnen.js` lädt `web/fremd/analyzer-worker.js` mit `new Function` und rechnet dieselben Bildpunkte, die der Browser rechnen würde — es gibt keine zweite Fassung, die auseinanderlaufen könnte. Zwei weitere Bilder je Song, `<id>.rechts.webp` und `<id>.summe.webp`, und der Analyzer lädt sie wie die anderen beiden. Eigene Meßreihen braucht es dafür nicht: Aus dem linken Kanal und der Seitenlage `p` folgt `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`, bei einer Auflösung von 1/127 für p mit einem Fehler unter 0,2 dB. Kosten: rund 5 MB je Song mehr in `library/analyse/`.
 
 **Berichtigung (25.08.2026):** Hier stand zuerst, die Spektrogramm-Rahmen seien nach dem Zeichnen weg und deshalb liefe der Zoom ins Leere. Das erste stimmt — `window._chartData.fft.frames` ist bei aus der Ablage geladenen Songs undefiniert —, das zweite nicht: Genau für diesen Fall gibt es den `ohneRoh`-Zweig in `_drawSpectrogramFromFrames` (`analyzer.js`:6801). Er zeichnet aus `window._pufferFlaechen`, den Flächen aus den gespeicherten Bildern, und zwar ausschnittweise nach `viewStart`/`viewEnd` — der Zoom arbeitet also über die Bilder, in mehreren Auflösungsstufen bis 16383 px Breite. Daß die Rohdaten nach dem Zeichnen fallen, ist Absicht und kein Fehler.
-
-### 18. Centroid im Index stammt aus einem einzigen 43-ms-Fenster bei 30 % der Spieldauer
-**hoch** · `analyzer-worker.js`:707
-
-**Fehler:** Die scalars-Nachricht rechnet Centroid und Rolloff aus GENAU EINER FFT von 2048 Werten, gelegt bei 30 % der Spieldauer: 'var fftSize=2048,mid=Math.floor(n*0.3); var magC=rfft(ch,mid,fftSize);'. Das sind 43 ms aus einem Song von vier Minuten. Ein Klangfarbenmaß ist ein Mittel über die Zeit; hier wird stattdessen eine Momentaufnahme genommen, die zufällig auf eine Pause, einen Beckenschlag oder eine Basstrommel fallen kann. bin/analyse-index.js:64 schreibt genau diesen Wert als 'centroid' in library/analyse-index.json - die Datei, die laut ihrem eigenen Kopf zum Sortieren und Filtern da ist. Die Oberfläche zeigt in derselben Karte einen anderen Wert: analyzer.js:5762 überschreibt den Ein-Fenster-Wert später mit dem Mittel über alle Rahmen. Zwei Zahlen, ein Name.
-
-**Beleg:** Vergleich Ein-Fenster-Wert gegen Mittel über alle Rahmen (12 Songs, WAV-Quelle): 'Ulrich & Ännchen' 581 Hz statt 1382 Hz; 'Das Bild - Ich komme' 6151 Hz statt 2191 Hz; 'Checkout um Zwölf' 6787 Hz statt 3369 Hz. Verhältnis Ein-Fenster zu Rahmenmittel: 0,33 bis 2,15 - Streuung Faktor 6,5. Dasselbe Fenster eine Sekunde später verschoben: 'Das Bild' 6151 -> 1105 Hz, 'Ich betrachte uns' 1228 -> 683 Hz. Über 200 zufällige Fenster desselben Songs: p10 614 Hz, p50 2067 Hz, p90 4821 Hz. Elf der zwölf Indexwerte stimmen auf die Stelle genau mit dem nachgerechneten Ein-Fenster-Wert überein - der Mechanismus ist damit belegt.
-
-**Wirkung:** Der Centroid im Analyse-Index ist ein Losentscheid. Jede Sortierung, jeder Songvergleich und jede Ähnlichkeitsrechnung, die diese Zahl benutzt, ordnet nach dem Zufall der 30-%-Stelle. Zusätzlich zeigen Karte und Index verschiedene Werte für dasselbe Feld.
-
-**Vorschlag:** Den Ein-Fenster-Block streichen und die scalars-Nachricht denselben Rahmenmittelwert schicken, den die FFT-Runden ohnehin liefern (meanCentroid/meanRolloff, Zeile 1096). Rahmen unter einer Energieschwelle dabei ausschließen, sonst zählt Stille mit.
-
-### 19. Rolloff summiert Amplituden statt Leistung - unter dem gemeldeten Wert liegen 94 bis 99 % der Energie, nicht 85 %
-**hoch** · `analyzer-worker.js`:1068
-
-**Fehler:** Der Schwellwert wird aus der Summe der BETRÄGE gebildet ('thr3=tot2*0.85' mit tot2=cden2, und cden2 ist die Summe von mag[k]), und aufsummiert wird ebenfalls mag[k]. Der Erklärungstext in analyzer.js:7558 sagt aber ausdrücklich 'Frequenz unterhalb derer 85% der Spektralenergie liegt'. Energie ist mag². Mit der Amplitudensumme zählt jedes Bin mit der Wurzel seiner Leistung - ein breites, leises Höhenband aus mehreren hundert Bins schlägt einen lauten, schmalen Bass. Bei fftSize 1024 und 48 kHz liegen 469 der 512 Bins über 2 kHz; die Grenze wandert deshalb in die Mitte der BIN-Achse statt dorthin, wo die Energie sitzt. Derselbe Fehler steht in der Ein-Fenster-Fassung in Zeile 713.
-
-**Beleg:** Für jeden der 12 Songs habe ich das mittlere Leistungsspektrum (FFT 4096, ganzer Song) gerechnet und nachgesehen, wieviel Energie tatsächlich unter dem gemeldeten Rolloff liegt: 94,2 / 97,3 / 97,0 / 99,0 / 97,1 / 98,0 / 97,4 / 98,6 / 97,9 / 99,4 / 96,9 / 99,0 Prozent - nie 85. Der echte 85-%-Energiepunkt liegt weit tiefer: 'Wenn das Licht geht' 1090 Hz statt gemeldeter 8072 Hz (Faktor 7,4); 'Waldesrauschen' 480 statt 1395 Hz; 'Erweckt v2' 1055 statt 8223 Hz. Gegenprobe mit weißem Rauschen (flaches Spektrum, dort sind Amplituden- und Leistungssumme gleichwertig): der Kern meldet 20390 Hz, rechnerisch richtig sind 20400 Hz - die Formel stimmt also nur für ein flaches Spektrum, also für kein Musikstück.
-
-**Wirkung:** Die Karte 'Rolloff Hz' meldet für jeden Song eine Frequenz, die zwei- bis siebenmal zu hoch liegt, und die Skala ('4-14 kHz Normalbereich') ist auf diese zu hohen Werte eingestellt. Der Wert misst nicht die Klanghelligkeit, sondern hauptsächlich die Breite des Rauschteppichs.
-
-**Vorschlag:** Über mag[k]*mag[k] summieren und die Bezugsgröße in den Erklärungstext schreiben ('85 % der Leistung'). Danach die Skalengrenzen in cardScales.rolloff neu setzen - die alten passen dann nicht mehr.
-
-### 20. Akkordwechsel/s zählt Rahmenflimmern und hängt an der Schrittweite der FFT-Runde
-**hoch** · `analyzer-worker.js`:1129
-
-**Fehler:** Für jeden einzelnen FFT-Rahmen wird aus einem 1024er-Chroma unabhängig der beste von 24 Dreiklängen gewählt; jeder Unterschied zum Vorrahmen zählt als Akkordwechsel (Zeile 1127). In der letzten Runde ist der Schritt 256 Werte = 5,3 ms, also 187 Rahmen je Sekunde. Was gezählt wird, ist damit nicht Harmonik, sondern das Zittern des Chroma von Rahmen zu Rahmen. Weil die Größe in jeder der fünf Runden neu gerechnet wird (Zeile 962: hop 8192, 4096, 2048, 1024, 256) und die Anzeige nach jeder Runde überschrieben wird, hängt die gezeigte Zahl allein daran, welche Runde zuletzt fertig war.
-
-**Beleg:** Derselbe Song, fünf Runden: 'Ich betrachte uns' 1,02 -> 1,78 -> 3,03 -> 5,03 -> 14,83 Wechsel/s; 'Ik will …' 2,80 -> 5,39 -> 9,59 -> 18,09 -> 54,65. Der Wert wächst fast genau mit 1/Schrittweite. Über alle 321 Songs (letzte Runde, das ist der gespeicherte Wert): min 2,56, p50 20,0, max 62,1 Wechsel je Sekunde. Die Skala der Karte (cardScales['chord-rate']) reicht von 0 bis 2 mit p95=1,5 - kein einziger der 321 Songs liegt im Anzeigebereich.
-
-**Wirkung:** Die Karte 'Akkordwechsel/s' zeigt für jeden Song eine physikalisch unmögliche Zahl (20 Akkorde je Sekunde im Mittel) und der Zeiger steht bei allen 321 Songs am rechten Anschlag. Die Größe geht außerdem mit 20 % Gewicht in den Textur-Index ein und sprengt ihn dort.
-
-**Vorschlag:** Den Akkord nicht je Rahmen bestimmen, sondern über ein Fenster von etwa einer halben bis einer Sekunde mitteln, und einen Wechsel erst zählen, wenn der neue Akkord mehrere Fenster lang hält. Dann ist das Ergebnis von der Rundenschrittweite unabhängig.
-
-### 21. Textur-Index steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt
-**hoch** · `analyzer.js`:5773
-
-**Fehler:** 'var texture=Math.round((sc.entropy*0.4+(1-meanHarm)*0.4+sc.chordRate/2*0.2)*100); texture=Math.min(100,texture);' - der dritte Summand teilt die Akkordrate durch 2, unterstellt also einen Wertebereich 0..2 Wechsel/s. Tatsächlich liegt die Akkordrate zwischen 2,6 und 62,1. Allein dieser Summand ergibt im Mittel 2,0 statt höchstens 0,2 und schiebt die Summe über den Deckel. Die beiden anderen Anteile, um die es eigentlich geht, sind damit wirkungslos. Zusätzlich stimmt der Erklärungstext (analyzer.js:7564) nicht mit dem Code überein: er nennt 'Inharmonizität (40%)', gerechnet wird (1-meanHarm), also die Gegen-Harmonizität aus harmArr.
-
-**Beleg:** Rohwert der Formel vor Math.min für alle 321 Songs aus den gespeicherten Analysen: min 42 %, p10 99 %, p50 220 %, p90 398 %, max 653 %. Auf 100 geklemmt werden 286 von 321 Songs = 89 %. Von den 12 nachgerechneten Songs zeigen 10 exakt '100 %', nur '1 Unter der Haut IV' (80 %) und 'Waldesrauschen' (97 %) liegen darunter.
-
-**Wirkung:** Die Karte 'Textur-Index' sagt bei neun von zehn Songs dasselbe ('100 %', Skalentext 'extrem dicht') und unterscheidet damit nichts mehr - auch nicht zwischen 'Ulrich & Ännchen' (mittelalterliche Ballade) und 'Asche und Staub' (Metal).
-
-**Vorschlag:** Die Akkordrate zuerst reparieren, dann durch einen Wert teilen, der zum reparierten Bereich paßt, und den Erklärungstext auf die tatsächlich benutzte Größe umschreiben. Wenn ein Anteil geklemmt werden muß, gehört die Klemme auf den einzelnen Summanden, nicht auf die Summe.
-
-### 22. Inharmonizität kann nicht messen, was sie heißt: das Suchfenster ist immer genau ein Bin breit
-**hoch** · `analyzer-worker.js`:1052
-
-**Fehler:** 'var searchW=Math.max(1,Math.round(f0bin*0.1));' - bei fftSize 1024 liegt der Tonhöhen-Bin f0bin zwischen 2 und 13 (hpsPitch sucht nur zwischen 80 und 600 Hz, Zeile 97), also ist f0bin*0.1 immer unter 1,35 und searchW immer genau 1. Der Beitrag jedes Teiltons kann deshalb nur 0 oder 1/(f0bin*h) sein - eine Treppe, die allein vom Tonhöhen-Bin abhängt, nicht vom Klang. Was Inharmonizität physikalisch bedeutet (f_h = h*f0*sqrt(1+B*h²), Saitensteifigkeit) kommt in der Formel nicht vor. Dazu: der 'Gipfel' ist einfach das größte von drei benachbarten Bins - bei Rauschen ein Münzwurf.
-
-**Beleg:** Prüfung mit Signalen, deren Antwort feststeht (30 s, 48 kHz): reiner Sinus 220 Hz -> Anzeige 122,7 (richtig wäre 0, ein Sinus hat keine Obertöne). Sägezahn 220 Hz mit 16 exakt ganzzahligen Teiltönen -> 49,1 (richtig wäre 0). Über alle 321 Songs liegen die Werte in dem engen Band 59,5 bis 93,1 - genau in dem Bereich, den die Bin-Treppe für f0bin 2 bis 4 vorgibt (122,7 / 81,8 / 61,4). Die Anzeige (analyzer.js:5765) rechnet iv=sc.inharm*1000 und setzt den Zeiger auf Math.min(100, iv*5); ab iv=20 steht er am Anschlag - bei allen 321 Songs.
-
-**Wirkung:** Die Karte 'Inharmonizität' liefert für jeden Song eine Zahl um 75 und einen Zeiger am rechten Anschlag mit dem Text 'extrem inharmonisch'. Die Größe entscheidet außerdem in der Instrumentenerkennung (analyzer.js ab 4720: 'if(inharmMed>0.03&&inharmMed<0.12) guitarScore+=2') über Gitarre/Klavier/Synthesizer, obwohl sie nur die Tonhöhenlage kennt.
-
-**Vorschlag:** Ohne feinere Frequenzauflösung ist die Größe nicht zu retten. Entweder mit deutlich größerer FFT und Parabel-Interpolation des Gipfels rechnen (dann wird die Abweichung ein Bruchteil eines Bins statt 0 oder 1), oder die Karte streichen, bis das da ist.
-
-### 24. Harmonische Dichte antwortet umgekehrt: weißes Rauschen 15,8 statt ~0, reiner Sinus 5,0 statt 1
-**hoch** · `analyzer-worker.js`:1086
-
-**Fehler:** 'for(var h=1;h<=16;h++){var hb=Math.round(f0bin*h); if(mag[hb]>noiseFloor) harmDens++;}' mit noiseFloor=mag[f0bin]*0.1. Gezählt wird also, wie viele von 16 Bins über einem Zehntel des Grundton-Bins liegen. Bei f0bin=2 sind das die Bins 2, 4, 6, ..., 32 - ein Kamm über das untere Ende des Spektrums, kein Obertonsatz. Ein Signal mit gleichmäßig verteilter Energie erfüllt die Bedingung an jeder Stelle und bekommt deshalb den Höchstwert; ein reiner Sinus bekommt mehrere Treffer, weil das Hann-Fenster in die Nachbarbins streut. Die Größe zählt Spektraldichte, nicht Obertöne.
-
-**Beleg:** Prüfsignale, 30 s, 48 kHz: weißes Rauschen -> 15,83 von 16 (der Erklärungstext analyzer.js:7569 sagt 'weißes Rauschen ≈ 0'); reiner Sinus 220 Hz -> 5,00 (Text: 'Sinuston = 1'); Sägezahn 220 Hz mit genau 16 Teiltönen -> 3,00 (richtig wären 16). Über alle 321 Songs: 4,3 bis 12,0 - der Bereich, in dem dichte Mischungen liegen.
-
-**Wirkung:** Die Karte 'Harmonische Dichte' zeigt das Gegenteil dessen, was ihr Erklärungstext verspricht: je rauschiger, desto höher. Sie geht mit in die Instrumentenerkennung (analyzer.js 4696 ff.) und verdreht dort die Entscheidung zwischen Schlagzeug, Orgel und Sinusflächen.
-
-**Vorschlag:** Den Grundton erst genau bestimmen, dann je Teilton den Gipfel im Umfeld suchen und ihn gegen den örtlichen Rauschboden im Umfeld prüfen, nicht gegen den Grundton. Ohne brauchbaren Grundton kann die Größe nicht funktionieren.
-
-### 25. Attack bleibt bei 297 von 321 Songs leer; die 24 gefüllten Werte gehen bis 19 Sekunden auf einer 0-500-ms-Skala
-**hoch** · `analyzer.js`:5808
-
-**Fehler:** Gesucht wird der erste Anstieg von 10 % auf 90 % - aber der Bezug ist der GRÖSSTE Energierahmen des ganzen Songs ('var peak' über die vollständige energy-Reihe), und gesucht wird nur in den ersten 400 Rahmen = 20 Sekunden. Der lauteste Moment eines Songs liegt fast nie in den ersten zwanzig Sekunden; also wird t90 nie gefunden und die Bedingung 't10>=0&&t90>t10' scheitert. Wo sie doch greift, mißt man nicht den Anschlag eines Tons, sondern wie lange das Intro braucht - in Rasterschritten von 50 ms. Dieselbe Rechnung steht zweimal im Code (5658 ff. und 5792 ff.).
-
-**Beleg:** Nachgerechnet mit den gespeicherten Hüllkurven aller 321 Songs, exakt nach dem Code der Oberfläche: gefüllt bei 24 Songs, leer bei 297. Die 24 Werte lauten 50, 600, 800, 1050, 1100, 1200, 1450, 1600, 1700, 2250, 4300, 4550, 5300, 6700, 6700, 7650, 8200, 8400, 10250, 13250, 15700, 16100, 17700, 19100 ms. Die Skala der Karte (cardScales.attack) reicht von 0 bis 500 ms; 23 der 24 Werte liegen darüber. Bei allen 12 einzeln nachgerechneten Songs bleibt die Karte leer.
-
-**Wirkung:** Die Karte 'Attack ms' steht bei 93 % der Songs auf '—'. Wo sie etwas zeigt, ist es die Intro-Länge in Sekunden, nicht eine Anschlagzeit. Der Wert geht außerdem in die Instrumentenerkennung ein (analyzer.js 4691: 'if(attackMs>0&&attackMs<40) drumScore+=2') - dort ist er praktisch immer 0 und stimmt für kein Instrument.
-
-**Vorschlag:** Nicht den Songgipfel als Bezug nehmen, sondern je erkanntem Einsatz den örtlichen Gipfel, und über alle Einsätze mitteln. Dafür braucht es eine feinere Hüllkurve als 50 ms - die envStep-Kurve mit 10 ms liegt schon vor (analyzer-worker.js:665).
-
-### 26. Die Tempo-Karte zeigt den schlechtesten der drei Schätzer, der Erklärungstext nennt ihn den robustesten
-**hoch** · `analyzer.js`:5688
-
-**Fehler:** Die Karte wird zuletzt aus dem Median der IOI-Median-Kurve gesetzt. Deren Verfahren (analyzer-worker.js ab 826) sucht Gipfel in einer 20-ms-Energiekurve mit Mindestabstand 10 Rahmen und behält nur Abstände zwischen 50 und 200 BPM. Damit zählt es nicht Taktschläge, sondern Notendichte: Achtel und Sechzehntel fallen in dasselbe Fenster und ziehen den Median in die Mitte des erlaubten Bereichs. Der Erklärungstext (analyzer.js:7553) nennt dieses Verfahren 'Robustester der drei Algorithmen'.
-
-**Beleg:** Gegen Sunos eigene Schlagzeiten (Feld 'schlaege', Tempo = 60/Median der Abstände), 306 taktfeste Songs: Autokorrelationswert (scalars.bpm, steht im Index) 165 richtig auf ±3 % = 53,9 %; IOI-Median (steht auf der Karte) 81 richtig = 26,5 %. Betrag der relativen Abweichung p50: Autokorrelation 1,2 %, IOI 20,0 %. Die 173 IOI-Fehlschläge häufen sich bei 110-140 BPM unabhängig vom wahren Tempo (Suno-Median 104, IOI-Median 126). Beispiele: 'Mensch Mädel' Suno 84,2 - Karte 152,5; 'Digitale ID' Suno 96,4 - Karte 141,1; 'Abend im Park' Suno 73,9 - Karte 105,1.
-
-**Wirkung:** Drei von vier Tempoangaben auf der Karte sind falsch, und der zuverlässigere Wert liegt im selben Programm bereits vor. Außerdem stehen auf Karte und im Index verschiedene Tempi für denselben Song ('Waldesrauschen': Karte 80,8, Index 60,0, Suno 120,0).
-
-**Vorschlag:** Wo Sunos schlaege vorliegen (321 von 321 Songs, 306 taktfest), das Tempo daraus nehmen - das tut bin/katalog.js:100 als taktBpm bereits. Die gemessenen Kurven bleiben als Verlauf sinnvoll, die EINE Zahl auf der Karte sollte die verläßlichste sein.
-
-### 27. Tonhöhe wird auf ein Raster von 23,4 Hz gerundet - nur 15 verschiedene f0-Werte für 321 Songs
-**hoch** · `analyzer-worker.js`:1037
-
-**Fehler:** Die Tonhöhe kommt aus hpsPitch mit fftSize 1024 (Zeile 1037) bzw. aus der Stimmanalyse mit fftSize 2048 (Zeile 793 ff.) und wird als bestK*sr/fftSize zurückgegeben - der nackte Bin-Index, ohne jede Interpolation. Bei 48 kHz sind das 46,9 Hz bzw. 23,4 Hz Schrittweite. Weil außerdem nur zwischen 80 und 600 Hz gesucht wird (Zeile 97), bleiben zwölf mögliche Tonhöhen übrig. Bei 117 Hz ist ein Bin 3,4 Halbtöne breit; zwischen den beiden untersten Bins liegen sieben Halbtöne. Eine Tonhöhe mit Quintauflösung ist keine Tonhöhe.
-
-**Beleg:** library/analyse-index.json enthält für 321 Songs genau 15 verschiedene f0-Werte: 86, 94, 108, 117, 129, 141, 151, 164, 172, 188, 211, 234, 258, 281, 305 Hz. Das sind exakt die Bins 4 bis 8 bei 44,1 kHz (Raster 21,5 Hz) und 4 bis 13 bei 48 kHz (Raster 23,4 Hz). Gegenprobe mit einem reinen Sinus von 220 Hz: der Kern meldet 94 Hz - ein Oktavfehler des HPS-Verfahrens dazu. Die Tonhöhenkurve eines Songs nimmt über 70000 Rahmen nur elf verschiedene Werte an.
-
-**Wirkung:** Die Karte 'F0' und die Tonhöhenspur zeigen ein Treppenmuster statt einer Melodie. Alles, was darauf aufbaut, erbt den Fehler: Noten-Stabilität, Inharmonizität, Harmonische Dichte und die Stimmerkennung (deren Grenzen 160/200 Hz zwischen die Rasterpunkte fallen).
-
-**Vorschlag:** Den Gipfel parabolisch zwischen den Bins interpolieren - drei Zeilen, kostet nichts und bringt sofort etwa ein Zehntel Bin Genauigkeit. Für tiefe Männerstimmen zusätzlich die FFT auf 4096 vergrößern oder auf ein Zeitbereichsverfahren (Autokorrelation/YIN) umstellen.
-
-### 28. Der f0-Median wird über alle Fenster gebildet, auch über die rein instrumentalen
-**mittel** · `analyzer-worker.js`:810
-
-**Fehler:** detectedF0s (Zeile 792) wird in jedem Fenster gefüllt, das das Mitten-Tor passiert hat — und das sind praktisch alle. Der Median in Zeile 810 läuft damit über Intro, Solo, Break und Ausklang mit. Bei einem Stück, das zur Hälfte instrumental ist, bestimmt die instrumentale Hälfte die angezeigte „Grundfrequenz der Stimme" mit.
-
-**Beleg:** Über alle 321 Songs wurden im Median 250 von 305 Fenstern gezählt, im Minimum 86, im Maximum 458 — bei einem Hop von 1 s heißt das: die ganze Spieldauer geht ein. Bei Okkultation (352 s) sind es 308 von 353 Fenstern; das Stück hat lange instrumentale Teile. Direkter Beleg für die Folge: die 64 Stücke ohne jeden Gesang liefern denselben f0-Median (117 Hz) wie die 109 Stücke mit männlicher Stimme.
-
-**Wirkung:** Selbst wenn die f0-Schätzung repariert wäre, mischte der Median Gesangs- und Instrumentalstellen zu einer Zahl, die keiner von beiden entspricht.
-
-**Vorschlag:** Den Median nur über die Fenster bilden, die ein tragfähiges Stimmkriterium erfüllt haben — und die Anzahl dieser Fenster mitliefern, damit sichtbar ist, worauf die Zahl beruht.
 
 ### 29. Die untere Suchgrenze liegt faktisch bei 93,75 Hz statt bei den beabsichtigten 80 Hz
 **mittel** · `analyzer-worker.js`:779
@@ -508,17 +434,6 @@ Lautheitsrechnung nach EBU R128.
 **Wirkung:** Die Kategorie „gemischt" ist keine Aussage über ein Duett, sondern der Auffangbehälter für die Mitte der Verteilung. Von 6 Songs, deren Stilangabe ausdrücklich ein Duett nennt, wird keiner deswegen erkannt.
 
 **Vorschlag:** Solange kein tragfähiges Merkmal darunterliegt, keine Schwellen nachjustieren — das verschöbe nur den Fehler. Wenn das Merkmal steht, die Schwellen an den 33 weiblichen und 109 männlichen Stücken des Archivs ablesen statt setzen. „Gemischt" sollte aus zwei getrennt gefundenen Stimmen entstehen, nicht aus einem unentschiedenen Punktestand.
-
-### 31. Die Tonhöhenspur hat 46,9 Hz Auflösung, und der Hilfetext beschreibt eine Funktion, die es nicht gibt
-**mittel** · `analyzer.js`:7644
-
-**Fehler:** Der zweite f0-Weg (analyzer-worker.js Zeile 1037, hpsPitch auf fftSize2=1024) hat bei 48 kHz eine Auflösung von 46,875 Hz. Der Hilfetext zum Panel „Stimmfrequenzen" verspricht dagegen: Bereich 80–600 Hz, nur Rahmen mit Harmonizität über 35 %, blau für F0<165 Hz, orange für F0>185 Hz, Grau als Übergangsbereich, und eine zweite Stimme per Spectral Subtraction. Die zeichnende Funktion drawPitchFromFrames (analyzer.js Zeile 6627–6718) filtert nicht nach Harmonizität (nur f>60 && f<2000), färbt nicht nach Stimmlage, sondern weiß/gelb/orange nach Notenstabilität, und im Kern gibt es keinen zweiten f0-Durchgang und keine Spektralsubtraktion — nur den einen hpsPitch-Aufruf in Zeile 1037.
-
-**Beleg:** Tonhöhenspur zweier Songs durch den echten Kern ausgelesen. Vanille-Eis: 57.175 Rahmen, genau 11 verschiedene Werte, alle Vielfache von 46,875 Hz (93,8 / 140,6 / 187,5 / 234,4 / 281,3 / 328,1 / 375,0 / 421,9 / 468,8 / 515,6 / 562,5). 93,8 Hz allein in 30.199 Rahmen = 53 %. Monolith: 56.412 von 66.070 Rahmen auf 93,8 Hz. Im vom Hilfetext genannten Graubereich 165–185 Hz: 0 Rahmen in beiden Songs — er ist physikalisch unerreichbar, weil dort kein Bin liegt. Rahmen mit Harmonizität über 35 %: 53.903 von 57.175 bzw. 61.268 von 66.070 — die Zeichnung filtert danach ohnehin nicht.
-
-**Wirkung:** Die Spur wird in der Zeichnung auf Halbtöne gerundet; bei 46,9 Hz Rasterabstand liegen benachbarte Rasterpunkte in Stimmlage 3 bis 7 Halbtöne auseinander. Das Bild kann keine Melodie zeigen, sondern nur, auf welchem der elf Bins der Rahmen gelandet ist. Wer den Hilfetext liest, hält die Balken für gefilterte Gesangstöne mit Geschlechtsfarbe.
-
-**Vorschlag:** Entweder die Spur auf ein Verfahren mit brauchbarer Auflösung stellen (Autokorrelation, oder Parabelinterpolation über die Nachbarbins) — oder, bis dahin, den Hilfetext auf das zurückführen, was die Zeichnung wirklich tut.
 
 ### 32. Das Ergebnis ist auf ein 10-ms-Lagraster gequantelt: nur 68 verschiedene BPM-Werte sind überhaupt möglich
 **mittel** · `analyzer-worker.js`:699
@@ -674,17 +589,6 @@ Lautheitsrechnung nach EBU R128.
 
 **Vorschlag:** Beide Seiten auf dieselbe Einheit bringen - entweder wEnergy nicht wurzeln, oder energyP5 aus Math.sqrt(energySorted[p5idx]) bilden. Der Faktor 3 gehoert dabei neu bemessen: auf den Effektivwert angewandt wuerde er in den geprueften Songs umgekehrt fast alles maskieren.
 
-### 46. Spektral-Tilt stellt 10 Bass-Bins gegen 469 Höhen-Bins - rosa Rauschen gilt als treblelastig
-**mittel** · `analyzer-worker.js`:1080
-
-**Fehler:** 'tiltArr[frame]=(bassE-trebleE)/(bassE+trebleE)' mit bassE = Summe der BETRÄGE über Bins 1 bis 10 und trebleE = Summe über Bins 43 bis 511. Drei Dinge stimmen nicht: (1) es wird nicht auf die Bandbreite normiert, die Höhen bekommen 47-mal so viele Summanden; (2) es sind Amplituden, nicht Leistungen; (3) das Band zwischen 500 und 2000 Hz - dort steckt der Hauptteil der Musik - kommt gar nicht vor. Der Erklärungstext (analyzer.js:7568) nennt außerdem falsche Grenzen: bei fftSize 1024 und 48 kHz reicht das Bassband von 47 bis 469 Hz (nicht ab 20 Hz, so tief gibt es kein Bin) und das Höhenband bis 23953 Hz (nicht bis 16 kHz). Ein Tilt ist üblicherweise eine Steigung in dB je Oktave; das hier ist ein Bin-Zählverhältnis.
-
-**Beleg:** Rosa Rauschen (gleiche Leistung je Oktave - der übliche neutrale Bezug beim Abmischen) ergibt tilt = -0,720, auf der Skala 'sehr hell / treblelastig'. Weißes Rauschen ergibt -0,958, also fast den Extremwert -1. Über alle 321 Songs liegt der Median bei +0,051, die Spanne bei -0,551 bis +0,900 - der Nullpunkt der Anzeige entspricht also keinem definierten Klang.
-
-**Wirkung:** Die Karte 'Spektral Tilt' hat keinen erkennbaren Nullpunkt; positiv/negativ trennt nicht bassig von hell, sondern nur Songs mit viel Tiefton von allen anderen. Sie geht mit in die Instrumentenerkennung ein (analyzer.js:4706).
-
-**Vorschlag:** Beide Bänder durch ihre Bin-Anzahl teilen (also mittlere Leistungsdichte statt Summe) und in dB rechnen, oder gleich eine Ausgleichsgerade durch das Log-Log-Spektrum legen und deren Steigung in dB/Oktave angeben - dann stimmt auch die Bezeichnung.
-
 ### 47. Grenzfrequenz ist bei 19,57 kHz gedeckelt und kennt nur 12 verschiedene Werte; 242 von 321 Songs liegen am Deckel
 **mittel** · `analyzer-worker.js`:508
 
@@ -695,17 +599,6 @@ Lautheitsrechnung nach EBU R128.
 **Wirkung:** Für drei Viertel der Sammlung steht auf der Karte dieselbe Zahl, und sie sagt nur 'irgendwo über 19,6 kHz'. Gerade der Fall, für den die Karte gedacht ist - erkennen, ob eine Datei bandbegrenzt ist -, ist bei Caspar_Ds 48-kHz-Material der ungeprüfte.
 
 **Vorschlag:** BAND_BIS an die halbe Abtastrate koppeln statt fest auf 20000, und statt der Bandmitte die interpolierte Stelle des Schwellwertdurchgangs melden. Dann steht am oberen Ende 24,0 kHz für 'nicht begrenzt' und die Auflösung ist nicht mehr auf 12 Stufen beschränkt.
-
-### 48. Noten-Stabilität wird durch den längsten Lauf DESSELBEN Songs geteilt und ist deshalb zwischen Songs nicht vergleichbar
-**mittel** · `analyzer-worker.js`:1115
-
-**Fehler:** 'for(var i=0;i<numFrames;i++) noteStabArr[i]/=maxStab;' - jeder Lauf wird durch den längsten Lauf des eigenen Songs geteilt. Das Maximum ist damit bauartbedingt immer genau 1,0, und der Mittelwert sagt nur, wie ein Song sich zu seinem eigenen ruhigsten Moment verhält. Die Karte zeigt diesen Mittelwert aber auf einer absoluten Skala mit Texten wie 'extrem statisch / Drone'. Zweiter Fehler: die Schwelle für einen Notenwechsel ist 1,5 Halbtöne (Zeile 1111), aber das Tonhöhenraster kann unterhalb von 516 Hz gar keinen Schritt unter 1,5 Halbtönen darstellen - der kleinste mögliche Sprung zwischen benachbarten Bins beträgt 7,0 / 5,0 / 3,9 / 3,2 / 2,7 / 2,3 / 2,0 / 1,8 / 1,7 / 1,5 Halbtöne. Jedes Zittern des Bins gilt daher als neue Note.
-
-**Beleg:** Zwei selbst erzeugte Signale: A = 30 Noten zu je 2 Sekunden -> 77 %. B = genau dieselbe Melodie, dahinter ein 30 Sekunden gehaltener Ton -> 37 %. Die 2-Sekunden-Noten sind in beiden identisch. Über 40 Songs aus der Ablage liegt der Wert zwischen 4 % und 24 % (p50 11 %); die Skala nennt alles unter 30 % 'eher unruhig / viele Glissandi' - das gilt damit für jeden Song.
-
-**Wirkung:** Die Karte 'Noten-Stabilität' vergleicht Songs mit sich selbst und wird trotzdem als absoluter Wert gelesen. Ihre Aussage kippt allein dadurch, ob irgendwo im Song ein langer Ton liegt.
-
-**Vorschlag:** Die Lauflängen in Sekunden umrechnen (Lauf * hop/sr) und den Median angeben - 'Note wird im Mittel 0,8 s gehalten' ist vergleichbar und lesbar. Die Normierung auf maxStab nur für die Farbgebung der Kurve behalten.
 
 ### 49. Fast alle Messgrößen werden nur aus dem linken Kanal gerechnet
 **mittel** · `analyzer-worker.js`:576
@@ -718,17 +611,6 @@ Lautheitsrechnung nach EBU R128.
 
 **Vorschlag:** 'var ch' aus der Mitte bilden: ch[i] = (left[i]+right[i])/2. Das ist eine Zeile und ändert nichts an den geprüften Normwerten, weil die ohnehin beide Kanäle nehmen.
 
-### 50. Harmonizität ist mit Faktor 4 überstreckt und steht bei 70 % der Rahmen am Anschlag
-**mittel** · `analyzer-worker.js`:1041
-
-**Fehler:** 'harmArr[frame]=totalE>0?Math.min(1,harmE/totalE*4):0;' - der Anteil der Energie in den ersten sechs Vielfachen des Grundton-Bins wird mit 4 malgenommen und dann bei 1 abgeschnitten. Sobald ein Viertel der Energie in diesem Kamm sitzt, ist der Wert 1 und alles darüber wird nicht mehr unterschieden. Der Faktor 4 ist eine reine Streckung ohne Begründung im Code; er verwandelt eine stetige Größe in ein fast binäres Signal.
-
-**Beleg:** Anteil der Rahmen, die genau auf 1,0 stehen, über 40 Songs aus der Ablage: p10 = 50 %, p50 = 70 %, p90 = 87 %. Der Mittelwert der Kurve liegt bei den 12 nachgerechneten Songs zwischen 0,752 und 0,964 - also fast durchweg im gesättigten Bereich.
-
-**Wirkung:** Die Harmonizitätskurve ist über weite Strecken eine gerade Linie am oberen Rand. Sie geht mit 40 % Gewicht in den Textur-Index ein (analyzer.js:5773) und trägt dort deshalb praktisch keine Information mehr bei.
-
-**Vorschlag:** Den Faktor 4 streichen und die Skala der Kurve stattdessen auf den tatsächlich vorkommenden Bereich legen, oder den Anteil in dB angeben. Wenn geklemmt werden muß, dann erst weit oberhalb des üblichen Bereichs.
-
 ### 51. Die BPM-Autokorrelation kennt nur 68 mögliche Ergebnisse und ist nicht auf die Überlappungslänge normiert
 **mittel** · `analyzer-worker.js`:697
 
@@ -739,17 +621,6 @@ Lautheitsrechnung nach EBU R128.
 **Wirkung:** Selbst wo das Verfahren den richtigen Schlag findet, ist der Wert auf ein grobes Raster gerundet; eine Sortierung nach Tempo bringt Songs mit 3 BPM Unterschied in dieselbe Stufe.
 
 **Vorschlag:** Den Gipfel der Autokorrelation zwischen den ganzzahligen Verschiebungen interpolieren und die Summe durch die Anzahl der Glieder teilen. Beides zusammen ist ein Dutzend Zeichen und behebt Raster und Schieflage.
-
-### 52. Lücken in der Tonhöhenspur werden mit erfundenen Werten gefüllt
-**niedrig** · `analyzer-worker.js`:1103
-
-**Fehler:** pitchArr[i]=(pitchArr[i-1]+pitchArr[i+1])/2 für jedes i mit Wert 0. Eine Null heißt an dieser Stelle „keine Tonhöhe gefunden" — also Stille oder unharmonisches Signal. Das Mittel der Nachbarn setzt dort eine Tonhöhe hin, die nie gemessen wurde. Weil die Schleife von links nach rechts läuft und den eben erst gesetzten Wert weiterverwendet, entsteht in längeren Lücken eine Halbierungskette.
-
-**Beleg:** Tonhöhenspur von Monolith: neben den 11 Rasterwerten stehen die Werte 82,0 · 41,0 · 20,5 · 10,3 · 5,1 · 2,6 · 1,3 · 0,6 · 0,3 · 0,2 · 0,1 Hz, jeweils genau einmal — die Halbierungskette einer Lücke am Rand. Dazu 46,9 · 35,15 · 11,72 · 5,86 Hz, ebenfalls je einmal. Keiner dieser Werte kann aus hpsPitch stammen, dessen kleinster möglicher Rückgabewert 93,75 Hz ist.
-
-**Wirkung:** Der Hilfetext sagt „Lücken = Instrumental, Pause" — die Lücken werden aber vorher zugeschüttet. Und die eingesetzten Werte liegen teils weit unterhalb des Suchbereichs, tauchen also als Phantomtöne im Datensatz auf.
-
-**Vorschlag:** Lücken als Lücken stehen lassen. Wenn geglättet werden soll, dann nur über Rahmen, die selbst einen Wert hatten, und höchstens über eine Lücke von ein bis zwei Rahmen — nicht über beliebig lange.
 
 ### 53. Die Onset-Reihe zählt mit einer absoluten Schwelle und mißt damit Pegel, nicht Anschläge
 **niedrig** · `analyzer-worker.js`:692

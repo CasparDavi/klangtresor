@@ -285,12 +285,10 @@
    traegt. Ohne diese Zeile kaeme es doppelt, und die Spur waere 24 px
    schmaler als alle anderen - der Spielkopf liefe im falschen Raster. */
 .sunoanalyzer #spur-befund{padding-left:0;padding-right:0}
-.sunoanalyzer #sa-spur-namen,.sunoanalyzer #sa-pitch-namen{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sunoanalyzer #sa-spur-namen{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .sunoanalyzer #sa-stereo-namen{position:absolute;inset:0;pointer-events:none}
 .sunoanalyzer #sa-stereo-namen span{position:absolute;left:4px;font-size:8px;color:#9a9a9a;
   text-shadow:0 0 3px #000,0 0 3px #000}
-.sunoanalyzer #sa-pitch-namen span{position:absolute;left:4px;font-size:8px;color:#9a9a9a;
-  transform:translateY(-50%);text-shadow:0 0 3px #000,0 0 3px #000}
 /* Senkrecht mittig in ihrer Bahn - ueber align-items, nicht ueber
    line-height. Die Zeilenbox einer Schrift ist nicht so hoch wie ihre
    Schriftgroesse und haengt von Ober- und Unterlaengen ab; mit
