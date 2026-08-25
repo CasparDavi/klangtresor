@@ -2091,12 +2091,19 @@
                aus dem die Unterkante am 23.08. ohne blieb.
 
                Die Haarlinie auf der Mitte tut das Gegenteil: Sie gibt
-               dem Auge die Achse, an der es spiegelt. Schwarz, damit
-               sie sich in jede Abschnittsfarbe schneidet statt sich mit
-               ihr zu mischen; ein Bildpunkt dick und non-scaling, damit
-               sie beim Zoomen eine Haarlinie bleibt. */
+               dem Auge die Achse, an der es spiegelt. Schwarz und VOLL
+               deckend (Caspar_D, 25.08.2026: "volle Deckung und nur 1px
+               breit") - eine halbdurchsichtige Linie mischt sich mit der
+               Farbe darunter und wird zum Schleier statt zum Schnitt.
+
+               shape-rendering="crispEdges" schaltet die Kantenglaettung
+               ab: Die Mitte liegt oft auf einer halben Bildpunktlage,
+               und geglaettet verteilt der Browser den einen Punkt auf
+               zwei halbe - die Linie waere doppelt so breit und halb so
+               kraeftig. Zusammen mit non-scaling-stroke bleibt sie in
+               jeder Zoomstufe genau ein Bildpunkt. */
             teile.push('<line x1="0" y1="'+mitte+'" x2="'+SPUR_W+'" y2="'+mitte+'" stroke="#000"'
-              + ' stroke-width="1" opacity="0.55" vector-effect="non-scaling-stroke"/>');
+              + ' stroke-width="1" shape-rendering="crispEdges" vector-effect="non-scaling-stroke"/>');
           }
         }
 
