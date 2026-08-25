@@ -73,15 +73,44 @@ wiederzubeschaffen wären, weg damit." Alles umgesetzt:
   (LUFS −13,9 am Prüfsong), Zoom/Playheads laufen, Export-Selbst-
   prüfung Exit 0.
 
-**Weiterhin offen, mit Grund:**
+**Der Stand vom 25.08. ist überholt** — nachgeprüft am 26.08.2026:
 
-- **zahl-Doppel** und **Höhenkarten-Doppel**: in der heutigen Fassung
-  nicht mehr vorhanden (vermutlich mit früheren Umbauten gefallen).
-- Der **linienSpuren-Doppelaufruf** fiel bereits beim Bau des
-  Lautheits-Panels.
-- **chromaZonen/chromaTakt-Zusammenlegung** und **Goertzel-sr**: hängen
-  am vorgehaltenen Werkzeug-Cluster (chromaTaktZeichnen bleibt
-  Werkzeug); lohnt erst, wenn über dessen Zukunft entschieden ist.
+- **zahl-Doppel**, **Höhenkarten-Doppel** und der
+  **linienSpuren-Doppelaufruf**: bestätigt nicht mehr vorhanden.
+- **chromaZonen/chromaTakt-Zusammenlegung** und **Goertzel-sr** hingen
+  am „vorgehaltenen Werkzeug-Cluster". Der ist am 25.08.2026 gelöscht —
+  `chromaTaktZeichnen` mit 275 Zeilen, der Bass-Lader und sechs
+  Hilfsfunktionen, darunter `goertzelKanal`. Damit sind beide Punkte
+  gegenstandslos: Es gibt nur noch eine Zonen-Rechnung, und die steht
+  in `bin/toene.js`.
+- **Abschnitt 3 (Laufzeit) ist vollständig erledigt.** Nachgesehen:
+  `_stereoP95` und `_spectroPerc` haben beide eine Wache und rechnen nur
+  noch einmal je Datenstand; von der Maßstabsreihe und `rafProgress`
+  stehen nur noch Kommentare, die auf ihren Ausbau verweisen.
+- **Der rechte Kanal wird wieder vorgehalten** — und zwar mit Absicht.
+  Am 25.08. war er gestrichen worden („wird auf keinem Weg mehr
+  vorgehalten, ~53 MB je Song"); seit dem 26.08. trägt er das
+  R-Spektrogramm, die Summe |L|+|R| und alle Größen, die vorher nur den
+  linken Kanal sahen. Er wird nach der letzten fft_partial-Nachricht
+  genullt, zusammen mit dem linken — der Speichergewinn bleibt also,
+  nur eben nach der Rechnung statt vorher.
+
+**Was am 26.08.2026 dazukam:** vier Spektrogramm-Register (L, R,
+|L|+|R|, Seitenlage) mit vorgerechneten Bildern; beide Kanäle statt nur
+links in Hüllkurve, Energie, Lautheit, Scheitelfaktor, Chroma, Fluss,
+Entropie und Abschnittserkennung; eine eigene Chroma-Rechnung mit 8192
+Punkten, Gipfelauswahl und parabolisch verfeinerter Scheitelfrequenz.
+Belege in den Commits `031a315`, `a735f90`, `3352a99`.
+
+**Aus Abschnitt 5 („Was fehlt") noch offen:**
+
+- **Punkt 4 — die zwei Artefakt-Näherungen** (Energie oberhalb der
+  gemessenen Kante, Rauschteppich aus den leisesten 5 % der Fenster).
+  Nicht gebaut. Ein Vorschlag, kein Fehler.
+- **Punkt 5 — MP3-Rückfall kennzeichnen.** Halb gebaut: Es gibt einen
+  MP3-Vermerk (`_quellname`), aber die Ablage stempelt die Quelldatei
+  nicht als Feld ein. Ein aus MP3 gerechneter Lauf ist danach nicht mehr
+  von einem WAV-Lauf zu unterscheiden.
 
 ---
 
