@@ -701,6 +701,7 @@
   <div class="card"><div class="val" id="v-lra">—</div><div class="lbl">Atmet der Song? <i>Schwankung LU</i></div></div>
   <div class="card"><div class="val" id="v-tp">—</div><div class="lbl">Wie nah an der Decke? <i>True Peak dBTP</i></div></div>
   <div class="card"><div class="val" id="v-plr">—</div><div class="lbl">Wie viel Luft zur Spitze? <i>Reserve PLR</i></div></div>
+  <div class="card"><div class="val" id="v-psr">—</div><div class="lbl">Luft an der lautesten Stelle <i>Reserve PSR</i></div></div>
   <div class="card"><div class="val" id="v-check">—</div><div class="lbl">Technisch sauber? <i>Anschläge · Gleichspannung · Phase</i></div></div>
   <div class="card"><div class="val" id="v-clip">—</div><div class="lbl">Werte am Anschlag <i>Clipping</i></div></div>
   <div class="card"><div class="val" id="v-dc">—</div><div class="lbl">Sitzt die Welle mittig? <i>Gleichspannung</i></div></div>
@@ -1205,7 +1206,7 @@
      ------------------------------------------------------------------ */
   const KARTEN_REIHENFOLGE = [
     // Pegel nach Norm - die geprüften Zahlen zuerst
-    'v-lufs', 'v-lra', 'v-tp', 'v-plr', 'v-check',
+    'v-lufs', 'v-lra', 'v-tp', 'v-plr', 'v-psr', 'v-check',
     // Fehlersuche
     'v-clip', 'v-dc', 'v-korr', 'v-ende', 'v-grenz',
     // Zeit und Form
@@ -6311,6 +6312,23 @@
             setzN('v-lra',  msg.lra.toFixed(1));
             setzN('v-tp',   (msg.truePeak>0?'+':'')+msg.truePeak.toFixed(1));
             setzN('v-plr',  (msg.truePeak-msg.lufs).toFixed(1));
+            /* PSR (AES TD1004): True Peak minus Maximum der KURZZEIT-
+               Lautheit - die Luft am lautesten Moment, nicht am
+               Durchschnitt. Unterscheidet "insgesamt leise, aber
+               totkomprimierte Refrains" von "wirklich dynamisch". Alte
+               Ablagen tragen kurzMax als NaN (die geheilte Falle im
+               Worker) - dann wird das Maximum hier NaN-sicher aus der
+               Kurve geholt, die in jeder Ablage liegt: die Karte
+               funktioniert damit sofort fuer den ganzen Bestand. */
+            (function(){
+              var kMax=msg.kurzMax;
+              if(!isFinite(kMax)&&msg.kurz&&msg.kurz.length){
+                kMax=-100;
+                for(var i=0;i<msg.kurz.length;i++)
+                  if(isFinite(msg.kurz[i])&&msg.kurz[i]>kMax) kMax=msg.kurz[i];
+              }
+              setzN('v-psr', isFinite(kMax)&&kMax>-100 ? (msg.truePeak-kMax).toFixed(1) : '—');
+            })();
             setzN('v-clip', msg.clip ? msg.clip.toLocaleString('de-DE') : '0');
             setzN('v-dc',   msg.dc<0.0002 ? '0' : (msg.dc*100).toFixed(2)+'%');
             setzN('v-korr', msg.korr.toFixed(2)+(msg.negPhase>1?' ('+msg.negPhase.toFixed(0)+'% neg)':''));

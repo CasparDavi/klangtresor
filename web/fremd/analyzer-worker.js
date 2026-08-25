@@ -292,11 +292,20 @@ function lautheitNachNorm(left,right,sr){
   var MASSSTAEBE=[0.025,0.05,0.1,0.2,0.4,1.0,3.0];
   var massstab=MASSSTAEBE.map(function(f){ return mkKurve(f, 0.02); });
 
+  /* NaN-SICHER (25.08.2026, Review): Die Kurven tragen an den Raendern
+     bewusst NaN (Fenstermitte-Bezug), und Math.max mit NaN ist NaN -
+     momentanMax und kurzMax standen dadurch in allen 321 Ablagen auf
+     NaN, und die PSR-Karte haette dieselbe Falle gerissen. */
+  var maxEndlich=function(a){
+    var m=-100;
+    for(var i=0;i<a.length;i++) if(isFinite(a[i])&&a[i]>m) m=a[i];
+    return m;
+  };
   return {integriert:integriert, schwankung:schwankung, momentan:momentan, kurz:kurz,
           momentanSchritt:0.02, kurzSchritt:0.02,
           massstab:massstab, massstabFenster:MASSSTAEBE,
-          momentanMax:momentan.length?Math.max.apply(null,Array.prototype.slice.call(momentan)):-100,
-          kurzMax:kurz.length?Math.max.apply(null,Array.prototype.slice.call(kurz)):-100};
+          momentanMax:maxEndlich(momentan),
+          kurzMax:maxEndlich(kurz)};
 }
 
 /* Spitzenwert zwischen den Abtastwerten (True Peak, dBTP).
