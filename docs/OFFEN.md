@@ -608,6 +608,19 @@ gemessen, nichts davon ist entschieden.
 
 ### 6.1 Die Hüllkurve fällt bei x² in sich zusammen
 
+> **Die optische Täuschung ist erledigt (25.08.2026).** Caspar_D hat den
+> Grund gefunden, nachdem die Messung ihn ausgeschlossen hatte: *„es ist
+> die topline, die eine optische Täuschung macht."* Die Kurve ist
+> punktgenau gespiegelt, aber nur die Oberkante trägt eine Kontur — ein
+> Rand oben und keiner unten läßt die obere Hälfte schwerer wirken.
+> Eine Kontur auch unten wäre die falsche Antwort (sie zöge eine zweite
+> Linie durch jede Spitze, genau der Grund für den Beschluß vom 23.08.).
+> Statt dessen liegt jetzt eine schwarze Haarlinie auf der Spiegelachse:
+> Sie gibt dem Auge die Achse, an der es spiegelt.
+>
+> **Die Skalierungsfrage unten bleibt davon unberührt.**
+
+
 Die drei Kurvenformen (√x · x · x²) sind gebaut und wirken. Die
 **Spiegelung ist exakt** — punktweise nachgemessen, Abweichung 0,000 in
 allen drei Formen. Das Problem liegt woanders: bei der **Skalierung**.

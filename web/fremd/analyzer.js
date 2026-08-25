@@ -2073,6 +2073,30 @@
             /* NUR die Oberkante, und die ist jetzt die Topline: voller Ton,
                ein Bildpunkt dünn. Die Unterkante bleibt ohne Linie. */
             teile.push('<path d="'+d1+'" fill="none" stroke="'+fuell+'" stroke-width="1" vector-effect="non-scaling-stroke"/>');
+            /* DIE MITTELLINIE GEGEN DIE TAEUSCHUNG (Caspar_D, 25.08.2026:
+               "es ist die topline, die eine optische Taeuschung macht,
+               vielleicht eine schwarze Haarlinie auf der vertikalen
+               Mitte drueberzeichnen").
+
+               Er hat den Grund gefunden, nachdem die Messung ihn
+               ausgeschlossen hatte: Die Kurve IST punktgenau
+               gespiegelt - nachgerechnet, Abweichung 0,000 - aber nur
+               die Oberkante traegt eine Kontur. Ein Rand oben und
+               keiner unten laesst die obere Haelfte schwerer wirken,
+               und das Auge liest Asymmetrie, wo keine ist.
+
+               Eine Kontur auch unten waere die naheliegende Antwort und
+               die falsche: Sie zoege eine zweite Linie durch jede
+               Spitze und liesse den Block zuwachsen - genau der Grund,
+               aus dem die Unterkante am 23.08. ohne blieb.
+
+               Die Haarlinie auf der Mitte tut das Gegenteil: Sie gibt
+               dem Auge die Achse, an der es spiegelt. Schwarz, damit
+               sie sich in jede Abschnittsfarbe schneidet statt sich mit
+               ihr zu mischen; ein Bildpunkt dick und non-scaling, damit
+               sie beim Zoomen eine Haarlinie bleibt. */
+            teile.push('<line x1="0" y1="'+mitte+'" x2="'+SPUR_W+'" y2="'+mitte+'" stroke="#000"'
+              + ' stroke-width="1" opacity="0.55" vector-effect="non-scaling-stroke"/>');
           }
         }
 
