@@ -108,6 +108,77 @@ Spitzenwert und legt die absolute Spitze nicht ab. Eine Spur mit bloßem
 
 ---
 
+## 5. Und wie sicher ist der Grundton, wo es einen gibt?
+
+Caspar_D: *„wie sicher ist denn unsere Grundtonermittlung?"* — gemessen
+mit zwei voneinander unabhängigen Proben.
+
+**Das Verfahren** (`bin/toene.js:341`): Der Grundton ist der häufigste
+Baßton auf der **Eins des Takts**, sofern mindestens zwölf solche Töne
+vorliegen (`woher: 'bass'`); sonst korreliert der Tonvorrat mit Dur-
+und Moll-Profilen (`woher: 'leiter'`). `einsAnteil` sagt, wie oft der
+gewählte Ton unter allen Baß-Einsen vorkommt — 48 % heißt: bei knapp
+jeder zweiten Eins.
+
+### Probe 1: gegen die Tonartangabe im Prompt (28 Songs)
+
+**16 von 28 Grundtönen richtig — 57 %.** Vorsicht beim Lesen: Der Prompt
+sagt, was Suno tun *sollte*, nicht was es getan hat. 57 % ist deshalb
+eine Untergrenze.
+
+Aufschlußreicher als die Quote sind die **Fehlerabstände**:
+
+| Abstand | Fälle | |
+|---|---|---|
+| 0 (richtig) | 16 | |
+| ±1 Halbton | 3 | |
+| ±2 Halbtöne | 3 | |
+| +3 | 1 | |
+| −4 | 1 | |
+| **−5 Halbtöne** | **4** | **die Quinte** |
+
+Vier der zwölf Fehler liegen auf derselben Stufe: Der Baß spielt auf
+der Eins die **Quinte statt des Grundtons**. Das ist kein Rauschen,
+sondern ein benennbarer Fehler des Verfahrens.
+
+### Probe 2: Fassungen desselben Stücks (14 Paare, nur Songs mit Text)
+
+Ohne jede äußere Wahrheit — zwei Fassungen eines Stücks müssen dieselbe
+Tonart haben:
+
+**10 von 14 einig — 71 %.** Die vier Abweichler: zweimal die Quinte
+(autophagie D↔A, ulrich & ännchen D↔G), zweimal eine Sekunde.
+
+### Was `einsAnteil` wirklich taugt
+
+Als Filter gegen Rauschen **nicht** (siehe Abschnitt 3). Als Maß für
+die Verläßlichkeit **schon**:
+
+| Sicherheit | Trefferquote gegen den Prompt |
+|---|---|
+| alle | 57 % |
+| ab 45 % | 71 % |
+| ab 50 % | 70 % |
+| **ab 55 %** | **86 %** |
+
+Und bei den uneinigen Fassungen zeigt sie, welche stimmt: „ulrich &
+ännchen" D mit **95 %** gegen G mit 30 %, „dogma" C mit **100 %** gegen
+D mit 52 %. Die sichere Fassung ist die plausible.
+
+### Was daraus zu machen wäre
+
+- **Den Quintenfehler abfangen.** Liegt der zweithäufigste Baßton eine
+  Quarte unter dem häufigsten, ist der häufigste vermutlich die Quinte.
+  Prüfbar wäre das erst nach einer Neurechnung — `toene.json` legt nur
+  den gewählten Ton und `einsAnteil` ab, nicht die ganze Verteilung.
+  **Sie mit abzulegen kostet 12 Zahlen je Song** und macht die Frage
+  ohne Neulauf beantwortbar.
+- **Die Sicherheit anzeigen.** Sie wird gemessen und nicht gezeigt. Ein
+  Grundton mit 30 % ist etwas anderes als einer mit 95 %, und der
+  Unterschied ist für den Betrachter heute unsichtbar.
+
+---
+
 ## Was alle vier gemeinsam haben
 
 Ein Verfahren wird auf Material angewandt, für das es nicht gedacht ist,
