@@ -294,6 +294,43 @@ ffmpeg-Bandpaß belegt) erschien in 0 % der Rahmen.
 > an, weil zum Zeitpunkt der Prüfung der Nachrechnungslauf für die
 > Spektrogramme auf genau diesem Rechenkern lief.
 
+**15 + 16 + 17 · Drei Fehler in derselben Funktion.** Alle drei sitzen in
+`schimmerFinden()` und sind mit Befund 14 zusammen gelöst — die Anzeige
+ist seit dem 23.08.2026 aus (`SA_SCHIMMER_TOT`), Ersatz ist
+`bin/stoerfrequenz.js`.
+
+**15 · Die dB-Zahl war eine Auswahl auf sich selbst.** `hervorSum+=hervor`
+stand INNERHALB von `if(verdaechtig)`, der Mittelwert also über genau die
+Rahmen, die die Schwelle von 7,8 dB schon überschritten hatten. Er konnte
+rechnerisch nie darunter fallen. Über 139 Befunde: angezeigt im Mittel
++16,6 dB, tatsächlich +4,1 dB; kleinster je angezeigter Wert +11,0 dB.
+Bei „Remix Mich" standen 736 Hz mit angezeigten +14,9 dB im Feinspektrum
+bei +6,0, und 499 Hz mit +15,5 bei +3,7. Jeder Befund sah gleich
+dramatisch aus.
+
+**16 · Kein einziger Test trennte Musik von Störung** — keine
+Tonhöhenprüfung, keine Obertonreihe, kein Intervallvergleich. Die ganze
+Last trug die Annahme, ein gehaltener Musikton komme in weniger als einem
+Viertel der Rahmen vor. Grundton und Quinte stehen in fast jedem Stück
+länger. Ergebnis: Von 139 Befunden lagen 137 innerhalb ±15 Cent eines
+gleichstufigen Halbtons, bis 6 kHz **137 von 137** — bei einer
+Zufallserwartung von 30 %. 100 Befunde lagen exakt auf 0 Cent. Der Kern
+zeigte dem Benutzer die Melodie und riet, sie herauszufiltern.
+
+**17 · Der Deckel warf gerade die echten Störtöne heraus.** Sortiert
+wurde nach „schwere", und die baut auf dem bedingten Mittelwert aus
+Befund 15 — der bei Musiktönen hoch ausfällt, weil ihre Bänder schmal
+genug sind, um nicht verdünnt zu werden (Befund 14). Bei acht Einträgen
+brach die Schleife ab. „Wiese mit Insekten": Der einzige echte Störton
+(7200,2 Hz, +15,1 dB, 82 % des Songs) lag auf Rang 13; die acht Plätze
+davor waren mit Musiktönen belegt. Er wurde nie angezeigt.
+
+> Die drei Fehler verstärkten sich gegenseitig: 14 verdünnte hohe Töne,
+> 15 machte jeden Fund dramatisch, 16 ließ Musik durch, und 17 sorgte
+> dafür, daß am Ende genau die Musiktöne oben standen. Der Rest ist
+> derselbe wie bei 14 — `schimmerFinden()` rechnet weiter, obwohl
+> niemand liest; siehe „Wartet auf den Rechenkern".
+
 ## Wartet auf den Rechenkern
 
 Zwei Schnitte sind fällig, aber nicht gemacht: Am 25.08.2026 lief der
@@ -329,39 +366,6 @@ truePeak, clip, dynamik, stereo, korrelation, dauer, stand.
 **Vorschlag:** Der Weg ist kurz, weil die Bildmathematik schon geteilt ist: `bin/vorrechnen.js` lädt `web/fremd/analyzer-worker.js` mit `new Function` und rechnet dieselben Bildpunkte, die der Browser rechnen würde — es gibt keine zweite Fassung, die auseinanderlaufen könnte. Zwei weitere Bilder je Song, `<id>.rechts.webp` und `<id>.summe.webp`, und der Analyzer lädt sie wie die anderen beiden. Eigene Meßreihen braucht es dafür nicht: Aus dem linken Kanal und der Seitenlage `p` folgt `|R| = |L|·(1−p)/(1+p)` und `|L|+|R| = 2·|L|/(1+p)`, bei einer Auflösung von 1/127 für p mit einem Fehler unter 0,2 dB. Kosten: rund 5 MB je Song mehr in `library/analyse/`.
 
 **Berichtigung (25.08.2026):** Hier stand zuerst, die Spektrogramm-Rahmen seien nach dem Zeichnen weg und deshalb liefe der Zoom ins Leere. Das erste stimmt — `window._chartData.fft.frames` ist bei aus der Ablage geladenen Songs undefiniert —, das zweite nicht: Genau für diesen Fall gibt es den `ohneRoh`-Zweig in `_drawSpectrogramFromFrames` (`analyzer.js`:6801). Er zeichnet aus `window._pufferFlaechen`, den Flächen aus den gespeicherten Bildern, und zwar ausschnittweise nach `viewStart`/`viewEnd` — der Zoom arbeitet also über die Bilder, in mehreren Auflösungsstufen bis 16383 px Breite. Daß die Rohdaten nach dem Zeichnen fallen, ist Absicht und kein Fehler.
-
-### 15. Die angezeigte dB-Zahl ist ein bedingter Mittelwert und kann strukturell nie klein werden
-**hoch** · `analyzer-worker.js`:542
-
-**Fehler:** 'hervorSum+=hervor' steht INNERHALB von 'if(verdaechtig)' (Zeile 540-542). hervorMittel=hervorSum/treffer (Zeile 554) ist damit der Mittelwert genau derjenigen Rahmen, die die Schwelle HERVOR=7,8 dB bereits überschritten haben — eine Auswahl auf sich selbst. Der Wert kann rechnerisch nie unter 7,8 liegen. Die Oberfläche zeigt ihn als Eigenschaft des Tons: 'X dB über der Nachbarschaft' (analyzer.js:1881) und als Spalte 'über Nachbarn' (analyzer.js:1943).
-
-**Beleg:** 139 Befunde aus 26 Songs, gerechnet auf audio.wav (dieselbe Quelle wie bin/vorrechnen.js): angezeigte Hervorhebung im Mittel +16,6 dB — tatsächlicher Mittelwert derselben Größe über ALLE Rahmen desselben Bandes: +4,1 dB. Kleinster je angezeigter Wert über alle 139 Befunde: +11,0 dB, nie darunter. Einzelfall 'Remix Mich', 736 Hz: angezeigt +14,9 dB, im Feinspektrum steht die Linie (740,2 Hz) im Median nur +6,0 dB über ihrer Nachbarschaft; 499 Hz: angezeigt +15,5 dB, echt +3,7 dB.
-
-**Wirkung:** Jeder Befund sieht gleich dramatisch aus. Die Zahl unterscheidet nicht zwischen einem kräftigen Pfeifton und einem gerade eben über die Schwelle gerutschten Musikton — sie sagt nur, wie weit die ausgewählten Ausreißer über der Schwelle lagen. Sie taugt weder zum Vergleich zwischen Songs noch zwischen Frequenzen.
-
-**Vorschlag:** Zwei getrennte Zahlen führen: den Median der Hervorhebung über ALLE Rahmen (die Stärke) und den Anteil der Rahmen über der Schwelle (die Dauer). Den bedingten Mittelwert gar nicht anzeigen.
-
-### 16. Gehaltene Musiktöne werden nicht ausgeschlossen — 137 von 137 Befunden bis 6 kHz liegen auf einem Halbton
-**hoch** · `analyzer-worker.js`:525
-
-**Fehler:** schimmerFinden() (Zeile 524-572) kennt keinen einzigen Test, der Musik von Störung trennt: keine Tonhöhenprüfung, keine Obertonreihe, kein Intervallvergleich zwischen den Befunden. Die ganze Last trägt MIND_ANTEIL=0,25 (Zeile 525) — die Annahme, ein gehaltener Musikton komme in weniger als einem Viertel der Rahmen vor. Diese Annahme ist falsch: der Grundton und die Quinte einer Tonart stehen in fast jedem Stück länger als ein Viertel der Zeit im Spektrum.
-
-**Beleg:** 26 Songs, 139 Befunde (audio.wav): 137 liegen innerhalb ±15 Cent eines gleichstufigen Halbtons — bis 6 kHz sind es 137 von 137, also 100 % (Zufallserwartung ±15 Cent = 30 %). Verteilung der Cent-Abweichung: 100 Befunde in der Klasse 0 c, 27 bei +10 c, 4 bei −10 c. Bei den meisten stehen die Obertonpartner ½, ⅓, 2×, 1,5× ebenfalls dauerhaft im Feinspektrum. 'Der Todt vnd das Mägdlein': die vier stärksten Befunde sind D5 −2 c (+21,1 dB echt), E5 +1 c, A5 ±0 c, D6 +2 c — die Melodie. 'Morgen', von der Referenz als sauber eingestuft, liefert 5 Befunde: A5 ±0 c, D5 −2 c, F6 ±0 c, D7 ±0 c, A4 +16 c. Die Referenz bin/stoerfrequenz.js stuft 149 ihrer 189 Kandidaten selbst als 'wahrscheinlich Musik' ein und verwirft sie; nur 4 bleiben als 'Stoerton' übrig.
-
-**Wirkung:** 25 der 26 geprüften Songs bekommen mindestens einen Befund, 7 die vollen acht; 112 der 139 Befunde erscheinen rot (schwere ≥ 0,70) mit dem Rat '−2 bis −3 dB'. Die Oberfläche behauptet dabei ausdrücklich das Gegenteil: 'Ein gehaltener Gesangston fällt heraus, ein stehender Ton nicht: Gefordert sind mindestens 25 % des Songs' (analyzer.js:1952-1954). Wer dem Rat folgt, schneidet dem Sänger die Töne aus dem Song.
-
-**Vorschlag:** Die Prüfungen aus bin/stoerfrequenz.js übernehmen: Cent-Abstand zum nächsten Halbton, Obertonreihe (n·f0 mit ebenso dauerhaftem Grundton), musikalische Intervalle zwischen den Kandidaten. Und die Dauerschwelle von 25 % auf 80 % heben.
-
-### 17. Deckel von acht Befunden, sortiert nach 'schwere' — der einzige echte Störton fällt hinten heraus
-**hoch** · `analyzer-worker.js`:569
-
-**Fehler:** Die Befunde werden nach 'schwere' sortiert (Zeile 562) und die Schleife bricht bei acht ab (Zeile 569). 'schwere' (Zeile 556) baut auf hervorMittel — dem bedingten Mittelwert, der bei Musiktönen hoch ausfällt, weil deren Bänder schmal genug sind, um nicht verdünnt zu werden (siehe Befund 1). Die Musiktöne verdrängen damit systematisch die hochfrequenten Störtöne aus der Liste. Nebenbei: der Kommentar in Zeile 555 sagt 'Hervorstand und Dauer je zur Hälfte', die Gewichte sind aber 0,58 und 0,84.
-
-**Beleg:** 'Wiese mit Insekten' (eca8fea7): die Referenz findet genau einen Störton, 7200,2 Hz, +15,1 dB, 82 % des Songs. Im Bandverfahren liegt er als Band 7251 Hz mit +11,6 dB in 40 % der Rahmen vor — über allen Schwellen. Die vollständige, ungekappte Liste zeigt ihn auf Rang 13 mit schwere 0,64; die acht Plätze sind mit Musiktönen (995, 837, 619, 499, 736, 913, 4709, 544 Hz, schwere 0,70 bis 0,97) belegt. Er wird nie angezeigt.
-
-**Wirkung:** Selbst dort, wo das Bandverfahren einen echten Störton knapp erwischt, kommt er nicht auf den Schirm. Der Deckel wirkt genau gegen die Befunde, für die die Anzeige gedacht ist.
-
-**Vorschlag:** Erst Musik aussortieren, dann deckeln. Solange nicht sortiert wird, den Deckel nach Frequenzgruppen vergeben (z. B. höchstens vier unter 2 kHz), damit der obere Bereich nicht verhungert.
 
 ### 18. Centroid im Index stammt aus einem einzigen 43-ms-Fenster bei 30 % der Spieldauer
 **hoch** · `analyzer-worker.js`:707
