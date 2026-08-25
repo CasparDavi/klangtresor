@@ -619,8 +619,8 @@
      und den Quellknoten (quelle). Er baut sich nichts davon selbst. -->
 <div class="row" id="sa-zoom" style="margin-bottom:10px">
   <span style="font-size:12px;color:#555">Zoom</span>
-  <input type="range" id="zoom-slider" min="0" max="5" step="0.1" value="0" style="flex:1;accent-color:#4b93f0">
-  <span id="zoom-label" style="font-size:12px;color:#4b93f0;min-width:32px">1×</span>
+  <input type="range" id="zoom-slider" min="0" max="5" step="0.1" value="0" style="flex:1;accent-color:var(--bakzent,var(--akzent,#4b93f0))">
+  <span id="zoom-label" style="font-size:12px;color:var(--bakzent,var(--akzent,#4b93f0));min-width:32px">1×</span>
   <button onclick="__SA.resetZoom()" style="padding:4px 10px;font-size:11px">Reset</button>
 </div>
 
