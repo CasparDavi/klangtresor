@@ -110,8 +110,11 @@ Spitzenwert und legt die absolute Spitze nicht ab. Eine Spur mit bloßem
 
 ## 5. Und wie sicher ist der Grundton, wo es einen gibt?
 
-Caspar_D: *„wie sicher ist denn unsere Grundtonermittlung?"* — gemessen
-mit zwei voneinander unabhängigen Proben.
+Caspar_D: *„wie sicher ist denn unsere Grundtonermittlung?"*
+
+Belastbar beantwortet **nur durch den Fassungsvergleich** unten. Der
+naheliegende Weg über die Prompt-Angabe ist eine Sackgasse — und zwar
+eine bekannte, siehe die Warnung gleich darunter.
 
 **Das Verfahren** (`bin/toene.js:341`): Der Grundton ist der häufigste
 Baßton auf der **Eins des Takts**, sofern mindestens zwölf solche Töne
@@ -120,55 +123,63 @@ und Moll-Profilen (`woher: 'leiter'`). `einsAnteil` sagt, wie oft der
 gewählte Ton unter allen Baß-Einsen vorkommt — 48 % heißt: bei knapp
 jeder zweiten Eins.
 
-### Probe 1: gegen die Tonartangabe im Prompt (28 Songs)
+### ⚠ Ein verworfener Maßstab, und warum er hier trotzdem steht
 
-**16 von 28 Grundtönen richtig — 57 %.** Vorsicht beim Lesen: Der Prompt
-sagt, was Suno tun *sollte*, nicht was es getan hat. 57 % ist deshalb
-eine Untergrenze.
+Der erste Anlauf maß gegen die **Tonartangabe im Prompt** (28 Songs
+nennen eine) und kam auf 57 % Treffer. **Dieser Maßstab ist am
+23.08.2026 ausdrücklich verworfen worden** (ANALYZER-PRUEFUNG.md,
+Caspar_Ds Einwand):
 
-Aufschlußreicher als die Quote sind die **Fehlerabstände**:
+> *„niemand garantiert, daß Suno die Prompt-Tonart auch wirklich
+> benutzt."* Der Prompt ist eine Absicht, kein Meßwert — Suno kann
+> transponieren, etwas anderes erzeugen oder die Angabe ignorieren.
 
-| Abstand | Fälle | |
+Die 57 % messen deshalb **nicht die Genauigkeit unserer Ermittlung**,
+sondern die Übereinstimmung zweier Unbekannter: wie tontreu Suno
+arbeitet **mal** wie gut wir messen. Aus einer solchen Zahl läßt sich
+keines von beidem herauslösen. Sie steht hier nur als Warnung, damit
+niemand den Weg ein drittes Mal geht.
+
+### Die belastbare Probe: Fassungen desselben Stücks
+
+14 Paare, nur Songs mit Liedtext, **ohne jede äußere Wahrheit** — zwei
+Fassungen eines Stücks müssen dieselbe Tonart haben, egal wie tontreu
+das Modell arbeitet:
+
+**10 von 14 einig — 71 %.**
+
+Die vier Abweichler:
+
+| Stück | gemessen | Abstand |
 |---|---|---|
-| 0 (richtig) | 16 | |
-| ±1 Halbton | 3 | |
-| ±2 Halbtöne | 3 | |
-| +3 | 1 | |
-| −4 | 1 | |
-| **−5 Halbtöne** | **4** | **die Quinte** |
+| autophagie | D (52 %) ↔ A (87 %) | **Quinte** |
+| ulrich & ännchen | D (95 %) ↔ G (30 %) | **Quinte** |
+| erweckt | G (32 %) ↔ F (33 %) | Sekunde |
+| dogma | D (52 %) ↔ C (100 %) | Sekunde |
 
-Vier der zwölf Fehler liegen auf derselben Stufe: Der Baß spielt auf
-der Eins die **Quinte statt des Grundtons**. Das ist kein Rauschen,
-sondern ein benennbarer Fehler des Verfahrens.
+**Zweimal die Quinte** — und das ist der eine Befund, der die
+Prompt-Probe überlebt: Der Baß spielt auf der Eins die fünfte Stufe
+statt der ersten, und das Verfahren nimmt sie für den Grundton. Hier
+gemessen ohne Rückgriff auf irgendeine Prompt-Angabe.
 
-### Probe 2: Fassungen desselben Stücks (14 Paare, nur Songs mit Text)
+### Was `einsAnteil` taugt
 
-Ohne jede äußere Wahrheit — zwei Fassungen eines Stücks müssen dieselbe
-Tonart haben:
+Als Filter gegen Rauschen **nicht** (Abschnitt 3). Als Maß für die
+Verläßlichkeit **schon** — und auch das zeigt sich prompt-unabhängig:
+Bei jedem uneinigen Paar hat eine Fassung deutlich mehr Sicherheit als
+die andere, und es ist die plausiblere. „dogma" C mit **100 %** gegen D
+mit 52 %, „ulrich & ännchen" D mit **95 %** gegen G mit 30 %.
 
-**10 von 14 einig — 71 %.** Die vier Abweichler: zweimal die Quinte
-(autophagie D↔A, ulrich & ännchen D↔G), zweimal eine Sekunde.
-
-### Was `einsAnteil` wirklich taugt
-
-Als Filter gegen Rauschen **nicht** (siehe Abschnitt 3). Als Maß für
-die Verläßlichkeit **schon**:
-
-| Sicherheit | Trefferquote gegen den Prompt |
-|---|---|
-| alle | 57 % |
-| ab 45 % | 71 % |
-| ab 50 % | 70 % |
-| **ab 55 %** | **86 %** |
-
-Und bei den uneinigen Fassungen zeigt sie, welche stimmt: „ulrich &
-ännchen" D mit **95 %** gegen G mit 30 %, „dogma" C mit **100 %** gegen
-D mit 52 %. Die sichere Fassung ist die plausible.
+Die naheliegende Auswertung „ab welcher Sicherheit stimmt es?" ließe
+sich nur gegen einen Maßstab rechnen — und den gibt es nicht. Was
+bleibt, ist die Beobachtung, daß die sichere Fassung bei allen vier
+Paaren die plausiblere ist.
 
 ### Was daraus zu machen wäre
 
-- **Den Quintenfehler abfangen.** Liegt der zweithäufigste Baßton eine
-  Quarte unter dem häufigsten, ist der häufigste vermutlich die Quinte.
+- **Den Quintenfehler abfangen** — der einzige Befund, der ohne äußeren
+  Maßstab auskommt. Liegt der zweithäufigste Baßton eine Quarte unter
+  dem häufigsten, ist der häufigste vermutlich die Quinte.
   Prüfbar wäre das erst nach einer Neurechnung — `toene.json` legt nur
   den gewählten Ton und `einsAnteil` ab, nicht die ganze Verteilung.
   **Sie mit abzulegen kostet 12 Zahlen je Song** und macht die Frage
@@ -176,6 +187,13 @@ D mit 52 %. Die sichere Fassung ist die plausible.
 - **Die Sicherheit anzeigen.** Sie wird gemessen und nicht gezeigt. Ein
   Grundton mit 30 % ist etwas anderes als einer mit 95 %, und der
   Unterschied ist für den Betrachter heute unsichtbar.
+- **Einen echten Maßstab bauen, falls die Frage je wichtig wird.** Der
+  Fassungsvergleich prüft nur Konsistenz, nicht Richtigkeit. Belastbar
+  wäre eine unabhängige Nachrechnung mit einem anderen Verfahren — oder
+  der Abtastraten-Test aus ANALYZER-PRUEFUNG.md: Dieselbe Aufnahme bei
+  44,1 / 48 / 32 / 22,05 kHz muß dieselbe Tonart ergeben. Der brachte
+  die ALTE Tonartmessung zu Fall (12 von 12 Songs bekamen verschiedene
+  Tonarten) und ist auf die heutige noch nicht angewandt.
 
 ---
 
