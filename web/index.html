@@ -1589,16 +1589,57 @@ pre.text{white-space:pre-wrap;word-wrap:break-word;font:inherit;line-height:1.7}
 #zvglkopf{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 #zvgltitel{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach)}
 #zvglzu{margin-left:auto;width:26px;height:26px;font-size:14px}
-.zvz{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:baseline;padding:7px 0;border-top:1px solid #ffffff0a}
-.zvz .qn{font-size:11.5px;color:var(--schwach);letter-spacing:.04em;white-space:nowrap}
-.zvz .qn b{display:block;color:var(--text);font-size:12.5px;letter-spacing:0}
-.zvz .qw{font-size:clamp(15px,1.6vw,21px);line-height:1.45;white-space:nowrap;overflow:hidden;color:var(--schwach)}
-.zvz .qw i{font-style:normal;opacity:.45}
-.zvz .qw b{font-weight:700;color:#fff;padding:0 2px;border-radius:3px}
-.zvz.q-v2 .qw b{background:#f97b1433;outline:1px solid #f97b14}
-.zvz.q-v3 .qw b{background:#4b93f033;outline:1px solid #4b93f0}
-.zvz.q-wh .qw b{background:#16be5c33;outline:1px solid #16be5c}
-.zvz .qleer{font-size:12.5px;color:var(--schwach);font-style:italic}
+/* DIE DREI QUELLEN ALS KARAOKE (Caspar_D, 25.08.2026: "den
+   Dreifachvergleich ... haette ich gern professioneller dargestellt /
+   mache das bitte in der Karaoke-Sicht ... nur die gesungene Zeile zeigen
+   und per Wisch die gesungenen Worte aufhellen").
+
+   Vorher lief ein Fenster von elf Woertern mit, und das gerade gesungene
+   trug einen Kasten. Das las sich wie ein Protokoll, nicht wie Karaoke:
+   Der Blick musste das aktuelle Wort erst suchen, und der Zeilenanfang
+   wanderte staendig. Jetzt steht die Zeile still, und die Front wandert
+   durch sie hindurch - dieselbe Bewegung wie auf der Buehne.
+
+   Die Kontur ist woertlich die der Buehne (.zeile.aktiv): 0,9 px in
+   currentColor, paint-order stroke fill. currentColor und nicht eine feste
+   Farbe, weil sich der Rand sonst vom Wort abhebt, statt es nur zu
+   verdicken - der Grund steht bei .zeile.aktiv ausfuehrlich. */
+/* ZWEI SPALTEN (Caspar_D, 25.08.2026: "mach das Layout 2 spaltig / vorne
+   das Model / darunter zweizeilig Modelltyp und Anwendung / alles
+   rechtsbuendig in der Spalte / daneben die erkannten Texte -
+   linksbuendig").
+
+   Die Kopfspalte laeuft nach rechts auf die Trennlinie zu, der Text
+   beginnt links davon: so stehen beide Spalten an derselben Kante und das
+   Auge findet den Zeilenanfang, ohne zu suchen. Bei linksbuendiger
+   Kopfspalte flatterten die Enden je nach Wortlaenge. */
+.zvz{display:grid;grid-template-columns:148px 1fr;gap:16px;
+  /* UNTEN AUSRICHTEN (Caspar_D, 25.08.2026: "den Karaoke-Text und die
+     Zeilenkoepfe unten ausrichten zueinander").
+
+     Nicht "baseline" - das nimmt die ERSTE Grundlinie, und weil der Kopf
+     drei Zeilen hat und der Text eine grosse, haengt der Text dann oben am
+     Modellnamen. "last baseline" nimmt die letzte: "im Archiv" und die
+     gesungene Zeile sitzen auf derselben Linie. Das "end" davor ist der
+     Rueckfall fuer Browser ohne last-baseline - es richtet die Unterkanten
+     der Kaesten aus, was fast dasselbe Bild ergibt. */
+  align-items:end;align-items:last baseline;
+  padding:11px 0;border-top:1px solid #ffffff0a}
+.zvz .qn{font-size:11.5px;color:var(--schwach);letter-spacing:.04em;
+  text-align:right;white-space:nowrap;line-height:1.42}
+.zvz .qn b{display:block;font-size:13px;letter-spacing:0;color:var(--zq,var(--text))}
+.zvz .qn em{display:block;font-style:normal;font-size:10.5px;opacity:.72}
+.zvz .qw{font-size:clamp(17px,2.05vw,30px);font-weight:700;line-height:1.3;
+  letter-spacing:-.01em;color:var(--zvgl-kommt,rgba(255,255,255,.34));
+  -webkit-text-stroke:.9px currentColor;paint-order:stroke fill;
+  overflow-wrap:anywhere}
+/* Der Wisch: was gesungen ist, bleibt hell stehen - nicht nur das eine
+   Wort. Dieselbe Uebergangszeit wie in der Buehne, damit die Front
+   flieszt statt zu springen. */
+.zvz .qw .wort{transition:color .18s ease}
+.zvz .qw .wort.dran{color:var(--zq,#fff)}
+.zvz .qleer{font-size:12.5px;color:var(--schwach);font-style:italic;
+  -webkit-text-stroke:0}
 /* WER DAS GEBAUT HAT. Dieselbe Form wie das Reaktionsfenster darunter:
    ein Kasten mit Rand in der Akzentfarbe, kein Vollbild. Nur kleiner -
    es sind zwei Namen und drei Verweise, keine Tabelle. */
@@ -4494,27 +4535,123 @@ function studioEffekte(){
    Zeitprobe des Lesezeichens, Whisper aus whisper.ndjson).
 ------------------------------------------------------------------ */
 let zvglLauf = null, zvglFrisch = null;
+
+/* DREI KENNFARBEN FUER DREI QUELLEN (Caspar_D, 25.08.2026: "drei
+   Akzentfarben, wenn es keine 3 gibt, dann zur 1. Farbe passende im Kreis
+   nehmen").
+
+   Das ist die bewusste Ausnahme von der Hausregel. Fuer die Buehne gilt:
+   nichts wird ergaenzt, es erscheinen nur Farben, die im Cover wirklich
+   vorkommen - eine fruehere Fassung konstruierte aus einer Leitfarbe vier
+   weitere im 72-Grad-Abstand und gab einem Rotwein-Cover Gruen und
+   Magenta (siehe den Block bei bToene).
+
+   Hier ist der Zweck ein anderer. Die Farbe gibt nicht das Bild wieder,
+   sie unterscheidet drei Datenquellen. Wenn das Cover nur einen Ton
+   hergibt, muessen die anderen beiden trotzdem auseinanderzuhalten sein -
+   sonst kann man nicht sehen, welche Zeile zu wem gehoert. Deshalb wird
+   hier ergaenzt, und zwar als Triade: gleiche Helligkeit, gleiche
+   Buntheit, Farbton um 120 und 240 Grad gedreht. In OKLCH, damit die
+   beiden ergaenzten Toene wirklich gleich hell wirken - in HSL taeten sie
+   das nicht, dort ist Gelb bei gleicher "Helligkeit" viel heller als
+   Blau. */
+function okFarbe(hex){
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex).trim());
+  if (!m) return null;
+  const lin = (v) => { v = parseInt(v,16)/255; return v <= 0.04045 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+  const r = lin(m[1]), g = lin(m[2]), b = lin(m[3]);
+  const l = Math.cbrt(0.4122214708*r + 0.5363325363*g + 0.0514459929*b);
+  const mm = Math.cbrt(0.2119034982*r + 0.6806995451*g + 0.1073969566*b);
+  const ss = Math.cbrt(0.0883024619*r + 0.2817188376*g + 0.6299787005*b);
+  const L = 0.2104542553*l + 0.7936177850*mm - 0.0040720468*ss;
+  const A = 1.9779984951*l - 2.4285922050*mm + 0.4505937099*ss;
+  const B = 0.0259040371*l + 0.7827717662*mm - 0.8086757660*ss;
+  return { L, C: Math.hypot(A, B), H: Math.atan2(B, A) * 180 / Math.PI };
+}
+function okZuHex(o){
+  const H = o.H * Math.PI / 180, a = o.C * Math.cos(H), b = o.C * Math.sin(H);
+  const l = Math.pow(o.L + 0.3963377774*a + 0.2158037573*b, 3);
+  const m = Math.pow(o.L - 0.1055613458*a - 0.0638541728*b, 3);
+  const s = Math.pow(o.L - 0.0894841775*a - 1.2914855480*b, 3);
+  const kanal = (v) => {
+    v = v <= 0.0031308 ? 12.92*v : 1.055*Math.pow(v, 1/2.4) - 0.055;
+    return Math.max(0, Math.min(255, Math.round(v*255))).toString(16).padStart(2,'0');
+  };
+  return '#' + kanal( 4.0767416621*l - 3.3077115913*m + 0.2309699292*s)
+             + kanal(-1.2684380046*l + 2.6097574011*m - 0.3413193965*s)
+             + kanal(-0.0041960863*l - 0.7034186147*m + 1.7076147010*s);
+}
+function zvglKennfarben(s){
+  const f = (s && s.farben) || {};
+  /* Zuerst nehmen, was das Cover hergibt - in der Reihenfolge, in der die
+     Buehne sie auch benutzt. */
+  const da = [f.akzent, f.akzent2].filter(x => x && okFarbe(x));
+  /* Winkelabstand auf dem Farbkreis, 0 bis 180 Grad. */
+  const abstand = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+  const eindeutig = [];
+  for (const x of da){
+    const o = okFarbe(x);
+    /* Zwei Toene unter 25 Grad Abstand sind im Bild dasselbe und taugen
+       nicht zur Unterscheidung - dann lieber einen drehen. */
+    if (eindeutig.every(y => abstand(okFarbe(y).H, o.H) >= 25)) eindeutig.push(x);
+  }
+  const basis = okFarbe(eindeutig[0] || f.akzent || getComputedStyle(document.documentElement)
+                  .getPropertyValue('--akzent').trim() || '#f97b14');
+  const kraeftig = { L: Math.max(0.62, Math.min(0.86, basis.L)),
+                     C: Math.max(0.11, Math.min(0.22, basis.C)) };
+  const aus = eindeutig.slice(0, 3);
+  for (let k = aus.length; k < 3; k++)
+    aus.push(okZuHex({ L: kraeftig.L, C: kraeftig.C, H: basis.H + 120 * k }));
+  /* Coverfarben sind nicht fuer Schrift gemacht. "Noch lachst Du" liefert
+     ein Blau mit OKLCH-Helligkeit 0,51 - auf dem fast schwarzen Grund des
+     Fensters sind das gut 3,3:1, und damit steht es genau auf der Schwelle,
+     die fuer grosse fette Schrift gerade noch gilt. Wird das Fenster
+     schmaler, faellt die Schrift darunter. Also dieselbe Behandlung wie
+     bei den Buehnenzeilen: aufhellen, bis es reicht. 4,0 statt 4,5 - die
+     Schrift ist gross, fett und traegt zusaetzlich eine Kontur. */
+  return aus.map(h => lesbarAuf(h, '#0a0b0e', 4.0));
+}
 async function zeitVergleichAuf(id){
   let d; try { d = await (await fetch('/api/zeitprobe/' + id)).json(); } catch (e) { return; }
   /* Fehlt eine Quelle noch (v3 rechnet bei Suno, Whisper laeuft in der
      Nacht), fragt das Fenster alle 30 s selbst nach - nicht der Mensch. */
   clearTimeout(zvglFrisch);
   if (!d.v3 || !d.whisper) zvglFrisch = setTimeout(() => { if ($('zvgl').style.display !== 'none') zeitVergleichAuf(id); }, 30000);
+  /* Modell, Modelltyp und Anwendung stehen getrennt, nicht als ein Satz
+     mit Gedankenstrich (Caspar_D, 25.08.2026: "vorne das Model / darunter
+     zweizeilig Modelltyp und Anwendung"). Drei Felder lassen sich
+     untereinander setzen und rechtsbuendig ausrichten; ein Satz nicht. */
   const QUELLEN = [
-    { k:'v2', name:'Suno v2', unter:'aligned_lyrics/v2 — im Archiv', worte: d.v2 },
-    { k:'v3', name:'Suno v3', unter:'aligned_lyrics/v3 — Zeitprobe', worte: d.v3 },
-    { k:'wh', name:'Whisper', unter:'large-v3, Text als Prompt', worte: d.whisper },
+    { k:'v2', name:'Suno v2', typ:'aligned_lyrics/v2', zweck:'im Archiv',       worte: d.v2 },
+    { k:'v3', name:'Suno v3', typ:'aligned_lyrics/v3', zweck:'Zeitprobe',       worte: d.v3 },
+    { k:'wh', name:'Whisper', typ:'large-v3',          zweck:'Text als Prompt', worte: d.whisper },
   ];
   $('zvgltitel').textContent = 'Zeitmarken-Vergleich · ' + (d.titel || id);
   const feld = $('zvglzeilen'); feld.innerHTML = '';
+  const kenn = zvglKennfarben(song(id));
+  /* DIE ZEILEN DES TEXTES. Die Worte tragen den Umbruch in sich: ein Wort,
+     das auf \n endet, schlieszt seine Zeile ab. So steht es in
+     whisper.ndjson und ebenso in Sunos aligned_lyrics - deshalb reicht
+     eine Regel fuer alle drei Quellen. */
+  const zuZeilen = (worte) => {
+    const raus = []; let lauf = [];
+    for (const w of worte){
+      lauf.push(w);
+      if (/\n\s*$/.test(String(w[2]))){ raus.push(lauf); lauf = []; }
+    }
+    if (lauf.length) raus.push(lauf);
+    return raus.filter(z => z.some(w => String(w[2]).trim()));
+  };
   const zeilen = [];
   for (const q of QUELLEN){
     const z = document.createElement('div'); z.className = 'zvz q-' + q.k;
-    const n = document.createElement('span'); n.className = 'qn'; n.innerHTML = `<b>${q.name}</b>${q.unter}`;
+    z.style.setProperty('--zq', kenn[QUELLEN.indexOf(q)] || kenn[0]);
+    const n = document.createElement('span'); n.className = 'qn';
+    n.innerHTML = `<b>${q.name}</b><em>${q.typ}</em><em>${q.zweck}</em>`;
     const w = document.createElement('span');
     if (q.worte && q.worte.length){
       w.className = 'qw';
-      zeilen.push({ q, el: w, i: 0 });
+      zeilen.push({ q, el: w, zz: zuZeilen(q.worte), n: -1 });
     } else {
       w.className = 'qleer';
       w.textContent = q.k === 'v3' ? (d.v3lauft ? 'Suno rechnet noch — das Fenster fragt alle 30 s nach; ein neuer Lesezeichen-Klick holt das Ergebnis'
@@ -4556,22 +4693,40 @@ async function zeitVergleichAuf(id){
   $('zvglzu').onclick = () => { $('zvgl').style.display = 'none'; if (zvglLauf) cancelAnimationFrame(zvglLauf); zvglLauf = null; clearTimeout(zvglFrisch); };
   if (posVon(id) < 0 || aktuellId !== id) spielenNachId(id);
 
+  /* NUR DIE GESUNGENE ZEILE, UND DER WISCH DARUEBER.
+
+     Das Neuaufbauen des Markups kostet: bei 60 Bildern in der Sekunde
+     dreimal innerHTML ist teuer und laesst die Schrift zappeln. Deshalb
+     wird der Text nur geschrieben, wenn sich die ZEILE aendert; dazwischen
+     werden bloss Klassen umgeschaltet. Genau so macht es die Buehne
+     (siehe den Wisch in buehnenTextTakt). */
   const malen = () => {
     const t = audio.currentTime;
     for (const z of zeilen){
-      const w = z.q.worte;
-      let i = z.i;
-      while (i + 1 < w.length && w[i + 1][0] <= t) i++;
-      while (i > 0 && w[i][0] > t) i--;
-      z.i = i;
-      const von = Math.max(0, i - 3), bis = Math.min(w.length, i + 8);
-      let html = '';
-      for (let k = von; k < bis; k++){
-        const wort = esc(String(w[k][2]).replace(/\n/g, ' '));
-        const an = k === i && t >= w[i][0] && t <= (w[i][1] + 0.15);
-        html += an ? `<b>${wort}</b>` : `<i>${wort}</i>`;
+      const zz = z.zz; if (!zz.length) continue;
+      let n = 0;
+      for (let i = 0; i < zz.length; i++){ if (zz[i][0][0] <= t) n = i; else break; }
+      if (n !== z.n){
+        z.n = n;
+        /* Die Worttexte tragen ihr trennendes Leerzeichen schon in sich
+           ("Dieser ", "alte "). Wer sie zusaetzlich mit einem Leerzeichen
+           verbindet, bekommt zwei - im Markup sichtbar, auch wenn HTML
+           sie beim Setzen wieder zusammenfaltet. Also trimmen und einmal
+           verbinden. */
+        z.el.innerHTML = zz[n]
+          .map((w, j) => [j, esc(String(w[2]).replace(/\n/g, '').trim())])
+          .filter(([, t]) => t)
+          .map(([j, t]) => `<span class="wort" data-j="${j}">${t}</span>`).join(' ');
       }
-      z.el.innerHTML = html;
+      /* Die Front: alles, was angesungen ist, bleibt hell stehen. */
+      const w = zz[n];
+      let k = -1;
+      for (let i = 0; i < w.length; i++){ if (w[i][0] <= t) k = i; else break; }
+      /* Ueber data-j, nicht ueber den Laufindex: leere Worte (reine
+         Umbrueche) fallen beim Aufbau weg, danach zaehlen die Spans anders
+         als die Worte. Der Wisch waere sonst um jedes ausgelassene Wort
+         verschoben. */
+      z.el.querySelectorAll('.wort').forEach(e => e.classList.toggle('dran', +e.dataset.j <= k));
     }
     zvglLauf = requestAnimationFrame(malen);
   };
