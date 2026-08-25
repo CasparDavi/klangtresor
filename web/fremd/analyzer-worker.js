@@ -918,6 +918,54 @@ onmessage=function(e){
       }
       postMessage({type:'structure',segments:segments,duration:dur});
 
+      /* ================= CHROMA, EIGENE RECHNUNG =================
+
+         Es steckte bis zum 26.08.2026 in der FFT-Rundenschleife und
+         erbte deren Aufloesung: 1024 Punkte, weil das Spektrogramm sie
+         so braucht. Fuer Toene ist das zu grob. Ein Fach ist dort
+         46,9 Hz breit und die Hauptkeule des Fensters 188 Hz - ein
+         A-Dur-Dreiklang, dessen Toene 52 und 57 Hz auseinanderliegen,
+         verschmilzt vollstaendig. Nebenbei wurde es fuenfmal gerechnet,
+         einmal je Runde, und nur die letzte zaehlte.
+
+         Jetzt einmal, mit 8192 Punkten: Fach 5,9 Hz, Hauptkeule 23 Hz,
+         also sind zwei Toene im Abstand einer kleinen Terz ab 124 Hz
+         getrennt. Dafuer ist das Fenster 171 ms lang - fuer ein Bild
+         ueber Minuten ist das reichlich, fuer eine Notenmessung waere es
+         zu traege. Die macht bin/toene.js mit einem Fenster JE TON.
+
+         Zwanzig Rahmen je Sekunde. Das Bild ist gut 1300 Punkte breit;
+         bei fuenf Minuten reicht das bis zu vierfachem Zoom, ohne dass
+         eine Spalte leer bleibt.
+
+         GIPFEL STATT ALLER FAECHER, und die Scheitelfrequenz parabolisch
+         verfeinert statt der Fachmitte: Ein Fach ohne Ton trug frueher
+         genauso bei wie ein Gipfel (Befund 11), und die Fachmitte ist
+         nicht die Frequenz des Tons (Befund 12). Gemessen wurde ein
+         reiner 220-Hz-Ton als A# - jetzt als A. */
+      var CH_N=8192, CH_HOP=Math.round(sr/20);
+      var chRahmen=Math.max(1,Math.floor((n-CH_N)/CH_HOP));
+      var chromaFlat=new Float32Array(chRahmen*12);
+      var chBins=CH_N/2, chHatR=right&&right.length===n;
+      for(var cf=0;cf<chRahmen;cf++){
+        var cmL=rfft(ch,cf*CH_HOP,CH_N);
+        var cmR=chHatR?rfft(right,cf*CH_HOP,CH_N):null;
+        var cmB=new Float32Array(chBins), cmx=0;
+        for(var k=0;k<chBins;k++){ cmB[k]=cmR?(cmL[k]+cmR[k]):cmL[k]; if(cmB[k]>cmx)cmx=cmB[k]; }
+        var schwelle=cmx*0.02, c12=new Float32Array(12);
+        for(var k=1;k<chBins-1;k++){
+          if(cmB[k]<cmB[k-1]||cmB[k]<cmB[k+1]||cmB[k]<schwelle) continue;
+          var nn=cmB[k-1]-2*cmB[k]+cmB[k+1];
+          var dd=nn!==0?0.5*(cmB[k-1]-cmB[k+1])/nn:0;
+          if(!(dd>-1&&dd<1)) dd=0;
+          var fz=(k+dd)*sr/CH_N;
+          if(fz<80||fz>4000) continue;
+          c12[((Math.round(12*Math.log2(fz/440)+69)%12)+12)%12]+=cmB[k];
+        }
+        var c12mx=0; for(var i=0;i<12;i++) if(c12[i]>c12mx) c12mx=c12[i];
+        if(c12mx>0) for(var i=0;i<12;i++) chromaFlat[cf*12+i]=c12[i]/c12mx;
+      }
+
       postMessage({type:'progress',label:'FFT Runde…',pct:62});
       // --- PROGRESSIVE FFT ROUNDS using real FFT ---
       var fftSize2=1024;
@@ -952,7 +1000,6 @@ onmessage=function(e){
         var bandFluxArr=[];
         for(var fb=0;fb<nFluxBands;fb++)bandFluxArr.push(new Float32Array(numFrames));
         var prevMagBands=null;
-        var chromaFlat=new Float32Array(numFrames*12);
         var entropyArr=new Float32Array(numFrames);       // spectral tilt: bass/treble ratio   // harmonic density: active partials count
         var prevMag=null;
 
@@ -1029,15 +1076,6 @@ onmessage=function(e){
 
           entropyArr[frame]=entropyVal;
 
-          // chroma
-          var ch12=new Float32Array(12);
-          for(var k=1;k<bins2;k++){
-            var freq=k*sr/fftSize2;if(freq<80||freq>4000)continue;
-            var midi=Math.round(12*Math.log2(freq/440)+69);
-            ch12[((midi%12)+12)%12]+=magB[k];
-          }
-          var cmx2=Math.max.apply(null,Array.prototype.slice.call(ch12));
-          if(cmx2>0)for(var i=0;i<12;i++)chromaFlat[frame*12+i]=ch12[i]/cmx2;
         }
 
         /* Hier standen Tonhoehenglaettung, Noten-Stabilitaet und
@@ -1052,11 +1090,18 @@ onmessage=function(e){
 
         var isFinal=round===totalRounds-1;
         // build transferable list for zero-copy transfer
+        /* chromaFlat NICHT hier: Es liegt seit dem 26.08.2026 ausserhalb
+           der Rundenschleife und wird nur einmal gerechnet. Uebertruege
+           man es schon in der ersten Runde, waere sein Puffer danach
+           leer und die vier folgenden Runden schickten ein Nichts. Es
+           faehrt in jeder Runde als Kopie mit und wird erst zuletzt
+           uebergeben. */
         var transferList=[
           fluxArr.buffer,
           ...bandFluxArr.map(function(a){return a.buffer;}),
-          chromaFlat.buffer,entropyArr.buffer
+          entropyArr.buffer
         ];
+        if(isFinal) transferList.push(chromaFlat.buffer);
         var msg={
           type:'fft_partial',round:round+1,totalRounds:totalRounds,isFinal:isFinal,
           numFrames:numFrames,fftSize:fftSize2,dur:dur,
