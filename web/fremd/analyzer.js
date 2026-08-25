@@ -942,24 +942,37 @@
 </div>
 
 
-<div class="section sa-spur" id="spur-chroma">
+<!-- ZWEI BILDER, EIN ABSCHNITT (Caspar_D, 25.08.2026: "wir bauen beide
+     Bilder in ein 2-Registerlaschen-System, lassen aber die
+     Zwischenschlagversion oben stehen"). Sie zeigen dieselben zwoelf
+     Tonklassen, nur anders gemessen - nebeneinander sind sie der Beleg
+     dafuer, dass Noten nur zwischen den Schlaegen messbar sind.
+     Die x-tel-Leiste steht UNTER dem Bild, nicht darueber: So bleibt die
+     Oberkante beider Laschen auf derselben Hoehe und beim Umschalten
+     huepft nichts (Caspar_D: "damit es kein Huepfen beim Hin- und
+     Herschalten der Register gibt"). -->
+<div class="section sa-spur" id="spur-noten">
   <div class="slbl"><span class="spur-titel"></span></div>
-  <div class="chart-outer" style="height:160px"><div id="chromaspur-canvas" class="spur-flaeche" style="height:160px"></div><div class="playhead" id="ph-chromaspur"></div></div>
-  <div class="chart-text">Die Signale aller Oktaven sind auf die zwölf Halbtöne konsolidiert, die Oktav-Lage geht dabei verloren. Man sieht, welche Töne über die Zeit klingen und wie stark. Die Zeilen tragen die Farben der Klaviatur, damit sich die Halbtöne zwischen ihren Nachbarn einordnen lassen; normiert wird auf das 95. Perzentil, sodass ein einzelner Ausreißer das Bild nicht verschiebt.</div>
-</div>
-<div class="section sa-spur" id="spur-chroma-takt">
-  <div class="slbl"><span class="spur-titel"></span></div>
-  <!-- DIE TEILUNG ALS EIGENE BAHN (Caspar_D, 24.08.2026). Sie beantwortet
-       eine andere Frage als das Bild darunter: nicht WAS klingt, sondern
-       WIE FEIN dort gemessen werden musste - und damit, wo sich im Stück
-       viel bewegt. -->
-  <!-- 4 px Luft zur Piano-Roll (Caspar_D, 25.08.2026: "mit etwas Abstand
-       zur Piano-Roll") - die Bahn beantwortet eine andere Frage und soll
-       nicht wie deren oberste Zeile lesen. -->
-  <div class="chart-outer" style="height:11px;margin-bottom:4px"><div id="taktrasterspur-canvas" class="spur-flaeche" style="height:11px"></div></div>
-  <div class="chart-outer" style="height:160px"><div id="chromataktspur-canvas" class="spur-flaeche" style="height:160px"></div>
-    <div class="playhead" id="ph-chromataktspur"></div></div>
-  <div class="chart-text">Nicht je Rechenfenster gemittelt, sondern je Notenzone
+  <div class="bf-register" id="noten-register">
+    <button type="button" data-lasche="takt" class="an">Signal zwischen Taktschlägen</button>
+    <button type="button" data-lasche="alles">Gesamtes Signal</button>
+  </div>
+
+  <div id="spur-chroma-takt">
+    <div class="chart-outer" style="height:160px"><div id="chromataktspur-canvas" class="spur-flaeche" style="height:160px"></div>
+      <div class="playhead" id="ph-chromataktspur"></div></div>
+    <!-- DIE TEILUNG ALS EIGENE BAHN (Caspar_D, 24.08.2026). Sie beantwortet
+         eine andere Frage als das Bild darüber: nicht WAS klingt, sondern
+         WIE FEIN dort gemessen werden musste - und damit, wo sich im Stück
+         viel bewegt. -->
+    <!-- 4 px Luft zur Piano-Roll (Caspar_D, 25.08.2026: "mit etwas Abstand
+         zur Piano-Roll") - die Bahn beantwortet eine andere Frage und soll
+         nicht wie deren unterste Zeile lesen. Sie stand bis zum 25.08.2026
+         ÜBER dem Bild; seit die beiden Fassungen sich eine Lasche teilen,
+         steht sie darunter, damit die Oberkante beider Bilder auf gleicher
+         Höhe bleibt und beim Umschalten nichts hüpft. -->
+    <div class="chart-outer" style="height:11px;margin-top:4px"><div id="taktrasterspur-canvas" class="spur-flaeche" style="height:11px"></div></div>
+    <div class="chart-text">Nicht je Rechenfenster gemittelt, sondern je Notenzone
     zwischen zwei Schlägen — der Anschlag am Zonenanfang bleibt ausgespart, weil dort der Ton noch
     nicht steht. Wo sich der Toninhalt innerhalb einer Zone ändert, wird sie halbiert und nötigenfalls
     geviertelt; bleibt er gleich, bleibt das lange Fenster, und das ist zugleich das genauere. Die
@@ -971,6 +984,19 @@
     gemessen — mit einer Fensterlänge, die sich nach der Frequenz richtet: tiefe Töne über rund
     260 Millisekunden, hohe über acht. Gemessen wird in beiden Kanälen, und addiert werden die Beträge — nicht die Signale, denn gegenphasige Anteile würden sich beim Mischen auslöschen. Im Bass ist das der ganze Unterschied, denn dort deckt ein
     Rechenfenster der alten Auflösung elf Halbtöne auf einmal ab.</div>
+  </div>
+
+  <div id="spur-chroma" style="display:none">
+    <div class="chart-outer" style="height:160px"><div id="chromaspur-canvas" class="spur-flaeche" style="height:160px"></div><div class="playhead" id="ph-chromaspur"></div></div>
+    <div class="chart-text">Die Signale aller Oktaven sind auf die zwölf Halbtöne konsolidiert, die Oktav-Lage geht dabei verloren. Man sieht, welche Töne über die Zeit klingen und wie stark. Die Zeilen tragen die Farben der Klaviatur, damit sich die Halbtöne zwischen ihren Nachbarn einordnen lassen; normiert wird auf das 95. Perzentil, sodass ein einzelner Ausreißer das Bild nicht verschiebt. <b>Und genau daran sieht man, warum oben anders gemessen wird:</b>
+      Das lineare Rechenraster teilt die zwölf Tonklassen ungleich auf — bei 48 kHz fallen auf F# und A#
+      je neun Rechenfächer, auf C und D nur je vier. Diese Reihen sammeln deshalb dauernd Energie ein,
+      ob dort ein Ton steht oder nicht: Sie sind die hellsten und zugleich die ruhigsten des Bildes und
+      unterscheiden gar nichts mehr. In jedem Song sind es mindestens zwei solcher Reihen, und welche es
+      trifft, hängt allein an der Abtastrate — bei 44,1 kHz nicht F#, sondern F und A. Die Messung
+      zwischen den Schlägen hat das nicht: Dort lebt jede der zwölf Reihen, in allen 321 Stücken des
+      Archivs ohne Ausnahme.</div>
+  </div>
 </div>
 <div class="section"><div class="slbl"><span><span class="nam">Spektrogramm</span> — <span class="erkl">lokal Z-normiert · dunkel=Stille · hell=Signal</span></span></div>
   <div class="chart-outer"><canvas id="spectro-canvas" style="height:180px;background:#0a0a0a" class="chart-pending">berechne…</canvas><div class="playhead" id="ph-spectro"></div></div>
@@ -3501,8 +3527,86 @@
       }catch(e){ return null; }
     }
 
+    /* DIE ZWEI LASCHEN (Caspar_D, 25.08.2026). Beide Bilder zeigen
+       dieselben zwoelf Tonklassen; oben liegt die Messung zwischen den
+       Schlaegen, dahinter die ueber das ganze Signal.
+
+       Zwei Dinge muessen beim Umschalten stimmen:
+
+       1. GEZEICHNET WIRD ERST BEIM AUFSCHLAGEN. sichtbar() prueft
+          offsetParent, und der ist bei display:none null - eine
+          verborgene Lasche zeichnet nicht. Also holt der Wechsel das
+          Zeichnen nach. Die Daten liegen dafuer bereit: die Zonen in
+          _letzteZonen, das Chroma in window._chartData.
+
+       2. DER LESEKOPF (Caspar_D: "wichtig ist, dass der Lesekopf
+          richtig arbeitet"). updatePlayheads setzt ihn auf
+          pct*offsetWidth - und offsetWidth ist null, solange die Lasche
+          verborgen ist. Die RAF-Schleife zoege das binnen eines Bildes
+          nach, aber ein sichtbarer Sprung von links waere trotzdem da.
+          Deshalb wird er hier sofort gesetzt, mit derselben Rechnung
+          wie in der Schleife. */
+    var _letzteZonen=null, _lascheOffen='takt', _lascheGezeichnet={takt:false, alles:false};
+
+    /* EIN Name fuer beide Bilder (Caspar_D, 25.08.2026: "die Ueberschrift
+       ist Chroma, einmal ohne und einmal mit Beruecksichtigung der
+       Zwischen-Schlag-Bereiche"); sie heissen "Signal zwischen
+       Taktschlaegen" und "Gesamtes Signal". Die Laschen sagen, welche Fassung
+       offen ist; der Titel traegt nur noch die Erklaerung dazu. Beide
+       Zeichenfunktionen legen ihre hier ab, statt selbst in den Titel zu
+       schreiben - das Titelfeld liegt jetzt ueber den Laschen und gehoert
+       keiner der beiden allein. */
+    var _notenErkl={takt:'', alles:''};
+    function notenTitelSetzen(){
+      var titel=document.querySelector('#spur-noten .spur-titel');
+      if(!titel) return;
+      titel.innerHTML='<span class="nam" style="color:'+TASTE_HELL+'">Chroma</span> — '
+        + (_notenErkl[_lascheOffen]||'');
+    }
+
+    function notenKopfSetzen(){
+      if(!songDuration) return;
+      var pos=ZEIT()/songDuration;
+      var pct=viewEnd>viewStart?(pos-viewStart)/(viewEnd-viewStart):pos;
+      pct=Math.max(0,Math.min(1,pct));
+      ['chromataktspur','chromaspur'].forEach(function(id){
+        var ph=document.getElementById('ph-'+id), c=document.getElementById(id+'-canvas');
+        if(ph&&c&&c.offsetWidth) ph.style.left=Math.round(pct*c.offsetWidth)+'px';
+      });
+    }
+
+    function notenLascheWaehlen(welche){
+      _lascheOffen=welche;
+      var takt=document.getElementById('spur-chroma-takt');
+      var alles=document.getElementById('spur-chroma');
+      if(takt)  takt.style.display  = welche==='takt'  ? '' : 'none';
+      if(alles) alles.style.display = welche==='alles' ? '' : 'none';
+      var reg=document.getElementById('noten-register');
+      if(reg) Array.prototype.forEach.call(reg.querySelectorAll('button'), function(b){
+        b.classList.toggle('an', b.getAttribute('data-lasche')===welche); });
+      /* Nachzeichnen, falls diese Lasche noch nie offen war. */
+      var d=window._chartData&&window._chartData.fft;
+      if(welche==='takt' && !_lascheGezeichnet.takt && _letzteZonen && d){
+        chromaZonenZeichnen(_letzteZonen, d.dur); _lascheGezeichnet.takt=true;
+      }
+      if(welche==='alles' && !_lascheGezeichnet.alles && d && d.chroma){
+        chromaSpurZeichnen(d.chroma, d.dur); _lascheGezeichnet.alles=true;
+      }
+      notenTitelSetzen();
+      notenKopfSetzen();
+    }
+
+    document.addEventListener('click', function(e){
+      var b=e.target.closest && e.target.closest('#noten-register button');
+      if(b) notenLascheWaehlen(b.getAttribute('data-lasche'));
+    });
+
     async function chromaTaktBereitZeichnen(chromaFlat, dur, schlaege, tonUrl, id){
       var lauf=++_chromaTaktLauf;
+      /* Neuer Song: beide Laschen gelten als ungezeichnet, sonst zeigt
+         die zugeklappte noch das Bild des vorigen Stuecks. Die offene
+         Lasche bleibt, wie der Benutzer sie gelassen hat. */
+      _letzteZonen=null; _lascheGezeichnet.takt=false; _lascheGezeichnet.alles=false;
       /* Erst nachsehen, ob es fertig vorliegt. */
       var fertig=await chromaZonenHolen(id);
       if(lauf!==_chromaTaktLauf) return;
@@ -3527,7 +3631,10 @@
       var host=document.getElementById('chromataktspur-canvas');
       var rahmen=document.getElementById('spur-chroma-takt');
       if(!host||!rahmen||!dur) return;
-      rahmen.style.display='';
+      /* Merken, damit die Lasche beim Aufschlagen nachzeichnen kann,
+         ohne die Zonen noch einmal vom Server zu holen. */
+      _letzteZonen=nz; _lascheGezeichnet.takt=true;
+      rahmen.style.display = _lascheOffen==='takt' ? '' : 'none';
       var H=160, zeilenH=H/12;
       var t=['<svg viewBox="'+(viewStart*SPUR_W).toFixed(1)+' 0 '
         +((viewEnd-viewStart)*SPUR_W).toFixed(1)+' '+H+'" preserveAspectRatio="none" data-h="'+H+'">'];
@@ -3562,24 +3669,23 @@
       if(rhost) rhost.innerHTML=rt.join('');
 
       var zs=nz.schlaege||{}, su=(zs[1]||0)+(zs[2]||0)+(zs[4]||0)||1;
-      var titel=document.querySelector('#spur-chroma-takt .spur-titel');
-      /* Der Wortlaut ist Caspar_Ds, Glied fuer Glied (24.08.2026): der
-         NAME bleibt "Tonverteilung je Notenzone", alles weitere sind
-         eigene Glieder dahinter - womit gemessen wurde, woher das
-         Raster kommt, wie sich die Schlaege teilen. "aus dem Bass"
-         gehoerte nie in den Namen.
+      /* Der Wortlaut ist Caspar_Ds, Glied fuer Glied (24.08.2026):
+         womit gemessen wurde, woher das Raster kommt, wie sich die
+         Schlaege teilen. Der NAME hiess bis zum 25.08.2026
+         "Tonverteilung je Notenzone" und ist seither "Chroma" fuer
+         beide Laschen - welche Fassung man sieht, sagt die Lasche.
          "Taktschlaege", nicht "Takte": gezaehlt wird, was wirklich
          gemessen wurde - ein 4/4-Takt hat vier Schlaege, die einzeln
          geteilt sein koennen (bei "Okkultation" 570 Schlaege in rund
          142 Takten). Zonenzahl und Herkunftsangabe bleiben draussen,
          der Titel soll ein Satz bleiben (beides Caspar_Ds Entscheidung). */
-      if(titel) titel.innerHTML=
-          '<span class="nam" style="color:'+TASTE_HELL+'">Tonverteilung je Notenzone</span> — '
-        + '<span class="erkl">bei den Halbtonfrequenzen gemessen · Raster '
+      _notenErkl.takt=
+          '<span class="erkl">bei den Halbtonfrequenzen gemessen · Raster '
         + (nz.raster==='bass' ? 'aus dem Bass' : 'aus dem Mix') + ' · '
         + '<span style="color:#4b93f0">Taktschläge mit Vierteln ' + Math.round(100*(zs[1]||0)/su) + ' %</span> · '
         + '<span style="color:#45e989">mit Achteln ' + Math.round(100*(zs[2]||0)/su) + ' %</span> · '
         + '<span style="color:#f9531c">mit Sechzehnteln ' + Math.round(100*(zs[4]||0)/su) + ' %</span></span>';
+      notenTitelSetzen();
     }
 
     function chromaTaktZeichnen(chromaFlat, dur, schlaege){
@@ -3847,7 +3953,7 @@
         + '<span class="erkl">'
         + (direktGemessen ? 'bei den Halbtonfrequenzen gemessen · ' : 'aus den Rechenfenstern gemittelt · ')
         + 'Raster ' + (_bassRoh ? 'aus dem Bass' : 'aus dem Mix') + ' · '
-        /* Die Anteile in den Farben der Bahn darueber - dann braucht sie
+        /* Die Anteile in den Farben der Bahn darunter - dann braucht sie
            keine eigene Legende. */
         /* Gezaehlt werden Taktschlaege, nicht Zonen - ein geviertelter
            Schlag ergibt vier Zonen und ein ganzer eine, was die feine
@@ -3921,11 +4027,12 @@
       teile.push('</svg>');
       host.innerHTML=teile.join('');
 
-      var titel=document.querySelector('#spur-chroma .spur-titel');
-      if(titel) titel.innerHTML='<span class="nam" style="color:'+TASTE_HELL+'">Kumulierte Tonverteilung (Chroma)</span> — '
+      _lascheGezeichnet.alles=true;
+      _notenErkl.alles='<span class="erkl">über das ganze Signal gemittelt · '
         +'<span style="opacity:.88">Oktaven addiert, Breite = Intensität</span> · '
         +'<span style="opacity:.82">Tastenfarben: <span style="color:'+TASTE_HELL+'">weiß</span> '
-        +'und <span style="color:'+lesbar(TASTE_DUNKEL, 6.6)  /* Reserve fuer die 0,82 Deckkraft des umgebenden Spans */+'">schwarz</span> wie auf der Klaviatur</span>';
+        +'und <span style="color:'+lesbar(TASTE_DUNKEL, 6.6)  /* Reserve fuer die 0,82 Deckkraft des umgebenden Spans */+'">schwarz</span> wie auf der Klaviatur</span></span>';
+      notenTitelSetzen();
     }
 
     function kaskadeSpurenZeichnen(m){
