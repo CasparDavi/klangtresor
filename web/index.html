@@ -2594,10 +2594,12 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
       </label>
       <label class="versatz" id="bversatzgruppe" title="Textanzeige gegen die Wiedergabe verschieben">
         <span style="opacity:.6">früher</span>
-        <input type="range" id="versatz" min="-800" max="800" step="10" value="0">
+        <input type="range" id="versatz" min="-3000" max="3000" step="10" value="0">
         <span style="opacity:.6">später</span>
         <b id="versatzText">0 ms</b>
         <button type="button" onclick="versatzSetzen(0)">zurück</button>
+        <button type="button" class="schaltknopf" id="bmessen" onclick="latenzMessen()"
+                title="Verzögerung messen: ein kurzer Ton geht über die Lautsprecher, das Mikrofon hört zu">messen</button>
       </label>
       </div>
       <!-- Die Analysepanels sitzen UNTER dem Pult in derselben Spalte und
@@ -12132,9 +12134,15 @@ async function analyzerAufbauen(){
        bis zum 19.08.2026 ein eigenes <audio> als Rückfall; das ist
        gestrichen. Er hat jetzt keinen Weg mehr, sich selbst Ton zu
        verschaffen — er bekommt ihn hier, oder er hat keinen. */
-    zeit:   () => audio.currentTime,
+    /* MIT VERSATZ (Caspar_D, 26.08.2026: „da ist auch die BPM-Zeile und
+       das Spektrometer nicht synchron mit dem Ton"). Bis dahin galt der
+       Versatz nur für den Karaoke-Text; alles im Analyzer - Spielköpfe,
+       Taktspur, Hüllkurve - lief auf der rohen Uhr. Bei einem
+       Funklautsprecher, der ein bis zwei Sekunden puffert, zeigt sie
+       überall auf die falsche Stelle. Eine Quelle, ein Versatz. */
+    zeit:   () => Math.max(0, audio.currentTime - bVersatz/1000),
     laeuft: () => !audio.paused,
-    sprung: t => { audio.currentTime = t; },
+    sprung: t => { audio.currentTime = Math.max(0, t + bVersatz/1000); },
     umschalten: () => umschalten(),
   });
 
@@ -13323,8 +13331,144 @@ function springe(i){
 ------------------------------------------------------------- */
 let bVersatz = parseInt(localStorage.getItem('mysuno-versatz'), 10) || 0;
 
+/* ======================================================================
+   DIE VERZOEGERUNG SELBST MESSEN (Caspar_D, 26.08.2026, „in der Dusche":
+   „lass uns doch die Latenz der Lautsprecher testen, indem wir Testtoene
+   abspielen und per Computermikrofon aufnehmen").
+
+   Der Anlass: HomePods. AirPlay 2 puffert absichtlich ein bis zwei
+   Sekunden, damit mehrere Lautsprecher zusammenbleiben - und so lange
+   laeuft die ganze Anzeige der Musik voraus. Den Versatz von Hand zu
+   suchen ist Gefummel; er laesst sich messen.
+
+   WIE: Ein Chirp - ein Frequenzsweep von 2 auf 8 kHz in 20 ms - geht
+   ueber den normalen Ausgang hinaus, das Mikrofon nimmt vier Sekunden
+   auf, und eine Kreuzkorrelation sucht, wo er wieder auftaucht.
+
+   WARUM EIN CHIRP UND KEIN TON: Ein reiner Ton korreliert mit sich
+   selbst an jeder Periode - das Ergebnis waere mehrdeutig. Der Chirp
+   hat eine einzige scharfe Spitze. Nachgerechnet an Kunstsignalen
+   (26.08.2026): bei 5, 30 und 80 % Rauschen jeweils auf die
+   Millisekunde genau.
+
+   WARUM NICHT UNHOERBAR: Ueber 18 kHz schneiden Bluetooth- und
+   AirPlay-Codecs ab, der Ton kaeme gar nicht erst aus dem Lautsprecher.
+   2-8 kHz ist hoerbar, aber 20 ms kurz - ein Klick.
+
+   WAS GEMESSEN WIRD: die ganze Strecke - Ausgabepuffer, Funkweg,
+   Schallweg, Mikrofoneingang. Der Schallweg sind rund 3 ms je Meter,
+   der Rest des Eigenanteils steckt in beiden Messungen gleich. Wer die
+   reine Funkverzoegerung will, misst zweimal: einmal ueber den
+   eingebauten Lautsprecher, einmal ueber den Funklautsprecher; die
+   Differenz ist es dann.
+
+   ECHOUNTERDRUECKUNG MUSS AUS. Sie ist genau dafuer gebaut, den eigenen
+   Ausgabeton aus dem Mikrofonsignal zu entfernen - also das, was wir
+   suchen. Mit ihr an misst man nichts.
+
+   NUR MIT LAUTSPRECHERN. Bei Kopfhoerern hoert das Mikrofon nichts. */
+async function latenzMessen(){
+  const knopf = $('bmessen');
+  const sagen = (txt) => { const a=$('versatzText'); if(a) a.textContent = txt; };
+  if (knopf && knopf.disabled) return;
+  if (knopf){ knopf.disabled = true; knopf.classList.add('an'); }
+
+  const liefMusik = !audio.paused;
+  if (liefMusik) audio.pause();
+
+  let strom = null, ctx = null;
+  try {
+    sagen('Mikrofon…');
+    strom = await navigator.mediaDevices.getUserMedia({ audio: {
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const sr = ctx.sampleRate;
+    const AUF_S = 4, VOR_MS = 500;
+
+    /* Aufnehmen: roh, ueber einen ScriptProcessor. Ein MediaRecorder
+       gaebe komprimierte Daten, die erst wieder dekodiert werden
+       muessten - fuer eine Laufzeitmessung ein Umweg mit eigenem
+       Zeitfehler. */
+    const quelle = ctx.createMediaStreamSource(strom);
+    const puffer = new Float32Array(Math.ceil(sr * AUF_S));
+    let schreib = 0;
+    const knoten = ctx.createScriptProcessor(4096, 1, 1);
+    knoten.onaudioprocess = (e) => {
+      const d = e.inputBuffer.getChannelData(0);
+      for (let i = 0; i < d.length && schreib < puffer.length; i++) puffer[schreib++] = d[i];
+    };
+    quelle.connect(knoten);
+    knoten.connect(ctx.destination);   /* Safari laeuft sonst nicht an */
+
+    /* Der Chirp, als Muster und als Klang - beide aus derselben Formel,
+       damit die Korrelation genau das sucht, was hinausging. */
+    const CH_MS = 20, F0 = 2000, F1 = 8000;
+    const cn = Math.round(sr * CH_MS / 1000);
+    const muster = new Float32Array(cn);
+    for (let i = 0; i < cn; i++){
+      const tt = i / sr, k = (F1 - F0) / (CH_MS / 1000);
+      const fen = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (cn - 1));
+      muster[i] = Math.sin(2 * Math.PI * (F0 * tt + k * tt * tt / 2)) * fen;
+    }
+    const ab = ctx.createBuffer(1, cn, sr);
+    ab.getChannelData(0).set(muster);
+
+    sagen('messe…');
+    await new Promise(r => setTimeout(r, VOR_MS));
+    const q2 = ctx.createBufferSource(); q2.buffer = ab;
+    const laut = ctx.createGain(); laut.gain.value = 0.35;
+    q2.connect(laut); laut.connect(ctx.destination);
+    const losT = schreib;                       /* Stand der Aufnahme beim Losschicken */
+    q2.start();
+    await new Promise(r => setTimeout(r, (AUF_S * 1000) - VOR_MS));
+
+    knoten.disconnect(); quelle.disconnect();
+
+    /* Kreuzkorrelation ab dem Punkt, an dem losgeschickt wurde. */
+    let best = -Infinity, bestI = -1;
+    for (let s = losT; s + cn < schreib; s++){
+      let sum = 0;
+      for (let i = 0; i < cn; i++) sum += puffer[s + i] * muster[i];
+      if (sum > best){ best = sum; bestI = s; }
+    }
+    /* Wie deutlich ist die Spitze? Ohne Vergleich waere jedes Rauschen
+       ein Ergebnis. */
+    let mittel = 0, n = 0;
+    for (let s = losT; s + cn < schreib; s += 97){
+      let sum = 0;
+      for (let i = 0; i < cn; i++) sum += puffer[s + i] * muster[i];
+      mittel += Math.abs(sum); n++;
+    }
+    mittel = n ? mittel / n : 0;
+    const deutlich = mittel > 0 ? best / mittel : 0;
+
+    if (bestI < 0 || deutlich < 4){
+      sagen('nichts gehört');
+      console.warn('Latenzmessung: kein Chirp gefunden (Deutlichkeit '
+        + deutlich.toFixed(1) + '). Lautsprecher an? Mikrofon frei? Bei Kopfhörern geht es nicht.');
+    } else {
+      const ms = Math.round((bestI - losT) / sr * 1000);
+      versatzSetzen(ms);
+      console.log('Latenzmessung: ' + ms + ' ms (Deutlichkeit ' + deutlich.toFixed(1) + ')');
+    }
+  } catch (e){
+    sagen('ging nicht');
+    console.warn('Latenzmessung fehlgeschlagen:', e.message);
+  } finally {
+    if (strom) strom.getTracks().forEach(s => s.stop());
+    if (ctx) try { await ctx.close(); } catch(_){}
+    if (knopf){ knopf.disabled = false; knopf.classList.remove('an'); }
+    if (liefMusik) audio.play().catch(()=>{});
+  }
+}
+
 function versatzSetzen(ms){
-  bVersatz = Math.max(-800, Math.min(800, ms|0));
+  /* ±3 s statt ±800 ms (26.08.2026). AirPlay 2 puffert absichtlich ein
+     bis zwei Sekunden, damit mehrere Lautsprecher zusammenbleiben -
+     Caspar_D: „ich hab halt HomePods dran hängen und die verzögern
+     schrecklich". Mit 800 ms kam man da nicht hin. */
+  bVersatz = Math.max(-3000, Math.min(3000, ms|0));
   localStorage.setItem('mysuno-versatz', bVersatz);
   const r = $('versatz'), a = $('versatzText');
   if (r) r.value = bVersatz;
