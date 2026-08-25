@@ -86,21 +86,18 @@
       return rmsM>0?Math.min(1,rmsS/rmsM):0;
     }
 
-    // HPS (Harmonic Product Spectrum) pitch detection
-    // Returns dominant F0 in Hz, 0 if not found
-    function hpsPitch(mag,sr,fftSize){
-      var bins=mag.length;
-      var hps=new Float32Array(Math.floor(bins/4));
-      for(var k=0;k<hps.length;k++){
-        hps[k]=mag[k];
-        for(var h=2;h<=4;h++){var hb=Math.round(k*h);if(hb<bins)hps[k]*=mag[hb];}
-      }
-      var kLo=Math.round(80/sr*fftSize),kHi=Math.round(600/sr*fftSize);
-      var best=0,bestK=0;
-      for(var k=kLo;k<Math.min(kHi,hps.length);k++){if(hps[k]>best){best=hps[k];bestK=k;}}
-      if(bestK===0)return 0;
-      return bestK*sr/fftSize;
-    }
+    /* hpsPitch stand hier, 15 Zeilen: Grundtonsuche ueber das harmonische
+       Produktspektrum. Sie lief in JEDEM Rahmen - bei fuenf Minuten Musik
+       ueber 55.000 mal - und war damit der teuerste Posten der
+       FFT-Schleife. Gebraucht wurde sie zuletzt nur noch von vier
+       Groessen, deren Karten wegen erwiesener Fehler verborgen waren:
+       Harmonizitaet, Tonhoehe, Inharmonizitaet und harmonische Dichte.
+       Am 25.08.2026 sind sie alle gefallen, und damit auch sie.
+
+       Wer eine Grundtonmessung braucht, findet sie in bin/toene.js: YIN
+       auf dem getrennten vocals-Stem fuer die Stimmlage, Goertzel auf den
+       Notenfrequenzen fuer die Notenzonen. Beide messen auf getrennten
+       Spuren statt auf dem Vollmix. */
 
     function smooth(arr,w){return arr.map(function(_,i){var s=0,c=0;for(var j=Math.max(0,i-w);j<=Math.min(arr.length-1,i+w);j++){s+=arr[j];c++;}return s/c;});}
 
@@ -909,15 +906,8 @@ onmessage=function(e){
         var bandFluxArr=[];
         for(var fb=0;fb<nFluxBands;fb++)bandFluxArr.push(new Float32Array(numFrames));
         var prevMagBands=null;
-        var harmArr=new Float32Array(numFrames);
-        var pitchArr=new Float32Array(numFrames);
         var chromaFlat=new Float32Array(numFrames*12);
-        var inharmonArr=new Float32Array(numFrames);
-        var entropyArr=new Float32Array(numFrames);
-        var centroidArr=new Float32Array(numFrames);
-        var rolloffArr=new Float32Array(numFrames);
-        var tiltArr=new Float32Array(numFrames);       // spectral tilt: bass/treble ratio
-        var harmDensArr=new Float32Array(numFrames);   // harmonic density: active partials count
+        var entropyArr=new Float32Array(numFrames);       // spectral tilt: bass/treble ratio   // harmonic density: active partials count
         var prevMag=null;
 
         // frequency bin boundaries for tilt
@@ -965,30 +955,14 @@ onmessage=function(e){
           prevMag=mag;
           prevMagBands=mag;
 
-          // harmonicity + pitch via HPS — multi-F0 with spectral subtraction
+          /* Nur noch totalE - es traegt die Entropie. Hier standen bis zum
+             25.08.2026 die Grundtonsuche (hpsPitch), die Harmonizitaet, die
+             Tonhoehe und die Inharmonizitaet. Alle vier fuetterten
+             ausschliesslich Karten, die wegen erwiesener Fehler verborgen
+             waren, und deren letzter Leser - die Instrument-Erkennung - war
+             schon geloescht. Die Grundtonsuche war dabei der teuerste
+             Posten der ganzen Schleife. */
           var totalE=0;for(var k=0;k<bins2;k++)totalE+=mag[k]*mag[k];
-          var f0=hpsPitch(mag,sr,fftSize2);
-          var f0bin=f0>0?Math.round(f0/sr*fftSize2):0;
-          var harmE=0;
-          if(f0bin>0){for(var h=1;h<=6;h++){var hb=Math.round(f0bin*h);if(hb<bins2)harmE+=mag[hb]*mag[hb];}}
-          harmArr[frame]=totalE>0?Math.min(1,harmE/totalE*4):0;
-          pitchArr[frame]=f0>0?f0:0;
-
-
-
-          // inharmonicity
-          var inharmVal=0;
-          if(f0bin>0){
-            var nPart=0;
-            for(var h=2;h<=8;h++){
-              var idealBin=f0bin*h;if(idealBin>=bins2)break;
-              var searchW=Math.max(1,Math.round(f0bin*0.1));
-              var peakBin=idealBin,peakMag=0;
-              for(var kb=Math.max(0,idealBin-searchW);kb<=Math.min(bins2-1,idealBin+searchW);kb++){if(mag[kb]>peakMag){peakMag=mag[kb];peakBin=kb;}}
-              if(peakMag>0){inharmVal+=Math.abs(peakBin-idealBin)/idealBin;nPart++;}
-            }
-            if(nPart>0)inharmVal/=nPart;
-          }
 
           // spectral entropy
           var entropyVal=0;
@@ -1006,29 +980,10 @@ onmessage=function(e){
             var f2=k*sr/fftSize2, m2=mag[k]+magR[k];
             cnum2+=f2*m2;cden2+=m2;
           }
-          centroidArr[frame]=cden2>0?cnum2/cden2:0;
           var rolloffFrame=sr/2,tot2=cden2,cum2=0,thr3=tot2*0.85;
           for(var k=0;k<bins2;k++){cum2+=mag[k]+magR[k];if(cum2>=thr3){rolloffFrame=k*sr/fftSize2;break;}}
-          rolloffArr[frame]=rolloffFrame;
 
-          inharmonArr[frame]=inharmVal;
           entropyArr[frame]=entropyVal;
-
-          // spectral tilt: log ratio of bass energy to treble energy
-          var bassE=0,trebleE=0;
-          for(var k=1;k<bassHi;k++)bassE+=mag[k];
-          for(var k=trebleLo;k<bins2;k++)trebleE+=mag[k];
-          // tilt > 0 = bass dominant, < 0 = treble dominant, 0 = balanced
-          tiltArr[frame]=(bassE+trebleE)>0?(bassE-trebleE)/(bassE+trebleE):0;
-
-          // harmonic density: count partials above noise floor (10% of f0 magnitude)
-          var harmDens=0;
-          if(f0bin>0){
-            var noiseFloor=mag[f0bin]*0.1;
-            for(var h=1;h<=16;h++){var hb=Math.round(f0bin*h);if(hb>=bins2)break;if(mag[hb]>noiseFloor)harmDens++;}
-          }
-          harmDensArr[frame]=harmDens;
-
 
           // chroma
           var ch12=new Float32Array(12);
@@ -1041,59 +996,29 @@ onmessage=function(e){
           if(cmx2>0)for(var i=0;i<12;i++)chromaFlat[frame*12+i]=ch12[i]/cmx2;
         }
 
-        // smooth pitch
-        for(var i=1;i<pitchArr.length-1;i++){if(pitchArr[i]===0)pitchArr[i]=(pitchArr[i-1]+pitchArr[i+1])/2;}
-
-        // note stability
-        var noteStabArr=new Float32Array(numFrames);
-        var runLen=1;
-        for(var i=1;i<numFrames;i++){
-          var p1=pitchArr[i-1],p2=pitchArr[i];
-          var semitones=(p1>0&&p2>0)?Math.abs(12*Math.log2(p2/p1)):0;
-          if(semitones<1.5){runLen++;}else{for(var j=i-runLen;j<i;j++)noteStabArr[j]=runLen;runLen=1;}
-        }
-        for(var j=numFrames-runLen;j<numFrames;j++)noteStabArr[j]=runLen;
-        var maxStab=0;for(var i=0;i<numFrames;i++){if(noteStabArr[i]>maxStab)maxStab=noteStabArr[i];}maxStab=maxStab||1;
-        for(var i=0;i<numFrames;i++)noteStabArr[i]/=maxStab;
-
-        // chord change rate
-        var chordChanges=0,prevChordIdx=-1;
-        for(var f=0;f<numFrames;f++){
-          var c12s=chromaFlat.subarray(f*12,(f+1)*12);
-          var bestC=-1,bestCI=0;
-          for(var root=0;root<12;root++){
-            var maj=c12s[root]+c12s[(root+4)%12]*0.8+c12s[(root+7)%12]*0.9;
-            var min=c12s[root]+c12s[(root+3)%12]*0.8+c12s[(root+7)%12]*0.9;
-            if(maj>bestC){bestC=maj;bestCI=root*2;}if(min>bestC){bestC=min;bestCI=root*2+1;}
-          }
-          if(bestCI!==prevChordIdx&&prevChordIdx>=0)chordChanges++;prevChordIdx=bestCI;
-        }
-        var chordRate=numFrames>0?chordChanges/(numFrames*hop/sr):0;
+        /* Hier standen Tonhoehenglaettung, Noten-Stabilitaet und
+           Akkordwechselrate. Alle drei fuetterten verborgene Karten und
+           sind am 25.08.2026 mit ihnen gefallen; die Akkordrate ging
+           ausserdem in den Textur-Index, der ebenfalls tot war. */
 
         // mean scalars
-        var meanCentroid=0,meanRolloff=0,meanEntropy=0,meanInharm=0,meanTilt=0,meanHarmDens=0,cnt3=0;
-        for(var i=0;i<numFrames;i++){if(centroidArr[i]>0){meanCentroid+=centroidArr[i];meanRolloff+=rolloffArr[i];meanEntropy+=entropyArr[i];meanInharm+=inharmonArr[i];meanTilt+=tiltArr[i];meanHarmDens+=harmDensArr[i];cnt3++;}}
-        if(cnt3>0){meanCentroid/=cnt3;meanRolloff/=cnt3;meanEntropy/=cnt3;meanInharm/=cnt3;meanTilt/=cnt3;meanHarmDens/=cnt3;}
+        var meanEntropy=0,cnt3=0;
+        for(var i=0;i<numFrames;i++){if(entropyArr[i]>0){meanEntropy+=entropyArr[i];cnt3++;}}
+        if(cnt3>0)meanEntropy/=cnt3;
 
         var isFinal=round===totalRounds-1;
         // build transferable list for zero-copy transfer
         var transferList=[
-          fluxArr.buffer,harmArr.buffer,pitchArr.buffer,
+          fluxArr.buffer,
           ...bandFluxArr.map(function(a){return a.buffer;}),
-          chromaFlat.buffer,entropyArr.buffer,inharmonArr.buffer,noteStabArr.buffer,
-          tiltArr.buffer,harmDensArr.buffer,
-          centroidArr.buffer,rolloffArr.buffer
+          chromaFlat.buffer,entropyArr.buffer
         ];
         var msg={
           type:'fft_partial',round:round+1,totalRounds:totalRounds,isFinal:isFinal,
           numFrames:numFrames,fftSize:fftSize2,dur:dur,
-          flux:fluxArr,bandFlux:bandFluxArr,harm:harmArr,pitch:pitchArr,chroma:chromaFlat,
-          entropy:entropyArr,inharm:inharmonArr,noteStab:noteStabArr,
-          tilt:tiltArr,harmDens:harmDensArr,
-          centroidCurve:centroidArr,rolloffCurve:rolloffArr,
-          scalars:{centroid:meanCentroid,rolloff:meanRolloff,entropy:meanEntropy,
-                   inharm:meanInharm,chordRate:chordRate,
-                   tilt:meanTilt,harmDens:meanHarmDens},
+          flux:fluxArr,bandFlux:bandFluxArr,chroma:chromaFlat,
+          entropy:entropyArr,
+          scalars:{entropy:meanEntropy},
           pct:Math.round(pctEnd)
         };
         // only send heavy spectro data on final round (saves ~200MB transfer)

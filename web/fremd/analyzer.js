@@ -5620,7 +5620,7 @@
                fft_partial zwar inzwischen richtig weiter, aber eine
                zweite Schreibstelle ist eine zweite Fehlerquelle. */
             // vocal card updated by drawVocalCurve via classifyVoice
-            window._chartData.fft={frames:msg.frames,stereoFrames:msg.stereoFrames,numFrames:msg.numFrames,fftSize:msg.fftSize,sr:sr,dur:msg.dur,flux:msg.flux,bandFlux:msg.bandFlux,harm:msg.harm,pitch:msg.pitch,chroma:msg.chroma,entropy:msg.entropy,inharm:msg.inharm,noteStab:msg.noteStab,tilt:msg.tilt,harmDens:msg.harmDens,centroidCurve:msg.centroidCurve,rolloffCurve:msg.rolloffCurve};
+            window._chartData.fft={frames:msg.frames,stereoFrames:msg.stereoFrames,numFrames:msg.numFrames,fftSize:msg.fftSize,sr:sr,dur:msg.dur,flux:msg.flux,bandFlux:msg.bandFlux,chroma:msg.chroma,entropy:msg.entropy};
             funkenZeichnen();
             linienSpurenZeichnen();
             /* Der fruehere sechste Parameter (numFramesFull) war ein

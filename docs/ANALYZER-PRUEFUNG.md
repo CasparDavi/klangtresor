@@ -331,28 +331,38 @@ davor waren mit Musiktönen belegt. Er wurde nie angezeigt.
 > derselbe wie bei 14 — `schimmerFinden()` rechnet weiter, obwohl
 > niemand liest; siehe „Wartet auf den Rechenkern".
 
-## Wartet auf den Rechenkern
+## Am 25.08.2026 aus dem Rechenkern entfernt
 
-Zwei Schnitte sind fällig, aber nicht gemacht: Am 25.08.2026 lief der
-Nachrechnungslauf für die Spektrogramme (`node bin/vorrechnen.js
---nur-bilder`) auf genau diesem Rechenkern, und seine Kindprozesse lesen
-`analyzer-worker.js` bei jedem Song neu. Eine Änderung mittendrin gäbe
-Bilder aus zwei verschiedenen Fassungen.
+Beide Schnitte, die auf das Ende des Nachrechnungslaufs warteten, sind
+gemacht.
 
-**1 · `schimmerFinden()`** rechnet bei jeder Analyse, obwohl seit dem
-23.08. niemand das Ergebnis mehr liest (`SA_SCHIMMER_TOT`, Befund 14).
-Wichtig beim Schneiden: `bandVerlauf()` bleibt — es trägt auch die
-Grenzfrequenz. Nur der Schimmer und was ausschließlich an ihm hängt.
+**1 · Der Schimmer.** `schimmerFinden()` samt Aufruf und Nachrichtenfeld,
+dazu auf der Anzeigeseite die Bahn „stehende Töne", die Befundtabelle,
+das Feld und die Konstante `SA_SCHIMMER_TOT`. `bandVerlauf()` blieb
+stehen — es trägt auch die Grenzfrequenz, und dort stört das grobe
+Raster nicht.
 
-**2 · Die zehn Größen aus `SA_TOT`.** Ihre Karten sind verborgen, weil
-die Zahlen nachweislich falsch sind — aber gerechnet werden sie weiter,
-in jedem Rahmen, bei fünf Minuten Musik über 55.000 mal. Ihr letzter
-Leser war die Instrument-Erkennung, und die ist am 25.08.2026 gelöscht.
-Seither sind `attackMs`, `pitchStab`, `harmDensMed` und `tiltMed` im
-Analyzer verwaist; `centroid` und `rolloff` haben noch ihre eigenen
-(verborgenen) Karten. Zu prüfen ist je Größe, ob wirklich niemand mehr
-liest — der Analyse-Index tut es nicht, seine Felder sind lufs, lra,
-truePeak, clip, dynamik, stereo, korrelation, dauer, stand.
+**2 · Die zehn verborgenen Karten** und alles, was nur sie fütterte. Im
+Analyzer: `SA_TOT`, `totLegen()`, die Karten, ihre Einträge in
+Anzeigereihenfolge, Rücksetzlisten, Mittelwert-Karten und `gaugeIds`,
+die Funken-Kurven, die Erklärtexte. Im Rechenkern: `hpsPitch()` (die
+Grundtonsuche über das harmonische Produktspektrum), Harmonizität,
+Tonhöhe, Inharmonizität, Centroid, Rolloff, Spektral-Neigung,
+harmonische Dichte, Noten-Stabilität, Akkordwechselrate — mitsamt ihren
+Arrays, Mittelwerten, Übertragungspuffern und Nachrichtenfeldern. Von
+`scalars` bleibt ein einziges Feld: `entropy`.
+
+*Was das gebracht hat, nachgemessen:* 30 Sekunden Ton durch den echten
+Kern, bester von drei Läufen — vorher 1,91 s, jetzt 1,83 s, also **4 %**.
+Weniger als erwartet: Die FFT selbst dominiert, und die bleibt. Der
+Gewinn liegt woanders — acht Arrays weniger im Speicher, eine schlankere
+Ablage, und vor allem keine Zahlen mehr, die falsch sind und trotzdem
+gerechnet werden.
+
+*Was bleibt:* `entropy` (die Karte ist sichtbar und war nie in `SA_TOT`),
+`flux` und `bandFlux` (eigene Spur), `chroma` (beide Chroma-Laschen),
+`bandVerlauf` mit Grenzfrequenz und Höhenkante, die ganze
+Lautheitsrechnung nach EBU R128.
 
 ## Alle Funde, nach Schwere
 
