@@ -82,6 +82,13 @@
   border-bottom:1px solid rgba(255,255,255,.06)}
 .sunoanalyzer #sa-karten .card .lbl{order:1;font-size:11px;color:#8a8a8a;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* DIE FRAGE VORNE, DER FACHBEGRIFF KLEIN DAHINTER (Caspar_D, 25.08.2026:
+   "ich bin kein Toningenieur, ich kann mit der Terminologie wenig
+   anfangen"). Die Karte soll eine Frage beantworten, nicht einen
+   Messwert etikettieren. Der Fachbegriff bleibt lesbar stehen - so
+   lernt man die Zuordnung nebenbei, statt sie zu brauchen. */
+.sunoanalyzer #sa-karten .card .lbl i{font-style:normal;opacity:.55;
+  font-size:10px;margin-left:4px}
 .sunoanalyzer #sa-karten .card .val{order:2;font-size:13px;margin:0;
   text-align:right;font-variant-numeric:tabular-nums;color:#e6e6e6}
 .sunoanalyzer #sa-karten .card .funke,
@@ -434,8 +441,8 @@
    als ein Block"). Sie zeigen dasselbe Stueck aus sechs Blickwinkeln;
    der uebliche Abstand zwischen Diagrammen wuerde daraus sechs
    Einzelaussagen machen. Nur ueber der ersten bleibt Luft. */
-.sunoanalyzer .section.sa-spur[id^="spur-stem-"]{margin:0;padding:0 12px;position:relative}
-.sunoanalyzer .section.sa-spur[id^="spur-stem-"] .chart-outer{margin:0}
+.sunoanalyzer .sa-spur[id^="spur-stem-"]{margin:0;position:relative}
+.sunoanalyzer .sa-spur[id^="spur-stem-"] .chart-outer{margin:0}
 /* Der Name liegt IN der Spur, nicht darueber. Sonst braucht die
    Beschriftung mehr Platz als die Daten - gemessen 42 px Ueberschrift
    auf 40 px Kurve, macht bei sechs Spuren 505 px statt 264. Wie in der
@@ -459,11 +466,10 @@
 .sunoanalyzer .stemsolo.an{opacity:1}
 .sunoanalyzer .stemsolo.an::after{content:'';position:absolute;inset:2px;border-radius:50%;
   background:currentColor}
-.sunoanalyzer .section.sa-spur[id^="spur-stem-"] .slbl{
-  position:absolute;left:19px;top:3px;z-index:2;margin:0;pointer-events:none;
+.sunoanalyzer .sa-spur[id^="spur-stem-"] .slbl{
+  position:absolute;left:7px;top:3px;z-index:2;margin:0;pointer-events:none;
   text-shadow:0 1px 3px #000,0 0 6px #000}
-.sunoanalyzer .section#spur-stem-kopf{margin:14px 0 0;padding:0 12px}
-.sunoanalyzer .section#spur-stem-kopf .slbl{margin:0 0 3px}
+.sunoanalyzer #spur-stem-kopf{margin:0 0 3px}
 /* Ueber die ganze Breite (Caspar_D, 24.08.2026). Die uebliche Regel - 60
    bis 80 Zeichen je Zeile - gilt fuer Fliesstext, den man absatzweise
    liest. Das hier sind zwei Zeilen Bildunterschrift, und jede
@@ -484,10 +490,8 @@
    das Panel waechst dadurch von selbst mit, ohne feste Hoehe. Das
    seitliche Polster bringt das Panel mit - eigenes waere doppelt. */
 .sunoanalyzer #sa-karten #karten-text{grid-column:1/-1;margin-top:12px}
-/* Der Einzelspuren-Text steht hinter der letzten Spur und damit
-   ausserhalb einer Sektion; das seitliche Polster muss er selbst
-   mitbringen, sonst liegt er 12 px neben allen anderen. */
-.sunoanalyzer #stem-hinweis{padding:0 12px}
+/* Der Einzelspuren-Text liegt seit dem 25.08.2026 IM Panel - das
+   seitliche Polster kommt von der Sektion, ein eigenes waere doppelt. */
 .sunoanalyzer .chart-text b{color:#b0b0b6;font-weight:600}
 .sunoanalyzer #stem-hinweis{font-size:11px;color:#8a8a8a;line-height:1.5;margin:4px 0 0}
 .sunoanalyzer #stem-hinweis b{color:#b0b0b6;font-weight:600}
@@ -683,14 +687,15 @@
 <div class="kartenblock">
 <div class="karten-kopf">Pegel und Lautheit</div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-lufs">—</div><div class="lbl">Lautheit LUFS</div></div>
-  <div class="card"><div class="val" id="v-lra">—</div><div class="lbl">Schwankung LU</div></div>
-  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl">True Peak dBTP</div></div>
-  <div class="card"><div class="val" id="v-plr">—</div><div class="lbl">Reserve PLR</div></div>
-  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl">Clipping</div></div>
-  <div class="card"><div class="val" id="v-dc">—</div><div class="lbl">Gleichspannung</div></div>
-  <div class="card"><div class="val" id="v-korr">—</div><div class="lbl">Phasenkorrelation</div></div>
-  <div class="card"><div class="val" id="v-ende">—</div><div class="lbl">Ende</div></div>
+  <div class="card"><div class="val" id="v-lufs">—</div><div class="lbl">Wie laut insgesamt? <i>LUFS</i></div></div>
+  <div class="card"><div class="val" id="v-lra">—</div><div class="lbl">Atmet der Song? <i>Schwankung LU</i></div></div>
+  <div class="card"><div class="val" id="v-tp">—</div><div class="lbl">Wie nah an der Decke? <i>True Peak dBTP</i></div></div>
+  <div class="card"><div class="val" id="v-plr">—</div><div class="lbl">Wie viel Luft zur Spitze? <i>Reserve PLR</i></div></div>
+  <div class="card"><div class="val" id="v-check">—</div><div class="lbl">Technisch sauber? <i>Anschläge · Gleichspannung · Phase</i></div></div>
+  <div class="card"><div class="val" id="v-clip">—</div><div class="lbl">Werte am Anschlag <i>Clipping</i></div></div>
+  <div class="card"><div class="val" id="v-dc">—</div><div class="lbl">Sitzt die Welle mittig? <i>Gleichspannung</i></div></div>
+  <div class="card"><div class="val" id="v-korr">—</div><div class="lbl">Stereo verträglich? <i>Phasenkorrelation</i></div></div>
+  <div class="card"><div class="val" id="v-ende">—</div><div class="lbl">Endet er weich? <i>Ende</i></div></div>
   <div class="card"><div class="val" id="v-grenz">—</div><div class="lbl">Grenzfrequenz</div></div>
 </div>
 </div>
@@ -699,30 +704,30 @@
 <div class="grid g4">
   <div class="card"><div class="val" id="v-bpm">—</div><div class="lbl">BPM</div><div class="gauge" id="g-bpm"><div class="gauge-track"></div><div class="gauge-marker" id="gm-bpm"></div></div></div>
   <div class="card"><div class="val" id="v-dur">—</div><div class="lbl">Dauer</div></div>
-  <div class="card"><div class="val" id="v-loud">—</div><div class="lbl">Lautheit dB</div><div class="gauge" id="g-loud"><div class="gauge-track"></div><div class="gauge-marker" id="gm-loud"></div></div></div>
-  <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl">Dynamik dB</div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
+  <div class="card"><div class="val" id="v-loud">—</div><div class="lbl">Wie kräftig im Schnitt? <i>dB</i></div><div class="gauge" id="g-loud"><div class="gauge-track"></div><div class="gauge-marker" id="gm-loud"></div></div></div>
+  <div class="card"><div class="val" id="v-dyn">—</div><div class="lbl">Laut-leise-Abstand <i>Dynamik dB</i></div><div class="gauge" id="g-dyn"><div class="gauge-track"></div><div class="gauge-marker" id="gm-dyn"></div></div></div>
 </div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-centroid">—</div><div class="lbl">Centroid Hz</div><div class="gauge" id="g-centroid"><div class="gauge-track"></div><div class="gauge-marker" id="gm-centroid"></div></div></div>
   <div class="card"><div class="val" id="v-rolloff">—</div><div class="lbl">Rolloff Hz</div><div class="gauge" id="g-rolloff"><div class="gauge-track"></div><div class="gauge-marker" id="gm-rolloff"></div></div></div>
-  <div class="card"><div class="val" id="v-stereo">—</div><div class="lbl">Stereobreite</div><div class="gauge" id="g-stereo"><div class="gauge-track"></div><div class="gauge-marker" id="gm-stereo"></div></div></div>
+  <div class="card"><div class="val" id="v-stereo">—</div><div class="lbl">Wie breit ist das Stereo? <i>Breite</i></div><div class="gauge" id="g-stereo"><div class="gauge-track"></div><div class="gauge-marker" id="gm-stereo"></div></div></div>
   <div class="card"><div class="val" id="v-attack">—</div><div class="lbl">Attack ms</div><div class="gauge" id="g-attack"><div class="gauge-track"></div><div class="gauge-marker" id="gm-attack"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-key">—</div><div class="lbl">Tonart</div></div>
+  <div class="card"><div class="val" id="v-key">—</div><div class="lbl">Welche Tonart?</div></div>
   <div class="card"><div class="val" id="v-chord-rate">—</div><div class="lbl">Akkordwechsel/s</div><div class="gauge" id="g-chord-rate"><div class="gauge-track"></div><div class="gauge-marker" id="gm-chord-rate"></div></div></div>
   <div class="card"><div class="val" id="v-note-stab">—</div><div class="lbl">Noten-Stabilität</div><div class="gauge" id="g-note-stab"><div class="gauge-track"></div><div class="gauge-marker" id="gm-note-stab"></div></div></div>
 </div>
 <div class="grid g4">
-  <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl">Spektr. Entropie</div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
+  <div class="card"><div class="val" id="v-entropy">—</div><div class="lbl">Dicht oder aufgeräumt? <i>Spektr. Entropie</i></div><div class="gauge" id="g-entropy"><div class="gauge-track"></div><div class="gauge-marker" id="gm-entropy"></div></div></div>
   <div class="card"><div class="val" id="v-inharm">—</div><div class="lbl">Inharmonizität</div><div class="gauge" id="g-inharm"><div class="gauge-track"></div><div class="gauge-marker" id="gm-inharm"></div></div></div>
   <div class="card"><div class="val" id="v-harmdense">—</div><div class="lbl">Harm. Dichte</div><div class="gauge" id="g-harmdense"><div class="gauge-track"></div><div class="gauge-marker" id="gm-harmdense"></div></div></div>
   <div class="card"><div class="val" id="v-tilt">—</div><div class="lbl">Spektral Tilt</div><div class="gauge" id="g-tilt"><div class="gauge-track"></div><div class="gauge-marker" id="gm-tilt"></div></div></div>
 </div>
 <div class="grid g4">
   <div class="card"><div class="val" id="v-texture">—</div><div class="lbl">Textur-Index</div><div class="gauge" id="g-texture"><div class="gauge-track"></div><div class="gauge-marker" id="gm-texture"></div></div></div>
-  <div class="card"><div class="val" id="v-symmetry">—</div><div class="lbl">Energie-Form</div></div>
-  <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl">Stimme</div></div>
+  <div class="card"><div class="val" id="v-symmetry">—</div><div class="lbl">Wohin entwickelt er sich? <i>Energie-Form</i></div></div>
+  <div class="card"><div class="val" id="v-vocal" style="font-size:13px">—</div><div class="lbl">Welche Stimmlage? <i>Stimme</i></div></div>
 </div>
 </div>
 <div class="kartenblock">
@@ -793,41 +798,46 @@
   </div>
 </div>
 <!-- DIE SECHS STEMS (Caspar_D, 24.08.2026: "6 Huellkurven"). Getrennt von
-     bin/stems.js, vermessen von bin/toene.js. Jede Spur eine eigene
-     Sektion: dann verschiebt spurSichtSetzen() ihre viewBox mit, und der
-     Spielkopf laeuft ohne weiteres Zutun mit.
+     bin/stems.js, vermessen von bin/toene.js.
      Die Farben sind die der abgeschalteten Bahnen - sie waren frei
      geworden. Orange und Blau bleiben ausgespart, die stehen im Haus
      fuer tief/hoch und links/rechts. -->
-<div class="section" id="spur-stem-kopf" style="display:none">
-  <div class="slbl"><span class="spur-titel"></span></div>
-</div>
-<div class="section sa-spur" id="spur-stem-drums" style="display:none">
+<!-- EIN PANEL statt sieben Sektionen (Caspar_D, 25.08.2026: "die
+     Einzelspuren inklusive Legenden auf ein Panel legen") - dieselbe
+     Bauweise wie bei den Lautheitsverlaeufen: aussen die Sektion mit
+     Kopf und EINER Bildunterschrift, innen die Spuren als schlichte
+     Bloecke. spurSichtSetzen() greift ueber die IDs und die svg-Elemente,
+     nicht ueber die Sektionsklasse - die viewBox laeuft also unveraendert
+     mit. Der Hinweistext lag vorher AUSSERHALB jeder Sektion und musste
+     sein Seitenpolster selbst mitbringen; im Panel entfaellt das. -->
+<div class="section" id="spur-stems" style="display:none">
+<div class="slbl" id="spur-stem-kopf"><span class="spur-titel"></span></div>
+<div class="sa-spur" id="spur-stem-drums" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:44px"><div id="stemdrumsspur-canvas" class="spur-flaeche" style="height:44px"></div>
     <div class="playhead" id="ph-stemdrumsspur"></div></div>
 </div>
-<div class="section sa-spur" id="spur-stem-bass" style="display:none">
+<div class="sa-spur" id="spur-stem-bass" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:44px"><div id="stembassspur-canvas" class="spur-flaeche" style="height:44px"></div>
     <div class="playhead" id="ph-stembassspur"></div></div>
 </div>
-<div class="section sa-spur" id="spur-stem-vocals" style="display:none">
+<div class="sa-spur" id="spur-stem-vocals" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:44px"><div id="stemvocalsspur-canvas" class="spur-flaeche" style="height:44px"></div>
     <div class="playhead" id="ph-stemvocalsspur"></div></div>
 </div>
-<div class="section sa-spur" id="spur-stem-guitar" style="display:none">
+<div class="sa-spur" id="spur-stem-guitar" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:44px"><div id="stemguitarspur-canvas" class="spur-flaeche" style="height:44px"></div>
     <div class="playhead" id="ph-stemguitarspur"></div></div>
 </div>
-<div class="section sa-spur" id="spur-stem-piano" style="display:none">
+<div class="sa-spur" id="spur-stem-piano" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:44px"><div id="stempianospur-canvas" class="spur-flaeche" style="height:44px"></div>
     <div class="playhead" id="ph-stempianospur"></div></div>
 </div>
-<div class="section sa-spur" id="spur-stem-other" style="display:none">
+<div class="sa-spur" id="spur-stem-other" style="display:none">
   <div class="slbl"><span class="spur-titel"></span></div>
   <div class="chart-outer" style="height:44px"><div id="stemotherspur-canvas" class="spur-flaeche" style="height:44px"></div>
     <div class="playhead" id="ph-stemotherspur"></div></div>
@@ -846,6 +856,7 @@
     werden die sechs Tonspuren geladen und die Kreise erscheinen. Sie laufen dann stumm mit, damit das
     Umschalten lückenlos ist; das kostet allerdings dauerhaft Rechenzeit, weshalb sie im Normalbetrieb
     ausgeschaltet bleiben. Die Hüllkurven sind davon unabhängig und immer zu sehen.</div>
+</div>
 
 <div class="section" id="instruments-section" style="display:none">
   <div class="slbl"><span><span class="nam">Instrument-Erkennung</span> — <span class="erkl">regelbasiert · heuristisch</span></span></div>
@@ -1164,7 +1175,7 @@
      ------------------------------------------------------------------ */
   const KARTEN_REIHENFOLGE = [
     // Pegel nach Norm - die geprüften Zahlen zuerst
-    'v-lufs', 'v-lra', 'v-tp', 'v-plr',
+    'v-lufs', 'v-lra', 'v-tp', 'v-plr', 'v-check',
     // Fehlersuche
     'v-clip', 'v-dc', 'v-korr', 'v-ende', 'v-grenz',
     // Zeit und Form
@@ -2254,11 +2265,30 @@
         msg.truePeak.toFixed(1), msg.truePeak>ziel.tp?2:0,
         msg.truePeak>ziel.tp? Math.abs(luft).toFixed(1)+' dB darüber' : luft.toFixed(1)+' dB Luft');
 
+      /* Die Normalisierung der Dienste ist STATISCH: ein Verstaerkungswert
+         je Song, aus der integrierten Lautheit. Die Schwankung ist
+         verstaerkungsinvariant - sie ueberlebt das Regeln immer. Der
+         fruehere Text 'ueberlebt die Regelung nicht' war fachlich falsch
+         (25.08.2026, Review). Einziger echter Sonderfall: Plattformen,
+         die anheben ('beides'), schicken zu leise Songs durch einen
+         Begrenzer - der greift in die Spitzen. */
       v('Schwankung', '—', msg.lra.toFixed(1)+' LU', 0,
-        ziel.regelt==='nein'?'bleibt erhalten':'überlebt die Regelung nicht');
+        (ziel.regelt==='beides' && soll>tol)
+          ? 'beim Anheben greift der Begrenzer in die Spitzen'
+          : 'bleibt erhalten');
 
-      if(msg.clip>0) v('Vollausschläge','keine', msg.clip.toLocaleString('de-DE'), 2, 'übersteuert');
-      else           v('Vollausschläge','keine','0',0,'');
+      /* 'Uebersteuert' erst bei LAEUFEN am Anschlag (>=3 in Folge, im
+         Worker gezaehlt). Einzelne Werte an der Decke sind heisses, aber
+         sauberes Mastern - vorher machte schon ein Wert die Ampel rot.
+         Alte Ablagen kennen clipLauf nicht (undefined): dann gilt das
+         alte, strenge Urteil weiter, statt faelschlich zu entwarnen. */
+      if(msg.clip>0 && msg.clipLauf===0)
+        v('Vollausschläge','keine', msg.clip.toLocaleString('de-DE')+' einzeln', 1,
+          'am Anschlag, aber nie in Folge');
+      else if(msg.clip>0)
+        v('Vollausschläge','keine', msg.clip.toLocaleString('de-DE'), 2,
+          'übersteuert'+(msg.clipLauf>0?' ('+msg.clipLauf+' Läufe)':''));
+      else v('Vollausschläge','keine','0',0,'');
 
       v('Phase','positiv', msg.negPhase.toFixed(0)+'% negativ', msg.negPhase>5?1:0,
         msg.negPhase>5?'löscht sich stellenweise':'');
@@ -2330,8 +2360,12 @@
          den gibt es nicht mehr. Der Rueckfall lief also ohnehin ins
          Leere; jetzt ist er fort. */
       /* LAUTHEIT ÜBER DEM ZIEL: Wo die Kurzzeitlautheit (3 s) über dem Ziel
-         der gewählten Plattform liegt, wird beim Abspielen leiser geregelt -
-         das ist eine Fundstelle wie jede andere (23.08.2026). */
+         der gewählten Plattform liegt, traegt den Ueberschuss, um den der
+         GANZE Song beim Abspielen abgesenkt wird - die Plattform regelt
+         statisch, nicht je Stelle. Der fruehere Bahnname 'wird beim
+         Abspielen heruntergeregelt' behauptete eine dynamische Regelung,
+         die es nicht gibt (berichtigt 25.08.2026, Review). Eine
+         Fundstelle wie jede andere (23.08.2026). */
       if(window._chartData&&window._chartData.kurz&&ziel&&isFinite(ziel.lufs)){
         var kz=window._chartData.kurz, kSchritt=(dauer/kz.length), kIdx=[];
         for(var i5=0;i5<kz.length;i5++) if(isFinite(kz[i5])&&kz[i5]>ziel.lufs+0.5) kIdx.push(i5);
@@ -2340,7 +2374,7 @@
           x.titel=zeitTxt(x.von)+'–'+zeitTxt(x.bis)+': lauter als das Ziel von '
                  +ziel.lufs+' LUFS ('+ziel.name+')';
           return x; });
-        if(st5.length) bahnen.push({name:'Lauter als das Ziel — wird beim Abspielen heruntergeregelt', strecken:st5});
+        if(st5.length) bahnen.push({name:'Lauter als das Ziel — hier sitzt der Pegelüberschuss', strecken:st5});
       }
 
       /* STEHENDE TÖNE aus dem geprüften Detektor (bin/stoerfrequenz.js), von
@@ -2389,7 +2423,9 @@
         stufe=0; text='Passt für '+ziel.name+'.'; tipp='';
       } else if(soll<-0.5){
         stufe=1; text='Um '+(-soll).toFixed(1)+' LU lauter als '+ziel.name+' — wird beim Abspielen leiser geregelt.';
-        tipp='Kein Fehler, aber die Dynamik bleibt auf der Strecke.';
+        /* Statische Absenkung erhaelt die Dynamik vollstaendig - der
+           fruehere Tipp behauptete das Gegenteil (25.08.2026, Review). */
+        tipp='Kein Fehler: der ganze Song wird um diesen Betrag abgesenkt, die Dynamik bleibt dabei erhalten.';
       } else {
         stufe=1; text='Um '+soll.toFixed(1)+' LU leiser als '+ziel.name+'.';
         tipp='Anheben möglich, '+luft.toFixed(1)+' dB Luft vorhanden.';
@@ -3219,13 +3255,18 @@
       var fertig=await chromaZonenHolen(id);
       if(lauf!==_chromaTaktLauf) return;
       if(fertig){ chromaZonenZeichnen(fertig, dur); return; }
-      try{
-        if(tonUrl) await abtastwerteNachladen(tonUrl);
-        if(lauf!==_chromaTaktLauf) return;      /* inzwischen weitergeschaltet */
-        if(id) await bassHolen(id);
-        if(lauf!==_chromaTaktLauf) return;
-      }catch(e){}
-      chromaTaktZeichnen(chromaFlat, dur, schlaege);
+      /* OHNE ZONEN NICHT ANZEIGEN (Caspar_D, 25.08.2026: "wenn die
+         Spuren noch nicht gerechnet sind, das Panel und alle
+         abhaengigen nicht anzeigen"). Bis dahin lief hier eine
+         Selbstrechnung als Ersatz: die volle WAV nachladen, den
+         Bass-Stem holen, Goertzel je Schlag - sekundenlang auf dem
+         Hauptfaden, und heraus kam die schlechtere Messung ohne
+         Stem-Raster. Jetzt ist das Bild schlicht nicht da, bis
+         bin/toene.js den Song vermessen hat - wie beim
+         Einzelspuren-Panel. chromaTaktZeichnen bleibt als Werkzeug
+         stehen (Hausregel: abklemmen, nicht loeschen). */
+      var rahmen=document.getElementById('spur-chroma-takt');
+      if(rahmen) rahmen.style.display='none';
     }
 
     /* Zeichnen aus den vorgerechneten Zonen. Dieselbe Form wie die
@@ -5727,9 +5768,10 @@
           var fertig=await chromaZonenHolen(_laufendeId);
           if(fertig){ chromaZonenZeichnen(fertig, d.fft.dur); }
           else {
-            await bassHolen(_laufendeId);
-            chromaTaktZeichnen(d.fft.chroma, d.fft.dur,
-              (_katalogDaten&&_katalogDaten.schlaege)||null);
+            /* Dieselbe Ansage wie in chromaTaktBereitZeichnen (25.08.2026):
+               ohne Zonen kein Notlauf und kein Bild. */
+            var rz=document.getElementById('spur-chroma-takt');
+            if(rz) rz.style.display='none';
           }
         }
         if(typeof drawMainWaveform==='function') drawMainWaveform();
@@ -6173,6 +6215,45 @@
             setzN('v-dc',   msg.dc<0.0002 ? '0' : (msg.dc*100).toFixed(2)+'%');
             setzN('v-korr', msg.korr.toFixed(2)+(msg.negPhase>1?' ('+msg.negPhase.toFixed(0)+'% neg)':''));
             setzN('v-ende', msg.endeDb>-12 ? 'abrupt' : 'klingt aus');
+            /* DER GESUNDHEITSCHECK (Caspar_D, 25.08.2026: "alles gruen =
+               ein Haekchen, nur Auffaelliges wird gross"). Drei rein
+               technische Pruefungen - Anschlaege, Gleichspannung,
+               Phasenausloeschung - sagen im Normalfall alle dasselbe:
+               nichts los. Drei Zeilen "nichts los" sind Laerm. Deshalb
+               buendelt eine Karte das Ergebnis, und die Einzelkarten
+               erscheinen nur, wenn ihre Pruefung anschlaegt.
+
+               "Ende abrupt" gehoert absichtlich NICHT dazu: Suno schneidet
+               oft hart ab, das ist eine musikalische Auskunft und kein
+               technischer Fehler - die Karte bleibt eigenstaendig.
+
+               Alte Ablagen kennen clipLauf nicht (undefined): dann zaehlt
+               wie frueher jeder Einzelwert als Verdacht - streng statt
+               faelschlich entwarnend. */
+            (function(){
+              var clipSchlecht = msg.clipLauf!==undefined ? msg.clipLauf>0 : msg.clip>0;
+              var dcSchlecht   = msg.dc>=0.005;
+              var korrSchlecht = msg.negPhase>5;
+              var zeig=function(id,an){var el=document.getElementById(id);
+                var ka=el&&(el.closest('.card')||el.parentElement);
+                if(ka) ka.style.display=an?'':'none';};
+              zeig('v-clip', clipSchlecht);
+              zeig('v-dc',   dcSchlecht);
+              zeig('v-korr', korrSchlecht);
+              var punkte=[];
+              if(clipSchlecht) punkte.push('übersteuert');
+              if(dcSchlecht)   punkte.push('Welle sitzt schief');
+              if(korrSchlecht) punkte.push('Stereo löscht sich stellenweise');
+              var ck=document.getElementById('v-check');
+              if(ck){
+                ck.textContent = punkte.length ? '⚠' : '✓';
+                ck.style.color = punkte.length ? AMPEL[clipSchlecht?2:1] : AMPEL[0];
+                var kl=ck.parentElement.querySelector('.lbl');
+                if(kl) kl.innerHTML = punkte.length
+                  ? punkte.join(' · ')
+                  : 'Technisch sauber? <i>Anschläge · Gleichspannung · Phase</i>';
+              }
+            })();
             window._chartData.momentan=msg.momentan;
             window._chartData.kurz=msg.kurz;
             /* Merken für die Datenbank und für den MP3/WAV-Vergleich. */
@@ -6283,8 +6364,11 @@
             window._chartData.fft={frames:msg.frames,stereoFrames:msg.stereoFrames,numFrames:msg.numFrames,fftSize:msg.fftSize,sr:sr,dur:msg.dur,flux:msg.flux,bandFlux:msg.bandFlux,harm:msg.harm,pitch:msg.pitch,chroma:msg.chroma,entropy:msg.entropy,inharm:msg.inharm,noteStab:msg.noteStab,tilt:msg.tilt,harmDens:msg.harmDens,centroidCurve:msg.centroidCurve,rolloffCurve:msg.rolloffCurve};
             funkenZeichnen();
             linienSpurenZeichnen();
-            var spectroFrames=msg.numFramesFull||msg.numFrames;
-            drawSpectrogramFromFrames(msg.frames,msg.numFrames,msg.fftSize,sr,msg.dur,spectroFrames);
+            /* Der fruehere sechste Parameter (numFramesFull) war ein
+               liegengebliebener Fixversuch fuers selbe Problem - die
+               Funktion hat ihn nie gelesen. Die Spaltenzahl bestimmt
+               sie jetzt selbst aus dem Array. */
+            drawSpectrogramFromFrames(msg.frames,msg.numFrames,msg.fftSize,sr,msg.dur);
             /* Auch OHNE Rohdaten aufrufen: Beim Abspielen aus der
                Ablage gibt es keine stereoFrames, wohl aber das fertige
                Bild - und die Zeichenfunktion nimmt dann den Weg "nur
@@ -6614,22 +6698,14 @@
           var x=i/sl.length*c.width,h=sl[i]/mx*c.height;
           ctx.fillRect(x,c.height-h,Math.max(1,c.width/sl.length),h);
         }
-        /* DIE BANDNAMEN ZULETZT, NICHT ZUERST (Caspar_D, 24.08.2026: "fehlt
-         die Beschriftung der Frequenzbänder"). Sie standen in
-         rgba(255,255,255,0.25) - rund 2:1 Kontrast, unter der
-         Lesbarkeitsschwelle - und wurden ausserdem von den Datenspalten
-         ueberzeichnet, weil sie VOR ihnen kamen. Jetzt liegen sie oben,
-         auf einem schmalen dunklen Grund, damit sie auch ueber hellen
-         Stellen stehen. */
-      ctx.font='8px system-ui';
-      for(var bl=0;bl<nBands;bl++){
-        var yl=Math.round(bl*bandH), txt=bandNames[bl];
-        var br=ctx.measureText(txt).width;
-        ctx.fillStyle='rgba(10,10,10,0.72)';
-        ctx.fillRect(0,yl+1,br+7,11);
-        ctx.fillStyle='rgba(255,255,255,0.62)';
-        ctx.fillText(txt,3,yl+9);
-      }
+        /* Bewusst OHNE Bandnamen: dieser Zweig zeichnet eine Summenkurve,
+           es gibt keine Baender zu beschriften. Hier stand bis zum
+           25.08.2026 eine verwaiste Kopie der Beschriftungsschleife, die
+           bandH und bandNames benutzte - beide werden erst NACH dem
+           return dieses Zweigs deklariert und waren hier per Hoisting
+           undefined: der Zweig waere beim ersten Lauf geworfen. Die
+           lebende Beschriftung steht unten im Bandzweig, samt der
+           Geschichte dieses Fundes. */
       markReady('flux-canvas');drawTimeAxis(ctx,c.width,c.height,dur);return;
       }
 
@@ -6932,7 +7008,7 @@
     }
 
 
-    function _drawSpectrogramFromFrames(frames,numFrames,fftSize,sr,dur,numFramesFull){
+    function _drawSpectrogramFromFrames(frames,numFrames,fftSize,sr,dur){
       var bins=fftSize/2;
       /* Die Hoehe steht im Markup, nicht hier. Sie stand vorher an
          beiden Stellen - und wer eine davon aendert, bekommt ein Bild,
@@ -6977,6 +7053,17 @@
          ebenso wie das Fuellen. Achsen, Warnband und Titel laufen
          weiter, denn die haengen nicht an den Rohdaten. */
       var ohneRoh = !frames;
+      /* DIE EHRLICHE SPALTENZAHL (25.08.2026, Review). In den
+         Vorschaurunden schickt der Worker heruntergerechnete Frames
+         (previewStep, hoechstens ~2000 Spalten), meldet numFrames aber
+         als VOLLE Zahl. Perzentile und Bildaufbau lasen damit weit
+         hinter dem Array-Ende (TypedArray liefert undefined -> NaN):
+         die Vorschaubilder waren Muell, und die Perzentilrechnung lief
+         ueber die volle Breite statt ueber die gelieferte. Ab hier gilt
+         darum, was wirklich im Array liegt. Nebenwirkung erwuenscht:
+         die Vorschaurunden rechnen jetzt ueber ~2000 statt ~56000
+         Spalten. */
+      if(!ohneRoh) numFrames = Math.floor(frames.length/bins) || numFrames;
       if(ohneRoh){
         /* Nur zeigen. Der Puffer steht schon (aus dem gespeicherten
            Bild), alles Weitere haengt an den Rohdaten und ist beim
@@ -6995,14 +7082,24 @@
       // per-frequency percentile scaling — compute once over ALL frames, cache
       if(!ohneRoh && (!window._spectroPerc||window._spectroPerc.bins!==bins
          ||window._spectroPerc.numFrames!==numFrames||window._spectroPerc.mitte!==P_MITTE)){
+        /* HISTOGRAMM STATT 512 SORTIERUNGEN (25.08.2026, Review). Die
+           Frames sind Bytes 0..255: je Bin einmal durchzaehlen und die
+           drei Perzentile aus den kumulierten Faechern ablesen - exakt
+           dasselbe Ergebnis wie sorted[floor(n*q)], nur ohne Kopie und
+           ohne Sort. Zusammen mit der ehrlichen Spaltenzahl oben faellt
+           die Endrunden-Blockade von grob 1-3 s auf Millisekunden. */
         var p5arr=new Float32Array(bins),pMarr=new Float32Array(bins),p95arr=new Float32Array(bins);
+        var perzByte=function(hh,nn,q){
+          var zielB=Math.floor(nn*q)+1, cb=0;
+          for(var bB=0;bB<256;bB++){ cb+=hh[bB]; if(cb>=zielB) return bB/255; }
+          return 1;
+        };
         for(var k=0;k<bins;k++){
-          var vals=new Float32Array(numFrames);
-          for(var fi2=0;fi2<numFrames;fi2++) vals[fi2]=frames[fi2*bins+k]/255;
-          var sorted=vals.slice().sort();
-          p5arr[k]=sorted[Math.floor(numFrames*0.05)];
-          pMarr[k]=sorted[Math.floor(numFrames*P_MITTE)];
-          p95arr[k]=sorted[Math.floor(numFrames*0.95)];
+          var hh=new Uint32Array(256);
+          for(var fi2=0;fi2<numFrames;fi2++) hh[frames[fi2*bins+k]]++;
+          p5arr[k]=perzByte(hh,numFrames,0.05);
+          pMarr[k]=perzByte(hh,numFrames,P_MITTE);
+          p95arr[k]=perzByte(hh,numFrames,0.95);
         }
         window._spectroPerc={p5:p5arr,pM:pMarr,p95:p95arr,bins:bins,numFrames:numFrames,mitte:P_MITTE};
       }
@@ -7053,13 +7150,20 @@
         }
         return;
       }
-      // contrast stretch — compute once over ALL frames, cache
+      /* Kontraststreckung - einmal ueber ALLE Frames, im Zwischenspeicher.
+         HISTOGRAMM STATT SORT (25.08.2026, Review): Hier liefen vorher
+         ~29 Millionen Werte durch push() in ein ungetyptes Array
+         (>230 MB Boxen) und dann durch sort() - die messbare Blockade
+         am Analyse-Ende. stereoFrames ist Int8, |Wert| ist eine ganze
+         Zahl 0..127: 128 Zaehlfaecher, einmal durchzaehlen, kumulieren,
+         ablesen. EXAKT dasselbe Perzentil, Sekunden statt Minuten der
+         Muellabfuhr. */
       if(!ohneRoh && (!window._stereoP95||window._stereoP95.numFrames!==numFrames)){
-        var allVals=[];
-        for(var fi=0;fi<numFrames;fi++)
-          for(var k=0;k<bins;k++) allVals.push(Math.abs(stereoFrames[fi*bins+k]));
-        allVals.sort(function(a,b){return a-b;});
-        window._stereoP95={val:allVals[Math.floor(allVals.length*0.95)]||1,numFrames:numFrames};
+        var hst=new Uint32Array(128), nWerte=numFrames*bins;
+        for(var fi=0;fi<nWerte;fi++) hst[Math.abs(stereoFrames[fi])]++;
+        var zielN=Math.floor(nWerte*0.95)+1, cum=0, p95v=127;
+        for(var hw=0;hw<128;hw++){ cum+=hst[hw]; if(cum>=zielN){ p95v=hw; break; } }
+        window._stereoP95={val:p95v||1,numFrames:numFrames};
       }
       var scale=(window._stereoP95&&window._stereoP95.val>0)?127/window._stereoP95.val:1;
 
@@ -7730,11 +7834,14 @@
           }
         }
       }
-      /* Der Kopf des Blocks. Er steht nur da, wenn auch Spuren da sind -
-         eine Ueberschrift ohne Inhalt ist Laerm. */
+      /* Das PANEL steht nur da, wenn auch Spuren da sind - eine
+         Ueberschrift ohne Inhalt ist Laerm. Seit dem 25.08.2026 schaltet
+         das die ganze Sektion, nicht mehr nur die Kopfzeile: Kopf,
+         Spuren und Bildunterschrift liegen jetzt zusammen darin. */
+      var panel = document.getElementById('spur-stems');
+      if (panel) panel.style.display = gezeigt ? '' : 'none';
       var kopf = document.getElementById('spur-stem-kopf');
       if (kopf){
-        kopf.style.display = gezeigt ? '' : 'none';
         var kt = kopf.querySelector('.spur-titel');
         if (kt && gezeigt){
           var an = !!(window.stemInspektionStand && window.stemInspektionStand());

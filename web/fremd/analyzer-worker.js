@@ -547,16 +547,31 @@ onmessage=function(e){
          Ohne den Verlauf sieht ein Stück mit zwei Ausreißern am Anfang
          und am Ende aus wie eines, das durchgehend übersteuert: erster
          und letzter Zeitpunkt sind dieselben. */
+      /* EINZELWERTE UND LAEUFE getrennt zaehlen (25.08.2026, Review).
+         Ein einzelner Wert am Anschlag ist ein normal ausgesteuerter
+         Transient - und dekodiertes verlustbehaftetes Material schiesst
+         als Float legitim ueber 1,0 hinaus (Codec-Overshoot). Echte
+         Uebersteuerung ist erst der LAUF aufeinanderfolgender Werte am
+         Anschlag (Schwelle: drei in Folge). Beide Zahlen aus demselben
+         Durchgang; clip bleibt die Einzelwertzahl, clipLauf zaehlt die
+         Laeufe. Alte Ablagen kennen clipLauf nicht - die Anzeige faellt
+         dann auf das alte, strenge Urteil zurueck. */
       var clipFw=Math.max(1,Math.round(sr*SPITZE_FENSTER));
       var clipVerlauf=new Uint16Array(Math.ceil(left.length/clipFw));
-      var clip=0, clipErst=-1, clipLetzt=-1;
+      var clip=0, clipErst=-1, clipLetzt=-1, clipLauf=0;
       for(var c2=0;c2<2;c2++){
-        var xx=c2?right:left;
-        for(var i2=0;i2<xx.length;i2++) if(Math.abs(xx[i2])>=0.9999){
-          clip++; if(clipErst<0)clipErst=i2/sr; clipLetzt=i2/sr;
-          var cw=(i2/clipFw)|0;
-          if(cw<clipVerlauf.length&&clipVerlauf[cw]<65535) clipVerlauf[cw]++;
+        var xx=c2?right:left, lauf=0;
+        for(var i2=0;i2<xx.length;i2++){
+          if(Math.abs(xx[i2])>=0.9999){
+            clip++; lauf++; if(clipErst<0)clipErst=i2/sr; clipLetzt=i2/sr;
+            var cw=(i2/clipFw)|0;
+            if(cw<clipVerlauf.length&&clipVerlauf[cw]<65535) clipVerlauf[cw]++;
+          } else {
+            if(lauf>=3) clipLauf++;
+            lauf=0;
+          }
         }
+        if(lauf>=3) clipLauf++;   /* Lauf, der bis zum letzten Wert reicht */
       }
 
       // Gleichspannungsanteil: kostet Aussteuerungsreserve, hört man nicht
@@ -607,7 +622,7 @@ onmessage=function(e){
         lufs:LN.integriert, lra:LN.schwankung,
         momentanMax:LN.momentanMax, kurzMax:LN.kurzMax,
         truePeak:tpDb, abtastSpitze:20*Math.log10(Math.max(TP.abtast,1e-10)),
-        clip:clip, clipErst:clipErst, clipLetzt:clipLetzt,
+        clip:clip, clipLauf:clipLauf, clipErst:clipErst, clipLetzt:clipLetzt,
         dc:dc, korr:korr, negPhase:negPhase, endeDb:endeDb,
         /* Drei Verläufe statt drei Zahlen - daraus bildet die
            Oberfläche die Strecken je Plattform. */
