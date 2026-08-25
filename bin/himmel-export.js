@@ -77,6 +77,11 @@ function deklaration(name) {
 }
 
 const code = [
+  /* Der Rabe (25.08.2026): eigenes Modul, hier ganz eingebettet - das
+     Gestalt-Dropdown steht im geschnittenen Panel, und ohne rabeZeichnen
+     bliebe die dritte Wahl ein unsichtbarer Flieger. module.exports am
+     Ende ist durch den typeof-Guard im Modul selbst abgesichert. */
+  fs.readFileSync(path.join(WURZEL, 'web', 'fremd', 'rabe.js'), 'utf8'),
   konstante(/const NEBEL = \[[^\n]*\];/),
   konstante(/const karteFarbe = [^\n]*;/),
   funktion('koronaFarbe'),
@@ -90,7 +95,7 @@ const code = [
   'let karteSpot = null;', funktion('karteKennwerte'),
   funktion('karteLayout'), funktion('karteSteckbrief'), funktion('karteHimmel'),
   konstante(/const ORBIT_EXZ = [^\n]*;/), konstante(/\{ let a = 0; for \(let k = 0; k < KEPLER_N[^\n]*\}/), konstante(/const KEPLER_GES = [^\n]*;/), funktion('keplerPhase'),
-  "let reise = false; const reiseBesucht = new Set(); let reiseWeg = []; const reiseSpuren = { '2d': [], '3d': [] }; let reiseSpur = reiseSpuren['3d'], reiseSpurArt = '3d'; let schiffLauf = 0; let zufall = false; let karteAnflug = null; function schiffName(){ return " + JSON.stringify(SCHIFF_TEXT) + "; } function matrixKennung(){ return " + JSON.stringify(MATRIX_TEXT) + "; } let schiffArt = 'orbit'; let schiffLetzteId = null, warpT0 = 0, warpVon = null, warpNach = null; let schiffKamVon = null; let probeflug = false, probeT0 = 0; const PROBE_UMLAUF = 1.0, PROBE_RUNDEN = 3; let kubus = false; const assimiliert = new Set(); let supernovae = []; const ZWILLING = 0.17;",
+  "let reise = false; const reiseBesucht = new Set(); let reiseWeg = []; const reiseSpuren = { '2d': [], '3d': [] }; let reiseSpur = reiseSpuren['3d'], reiseSpurArt = '3d'; let schiffLauf = 0; let zufall = false; let karteAnflug = null; let gestalt = 'schiff'; function schiffName(){ return " + JSON.stringify(SCHIFF_TEXT) + "; } function matrixKennung(){ return " + JSON.stringify(MATRIX_TEXT) + "; } let schiffArt = 'orbit'; let schiffLetzteId = null, warpT0 = 0, warpVon = null, warpNach = null; let schiffKamVon = null; let probeflug = false, probeT0 = 0; const PROBE_UMLAUF = 1.0, PROBE_RUNDEN = 3; let kubus = false; const assimiliert = new Set(); let supernovae = []; const ZWILLING = 0.17;",
   funktion('reiseNaechster'), funktion('reiseToggle'), funktion('probeflugToggle'), funktion('probeflugWeiter'), funktion('karteZielId'), 'let karteNachlaufT = 0, karteNachlaufAus = false;', funktion('karteNachlauf'), funktion('karteFlugkamera'), funktion('karteSchiff'), funktion('karteSchiffFrame'), konstante(/const titelStamm = [^\n]*;/), funktion('zwillinge'),
   konstante(/const karteArtAbleiten = [^\n]*;/),
   konstante(/const LADEN_ICON = \{[\s\S]*?\n\};/), "let karteLaden = { einstellungen: false, legende: true, werk: true };", funktion('ladeHtml'), funktion('ladenDran'), funktion('ladenLeiste'), 'let karteDrawerOffen = false;',

@@ -2443,10 +2443,15 @@ pre.text{white-space:pre-wrap;word-wrap:break-word;font:inherit;line-height:1.7}
                Doppelklick-Starter umgeht die ExecutionPolicy-Falle, und
                sein Zeichensalat-Fund ("â€”" statt Gedankenstrich) wurde
                zur Kodierungspruefung bin/pruefe-skripte.js. -->
-          <div class="wertext">Prüft unter Windows — hat den
-            Doppelklick-Starter beigesteuert, ohne den dort niemand
-            durchkommt, und den Zeichensalat-Fehler gefunden, aus dem
-            die Skript-Prüfung entstand.</div>
+          <!-- Nachtrag 25.08.2026 (Caspar_D): Castos eigener SunoAnalyzer
+               stand am Anfang - die Lautheits-Normteile und die
+               Schimmer-Suche gehen auf ihn zurueck ("CB Audio Analyzer"
+               in den Code-Kommentaren; nachgebaut, nicht uebernommen). -->
+          <div class="wertext">Sein eigener SunoAnalyzer stand Pate für
+            die Lautheits-Messungen und die Schimmer-Suche. Prüft unter
+            Windows — hat den Doppelklick-Starter beigesteuert, ohne den
+            dort niemand durchkommt, und den Zeichensalat-Fehler
+            gefunden, aus dem die Skript-Prüfung entstand.</div>
           <div class="werlinks">
             <a href="https://suno.com/@castobyte" target="_blank" rel="noopener">Songs auf Suno</a>
           </div>
@@ -2634,6 +2639,10 @@ pre.text{white-space:pre-wrap;word-wrap:break-word;font:inherit;line-height:1.7}
 <!-- Das Ablageformat zuerst: analyzer.js liest daraus. -->
 <script defer src="/fremd/analyse-ablage.js?v=1"></script>
 <script defer src="/fremd/analyzer.js?v=1"></script>
+<!-- Der Rabe: dritte Gestalt des Fliegers (Caspar_D, 25.08.2026), als
+     eigenes Modul wie der Analyzer - rabeZeichnen() wird erst zur
+     Laufzeit gebraucht, defer reicht also. -->
+<script defer src="/fremd/rabe.js?v=1"></script>
 <script defer src="/fremd/butterchurn.min.js"></script>
 <script defer src="/fremd/butterchurnPresetsExtra.min.js"></script>
 <script defer src="/fremd/butterchurnPresetsExtra2.min.js"></script>
@@ -5778,7 +5787,7 @@ function kartePanelHtml(){
   /* Kurzfassung des Zustands fuer die geschlossene Lade */
   const kurz = [karteDim === '3d' ? '3D' : '2D', karteVerf === 'umap' ? 'UMAP' : 'NMDS',
     schiffArt === 'direkt' ? 'Direkte Route' : schiffArt === 'warp' ? 'Warpsprung' : 'Orbiter',
-    reise ? 'Reise' : null, probeflug ? 'Probeflug' : null, kubus ? 'Kubus' : null,
+    reise ? 'Reise' : null, probeflug ? 'Probeflug' : null, gestalt !== 'schiff' ? (kubus ? 'Kubus' : 'Rabe') : null,
     Object.entries(karteArten).filter(([, v]) => v).map(([k]) => k === 'Instrument' ? 'Instrumente' : k + 's').join(', ') || null,
     karteNebel ? 'Nebel' : null, karteBahn ? 'Flugbahn' : null, karteLoecher ? 'Attraktoren' : null, karteLinien ? 'Sternbilder' : null].filter(Boolean).join(' · ');
   const zeile = (titel, inhalt) => `<div class="pzeile"><span class="ptitel">${titel}</span><span class="pinhalt">${inhalt}</span></div>`;
@@ -5796,9 +5805,11 @@ function kartePanelHtml(){
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>` +
       `<button class="pille" id="karteexport" title="Den Klangraum als eine HTML-Datei erzeugen (nur öffentliche Songs, jeder Stern führt zu seiner Suno-Seite) — zum Verschicken">Export</button>`) +
-    zeile(kubus ? `Musik-Matrix <b>${matrixKennung()}</b>` : `Sound-Schiff <b>${schiffName()}</b>`,
+    zeile(kubus ? `Musik-Matrix <b>${matrixKennung()}</b>` : gestalt === 'rabe' ? `Rabe <b>${schiffName()}</b>` : `Sound-Schiff <b>${schiffName()}</b>`,
       `<button class="pille ${probeflug ? 'an' : ''}" id="probeknopf" title="Probeflug ohne Musik: zwei Runden à 1 s um jeden Stern, dann Transit zum nächsten Klangnachbarn — zum Prüfen der Bahnen">Probeflug</button>` +
-      `<button class="pille ${kubus ? 'an' : ''}" id="kubusknopf" title="Kubus: jeder verlassene Stern verlischt in einer Supernova und bleibt ein dunkler Rest">Kubus</button>` +
+      `<select id="gestaltwahl" title="Wer fliegt: das Schiff, der Kubus (jeder verlassene Stern verlischt in einer Supernova) oder der Rabe">` +
+        ['schiff','kubus','rabe'].map(gw => `<option value="${gw}"${gestalt === gw ? ' selected' : ''}>` +
+          (gw === 'schiff' ? 'Schiff' : gw === 'kubus' ? 'Kubus' : 'Rabe') + '</option>').join('') + `</select>` +
       `<select id="schiffart" title="Flugart des Sound-Schiffs"><option value="direkt" ${schiffArt === 'direkt' ? 'selected' : ''}>Direkte Route</option><option value="orbit" ${schiffArt === 'orbit' ? 'selected' : ''}>Orbiter</option><option value="warp" ${schiffArt === 'warp' ? 'selected' : ''}>Warpsprung</option></select>` +
       (reise ? `<span class="phinweis">unterwegs seit ${song(reiseWeg[0]) ? song(reiseWeg[0]).titel : '?'} · ${reiseWeg.length} Station${reiseWeg.length === 1 ? '' : 'en'}</span><button class="pille an" id="reiseknopf">Reise beenden</button>`
             : startSong ? `<span class="phinweis">Start: ${startSong.titel}</span><button class="pille" id="reiseknopf">Starte Reise</button>`
@@ -5813,7 +5824,15 @@ function kartePanelDran(leg){
   const k = (id, fn) => { const el = leg.querySelector('#' + id); if (el) el.onclick = fn; };
   k('reiseknopf', () => { if (!leg.querySelector('#reiseknopf').disabled) reiseToggle(); });
   k('probeknopf', () => probeflugToggle());
-  k('kubusknopf', () => { kubus = !kubus; merk('mysuno-kubus', kubus ? 'an' : 'aus'); if (!kubus){ assimiliert.clear(); if (karteDaten) karteHimmel(karteDaten); } karteZeichnen(); });
+  const gwSel = leg.querySelector('#gestaltwahl');
+  if (gwSel) gwSel.onchange = () => {
+    const vorher = gestalt;
+    gestalt = gwSel.value; kubus = gestalt === 'kubus';
+    merk('mysuno-gestalt', gestalt);
+    if (vorher === 'kubus' && !kubus){ assimiliert.clear(); if (karteDaten) karteHimmel(karteDaten); }
+    if (vorher === 'rabe' && gestalt !== 'rabe' && typeof rabeWolkeLeeren === 'function') rabeWolkeLeeren();
+    karteZeichnen();
+  };
   const sel = leg.querySelector('#schiffart'); if (sel) sel.onchange = () => { schiffArt = sel.value; merk('mysuno-schiff-art', schiffArt); };
   k('kartenebel', () => { karteNebel = !karteNebel; merk('mysuno-karte-nebel', karteNebel ? 'an' : 'aus'); karteZeichnen(); });
   k('kartebahn', () => { karteBahn = !karteBahn; merk('mysuno-karte-bahn', karteBahn ? 'an' : 'aus'); karteZeichnen(); });
@@ -5877,7 +5896,7 @@ async function karteZeichnen(){
      (Caspar_D, 22.08.: "irgendwas klaut den Mausfokus" - Nachlauf und
      Drehung zeichnen bis zu 8x/s, und innerHTML ersetzte jedes Mal das
      Element unter der Maus). Signatur aus allem, was im Panel steht. */
-  const panelSig = JSON.stringify([karteDim, karteVerf, schiffArt, reise, probeflug, kubus, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0], d.anzahl, n]);
+  const panelSig = JSON.stringify([karteDim, karteVerf, schiffArt, reise, probeflug, gestalt, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0], d.anzahl, n]);
   if (leg.dataset.sig !== panelSig){
     leg.dataset.sig = panelSig;
     { const sb0 = $('kartesteckbrief'); if (sb0 && sb0.parentElement !== $('karterechts')) $('karterechts').appendChild(sb0); }   // Steckbrief vor dem Neubau parken
@@ -6669,10 +6688,21 @@ function zwillinge(p){
 }
 /* Der Kubus (Caspar_D, 21.08.2026): jeder verlassene Stern verlischt in
    einer Supernova und bleibt ein dunkler Rest - assimiliert. */
-/* Der Speicherschluessel heisst weiter 'mysuno-kubus'. Ihn umzubenennen
-   wuerde jede bestehende Einstellung auf 'aus' zuruecksetzen - er ist
-   unsichtbar, die Umbenennung betrifft das Sichtbare. */
-let kubus = (() => { try { return localStorage.getItem('mysuno-kubus') === 'an'; } catch (e) { return false; } })();
+/* DREI GESTALTEN (Caspar_D, 25.08.2026: "Schiff / Kubus / Rabe - mach
+   ein Dropdown draus"). Der Zustand heisst gestalt; kubus bleibt als
+   abgeleitete Weiche stehen, weil ein Dutzend Stellen daran haengt
+   (Assimilation, Beschuss, Matrix-Label, Nebelspur).
+   Migration: Der Schalter hiess erst 'mysuno-borg', dann - durch die
+   Umbenennung vom 25.08. ungewollt mit erfasst, der Bindestrich war
+   eine Wortgrenze - 'mysuno-kubus'. Beide Altwerte zaehlen. */
+let gestalt = (() => { try {
+  const g = localStorage.getItem('mysuno-gestalt');
+  if (g === 'schiff' || g === 'kubus' || g === 'rabe') return g;
+  if (localStorage.getItem('mysuno-kubus') === 'an') return 'kubus';
+  if (localStorage.getItem('mysuno-borg')  === 'an') return 'kubus';
+  return 'schiff';
+} catch (e) { return 'schiff'; } })();
+let kubus = gestalt === 'kubus';
 const assimiliert = new Set();          // Song-IDs, die schon verloschen sind
 let supernovae = [];                    // { id, t0 }
 let beschuss = [];                      // { id, t0, nova } - Laser, Pulsieren, dann Supernova
@@ -6730,9 +6760,20 @@ function karteNachlauf(L){
   const weit = Math.abs(dx) > 0.30 * W || Math.abs(dy) > 0.30 * H, nah = Math.abs(dx) < 0.05 * W && Math.abs(dy) < 0.05 * H;
   if (weit) karteNachlauf.aktiv = true; else if (nah) karteNachlauf.aktiv = false;
   if (!karteNachlauf.aktiv) return;
-  karteZoom.tx += dx * 0.06; karteZoom.ty += dy * 0.06;              // weich zur Mitte
+  /* WEICHER (Caspar_D, 25.08.2026: "die Zentrierbewegung muss weicher
+     sein - lieber langsamer und laenger als kurz und ruckartig").
+     Vorher: 6 % Restweg je AUFRUF, aber gezeichnet nur alle 120 ms -
+     eine schnelle Fahrt mit 8 Bildern je Sekunde, und genau das ruckelte.
+     Jetzt zeitbasiert mit Zeitkonstante 0,9 s (framerate-unabhaengig,
+     exponentiell auslaufend) und Zeichnung mit 30 Bildern je Sekunde -
+     die Fahrt dauert laenger und wirkt wie eine Kamera, nicht wie ein
+     Sprung. */
   const jetzt = performance.now();
-  if (jetzt - karteNachlaufT > 120){ karteNachlaufT = jetzt; karteZeichnen(); }
+  const dtN = Math.min(0.1, (jetzt - (karteNachlauf.tVor || jetzt)) / 1000);
+  karteNachlauf.tVor = jetzt;
+  const fN = 1 - Math.exp(-dtN / 0.9);
+  karteZoom.tx += dx * fN; karteZoom.ty += dy * fN;
+  if (jetzt - karteNachlaufT > 33){ karteNachlaufT = jetzt; karteZeichnen(); }
 }
 /* Flugkamera (Caspar_D, 22.08.): waehrend Schub + Transit zoomt die Kamera
    weich so, dass Start- und Zielstern das Bild fuellen; nach der
@@ -6868,7 +6909,21 @@ function karteSchiffFrame(){
       g.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]);
     }
     /* staerker sichtbar (Caspar_D, 22.08.): weicher Leuchtsaum unter einer kraeftigen Linie */
-    if (kubus){
+    if (gestalt === 'rabe'){
+      /* Die Rabenbahn schimmert VIOLETT (Caspar_D, 25.08.2026: "gib dem
+         Raben eine schimmernde Flugbahn in violett ... keine Akzentfarbe
+         beim Raben, nie"). Dieselbe Fuenf-Lagen-Bauweise wie beim Kubus,
+         aber im Ton von RABE.akzent, und obenauf eine hauchduenne fast
+         weisse Lage - das Schimmern. */
+      g.globalCompositeOperation = 'lighter';
+      for (const [br, dk] of [[19,0.035],[13,0.045],[8,0.060],[4,0.085],[1.4,0.20]]){
+        g.strokeStyle = `rgba(180,77,255,${dk})`;
+        g.lineWidth = br; g.stroke();
+      }
+      g.strokeStyle = 'rgba(242,220,255,0.26)';
+      g.lineWidth = 0.7; g.stroke();
+      g.globalCompositeOperation = 'source-over';
+    } else if (kubus){
       /* Der Wuerfel hinterlaesst keine Linie, sondern eine Stoerung
          (Caspar_D, 24.08.2026: "der orbit schweif muss auch gruen und
          neblig aussehen"). Drei Lagen statt zweier, die unteren breit
@@ -6952,6 +7007,9 @@ function karteSchiffFrame(){
        gleich im Raum steht, gleichgueltig wohin er faehrt, ist sein
        Merkmal - er hat keinen Bug, den er voranstellen muesste. Die
        Flugrichtung braucht er trotzdem, aber nur fuer die Spur. */
+    if (gestalt === 'rabe' && typeof rabeZeichnen === 'function'){
+      rabeZeichnen(g, P, sc, jetzt, ang, glut, schub); return;
+    }
     if (kubus){ wuerfelZeichnen(g, P, sc, jetzt, ang, glut, schub); return; }
 
     g.save(); g.translate(P[0], P[1]); g.rotate(ang); g.scale(sc, sc);
@@ -7002,7 +7060,7 @@ function karteSchiffFrame(){
     g.beginPath(); g.moveTo(P[0] + 5, P[1] - 5); g.lineTo(lx - 3, ly + 3); g.stroke();
     g.textAlign = 'left'; g.textBaseline = 'alphabetic';
     g.font = '600 9px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = 'rgba(255,255,255,0.6)';
-    g.fillText(kubus ? 'MUSIK-MATRIX' : 'SOUND-SCHIFF', lx, ly - 6);
+    g.fillText(kubus ? 'MUSIK-MATRIX' : gestalt === 'rabe' ? 'RABE' : 'SOUND-SCHIFF', lx, ly - 6);
     g.font = '600 12px -apple-system, Helvetica Neue, sans-serif'; g.fillStyle = '#fff';
     /* Assimiliert traegt das Schiff keinen Namen mehr, sondern eine
        Kennung - so wie Picard zu Locutus wurde (Caspar_D, 25.08.2026). */
@@ -7014,7 +7072,9 @@ function karteSchiffFrame(){
      der Orbitgeschwindigkeit, Ankunft entlang der Zielorbit-Tangente. */
   const hermite = (P0, M0, P1, M1) => (t) => { const t2 = t * t, t3 = t2 * t, h00 = 2*t3 - 3*t2 + 1, h10 = t3 - 2*t2 + t, h01 = -2*t3 + 3*t2, h11 = t3 - t2;
     return [h00*P0[0] + h10*M0[0] + h01*P1[0] + h11*M1[0], h00*P0[1] + h10*M0[1] + h01*P1[1] + h11*M1[1]]; };
-  const zielmarke = (B) => { g.strokeStyle = akz; g.lineWidth = 1; g.globalAlpha = 0.7; g.beginPath(); g.arc(B[0], B[1], 7, 0, 2 * Math.PI); g.stroke(); g.globalAlpha = 1; };
+  /* Beim Raben NIE die Akzentfarbe (Caspar_D, 25.08.2026) - auch die
+     Zielmarke traegt sein Violett. */
+  const zielmarke = (B) => { g.strokeStyle = gestalt === 'rabe' ? '#b44dff' : akz; g.lineWidth = 1; g.globalAlpha = 0.7; g.beginPath(); g.arc(B[0], B[1], 7, 0, 2 * Math.PI); g.stroke(); g.globalAlpha = 1; };
   const mmss = (t) => Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
 
   /* Songwechsel erkennen: im Warp-Modus startet hier der Sprung */
@@ -7430,7 +7490,11 @@ function karteSchiffFrame(){
         g.globalAlpha = 1;
       };
 
-      const schweif = (pts) => { if (kubus) return nebelspur(pts);
+      const schweif = (pts) => {
+        /* Der Rabe zieht keinen Schweif - seine Federwolke IST die Spur,
+           und sie lebt in rabeZeichnen (25.08.2026). */
+        if (gestalt === 'rabe') return;
+        if (kubus) return nebelspur(pts);
         const n = pts.length - 1; if (n < 1) return; g.lineCap = 'round'; g.lineJoin = 'round';
         const sc = Math.sqrt(karteZoom.k);
         g.globalCompositeOperation = 'lighter';
@@ -7733,7 +7797,7 @@ function karteSchiffFrame(){
         Object.assign(karteSchiffFrame.diag, { P: [P[0], P[1]], roh: P.roh, einfang: !!(bahn.vonFang && bahn.einRel && zeit < tEinfang) });
         zeichneSchiff(P, ang, glut, schub);
         g.globalAlpha = 1; g = gVorn;                                   // Transponder immer vorn (lesbar)
-        zeichneLabel(P, glut > 0 ? 'Warpkern lädt … ' + Math.ceil(rest) + ' s' : schub > 0 ? 'Schub · Absprung in ' + Math.ceil(tAb - zeit) + ' s' : (kubus ? 'Assimilation · ' : 'im Orbit · ') + mmss(zeit) + (a.rp < Rmax - 0.5 ? ' · spiralt' : ''));
+        zeichneLabel(P, glut > 0 ? 'Warpkern lädt … ' + Math.ceil(rest) + ' s' : schub > 0 ? 'Schub · Absprung in ' + Math.ceil(tAb - zeit) + ' s' : (kubus ? 'Assimilation · ' : gestalt === 'rabe' ? 'Rundflug · ' : 'im Orbit · ') + mmss(zeit) + (a.rp < Rmax - 0.5 ? ' · spiralt' : ''));
       }
     }
   }
