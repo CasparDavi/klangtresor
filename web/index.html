@@ -762,6 +762,22 @@ select,.knopf{
    Spalte war Zufall. Ein eigener Name loest es an der Wurzel; eine
    Gegenregel haette das Symptom geheilt und die Falle stehenlassen. */
 .capmarke.ohne{display:none;opacity:.6}
+/* Die Ablage fuers eigene Artwork. Gestrichelt, solange nichts drin
+   ist - ein voller Rahmen sieht aus wie ein Feld, das schon etwas
+   enthaelt. */
+/* Zwei Ablagen nebeneinander - Titelbild und Video getrennt. */
+.capartpaar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.capartname{font-size:11px;color:var(--schwach);margin-bottom:3px}
+.capart{margin-top:0;border:1px dashed var(--rand);border-radius:8px;
+  padding:10px;text-align:center;font-size:12px;color:var(--schwach);
+  cursor:pointer;transition:border-color .12s,color .12s}
+.capart:hover{border-color:var(--akzent);color:var(--text)}
+.capart.drueber{border-color:var(--akzent);border-style:solid;color:var(--text);
+  background:color-mix(in srgb, var(--akzent) 12%, transparent)}
+.capart.hat{border-style:solid;padding:8px;cursor:default}
+.capart video,.capart img{max-height:96px;max-width:100%;border-radius:5px;display:block;margin:0 auto 6px}
+.capart .weg{color:var(--schwach);text-decoration:underline;cursor:pointer;font-size:11.5px}
+.capart .weg:hover{color:var(--text)}
 .karte:hover .capmarke.ohne{display:block}
 #cap textarea{width:100%;min-height:70px;background:var(--flaeche2);border:1px solid var(--rand);
   border-radius:8px;color:var(--text);font:inherit;font-size:13px;line-height:1.5;padding:8px;resize:vertical}
@@ -5828,8 +5844,8 @@ function zeichnen(){
   r.innerHTML = liste.map(s=>`
     <div class="karte" data-id="${s.id}" onclick="spielenNachId('${s.id}')">
       <div class="bild">
-        <img loading="lazy" src="/media/${s.id}/kachel.jpg" alt=""
-             onerror="this.src='/media/${s.id}/cover.jpg'">
+        <img loading="lazy" src="${artworkKachel(s.id)}" alt=""
+             onerror="this.src='${artworkBild(s.id)}'">
         ${s.modell ? `<span class="marke">${s.modell}</span>` : ''}
         ${hatBewegtbild(s) ? `<span class="videomarke" title="${istEigenesBewegtbild(s) ? 'selbst zugeordnetes Video-Artwork' : 'eigenes Video-Artwork'}">${SYM('eigenvideo')}</span>` : ''}
         ${s.oeffentlich ? '' : '<span class="privatmarke" title="nicht auf Suno veröffentlicht">privat</span>'}
@@ -5968,7 +5984,7 @@ function coverBild(s){
   if (!im){
     im = new Image(); im.fertig = false;
     im.onload = () => { im.fertig = true; if (!karteNeuzeichnung) karteNeuzeichnung = requestAnimationFrame(() => { karteNeuzeichnung = 0; if (karteDaten && register === 'karte') karteHimmel(karteDaten); }); };
-    im.src = s.fremd ? (s.bildUrl || '') : (s.bild || `/media/${s.id}/cover.jpg`);
+    im.src = s.fremd ? (s.bildUrl || '') : (s.bild || artworkBild(s.id));
     karteCover.set(s.id, im);
   }
   return im.fertig ? im : null;
@@ -6484,7 +6500,7 @@ function karteSteckbrief(s, p){
     a.stimme && a.stimme !== 'gemischt' ? a.stimme : null].filter(Boolean).join(' · ');
   const datum = s.erstellt ? new Date(s.erstellt).toLocaleDateString('de-DE') : '';
   const nachbarn = (p.nachbarn || []).slice(0, 6).map(([id]) => song(id)).filter(Boolean);
-  el.innerHTML = `<div class="kopf"><img src="/media/${s.id}/cover.jpg" alt="" onerror="this.style.visibility='hidden'">` +
+  el.innerHTML = `<div class="kopf"><img src="${artworkBild(s.id)}" alt="" onerror="this.style.visibility='hidden'">` +
     `<div><b>${s.titel}</b><div class="meta">${datum}${s.modell ? ' · ' + s.modell : ''}${mess ? '<br>' + mess : ''}</div></div></div>` +
     `<div class="zeile"><span>Stil</span> ${pz(p.stile)}</div>` +
     /* Drei Spalten mit liegenden Saeulen (Caspar_D, 21.08.2026): Begriff
@@ -8830,8 +8846,8 @@ function zeichnePlaylistInhalt(){
   r.innerHTML = lieder.map((s,i) => `
     <div class="karte" data-id="${s.id}" onclick="spielenNachId('${s.id}')">
       <div class="bild">
-        <img loading="lazy" src="${s.fremd ? esc(s.bildUrl||'') : '/media/'+s.id+'/kachel.jpg'}" alt=""
-             ${s.fremd ? '' : `onerror="this.src='/media/${s.id}/cover.jpg'"`}>
+        <img loading="lazy" src="${s.fremd ? esc(s.bildUrl||'') : artworkKachel(s.id)}" alt=""
+             ${s.fremd ? '' : `onerror="this.src='${artworkBild(s.id)}'"`}>
         <span class="posmarke">${eintraege[i]?.position ?? i+1}</span>
         ${s.fremd
           ? `<span class="remotemarke" title="von ${esc(s.anzeigename||s.handle||'')} — kommt übers Netz">remote</span>`
@@ -8940,6 +8956,14 @@ function artworkVideo(id){
 function artworkBild(id){
   return (_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
     ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/cover.jpg';
+}
+/* Fuer die Kacheln gibt es eine kleingerechnete Fassung (kachel.jpg).
+   Ein selbst abgelegtes Titelbild hat die nicht - dann gilt es
+   unverkleinert. Der onerror-Rueckfall auf cover.jpg bleibt an den
+   Kacheln stehen, er faengt fehlende Verkleinerungen ab. */
+function artworkKachel(id){
+  return (_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
+    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/kachel.jpg';
 }
 
 function bewegtAn(karte, id){
@@ -9614,7 +9638,7 @@ function spielen(i, uebernahme){
 
   stemsLaden(s.fremd ? null : s.id);
   $('player').classList.add('an');
-  $('pbild').src   = s.fremd ? (s.bildUrl || '') : '/media/' + s.id + '/cover.jpg';
+  $('pbild').src   = s.fremd ? (s.bildUrl || '') : artworkBild(s.id);
   $('ptitel').textContent = s.titel + (s.fremd ? '  ·  ' + (s.anzeigename || s.handle || 'fremd') : '');
   if ($('studio') && $('studio').style.display !== 'none') studioSongLaden();
   else {
@@ -9874,7 +9898,7 @@ function sperrbildschirm(s){
     title:  s.titel,
     artist: s.anzeigename || (katalogInfo && katalogInfo.profil && katalogInfo.profil.display_name) || '',
     album:  'KlangTresor',
-    artwork:[{src:'/media/'+s.id+'/cover.jpg', sizes:'512x512', type:'image/jpeg'}],
+    artwork:[{src: artworkBild(s.id), sizes:'512x512', type:'image/jpeg'}],
   });
   navigator.mediaSession.setActionHandler('play',  ()=>audio.play());
   navigator.mediaSession.setActionHandler('pause', ()=>audio.pause());
@@ -9895,7 +9919,7 @@ async function detailAuf(id){
   $('detail').innerHTML = `
     <div class="dwrap">
       <div class="dkopf">
-        <img src="/media/${s.id}/cover.jpg" alt="">
+        <img src="${artworkBild(s.id)}" alt="">
         <div class="dinfo">
           <h2>${esc(s.titel)}</h2>
           <div class="chips">
@@ -10396,7 +10420,7 @@ function kuriosSeiten(eigene){
         const box = document.createElement('div'); box.appendChild(satz(`Heute vor ${heute.getFullYear() - +treffer[0].erstellt.slice(0,4)} Jahr(en) entstand:`));
         const r = document.createElement('div'); r.className = 'topreihe'; r.style.maxWidth = treffer.length * 90 + 'px';
         for (const s of treffer){ const z = document.createElement('div'); z.className = 'topk'; z.title = s.titel;
-          z.innerHTML = `<img src="/media/${s.id}/kachel.jpg" alt="" onerror="this.src='/media/${s.id}/cover.jpg'"><span>${s.erstellt.slice(0,4)}</span>`;
+          z.innerHTML = `<img src="${artworkKachel(s.id)}" alt="" onerror="this.src='${artworkBild(s.id)}'"><span>${s.erstellt.slice(0,4)}</span>`;
           z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); }; r.appendChild(z); }
         box.appendChild(r); return box;
       } },
@@ -13659,7 +13683,28 @@ function capAuf(id, x, y){
     +   `<input type="checkbox" id="capinstr"${istInstrumental(s) ? ' checked' : ''}> instrumental`
     +   `<span class="fussnote" id="capinstrstand">${
             instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
-    + `</label>`;
+    + `</label>`
+    /* MEIN ARTWORK sitzt aus demselben Grund hier wie der
+       Instrumental-Haken: Es ist Caspar_Ds Beitrag zum Song, nicht
+       Sunos Angabe. Und die Marke, die dieses Fenster oeffnet, sitzt
+       ohnehin schon auf jeder Kachel (Caspar_D, 26.08.2026: "wir haben
+       schon ein abzeichen, um text hinzuzufügen, dort könnte man in
+       diesem context auch einen videoupload einbauen"). */
+    + `<h4 style="margin-top:12px">Mein Artwork <small style="text-transform:none;letter-spacing:0">`
+    +   `— wird Sunos vorgezogen</small></h4>`
+    /* ZWEI GETRENNTE PLAETZE (Caspar_D, 26.08.2026: "sieh einfach vor,
+       ein neues cover-art und ein neues video artwork einzufügen, die
+       werden separat vom original gehalten aber sind immer prioritär").
+       Eine Flaeche, die je nach Dateityp mal das eine, mal das andere
+       wird, kann das Vorhandene nicht zeigen und nicht einzeln
+       entfernen - und man sieht nicht, was fehlt. */
+    + `<div class="capartpaar">`
+    +   `<div><div class="capartname">Titelbild</div>`
+    +     `<div class="capart" id="capartbild" data-art="bild"></div></div>`
+    +   `<div><div class="capartname">Video</div>`
+    +     `<div class="capart" id="capartvideo" data-art="video"></div></div>`
+    + `</div>`
+    + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
   const b = c.getBoundingClientRect();
   c.style.left = Math.max(8, Math.min(x + 10, innerWidth - b.width - 8)) + 'px';
@@ -13675,6 +13720,84 @@ function capAuf(id, x, y){
           zeichnen(); } catch (e) {}
   };
   feld.onblur = sichern;
+
+  /* ---- Artwork ablegen, ansehen, entfernen ------------------------
+     Zweimal dieselbe Mechanik, einmal fuer das Titelbild, einmal
+     fuers Video - unterschieden allein durch `art`. */
+  const dateiwahl = c.querySelector('#capartdatei');
+  let wohin = null;                       /* welche Flaeche die Dateiwahl bedient */
+
+  const artFelder = [['bild', c.querySelector('#capartbild'), 'image/*', 'eigen.jpg', 'Bild'],
+                     ['video', c.querySelector('#capartvideo'), 'video/*', 'eigen.mp4', 'Video']];
+
+  const artZeichnen = () => {
+    const e = (_eigenArt && _eigenArt[id]) || {};
+    for (const [art, feld, , datei, wort] of artFelder){
+      if (!feld) continue;
+      if (e[art]){
+        feld.className = 'capart hat';
+        /* Zeitstempel dahinter, damit der Browser nach dem Austauschen
+           nicht das alte aus seinem Speicher zeigt. */
+        const t = '?t=' + Date.now();
+        feld.innerHTML = (art === 'video'
+            ? `<video src="/media/${id}/${datei}${t}" muted loop autoplay playsinline></video>`
+            : `<img src="/media/${id}/${datei}${t}" alt="">`)
+          + `<span class="weg">entfernen</span>`;
+        feld.querySelector('.weg').onclick = async (ev) => {
+          ev.stopPropagation();
+          try { await fetch(`/api/eigen-artwork/${id}?was=${art}`, { method: 'DELETE' });
+                if (_eigenArt[id]) { delete _eigenArt[id][art];
+                  if (!Object.keys(_eigenArt[id]).length) delete _eigenArt[id]; }
+                artZeichnen(); zeichnen(); } catch (err) {}
+        };
+      } else {
+        feld.className = 'capart';
+        feld.textContent = wort + ' hierher ziehen';
+      }
+    }
+  };
+
+  const hochladen = async (art, feld, datei) => {
+    if (!datei) return;
+    const passt = art === 'video' ? /^video\//.test(datei.type) : /^image\//.test(datei.type);
+    if (!passt){
+      feld.className = 'capart';
+      feld.textContent = art === 'video' ? 'Das ist kein Video.' : 'Das ist kein Bild.';
+      setTimeout(artZeichnen, 2200); return;
+    }
+    feld.className = 'capart';
+    feld.textContent = `… ${(datei.size / 1048576).toFixed(1)} MB`;
+    try {
+      const a = await fetch('/api/eigen-artwork/' + id,
+        { method: 'PUT', headers: { 'Content-Type': datei.type }, body: datei });
+      const d = await a.json();
+      if (!d.ok){ feld.textContent = d.grund || 'ging schief'; setTimeout(artZeichnen, 2600); return; }
+      _eigenArt = _eigenArt || {};
+      _eigenArt[id] = Object.assign({}, _eigenArt[id], { [art]: true });
+      artZeichnen();
+      zeichnen();                    /* Kachel und Marke ziehen mit */
+    } catch (err) { feld.textContent = 'ging schief'; setTimeout(artZeichnen, 2600); }
+  };
+
+  for (const [art, feld, annehmen] of artFelder){
+    if (!feld) continue;
+    feld.onclick = () => {
+      if (feld.classList.contains('hat')) return;
+      wohin = [art, feld]; dateiwahl.accept = annehmen; dateiwahl.value = ''; dateiwahl.click();
+    };
+    feld.ondragover = (ev) => { ev.preventDefault(); feld.classList.add('drueber'); };
+    feld.ondragleave = () => feld.classList.remove('drueber');
+    feld.ondrop = (ev) => {
+      ev.preventDefault(); feld.classList.remove('drueber');
+      hochladen(art, feld, ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0]);
+    };
+  }
+  dateiwahl.onchange = () => {
+    if (!wohin) return;
+    hochladen(wohin[0], wohin[1], dateiwahl.files && dateiwahl.files[0]);
+  };
+
+  artZeichnen();
 
   const haken = c.querySelector('#capinstr');
   if (haken) haken.onchange = async () => {

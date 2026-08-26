@@ -1561,6 +1561,71 @@ const server = http.createServer((req, res) => {
     return jsonAntwort(res, { songs: raus, anzahl: Object.keys(raus).length });
   }
 
+  /* EIGENES ARTWORK ABLEGEN UND WIEDER LOESEN (Caspar_D, 26.08.2026:
+     "wir haben schon ein abzeichen, um text hinzuzufügen, dort könnte
+     man in diesem context auch einen videoupload einbauen").
+
+     KEIN MULTIPART. Die Datei kommt roh im Rumpf, die Art steht im
+     Content-Type. Ein Zerleger fuer multipart/form-data waere hundert
+     Zeilen Zustandsmaschine fuer genau eine Datei je Anfrage - der
+     Browser kann eine Datei auch einfach als Rumpf schicken.
+
+     DER DECKEL ist eine Notbremse gegen den Fehlgriff, nicht gegen
+     Angreifer: Wer versehentlich einen Film statt eines Artworks
+     zieht, soll nicht die Platte fuellen. Groesse steht im
+     Content-Length, wird aber trotzdem beim Lesen mitgezaehlt - die
+     Angabe im Kopf ist eine Behauptung, kein Beleg. */
+  if (p.startsWith('/api/eigen-artwork/')) {
+    const id = decodeURIComponent(p.slice('/api/eigen-artwork/'.length));
+    const ordner = sicherer(SONGS, id);
+    if (!ordner || !/^[A-Za-z0-9._-]+$/.test(id))
+      return jsonAntwort(res, { ok: false, grund: 'Ungültige Kennung.' }, 400);
+
+    if (req.method === 'DELETE') {
+      /* ?was=bild oder ?was=video entfernt nur das eine; ohne Angabe
+         beides. Titelbild und Video sind getrennte Entscheidungen -
+         wer das Video wegnimmt, will nicht auch sein Titelbild los. */
+      const was = (u.searchParams.get('was') || '').toLowerCase();
+      const namen = was === 'bild' ? ['eigen.jpg']
+                  : was === 'video' ? ['eigen.mp4']
+                  : ['eigen.mp4', 'eigen.jpg'];
+      let weg = 0;
+      for (const n of namen) {
+        const f = path.join(ordner, n);
+        try { if (fs.existsSync(f)) { fs.unlinkSync(f); weg++; } } catch (e) {}
+      }
+      return jsonAntwort(res, { ok: true, entfernt: weg });
+    }
+
+    if (req.method === 'PUT' || req.method === 'POST') {
+      const typ = String(req.headers['content-type'] || '').split(';')[0].toLowerCase();
+      const name = /^video\//.test(typ) ? 'eigen.mp4' : /^image\//.test(typ) ? 'eigen.jpg' : null;
+      if (!name) return jsonAntwort(res, { ok: false, grund: 'Nur Video oder Bild.' }, 415);
+      const DECKEL = 300 * 1024 * 1024;
+      const stuecke = []; let gross = 0, abgebrochen = false;
+      req.on('data', (c) => {
+        gross += c.length;
+        if (gross > DECKEL) { abgebrochen = true; req.destroy(); return; }
+        stuecke.push(c);
+      });
+      req.on('end', () => {
+        if (abgebrochen) return;
+        try {
+          fs.mkdirSync(ordner, { recursive: true });
+          /* Erst daneben schreiben, dann umbenennen: Bricht die
+             Uebertragung ab, bleibt die alte Datei stehen statt einer
+             halben neuen. */
+          const vorlaeufig = path.join(ordner, name + '.teil');
+          fs.writeFileSync(vorlaeufig, Buffer.concat(stuecke));
+          fs.renameSync(vorlaeufig, path.join(ordner, name));
+          jsonAntwort(res, { ok: true, datei: name, bytes: gross });
+        } catch (e) { jsonAntwort(res, { ok: false, grund: String(e.message || e) }, 500); }
+      });
+      req.on('error', () => {});
+      return;
+    }
+  }
+
   if (p.startsWith('/media/')) {
     const ziel = sicherer(SONGS, p.slice('/media/'.length));
     if (!ziel) { res.writeHead(403); return res.end(); }
