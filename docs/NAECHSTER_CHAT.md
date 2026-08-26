@@ -1,4 +1,4 @@
-# Für den nächsten Chat — Stand 25.08.2026, nachts
+# Für den nächsten Chat — Stand 26.08.2026, abends
 
 ## In drei Sätzen
 
@@ -19,32 +19,25 @@ muss), dann docs/HAUSREGELN.md, dann docs/TONSTUDIO.md.
 
 ## Was gerade läuft
 
-Zwei Läufe, beide abgekoppelt (PPID 1), beide unter `caffeinate -i`:
+**Nichts Langlaufendes mehr.** Die Nachtläufe vom 25.08. sind
+abgeschlossen — Stems 321/321, Töne 321/321, keine Ausfälle. Was der
+25.08. an Hängern gekostet hat, steht weiter unten im Abschnitt vom
+25.08.; der Pipe-Fix hat gehalten.
 
-- **`bin/stems.js --still`** — am 25.08. um **03:05** neu gestartet, 124
-  Songs vor sich. Protokoll: `library/nachtlauf.log`. Der Lauf davor
-  (00:45) blieb schon nach neun Songs stehen, wieder mitten in der
-  Trennung: „Kerze" hatte `drums`, `bass`, `other`, es fehlten `vocals`,
-  `guitar`, `piano` — **dieselben drei wie beim Mal davor**. Der halbe
-  Ordner ist verworfen. Das Muster steht jetzt in docs/OFFEN.md 2.10,
-  samt Verdacht (die Pipe in `flacSchreiben`) und Härtungsvorschlag.
-- **`bin/toene.js --still --neu`** — läuft parallel und ungestört.
+Anzustoßen sind noch die beiden Nachbarschaftsläufe, aber sie dauern
+Minuten, nicht Stunden, und laufen aus der Oberfläche heraus (Panel
+*Nachbarschaft* → „Neue holen"). Wer sie von Hand startet:
 
-**Warum neu gestartet:** Der Lauf vom 24.08. blieb nach 113 Songs
-stehen — letzte Spur 16:00:06, danach 8½ Stunden bei 0,0 % CPU mit
-10,4 GB im Speicher. Nicht angehalten (dann stünde `T` im Status),
-sondern schlafend. Ein Song war **mitten in der Trennung** stecken-
-geblieben: `9d375ce4…` hatte `bass`, `drums`, `other`, es fehlten
-`vocals`, `guitar`, `piano`. Die 70 MB wurden verworfen.
+```
+node bin/community-profile.js    Sekunden bis Minuten
+node bin/community-hirsch.js     ~20 min beim ersten vollen Lauf
+```
 
-Zeitlich fällt der Stillstand mit Arbeiten auf derselben Platte
-zusammen (Umbenennung 16:02, Historie-Bundle 16:20, `git gc`,
-`._`-Beifang löschen). Beweisen lässt sich das nicht.
+**Zu Beginn jeder Sitzung** — seit Tarja (`myinqi`) mitschreibt:
 
-**Wenn es wieder passiert:** `pgrep -fl stems.js`, dann `ps -o stat,%cpu`
-— `SN` bei 0,0 % über Stunden heißt hängend. Danach jeden `stems/`-Ordner
-auf sechs `.flac` prüfen; `stems.js` erkennt Fertiges nur an
-`piano.flac`, ein Ordner mit drei Spuren fällt sonst durch.
+```
+node bin/fremdstand.js
+```
 
 # Übergabetext für den nächsten Chat
 
@@ -971,3 +964,118 @@ zwei Fallen.
 - **Offene Arbeitsliste**: OFFEN.md Abschnitt 6 — Hüllkurven-Skalierung
   bei x², grobes Sampling von Crest/Lautheit, v3-Marken bei zwei Songs,
   die Leisten-Punkte.
+
+
+## Stand 26.08.2026 — Autorenseite, Rechenzeit, Nachbarschaft
+
+Ein langer Tag, 57 Commits. Vier Stränge.
+
+### 1 · Der Analyzer mißt jetzt, was da ist
+
+- **Beide Kanäle statt nur links** — Zeitbereich, Spektrum und Struktur.
+  Vorsicht bei `ch`: Die Variable war bisher **immer der linke Kanal**,
+  ein arglos eingefügtes `ch = (left+right)/2` hätte vier Stellen still
+  verfälscht. Sie paaren `ch` jetzt ausdrücklich mit `right`.
+- **Chroma bekommt eine eigene Rechnung.** Der Beleg für das alte
+  Verfahren steht in `a111822`: Bei **98 % der Songs** zeigte das alte
+  Chroma sein eigenes Raster, nicht die Musik.
+- **Kein MP3 mehr in der Analyse**; die Ablage sagt jetzt, woraus sie
+  stammt. Und der Browser hielt Analysen **ein Jahr** im Cache fest —
+  behoben.
+- Prüfton und Chirp laufen jetzt durch **dasselbe `<audio>` wie die
+  Musik** — sonst geht AirPlay nicht mit. Ein 20-ms-Stream ist dafür zu
+  kurz, es braucht Vorlauf. Die Lautsprecher-Verzögerung wird seither
+  **gemessen statt geschätzt**, und der Versatz gilt überall.
+
+### 2 · Rechenzeit, ohne die Lizenz anzufassen
+
+Tarjas Grok-Vorschläge geprüft und drei davon umgesetzt — FFTW
+ausgeschlossen (GPL, unvereinbar mit MIT):
+
+| | vorher | nachher |
+|---|---|---|
+| Gleitender Median im Detektor | 878 ms | **3 ms** (mitgeschobenes 256er-Histogramm) |
+| Störfrequenz-Detektor gesamt | | **5,7×** schneller |
+| `toene.js` | 118 min | **31 min** |
+
+Die **reelle FFT** (z[n] = x[2n] + i·x[2n+1], halbe Länge, danach
+auftrennen) bringt 1,68× im Kern und 1,22× im Nachtlauf. **Die Ablage
+ist bitgleich** — 0 von 2.687.660 Bytes verändert. Parallelisiert wird
+nach **gemessenen physischen Kernen** (`bin/kerne.js`), nicht nach
+`cpus().length`.
+
+`zonenAblegen` schrieb nebenbei **4,7 GB für 14,7 MB Ergebnis** — die
+Datei wurde 321 Mal neu geschrieben. Jetzt einmal am Schluß.
+
+> **Falle, die fünf Meßreihen gekostet hat:** `--arbeiter 16` wurde als
+> Song-ID gelesen, weil die Argumentprüfung nicht wußte, welche Schalter
+> einen Wert tragen. Dafür gibt es jetzt in jedem Skript ein
+> `MIT_WERT`-Set. Wer einen Schalter mit Wert ergänzt, trägt ihn dort
+> ein.
+
+### 3 · Die Autorenseite
+
+Farbgebung folgt der Musik: geblurrtes Titelbild als Grund, Panels mit
+transparentem Schwarz, Diagrammelemente in den Akzenten des laufenden
+Titels — bei Stille die von KlangTresor. **Alle** Diagramme der Seite
+laufen jetzt über `diaFlaeche()`/`diaTopline()`, also die Hausform:
+Fläche auf 0,66 gedämpft, Topline 1 px aufgehellt, **immer oben** —
+auch bei liegenden Balken.
+
+Neu: Tonarten als Säulenreihe, Wörter je Stück daneben, drei
+Längenhistogramme, die zehn bewegtesten Songs. Log-Odds für die
+Tonarten wurden **verworfen**: Die Literatur liefert nur Spitzenwerte,
+keine brauchbare Referenzverteilung.
+
+Zwei Fehler, die den Blick kosteten: `.capmarke.leer` erbte
+`padding:70px 20px` von der Leermeldung und wurde zum Balken (47×155
+statt 19×19) — umbenannt zu `.ohne`. Und der Playknopf ließ sich seinen
+Zustand erzählen, statt ihn zu lesen; `spielknoepfeStellen()` fragt
+jetzt `audio.paused`.
+
+### 4 · Nachbarschaft — die eigene Zahl bekommt einen Maßstab
+
+Zwei neue Skripte lesen **öffentlich und ohne Anmeldung** die Profile
+der Leute, die hier kommentiert, geliked oder gefolgt haben.
+
+- **179 Profile**, **174 Hirschfaktoren**. Median 36 — Caspar_D hat 22,
+  das ist **Rang 116 von 174**.
+- Der Aufwand skaliert mit **Seiten ≈ h/22 + 1**; 632 Seiten für alle.
+  Zwei Nachbarn (h = 217 und h = 211) standen genau an der eingebauten
+  Grenze von zwölf Seiten. Wer sie reißt, bekommt eine Untergrenze —
+  vermerkt als `genau: false`, bisher **nirgends angezeigt**. Falls das
+  sichtbar werden soll: offene Entscheidung.
+- Die Falle: Beide `sort_by`-Parameter sind **Pflicht**. Ohne sie kommt
+  422 mit einer leeren Hülle, in der jede Zahl `null` ist — das sieht
+  aus wie ein stiller Nutzer, nicht wie ein Fehler. Steht jetzt in
+  [SUNO-API.md](SUNO-API.md).
+- **Warum steht jeder im unteren Drittel?** Weil eine Community keine
+  Zufallsstichprobe ist — Freundschaftsparadoxon. Das erklärt ein
+  (i)-Kasten, der die Schiefe **aus den vorliegenden Daten rechnet**
+  (Median gegen Mittel, Anteil der obersten 10 %).
+
+Aufgefrischt wird aus dem Panel: „Neue holen" (Sekunden) und „Alles
+auffrischen" (~20 min, ~800 Anfragen, mit Rückfrage). Der Lauf läuft
+abgekoppelt weiter; der Fortschritt kommt **aus den Dateien**, nicht aus
+dem Prozeß.
+
+### Nebenbei
+
+- **Tonstudio** liegt jetzt über allem und bleibt stehen, wenn die
+  Bühne zugeht.
+- **Hub-Vergleich**: [VERGLEICH-HUB.md](VERGLEICH-HUB.md), Funktion für
+  Funktion mit „haben wir / besser / verworfen". Ergebnis: Tempo und
+  Tonart sind dort schwächer als hier, die echte Lücke ist **Harmonie**.
+- **61 veraltete Stimmlagen** korrigiert.
+- **Zusammenarbeit**: Tarja (`myinqi`) schreibt mit,
+  [ZUSAMMENARBEIT.md](ZUSAMMENARBEIT.md) samt `bin/fremdstand.js`.
+
+### Offen
+
+- Zwölf Befunde in `docs/ANALYZER-REVIEW.md`, Abschnitt 9.
+- Soll `genau: false` (Hirschfaktor als Untergrenze) im Bild sichtbar
+  werden? Betrifft heute zwei Nachbarn.
+- Die beiden Nachbarschaftsläufe in die Morgenroutine einhängen —
+  angeboten, nicht beauftragt.
+- Im Tooltip steht noch „Anhänger", während die Achsen inzwischen
+  Fragen sind („Wieviele folgen?" / „Wievielen gefolgt?").

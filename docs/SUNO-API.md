@@ -23,7 +23,7 @@ mit → markiert.
 
 | Weg | Token | | Was es tut |
 |---|---|---|---|
-| **`GET /api/profiles/{handle}`** | – | ● | Songliste mit Plays, Likes, Kommentarzahl, Stil, Lyrics — der Kern von `sammeln.js` |
+| **`GET /api/profiles/{handle}/`** | – | ● | Songliste mit Plays, Likes, Kommentarzahl, Stil, Lyrics — der Kern von `sammeln.js`. Auch **fremde** Profile, ohne Anmeldung → `community-profile.js`. **Vier Parameter sind Pflicht**, siehe unten |
 | **`GET /api/profiles/{handle}/info`** | – | ● | Profilkopf: Name, Avatar, Zähler |
 | **`GET /api/clip/{clip_id}`** | T | ● | Ein Song vollständig, auch privat — der Weg der 73 Privaten |
 | **`GET /api/gen/{clip_id}/comments?order=newest`** | – | ● | Kommentare mit Autor, Zeit, Text, Likes darauf — `reaktionen.js` |
@@ -133,6 +133,72 @@ mit → markiert.
 | `/api/mango/rights` | ○ | Unklar — Rechteverwaltung? |
 | `/api/music_player/playbar_state` | ◐ | Der Player meldet seinen Zustand |
 | `/api/v2/${t}` | ○ | Platzhalter im Code, unklar |
+
+---
+
+## Fremde Profile lesen — die Falle und die Umgangsform (26.08.2026)
+
+Derselbe Weg wie für das eigene Profil liest auch fremde, **ohne
+Anmeldung, ohne Token, ohne Credits**. Darauf steht die ganze
+Nachbarschaft auf der Autorenseite.
+
+```
+GET https://studio-api.prod.suno.com/api/profiles/<handle>/
+    ?page=1&playlists_sort_by=upvote_count&clips_sort_by=created_at
+```
+
+**Beide `sort_by`-Angaben sind Pflicht.** Fehlt eine, antwortet der
+Dienst mit **422 und einer vollständig aussehenden, leeren Hülle**: Der
+Aufbau stimmt, aber jede Zahl ist `null`. Das sieht nicht wie ein
+Fehler aus, sondern wie ein stiller Nutzer ohne Songs — und genau so
+ist es beim ersten Versuch durchgerutscht. Wer hier Zahlen bekommt, die
+verdächtig oft null sind, prüfe zuerst die Parameter, nicht die Daten.
+
+Der abschließende Schrägstrich hinter dem Handle gehört dazu.
+
+**Was zurückkommt:** `display_name`, `num_total_clips` und ein
+`stats`-Block mit `play_count__sum`, `upvote_count__sum`,
+`followers_count`, `following_count` — die Zusammenfassung über alle
+Songs. Dazu die erste Seite der Songs (22 Stück), `playlists` und
+`personas`.
+
+### Der Hirschfaktor kostet Seiten
+
+`stats` liefert Summen, aber keine Verteilung. Für den Hirschfaktor
+braucht man die Likes **je Song**, absteigend sortiert
+(`clips_sort_by=upvote_count`) — und zwar so viele, bis die Zahl steht.
+Bei 22 Songs je Seite gilt:
+
+> **Seiten ≈ h / 22 + 1**
+
+Mehr braucht es nie: Für ein h reichen die h besten Songs, alles
+dahinter kann es nicht mehr heben. `community-hirsch.js` bricht deshalb
+ab, sobald die laufende Seite den Wert nicht mehr ändern kann.
+
+Gemessen an 174 Nachbarn: **632 Seiten insgesamt**, die Hälfte der
+Leute war nach zwei bis drei Seiten fertig. Zwei standen bei h = 217
+und h = 211 genau an der eingebauten Grenze von zwölf Seiten. Wer sie
+reißt, bekommt eine **Untergrenze**, und die Datei vermerkt das als
+`genau: false` — damit später niemand eine Genauigkeit annimmt, die
+nicht dahintersteht.
+
+### Es ist ihr Server, nicht unserer
+
+Diese Wege sind offen, aber nicht dafür gedacht, in Serie abgefragt zu
+werden. Beide Skripte halten sich deshalb an fünf Regeln — sie stehen
+ausführlich im Kopf von `bin/community-profile.js`:
+
+| | |
+|---|---|
+| **eine Anfrage zur Zeit** | nie parallel, auch wenn es Minuten statt Sekunden dauert |
+| **1,5 s Pause** | höchstens 40 Anfragen je Minute |
+| **ehrlicher User-Agent** | `KlangTresor/1.0 (persoenliches Musikarchiv; …)` — wer sich als Browser tarnt, verbirgt, wer da anfragt |
+| **bei 429 oder 503 sofort aufhören** | nicht wiederholen. Wenn der Dienst bremst, ist das eine Bitte, keine Verhandlung. Das Geholte wird gesichert, der Rest folgt beim nächsten Lauf |
+| **nur einmal holen** | wer schon in der Datei steht, wird übersprungen — ein zweiter Lauf kostet nichts |
+
+Gespeichert werden nur die öffentlichen Zahlen und der Anzeigename.
+Keine Songlisten, keine Texte, keine Kommentare. Es sind fremde Daten,
+und sie bleiben — wie alles hier — lokal.
 
 ---
 

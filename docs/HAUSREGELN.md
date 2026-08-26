@@ -441,6 +441,91 @@ Nachmittag nachgeschlagen hatte.
 
 ---
 
+## Fremde Server: eine Anfrage zur Zeit, und der Name steht dran
+
+**Caspar_D, 26.08.2026,** auf die Frage, ob die Profile der Nachbarn
+geholt werden sollen: „ja, aber sei nett."
+
+Sunos Profil-Endpunkt ist offen — kein Token, kein Cookie, keine
+Credits. Offen heißt nicht: dafür gedacht, in Serie abgefragt zu
+werden. Wer regelmäßig von einem fremden Server liest, hält sich an
+fünf Dinge:
+
+1. **Eine Anfrage zur Zeit.** Nie parallel, auch wenn der Lauf dadurch
+   Minuten statt Sekunden dauert. Es eilt nichts.
+2. **Pause dazwischen**, mindestens eine Sekunde. Sie ist einstellbar,
+   aber nicht nach unten — darunter ist es kein Höflichkeitsabstand
+   mehr, sondern eine Zahl im Programm.
+3. **Ehrlicher User-Agent** mit Zweck und Adresse des Projekts. Wer
+   sich als Browser ausgibt, verbirgt, wer da anfragt. Wer angesprochen
+   werden kann, darf auch anfragen.
+4. **Bei 429 oder 503 sofort aufhören.** Nicht wiederholen, nicht
+   langsamer weitermachen. Wenn der Dienst bremst, ist das eine Bitte,
+   keine Verhandlung. Das bisher Geholte sichern, der Rest folgt beim
+   nächsten Lauf.
+5. **Nur einmal holen.** Wer schon in der Datei steht, wird
+   übersprungen. Ein zweiter Lauf kostet dann nichts, und das Auffrischen
+   wird zur bewußten Entscheidung statt zur Nebenwirkung.
+
+Gespeichert wird nur, was die Frage beantwortet: öffentliche Zahlen und
+der Anzeigename. Keine Songlisten, keine Texte, keine Kommentare
+Fremder. Der technische Teil steht in [SUNO-API.md](SUNO-API.md).
+
+---
+
+## Was es kostet, steht am Knopf — nicht im Kleingedruckten
+
+**Caspar_D, 26.08.2026:** „Zahlen updaten sollte man mit einem Knopf aus
+dem Community panel machen können, das Ding läuft aber im Hintergrund."
+
+Daraus wurden **zwei** Knöpfe, weil es zwei sehr verschieden teure
+Dinge sind:
+
+| | | |
+|---|---|---|
+| **Neue holen** | nur was fehlt | Sekunden |
+| **Alles auffrischen** | auch die vorhandenen Zahlen | ~20 min, ~800 fremde Anfragen — mit Rückfrage |
+
+Ein Knopf, der beides täte, müßte sich für den teuren Fall entscheiden
+oder den Preis verstecken. Zwei Knöpfe sagen ihn vorher. Die Rückfrage
+steht nur am teuren — sonst wird das Wegklicken zur Gewohnheit und
+schützt niemanden mehr.
+
+**Der Fortschritt kommt aus den Dateien, nicht aus dem Prozeß.** Dann
+stimmt er auch, wenn der Lauf von der Kommandozeile gestartet wurde
+oder die Seite zwischendurch zu war. Nachgesehen wird alle fünf
+Sekunden — der Lauf macht eine Anfrage je anderthalb Sekunden, öfter
+hinzuschauen zeigt dieselbe Zahl.
+
+---
+
+## Wo ein Bild einen Rang zeigt, gehört dazu, was der Rang nicht bedeutet
+
+**Caspar_D, 26.08.2026:** „ist es statistisch gesetzmässig das jeder in
+seiner Community eher im unteren drittel steht" — und dann: „ja bitte,
+mach wieder ein (i) Feld."
+
+Ja, es ist gesetzmäßig. Eine Community ist **keine
+Zufallsstichprobe**: Man wird von den Sichtbaren gefunden, und wer
+dreitausend Menschen folgt, taucht in dreitausend Nachbarschaften auf.
+Die Großen sind in jeder Liste vielfach überrepräsentiert — das
+*Freundschaftsparadoxon* (Feld 1991; Eom/Jo 2014 für abgeleitete
+Größen). „Ich stehe im unteren Drittel meiner Community" ist deshalb
+für fast jeden wahr, auch weit über dem Durchschnitt.
+
+Ein Rangbild, das das verschweigt, behauptet eine Einordnung, die es
+nicht leisten kann. Also steht ein **(i)** an der Überschrift, und der
+Kasten **rechnet die Schiefe aus den vorliegenden Daten** — Median
+gegen Mittel, Anteil der obersten zehn Prozent. So steht nichts
+Erfundenes darin, und der Effekt läßt sich mit eigenen Augen
+nachvollziehen.
+
+Nebenbefund, der bleiben durfte: Der Hirschfaktor ist von allen
+Größen die am wenigsten schiefe — ein einzelner Treffer hebt ihn nicht.
+Genau deshalb ist er hier die ehrlichste Zahl.
+
+---
+
 ## Zu zweit am Projekt
 
 Seit dem 26.08.2026 arbeitet Tarja (`myinqi`) mit Schreibrecht am Repo

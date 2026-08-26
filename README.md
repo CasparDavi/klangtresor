@@ -98,6 +98,10 @@ erzählen. Wer wissen will, wie so etwas zustande kommt, findet in
 **Werkzeuge**
 - Tonstudio mit Equalizer, Kompressor, Raum und Störfrequenz-Kerbe
 - Klangraum: die eigene Sammlung als Sternenkarte, mit Flugbahnen
+- Autorenseite: die eigenen Zahlen im Verhältnis zur Nachbarschaft —
+  wer hier kommentiert, geliked oder gefolgt hat, mit öffentlichen
+  Profilzahlen und Hirschfaktor. Samt Erklärung, warum in dieser
+  Rechnung fast jeder im unteren Drittel steht
 
 ---
 
@@ -163,6 +167,20 @@ Songs, Playlists, wer reagiert hat — gibt es das **Lesezeichen**. Es
 läuft im eigenen Suno-Tab, sichert sofort und schickt die Ernte in
 Paketen an den Server. Ein Zugangsschlüssel landet dabei nie auf der
 Platte.
+
+Die Zahlen der Nachbarschaft holen zwei Läufe, anzustoßen aus dem Panel
+*Nachbarschaft* auf der Autorenseite oder von Hand:
+
+```
+node bin/community-profile.js    Profilzahlen der Leute, die hier vorkommen
+node bin/community-hirsch.js     deren Hirschfaktoren (dauert deutlich länger)
+```
+
+Beide holen nur, was noch fehlt; ein zweiter Lauf kostet also nichts.
+Sie lesen öffentlich und ohne Anmeldung — und halten sich dabei an die
+Umgangsform aus [docs/HAUSREGELN.md](docs/HAUSREGELN.md): eine Anfrage
+zur Zeit, 1,5 s Pause, ehrlicher User-Agent, und bei einer Bremse des
+Dienstes sofort Schluß.
 
 ---
 
@@ -250,6 +268,9 @@ docs/      Fachdokumente
 | [docs/FARBHANDLING.md](docs/FARBHANDLING.md) | Farbextraktion, Farbräume, jede Regel mit Meßwert |
 | [docs/TONSTUDIO.md](docs/TONSTUDIO.md) | Equalizer, Kompressor, Raum |
 | [docs/WHISPER.md](docs/WHISPER.md) | Wort-Zeitmarken aus dem Hören |
+| [docs/SUNO-API.md](docs/SUNO-API.md) | Die Wege der Web-API — was wir nutzen, was lohnt, was das Konto verändert |
+| [docs/VERGLEICH-HUB.md](docs/VERGLEICH-HUB.md) | Funktionsvergleich mit einem verwandten Werkzeug — haben wir das, besser, oder verworfen? |
+| [docs/ZUSAMMENARBEIT.md](docs/ZUSAMMENARBEIT.md) | Zu zweit am Repo: fremde Commits prüfen, bevor gezogen wird |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Was offen ist — und was verworfen wurde, mit Begründung |
 | [docs/HISTORY.md](docs/HISTORY.md) | Chronologie einschließlich aller Irrwege |
 
