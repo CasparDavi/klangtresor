@@ -310,6 +310,29 @@ select,.knopf{
    auf der Seite und brauchen eine Kante, an der sie sitzen. */
 .profilreg{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--rand)}
 .pregfeld[hidden]{display:none}
+/* DIE LISTEN BLEIBEN OBEN STEHEN (Caspar_D, 26.08.2026: "mach den
+   diagramm bereich scrollbar, die listen oben bleiben stehen, dann kann
+   ich mir das diagramm zur liste schieben").
+
+   Wer in der Liste ueber einen Namen faehrt, sieht seinen Punkt im
+   Streubild aufleuchten - aber nur, wenn beide gleichzeitig im Bild
+   sind. Bei einem Streubild im goldenen Format sind das rund 550
+   Bildpunkte Hoehe, und die Listen stehen darueber. Also klebt das
+   Community-Panel oben fest, waehrend die Nachbarschaft darunter
+   durchlaeuft: Man schiebt sich das Diagramm zur Liste.
+
+   VOLL DECKEND, nicht wie die uebrigen Panels bei 0,46 - ein
+   halbdurchsichtiger Kasten, unter dem etwas durchscrollt, ist
+   unlesbar. Der Rahmen unten trennt ihn vom Laufenden. */
+/* Die Laschen der Nachbarschaft sitzen im Panel, nicht am Seitenrand -
+   deshalb etwas kleiner und ohne den Aussenabstand oben. */
+.profilreg.nbreg{margin:0 0 4px;font-size:13px}
+.profilreg.nbreg .reg{font-size:13px;padding:6px 12px}
+.nbfeld[hidden]{display:none}
+
+#profilcommunity{position:sticky;top:0;z-index:2;
+  background:#0b0c0f;border-bottom:1px solid var(--rand);
+  box-shadow:0 10px 24px rgba(0,0,0,.55)}
 
 .werte{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
 .werte.mithirsch{display:flex;flex-wrap:wrap}.werte.mithirsch .wert{flex:1 1 110px}
@@ -9934,6 +9957,9 @@ function balken(titel, eintraege, farbe, hinweis, icon){
   if (top.some(e => e.teile && (e.teile[0] || e.teile[1]))) w.classList.add('stufig');
   for (const e of top){
     const z = document.createElement('div'); z.className = 'bz' + (e.klick ? ' klick' : '');
+    /* Wer einen Handle mitbringt, wird beim Ueberfahren mit den
+       Nachbarschaftsbildern verbunden. */
+    if (e.handle) z.dataset.nb = e.handle;
     const n = document.createElement('span'); n.className = 'bn'; n.textContent = e.name; if (e.titel) n.title = e.titel;
     const b = document.createElement('span'); b.className = 'bb';
     /* Hausform: gedaempfte Flaeche, darauf die Topline. OBEN, auch beim
@@ -10045,7 +10071,10 @@ async function profilCommunityFuellen(){
   let fenster = localStorage.getItem('bestenFenster') || 'immer';
   const ich = (katalogInfo && katalogInfo.profil && katalogInfo.profil.handle) || '';
   const fremde = leute.filter(l => l.handle !== ich);       // ohne mich selbst
-  const person = (l) => ({ name: l.name || l.handle, titel: '@' + l.handle,
+  /* Der Handle reist mit: Er verbindet die Zeile in der Liste mit dem
+     Punkt im Streubild und der Saeule in der Rangfolge (siehe
+     nachbarHervorheben). */
+  const person = (l) => ({ name: l.name || l.handle, titel: '@' + l.handle, handle: l.handle,
     klick: () => { $('detail').classList.remove('auf'); reaktPersonAlleine(l.handle); } });
   const bestenZeichnen = () => {
     localStorage.setItem('bestenFenster', fenster);
@@ -10672,6 +10701,44 @@ async function profilLaengenFuellen(){
   ziel.appendChild(fuss);
 }
 
+/* ---- LISTE UND BILD VERBUNDEN --------------------------------------
+   Caspar_D, 26.08.2026: "mache die listen oben interaktiv, mousover
+   zeigt mir den punkt, die säle im diagramm".
+
+   Wer in der Community-Liste ueber einen Namen faehrt, sieht sofort, wo
+   dieser Mensch im Streubild steht und wie hoch seine Saeule in der
+   Rangfolge ist. Ohne das muesste man 175 Punkte nach einem Namen
+   absuchen - der Tooltip verraet ihn erst, wenn man ihn schon gefunden
+   hat.
+
+   Ueber Ereignisdelegation am Panel, nicht mit Handlern an jeder Zeile:
+   Die Listen werden bei jedem Umschalten des Zeitfensters neu gebaut,
+   einzeln gesetzte Handler waeren jedesmal weg.
+
+   Der Punkt bekommt einen Ring statt einer anderen Farbe - Farbe traegt
+   in diesen Bildern schon eine Aussage (welcher Punkt ich bin), und
+   zwei Bedeutungen auf einem Kanal liest niemand auseinander. */
+let _nbMarke = null;
+function nachbarHervorheben(handle){
+  if (_nbMarke === handle) return;
+  _nbMarke = handle;
+  document.querySelectorAll('.nbpunkt').forEach(c => {
+    const dran = handle && c.dataset.nb === handle;
+    c.setAttribute('r', dran ? 8 : 4.5);
+    c.style.stroke = dran ? 'var(--titel-a,#f97b14)' : '';
+    c.style.strokeWidth = dran ? 2.5 : '';
+  });
+  document.querySelectorAll('.nbsaeule').forEach(r => {
+    const dran = handle && r.dataset.nb === handle;
+    r.style.filter = dran ? 'brightness(2.4)' : '';
+  });
+}
+document.addEventListener('mouseover', (e) => {
+  const z = e.target.closest && e.target.closest('#profilcommunity .bz[data-nb]');
+  if (z) nachbarHervorheben(z.dataset.nb);
+  else if (_nbMarke && !(e.target.closest && e.target.closest('#profilcommunity'))) nachbarHervorheben(null);
+});
+
 /* ---- DIE NACHBARSCHAFT ----------------------------------------------
    Caspar_D, 26.08.2026: "wo stehen meine follower, liker, interessante
    Fragen" und "mit Namen finde ich nicht schlimm, wie machen es Leute,
@@ -10743,16 +10810,23 @@ async function profilNachbarnFuellen(){
     follower: st.followers_count || 0, folgt: st.following_count || 0 };
   const alleL = [...macher, ich];
 
+  /* ZWEI BILDER, EINES ZUR ZEIT (Caspar_D, 26.08.2026: "oder leg die
+     diagramme in ein registerpanel"). Untereinander braeuchten sie
+     zusammen ueber 800 Bildpunkte Hoehe - dann sind die Listen darueber,
+     mit denen man sie verbindet, laengst aus dem Bild. Im Register
+     bleibt es bei rund 550, und mit den festklebenden Listen sieht man
+     beides gleichzeitig. */
   ziel.innerHTML = '<h3>Nachbarschaft</h3>';
-  const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
+  const nbreg = document.createElement('div'); nbreg.className = 'profilreg nbreg';
+  ziel.appendChild(nbreg);
+  const feld1 = document.createElement('div'); feld1.className = 'nbfeld';
+  const feld2 = document.createElement('div'); feld2.className = 'nbfeld'; feld2.hidden = true;
+  ziel.append(feld1, feld2);
+  const g = feld1;
 
   /* ---- Bild 1: Follower gegen Folgt ------------------------------- */
   {
     const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
-    const kopf = document.createElement('div'); kopf.className = 'diatitel';
-    kopf.innerHTML = SYM('herz') + ' ';
-    kopf.appendChild(document.createTextNode('Wie Reichweite zustande kommt'));
-    w.appendChild(kopf);
     w.appendChild(streuBild(alleL, 'folgt', 'follower', 'folgt', 'Follower', true));
     const f = document.createElement('div'); f.className = 'fussnote';
     const oben = alleL.filter(x => !x.ist && x.follower > 2 * Math.max(1, x.folgt)).length;
@@ -10765,11 +10839,10 @@ async function profilNachbarnFuellen(){
 
   /* ---- Bild 2: Rangfolge, umschaltbar ----------------------------- */
   {
-    const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
+    const w = document.createElement('div'); w.className = 'dia breit'; feld2.appendChild(w);
     const kopf = document.createElement('div'); kopf.className = 'diatitel';
-    kopf.innerHTML = SYM('bewegung') + ' ';
-    kopf.appendChild(document.createTextNode('Wo ich stehe'));
-    const chips = document.createElement('span'); chips.style.cssText = 'margin-left:auto;display:flex;gap:6px';
+    kopf.style.justifyContent = 'flex-end';
+    const chips = document.createElement('span'); chips.style.cssText = 'display:flex;gap:6px';
     kopf.appendChild(chips); w.appendChild(kopf);
     const feld = document.createElement('div'); w.appendChild(feld);
     const fuss = document.createElement('div'); fuss.className = 'fussnote'; w.appendChild(fuss);
@@ -10803,6 +10876,22 @@ async function profilNachbarnFuellen(){
     zeichnen();
   }
 
+  /* Die Laschen zuletzt - sie brauchen die fertigen Felder. */
+  for (const [k, t, feld] of [['weg', 'Wie Reichweite zustande kommt', feld1],
+                              ['rang', 'Wo ich stehe', feld2]]){
+    const b = document.createElement('button');
+    b.className = 'reg' + (k === 'weg' ? ' an' : ''); b.dataset.nbr = k; b.textContent = t;
+    b.onclick = () => {
+      try { localStorage.setItem('nbRegister', k); } catch (e) {}
+      nbreg.querySelectorAll('.reg').forEach(x => x.classList.toggle('an', x.dataset.nbr === k));
+      feld1.hidden = k !== 'weg'; feld2.hidden = k !== 'rang';
+    };
+    nbreg.appendChild(b);
+  }
+  { let k = 'weg'; try { k = localStorage.getItem('nbRegister') || 'weg'; } catch (e) {}
+    const b = nbreg.querySelector(`[data-nbr="${k}"]`) || nbreg.firstChild;
+    if (b) b.onclick(); }
+
   const f = document.createElement('div'); f.className = 'fussnote';
   f.style.marginTop = '16px';
   f.textContent = `${macher.length} Leute, die hier kommentiert, geliked oder gefolgt haben und `
@@ -10814,24 +10903,69 @@ async function profilNachbarnFuellen(){
 
 /* Streubild mit logarithmischen Achsen. Punkte sind Kreise (Hausregel 7),
    der Datenbereich ein schwarzes Rechteck mit runden Ecken (Regel 8). */
+/* GOLDENES RECHTECK (Caspar_D, 26.08.2026: "und mache goldene
+   rechtecke"). Breite zu Hoehe wie 1,618 zu 1 - dasselbe Mass wie die
+   Gradationskurve im Tonstudio (447 : 276). Das Streubild gewinnt
+   dadurch spuerbar: Bei 380 Punkten Hoehe klebte die Wolke aufeinander.
+
+   ACHSEN, AUF DENEN MAN ALLES SIEHT (Caspar_D: "und beschrifte die
+   achsen so, dass man alles sieht"). Vorher standen nur die
+   Zehnerpotenzen da, und die aeusserste rutschte halb aus dem Bild.
+   Jetzt: Zwischenmarken bei 2 und 5 jeder Dekade, kurze Striche an
+   jeder Marke, Tausender abgekuerzt (1k, 10k, 100k), und die
+   Randbeschriftungen werden nach innen gezogen, statt abgeschnitten zu
+   werden. */
 function streuBild(liste, xf, yf, xn, yn, diagonale){
-  const W = 900, H = 380, L = 52, U = 34, R = 12, O = 10;
+  const W = 900, H = Math.round(900 / 1.618), L = 62, U = 40, R = 16, O = 14;
   const bx = L, by = O, bw = W - L - R, bh = H - O - U;
   const lg = (v) => Math.log10(Math.max(1, v));
   const xs = liste.map(p => lg(p[xf])), ys = liste.map(p => lg(p[yf]));
   const x0 = 0, x1 = Math.ceil(Math.max(...xs, 1)), y0 = 0, y1 = Math.ceil(Math.max(...ys, 1));
+  /* Bis wohin die Daten wirklich reichen. Die Achse laeuft bis zur
+     naechsten vollen Zehnerpotenz, damit die Marken auf runden Zahlen
+     sitzen - aber beschriftet wird nur, was auch belegt ist. Sonst
+     stehen am rechten Rand "500k" und "1 Mio" uebereinander, obwohl der
+     groesste Wert 116.081 ist (26.08.2026). */
+  const xMax = Math.max(...liste.map(q => q[xf]), 1) * 1.15;
+  const yMax = Math.max(...liste.map(q => q[yf]), 1) * 1.15;
   const X = (v) => bx + (lg(v) - x0) / (x1 - x0) * bw;
   const Y = (v) => by + bh - (lg(v) - y0) / (y1 - y0) * bh;
 
+  /* Kurz und lesbar: 1k statt 1.000, 100k statt 100.000. */
+  const kurz = (v) => v >= 1e6 ? (v / 1e6) + ' Mio' : v >= 1000 ? (v / 1000) + 'k' : String(v);
   let sv = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:6px">`;
   sv += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="rgba(0,0,0,.72)"/>`;
-  /* Zehnerpotenzen als Marken - keine Gitternetzlinien (Regel 8). */
-  for (let e = x0; e <= x1; e++)
-    sv += `<text x="${X(Math.pow(10, e)).toFixed(1)}" y="${H - 12}" font-size="12" fill="#8b8b90" text-anchor="middle">${Math.pow(10, e).toLocaleString('de-DE')}</text>`;
-  for (let e = y0; e <= y1; e++)
-    sv += `<text x="${bx - 8}" y="${(Y(Math.pow(10, e)) + 4).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${Math.pow(10, e).toLocaleString('de-DE')}</text>`;
-  sv += `<text x="${bx + bw}" y="${H - 12}" font-size="11" fill="#6c6c72" text-anchor="end">${xn}</text>`;
-  sv += `<text x="${bx + 4}" y="${by + 14}" font-size="11" fill="#6c6c72">${yn}</text>`;
+  /* Marken: jede Dekade beschriftet, dazu 2 und 5 als kurze Striche -
+     ohne sie liest man auf einer logarithmischen Achse nichts ab.
+     Keine Gitternetzlinien (Regel 8), nur Striche am Rand. */
+  for (let e = x0; e <= x1; e++){
+    for (const m of [1, 2, 5]){
+      const v = m * Math.pow(10, e); if (v > xMax) continue;
+      const x = X(v); if (x > bx + bw + 1) continue;
+      sv += `<line x1="${x.toFixed(1)}" y1="${(by + bh).toFixed(1)}" x2="${x.toFixed(1)}"`
+         + ` y2="${(by + bh + (m === 1 ? 6 : 3)).toFixed(1)}" stroke="#8b8b90" stroke-width="1" opacity="${m === 1 ? 0.8 : 0.4}"/>`;
+      if (m === 1 || (m === 5 && e < x1)){
+        /* Die aeusserste Marke wandert nach innen, statt aus dem Bild
+           zu rutschen. */
+        const anker = x > bx + bw - 18 ? 'end' : (x < bx + 14 ? 'start' : 'middle');
+        sv += `<text x="${x.toFixed(1)}" y="${(by + bh + 20).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="${anker}">${kurz(v)}</text>`;
+      }
+    }
+  }
+  for (let e = y0; e <= y1; e++){
+    for (const m of [1, 2, 5]){
+      const v = m * Math.pow(10, e); if (v > yMax) continue;
+      const y = Y(v); if (y < by - 1) continue;
+      sv += `<line x1="${(bx - (m === 1 ? 6 : 3)).toFixed(1)}" y1="${y.toFixed(1)}" x2="${bx}"`
+         + ` y2="${y.toFixed(1)}" stroke="#8b8b90" stroke-width="1" opacity="${m === 1 ? 0.8 : 0.4}"/>`;
+      if (m === 1 || (m === 5 && e < y1)){
+        const dy = y < by + 12 ? 12 : 4;
+        sv += `<text x="${(bx - 10).toFixed(1)}" y="${(y + dy).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${kurz(v)}</text>`;
+      }
+    }
+  }
+  sv += `<text x="${bx + bw}" y="${H - 4}" font-size="12" font-weight="600" fill="#6c6c72" text-anchor="end">${xn} →</text>`;
+  sv += `<text x="${bx + 6}" y="${by + 16}" font-size="12" fill="#6c6c72">↑ ${yn}</text>`;
   if (diagonale){
     const a = Math.max(x0, y0), b = Math.min(x1, y1);
     sv += `<line x1="${X(Math.pow(10, a)).toFixed(1)}" y1="${Y(Math.pow(10, a)).toFixed(1)}"`
@@ -10849,7 +10983,7 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
   for (const p of liste){
     if (p.ist) continue;
     sv += `<a href="https://suno.com/@${encodeURIComponent(p.handle)}" target="_blank" rel="noopener">`
-       + `<circle cx="${X(p[xf]).toFixed(1)}" cy="${Y(p[yf]).toFixed(1)}" r="4.5"`
+       + `<circle class="nbpunkt" data-nb="${esc(p.handle)}" cx="${X(p[xf]).toFixed(1)}" cy="${Y(p[yf]).toFixed(1)}" r="4.5"`
        + ` fill="${fl}" stroke="${kn}" stroke-width="1">`
        + `<title>${esc(p.name)} — ${p.songs} Songs, ${p.plays.toLocaleString('de-DE')} Plays, `
        + `${p.follower.toLocaleString('de-DE')} Follower, folgt ${p.folgt.toLocaleString('de-DE')}</title>`
@@ -10880,7 +11014,13 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
 /* Die Rangfolge als Saeulenreihe: jede Saeule ein Mensch, die eigene
    farbig. Hausform - gedaempfte Flaeche, Topline oben. */
 function rangBild(sortiert, wertVon){
-  const W = 900, H = 170, O = 6, U = 4;
+  /* Auch hier das goldene Rechteck, nur flacher gehalten: 176 Saeulen
+     in einem 1,618er Format waeren ein Wald aus Nadeln. Die halbe
+     Hoehe des Streubilds ist der Kompromiss - hoch genug, dass man die
+     eigene Saeule findet, flach genug, dass die Reihe eine Reihe
+     bleibt. preserveAspectRatio bleibt "none": Die Saeulen duerfen mit
+     der Fensterbreite mitgehen, die Hoehe nicht. */
+  const W = 900, H = Math.round(900 / 1.618 / 2), O = 8, U = 18;
   const n = sortiert.length, bw = W / n;
   const max = wertVon(sortiert[0]) || 1;
   const hoch = (v) => Math.max(1, Math.sqrt(Math.max(0, v) / max) * (H - O - U));   /* Wurzel: sonst ist alles ausser der Spitze ein Strich */
@@ -10892,12 +11032,20 @@ function rangBild(sortiert, wertVon){
        Saeulen von je fuenf Bildpunkten Breite ist Farbe das Einzige,
        was sie auffindbar macht. */
     const f = p.ist ? DIA_1 : '#8b8b90';
-    sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="${h.toFixed(1)}"`
+    sv += `<rect class="nbsaeule" data-nb="${esc(p.handle || '')}" x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="${h.toFixed(1)}"`
        + ` style="fill:${diaFlaeche(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}">`
        + `<title>${p.ist ? 'Du' : esc(p.name)} — ${Math.round(wertVon(p)).toLocaleString('de-DE')}</title></rect>`;
     sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="1"`
        + ` style="fill:${diaTopline(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}" pointer-events="none"/>`;
   });
+  /* Die Platznummern unter der Reihe: erste, letzte und die eigene -
+     mehr braucht es nicht, um sich zurechtzufinden. */
+  const eigen = sortiert.findIndex(p => p.ist);
+  const marke = (i, txt, farbig) => `<text x="${(i * bw + bw / 2).toFixed(1)}" y="${H - 5}"`
+    + ` font-size="11" fill="${farbig ? DIA_1 : '#8b8b90'}" text-anchor="middle">${txt}</text>`;
+  sv += marke(0, '1.', false);
+  if (eigen > 2 && eigen < n - 3) sv += marke(eigen, (eigen + 1) + '.', true);
+  sv += marke(n - 1, n + '.', false);
   sv += '</svg>';
   const d = document.createElement('div'); d.innerHTML = sv; return d;
 }
