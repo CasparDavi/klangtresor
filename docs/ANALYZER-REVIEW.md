@@ -102,6 +102,27 @@ Entropie und Abschnittserkennung; eine eigene Chroma-Rechnung mit 8192
 Punkten, Gipfelauswahl und parabolisch verfeinerter Scheitelfrequenz.
 Belege in den Commits `031a315`, `a735f90`, `3352a99`.
 
+**Der Beleg, über den ganzen Bestand (26.08.2026, während des
+Neulaufs).** Welche Tonklasse steht bei einem Song im Chroma ganz oben?
+
+```
+        C   C#   D   D#   E   F   F#   G   G#   A   A#   B
+  alt   0%   0%  0%   0%  0%  2%  98%  0%   0%  0%   0%  0%    (207 Songs)
+  neu   4%   3%  4%   5% 18%  4%   6% 11%   3% 17%  18%  7%    (114 Songs)
+```
+
+**Bei 203 von 207 Songs stand F# oben** — die Tonklasse, der das
+Raster bei 48 kHz neun Fächer zuteilt statt vier. Das alte Chroma hat
+über die Musik nichts ausgesagt; es zeigte in 98 % der Fälle sich
+selbst. Am 25.08. war das an sechs Songs vermutet worden (fünf von
+sechs mit F# oben), über den ganzen Bestand ist es eindeutig.
+
+Nach dem Umbau — eigene FFT mit 8192 Punkten, Gipfelauswahl,
+parabolisch verfeinerte Scheitelfrequenz — ist die Verteilung gestreut
+und musikalisch: A#, E und A führen mit 17 bis 18 %, F# liegt bei 6 %,
+also unter der Gleichverteilung von 8 %. Genau da, wo eine Tonklasse
+liegt, die nicht bevorzugt wird.
+
 **Ein Fund nebenbei: der Browser hielt die Analysen ein Jahr fest.**
 `server/server.js` gab für alles außer HTML und JavaScript
 `Cache-Control: public, max-age=31536000` — mit der Begründung, Medien
