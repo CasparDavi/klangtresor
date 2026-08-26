@@ -10866,13 +10866,24 @@ document.addEventListener('mouseover', (e) => {
    profile.js holt sie oeffentlich bei Suno, ohne Anmeldung). 180 Leute,
    die hier kommentiert, geliked oder gefolgt haben.
 
-   WAS DIE DATEN HERGEBEN, gerechnet ueber die 175 Macher, logarithmisch
+   WAS DIE DATEN HERGEBEN, gerechnet ueber die Macher, logarithmisch
    (sonst reissen die Ausreisser alles - einer folgt 116.081 Menschen):
 
-     Follower <-> folgt          r = +0,86   der staerkste Zusammenhang
-     Follower <-> Plays je Song  r = +0,64
-     Follower <-> Songzahl       r = +0,44
-     Songzahl <-> Plays je Song  r = -0,14   Vielschreiben verduennt NICHT
+     Folger <-> folgt          r = +0,86
+     Folger <-> Plays je Song  r = +0,65
+     Folger <-> Songzahl       r = +0,43
+     Songzahl <-> Plays je Song  r = -0,15   Vielschreiben verduennt NICHT
+
+   HIER STAND EINMAL "der staerkste Zusammenhang" an der 0,86. Das war
+   falsch, und Caspar_D hat es am 26.08.2026 aufgedeckt: Plays gegen
+   Likes liegt bei 0,91, Likes gegen Folger bei 0,87. Nachgerechnet
+   ueber alle 186 Macher stimmen die vier Zahlen oben aber bis auf 0,01
+   - falsch war die Einordnung, nicht die Messung.
+
+   Und der zweite, wichtigere Einwand: Ein r ist PAARWEISE und damit
+   kein Anteil an irgendetwas. Wer wissen will, was woran haengt,
+   braucht eine Varianzzerlegung - die steht im Register "Woran es
+   liegt".
 
    Daraus die beiden Bilder:
 
@@ -10983,7 +10994,8 @@ async function profilNachbarnFuellen(){
   ziel.appendChild(nbreg);
   const feld1 = document.createElement('div'); feld1.className = 'nbfeld';
   const feld2 = document.createElement('div'); feld2.className = 'nbfeld'; feld2.hidden = true;
-  ziel.append(feld1, feld2);
+  const feld3 = document.createElement('div'); feld3.className = 'nbfeld'; feld3.hidden = true;
+  ziel.append(feld1, feld2, feld3);
   const g = feld1;
 
   /* ---- Bild 1: Follower gegen Folgt ------------------------------- */
@@ -11012,7 +11024,7 @@ async function profilNachbarnFuellen(){
     const oben = alleL.filter(x => !x.ist && x.follower > 2 * Math.max(1, x.folgt)).length;
     f.textContent = `Waagerecht, wem jemand folgt — senkrecht, wer ihm folgt. Beide Achsen `
       + `logarithmisch. Auf der Linie halten sich beide die Waage. Darunter: Reichweite über `
-      + `Gegenseitigkeit — der stärkste Zusammenhang in diesen Daten (r = 0,86). Darüber: `
+      + `Gegenseitigkeit (r = 0,86). Darüber: `
       + `es folgen ihnen mehr, als sie selbst folgen — ${oben} von ${macher.length}. `
       + `Punkt anklicken führt zum Profil auf Suno.`;
     w.appendChild(f);
@@ -11087,15 +11099,88 @@ async function profilNachbarnFuellen(){
     zeichnen();
   }
 
+  /* ---- Bild 3: Woran es liegt -------------------------------------- */
+  {
+    const w = document.createElement('div'); w.className = 'dia breit'; feld3.appendChild(w);
+    const kopf = document.createElement('div'); kopf.className = 'fussnote';
+    kopf.style.margin = '0 0 10px';
+    kopf.innerHTML = 'Erst die Frage, dann die Rechnung: <b>Was soll „Reichweite" heißen?</b> '
+      + 'Drei Antworten sind möglich, und sie fallen verschieden aus. '
+      + 'Erklärt wird jede nur durch <b>Handlungen</b> — Dinge, die jemand tut, bevor etwas '
+      + 'zurückkommt. Niemals durch andere Ergebnisse: Daß wer viele Likes hat, auch viele '
+      + 'Folger hat, erklärt nichts, es ist dieselbe Sache zweimal gezählt.';
+    w.appendChild(kopf);
+
+    const chips3 = document.createElement('div'); chips3.className = 'diachips'; w.appendChild(chips3);
+    const feldB = document.createElement('div'); w.appendChild(feldB);
+    const fuss3 = document.createElement('div'); fuss3.className = 'fussnote'; w.appendChild(fuss3);
+
+    const lgz = (v) => Math.log10(Math.max(1, v || 0));
+    /* Die Handlungsgroessen. Playlists und Personas liest der Lauf nur
+       von der ersten Seite - deshalb gedeckelt und nur grob belastbar;
+       sie stehen mit im Bild, damit man sieht, wie wenig sie tragen. */
+    const HANDLUNG = [
+      { n: 'Songzahl',        f: (p) => lgz(p.songs) },
+      { n: 'wem jemand folgt', f: (p) => lgz(p.folgt) },
+      { n: 'Playlists',       f: (p) => lgz(p.playlists) },
+      { n: 'Personas',        f: (p) => lgz(p.personas) },
+    ];
+    const ZIELE = [
+      ['publikum', 'Publikum', 'die Folger — wer abonniert hat',
+        (p) => lgz(p.follower), HANDLUNG],
+      /* Ohne Songzahl: Sie steht im Nenner der Zielgroesse, ein Anteil
+         waere dann teils die Rechnung selbst. */
+      ['wirkung', 'Wirkung je Stück', 'Plays je Song — was ein einzelner Song erreicht',
+        (p) => lgz(p.plays / Math.max(1, p.songs)), HANDLUNG.filter(g => g.n !== 'Songzahl')],
+      ['dauer', 'Beständigkeit', 'der Hirschfaktor — wieviele Songs zugleich tragen',
+        (p) => (p.hirsch > 0 ? lgz(p.hirsch) : null), HANDLUNG],
+    ];
+    let zart = 'publikum';
+    try { zart = localStorage.getItem('nbAnteilZiel') || 'publikum'; } catch (e) {}
+    if (!ZIELE.some(z => z[0] === zart)) zart = 'publikum';
+
+    const zeichnen3 = () => {
+      try { localStorage.setItem('nbAnteilZiel', zart); } catch (e) {}
+      [...chips3.children].forEach(c => c.classList.toggle('an', c.dataset.z === zart));
+      const [, name, was, zf, geber] = ZIELE.find(z => z[0] === zart);
+      const daten = macher.filter(p => zf(p) != null && geber.every(g => g.f(p) != null));
+      feldB.innerHTML = '';
+      if (daten.length < 20){ fuss3.textContent = 'Zu wenige Zahlen für diese Rechnung.'; return; }
+      const y = daten.map(zf), spalten = geber.map(g => daten.map(g.f));
+      const { anteil, gesamt } = lmgAnteile(spalten, y);
+      const zeilen = geber.map((g, i) => ({ name: g.n, wert: Math.max(0, anteil[i]) }))
+                          .sort((a, b) => b.wert - a.wert);
+      feldB.appendChild(anteilBild(zeilen, gesamt, daten.length));
+      const stark = zeilen[0];
+      fuss3.innerHTML = `<b>${name}</b> — ${was}. Von der gesamten Streuung erklären die `
+        + `Handlungen zusammen <b>${(gesamt * 100).toFixed(0)} %</b>; den größten Einzelanteil hat `
+        + `„${stark.name}" mit ${(stark.wert * 100).toFixed(0)} %. Gerechnet über ${daten.length} `
+        + `Menschen, alle Größen logarithmisch.`
+        + `<br><span class="leise">Der Anteil ist über <b>alle</b> Reihenfolgen gemittelt, in denen `
+        + `man die Größen ins Modell nehmen könnte (Verfahren nach Lindeman, Merenda und Gold; `
+        + `derselbe Gedanke wie Shapleys Aufteilung). Sonst bekäme die zuerst genommene Größe den `
+        + `gemeinsamen Teil geschenkt. — <b>Anteil ist keine Ursache:</b> Wer viele Folger hat, `
+        + `folgt womöglich auch mehr zurück; welche Richtung wirkt, sagt eine Momentaufnahme nicht.</span>`;
+    };
+    for (const [k, t] of ZIELE.map(z => [z[0], z[1]])){
+      const c = document.createElement('span'); c.className = 'chip'; c.dataset.z = k;
+      c.textContent = t; c.style.cursor = 'pointer';
+      c.onclick = () => { zart = k; zeichnen3(); };
+      chips3.appendChild(c);
+    }
+    zeichnen3();
+  }
+
   /* Die Laschen zuletzt - sie brauchen die fertigen Felder. */
   for (const [k, t, feld] of [['weg', 'Wie Reichweite zustande kommt', feld1],
-                              ['rang', 'Wo ich stehe', feld2]]){
+                              ['rang', 'Wo ich stehe', feld2],
+                              ['anteil', 'Woran es liegt', feld3]]){
     const b = document.createElement('button');
     b.className = 'reg' + (k === 'weg' ? ' an' : ''); b.dataset.nbr = k; b.textContent = t;
     b.onclick = () => {
       try { localStorage.setItem('nbRegister', k); } catch (e) {}
       nbreg.querySelectorAll('.reg').forEach(x => x.classList.toggle('an', x.dataset.nbr === k));
-      feld1.hidden = k !== 'weg'; feld2.hidden = k !== 'rang';
+      feld1.hidden = k !== 'weg'; feld2.hidden = k !== 'rang'; feld3.hidden = k !== 'anteil';
       nachbarnListeSpiegeln();
     };
     nbreg.appendChild(b);
@@ -11264,6 +11349,171 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
 
 /* Die Rangfolge als Saeulenreihe: jede Saeule ein Mensch, die eigene
    farbig. Hausform - gedaempfte Flaeche, Topline oben. */
+/* ---- WORAN ES LIEGT: DIE ANTEILE AN DER STREUUNG -------------------
+   Caspar_D, 26.08.2026: "wie hast du den Anteil von folger/gefolgte
+   Verhältnis an der Erklärung der Rangfolge gefunden? da gibts doch
+   Diagramme, die den Anteil der verschiedenen gemessenen Grössen am
+   Ergebnis beschreiben."
+
+   Die Frage traf einen Fehler. In der Fussnote stand "der staerkste
+   Zusammenhang in diesen Daten (r = 0,86)" - das war zweimal daneben:
+   Erstens ist r zwischen Plays und Likes 0,91 und zwischen Likes und
+   Folgern 0,87, beide staerker. Zweitens, und das ist der Punkt: EIN
+   KORRELATIONSKOEFFIZIENT IST KEIN ANTEIL. Er vergleicht zwei Groessen
+   und weiss nichts von den uebrigen.
+
+   WARUM MAN NICHT EINFACH r² NIMMT. Die Groessen haengen untereinander
+   zusammen. Wer viele Folger hat, hat meist auch viele Likes; deren
+   Erklaerungsbeitraege ueberschneiden sich. Rechnet man sie einzeln
+   aus, summieren sich die Anteile auf weit ueber hundert Prozent.
+   Nimmt man sie nacheinander ins Modell, bekommt die zuerst genommene
+   Groesse den gemeinsamen Teil schenkt - das Ergebnis haengt dann an
+   der Reihenfolge und nicht an den Daten.
+
+   DIE LOESUNG IST, UEBER ALLE REIHENFOLGEN ZU MITTELN. Genau das tut
+   LMG (Lindeman, Merenda und Gold 1980), und es ist derselbe Gedanke
+   wie Shapleys Aufteilung eines Gewinns unter Mitspielern: Was haette
+   diese Groesse beigetragen, wenn sie als erste, als zweite, als
+   letzte dazugekommen waere? Der Mittelwert ueber alle Reihenfolgen ist
+   ihr Anteil. Bei vier Groessen sind das 24 Reihenfolgen, gerechnet
+   ueber 16 Teilmengen - im Browser eine Sache von Millisekunden.
+
+   KEINE ZIRKELSCHLUESSE (Caspar_D, 26.08.2026: "aber ohne
+   zirkelschlüsse, nicht sowas wie, Reichweite hat der, der Reichweite
+   hat. Definiere erstmal was Reichweite ist und dann, welche
+   unabhängige Grösse bestimmt dies").
+
+   Der erste Wurf war genau dieser Zirkel: Er liess Likes die Folger
+   erklaeren. Beides sind ERGEBNISSE desselben Vorgangs - keins
+   verursacht das andere, sie wachsen gemeinsam. Herauskam die
+   Binsenweisheit, dass erfolgreiche Profile erfolgreich sind.
+
+   Deshalb sind die Groessen jetzt getrennt:
+
+     HANDLUNG - was jemand tut, bevor irgendetwas zurueckkommt:
+       Songzahl, wem er folgt, Playlists, Personas.
+     ERGEBNIS - was dabei herauskommt:
+       Folger, Plays, Likes, Hirschfaktor.
+
+   Erklaert wird nur Ergebnis DURCH Handlung, nie Ergebnis durch
+   Ergebnis. Was am Ende offenbleibt, bleibt offen.
+
+   WAS "REICHWEITE" HEISST, muss dabei gesagt werden, sonst misst jeder
+   etwas anderes. Hier sind es drei verschiedene Fragen, und sie haben
+   verschiedene Antworten:
+
+     Publikum        - die Folger: wer hat abonniert
+     Wirkung je Stueck - Plays je Song: was ein einzelner Song erreicht
+     Bestaendigkeit  - der Hirschfaktor: wieviele Songs zugleich tragen
+
+   Plays INSGESAMT steht bewusst nicht zur Wahl: Die Zahl waechst schon
+   dadurch, dass jemand mehr veroeffentlicht - sie misst Fleiss und
+   Wirkung in einem und trennt beides nicht.
+
+   WAS DIE ZAHLEN NICHT SAGEN: eine Ursache. "Wem jemand folgt" ist
+   zwar eine Handlung und kein Ergebnis, aber wer viele Folger hat,
+   folgt womoeglich auch mehr zurueck - die Richtung ist aus einer
+   Momentaufnahme nicht zu klaeren. Das steht als Satz unter dem Bild,
+   nicht im Kleingedruckten.
+
+   ALLES LOGARITHMISCH, wie in den anderen Bildern: Einer folgt 116.081
+   Menschen; ohne Logarithmus rechnet man nur ihn.
+
+   WAS NICHT ERKLAERT IST, STEHT MIT IM BILD. Sonst liest sich eine
+   Zerlegung wie eine vollstaendige Antwort. Beim Hirschfaktor bleiben
+   23 von 100 Teilen offen - Musik, Zeitpunkt, Glueck, alles, was hier
+   keine Zahl hat. */
+
+/* R² einer Regression per kleinster Quadrate. Gauss mit Zeilentausch
+   nach dem groessten Element - ohne den kippt die Rechnung, sobald zwei
+   Spalten fast dasselbe sagen, und das ist hier der Normalfall. */
+function kqR2(spalten, y){
+  if (!spalten.length) return 0;
+  const n = y.length, k = spalten.length;
+  const X = [new Array(n).fill(1), ...spalten];          /* Achsenabschnitt */
+  const A = [], b = [];
+  for (let i = 0; i <= k; i++){
+    A.push([]);
+    for (let j = 0; j <= k; j++){ let s = 0; for (let t = 0; t < n; t++) s += X[i][t] * X[j][t]; A[i].push(s); }
+    let s = 0; for (let t = 0; t < n; t++) s += X[i][t] * y[t]; b.push(s);
+  }
+  for (let i = 0; i <= k; i++){
+    let p = i; for (let r = i + 1; r <= k; r++) if (Math.abs(A[r][i]) > Math.abs(A[p][i])) p = r;
+    [A[i], A[p]] = [A[p], A[i]]; [b[i], b[p]] = [b[p], b[i]];
+    if (Math.abs(A[i][i]) < 1e-10) continue;             /* Spalte sagt nichts Eigenes */
+    for (let r = 0; r <= k; r++){
+      if (r === i) continue;
+      const f = A[r][i] / A[i][i];
+      for (let c = i; c <= k; c++) A[r][c] -= f * A[i][c];
+      b[r] -= f * b[i];
+    }
+  }
+  const be = b.map((v, i) => Math.abs(A[i][i]) < 1e-10 ? 0 : v / A[i][i]);
+  const my = y.reduce((a, c) => a + c, 0) / n;
+  let sr = 0, st = 0;
+  for (let t = 0; t < n; t++){
+    let v = 0; for (let i = 0; i <= k; i++) v += be[i] * X[i][t];
+    sr += (y[t] - v) ** 2; st += (y[t] - my) ** 2;
+  }
+  return st > 0 ? Math.max(0, 1 - sr / st) : 0;
+}
+
+/* Der Anteil jeder Groesse, gemittelt ueber alle Reihenfolgen. */
+function lmgAnteile(spalten, y){
+  const k = spalten.length, merker = new Map();
+  const R2 = (maske) => {
+    if (merker.has(maske)) return merker.get(maske);
+    const xs = []; for (let i = 0; i < k; i++) if (maske & (1 << i)) xs.push(spalten[i]);
+    const v = kqR2(xs, y); merker.set(maske, v); return v;
+  };
+  const fak = (n) => { let f = 1; for (let i = 2; i <= n; i++) f *= i; return f; };
+  const anteil = new Array(k).fill(0);
+  for (let i = 0; i < k; i++){
+    for (let maske = 0; maske < (1 << k); maske++){
+      if (maske & (1 << i)) continue;
+      let gross = 0; for (let j = 0; j < k; j++) if (maske & (1 << j)) gross++;
+      anteil[i] += (fak(gross) * fak(k - gross - 1) / fak(k)) * (R2(maske | (1 << i)) - R2(maske));
+    }
+  }
+  return { anteil, gesamt: R2((1 << k) - 1) };
+}
+
+/* Liegende Balken in der Hausform: Flaeche gedaempft, Topline eine
+   Linie in voller Staerke - und zwar OBEN, auch wenn der Balken liegt
+   (HAUSREGELN.md). Was nicht erklaert ist, steht als letzter Balken in
+   Grau: eine artfremde Groesse, deshalb SPUR_FREMD. */
+function anteilBild(zeilen, gesamt, n){
+  const W = 900, H = Math.round(900 / 1.618 / 2), L = 118, R = 92, O = 22, U = 30;
+  const bh = 26, luft = 12;
+  const alle = [...zeilen, { name: 'nicht erklärt', wert: Math.max(0, 1 - gesamt), fremd: true }];
+  const hoehe = Math.max(H, O + U + alle.length * (bh + luft));
+  const skala = Math.max(0.35, Math.min(1, Math.max(...alle.map(z => z.wert)) * 1.25));
+  const bw = W - L - R;
+  const X = (v) => L + (v / skala) * bw;
+  let sv = `<svg viewBox="0 0 ${W} ${hoehe}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:${hoehe}px;display:block">`;
+  /* Senkrechte Hilfslinien alle zehn Prozentpunkte - zurueckhaltend,
+     sie sind Orientierung, kein Inhalt. */
+  for (let v = 0.1; v <= skala + 1e-9; v += 0.1){
+    sv += `<line x1="${X(v).toFixed(1)}" y1="${O - 4}" x2="${X(v).toFixed(1)}" y2="${hoehe - U + 2}"`
+       + ` stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>`;
+    sv += `<text x="${X(v).toFixed(1)}" y="${hoehe - U + 16}" font-size="10.5" fill="#8b8b90" text-anchor="middle">${Math.round(v * 100)} %</text>`;
+  }
+  alle.forEach((z, i) => {
+    const y = O + i * (bh + luft), b = Math.max(1.5, X(z.wert) - L);
+    const f = z.fremd ? '#8b8b90' : (i % 2 ? DIA_2 : DIA_1);
+    const deck = z.fremd ? SPUR_FREMD : SPUR_DECKUNG;
+    sv += `<rect x="${L}" y="${y}" width="${b.toFixed(1)}" height="${bh}" style="fill:${diaFlaeche(f, deck)}"/>`;
+    sv += `<rect x="${L}" y="${y}" width="${b.toFixed(1)}" height="1" style="fill:${diaTopline(f, deck)}"/>`;
+    sv += `<text x="${L - 10}" y="${y + bh / 2 + 4.5}" font-size="12.5" fill="${z.fremd ? '#8b8b90' : '#ececed'}" text-anchor="end">${z.name}</text>`;
+    sv += `<text x="${(L + b + 9).toFixed(1)}" y="${y + bh / 2 + 4.5}" font-size="12.5"`
+       + ` font-weight="${z.fremd ? '400' : '600'}" fill="${z.fremd ? '#8b8b90' : f}">`
+       + `${(z.wert * 100).toFixed(1).replace('.', ',')} %</text>`;
+  });
+  sv += '</svg>';
+  const d = document.createElement('div'); d.innerHTML = sv;
+  return d.firstChild;
+}
+
 /* untenBei(p) sagt, ob DIESER Wert nur eine Untergrenze ist. Als
    Parameter, nicht als globale Marke: Dasselbe Bild zeichnet alle sechs
    Groessen, und nur beim Hirschfaktor kann es Untergrenzen geben. Wer
