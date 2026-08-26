@@ -707,8 +707,19 @@ select,.knopf{
   border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;letter-spacing:.4px;
   cursor:pointer;opacity:.85}
 .capmarke:hover{opacity:1;outline:1px solid var(--akzent)}
-.capmarke.leer{display:none;opacity:.6}
-.karte:hover .capmarke.leer{display:block}
+/* HEISST 'ohne', NICHT 'leer' (26.08.2026). Sie hiess .leer - und
+   dieselbe Klasse traegt die Meldung "Nichts gefunden" (Zeile 1480),
+   mit padding:70px 20px. Beide sind einfache Klassen, also gleich
+   spezifisch, und .leer steht spaeter im Blatt: Die Marke bekam den
+   Innenabstand der Leermeldung und wurde zu einem Balken von 47 x 155
+   Punkten mitten auf dem Cover. Zu sehen war es nur beim Ueberfahren,
+   denn nur dann erscheint sie ueberhaupt.
+   Caspar_D, 26.08.2026: "die Text-Anklick-Zone in der ersten Spalte
+   übergroß" - sie war es auf jeder Kachel ohne Beschreibung, die erste
+   Spalte war Zufall. Ein eigener Name loest es an der Wurzel; eine
+   Gegenregel haette das Symptom geheilt und die Falle stehenlassen. */
+.capmarke.ohne{display:none;opacity:.6}
+.karte:hover .capmarke.ohne{display:block}
 #cap textarea{width:100%;min-height:70px;background:var(--flaeche2);border:1px solid var(--rand);
   border-radius:8px;color:var(--text);font:inherit;font-size:13px;line-height:1.5;padding:8px;resize:vertical}
 /* Der Instrumental-Haken im Notizfenster: eine Zeile, kein Kasten -
@@ -12602,7 +12613,7 @@ function capMarke(s){
   const tipp = n ? 'Deine Notiz — und Sunos Beschreibung, falls vorhanden'
     : s.beschriftung ? 'Sunos Beschreibung des Songs (Caption) — klicken zum Lesen, eigene Notiz möglich'
     : 'Eigene Notiz anlegen — bleibt lokal, nur für dich';
-  return `<span class="capmarke${n || s.beschriftung ? '' : ' leer'}" data-cap="${s.id}"
+  return `<span class="capmarke${n || s.beschriftung ? '' : ' ohne'}" data-cap="${s.id}"
     title="${tipp}">${was}</span>`;
 }
 
