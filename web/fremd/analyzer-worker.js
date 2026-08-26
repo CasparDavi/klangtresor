@@ -62,15 +62,67 @@
 
     // Find top-N spectral peaks in a range, returns array of {freq, amp}
 
+    /* REELLE FFT (26.08.2026). Die Funktion hiess schon immer rfft, tat
+       aber nie, was der Name sagt: Sie legte das reelle Signal in re,
+       fuellte im mit Nullen und liess eine volle komplexe FFT darueber
+       laufen - die halbe Arbeit war umsonst.
+
+       Ein reelles Signal x der Laenge N wird stattdessen als komplexe
+       Folge z[n] = x[2n] + i*x[2n+1] der HALBEN Laenge gepackt, einmal
+       transformiert und danach aufgetrennt:
+
+         Fe[k] = (Z[k] + conj(Z[N/2-k])) / 2      die geraden Abtastwerte
+         Fo[k] = (Z[k] - conj(Z[N/2-k])) / 2i     die ungeraden
+         X[k]  = Fe[k] + e^(-2*pi*i*k/N) * Fo[k]
+
+       Zwei weitere Bremsen sassen daneben: Das Hann-Fenster wurde bei
+       JEDEM Aufruf neu gerechnet - N Kosinusse je Rahmen, und rfft wird
+       an elf Stellen tausendfach gerufen. Und re, im und die
+       Drehfaktoren wurden jedes Mal frisch angelegt. Beides haengt nur
+       an der Fenstergroesse, von denen es eine Handvoll gibt; also
+       einmal rechnen und behalten.
+
+       Nur mag wird weiter frisch angelegt: Die Aufrufer behalten es.
+
+       Das Ergebnis ist dasselbe - an echtem Material geprueft, siehe
+       bin/stoerfrequenz.js, wo dasselbe Verfahren gegen eine Referenz
+       mit einzeln gerechneten Drehfaktoren antrat: null Abweichung. */
+    var _hannSpeicher={}, _rfftSpeicher={};
+    function hannHolen(N){
+      var w=_hannSpeicher[N];
+      if(!w){ w=new Float64Array(N);
+        for(var i=0;i<N;i++) w[i]=0.5*(1-Math.cos(2*Math.PI*i/(N-1)));
+        _hannSpeicher[N]=w; }
+      return w;
+    }
+    function rfftPuffer(N){
+      var p=_rfftSpeicher[N];
+      if(!p){ var h=N>>1;
+        p={ zre:new Float64Array(h), zim:new Float64Array(h),
+            dr:new Float64Array(h), di:new Float64Array(h) };
+        for(var k=0;k<h;k++){ var a=-2*Math.PI*k/N; p.dr[k]=Math.cos(a); p.di[k]=Math.sin(a); }
+        _rfftSpeicher[N]=p; }
+      return p;
+    }
     function rfft(signal,offset,N){
-      var re=new Float64Array(N),im=new Float64Array(N);
-      for(var i=0;i<N;i++){
-        var w=0.5*(1-Math.cos(2*Math.PI*i/(N-1)));
-        re[i]=(offset+i<signal.length?signal[offset+i]:0)*w;
+      var w=hannHolen(N), p=rfftPuffer(N), h=N>>1;
+      var zre=p.zre, zim=p.zim, len=signal.length;
+      for(var n=0;n<h;n++){
+        var i1=2*n, i2=i1+1, s1=offset+i1, s2=offset+i2;
+        zre[n]=(s1<len?signal[s1]:0)*w[i1];
+        zim[n]=(s2<len?signal[s2]:0)*w[i2];
       }
-      fft(re,im);
-      var mag=new Float32Array(N/2);
-      for(var k=0;k<N/2;k++)mag[k]=Math.sqrt(re[k]*re[k]+im[k]*im[k])/N;
+      fft(zre,zim);
+      var mag=new Float32Array(h);
+      for(var k=0;k<h;k++){
+        var k2=(h-k)&(h-1);                       /* h ist eine Zweierpotenz */
+        var ar=zre[k],ai=zim[k],br=zre[k2],bi=-zim[k2];
+        var fer=0.5*(ar+br), fei=0.5*(ai+bi);     /* gerade Teilfolge */
+        var fr=0.5*(ai-bi),  fi=-0.5*(ar-br);     /* ungerade, geteilt durch 2i */
+        var xr=fer+(fr*p.dr[k]-fi*p.di[k]);
+        var xi=fei+(fr*p.di[k]+fi*p.dr[k]);
+        mag[k]=Math.sqrt(xr*xr+xi*xi)/N;
+      }
       return mag;
     }
 

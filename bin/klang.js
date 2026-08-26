@@ -110,7 +110,15 @@ function melBank() {
 const HANN = new Float64Array(FRAME);
 for (let i = 0; i < FRAME; i++) HANN[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (FRAME - 1));
 
-/* Reelle FFT 512 (Radix-2, vorberechnete Drehfaktoren + Bitumkehr). */
+/* FFT 512 (Radix-2, vorberechnete Drehfaktoren + Bitumkehr).
+   Hier stand "Reelle FFT", und das stimmte nie: Das Signal geht reell
+   hinein (im = 0), gerechnet wird aber komplex - die halbe Arbeit ist
+   umsonst. Eine echte reelle FFT wuerde das auf 1,68x bringen, wie in
+   bin/stoerfrequenz.js nachgemessen; sie steht hier trotzdem nicht,
+   weil sich der Aufwand nicht lohnt: Die Mel-Frames sind 262 ms eines
+   Laufs von 5,3 s (4,9 %), und die FFT ist nur ein Teil davon. Alles
+   andere kostet das neuronale Netz, das ohnehin alle Kerne auslastet.
+   (26.08.2026, gemessen an einem Song.) */
 const BITS = Math.log2(FRAME) | 0;
 const UMKEHR = new Uint16Array(FRAME);
 for (let i = 0; i < FRAME; i++) { let j = 0; for (let b = 0; b < BITS; b++) j = (j << 1) | ((i >> b) & 1); UMKEHR[i] = j; }
