@@ -192,6 +192,29 @@ h1{
 #kartelegende .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 #kartelegende .phinweis{font-size:11px;color:var(--schwach)}
 #kartelegende #schiffart{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche);color:var(--text)}
+/* Der Schiffsname: sieht aus wie Text, ist aber immer ein Eingabefeld.
+   Der Rahmen kommt erst beim Zeigen und Hineinklicken - so verraet er
+   sich als anfassbar, ohne die Zeile mit einem weiteren Kasten zu
+   fuellen. Fett, weil er vorher als <b> in der Ueberschrift stand. */
+/* Feld und Stift sind EIN Element: Der Rahmen liegt aussen herum, damit
+   der Stift innerhalb der Pille sitzt und nicht daneben schwimmt. Das
+   Feld selbst bleibt rahmenlos. */
+#kartelegende .namensfeld{display:inline-flex;align-items:center;gap:2px;
+  padding:2px 7px 2px 2px;border-radius:999px;border:1px solid transparent;
+  transition:border-color .15s, background-color .15s;cursor:text}
+#kartelegende .namensfeld:hover{border-color:var(--rand)}
+#kartelegende .namensfeld:focus-within{border-color:var(--akzent);background:var(--flaeche)}
+#kartelegende #schiffname{font:inherit;font-size:11px;font-weight:600;
+  padding:2px 4px 2px 7px;border:0;background:none;color:var(--text);
+  min-width:6ch;max-width:22ch}
+#kartelegende #schiffname:focus{outline:none}
+#kartelegende #schiffname::placeholder{color:var(--schwach);font-weight:400}
+/* Der Stift ist leise, bis man hinzeigt - er soll den Namen nicht
+   ueberstrahlen, aber sagen, dass man ihn anfassen darf. */
+#kartelegende .namensfeld .ico{width:13px;height:13px;flex:0 0 auto;
+  color:var(--schwach);transition:color .15s}
+#kartelegende .namensfeld:hover .ico{color:var(--text)}
+#kartelegende .namensfeld:focus-within .ico{color:var(--akzent)}
 #kartelegende .pille{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
 #kartelegende .pille.an{border:2px solid var(--akzent);color:var(--text)}
 #kartelegende .pille[disabled]{opacity:.4;cursor:default}
@@ -1492,6 +1515,12 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   <symbol id="i-bewegung" viewBox="0 0 24 24"><path fill="none" stroke="currentColor"
     stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
     d="M3 17l5.5-5.5 3.5 3.5L21 6M15 6h6v6"/></symbol>
+  <!-- Der Stift sagt: hier darf man schreiben. Er steht neben dem
+       Schiffsnamen (Caspar_D, 26.08.2026: „ein edit symbol neben das
+       Feld") - ein Eingabefeld ohne Rahmen sieht sonst aus wie Text. -->
+  <symbol id="i-stift" viewBox="0 0 24 24"><path fill="none" stroke="currentColor"
+    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+    d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3zM14.5 7.5l2 2"/></symbol>
   <!-- Daumen hoch statt Herz (Caspar_D, 19.08.2026): Suno nennt es upvote,
        und das ist, was die Leute tun. Die Sprechblase daneben zählt
        Kommentare - ohne Antworten, die sind Gespräch, nicht Zuspruch. -->
@@ -6047,7 +6076,23 @@ function kartePanelHtml(){
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>` +
       `<button class="pille" id="karteexport" title="Den Klangraum als eine HTML-Datei erzeugen (nur öffentliche Songs, jeder Stern führt zu seiner Suno-Seite) — zum Verschicken">Export</button>`) +
-    zeile(kubus ? `Musik-Matrix <b>${matrixKennung()}</b>` : gestalt === 'rabe' ? `Rabe <b>${schiffName()}</b>` : `Sound-Schiff <b>${schiffName()}</b>`,
+    /* Der Name steht IN der Zeile, nicht mehr in ihrer Ueberschrift
+       (Caspar_D, 26.08.2026: „vorausgefuellt mit dem ganzen Sunohandle,
+       bei Klick darauf wird es zu einer editierbaren Box, in der
+       gleichen Zeile wie die Raumschiffauswahl"). Als <input>, nicht als
+       Text mit Umschalter: Ein Feld, das ohne Rahmen wie Text aussieht
+       und beim Hineinklicken einen bekommt, IST die editierbare Box -
+       ohne einen zweiten Zustand, den man verlieren kann.
+       Bei der Matrix steht die abgeleitete Kennung dahinter, sonst
+       wuesste man nicht, woher ihr Buchstabe kommt. */
+    zeile(kubus ? 'Musik-Matrix' : gestalt === 'rabe' ? 'Rabe' : 'Sound-Schiff',
+      `<span class="namensfeld" title="Der Name auf dem Rumpf. Vorbelegt mit dem Sunohandle — anklicken und überschreiben. Leeren stellt den Handle wieder her.">` +
+        `<input id="schiffname" value="${esc(schiffName())}" maxlength="20" spellcheck="false"` +
+          ` size="${Math.max(6, schiffName().length + 1)}"` +
+          ` placeholder="${esc(sunoHandle() || 'namenlos')}">` +
+        SYM('stift') +
+      `</span>` +
+      (kubus ? `<span class="phinweis">Kennung ${esc(matrixKennung())}</span>` : '') +
       `<button class="pille ${probeflug ? 'an' : ''}" id="probeknopf" title="Probeflug ohne Musik: zwei Runden à 1 s um jeden Stern, dann Transit zum nächsten Klangnachbarn — zum Prüfen der Bahnen">Probeflug</button>` +
       `<select id="gestaltwahl" title="Wer fliegt: das Schiff, der Kubus (jeder verlassene Stern verlischt in einer Supernova) oder der Rabe">` +
         ['schiff','kubus','rabe'].map(gw => `<option value="${gw}"${gestalt === gw ? ' selected' : ''}>` +
@@ -6078,6 +6123,24 @@ function kartePanelDran(leg){
     karteZeichnen();
   };
   const sel = leg.querySelector('#schiffart'); if (sel) sel.onchange = () => { schiffArt = sel.value; merk('mysuno-schiff-art', schiffArt); };
+  /* Der Schiffsname. Gespeichert wird bei JEDEM Anschlag, nicht erst
+     beim Verlassen: Das Panel wird neu gebaut, sobald sich sonst etwas
+     aendert (Songwechsel etwa), und ein noch nicht gesicherter Name
+     waere dann weg. Das Feld waechst mit dem Text mit.
+     Leeren heisst „zurueck zum Handle" - dafuer braucht es keinen
+     eigenen Knopf. Das Schiff selbst liest den Namen in jedem Bild neu,
+     es muss also nichts neu gezeichnet werden. */
+  const nam = leg.querySelector('#schiffname');
+  if (nam){
+    /* Der Stift ist kein Knopf, sondern ein Hinweis - aber er soll
+       nicht ins Leere zeigen: Wer ihn trifft, landet im Feld. */
+    const huelle = nam.closest('.namensfeld');
+    if (huelle) huelle.onclick = (e) => { if (e.target !== nam) nam.focus(); };
+    const weiten = () => { nam.size = Math.max(6, nam.value.length + 1); };
+    nam.oninput  = () => { merk('mysuno-schiffname', nam.value); weiten(); };
+    nam.onkeydown = (e) => { if (e.key === 'Enter' || e.key === 'Escape') nam.blur(); };
+    nam.onblur   = () => { if (!nam.value.trim()){ merk('mysuno-schiffname', ''); nam.value = sunoHandle(); weiten(); } };
+  }
   k('kartenebel', () => { karteNebel = !karteNebel; merk('mysuno-karte-nebel', karteNebel ? 'an' : 'aus'); karteZeichnen(); });
   k('kartebahn', () => { karteBahn = !karteBahn; merk('mysuno-karte-bahn', karteBahn ? 'an' : 'aus'); karteZeichnen(); });
   k('kartelinien', () => { karteLinien = !karteLinien; merk('mysuno-karte-linien', karteLinien ? 'an' : 'aus'); karteZeichnen(); });
@@ -6958,29 +7021,51 @@ if (gestalt === 'rabe' && typeof uiFaerben === 'function') uiFaerben(null);
 const assimiliert = new Set();          // Song-IDs, die schon verloschen sind
 let supernovae = [];                    // { id, t0 }
 let beschuss = [];                      // { id, t0, nova } - Laser, Pulsieren, dann Supernova
-/* DER TRANSPONDER KOMMT VOM SUNO-PROFIL (Caspar_D, 25.08.2026: "der Name
-   des Raumschiffs wird vom Sunonamen uebernommen, aber nur der erste Teil
-   vor - . _ als Trennzeichen, Musik Matrix bekommt den ersten Buchstaben
-   des SunoAlias").
+/* DER TRANSPONDER (Caspar_D, 25.08.2026: "der Name des Raumschiffs wird
+   vom Sunonamen uebernommen"; geaendert am 26.08.2026).
 
-   Aus "Caspar_D" wird also "Caspar", aus "castobyte" wird "Castobyte" -
-   und die Musik-Matrix fuehrt nur das "C". Das ist nicht bloss eine
-   Abkuerzung: Drohnen tragen im Kollektiv keine Namen, sondern Kennungen.
+   BIS ZUM 26.08.2026 wurde der Name GERECHNET: der erste Teil des
+   Anzeigenamens vor - . _ oder Leerzeichen, erster Buchstabe gross. Aus
+   "Caspar_D" wurde "Caspar". Die Regel hielt genau so lange, wie alle
+   Beteiligten schlichte Namen fuehren - Caspar_D, 26.08.2026: "meine
+   Regeln funktionieren bei Tarja nicht, weil sie dekorationszeichen
+   verwendet." Ein Anzeigename mit Schmuckzeichen zerfaellt an diesen
+   Trennern in Bruchstuecke, und welches davon der Name ist, kann die
+   Software nicht wissen.
 
-   Ohne Profil bleibt das Schild namenlos. Einen Namen zu erfinden waere
-   schlimmer als keiner - derselbe Grund, aus dem himmel-export.js ohne
-   Handle abbricht, statt zu raten. */
-function sunoAlias(){
+   JETZT steht der ganze Sunohandle da - der ist technisch und traegt
+   keinen Schmuck - und wer einen anderen Namen will, klickt drauf und
+   schreibt ihn hin. Das ist kein Regler fuer etwas Ausrechenbares
+   (Hausform), sondern das Gegenteil: Es war nie ausrechenbar, es sah nur
+   bei einem einzigen Nutzer so aus.
+
+   Der eigene Name liegt in mysuno-schiffname. Ist er leer, greift der
+   Handle; fehlt auch der, bleibt das Schild namenlos. Einen Namen zu
+   erfinden waere schlimmer als keiner - derselbe Grund, aus dem
+   himmel-export.js ohne Handle abbricht, statt zu raten. */
+function sunoHandle(){
   const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || null;
-  return ((p && (p.display_name || p.handle)) || '').trim();
+  return ((p && p.handle) || '').trim();
 }
 function schiffName(){
-  const kopf = sunoAlias().split(/[-._\s]/)[0];
-  return kopf ? kopf.charAt(0).toUpperCase() + kopf.slice(1) : '';
+  let eigen = ''; try { eigen = localStorage.getItem('mysuno-schiffname') || ''; } catch (e) {}
+  return eigen.trim() || sunoHandle();
 }
+/* Drohnen tragen im Kollektiv keine Namen, sondern Kennungen - ein
+   Buchstabe genuegt. Er folgt dem Schiffsnamen, damit es nicht zwei
+   Quellen gibt: Wer sein Schiff umbenennt, benennt auch die Matrix um.
+
+   DER ERSTE AUFFINDBARE BUCHSTABE, nicht das erste Zeichen (Caspar_D,
+   26.08.2026: „beim Borgschiff immer den ersten auffindbaren Buchstaben
+   nehmen"). Wer seinen Namen mit einem Schmuckzeichen beginnt, bekaeme
+   sonst ein Sternchen als Kennung - genau der Fall, an dem die alte
+   Namensregel zerbrach. \p{L} findet Buchstaben aller Schriften, nicht
+   nur A-Z: Ein kyrillischer oder griechischer Anfang ist ein Buchstabe
+   und soll auch als einer gelten. Steht gar keiner im Namen, bleibt die
+   Matrix ohne Kennung - lieber nichts als ein erfundenes Zeichen. */
 function matrixKennung(){
-  const a = sunoAlias();
-  return a ? a.charAt(0).toUpperCase() : '';
+  const t = schiffName().match(/\p{L}/u);
+  return t ? t[0].toUpperCase() : '';
 }
 function karteZielId(){
   if (!aktuellId) return null;
@@ -7302,7 +7387,14 @@ function karteSchiffFrame(){
       g.fillStyle = blink ? '#ff4d4d' : 'rgba(255,77,77,0.25)'; g.beginPath(); g.arc(-3.2, -2.1, 0.35, 0, 2 * Math.PI); g.fill();
       g.fillStyle = blink ? '#4dff88' : 'rgba(77,255,136,0.25)'; g.beginPath(); g.arc(-3.2, 2.1, 0.35, 0, 2 * Math.PI); g.fill();
       /* bei sehr nahem Zoom: Schriftzug auf dem Rumpf */
-      if (detail > 0.7){ g.fillStyle = '#2b2d33'; g.font = '600 1.1px -apple-system, Helvetica Neue, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(schiffName().toUpperCase(), 0, -1.1); }
+      /* Schriftzug auf dem Rumpf, bei sehr nahem Zoom. Die vierte
+         Angabe an fillText ist die HOECHSTBREITE: Seit der Name frei
+         waehlbar ist (26.08.2026) kann er statt "CASPAR" auch
+         "TARJA_RAVENVEIL" heissen, und der Rumpf misst nur gut acht
+         Einheiten. Canvas staucht den Text dann, statt ihn ueber den
+         Bug hinauslaufen zu lassen - schmaler gesetzt sieht ein
+         Rumpfschriftzug ohnehin richtig aus. */
+      if (detail > 0.7){ g.fillStyle = '#2b2d33'; g.font = '600 1.1px -apple-system, Helvetica Neue, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(schiffName().toUpperCase(), 0, -1.1, 7); }
     }
     g.restore();
   };
@@ -8973,6 +9065,11 @@ function anschlussUebergeben(n){
   }
   const alt = audio;
   audio = deckAnderes();
+  /* Das neue Deck spielt laengst - sein play-Ereignis kam, als `audio`
+     noch aufs alte zeigte, und wurde verworfen. Also den Knopfstand hier
+     von Hand nachziehen, sonst behauptet er bis zum naechsten Antippen,
+     es sei still (26.08.2026). */
+  spielknoepfeStellen();
   anschlussLaeuft = false;
   anschlussNaht = null;
   /* Die Temporampe des Neuen zurueck auf sein eigenes Tempo. */
@@ -14304,24 +14401,46 @@ $('plZurueck').onclick = () => {
 
 /* Beide Decks tragen dieselben Melder; nur das AKTIVE steuert die
    Oberflaeche - das andere spielt waehrend der Naht bloss mit. */
+/* BEIDE ABSPIELKNOEPFE AUF DEN TATSAECHLICHEN ZUSTAND (26.08.2026).
+   Der Stand wird aus audio.paused GELESEN, nicht aus dem Ereignisnamen
+   abgeleitet. Vorher nahm eine Hilfsfunktion 'play' oder 'pause'
+   entgegen, je nachdem, welches Ereignis sie gerufen hatte - und genau
+   daran hing der Fehler: Beim Anschluss gibt es kein Ereignis.
+
+   Der Ablauf war (Caspar_D, 26.08.2026: „zumindest hat der playbutton
+   den falschen status"):
+     1. Das zweite Deck startet MITTEN in der Naht. Da zeigt `audio`
+        noch aufs erste, sein onplay faellt also durch die Wache
+        `if (el !== audio) return`.
+     2. anschlussUebergeben() setzt `audio = deckAnderes()`.
+     3. Danach feuert nie wieder ein play - das Deck laeuft ja schon.
+   Der Knopf behielt den Stand von vor dem Wechsel und behauptete, es
+   sei still, waehrend der naechste Song lief.
+
+   Wer den Zustand liest statt ihn zu erzaehlen, kann ihn jederzeit
+   nachziehen; deshalb steht der Aufruf jetzt auch hinter dem
+   Deckwechsel. Dieselbe Lehre wie am 25.08.2026 beim Buehnenknopf:
+   „Zwei Anzeigen fuer einen Zustand muessen an derselben Quelle
+   haengen." Jetzt haengen sie an der Quelle selbst.
+   'pause' als Symbol heisst: es LAEUFT gerade - dann traegt der Knopf
+   den Umriss in Akzentfarbe und ein farbiges Symbol. */
+function spielknoepfeStellen(){
+  const laeuft = !!(typeof audio !== 'undefined' && audio && !audio.paused);
+  for (const id of ['abspielen','babspielen']){
+    const k = $(id); if (!k) continue;
+    k.innerHTML = SYM(laeuft ? 'pause' : 'play');
+    k.classList.toggle('an', laeuft);
+  }
+}
+
 function deckMelder(el){
   /* BEIDE Abspielknöpfe, nicht nur der untere (25.08.2026). Der im
      Bühnenpult hing allein an buehneTakt(), und das läuft an
      ontimeupdate — beim Pausieren hören die Zeitmeldungen auf, also
      blieb er auf dem Pausensymbol stehen und behauptete, es liefe noch.
      Zwei Anzeigen für einen Zustand müssen an derselben Quelle hängen. */
-  const beideKnoepfe = (art) => {
-    /* 'pause' als Symbol heisst: es LAEUFT gerade - dann ist der Knopf
-       an (Caspar_D, 26.08.2026: Umriss in Akzentfarbe, Symbol farbig). */
-    const laeuft = art === 'pause';
-    for (const id of ['abspielen','babspielen']){
-      const k = $(id); if (!k) continue;
-      k.innerHTML = SYM(art);
-      k.classList.toggle('an', laeuft);
-    }
-  };
-  el.onplay  = ()=>{ if (el !== audio) return; beideKnoepfe('pause'); markieren(); stemsMitlaufen(); };
-  el.onpause = ()=>{ if (el !== audio) return; beideKnoepfe('play');  markieren(); stemsMitlaufen(); };
+  el.onplay  = ()=>{ if (el !== audio) return; spielknoepfeStellen(); markieren(); stemsMitlaufen(); };
+  el.onpause = ()=>{ if (el !== audio) return; spielknoepfeStellen(); markieren(); stemsMitlaufen(); };
   /* Nach einem Sprung sofort nachziehen - die Stems stehen sonst noch
      an der alten Stelle, und wer waehrend des Solos spult, hoert die
      falsche Stelle. */
