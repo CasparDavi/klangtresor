@@ -379,6 +379,30 @@ select,.knopf{
 .sb{flex:1 1 auto;width:100%;display:flex;align-items:flex-end;background:#ffffff0a;border-radius:2px}.sb i{display:block;width:100%;border-radius:2px 2px 0 0;min-height:1px}
 .sv{font-size:10px;color:var(--schwach);height:14px;line-height:14px;font-variant-numeric:tabular-nums}
 .sn{font-size:10.5px;color:var(--schwach);margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:clip}
+/* GESTAPELTE SAEULEN (26.08.2026, fuer die Tonarten). Dieselbe Reihe
+   wie .sr, nur hoeher - sie nimmt die ganze Panelbreite und braucht
+   dann auch Hoehe, sonst stehen zwoelf breite Striche da. Die Segmente
+   liegen mit column-reverse uebereinander: erstes Kind unten. Dadurch
+   wird align-items zur Querachse, das geerbte flex-end schoebe die
+   Segmente sonst nach rechts statt sie zu fuellen. Die abgerundete
+   Kappe gehoert nur aufs oberste Segment. */
+.sr.hoch{height:210px;gap:8px}
+.sb.stapel{flex-direction:column-reverse;align-items:stretch}
+.sb.stapel i{border-radius:0}
+.sb.stapel i:last-child{border-radius:2px 2px 0 0}
+/* Die Grenze zwischen zwei Lagen sichtbar machen. Akzent 1 und 2
+   stammen aus DERSELBEN Coverpalette und liegen oft dicht beieinander
+   - dann verschmilzt der Stapel zu einer Flaeche. Die Linie trennt
+   auch dann noch, wenn die Farben es nicht tun; welche Lage welche
+   ist, sagt die feste Reihenfolge von unten (siehe Fussnote). Bei
+   column-reverse grenzt die UNTERE Kante jedes Segments an das
+   vorige, deshalb der negative Versatz. */
+.sb.stapel i + i{box-shadow:inset 0 -1px 0 rgba(0,0,0,.55)}
+/* Die Legende der Stapelfarben: ein Punkt, ein Wort. */
+.stapellegende{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px;
+  font-size:11px;color:var(--schwach);align-items:center}
+.stapellegende span{display:flex;align-items:center;gap:5px}
+.stapellegende i{width:9px;height:9px;border-radius:2px;display:block}
 .dia.breit{grid-column:1 / -1}
 .kzeile{display:flex;gap:26px;align-items:flex-start}
 .kgruppe{min-width:0}.kgruppe .diatitel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -10037,6 +10061,140 @@ function profilZahlenFuellen(){
     kg.appendChild(karussell('kuriosa', 'Kuriosa', kuriosSeiten(eigene))); }
 
 }
+/* ---- TONARTEN ------------------------------------------------------
+   Caspar_D, 26.08.2026: „mache einfach ein Saeulendiagramm ueber die
+   ganze Breite, ein neues Panel vor Befunde und Kuriosa."
+
+   WARUM KEINE LOG-ODDS. Geplant war eine Faerbung nach Log-Odds gegen
+   normale Popmusik und gegen Musik allgemein - wieviel haeufiger also
+   eine Tonart hier steht als anderswo. Dafuer braeuchte es zwei
+   Referenzverteilungen ueber alle zwoelf Tonklassen. In der Literatur
+   stehen nur Spitzenwerte: Spotify meldet G-Dur mit 10,7 % und C-Dur
+   mit 10,2 % als haeufigste; von 404 Songs mit ueber einer Milliarde
+   Streams sind 48,5 % in Dur und 47,5 % in Moll. Die restlichen zehn
+   Klassen fehlen. Sie zu schaetzen hiesse, die Referenz zu erfinden,
+   gegen die man dann misst - das Ergebnis saehe genau so aus wie die
+   Annahme. Caspar_D: „log odds koennen wir knicken, weil es keine
+   Referenz gibt, die man irgendwie brauchbar nutzen koennte."
+
+   DIE UNSICHERHEIT STEHT IM BILD. Die Tonart kommt aus dem Basston auf
+   Sunos Eins (bin/toene.js). Wie eindeutig der war, sagt einsAnteil:
+   der Anteil des haeufigsten Basstons an allen gezaehlten Einsen. Bei
+   138 von 321 Songs liegt er unter 0,4 - da hat der Bass zwischen
+   mehreren Toenen gewechselt, und der Gewinner gewann knapp. Deshalb
+   der Umschalter: „Eindeutige" zeigt dieselbe Reihe nur aus den Songs,
+   bei denen die Messung sich sicher war. Bleibt das Bild stehen,
+   traegt es; kippt es, war es Rauschen. Eine Reihe, die alle 321
+   kommentarlos zusammenzaehlt, behauptet eine Genauigkeit, die die
+   Messung nicht hat.
+-------------------------------------------------------------------- */
+const TONREIHE = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H'];
+const TON_SICHER = 0.4;   /* ab hier gilt der Grundton als eindeutig */
+
+function profilTonartenFuellen(){
+  const ziel = $('profiltonarten'); if (!ziel) return;
+  const mit = alle.filter(s => !s.fremd && s.analyse && s.analyse.tonart && s.analyse.tonart.grund);
+  if (!mit.length){ ziel.style.display = 'none'; return; }
+  ziel.style.removeProperty('display');
+
+  ziel.innerHTML = '<h3>Tonarten</h3>';
+  const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
+  const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
+
+  const kopf = document.createElement('div'); kopf.className = 'diatitel';
+  kopf.innerHTML = SYM('analyse') + ' ';
+  kopf.appendChild(document.createTextNode('Grundton und Tongeschlecht'));
+  const chips = document.createElement('span');
+  chips.style.cssText = 'margin-left:auto;display:flex;gap:6px';
+  kopf.appendChild(chips); w.appendChild(kopf);
+
+  const reihe = document.createElement('div'); reihe.className = 'sr hoch'; w.appendChild(reihe);
+
+  /* Moll und Dur in den beiden Akzenten des laufenden Titels, das
+     Unbestimmte in Grau - es ist kein dritter Befund, sondern das
+     Fehlen eines Befundes. */
+  const LAGEN = [
+    { art: 'Moll', farbe: DIA_1 },
+    { art: 'Dur',  farbe: DIA_2 },
+    { art: null,   farbe: 'rgba(255,255,255,.22)', wort: 'unbestimmt' },
+  ];
+
+  const legende = document.createElement('div'); legende.className = 'stapellegende';
+  const fuss = document.createElement('div'); fuss.className = 'fussnote'; fuss.style.marginTop = '2px';
+
+  const sicher = mit.filter(s => (s.analyse.tonart.sicher || 0) >= TON_SICHER);
+  const FEN = [['alle', `Alle ${mit.length}`], ['sicher', `Eindeutige ${sicher.length}`]];
+  let fen = localStorage.getItem('tonartFenster') || 'alle';
+
+  const zeichnen = () => {
+    localStorage.setItem('tonartFenster', fen);
+    [...chips.children].forEach(c => c.classList.toggle('an', c.dataset.f === fen));
+    const menge = fen === 'sicher' ? sicher : mit;
+
+    /* Erst zaehlen, dann zeichnen: je Tonklasse eine Zeile mit den
+       drei Lagen. */
+    const z = new Map(TONREIHE.map(t => [t, { Moll: 0, Dur: 0, offen: 0, n: 0 }]));
+    for (const s of menge){
+      const e = z.get(s.analyse.tonart.grund); if (!e) continue;
+      const a = s.analyse.tonart.art;
+      e[a === 'Moll' ? 'Moll' : a === 'Dur' ? 'Dur' : 'offen']++; e.n++;
+    }
+    const max = Math.max(...[...z.values()].map(e => e.n)) || 1;
+
+    reihe.innerHTML = '';
+    for (const t of TONREIHE){
+      const e = z.get(t);
+      const sz = document.createElement('div'); sz.className = 'sz';
+      const v = document.createElement('span'); v.className = 'sv'; v.textContent = e.n || '';
+      const b = document.createElement('span'); b.className = 'sb stapel';
+      for (const l of LAGEN){
+        const teil = l.art === 'Moll' ? e.Moll : l.art === 'Dur' ? e.Dur : e.offen;
+        if (!teil) continue;
+        const i = document.createElement('i');
+        i.style.height = (100 * teil / max).toFixed(2) + '%';
+        i.style.background = l.farbe;
+        b.appendChild(i);
+      }
+      const n = document.createElement('span'); n.className = 'sn'; n.textContent = t;
+      sz.title = `${t} · ${e.n} ${e.n === 1 ? 'Song' : 'Songs'}`
+        + ` (${e.Moll} Moll, ${e.Dur} Dur, ${e.offen} unbestimmt)`;
+      sz.append(v, b, n); reihe.appendChild(sz);
+    }
+
+    /* Die Legende traegt die Summen mit - so muss man die Saeulen nicht
+       im Kopf addieren, um das Verhaeltnis Moll zu Dur zu sehen. */
+    const summe = { Moll: 0, Dur: 0, offen: 0 };
+    for (const e of z.values()){ summe.Moll += e.Moll; summe.Dur += e.Dur; summe.offen += e.offen; }
+    legende.innerHTML = '';
+    for (const l of LAGEN){
+      const wort = l.wort || l.art;
+      const k = l.art === 'Moll' ? summe.Moll : l.art === 'Dur' ? summe.Dur : summe.offen;
+      const sp = document.createElement('span');
+      const pkt = document.createElement('i'); pkt.style.background = l.farbe;
+      sp.appendChild(pkt);
+      sp.appendChild(document.createTextNode(`${wort} ${k}`));
+      legende.appendChild(sp);
+    }
+
+    /* Die Stapelreihenfolge steht in Worten da, nicht nur in Farbe:
+       Bei verwandten Akzenten sind die beiden Punkte in der Legende
+       kaum zu unterscheiden, die Position im Stapel immer. */
+    fuss.textContent = 'Säulen von unten: Moll, Dur, unbestimmt. '
+      + (fen === 'sicher'
+        ? `Nur Songs, bei denen der Baß auf Sunos Eins eindeutig war - mindestens ${Math.round(TON_SICHER*100)} % der Einsen auf demselben Ton.`
+        : `Alle Songs, auch die ${mit.length - sicher.length}, bei denen der Baß auf Sunos Eins zwischen mehreren Tönen wechselte; dort ist der Grundton geraten.`);
+  };
+
+  for (const [f, tx] of FEN){
+    const c = document.createElement('span'); c.className = 'chip';
+    c.dataset.f = f; c.textContent = tx; c.style.cursor = 'pointer';
+    c.onclick = () => { fen = f; zeichnen(); };
+    chips.appendChild(c);
+  }
+  w.appendChild(legende); w.appendChild(fuss);
+  zeichnen();
+}
+
 /* Person aus dem Profil heraus - ohne Song dahinter. */
 function reaktPersonAlleine(handle){
   reaktStapel = []; reaktAktuell = null;
@@ -10110,6 +10268,7 @@ function profilAuf(){
       </div>
 
       <div class="block" id="profilzahlen"></div>
+      <div class="block" id="profiltonarten"></div>
       <div class="block" id="profilkarussell"></div>
 
       <div class="block" id="profilcommunity">
@@ -10167,6 +10326,7 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
   $('zu').style.display = 'block';
   $('detail').scrollTop = 0;
   profilZahlenFuellen();
+  profilTonartenFuellen();
   profilCommunityFuellen();
 }
 

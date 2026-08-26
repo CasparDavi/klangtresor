@@ -100,9 +100,38 @@ function ohneTote(e){
   return r;
 }
 
+/* DIE TONART KOMMT NICHT AUS DER ABLAGE (26.08.2026).
+   Die gueltige Tonart steht in library/toene.json - gerechnet aus dem
+   Bass auf Sunos Eins, nicht aus der Krumhansl-Korrelation im Rechenkern
+   (siehe skalare()). Diese Datei ist 17,7 MB gross, weil sie neben der
+   Tonart die vollstaendigen Notenzonen jedes Songs traegt; sie an die
+   Albumseite auszuliefern, nur um zwoelf Saeulen zu zeichnen, waere
+   absurd. Also wandern hier drei Felder je Song in den Index.
+
+   einsAnteil ist das Mass der Sicherheit: der Anteil, den der
+   haeufigste Basston an allen gezaehlten Einsen hat. Er kommt MIT in
+   den Index - bei 138 von 321 Songs liegt er unter 0,4, und ein
+   Diagramm, das diese Songs stillschweigend mitzaehlt, zeigt eine
+   Genauigkeit, die die Messung nicht hat. */
+function tonarten() {
+  const f = path.join(WURZEL, 'library', 'toene.json');
+  try {
+    const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+    const r = {};
+    for (const [id, e] of Object.entries(d.songs || {})) {
+      const t = e && e.tonart;
+      if (!t || !t.grund) continue;
+      r[id] = { grund: t.grund, art: t.art || null, sicher: rund(t.einsAnteil, 2) };
+    }
+    return r;
+  } catch (e) { console.error('toene.json nicht lesbar - Index ohne Tonarten'); return {}; }
+}
+
 let dateien = [];
 try { dateien = fs.readdirSync(ANALYSE).filter(f => /^[0-9a-f-]{36}\.bin$/.test(f)); }
 catch (e) { console.error('Keine Ablage unter library/analyse/'); process.exit(1); }
+
+const TON = tonarten();
 
 const index = {};
 let gut = 0, schief = 0;
@@ -112,6 +141,7 @@ for (const f of dateien) {
     const k = kopfLesen(path.join(ANALYSE, f));
     if (!k) { schief++; continue; }
     index[id] = ohneTote(skalare(k));
+    if (TON[id]) index[id].tonart = TON[id];
     gut++;
   } catch (e) { schief++; }
 }
