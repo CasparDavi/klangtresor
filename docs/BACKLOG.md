@@ -1074,3 +1074,76 @@ Offen:
       nicht installiert; geprüft sind nur Syntax und Logik).
 - [ ] `einrichten-windows.ps1` und `einrichten-docker.ps1` sind ungetestet —
       hier gibt es kein PowerShell. Casto könnte beide prüfen.
+
+
+---
+
+## Entscheidungen und ihre Folgen (Caspar_D, 26.08.2026)
+
+Entstanden aus dem Register „Woran es liegt". Dort werden bisher nur
+vier Handlungsgrößen zerlegt — Songzahl, wem jemand folgt, Playlists,
+Personas. Caspar_D hat die Liste weitergedacht:
+
+> „was man noch bräuchte, abstand zwischen Songpublikationen vielleicht.
+> oder ob songs abends publiziert wurden oder besser morgens. welche
+> Entscheidungen gibt es: lange songs zu machen / wann sie publizieren /
+> wieviel Zeit zwischen den Publikationen / wieviele Songs publizieren /
+> wievielen Leuten folgen / wie oft kommentieren. das sind alles
+> Entscheidungen, die Folgen haben, gibt es noch mehr"
+
+**Heute nicht mehr** — hier liegt es, damit es nicht verlorengeht.
+
+### Die Datenlage, und warum sie den Weg vorgibt
+
+| | eigene 321 Songs | die 186 Nachbarn |
+|---|---|---|
+| Songlänge | ✅ `dauer` | ❌ |
+| Publikationszeit | ✅ auf die Sekunde | ❌ |
+| Abstand zwischen Stücken | ✅ | ❌ |
+| Anzahl Songs | — (nur ein Autor) | ✅ |
+| wem jemand folgt | — | ✅ |
+| wie oft kommentiert wird | ✅ aus `reaktionen.ndjson` | ❌ |
+
+Von den Nachbarn liegt nur die Profil-**Zusammenfassung** vor. Alle
+Fragen nach Zeitpunkt, Abstand und Länge brauchen die **Songlisten** —
+und die holen `community-profile.js` und `community-hirsch.js` nicht,
+obwohl der Endpunkt sie mitliefert (`created_at`, `duration`,
+`upvote_count` je Clip).
+
+**Was ein Lauf kostete:** eine Seite je Person, also rund 186 Anfragen,
+bei 1,5 s Abstand etwa fünf Minuten — für ungefähr 3.700 Songs von 186
+Autoren. Erst damit ließe sich sagen, ob abends besser ist als morgens.
+Bei einem einzigen Autor bleibt es Selbstbeobachtung.
+
+### Die Liste der Entscheidungen, erweitert
+
+**Zeitliches:** Tageszeit · Wochentag · Abstand zwischen Stücken ·
+**stoßweise oder gleichmäßig** — fünf Songs an einem Tag und dann drei
+Wochen nichts, gegen alle zwei Tage eines.
+
+**Am Werk:** Länge · instrumental oder mit Gesang · Sprache des Textes ·
+Nische oder Streuung über Genres · Fortsetzungen und Serien gegen
+Einzelstücke · eigenes Cover oder das voreingestellte · Titellänge.
+
+**Im Umgang:** zurückfolgen oder nicht (die Reziprozitätsquote) · auf
+Kommentare antworten · wie oft selbst kommentieren · in fremden
+Playlists auftauchen.
+
+**Was sonst niemand fragen kann:** Lautheit, Tempo, Tonart und
+Stimmlage liegen für alle 321 eigenen Songs gemessen vor. Ob laut
+gemastertes Material mehr Plays bekommt, kann außer uns niemand
+untersuchen — Suno zeigt es nicht, der Hub misst es schwächer.
+
+### Der Fallstrick, der vor jeder dieser Rechnungen steht
+
+**Plays wachsen mit dem Alter.** Ein Song vom März hatte fünf Monate
+Zeit, einer von gestern einen Tag. Ohne Alterskorrektur mißt man nur,
+welche Songs älter sind — und findet „morgens ist besser", wenn früher
+morgens veröffentlicht wurde. Jede Auswertung braucht deshalb entweder
+eine Normierung auf die Standzeit oder einen Vergleich innerhalb
+gleicher Zeitfenster.
+
+Dazu gilt weiter, was schon unter dem Register steht: **Ein Anteil ist
+keine Ursache.** Aus einer Momentaufnahme läßt sich die Richtung nicht
+klären.
+
