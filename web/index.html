@@ -1587,8 +1587,28 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    Hintergrund bleibt nur leicht gedunkelt, damit man sieht, wo man ist.
    (Caspar_D, 19.08.2026: "immer in Naehe der Maus oeffnen, Wege kurz
    halten.") */
-/* Tonstudio: unten ueber dem Player, wie das Vergleichsfenster. */
-#studio{position:fixed;left:0;right:0;bottom:calc(var(--player-h) + 10px);z-index:56}   /* frei ueber der Playleiste - der untere Rahmen soll sichtbar sein (Caspar_D, 20.08.2026) */
+/* Tonstudio: unten ueber dem Player, wie das Vergleichsfenster.
+
+   UEBER ALLEM (Caspar_D, 26.08.2026: "besser ist wirklich die
+   Z-Koordinate hochbringen, damit die EQ Panels ueber allem sind, man
+   braucht sie ja auch immer, wenn einem der Sound nicht gefaellt").
+
+   Das Studio lag bei 56 und die Buehne bei 60 - und die Buehne ist
+   deckend. Wer dort den EQ-Knopf drueckte, bekam einen Knopf, der
+   aufleuchtete, und ein Panel, das vollstaendig dahinter stand;
+   sichtbar wurde es erst beim Schliessen der Buehne. Die Filter
+   wirkten die ganze Zeit, nur bedienen liess sich nichts.
+
+   Jetzt 90: ueber der Buehne (60) und ueber den Dialogen (#morgen 80,
+   #reakt 81, #cap und #wer 82). Darueber bleibt allein #tipp (120) -
+   ein Hinweis, der jeden Kasten ueberragen muss, auch diesen.
+
+   Ein Geschwisterselektor haette es nicht getan: #studio steht im
+   Markup VOR #buehne, "#buehne.auf ~ #studio" trifft also nie. Eine
+   feste Zahl ist hier ohnehin ehrlicher - der Equalizer soll von
+   ueberall erreichbar sein, nicht nur dort, wo gerade keine Buehne
+   steht. */
+#studio{position:fixed;left:0;right:0;bottom:calc(var(--player-h) + 10px);z-index:90}   /* frei ueber der Playleiste - der untere Rahmen soll sichtbar sein (Caspar_D, 20.08.2026) */
 #studiokasten{margin:0 auto;max-width:980px;background:#0a0b0e;border:1px solid var(--akzent);   /* voll deckend - die 97 % liessen das Raster durchschimmern und wirkten wie ein Grauschleier (Caspar_D, 20.08.2026) */
   border-radius:14px;padding:22px 30px 24px;
   max-height:calc(100vh - var(--player-h) - 34px);overflow-y:auto;overscroll-behavior:contain;   /* kleiner Bildschirm: der Kasten rollt innen, statt oben abgeschnitten zu werden (23.08.2026, bei 1300x1000 fehlte der Kopf) */
