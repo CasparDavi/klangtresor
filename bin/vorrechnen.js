@@ -409,7 +409,15 @@ async function parallelRechnen(aufgaben, zusatz){
   if (!offen.length) return;
 
   if (!nur && offen.length > 1 && !args.includes('--seriell')) {
-    await parallelRechnen(offen, []);
+    /* --neu MUSS AN DIE KINDER WEITER (26.08.2026). Ohne den Schalter
+       findet das Kind seinen Song als „fertig" vor und kehrt sofort mit
+       Exit 0 zurueck - der Elternprozess zaehlt ihn als gerechnet, und
+       heraus kommt ein Lauf, der in zwei Minuten 321 Songs meldet und
+       keine einzige Datei anfasst. Der Fehler stand seit dem ersten
+       Commit (1931d4c) drin: Ein paralleler --neu-Lauf hat noch nie
+       gerechnet. Aufgefallen erst, als die Zeitstempel nach 96
+       gemeldeten Songs unveraendert waren. */
+    await parallelRechnen(offen, neu ? ['--neu'] : []);
     return;
   }
 
