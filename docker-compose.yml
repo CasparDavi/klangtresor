@@ -7,6 +7,9 @@
 #
 # Beenden:  docker compose down
 # Logs:     docker compose logs -f
+#
+# NVIDIA-GPU (Whisper + Klangraum): docker-compose.cuda.yml danebenlegen,
+#   docker compose -f docker-compose.yml -f docker-compose.cuda.yml up -d --build
 
 services:
   klangtresor:

@@ -32,5 +32,7 @@ docs/
 *.zip
 *.md
 Dockerfile
+Dockerfile.cuda
 docker-compose.yml
+docker-compose.cuda.yml
 .dockerignore
