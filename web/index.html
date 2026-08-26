@@ -10206,23 +10206,26 @@ function karussell(kennung, titel, seiten){
    Verlaeufe, nicht fuer Klassen. Klein, SVG, nur Daten-Tinte. */
 function zeitsaeulen(eintraege, farbe, opts){
   opts = opts || {};
-  const H = 64, W = 600, n = eintraege.length || 1;
+  /* O oben fuer die Modellmarken, die vorher 0,4 Punkte unter der
+     Oberkante klebten; unten vier Punkte mehr fuer die Monatsbuchstaben
+     (26.08.2026). */
+  const H = 64, W = 600, O = 7, n = eintraege.length || 1;
   const max = Math.max(...eintraege.map(e => e.n || 0)) || 1;
   const bw = W / n;
-  let svg = `<svg viewBox="0 0 ${W} ${H + 18}" preserveAspectRatio="none" style="width:100%;height:${H + 18}px;display:block">`;
+  let svg = `<svg viewBox="0 0 ${W} ${O + H + 22}" preserveAspectRatio="none" style="width:100%;height:${O + H + 22}px;display:block">`;
   eintraege.forEach((e, k) => {
     const h = (e.n || 0) / max * H;
     const x = (k * bw + 0.5).toFixed(1), br = Math.max(bw - 1, 0.5).toFixed(1);
-    svg += `<rect x="${x}" y="${(H - h).toFixed(1)}" width="${br}" height="${h.toFixed(1)}" style="fill:${diaFlaeche(farbe)}" opacity="${e.n ? 1 : 0.15}"><title>${e.titel || e.name}: ${e.anzeige != null ? e.anzeige : e.n}</title></rect>`;
+    svg += `<rect x="${x}" y="${(O + H - h).toFixed(1)}" width="${br}" height="${h.toFixed(1)}" style="fill:${diaFlaeche(farbe)}" opacity="${e.n ? 1 : 0.15}"><title>${e.titel || e.name}: ${e.anzeige != null ? e.anzeige : e.n}</title></rect>`;
     /* Die Topline oben auf der Saeule. height="1" ist genau ein
        Bildpunkt - die Hoehe wird im gestreckten viewBox nicht
        skaliert, nur die Breite. Deshalb braucht es hier kein
        non-scaling-stroke: Es ist ein Rechteck, kein Strich. Leere
        Saeulen bekommen keine Kante, sonst behauptete eine Linie
        einen Wert von null. */
-    if (e.n) svg += `<rect x="${x}" y="${(H - h).toFixed(1)}" width="${br}" height="1" style="fill:${diaTopline(farbe)}" pointer-events="none"/>`;
-    if (e.name) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="${H + 14}" font-size="10" fill="#8b8b90" text-anchor="middle">${e.name}</text>`;
-    if (e.marke) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="9" font-size="9" fill="#ececed" text-anchor="middle">${e.marke}</text>`;
+    if (e.n) svg += `<rect x="${x}" y="${(O + H - h).toFixed(1)}" width="${br}" height="1" style="fill:${diaTopline(farbe)}" pointer-events="none"/>`;
+    if (e.name) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="${O + H + 15}" font-size="10" fill="#8b8b90" text-anchor="middle">${e.name}</text>`;
+    if (e.marke) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="${O + 7}" font-size="9" fill="#ececed" text-anchor="middle">${e.marke}</text>`;
   });
   svg += '</svg>';
   const d = document.createElement('div'); d.innerHTML = svg;
@@ -11150,7 +11153,13 @@ async function profilNachbarnFuellen(){
    Randbeschriftungen werden nach innen gezogen, statt abgeschnitten zu
    werden. */
 function streuBild(liste, xf, yf, xn, yn, diagonale){
-  const W = 900, H = Math.round(900 / 1.618), L = 62, U = 40, R = 16, O = 14;
+  /* LUFT UNTEN (Caspar_D, 26.08.2026: "gib den charts etwas mehr platz
+     zum atmen, damit die beschriftungen nicht abgeschnitten werden").
+     U war 40 - dabei blieben der Achsenfrage unten 1,5 Bildpunkte bis
+     zum Rand, sie klebte also fest. Das goldene Rechtecke bleibt, was
+     waechst, ist der Rand INNEN: Die Zeichenflaeche gibt zwoelf Punkte
+     ab, die Beschriftung bekommt sie. */
+  const W = 900, H = Math.round(900 / 1.618), L = 62, U = 52, R = 16, O = 14;
   const bx = L, by = O, bw = W - L - R, bh = H - O - U;
   const lg = (v) => Math.log10(Math.max(1, v));
   const xs = liste.map(p => lg(p[xf])), ys = liste.map(p => lg(p[yf]));
@@ -11198,7 +11207,7 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
       }
     }
   }
-  sv += `<text x="${bx + bw}" y="${H - 4}" font-size="12" font-weight="600" fill="#6c6c72" text-anchor="end">${xn} →</text>`;
+  sv += `<text x="${bx + bw}" y="${H - 12}" font-size="12" font-weight="600" fill="#6c6c72" text-anchor="end">${xn} →</text>`;
   sv += `<text x="${bx + 6}" y="${by + 16}" font-size="12" fill="#6c6c72">↑ ${yn}</text>`;
   if (diagonale){
     const a = Math.max(x0, y0), b = Math.min(x1, y1);
@@ -11268,7 +11277,9 @@ function rangBild(sortiert, wertVon, untenBei){
      eigene Saeule findet, flach genug, dass die Reihe eine Reihe
      bleibt. preserveAspectRatio bleibt "none": Die Saeulen duerfen mit
      der Fensterbreite mitgehen, die Hoehe nicht. */
-  const W = 900, H = Math.round(900 / 1.618 / 2), O = 8, U = 18;
+  /* U von 18 auf 26: Die Platznummern standen 2,5 Bildpunkte ueber dem
+     Rand (26.08.2026). Die Saeulen geben die acht Punkte ab. */
+  const W = 900, H = Math.round(900 / 1.618 / 2), O = 8, U = 26;
   const n = sortiert.length, bw = W / n;
   const max = wertVon(sortiert[0]) || 1;
   const hoch = (v) => Math.max(1, Math.sqrt(Math.max(0, v) / max) * (H - O - U));   /* Wurzel: sonst ist alles ausser der Spitze ein Strich */
@@ -11292,10 +11303,17 @@ function rangBild(sortiert, wertVon, untenBei){
   });
   /* Die Platznummern unter der Reihe: erste und letzte. */
   const eigen = sortiert.findIndex(p => p.ist);
-  const marke = (i, txt, farbig) => `<text x="${(i * bw + bw / 2).toFixed(1)}" y="${H - 5}"`
-    + ` font-size="11" fill="${farbig ? DIA_1 : '#8b8b90'}" text-anchor="middle">${txt}</text>`;
-  sv += marke(0, '1.', false);
-  sv += marke(n - 1, n + '.', false);
+  /* BUENDIG STATT MITTIG. Mit text-anchor="middle" haengt die Nummer
+     ueber der Mitte IHRER Saeule - und eine Saeule ist bei 186 Leuten
+     4,8 Punkte breit. Die "1." ragte 1,7 Punkte nach links hinaus, die
+     "186." volle 8,7 nach rechts. Am Rand wird deshalb nach innen
+     ausgerichtet: erste linksbuendig, letzte rechtsbuendig. Damit
+     stimmt die Zuordnung weiterhin (die Nummer beginnt bzw. endet ueber
+     ihrer Saeule) und nichts faellt aus dem Bild. */
+  const marke = (x, txt, anker) => `<text x="${x}" y="${H - 8}"`
+    + ` font-size="11" fill="#8b8b90" text-anchor="${anker}">${txt}</text>`;
+  sv += marke(6, '1.', 'start');
+  sv += marke(W - 6, n + '.', 'end');
 
   /* DER WERT STEHT AN DER EIGENEN SAEULE (Caspar_D, 26.08.2026: "Wieso
      steht der Rang dort, wenn ich oben etwas anklicke, muß ich zuerst

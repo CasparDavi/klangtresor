@@ -526,6 +526,41 @@ Genau deshalb ist er hier die ehrlichste Zahl.
 
 ---
 
+## Beschriftungen brauchen Rand — gemessen, nicht geschätzt
+
+**Caspar_D, 26.08.2026:** „gib den charts etwas mehr platz zum atmen,
+damit die beschriftungen nicht abgeschnitten werden."
+
+Drei Diagramme klebten am Rand oder hingen darüber:
+
+| | Luft zum Rand |
+|---|---|
+| Streubild, Achsenfrage unten | 1,5 |
+| Rangfolge, „186." | **−8,7** — hing hinaus |
+| Zeitleiste, Modellmarken | 0,4 |
+
+**Der Richtwert ist 5 Bildpunkte.** Darunter klebt es sichtbar, auch
+wenn technisch nichts fehlt.
+
+**Was wächst, ist der Rand innen — nicht die Außenform.** Die goldenen
+Rechtecke bleiben, wie sie sind; die Zeichenfläche gibt die Punkte ab,
+nicht das Bild. Beim Streubild ging `U` von 40 auf 52, bei der
+Rangfolge von 18 auf 26.
+
+**Am Rand wird nach innen ausgerichtet.** Die „186." hing hinaus, weil
+`text-anchor="middle"` sie über die Mitte *ihrer* Säule stellte — und
+eine Säule ist bei 186 Leuten 4,8 Punkte breit. Erste Marke
+linksbündig, letzte rechtsbündig: Die Zuordnung stimmt weiterhin, und
+nichts fällt heraus.
+
+**Nachmessen, nicht hinsehen.** Der Überstand war im Bild kaum zu
+erkennen, in Zahlen eindeutig. Die Probe vergleicht die `getBBox()`
+jedes `<text>` mit der `viewBox` — und sie muß über *alle* Register und
+alle Karussellseiten laufen, denn `getBBox()` liefert für unsichtbare
+Elemente Nullen, die wie ein Ergebnis aussehen.
+
+---
+
 ## Eine Datei, zwei Zeilenformen — wer nur eine kennt, verliert still
 
 Am 26.08.2026 gefunden: `library/reaktionen.ndjson` wird von **zwei**
