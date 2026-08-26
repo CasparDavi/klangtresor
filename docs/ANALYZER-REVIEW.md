@@ -102,14 +102,20 @@ Entropie und Abschnittserkennung; eine eigene Chroma-Rechnung mit 8192
 Punkten, Gipfelauswahl und parabolisch verfeinerter Scheitelfrequenz.
 Belege in den Commits `031a315`, `a735f90`, `3352a99`.
 
-**Der Beleg, über den ganzen Bestand (26.08.2026, während des
-Neulaufs).** Welche Tonklasse steht bei einem Song im Chroma ganz oben?
+**Der Beleg, über den ganzen Bestand (26.08.2026).** Welche Tonklasse
+steht bei einem Song im Chroma ganz oben?
 
 ```
         C   C#   D   D#   E   F   F#   G   G#   A   A#   B
   alt   0%   0%  0%   0%  0%  2%  98%  0%   0%  0%   0%  0%    (207 Songs)
-  neu   4%   3%  4%   5% 18%  4%   6% 11%   3% 17%  18%  7%    (114 Songs)
+  neu   4%   1%  7%   5% 14%  3%   4% 24%   2% 13%  15%  7%    (alle 321)
 ```
+
+Die Endzahlen nach dem vollständigen Neulauf. G führt mit 24 %, dann
+A# 15 %, E 14 %, A 13 % — das sind die Leersaiten einer normal
+gestimmten Gitarre (E-A-D-G) plus A#/B für tiefergestimmte. C# liegt bei
+1,2 %. Die Verteilung folgt also dem, was gespielt wird, nicht mehr dem
+Raster.
 
 **Bei 203 von 207 Songs stand F# oben** — die Tonklasse, der das
 Raster bei 48 kHz neun Fächer zuteilt statt vier. Das alte Chroma hat
