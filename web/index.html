@@ -331,6 +331,11 @@ select,.knopf{
 .nbfeld[hidden]{display:none}
 /* Punkte und Saeulen sind anfassbar - der Zeiger sagt es. */
 .nbpunkt,.nbsaeule{cursor:pointer}
+/* Die Laufmeldung haengt in der Fussnote und traegt die Akzentfarbe -
+   sie ist ein Zustand, kein Text. */
+.nblauf{color:var(--titel-a,#f97b14)}
+/* Die beiden Knoepfe stehen in der Fussnote und duerfen etwas Luft. */
+#profilnachbarn .fussnote .chip{margin-left:8px;vertical-align:1px}
 
 /* Die Zeile, deren Punkt gerade im Bild leuchtet. Ein Balken links in
    Akzentfarbe statt eines Farbwechsels am Text: Der Name soll lesbar
@@ -10723,6 +10728,49 @@ async function profilLaengenFuellen(){
   ziel.appendChild(fuss);
 }
 
+/* ---- DEN LAUF AUS DEM PANEL STARTEN --------------------------------
+   Der Server startet zwei Kindprozesse hintereinander (Profile, dann
+   Hirschfaktoren) und laesst sie los - sie laufen weiter, auch wenn die
+   Seite zugemacht wird. Hier wird nur angestossen und nachgesehen.
+
+   Nachgesehen wird alle fuenf Sekunden, nicht schneller: Der Lauf macht
+   eine Anfrage je anderthalb Sekunden, oefter hinzuschauen zeigt
+   dieselbe Zahl. Und der Zaehler kommt aus den Dateien, nicht aus dem
+   Prozess - so stimmt er auch, wenn jemand den Lauf von der
+   Kommandozeile gestartet hat. */
+let _nbUhr = null;
+async function nachbarnLaufStarten(alles, fussnote){
+  try { await fetch('/api/community/start', { method: 'POST',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ alles }) }); }
+  catch (e) { return; }
+  nachbarnStandPruefen(fussnote, true);
+}
+async function nachbarnStandPruefen(fussnote, gleich){
+  clearInterval(_nbUhr); _nbUhr = null;
+  const melden = document.createElement('span');
+  melden.className = 'nblauf';
+  const schauen = async () => {
+    let d = null;
+    try { d = await (await fetch('/api/community-stand', { cache: 'no-store' })).json(); }
+    catch (e) { return; }
+    if (!d.laeuft){
+      clearInterval(_nbUhr); _nbUhr = null;
+      if (melden.parentNode){
+        melden.textContent = ' — fertig, beim nächsten Öffnen sind die neuen Zahlen da.';
+        setTimeout(() => melden.remove(), 8000);
+      }
+      return;
+    }
+    if (!melden.parentNode && fussnote) fussnote.appendChild(melden);
+    const min = Math.round((Date.now() - d.seit) / 60000);
+    melden.textContent = ` — läuft: ${d.schritt}, ${d.profile} Profile und ${d.hirsch} Hirschfaktoren`
+      + (min ? `, seit ${min} min` : '') + '. Läuft im Hintergrund weiter.';
+  };
+  if (gleich) await schauen();
+  _nbUhr = setInterval(schauen, 5000);
+  schauen();
+}
+
 /* ---- LISTE UND BILD VERBUNDEN --------------------------------------
    Caspar_D, 26.08.2026: "mache die listen oben interaktiv, mousover
    zeigt mir den punkt, die säle im diagramm".
@@ -10929,7 +10977,13 @@ async function profilNachbarnFuellen(){
        sagen, was gemeint ist, ohne dass man das englische Wort mitdenken
        muss - und sie stellen die beiden Richtungen als das dar, was sie
        sind: wer mir zuhoert, und wem ich zuhoere. */
-    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'Vorbilder', 'Anhänger', true));
+    /* ACHSEN ALS FRAGEN (Caspar_D, 26.08.2026: "Wieviele folgen? /
+       Wievielen gefolgt? sollen die Achsenbeschriftungen sein").
+       Besser als jedes Substantiv: "Anhänger" und "Vorbilder" deuten
+       etwas hinein - wer 116.081 Menschen folgt, hat keine 116.081
+       Vorbilder. Die Frage sagt genau, was gezaehlt wird, und sonst
+       nichts. */
+    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'Wievielen gefolgt?', 'Wieviele folgen?', true));
     const f = document.createElement('div'); f.className = 'fussnote';
     const oben = alleL.filter(x => !x.ist && x.follower > 2 * Math.max(1, x.folgt)).length;
     f.textContent = `Waagerecht, wem jemand folgt — senkrecht, wer ihm folgt. Beide Achsen `
@@ -11018,8 +11072,30 @@ async function profilNachbarnFuellen(){
     .filter(([h, p]) => p && !p.songs && h.toLowerCase() !== ichHandle).length;
   f.textContent = `${macher.length} Leute, die hier kommentiert, geliked oder gefolgt haben und `
     + `selbst Musik machen — dazu ${hoerer}, die nur hören. `
-    + `Öffentliche Profilzahlen, Stand ${(_nachbarn.stand || '').slice(0, 10)}.`;
+    + `Öffentliche Profilzahlen, Stand ${(_nachbarn.stand || '').slice(0, 10)}. `;
+  /* AUFFRISCHEN AUS DEM PANEL (Caspar_D, 26.08.2026: "Zahlen updaten
+     sollte man mit einem Knopf aus dem Community panel machen können,
+     das Ding läuft aber im Hintergrund").
+
+     Zwei Knoepfe, weil es zwei sehr verschieden teure Sachen sind: Die
+     Neuen zu holen dauert Sekunden, alles aufzufrischen zweiundzwanzig
+     Minuten und rund achthundert Anfragen an einen fremden Server. Was
+     das kostet, steht am Knopf - nicht im Kleingedruckten. */
+  const neuKnopf = document.createElement('button');
+  neuKnopf.className = 'chip'; neuKnopf.style.cursor = 'pointer';
+  neuKnopf.textContent = 'Neue holen';
+  neuKnopf.title = 'Profile der Leute holen, die seit dem letzten Mal dazugekommen sind — dauert Sekunden';
+  neuKnopf.onclick = () => nachbarnLaufStarten(false, f);
+  const alleKnopf = document.createElement('button');
+  alleKnopf.className = 'chip'; alleKnopf.style.cursor = 'pointer';
+  alleKnopf.textContent = 'Alles auffrischen';
+  alleKnopf.title = 'Auch die vorhandenen Zahlen neu holen — rund 20 Minuten und 800 Anfragen an Suno';
+  alleKnopf.onclick = () => { if (confirm('Alle Zahlen neu holen?\n\nDas sind rund 800 Anfragen an Sunos Server '
+    + 'und dauert etwa 20 Minuten. Der Lauf geht im Hintergrund weiter, auch wenn du die Seite schließt.'))
+    nachbarnLaufStarten(true, f); };
+  f.append(neuKnopf, document.createTextNode(' '), alleKnopf);
   ziel.appendChild(f);
+  nachbarnStandPruefen(f);
   _nachbarnGebaut = true;
   nachbarnListeSpiegeln();
 }

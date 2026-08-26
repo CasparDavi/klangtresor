@@ -1088,6 +1088,57 @@ const server = http.createServer((req, res) => {
     if (!fs.existsSync(f)) return jsonAntwort(res, { stand: null, leute: {} });
     return liefere(req, res, f);
   }
+  /* NACHBARSCHAFT AUFFRISCHEN (Caspar_D, 26.08.2026: "Zahlen updaten
+     sollte man mit einem Knopf aus dem Community panel machen können,
+     das Ding läuft aber im Hintergrund").
+
+     Zwei Laeufe hintereinander: erst die Profilzahlen, dann die
+     Hirschfaktoren - der zweite liest die Liste des ersten. Sie laufen
+     losgeloest weiter, auch wenn die Seite zugemacht wird; der Stand
+     steht in /api/community-stand.
+
+     ohneNeu (Vorgabe): nur, was fehlt - neue Leute, die seit dem letzten
+     Mal kommentiert oder gefolgt haben. Das sind Sekunden.
+     Mit "alles": auch die vorhandenen Zahlen auffrischen. Das kostete
+     beim ersten Mal 22 Minuten und rund 800 Anfragen an Sunos Server -
+     deshalb nicht die Vorgabe. */
+  if (p === '/api/community/start' && req.method === 'POST') {
+    let roh = ''; req.on('data', c => { roh += c; if (roh.length > 4096) req.destroy(); });
+    req.on('end', () => {
+      let d = null; try { d = JSON.parse(roh); } catch (e) {}
+      const alles = !!(d && d.alles);
+      if (global.communityLauf) return jsonAntwort(res, { ok: true, laeuft: true });
+      const cp = require('node:child_process');
+      const zusatz = alles ? ['--neu'] : [];
+      global.communityLauf = { seit: Date.now(), schritt: 'Profile', alles };
+      const k1 = cp.spawn(process.execPath, ['bin/community-profile.js', ...zusatz], { cwd: WURZEL, stdio: 'ignore' });
+      k1.on('error', () => { global.communityLauf = null; });
+      k1.on('close', () => {
+        if (!global.communityLauf) return;
+        global.communityLauf.schritt = 'Hirschfaktoren';
+        const k2 = cp.spawn(process.execPath, ['bin/community-hirsch.js', ...zusatz], { cwd: WURZEL, stdio: 'ignore' });
+        k2.on('error', () => { global.communityLauf = null; });
+        k2.on('close', () => { global.communityLauf = null; });
+      });
+      jsonAntwort(res, { ok: true, laeuft: true });
+    });
+    return;
+  }
+  /* Laeuft gerade einer, und wie weit ist er? Die Zahlen kommen aus den
+     Dateien selbst - so stimmt der Fortschritt auch, wenn der Lauf von
+     der Kommandozeile gestartet wurde. */
+  if (p === '/api/community-stand') {
+    const zaehle = (name) => { try {
+      return Object.keys(JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', name), 'utf8')).leute || {}).length;
+    } catch (e) { return 0; } };
+    const l = global.communityLauf;
+    return jsonAntwort(res, {
+      laeuft: !!l, schritt: l ? l.schritt : null, alles: l ? !!l.alles : false,
+      seit: l ? l.seit : null,
+      profile: zaehle('community-profile.json'), hirsch: zaehle('community-hirsch.json'),
+    });
+  }
+
   /* Die Hirschfaktoren der Nachbarn (bin/community-hirsch.js). Erst
      damit bekommt die eigene Zahl einen Massstab. */
   if (p === '/api/community-hirsch') {
