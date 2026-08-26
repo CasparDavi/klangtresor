@@ -10836,7 +10836,7 @@ document.addEventListener('mouseover', (e) => {
    duenn besetzte Ecke oben links: die, die es ohne Folgen-Karussell
    geschafft haben.
 -------------------------------------------------------------------- */
-let _nachbarn = null, _nachbarnGebaut = false;
+let _nachbarn = null, _nbHirsch = null, _nachbarnGebaut = false;
 
 async function profilNachbarnFuellen(){
   const ziel = $('profilnachbarn'); if (!ziel || _nachbarnGebaut) return;
@@ -10844,6 +10844,14 @@ async function profilNachbarnFuellen(){
     try { _nachbarn = await (await fetch('/api/community-profile', { cache: 'no-store' })).json(); }
     catch (e) { _nachbarn = false; }
   }
+  /* Die Hirschfaktoren liegen in einer eigenen Datei, weil sie ein
+     eigener Lauf sind (bin/community-hirsch.js) und deutlich laenger
+     brauchen. Fehlen sie, faellt nur die eine Lasche weg. */
+  if (_nbHirsch === null){
+    try { _nbHirsch = await (await fetch('/api/community-hirsch', { cache: 'no-store' })).json(); }
+    catch (e) { _nbHirsch = false; }
+  }
+  const hirschVon = (h) => (_nbHirsch && _nbHirsch.leute && _nbHirsch.leute[h] || {}).h;
   const leute = (_nachbarn && _nachbarn.leute) || {};
   /* OHNE MICH SELBST (Caspar_D, 26.08.2026: "warum stehe ich und
      caspar_D als einzelentitäten in den charts").
@@ -10862,7 +10870,7 @@ async function profilNachbarnFuellen(){
   const ichHandle = ((katalogInfo && katalogInfo.profil && katalogInfo.profil.handle) || '').toLowerCase();
   const macher = Object.entries(leute)
     .filter(([h, p]) => p && p.songs > 0 && h.toLowerCase() !== ichHandle)
-    .map(([h, p]) => ({ handle: h, ...p }));
+    .map(([h, p]) => ({ handle: h, ...p, hirsch: hirschVon(h) }));
   if (macher.length < 8){
     ziel.innerHTML = '<h3>Nachbarschaft</h3><p class="fussnote">Noch keine Profile geholt — '
       + '<code>node bin/community-profile.js</code> sammelt sie.</p>';
@@ -10885,7 +10893,12 @@ async function profilNachbarnFuellen(){
        niedrig aus. */
     songs: alle.filter(s => !s.fremd && s.oeffentlich).length || alle.filter(s => !s.fremd).length,
     plays: st.play_count__sum || 0, likes: st.upvote_count__sum || 0,
-    follower: st.followers_count || 0, folgt: st.following_count || 0 };
+    follower: st.followers_count || 0, folgt: st.following_count || 0,
+    /* Aus den EIGENEN Daten gerechnet, nicht abgerufen - dieselbe
+       Rechnung wie oben auf der Seite. Zur Probe wurde sie einmal gegen
+       den Abruf gehalten: beide 22. */
+    hirsch: (() => { const w = alle.filter(x => !x.fremd).map(x => x.likes || 0).sort((a, b) => b - a);
+      let h = 0; while (h < w.length && w[h] >= h + 1) h++; return h; })() };
   const alleL = [...macher, ich];
 
   /* ZWEI BILDER, EINES ZUR ZEIT (Caspar_D, 26.08.2026: "oder leg die
@@ -10933,13 +10946,18 @@ async function profilNachbarnFuellen(){
 
     const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Anhänger'],
                 ['songs', 'Songs'], ['proSong', 'Plays je Song']];
+    /* Nur anbieten, wenn der Lauf auch gelaufen ist. */
+    if (alleL.filter(x => x.hirsch > 0).length > 8) GR.push(['hirsch', 'Hirschfaktor']);
     let art = localStorage.getItem('nachbarnGroesse') || 'plays';
-    const wertVon = (x) => art === 'proSong' ? x.plays / Math.max(1, x.songs) : x[art];
+    const wertVon = (x) => art === 'proSong' ? x.plays / Math.max(1, x.songs) : (x[art] || 0);
 
     const zeichnen = () => {
       localStorage.setItem('nachbarnGroesse', art);
       [...chips.children].forEach(c => c.classList.toggle('an', c.dataset.g === art));
-      const sortiert = [...alleL].sort((a, b) => wertVon(b) - wertVon(a));
+      /* Wer keinen Hirschfaktor hat, faellt bei dieser Groesse heraus -
+         eine Null waere keine Aussage, sondern eine Luecke. */
+      const grundmenge = art === 'hirsch' ? alleL.filter(x => x.ist || x.hirsch > 0) : alleL;
+      const sortiert = [...grundmenge].sort((a, b) => wertVon(b) - wertVon(a));
       const rang = sortiert.findIndex(x => x.ist) + 1;
       feld.innerHTML = '';
       feld.appendChild(rangBild(sortiert, wertVon));
@@ -11076,7 +11094,8 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` data-tipp="${esc(p.name)}${String.fromCharCode(10)}`
        + `${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · ${p.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
        + `${p.follower.toLocaleString('de-DE')} Anhänger · folgt ${p.folgt.toLocaleString('de-DE')}${String.fromCharCode(10)}`
-       + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Plays je Song">`
+       + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Plays je Song`
+       + `${p.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + p.hirsch : ''}">`
        + `<title>${esc(p.name)}</title></circle></a>`;
   }
   /* DER EIGENE PUNKT ZULETZT, GROESSER UND MIT RING (26.08.2026). Bei
@@ -11094,7 +11113,8 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` data-tipp="Du${String.fromCharCode(10)}`
        + `${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · ${ich.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
        + `${ich.follower.toLocaleString('de-DE')} Anhänger · folgt ${ich.folgt.toLocaleString('de-DE')}${String.fromCharCode(10)}`
-       + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Plays je Song">`
+       + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Plays je Song`
+       + `${ich.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + ich.hirsch : ''}">`
        + `<title>Du</title></circle>`;
     /* Nach links, wenn rechts kein Platz mehr ist. */
     const rechts = cx < bx + bw - 90;

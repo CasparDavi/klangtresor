@@ -1088,6 +1088,13 @@ const server = http.createServer((req, res) => {
     if (!fs.existsSync(f)) return jsonAntwort(res, { stand: null, leute: {} });
     return liefere(req, res, f);
   }
+  /* Die Hirschfaktoren der Nachbarn (bin/community-hirsch.js). Erst
+     damit bekommt die eigene Zahl einen Massstab. */
+  if (p === '/api/community-hirsch') {
+    const f = path.join(WURZEL, 'library', 'community-hirsch.json');
+    if (!fs.existsSync(f)) return jsonAntwort(res, { stand: null, leute: {} });
+    return liefere(req, res, f);
+  }
   if (p === '/api/toene') {
     const f = path.join(WURZEL, 'library', 'toene.json');
     if (!fs.existsSync(f)) return jsonAntwort(res, { stand: null, songs: {} });
