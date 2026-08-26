@@ -37,10 +37,24 @@ const WURZEL = path.join(__dirname, '..');
 const SONGS = path.join(WURZEL, 'library', 'songs');
 const ZIEL = path.join(WURZEL, 'library', 'stoerfrequenzen.json');
 const args = process.argv.slice(2);
-const nur = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--anzahl');   // Wert hinter --anzahl ist keine Song-ID
+/* SCHALTER MIT WERT stehen hier, nicht als Einzelvergleich (26.08.2026).
+   Vorher hiess es `args[i-1] !== '--anzahl'` - und als --arbeiter dazukam,
+   las der Aufruf `--arbeiter 16` die 16 prompt als Song-Kennung und
+   suchte Songs, deren Kennung mit "16" beginnt. Der Lauf meldete brav
+   "fertig" und hatte fast nichts gerechnet; aufgefallen ist es nur, weil
+   16 Songs angeblich in einer Sekunde fertig waren. Wer den naechsten
+   Schalter mit Wert baut, traegt ihn hier ein - dann kann derselbe
+   Fehler nicht wiederkommen. */
+const MIT_WERT = new Set(['--anzahl', '--arbeiter']);
+const nur = args.find((a, i) => !a.startsWith('--') && !MIT_WERT.has(args[i - 1]));
 const neu = args.includes('--neu');
 const anzahl = args.includes('--anzahl') ? +args[args.indexOf('--anzahl') + 1] : Infinity;
-const laut = !!nur || args.includes('--laut');
+const laut = (!!nur || args.includes('--laut')) && !args.includes('--roh');
+/* --roh: einen Song rechnen und das Ergebnis als JSON auf stdout geben,
+   ohne Datei und ohne Schloss. So ruft der Elternprozess seine Arbeiter;
+   geschrieben wird nur an einer Stelle, und zwei Laeufe koennen sich
+   die Ergebnisdatei nicht gegenseitig ueberschreiben. */
+const roh = args.includes('--roh');
 
 const SR = 44100, N = 16384, HOP = 8192;
 const FMIN = 30, FMAX = 16000;
@@ -249,6 +263,32 @@ function analysieren(pcm) {
   return { kandidaten, rahmen, musik: kand.filter(c => musik.has(c)).length };
 }
 
+/* WIEVIELE ARBEITER? (Caspar_D, 26.08.2026: "messe, wieviele Kerne da
+   sind und passe die Parallelisierung entsprechend an.")
+
+   Gefragt sind die PHYSISCHEN Kerne, nicht die logischen. Der Detektor
+   ist rechengebunden - FFT und Histogramme lasten eine Kernpipeline
+   voll aus, und zwei Faeden auf demselben Kern teilen sich dann
+   dieselben Recheneinheiten, statt doppelt so schnell zu sein. Nur der
+   ffmpeg-Anteil (13 %) profitiert von Hyperthreading. Nachgemessen:
+   siehe die Tabelle im Commit.
+
+   Auf macOS sagt sysctl die physischen Kerne. Wo es das nicht gibt,
+   ist die Haelfte der logischen die uebliche Annahme (SMT mit zwei
+   Faeden je Kern). Einer bleibt frei, damit Server und Oberflaeche
+   waehrend eines langen Laufs atmen koennen. */
+function arbeiterZahl(){
+  const os = require('node:os');
+  const logisch = os.availableParallelism ? os.availableParallelism() : os.cpus().length;
+  let physisch = 0;
+  if (process.platform === 'darwin') {
+    const r = spawnSync('sysctl', ['-n', 'hw.physicalcpu'], { encoding: 'utf8' });
+    if (r.status === 0) physisch = parseInt(String(r.stdout).trim(), 10) || 0;
+  }
+  if (!physisch) physisch = Math.max(1, Math.round(logisch / 2));
+  return Math.max(1, Math.min(physisch, logisch - 1));
+}
+
 /* ---- Lauf ---- */
 let alt = { stand: null, songs: {} };
 try { alt = JSON.parse(fs.readFileSync(ZIEL, 'utf8')); } catch (e) {}
@@ -260,6 +300,18 @@ else if (!neu) liste = liste.filter(s => !alt.songs[s.id]);
 liste.sort((a, b) => String(b.erstellt || '').localeCompare(String(a.erstellt || '')));
 liste = liste.filter(s => fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'))).slice(0, anzahl);
 if (!liste.length) { console.log('  Stoerfrequenzen: nichts zu tun.'); process.exit(0); }
+/* EIN ARBEITER: rechnen, ausgeben, fertig. Kein Schloss (das haelt der
+   Elternprozess), keine Datei, keine Warteschlange. */
+if (roh) {
+  const s0 = liste[0];
+  if (!s0) { console.log('[]'); process.exit(0); }
+  try {
+    const erg = analysieren(pcmLaden(path.join(SONGS, s0.id, 'audio.mp3')));
+    process.stdout.write(JSON.stringify(erg.kandidaten));
+    process.exit(0);
+  } catch (e) { process.stderr.write(String(e.message).slice(0, 200)); process.exit(1); }
+}
+
 /* Nur ein Lauf zur Zeit (Schloss mit PID): die Schaltflaeche im Tonstudio und ein Lauf aus
    dem Terminal sollen sich nicht gegenseitig die Datei ueberschreiben (23.08.2026).
    Atomar angelegt ('wx'), ein liegengebliebenes Schloss zaehlt nur, wenn die PID lebt UND
@@ -286,17 +338,53 @@ process.on('exit', () => { try { if (+fs.readFileSync(SCHLOSS, 'utf8') === proce
 const schreiben = () => { let j = { songs: {} }; try { j = JSON.parse(fs.readFileSync(ZIEL, 'utf8')); } catch (e) {}
   j.songs = Object.assign(j.songs || {}, alt.songs); j.stand = new Date().toISOString(); j.version = alt.version; j.fft = alt.fft; j.sr = alt.sr;
   fs.writeFileSync(ZIEL, JSON.stringify(j)); };
-console.log(`  Stoerfrequenzen: ${liste.length} Songs (FFT ${N}, ${(SR / N).toFixed(1)} Hz Aufloesung)`);
+const PARALLEL = args.includes('--arbeiter')
+  ? Math.max(1, +args[args.indexOf('--arbeiter') + 1] || 1)
+  : arbeiterZahl();
+console.log(`  Stoerfrequenzen: ${liste.length} Songs (FFT ${N}, ${(SR / N).toFixed(1)} Hz Aufloesung), ${PARALLEL} Arbeiter`);
 const t0 = Date.now(); let n = 0, mit = 0;
-for (const s of liste) {
-  try {
-    const pcm = pcmLaden(path.join(SONGS, s.id, 'audio.mp3'));
-    const erg = analysieren(pcm);
-    alt.songs[s.id] = erg.kandidaten;
-    n++; if (erg.kandidaten.length) mit++;
-    if (laut || erg.kandidaten.length) console.log(`  ${erg.kandidaten.length ? 'TREFFER ' : '        '}${(s.titel || s.id).slice(0, 40).padEnd(40)} ${erg.kandidaten.map(c => `${c.hz} Hz ${c.note}${c.cent >= 0 ? '+' : ''}${c.cent}c +${c.db} dB ${Math.round(c.dauer * 100)} % [${c.art}]`).join(' | ') || 'sauber'}${laut ? `  [${erg.rahmen} Fenster, ${erg.musik} als Musik verworfen]` : ''}`);
-    if (n % 10 === 0) schreiben();
-  } catch (e) { console.log(`  Fehler ${s.id.slice(0, 8)}: ${e.message}`); }
-}
-schreiben();
-console.log(`  fertig: ${n} Songs in ${((Date.now() - t0) / 1000).toFixed(0)} s, ${mit} mit Kandidaten -> library/stoerfrequenzen.json`);
+
+/* JEDER SONG FUER SICH - deshalb laesst sich das ohne Weiteres
+   aufteilen (Caspar_D, 19.08.2026 zum Vorrechnen: "das kann man doch
+   super parallelisieren"). Ein Arbeiter ist ein Kindprozess mit
+   demselben Skript und --roh; er gibt seine Kandidaten als JSON zurueck
+   und ruehrt die Datei nicht an. Geschrieben wird nur hier, alle zehn
+   Ergebnisse - so kann ein abgestuerzter Arbeiter nichts verlieren
+   ausser seinem eigenen Song, und zwei Arbeiter koennen sich nicht
+   gegenseitig ueberschreiben.
+   Die Ergebnisse sind dieselben wie beim seriellen Lauf: An der
+   Rechnung aendert sich nichts, nur daran, wieviele davon gleichzeitig
+   laufen. */
+const spawn = require('node:child_process').spawn;
+const warteschlange = liste.slice();
+new Promise((fertigAlle) => {
+  let laufend = 0;
+  const naechster = () => {
+    if (!warteschlange.length) { if (!laufend) fertigAlle(); return; }
+    const s = warteschlange.shift(); laufend++;
+    const tS = Date.now();
+    const kind = spawn(process.execPath, [__filename, s.id, '--roh'], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
+    let aus = '', fehler = '';
+    kind.stdout.on('data', d => aus += d);
+    kind.stderr.on('data', d => fehler += d);
+    kind.on('close', (code) => {
+      laufend--;
+      if (code === 0) {
+        let kandidaten = [];
+        try { kandidaten = JSON.parse(aus); } catch (e) { kandidaten = []; }
+        alt.songs[s.id] = kandidaten;
+        n++; if (kandidaten.length) mit++;
+        if (laut || kandidaten.length) console.log(`  ${kandidaten.length ? 'TREFFER ' : '        '}${(s.titel || s.id).slice(0, 40).padEnd(40)} ${kandidaten.map(c => `${c.hz} Hz ${c.note}${c.cent >= 0 ? '+' : ''}${c.cent}c +${c.db} dB ${Math.round(c.dauer * 100)} % [${c.art}]`).join(' | ') || 'sauber'}${laut ? `  [${((Date.now() - tS) / 1000).toFixed(0)} s]` : ''}`);
+        if (n % 10 === 0) schreiben();
+      } else {
+        console.log(`  Fehler ${s.id.slice(0, 8)}: ${fehler.trim().slice(0, 90)}`);
+      }
+      naechster();
+    });
+  };
+  for (let i = 0; i < PARALLEL; i++) naechster();
+}).then(() => {
+  schreiben();
+  const sek = (Date.now() - t0) / 1000;
+  console.log(`  fertig: ${n} Songs in ${sek.toFixed(0)} s (${(sek / Math.max(1, n)).toFixed(1)} s je Song), ${mit} mit Kandidaten -> library/stoerfrequenzen.json`);
+});
