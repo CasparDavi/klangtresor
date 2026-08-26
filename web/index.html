@@ -10845,7 +10845,23 @@ async function profilNachbarnFuellen(){
     catch (e) { _nachbarn = false; }
   }
   const leute = (_nachbarn && _nachbarn.leute) || {};
-  const macher = Object.entries(leute).filter(([, p]) => p && p.songs > 0)
+  /* OHNE MICH SELBST (Caspar_D, 26.08.2026: "warum stehe ich und
+     caspar_D als einzelentitäten in den charts").
+
+     bin/community-profile.js sammelt die Handles aus den Reaktionen -
+     und dort steht der eigene mit drin, weil man auf Kommentare unter
+     den eigenen Songs antwortet. So kam derselbe Mensch zweimal ins
+     Bild: einmal als grauer Punkt unter 175 anderen, einmal als eigene
+     Marke. Beim Rang zaehlte er doppelt und schob einen Platz nach
+     hinten.
+
+     Gefiltert wird HIER statt beim Holen: Der Abruf steht schon in der
+     Datei, und die Zeilen kosten nichts. Dieselbe Regel gilt schon fuer
+     die Community-Listen ("const fremde = leute.filter(l => l.handle
+     !== ich)"). */
+  const ichHandle = ((katalogInfo && katalogInfo.profil && katalogInfo.profil.handle) || '').toLowerCase();
+  const macher = Object.entries(leute)
+    .filter(([h, p]) => p && p.songs > 0 && h.toLowerCase() !== ichHandle)
     .map(([h, p]) => ({ handle: h, ...p }));
   if (macher.length < 8){
     ziel.innerHTML = '<h3>Nachbarschaft</h3><p class="fussnote">Noch keine Profile geholt — '
@@ -10963,8 +10979,10 @@ async function profilNachbarnFuellen(){
 
   const f = document.createElement('div'); f.className = 'fussnote';
   f.style.marginTop = '16px';
+  const hoerer = Object.entries(leute)
+    .filter(([h, p]) => p && !p.songs && h.toLowerCase() !== ichHandle).length;
   f.textContent = `${macher.length} Leute, die hier kommentiert, geliked oder gefolgt haben und `
-    + `selbst Musik machen — dazu ${Object.keys(leute).length - macher.length}, die nur hören. `
+    + `selbst Musik machen — dazu ${hoerer}, die nur hören. `
     + `Öffentliche Profilzahlen, Stand ${(_nachbarn.stand || '').slice(0, 10)}.`;
   ziel.appendChild(f);
   _nachbarnGebaut = true;

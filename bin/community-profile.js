@@ -83,12 +83,25 @@ const KOPF  = {
 
 const schlafen = (ms) => new Promise(r => setTimeout(r, ms));
 
+/* Der eigene Handle - er steht in den Reaktionen mit drin, weil man auf
+   Kommentare unter den eigenen Songs antwortet. Ihn als Nachbarn zu
+   holen hiesse, sich selbst mit sich zu vergleichen (26.08.2026). */
+function eigenerHandle() {
+  try {
+    const K = require('./katalog.js');
+    const k = K.lesen();
+    return String((k && k.profil && k.profil.handle) || '').toLowerCase();
+  } catch (e) { return ''; }
+}
+
 /* Alle Handles, die hier überhaupt vorkommen: wer kommentiert oder
    geliked hat, und wer folgt. Aus derselben Quelle wie /api/community. */
 function handlesSammeln() {
   const raus = new Map();
+  const ich = eigenerHandle();
   const merke = (h, name) => { if (!h) return;
     const k = String(h).toLowerCase();
+    if (k === ich) return;                       /* nicht sich selbst */
     if (!raus.has(k) || (name && !raus.get(k))) raus.set(k, name || raus.get(k) || ''); };
   let zeilen = [];
   try { zeilen = fs.readFileSync(REAKT, 'utf8').split('\n'); } catch (e) { return raus; }
