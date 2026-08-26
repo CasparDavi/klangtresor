@@ -329,6 +329,15 @@ select,.knopf{
 .profilreg.nbreg{margin:0 0 4px;font-size:13px}
 .profilreg.nbreg .reg{font-size:13px;padding:6px 12px}
 .nbfeld[hidden]{display:none}
+/* Punkte und Saeulen sind anfassbar - der Zeiger sagt es. */
+.nbpunkt,.nbsaeule{cursor:pointer}
+
+/* Die Zeile, deren Punkt gerade im Bild leuchtet. Ein Balken links in
+   Akzentfarbe statt eines Farbwechsels am Text: Der Name soll lesbar
+   bleiben, und die Marke muss auffallen, auch wenn man sie nicht sucht. */
+#profilcommunity .bz.nbdran{background:color-mix(in srgb, var(--titel-a,#f97b14) 14%, transparent);
+  box-shadow:inset 3px 0 0 var(--titel-a,#f97b14);border-radius:3px}
+#profilcommunity .bz.nbdran .bn{color:var(--text)}
 
 #profilcommunity{position:sticky;top:0;z-index:2;
   background:#0b0c0f;border-bottom:1px solid var(--rand);
@@ -10085,6 +10094,8 @@ async function profilCommunityFuellen(){
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
     const lik  = fremde.map(l => ({ ...person(l), n: l.likes.filter(k => imFenster(k.am, fenster)).length }))
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
+    /* Die Bilder darunter folgen der neuen Auswahl. */
+    requestAnimationFrame(() => { if (typeof nachbarnListeSpiegeln === 'function') nachbarnListeSpiegeln(); });
     besten.appendChild(balken('Kommentieren am meisten', komm, DIA_1, '', 'blase'));
     besten.appendChild(balken('Liken am meisten', lik, DIA_1,
       fenster === 'monat' ? '' : 'soweit Sunos Benachrichtigungen reichen', 'herz'));
@@ -10732,11 +10743,55 @@ function nachbarHervorheben(handle){
     const dran = handle && r.dataset.nb === handle;
     r.style.filter = dran ? 'brightness(2.4)' : '';
   });
+  /* UND ZURUECK IN DIE LISTE (Caspar_D, 26.08.2026: "mach es
+     bidirektional, auch mousover ueber eine saeule einen punkt hebt den
+     namen in der liste hervor"). Derselbe Handle, dieselbe Marke - wer
+     einen auffaelligen Punkt sieht, will wissen, wer das ist, ohne den
+     Tooltip zu treffen. Der Name steht in bis zu drei Listen zugleich
+     (Kommentare, Likes, gewichtet); alle drei leuchten mit. */
+  document.querySelectorAll('#profilcommunity .bz[data-nb]').forEach(z =>
+    z.classList.toggle('nbdran', !!handle && z.dataset.nb === handle));
 }
+/* WER IN DER LISTE STEHT, LEUCHTET IM BILD (Caspar_D, 26.08.2026: "alle
+   säulen, Punkte, die in der liste oben zu sehen sind, sind heller, bzw
+   alle anderen gefadet").
+
+   Die Nachbarschaft zeigt 175 Menschen - aber nur ein Teil davon
+   kommentiert und liked hier wirklich, und genau die stehen oben in den
+   Listen. Sie sind die interessanten: Wer sich mit einem austauscht,
+   dessen Zahlen will man zuerst einordnen. Die uebrigen bleiben als
+   Wolke stehen, damit der Massstab stimmt, treten aber zurueck.
+
+   Was "in der Liste" heisst, entscheidet das gewaehlte Zeitfenster
+   (Diesen Monat / Dieses Jahr / Fuer immer) - deshalb wird nach jedem
+   Neuaufbau der Listen neu gespiegelt, nicht einmal beim Start.
+
+   Die eigene Marke bleibt immer voll: Sie ist der Bezugspunkt. */
+function nachbarnListeSpiegeln(){
+  const nb = $('profilnachbarn'); if (!nb) return;
+  const inListe = new Set([...document.querySelectorAll('#profilcommunity .bz[data-nb]')]
+    .map(z => z.dataset.nb));
+  const setzen = (el) => {
+    const eigen = el.dataset.nb && el.dataset.nb === ((katalogInfo && katalogInfo.profil && katalogInfo.profil.handle) || '');
+    const dran = eigen || (inListe.size === 0) || inListe.has(el.dataset.nb);
+    el.style.opacity = dran ? '' : '0.3';
+  };
+  nb.querySelectorAll('.nbpunkt').forEach(setzen);
+  nb.querySelectorAll('.nbsaeule').forEach(setzen);
+}
+
+/* Die Verbindung geht in beide Richtungen: von der Zeile zum Bild und
+   vom Bild zur Zeile. Ereignisdelegation am Dokument, weil beide Seiten
+   neu gebaut werden - die Listen beim Umschalten des Zeitfensters, die
+   Bilder beim Registerwechsel. */
 document.addEventListener('mouseover', (e) => {
-  const z = e.target.closest && e.target.closest('#profilcommunity .bz[data-nb]');
-  if (z) nachbarHervorheben(z.dataset.nb);
-  else if (_nbMarke && !(e.target.closest && e.target.closest('#profilcommunity'))) nachbarHervorheben(null);
+  const t = e.target.closest && e.target.closest(
+    '#profilcommunity .bz[data-nb], .nbpunkt[data-nb], .nbsaeule[data-nb]');
+  if (t) { nachbarHervorheben(t.dataset.nb); return; }
+  /* Nur loeschen, wenn der Zeiger BEIDE Bereiche verlassen hat - sonst
+     flackert es beim Wandern zwischen Liste und Bild. */
+  if (_nbMarke && !(e.target.closest && e.target.closest('#profilcommunity, #profilnachbarn')))
+    nachbarHervorheben(null);
 });
 
 /* ---- DIE NACHBARSCHAFT ----------------------------------------------
@@ -10885,6 +10940,7 @@ async function profilNachbarnFuellen(){
       try { localStorage.setItem('nbRegister', k); } catch (e) {}
       nbreg.querySelectorAll('.reg').forEach(x => x.classList.toggle('an', x.dataset.nbr === k));
       feld1.hidden = k !== 'weg'; feld2.hidden = k !== 'rang';
+      nachbarnListeSpiegeln();
     };
     nbreg.appendChild(b);
   }
@@ -10899,6 +10955,7 @@ async function profilNachbarnFuellen(){
     + `Öffentliche Profilzahlen, Stand ${(_nachbarn.stand || '').slice(0, 10)}.`;
   ziel.appendChild(f);
   _nachbarnGebaut = true;
+  nachbarnListeSpiegeln();
 }
 
 /* Streubild mit logarithmischen Achsen. Punkte sind Kreise (Hausregel 7),
@@ -10984,10 +11041,10 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
     if (p.ist) continue;
     sv += `<a href="https://suno.com/@${encodeURIComponent(p.handle)}" target="_blank" rel="noopener">`
        + `<circle class="nbpunkt" data-nb="${esc(p.handle)}" cx="${X(p[xf]).toFixed(1)}" cy="${Y(p[yf]).toFixed(1)}" r="4.5"`
-       + ` fill="${fl}" stroke="${kn}" stroke-width="1">`
-       + `<title>${esc(p.name)} — ${p.songs} Songs, ${p.plays.toLocaleString('de-DE')} Plays, `
-       + `${p.follower.toLocaleString('de-DE')} Follower, folgt ${p.folgt.toLocaleString('de-DE')}</title>`
-       + `</circle></a>`;
+       + ` fill="${fl}" stroke="${kn}" stroke-width="1"`
+       + ` data-tipp="${esc(p.name)} · ${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · `
+       + `${p.follower.toLocaleString('de-DE')} Follower · folgt ${p.folgt.toLocaleString('de-DE')}">`
+       + `<title>${esc(p.name)}</title></circle></a>`;
   }
   /* DER EIGENE PUNKT ZULETZT, GROESSER UND MIT RING (26.08.2026). Bei
      176 Punkten im Bild geht ein siebter Bildpunkt unter, auch in
@@ -10999,9 +11056,11 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
     const cx = X(ich[xf]), cy = Y(ich[yf]);
     sv += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="14" fill="none"`
        + ` stroke="${DIA_1}" stroke-width="1.5" opacity="0.45"/>`;
-    sv += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6.5"`
-       + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5">`
-       + `<title>Du — ${ich.follower.toLocaleString('de-DE')} Follower, folgt ${ich.folgt.toLocaleString('de-DE')}</title></circle>`;
+    sv += `<circle class="nbpunkt" data-nb="${esc(ich.handle || '')}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6.5"`
+       + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5"`
+       + ` data-tipp="Du · ${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · `
+       + `${ich.follower.toLocaleString('de-DE')} Follower · folgt ${ich.folgt.toLocaleString('de-DE')}">`
+       + `<title>Du</title></circle>`;
     /* Nach links, wenn rechts kein Platz mehr ist. */
     const rechts = cx < bx + bw - 90;
     sv += `<text x="${(cx + (rechts ? 20 : -20)).toFixed(1)}" y="${(cy + 4).toFixed(1)}"`
@@ -11033,8 +11092,9 @@ function rangBild(sortiert, wertVon){
        was sie auffindbar macht. */
     const f = p.ist ? DIA_1 : '#8b8b90';
     sv += `<rect class="nbsaeule" data-nb="${esc(p.handle || '')}" x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="${h.toFixed(1)}"`
-       + ` style="fill:${diaFlaeche(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}">`
-       + `<title>${p.ist ? 'Du' : esc(p.name)} — ${Math.round(wertVon(p)).toLocaleString('de-DE')}</title></rect>`;
+       + ` style="fill:${diaFlaeche(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}"`
+       + ` data-tipp="${i + 1}. ${p.ist ? 'Du' : esc(p.name)} · ${Math.round(wertVon(p)).toLocaleString('de-DE')}">`
+       + `<title>${p.ist ? 'Du' : esc(p.name)}</title></rect>`;
     sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="1"`
        + ` style="fill:${diaTopline(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}" pointer-events="none"/>`;
   });
@@ -15624,7 +15684,15 @@ deckMelder(deckA); deckMelder(deckB);
     if (dran && dran.dataset.tipp){ dran.title = dran.dataset.tipp; delete dran.dataset.tipp; }
     dran = null; clearTimeout(zeit); zeit = null; };
   document.addEventListener('pointerover', (e) => {
-    const el = e.target.closest && e.target.closest('#player [title], #player [data-tipp]');
+    /* Auch die Punkte und Saeulen der Nachbarschaft (Caspar_D,
+       26.08.2026: "immer einen tooltip auf Säulen und Punkten öffnen mit
+       Nutzernamen"). Der eingebaute Browser-Tooltip aus dem
+       <title>-Kind laesst eine gefuehlte Ewigkeit auf sich warten und
+       verschwindet von selbst wieder; dieser hier steht nach 120 ms und
+       bleibt, solange der Zeiger steht. Bei 176 Punkten ist das der
+       Unterschied zwischen Suchen und Lesen. */
+    const el = e.target.closest && e.target.closest(
+      '#player [title], #player [data-tipp], .nbpunkt[data-tipp], .nbsaeule[data-tipp]');
     if (el === dran) return;
     weg();
     if (!el) return;
