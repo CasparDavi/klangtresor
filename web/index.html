@@ -1518,6 +1518,11 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   <!-- Der Stift sagt: hier darf man schreiben. Er steht neben dem
        Schiffsnamen (Caspar_D, 26.08.2026: „ein edit symbol neben das
        Feld") - ein Eingabefeld ohne Rahmen sieht sonst aus wie Text. -->
+  <!-- Das (i): ein Kreis mit Punkt und Strich. Steht neben Kennzahlen,
+       die man nicht am Namen ablesen kann. -->
+  <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor"
+    stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/>
+    <path d="M12 11v5.5"/></g><circle cx="12" cy="7.7" r="1.15" fill="currentColor"/></symbol>
   <symbol id="i-stift" viewBox="0 0 24 24"><path fill="none" stroke="currentColor"
     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
     d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3zM14.5 7.5l2 2"/></symbol>
@@ -1941,6 +1946,47 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   padding-top:12px;border-top:1px solid #ffffff12;
   display:flex;flex-direction:column;gap:5px}
 .werrecht{font-size:10.5px;line-height:1.5}
+
+/* Der Erklaerkasten teilt sich die Form mit dem Ueber-Fenster
+   (.werkopf, .werinhalt), ist aber breiter: Es steht eine Tabelle
+   darin, und die soll nicht umbrechen. Hoehenbegrenzt mit eigenem
+   Rollbereich - auf einem kleinen Schirm wuerde der Text sonst oben
+   und unten abgeschnitten. */
+#hirschinfo{position:fixed;inset:0;z-index:82;display:none;background:rgba(0,0,0,.55);
+  align-items:center;justify-content:center;padding:20px}
+#hirschinfo.auf{display:flex}
+#hirschkasten{width:min(620px,94vw);max-height:88vh;display:flex;flex-direction:column;
+  background:#0d0d0f;border-radius:12px;border:1px solid var(--akzent);
+  box-shadow:0 24px 70px rgba(0,0,0,.8);overflow:hidden}
+#hirschinfo .werinhalt{overflow-y:auto;overscroll-behavior:contain}
+#hirschinhalt h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--schwach);margin:20px 0 7px;font-weight:700}
+#hirschinhalt h4:first-child{margin-top:0}
+#hirschinhalt p{font-size:12.5px;line-height:1.6;color:var(--text);margin-bottom:9px}
+#hirschinhalt p.leise{color:var(--schwach)}
+/* Die Regel selbst steht hervorgehoben - sie ist der Kern, alles
+   andere ist Erlaeuterung. */
+#hirschinhalt .regel{font-size:13.5px;line-height:1.55;color:var(--text);
+  border-left:2px solid var(--akzent);padding:9px 0 9px 13px;margin:4px 0 14px}
+#hirschinhalt .regel b{color:var(--akzent)}
+#hirschinhalt table{border-collapse:collapse;font-size:12px;margin:6px 0 10px;
+  font-variant-numeric:tabular-nums}
+#hirschinhalt th,#hirschinhalt td{padding:4px 9px;text-align:right;
+  border-bottom:1px solid #ffffff12}
+#hirschinhalt th:first-child,#hirschinhalt td:first-child{text-align:left;color:var(--schwach)}
+#hirschinhalt th{color:var(--schwach);font-weight:600;font-size:11px}
+/* NUR die Kippstelle traegt Farbe, nicht die ganze Zeile - sie ist der
+   eine Platz, an dem sich entscheidet, wo die Zahl steht. Faerbt man
+   alles, zeigt man nichts. Dieselbe Akzentfarbe wie der Wert selbst auf
+   der Seite darunter. */
+#hirschinhalt th.dran,#hirschinhalt td.dran{color:var(--titel-a,#f97b14);font-weight:700}
+#hirschinhalt .fuss{font-size:11px;line-height:1.55;color:var(--schwach);
+  padding-top:12px;margin-top:16px;border-top:1px solid #ffffff12}
+/* Das (i) neben der Zahl: leise, bis man hinzeigt. */
+.wert .infoknopf{background:none;border:none;padding:0;margin-left:5px;
+  color:var(--schwach);cursor:pointer;line-height:0;vertical-align:-2px}
+.wert .infoknopf:hover{color:var(--text)}
+.wert .infoknopf .ico{width:13px;height:13px}
 
 #reakt{position:fixed;inset:0;z-index:81;display:none;background:rgba(0,0,0,.45)}
 #reakt.auf{display:block}
@@ -2660,6 +2706,22 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 </div>
 <!-- Wer das gebaut hat. Klein und mittig, nach der Form von #reakt -
      ein Kasten mit Rand in der Akzentfarbe, kein Vollbild. -->
+<!-- ERKLAERKASTEN FUER DEN HIRSCHFAKTOR (Caspar_D, 26.08.2026: "mach
+     ein (i) daneben und oeffne einen Modaldialog, der das ganze schoen
+     ausfuehrlich und gut gegliedert beschreibt"). Dieselbe Form wie das
+     Ueber-Fenster, nur breiter - hier steht eine Tabelle drin. Der
+     Inhalt wird beim Oeffnen gefuellt: Das Beispiel rechnet mit dem
+     ECHTEN Bestand, damit es nie an erfundenen Zahlen erklaert. -->
+<div id="hirschinfo" onclick="if(event.target===this)hirschZu()">
+  <div id="hirschkasten">
+    <div class="werkopf">
+      <h3>Der Hirschfaktor</h3>
+      <button type="button" onclick="hirschZu()" title="Schließen">✕</button>
+    </div>
+    <div class="werinhalt" id="hirschinhalt"></div>
+  </div>
+</div>
+
 <div id="wer" onclick="if(event.target===this)werZu()">
   <div id="werkasten">
     <div class="werkopf">
@@ -10561,8 +10623,11 @@ function profilAuf(){
           <div class="wert"><b>${zahl(s.followers_count)}</b><span>Follower</span></div>
           <div class="wert"><b>${zahl(s.following_count)}</b><span>Ich folge</span></div>
           <div class="wertluecke"></div>
-          <div class="wert hirsch" title="h Songs mit mindestens h Likes"><b>${hirsch('likes')}</b><span>Hirschfaktor<br>${SYM('herz')} Likes</span></div>
-          <div class="wert hirsch" title="h Songs mit mindestens h Plays"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Plays</span></div>
+          <!-- Das (i) hinter der Beschriftung, nicht hinter der Zahl: Die
+               Zahl soll gross und allein stehen. Der knappe title bleibt
+               fuer den, der nur kurz hinzeigt; wer mehr will, klickt. -->
+          <div class="wert hirsch" title="h Songs mit mindestens h Likes"><b>${hirsch('likes')}</b><span>Hirschfaktor<br>${SYM('herz')} Likes<button type="button" class="infoknopf" onclick="hirschAuf('likes')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
+          <div class="wert hirsch" title="h Songs mit mindestens h Plays"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Plays<button type="button" class="infoknopf" onclick="hirschAuf('plays')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
         </div>
         <p style="margin-top:13px">
           <!-- DER LINK WIRD ZUSAMMENGESETZT (Caspar_D, 26.08.2026: „füge
@@ -14307,9 +14372,87 @@ function werAuf(){
   document.getElementById('wer').classList.add('auf');
 }
 function werZu(){ document.getElementById('wer').classList.remove('auf'); }
+
+/* ---- Der Erklaerkasten zum Hirschfaktor ---------------------------
+   Caspar_D, 26.08.2026: "Tarja weiss nicht, was der Hirschfaktor ist"
+   und "mach ein (i) daneben und oeffne einen Modaldialog".
+
+   DAS BEISPIEL RECHNET MIT DEM ECHTEN BESTAND. Ein erfundenes Beispiel
+   waere leichter zu schreiben und schlechter zu glauben: Wer die
+   Tabelle sieht und die Zahl daneben, kann es nachzaehlen. Gezeigt
+   werden die Plaetze um h herum - genau dort, wo es kippt. */
+function hirschZu(){ document.getElementById('hirschinfo').classList.remove('auf'); }
+function hirschAuf(art){
+  const eigene = alle.filter(s => !s.fremd);
+  const wort = art === 'likes' ? 'Likes' : art === 'plays' ? 'Plays' : 'Kommentare';
+  const werte = eigene.map(s => s[art] || 0).sort((a, b) => b - a);
+  let h = 0; while (h < werte.length && werte[h] >= h + 1) h++;
+
+  /* Vier Plaetze davor, drei danach - mehr braucht es nicht, um die
+     Kippstelle zu zeigen. */
+  const von = Math.max(1, h - 4), bis = Math.min(werte.length, h + 3);
+  let kopf = '', zeile = '';
+  for (let p = von; p <= bis; p++){
+    const dran = p === h;
+    kopf  += `<th${dran ? ' class="dran"' : ''}>${p}</th>`;
+    zeile += `<td${dran ? ' class="dran"' : ''}>${werte[p - 1]}</td>`;
+  }
+  const summe = werte.reduce((a, b) => a + b, 0);
+  const zahl = (n) => n.toLocaleString('de-DE');
+
+  document.getElementById('hirschinhalt').innerHTML = `
+    <h4>Was er ist</h4>
+    <div class="regel">Der Hirschfaktor ist die größte Zahl <b>h</b>, für die gilt:
+      <b>h</b> Songs haben jeweils mindestens <b>h</b> ${wort}.</div>
+    <p>Mehr ist es nicht. Man sortiert alle Songs nach ${wort} absteigend und geht
+      die Liste hinunter, bis die Platznummer die Zahl überholt. Der letzte Platz
+      davor ist der Wert.</p>
+
+    <h4>An deinem Bestand</h4>
+    <p class="leise">${zahl(eigene.length)} Songs, ${zahl(summe)} ${wort} zusammen,
+      der beste Song hat ${zahl(werte[0] || 0)}. Die Plätze ${von} bis ${bis}:</p>
+    <table><tr><th>Platz</th>${kopf}</tr><tr><td>${wort}</td>${zeile}</tr></table>
+    <p>Auf Platz ${h} stehen noch ${zahl(werte[h - 1] || 0)} ${wort} — es gibt also
+      ${h} Songs mit mindestens ${h}. Weiter unten bricht die Bedingung.
+      <b>Hirschfaktor ${h}.</b></p>
+
+    <h4>Wofür er gut ist</h4>
+    <p>Die beiden naheliegenden Kennzahlen taugen beide nicht.</p>
+    <p><b>Die Summe</b> belohnt Masse. Wer dreihundert Songs mit je fünf ${wort} hat,
+      steht besser da als jemand mit zwanzig zu je fünfzig — obwohl das Zweite die
+      größere Leistung ist.</p>
+    <p><b>Der Bestwert</b> belohnt Glück. Ein Song, der einschlägt, sagt nichts darüber,
+      ob der nächste auch trägt. Ein Treffer unter dreihundert Fehlschlägen sieht aus
+      wie Erfolg.</p>
+    <p>Der Hirschfaktor verlangt <b>beides zugleich: Breite und Tiefe.</b> Er steigt nur,
+      wenn viele Songs gleichzeitig überzeugen. Das macht ihn unempfindlich gegen
+      Ausreißer in beide Richtungen: Ein Song mit tausend ${wort} hebt die ${h} nicht um
+      einen einzigen Punkt — er ist nur einer von ${h}. Umgekehrt zieht auch kein
+      Reinfall den Wert nach unten, denn was unterhalb von Platz ${h} steht, zählt gar
+      nicht mit. Um auf ${h + 1} zu kommen, braucht es ${h + 1} Songs mit je
+      ${h + 1} ${wort}.</p>
+
+    <h4>Was er nicht kann</h4>
+    <p>Er ist <b>nach oben durch die Anzahl der Werke begrenzt.</b> Wer zehn Songs hat,
+      kommt höchstens auf zehn, selbst bei tausend ${wort} pro Stück. Er bevorzugt damit,
+      wer lange dabei ist — in der Wissenschaft ist das die bekannteste Kritik an ihm.</p>
+    <p>Er <b>wächst träge.</b> Das ist gewollt, macht ihn aber als Fortschrittsanzeige
+      unbrauchbar; dafür stehen die Bewegungszahlen weiter unten auf dieser Seite.</p>
+    <p>Und er ist <b>nur innerhalb einer Größe vergleichbar.</b> Der Wert für Plays und
+      der für Likes sagen nichts über ein Verhältnis aus — Plays sind schlicht viel
+      häufiger. Auch zwischen zwei Personen vergleicht man ihn besser nur bei ähnlich
+      großem Katalog.</p>
+
+    <div class="fuss">Der Hirschfaktor ist der <i>h-Index</i> aus der Wissenschaft, auf
+      Musik übertragen. Dort misst er, wie oft die Arbeiten eines Forschers zitiert
+      werden; Jorge E. Hirsch schlug ihn 2005 vor, und der deutsche Name ist zugleich
+      sein eigener.</div>`;
+  document.getElementById('hirschinfo').classList.add('auf');
+}
 /* Esc schliesst - wie ueberall im Haus. */
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && document.getElementById('wer')?.classList.contains('auf')) werZu();
+  if (e.key === 'Escape' && document.getElementById('hirschinfo')?.classList.contains('auf')) hirschZu();
 });
 
 function detailZu(){
