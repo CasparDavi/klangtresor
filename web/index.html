@@ -543,6 +543,11 @@ select,.knopf{
    fuenf zwischen ihren. Vierzehn ist deutlich mehr als beides und
    trennt, ohne zu reissen. */
 .stapellegende + .fussnote{margin-top:14px}
+/* Der Platzhalter, der eine kurze Legende auf die Zeilenzahl ihrer
+   Nachbarin bringt: volle Breite, damit er umbricht, und die Hoehe eines
+   echten Eintrags, damit die neue Zeile auch Platz einnimmt (gesetzt in
+   profilWoerterFuellen, weil nur dort die gemessene Hoehe vorliegt). */
+.stapellegende .legumbruch{flex:0 0 100%;margin:0}
 .dia.breit{grid-column:1 / -1}
 .kzeile{display:flex;gap:26px;align-items:flex-start}
 .kgruppe{min-width:0}.kgruppe .diatitel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -10787,9 +10792,38 @@ async function profilWoerterFuellen(){
     const beide = [$('profiltonarten'), $('profilwoerter')]
       .map(e => e && e.querySelector('.stapellegende')).filter(Boolean);
     if (beide.length !== 2) return;
-    beide.forEach(l => l.style.minHeight = '');
-    const hoch = Math.max(...beide.map(l => l.getBoundingClientRect().height));
-    beide.forEach(l => l.style.minHeight = hoch + 'px');
+    /* Erst aufraeumen, was ein voriger Lauf eingefuegt hat. */
+    beide.forEach(l => { l.style.minHeight = ''; l.querySelectorAll('.legumbruch').forEach(x => x.remove()); });
+    /* Wieviele Zeilen hat eine Legende? So viele verschiedene Oberkanten
+       ihre Eintraege haben - das zaehlt den echten Umbruch, nicht eine
+       gerechnete Breite. */
+    const zeilen = (l) => new Set([...l.children].map(c => c.offsetTop)).size;
+    const soll = Math.max(...beide.map(zeilen));
+    const sollHoch = Math.max(...beide.map(l => l.getBoundingClientRect().height));
+    for (const l of beide){
+      /* ECHTE ZEILEN STATT EINES GESTRECKTEN KASTENS (Caspar_D,
+         26.08.2026: "die legende bei tonarten mit einem forcierten
+         Zeilenumbruch darstellen oder eine leere am ende einfügen").
+         Vorher hob eine Mindesthoehe nur den Kasten - die Eintraege
+         standen dann oben gedraengt und darunter war Luft. Ein
+         Trennstueck mit voller Breite und ohne Hoehe bricht die Zeile
+         wirklich um; die Legende sitzt dann so, wie sie es mit einem
+         Eintrag mehr taete. */
+      let da = zeilen(l), schutz = 0;
+      while (da < soll && schutz++ < 8){
+        const br = document.createElement('span');
+        br.className = 'legumbruch';
+        /* Die Hoehe ist genau, was zur Nachbarin fehlt - nicht die eines
+           eigenen Eintrags. Deren Zeilen koennen einen Punkt niedriger
+           sein (kuerzere Namen brechen anders), und dann stuende die
+           Fussnote wieder versetzt. Gerechnet statt geraten. */
+        const fehlt = sollHoch - l.getBoundingClientRect().height
+                    - (parseFloat(getComputedStyle(l).rowGap) || 0);
+        br.style.height = Math.max(0, Math.round(fehlt)) + 'px';
+        l.appendChild(br);
+        da = zeilen(l);
+      }
+    }
   });
 
   const ohne = feld[0].reduce((a, b) => a + b, 0);
