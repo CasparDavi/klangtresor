@@ -10967,6 +10967,16 @@ async function profilNachbarnFuellen(){
       const rang = sortiert.findIndex(x => x.ist) + 1;
       feld.innerHTML = '';
       feld.appendChild(rangBild(sortiert, wertVon));
+      /* DIE SAEULEN SIND FRISCH UND WISSEN NICHTS (Caspar_D, 26.08.2026:
+         "wenn ich die pillen auswähle, dann vergisst die darstellung, wer
+         oben in der liste drin ist"). Das Faden haengt an style.opacity
+         der einzelnen Rechtecke, und die werden hier neu gebaut - also
+         gleich wieder spiegeln. Dieselbe Falle wie beim Registerwechsel
+         der Bilder, nur eine Ebene tiefer. */
+      nachbarnListeSpiegeln();
+      /* Und wenn der Zeiger gerade auf einem Namen steht, soll seine
+         Saeule auch in der neuen Sortierung leuchten. */
+      if (_nbMarke){ const m = _nbMarke; _nbMarke = null; nachbarHervorheben(m); }
       const med = sortiert[Math.floor(sortiert.length / 2)];
       const nm = GR.find(x => x[0] === art)[1];
       /* Wert und Rang stehen jetzt IM Bild an der eigenen Saeule. Hier
