@@ -71,13 +71,44 @@ function fft(re, im) {
 }
 const hann = Float32Array.from({ length: N }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1)));
 
-/* Gleitender Median ueber +-1/3 Oktave (in Bins) - die "glatte Nachbarschaft" */
-function nachbarschaft(db, kMin, kMax) {
-  const aus = new Float32Array(db.length);
+const DRITTEL = Math.pow(2, 1 / 3);
+
+/* Gleitender Median ueber +-1/3 Oktave (in Bins) - die "glatte Nachbarschaft".
+ *
+ * MIT EINEM MITGESCHOBENEN HISTOGRAMM (26.08.2026). Vorher wurde je Bin
+ * ein Array kopiert und sortiert: bei k = 5000 sind das 2300 Werte, und
+ * das fuer jeden der 5900 Bins - zusammen 8 Millionen Werte, jeder als
+ * Fliesskommazahl in einem gewoehnlichen Array, jede Fensterlage frisch
+ * sortiert. Das war mit Abstand der zweitteuerste Posten des ganzen
+ * Detektors (878 ms von 6448 je Song).
+ *
+ * Zwei Beobachtungen machen es billig:
+ *   1. Die Werte sind Stufen von 0 bis 255 - ein Histogramm mit 256
+ *      Faechern ist also EXAKT, keine Naeherung. Den Median findet man
+ *      darin, indem man aufsummiert, bis die Haelfte ueberschritten ist.
+ *   2. lo und hi wachsen beide monoton mit k. Das Fenster wandert also
+ *      nur, es springt nie zurueck - man kann die herausfallenden Werte
+ *      abziehen und die neuen dazuzaehlen, statt es neu zu fuellen.
+ *
+ * Gemessen: 878 ms -> 3 ms, und in allen 5934 Bins derselbe Wert wie
+ * vorher. Kein Genauigkeitsverlust, weil nichts gerundet wird.
+ *
+ * Der Median wird auf den STUFEN gebildet, nicht auf den dB-Werten. Das
+ * ist dasselbe: zuDb ist streng monoton, und der Median einer monoton
+ * abgebildeten Menge ist das Bild ihres Medians. */
+function nachbarschaft(stufen, kMin, kMax, zuDb) {
+  const aus = new Float32Array(stufen.length);
+  const fach = new Int32Array(256);
+  let cl = -1, ch = -1, n = 0;
   for (let k = kMin; k < kMax; k++) {
-    const lo = Math.max(kMin, Math.floor(k / Math.pow(2, 1 / 3))), hi = Math.min(kMax - 1, Math.ceil(k * Math.pow(2, 1 / 3)));
-    const w = Array.from(db.subarray(lo, hi + 1)).sort((a, b) => a - b);
-    aus[k] = w[w.length >> 1];
+    const lo = Math.max(kMin, Math.floor(k / DRITTEL)), hi = Math.min(kMax - 1, Math.ceil(k * DRITTEL));
+    if (cl < 0) { for (let i = lo; i <= hi; i++) { fach[stufen[i]]++; n++; } cl = lo; ch = hi; }
+    else {
+      while (ch < hi) { ch++; fach[stufen[ch]]++; n++; }
+      while (cl < lo) { fach[stufen[cl]]--; n--; cl++; }
+    }
+    let summe = 0; const ziel = n >> 1;
+    for (let i = 0; i < 256; i++) { summe += fach[i]; if (summe > ziel) { aus[k] = zuDb(i); break; } }
   }
   return aus;
 }
@@ -93,13 +124,27 @@ function analysieren(pcm) {
     const off = r * HOP;
     for (let i = 0; i < N; i++) { re[i] = pcm[off + i] * hann[i]; im[i] = 0; }
     fft(re, im);
-    for (let k = 0; k < bins; k++) { const m = Math.hypot(re[k], im[k]) / (N / 4); const db = m > 1e-6 ? 20 * Math.log10(m) : -120; alle[r * bins + k] = Math.max(0, Math.min(255, Math.round((db + 120) / 120 * 255))); }
+    /* Math.sqrt statt Math.hypot (26.08.2026): hypot sichert gegen
+       Ueberlauf ab, indem es erst skaliert - eine Vorsicht, die hier
+       nichts nuetzt (die Betraege liegen weit im Mittelfeld) und den
+       Schritt mehr als verdoppelt. Gemessen 535 -> 247 ms je Song. */
+    for (let k = 0; k < bins; k++) { const m = Math.sqrt(re[k] * re[k] + im[k] * im[k]) / (N / 4); const db = m > 1e-6 ? 20 * Math.log10(m) : -120; alle[r * bins + k] = Math.max(0, Math.min(255, Math.round((db + 120) / 120 * 255))); }
   }
   const zuDb = (v) => v / 255 * 120 - 120;
-  /* Median je Bin ueber die Zeit */
-  const med = new Float32Array(bins), spalte = new Uint8Array(rahmen);
-  for (let k = kMin; k < kMax; k++) { for (let r = 0; r < rahmen; r++) spalte[r] = alle[r * bins + k]; spalte.sort(); med[k] = zuDb(spalte[rahmen >> 1]); }
-  const glatt = nachbarschaft(med, kMin, kMax);
+  /* Median je Bin ueber die Zeit - auch hier ueber ein 256er-Histogramm
+     statt ueber sort() (26.08.2026, 153 -> 32 ms). Die Werte sind schon
+     Stufen, das Histogramm ist also exakt. medU behaelt sie als Stufen,
+     denn die Nachbarschaft rechnet gleich darauf weiter. */
+  const medU = new Uint8Array(bins), med = new Float32Array(bins);
+  const fach = new Int32Array(256);
+  for (let k = kMin; k < kMax; k++) {
+    fach.fill(0);
+    for (let r = 0; r < rahmen; r++) fach[alle[r * bins + k]]++;
+    let summe = 0; const ziel = rahmen >> 1;
+    for (let i = 0; i < 256; i++) { summe += fach[i]; if (summe > ziel) { medU[k] = i; break; } }
+    med[k] = zuDb(medU[k]);
+  }
+  const glatt = nachbarschaft(medU, kMin, kMax, zuDb);
   /* Kandidaten: lokale Maxima der Hervorhebung */
   const kand = [];
   for (let k = kMin + 2; k < kMax - 2; k++) {
@@ -111,7 +156,7 @@ function analysieren(pcm) {
     const breiteHz = (hi - lo) * SR / N, fc = k * SR / N;
     if (breiteHz > fc * (Math.pow(2, 1 / 6) - Math.pow(2, -1 / 6))) continue;   // breiter als 1/3 Oktave: kein Ton
     /* Dauer: Anteil der Rahmen, in denen der Bin die Nachbarschaft um > 6 dB ueberragt */
-    let da = 0; const nLo = Math.max(kMin, Math.floor(k / Math.pow(2, 1 / 3))), nHi = Math.min(kMax - 1, Math.ceil(k * Math.pow(2, 1 / 3)));
+    let da = 0; const nLo = Math.max(kMin, Math.floor(k / DRITTEL)), nHi = Math.min(kMax - 1, Math.ceil(k * DRITTEL));
     for (let r = 0; r < rahmen; r++) { const v = zuDb(alle[r * bins + k]); let s = 0, n2 = 0; for (let j = nLo; j <= nHi; j += Math.max(1, (nHi - nLo) >> 4)) { s += zuDb(alle[r * bins + j]); n2++; } if (v - s / n2 > 6) da++; }
     const dauer = da / rahmen;
     if (dauer < 0.8) continue;
