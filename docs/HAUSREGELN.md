@@ -526,6 +526,34 @@ Genau deshalb ist er hier die ehrlichste Zahl.
 
 ---
 
+## Eine Datei, zwei Zeilenformen — wer nur eine kennt, verliert still
+
+Am 26.08.2026 gefunden: `library/reaktionen.ndjson` wird von **zwei**
+Schreibern gefüllt. `reaktionen.js` legt einen Menschen je Zeile ab
+(`von: "dermoth"`), der Benachrichtigungsstrom legt Sunos Bündel ab
+(`von: ["deven86","stadtrotfuchs","dermoth"]`, Namen im Plural als
+`namen`). Ein Leser, der nur die erste Form kannte, machte aus dem
+Bündel per Zeichenkettenwandlung **einen** Schlüssel
+`deven86,stadtrotfuchs,dermoth`.
+
+Das Tückische: **Es sah nach Erfolg aus.** Kein Fehler, keine Ausnahme,
+kein leeres Ergebnis — nur ein Name, den es nicht gibt. 12 Nachbarn
+fehlten still, und weil der erfundene Schlüssel nie in der Ergebnisdatei
+landete, wurde er bei **jedem** Lauf neu angefragt.
+
+Daraus zwei Regeln:
+
+**Wer eine Datei liest, die mehr als ein Schreiber füllt, prüft alle
+Formen.** `[].concat(x)` nimmt beide, ohne zu fragen. Zwei Zeilen Aufwand.
+
+**Was in eine Automatik wandert, wird vorher noch einmal angesehen.**
+Von Hand fiel der Fehler nie auf — 37 sinnlose Anfragen in einem Lauf,
+den man selbst anstößt, bemerkt niemand. Täglich und unbeaufsichtigt ist
+dasselbe ein Dauerzustand. Der Maßstab ändert sich mit der Wiederholung,
+nicht mit dem Code.
+
+---
+
 ## Zu zweit am Projekt
 
 Seit dem 26.08.2026 arbeitet Tarja (`myinqi`) mit Schreibrecht am Repo

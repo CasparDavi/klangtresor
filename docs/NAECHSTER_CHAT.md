@@ -1072,12 +1072,76 @@ dem Prozeß.
 - **Zusammenarbeit**: Tarja (`myinqi`) schreibt mit,
   [ZUSAMMENARBEIT.md](ZUSAMMENARBEIT.md) samt `bin/fremdstand.js`.
 
+### 5 · Abends: ein stiller Datenverlust, gefunden beim Aufräumen
+
+Die drei offenen Punkte sind erledigt — beim Nachsehen fiel aber ein
+Fehler auf, den niemand gesucht hatte.
+
+**Der Komma-Schlüssel.** `reaktionen.ndjson` hat **zwei Zeilenformen**:
+`reaktionen.js` schreibt einen Menschen je Zeile (`von: "dermoth"`,
+`name: "…"`), der Benachrichtigungsstrom schreibt Sunos Bündel
+(`von: ["deven86","stadtrotfuchs","dermoth"]`, dazu `namen` im Plural —
+ein Feld `name` gibt es dort gar nicht). `community-profile.js` behandelte
+beide gleich und machte aus dem Bündel per Zeichenkettenwandlung **einen**
+Schlüssel `deven86,stadtrotfuchs,dermoth`.
+
+| | |
+|---|---|
+| Komma-Schlüssel | 37 |
+| dadurch nie geholte Nachbarn | **12** |
+| vergebliche Anfragen **je Lauf** | 37 sichere 404 |
+
+Von Hand fiel das nie auf. Vor dem Einhängen in eine tägliche Routine
+war es aber ein Dauerbruch der Regel „nur einmal holen". Behoben mit
+`[].concat(e.von)` und `e.namen || e.name`; die 12 wurden nachgeholt,
+**alle existierten**. Bestand jetzt: **192 Profile, 186 Hirschfaktoren**.
+
+Geprüft, ob dieselbe Verwechslung anderswo steckt: `server.js` liest
+`e.von` an drei Stellen als Array — dort greift es aber nur bei den
+Benachrichtigungsarten, und die sind sauber getrennt (`kommentar` und
+`antwort` tragen Strings, alle `*_like`/`follow`/`clip_*` Arrays). **Kein
+zweiter Fundort.**
+
+**Morgenroutine.** Zwei Schritte ganz am Ende von `MORGEN_SCHRITTE`,
+gemeinsamer Schlüssel `nachbarn`, **ohne `--neu`**. Ans Ende, weil hier
+als einzigem Schritt ein fremder Server in der Kette hängt — dort
+blockiert ein Netzhänger nichts mehr. Zwei Wächter gegen den
+Doppellauf: die Routine überspringt, wenn `global.communityLauf` steht;
+`/api/community/start` lehnt ab, solange die Routine ihren
+Nachbarschaftsschritt noch vor sich hat.
+
+> **Falle, zweimal dieselbe Liste:** Ein Kreuz in `MORGEN_KREUZE`
+> genügt nicht — `morgenStarten()` filtert die Abwahl gegen eine
+> **zweite, fest verdrahtete Schlüsselliste**. Wer sie vergißt, baut ein
+> Kreuz, das sich anklicken läßt, gemerkt wird und nichts bewirkt.
+
+**Begriffe.** Die Verbform der Achsen ist jetzt durchgezogen: Tooltips
+sagen „213 folgen · 154 gefolgt", die Pille heißt **„Folger"** (statt
+„Anhänger"), und „Follower" ist aus dem sichtbaren Text verschwunden.
+Die Datenfelder `p.follower`/`p.folgt` bleiben unberührt — sie stehen so
+in `library/community-profile.json`.
+
+**Untergrenzen sind jetzt sichtbar.** `genau` ging bisher an der ersten
+Weiche verloren (`(…|| {}).h`). Der ganze Datensatz wird durchgereicht,
+und wo eine Untergrenze steht, steht **≥** — im Punkt-Tooltip, im
+Säulen-Tooltip („mindestens — der Lauf endete an der Seitengrenze"), in
+der Fußnote und im (i)-Kasten. Der eigene Wert kommt aus dem eigenen
+Bestand und ist nie eine Untergrenze.
+
+Geprüft mit **künstlich gesetzten** `genau: false` an den drei Größten
+(Echtdaten vorher gesichert, danach zurückgespielt): 3 von 186 Säulen
+mit ≥, eigener Punkt ohne. Heute betrifft es **0 von 186** — die
+Kennzeichnung ist Vorsorge, keine Anzeige.
+
 ### Offen
 
 - Zwölf Befunde in `docs/ANALYZER-REVIEW.md`, Abschnitt 9.
-- Soll `genau: false` (Hirschfaktor als Untergrenze) im Bild sichtbar
-  werden? Betrifft heute zwei Nachbarn.
-- Die beiden Nachbarschaftsläufe in die Morgenroutine einhängen —
-  angeboten, nicht beauftragt.
-- Im Tooltip steht noch „Anhänger", während die Achsen inzwischen
-  Fragen sind („Wieviele folgen?" / „Wievielen gefolgt?").
+- `schief` wird in beiden Community-Skripten nie zurückgesetzt: Der
+  Kommentar sagt „zehn Fehler hintereinander", gemeint sind zehn
+  insgesamt.
+- Kein `fetch`-Timeout in beiden Skripten — Undici wartet in der Vorgabe
+  bis zu fünf Minuten je Anfrage. Am Ende der Schrittliste kostet das
+  nichts; weiter vorn eingehängt wäre es ein Blocker.
+- Ein Neustart des Servers zerreißt einen laufenden Panel-Lauf:
+  `community-profile.js` läuft als Waise weiter, `hirsch` wird nie
+  gestartet, und der Stand behauptet „fertig".

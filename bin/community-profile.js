@@ -108,7 +108,22 @@ function handlesSammeln() {
   for (const z of zeilen) {
     if (!z.trim()) continue;
     let e; try { e = JSON.parse(z); } catch (err) { continue; }
-    merke(e.von, e.name);
+    /* ZWEI ZEILENFORMEN, und die Verwechslung war teuer:
+       - reaktionen.js schreibt EINEN Menschen je Zeile: von "dermoth",
+         name "Michael Lenz".
+       - Der Benachrichtigungsstrom (server.js) schreibt Sunos Buendel:
+         von ["deven86","stadtrotfuchs","dermoth"], dazu namen[] im
+         Plural. Ein Feld `name` gibt es dort gar nicht.
+       Wer beide gleich behandelt, macht aus dem Buendel per
+       Zeichenkettenwandlung EINEN Schluessel "deven86,stadtrotfuchs,
+       dermoth". Den gibt es bei Suno nicht, er landet nie in der Datei -
+       und wird deshalb bei JEDEM Lauf aufs Neue angefragt. Gemessen:
+       37 solcher Schluessel, also 37 sichere 404 je Lauf, und 12 echte
+       Nachbarn, die dadurch nie geholt wurden. Das verletzt die
+       Hausregel "nur einmal holen" genau dort, wo sie zaehlt. */
+    const vonListe  = [].concat(e.von || []);
+    const nameListe = [].concat(e.namen || e.name || []);
+    vonListe.forEach((h, i) => merke(h, nameListe[i]));
     if (Array.isArray(e.likes)) for (const l of e.likes) merke(l.von || l.handle, l.name);
   }
   return raus;

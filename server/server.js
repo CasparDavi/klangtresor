@@ -379,6 +379,35 @@ const MORGEN_SCHRITTE = [
   /* Die Karte ist in Sekunden gerechnet - immer, wenn der Musikstil
      lief, damit neue Songs ihren Platz am Himmel bekommen. */
   { schluessel: 'musikstil', name: 'Klangraum neu zeichnen', befehl: ['bin/karte.js'] },
+  /* DIE NACHBARSCHAFT GANZ ZUM SCHLUSS (Caspar_D, 26.08.2026). Zwei
+     Schritte, gemeinsamer Schluessel - denn hirsch liest die Datei, die
+     profile schreibt; einzeln abgewaehlt ergaebe der zweite keinen Sinn.
+
+     WARUM ANS ENDE. Die Frische braeuchte es nicht: reaktionen.js hat
+     zwei Schritte vorher schon geliefert, woraus die Handles kommen.
+     Aber hier haengt als einziges ein FREMDER Server in der Kette. Am
+     Ende blockiert ein Netzhaenger nichts mehr, und wenn Suno gerade
+     bremst, ist der Morgen trotzdem gelaufen.
+
+     OHNE --neu, also nur, wer seit gestern dazugekommen ist: an
+     normalen Tagen eine Handvoll Profile, deutlich unter einer Minute.
+     Das grosse Auffrischen (rund 800 Anfragen) bleibt der Knopf im
+     Panel, mit Rueckfrage - "bewusste Entscheidung statt Nebenwirkung",
+     HAUSREGELN.md.
+
+     KEIN einheiten() hier: Die Zahl der fehlenden Handles auszurechnen
+     hiesse, die beiden Zeilenformen von reaktionen.ndjson ein zweites
+     Mal auszuwerten - genau die Doppelung, die am 26.08. den
+     Komma-Schluessel-Fehler ergeben hat. Die Dauer schaetzt ohnehin
+     morgen-dauern.json aus den letzten Laeufen.
+
+     BEIDE ENDEN IMMER MIT EXIT 0, auch wenn Suno bremst (429/503) oder
+     zehn Fehler kamen. Das ist hier Absicht und kein Versehen: Sunos
+     Laune darf den Morgen nicht abbrechen - der Rest holt sich beim
+     naechsten Lauf. Was tatsaechlich passiert ist, steht in den Zeilen
+     im Morgenfenster. */
+  { schluessel: 'nachbarn', name: 'Nachbarschaft: Profile der Neuen holen', befehl: ['bin/community-profile.js'] },
+  { schluessel: 'nachbarn', name: 'Nachbarschaft: Hirschfaktoren der Neuen rechnen', befehl: ['bin/community-hirsch.js'] },
 ];
 
 const morgen = { laeuft:false, schritt:-1, seit:null, zeilen:[], fehler:null, neueIds:[], folge:[],
@@ -525,6 +554,15 @@ function morgenLosschicken(schritte) {
           return weiter(i + 1);
         }
       } catch (e) { /* pgrep ohne Treffer = Exit 1 = frei */ }
+    }
+    /* Dasselbe fuer die Nachbarschaft, nur billiger zu pruefen: Wer den
+       Knopf im Panel gedrueckt hat, laeuft als abgekoppeltes Kind und
+       steht in global.communityLauf. Zwei Laeufe nebeneinander wuerden
+       denselben fremden Server gleichzeitig fragen - genau das, was die
+       Regel "eine Anfrage zur Zeit" verbietet. */
+    if (s.befehl[0].startsWith('bin/community-') && global.communityLauf) {
+      morgen.zeilen.push('  Die Nachbarschaft wird gerade aus dem Panel geholt — übersprungen.');
+      return weiter(i + 1);
     }
     /* caffeinate gibt es nur auf dem Mac; auf Linux laeuft der Schritt
        direkt (Tarjas Maschine, 21.08.2026). */
@@ -1108,6 +1146,12 @@ const server = http.createServer((req, res) => {
       let d = null; try { d = JSON.parse(roh); } catch (e) {}
       const alles = !!(d && d.alles);
       if (global.communityLauf) return jsonAntwort(res, { ok: true, laeuft: true });
+      /* Und die Gegenrichtung: Laeuft die Morgenroutine und hat ihren
+         Nachbarschaftsschritt noch vor sich, wuerde der Knopf einen
+         zweiten Frager auf denselben Server schicken. */
+      if (morgen.laeuft && (morgen.folge || []).some((s, i) =>
+          i >= morgen.schritt && String(s.befehl && s.befehl[0]).startsWith('bin/community-')))
+        return jsonAntwort(res, { ok: false, grund: 'Die Morgenroutine holt die Nachbarschaft gleich selbst.' });
       const cp = require('node:child_process');
       const zusatz = alles ? ['--neu'] : [];
       global.communityLauf = { seit: Date.now(), schritt: 'Profile', alles };

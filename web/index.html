@@ -10137,7 +10137,7 @@ async function profilCommunityFuellen(){
   const folgende = follower.filter(f => !seen.has(f.handle) && seen.add(f.handle));
   if (folgende.length){
     const h = document.createElement('div'); h.className = 'fussnote';
-    h.textContent = `Neue Follower (${folgende.length}, soweit Sunos Benachrichtigungen reichen): `;
+    h.textContent = `Neue Folger (${folgende.length}, soweit Sunos Benachrichtigungen reichen): `;
     folgende.slice(0, 12).forEach((e, i) => {
       const sp = document.createElement('span'); sp.className = 'rwer'; sp.textContent = e.name || e.handle;
       sp.onclick = () => { $('detail').classList.remove('auf'); reaktPersonAlleine(e.handle); };
@@ -10903,7 +10903,17 @@ async function profilNachbarnFuellen(){
     try { _nbHirsch = await (await fetch('/api/community-hirsch', { cache: 'no-store' })).json(); }
     catch (e) { _nbHirsch = false; }
   }
-  const hirschVon = (h) => (_nbHirsch && _nbHirsch.leute && _nbHirsch.leute[h] || {}).h;
+  /* NICHT NUR DIE ZAHL (26.08.2026). Der Lauf legt neben h auch ab, ob
+     der Wert GENAU ist: Wer so viele hochgelikte Songs hat, dass die
+     Seitengrenze zuschlaegt, bekommt eine Untergrenze statt eines
+     Werts, und das steht als `genau: false` in der Datei. Wird hier nur
+     `.h` herausgezogen, ist diese Auskunft weg, bevor irgendein
+     Diagramm sie zeigen koennte - dann behauptet das Bild eine
+     Genauigkeit, die die Messung nicht hat.
+
+     Auf `=== false` pruefen, nicht auf `!genau`: Ein Datensatz aus einer
+     aelteren Fassung hat das Feld gar nicht und ist trotzdem in Ordnung. */
+  const hirschDs = (h) => (_nbHirsch && _nbHirsch.leute && _nbHirsch.leute[h]) || {};
   const leute = (_nachbarn && _nachbarn.leute) || {};
   /* OHNE MICH SELBST (Caspar_D, 26.08.2026: "warum stehe ich und
      caspar_D als einzelentitäten in den charts").
@@ -10922,7 +10932,8 @@ async function profilNachbarnFuellen(){
   const ichHandle = ((katalogInfo && katalogInfo.profil && katalogInfo.profil.handle) || '').toLowerCase();
   const macher = Object.entries(leute)
     .filter(([h, p]) => p && p.songs > 0 && h.toLowerCase() !== ichHandle)
-    .map(([h, p]) => ({ handle: h, ...p, hirsch: hirschVon(h) }));
+    .map(([h, p]) => { const d = hirschDs(h);
+      return { handle: h, ...p, hirsch: d.h, hirschUnten: d.genau === false }; });
   if (macher.length < 8){
     ziel.innerHTML = '<h3>Nachbarschaft</h3><p class="fussnote">Noch keine Profile geholt — '
       + '<code>node bin/community-profile.js</code> sammelt sie.</p>';
@@ -10950,7 +10961,10 @@ async function profilNachbarnFuellen(){
        Rechnung wie oben auf der Seite. Zur Probe wurde sie einmal gegen
        den Abruf gehalten: beide 22. */
     hirsch: (() => { const w = alle.filter(x => !x.fremd).map(x => x.likes || 0).sort((a, b) => b - a);
-      let h = 0; while (h < w.length && w[h] >= h + 1) h++; return h; })() };
+      let h = 0; while (h < w.length && w[h] >= h + 1) h++; return h; })(),
+    /* Der eigene Wert kommt aus dem eigenen Bestand - alle Songs liegen
+       hier, es gibt keine Seitengrenze. Er ist nie eine Untergrenze. */
+    hirschUnten: false };
   const alleL = [...macher, ich];
 
   /* ZWEI BILDER, EINES ZUR ZEIT (Caspar_D, 26.08.2026: "oder leg die
@@ -10973,10 +10987,17 @@ async function profilNachbarnFuellen(){
   {
     const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
     /* DEUTSCHE BEGRIFFE (Caspar_D, 26.08.2026: "follower wäre Folger
-       oder Anhänger, gefolgt wäre Vorbild"). Anhänger und Vorbilder
-       sagen, was gemeint ist, ohne dass man das englische Wort mitdenken
-       muss - und sie stellen die beiden Richtungen als das dar, was sie
-       sind: wer mir zuhoert, und wem ich zuhoere. */
+       oder Anhänger, gefolgt wäre Vorbild"). Englisch bleibt draussen.
+       "Vorbild" ist dabei verworfen worden - siehe gleich darunter -,
+       "Folger" hat sich gehalten: Es sagt genau das, was gezaehlt wird,
+       und nichts darueber hinaus. "Anhänger" klang nach Gefolgschaft,
+       die niemand geschworen hat.
+
+       WO EIN VERB PASST, STEHT EIN VERB. Ueberall dort, wo Platz fuer
+       einen Satz ist - Achsen, Tooltips, Fussnoten -, wird gezaehlt
+       statt benannt: "213 folgen · 154 gefolgt". Nur wo ein Wort allein
+       stehen muss, weil es eine Schaltflaeche beschriftet oder in einer
+       Tabellenspalte sitzt, steht das Substantiv "Folger". */
     /* ACHSEN ALS FRAGEN (Caspar_D, 26.08.2026: "Wieviele folgen? /
        Wievielen gefolgt? sollen die Achsenbeschriftungen sein").
        Besser als jedes Substantiv: "Anhänger" und "Vorbilder" deuten
@@ -10989,7 +11010,7 @@ async function profilNachbarnFuellen(){
     f.textContent = `Waagerecht, wem jemand folgt — senkrecht, wer ihm folgt. Beide Achsen `
       + `logarithmisch. Auf der Linie halten sich beide die Waage. Darunter: Reichweite über `
       + `Gegenseitigkeit — der stärkste Zusammenhang in diesen Daten (r = 0,86). Darüber: `
-      + `Anhänger ohne Gegenleistung — ${oben} von ${macher.length}. `
+      + `es folgen ihnen mehr, als sie selbst folgen — ${oben} von ${macher.length}. `
       + `Punkt anklicken führt zum Profil auf Suno.`;
     w.appendChild(f);
   }
@@ -11004,7 +11025,7 @@ async function profilNachbarnFuellen(){
     const feld = document.createElement('div'); w.appendChild(feld);
     const fuss = document.createElement('div'); fuss.className = 'fussnote'; w.appendChild(fuss);
 
-    const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Anhänger'],
+    const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Folger'],
                 ['songs', 'Songs'], ['proSong', 'Plays je Song']];
     /* Nur anbieten, wenn der Lauf auch gelaufen ist. */
     if (alleL.filter(x => x.hirsch > 0).length > 8) GR.push(['hirsch', 'Hirschfaktor']);
@@ -11020,7 +11041,8 @@ async function profilNachbarnFuellen(){
       const sortiert = [...grundmenge].sort((a, b) => wertVon(b) - wertVon(a));
       const rang = sortiert.findIndex(x => x.ist) + 1;
       feld.innerHTML = '';
-      feld.appendChild(rangBild(sortiert, wertVon));
+      feld.appendChild(rangBild(sortiert, wertVon,
+        art === 'hirsch' ? (x => !!x.hirschUnten) : null));
       /* DIE SAEULEN SIND FRISCH UND WISSEN NICHTS (Caspar_D, 26.08.2026:
          "wenn ich die pillen auswähle, dann vergisst die darstellung, wer
          oben in der liste drin ist"). Das Faden haengt an style.opacity
@@ -11036,9 +11058,22 @@ async function profilNachbarnFuellen(){
       /* Wert und Rang stehen jetzt IM Bild an der eigenen Saeule. Hier
          darunter nur noch das Umfeld - Mitte und Spitze -, damit die
          Zahl oben einen Bezug hat. */
-      fuss.textContent = `Jede Säule ein Mensch, nach ${nm} sortiert, deine in Akzentfarbe. `
+      /* Kasusfrei formuliert: "nach ${nm} sortiert" zwang jeden
+         Pillentext in einen Dativ, den nicht jeder hergibt ("nach Plays
+         je Song sortiert"). Der Doppelpunkt nimmt jedes Label. */
+      /* Ist die Spitze nur eine Untergrenze, darf hier kein "groesster"
+         stehen: Zwei Untergrenzen lassen sich nicht gegeneinander
+         ordnen, und der Satz behauptete sonst eine Reihenfolge, die die
+         Messung nicht hergibt. Dann sagt er "mindestens" - und wieviele
+         Werte ueberhaupt betroffen sind. */
+      const unten = art === 'hirsch' ? sortiert.filter(x => x.hirschUnten).length : 0;
+      fuss.textContent = `Jede Säule ein Mensch, absteigend — ${nm}. Deine in Akzentfarbe. `
         + `Mitte ${Math.round(wertVon(med)).toLocaleString('de-DE')}, `
-        + `größter ${Math.round(wertVon(sortiert[0])).toLocaleString('de-DE')} — ${sortiert[0].name}.`;
+        + `größter ${sortiert[0].hirschUnten && art === 'hirsch' ? 'mindestens ' : ''}`
+        + `${Math.round(wertVon(sortiert[0])).toLocaleString('de-DE')} — ${sortiert[0].name}.`
+        + (unten ? ` Bei ${unten === 1 ? 'einem Wert' : unten + ' Werten'} endete der Lauf `
+                 + `an der Seitengrenze — dort steht ≥, und die Reihenfolge an der Spitze `
+                 + `ist nicht gesichert.` : '');
     };
     for (const [k, t] of GR){
       const c = document.createElement('span'); c.className = 'chip'; c.dataset.g = k;
@@ -11186,9 +11221,9 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` fill="${fl}" stroke="${kn}" stroke-width="1"`
        + ` data-tipp="${esc(p.name)}${String.fromCharCode(10)}`
        + `${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · ${p.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
-       + `${p.follower.toLocaleString('de-DE')} Anhänger · folgt ${p.folgt.toLocaleString('de-DE')}${String.fromCharCode(10)}`
+       + `${p.follower.toLocaleString('de-DE')} folgen · ${p.folgt.toLocaleString('de-DE')} gefolgt${String.fromCharCode(10)}`
        + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Plays je Song`
-       + `${p.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + p.hirsch : ''}">`
+       + `${p.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + (p.hirschUnten ? '≥ ' : '') + p.hirsch : ''}">`
        + `<title>${esc(p.name)}</title></circle></a>`;
   }
   /* DER EIGENE PUNKT ZULETZT, GROESSER UND MIT RING (26.08.2026). Bei
@@ -11205,9 +11240,9 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5"`
        + ` data-tipp="Du${String.fromCharCode(10)}`
        + `${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · ${ich.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
-       + `${ich.follower.toLocaleString('de-DE')} Anhänger · folgt ${ich.folgt.toLocaleString('de-DE')}${String.fromCharCode(10)}`
+       + `${ich.follower.toLocaleString('de-DE')} folgen · ${ich.folgt.toLocaleString('de-DE')} gefolgt${String.fromCharCode(10)}`
        + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Plays je Song`
-       + `${ich.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + ich.hirsch : ''}">`
+       + `${ich.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + (ich.hirschUnten ? '≥ ' : '') + ich.hirsch : ''}">`
        + `<title>Du</title></circle>`;
     /* Nach links, wenn rechts kein Platz mehr ist. */
     const rechts = cx < bx + bw - 90;
@@ -11220,7 +11255,13 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
 
 /* Die Rangfolge als Saeulenreihe: jede Saeule ein Mensch, die eigene
    farbig. Hausform - gedaempfte Flaeche, Topline oben. */
-function rangBild(sortiert, wertVon){
+/* untenBei(p) sagt, ob DIESER Wert nur eine Untergrenze ist. Als
+   Parameter, nicht als globale Marke: Dasselbe Bild zeichnet alle sechs
+   Groessen, und nur beim Hirschfaktor kann es Untergrenzen geben. Wer
+   das an einer Aussenvariablen festmachte, haette beim naechsten
+   Umschalten die Kennzeichnung der vorigen Groesse im Bild. */
+function rangBild(sortiert, wertVon, untenBei){
+  untenBei = untenBei || (() => false);
   /* Auch hier das goldene Rechteck, nur flacher gehalten: 176 Saeulen
      in einem 1,618er Format waeren ein Wald aus Nadeln. Die halbe
      Hoehe des Streubilds ist der Kompromiss - hoch genug, dass man die
@@ -11243,7 +11284,8 @@ function rangBild(sortiert, wertVon){
        + ` style="fill:${diaFlaeche(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}"`
        + ` data-tipp="${p.ist ? 'Du' : esc(p.name)}${String.fromCharCode(10)}`
        + `Platz ${i + 1} von ${n}${String.fromCharCode(10)}`
-       + `${Math.round(wertVon(p)).toLocaleString('de-DE')}">`
+       + `${untenBei(p) ? '≥ ' : ''}${Math.round(wertVon(p)).toLocaleString('de-DE')}`
+       + `${untenBei(p) ? String.fromCharCode(10) + 'mindestens — der Lauf endete an der Seitengrenze' : ''}">`
        + `<title>${p.ist ? 'Du' : esc(p.name)}</title></rect>`;
     sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="1"`
        + ` style="fill:${diaTopline(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}" pointer-events="none"/>`;
@@ -11717,7 +11759,7 @@ function profilAuf(){
         <div class="werte mithirsch">
           <div class="wert"><b>${zahl(s.play_count__sum)}</b><span>Plays</span></div>
           <div class="wert"><b>${zahl(s.upvote_count__sum)}</b><span>Likes</span></div>
-          <div class="wert"><b>${zahl(s.followers_count)}</b><span>Follower</span></div>
+          <div class="wert"><b>${zahl(s.followers_count)}</b><span>Folger</span></div>
           <div class="wert"><b>${zahl(s.following_count)}</b><span>Ich folge</span></div>
           <div class="wertluecke"></div>
           <!-- Das (i) hinter der Beschriftung, nicht hinter der Zahl: Die
@@ -13626,7 +13668,7 @@ async function aliasZeigen(){
     let pr = {}; try { pr = await (await fetch('/api/profil-pruefen?handle=' + encodeURIComponent(h))).json(); } catch (e) {}
     if (!pr.ok){ $('aliasbefund').textContent = pr.status === 404 ? `@${h} gibt es bei Suno nicht.` : 'Suno antwortet nicht (' + (pr.status || pr.fehler || '?') + ').'; return; }
     $('aliasbefund').innerHTML = `${pr.avatar ? `<img src="${esc(pr.avatar)}" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:8px">` : ''}
-      <b style="color:var(--text)">${esc(pr.name || pr.handle)}</b> · ${pr.songs ?? '?'} Songs · ${pr.follower ?? '?'} Follower
+      <b style="color:var(--text)">${esc(pr.name || pr.handle)}</b> · ${pr.songs ?? '?'} Songs · ${pr.follower ?? '?'} Folger
       <button class="pille an" id="aliasja" style="margin-left:10px">Das bin ich</button>`;
     $('aliasja').onclick = async () => {
       await fetch('/api/konfig', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ handle: pr.handle }) });
@@ -13888,6 +13930,7 @@ const MORGEN_KREUZE = [
     text: 'Profil, private Songs, Follower und Zählerverlauf — wird beim Katalogbau verwoben.' },
   { gruppe: 'public', schluessel: 'kommentare', name: 'Kommentare sichern',  text: 'Neue Kommentare und Antworten zu deinen Songs.' },
   { gruppe: 'public', schluessel: 'medien',     name: 'Medien laden',        text: 'Fehlende MP3, Cover, Videos — und WAVs, die in Suno schon erzeugt wurden. Kostet Netz und Platz.' },
+  { gruppe: 'public', schluessel: 'nachbarn',   name: 'Nachbarschaft nachziehen', text: 'Öffentliche Profilzahlen und Hirschfaktor der Leute, die seit gestern dazugekommen sind — meist Sekunden. Das große Auffrischen bleibt der Knopf im Nachbarschafts-Panel.' },
   { gruppe: 'lokal',  schluessel: 'katalog',    pflicht: true, name: 'Katalog zusammenführen', text: 'Alle Ernten und Ergebnisse in den Katalog — die Grundlage für alles andere.' },
   { gruppe: 'lokal',  schluessel: 'analyse',    name: 'Songs analysieren',   text: 'BPM, Tonart, Lautheit, Bandprofil, Histogramm, Suchindex.' },
   { gruppe: 'lokal',  schluessel: 'whisper',    name: 'Karaoke-Zeitanker mit Whisper', text: 'Nur neue Songs mit Text, danach Lyrics-Abgleich. Etwa 3 Minuten je Song; der Mac bleibt dabei wach.' },
@@ -13935,7 +13978,11 @@ async function morgenUebernehmen(){
   $('morgentext').style.display = '';
   $('morgenkasten').querySelector('h2').textContent = 'Wird nachgezogen …';
   $('morgenknopf').classList.add('laeuft');
-  const aus = [...morgenAuswahlLesen()].filter(k => ['kommentare', 'medien', 'analyse', 'whisper', 'musikstil'].includes(k));
+  /* ZWEITE LISTE, die mitgezogen werden muss: Was hier nicht drinsteht,
+     laesst sich zwar abwaehlen und wird gemerkt - aber die Abwahl faellt
+     beim Start still unter den Tisch, und der Schritt laeuft trotzdem.
+     Wer ein Kreuz oben ergaenzt, ergaenzt es auch hier. */
+  const aus = [...morgenAuswahlLesen()].filter(k => ['kommentare', 'medien', 'analyse', 'whisper', 'musikstil', 'nachbarn'].includes(k));
   try { await fetch('/api/morgen/start', { method:'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ aus }) }); }
   catch (e){ $('morgentext').textContent = 'Start schiefgegangen: ' + e.message; return; }
   morgenSchauen(false);
@@ -15618,10 +15665,15 @@ function nachbarschaftInfoAuf(){
       + `<td>${Math.round(anteil)} %</td></tr>`;
   };
   const tab = zeile('Plays', mit.map(p => p.plays))
-            + zeile('Anhänger', mit.map(p => p.follower))
+            + zeile('Folger', mit.map(p => p.follower))
             + zeile('Likes', mit.map(p => p.likes))
             + zeile('Songs', mit.map(p => p.songs))
             + (Object.keys(hL).length > 8 ? zeile('Hirschfaktor', Object.values(hL).map(p => p.h)) : '');
+  /* Untergrenzen ziehen Mitte und Mittel nach unten. Solange es keine
+     gibt, steht hier nichts - aber wenn welche dazukommen, darf der
+     Kasten nicht ausgerechnet ueber die Zahl schweigen, mit der er
+     seine eigene Aussage begruendet. */
+  const untenZahl = Object.values(hL).filter(x => x.genau === false).length;
 
   erklaerkastenAuf('Warum stehe ich im unteren Drittel?', `
     <h4>Der kurze Grund</h4>
@@ -15657,7 +15709,9 @@ function nachbarschaftInfoAuf(){
       auftaucht — und damit ist man wieder beim selben Effekt.</p>
 
     <div class="fuss">Die Zahlen oben sind aus den ${mit.length} Nachbarn gerechnet, die selbst
-      Musik machen. Sie sagen etwas über deine Nachbarschaft, nicht über Suno insgesamt.</div>`);
+      Musik machen. Sie sagen etwas über deine Nachbarschaft, nicht über Suno insgesamt.${
+      untenZahl ? ` Bei ${untenZahl} Hirschfaktoren endete der Lauf an der Seitengrenze; sie sind
+      Untergrenzen und ziehen Mitte und Mittel nach unten.` : ''}</div>`);
 }
 
 function hirschAuf(art){
