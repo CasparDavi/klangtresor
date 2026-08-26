@@ -185,6 +185,23 @@ async function ladeDatei(url, ziel) {
     }
   }
 
+  // --- Profil-Titelbild -------------------------------------------
+  // Dasselbe wie beim Avatar: Es gehört dem Konto, nicht dem Programm,
+  // und wird deshalb geholt statt mitgeliefert. Es trägt den Kopf der
+  // Profilseite (Caspar_D, 26.08.2026: „schau dir meine Profilseite auf
+  // Suno an, da gibt es ein Hintergrundbild").
+  const titelUrl = katalog.profil && katalog.profil.cover_photo_url;
+  if (titelUrl){
+    const endung = (titelUrl.match(/\.(webp|jpe?g|png|gif)(\?|$)/i) || [,'webp'])[1].toLowerCase();
+    const ziel = path.join(WURZEL, 'library', 'profilbild.' + endung);
+    const e = await ladeDatei(titelUrl, ziel);
+    zaehler[e]++;
+    if (e === 'geladen' && fs.existsSync(ziel)){
+      bytes += fs.statSync(ziel).size;
+      console.log(`Profil-Titelbild: library/profilbild.${endung}`);
+    }
+  }
+
   // --- Playlist-Cover ---------------------------------------------
   // Caspar_Ds eigene Playlists sollen auch dann noch aussehen wie seine,
   // wenn Suno abgeschaltet ist. Die Cover FREMDER Songs innerhalb der

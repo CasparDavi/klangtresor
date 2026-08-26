@@ -1402,6 +1402,17 @@ const server = http.createServer((req, res) => {
     res.writeHead(404); return res.end();
   }
 
+  /* Das Titelbild des Profils, nach demselben Muster wie /avatar: in
+     library/, Endung gesucht, 404 wenn es fehlt (Caspar_D, 26.08.2026). */
+  if (p === '/profilbild') {
+    const ordner = path.join(WURZEL, 'library');
+    for (const e of ['webp','jpg','jpeg','png','gif']) {
+      const f = path.join(ordner, 'profilbild.' + e);
+      if (fs.existsSync(f)) return liefere(req, res, f);
+    }
+    res.writeHead(404); return res.end();
+  }
+
   // Playlist-Cover. Eigener Pfad, weil sie zu keinem Song gehören.
   if (p.startsWith('/playlistbild/')) {
     const ziel = sicherer(PLAYLISTBILDER, p.slice('/playlistbild/'.length));

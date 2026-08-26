@@ -252,6 +252,25 @@ select,.knopf{
 
 /* Autorenbereich */
 .ichkopf{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+/* DER KOPF MIT TITELBILD (26.08.2026). Das Bild liegt als eigenes <img>
+   darunter, nicht als background-image: So kann onerror es abräumen,
+   wenn es fehlt - eine CSS-Fläche bliebe leer stehen und man wüsste
+   nicht, ob sie leer sein soll.
+
+   Darüber ein Verlauf von unten nach oben: Ohne ihn steht die weisse
+   Schrift auf beliebigen Bildstellen, und bei einem hellen Titelbild
+   ist der Name nicht mehr zu lesen. Der Verlauf ist unten dicht und
+   oben durchsichtig - der Text sitzt unten. */
+.ichkopf.mitbild{position:relative;overflow:hidden;border-radius:12px;
+  padding:22px 18px 18px;min-height:150px;align-items:flex-end}
+.ichkopf .ichgrund{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center;z-index:0;border-radius:0}
+.ichkopf.mitbild::after{content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,.15) 100%)}
+.ichkopf.mitbild > img:not(.ichgrund),
+.ichkopf.mitbild > div{position:relative;z-index:2}
+.ichkopf.mitbild > img:not(.ichgrund){box-shadow:0 2px 12px rgba(0,0,0,.6)}
+
 .ichkopf img{width:96px;height:96px;border-radius:50%;object-fit:cover;
   border:3px solid var(--rand)}
 .ichkopf h2{font-size:26px;margin-bottom:2px}
@@ -9916,7 +9935,15 @@ function profilAuf(){
 
   $('detail').innerHTML = `
     <div class="dwrap">
-      <div class="ichkopf">
+      <!-- DAS TITELBILD ALS GRUND DES KOPFES (Caspar_D, 26.08.2026:
+           „den Profilhintergrund noch als Header-Hintergrund nehmen").
+           Es liegt seit demselben Tag lokal unter /profilbild - Suno
+           liefert es als cover_photo_url im selben Kopf wie den Avatar.
+           Fehlt es, bleibt der Kopf wie vorher: Das Bild wird per
+           onerror abgeräumt, nicht per Rückfallfarbe überdeckt. -->
+      <div class="ichkopf mitbild">
+        <img class="ichgrund" src="/profilbild" alt=""
+             onerror="this.closest('.ichkopf').classList.remove('mitbild'); this.remove();">
         <img src="/avatar" alt="" onerror="this.style.display='none'">
         <div>
           <h2>${esc(p.display_name || '—')}</h2>
@@ -9940,8 +9967,15 @@ function profilAuf(){
           <div class="wert hirsch" title="h Songs mit mindestens h Plays"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Plays</span></div>
         </div>
         <p style="margin-top:13px">
-          <a class="chip" href="${p.profil_link || 'https://suno.com'}"
-             target="_blank" rel="noopener">Profil auf Suno ↗</a>
+          <!-- DER LINK WIRD ZUSAMMENGESETZT (Caspar_D, 26.08.2026: „füge
+               meinen Sunoprofillink aus Suno-Adresse und Alias zusammengesetzt
+               in meine Profilseite mit ein"). Vorher stand hier p.profil_link
+               mit Rückfall auf suno.com — und das Feld gibt es nicht, der
+               Knopf führte also auf Sunos Startseite statt auf das eigene
+               Profil. Der Handle steht im Katalog, mehr braucht es nicht. -->
+          <a class="chip" href="${p.handle ? 'https://suno.com/@' + encodeURIComponent(p.handle) : 'https://suno.com'}"
+             target="_blank" rel="noopener"
+             title="${p.handle ? 'suno.com/@' + p.handle : 'Suno'}">Profil auf Suno ↗</a>
         </p>
       </div>
 
