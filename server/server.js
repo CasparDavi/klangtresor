@@ -1079,6 +1079,15 @@ const server = http.createServer((req, res) => {
       return jsonAntwort(res, zonenSpeicher.daten[id] || null);
     } catch (e) { return jsonAntwort(res, null); }
   }
+  /* Die oeffentlichen Profilzahlen der Leute, die hier vorkommen -
+     geholt von bin/community-profile.js. Dient dem Einordnen der eigenen
+     Zahlen; ohne Vergleich sagt ein Hirschfaktor von 22 nichts.
+     (Caspar_D, 26.08.2026: "wo stehen meine follower, liker".) */
+  if (p === '/api/community-profile') {
+    const f = path.join(WURZEL, 'library', 'community-profile.json');
+    if (!fs.existsSync(f)) return jsonAntwort(res, { stand: null, leute: {} });
+    return liefere(req, res, f);
+  }
   if (p === '/api/toene') {
     const f = path.join(WURZEL, 'library', 'toene.json');
     if (!fs.existsSync(f)) return jsonAntwort(res, { stand: null, songs: {} });

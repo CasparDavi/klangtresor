@@ -305,6 +305,12 @@ select,.knopf{
   border:3px solid var(--rand)}
 .ichkopf h2{font-size:26px;margin-bottom:2px}
 .ichkopf .kennung{color:var(--schwach);font-size:14px}
+/* Die Register der Autorenseite. Dieselben Laschen wie oben im Kopf
+   (.reg), nur mit einer Trennlinie darunter - hier stehen sie mitten
+   auf der Seite und brauchen eine Kante, an der sie sitzen. */
+.profilreg{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--rand)}
+.pregfeld[hidden]{display:none}
+
 .werte{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
 .werte.mithirsch{display:flex;flex-wrap:wrap}.werte.mithirsch .wert{flex:1 1 110px}
 .wertluecke{flex:0 0 18px}   /* die Luecke zwischen Sunos Zahlen und den Hirschfaktoren */
@@ -10666,6 +10672,250 @@ async function profilLaengenFuellen(){
   ziel.appendChild(fuss);
 }
 
+/* ---- DIE NACHBARSCHAFT ----------------------------------------------
+   Caspar_D, 26.08.2026: "wo stehen meine follower, liker, interessante
+   Fragen" und "mit Namen finde ich nicht schlimm, wie machen es Leute,
+   viel Reichweite zu bekommen, da kann man auch ruhig mal deren Musik
+   hören".
+
+   Die Zahlen kommen aus library/community-profile.json (bin/community-
+   profile.js holt sie oeffentlich bei Suno, ohne Anmeldung). 180 Leute,
+   die hier kommentiert, geliked oder gefolgt haben.
+
+   WAS DIE DATEN HERGEBEN, gerechnet ueber die 175 Macher, logarithmisch
+   (sonst reissen die Ausreisser alles - einer folgt 116.081 Menschen):
+
+     Follower <-> folgt          r = +0,86   der staerkste Zusammenhang
+     Follower <-> Plays je Song  r = +0,64
+     Follower <-> Songzahl       r = +0,44
+     Songzahl <-> Plays je Song  r = -0,14   Vielschreiben verduennt NICHT
+
+   Daraus die beiden Bilder:
+
+   1. FOLLOWER GEGEN FOLGT, beide Achsen logarithmisch. Die Diagonale
+      trennt zwei Wege zur Reichweite: Wer darunter liegt, folgt mehr
+      Menschen als ihm folgen - Gegenseitigkeit. Wer darueber liegt, hat
+      Follower ohne Gegenleistung. Das ist keine Wertung, es sind zwei
+      Zahlen gegeneinander; aber es erklaert, warum eine Followerzahl von
+      347 neben Leuten mit halb so vielen Songs klein aussieht.
+
+   2. DIE RANGFOLGE ueber eine waehlbare Groesse, mit der eigenen Marke.
+      Erst dadurch bekommt eine Zahl einen Massstab.
+
+   NAMEN STEHEN DRAN, und jeder Punkt fuehrt zum Profil auf Suno - das
+   Bild ist eine Karte zum Hineinhoeren, keine Bestenliste. Besonders die
+   duenn besetzte Ecke oben links: die, die es ohne Folgen-Karussell
+   geschafft haben.
+-------------------------------------------------------------------- */
+let _nachbarn = null, _nachbarnGebaut = false;
+
+async function profilNachbarnFuellen(){
+  const ziel = $('profilnachbarn'); if (!ziel || _nachbarnGebaut) return;
+  if (_nachbarn === null){
+    try { _nachbarn = await (await fetch('/api/community-profile', { cache: 'no-store' })).json(); }
+    catch (e) { _nachbarn = false; }
+  }
+  const leute = (_nachbarn && _nachbarn.leute) || {};
+  const macher = Object.entries(leute).filter(([, p]) => p && p.songs > 0)
+    .map(([h, p]) => ({ handle: h, ...p }));
+  if (macher.length < 8){
+    ziel.innerHTML = '<h3>Nachbarschaft</h3><p class="fussnote">Noch keine Profile geholt — '
+      + '<code>node bin/community-profile.js</code> sammelt sie.</p>';
+    /* NICHT als gebaut vermerken: Wenn der Abruf scheitert, waere das
+       Panel sonst fuer den Rest der Sitzung gesperrt. Auch _nachbarn
+       zuruecksetzen, damit der naechste Versuch wirklich einer ist. */
+    if (!_nachbarn) _nachbarn = null;
+    return;
+  }
+
+  /* Die eigenen Zahlen aus dem Katalog - dieselbe Quelle wie oben. */
+  const pr = (katalogInfo && katalogInfo.profil) || {};
+  const st = pr.stats || {};
+  const ich = { handle: pr.handle || 'ich', name: pr.display_name || 'Ich', ist: true,
+    /* NUR DIE OEFFENTLICHEN (26.08.2026). Der Katalog hier fuehrt 321
+       Stuecke, Suno zaehlt 248 - der Rest ist privat und fuer niemanden
+       ausser uns sichtbar. Die Nachbarn werden mit ihrer oeffentlichen
+       Zahl gemessen; alles andere waere ein Vergleich mit verschiedenen
+       Massstaeben, und "Plays je Song" faellt dadurch um ein Viertel zu
+       niedrig aus. */
+    songs: alle.filter(s => !s.fremd && s.oeffentlich).length || alle.filter(s => !s.fremd).length,
+    plays: st.play_count__sum || 0, likes: st.upvote_count__sum || 0,
+    follower: st.followers_count || 0, folgt: st.following_count || 0 };
+  const alleL = [...macher, ich];
+
+  ziel.innerHTML = '<h3>Nachbarschaft</h3>';
+  const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
+
+  /* ---- Bild 1: Follower gegen Folgt ------------------------------- */
+  {
+    const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
+    const kopf = document.createElement('div'); kopf.className = 'diatitel';
+    kopf.innerHTML = SYM('herz') + ' ';
+    kopf.appendChild(document.createTextNode('Wie Reichweite zustande kommt'));
+    w.appendChild(kopf);
+    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'folgt', 'Follower', true));
+    const f = document.createElement('div'); f.className = 'fussnote';
+    const oben = alleL.filter(x => !x.ist && x.follower > 2 * Math.max(1, x.folgt)).length;
+    f.textContent = `Beide Achsen logarithmisch. Auf der Linie folgt jemand genau so vielen, `
+      + `wie ihm folgen. Darunter: Reichweite über Gegenseitigkeit — der stärkste Zusammenhang `
+      + `in diesen Daten (r = 0,86). Darüber: Follower ohne Gegenleistung — ${oben} von `
+      + `${macher.length}. Punkt anklicken führt zum Profil auf Suno.`;
+    w.appendChild(f);
+  }
+
+  /* ---- Bild 2: Rangfolge, umschaltbar ----------------------------- */
+  {
+    const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
+    const kopf = document.createElement('div'); kopf.className = 'diatitel';
+    kopf.innerHTML = SYM('bewegung') + ' ';
+    kopf.appendChild(document.createTextNode('Wo ich stehe'));
+    const chips = document.createElement('span'); chips.style.cssText = 'margin-left:auto;display:flex;gap:6px';
+    kopf.appendChild(chips); w.appendChild(kopf);
+    const feld = document.createElement('div'); w.appendChild(feld);
+    const fuss = document.createElement('div'); fuss.className = 'fussnote'; w.appendChild(fuss);
+
+    const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Follower'],
+                ['songs', 'Songs'], ['proSong', 'Plays je Song']];
+    let art = localStorage.getItem('nachbarnGroesse') || 'plays';
+    const wertVon = (x) => art === 'proSong' ? x.plays / Math.max(1, x.songs) : x[art];
+
+    const zeichnen = () => {
+      localStorage.setItem('nachbarnGroesse', art);
+      [...chips.children].forEach(c => c.classList.toggle('an', c.dataset.g === art));
+      const sortiert = [...alleL].sort((a, b) => wertVon(b) - wertVon(a));
+      const rang = sortiert.findIndex(x => x.ist) + 1;
+      feld.innerHTML = '';
+      feld.appendChild(rangBild(sortiert, wertVon));
+      const med = sortiert[Math.floor(sortiert.length / 2)];
+      const nm = GR.find(x => x[0] === art)[1];
+      fuss.textContent = `${nm}: Rang ${rang} von ${sortiert.length}. `
+        + `Du ${Math.round(wertVon(ich)).toLocaleString('de-DE')}, `
+        + `Mitte ${Math.round(wertVon(med)).toLocaleString('de-DE')}, `
+        + `größter ${Math.round(wertVon(sortiert[0])).toLocaleString('de-DE')} (${sortiert[0].name}). `
+        + `Jede Säule ein Mensch, deine in Akzentfarbe.`;
+    };
+    for (const [k, t] of GR){
+      const c = document.createElement('span'); c.className = 'chip'; c.dataset.g = k;
+      c.textContent = t; c.style.cursor = 'pointer';
+      c.onclick = () => { art = k; zeichnen(); };
+      chips.appendChild(c);
+    }
+    zeichnen();
+  }
+
+  const f = document.createElement('div'); f.className = 'fussnote';
+  f.style.marginTop = '16px';
+  f.textContent = `${macher.length} Leute, die hier kommentiert, geliked oder gefolgt haben und `
+    + `selbst Musik machen — dazu ${Object.keys(leute).length - macher.length}, die nur hören. `
+    + `Öffentliche Profilzahlen, Stand ${(_nachbarn.stand || '').slice(0, 10)}.`;
+  ziel.appendChild(f);
+  _nachbarnGebaut = true;
+}
+
+/* Streubild mit logarithmischen Achsen. Punkte sind Kreise (Hausregel 7),
+   der Datenbereich ein schwarzes Rechteck mit runden Ecken (Regel 8). */
+function streuBild(liste, xf, yf, xn, yn, diagonale){
+  const W = 900, H = 380, L = 52, U = 34, R = 12, O = 10;
+  const bx = L, by = O, bw = W - L - R, bh = H - O - U;
+  const lg = (v) => Math.log10(Math.max(1, v));
+  const xs = liste.map(p => lg(p[xf])), ys = liste.map(p => lg(p[yf]));
+  const x0 = 0, x1 = Math.ceil(Math.max(...xs, 1)), y0 = 0, y1 = Math.ceil(Math.max(...ys, 1));
+  const X = (v) => bx + (lg(v) - x0) / (x1 - x0) * bw;
+  const Y = (v) => by + bh - (lg(v) - y0) / (y1 - y0) * bh;
+
+  let sv = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:6px">`;
+  sv += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="rgba(0,0,0,.72)"/>`;
+  /* Zehnerpotenzen als Marken - keine Gitternetzlinien (Regel 8). */
+  for (let e = x0; e <= x1; e++)
+    sv += `<text x="${X(Math.pow(10, e)).toFixed(1)}" y="${H - 12}" font-size="12" fill="#8b8b90" text-anchor="middle">${Math.pow(10, e).toLocaleString('de-DE')}</text>`;
+  for (let e = y0; e <= y1; e++)
+    sv += `<text x="${bx - 8}" y="${(Y(Math.pow(10, e)) + 4).toFixed(1)}" font-size="12" fill="#8b8b90" text-anchor="end">${Math.pow(10, e).toLocaleString('de-DE')}</text>`;
+  sv += `<text x="${bx + bw}" y="${H - 12}" font-size="11" fill="#6c6c72" text-anchor="end">${xn}</text>`;
+  sv += `<text x="${bx + 4}" y="${by + 14}" font-size="11" fill="#6c6c72">${yn}</text>`;
+  if (diagonale){
+    const a = Math.max(x0, y0), b = Math.min(x1, y1);
+    sv += `<line x1="${X(Math.pow(10, a)).toFixed(1)}" y1="${Y(Math.pow(10, a)).toFixed(1)}"`
+       + ` x2="${X(Math.pow(10, b)).toFixed(1)}" y2="${Y(Math.pow(10, b)).toFixed(1)}"`
+       + ` stroke="#ffffff" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.45"/>`;
+  }
+  /* DIE ANDEREN GRAU, NUR DER EIGENE FARBIG (26.08.2026). Hier standen
+     die Nachbarn zuerst in Akzent 2 und der eigene Punkt in Akzent 1 -
+     und bei Covern, deren beide Akzente nah beieinander liegen, war er
+     in der Wolke aus 175 Punkten nicht wiederzufinden. Farbe traegt hier
+     nur eine Aussage: welcher Punkt ich bin. Dieselbe Entscheidung wie
+     in der Rangfolge darunter. */
+  const fl = 'color-mix(in srgb, #8b8b90 45%, transparent)';
+  const kn = 'color-mix(in srgb, #8b8b90 75%, #fff)';
+  for (const p of liste){
+    if (p.ist) continue;
+    sv += `<a href="https://suno.com/@${encodeURIComponent(p.handle)}" target="_blank" rel="noopener">`
+       + `<circle cx="${X(p[xf]).toFixed(1)}" cy="${Y(p[yf]).toFixed(1)}" r="4.5"`
+       + ` fill="${fl}" stroke="${kn}" stroke-width="1">`
+       + `<title>${esc(p.name)} — ${p.songs} Songs, ${p.plays.toLocaleString('de-DE')} Plays, `
+       + `${p.follower.toLocaleString('de-DE')} Follower, folgt ${p.folgt.toLocaleString('de-DE')}</title>`
+       + `</circle></a>`;
+  }
+  /* DER EIGENE PUNKT ZULETZT, GROESSER UND MIT RING (26.08.2026). Bei
+     176 Punkten im Bild geht ein siebter Bildpunkt unter, auch in
+     Akzentfarbe - im ersten Wurf habe ich ihn selbst nicht wiedergefunden.
+     Ein Halo darum hebt ihn heraus, ohne die Wolke zu verdecken; die
+     Beschriftung sagt endgueltig, wo man steht. */
+  const ich = liste.find(p => p.ist);
+  if (ich){
+    const cx = X(ich[xf]), cy = Y(ich[yf]);
+    sv += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="14" fill="none"`
+       + ` stroke="${DIA_1}" stroke-width="1.5" opacity="0.45"/>`;
+    sv += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6.5"`
+       + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5">`
+       + `<title>Du — ${ich.follower.toLocaleString('de-DE')} Follower, folgt ${ich.folgt.toLocaleString('de-DE')}</title></circle>`;
+    /* Nach links, wenn rechts kein Platz mehr ist. */
+    const rechts = cx < bx + bw - 90;
+    sv += `<text x="${(cx + (rechts ? 20 : -20)).toFixed(1)}" y="${(cy + 4).toFixed(1)}"`
+       + ` font-size="12" font-weight="700" fill="${DIA_1}" text-anchor="${rechts ? 'start' : 'end'}">du</text>`;
+  }
+  sv += '</svg>';
+  const d = document.createElement('div'); d.innerHTML = sv; return d;
+}
+
+/* Die Rangfolge als Saeulenreihe: jede Saeule ein Mensch, die eigene
+   farbig. Hausform - gedaempfte Flaeche, Topline oben. */
+function rangBild(sortiert, wertVon){
+  const W = 900, H = 170, O = 6, U = 4;
+  const n = sortiert.length, bw = W / n;
+  const max = wertVon(sortiert[0]) || 1;
+  const hoch = (v) => Math.max(1, Math.sqrt(Math.max(0, v) / max) * (H - O - U));   /* Wurzel: sonst ist alles ausser der Spitze ein Strich */
+  let sv = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:${H}px;display:block;margin-top:6px">`;
+  sv += `<rect x="0" y="0" width="${W}" height="${H}" rx="6" fill="rgba(0,0,0,.72)"/>`;
+  sortiert.forEach((p, i) => {
+    const h = hoch(wertVon(p)), y = H - U - h, x = i * bw;
+    /* Die eigene Saeule in Akzentfarbe, die anderen grau - bei 176
+       Saeulen von je fuenf Bildpunkten Breite ist Farbe das Einzige,
+       was sie auffindbar macht. */
+    const f = p.ist ? DIA_1 : '#8b8b90';
+    sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="${h.toFixed(1)}"`
+       + ` style="fill:${diaFlaeche(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}">`
+       + `<title>${p.ist ? 'Du' : esc(p.name)} — ${Math.round(wertVon(p)).toLocaleString('de-DE')}</title></rect>`;
+    sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="1"`
+       + ` style="fill:${diaTopline(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}" pointer-events="none"/>`;
+  });
+  sv += '</svg>';
+  const d = document.createElement('div'); d.innerHTML = sv; return d;
+}
+
+/* Zwischen den Registern der Autorenseite umschalten. Die Wahl bleibt
+   erhalten - wer die Community ansieht und einen Song anspielt, will
+   beim Zurueckkommen wieder dort stehen. */
+function profilRegister(welches){
+  try { localStorage.setItem('profilRegister', welches); } catch (e) {}
+  document.querySelectorAll('.profilreg .reg').forEach(b =>
+    b.classList.toggle('an', b.dataset.preg === welches));
+  document.querySelectorAll('.pregfeld').forEach(f =>
+    f.hidden = f.dataset.preg !== welches);
+  /* Die Nachbarschaft wird erst beim ersten Hinsehen gebaut - sie liest
+     eine eigene Datei und soll den Seitenaufbau nicht aufhalten. */
+  if (welches === 'community' && typeof profilNachbarnFuellen === 'function') profilNachbarnFuellen();
+}
+
 /* ---- WOERTER JE STUECK ----------------------------------------------
    Caspar_D, 26.08.2026: "Wörter hatten wir noch, leg das mals neben die
    tonarten."
@@ -11101,6 +11351,18 @@ function profilAuf(){
         </p>
       </div>
 
+      <!-- ZWEI REGISTER (Caspar_D, 26.08.2026: "registerlasche in user,
+           meine Daten / meine Community"). Der Kopf und die Suno-Zahlen
+           bleiben darueber stehen - sie gelten fuer beides. Darunter
+           trennt sich, was den eigenen Bestand beschreibt, von dem, was
+           ihn EINORDNET: Ohne Vergleich sagt ein Hirschfaktor von 22
+           nichts. -->
+      <div class="profilreg">
+        <button class="reg an" data-preg="daten" onclick="profilRegister('daten')">Meine Daten</button>
+        <button class="reg" data-preg="community" onclick="profilRegister('community')">Meine Community</button>
+      </div>
+
+      <div class="pregfeld" data-preg="daten">
       <div class="block" id="profilzahlen"></div>
       <div class="block" id="profillaengen"></div>
       <!-- TONARTEN UND TEXT IN EINEM PANEL (Caspar_D, 26.08.2026: "mach
@@ -11115,11 +11377,6 @@ function profilAuf(){
         </div>
       </div>
       <div class="block" id="profilkarussell"></div>
-
-      <div class="block" id="profilcommunity">
-        <h3>Community</h3>
-        <p class="fussnote">Lade …</p>
-      </div>
 
       <div class="block">
         <h3>In diesem Archiv</h3>
@@ -11157,6 +11414,15 @@ function profilAuf(){
 Die Musik entstand bei Suno. Dieses Archiv läuft ausschließlich im
 lokalen Netz und ist für niemanden von außen erreichbar.</pre>
       </div>
+      </div><!-- /Register: Meine Daten -->
+
+      <div class="pregfeld" data-preg="community" hidden>
+        <div class="block" id="profilcommunity">
+          <h3>Community</h3>
+          <p class="fussnote">Lade …</p>
+        </div>
+        <div class="block" id="profilnachbarn"></div>
+      </div><!-- /Register: Meine Community -->
     </div>`;
 
   $('detail').classList.add('auf');
@@ -11174,6 +11440,14 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
   profilLaengenFuellen();
   profilTonartenFuellen();
   profilWoerterFuellen();
+  /* profilAuf() schreibt die ganze Seite neu - das Nachbarschaftsfeld
+     ist danach ein FRISCHES, leeres Element. Ohne dieses Zuruecksetzen
+     hielte das Merkzeichen die Funktion fuer erledigt, und beim zweiten
+     Oeffnen bliebe das Panel leer (26.08.2026). Die geholten Zahlen
+     bleiben im Speicher, nur der Bauzustand faellt. */
+  _nachbarnGebaut = false;
+  { let r = 'daten'; try { r = localStorage.getItem('profilRegister') || 'daten'; } catch (e) {}
+    profilRegister(r === 'community' ? 'community' : 'daten'); }
   profilCommunityFuellen();
 }
 
