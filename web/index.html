@@ -14381,6 +14381,70 @@ function werZu(){ document.getElementById('wer').classList.remove('auf'); }
    waere leichter zu schreiben und schlechter zu glauben: Wer die
    Tabelle sieht und die Zahl daneben, kann es nachzaehlen. Gezeigt
    werden die Plaetze um h herum - genau dort, wo es kippt. */
+/* DIE RANGFOLGE ALS BILD (Caspar_D, 26.08.2026: "magst du noch das
+   rangfolge like bzw rangfolge play diagramm mit einbeziehen").
+
+   Die klassische Darstellung des h-Index: Werte absteigend gegen den
+   Rang, dazu die Diagonale y = x. Wo die Kurve sie unterschreitet,
+   steht h - und das Quadrat h x h darunter zeigt, was die Zahl
+   eigentlich behauptet.
+
+   BEIDE ACHSEN GLEICH SKALIERT, sonst ist die Diagonale keine. Gezeigt
+   wird ein Ausschnitt bis etwa 1,6 h: Ueber den ganzen Bestand (321
+   Songs, Werte bis 1200) faellt die Kurve so steil, dass die Kippstelle
+   in der Ecke verschwindet. Der Ausschnitt steht in der Fussnote, damit
+   niemand ihn fuer den ganzen Bestand haelt.
+
+   Hausform (docs/HAUSREGELN.md): schwarzer Datenbereich mit runden
+   Ecken, Saeulen als gedaempfte Flaeche mit aufgehellter Topline oben,
+   Beschriftung 12 px. Die Diagonale ist gestrichelt - sie ist eine
+   Hilfslinie, keine Messung. */
+function hirschBild(werte, h, wort){
+  const G = Math.max(4, Math.min(werte.length, Math.ceil(h * 1.6) || 8));
+  const W = 340, H = 340, L = 34, U = 26, R = 8, O = 8;      /* Rand links/unten */
+  const bx = L, by = O, bw = W - L - R, bh = H - O - U;       /* Datenbereich */
+  const x = (rang) => bx + (rang - 0.5) / G * bw;             /* Saeulenmitte */
+  const y = (v) => by + bh - Math.min(v, G) / G * bh;
+  const breite = Math.max(1.2, bw / G - 1.2);
+  const f1 = 'var(--titel-a,#f97b14)', f2 = 'var(--titel-b,#e31c79)';
+  const flaeche = `color-mix(in srgb, ${f1} 66%, transparent)`;
+  const kante   = `color-mix(in srgb, ${f1} 75%, #fff)`;
+
+  let sv = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block;margin:2px auto 4px">`;
+  sv += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="6" fill="rgba(0,0,0,.72)"/>`;
+
+  /* Das Quadrat h x h - was die Zahl behauptet, als Flaeche. */
+  if (h > 0) sv += `<rect x="${bx}" y="${y(h).toFixed(1)}" width="${(x(h) + breite / 2 - bx).toFixed(1)}"`
+    + ` height="${(by + bh - y(h)).toFixed(1)}" fill="${f2}" opacity="0.13"/>`
+    + `<rect x="${bx}" y="${y(h).toFixed(1)}" width="${(x(h) + breite / 2 - bx).toFixed(1)}"`
+    + ` height="${(by + bh - y(h)).toFixed(1)}" fill="none" stroke="${f2}" stroke-width="1" opacity="0.55"/>`;
+
+  /* Die Saeulen: Flaeche gedaempft, Topline oben in voller Staerke. */
+  for (let r = 1; r <= G; r++){
+    const v = Math.min(werte[r - 1] || 0, G);
+    if (v <= 0) continue;
+    const yo = y(v), hh = by + bh - yo;
+    sv += `<rect x="${(x(r) - breite / 2).toFixed(1)}" y="${yo.toFixed(1)}" width="${breite.toFixed(1)}" height="${hh.toFixed(1)}" fill="${flaeche}"/>`;
+    sv += `<rect x="${(x(r) - breite / 2).toFixed(1)}" y="${yo.toFixed(1)}" width="${breite.toFixed(1)}" height="1" fill="${kante}"/>`;
+  }
+
+  /* Die Diagonale "so viele wie die Platznummer". */
+  sv += `<line x1="${x(1).toFixed(1)}" y1="${y(1).toFixed(1)}" x2="${x(G).toFixed(1)}" y2="${y(G).toFixed(1)}"`
+     + ` stroke="#ffffff" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.5"/>`;
+
+  /* Die Kippstelle: ein Ring auf dem Schnittpunkt. */
+  if (h > 0) sv += `<circle cx="${x(h).toFixed(1)}" cy="${y(h).toFixed(1)}" r="4" fill="none" stroke="${kante}" stroke-width="2"/>`;
+
+  /* Achsen: nur h und der Rand, mehr braucht es nicht. */
+  const zahl = (v) => `<text font-size="12" fill="#8b8b90"`;
+  sv += `${zahl()} x="${(bx - 7)}" y="${(y(h) + 4).toFixed(1)}" text-anchor="end">${h}</text>`;
+  sv += `${zahl()} x="${(bx - 7)}" y="${(by + bh).toFixed(1)}" text-anchor="end">0</text>`;
+  sv += `${zahl()} x="${x(h).toFixed(1)}" y="${H - 9}" text-anchor="middle" fill="${f1}">${h}</text>`;
+  sv += `${zahl()} x="${x(G).toFixed(1)}" y="${H - 9}" text-anchor="end">${G}</text>`;
+  sv += `<text font-size="11" fill="#6c6c72" x="${bx}" y="${H - 9}">Platz</text>`;
+  sv += '</svg>';
+  return sv;
+}
 function hirschZu(){ document.getElementById('hirschinfo').classList.remove('auf'); }
 function hirschAuf(art){
   const eigene = alle.filter(s => !s.fremd);
@@ -14415,6 +14479,14 @@ function hirschAuf(art){
     <p>Auf Platz ${h} stehen noch ${zahl(werte[h - 1] || 0)} ${wort} — es gibt also
       ${h} Songs mit mindestens ${h}. Weiter unten bricht die Bedingung.
       <b>Hirschfaktor ${h}.</b></p>
+
+    <h4>Als Bild</h4>
+    ${hirschBild(werte, h, wort)}
+    <p class="leise">Die Songs stehen nach ${wort} sortiert nebeneinander, der beste links.
+      Die Diagonale ist die Linie „so viele ${wort} wie Platznummer". Wo die Säulen unter
+      sie fallen, ist Schluss — das eingefasste Quadrat ist ${h} × ${h}, und seine
+      Kantenlänge ist der Hirschfaktor. Ein einzelner sehr hoher Balken macht das Quadrat
+      nicht größer; nur wenn viele zugleich wachsen, passt ein größeres hinein.</p>
 
     <h4>Wofür er gut ist</h4>
     <p>Die beiden naheliegenden Kennzahlen taugen beide nicht.</p>
