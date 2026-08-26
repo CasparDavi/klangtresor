@@ -2110,6 +2110,10 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #hirschinhalt .fuss{font-size:11px;line-height:1.55;color:var(--schwach);
   padding-top:12px;margin-top:16px;border-top:1px solid #ffffff12}
 /* Das (i) neben der Zahl: leise, bis man hinzeigt. */
+h3 .infoknopf{background:none;border:none;padding:0;margin-left:6px;
+  color:var(--schwach);cursor:pointer;line-height:0;vertical-align:-2px}
+h3 .infoknopf:hover{color:var(--text)}
+h3 .infoknopf .ico{width:14px;height:14px}
 .wert .infoknopf{background:none;border:none;padding:0;margin-left:5px;
   color:var(--schwach);cursor:pointer;line-height:0;vertical-align:-2px}
 .wert .infoknopf:hover{color:var(--text)}
@@ -2842,7 +2846,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 <div id="hirschinfo" onclick="if(event.target===this)hirschZu()">
   <div id="hirschkasten">
     <div class="werkopf">
-      <h3>Der Hirschfaktor</h3>
+      <h3 id="hirschtitel">Der Hirschfaktor</h3>
       <button type="button" onclick="hirschZu()" title="Schließen">✕</button>
     </div>
     <div class="werinhalt" id="hirschinhalt"></div>
@@ -10907,7 +10911,9 @@ async function profilNachbarnFuellen(){
      mit denen man sie verbindet, laengst aus dem Bild. Im Register
      bleibt es bei rund 550, und mit den festklebenden Listen sieht man
      beides gleichzeitig. */
-  ziel.innerHTML = '<h3>Nachbarschaft</h3>';
+  ziel.innerHTML = '<h3>Nachbarschaft'
+    + `<button type="button" class="infoknopf" onclick="nachbarschaftInfoAuf()"`
+    + ` title="Warum stehe ich im unteren Drittel?">${SYM('info')}</button></h3>`;
   const nbreg = document.createElement('div'); nbreg.className = 'profilreg nbreg';
   ziel.appendChild(nbreg);
   const feld1 = document.createElement('div'); feld1.className = 'nbfeld';
@@ -15488,6 +15494,86 @@ function hirschBild(werte, h, wort){
   return sv;
 }
 function hirschZu(){ document.getElementById('hirschinfo').classList.remove('auf'); }
+/* Derselbe Kasten, anderer Inhalt: Der Erklaerkasten wird seit dem
+   26.08.2026 von zwei Stellen benutzt, deshalb wandert der Titel mit. */
+function erklaerkastenAuf(titel, html){
+  document.getElementById('hirschtitel').textContent = titel;
+  document.getElementById('hirschinhalt').innerHTML = html;
+  document.getElementById('hirschinfo').classList.add('auf');
+}
+
+/* ---- WARUM STEHE ICH IM UNTEREN DRITTEL? ---------------------------
+   Caspar_D, 26.08.2026: "ist es statistisch gesetzmässig das jeder in
+   seiner Community eher im unteren drittel steht" - und dann: "ja bitte,
+   mach wieder ein (i) Feld".
+
+   Die Antwort ist ja, und der Effekt hat einen Namen. Er gehoert ins
+   Panel, weil das Bild sonst eine Einordnung behauptet, die es so nicht
+   leisten kann: Eine Community ist keine Zufallsstichprobe.
+
+   Die Zahlen rechnet der Kasten aus den vorliegenden Daten - so steht
+   nichts Erfundenes darin, und die Schiefe laesst sich mit eigenen
+   Augen nachvollziehen. */
+function nachbarschaftInfoAuf(){
+  const leute = (_nachbarn && _nachbarn.leute) || {};
+  const hL = (_nbHirsch && _nbHirsch.leute) || {};
+  const mit = Object.values(leute).filter(p => p && p.songs > 0);
+  const med = (w) => { const a = [...w].sort((x, y) => x - y); const m = a.length >> 1;
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
+  const mittel = (w) => w.reduce((a, b) => a + b, 0) / Math.max(1, w.length);
+  const zeile = (name, w) => {
+    const M = med(w), D = mittel(w);
+    const sortiert = [...w].sort((a, b) => a - b);
+    const oben = sortiert.slice(Math.floor(0.9 * sortiert.length));
+    const anteil = 100 * oben.reduce((a, b) => a + b, 0) / Math.max(1, sortiert.reduce((a, b) => a + b, 0));
+    return `<tr><td>${name}</td><td>${Math.round(M).toLocaleString('de-DE')}</td>`
+      + `<td>${Math.round(D).toLocaleString('de-DE')}</td>`
+      + `<td><b>${(D / Math.max(1, M)).toFixed(2).replace('.', ',')}</b></td>`
+      + `<td>${Math.round(anteil)} %</td></tr>`;
+  };
+  const tab = zeile('Plays', mit.map(p => p.plays))
+            + zeile('Anhänger', mit.map(p => p.follower))
+            + zeile('Likes', mit.map(p => p.likes))
+            + zeile('Songs', mit.map(p => p.songs))
+            + (Object.keys(hL).length > 8 ? zeile('Hirschfaktor', Object.values(hL).map(p => p.h)) : '');
+
+  erklaerkastenAuf('Warum stehe ich im unteren Drittel?', `
+    <h4>Der kurze Grund</h4>
+    <div class="regel">Deine Community ist <b>keine Zufallsstichprobe</b>. Sie besteht aus
+      denen, die dich gefunden haben — und gefunden wird man vor allem von den Sichtbaren.</div>
+    <p>Das ist ein bekannter Effekt, das <i>Freundschaftsparadoxon</i>: <b>Deine Freunde haben im
+      Durchschnitt mehr Freunde als du.</b> Das gilt fast immer und für fast jeden, und es ist kein
+      Urteil, sondern eine Folge davon, wie Nachbarschaften entstehen: Wer dreitausend Menschen
+      folgt, taucht in dreitausend Nachbarschaften auf; wer dreißig folgt, in dreißig. Die Großen
+      sind in deiner Liste also hundertfach überrepräsentiert.</p>
+    <p class="leise">Scott Feld hat es 1991 beschrieben; Eom und Jo haben 2014 gezeigt, daß es
+      nicht nur für die Zahl der Verbindungen gilt, sondern für fast jede damit
+      zusammenhängende Größe — bei Wissenschaftlern für Zitate, hier für Plays und Likes.</p>
+
+    <h4>In deinen Daten messbar</h4>
+    <p>Je weiter das Mittel über dem Median liegt, desto stärker beherrschen wenige Große die
+      Zahlen — und desto mehr verzerrt der Auswahleffekt:</p>
+    <table><tr><th></th><th>Mitte</th><th>Mittel</th><th>Verhältnis</th><th>oberste 10 % halten</th></tr>
+      ${tab}</table>
+
+    <h4>Warum der Hirschfaktor die ehrlichste Zahl ist</h4>
+    <p>Er ist mit Abstand die am wenigsten schiefe Größe. Genau das ist seine Stärke: Ein
+      einzelner Song, der einschlägt, hebt ihn nicht — dafür bräuchte es viele Songs zugleich.
+      Damit ist er auch am wenigsten von diesem Effekt betroffen. Bei den Plays wäre dein Rang
+      stark verzerrt, beim Hirschfaktor am wenigsten.</p>
+
+    <h4>Was das für die Bilder heißt</h4>
+    <p><b>„Ich stehe im unteren Drittel meiner Community" ist für fast jeden wahr</b> — auch für
+      Leute, die weit über dem Durchschnitt aller Nutzer liegen. Man vergleicht sich systematisch
+      mit den Sichtbarsten.</p>
+    <p>Wollte man es sauber messen, bräuchte man eine Zufallsstichprobe aller Suno-Nutzer. Die
+      bekommt man über diesen Weg nicht: Man findet einen Menschen nur, wenn er irgendwo
+      auftaucht — und damit ist man wieder beim selben Effekt.</p>
+
+    <div class="fuss">Die Zahlen oben sind aus den ${mit.length} Nachbarn gerechnet, die selbst
+      Musik machen. Sie sagen etwas über deine Nachbarschaft, nicht über Suno insgesamt.</div>`);
+}
+
 function hirschAuf(art){
   const eigene = alle.filter(s => !s.fremd);
   const wort = art === 'likes' ? 'Likes' : art === 'plays' ? 'Plays' : 'Kommentare';
@@ -15506,6 +15592,7 @@ function hirschAuf(art){
   const summe = werte.reduce((a, b) => a + b, 0);
   const zahl = (n) => n.toLocaleString('de-DE');
 
+  document.getElementById('hirschtitel').textContent = 'Der Hirschfaktor';
   document.getElementById('hirschinhalt').innerHTML = `
     <h4>Was er ist</h4>
     <div class="regel">Der Hirschfaktor ist die größte Zahl <b>h</b>, für die gilt:
