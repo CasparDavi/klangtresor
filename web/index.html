@@ -370,9 +370,15 @@ select,.knopf{
 .bz.klick{cursor:pointer}.bz.klick:hover .bn{color:var(--text);text-decoration:underline}
 .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--schwach)}
 .bb{height:9px;overflow:hidden;position:relative}.bb i{display:block;height:100%;border-radius:1px}   /* keine Hintergrundspur: nur Daten-Tinte */
-.dia.stufig .bb i:first-child{opacity:.4}                        /* gesamt gedaempft - im ganzen Diagramm, sobald es Stufen gibt */
+/* ZWEI DAEMPFUNGEN MULTIPLIZIEREN SICH (Hausregel). Seit die Flaeche
+   selbst auf SPUR_DECKUNG 0,66 steht, wirken diese Werte auf eine schon
+   gedaempfte Flaeche. Sie sind am 26.08.2026 nachgezogen worden, damit
+   die Stufen dieselbe Staffelung behalten wie vorher: 0,55 x 0,66 = 0,36
+   (vorher 0,40), 0,83 x 0,66 = 0,55 (vorher 0,70), 1 x 0,66 = 0,66
+   (vorher 1,00 - eine volle Flaeche, die es in der Hausform nicht gibt). */
+.dia.stufig .bb i:first-child{opacity:.55}                       /* gesamt gedaempft - im ganzen Diagramm, sobald es Stufen gibt */
 .bb i.w4,.bb i.w1{position:absolute;left:0;top:0}
-.bb i.w4{opacity:.7}.bb i.w1{opacity:1}                          /* 4 Wochen heller, 1 Woche voll */
+.bb i.w4{opacity:.83}.bb i.w1{opacity:1}                         /* 4 Wochen heller, 1 Woche am hellsten */
 .bv{text-align:right;font-variant-numeric:tabular-nums;color:var(--schwach)}
 .sr{display:flex;gap:4px;align-items:flex-end;height:110px;padding-top:14px}
 .sz{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;height:100%;position:relative}
@@ -391,14 +397,19 @@ select,.knopf{
    Wolke." Bei einer Flaeche auf einer Grundlinie liegt die Kontur nur
    oben - das gilt ausdruecklich auch fuer Saeulen.
 
-   REGEL 13 fuer Deckungs-Stapel: „Verlauf je Schicht (Aussenkante
-   intensiv -> Basis dunkel) + Haarlinien auf den Kanten." Genau das
-   loest hier ein Problem, das vorher eine Notloesung hatte: Akzent 1
-   und 2 stammen aus DERSELBEN Coverpalette und liegen oft dicht
-   beieinander. Mit Verlauf und Topline traegt jede Lage ihre eigene
-   Kante, auch wenn die Farben sich aehneln - dafuer brauchte es
-   vorher eine schwarze Trennlinie und einen Satz in der Fussnote,
-   der die Stapelreihenfolge aufzaehlte. Beides ist jetzt ueberfluessig.
+   Das loest zugleich ein Problem, das vorher eine Notloesung hatte:
+   Akzent 1 und 2 stammen aus DERSELBEN Coverpalette und sind manchmal
+   sogar identisch. Weil jede Lage ihre eigene Topline in voller
+   Staerke traegt, hat sie eine sichtbare Kante, auch wenn die Farben
+   gleich sind - dafuer brauchte es vorher eine schwarze Trennlinie
+   und einen Satz in der Fussnote, der die Stapelreihenfolge
+   aufzaehlte. Beides ist ueberfluessig.
+
+   KEIN FARBVERLAUF in den Saeulen (Caspar_D, 26.08.2026: „die saeulen
+   sind immer gedaempft und tragen eine high intensity top line"). Den
+   Verlauf schreibt Regel 13 nur fuer Deckungs-Stapel vor - Flaechen,
+   die einander UEBERLAGERN und deren Daempfungen sich multiplizieren.
+   Gestapelte Saeulensegmente liegen nebeneinander, nicht uebereinander.
 
    REGEL 8: „Schwarzer Datenbereich, keine Gitternetzlinien" - ein
    Rect mit runden Ecken traegt die Daten. Deshalb liegt der Grund
@@ -9577,6 +9588,45 @@ async function detailAuf(id){
    weg - zwei Akzente sind vorgegeben, ein dritter waere wieder
    erfunden. */
 const DIA_1 = 'var(--titel-a,#f97b14)', DIA_2 = 'var(--titel-b,#e31c79)';
+
+/* ---- DIE HAUSFORM DER DATENFLAECHEN -------------------------------
+   docs/HAUSREGELN.md, „Fläche gedämpft, Kontur in voller Stärke":
+   Jede Datenform besteht aus einer halb deckenden FLAECHE und darueber
+   einer KONTUR von 1 px, der TOPLINE, in derselben Farbe. „Erst durch
+   sie liest man einen Verlauf als Linie statt als Wolke." Sie liegt
+   IMMER OBEN - bei stehenden Saeulen wie bei liegenden Balken
+   (Caspar_D, 26.08.2026: „das ding heisst top line, und genau deswegen
+   gehoert die immer on top"). Nicht an der jeweiligen Datenkante: Der
+   Name ist die Regel, und alle Flaechen im Haus tragen dieselbe Kante.
+
+   SPUR_DECKUNG 0,66 ist der Hausstandard.
+
+   Die Topline wird AUFGEHELLT (Caspar_D, 26.08.2026: „wenn die Flaeche
+   durch helligkeit codiert wird, dann die topline noch etwas
+   aufhellen"). Die Regel verlangt zwischen Flaeche und Kontur einen
+   Abstand von mindestens Faktor zwei; Flaeche 0,66 gegen Kontur 1,0
+   ergaebe nur 1,5. Ein Viertel Weiss hebt sie darueber, ohne den
+   Farbton zu verlassen - „bei rot muss die topline rot sein" gilt
+   weiter, sie wird nur heller.
+
+   Wo die Flaeche selbst Helligkeit codiert (die Kachelzeilen, deren
+   Deckung den Wert traegt), folgt die Topline mit: doppelte Deckung,
+   gedeckelt bei voll. Sonst behauptete eine volle Kante ueber einer
+   fast leeren Flaeche einen Wert, den es nicht gibt.
+
+   Bis zum 26.08.2026 zeichneten die Diagramme der Autorenseite ihre
+   Flaechen VOLL deckend und ohne Kontur - sie standen als einzige
+   ausserhalb der Formsprache. (Caspar_D: „zieh das mit der topline mit
+   allen diagrammen durch.")
+------------------------------------------------------------------- */
+const SPUR_DECKUNG = 0.66;
+const diaFlaeche = (f, deckung) =>
+  `color-mix(in srgb, ${f} ${Math.round((deckung == null ? SPUR_DECKUNG : deckung) * 100)}%, transparent)`;
+const diaTopline = (f, deckung) => {
+  const hell = `color-mix(in srgb, ${f} 75%, #fff)`;
+  const d = Math.min(1, (deckung == null ? SPUR_DECKUNG : deckung) * 2);
+  return d >= 1 ? hell : `color-mix(in srgb, ${hell} ${Math.round(d * 100)}%, transparent)`;
+};
 function diaTitel(t, hinweis, icon){
   const h = document.createElement('div'); h.className = 'diatitel';
   if (icon) h.innerHTML = SYM(icon) + ' ';
@@ -9600,14 +9650,31 @@ function balken(titel, eintraege, farbe, hinweis, icon){
     const z = document.createElement('div'); z.className = 'bz' + (e.klick ? ' klick' : '');
     const n = document.createElement('span'); n.className = 'bn'; n.textContent = e.name; if (e.titel) n.title = e.titel;
     const b = document.createElement('span'); b.className = 'bb';
-    const f = document.createElement('i'); f.style.width = (100 * e.n / max).toFixed(1) + '%'; f.style.background = farbe; b.appendChild(f);
+    /* Hausform: gedaempfte Flaeche, darauf die Topline. OBEN, auch beim
+       liegenden Balken (Caspar_D, 26.08.2026: „das ding heisst top line,
+       und genau deswegen gehoert die immer on top, und nicht nach
+       rechts"). Hier stand kurz eine Kante rechts, mit dem Argument, das
+       sei beim liegenden Balken die Datenkante. Der Name ist die Regel:
+       Sie liegt oben, damit alle Flaechen im Haus dieselbe Kante tragen
+       und man sie nicht je Diagrammart neu suchen muss. */
+    const f = document.createElement('i'); f.style.width = (100 * e.n / max).toFixed(1) + '%';
+    f.style.background = diaFlaeche(farbe);
+    f.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farbe)}`;
+    b.appendChild(f);
     /* Anteile der juengeren Zeit, uebereinandergelegt: das Kleinere
        steckt im Groesseren, also liegt es davor - 4 Wochen heller,
        1 Woche am hellsten. (Caspar_D, 20.08.2026) */
     if (e.teile){
       const [w4, w1] = e.teile;
-      if (w4){ const t = document.createElement('i'); t.className = 'w4'; t.style.width = (100 * w4 / max).toFixed(1) + '%'; t.style.background = farbe; t.title = `${w4} in den letzten 4 Wochen`; b.appendChild(t); }
-      if (w1){ const t = document.createElement('i'); t.className = 'w1'; t.style.width = (100 * w1 / max).toFixed(1) + '%'; t.style.background = farbe; t.title = `${w1} in der letzten Woche`; b.appendChild(t); }
+      const stufe = (kl, wert, hinweis) => {
+        const t = document.createElement('i'); t.className = kl;
+        t.style.width = (100 * wert / max).toFixed(1) + '%';
+        t.style.background = diaFlaeche(farbe);
+        t.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farbe)}`;
+        t.title = hinweis; b.appendChild(t);
+      };
+      if (w4) stufe('w4', w4, `${w4} in den letzten 4 Wochen`);
+      if (w1) stufe('w1', w1, `${w1} in der letzten Woche`);
     }
     const v = document.createElement('span'); v.className = 'bv'; v.textContent = e.anzeige != null ? e.anzeige : e.n;
     z.append(n, b, v);
@@ -9617,23 +9684,12 @@ function balken(titel, eintraege, farbe, hinweis, icon){
   if (w._fuss) w.appendChild(w._fuss);
   return w;
 }
-/* eintraege in fester Reihenfolge (Mo..So, Jan..Dez) */
-function saeulen(titel, eintraege, farbe, hinweis){
-  const w = document.createElement('div'); w.className = 'dia';
-  w.appendChild(diaTitel(titel, hinweis));
-  const max = Math.max(...eintraege.map(e => e.n)) || 1;
-  const r = document.createElement('div'); r.className = 'sr';
-  for (const e of eintraege){
-    const z = document.createElement('div'); z.className = 'sz';
-    const v = document.createElement('span'); v.className = 'sv'; v.textContent = e.n || '';
-    const b = document.createElement('span'); b.className = 'sb';
-    const f = document.createElement('i'); f.style.height = (100 * e.n / max).toFixed(1) + '%'; f.style.background = farbe; b.appendChild(f);
-    const n = document.createElement('span'); n.className = 'sn'; n.textContent = e.name;
-    z.append(v, b, n); r.appendChild(z);
-  }
-  w.appendChild(r);
-  return w;
-}
+/* saeulen() stand hier: senkrechte Saeulen in fester Reihenfolge
+   (Mo..So, Jan..Dez). Am 26.08.2026 geloescht - die Funktion wurde von
+   niemandem aufgerufen. Wer eine Saeulenreihe braucht, nimmt
+   zeitsaeulen() (SVG, fuer Zeitachsen) oder die Reihe aus
+   profilTonartenFuellen() (gestapelt, mit Umschalter).
+   (Caspar_D: „wir legen nichts mehr tot ohne den code mitzuloeschen.") */
 
 /* Kachelreihen mit Helligkeit - fuer Zeitklassen, die sich wiederholen
    (Wochentag, Stunde, Jahreszeit, Monat) und fuer Modelle. Die
@@ -9653,7 +9709,22 @@ function kachelzeile(gruppen, farbe){
     for (const e of g.eintraege){
       const z = document.createElement('div'); z.className = 'kz';
       const k = document.createElement('span'); k.className = 'kk';
-      k.style.background = g.farbe || farbe; k.style.opacity = e.n ? (0.18 + 0.82 * e.n / max).toFixed(2) : '0.06';
+      /* HIER CODIERT DIE FLAECHE SELBST DEN WERT. Die Deckung steckt
+         deshalb in der Farbe, nicht mehr in style.opacity: opacity
+         daempft das ganze Element und haette die Topline gleich mit
+         verschluckt. Die Topline folgt der Flaeche mit doppelter
+         Deckung (diaTopline), damit eine fast leere Kachel keine
+         volle Kante bekommt. */
+      const f2 = g.farbe || farbe;
+      /* Die Spanne endet bei SPUR_DECKUNG, nicht bei voller Deckung:
+         Eine volle Flaeche gibt es in der Hausform nicht, und ueber ihr
+         bekaeme die Topline den geforderten Abstand von Faktor zwei
+         nicht mehr (nachgemessen: 1,42). Das Verhaeltnis hellste zu
+         blasseste Kachel bleibt dabei erhalten - vorher 1,00/0,18 =
+         5,6, jetzt 0,66/0,12 = 5,5. */
+      const deck = e.n ? 0.12 + (SPUR_DECKUNG - 0.12) * e.n / max : 0.05;
+      k.style.background = diaFlaeche(f2, deck);
+      k.style.boxShadow  = `inset 0 1px 0 ${diaTopline(f2, deck)}`;
       k.textContent = e.n || ''; k.title = `${e.titel || e.name || ''}: ${e.n}`;
       const n = document.createElement('span'); n.className = 'kn'; n.textContent = e.name;
       z.append(k, n); reihe.appendChild(z);
@@ -9799,7 +9870,15 @@ function zeitsaeulen(eintraege, farbe, opts){
   let svg = `<svg viewBox="0 0 ${W} ${H + 18}" preserveAspectRatio="none" style="width:100%;height:${H + 18}px;display:block">`;
   eintraege.forEach((e, k) => {
     const h = (e.n || 0) / max * H;
-    svg += `<rect x="${(k * bw + 0.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${Math.max(bw - 1, 0.5).toFixed(1)}" height="${h.toFixed(1)}" style="fill:${farbe}" opacity="${e.n ? 1 : 0.15}"><title>${e.titel || e.name}: ${e.anzeige != null ? e.anzeige : e.n}</title></rect>`;
+    const x = (k * bw + 0.5).toFixed(1), br = Math.max(bw - 1, 0.5).toFixed(1);
+    svg += `<rect x="${x}" y="${(H - h).toFixed(1)}" width="${br}" height="${h.toFixed(1)}" style="fill:${diaFlaeche(farbe)}" opacity="${e.n ? 1 : 0.15}"><title>${e.titel || e.name}: ${e.anzeige != null ? e.anzeige : e.n}</title></rect>`;
+    /* Die Topline oben auf der Saeule. height="1" ist genau ein
+       Bildpunkt - die Hoehe wird im gestreckten viewBox nicht
+       skaliert, nur die Breite. Deshalb braucht es hier kein
+       non-scaling-stroke: Es ist ein Rechteck, kein Strich. Leere
+       Saeulen bekommen keine Kante, sonst behauptete eine Linie
+       einen Wert von null. */
+    if (e.n) svg += `<rect x="${x}" y="${(H - h).toFixed(1)}" width="${br}" height="1" style="fill:${diaTopline(farbe)}" pointer-events="none"/>`;
     if (e.name) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="${H + 14}" font-size="10" fill="#8b8b90" text-anchor="middle">${e.name}</text>`;
     if (e.marke) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="9" font-size="9" fill="#ececed" text-anchor="middle">${e.marke}</text>`;
   });
@@ -10182,13 +10261,32 @@ function profilTonartenFuellen(){
     { art: 'Dur',  farbe: DIA_2 },
     { art: null,   farbe: '#8b8b90', wort: 'unbestimmt' },
   ];
-  /* Die Hausform in zwei Zeilen: eine Flaeche, die von der Basis (30 %)
-     zur Aussenkante (66 %) aufhellt, und darauf die Topline in voller
-     Staerke. 66 % ist SPUR_DECKUNG, der Hausstandard; der Verlauf
-     kommt aus Regel 13 fuer Deckungs-Stapel. */
-  const fuellung = (f) => `linear-gradient(to top,`
-    + ` color-mix(in srgb, ${f} 30%, transparent),`
-    + ` color-mix(in srgb, ${f} 66%, transparent))`;
+  /* Die Hausform: die Flaeche GLEICHMAESSIG gedaempft auf SPUR_DECKUNG
+     (0,66, der Hausstandard), darauf die Topline in voller Staerke.
+     Caspar_D, 26.08.2026: „die saeulen sind immer gedaempft und tragen
+     eine high intensity top line."
+
+     Hier stand kurz ein Farbverlauf von der Basis zur Aussenkante. Der
+     kam aus Regel 13 - „Bei Deckungs-Stapeln: Verlauf je Schicht
+     (Aussenkante intensiv -> Basis dunkel)" - und war falsch
+     uebertragen: Ein Deckungs-Stapel sind Flaechen, die einander
+     UEBERLAGERN, wo sich zwei Daempfungen multiplizieren. Diese
+     Segmente liegen nebeneinander, jedes auf eigenem Grund; da gibt es
+     nichts zu entzerren. Es gilt die Grundregel. */
+  const fuellung = (f) => `color-mix(in srgb, ${f} 66%, transparent)`;
+  /* DIE TOPLINE WIRD AUFGEHELLT (Caspar_D, 26.08.2026: „wenn die
+     Flaeche durch helligkeit codiert wird, dann die topline noch etwas
+     aufhellen").
+
+     Die Hausregel verlangt zwischen Flaeche und Kontur einen Abstand
+     von mindestens Faktor zwei (beim Chroma: Flaeche 84, Topline 159).
+     Eine Flaeche auf 0,66 und eine Kontur auf voller Staerke stehen
+     aber nur im Verhaeltnis 1,5 - die Kontur bliebe zu leise, weil die
+     Daempfung der Flaeche schon Helligkeit codiert. Ein Viertel Weiss
+     dazu hebt sie ueber die Schwelle, ohne den Farbton zu verlassen:
+     „bei rot muss die topline rot sein" gilt weiter, sie wird nur
+     heller. Nachgemessen in relativer Luminanz, nicht geschaetzt. */
+  const topline = (f) => `color-mix(in srgb, ${f} 75%, #fff)`;
 
   const legende = document.createElement('div'); legende.className = 'stapellegende';
   const fuss = document.createElement('div'); fuss.className = 'fussnote'; fuss.style.marginTop = '2px';
@@ -10224,7 +10322,7 @@ function profilTonartenFuellen(){
         const i = document.createElement('i');
         i.style.height = (100 * teil / max).toFixed(2) + '%';
         i.style.background = fuellung(l.farbe);
-        i.style.boxShadow = `inset 0 1px 0 ${l.farbe}`;   /* die Topline, nur oben */
+        i.style.boxShadow = `inset 0 1px 0 ${topline(l.farbe)}`;   /* die Topline, nur oben */
         b.appendChild(i);
       }
       sz.title = `${t} · ${e.n} ${e.n === 1 ? 'Song' : 'Songs'}`
@@ -10245,7 +10343,7 @@ function profilTonartenFuellen(){
          Lage in der Saeule - sie zeigt, statt zu beschreiben. */
       const pil = document.createElement('i');
       pil.style.background = fuellung(l.farbe);
-      pil.style.boxShadow  = `inset 0 1px 0 ${l.farbe}`;
+      pil.style.boxShadow  = `inset 0 1px 0 ${topline(l.farbe)}`;
       const nam = document.createElement('b'); nam.textContent = wort; nam.style.color = l.farbe;
       sp.append(pil, nam, document.createTextNode(String(k)));
       legende.appendChild(sp);

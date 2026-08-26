@@ -235,6 +235,12 @@ Nichts von Hand nachbauen, was diese Funktionen schon können.
 ### Wo die Kontur liegt
 
 - **Fläche auf einer Grundlinie** → Kontur **nur oben**.
+- **Liegender Balken** → ebenfalls **oben**, nicht an der rechten
+  Datenkante. *„Das Ding heißt Top Line, und genau deswegen gehört die
+  immer on top, und nicht nach rechts"* (Caspar_D, 26.08.2026). Die
+  Versuchung, sie beim liegenden Balken an das Wertende zu setzen, ist
+  naheliegend und falsch: Alle Flächen im Haus tragen dieselbe Kante,
+  sonst muss man sie in jedem Diagramm neu suchen.
 - **Gespiegelte Fläche** (symmetrisch um eine Mittellinie) → ebenfalls
   **nur oben**. Das war eine ausdrückliche Entscheidung: *„die helle
   topline nur oben, wie ganz oben in der Hüllkurve."*
@@ -253,6 +259,20 @@ einer hellen Masse, und dann trägt die Kante nichts mehr.
 Die Kontur läuft bei voller Stärke oder 0,85. Sie muss **deutlich heller**
 sein als die Fläche; gemessen sollte der Abstand mindestens Faktor zwei
 betragen. Beim Chroma: Fläche 84, Topline 159.
+
+**Wo die Fläche gedämpft ist, wird die Topline aufgehellt** (Caspar_D,
+26.08.2026: *„wenn die Fläche durch Helligkeit codiert wird, dann die
+Topline noch etwas aufhellen"*). Eine Fläche auf 0,66 gegen eine Kontur
+auf voller Stärke steht nur im Verhältnis 1,5 — die geforderten Faktor
+zwei erreicht sie erst mit einem Viertel Weiß dazu (gemessen in
+relativer Luminanz: 3,2). Der Farbton bleibt, sie wird nur heller.
+
+**Codiert die Fläche selbst einen Wert** — Kachelzeilen, deren Deckung
+den Wert trägt —, folgt die Topline mit **doppelter Deckung**, gedeckelt
+bei voll. Sonst behauptet eine volle Kante über einer fast leeren Fläche
+einen Wert, den es nicht gibt. Und die Wertspanne endet bei
+`SPUR_DECKUNG`, nicht bei voller Deckung: Über einer vollen Fläche
+bekommt die Topline den Abstand nicht mehr hin (nachgemessen: 1,42).
 
 ### Die SVG-Falle
 
