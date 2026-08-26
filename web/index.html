@@ -13928,13 +13928,24 @@ function buehneZu(){
   // Der Analyzer bringt einen Worker und eigene Zeichenschleifen mit -
   // ohne Abräumen rechnen sie hinter der geschlossenen Bühne weiter.
   analyzerAbraeumen();
-  /* Dasselbe gilt fürs Tonstudio, nur andersherum: Es liegt auf
-     z-index 56, die Bühne auf 60 - ein offenes Studio verschwindet
-     also unter ihr, ist nicht mehr erreichbar (sein × liegt darunter,
-     Escape kennt es nicht) und rechnet mit 100 ms weiter. Beim
-     Schließen der Bühne holen wir es nicht zurück, sondern räumen es
-     ab; beim Öffnen ebenso (25.08.2026). */
-  if (typeof studioZu === 'function' && $('studio') && $('studio').style.display !== 'none') studioZu();
+  /* DAS TONSTUDIO BLEIBT STEHEN (Caspar_D, 26.08.2026: "wenn ich die
+     Bühne zu mache, kann das Tonstudio bleiben, ginge dass?").
+
+     Hier wurde es bis heute mit abgeräumt, und das hatte einen guten
+     Grund: Es lag auf z-index 56, die Bühne auf 60 - ein offenes Studio
+     verschwand also unter ihr, war nicht mehr erreichbar (sein × lag
+     darunter, Escape kennt es nicht) und rechnete mit 100 ms weiter.
+     Ein unsichtbares Panel, das Strom verbraucht, räumt man besser ab
+     (25.08.2026).
+
+     Seit das Studio auf 90 liegt und über der Bühne steht, ist diese
+     Begründung weg: Es ist sichtbar, es ist bedienbar, und wer es
+     offen hat, will es offen haben - der Sound gefällt einem ja nicht
+     nur, solange die Bühne steht. Also bleibt es. Wer es schließen
+     will, hat sein × und den EQ-Knopf.
+
+     Der Analyzer darüber wird weiter abgeräumt: Der bringt einen
+     eigenen Worker mit und gehört zur Bühne, nicht zum Ton. */
   $('buehne').classList.remove('auf');
   pmodiAufbauen();          // kein Segment mehr gefüllt: die Bühne ist zu
   if (bTakt) { cancelAnimationFrame(bTakt); bTakt = null; }
