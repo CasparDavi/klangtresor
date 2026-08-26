@@ -1439,7 +1439,14 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    eigener, der nach 120 ms da ist. Die Texte bleiben im HTML als title
    stehen (wartbar, auch fuer Vorleseprogramme); getauscht wird erst beim
    Ueberfahren. */
+/* MEHRZEILIG (Caspar_D, 26.08.2026: "strukturiere die tooltips für die
+   menschen besser, nicht alles hintereinaderweg schreiben"). Ein
+   Mensch mit fuenf Zahlen in einer Zeile ist eine Wurst; mit Namen oben
+   und den Zahlen paarweise darunter liest man ihn in einem Blick.
+   pre-line laesst Umbrueche gelten und faltet den uebrigen Weissraum
+   zusammen - die Kurztipps der Playleiste bleiben also einzeilig. */
 #tipp{
+  white-space:pre-line;
   position:fixed;z-index:120;pointer-events:none;opacity:0;
   transform:translateY(4px);transition:opacity .12s ease, transform .12s ease;
   background:color-mix(in srgb, var(--flaeche2) 94%, #000);
@@ -10882,13 +10889,19 @@ async function profilNachbarnFuellen(){
   /* ---- Bild 1: Follower gegen Folgt ------------------------------- */
   {
     const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
-    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'folgt', 'Follower', true));
+    /* DEUTSCHE BEGRIFFE (Caspar_D, 26.08.2026: "follower wäre Folger
+       oder Anhänger, gefolgt wäre Vorbild"). Anhänger und Vorbilder
+       sagen, was gemeint ist, ohne dass man das englische Wort mitdenken
+       muss - und sie stellen die beiden Richtungen als das dar, was sie
+       sind: wer mir zuhoert, und wem ich zuhoere. */
+    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'Vorbilder', 'Anhänger', true));
     const f = document.createElement('div'); f.className = 'fussnote';
     const oben = alleL.filter(x => !x.ist && x.follower > 2 * Math.max(1, x.folgt)).length;
-    f.textContent = `Beide Achsen logarithmisch. Auf der Linie folgt jemand genau so vielen, `
-      + `wie ihm folgen. Darunter: Reichweite über Gegenseitigkeit — der stärkste Zusammenhang `
-      + `in diesen Daten (r = 0,86). Darüber: Follower ohne Gegenleistung — ${oben} von `
-      + `${macher.length}. Punkt anklicken führt zum Profil auf Suno.`;
+    f.textContent = `Waagerecht, wem jemand folgt — senkrecht, wer ihm folgt. Beide Achsen `
+      + `logarithmisch. Auf der Linie halten sich beide die Waage. Darunter: Reichweite über `
+      + `Gegenseitigkeit — der stärkste Zusammenhang in diesen Daten (r = 0,86). Darüber: `
+      + `Anhänger ohne Gegenleistung — ${oben} von ${macher.length}. `
+      + `Punkt anklicken führt zum Profil auf Suno.`;
     w.appendChild(f);
   }
 
@@ -10902,7 +10915,7 @@ async function profilNachbarnFuellen(){
     const feld = document.createElement('div'); w.appendChild(feld);
     const fuss = document.createElement('div'); fuss.className = 'fussnote'; w.appendChild(fuss);
 
-    const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Follower'],
+    const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Anhänger'],
                 ['songs', 'Songs'], ['proSong', 'Plays je Song']];
     let art = localStorage.getItem('nachbarnGroesse') || 'plays';
     const wertVon = (x) => art === 'proSong' ? x.plays / Math.max(1, x.songs) : x[art];
@@ -11042,8 +11055,10 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
     sv += `<a href="https://suno.com/@${encodeURIComponent(p.handle)}" target="_blank" rel="noopener">`
        + `<circle class="nbpunkt" data-nb="${esc(p.handle)}" cx="${X(p[xf]).toFixed(1)}" cy="${Y(p[yf]).toFixed(1)}" r="4.5"`
        + ` fill="${fl}" stroke="${kn}" stroke-width="1"`
-       + ` data-tipp="${esc(p.name)} · ${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · `
-       + `${p.follower.toLocaleString('de-DE')} Follower · folgt ${p.folgt.toLocaleString('de-DE')}">`
+       + ` data-tipp="${esc(p.name)}${String.fromCharCode(10)}`
+       + `${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · ${p.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
+       + `${p.follower.toLocaleString('de-DE')} Anhänger · folgt ${p.folgt.toLocaleString('de-DE')}${String.fromCharCode(10)}`
+       + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Plays je Song">`
        + `<title>${esc(p.name)}</title></circle></a>`;
   }
   /* DER EIGENE PUNKT ZULETZT, GROESSER UND MIT RING (26.08.2026). Bei
@@ -11058,8 +11073,10 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` stroke="${DIA_1}" stroke-width="1.5" opacity="0.45"/>`;
     sv += `<circle class="nbpunkt" data-nb="${esc(ich.handle || '')}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6.5"`
        + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5"`
-       + ` data-tipp="Du · ${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · `
-       + `${ich.follower.toLocaleString('de-DE')} Follower · folgt ${ich.folgt.toLocaleString('de-DE')}">`
+       + ` data-tipp="Du${String.fromCharCode(10)}`
+       + `${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · ${ich.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
+       + `${ich.follower.toLocaleString('de-DE')} Anhänger · folgt ${ich.folgt.toLocaleString('de-DE')}${String.fromCharCode(10)}`
+       + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Plays je Song">`
        + `<title>Du</title></circle>`;
     /* Nach links, wenn rechts kein Platz mehr ist. */
     const rechts = cx < bx + bw - 90;
@@ -11093,7 +11110,9 @@ function rangBild(sortiert, wertVon){
     const f = p.ist ? DIA_1 : '#8b8b90';
     sv += `<rect class="nbsaeule" data-nb="${esc(p.handle || '')}" x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="${h.toFixed(1)}"`
        + ` style="fill:${diaFlaeche(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}"`
-       + ` data-tipp="${i + 1}. ${p.ist ? 'Du' : esc(p.name)} · ${Math.round(wertVon(p)).toLocaleString('de-DE')}">`
+       + ` data-tipp="${p.ist ? 'Du' : esc(p.name)}${String.fromCharCode(10)}`
+       + `Platz ${i + 1} von ${n}${String.fromCharCode(10)}`
+       + `${Math.round(wertVon(p)).toLocaleString('de-DE')}">`
        + `<title>${p.ist ? 'Du' : esc(p.name)}</title></rect>`;
     sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="1"`
        + ` style="fill:${diaTopline(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}" pointer-events="none"/>`;
