@@ -474,23 +474,75 @@ select,.knopf{
    und eine niedrigere Reihe als bei den Tonarten. */
 .laengendrei{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
   gap:16px 20px;margin-top:10px}
+/* TONARTEN UND WOERTER NEBENEINANDER (26.08.2026), zu GLEICHEN Teilen.
+   Hier stand zuerst 2fr zu 1fr, weil die Tonarten laengere
+   Beschriftungen tragen. Caspar_D hat nachgezaehlt: "übrigens sind es
+   immer 13 Säulen, die hätten auch so nebeneinander gepasst" - zwoelf
+   Tonklassen, dreizehn Woerterklassen, dreizehn Laengenklassen. Bei
+   gleicher Breite bekommen beide dieselben rund 34 px je Saeule, und
+   die Wertzahlen darueber stehen nicht mehr gedraengt.
+   Unter 860 px untereinander. */
+.tonwortgitter{display:grid;grid-template-columns:1fr 1fr;gap:10px 26px;align-items:start}
+@media (max-width:860px){ .tonwortgitter{grid-template-columns:1fr} }
+/* BEIDE REIHEN FLUCHTEN (Caspar_D, 26.08.2026: "jetzt noch baseline und
+   topline alignieren"). Hier stand fuer das Woerterbild eine eigene,
+   niedrigere Reihe - das stammte aus der Zeit, als es nur ein Drittel
+   der Breite hatte. Seit beide gleich breit sind, gilt fuer beide
+   dasselbe Mass: gleiche Hoehe, gleicher Innenabstand, gleicher
+   Zwischenraum. Damit liegen Grundlinie und Oberkante des
+   Datenbereichs auf einer Hoehe, und die Ueberschriften darueber
+   ebenso - zwei Diagramme nebeneinander, die nicht auf einer Linie
+   stehen, liest das Auge als zwei verschiedene Massstaebe.
+   Die Legende darf schmaler setzen, sie traegt keine Achse. */
+#profilwoerter .stapellegende{gap:3px 10px;font-size:11.5px}
+#profilwoerter .stapellegende i{width:16px;height:10px}
+/* Der Kopf beider Felder hat eine FESTE Hoehe, keine Mindesthoehe: Die
+   Laschen im Tonartenkopf machten ihn einen Bildpunkt hoeher als den
+   Woerterkopf, und damit lagen Grundlinie und Achse der beiden Reihen
+   um genau diesen Punkt versetzt. Hausregel 16 nennt den Fall beim
+   Namen - "Wertzeilen brauchen FIXE Hoehe (Inhalt liess sie wachsen und
+   verschob Ticks um 2 px)". Nachgemessen: jetzt 0 px Versatz bei
+   Ueberschrift, Oberkante, Grundlinie und Achse. */
+.tonwortgitter .diatitel{height:24px;margin-bottom:6px;align-items:center}
+/* Beide Felder tragen ihre eigene Ueberschrift wie sonst ein Panel. */
+.tonwortgitter > div > h3{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--schwach);margin-bottom:11px;font-weight:700}
 .laengenspalte{min-width:0}
 .laengenspalte .diatitel{margin-bottom:4px}
 .sr.hoch.laengen{height:150px;gap:2px;padding:10px 8px 0}
 .tonachse.laengen{gap:2px;padding:0 8px;margin-top:7px}
 .tonachse.laengen span{font-size:11px}
 /* Die Legende steht hier unter jeder Spalte und darf umbrechen. */
-.laengenspalte .stapellegende{gap:10px;margin-top:8px;font-size:11.5px}
+.laengenspalte .stapellegende{gap:3px 10px;margin-top:8px;font-size:11.5px}
 .laengenspalte .stapellegende i{width:16px;height:10px}
 /* DIE LEGENDE ZEIGT, STATT ZU BESCHREIBEN (Regel 23): Die Pille traegt
    die echte Fuellung samt Topline, das Wort traegt die Farbe seines
    Gegenstands. Meta-Woerter („in Akzent", „von unten:") entfallen -
    wer die Pille sieht, findet die Lage in der Saeule wieder. */
-.stapellegende{display:flex;gap:16px;flex-wrap:wrap;margin-top:11px;
-  font-size:12px;color:var(--schwach);align-items:center}
+/* ZEILENABSTAND KLEINER ALS SPALTENABSTAND (Caspar_D, 26.08.2026: "den
+   Zeilenabstand in allen Legende verkleinern"). Ein gap-Wert gilt fuer
+   beide Richtungen, und was zwischen zwei Eintraegen einer Zeile richtig
+   ist, reisst zwischen zwei Zeilen ein Loch: Bei sechs Modellen oder
+   vier Stilgruppen bricht die Legende um, und dann stand sie so weit
+   auseinander wie ein Absatz. Zwei Werte statt einem - vier Punkte nach
+   unten, sechzehn zur Seite -, dazu eine engere Zeilenhoehe, weil hier
+   nur ein Wort und eine Zahl stehen. */
+.stapellegende{display:flex;gap:4px 16px;flex-wrap:wrap;margin-top:11px;
+  font-size:12px;line-height:1.25;color:var(--schwach);align-items:center}
 .stapellegende span{display:flex;align-items:center;gap:6px}
 .stapellegende i{width:22px;height:11px;border-radius:2px;display:block}
 .stapellegende b{font-weight:600}
+/* ABSTAND ZWISCHEN DEN GRUPPEN GROESSER ALS INNERHALB (Caspar_D,
+   26.08.2026: "der abstand zwischen legende und erklärtext muss grösser
+   sein als innerhalb der Legende oder innerhalb des erklärtextes").
+
+   Legende und Erklaertext sind zwei Sachen, nicht eine. Solange der
+   Sprung zwischen ihnen so klein ist wie der Zeilensprung in ihnen,
+   liest das Auge einen Block - hier standen zwei Bildpunkte, waehrend
+   die Legende vier zwischen ihren Zeilen hat und die Fussnote rund
+   fuenf zwischen ihren. Vierzehn ist deutlich mehr als beides und
+   trennt, ohne zu reissen. */
+.stapellegende + .fussnote{margin-top:14px}
 .dia.breit{grid-column:1 / -1}
 .kzeile{display:flex;gap:26px;align-items:flex-start}
 .kgruppe{min-width:0}.kgruppe .diatitel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -10440,6 +10492,20 @@ function profilZahlenFuellen(){
 -------------------------------------------------------------------- */
 const LAENGEN_KLASSE = 30;          /* halbe Minuten */
 const LAGE_GRAU = '#8b8b90';
+/* ARTFREMDE FARBEN WERDEN STAERKER GEDAEMPFT (Caspar_D, 26.08.2026:
+   "dämpfe mal die säulen bei den stilen noch etwas, damit die
+   artfremden farben nicht so reinknallen").
+
+   Die Clusterfarben kommen aus dem Klangraum und folgen nicht der
+   Coverpalette - Rot, Tuerkis, Blau und Gelb stehen auf einer Seite,
+   die sonst durchgehend in zwei Akzenten gehalten ist, und drei
+   gesaettigte Fremdtoene ziehen den Blick staerker als der Inhalt es
+   verdient. 0,45 statt 0,66 ist dabei kein ausgedachter Wert, sondern
+   der zweite Hausstandard: docs/HAUSREGELN.md nennt ihn fuer den Fall,
+   dass viele Flaechen zusammenkommen (Chroma mit zwoelf Zeilen, der
+   Stemblock mit sechs). Die Topline folgt ueber diaTopline() mit und
+   haelt ihren Abstand. */
+const SPUR_FREMD = 0.45;
 
 /* Eine Rampe von Akzent 1 nach Akzent 2 - fuer geordnete Reihen. */
 function lagenRampe(n){
@@ -10477,6 +10543,7 @@ async function profilLaengenFuellen(){
     name: (g) => gruppenName.get(g) || ('Gruppe ' + g),
     ordnung: (a, b) => a - b,
     farben: (lagen) => lagen.map(g => karteFarbe(g)),
+    deckung: SPUR_FREMD,          /* Clusterfarben: leiser als die Akzente */
   });
   SPALTEN.push({
     titel: 'nach Modell',
@@ -10539,8 +10606,8 @@ async function profilLaengenFuellen(){
         const teil = feld[kk][l]; if (!teil) continue;
         const ii = document.createElement('i');
         ii.style.height = (100 * teil / max).toFixed(2) + '%';
-        ii.style.background = diaFlaeche(farben[l]);
-        ii.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[l])}`;
+        ii.style.background = diaFlaeche(farben[l], sp.deckung);
+        ii.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[l], sp.deckung)}`;
         b.appendChild(ii);
       }
       const vonM = (vonS + kk * LAENGEN_KLASSE) / 60, bisM = (vonS + (kk + 1) * LAENGEN_KLASSE) / 60;
@@ -10562,8 +10629,8 @@ async function profilLaengenFuellen(){
       const l = lagen[i];
       const spn = document.createElement('span');
       const pil = document.createElement('i');
-      pil.style.background = diaFlaeche(farben[i]);
-      pil.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[i])}`;
+      pil.style.background = diaFlaeche(farben[i], sp.deckung);
+      pil.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[i], sp.deckung)}`;
       const nam = document.createElement('b');
       nam.textContent = l === ' ohne' ? 'ohne Angabe' : sp.name(l);
       nam.style.color = farben[i];
@@ -10581,6 +10648,160 @@ async function profilLaengenFuellen(){
     + `Mittel ${(laengen.reduce((a, b) => a + b, 0) / laengen.length / 60).toFixed(1).replace('.', ',')} min. `
     + `Liegt eine Farbe in Schichten, erklärt das Merkmal die Länge mit; ist sie überall gleich gemischt, nicht.`;
   ziel.appendChild(fuss);
+}
+
+/* ---- WOERTER JE STUECK ----------------------------------------------
+   Caspar_D, 26.08.2026: "Wörter hatten wir noch, leg das mals neben die
+   tonarten."
+
+   Zwei Sorten Stuecke, und man sieht es sofort: ein Turm bei null - die
+   textlosen - und danach eine breite Glocke. Dazwischen ein Tal. Die
+   Null steht als EIGENE Klasse ganz links, nicht in der ersten
+   Zaehlklasse mit eins bis fuenfzig: Ein Stueck ohne Text ist etwas
+   anderes als eins mit dreissig Woertern, und die Grenze verwischt
+   sonst.
+
+   GESTAPELT NACH STILGRUPPE, mit den Farben aus dem Klangraum - dieselbe
+   Frage wie bei den Laengen: Erklaert das Genre, wieviel gesungen wird?
+   Nach hatGesang zu stapeln waere naheliegend und falsch: Das Feld
+   traegt bei ALLEN 64 textlosen Stuecken true und bei 196 mit Text
+   nicht - es misst offenbar etwas anderes, als sein Name sagt.
+
+   WAS DIE ZAHL WIRKLICH ZAEHLT: die Woerter in Sunos Lyricbox, ohne
+   [Anweisungen]. Das ist nicht immer das Gesungene - Caspar_D,
+   26.08.2026: "manche Schreiben zuviel Kram in die Lyricboxen, die
+   nicht Text sind - bspw Englische Translation." Nachgeprueft an den
+   261 Stuecken, fuer die eine Whisper-Abschrift vorliegt: Im Mittel
+   stehen 90 % der gesungenen Woerter auch in der Box, und 11 % der
+   Box-Woerter werden nicht gesungen. Bei 25 Stuecken liegt der
+   Ueberhang ueber 40 % - dort ist die Saeule zu hoch. Auffaellig
+   dabei: Die schlechtesten Werte kommen nicht von Fremdtexten, sondern
+   von Plattdeutsch und Berlinerisch, wo Whisper danebenliegt. Die
+   Fussnote sagt das, damit niemand die Zahl fuer bare Muenze nimmt.
+-------------------------------------------------------------------- */
+const WORT_KLASSE = 50;
+
+async function profilWoerterFuellen(){
+  const ziel = $('profilwoerter'); if (!ziel) return;
+  const eigene = alle.filter(s => !s.fremd);
+  if (eigene.length < 12){ ziel.style.display = 'none'; return; }
+  ziel.style.removeProperty('display');
+
+  /* Dieselbe Karte wie bei den Laengen - sie ist dann schon geholt. */
+  if (_karteFuerLaengen === null){
+    try { _karteFuerLaengen = await (await fetch('/api/karte', { cache: 'no-store' })).json(); }
+    catch (e) { _karteFuerLaengen = false; }
+  }
+  const gruppeVon = new Map(), gruppenName = new Map();
+  if (_karteFuerLaengen && _karteFuerLaengen.songs){
+    for (const p of _karteFuerLaengen.songs) gruppeVon.set(p.id, p.gruppe);
+    for (const g of (_karteFuerLaengen.gruppen || [])) gruppenName.set(g.nr, g.name);
+  }
+
+  const worte = (s) => s.lyricsWorte || 0;
+  const maxW = Math.max(...eigene.map(worte));
+  const nK = 1 + Math.max(1, Math.ceil(maxW / WORT_KLASSE));   /* Klasse 0 plus die Zaehlklassen */
+  const klasseVon = (w) => w === 0 ? 0 : Math.min(nK - 1, 1 + Math.floor((w - 1) / WORT_KLASSE));
+
+  /* Lagen: die Stilgruppen, sonst eine einzige Lage in Akzent 1. */
+  let lagen = [], farben = [], lageVon = () => 0, lageName = () => '';
+  if (gruppeVon.size){
+    lagen = [...new Set(eigene.map(s => gruppeVon.get(s.id)).filter(g => g != null))].sort((a, b) => a - b);
+    farben = lagen.map(g => karteFarbe(g));
+    const platz = new Map(lagen.map((l, i) => [l, i]));
+    const ohneNr = lagen.length;
+    if (eigene.some(s => gruppeVon.get(s.id) == null)){ lagen.push(null); farben.push(LAGE_GRAU); }
+    lageVon = (s) => { const g = gruppeVon.get(s.id); return g == null ? ohneNr : platz.get(g); };
+    lageName = (i) => lagen[i] == null ? 'ohne Gruppe' : (gruppenName.get(lagen[i]) || ('Gruppe ' + lagen[i]));
+  } else {
+    lagen = [0]; farben = [DIA_1]; lageName = () => 'Stücke';
+  }
+  /* Clusterfarben leiser, die eigene Akzentfarbe im Hausmass. */
+  const deckung = gruppeVon.size ? SPUR_FREMD : SPUR_DECKUNG;
+
+  const feld = Array.from({ length: nK }, () => new Array(lagen.length).fill(0));
+  const proLage = new Array(lagen.length).fill(0);
+  for (const s of eigene){ const l = lageVon(s); feld[klasseVon(worte(s))][l]++; proLage[l]++; }
+  const max = Math.max(...feld.map(z => z.reduce((a, b) => a + b, 0))) || 1;
+
+  ziel.innerHTML = '<h3>Wörter je Stück</h3>';
+  const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
+  const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
+  const kopf = document.createElement('div'); kopf.className = 'diatitel';
+  kopf.innerHTML = SYM('lyrics') + ' ';
+  kopf.appendChild(document.createTextNode('Wie viel gesungen wird'));
+  w.appendChild(kopf);
+
+  const reihe = document.createElement('div'); reihe.className = 'sr hoch'; w.appendChild(reihe);
+  const achse = document.createElement('div'); achse.className = 'tonachse'; w.appendChild(achse);
+
+  for (let k = 0; k < nK; k++){
+    const sum = feld[k].reduce((a, b) => a + b, 0);
+    const sz = document.createElement('div'); sz.className = 'sz';
+    const v = document.createElement('span'); v.className = 'sv'; v.textContent = sum || '';
+    const b = document.createElement('span'); b.className = 'sb stapel';
+    for (let l = 0; l < lagen.length; l++){
+      const teil = feld[k][l]; if (!teil) continue;
+      const i = document.createElement('i');
+      i.style.height = (100 * teil / max).toFixed(2) + '%';
+      i.style.background = diaFlaeche(farben[l], deckung);
+      i.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[l], deckung)}`;
+      b.appendChild(i);
+    }
+    const spanne = k === 0 ? 'ohne Text'
+      : `${(k - 1) * WORT_KLASSE + 1}–${k * WORT_KLASSE} Wörter`;
+    const zeilen = lagen.map((l, i2) => feld[k][i2] ? `${feld[k][i2]} × ${lageName(i2)}` : null).filter(Boolean);
+    sz.title = `${spanne} · ${sum} ${sum === 1 ? 'Stück' : 'Stücke'}`
+      + (zeilen.length ? String.fromCharCode(10) + zeilen.join(String.fromCharCode(10)) : '');
+    sz.append(v, b); reihe.appendChild(sz);
+    const asp = document.createElement('span');
+    /* Die Null bekommt ihr eigenes Wort, danach jede zweite Marke. */
+    asp.textContent = k === 0 ? '0' : ((k - 1) % 2 === 0 ? String(k * WORT_KLASSE) : '');
+    achse.appendChild(asp);
+  }
+
+  const legende = document.createElement('div'); legende.className = 'stapellegende'; w.appendChild(legende);
+  for (let i = lagen.length - 1; i >= 0; i--){
+    const sp = document.createElement('span');
+    const pil = document.createElement('i');
+    pil.style.background = diaFlaeche(farben[i], deckung);
+    pil.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[i], deckung)}`;
+    const nam = document.createElement('b'); nam.textContent = lageName(i); nam.style.color = farben[i];
+    sp.append(pil, nam, document.createTextNode(String(proLage[i])));
+    legende.appendChild(sp);
+  }
+
+  /* GLEICH VIELE LEGENDENZEILEN (Caspar_D, 26.08.2026: "bei tonarten und
+     wörter pro stück die anzahl der Legendenzeilen gleichgross machen").
+
+     Die Tonarten fuehren drei Lagen mit kurzen Namen, die Woerter vier
+     mit langen - die eine Legende bricht auf eine Zeile um, die andere
+     auf vier, und die Fussnoten darunter stehen versetzt. Wieviele
+     Zeilen es werden, entscheidet der Umbruch und damit die Breite des
+     Fensters; das kann kein fester CSS-Wert wissen. Also nachmessen und
+     die kuerzere auf die laengere heben - dieselbe Regel wie bei den
+     Spalten weiter oben: Was nebeneinander steht, muss auf einer Linie
+     enden (Hausregel 17, "Spalten so bemessen, dass sie GLEICH HOCH
+     enden"). */
+  requestAnimationFrame(() => {
+    const beide = [$('profiltonarten'), $('profilwoerter')]
+      .map(e => e && e.querySelector('.stapellegende')).filter(Boolean);
+    if (beide.length !== 2) return;
+    beide.forEach(l => l.style.minHeight = '');
+    const hoch = Math.max(...beide.map(l => l.getBoundingClientRect().height));
+    beide.forEach(l => l.style.minHeight = hoch + 'px');
+  });
+
+  const ohne = feld[0].reduce((a, b) => a + b, 0);
+  const mit = eigene.length - ohne;
+  const mittel = mit ? Math.round(eigene.filter(s => worte(s) > 0).reduce((a, s) => a + worte(s), 0) / mit) : 0;
+  const fuss = document.createElement('div'); fuss.className = 'fussnote';
+  fuss.textContent = `${ohne} Stücke ohne Text, ${mit} mit — diese im Mittel ${mittel} Wörter, `
+    + `das längste ${maxW}. Gezählt wird, was in Sunos Textfeld steht, ohne [Anweisungen]; `
+    + `das ist nicht immer das Gesungene. Gegen die Whisper-Abschriften geprüft: im Mittel stehen `
+    + `90 % der gesungenen Wörter auch im Feld, bei 25 von 261 Stücken steht dort deutlich mehr, `
+    + `als zu hören ist.`;
+  w.appendChild(fuss);
 }
 
 /* ---- TONARTEN ------------------------------------------------------
@@ -10676,10 +10897,14 @@ function profilTonartenFuellen(){
   const topline = (f) => `color-mix(in srgb, ${f} 75%, #fff)`;
 
   const legende = document.createElement('div'); legende.className = 'stapellegende';
-  const fuss = document.createElement('div'); fuss.className = 'fussnote'; fuss.style.marginTop = '2px';
+  const fuss = document.createElement('div'); fuss.className = 'fussnote';
 
   const sicher = mit.filter(s => (s.analyse.tonart.sicher || 0) >= TON_SICHER);
-  const FEN = [['alle', `Alle ${mit.length}`], ['sicher', `Eindeutige ${sicher.length}`]];
+  /* KURZE LASCHEN (26.08.2026). Sie hiessen "Alle 321" und "Eindeutige
+     183"; seit die Tonarten sich die Panelbreite mit dem Woerterbild
+     teilen, brach der Kopf damit um. Die Zahlen stehen jetzt in der
+     Fussnote, wo ohnehin steht, was sie bedeuten. */
+  const FEN = [['alle', 'Alle'], ['sicher', 'Eindeutige']];
   let fen = localStorage.getItem('tonartFenster') || 'alle';
 
   const zeichnen = () => {
@@ -10742,8 +10967,8 @@ function profilTonartenFuellen(){
        beschreiben). Die Fussnote sagt nur noch, was man dem Bild NICHT
        ansieht: wie sicher die Messung war. */
     fuss.textContent = (fen === 'sicher'
-        ? `Nur Songs, bei denen der Baß auf Sunos Eins eindeutig war - mindestens ${Math.round(TON_SICHER*100)} % der Einsen auf demselben Ton.`
-        : `Alle Songs, auch die ${mit.length - sicher.length}, bei denen der Baß auf Sunos Eins zwischen mehreren Tönen wechselte; dort ist der Grundton geraten.`);
+        ? `${sicher.length} von ${mit.length} Songs: nur die, bei denen der Baß auf Sunos Eins eindeutig war — mindestens ${Math.round(TON_SICHER*100)} % der Einsen auf demselben Ton.`
+        : `Alle ${mit.length} Songs, auch die ${mit.length - sicher.length}, bei denen der Baß auf Sunos Eins zwischen mehreren Tönen wechselte; dort ist der Grundton geraten.`);
   };
 
   for (const [f, tx] of FEN){
@@ -10833,7 +11058,17 @@ function profilAuf(){
 
       <div class="block" id="profilzahlen"></div>
       <div class="block" id="profillaengen"></div>
-      <div class="block" id="profiltonarten"></div>
+      <!-- TONARTEN UND TEXT IN EINEM PANEL (Caspar_D, 26.08.2026: "mach
+           das tonartdiagramm über zwei panels breit und das
+           textlängenhistogramm daneben"). Zwei Drittel zu einem: Die
+           Tonarten tragen zwoelf Saeulen und lange Beschriftungen, die
+           Woerter kommen mit weniger aus. -->
+      <div class="block" id="tonwortpanel">
+        <div class="tonwortgitter">
+          <div id="profiltonarten"></div>
+          <div id="profilwoerter"></div>
+        </div>
+      </div>
       <div class="block" id="profilkarussell"></div>
 
       <div class="block" id="profilcommunity">
@@ -10893,6 +11128,7 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
   profilZahlenFuellen();
   profilLaengenFuellen();
   profilTonartenFuellen();
+  profilWoerterFuellen();
   profilCommunityFuellen();
 }
 
