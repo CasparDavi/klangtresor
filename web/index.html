@@ -379,30 +379,63 @@ select,.knopf{
 .sb{flex:1 1 auto;width:100%;display:flex;align-items:flex-end;background:#ffffff0a;border-radius:2px}.sb i{display:block;width:100%;border-radius:2px 2px 0 0;min-height:1px}
 .sv{font-size:10px;color:var(--schwach);height:14px;line-height:14px;font-variant-numeric:tabular-nums}
 .sn{font-size:10.5px;color:var(--schwach);margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:clip}
-/* GESTAPELTE SAEULEN (26.08.2026, fuer die Tonarten). Dieselbe Reihe
-   wie .sr, nur hoeher - sie nimmt die ganze Panelbreite und braucht
-   dann auch Hoehe, sonst stehen zwoelf breite Striche da. Die Segmente
-   liegen mit column-reverse uebereinander: erstes Kind unten. Dadurch
-   wird align-items zur Querachse, das geerbte flex-end schoebe die
-   Segmente sonst nach rechts statt sie zu fuellen. Die abgerundete
-   Kappe gehoert nur aufs oberste Segment. */
-.sr.hoch{height:210px;gap:8px}
+/* ---- GESTAPELTE SAEULEN, nach docs/HAUSREGELN.md -------------------
+   Caspar_D, 26.08.2026: „geh mal in die Hausregeln, wie wir diagramme
+   zeichnen und orientiere dich daran. Bleibe aber bei den
+   Akzentfarben."
+
+   DIE ZENTRALE REGEL ("Formsprache der Diagramme"): Jede Datenform
+   besteht aus zwei Teilen - einer halb deckenden FLAECHE und darueber
+   einer KONTUR von 1 px in voller Staerke, der Topline, in derselben
+   Farbe. „Erst durch sie liest man einen Verlauf als Linie statt als
+   Wolke." Bei einer Flaeche auf einer Grundlinie liegt die Kontur nur
+   oben - das gilt ausdruecklich auch fuer Saeulen.
+
+   REGEL 13 fuer Deckungs-Stapel: „Verlauf je Schicht (Aussenkante
+   intensiv -> Basis dunkel) + Haarlinien auf den Kanten." Genau das
+   loest hier ein Problem, das vorher eine Notloesung hatte: Akzent 1
+   und 2 stammen aus DERSELBEN Coverpalette und liegen oft dicht
+   beieinander. Mit Verlauf und Topline traegt jede Lage ihre eigene
+   Kante, auch wenn die Farben sich aehneln - dafuer brauchte es
+   vorher eine schwarze Trennlinie und einen Satz in der Fussnote,
+   der die Stapelreihenfolge aufzaehlte. Beides ist jetzt ueberfluessig.
+
+   REGEL 8: „Schwarzer Datenbereich, keine Gitternetzlinien" - ein
+   Rect mit runden Ecken traegt die Daten. Deshalb liegt der Grund
+   unter der ganzen Reihe statt als Streifen hinter jeder Saeule.
+
+   REGEL 15: Die Achsbeschriftung braucht Atem, ~9 px unter der
+   SAEULENBASIS - nicht unter dem Rand. Darum stehen die Notennamen
+   in einer eigenen Zeile ausserhalb des Datenbereichs, mit demselben
+   Innenabstand und Zwischenraum, damit sie mit den Saeulen fluchten.
+
+   REGEL 14: 12 px ist die Lesegrenze.
+------------------------------------------------------------------- */
+.sr.hoch{height:200px;gap:8px;background:rgba(0,0,0,.72);border-radius:6px;
+  padding:16px 10px 0}
+.sr.hoch .sv{font-size:12px;height:16px;line-height:16px}
+/* Kein eigener Grund mehr hinter der einzelnen Saeule - der
+   Datenbereich ist EINE Flaeche (Regel 8). */
+.sr.hoch .sb{background:none}
 .sb.stapel{flex-direction:column-reverse;align-items:stretch}
+/* Die Kappe traegt die oberste Lage; die Toplines der Lagen darunter
+   sind gerade Kanten. */
 .sb.stapel i{border-radius:0}
-.sb.stapel i:last-child{border-radius:2px 2px 0 0}
-/* Die Grenze zwischen zwei Lagen sichtbar machen. Akzent 1 und 2
-   stammen aus DERSELBEN Coverpalette und liegen oft dicht beieinander
-   - dann verschmilzt der Stapel zu einer Flaeche. Die Linie trennt
-   auch dann noch, wenn die Farben es nicht tun; welche Lage welche
-   ist, sagt die feste Reihenfolge von unten (siehe Fussnote). Bei
-   column-reverse grenzt die UNTERE Kante jedes Segments an das
-   vorige, deshalb der negative Versatz. */
-.sb.stapel i + i{box-shadow:inset 0 -1px 0 rgba(0,0,0,.55)}
-/* Die Legende der Stapelfarben: ein Punkt, ein Wort. */
-.stapellegende{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px;
-  font-size:11px;color:var(--schwach);align-items:center}
-.stapellegende span{display:flex;align-items:center;gap:5px}
-.stapellegende i{width:9px;height:9px;border-radius:2px;display:block}
+.sb.stapel i:last-child{border-radius:3px 3px 0 0}
+/* Die Achsenzeile fluchtet mit den Saeulen: gleiche Flex-Verhaeltnisse,
+   gleicher Zwischenraum, gleicher seitlicher Innenabstand. */
+.tonachse{display:flex;gap:8px;padding:0 10px;margin-top:9px}
+.tonachse span{flex:1 1 0;min-width:0;text-align:center;font-size:12px;
+  color:var(--schwach);font-variant-numeric:tabular-nums}
+/* DIE LEGENDE ZEIGT, STATT ZU BESCHREIBEN (Regel 23): Die Pille traegt
+   die echte Fuellung samt Topline, das Wort traegt die Farbe seines
+   Gegenstands. Meta-Woerter („in Akzent", „von unten:") entfallen -
+   wer die Pille sieht, findet die Lage in der Saeule wieder. */
+.stapellegende{display:flex;gap:16px;flex-wrap:wrap;margin-top:11px;
+  font-size:12px;color:var(--schwach);align-items:center}
+.stapellegende span{display:flex;align-items:center;gap:6px}
+.stapellegende i{width:22px;height:11px;border-radius:2px;display:block}
+.stapellegende b{font-weight:600}
 .dia.breit{grid-column:1 / -1}
 .kzeile{display:flex;gap:26px;align-items:flex-start}
 .kgruppe{min-width:0}.kgruppe .diatitel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -9254,6 +9287,29 @@ function uiFaerben(s){
   const f = s && s.farben;
   if (!f || !f.toene || !f.toene.length){
     for (const [k,v] of Object.entries(GRUNDFARBEN)) w.setProperty(k, v);
+    /* --titel-a und --titel-b werden ENTFERNT, nicht gesetzt (26.08.2026).
+       Sie stehen in GRUNDFARBEN nicht drin, und das ist Absicht: Ohne sie
+       greift der Rueckfall im CSS - Orange nach Rot, die Farben des
+       Namens. Ein Wert waere hier falsch, weil er an zwei Stellen
+       gepflegt werden muesste.
+
+       Bis heute wurden sie hier gar nicht angefasst, und das war der
+       Fehler: Der Rabenzweig darueber setzt sie auf sein Violett, der
+       Songzweig darunter auf die Coverfarben - beide als Inline-Stil am
+       Wurzelelement. Wer den Raben wieder ausschaltet oder einen Song
+       ohne Palette startet (fremde Songs aus Playlists, dazu 20 Cover
+       ohne Farbtoene), landet in DIESEM Zweig, und die alten Werte
+       blieben kleben. Caspar_D, 26.08.2026: „ich hab den magischen Raben
+       aktiviert und wieder deaktiviert, die user seite bleibt lila."
+
+       Aufgefallen ist es erst jetzt, weil bis heute nur der Name oben an
+       diesen beiden Variablen hing - eine Zeile, bei der man den
+       Farbrest fuer gewollt halten konnte. Seit die Diagramme der
+       Autorenseite daran haengen, faerbt der Rest die halbe Seite.
+       Derselbe Fehlertyp steckte am 24.08.2026 in buehneAuf(), wo fuenf
+       Variablen des vorigen Liedes am #buehne-Element kleben blieben. */
+    w.removeProperty('--titel-a');
+    w.removeProperty('--titel-b');
     return;
   }
   w.setProperty('--bg',       f.grund);
@@ -10109,15 +10165,30 @@ function profilTonartenFuellen(){
   kopf.appendChild(chips); w.appendChild(kopf);
 
   const reihe = document.createElement('div'); reihe.className = 'sr hoch'; w.appendChild(reihe);
+  /* Die Notennamen stehen ausserhalb des Datenbereichs (Regel 15:
+     Atem unter der Saeulenbasis). Sie stehen fest - nur die Saeulen
+     werden beim Umschalten neu gezeichnet. */
+  const achse = document.createElement('div'); achse.className = 'tonachse';
+  for (const t of TONREIHE){ const sp = document.createElement('span'); sp.textContent = t; achse.appendChild(sp); }
+  w.appendChild(achse);
 
   /* Moll und Dur in den beiden Akzenten des laufenden Titels, das
      Unbestimmte in Grau - es ist kein dritter Befund, sondern das
-     Fehlen eines Befundes. */
+     Fehlen eines Befundes. Alle drei tragen VOLLE Farben; gedaempft
+     wird erst in der Flaeche (siehe fuellung), damit die Topline den
+     geforderten Abstand von mindestens Faktor zwei hat. */
   const LAGEN = [
     { art: 'Moll', farbe: DIA_1 },
     { art: 'Dur',  farbe: DIA_2 },
-    { art: null,   farbe: 'rgba(255,255,255,.22)', wort: 'unbestimmt' },
+    { art: null,   farbe: '#8b8b90', wort: 'unbestimmt' },
   ];
+  /* Die Hausform in zwei Zeilen: eine Flaeche, die von der Basis (30 %)
+     zur Aussenkante (66 %) aufhellt, und darauf die Topline in voller
+     Staerke. 66 % ist SPUR_DECKUNG, der Hausstandard; der Verlauf
+     kommt aus Regel 13 fuer Deckungs-Stapel. */
+  const fuellung = (f) => `linear-gradient(to top,`
+    + ` color-mix(in srgb, ${f} 30%, transparent),`
+    + ` color-mix(in srgb, ${f} 66%, transparent))`;
 
   const legende = document.createElement('div'); legende.className = 'stapellegende';
   const fuss = document.createElement('div'); fuss.className = 'fussnote'; fuss.style.marginTop = '2px';
@@ -10152,13 +10223,13 @@ function profilTonartenFuellen(){
         if (!teil) continue;
         const i = document.createElement('i');
         i.style.height = (100 * teil / max).toFixed(2) + '%';
-        i.style.background = l.farbe;
+        i.style.background = fuellung(l.farbe);
+        i.style.boxShadow = `inset 0 1px 0 ${l.farbe}`;   /* die Topline, nur oben */
         b.appendChild(i);
       }
-      const n = document.createElement('span'); n.className = 'sn'; n.textContent = t;
       sz.title = `${t} · ${e.n} ${e.n === 1 ? 'Song' : 'Songs'}`
         + ` (${e.Moll} Moll, ${e.Dur} Dur, ${e.offen} unbestimmt)`;
-      sz.append(v, b, n); reihe.appendChild(sz);
+      sz.append(v, b); reihe.appendChild(sz);
     }
 
     /* Die Legende traegt die Summen mit - so muss man die Saeulen nicht
@@ -10170,17 +10241,22 @@ function profilTonartenFuellen(){
       const wort = l.wort || l.art;
       const k = l.art === 'Moll' ? summe.Moll : l.art === 'Dur' ? summe.Dur : summe.offen;
       const sp = document.createElement('span');
-      const pkt = document.createElement('i'); pkt.style.background = l.farbe;
-      sp.appendChild(pkt);
-      sp.appendChild(document.createTextNode(`${wort} ${k}`));
+      /* Die Pille traegt dieselbe Fuellung und dieselbe Topline wie die
+         Lage in der Saeule - sie zeigt, statt zu beschreiben. */
+      const pil = document.createElement('i');
+      pil.style.background = fuellung(l.farbe);
+      pil.style.boxShadow  = `inset 0 1px 0 ${l.farbe}`;
+      const nam = document.createElement('b'); nam.textContent = wort; nam.style.color = l.farbe;
+      sp.append(pil, nam, document.createTextNode(String(k)));
       legende.appendChild(sp);
     }
 
-    /* Die Stapelreihenfolge steht in Worten da, nicht nur in Farbe:
-       Bei verwandten Akzenten sind die beiden Punkte in der Legende
-       kaum zu unterscheiden, die Position im Stapel immer. */
-    fuss.textContent = 'Säulen von unten: Moll, Dur, unbestimmt. '
-      + (fen === 'sicher'
+    /* Kein Satz mehr, der die Stapelreihenfolge aufzaehlt: Seit die
+       Lagen Verlauf und Topline tragen, findet man sie ueber die
+       Legendenpille wieder (Regel 23 - die Legende zeigt, statt zu
+       beschreiben). Die Fussnote sagt nur noch, was man dem Bild NICHT
+       ansieht: wie sicher die Messung war. */
+    fuss.textContent = (fen === 'sicher'
         ? `Nur Songs, bei denen der Baß auf Sunos Eins eindeutig war - mindestens ${Math.round(TON_SICHER*100)} % der Einsen auf demselben Ton.`
         : `Alle Songs, auch die ${mit.length - sicher.length}, bei denen der Baß auf Sunos Eins zwischen mehreren Tönen wechselte; dort ist der Grundton geraten.`);
   };
