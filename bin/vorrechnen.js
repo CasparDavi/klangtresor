@@ -310,10 +310,21 @@ function bilderVollstaendig(id){
    `zusatz` reicht Schalter an die Kinder weiter - so laeuft das
    Nachrechnen der fehlenden Bilder ueber denselben Weg wie ein voller
    Lauf, statt daneben noch einmal gebaut zu werden. */
-function arbeiterZahl(){
-  const os = require('node:os');
-  return Math.max(1, Math.min(6, os.cpus().length - 1));
-}
+/* Wieviele Arbeiter - siehe bin/kerne.js, dort stehen die Messreihen.
+   Hier stand bis zum 26.08.2026 ein fester Deckel von 6. Er stammte aus
+   der Zeit, als niemand nachgemessen hatte; auf diesem Rechner (8
+   physische Kerne) verschenkte er drei Minuten je vollem Lauf:
+
+     6 Arbeiter   99 s fuer 12 Songs  ->  44,1 min fuer 321
+     8 Arbeiter   92 s               ->  41,0 min
+    10 Arbeiter   94 s               ->  41,9 min
+
+   Der Nachtlauf haelt groessere Puffer als die uebrigen Laeufe (der
+   Rechenkern arbeitet auf dem ganzen Song), deshalb war der Deckel
+   vorsichtig gesetzt. Gemessen traegt er nicht: Bei acht Arbeitern
+   laeuft es schneller und ohne Auffaelligkeit. arbeiterZahl() laesst
+   ohnehin einen Kern frei. */
+const { arbeiterZahl } = require('./kerne.js');
 async function parallelRechnen(aufgaben, zusatz){
   const PARALLEL = arbeiterZahl();
   console.log(`  ${PARALLEL} Arbeiter parallel.\n`);
