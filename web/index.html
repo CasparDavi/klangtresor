@@ -145,7 +145,14 @@ h1{
 #kartesteckbrief .spalte h5{grid-column:1/-1;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:0 0 2px}
 #kartesteckbrief .begriff{font-size:11px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
 #kartesteckbrief .balken{position:relative;height:10px;background:#1c1c1f;border-radius:2px;overflow:visible}
-#kartesteckbrief .balken i{display:block;height:100%;background:var(--akzent);border-radius:2px;opacity:.7}
+/* Die liegenden Saeulen des Steckbriefs tragen seit dem 26.08.2026 die
+   Hausform: gedaempfte Flaeche, Topline oben. Beides setzt der Aufbau
+   per diaFlaeche()/diaTopline(), damit die Zahlen nicht ein zweites Mal
+   im CSS stehen - hier standen vorher eine volle Akzentflaeche und
+   opacity:.7, und eine Kontur gab es gar nicht. Kein opacity mehr:
+   zwei Daempfungen multiplizieren sich (Hausregel), und die Deckung
+   steckt jetzt in der Farbe. */
+#kartesteckbrief .balken i{display:block;height:100%;border-radius:2px}
 #kartesteckbrief .balken em{position:absolute;right:3px;top:-1px;font-style:normal;font-size:9.5px;color:var(--schwach);white-space:nowrap;text-shadow:0 0 3px #000,0 0 3px #000}
 #kartesteckbrief h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:12px 0 4px}
 #kartesteckbrief ol{list-style:none;font-size:12px;line-height:1.6}
@@ -3541,6 +3548,15 @@ function kompKurveZeichnen(){
         if (!hist[k]) continue;
         const x0 = nachX(-60 + k * 2), x1 = nachX(-58 + k * 2);
         const hh = hist[k] / hMax * (PH * 0.35);
+        /* KONTEXTFLAECHE, KEINE DATENFORM (Hausregel 5: „Kontextflaechen
+           sind still und tragen keine Skala-Behauptung"). Deshalb hier
+           bewusst keine Topline und eine Deckung weit unter dem
+           Hausstandard - dasselbe gilt fuer die stille Pegelflaeche im
+           Parameter-Panel. Caspar_D, 26.08.2026: „das Histogramm soll so
+           zurueckhaltend bleiben, es ist nur eine hilfreiche
+           Orientierung, nichts, was im Vordergrund wirken soll." Wer die
+           Diagramme des Hauses das naechste Mal durchgeht: Das hier ist
+           Absicht, kein Rueckstand. */
         inhalt += `<rect x="${x0.toFixed(1)}" y="${(O2 + PH - hh).toFixed(1)}" width="${Math.max(0.5, x1 - x0).toFixed(1)}" height="${hh.toFixed(1)}" fill="#8b8b90" opacity="0.28"/>`;
       }
     }
@@ -6190,7 +6206,10 @@ function karteSteckbrief(s, p){
        davon weg, Laenge = Wahrscheinlichkeit. */
     `<div class="saeulen">` + [['Genre', p.genres], ['Stimmung', p.stimmungen], ['Instrumente', p.instrumente]].map(([titel, l]) =>
       `<div class="spalte"><h5>${titel}</h5>` + (l || []).map(([n, w]) =>
-        `<div class="begriff">${n}</div><div class="balken"><i style="width:${Math.round(w * 100)}%"></i><em>${Math.round(w * 100)} %</em></div>`).join('') + `</div>`).join('') + `</div>` +
+        `<div class="begriff">${n}</div><div class="balken"><i style="width:${Math.round(w * 100)}%`
+        + `;background:${diaFlaeche('var(--akzent)')}`
+        + `;box-shadow:inset 0 1px 0 ${diaTopline('var(--akzent)')}"></i>`
+        + `<em>${Math.round(w * 100)} %</em></div>`).join('') + `</div>`).join('') + `</div>` +
     (p.streuung != null ? `<div class="zeile"><span>Wechselhaftigkeit</span> ${p.streuung.toFixed(2).replace('.', ',')} <i>(Streuung der 2-s-Fenster um das Songmittel)</i></div>` : '') +
     `<h4>Nächste Klangnachbarn</h4><ol>${nachbarn.map((n, i) => `<li>${n.titel}<i>${(p.nachbarn[i][1]).toFixed(2).replace('.', ',')}</i></li>`).join('')}</ol>`;
   el.hidden = false;

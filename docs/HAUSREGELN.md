@@ -226,6 +226,30 @@ einen Verlauf als Linie statt als Wolke.
 Das gilt für **alles**: Hüllkurven, Balken, Blöcke der Befundspur, Säulen
 des Spektrums, Bänder des Chroma, Histogrammbalken.
 
+### Die Ausnahme: Kontextflächen
+
+**Was nur der Orientierung dient, bleibt still** — keine Topline, Deckung
+weit unter dem Hausstandard. Regel 5 sagt es schon: *„Kontextflächen sind
+still und tragen keine Skala-Behauptung."* Der Unterschied liegt nicht in
+der Form, sondern in der Rolle: Ein Histogramm als **Datum** trägt die
+Formsprache, dasselbe Histogramm **hinter** einer Kurve ist Untergrund.
+
+So gemeint und nicht nachzuziehen:
+
+- das Histogramm im Gradations-Panel (0,28). Caspar_D, 26.08.2026: *„das
+  Histogramm soll so zurückhaltend bleiben, es ist nur eine hilfreiche
+  Orientierung, nichts, was im Vordergrund wirken soll."*
+- die stille Pegelfläche im Parameter-Panel (0,21).
+
+### Wo feste Farben bleiben dürfen
+
+Die Diagrammfarben folgen sonst der Musik (`--titel-a`, `--titel-b`). Der
+**Zählerverlauf im Reaktionen-Panel** behält seine drei festen Kennfarben,
+weil er drei Reihen nebeneinander zeigt — Plays, Likes, Kommentare — und es
+nur zwei Akzente gibt. Caspar_D, 26.08.2026: *„bei 3 wüsste ich keine guten
+drei Farben, die gehen hier."* Die Farben entsprechen den Symbolen auf den
+Kacheln.
+
 ### Die Werkzeuge
 
 In `analyzer.js` stehen `spurZug()`, `spurTopline()` und `spurBild()`.
