@@ -1,0 +1,68 @@
+# KlangTresor mit NVIDIA-GPU: Whisper (whisper.cpp) und Klangraum (ONNX/CUDA).
+# Default bleibt Dockerfile (CPU, Mac/Windows/Linux ohne NVIDIA).
+# Dieses Abbild: CUDA 12.4 + cuDNN 9, passend zu onnxruntime-node 1.20.
+#
+# Bauen und starten:
+#   docker compose -f docker-compose.yml -f docker-compose.cuda.yml up -d --build
+
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04 AS whisper-build
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git cmake build-essential ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+RUN git clone --depth 1 https://github.com/ggml-org/whisper.cpp.git
+WORKDIR /src/whisper.cpp
+# libcuda.so.1 kommt vom Treiber; beim Image-Build gibt es nur den CUDA-Stub.
+# ARG: 89 = Ada (RTX 40), 86 = Ampere (RTX 30), 75 = Turing. Mehrere mit Semikolon.
+# "native" geht hier nicht — der Build sieht oft keine GPU.
+ARG CUDA_ARCHITECTURES=89
+RUN ln -sf /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so \
+ && ln -sf /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so.1 \
+ && cmake -B build -DCMAKE_BUILD_TYPE=Release -DGGML_CUDA=1 \
+      -DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES} -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_EXE_LINKER_FLAGS="-L/usr/local/cuda/lib64/stubs -Wl,-rpath-link,/usr/local/cuda/lib64/stubs" \
+ && cmake --build build -j"$(nproc)" --config Release --target whisper-cli
+
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+ENV DEBIAN_FRONTEND=noninteractive \
+    NODE_VERSION=20.19.4 \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ffmpeg libgomp1 ca-certificates curl xz-utils \
+ && curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+    | tar -xJ -C /usr/local --strip-components=1 \
+ && groupadd --gid 1000 node \
+ && useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash node \
+ && rm -rf /var/lib/apt/lists/* \
+ && node -v && npm -v
+
+COPY --from=whisper-build /src/whisper.cpp/build/bin/whisper-cli /usr/local/bin/whisper-cli
+RUN chmod 755 /usr/local/bin/whisper-cli
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+COPY bin ./bin
+COPY browser ./browser
+COPY server ./server
+COPY web ./web
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
+# chmod 755, nicht chmod +x: siehe Dockerfile (exFAT / ._ Dateien).
+RUN chmod 755 /usr/local/bin/docker-entrypoint.sh bin/server-start.sh \
+ && chown -R node:node /app \
+ && mkdir -p /app/library /app/geheim \
+ && chown node:node /app/library /app/geheim
+
+USER node
+
+EXPOSE 8788
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["sh", "bin/server-start.sh"]

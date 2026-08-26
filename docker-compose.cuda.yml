@@ -1,0 +1,24 @@
+# Optional: NVIDIA-GPU für Whisper und den Klangraum.
+# Caspars docker-compose.yml bleibt der Weg ohne Karte.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.cuda.yml up -d --build
+#
+# Braucht das NVIDIA Container Toolkit. Ohne GPU diesen Overlay nicht
+# verwenden — `gpus: all` hat keinen CPU-Rückfall, der Container startet
+# dann oft gar nicht. Innerhalb des Images fällt Klangraum bei CUDA-Fehler
+# trotzdem auf CPU zurück (KLANG_CUDA=1 in bin/klang.js).
+
+services:
+  klangtresor:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda
+    gpus: all
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      KLANG_CUDA: "1"
+      WHISPER_CLI: /usr/local/bin/whisper-cli
+      WHISPER_MODELL: /app/library/modelle/ggml-large-v3.bin
+    healthcheck:
+      start_period: 600s
