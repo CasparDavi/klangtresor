@@ -394,3 +394,14 @@ Einzelschritt muss der Bestand lauffähig sein.
 Frage hätte den ganzen Umweg erspart; die Antwort stand in
 `bin/analyse-index.js`, zwei Zeilen über dem Eintrag, den ich am selben
 Nachmittag nachgeschlagen hatte.
+
+---
+
+## Zu zweit am Projekt
+
+Seit dem 26.08.2026 arbeitet Tarja (`myinqi`) mit Schreibrecht am Repo
+mit. Wie mit fremden Commits umgegangen wird — prüfen, bevor gezogen
+wird, und was dabei angesehen werden muß — steht in
+[ZUSAMMENARBEIT.md](ZUSAMMENARBEIT.md). Die Kurzfassung: Zu Beginn jeder
+Sitzung `node bin/fremdstand.js`, und Caspar_D bekommt die Liste, bevor
+etwas übernommen wird.
