@@ -40,10 +40,26 @@
  * NETT SEIN, wie in bin/community-profile.js: eine Anfrage zur Zeit,
  * Pause dazwischen, ehrlicher User-Agent, bei 429 oder 503 sofort
  * aufhören, Bekanntes überspringen. Zusätzlich hier eine Obergrenze von
- * zwölf Seiten je Person - wer mehr als 260 Songs mit hohen Likezahlen
- * hat, bekommt eine Untergrenze statt eines genauen Werts. Das steht
+ * zwanzig Seiten je Person - wer mehr als rund 400 Songs mit hohen
+ * Likezahlen hat, bekommt eine Untergrenze statt eines genauen Werts. Das steht
  * dann als `genau: false` in der Datei; ein Diagramm darf keine
  * Genauigkeit behaupten, die die Messung nicht hat.
+ *
+ * WARUM ZWANZIG UND NICHT ZWÖLF (Caspar_D, 26.08.2026: "setze die
+ * Seitengrenze noch auf 20"). Beim ersten vollen Lauf standen zwei
+ * Leute mit h = 217 und h = 211 unmittelbar an der alten Grenze von
+ * zwölf - der Abbruch griff gerade noch vorher, aber ohne Spielraum.
+ * Die Grenze kostet nichts, solange niemand sie erreicht: Der Abbruch
+ * oben hört ohnehin auf, sobald die Seite den Wert nicht mehr heben
+ * kann. Sie ist nur die Notbremse für den Fall, daß jemand sehr viele
+ * sehr gut gelikte Songs hat.
+ *
+ * WIE WEIT ES REICHT. Eine Seite trägt im Median 20 Clips (gemessen an
+ * 175 Profilen, Spanne 3 bis 22), nicht die 22, die die Web-App
+ * nahelegt. Aus den Daten paßt `Seiten = h/18,5 + 1` am besten
+ * (mittlerer Fehler 0,4 Seiten, größter 1,2). Zwanzig Seiten reichen
+ * damit bis etwa h = 350 - über anderthalbmal so weit wie der größte
+ * gemessene Wert (217).
  *
  * Ergebnis: library/community-hirsch.json
  *   { stand, leute: { handle: { h, songs, seiten, genau, stand } } }
@@ -63,7 +79,7 @@ const nur    = args.find((a, i) => !a.startsWith('--') && !MIT_WERT.has(args[i -
 const anzahl = args.includes('--anzahl') ? Math.max(1, parseInt(args[args.indexOf('--anzahl') + 1], 10) || 1) : Infinity;
 const PAUSE  = Math.max(1000, args.includes('--pause')
   ? (parseFloat(args[args.indexOf('--pause') + 1]) || 1.5) * 1000 : 1500);
-const MAXSEITEN = args.includes('--seiten') ? Math.max(1, parseInt(args[args.indexOf('--seiten') + 1], 10) || 12) : 12;
+const MAXSEITEN = args.includes('--seiten') ? Math.max(1, parseInt(args[args.indexOf('--seiten') + 1], 10) || 20) : 20;
 
 const BASIS = 'https://studio-api.prod.suno.com/api/profiles';
 const KOPF  = {

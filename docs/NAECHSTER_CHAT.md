@@ -1040,11 +1040,13 @@ der Leute, die hier kommentiert, geliked oder gefolgt haben.
 
 - **179 Profile**, **174 Hirschfaktoren**. Median 36 — Caspar_D hat 22,
   das ist **Rang 116 von 174**.
-- Der Aufwand skaliert mit **Seiten ≈ h/22 + 1**; 632 Seiten für alle.
-  Zwei Nachbarn (h = 217 und h = 211) standen genau an der eingebauten
-  Grenze von zwölf Seiten. Wer sie reißt, bekommt eine Untergrenze —
-  vermerkt als `genau: false`, bisher **nirgends angezeigt**. Falls das
-  sichtbar werden soll: offene Entscheidung.
+- Der Aufwand skaliert mit **Seiten ≈ h/20 + 1** (genauer: h/18,5 + 1 —
+  eine Seite trägt im Median 20 Clips, nicht 22); 632 Seiten für alle.
+  Zwei Nachbarn (h = 217 und h = 211) standen dicht an der damaligen
+  Grenze von zwölf Seiten; sie liegt jetzt bei **zwanzig** (reicht bis
+  h ≈ 350). `mrmeovv` brauchte 12 von 12 Seiten — der Puffer war exakt
+  null. Wer sie reißt, bekommt eine Untergrenze — vermerkt als
+  `genau: false`. Das trifft derzeit auf **0 von 175** Nachbarn zu.
 - Die Falle: Beide `sort_by`-Parameter sind **Pflicht**. Ohne sie kommt
   422 mit einer leeren Hülle, in der jede Zahl `null` ist — das sieht
   aus wie ein stiller Nutzer, nicht wie ein Fehler. Steht jetzt in

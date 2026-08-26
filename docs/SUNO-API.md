@@ -167,9 +167,12 @@ Songs. Dazu die erste Seite der Songs (22 Stück), `playlists` und
 `stats` liefert Summen, aber keine Verteilung. Für den Hirschfaktor
 braucht man die Likes **je Song**, absteigend sortiert
 (`clips_sort_by=upvote_count`) — und zwar so viele, bis die Zahl steht.
-Bei 22 Songs je Seite gilt:
+Eine Seite trägt im Median **20 Clips** (gemessen an 175 Profilen,
+Spanne 3 bis 22 — nicht die 22, die die Web-App nahelegt):
 
-> **Seiten ≈ h / 22 + 1**
+> **Seiten ≈ h / 20 + 1**
+>
+> Genauer paßt `h / 18,5 + 1`: mittlerer Fehler 0,4 Seiten, größter 1,2.
 
 Mehr braucht es nie: Für ein h reichen die h besten Songs, alles
 dahinter kann es nicht mehr heben. `community-hirsch.js` bricht deshalb
@@ -177,10 +180,20 @@ ab, sobald die laufende Seite den Wert nicht mehr ändern kann.
 
 Gemessen an 174 Nachbarn: **632 Seiten insgesamt**, die Hälfte der
 Leute war nach zwei bis drei Seiten fertig. Zwei standen bei h = 217
-und h = 211 genau an der eingebauten Grenze von zwölf Seiten. Wer sie
-reißt, bekommt eine **Untergrenze**, und die Datei vermerkt das als
-`genau: false` — damit später niemand eine Genauigkeit annimmt, die
-nicht dahintersteht.
+und h = 211 dicht an der damaligen Grenze von zwölf Seiten — deshalb
+liegt sie seit dem 26.08.2026 bei **zwanzig** (`--seiten` ändert sie).
+Das reicht bis etwa h = 350 und kostet nichts, solange niemand sie
+erreicht: Der Abbruch oben greift ohnehin früher.
+
+Wie knapp es war, zeigt der größte Nachbar: `mrmeovv`, h = 217, brauchte
+**12 von 12 Seiten**. Auf der zwölften lag der Höchstwert bei 201 ≤ 217,
+damit griff der Abbruch — eine Seite später hätte die alte Grenze
+zugeschlagen. Der Puffer war null.
+
+Wer die Grenze doch reißt, bekommt eine **Untergrenze**, und die Datei
+vermerkt das als `genau: false` — damit später niemand eine Genauigkeit
+annimmt, die nicht dahintersteht. Beim Stand vom 26.08.2026 trifft das
+auf **keinen** der 175 Nachbarn zu.
 
 ### Es ist ihr Server, nicht unserer
 
