@@ -3211,6 +3211,11 @@ async function start(){
      und die Sortierungen dafuer erscheinen gar nicht erst. */
   analyseIndex = d.analyse || null;
   for (const s of alle) s.analyse = (analyseIndex && analyseIndex[s.id]) || null;
+  /* VOR den Kacheln: Sie fragen beim Bauen, welches Artwork gilt.
+     Kommt die Liste zu spaet, zeigen sie Sunos Fassung und merken
+     nichts davon - ein Fehler, den man nur sieht, wenn man weiss,
+     dass ein eigenes Video existiert. */
+  await eigenArtworkLaden();
   sortierungenAnbieten();
   filterAufbauen();
   songVonId = new Map(alle.map(s => [s.id, s]));
@@ -5670,8 +5675,8 @@ function zeichnen(){
     // Gemeint ist das EIGENE Video-Artwork (83 Songs), nicht Sunos
     // Lyric-Video - das hat fast jeder Song, es würde also nichts
     // unterscheiden.
-    if (video === 'mit'  && !s.videoCoverUrl) return false;
-    if (video === 'ohne' &&  s.videoCoverUrl) return false;
+    if (video === 'mit'  && !hatBewegtbild(s)) return false;
+    if (video === 'ohne' &&  hatBewegtbild(s)) return false;
     if (!q && !filterAktiv.some(f => f.wert !== null)) return true;
     return sucheTrifft(s, q);
   });
@@ -5826,7 +5831,7 @@ function zeichnen(){
         <img loading="lazy" src="/media/${s.id}/kachel.jpg" alt=""
              onerror="this.src='/media/${s.id}/cover.jpg'">
         ${s.modell ? `<span class="marke">${s.modell}</span>` : ''}
-        ${s.videoCoverUrl ? `<span class="videomarke" title="eigenes Video-Artwork">${SYM('eigenvideo')}</span>` : ''}
+        ${hatBewegtbild(s) ? `<span class="videomarke" title="${istEigenesBewegtbild(s) ? 'selbst zugeordnetes Video-Artwork' : 'eigenes Video-Artwork'}">${SYM('eigenvideo')}</span>` : ''}
         ${s.oeffentlich ? '' : '<span class="privatmarke" title="nicht auf Suno veröffentlicht">privat</span>'}
         ${capMarke(s)}
       </div>
@@ -8887,12 +8892,62 @@ function esc(t){
    sofort wieder entfernt. Bei 248 Kacheln dauerhaft laufende
    Videos würden jedes Gerät in die Knie zwingen.
 ------------------------------------------------------------- */
+/* ---- EIGENE ARTWORKS ------------------------------------------------
+   Caspar_D, 26.08.2026: "Artwork zuordnen, die Suno wegen puritanischer
+   Engstirnigkeit abgelehnt hat, wie bspw meine Videos für den Song
+   Seife oder die Braut von Corinth."
+
+   Ein lokales Archiv heisst auch: Was zu einem Stueck gehoert,
+   entscheidet der, dem es gehoert. Suno nimmt manche Videos nicht an -
+   hier liegen sie trotzdem beim Song.
+
+   EIN EIGENER NAME, KEIN UEBERSCHREIBEN. eigen.mp4 steht neben
+   artwork.mp4, eigen.jpg neben cover.jpg. Damit faellt kein Medienlauf
+   darueber her (laden.js kennt nur seine eigenen Namen), man sieht
+   jederzeit, was von wem stammt, und die Datei zu loeschen stellt
+   Sunos Fassung wieder her. Ersetzt wird nichts, nur vorgezogen.
+
+   Die Liste kommt einmal vom Server. 321 Kacheln einzeln fragen zu
+   lassen hiesse, fuer jeden Song ohne eigenes Artwork einen
+   Fehlschlag zu erzeugen. */
+let _eigenArt = null;
+async function eigenArtworkLaden(){
+  if (_eigenArt !== null) return _eigenArt;
+  try { _eigenArt = (await (await fetch('/api/eigen-artwork', { cache: 'no-store' })).json()).songs || {}; }
+  catch (e) { _eigenArt = {}; }
+  return _eigenArt;
+}
+/* HAT DIESER SONG UEBERHAUPT EIN BEWEGTBILD? Bis zum 26.08.2026 hiess
+   diese Frage `s.videoCoverUrl` - also "hat Suno eines". Damit blieb
+   ein selbst zugeordnetes Video unsichtbar: Die Buehne zeigte das
+   Standbild, die Kachel trug keine Marke, und der Filter "Mit
+   Video-Artwork" liess den Song aus. Sieben Stellen fragten so; jetzt
+   fragen sie hier. */
+function hatBewegtbild(s){
+  if (!s || s.fremd) return false;
+  return !!s.videoCoverUrl || !!(_eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
+}
+/* Und ob es ein EIGENES ist - fuer alles, was das benennen will. */
+function istEigenesBewegtbild(s){
+  return !!(s && _eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
+}
+/* Welches Bewegtbild gilt fuer diesen Song - das eigene, sonst Sunos. */
+function artworkVideo(id){
+  return (_eigenArt && _eigenArt[id] && _eigenArt[id].video)
+    ? '/media/' + id + '/eigen.mp4' : '/media/' + id + '/artwork.mp4';
+}
+/* Und welches Standbild. */
+function artworkBild(id){
+  return (_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
+    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/cover.jpg';
+}
+
 function bewegtAn(karte, id){
   const kasten = karte.querySelector('.bild');
   if (!kasten || kasten.querySelector('video.bewegt')) return;
   const v = document.createElement('video');
   v.className = 'bewegt';
-  v.src = '/media/' + id + '/artwork.mp4';
+  v.src = artworkVideo(id);
   v.muted = true; v.loop = true; v.playsInline = true; v.preload = 'metadata';
   // Erst wenn das Video wirklich läuft, wird das Clipping der
   // Kachel aufgehoben - sonst blitzt bei fehlendem Artwork kurz
@@ -8952,7 +9007,7 @@ function markieren(){
     // Der laufende Song zeigt sein bewegtes Artwork dauerhaft.
     // Auf dem iPhone gibt es kein Überfahren mit der Maus - so
     // bekommst du die Videos dort trotzdem zu sehen.
-    if (dieser && s.videoCoverUrl) bewegtAn(k, s.id);
+    if (dieser && hatBewegtbild(s)) bewegtAn(k, s.id);
     else if (!dieser)              bewegtAus(k);
   });
 }
@@ -9866,9 +9921,9 @@ async function detailAuf(id){
       ${s.lyrics ? `<div class="block"><h3>Lyrics</h3><pre class="text">${esc(s.lyrics)}</pre></div>`:''}
       ${s.stilPrompt ? `<div class="block"><h3>Stil-Prompt</h3><pre class="text">${esc(s.stilPrompt)}</pre></div>`:''}
       ${s.stilAusschluss ? `<div class="block"><h3>Ausgeschlossene Stile</h3><pre class="text">${esc(s.stilAusschluss)}</pre></div>`:''}
-      ${s.videoCoverUrl ? `<div class="block"><h3>Dein Video-Artwork</h3>
+      ${hatBewegtbild(s) ? `<div class="block"><h3>${istEigenesBewegtbild(s) ? 'Dein Video-Artwork — selbst zugeordnet' : 'Dein Video-Artwork'}</h3>
          <video controls loop playsinline preload="metadata"
-           poster="/media/${s.id}/cover.jpg" src="/media/${s.id}/artwork.mp4"></video></div>`:''}
+           poster="${artworkBild(s.id)}" src="${artworkVideo(s.id)}"></video></div>`:''}
       ${s.videoUrl ? `<div class="block"><h3>Lyric-Video von Suno</h3>
          <p style="color:var(--schwach);font-size:13px;line-height:1.6">
            Nicht mitarchiviert — die Bühne kann dasselbe wortgenau statt
@@ -15247,15 +15302,15 @@ function darstellungAufbauen(){
     // für DIESES Lied das Standbild - still, ohne Hinweis. Die
     // Einstellung bleibt stehen und greift beim nächsten Song, der
     // eines hat.
-    const eigenesVideo = bBild === 'video' && bSong.videoCoverUrl && !bSong.fremd;
+    const eigenesVideo = bBild === 'video' && hatBewegtbild(bSong);
 
     if (eigenesVideo){
-      kasten.innerHTML = medienEbenen('video', `/media/${bSong.id}/artwork.mp4`,
-        `muted loop playsinline autoplay poster="/media/${bSong.id}/cover.jpg"`);
+      kasten.innerHTML = medienEbenen('video', artworkVideo(bSong.id),
+        `muted loop playsinline autoplay poster="${artworkBild(bSong.id)}"`);
       const v = kasten.querySelector('video.motiv');
       v.onloadedmetadata = () => formatUebernehmen(kasten, v.videoWidth, v.videoHeight);
       v.onerror = () => {
-        kasten.innerHTML = medienEbenen('img', `/media/${bSong.id}/cover.jpg`, 'alt=""');
+        kasten.innerHTML = medienEbenen('img', artworkBild(bSong.id), 'alt=""');
       };
     } else {
       // Fremde Songs holen ihr Cover direkt von Sunos CDN.
@@ -16163,7 +16218,7 @@ $('raster').addEventListener('mouseover', (e)=>{
   const k = e.target.closest('.karte');
   if (!k || k.contains(e.relatedTarget)) return;
   const s = song(k.dataset.id);
-  if (s && s.videoCoverUrl) bewegtAn(k, s.id);
+  if (hatBewegtbild(s)) bewegtAn(k, s.id);
 });
 $('raster').addEventListener('mouseout', (e)=>{
   const k = e.target.closest('.karte');

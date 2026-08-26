@@ -1532,6 +1532,35 @@ const server = http.createServer((req, res) => {
   }
 
   // Mediendateien
+  /* EIGENE ARTWORKS (Caspar_D, 26.08.2026: "Artwork zuordnen, die Suno
+     wegen puritanischer Engstirnigkeit abgelehnt hat").
+
+     Welche Songs ein selbst zugeordnetes Bild oder Video haben, weiss
+     nur die Platte. Die Oberflaeche holt die Liste einmal, statt fuer
+     321 Kacheln je eine Datei zu erfragen und 300 Fehlschlaege zu
+     ernten.
+
+     eigen.mp4 und eigen.jpg heissen absichtlich anders als Sunos
+     artwork.mp4 und cover.jpg: So faellt kein Medienlauf darueber her,
+     man sieht jederzeit, was von wem stammt, und Loeschen macht es
+     rueckgaengig. */
+  if (p === '/api/eigen-artwork') {
+    const raus = {};
+    try {
+      for (const d of fs.readdirSync(SONGS)) {
+        const o = path.join(SONGS, d);
+        let st; try { st = fs.statSync(o); } catch (e) { continue; }
+        if (!st.isDirectory()) continue;
+        const hat = {};
+        for (const [feld, datei] of [['video', 'eigen.mp4'], ['bild', 'eigen.jpg']]) {
+          try { if (fs.statSync(path.join(o, datei)).size > 0) hat[feld] = true; } catch (e) {}
+        }
+        if (Object.keys(hat).length) raus[d] = hat;
+      }
+    } catch (e) {}
+    return jsonAntwort(res, { songs: raus, anzahl: Object.keys(raus).length });
+  }
+
   if (p.startsWith('/media/')) {
     const ziel = sicherer(SONGS, p.slice('/media/'.length));
     if (!ziel) { res.writeHead(403); return res.end(); }
