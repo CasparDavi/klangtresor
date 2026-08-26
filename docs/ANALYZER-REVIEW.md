@@ -535,7 +535,51 @@ Und: fast alles wird nur aus dem linken Kanal gerechnet. Tauscht man die Kanäle
 Der kürzeste Weg nach vorn ist der, den bin/pruefe-lautheit.js schon vorzeichnet: für jede Messgröße ein Prüfsignal mit bekannter Antwort. Sinus, Sägezahn, weißes und rosa Rauschen, eine bandbegrenzte Datei, eine Tonleiter — damit fallen sieben der zehn schweren Befunde beim ersten Lauf auf.
 
 
-### Die 17 Befunde, die noch gelten
+### Fünf Befunde sind seither erledigt
+
+Stand 26.08.2026, nachgeprüft am Code und an der Ablage:
+
+- **12** (kein R, kein L+R): 321 × `rechts.webp` und 321 × `summe.webp`
+  liegen in `library/analyse/`, der Analyzer hat die vier Register.
+- **34, 44, 49** (alles nur aus dem linken Kanal): Hüllkurve, Anschläge,
+  Tempo, Lautheit und Scheitelfaktor rechnen beide Kanäle. Siehe unten.
+- **43** (momentanMax und kurzMax sind NaN): stehen nicht mehr im Index.
+
+### Warnung: der Vorschlag zu 34/49 war falsch
+
+Dort stand: *„ch als (left+right)/2 bilden. Der Aufwand ist eine Zeile."*
+Das hätte zwei Schäden angerichtet, und beide sind teuer:
+
+**1. `ch` ist an vier Stellen unmissverständlich der LINKE Kanal**, weil
+`right` direkt daneben steht (Caspar_D, 26.08.2026: *„nicht das
+irgendwelche Funktionen auch auf ch zugreifen und links erwarten, obwohl
+wir es auf ch L+R umdefiniert haben"*):
+
+| Zeile | Paar | wozu |
+|---|---|---|
+| 824 | `magC` / `magC2` | Stereo-Vergleich |
+| 933 | `magS` / `magS2` | bandweise Seitenlage |
+| 1003 | `cmL` / `cmR` | Chroma links und rechts |
+| 1063 | `mag` / `magR` | Spektrogramm L und R |
+
+Bei 1003 sagt es der Name: `cmL` heißt „Chroma mag **Links**". Wäre `ch`
+die Summe, verglichen alle vier **Summe gegen rechts** statt links gegen
+rechts — die Seitenlage wäre falsch, das Chroma wäre falsch, und das
+„L"-Register des Spektrogramms zeigte die Summe.
+
+**2. Eine Signalsumme löscht gegenphasige Anteile aus.** Was beide
+Lautsprecher gegenphasig spielen, verschwände aus dem Bild, und in Sunos
+Mischungen steht davon reichlich.
+
+**Wie es statt dessen gelöst wurde:** kanalweise rechnen und erst das
+ERGEBNIS mitteln — Beträge bei der Hüllkurve, Leistungen bei Energie,
+Lautheit und Scheitelfaktor, die Spitze als Maximum beider (eine
+Übersteuerung rechts bleibt eine Übersteuerung). Das ist dieselbe
+Entscheidung wie bei |L|+|R| im Spektrogramm und in `bin/toene.js`, und
+es ist das, was BS.1770 tut: Kanalleistungen addieren, nicht Signale.
+`ch` bleibt dabei `left` und darf es bleiben.
+
+### Die 12 Befunde, die noch gelten
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
 **mittel** · `analyzer-worker.js`:943, `bin/vorrechnen.js`
