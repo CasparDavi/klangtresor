@@ -10963,11 +10963,12 @@ async function profilNachbarnFuellen(){
       feld.appendChild(rangBild(sortiert, wertVon));
       const med = sortiert[Math.floor(sortiert.length / 2)];
       const nm = GR.find(x => x[0] === art)[1];
-      fuss.textContent = `${nm}: Rang ${rang} von ${sortiert.length}. `
-        + `Du ${Math.round(wertVon(ich)).toLocaleString('de-DE')}, `
+      /* Wert und Rang stehen jetzt IM Bild an der eigenen Saeule. Hier
+         darunter nur noch das Umfeld - Mitte und Spitze -, damit die
+         Zahl oben einen Bezug hat. */
+      fuss.textContent = `Jede Säule ein Mensch, nach ${nm} sortiert, deine in Akzentfarbe. `
         + `Mitte ${Math.round(wertVon(med)).toLocaleString('de-DE')}, `
-        + `größter ${Math.round(wertVon(sortiert[0])).toLocaleString('de-DE')} (${sortiert[0].name}). `
-        + `Jede Säule ein Mensch, deine in Akzentfarbe.`;
+        + `größter ${Math.round(wertVon(sortiert[0])).toLocaleString('de-DE')} — ${sortiert[0].name}.`;
     };
     for (const [k, t] of GR){
       const c = document.createElement('span'); c.className = 'chip'; c.dataset.g = k;
@@ -11155,14 +11156,44 @@ function rangBild(sortiert, wertVon){
     sv += `<rect x="${(x + 0.4).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8, bw - 0.8).toFixed(1)}" height="1"`
        + ` style="fill:${diaTopline(f, p.ist ? SPUR_DECKUNG : SPUR_FREMD)}" pointer-events="none"/>`;
   });
-  /* Die Platznummern unter der Reihe: erste, letzte und die eigene -
-     mehr braucht es nicht, um sich zurechtzufinden. */
+  /* Die Platznummern unter der Reihe: erste und letzte. */
   const eigen = sortiert.findIndex(p => p.ist);
   const marke = (i, txt, farbig) => `<text x="${(i * bw + bw / 2).toFixed(1)}" y="${H - 5}"`
     + ` font-size="11" fill="${farbig ? DIA_1 : '#8b8b90'}" text-anchor="middle">${txt}</text>`;
   sv += marke(0, '1.', false);
-  if (eigen > 2 && eigen < n - 3) sv += marke(eigen, (eigen + 1) + '.', true);
   sv += marke(n - 1, n + '.', false);
+
+  /* DER WERT STEHT AN DER EIGENEN SAEULE (Caspar_D, 26.08.2026: "Wieso
+     steht der Rang dort, wenn ich oben etwas anklicke, muß ich zuerst
+     das sehen und erst danach den rang oder es muß über der roten Säule
+     stehen").
+
+     Wer eine Groesse anklickt, will zuerst SEINEN WERT sehen und dann,
+     wo der steht - in dieser Reihenfolge. In der Fussnote unter dem Bild
+     stand es andersherum und ausserdem an der falschen Stelle: Der Blick
+     ist bei der farbigen Saeule, nicht drei Zeilen tiefer. Also zwei
+     Zeilen direkt darueber, Wert oben und fett, Rang darunter und
+     leiser.
+
+     Die Beschriftung weicht aus, wenn die Saeule zu weit rechts steht -
+     sonst laeuft sie aus dem Bild. */
+  if (eigen >= 0){
+    const x = eigen * bw + bw / 2;
+    const hEigen = hoch(wertVon(sortiert[eigen]));
+    const y = Math.max(24, H - U - hEigen - 8);
+    const rechts = x > W - 90, links = x < 90;
+    const anker = rechts ? 'end' : links ? 'start' : 'middle';
+    const tx = rechts ? x + 4 : links ? x - 4 : x;
+    sv += `<text x="${tx.toFixed(1)}" y="${(y - 12).toFixed(1)}" font-size="15" font-weight="700"`
+       + ` fill="${DIA_1}" text-anchor="${anker}">${Math.round(wertVon(sortiert[eigen])).toLocaleString('de-DE')}</text>`;
+    sv += `<text x="${tx.toFixed(1)}" y="${y.toFixed(1)}" font-size="11.5"`
+       + ` fill="#8b8b90" text-anchor="${anker}">Rang ${eigen + 1} von ${n}</text>`;
+    /* Ein Strich von der Beschriftung zur Saeule, falls sie ausweichen
+       musste - sonst weiss man nicht, worauf sie sich bezieht. */
+    if (rechts || links)
+      sv += `<line x1="${x.toFixed(1)}" y1="${(H - U - hEigen).toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(y + 3).toFixed(1)}"`
+         + ` stroke="${DIA_1}" stroke-width="1" opacity="0.5"/>`;
+  }
   sv += '</svg>';
   const d = document.createElement('div'); d.innerHTML = sv; return d;
 }
