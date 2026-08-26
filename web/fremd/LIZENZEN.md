@@ -94,6 +94,30 @@ Zur Vorgeschichte: Demucs stand bis zum 13.04.2020 unter CC BY-NC
 (nicht-kommerziell) und ist seither MIT. Das Sechs-Spur-Modell entstand
 erst am 07.12.2022, fällt also vollständig in die MIT-Zeit.
 
+### NVIDIA CUDA-Images — NVIDIA Deep Learning Container License
+
+Seit dem 26.08.2026 gibt es ein **optionales** GPU-Overlay
+(`Dockerfile.cuda`, Tarja). Es baut auf
+`nvidia/cuda:12.4.1-devel-ubuntu22.04` und
+`nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04` auf.
+
+**Im Repositorium liegt davon nichts** — die Images werden beim Bauen
+geholt. Ein `FROM`-Verweis ist keine Verteilung, unsere MIT-Lizenz
+bleibt davon unberührt.
+
+**Wer das gebaute Image weitergibt**, unterliegt dagegen NVIDIAs
+Bedingungen: Die CUDA-Bibliotheken und cuDNN stehen unter der *NVIDIA
+Deep Learning Container License*, nicht unter MIT. Für den eigenen
+Gebrauch auf der eigenen Maschine ist das ohne Belang; ein fertiges
+Image öffentlich anzubieten wäre etwas anderes.
+
+Das Ubuntu-Grundsystem darin enthält wie jedes Linux GPL-Software.
+Auch das berührt uns nicht: Wir verlinken nichts davon in eigenen Code
+und geben nichts davon weiter.
+
+> [catalog.ngc.nvidia.com](https://catalog.ngc.nvidia.com) ·
+> [hub.docker.com/r/nvidia/cuda](https://hub.docker.com/r/nvidia/cuda)
+
 ### Whisper — MIT
 
 Erkennt gesungene Sprache und liefert Wort-Zeitmarken.

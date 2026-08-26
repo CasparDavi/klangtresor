@@ -94,6 +94,33 @@ for (const h of neu) {
     adressen.forEach(a => console.log('      ' + a));
   }
 
+  /* LIZENZEN (Caspar_D, 26.08.2026: „Pruefe bitte auch unbedingt, dass
+     Ein- und Umbauten lizenzkonform sind, nicht dass ploetzlich in
+     unserem Repo Dinge liegen, die unsere Lizenz verletzen").
+
+     KlangTresor steht unter MIT. Verträglich sind MIT, BSD, ISC,
+     Apache-2.0 und Public Domain. NICHT verträglich sind GPL, AGPL und
+     LGPL: Wer solchen Code einbaut, muss das ganze Werk unter dieselbe
+     Lizenz stellen. Ein NACHBAU nach fremdem Vorbild ist erlaubt und
+     im Haus schon einmal so gemacht worden (CB Audio Analyzer, GPL -
+     nachgebaut, nicht uebernommen; siehe web/fremd/LIZENZEN.md).
+
+     Gemeldet wird jede neue Abhaengigkeit, jedes fremde Repositorium
+     und jedes Docker-Grundbild. Die Lizenz selbst kann dieses Werkzeug
+     nicht nachschlagen - es sagt nur, WO nachzusehen ist. */
+  const paketNeu = stat.some(z => /package(-lock)?\.json/.test(z));
+  const quellen = [
+    ...(zugewinn.match(/(?:FROM|--from=)\s*([a-z0-9][a-z0-9._\/-]*:[a-z0-9._-]+)/gi) || []),
+    ...(zugewinn.match(/git clone[^\n]*?(https?:\/\/[^\s'"]+)/gi) || []),
+  ];
+  if (paketNeu || quellen.length) {
+    console.log('\n    ⚠ LIZENZ PRÜFEN — fremder Code kommt herein:');
+    if (paketNeu) console.log('      package.json geändert → neue Abhängigkeiten?');
+    [...new Set(quellen)].forEach(q => console.log('      ' + q.replace(/\s+/g, ' ')));
+    console.log('      MIT/BSD/ISC/Apache-2.0 sind verträglich, GPL/AGPL/LGPL NICHT.');
+    console.log('      Eintragen in web/fremd/LIZENZEN.md, wenn es bleibt.');
+  }
+
   /* Anfassen, was nicht Programm ist. */
   const heikel = stat.map(z => z.split('|')[0].trim())
     .filter(d => /^(library|geheim)\//.test(d) || /\.(env|pem|key)$/.test(d) || d === '.gitignore');

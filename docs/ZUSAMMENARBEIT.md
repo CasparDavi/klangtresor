@@ -66,12 +66,46 @@ whisper-cli nicht mit — also läuft er nie, wenn man ihn nicht will.
 gelistet. Zu prüfen: Ist die Quelle die offizielle? Wird etwas
 heruntergeladen, und wie groß ist es? Was passiert, wenn es fehlschlägt?
 
-**e) Werden Dateien außerhalb des Programms angefaßt?** `library/`,
+**e) Ist es lizenzkonform?** Caspar_D, 26.08.2026: *„Prüfe bitte auch
+unbedingt, dass Ein- und Umbauten lizenzkonform sind, nicht dass
+plötzlich in unserem Repo Dinge liegen, die unsere Lizenz verletzen."*
+
+KlangTresor steht unter **MIT**. Damit verträglich sind MIT, BSD, ISC,
+Apache-2.0 und Public Domain — sie erlauben die Verwendung in einem
+MIT-Werk, meist unter Beibehaltung des Urhebervermerks.
+
+**Nicht verträglich sind GPL, AGPL und LGPL.** Wer solchen Code
+übernimmt, muß das *ganze* Werk unter dieselbe Lizenz stellen. Das ist
+keine Formalie: Es würde bedeuten, daß KlangTresor selbst GPL wird.
+
+Ein **Nachbau** nach fremdem Vorbild ist dagegen erlaubt und im Haus
+schon einmal so gemacht worden: Der Störfrequenz-Sucher ist dem *CB
+Audio Analyzer* (GPL) nachgebaut, nicht übernommen — das steht
+ausdrücklich in `web/fremd/LIZENZEN.md`. Wer ein Verfahren versteht und
+neu schreibt, schleppt keine Lizenz mit.
+
+`fremdstand.js` meldet, **wo** nachzusehen ist: jede geänderte
+`package.json`, jedes geklonte Repositorium, jedes Docker-Grundbild. Die
+Lizenz selbst muß man nachschlagen — bei npm-Paketen steht sie in deren
+`package.json`, bei GitHub-Projekten im Repo-Kopf, bei Docker-Images
+beim Anbieter.
+
+**Ein Unterschied, der oft übersehen wird:** Ein `FROM`-Verweis in einem
+Dockerfile ist *keine* Verteilung. Das Bild liegt nicht im Repo, es wird
+beim Bauen geholt — unsere Lizenz bleibt unberührt. Erst wer ein
+*gebautes* Image weitergibt, unterliegt dessen Bedingungen. Genau dieser
+Fall trat am 26.08. mit den NVIDIA-CUDA-Images ein; er ist in
+`LIZENZEN.md` festgehalten.
+
+**Was ins Repo kommt, muß in `web/fremd/LIZENZEN.md`.** Auch wenn es nur
+referenziert wird.
+
+**f) Werden Dateien außerhalb des Programms angefaßt?** `library/`,
 `geheim/`, `.gitignore`, Schlüsseldateien. Das Archiv gehört nicht ins
 Repo (siehe `.gitignore`), und wer daran rührt, tut es entweder aus
 Versehen oder mit einem Grund, den man kennen sollte.
 
-**f) Stimmen Absender und Inhalt zusammen?** Verschiedene
+**g) Stimmen Absender und Inhalt zusammen?** Verschiedene
 Mailadressen im selben Vorgang sind normal (privates Konto,
 GitHub-Konto), aber sie gehören erwähnt.
 
