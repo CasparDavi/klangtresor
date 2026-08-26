@@ -10394,6 +10394,165 @@ function profilZahlenFuellen(){
     kg.appendChild(karussell('kuriosa', 'Kuriosa', kuriosSeiten(eigene))); }
 
 }
+/* ---- SONGLAENGEN, GESTAPELT ----------------------------------------
+   Caspar_D, 26.08.2026: "Songlänge fände ich gut, das ist gar nicht so
+   Sunotypisch. Darin könnte man gestapelte Säulen nehmen und bspw die
+   Cluster aus dem Klangraum nehmen, die Modelle, Jahre/Monate, also
+   multidimensional."
+
+   Die Laenge steht auf der x-Achse, die Haeufigkeit in der Hoehe - und
+   was die Saeule INNEN teilt, ist umschaltbar: Stilgruppe, Modell oder
+   Jahr. Dieselben Songs, dreimal anders sortiert; wer umschaltet, sieht,
+   welche Aufteilung die Laengen ueberhaupt erklaert.
+
+   NICHT genommen wurde das Tempo als vierte Dimension (Caspar_D:
+   "Tempo wäre ich vorsichtig, weil man die in Vielfache teilen kann und
+   manchmal das gleiche gemeint ist obwohl ein vielfaches in der Messung
+   herausgekommen ist"). Nachgerechnet: Faltet man alle Tempi auf eine
+   Oktave, verschwindet die scheinbare Zweigipfligkeit - 16 % der Songs
+   liegen ausserhalb von 70..140 BPM und wandern beim Falten mitten ins
+   Bild. Eine Achse, die man so leicht falsch liest, gehoert nicht ins
+   Diagramm.
+
+   Die Lagen tragen Farben zwischen Akzent 1 und Akzent 2. Die
+   Stilgruppen haben im Klangraum zwar eigene Farben, aber hier gilt die
+   Seitenregel - und sie muss fuer beliebig viele Lagen tragen, nicht
+   nur fuer vier.
+-------------------------------------------------------------------- */
+function laengenLagen(n){
+  /* n Farben zwischen Akzent 1 und Akzent 2 - die erste voll DIA_1, die
+     letzte voll DIA_2, dazwischen gemischt. */
+  if (n <= 1) return [DIA_1];
+  const aus = [];
+  for (let i = 0; i < n; i++)
+    aus.push(`color-mix(in srgb, ${DIA_2} ${Math.round(100 * i / (n - 1))}%, ${DIA_1})`);
+  return aus;
+}
+
+let _karteFuerLaengen = null;
+async function profilLaengenFuellen(){
+  const ziel = $('profillaengen'); if (!ziel) return;
+  const eigene = alle.filter(s => !s.fremd && s.dauer > 0);
+  if (eigene.length < 12){ ziel.style.display = 'none'; return; }
+  ziel.style.removeProperty('display');
+
+  /* Die Stilgruppen liegen im Klangraum, nicht im Katalog - einmal
+     holen, still scheitern, wenn es sie nicht gibt. */
+  if (_karteFuerLaengen === null){
+    try { _karteFuerLaengen = await (await fetch('/api/karte', { cache: 'no-store' })).json(); }
+    catch (e) { _karteFuerLaengen = false; }
+  }
+  const gruppeVon = new Map(), gruppenName = new Map();
+  if (_karteFuerLaengen && _karteFuerLaengen.songs){
+    for (const p of _karteFuerLaengen.songs) gruppeVon.set(p.id, p.gruppe);
+    for (const g of (_karteFuerLaengen.gruppen || [])) gruppenName.set(g.nr, g.name);
+  }
+
+  const ARTEN = [];
+  if (gruppeVon.size) ARTEN.push(['stil', 'Stilgruppe',
+    (s) => { const g = gruppeVon.get(s.id); return g == null ? null : (gruppenName.get(g) || ('Gruppe ' + g)); }]);
+  ARTEN.push(['modell', 'Modell', (s) => s.modell || null]);
+  ARTEN.push(['jahr', 'Jahr', (s) => s.erstellt ? s.erstellt.slice(0, 4) : null]);
+
+  ziel.innerHTML = '<h3>Songlängen</h3>';
+  const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
+  const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
+
+  const kopf = document.createElement('div'); kopf.className = 'diatitel';
+  kopf.innerHTML = SYM('analyse') + ' ';
+  kopf.appendChild(document.createTextNode('Wie lang die Stücke sind'));
+  const chips = document.createElement('span');
+  chips.style.cssText = 'margin-left:auto;display:flex;gap:6px';
+  kopf.appendChild(chips); w.appendChild(kopf);
+
+  const reihe = document.createElement('div'); reihe.className = 'sr hoch'; w.appendChild(reihe);
+  const achse = document.createElement('div'); achse.className = 'tonachse'; w.appendChild(achse);
+  const legende = document.createElement('div'); legende.className = 'stapellegende'; w.appendChild(legende);
+  const fuss = document.createElement('div'); fuss.className = 'fussnote'; fuss.style.marginTop = '2px'; w.appendChild(fuss);
+
+  /* HALBE MINUTEN als Klassen. Feiner waere Rauschen (die Laengen
+     streuen auf die Sekunde), groeber verwischt den Gipfel. */
+  const KLASSE = 30;
+  const laengen = eigene.map(s => s.dauer);
+  const vonS = Math.floor(Math.min(...laengen) / KLASSE) * KLASSE;
+  const bisS = Math.ceil(Math.max(...laengen) / KLASSE) * KLASSE;
+  const nK = Math.max(1, Math.round((bisS - vonS) / KLASSE));
+
+  let art = localStorage.getItem('laengenArt') || ARTEN[0][0];
+  if (!ARTEN.some(a => a[0] === art)) art = ARTEN[0][0];
+
+  const zeichnen = () => {
+    localStorage.setItem('laengenArt', art);
+    [...chips.children].forEach(c => c.classList.toggle('an', c.dataset.a === art));
+    const nachWas = ARTEN.find(a => a[0] === art)[2];
+
+    /* Welche Lagen gibt es, und wie stark? Die haeufigste steht unten. */
+    const staerke = new Map();
+    for (const s of eigene){ const k = nachWas(s) || 'ohne Angabe';
+      staerke.set(k, (staerke.get(k) || 0) + 1); }
+    const lagen = [...staerke].sort((a, b) => b[1] - a[1]).map(x => x[0]);
+    const farben = laengenLagen(lagen.length);
+    const platz = new Map(lagen.map((l, i) => [l, i]));
+
+    /* Zaehlen: je Klasse und Lage */
+    const feld = Array.from({ length: nK }, () => new Array(lagen.length).fill(0));
+    for (const s of eigene){
+      const k = Math.min(nK - 1, Math.floor((s.dauer - vonS) / KLASSE));
+      feld[k][platz.get(nachWas(s) || 'ohne Angabe')]++;
+    }
+    const max = Math.max(...feld.map(z => z.reduce((a, b) => a + b, 0))) || 1;
+
+    reihe.innerHTML = ''; achse.innerHTML = '';
+    for (let k = 0; k < nK; k++){
+      const sum = feld[k].reduce((a, b) => a + b, 0);
+      const sz = document.createElement('div'); sz.className = 'sz';
+      const v = document.createElement('span'); v.className = 'sv'; v.textContent = sum || '';
+      const b = document.createElement('span'); b.className = 'sb stapel';
+      for (let l = 0; l < lagen.length; l++){
+        const teil = feld[k][l]; if (!teil) continue;
+        const i = document.createElement('i');
+        i.style.height = (100 * teil / max).toFixed(2) + '%';
+        i.style.background = diaFlaeche(farben[l]);
+        i.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[l])}`;
+        b.appendChild(i);
+      }
+      const vonM = (vonS + k * KLASSE) / 60, bisM = (vonS + (k + 1) * KLASSE) / 60;
+      sz.title = `${vonM.toFixed(1).replace('.', ',')}–${bisM.toFixed(1).replace('.', ',')} min · ${sum} ${sum === 1 ? 'Song' : 'Songs'}`
+        + (sum ? '\n' + lagen.map((l, i2) => feld[k][i2] ? `${feld[k][i2]} × ${l}` : null).filter(Boolean).join('\n') : '');
+      sz.append(v, b); reihe.appendChild(sz);
+      /* Beschriftet werden nur die vollen Minuten - zwoelf Zahlen
+         nebeneinander liest niemand. */
+      const sp = document.createElement('span');
+      const sek = vonS + k * KLASSE;
+      sp.textContent = sek % 60 === 0 ? String(sek / 60) : '';
+      achse.appendChild(sp);
+    }
+
+    legende.innerHTML = '';
+    lagen.forEach((l, i) => {
+      const sp = document.createElement('span');
+      const pil = document.createElement('i');
+      pil.style.background = diaFlaeche(farben[i]);
+      pil.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farben[i])}`;
+      const nam = document.createElement('b'); nam.textContent = l; nam.style.color = farben[i];
+      sp.append(pil, nam, document.createTextNode(String(staerke.get(l))));
+      legende.appendChild(sp);
+    });
+    fuss.textContent = `Klassen zu ${KLASSE} Sekunden, Achse in Minuten. `
+      + `Kürzester ${(Math.min(...laengen) / 60).toFixed(1).replace('.', ',')} min, `
+      + `längster ${(Math.max(...laengen) / 60).toFixed(1).replace('.', ',')} min, `
+      + `Mittel ${(laengen.reduce((a, b) => a + b, 0) / laengen.length / 60).toFixed(1).replace('.', ',')} min.`;
+  };
+
+  for (const [a, tx] of ARTEN){
+    const c = document.createElement('span'); c.className = 'chip';
+    c.dataset.a = a; c.textContent = tx; c.style.cursor = 'pointer';
+    c.onclick = () => { art = a; zeichnen(); };
+    chips.appendChild(c);
+  }
+  zeichnen();
+}
+
 /* ---- TONARTEN ------------------------------------------------------
    Caspar_D, 26.08.2026: „mache einfach ein Saeulendiagramm ueber die
    ganze Breite, ein neues Panel vor Befunde und Kuriosa."
@@ -10643,6 +10802,7 @@ function profilAuf(){
       </div>
 
       <div class="block" id="profilzahlen"></div>
+      <div class="block" id="profillaengen"></div>
       <div class="block" id="profiltonarten"></div>
       <div class="block" id="profilkarussell"></div>
 
@@ -10701,6 +10861,7 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
   $('zu').style.display = 'block';
   $('detail').scrollTop = 0;
   profilZahlenFuellen();
+  profilLaengenFuellen();
   profilTonartenFuellen();
   profilCommunityFuellen();
 }
