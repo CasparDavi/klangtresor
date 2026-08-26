@@ -32,6 +32,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const K = require('./katalog.js');
+/* Wieviele Arbeiter - eine Quelle fuer alle Laeufe, mit den Messwerten
+   im Kommentar dort. */
+const { arbeiterZahl } = require('./kerne.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS = path.join(WURZEL, 'library', 'songs');
@@ -261,32 +264,6 @@ function analysieren(pcm) {
   for (const c of kand) c.art = brumm(c.hz) ? 'Brummen' : musik.has(c) ? 'wahrscheinlich Musik' : Math.abs(c.cent) <= 8 ? 'Ton auf Note' : 'Stoerton';
   const kandidaten = kand.sort((a, b) => b.db - a.db).slice(0, 6).map(({ k, ...rest }) => rest);
   return { kandidaten, rahmen, musik: kand.filter(c => musik.has(c)).length };
-}
-
-/* WIEVIELE ARBEITER? (Caspar_D, 26.08.2026: "messe, wieviele Kerne da
-   sind und passe die Parallelisierung entsprechend an.")
-
-   Gefragt sind die PHYSISCHEN Kerne, nicht die logischen. Der Detektor
-   ist rechengebunden - FFT und Histogramme lasten eine Kernpipeline
-   voll aus, und zwei Faeden auf demselben Kern teilen sich dann
-   dieselben Recheneinheiten, statt doppelt so schnell zu sein. Nur der
-   ffmpeg-Anteil (13 %) profitiert von Hyperthreading. Nachgemessen:
-   siehe die Tabelle im Commit.
-
-   Auf macOS sagt sysctl die physischen Kerne. Wo es das nicht gibt,
-   ist die Haelfte der logischen die uebliche Annahme (SMT mit zwei
-   Faeden je Kern). Einer bleibt frei, damit Server und Oberflaeche
-   waehrend eines langen Laufs atmen koennen. */
-function arbeiterZahl(){
-  const os = require('node:os');
-  const logisch = os.availableParallelism ? os.availableParallelism() : os.cpus().length;
-  let physisch = 0;
-  if (process.platform === 'darwin') {
-    const r = spawnSync('sysctl', ['-n', 'hw.physicalcpu'], { encoding: 'utf8' });
-    if (r.status === 0) physisch = parseInt(String(r.stdout).trim(), 10) || 0;
-  }
-  if (!physisch) physisch = Math.max(1, Math.round(logisch / 2));
-  return Math.max(1, Math.min(physisch, logisch - 1));
 }
 
 /* ---- Lauf ---- */

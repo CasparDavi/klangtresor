@@ -53,6 +53,7 @@ const ZIEL   = path.join(WURZEL, 'library', 'toene.json');
    einen Song heraus, den er braucht. */
 const ZONEN  = path.join(WURZEL, 'library', 'notenzonen.json');
 const K      = require('./katalog.js');
+const { arbeiterZahl } = require('./kerne.js');
 const args   = process.argv.slice(2);
 
 const still  = args.includes('--still');
@@ -60,6 +61,9 @@ const neu    = args.includes('--neu');
 const anzahl = (() => { const i = args.indexOf('--anzahl');
   return i >= 0 && args[i+1] ? parseInt(args[i+1], 10) : null; })();
 const nur    = args.find(a => /^[0-9a-f-]{30,}$/i.test(a)) || null;
+/* --roh: EIN Lied rechnen und als JSON auf stdout geben, ohne eine Datei
+   anzufassen. So ruft der Elternprozess seine Arbeiter (26.08.2026). */
+const roh    = args.includes('--roh');
 
 const STEMS = ['drums','bass','other','vocals','guitar','piano'];
 const NOTEN = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','H'];
@@ -456,12 +460,27 @@ function stimme(id, schlaege) {
    Speicher gehalten; geschrieben nach jedem Song, damit ein Abbruch
    nicht alles verliert. */
 let _zonenAlle = null;
-function zonenAblegen(id, nz) {
+/* GESAMMELT SCHREIBEN, NICHT JE LIED (26.08.2026).
+
+   Bis heute schrieb diese Funktion die GANZE notenzonen.json neu, sobald
+   ein einziges Lied fertig war - 14,7 MB serialisieren und auf die
+   Platte legen, 321 Mal in einem vollen Lauf. Das sind 4,7 Gigabyte
+   Schreiblast fuer 14,7 Megabyte Ergebnis, und auf einer exFAT-Platte
+   mit 1 MB Blockgroesse ist das kein Nebengeraeusch.
+
+   Jetzt sammelt zonenMerken() nur im Speicher; zonenSchreiben() legt
+   alles auf einmal ab. Der Elternprozess ruft es alle zwanzig Lieder
+   und am Ende - so ist ein abgebrochener Lauf nicht verloren, ohne dass
+   jedes Lied die volle Datei kostet. */
+function zonenMerken(id, nz) {
   if (!_zonenAlle) {
     try { _zonenAlle = JSON.parse(fs.readFileSync(ZONEN, 'utf8')).songs || {}; }
     catch (e) { _zonenAlle = {}; }
   }
   _zonenAlle[id] = nz;
+}
+function zonenSchreiben() {
+  if (!_zonenAlle) return;
   fs.writeFileSync(ZONEN, JSON.stringify({
     stand: new Date().toISOString(),
     verfahren: 'Goertzel je Halbtonfrequenz, beide Kanaele, Raster aus dem Bass',
@@ -497,9 +516,10 @@ function vermessen(s) {
      Song das Zwanzigfache von allem anderen zusammen, und der Browser
      braucht immer nur die eines Songs. In toene.json bleibt der Vermerk,
      dass es sie gibt. */
+  /* Die Zonen werden ZURUECKGEGEBEN, nicht hier abgelegt: Im Arbeiter
+     gibt es keine Datei, und der Elternprozess sammelt sie. */
   const nz = notenzonen(s.id, s.schlaege || []);
-  if (nz) zonenAblegen(s.id, nz);
-  return {
+  return { _zonen: nz || null,
     huellen, proSekunde: HUELL_PRO_S,
     hatNotenzonen: !!nz,
     zonenRaster: nz ? nz.raster : null,
@@ -538,31 +558,89 @@ function vermessen(s) {
   if (anzahl) liste = liste.slice(0, anzahl);
 
   if (!liste.length) { console.log('  Töne: nichts zu tun (Stems fehlen oder alles gerechnet).'); return; }
-  console.log('  Töne: ' + liste.length + ' Lied(er)');
 
-  let i = 0;
-  for (const s of liste) {
-    i++;
-    const t0 = Date.now();
-    try {
-      const e = vermessen(s);
-      ergebnis[s.id] = e;
-      if (!still) {
-        const t = e.tonart, v = e.stimme;
-        console.log('  [' + i + '/' + liste.length + '] ' + (s.titel||s.id).slice(0,30).padEnd(32)
-          + (t ? t.name : '—').padEnd(10)
-          + (v ? v.lage : '—').padEnd(11)
-          + ((Date.now()-t0)/1000).toFixed(0) + ' s');
-      }
-    } catch (err) {
-      console.log('  [' + i + '] ' + (s.titel||s.id).slice(0,30) + '  gescheitert: '
-        + String(err.message).slice(0,60));
-    }
+  const schreiben = () => {
     fs.writeFileSync(ZIEL, JSON.stringify({
       stand: new Date().toISOString(),
       verfahren: 'Huellkurven aus den Stems · Tonart: Grundton aus dem Bass auf der Eins, '
                + 'Geschlecht aus der Terz · Stimmlage: YIN auf dem vocals-Stem, unteres Viertel',
       songs: ergebnis }, null, 0));
+    zonenSchreiben();
+  };
+
+  /* EIN ARBEITER: ein Lied rechnen, als JSON ausgeben, fertig. */
+  if (roh) {
+    const s0 = liste[0];
+    if (!s0) { process.stdout.write('null'); return; }
+    try { process.stdout.write(JSON.stringify(vermessen(s0))); }
+    catch (err) { process.stderr.write(String(err.message).slice(0, 200)); process.exitCode = 1; }
+    return;
   }
-  console.log('  → ' + ZIEL);
+
+  /* JEDES LIED FUER SICH - also aufteilbar (26.08.2026). Mit 22 Sekunden
+     je Lied war dies der groesste Posten des Hauses: 321 Lieder brauchten
+     seriell knapp zwei Stunden, mehr als alle anderen Schritte zusammen.
+     Ein Arbeiter ist ein Kindprozess mit demselben Skript und --roh; er
+     ruehrt keine Datei an, sondern gibt sein Ergebnis zurueck.
+     Geschrieben wird nur hier - toene.json UND notenzonen.json, alle
+     zwanzig Lieder und am Ende.
+     An der Rechnung aendert sich nichts, nur daran, wieviele davon
+     gleichzeitig laufen. */
+  const PARALLEL = args.includes('--arbeiter')
+    ? Math.max(1, parseInt(args[args.indexOf('--arbeiter') + 1], 10) || 1)
+    : arbeiterZahl();
+  console.log('  Töne: ' + liste.length + ' Lied(er), ' + PARALLEL + ' Arbeiter');
+
+  const spawn = require('node:child_process').spawn;
+  const warteschlange = liste.slice();
+  const t0Alle = Date.now();
+  let fertig = 0, schief = 0, laufend = 0;
+
+  new Promise((alleFertig) => {
+    const naechster = () => {
+      if (!warteschlange.length) { if (!laufend) alleFertig(); return; }
+      const s = warteschlange.shift(); laufend++;
+      const t0 = Date.now();
+      const kind = spawn(process.execPath, [__filename, s.id, '--roh'],
+        { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
+      let aus = '', fehler = '';
+      kind.stdout.on('data', d => aus += d);
+      kind.stderr.on('data', d => fehler += d);
+      kind.on('close', (code) => {
+        laufend--;
+        let e = null;
+        if (code === 0) { try { e = JSON.parse(aus); } catch (err) { e = null; } }
+        if (e) {
+          /* Die Zonen wandern in ihre eigene Datei, der Vermerk bleibt. */
+          const nz = e._zonen; delete e._zonen;
+          if (nz) zonenMerken(s.id, nz);
+          ergebnis[s.id] = e;
+          fertig++;
+          if (!still) {
+            const t = e.tonart, v = e.stimme;
+            const proLied = (Date.now() - t0Alle) / Math.max(1, fertig + schief) / 1000;
+            const rest = Math.round((warteschlange.length + laufend) * proLied / 60);
+            console.log('  [' + (fertig + schief) + '/' + liste.length + '] '
+              + (s.titel || s.id).slice(0, 30).padEnd(32)
+              + (t ? t.name : '—').padEnd(10)
+              + (v ? v.lage : '—').padEnd(11)
+              + ((Date.now() - t0) / 1000).toFixed(0) + ' s'
+              + (rest ? '   noch rund ' + rest + ' min' : ''));
+          }
+        } else {
+          schief++;
+          console.log('  [' + (fertig + schief) + '] ' + (s.titel || s.id).slice(0, 30)
+            + '  gescheitert: ' + (fehler.trim() || 'kein Ergebnis').slice(0, 60));
+        }
+        if ((fertig + schief) % 20 === 0) schreiben();
+        naechster();
+      });
+    };
+    for (let k = 0; k < PARALLEL; k++) naechster();
+  }).then(() => {
+    schreiben();
+    const min = (Date.now() - t0Alle) / 60000;
+    console.log('  fertig: ' + fertig + ' gerechnet, ' + schief + ' schief, '
+      + min.toFixed(1) + ' min → ' + ZIEL);
+  });
 })();
