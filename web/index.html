@@ -278,13 +278,64 @@ select,.knopf{
 .werte{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
 .werte.mithirsch{display:flex;flex-wrap:wrap}.werte.mithirsch .wert{flex:1 1 110px}
 .wertluecke{flex:0 0 18px}   /* die Luecke zwischen Sunos Zahlen und den Hirschfaktoren */
-/* Hirschfaktoren hervorgehoben: Rand und Zahl in Suno-Orange - das ist
-   die eigene Kennzahl, nicht Sunos. */
-.wert.hirsch{border-color:#f97b14;background:#f97b1414}.wert.hirsch b{color:#f97b14}
+/* Hirschfaktoren hervorgehoben: Rand und Zahl in Akzent 1 - das ist
+   die eigene Kennzahl, nicht Sunos, und sie soll sich von den vier
+   Suno-Zahlen daneben abheben. Bis zum 26.08.2026 stand hier
+   Suno-Orange fest; jetzt traegt sie dieselbe Farbe wie die
+   Diagramme, folgt also dem laufenden Titel. Ausgerechnet die
+   eigene Kennzahl in Sunos Hausfarbe zu setzen war ohnehin
+   verkehrt herum. */
+.wert.hirsch{border-color:var(--titel-a,#f97b14);
+  background:color-mix(in srgb, var(--titel-a,#f97b14) 9%, transparent)}
+.wert.hirsch b{color:var(--titel-a,#f97b14)}
 .wert{background:var(--flaeche2);border:1px solid var(--rand);
   border-radius:11px;padding:13px 15px}
 .wert b{display:block;font-size:21px;line-height:1.2}
 .wert span{color:var(--schwach);font-size:12px}
+
+/* ---- Die Farbgebung der Autorenseite (Caspar_D, 26.08.2026) --------
+   „Den Gesamthintergrund bitte eine abgedunkelte geblurrte Version
+   meines Headerbildes, so wie du es mit den Coverbildern im Hintergrund
+   machst. Die Panels mit transparentem Schwarz abdunkeln. Die Rahmen
+   und Inhalte in grau."
+
+   DER GRUND ist dasselbe Titelbild, das oben im Kopf scharf steht -
+   weichgezeichnet, vergroessert und heruntergedunkelt, genau wie
+   #bhintergrund es auf der Buehne mit dem Cover macht. Er liegt als
+   eigenes Element NEBEN #detail, nicht darin: profilAuf() schreibt
+   innerHTML neu, ein Kind waere bei jedem Aufruf weg. Und er ist
+   fixiert, nicht mitlaufend - sonst geriete die Unschaerfe beim
+   Scrollen in Bewegung, und fuer eine lange Seite reichte ein Bild
+   nicht. z-index 39 haelt ihn unter #detail (40), dessen eigener
+   Hintergrund dann als dunkle Lage darueberliegt.
+
+   DAS GRAU kommt NICHT aus den geerbten --rand und --flaeche: Die
+   mischt uiFaerben() aus der Coverpalette, sie tragen also den
+   Farbstich des laufenden Titels - und genau der sollte weg. Hier
+   werden sie ueberschrieben; weil alle Regeln mit var() arbeiten,
+   folgen Panels, Wertkacheln, Chips und Trennlinien von selbst.
+   --akzent und --titel-a/b bleiben unangetastet, sonst verloeren die
+   Diagramme ihre Farbe.
+----------------------------------------------------------------- */
+#autorgrund{position:fixed;inset:-8%;z-index:39;pointer-events:none;display:none;
+  background-size:cover;background-position:center;background-color:#07080b;
+  filter:blur(60px) saturate(1.25) brightness(.58);transform:scale(1.15)}
+/* Sichtbar genau dann, wenn die Autorenseite offen steht. An die
+   Klassen gehaengt statt an JS: Der Kasten wird an einem guten Dutzend
+   Stellen mit remove('auf') geschlossen - eine davon zu vergessen
+   liesse das Bild bildschirmfuellend stehen bleiben. */
+#detail.autor.auf ~ #autorgrund{display:block}
+#detail.autor{
+  background:rgba(4,5,8,.34);       /* die dunkle Lage ueber dem Bild.
+     Zusammen mit brightness(.58) landet ein mittleres Bildpixel etwa
+     dort, wo #bhintergrund auf der Buehne es hat. Dichter gesetzt
+     (.5 und mehr) blieb vom Titelbild nichts uebrig als ein Hauch
+     Braun am Rand - dann kann man es auch weglassen. */
+  --flaeche:rgba(0,0,0,.46);        /* Panels: transparentes Schwarz */
+  --flaeche2:rgba(0,0,0,.32);       /* Wertkacheln und Chips, eine Spur heller */
+  --rand:rgba(255,255,255,.13);     /* Rahmen: neutrales Grau, kein Coverstich */
+  --schwach:#a2a2a8;                /* Beschriftungen, gegen das Bild etwas heller */
+}
 /* WIE EIN KNOPF ZEIGT, DASS ER AN IST (Caspar_D, 26.08.2026):
    „aktive Knoepfe haben einen Umriss in Akzentfarbe und ihr Symbol wird
    farbig. Ausgeschaltete Knoepfe haben keinen Rand, das Symbol ist
@@ -2563,6 +2614,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 </div>
 
 <div id="detail"></div>
+<div id="autorgrund"></div>
 <button id="zu" onclick="detailZu()" title="Schließen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zu"/></svg></button>
 
 <div id="buehne">
@@ -9405,6 +9457,9 @@ async function detailAuf(id){
     </div>`;
 
   $('detail').classList.add('auf');
+  /* Derselbe Kasten zeigt Song UND Autor. Das Titelbild im Ruecken
+     gehoert nur der Autorenseite, also hier wieder abraeumen. */
+  $('detail').classList.remove('autor');
   $('zu').style.display = 'block';
   $('detail').scrollTop = 0;
 }
@@ -9425,7 +9480,23 @@ async function detailAuf(id){
    fuer Menschen/Songs, Suno-Blau fuer Zeit. */
 /* Drei Farben, drei Herkuenfte: Orange = Sunos Zaehler und Menschen,
    Blau = Zeit, Gruen = gemessen (Analyzer-Gruen). */
-const DIA_ORANGE = '#f97b14', DIA_BLAU = '#4b93f0', DIA_GRUEN = '#16be5c';
+/* DIE DIAGRAMMFARBEN FOLGEN DER MUSIK (Caspar_D, 26.08.2026: „alle
+   diagrammelemente mit Akzent 1 und 2 des laufenden Titels bzw bei
+   keiner Musik von KlangTresor").
+
+   --titel-a und --titel-b stehen am Wurzelelement; uiFaerben() setzt
+   sie bei jedem Songwechsel aus der Coverpalette. Laeuft nichts, greift
+   der Rueckfallwert - Orange nach Rot, die beiden Farben, in denen der
+   Name KlangTresor oben steht. Es braucht also keine eigene Abfrage,
+   was gerade spielt: Die Diagramme haengen an denselben zwei
+   Variablen wie der Rest der Oberflaeche.
+
+   Vorher standen hier drei feste Werte (Orange, Blau, Gruen). Die
+   waren unabhaengig vom Cover und blieben als Fremdfarben stehen,
+   waehrend ringsum alles der Musik folgte. Gruen faellt ersatzlos
+   weg - zwei Akzente sind vorgegeben, ein dritter waere wieder
+   erfunden. */
+const DIA_1 = 'var(--titel-a,#f97b14)', DIA_2 = 'var(--titel-b,#e31c79)';
 function diaTitel(t, hinweis, icon){
   const h = document.createElement('div'); h.className = 'diatitel';
   if (icon) h.innerHTML = SYM(icon) + ' ';
@@ -9548,8 +9619,8 @@ async function profilCommunityFuellen(){
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
     const lik  = fremde.map(l => ({ ...person(l), n: l.likes.filter(k => imFenster(k.am, fenster)).length }))
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
-    besten.appendChild(balken('Kommentieren am meisten', komm, DIA_ORANGE, '', 'blase'));
-    besten.appendChild(balken('Liken am meisten', lik, DIA_ORANGE,
+    besten.appendChild(balken('Kommentieren am meisten', komm, DIA_1, '', 'blase'));
+    besten.appendChild(balken('Liken am meisten', lik, DIA_1,
       fenster === 'monat' ? '' : 'soweit Sunos Benachrichtigungen reichen', 'herz'));
     /* Kombiwert: Kommentar dreifach, Like doppelt - wie die Bewegung
        auf der Albumseite. (Caspar_D, 20.08.2026: "kommentieren x3 und
@@ -9558,7 +9629,7 @@ async function profilCommunityFuellen(){
                                     const li = l.likes.filter(x => imFenster(x.am, fenster)).length;
                                     return { ...person(l), n: 3 * k + 2 * li, titel: `@${l.handle}: ${k} Kommentare, ${li} Likes` }; })
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
-    besten.appendChild(balken('Kommentieren ×3 + Liken ×2', kombi, DIA_ORANGE));
+    besten.appendChild(balken('Kommentieren ×3 + Liken ×2', kombi, DIA_1));
   };
   for (const [f, t] of FENSTER){
     const c = document.createElement('span'); c.className = 'chip'; c.dataset.f = f; c.textContent = t; c.style.cursor = 'pointer';
@@ -9648,7 +9719,7 @@ function zeitsaeulen(eintraege, farbe, opts){
   let svg = `<svg viewBox="0 0 ${W} ${H + 18}" preserveAspectRatio="none" style="width:100%;height:${H + 18}px;display:block">`;
   eintraege.forEach((e, k) => {
     const h = (e.n || 0) / max * H;
-    svg += `<rect x="${(k * bw + 0.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${Math.max(bw - 1, 0.5).toFixed(1)}" height="${h.toFixed(1)}" fill="${farbe}" opacity="${e.n ? 1 : 0.15}"><title>${e.titel || e.name}: ${e.anzeige != null ? e.anzeige : e.n}</title></rect>`;
+    svg += `<rect x="${(k * bw + 0.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${Math.max(bw - 1, 0.5).toFixed(1)}" height="${h.toFixed(1)}" style="fill:${farbe}" opacity="${e.n ? 1 : 0.15}"><title>${e.titel || e.name}: ${e.anzeige != null ? e.anzeige : e.n}</title></rect>`;
     if (e.name) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="${H + 14}" font-size="10" fill="#8b8b90" text-anchor="middle">${e.name}</text>`;
     if (e.marke) svg += `<text x="${(k * bw + bw / 2).toFixed(1)}" y="9" font-size="9" fill="#ececed" text-anchor="middle">${e.marke}</text>`;
   });
@@ -9680,30 +9751,30 @@ function befundSeiten(eigene){
         const erst = new Map(); for (const s of [...mitDatum].sort((a,b)=>a.erstellt.localeCompare(b.erstellt))) if (s.modell && !erst.has(s.modell)) erst.set(s.modell, mon(s.erstellt));
         const marke = new Map(); for (const [mo, ms] of erst) marke.set(ms, (marke.get(ms) ? marke.get(ms) + ' ' : '') + mo);
         const e = monateSeit().map(k => ({ titel: k, name: k.endsWith('-01') || k === monateSeit()[0] ? k.slice(0,4) : (MONK[+k.slice(5)-1][0]), n: z.get(k) || 0, marke: marke.get(k) || '' }));
-        return zeitsaeulen(e, DIA_BLAU, { hinweis: 'Oben: erstes Auftreten eines Modells.' });
+        return zeitsaeulen(e, DIA_2, { hinweis: 'Oben: erstes Auftreten eines Modells.' });
       } },
     { titel: 'Likes je Song nach Entstehungsmonat (Median)', bau: () => {
         const g = new Map(); for (const s of mitDatum){ const k = mon(s.erstellt); if (!g.has(k)) g.set(k, []); g.get(k).push(s.likes || 0); }
         const e = monateSeit().map(k => ({ titel: `${k} (${(g.get(k)||[]).length} Songs)`, name: k.endsWith('-01') || k === monateSeit()[0] ? k.slice(0,4) : MONK[+k.slice(5)-1][0], n: g.has(k) ? median(g.get(k)) : 0 }));
-        return zeitsaeulen(e, DIA_ORANGE, { hinweis: 'Ältere Songs hatten länger Zeit zu sammeln - das ist kein Qualitätsurteil, nur ein Bild.' });
+        return zeitsaeulen(e, DIA_1, { hinweis: 'Ältere Songs hatten länger Zeit zu sammeln - das ist kein Qualitätsurteil, nur ein Bild.' });
       } },
     { titel: 'Tempo × Likes (Median, ab 5 Songs)', bau: () => {
         const TEMPO = [[0,70,'< 70'],[70,85,'70–85'],[85,100,'85–100'],[100,115,'100–115'],[115,130,'115–130'],[130,150,'130–150'],[150,999,'150 +']];
         const e = TEMPO.map(([v, b, name]) => { const l = eigene.filter(s => s.analyse && s.analyse.bpm >= v && s.analyse.bpm < b).map(s => s.likes || 0);
           return { name, titel: `${name} BPM (${l.length} Songs)`, n: l.length >= 5 ? Math.round(median(l)) : 0 }; });
-        return kachelzeile([{ titel: 'BPM', hinweis: 'Helligkeit = Median Likes', eintraege: e }], DIA_GRUEN);
+        return kachelzeile([{ titel: 'BPM', hinweis: 'Helligkeit = Median Likes', eintraege: e }], DIA_2);
       } },
     { titel: 'Wirkung je Modell: Likes je 100 Plays', bau: () => {
         const g = new Map(); for (const s of eigene){ const k = s.modell || 'Unbekannt'; if (!g.has(k)) g.set(k, { p: 0, l: 0, n: 0 }); const x = g.get(k); x.p += s.plays || 0; x.l += s.likes || 0; x.n++; }
         const e = [...g].filter(([, x]) => x.p >= 100).map(([name, x]) => ({ name: `${name} (${x.n} Songs)`, n: 100 * x.l / x.p, anzeige: (100 * x.l / x.p).toFixed(1) })).sort((a,b) => b.n - a.n);
-        return balken('Likes je 100 Plays', e, DIA_ORANGE, 'ab 100 Plays je Modell');
+        return balken('Likes je 100 Plays', e, DIA_1, 'ab 100 Plays je Modell');
       } },
     { titel: 'Die Stillen: wenigste Plays', bau: () => {
         const alt = Date.now() - 30 * 86400000;
         const e = eigene.filter(s => s.oeffentlich && s.erstellt && new Date(s.erstellt).getTime() < alt)
           .sort((a,b) => (a.plays||0) - (b.plays||0)).slice(0, 10)
           .map(s => ({ name: s.titel, n: s.plays || 0, klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }));
-        return balken('Wenigste Plays', e, DIA_ORANGE, 'öffentlich, älter als 30 Tage', 'plays');
+        return balken('Wenigste Plays', e, DIA_1, 'öffentlich, älter als 30 Tage', 'plays');
       } },
   ];
 }
@@ -9892,9 +9963,9 @@ function profilZahlenFuellen(){
 
   /* Die 10 Songs mit den meisten Likes / Plays / Kommentaren - mit
      denselben Zeichen wie auf den Kacheln. */
-  g.appendChild(balken('Meiste Likes', [...eigene].sort((a,b)=>(b.likes||0)-(a.likes||0)).map(songEintrag('likes')), DIA_ORANGE, stufenHinweis, 'herz'));
-  g.appendChild(balken('Meiste Plays', [...eigene].sort((a,b)=>(b.plays||0)-(a.plays||0)).map(songEintrag('plays')), DIA_ORANGE, stufenHinweis, 'plays'));
-  g.appendChild(balken('Meiste Kommentare', [...eigene].filter(s=>s.kommentare).sort((a,b)=>(b.kommentare||0)-(a.kommentare||0)).map(songEintrag('kommentare')), DIA_ORANGE, stufenHinweis, 'blase'));
+  g.appendChild(balken('Meiste Likes', [...eigene].sort((a,b)=>(b.likes||0)-(a.likes||0)).map(songEintrag('likes')), DIA_1, stufenHinweis, 'herz'));
+  g.appendChild(balken('Meiste Plays', [...eigene].sort((a,b)=>(b.plays||0)-(a.plays||0)).map(songEintrag('plays')), DIA_1, stufenHinweis, 'plays'));
+  g.appendChild(balken('Meiste Kommentare', [...eigene].filter(s=>s.kommentare).sort((a,b)=>(b.kommentare||0)-(a.kommentare||0)).map(songEintrag('kommentare')), DIA_1, stufenHinweis, 'blase'));
   if (hatBewegung){
     const l = document.createElement('div'); l.className = 'fussnote breit'; l.style.cssText = 'grid-column:1/-1;margin-top:0';
     l.textContent = 'Balken: gedämpft = gesamt · mittel = letzte 4 Wochen · hell = letzte Woche (aus dem Zählerverlauf, seit ' + (eigene.find(s=>s.bewegung28)?.bewegung28.seit || '–') + ')';
@@ -9918,11 +9989,11 @@ function profilZahlenFuellen(){
   g.appendChild(kachelzeile([
     { titel: 'Wochentage', eintraege: tage },
     { titel: 'Tageszeit',  hinweis: 'wann Songs entstanden, Stunde in deiner Ortszeit', eintraege: stunden },
-  ], DIA_BLAU));
+  ], DIA_2));
   g.appendChild(kachelzeile([
     { titel: 'Jahreszeiten', eintraege: jz },
     { titel: 'Monate', hinweis: 'alle Jahre zusammen', eintraege: monate },
-  ], DIA_BLAU));
+  ], DIA_2));
 
   /* Modelle als Kacheln, in Suno-Reihenfolge; was kein Modell traegt,
      heisst Unbekannt und steht hinten. */
@@ -9937,7 +10008,7 @@ function profilZahlenFuellen(){
   g.appendChild(balken('Likes je 100 Plays', eigene.filter(s => (s.plays||0) >= 50)
     .map(s => ({ name: s.titel, n: 100 * (s.likes||0) / s.plays, anzeige: (100 * (s.likes||0) / s.plays).toFixed(1),
                  klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }))
-    .sort((a,b) => b.n - a.n), DIA_ORANGE, 'ab 50 Plays', 'herz'));
+    .sort((a,b) => b.n - a.n), DIA_1, 'ab 50 Plays', 'herz'));
 
   /* Likes je drei Minuten Songlaenge - Likes bezogen auf die Laenge,
      nicht auf die Zeit seit Entstehung (Caspar_D, 20.08.2026: "nicht Likes
@@ -9948,14 +10019,14 @@ function profilZahlenFuellen(){
     .map(s => { const v = (s.likes||0) / (s.dauer / 180);
       return { name: s.titel, n: v, anzeige: v.toFixed(1), titel: `${s.titel}: ${s.likes} Likes auf ${Math.floor(s.dauer/60)}:${String(Math.round(s.dauer%60)).padStart(2,'0')}`,
                klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }; })
-    .sort((a,b) => b.n - a.n), DIA_ORANGE, 'Songlänge', 'herz'));
+    .sort((a,b) => b.n - a.n), DIA_1, 'Songlänge', 'herz'));
 
   /* Laengste Lyrics - Woerter ohne [Regieanweisungen], gezaehlt vom
      Server (katalog.js). */
   if (eigene.some(s => s.lyricsWorte))
     g.appendChild(balken('Längste Lyrics', eigene.filter(s => s.lyricsWorte)
       .map(s => ({ name: s.titel, n: s.lyricsWorte, klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }))
-      .sort((a,b) => b.n - a.n), DIA_ORANGE, 'Wörter, ohne [Anweisungen]', 'lyrics'));
+      .sort((a,b) => b.n - a.n), DIA_1, 'Wörter, ohne [Anweisungen]', 'lyrics'));
 
   /* Zwei Karussells: Befunde und Kuriosa - viele Seiten, eine sichtbar.
      Eigenes Panel (Caspar_D, 20.08.2026). */
@@ -10085,6 +10156,14 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
     </div>`;
 
   $('detail').classList.add('auf');
+  /* DAS TITELBILD ALS GRUND DER GANZEN SEITE (Caspar_D, 26.08.2026).
+     Fehlt es, bleibt .autor trotzdem gesetzt - Panels und Rahmen
+     sollen auch dann grau statt coverfarben sein; nur der Grund
+     bleibt dann das schlichte Dunkel. Ob das Bild da ist, sagt uns
+     dasselbe <img> im Kopf, das es scharf zeigt: Sein onerror nimmt
+     die Klasse .mitbild weg. */
+  $('detail').classList.add('autor');
+  $('autorgrund').style.backgroundImage = "url('/profilbild')";
   $('zu').style.display = 'block';
   $('detail').scrollTop = 0;
   profilZahlenFuellen();
