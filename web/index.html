@@ -1090,15 +1090,14 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    niemand braucht, solange er liest. Wer den Zeiger im Feld hat, will
    ohnehin etwas damit tun. */
 #bprompts .prompt.hatkopie{position:relative}
-#bprompts .textkopie{position:absolute;top:5px;left:5px;z-index:2;
+#bprompts .textkopie{position:absolute;top:4px;right:4px;z-index:2;
   display:flex;align-items:center;justify-content:center;
-  width:24px;height:24px;padding:0;border:none;border-radius:6px;
-  /* --grund gibt es hier nicht; auf der Buehne heisst der Grund
-     --bgrund und traegt die Farbe des laufenden Titels. Mit einer
-     Variablen, die es nicht gibt, blieb die Flaeche durchsichtig und
-     das Zeichen verschwamm im Text darunter (26.08.2026). */
-  background:color-mix(in srgb, var(--bgrund, #0b0b0d) 86%, transparent);
-  backdrop-filter:blur(4px);color:var(--schwach);cursor:pointer;
+  width:22px;height:22px;padding:0;border:none;border-radius:6px;
+  /* OHNE FLAECHE (Caspar_D, 26.08.2026: "bitte keinen hintergrund und
+     oben rechts"). Ein abgedunkeltes Kaestchen setzte einen zweiten
+     Gegenstand ins Feld; das Zeichen allein genuegt. Rechts steht es
+     ohnehin meist ueber dem Zeilenende, verdeckt also nichts. */
+  background:none;color:var(--schwach);cursor:pointer;
   opacity:0;transition:opacity .13s,color .13s}
 #bprompts .prompt.hatkopie:hover .textkopie,
 #bprompts .textkopie:focus-visible{opacity:1}
