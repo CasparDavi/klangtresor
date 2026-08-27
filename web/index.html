@@ -1848,12 +1848,21 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    mit 3 bis 5 Punkten Wortabstand aneinander und auf drei
    verschiedenen Grundlinien (Caspar_D, 26.08.2026: "atmungsplatz,
    nichts aneinandergeklatscht"). */
-.messkopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+/* ATMUNGSPLATZ ZUR REGISTERGRENZE (Caspar_D, 27.08.2026: "die
+   dropdownpille im einmessen register klebt zu weit oben an der
+   registergrenze"). 4 Punkte waren keine Luecke, sondern ein
+   Versehen - die Pille sass auf der Trennlinie. */
+.messkopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+/* Die zweite Reihe traegt die Knoepfe. Sie gehoert zur ersten, steht
+   also enger an ihr als am Register darueber. */
+.messkopf-zwei{margin-top:12px}
 /* Gleiche Hoehe fuer Wahl und Knoepfe: Bei 34 gegen 37 Punkten standen
    sie auf verschiedenen Kanten - zentriert zwar, aber die Unterkanten
    liefen um drei Punkte auseinander. */
 .messkopf select,.messkopf .knopf{height:36px;box-sizing:border-box}
 .messkopf select{min-width:220px}
+/* Die Mikrofonzeile darf wachsen - die Geraetenamen sind lang. */
+.messkopf #messmikro{flex:1 1 320px;min-width:260px;max-width:520px}
 .messkopf .messdauer{font-size:11px;color:var(--schwach);letter-spacing:.04em}
 .messkopf .messluecke{flex:1 1 20px}
 /* Die beiden Knoepfe gehoeren zusammen und stehen deshalb enger
@@ -2693,6 +2702,15 @@ h3 .infoknopf .ico{width:14px;height:14px}
              Deshalb steht die Wahl jetzt sichtbar da; echte Mikrofone
              oben, virtuelle Geraete ans Ende und ausgegraut. -->
         <select id="messmikro" title="Womit aufgenommen wird. Virtuelle Geräte taugen nicht: Sie hören den Raum nicht, sondern schleifen Ton im Rechner durch."></select>
+      </div>
+      <div class="messkopf messkopf-zwei">
+        <!-- ERST DEN RAUM ABHOEREN (Caspar_D, 27.08.2026: "auch der
+             basispegel mit rauschen koennte zu sehen sein, dann kann ich
+             das mikrophon schon zu einer stelle tragen, wo das rauschen
+             bzw die basisgeraeuschbelastung moeglichst klein ist"). Ohne
+             jeden Ton - nur hoeren, was der Raum von sich aus macht. -->
+        <button class="knopf" id="messraum" onclick="raumAbhoeren()"
+          title="Ohne Ton: zeigt fortlaufend, wie laut der Raum ist und welche Frequenzen stören. Zum Suchen einer ruhigen Stelle fürs Mikrofon.">Raum abhören</button>
         <span class="messluecke"></span>
         <button class="knopf" id="messneutral" onclick="einmessenNeutral()"
           title="Erster Durchgang: das Tonstudio wird dabei umgangen. Ohne ihn zeigt die Messung nur die Kette aus Lautsprecher, Raum und Mikrofon.">1 · Neutral</button>
@@ -9294,6 +9312,22 @@ function markieren(){
 let anAnschluss = localStorage.getItem('mysuno-anschluss') !== '0';   /* an, bis er ausgeschaltet wird */
 let anschlussNaht = null;        /* der Plan fuer die naechste Naht */
 let anschlussLaeuft = false;     /* waehrend der Naht: onended haelt sich zurueck */
+/* Waehrend einer Messung liegt ein Messsignal im Player statt eines
+   Songs. Zwei Dinge duerfen dann nicht passieren:
+
+   1. WEITERSCHALTEN. Laeuft das Signal aus, ist das kein zu Ende
+      gespieltes Lied. Die Hauptsache erledigt inzwischen das Signal
+      selbst - es ist mit Stille bis ueber die Aufnahme hinaus gepolstert
+      und wird am Ende gestoppt, das Ende tritt also gar nicht ein. Diese
+      Sperre bleibt fuer den Fall, dass die Notbremse im Messlauf greift
+      und laenger wartet als das Signal reicht.
+   2. MITLAUFEN. Fortschrittsbalken, Buehnentakt und die Vorbereitung der
+      naechsten Naht haben am Messton nichts zu suchen - das faengt nur
+      diese Sperre ab.
+
+   (Caspar_D, 27.08.2026: "es kommt immer noch sofort musik nach dem
+   ton") */
+let messLaeuft = false;
 let anschlussVorgemerkt = null;  /* bei Zufall der schon gewuerfelte Naechste */
 let anschlussUhr = null, anschlussRampe = null;
 let anschlussAusklang = null;    /* das Deck, das nach der Uebergabe noch zu Ende klingen darf */
@@ -16286,6 +16320,7 @@ async function messLauf(neutral){
   let merkEqAus = (typeof eqAus !== 'undefined') ? eqAus : null;
 
   try {
+    if (raumStrom) raumAus();        /* nicht zwei Mikrofonströme gleichzeitig */
     sagen('Mikrofon …');
     /* Das GEWAEHLTE Geraet, nicht das Standardgeraet: das kann ein
        virtueller Durchschleifer sein, der den Raum gar nicht hoert. */
@@ -16318,19 +16353,28 @@ async function messLauf(neutral){
        unbrauchbar: 33 dB Stoerabstand im ersten Lauf, 0 bis 15 dB in
        den folgenden. */
     const DAUER = art === 'baender' ? 8 : 4, VOR = 3.5, NACH = 0.6;
+    /* Reserve fuer den Weg zum Lautsprecher. Ueber AirPlay puffern die
+       Empfaenger rund zwei Sekunden. */
+    const RESERVE = 4;
+    const AUF = VOR + DAUER + NACH + RESERVE;
+
+    /* DAS SIGNAL WIRD VORN UND HINTEN MIT STILLE GEPUFFERT (Caspar_D,
+       27.08.2026: "kannst du nicht das wav lang genug mit stille
+       puffern vorn und hinten und nach der messung einfach stoppen").
+
+       Vorher war das WAV 8,1 s lang, die Aufnahme 12,1 s - es lief
+       mitten in der Messung aus. Fuer den Player sah das aus wie ein zu
+       Ende gespieltes Lied, also schaltete er weiter, und die Musik fiel
+       einem sofort nach dem Messton ins Ohr. Jetzt reicht die Stille
+       ueber die ganze Aufnahme hinaus; am Ende wird schlicht gestoppt.
+       Das Signalende tritt nie ein. */
     const signal = messSignalBauen(art, sr, DAUER);
-    const ganz = new Float32Array(Math.round(sr * (VOR + DAUER + NACH)));
+    const ganz = new Float32Array(Math.round(sr * (AUF + 1)));
     ganz.set(signal, Math.round(sr * VOR));
 
     /* Aufnehmen: roh, ueber einen ScriptProcessor - wie bei der
        Latenzmessung. Ein MediaRecorder gaebe komprimierte Daten. */
     const quelle = ctx.createMediaStreamSource(strom);
-    /* Reserve fuer den Weg zum Lautsprecher. Ueber AirPlay puffern die
-       Empfaenger rund zwei Sekunden - ohne Reserve endet die Aufnahme,
-       bevor das Signal ueberhaupt vollstaendig angekommen ist. 4 s
-       decken auch zaehe Funkstrecken. */
-    const RESERVE = 4;
-    const AUF = VOR + DAUER + NACH + RESERVE;
     const puffer = new Float32Array(Math.ceil(sr * AUF));
     let schreib = 0;
     /* Das Ende der Aufnahme haengt am Fuellstand des Puffers, nicht an
@@ -16341,10 +16385,23 @@ async function messLauf(neutral){
        Taktgeber. */
     let vollMelden = null;
     const voll = new Promise(f => { vollMelden = f; });
+
+    /* Ein Analyser als Sackgasse neben der Aufnahme: er liefert das
+       Momentanspektrum fuers Live-Bild und veraendert nichts. */
+    const schau = ctx.createAnalyser();
+    schau.fftSize = 4096; schau.smoothingTimeConstant = 0.5;
+    quelle.connect(schau);
+    const schauRoh = new Float32Array(schau.frequencyBinCount);
+    messLiveStart(neutral, sr, VOR, DAUER, AUF);
+
     const knoten = ctx.createScriptProcessor(4096, 1, 1);
     knoten.onaudioprocess = (e) => {
       const d = e.inputBuffer.getChannelData(0);
       for (let i = 0; i < d.length && schreib < puffer.length; i++) puffer[schreib++] = d[i];
+      /* das Live-Bild fuettern: Pegel dieses Blocks und das Spektrum */
+      let q = 0; for (let i = 0; i < d.length; i++) q += d[i] * d[i];
+      schau.getFloatFrequencyData(schauRoh);
+      messLiveBlock(Math.sqrt(q / d.length), messLiveBaender(schauRoh, sr, schau.frequencyBinCount));
       if (schreib >= puffer.length && vollMelden){ const f = vollMelden; vollMelden = null; f(); }
     };
     quelle.connect(knoten);
@@ -16354,6 +16411,7 @@ async function messLauf(neutral){
     const wav = messWavBauen(ganz, sr);
     const url = URL.createObjectURL(wav);
     merkQuelle = audio.src; merkStelle = audio.currentTime;
+    messLaeuft = true;              /* jetzt liegt ein Messton im Player, kein Lied */
     audio.src = url;
     await new Promise((f, x) => { audio.oncanplaythrough = f; audio.onerror = x; audio.load(); });
     sagen(neutral ? 'messe neutral …' : 'messe …');
@@ -16361,7 +16419,10 @@ async function messLauf(neutral){
     /* Notbremse, falls der Audio-Thread stockt: doppelte Aufnahmezeit */
     await Promise.race([ voll, new Promise(r => setTimeout(r, AUF * 2000)) ]);
 
+    audio.pause();                  /* die Stille am Ende braucht niemand */
     knoten.disconnect(); quelle.disconnect();
+    try { schau.disconnect(); } catch (e4) {}
+    messLiveEnde();
     URL.revokeObjectURL(url);
 
     /* WANN IST DAS SIGNAL ANGEKOMMEN? Ein festes Fenster taugt nicht:
@@ -16455,9 +16516,11 @@ async function messLauf(neutral){
       if (typeof eqAusSetzen === 'function') eqAusSetzen(merkEqAus);
       else { eqAus = merkEqAus; if (typeof eqAnwenden === 'function') eqAnwenden(); }
     }
+    messLiveEnde();                 /* auch wenn unterwegs etwas schiefging */
     if (strom) strom.getTracks().forEach(t => t.stop());
     if (ctx) { try { await ctx.close(); } catch (e2) {} }
     if (merkQuelle){ audio.src = merkQuelle; try { audio.currentTime = merkStelle; } catch (e3) {} }
+    messLaeuft = false;             /* ab jetzt ist wieder ein Lied im Player */
     if (liefMusik) audio.play().catch(() => {});
     if (knopf) knopf.disabled = false;
     if (knopf2) knopf2.disabled = false;
@@ -16471,6 +16534,311 @@ async function messLauf(neutral){
 
    Hausform: Flaeche gedaempft, Topline in voller Staerke oben. Die
    Waagerechte ist logarithmisch, weil Terzbaender es sind. */
+/* DAS LIVE-BILD WAEHREND DER MESSUNG (Caspar_D, 27.08.2026: "ich
+   moechte im einmessdialog diagramme und kurven sehen, die sich
+   aufbauen, soweit toene zu hoeren sind. Der Nutzer soll an den
+   Messungen teilhaben und sie verstaendlich aufbereitet bekommen").
+
+   Eine Messung sieht von aussen so aus: man drueckt, es passiert zwei
+   Sekunden nichts, dann kommt ein Ton, dann steht eine Kurve da. Wer
+   nicht weiss, dass die zwei Sekunden der AirPlay-Puffer sind, haelt
+   das fuer einen Fehler.
+
+   Also wird gezeigt, was gerade geschieht:
+   - der Pegel, den das Mikrofon in diesem Augenblick hoert, gegen den
+     Ruhepegel des Raums,
+   - das Momentanspektrum als Saeulen - beim Sweep wandert der Ton
+     sichtbar von links nach rechts durch die Baender,
+   - die Messkurve, die sich daraus aufbaut, schon in der Farbe, die
+     sie am Ende hat: grau fuer den neutralen Durchgang, orange fuer
+     den mit Einstellung,
+   - und in Worten, in welchem Abschnitt man steckt.
+
+   Gezeichnet wird aus dem Bildtakt heraus, gefuettert aus dem
+   Audio-Thread. Steht das Fenster im Hintergrund, ruht das Zeichnen -
+   dann sieht ohnehin niemand hin, und die Messung selbst haengt nicht
+   daran. */
+let messLive = null, messLiveBild = null;
+
+/* Terzbaender aus einem Analyser-Spektrum. Dieselben 31 Baender wie in
+   messSpektrum, damit Live-Bild und Ergebnis dieselbe Achse haben. */
+function messLiveBaender(db, sr, n){
+  const df = sr / (n * 2), out = new Float32Array(31);
+  for (let t = 0; t < 31; t++){
+    const fm = 20 * Math.pow(2, t / 3);
+    const iu = Math.max(1, Math.round(fm / Math.pow(2, 1/6) / df));
+    const io_ = Math.min(n - 1, Math.round(fm * Math.pow(2, 1/6) / df));
+    let p = 0, c = 0;
+    for (let i = iu; i <= io_; i++){ p += Math.pow(10, db[i] / 10); c++; }
+    out[t] = c ? 10 * Math.log10(p / c) : -120;
+  }
+  return out;
+}
+
+function messLiveStart(neutral, sr, vor, dauer, gesamt){
+  messLive = {
+    neutral, sr, vor, dauer, gesamt,
+    t: 0, pegel: -120, ruhe: null, ruheSumme: 0, ruheN: 0,
+    jetzt: new Float32Array(31).fill(-120),
+    akku: new Float64Array(31), akkuN: 0,
+    ankunft: null, phase: 'vorlauf',
+  };
+  const male = () => {
+    if (!messLive) return;
+    messLiveZeichnen();
+    messLiveBild = requestAnimationFrame(male);
+  };
+  messLiveBild = requestAnimationFrame(male);
+}
+
+/* Ein Block frischer Mikrofondaten. Kommt aus dem Aufnahmeknoten. */
+function messLiveBlock(rms, spektrum){
+  const L = messLive; if (!L) return;
+  L.t += 4096 / L.sr;
+  L.pegel = 20 * Math.log10(Math.max(1e-9, rms));
+  if (spektrum) L.jetzt = spektrum;
+
+  /* Im Vorlauf den Ruhepegel des Raums sammeln - aber erst im letzten
+     Stueck, davor kann der Ausgabepuffer noch leerlaufen. */
+  if (L.t < L.vor - 0.2){
+    if (L.t > L.vor - 1.5){ L.ruheSumme += rms; L.ruheN++; }
+    L.phase = 'vorlauf';
+    if (L.ruheN) L.ruhe = 20 * Math.log10(Math.max(1e-9, L.ruheSumme / L.ruheN));
+    return;
+  }
+  if (L.ankunft === null){
+    L.phase = 'wartet';
+    const schwelle = (L.ruhe === null ? -60 : L.ruhe) + 12;
+    if (L.pegel > schwelle){ L.ankunft = L.t; L.phase = 'misst'; }
+    return;
+  }
+  /* Ab der Ankunft baut sich die Kurve auf. */
+  if (L.t - L.ankunft < L.dauer){
+    L.phase = 'misst';
+    for (let i = 0; i < 31; i++) L.akku[i] += Math.pow(10, L.jetzt[i] / 10);
+    L.akkuN++;
+    /* Der GROESSTE Abstand zum Grundgeraeusch, nicht der momentane: der
+       zappelt mit dem Sweep, weil ein Lautsprecher nicht auf allen
+       Frequenzen gleich laut ist. Was zaehlt, ist wieviel Luft die
+       Messung ueberhaupt hatte. */
+    const ab = L.pegel - (L.ruhe === null ? -60 : L.ruhe);
+    if (L.abstand === undefined || ab > L.abstand) L.abstand = ab;
+  } else {
+    L.phase = 'aus';
+  }
+}
+
+function messLiveEnde(){
+  if (messLiveBild) cancelAnimationFrame(messLiveBild);
+  messLiveBild = null; messLive = null;
+}
+
+/* RAUM ABHOEREN - ohne einen einzigen Ton. Zeigt fortlaufend, wie laut
+   der Raum ist und welche Baender das Grundgeraeusch tragen. Wer das
+   Mikrofon dabei herumtraegt, sieht am Minimum-Halter, wo es am
+   ruhigsten war.
+
+   Der Nutzen ist handfest: unter etwa 20 dB Abstand zwischen Signal und
+   Grundgeraeusch ist die Differenz zweier Durchgaenge mehr Zufall als
+   Messung. Je leiser der Raum, desto leiser darf die Messung sein. */
+let raumStrom = null, raumCtx = null;
+
+async function raumAbhoeren(){
+  const k = $('messraum'), sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
+  if (raumStrom){                      /* laeuft schon - dann aus */
+    raumAus(); sagen('bereit');
+    return;
+  }
+  try {
+    k.classList.add('an'); sagen('höre …');
+    const wunsch = ($('messmikro') || { value: '' }).value;
+    const bed = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+    if (wunsch) bed.deviceId = { exact: wunsch };
+    raumStrom = await navigator.mediaDevices.getUserMedia({ audio: bed });
+    messMikrosLaden();
+    raumCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (raumCtx.state === 'suspended') await raumCtx.resume();
+    const sr = raumCtx.sampleRate;
+    const q = raumCtx.createMediaStreamSource(raumStrom);
+    const schau = raumCtx.createAnalyser();
+    schau.fftSize = 4096; schau.smoothingTimeConstant = 0.6;
+    q.connect(schau);
+    const roh = new Float32Array(schau.frequencyBinCount);
+
+    messLive = { neutral: true, sr, vor: 0, dauer: 0, gesamt: 0, raum: true,
+      t: 0, pegel: -120, ruhe: null, mittel: null, tiefst: null,
+      jetzt: new Float32Array(31).fill(-120),
+      akku: new Float64Array(31), akkuN: 0, ankunft: null, phase: 'raum' };
+
+    const kn = raumCtx.createScriptProcessor(4096, 1, 1);
+    const still = raumCtx.createGain(); still.gain.value = 0;
+    kn.onaudioprocess = (e) => {
+      if (!messLive || !messLive.raum) return;
+      const d = e.inputBuffer.getChannelData(0);
+      let s2 = 0; for (let i = 0; i < d.length; i++) s2 += d[i] * d[i];
+      const db = 20 * Math.log10(Math.max(1e-9, Math.sqrt(s2 / d.length)));
+      const L = messLive;
+      L.t += d.length / sr;
+      L.pegel = db;
+      /* traeges Mittel ueber rund zwei Sekunden - der Wert, auf den man
+         schaut, waehrend man das Mikrofon traegt */
+      L.mittel = L.mittel === null ? db : L.mittel + (db - L.mittel) * 0.04;
+      L.ruhe = L.mittel;
+      if (L.tiefst === null || L.mittel < L.tiefst) L.tiefst = L.mittel;
+      schau.getFloatFrequencyData(roh);
+      L.jetzt = messLiveBaender(roh, sr, schau.frequencyBinCount);
+      /* das gemittelte Spektrum baut sich mit auf - es zeigt, WELCHE
+         Baender das Grundgeraeusch tragen */
+      for (let i = 0; i < 31; i++) L.akku[i] += Math.pow(10, L.jetzt[i] / 10);
+      L.akkuN++;
+    };
+    q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
+    raumCtx.__kn = kn;
+
+    const male = () => { if (!messLive || !messLive.raum) return;
+      messLiveZeichnen(); raumCtx.__bild = requestAnimationFrame(male); };
+    raumCtx.__bild = requestAnimationFrame(male);
+    sagen('höre den Raum ab — Mikrofon bewegen, um eine ruhige Stelle zu finden. Nochmal drücken beendet.');
+  } catch (e){
+    sagen('ging nicht: ' + (e && e.message ? e.message : e));
+    raumAus();
+  }
+}
+
+function raumAus(){
+  const k = $('messraum'); if (k) k.classList.remove('an');
+  if (raumCtx && raumCtx.__bild) cancelAnimationFrame(raumCtx.__bild);
+  if (raumCtx && raumCtx.__kn) try { raumCtx.__kn.disconnect(); } catch(e){}
+  if (raumStrom) raumStrom.getTracks().forEach(t => t.stop());
+  if (raumCtx) try { raumCtx.close(); } catch(e){}
+  raumStrom = null; raumCtx = null;
+  if (messLive && messLive.raum) messLive = null;
+  messBildZeichnen();
+}
+
+function messLiveZeichnen(){
+  const L = messLive; if (!L) return;
+  const c = $('messbild'); if (!c) return;
+  const b = c.getContext('2d');
+  const B = c.clientWidth || 800, H = c.height;
+  if (c.width !== B) c.width = B;
+  b.fillStyle = '#0a0a0a'; b.fillRect(0, 0, B, H);
+
+  const LI = 52, RE = 12, OB = 34, UN = 34;
+  const bw = B - LI - RE, bh = H - OB - UN;
+  const X = (i) => LI + bw * i / 30;
+  const farbe = L.neutral ? '#8b8b90' : '#f97b14';
+
+  /* Senkrechte Marken wie im Ergebnisbild */
+  b.font = '10px system-ui';
+  for (let t = 0; t < 31; t++){
+    const f = 20 * Math.pow(2, t / 3);
+    if (![31.5, 100, 315, 1000, 3150, 10000].some(r => Math.abs(f - r) / r < 0.06)) continue;
+    b.fillStyle = 'rgba(255,255,255,0.06)'; b.fillRect(X(t), OB, 1, bh);
+    b.fillStyle = '#6e6e73';
+    b.fillText(f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0) + 'k' : Math.round(f), X(t) - 8, H - 20);
+  }
+
+  /* ZWEI SKALEN, weil zwei verschiedene Groessen gezeigt werden.
+
+     Die Flaeche zeigt BANDPEGEL - ein einzelnes Terzband traegt weit
+     weniger Energie als das ganze Signal zusammen. Haengt man ihre
+     Skala an den Breitbandpegel, liegen alle Saeulen unter dem
+     Bildrand (so gebaut, so gesehen, 27.08.2026). Ihre Skala kommt
+     also aus den Baendern selbst: das lauteste bisher gesehene Band
+     bildet die Obergrenze, 60 dB darunter die Untergrenze. Die
+     Obergrenze waechst nur, sie faellt nicht zurueck - sonst zappelt
+     das Bild bei jedem Block.
+
+     Die Saeule links zeigt den BREITBANDPEGEL auf fester Skala. */
+  let bandHoch = -120;
+  for (let i = 0; i < 31; i++){
+    if (L.jetzt[i] > bandHoch) bandHoch = L.jetzt[i];
+    if (L.akkuN){ const m = 10 * Math.log10(L.akku[i] / L.akkuN); if (m > bandHoch) bandHoch = m; }
+  }
+  if (L.dach === undefined || bandHoch > L.dach) L.dach = bandHoch;
+  const hi = (L.dach === undefined || L.dach < -110 ? -30 : L.dach) + 6, lo = hi - 66;
+  const Y = (db) => OB + bh * (1 - (db - lo) / (hi - lo));
+
+  /* dB-Marken an der Bandskala */
+  b.font = '9px system-ui';
+  for (let d = Math.ceil(lo / 20) * 20; d <= hi - 4; d += 20){
+    b.fillStyle = 'rgba(255,255,255,0.05)'; b.fillRect(LI, Y(d), bw, 1);
+    b.fillStyle = '#55555a'; b.fillText(d + '', LI + bw - 16, Y(d) - 3);
+  }
+
+  /* Momentanspektrum als Saeulen: beim Sweep wandert der Ton sichtbar
+     durch die Baender. */
+  const breite = Math.max(2, bw / 31 - 3);
+  for (let i = 0; i < 31; i++){
+    const y = Y(L.jetzt[i]);
+    if (y >= OB + bh) continue;
+    b.fillStyle = 'rgba(255,255,255,0.14)';
+    b.fillRect(X(i) - breite / 2, Math.max(OB, y), breite, OB + bh - Math.max(OB, y));
+  }
+
+  /* Die Kurve, die sich aufbaut - in der Farbe des Durchgangs. */
+  if (L.akkuN){
+    b.beginPath();
+    for (let i = 0; i < 31; i++){
+      const db = 10 * Math.log10(L.akku[i] / L.akkuN);
+      const x = X(i), y = Math.max(OB, Math.min(OB + bh, Y(db)));
+      i ? b.lineTo(x, y) : b.moveTo(x, y);
+    }
+    b.strokeStyle = farbe; b.lineWidth = 2; b.stroke();
+  }
+
+  /* Pegelsaeule links: Breitbandpegel auf fester Skala -85..0 dB. */
+  const Yp = (db) => OB + bh * (1 - (Math.max(-85, Math.min(0, db)) + 85) / 85);
+  const py = Yp(L.pegel);
+  b.fillStyle = 'rgba(255,255,255,0.07)'; b.fillRect(12, OB, 16, bh);
+  b.fillStyle = L.phase === 'misst' ? farbe : '#6e6e73';
+  b.fillRect(12, py, 16, OB + bh - py);
+  /* Ruhepegel als Marke an der Saeule - alles darunter ist Raum, nicht Signal */
+  if (L.ruhe !== null){
+    b.fillStyle = 'rgba(255,255,255,0.55)'; b.fillRect(10, Yp(L.ruhe), 20, 1);
+  }
+  if (L.raum && L.tiefst !== null){
+    b.fillStyle = '#f9b414'; b.fillRect(10, Yp(L.tiefst), 20, 1);
+  }
+  b.fillStyle = '#6e6e73'; b.font = '9px system-ui';
+  b.fillText(L.pegel > -100 ? L.pegel.toFixed(0) : '—', 12, OB - 5);
+
+  /* In Worten, was gerade geschieht. */
+  const worte = {
+    raum:    'Ich höre nur den Raum — kein Ton wird ausgegeben',
+    vorlauf: 'Stille — ich höre erst den Raum ab',
+    wartet:  'Der Ton ist unterwegs — über AirPlay dauert das gut zwei Sekunden',
+    misst:   'Ton da' + (L.ankunft !== null ? ' nach ' + Math.round((L.ankunft - L.vor) * 1000) + ' ms' : '') + ' — die Kurve baut sich auf',
+    aus:     'Ton vorbei — ich werte aus',
+  };
+  b.fillStyle = '#ececed'; b.font = '12px system-ui';
+  b.fillText(worte[L.phase] || '', LI, 16);
+  b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
+  if (L.raum){
+    /* Ein Urteil in Worten, damit man nicht dB gegen Erfahrung abwaegen
+       muss. Die Schwellen folgen dem, was fuer eine Differenzmessung
+       reicht: je leiser der Raum, desto leiser darf die Messung sein. */
+    const m = L.mittel === null ? -120 : L.mittel;
+    const urteil = m < -60 ? 'sehr ruhig — hier läßt sich auch leise messen'
+                 : m < -50 ? 'ruhig — gut zum Messen'
+                 : m < -40 ? 'brauchbar — die Messung muß etwas lauter sein'
+                 : 'laut — such eine ruhigere Stelle oder mach die Quelle aus';
+    b.fillText('Grundgeräusch ' + m.toFixed(0) + ' dB   ·   ' + urteil, LI, 29);
+  } else {
+    b.fillText((L.neutral ? 'Durchgang 1 · neutral' : 'Durchgang 2 · mit Einstellung')
+      + (L.ruhe !== null ? '   ·   Raum ' + L.ruhe.toFixed(0) + ' dB' : '')
+      + (L.abstand !== undefined ? '   ·   Störabstand bis ' + Math.max(0, L.abstand).toFixed(0) + ' dB' : ''), LI, 29);
+  }
+
+  /* Zeitleiste unten - im Abhoermodus gibt es kein Ende, also auch
+     keinen Fortschritt zu zeigen. */
+  if (L.raum) return;
+  const anteil = Math.max(0, Math.min(1, L.t / L.gesamt));
+  b.fillStyle = 'rgba(255,255,255,0.10)'; b.fillRect(LI, H - 12, bw, 3);
+  b.fillStyle = farbe; b.fillRect(LI, H - 12, bw * anteil, 3);
+}
+
 function messBildZeichnen(){
   const c = $('messbild'); if (!c) return;
   const b = c.getContext('2d');
@@ -16734,6 +17102,7 @@ async function latenzMessen(){
        Stelle und Quelle werden vorher gemerkt und danach wieder
        hergestellt; die Musik war ohnehin angehalten. */
     merkQuelle = audio.src; merkStelle = audio.currentTime;
+    messLaeuft = true;              /* jetzt liegt ein Messton im Player, kein Lied */
     const klick = audio;
     audio.src = url;
     await new Promise((f,x) => { klick.oncanplaythrough = f;
@@ -16800,6 +17169,7 @@ async function latenzMessen(){
        traegt die Musik und muss stehen bleiben. */
     if (ctx && !(hörer && hörer.ok && ctx === hörer.ctx)) try { await ctx.close(); } catch(_){}
     if (knopf){ knopf.disabled = false; knopf.classList.remove('an'); }
+    messLaeuft = false;
     if (liefMusik) audio.play().catch(()=>{});
   }
 }
@@ -17455,10 +17825,15 @@ function deckMelder(el){
     /* Bei Fall 1 und 4 liegt der Einsatz JENSEITS des Songendes - der leere
        Takt gehoert noch zur Naht. Solange sie ansteht, haelt sich das
        Weiterschalten zurueck (23.08.2026, im Trockenlauf gefunden). */
+    if (messLaeuft) return;                 /* das war ein Messton, kein Lied */
     if (anschlussLaeuft || anschlussSteht()) return;
     vor(1); };
   el.ontimeupdate = ()=>{
     if (el !== audio || !audio.duration) return;
+    /* Waehrend der Messung liegt ein Messsignal im Player - Fortschritt,
+       Buehne und die Naht des naechsten Songs haben hier nichts zu
+       suchen. */
+    if (messLaeuft) return;
     $('fortschritt').style.width = (audio.currentTime/audio.duration*100)+'%';
     $('pzeit').textContent = zeit(audio.currentTime)+' / '+zeit(audio.duration);
     buehneTakt();
