@@ -2782,18 +2782,19 @@ h3 .infoknopf .ico{width:14px;height:14px}
            einzelnen bedienen will, kommt ueber die kleine Zeile
            darunter hin. -->
       <div class="messeinleitung" id="messeinleitung">
-        <h5>Wozu Einmessen</h5>
-        <p>Was aus den Lautsprechern kommt, ist nicht das, was der Rechner losgeschickt hat.
-        Dazwischen liegen der Lautsprecher, der Raum und dein Platz darin. Ein Regler, den du
-        um 6 dB hochziehst, kann am Ohr mit 2 dB ankommen — oder mit 8, wenn eine stehende
-        Welle mitspielt.</p>
-        <p>Diese Messung findet heraus, <b>was davon bei dir wirklich ankommt</b>. Dafür läuft
-        ein Ton über deine Lautsprecher, und das Mikrofon hört zu — einmal ohne und einmal mit
-        Einstellung. Was beide Male gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit
-        über deinen Hörplatz.</p>
-        <p>Der Ablauf führt dich durch <span id="messplanzahl">sieben</span> Schritte. Die Einstellungen nehme ich vor, du
-        bestimmst nur, wann es still genug ist. Kein Schritt beginnt ungefragt, und jeder
-        läßt sich wiederholen.</p>
+        <h5>Wozu sollte die Hörumgebung eingemessen werden?</h5>
+        <p>Was aus den Lautsprechern kommt, weicht immer von dem ab, was der Rechner
+        losgeschickt hat. Zwischen Musikdatei und Ohr liegen der Lautsprecher, der Raum und
+        dein Platz darin. Ein Regler, den du um 6 dB hochziehst, kann am Ohr mit 2 dB
+        ankommen — oder mit 8, wenn eine stehende Welle mitmischt.</p>
+        <p>Diese Messung findet heraus, welche Anteile des akustischen Signals tatsächlich bei
+        dir ankommen. Dafür läuft ein (nervtötender) Ton über deine Lautsprecher, und das
+        Mikrofon, was du konfiguriert hast, hört zu. Das passiert einmal neutral in den
+        Standardeinstellungen und dann mit Variationen in den Einstellungen. Was beide Male
+        gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit über deinen Hörplatz.</p>
+        <p>Der Ablauf führt durch verschiedene Schritte. Die Einstellungen nehme ich vor, du
+        bestimmst nur, wann es still genug ist und ohne Störungen möglich ist, zu messen. Kein
+        Schritt beginnt ungefragt, und jeder läßt sich wiederholen.</p>
         <p class="planknoepfe">
           <button class="knopf planbereit" onclick="messPlanStarten()">Prozeß beginnen</button>
         </p>
@@ -18316,11 +18317,6 @@ function messPlanAbbrechen(){
 }
 
 function messPlanZeigen(zustand, meldung){
-  /* Die Zahl in der Einleitung folgt dem Plan - sonst steht dort
-     "sechs", waehrend sieben Schritte kommen. */
-  const zahl = $('messplanzahl');
-  if (zahl) zahl.textContent = ['null','einen','zwei','drei','vier','fünf','sechs','sieben',
-    'acht','neun','zehn'][MESS_PLAN.length] || MESS_PLAN.length;
   const el = $('messplan'); if (!el) return;
   if (messPlanSchritt < 0){
     el.innerHTML = '<p>Der geführte Ablauf mißt in sechs Schritten durch, stellt den '
