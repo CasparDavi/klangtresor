@@ -32,6 +32,12 @@
      3. Diese Datei komplett kopieren, einfügen, Enter
      4. Warten. Die Seite darf dabei nicht neu geladen werden.
 
+   KEINE TEMPLATE-LITERALE HIER, absichtlich. Wer dieses Skript in
+   einem Discord-Codeblock weitergibt, stolpert sonst: Discord beendet
+   den Block am ersten Backtick im Code, der Rest kommt als Text durch,
+   und in der Konsole landet ein „Unexpected identifier '$'". Also
+   Zeichenketten mit + zusammensetzen, so unschön das ist.
+
    Geprüft am 27.08.2026 an einem Konto mit 101 Folgenden.
    ============================================================ */
 
@@ -62,7 +68,8 @@
 
   const gesamt = erste.num_total_profiles;
   const seiten = Math.ceil(gesamt / 20);
-  log(`${gesamt} Profile, ${seiten} Seiten. Das dauert rund ${Math.ceil(seiten * 0.3 / 60)} Minuten.`);
+  log(gesamt + ' Profile, ' + seiten + ' Seiten. Das dauert rund '
+      + Math.ceil(seiten * 0.3 / 60) + ' Minuten.');
 
   const alle = [...(erste.profiles || [])];
   for (let s = 2; s <= seiten; s++) {
@@ -73,12 +80,12 @@
       console.log('%c' + e.message + ' — Abbruch, das Bisherige folgt.', rot);
       break;
     }
-    if (s % 25 === 0) log(`  ${alle.length} von ${gesamt}`);
+    if (s % 25 === 0) log('  ' + alle.length + ' von ' + gesamt);
     await new Promise(r => setTimeout(r, 250));
   }
 
   const einseitig = alle.filter(p => !p.is_following_viewer);
-  log(`${einseitig.length} von ${alle.length} folgen nicht zurück.`);
+  log(einseitig.length + ' von ' + alle.length + ' folgen nicht zurück.');
   console.table(einseitig.map(p => ({ handle: p.handle, name: p.display_name })));
 
   /* Als Datei, damit die Liste den Konsolenpuffer überlebt. */

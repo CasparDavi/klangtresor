@@ -64,6 +64,22 @@ fürs Studio. Ein späterer Chat liest das hier ZUERST.
     color-mix). Bei Deckungs-Stapeln: Verlauf je Schicht (Außenkante
     intensiv → Basis dunkel) + Haarlinien auf den Kanten.
 
+## Was durch fremde Hände geht
+
+**Skripte für den Chat tragen keine Backticks und keine drei Punkte.**
+Wer ein Skript in einen Discord-Codeblock legt, markiert den Block
+selbst mit Backticks — ein Template-Literal im Code beendet ihn
+vorzeitig, der Rest kommt als Fließtext durch, und beim Empfänger
+landet ein `Unexpected identifier '$'`. Zeichenketten also mit `+`
+zusammensetzen, so unschön das ist. Dasselbe gilt für den
+Spread-Operator: manche Programme ziehen drei Punkte zu einem
+Auslassungszeichen zusammen; `.concat()` und `.apply()` überstehen das.
+
+Anlaß: 27.08.2026, ein Skript für die Suno-Runde scheiterte genau
+daran. Verwandt mit Castos Zeichensalat-Fund, aus dem
+`bin/pruefe-skripte.js` entstand — dort war es die Kodierung, hier die
+Auszeichnungssprache des Boten.
+
 ## Schrift und Maß
 
 14. **12 px ist die Lesegrenze** — alle Beschriftungen mindestens in
