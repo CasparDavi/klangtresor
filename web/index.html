@@ -2791,7 +2791,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         ein Ton über deine Lautsprecher, und das Mikrofon hört zu — einmal ohne und einmal mit
         Einstellung. Was beide Male gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit
         über deinen Hörplatz.</p>
-        <p>Der Ablauf führt dich durch sechs Schritte. Die Einstellungen nehme ich vor, du
+        <p>Der Ablauf führt dich durch <span id="messplanzahl">sieben</span> Schritte. Die Einstellungen nehme ich vor, du
         bestimmst nur, wann es still genug ist. Kein Schritt beginnt ungefragt, und jeder
         läßt sich wiederholen.</p>
         <p class="planknoepfe">
@@ -2872,6 +2872,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="messblock" hidden>
         <h6>Wie die Kette auf Lautstärke reagiert</h6>
         <canvas id="messpegel" height="200"></canvas>
+      </div>
+
+      <!-- UND WO sie zupackt: die Frequenzgänge der Stufen übereinander,
+           auf gleichen Pegel gebracht. -->
+      <div class="messblock" hidden>
+        <h6>Welche Frequenzen bei welcher Lautstärke nachgeben</h6>
+        <canvas id="messpegelbaender" height="200"></canvas>
       </div>
 
       <!-- DAS FAZIT (Caspar_D, 27.08.2026: "es muß ja jetzt ein Fazit
@@ -2975,6 +2982,25 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <p class="messhgnoch">Die Zutaten dafür liegen hier bereits vor: der log-Sweep, die rohe
             Aufnahme und die Kenntnis des gesendeten Signals. Es fehlt die Entfaltung — eine
             FFT-Division. <b>Noch nicht gebaut.</b></p>
+
+            <h6>Stehende Welle und Auslöschung</h6>
+            <p>Beide entstehen daraus, daß Schall von den Wänden zurückkommt und sich mit dem
+            direkten überlagert. Beide betreffen einzelne Frequenzen. Und sie verlangen genau
+            entgegengesetztes Handeln — deshalb lohnt es, sie auseinanderzuhalten.</p>
+            <p>Eine <b>stehende Welle</b> macht eine Frequenz an deinem Platz <i>lauter</i>.
+            Direktschall und Reflexion addieren sich; der Baß dröhnt. Sie ist nichts, was man
+            übertönen müßte, um sie zu hören — man hört sie zu deutlich. Sie gehört
+            <b>gedämpft</b>, und das funktioniert: ein Regler nach unten nimmt die zusätzliche
+            Energie wieder weg.</p>
+            <p>Eine <b>Auslöschung</b> ist der umgekehrte Fall: Direktschall und Reflexion
+            treffen gegenphasig ein und heben sich auf, die Frequenz fehlt. Sie läßt sich
+            <b>nicht</b> übertönen. Was man an Pegel nachlegt, wird genauso ausgelöscht — man
+            leuchtet gegen den eigenen Schatten an. Dagegen hilft, den Lautsprecher oder den
+            Sitzplatz zu verrücken, nicht der Equalizer.</p>
+            <p class="messhgnoch">Im Diagramm sehen beide gleich aus: ein Ausschlag nach oben
+            oder unten. Der Unterschied ist nur das Vorzeichen — und daran hängt, ob ein Eingriff
+            hilft oder Leistung verheizt. Deshalb dämpft der Korrekturvorschlag ausschließlich
+            Überhöhungen und läßt Löcher stehen.</p>
 
             <h6>Was man mit dem Ergebnis tun darf</h6>
             <p>Hier ist Vorsicht am Platz, denn zwei Dinge sehen in der Messung gleich aus und
@@ -17495,6 +17521,84 @@ function messPegelZeichnen(){
   b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
   b.fillText('gestrichelt: was ohne Begrenzung herauskäme   ·   gelb: was fehlt', LI, 13);
   b.fillText('gemessener Pegel', 4, OB + bh / 2);
+
+  messPegelBaenderZeichnen();
+}
+
+/* WO die Begrenzung zupackt, nicht nur DASS sie zupackt (Caspar_D,
+   27.08.2026: "ich dachte der laeuft jetzt mit verschiedenen
+   lautstaerken durch, um Pegelabhaengige Effekte zu sehen - KOmpressor
+   bspw.").
+
+   Die Kennlinie darueber zeigt einen Mittelwert je Stufe. Ein
+   Kompressor arbeitet aber nicht auf allen Frequenzen gleich - meist
+   packt er im Bass zu, wo die meiste Energie sitzt. Das sieht man erst,
+   wenn man die Frequenzgaenge der Stufen UEBEREINANDERLEGT.
+
+   Dafuer wird jede Stufe auf denselben mittleren Pegel gebracht: die
+   reine Lautstaerkeaenderung faellt heraus, uebrig bleibt die
+   Formaenderung. Liegen alle Kurven aufeinander, arbeitet die Kette auf
+   allen Frequenzen gleich - dann ist sie entweder ganz linear oder ganz
+   gleichmaessig begrenzt. Faechern sie auf, sieht man am Ort des
+   Faechers, welches Band bei welcher Lautstaerke nachgibt. */
+function messPegelBaenderZeichnen(){
+  const c = $('messpegelbaender'); if (!c) return;
+  const reihe = messErgebnis.pegel;
+  const huelle = c.closest('.messblock') || c;
+  if (!reihe || reihe.length < 2 || !reihe[0].kurve){ huelle.hidden = true; return; }
+  huelle.hidden = false;
+
+  const OB = 26, UN = 26, LI = 46, RE = 12;
+  const { b, bw, bh, X } = messRahmen(c, OB, UN, LI, RE);
+
+  /* Jede Stufe auf ihren eigenen Mittelwert beziehen - dann steht da
+     die FORM, nicht die Lautstaerke. */
+  const formen = reihe.map(r => {
+    const innen = r.kurve.filter(p => p.f >= 63 && p.f <= 8000);
+    let leist = 0;
+    for (const p of innen) leist += Math.pow(10, p.db / 10);
+    const mittel = 10 * Math.log10(leist / innen.length);
+    return { laut: r.laut, werte: r.kurve.map(p => p.db - mittel) };
+  });
+
+  /* Gegen die LEISESTE Stufe: sie ist am ehesten unbegrenzt, also der
+     ehrlichste Bezug. Gezeigt wird die Abweichung davon. */
+  const bezug = formen[formen.length - 1].werte;
+  let gr = 2;
+  for (const f of formen) f.werte.forEach((v, i) => {
+    if (f.werte[i] === undefined || bezug[i] === undefined) return;
+    const d = Math.abs(v - bezug[i]);
+    if (d > gr && reihe[0].kurve[i].f >= 40 && reihe[0].kurve[i].f <= 10000) gr = d;
+  });
+  gr = Math.ceil(gr);
+  const Y = (db) => OB + bh * (1 - (db + gr) / (2 * gr));
+
+  for (let d = -gr; d <= gr; d += Math.max(1, Math.round(gr / 2))){
+    b.fillStyle = d === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.05)';
+    b.fillRect(LI, Y(d), bw, 1);
+    b.fillStyle = '#6e6e73'; b.font = '9px system-ui';
+    b.fillText((d > 0 ? '+' : '') + d, 20, Y(d) + 3);
+  }
+
+  formen.forEach((f, k) => {
+    const farbe = MESS_FARBEN[k % MESS_FARBEN.length];
+    b.beginPath();
+    f.werte.forEach((v, i) => {
+      const x = X(i), y = Math.max(OB, Math.min(OB + bh, Y(v - bezug[i])));
+      i ? b.lineTo(x, y) : b.moveTo(x, y);
+    });
+    b.strokeStyle = farbe; b.lineWidth = k === formen.length - 1 ? 1.5 : 2;
+    b.globalAlpha = k === formen.length - 1 ? 0.5 : 1;
+    b.stroke(); b.globalAlpha = 1;
+    /* Beschriftung am rechten Rand */
+    b.fillStyle = farbe; b.font = '10px system-ui';
+    const letzte = f.werte.length - 1;
+    b.fillText(f.laut + ' %', LI + bw - 34, Math.max(OB + 9, Math.min(OB + bh - 2,
+      Y(f.werte[letzte] - bezug[letzte]) - 4)));
+  });
+
+  b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
+  b.fillText('Formänderung gegenüber der leisesten Stufe — flach heißt: auf allen Frequenzen gleich', LI, 13);
 }
 
 /* DAS FAZIT (Caspar_D, 27.08.2026: "es muss ja jetzt ein Fazit geben"
@@ -18016,30 +18120,44 @@ const MESS_PLAN = [
         + 'das Grundgeräusch, sonst mißt man Zufall. Dauert etwa fünf Sekunden, '
         + 'dabei darfst du dich ruhig bewegen.',
     ruhe: false },
-  { art: 'neutral',
+  { art: 'neutral', signal: 'rosa',
     titel: 'Die Bezugsmessung',
-    text: 'Ein Sweep von 20 Hz bis 20 kHz, das Tonstudio wird dabei umgangen. Diese Kurve '
+    text: 'Rosa Rauschen, vier Sekunden, das Tonstudio wird dabei umgangen. Diese Kurve '
         + 'enthält Lautsprecher, Raum und Mikrofon — alles außer dem Equalizer. Gegen sie '
-        + 'wird später jede Einstellung gehalten.',
+        + 'wird später jede Einstellung gehalten.<br><br>'
+        + 'Warum Rauschen und kein Sweep? Rauschen regt alle Frequenzen <b>zugleich</b> an, '
+        + 'jedes Band bekommt die volle Meßzeit, und die Kurve wird ruhig. Ein Sweep läuft '
+        + 'sie <b>nacheinander</b> ab — jedes Band bekommt nur einen Bruchteil der Zeit, und '
+        + 'die Kurve zappelt. Für einen sauberen Frequenzgang ist Rauschen das bessere Signal.',
     ruhe: true },
-  { art: 'lauf', gains: () => EQ_KLASSIKER.bass.slice(),
+  { art: 'vergleich', signal: 'sweep',
+    titel: 'Dieselbe Messung mit dem Sweep',
+    text: 'Jetzt derselbe Durchgang, aber mit einem Ton, der von 20 Hz bis 20 kHz hochläuft. '
+        + 'Zwei Signale, dieselbe Kette — die Unterschiede zwischen den beiden Kurven sind '
+        + 'nicht der Raum, sondern das Verfahren.<br><br>'
+        + 'Der Sweep hat einen Vorteil, den das Rauschen nicht hat: weil zu jedem Zeitpunkt '
+        + 'nur eine Frequenz im Raum steht, lassen sich Direktschall und Nachhall trennen. '
+        + 'Deshalb ist er der Standard der Raumakustik — und deshalb wäre er die Grundlage '
+        + 'für Nachhallzeit und Klarheit, wenn wir die einmal rechnen.',
+    ruhe: true, freiwillig: true },
+  { art: 'lauf', signal: 'rosa', gains: () => EQ_KLASSIKER.bass.slice(),
     titel: 'Erste Einstellung: Bass',
     text: 'Ich stelle die Bass-Anhebung ein (bis +6 dB unten herum) und messe denselben '
         + 'Sweep noch einmal. Der Unterschied zur Bezugsmessung ist das, was der Equalizer '
         + 'an deinem Hörplatz wirklich bewirkt.',
     ruhe: true },
-  { art: 'lauf', gains: () => EQ_KLASSIKER.hoehen.slice(),
+  { art: 'lauf', signal: 'rosa', gains: () => EQ_KLASSIKER.hoehen.slice(),
     titel: 'Zweite Einstellung: Höhen',
     text: 'Dasselbe mit der Höhenanhebung. Zwei Einstellungen an verschiedenen Enden des '
         + 'Bereichs zeigen, ob die Dämpfung überall gleich ist oder nur an einem Ende '
         + 'zuschlägt.',
     ruhe: true },
-  { art: 'lauf', gains: () => [0,0,0,0,12,0,0,0],
+  { art: 'lauf', signal: 'rosa', gains: () => [0,0,0,0,12,0,0,0],
     titel: 'Dritte Einstellung: ein einzelnes Band voll aufgedreht',
     text: '445 Hz um 12 dB angehoben — die stärkste Einstellung, die der Equalizer hergibt. '
         + 'Wenn irgendwo eine Begrenzung sitzt, wird sie hier sichtbar.',
     ruhe: true },
-  { art: 'pegel',
+  { art: 'pegel', signal: 'rosa',
     titel: 'Zuletzt: die Lautstärke durchfahren',
     text: 'Fünf Durchgänge von 100 % auf 25 %, zusammen gut eine Minute. Der erste ist '
         + 'lauter als alles bisher. Das ist die entscheidende Probe: Bleibt die Kette '
@@ -18074,6 +18192,11 @@ function messPlanAbbrechen(){
 }
 
 function messPlanZeigen(zustand, meldung){
+  /* Die Zahl in der Einleitung folgt dem Plan - sonst steht dort
+     "sechs", waehrend sieben Schritte kommen. */
+  const zahl = $('messplanzahl');
+  if (zahl) zahl.textContent = ['null','einen','zwei','drei','vier','fünf','sechs','sieben',
+    'acht','neun','zehn'][MESS_PLAN.length] || MESS_PLAN.length;
   const el = $('messplan'); if (!el) return;
   if (messPlanSchritt < 0){
     el.innerHTML = '<p>Der geführte Ablauf mißt in sechs Schritten durch, stellt den '
@@ -18131,6 +18254,11 @@ function messPlanWiederholen(){ messPlanZeigen(); }
 async function messPlanAusfuehren(){
   const s = MESS_PLAN[messPlanSchritt]; if (!s) return;
   messPlanZeigen('laeuft');
+  /* Der Schritt bestimmt das Signal, nicht die Auswahl oben - sonst
+     misst Schritt 3 mit etwas anderem als Schritt 2, und die
+     Differenz enthaelt den Signalwechsel statt der Einstellung. */
+  if (s.signal){ const w = $('messsignal');
+    if (w){ w.value = s.signal; if (typeof messDauerZeigen === 'function') messDauerZeigen(); } }
   try {
     if (s.art === 'raum'){
       await raumAbhoeren();
@@ -18157,6 +18285,27 @@ async function messPlanAusfuehren(){
         : 'Bezugsmessung steht, Störabstand <b>' + Math.round(ab) + ' dB</b>'
           + (ab < 20 ? ' — das ist zu wenig. Lauter stellen und wiederholen.'
                      : ', das trägt.'));
+      return;
+    }
+    if (s.art === 'vergleich'){
+      /* Der Sweep-Durchgang wird als eigener Lauf gefuehrt, damit man
+         beide Kurven nebeneinander sieht. Verglichen wird er gegen
+         dieselbe Bezugsmessung - der Unterschied ist dann rein das
+         Signal. */
+      if (!messErgebnis.neutral){
+        messPlanZeigen('fertig', 'Es fehlt die Bezugsmessung — geh einen Schritt zurück.');
+        return;
+      }
+      eqGains = [0,0,0,0,0,0,0,0]; eqAnwenden();
+      await messLauf(false);
+      const l = (messErgebnis.laeufe || []).slice(-1)[0];
+      if (l) l.name = 'Sweep statt Rauschen';
+      messPlanZeigen('fertig', !l
+        ? 'Es kam nichts an — bitte wiederholen.'
+        : 'Gemessen. Im Diagramm „Was eingestellt war und was ankam" liegt diese Kurve jetzt '
+          + 'neben der Nullinie: <b>der Equalizer stand neutral</b>, also ist alles, was du '
+          + 'dort siehst, der Unterschied zwischen Rauschen und Sweep — nicht der Raum. '
+          + 'Je zappeliger, desto mehr davon geht auf das Verfahren.');
       return;
     }
     if (s.art === 'lauf'){
@@ -19057,7 +19206,17 @@ addEventListener('resize', spaltenAnwenden);
    Der Wert wird quadriert: Das Gehör empfindet Lautstärke nicht
    linear, ein linearer Regler wirkt in der oberen Hälfte fast
    wirkungslos und stürzt unten ab. */
-let bStumm = false, bLetzteLautstaerke = 1;
+let bStumm = false;
+/* WOHIN DAS ENTSTUMMEN ZURUECKKEHRT. Stand hier fest 1, also voll: wer
+   stumm gestartet war und einmal auf den Stummknopf drueckte, bekam
+   volle Lautstaerke ins Ohr, ohne je laut gestellt zu haben. Der
+   Rueckkehrwert kommt jetzt aus dem, was zuletzt gemerkt wurde; fehlt
+   das oder war es Null, ist die halbe Lautstaerke der hoefliche
+   Vorgabewert (27.08.2026, beim Einmessen aufgefallen). */
+let bLetzteLautstaerke = (() => {
+  const merk = parseInt(localStorage.getItem('mysuno-lautstaerke'), 10);
+  return (Number.isFinite(merk) && merk > 0) ? merk / 100 : 0.5;
+})();
 
 /* DIE LAUTSTAERKE SITZT HINTER ALLEM (Caspar_D, 26.08.2026).
 
