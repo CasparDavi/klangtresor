@@ -427,19 +427,22 @@ durch.
 
 ---
 
-## 4. Läuft gerade
+## 4. ~~Läuft gerade~~ — durchgelaufen (nachgeprüft 27.08.2026)
 
-- **Trennlauf** über die restlichen Songs (Stand 129 von 321),
-  abgekoppelt von der Sitzung, gedrosselt auf vier Kerne.
-- Danach automatisch **`bin/toene.js` über alles** — dabei entstehen auch
-  die Notenzonen für alle Songs (rund fünf Stunden).
-- Danach **`library/nachtbericht.txt`** mit den Trefferquoten für Tonart
-  und Stimmlage, der Gegenprobe an den textlosen Stücken und der Liste
-  der Fälle, in denen Messung und Prompt auseinandergehen.
+Der Abschnitt beschrieb den Stand vom 25.08. („Trennlauf, 129 von 321").
+Nachgesehen: **alle drei Läufe sind durch.**
 
-Wird 1.3 vor dem `toene.js`-Durchlauf entschieden, entstehen die
-Notenzonen gleich im richtigen Format — sonst sind es 321 MB, die später
-umgeschrieben werden müssen.
+- **Trennlauf** — 321 von 321 Songs haben ihre Stems.
+- **`bin/toene.js`** — gelaufen, `library/notenzonen.json` steht mit
+  321 Songs und 14 MB (geschrieben am 26.08.). Die Sorge, es könnten
+  321 MB werden, hat sich nicht bestätigt.
+- **`library/nachtbericht.txt`** — **existiert nicht.** Er sollte die
+  Trefferquoten für Tonart und Stimmlage enthalten, die Gegenprobe an
+  den textlosen Stücken und die Fälle, in denen Messung und Prompt
+  auseinandergehen. Entweder wurde er nie erzeugt oder er ist
+  verlorengegangen; die Daten dafür liegen jedenfalls vor.
+
+Keine laufenden Prozesse mehr.
 
 ---
 

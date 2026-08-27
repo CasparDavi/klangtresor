@@ -1227,21 +1227,32 @@ Differenz (neutral gegen eingestellt) zeigt das Tonstudio allein.
   statt Wortabständen (vorher 3–5 px), gleiche Höhen, Legende statt
   Fließtext, Bedienung und Erklärung zweispaltig 4:6.
 
+### Am selben Abend erledigt
+
+- ~~Das Tonstudio als freies Fenster~~ — **gebaut.** Verschiebbar am
+  Titel, Doppelklick stellt zurück, Lage gemerkt. Der eigentliche Ärger
+  war ein anderer als gedacht: der Kasten hing an `bottom` und wuchs
+  nach oben, also sprang der Oberrand bei jedem Laschenwechsel um bis
+  zu 330 Punkte. Jetzt oben verankert, Standardplatz mittig unter der
+  Kopfleiste.
+- ~~Die Einmessung mit dem Mikrofon prüfen~~ — **durchgeführt**, und
+  daraus wurde der ganze Abend. Siehe [EINMESSEN.md](EINMESSEN.md).
+- ~~Mehrere Einstellungen durchmessen~~ — **erledigt**, digital wie am
+  Hörplatz. Der Equalizer wurde bandweise vermessen (19 Einstellungen),
+  und die Lautstärkereihe brachte den Befund des Tages: der HomePod
+  regelt ab 50 % den Baß zurück.
+
 ### Offen
 
-- **Das Tonstudio als freies Fenster** (Caspar_D, 27.08.: „es ist wohl
-  langsam nötig, das tonstudio zu einem extra fenster zu machen, was
-  positionell nicht eingeschränkt ist"). Es ist unten festgenagelt,
-  spannt die volle Breite und wächst mit jeder Lasche. Verschiebbar
-  wäre die richtige Antwort — dann bräuchte es auch das Durchreichen
-  der Mausereignisse nicht mehr.
-- **Die Einmessung mit dem Mikrofon prüfen.** Erster echter Lauf.
-- **Mehrere Einstellungen durchmessen** — angefangen, aber der Browser
-  hing beim Umschalten des Equalizers während laufender Messung. Ein
-  eigener Anlauf wert: Der Weg über zwei Analyser an `quelle` und
-  `summe` braucht kein Mikrofon.
 - Ob das Ausgabe-Signal die Abhörlautstärke enthalten soll (derzeit
   nicht — sonst zeigte der Vergleich den Regler statt der Bearbeitung).
 - Ob im Overlay auch die Stereo-Asymmetrie erscheinen soll; dafür war
   „etwas heller als die Farben, aber nicht weiß" vorgesehen.
+- **`bin/wav.js` auf Tarjas Weg umstellen** und das Kreuzchen im
+  Lesezeichen bauen — siehe [BACKLOG.md](BACKLOG.md) und
+  [WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md).
+- **Ob die Baßbegrenzung wirklich im Lautsprecher sitzt** und nicht im
+  Mikrofon. Klirranteil und Kopfraum werden seit dem 27.08. mitgemessen,
+  lagen für die bisherigen Reihen aber noch nicht vor. Eine Wiederholung
+  beantwortet es.
 
