@@ -2894,6 +2894,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <canvas id="messraumbild" height="220"></canvas>
       </div>
 
+      <!-- DER RAUM UNTER DER LUPE: die lange FFT der Bezugsmessung,
+           mit Raummoden und ihrer Güte. -->
+      <div class="messblock" hidden>
+        <h6>Der Raum im Baß — Moden und ihre Güte</h6>
+        <canvas id="messlupe" height="260"></canvas>
+      </div>
+      <div class="messfazit" id="messkamm" hidden></div>
+
       <!-- RIDGE PLOT: dieselben Daten über die Zeit gestapelt. Zeigt,
            ob eine Störung dauerhaft war oder nur einmal aufblitzte. -->
       <div class="messblock" hidden>
@@ -16699,8 +16707,8 @@ async function messLauf(neutral){
       const artN = ($('messsignal') || { value: 'sweep' }).value;
       const konv = (artN === 'rosa' || artN === 'weiss');
       sagen('Bitte jetzt Ruhe — '
-        + (konv ? 'die Messung läuft, bis die Kurve steht: mindestens acht, höchstens '
-                + 'gut dreißig Sekunden.'
+        + (konv ? 'die Messung läuft rund fünfzehn Sekunden — so lange braucht die '
+                + 'Auflösung, um Raummoden im Baß auseinanderzuhalten.'
                 : 'die Messung läuft ' + Math.round((artN === 'baender' ? 8 : 4) + 8.1)
                   + ' Sekunden.')
         + ' Jedes Geräusch im Raum steht nachher in der Kurve.');
@@ -16823,7 +16831,23 @@ async function messLauf(neutral){
     const konvWache = !konvergiert ? new Promise(() => {}) : new Promise(r => {
       const sehen = () => {
         if (!messLive) return;
-        if (messLive.ankunft !== null && (messLive.t - messLive.ankunft) > 4
+        /* MINDESTENS ZWOELF SEKUNDEN SIGNAL - nicht wegen der Mittelung,
+           die steht meist nach vier, sondern wegen der AUFLOESUNG der
+           langen FFT. Sie entscheidet, ob eine Raummode messbar ist:
+
+             4 s → 0,336 Hz → eine Mode mit Q 34 bei 34 Hz ist 3 Punkte breit
+             8 s → 0,168 Hz →                                  6 Punkte
+            12 s → 0,084 Hz →                                 12 Punkte
+
+           Unter vier Punkten laesst sich keine Guete angeben, und
+           gerade die tiefen Moden sind die, die man hoert. Zwoelf
+           Sekunden kosten nichts als Warten. */
+        /* Dreizehn, nicht zwoelf: die FFT nimmt die groesste
+           Zweierpotenz, die hineinpasst, und 2^19 sind bei 44,1 kHz
+           genau 11,89 s. Nach Abzug der 0,3 s Einschwingzeit blieben
+           bei zwoelf Sekunden nur 11,7 uebrig - knapp daneben, und die
+           Aufloesung fiel auf die Haelfte zurueck. */
+        if (messLive.ankunft !== null && (messLive.t - messLive.ankunft) > 13
             && messLive.restrauschen !== null && messLive.restrauschen !== undefined
             && messLive.restrauschen < 0.3){ r('steht'); return; }
         setTimeout(sehen, 200);
@@ -16841,7 +16865,7 @@ async function messLauf(neutral){
        zur vollen Dauer. */
     let genutzt = DAUER;
     if (wieAus === 'steht' && messLive && messLive.ankunft !== null)
-      genutzt = Math.max(4, messLive.t - messLive.ankunft);
+      genutzt = Math.max(13, messLive.t - messLive.ankunft);
 
     if (wieAus === 'abbruch'){
       audio.pause();
@@ -16931,6 +16955,27 @@ async function messLauf(neutral){
     const bis = Math.min(puffer.length, schreib, Math.round(sr * (versatz + genutzt)));
     const kurve = messSpektrum(puffer.subarray(ab, bis), sr);
 
+    /* DIESELBE LUPE WIE BEIM RAUM (Caspar_D, 27.08.2026: "die raumstille
+       hat klare signale, was können wir aus dem rosa rauschen sehen,
+       sollten wir dort die gleiche auflösung machen").
+
+       Ja - und dort noch dringender. Was bei Stille die Stoerlinien
+       sind, ist beim angeregten Raum zweierlei, beides schmal:
+
+       RAUMMODEN. Eine stehende Welle bei 40 Hz mit Guete 20 ist zwei
+       Hertz breit. Das 40-Hz-Terzband umfasst neun - dort ist sie ein
+       Punkt, und man sieht nicht, wie scharf sie ist.
+
+       KAMMFILTER. Eine Reflexion, die fuenf Millisekunden spaeter
+       eintrifft, loescht alle 200 Hz eine Frequenz aus. Aus dem ABSTAND
+       der Zacken laesst sich die Laufzeit zurueckrechnen, also wie weit
+       die reflektierende Flaeche entfernt ist. In Terzbaendern mittelt
+       sich das restlos weg.
+
+       Die Rohaufnahme liegt ohnehin im Puffer; sie wurde nur zu grob
+       ausgewertet. */
+    const lang = messLangeFft({ buf: puffer.subarray(ab, bis), n: bis - ab, sr });
+
     /* DER STOERABSTAND JE BAND, nicht breitbandig (27.08.2026 beim
        Umstieg auf Rauschen aufgefallen).
 
@@ -16973,7 +17018,7 @@ async function messLauf(neutral){
       messErgebnis.laeufe.push({
         name: messLaufName(),
         farbe: MESS_FARBEN[n % MESS_FARBEN.length],
-        kurve, soll: messSollkurve(), gains: eqGains.map(v => +v || 0),
+        kurve, lang, soll: messSollkurve(), gains: eqGains.map(v => +v || 0),
         abstand, laufzeit: Math.round((versatz - VOR) * 1000),
         laut: Math.round(+($('lautstaerke') || { value: 0 }).value),
       });
@@ -16984,6 +17029,7 @@ async function messLauf(neutral){
       messErgebnis.mit = null;
       messErgebnis.pegel = null;
       messErgebnis.neutralLaut = Math.round(+($('lautstaerke') || { value: 0 }).value);
+      messErgebnis.neutralLang = lang;
     }
     /* Der Bandabstand ist der massgebliche Wert; der breitbandige
        bleibt als Nebenangabe erhalten. */
@@ -18281,6 +18327,277 @@ function messSaeulen(b, werte, X, Y, grund, farbe, breite){
   }
 }
 
+/* DER RAUM UNTER DER LUPE: die lange FFT der Bezugsmessung.
+
+   Hier steht, was die Terzbaender verschweigen. Zwei Dinge sind
+   sichtbar und werden auch benannt:
+
+   RAUMMODEN - schmale Ueberhoehungen, meist unter 300 Hz. Zu jeder
+   laesst sich die GUETE angeben: Mittenfrequenz geteilt durch die
+   Breite bei halber Hoehe. Eine Guete von 30 heisst, dass die Mode lang
+   nachklingt (etwa 30 Perioden), eine von 5, dass sie schnell
+   verstummt. Das entscheidet, ob man sie hoert oder nur misst.
+
+   KAMMFILTER - eine Reflexion, die spaeter eintrifft, loescht
+   regelmaessig Frequenzen aus. Der Abstand der Einbrueche ist der
+   Kehrwert der Laufzeitdifferenz: 200 Hz Abstand heissen 5 ms
+   Verzoegerung, und das sind bei 343 m/s gut 1,7 Meter Umweg. So
+   laesst sich aus dem Frequenzgang die Entfernung der reflektierenden
+   Flaeche zurueckrechnen. */
+function messLupeZeichnen(){
+  const c = $('messlupe'); if (!c) return;
+  const L = messErgebnis.neutralLang;
+  const huelle = c.closest('.messblock') || c;
+  if (!L || !L.db){ huelle.hidden = true; return; }
+  huelle.hidden = false;
+
+  const OB = 34, UN = 28, LI = 52, RE = 12;
+  const b = c.getContext('2d');
+  const B = c.clientWidth || 800, H = c.height;
+  if (c.width !== B) c.width = B;
+  b.clearRect(0, 0, B, H);
+  const bw = B - LI - RE, bh = H - OB - UN;
+  b.fillStyle = '#000';
+  b.beginPath();
+  if (b.roundRect) b.roundRect(LI, OB, bw, bh, 6); else b.rect(LI, OB, bw, bh);
+  b.fill();
+
+  /* Nur der Bereich, in dem Moden leben: 20 bis 400 Hz. Darueber wird
+     das Muster so dicht, dass man es nicht mehr einzeln sieht - dort
+     hilft der Kammfilter-Befund im Text. */
+  const fVon = 20, fBis = 400;
+  const X = (f) => LI + bw * Math.log2(f / fVon) / Math.log2(fBis / fVon);
+
+  b.font = MESS_SCHRIFT; b.fillStyle = '#6e6e73';
+  for (const f of [25, 40, 63, 100, 160, 250, 400]){
+    const wort = String(f);
+    b.fillText(wort, X(f) - b.measureText(wort).width / 2, OB + bh + 17);
+  }
+
+  /* Werte einsammeln und Skala bestimmen */
+  const pkt = [];
+  for (let i = 1; i < L.db.length; i++){
+    const f = i * L.df; if (f < fVon) continue; if (f > fBis) break;
+    pkt.push({ f, db: L.db[i] });
+  }
+  if (pkt.length < 8){ huelle.hidden = true; return; }
+  let lo = Infinity, hi = -Infinity;
+  for (const p of pkt){ if (p.db < lo) lo = p.db; if (p.db > hi) hi = p.db; }
+  const rand = Math.max(3, (hi - lo) * 0.08);
+  lo -= rand; hi += rand;
+  const Y = (db) => OB + bh * (1 - (db - lo) / (hi - lo));
+
+  b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
+  for (let d = Math.ceil(lo / 10) * 10; d <= hi - 2; d += 10)
+    b.fillText(d + ' dB', LI - 8 - b.measureText(d + ' dB').width, Y(d) + 4);
+
+  /* Die Kurve, Spitzenwert je Bildpunkt */
+  const px = Math.max(1, Math.round(bw));
+  const sp = new Float32Array(px).fill(-999);
+  for (const p of pkt){
+    const k = Math.max(0, Math.min(px - 1, Math.round(X(p.f) - LI)));
+    if (p.db > sp[k]) sp[k] = p.db;
+  }
+  b.beginPath(); let e1 = true;
+  for (let k = 0; k < px; k++){
+    if (sp[k] < -900) continue;
+    const x = LI + k, y = Math.max(OB, Math.min(OB + bh, Y(sp[k])));
+    if (e1){ b.moveTo(x, y); e1 = false; } else b.lineTo(x, y);
+  }
+  b.strokeStyle = '#ececed'; b.lineWidth = 2.5; b.globalAlpha = 0.9; b.stroke(); b.globalAlpha = 1;
+
+  /* Moden suchen und beschriften */
+  const moden = messModenFinden(L, fVon, fBis);
+  for (const m of moden){
+    const x = X(m.f), y = Math.max(OB + 16, Math.min(OB + bh, Y(m.db)));
+    b.strokeStyle = 'rgba(249,20,60,0.7)'; b.lineWidth = 1;
+    b.beginPath(); b.moveTo(x, y - 8); b.lineTo(x, OB + bh); b.stroke();
+    b.fillStyle = '#f9143c'; b.beginPath(); b.arc(x, y, 3.5, 0, 6.284); b.fill();
+    /* AUS DER MODE FOLGT EIN WANDABSTAND. Eine axiale Mode entsteht,
+       wenn zwischen zwei Waenden genau eine halbe Wellenlaenge passt:
+       f = c / (2L), also L = 343 / (2f). Bei 34 Hz sind das fuenf
+       Meter, bei 71 Hz zweieinhalb - Zimmermasse. Das ist kein Beweis
+       (es koennte auch die zweite Mode einer doppelt so langen Strecke
+       sein), aber ein Anhalt, der die Zahl greifbar macht. */
+    const meter = 343 / (2 * m.f);
+    const wort = m.f.toFixed(1).replace('.', ',') + ' Hz  Q ' + m.q.toFixed(0)
+      + '  ≈ ' + meter.toFixed(1).replace('.', ',') + ' m';
+    b.font = MESS_SCHRIFT;
+    const br = b.measureText(wort).width;
+    const tx = Math.min(LI + bw - br - 2, Math.max(LI + 2, x - br / 2));
+    b.fillStyle = '#000'; b.fillRect(tx - 3, y - 23, br + 6, 14);
+    b.fillStyle = '#f9143c'; b.fillText(wort, tx, y - 12);
+  }
+
+  b.fillStyle = '#ececed'; b.font = MESS_SCHRIFT_GROSS;
+  b.fillText('Der Raum von 20 bis 400 Hz, aufgelöst mit '
+    + L.df.toFixed(3).replace('.', ',') + ' Hz', LI, 15);
+  b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
+  b.fillText(moden.length
+    ? moden.length + (moden.length === 1 ? ' Raummode' : ' Raummoden') + ' gefunden — '
+      + 'Q sagt, wie lange sie nachklingt (30 ≈ dreißig Perioden), der Meterwert den '
+      + 'Wandabstand, der sie erzeugt. Dauertöne aus der Raumstille sind ausgenommen'
+    : 'keine ausgeprägte Raummode gefunden', LI, 30);
+
+  messKammBefund(L);
+}
+
+/* RAUMMODEN FINDEN: schmale Ueberhoehungen gegen den geglaetteten
+   Verlauf, mit Guete aus der Breite bei halber Hoehe (-3 dB). */
+function messModenFinden(L, fVon, fBis){
+  const idxVon = Math.max(1, Math.round(fVon / L.df));
+  const idxBis = Math.min(L.db.length - 1, Math.round(fBis / L.df));
+  if (idxBis - idxVon < 50) return [];
+
+  /* FUER DIE SUCHE GEGLAETTET, fuer die Anzeige nicht.
+
+     Je feiner die Aufloesung, desto weniger Mittelung steckt in jedem
+     einzelnen Punkt - eine 0,084-Hz-FFT zappelt deutlich staerker als
+     eine mit 0,336 Hz. Die Suche vergleicht eine Spitze mit ihrem
+     Umfeld; zappeln beide, geht der Vergleich unter, und bei voller
+     Aufloesung wurde gar keine Mode mehr gefunden.
+
+     Geglaettet wird ueber ein halbes Hertz. Das ist schmaler als jede
+     Raummode (eine mit Q 50 bei 40 Hz ist 0,8 Hz breit) und breit
+     genug, um das Grieseln zu nehmen. Die gezeichnete Kurve bleibt
+     davon unberuehrt - dort will man ja gerade jede Zacke sehen. */
+  const roh = L.db;                         /* fuer die Breite */
+  const glaettePunkte = Math.max(1, Math.round(0.5 / L.df));
+  const g = new Float32Array(L.db.length);
+  for (let i = 0; i < L.db.length; i++){
+    let sum = 0, c = 0;
+    for (let k = -glaettePunkte; k <= glaettePunkte; k++){
+      const j = i + k; if (j < 0 || j >= L.db.length) continue;
+      sum += Math.pow(10, L.db[j] / 10); c++;
+    }
+    g[i] = 10 * Math.log10(sum / c);
+  }
+  L = { db: g, df: L.df, N: L.N, sekunden: L.sekunden };
+  /* geglaetteter Verlauf: breites gleitendes Mittel in Oktavbreite */
+  const funde = [];
+  for (let i = idxVon + 3; i < idxBis - 3; i++){
+    const f = i * L.df;
+    const halb = Math.max(3, Math.round(f * 0.12 / L.df));   /* rund eine Sechstel-Oktave */
+    let sum = 0, c = 0;
+    for (let k = -halb * 3; k <= halb * 3; k++){
+      if (Math.abs(k) <= halb) continue;
+      const j = i + k; if (j < idxVon || j > idxBis) continue;
+      sum += Math.pow(10, L.db[j] / 10); c++;
+    }
+    if (!c) continue;
+    const umfeld = 10 * Math.log10(sum / c);
+    const ueber = L.db[i] - umfeld;
+    if (ueber < 6) continue;
+    let spitze = true;
+    for (let k = -halb; k <= halb; k++){ const j = i + k;
+      if (j >= idxVon && j <= idxBis && L.db[j] > L.db[i]) spitze = false; }
+    if (!spitze) continue;
+    /* DIE BREITE AM ORIGINAL, nicht an der geglaetteten Kurve.
+
+       Die Glaettung verbreitert jede Spitze und druecktdamit das Q -
+       gemessen an derselben Mode ergab sie bei 0,2 Hz Glaettung Q 41,
+       bei 0,5 Hz Q 17 und bei 1,0 Hz Q 6. Eine Zahl, die vom
+       Suchverfahren abhaengt, ist keine Messung. Gesucht wird also
+       geglaettet, gemessen wird roh. */
+    const ziel = roh[i] - 3;
+    let li = i, re = i;
+    while (li > idxVon && roh[li] > ziel) li--;
+    while (re < idxBis && roh[re] > ziel) re++;
+    const breite = (re - li) * L.df;
+    if (breite <= 0) continue;
+    const q = f / breite;
+    if (q < 3) continue;                       /* zu breit fuer eine Mode */
+
+    /* ZWEI FILTER, die aus Zahlen erst Befunde machen:
+
+       1. DIE AUFLOESUNGSGRENZE. Eine Spitze, die nur zwei, drei
+          Messpunkte breit ist, bekommt rechnerisch eine gewaltige
+          Guete - gemessen ist sie aber nicht, sie ist nur schmaler als
+          das Raster. Gemeldet wurde so ein Q von 528 bei 355 Hz, das
+          waeren 0,67 Hz Breite bei 0,336 Hz Aufloesung. Unter vier
+          Punkten Breite gibt es keine Gueteangabe.
+
+       2. DIE PHYSIK. Die Guete einer Raummode haengt an der
+          Nachhallzeit: Q ist ungefaehr Pi mal f mal RT60 durch 6,9.
+          Ein Wohnraum mit einer halben Sekunde Nachhall kommt bei
+          100 Hz auf etwa 22, bei einer ganzen Sekunde auf 45. Ueber
+          hundert ist es kein Raum mehr, sondern ein Dauerton - ein
+          Luefter, ein Netzteil, ein Trafo. */
+    if ((re - li) < 4) continue;
+    if (q > 120) continue;
+    funde.push({ f, db: L.db[i], ueber, q, breite });
+  }
+  /* WAS SCHON IN DER STILLE DA WAR, IST KEINE RAUMMODE. Der Luefter
+     brummt auch waehrend der Messung weiter; seine Linie steht dann im
+     Signal und sieht dort aus wie eine sehr scharfe Resonanz. Genau so
+     kam "148 Hz mit Q 147" zustande - bei der Raumstille stand dort
+     eine Luefterlinie bei 145,3 Hz. */
+  const stoer = (messErgebnis.raum && messErgebnis.raum.stoer) || [];
+  const gefiltert = funde.filter(x =>
+    !stoer.some(st => Math.abs(st.f - x.f) / x.f < 0.04));
+
+  gefiltert.sort((a, b) => b.ueber - a.ueber);
+  const raus = [];
+  for (const x of gefiltert){
+    if (raus.some(y => Math.abs(y.f - x.f) / x.f < 0.08)) continue;
+    raus.push(x);
+    if (raus.length >= 5) break;
+  }
+  return raus.sort((a, b) => a.f - b.f);
+}
+
+/* KAMMFILTER: regelmaessige Einbrueche verraten eine Reflexion. Der
+   Abstand der Einbrueche ist der Kehrwert der Laufzeitdifferenz.
+   Gesucht wird per Autokorrelation des Frequenzgangs - ein Kamm
+   wiederholt sich, ein Raum nicht. */
+function messKammBefund(L){
+  const el = $('messkamm'); if (!el) return;
+  const von = Math.max(1, Math.round(300 / L.df));
+  const bis = Math.min(L.db.length - 1, Math.round(4000 / L.df));
+  if (bis - von < 400){ el.hidden = true; return; }
+  /* Mittelwert abziehen, damit die Autokorrelation auf die Welligkeit
+     schaut und nicht auf den Verlauf */
+  const n = bis - von;
+  const w = new Float64Array(n);
+  let mittel = 0;
+  for (let i = 0; i < n; i++) mittel += L.db[von + i];
+  mittel /= n;
+  for (let i = 0; i < n; i++) w[i] = L.db[von + i] - mittel;
+  /* Abstaende von 20 bis 1000 Hz absuchen */
+  let besterAbstand = 0, besterWert = 0;
+  for (let dHz = 20; dHz <= 1000; dHz += 2){
+    const d = Math.round(dHz / L.df);
+    if (d < 4 || d >= n / 3) continue;
+    let s = 0, c = 0;
+    for (let i = 0; i + d < n; i++){ s += w[i] * w[i + d]; c++; }
+    const r = c ? s / c : 0;
+    if (r > besterWert){ besterWert = r; besterAbstand = dHz; }
+  }
+  /* Bezug: die Streuung selbst. Unter einem Drittel ist es kein Kamm. */
+  let varianz = 0;
+  for (let i = 0; i < n; i++) varianz += w[i] * w[i];
+  varianz /= n;
+  const guete = varianz > 0 ? besterWert / varianz : 0;
+  if (!besterAbstand || guete < 0.25){ el.hidden = true; return; }
+  el.hidden = false;
+  const msek = 1000 / besterAbstand;
+  const meter = 343 * msek / 1000;
+  el.innerHTML = '<h5>Eine Reflexion ist zu sehen</h5>'
+    + '<p>Im Frequenzgang wiederholt sich ein Muster im Abstand von <b>'
+    + besterAbstand + ' Hz</b>. Das ist ein Kammfilter, und er entsteht, wenn derselbe '
+    + 'Schall zweimal ankommt: einmal direkt, einmal über eine Fläche reflektiert. '
+    + 'Der Abstand der Einbrüche ist der Kehrwert der Laufzeitdifferenz.</p>'
+    + '<p>Aus <b>' + besterAbstand + ' Hz</b> folgt eine Verzögerung von <b class="fzahl">'
+    + msek.toFixed(1).replace('.', ',') + ' ms</b> — bei 343 m/s Schallgeschwindigkeit ein '
+    + 'Umweg von <b class="fzahl">' + meter.toFixed(2).replace('.', ',') + ' m</b>. '
+    + 'Die reflektierende Fläche liegt also rund <b>' + (meter / 2).toFixed(2).replace('.', ',')
+    + ' m</b> von der geraden Linie zwischen Lautsprecher und Ohr entfernt: Tischplatte, '
+    + 'Seitenwand, Fensterscheibe.</p>'
+    + '<p class="fmatt">Dagegen hilft kein Equalizer — die Auslöschungen sitzen an anderen '
+    + 'Frequenzen, sobald du den Kopf bewegst. Was hilft: die Fläche dämpfen oder den '
+    + 'Lautsprecher so stellen, daß der Umweg länger wird.</p>';
+}
+
 /* DIE WIRKUNG: was eingestellt war gegen das, was ankam (Caspar_D,
    27.08.2026: "diagramme, die zeigen, wie sieht die kurve erwartbar
    aus, wenn alles ankommt, was ich einstelle und wie sieht sie gemessen
@@ -18983,7 +19300,8 @@ function messAnsicht(was){
   const hatKurven = !!(messErgebnis.neutral || (messErgebnis.laeufe || []).length
                        || (messLive && !messLive.raum));
   zeig('messkurven', hatKurven && (a === 'werkzeug' || imAblauf));
-  if (a === 'werkzeug' || imAblauf){ messRaumbildZeichnen(); messRidgeZeichnen(); }
+  if (a === 'werkzeug' || imAblauf){ messRaumbildZeichnen(); messRidgeZeichnen();
+    messLupeZeichnen(); }
   const rt = $('messraumtitel');
   if (rt) rt.textContent = (messLive && messLive.raum)
     ? 'Ich höre gerade zu …' : 'Was der Raum von sich aus macht';
@@ -19025,7 +19343,9 @@ const MESS_PLAN = [
     titel: 'Die Bezugsmessung',
     text: 'Rosa Rauschen, das Tonstudio wird dabei umgangen. Es läuft, bis die Kurve steht — '
         + 'wie beim Raum vorhin wird aus vielen Momentaufnahmen gemittelt, bis das Rauschen '
-        + 'weg ist. Meist acht bis zwölf Sekunden. Diese Kurve '
+        + 'weg ist. Das dauert rund fünfzehn Sekunden — länger als die Mittelung bräuchte, '
+        + 'aber erst dann ist die Auflösung fein genug, um Raummoden im Baß voneinander zu '
+        + 'trennen. Diese Kurve '
         + 'enthält Lautsprecher, Raum und Mikrofon — alles außer dem Equalizer. Gegen sie '
         + 'wird später jede Einstellung gehalten.<br><br>'
         + 'Warum Rauschen und kein Sweep? Rauschen regt alle Frequenzen <b>zugleich</b> an, '
