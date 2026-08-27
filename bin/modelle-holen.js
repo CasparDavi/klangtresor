@@ -53,29 +53,87 @@ const DATEIEN = [
       Systemzertifikate), 3. Anleitung zum Holen von Hand. */
 const { spawnSync } = require('node:child_process');
 const schlaf = (ms) => new Promise(r => setTimeout(r, ms));
+
+/* Wie lange ohne ein einziges Byte gewartet wird, bevor abgebrochen und
+   curl versucht wird.
+
+   ANLASS (27.08.2026): Dr. Fruusch starrte vier Minuten auf die Zeile
+   "hole discogs-effnet-bsdynamic-1.onnx …" und hielt das Programm fuer
+   abgestuerzt. Es war keiner: fetch ohne signal wartet unbegrenzt,
+   solange die Verbindung steht. Die drei Versuche unten liefen nie an,
+   denn geworfen wurde nie etwas.
+
+   Begrenzt wird der STILLSTAND, nicht die Gesamtdauer - 246 MB duerfen
+   an einer langsamen Leitung ihre Zeit haben. Jedes ankommende Stueck
+   setzt die Uhr zurueck. */
+const STILLSTAND = 45000;
+
+/* Merkt sich, was gerade laeuft: die Fortschrittszeile ueberschreibt
+   sich selbst und muss den Namen jedesmal mitschreiben. */
+let NAME_JETZT = '';
+
+function mb(n) { return (n / 1048576).toFixed(1) + ' MB'; }
+
 async function perFetch(url, mindestens) {
   let letzter = null;
   for (let versuch = 1; versuch <= 3; versuch++) {
+    const steuer = new AbortController();
+    let stand = Date.now(), still = false;
+    const wacht = setInterval(() => {
+      if (Date.now() - stand > STILLSTAND) { still = true; steuer.abort(); }
+    }, 1000);
     try {
-      const r = await fetch(url, { redirect: 'follow' });
+      const r = await fetch(url, { redirect: 'follow', signal: steuer.signal });
       if (!r.ok) { letzter = `HTTP ${r.status}`; break; }
-      const buf = Buffer.from(await r.arrayBuffer());
+
+      /* Stueckweise statt arrayBuffer(): nur so laesst sich beim Warten
+         zusehen, und nur so weiss die Wache oben, dass etwas ankommt. */
+      const ganz = Number(r.headers.get('content-length')) || 0;
+      const teile = []; let n = 0, letzteMeldung = 0;
+      for await (const stueck of r.body) {
+        teile.push(stueck); n += stueck.length; stand = Date.now();
+        /* Nur im Terminal fortschreiben - in eine Datei umgeleitet
+           wuerde jedes \r zu einer weiteren Zeile Muell. */
+        if (process.stdout.isTTY && Date.now() - letzteMeldung > 250) {
+          letzteMeldung = Date.now();
+          const wieweit = ganz ? ` von ${mb(ganz)} (${Math.round(n / ganz * 100)} %)` : '';
+          process.stdout.write(`\r  hole       ${NAME_JETZT} … ${mb(n)}${wieweit}   `);
+        }
+      }
+      const buf = Buffer.concat(teile);
       if (buf.length < mindestens) { letzter = `zu klein (${buf.length} Bytes)`; break; }
       return { buf };
     } catch (e) {
       const c = e.cause || {};
-      letzter = [e.message, c.code, c.message].filter(Boolean).join(' / ');
+      letzter = still
+        ? `${STILLSTAND / 1000} s lang kein Byte angekommen`
+        : [e.message, c.code, c.message].filter(Boolean).join(' / ');
+      if (still) break;   /* Hier hilft kein Wiederholen, nur ein anderer Weg. */
       await schlaf(800 * versuch);
+    } finally {
+      clearInterval(wacht);
     }
   }
   return { fehler: letzter };
 }
+
 function perCurl(url, f, mindestens) {
-  const r = spawnSync('curl', ['-L', '--fail', '--silent', '--show-error', '-o', f, url], { encoding: 'utf8' });
-  if (r.error) return { fehler: 'kein curl' };
-  if (r.status !== 0) return { fehler: (r.stderr || '').trim() || `curl ${r.status}` };
+  /* Dieselbe Frist fuer curl: bricht ab, wenn STILLSTAND lang weniger
+     als 1 kB/s ankommt. Ohne das haengt auch der Notweg unbegrenzt. */
+  const r = spawnSync('curl', ['-L', '--fail', '--silent', '--show-error',
+    '--speed-time', String(STILLSTAND / 1000), '--speed-limit', '1024',
+    '--connect-timeout', '20', '-o', f, url], { encoding: 'utf8' });
+  /* Bruchstueck wegraeumen, ehe irgendetwas zurueckgegeben wird: curl
+     schreibt mit -o auch dann in die Datei, wenn es hinterher aufgibt.
+     Die Groessenpruefung weiter unten kam dafuer zu spaet - sie steht
+     hinter dem Statusabbruch und lief bei einem Fehler nie an. Gefunden
+     am 27.08.2026 an einem stumm gestellten Testserver: zurueck blieben
+     1024 Bytes, die aussahen wie ein Modell. */
+  const weg = () => { try { if (fs.existsSync(f)) fs.rmSync(f); } catch (e) {} };
+  if (r.error) { weg(); return { fehler: 'kein curl' }; }
+  if (r.status !== 0) { weg(); return { fehler: (r.stderr || '').trim() || `curl ${r.status}` }; }
   const n = fs.existsSync(f) ? fs.statSync(f).size : 0;
-  if (n < mindestens) { try { fs.rmSync(f); } catch (e) {} return { fehler: `zu klein (${n} Bytes)` }; }
+  if (n < mindestens) { weg(); return { fehler: `zu klein (${n} Bytes)` }; }
   return { n };
 }
 
@@ -85,12 +143,16 @@ function perCurl(url, f, mindestens) {
   for (const [name, url, mindestens] of DATEIEN) {
     const f = path.join(ZIEL, name);
     if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); continue; }
+    NAME_JETZT = name;
     process.stdout.write(`  hole       ${name} … `);
     const a = await perFetch(url, mindestens);
-    if (a.buf) { fs.writeFileSync(f, a.buf); geholt++; console.log(`${(a.buf.length / 1048576).toFixed(1)} MB`); continue; }
+    /* Die Fortschrittszeile hat sich selbst ueberschrieben; erst
+       loeschen, sonst klebt das Ergebnis hinter halben Prozentzahlen. */
+    if (process.stdout.isTTY) process.stdout.write(`\r${' '.repeat(78)}\r  hole       ${name} … `);
+    if (a.buf) { fs.writeFileSync(f, a.buf); geholt++; console.log(mb(a.buf.length)); continue; }
     process.stdout.write(`fetch: ${a.fehler} → curl … `);
     const b = perCurl(url, f, mindestens);
-    if (b.n) { geholt++; console.log(`${(b.n / 1048576).toFixed(1)} MB`); continue; }
+    if (b.n) { geholt++; console.log(mb(b.n)); continue; }
     console.log(`FEHLER (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }
   const da = DATEIEN.filter(([n, , m]) => fs.existsSync(path.join(ZIEL, n)) && fs.statSync(path.join(ZIEL, n)).size >= m).length;
