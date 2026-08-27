@@ -1886,6 +1886,22 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 .messfazit p:last-child{margin-bottom:0}
 .messfazit ul{margin:0 0 9px;padding-left:18px}
 .messfazit li{margin-bottom:3px}
+/* Die Wissenslade: Ueberschriften gliedern zwei lange Spalten, sonst
+   liest man sich fest. Der erste Absatz nach einer Ueberschrift steht
+   naeher an ihr als am Absatz davor. */
+.messhg{margin-top:30px}
+.messhg .hgkoerper{font-size:12px;line-height:1.62;color:var(--schwach)}
+.messhg h6{margin:20px 0 7px;font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--text);font-weight:600}
+.messhg h6:first-child{margin-top:4px}
+.messhg p{margin:0 0 9px}
+.messhg ul{margin:0 0 9px;padding-left:17px}
+.messhg li{margin-bottom:4px}
+.messhg b{color:var(--text);font-weight:600}
+.messhg i{font-style:normal;color:var(--text)}
+/* Was noch aussteht, wird als solches kenntlich gemacht - sonst sucht
+   jemand einen Knopf, den es nicht gibt. */
+.messhgnoch{border-left:2px solid var(--rand);padding-left:11px}
 .messfazit b{color:#f97b14;font-weight:600}
 .messfazit .fzahl{font-variant-numeric:tabular-nums}
 .messfazit .fmatt{color:var(--schwach)}
@@ -2781,6 +2797,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="messfazit" id="messfazit" hidden></div>
       <div class="messfazit" id="messkorrektur" hidden></div>
 
+      <!-- ALLES, WAS MAN DAZU WISSEN MUSS, STEHT HIER (Caspar_D,
+           27.08.2026: "und es gehoert alles in die dialogbox zum
+           einmessen, der chat hier nuetzt mir nichts, wenn ich im
+           browser auf das Fenster starre"). Aufgeklappt wie beim
+           Kompressor, damit es niemanden erschlaegt, der nur schnell
+           messen will. -->
       <div class="messspalten">
         <div class="messwie">
           <h5>So geht es</h5>
@@ -2805,6 +2827,105 @@ h3 .infoknopf .ico{width:14px;height:14px}
         </div>
       </div>
     </div>
+
+      <div class="hintergrund messhg" id="messhintergrund">
+        <button type="button" class="hgkopf" id="messhgkopf" title="Hintergrund auf- und zuklappen"><span class="hgpfeil">▸</span> Hintergrund — <b>Was hier gemessen wird, was Toningenieure messen, und was man mit dem Ergebnis tun darf.</b></button>
+        <div class="hgkoerper" hidden>
+          <div>
+            <h6>Welches Signal wofür</h6>
+            <p><b>Sweep.</b> Ein Ton, der von 20 Hz bis 20 kHz hochläuft. Er trägt seine Energie
+            <i>nacheinander</i> durch die Bänder. Weil zu jedem Zeitpunkt nur eine Frequenz im Raum
+            steht, lassen sich Direktschall und Nachhall zeitlich trennen — deshalb ist er der
+            Standard der Raumakustik. Der Preis: jedes Terzband bekommt nur einen Bruchteil der
+            Meßzeit, bei vier Sekunden gut hundert Millisekunden. Wenig Zeit heißt wenig Mittelung,
+            und die Kurve zappelt.</p>
+            <p><b>Rosa Rauschen.</b> Regt alle Bänder <i>zugleich</i> an, mit gleicher Energie je
+            Oktave. Jedes Band bekommt die volle Meßzeit, die Kurve wird glatt. Dafür vermischen
+            sich Direktschall und Nachhall untrennbar. Für einen ruhigen Frequenzgang das bessere
+            Signal, für Raumakustik das schlechtere.</p>
+            <p><b>Weißes Rauschen.</b> Gleiche Energie je <i>Hertz</i> statt je Oktave — klingt
+            deshalb hell und belastet die Hochtöner. Für Messungen an Geräten sinnvoll, im Raum
+            selten.</p>
+            <p><b>Bandtöne.</b> Auf jeder der acht Equalizer-Frequenzen steht nacheinander ein
+            reiner Ton. Damit läßt sich Band für Band ablesen, was ein einzelner Regler bewirkt —
+            ohne daß die Nachbarn hineinreden.</p>
+
+            <h6>Warum zwei Durchgänge</h6>
+            <p>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal, Lautsprecher, Raum
+            und Mikrofon. Die lassen sich ohne Referenz nicht trennen, und ein Mikrofon ohne
+            bekannte Kennlinie macht daraus keine Eichung. In der <b>Differenz</b> zweier Durchgänge
+            kürzen sich Mikrofon, Lautsprecher und Raum aber heraus — sie sind in beiden Messungen
+            dieselben. Übrig bleibt, was das Tonstudio wirklich bewirkt. Alles, was dieses Fenster
+            berechnet, kommt aus solchen Differenzen.</p>
+
+            <h6>Was die Zahlen bedeuten</h6>
+            <p><b>Störabstand.</b> Wieviel lauter das Signal war als das Grundgeräusch. Unter 20 dB
+            ist eine Differenz mehr Zufall als Messung. „Raum abhören" hilft, eine ruhigere Stelle
+            zu finden.</p>
+            <p><b>Ausbeute.</b> Die Steigung der Ausgleichsgeraden durch den Ursprung: gemessen =
+            k · eingestellt. Bei 100 % kommt an, was am Regler steht. Durch den Ursprung, weil
+            „nichts eingestellt" auch „nichts gemessen" heißen muß.</p>
+            <p><b>Bestimmtheitsmaß.</b> Trennt zwei Ursachen: Ist die Abweichung überall gleich
+            groß, dämpft der Lautsprecher gleichmäßig. Bricht sie in einzelnen Bändern aus, ist es
+            der Raum.</p>
+            <p><b>Laufzeit.</b> Wie lange der Ton vom Rechner bis zum Hörplatz braucht. Über AirPlay
+            sind das zwei Sekunden, absichtlich — so bleiben mehrere Lautsprecher zusammen. Derselbe
+            Betrag gehört als Versatz an den mitlaufenden Text.</p>
+          </div>
+          <div>
+            <h6>Was Toningenieure messen</h6>
+            <p>Fast alles davon kommt aus einer einzigen Größe: der <b>Impulsantwort</b>. Man
+            schickt einen logarithmischen Sweep, nimmt ihn auf und faltet die Aufnahme mit dem
+            zeitinversen Sweep. Heraus fällt, was der Raum aus einem einzigen Knall machen würde.
+            Daraus folgen dann:</p>
+            <ul>
+              <li><b>Frequenzgang</b> — was dieses Fenster schon zeigt.</li>
+              <li><b>Nachhallzeit RT60</b>, je Terzband: wie lange der Raum nachklingt.</li>
+              <li><b>Klarheit C50/C80</b> — Verhältnis von frühem zu spätem Schall. Sagt, ob Sprache
+              verständlich und Musik durchhörbar bleibt.</li>
+              <li><b>Erstreflexionen</b> — wann die erste Wand zurückschlägt und wie stark.</li>
+              <li><b>Klirrfaktor</b> — beim log-Sweep trennen sich die Verzerrungsprodukte zeitlich
+              von der Hauptantwort und erscheinen als eigene Impulse davor.</li>
+            </ul>
+            <p class="messhgnoch">Die Zutaten dafür liegen hier bereits vor: der log-Sweep, die rohe
+            Aufnahme und die Kenntnis des gesendeten Signals. Es fehlt die Entfaltung — eine
+            FFT-Division. <b>Noch nicht gebaut.</b></p>
+
+            <h6>Was man mit dem Ergebnis tun darf</h6>
+            <p>Hier ist Vorsicht am Platz, denn zwei Dinge sehen in der Messung gleich aus und
+            müssen verschieden behandelt werden.</p>
+            <p><b>Überhöhungen darf man dämpfen.</b> Eine stehende Welle lädt Energie in ein Band;
+            ein Regler nimmt sie wieder weg. Das funktioniert und ist Standardpraxis.</p>
+            <p><b>Einbrüche darf man nicht auffüllen.</b> Ein Loch im Frequenzgang kommt meist von
+            einer Auslöschung: Direktschall und Reflexion treffen gegenphasig ein und heben sich
+            auf. Mehr Pegel wird genauso ausgelöscht — man verheizt Leistung und Kopfraum, ohne daß
+            am Hörplatz etwas ankommt. Dagegen hilft ein anderer Platz, kein Regler.</p>
+            <p><b>Fehlende Ausbeute darf man nur hochrechnen, wenn nichts begrenzt.</b> Regelt der
+            Lautsprecher oben zurück, macht mehr Pegel es schlimmer statt besser. Deshalb ist
+            „Lautstärke durchfahren" die Bedingung dafür und nicht die Zierde: erst wenn die
+            Kennlinie gerade bleibt, ist eine Hochrechnung ehrlich.</p>
+            <p>Was hier <b>nicht</b> gerechnet wird, ist eine Korrektur des absoluten Frequenzgangs.
+            Die bräuchte ein Mikrofon mit bekannter Kennlinie — sonst hebt man Bässe an, um ein
+            Loch auszugleichen, das im Mikrofon sitzt.</p>
+
+            <h6>Warum das Mikrofon zählt</h6>
+            <p>Die Auswahl ist nach Eignung für <i>Raummessung</i> sortiert, nicht nach Eignung für
+            Sprache. Ein USB-Kondensator hört unten weit hinunter und arbeitet ohne
+            Nachbearbeitung. Ein eingebautes Array rechnet Beamforming und Störunterdrückung mit,
+            die sich nicht abschalten lassen. Ein Webcam-Mikrofon ist auf Sprache getrimmt:
+            Hochpaß, Kompressor, Rauschfilter, alles fest verdrahtet. Virtuelle Geräte hören gar
+            keinen Raum, sondern schleifen Ton im Rechner durch.</p>
+            <p>Für die Differenz kürzt sich die Kennlinie zwar heraus — aber nur dort, wo das
+            Mikrofon überhaupt etwas hört. Wo es taub ist, steht in beiden Messungen Rauschen, und
+            die Differenz zweier Rauschwerte ist Zufall. Deshalb zählt der Tiefgang.</p>
+            <p class="messhgnoch">Mehrere Mikrofone <b>gleichzeitig</b> aufzunehmen wäre möglich und
+            nützlich — weniger zum Mitteln (die Kammfiltermuster verschiedener Orte addieren sich
+            zu neuem Unsinn) als zur <b>Unterscheidung</b>: Zeigen drei Mikrofone an drei Orten
+            dasselbe Loch, ist es der Lautsprecher. Zeigen sie drei verschiedene, ist es der Raum.
+            Das kann eine Einzelmessung grundsätzlich nicht trennen. <b>Noch nicht gebaut.</b></p>
+          </div>
+        </div>
+      </div>
 
     <div class="sseite" data-seite="pro" hidden>
       <!-- Zwei Werkzeuge, exklusiv - wie Equalizer und Glockenstuhl (Caspar_D,
@@ -4301,7 +4422,20 @@ function studioLasche(name){
   /* Die Mikrofonliste beim Aufschlagen der Lasche frisch holen: Geraete
      kommen und gehen, und ohne erteilte Erlaubnis tragen sie erst
      einmal keine Namen. */
-  if (name === 'mess') messMikrosLaden();
+  if (name === 'mess'){
+    messMikrosLaden();
+    /* Die Wissenslade auf- und zuklappbar machen - dasselbe Muster wie
+       beim Kompressor, und wie dort bleibt der Zustand gemerkt. */
+    const hg = $('messhintergrund'), hk = $('messhgkopf');
+    if (hg && hk && !hk.dataset.dran){ hk.dataset.dran = '1';
+      const setzen = (auf) => { hg.classList.toggle('auf', auf);
+        hg.querySelector('.hgkoerper').hidden = !auf;
+        localStorage.setItem('mysuno-mess-hintergrund', auf ? '1' : '0'); };
+      setzen(localStorage.getItem('mysuno-mess-hintergrund') === '1');
+      hk.onclick = () => setzen(!hg.classList.contains('auf'));
+    }
+    messLegende();
+  }
   if (name === 'eq') requestAnimationFrame(() => { studioZeichnen(); eqGesamtEinrichten('eqgesamt'); eqGesamtEinrichten('pargesamt'); if (eqAnsichtHz) parZiehenEinrichten(); });
   if (name === 'pro'){
     kompKurveZeichnen(); gradGriffeEinrichten();
