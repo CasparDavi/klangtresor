@@ -2685,6 +2685,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
           <option value="baender">Bandtöne · die acht EQ-Frequenzen</option>
         </select>
         <span class="messdauer" id="messdauer">4 s</span>
+        <!-- WELCHES MIKROFON (Caspar_D, 27.08.2026: "welches mikro
+             nimmst du, das ist wichtig"). Vorher nahm der Lauf
+             stillschweigend das Standardgeraet - und das war hier ein
+             VIRTUELLES Audiogeraet, also gar kein Mikrofon. Gemessen
+             worden waere ein interner Umweg statt des Raums.
+             Deshalb steht die Wahl jetzt sichtbar da; echte Mikrofone
+             oben, virtuelle Geraete ans Ende und ausgegraut. -->
+        <select id="messmikro" title="Womit aufgenommen wird. Virtuelle Geräte taugen nicht: Sie hören den Raum nicht, sondern schleifen Ton im Rechner durch."></select>
         <span class="messluecke"></span>
         <button class="knopf" id="messneutral" onclick="einmessenNeutral()"
           title="Erster Durchgang: das Tonstudio wird dabei umgangen. Ohne ihn zeigt die Messung nur die Kette aus Lautsprecher, Raum und Mikrofon.">1 · Neutral</button>
@@ -4219,6 +4227,10 @@ function studioLasche(name){
   blasterLcd(name === 'fx');
   kompAnzeige(name === 'pro');
   parSpektrum(name === 'eq' && eqAnsichtHz);
+  /* Die Mikrofonliste beim Aufschlagen der Lasche frisch holen: Geraete
+     kommen und gehen, und ohne erteilte Erlaubnis tragen sie erst
+     einmal keine Namen. */
+  if (name === 'mess') messMikrosLaden();
   if (name === 'eq') requestAnimationFrame(() => { studioZeichnen(); eqGesamtEinrichten('eqgesamt'); eqGesamtEinrichten('pargesamt'); if (eqAnsichtHz) parZiehenEinrichten(); });
   if (name === 'pro'){
     kompKurveZeichnen(); gradGriffeEinrichten();
@@ -16185,6 +16197,75 @@ function messSignalBauen(art, sr, sekunden){
 async function einmessen(neutral){ return messLauf(!!neutral); }
 async function einmessenNeutral(){ return messLauf(true); }
 
+/* Die Mikrofonliste fuellen. Namen gibt es erst, wenn die Erlaubnis
+   erteilt ist - vorher liefert der Browser leere Bezeichner. Virtuelle
+   Geraete (Loopback, UI-Sounds) hoeren keinen Raum; sie stehen unten
+   und sind kenntlich gemacht, damit man sie nicht versehentlich nimmt. */
+const MESS_VIRTUELL = /virtual|jingle|loopback|blackhole|soundflower|aggregat|multi-?output/i;
+
+/* WELCHES IST DAS BESTE (Caspar_D: "such das beste aus")? Die Software
+   kann das entscheiden, also wird es kein Regler - der Wähler steht nur
+   zum Übersteuern da.
+
+   Die Rangfolge folgt dem, was ein Mikrofon für eine RAUMMESSUNG
+   taugen lässt, nicht dem, was es für Sprache taugen lässt:
+
+   - Ein USB-Kondensator mit Grossmembran (TONOR, Rode, Blue, Shure,
+     Audio-Technica, Samson) hoert unten weit hinunter und arbeitet
+     ohne Nachbearbeitung. Das ist, was wir brauchen.
+   - Ein Telefon-Mikrofon per Continuity ist gut gebaut, haengt aber an
+     einer Funkstrecke mit eigener Verzoegerung und eigener Regelung.
+   - Ein eingebautes Array (iMac, MacBook) rechnet Beamforming und
+     Stoerunterdrueckung mit, die sich nicht abschalten lassen, und
+     faellt unter 100 Hz steil ab.
+   - Ein Webcam-Mikrofon ist auf Sprache getrimmt: Hochpass, Kompressor,
+     Rauschfilter - alles fest verdrahtet.
+   - Virtuelle Geraete hoeren gar keinen Raum.
+
+   Fuer die DIFFERENZ zweier Durchgaenge kuerzt sich die Kennlinie zwar
+   heraus - aber nur, wo das Mikrofon ueberhaupt etwas hoert. Wo es
+   taub ist, steht in beiden Messungen Rauschen, und die Differenz
+   zweier Rauschwerte ist Zufall. Deshalb zaehlt der Tiefgang. */
+const MESS_GUETE = [
+  { m: /tonor|rode|r\u00f8de|blue |yeti|shure|audio-?technica|at2020|samson|behringer|focusrite|scarlett|zoom h|marantz|neumann|akg|sennheiser|umik|dayton/i, p: 100, was: 'Studiomikrofon am USB-Wandler' },
+  { m: /iphone|ipad/i,                         p: 60, was: 'Telefon per Continuity, mit Funkstrecke' },
+  { m: /built-?in|eingebaut|imac|macbook/i,    p: 40, was: 'eingebautes Array mit fester Störunterdrückung' },
+  { m: /obsbot|webcam|camera|kamera|tiny|logi/i, p: 20, was: 'Webcam-Mikrofon, auf Sprache getrimmt' },
+];
+function messMikroGuete(label){
+  if (MESS_VIRTUELL.test(label || '')) return { p: -1, was: 'virtuell, hört keinen Raum' };
+  for (const g of MESS_GUETE) if (g.m.test(label || '')) return { p: g.p, was: g.was };
+  return { p: 50, was: 'unbekanntes Gerät' };
+}
+async function messMikrosLaden(){
+  const sel = $('messmikro'); if (!sel) return;
+  let liste = [];
+  try { liste = (await navigator.mediaDevices.enumerateDevices())
+          .filter(g => g.kind === 'audioinput' && g.deviceId !== 'default'); }
+  catch (e) { return; }
+  const merk = localStorage.getItem('mysuno-messmikro');
+  sel.innerHTML = '';
+  if (!liste.length){
+    sel.innerHTML = '<option value="">Mikrofon — erst Erlaubnis erteilen</option>';
+    return;
+  }
+  /* nach Güte sortiert: das beste steht oben und ist vorgewählt */
+  const bewertet = liste.map(g => ({ g, ...messMikroGuete(g.label) }))
+                        .sort((a, b) => b.p - a.p);
+  for (const e of bewertet){
+    const o = document.createElement('option');
+    o.value = e.g.deviceId;
+    o.textContent = (e.g.label || 'Gerät') + ' — ' + e.was;
+    if (e.p < 0) o.style.color = 'var(--schwach)';
+    sel.appendChild(o);
+  }
+  sel.value = bewertet[0].g.deviceId;
+  if (merk && [...sel.options].some(o => o.value === merk)) sel.value = merk;
+  sel.onchange = () => localStorage.setItem('mysuno-messmikro', sel.value);
+}
+try { navigator.mediaDevices && navigator.mediaDevices.addEventListener &&
+      navigator.mediaDevices.addEventListener('devicechange', messMikrosLaden); } catch (e) {}
+
 /* Die Dauer haengt am Signal: acht Bandtoene wollen je einen halben
    Takt stehen, ein Sweep ist in vier Sekunden durch. Die Zahl neben
    der Auswahl sagt vorher, wie lange es dauert. */
@@ -16206,8 +16287,16 @@ async function messLauf(neutral){
 
   try {
     sagen('Mikrofon …');
-    strom = await navigator.mediaDevices.getUserMedia({ audio: {
-      echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    /* Das GEWAEHLTE Geraet, nicht das Standardgeraet: das kann ein
+       virtueller Durchschleifer sein, der den Raum gar nicht hoert. */
+    const wunsch = ($('messmikro') || { value: '' }).value;
+    const bedingung = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+    if (wunsch) bedingung.deviceId = { exact: wunsch };
+    strom = await navigator.mediaDevices.getUserMedia({ audio: bedingung });
+    /* Nach erteilter Erlaubnis tragen die Geraete erst ihre Namen */
+    messMikrosLaden();
+    const spur = strom.getAudioTracks()[0];
+    const mikroName = spur ? spur.label : 'unbekannt';
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state === 'suspended') await ctx.resume();
     const sr = ctx.sampleRate;
@@ -16228,13 +16317,27 @@ async function messLauf(neutral){
     /* Aufnehmen: roh, ueber einen ScriptProcessor - wie bei der
        Latenzmessung. Ein MediaRecorder gaebe komprimierte Daten. */
     const quelle = ctx.createMediaStreamSource(strom);
-    const AUF = VOR + DAUER + NACH + 1.5;
+    /* Reserve fuer den Weg zum Lautsprecher. Ueber AirPlay puffern die
+       Empfaenger rund zwei Sekunden - ohne Reserve endet die Aufnahme,
+       bevor das Signal ueberhaupt vollstaendig angekommen ist. 4 s
+       decken auch zaehe Funkstrecken. */
+    const RESERVE = 4;
+    const AUF = VOR + DAUER + NACH + RESERVE;
     const puffer = new Float32Array(Math.ceil(sr * AUF));
     let schreib = 0;
+    /* Das Ende der Aufnahme haengt am Fuellstand des Puffers, nicht an
+       einer Uhr. Ein Browserfenster im Hintergrund drosselt setTimeout
+       auf einen Schlag je Sekunde - der Ton laeuft aber unbeirrt
+       weiter. Wer hier auf die Uhr sieht, misst je nach Sichtbarkeit
+       des Fensters etwas anderes. Der Audio-Thread ist der ehrlichere
+       Taktgeber. */
+    let vollMelden = null;
+    const voll = new Promise(f => { vollMelden = f; });
     const knoten = ctx.createScriptProcessor(4096, 1, 1);
     knoten.onaudioprocess = (e) => {
       const d = e.inputBuffer.getChannelData(0);
       for (let i = 0; i < d.length && schreib < puffer.length; i++) puffer[schreib++] = d[i];
+      if (schreib >= puffer.length && vollMelden){ const f = vollMelden; vollMelden = null; f(); }
     };
     quelle.connect(knoten);
     const still = ctx.createGain(); still.gain.value = 0;
@@ -16247,24 +16350,93 @@ async function messLauf(neutral){
     await new Promise((f, x) => { audio.oncanplaythrough = f; audio.onerror = x; audio.load(); });
     sagen(neutral ? 'messe neutral …' : 'messe …');
     await audio.play();
-    await new Promise(r => setTimeout(r, (VOR + DAUER + NACH + 1.2) * 1000));
+    /* Notbremse, falls der Audio-Thread stockt: doppelte Aufnahmezeit */
+    await Promise.race([ voll, new Promise(r => setTimeout(r, AUF * 2000)) ]);
 
     knoten.disconnect(); quelle.disconnect();
     URL.revokeObjectURL(url);
 
-    /* Auswerten: das Spektrum des aufgenommenen Abschnitts, gemittelt
-       ueber viele Fenster. Der Anfang wird uebersprungen - dort steht
-       die Stille vor dem Signal und, bei AirPlay, die Pufferzeit. */
-    const ab = Math.round(sr * (VOR + 0.3));
-    const bis = Math.min(puffer.length, Math.round(sr * (VOR + DAUER)));
+    /* WANN IST DAS SIGNAL ANGEKOMMEN? Ein festes Fenster taugt nicht:
+       ueber AirPlay puffern die Empfaenger rund zwei Sekunden, ueber
+       Kabel sind es Millisekunden. Das frueher fest auf VOR+0,3 s
+       gesetzte Fenster fing bei AirPlay erst Stille ein und dann die
+       halbe Rampe - die Hoehen fehlten ganz.
+
+       Also aus der Aufnahme selbst ablesen. In den ersten Sekunden ist
+       noch Ruhe; daraus wird der Grundpegel des Raums bestimmt. Der
+       erste Block, der 12 dB darueber steigt UND danach oben bleibt,
+       ist die Ankunft. Die Nachbedingung schuetzt vor einem einzelnen
+       Knacken oder einem Huesteln. */
+    const BLOCK = Math.round(sr * 0.01);                       /* 10 ms */
+    const huell = [];
+    for (let o = 0; o + BLOCK <= puffer.length; o += BLOCK){
+      let q = 0; for (let i = 0; i < BLOCK; i++){ const v = puffer[o + i]; q += v * v; }
+      huell.push(Math.sqrt(q / BLOCK));
+    }
+    const ruheBis = Math.floor(sr * (VOR - 0.2) / BLOCK);
+    let ruhe = 0, rn = 0;
+    for (let i = 2; i < Math.min(ruheBis, huell.length); i++){ ruhe += huell[i]; rn++; }
+    ruhe = rn ? ruhe / rn : 1e-6;
+    const schwelle = ruhe * Math.pow(10, 12 / 20);
+    const halten = 15;                                          /* 150 ms oben bleiben */
+    let anBlock = -1;
+    for (let i = Math.max(2, ruheBis); i < huell.length - halten; i++){
+      if (huell[i] < schwelle) continue;
+      let bleibt = 0;
+      for (let k = 0; k < halten; k++) if (huell[i + k] >= schwelle) bleibt++;
+      if (bleibt >= halten * 0.7){ anBlock = i; break; }
+    }
+
+    /* Stoerabstand: mittlerer Signalpegel gegen den Ruhepegel. Unter
+       20 dB ist die Differenz zweier Durchgaenge mehr Zufall als
+       Messung - dann muss es lauter oder leiser im Raum werden. */
+    const versatz = anBlock < 0 ? VOR : anBlock * 0.01;
+    let sig = 0, sn = 0;
+    const sigVon = Math.round((versatz + 0.2) / 0.01);
+    const sigBis = Math.min(huell.length, Math.round((versatz + DAUER) / 0.01));
+    for (let i = sigVon; i < sigBis; i++){ sig += huell[i]; sn++; }
+    sig = sn ? sig / sn : 0;
+    const abstand = 20 * Math.log10(Math.max(1e-9, sig) / Math.max(1e-9, ruhe));
+
+    /* Was das Mikrofon ueberhaupt gehoert hat - in Zahlen, damit man
+       bei einem Fehlschlag nicht raten muss, woran es lag. */
+    let hMax = 0, hMaxBei = 0;
+    for (let i = 0; i < huell.length; i++) if (huell[i] > hMax){ hMax = huell[i]; hMaxBei = i * 0.01; }
+    const dB = (v) => (20 * Math.log10(Math.max(1e-9, v))).toFixed(1);
+    messErgebnis.diagnose = {
+      mikro: mikroName,
+      ruhe_dB: +dB(ruhe), schwelle_dB: +dB(schwelle),
+      lautestes_dB: +dB(hMax), lautestes_bei_s: +hMaxBei.toFixed(2),
+      ueber_ruhe_dB: +(20 * Math.log10(Math.max(1e-9, hMax) / Math.max(1e-9, ruhe))).toFixed(1),
+      aufnahme_s: +(puffer.length / sr).toFixed(1),
+      profil: huell.filter((_, i) => i % 25 === 0).map(v => +dB(v)),
+    };
+
+    if (anBlock < 0){
+      sagen('kein Signal gehört (' + mikroName + ') · Ruhe ' + dB(ruhe)
+        + ' dB, lautester Moment ' + dB(hMax) + ' dB — nur '
+        + messErgebnis.diagnose.ueber_ruhe_dB + ' dB darüber. Lauter stellen, '
+        + 'Ausgabegerät prüfen oder ein anderes Mikrofon wählen.');
+      return;
+    }
+
+    /* Ausgewertet wird ab der Ankunft, nicht ab dem Absenden. Die
+       ersten 0,3 s bleiben aus: dort schwingt die Kette ein. */
+    const ab  = Math.round(sr * (versatz + 0.3));
+    const bis = Math.min(puffer.length, Math.round(sr * (versatz + DAUER)));
     const kurve = messSpektrum(puffer.subarray(ab, bis), sr);
     messErgebnis[neutral ? 'neutral' : 'mit'] = kurve;
     messErgebnis.sr = sr;
+    messErgebnis[neutral ? 'abstandN' : 'abstandM'] = abstand;
+    messErgebnis.laufzeit = Math.round((versatz - VOR) * 1000);
+    messErgebnis.mikro = mikroName;
     messBildZeichnen();
     const laut = kurve.reduce((a, b) => a + b.db, 0) / kurve.length;
-    sagen(neutral
-      ? 'neutraler Durchgang steht (' + laut.toFixed(0) + ' dB im Mittel)'
-      : 'gemessen (' + laut.toFixed(0) + ' dB im Mittel)');
+    sagen((neutral ? 'neutraler Durchgang steht' : 'gemessen')
+      + ' · ' + laut.toFixed(0) + ' dB im Mittel'
+      + ' · Störabstand ' + abstand.toFixed(0) + ' dB'
+      + ' · Laufzeit ' + Math.round((versatz - VOR) * 1000) + ' ms'
+      + (abstand < 20 ? ' — zu leise für eine belastbare Messung' : ''));
   } catch (e) {
     sagen('ging nicht: ' + (e && e.message ? e.message : e));
   } finally {
@@ -16436,8 +16608,12 @@ async function latenzMessen(){
   let strom = null, ctx = null, merkQuelle = null, merkStelle = 0;
   try {
     sagen('Mikrofon…');
-    strom = await navigator.mediaDevices.getUserMedia({ audio: {
-      echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    /* Auch die Latenzmessung nimmt das gewaehlte Geraet - sonst misst
+       sie den Weg zu einem anderen Mikrofon als die Einmessung. */
+    const wunschL = ($('messmikro') || { value: '' }).value;
+    const bedingungL = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+    if (wunschL) bedingungL.deviceId = { exact: wunschL };
+    strom = await navigator.mediaDevices.getUserMedia({ audio: bedingungL });
 
     /* DER CHIRP MUSS DENSELBEN WEG NEHMEN WIE DIE MUSIK (Caspar_D,
        26.08.2026: „es kommt immer aus den iMac-Lautsprechern, wie krieg
