@@ -776,6 +776,7 @@
   <div class="bf-register" id="sa-signal-wahl" data-wert="codiert" style="display:none">
     <button type="button" data-s="codiert" class="an" title="Das Stück, wie es in der Datei steht — vor allem, was KlangTresor damit tut">Codiertes Signal</button>
     <button type="button" data-s="ausgabe" title="Nach Equalizer, Kompressor, Breite, Hall und Echo">Ausgabe-Signal</button>
+    <button type="button" data-s="beide" title="Beides übereinander — was sich deckt, trägt die Hausfarbe des Kanals">Überlagert</button>
   </div>
   <div class="chart-outer"><canvas id="freq-canvas" style="height:150px;background:#0a0a0a"></canvas></div>
   <!-- Der Text wird mit dem Modus umgeschrieben, siehe
@@ -6600,6 +6601,23 @@
       var teiler=ktx.createChannelSplitter(2);
       var mk=function(){ var a=ktx.createAnalyser();
         a.fftSize=4096;a.smoothingTimeConstant=0.8;return a; };
+      /* DIE PALETTE DES OVERLAYS (Caspar_D, 26.08.2026).
+         Nicht additiv gemischt, sondern nach Absorptionsfarben - wie
+         Malfarben: "linker Kanal ist orange, orange mischt in der Kunst
+         aus rot und gelb, also Rohsignal in Gelb, Overlap genau unser
+         Orange, Endsignal Rot." Beim rechten Kanal ebenso, nur dass
+         unser Blau im Farbton fast reines Blau ist (256° gegen 267°) -
+         mit Gruen kaeme die Mischung bei Tuerkis heraus und traefe den
+         Akzent nicht. Deshalb Blaugruen.
+
+         MIT HELLIGKEITSKOMPENSATION: Die Ueberlappung ist die HELLSTE
+         der drei und zugleich die Hausfarbe des Kanals. Sie ist der
+         Ort, an dem sich beide Signale decken - und das ist der
+         Normalfall, der ruhig dominieren darf. */
+      var UEBER = {
+        links:  { codiert:'#a06000', deckung:'#f97b14', ausgabe:'#b02038', asym:'#f9ccb2' },
+        rechts: { codiert:'#106a8c', deckung:'#4b93f0', ausgabe:'#2a4bf0', asym:'#aec7e7' },
+      };
       var aL=mk(), aR=mk();
       try{
         _fremdeQuelle.connect(teiler);
@@ -6641,6 +6659,8 @@
 
       var binCount=aL.frequencyBinCount,logMin=Math.log10(20),logMax=Math.log10(sr/2);
       var fdL=new Uint8Array(binCount), fdR=new Uint8Array(binCount);
+      /* Im Overlay werden beide Signale zugleich gebraucht. */
+      var fcL=new Uint8Array(binCount), fcR=new Uint8Array(binCount);
 
       function raster(){
         ctx.font='10px system-ui';
@@ -6665,13 +6685,24 @@
         /* Welcher Abgriff gilt gerade? Fehlt das Endpaar (aeltere
            Buehne, die den Knoten nicht hereinreicht), bleibt es beim
            Rohsignal - dann ist der Umschalter gar nicht erst da. */
+        var beides = (_signalModus==='beide' && eL && eR);
         var qL = (_signalModus==='ausgabe' && eL) ? eL : aL;
         var qR = (_signalModus==='ausgabe' && eR) ? eR : aR;
         qL.getByteFrequencyData(fdL); qR.getByteFrequencyData(fdR);
+        /* Im Overlay traegt fd* das CODIERTE und fc* das AUSGABE-Signal
+           - so bleibt der Rest des Zeichencodes unberuehrt, der ohnehin
+           mit fd* rechnet. */
+        if(beides){ eL.getByteFrequencyData(fcL); eR.getByteFrequencyData(fcR); }
         ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,c.width,c.height);
 
         if(_spektrumModus==='gespiegelt'){
-          var mitte=Math.round(c.height/2), halb=mitte-1;
+          /* LUFT OBEN UND UNTEN (Caspar_D, 26.08.2026: "gib dem spektrum
+             mehr Luft zum Atmen oben und unten, ca 10 px"). Vorher
+             reichten die Spitzen bis einen Bildpunkt an die Kante - ein
+             lauter Bass sah aus, als waere er abgeschnitten, und man
+             konnte nicht sehen, ob er es war. */
+          var LUFT=10;
+          var mitte=Math.round(c.height/2), halb=mitte-LUFT;
           for(var x=0;x<c.width;x++){
             var freq=Math.pow(10,logMin+(logMax-logMin)*x/c.width);
             var bin=Math.min(Math.round(freq/(sr/2)*binCount),binCount-1);
@@ -6692,6 +6723,39 @@
                harte Linien in voller Farbe - oben im linken Spektrum, unten
                im rechten. Die weißen Spitzen ebenso: halb deckend mit
                eigener Kante. */
+            /* ---- UEBERLAGERT: codiert gegen Ausgabe -----------------
+               Statt Mono-Sockel und Stereo-Spitze steht hier je Kanal,
+               was sich deckt und was uebersteht. Die Deckung traegt die
+               Hausfarbe, der Ueberstand sagt, WELCHES Signal weiter
+               reicht: Gelb bzw. Blaugruen, wenn das codierte hoeher
+               steht (KlangTresor nimmt dort weg), Rot bzw. Blau, wenn
+               das Ausgabesignal hoeher steht (es hebt dort an).
+
+               Dieselbe Formensprache wie sonst: Flaeche halb deckend,
+               Kante in voller Staerke. */
+            if(beides){
+              var aH=Math.round(fcL[bin]/255*halb), aHr=Math.round(fcR[bin]/255*halb);
+              var dL=Math.min(hL,aH), dR=Math.min(hR,aHr);
+              var oL=UEBER.links, oR=UEBER.rechts;
+              ctx.globalAlpha=0.5;
+              ctx.fillStyle=oL.deckung; ctx.fillRect(x,mitte-dL,1,dL);
+              ctx.fillStyle=oR.deckung; ctx.fillRect(x,mitte,1,dR);
+              if(hL>dL){ ctx.fillStyle=oL.codiert; ctx.fillRect(x,mitte-hL,1,hL-dL); }
+              if(aH>dL){ ctx.fillStyle=oL.ausgabe; ctx.fillRect(x,mitte-aH,1,aH-dL); }
+              if(hR>dR){ ctx.fillStyle=oR.codiert; ctx.fillRect(x,mitte+dR,1,hR-dR); }
+              if(aHr>dR){ ctx.fillStyle=oR.ausgabe; ctx.fillRect(x,mitte+dR,1,aHr-dR); }
+              ctx.globalAlpha=1;
+              var kL=Math.max(hL,aH), kR=Math.max(hR,aHr);
+              if(kL>0){ ctx.fillStyle=(hL>aH?oL.codiert:aH>hL?oL.ausgabe:oL.deckung);
+                        ctx.fillRect(x,mitte-kL,1,1); }
+              if(kR>0){ ctx.fillStyle=(hR>aHr?oR.codiert:aHr>hR?oR.ausgabe:oR.deckung);
+                        ctx.fillRect(x,mitte+kR-1,1,1); }
+              /* Wo ein Ueberstand aufsitzt, traegt auch die Deckung ihre
+                 Kante - sonst verschwimmen beide ineinander. */
+              if(dL>0&&kL>dL){ ctx.fillStyle=oL.deckung; ctx.fillRect(x,mitte-dL,1,1); }
+              if(dR>0&&kR>dR){ ctx.fillStyle=oR.deckung; ctx.fillRect(x,mitte+dR-1,1,1); }
+              continue;
+            }
             var gemein=Math.min(hL,hR);
             ctx.globalAlpha=0.5;
             ctx.fillStyle='#f97b14';ctx.fillRect(x,mitte-gemein,1,gemein);
@@ -6717,9 +6781,12 @@
             var f2=Math.pow(10,logMin+(logMax-logMin)*x2/c.width);
             var b2=Math.min(Math.round(f2/(sr/2)*binCount),binCount-1);
             var summe=ampZuByte((byteZuAmp(fdL[b2])+byteZuAmp(fdR[b2]))/2);
-            var h2=summe/255*c.height*0.95;
+            /* Dieselbe Luft wie im gespiegelten Bild: zehn Punkte oben,
+               zehn unten. Der Faktor 0,95 von frueher ist darin
+               aufgegangen. */
+            var h2=summe/255*(c.height-20);
             ctx.fillStyle=SUNO_VERLAUF(x2/c.width);
-            ctx.fillRect(x2,c.height-h2,1,h2);
+            ctx.fillRect(x2,c.height-10-h2,1,h2);
           }
           raster();
         }
@@ -6738,6 +6805,20 @@
        gibt. Jetzt schreiben beide dasselbe Bild. */
     function spektrumTexteSetzen(){
       var u=document.getElementById('sa-spektrum-text');
+      /* Im Overlay bedeuten die Farben etwas anderes als sonst - dann
+         muss auch etwas anderes darunter stehen. */
+      if(u && _signalModus==='beide'){
+        u.innerHTML =
+          'Beide Signale übereinander. Was sich <b>deckt</b>, trägt die Hausfarbe des Kanals — '
+        + '<span style="color:#f97b14">orange</span> links, '
+        + '<span style="color:#4b93f0">blau</span> rechts. Wo etwas übersteht, sagt die Farbe, '
+        + 'welches Signal weiter reicht: <span style="color:#c98000">gelb</span> bzw. '
+        + '<span style="color:#2ba7d8">blaugrün</span>, wenn das <b>codierte</b> höher steht — '
+        + 'dort nimmt KlangTresor weg. <span style="color:#e04a60">Rot</span> bzw. '
+        + '<span style="color:#5a72f5">blau</span>, wenn das <b>Ausgabe-Signal</b> höher steht — '
+        + 'dort hebt es an. Die Deckung ist der Normalfall und darum die hellste der drei Farben.';
+        return;
+      }
       if(u) u.innerHTML =
         'Momentane Verteilung der hörbaren Frequenzen im Track. Waagerecht sind die '
         + 'Frequenzen von tief nach hoch sortiert, senkrecht wird die Stärke abgebildet. '
