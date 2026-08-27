@@ -1,5 +1,31 @@
 # WAV-Nachtlauf — abgeschlossen
 
+> ## ⚠ Der beschriebene Weg funktioniert seit spätestens 27.08.2026 nicht mehr
+>
+> Nachgemessen am 27.08.2026 an einem Song, dessen WAV hier lokal liegt
+> (64 MB, geladen am 18.08.):
+>
+> | | August | 27.08.2026 |
+> |---|---|---|
+> | `cdn1.suno.ai/<id>.wav` ohne Anmeldung | 206 | **403** |
+> | dasselbe mit `Authorization`-Header | — | kommt **gar nicht durch**: das CDN beantwortet den CORS-Vorabruf nicht |
+> | `cdn1.suno.ai/<id>.mp3` ohne Anmeldung | 206 | 206 — geht weiter |
+> | `GET /api/gen/<id>/` | ging | **404** |
+>
+> Außerdem führt `/api/clip/<id>` ein neues Feld **`media_urls`**, und
+> dort stehen für denselben Song nur noch zwei Formate: `m3a-opus`
+> (neu, auf CloudFront) und `mp3`. **Kein WAV.**
+>
+> Ob `POST /api/gen/<id>/convert_wav/` noch antwortet, wurde **nicht**
+> geprüft — ein Versuch hätte eine Erzeugung ausgelöst und ab September
+> Kontingent gekostet.
+>
+> **Was daraus folgt:** Alles unterhalb dieser Zeile beschreibt den Stand
+> vom August und ist als Bericht gültig, als Anleitung nicht mehr. Wer
+> WAVs für neue Songs braucht, muß zuerst herausfinden, wie Suno sie
+> heute ausliefert — am ehesten, indem man auf einer Songseite einen
+> Download anstößt und den Netzwerkverkehr mitschreibt.
+
 Begonnen 18.08.2026, 02:20 Uhr. **Fertig um 03:20 Uhr: alle 321 WAVs.**
 
 | | |

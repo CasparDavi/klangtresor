@@ -1147,3 +1147,46 @@ Dazu gilt weiter, was schon unter dem Register steht: **Ein Anteil ist
 keine Ursache.** Aus einer Momentaufnahme läßt sich die Richtung nicht
 klären.
 
+
+## WAV-Dateien für neue Songs — Weg ist zu (27.08.2026)
+
+Caspar_D: *„wir werden uns darum kümmern müssen, nachträglich
+wav-Dateien in unser Repo zu legen."*
+
+**Stand:** 321 von 321 Songs im Katalog haben ihr WAV, lückenlos. Der
+neueste Song ist vom 17.08. — dem Tag vor dem Nachtlauf. Es fehlt also
+derzeit nichts; sobald neue Songs dazukommen, fehlt es.
+
+**Das Problem:** Der Weg aus `WAV-PROTOKOLL.md` funktioniert nicht mehr.
+`cdn1.suno.ai/<id>.wav` liefert 403 statt 206, auch für Songs, deren WAV
+wir besitzen. Mit `Authorization`-Header kommt die Anfrage gar nicht
+durch (CORS-Vorabruf). `/api/gen/<id>/` gibt 404. Und `media_urls` in
+`/api/clip/<id>` listet nur noch `m4a-opus` und `mp3`.
+
+**Was zu tun wäre, in dieser Reihenfolge:**
+
+1. Auf einer eigenen Songseite einen WAV-Download anstoßen und den
+   Netzwerkverkehr mitschreiben. Das zeigt den heutigen Endpunkt.
+2. Prüfen, ob `POST /api/gen/<id>/convert_wav/` noch antwortet. Nicht
+   ungefragt — ab September zählt jede Erzeugung gegen das Kontingent
+   (30 bzw. 60 je nach Plan, darüber wird extra abgerechnet).
+3. Erst dann das Kreuzchen im Lesezeichen bauen (siehe unten).
+
+**Der Plan für das Lesezeichen**, sobald der Weg wieder steht:
+
+- Ein Kreuzchen in `browser/02-sammeln.js`, **standardmäßig aus**, mit
+  einer Zahl daneben: wieviele Anstöße höchstens.
+- **Neueste zuerst** (Caspar_D). Der Nachtlauf im August lief umgekehrt,
+  aber das war Aufholen, kein laufender Betrieb.
+- Vorher prüfen, welche WAVs schon existieren, und nur die fehlenden
+  anstoßen — das spart Kontingent. Ob das cross-origin lesbar ist, war
+  am 27.08. gegeben (`type: cors`, Status lesbar).
+- **Kein Filter für Studio-Generierungen** — die kann man anstoßen, ohne
+  daß es berechnet wird.
+- Ein Monatszähler wäre nützlicher als ein starres Limit. Offen: wo er
+  lebt — im `localStorage` der Suno-Seite oder in den Metadaten, die
+  KlangTresor führt.
+
+Das Lesezeichen hat den Token ohnehin (`window.Clerk.session.getToken()`
+für die Metadaten); der Anstoß wäre kein neuer Mechanismus, sondern
+zwanzig Zeilen im vorhandenen Skript.
