@@ -853,3 +853,69 @@ individuelle Datei zur Seriennummer mit — schlichte Frequenz/dB-Paare,
 leicht einzulesen. Das Behringer ECM8000 hat einen typischen, aber
 keinen individuellen Frequenzgang.
 
+
+## Die Kette digital nachgemessen (27.08.2026)
+
+Ohne Mikrofon, über zwei Analyser an `quelle` und `summe`. Gemessen
+wird die Differenz je Terzband — was das Tonstudio zwischen den beiden
+Punkten tut.
+
+**Das Meßverfahren braucht ein konstantes Eingangssignal.** Mit Musik
+schwankten die Werte um 0,73 dB zwischen zwei identischen Zuständen —
+mehr als die Unterschiede selbst. Mit rosa Rauschen in Endlosschleife
+und vier Sekunden Einschwingzeit je Zustand fiel die Gegenprobe auf
+**0,16 dB**. Der Master steht dabei auf null: digital meßbar, hörbar
+still.
+
+### Was die Filter tun
+
+| Eingriff | Wirkung |
+|---|---|
+| 445 Hz **+8 dB** | 315-Hz-Band 1,7 → **7,0** · übrige Bänder unberührt |
+| 2500 Hz Shelf **−6 dB** | 5 kHz 6,8 → **−1,2** · 20 kHz 6,7 → **−1,7** |
+| zurückgestellt | alle Bänder wieder auf Ausgangsniveau |
+
+Die Kette zeigt Anhebung und Absenkung an der richtigen Frequenz und in
+der richtigen Größenordnung.
+
+### Latenz
+
+| | |
+|---|---|
+| Basislatenz (Web Audio) | 5,33 ms |
+| Ausgabelatenz (System) | 16,00 ms |
+| zusammen | **21,33 ms** |
+| Kompressor-Vorschau | 2,67 ms (128 Bilder bei 48 kHz) |
+
+Zum Vergleich: Der gemessene AirPlay-Versatz zu den HomePods liegt bei
+**2079 ms** — das Hundertfache. Die lokale Verarbeitung ist gegen den
+Funkweg vernachlässigbar.
+
+---
+
+## Warum sich der Mikrofonfrequenzgang nicht schätzen läßt
+
+Naheliegender Gedanke: Man kennt idealtypische Mikrofonkurven und
+vielleicht die des Lautsprechers — ergäbe das nicht eine Näherung?
+
+**Nein, und der Grund liegt beim Lautsprecher.** HomePods führen eine
+**adaptive Raumkorrektur** aus: Sie messen ihre Aufstellung selbst und
+ändern danach ihren Frequenzgang. Es gibt also keine feste
+HomePod-Kurve, die man abziehen könnte — sie ist in jedem Raum und
+nach jedem Verrücken eine andere. Apple veröffentlicht ohnehin keine
+Meßschriebe; was kursiert, sind Fremdmessungen einzelner Exemplare in
+einzelnen Räumen.
+
+Beim Mikrofon dasselbe in kleiner: Bekannt ist nur die Richtung
+(Hochpaß um 100 Hz, Präsenzanhebung 2–5 kHz, Abfall über 10 kHz), nicht
+der Betrag.
+
+**Eine Korrektur aus geschätzten Kurven wäre schlechter als keine**, weil
+sie Genauigkeit vortäuscht, wo Vermutung steht — und weil sich zwei
+Schätzfehler addieren statt aufzuheben.
+
+Was bleibt, ist der Weg, der ohne diese Kurven auskommt: die
+**Differenz zweier Durchgänge**. Was in beiden Messungen steckt, kürzt
+sich heraus, gleichgültig wie es aussieht. Für eine absolute Skala
+führt kein Weg an einem Meßmikrofon mit Kalibrierdatei vorbei.
+
