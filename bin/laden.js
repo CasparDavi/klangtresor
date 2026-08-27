@@ -55,6 +55,20 @@ const TESTZAHL  = args.includes('--test')
 const PAUSE_MS  = 700;      // zwischen zwei Dateien
 const VERSUCHE  = 4;        // pro Datei
 
+/* Abgebrochen wird, wenn so lange kein einziges Byte ankommt. Nicht die
+   Gesamtdauer wird begrenzt - eine grosze Datei darf an einer langsamen
+   Leitung ihre Zeit haben; jedes Stueck setzt die Uhr zurueck.
+
+   ANLASS (27.08.2026): Beim Einrichten auf einem fremden Rechner blieb
+   das Modelle-Holen ohne Anzeichen stehen, weil fetch ohne signal
+   unbegrenzt wartet, solange die Verbindung steht. Dieselbe Zeile stand
+   hier - und hier waere es schlimmer gewesen: 89 Songs am Stueck, und
+   der Lauf haette an einer einzigen stummen Verbindung fuer immer
+   gestanden. Hier faengt der Abbruch weich: unten wartet der
+   Wiederholmechanismus, und die .teil-Datei laesst ihn per Range dort
+   weitermachen, wo es aufhoerte. */
+const STILLSTAND = 45000;
+
 // --- Hilfsmittel ------------------------------------------------
 
 const schlaf = (ms) => new Promise(r => setTimeout(r, ms));
@@ -73,11 +87,19 @@ async function ladeDatei(url, ziel) {
   const teil = ziel + '.teil';
 
   for (let versuch = 1; versuch <= VERSUCHE; versuch++) {
+    /* Vor dem try, nicht darin: catch und finally lesen beides. */
+    let wacht = null, still = false;
     try {
       const schonDa = fs.existsSync(teil) ? fs.statSync(teil).size : 0;
       const kopf = schonDa > 0 ? { Range: `bytes=${schonDa}-` } : {};
 
-      const r = await fetch(url, { headers: kopf });
+      const steuer = new AbortController();
+      let stand = Date.now();
+      wacht = setInterval(() => {
+        if (Date.now() - stand > STILLSTAND) { still = true; steuer.abort(); }
+      }, 1000);
+
+      const r = await fetch(url, { headers: kopf, signal: steuer.signal });
 
       // 416 = "Range nicht erfüllbar" -> Datei ist schon vollständig
       if (r.status === 416 && schonDa > 0) {
@@ -95,7 +117,7 @@ async function ladeDatei(url, ziel) {
       const anhaengen = r.status === 206 && schonDa > 0;
       const strom = fs.createWriteStream(teil, { flags: anhaengen ? 'a' : 'w' });
 
-      for await (const stueck of r.body) strom.write(stueck);
+      for await (const stueck of r.body) { strom.write(stueck); stand = Date.now(); }
       await new Promise(res => strom.end(res));
 
       if (fs.statSync(teil).size === 0) throw new Error('leere Datei');
@@ -103,11 +125,14 @@ async function ladeDatei(url, ziel) {
       return 'geladen';
 
     } catch (e) {
+      const grund = still ? `${STILLSTAND / 1000} s ohne Daten` : e.message;
       if (versuch === VERSUCHE) {
-        console.log(`      ✗ ${path.basename(ziel)}: ${e.message}`);
+        console.log(`      ✗ ${path.basename(ziel)}: ${grund}`);
         return 'fehler';
       }
       await schlaf(2000 * versuch);
+    } finally {
+      if (wacht) clearInterval(wacht);
     }
   }
   return 'fehler';
