@@ -1805,10 +1805,21 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    feste Zahl ist hier ohnehin ehrlicher - der Equalizer soll von
    ueberall erreichbar sein, nicht nur dort, wo gerade keine Buehne
    steht. */
-#studio{position:fixed;left:0;right:0;bottom:calc(var(--player-h) + 10px);z-index:90}   /* frei ueber der Playleiste - der untere Rahmen soll sichtbar sein (Caspar_D, 20.08.2026) */
+#studio{position:fixed;left:0;right:0;bottom:calc(var(--player-h) + 10px);z-index:90;
+  /* HINTER DEM STUDIO SCROLLEN (Caspar_D, 26.08.2026: "ich will hinter
+     dem tonstudio scrollen können"). Der Rahmen spannt sich ueber die
+     volle Breite, der Kasten darin ist aber nur 980 px breit - links
+     und rechts davon fing unsichtbares Nichts die Mausereignisse ab.
+     Genau dort will man aber scrollen, waehrend man am Equalizer
+     dreht und im Spektrum nachsieht, was er tut. */
+  pointer-events:none}   /* frei ueber der Playleiste - der untere Rahmen soll sichtbar sein (Caspar_D, 20.08.2026) */
+#studiokasten{pointer-events:auto}
 #studiokasten{margin:0 auto;max-width:980px;background:#0a0b0e;border:1px solid var(--akzent);   /* voll deckend - die 97 % liessen das Raster durchschimmern und wirkten wie ein Grauschleier (Caspar_D, 20.08.2026) */
   border-radius:14px;padding:22px 30px 24px;
-  max-height:calc(100vh - var(--player-h) - 34px);overflow-y:auto;overscroll-behavior:contain;   /* kleiner Bildschirm: der Kasten rollt innen, statt oben abgeschnitten zu werden (23.08.2026, bei 1300x1000 fehlte der Kopf) */
+  /* overscroll-behavior:auto statt contain: Ist der Kasten am Ende
+     angekommen - oder passt sein Inhalt ohnehin hinein -, laeuft das
+     Rollen an die Seite dahinter weiter, statt dort zu versanden. */
+  max-height:calc(100vh - var(--player-h) - 34px);overflow-y:auto;overscroll-behavior:auto;   /* kleiner Bildschirm: der Kasten rollt innen, statt oben abgeschnitten zu werden (23.08.2026, bei 1300x1000 fehlte der Kopf) */
   box-shadow:0 18px 60px rgba(0,0,0,.55), 0 -12px 44px rgba(0,0,0,.5)}   /* Akzentrand + der Haus-Schlagschatten (wie #cap): sonst verschwimmt der Kasten mit dem Raster (Caspar_D, 20.08.2026) */
 #studiokopf{position:sticky;top:-22px;margin-top:-22px;padding-top:22px;background:#0a0b0e;z-index:3}   /* Kopf mit A/B, Quelle und Stufen bleibt beim Rollen stehen */
 #studiokopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
