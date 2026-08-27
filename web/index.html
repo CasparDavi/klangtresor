@@ -16766,7 +16766,13 @@ async function messLauf(neutral){
        jedem Band mehr Zeit und damit mehr Energie. Dass er langsam
        laeuft, ist kein Nachteil - im Gegenteil, es ist genau der
        Grund, warum Raumakustiker lange Sweeps fahren. */
-    const DAUER = konvergiert ? 24 : (art === 'baender' ? 8 : 13);
+    /* Die Pegelreihe setzt eine kuerzere Dauer: dort geht es um die
+       FORM des Frequenzgangs bei verschiedenen Lautstaerken, nicht um
+       Modenaufloesung. Fuenf Durchgaenge zu dreizehn Sekunden waeren
+       ueber zwei Minuten Ton. */
+    const DAUER = (typeof messDauerWunsch === 'number' && messDauerWunsch > 0)
+      ? messDauerWunsch
+      : (konvergiert ? 24 : (art === 'baender' ? 8 : 13));
     const VOR = 3.5, NACH = 0.6;
     /* Reserve fuer den Weg zum Lautsprecher. Ueber AirPlay puffern die
        Empfaenger rund zwei Sekunden. */
@@ -17926,7 +17932,28 @@ function messSollkurve(){
 
    Gemessen wird mit UMGANGENEM Tonstudio: es geht um den Weg vom
    Rechner zum Ohr, nicht um den Equalizer. */
-const MESS_STUFEN = [100, 70, 50, 35, 25];
+/* SIEBEN STUFEN, GLEICHMAESSIG IN DEZIBEL (Caspar_D, 27.08.2026:
+   "mach es ausführlich, nich zwei variablen zugleich ändern").
+
+   Der Regler wirkt quadratisch: seine Wirkung in dB ist 40 mal
+   log10(Prozent/100). Gleiche Prozentschritte waeren also ungleiche
+   dB-Schritte - unten dicht, oben weit. Diese sieben Werte liegen
+   dagegen auf exakt vier Dezibel Abstand:
+
+     100 %   0 dB        40 %  -16 dB
+      79 %  -4 dB        32 %  -20 dB
+      63 %  -8 dB        25 %  -24 dB
+      50 % -12 dB
+
+   Damit ist die Achse des Diagramms linear, und eine Abweichung von
+   der Geraden ist unmittelbar als Regelung lesbar.
+
+   UND ES AENDERT SICH NUR EINE GROESSE. Signal, Dauer, Mikrofon,
+   Tonstudio und Platz bleiben ueber alle sieben Durchgaenge gleich;
+   allein die Lautstaerke wandert. Wer zwei Dinge zugleich verstellt,
+   misst hinterher die Summe und kann sie nicht mehr trennen. */
+const MESS_STUFEN = [100, 79, 63, 50, 40, 32, 25];
+let messDauerWunsch = null;
 
 async function pegelReihe(){
   const sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
@@ -17936,15 +17963,41 @@ async function pegelReihe(){
   const merkEq = (typeof eqAus !== 'undefined') ? eqAus : null;
   if (k) k.classList.add('an');
   messAbbruch = false; pegelReiheLaeuft = true; messAbbruchKnopf(true);
-  messErgebnis.pegel = [];
-  sagen('Bitte jetzt Ruhe — ' + MESS_STUFEN.length + ' Durchgänge, zusammen gut eine Minute. '
-    + 'Die Lautstärke wird dabei von ' + MESS_STUFEN[0] + ' % auf '
-    + MESS_STUFEN[MESS_STUFEN.length - 1] + ' % heruntergefahren.');
-  await new Promise(r => setTimeout(r, 1600));
+  /* MIT DEM SWEEP (Caspar_D, 27.08.2026: "es kann aber sein, dass die
+     homepods bass und höhen bei hoher lautstärke wegregulieren. kannst
+     du mal den sweep mit verschiedenen Lautstärken machen").
+
+     Der Sweep ist hier das bessere Signal: er liefert bei gleicher
+     Dauer die ruhigere Kurve, und um genau eine Formaenderung geht es -
+     ob unten und oben etwas fehlt, wenn es lauter wird.
+
+     UND FEINSTMOEGLICH (Caspar_D: "und bitte auch feinstmöglich
+     aufgelöst"). Dreizehn Sekunden je Stufe, damit die lange FFT auf
+     0,084 Hz kommt. Fuenf Stufen sind dann knapp zwei Minuten Ton -
+     der Preis dafuer, dass man nicht nur SIEHT, dass geregelt wird,
+     sondern auf ein Zehntel Hertz genau, WO. */
+  const merkSignal = ($('messsignal') || {}).value;
+  if ($('messsignal')){ $('messsignal').value = 'sweep';
+    if (typeof messDauerZeigen === 'function') messDauerZeigen(); }
+  messDauerWunsch = 13;
+  /* LOKAL SAMMELN. Jeder neutrale Durchgang setzt messErgebnis.pegel
+     auf null - zu Recht, denn ein neuer Nullpunkt macht alte Laeufe
+     unvergleichbar. In der Pegelreihe loescht das aber genau die
+     Ergebnisse, die sie gerade zusammentraegt: nach sieben
+     Durchgaengen stand die Liste bei null Eintraegen. Also erst am
+     Ende zuweisen. */
+  const gesammelt = [];
+  sagen('Bitte jetzt Ruhe — ' + MESS_STUFEN.length + ' Durchgänge mit dem Sweep, '
+    + 'je rund 20 Sekunden, zusammen gut zweieinhalb Minuten. Die Lautstärke geht in '
+    + 'gleichen Schritten von ' + MESS_STUFEN[0] + ' % auf '
+    + MESS_STUFEN[MESS_STUFEN.length - 1] + ' % herunter — je vier Dezibel. '
+    + 'Sonst ändert sich nichts: gleiches Signal, gleiche Dauer, gleicher Platz. '
+    + 'Der erste Durchgang ist der lauteste.');
+  await new Promise(r => setTimeout(r, 2200));
   try {
     for (let i = 0; i < MESS_STUFEN.length; i++){
       if (messAbbruch){ sagen('Reihe abgebrochen — die Durchgänge davor sind verworfen.');
-        messErgebnis.pegel = null; break; }
+        gesammelt.length = 0; break; }
       const stufe = MESS_STUFEN[i];
       sagen('Lautstärke ' + stufe + ' % — Durchgang ' + (i + 1) + ' von ' + MESS_STUFEN.length + ' …');
       lautstaerkeSetzen(stufe);
@@ -17960,16 +18013,23 @@ async function pegelReihe(){
       const innen = kurve.filter(p => p.f >= 63 && p.f <= 8000);
       let leist = 0;
       for (const p of innen) leist += Math.pow(10, p.db / 10);
-      messErgebnis.pegel.push({
+      gesammelt.push({
         laut: stufe,
         mittel: 10 * Math.log10(leist / innen.length),
         abstand: messErgebnis.abstandN,
         kurve,
+        lang: messErgebnis.neutralLang,     /* die feine Kurve dieser Stufe */
       });
+      sagen('Stufe ' + stufe + ' % gemessen (' + (i + 1) + ' von ' + MESS_STUFEN.length
+        + ') — Störabstand ' + Math.round(messErgebnis.abstandN) + ' dB je Band. Bitte weiter still.');
+      messErgebnis.pegel = gesammelt.slice();   /* fuers Live-Bild */
       messPegelZeichnen();
     }
   } finally {
     lautstaerkeSetzen(merkLaut);
+    messDauerWunsch = null;
+    if (merkSignal && $('messsignal')){ $('messsignal').value = merkSignal;
+      if (typeof messDauerZeigen === 'function') messDauerZeigen(); }
     if (merkEq !== null && typeof eqAusSetzen === 'function') eqAusSetzen(merkEq);
     if (k) k.classList.remove('an');
     pegelReiheLaeuft = false; messAbbruchKnopf(false);
@@ -17978,6 +18038,7 @@ async function pegelReihe(){
        jemand später gegen einen anderen Pegel. */
     messErgebnis.laeufe = [];
     messErgebnis.mit = null;
+    messErgebnis.pegel = gesammelt.length ? gesammelt : null;
     messPegelZeichnen(); messWirkungZeichnen(); messFazitZeigen();
     const p = messErgebnis.pegel;
     if (p && p.length >= 2){
@@ -18867,23 +18928,57 @@ function messPegelBaenderZeichnen(){
   const { b, bw, bh, X } = messRahmen(c, OB, UN, LI, RE);
 
   /* Jede Stufe auf ihren eigenen Mittelwert beziehen - dann steht da
-     die FORM, nicht die Lautstaerke. */
+     die FORM, nicht die Lautstaerke.
+
+     GERECHNET WIRD AUF DER FEINEN KURVE, wenn es sie gibt (Caspar_D,
+     27.08.2026: "und bitte auch feinstmöglich aufgelöst"). Terzbaender
+     wuerden gerade das verschleiern, worum es hier geht: ein
+     Lautsprecher, der bei hohem Pegel den Bass zuruecknimmt, tut das
+     nicht ueber ein ganzes Terzband gleichmaessig.
+
+     Auf ein logarithmisches Raster von 240 Punkten gebracht - feiner
+     als das Bild aufloest, gruendlicher als Terzbaender. */
+  const RASTER = 240;
+  const ausLang = (L) => {
+    const w = new Float32Array(RASTER).fill(-999);
+    for (let i = 1; i < L.db.length; i++){
+      const f = i * L.df; if (f < 20 || f > 20000) continue;
+      const k = Math.max(0, Math.min(RASTER - 1,
+        Math.round(RASTER * Math.log2(f / 20) / 10)));
+      if (L.db[i] > w[k]) w[k] = L.db[i];      /* Spitzenwert je Rasterpunkt */
+    }
+    /* Luecken unten fuellen, wo die FFT weniger Punkte hat als das Raster */
+    let letzt = null;
+    for (let k = 0; k < RASTER; k++){
+      if (w[k] > -900) letzt = w[k]; else if (letzt !== null) w[k] = letzt;
+    }
+    return Array.from(w);
+  };
+  const fein = reihe.every(r => r.lang && r.lang.db);
   const formen = reihe.map(r => {
-    const innen = r.kurve.filter(p => p.f >= 63 && p.f <= 8000);
+    const werte = fein ? ausLang(r.lang) : r.kurve.map(p => p.db);
+    const gilt = werte.filter((_, i) => {
+      const f = fein ? 20 * Math.pow(2, i * 10 / RASTER) : r.kurve[i].f;
+      return f >= 63 && f <= 8000;
+    });
     let leist = 0;
-    for (const p of innen) leist += Math.pow(10, p.db / 10);
-    const mittel = 10 * Math.log10(leist / innen.length);
-    return { laut: r.laut, werte: r.kurve.map(p => p.db - mittel) };
+    for (const v of gilt) leist += Math.pow(10, v / 10);
+    const mittel = 10 * Math.log10(leist / Math.max(1, gilt.length));
+    return { laut: r.laut, werte: werte.map(v => v - mittel) };
   });
 
   /* Gegen die LEISESTE Stufe: sie ist am ehesten unbegrenzt, also der
      ehrlichste Bezug. Gezeigt wird die Abweichung davon. */
+  const M = formen[0].werte.length;
+  const fVon = (i) => fein ? 20 * Math.pow(2, i * 10 / RASTER) : reihe[0].kurve[i].f;
   const bezug = formen[formen.length - 1].werte;
   let gr = 2;
   for (const f of formen) f.werte.forEach((v, i) => {
-    if (f.werte[i] === undefined || bezug[i] === undefined) return;
+    if (v === undefined || bezug[i] === undefined) return;
+    const ff = fVon(i);
+    if (ff < 40 || ff > 10000) return;
     const d = Math.abs(v - bezug[i]);
-    if (d > gr && reihe[0].kurve[i].f >= 40 && reihe[0].kurve[i].f <= 10000) gr = d;
+    if (d > gr) gr = d;
   });
   gr = Math.ceil(gr);
   const Y = (db) => OB + bh * (1 - (db + gr) / (2 * gr));
@@ -18895,25 +18990,32 @@ function messPegelBaenderZeichnen(){
     b.fillText((d > 0 ? '+' : '') + d, 20, Y(d) + 3);
   }
 
+  /* Die Achse deckungsgleich mit den anderen Bildern: Terz-Index 0..30
+     entspricht 20 Hz bis 20480 Hz. */
+  const XF = (i) => {
+    const f = fVon(i);
+    return LI + bw * Math.max(0, Math.min(30, 3 * Math.log2(f / 20))) / 30;
+  };
   formen.forEach((f, k) => {
     const farbe = MESS_FARBEN[k % MESS_FARBEN.length];
     b.beginPath();
     f.werte.forEach((v, i) => {
-      const x = X(i), y = Math.max(OB, Math.min(OB + bh, Y(v - bezug[i])));
+      const x = XF(i), y = Math.max(OB, Math.min(OB + bh, Y(v - bezug[i])));
       i ? b.lineTo(x, y) : b.moveTo(x, y);
     });
     b.strokeStyle = farbe; b.lineWidth = k === formen.length - 1 ? 1.5 : 2;
     b.globalAlpha = k === formen.length - 1 ? 0.5 : 1;
     b.stroke(); b.globalAlpha = 1;
     /* Beschriftung am rechten Rand */
-    b.fillStyle = farbe; b.font = '10px system-ui';
+    b.fillStyle = farbe; b.font = MESS_SCHRIFT;
     const letzte = f.werte.length - 1;
     b.fillText(f.laut + ' %', LI + bw - 34, Math.max(OB + 9, Math.min(OB + bh - 2,
       Y(f.werte[letzte] - bezug[letzte]) - 4)));
   });
 
   b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
-  b.fillText('Formänderung gegenüber der leisesten Stufe — flach heißt: auf allen Frequenzen gleich', LI, 13);
+  b.fillText('Formänderung gegenüber der leisesten Stufe — flach heißt: auf allen Frequenzen gleich'
+    + (fein ? '   ·   volle Auflösung' : ''), LI, 13);
 }
 
 /* DAS FAZIT (Caspar_D, 27.08.2026: "es muss ja jetzt ein Fazit geben"
@@ -19505,11 +19607,16 @@ const MESS_PLAN = [
     ruhe: true },
   { art: 'pegel', signal: 'rosa',
     titel: 'Zuletzt: die Lautstärke durchfahren',
-    text: 'Fünf Durchgänge von 100 % auf 25 %, zusammen gut eine Minute. Der erste ist '
-        + 'lauter als alles bisher. Das ist die entscheidende Probe: Bleibt die Kette '
-        + 'linear, liegen alle Punkte auf einer Geraden. Knickt sie oben ab, wird '
-        + 'zurückgeregelt — und dann hilft gegen die fehlende Wirkung kein Equalizer, '
-        + 'sondern nur leiser abhören.',
+    text: 'Sieben Durchgänge mit dem Sweep, von 100 % auf 25 % in gleichen Schritten von je '
+        + 'vier Dezibel. Zusammen rund zweieinhalb Minuten; der erste ist der lauteste.'
+        + '<br><br>'
+        + 'Es ändert sich dabei <b>nur die Lautstärke</b> — gleiches Signal, gleiche Dauer, '
+        + 'gleicher Platz. Wer zwei Dinge zugleich verstellt, mißt hinterher die Summe und '
+        + 'kann sie nicht mehr trennen.<br><br>'
+        + 'Das ist die entscheidende Probe: Bleibt die Kette linear, liegen alle Punkte auf '
+        + 'einer Geraden. Knickt sie oben ab, wird zurückgeregelt. Und weil jede Stufe voll '
+        + 'aufgelöst gemessen wird, sieht man nicht nur <i>daß</i> geregelt wird, sondern '
+        + '<i>wo</i> — viele Lautsprecher nehmen bei hohen Pegeln zuerst den Baß zurück.',
     ruhe: true },
 ];
 
