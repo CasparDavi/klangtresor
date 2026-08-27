@@ -2898,7 +2898,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            ob eine Störung dauerhaft war oder nur einmal aufblitzte. -->
       <div class="messblock" hidden>
         <h6>Wann war es laut — Zeitverlauf</h6>
-        <canvas id="messridge" height="260"></canvas>
+        <canvas id="messridge" height="340"></canvas>
       </div>
 
       <!-- WIRKUNG: eingestellt gegen angekommen. Steht in Differenzen,
@@ -16991,6 +16991,42 @@ function messAbbrechen(){
    daran. */
 let messLive = null, messLiveBild = null;
 
+/* FEINERE BAENDER FUER DEN RIDGE PLOT (Caspar_D, 27.08.2026: "der
+   ridgeplot ist aber nicht so fein granulär, mittelst du den?" - ja,
+   und zwar doppelt).
+
+   Terzbaender sind fuer den Zeitverlauf zu grob: bei 40 Hz sind sie
+   neun Hertz breit, bei 4 kHz aber neunhundertzwanzig. Dort
+   verschwindet jede Struktur.
+
+   Zwoelf Baender je Oktave - Halbtonschritte - geben viermal so viele
+   Stuetzen und bleiben doch glatt genug, dass eine einzelne Zeile
+   lesbar ist. Die rohe FFT direkt zu zeigen waere feiner, aber jede
+   Zeile bestuende dann ueberwiegend aus Rauschen: eine einzelne
+   Momentaufnahme ist nicht gemittelt, und genau das Zappeln wollte man
+   ja mit der Mittelung loswerden.
+
+   Die Achse bleibt logarithmisch und deckungsgleich mit den anderen
+   Bildern: 20 Hz bis 20 kHz sind zehn Oktaven, also 120 Baender. */
+const MESS_JEOKT = 12;
+const MESS_FEINBAND = 120;
+function messLiveBaenderFein(db, sr, n){
+  const df = sr / (n * 2), out = new Float32Array(MESS_FEINBAND);
+  const w = Math.pow(2, 1 / (2 * MESS_JEOKT));      /* halbe Bandbreite */
+  for (let k = 0; k < MESS_FEINBAND; k++){
+    const fm = 20 * Math.pow(2, k / MESS_JEOKT);
+    const iu = Math.max(1, Math.round(fm / w / df));
+    const io = Math.min(n - 1, Math.round(fm * w / df));
+    let p = 0, c = 0;
+    /* Bei tiefen Baendern faellt die Untergrenze mit der Obergrenze
+       zusammen - dann wenigstens den einen Punkt nehmen, statt das Band
+       leer zu lassen. */
+    for (let i = iu; i <= Math.max(iu, io); i++){ p += Math.pow(10, db[i] / 10); c++; }
+    out[k] = c ? 10 * Math.log10(p / c) : -120;
+  }
+  return out;
+}
+
 /* Terzbaender aus einem Analyser-Spektrum. Dieselben 31 Baender wie in
    messSpektrum, damit Live-Bild und Ergebnis dieselbe Achse haben. */
 function messLiveBaender(db, sr, n){
@@ -17184,14 +17220,18 @@ async function raumAbhoeren(){
 
          Eine Zeile je halber Sekunde - bei acht Sekunden sechzehn
          Zeilen, das liest sich noch. */
-      if (!L.scheiben){ L.scheiben = []; L.scheibeAkku = new Float64Array(31); L.scheibeN = 0; }
-      for (let i = 0; i < 31; i++) L.scheibeAkku[i] += Math.pow(10, L.jetzt[i] / 10);
+      if (!L.scheiben){ L.scheiben = []; L.scheibeAkku = new Float64Array(MESS_FEINBAND); L.scheibeN = 0; }
+      const fein = messLiveBaenderFein(roh, sr, roh.length);
+      for (let i = 0; i < MESS_FEINBAND; i++) L.scheibeAkku[i] += Math.pow(10, fein[i] / 10);
       L.scheibeN++;
-      if (L.scheibeN >= 5){                       /* rund 0,5 s bei 93 ms je Block */
+      /* Zwei Bloecke je Zeile - rund eine Viertelsekunde. Bei einer
+         halben verschmierte ein kurzes Geraeusch ueber zwei Zeilen und
+         sah aus wie ein Dauerton. */
+      if (L.scheibeN >= 2){
         L.scheiben.push({ t: L.t,
           werte: Array.from(L.scheibeAkku, v => 10 * Math.log10(v / L.scheibeN)) });
-        L.scheibeAkku = new Float64Array(31); L.scheibeN = 0;
-        if (L.scheiben.length > 60) L.scheiben.shift();
+        L.scheibeAkku = new Float64Array(MESS_FEINBAND); L.scheibeN = 0;
+        if (L.scheiben.length > 200) L.scheiben.shift();
       }
     };
     q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
@@ -17834,17 +17874,39 @@ function messRidgeZeichnen(){
   if (c.width !== B) c.width = B;
   b.clearRect(0, 0, B, H);
   const bw = B - LI - RE, bh = H - OB - UN;
-  const X = (i) => LI + bw * i / 30;
+  /* Die Zeilen kommen jetzt in Zwoelftelbaendern, die Achse muss
+     dieselbe logarithmische Lage haben wie in den anderen Bildern:
+     Band k liegt bei 20 Hz mal 2 hoch k/12, also bei Terz-Index k/4. */
+  const M = scheiben[scheiben.length - 1].werte.length;
+  const X = (i) => LI + bw * i / (M - 1);
 
-  /* Hoechstens 40 Zeilen zeigen, sonst wird jede zu flach. */
-  const zeilen = scheiben.slice(-40);
+  /* WIEVIELE ZEILEN PASSEN. Nicht die Zahl der Messungen entscheidet
+     das, sondern die Hoehe: unter acht Punkten je Zeile verschmelzen
+     sie zu einer Masse - 43 Zeilen auf 130 Punkte waren drei Punkte je
+     Zeile, und daraus wurde wieder Brei.
+
+     Ausgeduennt wird GLEICHMAESSIG ueber die ganze Messung, nicht die
+     letzten N genommen: sonst zeigt der Zeitverlauf nur das Ende, und
+     eine Stoerung am Anfang faellt unter den Tisch. */
+  const passen = Math.max(6, Math.min(28, Math.floor(bh / 9)));
+  let zeilen;
+  if (scheiben.length <= passen) zeilen = scheiben;
+  else {
+    zeilen = [];
+    for (let k = 0; k < passen; k++)
+      zeilen.push(scheiben[Math.round(k * (scheiben.length - 1) / (passen - 1))]);
+  }
   const n = zeilen.length;
 
   /* Gemeinsame Skala ueber alle Zeilen. Die Hoehe einer einzelnen Zeile
      darf mehrere Zeilenabstaende ueberragen - gerade die Ausreisser
-     sind ja das Interessante. */
+     sind ja das Interessante. Die aeussersten Baender bleiben aussen
+     vor: unten und ganz oben steht ohnehin nur Rauschen, und es wuerde
+     die Skala verzerren. */
   let lo = Infinity, hi = -Infinity;
-  for (const z of zeilen) for (let i = 0; i < 31; i++){
+  const vonK = Math.round(MESS_JEOKT * Math.log2(40 / 20));
+  const bisK = Math.min(M - 1, Math.round(MESS_JEOKT * Math.log2(12000 / 20)));
+  for (const z of zeilen) for (let i = vonK; i <= bisK; i++){
     if (z.werte[i] < lo) lo = z.werte[i];
     if (z.werte[i] > hi) hi = z.werte[i];
   }
@@ -17856,7 +17918,7 @@ function messRidgeZeichnen(){
      Nachbarn; gut zwei ist das Mass, bei dem Ausreisser noch ueber die
      Nachbarzeile ragen, die Zeilen aber unterscheidbar bleiben. */
   const versatz = bh / (n + 2);            /* Abstand der Zeilen */
-  const hoehe   = versatz * 2.2;           /* wie hoch ein Ausschlag ausschlägt */
+  const hoehe   = versatz * 1.8;           /* wie hoch ein Ausschlag ausschlägt */
 
   /* Der Datenbereich als schwarzes Feld mit runden Ecken, Achszahlen
      ohne Gitterlinien - wie in messRahmen, hier von Hand, weil dieses
@@ -17866,12 +17928,12 @@ function messRidgeZeichnen(){
   if (b.roundRect) b.roundRect(LI, OB, bw, bh, 6); else b.rect(LI, OB, bw, bh);
   b.fill();
   b.font = MESS_SCHRIFT; b.fillStyle = '#6e6e73';
-  for (let t = 0; t < 31; t++){
-    const f = 20 * Math.pow(2, t / 3);
-    if (![31.5, 100, 315, 1000, 3150, 10000].some(r => Math.abs(f - r) / r < 0.06)) continue;
+  for (const f of [31.5, 100, 315, 1000, 3150, 10000]){
+    const k = MESS_JEOKT * Math.log2(f / 20);
+    if (k < 0 || k > M - 1) continue;
     const wort = f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + 'k'
                            : String(Math.round(f));
-    b.fillText(wort, X(t) - b.measureText(wort).width / 2, OB + bh + 9 + 8);
+    b.fillText(wort, X(k) - b.measureText(wort).width / 2, OB + bh + 9 + 8);
   }
 
   /* Von hinten nach vorn: aelteste Zeile oben, juengste unten. Jede
@@ -17888,26 +17950,33 @@ function messRidgeZeichnen(){
     const pfad = () => {
       b.beginPath();
       b.moveTo(X(0), grund);
-      for (let i = 0; i < 31; i++) b.lineTo(X(i), Y(z.werte[i]));
-      b.lineTo(X(30), grund);
+      for (let i = 0; i < M; i++) b.lineTo(X(i), Y(z.werte[i]));
+      b.lineTo(X(M - 1), grund);
       b.closePath();
     };
     pfad(); b.fillStyle = '#000'; b.fill();          /* verdeckt die Zeile dahinter */
+    /* Die Flaeche bleibt zurueckhaltend: bei knapp dreissig Zeilen
+       ueberlagern sich die Deckungen, und aus lauter halbdeckenden
+       Flaechen wird sonst eine geschlossene orange Masse. Die Topline
+       traegt die Information. */
     pfad(); b.fillStyle = '#f97b14';
-    b.globalAlpha = 0.16 + 0.22 * alter; b.fill(); b.globalAlpha = 1;
+    b.globalAlpha = 0.09 + 0.13 * alter; b.fill(); b.globalAlpha = 1;
 
     /* die Topline in voller Staerke; die juengste Zeile am kraeftigsten,
        das gibt der Zeitachse eine Richtung ohne Beschriftung */
     b.beginPath();
     b.moveTo(X(0), Y(z.werte[0]));
-    for (let i = 1; i < 31; i++) b.lineTo(X(i), Y(z.werte[i]));
+    for (let i = 1; i < M; i++) b.lineTo(X(i), Y(z.werte[i]));
     b.strokeStyle = '#f97b14';
     b.globalAlpha = 0.4 + 0.6 * alter;
     b.lineWidth = 2.5; b.stroke(); b.globalAlpha = 1;
   }
 
   b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
-  b.fillText('je Zeile eine halbe Sekunde, älteste oben   ·   durchgehender Kamm = dauerhaft, '
+  const spanne = zeilen.length > 1 ? (zeilen[zeilen.length-1].t - zeilen[0].t) : 0;
+  const proZeile = zeilen.length > 1 ? spanne / (zeilen.length - 1) : 0;
+  b.fillText('je Zeile ' + (proZeile * 1000).toFixed(0) + ' ms, älteste oben   ·   '
+    + M + ' Bänder (Halbtonschritte)   ·   durchgehender Kamm = dauerhaft, '
     + 'einzelner Ausschlag = einmaliges Geräusch', LI, 18);
   b.save(); b.translate(15, OB + bh / 2); b.rotate(-Math.PI / 2);
   b.fillStyle = '#55555a'; b.fillText('Zeit →', -18, 0); b.restore();
