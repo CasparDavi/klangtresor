@@ -2894,6 +2894,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <canvas id="messraumbild" height="220"></canvas>
       </div>
 
+      <!-- RIDGE PLOT: dieselben Daten über die Zeit gestapelt. Zeigt,
+           ob eine Störung dauerhaft war oder nur einmal aufblitzte. -->
+      <div class="messblock" hidden>
+        <h6>Wann war es laut — Zeitverlauf</h6>
+        <canvas id="messridge" height="260"></canvas>
+      </div>
+
       <!-- WIRKUNG: eingestellt gegen angekommen. Steht in Differenzen,
            nicht in Pegeln - erst dadurch ist die Messung mit der
            Einstellung vergleichbar. -->
@@ -17086,12 +17093,29 @@ async function raumAbhoeren(){
     const sr = raumCtx.sampleRate;
     const q = raumCtx.createMediaStreamSource(raumStrom);
     const schau = raumCtx.createAnalyser();
-    /* Im Abhoermodus die grosse FFT: 16384 Punkte geben 2,7 Hz statt
-       10,8 Hz Aufloesung. Das entscheidet darueber, ob eine Netzlinie
-       als 150 Hz erkannt wird oder als 151 - und damit, ob die Deutung
-       stimmt. Waehrend einer Messung waere das zu traege, dort zaehlt
-       die schnelle Aktualisierung; hier laeuft nichts weg. */
-    schau.fftSize = 16384; schau.smoothingTimeConstant = 0.6;
+    /* DIE FEINSTE FFT, DIE DER BROWSER HERGIBT (Caspar_D, 27.08.2026:
+       "wie die feinste fft waere, die wir noch rechnen koennen und wo
+       es noch sinnvoll ist" / "lohn hoeher aufgeloester scan?").
+
+       32768 ist das Maximum eines AnalyserNode und gibt 1,35 Hz bei
+       44,1 kHz. Das Fenster ist dann 0,74 s lang - die physikalische
+       Schranke ist hart: Aufloesung mal Fensterdauer ist rund eins.
+
+       UND ES LOHNT SICH, aber nur unten. Eine Raummode bei 40 Hz mit
+       Guete 20 ist zwei Hertz breit; bei 10,8 Hz Raster war sie ein
+       einzelner Punkt, bei 1,35 Hz sieht man ihre Form. Das Netz brummt
+       exakt bei 50,000 Hz - gemeldet wurden 151 statt 150 Hz, weil die
+       Spitze im groben Raster gar nicht genauer landen KANN.
+
+       Nach oben ist mehr Aufloesung sinnlos: bei 1 kHz ist ein Terzband
+       schon 230 Hz breit, da wirft man 170 Messpunkte hinein und
+       mittelt sie gleich wieder zusammen. Das ist die Schwaeche der
+       linearen FFT - das Gehoer ist logarithmisch, sie ist es nicht.
+
+       Und noch laenger zu fenstern hilft nicht: ein Raumgeraeusch ist
+       ueber eine Sekunde stabil, ueber zehn meist nicht. Dann
+       verschmiert das Fenster mehr, als es aufloest. */
+    schau.fftSize = 32768; schau.smoothingTimeConstant = 0.6;
     q.connect(schau);
     const roh = new Float32Array(schau.frequencyBinCount);
 
@@ -17149,6 +17173,26 @@ async function raumAbhoeren(){
          steckt - oefter waere Rechnen ohne Erkenntnisgewinn. */
       if (L.feinNA > 2 && L.feinNB > 2 && L.feinN % 8 === 0)
         L.restrauschen = messRestrauschen(L);
+
+      /* ZEITSCHEIBEN FUER DEN RIDGE PLOT (Caspar_D, 27.08.2026: "ridge
+         plot?"). Ein gemitteltes Spektrum verschweigt, WANN etwas
+         passiert ist. Gestapelt ueber die Zeit sieht man den
+         Unterschied sofort: ein Luefter zieht einen durchgehenden Kamm
+         durch alle Zeilen, ein Tastendruck erscheint in genau einer.
+         Damit laesst sich auch nachtraeglich sagen, ob eine Messung
+         durch eine Stoerung verdorben wurde.
+
+         Eine Zeile je halber Sekunde - bei acht Sekunden sechzehn
+         Zeilen, das liest sich noch. */
+      if (!L.scheiben){ L.scheiben = []; L.scheibeAkku = new Float64Array(31); L.scheibeN = 0; }
+      for (let i = 0; i < 31; i++) L.scheibeAkku[i] += Math.pow(10, L.jetzt[i] / 10);
+      L.scheibeN++;
+      if (L.scheibeN >= 5){                       /* rund 0,5 s bei 93 ms je Block */
+        L.scheiben.push({ t: L.t,
+          werte: Array.from(L.scheibeAkku, v => 10 * Math.log10(v / L.scheibeN)) });
+        L.scheibeAkku = new Float64Array(31); L.scheibeN = 0;
+        if (L.scheiben.length > 60) L.scheiben.shift();
+      }
     };
     q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
     raumCtx.__kn = kn;
@@ -17171,12 +17215,20 @@ function raumAus(){
      diagramm in schritt 1"). */
   if (messLive && messLive.raum && messLive.feinN){
     const L = messLive;
+    /* DIE VORIGE MESSUNG AUFHEBEN (Caspar_D, 27.08.2026: "mein
+       computerluefter mach 10dB aus"). Wer eine Geraeuschquelle
+       abstellt und noch einmal misst, will sehen, was es gebracht hat -
+       und zwar nicht nur als Zahl, sondern in welchen Baendern. Zehn
+       Dezibel sind ein Faktor zehn in der Leistung; das entscheidet
+       darueber, ob man leise messen kann. */
+    if (messErgebnis.raum && messErgebnis.raum.fein) messErgebnis.raumVorher = messErgebnis.raum;
     messErgebnis.raum = {
       mittel: L.mittel, tiefst: L.tiefst,
       baender: L.akkuN ? Array.from({ length: 31 },
         (_, i) => 10 * Math.log10(L.akku[i] / L.akkuN)) : null,
       fein: Float64Array.from(L.fein), feinN: L.feinN, feinDf: L.feinDf,
       stoer: messStoerlinien(L.fein, L.feinN, L.feinDf),
+      scheiben: (L.scheiben || []).map(x => ({ t: x.t, werte: x.werte.slice() })),
       sekunden: +(L.t || 0).toFixed(1),
     };
   }
@@ -17296,6 +17348,8 @@ function messLiveZeichnen(){
      messens"). Sonst malte das Live-Bild in ein Canvas, das in Schritt
      1 gar nicht sichtbar ist. */
   const c = $(L.raum ? 'messraumbild' : 'messbild'); if (!c) return;
+  /* Der Ridge Plot waechst mit - man sieht die Zeilen entstehen. */
+  if (L.raum && typeof messRidgeZeichnen === 'function') messRidgeZeichnen();
   const b = c.getContext('2d');
   const B = c.clientWidth || 800, H = c.height;
   if (c.width !== B) c.width = B;
@@ -17656,7 +17710,9 @@ function messRaumbildZeichnen(){
   if (!R || !R.fein){ huelle.hidden = true; return; }
   huelle.hidden = false;
 
-  const OB = 30, UN = 26, LI = 46, RE = 12;
+  /* Zwei Kopfzeilen brauchen Platz: 12 px Titelzeile und 10,5 px
+     Legendenzeile mit Zeilenabstand, dann erst das Datenfeld. */
+  const OB = 46, UN = 28, LI = 52, RE = 12;
   const { b, bw, bh, X } = messRahmen(c, OB, UN, LI, RE);
 
   /* Skala aus den Baendern: das lauteste bildet die Obergrenze. */
@@ -17670,25 +17726,40 @@ function messRaumbildZeichnen(){
   const hi = hoch + 5, lo = hi - 60;
   const Y = (db) => OB + bh * (1 - (db - lo) / (hi - lo));
 
+  /* Achszahlen ohne Gitterlinien (Hausregel 8), 8 Punkte Atem zur Achse */
+  b.font = MESS_SCHRIFT; b.fillStyle = '#6e6e73';
   for (let d = Math.ceil(lo / 20) * 20; d <= hi - 4; d += 20){
-    b.fillStyle = 'rgba(255,255,255,0.05)'; b.fillRect(LI, Y(d), bw, 1);
-    b.fillStyle = '#55555a'; b.font = '9px system-ui';
-    b.fillText(d + ' dB', LI + bw - 38, Y(d) - 3);
+    b.fillText(d + ' dB', LI - 8 - b.measureText(d + ' dB').width, Y(d) + 4);
   }
 
-  /* Terzbaender als Saeulen */
+  /* Terzbaender als Saeulen - Flaeche gedaempft, Topline in voller
+     Staerke (Hausregel "Formsprache", gilt ausdruecklich fuer Saeulen
+     des Spektrums). */
   if (R.baender){
-    const br = Math.max(2, bw / 31 - 3);
-    for (let i = 0; i < 31; i++){
-      const y = Math.max(OB, Y(R.baender[i]));
-      if (y >= OB + bh) continue;
-      b.fillStyle = 'rgba(255,255,255,0.13)';
-      b.fillRect(X(i) - br / 2, y, br, OB + bh - y);
+    const br = Math.max(3, bw / 31 - 3);
+    messSaeulen(b, R.baender, X, (v) => Math.max(OB, Y(v)), OB + bh, '#8b8b90', br);
+  }
+
+  const XF = (f) => LI + bw * Math.max(0, Math.min(30, 3 * Math.log2(Math.max(20, f) / 20))) / 30;
+
+  /* Die VORIGE Messung als blasse Linie darunter - dann sieht man beim
+     Wiederholen unmittelbar, was das Abschalten einer Geraeuschquelle
+     gebracht hat, und in welchen Baendern. */
+  const V = messErgebnis.raumVorher;
+  if (V && V.fein){
+    b.beginPath(); let e1 = true;
+    for (let i = 1; i < V.fein.length; i++){
+      const f = i * V.feinDf; if (f < 20 || f > 20000) continue;
+      const v = 10 * Math.log10(Math.max(1e-12, V.fein[i] / V.feinN));
+      const x = XF(f), y = Math.max(OB, Math.min(OB + bh, Y(v)));
+      if (e1){ b.moveTo(x, y); e1 = false; } else b.lineTo(x, y);
     }
+    /* Kontextflaeche: still, keine volle Staerke - sie dient nur der
+       Orientierung (Hausregel "Die Ausnahme: Kontextflaechen"). */
+    b.strokeStyle = '#f9b414'; b.globalAlpha = 0.4; b.lineWidth = 2; b.stroke(); b.globalAlpha = 1;
   }
 
   /* Feine FFT als Linie, auf dieselbe logarithmische Achse gelegt */
-  const XF = (f) => LI + bw * Math.max(0, Math.min(30, 3 * Math.log2(Math.max(20, f) / 20))) / 30;
   b.beginPath(); let erste = true;
   for (let i = 1; i < R.fein.length; i++){
     const f = i * R.feinDf; if (f < 20 || f > 20000) continue;
@@ -17696,7 +17767,8 @@ function messRaumbildZeichnen(){
     const x = XF(f), y = Math.max(OB, Math.min(OB + bh, Y(v)));
     if (erste){ b.moveTo(x, y); erste = false; } else b.lineTo(x, y);
   }
-  b.strokeStyle = 'rgba(255,255,255,0.42)'; b.lineWidth = 1; b.stroke();
+  /* Datenlinie in voller Staerke - "so dick, dass man sie ernst nimmt" */
+  b.strokeStyle = '#ececed'; b.lineWidth = 2.5; b.globalAlpha = 0.85; b.stroke(); b.globalAlpha = 1;
 
   /* Die Stoerlinien markiert und benannt */
   for (const st of (R.stoer || [])){
@@ -17707,39 +17779,206 @@ function messRaumbildZeichnen(){
     const deut = messStoerdeutung(st.f);
     const wort = (st.f >= 1000 ? (st.f / 1000).toFixed(1).replace('.', ',') + ' kHz'
                                : Math.round(st.f) + ' Hz') + (deut ? ' · ' + deut : '');
-    b.font = '10px system-ui';
+    b.font = MESS_SCHRIFT;
     const br = b.measureText(wort).width;
     const tx = Math.min(LI + bw - br - 2, Math.max(LI + 2, x - br / 2));
-    b.fillStyle = '#0a0a0a'; b.fillRect(tx - 3, y - 21, br + 6, 13);
+    b.fillStyle = '#000'; b.fillRect(tx - 3, y - 22, br + 6, 14);
     b.fillStyle = '#f9143c'; b.fillText(wort, tx, y - 11);
   }
 
-  b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
-  b.fillText('Säulen: Terzbänder   ·   Linie: feine FFT (' + R.feinDf.toFixed(1).replace('.', ',')
-    + ' Hz)   ·   rot: schmale Störlinien', LI, 13);
-  b.fillStyle = '#ececed'; b.font = '11px system-ui';
-  b.fillText('Grundgeräusch ' + (R.mittel === null ? '—' : R.mittel.toFixed(0) + ' dB')
-    + (R.tiefst !== null ? ',  am ruhigsten ' + R.tiefst.toFixed(0) + ' dB' : ''), LI, 26);
+  b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
+  b.fillText('Säulen: Terzbänder   ·   Linie: feine FFT (' + R.feinDf.toFixed(2).replace('.', ',')
+    + ' Hz)   ·   rot: schmale Störlinien'
+    + (V && V.fein ? '   ·   gelb: die Messung davor' : ''), LI, 33);
+  b.fillStyle = '#ececed'; b.font = MESS_SCHRIFT_GROSS;
+  let kopf = 'Grundgeräusch ' + (R.mittel === null ? '—' : R.mittel.toFixed(0) + ' dB')
+    + (R.tiefst !== null ? ',  am ruhigsten ' + R.tiefst.toFixed(0) + ' dB' : '');
+  if (V && V.mittel !== null && R.mittel !== null){
+    const d = V.mittel - R.mittel;
+    if (Math.abs(d) >= 0.5)
+      kopf += '   ·   ' + Math.abs(d).toFixed(0) + ' dB ' + (d > 0 ? 'leiser' : 'lauter') + ' als vorher';
+  }
+  b.fillText(kopf, LI, 15);
 }
 
-/* Gemeinsamer Rahmen fuer die Messbilder: Frequenzachse waagerecht,
-   31 Terzbaender, dieselben Marken. */
+/* DER RIDGE PLOT (Caspar_D, 27.08.2026: "ridge plot?").
+
+   Eine Zeile je halber Sekunde, von unten nach oben gestapelt, jede um
+   ein Stueck versetzt. Was ein gemitteltes Spektrum nicht sagen kann,
+   steht hier: OB eine Stoerung dauerhaft war. Ein Luefter zieht einen
+   durchgehenden Kamm durch alle Zeilen; ein Tastendruck, ein Huesteln,
+   ein vorbeifahrendes Auto erscheinen in einer einzigen.
+
+   Zwei Dinge machen die Form lesbar:
+
+   - Jede Zeile wird GEFUELLT und in der Hintergrundfarbe unterlegt,
+     bevor ihre Linie kommt. Dadurch verdeckt die vordere Zeile die
+     hintere - genau das erzeugt den Gebirgseindruck. Ohne diese
+     Verdeckung liegen fuenfzig Linien uebereinander und man sieht
+     nichts.
+   - Gezeichnet wird von HINTEN nach VORN, also von der aeltesten zur
+     juengsten Zeile. Die Reihenfolge ist keine Geschmacksfrage: nur so
+     stimmt, was wen verdeckt. */
+function messRidgeZeichnen(){
+  const c = $('messridge'); if (!c) return;
+  const R = messErgebnis.raum;
+  const live = (messLive && messLive.raum) ? messLive : null;
+  const scheiben = live ? live.scheiben : (R ? R.scheiben : null);
+  const huelle = c.closest('.messblock') || c;
+  if (!scheiben || scheiben.length < 3){ huelle.hidden = true; return; }
+  huelle.hidden = false;
+
+  const OB = 32, UN = 28, LI = 52, RE = 12;
+  const b = c.getContext('2d');
+  const B = c.clientWidth || 800, H = c.height;
+  if (c.width !== B) c.width = B;
+  b.clearRect(0, 0, B, H);
+  const bw = B - LI - RE, bh = H - OB - UN;
+  const X = (i) => LI + bw * i / 30;
+
+  /* Hoechstens 40 Zeilen zeigen, sonst wird jede zu flach. */
+  const zeilen = scheiben.slice(-40);
+  const n = zeilen.length;
+
+  /* Gemeinsame Skala ueber alle Zeilen. Die Hoehe einer einzelnen Zeile
+     darf mehrere Zeilenabstaende ueberragen - gerade die Ausreisser
+     sind ja das Interessante. */
+  let lo = Infinity, hi = -Infinity;
+  for (const z of zeilen) for (let i = 0; i < 31; i++){
+    if (z.werte[i] < lo) lo = z.werte[i];
+    if (z.werte[i] > hi) hi = z.werte[i];
+  }
+  if (!isFinite(lo)) return;
+  if (hi - lo < 12){ const m = (hi + lo) / 2; lo = m - 6; hi = m + 6; }
+
+  /* Die Ueberlappung entscheidet, ob man ein Gebirge sieht oder Brei.
+     Bei viereinhalb Zeilenhoehen verschwand jede einzelne Zeile in den
+     Nachbarn; gut zwei ist das Mass, bei dem Ausreisser noch ueber die
+     Nachbarzeile ragen, die Zeilen aber unterscheidbar bleiben. */
+  const versatz = bh / (n + 2);            /* Abstand der Zeilen */
+  const hoehe   = versatz * 2.2;           /* wie hoch ein Ausschlag ausschlägt */
+
+  /* Der Datenbereich als schwarzes Feld mit runden Ecken, Achszahlen
+     ohne Gitterlinien - wie in messRahmen, hier von Hand, weil dieses
+     Bild seine eigene Geometrie hat. */
+  b.fillStyle = '#000';
+  b.beginPath();
+  if (b.roundRect) b.roundRect(LI, OB, bw, bh, 6); else b.rect(LI, OB, bw, bh);
+  b.fill();
+  b.font = MESS_SCHRIFT; b.fillStyle = '#6e6e73';
+  for (let t = 0; t < 31; t++){
+    const f = 20 * Math.pow(2, t / 3);
+    if (![31.5, 100, 315, 1000, 3150, 10000].some(r => Math.abs(f - r) / r < 0.06)) continue;
+    const wort = f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + 'k'
+                           : String(Math.round(f));
+    b.fillText(wort, X(t) - b.measureText(wort).width / 2, OB + bh + 9 + 8);
+  }
+
+  /* Von hinten nach vorn: aelteste Zeile oben, juengste unten. Jede
+     Zeile traegt die Hausform - Flaeche gedaempft, Kontur in voller
+     Staerke -, nur wird die Flaeche hier zusaetzlich in Schwarz
+     unterlegt: dadurch verdeckt die vordere Zeile die hintere, und
+     genau daraus entsteht der Gebirgseindruck. */
+  for (let k = 0; k < n; k++){
+    const z = zeilen[k];
+    const grund = OB + versatz * (k + 1.5);
+    const Y = (db) => grund - hoehe * (db - lo) / (hi - lo);
+    const alter = k / Math.max(1, n - 1);
+
+    const pfad = () => {
+      b.beginPath();
+      b.moveTo(X(0), grund);
+      for (let i = 0; i < 31; i++) b.lineTo(X(i), Y(z.werte[i]));
+      b.lineTo(X(30), grund);
+      b.closePath();
+    };
+    pfad(); b.fillStyle = '#000'; b.fill();          /* verdeckt die Zeile dahinter */
+    pfad(); b.fillStyle = '#f97b14';
+    b.globalAlpha = 0.16 + 0.22 * alter; b.fill(); b.globalAlpha = 1;
+
+    /* die Topline in voller Staerke; die juengste Zeile am kraeftigsten,
+       das gibt der Zeitachse eine Richtung ohne Beschriftung */
+    b.beginPath();
+    b.moveTo(X(0), Y(z.werte[0]));
+    for (let i = 1; i < 31; i++) b.lineTo(X(i), Y(z.werte[i]));
+    b.strokeStyle = '#f97b14';
+    b.globalAlpha = 0.4 + 0.6 * alter;
+    b.lineWidth = 2.5; b.stroke(); b.globalAlpha = 1;
+  }
+
+  b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
+  b.fillText('je Zeile eine halbe Sekunde, älteste oben   ·   durchgehender Kamm = dauerhaft, '
+    + 'einzelner Ausschlag = einmaliges Geräusch', LI, 18);
+  b.save(); b.translate(15, OB + bh / 2); b.rotate(-Math.PI / 2);
+  b.fillStyle = '#55555a'; b.fillText('Zeit →', -18, 0); b.restore();
+}
+
+/* DIE HAUSFORM FUER DIE MESSBILDER.
+
+   Nachgelesen in den Hausregeln, nachdem die ersten Fassungen dagegen
+   verstiessen (Caspar_D, 27.08.2026: "schau mal in den Hausregeln, wie
+   diagramm auszushen haben, ganz besonders Säulen"):
+
+   - "Schwarzer Datenbereich, keine Gitternetzlinien" (Regel 8): ein
+     schwarzes Rechteck mit runden Ecken traegt die Daten, Achszahlen
+     genuegen. Meine senkrechten und waagerechten Hilfslinien mussten
+     raus.
+   - "12 px ist die Lesegrenze, Faktoren/Nebenwerte 10,5" (Regel 14):
+     9-px-Beschriftungen gibt es im Haus nicht.
+   - "Achsbeschriftung mit Atem: 8 px zur y-Achse, ~9 px unter der
+     x-Achse, Bezug ist die SAEULENBASIS, nicht der Rand" (Regel 15).
+   - Dezimalkomma ueberall. */
+const MESS_SCHRIFT = '10.5px system-ui', MESS_SCHRIFT_GROSS = '12px system-ui';
+
 function messRahmen(c, OB, UN, LI, RE){
   const b = c.getContext('2d');
   const B = c.clientWidth || 800, H = c.height;
   if (c.width !== B) c.width = B;
-  b.fillStyle = '#0a0a0a'; b.fillRect(0, 0, B, H);
+  b.clearRect(0, 0, B, H);
   const bw = B - LI - RE, bh = H - OB - UN;
   const X = (i) => LI + bw * i / 30;
-  b.font = '10px system-ui';
+  /* Der Datenbereich als schwarzes Feld mit runden Ecken - er traegt
+     die Daten, nicht der ganze Canvas. */
+  b.fillStyle = '#000'; 
+  b.beginPath();
+  if (b.roundRect) b.roundRect(LI, OB, bw, bh, 6);
+  else b.rect(LI, OB, bw, bh);
+  b.fill();
+  /* Nur Achszahlen, keine Gitterlinien. Neun Punkte unter der
+     Saeulenbasis, also unter OB+bh. */
+  b.font = MESS_SCHRIFT;
+  b.fillStyle = '#6e6e73';
   for (let t = 0; t < 31; t++){
     const f = 20 * Math.pow(2, t / 3);
     if (![31.5, 100, 315, 1000, 3150, 10000].some(r => Math.abs(f - r) / r < 0.06)) continue;
-    b.fillStyle = 'rgba(255,255,255,0.06)'; b.fillRect(X(t), OB, 1, bh);
-    b.fillStyle = '#6e6e73';
-    b.fillText(f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0) + 'k' : Math.round(f), X(t) - 8, H - 8);
+    const wort = f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + 'k'
+                           : String(Math.round(f));
+    b.fillText(wort, X(t) - b.measureText(wort).width / 2, OB + bh + 9 + 8);
   }
   return { b, B, H, bw, bh, X };
+}
+
+/* Fläche gedämpft, Kontur in voller Stärke - die zentrale Formregel des
+   Hauses (Hausregeln, "Die Formsprache der Diagramme"). Gilt
+   ausdruecklich auch fuer "Saeulen des Spektrums". Beides in DERSELBEN
+   Farbe; die Topline ist keine Hervorhebung, sondern die Kante der
+   Daten. */
+function messSaeulen(b, werte, X, Y, grund, farbe, breite){
+  /* erst die Flaechen, halb deckend */
+  b.globalAlpha = 0.5; b.fillStyle = farbe;
+  for (let i = 0; i < werte.length; i++){
+    const y = Math.min(grund, Y(werte[i]));
+    if (y >= grund) continue;
+    b.fillRect(X(i) - breite / 2, y, breite, grund - y);
+  }
+  b.globalAlpha = 1;
+  /* dann die Toplines in voller Staerke, 1 px auf jeder Saeulenkante */
+  b.fillStyle = farbe;
+  for (let i = 0; i < werte.length; i++){
+    const y = Math.min(grund, Y(werte[i]));
+    if (y >= grund) continue;
+    b.fillRect(X(i) - breite / 2, y, breite, 1);
+  }
 }
 
 /* DIE WIRKUNG: was eingestellt war gegen das, was ankam (Caspar_D,
@@ -18444,7 +18683,7 @@ function messAnsicht(was){
   const hatKurven = !!(messErgebnis.neutral || (messErgebnis.laeufe || []).length
                        || (messLive && !messLive.raum));
   zeig('messkurven', hatKurven && (a === 'werkzeug' || imAblauf));
-  if (a === 'werkzeug' || imAblauf) messRaumbildZeichnen();
+  if (a === 'werkzeug' || imAblauf){ messRaumbildZeichnen(); messRidgeZeichnen(); }
   const rt = $('messraumtitel');
   if (rt) rt.textContent = (messLive && messLive.raum)
     ? 'Ich höre gerade zu …' : 'Was der Raum von sich aus macht';
@@ -18606,7 +18845,11 @@ function messPlanZeigen(zustand, meldung){
 
 function messPlanWeiter(){ messPlanSchritt++; messPlanZeigen(); messAnsicht(); }
 function messPlanUeberspringen(){ messPlanSchritt++; messPlanZeigen(); messAnsicht(); }
-function messPlanWiederholen(){ messPlanZeigen(); }
+/* Wiederholen heisst wiederholen, nicht noch einmal erklaeren
+   (Caspar_D, 27.08.2026: "wenn ich auf nochmal druecke, kann es auch
+   sofort los gehen, ich kenn ja die modaliaeten vom letzten mal"). Wer
+   nach einer Stoerung "Nochmal" drueckt, steht schon still. */
+function messPlanWiederholen(){ messPlanAusfuehren(); }
 
 async function messPlanAusfuehren(){
   const s = MESS_PLAN[messPlanSchritt]; if (!s) return;
@@ -18656,7 +18899,24 @@ async function messPlanAusfuehren(){
           + (tiefst !== null ? ', am ruhigsten war es bei ' + tiefst.toFixed(0) + ' dB' : '') + '. '
           + (wert < -55 ? 'Das ist ruhig genug, um auch leise zu messen.'
             : wert < -45 ? 'Brauchbar. Die Messung sollte etwas lauter laufen.'
-            : 'Ziemlich laut. Wenn eine Geräuschquelle abschaltbar ist, lohnt sich das jetzt.')
+            : 'Ziemlich laut. Wenn eine Geräuschquelle abschaltbar ist, lohnt sich das jetzt — '
+              + 'ein Rechnerlüfter allein macht leicht 10 dB aus, und das ist ein Faktor zehn '
+              + 'in der Leistung. Abschalten, noch einmal messen, dann steht der Vergleich hier.')
+          + (() => {
+              /* Hat sich seit der vorigen Messung etwas getan? Zehn
+                 Dezibel sind ein Faktor zehn in der Leistung - das ist
+                 der Unterschied zwischen "brauchbar" und "ruhig genug
+                 für leise Messungen", und es lohnt, das auszusprechen. */
+              const V = messErgebnis.raumVorher;
+              if (!V || V.mittel === null || wert === null) return '';
+              const d = V.mittel - wert;
+              if (Math.abs(d) < 0.5) return ' Gegenüber der Messung davor hat sich nichts geändert.';
+              return d > 0
+                ? ' Das sind <b>' + d.toFixed(0) + ' dB weniger</b> als bei der Messung davor — '
+                  + 'im Diagramm liegt die alte Kurve gelb darunter, dort siehst du, welche '
+                  + 'Bänder ruhiger geworden sind.'
+                : ' Das sind ' + Math.abs(d).toFixed(0) + ' dB <b>mehr</b> als bei der Messung davor.';
+            })()
           + '<br><br>Aus <b>' + aufnahmen + ' Momentaufnahmen</b> in ' + dauer + ' s gemittelt'
           + (rest !== null && rest !== undefined
               ? '; es zappelt noch um ' + rest.toFixed(2).replace('.', ',') + ' dB'
