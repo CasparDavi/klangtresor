@@ -789,16 +789,17 @@
 <div class="section" id="spur-spektrum">
   <div class="slbl"><span id="sa-spektrum-titel"><span class="nam">Frequenzspektrum</span> — <span class="erkl">live</span></span></div>
   <!-- WELCHES SIGNAL (Caspar_D, 26.08.2026: "wie wärs mit Registern,
-       Rohsignal, Endsignal" - benannt als "Codiertes Signal /
-       Ausgabe-Signal"). Als Registerzeile im Hausschnitt: dieselben
+       Rohsignal, Endsignal" - benannt als "Signal aus der Sound-Datei"
+       und "Anpassung im Tonstudio [EQ]"). Als Registerzeile im
+       Hausschnitt: dieselben
        Unterstrich-Reiter wie beim Spektrogramm darunter ("die register
        bitte, wie unten bei fft, gleiches design").
 
        Versteckt, solange die Buehne keinen zweiten Abgriff
        hereinreicht - ein Umschalter mit nur einer Stellung ist keiner. -->
   <div class="bf-register" id="sa-signal-wahl" data-wert="codiert" style="display:none">
-    <button type="button" data-s="codiert" class="an" title="Das Stück, wie es in der Datei steht — vor allem, was KlangTresor damit tut">Codiertes Signal</button>
-    <button type="button" data-s="ausgabe" title="Nach Equalizer, Kompressor, Breite, Hall und Echo">Ausgabe-Signal</button>
+    <button type="button" data-s="codiert" class="an" title="Das Stück, wie es in der Sound-Datei liegt — vor jedem Eingriff">Signal aus der Sound-Datei</button>
+    <button type="button" data-s="ausgabe" title="Nach Equalizer, Kompressor, Breite, Hall und Echo — einzustellen über den Knopf EQ">Anpassung im Tonstudio [EQ]</button>
     <button type="button" data-s="beide" title="Beides übereinander — was sich deckt, trägt die Hausfarbe des Kanals">Überlagert</button>
   </div>
   <div class="chart-outer"><canvas id="freq-canvas" style="height:150px;background:#0a0a0a"></canvas></div>
@@ -1219,8 +1220,8 @@
        Aufrufers. Ohne sie bleiben Dichte-Spektrum und Live-Spektrum
        leer; alles andere rechnet der Analyzer aus der Datei.
 
-       ZWEI KNOTEN seit dem 26.08.2026: `knoten` ist das codierte
-       Signal, `ende` das Ausgabe-Signal. Der dritte Parameter ist
+       ZWEI KNOTEN: `knoten` ist das Signal aus der Sound-Datei,
+       `ende` die Anpassung im Tonstudio. Der dritte Parameter ist
        freiwillig - fehlt er, gibt es nur den einen Abgriff und der
        Umschalter erscheint gar nicht erst. */
     quelle(knoten, ctx, ende){
@@ -4704,8 +4705,15 @@
 
        `knoten` ist die Summe der Decks vor jeder Bearbeitung - das
        CODIERTE SIGNAL, also das Stueck, wie es in der Datei steht
-       (Caspar_D, 26.08.2026: "Codiertes Signal / Ausgabe-Signal" -
-       "roh" waere falsch gewesen, decodiert ist es ja bereits).
+       (Caspar_D, 26.08.2026: "Signal aus der Sound-Datei" und
+       "Anpassung im Tonstudio [EQ]"). "Roh" waere falsch gewesen, und
+       "codiert" ebenso: Was hier ankommt, ist bereits decodiert - die
+       Namen benennen deshalb die STELLE, nicht den Zustand.
+
+       Die internen Schluessel heissen weiterhin 'codiert' und
+       'ausgabe'. Sie stehen in localStorage und in data-Attributen;
+       sie umzubenennen haette bestehende Einstellungen verworfen,
+       ohne dass jemand etwas davon haette.
        `ende` ist der Punkt unmittelbar vor dem Lautsprecher: das
        AUSGABE-SIGNAL, nach Equalizer, Kompressor, Stereobreite, Hall
        und Echo.
@@ -6903,9 +6911,9 @@
         lg.innerHTML =
             '<span>' + '<i class="linie" style="background:#f97b14"></i>'
                      + '<i class="linie" style="background:#4b93f0"></i>'
-                     + 'Linie: codiertes Signal</span>'
-          + '<span>' + feld('#f9b414','#14b4a0') + 'codiert höher — wird weggenommen</span>'
-          + '<span>' + feld('#f9143c','#2a4bf0') + 'Ausgabe höher — wird angehoben</span>'
+                     + 'Linie: Signal aus der Datei</span>'
+          + '<span>' + feld('#f9b414','#14b4a0') + 'Datei höher — Tonstudio nimmt weg</span>'
+          + '<span>' + feld('#f9143c','#2a4bf0') + 'Tonstudio höher — es hebt an</span>'
           + '<span>' + feld('#000000') + 'deckungsgleich</span>'
           + '<span style="color:#6e6e73">links · rechts</span>'
           + (ERKLAEREN ? '<button type="button" class="sa-info" id="sa-kette-info"'
@@ -6919,10 +6927,10 @@
         /* Kurz gehalten: Was die Farben bedeuten, steht in der Legende
            darueber. Hier steht nur, was sie nicht zeigen kann. */
         u.innerHTML =
-          'Codiertes und Ausgabe-Signal übereinander — so, daß nur der <b>Unterschied</b> '
+          'Das Signal aus der Sound-Datei und die Anpassung im Tonstudio übereinander — so, daß nur der <b>Unterschied</b> '
         + 'leuchtet. Was sich deckt, bleibt schwarz und ist damit auch das, was KlangTresor '
         + 'nicht verändert hat; Farbe hat nur, wo Equalizer, Kompressor, Breite, Hall oder Echo '
-        + 'eingreifen. Die Linie steht immer auf der Höhe des codierten Signals — sie ist die Bezugsgröße: '
+        + 'eingreifen. Die Linie steht immer auf der Höhe des Dateisignals — sie ist die Bezugsgröße: '
         + 'Was darüber leuchtet, wurde angehoben, was darunter fehlt, weggenommen. '
         + 'Oben der linke Kanal, unten der rechte.';
         return;
@@ -6970,7 +6978,7 @@
       + 'Abspieldecks und den sechs Instrumentspuren, die alle in eine Summe laufen — '
       + 'und endet an den Lautsprechern:</p>'
       + '<svg class="kettebild" viewBox="0 0 560 470" width="100%" role="img" '
-      +   'aria-label="Signalweg vom codierten Signal über das Tonstudio zum Ausgabe-Signal, mit beiden Meßpunkten">'
+      +   'aria-label="Signalweg von der Sound-Datei über das Tonstudio zu den Lautsprechern, mit beiden Meßpunkten">'
       /* Reine Vektorformen - Rechtecke, Linien, Kreise. Keine
          gezeichneten Geraete: Ein abgebildeter Lautsprecher oder
          Drehregler saehe aus wie Zierat und sagte nichts, was die
@@ -6994,8 +7002,8 @@
       +   '<line x1="298" y1="96" x2="392" y2="96" stroke="#f97b14" stroke-width="1.4" '
       +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
       +   '<g class="mess"><circle cx="418" cy="96" r="13"/><text x="418" y="101">1</text></g>'
-      +   '<text class="ml" x="440" y="93">Codiertes</text>'
-      +   '<text class="ml" x="440" y="107">Signal</text>'
+      +   '<text class="ml" x="440" y="90">Signal aus der</text>'
+      +   '<text class="ml" x="440" y="104">Sound-Datei</text>'
       +   '<line x1="228" y1="112" x2="228" y2="134" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Tonstudio */
       /* Der Rahmen umfasst ALLE Stufen des Tonstudios - auch Breite,
@@ -7026,8 +7034,8 @@
       +   '<line x1="298" y1="378" x2="392" y2="378" stroke="#f97b14" stroke-width="1.4" '
       +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
       +   '<g class="mess"><circle cx="418" cy="378" r="13"/><text x="418" y="383">2</text></g>'
-      +   '<text class="ml" x="440" y="375">Ausgabe-</text>'
-      +   '<text class="ml" x="440" y="389">Signal</text>'
+      +   '<text class="ml" x="440" y="372">Anpassung im</text>'
+      +   '<text class="ml" x="440" y="386">Tonstudio</text>'
       +   '<line x1="228" y1="394" x2="228" y2="410" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Lautstaerke und Ausgang */
       +   '<g class="k"><rect x="150" y="414" width="156" height="28" rx="5"/>'
@@ -7050,12 +7058,12 @@
       + 'er treffen soll.</p>'
 
       + '<h4>Warum genau an diesen zwei Stellen</h4>'
-      + '<div class="regel"><b>①</b> ist das <b>codierte Signal</b>: das Stück, wie es in der '
-      + 'Datei steht — decodiert, aber vor jedem Eingriff.</div>'
-      + '<p><b>②</b> ist das <b>Ausgabe-Signal</b>: hinter allem, was KlangTresor tut, aber <b>vor der '
+      + '<div class="regel"><b>①</b> ist das <b>Signal aus der Sound-Datei</b>: das Stück, wie es '
+      + 'dort liegt, vor jedem Eingriff.</div>'
+      + '<p><b>②</b> ist die <b>Anpassung im Tonstudio</b>: hinter allem, was dort eingestellt wird, aber <b>vor der '
       + 'Abhörlautstärke</b>. Das ist die entscheidende Feinheit: Läge der Abgriff dahinter, '
       + 'zeigte der Vergleich den Lautstärkeregler statt der Bearbeitung — bei 30 % läge das '
-      + 'Ausgabe-Signal zehn Dezibel tiefer, und es sähe aus, als nähme KlangTresor etwas weg.</p>'
+      + 'zweite Kurve zehn Dezibel tiefer, und es sähe aus, als nähme das Tonstudio etwas weg.</p>'
 
       + '<h4>Wo die Lautstärke sitzt</h4>'
       + '<p>Die Abhörlautstärke steht <b>hinter</b> der gesamten Kette, unmittelbar vor den '
