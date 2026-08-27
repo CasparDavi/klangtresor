@@ -14,7 +14,8 @@ den Fachdokumenten daneben.
 | [BACKLOG.md](BACKLOG.md) | Was offen ist, mit Begründung und Aufwand |
 | [HISTORY.md](HISTORY.md) | Chronologie der Entscheidungen und der Irrtümer |
 | [NAECHSTER_CHAT.md](NAECHSTER_CHAT.md) | Text zum Kopieren in eine neue Sitzung |
-| [../WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md) | WAV-Originale: Endpunkt, Skript, Ablauf |
+| [EINMESSEN.md](EINMESSEN.md) | Einmessen am Hörplatz: Ablauf, Signale, Auswertung, Befunde |
+| [../WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md) | WAV-Originale: der offizielle Download über die Studio-API |
 
 ---
 
@@ -42,6 +43,8 @@ September 2026 auf 60 Downloads pro Monat.
 | Farbpaletten | 321, Kontrastziel überall erreicht |
 | Playlists | 25 (23 öffentlich, 2 privat) |
 | **WAV-Originale** | **321** — PCM 16 Bit, 48 kHz, vollständig |
+| Eigene Medien (Bild/Video/Ton) | über das Notizfenster, überstimmen Sunos Fassung |
+| Einmessungen | erste am 27.08., Daten in `library/messungen/` |
 | Katalog gepackt | 2,1 MB |
 | Medien | 6.9G |
 
@@ -62,6 +65,13 @@ Alles läuft mit Node-Bordmitteln. Zusätzlich installiert: **ffmpeg**
 ---
 
 ## Woran als Nächstes gearbeitet wird
+
+> **Stand 27.08.2026.** Zuletzt gearbeitet wurde am **Einmessen** (siehe
+> unten und [EINMESSEN.md](EINMESSEN.md)). Offen sind vor allem drei
+> Dinge: `bin/wav.js` auf den neuen Download-Weg umstellen, das
+> Kreuzchen im Lesezeichen dafür, und die Frage, ob die gemessene
+> Baßbegrenzung wirklich im Lautsprecher sitzt. Der Rest steht in
+> [BACKLOG.md](BACKLOG.md) und [OFFEN.md](OFFEN.md).
 
 **Der SunoAnalyzer wird angebunden — Schritt 1 steht seit dem
 18.08.2026.** Der Knopf **Analyse** im Pult der Bühne öffnet ihn in
@@ -216,16 +226,73 @@ Baut aus `library/roh/` das komplette Archiv neu auf. **Kein Schritt
 braucht eine Anmeldung bei Suno** — die Mediendateien liegen offen auf
 dem CDN. Läuft beliebig oft; es wird nur nachgeholt, was fehlt.
 
+### Den Hörplatz einmessen
+
+Im Tonstudio, vierte Lasche. Beim Öffnen steht dort ein Text und ein
+Knopf; alles Weitere erscheint erst, wenn es an der Reihe ist.
+
+**Was ein neuer Chat davon wissen muß**, bevor er daran arbeitet:
+
+- **Nie ferngesteuert auslösen.** Der Ablauf sagt an, was er vorhat, und
+  wartet — Caspar_D drückt. Eine Messung nimmt den ganzen Raum auf; ein
+  Tastendruck im falschen Moment verdirbt sie. Das gilt für alles mit
+  Ton; „Raum abhören" und die digitale Messung über zwei Analyser sind
+  ausgenommen.
+- **`requestAnimationFrame` ruht in einem Fenster im Hintergrund.** Das
+  hat an einem Tag dreimal zugeschlagen — beim Live-Bild, bei der
+  Playerleiste und beim Verankern des Tonstudios. Wo etwas nach dem
+  Sichtbarmachen gemessen oder gesetzt werden muß, direkt aufrufen.
+- **Der Störabstand wird je Band gemessen**, nicht breitbandig. Dieselbe
+  Messung ergibt breitbandig 14 dB und je Band 40.
+- **Drei Fallen beim Auswerten**, alle drei erzeugen Zahlen, die wie
+  Meßwerte aussehen: die Auflösungsgrenze (eine Spitze aus zwei Punkten
+  bekommt ein Q von 528), die Physik (Q über 120 ist kein Raum, sondern
+  ein Dauerton) und die Glättung (sie verbreitert die Spitzen und drückt
+  das Q von 41 auf 6 — also geglättet suchen, roh messen).
+
+**Der Befund, der daraus entstand:** Caspar_Ds HomePods nehmen ab 50 %
+Lautstärke den Baß zurück, rund 3,5 dB je Vier-Dezibel-Stufe. Bis 40 %
+ist die Kette ehrlich. Das erklärt, warum vom Equalizer nur ein Drittel
+ankam — es lag weder am Equalizer noch am Raum.
+
+**Offen:** ob die Begrenzung wirklich im Lautsprecher sitzt und nicht im
+Mikrofon. Klirranteil und Kopfraum werden seit dem 27.08. mitgemessen,
+lagen für die bisherigen Reihen aber noch nicht vor; eine Wiederholung
+beantwortet es.
+
+Alles Weitere — Signale, Auflösungsgrenzen, die Diagramme und was man
+mit dem Ergebnis tun darf — steht in **[EINMESSEN.md](EINMESSEN.md)**.
+Die Meßdaten des ersten Tages liegen in `library/messungen/`.
+
 ### WAV-Originale holen
 
+**Achtung, der Weg hat sich geändert (27.08.2026).** `bin/wav.js` ist
+noch auf den alten gebaut und funktioniert so nicht mehr:
+
 ```bash
-node bin/wav.js --pruefen   # Stand: wer hat schon ein WAV?
-node bin/wav.js             # alles Fertige holen, älteste zuerst
+node bin/wav.js --pruefen   # überholt: prüft cdn1.suno.ai, das gibt jetzt 403
+node bin/wav.js             # überholt
 ```
 
-WAVs entstehen erst auf Anforderung — der Auslöser ist ein einziger
-Aufruf, den die Browserkonsole absetzt. **Vollständige Anleitung samt
-Skript: `WAV-PROTOKOLL.md`.**
+Der offene Zugriff auf `cdn1.suno.ai/<id>.wav` ist zu — auch für Songs,
+deren WAV hier längst liegt. Der heutige Weg führt über den Endpunkt,
+den Sunos eigene Oberfläche benutzt:
+
+```
+GET https://studio-api.prod.suno.com/api/download/clip/<id>?format=wav
+```
+
+Er antwortet mit `status: processing`, dann `ready` samt signierter
+S3-Adresse, die **ohne Token** ladbar ist. Der Aufruf braucht den
+Clerk-Token, gilt aber als offizieller Download — das ist der
+Unterschied, der ab dem 3. September für Sunos Limits zählt.
+
+**Vollständig, mit allen Kopfzeilen, Formaten und Stolperfallen:
+[WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md).** Gefunden hat den Weg Tarja.
+
+`bin/wav.js` umzustellen steht im [Backlog](BACKLOG.md); zu beachten ist
+dabei vor allem, daß die signierte Adresse nur **eine Stunde** gilt —
+also je Datei kurz vor dem Laden anfordern, nicht auf Vorrat.
 
 ### Etwas an den Farben ändern
 
