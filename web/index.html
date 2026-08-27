@@ -2172,6 +2172,26 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #hirschinhalt .regel{font-size:13.5px;line-height:1.55;color:var(--text);
   border-left:2px solid var(--akzent);padding:9px 0 9px 13px;margin:4px 0 14px}
 #hirschinhalt .regel b{color:var(--akzent)}
+/* Das Kettendiagramm im Erklaerkasten. Reine Vektorformen - Rechtecke,
+   Linien, Kreise (Caspar_D, 26.08.2026: "nur vektorsymbole, nichts
+   photorealistisches oder real world ähnliches"). Ein gezeichneter
+   Lautsprecher waere Zierat und sagte nichts, was die Beschriftung
+   nicht schon sagt. */
+#hirschinhalt .kettebild{display:block;margin:6px 0 16px;
+  background:#00000055;border:1px solid var(--rand);border-radius:8px;padding:6px 0}
+#hirschinhalt .kettebild text{font-family:inherit;font-size:11.5px;fill:#c8c8cc;
+  text-anchor:middle;dominant-baseline:auto}
+#hirschinhalt .kettebild .k rect{fill:#17171c;stroke:#3a3a42;stroke-width:1}
+#hirschinhalt .kettebild .q rect{fill:#121216;stroke:#33333a;stroke-width:1}
+#hirschinhalt .kettebild .q text{fill:#8a8a90}
+/* Die beiden Messpunkte tragen als einzige Farbe - sie sind die
+   Aussage des Bildes. */
+#hirschinhalt .kettebild .mess circle{fill:none;stroke:var(--akzent);stroke-width:1.6}
+#hirschinhalt .kettebild .mess text{fill:var(--akzent);font-weight:700;font-size:12px}
+#hirschinhalt .kettebild .ml{fill:var(--text);text-anchor:start;font-weight:600}
+#hirschinhalt .kettebild .ms{fill:#8a8a90;text-anchor:start;font-size:10.5px}
+#hirschinhalt .kettebild .gr{fill:var(--akzent);text-anchor:start;font-size:10.5px;
+  letter-spacing:.06em;text-transform:uppercase}
 #hirschinhalt table{border-collapse:collapse;font-size:12px;margin:6px 0 10px;
   font-variant-numeric:tabular-nums}
 #hirschinhalt th,#hirschinhalt td{padding:4px 9px;text-align:right;
@@ -14592,6 +14612,11 @@ async function analyzerAufbauen(){
     laeuft: () => !audio.paused,
     sprung: t => { audio.currentTime = Math.max(0, t + bVersatz/1000); },
     umschalten: () => umschalten(),
+    /* Der Erklaerkasten gehoert der Buehne - der Analyzer kennt ihn
+       nicht und soll auch keinen zweiten bauen. Er bekommt ihn hier
+       gereicht, wie Zeit und Laufzustand (Caspar_D, 26.08.2026: "das
+       (i) Feld wie beim Hirschfaktor"). */
+    erklaeren: (titel, html) => erklaerkastenAuf(titel, html),
   });
 
   // Die beiden Live-Anzeigen bekommen den vorhandenen Quellknoten -
