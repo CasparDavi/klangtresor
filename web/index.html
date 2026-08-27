@@ -1080,6 +1080,19 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    dann sehen, wenn dieser Song keines hat. Der Grund steht im Tooltip. */
 #promptregz .preg:disabled{color:#6e6e73;cursor:default}
 #bprompts .pseite[hidden]{display:none}
+/* Der Kopierknopf: so leise wie moeglich. Er steht in einer
+   Ueberschrift bzw. in der Reiterzeile und darf dort nicht mit dem
+   konkurrieren, was er beschriftet - deshalb kleiner, grau, und erst
+   beim Ueberfahren in Akzentfarbe. (Caspar_D, 26.08.2026) */
+#bprompts .kopfkopie{background:none;border:none;padding:2px 0 2px 10px;
+  margin-left:auto;font:inherit;font-size:10.5px;font-weight:600;
+  letter-spacing:.03em;text-transform:none;color:var(--schwach);
+  cursor:pointer;opacity:.7;transition:opacity .12s,color .12s}
+#bprompts .kopfkopie:hover{opacity:1;color:var(--akzent)}
+#bprompts .kopfkopie.fertig{color:var(--akzent);opacity:1}
+/* In der Ueberschrift steht er rechts - dafuer muss sie eine Zeile
+   sein, die zwei Dinge nebeneinander traegt. */
+#bprompts .stueck h3{display:flex;align-items:baseline}
 /* Woher der Text kommt, steht ueber ihm - nicht im Text versteckt. */
 #bprompts .herkunft{font-size:11.5px;color:var(--schwach);margin:0 0 8px;line-height:1.5}
 /* Der Vergleich: oben die Zeile, wie sie geschrieben steht, in der
@@ -14589,7 +14602,17 @@ function promptsFuellen(){
   const teile = ['<img class="passfoto" alt="" src="/media/' + bSong.id + '/kachel.jpg"'
                  + ' onerror="this.src=\'/media/' + bSong.id + '/cover.jpg\'">'];
   if (bSong.stilPrompt || bSong.stilAusschluss){
-    teile.push('<div class="stueck"><h3>Stil</h3><div class="prompt">'
+    /* KOPIEREN (Caspar_D, 26.08.2026: "wir brauchen wenigstens im
+       analyzer eine kleine copy schaltfläche für lyrics und style
+       prompt"). Beides steht hier zum Nachlesen; wer es
+       weiterverwenden will, musste es bisher mit der Maus markieren -
+       bei 963 Zeichen Stil und 2637 Zeichen Text eine Fummelei.
+
+       Der Knopf sitzt in der Ueberschrift, nicht unter dem Text: Dort
+       ist er zu finden, ohne erst ans Ende scrollen zu muessen. */
+    teile.push('<div class="stueck"><h3>Stil'
+      + '<button class="kopfkopie" data-kopie="stil" title="Stil-Prompt in die Zwischenablage">kopieren</button>'
+      + '</h3><div class="prompt" data-quelle="stil">'
       + esc(bSong.stilPrompt || '')
       + (bSong.stilAusschluss
           ? '<div class="aus" style="margin-top:6px">ohne: ' + esc(bSong.stilAusschluss) + '</div>'
@@ -14606,6 +14629,9 @@ function promptsFuellen(){
       +   '<button class="preg" data-preg="lyrics">Lyrics</button>'
       +   '<button class="preg" data-preg="transkript" disabled>Transkript</button>'
       +   '<button class="preg" data-preg="vergleich" disabled>Vergleich</button>'
+      /* Kopiert immer, was gerade zu sehen ist - Lyrics, Transkript
+         oder Vergleich. Ein Knopf je Lasche waere dreimal derselbe. */
+      +   '<button class="kopfkopie" data-kopie="seite" title="Sichtbaren Text in die Zwischenablage">kopieren</button>'
       + '</div>'
       + '<div class="pseite" data-pseite="lyrics"><div class="prompt">'
       +   esc(bSong.lyrics) + '</div></div>'
@@ -14620,6 +14646,7 @@ function promptsFuellen(){
     teile.push('<div class="stueck"><div class="prompt" style="opacity:.6">'
       + 'Ohne Gesang — als instrumental geführt.</div></div>');
   $('bprompts').innerHTML = teile.join('');
+  $('bprompts').querySelectorAll('.kopfkopie').forEach(b => { b.onclick = () => promptKopieren(b); });
   if (bSong.lyrics){
     document.querySelectorAll('#promptregz .preg').forEach(b => {
       b.onclick = () => promptLasche(b.dataset.preg);
@@ -14627,6 +14654,36 @@ function promptsFuellen(){
     promptLasche('lyrics');                 // bis das Transkript da ist
     whisperEinsetzen(bSong.id);             // laeuft nach, schaltet frei
   }
+}
+
+/* ZWISCHENABLAGE. Ein Handler fuer beide Knoepfe, weil sie dasselbe
+   tun und sich nur in der Quelle unterscheiden: 'stil' nimmt den
+   Stil-Prompt, 'seite' das, was gerade in der sichtbaren Lasche steht.
+
+   Ohne Zwischenablage-Recht - das gibt es nur bei https oder auf
+   localhost, und nicht immer - bleibt der alte Weg. Dann wird
+   wenigstens die Auswahl gesetzt, statt nichts zu tun und nichts zu
+   sagen. */
+async function promptKopieren(knopf){
+  const was = knopf.dataset.kopie;
+  const feld = was === 'stil'
+    ? document.querySelector('#bprompts .prompt[data-quelle="stil"]')
+    : document.querySelector('#bprompts .pseite:not([hidden]) .prompt, #bprompts .pseite:not([hidden])');
+  const text = feld ? feld.textContent.trim() : '';
+  if (!text) return;
+  const alt = knopf.textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    knopf.textContent = 'kopiert';
+  } catch (e) {
+    try {
+      const r = document.createRange(); r.selectNodeContents(feld);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      knopf.textContent = 'markiert';
+    } catch (e2) { knopf.textContent = 'ging nicht'; }
+  }
+  knopf.classList.add('fertig');
+  setTimeout(() => { knopf.textContent = alt; knopf.classList.remove('fertig'); }, 1600);
 }
 
 /* Die drei Laschen. Wie im Tonstudio: Knopf hell, Seite sichtbar,
