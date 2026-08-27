@@ -16567,7 +16567,21 @@ function messSignalBauen(art, sr, sekunden){
       o += ton + pause;
     }
   } else if (art === 'rosa'){
-    x.set(rauschenRosa(n));
+    /* AUF VOLLEN PEGEL NORMIEREN. Vorher stand da nur "summe durch
+       acht" - ein willkuerlicher Teiler, und das Signal kam entsprechend
+       leise heraus: bei 60 % Lautstaerke blieben nur 13 dB Stoerabstand,
+       waehrend derselbe Regler mit dem Sweep 33 dB brachte.
+
+       Rauschen ist bei gleicher Spitze systematisch leiser als ein
+       Sinus: seine Energie verteilt sich, der Scheitelfaktor liegt bei
+       etwa vier statt bei Wurzel zwei. Diese rund zehn Dezibel kann man
+       nicht wegrechnen - aber man kann wenigstens die Spitze
+       ausnutzen, statt Kopfraum zu verschenken. */
+    const r = rauschenRosa(n);
+    let spitze = 0;
+    for (let i = 0; i < n; i++){ const a = Math.abs(r[i]); if (a > spitze) spitze = a; }
+    const f = spitze > 1e-9 ? 0.95 / spitze : 1;
+    for (let i = 0; i < n; i++) x[i] = r[i] * f;
   } else {
     for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1;
   }
@@ -16723,7 +16737,17 @@ async function messLauf(neutral){
        Musik gemessen statt an Stille. Genau das machte eine Messreihe
        unbrauchbar: 33 dB Stoerabstand im ersten Lauf, 0 bis 15 dB in
        den folgenden. */
-    const DAUER = art === 'baender' ? 8 : 4, VOR = 3.5, NACH = 0.6;
+    /* WIE LANGE DAS SIGNAL LAEUFT (Caspar_D, 27.08.2026: "ja, auch
+       konvergenz").
+
+       Rauschen laesst sich beliebig lang erzeugen, also laeuft es bis
+       zu 24 Sekunden - abgebrochen wird, sobald die Kurve steht. Sweep
+       und Bandtoene haben eine feste Gestalt: sie laenger laufen zu
+       lassen hiesse, den Sweep zu strecken, und das waere eine andere
+       Messung. Sie behalten ihre Dauer. */
+    const konvergiert = (art === 'rosa' || art === 'weiss');
+    const DAUER = konvergiert ? 24 : (art === 'baender' ? 8 : 4);
+    const VOR = 3.5, NACH = 0.6;
     /* Reserve fuer den Weg zum Lautsprecher. Ueber AirPlay puffern die
        Empfaenger rund zwei Sekunden. */
     const RESERVE = 4;
@@ -16906,6 +16930,38 @@ async function messLauf(neutral){
     const ab  = Math.round(sr * (versatz + 0.3));
     const bis = Math.min(puffer.length, schreib, Math.round(sr * (versatz + genutzt)));
     const kurve = messSpektrum(puffer.subarray(ab, bis), sr);
+
+    /* DER STOERABSTAND JE BAND, nicht breitbandig (27.08.2026 beim
+       Umstieg auf Rauschen aufgefallen).
+
+       Breitbandig gemessen sieht ein Sweep viel besser aus als
+       Rauschen: er legt seine ganze Energie in eine Frequenz, das
+       Rauschen verteilt sie auf alle. Fuer das ERGEBNIS zaehlt aber
+       nicht der Gesamtpegel, sondern wie weit jedes einzelne Band ueber
+       dem Grundgeraeusch liegt - und dort mittelt das Rauschen ueber
+       die volle Zeit, waehrend der Sweep nur vorbeihuscht.
+
+       Also wird der Vorlauf mit demselben Verfahren ausgewertet wie das
+       Signal und Band fuer Band verglichen. Genommen wird der MEDIAN
+       ueber 63 Hz bis 8 kHz: ein einzelnes taubes Band am Rand soll das
+       Urteil nicht kippen. */
+    const rVon = Math.round(sr * Math.max(0, VOR - 1.6));
+    const rBis = Math.round(sr * (VOR - 0.2));
+    let abstandBand = null;
+    if (rBis - rVon > sr * 0.5){
+      const ruheKurve = messSpektrum(puffer.subarray(rVon, rBis), sr);
+      if (ruheKurve.length === kurve.length){
+        const werte = [];
+        for (let i = 0; i < kurve.length; i++){
+          if (kurve[i].f < 63 || kurve[i].f > 8000) continue;
+          werte.push(kurve[i].db - ruheKurve[i].db);
+        }
+        if (werte.length){
+          werte.sort((x, y) => x - y);
+          abstandBand = werte[Math.floor(werte.length / 2)];
+        }
+      }
+    }
     messErgebnis[neutral ? 'neutral' : 'mit'] = kurve;
     messErgebnis.sr = sr;
     /* Der Lauf haengt sich an die Reihe an, statt den vorigen zu
@@ -16929,7 +16985,11 @@ async function messLauf(neutral){
       messErgebnis.pegel = null;
       messErgebnis.neutralLaut = Math.round(+($('lautstaerke') || { value: 0 }).value);
     }
-    messErgebnis[neutral ? 'abstandN' : 'abstandM'] = abstand;
+    /* Der Bandabstand ist der massgebliche Wert; der breitbandige
+       bleibt als Nebenangabe erhalten. */
+    const abstandGilt = (abstandBand !== null) ? abstandBand : abstand;
+    messErgebnis[neutral ? 'abstandN' : 'abstandM'] = abstandGilt;
+    messErgebnis[neutral ? 'breitN' : 'breitM'] = abstand;
     messErgebnis.restrauschen = messLive ? messLive.restrauschen : null;
     messErgebnis.gemessen = genutzt;
     /* Was das Tonstudio in diesem Augenblick laut eigener Rechnung tut -
@@ -16945,13 +17005,14 @@ async function messLauf(neutral){
     const laut = kurve.reduce((a, b) => a + b.db, 0) / kurve.length;
     sagen((neutral ? 'neutraler Durchgang steht' : 'gemessen')
       + ' · ' + laut.toFixed(0) + ' dB im Mittel'
-      + ' · Störabstand ' + abstand.toFixed(0) + ' dB'
+      + ' · Störabstand ' + abstandGilt.toFixed(0) + ' dB je Band'
+      + (abstandBand !== null ? ' (' + abstand.toFixed(0) + ' dB breitbandig)' : '')
       + ' · Laufzeit ' + Math.round((versatz - VOR) * 1000) + ' ms'
       + (konvergiert ? ' · ' + genutzt.toFixed(1).replace('.', ',') + ' s gemessen'
           + (messErgebnis.restrauschen !== undefined && messErgebnis.restrauschen !== null
               ? ', Restrauschen ' + messErgebnis.restrauschen.toFixed(2).replace('.', ',') + ' dB' : '')
         : '')
-      + (abstand < 20 ? ' — zu leise für eine belastbare Messung' : ''));
+      + (abstandGilt < 20 ? ' — zu leise für eine belastbare Messung' : ''));
   } catch (e) {
     sagen('ging nicht: ' + (e && e.message ? e.message : e));
   } finally {
