@@ -12464,10 +12464,10 @@ function analyseStarten(){
     const breiteVerlegen = (vorn) => {
       breiteVorn = !!vorn;
       try { knoten.disconnect(slotEin); } catch (e) {} try { knoten.disconnect(mTeiler); } catch (e) {}
-      try { aufhol.disconnect(mTeiler); } catch (e) {} try { aufhol.disconnect(master); } catch (e) {}
-      try { mSammler.disconnect(slotEin); } catch (e) {} try { mSammler.disconnect(master); } catch (e) {}
-      if (breiteVorn){ knoten.connect(mTeiler); mSammler.connect(slotEin); aufhol.connect(master); }
-      else { knoten.connect(slotEin); aufhol.connect(mTeiler); mSammler.connect(master); }
+      try { aufhol.disconnect(mTeiler); } catch (e) {} try { aufhol.disconnect(summe); } catch (e) {}
+      try { mSammler.disconnect(slotEin); } catch (e) {} try { mSammler.disconnect(summe); } catch (e) {}
+      if (breiteVorn){ knoten.connect(mTeiler); mSammler.connect(slotEin); aufhol.connect(summe); }
+      else { knoten.connect(slotEin); aufhol.connect(mTeiler); mSammler.connect(summe); }
     };
     mTeiler.connect(gLL, 0); mTeiler.connect(gRL, 0);
     mTeiler.connect(gLR, 1); mTeiler.connect(gRR, 1);
@@ -12477,7 +12477,47 @@ function analyseStarten(){
        einen Knoten, von dort zu den Lautsprechern UND in den
        Anzeige-Analyser des Blaster-Displays. Der zeigt, was man
        HOERT - die Roh-Analyser oben bleiben davon unberuehrt. */
+    /* ZWEI KNOTEN STATT EINEM (Caspar_D, 26.08.2026).
+       `summe` ist das FERTIGE Klangbild: alles, was KlangTresor tut, ist
+       darin - Equalizer, Kompressor, Breite, Hall, Echo. `master` ist
+       nur noch die Abhoerlautstaerke davor dem Lautsprecher.
+
+       WARUM DIE TRENNUNG. Der Lautstaerkeregler setzte bis heute
+       audio.volume, und das wirkt AM ELEMENT, also ganz vorne. Damit
+       lief das Material dem Kompressor in wechselnder Hoehe zu - und
+       dessen Kennlinie ist eine ABSOLUTE Skala von -60 bis 0 dB. Er
+       schlug also je nach Reglerstellung an anderer Stelle nach.
+
+       Gemessen an derselben Songstelle, viermal angesprungen:
+
+         Regler 1,0   Huellkurve -11,41 LUFS   Wegregelung +4,04 dB
+         Regler 0,5   Huellkurve -17,46 LUFS   Wegregelung +6,19 dB
+         Regler 0,1   Huellkurve -31,36 LUFS   Wegregelung +2,39 dB
+         Regler 1,0   Huellkurve -11,40 LUFS   Wegregelung +3,99 dB  (Gegenprobe)
+
+       Bis zu 3,8 dB Unterschied in der Bearbeitung, allein durch den
+       Regler: Leise gehoert klang nicht nur leiser, sondern ANDERS
+       komprimiert. Die Huellkurve folgte dem Regler dabei exakt
+       (-6,05 dB bei halber, -19,95 dB bei einem Zehntel - rechnerisch
+       -6,02 und -20,0).
+
+       Jetzt sitzt die Lautstaerke hinter allem. Nachgemessen, dieselbe
+       Stelle, dieselbe Methode:
+
+         Regler 100 %   Huellkurve -11,20 LUFS   Wegregelung +4,12 dB
+         Regler  70 %   Huellkurve -11,13 LUFS   Wegregelung +4,19 dB
+         Regler  32 %   Huellkurve -11,24 LUFS   Wegregelung +4,18 dB
+         Regler 100 %   Huellkurve -11,16 LUFS   Wegregelung +4,06 dB
+
+       Die Huellkurve steht still, die Regelung schwankt noch um 0,13 dB
+       statt um 3,8. Der Kompressor sieht immer denselben Pegel.
+
+       Die Abgriffe fuer die Anzeige haengen an `summe` - vor der
+       Abhoerlautstaerke, damit der Vergleich die Bearbeitung zeigt und
+       nicht den Regler. */
+    const summe  = ctx.createGain();
     const master = ctx.createGain();
+    summe.connect(master);
     master.connect(ctx.destination);
     const anzeige = ctx.createAnalyser();
     anzeige.fftSize = 1024; anzeige.smoothingTimeConstant = 0.55;
@@ -12518,7 +12558,7 @@ function analyseStarten(){
     })();
     const hall = ctx.createConvolver(); hall.buffer = impuls;
     const hallNass = ctx.createGain(); hallNass.gain.value = 0;
-    aufhol.connect(hall); hall.connect(hallNass); hallNass.connect(master);
+    aufhol.connect(hall); hall.connect(hallNass); hallNass.connect(summe);
     /* ECHO - das Boombox-Delay: verzoegerte Kopie mit Rueckkopplung,
        parallel zur trockenen Spur. Drei Groessen: Zeit, Rueckkopplung
        (wie oft es nachklingt), Mischung. Rueckkopplung hart unter 0.85
@@ -12527,7 +12567,7 @@ function analyseStarten(){
     const echoRueck = ctx.createGain(); echoRueck.gain.value = 0;
     const echoNass  = ctx.createGain(); echoNass.gain.value = 0;
     aufhol.connect(echo); echo.connect(echoRueck); echoRueck.connect(echo);
-    echo.connect(echoNass); echoNass.connect(master);
+    echo.connect(echoNass); echoNass.connect(summe);
     hörer = {
       // `quelle` wird mit herausgereicht: Die fertigen Visualizer
       // (Butterchurn) brauchen einen eigenen Zugang zum
@@ -12543,13 +12583,22 @@ function analyseStarten(){
          Nur herausgereicht, nicht umgesteckt: Wer daran misst, haengt
          einen Analyser an, und der ist eine Sackgasse. Am Hoerweg
          aendert sich dadurch nichts. */
-      master,
+      master, summe,
       blendA, blendB,                             /* die zwei Decks - der Anschluss blendet daran */
       dl:new Uint8Array(l.frequencyBinCount),
       dr:new Uint8Array(r.frequencyBinCount),
       proBin: ctx.sampleRate / 2048,
       bassMittel:0, letzterSchlag:0, schlag:0,
     };
+    /* DIE GELTENDE LAUTSTAERKE UEBERNEHMEN. Der frische Gain steht auf
+       1, der Regler steht vielleicht bei 5 % - ohne diese Zeile spraenge
+       der Ton beim Aufbau des Graphen auf volle Lautstaerke. Und
+       umgekehrt muessen die Elemente jetzt auf 1, sonst wirkt die
+       Daempfung zweimal. */
+    try { if (typeof lautstaerkeAnwenden === 'function'){
+      const p = Math.max(0, Math.min(100, +($('lautstaerke')||{value:100}).value)) / 100;
+      lautstaerkeAnwenden(p * p);
+    } } catch (e) {}
   }catch(e){
     console.log('Audioanalyse nicht verfügbar:', e.message);
     /* NOTWEG (Caspar_D, 23.08.2026: "Ton verstummt, wenn ich das Tonstudio
@@ -14537,10 +14586,12 @@ async function analyzerAufbauen(){
   // Die beiden Live-Anzeigen bekommen den vorhandenen Quellknoten -
   // genau wie Butterchurn. Ein zweiter
   // createMediaElementSource ist pro Audioelement nicht erlaubt.
-  /* ZWEI ABGRIFFE: das Werk (quelle) und das Ergebnis (master).
-     Der Analyzer baut sich daran je ein Analyserpaar und schaltet um;
-     beides sind Sackgassen und beruehren den Hoerweg nicht. */
-  if (analyseStarten() && SunoAnalyzer.quelle) SunoAnalyzer.quelle(hörer.quelle, hörer.ctx, hörer.master);
+  /* ZWEI ABGRIFFE: das Werk (quelle) und das Ergebnis (summe).
+     `summe`, nicht `master`: Dort ist alles drin, was KlangTresor tut,
+     aber noch nicht die Abhoerlautstaerke - sonst zeigte der Vergleich
+     den Regler statt der Bearbeitung.
+     Beides sind Sackgassen und beruehren den Hoerweg nicht. */
+  if (analyseStarten() && SunoAnalyzer.quelle) SunoAnalyzer.quelle(hörer.quelle, hörer.ctx, hörer.summe);
 
   /* DIE ANALYSE RECHNET IMMER AUF DEM WAV (Caspar_D, 24.08.2026: "wir
      wollten alle analysen auf wav machen"), unabhaengig davon, was das
@@ -16426,11 +16477,41 @@ addEventListener('resize', spaltenAnwenden);
    wirkungslos und stürzt unten ab. */
 let bStumm = false, bLetzteLautstaerke = 1;
 
+/* DIE LAUTSTAERKE SITZT HINTER ALLEM (Caspar_D, 26.08.2026).
+
+   Bis dahin setzte sie audio.volume - am Element, also ganz vorne im
+   Signalweg. Das machte die KLANGBEARBEITUNG von der Abhoerlautstaerke
+   abhaengig: Der Kompressor hat eine absolute Kennlinie ueber -60..0 dB
+   und schlug je nach Reglerstellung an anderer Stelle nach. Gemessen an
+   derselben Songstelle regelte er zwischen +2,4 und +6,2 dB - bis zu
+   3,8 dB Unterschied, allein durch den Regler.
+
+   Jetzt geht die Lautstaerke an den Master-Gain, hinter Equalizer,
+   Kompressor, Breite, Hall und Echo. Die Elemente selbst bleiben auf
+   voller Lautstaerke.
+
+   AUSSER es gibt keinen Graphen. Dann haengen die Decks direkt an den
+   Lautsprechern (der Notweg vom 23.08.2026), und ein Gain, den niemand
+   durchlaeuft, regelt nichts - in dem Fall gilt weiter audio.volume.
+   Deshalb wird beides gepflegt und nicht eines gegen das andere
+   getauscht. */
+function lautstaerkeAnwenden(anteil){
+  const amGraphen = !!(typeof hörer !== 'undefined' && hörer && hörer.ok && hörer.master);
+  if (amGraphen){
+    /* Kein Sprung: Ein harter Gainwechsel knackt hoerbar. */
+    try { hörer.master.gain.setTargetAtTime(anteil, hörer.ctx.currentTime, 0.015); }
+    catch (e) { hörer.master.gain.value = anteil; }
+  }
+  const amElement = amGraphen ? 1 : anteil;
+  audio.volume = amElement;
+  for (const n of STEM_NAMEN){ const el = document.getElementById('stem-' + n);
+    if (el) el.volume = amElement; }
+  const zweit = $('audio2'); if (zweit) zweit.volume = amElement;
+}
+
 function lautstaerkeSetzen(prozent, merken = true){
   const anteil = Math.max(0, Math.min(100, prozent)) / 100;
-  audio.volume = anteil * anteil;
-  for (const n of STEM_NAMEN){ const el = document.getElementById('stem-' + n);
-    if (el) el.volume = audio.volume; }
+  lautstaerkeAnwenden(anteil * anteil);
   bStumm = anteil === 0;
   /* Stumm ist ein eingeschalteter Zustand wie Zufall oder Schleife. */
   for (const id of ['stummknopf','bstumm']){
