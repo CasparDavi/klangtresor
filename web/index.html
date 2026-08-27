@@ -1865,6 +1865,9 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 .messkopf #messmikro{flex:1 1 320px;min-width:260px;max-width:520px}
 .messkopf .messdauer{font-size:11px;color:var(--schwach);letter-spacing:.04em}
 .messkopf .messluecke{flex:1 1 20px}
+/* Der Abbruch faellt auf, weil er in einem Moment gebraucht wird, in
+   dem man nicht suchen will. */
+.messabbruch{border-color:#f9b414;color:#f9b414}
 /* Die beiden Knoepfe gehoeren zusammen und stehen deshalb enger
    beieinander als zum Rest: halbe Luecke. */
 .messkopf #messneutral{margin-right:-5px}
@@ -2736,6 +2739,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
              auf dem Weg begrenzt. -->
         <button class="knopf" id="messpegelreihe" onclick="pegelReihe()"
           title="Fährt die Lautstärke in Stufen durch und mißt jedesmal. Zeigt, ob die Kette linear bleibt oder ab einem Punkt zurückregelt.">Lautstärke durchfahren</button>
+        <button class="knopf messabbruch" id="messabbruch" onclick="messAbbrechen()" hidden
+          title="Bricht die laufende Messung ab. Ein Geräusch im Raum verdirbt sie ohnehin.">Abbrechen</button>
         <button class="knopf" id="messleeren" onclick="messReiheLeeren()"
           title="Löscht die gesammelten Durchgänge. Die neutrale Bezugsmessung bleibt.">Reihe leeren</button>
         <span class="messluecke"></span>
@@ -9376,6 +9381,12 @@ let anschlussLaeuft = false;     /* waehrend der Naht: onended haelt sich zuruec
    (Caspar_D, 27.08.2026: "es kommt immer noch sofort musik nach dem
    ton") */
 let messLaeuft = false;
+/* Eine laufende Messung muss man stoppen koennen. Ein Huesteln, ein
+   Anruf, ein Tippen auf der Tastatur - alles steht nachher als Buckel
+   in der Kurve, und ohne Abbruch muesste man eine Minute lang
+   zusehen, wie eine verdorbene Reihe zu Ende laeuft (Caspar_D,
+   27.08.2026: "ich habe auf der Tastatur geschrieben"). */
+let messAbbruch = false;
 let anschlussVorgemerkt = null;  /* bei Zufall der schon gewuerfelte Naechste */
 let anschlussUhr = null, anschlussRampe = null;
 let anschlussAusklang = null;    /* das Deck, das nach der Uebergabe noch zu Ende klingen darf */
@@ -16361,6 +16372,8 @@ async function messLauf(neutral){
   if (knopf && knopf.disabled) return;
   if (knopf) knopf.disabled = true;
   if (knopf2) knopf2.disabled = true;
+  messAbbruch = false;
+  messAbbruchKnopf(true);
 
   const liefMusik = !audio.paused;
   if (liefMusik) audio.pause();
@@ -16477,8 +16490,24 @@ async function messLauf(neutral){
     await new Promise((f, x) => { audio.oncanplaythrough = f; audio.onerror = x; audio.load(); });
     sagen(neutral ? 'messe neutral …' : 'messe …');
     await audio.play();
-    /* Notbremse, falls der Audio-Thread stockt: doppelte Aufnahmezeit */
-    await Promise.race([ voll, new Promise(r => setTimeout(r, AUF * 2000)) ]);
+    /* Notbremse, falls der Audio-Thread stockt: doppelte Aufnahmezeit.
+       Und der Abbruch, der jederzeit dazwischenkommen darf. */
+    const abbruchWache = new Promise(r => {
+      const sehen = () => { if (messAbbruch) r('abbruch'); else setTimeout(sehen, 120); };
+      sehen();
+    });
+    const wieAus = await Promise.race([
+      voll.then(() => 'voll'), abbruchWache,
+      new Promise(r => setTimeout(() => r('notbremse'), AUF * 2000)),
+    ]);
+    if (wieAus === 'abbruch'){
+      audio.pause();
+      knoten.disconnect(); quelle.disconnect();
+      try { schau.disconnect(); } catch (e5) {}
+      messLiveEnde(); URL.revokeObjectURL(url);
+      sagen('abgebrochen — nichts gemessen');
+      return;
+    }
 
     audio.pause();                  /* die Stille am Ende braucht niemand */
     knoten.disconnect(); quelle.disconnect();
@@ -16613,7 +16642,20 @@ async function messLauf(neutral){
     if (liefMusik) audio.play().catch(() => {});
     if (knopf) knopf.disabled = false;
     if (knopf2) knopf2.disabled = false;
+    if (!pegelReiheLaeuft) messAbbruchKnopf(false);
   }
+}
+
+/* Der Abbruchknopf erscheint nur, solange etwas laeuft - ein Knopf, der
+   die meiste Zeit nichts tut, ist Moebel. */
+let pegelReiheLaeuft = false;
+function messAbbruchKnopf(an){
+  const k = $('messabbruch'); if (!k) return;
+  k.hidden = !an;
+}
+function messAbbrechen(){
+  messAbbruch = true;
+  const e = $('messstand'); if (e) e.textContent = 'breche ab …';
 }
 
 /* DAS BILD. Zwei Kurven, wenn beide Durchgaenge da sind, und dazwischen
@@ -17020,6 +17062,7 @@ async function pegelReihe(){
   const merkLaut = Math.round(+($('lautstaerke') || { value: 60 }).value);
   const merkEq = (typeof eqAus !== 'undefined') ? eqAus : null;
   if (k) k.classList.add('an');
+  messAbbruch = false; pegelReiheLaeuft = true; messAbbruchKnopf(true);
   messErgebnis.pegel = [];
   sagen('Bitte jetzt Ruhe — ' + MESS_STUFEN.length + ' Durchgänge, zusammen gut eine Minute. '
     + 'Die Lautstärke wird dabei von ' + MESS_STUFEN[0] + ' % auf '
@@ -17027,6 +17070,8 @@ async function pegelReihe(){
   await new Promise(r => setTimeout(r, 1600));
   try {
     for (let i = 0; i < MESS_STUFEN.length; i++){
+      if (messAbbruch){ sagen('Reihe abgebrochen — die Durchgänge davor sind verworfen.');
+        messErgebnis.pegel = null; break; }
       const stufe = MESS_STUFEN[i];
       sagen('Lautstärke ' + stufe + ' % — Durchgang ' + (i + 1) + ' von ' + MESS_STUFEN.length + ' …');
       lautstaerkeSetzen(stufe);
@@ -17054,6 +17099,7 @@ async function pegelReihe(){
     lautstaerkeSetzen(merkLaut);
     if (merkEq !== null && typeof eqAusSetzen === 'function') eqAusSetzen(merkEq);
     if (k) k.classList.remove('an');
+    pegelReiheLaeuft = false; messAbbruchKnopf(false);
     /* Die Reihe hat die Bezugsmessung mit ihrer letzten Stufe
        überschrieben - das muß dazugesagt werden, sonst vergleicht
        jemand später gegen einen anderen Pegel. */
