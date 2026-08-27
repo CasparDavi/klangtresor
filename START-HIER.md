@@ -391,6 +391,17 @@ wählen.
 - **Suno hat etwas geändert:** `browser/01-erkundung.js` in der
   Browserkonsole ausführen; es zeigt, welche Schnittstellen noch
   antworten.
+- **npm warnt „install scripts not yet covered by allowScripts":**
+  Kein Fehler, und nichts fehlt. Seit npm 11 will npm wissen, welche
+  Pakete beim Installieren eigene Skripte ausführen dürfen — eine Folge
+  der Einschleusungen über npm-Pakete. KlangTresor hat genau eines
+  davon: `onnxruntime-node` holt damit die KI-Laufzeit für den
+  Klangraum. Die Freigabe steht seit dem 27.08.2026 in der
+  `package.json`. Siehst du die Meldung trotzdem, ist deine Fassung
+  älter — lade sie neu, oder führe einmal
+  `npm approve-scripts onnxruntime-node` aus. Bei npm 11 läuft
+  unterdessen alles, es ist bloß eine Warnung; ab npm 12 blockiert npm
+  ohne die Freigabe.
 
 <details><summary>Der alte Weg über die Browserkonsole</summary>
 
