@@ -6610,13 +6610,23 @@
          mit Gruen kaeme die Mischung bei Tuerkis heraus und traefe den
          Akzent nicht. Deshalb Blaugruen.
 
-         MIT HELLIGKEITSKOMPENSATION: Die Ueberlappung ist die HELLSTE
-         der drei und zugleich die Hausfarbe des Kanals. Sie ist der
-         Ort, an dem sich beide Signale decken - und das ist der
-         Normalfall, der ruhig dominieren darf. */
+         DIE DECKUNG IST SCHWARZ (Caspar_D, 26.08.2026: "lass uns den
+         overlap schwarz machen"). Erst trug sie die Hausfarbe und war
+         die hellste der drei - das zeigte vor allem den Normalfall,
+         also das, was gleich geblieben ist. Schwarz dreht die Aussage
+         um: Was sich deckt, sinkt als dunkle Silhouette in den Grund,
+         und es leuchtet nur noch, WO SICH ETWAS GEAENDERT HAT. Das Bild
+         zeigt damit die Bearbeitung selbst statt des Materials.
+
+         Reines Schwarz, nicht die Grundfarbe (#0a0a0a): So bleibt die
+         Silhouette als Andeutung erkennbar - man sieht, worauf sich die
+         Unterschiede beziehen, ohne dass es um Aufmerksamkeit
+         konkurriert. */
       var UEBER = {
-        links:  { codiert:'#a06000', deckung:'#f97b14', ausgabe:'#b02038', asym:'#f9ccb2' },
-        rechts: { codiert:'#106a8c', deckung:'#4b93f0', ausgabe:'#2a4bf0', asym:'#aec7e7' },
+        links:  { codiert:'#f9b414', deckung:'#000000', ausgabe:'#f9143c',
+                  linie:'#f97b14', asym:'#f9ccb2' },
+        rechts: { codiert:'#14b4a0', deckung:'#000000', ausgabe:'#2a4bf0',
+                  linie:'#4b93f0', asym:'#aec7e7' },
       };
       var aL=mk(), aR=mk();
       try{
@@ -6737,23 +6747,36 @@
               var aH=Math.round(fcL[bin]/255*halb), aHr=Math.round(fcR[bin]/255*halb);
               var dL=Math.min(hL,aH), dR=Math.min(hR,aHr);
               var oL=UEBER.links, oR=UEBER.rechts;
-              ctx.globalAlpha=0.5;
+              /* Die Deckung voll deckend, nicht halb: Sie soll den Grund
+                 wirklich verdraengen, sonst schimmert das Raster durch
+                 und macht aus der Silhouette ein Gitter. */
+              ctx.globalAlpha=1;
               ctx.fillStyle=oL.deckung; ctx.fillRect(x,mitte-dL,1,dL);
               ctx.fillStyle=oR.deckung; ctx.fillRect(x,mitte,1,dR);
+              ctx.globalAlpha=0.5;
               if(hL>dL){ ctx.fillStyle=oL.codiert; ctx.fillRect(x,mitte-hL,1,hL-dL); }
               if(aH>dL){ ctx.fillStyle=oL.ausgabe; ctx.fillRect(x,mitte-aH,1,aH-dL); }
               if(hR>dR){ ctx.fillStyle=oR.codiert; ctx.fillRect(x,mitte+dR,1,hR-dR); }
               if(aHr>dR){ ctx.fillStyle=oR.ausgabe; ctx.fillRect(x,mitte+dR,1,aHr-dR); }
               ctx.globalAlpha=1;
-              var kL=Math.max(hL,aH), kR=Math.max(hR,aHr);
-              if(kL>0){ ctx.fillStyle=(hL>aH?oL.codiert:aH>hL?oL.ausgabe:oL.deckung);
-                        ctx.fillRect(x,mitte-kL,1,1); }
-              if(kR>0){ ctx.fillStyle=(hR>aHr?oR.codiert:aHr>hR?oR.ausgabe:oR.deckung);
-                        ctx.fillRect(x,mitte+kR-1,1,1); }
-              /* Wo ein Ueberstand aufsitzt, traegt auch die Deckung ihre
-                 Kante - sonst verschwimmen beide ineinander. */
-              if(dL>0&&kL>dL){ ctx.fillStyle=oL.deckung; ctx.fillRect(x,mitte-dL,1,1); }
-              if(dR>0&&kR>dR){ ctx.fillStyle=oR.deckung; ctx.fillRect(x,mitte+dR-1,1,1); }
+              /* DIE TOPLINE GEHOERT DEM EINGANG (Caspar_D, 26.08.2026:
+                 "nur das eingangsignal bekommt eine topline, dann sieht
+                 man immer gleich, ob ich drunter oder drüber bin").
+
+                 Sie steht immer auf der Hoehe des CODIERTEN Signals,
+                 gleichgueltig ob die Ausgabe darueber oder darunter
+                 liegt - dadurch ist sie eine feste Bezugslinie und kein
+                 Umriss. Was oberhalb leuchtet, wurde angehoben; was
+                 unterhalb fehlt, wurde weggenommen.
+
+                 Sie traegt die Hausfarbe des Kanals. Die ist frei
+                 geworden, seit die Deckung schwarz ist - und sie ist
+                 genau die Farbe, die man mit "dieser Kanal" verbindet. */
+              if(hL>0){ ctx.fillStyle=oL.linie; ctx.fillRect(x,mitte-hL,1,1); }
+              if(hR>0){ ctx.fillStyle=oR.linie; ctx.fillRect(x,mitte+hR-1,1,1); }
+              /* Keine Kante auf der Deckung: Sie ist schwarz, eine
+                 schwarze Linie auf Schwarz waere nichts. Die Grenze
+                 zeichnet der Ueberstand selbst, indem er dort beginnt. */
               continue;
             }
             var gemein=Math.min(hL,hR);
@@ -6809,14 +6832,16 @@
          muss auch etwas anderes darunter stehen. */
       if(u && _signalModus==='beide'){
         u.innerHTML =
-          'Beide Signale übereinander. Was sich <b>deckt</b>, trägt die Hausfarbe des Kanals — '
-        + '<span style="color:#f97b14">orange</span> links, '
-        + '<span style="color:#4b93f0">blau</span> rechts. Wo etwas übersteht, sagt die Farbe, '
-        + 'welches Signal weiter reicht: <span style="color:#c98000">gelb</span> bzw. '
-        + '<span style="color:#2ba7d8">blaugrün</span>, wenn das <b>codierte</b> höher steht — '
-        + 'dort nimmt KlangTresor weg. <span style="color:#e04a60">Rot</span> bzw. '
-        + '<span style="color:#5a72f5">blau</span>, wenn das <b>Ausgabe-Signal</b> höher steht — '
-        + 'dort hebt es an. Die Deckung ist der Normalfall und darum die hellste der drei Farben.';
+          'Beide Signale übereinander — und zwar so, daß nur der <b>Unterschied</b> leuchtet. '
+        + 'Was sich deckt, bleibt schwarz: Es ist als Silhouette zu erkennen, aber es ist auch '
+        + 'das, was KlangTresor nicht verändert hat. Farbe hat nur, wo sich etwas ändert. '
+        + '<span style="color:#f9b414">Gelb</span> und '
+        + '<span style="color:#14b4a0">blaugrün</span> heißt: das <b>codierte</b> Signal steht '
+        + 'höher, dort wird weggenommen. <span style="color:#f9143c">Rot</span> und '
+        + '<span style="color:#5a72f5">blau</span> heißt: das <b>Ausgabe-Signal</b> steht höher, '
+        + 'dort wird angehoben. Die <span style="color:#f97b14">durchgehende Linie</span> steht '
+        + 'immer auf der Höhe des <b>Eingangs</b> — an ihr liest man sofort ab, ob die Ausgabe '
+        + 'darüber oder darunter liegt. Oben der linke Kanal, unten der rechte.';
         return;
       }
       if(u) u.innerHTML =
