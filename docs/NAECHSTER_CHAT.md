@@ -1,4 +1,4 @@
-# Für den nächsten Chat — Stand 26.08.2026, abends
+# Für den nächsten Chat — Stand 27.08.2026
 
 ## In drei Sätzen
 
@@ -1145,3 +1145,102 @@ Kennzeichnung ist Vorsorge, keine Anzeige.
 - Ein Neustart des Servers zerreißt einen laufenden Panel-Lauf:
   `community-profile.js` läuft als Waise weiter, `hirsch` wird nie
   gestartet, und der Stand behauptet „fertig".
+
+
+## Stand 27.08.2026 — Analyzer, Audiokette, Einmessen
+
+Der Tag hat den Analyzer und den Tonpfad umgebaut. Ein Fund darin war
+mehr als eine Anzeigesache.
+
+### Der Klangfehler, der dabei auffiel
+
+Caspar_D fragte, ob leise Töne überhaupt noch im Equalizer ankommen.
+Antwort: im Equalizer ja (lineare Filter, Fließkomma), im **Kompressor
+nicht** — der arbeitet mit einer absoluten Kennlinie über −60…0 dB. Der
+Lautstärkeregler saß am Abspielelement, also davor.
+
+```
+vorher:  Element(Lautstärke) → EQ → Kompressor → … → master → Ausgang
+nachher: Element → EQ → Kompressor → … → summe → master(Lautstärke) → Ausgang
+```
+
+Gemessen an derselben Songstelle, mit Gegenprobe: Die Wegregelung
+schwankte zwischen **+2,4 und +6,2 dB**, allein durch den Regler. Nach
+dem Umbau steht die Hüllkurve bei −11,2 LUFS und die Regelung schwankt
+um 0,13 dB. Details in HAUSREGELN.md.
+
+**Neu im Graphen:** `summe` nimmt auf, was früher direkt in `master`
+lief (trockener Weg, Hall, Echo). `master` ist jetzt nur noch die
+Abhörlautstärke. Beide stehen im `hörer`-Objekt.
+
+### Das Spektrum zeigt jetzt die Kette
+
+Drei Register über dem Frequenzspektrum:
+
+| | |
+|---|---|
+| **Signal aus der Sound-Datei** | Abgriff an `quelle`, vor jedem Eingriff |
+| **Anpassung im Tonstudio [EQ]** | Abgriff an `summe`, nach allem — aber vor der Lautstärke |
+| **Überlagert** | beides übereinander |
+
+Im Overlay ist die **Deckung schwarz**: Es leuchtet nur, wo sich etwas
+ändert (gemessen 5,7 % der Fläche). Die **Topline gehört dem Eingang** —
+eine feste Bezugslinie in der Hausfarbe des Kanals. Gelb bzw. blaugrün
+heißt, das Dateisignal steht höher (Tonstudio nimmt weg), rot bzw. blau,
+die Anpassung steht höher (es hebt an).
+
+Die Farben folgen Caspar_Ds Vorgabe: **Absorptionsfarben mit
+Helligkeitskompensation**, nicht additiv. Beim rechten Kanal wurde aus
+Grün Blaugrün, weil unser Blau im Farbton fast reines Blau ist (256°
+gegen 267°) — mit Grün käme die Mischung bei Türkis heraus.
+
+Die **Summendarstellung verschwindet im Overlay**: Sie legt beide Kanäle
+zusammen, darin ist kein Platz für zwei Signale übereinander.
+
+### Einmessen am Hörplatz
+
+Neue Lasche im Tonstudio. Drei Signale, nachgemessen über 31
+Terzbänder: Sweep −3,20 dB/Oktave, rosa −3,03, weiß −0,04. Der Prüfton
+nimmt den Musikweg (WAV über das Abspielelement), sonst käme er nicht
+über AirPlay.
+
+**Zwei Durchgänge sind Pflicht.** Eine einzelne Messung ist keine
+Eichung — sie zeigt Lautsprecher, Raum und Mikrofon mit. Erst die
+Differenz (neutral gegen eingestellt) zeigt das Tonstudio allein.
+
+> **Noch nicht mit dem Mikrofon geprüft.** Im Browserfenster der
+> Werkstatt ist es gesperrt; geprüft sind Signalerzeugung,
+> Spektrumrechnung und Zeichnung. Der erste echte Lauf steht aus.
+
+### Kleineres
+
+- **Kopiersymbol** in Stil-Prompt und Liedtext, oben rechts im Textfeld,
+  ohne Fläche, erscheint beim Überfahren.
+- **Hinter dem Tonstudio läßt sich scrollen** — `#studio` spannte die
+  volle Breite und fing links und rechts vom Kasten (je 471 px) alles ab.
+- **Der Erklärkasten zur Audiokette** ist von zwei Stellen erreichbar:
+  (i) im Analyzer und (i) in der Kopfzeile des Tonstudios. Der Text
+  liegt in `audioketteErklaeren()` in index.html — eine Quelle, zwei
+  Zugänge.
+- **Einmess-Panel gestaltet** nach den Hausregeln: Kopfzeile mit Flex
+  statt Wortabständen (vorher 3–5 px), gleiche Höhen, Legende statt
+  Fließtext, Bedienung und Erklärung zweispaltig 4:6.
+
+### Offen
+
+- **Das Tonstudio als freies Fenster** (Caspar_D, 27.08.: „es ist wohl
+  langsam nötig, das tonstudio zu einem extra fenster zu machen, was
+  positionell nicht eingeschränkt ist"). Es ist unten festgenagelt,
+  spannt die volle Breite und wächst mit jeder Lasche. Verschiebbar
+  wäre die richtige Antwort — dann bräuchte es auch das Durchreichen
+  der Mausereignisse nicht mehr.
+- **Die Einmessung mit dem Mikrofon prüfen.** Erster echter Lauf.
+- **Mehrere Einstellungen durchmessen** — angefangen, aber der Browser
+  hing beim Umschalten des Equalizers während laufender Messung. Ein
+  eigener Anlauf wert: Der Weg über zwei Analyser an `quelle` und
+  `summe` braucht kein Mikrofon.
+- Ob das Ausgabe-Signal die Abhörlautstärke enthalten soll (derzeit
+  nicht — sonst zeigte der Vergleich den Regler statt der Bearbeitung).
+- Ob im Overlay auch die Stereo-Asymmetrie erscheinen soll; dafür war
+  „etwas heller als die Farben, aber nicht weiß" vorgesehen.
+

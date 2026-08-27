@@ -589,6 +589,75 @@ nicht mit dem Code.
 
 ---
 
+## Was absolut mißt, gehört hinter den Lautstärkeregler
+
+**Caspar_D, 26.08.2026,** auf die Frage, ob leise Töne überhaupt noch im
+Equalizer ankommen: *„Mach die Tests."*
+
+Sie haben einen echten Klangfehler belegt. Der Lautstärkeregler saß am
+Abspielelement, also **ganz vorne**. Lineare Filter stört das nicht —
+Fließkomma verliert nichts, wenn ein Signal leiser ankommt. Aber der
+Kompressor arbeitet mit einer **absoluten** Kennlinie von −60 bis 0 dB
+und schlug je nach Reglerstellung an anderer Stelle nach:
+
+| Regler | Hüllkurve | Wegregelung |
+|---|---|---|
+| 1,0 | −11,41 LUFS | +4,04 dB |
+| 0,5 | −17,46 LUFS | **+6,19 dB** |
+| 0,1 | −31,36 LUFS | **+2,39 dB** |
+| 1,0 (Gegenprobe) | −11,40 LUFS | +3,99 dB |
+
+Bis zu **3,8 dB** Unterschied in der Bearbeitung, allein durch den
+Regler: Leise gehört klang nicht nur leiser, sondern **anders
+komprimiert**.
+
+Daraus die Regel: **Jede Stufe mit absoluter Pegelschwelle muß vor dem
+Lautstärkeregler liegen.** Kompressoren, Limiter, Gates, alles mit
+Kennlinie oder Schwelle. Die Abhörlautstärke gehört ans Ende der Kette,
+sonst verändert sie nicht nur, *wie laut* man hört, sondern *was*.
+
+Nach dem Umbau steht die Hüllkurve bei −11,2 LUFS, unabhängig vom
+Regler; die Regelung schwankt noch um 0,13 dB.
+
+**Und zwei Fallstricke, die dabei sichtbar wurden:** Ein frisch
+gebauter Gain steht auf 1 — ohne Übernahme der geltenden
+Reglerstellung springt der Ton beim Aufbau des Graphen auf volle
+Lautstärke. Und wo es keinen Graphen gibt (der Notweg vom 23.08.), regelt
+ein Gain nichts, den niemand durchläuft; dort gilt weiter
+`audio.volume`. Beides wird gepflegt, nicht eines gegen das andere
+getauscht.
+
+---
+
+## Ein Vergleich zeigt nur dann die Bearbeitung, wenn alles andere gleich bleibt
+
+**Caspar_D, 26.08.2026:** *„roh ist roh, Lautstärke wirkt darauf nicht"*
+— und später, zum Einmessen: *„du kannst dir gern ein Eichprogramm
+bauen."*
+
+Beides führt auf dieselbe Einsicht. Wer zwei Zustände vergleicht, muß
+**alles außer dem Unterschied konstant halten** — dann kürzt sich der
+Rest von selbst heraus, und man braucht ihn gar nicht zu kennen.
+
+**Im Spektrum:** Der Lautstärkeregler steckt in beiden Kurven
+gleichermaßen und fällt im Abstand zwischen ihnen heraus. Deshalb wird
+er *nicht* herausgerechnet — zwei Versuche das zu tun scheiterten beide
+daran, daß sie Rauschen mit heraufholten. Was in beiden Messungen
+steckt, stört nicht.
+
+**Beim Einmessen:** Ein Mikrofon nimmt das Produkt aus Signal,
+Lautsprecher, Raum und Mikrofon auf. Ohne Meßmikrofon läßt sich das
+nicht trennen — eine einzelne Messung ist **keine Eichung**. Aber die
+Differenz zweier Durchgänge (neutral gegen eingestellt) zeigt die
+Bearbeitung allein, weil Mikrofon, Lautsprecher und Raum in beiden
+dieselben sind.
+
+**Die Gegenprobe gehört dazu.** Beide Meßreihen wiederholen den ersten
+Zustand am Ende. Trifft die Wiederholung den Anfangswert (gemessen: auf
+0,05 dB), sind die Unterschiede dazwischen echt und kein Meßrauschen.
+
+---
+
 ## Zu zweit am Projekt
 
 Seit dem 26.08.2026 arbeitet Tarja (`myinqi`) mit Schreibrecht am Repo

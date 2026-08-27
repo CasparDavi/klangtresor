@@ -1823,10 +1823,60 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   box-shadow:0 18px 60px rgba(0,0,0,.55), 0 -12px 44px rgba(0,0,0,.5)}   /* Akzentrand + der Haus-Schlagschatten (wie #cap): sonst verschwimmt der Kasten mit dem Raster (Caspar_D, 20.08.2026) */
 #studiokopf{position:sticky;top:-22px;margin-top:-22px;padding-top:22px;background:#0a0b0e;z-index:3}   /* Kopf mit A/B, Quelle und Stufen bleibt beim Rollen stehen */
 #studiokopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* Das (i) in der Kopfzeile: leise, in der Reihe der Stufenschalter,
+   aber ohne deren Rahmen - es schaltet nichts, es erklaert. Die
+   ID-Regel ist noetig, weil #studiokopf button die Knopfform setzt
+   (Spezifitaetsfalle, Hausregel 18). */
+#studiokopf #studioinfo{background:none;border:none;padding:0 2px;margin-left:2px;
+  color:var(--schwach);cursor:pointer;line-height:0;display:flex;align-items:center;
+  min-width:0;box-shadow:none}
+#studiokopf #studioinfo:hover{color:var(--text)}
+#studiokopf #studioinfo .ico{width:15px;height:15px}
 #studiotitel{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--text);
   font-weight:700;margin:0 auto 0 0}
 /* Registerlaschen - dieselbe Form wie Tracks/Playlists oben:
    unterstrichene Reiter, kein Pillen-Klon. */
+/* ---- EINMESSEN -------------------------------------------------------
+   Abstaende als Verhaeltnisse (Hausregel 17): Der Grundwert ist 10 px.
+   Innerhalb einer Gruppe die Haelfte, zwischen den Gruppen das Doppelte,
+   zum naechsten Block das Dreifache. So entsteht Gliederung ohne
+   Trennlinien.
+
+   Die Kopfzeile war vorher ein Block ohne Flex - die Elemente standen
+   mit 3 bis 5 Punkten Wortabstand aneinander und auf drei
+   verschiedenen Grundlinien (Caspar_D, 26.08.2026: "atmungsplatz,
+   nichts aneinandergeklatscht"). */
+.messkopf{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+/* Gleiche Hoehe fuer Wahl und Knoepfe: Bei 34 gegen 37 Punkten standen
+   sie auf verschiedenen Kanten - zentriert zwar, aber die Unterkanten
+   liefen um drei Punkte auseinander. */
+.messkopf select,.messkopf .knopf{height:36px;box-sizing:border-box}
+.messkopf select{min-width:220px}
+.messkopf .messdauer{font-size:11px;color:var(--schwach);letter-spacing:.04em}
+.messkopf .messluecke{flex:1 1 20px}
+/* Die beiden Knoepfe gehoeren zusammen und stehen deshalb enger
+   beieinander als zum Rest: halbe Luecke. */
+.messkopf #messneutral{margin-right:-5px}
+.messstand{font-size:11.5px;color:var(--schwach);margin-top:10px;min-height:15px}
+#messbild{display:block;width:100%;height:260px;background:#0a0a0a;
+  border:1px solid var(--rand);border-radius:8px;margin-top:10px}
+/* Die Legende haengt naeher am Bild als am Text darunter (Hausregel:
+   die Bildunterschrift gehoert zum Bild). Zeilenabstand kleiner als
+   Spaltenabstand, wie ueberall im Haus. */
+.messleg{display:flex;gap:4px 18px;flex-wrap:wrap;align-items:center;
+  margin-top:7px;font-size:11.5px;line-height:1.25;color:var(--schwach)}
+.messleg span{display:flex;align-items:center;gap:6px}
+.messleg i{display:block;width:20px;height:3px;border-radius:2px}
+.messleg i.bal{width:11px;height:11px}
+/* Bedienung links und schmaler, Erklaerung rechts (Hausregel 24). */
+.messspalten{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);
+  gap:30px;margin-top:30px}
+.messspalten h5{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--schwach);font-weight:700;margin:0 0 8px}
+.messwie ol{margin:0;padding-left:18px;font-size:12px;line-height:1.65;color:var(--text)}
+.messwie li{margin-bottom:5px}
+.messwarum p{font-size:12px;line-height:1.65;color:var(--text);margin:0 0 8px}
+.messwarum p.leise{color:var(--schwach);margin-bottom:0}
 #studioregz{display:flex;gap:4px;margin-top:12px;border-bottom:1px solid var(--rand);align-items:center}
 #studioregz .sreg{background:none;border:none;border-bottom:2px solid transparent;
   padding:7px 14px;margin-bottom:-1px;cursor:pointer;color:var(--schwach);font-size:13px}
@@ -2425,6 +2475,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <button id="bypeq" class="pille an" title="Die EQ-Stufe (Bänder/Glockenstuhl) hörbar oder stumm — die Einstellungen bleiben">EQ</button>
       <button id="bypkomp" class="pille an" title="Die Kompressor-Stufe (Kompressor/Gradationskompressor) hörbar oder stumm — die Kennlinie bleibt">Kompressor</button>
       <button id="bypfx" class="pille an" title="Die Effekt-Stufe (Breite, Hall, Echo, Tempo) hörbar oder stumm — die Regler bleiben">Effekte</button>
+      <!-- Das (i) hinter den drei Stufenschaltern: Sie SIND die Kette,
+           und hier steht, wie sie zusammenhaengt und wo gemessen wird
+           (Caspar_D, 26.08.2026: "auch vom tonstudio aus muß unsere
+           beispielgrafik sichtbar sein, oben in die button Kette ganz
+           hinten das (i) Zeichen einfügen"). Es sitzt hinter ihnen und
+           vor dem Schliessen - das × bleibt aussen, wo man es sucht. -->
+      <button id="studioinfo" class="infoknopf" onclick="audioketteErklaeren()"
+        title="Die Audiokette: wie die Stufen zusammenhängen und wo Signal und Anpassung gemessen werden"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-info"/></svg></button>
       <button id="studiozu" title="schließen">×</button>
     </div>
     <div id="studioregz">
@@ -2618,23 +2676,51 @@ h3 .infoknopf .ico{width:14px;height:14px}
          Overlay im Spektrum, nur eine Ebene weiter draussen. -->
     <div class="sseite" data-seite="mess" hidden>
       <div class="messkopf">
-        <select id="messsignal" title="Womit gemessen wird">
-          <option value="sweep">Sweep — 20 Hz bis 20 kHz, 4 s</option>
-          <option value="rosa">Rosa Rauschen — 4 s</option>
-          <option value="weiss">Weißes Rauschen — 4 s</option>
+        <select id="messsignal" title="Womit gemessen wird. Der Sweep ist der Standard der Raumakustik: Er trägt seine Energie nacheinander statt gleichzeitig und ist deshalb auch in einem halligen Raum auswertbar.">
+          <option value="sweep">Sweep · 20 Hz – 20 kHz</option>
+          <option value="rosa">Rosa Rauschen</option>
+          <option value="weiss">Weißes Rauschen</option>
         </select>
-        <button class="knopf" id="messknopf" onclick="einmessen()">Messen</button>
+        <span class="messdauer">4 s</span>
+        <span class="messluecke"></span>
         <button class="knopf" id="messneutral" onclick="einmessenNeutral()"
-          title="Zweiter Durchgang mit neutralem Tonstudio — erst danach zeigt die Differenz, was die Einstellung bewirkt">Neutral messen</button>
-        <span class="fussnote" id="messstand">bereit</span>
+          title="Erster Durchgang: das Tonstudio wird dabei umgangen. Ohne ihn zeigt die Messung nur die Kette aus Lautsprecher, Raum und Mikrofon.">1 · Neutral</button>
+        <button class="knopf" id="messknopf" onclick="einmessen()"
+          title="Zweiter Durchgang: mit der Einstellung, die gerade gilt.">2 · Mit Einstellung</button>
       </div>
-      <canvas id="messbild" height="260" style="width:100%;height:260px;background:#0a0a0a;border-radius:8px;margin-top:12px"></canvas>
-      <div class="fussnote" id="messtext" style="margin-top:10px">
-        Der Prüfton geht über den normalen Ausgang — auch über AirPlay —, das Mikrofon
-        nimmt auf. Gemessen wird damit die ganze Strecke: Lautsprecher, Raum und Mikrofon.
-        <b>Eine einzelne Messung ist deshalb keine Eichung</b>, sondern ein Abbild dieser Kette.
-        Erst der Vergleich zweier Durchgänge — einmal neutral, einmal mit deiner Einstellung —
-        zeigt, was das Tonstudio am Hörplatz bewirkt: Was in beiden gleich ist, fällt heraus.
+      <div class="messstand" id="messstand">bereit</div>
+
+      <canvas id="messbild" height="260"></canvas>
+
+      <div class="messleg" id="messleg">
+        <span><i style="background:#8b8b90"></i>neutral</span>
+        <span><i style="background:#f97b14"></i>mit Einstellung</span>
+        <span><i class="bal" style="background:#f9143c"></i>Tonstudio hebt an</span>
+        <span><i class="bal" style="background:#f9b414"></i>Tonstudio nimmt weg</span>
+      </div>
+
+      <div class="messspalten">
+        <div class="messwie">
+          <h5>So geht es</h5>
+          <ol>
+            <li>Lautsprecher, nicht Kopfhörer — das Mikrofon muß hören können.</li>
+            <li><b>1 · Neutral</b> messen. Das Tonstudio wird dabei umgangen.</li>
+            <li>Einstellen, was du hören willst.</li>
+            <li><b>2 · Mit Einstellung</b> messen — vom selben Platz aus.</li>
+          </ol>
+        </div>
+        <div class="messwarum">
+          <h5>Was dabei herauskommt</h5>
+          <p>Ein Mikrofon nimmt immer das Produkt aus vier Dingen auf: Signal,
+            Lautsprecher, Raum und Mikrofon. Die lassen sich ohne Meßmikrofon nicht
+            trennen — <b>eine einzelne Messung ist deshalb keine Eichung</b>, sondern
+            ein Abbild dieser ganzen Kette.</p>
+          <p>In der <b>Differenz</b> zweier Durchgänge kürzen sie sich heraus: Mikrofon,
+            Lautsprecher und Raum sind in beiden dieselben. Übrig bleibt, was das
+            Tonstudio an deinem Hörplatz wirklich bewirkt — Raummoden und Reflexionen
+            inbegriffen.</p>
+          <p class="leise">Der Prüfton geht über den normalen Ausgang, auch über AirPlay.</p>
+        </div>
       </div>
     </div>
 
@@ -14655,10 +14741,10 @@ async function analyzerAufbauen(){
     sprung: t => { audio.currentTime = Math.max(0, t + bVersatz/1000); },
     umschalten: () => umschalten(),
     /* Der Erklaerkasten gehoert der Buehne - der Analyzer kennt ihn
-       nicht und soll auch keinen zweiten bauen. Er bekommt ihn hier
-       gereicht, wie Zeit und Laufzustand (Caspar_D, 26.08.2026: "das
-       (i) Feld wie beim Hirschfaktor"). */
-    erklaeren: (titel, html) => erklaerkastenAuf(titel, html),
+       nicht und soll auch keinen zweiten bauen. Er bekommt hier die
+       fertige Erklaerung gereicht, wie Zeit und Laufzustand; den Text
+       pflegt nur noch eine Stelle (audioketteErklaeren). */
+    erklaeren: () => audioketteErklaeren(),
   });
 
   // Die beiden Live-Anzeigen bekommen den vorhandenen Quellknoten -
@@ -16650,6 +16736,129 @@ function hirschBild(werte, h, wort){
 function hirschZu(){ document.getElementById('hirschinfo').classList.remove('auf'); }
 /* Derselbe Kasten, anderer Inhalt: Der Erklaerkasten wird seit dem
    26.08.2026 von zwei Stellen benutzt, deshalb wandert der Titel mit. */
+/* DIE AUDIOKETTE, EINMAL BESCHRIEBEN (Caspar_D, 26.08.2026: "auch vom
+   tonstudio aus muß unsere beispielgrafik sichtbar sein").
+
+   Der Text stand zuerst im Analyzer, weil er dort gebraucht wurde. Nun
+   braucht ihn auch das Tonstudio - und zweimal derselbe Text waere
+   zweimal zu pflegen. Er liegt deshalb hier, wo beide ihn erreichen:
+   der Analyzer ueber den Rueckruf, den er beim Aufbau bekommt, das
+   Tonstudio unmittelbar. */
+function audioketteErklaeren(){
+  erklaerkastenAuf('Die Audiokette — und wo gemessen wird',
+        '<h4>Der Weg des Tons</h4>'
+      + '<p>Jedes Stück läuft durch dieselbe Kette. Sie beginnt bei den beiden '
+      + 'Abspieldecks und den sechs Instrumentspuren, die alle in eine Summe laufen — '
+      + 'und endet an den Lautsprechern:</p>'
+      + '<svg class="kettebild" viewBox="0 0 560 470" width="100%" role="img" '
+      +   'aria-label="Signalweg von der Sound-Datei über das Tonstudio zu den Lautsprechern, mit beiden Meßpunkten">'
+      /* Reine Vektorformen - Rechtecke, Linien, Kreise. Keine
+         gezeichneten Geraete: Ein abgebildeter Lautsprecher oder
+         Drehregler saehe aus wie Zierat und sagte nichts, was die
+         Beschriftung nicht schon sagt (Caspar_D, 26.08.2026: "nur
+         vektorsymbole, nichts photorealistisches"). */
+      +   '<defs><marker id="kpf" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" '
+      +   'markerHeight="5" orient="auto"><path d="M1 1L7 5L1 9" fill="none" stroke="#6e6e73" '
+      +   'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>'
+      /* Die drei Quellen */
+      /* EINE QUELLE, nicht drei (Caspar_D, 26.08.2026: "statt decka und
+         deckb und den 6 Spuren steht dort einfach nur - in den Dateien
+         gespeicherte Signalinformation, alles andere verwirrt hier
+         nur"). Wieviele Abspielwege intern zusammenlaufen, gehoert
+         nicht in ein Bild, das erklaert, WO gemessen wird. */
+      +   '<g class="q"><rect x="60" y="16" width="336" height="34" rx="5"/>'
+      +   '<text x="228" y="38">in den Dateien gespeicherte Signalinformation</text></g>'
+      +   '<line x1="228" y1="50" x2="228" y2="76" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
+      +   '<g class="k"><rect x="158" y="80" width="140" height="32" rx="5"/>'
+      +   '<text x="228" y="100">Summe</text></g>'
+      /* Abgriff 1 */
+      +   '<line x1="298" y1="96" x2="392" y2="96" stroke="#f97b14" stroke-width="1.4" '
+      +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
+      +   '<g class="mess"><circle cx="418" cy="96" r="13"/><text x="418" y="101">1</text></g>'
+      +   '<text class="ml" x="440" y="90">Signal aus der</text>'
+      +   '<text class="ml" x="440" y="104">Sound-Datei</text>'
+      +   '<line x1="228" y1="112" x2="228" y2="134" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
+      /* Tonstudio */
+      /* Der Rahmen umfasst ALLE Stufen des Tonstudios - auch Breite,
+         Hall und Echo, die in der Lasche "Ghettoblaster" sitzen. Sie
+         standen zuerst ausserhalb, und das war schlicht falsch. */
+      +   '<rect x="12" y="138" width="432" height="200" rx="8" fill="none" stroke="#f97b14" '
+      +   'stroke-width="1" stroke-dasharray="5 4" opacity="0.55"/>'
+      +   '<text class="gr" x="28" y="156">Tonstudio</text>'
+      +   '<g class="k">'
+      +   '<rect x="150" y="164" width="156" height="26" rx="4"/><text x="228" y="181">Equalizer</text>'
+      +   '<rect x="150" y="194" width="156" height="26" rx="4"/><text x="228" y="211">Abhör-Solo</text>'
+      +   '<rect x="150" y="224" width="156" height="26" rx="4"/><text x="228" y="241">Störfrequenz-Kerbe</text>'
+      +   '<rect x="150" y="254" width="156" height="26" rx="4"/><text x="228" y="271">Kompressor</text>'
+      +   '</g>'
+      +   '<path d="M228 190v4M228 220v4M228 250v4" stroke="#4a4a50" stroke-width="1.2"/>'
+      +   '<line x1="228" y1="280" x2="228" y2="298" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
+      /* Breite, Hall, Echo */
+      +   '<g class="k">'
+      +   '<rect x="150" y="302" width="156" height="26" rx="4"/><text x="228" y="319">Stereobreite</text>'
+      +   '<rect x="20" y="302" width="104" height="26" rx="4"/><text x="72" y="319">Hall</text>'
+      +   '<rect x="332" y="302" width="104" height="26" rx="4"/><text x="384" y="319">Echo</text>'
+      +   '</g>'
+      +   '<path d="M72 328v18h312v-18M228 328v18" stroke="#4a4a50" stroke-width="1.2" fill="none"/>'
+      +   '<line x1="228" y1="346" x2="228" y2="358" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
+      /* Summe 2 + Abgriff 2 */
+      +   '<g class="k"><rect x="158" y="362" width="140" height="32" rx="5"/>'
+      +   '<text x="228" y="382">Summe</text></g>'
+      +   '<line x1="298" y1="378" x2="392" y2="378" stroke="#f97b14" stroke-width="1.4" '
+      +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
+      +   '<g class="mess"><circle cx="418" cy="378" r="13"/><text x="418" y="383">2</text></g>'
+      +   '<text class="ml" x="440" y="372">Anpassung im</text>'
+      +   '<text class="ml" x="440" y="386">Tonstudio</text>'
+      +   '<line x1="228" y1="394" x2="228" y2="410" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
+      /* Lautstaerke und Ausgang */
+      +   '<g class="k"><rect x="150" y="414" width="156" height="28" rx="5"/>'
+      +   '<text x="228" y="433">Lautstärke</text></g>'
+      +   '<line x1="306" y1="428" x2="352" y2="428" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
+      +   '<text class="gr" x="362" y="432">Lautsprecher</text>'
+      +   '</svg>'
+
+      + '<h4>Alles dazwischen ist das Tonstudio</h4>'
+      + '<div class="regel">Was zwischen ① und ② steht, ist genau das, was im '
+      + '<b>Tonstudio</b> eingestellt wird: der <b>Equalizer</b> samt Glockenstuhl, das '
+      + '<b>Abhör-Solo</b>, die <b>Störfrequenz-Kerbe</b>, der <b>Kompressor</b> und im '
+      + '<b>Ghettoblaster</b> Stereobreite, Hall und Echo.</div>'
+      + '<p>Es öffnet der Knopf <b>EQ</b> — er steht in der Abspielleiste unten und in der '
+      + 'Leiste der Bühne. Das Fenster darf dabei offen stehen bleiben: Hinter ihm läßt sich '
+      + 'scrollen, so daß Regler und Spektrum gleichzeitig sichtbar sind.</p>'
+      + '<p>Damit ist dieses Bild das Gegenstück zum Tonstudio: Jeder Regler dort verändert '
+      + 'den Abstand zwischen den beiden Kurven hier. Zieht man einen Filter hoch, wächst an '
+      + 'seiner Frequenz der farbige Saum über der Linie — man sieht sofort, ob er trifft, was '
+      + 'er treffen soll.</p>'
+
+      + '<h4>Warum genau an diesen zwei Stellen</h4>'
+      + '<div class="regel"><b>①</b> ist das <b>Signal aus der Sound-Datei</b>: das Stück, wie es '
+      + 'dort liegt, vor jedem Eingriff.</div>'
+      + '<p><b>②</b> ist die <b>Anpassung im Tonstudio</b>: hinter allem, was dort eingestellt wird, aber <b>vor der '
+      + 'Abhörlautstärke</b>. Das ist die entscheidende Feinheit: Läge der Abgriff dahinter, '
+      + 'zeigte der Vergleich den Lautstärkeregler statt der Bearbeitung — bei 30 % läge das '
+      + 'zweite Kurve zehn Dezibel tiefer, und es sähe aus, als nähme das Tonstudio etwas weg.</p>'
+
+      + '<h4>Wo die Lautstärke sitzt</h4>'
+      + '<p>Die Abhörlautstärke steht <b>hinter</b> der gesamten Kette, unmittelbar vor den '
+      + 'Lautsprechern. Das ist keine Nebensache: Der Kompressor arbeitet mit einer '
+      + '<b>absoluten</b> Kennlinie von −60 bis 0 dB — er mißt den Momentanpegel in LUFS und '
+      + 'schlägt darin nach, welcher Ausgangspegel gelten soll. Käme das Material in '
+      + 'wechselnder Höhe bei ihm an, schlüge er jedesmal an anderer Stelle nach, und leise '
+      + 'gehört klänge nicht nur leiser, sondern anders komprimiert.</p>'
+      + '<div class="regel">Weil die Lautstärke am Ende steht, sieht der Kompressor immer '
+      + 'denselben Pegel. Wie laut du hörst, ändert nichts daran, <b>was</b> du hörst.</div>'
+      + '<p class="leise">Der Equalizer wäre davon ohnehin nicht betroffen: Lineare Filter in '
+      + 'Fließkomma-Arithmetik verlieren nichts, wenn das Signal leiser ankommt. Es trifft nur, '
+      + 'was eine absolute Pegelschwelle kennt.</p>'
+
+      + '<h4>Was die Messung nicht sieht</h4>'
+      + '<p>Systemlautstärke, Klangregelung des Betriebssystems und AirPlay liegen <b>hinter</b> '
+      + 'den Lautsprechern und sind für den Browser unsichtbar. Die Linie „was KlangTresor daraus '
+      + 'macht" ist deshalb genau die Linie, an der die Messung ohnehin endet.</p>'
+      + '<div class="fuss">Beide Abgriffe sind Sackgassen: Sie hören zu, ohne etwas zu '
+      + 'verändern. Am Klang ändert die Anzeige nichts.</div>');
+}
+
 function erklaerkastenAuf(titel, html){
   document.getElementById('hirschtitel').textContent = titel;
   document.getElementById('hirschinhalt').innerHTML = html;

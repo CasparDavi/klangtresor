@@ -789,3 +789,67 @@ Einträge heißen jetzt ehrlich „(gemessen)". Spanne der Sammlung: 64,1 bis
 sind **kein** Tempoproblem, sondern „Takt zu unruhig" — Ambient und
 Geräuschkulissen ohne klares Raster; dort greift die Notblende. Zum Vergleich:
 Album chronologisch 53 %, Klangraum-Reise 45 %.
+
+
+## Einmessen am Hörplatz (27.08.2026)
+
+Vierte Lasche im Tonstudio. Ein Prüfton geht über den normalen Ausgang,
+das Mikrofon nimmt auf, und aus der Aufnahme entsteht ein Spektrum über
+31 Terzbänder.
+
+### Drei Signale
+
+| | Neigung je Oktave | wofür |
+|---|---|---|
+| **Sweep** 20 Hz – 20 kHz | −3,20 dB | Standard der Raumakustik: trägt seine Energie nacheinander, deshalb auch in halligen Räumen auswertbar |
+| **Rosa Rauschen** | −3,03 dB | gleiche Energie je Oktave; womit Beschallungsleute einmessen |
+| **Weißes Rauschen** | −0,04 dB | gleiche Energie je Hertz; ehrlichste Anregung für lineare Fächer |
+
+Alle drei mit 50-ms-Blende an beiden Enden — ein hart einsetzendes
+Signal knackt, und der Knack ist breitbandig.
+
+Das rosa Rauschen entsteht nach **Voss-McCartney**: mehrere
+Zufallsreihen, jede halb so oft erneuert wie die vorige. Das ergibt
+sauber 3 dB Abfall je Oktave ohne Filter.
+
+### Der Prüfton nimmt den Musikweg
+
+Als WAV über **das Element, das die Musik spielt** — nicht über die
+`destination` des AudioContext. Web Audio kennt AirPlay nicht; über den
+Kontext käme der Ton aus dem eingebauten Lautsprecher statt aus den
+HomePods. Dasselbe gilt für den Chirp der Latenzmessung.
+
+Aufgenommen wird über Web Audio (ein Eingang, davon unberührt), mit
+abgeschalteter Echounterdrückung, Rauschunterdrückung und
+Pegelautomatik.
+
+### Was die Messung nicht ist
+
+**Keine Eichung.** Ein Mikrofon nimmt das Produkt aus vier Dingen auf:
+
+```
+gemessen = Signal × Lautsprecher × Raum × Mikrofon
+```
+
+Ohne Meßmikrofon lassen sich die vier nicht trennen. Für eingebaute
+Mac-Mikrofone gibt es keine Kennlinien — Apple veröffentlicht keine, und
+es existiert keine Datenbank. Qualitativ bekannt ist: Hochpaß bei etwa
+100 Hz, Betonung um 2–5 kHz, Abfall über 10 kHz.
+
+**Eine automatische EQ-Korrektur daraus wäre schädlich**: Sie höbe den
+Baß an, um ein Loch auszugleichen, das im Mikrofon sitzt und nicht im
+Raum.
+
+### Warum zwei Durchgänge
+
+In der **Differenz** kürzen sich Mikrofon, Lautsprecher und Raum heraus
+— sie sind in beiden Messungen dieselben. Übrig bleibt, was das
+Tonstudio am Hörplatz wirklich bewirkt, Raummoden und Reflexionen
+inbegriffen.
+
+Für eine absolute Skala bräuchte es ein Meßmikrofon mit
+Kalibrierdatei. Das **miniDSP UMIK-1** (rund 100 €) bringt eine
+individuelle Datei zur Seriennummer mit — schlichte Frequenz/dB-Paare,
+leicht einzulesen. Das Behringer ECM8000 hat einen typischen, aber
+keinen individuellen Frequenzgang.
+
