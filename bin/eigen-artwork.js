@@ -17,8 +17,9 @@
  * lokales Archiv heißt auch: Was zu einem Stück gehört, entscheidet
  * der, dem es gehört.
  *
- * EIN EIGENER NAME, KEIN ÜBERSCHREIBEN. Die Dateien heißen `eigen.mp4`
- * und `eigen.jpg` und stehen NEBEN Sunos `artwork.mp4` und `cover.jpg`.
+ * EIN EIGENER NAME, KEIN ÜBERSCHREIBEN. Die Dateien heißen `eigen.mp4`,
+ * `eigen.jpg` und `eigen.mp3` und stehen NEBEN Sunos `artwork.mp4`,
+ * `cover.jpg` und `audio.mp3`.
  * Damit:
  *
  *   - fällt kein Medienlauf darüber her. `bin/laden.js` kennt nur seine

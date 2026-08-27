@@ -1552,7 +1552,12 @@ const server = http.createServer((req, res) => {
         let st; try { st = fs.statSync(o); } catch (e) { continue; }
         if (!st.isDirectory()) continue;
         const hat = {};
-        for (const [feld, datei] of [['video', 'eigen.mp4'], ['bild', 'eigen.jpg']]) {
+        /* Ton kommt dazu (Tarja über Caspar_D, 27.08.2026: "auch mp3's
+           hochladen können, die das vorhandene nicht ersetzen aber
+           überstimmen" - "wie bei den artwork und videos"). Dasselbe
+           Muster: eigen.mp3 steht neben Sunos audio.mp3 und audio.wav. */
+        for (const [feld, datei] of [['video', 'eigen.mp4'], ['bild', 'eigen.jpg'],
+                                     ['ton', 'eigen.mp3']]) {
           try { if (fs.statSync(path.join(o, datei)).size > 0) hat[feld] = true; } catch (e) {}
         }
         if (Object.keys(hat).length) raus[d] = hat;
@@ -1588,7 +1593,8 @@ const server = http.createServer((req, res) => {
       const was = (u.searchParams.get('was') || '').toLowerCase();
       const namen = was === 'bild' ? ['eigen.jpg']
                   : was === 'video' ? ['eigen.mp4']
-                  : ['eigen.mp4', 'eigen.jpg'];
+                  : was === 'ton' ? ['eigen.mp3']
+                  : ['eigen.mp4', 'eigen.jpg', 'eigen.mp3'];
       let weg = 0;
       for (const n of namen) {
         const f = path.join(ordner, n);
@@ -1599,8 +1605,16 @@ const server = http.createServer((req, res) => {
 
     if (req.method === 'PUT' || req.method === 'POST') {
       const typ = String(req.headers['content-type'] || '').split(';')[0].toLowerCase();
-      const name = /^video\//.test(typ) ? 'eigen.mp4' : /^image\//.test(typ) ? 'eigen.jpg' : null;
-      if (!name) return jsonAntwort(res, { ok: false, grund: 'Nur Video oder Bild.' }, 415);
+      /* Die Art steht im Content-Type. Bei Ton ist der Behälter
+         vielfältiger als bei Bild und Video: Ein MP3 kommt je nach
+         Browser als audio/mpeg, audio/mp3 oder audio/mpeg3 an, und wer
+         ein WAV zieht, meint dasselbe - eine eigene Fassung. Alles
+         landet unter eigen.mp3; der Name sagt "eigener Ton", nicht
+         "MPEG Layer III". */
+      const name = /^video\//.test(typ) ? 'eigen.mp4'
+                 : /^image\//.test(typ) ? 'eigen.jpg'
+                 : /^audio\//.test(typ) ? 'eigen.mp3' : null;
+      if (!name) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild oder Ton.' }, 415);
       const DECKEL = 300 * 1024 * 1024;
       const stuecke = []; let gross = 0, abgebrochen = false;
       req.on('data', (c) => {

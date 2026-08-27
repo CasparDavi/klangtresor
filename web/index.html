@@ -767,6 +767,13 @@ select,.knopf{
    enthaelt. */
 /* Zwei Ablagen nebeneinander - Titelbild und Video getrennt. */
 .capartpaar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+/* Der Ton steht allein, in voller Breite: Bild und Video sind zwei
+   Ansichten desselben Songs, der Ton IST der Song. */
+.capartton{margin-top:8px}
+.capartton .capart{padding:8px}
+.capartton .capart.hat{padding:8px 10px}
+.capartton audio{width:100%;height:32px;display:block;margin-bottom:6px}
+.capartname small{color:var(--schwach);font-weight:400}
 .capartname{font-size:11px;color:var(--schwach);margin-bottom:3px}
 .capart{margin-top:0;border:1px dashed var(--rand);border-radius:8px;
   padding:10px;text-align:center;font-size:12px;color:var(--schwach);
@@ -4781,7 +4788,32 @@ function studioQuelleZeigen(){
   k.options[1].disabled = !wavDa;
   k.options[1].textContent = wavDa
     ? `Quelle: WAV (${Math.round(s.wav / 1048576)} MB)` : 'Quelle: WAV — nicht auf der Platte';
-  k.value = (bTon === 'wav' && wavDa) ? 'wav' : 'mp3';
+
+  /* DER DRITTE EINTRAG erscheint nur, wenn eine eigene Fassung
+     danebenliegt - ein dauerhaft gesperrter Eintrag fuer etwas, das die
+     meisten Songs nie haben werden, waere Moebel. */
+  const eigen = s && hatEigenenTon(s.id);
+  let o = k.querySelector('option[value="eigen"]');
+  if (eigen && !o){
+    o = document.createElement('option');
+    o.value = 'eigen'; o.textContent = 'Quelle: eigene Fassung';
+    k.insertBefore(o, k.firstChild);      /* nach vorn: sie hat Vorrang */
+  } else if (!eigen && o){
+    o.remove();
+    if (bTon === 'eigen') bTon = 'wav';   /* die Wahl ist weggefallen */
+  }
+  k.value = (bTon === 'eigen' && eigen) ? 'eigen'
+          : (bTon === 'wav' && wavDa) ? 'wav' : 'mp3';
+}
+
+/* Nach dem Ablegen oder Entfernen einer eigenen Fassung: den Umschalter
+   nachziehen und, wenn gerade eine dazukam, gleich darauf umstellen -
+   wer eine eigene Fassung ablegt, will sie hoeren. */
+function quellenAnbieten(){
+  const s = songVonId.get(aktuellId);
+  if (s && hatEigenenTon(s.id) && bTon !== 'eigen'){ tonSetzen('eigen'); return; }
+  if (s && !hatEigenenTon(s.id) && bTon === 'eigen'){ tonSetzen('wav'); return; }
+  studioQuelleZeigen();
 }
 
 /* Stilgruppe des Songs aus dem Klangraum (karte.json): name, anzahl,
@@ -9905,7 +9937,7 @@ function anschlussVorladen(n){
   if (b === anschlussAusklang) return;    /* klingt noch aus - nicht ueberschreiben */
   n.geladen = true;
   try {
-    const datei = (bTon === 'wav' && s.wav) ? 'audio.wav' : 'audio.mp3';
+    const datei = tonDatei(s);
     b.src = s.fremd ? s.audioUrl : '/media/' + s.id + '/' + datei;
     try { b.preservesPitch = true; } catch (e) {}
     b.playbackRate = n.rateB || 1;
@@ -10247,7 +10279,7 @@ function spielen(i, uebernahme){
   // sonst lägen alle Visualisierungen bei ihnen still.
   // WAV nur, wenn gewählt UND vorhanden - sonst stumm bleiben statt
   // auf eine Datei zu zeigen, die es nicht gibt.
-  const datei = (bTon === 'wav' && s.wav) ? 'audio.wav' : 'audio.mp3';
+  const datei = tonDatei(s);
   if (!karteSchiffFrame.fake && !uebernahme){                    // Pruefsystem: kein Ton
     audio.src = s.fremd ? s.audioUrl : '/media/' + s.id + '/' + datei;
     audio.play().catch(e => console.log('Wiedergabe blockiert:', e.message));
@@ -13467,6 +13499,34 @@ const BILDRATE = 24;
    wenn kein WAV da ist. Wer einmal umschaltet, bleibt bei seiner Wahl. */
 let bTon = localStorage.getItem('mysuno-ton') || 'wav';
 
+/* WELCHE TONDATEI GILT (Tarja über Caspar_D, 27.08.2026: eigene MP3s,
+   "die das vorhandene nicht ersetzen aber überstimmen").
+
+   Drei Quellen stehen zur Wahl, und die Regel dahinter ist dieselbe wie
+   bei Titelbild und Video: eine eigene Fassung wird VORGEZOGEN, nicht
+   eingesetzt. Sunos Dateien bleiben liegen, das Umschalten ist ein
+   Knopfdruck, und Löschen stellt den alten Zustand her.
+
+   Diese Bedingung stand an drei Stellen im Code (Kopf, Bühne,
+   Umschalter) und hätte an einer vierten wieder gestanden. Jetzt steht
+   sie hier. */
+function tonDatei(s){
+  if (!s) return 'audio.mp3';
+  if (bTon === 'eigen'){
+    if (_eigenArt && _eigenArt[s.id] && _eigenArt[s.id].ton) return 'eigen.mp3';
+    /* Der naechste Song hat keine eigene Fassung. Dann gilt WAV, nicht
+       MP3 - wer "eigen" gewaehlt hat, wollte die BESTE Quelle, nicht
+       die verlustbehaftete. */
+    return s.wav ? 'audio.wav' : 'audio.mp3';
+  }
+  if (bTon === 'wav' && s.wav) return 'audio.wav';
+  return 'audio.mp3';
+}
+/* Gibt es für diesen Song eine eigene Fassung? */
+function hatEigenenTon(id){
+  return !!(_eigenArt && _eigenArt[id] && _eigenArt[id].ton);
+}
+
 let bText  = localStorage.getItem('mysuno-text') || 'aus';
 let bBild  = localStorage.getItem('mysuno-bild') || 'artwork';
 let bModus = localStorage.getItem('mysuno-modus') || 'stereo';
@@ -14218,7 +14278,7 @@ function tonSetzen(art){
   const s = song(aktuellId);
   if (s && !s.fremd){
     const stelle = audio.currentTime, lief = !audio.paused;
-    const datei = (bTon === 'wav' && s.wav) ? 'audio.wav' : 'audio.mp3';
+    const datei = tonDatei(s);
     audio.src = '/media/' + s.id + '/' + datei;
     audio.currentTime = stelle;
     if (lief) audio.play().catch(()=>{});
@@ -14380,6 +14440,19 @@ function capAuf(id, x, y){
     +   `<div><div class="capartname">Video</div>`
     +     `<div class="capart" id="capartvideo" data-art="video"></div></div>`
     + `</div>`
+    /* DIE EIGENE TONFASSUNG (Tarja über Caspar_D, 27.08.2026: "auch
+       mp3's hochladen können, die das vorhandene nicht ersetzen aber
+       überstimmen" - "wie bei den artwork und videos").
+
+       Sie steht ALLEIN in ihrer Zeile, nicht als drittes neben Bild
+       und Video: die beiden sind Bildseiten desselben Songs, der Ton
+       ist der Song. Und sie braucht mehr Breite, weil sie mehr sagen
+       muss - eine Tonspur laesst sich nicht in einer Vorschau zeigen
+       wie ein Bild. */
+    + `<div class="capartton">`
+    +   `<div class="capartname">Eigene Tonfassung <small>— tritt neben WAV und MP3</small></div>`
+    +   `<div class="capart" id="capartton" data-art="ton"></div>`
+    + `</div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
   const b = c.getBoundingClientRect();
@@ -14404,7 +14477,8 @@ function capAuf(id, x, y){
   let wohin = null;                       /* welche Flaeche die Dateiwahl bedient */
 
   const artFelder = [['bild', c.querySelector('#capartbild'), 'image/*', 'eigen.jpg', 'Bild'],
-                     ['video', c.querySelector('#capartvideo'), 'video/*', 'eigen.mp4', 'Video']];
+                     ['video', c.querySelector('#capartvideo'), 'video/*', 'eigen.mp4', 'Video'],
+                     ['ton', c.querySelector('#capartton'), 'audio/*', 'eigen.mp3', 'Tondatei']];
 
   const artZeichnen = () => {
     const e = (_eigenArt && _eigenArt[id]) || {};
@@ -14415,8 +14489,14 @@ function capAuf(id, x, y){
         /* Zeitstempel dahinter, damit der Browser nach dem Austauschen
            nicht das alte aus seinem Speicher zeigt. */
         const t = '?t=' + Date.now();
+        /* Eine Tonspur laesst sich nicht zeigen, nur hoeren - also ein
+           kleiner Abspieler statt einer Vorschau. Er haengt an keinem
+           Graphen und stoert die Wiedergabe nicht; wer vergleichen
+           will, nimmt den Quellenumschalter im Tonstudio. */
         feld.innerHTML = (art === 'video'
             ? `<video src="/media/${id}/${datei}${t}" muted loop autoplay playsinline></video>`
+            : art === 'ton'
+            ? `<audio src="/media/${id}/${datei}${t}" controls preload="metadata"></audio>`
             : `<img src="/media/${id}/${datei}${t}" alt="">`)
           + `<span class="weg">entfernen</span>`;
         feld.querySelector('.weg').onclick = async (ev) => {
@@ -14424,7 +14504,9 @@ function capAuf(id, x, y){
           try { await fetch(`/api/eigen-artwork/${id}?was=${art}`, { method: 'DELETE' });
                 if (_eigenArt[id]) { delete _eigenArt[id][art];
                   if (!Object.keys(_eigenArt[id]).length) delete _eigenArt[id]; }
-                artZeichnen(); zeichnen(); } catch (err) {}
+                artZeichnen(); zeichnen();
+                if (art === 'ton' && typeof quellenAnbieten === 'function') quellenAnbieten();
+              } catch (err) {}
         };
       } else {
         feld.className = 'capart';
@@ -14435,10 +14517,14 @@ function capAuf(id, x, y){
 
   const hochladen = async (art, feld, datei) => {
     if (!datei) return;
-    const passt = art === 'video' ? /^video\//.test(datei.type) : /^image\//.test(datei.type);
+    const passt = art === 'video' ? /^video\//.test(datei.type)
+                : art === 'ton'   ? /^audio\//.test(datei.type)
+                : /^image\//.test(datei.type);
     if (!passt){
       feld.className = 'capart';
-      feld.textContent = art === 'video' ? 'Das ist kein Video.' : 'Das ist kein Bild.';
+      feld.textContent = art === 'video' ? 'Das ist kein Video.'
+                       : art === 'ton'   ? 'Das ist keine Tondatei.'
+                       : 'Das ist kein Bild.';
       setTimeout(artZeichnen, 2200); return;
     }
     feld.className = 'capart';
@@ -14452,6 +14538,10 @@ function capAuf(id, x, y){
       _eigenArt[id] = Object.assign({}, _eigenArt[id], { [art]: true });
       artZeichnen();
       zeichnen();                    /* Kachel und Marke ziehen mit */
+      /* Der Quellenumschalter im Tonstudio bekommt einen Eintrag mehr,
+         sobald eine eigene Fassung da ist - und verliert ihn wieder,
+         wenn sie geht. */
+      if (art === 'ton' && typeof quellenAnbieten === 'function') quellenAnbieten();
     } catch (err) { feld.textContent = 'ging schief'; setTimeout(artZeichnen, 2600); }
   };
 
