@@ -16683,9 +16683,13 @@ async function messLauf(neutral){
        stillhalten soll. */
     {
       const artN = ($('messsignal') || { value: 'sweep' }).value;
-      const sek = Math.round((artN === 'baender' ? 8 : 4) + 3.5 + 0.6 + 4);
-      sagen('Bitte jetzt Ruhe — die Messung läuft ' + sek + ' Sekunden. '
-        + 'Jedes Geräusch im Raum steht nachher in der Kurve.');
+      const konv = (artN === 'rosa' || artN === 'weiss');
+      sagen('Bitte jetzt Ruhe — '
+        + (konv ? 'die Messung läuft, bis die Kurve steht: mindestens acht, höchstens '
+                + 'gut dreißig Sekunden.'
+                : 'die Messung läuft ' + Math.round((artN === 'baender' ? 8 : 4) + 8.1)
+                  + ' Sekunden.')
+        + ' Jedes Geräusch im Raum steht nachher in der Kurve.');
     }
     await new Promise(r => setTimeout(r, 900));   /* damit man es lesen kann */
     sagen('Mikrofon …');
@@ -16789,10 +16793,32 @@ async function messLauf(neutral){
       const sehen = () => { if (messAbbruch) r('abbruch'); else setTimeout(sehen, 120); };
       sehen();
     });
+    /* Die Konvergenzwache meldet, sobald das Restrauschen unter 0,3 dB
+       faellt - fruehestens nach vier Sekunden Signal, damit ein paar
+       Dutzend Aufnahmen zusammenkommen. */
+    const konvWache = !konvergiert ? new Promise(() => {}) : new Promise(r => {
+      const sehen = () => {
+        if (!messLive) return;
+        if (messLive.ankunft !== null && (messLive.t - messLive.ankunft) > 4
+            && messLive.restrauschen !== null && messLive.restrauschen !== undefined
+            && messLive.restrauschen < 0.3){ r('steht'); return; }
+        setTimeout(sehen, 200);
+      };
+      sehen();
+    });
+
     const wieAus = await Promise.race([
-      voll.then(() => 'voll'), abbruchWache,
+      voll.then(() => 'voll'), abbruchWache, konvWache,
       new Promise(r => setTimeout(() => r('notbremse'), AUF * 2000)),
     ]);
+
+    /* Steht die Kurve, wird hier beendet - der Rest des Signals aenderte
+       nichts mehr. Ausgewertet wird dann bis zum Fuellstand, nicht bis
+       zur vollen Dauer. */
+    let genutzt = DAUER;
+    if (wieAus === 'steht' && messLive && messLive.ankunft !== null)
+      genutzt = Math.max(4, messLive.t - messLive.ankunft);
+
     if (wieAus === 'abbruch'){
       audio.pause();
       knoten.disconnect(); quelle.disconnect();
@@ -16878,7 +16904,7 @@ async function messLauf(neutral){
     /* Ausgewertet wird ab der Ankunft, nicht ab dem Absenden. Die
        ersten 0,3 s bleiben aus: dort schwingt die Kette ein. */
     const ab  = Math.round(sr * (versatz + 0.3));
-    const bis = Math.min(puffer.length, Math.round(sr * (versatz + DAUER)));
+    const bis = Math.min(puffer.length, schreib, Math.round(sr * (versatz + genutzt)));
     const kurve = messSpektrum(puffer.subarray(ab, bis), sr);
     messErgebnis[neutral ? 'neutral' : 'mit'] = kurve;
     messErgebnis.sr = sr;
@@ -16904,6 +16930,8 @@ async function messLauf(neutral){
       messErgebnis.neutralLaut = Math.round(+($('lautstaerke') || { value: 0 }).value);
     }
     messErgebnis[neutral ? 'abstandN' : 'abstandM'] = abstand;
+    messErgebnis.restrauschen = messLive ? messLive.restrauschen : null;
+    messErgebnis.gemessen = genutzt;
     /* Was das Tonstudio in diesem Augenblick laut eigener Rechnung tut -
        festgehalten zur Messung, nicht erst beim Anzeigen: bis dahin
        koennte laengst jemand am Regler gedreht haben. */
@@ -16919,6 +16947,10 @@ async function messLauf(neutral){
       + ' · ' + laut.toFixed(0) + ' dB im Mittel'
       + ' · Störabstand ' + abstand.toFixed(0) + ' dB'
       + ' · Laufzeit ' + Math.round((versatz - VOR) * 1000) + ' ms'
+      + (konvergiert ? ' · ' + genutzt.toFixed(1).replace('.', ',') + ' s gemessen'
+          + (messErgebnis.restrauschen !== undefined && messErgebnis.restrauschen !== null
+              ? ', Restrauschen ' + messErgebnis.restrauschen.toFixed(2).replace('.', ',') + ' dB' : '')
+        : '')
       + (abstand < 20 ? ' — zu leise für eine belastbare Messung' : ''));
   } catch (e) {
     sagen('ging nicht: ' + (e && e.message ? e.message : e));
@@ -17112,6 +17144,27 @@ function messLiveBlock(rms, spektrum){
     L.phase = 'misst';
     for (let i = 0; i < 31; i++) L.akku[i] += Math.pow(10, L.jetzt[i] / 10);
     L.akkuN++;
+    /* ZWEI HALBMITTELUNGEN AUCH HIER (Caspar_D, 27.08.2026: "ja, auch
+       konvergenz"). Dasselbe Verfahren wie beim Abhoeren des Raums:
+       jede zweite Aufnahme in einen anderen Topf, ihre Differenz ist
+       das verbleibende Rauschen. Nur so laesst sich sagen, wann ein
+       Durchgang genug hat - statt vier Sekunden abzuzaehlen und zu
+       hoffen. */
+    if (!L.mA){ L.mA = new Float64Array(31); L.mB = new Float64Array(31); L.mNA = 0; L.mNB = 0; }
+    const topf = (L.akkuN % 2 === 0) ? L.mA : L.mB;
+    for (let i = 0; i < 31; i++) topf[i] += Math.pow(10, L.jetzt[i] / 10);
+    if (L.akkuN % 2 === 0) L.mNA++; else L.mNB++;
+    if (L.mNA > 2 && L.mNB > 2 && L.akkuN % 6 === 0){
+      let summe = 0, c = 0;
+      for (let i = 0; i < 31; i++){
+        const f = 20 * Math.pow(2, i / 3);
+        if (f < 63 || f > 8000) continue;
+        const da = 10 * Math.log10(Math.max(1e-12, L.mA[i] / L.mNA));
+        const db = 10 * Math.log10(Math.max(1e-12, L.mB[i] / L.mNB));
+        summe += Math.abs(da - db); c++;
+      }
+      L.restrauschen = c ? (summe / c) / 2 : null;
+    }
     /* Der GROESSTE Abstand zum Grundgeraeusch, nicht der momentane: der
        zappelt mit dem Sweep, weil ein Lautsprecher nicht auf allen
        Frequenzen gleich laut ist. Was zaehlt, ist wieviel Luft die
@@ -17189,9 +17242,21 @@ async function raumAbhoeren(){
 
     const kn = raumCtx.createScriptProcessor(4096, 1, 1);
     const still = raumCtx.createGain(); still.gain.value = 0;
+    /* DIE ROHEN SAMPLES MITSCHREIBEN (Caspar_D, 27.08.2026: "aber gehen
+       die kurven noch feiner"). Der Analyser ist bei 32768 Punkten am
+       Ende, das sind 1,35 Hz. Ueber die Rohaufnahme laesst sich am Ende
+       eine viel laengere FFT rechnen - bei 30 s und 44,1 kHz reicht es
+       fuer 2^20 Punkte, also 0,042 Hz. Platz fuer eine halbe Minute,
+       das sind gut fuenf Megabyte. */
+    const rohMax = Math.ceil(sr * 32);
+    const rohBuf = new Float32Array(rohMax);
+    let rohN = 0;
+    raumCtx.__roh = () => ({ buf: rohBuf, n: rohN, sr });
+
     kn.onaudioprocess = (e) => {
       if (!messLive || !messLive.raum) return;
       const d = e.inputBuffer.getChannelData(0);
+      for (let i = 0; i < d.length && rohN < rohMax; i++) rohBuf[rohN++] = d[i];
       let s2 = 0; for (let i = 0; i < d.length; i++) s2 += d[i] * d[i];
       const db = 20 * Math.log10(Math.max(1e-9, Math.sqrt(s2 / d.length)));
       const L = messLive;
@@ -17300,6 +17365,7 @@ function raumAus(){
         (_, i) => 10 * Math.log10(L.akku[i] / L.akkuN)) : null,
       fein: Float64Array.from(L.fein), feinN: L.feinN, feinDf: L.feinDf,
       stoer: messStoerlinien(L.fein, L.feinN, L.feinDf),
+      lang: (raumCtx && raumCtx.__roh) ? messLangeFft(raumCtx.__roh()) : null,
       scheiben: (L.scheiben || []).map(x => ({ t: x.t, werte: x.werte.slice() })),
       sekunden: +(L.t || 0).toFixed(1),
     };
@@ -17313,6 +17379,53 @@ function raumAus(){
   if (messLive && messLive.raum) messLive = null;
   messBildZeichnen();
   if (typeof messAnsicht === 'function') messAnsicht();
+}
+
+/* DIE LANGE FFT ueber die gesamte Aufnahme (Caspar_D, 27.08.2026:
+   "aber gehen die kurven noch feiner").
+
+   Der AnalyserNode kann hoechstens 32768 Punkte, das sind 1,35 Hz. Ueber
+   die Rohaufnahme geht mehr: acht Sekunden bei 44,1 kHz sind 352800
+   Samples, aufgerundet 2^19 = 524288 - und damit 0,084 Hz, sechzehnmal
+   feiner.
+
+   WOFUER das gut ist: Man sieht die BREITE einer Stoerlinie. Ein
+   Netzbrummen ist nadelscharf, ein Luefter hat eine Breite von einigen
+   Hertz, eine Raummode eine, aus der sich ihre Guete ablesen laesst.
+   Bei 1,35 Hz Raster ist all das ein einzelner Punkt.
+
+   WOFUER NICHT: Diese eine lange Transformation ist etwas anderes als
+   die Mittelung vieler kurzer. Sie setzt voraus, dass sich in den acht
+   Sekunden nichts aendert. Ein Auto, das vorbeifaehrt, verschmiert hier
+   ueber den ganzen Bereich, waehrend die Mittelung ihn nur leicht
+   anhebt. Deshalb bleibt die gemittelte Kurve die Hauptdarstellung und
+   diese hier die Lupe daneben.
+
+   Ein Hann-Fenster ueber die ganze Laenge haelt die Leckstrahlung
+   klein - ohne Fenster verschmiert eine starke Linie ueber Dutzende
+   von Punkten und macht die feine Aufloesung wieder zunichte. */
+function messLangeFft(roh){
+  if (!roh || roh.n < roh.sr) return null;
+  /* groesste Zweierpotenz, die hineinpasst */
+  let N = 1; while (N * 2 <= roh.n) N *= 2;
+  if (N > 1048576) N = 1048576;
+  if (N < 65536) return null;
+  const re = new Float64Array(N), im = new Float64Array(N);
+  /* Aus der Mitte der Aufnahme nehmen: der Anfang traegt oft noch das
+     Einschwingen des Mikrofons. */
+  const von = Math.max(0, Math.floor((roh.n - N) / 2));
+  for (let i = 0; i < N; i++){
+    const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1));
+    re[i] = roh.buf[von + i] * w;
+  }
+  try { messFft(re, im); } catch (e) { return null; }
+  const halb = N / 2;
+  const db = new Float32Array(halb);
+  /* Fenstergewinn ausgleichen, damit die Pegel zu den anderen Bildern passen */
+  const norm = 2 / (N * 0.5);
+  for (let i = 0; i < halb; i++)
+    db[i] = 20 * Math.log10(Math.max(1e-12, Math.hypot(re[i], im[i]) * norm));
+  return { db, df: roh.sr / N, N, sekunden: +(N / roh.sr).toFixed(1) };
 }
 
 /* WIEVIEL RAUSCHEN STECKT NOCH IM BILD?
@@ -17831,6 +17944,28 @@ function messRaumbildZeichnen(){
     b.strokeStyle = '#f9b414'; b.globalAlpha = 0.4; b.lineWidth = 2; b.stroke(); b.globalAlpha = 1;
   }
 
+  /* DIE LANGE FFT als feinste Linie - Spitzenwert je Bildpunkt, sonst
+     ersaeuft eine nadelscharfe Linie zwischen ihren leisen Nachbarn.
+     Sie liegt unter der gemittelten Kurve: die ist die Aussage, diese
+     hier die Lupe. */
+  if (R.lang && R.lang.db){
+    const L = R.lang, px = Math.max(1, Math.round(bw));
+    const spitzen = new Float32Array(px).fill(-999);
+    for (let i = 1; i < L.db.length; i++){
+      const f = i * L.df; if (f < 20 || f > 20000) continue;
+      const k = Math.max(0, Math.min(px - 1, Math.round(XF(f) - LI)));
+      if (L.db[i] > spitzen[k]) spitzen[k] = L.db[i];
+    }
+    b.beginPath(); let e2 = true;
+    for (let k = 0; k < px; k++){
+      if (spitzen[k] < -900) continue;
+      const x = LI + k, y = Math.max(OB, Math.min(OB + bh, Y(spitzen[k])));
+      if (e2){ b.moveTo(x, y); e2 = false; } else b.lineTo(x, y);
+    }
+    b.strokeStyle = '#14b4a0'; b.globalAlpha = 0.55; b.lineWidth = 1.5;
+    b.stroke(); b.globalAlpha = 1;
+  }
+
   /* Feine FFT als Linie, auf dieselbe logarithmische Achse gelegt */
   b.beginPath(); let erste = true;
   for (let i = 1; i < R.fein.length; i++){
@@ -17859,9 +17994,12 @@ function messRaumbildZeichnen(){
   }
 
   b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
-  b.fillText('Säulen: Terzbänder   ·   Linie: feine FFT (' + R.feinDf.toFixed(2).replace('.', ',')
-    + ' Hz)   ·   rot: schmale Störlinien'
-    + (V && V.fein ? '   ·   gelb: die Messung davor' : ''), LI, 33);
+  b.fillText('Säulen: Terzbänder   ·   weiß: gemittelt (' + R.feinDf.toFixed(2).replace('.', ',')
+    + ' Hz)'
+    + (R.lang ? '   ·   türkis: eine lange FFT über ' + R.lang.sekunden.toFixed(1).replace('.', ',')
+                + ' s (' + R.lang.df.toFixed(3).replace('.', ',') + ' Hz)' : '')
+    + '   ·   rot: Störlinien'
+    + (V && V.fein ? '   ·   gelb: davor' : ''), LI, 33);
   b.fillStyle = '#ececed'; b.font = MESS_SCHRIFT_GROSS;
   let kopf = 'Grundgeräusch ' + (R.mittel === null ? '—' : R.mittel.toFixed(0) + ' dB')
     + (R.tiefst !== null ? ',  am ruhigsten ' + R.tiefst.toFixed(0) + ' dB' : '');
@@ -18824,7 +18962,9 @@ const MESS_PLAN = [
     ruhe: false },
   { art: 'neutral', signal: 'rosa',
     titel: 'Die Bezugsmessung',
-    text: 'Rosa Rauschen, vier Sekunden, das Tonstudio wird dabei umgangen. Diese Kurve '
+    text: 'Rosa Rauschen, das Tonstudio wird dabei umgangen. Es läuft, bis die Kurve steht — '
+        + 'wie beim Raum vorhin wird aus vielen Momentaufnahmen gemittelt, bis das Rauschen '
+        + 'weg ist. Meist acht bis zwölf Sekunden. Diese Kurve '
         + 'enthält Lautsprecher, Raum und Mikrofon — alles außer dem Equalizer. Gegen sie '
         + 'wird später jede Einstellung gehalten.<br><br>'
         + 'Warum Rauschen und kein Sweep? Rauschen regt alle Frequenzen <b>zugleich</b> an, '
