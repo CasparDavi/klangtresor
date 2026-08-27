@@ -1864,8 +1864,11 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    Solange niemand gezogen hat, steht es wie bisher: unten mittig über
    der Playleiste. Erst der erste Zug macht die Position zu einer
    eigenen, und die wird gemerkt. */
-#studiokasten.gezogen{position:fixed;margin:0;
-  max-height:calc(100vh - 40px)}
+/* Oben verankert heisst: der Kasten waechst nach unten. Damit er dabei
+   nicht aus dem Bild laeuft, begrenzt ihn der Abstand seiner Oberkante
+   zum unteren Rand - das rechnet studioHoeheKlemmen(), weil der Wert
+   von der Lage abhaengt und nicht fest sein kann. */
+#studiokasten.gezogen{position:fixed;margin:0}
 /* Der Greifhinweis sitzt am TITEL, nicht auf der ganzen Kopfzeile:
    dort stehen Dropdowns und Knöpfe, und ein Greifzeiger über einem
    Knopf verspricht das Falsche. Gezogen werden kann trotzdem überall,
@@ -4681,6 +4684,58 @@ function studioLasche(name){
 let studioLage = null;
 try { studioLage = JSON.parse(localStorage.getItem('mysuno-studio-lage') || 'null'); } catch (e) {}
 
+/* OBEN VERANKERN, NICHT UNTEN (Caspar_D, 27.08.2026: "was mich genervt
+   hat, die ausrichtung nach unten, der Fensteroberrand sprang ständig
+   durch die Gegend").
+
+   Der Kasten hing an `bottom` und wuchs nach oben. Jede Lasche ist
+   unterschiedlich hoch - Equalizer, Kompressor, Ghettoblaster,
+   Einmessen -, also sprang der Oberrand bei jedem Wechsel. Man
+   verliert dabei die Stelle, an der man gerade hinsah.
+
+   Jetzt wird beim Oeffnen einmal ausgerechnet, wo der Kasten steht, und
+   der Wert als `top` festgeschrieben. Danach bleibt der Oberrand liegen
+   und der Kasten waechst nach unten - dorthin, wo man ohnehin nicht
+   hinsieht. Wird er dabei laenger als das Fenster, rollt er innen; das
+   tat er vorher auch. */
+function studioOberkanteFestlegen(){
+  const k = $('studiokasten'); if (!k) return;
+  if (k.classList.contains('gezogen')) return;    /* schon verankert */
+  const b = k.getBoundingClientRect();
+  k.classList.add('gezogen');
+
+  /* DER STANDARDPLATZ IST OBEN MITTE (Caspar_D, 27.08.2026: "oft sind
+     links, rechts und ganz oben die meisten Schaltelemente, also mitte
+     oben mit ein wenig atemplatz").
+
+     Waagerecht mittig, senkrecht unter die Leisten: Suchzeile, die
+     Reiter Werke/Alben/Klangraum und die Filterpillen. Statt eine
+     feste Zahl zu raten, wird die unterste dieser Leisten gemessen -
+     wenn dort einmal eine Zeile dazukommt, wandert das Fenster mit. */
+  const kopf = document.querySelector('header');
+  const unterkante = kopf ? kopf.getBoundingClientRect().bottom : 0;
+  /* Der Kopf traegt Suchzeile, Reiter und Filterpillen; seine
+     Unterkante ist damit die Linie, unter der Platz ist. 16 Punkte
+     Atem darunter - dieselbe Luft wie zwischen den Panels im Studio. */
+  const oben = Math.round(Math.min(innerHeight / 3, (unterkante || 100)) + 16);
+  const links = Math.round(Math.max(8, (innerWidth - b.width) / 2));
+
+  k.style.left  = links + 'px';
+  k.style.top   = oben + 'px';
+  k.style.width = b.width + 'px';
+  studioHoeheKlemmen();
+}
+
+/* Wieviel Platz hat der Kasten von seiner Oberkante bis zum unteren
+   Rand? Das ist seine Hoechsthoehe. Steht er weiter unten, hat er
+   weniger - und rollt entsprechend frueher innen, statt hinauszuwachsen. */
+function studioHoeheKlemmen(){
+  const k = $('studiokasten'); if (!k) return;
+  if (!k.classList.contains('gezogen')){ k.style.maxHeight = ''; return; }
+  const oben = parseFloat(k.style.top) || 0;
+  k.style.maxHeight = Math.max(220, innerHeight - oben - 16) + 'px';
+}
+
 function studioLageAnwenden(){
   const k = $('studiokasten'); if (!k || !studioLage) return;
   k.classList.add('gezogen');
@@ -4690,6 +4745,7 @@ function studioLageAnwenden(){
   const y = Math.max(0, Math.min(studioLage.y, innerHeight - 40));
   k.style.left = x + 'px';
   k.style.top  = y + 'px';
+  studioHoeheKlemmen();
 }
 
 function studioZiehenEinrichten(){
@@ -4724,6 +4780,7 @@ function studioZiehenEinrichten(){
     const y = Math.max(0, Math.min(von.y + (e.clientY - von.my), innerHeight - 40));
     kasten.style.left = x + 'px';
     kasten.style.top  = y + 'px';
+    studioHoeheKlemmen();
   });
 
   const loslassen = (e) => {
@@ -4746,10 +4803,15 @@ function studioZiehenEinrichten(){
     kasten.style.left = kasten.style.top = kasten.style.width = '';
     studioLage = null;
     localStorage.removeItem('mysuno-studio-lage');
+    /* Zurueckgestellt heisst: wieder an den Standardplatz - und gleich
+       wieder verankert, damit der Oberrand auch dort nicht springt. */
+    studioOberkanteFestlegen();
   });
 
   /* Wird das Browserfenster kleiner, darf der Kopf nicht hinausrutschen. */
-  addEventListener('resize', () => { if (studioLage) studioLageAnwenden(); });
+  addEventListener('resize', () => {
+    if (studioLage) studioLageAnwenden(); else studioHoeheKlemmen();
+  });
 }
 
 async function studioAuf(){
@@ -4764,7 +4826,13 @@ async function studioAuf(){
   if (st.style.display !== 'none'){ studioZu(); return; }
   st.style.display = '';
   studioZiehenEinrichten();
-  studioLageAnwenden();
+  /* Direkt aufrufen, nicht ueber requestAnimationFrame: nach
+     style.display = '' steht der Kasten sofort im Layout, und rAF ruht
+     in einem Fenster im Hintergrund - dann bliebe die Verankerung aus
+     und der Oberrand spraenge weiter. (Derselbe Fallstrick wie beim
+     Live-Bild der Messung und bei der Playerleiste.) */
+  if (studioLage) studioLageAnwenden();
+  else studioOberkanteFestlegen();
   $('studiozu').onclick = studioZu;
   const ab = $('studioab');
   const abSetzen = (aus) => {
