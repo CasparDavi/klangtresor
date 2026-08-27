@@ -17127,9 +17127,28 @@ async function raumAbhoeren(){
          Unsichtbarkeit: ein Netzbrummen bei 50 Hz ist eine haarscharfe
          Linie, die im ganzen 50-Hz-Band untergeht. Also die rohen
          FFT-Punkte mitmitteln - dort steht sie als Nadel. */
-      if (!L.fein){ L.fein = new Float64Array(roh.length); L.feinN = 0; L.feinDf = sr / (roh.length * 2); }
-      for (let i = 0; i < roh.length; i++) L.fein[i] += Math.pow(10, roh[i] / 10);
+      if (!L.fein){ L.fein = new Float64Array(roh.length); L.feinN = 0; L.feinDf = sr / (roh.length * 2);
+        /* ZWEI GETRENNTE HALBMITTELUNGEN (Caspar_D, 27.08.2026: "wie
+           bei mulitple exposures in der Mikroskopie, weniger Rauschen,
+           klarere Signale"). Jede zweite Aufnahme geht in einen anderen
+           Topf. Beide Toepfe sehen dasselbe Signal, aber unabhaengiges
+           Rauschen - ihre Differenz IST das verbleibende Rauschen, und
+           man braucht dafuer keine Annahme darueber, wie es aussieht.
+           Sie sinkt mit der Wurzel aus der Zahl der Aufnahmen; wenn sie
+           unter die Schwelle faellt, ist das Bild fertig. */
+        L.feinA = new Float64Array(roh.length); L.feinB = new Float64Array(roh.length);
+        L.feinNA = 0; L.feinNB = 0; }
+      for (let i = 0; i < roh.length; i++){
+        const p = Math.pow(10, roh[i] / 10);
+        L.fein[i] += p;
+        if (L.feinN % 2 === 0) L.feinA[i] += p; else L.feinB[i] += p;
+      }
+      if (L.feinN % 2 === 0) L.feinNA++; else L.feinNB++;
       L.feinN++;
+      /* Alle acht Aufnahmen nachrechnen, wieviel Rauschen noch drin
+         steckt - oefter waere Rechnen ohne Erkenntnisgewinn. */
+      if (L.feinNA > 2 && L.feinNB > 2 && L.feinN % 8 === 0)
+        L.restrauschen = messRestrauschen(L);
     };
     q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
     raumCtx.__kn = kn;
@@ -17170,6 +17189,39 @@ function raumAus(){
   if (messLive && messLive.raum) messLive = null;
   messBildZeichnen();
   if (typeof messAnsicht === 'function') messAnsicht();
+}
+
+/* WIEVIEL RAUSCHEN STECKT NOCH IM BILD?
+
+   Zwei Halbmittelungen, gebildet aus jeder zweiten Aufnahme. Beide
+   sehen dasselbe Signal, aber unabhaengiges Rauschen. Ihre mittlere
+   Abweichung ist damit ein direktes Mass fuer das, was noch zappelt -
+   ohne jede Annahme darueber, wie das Rauschen verteilt ist.
+
+   Gemessen wird in den Terzbaendern von 63 Hz bis 8 kHz: die Raender
+   sind ohnehin unsicher und wuerden das Urteil verfaelschen.
+
+   Die Differenz zweier Halbmittelungen ist um Wurzel 2 groesser als
+   der Fehler der Gesamtmittelung - beide beruhen ja nur auf der
+   halben Zahl von Aufnahmen. Deshalb wird durch 2 geteilt: heraus
+   kommt, wie weit das GESAMTBILD noch zappelt. */
+function messRestrauschen(L){
+  if (!L.feinA || !L.feinB || L.feinNA < 1 || L.feinNB < 1) return null;
+  const df = L.feinDf;
+  let summe = 0, n = 0;
+  for (let t = 0; t < 31; t++){
+    const fm = 20 * Math.pow(2, t / 3);
+    if (fm < 63 || fm > 8000) continue;
+    const iu = Math.max(1, Math.round(fm / Math.pow(2, 1/6) / df));
+    const io = Math.min(L.feinA.length - 1, Math.round(fm * Math.pow(2, 1/6) / df));
+    let pa = 0, pb = 0, c = 0;
+    for (let i = iu; i <= io; i++){ pa += L.feinA[i] / L.feinNA; pb += L.feinB[i] / L.feinNB; c++; }
+    if (!c) continue;
+    const da = 10 * Math.log10(Math.max(1e-12, pa / c));
+    const db = 10 * Math.log10(Math.max(1e-12, pb / c));
+    summe += Math.abs(da - db); n++;
+  }
+  return n ? (summe / n) / 2 : null;
 }
 
 /* STOERLINIEN IM GRUNDGERAEUSCH FINDEN (Caspar_D, 27.08.2026: "wenn
@@ -17397,6 +17449,28 @@ function messLiveZeichnen(){
     const anz = (L.stoer || []).length;
     b.fillText('Grundgeräusch ' + m.toFixed(0) + ' dB   ·   ' + urteil
       + (anz ? '   ·   ' + anz + (anz === 1 ? ' Störlinie' : ' Störlinien') + ' gefunden' : ''), LI, 29);
+
+    /* DER FORTSCHRITT DER MITTELUNG, rechts oben. Man soll zusehen
+       koennen, wie das Rauschen wegmittelt - wie bei der
+       Mehrfachbelichtung wird das Bild mit jeder Aufnahme klarer, und
+       der Balken zeigt, wie weit es noch ist. Er misst nicht die Zeit,
+       sondern die Ruhe: gefuellt heisst fertig, nicht "gleich soweit". */
+    const rest = L.restrauschen;
+    if (rest !== null && rest !== undefined){
+      const ZIEL = 0.4;
+      /* logarithmisch, weil das Rauschen mit Wurzel N faellt: von 4 dB
+         auf 0,4 dB ist ein Faktor 10, und der soll den ganzen Balken
+         ausmachen statt der letzten Handbreit. */
+      const anteil = Math.max(0, Math.min(1,
+        1 - Math.log10(Math.max(ZIEL, rest) / ZIEL) / Math.log10(10)));
+      const bx = LI + bw - 168, by = 8, bwd = 168, bhd = 5;
+      b.fillStyle = 'rgba(255,255,255,0.10)'; b.fillRect(bx, by, bwd, bhd);
+      b.fillStyle = rest < ZIEL ? '#14b4a0' : '#f97b14';
+      b.fillRect(bx, by, bwd * anteil, bhd);
+      b.fillStyle = '#6e6e73'; b.font = '9px system-ui';
+      b.fillText(L.feinN + ' Aufnahmen   ·   noch '
+        + rest.toFixed(2).replace('.', ',') + ' dB Rauschen', bx, by + 16);
+    }
   } else {
     b.fillText((L.neutral ? 'Durchgang 1 · neutral' : 'Durchgang 2 · mit Einstellung')
       + (L.ruhe !== null ? '   ·   Raum ' + L.ruhe.toFixed(0) + ' dB' : '')
@@ -18544,10 +18618,31 @@ async function messPlanAusfuehren(){
   try {
     if (s.art === 'raum'){
       await raumAbhoeren();
-      /* fünf Sekunden hören, dann wieder aus */
-      await new Promise(r => setTimeout(r, 5000));
+      /* MESSEN, BIS DAS BILD STEHT (Caspar_D, 27.08.2026: "ich haette
+         es gern so, dass es so lange misst, bis es aus vielen
+         momenaufnahmen ein gemitteltes bild gemacht hat / wie bei
+         mulitple exposures in der Mikroskopie").
+
+         Abbruchkriterium ist das Restrauschen aus den beiden
+         Halbmittelungen: faellt es unter 0,4 dB, aendert sich am Bild
+         nichts Wesentliches mehr. Mindestens vier Sekunden, damit
+         wenigstens ein paar Dutzend Aufnahmen zusammenkommen; nach
+         dreissig Sekunden ist Schluss, auch wenn es nicht ruhig wird -
+         dann liegt es am Raum und nicht an der Messzeit. */
+      const ZIEL = 0.4, MIN = 4000, MAX = 30000;
+      const t0 = Date.now();
+      while (Date.now() - t0 < MAX){
+        await new Promise(r => setTimeout(r, 250));
+        if (!messLive) break;
+        if (Date.now() - t0 < MIN) continue;
+        if (messLive.restrauschen !== null && messLive.restrauschen !== undefined
+            && messLive.restrauschen < ZIEL) break;
+      }
       const wert = (messLive && messLive.mittel !== null) ? messLive.mittel : null;
       const tiefst = (messLive && messLive.tiefst !== null) ? messLive.tiefst : null;
+      const aufnahmen = messLive ? messLive.feinN : 0;
+      const rest = messLive ? messLive.restrauschen : null;
+      const dauer = ((Date.now() - t0) / 1000).toFixed(1).replace('.', ',');
       raumAus();
       messPlanZeigen('fertig', wert === null
         ? 'Es kam nichts vom Mikrofon — stimmt die Auswahl oben?'
@@ -18555,7 +18650,13 @@ async function messPlanAusfuehren(){
           + (tiefst !== null ? ', am ruhigsten war es bei ' + tiefst.toFixed(0) + ' dB' : '') + '. '
           + (wert < -55 ? 'Das ist ruhig genug, um auch leise zu messen.'
             : wert < -45 ? 'Brauchbar. Die Messung sollte etwas lauter laufen.'
-            : 'Ziemlich laut. Wenn eine Geräuschquelle abschaltbar ist, lohnt sich das jetzt.'));
+            : 'Ziemlich laut. Wenn eine Geräuschquelle abschaltbar ist, lohnt sich das jetzt.')
+          + '<br><br>Aus <b>' + aufnahmen + ' Momentaufnahmen</b> in ' + dauer + ' s gemittelt'
+          + (rest !== null && rest !== undefined
+              ? '; es zappelt noch um ' + rest.toFixed(2).replace('.', ',') + ' dB'
+                + (rest < 0.4 ? ' — das Bild steht.'
+                              : '. Ganz ruhig wurde es nicht: dann schwankt der Raum selbst.')
+              : '.'));
       return;
     }
     if (s.art === 'neutral'){
