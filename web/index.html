@@ -668,6 +668,30 @@ select,.knopf{
 }
 .bild.zeigtVideo{overflow:visible}
 .karte.zeigtVideo{z-index:30}
+/* DAS BEWEGTE ARTWORK IST ANZEIGE, KEIN BEDIENELEMENT.
+
+   Caspar_D, 28.08.2026: "wenn das Video auf der main view anfängt zu
+   spielen, komme ich an keines der Abzeichen der Bilder ran."
+
+   Zwei Ursachen, beide hier: bewegtAn() haengt das <video> als LETZTES
+   Kind in .bild, damit liegt es ueber allen vier Marken - und ohne
+   pointer-events verschluckt es jeden Klick, der eigentlich der Kachel
+   oder einer Marke galt. Weil es breiter sein darf als die Kachel und
+   ueberstehen soll (siehe bewegtEinpassen), traf das sogar die Marken
+   der NACHBARkacheln.
+
+   Klicks gehen jetzt hindurch an die Karte darunter - deren onclick
+   spielt den Song, also aendert sich fuer den Nutzer nichts, ausser
+   dass es wieder geht. Und die Marken steigen ueber das Video: Sie
+   gehoeren zur Kachel, nicht zum Bewegtbild. */
+.bild video.bewegt{pointer-events:none; z-index:1}
+/* ALLE Marken auf einmal statt einer Liste von Klassennamen: In .bild
+   liegen genau drei Arten von Kindern - das <img>, das <video> und die
+   Marken, und die sind ausnahmslos <span>. Beim ersten Anlauf hatte ich
+   vier Klassen aufgezaehlt und posmarke und remotemarke uebersehen, die
+   nur im Playlist-Raster vorkommen. Die naechste haette ich auch
+   vergessen. */
+.bild > span{z-index:2}
 @keyframes einblenden{from{opacity:0}to{opacity:1}}
 /* Der laufende Song bekommt einen pulsierenden Rahmen statt einer
    Einfärbung - das Artwork bleibt unverfälscht sichtbar. Der Rahmen
