@@ -16754,7 +16754,19 @@ async function messLauf(neutral){
        lassen hiesse, den Sweep zu strecken, und das waere eine andere
        Messung. Sie behalten ihre Dauer. */
     const konvergiert = (art === 'rosa' || art === 'weiss');
-    const DAUER = konvergiert ? 24 : (art === 'baender' ? 8 : 4);
+    /* DER SWEEP LAEUFT GENAUSO LANG wie das Rauschen (Caspar_D,
+       27.08.2026: "und das können wir jetzt mit dem sweep vergleichen").
+
+       Vier Sekunden waeren fuer den Vergleich unfair: die lange FFT
+       kaeme auf 0,336 Hz und koennte die Raummoden gar nicht
+       aufloesen, die das Rauschen bei 0,084 Hz zeigt. Man verglich
+       dann nicht zwei Signale, sondern zwei Aufloesungen.
+
+       Ein gestreckter Sweep ist ausserdem der bessere Sweep: er gibt
+       jedem Band mehr Zeit und damit mehr Energie. Dass er langsam
+       laeuft, ist kein Nachteil - im Gegenteil, es ist genau der
+       Grund, warum Raumakustiker lange Sweeps fahren. */
+    const DAUER = konvergiert ? 24 : (art === 'baender' ? 8 : 13);
     const VOR = 3.5, NACH = 0.6;
     /* Reserve fuer den Weg zum Lautsprecher. Ueber AirPlay puffern die
        Empfaenger rund zwei Sekunden. */
@@ -18327,6 +18339,85 @@ function messSaeulen(b, werte, X, Y, grund, farbe, breite){
   }
 }
 
+/* DEN VERGLEICH AUSWERTEN, statt ihn nur nebeneinanderzulegen
+   (Caspar_D, 27.08.2026: "und das können wir jetzt mit dem sweep
+   vergleichen").
+
+   Beide Durchgaenge haben dieselbe Kette gesehen, denselben Raum,
+   denselben Equalizer in Neutralstellung. Was sie unterscheidet, ist
+   allein das Signal. Drei Dinge lassen sich daran ablesen:
+
+   - Wie ZAPPELIG die Kurven sind. Der Sweep streift jedes Band nur
+     einmal, das Rauschen regt es die ganze Zeit an; der Unterschied
+     ist das Mass fuer den Verfahrensanteil an der Unruhe.
+   - Ob dieselben MODEN gefunden werden. Sie sind eine Eigenschaft des
+     Raums, nicht des Signals - findet man sie in beiden, sind sie
+     echt. Findet man sie nur in einer, ist Vorsicht geboten.
+   - Wie weit die Kurven im MITTEL auseinanderliegen. Sollten sie nicht:
+     derselbe Frequenzgang, zweimal gemessen. */
+function messVergleichBefund(l){
+  const n = messErgebnis.neutral;
+  if (!n || !l.kurve) return 'Gemessen.';
+  const zappel = (k) => {
+    const innen = k.filter(p => p.f >= 63 && p.f <= 8000);
+    let s2 = 0, c = 0;
+    for (let i = 1; i < innen.length - 1; i++){
+      s2 += Math.abs(innen[i-1].db - 2*innen[i].db + innen[i+1].db); c++;
+    }
+    return c ? s2 / c : 0;
+  };
+  const zR = zappel(n), zS = zappel(l.kurve);
+
+  /* mittlerer Abstand der beiden Kurven, auf gleichen Pegel gebracht */
+  let sum = 0, c = 0;
+  for (let i = 0; i < n.length; i++){
+    if (n[i].f < 63 || n[i].f > 8000) continue;
+    sum += l.kurve[i].db - n[i].db; c++;
+  }
+  const versatz = c ? sum / c : 0;
+  let ab = 0; c = 0;
+  for (let i = 0; i < n.length; i++){
+    if (n[i].f < 63 || n[i].f > 8000) continue;
+    ab += Math.abs((l.kurve[i].db - versatz) - n[i].db); c++;
+  }
+  const mittlereAbweichung = c ? ab / c : 0;
+
+  const mR = messErgebnis.neutralLang ? messModenFinden(messErgebnis.neutralLang, 20, 400) : [];
+  const mS = l.lang ? messModenFinden(l.lang, 20, 400) : [];
+  const beide = mR.filter(a => mS.some(b => Math.abs(a.f - b.f) / a.f < 0.05));
+
+  const teile = [];
+  teile.push('Beide Signale haben dieselbe Kette gesehen. Was sie unterscheidet, ist das '
+    + 'Verfahren.');
+  teile.push('<b>Unruhe der Kurve:</b> Rauschen ' + zR.toFixed(2).replace('.', ',')
+    + ' dB von Band zu Band, Sweep ' + zS.toFixed(2).replace('.', ',') + ' dB. '
+    + (zS > zR * 1.25
+        ? 'Der Sweep zappelt deutlich mehr — genau wie erwartet: er streift jedes Band nur '
+          + 'einmal, das Rauschen regt es die ganze Zeit an.'
+        : zR > zS * 1.25
+          ? 'Ungewöhnlich: hier ist das Rauschen unruhiger. Das spricht dafür, daß während '
+            + 'einer der beiden Messungen etwas im Raum war.'
+          : 'Beide etwa gleich ruhig — bei dieser Länge holt der Sweep auf.'));
+  teile.push('<b>Frequenzgang:</b> die beiden Kurven liegen im Mittel '
+    + mittlereAbweichung.toFixed(2).replace('.', ',') + ' dB auseinander'
+    + (Math.abs(versatz) > 0.5
+        ? ' (nach Abzug eines Pegelunterschieds von ' + versatz.toFixed(1).replace('.', ',')
+          + ' dB, den der Scheitelfaktor der Signale erklärt)' : '')
+    + '. ' + (mittlereAbweichung < 1.5
+        ? 'Das ist gute Übereinstimmung: derselbe Raum, zweimal gemessen.'
+        : 'Das ist mehr, als zwei Messungen desselben Raums auseinanderliegen sollten.'));
+  if (mR.length || mS.length){
+    teile.push('<b>Raummoden:</b> im Rauschen ' + mR.length + ', im Sweep ' + mS.length
+      + (beide.length
+          ? ', davon <b>' + beide.length + ' in beiden</b> — '
+            + beide.map(m => m.f.toFixed(1).replace('.', ',') + ' Hz').join(', ')
+            + '. Was beide Signale finden, ist eine Eigenschaft des Raums und kein Artefakt.'
+          : ', aber keine gemeinsame. Das ist ein Warnzeichen: eine echte Mode müßte in '
+            + 'beiden auftauchen.'));
+  }
+  return teile.join('<br><br>');
+}
+
 /* DER RAUM UNTER DER LUPE: die lange FFT der Bezugsmessung.
 
    Hier steht, was die Terzbaender verschweigen. Zwei Dinge sind
@@ -18434,12 +18525,37 @@ function messLupeZeichnen(){
     + L.df.toFixed(3).replace('.', ',') + ' Hz', LI, 15);
   b.fillStyle = '#6e6e73'; b.font = MESS_SCHRIFT;
   b.fillText(moden.length
-    ? moden.length + (moden.length === 1 ? ' Raummode' : ' Raummoden') + ' gefunden — '
+    ? moden.length + (moden.length === 1 ? ' Raummode' : ' Raummoden')
+      + (messModenBestaetigt() ? ' (in beiden Signalen bestätigt)' : ' — noch unbestätigt')
+      + ' — '
       + 'Q sagt, wie lange sie nachklingt (30 ≈ dreißig Perioden), der Meterwert den '
       + 'Wandabstand, der sie erzeugt. Dauertöne aus der Raumstille sind ausgenommen'
     : 'keine ausgeprägte Raummode gefunden', LI, 30);
 
   messKammBefund(L);
+}
+
+/* IST EINE MODE BESTAETIGT? (Caspar_D, 27.08.2026: "und das können wir
+   jetzt mit dem sweep vergleichen" - und genau der Vergleich hat es
+   aufgedeckt.)
+
+   Erste Gegenprobe zwischen Rauschen und Sweep: zwei Moden im einen,
+   eine im anderen, KEINE gemeinsame. Eine Raummode ist aber eine
+   Eigenschaft des Raums und muesste in beiden auftauchen. Also ist die
+   Suche nicht robust genug, und das gehoert dazugesagt, statt Zahlen
+   als Befund auszugeben.
+
+   Bestaetigt heisst: dieselbe Mode wurde in einem zweiten Durchgang
+   mit ANDEREM Signal wiedergefunden, auf fuenf Prozent genau. Was nur
+   einmal auftaucht, bleibt ein Verdacht. */
+function messModenBestaetigt(){
+  const a = messErgebnis.neutralLang;
+  if (!a) return false;
+  const sweepLauf = (messErgebnis.laeufe || []).find(l => l.lang && /Sweep/i.test(l.name || ''));
+  if (!sweepLauf) return false;
+  const mA = messModenFinden(a, 20, 400), mB = messModenFinden(sweepLauf.lang, 20, 400);
+  if (!mA.length || !mB.length) return false;
+  return mA.some(x => mB.some(y => Math.abs(x.f - y.f) / x.f < 0.05));
 }
 
 /* RAUMMODEN FINDEN: schmale Ueberhoehungen gegen den geglaetteten
@@ -19355,9 +19471,16 @@ const MESS_PLAN = [
     ruhe: true },
   { art: 'vergleich', signal: 'sweep',
     titel: 'Dieselbe Messung mit dem Sweep',
-    text: 'Jetzt derselbe Durchgang, aber mit einem Ton, der von 20 Hz bis 20 kHz hochläuft. '
-        + 'Zwei Signale, dieselbe Kette — die Unterschiede zwischen den beiden Kurven sind '
+    text: 'Jetzt derselbe Durchgang, aber mit einem Ton, der von 20 Hz bis 20 kHz hochläuft — '
+        + 'gleich lang wie das Rauschen, damit die Auflösung dieselbe ist. Zwei Signale, '
+        + 'dieselbe Kette, Equalizer neutral: die Unterschiede zwischen den beiden Kurven sind '
         + 'nicht der Raum, sondern das Verfahren.<br><br>'
+        + 'Zu erwarten ist: dieselben Raummoden an denselben Frequenzen — sie sind ja eine '
+        + 'Eigenschaft des Raums, nicht des Signals. Beim Rest lohnt es sich, die Erwartung '
+        + 'offen zu lassen: bei kurzen Messungen zappelt der Sweep mehr, weil er jedes Band '
+        + 'nur streift. Bei dieser Länge kann es umgekehrt sein — dann spielt er seinen '
+        + 'Vorteil aus, seine ganze Energie in eine Frequenz zu legen, während das Rauschen '
+        + 'sie verteilt.<br><br>'
         + 'Der Sweep hat einen Vorteil, den das Rauschen nicht hat: weil zu jedem Zeitpunkt '
         + 'nur eine Frequenz im Raum steht, lassen sich Direktschall und Nachhall trennen. '
         + 'Deshalb ist er der Standard der Raumakustik — und deshalb wäre er die Grundlage '
@@ -19571,12 +19694,8 @@ async function messPlanAusfuehren(){
       await messLauf(false);
       const l = (messErgebnis.laeufe || []).slice(-1)[0];
       if (l) l.name = 'Sweep statt Rauschen';
-      messPlanZeigen('fertig', !l
-        ? 'Es kam nichts an — bitte wiederholen.'
-        : 'Gemessen. Im Diagramm „Was eingestellt war und was ankam" liegt diese Kurve jetzt '
-          + 'neben der Nullinie: <b>der Equalizer stand neutral</b>, also ist alles, was du '
-          + 'dort siehst, der Unterschied zwischen Rauschen und Sweep — nicht der Raum. '
-          + 'Je zappeliger, desto mehr davon geht auf das Verfahren.');
+      messPlanZeigen('fertig', !l ? 'Es kam nichts an — bitte wiederholen.'
+        : messVergleichBefund(l));
       return;
     }
     if (s.art === 'lauf'){
