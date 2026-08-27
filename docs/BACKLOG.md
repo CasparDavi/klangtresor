@@ -1157,7 +1157,27 @@ wav-Dateien in unser Repo zu legen."*
 neueste Song ist vom 17.08. — dem Tag vor dem Nachtlauf. Es fehlt also
 derzeit nichts; sobald neue Songs dazukommen, fehlt es.
 
-**Das Problem:** Der Weg aus `WAV-PROTOKOLL.md` funktioniert nicht mehr.
+**GELÖST am selben Abend — von Tarja.** Sie kennt den Endpunkt, den
+Sunos eigene Website benutzt: `GET studio-api.prod.suno.com/api/download/clip/<id>?format=wav`
+liefert eine signierte S3-Adresse, die ohne Token ladbar ist. Nachgeprüft
+und bestätigt, Beschreibung in `WAV-PROTOKOLL.md`. Der Download zählt
+damit als offiziell — genau das, was ab 3. September für die Limits
+zählt.
+
+Was jetzt noch zu tun ist:
+
+1. `bin/wav.js` auf den neuen Weg umstellen: Token besorgen (Browser
+   oder übergeben), `/api/download/clip/` abfragen, pollen bis `ready`,
+   dann die S3-Adresse laden — letzteres kann Node direkt.
+   **Die Signatur gilt nur eine Stunde**, also je Datei kurz vor dem
+   Laden anfordern, nicht alle auf Vorrat.
+2. Das Kreuzchen im Lesezeichen (Beschreibung unten) — es wird
+   einfacher als gedacht, weil derselbe Aufruf Anstoßen und Laden in
+   einem erledigt. Ein getrenntes `convert_wav` braucht es nicht mehr.
+
+---
+
+**Das ursprüngliche Problem (überholt):** Der Weg aus `WAV-PROTOKOLL.md` funktioniert nicht mehr.
 `cdn1.suno.ai/<id>.wav` liefert 403 statt 206, auch für Songs, deren WAV
 wir besitzen. Mit `Authorization`-Header kommt die Anfrage gar nicht
 durch (CORS-Vorabruf). `/api/gen/<id>/` gibt 404. Und `media_urls` in

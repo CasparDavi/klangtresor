@@ -1,30 +1,94 @@
 # WAV-Nachtlauf — abgeschlossen
 
-> ## ⚠ Der beschriebene Weg funktioniert seit spätestens 27.08.2026 nicht mehr
+> ## Der Weg von August ist zu — es gibt einen neuen (27.08.2026)
 >
-> Nachgemessen am 27.08.2026 an einem Song, dessen WAV hier lokal liegt
-> (64 MB, geladen am 18.08.):
+> **Der alte Weg** (`convert_wav` anstoßen, dann `cdn1.suno.ai/<id>.wav`
+> ohne Anmeldung laden) funktioniert nicht mehr. Nachgemessen an einem
+> Song, dessen WAV hier liegt:
 >
 > | | August | 27.08.2026 |
 > |---|---|---|
 > | `cdn1.suno.ai/<id>.wav` ohne Anmeldung | 206 | **403** |
-> | dasselbe mit `Authorization`-Header | — | kommt **gar nicht durch**: das CDN beantwortet den CORS-Vorabruf nicht |
-> | `cdn1.suno.ai/<id>.mp3` ohne Anmeldung | 206 | 206 — geht weiter |
+> | dasselbe mit `Authorization` | — | kommt gar nicht durch (CORS-Vorabruf) |
+> | `cdn1.suno.ai/<id>.mp3` | 206 | 206 — geht weiter |
 > | `GET /api/gen/<id>/` | ging | **404** |
 >
-> Außerdem führt `/api/clip/<id>` ein neues Feld **`media_urls`**, und
-> dort stehen für denselben Song nur noch zwei Formate: `m3a-opus`
-> (neu, auf CloudFront) und `mp3`. **Kein WAV.**
->
-> Ob `POST /api/gen/<id>/convert_wav/` noch antwortet, wurde **nicht**
-> geprüft — ein Versuch hätte eine Erzeugung ausgelöst und ab September
-> Kontingent gekostet.
->
-> **Was daraus folgt:** Alles unterhalb dieser Zeile beschreibt den Stand
-> vom August und ist als Bericht gültig, als Anleitung nicht mehr. Wer
-> WAVs für neue Songs braucht, muß zuerst herausfinden, wie Suno sie
-> heute ausliefert — am ehesten, indem man auf einer Songseite einen
-> Download anstößt und den Netzwerkverkehr mitschreibt.
+> **Der neue Weg** kommt von **Tarja** und ist der, den Sunos eigene
+> Website nach *Drei Punkte → Download → WAV* benutzt. Nachgeprüft und
+> bestätigt am 27.08.2026 — siehe unten, Abschnitt „Der offizielle
+> Download". Der Rest dieses Dokuments beschreibt den Stand vom August
+> und ist als Bericht gültig, als Anleitung überholt.
+
+## Der offizielle Download (Stand 27.08.2026)
+
+Gefunden von **Tarja**, nachgeprüft am selben Tag. Der Punkt: Wer über
+`cdn1.suno.ai` lädt, umgeht Sunos Zählung. Der Endpunkt unten ist
+derselbe, den die Website benutzt — der Download zählt also als
+offiziell, was ab dem **3. September** für die Limits zählt (30 bzw. 60
+je nach Plan, darüber wird abgerechnet).
+
+### Der Endpunkt
+
+```
+GET https://studio-api.prod.suno.com/api/download/clip/<id>?format=wav
+```
+
+`format` kennt `wav`, `mp3` und `m4a`. Kopfzeilen:
+
+```http
+Authorization: Bearer <clerk-jwt>
+Content-Type: application/json
+browser-token: {"token":"<base64 von {"timestamp":<ms>}>"}
+```
+
+Der `browser-token` ist kein Anmeldeschlüssel, sondern nur ein
+base64-verpackter Zeitstempel.
+
+**Achtung beim Hostnamen:** `studio-api.prod.suno.com` mit **Punkt**.
+(Der alte Name mit Bindestrich antwortet zwar auch, aber der
+Download-Endpunkt liegt hier.)
+
+### Die Antwort
+
+```json
+{ "ok": true, "status": "processing" }          → weiter pollen
+{ "ok": true, "status": "ready",
+  "download_url": "https://suno-data-uploads.s3.amazonaws.com/studio/uploads/<id>.wav?..." }
+```
+
+Rund jede Sekunde nachfragen. Gemessen war die Datei beim **zweiten**
+Aufruf fertig; Tarja nennt 2–5 s beim ersten WAV eines Clips, danach
+sofort.
+
+### Die Datei holen
+
+Die `download_url` ist eine **signierte S3-Adresse** und braucht keinen
+Token mehr — ein nacktes GET genügt, auch von Node aus.
+
+| | |
+|---|---|
+| Host | `suno-data-uploads.s3.amazonaws.com` |
+| Pfad | `/studio/uploads/<id>.wav` |
+| Signatur | `AWSAccessKeyId`, `Signature`, `Expires` |
+| gültig | **eine Stunde** (gemessen) |
+| Inhalt | `audio/wav`, im Test 64.111.122 Bytes |
+
+Die Stunde Gültigkeit heißt: Wer viele Dateien holt, muß die URL kurz
+vor dem Laden anfordern, nicht alle auf Vorrat.
+
+**Randnotiz:** Die so geladene Datei war 13.670 Bytes größer als unsere
+vom August — vermutlich andere Kopfdaten, nicht anderer Toninhalt. Nicht
+weiter geprüft.
+
+### Was daraus für KlangTresor folgt
+
+`bin/wav.js` müßte den Weg umstellen: erst `/api/download/clip/` mit
+Token (also im Browser oder mit übergebenem Token), dann die S3-Adresse
+ohne Token laden — letzteres kann Node direkt. Das Kreuzchen im
+Lesezeichen aus dem Backlog wird damit einfacher, weil das Lesezeichen
+den Token ohnehin hat.
+
+---
 
 Begonnen 18.08.2026, 02:20 Uhr. **Fertig um 03:20 Uhr: alle 321 WAVs.**
 
