@@ -464,10 +464,6 @@
    Die .slbl ist fuer Klicks durchlaessig, der Kreis darf sie fangen. */
 /* Die Pille sitzt in der Kopfzeile und schaltet die sechs Tonspuren
    zu. Aus ist der Normalfall: Bilder ja, Ton nein. */
-/* Die Wortknoepfe des Signalumschalters - dieselbe Form wie die
-   Symbolknoepfe daneben, nur mit Text. */
-.sunoanalyzer .sa-signal button{font:inherit;font-size:9.5px;font-weight:600;
-  letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;min-width:0}
 .sunoanalyzer .stem-pille{display:inline-block;margin-left:10px;padding:1px 8px;
   border:1px solid #4b93f0;border-radius:9px;font-size:9.5px;font-weight:600;
   letter-spacing:.04em;text-transform:uppercase;color:#4b93f0;cursor:pointer;
@@ -769,6 +765,18 @@
      nebeneinander, beide ohne Scrollen. -->
 <div class="section" id="spur-spektrum">
   <div class="slbl"><span id="sa-spektrum-titel"><span class="nam">Frequenzspektrum</span> — <span class="erkl">live</span></span></div>
+  <!-- WELCHES SIGNAL (Caspar_D, 26.08.2026: "wie wärs mit Registern,
+       Rohsignal, Endsignal" - benannt als "Codiertes Signal /
+       Ausgabe-Signal"). Als Registerzeile im Hausschnitt: dieselben
+       Unterstrich-Reiter wie beim Spektrogramm darunter ("die register
+       bitte, wie unten bei fft, gleiches design").
+
+       Versteckt, solange die Buehne keinen zweiten Abgriff
+       hereinreicht - ein Umschalter mit nur einer Stellung ist keiner. -->
+  <div class="bf-register" id="sa-signal-wahl" data-wert="codiert" style="display:none">
+    <button type="button" data-s="codiert" class="an" title="Das Stück, wie es in der Datei steht — vor allem, was KlangTresor damit tut">Codiertes Signal</button>
+    <button type="button" data-s="ausgabe" title="Nach Equalizer, Kompressor, Breite, Hall und Echo">Ausgabe-Signal</button>
+  </div>
   <div class="chart-outer"><canvas id="freq-canvas" style="height:150px;background:#0a0a0a"></canvas></div>
   <!-- Der Text wird mit dem Modus umgeschrieben, siehe
        spektrumTexteSetzen() - die Kanalfarben gelten nur in der
@@ -782,18 +790,6 @@
     <span class="spur-profil" id="sa-spektrum-wahl" data-wert="gespiegelt">
       <button data-m="gespiegelt" class="an" title="Links oben, rechts unten — an einer gemeinsamen Achse gespiegelt"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 5.5H14M2.5 5.5V2.5M2.5 5.5V8.5M6 5.5V1.5M6 5.5V9.5M9.5 5.5V3.2M9.5 5.5V7.8M12.5 5.5V4.3M12.5 5.5V6.7" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
       <button data-m="summe" title="Beide Kanäle zusammen"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 10H14M2 10V6.5M5 10V3M8 10V1.5M11 10V5M13.5 10V7.5" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
-    </span>
-    <!-- WELCHES SIGNAL (Caspar_D, 26.08.2026: "wie wärs mit Registern,
-         Rohsignal, Endsignal"). Hier stehen Woerter statt Symbole: Der
-         Unterschied zwischen "vor der Bearbeitung" und "danach" laesst
-         sich nicht zeichnen, ohne dass man die Beschriftung trotzdem
-         lesen muesste.
-
-         Versteckt, solange die Buehne keinen Endknoten hereinreicht -
-         ein Umschalter, der nur eine Stellung hat, ist keiner. -->
-    <span class="spur-profil sa-signal" id="sa-signal-wahl" data-wert="codiert" style="display:none;margin-left:8px">
-      <button data-s="codiert" class="an" title="Codiertes Signal — das Stück, wie es in der Datei steht, vor allem, was KlangTresor damit tut">codiert</button>
-      <button data-s="ausgabe" title="Ausgabe-Signal — nach Equalizer, Kompressor, Breite, Hall und Echo">Ausgabe</button>
     </span>
   </div>
 </div>
@@ -6627,7 +6623,7 @@
       /* Der Umschalter erscheint erst jetzt - vorher weiss niemand, ob
          es ueberhaupt zwei Abgriffe gibt. */
       var sw=document.getElementById('sa-signal-wahl');
-      if(sw) sw.style.display = (eL&&eR) ? '' : 'none';
+      if(sw) sw.style.display = (eL&&eR) ? 'flex' : 'none';
       if(!(eL&&eR)) _signalModus='codiert';
       window._liveGraph={teiler:teiler,l:aL,r:aR,quelle:_fremdeQuelle};
       window._analyser=aL; window._liveQuelle=_fremdeQuelle;
