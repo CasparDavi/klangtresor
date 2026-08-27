@@ -18478,8 +18478,9 @@ const MESS_PLAN = [
     text: 'Ohne selbst Töne oder Geräusche zu erzeugen, messe ich, wie laut es bei dir von '
         + 'sich aus ist — das ist die Grundlage für alles Weitere: Ein Signal muß mindestens '
         + '20 dB lauter sein als das Grundgeräusch, sonst mißt man Störsignal / Zufall. '
-        + 'Das dauert etwa fünf Sekunden, dabei solltest du still sein, darfst dich aber '
-        + 'ruhig bewegen.',
+        + 'Das dauert acht Sekunden oder länger — so lange, bis sich aus vielen '
+        + 'Momentaufnahmen ein ruhiges Bild gemittelt hat. Dabei solltest du still sein, '
+        + 'darfst dich aber ruhig bewegen.',
     ruhe: false },
   { art: 'neutral', signal: 'rosa',
     titel: 'Die Bezugsmessung',
@@ -18625,11 +18626,16 @@ async function messPlanAusfuehren(){
 
          Abbruchkriterium ist das Restrauschen aus den beiden
          Halbmittelungen: faellt es unter 0,4 dB, aendert sich am Bild
-         nichts Wesentliches mehr. Mindestens vier Sekunden, damit
-         wenigstens ein paar Dutzend Aufnahmen zusammenkommen; nach
-         dreissig Sekunden ist Schluss, auch wenn es nicht ruhig wird -
-         dann liegt es am Raum und nicht an der Messzeit. */
-      const ZIEL = 0.4, MIN = 4000, MAX = 30000;
+         nichts Wesentliches mehr.
+
+         Mindestens ACHT Sekunden (Caspar_D, 27.08.2026: "ich wuerde die
+         Zeit noch verdoppeln"). Doppelte Messzeit heisst Wurzel zwei
+         weniger Rauschen - der Gewinn ist bescheiden, aber er kostet
+         nur Warten, und ein Grundgeraeusch misst man einmal und
+         verlaesst sich dann darauf. Nach sechzig Sekunden ist Schluss,
+         auch wenn es nicht ruhig wird: dann liegt es am Raum und nicht
+         an der Messzeit. */
+      const ZIEL = 0.4, MIN = 8000, MAX = 60000;
       const t0 = Date.now();
       while (Date.now() - t0 < MAX){
         await new Promise(r => setTimeout(r, 250));
