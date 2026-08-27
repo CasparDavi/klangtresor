@@ -1869,6 +1869,25 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    beieinander als zum Rest: halbe Luecke. */
 .messkopf #messneutral{margin-right:-5px}
 .messstand{font-size:11.5px;color:var(--schwach);margin-top:10px;min-height:15px}
+/* Das Fazit steht abgesetzt vom Bild - es ist das Ergebnis, nicht eine
+   Beschriftung dazu. Linke Kante als ruhige Marke, kein Kasten. */
+.messblock{margin-top:26px}
+.messblock h6{margin:0 0 8px;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--schwach);font-weight:600}
+.messblock canvas{width:100%;display:block;border-radius:8px}
+.messfazit{margin-top:26px;padding:2px 0 2px 16px;border-left:2px solid var(--rand);
+  font-size:12.5px;line-height:1.65;color:var(--text)}
+.messfazit h5{margin:0 0 10px;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--schwach);font-weight:600}
+.messfazit p{margin:0 0 9px}
+.messfazit p:last-child{margin-bottom:0}
+.messfazit b{color:#f97b14;font-weight:600}
+.messfazit .fzahl{font-variant-numeric:tabular-nums}
+.messfazit .fmatt{color:var(--schwach)}
+.messfazit .fwarn{color:#f9b414}
+/* Ein Knopf mitten im Fliesstext: er soll die Zeile nicht sprengen. */
+.messfazit .messknopfklein{height:26px;padding:0 10px;font-size:11.5px;
+  vertical-align:middle;margin-left:4px}
 #messbild{display:block;width:100%;height:260px;background:#0a0a0a;
   border:1px solid var(--rand);border-radius:8px;margin-top:10px}
 /* Die Legende haengt naeher am Bild als am Text darunter (Hausregel:
@@ -2711,6 +2730,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
              jeden Ton - nur hoeren, was der Raum von sich aus macht. -->
         <button class="knopf" id="messraum" onclick="raumAbhoeren()"
           title="Ohne Ton: zeigt fortlaufend, wie laut der Raum ist und welche Frequenzen stören. Zum Suchen einer ruhigen Stelle fürs Mikrofon.">Raum abhören</button>
+        <!-- Die Kette in Stufen durchfahren: zeigt, ab wann etwas
+             auf dem Weg begrenzt. -->
+        <button class="knopf" id="messpegelreihe" onclick="pegelReihe()"
+          title="Fährt die Lautstärke in Stufen durch und mißt jedesmal. Zeigt, ob die Kette linear bleibt oder ab einem Punkt zurückregelt.">Lautstärke durchfahren</button>
+        <button class="knopf" id="messleeren" onclick="messReiheLeeren()"
+          title="Löscht die gesammelten Durchgänge. Die neutrale Bezugsmessung bleibt.">Reihe leeren</button>
         <span class="messluecke"></span>
         <button class="knopf" id="messneutral" onclick="einmessenNeutral()"
           title="Erster Durchgang: das Tonstudio wird dabei umgangen. Ohne ihn zeigt die Messung nur die Kette aus Lautsprecher, Raum und Mikrofon.">1 · Neutral</button>
@@ -2727,6 +2752,26 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <span><i class="bal" style="background:#f9143c"></i>Tonstudio hebt an</span>
         <span><i class="bal" style="background:#f9b414"></i>Tonstudio nimmt weg</span>
       </div>
+
+      <!-- WIRKUNG: eingestellt gegen angekommen. Steht in Differenzen,
+           nicht in Pegeln - erst dadurch ist die Messung mit der
+           Einstellung vergleichbar. -->
+      <div class="messblock" hidden>
+        <h6>Was eingestellt war und was ankam</h6>
+        <canvas id="messwirkung" height="200"></canvas>
+      </div>
+
+      <!-- LAUTSTAERKEKENNLINIE: wieviel vom Regler ankommt, Stufe für Stufe. -->
+      <div class="messblock" hidden>
+        <h6>Wie die Kette auf Lautstärke reagiert</h6>
+        <canvas id="messpegel" height="200"></canvas>
+      </div>
+
+      <!-- DAS FAZIT (Caspar_D, 27.08.2026: "es muß ja jetzt ein Fazit
+           geben"). Zwei Kurven und eine Differenz sind noch kein
+           Ergebnis - erst der Vergleich mit dem, was eingestellt WAR,
+           sagt etwas. -->
+      <div class="messfazit" id="messfazit" hidden></div>
 
       <div class="messspalten">
         <div class="messwie">
@@ -16321,6 +16366,19 @@ async function messLauf(neutral){
 
   try {
     if (raumStrom) raumAus();        /* nicht zwei Mikrofonströme gleichzeitig */
+    /* UM RUHE BITTEN, bevor es losgeht (Caspar_D, 27.08.2026: "auch
+       solltest du vorher sagen, jetzt Ruhe bitte oder sowas"). Ein
+       Mikrofon nimmt alles mit - ein Rascheln waehrend der Messung
+       steht nachher als Buckel in der Kurve, und niemand weiss mehr
+       warum. Die Dauer gehoert dazu: dann weiss man, wie lange man
+       stillhalten soll. */
+    {
+      const artN = ($('messsignal') || { value: 'sweep' }).value;
+      const sek = Math.round((artN === 'baender' ? 8 : 4) + 3.5 + 0.6 + 4);
+      sagen('Bitte jetzt Ruhe — die Messung läuft ' + sek + ' Sekunden. '
+        + 'Jedes Geräusch im Raum steht nachher in der Kurve.');
+    }
+    await new Promise(r => setTimeout(r, 900));   /* damit man es lesen kann */
     sagen('Mikrofon …');
     /* Das GEWAEHLTE Geraet, nicht das Standardgeraet: das kann ein
        virtueller Durchschleifer sein, der den Raum gar nicht hoert. */
@@ -16499,10 +16557,38 @@ async function messLauf(neutral){
     const kurve = messSpektrum(puffer.subarray(ab, bis), sr);
     messErgebnis[neutral ? 'neutral' : 'mit'] = kurve;
     messErgebnis.sr = sr;
+    /* Der Lauf haengt sich an die Reihe an, statt den vorigen zu
+       verdraengen - mit eigener Farbe, eigenem Namen und der
+       Sollkurve, die zu SEINER Reglerstellung gehoert. */
+    if (!neutral){
+      if (!Array.isArray(messErgebnis.laeufe)) messErgebnis.laeufe = [];
+      const n = messErgebnis.laeufe.length;
+      messErgebnis.laeufe.push({
+        name: messLaufName(),
+        farbe: MESS_FARBEN[n % MESS_FARBEN.length],
+        kurve, soll: messSollkurve(), gains: eqGains.map(v => +v || 0),
+        abstand, laufzeit: Math.round((versatz - VOR) * 1000),
+        laut: Math.round(+($('lautstaerke') || { value: 0 }).value),
+      });
+    } else {
+      /* Ein neuer Nullpunkt macht die alten Laeufe unvergleichbar:
+         sie waren gegen eine andere Bezugsmessung aufgenommen. */
+      messErgebnis.laeufe = [];
+      messErgebnis.mit = null;
+      messErgebnis.pegel = null;
+      messErgebnis.neutralLaut = Math.round(+($('lautstaerke') || { value: 0 }).value);
+    }
     messErgebnis[neutral ? 'abstandN' : 'abstandM'] = abstand;
+    /* Was das Tonstudio in diesem Augenblick laut eigener Rechnung tut -
+       festgehalten zur Messung, nicht erst beim Anzeigen: bis dahin
+       koennte laengst jemand am Regler gedreht haben. */
+    if (!neutral) messErgebnis.soll = messSollkurve();
     messErgebnis.laufzeit = Math.round((versatz - VOR) * 1000);
     messErgebnis.mikro = mikroName;
     messBildZeichnen();
+    messWirkungZeichnen();
+    messPegelZeichnen();
+    messFazitZeigen();
     const laut = kurve.reduce((a, b) => a + b.db, 0) / kurve.length;
     sagen((neutral ? 'neutraler Durchgang steht' : 'gemessen')
       + ' · ' + laut.toFixed(0) + ' dB im Mittel'
@@ -16839,25 +16925,573 @@ function messLiveZeichnen(){
   b.fillStyle = farbe; b.fillRect(LI, H - 12, bw * anteil, 3);
 }
 
+/* DIE MESSREIHE (Caspar_D, 27.08.2026: "und ich dachte du misst mit
+   mehreren einstellungen und jede einstellung bekommt eine farbe und
+   dann noch diagramme, die zeigen, wie sieht die kurve erwartbar aus,
+   wenn alles ankommt, was ich einstelle und wie sieht sie gemessen aus.
+   das sind doch alles daten, die wir haben").
+
+   Vorher hielt das Ergebnis genau zwei Kurven: neutral und "mit
+   Einstellung". Wer eine zweite Einstellung pruefen wollte, verlor die
+   erste. Jetzt sammelt sich eine Reihe an, jeder Lauf mit eigener
+   Farbe, und die gerechnete Sollkurve haengt an jedem Lauf mit dran. */
+const MESS_FARBEN = ['#f97b14', '#14b4a0', '#2a4bf0', '#f9143c', '#4b93f0', '#f9b414', '#a06cd5'];
+
+/* Ein Name fuer den Lauf, ohne dass jemand tippen muss. Ein Klassiker
+   heisst wie der Klassiker; sonst benennt ihn der auffaelligste Regler.
+   Das ist genauer als "Einstellung 3" und kuerzer als acht Zahlen. */
+function messLaufName(){
+  const g = eqGains.map(v => +v || 0);
+  if (g.every(v => Math.abs(v) < 0.05)) return 'neutral gestellt';
+  for (const [k, vals] of Object.entries(EQ_KLASSIKER))
+    if (vals.every((v, i) => Math.abs(v - g[i]) < 1e-9)){
+      return ({ loudness: 'Loudness', bass: 'Bass', hoehen: 'Höhen',
+                stimme: 'Stimme', nacht: 'Nacht' })[k] || k;
+    }
+  let iMax = 0;
+  g.forEach((v, i) => { if (Math.abs(v) > Math.abs(g[iMax])) iMax = i; });
+  const f = (eqAnsichtHz ? (eqFreq[iMax] || EQ_FREQ_STD[iMax]) : EQ_FREQ_STD[iMax]);
+  const wieviele = g.filter(v => Math.abs(v) >= 0.5).length;
+  const kern = (f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz')
+    + ' ' + (g[iMax] >= 0 ? '+' : '') + (+g[iMax].toFixed(1)).toString().replace('.', ',');
+  return wieviele > 1 ? kern + ' u. a.' : kern;
+}
+
+/* Die Reihe leeren - die Bezugsmessung bleibt, sie ist ja der Nullpunkt. */
+function messReiheLeeren(){
+  messErgebnis.laeufe = [];
+  messErgebnis.mit = null;
+  messErgebnis.pegel = null;
+  messBildZeichnen(); messWirkungZeichnen(); messPegelZeichnen(); messFazitZeigen();
+  const e = $('messstand'); if (e) e.textContent = 'Reihe geleert — die neutrale Bezugsmessung bleibt.';
+}
+
+/* DIE SOLLKURVE: was das Tonstudio laut seiner eigenen Rechnung tut,
+   auf denselben 31 Terzbaendern wie die Messung.
+
+   Wichtig ist die MITTELUNG ueber die Bandbreite. Ein Terzband ist
+   breiter als eine EQ-Glocke spitz ist; wer nur die Bandmitte
+   nachschlaegt, vergleicht eine Spitze mit einem Mittelwert und
+   wundert sich, dass "12 dB eingestellt" nur "11,3 dB gemessen"
+   ergibt. Also wird die Sollkurve genauso gemittelt wie die Messung:
+   feines Raster im Band, Mittel in Leistung. */
+function messSollkurve(){
+  if (typeof eqAntworten !== 'function') return null;
+  const TEIL = 9;                       /* Stuetzen je Terzband */
+  const fs = [];
+  for (let t = 0; t < 31; t++){
+    const fm = 20 * Math.pow(2, t / 3);
+    const fu = fm / Math.pow(2, 1/6), fo = fm * Math.pow(2, 1/6);
+    for (let k = 0; k < TEIL; k++) fs.push(fu * Math.pow(fo / fu, k / (TEIL - 1)));
+  }
+  let antwort;
+  try { antwort = eqAntworten(new Float32Array(fs)); } catch (e) { return null; }
+  if (!antwort || !antwort.summe) return null;
+  const out = [];
+  for (let t = 0; t < 31; t++){
+    let p = 0;
+    for (let k = 0; k < TEIL; k++) p += Math.pow(10, antwort.summe[t * TEIL + k] / 10);
+    out.push(10 * Math.log10(p / TEIL));
+  }
+  return out;
+}
+
+/* DIE LAUTSTAERKE DURCHFAHREN (Caspar_D, 27.08.2026: "und auch
+   erhoehung der Lautstaerke und wahrnehmung der mom mikrophon
+   gemessenen Signalaenderung").
+
+   Fuenf Stufen, jedesmal messen. Der Regler wirkt quadratisch, seine
+   Wirkung in dB ist also 40*log10(Anteil): von 100 % auf 35 % sind das
+   genau 18 dB weniger. Bleibt die Kette linear, faellt der gemessene
+   Pegel um dieselben 18 dB. Faellt er um weniger, hat oben etwas
+   begrenzt - und man sieht, ab welcher Stufe.
+
+   Gemessen wird mit UMGANGENEM Tonstudio: es geht um den Weg vom
+   Rechner zum Ohr, nicht um den Equalizer. */
+const MESS_STUFEN = [100, 70, 50, 35, 25];
+
+async function pegelReihe(){
+  const sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
+  const k = $('messpegelreihe');
+  if (k && k.disabled) return;
+  const merkLaut = Math.round(+($('lautstaerke') || { value: 60 }).value);
+  const merkEq = (typeof eqAus !== 'undefined') ? eqAus : null;
+  if (k) k.classList.add('an');
+  messErgebnis.pegel = [];
+  sagen('Bitte jetzt Ruhe — ' + MESS_STUFEN.length + ' Durchgänge, zusammen gut eine Minute. '
+    + 'Die Lautstärke wird dabei von ' + MESS_STUFEN[0] + ' % auf '
+    + MESS_STUFEN[MESS_STUFEN.length - 1] + ' % heruntergefahren.');
+  await new Promise(r => setTimeout(r, 1600));
+  try {
+    for (let i = 0; i < MESS_STUFEN.length; i++){
+      const stufe = MESS_STUFEN[i];
+      sagen('Lautstärke ' + stufe + ' % — Durchgang ' + (i + 1) + ' von ' + MESS_STUFEN.length + ' …');
+      lautstaerkeSetzen(stufe);
+      /* messLauf(true) umgeht das Tonstudio und legt seine Kurve in
+         messErgebnis.neutral ab - hier interessiert nur der Pegel. */
+      await messLauf(true);
+      const kurve = messErgebnis.neutral;
+      if (!kurve || messErgebnis.abstandN === undefined){
+        sagen('bei ' + stufe + ' % kam nichts an — Reihe abgebrochen');
+        break;
+      }
+      /* Mittlerer Pegel über die Bänder, die das Mikrofon sicher hört */
+      const innen = kurve.filter(p => p.f >= 63 && p.f <= 8000);
+      let leist = 0;
+      for (const p of innen) leist += Math.pow(10, p.db / 10);
+      messErgebnis.pegel.push({
+        laut: stufe,
+        mittel: 10 * Math.log10(leist / innen.length),
+        abstand: messErgebnis.abstandN,
+        kurve,
+      });
+      messPegelZeichnen();
+    }
+  } finally {
+    lautstaerkeSetzen(merkLaut);
+    if (merkEq !== null && typeof eqAusSetzen === 'function') eqAusSetzen(merkEq);
+    if (k) k.classList.remove('an');
+    /* Die Reihe hat die Bezugsmessung mit ihrer letzten Stufe
+       überschrieben - das muß dazugesagt werden, sonst vergleicht
+       jemand später gegen einen anderen Pegel. */
+    messErgebnis.laeufe = [];
+    messErgebnis.mit = null;
+    messPegelZeichnen(); messWirkungZeichnen(); messFazitZeigen();
+    const p = messErgebnis.pegel;
+    if (p && p.length >= 2){
+      const soll = (l) => 40 * Math.log10(l / 100);
+      const oben = p[0], unten = p[p.length - 1];
+      const erwartet = soll(oben.laut) - soll(unten.laut);
+      const gemessen = oben.mittel - unten.mittel;
+      sagen('Lautstärkereihe steht: von ' + unten.laut + ' % auf ' + oben.laut
+        + ' % erwartet ' + erwartet.toFixed(1).replace('.', ',') + ' dB, gemessen '
+        + gemessen.toFixed(1).replace('.', ',') + ' dB. '
+        + 'Die neutrale Bezugsmessung steht jetzt auf ' + merkLaut + ' % — für eine '
+        + 'Einstellungsreihe bitte „1 · Neutral“ neu messen.');
+    }
+  }
+}
+
+/* Gemeinsamer Rahmen fuer die Messbilder: Frequenzachse waagerecht,
+   31 Terzbaender, dieselben Marken. */
+function messRahmen(c, OB, UN, LI, RE){
+  const b = c.getContext('2d');
+  const B = c.clientWidth || 800, H = c.height;
+  if (c.width !== B) c.width = B;
+  b.fillStyle = '#0a0a0a'; b.fillRect(0, 0, B, H);
+  const bw = B - LI - RE, bh = H - OB - UN;
+  const X = (i) => LI + bw * i / 30;
+  b.font = '10px system-ui';
+  for (let t = 0; t < 31; t++){
+    const f = 20 * Math.pow(2, t / 3);
+    if (![31.5, 100, 315, 1000, 3150, 10000].some(r => Math.abs(f - r) / r < 0.06)) continue;
+    b.fillStyle = 'rgba(255,255,255,0.06)'; b.fillRect(X(t), OB, 1, bh);
+    b.fillStyle = '#6e6e73';
+    b.fillText(f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0) + 'k' : Math.round(f), X(t) - 8, H - 8);
+  }
+  return { b, B, H, bw, bh, X };
+}
+
+/* DIE WIRKUNG: was eingestellt war gegen das, was ankam (Caspar_D,
+   27.08.2026: "diagramme, die zeigen, wie sieht die kurve erwartbar
+   aus, wenn alles ankommt, was ich einstelle und wie sieht sie gemessen
+   aus").
+
+   Hier stehen DIFFERENZEN, nicht Pegel. Erst dadurch wird die Messung
+   mit der Einstellung vergleichbar: die Nullinie heisst "das Tonstudio
+   tut nichts", die gestrichelte Kurve ist die eigene Rechnung des
+   Equalizers, die durchgezogene das, was das Mikrofon davon gehoert
+   hat. Der Abstand zwischen beiden ist alles, worum es geht. */
+function messWirkungZeichnen(){
+  const c = $('messwirkung'); if (!c) return;
+  const laeufe = Array.isArray(messErgebnis.laeufe) ? messErgebnis.laeufe : [];
+  const neu = messErgebnis.neutral;
+  const huelle = c.closest('.messblock') || c;
+  if (!neu || !laeufe.length){ huelle.hidden = true; return; }
+  huelle.hidden = false;
+
+  const OB = 22, UN = 24, LI = 44, RE = 12;
+  const { b, bw, bh, X } = messRahmen(c, OB, UN, LI, RE);
+
+  /* Gemeinsame Skala fuer alle Laeufe und ihre Sollkurven, symmetrisch
+     um Null - sonst laege die Nullinie irgendwo schief im Bild. */
+  let gr = 3;
+  for (const l of laeufe){
+    l.kurve.forEach((p, i) => { const d = Math.abs(p.db - neu[i].db); if (d > gr) gr = d; });
+    if (l.soll) l.soll.forEach(v => { if (Math.abs(v) > gr) gr = Math.abs(v); });
+  }
+  gr = Math.ceil(gr / 3) * 3;
+  const Y = (db) => OB + bh * (1 - (db + gr) / (2 * gr));
+
+  /* Waagerechte Marken alle 3 dB, die Null kraeftiger */
+  for (let d = -gr; d <= gr; d += 3){
+    b.fillStyle = d === 0 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.05)';
+    b.fillRect(LI, Y(d), bw, 1);
+    if (d === 0 || d === gr || d === -gr){
+      b.fillStyle = '#6e6e73'; b.font = '9px system-ui';
+      b.fillText((d > 0 ? '+' : '') + d + ' dB', 4, Y(d) + 3);
+    }
+  }
+
+  const linie = (werte, farbe, gestrichelt) => {
+    b.beginPath();
+    werte.forEach((v, i) => { const x = X(i), y = Math.max(OB, Math.min(OB + bh, Y(v)));
+      i ? b.lineTo(x, y) : b.moveTo(x, y); });
+    b.strokeStyle = farbe; b.lineWidth = gestrichelt ? 1.5 : 2;
+    b.globalAlpha = gestrichelt ? 0.55 : 1;
+    if (gestrichelt) b.setLineDash([5, 4]);
+    b.stroke(); b.setLineDash([]); b.globalAlpha = 1;
+  };
+
+  for (const l of laeufe){
+    if (l.soll) linie(l.soll, l.farbe, true);                       /* erwartet */
+    linie(l.kurve.map((p, i) => p.db - neu[i].db), l.farbe, false); /* gemessen */
+  }
+
+  b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
+  b.fillText('gestrichelt: eingestellt   ·   durchgezogen: am Hörplatz gemessen', LI, 13);
+}
+
+/* DIE LAUTSTAERKEKENNLINIE (Caspar_D, 27.08.2026: "und auch erhoehung
+   der Lautstaerke und wahrnehmung der mom mikrophon gemessenen
+   Signalaenderung").
+
+   Der Regler wird in Stufen durchgefahren und jedesmal gemessen, was
+   das Mikrofon davon hoert. Bliebe die Kette linear, laege alles auf
+   einer Geraden: zehn Regler-dB mehr, zehn gemessene dB mehr. Knickt
+   die Kurve oben ab, begrenzt etwas auf dem Weg - und dann laesst sich
+   auch ablesen, ab welchem Regler es anfaengt. */
+function messPegelZeichnen(){
+  const c = $('messpegel'); if (!c) return;
+  const reihe = messErgebnis.pegel;
+  const huelle = c.closest('.messblock') || c;
+  if (!reihe || reihe.length < 2){ huelle.hidden = true; return; }
+  huelle.hidden = false;
+
+  const OB = 22, UN = 26, LI = 46, RE = 14;
+  const b = c.getContext('2d');
+  const B = c.clientWidth || 800, H = c.height;
+  if (c.width !== B) c.width = B;
+  b.fillStyle = '#0a0a0a'; b.fillRect(0, 0, B, H);
+  const bw = B - LI - RE, bh = H - OB - UN;
+
+  /* Waagerecht: die Reglerstellung in dB. Der Regler wirkt quadratisch
+     (Anteil hoch zwei), also ist seine dB-Wirkung 40*log10(Anteil) -
+     genau das, was die Kette bekommt. So ist die erwartete Antwort eine
+     Gerade mit Steigung 1 und nicht eine krumme Linie. */
+  const soll = (l) => 40 * Math.log10(Math.max(0.001, l / 100));
+  const xs = reihe.map(r => soll(r.laut)), ys = reihe.map(r => r.mittel);
+  const xlo = Math.min(...xs) - 2, xhi = Math.max(...xs) + 2;
+  const ylo = Math.min(...ys) - 3, yhi = Math.max(...ys) + 3;
+  const X = (v) => LI + bw * (v - xlo) / (xhi - xlo);
+  const Y = (v) => OB + bh * (1 - (v - ylo) / (yhi - ylo));
+
+  /* Die Gerade, auf der alles laege, wenn nichts begrenzt: durch den
+     lautesten Punkt, Steigung 1. */
+  const iLaut = xs.indexOf(Math.max(...xs));
+  const g = (x) => ys[iLaut] + (x - xs[iLaut]);
+  b.beginPath(); b.moveTo(X(xlo), Y(g(xlo))); b.lineTo(X(xhi), Y(g(xhi)));
+  b.strokeStyle = '#8b8b90'; b.globalAlpha = 0.5; b.setLineDash([5, 4]);
+  b.lineWidth = 1.5; b.stroke(); b.setLineDash([]); b.globalAlpha = 1;
+
+  /* Die Messpunkte */
+  b.beginPath();
+  reihe.forEach((r, i) => { const x = X(xs[i]), y = Y(ys[i]); i ? b.lineTo(x, y) : b.moveTo(x, y); });
+  b.strokeStyle = '#f97b14'; b.lineWidth = 2; b.stroke();
+  b.font = '9px system-ui';
+  reihe.forEach((r, i) => {
+    const x = X(xs[i]), y = Y(ys[i]);
+    b.fillStyle = '#f97b14'; b.beginPath(); b.arc(x, y, 3.5, 0, 6.284); b.fill();
+    b.fillStyle = '#6e6e73'; b.fillText(r.laut + ' %', x - 10, H - 9);
+    /* die Abweichung von der Geraden - das ist die Wegregelung */
+    const ab = ys[i] - g(xs[i]);
+    if (Math.abs(ab) >= 1){
+      b.fillStyle = '#f9b414';
+      b.fillText((ab > 0 ? '+' : '') + ab.toFixed(1), x - 10, y - 9);
+    }
+  });
+
+  b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
+  b.fillText('gestrichelt: was ohne Begrenzung herauskäme   ·   gelb: was fehlt', LI, 13);
+  b.fillText('gemessener Pegel', 4, OB + bh / 2);
+}
+
+/* DAS FAZIT (Caspar_D, 27.08.2026: "es muss ja jetzt ein Fazit geben"
+   und "wer misst muss auch informieren und erklaerbar schlussfolgern").
+
+   Kurven sind noch kein Ergebnis. Die Fragen, die eine Einmessung
+   beantworten soll, sind:
+   - Traegt die Messung ueberhaupt?
+   - Kommt an, was ich eingestellt habe - und wieviel davon?
+   - Was davon ist der Raum und nicht mein Equalizer?
+   - Wie lange braucht der Ton bis zum Ohr, und was heisst das fuer den
+     mitlaufenden Text?
+
+   Die AUSBEUTE je Lauf ist die Steigung der Ausgleichsgeraden durch den
+   Ursprung: gemessen = k * eingestellt. Durch den Ursprung, weil
+   "nichts eingestellt" auch "nichts gemessen" heissen muss - eine freie
+   Konstante waere hier nur eine Ausrede fuer Messfehler. */
+function messFazitZeigen(){
+  const el = $('messfazit'); if (!el) return;
+  const neu = messErgebnis.neutral;
+  const laeufe = Array.isArray(messErgebnis.laeufe) ? messErgebnis.laeufe : [];
+  const pegel = messErgebnis.pegel;
+  if (!neu && !pegel){ el.hidden = true; return; }
+  el.hidden = false;
+
+  const z = [];
+  const hz = (f) => f >= 1000 ? (f / 1000).toFixed(f < 10000 ? 1 : 0).replace('.', ',') + ' kHz'
+                              : Math.round(f) + ' Hz';
+  const zahl = (v, n = 1) => (v >= 0 ? '+' : '') + v.toFixed(n).replace('.', ',');
+
+  /* ---- 1. Traegt die Messung? ---- */
+  const abN = messErgebnis.abstandN;
+  if (abN !== undefined && abN < 20){
+    z.push('<p class="fwarn">Die Bezugsmessung trägt nicht: Störabstand nur '
+      + Math.round(abN) + ' dB. Unter 20 dB ist eine Differenz mehr Zufall als Messung. '
+      + 'Lauter stellen oder mit „Raum abhören“ eine ruhigere Stelle suchen.</p>');
+  }
+
+  /* ---- 2. Was jeder Lauf am Hoerplatz bewirkt ---- */
+  const ausbeuten = [];
+  for (const l of laeufe){
+    const gem = l.kurve.map((p, i) => p.db - neu[i].db);
+    /* Nur Baender, die das Mikrofon sicher hoert. Die Startwerte muessen
+       SELBST aus diesem Bereich kommen - stand der Anfang auf Band 0
+       (20 Hz), meldete das Fazit dessen Rauschen als groesste Absenkung:
+       "1,8 kHz +12 nimmt 5,2 dB bei 20 Hz weg". */
+    const gilt = (i) => l.kurve[i].f >= 31.5 && l.kurve[i].f <= 12000;
+    let iH = -1, iT = -1;
+    gem.forEach((d, i) => { if (!gilt(i)) return;
+      if (iH < 0 || d > gem[iH]) iH = i;
+      if (iT < 0 || d < gem[iT]) iT = i; });
+    if (iH < 0){ z.push('<p><b style="color:' + l.farbe + '">' + l.name
+      + '</b> — kein auswertbares Band.</p>'); continue; }
+
+    let satz = '<p><b style="color:' + l.farbe + '">' + l.name + '</b> — ';
+    if (gem[iH] - gem[iT] < 1){
+      satz += 'am Hörplatz nicht von der neutralen Messung zu unterscheiden.';
+    } else {
+      satz += 'hebt <span class="fzahl">' + zahl(gem[iH]) + ' dB</span> bei ' + hz(l.kurve[iH].f)
+        + ' an, nimmt <span class="fzahl">' + zahl(gem[iT]) + ' dB</span> bei ' + hz(l.kurve[iT].f) + ' weg';
+    }
+
+    /* Ausbeute gegen die eigene Rechnung des Equalizers */
+    if (l.soll){
+      const paare = [];
+      for (let i = 0; i < 31; i++){
+        if (l.kurve[i].f < 31.5 || l.kurve[i].f > 12000) continue;
+        if (Math.abs(l.soll[i]) < 1) continue;
+        paare.push([l.soll[i], gem[i]]);
+      }
+      if (paare.length >= 3){
+        let sxy = 0, sxx = 0;
+        for (const [x, y] of paare){ sxy += x * y; sxx += x * x; }
+        const k = sxx > 0 ? sxy / sxx : 0;
+        let ssr = 0, sst = 0;
+        const ym = paare.reduce((a, [, y]) => a + y, 0) / paare.length;
+        for (const [x, y] of paare){ ssr += Math.pow(y - k * x, 2); sst += Math.pow(y - ym, 2); }
+        const r2 = sst > 0 ? Math.max(0, 1 - ssr / sst) : 0;
+        ausbeuten.push({ l, k, r2, paare: paare.length });
+        satz += '. Davon kommen <b class="fzahl">' + Math.round(k * 100) + ' %</b> dessen an, '
+          + 'was der Equalizer rechnet';
+      }
+    }
+    z.push(satz + '.</p>');
+  }
+
+  /* ---- 3. Was die Ausbeuten zusammen sagen ---- */
+  if (ausbeuten.length){
+    const kM = ausbeuten.reduce((a, b) => a + b.k, 0) / ausbeuten.length;
+    const r2M = ausbeuten.reduce((a, b) => a + b.r2, 0) / ausbeuten.length;
+    let deutung;
+    if (kM >= 0.85) deutung = 'Der Weg vom Rechner zum Ohr gibt die Einstellung <b>ehrlich weiter</b>. '
+      + 'Was am Regler steht, steht auch am Hörplatz.';
+    else if (kM >= 0.6) deutung = 'Ein Teil bleibt unterwegs. Das ist normal — kein Lautsprecher folgt '
+      + 'einer Kennlinie eins zu eins.';
+    else if (kM >= 0.35) deutung = 'Es kommt <b>weniger als zwei Drittel</b> an. Das ist das Bild einer '
+      + 'Begrenzung: viele Aktivlautsprecher regeln zurück, sobald es lauter wird. '
+      + 'Die Probe steht bereit — <b>Lautstärke durchfahren</b>: knickt die Kennlinie oben ab, '
+      + 'war es die Begrenzung.';
+    else deutung = 'Es kommt <b>kaum etwas</b> an. Entweder begrenzt der Lautsprecher stark, oder er '
+      + 'kann in diesem Bereich nicht mehr. Beides läßt sich mit dem Equalizer nicht überstimmen.';
+    z.push('<p>' + (ausbeuten.length > 1 ? 'Über alle Durchgänge gemittelt kommen <b>'
+      + Math.round(kM * 100) + ' %</b> an. ' : '') + deutung + '</p>');
+
+    if (r2M < 0.5 && ausbeuten.some(a => a.paare >= 5)){
+      z.push('<p class="fmatt">Die Abweichung verteilt sich ungleichmäßig (Bestimmtheitsmaß '
+        + r2M.toFixed(2).replace('.', ',') + '): manche Bänder folgen der Einstellung, andere gar '
+        + 'nicht. Das spricht weniger für eine gleichmäßige Dämpfung als für den Raum — stehende '
+        + 'Wellen heben und löschen einzelne Frequenzen, unabhängig von jeder Einstellung.</p>');
+    }
+  }
+
+  /* ---- 4. Die Lautstaerkekennlinie ---- */
+  if (pegel && pegel.length >= 2){
+    const soll = (l) => 40 * Math.log10(l / 100);
+    const oben = pegel[0], unten = pegel[pegel.length - 1];
+    const erwartet = soll(oben.laut) - soll(unten.laut);
+    const gemessen = oben.mittel - unten.mittel;
+    const fehlt = erwartet - gemessen;
+    z.push('<p>Von ' + unten.laut + ' % auf ' + oben.laut + ' % Lautstärke wären '
+      + '<span class="fzahl">' + erwartet.toFixed(1).replace('.', ',') + ' dB</span> zu erwarten; '
+      + 'gemessen wurden <b class="fzahl">' + gemessen.toFixed(1).replace('.', ',') + ' dB</b>. '
+      + (Math.abs(fehlt) < 1.5
+        ? 'Die Kette bleibt also <b>linear</b> — was fehlt, fehlt nicht an ihr.'
+        : fehlt > 0
+          ? 'Es fehlen <b class="fzahl">' + fehlt.toFixed(1).replace('.', ',') + ' dB</b>: '
+            + 'oben wird zurückgeregelt. Genau das schluckt auch die Einstellung — '
+            + 'leiser abhören läßt mehr davon durch.'
+          : 'Der Pegel steigt <b>stärker</b> als der Regler vorgibt. Das deutet auf eine '
+            + 'Klangregelung im Lautsprecher, die bei leisen Pegeln anhebt.') + '</p>');
+    /* Wo genau der Knick sitzt */
+    let iKnick = -1, gr = 0;
+    for (let i = 0; i < pegel.length; i++){
+      const ab = (pegel[i].mittel - unten.mittel) - (soll(pegel[i].laut) - soll(unten.laut));
+      if (ab < gr){ gr = ab; iKnick = i; }
+    }
+    if (iKnick >= 0 && gr < -1.5){
+      z.push('<p class="fmatt">Am weitesten unter der Geraden liegt die Stufe bei '
+        + pegel[iKnick].laut + ' % (' + gr.toFixed(1).replace('.', ',') + ' dB). '
+        + 'Darunter arbeitet die Kette am ehrlichsten.</p>');
+    }
+  }
+
+  /* ---- 5. Der Raum ---- */
+  if (neu){
+    const raum = messRaumauffaelligkeit(neu);
+    if (raum) z.push('<p class="fmatt">' + raum + '</p>');
+    const buckel = messBuckeligkeit(neu);
+    if (buckel) z.push('<p class="fmatt">' + buckel + '</p>');
+  }
+
+  /* ---- 6. Die Laufzeit - und was sie fuer den mitlaufenden Text heisst ---- */
+  const lz = messErgebnis.laufzeit;
+  if (lz !== undefined && lz !== null){
+    let satz = 'Der Ton braucht <b class="fzahl">' + lz + ' ms</b> vom Rechner bis zum Hörplatz'
+      + (lz > 500 ? ' — das ist der Puffer, den AirPlay absichtlich anlegt, damit mehrere '
+                  + 'Lautsprecher zusammenbleiben' : '') + '. ';
+    /* Der mitlaufende Text nimmt audio.currentTime MINUS bVersatz: ein
+       positiver Versatz laesst ihn spaeter kommen. Genau um die
+       Laufzeit spaeter - dann steht das Wort da, wenn es zu hoeren
+       ist, statt wenn es abgeschickt wurde. */
+    const jetzt = (typeof bVersatz !== 'undefined') ? Math.round(bVersatz) : null;
+    if (jetzt === null){
+      satz += 'Der mitlaufende Text müßte um denselben Betrag später kommen.';
+    } else if (Math.abs(jetzt - lz) < 60){
+      satz += 'Der Textversatz steht auf <span class="fzahl">' + jetzt + ' ms</span> — das paßt dazu, '
+        + 'der Text steht also da, wenn das Wort zu hören ist.';
+    } else {
+      satz += 'Der Textversatz steht auf <span class="fzahl">' + jetzt + ' ms</span> und läuft damit '
+        + Math.abs(jetzt - lz) + ' ms ' + (jetzt < lz ? 'zu früh' : 'zu spät') + '. '
+        + '<button class="knopf messknopfklein" onclick="versatzSetzen(' + lz + '); messFazitZeigen();">'
+        + 'Auf ' + lz + ' ms setzen</button>';
+    }
+    z.push('<p>' + satz + '</p>');
+  }
+
+  /* ---- 7. Belastbarkeit ---- */
+  const teile = [];
+  if (abN !== undefined) teile.push('Störabstand ' + Math.round(abN) + ' dB');
+  if (messErgebnis.mikro) teile.push('gemessen mit ' + messErgebnis.mikro);
+  const art = ($('messsignal') || { value: '' }).value;
+  if (art) teile.push('Signal: ' + ({ sweep: 'Sweep', rosa: 'rosa Rauschen',
+    weiss: 'weißes Rauschen', baender: 'Bandtöne' })[art]);
+  if (teile.length) z.push('<p class="fmatt">' + teile.join('   ·   ') + '</p>');
+
+  el.innerHTML = '<h5>Fazit</h5>' + z.join('');
+}
+
+/* WARUM DIE KURVE BUCKELIG AUSSIEHT (Caspar_D, 27.08.2026: "und warum
+   sieht der sweep eigentlich so buckelig aus" - dazu: "der sweep misst
+   nacheinander, das Rauschen zugleich, auch davon hab ich nichts
+   gesehen").
+
+   Ein Teil der Buckel ist echt: Raum und Lautsprecher. Ein Teil ist
+   aber das Verfahren. Der Sweep traegt seine Energie NACHEINANDER durch
+   die Baender - jedes Terzband bekommt nur einen Bruchteil der Messzeit,
+   bei vier Sekunden und 31 Baendern gut hundert Millisekunden. So wenig
+   Zeit heisst wenig Mittelung und damit eine zappelige Kurve.
+
+   Rosa Rauschen regt alle Baender ZUGLEICH an; jedes bekommt die volle
+   Messzeit, die Kurve wird glatt. Dafuer vermischen sich in einem
+   halligen Raum Direktschall und Nachhall, waehrend der Sweep sie
+   trennen kann - deshalb ist er der Standard der Raumakustik.
+
+   Wenn die Kurve also stark zappelt, ist der Hinweis auf das andere
+   Signal ehrlicher als eine schweigende Kurve. */
+function messBuckeligkeit(kurve){
+  const innen = kurve.filter(p => p.f >= 63 && p.f <= 8000);
+  if (innen.length < 7) return null;
+  /* Zappeligkeit = mittlerer Betrag der zweiten Differenz. Eine glatte
+     Kurve hat kleine zweite Differenzen, eine zappelige grosse. */
+  let s2 = 0, n = 0;
+  for (let i = 1; i < innen.length - 1; i++){
+    s2 += Math.abs(innen[i - 1].db - 2 * innen[i].db + innen[i + 1].db); n++;
+  }
+  const zappel = n ? s2 / n : 0;
+  const art = ($('messsignal') || { value: 'sweep' }).value;
+  if (zappel < 2.5) return null;
+  if (art === 'sweep'){
+    return 'Die Kurve zappelt (' + zappel.toFixed(1).replace('.', ',')
+      + ' dB von Band zu Band). Ein Teil davon ist der Raum, ein Teil das Verfahren: '
+      + 'der Sweep trägt seine Energie <b>nacheinander</b> durch die Bänder, jedes bekommt nur '
+      + 'gut hundert Millisekunden Meßzeit. Rosa Rauschen regt alle Bänder <b>zugleich</b> an — '
+      + 'jedes bekommt die volle Zeit, die Kurve wird glatter. Dafür kann der Sweep in einem '
+      + 'halligen Raum Direktschall und Nachhall trennen, das Rauschen nicht. '
+      + 'Für einen glatten Frequenzgang: rosa Rauschen. Für die Raumakustik: Sweep.';
+  }
+  return 'Die Kurve zappelt (' + zappel.toFixed(1).replace('.', ',')
+    + ' dB von Band zu Band). Bei Rauschen liegt das nicht am Verfahren — das ist der Raum.';
+}
+
+/* Was im NEUTRALEN Durchgang auffaellt, ist nicht das Tonstudio - das
+   war ja umgangen. Es ist der Raum mit dem Lautsprecher. Ein einzelnes
+   Band, das weit aus seiner Nachbarschaft ausbricht, ist der
+   verdaechtige Fall: so sehen stehende Wellen aus. */
+function messRaumauffaelligkeit(neu){
+  const innen = neu.filter(p => p.f >= 40 && p.f <= 8000);
+  if (innen.length < 9) return null;
+  /* geglaetteter Verlauf: gleitendes Mittel ueber funf Baender */
+  let iMax = -1, abw = 0;
+  for (let i = 2; i < innen.length - 2; i++){
+    let m = 0; for (let k = -2; k <= 2; k++) m += innen[i + k].db;
+    m /= 5;
+    const d = innen[i].db - m;
+    if (Math.abs(d) > Math.abs(abw)){ abw = d; iMax = i; }
+  }
+  if (iMax < 0 || Math.abs(abw) < 4) return null;
+  const f = innen[iMax].f;
+  const hz = f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz';
+  return 'Unabhängig vom Tonstudio fällt der Raum auf: bei ' + hz + ' liegt der Pegel '
+    + Math.abs(abw).toFixed(1).replace('.', ',') + ' dB '
+    + (abw > 0 ? 'über' : 'unter') + ' dem Verlauf ringsum. '
+    + (abw > 0 ? 'So sieht eine stehende Welle aus — sie steht schon im neutralen Durchgang da und '
+               + 'ist keine Folge der Einstellung.'
+               : 'Ein Einbruch an dieser Stelle kommt meist von einer Auslöschung zwischen Direktschall '
+               + 'und Reflexion; ein anderer Hörplatz ändert ihn mehr als jeder Regler.');
+}
+
 function messBildZeichnen(){
   const c = $('messbild'); if (!c) return;
+  const neu = messErgebnis.neutral;
+  const laeufe = Array.isArray(messErgebnis.laeufe) ? messErgebnis.laeufe : [];
   const b = c.getContext('2d');
   const B = c.clientWidth || 800, H = c.height;
   if (c.width !== B) c.width = B;
   b.fillStyle = '#0a0a0a'; b.fillRect(0, 0, B, H);
 
-  const mit = messErgebnis.mit, neu = messErgebnis.neutral;
-  if (!mit && !neu){
+  if (!neu && !laeufe.length){
     b.fillStyle = '#555'; b.font = '12px system-ui';
     b.fillText('Noch nicht gemessen.', 12, 22);
+    messLegende();
     return;
   }
   const L = 40, R = 12, O = 14, U = 26;
   const bw = B - L - R, bh = H - O - U;
-  const kurve = mit || neu;
+  const kurve = neu || laeufe[0].kurve;
   const X = (i) => L + bw * i / (kurve.length - 1);
 
-  /* Senkrechte Marken bei 100 Hz, 1 kHz, 10 kHz. */
   b.font = '10px system-ui';
   kurve.forEach((p, i) => {
     const rund = [31.5, 100, 315, 1000, 3150, 10000];
@@ -16867,8 +17501,8 @@ function messBildZeichnen(){
     b.fillText(p.f >= 1000 ? (p.f / 1000).toFixed(p.f < 10000 ? 1 : 0) + 'k' : Math.round(p.f), X(i) - 8, H - 8);
   });
 
-  /* Die Skala: gemeinsame Spanne beider Kurven, mindestens 30 dB. */
-  const alle = [].concat(mit || [], neu || []).map(p => p.db);
+  /* Gemeinsame Spanne ueber ALLE Kurven der Reihe, mindestens 30 dB. */
+  const alle = [].concat(neu || [], ...laeufe.map(l => l.kurve)).map(p => p.db);
   let lo = Math.min(...alle), hi = Math.max(...alle);
   if (hi - lo < 30){ const m = (hi + lo) / 2; lo = m - 15; hi = m + 15; }
   const Y = (db) => O + bh * (1 - (db - lo) / (hi - lo));
@@ -16882,12 +17516,15 @@ function messBildZeichnen(){
     b.globalAlpha = 1;
   };
   if (neu) linie(neu, '#8b8b90', 0.85);
-  if (mit) linie(mit, '#f97b14', 1);
+  /* JEDER Lauf in seiner Farbe - die Reihe steht hier vollstaendig,
+     nicht nur der letzte Durchgang. */
+  for (const l of laeufe) linie(l.kurve, l.farbe, 1);
 
-  /* Die Differenz - nur wenn beide da sind. Sie steht als Flaeche um
-     eine Nullinie in der Bildmitte, damit man Anheben und Absenken
-     unterscheidet, ohne die Zahlen zu lesen. */
-  if (mit && neu){
+  /* Die Differenz als Balken - nur beim EINZELNEN Lauf. Bei mehreren
+     wuerden sich die Balken ueberdecken; dafuer gibt es das
+     Wirkungsdiagramm darunter, das sie als Linien trennt. */
+  if (neu && laeufe.length === 1){
+    const mit = laeufe[0].kurve;
     const m0 = O + bh / 2;
     const spanne = Math.max(3, Math.max(...mit.map((p, i) => Math.abs(p.db - neu[i].db))));
     b.globalAlpha = 0.45;
@@ -16902,7 +17539,28 @@ function messBildZeichnen(){
     b.fillStyle = '#8b8b90'; b.font = '10px system-ui';
     b.fillText('Differenz ±' + spanne.toFixed(1) + ' dB', L + 6, m0 - 6);
   }
+  messLegende();
 }
+
+/* Die Legende folgt der Reihe: jeder Lauf steht mit seinem Namen und
+   seiner Farbe da, sonst weiss niemand, welche Linie welche ist. */
+function messLegende(){
+  const el = $('messleg'); if (!el) return;
+  const laeufe = Array.isArray(messErgebnis.laeufe) ? messErgebnis.laeufe : [];
+  const teile = [];
+  if (messErgebnis.neutral)
+    teile.push('<span><i style="background:#8b8b90"></i>neutral' 
+      + (messErgebnis.neutralLaut !== undefined ? ' (' + messErgebnis.neutralLaut + ' %)' : '') + '</span>');
+  for (const l of laeufe)
+    teile.push('<span><i style="background:' + l.farbe + '"></i>' + l.name + '</span>');
+  if (laeufe.length === 1){
+    teile.push('<span><i class="bal" style="background:#f9143c"></i>Tonstudio hebt an</span>');
+    teile.push('<span><i class="bal" style="background:#f9b414"></i>Tonstudio nimmt weg</span>');
+  }
+  if (!teile.length) teile.push('<span class="fmatt">noch nichts gemessen</span>');
+  el.innerHTML = teile.join('');
+}
+
 
 /* Ein WAV aus Fliesskomma - 16 Bit, ein Kanal, Kopf von Hand. */
 function messWavBauen(x, sr){
