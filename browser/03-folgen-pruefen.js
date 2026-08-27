@@ -14,14 +14,14 @@
 
    DER KNIFF: Man muss KEINE zwei Listen vergleichen. Suno liefert
    an jedem Eintrag von /api/profiles/following gleich das Feld
-   `is_following_viewer` mit — steht es auf false, folgt die Person
+   is_following_viewer mit — steht es auf false, folgt die Person
    nicht zurück. Der Abgleich, den man erwarten würde (following
    gegen followers), ist damit überflüssig.
 
    ZWEI DINGE ZUM ABLAUF:
 
-   - 20 Einträge je Seite, fest. `page_size` und `offset` werden
-     ignoriert, nur `page` zählt. Bei 5800 Folgenden sind das 290
+   - 20 Einträge je Seite, fest. page_size und offset werden
+     ignoriert, nur page zählt. Bei 5800 Folgenden sind das 290
      Seiten und rund vier Minuten.
    - Der Clerk-Token lebt etwa eine Minute. Deshalb wird er vor
      JEDER Seite neu geholt, nicht einmal am Anfang.
@@ -35,7 +35,7 @@
    KEINE TEMPLATE-LITERALE HIER, absichtlich. Wer dieses Skript in
    einem Discord-Codeblock weitergibt, stolpert sonst: Discord beendet
    den Block am ersten Backtick im Code, der Rest kommt als Text durch,
-   und in der Konsole landet ein „Unexpected identifier '$'". Also
+   und in der Konsole landet ein "Unexpected identifier Dollarzeichen". Also
    Zeichenketten mit + zusammensetzen, so unschön das ist.
 
    Geprüft am 27.08.2026 an einem Konto mit 101 Folgenden.
@@ -44,10 +44,11 @@
 (async () => {
   const gruen = 'color:#4ade80;font-weight:bold';
   const rot   = 'color:#f87171';
-  const log = (...a) => console.log('%c[Archiv]', gruen, ...a);
+  const log = function(){ console.log.apply(console,
+    ['%c[Archiv]', gruen].concat(Array.prototype.slice.call(arguments))); };
 
   if (!window.Clerk?.session) {
-    console.log('%cNicht angemeldet — bitte erst auf suno.com einloggen.', rot);
+    console.log('%cNicht angemeldet - bitte erst auf suno.com einloggen.', rot);
     return;
   }
 
@@ -71,13 +72,13 @@
   log(gesamt + ' Profile, ' + seiten + ' Seiten. Das dauert rund '
       + Math.ceil(seiten * 0.3 / 60) + ' Minuten.');
 
-  const alle = [...(erste.profiles || [])];
+  const alle = [].concat(erste.profiles || []);
   for (let s = 2; s <= seiten; s++) {
-    try { alle.push(...((await hol(s)).profiles || [])); }
+    try { alle.push.apply(alle, (await hol(s)).profiles || []); }
     catch (e) {
       /* Bremst Suno, hört das Skript auf statt zu drängeln - und gibt
          aus, was es bis dahin hat. */
-      console.log('%c' + e.message + ' — Abbruch, das Bisherige folgt.', rot);
+      console.log('%c' + e.message + ' - Abbruch, das Bisherige folgt.', rot);
       break;
     }
     if (s % 25 === 0) log('  ' + alle.length + ' von ' + gesamt);
