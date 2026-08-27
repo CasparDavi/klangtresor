@@ -1871,6 +1871,46 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 /* Die beiden Knoepfe gehoeren zusammen und stehen deshalb enger
    beieinander als zum Rest: halbe Luecke. */
 .messkopf #messneutral{margin-right:-5px}
+/* Die Einleitung: ruhig gesetzt, ein Gedanke je Absatz, und ein
+   einziger Knopf, der ins Auge faellt. */
+.messeinleitung{margin-top:22px;max-width:62ch;font-size:13px;line-height:1.7}
+.messeinleitung h5{margin:0 0 12px;font-size:15px;color:var(--text);font-weight:600}
+.messeinleitung p{margin:0 0 12px;color:var(--schwach)}
+.messeinleitung b{color:var(--text);font-weight:600}
+.messexpert{font-size:11.5px;color:var(--schwach);margin-top:18px}
+.messexpert a{color:var(--schwach);text-decoration:underline;text-underline-offset:2px}
+.messexpert a:hover{color:var(--text)}
+
+/* Der gefuehrte Ablauf: ein Kasten, der eine Sache sagt und dann
+   wartet. Solange er ruht, ist er nur eine Zeile mit einem Knopf. */
+.messplan{margin-top:20px;padding:14px 16px;border:1px solid var(--rand);
+  border-radius:10px;background:var(--flaeche);font-size:12.5px;line-height:1.6}
+.messplan.ruht{background:none;border-style:dashed;color:var(--schwach)}
+.messplan.fertig{border-color:#14b4a0}
+.messplan h5{margin:0 0 8px;font-size:14px;color:var(--text);font-weight:600}
+.messplan p{margin:0 0 10px;color:var(--schwach)}
+.messplan p:last-child{margin-bottom:0}
+.messplan b{color:var(--text);font-weight:600}
+.messplan .planzeile{font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--schwach);margin-bottom:6px}
+.messplan .planruhe{color:#f9b414}
+.messplan .planlaeuft{color:#f97b14;font-weight:600}
+.messplan .planknoepfe{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.messplan .planbereit{border-color:#f97b14;color:#f97b14}
+.messplan .planweg{color:var(--schwach)}
+
+/* Die Schrittliste: der naechste Schritt traegt die Akzentfarbe und
+   einen Pfeil, Erledigtes einen Haken und gedaempfte Schrift. So sieht
+   man mit einem Blick, wo man steht - ohne zu lesen. */
+.messweg{list-style:none;margin:20px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 22px}
+.messweg li{display:flex;align-items:baseline;gap:7px;font-size:12px;color:var(--schwach)}
+.messweg .wzeichen{font-size:11px;width:13px;flex:none;text-align:center}
+.messweg .fertig{color:var(--schwach)}
+.messweg .fertig .wzeichen{color:#14b4a0}
+.messweg .dran{color:var(--text);font-weight:600}
+.messweg .dran .wzeichen{color:#f97b14}
+.messweg .warte{opacity:.45}
+.messweg .wnote{color:var(--schwach);font-weight:400;font-size:11px}
 .messstand{font-size:11.5px;color:var(--schwach);margin-top:10px;min-height:15px}
 /* Das Fazit steht abgesetzt vom Bild - es ist das Ergebnis, nicht eine
    Beschriftung dazu. Linke Kante als ruhige Marke, kein Kasten. */
@@ -1922,6 +1962,10 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 /* Bedienung links und schmaler, Erklaerung rechts (Hausregel 24). */
 .messspalten{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);
   gap:30px;margin-top:30px}
+/* hidden muss gewinnen - display:grid schlaegt sonst [hidden], und die
+   Spalten stehen da, obwohl sie versteckt sein sollen. Derselbe
+   Fallstrick wie bei der Hintergrundlade des Kompressors. */
+.messspalten[hidden]{display:none}
 .messspalten h5{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--schwach);font-weight:700;margin:0 0 8px}
 .messwie ol{margin:0;padding-left:18px;font-size:12px;line-height:1.65;color:var(--text)}
@@ -2726,6 +2770,38 @@ h3 .infoknopf .ico{width:14px;height:14px}
          am Hoerplatz wirklich bewirkt. Das ist dieselbe Idee wie beim
          Overlay im Spektrum, nur eine Ebene weiter draussen. -->
     <div class="sseite" data-seite="mess" hidden>
+      <!-- WAS DER NUTZER ZUERST SIEHT (Caspar_D, 27.08.2026: "stell dir
+           vor, jemand drueckt auf einmessen, da stehen ploetzlich
+           mehrere Sachen auf dem Panel, der nutzer weiss nicht, was das
+           soll / erst einen Text, wozu einmessen da ist, darunter einen
+           Knopf / prozess beginnen").
+
+           Ein Text und ein Knopf. Alles Weitere - Signalwahl,
+           Mikrofonwahl, die Einzelknoepfe, die Diagramme - bleibt
+           verborgen, bis es an der Reihe ist. Wer das Werkzeug im
+           einzelnen bedienen will, kommt ueber die kleine Zeile
+           darunter hin. -->
+      <div class="messeinleitung" id="messeinleitung">
+        <h5>Wozu Einmessen</h5>
+        <p>Was aus den Lautsprechern kommt, ist nicht das, was der Rechner losgeschickt hat.
+        Dazwischen liegen der Lautsprecher, der Raum und dein Platz darin. Ein Regler, den du
+        um 6 dB hochziehst, kann am Ohr mit 2 dB ankommen — oder mit 8, wenn eine stehende
+        Welle mitspielt.</p>
+        <p>Diese Messung findet heraus, <b>was davon bei dir wirklich ankommt</b>. Dafür läuft
+        ein Ton über deine Lautsprecher, und das Mikrofon hört zu — einmal ohne und einmal mit
+        Einstellung. Was beide Male gleich ist, kürzt sich heraus; übrig bleibt die Wahrheit
+        über deinen Hörplatz.</p>
+        <p>Der Ablauf führt dich durch sechs Schritte. Die Einstellungen nehme ich vor, du
+        bestimmst nur, wann es still genug ist. Kein Schritt beginnt ungefragt, und jeder
+        läßt sich wiederholen.</p>
+        <p class="planknoepfe">
+          <button class="knopf planbereit" onclick="messPlanStarten()">Prozeß beginnen</button>
+        </p>
+        <p class="messexpert">Lieber selbst steuern?
+          <a href="#" onclick="messAnsicht('werkzeug');return false">Einzelne Messungen von Hand</a></p>
+      </div>
+
+      <div class="messwerkzeug" id="messwerkzeug" hidden>
       <div class="messkopf">
         <select id="messsignal" onchange="messDauerZeigen()" title="Womit gemessen wird. Der Sweep ist der Standard der Raumakustik: Er trägt seine Energie nacheinander statt gleichzeitig und ist deshalb auch in einem halligen Raum auswertbar.">
           <option value="sweep">Sweep · 20 Hz – 20 kHz</option>
@@ -2765,8 +2841,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <button class="knopf" id="messknopf" onclick="einmessen()"
           title="Zweiter Durchgang: mit der Einstellung, die gerade gilt.">2 · Mit Einstellung</button>
       </div>
+      <ol class="messweg" id="messweg"></ol>
+      <p class="messexpert"><a href="#" onclick="messAnsicht('einleitung');return false">Zurück zum geführten Ablauf</a></p>
+      </div>
+      <!-- DER GEFUEHRTE ABLAUF steht ganz oben: er ist das Erste, was
+           jemand sehen soll, der nicht weiss, was zu tun ist. -->
+      <div class="messplan ruht" id="messplan"></div>
+
       <div class="messstand" id="messstand">bereit</div>
 
+      <div class="messergebnis" id="messergebnisteil" hidden>
       <canvas id="messbild" height="260"></canvas>
 
       <div class="messleg" id="messleg">
@@ -2796,6 +2880,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            sagt etwas. -->
       <div class="messfazit" id="messfazit" hidden></div>
       <div class="messfazit" id="messkorrektur" hidden></div>
+      </div>
 
       <!-- ALLES, WAS MAN DAZU WISSEN MUSS, STEHT HIER (Caspar_D,
            27.08.2026: "und es gehoert alles in die dialogbox zum
@@ -2803,7 +2888,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            browser auf das Fenster starre"). Aufgeklappt wie beim
            Kompressor, damit es niemanden erschlaegt, der nur schnell
            messen will. -->
-      <div class="messspalten">
+      <div class="messspalten" id="messspalten" hidden>
         <div class="messwie">
           <h5>So geht es</h5>
           <ol>
@@ -2828,7 +2913,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       </div>
     </div>
 
-      <div class="hintergrund messhg" id="messhintergrund">
+      <div class="hintergrund messhg" id="messhintergrund" hidden>
         <button type="button" class="hgkopf" id="messhgkopf" title="Hintergrund auf- und zuklappen"><span class="hgpfeil">▸</span> Hintergrund — <b>Was hier gemessen wird, was Toningenieure messen, und was man mit dem Ergebnis tun darf.</b></button>
         <div class="hgkoerper" hidden>
           <div>
@@ -3826,6 +3911,9 @@ let stoerfrequenzen = null;          // /api/stoerfrequenzen, einmal geladen
 let toeneDaten = null;               // /api/toene, einmal geladen
 
 function eqAnwenden(){
+  /* Der Wegweiser im Einmess-Register haengt daran, ob ueberhaupt etwas
+     eingestellt ist - also mitziehen, wenn jemand am Regler dreht. */
+  if (typeof messWegweiser === 'function') messWegweiser();
   if (!analyseStarten() || !hörer.eq) return;
   hörer.eq.forEach((k, i) => k.gain.value = eqGainWirk(i));
   kerbeAnwenden();
@@ -4435,6 +4523,9 @@ function studioLasche(name){
       hk.onclick = () => setzen(!hg.classList.contains('auf'));
     }
     messLegende();
+    messWegweiser();
+    messPlanZeigen();
+    messAnsicht();
   }
   if (name === 'eq') requestAnimationFrame(() => { studioZeichnen(); eqGesamtEinrichten('eqgesamt'); eqGesamtEinrichten('pargesamt'); if (eqAnsichtHz) parZiehenEinrichten(); });
   if (name === 'pro'){
@@ -16773,7 +16864,14 @@ async function messLauf(neutral){
     if (ctx) { try { await ctx.close(); } catch (e2) {} }
     if (merkQuelle){ audio.src = merkQuelle; try { audio.currentTime = merkStelle; } catch (e3) {} }
     messLaeuft = false;             /* ab jetzt ist wieder ein Lied im Player */
-    if (liefMusik) audio.play().catch(() => {});
+    /* IM GEFUEHRTEN ABLAUF BLEIBT ES STILL (Caspar_D, 27.08.2026:
+       "alles passiert in STille, es wird keine Musik abgespielt, es
+       bleibt alles ruhig"). Sonst faellt einem nach jedem Messton die
+       Musik ins Ohr - und sie spielt in die Ruhephase des naechsten
+       Durchgangs hinein, was dessen Grundpegel verfaelscht. Nur wer
+       einzeln von Hand misst, bekommt seine Musik zurueck. */
+    const imAblauf = (typeof messPlanSchritt !== 'undefined') && messPlanSchritt >= 0;
+    if (liefMusik && !imAblauf) audio.play().catch(() => {});
     if (knopf) knopf.disabled = false;
     if (knopf2) knopf2.disabled = false;
     if (!pegelReiheLaeuft) messAbbruchKnopf(false);
@@ -17858,6 +17956,317 @@ function messBildZeichnen(){
   messLegende();
 }
 
+/* WAS GERADE ZU SEHEN IST (Caspar_D, 27.08.2026: "versetz dich in die
+   Lage des nutzers").
+
+   Drei Ansichten, und immer nur eine:
+
+   - EINLEITUNG: ein Text, wozu das gut ist, und ein Knopf. Sonst
+     nichts. Das ist der Zustand beim Oeffnen.
+   - ABLAUF: der gefuehrte Prozess, Schritt fuer Schritt. Diagramme
+     erscheinen, sobald es etwas zu zeigen gibt - nicht vorher, ein
+     leeres Diagramm sagt nichts und macht nur Angst.
+   - WERKZEUG: die Einzelbedienung fuer den, der weiss was er tut.
+
+   Die Erklaerspalten und die Wissenslade stehen nur im Werkzeugmodus
+   und am Ende des Ablaufs: waehrend man Schritt fuer Schritt gefuehrt
+   wird, erklaert der Schritt selbst, was geschieht. */
+function messAnsicht(was){
+  const zeig = (id, an) => { const e = $(id); if (e) e.hidden = !an; };
+  const hatDaten = !!(messErgebnis.neutral || (messErgebnis.laeufe || []).length
+                      || messErgebnis.pegel);
+  if (was) messErgebnis.__ansicht = was;
+  const a = messErgebnis.__ansicht || 'einleitung';
+  const imAblauf = a === 'ablauf' && messPlanSchritt >= 0;
+
+  zeig('messeinleitung', a === 'einleitung');
+  zeig('messwerkzeug',   a === 'werkzeug');
+  zeig('messplan',       imAblauf);
+  zeig('messstand',      a === 'werkzeug' || imAblauf);
+  zeig('messergebnisteil', hatDaten && (a === 'werkzeug' || imAblauf));
+  /* Die Hintergruende: im Werkzeugmodus immer, im Ablauf erst, wenn er
+     durch ist - vorher lenken sie nur ab. */
+  const erklaeren = a === 'werkzeug' || (imAblauf && messPlanSchritt >= MESS_PLAN.length);
+  zeig('messspalten', erklaeren);
+  zeig('messhintergrund', erklaeren);
+  if (a === 'werkzeug'){ messWegweiser(); messLegende(); }
+}
+
+/* DER GEFUEHRTE ABLAUF (Caspar_D, 27.08.2026: "es erscheint text mit
+   einem bestaetigen button / immer und immer wieder / Punkt fuer Punkt
+   / die Einstelungen machst du / jedesmal gibt es die Moeglichkeit, es
+   zu wiederholen, falls es eine stoerung gab").
+
+   Der Kern: NIEMAND ausser dem Menschen loest eine Messung aus. Das
+   Programm sagt, was es vorhat und dass Ruhe noetig ist - dann wartet
+   es. Erst der Druck auf "Bereit" startet den Ton. Danach steht das
+   Ergebnis da, und es gibt immer zwei Wege weiter: annehmen oder
+   wiederholen. Ein Huesteln zur falschen Zeit verdirbt sonst eine ganze
+   Reihe, die man nur im Ganzen neu fahren koennte.
+
+   Die REGLERSTELLUNGEN kommen vom Programm, nicht vom Nutzer. Wer
+   messen will, was der Equalizer am Hoerplatz bewirkt, braucht dafuer
+   bekannte Einstellungen - und die soll niemand von Hand nachbauen
+   muessen. */
+const MESS_PLAN = [
+  { art: 'raum',
+    titel: 'Zuerst hören wir den Raum ab',
+    text: 'Ohne Ton. Ich messe, wie laut es bei dir von sich aus ist — das ist die '
+        + 'Grundlage für alles Weitere: Ein Signal muß mindestens 20 dB lauter sein als '
+        + 'das Grundgeräusch, sonst mißt man Zufall. Dauert etwa fünf Sekunden, '
+        + 'dabei darfst du dich ruhig bewegen.',
+    ruhe: false },
+  { art: 'neutral',
+    titel: 'Die Bezugsmessung',
+    text: 'Ein Sweep von 20 Hz bis 20 kHz, das Tonstudio wird dabei umgangen. Diese Kurve '
+        + 'enthält Lautsprecher, Raum und Mikrofon — alles außer dem Equalizer. Gegen sie '
+        + 'wird später jede Einstellung gehalten.',
+    ruhe: true },
+  { art: 'lauf', gains: () => EQ_KLASSIKER.bass.slice(),
+    titel: 'Erste Einstellung: Bass',
+    text: 'Ich stelle die Bass-Anhebung ein (bis +6 dB unten herum) und messe denselben '
+        + 'Sweep noch einmal. Der Unterschied zur Bezugsmessung ist das, was der Equalizer '
+        + 'an deinem Hörplatz wirklich bewirkt.',
+    ruhe: true },
+  { art: 'lauf', gains: () => EQ_KLASSIKER.hoehen.slice(),
+    titel: 'Zweite Einstellung: Höhen',
+    text: 'Dasselbe mit der Höhenanhebung. Zwei Einstellungen an verschiedenen Enden des '
+        + 'Bereichs zeigen, ob die Dämpfung überall gleich ist oder nur an einem Ende '
+        + 'zuschlägt.',
+    ruhe: true },
+  { art: 'lauf', gains: () => [0,0,0,0,12,0,0,0],
+    titel: 'Dritte Einstellung: ein einzelnes Band voll aufgedreht',
+    text: '445 Hz um 12 dB angehoben — die stärkste Einstellung, die der Equalizer hergibt. '
+        + 'Wenn irgendwo eine Begrenzung sitzt, wird sie hier sichtbar.',
+    ruhe: true },
+  { art: 'pegel',
+    titel: 'Zuletzt: die Lautstärke durchfahren',
+    text: 'Fünf Durchgänge von 100 % auf 25 %, zusammen gut eine Minute. Der erste ist '
+        + 'lauter als alles bisher. Das ist die entscheidende Probe: Bleibt die Kette '
+        + 'linear, liegen alle Punkte auf einer Geraden. Knickt sie oben ab, wird '
+        + 'zurückgeregelt — und dann hilft gegen die fehlende Wirkung kein Equalizer, '
+        + 'sondern nur leiser abhören.',
+    ruhe: true },
+];
+
+let messPlanSchritt = -1;
+
+function messPlanStarten(){
+  messPlanSchritt = 0;
+  messErgebnis.__ansicht = 'ablauf';
+  /* WAEHREND DES ABLAUFS BLEIBT ES STILL (Caspar_D: "alles passiert in
+     STille, es wird keine Musik abgespielt, es bleibt alles ruhig").
+     Die Musik wuerde sonst nach jedem Durchgang wieder anlaufen und in
+     die Ruhephase der naechsten Messung hineinspielen. */
+  try { document.querySelectorAll('audio').forEach(el => el.pause()); } catch (e) {}
+  /* Ein Plan beginnt bei Null: alte Läufe wären gegen einen anderen
+     Nullpunkt gemessen. */
+  messErgebnis.laeufe = []; messErgebnis.mit = null; messErgebnis.pegel = null;
+  messPlanZeigen();
+  messAnsicht();
+}
+
+function messPlanAbbrechen(){
+  messPlanSchritt = -1;
+  messErgebnis.__ansicht = 'einleitung';
+  messPlanZeigen();
+  messAnsicht();
+}
+
+function messPlanZeigen(zustand, meldung){
+  const el = $('messplan'); if (!el) return;
+  if (messPlanSchritt < 0){
+    el.innerHTML = '<p>Der geführte Ablauf mißt in sechs Schritten durch, stellt den '
+      + 'Equalizer selbst ein und fragt vor jedem Ton nach. '
+      + '<button class="knopf" onclick="messPlanStarten()">Geführt messen</button></p>';
+    el.className = 'messplan ruht';
+    return;
+  }
+  if (messPlanSchritt >= MESS_PLAN.length){
+    el.className = 'messplan fertig';
+    el.innerHTML = '<h5>Alle Schritte durch</h5><p>Das Fazit unten faßt zusammen, was '
+      + 'dabei herausgekommen ist. '
+      + '<button class="knopf" onclick="messPlanStarten()">Noch einmal von vorn</button></p>';
+    return;
+  }
+  const s = MESS_PLAN[messPlanSchritt];
+  const nr = messPlanSchritt + 1, ges = MESS_PLAN.length;
+  el.className = 'messplan';
+
+  if (zustand === 'laeuft'){
+    el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + '</div>'
+      + '<h5>' + s.titel + '</h5>'
+      + '<p class="planlaeuft">läuft — bitte jetzt still bleiben</p>';
+    return;
+  }
+  if (zustand === 'fertig'){
+    el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + ' — gemessen</div>'
+      + '<h5>' + s.titel + '</h5>'
+      + '<p>' + (meldung || '') + '</p>'
+      + '<p class="planknoepfe">'
+      + '<button class="knopf" onclick="messPlanWeiter()">Paßt — weiter</button>'
+      + '<button class="knopf" onclick="messPlanWiederholen()">Nochmal — es gab eine Störung</button>'
+      + '<button class="knopf planweg" onclick="messPlanAbbrechen()">Ablauf beenden</button>'
+      + '</p>';
+    return;
+  }
+  /* Der Normalfall: ansagen und warten. */
+  el.innerHTML = '<div class="planzeile">Schritt ' + nr + ' von ' + ges + '</div>'
+    + '<h5>' + s.titel + '</h5>'
+    + '<p>' + s.text + '</p>'
+    + (s.ruhe ? '<p class="planruhe">Es muß still sein — jedes Geräusch im Raum steht '
+              + 'nachher in der Kurve. Wenn du soweit bist:</p>' : '')
+    + '<p class="planknoepfe">'
+    + '<button class="knopf planbereit" onclick="messPlanAusfuehren()">'
+    + (s.ruhe ? 'Bereit — jetzt messen' : 'Los') + '</button>'
+    + '<button class="knopf planweg" onclick="messPlanUeberspringen()">Überspringen</button>'
+    + '<button class="knopf planweg" onclick="messPlanAbbrechen()">Ablauf beenden</button>'
+    + '</p>';
+}
+
+function messPlanWeiter(){ messPlanSchritt++; messPlanZeigen(); messAnsicht(); }
+function messPlanUeberspringen(){ messPlanSchritt++; messPlanZeigen(); messAnsicht(); }
+function messPlanWiederholen(){ messPlanZeigen(); }
+
+async function messPlanAusfuehren(){
+  const s = MESS_PLAN[messPlanSchritt]; if (!s) return;
+  messPlanZeigen('laeuft');
+  try {
+    if (s.art === 'raum'){
+      await raumAbhoeren();
+      /* fünf Sekunden hören, dann wieder aus */
+      await new Promise(r => setTimeout(r, 5000));
+      const wert = (messLive && messLive.mittel !== null) ? messLive.mittel : null;
+      const tiefst = (messLive && messLive.tiefst !== null) ? messLive.tiefst : null;
+      raumAus();
+      messPlanZeigen('fertig', wert === null
+        ? 'Es kam nichts vom Mikrofon — stimmt die Auswahl oben?'
+        : 'Dein Raum liegt bei <b>' + wert.toFixed(0) + ' dB</b>'
+          + (tiefst !== null ? ', am ruhigsten war es bei ' + tiefst.toFixed(0) + ' dB' : '') + '. '
+          + (wert < -55 ? 'Das ist ruhig genug, um auch leise zu messen.'
+            : wert < -45 ? 'Brauchbar. Die Messung sollte etwas lauter laufen.'
+            : 'Ziemlich laut. Wenn eine Geräuschquelle abschaltbar ist, lohnt sich das jetzt.'));
+      return;
+    }
+    if (s.art === 'neutral'){
+      eqGains = [0,0,0,0,0,0,0,0]; eqAnwenden();
+      await messLauf(true);
+      const ab = messErgebnis.abstandN;
+      messPlanZeigen('fertig', !messErgebnis.neutral
+        ? 'Es kam nichts an. Lautstärke prüfen, Ausgabegerät prüfen — dann nochmal.'
+        : 'Bezugsmessung steht, Störabstand <b>' + Math.round(ab) + ' dB</b>'
+          + (ab < 20 ? ' — das ist zu wenig. Lauter stellen und wiederholen.'
+                     : ', das trägt.'));
+      return;
+    }
+    if (s.art === 'lauf'){
+      if (!messErgebnis.neutral){
+        messPlanZeigen('fertig', 'Es fehlt die Bezugsmessung — ohne sie ist eine Einstellung '
+          + 'mit nichts zu vergleichen. Geh einen Schritt zurück.');
+        return;
+      }
+      eqGains = s.gains(); eqAnwenden();
+      if (typeof eqPresetAnzeigen === 'function') eqPresetAnzeigen();
+      await messLauf(false);
+      const l = (messErgebnis.laeufe || []).slice(-1)[0];
+      messPlanZeigen('fertig', !l
+        ? 'Es kam nichts an — bitte wiederholen.'
+        : 'Gemessen. Störabstand ' + Math.round(l.abstand) + ' dB.'
+          + (l.soll ? ' Das Ergebnis steht als <b style="color:' + l.farbe + '">' + l.name
+                    + '</b> in den Diagrammen.' : ''));
+      return;
+    }
+    if (s.art === 'pegel'){
+      await pegelReihe();
+      const p = messErgebnis.pegel;
+      messPlanZeigen('fertig', !p || p.length < 2
+        ? 'Die Reihe kam nicht durch — bitte wiederholen.'
+        : 'Fünf Stufen gemessen. Das Ergebnis steht unten im Diagramm und im Fazit.');
+      return;
+    }
+  } catch (e){
+    messPlanZeigen('fertig', 'Es ging etwas schief: ' + (e && e.message ? e.message : e));
+  } finally {
+    /* Nach jedem Schritt den Equalizer zurueckstellen waere falsch -
+       die naechste Messung setzt ihn ohnehin selbst. */
+    messWegweiser();
+    messAnsicht();
+    /* Und still bleibt es auch danach. */
+    try { document.querySelectorAll('audio').forEach(el => el.pause()); } catch (e) {}
+  }
+}
+
+/* DER WEGWEISER (Caspar_D, 27.08.2026: "ich sehe in der dialogbox
+   nicht, was ich machen soll").
+
+   Fuenf Schritte, und die Liste weiss, welcher erledigt ist. Erledigtes
+   traegt einen Haken und den erreichten Wert - "Mikrofon: TONOR TM20"
+   ist mehr wert als ein blosses Haekchen, weil man daran auch sieht, OB
+   das Richtige gewaehlt wurde. Der naechste Schritt traegt einen Pfeil
+   und die Akzentfarbe, alles Weitere steht gedaempft.
+
+   Die Liste ist keine Bevormundung: alle Knoepfe bleiben jederzeit
+   bedienbar. Sie beantwortet nur die Frage, was jetzt am meisten
+   bringt. */
+function messWegweiser(){
+  const el = $('messweg'); if (!el) return;
+  const neu = messErgebnis.neutral;
+  const laeufe = Array.isArray(messErgebnis.laeufe) ? messErgebnis.laeufe : [];
+  const pegel = messErgebnis.pegel;
+
+  /* Steht am Equalizer ueberhaupt etwas? Sonst waere ein zweiter
+     Durchgang eine Messung des Nichts. */
+  const eingestellt = (typeof eqGains !== 'undefined')
+    && eqGains.some(v => Math.abs(+v || 0) >= 0.5);
+
+  const sel = $('messmikro');
+  const mikroName = sel && sel.options[sel.selectedIndex]
+    ? sel.options[sel.selectedIndex].textContent.split(' — ')[0] : null;
+  const mikroTaugt = mikroName && !MESS_VIRTUELL.test(mikroName);
+
+  const raumWert = (messLive && messLive.raum && messLive.mittel !== null)
+    ? messLive.mittel : null;
+
+  const schritte = [
+    { text: 'Mikrofon wählen',
+      fertig: !!mikroTaugt,
+      note: mikroName ? mikroName.replace(/\s*\([^)]*\)\s*$/, '') : null,
+      warnung: mikroName && !mikroTaugt ? 'virtuell — hört keinen Raum' : null },
+    { text: 'Raum abhören',
+      fertig: raumWert !== null || !!neu,
+      note: raumWert !== null ? raumWert.toFixed(0) + ' dB' : null,
+      freiwillig: true },
+    { text: '1 · Neutral messen',
+      fertig: !!neu,
+      note: neu && messErgebnis.abstandN !== undefined
+        ? 'Störabstand ' + Math.round(messErgebnis.abstandN) + ' dB' : null },
+    { text: eingestellt || laeufe.length ? '2 · Mit Einstellung messen'
+                                         : 'Etwas am Equalizer einstellen',
+      fertig: laeufe.length > 0,
+      note: laeufe.length ? laeufe.length + (laeufe.length === 1 ? ' Durchgang' : ' Durchgänge') : null },
+    { text: 'Lautstärke durchfahren',
+      fertig: !!(pegel && pegel.length >= 2),
+      note: pegel && pegel.length >= 2 ? pegel.length + ' Stufen' : null,
+      freiwillig: true },
+  ];
+
+  /* Der naechste Schritt ist der erste unerledigte, der nicht
+     freiwillig ist - freiwillige werden uebersprungen, sonst zeigt der
+     Pfeil auf "Raum abhoeren", waehrend die eigentliche Messung wartet. */
+  let dran = schritte.findIndex(x => !x.fertig && !x.freiwillig);
+  if (dran < 0) dran = schritte.findIndex(x => !x.fertig);
+
+  el.innerHTML = schritte.map((x, i) => {
+    const art = x.fertig ? 'fertig' : (i === dran ? 'dran' : 'warte');
+    const zeichen = x.fertig ? '✓' : (i === dran ? '▸' : '·');
+    const note = x.warnung
+      ? ' <span class="wnote fwarn">' + x.warnung + '</span>'
+      : (x.note ? ' <span class="wnote">' + x.note + '</span>' : '');
+    return '<li class="' + art + '"><span class="wzeichen">' + zeichen + '</span>'
+      + '<span>' + x.text + note + '</span></li>';
+  }).join('');
+}
+
 /* Die Legende folgt der Reihe: jeder Lauf steht mit seinem Namen und
    seiner Farbe da, sonst weiss niemand, welche Linie welche ist. */
 function messLegende(){
@@ -17875,6 +18284,7 @@ function messLegende(){
   }
   if (!teile.length) teile.push('<span class="fmatt">noch nichts gemessen</span>');
   el.innerHTML = teile.join('');
+  messWegweiser();
 }
 
 
@@ -18710,7 +19120,15 @@ function stumm(){
   else        lautstaerkeSetzen(0, false);
 }
 
-lautstaerkeSetzen(parseInt(localStorage.getItem('mysuno-lautstaerke'), 10) || 100);
+/* EINE GESPEICHERTE NULL IST KEINE FEHLENDE ANGABE (Caspar_D,
+   27.08.2026 gefunden: "und schon wieder spielst du musik, warum").
+   `|| 100` haelt die 0 fuer falsy und setzt volle Lautstaerke - wer
+   stumm geschlossen hat, wurde beim naechsten Start angebruellt.
+   Also ausdruecklich pruefen, ob ueberhaupt etwas gespeichert war. */
+{
+  const merk = parseInt(localStorage.getItem('mysuno-lautstaerke'), 10);
+  lautstaerkeSetzen(Number.isFinite(merk) ? merk : 100);
+}
 $('lautstaerke').oninput  = (e) => lautstaerkeSetzen(+e.target.value);
 $('blautstaerke').oninput = (e) => lautstaerkeSetzen(+e.target.value);
 
