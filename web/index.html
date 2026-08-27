@@ -1581,6 +1581,8 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #abspielen{font-size:26px}
 .laut{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .laut input{width:84px;accent-color:var(--akzent);cursor:pointer}
+.lautzahl{font-size:11px;color:var(--schwach);font-variant-numeric:tabular-nums;
+  min-width:36px;text-align:right;user-select:none}
 /* background:none ist Pflicht - ein <button> hat sonst den hellen
    Standardhintergrund des Browsers und erscheint als weißer Kasten. */
 /* Der Stummknopf traegt seit dem 26.08.2026 dieselbe Form wie die
@@ -2676,12 +2678,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
          Overlay im Spektrum, nur eine Ebene weiter draussen. -->
     <div class="sseite" data-seite="mess" hidden>
       <div class="messkopf">
-        <select id="messsignal" title="Womit gemessen wird. Der Sweep ist der Standard der Raumakustik: Er trägt seine Energie nacheinander statt gleichzeitig und ist deshalb auch in einem halligen Raum auswertbar.">
+        <select id="messsignal" onchange="messDauerZeigen()" title="Womit gemessen wird. Der Sweep ist der Standard der Raumakustik: Er trägt seine Energie nacheinander statt gleichzeitig und ist deshalb auch in einem halligen Raum auswertbar.">
           <option value="sweep">Sweep · 20 Hz – 20 kHz</option>
           <option value="rosa">Rosa Rauschen</option>
           <option value="weiss">Weißes Rauschen</option>
+          <option value="baender">Bandtöne · die acht EQ-Frequenzen</option>
         </select>
-        <span class="messdauer">4 s</span>
+        <span class="messdauer" id="messdauer">4 s</span>
         <span class="messluecke"></span>
         <button class="knopf" id="messneutral" onclick="einmessenNeutral()"
           title="Erster Durchgang: das Tonstudio wird dabei umgangen. Ohne ihn zeigt die Messung nur die Kette aus Lautsprecher, Raum und Mikrofon.">1 · Neutral</button>
@@ -3260,6 +3263,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <button class="schaltknopf" onclick="stumm()" id="stummknopf" title="Stumm (m)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-laut"/></svg></button>
       <input type="range" id="lautstaerke" min="0" max="100" step="1" value="100"
              title="Lautstärke">
+      <!-- Die Zahl zum Regler (Caspar_D, 27.08.2026: "waere schoen, wenn ich
+           am lautsaerkeregler eine Prozentzahl sehen koennte"). Auf der
+           Buehne stand sie laengst - hier fehlte sie. Feste Breite, damit
+           beim Ziehen nichts wackelt. -->
+      <span class="lautzahl" id="lautText" aria-live="off">100 %</span>
     </div>
     <div class="ptrenn"></div>
     <div class="pmodi" id="pmodi">
@@ -16135,6 +16143,31 @@ function messSignalBauen(art, sr, sekunden){
       const t = i / sr;
       x[i] = Math.sin(2 * Math.PI * f0 * T / k * (Math.exp(k * t / T) - 1));
     }
+  } else if (art === 'baender'){
+    /* DIE ACHT EQ-FREQUENZEN NACHEINANDER (Caspar_D, 27.08.2026:
+       "verschiedene frequenzen testen aus den typischen eq bändern").
+
+       Der Sweep laeuft ueber alles hinweg und trifft die Bandmitten nur
+       im Vorbeigehen. Hier steht auf jeder ein halber Takt lang ein
+       reiner Ton - dann laesst sich Band fuer Band ablesen, was der
+       Regler dort bewirkt.
+
+       Jeder Ton mit eigener Blende, sonst klickt es acht Mal; und
+       eine kurze Pause dazwischen, damit man im Bild sieht, wo einer
+       aufhoert und der naechste anfaengt. */
+    const F = EQ_FREQ_STD || [40, 56.6, 113, 224, 445, 886, 1768, 2500];
+    const proTon = n / F.length, ton = Math.round(proTon * 0.78), pause = Math.round(proTon * 0.22);
+    let o = 0;
+    for (const f of F){
+      const bl = Math.min(Math.round(sr * 0.02), Math.floor(ton / 2));
+      for (let i = 0; i < ton && o + i < n; i++){
+        let a = 1;
+        if (i < bl) a = 0.5 - 0.5 * Math.cos(Math.PI * i / bl);
+        else if (i > ton - bl) a = 0.5 - 0.5 * Math.cos(Math.PI * (ton - i) / bl);
+        x[o + i] = Math.sin(2 * Math.PI * f * i / sr) * a * 0.9;
+      }
+      o += ton + pause;
+    }
   } else if (art === 'rosa'){
     x.set(rauschenRosa(n));
   } else {
@@ -16152,6 +16185,13 @@ function messSignalBauen(art, sr, sekunden){
 async function einmessen(neutral){ return messLauf(!!neutral); }
 async function einmessenNeutral(){ return messLauf(true); }
 
+/* Die Dauer haengt am Signal: acht Bandtoene wollen je einen halben
+   Takt stehen, ein Sweep ist in vier Sekunden durch. Die Zahl neben
+   der Auswahl sagt vorher, wie lange es dauert. */
+function messDauerZeigen(){
+  const art = ($('messsignal') || { value: 'sweep' }).value;
+  const el = $('messdauer'); if (el) el.textContent = (art === 'baender' ? 8 : 4) + ' s';
+}
 async function messLauf(neutral){
   const knopf = $('messknopf'), knopf2 = $('messneutral');
   const sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
@@ -16177,8 +16217,11 @@ async function messLauf(neutral){
     if (neutral && typeof eqAusSetzen === 'function') eqAusSetzen(true);
     else if (neutral && typeof eqAus !== 'undefined') { eqAus = true; if (typeof eqAnwenden === 'function') eqAnwenden(); }
 
-    const DAUER = 4, VOR = 1.5, NACH = 0.6;
-    const signal = messSignalBauen(($('messsignal')||{value:'sweep'}).value, sr, DAUER);
+    /* Bandtoene brauchen laenger: acht Toene wollen je einen halben
+       Takt stehen, sonst misst man den Einschwingvorgang. */
+    const art = ($('messsignal') || { value: 'sweep' }).value;
+    const DAUER = art === 'baender' ? 8 : 4, VOR = 1.5, NACH = 0.6;
+    const signal = messSignalBauen(art, sr, DAUER);
     const ganz = new Float32Array(Math.round(sr * (VOR + DAUER + NACH)));
     ganz.set(signal, Math.round(sr * VOR));
 
@@ -17118,6 +17161,7 @@ function lautstaerkeSetzen(prozent, merken = true){
 
   // Beide Regler gleichziehen - Player und Bühne zeigen denselben Wert
   $('lautstaerke').value  = Math.round(anteil*100);
+  const lt = $('lautText'); if (lt) lt.textContent = Math.round(anteil*100) + ' %';
   $('stummknopf').innerHTML = sym;
   const bl = $('blautstaerke'), bt = $('blautText'), bs = $('bstumm');
   if (bl) bl.value = Math.round(anteil*100);
