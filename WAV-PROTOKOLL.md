@@ -42,7 +42,21 @@ browser-token: {"token":"<base64 von {"timestamp":<ms>}>"}
 ```
 
 Der `browser-token` ist kein Anmeldeschlüssel, sondern nur ein
-base64-verpackter Zeitstempel.
+base64-verpackter Zeitstempel: `btoa('{"timestamp":<ms>}')`, verpackt in
+`{"token": "..."}`. Optional geht noch `device-id` (UUID aus der echten
+Session) mit.
+
+**Von außerhalb des Browsers** kommen drei Kopfzeilen dazu, die im
+Browser automatisch gesetzt werden:
+
+```http
+Origin: https://suno.com
+Referer: https://suno.com/
+User-Agent: Mozilla/5.0 ... Chrome/...
+```
+
+Der Clerk-Token lebt **rund eine Stunde**; bei HTTP 401 einfach neu
+holen.
 
 **Achtung beim Hostnamen:** `studio-api.prod.suno.com` mit **Punkt**.
 (Der alte Name mit Bindestrich antwortet zwar auch, aber der
@@ -56,9 +70,12 @@ Download-Endpunkt liegt hier.)
   "download_url": "https://suno-data-uploads.s3.amazonaws.com/studio/uploads/<id>.wav?..." }
 ```
 
-Rund jede Sekunde nachfragen. Gemessen war die Datei beim **zweiten**
-Aufruf fertig; Tarja nennt 2–5 s beim ersten WAV eines Clips, danach
-sofort.
+Rund jede Sekunde nachfragen (Tarja: 1,0–1,2 s, höchstens 30 Versuche).
+Gemessen war die Datei beim **zweiten** Aufruf fertig; beim ersten WAV
+eines Clips dauert `processing` 2–5 s, danach sofort.
+
+Fehlerfälle: `status` wird `error` oder `not_available`, oder es kommt
+HTTP 401 — dann ist der Token abgelaufen.
 
 ### Die Datei holen
 
@@ -76,9 +93,46 @@ Token mehr — ein nacktes GET genügt, auch von Node aus.
 Die Stunde Gültigkeit heißt: Wer viele Dateien holt, muß die URL kurz
 vor dem Laden anfordern, nicht alle auf Vorrat.
 
+**Ohne `Authorization` laden.** Ein Clerk-Bearer auf der signierten
+S3-Adresse gibt HTTP 400 mit `SignatureDoesNotMatch` — nur der
+signierte Query-String zählt.
+
+### Die drei Formate
+
+Tarjas Messung an einem Clip von 3:55:
+
+| `format` | Objekt auf S3 | Inhalt | Größe |
+|---|---|---|---|
+| `wav` | `{id}.wav` | echtes WAV (`RIFF`/`WAVE`), PCM s16le, 48 kHz stereo, 1536 kb/s | ~43 MB |
+| `mp3` | `{id}_lyrics.mp3` | MPEG Layer III, 48 kHz stereo, ~167 kb/s, ID3 mit Lyrics | ~4,7 MB |
+| `m4a` | `{id}_lyrics.m4a` | MP4-Container mit **Opus** darin, ~130 kb/s | ~3,7 MB |
+
+Das WAV ist das unkomprimierte Master; MP3 und M4A sind die
+komprimierten „Lyrics"-Exporte, erkennbar am `_lyrics` im Dateinamen.
+Das M4A enthält trotz der Endung meist Opus, kein klassisches AAC.
+
+**Prüfen, ob wirklich ein WAV kam:** Die ersten Bytes müssen `RIFF`
+sein und Byte 8 bis 11 `WAVE`. Der Metadaten-Kommentar lautet
+`made with suno; created=…; id={clip_id}`, als Encoder steht
+`Lavf60.16.100` darin.
+
+Platzbedarf: rund **10 MB je Minute** (48 kHz, 16 Bit, stereo).
+
 **Randnotiz:** Die so geladene Datei war 13.670 Bytes größer als unsere
 vom August — vermutlich andere Kopfdaten, nicht anderer Toninhalt. Nicht
 weiter geprüft.
+
+### Stolperfallen (von Tarja, teils nachgeprüft)
+
+- **S3 mit Bearer → HTTP 400.** Die Datei nackt laden.
+- **Beim ersten Mal `processing`** — pollen, nicht sofort abbrechen.
+- **HTTP 401** heißt: Token abgelaufen, neu holen.
+- **`/api/playlist/v2/{id}`** liefert oft Metadaten *ohne* Songs. Immer
+  `/api/playlist/{id}` nehmen; die Tracks stehen in `playlist_clips`.
+  *(Betrifft uns nicht — wir nutzen bereits den richtigen.)*
+- **Kein CDN-Rückfall**, wenn der Download zählen soll.
+  `cdn1.suno.ai/{id}.mp3` ist Wiedergabe, kein Export.
+- Pause zwischen den Songs wie gehabt, 1–5 s.
 
 ### Was daraus für KlangTresor folgt
 
@@ -87,6 +141,12 @@ Token (also im Browser oder mit übergebenem Token), dann die S3-Adresse
 ohne Token laden — letzteres kann Node direkt. Das Kreuzchen im
 Lesezeichen aus dem Backlog wird damit einfacher, weil das Lesezeichen
 den Token ohnehin hat.
+
+Und der Kern von Tarjas Anleitung, der über WAVs hinausgeht: **der
+API-Aufruf *ist* der offizielle Download.** Ihr Werkzeug klickte bisher
+im Browser durch das Menü (Drei Punkte → Download → MP3), um das Flag zu
+setzen; das ist überflüssig. Wer diesen Endpunkt benutzt, ist damit
+automatisch auf dem gezählten Weg.
 
 ---
 
