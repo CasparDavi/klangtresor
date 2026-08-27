@@ -2431,6 +2431,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <button class="sreg" data-sreg="eq" onclick="studioLasche('eq')">Equalizer</button>
       <button class="sreg" data-sreg="pro" onclick="studioLasche('pro')">Kompressor</button>
       <button class="sreg" data-sreg="fx" onclick="studioLasche('fx')">Ghettoblaster</button>
+      <button class="sreg" data-sreg="mess" onclick="studioLasche('mess')">Einmessen</button>
     </div>
 
     <div class="sseite" data-seite="eq">
@@ -2593,6 +2594,47 @@ h3 .infoknopf .ico{width:14px;height:14px}
         flüchtig wirkt (Tempo, Solo, MEGA BASS, eine stumme Stufe, A/B), leuchtet
         nach dem Schließen am EQ-Knopf des Players weiter.
       </div>
+      </div>
+    </div>
+
+    <!-- EINMESSEN (Caspar_D, 26.08.2026: "du kannst dir gern ein
+         Eichprogramm bauen, mit entsprechenden Signalen und
+         Geräuschen").
+
+         WAS HIER GEMESSEN WIRD - und was nicht. Ein Mikrofon nimmt
+         immer das Produkt aus vier Dingen auf: Signal, Lautsprecher,
+         Raum und Mikrofon. Die lassen sich ohne Referenz nicht
+         trennen, und das eingebaute Mikrofon hat keine bekannte
+         Kennlinie - es hoert unter 100 Hz kaum etwas und betont
+         2-5 kHz. Eine EQ-Korrektur daraus zu rechnen waere schaedlich:
+         Sie hoebe den Bass an, um ein Loch auszugleichen, das im
+         Mikrofon sitzt und nicht im Raum.
+
+         DESHALB ZWEI DURCHGAENGE. Einmal mit neutralem Tonstudio,
+         einmal mit der eingestellten Fassung. In der DIFFERENZ kuerzen
+         sich Mikrofon, Lautsprecher und Raum heraus - sie sind in
+         beiden Messungen dieselben. Uebrig bleibt, was das Tonstudio
+         am Hoerplatz wirklich bewirkt. Das ist dieselbe Idee wie beim
+         Overlay im Spektrum, nur eine Ebene weiter draussen. -->
+    <div class="sseite" data-seite="mess" hidden>
+      <div class="messkopf">
+        <select id="messsignal" title="Womit gemessen wird">
+          <option value="sweep">Sweep — 20 Hz bis 20 kHz, 4 s</option>
+          <option value="rosa">Rosa Rauschen — 4 s</option>
+          <option value="weiss">Weißes Rauschen — 4 s</option>
+        </select>
+        <button class="knopf" id="messknopf" onclick="einmessen()">Messen</button>
+        <button class="knopf" id="messneutral" onclick="einmessenNeutral()"
+          title="Zweiter Durchgang mit neutralem Tonstudio — erst danach zeigt die Differenz, was die Einstellung bewirkt">Neutral messen</button>
+        <span class="fussnote" id="messstand">bereit</span>
+      </div>
+      <canvas id="messbild" height="260" style="width:100%;height:260px;background:#0a0a0a;border-radius:8px;margin-top:12px"></canvas>
+      <div class="fussnote" id="messtext" style="margin-top:10px">
+        Der Prüfton geht über den normalen Ausgang — auch über AirPlay —, das Mikrofon
+        nimmt auf. Gemessen wird damit die ganze Strecke: Lautsprecher, Raum und Mikrofon.
+        <b>Eine einzelne Messung ist deshalb keine Eichung</b>, sondern ein Abbild dieser Kette.
+        Erst der Vergleich zweier Durchgänge — einmal neutral, einmal mit deiner Einstellung —
+        zeigt, was das Tonstudio am Hörplatz bewirkt: Was in beiden gleich ist, fällt heraus.
       </div>
     </div>
 
@@ -15942,6 +15984,317 @@ let bVersatz = parseInt(localStorage.getItem('mysuno-versatz'), 10) || 0;
    sind der Eigenanteil des Messwegs - Mikrofoneingang, Schallweg,
    lokale Ausgabe. Wer es genau will, misst zweimal und zieht ab. Fuer
    die Anzeige genuegte der volle Wert: „funktioniert prima." */
+/* ---- EINMESSEN AM HOERPLATZ ------------------------------------------
+   Caspar_D, 26.08.2026: "du kannst dir gern ein Eichprogramm bauen, mit
+   entsprechenden Signalen und Geräuschen."
+
+   Der Weg ist derselbe wie bei der Latenzmessung, und zwar aus
+   demselben Grund: Der Pruefton muss durch DAS ELEMENT, das die Musik
+   spielt, sonst kommt er aus dem eingebauten Lautsprecher statt aus den
+   HomePods. Web Audio kennt AirPlay nicht.
+
+   DREI SIGNALE, drei Zwecke:
+
+     SWEEP - ein Sinus, der in vier Sekunden von 20 Hz auf 20 kHz
+     laeuft, logarithmisch (jede Oktave gleich lang). Er traegt seine
+     ganze Energie nacheinander statt gleichzeitig und ist deshalb auch
+     in einem halligen Raum auswertbar. Der Standard der Raumakustik.
+
+     ROSA RAUSCHEN - gleiche Energie je Oktave, also fallend mit 3 dB je
+     Oktave. Es klingt "gleichmaessig laut" ueber das Gehoer hinweg und
+     ist das, womit Beschallungsleute einmessen.
+
+     WEISSES RAUSCHEN - gleiche Energie je Hertz. Klingt hell und zischt,
+     ist aber die ehrlichste Anregung, wenn man in linearen Faechern
+     misst - jedes FFT-Fach bekommt gleich viel.
+
+   ALLE DREI mit Ein- und Ausblende: Ein hart einsetzendes Signal hat
+   einen Knack, und der ist breitbandig - er faerbt die Messung.
+
+   WAS DABEI HERAUSKOMMT, ist NICHT die Kennlinie der Anlage. Ein
+   Mikrofon nimmt das Produkt aus Signal, Lautsprecher, Raum und
+   Mikrofon auf; ohne Referenzmikrofon laesst sich das nicht trennen.
+   Die einzelne Messung ist ein Abbild dieser Kette. Erst die DIFFERENZ
+   zweier Durchgaenge - neutral gegen eingestellt - zeigt die
+   Bearbeitung allein, weil sich alles Uebrige herauskuerzt. */
+let messErgebnis = { mit: null, neutral: null, sr: 0 };
+
+/* Rosa Rauschen nach Voss-McCartney: mehrere Zufallsreihen, jede halb
+   so oft erneuert wie die vorige. Ergibt sauber 3 dB Abfall je Oktave
+   ohne Filter. */
+function rauschenRosa(n){
+  const raus = new Float32Array(n), z = new Float32Array(16);
+  let summe = 0, zaehler = 0;
+  for (let i = 0; i < n; i++){
+    zaehler++;
+    for (let k = 0; k < 16; k++){
+      if ((zaehler & ((1 << k) - 1)) === 0){
+        summe -= z[k]; z[k] = Math.random() * 2 - 1; summe += z[k];
+      }
+    }
+    raus[i] = summe / 8;
+  }
+  return raus;
+}
+
+function messSignalBauen(art, sr, sekunden){
+  const n = Math.round(sr * sekunden), x = new Float32Array(n);
+  if (art === 'sweep'){
+    /* Logarithmischer Sweep: die Momentanfrequenz waechst exponentiell,
+       die Phase ist ihr Integral. Von Hand hergeleitet, damit die
+       Formel nachvollziehbar bleibt. */
+    const f0 = 20, f1 = Math.min(20000, sr / 2 * 0.95), T = sekunden;
+    const k = Math.log(f1 / f0);
+    for (let i = 0; i < n; i++){
+      const t = i / sr;
+      x[i] = Math.sin(2 * Math.PI * f0 * T / k * (Math.exp(k * t / T) - 1));
+    }
+  } else if (art === 'rosa'){
+    x.set(rauschenRosa(n));
+  } else {
+    for (let i = 0; i < n; i++) x[i] = Math.random() * 2 - 1;
+  }
+  /* Ein- und Ausblende ueber 50 ms - gegen den Knack am Rand. */
+  const fl = Math.round(sr * 0.05);
+  for (let i = 0; i < fl && i < n; i++){
+    const f = 0.5 - 0.5 * Math.cos(Math.PI * i / fl);
+    x[i] *= f; x[n - 1 - i] *= f;
+  }
+  return x;
+}
+
+async function einmessen(neutral){ return messLauf(!!neutral); }
+async function einmessenNeutral(){ return messLauf(true); }
+
+async function messLauf(neutral){
+  const knopf = $('messknopf'), knopf2 = $('messneutral');
+  const sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
+  if (knopf && knopf.disabled) return;
+  if (knopf) knopf.disabled = true;
+  if (knopf2) knopf2.disabled = true;
+
+  const liefMusik = !audio.paused;
+  if (liefMusik) audio.pause();
+  let strom = null, ctx = null, merkQuelle = null, merkStelle = 0;
+  let merkEqAus = (typeof eqAus !== 'undefined') ? eqAus : null;
+
+  try {
+    sagen('Mikrofon …');
+    strom = await navigator.mediaDevices.getUserMedia({ audio: {
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') await ctx.resume();
+    const sr = ctx.sampleRate;
+
+    /* Fuer den neutralen Durchgang das Tonstudio umgehen - dann misst
+       man Lautsprecher, Raum und Mikrofon ohne jede Bearbeitung. */
+    if (neutral && typeof eqAusSetzen === 'function') eqAusSetzen(true);
+    else if (neutral && typeof eqAus !== 'undefined') { eqAus = true; if (typeof eqAnwenden === 'function') eqAnwenden(); }
+
+    const DAUER = 4, VOR = 1.5, NACH = 0.6;
+    const signal = messSignalBauen(($('messsignal')||{value:'sweep'}).value, sr, DAUER);
+    const ganz = new Float32Array(Math.round(sr * (VOR + DAUER + NACH)));
+    ganz.set(signal, Math.round(sr * VOR));
+
+    /* Aufnehmen: roh, ueber einen ScriptProcessor - wie bei der
+       Latenzmessung. Ein MediaRecorder gaebe komprimierte Daten. */
+    const quelle = ctx.createMediaStreamSource(strom);
+    const AUF = VOR + DAUER + NACH + 1.5;
+    const puffer = new Float32Array(Math.ceil(sr * AUF));
+    let schreib = 0;
+    const knoten = ctx.createScriptProcessor(4096, 1, 1);
+    knoten.onaudioprocess = (e) => {
+      const d = e.inputBuffer.getChannelData(0);
+      for (let i = 0; i < d.length && schreib < puffer.length; i++) puffer[schreib++] = d[i];
+    };
+    quelle.connect(knoten);
+    const still = ctx.createGain(); still.gain.value = 0;
+    knoten.connect(still); still.connect(ctx.destination);
+
+    const wav = messWavBauen(ganz, sr);
+    const url = URL.createObjectURL(wav);
+    merkQuelle = audio.src; merkStelle = audio.currentTime;
+    audio.src = url;
+    await new Promise((f, x) => { audio.oncanplaythrough = f; audio.onerror = x; audio.load(); });
+    sagen(neutral ? 'messe neutral …' : 'messe …');
+    await audio.play();
+    await new Promise(r => setTimeout(r, (VOR + DAUER + NACH + 1.2) * 1000));
+
+    knoten.disconnect(); quelle.disconnect();
+    URL.revokeObjectURL(url);
+
+    /* Auswerten: das Spektrum des aufgenommenen Abschnitts, gemittelt
+       ueber viele Fenster. Der Anfang wird uebersprungen - dort steht
+       die Stille vor dem Signal und, bei AirPlay, die Pufferzeit. */
+    const ab = Math.round(sr * (VOR + 0.3));
+    const bis = Math.min(puffer.length, Math.round(sr * (VOR + DAUER)));
+    const kurve = messSpektrum(puffer.subarray(ab, bis), sr);
+    messErgebnis[neutral ? 'neutral' : 'mit'] = kurve;
+    messErgebnis.sr = sr;
+    messBildZeichnen();
+    const laut = kurve.reduce((a, b) => a + b.db, 0) / kurve.length;
+    sagen(neutral
+      ? 'neutraler Durchgang steht (' + laut.toFixed(0) + ' dB im Mittel)'
+      : 'gemessen (' + laut.toFixed(0) + ' dB im Mittel)');
+  } catch (e) {
+    sagen('ging nicht: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (neutral && merkEqAus !== null){
+      if (typeof eqAusSetzen === 'function') eqAusSetzen(merkEqAus);
+      else { eqAus = merkEqAus; if (typeof eqAnwenden === 'function') eqAnwenden(); }
+    }
+    if (strom) strom.getTracks().forEach(t => t.stop());
+    if (ctx) { try { await ctx.close(); } catch (e2) {} }
+    if (merkQuelle){ audio.src = merkQuelle; try { audio.currentTime = merkStelle; } catch (e3) {} }
+    if (liefMusik) audio.play().catch(() => {});
+    if (knopf) knopf.disabled = false;
+    if (knopf2) knopf2.disabled = false;
+  }
+}
+
+/* DAS BILD. Zwei Kurven, wenn beide Durchgaenge da sind, und dazwischen
+   die Differenz - die ist die eigentliche Aussage: Was in beiden
+   Messungen gleich ist (Mikrofon, Lautsprecher, Raum), faellt darin
+   heraus.
+
+   Hausform: Flaeche gedaempft, Topline in voller Staerke oben. Die
+   Waagerechte ist logarithmisch, weil Terzbaender es sind. */
+function messBildZeichnen(){
+  const c = $('messbild'); if (!c) return;
+  const b = c.getContext('2d');
+  const B = c.clientWidth || 800, H = c.height;
+  if (c.width !== B) c.width = B;
+  b.fillStyle = '#0a0a0a'; b.fillRect(0, 0, B, H);
+
+  const mit = messErgebnis.mit, neu = messErgebnis.neutral;
+  if (!mit && !neu){
+    b.fillStyle = '#555'; b.font = '12px system-ui';
+    b.fillText('Noch nicht gemessen.', 12, 22);
+    return;
+  }
+  const L = 40, R = 12, O = 14, U = 26;
+  const bw = B - L - R, bh = H - O - U;
+  const kurve = mit || neu;
+  const X = (i) => L + bw * i / (kurve.length - 1);
+
+  /* Senkrechte Marken bei 100 Hz, 1 kHz, 10 kHz. */
+  b.font = '10px system-ui';
+  kurve.forEach((p, i) => {
+    const rund = [31.5, 100, 315, 1000, 3150, 10000];
+    if (!rund.some(f => Math.abs(p.f - f) / f < 0.06)) return;
+    b.fillStyle = 'rgba(255,255,255,0.06)'; b.fillRect(X(i), O, 1, bh);
+    b.fillStyle = '#6e6e73';
+    b.fillText(p.f >= 1000 ? (p.f / 1000).toFixed(p.f < 10000 ? 1 : 0) + 'k' : Math.round(p.f), X(i) - 8, H - 8);
+  });
+
+  /* Die Skala: gemeinsame Spanne beider Kurven, mindestens 30 dB. */
+  const alle = [].concat(mit || [], neu || []).map(p => p.db);
+  let lo = Math.min(...alle), hi = Math.max(...alle);
+  if (hi - lo < 30){ const m = (hi + lo) / 2; lo = m - 15; hi = m + 15; }
+  const Y = (db) => O + bh * (1 - (db - lo) / (hi - lo));
+  b.fillStyle = '#6e6e73';
+  for (const d of [lo, (lo + hi) / 2, hi]) b.fillText(Math.round(d) + ' dB', 2, Y(d) + 3);
+
+  const linie = (k, farbe, deckung) => {
+    b.beginPath();
+    k.forEach((p, i) => { const x = X(i), y = Y(p.db); i ? b.lineTo(x, y) : b.moveTo(x, y); });
+    b.strokeStyle = farbe; b.globalAlpha = deckung; b.lineWidth = 2; b.stroke();
+    b.globalAlpha = 1;
+  };
+  if (neu) linie(neu, '#8b8b90', 0.85);
+  if (mit) linie(mit, '#f97b14', 1);
+
+  /* Die Differenz - nur wenn beide da sind. Sie steht als Flaeche um
+     eine Nullinie in der Bildmitte, damit man Anheben und Absenken
+     unterscheidet, ohne die Zahlen zu lesen. */
+  if (mit && neu){
+    const m0 = O + bh / 2;
+    const spanne = Math.max(3, Math.max(...mit.map((p, i) => Math.abs(p.db - neu[i].db))));
+    b.globalAlpha = 0.45;
+    mit.forEach((p, i) => {
+      const d = p.db - neu[i].db;
+      const h = (d / spanne) * (bh / 2) * 0.9;
+      b.fillStyle = d >= 0 ? '#f9143c' : '#f9b414';
+      b.fillRect(X(i) - 3, h >= 0 ? m0 - h : m0, 6, Math.abs(h));
+    });
+    b.globalAlpha = 1;
+    b.fillStyle = 'rgba(255,255,255,0.28)'; b.fillRect(L, m0, bw, 1);
+    b.fillStyle = '#8b8b90'; b.font = '10px system-ui';
+    b.fillText('Differenz ±' + spanne.toFixed(1) + ' dB', L + 6, m0 - 6);
+  }
+}
+
+/* Ein WAV aus Fliesskomma - 16 Bit, ein Kanal, Kopf von Hand. */
+function messWavBauen(x, sr){
+  const n = x.length, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
+  const txt = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  txt(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); txt(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  txt(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++){
+    const w = Math.max(-1, Math.min(1, x[i] * 0.5));
+    v.setInt16(44 + i * 2, w < 0 ? w * 0x8000 : w * 0x7FFF, true);
+  }
+  return new Blob([b], { type: 'audio/wav' });
+}
+
+/* Terzbaender von 20 Hz bis 20 kHz - 31 Stueck, wie am Terzband-
+   Equalizer. Feiner braeuchte es nicht: Der Raum selbst schwankt von
+   Ohr zu Ohr staerker als ein Zwoelftel einer Oktave. */
+function messSpektrum(daten, sr){
+  const N = 8192, schritt = N / 2;
+  const fen = new Float32Array(N);
+  for (let i = 0; i < N; i++) fen[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1));
+  const summe = new Float64Array(N / 2), re = new Float64Array(N), im = new Float64Array(N);
+  let bloecke = 0;
+  for (let o = 0; o + N <= daten.length; o += schritt){
+    for (let i = 0; i < N; i++){ re[i] = daten[o + i] * fen[i]; im[i] = 0; }
+    messFft(re, im);
+    for (let i = 0; i < N / 2; i++) summe[i] += Math.hypot(re[i], im[i]);
+    bloecke++;
+  }
+  if (!bloecke) return [];
+  const mitte = [], f0 = 20;
+  for (let t = 0; t < 31; t++){
+    const fm = f0 * Math.pow(2, t / 3);
+    const fu = fm / Math.pow(2, 1 / 6), fo = fm * Math.pow(2, 1 / 6);
+    const iu = Math.max(1, Math.round(fu / (sr / N))), io = Math.min(N / 2 - 1, Math.round(fo / (sr / N)));
+    let s = 0, n = 0;
+    for (let i = iu; i <= io; i++){ s += summe[i] / bloecke; n++; }
+    const amp = n ? s / n : 1e-9;
+    mitte.push({ f: fm, db: 20 * Math.log10(Math.max(1e-9, amp)) });
+  }
+  return mitte;
+}
+
+/* Eine schlichte Radix-2-FFT. Der Analyzer hat eine schnellere, die
+   liegt aber in seinem Modulschluss und ist von hier nicht erreichbar;
+   fuer ein paar Dutzend Bloecke genuegt diese. */
+function messFft(re, im){
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++){
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j){ let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+  }
+  for (let len = 2; len <= n; len <<= 1){
+    const w = -2 * Math.PI / len;
+    for (let i = 0; i < n; i += len){
+      for (let k = 0; k < len / 2; k++){
+        const wr = Math.cos(w * k), wi = Math.sin(w * k);
+        const ur = re[i + k], ui = im[i + k];
+        const vr = re[i + k + len / 2] * wr - im[i + k + len / 2] * wi;
+        const vi = re[i + k + len / 2] * wi + im[i + k + len / 2] * wr;
+        re[i + k] = ur + vr; im[i + k] = ui + vi;
+        re[i + k + len / 2] = ur - vr; im[i + k + len / 2] = ui - vi;
+      }
+    }
+  }
+}
+
 async function latenzMessen(){
   const knopf = $('bmessen');
   const sagen = (txt) => { const a=$('versatzText'); if(a) a.textContent = txt; };
