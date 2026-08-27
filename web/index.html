@@ -1881,6 +1881,8 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   text-transform:uppercase;color:var(--schwach);font-weight:600}
 .messfazit p{margin:0 0 9px}
 .messfazit p:last-child{margin-bottom:0}
+.messfazit ul{margin:0 0 9px;padding-left:18px}
+.messfazit li{margin-bottom:3px}
 .messfazit b{color:#f97b14;font-weight:600}
 .messfazit .fzahl{font-variant-numeric:tabular-nums}
 .messfazit .fmatt{color:var(--schwach)}
@@ -2772,6 +2774,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            Ergebnis - erst der Vergleich mit dem, was eingestellt WAR,
            sagt etwas. -->
       <div class="messfazit" id="messfazit" hidden></div>
+      <div class="messfazit" id="messkorrektur" hidden></div>
 
       <div class="messspalten">
         <div class="messwie">
@@ -17400,6 +17403,139 @@ function messFazitZeigen(){
   if (teile.length) z.push('<p class="fmatt">' + teile.join('   ·   ') + '</p>');
 
   el.innerHTML = '<h5>Fazit</h5>' + z.join('');
+  messKorrekturZeigen();
+}
+
+/* AUS DER MESSUNG EINE KORREKTUR MACHEN (Caspar_D, 27.08.2026: "am
+   ende muesste man die slider des EQs mit Korrekturfaktoren belegen"
+   und "wenn ich dann gemessen habe, wie nutze ich das wissen fuer
+   unsere Signalaufbereitung").
+
+   Hier ist Vorsicht am Platz, denn zwei Dinge sehen in der Messung
+   gleich aus und muessen verschieden behandelt werden.
+
+   1. UEBERHOEHUNGEN darf man daempfen. Eine stehende Welle laedt
+      Energie in ein Band; ein Regler nach unten nimmt sie wieder weg.
+      Das ist Standardpraxis und funktioniert.
+
+   2. EINBRUECHE darf man NICHT auffuellen. Ein Loch im Frequenzgang
+      kommt meist von einer Ausloeschung: Direktschall und Reflexion
+      treffen gegenphasig ein und heben sich auf. Mehr Pegel wird
+      genauso ausgeloescht - man verheizt Leistung und Kopfraum, ohne
+      dass am Hoerplatz etwas ankommt. Ein anderer Platz hilft, ein
+      Regler nicht.
+
+   3. Und die AUSBEUTE laesst sich nur dann hochrechnen, wenn der
+      Verlust NICHT von einer Begrenzung kommt. Begrenzt der
+      Lautsprecher, macht mehr Pegel es schlimmer, nicht besser: was
+      man draufgibt, regelt er staerker weg. Deshalb wird die
+      Lautstaerkereihe hier zur Bedingung, nicht zur Zierde.
+
+   Was hier NICHT gerechnet wird, ist eine Korrektur des absoluten
+   Frequenzgangs. Die braeuchte ein Mikrofon mit bekannter Kennlinie -
+   sonst hebt man Baesse an, um ein Loch auszugleichen, das im Mikrofon
+   sitzt. Alles unten Gerechnete kommt aus DIFFERENZEN, in denen sich
+   das Mikrofon herauskuerzt. */
+function messKorrekturRechnen(){
+  const neu = messErgebnis.neutral;
+  if (!neu) return null;
+
+  /* Der glatte Verlauf, gegen den Ueberhoehungen auffallen: gleitendes
+     Mittel ueber fuenf Terzbaender. Nicht der Mittelwert der ganzen
+     Kurve - dann waere jeder Basshang eine "Ueberhoehung". */
+  const N = neu.length;
+  const glatt = neu.map((p, i) => {
+    let sum = 0, n = 0;
+    for (let k = -2; k <= 2; k++){ const j = i + k;
+      if (j >= 0 && j < N){ sum += neu[j].db; n++; } }
+    return sum / n;
+  });
+
+  /* Je EQ-Band die staerkste Ueberhoehung in seinem Bereich suchen.
+     Nur Ueberhoehungen - Einbrueche bleiben stehen, siehe oben. */
+  const vorschlag = [0,0,0,0,0,0,0,0];
+  const gruende = [];
+  for (let i = 0; i < 8; i++){
+    const [fu, fo] = EQ_BAENDER[i];
+    let best = 0, bestF = 0;
+    neu.forEach((p, j) => {
+      if (p.f < Math.max(40, fu) || p.f > Math.min(8000, fo)) return;
+      const ueber = p.db - glatt[j];
+      if (ueber > best){ best = ueber; bestF = p.f; }
+    });
+    /* Erst ab 3 dB lohnt der Eingriff, und nie mehr als 6 dB weg:
+       ein Regler soll eine Spitze brechen, nicht den Raum umbauen. */
+    if (best >= 3){
+      vorschlag[i] = -Math.min(6, +(best * 0.7).toFixed(1));
+      gruende.push({ i, f: bestF, ueber: best, db: vorschlag[i] });
+    }
+  }
+
+  /* Begrenzt die Kette? Dann keine Hochrechnung der Ausbeute. */
+  let begrenzt = null;
+  const pg = messErgebnis.pegel;
+  if (pg && pg.length >= 2){
+    const soll = (l) => 40 * Math.log10(l / 100);
+    const fehlt = (soll(pg[0].laut) - soll(pg[pg.length-1].laut))
+                - (pg[0].mittel - pg[pg.length-1].mittel);
+    begrenzt = fehlt > 1.5;
+  }
+  return { vorschlag, gruende, begrenzt };
+}
+
+function messKorrekturZeigen(){
+  const k = messKorrekturRechnen();
+  const el = $('messkorrektur'); if (!el) return;
+  if (!k){ el.hidden = true; return; }
+  el.hidden = false;
+  const z = [];
+  const hz = (f) => f >= 1000 ? (f / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(f) + ' Hz';
+
+  if (!k.gruende.length){
+    z.push('<p>Im gemessenen Verlauf ragt kein Band um mehr als 3 dB aus seiner Nachbarschaft. '
+      + 'Es gibt <b>nichts zu korrigieren</b> — was uneben aussieht, ist der allgemeine Verlauf '
+      + 'von Lautsprecher und Mikrofon, und der gehört nicht weggebügelt.</p>');
+  } else {
+    z.push('<p>Diese Bänder ragen aus ihrer Nachbarschaft heraus — das sind die Kandidaten '
+      + 'für eine Dämpfung:</p><ul>' + k.gruende.map(g =>
+        '<li>' + hz(g.f) + ': <span class="fzahl">' + g.ueber.toFixed(1).replace('.', ',')
+        + ' dB</span> über dem Verlauf ringsum → Regler '
+        + (EQ_FREQ_STD[g.i] >= 1000 ? (EQ_FREQ_STD[g.i]/1000).toFixed(1).replace('.', ',') + ' kHz'
+                                    : EQ_FREQ_STD[g.i] + ' Hz')
+        + ' auf <b class="fzahl">' + g.db.toFixed(1).replace('.', ',') + ' dB</b></li>').join('')
+      + '</ul>');
+    z.push('<p class="fmatt">Nur zu 70 % der gemessenen Überhöhung und höchstens 6 dB: '
+      + 'ein Regler soll eine Spitze brechen, nicht den Raum umbauen. '
+      + 'Und nur Überhöhungen — <b>Einbrüche werden nicht aufgefüllt</b>. Ein Loch im '
+      + 'Frequenzgang ist meist eine Auslöschung zwischen Direktschall und Reflexion; '
+      + 'mehr Pegel wird genauso ausgelöscht und verheizt nur Kopfraum.</p>');
+    z.push('<p><button class="knopf" onclick="messKorrekturAnwenden()">'
+      + 'Diese Korrektur auf die Regler legen</button></p>');
+  }
+
+  if (k.begrenzt === true){
+    z.push('<p class="fwarn">Die Lautstärkereihe zeigt eine Begrenzung auf dem Weg. '
+      + 'Deshalb wird hier <b>nicht</b> hochgerechnet, was von der Einstellung fehlt: '
+      + 'gegen eine Begrenzung hilft mehr Pegel nicht, sie regelt ihn nur stärker weg. '
+      + 'Was hier hilft, ist leiser abhören.</p>');
+  } else if (k.begrenzt === null){
+    z.push('<p class="fmatt">Ob die Kette begrenzt, ist noch nicht geprüft — dafür ist '
+      + '<b>Lautstärke durchfahren</b> da. Solange das offen ist, wäre jede Hochrechnung '
+      + 'der fehlenden Wirkung geraten.</p>');
+  }
+  el.innerHTML = '<h5>Was sich daraus einstellen läßt</h5>' + z.join('');
+}
+
+function messKorrekturAnwenden(){
+  const k = messKorrekturRechnen(); if (!k) return;
+  eqGains = k.vorschlag.slice();
+  if (typeof eqAnwenden === 'function') eqAnwenden();
+  if (typeof eqMerken === 'function') eqMerken();
+  if (typeof eqPresetAnzeigen === 'function') eqPresetAnzeigen();
+  if (typeof studioZeichnen === 'function') studioZeichnen();
+  const e = $('messstand');
+  if (e) e.textContent = 'Korrektur auf die Regler gelegt. Zum Prüfen jetzt '
+    + '„2 · Mit Einstellung“ messen — dann steht sie als eigene Kurve neben der neutralen.';
 }
 
 /* WARUM DIE KURVE BUCKELIG AUSSIEHT (Caspar_D, 27.08.2026: "und warum
