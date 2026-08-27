@@ -9,6 +9,11 @@
 # vollständig neu. Datensicherung ist eine eigene Aufgabe und gehört auf eine
 # zweite Platte — ein git-Repo auf derselben SSD ist keine.
 library/
+# ... mit einer Ausnahme: Meßdaten. Sie sind klein (Zehnerkilobyte) und
+# im Gegensatz zum Audio NICHT reproduzierbar - ein Raum an einem
+# bestimmten Abend läßt sich nicht nachstellen. (27.08.2026)
+!library/messungen/
+!library/messungen/**
 
 # Das Profilbild gehört dem Konto, nicht dem Programm. Es wird von
 # bin/laden.js nach library/avatar.<endung> geholt und vom Server

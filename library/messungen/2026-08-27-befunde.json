@@ -1,0 +1,67 @@
+{
+  "wann": "2026-08-27",
+  "ort": "Caspar_Ds Hörplatz",
+  "kette": "KlangTresor → macOS → AirPlay → HomePod",
+  "mikrofon": "TONOR TM20 Audio Device (0d8c:0134)",
+
+  "hinweis": "Von Hand aus den Meldungen der Sitzung übertragen. Die Rohaufnahmen wurden nicht gespeichert; die einzige vollständige Kurve liegt in einmessung-2026-08-27.json.",
+
+  "laufzeit_airplay_ms": { "werte": [2030, 2070, 2080, 2090, 2110, 2120, 2170], "mittel": 2096 },
+
+  "raum": {
+    "grundgeraeusch_db": { "spanne": [-64, -49], "typisch": -57 },
+    "stoerlinien_hz": [55.2, 86.1, 119.8, 130.5, 145.3, 230.1, 239.6, 276, 323, 592, 648.7, 974.4, 1158.8, 1379.5, 1440, 11768],
+    "deutung": "86 und 145 Hz gehören zum Rechnerlüfter (Drehfrequenz und Oberwelle); 120/240 Hz ein weiteres Paar. Kein Netzbrummen — das läge exakt bei 50."
+  },
+
+  "raummoden_unbestaetigt": [
+    { "hz": 34.2, "q": 17, "wandabstand_m": 5.01 },
+    { "hz": 71.4, "q": 27, "wandabstand_m": 2.40 },
+    { "hz": 129.8, "q": 41, "wandabstand_m": 1.32 },
+    { "hz": 220.5, "q": 56, "wandabstand_m": 0.78 }
+  ],
+  "moden_vorbehalt": "Rauschen und Sweep fanden KEINE gemeinsame Mode. Die Werte sind Verdacht, nicht Befund. Q hängt zudem von der Glättung ab (0,2 Hz → 41, 0,5 Hz → 17, 1,0 Hz → 6).",
+
+  "vergleich_rauschen_sweep": {
+    "unruhe_db_je_band": { "rauschen": 4.59, "sweep": 3.78 },
+    "frequenzgang_abweichung_db": 1.48,
+    "pegelunterschied_db": -4.8,
+    "deutung": "Bei 13 s Länge ist der Sweep ruhiger als das Rauschen. Der Frequenzgang stimmt überein — zwei Signale, derselbe Raum."
+  },
+
+  "pegelreihe_absteigend": {
+    "signal": "Sweep, 13 s je Stufe",
+    "stufen_prozent": [100, 79, 63, 50, 40, 32, 25],
+    "abweichung_von_der_geraden_db": [0.0, 1.2, 2.1, 2.4, 2.5, 2.1, null],
+    "formaenderung_100_gegen_25_db": {
+      "32": -13.2, "63": -4.9, "127": 1.6, "254": -1.0, "508": 0.0,
+      "1016": 0.5, "2032": -1.3, "4064": 0.7, "8127": -2.4
+    }
+  },
+
+  "pegelreihe_aufsteigend": {
+    "signal": "Sweep, 13 s je Stufe, Abbruch bei Baßabfall",
+    "bezug": "25 %",
+    "stufen": [
+      { "prozent": 25, "bass_db": 0, "hoehen_db": 0 },
+      { "prozent": 32, "bass_db": -0.5, "hoehen_db": -0.4 },
+      { "prozent": 40, "bass_db": -0.4, "hoehen_db": -1.3 },
+      { "prozent": 50, "bass_db": -3.6, "hoehen_db": -1.3 },
+      { "prozent": 63, "bass_db": -7.0, "hoehen_db": -1.4 }
+    ],
+    "befund": "Bis 40 % ist die Kette ehrlich. Ab 50 % greift eine Baßbegrenzung, rund 3,5 dB je Vier-Dezibel-Stufe.",
+    "vorbehalt": "Nicht restlos bewiesen, daß es der Lautsprecher ist und nicht das Mikrofon. Dafür spricht die Form (Absenken ohne zusätzliche Oberwellen) und der Kopfraum (lautester Moment -15,5 dB über 10-ms-Blöcke). Klirranteil und Kopfraum werden seit dem 27.08. mitgemessen, lagen für diese Reihe aber noch nicht vor."
+  },
+
+  "eq_ausbeute_bei_60_prozent": {
+    "bass": 0.44,
+    "hoehen_1768hz_plus12": 0.28,
+    "mittel": 0.36,
+    "deutung": "Rückwirkend durch die Pegelreihe erklärt: nicht der Equalizer, sondern die Baßbegrenzung des Lautsprechers."
+  },
+
+  "digital_gegengeprueft": {
+    "nullprobe_db": 0.02,
+    "hinweis": "Die Kette ist bei neutralen Reglern über 25 Hz bis 12,9 kHz auf 0,02 dB durchsichtig. Alles Gemessene ist also echte Wirkung."
+  }
+}

@@ -677,3 +677,22 @@ getrennt.
 **Eine Lautstärke-Empfehlung.** Der Punkt, ab dem die Kette ehrlich
 arbeitet, ist meßbar (bei Caspar_D 40 %). Das Programm könnte ihn nennen
 und beim Abhören daran erinnern.
+
+---
+
+## Die Meßdaten liegen bei
+
+`library/messungen/` — trotz `.gitignore` für `library/` mit im Repo,
+weil sie klein sind und im Gegensatz zum Audio **nicht reproduzierbar**:
+ein Raum an einem bestimmten Abend läßt sich nicht nachstellen.
+
+| Datei | Inhalt |
+|---|---|
+| `einmessung-2026-08-27.json` | eine vollständige Bezugsmessung: 31 Terzbänder und die lange FFT auf 2731 Punkte eingedampft (0,084 Hz Auflösung, 11,9 s Fenster) |
+| `2026-08-27-befunde.json` | alle Zahlen des Tages, von Hand aus den Meldungen übertragen — Laufzeiten, Störlinien, Modenverdacht, beide Pegelreihen, der Signalvergleich |
+
+Die **Rohaufnahmen wurden nicht gespeichert.** Das ist eine Lücke: mit
+ihnen ließe sich jede Auswertung nachträglich anders rechnen, ohne noch
+einmal Ton zu machen. Bei 13 Sekunden und 44,1 kHz wären es 1,1 MB je
+Durchgang als Float32 — vertretbar, wenn man sie nach der Auswertung
+gleich als WAV ablegt.

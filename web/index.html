@@ -16950,9 +16950,44 @@ async function messLauf(neutral){
     let hMax = 0, hMaxBei = 0;
     for (let i = 0; i < huell.length; i++) if (huell[i] > hMax){ hMax = huell[i]; hMaxBei = i * 0.01; }
     const dB = (v) => (20 * Math.log10(Math.max(1e-9, v))).toFixed(1);
+
+    /* UEBERSTEUERT DAS MIKROFON? (Caspar_D, 27.08.2026: "es könnte doch
+       aber auch sein, dass das Mikrophon schlapp macht bei den lauten
+       Bässen und Höhen, oder ist das resistent dagegen.")
+
+       Ein berechtigter Einwand: die Messung kann von sich aus nicht
+       unterscheiden, ob der LAUTSPRECHER zurueckregelt oder das
+       MIKROFON an seine Grenze kommt. Beides sieht im Frequenzgang nach
+       "da fehlt etwas" aus.
+
+       Zwei Dinge trennen die Faelle:
+
+       1. DIE AUSSTEUERUNG. Ein Mikrofon, das nicht in die Naehe der
+          Vollaussteuerung kommt, kann nicht uebersteuern. Gemessen wird
+          der echte Spitzenwert der Rohaufnahme, nicht der geglaettete
+          Huellkurvenwert - eine einzelne Spitze verschwindet im
+          10-ms-Mittel.
+
+       2. DIE FORM DES FEHLERS. Ein uebersteuerndes Mikrofon VERZERRT:
+          es erzeugt Oberwellen, das Spektrum bekommt oben MEHR. Ein
+          begrenzender Lautsprecher nimmt weg. Wer also Absenkung ohne
+          zusaetzliche Oberwellen sieht, hat es nicht mit dem Mikrofon
+          zu tun.
+
+       Hier wird der erste Punkt geprueft und, wenn noetig, gewarnt. */
+    let spitze = 0, nahVoll = 0;
+    for (let i = 0; i < schreib; i++){
+      const a = Math.abs(puffer[i]);
+      if (a > spitze) spitze = a;
+      if (a > 0.98) nahVoll++;
+    }
+    const anteilVoll = schreib ? nahVoll / schreib : 0;
+    const kopfraum = 20 * Math.log10(Math.max(1e-9, 1 / Math.max(1e-9, spitze)));
     messErgebnis.diagnose = {
       mikro: mikroName,
       ruhe_dB: +dB(ruhe), schwelle_dB: +dB(schwelle),
+      spitze_dB: +dB(spitze), kopfraum_dB: +kopfraum.toFixed(1),
+      anteil_nah_voll: +(anteilVoll * 100).toFixed(3),
       lautestes_dB: +dB(hMax), lautestes_bei_s: +hMaxBei.toFixed(2),
       ueber_ruhe_dB: +(20 * Math.log10(Math.max(1e-9, hMax) / Math.max(1e-9, ruhe))).toFixed(1),
       aufnahme_s: +(puffer.length / sr).toFixed(1),
@@ -17055,6 +17090,8 @@ async function messLauf(neutral){
     messErgebnis[neutral ? 'abstandN' : 'abstandM'] = abstandGilt;
     messErgebnis[neutral ? 'breitN' : 'breitM'] = abstand;
     messErgebnis.restrauschen = messLive ? messLive.restrauschen : null;
+    messErgebnis.kopfraum = kopfraum;
+    messErgebnis.uebersteuert = anteilVoll > 0.0001;   /* mehr als ein Sample von zehntausend */
     messErgebnis.gemessen = genutzt;
     /* Was das Tonstudio in diesem Augenblick laut eigener Rechnung tut -
        festgehalten zur Messung, nicht erst beim Anzeigen: bis dahin
@@ -17076,7 +17113,11 @@ async function messLauf(neutral){
           + (messErgebnis.restrauschen !== undefined && messErgebnis.restrauschen !== null
               ? ', Restrauschen ' + messErgebnis.restrauschen.toFixed(2).replace('.', ',') + ' dB' : '')
         : '')
-      + (abstandGilt < 20 ? ' — zu leise für eine belastbare Messung' : ''));
+      + ' · Mikrofon ' + kopfraum.toFixed(0) + ' dB unter Vollaussteuerung'
+      + (abstandGilt < 20 ? ' — zu leise für eine belastbare Messung' : '')
+      + (anteilVoll > 0.0001
+          ? ' — ACHTUNG: das Mikrofon übersteuert, die Messung ist nicht verwertbar'
+          : (kopfraum < 6 ? ' — knapp, das Mikrofon ist nahe an seiner Grenze' : '')));
   } catch (e) {
     sagen('ging nicht: ' + (e && e.message ? e.message : e));
   } finally {
@@ -17970,6 +18011,55 @@ function messSollkurve(){
 const MESS_STUFEN = [25, 32, 40, 50, 63, 79, 100];
 let messDauerWunsch = null;
 
+/* LAUTSPRECHER ODER MIKROFON? (Caspar_D, 27.08.2026: "es könnte doch
+   aber auch sein, dass das Mikrophon schlapp macht bei den lauten
+   Bässen und Höhen, oder ist das resistent dagegen.")
+
+   Der Einwand trifft: im Frequenzgang allein sind die beiden Faelle
+   nicht zu unterscheiden. Beide sehen nach "da fehlt etwas" aus.
+
+   Die Unterscheidung liegt in den OBERWELLEN. Ein Mikrofon, das an
+   seine Grenze kommt, verzerrt - aus einem reinen Ton bei 40 Hz werden
+   80, 120, 160 Hz. Ein Lautsprecher, der zurueckregelt, nimmt den Ton
+   einfach leiser, ohne etwas hinzuzufuegen.
+
+   Gemessen wird an den Grundtoenen der Bandtoene: wieviel Energie steht
+   bei den ersten drei Vielfachen, verglichen mit dem Grundton? Steigt
+   dieser Anteil mit der Lautstaerke, verzerrt etwas auf dem Weg. Bleibt
+   er gleich, waehrend der Bass abfaellt, ist es eine Regelung - und die
+   sitzt im Lautsprecher, denn das Mikrofon hat nichts zu regeln.
+
+   Der Wert allein sagt nicht, WER verzerrt (auch der Lautsprecher kann
+   es bei hohen Pegeln). Aber er sagt, ob ueberhaupt verzerrt wird - und
+   ohne Verzerrung faellt der Verdacht auf das Mikrofon weg. */
+function messKlirrAnteil(lang, grund){
+  if (!lang || !lang.db) return null;
+  const bei = (f) => {
+    const i = Math.round(f / lang.df);
+    if (i < 1 || i >= lang.db.length) return null;
+    /* die drei Punkte um die Stelle, damit ein leichter Versatz nicht
+       am Maximum vorbeigreift */
+    let hoch = -999;
+    for (let k = -2; k <= 2; k++){
+      const j = i + k; if (j < 1 || j >= lang.db.length) continue;
+      if (lang.db[j] > hoch) hoch = lang.db[j];
+    }
+    return hoch;
+  };
+  const g = bei(grund);
+  if (g === null || g < -110) return null;
+  let summe = 0, n = 0;
+  for (const v of [2, 3, 4]){
+    const o = bei(grund * v);
+    if (o === null) continue;
+    summe += Math.pow(10, o / 10); n++;
+  }
+  if (!n) return null;
+  /* Klirrfaktor in Prozent: Wurzel aus dem Verhaeltnis der Leistungen */
+  const verh = summe / Math.pow(10, g / 10);
+  return { prozent: 100 * Math.sqrt(verh), db: 10 * Math.log10(verh) };
+}
+
 /* FALLEN BASS UND HOEHEN AB - relativ zu den Mitten?
 
    Dass mit dem Regler alles leiser wird, ist der Zweck des Reglers.
@@ -17998,10 +18088,15 @@ function messPegelBefund(reihe){
   };
   const erste = form(reihe[0]), jetzt = form(reihe[reihe.length - 1]);
   if (!erste || !jetzt) return null;
+  /* Und der Klirranteil bei 40 Hz - er trennt Regelung von Verzerrung. */
+  const k0 = messKlirrAnteil(reihe[0].lang, 40);
+  const k1 = messKlirrAnteil(reihe[reihe.length - 1].lang, 40);
   return {
     laut: reihe[reihe.length - 1].laut,
     bass:   (erste.bass   === null || jetzt.bass   === null) ? 0 : jetzt.bass   - erste.bass,
     hoehen: (erste.hoehen === null || jetzt.hoehen === null) ? 0 : jetzt.hoehen - erste.hoehen,
+    klirrLeise: k0 ? k0.prozent : null,
+    klirrLaut:  k1 ? k1.prozent : null,
   };
 }
 
@@ -18131,6 +18226,22 @@ async function pegelReihe(){
         + (bef ? ' Dabei fiel der Baß um ' + Math.abs(bef.bass).toFixed(1).replace('.', ',')
                  + ' dB und die Höhen um ' + Math.abs(bef.hoehen).toFixed(1).replace('.', ',')
                  + ' dB gegenüber den Mitten zurück.' : '')
+        /* WER regelt - Lautsprecher oder Mikrofon? Der Klirranteil
+           entscheidet, und der Kopfraum bestätigt. */
+        + (bef && bef.klirrLeise !== null && bef.klirrLaut !== null
+            ? ' Der Klirranteil bei 40 Hz ging dabei von '
+              + bef.klirrLeise.toFixed(1).replace('.', ',') + ' % auf '
+              + bef.klirrLaut.toFixed(1).replace('.', ',') + ' % — '
+              + (bef.klirrLaut > bef.klirrLeise * 2
+                  ? 'er steigt deutlich, es wird also auch verzerrt. Dann läßt sich nicht '
+                    + 'sicher sagen, ob Lautsprecher oder Mikrofon an der Grenze ist.'
+                  : 'er bleibt praktisch gleich. Es wird also nicht verzerrt, sondern '
+                    + 'geregelt — und regeln kann nur der Lautsprecher, das Mikrofon hat '
+                    + 'nichts zu regeln.')
+            : '')
+        + (messErgebnis.kopfraum !== undefined
+            ? ' Das Mikrofon blieb ' + Math.round(messErgebnis.kopfraum)
+              + ' dB unter Vollaussteuerung.' : '')
         + ' Die neutrale Bezugsmessung steht jetzt auf ' + merkLaut + ' % — für eine '
         + 'Einstellungsreihe bitte „1 · Neutral“ neu messen.');
     }
