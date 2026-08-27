@@ -1246,11 +1246,6 @@
        still, statt sich heimlich eine zweite Quelle zu bauen. */
     const ZEIT       = OPT.zeit       || function(){ return 0; };
     const LAEUFT     = OPT.laeuft     || function(){ return false; };
-    /* Die Abhoerlautstaerke - sie steht am Audioelement und wirkt damit
-       schon VOR dem Abgriff. Wer sie nicht herausrechnet, misst das Werk
-       mal Reglerstellung (Caspar_D, 26.08.2026: "roh ist roh, Lautstärke
-       wirkt darauf nicht"). Fehlt die Auskunft, bleibt alles wie zuvor. */
-    const PEGEL      = OPT.pegel      || function(){ return 1; };
     const SPRUNG     = OPT.sprung     || function(){};
     const UMSCHALTEN = OPT.umschalten || function(){};
 
@@ -6614,28 +6609,6 @@
         if(!LAEUFT() && _z===_spektrumLetzte) return;
         _spektrumLetzte=_z;
         aL.getByteFrequencyData(fdL); aR.getByteFrequencyData(fdR);
-        /* DEN REGLER HERAUSRECHNEN. getByteFrequencyData liefert eine
-           DEZIBELSKALA: 0 steht fuer minDecibels, 255 fuer maxDecibels.
-           Eine Lautstaerkeaenderung ist darin keine Streckung, sondern
-           eine VERSCHIEBUNG um 20*log10(pegel) Dezibel - umgerechnet in
-           Byteschritte ueber die Spanne des Analysers. Halbe Lautstaerke
-           sind gut sechs Dezibel, bei der ueblichen Spanne von siebzig
-           also rund zweiundzwanzig Schritte. */
-        var _p = PEGEL();
-        if (_p > 0 && Math.abs(_p - 1) > 0.001){
-          var spanne = (aL.maxDecibels - aL.minDecibels) || 70;
-          var schub  = Math.round(-20 * Math.log10(_p) / spanne * 255);
-          if (schub !== 0){
-            for (var i = 0; i < fdL.length; i++){
-              /* Nur heben, was ueberhaupt Signal ist: Eine Null bedeutet
-                 "unter der Messschwelle" und wird durch das Anheben nicht
-                 zu Musik. Sonst haette Stille bei leisem Regler einen
-                 Sockel. */
-              if (fdL[i]) fdL[i] = Math.min(255, fdL[i] + schub);
-              if (fdR[i]) fdR[i] = Math.min(255, fdR[i] + schub);
-            }
-          }
-        }
         ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,c.width,c.height);
 
         if(_spektrumModus==='gespiegelt'){

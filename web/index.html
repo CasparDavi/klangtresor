@@ -14520,21 +14520,6 @@ async function analyzerAufbauen(){
        überall auf die falsche Stelle. Eine Quelle, ein Versatz. */
     zeit:   () => Math.max(0, audio.currentTime - bVersatz/1000),
     laeuft: () => !audio.paused,
-    /* ROH IST ROH (Caspar_D, 26.08.2026: "roh ist roh, Lautstärke wirkt
-       darauf nicht").
-
-       Der Lautstaerkeregler setzt audio.volume, und das wirkt am
-       Element - also VOR createMediaElementSource. Der Analyser hing
-       damit nicht am Werk, sondern am Werk mal Abhoerlautstaerke: Am
-       Regler zu drehen bewegte die Kurve, obwohl sich nichts geaendert
-       hatte. Das widersprach der eigenen Regel von Zeile 12395 ("misst
-       das Werk, nicht die Filter") - der Regler ist so wenig eine
-       Eigenschaft des Werks wie ein Filter.
-
-       Herausgerechnet wird nur ER. Was der Equalizer oder der
-       Kompressor tun, bleibt sichtbar - das ist ja gerade das, was man
-       sehen will. */
-    pegel:  () => (audio && audio.volume > 0 ? audio.volume : 1),
     sprung: t => { audio.currentTime = Math.max(0, t + bVersatz/1000); },
     umschalten: () => umschalten(),
   });
