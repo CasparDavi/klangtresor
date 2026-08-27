@@ -919,3 +919,117 @@ Was bleibt, ist der Weg, der ohne diese Kurven auskommt: die
 sich heraus, gleichgültig wie es aussieht. Für eine absolute Skala
 führt kein Weg an einem Meßmikrofon mit Kalibrierdatei vorbei.
 
+
+## Der Equalizer bandweise durchgemessen (27.08.2026)
+
+Caspar_D: *„ferner sollst du verschiedene frequenzen testen aus den
+typischen eq bändern"* — und, nachdem ich ihn nach Einstellungen fragte:
+*„warum soll ich da was einstellen, du kannst das reproduzierbar viel
+besser und schneller als ich"*. Also 19 Einstellungen selbst gefahren,
+jede digital gemessen.
+
+**Erst der Einwand richtiggestellt.** Er vermutete, der Meßton rege alle
+Frequenzen gleichzeitig an. Umgekehrt: der **Sweep** trägt seine Energie
+*nacheinander* (deshalb ist er in halligen Räumen auswertbar), das
+**Rauschen** regt gleichzeitig an. Für eine bandweise Prüfung ist
+gleichzeitig sogar richtig — man sieht den ganzen Frequenzgang in einem
+Zug, statt ihn aus Einzeltönen zusammenzustückeln.
+
+### Aufbau
+
+Zwei Analyser als Sackgassen, einer an `quelle`, einer an `summe` — genau
+die beiden Punkte, die das Spektrum als *Codiertes Signal* und
+*Ausgabe-Signal* führt. Rosa Rauschen (Voss-McCartney, 8-s-Schleife) an
+`quelle`, `master` auf 0, damit nichts nach draußen dringt. FFT 16384 →
+2,69 Hz Auflösung, zusammengefaßt in 31 Terzbänder. Gemessen wird die
+**Differenz** Ausgang minus Eingang; was beiden gemeinsam ist, kürzt sich
+heraus.
+
+**Der Takt kommt aus dem Audio-Thread**, nicht von `setTimeout`. Ein
+verstecktes Browserfenster drosselt Timer auf einen Schlag je Sekunde —
+die erste Messung lief deshalb ins Zeitlimit. Ein `ScriptProcessor` mit
+16384 Samples Blockgröße feuert alle 371 ms, unbeirrt von der
+Sichtbarkeit, und liest **beide Analyser im selben Augenblick**. Sonst
+vergleicht man zwei verschiedene Rauschabschnitte miteinander.
+
+### Nullprobe: ±0,02 dB
+
+Alle Regler auf 0, gemessen von 25 Hz bis 12,9 kHz: die größte Abweichung
+ist **0,02 dB**. Die Kette ist bei neutraler Stellung vollkommen
+durchsichtig — EQ, Kerbe, Kompressor, Breite, alles. Damit ist jeder
+folgende Wert echte Reglerwirkung und kein Meßartefakt. (Die frühere
+Gegenprobe über das Mikrofon kam auf 0,16 dB; der Unterschied ist der
+Raum, nicht die Software.)
+
+### Die acht Bänder einzeln, je +12 dB
+
+| Regler | Typ | Spitze gemessen | wo |
+|---|---|---|---|
+| 40 Hz | lowshelf | +10,1 dB | 25 Hz (läuft nach unten weiter) |
+| 56,6 Hz | peaking | +11,2 dB | 50–64 Hz |
+| 113 Hz | peaking | +11,4 dB | 101–127 Hz |
+| 224 Hz | peaking | +11,3 dB | 202–254 Hz |
+| 445 Hz | peaking | +11,3 dB | 403–508 Hz |
+| 886 Hz | peaking | +11,3 dB | 806 Hz |
+| 1768 Hz | peaking | +11,4 dB | 1613 Hz |
+| 2500 Hz | highshelf | +12,0 dB | ab 10 kHz |
+
+Die 11,3 statt 12,0 bei den Glocken sind kein Fehler: ein Terzband ist
+breiter als die Spitze, der Mittelwert liegt darunter.
+
+**Die beiden Shelfs verhalten sich lehrbuchgenau.** Bei einem Shelf ist
+die genannte Frequenz der Punkt der **halben** Anhebung, nicht der
+vollen: bei 40 Hz gemessen +6,1 dB, bei 2560 Hz +6,3 dB — beide Male die
+Hälfte von 12. Voll wird es erst weit außerhalb (Band 8 erreicht +12,0
+ab 10 kHz). Wer am 40-Hz-Regler zieht, hebt also vor allem an, was
+*unter* 40 Hz liegt.
+
+### Der eigentliche Befund: die Bänder überlappen
+
+Mit Q = 1 ist jede Glocke gut 1,7 Oktaven breit. Nachbarn addieren sich:
+
+| Einstellung | erwartet | gemessen |
+|---|---|---|
+| nur 445 Hz auf +3 | +3 | **+2,84** |
+| nur 886 Hz auf +3 | +3 | **+2,85** |
+| beide auf +3 | +3 | **+4,04** |
+| alle acht auf +3 | +3 | **+5,29** |
+| alle acht auf −3 | −3 | **−5,29** |
+
+Wer alle Regler gleichmäßig um 3 dB anhebt, bekommt **5,3 dB** — fast das
+Doppelte. Das ist keine Lautstärkeregelung mit Umweg, sondern acht
+überlappende Glocken, die einander aufaddieren.
+
+### Und die Gegenprobe: feine Zacken gehen nicht
+
+Regler abwechselnd +6 / −6 gestellt. Heraus kommt in der Mitte nur
+±2,5 dB — die Nachbarn löschen einander weitgehend aus:
+
+```
+50 Hz −2,7   101 Hz +2,3   202 Hz −2,4   403 Hz +2,5
+806 Hz −2,3  1613 Hz +2,9  3225 Hz −2,5  12,9 kHz −6,0
+```
+
+Nur ganz oben setzt sich die volle Stellung durch (−6,0 dB) — der
+Highshelf hat keinen Nachbarn über sich, der ihm entgegenarbeitet.
+Dasselbe gilt unten für den Lowshelf. **Die Enden der Kette sind
+durchsetzungsfähig, die Mitte ist ein Kompromiß der Nachbarn.**
+
+Praktisch heißt das: der Equalizer ist ein Werkzeug für breite Griffe —
+Badewanne, Bassfundament, Stimmenband. Wer eine schmale Störfrequenz
+treffen will, nimmt die **Kerbe**, nicht die Regler.
+
+### Was die fünf Klassiker wirklich tun
+
+| Name | größte Anhebung | größte Absenkung | Spanne |
+|---|---|---|---|
+| loudness | +5,1 dB @ 25 Hz | −1,5 dB @ 403 Hz | 6,6 dB |
+| bass | +6,6 dB @ 50 Hz | 0,0 dB @ 4 kHz | 6,6 dB |
+| hoehen | +5,3 dB @ 5,1 kHz | 0,0 dB @ 25 Hz | 5,3 dB |
+| stimme | +4,5 dB @ 508 Hz | −2,0 dB @ 25 Hz | 6,5 dB |
+| nacht | +1,1 dB @ 508 Hz | −4,8 dB @ 32 Hz | ~6 dB |
+
+Bei *stimme* stehen zwei Regler auf +3 (445 und 886 Hz) — heraus kommen
+**+4,5 dB bei 508 Hz**. Die Überlappung wieder, diesmal als gewollter
+Effekt: das Stimmenband wird breiter und lauter, als die Reglerstellung
+vermuten läßt.
