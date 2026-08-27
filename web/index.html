@@ -1518,6 +1518,26 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   padding-bottom:env(safe-area-inset-bottom);
 }
 #player.an{display:block}
+/* DIE LEISTE UEBER DIE UNTERE RANDZONE HOLEN (Caspar_D, 27.08.2026:
+   "die playbar erst gezeigt wird, wenn ein titel spielt, die kann unten
+   immer auftauchen, wenn ich mit der Maus in die untere heisse
+   Randzone komme").
+
+   Vorher tauchte sie beim Laden des ersten Titels auf und blieb dann
+   fuer immer - vorher war sie unerreichbar, obwohl dort die
+   Lautstaerke, die Suche im Stueck und die Knoepfe sitzen. Jetzt faehrt
+   sie herein, sobald die Maus die unteren Punkte erreicht, und wieder
+   hinaus, wenn man weggeht. Laeuft Musik, bleibt sie ohnehin stehen -
+   dann ist sie kein Gast, sondern Arbeitsflaeche. */
+#player.gast{display:block;transform:translateY(100%);
+  transition:transform .22s ease, background-color .8s ease, border-color .8s ease}
+#player.gast.da{transform:translateY(0)}
+/* Die heisse Zone selbst: unsichtbar, nur ein paar Punkte hoch, und
+   sie faengt keine Klicks ab - sonst waere die unterste Zeile der
+   Werkeliste nicht mehr anklickbar. */
+#playerzone{position:fixed;left:0;right:0;bottom:0;height:14px;z-index:49;
+  pointer-events:auto;background:none}
+#playerzone.aus{pointer-events:none}
 #leiste{height:4px;background:var(--flaeche2);cursor:pointer;position:relative}
 #fortschritt{height:100%;width:0;background:linear-gradient(90deg,var(--akzent),var(--akzent2))}
 .preihe{display:flex;align-items:center;gap:13px;padding:9px 16px}
@@ -2852,6 +2872,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="messstand" id="messstand">bereit</div>
 
       <div class="messergebnis" id="messergebnisteil" hidden>
+      <!-- Das Kurvenbild gehoert zu den Durchgaengen mit Ton. Solange
+           keiner gelaufen ist, hat es nichts zu zeigen - und ein leeres
+           Diagramm mit "Noch nicht gemessen" ist schlechter als gar
+           keins (Caspar_D, 27.08.2026). -->
+      <div class="messkurven" id="messkurven" hidden>
       <canvas id="messbild" height="260"></canvas>
 
       <div class="messleg" id="messleg">
@@ -2859,6 +2884,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <span><i style="background:#f97b14"></i>mit Einstellung</span>
         <span><i class="bal" style="background:#f9143c"></i>Tonstudio hebt an</span>
         <span><i class="bal" style="background:#f9b414"></i>Tonstudio nimmt weg</span>
+      </div>
+      </div>
+
+      <!-- WAS DER RAUM VON SICH AUS MACHT: das bleibende Bild zu
+           Schritt 1, mit feiner FFT und markierten Störlinien. -->
+      <div class="messblock" hidden>
+        <h6 id="messraumtitel">Was der Raum von sich aus macht</h6>
+        <canvas id="messraumbild" height="220"></canvas>
       </div>
 
       <!-- WIRKUNG: eingestellt gegen angekommen. Steht in Differenzen,
@@ -3546,6 +3579,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 </div>
 
 <div id="tipp" hidden></div>
+<div id="playerzone" aria-hidden="true"></div>
 <div id="player">
   <div id="leiste"><div id="fortschritt"></div></div>
   <div class="preihe">
@@ -16973,6 +17007,7 @@ function messLiveStart(neutral, sr, vor, dauer, gesamt){
     akku: new Float64Array(31), akkuN: 0,
     ankunft: null, phase: 'vorlauf',
   };
+  if (typeof messAnsicht === 'function') messAnsicht();
   const male = () => {
     if (!messLive) return;
     messLiveZeichnen();
@@ -17099,6 +17134,7 @@ async function raumAbhoeren(){
     q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
     raumCtx.__kn = kn;
 
+    if (typeof messAnsicht === 'function') messAnsicht();
     const male = () => { if (!messLive || !messLive.raum) return;
       messLiveZeichnen(); raumCtx.__bild = requestAnimationFrame(male); };
     raumCtx.__bild = requestAnimationFrame(male);
@@ -17110,6 +17146,21 @@ async function raumAbhoeren(){
 }
 
 function raumAus(){
+  /* DAS ERGEBNIS FESTHALTEN, bevor der Live-Zustand faellt. Sonst ist
+     nach dem Abhoeren nichts mehr zu sehen - und gerade die
+     Stoerlinien will man behalten (Caspar_D, 27.08.2026: "ich sehe kein
+     diagramm in schritt 1"). */
+  if (messLive && messLive.raum && messLive.feinN){
+    const L = messLive;
+    messErgebnis.raum = {
+      mittel: L.mittel, tiefst: L.tiefst,
+      baender: L.akkuN ? Array.from({ length: 31 },
+        (_, i) => 10 * Math.log10(L.akku[i] / L.akkuN)) : null,
+      fein: Float64Array.from(L.fein), feinN: L.feinN, feinDf: L.feinDf,
+      stoer: messStoerlinien(L.fein, L.feinN, L.feinDf),
+      sekunden: +(L.t || 0).toFixed(1),
+    };
+  }
   const k = $('messraum'); if (k) k.classList.remove('an');
   if (raumCtx && raumCtx.__bild) cancelAnimationFrame(raumCtx.__bild);
   if (raumCtx && raumCtx.__kn) try { raumCtx.__kn.disconnect(); } catch(e){}
@@ -17118,6 +17169,7 @@ function raumAus(){
   raumStrom = null; raumCtx = null;
   if (messLive && messLive.raum) messLive = null;
   messBildZeichnen();
+  if (typeof messAnsicht === 'function') messAnsicht();
 }
 
 /* STOERLINIEN IM GRUNDGERAEUSCH FINDEN (Caspar_D, 27.08.2026: "wenn
@@ -17185,7 +17237,13 @@ function messStoerdeutung(f){
 
 function messLiveZeichnen(){
   const L = messLive; if (!L) return;
-  const c = $('messbild'); if (!c) return;
+  /* Beim Raum-Abhoeren wird auf DAS Bild gezeichnet, in dem hinterher
+     auch das Ergebnis steht - dann zappelt waehrend der Messung genau
+     die Flaeche, die danach stehenbleibt (Caspar_D, 27.08.2026: "ich
+     haette gern das diagramm so, das es mitzappelt waehrend des
+     messens"). Sonst malte das Live-Bild in ein Canvas, das in Schritt
+     1 gar nicht sichtbar ist. */
+  const c = $(L.raum ? 'messraumbild' : 'messbild'); if (!c) return;
   const b = c.getContext('2d');
   const B = c.clientWidth || 800, H = c.height;
   if (c.width !== B) c.width = B;
@@ -17502,6 +17560,92 @@ async function pegelReihe(){
         + 'Einstellungsreihe bitte „1 · Neutral“ neu messen.');
     }
   }
+}
+
+/* WAS DER RAUM VON SICH AUS MACHT - das bleibende Bild zu Schritt 1.
+
+   Zwei Auflösungen uebereinander: die 31 Terzbaender als Saeulen (grob,
+   aber ruhig) und die feine FFT als Linie (2,7 Hz, dort stehen schmale
+   Stoerungen als Nadeln). Erst die feine Aufloesung macht ein
+   Netzbrummen sichtbar - im Terzband geht es unter.
+
+   Was hier NICHT zu sehen ist: stehende Wellen. Die sind Resonanzen und
+   zeigen sich erst, wenn etwas sie anregt. Hier steht nur, was ohnehin
+   Laerm macht. */
+function messRaumbildZeichnen(){
+  const c = $('messraumbild'); if (!c) return;
+  const R = messErgebnis.raum;
+  const huelle = c.closest('.messblock') || c;
+  /* Waehrend des Abhoerens gehoert die Flaeche dem Live-Bild - dann
+     nicht ueberzeichnen, aber sichtbar halten. */
+  if (messLive && messLive.raum){ huelle.hidden = false; return; }
+  if (!R || !R.fein){ huelle.hidden = true; return; }
+  huelle.hidden = false;
+
+  const OB = 30, UN = 26, LI = 46, RE = 12;
+  const { b, bw, bh, X } = messRahmen(c, OB, UN, LI, RE);
+
+  /* Skala aus den Baendern: das lauteste bildet die Obergrenze. */
+  let hoch = -120;
+  if (R.baender) for (const v of R.baender) if (v > hoch) hoch = v;
+  for (let i = 1; i < R.fein.length; i++){
+    const f = i * R.feinDf; if (f < 25 || f > 16000) continue;
+    const v = 10 * Math.log10(Math.max(1e-12, R.fein[i] / R.feinN));
+    if (v > hoch) hoch = v;
+  }
+  const hi = hoch + 5, lo = hi - 60;
+  const Y = (db) => OB + bh * (1 - (db - lo) / (hi - lo));
+
+  for (let d = Math.ceil(lo / 20) * 20; d <= hi - 4; d += 20){
+    b.fillStyle = 'rgba(255,255,255,0.05)'; b.fillRect(LI, Y(d), bw, 1);
+    b.fillStyle = '#55555a'; b.font = '9px system-ui';
+    b.fillText(d + ' dB', LI + bw - 38, Y(d) - 3);
+  }
+
+  /* Terzbaender als Saeulen */
+  if (R.baender){
+    const br = Math.max(2, bw / 31 - 3);
+    for (let i = 0; i < 31; i++){
+      const y = Math.max(OB, Y(R.baender[i]));
+      if (y >= OB + bh) continue;
+      b.fillStyle = 'rgba(255,255,255,0.13)';
+      b.fillRect(X(i) - br / 2, y, br, OB + bh - y);
+    }
+  }
+
+  /* Feine FFT als Linie, auf dieselbe logarithmische Achse gelegt */
+  const XF = (f) => LI + bw * Math.max(0, Math.min(30, 3 * Math.log2(Math.max(20, f) / 20))) / 30;
+  b.beginPath(); let erste = true;
+  for (let i = 1; i < R.fein.length; i++){
+    const f = i * R.feinDf; if (f < 20 || f > 20000) continue;
+    const v = 10 * Math.log10(Math.max(1e-12, R.fein[i] / R.feinN));
+    const x = XF(f), y = Math.max(OB, Math.min(OB + bh, Y(v)));
+    if (erste){ b.moveTo(x, y); erste = false; } else b.lineTo(x, y);
+  }
+  b.strokeStyle = 'rgba(255,255,255,0.42)'; b.lineWidth = 1; b.stroke();
+
+  /* Die Stoerlinien markiert und benannt */
+  for (const st of (R.stoer || [])){
+    const x = XF(st.f), y = Math.max(OB + 14, Math.min(OB + bh, Y(st.db)));
+    b.strokeStyle = 'rgba(249,20,60,0.7)'; b.lineWidth = 1;
+    b.beginPath(); b.moveTo(x, y - 7); b.lineTo(x, OB + bh); b.stroke();
+    b.fillStyle = '#f9143c'; b.beginPath(); b.arc(x, y, 3, 0, 6.284); b.fill();
+    const deut = messStoerdeutung(st.f);
+    const wort = (st.f >= 1000 ? (st.f / 1000).toFixed(1).replace('.', ',') + ' kHz'
+                               : Math.round(st.f) + ' Hz') + (deut ? ' · ' + deut : '');
+    b.font = '10px system-ui';
+    const br = b.measureText(wort).width;
+    const tx = Math.min(LI + bw - br - 2, Math.max(LI + 2, x - br / 2));
+    b.fillStyle = '#0a0a0a'; b.fillRect(tx - 3, y - 21, br + 6, 13);
+    b.fillStyle = '#f9143c'; b.fillText(wort, tx, y - 11);
+  }
+
+  b.fillStyle = '#6e6e73'; b.font = '10px system-ui';
+  b.fillText('Säulen: Terzbänder   ·   Linie: feine FFT (' + R.feinDf.toFixed(1).replace('.', ',')
+    + ' Hz)   ·   rot: schmale Störlinien', LI, 13);
+  b.fillStyle = '#ececed'; b.font = '11px system-ui';
+  b.fillText('Grundgeräusch ' + (R.mittel === null ? '—' : R.mittel.toFixed(0) + ' dB')
+    + (R.tiefst !== null ? ',  am ruhigsten ' + R.tiefst.toFixed(0) + ' dB' : ''), LI, 26);
 }
 
 /* Gemeinsamer Rahmen fuer die Messbilder: Frequenzachse waagerecht,
@@ -18202,8 +18346,13 @@ function messBildZeichnen(){
    wird, erklaert der Schritt selbst, was geschieht. */
 function messAnsicht(was){
   const zeig = (id, an) => { const e = $(id); if (e) e.hidden = !an; };
+  /* Auch waehrend einer laufenden Messung muss das Bild da sein - beim
+     Raum-Abhoeren gibt es noch keine Ergebnisse, aber sehr wohl etwas
+     zu sehen. Ohne diese Bedingung zeichnete das Live-Bild in eine
+     versteckte Huelle (Caspar_D, 27.08.2026: "ich sehe kein diagramm in
+     schritt 1"). */
   const hatDaten = !!(messErgebnis.neutral || (messErgebnis.laeufe || []).length
-                      || messErgebnis.pegel);
+                      || messErgebnis.pegel || messErgebnis.raum || messLive);
   if (was) messErgebnis.__ansicht = was;
   const a = messErgebnis.__ansicht || 'einleitung';
   const imAblauf = a === 'ablauf' && messPlanSchritt >= 0;
@@ -18211,8 +18360,20 @@ function messAnsicht(was){
   zeig('messeinleitung', a === 'einleitung');
   zeig('messwerkzeug',   a === 'werkzeug');
   zeig('messplan',       imAblauf);
-  zeig('messstand',      a === 'werkzeug' || imAblauf);
+  /* Die Standzeile gehoert zum Werkzeugmodus. Im gefuehrten Ablauf
+     sagt der Schrittkasten schon, was los ist - zwei Meldungen
+     nebeneinander widersprechen sich nur. */
+  zeig('messstand',      a === 'werkzeug');
   zeig('messergebnisteil', hatDaten && (a === 'werkzeug' || imAblauf));
+  /* Das Kurvenbild nur, wenn ein Durchgang mit Ton gelaufen ist - oder
+     gerade laeuft. */
+  const hatKurven = !!(messErgebnis.neutral || (messErgebnis.laeufe || []).length
+                       || (messLive && !messLive.raum));
+  zeig('messkurven', hatKurven && (a === 'werkzeug' || imAblauf));
+  if (a === 'werkzeug' || imAblauf) messRaumbildZeichnen();
+  const rt = $('messraumtitel');
+  if (rt) rt.textContent = (messLive && messLive.raum)
+    ? 'Ich höre gerade zu …' : 'Was der Raum von sich aus macht';
   /* Die Hintergruende: im Werkzeugmodus immer, im Ablauf erst, wenn er
      durch ist - vorher lenken sie nur ab. */
   const erklaeren = a === 'werkzeug' || (imAblauf && messPlanSchritt >= MESS_PLAN.length);
@@ -18240,10 +18401,11 @@ function messAnsicht(was){
 const MESS_PLAN = [
   { art: 'raum',
     titel: 'Zuerst hören wir den Raum ab',
-    text: 'Ohne Ton. Ich messe, wie laut es bei dir von sich aus ist — das ist die '
-        + 'Grundlage für alles Weitere: Ein Signal muß mindestens 20 dB lauter sein als '
-        + 'das Grundgeräusch, sonst mißt man Zufall. Dauert etwa fünf Sekunden, '
-        + 'dabei darfst du dich ruhig bewegen.',
+    text: 'Ohne selbst Töne oder Geräusche zu erzeugen, messe ich, wie laut es bei dir von '
+        + 'sich aus ist — das ist die Grundlage für alles Weitere: Ein Signal muß mindestens '
+        + '20 dB lauter sein als das Grundgeräusch, sonst mißt man Störsignal / Zufall. '
+        + 'Das dauert etwa fünf Sekunden, dabei solltest du still sein, darfst dich aber '
+        + 'ruhig bewegen.',
     ruhe: false },
   { art: 'neutral', signal: 'rosa',
     titel: 'Die Bezugsmessung',
@@ -18825,6 +18987,57 @@ async function latenzMessen(){
     messLaeuft = false;
     if (liefMusik) audio.play().catch(()=>{});
   }
+}
+
+/* DIE PLAYER-LEISTE ALS GAST (Caspar_D, 27.08.2026: "ein fehler ist
+   schon, dass die playbar erst gezeigt wird, wenn ein titel spielt, die
+   kann unten immer auftauchen, wenn ich mit der Maus in die untere
+   heisse Randzone komme").
+
+   Solange nie ein Titel geladen war, gab es die Leiste nicht - und mit
+   ihr weder Lautstaerkeregler noch Suchleiste noch die Knoepfe. Jetzt
+   faehrt sie herein, sobald die Maus die untersten Punkte des Fensters
+   erreicht, und wieder hinaus, wenn man weggeht.
+
+   Sobald ein Titel laeuft, wird aus dem Gast Arbeitsflaeche: dann
+   bleibt sie stehen (Klasse "an"), und die heisse Zone braucht es
+   nicht mehr. */
+function playerGastEinrichten(){
+  const p = $('player'), z = $('playerzone');
+  if (!p || !z || z.dataset.dran) return;
+  z.dataset.dran = '1';
+
+  const fest = () => p.classList.contains('an');
+  const rein = () => { if (fest()) return;
+    p.classList.add('gast');
+    /* Ein Reflow zwischen den beiden Klassen, damit der Uebergang
+       ueberhaupt laeuft: ohne ihn setzt der Browser beide Zustaende in
+       einem Rutsch und es gibt keine Bewegung. requestAnimationFrame
+       taete dasselbe, ruht aber in einem Hintergrundfenster - dann
+       bliebe die Leiste unten stehen. */
+    void p.offsetHeight;
+    p.classList.add('da'); };
+  const raus = () => { if (fest()) return;
+    p.classList.remove('da');
+    /* erst nach der Bewegung ausblenden, sonst springt sie */
+    setTimeout(() => { if (!p.classList.contains('da') && !fest()) p.classList.remove('gast'); }, 240); };
+
+  z.addEventListener('mouseenter', rein);
+  p.addEventListener('mouseenter', rein);
+  p.addEventListener('mouseleave', (e) => {
+    /* nicht ausblenden, solange die Maus in einem aufgeklappten Menue
+       der Leiste steht - relatedTarget ist dann null */
+    if (e.relatedTarget === null) return;
+    raus();
+  });
+  /* Tastaturbedienung: wer mit Tab in die Leiste faehrt, soll sie sehen */
+  p.addEventListener('focusin', rein);
+  p.addEventListener('focusout', (e) => { if (!p.contains(e.relatedTarget)) raus(); });
+
+  /* Die Zone ist im Weg, sobald die Leiste fest steht. */
+  const zonePflegen = () => z.classList.toggle('aus', fest());
+  zonePflegen();
+  new MutationObserver(zonePflegen).observe(p, { attributes: true, attributeFilter: ['class'] });
 }
 
 function versatzSetzen(ms){
@@ -19413,6 +19626,7 @@ $('blautstaerke').oninput = (e) => lautstaerkeSetzen(+e.target.value);
 
 // Textversatz
 versatzSetzen(bVersatz);
+playerGastEinrichten();
 $('versatz').oninput = (e) => versatzSetzen(+e.target.value);
 
 $('suche').oninput      = zeichnen;
