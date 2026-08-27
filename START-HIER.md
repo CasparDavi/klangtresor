@@ -30,6 +30,9 @@ Zeile für dein System und deinen Weg:
 Beim ersten Doppelklick auf dem Mac fragt das System, ob du der Datei traust —
 dann einmal Rechtsklick → Öffnen wählen.
 
+Zum **späteren Starten** gibt es unter Windows `KlangTresor-starten.cmd`
+— die richtet nichts mehr ein, sondern startet nur den Server.
+
 Unter Windows **nicht** die `.ps1` direkt anklicken: Viele Rechner lehnen
 Skripte ab, und das Fenster schließt sich, bevor man die Meldung lesen
 kann — man hält das Programm dann für kaputt. Der `.cmd`-Starter umgeht
@@ -133,9 +136,16 @@ starten — es wird nur nachgeholt, was fehlt.
 node server/server.js
 ```
 
+Unter **Windows** geht es auch per Doppelklick auf
+**`KlangTresor-starten.cmd`** — dasselbe, nur ohne Terminal.
+
 Die Adressen stehen in der Ausgabe: auf dem Rechner selbst
 `http://localhost:8788`, auf iPhone und iPad die Adresse mit den
 Zahlen. Beide Geräte müssen im selben WLAN sein. Beenden mit `Strg+C`.
+
+**Das Fenster bleibt offen, solange du hörst.** Darin läuft der Server;
+schließen beendet ihn — und mit ihm alles, was der rote Knopf gerade
+rechnet. Kleinmachen ist in Ordnung.
 
 **Tastatur:** Leertaste pausiert, Pfeil links/rechts wechselt den Song,
 Pfeil hoch/runter regelt die Lautstärke, `m` schaltet stumm. In der

@@ -1714,9 +1714,15 @@ server.on('error', (e) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log('\n  KlangTresor läuft\n');
-  console.log(`  Auf diesem Mac:  http://localhost:${PORT}`);
+  /* Hier stand "Auf diesem Mac" - was auf einem Windows-Rechner schlicht
+     falsch ist und beim Einrichten sofort auffaellt (27.08.2026). Das
+     Haus ist am Mac gewachsen, aber es laeuft nicht nur dort. */
+  const hier = process.platform === 'darwin' ? 'Auf diesem Mac'
+             : process.platform === 'win32'  ? 'Auf diesem PC'
+             : 'Auf diesem Rechner';
+  console.log(`  ${hier}:  http://localhost:${PORT}`);
 
-  // Alle Netzwerkadressen zeigen - der Mac hängt oft in mehreren Netzen
+  // Alle Netzwerkadressen zeigen - ein Rechner hängt oft in mehreren Netzen
   for (const [name, liste] of Object.entries(os.networkInterfaces())) {
     for (const n of liste || []) {
       if (n.family === 'IPv4' && !n.internal) {

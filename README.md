@@ -244,8 +244,9 @@ allerdings zig Gigabyte.
 ## Verzeichnis
 
 ```
-KlangTresor-einrichten.cmd   Starter für Windows (Doppelklick)
-einrichten-*.sh/.command     dasselbe für macOS und Linux
+KlangTresor-einrichten.cmd   Einrichten unter Windows (Doppelklick)
+KlangTresor-starten.cmd      nur den Server starten (Doppelklick)
+einrichten-*.sh/.command     das Einrichten für macOS und Linux
 bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen
 browser/   Skripte für die Suno-Konsole und das Lesezeichen
 server/    Website fürs Heimnetz, Port 8788

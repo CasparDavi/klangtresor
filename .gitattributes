@@ -4,3 +4,11 @@
 # aber wichtig - deshalb export-ignore statt löschen.
 docs/NAECHSTER_CHAT.md export-ignore
 .gitattributes         export-ignore
+
+# Windows-Starter brauchen CRLF - cmd.exe stolpert sonst ueber
+# mehrzeilige if-Bloecke, und PowerShell meldet bei LF gern kryptische
+# Parserfehler. Ohne diese Regel entscheidet die lokale
+# core.autocrlf-Einstellung des Klonenden darueber, ob die Datei beim
+# Empfaenger noch laeuft. (27.08.2026)
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
