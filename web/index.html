@@ -1843,6 +1843,41 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
      dreht und im Spektrum nachsieht, was er tut. */
   pointer-events:none}   /* frei ueber der Playleiste - der untere Rahmen soll sichtbar sein (Caspar_D, 20.08.2026) */
 #studiokasten{pointer-events:auto}
+/* DAS TONSTUDIO IST EIN FENSTER (Caspar_D, 26./27.08.2026: "es ist wohl
+   langsam nötig, das tonstudio zu einem extra fenster zu machen, was
+   postionell nicht eingeschränkt ist" - und später, als es die
+   Audioketten-Erklärung verdeckte: "das tonstudio soll noch ein eigenes
+   Fenster bekommen").
+
+   Es hing unten an der Playleiste und war damit an einen Ort gebunden.
+   Wer die (i)-Erklärung daneben aufschlug, bekam sie verdeckt und
+   konnte nichts dagegen tun.
+
+   Jetzt hängt es an `left`/`top` und läßt sich am Kopf ziehen. Zwei
+   Dinge bleiben, die teuer erarbeitet waren:
+
+   - HINTER DEM STUDIO SCROLLEN: der äußere Rahmen fängt nach wie vor
+     keine Mausereignisse ab, nur der Kasten selbst.
+   - DER MITLAUFENDE KOPF: `position:sticky` im Kasten, unabhängig
+     davon, wo der Kasten steht.
+
+   Solange niemand gezogen hat, steht es wie bisher: unten mittig über
+   der Playleiste. Erst der erste Zug macht die Position zu einer
+   eigenen, und die wird gemerkt. */
+#studiokasten.gezogen{position:fixed;margin:0;
+  max-height:calc(100vh - 40px)}
+/* Der Greifhinweis sitzt am TITEL, nicht auf der ganzen Kopfzeile:
+   dort stehen Dropdowns und Knöpfe, und ein Greifzeiger über einem
+   Knopf verspricht das Falsche. Gezogen werden kann trotzdem überall,
+   wo kein Bedienelement liegt. */
+#studiotitel{cursor:grab}
+#studiokasten.zieht #studiotitel{cursor:grabbing}
+/* Ein zurückgestelltes Fenster steht wieder unten mittig - das sagt
+   der Doppelklick-Hinweis im title. */
+/* Was man anklickt, soll nicht das Fenster verschieben. */
+#studiokopf button, #studiokopf select, #studiokopf input, #studiokopf a{cursor:pointer}
+#studiokasten.zieht{user-select:none}
+#studiokasten.zieht *{cursor:grabbing !important}
 #studiokasten{margin:0 auto;max-width:980px;background:#0a0b0e;border:1px solid var(--akzent);   /* voll deckend - die 97 % liessen das Raster durchschimmern und wirkten wie ein Grauschleier (Caspar_D, 20.08.2026) */
   border-radius:14px;padding:22px 30px 24px;
   /* overscroll-behavior:auto statt contain: Ist der Kasten am Ende
@@ -2582,7 +2617,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
      Equalizer (serioes) - Ghettoblaster - Professionell. -->
 <div id="studio" style="display:none">
   <div id="studiokasten">
-    <div id="studiokopf">
+    <div id="studiokopf" title="Am Titel ziehen verschiebt das Fenster · Doppelklick stellt es zurück">
       <h3 id="studiotitel">KlangTresor Tonstudio</h3>
       <select id="studioab" title="Kurzer Klick wechselt · Alt-Klick öffnet die Liste">
         <option value="eq">EQ Output</option>
@@ -4627,6 +4662,96 @@ function studioLasche(name){
   }
 }
 
+/* DAS TONSTUDIO ZIEHBAR MACHEN (Caspar_D, 27.08.2026: "das tonstudio
+   soll noch ein eigenes Fenster bekommen").
+
+   Gezogen wird am Kopf, aber nicht an dem, was darin bedienbar ist -
+   ein Knopf, ein Dropdown oder das (i) sollen tun, wofuer sie da sind,
+   und nicht das Fenster verschieben.
+
+   ERST BEIM ERSTEN ZUG wird die Position eine eigene. Vorher steht das
+   Fenster, wo es immer stand: unten mittig ueber der Playleiste. Wer
+   es nie anfasst, merkt von der Aenderung nichts.
+
+   IM BILD BLEIBEN. Beim Ziehen und nach jeder Groessenaenderung des
+   Fensters wird die Lage geklemmt, damit der Kopf nie unerreichbar
+   wird - ein Fenster, das man aus dem Bild geschoben hat und nicht
+   zurueckholen kann, ist verloren. Es darf hinausragen, aber der Kopf
+   bleibt greifbar. */
+let studioLage = null;
+try { studioLage = JSON.parse(localStorage.getItem('mysuno-studio-lage') || 'null'); } catch (e) {}
+
+function studioLageAnwenden(){
+  const k = $('studiokasten'); if (!k || !studioLage) return;
+  k.classList.add('gezogen');
+  const b = k.getBoundingClientRect();
+  /* Mindestens 80 Punkte des Kopfs muessen sichtbar bleiben. */
+  const x = Math.max(80 - b.width, Math.min(studioLage.x, innerWidth - 80));
+  const y = Math.max(0, Math.min(studioLage.y, innerHeight - 40));
+  k.style.left = x + 'px';
+  k.style.top  = y + 'px';
+}
+
+function studioZiehenEinrichten(){
+  const kopf = $('studiokopf'), kasten = $('studiokasten');
+  if (!kopf || !kasten || kopf.dataset.ziehbar) return;
+  kopf.dataset.ziehbar = '1';
+
+  let von = null;
+  kopf.addEventListener('pointerdown', (e) => {
+    /* Nur der Kopf selbst zieht, nicht seine Bedienelemente. */
+    if (e.target.closest('button, select, input, textarea, a, label')) return;
+    if (e.button !== 0) return;
+    const b = kasten.getBoundingClientRect();
+    /* Beim ersten Zug von der bisherigen Lage uebernehmen, damit das
+       Fenster nicht springt. */
+    if (!kasten.classList.contains('gezogen')){
+      kasten.classList.add('gezogen');
+      kasten.style.left = b.left + 'px';
+      kasten.style.top  = b.top  + 'px';
+      kasten.style.width = b.width + 'px';
+    }
+    von = { mx: e.clientX, my: e.clientY, x: b.left, y: b.top };
+    kasten.classList.add('zieht');
+    kopf.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  kopf.addEventListener('pointermove', (e) => {
+    if (!von) return;
+    const b = kasten.getBoundingClientRect();
+    const x = Math.max(80 - b.width, Math.min(von.x + (e.clientX - von.mx), innerWidth - 80));
+    const y = Math.max(0, Math.min(von.y + (e.clientY - von.my), innerHeight - 40));
+    kasten.style.left = x + 'px';
+    kasten.style.top  = y + 'px';
+  });
+
+  const loslassen = (e) => {
+    if (!von) return;
+    von = null;
+    kasten.classList.remove('zieht');
+    try { kopf.releasePointerCapture(e.pointerId); } catch (err) {}
+    const b = kasten.getBoundingClientRect();
+    studioLage = { x: b.left, y: b.top };
+    localStorage.setItem('mysuno-studio-lage', JSON.stringify(studioLage));
+  };
+  kopf.addEventListener('pointerup', loslassen);
+  kopf.addEventListener('pointercancel', loslassen);
+
+  /* Doppelklick auf den Kopf stellt die alte Lage wieder her - der Weg
+     zurueck, ohne dass man ihn suchen muss. */
+  kopf.addEventListener('dblclick', (e) => {
+    if (e.target.closest('button, select, input, textarea, a, label')) return;
+    kasten.classList.remove('gezogen');
+    kasten.style.left = kasten.style.top = kasten.style.width = '';
+    studioLage = null;
+    localStorage.removeItem('mysuno-studio-lage');
+  });
+
+  /* Wird das Browserfenster kleiner, darf der Kopf nicht hinausrutschen. */
+  addEventListener('resize', () => { if (studioLage) studioLageAnwenden(); });
+}
+
 async function studioAuf(){
   for (const id of ['studioknopf','bstudio']){ const k = $(id); if (k) k.classList.add('an'); }
   if (hörer && hörer.ctx && hörer.ctx.state === 'suspended') hörer.ctx.resume().catch(() => {});   /* Autoplay-Regel: ein Klick darf wecken */
@@ -4638,6 +4763,8 @@ async function studioAuf(){
   const st = $('studio');
   if (st.style.display !== 'none'){ studioZu(); return; }
   st.style.display = '';
+  studioZiehenEinrichten();
+  studioLageAnwenden();
   $('studiozu').onclick = studioZu;
   const ab = $('studioab');
   const abSetzen = (aus) => {

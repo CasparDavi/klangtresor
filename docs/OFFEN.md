@@ -790,13 +790,14 @@ den Schutz hinter **jedes** `await`.
 
 ## Tonstudio-Fenster und Einmess-Panel (27.08.2026, gemeldet)
 
-1. **Das Tonstudio läßt sich nicht bewegen.** Es sitzt fest und verdeckt
-   dabei die Audioketten-Erklärung, wenn man sie über (i) öffnet. Es
-   müßte ein frei verschiebbares Fenster werden, positionell nicht
-   eingeschränkt — Caspar_D hatte das schon am 26.08. angemerkt
-   („es ist wohl langsam nötig, das tonstudio zu einem extra fenster zu
-   machen"), jetzt beißt es sich konkret mit der (i)-Erklärung.
+1. ~~**Das Tonstudio läßt sich nicht bewegen.**~~ **Erledigt am
+   27.08.2026.** Es hängt jetzt an `left`/`top` statt an der
+   Playleiste und läßt sich am Titel ziehen; Doppelklick stellt es
+   zurück, die Lage wird gemerkt. Beim Hinausschieben bleiben 80 Punkte
+   greifbar — ein Fenster, das man nicht zurückholen kann, wäre
+   verloren. Bedienelemente im Kopf ziehen nicht mit. Das Scrollen
+   hinter dem Fenster und der mitlaufende Kopf bleiben.
 
-2. **Die Auswahlpille im Einmess-Register klebt zu weit oben** an der
-   Registergrenze. Der `.messkopf` braucht mehr Luft nach oben, so wie
-   die anderen Laschen sie haben.
+2. ~~**Die Auswahlpille im Einmess-Register klebt zu weit oben**~~
+   **Erledigt am 27.08.2026:** 22 Punkte statt 4, und die Knöpfe stehen
+   in einer eigenen Reihe statt unsauber umzubrechen.
