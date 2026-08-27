@@ -787,3 +787,16 @@ den Schutz hinter **jedes** `await`.
   sich ausblendet; das Einzelspuren-Panel startet dagegen versteckt.
 - Der Eintrag „Lyrics" im Pult trägt als einziger kein Sperrflag,
   während die Fußzeile ihn über `s.hatLyrics` ausgraut.
+
+## Tonstudio-Fenster und Einmess-Panel (27.08.2026, gemeldet)
+
+1. **Das Tonstudio läßt sich nicht bewegen.** Es sitzt fest und verdeckt
+   dabei die Audioketten-Erklärung, wenn man sie über (i) öffnet. Es
+   müßte ein frei verschiebbares Fenster werden, positionell nicht
+   eingeschränkt — Caspar_D hatte das schon am 26.08. angemerkt
+   („es ist wohl langsam nötig, das tonstudio zu einem extra fenster zu
+   machen"), jetzt beißt es sich konkret mit der (i)-Erklärung.
+
+2. **Die Auswahlpille im Einmess-Register klebt zu weit oben** an der
+   Registergrenze. Der `.messkopf` braucht mehr Luft nach oben, so wie
+   die anderen Laschen sie haben.

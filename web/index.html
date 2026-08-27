@@ -16309,7 +16309,15 @@ async function messLauf(neutral){
     /* Bandtoene brauchen laenger: acht Toene wollen je einen halben
        Takt stehen, sonst misst man den Einschwingvorgang. */
     const art = ($('messsignal') || { value: 'sweep' }).value;
-    const DAUER = art === 'baender' ? 8 : 4, VOR = 1.5, NACH = 0.6;
+    /* VORLAUF: Stille vor dem Signal, aus der der Ruhepegel des Raums
+       bestimmt wird. Er muss laenger sein als der Ausgabepuffer -
+       ueber AirPlay stehen dort rund zwei Sekunden Ton. Sonst kommt
+       waehrend der vermeintlichen Ruhe noch die Musik des vorigen
+       Augenblicks aus den Lautsprechern, und der Ruhepegel wird an
+       Musik gemessen statt an Stille. Genau das machte eine Messreihe
+       unbrauchbar: 33 dB Stoerabstand im ersten Lauf, 0 bis 15 dB in
+       den folgenden. */
+    const DAUER = art === 'baender' ? 8 : 4, VOR = 3.5, NACH = 0.6;
     const signal = messSignalBauen(art, sr, DAUER);
     const ganz = new Float32Array(Math.round(sr * (VOR + DAUER + NACH)));
     ganz.set(signal, Math.round(sr * VOR));
@@ -16373,9 +16381,12 @@ async function messLauf(neutral){
       let q = 0; for (let i = 0; i < BLOCK; i++){ const v = puffer[o + i]; q += v * v; }
       huell.push(Math.sqrt(q / BLOCK));
     }
+    /* Die Ruhe wird im LETZTEN Stueck des Vorlaufs gemessen, nicht im
+       ersten: davor kann der Ausgabepuffer noch leerlaufen. */
+    const ruheVon = Math.floor(sr * (VOR - 1.5) / BLOCK);
     const ruheBis = Math.floor(sr * (VOR - 0.2) / BLOCK);
     let ruhe = 0, rn = 0;
-    for (let i = 2; i < Math.min(ruheBis, huell.length); i++){ ruhe += huell[i]; rn++; }
+    for (let i = Math.max(2, ruheVon); i < Math.min(ruheBis, huell.length); i++){ ruhe += huell[i]; rn++; }
     ruhe = rn ? ruhe / rn : 1e-6;
     const schwelle = ruhe * Math.pow(10, 12 / 20);
     const halten = 15;                                          /* 150 ms oben bleiben */

@@ -1033,3 +1033,72 @@ Bei *stimme* stehen zwei Regler auf +3 (445 und 886 Hz) — heraus kommen
 **+4,5 dB bei 508 Hz**. Die Überlappung wieder, diesmal als gewollter
 Effekt: das Stimmenband wird breiter und lauter, als die Reglerstellung
 vermuten läßt.
+
+## Am Hörplatz gemessen — und was die HomePods davon übriglassen (27.08.2026)
+
+Erste vollständige Mikrofonmessung, TONOR TM20, Ausgabe über AirPlay auf
+die HomePods, Sweep 20 Hz – 20 kHz, Lautstärke 60 %. Neutraler Durchgang
+als Bezug, Störabstand 31 dB, Laufzeit 2100 ms.
+
+### Drei Fehler, die vorher zu beheben waren
+
+**Das Mikrofon.** Der Lauf nahm das Standardgerät — hier ein virtuelles
+Audiogerät. Gemessen worden wäre ein Umweg im Rechner statt des Raums.
+
+**Der Versatz.** Das Auswertefenster stand fest auf 1,8–5,5 s nach dem
+Start. Über AirPlay kommt der Ton erst nach 2,1 s an; ausgewertet wurde
+also Stille plus die untere Hälfte des Sweeps. Jetzt wird die Ankunft
+aus der Aufnahme abgelesen.
+
+**Die Musik im Puffer.** Nach jedem Lauf startet die Musik wieder. Beim
+nächsten Lauf wird sie zwar angehalten, aber im AirPlay-Puffer stehen
+noch zwei Sekunden — die genau während der Ruhephase erklingen. Der
+Ruhepegel wurde an Musik gemessen: erster Lauf 33 dB Störabstand,
+folgende 0 bis 15 dB. Vorlauf auf 3,5 s verlängert, Ruhe erst im letzten
+Stück davor gemessen — danach alle Läufe 29–33 dB.
+
+### Was ankommt
+
+| Einstellung | digital | am Hörplatz |
+|---|---|---|
+| bass, 63 Hz | +6,0 dB | +1,3 dB |
+| bass, Spitze | +6,6 dB | +3,5 dB |
+| 445 Hz +12 | +11,3 dB | +4,1 dB |
+| hoehen, 8 kHz | +5,1 dB | +0,9 dB |
+| hoehen, 2 kHz | +5,2 dB | +4,1 dB |
+| loudness, 32 Hz | +5,0 dB | −0,3 dB |
+
+### Es ist Begrenzung, nicht Raumkorrektur
+
+Naheliegend wäre gewesen, das der adaptiven Raumkorrektur der HomePods
+zuzuschreiben. Die Gegenprobe sagt etwas anderes:
+
+| Einstellung | am Hörplatz | Ausbeute |
+|---|---|---|
+| 445 Hz **+12** bei 60 % | +4,9 dB | 43 % |
+| 445 Hz **+6** bei 60 % | +4,2 dB | 74 % |
+| 445 Hz **+12** bei 30 % | +7,1 dB | 63 % |
+
+Die doppelte Anhebung bringt am Ohr fast nichts mehr; dieselbe Anhebung
+leiser abgespielt bringt mehr durch. **Es entscheidet der Pegel, nicht
+die Frequenz** — das Verhalten eines Kompressors.
+
+Der Verlust sitzt außerhalb der Software: digital verläßt das Signal die
+Kette mit +11,3 dB, und die Kette ist neutral auf ±0,02 dB durchsichtig.
+Zwischen `summe` und dem Lautsprecher liegt nur der Lautstärkeregler,
+ein frequenzneutraler Faktor.
+
+**Folge für die Arbeit:** Wer über die HomePods mischt, mischt gegen
+einen unsichtbaren Kompressor, und je lauter, desto mehr. Für
+EQ-Entscheidungen taugen sie nur bedingt.
+
+Der 30-%-Durchgang meldete von selbst *„Störabstand 10 dB — zu leise für
+eine belastbare Messung"*. Die Zahlen zeigen die Richtung, tragen aber
+allein nicht; sie stehen hier nur, weil die anderen beiden dasselbe
+sagen.
+
+### Offen
+
+Ob der Verlust wirklich im HomePod sitzt oder schon in der Übergabe an
+macOS/AirPlay, ließe sich mit einer Messung über die iMac-Lautsprecher
+trennen. Das ist ein Eingriff in den Tonweg und wartet auf ein Wort.
