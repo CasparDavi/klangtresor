@@ -226,6 +226,22 @@ Baut aus `library/roh/` das komplette Archiv neu auf. **Kein Schritt
 braucht eine Anmeldung bei Suno** — die Mediendateien liegen offen auf
 dem CDN. Läuft beliebig oft; es wird nur nachgeholt, was fehlt.
 
+### Nachsehen, wer nicht zurückfolgt
+
+```
+browser/03-folgen-pruefen.js   → in die Konsole auf suno.com
+```
+
+Liest die eigene Folge-Liste, zählt aus, wer nicht zurückfolgt, und legt
+die Handles als Textdatei ab. **Ändert nichts** — entfolgt wird von Hand.
+
+Der Kniff: Man muß keine zwei Listen vergleichen. Suno liefert an jedem
+Eintrag von `/api/profiles/following` das Feld `is_following_viewer`
+mit. 20 Einträge je Seite, nur `?page=N` zählt.
+
+Entstanden aus einer Frage im Discord (27.08.2026): jemand stieß an
+Sunos Obergrenze fürs Folgen und suchte ein Werkzeug dafür.
+
 ### Den Hörplatz einmessen
 
 Im Tonstudio, vierte Lasche. Beim Öffnen steht dort ein Text und ein

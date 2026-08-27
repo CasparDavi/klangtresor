@@ -1,6 +1,7 @@
 # Die Wege der Suno-Web-API
 
-Stand 19.08.2026. Aus dem Quelltext der Web-App gezogen — 120 Skripte
+Stand 19.08.2026, einzelne Wege am 27.08.2026 nachgeprüft (die drei
+Folge-Listen und `download/clip`). Aus dem Quelltext der Web-App gezogen — 120 Skripte
 von suno.com, Muster `/api/…` — 273 Wege. Die rohe Liste steht in
 `suno-api-wege.txt`, hier sind sie geordnet und beschrieben.
 
@@ -48,7 +49,9 @@ mit → markiert.
 | `GET /api/clip/{clip_id}/stems` · `/stems/pages` | T | ◐ | Stem-Trennung abfragen — die hat Suno schon gerechnet, wir nicht mehr |
 | `GET /api/active_listeners/{clip_id}` | T | ● | Antwortet 403 — vermutlich nur während laufender Wiedergabe |
 | `GET /api/clips/get_songs_by_ids` | ? | ◐ | Mehrere Songs auf einmal — statt 73 Einzelaufrufe für die Privaten |
-| `GET /api/profiles/mutual-followers` | T | ◐ | Wer dir folgt und du ihm |
+| **`GET /api/profiles/following`** | T | ● | **Wem du folgst.** 20 je Seite über `?page=N`; `page_size` und `offset` werden ignoriert. Antwort trägt `num_total_profiles` und `current_page`. Jeder Eintrag hat **`is_following_viewer`** — damit steht direkt dran, wer nicht zurückfolgt (geprüft 27.08.2026) |
+| **`GET /api/profiles/followers`** | T | ● | Wer dir folgt, gleiches Schema und dieselben Felder |
+| `GET /api/profiles/mutual-followers` | T | ● | Wer dir folgt und du ihm — gleiches Schema. Für die Frage „wer folgt nicht zurück" **nicht nötig**: das Feld `is_following_viewer` an `following` beantwortet sie ohne zweite Liste |
 | `GET /api/social/following-feed` | T | ◐ | Was Leute, denen du folgst, veröffentlichen |
 | `GET /api/playlist/me` | T | ◐ | Deine Playlists — vermutlich das, was wir über Umwege holen |
 | `GET /api/playlist/v2/{playlist_id}` | ? | ◐ | Eine Playlist mit Einträgen |
@@ -119,7 +122,7 @@ mit → markiert.
 | `/api/profiles/follow` | ◐ | Folgen |
 | `/api/share/…` (6 Wege) | ◐ | Teilen-Links, Statistik dazu (`share/stats` ruft die Seite selbst auf) |
 | `/api/song_copy/send-song` | ○ | Unklar — Song an jemanden schicken? |
-| `/api/download/clip/{clip_id}` · `/cover` · `clips/zip/prepare` · `sample-pack/{clip_id}` | ◐ | Herunterladen — **`download/clip` könnte der saubere MP3-Weg sein** statt CDN |
+| **`/api/download/clip/{clip_id}`** · `/cover` · `clips/zip/prepare` · `sample-pack/{clip_id}` | ● | Herunterladen. Die Vermutung von damals stimmte: **`download/clip` IST der saubere Weg** statt CDN — `?format=wav|mp3|m4a`, antwortet `processing` → `ready` mit signierter S3-Adresse, die ohne Token ladbar ist. Und er zählt als offizieller Download. Gefunden von Tarja, geprüft 27.08.2026. Vollständig in [WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md) |
 
 ## Konto, Abrechnung, Sonstiges
 
