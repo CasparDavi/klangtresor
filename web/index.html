@@ -17050,7 +17050,12 @@ async function raumAbhoeren(){
     const sr = raumCtx.sampleRate;
     const q = raumCtx.createMediaStreamSource(raumStrom);
     const schau = raumCtx.createAnalyser();
-    schau.fftSize = 4096; schau.smoothingTimeConstant = 0.6;
+    /* Im Abhoermodus die grosse FFT: 16384 Punkte geben 2,7 Hz statt
+       10,8 Hz Aufloesung. Das entscheidet darueber, ob eine Netzlinie
+       als 150 Hz erkannt wird oder als 151 - und damit, ob die Deutung
+       stimmt. Waehrend einer Messung waere das zu traege, dort zaehlt
+       die schnelle Aktualisierung; hier laeuft nichts weg. */
+    schau.fftSize = 16384; schau.smoothingTimeConstant = 0.6;
     q.connect(schau);
     const roh = new Float32Array(schau.frequencyBinCount);
 
@@ -17080,6 +17085,15 @@ async function raumAbhoeren(){
          Baender das Grundgeraeusch tragen */
       for (let i = 0; i < 31; i++) L.akku[i] += Math.pow(10, L.jetzt[i] / 10);
       L.akkuN++;
+      /* UND DAS FEINE SPEKTRUM DAZU (Caspar_D, 27.08.2026: "mach
+         vielleicht auch eine fft, damit man sowas sieht"). 31
+         Terzbaender verschmieren schmale Stoerungen bis zur
+         Unsichtbarkeit: ein Netzbrummen bei 50 Hz ist eine haarscharfe
+         Linie, die im ganzen 50-Hz-Band untergeht. Also die rohen
+         FFT-Punkte mitmitteln - dort steht sie als Nadel. */
+      if (!L.fein){ L.fein = new Float64Array(roh.length); L.feinN = 0; L.feinDf = sr / (roh.length * 2); }
+      for (let i = 0; i < roh.length; i++) L.fein[i] += Math.pow(10, roh[i] / 10);
+      L.feinN++;
     };
     q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
     raumCtx.__kn = kn;
@@ -17103,6 +17117,69 @@ function raumAus(){
   raumStrom = null; raumCtx = null;
   if (messLive && messLive.raum) messLive = null;
   messBildZeichnen();
+}
+
+/* STOERLINIEN IM GRUNDGERAEUSCH FINDEN (Caspar_D, 27.08.2026: "wenn
+   du dort schon eine stehende Welle siehst, dann highlighte sie auch").
+
+   Eine Bemerkung vorweg, weil die Erwartung sonst schiefliegt: Im
+   Grundgeraeusch sieht man KEINE stehende Welle. Eine stehende Welle
+   ist eine Resonanz - sie zeigt sich erst, wenn etwas sie anregt. Ohne
+   Ton hoert man nur, was ohnehin Laerm macht. Das ist trotzdem viel
+   wert: Netzbrummen, Luefter, Kuehlschrank, Strasse. Wer die kennt,
+   kann sie abstellen oder umgehen.
+
+   Gesucht wird eine Nadel, die aus ihrer Nachbarschaft ragt: ein
+   FFT-Punkt, der deutlich ueber dem Mittel der Punkte ringsum liegt,
+   aber die unmittelbaren Nachbarn ausgenommen (sonst misst man die
+   Nadel gegen sich selbst). */
+function messStoerlinien(fein, n, df){
+  if (!fein || !n) return [];
+  const db = [];
+  for (let i = 0; i < fein.length; i++) db.push(10 * Math.log10(Math.max(1e-12, fein[i] / n)));
+  const funde = [];
+  const UM = 14, LUECKE = 3;
+  for (let i = UM; i < db.length - UM; i++){
+    const f = i * df;
+    if (f < 25 || f > 12000) continue;
+    let sum = 0, c = 0;
+    for (let k = -UM; k <= UM; k++){
+      if (Math.abs(k) <= LUECKE) continue;
+      sum += Math.pow(10, db[i + k] / 10); c++;
+    }
+    const umfeld = 10 * Math.log10(sum / c);
+    const ueber = db[i] - umfeld;
+    if (ueber < 8) continue;
+    /* nur das lokale Maximum der Nadel behalten */
+    let spitze = true;
+    for (let k = -LUECKE; k <= LUECKE; k++) if (db[i + k] > db[i]) spitze = false;
+    if (!spitze) continue;
+    funde.push({ f, db: db[i], ueber });
+  }
+  /* nahe beieinanderliegende Funde zusammenfassen und die staerksten
+     zuerst - mehr als vier Nadeln kann niemand lesen */
+  funde.sort((a, b) => b.ueber - a.ueber);
+  const raus = [];
+  for (const x of funde){
+    if (raus.some(y => Math.abs(y.f - x.f) / x.f < 0.06)) continue;
+    raus.push(x);
+    if (raus.length >= 4) break;
+  }
+  return raus.sort((a, b) => a.f - b.f);
+}
+
+/* Was eine Stoerlinie sein koennte - Verdacht, nicht Diagnose. Das
+   Netz brummt bei 50 Hz und in ihren Vielfachen; Netzteile pfeifen im
+   Bereich einiger Kilohertz; darunter sitzen Luefter und Motoren. */
+function messStoerdeutung(f){
+  for (let k = 1; k <= 8; k++){
+    if (Math.abs(f - 50 * k) / (50 * k) < 0.04)
+      return k === 1 ? 'Netzbrummen' : 'Netz, ' + k + '. Oberwelle';
+  }
+  if (f < 120) return 'Lüfter oder Motor';
+  if (f > 8000) return 'Schaltnetzteil oder Bildschirm';
+  if (f > 2000) return 'elektronisches Pfeifen';
+  return null;
 }
 
 function messLiveZeichnen(){
@@ -17166,6 +17243,51 @@ function messLiveZeichnen(){
     b.fillRect(X(i) - breite / 2, Math.max(OB, y), breite, OB + bh - Math.max(OB, y));
   }
 
+  /* DAS FEINE SPEKTRUM darueber: dieselbe Achse, aber jeder FFT-Punkt
+     einzeln. Terzbaender verschmieren eine schmale Stoerung bis zur
+     Unsichtbarkeit - hier steht sie als Nadel. Die Achse ist logarith-
+     misch wie die Baenderachse, also wird jeder Punkt auf seine Lage
+     zwischen den Bandmitten umgerechnet. */
+  if (L.raum && L.fein && L.feinN){
+    const XF = (f) => {
+      if (f < 20) return LI;
+      const t = 3 * Math.log2(f / 20);          /* Terzband-Index, gebrochen */
+      return LI + bw * Math.max(0, Math.min(30, t)) / 30;
+    };
+    b.beginPath();
+    let erste = true;
+    for (let i = 1; i < L.fein.length; i++){
+      const f = i * L.feinDf;
+      if (f < 20 || f > 20000) continue;
+      const db = 10 * Math.log10(Math.max(1e-12, L.fein[i] / L.feinN));
+      const x = XF(f), y = Math.max(OB, Math.min(OB + bh, Y(db)));
+      if (erste){ b.moveTo(x, y); erste = false; } else b.lineTo(x, y);
+    }
+    b.strokeStyle = 'rgba(255,255,255,0.30)'; b.lineWidth = 1; b.stroke();
+
+    /* Und die Nadeln, die aus ihrer Nachbarschaft ragen. Alle zwei
+       Sekunden neu gesucht - oefter waere Flackern. */
+    if (!L.stoerZaehler || L.feinN - L.stoerZaehler > 20){
+      L.stoer = messStoerlinien(L.fein, L.feinN, L.feinDf);
+      L.stoerZaehler = L.feinN;
+    }
+    for (const st of (L.stoer || [])){
+      const x = XF(st.f), y = Math.max(OB + 12, Math.min(OB + bh, Y(st.db)));
+      b.strokeStyle = 'rgba(249,20,60,0.75)'; b.lineWidth = 1;
+      b.beginPath(); b.moveTo(x, y - 6); b.lineTo(x, OB + bh); b.stroke();
+      b.fillStyle = '#f9143c'; b.beginPath(); b.arc(x, y, 3, 0, 6.284); b.fill();
+      const deut = messStoerdeutung(st.f);
+      const wort = (st.f >= 1000 ? (st.f / 1000).toFixed(1).replace('.', ',') + ' kHz'
+                                 : Math.round(st.f) + ' Hz')
+                 + (deut ? ' · ' + deut : '');
+      b.font = '10px system-ui';
+      const br = b.measureText(wort).width;
+      const tx = Math.min(LI + bw - br - 2, Math.max(LI + 2, x - br / 2));
+      b.fillStyle = '#0a0a0a'; b.fillRect(tx - 3, y - 20, br + 6, 13);
+      b.fillStyle = '#f9143c'; b.fillText(wort, tx, y - 10);
+    }
+  }
+
   /* Die Kurve, die sich aufbaut - in der Farbe des Durchgangs. */
   if (L.akkuN){
     b.beginPath();
@@ -17213,7 +17335,9 @@ function messLiveZeichnen(){
                  : m < -50 ? 'ruhig — gut zum Messen'
                  : m < -40 ? 'brauchbar — die Messung muß etwas lauter sein'
                  : 'laut — such eine ruhigere Stelle oder mach die Quelle aus';
-    b.fillText('Grundgeräusch ' + m.toFixed(0) + ' dB   ·   ' + urteil, LI, 29);
+    const anz = (L.stoer || []).length;
+    b.fillText('Grundgeräusch ' + m.toFixed(0) + ' dB   ·   ' + urteil
+      + (anz ? '   ·   ' + anz + (anz === 1 ? ' Störlinie' : ' Störlinien') + ' gefunden' : ''), LI, 29);
   } else {
     b.fillText((L.neutral ? 'Durchgang 1 · neutral' : 'Durchgang 2 · mit Einstellung')
       + (L.ruhe !== null ? '   ·   Raum ' + L.ruhe.toFixed(0) + ' dB' : '')
