@@ -6903,8 +6903,8 @@
         lg.innerHTML =
             '<span>' + '<i class="linie" style="background:#f97b14"></i>'
                      + '<i class="linie" style="background:#4b93f0"></i>'
-                     + 'Linie: Eingang</span>'
-          + '<span>' + feld('#f9b414','#14b4a0') + 'Eingang höher — wird weggenommen</span>'
+                     + 'Linie: codiertes Signal</span>'
+          + '<span>' + feld('#f9b414','#14b4a0') + 'codiert höher — wird weggenommen</span>'
           + '<span>' + feld('#f9143c','#2a4bf0') + 'Ausgabe höher — wird angehoben</span>'
           + '<span>' + feld('#000000') + 'deckungsgleich</span>'
           + '<span style="color:#6e6e73">links · rechts</span>'
@@ -6922,7 +6922,7 @@
           'Codiertes und Ausgabe-Signal übereinander — so, daß nur der <b>Unterschied</b> '
         + 'leuchtet. Was sich deckt, bleibt schwarz und ist damit auch das, was KlangTresor '
         + 'nicht verändert hat; Farbe hat nur, wo Equalizer, Kompressor, Breite, Hall oder Echo '
-        + 'eingreifen. Die Linie steht immer auf der Höhe des Eingangs und ist die Bezugsgröße: '
+        + 'eingreifen. Die Linie steht immer auf der Höhe des codierten Signals — sie ist die Bezugsgröße: '
         + 'Was darüber leuchtet, wurde angehoben, was darunter fehlt, weggenommen. '
         + 'Oben der linke Kanal, unten der rechte.';
         return;
@@ -6970,7 +6970,7 @@
       + 'Abspieldecks und den sechs Instrumentspuren, die alle in eine Summe laufen — '
       + 'und endet an den Lautsprechern:</p>'
       + '<svg class="kettebild" viewBox="0 0 560 470" width="100%" role="img" '
-      +   'aria-label="Signalweg von den Abspieldecks über das Tonstudio zum Ausgang, mit den zwei Meßpunkten">'
+      +   'aria-label="Signalweg vom codierten Signal über das Tonstudio zum Ausgabe-Signal, mit beiden Meßpunkten">'
       /* Reine Vektorformen - Rechtecke, Linien, Kreise. Keine
          gezeichneten Geraete: Ein abgebildeter Lautsprecher oder
          Drehregler saehe aus wie Zierat und sagte nichts, was die
@@ -6980,22 +6980,22 @@
       +   'markerHeight="5" orient="auto"><path d="M1 1L7 5L1 9" fill="none" stroke="#6e6e73" '
       +   'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>'
       /* Die drei Quellen */
-      +   '<g class="q">'
-      +   '<rect x="40" y="14" width="110" height="30" rx="5"/><text x="95" y="33">Deck A</text>'
-      +   '<rect x="165" y="14" width="110" height="30" rx="5"/><text x="220" y="33">Deck B</text>'
-      +   '<rect x="290" y="14" width="130" height="30" rx="5"/><text x="355" y="33">sechs Spuren</text>'
-      +   '</g>'
-      +   '<path d="M95 44v14h265v-14M220 44v22M230 58h-4" stroke="#4a4a50" stroke-width="1.2" fill="none"/>'
-      +   '<line x1="228" y1="58" x2="228" y2="76" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
-      /* Summe */
+      /* EINE QUELLE, nicht drei (Caspar_D, 26.08.2026: "statt decka und
+         deckb und den 6 Spuren steht dort einfach nur - in den Dateien
+         gespeicherte Signalinformation, alles andere verwirrt hier
+         nur"). Wieviele Abspielwege intern zusammenlaufen, gehoert
+         nicht in ein Bild, das erklaert, WO gemessen wird. */
+      +   '<g class="q"><rect x="60" y="16" width="336" height="34" rx="5"/>'
+      +   '<text x="228" y="38">in den Dateien gespeicherte Signalinformation</text></g>'
+      +   '<line x1="228" y1="50" x2="228" y2="76" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       +   '<g class="k"><rect x="158" y="80" width="140" height="32" rx="5"/>'
       +   '<text x="228" y="100">Summe</text></g>'
       /* Abgriff 1 */
       +   '<line x1="298" y1="96" x2="392" y2="96" stroke="#f97b14" stroke-width="1.4" '
       +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
       +   '<g class="mess"><circle cx="418" cy="96" r="13"/><text x="418" y="101">1</text></g>'
-      +   '<text class="ml" x="440" y="93">Eingang</text>'
-      +   '<text class="ms" x="440" y="106">codiertes Signal</text>'
+      +   '<text class="ml" x="440" y="93">Codiertes</text>'
+      +   '<text class="ml" x="440" y="107">Signal</text>'
       +   '<line x1="228" y1="112" x2="228" y2="134" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Tonstudio */
       /* Der Rahmen umfasst ALLE Stufen des Tonstudios - auch Breite,
@@ -7026,8 +7026,8 @@
       +   '<line x1="298" y1="378" x2="392" y2="378" stroke="#f97b14" stroke-width="1.4" '
       +   'stroke-dasharray="4 3" marker-end="url(#kpf)"/>'
       +   '<g class="mess"><circle cx="418" cy="378" r="13"/><text x="418" y="383">2</text></g>'
-      +   '<text class="ml" x="440" y="375">Ausgang</text>'
-      +   '<text class="ms" x="440" y="388">nach der Bearbeitung</text>'
+      +   '<text class="ml" x="440" y="375">Ausgabe-</text>'
+      +   '<text class="ml" x="440" y="389">Signal</text>'
       +   '<line x1="228" y1="394" x2="228" y2="410" stroke="#4a4a50" stroke-width="1.2" marker-end="url(#kpf)"/>'
       /* Lautstaerke und Ausgang */
       +   '<g class="k"><rect x="150" y="414" width="156" height="28" rx="5"/>'
@@ -7041,41 +7041,38 @@
       + '<b>Tonstudio</b> eingestellt wird: der <b>Equalizer</b> samt Glockenstuhl, das '
       + '<b>Abhör-Solo</b>, die <b>Störfrequenz-Kerbe</b>, der <b>Kompressor</b> und im '
       + '<b>Ghettoblaster</b> Stereobreite, Hall und Echo.</div>'
-      + '<p>Deshalb ist dieses Bild das Gegenstück zum Tonstudio: Jeder Regler dort verändert '
+      + '<p>Es öffnet der Knopf <b>EQ</b> — er steht in der Abspielleiste unten und in der '
+      + 'Leiste der Bühne. Das Fenster darf dabei offen stehen bleiben: Hinter ihm läßt sich '
+      + 'scrollen, so daß Regler und Spektrum gleichzeitig sichtbar sind.</p>'
+      + '<p>Damit ist dieses Bild das Gegenstück zum Tonstudio: Jeder Regler dort verändert '
       + 'den Abstand zwischen den beiden Kurven hier. Zieht man einen Filter hoch, wächst an '
-      + 'seiner Frequenz der farbige Saum über der Linie — und man sieht sofort, ob er trifft, '
-      + 'was er treffen soll. Das Studiofenster läßt sich dabei offen stehen lassen; hinter ihm '
-      + 'kann gescrollt werden.</p>'
+      + 'seiner Frequenz der farbige Saum über der Linie — man sieht sofort, ob er trifft, was '
+      + 'er treffen soll.</p>'
 
       + '<h4>Warum genau an diesen zwei Stellen</h4>'
-      + '<div class="regel"><b>①</b> liegt vor jedem Eingriff. Was dort ankommt, ist das '
-      + 'Stück, wie es in der Datei steht — decodiert, aber unbearbeitet. Deshalb heißt es '
-      + '<i>codiertes Signal</i> und nicht „roh": roh im Wortsinn wäre die Datei selbst.</div>'
-      + '<p><b>②</b> liegt hinter allem, was KlangTresor tut, aber <b>vor der '
+      + '<div class="regel"><b>①</b> ist das <b>codierte Signal</b>: das Stück, wie es in der '
+      + 'Datei steht — decodiert, aber vor jedem Eingriff.</div>'
+      + '<p><b>②</b> ist das <b>Ausgabe-Signal</b>: hinter allem, was KlangTresor tut, aber <b>vor der '
       + 'Abhörlautstärke</b>. Das ist die entscheidende Feinheit: Läge der Abgriff dahinter, '
       + 'zeigte der Vergleich den Lautstärkeregler statt der Bearbeitung — bei 30 % läge das '
       + 'Ausgabe-Signal zehn Dezibel tiefer, und es sähe aus, als nähme KlangTresor etwas weg.</p>'
 
-      + '<h4>Warum die Lautstärke ganz am Ende sitzt</h4>'
-      + '<p>Sie saß bis zum 26.08.2026 ganz vorne, am Abspielelement. Das hatte eine Folge, die '
-      + 'niemand vermutet: Der Kompressor arbeitet mit einer <b>absoluten</b> Kennlinie von '
-      + '−60 bis 0 dB. Kam das Material leiser bei ihm an, schlug er an anderer Stelle nach.</p>'
-      + '<p>Gemessen an derselben Songstelle, viermal angesprungen:</p>'
-      + '<table><tr><th>Regler</th><th>Hüllkurve</th><th>Wegregelung</th></tr>'
-      + '<tr><td>1,0</td><td>−11,41 LUFS</td><td>+4,04 dB</td></tr>'
-      + '<tr><td>0,5</td><td>−17,46 LUFS</td><td><b>+6,19 dB</b></td></tr>'
-      + '<tr><td>0,1</td><td>−31,36 LUFS</td><td><b>+2,39 dB</b></td></tr>'
-      + '<tr><td>1,0</td><td>−11,40 LUFS</td><td>+3,99 dB</td></tr></table>'
-      + '<p>Bis zu <b>3,8 dB</b> Unterschied in der Bearbeitung, allein durch den Regler: Leise '
-      + 'gehört klang nicht nur leiser, sondern anders komprimiert. Seit die Lautstärke hinter '
-      + 'der Kette sitzt, steht die Hüllkurve still — die Regelung schwankt noch um 0,13 dB.</p>'
-      + '<p class="leise">Der Equalizer war davon nie betroffen: Lineare Filter in '
-      + 'Fließkomma-Arithmetik verlieren nichts, wenn das Signal leiser ankommt. Betroffen ist '
-      + 'alles, was eine absolute Pegelschwelle kennt.</p>'
+      + '<h4>Wo die Lautstärke sitzt</h4>'
+      + '<p>Die Abhörlautstärke steht <b>hinter</b> der gesamten Kette, unmittelbar vor den '
+      + 'Lautsprechern. Das ist keine Nebensache: Der Kompressor arbeitet mit einer '
+      + '<b>absoluten</b> Kennlinie von −60 bis 0 dB — er mißt den Momentanpegel in LUFS und '
+      + 'schlägt darin nach, welcher Ausgangspegel gelten soll. Käme das Material in '
+      + 'wechselnder Höhe bei ihm an, schlüge er jedesmal an anderer Stelle nach, und leise '
+      + 'gehört klänge nicht nur leiser, sondern anders komprimiert.</p>'
+      + '<div class="regel">Weil die Lautstärke am Ende steht, sieht der Kompressor immer '
+      + 'denselben Pegel. Wie laut du hörst, ändert nichts daran, <b>was</b> du hörst.</div>'
+      + '<p class="leise">Der Equalizer wäre davon ohnehin nicht betroffen: Lineare Filter in '
+      + 'Fließkomma-Arithmetik verlieren nichts, wenn das Signal leiser ankommt. Es trifft nur, '
+      + 'was eine absolute Pegelschwelle kennt.</p>'
 
       + '<h4>Was die Messung nicht sieht</h4>'
       + '<p>Systemlautstärke, Klangregelung des Betriebssystems und AirPlay liegen <b>hinter</b> '
-      + 'dem Ausgang und sind für den Browser unsichtbar. Die Linie „was KlangTresor daraus '
+      + 'den Lautsprechern und sind für den Browser unsichtbar. Die Linie „was KlangTresor daraus '
       + 'macht" ist deshalb genau die Linie, an der die Messung ohnehin endet.</p>'
       + '<div class="fuss">Beide Abgriffe sind Sackgassen: Sie hören zu, ohne etwas zu '
       + 'verändern. Am Klang ändert die Anzeige nichts.</div>');
