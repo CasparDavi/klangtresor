@@ -17008,21 +17008,48 @@ let messLive = null, messLiveBild = null;
 
    Die Achse bleibt logarithmisch und deckungsgleich mit den anderen
    Bildern: 20 Hz bis 20 kHz sind zehn Oktaven, also 120 Baender. */
-const MESS_JEOKT = 12;
-const MESS_FEINBAND = 120;
+/* DIE ACHSEN MUESSEN DECKUNGSGLEICH SEIN (Caspar_D, 27.08.2026: "ich
+   finde, die ridge plots passen nicht zu der kurve von oben / anders
+   aligniert").
+
+   Das Bild darueber zeigt 31 Terzbaender, Index 0 bis 30 - das reicht
+   von 20 Hz bis 20 mal 2 hoch 10, also 20480 Hz. Mit 120
+   Halbtonbaendern kam man nur bis 19331 Hz, und damit lagen alle
+   Frequenzmarken um ein Stueck daneben. Es fehlte genau EIN Band:
+   zehn Oktaven zu zwoelf Baendern sind 120 SCHRITTE, also 121
+   Stuetzen. */
+/* SO FEIN WIE ES GEHT (Caspar_D, 27.08.2026: "ich will feinste
+   signale sehen, vielleicht doch mal die linie so fein wie möglich").
+
+   Keine Bandmittelung mehr, sondern die rohe FFT auf ein
+   logarithmisches Raster von 1024 Punkten gelegt - feiner als jede
+   Anzeige es zeigen kann, gut 900 Punkte breit ist sie.
+
+   DAS MAXIMUM, NICHT DER MITTELWERT. Das ist der entscheidende Punkt:
+   oben faellt viel FFT auf einen Bildpunkt (zwischen 10 und 20 kHz
+   liegen 7400 Punkte auf einem Zehntel der Breite). Wer dort mittelt,
+   ersaeuft eine einzelne scharfe Linie in ihren leisen Nachbarn -
+   genau das Signal, das man sehen will, verschwindet. Das Maximum
+   haelt sie. Der Preis ist ein hoeher liegender Rauschteppich, denn
+   auch dessen Spitzen bleiben stehen; das ist der ehrliche Tausch.
+
+   Unten kehrt sich das Verhaeltnis um: zwischen 20 und 40 Hz liefert
+   die FFT bei 1,35 Hz Raster nur fuenfzehn Punkte fuer hundert
+   Rasterstellen. Dort wird derselbe Punkt mehrfach genommen - eine
+   Treppe, aber eine ehrliche: feiner KANN die FFT dort nicht. */
+const MESS_JEOKT = 102.4;                    /* 1024 Punkte auf 10 Oktaven */
+const MESS_FEINBAND = 1025;
 function messLiveBaenderFein(db, sr, n){
   const df = sr / (n * 2), out = new Float32Array(MESS_FEINBAND);
-  const w = Math.pow(2, 1 / (2 * MESS_JEOKT));      /* halbe Bandbreite */
   for (let k = 0; k < MESS_FEINBAND; k++){
     const fm = 20 * Math.pow(2, k / MESS_JEOKT);
-    const iu = Math.max(1, Math.round(fm / w / df));
-    const io = Math.min(n - 1, Math.round(fm * w / df));
-    let p = 0, c = 0;
-    /* Bei tiefen Baendern faellt die Untergrenze mit der Obergrenze
-       zusammen - dann wenigstens den einen Punkt nehmen, statt das Band
-       leer zu lassen. */
-    for (let i = iu; i <= Math.max(iu, io); i++){ p += Math.pow(10, db[i] / 10); c++; }
-    out[k] = c ? 10 * Math.log10(p / c) : -120;
+    /* Das Fenster reicht bis zur Mitte zum jeweiligen Nachbarn. */
+    const fu = fm / Math.pow(2, 0.5 / MESS_JEOKT), fo = fm * Math.pow(2, 0.5 / MESS_JEOKT);
+    const iu = Math.max(1, Math.round(fu / df));
+    const io = Math.min(n - 1, Math.round(fo / df));
+    let hoch = -Infinity;
+    for (let i = iu; i <= Math.max(iu, io); i++) if (db[i] > hoch) hoch = db[i];
+    out[k] = isFinite(hoch) ? hoch : -120;
   }
   return out;
 }
@@ -17220,18 +17247,23 @@ async function raumAbhoeren(){
 
          Eine Zeile je halber Sekunde - bei acht Sekunden sechzehn
          Zeilen, das liest sich noch. */
-      if (!L.scheiben){ L.scheiben = []; L.scheibeAkku = new Float64Array(MESS_FEINBAND); L.scheibeN = 0; }
+      if (!L.scheiben){ L.scheiben = []; L.scheibeAkku = new Float64Array(MESS_FEINBAND).fill(-200); L.scheibeN = 0; }
       const fein = messLiveBaenderFein(roh, sr, roh.length);
-      for (let i = 0; i < MESS_FEINBAND; i++) L.scheibeAkku[i] += Math.pow(10, fein[i] / 10);
+      /* Auch ueber die zwei Bloecke einer Zeile das Maximum halten,
+         nicht mitteln - sonst nimmt man die Schaerfe gleich wieder
+         heraus, die die Rasterung eben bewahrt hat. */
+      for (let i = 0; i < MESS_FEINBAND; i++)
+        if (fein[i] > L.scheibeAkku[i]) L.scheibeAkku[i] = fein[i];
       L.scheibeN++;
       /* Zwei Bloecke je Zeile - rund eine Viertelsekunde. Bei einer
          halben verschmierte ein kurzes Geraeusch ueber zwei Zeilen und
          sah aus wie ein Dauerton. */
       if (L.scheibeN >= 2){
-        L.scheiben.push({ t: L.t,
-          werte: Array.from(L.scheibeAkku, v => 10 * Math.log10(v / L.scheibeN)) });
-        L.scheibeAkku = new Float64Array(MESS_FEINBAND); L.scheibeN = 0;
-        if (L.scheiben.length > 200) L.scheiben.shift();
+        L.scheiben.push({ t: L.t, werte: Array.from(L.scheibeAkku) });
+        L.scheibeAkku = new Float64Array(MESS_FEINBAND).fill(-200); L.scheibeN = 0;
+        /* 1025 Werte je Zeile - da reichen hundert Scheiben, das sind
+           zwanzig Sekunden Verlauf bei zweihundert Millisekunden. */
+        if (L.scheiben.length > 100) L.scheiben.shift();
       }
     };
     q.connect(kn); kn.connect(still); still.connect(raumCtx.destination);
@@ -17976,7 +18008,7 @@ function messRidgeZeichnen(){
   const spanne = zeilen.length > 1 ? (zeilen[zeilen.length-1].t - zeilen[0].t) : 0;
   const proZeile = zeilen.length > 1 ? spanne / (zeilen.length - 1) : 0;
   b.fillText('je Zeile ' + (proZeile * 1000).toFixed(0) + ' ms, älteste oben   ·   '
-    + M + ' Bänder (Halbtonschritte)   ·   durchgehender Kamm = dauerhaft, '
+    + M + ' Punkte, Spitzenwert je Punkt   ·   durchgehender Kamm = dauerhaft, '
     + 'einzelner Ausschlag = einmaliges Geräusch', LI, 18);
   b.save(); b.translate(15, OB + bh / 2); b.rotate(-Math.PI / 2);
   b.fillStyle = '#55555a'; b.fillText('Zeit →', -18, 0); b.restore();
