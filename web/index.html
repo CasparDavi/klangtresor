@@ -12534,6 +12534,16 @@ function analyseStarten(){
       // Ton. Einen zweiten createMediaElementSource darf es nicht
       // geben - pro Audioelement ist genau einer erlaubt.
       ok:true, ctx, l, r, quelle, eq, kerbe, soloDirekt, soloZweige, breiteSetzen, breiteVerlegen, hallNass, echo, echoRueck, echoNass, anzeige, anzL, anzR,
+      /* DER PUNKT NACH ALLEM (Caspar_D, 26.08.2026: "Roh ist Roh und
+         Ende ist das, was Klangtresor draus macht"). `quelle` ist die
+         Summe der Decks vor jeder Bearbeitung, `master` das Ergebnis
+         danach - nach Equalizer, Solo, Kerbe, Kompressor, Breite, Hall
+         und Echo, unmittelbar vor dem Lautsprecher.
+
+         Nur herausgereicht, nicht umgesteckt: Wer daran misst, haengt
+         einen Analyser an, und der ist eine Sackgasse. Am Hoerweg
+         aendert sich dadurch nichts. */
+      master,
       blendA, blendB,                             /* die zwei Decks - der Anschluss blendet daran */
       dl:new Uint8Array(l.frequencyBinCount),
       dr:new Uint8Array(r.frequencyBinCount),
@@ -14527,7 +14537,10 @@ async function analyzerAufbauen(){
   // Die beiden Live-Anzeigen bekommen den vorhandenen Quellknoten -
   // genau wie Butterchurn. Ein zweiter
   // createMediaElementSource ist pro Audioelement nicht erlaubt.
-  if (analyseStarten() && SunoAnalyzer.quelle) SunoAnalyzer.quelle(hörer.quelle, hörer.ctx);
+  /* ZWEI ABGRIFFE: das Werk (quelle) und das Ergebnis (master).
+     Der Analyzer baut sich daran je ein Analyserpaar und schaltet um;
+     beides sind Sackgassen und beruehren den Hoerweg nicht. */
+  if (analyseStarten() && SunoAnalyzer.quelle) SunoAnalyzer.quelle(hörer.quelle, hörer.ctx, hörer.master);
 
   /* DIE ANALYSE RECHNET IMMER AUF DEM WAV (Caspar_D, 24.08.2026: "wir
      wollten alle analysen auf wav machen"), unabhaengig davon, was das

@@ -464,6 +464,10 @@
    Die .slbl ist fuer Klicks durchlaessig, der Kreis darf sie fangen. */
 /* Die Pille sitzt in der Kopfzeile und schaltet die sechs Tonspuren
    zu. Aus ist der Normalfall: Bilder ja, Ton nein. */
+/* Die Wortknoepfe des Signalumschalters - dieselbe Form wie die
+   Symbolknoepfe daneben, nur mit Text. */
+.sunoanalyzer .sa-signal button{font:inherit;font-size:9.5px;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;min-width:0}
 .sunoanalyzer .stem-pille{display:inline-block;margin-left:10px;padding:1px 8px;
   border:1px solid #4b93f0;border-radius:9px;font-size:9.5px;font-weight:600;
   letter-spacing:.04em;text-transform:uppercase;color:#4b93f0;cursor:pointer;
@@ -778,6 +782,18 @@
     <span class="spur-profil" id="sa-spektrum-wahl" data-wert="gespiegelt">
       <button data-m="gespiegelt" class="an" title="Links oben, rechts unten — an einer gemeinsamen Achse gespiegelt"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 5.5H14M2.5 5.5V2.5M2.5 5.5V8.5M6 5.5V1.5M6 5.5V9.5M9.5 5.5V3.2M9.5 5.5V7.8M12.5 5.5V4.3M12.5 5.5V6.7" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
       <button data-m="summe" title="Beide Kanäle zusammen"><svg viewBox="0 0 14 11" width="14" height="11"><path d="M0 10H14M2 10V6.5M5 10V3M8 10V1.5M11 10V5M13.5 10V7.5" fill="none" stroke="currentColor" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg></button>
+    </span>
+    <!-- WELCHES SIGNAL (Caspar_D, 26.08.2026: "wie wärs mit Registern,
+         Rohsignal, Endsignal"). Hier stehen Woerter statt Symbole: Der
+         Unterschied zwischen "vor der Bearbeitung" und "danach" laesst
+         sich nicht zeichnen, ohne dass man die Beschriftung trotzdem
+         lesen muesste.
+
+         Versteckt, solange die Buehne keinen Endknoten hereinreicht -
+         ein Umschalter, der nur eine Stellung hat, ist keiner. -->
+    <span class="spur-profil sa-signal" id="sa-signal-wahl" data-wert="codiert" style="display:none;margin-left:8px">
+      <button data-s="codiert" class="an" title="Codiertes Signal — das Stück, wie es in der Datei steht, vor allem, was KlangTresor damit tut">codiert</button>
+      <button data-s="ausgabe" title="Ausgabe-Signal — nach Equalizer, Kompressor, Breite, Hall und Echo">Ausgabe</button>
     </span>
   </div>
 </div>
@@ -1178,12 +1194,17 @@
   window.SunoAnalyzer = {
     aufbauen,
     abraeumen,
-    /* Der Quellknoten für die Live-Anzeigen, aus dem Graphen des
-       Aufrufers. Ohne ihn bleiben Dichte-Spektrum und Live-Spektrum
-       leer; alles andere rechnet der Analyzer aus der Datei. */
-    quelle(knoten, ctx){
+    /* Die Quellknoten für die Live-Anzeigen, aus dem Graphen des
+       Aufrufers. Ohne sie bleiben Dichte-Spektrum und Live-Spektrum
+       leer; alles andere rechnet der Analyzer aus der Datei.
+
+       ZWEI KNOTEN seit dem 26.08.2026: `knoten` ist das codierte
+       Signal, `ende` das Ausgabe-Signal. Der dritte Parameter ist
+       freiwillig - fehlt er, gibt es nur den einen Abgriff und der
+       Umschalter erscheint gar nicht erst. */
+    quelle(knoten, ctx, ende){
       if (!kern) throw new Error('SunoAnalyzer: erst aufbauen()');
-      return kern.quelle(knoten, ctx);
+      return kern.quelle(knoten, ctx, ende);
     },
     /* Ein Song aus dem Katalog. Erwartet die Felder von /api/song/<id>,
        dazu 'tonUrl' und 'bild' - welche Tonspur und welches Bild, weiß
@@ -4651,8 +4672,26 @@
        nicht mischen - der Analyser MUSS an dem Kontext hängen, aus dem
        die Quelle stammt. */
     var _fremdeQuelle = null, _fremderCtx = null;
-    function quelleSetzen(knoten, ctx){
+    var _fremdesEnde  = null;
+    var _signalModus  = 'codiert';    /* 'codiert' | 'ausgabe' - welcher Abgriff gilt */
+    /* ZWEI ABGRIFFE (Caspar_D, 26.08.2026: "wie wärs mit Registern,
+       Rohsignal, Endsignal").
+
+       `knoten` ist die Summe der Decks vor jeder Bearbeitung - das
+       CODIERTE SIGNAL, also das Stueck, wie es in der Datei steht
+       (Caspar_D, 26.08.2026: "Codiertes Signal / Ausgabe-Signal" -
+       "roh" waere falsch gewesen, decodiert ist es ja bereits).
+       `ende` ist der Punkt unmittelbar vor dem Lautsprecher: das
+       AUSGABE-SIGNAL, nach Equalizer, Kompressor, Stereobreite, Hall
+       und Echo.
+
+       NICHTS WIRD VERRECHNET. Wenn das Endsignal leiser ist, sieht man
+       das; wenn der Kompressor anhebt und dabei Rauschen mit
+       hochkommt, sieht man auch das. Der Lautstaerkeregler steckt in
+       beiden gleichermassen und faellt im Vergleich heraus. */
+    function quelleSetzen(knoten, ctx, ende){
       _fremdeQuelle = knoten || null;
+      _fremdesEnde  = ende || null;
       _fremderCtx   = ctx || null;
       initDensitySpectrum();
       /* Falls das Live-Spektrum schon laeuft: umhaengen. In der Buehne
@@ -6571,6 +6610,25 @@
         teiler.connect(aL,0);
         teiler.connect(aR,1);
       }catch(e){}
+      /* DAS ZWEITE PAAR am Ende der Kette. Beide haengen dauerhaft -
+         umgeschaltet wird nur, welches gelesen wird. Ein Analyser ist
+         eine Sackgasse: Er hoert zu, ohne etwas zu veraendern, und
+         kostet nichts, solange niemand ihn ausliest. */
+      var eL=null, eR=null, eTeiler=null;
+      if(_fremdesEnde){
+        try{
+          eTeiler=ktx.createChannelSplitter(2);
+          eL=mk(); eR=mk();
+          _fremdesEnde.connect(eTeiler);
+          eTeiler.connect(eL,0);
+          eTeiler.connect(eR,1);
+        }catch(e){ eL=eR=null; }
+      }
+      /* Der Umschalter erscheint erst jetzt - vorher weiss niemand, ob
+         es ueberhaupt zwei Abgriffe gibt. */
+      var sw=document.getElementById('sa-signal-wahl');
+      if(sw) sw.style.display = (eL&&eR) ? '' : 'none';
+      if(!(eL&&eR)) _signalModus='codiert';
       window._liveGraph={teiler:teiler,l:aL,r:aR,quelle:_fremdeQuelle};
       window._analyser=aL; window._liveQuelle=_fremdeQuelle;
 
@@ -6608,7 +6666,12 @@
         var _z=ZEIT();
         if(!LAEUFT() && _z===_spektrumLetzte) return;
         _spektrumLetzte=_z;
-        aL.getByteFrequencyData(fdL); aR.getByteFrequencyData(fdR);
+        /* Welcher Abgriff gilt gerade? Fehlt das Endpaar (aeltere
+           Buehne, die den Knoten nicht hereinreicht), bleibt es beim
+           Rohsignal - dann ist der Umschalter gar nicht erst da. */
+        var qL = (_signalModus==='ausgabe' && eL) ? eL : aL;
+        var qR = (_signalModus==='ausgabe' && eR) ? eR : aR;
+        qL.getByteFrequencyData(fdL); qR.getByteFrequencyData(fdR);
         ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,c.width,c.height);
 
         if(_spektrumModus==='gespiegelt'){
@@ -6706,6 +6769,17 @@
     /* Der Umschalter. Er wirkt sofort - die Zeichenschleife liest
        _spektrumModus in jedem Bild, es muss nichts neu aufgebaut
        werden. */
+    /* Der Signalumschalter. Wie der daneben: Die Zeichenschleife liest
+       den Modus in jedem Bild, es muss nichts neu aufgebaut werden. */
+    document.addEventListener('click', function(e){
+      var k=e.target.closest && e.target.closest('#sa-signal-wahl button');
+      if(!k) return;
+      var g=k.parentElement;
+      g.dataset.wert=k.dataset.s;
+      [].forEach.call(g.children, function(b){ b.classList.toggle('an', b===k); });
+      _signalModus=k.dataset.s;
+      spektrumTexteSetzen();
+    });
     document.addEventListener('click', function(e){
       var k=e.target.closest && e.target.closest('#sa-spektrum-wahl button');
       if(!k) return;
