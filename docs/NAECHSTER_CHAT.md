@@ -15,7 +15,8 @@ wer eilig ist, liest diesen Kopf, den letzten Abschnitt und
 docs/OFFEN.md.
 
 ZUERST LESEN: docs/OFFEN.md (was falsch ist und was entschieden werden
-muss), dann docs/HAUSREGELN.md, dann docs/TONSTUDIO.md.
+muss), dann docs/HAUSREGELN.md, dann docs/TONSTUDIO.md — und fürs
+Einmessen docs/EINMESSEN.md.
 
 ## Was gerade läuft
 

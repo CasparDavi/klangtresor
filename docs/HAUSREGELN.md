@@ -645,7 +645,8 @@ er *nicht* herausgerechnet — zwei Versuche das zu tun scheiterten beide
 daran, daß sie Rauschen mit heraufholten. Was in beiden Messungen
 steckt, stört nicht.
 
-**Beim Einmessen:** Ein Mikrofon nimmt das Produkt aus Signal,
+**Beim Einmessen** (ausführlich in [EINMESSEN.md](EINMESSEN.md)):
+Ein Mikrofon nimmt das Produkt aus Signal,
 Lautsprecher, Raum und Mikrofon auf. Ohne Meßmikrofon läßt sich das
 nicht trennen — eine einzelne Messung ist **keine Eichung**. Aber die
 Differenz zweier Durchgänge (neutral gegen eingestellt) zeigt die

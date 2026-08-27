@@ -267,6 +267,7 @@ docs/      Fachdokumente
 | [docs/VISUALIZER.md](docs/VISUALIZER.md) | Bühne, Analyse, Darstellungsregeln |
 | [docs/FARBHANDLING.md](docs/FARBHANDLING.md) | Farbextraktion, Farbräume, jede Regel mit Meßwert |
 | [docs/TONSTUDIO.md](docs/TONSTUDIO.md) | Equalizer, Kompressor, Raum |
+| [docs/EINMESSEN.md](docs/EINMESSEN.md) | Einmessen am Hörplatz: Signale, Ablauf, Auswertung, Befunde |
 | [docs/WHISPER.md](docs/WHISPER.md) | Wort-Zeitmarken aus dem Hören |
 | [docs/SUNO-API.md](docs/SUNO-API.md) | Die Wege der Web-API — was wir nutzen, was lohnt, was das Konto verändert |
 | [docs/VERGLEICH-HUB.md](docs/VERGLEICH-HUB.md) | Funktionsvergleich mit einem verwandten Werkzeug — haben wir das, besser, oder verworfen? |
