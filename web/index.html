@@ -17952,8 +17952,58 @@ function messSollkurve(){
    Tonstudio und Platz bleiben ueber alle sieben Durchgaenge gleich;
    allein die Lautstaerke wandert. Wer zwei Dinge zugleich verstellt,
    misst hinterher die Summe und kann sie nicht mehr trennen. */
-const MESS_STUFEN = [100, 79, 63, 50, 40, 32, 25];
+/* VON UNTEN NACH OBEN (Caspar_D, 27.08.2026: "das heisst, man muß
+   erstmal Krach ertragen / lass uns doch von unten anfangen und schauen,
+   ab wann die Bässe und Höhen relativ abfallen").
+
+   Die Reihe lief bisher von laut nach leise - man musste also erst den
+   lautesten Durchgang ueber sich ergehen lassen, um herauszufinden,
+   dass er zu laut war. Umgekehrt herum geht es leise los und steigert
+   sich; sobald der Bass messbar abfaellt, ist der Punkt gefunden und
+   die Reihe kann aufhoeren. Der Krach bleibt einem erspart.
+
+   Die leiseste Stufe wird dabei zur Bezugsgroesse: dort ist die Kette
+   am ehrlichsten, weil dort am wenigsten zu begrenzen ist.
+
+   Weiterhin gleichmaessig in Dezibel - 25/32/40/50/63/79/100 % liegen
+   auf exakt vier Dezibel Abstand. */
+const MESS_STUFEN = [25, 32, 40, 50, 63, 79, 100];
 let messDauerWunsch = null;
+
+/* FALLEN BASS UND HOEHEN AB - relativ zu den Mitten?
+
+   Dass mit dem Regler alles leiser wird, ist der Zweck des Reglers.
+   Interessant ist allein, ob sich die FORM aendert: ob unten und oben
+   mehr verschwindet als in der Mitte. Deshalb wird jede Stufe zuerst
+   auf ihre eigenen Mitten bezogen (250 bis 2000 Hz - dort begrenzt
+   praktisch kein Lautsprecher, dort sitzt die Lautheit) und dann mit
+   der leisesten Stufe verglichen.
+
+   Ein negativer Wert heisst: dieses Band ist gegenueber den Mitten
+   zurueckgefallen, seit es lauter wurde. Genau das tut eine
+   Schutzbegrenzung. */
+function messPegelBefund(reihe){
+  if (!reihe || reihe.length < 2) return null;
+  const teil = (kurve, von, bis) => {
+    let s = 0, c = 0;
+    for (const p of kurve){ if (p.f < von || p.f > bis) continue;
+      s += Math.pow(10, p.db / 10); c++; }
+    return c ? 10 * Math.log10(s / c) : null;
+  };
+  const form = (r) => {
+    const m = teil(r.kurve, 250, 2000);
+    if (m === null) return null;
+    const b = teil(r.kurve, 25, 63), h = teil(r.kurve, 6300, 16000);
+    return { bass: b === null ? null : b - m, hoehen: h === null ? null : h - m };
+  };
+  const erste = form(reihe[0]), jetzt = form(reihe[reihe.length - 1]);
+  if (!erste || !jetzt) return null;
+  return {
+    laut: reihe[reihe.length - 1].laut,
+    bass:   (erste.bass   === null || jetzt.bass   === null) ? 0 : jetzt.bass   - erste.bass,
+    hoehen: (erste.hoehen === null || jetzt.hoehen === null) ? 0 : jetzt.hoehen - erste.hoehen,
+  };
+}
 
 async function pegelReihe(){
   const sagen = (t) => { const e = $('messstand'); if (e) e.textContent = t; };
@@ -17987,12 +18037,13 @@ async function pegelReihe(){
      Durchgaengen stand die Liste bei null Eintraegen. Also erst am
      Ende zuweisen. */
   const gesammelt = [];
-  sagen('Bitte jetzt Ruhe — ' + MESS_STUFEN.length + ' Durchgänge mit dem Sweep, '
-    + 'je rund 20 Sekunden, zusammen gut zweieinhalb Minuten. Die Lautstärke geht in '
-    + 'gleichen Schritten von ' + MESS_STUFEN[0] + ' % auf '
-    + MESS_STUFEN[MESS_STUFEN.length - 1] + ' % herunter — je vier Dezibel. '
-    + 'Sonst ändert sich nichts: gleiches Signal, gleiche Dauer, gleicher Platz. '
-    + 'Der erste Durchgang ist der lauteste.');
+  let gefunden = null;
+  sagen('Bitte jetzt Ruhe — Durchgänge mit dem Sweep, je rund 20 Sekunden. '
+    + 'Die Lautstärke steigt in Vier-Dezibel-Schritten von ' + MESS_STUFEN[0] + ' % an, '
+    + 'höchstens bis ' + MESS_STUFEN[MESS_STUFEN.length - 1] + ' %. '
+    + 'Es beginnt leise und hört auf, sobald der Lautsprecher anfängt, den Baß '
+    + 'zurückzunehmen — laut wird es also nur, wenn es sein muß. '
+    + 'Sonst ändert sich nichts: gleiches Signal, gleiche Dauer, gleicher Platz.');
   await new Promise(r => setTimeout(r, 2200));
   try {
     for (let i = 0; i < MESS_STUFEN.length; i++){
@@ -18020,8 +18071,33 @@ async function pegelReihe(){
         kurve,
         lang: messErgebnis.neutralLang,     /* die feine Kurve dieser Stufe */
       });
-      sagen('Stufe ' + stufe + ' % gemessen (' + (i + 1) + ' von ' + MESS_STUFEN.length
-        + ') — Störabstand ' + Math.round(messErgebnis.abstandN) + ' dB je Band. Bitte weiter still.');
+
+      /* NACH JEDER STUFE NACHSEHEN, ob Bass und Hoehen relativ
+         abfallen - gemessen gegen die leiseste Stufe und bezogen auf
+         die Mitten, denn nur das VERHAELTNIS zaehlt: dass alles leiser
+         wird, ist ja der Zweck des Reglers. */
+      const bef = messPegelBefund(gesammelt);
+      let melde = 'Stufe ' + stufe + ' % gemessen (' + (i + 1) + ' von '
+        + MESS_STUFEN.length + '), Störabstand ' + Math.round(messErgebnis.abstandN) + ' dB';
+      if (bef){
+        melde += ' — Baß ' + (bef.bass >= 0 ? '+' : '') + bef.bass.toFixed(1)
+          + ' dB, Höhen ' + (bef.hoehen >= 0 ? '+' : '') + bef.hoehen.toFixed(1)
+          + ' dB gegenüber ' + gesammelt[0].laut + ' %';
+      }
+      sagen(melde + '. Bitte weiter still.');
+
+      /* ABBRECHEN, SOBALD DER PUNKT GEFUNDEN IST. Drei Dezibel Abfall
+         im Bass sind eindeutig - und eine Stufe weiter zur Bestaetigung
+         reicht. Alles darueber waere nur noch Laerm ohne Erkenntnis. */
+      if (bef && (bef.bass < -3 || bef.hoehen < -3)){
+        if (!gefunden){ gefunden = i; }
+        else if (i > gefunden){
+          sagen('Der Punkt ist gefunden: ab rund ' + MESS_STUFEN[gefunden]
+            + ' % beginnt der Lautsprecher zurückzuregeln. Die Reihe hört hier auf — '
+            + 'lauter zu messen brächte nur noch Lärm.');
+          break;
+        }
+      }
       messErgebnis.pegel = gesammelt.slice();   /* fuers Live-Bild */
       messPegelZeichnen();
     }
@@ -18042,14 +18118,20 @@ async function pegelReihe(){
     messPegelZeichnen(); messWirkungZeichnen(); messFazitZeigen();
     const p = messErgebnis.pegel;
     if (p && p.length >= 2){
+      /* Die Reihe laeuft jetzt von leise nach laut: die erste Stufe ist
+         die leiseste und damit die Bezugsgroesse. */
       const soll = (l) => 40 * Math.log10(l / 100);
-      const oben = p[0], unten = p[p.length - 1];
-      const erwartet = soll(oben.laut) - soll(unten.laut);
-      const gemessen = oben.mittel - unten.mittel;
-      sagen('Lautstärkereihe steht: von ' + unten.laut + ' % auf ' + oben.laut
-        + ' % erwartet ' + erwartet.toFixed(1).replace('.', ',') + ' dB, gemessen '
-        + gemessen.toFixed(1).replace('.', ',') + ' dB. '
-        + 'Die neutrale Bezugsmessung steht jetzt auf ' + merkLaut + ' % — für eine '
+      const leise = p[0], laut = p[p.length - 1];
+      const erwartet = soll(laut.laut) - soll(leise.laut);
+      const gemessen = laut.mittel - leise.mittel;
+      const bef = messPegelBefund(p);
+      sagen('Lautstärkereihe steht: von ' + leise.laut + ' % auf ' + laut.laut
+        + ' % wären ' + erwartet.toFixed(1).replace('.', ',') + ' dB zu erwarten, gemessen '
+        + gemessen.toFixed(1).replace('.', ',') + ' dB.'
+        + (bef ? ' Dabei fiel der Baß um ' + Math.abs(bef.bass).toFixed(1).replace('.', ',')
+                 + ' dB und die Höhen um ' + Math.abs(bef.hoehen).toFixed(1).replace('.', ',')
+                 + ' dB gegenüber den Mitten zurück.' : '')
+        + ' Die neutrale Bezugsmessung steht jetzt auf ' + merkLaut + ' % — für eine '
         + 'Einstellungsreihe bitte „1 · Neutral“ neu messen.');
     }
   }
@@ -19607,16 +19689,16 @@ const MESS_PLAN = [
     ruhe: true },
   { art: 'pegel', signal: 'rosa',
     titel: 'Zuletzt: die Lautstärke durchfahren',
-    text: 'Sieben Durchgänge mit dem Sweep, von 100 % auf 25 % in gleichen Schritten von je '
-        + 'vier Dezibel. Zusammen rund zweieinhalb Minuten; der erste ist der lauteste.'
-        + '<br><br>'
+    text: 'Durchgänge mit dem Sweep, beginnend bei 25 % und in Vier-Dezibel-Schritten '
+        + 'ansteigend. Es <b>hört auf, sobald der Baß abfällt</b> — laut wird es also nur, '
+        + 'wenn es sein muß, und höchstens bis 100 %.<br><br>'
         + 'Es ändert sich dabei <b>nur die Lautstärke</b> — gleiches Signal, gleiche Dauer, '
         + 'gleicher Platz. Wer zwei Dinge zugleich verstellt, mißt hinterher die Summe und '
         + 'kann sie nicht mehr trennen.<br><br>'
-        + 'Das ist die entscheidende Probe: Bleibt die Kette linear, liegen alle Punkte auf '
-        + 'einer Geraden. Knickt sie oben ab, wird zurückgeregelt. Und weil jede Stufe voll '
-        + 'aufgelöst gemessen wird, sieht man nicht nur <i>daß</i> geregelt wird, sondern '
-        + '<i>wo</i> — viele Lautsprecher nehmen bei hohen Pegeln zuerst den Baß zurück.',
+        + 'Gemessen wird, ob Baß und Höhen <i>gegenüber den Mitten</i> zurückfallen. Daß mit '
+        + 'dem Regler alles leiser wird, ist ja sein Zweck; interessant ist allein, ob sich '
+        + 'die Form ändert. Viele Lautsprecher nehmen bei hohen Pegeln zuerst den Baß '
+        + 'zurück, weil tiefe Töne die größte Membranauslenkung brauchen.',
     ruhe: true },
 ];
 
