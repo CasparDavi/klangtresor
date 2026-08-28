@@ -1212,11 +1212,26 @@ const server = http.createServer((req, res) => {
     if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
     return liefere(req, res, f);
   }
-  /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js). */
+  /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js).
+
+     DREI RAEUME seit dem 28.08.2026: ?raum=klang|geschichten|lied.
+     Ohne Angabe kommt der Klang-Raum - so bleiben alte Lesezeichen und
+     der Sternenhimmel-Export gueltig. */
   if (p === '/api/karte' || p === '/api/klang') {
-    const f = path.join(WURZEL, 'library', p === '/api/karte' ? 'karte.json' : 'klang.json');
+    const RAUMDATEI = { klang: 'karte.json', geschichten: 'karte-geschichten.json', lied: 'karte-lied.json' };
+    const raum = (u.searchParams.get('raum') || 'klang');
+    const name = p === '/api/klang' ? 'klang.json' : (RAUMDATEI[raum] || RAUMDATEI.klang);
+    const f = path.join(WURZEL, 'library', name);
     if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
     return liefere(req, res, f);
+  }
+  /* Welche Raeume sind gerechnet? Die Oberflaeche zeigt nur an, was da
+     ist - ein Register, das ins Leere fuehrt, ist schlimmer als keins. */
+  if (p === '/api/raeume') {
+    const da = {};
+    for (const [r, n] of Object.entries({ klang: 'karte.json', geschichten: 'karte-geschichten.json', lied: 'karte-lied.json' }))
+      da[r] = fs.existsSync(path.join(WURZEL, 'library', n));
+    return jsonAntwort(res, da);
   }
   /* Gemerkte EQ-Einstellungen je Song. EINE Datei fuer alle Songs
      (exFAT: jede Datei kostet einen Block - Caspar_D, 20.08.2026: "nie

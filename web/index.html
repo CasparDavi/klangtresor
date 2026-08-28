@@ -191,6 +191,9 @@ h1{
 #kartelegende .ptitel b{color:var(--text);text-transform:none;letter-spacing:0;font-size:12px}
 #kartelegende .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 #kartelegende .phinweis{font-size:11px;color:var(--schwach)}
+#kartelegende .raumpille{font-weight:600}
+#kartelegende .raumwas{margin:6px 0 2px;line-height:1.45}
+#kartelegende .raumwas b{color:var(--akzent);font-weight:600}
 #kartelegende #schiffart{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche);color:var(--text)}
 /* Der Schiffsname: sieht aus wie Text, ist aber immer ein Eingabefeld.
    Der Rahmen kommt erst beim Zeigen und Hineinklicken - so verraet er
@@ -3434,8 +3437,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button class="reg an" data-reg="tracks">Werke</button>
     <button class="reg"    data-reg="playlists">Alben</button>
     <!-- Taufe 21.08.2026: "Karte" -> "Klangraum" (Caspar_D: "am schoensten").
-         Intern heisst das Register weiter 'karte'. -->
-    <button class="reg"    data-reg="karte">Klangraum</button>
+         Zweite Taufe 28.08.2026: "Klangraum" -> "Räume", weil es jetzt
+         drei sind - Klang, Geschichten, Lied. Intern heisst das Register
+         weiter 'karte'. -->
+    <button class="reg"    data-reg="karte">Räume</button>
     <!-- Der Größenregler steht bewusst HIER und nicht in einer der
          Filterleisten: Die Spaltenzahl gilt für beide Register - alle
          Ansichten malen in dasselbe Raster. In der Trackleiste wäre
@@ -6635,8 +6640,11 @@ function zeichnen(){
      sichtbar, damit man erkennt, wo man herkommt; als ZIEL der Reise
      zaehlt er nicht mehr. */
   if (register === 'karte'){
-    if (karteDaten){
-      const amHimmel = new Set(karteDaten.songs.map(p => p.id));
+    /* Der ANGEZEIGTE Raum entscheidet, wer einen Stern hat - im
+       Geschichten- und Lied-Raum fehlen die Lieder ohne Text. */
+    const rD = raumDaten[raumJetzt] || karteDaten;
+    if (rD){
+      const amHimmel = new Set(rD.songs.map(p => p.id));
       liste = liste.filter(s => amHimmel.has(s.id));
       if (aktuellId && amHimmel.has(aktuellId) && !liste.some(s => s.id === aktuellId)){
         const s = song(aktuellId); if (s) liste = liste.concat([s]);
@@ -6664,13 +6672,13 @@ function zeichnen(){
        Bildmitte. Das Easteregg soll auch dem gehoeren, der gerade nur
        zuhoert. */
     const verkehrt = zeitspanneVerkehrt();
-    if (verkehrt && !wurmloch && karteDaten){
+    if (verkehrt && !wurmloch && (raumDaten[raumJetzt] || karteDaten)){
       /* In LAYOUT-Einheiten rechnen, nicht in CSS-Pixeln: die Bildpunkte
          kommen aus karteXY(L, ...) und leben in L.W x L.H. Der Canvas
          wird zwar mit devicePixelRatio skaliert, aber gezeichnet wird
          nach der Transformation wieder in denselben Einheiten. Wer hier
          clientWidth nimmt, setzt das Loch neben das Bild. */
-      const Lk = karteLayout(karteDaten);
+      const Lk = karteLayout(raumDaten[raumJetzt] || karteDaten);
       const R = Math.min(Lk.W, Lk.H) * 0.26;
       let jetztP = null, vorherP = null;
       if (wurmlochSpur){
@@ -6749,6 +6757,25 @@ function registerSetzen(name){
    hervor. Hausregeln: schwarzer Datenbereich, runde Punkte, Fussnote
    nennt Herkunft der Daten. */
 let karteDaten = null, karteGruppeAn = null;
+
+/* ---- DREI RAEUME -------------------------------------------------------
+   Caspar_D, 28.08.2026: "wir haben Klang-Raum und Geschichten-Raum und
+   Lied-Raum (das sind die beiden aneinandergehaengten Vektoren), 3
+   Register."
+
+   karteDaten bleibt UNANGETASTET der Klang-Raum: an ihm haengen die
+   Stilgruppen der Songs (stilgruppeVon, die Gruppensperre im Tonstudio),
+   und die duerfen sich nicht aendern, nur weil jemand die Karte
+   umschaltet. Der angezeigte Raum liegt daneben. */
+const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum', lied: 'Lied-Raum' };
+const RAUM_WAS  = {
+  klang:       'Nähe heißt: klingt ähnlich. Aus dem Ton gerechnet, der Text spielt keine Rolle.',
+  geschichten: 'Nähe heißt: handelt von Ähnlichem. Aus den Liedtexten, der Klang spielt keine Rolle.',
+  lied:        'Beides zusammen, zu gleichen Teilen — Klang und Geschichte.',
+};
+let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
+const raumDaten = {};      /* je Raum die geladene Karte */
+let raumDa = null;         /* welche Räume gerechnet sind */
 /* Welche Sterne der Filter der Albumansicht durchlaesst - null heisst
    "kein Filter, alles anfliegbar". Gesetzt in zeichnen(), gelesen beim
    Malen (Blaesse) und von reiseNaechster (Ziel). */
@@ -7158,7 +7185,11 @@ function ladenLeiste(){
 }
 let karteDrawerOffen = false;   // (alt; ersetzt durch karteLaden)
 function kartePanelHtml(){
-  const d = karteDaten;
+  /* Die Legende beschreibt den ANGEZEIGTEN Raum, nicht den Klang-Raum:
+     Stress, Gruppenzahl und Songzahl gehoeren zu dem, was man sieht.
+     (karteDaten bleibt daneben der Klang-Raum - daran haengen die
+     Stilgruppen der Songs.) */
+  const d = raumDaten[raumJetzt] || karteDaten;
   /* Kurzfassung des Zustands fuer die geschlossene Lade */
   const kurz = [karteDim === '3d' ? '3D' : '2D', karteVerf === 'umap' ? 'UMAP' : 'NMDS',
     schiffArt === 'direkt' ? 'Direkte Route' : schiffArt === 'warp' ? 'Warpsprung' : 'Orbiter',
@@ -7168,7 +7199,22 @@ function kartePanelHtml(){
   const zeile = (titel, inhalt) => `<div class="pzeile"><span class="ptitel">${titel}</span><span class="pinhalt">${inhalt}</span></div>`;
   const artFarbe = { Genre: '#c8d7ff', Stimmung: '#ffc896', Instrument: '#a0ebe1' };
   const startSong = aktuellId && song(aktuellId);
+  /* DIE RAUMWAHL STEHT OBEN, vor allem anderen: Sie entscheidet, WAS
+     man sieht - alles darunter entscheidet nur, WIE. Räume, die nicht
+     gerechnet sind, erscheinen gar nicht erst; ein Knopf, der ins Leere
+     führt, ist schlimmer als keiner. */
+  const raumZeile = (raumDa && Object.values(raumDa).filter(Boolean).length > 1)
+    ? zeile('Raum', ['klang', 'geschichten', 'lied'].filter(r => raumDa[r]).map(r =>
+        `<button class="pille raumpille ${raumJetzt === r ? 'an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
+        + RAUM_NAME[r].replace('-Raum', '') + `</button>`).join(''))
+      + `<p class="fussnote raumwas">${RAUM_WAS[raumJetzt]}`
+      + (raumJetzt !== 'klang' && karteDaten
+          ? ` <b>${karteDaten.songs.length - d.songs.length} Lieder ohne Text fehlen hier.</b>` : '')
+      + `</p>`
+    : '';
+
   return ladeHtml('einstellungen', 'Einstellungen', kurz, `<div class="panel">` +
+    raumZeile +
     zeile('Visualisierung',
       `<span class="schalter" title="Fläche oder Raum. Im Raum: Klick dreht den Song nach vorn, Ziehen dreht frei, Doppelklick zurück."><button class="pille ${karteDim === '2d' ? 'an' : ''}" data-dim="2d">2D</button><button class="pille ${karteDim === '3d' ? 'an' : ''}" data-dim="3d">3D</button></span>` +
       `<span class="schalter" title="NMDS: Rangfolge aller Abstände stimmt (Stress 2D ${String(d.stress ?? '?').replace('.', ',')}, 3D ${String(d.stress3d ?? '?').replace('.', ',')}). UMAP: nur Nachbarschaft, Abstände dazwischen erfunden."><button class="pille ${karteVerf === 'nmds' ? 'an' : ''}" data-verf="nmds">NMDS</button><button class="pille ${karteVerf === 'umap' ? 'an' : ''}" data-verf="umap">UMAP</button></span>`) +
@@ -7210,6 +7256,14 @@ function kartePanelDran(leg){
   const merk = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
   ladenDran(leg);
   leg.querySelectorAll('.artpille').forEach(b => b.onclick = () => { karteArten[b.dataset.a] = !karteArten[b.dataset.a]; merk('mysuno-karte-arten', JSON.stringify(karteArten)); karteZeichnen(); });
+  leg.querySelectorAll('[data-raum]').forEach(b => b.onclick = () => {
+    if (b.dataset.raum === raumJetzt) return;
+    raumJetzt = b.dataset.raum; merk('mysuno-raum', raumJetzt);
+    /* Die Sternbilder gelten je Raum - sonst zeigt der Geschichten-Raum
+       die Namen aus dem Klang-Raum. */
+    karteSternbilder = [];
+    zeichnen();          /* filtert die Liste neu - im Geschichten-Raum fehlen die Textlosen */
+  });
   leg.querySelectorAll('[data-dim]').forEach(b => b.onclick = () => { karteDim = b.dataset.dim; merk('mysuno-karte-dim', karteDim); karteArt = karteArtAbleiten(); karteZeichnen(); });
   leg.querySelectorAll('[data-verf]').forEach(b => b.onclick = () => { karteVerf = b.dataset.verf; merk('mysuno-karte-verf', karteVerf); karteArt = karteArtAbleiten(); karteZeichnen(); });
   const k = (id, fn) => { const el = leg.querySelector('#' + id); if (el) el.onclick = fn; };
@@ -7255,18 +7309,30 @@ async function karteZeichnen(){
   karteHoehe();
   if (!schiffLauf) schiffLauf = requestAnimationFrame(karteSchiff);
   const svg = $('kartesvg'), leg = $('kartelegende');
-  if (!karteDaten){
+  /* Welche Räume gibt es? Einmal fragen, dann merken. */
+  if (!raumDa){
+    try { raumDa = await (await fetch('/api/raeume', { cache: 'no-store' })).json(); }
+    catch (e) { raumDa = { klang: true }; }
+    if (!raumDa[raumJetzt]) raumJetzt = 'klang';
+  }
+  if (!raumDaten[raumJetzt]){
     /* Erst hier steht fest, welche Songs ueberhaupt einen Stern haben.
        Also die Liste einmal ueber zeichnen() bauen lassen - das setzt
        sichtbar UND karteAnflug in einem Zug und laeuft dann durch die
        Filterung der Albumansicht, statt sie zu umgehen. */
-    try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); return zeichnen(); }
+    try {
+      raumDaten[raumJetzt] = await (await fetch('/api/karte?raum=' + raumJetzt, { cache: 'no-store' })).json();
+      if (raumJetzt === 'klang') karteDaten = raumDaten.klang;
+      /* Der Klang-Raum wird IMMER gebraucht - fuer die Stilgruppen. */
+      if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
+      return zeichnen();
+    }
     catch (e) {
-      leg.innerHTML = '<h3>Klangraum</h3><p class="fussnote">Noch kein Klangraum — der Morgenlauf „Musikstil und Musik-Karte“ rechnet ihn.</p>';
+      leg.innerHTML = '<h3>Räume</h3><p class="fussnote">Noch kein Klang-Raum — der Morgenlauf „Musikstil und Musik-Karte“ rechnet ihn.</p>';
       svg.innerHTML = ''; return;
     }
   }
-  const d = karteDaten, n = d.gruppen.length;
+  const d = raumDaten[raumJetzt], n = d.gruppen.length;
   const L = karteLayout(d);
   karteHimmel(d);
   /* Die SVG-Schicht ist nur noch TREFFFLAECHE und Ringe (Nachbarn,
