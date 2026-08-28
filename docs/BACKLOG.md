@@ -1343,3 +1343,77 @@ einer Playlist — die Frage an Tarja ist, ob das reicht.
 ihrer Vorschläge: ein Pluszeichen neben dem roten Knopf. Eine Kachel
 „ganz unten rechts" wandert mit jeder Sortierung woanders hin und ist
 bei 321 Songs weit weg.
+
+---
+
+## Die Gegenprobe mit einem zweiten Mikrofon
+
+**Die offene Frage vom 27.08.:** Die Messung zeigte, daß die HomePods ab
+50 % Lautstärke den Baß zurücknehmen (25 %: Bezug, 40 %: −0,4 dB,
+50 %: −3,6 dB, 63 %: −7,0 dB). Offen blieb, ob die Begrenzung im
+Lautsprecher sitzt oder ob das Mikrofon überfordert war. Für den
+Lautsprecher spricht die Form — Absenken ohne Oberwellen — und der
+Kopfraum von −15,5 dB.
+
+**Der Weg dahin braucht kein besseres Mikrofon, sondern ein anderes.**
+Zeigen zwei verschieden gebaute Wandler denselben Abfall an derselben
+Stelle, liegt er nicht am Mikrofon; so etwas passiert nicht zufällig
+zweimal gleich. Zeigt der zweite ihn nicht, war der erste überfordert.
+Kalibrierung braucht es dafür nicht.
+
+### Was schon dasteht
+
+Caspar_D, 28.08.2026: „also wir haben schon jetzt mehrere Mikrophone."
+
+| | in der Güteliste | Bauart |
+|---|---|---|
+| **TONOR TM20** | 100, „Studiomikrofon am USB-Wandler" | USB-Kondensator, eigener Wandler |
+| **iMac-Array** | 40, „eingebautes Array mit fester Störunterdrückung" | mehrere Kapseln, Signalverarbeitung |
+| **Webcam** | 20, „Webcam-Mikrofon, auf Sprache getrimmt" | eine Kapsel, auf Stimme entzerrt |
+
+Die drei sind so verschieden gebaut, wie man es sich für eine
+Gegenprobe wünscht. **Die Messung vom 27.08. lief über das TONOR TM20** —
+das steht in `library/messungen/2026-08-27-befunde.json`.
+
+Das schwächt den Vorbehalt bereits: Ein TM20 hat reichlich Kopfraum, und
+bei Zimmerlautstärke ist es weit von seiner Grenze entfernt. Die
+Vermutung „Mikrofon überfordert" war naheliegend, aber sie paßt schlecht
+zu dem Gerät, das tatsächlich gemessen hat.
+
+### Was zu tun wäre
+
+Denselben Sweep über alle drei Mikrofone, sonst nichts verändert. Dann:
+
+- **Sehen alle drei den Abfall ab 50 %?** Dann sind es die HomePods, und
+  der Vorbehalt ist erledigt.
+- **Die Differenz zweier Läufe** zeigt zwar nicht, welches Mikrofon recht
+  hat, aber wo sie sich unterscheiden. Ist sie über weite Strecken flach,
+  sind beide dort brauchbar; wo sie auseinanderläuft, ist mindestens
+  eines schlecht. Das ist auch ohne Kalibrierdatei aussagekräftig.
+
+Im Panel fehlt dafür der Vergleich zweier gespeicherter Läufe. Das
+Mikrofon wird in der Messung schon vermerkt, die Daten liegen also
+richtig — es fehlt nur die Gegenüberstellung.
+
+### Das Onkyo-Einmessmikrofon
+
+Caspar_D hat eines vom AV-Receiver, muß es aber erst suchen
+(28.08.2026). Seine Sorge: „das ding hat, fürchte ich, aber überhaupt
+keine Frequenzwahrnehmung sondern nur trivial loudness."
+
+Das trifft nicht zu — ein Mikrofon kann gar nicht anders, als den ganzen
+Frequenzbereich zu übertragen; „nur Lautstärke" wäre eine Auswertung im
+Receiver. Und der wertet mehr aus: AccuEQ stellt einen Equalizer ein,
+dafür muß es Frequenzgänge messen; die älteren Onkyos mit Audyssey
+nehmen die komplette Impulsantwort auf.
+
+Was zutrifft: Es kommt **ohne Kalibrierdatei**, und bei einem billigen
+Elektret weiß man nicht, wo es danebenliegt. Für eine Gegenprobe reicht
+es trotzdem — dort zählt Verschiedenheit, nicht Genauigkeit.
+
+**Hürde ist der Anschluß:** meist 3,5-mm-Mono-Klinke mit
+Speisespannung aus dem Receiver. Der Mac-Kombianschluß ist auf Headsets
+ausgelegt und erkennt einen Mono-Stecker oft nicht. Erster Test:
+einstecken und sehen, ob es in der Mikrofonliste auftaucht. Wenn ja,
+gehört sein Name in `MESS_GUETE` — heute liefe es als „unbekanntes
+Gerät" mit 50 Punkten, zwischen iMac-Array und Studiomikrofon.
