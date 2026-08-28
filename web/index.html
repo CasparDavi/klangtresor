@@ -3495,10 +3495,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button class="reg an" data-reg="tracks">Werke</button>
     <button class="reg"    data-reg="playlists">Alben</button>
     <!-- Taufe 21.08.2026: "Karte" -> "Klangraum" (Caspar_D: "am schoensten").
-         Zweite Taufe 28.08.2026: "Klangraum" -> "Räume", weil es jetzt
-         drei sind - Klang, Geschichten, Lied. Intern heisst das Register
-         weiter 'karte'. -->
-    <button class="reg"    data-reg="karte">Räume</button>
+         Zweite Taufe 28.08.2026: "Klangraum" -> "Räume", weil es drei
+         wurden. Seither heisst die Lasche nach dem, was da ist: bei
+         mehreren Raeumen "Räume", bei einem einzigen nach diesem einen.
+         Caspar_D, 28.08.2026: "mit der bedingung, das die registerlasche
+         den Namen ändert, wenn nur noch ein Raum zugänglich ist. ich will
+         meinen klangraum zurück." Intern heisst das Register weiter
+         'karte'. Gesetzt wird der Name in raumLascheBenennen(). -->
+    <button class="reg"    data-reg="karte" id="reg-karte">Klangraum</button>
     <!-- DIE DREI RAEUME als Unterregister, nicht in einer Lade: Sie
          entscheiden, WAS man sieht - das gehoert nach oben und
          sichtbar. Caspar_D, 28.08.2026: "der Register heisst räume aber
@@ -7318,7 +7322,18 @@ document.addEventListener('fullscreenchange', () => {
 /* Die Raumleiste oben. Sie wird nur gebaut, wenn es mehr als einen Raum
    gibt - wer nur den Klang-Raum gerechnet hat, soll keine Leiste sehen,
    die nichts zu waehlen hat. */
+/* Der Name der Registerlasche richtet sich nach dem, was zugaenglich
+   ist: bei einem einzigen Raum sein eigener Name, bei mehreren "Räume".
+   So heisst es wieder "Klangraum", sobald die anderen beiden nicht
+   gerechnet oder beiseitegelegt sind. */
+function raumLascheBenennen(){
+  const b = $('reg-karte'); if (!b) return;
+  const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
+  b.textContent = da.length === 1 ? RAUM_NAME[da[0]].replace('-Raum', 'raum') : 'Räume';
+}
+
 function raumLeisteBauen(){
+  raumLascheBenennen();
   const el = $('raumreg'); if (!el) return;
   const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
   if (da.length < 2){ el.hidden = true; el.innerHTML = ''; return; }

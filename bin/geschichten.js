@@ -48,7 +48,8 @@ const { einbetterLaden } = require('./texte-einbetten.js');
 const WURZEL  = path.join(__dirname, '..');
 const MODELL  = path.join(WURZEL, 'library', 'modelle', 'paraphrase-multilingual-mpnet.onnx');
 const TOKEN   = path.join(WURZEL, 'library', 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
-const ZIEL    = path.join(WURZEL, 'library', 'geschichten.json');
+const LIB     = path.join(WURZEL, 'library');
+const ZIEL    = path.join(LIB, 'geschichten.json');
 const MINDEST = 50;   /* Kuerzere "Texte" sind Platzhalter, keine Geschichte. */
 
 /* ---- NUR DAS GESUNGENE ------------------------------------------------
@@ -188,17 +189,75 @@ if (require.main !== module) return;
   try { alt = JSON.parse(fs.readFileSync(ZIEL, 'utf8')).songs || {}; } catch (e) {}
 
   const e = await einbetterLaden(MODELL, TOKEN);
+
+  /* ---- WAS EINGEBETTET WIRD -------------------------------------------
+     Caspar_D, 28.08.2026, ueber die Gruppennamen: "die
+     gruppenbezeichnungen sind Quark, sorry. Das geht gar nicht."
+
+     Er hatte recht, und das Problem lag nicht bei den Namen. Aus dem
+     GANZEN Liedtext entstand eine Gruppe mit 144 von 257 Liedern - ihr
+     Schwerpunkt IST damit die Gesamtmitte, sie hat kein gemeinsames
+     Thema, also kann kein Verfahren eines finden. Der Text besteht zum
+     groessten Teil aus Fuellwoertern, Refrainwiederholungen und
+     Reimzwang; was ein Lied ERZAEHLT, geht darin unter.
+
+     Deshalb werden, wo vorhanden, die ZEHN KONDENSIERTEN SUBSTANTIVE
+     eingebettet (library/kondensate/, erzeugt nach den Regeln in
+     bin/kondensat-prompt.js). Gemessen:
+
+       Vektor aus     k  Silhouette  groesste Gruppe
+       Volltext       5      0,183      154 (60 %)
+       Kondensat      7      0,150       84 (33 %)
+
+     Die Silhouette faellt, aber sie belohnt wenige grosse Klumpen - eine
+     Loesung mit einer 60-%-Gruppe sieht gut aus und ist unbrauchbar. Und
+     an den Werkgruppen mit bekannter Wahrheit gemessen findet das
+     Kondensat den Partner eines Liedes auf Rang 1,00 statt 6,08.
+
+     Wer kein Kondensat hat - ein frisch importiertes Lied etwa -,
+     bekommt weiter den gefilterten Volltext. Die Karte bleibt damit
+     vollstaendig, und das Feld 'quelle' sagt je Lied, woher der Vektor
+     stammt. */
+  let kondensate = null;
+  const kondPfad = path.join(LIB, 'kondensate', 'kondensate.json');
+  if (fs.existsSync(kondPfad)) {
+    const A = JSON.parse(fs.readFileSync(kondPfad, 'utf8'));
+    const reihe = ['opus-f2-gesamt', 'opus', 'opus-gesamt'];
+    kondensate = {};
+    for (const [id, eintrag] of Object.entries(A.lieder || {})) {
+      const m = reihe.find(k => eintrag.modelle && eintrag.modelle[k]);
+      if (m) kondensate[id] = eintrag.modelle[m];
+    }
+    if (!Object.keys(kondensate).length) kondensate = null;
+    else console.log(`  Kondensate: ${Object.keys(kondensate).length} Lieder mit zehn Substantiven`);
+  }
+
   const songs = {};
-  let gerechnet = 0, uebernommen = 0, uebersprungen = 0;
+  let gerechnet = 0, uebernommen = 0, uebersprungen = 0, ausKondensat = 0;
   const t0 = Date.now();
 
   for (const s of liste) {
     const n = s.lyrics.length;
-    if (alt[s.id] && alt[s.id].zeichen === n) { songs[s.id] = alt[s.id]; uebernommen++; continue; }
-    const rein = nurGesungenesGanz(s.lyrics);
-    if (rein.length < MINDEST) { uebersprungen++; continue; }
-    const v = await e.einbetten(rein);
-    songs[s.id] = { emb: Array.from(v, x => +x.toFixed(6)), zeichen: n, gesungen: rein.length };
+    const kond = kondensate && kondensate[s.id];
+    const quelle = kond ? 'kondensat' : 'volltext';
+    /* Uebernehmen nur, wenn Text UND Quelle gleich geblieben sind - sonst
+       stuende ein alter Volltext-Vektor neben neuen Kondensat-Vektoren,
+       und die Karte mischte zwei Massstaebe. */
+    if (alt[s.id] && alt[s.id].zeichen === n && (alt[s.id].quelle || 'volltext') === quelle) {
+      songs[s.id] = alt[s.id]; uebernommen++; if (kond) ausKondensat++; continue;
+    }
+    let text, gesungen;
+    if (kond) {
+      text = kond.join(', ');
+      gesungen = text.length;
+      ausKondensat++;
+    } else {
+      text = nurGesungenesGanz(s.lyrics);
+      if (text.length < MINDEST) { uebersprungen++; continue; }
+      gesungen = text.length;
+    }
+    const v = await e.einbetten(text);
+    songs[s.id] = { emb: Array.from(v, x => +x.toFixed(6)), zeichen: n, gesungen, quelle };
     gerechnet++;
     if (gerechnet % 25 === 0)
       process.stdout.write(`\r  ${gerechnet} gerechnet …`);
