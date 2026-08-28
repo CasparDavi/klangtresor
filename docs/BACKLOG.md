@@ -1210,3 +1210,136 @@ durch (CORS-Vorabruf). `/api/gen/<id>/` gibt 404. Und `media_urls` in
 Das Lesezeichen hat den Token ohnehin (`window.Clerk.session.getToken()`
 für die Metadaten); der Anstoß wäre kein neuer Mechanismus, sondern
 zwanzig Zeilen im vorhandenen Skript.
+
+---
+
+## Bewegte Standbilder — 236 Songs ohne Video-Artwork
+
+Aus dem Cover ein zehn Sekunden langes Bewegtbild rechnen, das sich zur
+Musik regt. Keine fremde KI, kein Generator: Die Bewegung kommt aus
+Zahlen, die längst im Katalog stehen.
+
+**Entwurf und Werkbank liegen in `docs/entwuerfe/bewegtbild/`** — mit
+Renderer, Reglern und einem Werkzeugkasten zum Drehen im Browser.
+
+### Woher alles kommt
+
+Für **alle 321 Songs** liegt vor, was gebraucht wird:
+
+- `schlaege` — Sunos Schlagzeiten als `[zeit, zählzeit]`, die Eins des
+  Takts ist Zählzeit 1
+- `farben.akzent` / `akzent2` und die Tonliste aus dem Cover
+- das Cover selbst
+
+Der erste Anlauf am 26.08. rechnete die Hüllkurven aus den
+Instrumentspuren. Das war der Umweg: **Sunos Schlagzeiten sind genauer,
+liegen für jeden Song vor und kosten keine 85 MB je Stück.** Sie standen
+die ganze Zeit im Katalog — `bin/katalog.js` nimmt sie beim Verschlanken
+heraus, deshalb sind sie in der Browserfassung nicht zu sehen.
+
+### Was probiert wurde
+
+| | Bewegung woher | Befund |
+|---|---|---|
+| A | Ken Burns, nur Zeit | funktioniert überall, austauschbar |
+| B | Baß-Hüllkurve → Zoom | zu subtil bei durchgehend kräftigem Baß |
+| C | Trommel-Anstiege → Helligkeit | Caspar_Ds Wahl am 26.08. |
+| D | alle drei zusammen | unentschieden |
+| E | Puls nur in der Korona | **zu speziell** — brauchte eine von Hand gesuchte Stelle im Bild |
+| F | schlagendes Rescale | generisch, läuft auf jedem Cover |
+| G | Farbwechsel Akzent 1 → 2 | generisch, aber siehe unten |
+
+Caspar_D, 27.08.2026: „das muß generischer werden, sowas spezielles
+sollten wir nicht machen." E war der Wendepunkt — dort mußte die
+Leuchtstelle im Bild gesucht werden, und sie saß erst 13 px daneben.
+F und G brauchen keinen Blick ins Bild.
+
+### Vier Befunde, die beim Bauen herauskamen
+
+**Die Akzentfarben taugen nicht als Paar.** Median-Farbtonabstand
+zwischen `akzent` und `akzent2`: **13 Grad**. Bei 13 % der Songs sind
+sie identisch, bei 53 % unter 15 Grad. Über die Hälfte hätte einen
+Wechsel, den man nicht sieht. Die beiden Felder sind offenbar als
+UI-Paar gedacht, nicht als Kontrast. Deshalb der Regler
+`mindestAbstand`: Darunter wird die zweite Farbe gedreht — dann kommt
+sie allerdings nicht mehr aus dem Bild. **Offen:** ob das der richtige
+Weg ist oder ob eine dritte Quelle besser wäre.
+
+**Die Schleife muß einrasten.** Eine Wechselperiode, die sich nicht
+ganzzahlig in die zehn Sekunden teilt, endet in einer anderen Farbe als
+sie anfing — gemessen sprang die Naht um 13,3, mehr als die halbe
+Wanderung selbst. Jetzt wird die gewünschte Periode auf den nächsten
+Teiler der Laufzeit gerundet; Naht 0,28.
+
+**Dunkle Cover nehmen kaum Farbe an.** Die Tönung wird mit der
+Bildhelligkeit multipliziert — was dunkel ist, bleibt dunkel. Bei „Lea
+Moreau" (Helligkeit 0,36) liegt die gemessene Bewegung **unter der
+Grundlinie**, die ein reines Standbild allein durch x264-Rauschen
+erzeugt. Der Regler „Dunkle Cover ausgleichen" hebt an, ist aber noch
+nicht durchdacht. **Das ist der wichtigste offene Punkt.**
+
+**Zehn Sekunden sind die Grenze.** Caspar_D, 27.08.2026: „nicht länger
+als 10 sec, sonst lehnt suno das als cover art video ab."
+
+### Was noch fehlt
+
+- Die Dosierung an der Bildhelligkeit ausrichten
+- Serienlauf über die Songs ohne Bewegtbild
+- Der Weg in KlangTresor: Die Regler gehören ins Notizfenster neben
+  „Mein Artwork", das Ergebnis als `eigen.mp4` in den Weg, den es
+  schon gibt
+- Ob der Ausschnitt an einer Takt-Eins beginnen sollte — dann wäre die
+  Schleife auch musikalisch geschlossen, nicht nur farblich
+
+### Eine Messfalle, die dreimal zugeschlagen hat
+
+Ein reines Standbild zeigt bei `tblend=difference` eine mittlere
+Änderung von **1,97**, nicht 0 — x264 kodiert es nicht bitgleich. Ohne
+diese Grundlinie liest man jede Messung zu hoch. Und `metadata=print`
+schreibt nach stderr; mit `-loglevel error` kommt gar nichts an, was wie
+„keine Bewegung" aussieht statt wie „nicht gemessen".
+
+---
+
+## Fremde Songs im Tresor — Tarjas Vorschlag
+
+Tarja, 28.08.2026: „hier (mit dem Text/Notizabzeichen auf dem artwork)
+kann man zwar was ZUM Song anpassen, aber keinen NEUEN generieren,
+welcher nicht bei Suno ist hinterlegen. hierfür wäre vielleicht ganz
+unten, rechts neben dem letzten Song eine eigene große Kachel ‚neuen
+Song hinzufügen' cool. Alternativ, und vermutlich zugänglicher links
+neben dem roten Kreisel ein schwarzes +"
+
+Caspar_Ds Antwort, 28.08.2026: „Neue und andere Songs wären ein ganz
+anderes Kaliber. Sie fügen sich nicht mehr in das Suno Konzept ein, wir
+hätten keine Schlagdaten mehr, keine Suno-Text/Zeitanker, keine
+identisch generierte Hüllkurve, Abschnittswechsel und vieles mehr —
+aber, den Klangtresor für eine ganze lokale Mediensammlung zu öffnen ist
+natürlich durchaus reizvoll und über das Naheliegende nachzudenken auch
+nicht verboten. Aber das wäre ein grösseres Projekt, von dem ich noch
+nicht weiß, ob ich es angehen möchte."
+
+**Was tatsächlich wegfiele**, wenn ein Song nicht von Suno kommt — und
+was davon zu ersetzen wäre:
+
+| | fällt weg | Ersatz denkbar? |
+|---|---|---|
+| Schlagzeiten | ja | ja, aber selbst gerechnet und ungenauer |
+| Wort-Zeitmarken fürs Karaoke | ja | Whisper kann es, läuft schon |
+| Abschnittswechsel | ja | nur geraten |
+| Lyrics, Prompt, Modell | ja | von Hand |
+| Plays, Likes, Kommentare | ja | entfällt ersatzlos |
+| Lautheit, Tonart, Klangraum | **nein** | rechnet KlangTresor selbst |
+
+Der Klangraum, die Analyse und das Tonstudio arbeiten am Ton, nicht an
+Sunos Angaben — die liefen weiter. Was fehlte, ist alles, was Suno
+*über* den Song weiß.
+
+**Zwischenweg, den Caspar_D vorgeschlagen hat:** eine Suno-ID eines
+privaten Songs angeben können. Das geht heute schon über den Umweg
+einer Playlist — die Frage an Tarja ist, ob das reicht.
+
+**Wenn es doch angegangen wird**, ist der Einstiegspunkt eher der zweite
+ihrer Vorschläge: ein Pluszeichen neben dem roten Knopf. Eine Kachel
+„ganz unten rechts" wandert mit jeder Sortierung woanders hin und ist
+bei 321 Songs weit weg.
