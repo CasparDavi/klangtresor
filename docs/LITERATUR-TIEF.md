@@ -156,9 +156,34 @@ DSP-Verfahren für die Tonart — ist damit nicht Kompromiß, sondern genau
 das, was diese Zahlen nahelegen. **Ein Wechsel auf MERT würde die
 Ähnlichkeit voraussichtlich verschlechtern.**
 
-MAEST wäre der einzige saubere Aufrüstungspfad (fertiges ONNX, MTG-UPF,
-gleiche Bibliothek): +0,5 bis +2,5 ROC-Punkte auf Tagging-Aufgaben — bei
-**345 MB statt 18 MB**, also dem 19-fachen. Bei 321 Songs nicht meßbar.
+**MAEST ist der einzige belegte Aufrüstungspfad** — gleiches Labor,
+gleiche Discogs-Vortrainierung, und das ONNX liegt bei Essentia
+**offiziell mit dynamischer Stapelgröße** bereit, kein Export nötig:
+
+| | Δ ROC | Δ mAP |
+|---|---|---|
+| Genre | +0,5 | +1,7 |
+| **Instrumente** | **+2,4** | **+3,1** |
+| **Stimmung** | **+2,5** | **+1,8** |
+
+Preis: **~340 MB statt ~18 MB**, das 19-fache. Ein einmaliger
+Neuberechnungslauf über 321 Songs läge bei Minuten. Aber es ist ein
+Eingriff in den Datenfluß: andere Einbettungsdimension, neue Köpfe,
+Analyzer und Ähnlichkeitsindex müssen neu gerechnet werden.
+
+**Ein Wechsel auf CLAP wäre dagegen ein Rückschritt.** Der
+MGPHot-Benchmark (2025) mißt genau unsere Aufgabe — MTG-Jamendo, mAP:
+**MAEST 0,154 · MERT 0,139 · CLAP 0,124.** Ein Wechsel von der
+Discogs-Linie auf CLAP verlöre rund ein Fünftel. Der Grund ist
+strukturell: 87 der 185 MTG-Jamendo-Etiketten sind Genre-Etiketten, die
+mit dem Discogs-Trainingsvokabular überlappen. Diese Paßgenauigkeit ist
+unser Vorteil, und sie ist nicht wegzuoptimieren.
+
+**Zwei Zahlen zum Maßhalten:** Der weltweite Bestwert bei
+MTG-Jamendo Stimmung liegt bei **PR-AUC 0,161** — auch der Beste liegt
+bei vier von fünf Vorhersagen daneben. Und MagnaTagATune hat sich in
+**neun Jahren um 2,0 ROC-Punkte** bewegt. Von einem Modellwechsel ist
+kein Sprung zu erwarten, von keinem Modell.
 
 ## 1.3 Wo wir wirklich stehen: die Tonart
 
@@ -214,12 +239,58 @@ lohnt Hinsehen.
 Vergleichsvorschrift, damit die Zahlen zur Literatur passen: **±70 ms
 Toleranz, erste 5 Sekunden verwerfen** (mir_eval-Konvention).
 
-**Struktur dagegen: klares Nein.** Der Weltstand liegt bei **0,61 bis
-0,66 F-Measure** für Abschnittsgrenzen auf 0,5 s genau — die menschliche
-Obergrenze wird auf ~90 % geschätzt. Ein lokales Verfahren würde eine
-bessere Information (Sunos Erzeugungswahrheit) durch eine schlechtere
-ersetzen. Und selbst als Gegenprüfung taugt es kaum: Bei 0,61 F-Measure
-wäre bei einer Abweichung fast immer der Segmentierer schuld.
+**Struktur dagegen: klares Nein** — und die Begründung ist eine andere,
+als ich zuerst schrieb.
+
+Die verbreitete Angabe, Menschen erreichten „~90 %", stammt aus dem
+TISMIR-Survey und steht dort **unbelegt** („is thought to be").
+Gemessen wurde es von Ullrich, Schlüter und Grill (ISMIR 2014) an 498
+doppelt annotierten SALAMI-Stücken: **F ≈ 0,67–0,68 bei ±0,5 s
+Toleranz, 0,76 bei ±3 s.** Zwei Fachleute sind sich also zu zwei
+Dritteln einig, nicht zu neun Zehnteln.
+
+Damit liegt der Weltstand (SongFormer 2025: 0,703) sogar *auf*
+menschlichem Niveau. Die Schlußfolgerung bleibt trotzdem: Suno liefert
+keine Schätzung, sondern den Erzeugungsplan. Ein lokales Verfahren
+könnte ihn bestenfalls bestätigen.
+
+Zwei Zahlen zum Maßhalten aus derselben Arbeit: Eine **triviale
+Grundlinie**, die einfach gleichmäßig verteilte Grenzen setzt, erreicht
+schon **F = 0,33 bei ±3 s.** Der ganze nutzbare Spielraum zwischen
+„nichts können" und „so gut wie ein Mensch" ist also 0,43 breit. Und
+alles, was ohne Training lokal liefe, landet bei 0,35–0,50 — näher an
+der Trivialgrenze als am Menschen.
+
+Dazu ein methodischer Fund, der Vorsicht bei allen Vergleichen gebietet:
+**Ungetrimmte Metriken schenken bis zu 9 F-Punkte.** Anfang und Ende
+einer Datei sind semantisch keine Grenzen, aber `mir_eval` zählt sie
+standardmäßig mit — und viele Arbeiten sagen nicht, welche Variante sie
+verwenden.
+
+### Was Suno tatsächlich liefert — nachgesehen
+
+Eine Annahme mußte ich dabei berichtigen: **Suno liefert keine
+Funktionsnamen.** Das Feld `abschnitte` enthält kein „Strophe" oder
+„Refrain", sondern anonyme Gruppenbuchstaben:
+
+```
+{ state: "complete",
+  peak_times:     [11.72, 20.64, 25.6, 47, 62.44, …],
+  segment_labels: ["A", "A", "A", "B", "C", "C", "D", …] }
+```
+
+Das sind Cluster — „diese Stellen klingen gleich" —, nicht Bedeutungen.
+Wer daraus „Refrain" macht, legt eine Deutung darüber.
+
+**Und der billige Plausibilitätstest, den die Recherche vorschlug, ist
+gemacht:** Liegt die letzte Abschnittsgrenze plausibel zur Dauer? Bei
+Bearbeitungen (Crop, Extend, Replace Section) könnten die Zeitmarken
+verrutschen — das wäre die einzige Fehlerklasse, die überhaupt plausibel
+ist.
+
+**Ergebnis: 321 von 321 stimmig, keine einzige Auffälligkeit.** Median
+15 Grenzen je Song, zwischen 7 und 39. Alle im Zustand `complete`.
+Die Suno-Angaben passen zum Audio.
 
 ## 1.5 Der Dämpfer
 
