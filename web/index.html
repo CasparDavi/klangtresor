@@ -191,6 +191,37 @@ h1{
 #kartelegende .ptitel b{color:var(--text);text-transform:none;letter-spacing:0;font-size:12px}
 #kartelegende .pinhalt{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 #kartelegende .phinweis{font-size:11px;color:var(--schwach)}
+/* Die Unterregister sitzen in derselben Zeile wie Werke/Alben/Räume,
+   durch einen Trennstrich abgesetzt - sie gehoeren zum Register
+   darueber, sind aber eine Ebene darunter. */
+/* Vollbildknopf: unaufdringlich in der Ecke, wird erst beim Ueberfahren
+   der Karte deutlich - er soll den Sternenhimmel nicht stoeren. */
+#kartevoll{position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
+  border:1px solid var(--rand);border-radius:8px;background:rgba(10,11,14,.55);
+  color:var(--schwach);cursor:pointer;opacity:.35;transition:opacity .15s,color .15s;
+  display:flex;align-items:center;justify-content:center;padding:0}
+#kartefeld:hover #kartevoll{opacity:.9}
+#kartevoll:hover{color:var(--text);border-color:var(--akzent)}
+#kartevoll svg{width:15px;height:15px;display:block}
+
+/* Der laufende Song im Vollbild. Unten rechts, damit er die Sterne
+   nicht verdeckt - und mit Datum, weil im Vollbild sonst nichts mehr
+   sagt, aus welcher Zeit das Stueck stammt. */
+#karteläuft{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:10px;
+  align-items:center;max-width:min(340px,46vw);padding:9px 13px 9px 9px;
+  background:rgba(10,11,14,.82);border:1px solid var(--rand);border-radius:12px;
+  box-shadow:0 10px 34px rgba(0,0,0,.5);backdrop-filter:blur(7px);pointer-events:none}
+#karteläuft img{width:46px;height:46px;border-radius:7px;object-fit:cover;flex:0 0 auto}
+#karteläuft .t{font-size:13.5px;font-weight:600;line-height:1.3;
+  overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#karteläuft .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
+
+.unterreg{display:inline-flex;gap:4px;align-items:center;margin-left:10px;padding-left:12px;
+  border-left:1px solid var(--rand)}
+.unterreg-b{font:inherit;font-size:13px;color:var(--schwach);background:none;border:1px solid transparent;
+  border-radius:999px;padding:4px 11px;cursor:pointer;transition:color .12s,border-color .12s,background .12s}
+.unterreg-b:hover{color:var(--text);border-color:var(--rand)}
+.unterreg-b.an{color:var(--text);background:var(--flaeche);border-color:var(--akzent);font-weight:600}
 #kartelegende .raumpille{font-weight:600}
 #kartelegende .raumwas{margin:6px 0 2px;line-height:1.45}
 #kartelegende .raumwas b{color:var(--akzent);font-weight:600}
@@ -3441,6 +3472,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
          drei sind - Klang, Geschichten, Lied. Intern heisst das Register
          weiter 'karte'. -->
     <button class="reg"    data-reg="karte">Räume</button>
+    <!-- DIE DREI RAEUME als Unterregister, nicht in einer Lade: Sie
+         entscheiden, WAS man sieht - das gehoert nach oben und
+         sichtbar. Caspar_D, 28.08.2026: "der Register heisst räume aber
+         die unterregister gbibt es nicht" - sie steckten zuerst in der
+         Einstellungen-Lade und waren dort zugeklappt unsichtbar.
+         Gefuellt wird die Leiste erst, wenn feststeht, welche Raeume
+         gerechnet sind (/api/raeume). -->
+    <span class="unterreg" id="raumreg" hidden></span>
     <!-- Der Größenregler steht bewusst HIER und nicht in einer der
          Filterleisten: Die Spaltenzahl gilt für beide Register - alle
          Ansichten malen in dasselbe Raster. In der Trackleiste wäre
@@ -3499,7 +3538,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
      Song ein Punkt, Naehe = aehnlicher Klang (UMAP aus den EffNet-
      Embeddings), Farbe = Stilgruppe (im vollen Raum gerechnet). -->
 <div id="karte" hidden>
-  <div id="kartefeld"><canvas id="karteschiffhinten"></canvas><canvas id="karteglut"></canvas><canvas id="karteschiff"></canvas><svg id="kartesvg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg></div>
+  <div id="kartefeld"><canvas id="karteschiffhinten"></canvas><canvas id="karteglut"></canvas><canvas id="karteschiff"></canvas><svg id="kartesvg" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+    <!-- Vollbild und die Anzeige des laufenden Songs gehoeren zusammen:
+         im Vollbild faellt die Playerleiste weg, und dann muss irgendwo
+         stehen, was gerade laeuft (Caspar_D, 28.08.2026). -->
+    <button id="kartevoll" title="Vollbild (Esc zurück)" aria-label="Vollbild"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-vollbild"/></svg></button>
+    <div id="karteläuft" hidden></div>
+  </div>
   <div id="karterechts">
     <div id="kartelegende"></div>
     <!-- Steckbrief des Sterns unter der Maus, darunter die Nachbarn -->
@@ -6748,6 +6793,7 @@ function registerSetzen(name){
   $('filterPlaylists').hidden = name !== 'playlists';
   $('raster').hidden = name === 'karte';
   $('karte').hidden  = name !== 'karte';
+  const rr = $('raumreg'); if (rr) rr.hidden = name !== 'karte';
   zeichnen();
 }
 
@@ -7184,6 +7230,64 @@ function ladenLeiste(){
   if (typeof karteZeichnen === 'function' && typeof karteDaten !== 'undefined' && karteDaten && !ladenLeiste.laeuft){ ladenLeiste.laeuft = true; setTimeout(() => { ladenLeiste.laeuft = false; karteZeichnen(); }, 260); }
 }
 let karteDrawerOffen = false;   // (alt; ersetzt durch karteLaden)
+/* ---- VOLLBILD UND DER LAUFENDE SONG -----------------------------------
+   Caspar_D, 28.08.2026: "ferner wäre ein Vollbildmodus schön / der
+   laufende song unten rechts als thumbnail abgebildet mit Titel und
+   Erstellungsdatum".
+
+   Beides gehoert zusammen: Im Vollbild verschwindet die Playerleiste,
+   und dann steht nirgends mehr, was gerade laeuft. Die Anzeige
+   erscheint deshalb NUR im Vollbild - darunter waere sie doppelt. */
+function karteLaeuftSetzen(){
+  const el = $('karteläuft'); if (!el) return;
+  const voll = document.fullscreenElement === $('karte');
+  const s = aktuellId && song(aktuellId);
+  if (!voll || !s){ el.hidden = true; return; }
+  const datum = s.erstellt
+    ? new Date(s.erstellt).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '';
+  el.hidden = false;
+  el.innerHTML = `<img src="${artworkBild(s.id)}" alt="" onerror="this.style.visibility='hidden'">`
+    + `<div><div class="t">${esc(s.titel)}</div>`
+    + (datum ? `<div class="d">${datum}${s.modell ? ' · ' + esc(s.modell) : ''}</div>` : '')
+    + `</div>`;
+}
+
+function karteVollbild(){
+  const el = $('karte');
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else (el.requestFullscreen || el.webkitRequestFullscreen).call(el).catch(() => {});
+}
+document.addEventListener('fullscreenchange', () => {
+  karteLaeuftSetzen();
+  /* Die Karte rechnet ihre Groesse aus dem Feld - nach dem Wechsel hat
+     es eine andere, also neu vermessen und zeichnen. */
+  if (register === 'karte') setTimeout(karteZeichnen, 60);
+});
+
+/* Die Raumleiste oben. Sie wird nur gebaut, wenn es mehr als einen Raum
+   gibt - wer nur den Klang-Raum gerechnet hat, soll keine Leiste sehen,
+   die nichts zu waehlen hat. */
+function raumLeisteBauen(){
+  const el = $('raumreg'); if (!el) return;
+  const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
+  if (da.length < 2){ el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = register !== 'karte';
+  const soll = da.map(r => r + (r === raumJetzt ? '*' : '')).join('|');
+  if (el.dataset.stand === soll) return;      /* nichts geaendert - nicht neu bauen */
+  el.dataset.stand = soll;
+  el.innerHTML = da.map(r =>
+    `<button class="unterreg-b${r === raumJetzt ? ' an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
+    + RAUM_NAME[r].replace('-Raum', '') + '</button>').join('');
+  el.querySelectorAll('[data-raum]').forEach(b => b.onclick = () => {
+    if (b.dataset.raum === raumJetzt) return;
+    raumJetzt = b.dataset.raum;
+    try { localStorage.setItem('mysuno-raum', raumJetzt); } catch (e) {}
+    karteSternbilder = [];
+    zeichnen();
+  });
+}
+
 function kartePanelHtml(){
   /* Die Legende beschreibt den ANGEZEIGTEN Raum, nicht den Klang-Raum:
      Stress, Gruppenzahl und Songzahl gehoeren zu dem, was man sieht.
@@ -7332,6 +7436,9 @@ async function karteZeichnen(){
       svg.innerHTML = ''; return;
     }
   }
+  raumLeisteBauen();
+  { const vb = $('kartevoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
+  karteLaeuftSetzen();
   const d = raumDaten[raumJetzt], n = d.gruppen.length;
   const L = karteLayout(d);
   karteHimmel(d);
@@ -7387,9 +7494,20 @@ async function karteZeichnen(){
   /* Caspar_Ds Formulierung (21.08.2026). Das Verfahren ist eingesetzt,
      weil NMDS und UMAP umschaltbar sind. */
   const verfahren = (karteVerf === 'umap' ? 'UMAP' : 'nicht-metrischer multidimensionaler Skalierung (NMDS, Kruskal-Stress ' + String((karteDim === '3d' ? d.stress3d : d.stress) ?? '?').replace('.', ',') + ')') + (karteDim === '3d' ? ' in drei Dimensionen, auf Hauptachsen gedreht' : '');
-  $('kartefuss').textContent = `Klangraum: die geclusterten Suno-Tracks als Sterne. Jeder Stern stellt einen Track dar. Nähe von Punkten bedeutet ähnlicher Klang: ` +
-    `Die Karte wurde per ${verfahren} aus den Klang-Embeddings des KI-Modells Discogs-EffNet gerechnet, lokal auf diesem Rechner. ` +
-    `Die Gruppen wurden im vollen Klangraum gebildet — nicht auf der Karte, die wegen der Flachheit des Bildschirms nur eine fehlerbehaftete Projektion darstellt. ` +
+  /* Die Fussnote beschreibt den ANGEZEIGTEN Raum. Woher die Vektoren
+     kommen, ist der ganze Unterschied zwischen den dreien - das gehoert
+     dorthin, wo es steht. */
+  const HERKUNFT = {
+    klang:       ['Nähe bedeutet ähnlicher Klang', 'aus den Klang-Embeddings des KI-Modells Discogs-EffNet'],
+    geschichten: ['Nähe bedeutet: handelt von Ähnlichem', 'aus den Liedtexten, eingebettet mit dem mehrsprachigen Modell paraphrase-multilingual-mpnet — deutsche und englische Texte landen dabei im selben Raum, ohne Übersetzung'],
+    lied:        ['Nähe bedeutet: klingt ähnlich UND handelt von Ähnlichem', 'aus beidem zu gleichen Teilen — Klang-Embeddings und Liedtext-Vektoren, jeder auf die Hälfte gewichtet, damit der Klang die Geschichte nicht übertönt'],
+  };
+  const [wasNaehe, woher] = HERKUNFT[raumJetzt] || HERKUNFT.klang;
+  const fehlen = raumJetzt !== 'klang' && karteDaten ? karteDaten.songs.length - d.songs.length : 0;
+  $('kartefuss').textContent = `${RAUM_NAME[raumJetzt]}: die geclusterten Suno-Tracks als Sterne. Jeder Stern stellt einen Track dar. ${wasNaehe}: ` +
+    `Die Karte wurde per ${verfahren} ${woher} gerechnet, lokal auf diesem Rechner. ` +
+    (fehlen ? `${fehlen} Lieder ohne Text fehlen in diesem Raum — sie stehen nur im Klang-Raum. ` : '') +
+    `Die Gruppen wurden im vollen Vektorraum gebildet — nicht auf der Karte, die wegen der Flachheit des Bildschirms nur eine fehlerbehaftete Projektion darstellt. ` +
     `Gruppennamen wurden aus den häufigsten Genres und Stimmungen (MTG-Jamendo) abgeleitet, Messwerte aus der eigenen Analyse. Stand ${new Date(d.stand).toLocaleDateString('de-DE')}.`;
 
   leg.querySelectorAll('.gruppe').forEach(z => z.onclick = () => {
@@ -7427,7 +7545,14 @@ function karteSteckbrief(s, p){
   const kw = document.querySelector('.drawer[data-lade="werk"] .dkurz'); if (kw) kw.textContent = s.titel;
   const pz = (l) => (l || []).map(([n, w]) => `${n} <i>${Math.round(w * 100)} %</i>`).join(' · ');
   const a = s.analyse || {};
-  const mess = [a.bpm && `${Math.round(a.bpm)} BPM`, a.tonart, a.lufs != null && `${String(a.lufs).replace('.', ',')} LUFS`,
+  /* a.tonart ist ein OBJEKT {grund, art, sicher} und kein Text - direkt
+     eingesetzt stand hier "[object Object]" (Caspar_D, 28.08.2026:
+     "übrigens tauchen komische Enitites auf"). Bei unsicherer Erkennung
+     ein Fragezeichen: lieber zugeben, dass man nicht sicher ist. */
+  const tonart = a.tonart && a.tonart.grund
+    ? a.tonart.grund + (a.tonart.art ? ' ' + a.tonart.art : '') + ((a.tonart.sicher ?? 1) < 0.5 ? ' ?' : '')
+    : null;
+  const mess = [a.bpm && `${Math.round(a.bpm)} BPM`, tonart, a.lufs != null && `${String(a.lufs).replace('.', ',')} LUFS`,
     a.stimme && a.stimme !== 'gemischt' ? a.stimme : null].filter(Boolean).join(' · ');
   const datum = s.erstellt ? new Date(s.erstellt).toLocaleDateString('de-DE') : '';
   const nachbarn = (p.nachbarn || []).slice(0, 6).map(([id]) => song(id)).filter(Boolean);
@@ -10593,6 +10718,7 @@ function spielen(i, uebernahme){
   $('player').classList.add('an');
   $('pbild').src   = s.fremd ? (s.bildUrl || '') : artworkBild(s.id);
   $('ptitel').textContent = s.titel + (s.fremd ? '  ·  ' + (s.anzeigename || s.handle || 'fremd') : '');
+  if (typeof karteLaeuftSetzen === 'function') karteLaeuftSetzen();
   if ($('studio') && $('studio').style.display !== 'none') studioSongLaden();
   else {
     /* Auch bei geschlossenem Studio gehoert der ganze EQ-Zustand zum Song:
