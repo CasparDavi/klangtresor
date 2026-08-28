@@ -204,6 +204,27 @@ h1{
 #kartevoll:hover{color:var(--text);border-color:var(--akzent)}
 #kartevoll svg{width:15px;height:15px;display:block}
 
+/* VOLLBILD HEISST VOLLBILD (Caspar_D, 28.08.2026: "das vollbild bei den
+   Räumen muß aber auch wirklich ein vollbild sein, also keine panel,
+   legenden, rahmen, nur den Steckbrief des laufenden Songs").
+
+   Das Register ist sonst ein Raster aus Sternfeld, rechter Spalte
+   (Einstellungen, Legende, Steckbrief) und Fussnote. Im Vollbild bleibt
+   davon nur das Sternfeld - randlos, ohne Ecken, ueber die ganze
+   Flaeche. Der laufende Song steht unten rechts, sonst nichts.
+
+   Beide Schreibweisen, weil Safari die eigene braucht. */
+#karte:fullscreen,
+#karte:-webkit-full-screen{
+  grid-template-columns:1fr;grid-template-rows:1fr;gap:0;padding:0;background:#000;
+}
+#karte:fullscreen > #karterechts,
+#karte:fullscreen > #kartefuss,
+#karte:-webkit-full-screen > #karterechts,
+#karte:-webkit-full-screen > #kartefuss{ display:none }
+#karte:fullscreen #kartefeld,
+#karte:-webkit-full-screen #kartefeld{ border:none;border-radius:0 }
+
 /* Der laufende Song im Vollbild. Unten rechts, damit er die Sterne
    nicht verdeckt - und mit Datum, weil im Vollbild sonst nichts mehr
    sagt, aus welcher Zeit das Stueck stammt. */
