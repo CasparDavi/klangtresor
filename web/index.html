@@ -6916,7 +6916,7 @@ function rauschen(){
    Hauptachse (PCA der 2-D-Koordinaten) entlang der laengeren Seite des
    Feldes liegt (Caspar_D, 21.08.2026), dann GLEICHMAESSIG eingepasst -
    Drehung und Massstab, keine Verzerrung; Abstaende bleiben wahr. */
-let karteLage = { W: 0, H: 0, xy: null };
+let karteLage = { raum: raumJetzt, W: 0, H: 0, xy: null };
 /* Zoom und Verschiebung (Caspar_D, 21.08.2026): Bildpunkt = tx + k * x.
    Rad zoomt um den Mauszeiger, Ziehen verschiebt, Doppelklick setzt
    zurueck. Ab k >= COVER_AB wird das Cover als runder Ausschnitt im
@@ -7118,7 +7118,16 @@ function karteLayout(d){
   const W = feld.clientWidth || 600, H = feld.clientHeight || 400;
   const ist3d = karteArt === '3d' || karteArt === 'umap3';
   const rotKey = ist3d ? karteRot.map(v => v.toFixed(4)).join(',') + '|' + karteDrehZentrum().map(v => v.toFixed(4)).join(',') : '';
-  if (karteLage.xy && karteLage.W === W && karteLage.H === H && karteLage.n === d.songs.length && karteLage.art === karteArt && karteLage.rotKey === rotKey) return karteLage;
+  /* DER RAUM GEHOERT IN DEN SCHLUESSEL. Die Anzahl allein genuegt nicht:
+     Geschichten- und Lied-Raum haben BEIDE 257 Songs, aber verschiedene
+     Lagen und eine andere Reihenfolge. Ohne diese Pruefung lieferte der
+     Zwischenspeicher beim Wechsel das Layout des anderen Raums - das
+     Sound-Schiff suchte darin seinen Stern und griff ins Leere
+     ("Cannot read properties of undefined"). Caspar_D, 28.08.2026: "ich
+     sehe in den beiden neuen räumen immer noch kein raumschiff". */
+  if (karteLage.xy && karteLage.W === W && karteLage.H === H && karteLage.n === d.songs.length
+      && karteLage.raum === raumJetzt
+      && karteLage.art === karteArt && karteLage.rotKey === rotKey) return karteLage;
   const n = d.songs.length;
   if (ist3d && d.songs[0] && d.songs[0].xyz){
     /* Perspektive: Kamera bei z = KAMERA, Blick auf den Ursprung.
@@ -7141,7 +7150,7 @@ function karteLayout(d){
     const P = d.songs.map(p => proj(karteRaum(p)));
     const T = (d.tags || []).map(t => proj(t.xyz));     // (Beschriftung sitzt ohnehin am Schwerpunkt der Sternbild-Sterne)
     const G = d.gruppen.map(g => { const r = karteGruppeRaum(g); return r.xyz ? { p: proj(r.xyz), a: qDreh(karteRot, r.achse || [1, 0, 0]), aus: r.ausdehnung, ger: r.gerichtet } : null; });
-    return karteLage = { W, H, n, art: karteArt, rotKey, xy: P.map(q => [q[0], q[1]]), tiefe: P.map(q => q[2]), z: P.map(q => q[3]), tags: T, gruppen: G, proj, ist3d: true, S };
+    return karteLage = { raum: raumJetzt, W, H, n, art: karteArt, rotKey, xy: P.map(q => [q[0], q[1]]), tiefe: P.map(q => q[2]), z: P.map(q => q[3]), tags: T, gruppen: G, proj, ist3d: true, S };
   }
   const P = d.songs.map(karteRoh);
   let mx = 0, my = 0; for (const [x, y] of P){ mx += x; my += y; } mx /= n; my /= n;
@@ -7161,7 +7170,7 @@ function karteLayout(d){
   const rand = 20;                                                   // aeusserste Sterne 20 px vom Rand (Caspar_D, 22.08.)
   const kx = (W - 2 * rand) / ((x1 - x0) || 1), ky = (H - 2 * rand) / ((y1 - y0) || 1);
   const xy = rot.map(([x, y]) => [rand + kx * (x - x0), rand + ky * (y1 - y)]);   // y nach oben
-  return karteLage = { W, H, n, xy, art: karteArt };
+  return karteLage = { raum: raumJetzt, W, H, n, xy, art: karteArt };
 }
 
 /* Die Karte bekommt GENAU die Hoehe zwischen Kopf und Player - kein
