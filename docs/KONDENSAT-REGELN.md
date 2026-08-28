@@ -194,3 +194,66 @@ Caspar_D, 28.08.2026:
 Teilläufe (`-a01`, `-a02` …) überspringt das Sammelskript — ihr Inhalt
 steckt schon im Gesamtlauf, und als eigene „Modelle" geführt verstopfen
 sie das Archiv.
+
+---
+
+## Nachtrag: was Fassung 2 gebracht hat
+
+Gemessen am 28.08.2026, beide Fassungen vollständig über 257 Lieder und im
+Archiv nebeneinander (`opus` = Fassung 1, `opus-f2-gesamt` = Fassung 2).
+
+Im Mittel **4,32 von 10 Wörtern gleich**, Glockenverteilung um vier. Kein
+einziges Lied blieb unverändert, keines wurde ganz umgeworfen — die
+Regeländerung hat überall zugegriffen, ohne irgendwo das Lied zu vergessen.
+
+### Die Einheitlichkeitsregel wirkt
+
+| | Fassung 1 | Fassung 2 |
+|---|---|---|
+| Begehren | 9× | **57×** |
+| Annäherung | 9× | 24× |
+| Zärtlichkeit / Erregung / Anziehung | 3 / 6 / 8× | 0 / 0 / 0 |
+| wirksame Wortzahl im Feld (1/Herfindahl) | 22,4 | **9,2** |
+| Nennungen insgesamt | 139 | 219 |
+
+Das Feld trägt 57 % mehr Nennungen auf 41 % der Breite. Auf die Frage, ob
+57× „Begehren" nicht selbst zum Allerweltswort wird, sagte Caspar_D:
+
+> „57x begehren ist okay, es ist Begehren."
+
+### Der Fall, in dem wir uns geirrt haben
+
+Der Meßbericht hielt es für eine Verschlechterung, daß Fassung 2 bei
+„Zug um Zug – Die ewige Partie" das Wort **Versäumnis** verliert — es sei
+„das genaueste Wort überhaupt". Caspar_D, 28.08.2026:
+
+> „es ist nicht versäumnis, sie gehen gemeinsam, man ahnt es, es war mal
+> früher versäumnis, dann mangel an gelegenheit und jetzt wird was
+> passieren."
+
+| | |
+|---|---|
+| Fassung 1 | Schachpartie · Unentschieden · Wiederbegegnung · Hotelhalle · Kongress · Wette · **Versäumnis** · **Zaghaftigkeit** · Kollegialität · Neuanfang |
+| Fassung 2 | Remis · Schachpartie · **Wiedersehen** · Hotellobby · **Annäherung** · Kollegin · Zurückhaltung · **Wendepunkt** · **Gelegenheit** · **Sehnsucht** |
+
+Fassung 2 liest die **Bewegung** des Liedes, Fassung 1 beharrt auf einem
+Rückblick, der an dieser Stelle schon vorbei ist. **Merke: Ein Kondensat
+kann falsch aussehen, weil der Messende die Geschichte nicht kennt.** Wo
+eine Messung ein Lied für schlechter etikettiert hält, entscheidet der
+Autor, nicht die Zahl.
+
+### Eine Korrektur an einer früheren Zahl
+
+Oben unter *„Für dasselbe Thema immer dasselbe Wort"* steht, „Hingabe"
+liege von „Liebe" weiter entfernt (0,308) als der Durchschnitt zu einem
+Sachbegriff (0,380). **Das taugt nicht als Beleg.** In diesem
+Einbettungsraum liegen schon zwölf zufällig gezogene Substantive bei
+0,431 — der Raum ist schief, unzentrierte Kosinus einzelner Wörter sagen
+kaum etwas. Nach Abzug des Schwerpunkts aller Wörter fallen Zufallspaare
+auf 0,006, und dann findet „Zärtlichkeit" tatsächlich Zuneigung,
+Umarmung, Verliebtheit.
+
+Sauber gemessen, gewichtet nach Nennungen und zentriert, ist das Feld in
+Fassung 2 deutlich enger beieinander: **0,218 → 0,364.** Die Richtung des
+ursprünglichen Arguments stimmte, die Zahlen dazu nicht. Wer künftig
+Wortabstände in diesem Raum mißt, zentriert vorher.
