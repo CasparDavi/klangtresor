@@ -807,6 +807,11 @@ select,.knopf{
   background:color-mix(in srgb, var(--akzent) 12%, transparent)}
 .capart.hat{border-style:solid;padding:8px;cursor:default}
 .capart video,.capart img{max-height:96px;max-width:100%;border-radius:5px;display:block;margin:0 auto 6px}
+/* Platz reservieren, solange die Vorschau noch laedt: Das Fenster wird
+   nach ihr bemessen, und ein Bild, das erst danach ankommt, verschoebe
+   es nachtraeglich. Der Zeitstempel an der Adresse laesst sie bei JEDEM
+   Oeffnen neu laden - aus dem Zwischenspeicher kommt sie nie. */
+.capart.hat{min-height:110px}
 .capart .weg{color:var(--schwach);text-decoration:underline;cursor:pointer;font-size:11.5px}
 .capart .weg:hover{color:var(--text)}
 .karte:hover .capmarke.ohne{display:block}
@@ -819,7 +824,13 @@ select,.knopf{
 #cap .capinstr input{accent-color:var(--akzent);cursor:pointer}
 #cap .capinstr .fussnote{margin-left:auto;font-size:10px;opacity:.7}
 #cap textarea:focus{outline:none;border-color:var(--akzent)}
+/* Die Hoehenschranke gehoert dazu: Mit Beschreibung (bis 50vh) plus
+   Notizfeld plus drei Artwork-Vorschauen kommt der Kasten auf einem
+   Laptopschirm ueber die Kante - dann rechnet die Platzierung eine
+   negative Position, faellt auf 8 px zurueck, und der untere Teil ist
+   nicht erreichbar. Mit max-height scrollt er stattdessen. */
 #cap{position:fixed;z-index:82;display:none;max-width:min(480px,86vw);
+  max-height:calc(100vh - 16px);overflow:auto;
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
   box-shadow:0 18px 60px rgba(0,0,0,.55);padding:14px 16px}
 #cap h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);margin:0 0 8px}
@@ -14682,9 +14693,25 @@ function capAuf(id, x, y){
     + `</div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
-  const b = c.getBoundingClientRect();
-  c.style.left = Math.max(8, Math.min(x + 10, innerWidth - b.width - 8)) + 'px';
-  c.style.top  = Math.max(8, Math.min(y + 10, innerHeight - b.height - 8)) + 'px';
+  /* ERST FUELLEN, DANN PLATZIEREN.
+
+     Tarja, 28.08.2026: "wenn man diese Text Taste klickt rueckt das
+     ganze Fenster mit jedem Klick nach oben."
+
+     Hier stand die Messung frueher an dieser Stelle - und mass den noch
+     LEEREN Kasten: artZeichnen() fuellt die drei Artwork-Felder erst
+     hundert Zeilen weiter unten. Der Kasten wuchs danach nach unten,
+     ragte hinaus, und beim naechsten Klick wurde die inzwischen groessere
+     Hoehe gemessen und der Kasten weiter hochgeschoben. Bei jedem Klick
+     ein Stueck, bis er oben klebte.
+
+     Aufgerufen wird das jetzt nach artZeichnen(), wenn drinsteht, was
+     drinstehen soll. */
+  const platzieren = () => {
+    const b = c.getBoundingClientRect();
+    c.style.left = Math.max(8, Math.min(x + 10, innerWidth - b.width - 8)) + 'px';
+    c.style.top  = Math.max(8, Math.min(y + 10, innerHeight - b.height - 8)) + 'px';
+  };
   const feld = c.querySelector('#capnotiz');
   /* Speichern beim Verlassen des Felds oder Schliessen - kein Knopf. */
   const sichern = async () => {
@@ -14791,6 +14818,7 @@ function capAuf(id, x, y){
   };
 
   artZeichnen();
+  platzieren();
 
   const haken = c.querySelector('#capinstr');
   if (haken) haken.onchange = async () => {
