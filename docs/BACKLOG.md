@@ -1449,3 +1449,87 @@ ausgelegt und erkennt einen Mono-Stecker oft nicht. Erster Test:
 einstecken und sehen, ob es in der Mikrofonliste auftaucht. Wenn ja,
 gehört sein Name in `MESS_GUETE` — heute liefe es als „unbekanntes
 Gerät" mit 50 Punkten, zwischen iMac-Array und Studiomikrofon.
+
+---
+
+## Was andere besser können — GitHub-Recherche vom 28.08.2026
+
+Caspar_D: „wer sich mit Songanalyse beschäftigt und ob die featurelisten
+Blender sind oder ob tatsächlich ausgefeilte Verfahren, die besser als
+unsere sind, dahinterstecken."
+
+Antwort in einem Satz: **Die Bibliotheken sind kein Vorsprung, die
+Forschungsgruppen schon — und zwar genau dort, wo wir bisher Suno
+fragen.**
+
+### Das Feld
+
+| Gruppe | wer | was davon zu halten ist |
+|---|---|---|
+| Werkzeugkästen | librosa (8.578★), essentia (3.706★), aubio (3.754★), audioFlux (3.352★) | Bausteine, keine Verfahren. Lange Feature-Listen, aber da steht nur, was DSP eben kann. Essentia kennen wir — der Klangraum läuft auf deren Modellen. |
+| Forschungscode | beat_this (374★), madmom (1.702★), BeatNet (515★), msaf (557★) | **Echte Substanz.** ISMIR-Papers, Meßzahlen, Vergleiche gegen Vorgänger. |
+| Anwendungen | AudioMuse-AI (2.500★) | Uns am nächsten: lokale Bibliothek, Analyse, Playlists, ohne fremde Dienste. Ernsthafte Modellwahl. |
+
+### Der wichtigste Fund: Downbeat ist lösbar
+
+**[beat_this](https://github.com/CPJKU/beat_this)** (CPJKU Linz, ISMIR
+2024, „Beat This! Accurate Beat Tracking Without DBN Postprocessing"):
+Neuronales Netz auf Spektrogrammen, auf GTZAN **F1 88,9 % für Beats und
+75,5 % für Downbeats**. Ein Nachfolger (BeatFM, 2026) kommt bei
+Downbeats auf 79,6 %.
+
+**Downbeat heißt: welcher Schlag ist die Eins.** In
+`docs/KlangTresor-generalisieren.md` stand, das sei „nicht abzuleiten,
+sondern gewußt". Das war falsch, und es ist der Grund, warum sich diese
+Recherche gelohnt hat: Der teuerste Verlust bei einem Song ohne
+Suno-Herkunft ist ersetzbar. Nicht gleichwertig — Suno *weiß* es, ein
+Netz schätzt —, aber drei von vier richtig ist weit besser als nichts.
+
+Es gibt einen [C++-Port](https://github.com/mosynthkey/beat_this_cpp),
+läuft also ohne Python-Umgebung.
+
+### Der zweite Fund: CLAP kann, was unser Klangraum nicht kann
+
+AudioMuse-AI benutzt neben MusiCNN ein **CLAP**-Modell — Audio und Text
+im selben Einbettungsraum, 512 Dimensionen, als ONNX. Damit findet man
+Songs über eine Beschreibung: „ruhig, Streicher, langsam".
+
+Unser Discogs-EffNet liefert feste Etiketten aus einer Liste. Es kann
+sagen, was ein Song *ist*, aber nicht auf eine freie Frage antworten.
+Das ist ein echter Vorsprung, und technisch nachvollziehbar: auch ONNX,
+auch lokal, auch ohne Dienst.
+
+Der Rest ihrer Kette zum Vergleich: Whisper-small für Lyrics, Silero für
+Sprachaktivität, scikit-learn zum Clustern, UMAP/PCA zur Projektion —
+und eine **evolutionäre Suche** über hunderte Cluster-Läufe mit sieben
+Fitness-Maßen. Mehr Aufwand als unser UMAP; ob besser, ist offen. Vor
+allem ist es teurer.
+
+### Wo wir stehen
+
+**Tonart:** Unser Verfahren mißt mit Goertzel bei jeder einzelnen
+Halbtonfrequenz statt mit FFT-Chroma, und aus der Baßspur statt aus dem
+Vollmix. Das ist aufwendiger als das, was libKeyFinder oder essentia
+standardmäßig tun.
+
+**Clustering:** `docs/CLUSTERING-RECHERCHE.md` hält den Fehler fest, den
+beide Seiten vermeiden — nicht auf der 2-D-Karte clustern, sondern auf
+den Einbettungen.
+
+**Und etwas, das dort niemand hat:** das Einmessen. Kein Projekt aus
+dieser Recherche mißt den Raum, in dem gehört wird. Das ist kein
+Versäumnis, sondern ein anderes Fach — dafür gibt es REW. Aber die
+Verbindung aus Songanalyse *und* Wiedergabekette gibt es sonst nicht.
+
+### Was zu tun wäre, in dieser Reihenfolge
+
+1. **beat_this als Rückfallebene** für Songs ohne Suno-Schlagzeiten.
+   Betrifft die Taktbahn, die Notenzonen, „Signal zwischen
+   Taktschlägen" und die bewegten Standbilder — alles, was heute
+   ausfiele.
+2. **CLAP neben Discogs-EffNet**, nicht als Ersatz, sondern für die
+   Suche. „Zeig mir etwas Ruhiges mit Streichern" kann das Archiv heute
+   nicht beantworten.
+3. **msaf** für Abschnittsgrenzen, falls die Suno-Angaben je fehlen —
+   nachrangig, weil ohne Text ohnehin nur zu raten ist, was Strophe und
+   was Refrain heißt.

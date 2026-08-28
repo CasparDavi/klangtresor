@@ -94,14 +94,26 @@ Sie stecken in sechs Rechenskripten und 39 Stellen der Oberfläche:
 Taktbahn, Notenzonen, „Signal zwischen Taktschlägen", und seit dem
 27.08. die bewegten Standbilder.
 
-Eigene Onset-Erkennung ist machbar — `bin/stoerfrequenz.js` zeigt, daß
-das Haus so etwas kann —, aber sie ist deutlich ungenauer, besonders bei
-weicher Musik ohne scharfen Anschlag. Und sie kennt die **Zählzeit**
-nicht: Suno liefert mit, welcher Schlag die Eins des Takts ist. Das ist
-nicht abzuleiten, das ist gewußt.
+Eine selbstgebaute Onset-Erkennung wäre deutlich ungenauer, besonders
+bei weicher Musik ohne scharfen Anschlag — und sie kennte die
+**Zählzeit** nicht, also welcher Schlag die Eins des Takts ist.
 
-An dieser Stelle wäre ein fremder Song sichtbar zweiter Klasse. Die
-Frage ist nicht, ob man das behebt, sondern ob man damit lebt.
+> **Nachtrag 28.08.2026.** Hier stand, die Zählzeit sei „nicht
+> abzuleiten, das ist gewußt". Das ist falsch, und die GitHub-Recherche
+> desselben Tages hat es widerlegt (siehe `docs/BACKLOG.md`, „Was
+> andere besser können"). **[beat_this](https://github.com/CPJKU/beat_this)**
+> aus Linz — ISMIR 2024 — erreicht auf GTZAN F1 88,9 % für Beats und
+> **75,5 % für Downbeats**, also für ebendiese Eins. Es läuft lokal, es
+> gibt einen C++-Port, und ein Nachfolger kommt bei Downbeats schon auf
+> 79,6 %.
+
+Damit ändert sich die Lage an diesem Punkt: Der teuerste Verlust ist
+**ersetzbar**, wenn auch nicht gleichwertig. Suno *weiß* die Zählzeit,
+ein Netz schätzt sie — drei von vier richtig. Ein fremder Song wäre
+hier also nicht zweiter Klasse, sondern etwas unschärfer.
+
+Was das für die Aufstellung oben heißt: Die 39 Stellen zur Taktbahn
+rücken von „teuer" nach „ersetzbar, mit Abstrichen".
 
 ---
 
