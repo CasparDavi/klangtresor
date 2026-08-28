@@ -1873,3 +1873,66 @@ Zehntel der Arbeit**, wenn man die Mechanik (Stufe 0) einmal hat.
 **Für wen?** Tarja, Fruusch und Casto schreiben Deutsch. Wenn das Ziel
 ist, das Projekt öffentlich brauchbar zu machen, ist Stufe 1 das
 Wichtigste und vielleicht für lange Zeit das Einzige, was sich lohnt.
+
+---
+
+## Sunos Zeitmarken sind bei 18 Liedern falsch — Karaoke läuft doppelt
+
+Gefunden am 28.08.2026 beim Bau des Geschichten-Raums, als Nebenbefund.
+
+**Der Beweis ist eine einzige Zahl.** Wörter je Sekunde in den
+Zeitmarken:
+
+| | Wörter/s |
+|---|---|
+| Lieder mit doppelter Textfassung | **1,96** |
+| alle übrigen | **1,00** |
+
+**Genau doppelt.** Sunos Zeitmarken decken bei diesen Liedern *beide*
+Textfassungen ab — die deutsche und die englische —, gesungen wird aber
+nur eine. Suno leitet die Marken offenbar aus dem gesamten Lyrics-Feld
+ab, ohne zu prüfen, was im Audio tatsächlich klingt.
+
+Caspar_D dazu: „das macht suno falsch, hier nur auf whisper verlassen."
+
+**Die Folge:** Bei diesen Liedern läuft das Karaoke mit doppelter
+Geschwindigkeit an der Musik vorbei. Das ist seit jeher so und hat mit
+dem Geschichten-Raum nichts zu tun — er hat es nur sichtbar gemacht.
+
+### Wie man sie findet
+
+Über die Wortdichte. Median im Bestand: **1,03 Wörter/s**. Auffällig
+sind 18 Lieder über dem 1,6-fachen davon:
+
+```
+3,78  Erlkönigs Tochter '25 v2 (OLD MASTERS…)
+3,12  Der Vulkan und das Mädchen
+2,16  Die Gedanken …
+2,12  Checkout um Zwölf
+1,98  Farben v2
+…
+```
+
+Der Spitzenwert von 3,78 ist fast das Vierfache — dort dürfte der Text
+sogar dreifach hinterlegt sein.
+
+**Vorsicht bei der Schwelle:** Schnelle Stücke (Rap, Sprechgesang)
+haben von Natur aus hohe Wortdichte. Das 1,6-fache des Medians ist ein
+Anhaltspunkt, kein Beweis; die Liste gehört durchgesehen, bevor etwas
+neu gerechnet wird.
+
+### Was zu tun wäre
+
+`bin/whisper.js` rechnet heute nur für Songs **ohne** Zeitmarken. Diese
+18 haben welche — nur falsche, und sie fallen deshalb durchs Raster.
+Nötig wäre ein zweites Kriterium: *Zeitmarken verdächtig* statt nur
+*Zeitmarken fehlen*.
+
+Die Whisper-Marken würden dann Sunos ersetzen, nicht ergänzen. Der
+Knopf im Analysefenster zeigt bereits „Karaoke (Whisper)" an, wenn die
+Marken gehört statt geliefert sind — die Unterscheidung ist also schon
+sichtbar.
+
+**Nebenbei geklärt:** Der Übersetzungsfilter im Geschichten-Raum war
+richtig. Die englische Fassung wird *nicht* gesungen — die Wortdichte
+beweist es.
