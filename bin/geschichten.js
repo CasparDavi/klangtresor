@@ -68,16 +68,49 @@ const MINDEST = 50;   /* Kuerzere "Texte" sind Platzhalter, keine Geschichte. */
 const REGIEWORT = /^(spoken|whispered?|instrumental|silence|talking|sound effects?|sfx|ad-?lib\w*)$/i;
 
 function nurGesungenes(text) {
+  /* ALLES VOR DER ERSTEN KLAMMER faellt weg. Caspar_D, 28.08.2026:
+     "alles was vor der ersten eckigen Klammer steht, muß auch raus".
+
+     Dort stehen Notizen an sich selbst - "Dieser Song gehoert zu meiner
+     GEGENUEBER-Playlist" -, Stilangaben und Ansagen an Suno. Kein
+     gesungenes Wort. Das Lied faengt mit der ersten Regieangabe an.
+
+     Nur wenn ueberhaupt eine Klammer da ist: Ein Text ohne jede Regie
+     ist von vorn bis hinten Gesang. */
+  const ersteKlammer = text.indexOf('[');
+  if (ersteKlammer > 0) text = text.slice(ersteKlammer);
   return text
-    .replace(/\[[^\]]{1,60}\]/g, ' ')                      /* [Verse 1] und Verwandte */
+    /* ALLES in eckigen Klammern, ohne Laengengrenze. Caspar_D,
+       28.08.2026: "regie steht in suno immer in eckigen klammern" - und
+       damit ist die Regel so einfach, wie sie aussieht.
+
+       Die erste Fassung begrenzte auf 60 Zeichen. Damit blieben 388 der
+       4274 Klammern stehen, darunter "[Verse 1 - Clean guitar
+       arpeggios, mid tempo, intimate bariton vocal]", und im
+       Geschichten-Raum hiess eine Gruppe daraufhin "Drums · Outro ·
+       Slow". Eine Grenze zu ziehen, wo die Quelle keine hat, schafft
+       nur eine Luecke. */
+    .replace(/\[[^\]]*\]/gs, ' ')                          /* [Verse 1] und alles Weitere */
     .replace(/\*[^*\n]{1,60}\*/g, ' ')                      /* *fluesternd* */
     .replace(/\(([^)\n]{1,60})\)/g, (m, inhalt) =>
       REGIEWORT.test(inhalt.trim()) ? ' ' : m)              /* (spoken) raus, (ich geh) bleibt */
+    /* Verwaiste Klammern: In drei Liedern des Bestands fehlt die
+       oeffnende oder es stehen zwei schliessende hintereinander
+       ("…Rhodes deepens]break]"). Was zwischen einer solchen Klammer und
+       dem Zeilenrand steht, ist Regie ohne Gegenstueck - weg damit. */
+    .replace(/^[^\[\]\n]*\]/gm, '')
+    .replace(/\[[^\[\]\n]*$/gm, '')
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .split('\n').map(z => z.trim()).filter(Boolean).join('\n')
     .trim();
 }
+
+/* Auch karte.js braucht den Filter - fuer die Gruppennamen im
+   Geschichten-Raum. Einmal geschrieben, zweimal benutzt. */
+module.exports = { nurGesungenes };
+
+if (require.main !== module) return;
 
 (async () => {
   for (const [d, was] of [[MODELL, 'Modell'], [TOKEN, 'Tokenizer']])

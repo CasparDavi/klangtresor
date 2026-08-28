@@ -332,15 +332,86 @@ const mittelListe = (mitglieder, feld) => {
 const mittel = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
 const median = arr => { const a = Array.from(arr).sort((x, y) => x - y); return a.length ? a[a.length >> 1] : 0; };
 
+/* ---- NAMEN AUS DEN TEXTEN --------------------------------------------
+   Caspar_D, 28.08.2026: "warum clustern die musikstile in der
+   geschichtenansicht feiner und in anderen farben".
+
+   Die Gruppen entstehen je Raum neu - das ist richtig. Falsch war, sie
+   ueberall nach Genre und Stimmung zu benennen: Im Geschichten-Raum
+   sind sie nach THEMEN gebildet, und ein Name wie "Pop · Elektronik"
+   beschreibt dann etwas anderes als die Gruppe.
+
+   Kennzeichnend ist ein Wort, das INNEN haeufig und AUSSEN selten ist.
+   Nicht das haeufigste - "Herz" steht in der Haelfte aller Lieder und
+   sagt ueber keine Gruppe etwas. Gezaehlt wird je LIED, nicht je
+   Vorkommen: ein Refrain soll nicht dreimal zaehlen. */
+const STOPP = new Set(('der die das den dem des ein eine einer eines einem einen und oder aber wenn dann weil dass '
+  + 'ich du er sie es wir ihr mich dich sich uns euch mir dir ihm ihn ihnen mein dein sein unser euer '
+  + 'ist sind war waren bin bist hat habe haben hatte wird werde werden wurde kann kannst koennen muss '
+  + 'nicht nur noch schon auch mehr sehr ganz immer wieder hier dort jetzt heute wieder mal doch '
+  + 'auf aus bei mit nach seit von vor zu zur zum ueber unter durch fuer ohne gegen um an in im '
+  + 'wie was wer wo wann warum welche alle alles nichts etwas man kein keine als so wenn '
+  + 'the and you are for with this that have from your will can all but not was what when who out now '
+  + 'get got just like know time love our their they them there here then than into '
+  + 'oh ah yeah hey uh mm la na da').split(/\s+/));
+
+let TEXTE = null;
+function texteLaden() {
+  if (TEXTE) return TEXTE;
+  let filter = (x) => x;
+  try { filter = require('./geschichten.js').nurGesungenes || filter; } catch (e) {}
+  TEXTE = {};
+  for (const id of ids) {
+    const l = (katalog.songs[id] || {}).lyrics;
+    if (!l) continue;
+    /* Je Lied die MENGE der Woerter, nicht ihre Zahl - siehe oben. */
+    const w = new Set();
+    for (const x of filter(l).toLowerCase().match(/[a-zäöüß]{4,}/g) || [])
+      if (!STOPP.has(x)) w.add(x);
+    TEXTE[id] = w;
+  }
+  return TEXTE;
+}
+
+/* Die drei kennzeichnendsten Woerter einer Gruppe. */
+function themenName(m) {
+  const T = texteLaden();
+  const drin = m.map(i => T[ids[i]]).filter(Boolean);
+  if (drin.length < 3) return null;
+  const draussen = ids.map((id, i) => m.includes(i) ? null : T[id]).filter(Boolean);
+  if (!draussen.length) return null;
+  const zaehl = (menge, w) => menge.reduce((n, s) => n + (s.has(w) ? 1 : 0), 0);
+  const kandidaten = new Set();
+  for (const s of drin) for (const w of s) kandidaten.add(w);
+  const bewertet = [];
+  for (const w of kandidaten) {
+    const i = zaehl(drin, w);
+    if (i < 3 || i / drin.length < 0.12) continue;      /* zu selten, um zu kennzeichnen */
+    const a = zaehl(draussen, w);
+    /* Verhaeltnis der Anteile, mit Glaettung gegen Zufallstreffer. */
+    bewertet.push([w, (i / drin.length + 0.02) / (a / draussen.length + 0.02)]);
+  }
+  bewertet.sort((x, y) => y[1] - x[1]);
+  if (!bewertet.length) return null;
+  return bewertet.slice(0, 3).map(([w]) => w[0].toUpperCase() + w.slice(1)).join(' · ');
+}
+
 const gruppen = [];
 for (let g = 0; g < bestK; g++) {
   const m = []; for (let i = 0; i < N; i++) if (label[i] === g) m.push(i);
   const genres = mittelListe(m, 'genre'), stimmungen = mittelListe(m, 'stimmung');
   const werte = m.map(i => analyse[ids[i]]).filter(Boolean);
   const prof = m.map(i => profile[ids[i]]).filter(p => p && p.length === 8);
-  const name = genres.slice(0, 2).map(x => de(x[0])).join(' · ') + (stimmungen[0] ? ' — ' + de(stimmungen[0][0]) : '');
+  const klangName = genres.slice(0, 2).map(x => de(x[0])).join(' · ') + (stimmungen[0] ? ' — ' + de(stimmungen[0][0]) : '');
+  /* Klang-Raum: wie bisher. Geschichten-Raum: die Themen. Lied-Raum:
+     beides, denn er ist beides - Thema zuerst, weil es das ist, was der
+     Klangname nicht sagen kann. */
+  const themen = RAUM === 'klang' ? null : themenName(m);
+  const name = RAUM === 'geschichten' ? (themen || klangName)
+             : RAUM === 'lied'        ? (themen ? themen + ' — ' + klangName : klangName)
+             : klangName;
   gruppen.push({
-    nr: g, name, anzahl: m.length, genres, stimmungen,
+    nr: g, name, anzahl: m.length, genres, stimmungen, themen,
     stile: mittelListe(m, 'stile'), instrumente: mittelListe(m, 'instrumente'),
     /* Die Erdung sagt, wie eine Gruppe klingt - aber nur mit Werten, die
        stimmen. Tempo, Tonart/Modus und Stimme sind seit der Prüfung vom

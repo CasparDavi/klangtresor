@@ -207,12 +207,18 @@ h1{
 /* Der laufende Song im Vollbild. Unten rechts, damit er die Sterne
    nicht verdeckt - und mit Datum, weil im Vollbild sonst nichts mehr
    sagt, aus welcher Zeit das Stueck stammt. */
-#karteläuft{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:10px;
-  align-items:center;max-width:min(340px,46vw);padding:9px 13px 9px 9px;
-  background:rgba(10,11,14,.82);border:1px solid var(--rand);border-radius:12px;
-  box-shadow:0 10px 34px rgba(0,0,0,.5);backdrop-filter:blur(7px);pointer-events:none}
-#karteläuft img{width:46px;height:46px;border-radius:7px;object-fit:cover;flex:0 0 auto}
-#karteläuft .t{font-size:13.5px;font-weight:600;line-height:1.3;
+/* Ohne Kasten und ohne Rahmen (Caspar_D, 28.08.2026: "kein Rahmen"):
+   Der Sternenhimmel soll nicht eingerahmt werden. Das Bild steht ganz
+   aussen, der Text rechtsbuendig davor - so laeuft die Zeile auf das
+   Bild zu, statt von ihm wegzulaufen. Ein weicher Schatten am Text
+   haelt ihn ueber hellen Sternen lesbar. */
+#karteläuft{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:11px;
+  align-items:center;max-width:min(360px,48vw);pointer-events:none}
+#karteläuft img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex:0 0 auto;
+  box-shadow:0 4px 16px rgba(0,0,0,.6);order:2}
+#karteläuft > div{order:1;text-align:right;min-width:0;
+  text-shadow:0 1px 6px rgba(0,0,0,.9),0 0 16px rgba(0,0,0,.7)}
+#karteläuft .t{font-size:14px;font-weight:600;line-height:1.3;
   overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 #karteläuft .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
 
@@ -6822,6 +6828,15 @@ const RAUM_WAS  = {
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
 const raumDaten = {};      /* je Raum die geladene Karte */
 let raumDa = null;         /* welche Räume gerechnet sind */
+
+/* Die Karte, die GERADE gezeigt wird. Alles, was mit Sternlagen zu tun
+   hat - das Sound-Schiff, die Reise, der Nachlauf, die Flugkamera -,
+   muss hierueber gehen und nicht ueber karteDaten. Caspar_D,
+   28.08.2026: "das Raumschiff muß in jedem Raum die richtigen
+   koordinaten bekommmen, nicht diejenigen aus dem Klangraum." Sonst
+   fliegt es im Geschichten-Raum die Bahn des Klang-Raums ab und landet
+   neben den Sternen. */
+const raumK = () => raumDaten[raumJetzt] || karteDaten;
 /* Welche Sterne der Filter der Albumansicht durchlaesst - null heisst
    "kein Filter, alles anfliegbar". Gesetzt in zeichnen(), gelesen beim
    Malen (Blaesse) und von reiseNaechster (Ziel). */
@@ -8185,7 +8200,7 @@ let probeflug = false, probeT0 = 0;
 const PROBE_UMLAUF = 1.0, PROBE_RUNDEN = 3;
 function probeflugToggle(){
   probeflug = !probeflug;
-  if (probeflug){ if (!aktuellId && karteDaten) aktuellId = karteDaten.songs[0].id; if (!reise) reiseToggle(); probeT0 = performance.now(); try { audio.pause(); } catch (e) {} }
+  if (probeflug){ if (!aktuellId && raumK()) aktuellId = raumK().songs[0].id; if (!reise) reiseToggle(); probeT0 = performance.now(); try { audio.pause(); } catch (e) {} }
   karteZeichnen();
 }
 function probeflugWeiter(){
@@ -8207,21 +8222,21 @@ function probeflugWeiter(){
    Rueckgabe: { fehler: [...], protokoll: [...], zusammenfassung } */
 async function schiffPruefung(o){
   o = Object.assign({ dauer: 10, stationen: 4, dt: 1 / 30, zoom: 3, kamera: true, still: false, reise: true }, o || {});
-  if (register !== 'karte' || !karteDaten) throw new Error('Klangraum oeffnen');
+  if (register !== 'karte' || !raumK()) throw new Error('Klangraum oeffnen');
   const fehler = [], prot = [];
   const melde = (art, text, d) => { fehler.push({ art, station: stNr, t: +t.toFixed(2), text, ...(d || {}) }); };
   try { audio.pause(); } catch (e) {}
   cancelAnimationFrame(schiffLauf); schiffLauf = 0;
   const zoom0 = { ...karteZoom };
-  if (!aktuellId) aktuellId = karteDaten.songs[0].id;
+  if (!aktuellId) aktuellId = raumK().songs[0].id;
   if (o.reise !== false){ if (!reise) reiseToggle(); reiseBesucht.add(aktuellId); if (!reiseWeg.includes(aktuellId)) reiseWeg.push(aktuellId); }
   else if (reise) reiseToggle();                                   // Listenfolge statt Klangnachbar pruefen
   schiffArt = 'orbit'; karteNachlaufAus = false;
   karteSchiffFrame.fake = { t: 0, dauer: o.dauer };
   karteSchiffFrame.bahnId = null; karteSchiffFrame.radienId = null; karteSchiffFrame.kursFest = null; karteSchiffFrame.ankunft = null; karteSchiffFrame.flug = null; karteSchiffFrame.kameraZurueck = null;
   let stNr = 0, t = 0, letzt = null, letztRoh = null;
-  const proj = (roh) => { const L = karteLayout(karteDaten); if (L.ist3d){ const q = L.proj(roh); return [karteZoom.tx + karteZoom.k * q[0], karteZoom.ty + karteZoom.k * q[1]]; } return [karteZoom.tx + karteZoom.k * roh[0], karteZoom.ty + karteZoom.k * roh[1]]; };
-  const sternRoh = (id) => { const i = karteDaten.songs.findIndex(q => q.id === id); if (i < 0) return null; const L = karteLayout(karteDaten); return L.ist3d ? karteRaum(karteDaten.songs[i]) : L.xy[i].slice(0, 2); };
+  const proj = (roh) => { const L = karteLayout(raumK()); if (L.ist3d){ const q = L.proj(roh); return [karteZoom.tx + karteZoom.k * q[0], karteZoom.ty + karteZoom.k * q[1]]; } return [karteZoom.tx + karteZoom.k * roh[0], karteZoom.ty + karteZoom.k * roh[1]]; };
+  const sternRoh = (id) => { const i = raumK().songs.findIndex(q => q.id === id); if (i < 0) return null; const L = karteLayout(raumK()); return L.ist3d ? karteRaum(raumK().songs[i]) : L.xy[i].slice(0, 2); };
   const abstand = (a, b) => Math.hypot(...a.map((v, i) => v - (b[i] || 0)));
   for (stNr = 1; stNr <= o.stationen; stNr++){
     const id0 = aktuellId, ziel0 = karteZielId();
@@ -8249,7 +8264,7 @@ async function schiffPruefung(o){
         if (n1 > 1e-6 && n2 > 1e-6){ const wk = Math.acos(Math.max(-1, Math.min(1, v1.reduce((a, v, i) => a + v * v2[i], 0) / (n1 * n2)))) * 180 / Math.PI; if (wk > 15) melde('knick', `Richtungsknick ${wk.toFixed(0)} Grad`, { phase: d.phase, einfang: !!d.einfang }); } }
       prot.push({ st: stNr, t: +t.toFixed(2), phase: d.phase + (d.einfang ? '/einfang' : ''), P: P.map(v => +v.toFixed(1)), roh: roh.slice(), k: +karteZoom.k.toFixed(2), rp: d.rp != null ? +d.rp.toFixed(1) : null, u: d.u != null ? +d.u.toFixed(3) : null });
       letzt = P; letztRoh = { id: id0, roh, vor: letztRoh && letztRoh.id === id0 ? letztRoh.roh : null };
-      if (o.kamera){ karteFlugkamera(karteLayout(karteDaten)); }   // Kamera NACH der Messung (sonst misst man ihren Schwenk)
+      if (o.kamera){ karteFlugkamera(karteLayout(raumK())); }   // Kamera NACH der Messung (sonst misst man ihren Schwenk)
     }
     /* Radius-Invarianz: Raumradius vor/nach dem Zoom gleich (wenn der Maximalkreis erreicht war) */
     const voll = radien.filter(r => Math.abs(r.rPx - r.Rmax) < 0.6), vorZ = voll.filter(r => r.k === +zoom0.k.toFixed(2)), nachZ = voll.filter(r => r.k !== +zoom0.k.toFixed(2));
@@ -8271,7 +8286,7 @@ async function schiffPruefung(o){
     if (d2 && d2.roh && letzteRoh){ const spr = abstand(d2.roh, letzteRoh) * (d2.px || 1); if (spr > Math.max(2, 0.5 * d2.fang)) melde('wechsel', `Sprung beim Stationswechsel: ${spr.toFixed(1)} px (Fangkreis ${d2.fang.toFixed(1)})`); }
     if (ankunftP && d2 && d2.roh){ const da = abstand(d2.roh, ankunftP.roh) * (d2.px || 1); if (da > Math.max(2, 0.5 * d2.fang)) melde('wechsel', `Start der neuen Station ${da.toFixed(1)} px vom Ankunftspunkt entfernt`); }
     letztRoh = null;
-    if (o.kamera){ for (let i = 0; i < 400; i++) karteFlugkamera(karteLayout(karteDaten)); if (Math.abs(karteZoom.k - (o.zoom || zoom0.k)) > 0.05 && !karteSchiffFrame.flug && karteSchiffFrame.kameraZurueck) melde('kamera', `Flugkamera kehrt nicht zurueck: k = ${karteZoom.k.toFixed(2)}`); }
+    if (o.kamera){ for (let i = 0; i < 400; i++) karteFlugkamera(karteLayout(raumK())); if (Math.abs(karteZoom.k - (o.zoom || zoom0.k)) > 0.05 && !karteSchiffFrame.flug && karteSchiffFrame.kameraZurueck) melde('kamera', `Flugkamera kehrt nicht zurueck: k = ${karteZoom.k.toFixed(2)}`); }
     karteZoom = { ...zoom0 }; karteZeichnen();
   }
   karteSchiffFrame.fake = null;
@@ -8437,20 +8452,20 @@ function karteFlugkamera(L){
   if (jetzt - karteNachlaufT > 120){ karteNachlaufT = jetzt; karteZeichnen(); }
 }
 function karteSchiff(){
-  try { karteSchiffFrame(); if (karteDaten && register === 'karte'){ const L = karteLayout(karteDaten); karteNachlauf(L); } }
+  try { karteSchiffFrame(); if (raumK() && register === 'karte'){ const L = karteLayout(raumK()); karteNachlauf(L); } }
   catch (e) { if (!karteSchiff.gemeldet){ karteSchiff.gemeldet = true; console.warn('Sound-Schiff:', e.message); } }
-  if (register === 'karte' && karteDaten) schiffLauf = requestAnimationFrame(karteSchiff); else schiffLauf = 0;
+  if (register === 'karte' && raumK()) schiffLauf = requestAnimationFrame(karteSchiff); else schiffLauf = 0;
 }
 function karteSchiffFrame(){
   const cv = $('karteschiff'); if (!cv) return;
-  if (register !== 'karte' || !karteDaten) return;
-  let L = karteLayout(karteDaten); const W = L.W, H = L.H;
+  if (register !== 'karte' || !raumK()) return;
+  let L = karteLayout(raumK()); const W = L.W, H = L.H;
   /* Pivotwechsel (Drehzentrum = neuer Stern): bei gedrehtem Raum
      verschiebt das die ganze Projektion. Das Bild so nachschieben, dass
      der neue Stern an seinem bisherigen Bildort bleibt - sonst springt
      alles um hunderte Pixel (gemessen 21.08.: 457 px). */
   if (L.ist3d && karteSchiffFrame.pivotId !== aktuellId){
-    const iNeu = karteDaten.songs.findIndex(p => p.id === aktuellId);
+    const iNeu = raumK().songs.findIndex(p => p.id === aktuellId);
     if (iNeu >= 0 && karteSchiffFrame.letzteBildpos && karteSchiffFrame.letzteBildpos.id === aktuellId){
       const Aneu = karteXY(L, iNeu), alt = karteSchiffFrame.letzteBildpos.P;
       karteZoom.tx += alt[0] - Aneu[0]; karteZoom.ty += alt[1] - Aneu[1];
@@ -8495,7 +8510,7 @@ function karteSchiffFrame(){
   const sternR = 16 * Math.sqrt(karteZoom.k);          // Lichthof-Halbmesser im Bild
   const zelle = Math.max(24, sternR * 2);
   const gitter = new Map();
-  if (L.ist3d) for (let i = 0; i < karteDaten.songs.length; i++){
+  if (L.ist3d) for (let i = 0; i < raumK().songs.length; i++){
     const Q = karteXY(L, i);
     if (Q[0] < -sternR || Q[1] < -sternR || Q[0] > W + sternR || Q[1] > H + sternR) continue;   // ausserhalb des Bildes
     const cx = Math.floor(Q[0] / zelle), cy = Math.floor(Q[1] / zelle);
@@ -8577,8 +8592,8 @@ function karteSchiffFrame(){
       g.globalAlpha = 0.25; g.lineWidth = 1.4; g.stroke(); g.globalAlpha = 1;       // Bahn 0,25 (Caspar_D, 22.08.: der Schweif traegt jetzt)
     }
   }
-  const von = karteDaten.songs.findIndex(p => p.id === aktuellId), zielId = karteZielId();
-  const nach = zielId ? karteDaten.songs.findIndex(p => p.id === zielId) : -1;
+  const von = raumK().songs.findIndex(p => p.id === aktuellId), zielId = karteZielId();
+  const nach = zielId ? raumK().songs.findIndex(p => p.id === zielId) : -1;
   schiffPos = null; schiffAnker = null;
   const jetzt = performance.now();
   const akz = akz0;
@@ -8586,12 +8601,12 @@ function karteSchiffFrame(){
      neu (< 7 Tage): sanfte Szintillation; Hybride: langsames Pulsieren
      (veraenderlicher Stern). Wenige Sterne, also kein Zappeln. */
   {
-    const K = karteKennwerte(karteDaten); const streu = karteDaten.songs.map(p => p.streuung).filter(v => v != null).sort((a, b) => a - b);
+    const K = karteKennwerte(raumK()); const streu = raumK().songs.map(p => p.streuung).filter(v => v != null).sort((a, b) => a - b);
     const hybridAb = streu.length ? streu[Math.floor(streu.length * 0.9)] : Infinity;
-    const zeiten = karteDaten.songs.map(p => { const s = song(p.id); return s && s.erstellt ? Date.parse(s.erstellt) : NaN; }).filter(Number.isFinite);
+    const zeiten = raumK().songs.map(p => { const s = song(p.id); return s && s.erstellt ? Date.parse(s.erstellt) : NaN; }).filter(Number.isFinite);
     const t0z = Math.min(...zeiten), t1z = Math.max(...zeiten);
     g.globalCompositeOperation = 'lighter';
-    karteDaten.songs.forEach((p, i) => {
+    raumK().songs.forEach((p, i) => {
       const kw = K.get(p.id); if (!kw || kw.privat) return;
       const istNeu = kw.neu, istVar = p.streuung != null && p.streuung >= hybridAb;
       if (!istNeu && !istVar) return;
@@ -8609,9 +8624,9 @@ function karteSchiffFrame(){
        neu gebaut wurde). Lebenszeit 4 s wie beim Tooltip. */
     if (karteSpot && karteSpot.id && performance.now() - (karteSpot.t || 0) > 4000) karteSpot = null;
     if (karteSpot && karteSpot.id){
-      const iS = karteDaten.songs.findIndex(p => p.id === karteSpot.id);
+      const iS = raumK().songs.findIndex(p => p.id === karteSpot.id);
       if (iS >= 0){ const PS = karteXY(L, iS);
-        for (const [nid, dd] of karteSpot.nachbarn){ const j = karteDaten.songs.findIndex(p => p.id === nid); if (j < 0) continue; const Q = karteXY(L, j);
+        for (const [nid, dd] of karteSpot.nachbarn){ const j = raumK().songs.findIndex(p => p.id === nid); if (j < 0) continue; const Q = karteXY(L, j);
           g.strokeStyle = `rgba(255,255,255,${Math.max(0.12, Math.min(0.85, 1 - (dd - 0.1) / 0.5)).toFixed(2)})`; g.lineWidth = 0.9; g.beginPath(); g.moveTo(PS[0], PS[1]); g.lineTo(Q[0], Q[1]); g.stroke(); }
       }
     }
@@ -8720,7 +8735,7 @@ function karteSchiffFrame(){
   /* Warp nur, wenn das Ziel KEIN Klangnachbar ist (Caspar_D, 21.08.2026:
      "bei Nachbarn macht Warp keinen Sinn") - zu Nachbarn fliegt das
      Schiff normal aus dem Orbit. */
-  const istNachbar = (a, b) => { const p = a && karteDaten.songs.find(x => x.id === a); return !!(p && (p.nachbarn || []).some(n => n[0] === b)); };
+  const istNachbar = (a, b) => { const p = a && raumK().songs.find(x => x.id === a); return !!(p && (p.nachbarn || []).some(n => n[0] === b)); };
   /* Bahnebene frontal ausrichten, sobald Song ODER Ziel wechseln (das
      Ziel aendert sich z. B., wenn die Reise eingeschaltet wird). */
   const zielJetzt = karteZielId();
@@ -8729,10 +8744,10 @@ function karteSchiffFrame(){
      senkrecht in die Orbitebene"): so sind Transit und Eintritt in
      ruhiger Kamera, und der naechste Orbit liegt schon frontal. */
   if (L.ist3d && schiffArt !== 'direkt' && von >= 0 && (aktuellId !== schiffLetzteId || zielJetzt !== karteSchiffFrame.letztesZiel)){
-    const pH = karteDaten.songs[von], pZ = zielJetzt && karteDaten.songs.find(q => q.id === zielJetzt);
+    const pH = raumK().songs[von], pZ = zielJetzt && raumK().songs.find(q => q.id === zielJetzt);
     if (pH && pH.xyz && pZ && pZ.xyz){
       const h = karteRaum(pH), z = karteRaum(pZ);
-      const nId = karteZielDanach(pZ.id), pN = nId && karteDaten.songs.find(q => q.id === nId);
+      const nId = karteZielDanach(pZ.id), pN = nId && raumK().songs.find(q => q.id === nId);
       const zz = pN && pN.xyz ? karteRaum(pN) : [z[0] + (z[0] - h[0]), z[1] + (z[1] - h[1]), z[2] + (z[2] - h[2])];
       karteEbeneNachVorn(orbitBasis(z, zz, h).n);
     } else if (pH && pH.xyz){ const h = karteRaum(pH); karteEbeneNachVorn(orbitBasis(h, [h[0] + 1, h[1], h[2]], null).n); }
@@ -8749,7 +8764,7 @@ function karteSchiffFrame(){
        beschiesst der Wuerfel ihn noch im Orbit, und die Explosion folgt
        dem Schuss. Siehe beschuss[] weiter unten. */
     if (schiffArt === 'warp' && schiffLetzteId && von >= 0 && !istNachbar(schiffLetzteId, aktuellId)){
-      const iv = karteDaten.songs.findIndex(p => p.id === schiffLetzteId);
+      const iv = raumK().songs.findIndex(p => p.id === schiffLetzteId);
       warpVon = iv >= 0 ? karteXY(L, iv) : (schiffPos || karteXY(L, von)); warpNach = karteXY(L, von); warpT0 = jetzt;
     }
     schiffLetzteId = aktuellId;
@@ -8768,9 +8783,9 @@ function karteSchiffFrame(){
      und die Huelle soll danach noch laufen duerfen. */
   supernovae = supernovae.filter(sn => jetzt - sn.t0 < 1900);
   for (const sn of supernovae){
-    const i = karteDaten.songs.findIndex(p => p.id === sn.id); if (i < 0) continue;
+    const i = raumK().songs.findIndex(p => p.id === sn.id); if (i < 0) continue;
     const P = karteXY(L, i), u = (jetzt - sn.t0) / 1900, a = 1 - u;
-    const fh = karteFarbe(karteDaten.songs[i].gruppe);
+    const fh = karteFarbe(raumK().songs[i].gruppe);
     const fm = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(fh);
     const rgb = fm ? [parseInt(fm[1],16), parseInt(fm[2],16), parseInt(fm[3],16)] : [255,200,120];
 
