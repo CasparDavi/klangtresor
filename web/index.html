@@ -7351,8 +7351,21 @@ function kartePanelHtml(){
     zeile('Visualisierung',
       `<span class="schalter" title="Fläche oder Raum. Im Raum: Klick dreht den Song nach vorn, Ziehen dreht frei, Doppelklick zurück."><button class="pille ${karteDim === '2d' ? 'an' : ''}" data-dim="2d">2D</button><button class="pille ${karteDim === '3d' ? 'an' : ''}" data-dim="3d">3D</button></span>` +
       `<span class="schalter" title="NMDS: Rangfolge aller Abstände stimmt (Stress 2D ${String(d.stress ?? '?').replace('.', ',')}, 3D ${String(d.stress3d ?? '?').replace('.', ',')}). UMAP: nur Nachbarschaft, Abstände dazwischen erfunden."><button class="pille ${karteVerf === 'nmds' ? 'an' : ''}" data-verf="nmds">NMDS</button><button class="pille ${karteVerf === 'umap' ? 'an' : ''}" data-verf="umap">UMAP</button></span>`) +
-    zeile('Klassifikatoren',
-      [['Genre', 'Genres'], ['Instrument', 'Instrumente'], ['Stimmung', 'Stimmungen']].map(([a, pl]) => `<button class="pille artpille ${karteArten[a] ? 'an' : ''}" data-a="${a}" style="--af:${artFarbe[a]}" title="${pl} als Sternbilder: Name am Schwerpunkt der stärksten Songs; Rang danach, wie stark der Tag die Gruppen erklärt">${pl}</button>`).join('')) +
+    /* Die Zeile baut sich aus dem, was TATSAECHLICH in diesem Raum steht.
+       karte.js verwirft Etiketten, die nicht mehr erklären als gemischte
+       Gruppen — im Geschichten-Raum bleibt davon nichts, und dann entfällt
+       die Zeile ganz statt drei bedeutungslose Namen anzubieten.
+       (Caspar_D, 28.08.2026: „im Kombiraum die, die etwas erklären") */
+    (() => {
+      const da = new Set((d.tags || []).map(t => t.art));
+      const knopf = ([a, pl]) => {
+        const n = (d.tags || []).filter(t => t.art === a).length;
+        return `<button class="pille artpille ${karteArten[a] ? 'an' : ''}" data-a="${a}" style="--af:${artFarbe[a]}" title="${n} ${pl}, die diesen Raum erklären, als Sternbilder: Name am Schwerpunkt der stärksten Songs; Rang danach, wie stark der Tag die Gruppen erklärt">${pl}</button>`;
+      };
+      const knoepfe = [['Genre', 'Genres'], ['Instrument', 'Instrumente'], ['Stimmung', 'Stimmungen']]
+        .filter(([a]) => da.has(a)).map(knopf).join('');
+      return knoepfe ? zeile('Klassifikatoren', knoepfe) : '';
+    })() +
     zeile('Weiteres',
       `<button class="pille ${karteLoecher ? 'an' : ''}" id="karteloecher" title="Attraktoren: ein Schwarzes Loch als Massezentrum je Stilgruppe, Jets entlang der Hauptachse (nur im Raum)">Attraktoren</button>` +
       `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Songs eines Klassifikators">Sternbilder</button>` +
@@ -9653,7 +9666,16 @@ function karteHimmel(d){
     const rangliste = d.tags.map((t, i) => ({ t, i, guete: (t.erklaert ?? 0) + 0.02 / Math.max(0.05, t.streu) }))
       .filter(e => karteArten[e.t.art]).sort((a, b) => b.guete - a.guete);
     const sichtbar = Math.round(12 + 6 * (karteZoom.k - 1));
-    const mindest = 0.16 / Math.sqrt(karteZoom.k);
+    /* Mindestabstand zweier Namen — misst sich an der BREITE DER WOLKE
+       dieses Raums, nicht an einer festen Länge. Die 0,16 stammten aus dem
+       Klang-Raum und waren dort richtig; in einer engeren Wolke ließen sie
+       zu wenige Namen durch. Der Teiler ist so geeicht, dass der Klang-Raum
+       (mittlere Entfernung der Tag-Punkte vom Mittelpunkt: 0,468) wieder
+       bei 0,16 landet — die engere Lied-Wolke (0,332) kommt damit auf 0,11
+       und zeigt entsprechend mehr. */
+    let weite = 0;
+    for (const t of d.tags) weite += Math.hypot(t.xyz[0], t.xyz[1], t.xyz[2]) / (d.tags.length || 1);
+    const mindest = (weite ? weite / 2.9 : 0.16) / Math.sqrt(karteZoom.k);
     for (const e of rangliste){
       if (karteSternbilder.length >= sichtbar) break;
       const v = e.t.xyz;

@@ -292,6 +292,25 @@ console.log(`  NMDS 3D: Stress-1 ${NM3.stress.toFixed(3)} (${((Date.now() - t1) 
    Spaltenprofile, angewandt im NMDS-Raum. 'masse' = Summe der
    Wahrscheinlichkeiten, 'streu' = gewichtete mittlere Entfernung der
    Songs vom Tag-Punkt (klein = der Tag sitzt wirklich dort). */
+
+/* Wie stark erklaert ein Tag die Gruppen? eta^2 = Varianz der
+   Tag-Wahrscheinlichkeit ZWISCHEN den Gruppen / Gesamtvarianz
+   (ANOVA-Effektstaerke, 0..1). Songs ohne den Tag in ihren Top 5
+   zaehlen mit 0. 'best' = Gruppe mit dem hoechsten Mittel.
+   (Caspar_D, 21.08.2026: "welche am staerksten die Clusterung erklaeren")
+   Steht als Funktion da, weil sie zweimal gebraucht wird: einmal echt und
+   einmal fuer den Zufallsvergleich weiter unten. */
+function etaQuadrat(pj, zuordnung) {
+  const gm = new Float64Array(bestK), gn = new Int32Array(bestK); let m = 0;
+  for (let i = 0; i < N; i++) { gm[zuordnung[i]] += pj[i]; gn[zuordnung[i]]++; m += pj[i]; } m /= N;
+  for (let g = 0; g < bestK; g++) gm[g] = gn[g] ? gm[g] / gn[g] : 0;
+  let ssb = 0, sst = 0;
+  for (let g = 0; g < bestK; g++) ssb += gn[g] * (gm[g] - m) ** 2;
+  for (let i = 0; i < N; i++) sst += (pj[i] - m) ** 2;
+  let best = 0; for (let g = 1; g < bestK; g++) if (gm[g] > gm[best]) best = g;
+  return { eta: sst ? ssb / sst : 0, best };
+}
+
 const tags = [];
 for (const [feld, art] of [['genre', 'Genre'], ['stimmung', 'Stimmung'], ['instrumente', 'Instrument']]) {
   const summe = {};
@@ -306,23 +325,93 @@ for (const [feld, art] of [['genre', 'Genre'], ['stimmung', 'Stimmung'], ['instr
        zaehlen mit 0. 'markiert' = Gruppe mit dem hoechsten Mittel.
        (Caspar_D, 21.08.2026: "welche am staerksten die Clusterung erklaeren") */
     const pj = new Float64Array(N); for (const [i, p] of l) pj[i] = p;
-    const gm = new Float64Array(bestK), gn = new Int32Array(bestK); let m = 0;
-    for (let i = 0; i < N; i++) { gm[label[i]] += pj[i]; gn[label[i]]++; m += pj[i]; } m /= N;
-    for (let g = 0; g < bestK; g++) gm[g] = gn[g] ? gm[g] / gn[g] : 0;
-    let ssb = 0, sst = 0;
-    for (let g = 0; g < bestK; g++) ssb += gn[g] * (gm[g] - m) ** 2;
-    for (let i = 0; i < N; i++) sst += (pj[i] - m) ** 2;
-    let best = 0; for (let g = 1; g < bestK; g++) if (gm[g] > gm[best]) best = g;
+    const { eta, best } = etaQuadrat(pj, label);
     tags.push({ name, art, xyz: c.map(v => +v.toFixed(4)), masse: +masse.toFixed(2), songs: l.length, streu: +streu.toFixed(3),
-      erklaert: +(sst ? ssb / sst : 0).toFixed(3), markiert: best,
+      erklaert: +eta.toFixed(3), markiert: best, pj,
       /* Sternbild: die acht staerksten Mitglieder (Caspar_D, 21.08.2026 -
          Tags sind Benennungen von Sterngruppen, keine Objekte) */
       sterne: [...l].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([i]) => ids[i]) });
   }
 }
 tags.sort((a, b) => b.erklaert - a.erklaert);
+
+/* ---- NUR TAGS, DIE ETWAS ERKLAEREN ------------------------------------
+   Caspar_D, 28.08.2026, auf die Frage, was mit den Klassifikatoren im
+   Lied-Raum geschehen soll: "im Kombiraum die, die etwas erklaeren".
+
+   Die Etiketten kommen aus dem KLANG (library/klang.json, Genre,
+   Stimmung, Instrument). In den Klang-Raum gehoeren sie; im
+   Geschichten-Raum beschreiben sie etwas anderes als die Gruppen, die
+   dort nach THEMEN entstanden sind. Gemessen am Bestand: bestes eta^2
+   im Klang-Raum 0,783 (episch), im Lied-Raum 0,666 (romantisch), im
+   Geschichten-Raum nur 0,242 - und dort liegen 30 von 47 Etiketten
+   unter 0,10. Sichtbar wurden trotzdem drei, weil die Schwelle in der
+   Oberflaeche eine feste Laenge war: "tief", "Poprock", "Elektronik"
+   standen im Textraum, ohne dort etwas zu bedeuten.
+
+   Die Schwelle wird GERECHNET, nicht eingestellt (Hausregel: was die
+   Software ausrechnen kann, wird kein Regler). Ein Merkmal ohne jeden
+   Zusammenhang mit der Gruppierung hat bei k Gruppen und N Liedern ein
+   erwartetes eta^2 von (k-1)/(N-1) - das ist der Boden, auf dem alles
+   liegt, was gar nichts erklaert. Wer nicht mindestens das Doppelte
+   davon schafft, wird verworfen. */
+/* ---- NUR TAGS, DIE ETWAS ERKLAEREN ------------------------------------
+   Caspar_D, 28.08.2026, zu den Klassifikatoren im Lied-Raum:
+   "im Kombiraum die, die etwas erklaeren".
+
+   Die Etiketten kommen aus dem KLANG (library/klang.json: Genre,
+   Stimmung, Instrument). Im Klang-Raum gehoeren sie hin; im
+   Geschichten-Raum beschreiben sie etwas anderes als die Gruppen, die
+   dort nach THEMEN entstanden sind. Gemessen: bestes eta^2 im
+   Klang-Raum 0,783 (episch), im Lied-Raum 0,666 (romantisch), im
+   Geschichten-Raum nur 0,242 - und dort liegen 30 von 47 Etiketten
+   unter 0,10. Sichtbar wurden trotzdem drei, weil die Schwelle in der
+   Oberflaeche eine feste Laenge war: "tief", "Poprock" und "Elektronik"
+   standen im Textraum, ohne dort etwas zu bedeuten.
+
+   DIE SCHWELLE WIRD GEMESSEN, NICHT EINGESTELLT (Hausregel: was die
+   Software ausrechnen kann, wird kein Regler). Der Erwartungswert
+   (k-1)/(N-1) taugt dafuer nicht - er ist die MITTE der Zufallsvertei-
+   lung, und die Haelfte aller sinnlosen Tags liegt darueber. Gerechnet
+   wird deshalb die Verteilung selbst: die Gruppenzuordnung wird
+   gemischt und eta^2 neu bestimmt, oft genug fuer ein belastbares
+   99-Prozent-Quantil. Was ein Tag bei GEMISCHTEN Gruppen erreicht, ist
+   genau das, was nichts bedeutet.
+
+   Gemischt wird mit fester Saat: die Karte soll bei gleichem Bestand
+   gleich aussehen, nicht bei jedem Lauf anders. */
+let saat = 20260828;
+const wuerfel = () => ((saat = (saat * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+const RUNDEN = 200;
+const zufallsWerte = [];
+const gemischt = Int32Array.from(label);
+for (let r = 0; r < RUNDEN; r++) {
+  for (let i = N - 1; i > 0; i--) {                      /* Fisher-Yates */
+    const j = Math.floor(wuerfel() * (i + 1));
+    const h = gemischt[i]; gemischt[i] = gemischt[j]; gemischt[j] = h;
+  }
+  for (const t of tags) zufallsWerte.push(etaQuadrat(t.pj, gemischt).eta);
+}
+zufallsWerte.sort((a, b) => a - b);
+const SCHWELLE = zufallsWerte[Math.floor(zufallsWerte.length * 0.99)] || 0;
+
+/* Im GESCHICHTEN-RAUM fliegen sie ganz raus, auch die zehn, die ueber
+   der Schwelle liegen. Caspar_D, 28.08.2026: "und genres, instrumente in
+   Geschichten muessten was voellig anderes sein - naemlich
+   Geschichten-Genres". Was dort durchkam, waren House, Dance, downtempo
+   und Keyboard - sie schaffen die Schwelle nur, weil "Elektronik" bei 203
+   von 257 Liedern steht und darum mittelbar mit dem Textstil zusammen-
+   haengt. Was ein Lied ERZAEHLT, sagen sie nicht. Der Raum bleibt so
+   lange ohne Etiketten, bis die textlichen da sind. */
+const vorherTags = tags.length;
+const behalten = RAUM === 'geschichten' ? [] : tags.filter(t => t.erklaert >= SCHWELLE);
+tags.length = 0;
+tags.push(...behalten);
+for (const t of tags) delete t.pj;                       /* nicht in die Datei */
 /* (deutsche Namen bekommen die Tags unten, wenn UEBERSETZUNG steht) */
-console.log(`  Tags als Punkte: ${tags.length} (Masse >= 1,5, >= 3 Songs)`);
+console.log(`  Tags als Punkte: ${tags.length} von ${vorherTags} (Masse >= 1,5, >= 3 Songs, `
+  + `eta^2 >= ${SCHWELLE.toFixed(3)} = 99-%-Quantil bei gemischten Gruppen)`);
+if (!tags.length) console.log('  -> kein Klang-Etikett erklaert diesen Raum. Die Zeile entfaellt dort.');
 
 const normiere = (xy) => {
   const xs = xy.map(p => p[0]), ys = xy.map(p => p[1]);
