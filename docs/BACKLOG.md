@@ -1629,6 +1629,16 @@ dessen, was ohnehin aufgenommen wird.** Zwei Änderungen: Der Sweep muß
 exponentiell sein statt linear, und das Ergebnis wird entfaltet statt
 nur spektral betrachtet.
 
+> **Nachtrag 28.08.2026, wichtig.** Die Literaturanalyse desselben Tages
+> (`docs/LITERATUR.md`) hat einen Fehler in der Empfehlung unten
+> aufgedeckt: **Unterhalb der Schroeder-Frequenz — in Wohnräumen 100 bis
+> 200 Hz — gilt ISO 3382 nicht.** Dort klingt jede Mode mit eigener Rate
+> ab, ein globales RT60 beschreibt keinen physikalischen Vorgang. Und
+> genau dort liegt unser ganzer Problembereich. Statt Schroeder-
+> Integration gehört dorthin die **modale Abklingzeit je Resonanz**,
+> gewonnen per Stockwell- oder Wavelet-Transformation. Punkt 3 der
+> Reihenfolge ist entsprechend zu lesen.
+
 ### Reihenfolge
 
 1. **Sweep auf exponentiell umstellen** und entfalten. Ab da liegt eine
@@ -1720,7 +1730,10 @@ beieinander. Was eingestellt wird, kommt also auch an.
 1. **Schwellensuche** bei den Audiometrie-Frequenzen (250, 500, 1k, 2k,
    3k, 4k, 6k, 8k Hz), adaptiv wie bei Apple: von 1 kHz aus, nach jedem
    Treffer 10 dB leiser, nach jedem Fehlschlag 5 dB lauter, mehrere
-   Umkehrpunkte mitteln.
+   Umkehrpunkte mitteln. **Nicht höher als 8 kHz** — dort erreicht die
+   Wellenlänge die Größe des Gehörgangs, es bilden sich stehende Wellen
+   darin, und man mißt die Sitzposition des Kopfhörers statt des Ohrs.
+   Belege in `docs/LITERATUR.md`.
 2. **Je Ohr getrennt** — der Unterschied zwischen links und rechts ist
    klinisch das Wichtigste und für die Wiedergabe ohnehin relevant.
 3. **Auf 1 kHz normieren.** Das Ergebnis ist keine Hörschwelle, sondern
