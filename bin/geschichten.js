@@ -46,8 +46,8 @@ const K = require('./katalog.js');
 const { einbetterLaden } = require('./texte-einbetten.js');
 
 const WURZEL  = path.join(__dirname, '..');
-const MODELL  = path.join(WURZEL, 'library', 'modelle', 'multilingual-e5-small.onnx');
-const TOKEN   = path.join(WURZEL, 'library', 'modelle', 'multilingual-e5-small-tokenizer.json');
+const MODELL  = path.join(WURZEL, 'library', 'modelle', 'paraphrase-multilingual-mpnet.onnx');
+const TOKEN   = path.join(WURZEL, 'library', 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
 const ZIEL    = path.join(WURZEL, 'library', 'geschichten.json');
 const MINDEST = 50;   /* Kuerzere "Texte" sind Platzhalter, keine Geschichte. */
 
@@ -119,7 +119,7 @@ function nurGesungenes(text) {
 
   fs.writeFileSync(ZIEL, JSON.stringify({
     stand: new Date().toISOString().slice(0, 10),
-    modell: 'multilingual-e5-small (mehrsprachig, 384 Dimensionen)',
+    modell: 'paraphrase-multilingual-mpnet-base-v2 (mehrsprachig, 768 Dimensionen)',
     songs,
   }));
 

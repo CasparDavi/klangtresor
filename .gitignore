@@ -68,5 +68,5 @@ node_modules/
 library/instrumental.json
 
 # Das Textmodell wird geholt, nicht mitgeliefert (129 MB)
-library/modelle/multilingual-e5-small*.json
-library/modelle/multilingual-e5-small*.onnx
+library/modelle/paraphrase-multilingual-mpnet*.json
+library/modelle/paraphrase-multilingual-mpnet*.onnx

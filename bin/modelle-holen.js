@@ -45,6 +45,14 @@ const DATEIEN = [
   ['mtg_jamendo_moodtheme-discogs-effnet-1.json',   `${E}/classification-heads/mtg_jamendo_moodtheme/mtg_jamendo_moodtheme-discogs-effnet-1.json`, 3000],
   ['mtg_jamendo_instrument-discogs-effnet-1.onnx',  `${E}/classification-heads/mtg_jamendo_instrument/mtg_jamendo_instrument-discogs-effnet-1.onnx`, 2700000],
   ['mtg_jamendo_instrument-discogs-effnet-1.json',  `${E}/classification-heads/mtg_jamendo_instrument/mtg_jamendo_instrument-discogs-effnet-1.json`, 3000],
+
+  /* Der Geschichten-Raum (bin/geschichten.js): Liedtexte als Vektoren.
+     Ein AEHNLICHKEITSmodell, kein Suchmodell - der Unterschied ist in
+     bin/texte-einbetten.js begruendet und mit Zahlen belegt. */
+  ['paraphrase-multilingual-mpnet.onnx',
+   'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/onnx/model_quantized.onnx', 200000000],
+  ['paraphrase-multilingual-mpnet-tokenizer.json',
+   'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/tokenizer.json', 10000000],
 ];
 
 /* Holen mit Rueckfall (22.08.2026, Tarja unter Windows: "fetch failed"):

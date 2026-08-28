@@ -1,11 +1,34 @@
 /* Liedtexte als Vektoren - der Geschichten-Raum.
 
-   multilingual-e5-small, mehrsprachig ueber 100 Sprachen. Der Witz
-   daran: Deutsch und Englisch landen im SELBEN Raum. Ein deutscher
-   Text ueber Abschied liegt neben einem englischen ueber dasselbe -
-   ohne dass irgendwo uebersetzt wird. Genau deshalb braucht es keine
-   Uebersetzung, und genau deshalb waere eine schaedlich: Reim,
-   Wortspiel und Klang ueberleben sie nicht. */
+   paraphrase-multilingual-mpnet-base-v2, mehrsprachig. Deutsch und
+   Englisch landen im SELBEN Raum: ein deutscher Text ueber Abschied
+   liegt neben einem englischen ueber dasselbe, ohne dass irgendwo
+   uebersetzt wird. Deshalb braucht es keine Uebersetzung - und deshalb
+   waere eine schaedlich: Reim und Wortspiel ueberleben sie nicht.
+
+   -------------------------------------------------------------
+   WARUM EIN AEHNLICHKEITSMODELL UND KEIN SUCHMODELL
+
+   Der erste Anlauf lief mit multilingual-e5-small und lieferte
+   Unsinn: "Autophagie" (ueber Zellen) landete neben "Der Blogger"
+   (ueber Datencenter), weil beide in Systemvokabular reden.
+
+   Der Grund liegt in der Trainingsaufgabe. E5, BGE und GTE sind
+   SUCHmodelle - trainiert auf "finde das Dokument zu dieser Frage",
+   mit ungleichen Seiten und deshalb Praefixen wie "query:". Dabei
+   zaehlt nur die Reihenfolge, nicht der Abstand, und so draengen sich
+   alle Werte oben zusammen. Gemessen am Bestand lagen sie zwischen
+   0,9232 und 0,9307 - acht Tausendstel fuer alle Lieder. Darin ist
+   jede Nachbarschaft Zufall.
+
+   AEHNLICHKEITSmodelle sind auf "sind diese zwei Texte dasselbe in
+   anderen Worten" trainiert, beide Seiten gleichrangig, kein Praefix.
+   Dieselbe Messung: 0,6825 bis 0,7567, also zehnmal weiter gespreizt -
+   und "Autophagie v2" findet endlich "Autophagie" als naechsten
+   Nachbarn statt den Blogger.
+
+   Groesser hilft dabei nicht: e5-base ordnete schlechter als
+   e5-small. Es ist die Familie, nicht die Groesse. */
 'use strict';
 const ort = require('onnxruntime-node');
 const { tokenizerLaden } = require('./tokenizer.js');
@@ -46,7 +69,11 @@ async function einbetterLaden(modell, tokenizer) {
      einzeln einbetten, dann mitteln. Ein Liedtext hat Refrains - die
      wiederholen sich ohnehin, ein Mittel verzerrt also wenig. */
   async function einbetten(text) {
-    const ids = tk.zerlegen('query: ' + text);
+    /* KEIN Praefix. "query:" gehoert zu den SUCHmodellen (e5, bge, gte),
+       die auf "finde das Dokument zur Frage" trainiert sind. Wir
+       vergleichen zwei gleichrangige Texte - das ist eine andere
+       Aufgabe und braucht ein Aehnlichkeitsmodell ohne Praefix. */
+    const ids = tk.zerlegen(text);
     if (ids.length <= MAX) return normieren(await einVektor(ids));
     const stuecke = [];
     const kern = ids.slice(1, -1);
