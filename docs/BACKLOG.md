@@ -1761,3 +1761,114 @@ Schrittfolge mit Text-Knopf-Text mit — der Hörtest wäre derselbe Ablauf
 mit anderem Signal. Was fehlt, ist die Verrechnung: **Raumkorrektur und
 Ohrkorrektur dürfen sich nicht summieren.** Über Kopfhörer gibt es
 keinen Raum, über Lautsprecher gilt beides — das muß die Kette wissen.
+
+---
+
+## Englisch mit Sprachumschalter
+
+Caspar_D, 28.08.2026: „der nächste große Brocken ist Übersetzung ins
+Englische mit einem Sprachumschalter. Das wird lustig."
+
+Am Bestand gemessen, damit die Größenordnung feststeht.
+
+### Was zu übersetzen wäre
+
+| | Anzahl | Umfang |
+|---|---:|---:|
+| Zeichenketten im Code | 900 | 55 k Zeichen |
+| HTML-Text zwischen den Tags | 414 | 48 k Zeichen |
+| **zusammen** | **1.314** | **103 k Zeichen ≈ 57 Normseiten** |
+
+Nach Länge gestaffelt (nur die Zeichenketten, die HTML-Knoten verteilen
+sich ähnlich):
+
+| | Anzahl | |
+|---|---:|---|
+| Beschriftungen (Knöpfe, Menüs) | 201 | 3 k Zeichen |
+| kurze Hinweise | 495 | 25 k |
+| Erklärungen | 186 | 20 k |
+| lange Fachtexte | 18 | 6 k |
+
+**Die Kommentare bleiben deutsch** — 1.533 Zeilen, Arbeitssprache des
+Hauses, gehen niemanden sonst etwas an.
+
+### Der Aufwand steckt woanders, als man denkt
+
+Nicht im Übersetzen. 57 Normseiten sind an einem Tag zu schaffen. Der
+Aufwand steckt im **Herausholen**, und dort in drei Sorten Arbeit:
+
+**110 zusammengesetzte Sätze.** Stellen der Form
+`'Es fehlen ' + n + ' Songs'`. Die lassen sich nicht stückweise
+übersetzen — Wortstellung und Pluralformen unterscheiden sich. Sie
+müssen erst zu Vorlagen mit Platzhaltern werden. Dazu kommen **103
+Template-Literale** mit eingebetteten Werten, dieselbe Sache in anderer
+Schreibweise.
+
+**84 Stellen mit Dezimalkomma** (`replace('.', ',')`), dazu 444
+`toFixed`-Aufrufe, von denen viele in eine Ausgabe münden. Das ist keine
+Übersetzung, sondern Zahlenformatierung — sie klebt in jeder Meßausgabe
+und muß an eine Stelle wandern, die die Sprache kennt. Gleiches gilt für
+Datumsangaben.
+
+**Die 18 langen Fachtexte.** Einmessen, Analysehinweise, die Vorschläge
+je Plattform. Sie sind ein Gutteil des Werts dieser Software. Eine
+mechanische Übersetzung wäre dort schlimmer als keine: Aus „die Kerbe
+sitzt zu tief" wird schnell etwas, das ein Toningenieur nicht mehr
+versteht. Diese achtzehn gehören von Hand gemacht und gegengelesen.
+
+### Eine Architekturfrage vorweg
+
+`web/index.html` ist **absichtlich eine einzige Datei**. Zwei
+Sprachdateien danebenzulegen wäre ein Bruch mit dem, was das Haus
+ausmacht. Drei Möglichkeiten:
+
+1. **Beide Sprachen in der Datei.** Sie wächst um etwa 100 kB — bei
+   heute rund 1 MB verkraftbar. Kein Bruch, kein Nachladen.
+2. **Sprachdateien vom Server**, wie die Modelle. Sauberer getrennt,
+   aber die Oberfläche ist dann nicht mehr allein lauffähig — und der
+   Sternenhimmel-Export (`library/export/sternenhimmel.html`) ist es
+   heute.
+3. **Zwei gebaute Fassungen** aus einer Quelle. Braucht einen
+   Bauschritt, den es bisher nicht gibt.
+
+Für dieses Haus spricht am meisten für **(1)**.
+
+### Reihenfolge
+
+**Stufe 0 — die Mechanik, vor allem anderen.** Vorlagen mit
+Platzhaltern statt zusammengesetzter Sätze; Zahlen- und Datumsformat an
+eine Stelle; ein Nachschlagemechanismus. Ohne das kann keine Stufe
+danach beginnen. Das ist der eigentliche Umbau und betrifft rund 300
+Stellen.
+
+**Stufe 1 — die Dokumente.** `README.md` und `START-HIER.md`. Eine
+englische Oberfläche nützt niemandem, der beim Einrichten scheitert; die
+Reihenfolge ist also andersherum, als sie sich anfühlt. Und diese beiden
+sind unabhängig vom Rest — sie könnten sofort gemacht werden.
+
+**Stufe 2 — die Bedienelemente.** 201 Beschriftungen, 3 k Zeichen. Ein
+Nachmittag, und die Oberfläche ist bedienbar.
+
+**Stufe 3 — die kurzen Hinweise.** 495 Stück, 25 k Zeichen.
+
+**Stufe 4 — Erklärungen und Fachtexte.** 204 Stück, 26 k Zeichen, davon
+18 lange, die Sorgfalt brauchen.
+
+Nach Stufe 2 ist die Software englisch bedienbar, mit deutschen
+Erklärungen — das wären etwa **achtzig Prozent der Wirkung für ein
+Zehntel der Arbeit**, wenn man die Mechanik (Stufe 0) einmal hat.
+
+### Was nicht übersetzt wird
+
+- **Suno-Werte**: Modellnamen, Stil-Etiketten, die Filterwerte. Die
+  kommen von Suno und sind ohnehin englisch.
+- **Tonartnamen** brauchen eine Umsetzung: „F Moll" → „F minor", und im
+  Englischen ist H das B. Das ist eine Tabelle, keine Übersetzung — und
+  eine bekannte Fehlerquelle.
+- **Die Kommentare im Code.**
+
+### Die Frage, die vor allem steht
+
+**Für wen?** Tarja, Fruusch und Casto schreiben Deutsch. Wenn das Ziel
+ist, das Projekt öffentlich brauchbar zu machen, ist Stufe 1 das
+Wichtigste und vielleicht für lange Zeit das Einzige, was sich lohnt.
