@@ -6,6 +6,23 @@ Stand 28.08.2026. Ergänzt die GitHub-Recherchen desselben Tages
 (`docs/BACKLOG.md`) um das, was in Papers steht, aber in keinem
 Repositorium liegt.
 
+> **Wie diese Fassung entstanden ist — und was ihr fehlt.**
+> Grundlage sind **neun Websuchen** in drei Runden, dazu einige Abrufe
+> einzelner Repositorien. Das ist keine systematische Literaturrecherche:
+> Es wurde **keine Fachdatenbank** benutzt (kein Semantic Scholar, kein
+> Web of Science, kein IEEE Xplore), es gab **keine Zitationsanalyse**,
+> und **nicht gezielt nach Übersichtsarbeiten** gesucht — der Einstieg in
+> ein fremdes Feld gehört über einen Survey, nicht über die
+> Einzelarbeiten, die eine Suchmaschine oben hat.
+>
+> Die berichteten Zahlen sind belegt und die Quellen verlinkt. Was fehlt,
+> ist die Gewähr, daß nichts Wesentliches übersehen wurde, und jede
+> Aussage darüber, welche Arbeiten das Feld tatsächlich prägen.
+>
+> Caspar_D hat das am selben Tag bemerkt und eine richtige Recherche
+> beauftragt. Deren Ergebnis steht in `docs/LITERATUR-TIEF.md`; dieses
+> Dokument bleibt als erster Durchgang stehen.
+
 **Ein Befund wiegt schwerer als alle anderen und steht deshalb vorn:**
 Bei den Raummoden — genau unserem Problembereich — ist die Norm, die
 ich gestern empfohlen habe, das falsche Werkzeug. Das steht unten unter
