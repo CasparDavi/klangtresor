@@ -38,8 +38,24 @@ const { UMAP } = require('umap-js');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB    = path.join(WURZEL, 'library');
-const ZIEL   = path.join(LIB, 'karte.json');
 const args   = process.argv.slice(2);
+
+/* ---- DREI RAEUME, EINE RECHNUNG ---------------------------------------
+   Caspar_D, 28.08.2026: "wir haben Klang-Raum und Geschichten-Raum und
+   Lied-Raum (das sind die beiden aneinandergehaengten Vektoren)."
+
+   Es aendern sich nur die Vektoren, mit denen gerechnet wird - alles
+   danach ist identisch. Die Etiketten (Stil, Genre, Stimmung) kommen in
+   jedem Raum aus klang.json, denn sie beschreiben den Song und nicht den
+   Raum: dieselben Lieder, dieselben Namen, andere Anordnung. */
+const RAEUME = {
+  klang:       { datei: 'karte.json',              was: 'Klang-Raum' },
+  geschichten: { datei: 'karte-geschichten.json',  was: 'Geschichten-Raum' },
+  lied:        { datei: 'karte-lied.json',         was: 'Lied-Raum' },
+};
+const RAUM = args.includes('--raum') ? args[args.indexOf('--raum') + 1] : 'klang';
+if (!RAEUME[RAUM]) { console.error('  Raum unbekannt: ' + RAUM + ' (klang | geschichten | lied)'); process.exit(1); }
+const ZIEL   = path.join(LIB, RAEUME[RAUM].datei);
 const GRUPPEN_FEST = args.includes('--gruppen') ? +args[args.indexOf('--gruppen') + 1] : 0;
 
 let klang;
@@ -50,15 +66,43 @@ try { analyse = JSON.parse(fs.readFileSync(path.join(LIB, 'analyse-index.json'),
 try { profile = JSON.parse(fs.readFileSync(path.join(LIB, 'eq-profil.json'), 'utf8')).songs || {}; } catch (e) {}
 try { katalog = require('./katalog.js').lesen(); } catch (e) {}
 
-const ids = Object.keys(klang.songs).filter(id => (katalog.songs || {})[id] && !katalog.songs[id].fremd);
+let geschichten = null;
+if (RAUM !== 'klang') {
+  try { geschichten = JSON.parse(fs.readFileSync(path.join(LIB, 'geschichten.json'), 'utf8')).songs; }
+  catch (e) { console.log('  ' + RAEUME[RAUM].was + ': library/geschichten.json fehlt - erst node bin/geschichten.js.'); process.exit(0); }
+}
+
+/* Im Geschichten- und im Lied-Raum sind nur die Lieder MIT Text dabei.
+   Die uebrigen fehlen dort, und das soll man sehen - nicht so tun, als
+   waeren sie allem unaehnlich. */
+const ids = Object.keys(klang.songs).filter(id =>
+  (katalog.songs || {})[id] && !katalog.songs[id].fremd &&
+  (RAUM === 'klang' || (geschichten && geschichten[id])));
 if (ids.length < 8) { console.log(`  Karte: erst ${ids.length} Songs vermessen — zu wenig für eine Karte.`); process.exit(0); }
 
 /* ---- Embeddings, L2-normiert ----------------------------------------- */
-const X = ids.map(id => {
-  const e = Float64Array.from(klang.songs[id].emb);
+function norm(arr) {
+  const e = Float64Array.from(arr);
   let n = 0; for (const v of e) n += v * v; n = Math.sqrt(n) || 1;
   for (let i = 0; i < e.length; i++) e[i] /= n;
   return e;
+}
+const X = ids.map(id => {
+  const kl = () => norm(klang.songs[id].emb);
+  const ge = () => norm(geschichten[id].emb);
+  if (RAUM === 'klang')       return kl();
+  if (RAUM === 'geschichten') return ge();
+  /* LIED-RAUM: beide aneinander. Vorher jeden Teil auf 1/sqrt(2)
+     herunterskalieren - dann ist das Skalarprodukt des Ganzen genau das
+     Mittel der beiden Einzelprodukte, und der Klang uebertoent die
+     Geschichte nicht, obwohl er 1280 gegen 384 Dimensionen hat. Ohne
+     diese Wichtung entschiede allein die Dimensionszahl. */
+  const w = Math.SQRT1_2;
+  const a = kl(), b = ge();
+  const v = new Float64Array(a.length + b.length);
+  for (let i = 0; i < a.length; i++) v[i] = a[i] * w;
+  for (let i = 0; i < b.length; i++) v[a.length + i] = b[i] * w;
+  return v;
 });
 const N = X.length;
 /* Abstand: WURZEL des Kosinus-Abstands, sqrt(1 - <a,b>) (Caspar_D,
@@ -373,11 +417,13 @@ const songs = ids.map((id, i) => ({
 fs.writeFileSync(ZIEL, JSON.stringify({
   stand: new Date().toISOString(), anzahl: N, gruppenzahl: bestK, silhouette: +bestS.toFixed(3),
   abstand: { median6: +median(nachbarn.map(l => l[5] ? l[5][0] : 1)).toFixed(3), medianAlle: +median(Array.from(D).filter(Boolean)).toFixed(3) },
-  verfahren: 'agglomerativ/complete auf sqrt(1-cos) im 1280-dim-Raum; Karte x/y = NMDS (Kruskal, SMACOF), umap = UMAP(15, 0.1, Saat 20260821)',
+  raum: RAUM,
+  verfahren: `agglomerativ/complete auf sqrt(1-cos) im ${X[0].length}-dim-Raum (${RAEUME[RAUM].was}); `
+    + 'Karte x/y = NMDS (Kruskal, SMACOF), umap = UMAP(15, 0.1, Saat 20260821)',
   stress: +NM.stress.toFixed(3), stress3d: +NM3.stress.toFixed(3),
   tags,
   gruppen, songs,
 }));
-console.log(`  Karte: ${N} Songs, ${bestK} Gruppen (Silhouette ${bestS.toFixed(3)}) → ${path.relative(WURZEL, ZIEL)}`);
+console.log(`  ${RAEUME[RAUM].was}: ${N} Songs, ${bestK} Gruppen (Silhouette ${bestS.toFixed(3)}) → ${path.relative(WURZEL, ZIEL)}`);
 for (const g of gruppen) console.log(`    ${String(g.nr + 1).padStart(2)}. ${String(g.anzahl).padStart(3)} Songs  ${g.name}` +
   (g.erdung.bpm ? `  (${g.erdung.bpm} BPM nach Sunos Takt, ${g.erdung.lufs} LUFS)` : ''));

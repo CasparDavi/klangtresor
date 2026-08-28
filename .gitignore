@@ -66,3 +66,7 @@ node_modules/
 # 19 Commit-Betreffzeilen und in aelteren Dateistaenden.
 .git-alt-*/
 library/instrumental.json
+
+# Das Textmodell wird geholt, nicht mitgeliefert (129 MB)
+library/modelle/multilingual-e5-small*.json
+library/modelle/multilingual-e5-small*.onnx
