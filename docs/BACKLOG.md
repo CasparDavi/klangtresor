@@ -1564,9 +1564,10 @@ Was das für uns heißt:
   Kompression ohne Klirr sieht anders aus als ein überfahrener
   Verstärker — und der Klirranteil fällt bei dieser Methode ohne
   zusätzlichen Meßlauf an, aus derselben Aufnahme.
-- **Rund 20 dB mehr Dynamik als MLS.** Unser Störabstand lag je Band bei
-  14,2 dB, und das war der Grund für die lange Mittelung. Hier läge
-  Reserve.
+- **Mehr Dynamik.** Farina nennt „rund 20 dB gegenüber MLS" — was uns
+  nichts sagt, weil wir kein MLS benutzen. Der Gewinn gegenüber unserem
+  heutigen Verfahren ist ein anderer und größerer: siehe die Sweeprate-
+  Grenze in `docs/LITERATUR-TIEF.md`.
 - **Ein Durchgang statt zwei.** Keine zusätzliche Stille, keine zweite
   Bitte an den Nutzer.
 

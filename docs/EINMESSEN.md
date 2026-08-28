@@ -718,9 +718,20 @@ Damit fällt in einem einzigen Durchgang an:
   Frage, die oben offen bleibt: ob die HomePods ab 50 % begrenzen oder
   nur zurücknehmen. Kompression ohne Klirr sieht anders aus als ein
   überfahrener Verstärker.
-- rund **20 dB mehr Dynamik** als die bisherige Auswertung. Der
-  Störabstand von 14,2 dB je Band war der Grund für die lange
-  Mittelung — hier läge Reserve.
+- mehr Dynamik — wieviel, ist offen. Farinas „20 dB" gelten gegenüber
+  MLS-Geräten, und MLS benutzen wir nicht.
+
+> **Berichtigung 28.08.2026.** Hier stand zuerst „der Störabstand von
+> 14,2 dB je Band". Das war vertauscht: 14,2 dB ist der **breitbandige**
+> Wert und ausdrücklich der Fehlalarm, **je Band** waren es 39,9 dB —
+> nachzulesen weiter oben unter „Der Maßstab war falsch". Die abgelegte
+> Messung vom 27.08. nennt **34,8 dB je Band** und 36,58 dB breitbandig.
+>
+> Der Unterschied ist nicht akademisch: **ISO 3382-1 verlangt für T20
+> einen Abklingbereich von 35 dB** über dem Grundgeräusch, für T30
+> deren 45. Mit 34,8 dB liegt eine T20-Auswertung genau an der Schwelle
+> und T30 außer Reichweite. Mit 14 dB wäre gar nichts davon möglich
+> gewesen.
 - Nachhallzeit, Klarheit C50/C80 und Reflexionen mit Laufzeit, alles
   aus derselben Aufnahme
 
