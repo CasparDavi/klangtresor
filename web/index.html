@@ -8844,9 +8844,9 @@ function karteSchiffFrame(){
   const BESCHUSS = { strahlBis: 320, pulsAb: 200, pulsBis: 980 };
   beschuss = beschuss.filter(b => !b.nova || jetzt - b.t0 < 1200);
   for (const b of beschuss){
-    const i = karteDaten.songs.findIndex(p => p.id === b.id); if (i < 0) continue;
+    const i = raumK().songs.findIndex(p => p.id === b.id); if (i < 0) continue;
     const Z = karteXY(L, i), t = jetzt - b.t0;
-    const fh = karteFarbe(karteDaten.songs[i].gruppe);
+    const fh = karteFarbe(raumK().songs[i].gruppe);
     const fm = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(fh);
     const rgb = fm ? [parseInt(fm[1],16), parseInt(fm[2],16), parseInt(fm[3],16)] : [255,200,120];
     g.globalCompositeOperation = 'lighter';
@@ -8889,7 +8889,7 @@ function karteSchiffFrame(){
       b.nova = true;
       supernovae.push({ id: b.id, t0: jetzt });
       assimiliert.add(b.id);
-      if (karteDaten) karteHimmel(karteDaten);     // der Stern verlischt im Himmel
+      if (raumK()) karteHimmel(raumK());     // der Stern verlischt im Himmel
     }
     g.globalCompositeOperation = 'source-over';
   }
@@ -8906,7 +8906,7 @@ function karteSchiffFrame(){
       g.fillStyle = bl; g.fillRect(0, 0, W, H);
       g.strokeStyle = `rgba(220,235,255,${(0.7 * a1).toFixed(2)})`; g.lineWidth = 1;
       g.beginPath();
-      for (let i = 0; i < karteDaten.songs.length; i++){
+      for (let i = 0; i < raumK().songs.length; i++){
         const P = karteXY(L, i), dx = P[0] - von2[0], dy = P[1] - von2[1], d = Math.hypot(dx, dy) || 1;
         const st = 12 + 90 * u;                          // Strahlenlaenge waechst
         g.moveTo(P[0], P[1]); g.lineTo(P[0] + dx / d * st, P[1] + dy / d * st);
@@ -8990,7 +8990,7 @@ function karteSchiffFrame(){
          den Tangentenpunkt des Ziel-Fangkreises zeigt, Transit geradeaus -
          nie langsamer. Alles in Bildpixeln der aktuellen Projektion; die
          Bahnebene liegt im Raum (kippt mit), Radien in Bildpixeln. */
-      const pHier = karteDaten.songs[von], pZiel = nach >= 0 ? karteDaten.songs[nach] : null;
+      const pHier = raumK().songs[von], pZiel = nach >= 0 ? raumK().songs[nach] : null;
       const umlauf = probeflug ? PROBE_UMLAUF : 20.0;                     // Sekunden je Runde auf dem Maximalkreis (Caspar_D, 22.08.)
       const zk = Math.sqrt(karteZoom.k), E = Math.min(W, H) / 600;
       let WACHSTUM = 4.5 * zk * E;                                      // px Radius je Runde - gemaechlich (Caspar_D, 21.08.)
@@ -9002,8 +9002,8 @@ function karteSchiffFrame(){
          auch VORAB fuers Ziel gerechnet - das Schiff kommt direkt auf der
          Zielschale an (Caspar_D, 22.08.: "Transitlinien enden blind innerhalb
          der Orbitschale"). */
-      const orbitRadiusPx = (idx) => { const pS = karteDaten.songs[idx], zw = zwillinge(pS), Q0 = karteXY(L, idx); const dS = (song(pS.id) || {}).dauer || dauer || 180;
-        let nah = Infinity; for (let i = 0; i < karteDaten.songs.length; i++){ if (i === idx || zw.has(karteDaten.songs[i].id)) continue; const Q = karteXY(L, i); const dd = Math.hypot(Q[0] - Q0[0], Q[1] - Q0[1]); if (dd < nah) nah = dd; }
+      const orbitRadiusPx = (idx) => { const pS = raumK().songs[idx], zw = zwillinge(pS), Q0 = karteXY(L, idx); const dS = (song(pS.id) || {}).dauer || dauer || 180;
+        let nah = Infinity; for (let i = 0; i < raumK().songs.length; i++){ if (i === idx || zw.has(raumK().songs[i].id)) continue; const Q = karteXY(L, i); const dd = Math.hypot(Q[0] - Q0[0], Q[1] - Q0[1]); if (dd < nah) nah = dd; }
         return Math.max(fangMin * 1.6, Math.min((16 + 14 * Math.min(1, dS / 300)) * zk, 0.45 * nah, 0.30 * Math.min(W, H))); };
       let Rmax = orbitRadiusPx(von);
       /* BAHNEBENEN (Caspar_D, 22.08.2026: "wie in der Raumfahrt"): Die eigene
@@ -9017,14 +9017,14 @@ function karteSchiffFrame(){
       let kreis, pxJeEinheit = 1, ebene = null;
       if (L.ist3d && pHier.xyz){
         const hier3 = karteRaum(pHier), ziel3 = pZiel ? karteRaum(pZiel) : [hier3[0] + 1, hier3[1], hier3[2]];
-        const pVor = schiffKamVon && karteDaten.songs.find(q => q.id === schiffKamVon);
+        const pVor = schiffKamVon && raumK().songs.find(q => q.id === schiffKamVon);
         const { e1, e2 } = orbitBasis(hier3, ziel3, pVor && pVor.xyz ? karteRaum(pVor) : null);
         pxJeEinheit = (L.S || 0.46 * Math.min(W, H)) * (L.tiefe ? L.tiefe[von] : 1) * karteZoom.k;
         /* Zielebene: Ziel -> dessen naechstes Ziel, dazu unsere Richtung als Herkunft (enthaelt unseren Stern) */
         let f1 = null, f2 = null, nZ = null, zz = null;
         if (pZiel && pZiel.xyz){
           const naechstId = karteZielDanach(pZiel.id);
-          const pN = naechstId && karteDaten.songs.find(q => q.id === naechstId);
+          const pN = naechstId && raumK().songs.find(q => q.id === naechstId);
           zz = pN && pN.xyz ? karteRaum(pN) : [ziel3[0] + (ziel3[0] - hier3[0]), ziel3[1] + (ziel3[1] - hier3[1]), ziel3[2] + (ziel3[2] - hier3[2])];
           const bz = orbitBasis(ziel3, zz, hier3); f1 = bz.e1; f2 = bz.e2; nZ = bz.n;
         }
@@ -9371,7 +9371,7 @@ function karteSchiffFrame(){
       const imFlug = ab && zeit >= tAb - ANLAUF && nach >= 0;
       const nachAnkunft = bahn.vonFang && zeit < 2 && schiffKamVon;
       if (imFlug) karteSchiffFrame.flug = { von, nach };
-      else if (nachAnkunft){ const iv = karteDaten.songs.findIndex(q => q.id === schiffKamVon); karteSchiffFrame.flug = iv >= 0 ? { von: iv, nach: von } : null; }
+      else if (nachAnkunft){ const iv = raumK().songs.findIndex(q => q.id === schiffKamVon); karteSchiffFrame.flug = iv >= 0 ? { von: iv, nach: von } : null; }
       else karteSchiffFrame.flug = null;
       if (ab && zeit >= tAb){
         /* Transit geradeaus, Tempo = Rest des Songs fuer die Strecke, mindestens Bahngeschwindigkeit */
@@ -10923,12 +10923,12 @@ const reiseSpuren = { '2d': [], '3d': [] };
 let reiseSpur = reiseSpuren['3d'], reiseSpurArt = '3d';
 function reiseNaechster(vonId, zusaetzlichBesucht){
   vonId = vonId || aktuellId;
-  if (!karteDaten || !vonId) return null;
-  const hier = karteDaten.songs.find(p => p.id === vonId); if (!hier) return null;
+  if (!raumK() || !vonId) return null;
+  const hier = raumK().songs.find(p => p.id === vonId); if (!hier) return null;
   const raum = p => (p.xyz || [p.x, p.y, 0]);
   const h = raum(hier);
   let best = null, bd = Infinity;
-  for (const p of karteDaten.songs){
+  for (const p of raumK().songs){
     if (p.id === vonId || reiseBesucht.has(p.id) || (zusaetzlichBesucht && zusaetzlichBesucht.has(p.id)) || !song(p.id)) continue;
     if (karteAnflug && !karteAnflug.has(p.id)) continue;   /* ausgefiltert: sichtbar, aber kein Ziel */
     const q = raum(p), dd = Math.hypot(q[0] - h[0], q[1] - h[1], (q[2] || 0) - (h[2] || 0));
@@ -10949,7 +10949,7 @@ function vor(richtung, uebernahme){
   if (!sichtbar.length) return;
   if (reise && richtung > 0){
     const ziel = reiseNaechster();
-    if (ziel){ reiseBesucht.add(ziel); reiseWeg.push(ziel); if (karteDim === '3d' && register === 'karte' && schiffArt === 'direkt'){ const p = karteDaten.songs.find(x => x.id === ziel); if (p) karteNachVorn(karteRaum(p)); } spielenNachId(ziel); return; }
+    if (ziel){ reiseBesucht.add(ziel); reiseWeg.push(ziel); if (karteDim === '3d' && register === 'karte' && schiffArt === 'direkt'){ const p = raumK().songs.find(x => x.id === ziel); if (p) karteNachVorn(karteRaum(p)); } spielenNachId(ziel); return; }
   }
   // Position frisch bestimmen - die Liste kann sich zwischenzeitlich
   // geändert haben. Ist der laufende Song gar nicht mehr sichtbar
