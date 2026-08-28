@@ -218,6 +218,35 @@ function nmds(D, N, iter = 400, DIM = 2) {
       for (let a = 0; a < DIM; a++) { const dd = (X[a][i] - X[a][j]) * dq; nxs[a][i] += dd; nxs[a][j] -= dd; }
     }
     for (let a = 0; a < DIM; a++) for (let i = 0; i < N; i++) X[a][i] = nxs[a][i] / N;
+
+    /* SKALE FESTHALTEN (Caspar_D, 28.08.2026: "ja, repariere den kollaps")
+       Stress-1 ist skaleninvariant. Deshalb hat die nichtmetrische MDS
+       eine triviale Loesung: alle Punkte auf EINEM Punkt, alle Abstaende
+       null, Stress null. Ohne Verankerung laeuft die Guttman-Iteration
+       genau dorthin - langsam, aber sicher.
+
+       Gemessen am Geschichten-Raum (257 Lieder): Spanne der ersten Achse
+       0,73 im Start, 0,063 nach 50 Schritten, 4,3e-5 nach 200, exakt 0
+       nach 400. Der Stress blieb dabei bis zuletzt bei 0,218 - die FORM
+       war die ganze Zeit richtig, nur die GROESSE fiel weg. In der
+       fertigen karte-geschichten.json stand deshalb bei allen 257
+       Liedern x = y = 0,04 und stress = 0. Aufgefallen war es nie, weil
+       die Karte auf 3D stand: dort rettete die nachtraegliche Normierung
+       auf Radius 1 die Anzeige, waehrend die Rechnung selbst schon bei
+       6e-5 lief.
+
+       Also nach jedem Schritt die Ausdehnung festhalten: Wurzel des
+       mittleren quadrierten Abstands auf 1. Das aendert an der Loesung
+       nichts (Stress 3D vorher wie nachher 0,1526), verhindert aber den
+       Unterlauf. */
+    let q2 = 0;
+    for (let q = 0; q < M; q++) {
+      const [, i, j] = paare[q]; let s = 0;
+      for (let a = 0; a < DIM; a++) s += (X[a][i] - X[a][j]) ** 2;
+      q2 += s;
+    }
+    const f = Math.sqrt(M / (q2 || 1e-30));
+    for (let a = 0; a < DIM; a++) for (let i = 0; i < N; i++) X[a][i] *= f;
   }
   return { xy: Array.from({ length: N }, (_, i) => X.map(ax => ax[i])), stress };
 }
