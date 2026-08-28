@@ -1533,3 +1533,109 @@ Verbindung aus Songanalyse *und* Wiedergabekette gibt es sonst nicht.
 3. **msaf** für Abschnittsgrenzen, falls die Suno-Angaben je fehlen —
    nachrangig, weil ohne Text ohnehin nur zu raten ist, was Strophe und
    was Refrain heißt.
+
+---
+
+## Einmessen: was die Welt besser macht — Recherche vom 28.08.2026
+
+Caspar_D: „einmessen, anderes Thema, gleiches Vorgehen, schau github an,
+was uns weiter hilft."
+
+Ein Fund überholt alles andere, und er betrifft ausgerechnet die Frage,
+die seit dem 27.08. offen ist.
+
+### Farinas Sweep — Frequenzgang und Klirr in einem Durchgang
+
+Angelo Farina, *Simultaneous measurement of impulse response and
+distortion with a swept-sine technique*, AES-Konvention 108 (2000).
+Nachzulesen unter
+[angelofarina.it](https://www.angelofarina.it/Public/Presentations/AES122-Farina.pdf).
+
+**Der Kniff:** Bei einem **exponentiellen** Sweep — nicht bei einem
+linearen — erscheinen die harmonischen Verzerrungen nach der Entfaltung
+als **eigene Impulsantworten, zeitlich vor der Hauptantwort**. Sie lassen
+sich einzeln herausschneiden: k2, k3, k4 je für sich, mit eigenem
+Frequenzgang.
+
+Was das für uns heißt:
+
+- **Die HomePod-Frage wird nebenbei beantwortet.** Am 27.08. blieb offen,
+  ob die Bässe ab 50 % begrenzt oder nur zurückgenommen werden.
+  Kompression ohne Klirr sieht anders aus als ein überfahrener
+  Verstärker — und der Klirranteil fällt bei dieser Methode ohne
+  zusätzlichen Meßlauf an, aus derselben Aufnahme.
+- **Rund 20 dB mehr Dynamik als MLS.** Unser Störabstand lag je Band bei
+  14,2 dB, und das war der Grund für die lange Mittelung. Hier läge
+  Reserve.
+- **Ein Durchgang statt zwei.** Keine zusätzliche Stille, keine zweite
+  Bitte an den Nutzer.
+
+### Die Normen, an denen wir uns ausrichten sollten
+
+[**phonometry**](https://github.com/jmrplens/phonometry) (108★) ist
+standardkonform gebaut und nennt, woran man sich hält:
+
+| Norm | wofür |
+|---|---|
+| **ISO 3382-1/2** | Raumakustik aus Impulsantworten |
+| **IEC 61260-1** | Oktav- und Terzbänder |
+| **IEC 61672-1** | Bewertungsfilter |
+| IEC 60268-16 | Sprachverständlichkeit (STI) |
+
+Und die Kennzahlen, die ein Raum hat:
+
+- **EDT, T20, T30** über **Schroeder-Integration** — rückwärts
+  integrierte Abklingkurve, nicht Abklingen nach Augenmaß
+- **C50 / C80** (Klarheitsmaß): das Verhältnis von früher zu später
+  Energie, in dB. Sagt, ob ein Raum Sprache oder Musik trägt.
+- **Deutlichkeit D**
+
+Der Code ist Python und für uns nicht direkt brauchbar. Der Wert liegt
+in der Liste: Sie sagt, **welche** Kennzahlen es gibt und **wie** man
+sie richtig rechnet. Unsere Modenerkennung arbeitet bisher ohne solchen
+Bezug — Güte über `Q ≈ π·f·RT60/6,9` geschätzt, RT60 selbst geraten.
+
+### Daß es im Browser geht, ist bewiesen
+
+[**Broom**](https://github.com/DanielRudrich/Broom) (60★) mißt
+Raumimpulsantworten vollständig im Browser: Sweep erzeugen, aufnehmen,
+entfalten, herunterladen. Kein Server, kein Plugin. Dieselbe
+Beschränkung, unter der wir arbeiten — und dieselbe Lösung.
+
+### Was nicht hilft, und warum
+
+- [**CamillaDSP**](https://github.com/HEnquist/camilladsp) (1.044★) und
+  [DecayCore](https://github.com/VilhoValittu/DecayCore): FIR-Filter und
+  Faltung in Echtzeit, also die *Korrektur*. Wir haben unseren
+  Equalizer, und er sitzt an der richtigen Stelle in der Kette.
+- [**Impulcifer**](https://github.com/jaakkopasanen/Impulcifer) (288★):
+  binaurale Antworten für Kopfhörer-Virtualisierung. Anderes Ziel.
+- Die Simulatoren (gpuRIR 611★, pffdtd, wayverb): rechnen Räume aus
+  Geometrie, statt zu messen. Für uns umgekehrt herum.
+
+### Der Hebel: ein Schritt, viele Kennzahlen
+
+Wir messen bereits Sweeps. Was fehlt, ist **die Entfaltung zur
+Impulsantwort**. Daraus kommt danach alles:
+
+- Nachhallzeit nach Norm statt geschätzt
+- Klarheit C50/C80 — Kennzahlen, die wir gar nicht haben
+- Klirr je Harmonische, ohne Mehraufwand
+- Reflexionen mit Laufzeit und Pegel, statt nur als Kammfiltermuster
+- Moden mit belegter Güte statt mit geschätzter
+
+**Es ist kein neues Meßverfahren, sondern eine andere Auswertung
+dessen, was ohnehin aufgenommen wird.** Zwei Änderungen: Der Sweep muß
+exponentiell sein statt linear, und das Ergebnis wird entfaltet statt
+nur spektral betrachtet.
+
+### Reihenfolge
+
+1. **Sweep auf exponentiell umstellen** und entfalten. Ab da liegt eine
+   Impulsantwort vor, und die Auswertungen lassen sich einzeln
+   nachziehen.
+2. **Klirr je Harmonische** herausschneiden — beantwortet die
+   HomePod-Frage.
+3. **RT60 nach ISO 3382** über Schroeder-Integration, dann bekommt auch
+   die Modengüte ihren Bezug.
+4. **C50/C80** dazu, mit Erklärung im Panel.

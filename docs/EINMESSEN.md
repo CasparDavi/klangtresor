@@ -696,3 +696,43 @@ ihnen ließe sich jede Auswertung nachträglich anders rechnen, ohne noch
 einmal Ton zu machen. Bei 13 Sekunden und 44,1 kHz wären es 1,1 MB je
 Durchgang als Float32 — vertretbar, wenn man sie nach der Auswertung
 gleich als WAV ablegt.
+
+---
+
+## Nachtrag 28.08.2026: der Weg, den die Fachwelt geht
+
+Eine GitHub-Recherche hat ein Verfahren zutage gebracht, das mehreres
+auf einmal löst — ausführlich in `docs/BACKLOG.md` unter „Einmessen: was
+die Welt besser macht". Hier nur, was es für die Messungen oben
+bedeutet.
+
+**Angelo Farina, AES 108 (2000):** Bei einem **exponentiellen** Sweep
+erscheinen die harmonischen Verzerrungen nach der Entfaltung als eigene
+Impulsantworten, zeitlich **vor** der Hauptantwort. Sie lassen sich
+einzeln herausschneiden.
+
+Damit fällt in einem einzigen Durchgang an:
+
+- der Frequenzgang, wie bisher
+- **der Klirranteil je Harmonische** — und damit die Antwort auf die
+  Frage, die oben offen bleibt: ob die HomePods ab 50 % begrenzen oder
+  nur zurücknehmen. Kompression ohne Klirr sieht anders aus als ein
+  überfahrener Verstärker.
+- rund **20 dB mehr Dynamik** als die bisherige Auswertung. Der
+  Störabstand von 14,2 dB je Band war der Grund für die lange
+  Mittelung — hier läge Reserve.
+- Nachhallzeit, Klarheit C50/C80 und Reflexionen mit Laufzeit, alles
+  aus derselben Aufnahme
+
+**Und hier schließt sich der Kreis zum Absatz darüber:** Genau deshalb
+sind die Rohaufnahmen so wertvoll. Läge die Aufnahme des Sweeps vor,
+ließe sich die Entfaltung **nachträglich** rechnen — ohne noch einmal
+Ton zu machen, ohne den Raum noch einmal still zu halten. Die Messungen
+vom 27.08. sind für diese Auswertung verloren; die nächsten müßten es
+nicht sein.
+
+Für die Nachhallzeit nennt **ISO 3382-1** das Verfahren: Schroeder-
+Integration, also die rückwärts integrierte Abklingkurve, ausgewertet
+als EDT, T20 und T30. Unsere Modengüte über `Q ≈ π·f·RT60/6,9` steht
+bisher auf einem geschätzten RT60 — mit einem gemessenen bekäme sie
+ihren Bezug.
