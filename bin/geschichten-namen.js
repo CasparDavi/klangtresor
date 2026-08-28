@@ -65,7 +65,7 @@ const LIB    = path.join(WURZEL, 'library');
 const MODELL = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx');
 const TOKEN  = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
 
-const MINDEST_KONTRAST = 0.04;   /* darunter hat die Gruppe kein Thema */
+const MINDEST_KONTRAST = 0.05;   /* darunter hat die Gruppe kein Thema */
 const WORTE_JE_NAME    = 3;
 const MINDEST_ANTEIL   = 0.2;    /* ein Wort muss in einem Fuenftel der Gruppe stehen */
 
@@ -156,15 +156,38 @@ function mittel(vektoren) {
 
     for (const g of karte.gruppen) {
       const mit = karte.songs.filter(s => s.gruppe === g.nr && texte[s.id]);
-      if (mit.length < 3) { namenlos++; continue; }
+      if (mit.length < 3) {
+        /* Zu klein fuer eine Wortstatistik - aber der Klangname darf
+           trotzdem nicht stehenbleiben. */
+        const stoff = mittelAchse(mit, 'stoff'), ton = mittelAchse(mit, 'ton');
+        g.name = stoff ? stoff + (ton ? ' — ' + ton : '') : 'zu klein für ein Thema';
+        g.themen = null; g.achsen = { stoff, haltung: mittelAchse(mit, 'haltung'), ton };
+        namenlos++; continue;
+      }
       const mitte = mittel(mit.map(s => Float64Array.from(texte[s.id].emb)));
 
       /* Kandidaten: Woerter aus einem Fuenftel der Gruppe aufwaerts. */
+      /* NUR SUBSTANTIVE. Caspar_D, 28.08.2026: "okay, nur Substantive".
+         Im Deutschen sind sie am grossen Anfangsbuchstaben zu erkennen -
+         das ersetzt jede Stoppwortliste, denn "Schon", "Doch" und
+         "Vielleicht" sind keine.
+
+         Der Haken: In Liedtexten faengt fast jede ZEILE gross an. Ein
+         Wort zaehlt deshalb nur, wenn es NICHT am Zeilenanfang steht -
+         dort ist die Grossschreibung ohne Aussage. Ein Substantiv, das
+         nur je einmal am Zeilenanfang vorkommt, geht dabei verloren;
+         das ist der Preis, und er ist klein. */
       const zaehl = {};
       for (const s of mit) {
         const l = (katalog.songs[s.id] || {}).lyrics; if (!l) continue;
-        for (const w of new Set(nurGesungenes(l).toLowerCase().match(/[a-zäöüß]{4,}/g) || []))
-          zaehl[w] = (zaehl[w] || 0) + 1;
+        const drin = new Set();
+        for (const zeile of nurGesungenes(l).split('\n')) {
+          const w = zeile.match(/[A-Za-zÄÖÜäöüß]{4,}/g) || [];
+          /* Das erste Wort der Zeile ueberspringen. */
+          for (let i = 1; i < w.length; i++)
+            if (/^[A-ZÄÖÜ]/.test(w[i])) drin.add(w[i]);
+        }
+        for (const w of drin) zaehl[w] = (zaehl[w] || 0) + 1;
       }
       const schwelle = Math.max(3, Math.ceil(mit.length * MINDEST_ANTEIL));
       const kand = Object.entries(zaehl).filter(([, n]) => n >= schwelle).map(([w]) => w);
@@ -178,13 +201,17 @@ function mittel(vektoren) {
       const beste = bewertet.slice(0, WORTE_JE_NAME);
 
       if (!beste.length || beste[0][1] < MINDEST_KONTRAST) {
-        /* Kein Thema erkennbar - dann lieber die Achsen als Namen. */
+        /* Kein kennzeichnendes Substantiv - dann die Achsen. NIEMALS
+           die Klangetiketten: Caspar_D, 28.08.2026: "im Geschichtenraum
+           sind immer noch die Mehrzahl der Cluster mit Musikbegriffen
+           beschriftet". Genre und Stimmung beschreiben den Ton; in
+           diesem Raum haben sie nichts zu suchen. */
         const stoff = mittelAchse(mit, 'stoff'), ton = mittelAchse(mit, 'ton');
         g.name = stoff ? stoff + (ton ? ' — ' + ton : '') : 'ohne erkennbares Thema';
         g.themen = null; g.kontrast = beste.length ? +beste[0][1].toFixed(3) : null;
         namenlos++;
       } else {
-        g.themen = beste.map(([w]) => w[0].toUpperCase() + w.slice(1));
+        g.themen = beste.map(([w]) => w);
         g.name = g.themen.join(' · ');
         g.kontrast = +beste[0][1].toFixed(3);
         benannt++;
