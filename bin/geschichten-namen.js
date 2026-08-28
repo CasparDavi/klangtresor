@@ -65,7 +65,20 @@ const LIB    = path.join(WURZEL, 'library');
 const MODELL = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet.onnx');
 const TOKEN  = path.join(LIB, 'modelle', 'paraphrase-multilingual-mpnet-tokenizer.json');
 
-const MINDEST_KONTRAST = 0.05;   /* darunter hat die Gruppe kein Thema */
+/* Wie gut muss das beste Wort sein, damit die Gruppe danach heisst?
+   Frueher stand hier eine feste Zahl (0,05 Kontrast). Die war heimlich
+   eine GROESSENSCHWELLE, keine Gueteschwelle: gemessen am Bestand
+   korreliert der Kontrastwert mit r = -0,93 gegen die logarithmierte
+   Gruppengroesse, weil der Schwerpunkt einer grossen Gruppe zwangslaeufig
+   nahe der Gesamtmitte liegt. Die Folge war genau verkehrt herum - eine
+   Gruppe mit 11 Liedern bekam einen Namen (z = 0,43, das schlechteste
+   Wort im ganzen Bestand), die mit 144 Liedern nicht (z = 2,42, das
+   drittbeste). 187 von 257 Liedern verloren so ihren Wortnamen.
+
+   Gemessen wird deshalb, wie weit das beste Wort aus dem Feld ALLER
+   Kandidatenwoerter aller Gruppen herausragt - in Streuungen, also
+   groessenunabhaengig. Wie weit das sein muss, steht auch nicht hier:
+   es wird je Lauf gegen Zufallsgruppen gemessen, siehe unten. */
 const WORTE_JE_NAME    = 3;
 const MINDEST_ANTEIL   = 0.2;    /* ein Wort muss in einem Fuenftel der Gruppe stehen */
 
@@ -153,6 +166,8 @@ function mittel(vektoren) {
     const alleV = karte.songs.filter(s => texte[s.id]).map(s => Float64Array.from(texte[s.id].emb));
     const gesamt = mittel(alleV);
     let benannt = 0, namenlos = 0;
+    const alleWerte = [];   /* alle Kandidatenwerte aller Gruppen, fuer den z-Wert unten */
+    const wortVek = new Map();   /* Wort -> Vektor, einmal einbetten reicht */
 
     for (const g of karte.gruppen) {
       const mit = karte.songs.filter(s => s.gruppe === g.nr && texte[s.id]);
@@ -194,13 +209,67 @@ function mittel(vektoren) {
 
       const bewertet = [];
       for (const w of kand) {
-        const v = await e.einbetten(w);
+        let v = wortVek.get(w);
+        if (!v) { v = await e.einbetten(w); wortVek.set(w, v); }
         bewertet.push([w, cos(v, mitte) - cos(v, gesamt)]);
       }
       bewertet.sort((a, b) => b[1] - a[1]);
-      const beste = bewertet.slice(0, WORTE_JE_NAME);
+      /* Noch nicht entscheiden: ob ein Wert gut ist, zeigt sich erst im
+         Vergleich mit den Kandidaten ALLER Gruppen. Der kommt unten. */
+      g._kandidaten = bewertet;
+      for (const [, wert] of bewertet) alleWerte.push(wert);
 
-      if (!beste.length || beste[0][1] < MINDEST_KONTRAST) {
+      /* Die Achsen der Gruppe stehen immer dabei - sie sind die
+         Einordnung, auch wenn die Woerter schon einen Namen ergeben. */
+      g.achsen = { stoff: mittelAchse(mit, 'stoff'), haltung: mittelAchse(mit, 'haltung'), ton: mittelAchse(mit, 'ton') };
+      g._mit = mit;
+    }
+
+    /* ---- Jetzt erst benennen ---------------------------------------
+       Der Bezugsvorrat ist das Feld ALLER Kandidatenwoerter aller
+       Gruppen - nicht nur der eigenen. Sonst misst jede Gruppe an sich
+       selbst, und die Schwelle waere wieder groessenabhaengig.
+
+       Wie hoch muss der z-Wert sein? Auch das wird GEMESSEN: fuer jede
+       Gruppe wird eine gleich grosse ZUFALLSGRUPPE gezogen, ihre Mitte
+       gebildet und der Kontrast derselben Kandidatenwoerter dagegen
+       gerechnet. Was dabei herauskommt, ist der Wert, den ein Wort ohne
+       jeden Zusammenhang erreicht. Die Schwelle ist das 99-%-Quantil
+       dieser Verteilung - in z umgerechnet, damit sie mit dem echten
+       Wert vergleichbar bleibt. Feste Saat, damit die Namen bei gleichem
+       Bestand gleich bleiben. */
+    const mAlle = alleWerte.reduce((a, b) => a + b, 0) / (alleWerte.length || 1);
+    const sAlle = Math.sqrt(alleWerte.reduce((a, b) => a + (b - mAlle) ** 2, 0) / (alleWerte.length || 1)) || 1e-9;
+
+    let saat = 20260828;
+    const wuerfel = () => ((saat = (saat * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+    const zufall = [];
+    for (let r = 0; r < 60; r++) {
+      for (const g of karte.gruppen) {
+        if (!g._kandidaten || !g._kandidaten.length || !g._mit) continue;
+        const zieh = [];
+        for (let i = 0; i < g._mit.length; i++) zieh.push(alleV[Math.floor(wuerfel() * alleV.length)]);
+        const zufallsMitte = mittel(zieh);
+        for (const [w] of g._kandidaten.slice(0, WORTE_JE_NAME)) {
+          const v = wortVek.get(w);
+          if (v) zufall.push(cos(v, zufallsMitte) - cos(v, gesamt));
+        }
+      }
+    }
+    zufall.sort((a, b) => a - b);
+    const bodenWert = zufall.length ? zufall[Math.floor(zufall.length * 0.99)] : 0;
+    const MINDEST_Z = (bodenWert - mAlle) / sAlle;
+    console.log(`     Schwelle: Kontrast ${bodenWert.toFixed(3)} (z = ${MINDEST_Z.toFixed(2)}) `
+      + `= 99-%-Quantil gegen gleich grosse Zufallsgruppen`);
+
+    for (const g of karte.gruppen) {
+      const bewertet = g._kandidaten, mit = g._mit;
+      delete g._kandidaten; delete g._mit;
+      if (!bewertet) continue;                     /* zu kleine Gruppen, schon oben benannt */
+      const beste = bewertet.slice(0, WORTE_JE_NAME);
+      const z = beste.length ? (beste[0][1] - mAlle) / sAlle : -Infinity;
+
+      if (z < MINDEST_Z) {
         /* Kein kennzeichnendes Substantiv - dann die Achsen. NIEMALS
            die Klangetiketten: Caspar_D, 28.08.2026: "im Geschichtenraum
            sind immer noch die Mehrzahl der Cluster mit Musikbegriffen
@@ -208,17 +277,17 @@ function mittel(vektoren) {
            diesem Raum haben sie nichts zu suchen. */
         const stoff = mittelAchse(mit, 'stoff'), ton = mittelAchse(mit, 'ton');
         g.name = stoff ? stoff + (ton ? ' — ' + ton : '') : 'ohne erkennbares Thema';
-        g.themen = null; g.kontrast = beste.length ? +beste[0][1].toFixed(3) : null;
+        g.themen = null;
+        g.kontrast = beste.length ? +beste[0][1].toFixed(3) : null;
+        g.guete = beste.length ? +z.toFixed(2) : null;
         namenlos++;
       } else {
         g.themen = beste.map(([w]) => w);
         g.name = g.themen.join(' · ');
         g.kontrast = +beste[0][1].toFixed(3);
+        g.guete = +z.toFixed(2);
         benannt++;
       }
-      /* Die Achsen der Gruppe stehen immer dabei - sie sind die
-         Einordnung, auch wenn die Woerter schon einen Namen ergeben. */
-      g.achsen = { stoff: mittelAchse(mit, 'stoff'), haltung: mittelAchse(mit, 'haltung'), ton: mittelAchse(mit, 'ton') };
     }
 
     function mittelAchse(mit, achse) {
