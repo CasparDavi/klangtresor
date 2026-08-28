@@ -1639,3 +1639,112 @@ nur spektral betrachtet.
 3. **RT60 nach ISO 3382** über Schroeder-Integration, dann bekommt auch
    die Modengüte ihren Bezug.
 4. **C50/C80** dazu, mit Erklärung im Panel.
+
+---
+
+## Das Ohr einmessen — Recherche vom 28.08.2026
+
+Caspar_D: „wenn wir Räume vermessen müssen wir auch Ohren vermessen. Im
+Alter nimmt die Hörfähigkeit anfangs bei den hohen Frequenzen massiv ab.
+… wie wir bspw bei der Kopfhörernutzung einen Hörtest a la Apple air
+pods pro 3 machen können und die Ergebnisse zum kalibrieren des EQs
+benutzen können."
+
+Der Gedanke ist richtig: Eine eingemessene Kette endet am Trommelfell,
+nicht am Lautsprecher. Was danach kommt, ist die größte
+Einzelabweichung der ganzen Übertragung — und die einzige, die sich
+nicht ersetzen läßt.
+
+### Erster Befund: hier hilft GitHub nicht
+
+Der größte Treffer im ganzen Feld hat **84 Sterne**
+([woheller69/audiometry](https://github.com/woheller69/audiometry), eine
+Android-App). Alles andere liegt im einstelligen Bereich. Audiometrie
+ist medizinisch-kommerziell besetzt; es gibt nichts Ausgereiftes zum
+Übernehmen. Was es gibt, sind zwei brauchbare Ideen und viel
+Fachliteratur.
+
+### Falle 1: Wir kennen den Absolutpegel nicht
+
+Ein Browser weiß nicht, wieviel Schalldruck bei einem gegebenen
+Zahlenwert aus dem Kopfhörer kommt. Die Zahlen dazu sind unangenehm:
+
+- Standardabweichung durch **Kalibrierfehler allein: 6,2 dB**
+- Selbstdurchgeführte Tests weichen im ruhigen Raum um **>8 dB HL** ab,
+  in normaler Umgebung um **>14 dB**
+
+Eine Aussage wie „du hast 30 dB Verlust bei 6 kHz" wäre damit nicht zu
+halten.
+
+**Wie hEARtest es löst:** entweder mehrere normalhörende Personen
+zwischen 18 und 35 als Referenz messen — oder **einen einzigen Punkt bei
+1000 Hz** kalibrieren und den Rest über **ISO 226:2003** (Kurven
+gleicher Lautstärke) hochrechnen. Dazu die Auflage, die auch für uns
+gilt: Der Kopfhörer darf keine eigene Lautstärkeautomatik und keinen
+eigenen EQ haben.
+
+### Falle 2: Die Hörschwelle darf man nicht umdrehen
+
+Das ist die Falle, in die man von selbst tappt. Die Hörgeräteakustik
+verordnet seit jeher **weniger** Verstärkung als der Verlust beträgt —
+historisch die „half-gain rule", heute
+[NAL-NL2](https://hearingreview.com/practice-building/practice-management/whats-new-about-nal-nl2).
+Die Begründung ist nicht Vorsicht, sondern Wirkung:
+
+- Ziel ist **Sprachverständlichkeit bei angenehmer Lautheit**, nicht die
+  Wiederherstellung der Normalhörschwelle.
+- Es gibt eine **Entsättigung** (*desensitization*): Bei größerem
+  Verlust bringt zusätzliche Verstärkung immer weniger, weil das
+  geschädigte Innenohr die Information nicht mehr auflöst. Mehr Höhen
+  machen es dann schrill, nicht klarer.
+
+Apple nennt seine Funktion ausdrücklich „mild amplification". Wer die
+Audiogrammkurve invertiert und als EQ setzt, baut etwas, das lauter,
+aber nicht besser klingt.
+
+### Was trotzdem geht — und gut
+
+Für unseren Zweck brauchen wir **keine Audiometrie**. Wir brauchen die
+**Form** der Kurve, nicht ihren Absolutwert: Wo fällt das Gehör relativ
+zu 1 kHz ab? Das beantwortet auch ein unkalibrierter Test — normiert man
+auf 1 kHz, wird der Kalibrierfehler zu einem konstanten Versatz und
+kürzt sich heraus.
+
+Und Kopfhörer nehmen EQ bereitwillig an: RTINGS hat das an
+[200 Nachmessungen](https://www.rtings.com/headphones/learn/research/eq-remeasurements)
+belegt — gerechnete Kurve und gemessenes Ergebnis liegen dicht
+beieinander. Was eingestellt wird, kommt also auch an.
+
+### Bauplan
+
+1. **Schwellensuche** bei den Audiometrie-Frequenzen (250, 500, 1k, 2k,
+   3k, 4k, 6k, 8k Hz), adaptiv wie bei Apple: von 1 kHz aus, nach jedem
+   Treffer 10 dB leiser, nach jedem Fehlschlag 5 dB lauter, mehrere
+   Umkehrpunkte mitteln.
+2. **Je Ohr getrennt** — der Unterschied zwischen links und rechts ist
+   klinisch das Wichtigste und für die Wiedergabe ohnehin relevant.
+3. **Auf 1 kHz normieren.** Das Ergebnis ist keine Hörschwelle, sondern
+   ein Kurvenverlauf. So auch benennen.
+4. **Halb kompensieren**, nicht ganz, und die Anhebung oben deckeln
+   (etwa 12 dB bei 6–8 kHz).
+5. **Gegen ISO 7029 prüfen** — die Norm beschreibt, wie sich die
+   Hörschwelle mit dem Alter typischerweise verschiebt. Weicht das
+   Ergebnis stark davon ab, war eher die Messung schlecht als das Ohr.
+   Das ist dieselbe Art Plausibilitätsprüfung wie beim Einmessen die
+   Frage, ob eine Mode zum Wandabstand paßt.
+
+### Die Grenze, klar benannt
+
+**Das ist kein Hörtest.** Es ist eine persönliche Entzerrung, die keine
+Untersuchung ersetzt. Das gehört ins Panel, nicht in eine Fußnote — und
+zwar mit dem konkreten Hinweis: Auffällige Ergebnisse, besonders ein
+deutlicher Unterschied zwischen den Ohren, gehören zum HNO-Arzt.
+Einseitiger Hörverlust hat Ursachen, die man nicht wegentzerrt.
+
+### Anschluß an das Bestehende
+
+Das Tonstudio hat den Equalizer bereits, und das Einmessen bringt die
+Schrittfolge mit Text-Knopf-Text mit — der Hörtest wäre derselbe Ablauf
+mit anderem Signal. Was fehlt, ist die Verrechnung: **Raumkorrektur und
+Ohrkorrektur dürfen sich nicht summieren.** Über Kopfhörer gibt es
+keinen Raum, über Lautsprecher gilt beides — das muß die Kette wissen.
