@@ -1395,6 +1395,38 @@ Im Panel fehlt dafür der Vergleich zweier gespeicherter Läufe. Das
 Mikrofon wird in der Messung schon vermerkt, die Daten liegen also
 richtig — es fehlt nur die Gegenüberstellung.
 
+### Das iPhone — und was es zusätzlich kann
+
+Caspar_D, 28.08.2026: „und mein iphone könnte ich auch verbinden und als
+mikrophon benutzen."
+
+Steht bereits in `MESS_GUETE` mit 60 Punkten, „Telefon per Continuity,
+mit Funkstrecke" — über dem iMac-Array, unter dem TONOR. Der Abzug gilt
+der Funkstrecke, nicht der Kapsel; die ist bei Apple ordentlich. Was
+dabei durch Apples Signalverarbeitung läuft, weiß man allerdings nicht.
+
+**Der eigentliche Gewinn ist nicht die Gegenprobe, sondern der Ort.**
+Ein Mikrofon ohne Kabel läßt sich hinstellen, wohin man will — und
+Raummoden hängen genau davon ab. Eine stehende Welle hat Knoten und
+Bäuche: Am Bauch mißt man sie kräftig, am Knoten gar nicht. Alles, was
+das Panel bisher über Moden sagt, stammt von **einem** Ort.
+
+Damit wären Messungen möglich, die es bisher nicht gab:
+
+- **Dieselbe Frequenz an mehreren Orten.** Fällt der Pegel an einer
+  Stelle im Raum ein, während er zwei Meter weiter steht, ist die Mode
+  bestätigt — und man weiß, wo man nicht sitzen sollte.
+- **Hörplatz gegen Raummitte.** Der Unterschied sagt, wieviel von dem,
+  was man hört, der Raum ist und nicht der Lautsprecher.
+- **Nah am Lautsprecher.** Dort ist der Raum fast draußen. Was dort
+  schon abfällt, kommt aus dem Gerät — das beantwortet die Baßfrage
+  vom 27.08. direkter als jede Gegenprobe mit zwei Mikrofonen.
+
+Der letzte Punkt ist der stärkste: **Aus 20 cm Abstand gemessen** ist
+der Raumanteil so klein, daß ein Baßrückgang nur noch vom HomePod kommen
+kann. Dafür braucht es weder Kalibrierung noch ein zweites Gerät,
+sondern nur ein Mikrofon, das man dorthin bringen kann.
+
 ### Das Onkyo-Einmessmikrofon
 
 Caspar_D hat eines vom AV-Receiver, muß es aber erst suchen
