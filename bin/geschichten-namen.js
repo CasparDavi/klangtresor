@@ -136,6 +136,34 @@ function mittel(vektoren) {
 
   const katalog = K.lesen();
   const texte   = JSON.parse(fs.readFileSync(gesch, 'utf8')).songs;
+
+  /* DIE KONDENSATE, wenn es sie gibt: zehn Substantive je Lied, von
+     einem Sprachmodell aus dem Text destilliert (bin/kondensat-prompt.js,
+     Regeln in docs/KONDENSAT-REGELN.md). Sie sind als Kandidaten fuer
+     Gruppennamen ungleich besser als Rohtextwoerter - dort steht kein
+     Fuellwort und keine Reimfloskel mehr drin. Gemessen an einer Probe
+     ergeben sie ausserdem ausgewogenere Gruppen (groesste Gruppe 33 %
+     statt 60 %), und genau daran hing die Benennung: der Schwerpunkt
+     einer 144-Lieder-Gruppe IST die Gesamtmitte, ihr Kontrast wird
+     negativ, und kein Schwellenwert rettet das.
+     Fehlen sie, laeuft alles wie zuvor ueber den Rohtext. */
+  let kondensate = null;
+  const kondPfad = path.join(LIB, 'kondensate', 'kondensate.json');
+  if (fs.existsSync(kondPfad)) {
+    const A = JSON.parse(fs.readFileSync(kondPfad, 'utf8'));
+    /* Die juengste vollstaendige Fassung gewinnt: erst opus-f2-gesamt,
+       dann opus. */
+    const reihe = ['opus-f2-gesamt', 'opus', 'opus-gesamt'];
+    kondensate = {};
+    for (const [id, e] of Object.entries(A.lieder || {})) {
+      const m = reihe.find(k => e.modelle && e.modelle[k]);
+      if (m) kondensate[id] = e.modelle[m];
+    }
+    const n = Object.keys(kondensate).length;
+    console.log(`  Kondensate: ${n} Lieder mit zehn Substantiven`);
+    if (!n) kondensate = null;
+  }
+  const kondensatVon = (id) => (kondensate && kondensate[id]) || null;
   const e       = await einbetterLaden(MODELL, TOKEN);
 
   /* Die Achsenbegriffe einmal einbetten - sie gelten fuer alle Songs. */
@@ -153,12 +181,61 @@ function mittel(vektoren) {
     const karte = JSON.parse(fs.readFileSync(pfad, 'utf8'));
 
     /* ---- 1. Geschichten-Genres je Song ---------------------------- */
+    /* DER SOCKEL. Manche Kategoriensaetze liegen einfach naeher an
+       Liedtexten als andere - das sagt ueber das einzelne Lied nichts,
+       entscheidet aber jeden Groesstvergleich. Ohne Abzug bekamen 227
+       von 257 Liedern (88 %) die Haltung "Anklage", zwei der sieben
+       Kategorien wurden nie gewaehlt, und in karte-geschichten.json
+       stand bei ALLEN zwoelf Gruppen haltung: "Anklage" - die Achse trug
+       buchstaeblich null Information. Mit Abzug: Beschwoerung 56,
+       Spott 49, Bekenntnis 44, Anrede 30, Erzaehlung 30, Beobachtung 27,
+       Anklage 21, keine Kategorie leer.
+
+       Caspar_D hat beide Spalten an zwanzig Liedern verglichen, die er
+       kennt (28.08.2026): "schwierig zu beurteilen, auch die zweite
+       spalte liegt oft daneben, aber sie ist besser."
+
+       UND ER WIRD EINGEFROREN. Der Sockel mittelt ueber die Lieder des
+       Bestands und wandert deshalb mit ihm - gemessen um bis zu 30
+       Milli-Kosinus von 100 auf 257 Lieder, das Sechsfache dessen, was
+       die Zuordnung trennt. Dadurch wechselten Lieder ihr Etikett,
+       obwohl sich an ihnen nichts geaendert hatte. Einmal berechnet und
+       abgelegt bleibt er stehen: die Bewegung ist dann exakt null, die
+       Guete praktisch gleich (benannt 88 % gegen 87 %).
+
+       Wer ihn neu bilden will, loescht library/achsen-sockel.json. Das
+       benennt dann moeglicherweise alte Lieder um - deshalb steht das
+       Datum mit drin. */
+    const sockelPfad = path.join(LIB, 'achsen-sockel.json');
+    let sockel = null;
+    if (fs.existsSync(sockelPfad)) {
+      const d = JSON.parse(fs.readFileSync(sockelPfad, 'utf8'));
+      sockel = d.sockel;
+      console.log(`  Sockel vom ${d.stand} (${d.lieder} Lieder), eingefroren`);
+    } else {
+      sockel = {};
+      const mitText = karte.songs.filter(s => texte[s.id]);
+      for (const [achse, liste] of Object.entries(achsVek)) {
+        sockel[achse] = {};
+        for (const [n, w] of liste) {
+          let su = 0;
+          for (const s of mitText) su += cos(Float64Array.from(texte[s.id].emb), w);
+          sockel[achse][n] = +(su / (mitText.length || 1)).toFixed(5);
+        }
+      }
+      fs.writeFileSync(sockelPfad, JSON.stringify(
+        { stand: new Date().toISOString().slice(0, 10), lieder: mitText.length,
+          wozu: 'Grundniveau je Kategorie. Eingefroren, damit alte Lieder ihr Etikett behalten, wenn neue dazukommen.',
+          sockel }, null, 1));
+      console.log(`  Sockel neu gebildet aus ${mitText.length} Liedern -> library/achsen-sockel.json`);
+    }
+
     for (const s of karte.songs) {
       const t = texte[s.id]; if (!t) continue;
       const v = Float64Array.from(t.emb);
       s.gesch = {};
       for (const [achse, liste] of Object.entries(achsVek))
-        s.gesch[achse] = liste.map(([n, w]) => [n, +cos(v, w).toFixed(3)])
+        s.gesch[achse] = liste.map(([n, w]) => [n, +(cos(v, w) - ((sockel[achse] || {})[n] || 0)).toFixed(3)])
                               .sort((a, b) => b[1] - a[1]).slice(0, 3);
     }
 
@@ -194,17 +271,28 @@ function mittel(vektoren) {
          das ist der Preis, und er ist klein. */
       const zaehl = {};
       for (const s of mit) {
+        const drin = kondensatVon(s.id);
+        if (drin) { for (const w of drin) zaehl[w] = (zaehl[w] || 0) + 1; continue; }
+        /* Kein Kondensat - dann wie frueher aus dem Rohtext. Deutsche
+           Substantive sind am grossen Anfangsbuchstaben zu erkennen; das
+           erste Wort der Zeile zaehlt nicht, weil dort jedes Wort gross
+           anfaengt. */
         const l = (katalog.songs[s.id] || {}).lyrics; if (!l) continue;
-        const drin = new Set();
+        const roh = new Set();
         for (const zeile of nurGesungenes(l).split('\n')) {
           const w = zeile.match(/[A-Za-zÄÖÜäöüß]{4,}/g) || [];
-          /* Das erste Wort der Zeile ueberspringen. */
           for (let i = 1; i < w.length; i++)
-            if (/^[A-ZÄÖÜ]/.test(w[i])) drin.add(w[i]);
+            if (/^[A-ZÄÖÜ]/.test(w[i])) roh.add(w[i]);
         }
-        for (const w of drin) zaehl[w] = (zaehl[w] || 0) + 1;
+        for (const w of roh) zaehl[w] = (zaehl[w] || 0) + 1;
       }
-      const schwelle = Math.max(3, Math.ceil(mit.length * MINDEST_ANTEIL));
+      /* Aus dem Kondensat kommen je Lied nur zehn Woerter statt hunderter
+         Rohtextwoerter - ein Wort in einem Fuenftel der Gruppe ist dort
+         viel mehr wert. Deshalb reicht ein Zehntel, mindestens aber drei
+         Lieder. */
+      const ausKondensat = mit.some(s => kondensatVon(s.id));
+      const anteil = ausKondensat ? MINDEST_ANTEIL / 2 : MINDEST_ANTEIL;
+      const schwelle = Math.max(3, Math.ceil(mit.length * anteil));
       const kand = Object.entries(zaehl).filter(([, n]) => n >= schwelle).map(([w]) => w);
 
       const bewertet = [];
@@ -295,6 +383,27 @@ function mittel(vektoren) {
       for (const s of mit) for (const [n, w] of (s.gesch || {})[achse] || []) summe[n] = (summe[n] || 0) + w;
       const best = Object.entries(summe).sort((a, b) => b[1] - a[1])[0];
       return best ? best[0] : null;
+    }
+
+    /* ---- Doppelte Namen aufloesen ----------------------------------
+       Zwei Gruppen, die beide "Liebe — zärtlich" heissen, sind in der
+       Legende nicht auseinanderzuhalten. Wo der Achsenname doppelt
+       vorkommt, kommt die HALTUNG dazu - sie unterscheidet die beiden
+       Gruppen ja gerade (die eine spricht ein Du an, die andere
+       beschwoert). Hilft auch das nicht, entscheidet die Groesse. */
+    const wieOft = {};
+    for (const g of karte.gruppen) wieOft[g.name] = (wieOft[g.name] || 0) + 1;
+    for (const g of karte.gruppen) {
+      if (wieOft[g.name] < 2 || g.themen) continue;      /* Wortnamen sind schon eindeutig */
+      const h = g.achsen && g.achsen.haltung;
+      if (h && !g.name.includes(h)) g.name += ' · ' + h;
+    }
+    const nochmal = {};
+    for (const g of karte.gruppen) nochmal[g.name] = (nochmal[g.name] || 0) + 1;
+    for (const g of karte.gruppen) {
+      if (nochmal[g.name] < 2) continue;
+      const n = karte.songs.filter(s => s.gruppe === g.nr).length;
+      g.name += ` (${n})`;
     }
 
     fs.writeFileSync(pfad, JSON.stringify(karte));
