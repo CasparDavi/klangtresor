@@ -6735,7 +6735,7 @@ function zeichnen(){
       if (wurmlochSpur){
         jetztP = wurmlochSpur[1]; vorherP = wurmlochSpur[0];
       } else {
-        const i = karteDaten.songs.findIndex(p => p.id === aktuellId);
+        const i = raumK().songs.findIndex(p => p.id === aktuellId);
         const P = i >= 0 ? karteXY(Lk, i) : [Lk.W * 0.34, Lk.H * 0.5];
         /* Tangente an einen gedachten Kreis um die Bildmitte */
         const dx = P[0] - Lk.W / 2, dy = P[1] - Lk.H / 2;
@@ -6836,7 +6836,12 @@ let raumDa = null;         /* welche Räume gerechnet sind */
    koordinaten bekommmen, nicht diejenigen aus dem Klangraum." Sonst
    fliegt es im Geschichten-Raum die Bahn des Klang-Raums ab und landet
    neben den Sternen. */
-const raumK = () => raumDaten[raumJetzt] || karteDaten;
+/* Als Funktionsdeklaration, nicht als const: Sie wird an Stellen
+   benutzt, die im Quelltext WEITER OBEN stehen (der Wurmloch-Code).
+   Eine const-Bindung waere dort in der temporalen Todeszone - zur
+   Laufzeit ginge es gut, weil die Funktionen spaeter laufen, aber es
+   ist eine Falle, die beim naechsten Verschieben zuschnappt. */
+function raumK(){ return raumDaten[raumJetzt] || karteDaten; }
 /* Welche Sterne der Filter der Albumansicht durchlaesst - null heisst
    "kein Filter, alles anfliegbar". Gesetzt in zeichnen(), gelesen beim
    Malen (Blaesse) und von reiseNaechster (Ziel). */
@@ -6922,7 +6927,7 @@ const COVER_AB = 2.5;                 // (alt: feste Zoomschwelle; jetzt zaehlt 
    (Caspar_D, 21.08.2026) - nicht bei einer festen Zoomstufe. */
 const COVER_STERNE = 20;
 function sichtbareSterne(z){
-  if (!karteDaten || !karteLage.xy) return Infinity;
+  if (!raumK() || !karteLage.xy) return Infinity;
   const { W, H, xy } = karteLage; let n = 0;
   for (const [x, y] of xy){ const X = z.tx + z.k * x, Y = z.ty + z.k * y; if (X >= 0 && X <= W && Y >= 0 && Y <= H) n++; }
   return n;
@@ -6936,7 +6941,7 @@ function coverBild(s){
   let im = karteCover.get(s.id);
   if (!im){
     im = new Image(); im.fertig = false;
-    im.onload = () => { im.fertig = true; if (!karteNeuzeichnung) karteNeuzeichnung = requestAnimationFrame(() => { karteNeuzeichnung = 0; if (karteDaten && register === 'karte') karteHimmel(karteDaten); }); };
+    im.onload = () => { im.fertig = true; if (!karteNeuzeichnung) karteNeuzeichnung = requestAnimationFrame(() => { karteNeuzeichnung = 0; if (raumK() && register === 'karte') karteHimmel(raumK()); }); };
     im.src = s.fremd ? (s.bildUrl || '') : (s.bild || artworkBild(s.id));
     karteCover.set(s.id, im);
   }
@@ -7010,7 +7015,7 @@ const DREH_DAUER = 3200;                 // ms je Drehung - langsam genug zum Fo
 /* Drehzentrum (Caspar_D, 21.08.2026): immer der Stern, um den das Schiff
    fliegt - er bleibt beim Drehen an seinem Platz. Ohne laufenden Song
    der Ursprung. */
-const karteDrehZentrum = () => { const p = aktuellId && karteDaten && karteDaten.songs.find(x => x.id === aktuellId); return p && p.xyz ? karteRaum(p) : [0, 0, 0]; };
+const karteDrehZentrum = () => { const p = aktuellId && raumK() && raumK().songs.find(x => x.id === aktuellId); return p && p.xyz ? karteRaum(p) : [0, 0, 0]; };
 let karteSternbilder = [];   // gerade gezeigte Sternbilder ({t, i}), setzt karteHimmel
 let karteSpot = null;        // Stern unter der Maus + seine Nachbarn (Spotlight auf der Animationsschicht)
 const karteSternbildLage = new Map();   // i -> [x, y] der Beschriftung (Treffflaeche)
@@ -7393,7 +7398,7 @@ function kartePanelDran(leg){
     const vorher = gestalt;
     gestalt = gwSel.value; kubus = gestalt === 'kubus';
     merk('mysuno-gestalt', gestalt);
-    if (vorher === 'kubus' && !kubus){ assimiliert.clear(); if (karteDaten) karteHimmel(karteDaten); }
+    if (vorher === 'kubus' && !kubus){ assimiliert.clear(); if (raumK()) karteHimmel(raumK()); }
     if (vorher === 'rabe' && gestalt !== 'rabe' && typeof rabeWolkeLeeren === 'function') rabeWolkeLeeren();
     if (vorher === 'rabe' && gestalt !== 'rabe' && karteSchiffFrame) karteSchiffFrame.rabenFunken = null;
     if (typeof rabenmagieAnwenden === 'function') rabenmagieAnwenden();
