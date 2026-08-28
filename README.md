@@ -97,7 +97,11 @@ erzählen. Wer wissen will, wie so etwas zustande kommt, findet in
 
 **Werkzeuge**
 - Tonstudio mit Equalizer, Kompressor, Raum und Störfrequenz-Kerbe
-- Klangraum: die eigene Sammlung als Sternenkarte, mit Flugbahnen
+- **Räume**: die eigene Sammlung als Sternenkarte, mit Flugbahnen — in
+  drei Sichten. Der **Klang-Raum** ordnet nach dem Ton, der
+  **Geschichten-Raum** nach dem, wovon die Lieder handeln (aus den
+  Texten, mehrsprachig — deutsche und englische landen im selben Raum,
+  ohne Übersetzung), der **Lied-Raum** nach beidem zu gleichen Teilen
 - Autorenseite: die eigenen Zahlen im Verhältnis zur Nachbarschaft —
   wer hier kommentiert, geliked oder gefolgt hat, mit öffentlichen
   Profilzahlen und Hirschfaktor. Samt Erklärung, warum in dieser

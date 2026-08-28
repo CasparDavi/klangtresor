@@ -53,6 +53,40 @@ erst durch seine Frage „wo sind meine echten Videoartworks?".
 **Kosten:** kompletter neuer Sammellauf über alle 248 Songs, ~35 Minuten.
 **Lehre:** Beim Reduzieren von Fremddaten lieber zu viel behalten.
 
+### Ein Suchmodell für eine Ähnlichkeitsaufgabe genommen
+Der Geschichten-Raum lief zuerst mit **multilingual-e5** — dem
+bekanntesten mehrsprachigen Einbetter. Ergebnis: „Autophagie" (über
+Zellen) landete neben „Der Blogger" (über Datencenter), weil beide in
+Systemvokabular reden. Caspar_Ds Nachfrage („die haben textlich nix
+miteinander zu tun") führte zur Messung: Sämtliche Abstände lagen
+zwischen **0,9232 und 0,9307** — acht Tausendstel für 257 Lieder. Darin
+ist jede Nachbarschaft Zufall.
+
+Der Grund ist die Trainingsaufgabe. **E5, BGE und GTE sind Suchmodelle**
+(„finde das Dokument zu dieser Frage"), mit ungleichen Seiten und
+Präfixen wie `query:`. Dort zählt nur die Reihenfolge, nicht der
+Abstand. **Ähnlichkeitsmodelle** (`paraphrase-*`, LaBSE) sind auf „sind
+diese zwei Texte dasselbe in anderen Worten" trainiert — beide Seiten
+gleichrangig, kein Präfix.
+**Und größer half nicht:** e5-base ordnete *schlechter* als e5-small und
+fand nicht einmal die eigene zweite Fassung als nächsten Nachbarn. Auch
+die unquantisierte Fassung lag falsch.
+**Lehre:** Zwei Modelle können beide „mehrsprachige Textvektoren"
+liefern und trotzdem für verschiedene Fragen gebaut sein. Der Unterschied
+zeigt sich nicht am Modellsteckbrief, sondern erst, wenn man **die
+Spreizung der Abstände** mißt.
+
+### Eine Längengrenze gezogen, wo die Quelle keine hat
+Der Filter für Sunos Regieangaben begrenzte auf 60 Zeichen — aus Sorge,
+eine offene Klammer könnte den halben Text fressen. Damit blieben **388
+der 4274 Klammern stehen**, darunter `[Verse 1 – Clean guitar arpeggios,
+mid tempo, intimate bariton vocal]`. Eine Gruppe im Geschichten-Raum hieß
+daraufhin „Drums · Outro · Slow".
+Caspar_D: „regie steht in suno immer in eckigen klammern" — und damit war
+die Regel so einfach, wie sie aussah.
+**Lehre:** Eine Grenze zu ziehen, wo die Quelle keine hat, schafft keine
+Sicherheit, sondern eine Lücke.
+
 ### Lyric-Videos für Standbilder gehalten
 Aus Dateigröße und Datenrate wurde geschlossen, die `.mp4` seien Cover
 plus Ton. Caspar_Ds Nachfrage führte zur Prüfung mit ffprobe und

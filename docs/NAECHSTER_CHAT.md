@@ -1256,3 +1256,143 @@ Differenz (neutral gegen eingestellt) zeigt das Tonstudio allein.
   lagen für die bisherigen Reihen aber noch nicht vor. Eine Wiederholung
   beantwortet es.
 
+
+---
+
+# 28.08.2026 — Die drei Räume, drei Literaturrecherchen, zwei fremde Rechner
+
+Eine lange Nacht. Vier Stränge, in dieser Reihenfolge entstanden.
+
+## 1 · Fremde Rechner: Fruusch und Tarja
+
+**Dr. Fruusch richtete KlangTresor unter Windows ein** und brachte drei
+echte Mängel ans Licht:
+
+- **`bin/modelle-holen.js` hing ohne jedes Anzeichen.** `fetch` stand
+  ohne Timeout da; die drei Wiederholversuche darunter liefen nie an,
+  weil nie ein Fehler geworfen wurde. Jetzt liest es den Körper
+  stückweise — das gibt Fortschrittsanzeige *und* eine Wache, die nach
+  45 s ohne ein einziges Byte abbricht. **Dieselbe Zeile stand in
+  `bin/laden.js`**, wo es schlimmer gewesen wäre: 89 Songs am Stück.
+- **`npm` blockiert seit Version 11 Installationsskripte.** Die Freigabe
+  für `onnxruntime-node` steht jetzt in `package.json` (`allowScripts`).
+  Ohne sie hätte ab npm 12 jeder Neue ein halb installiertes Paket und
+  einen ausgefallenen Klangraum ohne erkennbaren Grund.
+- **`KlangTresor-starten.cmd`** ist neu — er hatte das PowerShell-Fenster
+  zugemacht, in dem der Server lief. Kein Anfängerfehler: Nichts am
+  Fenster verrät, daß dort etwas laufen muß.
+
+**Tarja meldete zwei Fehler in der Oberfläche**, beide behoben: Das
+Notizfenster wanderte bei jedem Klick nach oben (es wurde gemessen,
+bevor `artZeichnen()` es füllte), und das bewegte Artwork verschluckte
+alle Klicks auf die Kachelmarken (`pointer-events` fehlte, und weil das
+Video breiter sein darf als die Kachel, traf es sogar die Nachbarn).
+
+## 2 · Drei Recherchen — und was sie an unseren Zahlen berichtigt haben
+
+Erst eine GitHub-Runde (`docs/BACKLOG.md`), dann eine richtige
+Literaturrecherche mit Subagenten (`docs/LITERATUR-TIEF.md`, rund 310
+Werkzeugaufrufe). Der erste Durchgang steht als `docs/LITERATUR.md` mit
+einem Kasten obenauf, der sagt, was ihm fehlt.
+
+**Zwei Fehler in unseren eigenen Dokumenten kamen dabei heraus:**
+
+- **Der Störabstand war vertauscht.** 14,2 dB ist der *breitbandige*
+  Wert und im Originaltext ausdrücklich der Fehlalarm; **je Band** waren
+  es 39,9 dB, die abgelegte Messung nennt 34,8. Das ist keine
+  Kleinigkeit: ISO 3382-1 verlangt für T20 einen Abklingbereich von
+  35 dB.
+- **Die „menschliche Obergrenze von 90 %"** bei der Struktursegmentierung
+  steht im TISMIR-Survey **unbelegt**. Gemessen sind es **F ≈ 0,67–0,68**.
+
+**Der wichtigste inhaltliche Fund**, zweimal unabhängig gefunden: **Das
+Tonstudio kann nicht, was wir von ihm wollen.** Für Raummoden ist Q = 1
+um Faktor 20–35 zu breit; fürs Gehör fehlt jedes Band oberhalb 2500 Hz,
+und genau dort sitzt der altersbedingte Verlust (19 dB bei 3 kHz, 36 dB
+bei 8 kHz). Beides führt auf dieselbe Änderung: **Frequenz und Güte der
+acht Bänder müßten freie Parameter werden.**
+
+Dazu für die Raumakustik: **Über AirPlay laufen zwei unabhängige Quarze**
+(HomePod, USB-Mikrofon). Ohne Taktabgleich wäre eine Impulsantwort im Baß
+belastbar und **oberhalb 1 kHz wertlos** — und man sähe es ihr nicht an.
+
+## 3 · Der große Bau: drei Räume
+
+Caspar_D: „wir haben Klang-Raum und Geschichten-Raum und Lied-Raum (das
+sind die beiden aneinandergehängten Vektoren), 3 Register."
+
+| Raum | Vektoren | Songs |
+|---|---|---|
+| **Klang** | Discogs-EffNet, 1280 Dim | 321 |
+| **Geschichten** | Liedtexte, 768 Dim | 257 |
+| **Lied** | beide, je auf 1/√2 skaliert | 257 |
+
+Neu: `bin/geschichten.js`, `bin/texte-einbetten.js`, `bin/tokenizer.js`
+(ein Unigram-Viterbi in hundert Zeilen — Transformers.js wäre eine
+zweite ML-Abhängigkeit gewesen). `bin/karte.js` rechnet alle drei über
+`--raum`. Server: `/api/karte?raum=…` und `/api/raeume`.
+
+**Keine Übersetzung nötig** — das war der Ausgangspunkt und hat sich
+erledigt. Ein mehrsprachiges Modell bildet Deutsch und Englisch in
+denselben Raum ab. Gemessen: deutscher Abschiedstext zu englischem
+0,913, deutscher Tanztext zu englischem 0,903 — *höher* als deutscher
+Abschied gegen deutschen Tanz (0,855). Und eine Übersetzung wäre
+schädlich: Reim und Wortspiel überleben sie nicht, das Thema ohnehin.
+
+### Die Lehre der Nacht: Suchmodell ≠ Ähnlichkeitsmodell
+
+Der erste Anlauf lief mit **e5** und lieferte Unsinn — „Autophagie"
+(Zellen) landete neben „Der Blogger" (Datencenter), weil beide in
+Systemvokabular reden.
+
+**E5, BGE und GTE sind Suchmodelle**, trainiert auf „finde das Dokument
+zu dieser Frage". Ungleiche Seiten, daher Präfixe wie `query:`. Dabei
+zählt nur die Reihenfolge, nicht der Abstand — und so drängen sich alle
+Werte oben zusammen: **0,9232 bis 0,9307 für sämtliche Lieder.** Darin
+ist jede Nachbarschaft Zufall.
+
+**Größer half nicht:** e5-base ordnete *schlechter* als e5-small und
+fand nicht einmal die eigene zweite Fassung. Auch die unquantisierte
+Fassung lag falsch. Es war die Familie, nicht die Größe.
+
+Mit **paraphrase-multilingual-mpnet-base-v2** (Ähnlichkeitsmodell, kein
+Präfix): Spreizung von 0,269 auf **0,664**, und „Autophagie v2" findet
+„Autophagie".
+
+### Der Textfilter, in drei Schritten scharfgestellt
+
+Alle drei kamen von Caspar_D, alle drei waren nötig:
+
+1. **Regie raus** — 3641 Angaben in 252 von 257 Liedern, überall
+   dieselben Wörter. Spanne der Abstände +20 %.
+2. **Keine Längengrenze** — „regie steht in suno immer in eckigen
+   klammern". Meine 60-Zeichen-Grenze ließ 388 Klammern stehen; eine
+   Gruppe hieß daraufhin „Drums · Outro · Slow".
+3. **Vorspann raus** — alles vor der ersten Klammer. 76 Lieder, 31k
+   Zeichen: Notizen an sich selbst, Ansagen an Suno. Eine Gruppe hieß
+   „Playlist". Silhouette 0,084 → 0,101.
+
+### Was am Ende noch auffiel
+
+Die Gruppennamen kamen im Geschichten-Raum weiter aus den Klang-Etiketten
+— „Pop · Elektronik" für eine Gruppe, die nach Themen gebildet wurde.
+Jetzt kommen sie aus den Texten: Wörter, die *innen häufig und außen
+selten* sind, je Lied gezählt statt je Vorkommen.
+
+Und das **Raumschiff rechnete an 26 Stellen mit dem Klang-Raum** — es
+wäre im Geschichten-Raum die falsche Bahn geflogen. Alles geht jetzt
+über `raumK()`.
+
+## 4 · Was offen ist
+
+- **Englische Übersetzungen, die in deutschen Liedern nachgeschoben
+  sind**, verwässern den Geschichten-Raum. Noch kein Filter dafür.
+- **Die Stoppwortliste** für die Gruppennamen ist zu klein — es stehen
+  noch Füllwörter drin („Hast · Bevor · Fühl").
+- **Das Vollbild** ist gebaut, aber im eingebetteten Browser nicht
+  prüfbar („Permissions check failed"). In Chrome sollte es gehen.
+- **Übersetzung der Oberfläche**: Plan steht im Backlog. 1.314 Texte,
+  57 Normseiten — aber der Aufwand steckt in 110 zusammengesetzten
+  Sätzen und 84 Dezimalkomma-Stellen, nicht im Übersetzen.
+- **Bewegte Standbilder**: Werkbank in `docs/entwuerfe/bewegtbild/`,
+  offen ist die Dosierung bei dunklen Covern.

@@ -273,9 +273,22 @@ bist. Dein Paßwort wird dabei nirgends abgelegt.
 
 ---
 
-## Der Klangraum — dein Archiv als Sternenhimmel
+## Die Räume — dein Archiv als Sternenhimmel
 
-Das dritte Register. Eine Musik-KI (Discogs-EffNet, von den Essentia-
+Das dritte Register. **Es gibt drei Räume**, umschaltbar in der Kopfzeile:
+
+| | Nähe bedeutet | woraus |
+|---|---|---|
+| **Klang** | klingt ähnlich | dem Ton |
+| **Geschichten** | handelt von Ähnlichem | den Liedtexten |
+| **Lied** | beides | beidem, je zur Hälfte |
+
+Der Geschichten-Raum braucht **keine Übersetzung**: Das Modell bildet
+über hundert Sprachen in denselben Raum ab, deutsche und englische Texte
+liegen nebeneinander, wenn sie von Ähnlichem handeln. Lieder ohne Text
+fehlen dort — das steht auch so in der Legende.
+
+Zum Klang-Raum im einzelnen: Eine Musik-KI (Discogs-EffNet, von den Essentia-
 Leuten in Barcelona) hört jeden Song komplett durch und gibt ihm einen
 Ort im Klangraum: Nähe = ähnlicher Sound, unabhängig vom Styleprompt.
 Dazu Genre, Stimmung und Instrumente je Song. Daraus wird ein
