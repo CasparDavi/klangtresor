@@ -1936,3 +1936,109 @@ sichtbar.
 **Nebenbei geklärt:** Der Übersetzungsfilter im Geschichten-Raum war
 richtig. Die englische Fassung wird *nicht* gesungen — die Wortdichte
 beweist es.
+
+---
+
+## Geschichten-Genres statt Klang-Etiketten
+
+Caspar_D, 28.08.2026: „und genres, instrumente in Geschichten müssten
+was völlig anderes sein — nämlich Geschichten-Genres" — und dann: „oder
+Gedichtgenres, da ist wohl ein Brainstorm fällig".
+
+Der Geschichten-Raum zeigt heute Genre, Stimmung und Instrumente aus
+`klang.json`. Die beschreiben den **Ton**, nicht den Text. Im
+Geschichten-Raum stehen sie am falschen Platz — die Sternbilder heißen
+dort „Elektronik" und „Synthesizer", obwohl der Raum von Themen handelt.
+
+### Das Verfahren: Zero-Shot mit dem vorhandenen Modell
+
+Kategorien werden **in Worten vorgegeben**, mit demselben
+mpnet-Modell eingebettet, und jedes Lied bekommt die, der es am
+nächsten liegt. Kein Training, keine Etiketten, keine neue
+Abhängigkeit. Genau das, wonach die Frage lautete: eine KI, die Texte
+mit Stichworten versieht, die eine höhere Ordnung beschreiben.
+
+### Was das Modell nicht kann
+
+**Form.** Klassische Gattungen — Ballade, Sonett, Elegie, Ode — hängen
+an Versmaß, Strophenbau und Reim. Das sieht ein Bedeutungsmodell nicht;
+eine Ballade und ein Bekenntnis über dasselbe Thema lägen für es
+nebeneinander. Wer Gedichtgattungen will, braucht dafür ein anderes
+Verfahren (Silbenzählung, Reimerkennung) — das ist ein eigenes Vorhaben.
+
+### Vorschlag: drei Achsen, wie im Klang-Raum
+
+| Achse | | Begriffe (Entwurf) |
+|---|---|---|
+| **Stoff** | wovon handelt es | Liebe · Verlust · Aufbruch · Technik und Maschine · Körper · Gesellschaft · Natur · Rausch · Arbeit · Kindheit · Tod |
+| **Haltung** | wie spricht es | Bekenntnis · Anklage · Anrede an ein Du · Beobachtung · Erzählung · Selbstgespräch · Beschwörung · Spott |
+| **Ton** | wie klingt es | zärtlich · trotzig · düster · ironisch · pathetisch · nüchtern · verspielt · resigniert |
+
+Damit hätten die Sternbilder im Geschichten-Raum dieselbe Dreiteilung
+wie im Klang-Raum (Genre / Stimmung / Instrumente), nur mit Begriffen,
+die zum Raum passen.
+
+**Die Haltung ist die interessanteste Achse**, weil sie im Klang-Raum
+kein Gegenstück hat: Ob ein Lied jemanden anspricht, sich bekennt oder
+von außen erzählt, hört man dem Ton nicht an — dem Text schon.
+
+### Zwei Dinge, die vor der Liste zu prüfen sind
+
+**Trennt das Modell die Achsen?** „Trotzig" und „Anklage" könnten für
+es dasselbe sein. Das ist in Minuten gemessen: Kategorien einbetten und
+ihre Abstände untereinander ansehen. Liegen zwei zu nah beieinander,
+ist eine überflüssig.
+
+**Wie sind die Kategorien formuliert?** „Liebe" allein ist ein schwaches
+Signal; „ein Lied über Liebe und Nähe zwischen zwei Menschen" trifft
+besser, weil es dem ähnelt, was in den Texten steht. Bei Zero-Shot ist
+die Formulierung der halbe Erfolg und wird regelmäßig unterschätzt.
+
+---
+
+## Gruppennamen: Kontrast statt Stoppwortliste
+
+Caspar_D, 28.08.2026: „die stoppwörter sind schrott, wir müssen irgendwas
+übergeordnetes finden".
+
+Er hat recht — eine Handliste versucht durch **Ausschluß** zu erreichen,
+was man durch **Bedeutung** entscheiden sollte. Und sie funktionierte
+schlecht: Gruppen hießen „Hast · Bevor · Fühl".
+
+### Der erste Versuch war falsch herum
+
+Naheliegend wäre, die Wörter zu nehmen, die dem **Schwerpunkt der
+Gruppe** am nächsten liegen (KeyBERT-Prinzip). Gemessen kam das Gegenteil
+heraus:
+
+```
+am nächsten:    dabei · kotzt · motzt · vorbei · sagt
+am weitesten:   protein · systemstart · supplements · oxytocin
+```
+
+Der Grund: Der Schwerpunkt liegt in der **Mitte** des Raums, und dort
+wohnen die allgemeinen Wörter. Nähe zum Schwerpunkt mißt
+Durchschnittlichkeit, nicht Kennzeichnung.
+
+### Richtig ist der Kontrast
+
+```
+Wert = Nähe zum eigenen Schwerpunkt − Nähe zum Gesamtschwerpunkt
+```
+
+Gemessen am Bestand:
+
+| Gruppe | mit Stoppwortliste | mit Kontrast | Wert |
+|---|---|---|---|
+| 16 Lieder | Dogma · Schrott · Null | **Dogma · System · Macht · Maschine** | 0,155 |
+| 40 Lieder | Frage · Sätze · Eigentlich | Schon · Doch · Vielleicht | 0,066 |
+| 144 Lieder | Glut · Hände · Meiner | Warm · Hand · Weich · Nacht | **−0,015** |
+
+**Der Wert ist nebenbei ein Gütemaß.** Bei 0,155 hat die Gruppe ein
+klares Thema, bei −0,015 keines — dann sollte **gar kein Name** vergeben
+werden statt eines erfundenen. Die Stoppwortliste kann ersatzlos weg.
+
+Umsetzung: Für jede Gruppe die Kandidatenwörter einbetten (die, die in
+mindestens einem Fünftel ihrer Lieder vorkommen) und nach Kontrast
+sortieren. Das Modell liegt bereits geladen vor; die Rechnung kostet
+Sekunden je Raum.
