@@ -67,6 +67,56 @@ const MINDEST = 50;   /* Kuerzere "Texte" sind Platzhalter, keine Geschichte. */
    Lied. Nur die wenigen offensichtlichen Regieworte darin fliegen raus. */
 const REGIEWORT = /^(spoken|whispered?|instrumental|silence|talking|sound effects?|sfx|ad-?lib\w*)$/i;
 
+/* ---- NACHGESCHOBENE UEBERSETZUNGEN -----------------------------------
+   Caspar_D, 28.08.2026: "und englische Texte, die nachgeschoben sind in
+   deutschen Versionen müssen auch weg".
+
+   Manche Lieder tragen ihren Text zweimal: erst deutsch, dann englisch.
+   Sichtbar wird das, wenn man den Sprachverlauf ueber die Zeilen
+   auftraegt - er sieht dann so aus:
+
+       DDDDDEEEEEE
+
+   Fuer den Geschichten-Raum ist das doppelt schaedlich: Der Song zieht
+   in beide Sprachraeume, und weil alle Uebersetzungen dieselben
+   englischen Fuellwoerter tragen, ruecken sie untereinander naeher,
+   als ihre Themen es rechtfertigen.
+
+   ABGESCHNITTEN WIRD NUR EIN SAUBERER BLOCK am Ende: Beide Haelften
+   muessen fuer sich einsprachig sein und die Sprachen sich
+   unterscheiden. Ein Lied, das zwischen den Sprachen SPIELT - Refrain
+   englisch, Strophe deutsch -, hat kein solches Profil und bleibt
+   unangetastet. Lieber eine Uebersetzung uebersehen als ein
+   zweisprachiges Lied halbieren. */
+const W_DE = /\b(und|der|die|das|ich|nicht|ist|mit|wir|du|sich|ein|eine|dem|den|für|auf|von|aus|mir|dir|mich|dich|wie|noch|nur|aber|wenn|dann|hat|war|kein|schon|immer|sind|hab|mein|dein|durch|über|ohne|zu)\b/gi;
+const W_EN = /\b(the|and|you|that|with|for|are|this|have|from|your|will|can|all|but|not|was|what|when|who|out|now|get|just|like|know|time|love|don|been|would|its|our|they|there|into)\b/gi;
+
+function sprache(zeile) {
+  const d = (zeile.match(W_DE) || []).length, e = (zeile.match(W_EN) || []).length;
+  if (d + e < 1) return null;                 /* zu wenig zum Urteilen */
+  return d > e ? 'de' : e > d ? 'en' : null;
+}
+
+function ohneUebersetzung(text) {
+  const zeilen = text.split('\n');
+  const sp = zeilen.map(z => z.trim().length > 6 ? sprache(z) : null);
+  const bewertbar = sp.filter(Boolean).length;
+  if (bewertbar < 8) return text;             /* zu kurz fuer ein Urteil */
+
+  /* Die Schnittstelle suchen, an der beide Haelften am reinsten sind. */
+  let bester = null;
+  for (let i = Math.floor(zeilen.length * 0.25); i < Math.floor(zeilen.length * 0.75); i++) {
+    const vorn = sp.slice(0, i).filter(Boolean), hinten = sp.slice(i).filter(Boolean);
+    if (vorn.length < 4 || hinten.length < 4) continue;
+    const anteil = (a, s) => a.filter(x => x === s).length / a.length;
+    for (const [a, b] of [['de', 'en'], ['en', 'de']]) {
+      const rein = Math.min(anteil(vorn, a), anteil(hinten, b));
+      if (rein > 0.8 && (!bester || rein > bester.rein)) bester = { i, rein };
+    }
+  }
+  return bester ? zeilen.slice(0, bester.i).join('\n') : text;
+}
+
 function nurGesungenes(text) {
   /* ALLES VOR DER ERSTEN KLAMMER faellt weg. Caspar_D, 28.08.2026:
      "alles was vor der ersten eckigen Klammer steht, muß auch raus".
@@ -106,9 +156,14 @@ function nurGesungenes(text) {
     .trim();
 }
 
+/* Erst die Regie weg, dann die Uebersetzung - in dieser Reihenfolge:
+   Der Sprachverlauf ist nur lesbar, wenn keine englischen Regiewoerter
+   mehr dazwischenstehen. */
+const nurGesungenesGanz = (text) => ohneUebersetzung(nurGesungenes(text));
+
 /* Auch karte.js braucht den Filter - fuer die Gruppennamen im
    Geschichten-Raum. Einmal geschrieben, zweimal benutzt. */
-module.exports = { nurGesungenes };
+module.exports = { nurGesungenes: nurGesungenesGanz, ohneRegie: nurGesungenes };
 
 if (require.main !== module) return;
 
@@ -140,7 +195,7 @@ if (require.main !== module) return;
   for (const s of liste) {
     const n = s.lyrics.length;
     if (alt[s.id] && alt[s.id].zeichen === n) { songs[s.id] = alt[s.id]; uebernommen++; continue; }
-    const rein = nurGesungenes(s.lyrics);
+    const rein = nurGesungenesGanz(s.lyrics);
     if (rein.length < MINDEST) { uebersprungen++; continue; }
     const v = await e.einbetten(rein);
     songs[s.id] = { emb: Array.from(v, x => +x.toFixed(6)), zeichen: n, gesungen: rein.length };

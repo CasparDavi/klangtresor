@@ -1385,8 +1385,16 @@ wäre im Geschichten-Raum die falsche Bahn geflogen. Alles geht jetzt
 
 ## 4 · Was offen ist
 
-- **Englische Übersetzungen, die in deutschen Liedern nachgeschoben
-  sind**, verwässern den Geschichten-Raum. Noch kein Filter dafür.
+- ~~Englische Übersetzungen in deutschen Liedern~~ — **erledigt am
+  28.08.** Sichtbar wird das am Sprachverlauf über die Zeilen: `DDDDDEEEEEE`.
+  Abgeschnitten wird nur ein *sauberer* Block am Ende — beide Hälften
+  müssen für sich einsprachig sein. Ein Lied, das zwischen den Sprachen
+  *spielt*, hat kein solches Profil und bleibt ganz. Betroffen: 7 Lieder,
+  16k Zeichen; von 8 Liedern mit gemischter Sprache blieb eines
+  unangetastet, und das ist echte Zweisprachigkeit. Bei „Sync - Bio
+  Anthem" sitzt der Schnitt genau bei der Zeile „SYNC - english lyrics".
+  **Die Silhouette hat sich dadurch nicht verbessert** (0,101 → 0,086) —
+  der Gewinn liegt in sauberen Texten, nicht in schärferen Gruppen.
 - **Die Stoppwortliste** für die Gruppennamen ist zu klein — es stehen
   noch Füllwörter drin („Hast · Bevor · Fühl").
 - **Das Vollbild** ist gebaut, aber im eingebetteten Browser nicht
