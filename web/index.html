@@ -245,6 +245,10 @@ h1{
 
 .unterreg{display:inline-flex;gap:4px;align-items:center;margin-left:10px;padding-left:12px;
   border-left:1px solid var(--rand)}
+/* display:inline-flex schluege sonst das hidden-Attribut - die Leiste
+   stand in jedem Register, sobald sie Inhalt hatte (aufgefallen am
+   29.08.2026, als der zweite Raum kam und sie erstmals gefuellt war). */
+.unterreg[hidden]{display:none}
 .unterreg-b{font:inherit;font-size:13px;color:var(--schwach);background:none;border:1px solid transparent;
   border-radius:999px;padding:4px 11px;cursor:pointer;transition:color .12s,border-color .12s,background .12s}
 .unterreg-b:hover{color:var(--text);border-color:var(--rand)}
