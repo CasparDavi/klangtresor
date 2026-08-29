@@ -430,6 +430,15 @@ const MORGEN_SCHRITTE = [
 const morgen = { laeuft:false, schritt:-1, seit:null, zeilen:[], fehler:null, neueIds:[], folge:[],
                  schrittSeit:null };
 
+/* Fuers Einmessen (29.08.2026): das Standard-Ausgabegeraet wird per
+   system_profiler ermittelt (traege, darum 10 s Cache), und die
+   WARNTON-Lautstaerke laesst sich fuer die Dauer einer Messung auf
+   null stellen (Caspar_D: "kannst du fuer den Testlauf saemtliche
+   Systemmessages, die Geraeusche machen, ausschalten?"). Der alte
+   Wert wird hier gemerkt und beim Zurueckstellen wiederhergestellt. */
+let ausgabeGeraetCache = { t: 0, wert: null };
+let warntonMerker = null;
+
 /* ------------------------------------------------------------
    Selbstkalibrierender Fortschritt
    ------------------------------------------------------------
@@ -1246,6 +1255,70 @@ const server = http.createServer((req, res) => {
   }
   /* Welche Raeume sind gerechnet? Die Oberflaeche zeigt nur an, was da
      ist - ein Register, das ins Leere fuehrt, ist schlimmer als keins. */
+  /* Systemlautstaerke fuers Einmessen (Caspar_D, 29.08.2026: "kannst du
+     die systemlautstaerke abfragen vorher?"). Nur LESEN - gesetzt wird
+     nichts, das bleibt beim Nutzer. Nur auf macOS; anderswo ehrlich
+     {verfuegbar:false}, und die Oberflaeche bittet um Handpruefung. */
+  if (p === '/api/system/lautstaerke') {
+    if (process.platform !== 'darwin') return jsonAntwort(res, { verfuegbar: false });
+    return require('node:child_process').execFile('osascript', ['-e', 'get volume settings'],
+      { timeout: 3000 }, (err, out) => {
+        const m = err ? null : /output volume:(\d+).*output muted:(\w+)/.exec(out || '');
+        if (!m) return jsonAntwort(res, { verfuegbar: false });
+        jsonAntwort(res, { verfuegbar: true, prozent: +m[1], stumm: m[2] === 'true' });
+      });
+  }
+
+  /* Das Standard-Ausgabegeraet - wichtig fuers Einmessen, denn die
+     Befunde sind geraetespezifisch (der Kompressor wohnt im HomePod,
+     nicht im iMac). */
+  if (p === '/api/system/ausgabegeraet') {
+    if (process.platform !== 'darwin') return jsonAntwort(res, { verfuegbar: false });
+    if (Date.now() - ausgabeGeraetCache.t < 10000 && ausgabeGeraetCache.wert)
+      return jsonAntwort(res, ausgabeGeraetCache.wert);
+    return require('node:child_process').execFile('system_profiler', ['SPAudioDataType', '-json'],
+      { timeout: 8000, maxBuffer: 4 * 1024 * 1024 }, (err, out) => {
+        let w = { verfuegbar: false };
+        try {
+          const j = JSON.parse(out);
+          const geraete = (j.SPAudioDataType || []).flatMap(x => x._items || []);
+          const std = geraete.find(g => g.coreaudio_default_audio_output_device === 'spaudio_yes');
+          if (std) w = { verfuegbar: true, name: std._name };
+        } catch (e) {}
+        ausgabeGeraetCache = { t: Date.now(), wert: w };
+        jsonAntwort(res, w);
+      });
+  }
+
+  /* Warntoene stumm fuer die Dauer einer Messung. POST {"an":true}
+     merkt den aktuellen Pegel und stellt auf 0; {"an":false} stellt
+     den gemerkten Pegel wieder her. Nur die Warntoene - die
+     Ausgabelautstaerke bleibt unberuehrt. */
+  if (p === '/api/system/stille' && req.method === 'POST') {
+    if (process.platform !== 'darwin') return jsonAntwort(res, { verfuegbar: false });
+    let roh = '';
+    req.on('data', s => { roh += s; if (roh.length > 256) req.destroy(); });
+    return req.on('end', () => {
+      let an = false; try { an = !!JSON.parse(roh || '{}').an; } catch (e) {}
+      const { execFile } = require('node:child_process');
+      if (an) {
+        execFile('osascript', ['-e', 'alert volume of (get volume settings)'], { timeout: 3000 }, (err, out) => {
+          const alt = err ? null : parseInt(out, 10);
+          if (Number.isFinite(alt)) warntonMerker = alt;
+          execFile('osascript', ['-e', 'set volume alert volume 0'], { timeout: 3000 }, () => {
+            jsonAntwort(res, { an: true, vorher: warntonMerker });
+          });
+        });
+      } else {
+        const zurueck = Number.isFinite(warntonMerker) ? warntonMerker : 50;
+        execFile('osascript', ['-e', 'set volume alert volume ' + zurueck], { timeout: 3000 }, () => {
+          jsonAntwort(res, { an: false, wieder: zurueck });
+        });
+        warntonMerker = null;
+      }
+    });
+  }
+
   if (p === '/api/raeume') {
     const da = {};
     for (const [r, n] of Object.entries({ klang: 'karte.json', geschichten: 'karte-geschichten.json' }))
@@ -1259,6 +1332,46 @@ const server = http.createServer((req, res) => {
      werden von den Rechenlaeufen neu geschrieben und wuerden die
      Einstellungen ueberschreiben. Gemessenes gehoert der Maschine,
      Eingestelltes gehoert Caspar_D - getrennte Dateien, beide einzeln. */
+  /* DER MESSGANG-ZWISCHENSPEICHER (Caspar_D, 29.08.2026: "es wäre gut,
+     wenn alle daten irgendwo zwischengespeichert würden, dann könnte
+     die Zusammenfassung damit spielen"). EINE Sammeldatei je Gang
+     (exFAT: 1-MB-Bloecke, keine Kleindateien), benannt nach dem
+     Startzeitpunkt; jeder Schritt ueberschreibt sie mit dem
+     gewachsenen Stand. Die Daten sind nicht reproduzierbar - ein Raum
+     an einem Abend laesst sich nicht nachstellen. */
+  const DURCHLAEUFE_DATEI = path.join(WURZEL, 'library', 'messungen', 'tontestdurchlaeufe.json');
+  if (p === '/api/messungen/durchlauf' && req.method === 'PUT') {
+    let roh = '';
+    req.on('data', c => { roh += c; if (roh.length > 16 * 1024 * 1024) req.destroy(); });
+    req.on('end', () => {
+      try {
+        const d = JSON.parse(roh);
+        const stempel = String(d.begonnen || '').slice(0, 19);
+        if (!/^\d{4}-\d{2}-\d{2}T/.test(stempel)) { res.writeHead(400); return res.end(); }
+        fs.mkdirSync(path.dirname(DURCHLAEUFE_DATEI), { recursive: true });
+        let alle = {}; try { alle = JSON.parse(fs.readFileSync(DURCHLAEUFE_DATEI, 'utf8')); } catch (e) {}
+        alle[stempel] = d.daten || d;
+        fs.writeFileSync(DURCHLAEUFE_DATEI, JSON.stringify(alle));
+        jsonAntwort(res, { ok: true, durchlauf: stempel, anzahl: Object.keys(alle).length });
+      } catch (e) { jsonAntwort(res, { ok: false, fehler: e.message }, 400); }
+    });
+    return;
+  }
+  if (p === '/api/messungen/durchlauf' && req.method === 'GET') {
+    try {
+      const alle = JSON.parse(fs.readFileSync(DURCHLAEUFE_DATEI, 'utf8'));
+      const namen = Object.keys(alle).sort();
+      if (!namen.length) return jsonAntwort(res, { ok: false, fehler: 'noch kein Durchlauf gespeichert' }, 404);
+      const name = namen[namen.length - 1];
+      return jsonAntwort(res, { ok: true, name, durchlauf: alle[name] });
+    } catch (e) { return jsonAntwort(res, { ok: false, fehler: 'noch kein Durchlauf gespeichert' }, 404); }
+  }
+  if (p === '/api/messungen/durchlaeufe' && req.method === 'GET') {
+    try {
+      const alle = JSON.parse(fs.readFileSync(DURCHLAEUFE_DATEI, 'utf8'));
+      return jsonAntwort(res, { ok: true, durchlaeufe: Object.keys(alle).sort() });
+    } catch (e) { return jsonAntwort(res, { ok: true, durchlaeufe: [] }); }
+  }
   if (p === '/api/eq' && req.method === 'GET') {
     const f = path.join(WURZEL, 'library', 'eq.json');
     try { return jsonAntwort(res, JSON.parse(fs.readFileSync(f, 'utf8'))); }

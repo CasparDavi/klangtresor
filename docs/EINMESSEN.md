@@ -12,6 +12,44 @@ Schritt für Schritt durchgegangen ist und gesagt hat, was er sieht.
 
 ---
 
+## Das Messdokument (29.08.2026) — der heutige Hauptweg
+
+Der Messgang lebt seit dem 29.08. als **ein Dokument im Einmessen-Register**
+(Knopf „Raum vermessen — das Messdokument"): Es beginnt oben, wächst nur nach
+unten, der aktive Block ankert unter den feststehenden Registerlaschen, Fertiges
+bleibt stehen, Vergängliches fliegt raus. Regeln in HAUSREGELN.md („Das
+Messdokument"); der Code trägt seine Begründungen als Kommentare (dok*-Funktionen
+in web/index.html).
+
+**Der Gang:** Kopf & Geräte (Dropdowns, Ampeln) → anklickbares Inhaltsverzeichnis
+(✓/▸/·, Sprung ersetzt den festen Block des Tests an Ort und Stelle) →
+Zusammenfassungstext → Stilletest (12 s, superfein, Nadeln samt Deutung; Bezug der
+Serie) → Piep-Eichung (zwei Einzelpieps: Latenz-Median + Konstanz-Spanne;
+Anhebeschleife 50→71→100 %, bis der Piep 20 dB über der Ruhe liegt; Rauschprobe
+2 s rosa bestätigt je Band) → je Signal 2 Läufe (weiß/rosa/blau, Sweep log/linear;
+alle auf −12 dBFS Energie normiert, Signal-QS vor dem Senden, Exklusiv-Wächter,
+Live-Bild „Ende der Audiokette" + „Mikrofon" auf einer Uhr; Rauschen wird
+detektiert mit automatischer Einmal-Wiederholung bei Latenzabweichung, Sweeps
+laufen auf der GESETZTEN Eichlatenz) → Lautstärkerampen weiß + sweep (Start am
+Eichpegel, 3-dB-Stufen, Ende wenn der Baßabfall von der Folgestufe BESTÄTIGT ist
+— Kennlinie statt Gängelung) → **Zusammenfassung & Steckbrief** (spielt nur mit
+dem Zwischenspeicher: Steckbrief Stille/Latenz/Kette/Meßgüte mit ISO-3382-
+Einordnung samt Schroeder-Vorbehalt; Raumkurven-Schar mit datengetriebenem
+Vergleichsband, außerhalb blaß; Wiederholstreuung; Formtreue je Rampenstufe mit
+4-dB-Marke; EQ-Absenkung mit Übernehmen; Kompressor mit Umschalter Kette/
+Hörbarkeit; Latenz-Übernahme als Textversatz). Über-alles-Test fährt alles ohne
+Bestätigungen und sammelt Fehlschläge zur Nachhol-Liste.
+
+**Zwischenspeicher:** je Schritt nach `library/messungen/tontestdurchlaeufe.json`
+(EINE Datei, ein Schlüssel je Durchlauf; PUT/GET `/api/messungen/durchlauf`,
+Liste `/durchlaeufe`). Lange FFTs aufs 1024er-Logruster eingedampft (Maximum).
+
+**Offen (siehe BACKLOG):** Entfaltung → Klirr/RT60/C50/C80; Anzeigen an den
+gemessenen Versatz koppeln (Tabelle im BACKLOG); Messpegel-Deckel −12 dBFS
+(„wenn wir immer noch cappen…"); Werkzeugmodus-Altteile abräumen.
+
+---
+
 ## Der Grundgedanke
 
 **Eine einzelne Messung ist keine Eichung.** Ein Mikrofon nimmt immer das

@@ -2167,3 +2167,44 @@ ein fehlender Raum ist unsichtbar, nicht kaputt.
   das Register einmal geöffnet wurde — erst dann fragt die Seite
   `/api/raeume` und benennt in „Räume" um. Altverhalten, fiel nur nie
   auf, solange es einen Raum gab.
+
+
+## Anzeigen an den gemessenen Versatz koppeln (29.08.2026)
+
+Caspar_D: „wenn die latenz bestimmt ist — muß am ende darauf
+zurückgekommen werden, daß alle anzeigen verzögert werden müssen, damit
+das gezeigte signal synchron zum gehörten Signal ist."
+
+Die Piep-Eichung des Messdokuments mißt die Laufzeit Kettenende → Ohr
+(über AirPlay ~2 s). Alle Anzeigen, die am Audiographen oder an
+`audio.currentTime` hängen, zeigen aber den SENDE-Moment. Bestandsliste:
+
+| Anzeige | Quelle | Stand |
+|---|---|---|
+| Karaoke-Text der Bühne | `audio.currentTime − bVersatz` | Mechanismus DA (`versatzSetzen`, ±3000 ms, localStorage) — nur den gemessenen Wert übernehmen |
+| Taktpuls der Bühne | dito (`buehneTakt`) | folgt bVersatz mit |
+| Blaster-Pegelbalken L/R | Analyser `hörer.anzL/anzR` | zeigt Sendezeit; bräuchte Verzögerungspuffer |
+| Spektralfläche/LCD | `hörer.anzL` (Float) | dito |
+| Ghettoblaster-Visualizer | `hörer.l/r` | dito |
+| Kompressor-Anzeigen (Wegregelung, Lampen) | Graph live | dito |
+| Studio-Messwerte/Zeiger | Graph live | dito |
+| Spielkopf/Fortschritt/Wellenform | `audio.currentTime` | zeigt Sendeposition; Anzeige der „gehörten" Stelle wäre −Versatz (Springen muß Sendezeit behalten!) |
+| EQ/A-B/Solo-Umschalten | — | keine Anzeige: Wirkung kommt erst nach dem Versatz an — gehört als Hinweis in die Bedienung |
+
+Plan: Der Abschluß-Schritt des Messgangs bekommt „Versatz auf die
+Anzeigen legen" — für den Text sofort (versatzSetzen), für die
+Analyser-Anzeigen braucht es einen Ringpuffer, der die Zeichendaten um
+den Versatz verzögert (eigener Bauabschnitt; ein zentraler
+Anzeige-Versatz statt Bühnen-Sonderweg).
+
+## Messpegel-Deckel und „echte" Messung (29.08.2026, ~Mitternacht)
+
+Caspar_D: „wenn wir immer noch cappen, ist es ja immer noch nicht das,
+was eine Messung ausmacht." Die Meßsignale sind auf −12 dBFS Energie
+normiert (Rausch-Scheitelfaktor; Ton kam herunter statt Rauschen
+hinauf). Für lautere Messungen bliebe: Signalarten getrennt voll
+aussteuern (Ton −3 dBFS) und die Energie-Verknüpfung über gemessene
+Werte statt gleicher Normierung herstellen — oder gezielt mit dem
+App-Pegel > Eichpegel fahren. Offen; abends nicht mehr getestet
+(„ich kann hier keinen Krach mehr machen, wir leben erstmal mit dem,
+was wir hier haben").

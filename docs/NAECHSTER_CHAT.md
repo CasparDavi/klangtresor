@@ -1490,3 +1490,47 @@ die 38er-Mischgruppe), Ortsbegriffe beim Zeigen auf die Karte,
 Achsen-Anzeige (die gesch-Felder liegen ungenutzt in der Karte),
 Playlist-Ebene mit Auto-Erkennung, Ereignishaftigkeits-Zähler,
 `bin/eichkasten.js` als Wache im Wartungslauf.
+
+---
+
+## 29.08.2026, spätabends — Das Messdokument steht; danach 10 Tage Pause
+
+**Was heute abend entstand** (Details: EINMESSEN.md „Das Messdokument",
+Regeln: HAUSREGELN.md gleichnamiger Abschnitt, Chronik: HISTORY.md):
+Der komplette Messgang als EIN Dokument im Einmessen-Register —
+Stilletest 12 s superfein · Doppelpiep-Eichung (Latenz-Median + Spanne,
+Anhebeschleife bis der Piep 20 dB über der Ruhe liegt, Rauschprobe) ·
+10 Läufe (weiß/rosa/blau, Sweep log/linear; −12-dBFS-Energie, Signal-QS,
+Exklusiv-Wächter, Live „Ende der Audiokette ↔ Mikrofon" auf einer Uhr;
+Sweep-Ankunft aus der Eichlatenz GESETZT) · Kennlinien-Rampen (Start am
+Eichpegel, Ende bei bestätigtem Baßabfall) · Zusammenfassung & Steckbrief
+mit Handgriffen (EQ übernehmen, Kompressor-Umschalter Kette/Hörbarkeit,
+Latenz→Textversatz, Abhörpegel). Über-alles-Test ohne Bestätigungen;
+anklickbares Inhaltsverzeichnis; Zwischenspeicher
+library/messungen/tontestdurchlaeufe.json (PUT/GET
+/api/messungen/durchlauf).
+
+**Erster echter Durchlauf (20:46, AirPlay/HomePods):** Latenz 2084 ms
+(Spanne 64) · Kette linear bis 100 % (Fehlbetrag 0,1 dB!) ·
+Wiederholstreuung ±0,1–0,8 dB · Störabstände weiß/rosa 35–38 dB
+(T20-tauglich nach ISO 3382-1), blau/linear-Sweep bauartbedingt schwach.
+
+**Zum Fortsetzen nach der Pause:**
+1. Offener Diskussionspunkt: Das datengetriebene Vergleichsband der
+   Zusammenfassung fiel eng aus (57–226 Hz; 60-%-Kriterium) — Alternative
+   „mind. 3 Läufe tragen" wäre eine Zeile (dokVergleichsBand).
+2. BACKLOG „Anzeigen an den gemessenen Versatz koppeln" (Tabelle) —
+   Textversatz-Übernahme existiert, Analyser-Anzeigen bräuchten einen
+   Ringpuffer.
+3. BACKLOG „Messpegel-Deckel −12 dBFS" („wenn wir immer noch cappen…") —
+   abends nicht mehr diskutiert.
+4. BACKLOG Entfaltung (Farina): Impulsantwort → Klirr → RT60 → C50/C80.
+5. Aufräumen: alter geführter MESS_PLAN/Werkzeugmodus-Teile gegen das
+   Dokument abwägen (Hausregel „Wer ersetzt, räumt ab").
+6. Wiedereinstieg zum Testen: Seite laden → Tonstudio → Einmessen →
+   „Raum vermessen — das Messdokument"; Daten ansehen ohne Ton:
+   GET /api/messungen/durchlauf.
+
+Der Verfahrensvergleich als eigener Panel-Plan wurde gelöscht (lebt im
+Dokument); die Session davor (vormittags) brachte Geschichten-Raum-
+Reaktivierung + gesundheit.js — steht weiter unten bzw. in HISTORY.

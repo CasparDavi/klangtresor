@@ -683,3 +683,48 @@ wird, und was dabei angesehen werden muß — steht in
 [ZUSAMMENARBEIT.md](ZUSAMMENARBEIT.md). Die Kurzfassung: Zu Beginn jeder
 Sitzung `node bin/fremdstand.js`, und Caspar_D bekommt die Liste, bevor
 etwas übernommen wird.
+
+---
+
+## Das Messdokument (29.08.2026)
+
+Die Tonvermessung ist **ein Dokument im Tonstudio-Panel** — kein
+Panelgeflecht, keine schwebende Ebene (die Vollbild-Ebene wurde ohne
+Freigabe gebaut und zurückgenommen). Es beginnt oben und wächst nur
+nach unten; am Ende dokumentiert es den ganzen Prozeß und läßt sich
+exportieren.
+
+1. **Die Bühne ist oben.** Der aktive Block ankert mit seiner
+   Überschrift direkt unter den Registerlaschen (die Laschen stehen
+   beim Scrollen fest) und wächst nach unten in den Blick. Nichts
+   passiert an der unteren Kante. Damit auch der letzte Block hinauf
+   kann, hat das Dokument Fußraum.
+2. **Fertiges bleibt stehen.** Kein Diagramm verschwindet, nichts wird
+   überdeckt. Knöpfe gibt es nur am lebenden Ende; Wiederholen ersetzt
+   genau den eigenen Block an Ort und Stelle.
+3. **Vergängliches fliegt raus.** Handlungsansagen („Bitte jetzt still
+   sein", „läuft …") tragen die Klasse `dokweg` und werden entfernt,
+   sobald ihr Moment vorbei ist. Im stehenden Dokument steht nur, was
+   dokumentiert.
+4. **Alles live — der Nutzer ist Kontrollinstanz.** Die Anzeige ist
+   Teil der Aufnahme und Auswertung: Während jedes Laufs läuft ein
+   Live-Feld mit dem Signal **vor** der Pipeline (Sende-Hüllkurve mit
+   Laufzeiger) und **hinter** ihr (Mikrofonspur mit Ankunftsmarke,
+   Momentanspektrum). Ein Ausschlag beantwortet sofort, ob Audio in
+   der Detektion ankommt.
+5. **Messung ist Kalibrierung — der Pfad ist exklusiv.** Während einer
+   Messung ist das Abspielelement Meßgerät: Weiterschalten und
+   Abspielen sind verriegelt (`messLaeuft`-Guards), und ein Wächter
+   prüft fortlaufend, daß das Meß-WAV unangetastet läuft. Jede
+   Einstreuung bricht mit Roß und Reiter ab. Nach einem Beilauf
+   startet nie von allein Musik.
+6. **Kein Signal ohne Prüfung.** Jedes erzeugte Signal wird vor dem
+   Senden geprüft (Dauer, Spitze, Lücken — `messSignalPruefen`); der
+   Befund steht im Dokument. Was durchfällt, wird nicht gesendet.
+7. **Fehlertexte tragen Zahlen und unterscheiden die Fälle** — „gar
+   nichts gehört" ist etwas anderes als „zu leise für die Erkennung".
+8. **Abschnittsweise Freigabe.** Der Gang (`DOK_GANG`) wird Schritt
+   für Schritt ausgebaut und von Caspar_D abgenommen; hinter dem
+   letzten freigegebenen Schritt steht ein Baustellen-Block.
+
+Ausführlich in [EINMESSEN.md](EINMESSEN.md).

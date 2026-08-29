@@ -1400,3 +1400,21 @@ Drei Lehren, die bleiben:
    Nachbarlied steht — Feldnachbarschaft statt Häufigkeit. Und ein
    Name darf scheitern dürfen: „(gemischte Gegend)" zeigt eine kranke
    Gruppe an, statt sie zu kaschieren.
+
+### Abends: Das Messdokument (29.08.2026)
+
+Der Einmess-Umbau des Nachmittags wurde nach Caspar_Ds Protokoll-Kritik
+(„mieseste Praxis") neu aufgesetzt: erst Zielbild (Bullets + ASCII), dann
+abschnittsweise Freigabe. Ergebnis: das Messdokument im Panel — Gang aus
+Stilletest (12 s superfein), Doppelpiep-Eichung mit Anhebeschleife und
+Rauschprobe, 10 Läufen (weiß/rosa/blau/Sweep log+linear, −12-dBFS-Energie,
+Signal-QS, Exklusiv-Wächter, Live „Kettenende ↔ Mikrofon" auf einer Uhr),
+Kennlinien-Rampen und einer Zusammenfassung mit Steckbrief, Vergleichsband,
+Formtreue, EQ-/Kompressor-/Latenz-Handgriffen. Zwischenspeicher
+tontestdurchlaeufe.json (eine Datei); Über-alles-Test ohne Bestätigungen;
+anklickbares Inhaltsverzeichnis mit festen Test-Blöcken. Nebenbefunde:
+versteckte 6-dB-Deckelung im WAV-Bau entfernt; Sweep-Ankunft wird aus der
+Eichlatenz GESETZT statt detektiert; Rampen-Abbruch wurde zur bestätigten
+Kennlinie („Empfehlung, nicht Gängelung"). Erster voller Durchlauf über
+AirPlay: Latenz 2084 ms (Spanne 64), Kette linear bis 100 %,
+Wiederholstreuung ±0,1–0,8 dB.

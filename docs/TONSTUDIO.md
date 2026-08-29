@@ -793,5 +793,9 @@ Album chronologisch 53 %, Klangraum-Reise 45 %.
 ## Einmessen am Hörplatz
 
 Steht seit dem 27.08.2026 in einem eigenen Dokument:
+Seit dem 29.08.2026 ist das **Messdokument** der Hauptweg (ein Dokument im
+Register: Eichung, Rauscharten, Sweeps, Rampen, Zusammenfassung — Abschnitt
+"Das Messdokument" in EINMESSEN.md und HAUSREGELN.md).
+
 **[EINMESSEN.md](EINMESSEN.md)** — Signale, Ablauf, Auswertung,
 Diagramme und die Befunde über Raum und Lautsprecher.
