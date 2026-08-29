@@ -145,3 +145,25 @@ teilweise **ohne Modell** — Pronomenverteilung, Verbformen, Eigennamen.
 3. Gruppennamen dann per Sprachmodell aus den Kondensaten der Gruppe
    („Ballade · Verhängnis · Warnung"), einmal gerechnet, fest —
    derselbe Weg wie bei den Kondensaten selbst.
+
+---
+
+## Nachtrag, 29.08.2026
+
+Am Tag danach wurde der Rückweg ein anderer, und er ist gegangen —
+die Messungen dazu in `docs/GESCHICHTEN-RAUM-EICHKASTEN.md`:
+
+- **Der Lied-Raum bleibt zu**, endgültig (Caspar_D: „den kombinierten
+  Raum machen wir nicht wieder auf"). Der Rückweg gilt nur noch für
+  `karte-geschichten.json`.
+- **Die Namen kommen nicht per Sprachmodell**, sondern aus den
+  **Ortsbegriffen** (bin/ortsbegriffe.js): das eigene Kondensat-
+  Vokabular, eingebettet mit der vorhandenen ONNX-Strecke, mit Sockel,
+  Belegpflicht und Zufalls-Schwelle. Autark, generisch, am Eichkasten
+  gemessen — der Punkt 3 oben ist damit überholt.
+- Die **Achsen** (Punkt 2) laufen als bin/geschichten-achsen.js
+  (Zero-Shot, Sockel eingefroren); die Ereignishaftigkeit als
+  Zählachse (Pronomen, Tempus) ist gemessen tragfähig und steht im
+  Backlog. Die feinere Gruppierung bleibt offen.
+- **Seit dem Abend des 29.08. ist der Raum offen** — als „Geschichten
+  (beta)". Die Türen sind also wieder auf, mit ehrlichem Etikett.

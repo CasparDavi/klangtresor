@@ -98,10 +98,12 @@ erzählen. Wer wissen will, wie so etwas zustande kommt, findet in
 **Werkzeuge**
 - Tonstudio mit Equalizer, Kompressor, Raum und Störfrequenz-Kerbe
 - **Räume**: die eigene Sammlung als Sternenkarte, mit Flugbahnen — in
-  drei Sichten. Der **Klang-Raum** ordnet nach dem Ton, der
+  zwei Sichten. Der **Klang-Raum** ordnet nach dem Ton, der
   **Geschichten-Raum** nach dem, wovon die Lieder handeln (aus den
   Texten, mehrsprachig — deutsche und englische landen im selben Raum,
-  ohne Übersetzung), der **Lied-Raum** nach beidem zu gleichen Teilen
+  ohne Übersetzung). Seine Gruppen heißen nach den **Ortsbegriffen**:
+  den Wörtern des eigenen Bestands, die dort wohnen, wo die Gruppe
+  liegt — eine Gruppe ohne klaren Ort sagt das ehrlich
 - Autorenseite: die eigenen Zahlen im Verhältnis zur Nachbarschaft —
   wer hier kommentiert, geliked oder gefolgt hat, mit öffentlichen
   Profilzahlen und Hirschfaktor. Samt Erklärung, warum in dieser

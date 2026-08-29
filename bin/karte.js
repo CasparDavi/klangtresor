@@ -40,23 +40,40 @@ const WURZEL = path.join(__dirname, '..');
 const LIB    = path.join(WURZEL, 'library');
 const args   = process.argv.slice(2);
 
-/* ---- DREI RAEUME, EINE RECHNUNG ---------------------------------------
+/* ---- ZWEI RAEUME, EINE RECHNUNG ---------------------------------------
    Caspar_D, 28.08.2026: "wir haben Klang-Raum und Geschichten-Raum und
    Lied-Raum (das sind die beiden aneinandergehaengten Vektoren)."
 
    Es aendern sich nur die Vektoren, mit denen gerechnet wird - alles
    danach ist identisch. Die Etiketten (Stil, Genre, Stimmung) kommen in
    jedem Raum aus klang.json, denn sie beschreiben den Song und nicht den
-   Raum: dieselben Lieder, dieselben Namen, andere Anordnung. */
+   Raum: dieselben Lieder, dieselben Namen, andere Anordnung.
+
+   DER LIED-RAUM (Klang- und Geschichten-Vektor verkettet, je 1/sqrt(2)
+   gewichtet) IST GESTRICHEN. Caspar_D, 29.08.2026: "ich denke, den
+   kombinierten Raum machen wir nicht wieder auf." Die letzte gerechnete
+   Karte liegt in library/entwurf/karte-lied.json; die Rechnung selbst
+   ist geloescht, damit kein Lauf den Raum wieder erzeugt. */
 const RAEUME = {
   klang:       { datei: 'karte.json',              was: 'Klang-Raum' },
   geschichten: { datei: 'karte-geschichten.json',  was: 'Geschichten-Raum' },
-  lied:        { datei: 'karte-lied.json',         was: 'Lied-Raum' },
 };
 const RAUM = args.includes('--raum') ? args[args.indexOf('--raum') + 1] : 'klang';
-if (!RAEUME[RAUM]) { console.error('  Raum unbekannt: ' + RAUM + ' (klang | geschichten | lied)'); process.exit(1); }
+if (!RAEUME[RAUM]) { console.error('  Raum unbekannt: ' + RAUM + ' (klang | geschichten)'); process.exit(1); }
 const ZIEL   = path.join(LIB, RAEUME[RAUM].datei);
 const GRUPPEN_FEST = args.includes('--gruppen') ? +args[args.indexOf('--gruppen') + 1] : 0;
+
+/* DER GESCHICHTEN-RAUM WIRD GEPFLEGT, NICHT AUFGEMACHT. Liegt seine
+   Karte nicht in library/ (sondern beiseitegelegt in library/entwurf/),
+   rechnet der Lauf ihn nicht - sonst oeffnete jeder Morgenlauf den
+   Raum, den der Autor zugemacht hat. Aufmachen heisst: die Karte aus
+   dem Entwurf zurueckschieben (mv library/entwurf/karte-geschichten.json
+   library/) oder einmal ausdruecklich mit --neu rechnen. */
+if (RAUM === 'geschichten' && !fs.existsSync(ZIEL) && !args.includes('--neu')) {
+  console.log('  Geschichten-Raum: beiseitegelegt (keine library/karte-geschichten.json) — nichts zu tun.');
+  console.log('  Aufmachen: mv library/entwurf/karte-geschichten.json library/  oder  node bin/karte.js --raum geschichten --neu');
+  process.exit(0);
+}
 
 let klang;
 try { klang = JSON.parse(fs.readFileSync(path.join(LIB, 'klang.json'), 'utf8')); }
@@ -87,23 +104,7 @@ function norm(arr) {
   for (let i = 0; i < e.length; i++) e[i] /= n;
   return e;
 }
-const X = ids.map(id => {
-  const kl = () => norm(klang.songs[id].emb);
-  const ge = () => norm(geschichten[id].emb);
-  if (RAUM === 'klang')       return kl();
-  if (RAUM === 'geschichten') return ge();
-  /* LIED-RAUM: beide aneinander. Vorher jeden Teil auf 1/sqrt(2)
-     herunterskalieren - dann ist das Skalarprodukt des Ganzen genau das
-     Mittel der beiden Einzelprodukte, und der Klang uebertoent die
-     Geschichte nicht, obwohl er 1280 gegen 384 Dimensionen hat. Ohne
-     diese Wichtung entschiede allein die Dimensionszahl. */
-  const w = Math.SQRT1_2;
-  const a = kl(), b = ge();
-  const v = new Float64Array(a.length + b.length);
-  for (let i = 0; i < a.length; i++) v[i] = a[i] * w;
-  for (let i = 0; i < b.length; i++) v[a.length + i] = b[i] * w;
-  return v;
-});
+const X = ids.map(id => norm((RAUM === 'klang' ? klang.songs[id] : geschichten[id]).emb));
 const N = X.length;
 /* Abstand: WURZEL des Kosinus-Abstands, sqrt(1 - <a,b>) (Caspar_D,
    21.08.2026: "damit die grossen etwas kleiner gegenueber den kleinen
@@ -514,6 +515,16 @@ function themenName(m) {
   return bewertet.slice(0, 3).map(([w]) => w[0].toUpperCase() + w.slice(1)).join(' · ');
 }
 
+/* Ortsbegriffe-Namensgeber (nur Geschichten-Raum). null, wenn Kondensate
+   oder Wortvektoren fehlen - dann Wortkontrast als Fallback, siehe unten. */
+let orte = null;
+if (RAUM === 'geschichten') {
+  try { orte = require('./ortsbegriffe.js').namensgeber({ ids, geschichten }); } catch (e) { orte = null; }
+  console.log('  Benennung: ' + (orte
+    ? 'Ortsbegriffe (Kondensat-Vokabular, Sockel, Belegpflicht, Zufalls-Schwelle)'
+    : 'Wortkontrast aus Volltexten (keine Kondensate/Wortvektoren vorhanden)'));
+}
+
 const gruppen = [];
 for (let g = 0; g < bestK; g++) {
   const m = []; for (let i = 0; i < N; i++) if (label[i] === g) m.push(i);
@@ -521,13 +532,18 @@ for (let g = 0; g < bestK; g++) {
   const werte = m.map(i => analyse[ids[i]]).filter(Boolean);
   const prof = m.map(i => profile[ids[i]]).filter(p => p && p.length === 8);
   const klangName = genres.slice(0, 2).map(x => de(x[0])).join(' · ') + (stimmungen[0] ? ' — ' + de(stimmungen[0][0]) : '');
-  /* Klang-Raum: wie bisher. Geschichten-Raum: die Themen. Lied-Raum:
-     beides, denn er ist beides - Thema zuerst, weil es das ist, was der
-     Klangname nicht sagen kann. */
-  const themen = RAUM === 'klang' ? null : themenName(m);
-  const name = RAUM === 'geschichten' ? (themen || klangName)
-             : RAUM === 'lied'        ? (themen ? themen + ' — ' + klangName : klangName)
-             : klangName;
+  /* Klang-Raum: Genre + Stimmung, wie bisher. Geschichten-Raum:
+     ORTSBEGRIFFE - die Woerter des eigenen Kondensat-Vokabulars am
+     Gruppen-Schwerpunkt (bin/ortsbegriffe.js). Gemessen am Eichkasten,
+     29.08.2026: "Opfermut · Urgewalt · Glaubenszwang" statt
+     "Gesellschaft — pathetisch"; eine Gruppe ohne klaren Ort heisst
+     ehrlich "(gemischte Gegend)". Ohne Kondensate faellt der Bestand
+     auf den Wortkontrast aus den Volltexten zurueck (themenName).
+     NIE der Klangname: "Pop · Elektronik" beschreibt im Themenraum
+     etwas anderes als die Gruppe (Caspar_D, 28.08.2026: "die
+     gruppenbezeichnungen sind Quark, sorry. Das geht gar nicht."). */
+  const themen = RAUM === 'klang' ? null : (((orte && orte.ortsname(m)) || {}).name || themenName(m));
+  const name = RAUM === 'geschichten' ? (themen || `Gruppe ${g + 1}`) : klangName;
   gruppen.push({
     nr: g, name, anzahl: m.length, genres, stimmungen, themen,
     stile: mittelListe(m, 'stile'), instrumente: mittelListe(m, 'instrumente'),
@@ -608,7 +624,10 @@ fs.writeFileSync(ZIEL, JSON.stringify({
   abstand: { median6: +median(nachbarn.map(l => l[5] ? l[5][0] : 1)).toFixed(3), medianAlle: +median(Array.from(D).filter(Boolean)).toFixed(3) },
   raum: RAUM,
   verfahren: `agglomerativ/complete auf sqrt(1-cos) im ${X[0].length}-dim-Raum (${RAEUME[RAUM].was}); `
-    + 'Karte x/y = NMDS (Kruskal, SMACOF), umap = UMAP(15, 0.1, Saat 20260821)',
+    + 'Karte x/y = NMDS (Kruskal, SMACOF), umap = UMAP(15, 0.1, Saat 20260821)'
+    + (RAUM === 'geschichten' ? (orte
+        ? '; Namen = Ortsbegriffe des Kondensat-Vokabulars (Sockel, Belegpflicht, Zufalls-Schwelle)'
+        : '; Namen = Wortkontrast aus Volltexten') : ''),
   stress: +NM.stress.toFixed(3), stress3d: +NM3.stress.toFixed(3),
   tags,
   gruppen, songs,

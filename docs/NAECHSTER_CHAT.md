@@ -1395,8 +1395,10 @@ wäre im Geschichten-Raum die falsche Bahn geflogen. Alles geht jetzt
   Anthem" sitzt der Schnitt genau bei der Zeile „SYNC - english lyrics".
   **Die Silhouette hat sich dadurch nicht verbessert** (0,101 → 0,086) —
   der Gewinn liegt in sauberen Texten, nicht in schärferen Gruppen.
-- **Die Stoppwortliste** für die Gruppennamen ist zu klein — es stehen
-  noch Füllwörter drin („Hast · Bevor · Fühl").
+- ~~**Die Stoppwortliste** für die Gruppennamen ist zu klein~~ —
+  **überholt am 29.08.**: Die Namen kommen jetzt aus den Ortsbegriffen
+  (bin/ortsbegriffe.js), die keine Stoppwortliste brauchen; siehe der
+  Abschnitt zum 29.08. unten.
 - **Das Vollbild** ist gebaut, aber im eingebetteten Browser nicht
   prüfbar („Permissions check failed"). In Chrome sollte es gehen.
 - **Übersetzung der Oberfläche**: Plan steht im Backlog. 1.314 Texte,
@@ -1404,3 +1406,87 @@ wäre im Geschichten-Raum die falsche Bahn geflogen. Alles geht jetzt
   Sätzen und 84 Dezimalkomma-Stellen, nicht im Übersetzen.
 - **Bewegte Standbilder**: Werkbank in `docs/entwuerfe/bewegtbild/`,
   offen ist die Dosierung bei dunklen Covern.
+
+---
+
+# 29.08.2026 — Eichkasten, Ortsbegriffe, Reaktivierung
+
+Der Tag nach dem Beiseitelegen. Erst wurde **gemessen statt gebaut**:
+Caspar_Ds Playlists sind handgepflegte, bekannte Wahrheit — jede ein
+Prüfstein. Alle Zahlen in `docs/GESCHICHTEN-RAUM-EICHKASTEN.md`;
+Kurzfassung: Kondensate heilen die Sprachen (Japanisch-Paare von Rang
+100 auf 1), die zwei Erzählserien sind eine neue mittlere Leitersprosse,
+das Vier-Felder-Schema (Stoff- gegen Klang-Kompaktheit je Playlist)
+bestätigt die Raumtrennung als Fläche, und der Pronomen-Zähler trennt
+erzählend von betrachtend ohne Modell.
+
+Dann der Umbau — **der Geschichten-Raum ist fertig zum Wiederaufmachen**
+(`library/entwurf/karte-geschichten.json`, Anleitung in
+`library/entwurf/WARUM-HIER.md`):
+
+- **Namen aus Ortsbegriffen** (`bin/ortsbegriffe.js`, neu): das eigene
+  Kondensat-Vokabular (1454 Wörter, `library/wortvektoren.json`) am
+  Gruppen-Schwerpunkt — Sockel, Belegpflicht, Zufalls-Schwelle.
+  „Opfermut · Urgewalt" statt „Gesellschaft — pathetisch"; ohne klaren
+  Ort heißt es „(gemischte Gegend)". Generisch: braucht keine
+  Playlists, nur Kondensate; ohne die fällt es auf den Wortkontrast
+  zurück.
+- **`bin/geschichten-namen.js` ist gelöscht**; der Achsenteil lebt als
+  `bin/geschichten-achsen.js` (Stoff/Haltung/Ton, Sockel eingefroren).
+- **Der Lied-Raum ist gestrichen** (Caspar_D: „den kombinierten Raum
+  machen wir nicht wieder auf") — aus `bin/karte.js` und
+  `server/server.js` entfernt.
+- **Wartungslauf**: vier neue Schritte (Schlüssel `geschichten`), und
+  `bin/karte.js` zeichnet den Raum nur, wenn er offen ist — der Lauf
+  macht nichts von selbst auf.
+- Frontend: Legende sagt im Geschichten-Raum „Themengruppen".
+
+## Der Abend: aufgemacht, als Beta
+
+- **Der Raum ist offen** (`mv` erfolgt, im internen Browser geprüft):
+  Raumleiste Klang | „Geschichten (beta)", 3D/NMDS, Legende
+  „Themengruppen" mit den Ortsnamen. Das **(beta)** hängt am
+  Raumnamen (`RAUM_NAME` in web/index.html) — Caspar_D: „das ist es
+  noch nicht so richtig."
+- Die **Fußnote** der Karte sagt jetzt raumabhängig die Wahrheit über
+  die Namensherkunft (Ortsbegriffe statt „Genres und Stimmungen").
+- Ein im Browser **gemerkter Lied-Raum** fällt sauber auf Klang
+  zurück.
+- **Handlungsbedarf festgehalten** (Backlog: „Kondensate ohne
+  Bezahl-Modell — HANDLUNGSBEDARF"): Die gute Ausbaustufe hängt am
+  Kondensat-Schritt und damit an einem Bezahl- oder starken lokalen
+  Modell. Ohne die Daten stuft alles weich ab (drei Stufen, kein
+  Absturz — dort dokumentiert).
+- Die **Eichkasten-Messskripte** liegen jetzt versioniert in
+  `docs/eichkasten/` (LIESMICH dort), laufen rein lesend und
+  reproduzieren die Referenzwerte.
+- **Verbindungs-Wächter**: `bin/gesundheit.js` läuft als erster
+  Schritt der Morgenroutine — ein GET je Suno-Adresse (Seite,
+  Profil-API mit Pflicht-Query, Kommentar-API, Bild-/Video-CDN mit
+  Range; HEAD blockt Sunos CDN), Statuscode gemeldet, Änderungen
+  gegenüber `library/gesundheit.json` laut. Die Statusnummern stehen
+  in normaler Sprache dabei („200 (in Ordnung)", „403 (Zugriff
+  verweigert)"). Befund vom 29.08.: alles antwortet; Audio bleibt
+  gesperrt (neue Songs tragen „forbidden"-Platzhalter statt Links,
+  alte cdn1-Links → 403) — die Beobachtungszeile meldet es, falls
+  Suno je wieder aufmacht.
+- **Der volle Kreis ist getestet** (29.08., mittags): Lesezeichen in
+  Chrome geklickt → zwei Ernte-Pakete angenommen (je 248 Songs samt
+  Playlists und Benachrichtigungen) → Morgenroutine mit allen 17
+  Schritten (Gesundheit als Schritt 0, die vier Geschichten-Schritte)
+  ohne Fehler durch → beide Räume korrekt neu gezeichnet, Ortsnamen
+  stabil, Achsen vollständig.
+
+## Zum Fortsetzen (Geschichten-Raum)
+
+Lesereihenfolge für eine frische Sitzung: dieses Kapitel →
+`docs/GESCHICHTEN-RAUM-EICHKASTEN.md` (alle Messungen) → Backlog
+„Geschichten-Raum: nächste Schritte" (priorisiert) und „Kondensate
+ohne Bezahl-Modell" (der wunde Punkt). Zustand prüfen:
+`curl localhost:8788/api/raeume` (beide Räume?), `node
+docs/eichkasten/messlauf.js` (Referenzwerte im LIESMICH). Die
+nächsten Schritte, kurz: Familienfaltung vor der Gruppierung (löst
+die 38er-Mischgruppe), Ortsbegriffe beim Zeigen auf die Karte,
+Achsen-Anzeige (die gesch-Felder liegen ungenutzt in der Karte),
+Playlist-Ebene mit Auto-Erkennung, Ereignishaftigkeits-Zähler,
+`bin/eichkasten.js` als Wache im Wartungslauf.

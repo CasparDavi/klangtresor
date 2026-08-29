@@ -275,18 +275,21 @@ bist. Dein Paßwort wird dabei nirgends abgelegt.
 
 ## Die Räume — dein Archiv als Sternenhimmel
 
-Das dritte Register. **Es gibt drei Räume**, umschaltbar in der Kopfzeile:
+Das dritte Register. **Es gibt zwei Räume**, umschaltbar in der Kopfzeile:
 
 | | Nähe bedeutet | woraus |
 |---|---|---|
 | **Klang** | klingt ähnlich | dem Ton |
 | **Geschichten** | handelt von Ähnlichem | den Liedtexten |
-| **Lied** | beides | beidem, je zur Hälfte |
 
 Der Geschichten-Raum braucht **keine Übersetzung**: Das Modell bildet
 über hundert Sprachen in denselben Raum ab, deutsche und englische Texte
 liegen nebeneinander, wenn sie von Ähnlichem handeln. Lieder ohne Text
-fehlen dort — das steht auch so in der Legende.
+fehlen dort — das steht auch so in der Legende. Seine Themengruppen
+heißen nach den **Ortsbegriffen** — Wörtern aus den eigenen Liedern,
+die dort wohnen, wo die Gruppe liegt; eine Gruppe ohne klaren Ort heißt
+ehrlich „(gemischte Gegend)". Der Raum trägt ein **(beta)**: Er ist
+jung und wird noch verfeinert.
 
 Zum Klang-Raum im einzelnen: Eine Musik-KI (Discogs-EffNet, von den Essentia-
 Leuten in Barcelona) hört jeden Song komplett durch und gibt ihm einen

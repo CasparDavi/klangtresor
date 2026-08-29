@@ -6844,13 +6844,19 @@ let karteDaten = null, karteGruppeAn = null;
    Stilgruppen der Songs (stilgruppeVon, die Gruppensperre im Tonstudio),
    und die duerfen sich nicht aendern, nur weil jemand die Karte
    umschaltet. Der angezeigte Raum liegt daneben. */
-const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum', lied: 'Lied-Raum' };
+/* Der Lied-Raum (beide Vektoren verkettet) ist gestrichen — Caspar_D,
+   29.08.2026: "den kombinierten Raum machen wir nicht wieder auf". */
+/* Der Geschichten-Raum traegt ein (beta) — Caspar_D, 29.08.2026: "das
+   ist es noch nicht so richtig." Offene Schritte: docs/BACKLOG.md,
+   "Geschichten-Raum: naechste Schritte". Das Etikett haengt am Namen
+   und wandert damit in Pille, Lasche und Fussnote. */
+const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)' };
 const RAUM_WAS  = {
   klang:       'Nähe heißt: klingt ähnlich. Aus dem Ton gerechnet, der Text spielt keine Rolle.',
   geschichten: 'Nähe heißt: handelt von Ähnlichem. Aus den Liedtexten, der Klang spielt keine Rolle.',
-  lied:        'Beides zusammen, zu gleichen Teilen — Klang und Geschichte.',
 };
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
+if (!RAUM_NAME[raumJetzt]) raumJetzt = 'klang';   /* gemerkter Raum, den es nicht mehr gibt (lied) */
 const raumDaten = {};      /* je Raum die geladene Karte */
 let raumDa = null;         /* welche Räume gerechnet sind */
 
@@ -7373,7 +7379,7 @@ function kartePanelHtml(){
      gerechnet sind, erscheinen gar nicht erst; ein Knopf, der ins Leere
      führt, ist schlimmer als keiner. */
   const raumZeile = (raumDa && Object.values(raumDa).filter(Boolean).length > 1)
-    ? zeile('Raum', ['klang', 'geschichten', 'lied'].filter(r => raumDa[r]).map(r =>
+    ? zeile('Raum', ['klang', 'geschichten'].filter(r => raumDa[r]).map(r =>
         `<button class="pille raumpille ${raumJetzt === r ? 'an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
         + RAUM_NAME[r].replace('-Raum', '') + `</button>`).join(''))
       + `<p class="fussnote raumwas">${RAUM_WAS[raumJetzt]}`
@@ -7544,7 +7550,11 @@ async function karteZeichnen(){
   /* Bedienpanel in Zeilen (Caspar_D, 21.08.2026): Visualisierung,
      Klassifikatoren, Weiteres, Sound-Schiff. Darunter die Legende
      zweispaltig. */
-  const gruppenHtml = `<div class="legende2"><div class="lblock"><h4>Stilgruppen</h4><div class="lgrid">` + d.gruppen.map(g => {
+  /* Im Geschichten-Raum sind die Gruppen nach Themen gebildet und nach
+     Ortsbegriffen benannt (bin/ortsbegriffe.js) - "Stilgruppen" waere
+     dort das falsche Wort. */
+  const gruppenWort = d.raum === 'geschichten' ? 'Themengruppen' : 'Stilgruppen';
+  const gruppenHtml = `<div class="legende2"><div class="lblock"><h4>${gruppenWort}</h4><div class="lgrid">` + d.gruppen.map(g => {
     const e = g.erdung || {};
     const erd = [e.bpm && `${e.bpm} BPM`, e.lufs != null && `${String(e.lufs).replace('.', ',')} LUFS`,
       /* Moll-Anteil und Stimme sind totgelegt (docs/ANALYZER-REVIEW.md) und
@@ -7562,7 +7572,7 @@ async function karteZeichnen(){
   if (leg.dataset.sig !== panelSig){
     leg.dataset.sig = panelSig;
     { const sb0 = $('kartesteckbrief'); if (sb0 && sb0.parentElement !== $('karterechts')) $('karterechts').appendChild(sb0); }   // Steckbrief vor dem Neubau parken
-    leg.innerHTML = kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Songs · ${n} Stilgruppen`, gruppenHtml) +
+    leg.innerHTML = kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Songs · ${n} ${gruppenWort}`, gruppenHtml) +
       ladeHtml('werk', 'Werk', aktuellId && song(aktuellId) ? song(aktuellId).titel : '', '<div id="kartesteckbriefhalter"></div>');
     /* der Steckbrief (eigenes Element, wird vom Hover befuellt) wandert in die Werk-Lade */
     const sb = $('kartesteckbrief'), halter = leg.querySelector('#kartesteckbriefhalter'); if (sb && halter){ halter.appendChild(sb); sb.hidden = false; }
@@ -7578,7 +7588,6 @@ async function karteZeichnen(){
   const HERKUNFT = {
     klang:       ['Nähe bedeutet ähnlicher Klang', 'aus den Klang-Embeddings des KI-Modells Discogs-EffNet'],
     geschichten: ['Nähe bedeutet: handelt von Ähnlichem', 'aus den Liedtexten, eingebettet mit dem mehrsprachigen Modell paraphrase-multilingual-mpnet — deutsche und englische Texte landen dabei im selben Raum, ohne Übersetzung'],
-    lied:        ['Nähe bedeutet: klingt ähnlich UND handelt von Ähnlichem', 'aus beidem zu gleichen Teilen — Klang-Embeddings und Liedtext-Vektoren, jeder auf die Hälfte gewichtet, damit der Klang die Geschichte nicht übertönt'],
   };
   const [wasNaehe, woher] = HERKUNFT[raumJetzt] || HERKUNFT.klang;
   const fehlen = raumJetzt !== 'klang' && karteDaten ? karteDaten.songs.length - d.songs.length : 0;
@@ -7586,7 +7595,10 @@ async function karteZeichnen(){
     `Die Karte wurde per ${verfahren} ${woher} gerechnet, lokal auf diesem Rechner. ` +
     (fehlen ? `${fehlen} Lieder ohne Text fehlen in diesem Raum — sie stehen nur im Klang-Raum. ` : '') +
     `Die Gruppen wurden im vollen Vektorraum gebildet — nicht auf der Karte, die wegen der Flachheit des Bildschirms nur eine fehlerbehaftete Projektion darstellt. ` +
-    `Gruppennamen wurden aus den häufigsten Genres und Stimmungen (MTG-Jamendo) abgeleitet, Messwerte aus der eigenen Analyse. Stand ${new Date(d.stand).toLocaleDateString('de-DE')}.`;
+    (raumJetzt === 'geschichten'
+      ? `Gruppennamen sind die Ortsbegriffe: Wörter aus den eigenen Liedern, die dort wohnen, wo die Gruppe liegt — eine Gruppe ohne klaren Ort heißt „(gemischte Gegend)". `
+      : `Gruppennamen wurden aus den häufigsten Genres und Stimmungen (MTG-Jamendo) abgeleitet, `) +
+    `Messwerte aus der eigenen Analyse. Stand ${new Date(d.stand).toLocaleDateString('de-DE')}.`;
 
   leg.querySelectorAll('.gruppe').forEach(z => z.onclick = () => {
     const g = +z.dataset.g; karteGruppeAn = karteGruppeAn === g ? null : g; karteZeichnen();

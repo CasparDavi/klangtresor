@@ -332,6 +332,13 @@ function juengsteProfilErnte() {
    ist Pflicht. 'kaffee' haelt den Mac wach (caffeinate -i) - der
    Whisper-Nachtlauf stand von 2 bis 9 Uhr, weil der Mac schlief. */
 const MORGEN_SCHRITTE = [
+  /* ZUERST DIE VERBINDUNGEN. Caspar_D, 29.08.2026: "Es darf nicht
+     passieren, dass unbemerkt Links sterben und still Daten deswegen
+     nicht aktualisiert werden." bin/gesundheit.js fragt jede Adresse,
+     von der die Routine holt, nach ihrem Statuscode und meldet
+     AENDERUNGEN gegenueber dem letzten Lauf laut. Bricht nie ab -
+     die Lautstaerke ist das Protokoll. */
+  { schluessel: 'gesundheit', name: 'Verbindungen prüfen — antworten die Suno-Adressen?', befehl: ['bin/gesundheit.js'] },
   { schluessel: 'katalog', name: 'Katalog neu bauen — alle Ernten zusammenführen, Zählerverlauf fortschreiben', befehl: ['bin/aufbereiten.js'] },
   /* Direkt hinter den Katalog: reaktionen.js liest die Kommentarzahl
      von dort und fragt nur die Songs ab, die welche haben. Vorher waere
@@ -379,6 +386,16 @@ const MORGEN_SCHRITTE = [
   /* Die Karte ist in Sekunden gerechnet - immer, wenn der Musikstil
      lief, damit neue Songs ihren Platz am Himmel bekommen. */
   { schluessel: 'musikstil', name: 'Klangraum neu zeichnen', befehl: ['bin/karte.js'] },
+  /* DER GESCHICHTEN-RAUM, falls er offen ist. Vier Schritte: Vektoren
+     fuer neue Texte, Wortvektoren fuer die Ortsbegriffe, die Karte, die
+     Text-Achsen. bin/karte.js zeichnet den Raum nur, wenn
+     library/karte-geschichten.json da ist - ein beiseitegelegter Raum
+     (library/entwurf/) bleibt zu; der Lauf pflegt, was der Autor
+     aufgemacht hat, und macht nichts von selbst auf. */
+  { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Vektoren für neue Songs', befehl: ['bin/geschichten.js'] },
+  { schluessel: 'geschichten', name: 'Geschichten-Raum: Wortvektoren für die Ortsbegriffe', befehl: ['bin/ortsbegriffe.js'] },
+  { schluessel: 'geschichten', name: 'Geschichten-Raum neu zeichnen (nur wenn offen)', befehl: ['bin/karte.js', '--raum', 'geschichten'] },
+  { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Achsen (Stoff, Haltung, Ton)', befehl: ['bin/geschichten-achsen.js'] },
   /* DIE NACHBARSCHAFT GANZ ZUM SCHLUSS (Caspar_D, 26.08.2026). Zwei
      Schritte, gemeinsamer Schluessel - denn hirsch liest die Datei, die
      profile schreibt; einzeln abgewaehlt ergaebe der zweite keinen Sinn.
@@ -1214,11 +1231,13 @@ const server = http.createServer((req, res) => {
   }
   /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js).
 
-     DREI RAEUME seit dem 28.08.2026: ?raum=klang|geschichten|lied.
-     Ohne Angabe kommt der Klang-Raum - so bleiben alte Lesezeichen und
-     der Sternenhimmel-Export gueltig. */
+     ZWEI RAEUME: ?raum=klang|geschichten. Ohne Angabe kommt der
+     Klang-Raum - so bleiben alte Lesezeichen und der Sternenhimmel-
+     Export gueltig. Der Lied-Raum (verkettete Vektoren) ist gestrichen:
+     Caspar_D, 29.08.2026, "den kombinierten Raum machen wir nicht
+     wieder auf". */
   if (p === '/api/karte' || p === '/api/klang') {
-    const RAUMDATEI = { klang: 'karte.json', geschichten: 'karte-geschichten.json', lied: 'karte-lied.json' };
+    const RAUMDATEI = { klang: 'karte.json', geschichten: 'karte-geschichten.json' };
     const raum = (u.searchParams.get('raum') || 'klang');
     const name = p === '/api/klang' ? 'klang.json' : (RAUMDATEI[raum] || RAUMDATEI.klang);
     const f = path.join(WURZEL, 'library', name);
@@ -1229,7 +1248,7 @@ const server = http.createServer((req, res) => {
      ist - ein Register, das ins Leere fuehrt, ist schlimmer als keins. */
   if (p === '/api/raeume') {
     const da = {};
-    for (const [r, n] of Object.entries({ klang: 'karte.json', geschichten: 'karte-geschichten.json', lied: 'karte-lied.json' }))
+    for (const [r, n] of Object.entries({ klang: 'karte.json', geschichten: 'karte-geschichten.json' }))
       da[r] = fs.existsSync(path.join(WURZEL, 'library', n));
     return jsonAntwort(res, da);
   }

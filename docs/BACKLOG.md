@@ -1941,6 +1941,13 @@ beweist es.
 
 ## Geschichten-Genres statt Klang-Etiketten
 
+**Umgesetzt am 28./29.08.2026** als die drei Text-Achsen in
+`bin/geschichten-achsen.js` (Stoff · Haltung · Ton, Zero-Shot, Sockel
+eingefroren in `library/achsen-sockel.json`, läuft im Wartungslauf).
+**Offen bleibt die Anzeige**: Das Frontend liest die `gesch`-Felder je
+Song und die `achsen` je Gruppe noch nirgends — die Sternbilder des
+Geschichten-Raums sind weiter leer.
+
 Caspar_D, 28.08.2026: „und genres, instrumente in Geschichten müssten
 was völlig anderes sein — nämlich Geschichten-Genres" — und dann: „oder
 Gedichtgenres, da ist wohl ein Brainstorm fällig".
@@ -2042,3 +2049,121 @@ Umsetzung: Für jede Gruppe die Kandidatenwörter einbetten (die, die in
 mindestens einem Fünftel ihrer Lieder vorkommen) und nach Kontrast
 sortieren. Das Modell liegt bereits geladen vor; die Rechnung kostet
 Sekunden je Raum.
+
+**Überholt am 29.08.2026.** So gebaut (als bin/geschichten-namen.js)
+und am Balladen-Fall gescheitert: Gruppen, die über Wortnachbarschaft
+statt Wortgleichheit zusammenhalten, haben kein kennzeichnendes
+gemeinsames Wort. Die Benennung läuft jetzt über die **Ortsbegriffe**
+(bin/ortsbegriffe.js, direkt in bin/karte.js): Sockel je Wort statt
+Kontrast je Gruppe, Belegpflicht aus den zwanzig nächsten Liedern,
+Zufalls-Schwelle als Wächter. Gemessen in
+docs/GESCHICHTEN-RAUM-EICHKASTEN.md.
+
+## Geschichten-Raum: nächste Schritte (Stand 29.08.2026)
+
+Der Raum ist seit dem Abend des 29.08. **offen, als „Geschichten
+(beta)"** — Caspar_D: „das ist es noch nicht so richtig." Was zum
+„richtig" fehlt, in der Reihenfolge des Nutzens — alle Messbezüge in
+docs/GESCHICHTEN-RAUM-EICHKASTEN.md, Messwerkzeuge in docs/eichkasten/:
+
+- **Familienfaltung vor der Gruppierung.** Fassungen (v2/v3) und
+  erkennbare Übersetzungspaare bilden künstliche Dichtekerne; gefaltet
+  (eine Stimme je Werkfamilie) würden Gruppen Themen zählen statt
+  Duplikate. Die 38er-Gruppe „Rheinfelsen · Schweinshaxe ·
+  Klabautermann" ist der Prüffall: Sie mischt Unvereinbares, und ihr
+  absurder Name zeigt es — feinere, gefaltete Gruppen sollten sie
+  auflösen.
+- **Ortsbegriffe beim Zeigen auf die Karte.** Stelle → zwanzig nächste
+  Lieder → belegte, gesockelte Begriffe im Steckbrief. Die Bausteine
+  liegen (wortvektoren.json, Nachbarlisten); es fehlt nur die
+  Oberfläche.
+- **Achsen-Anzeige.** Die gesch-Felder (Stoff · Haltung · Ton) je Song
+  und Gruppe stehen in der Karte, das Frontend zeigt sie noch nicht.
+- **Playlist-Ebene, automatisch erkannt.** Playlists, die im
+  Geschichten-Raum kompakt sind (z-Wert gegen den Untergrund — die
+  η²-Logik), als zuschaltbare benannte Farbebene; die des Nutzers, wo
+  vorhanden. Bei Caspar_D gemessen: Balladen 1,47 · Lea 1,16 · Essen
+  0,81 — und Bio-Gefahr fiele mit −0,10 zu Recht durch.
+- **Ereignishaftigkeit als Zählachse.** Der Erzähl-Anteil (3. Person)
+  trennt die bekannten Enden 0,527 gegen 0,128, ganz ohne Modell;
+  Tempus und Imperative als Beifang. Härtefall für jeden Test: der
+  Erlkönig, der durch Rede erzählt.
+- **bin/eichkasten.js als stehende Wache.** Leiter, Vier-Felder und
+  Selbsttreffer im Wartungslauf, damit jede Änderung an Modell, Prompt
+  oder Karte gegen die bekannte Wahrheit gemessen wird. Die
+  Bordmittel-Fassung (v2-Familien, Titel-Übersetzungspaare) läuft auf
+  jedem Bestand.
+- **3D als Standardansicht des Geschichten-Raums.** Gemessen verliert
+  die 2D-Karte Nachbarschaft (Treue 0,28 gegen 0,51 in UMAP-3D); die
+  3D-Koordinaten liegen längst in der Karte. Caspar_D: „3d wollte ich
+  sowieso".
+- **Enden-Zwilling für die Verlaufs-Achse.** „Der Tod und das Mädchen"
+  gegen „Der Todt vnd das Mägdlein": gleiche Szene, gegenläufiger
+  Ausgang — der erste handverlesene Prüfstein, falls die Mythoi-Achse
+  (Komödie/Romanze/Tragödie/Ironie) je gebaut wird.
+
+## Kondensate ohne Bezahl-Modell — HANDLUNGSBEDARF
+
+Caspar_D, 29.08.2026: „man braucht ein lokales LLM, das leistungsfähig
+genug ist, das hinzubekommen, oder einen Token für ein Bezahl-LLM. Das
+ist auf Dauer nicht tragfähig."
+
+Der Geschichten-Raum hängt in seiner guten Ausbaustufe an den
+Kondensaten: Sie normalisieren die Sprachen, tragen das Vokabular der
+Ortsbegriffe und machten den Raum erst brauchbar (Partner-Rang 1,00
+statt 6,08). Erzeugt hat sie einmalig ein großes Bezahl-Modell (Opus,
+über die API). Für fremde Bestände heißt das heute: Schlüssel oder
+schwacher Raum. Das ist der wunde Punkt des generischen Systems.
+
+**Was passiert, wenn die Daten fehlen — heute schon abgesichert,
+gestuft, kein Absturz:**
+
+1. Kein mpnet-Modell (modelle-holen nie gelaufen): Alle
+   Geschichten-Schritte des Wartungslaufs überspringen sich mit
+   Meldung (Exit 0, seit 29.08.); kein Raum, keine Raumleiste, die App
+   ist eine reine Klangraum-App.
+2. mpnet da, keine Kondensate: bin/geschichten.js bettet die
+   gefilterten Volltexte ein (Feld quelle je Lied), die Karte entsteht,
+   die Namen kommen aus dem Wortkontrast-Fallback. Der Raum ist da und
+   ehrlich schwächer — das ist der Stand vom 28.08. mittags.
+3. Kondensate da: voller Ausbau (Ortsbegriffe, Sprachheilung, Achsen).
+
+Die Oberfläche zeigt nur Räume, deren Karte existiert (/api/raeume) —
+ein fehlender Raum ist unsichtbar, nicht kaputt.
+
+**Wege, alle ungelöst — festgehalten als Handlungsbedarf:**
+
+1. **Lokale Modelle auf tauglicher Hardware messen.** Auf dem
+   Intel-Mac unbrauchbar (qwen3:8b 56 s je Lied, qwen3:14b 82 s,
+   deepseek-r1 in 51 Minuten nichts) — aber das ist zuerst eine
+   Hardware-Grenze. Die Stichproben von llama3.2, qwen3:8b und
+   qwen3:14b liegen im Kondensat-Archiv; der Eichkasten
+   (Übersetzungspaare, Selbsttreffer) ist das fertige Messgerät, um
+   ihre QUALITÄT gegen die Opus-Kondensate zu stellen. Auf Apple
+   Silicon oder mit GPU (Dockerfile.cuda liegt bereit) könnte die
+   14b-Klasse tragfähig sein — zu messen, nicht zu raten.
+2. **Kondensatfreier Ortsbegriffe-Weg.** Der Mechanismus (Sockel,
+   Belegpflicht, Zufalls-Schwelle) braucht nur irgendein Vokabular
+   mit Belegen. Aus den Texten selbst ließe sich eines ziehen —
+   deutsch über Großschreibung mitten in der Zeile (der Trick aus der
+   alten Kontrastrechnung), englisch offen. Schwächer als Kondensate
+   (Oberflächen- statt Themenwörter, keine Sprachheilung), aber
+   dieselbe Namensqualität eine Stufe unterhalb, ganz ohne LLM.
+3. **Die Einmaligkeit ausspielen.** Kondensate sind je Lied EINMAL
+   nötig und wandern nie — kein Abo, kein laufender Verbrauch; Haiku
+   reichte gemessen fürs Wiederfinden (verwäscht aber). Vielleicht ist
+   die tragfähige Form: ein optionaler Knopf, der seine einmaligen
+   Kosten je Lied vorher beziffert. Entscheidung offen.
+
+## Kleinigkeiten, notiert am 29.08.2026
+
+- **Der Protokoll-Puffer des Morgenlaufs hält 60 Zeilen** — bei jetzt
+  17 Schritten fallen die frühen (auch die Klartext-Zeilen des
+  Gesundheits-Schritts) hinten raus, sobald der Lauf durch ist. Der
+  Befund überlebt in `library/gesundheit.json`; wer die Zeilen im
+  Protokoll behalten will, vergrößert den Puffer in server.js (ein
+  Einzeiler).
+- **Die Registerlasche heißt nach frischem Laden „Klangraum"**, bis
+  das Register einmal geöffnet wurde — erst dann fragt die Seite
+  `/api/raeume` und benennt in „Räume" um. Altverhalten, fiel nur nie
+  auf, solange es einen Raum gab.

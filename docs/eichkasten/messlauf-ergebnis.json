@@ -1,0 +1,752 @@
+{
+ "stand": "2026-08-28",
+ "leiter": {
+  "kondensat": {
+   "fassungen": {
+    "n": 19,
+    "mittel": 0.9049,
+    "streuung": 0.0686
+   },
+   "gegenueber": {
+    "n": 19,
+    "mittel": 0.8399,
+    "streuung": 0.0768
+   },
+   "uebersetzungen": {
+    "n": 16,
+    "mittel": 0.9157,
+    "streuung": 0.061
+   },
+   "ahnheimNachbarn": {
+    "n": 9,
+    "mittel": 0.8727,
+    "streuung": 0.1139
+   },
+   "leaBinnen": {
+    "n": 55,
+    "mittel": 0.6758,
+    "streuung": 0.0902
+   },
+   "atmeBinnen": {
+    "n": 36,
+    "mittel": 0.7049,
+    "streuung": 0.0851
+   },
+   "leaAtmeKreuz": {
+    "n": 99,
+    "mittel": 0.6314,
+    "streuung": 0.0859
+   },
+   "untergrund": {
+    "n": 27507,
+    "mittel": 0.5078,
+    "streuung": 0.1447
+   }
+  },
+  "volltext": {
+   "fassungen": {
+    "n": 19,
+    "mittel": 0.9301,
+    "streuung": 0.0765
+   },
+   "gegenueber": {
+    "n": 19,
+    "mittel": 0.8631,
+    "streuung": 0.0779
+   },
+   "uebersetzungen": {
+    "n": 16,
+    "mittel": 0.8308,
+    "streuung": 0.0697
+   },
+   "ahnheimNachbarn": {
+    "n": 9,
+    "mittel": 0.8096,
+    "streuung": 0.0914
+   },
+   "leaBinnen": {
+    "n": 55,
+    "mittel": 0.8184,
+    "streuung": 0.0799
+   },
+   "atmeBinnen": {
+    "n": 36,
+    "mittel": 0.8853,
+    "streuung": 0.0357
+   },
+   "leaAtmeKreuz": {
+    "n": 99,
+    "mittel": 0.7927,
+    "streuung": 0.0877
+   },
+   "untergrund": {
+    "n": 27507,
+    "mittel": 0.6578,
+    "streuung": 0.1438
+   }
+  },
+  "klang": {
+   "fassungen": {
+    "n": 19,
+    "mittel": 0.8153,
+    "streuung": 0.1308
+   },
+   "gegenueber": {
+    "n": 19,
+    "mittel": 0.7563,
+    "streuung": 0.0647
+   },
+   "uebersetzungen": {
+    "n": 16,
+    "mittel": 0.9185,
+    "streuung": 0.0397
+   },
+   "ahnheimNachbarn": {
+    "n": 9,
+    "mittel": 0.5558,
+    "streuung": 0.1695
+   },
+   "leaBinnen": {
+    "n": 55,
+    "mittel": 0.6784,
+    "streuung": 0.0913
+   },
+   "atmeBinnen": {
+    "n": 36,
+    "mittel": 0.8229,
+    "streuung": 0.0836
+   },
+   "leaAtmeKreuz": {
+    "n": 99,
+    "mittel": 0.5256,
+    "streuung": 0.116
+   },
+   "untergrund": {
+    "n": 27507,
+    "mittel": 0.4908,
+    "streuung": 0.1688
+   }
+  }
+ },
+ "ahnheimEinzeln": [
+  {
+   "paar": "Ulrich & Ännchen  ×  Ulrich & Ännchen",
+   "kondensat": 0.955,
+   "volltext": 0.81,
+   "klang": 0.364
+  },
+  {
+   "paar": "Schlaraffenland 2.0  ×  Schlaraffenland v3",
+   "kondensat": 0.972,
+   "volltext": 0.816,
+   "klang": 0.876
+  },
+  {
+   "paar": "Der Blogger  ×  Der Blogger v2",
+   "kondensat": 0.915,
+   "volltext": 0.934,
+   "klang": 0.829
+  },
+  {
+   "paar": "Hoch auf dem Lebenswagen  ×  Der Wagen des Lebens",
+   "kondensat": 0.908,
+   "volltext": 0.96,
+   "klang": 0.389
+  },
+  {
+   "paar": "Das rote Zimmer  ×  Haus im Roten Licht",
+   "kondensat": 0.742,
+   "volltext": 0.805,
+   "klang": 0.498
+  },
+  {
+   "paar": "Randers  ×  Nis Randers",
+   "kondensat": 0.938,
+   "volltext": 0.813,
+   "klang": 0.563
+  },
+  {
+   "paar": "Finst're Nacht im gleißend' Licht (ft. B's 🔥Ξdu Ғueㄥ🔥)  ×  Dunkel war‘s, der Mond schien helle - Marktfest  (feat. B's 🔥Ξdu Ғueㄥ🔥)",
+   "kondensat": 0.886,
+   "volltext": 0.671,
+   "klang": 0.457
+  },
+  {
+   "paar": "Der Tod und das Mädchen  ×  Der Todt vnd das Mägdlein",
+   "kondensat": 0.604,
+   "volltext": 0.676,
+   "klang": 0.519
+  },
+  {
+   "paar": "Belsazar  ×  Belsazar - König von Babylon",
+   "kondensat": 0.933,
+   "volltext": 0.802,
+   "klang": 0.508
+  }
+ ],
+ "serien": {},
+ "matrixZeilen": {
+  "lea": {
+   "n": 11,
+   "kondensat": {
+    "binnen": 0.6758,
+    "z": 1.16
+   },
+   "volltext": {
+    "binnen": 0.8184,
+    "z": 1.12
+   },
+   "klang": {
+    "binnen": 0.6784,
+    "z": 1.11
+   }
+  },
+  "atme": {
+   "n": 9,
+   "kondensat": {
+    "binnen": 0.7049,
+    "z": 1.36
+   },
+   "volltext": {
+    "binnen": 0.8853,
+    "z": 1.58
+   },
+   "klang": {
+    "binnen": 0.8229,
+    "z": 1.97
+   }
+  },
+  "bioGefahr": {
+   "n": 13,
+   "kondensat": {
+    "binnen": 0.4933,
+    "z": -0.1
+   },
+   "volltext": {
+    "binnen": 0.6781,
+    "z": 0.14
+   },
+   "klang": {
+    "binnen": 0.7522,
+    "z": 1.55
+   }
+  },
+  "biohazard": {
+   "n": 5,
+   "kondensat": {
+    "binnen": 0.4847,
+    "z": -0.16
+   },
+   "volltext": {
+    "binnen": 0.5682,
+    "z": -0.62
+   },
+   "klang": {
+    "binnen": 0.8595,
+    "z": 2.18
+   }
+  },
+  "essen": {
+   "n": 8,
+   "kondensat": {
+    "binnen": 0.6243,
+    "z": 0.81
+   },
+   "volltext": {
+    "binnen": 0.7039,
+    "z": 0.32
+   },
+   "klang": {
+    "binnen": 0.5203,
+    "z": 0.17
+   }
+  },
+  "guteLaune": {
+   "n": 8,
+   "kondensat": {
+    "binnen": 0.5919,
+    "z": 0.58
+   },
+   "volltext": {
+    "binnen": 0.8748,
+    "z": 1.51
+   },
+   "klang": {
+    "binnen": 0.8716,
+    "z": 2.26
+   }
+  },
+  "balladen": {
+   "n": 12,
+   "kondensat": {
+    "binnen": 0.7202,
+    "z": 1.47
+   },
+   "volltext": {
+    "binnen": 0.7408,
+    "z": 0.58
+   },
+   "klang": {
+    "binnen": 0.7406,
+    "z": 1.48
+   }
+  },
+  "vorLangerZeit": {
+   "n": 12,
+   "kondensat": {
+    "binnen": 0.7202,
+    "z": 1.47
+   },
+   "volltext": {
+    "binnen": 0.7408,
+    "z": 0.58
+   },
+   "klang": {
+    "binnen": 0.7406,
+    "z": 1.48
+   }
+  },
+  "deutscheSchatten": {
+   "n": 22,
+   "kondensat": {
+    "binnen": 0.6997,
+    "z": 1.33
+   },
+   "volltext": {
+    "binnen": 0.7538,
+    "z": 0.67
+   },
+   "klang": {
+    "binnen": 0.7684,
+    "z": 1.64
+   }
+  },
+  "teutonicTales": {
+   "n": 7,
+   "kondensat": {
+    "binnen": 0.6895,
+    "z": 1.26
+   },
+   "volltext": {
+    "binnen": 0.7059,
+    "z": 0.33
+   },
+   "klang": {
+    "binnen": 0.7968,
+    "z": 1.81
+   }
+  },
+  "ndh": {
+   "n": 68,
+   "kondensat": {
+    "binnen": 0.5104,
+    "z": 0.02
+   },
+   "volltext": {
+    "binnen": 0.7007,
+    "z": 0.3
+   },
+   "klang": {
+    "binnen": 0.7965,
+    "z": 1.81
+   }
+  },
+  "industrial": {
+   "n": 94,
+   "kondensat": {
+    "binnen": 0.5246,
+    "z": 0.12
+   },
+   "volltext": {
+    "binnen": 0.6763,
+    "z": 0.13
+   },
+   "klang": {
+    "binnen": 0.7296,
+    "z": 1.41
+   }
+  },
+  "edm": {
+   "n": 0,
+   "zuKlein": true
+  },
+  "minimal": {
+   "n": 14,
+   "kondensat": {
+    "binnen": 0.4193,
+    "z": -0.61
+   },
+   "volltext": {
+    "binnen": 0.4638,
+    "z": -1.35
+   },
+   "klang": {
+    "binnen": 0.7632,
+    "z": 1.61
+   }
+  },
+  "energyMetal": {
+   "n": 5,
+   "kondensat": {
+    "binnen": 0.4559,
+    "z": -0.36
+   },
+   "volltext": {
+    "binnen": 0.8142,
+    "z": 1.09
+   },
+   "klang": {
+    "binnen": 0.8373,
+    "z": 2.05
+   }
+  },
+  "niceSongs": {
+   "n": 1,
+   "zuKlein": true
+  },
+  "hochgefuehl": {
+   "n": 15,
+   "kondensat": {
+    "binnen": 0.6588,
+    "z": 1.04
+   },
+   "volltext": {
+    "binnen": 0.6849,
+    "z": 0.19
+   },
+   "klang": {
+    "binnen": 0.7165,
+    "z": 1.34
+   }
+  },
+  "deutschPop": {
+   "n": 19,
+   "kondensat": {
+    "binnen": 0.4759,
+    "z": -0.22
+   },
+   "volltext": {
+    "binnen": 0.6137,
+    "z": -0.31
+   },
+   "klang": {
+    "binnen": 0.5571,
+    "z": 0.39
+   }
+  },
+  "fokus": {
+   "n": 0,
+   "zuKlein": true
+  }
+ },
+ "japanisch": [
+  {
+   "art": "de↔en",
+   "paar": "Erlkönig  ×  The Erlking",
+   "volltext": {
+    "kos": 0.917,
+    "rangHin": 1,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.793,
+    "rangHin": 15,
+    "rangZurueck": 34
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Der Zauberlehrling  ×  The Sorcerer’s Apprentice",
+   "volltext": {
+    "kos": 0.768,
+    "rangHin": 12,
+    "rangZurueck": 7
+   },
+   "kondensat": {
+    "kos": 1,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Der rechte Barbier  ×  The right barber",
+   "volltext": {
+    "kos": 0.84,
+    "rangHin": 4,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.894,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Loreley v2  ×  Loreley - english",
+   "volltext": {
+    "kos": 0.925,
+    "rangHin": 1,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.973,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Lenore  ×  Lenore english",
+   "volltext": {
+    "kos": 0.854,
+    "rangHin": 1,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.975,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Die Braut von Corinth  ×  The Corinthian Bride",
+   "volltext": {
+    "kos": 0.757,
+    "rangHin": 155,
+    "rangZurueck": 3
+   },
+   "kondensat": {
+    "kos": 0.958,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Das Mädchen im Moor [STTZ Projekt Poesie]  ×  The Maiden in the Moor",
+   "volltext": {
+    "kos": 0.859,
+    "rangHin": 25,
+    "rangZurueck": 4
+   },
+   "kondensat": {
+    "kos": 0.965,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Dogma  ×  The Dogma",
+   "volltext": {
+    "kos": 0.789,
+    "rangHin": 2,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.859,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Wirt  ×  Host",
+   "volltext": {
+    "kos": 0.718,
+    "rangHin": 119,
+    "rangZurueck": 7
+   },
+   "kondensat": {
+    "kos": 0.885,
+    "rangHin": 2,
+    "rangZurueck": 2
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Erweckt  ×  Awakened",
+   "volltext": {
+    "kos": 0.875,
+    "rangHin": 1,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.776,
+    "rangHin": 2,
+    "rangZurueck": 12
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Asche und Staub  ×  Ashes and Dust",
+   "volltext": {
+    "kos": 0.83,
+    "rangHin": 1,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.917,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Testosteron v2  ×  Testosterone",
+   "volltext": {
+    "kos": 0.868,
+    "rangHin": 4,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.935,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "de↔en",
+   "paar": "Lakritz  ×  Lakritz means LICORICE",
+   "volltext": {
+    "kos": 0.688,
+    "rangHin": 34,
+    "rangZurueck": 14
+   },
+   "kondensat": {
+    "kos": 0.917,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "ja↔de",
+   "paar": "桜の少女  ×  Sakura Mädchen",
+   "volltext": {
+    "kos": 0.938,
+    "rangHin": 1,
+    "rangZurueck": 1
+   },
+   "kondensat": {
+    "kos": 0.944,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "ja↔de",
+   "paar": "手と木  ×  Hände und Holz",
+   "volltext": {
+    "kos": 0.816,
+    "rangHin": 2,
+    "rangZurueck": 100
+   },
+   "kondensat": {
+    "kos": 0.947,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  },
+  {
+   "art": "ja↔de",
+   "paar": "本物の守り人  ×  Wächterin des Echten",
+   "volltext": {
+    "kos": 0.851,
+    "rangHin": 10,
+    "rangZurueck": 63
+   },
+   "kondensat": {
+    "kos": 0.913,
+    "rangHin": 1,
+    "rangZurueck": 1
+   }
+  }
+ ],
+ "zeitpfeil": {
+  "lea": {
+   "kondensat": {
+    "rho": -0.162,
+    "p": 0.88
+   },
+   "volltext": {
+    "rho": -0.013,
+    "p": 0.38
+   }
+  },
+  "atme": {
+   "kondensat": {
+    "rho": 0.188,
+    "p": 0.134
+   },
+   "volltext": {
+    "rho": 0.026,
+    "p": 0.396
+   }
+  }
+ },
+ "kollision": {
+  "kondensat": {
+   "leaBinnen": 0.6758,
+   "guteLauneBinnen": 0.5919,
+   "kreuz": 0.5792,
+   "untergrund": 0.5078
+  },
+  "volltext": {
+   "leaBinnen": 0.8184,
+   "guteLauneBinnen": 0.8748,
+   "kreuz": 0.7647,
+   "untergrund": 0.6578
+  },
+  "klang": {
+   "leaBinnen": 0.6784,
+   "guteLauneBinnen": 0.8716,
+   "kreuz": 0.5928,
+   "untergrund": 0.4908
+  }
+ },
+ "notizen": {
+  "gruppenGroessen": {
+   "lea": 11,
+   "atme": 9,
+   "bioGefahr": 13,
+   "biohazard": 5,
+   "essen": 8,
+   "guteLaune": 8,
+   "balladen": 12,
+   "vorLangerZeit": 12,
+   "deutscheSchatten": 22,
+   "teutonicTales": 7,
+   "ndh": 68,
+   "industrial": 94,
+   "edm": 0,
+   "minimal": 14,
+   "energyMetal": 5,
+   "niceSongs": 1,
+   "hochgefuehl": 15,
+   "deutschPop": 19,
+   "fokus": 0
+  },
+  "fassungsPaare": 19,
+  "uebersetzungsPaare": 16,
+  "achsenEnden": [
+   {
+    "titel": "Okkultation",
+    "lyricsZeichen": 2637,
+    "imGeschichtenRaum": true
+   },
+   {
+    "titel": "Gleich",
+    "lyricsZeichen": 1562,
+    "imGeschichtenRaum": true
+   },
+   {
+    "titel": "Stumm",
+    "lyricsZeichen": 2206,
+    "imGeschichtenRaum": true
+   }
+  ]
+ }
+}

@@ -169,10 +169,14 @@ module.exports = { nurGesungenes: nurGesungenesGanz, ohneRegie: nurGesungenes };
 if (require.main !== module) return;
 
 (async () => {
+  /* Fehlt das Modell, wird der Schritt UEBERSPRUNGEN, nicht abgebrochen
+     (Exit 0): im Wartungslauf ist eine fehlende Voraussetzung kein
+     Fehler - der Rest des Morgens soll trotzdem laufen. Wichtig fuer
+     Bestaende, auf denen bin/modelle-holen.js noch nie lief. */
   for (const [d, was] of [[MODELL, 'Modell'], [TOKEN, 'Tokenizer']])
     if (!fs.existsSync(d)) {
-      console.error(`  ${was} fehlt: ${path.relative(WURZEL, d)}\n  node bin/modelle-holen.js`);
-      process.exit(1);
+      console.log(`  Geschichten: ${was} fehlt (${path.relative(WURZEL, d)}) — Schritt übersprungen. Holen: node bin/modelle-holen.js`);
+      process.exit(0);
     }
 
   const katalog = K.lesen();

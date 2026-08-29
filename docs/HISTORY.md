@@ -1366,3 +1366,37 @@ unbrauchbare** tauschte. Zwei Regeln daraus:
    der am selben Nachmittag nachgeschlagen wurde.
 2. **Ein Automatismus, der Daten umschreibt, gehört angekündigt** — und
    nicht nebenbei in einen fremden Ablauf gehängt.
+
+## 29.08.2026 — Der Geschichten-Raum kommt zurück, anders benannt
+
+Am 28.08. war der Geschichten-Raum am Abend beiseitegelegt worden: Die
+Zuordnung stimmte (die Balladen fanden zusammen), aber die Gruppe hieß
+„Gesellschaft — pathetisch", weil die Kontrastrechnung kein gemeinsames
+Substantiv fand. Am 29.08. wurden zuerst **Caspar_Ds Playlists als
+Eichkasten vermessen** (docs/GESCHICHTEN-RAUM-EICHKASTEN.md): bekannte
+Wahrheit — Fassungen, Übersetzungen, zwei Erzählserien, Stoffgruppen —
+gegen die drei Vektorsätze. Danach der Umbau: Gruppennamen aus den
+**Ortsbegriffen** (bin/ortsbegriffe.js — das eigene Kondensat-Vokabular
+am Gruppen-Schwerpunkt, Sockel, Belegpflicht, Zufalls-Schwelle),
+Text-Achsen als bin/geschichten-achsen.js, der Lied-Raum gestrichen,
+der Wartungslauf pflegt den Raum nur, wenn er offen ist. Am Abend
+wurde der Raum aufgemacht — als „Geschichten (beta)", denn Caspar_D:
+„das ist es noch nicht so richtig." Ehrlich benannt, ehrlich etikettiert.
+
+Drei Lehren, die bleiben:
+
+1. **Wo bekannte Wahrheit den Maßstab gab, hielt es; wo Geerbtes ohne
+   Maßstab lief, brach es.** Modellwahl und Kondensat-Regeln waren an
+   Zwillingspaaren gemessen und trugen; Gruppierung und Benennung
+   waren ungeeicht übernommen und brachen. Eichgewichte zuerst.
+2. **„Gruppe" ist kein einheitlicher Begriff.** Die Playlists halten
+   über mindestens sechs verschiedene Klammern zusammen — Welt, Stoff,
+   Wortfeld, Form, Haltung, Duktus. Eine Rechnung, die alle zugleich
+   finden und benennen soll, macht einen Kategorienfehler.
+3. **Wortgleichheit kann nicht benennen, was über Wortnachbarschaft
+   zusammenhält.** Die Balladen teilen fast kein Wort (Tod ×3, Grabmal
+   ×2) und sind doch die kompakteste Gruppe. Die Ortsbegriffe sagen
+   „Kindsverlust" über dem Erlkönig, obwohl das Wort in einem
+   Nachbarlied steht — Feldnachbarschaft statt Häufigkeit. Und ein
+   Name darf scheitern dürfen: „(gemischte Gegend)" zeigt eine kranke
+   Gruppe an, statt sie zu kaschieren.
