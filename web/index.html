@@ -11759,10 +11759,12 @@ function kuriosSeiten(eigene){
    ohnehin hat) und liegt in library/kontingent.json.
 
    ZWEI TOEPFE, GETRENNT: Die Monatsgrenze erneuert sich am Ankertag; die
-   lebenslangen Freigaben aus der Testphase kommen NIE wieder (Caspar_D:
-   „die 7 sind die lifetime free downloads für den trial user"). Sie
-   werden deshalb nie zur Monatsgrenze dazugezaehlt, sondern eigens
-   ausgewiesen - sonst verschwinden sie unbemerkt.
+   lifetime-Freigaben aus der Testphase sind einmalig (Caspar_D: „die 7
+   sind die lifetime free downloads für den trial user"). Sie werden
+   deshalb nie zur Monatsgrenze dazugezaehlt, sondern eigens ausgewiesen -
+   sonst verschwinden sie unbemerkt. In der Anzeige steht das knapp als
+   „lifetime / einmalig"; die Warnung, dass sie nie wiederkommen, braucht
+   dort niemand (Caspar_D, 06.09.2026).
 
    KEIN KNOPF, DER LAEDT. KlangTresor loest bei Suno nichts aus, was Geld
    kostet; es verlinkt nur auf die Songseite, wo der Mensch selbst klickt.
@@ -11781,7 +11783,8 @@ async function profilKontingentFuellen(){
         { day: 'numeric', month: 'long' })
     : null;
   const gelesen = s.gelesenAm
-    ? new Date(s.gelesenAm).toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })
+    ? new Date(s.gelesenAm).toLocaleString('de-DE',
+        { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
     : null;
 
   el.hidden = false;
@@ -11794,11 +11797,11 @@ async function profilKontingentFuellen(){
       </div>
       ${s.lebenslang ? `<div class="kontlebens">
         <div class="kontgross klein">${s.lebenslang}</div>
-        <div class="kontwas">lebenslang<br><b>kommen nie wieder</b></div></div>` : ''}
+        <div class="kontwas">lifetime<br>einmalig</div></div>` : ''}
     </div>
     <p class="fussnote">
       ${tag ? `Der Zähler springt am <b>${tag}</b> zurück.` : ''}
-      ${gelesen ? ` Stand vom ${gelesen}, aus der Ernte.` : ''}
+      ${gelesen ? ` Datenübertragung vom ${gelesen} Uhr.` : ''}
       ${d.fehlen && d.fehlen.length
         ? ` <b>${d.fehlen.length} Lied${d.fehlen.length === 1 ? '' : 'er'}</b> ${d.fehlen.length === 1 ? 'hat' : 'haben'} hier noch keine Datei.`
         : ' Alle Lieder liegen vollständig hier.'}
