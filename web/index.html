@@ -956,6 +956,25 @@ select,.knopf{
   border-radius:13px;padding:17px}
 .block h3{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;
   color:var(--schwach);margin-bottom:11px;font-weight:700}
+/* Download-Kontingent im Profil. Die grosse Zahl ist das, was noch frei
+   ist - nicht das Verbrauchte: Man will wissen, wieviel bleibt. Die
+   lebenslangen Freigaben stehen ABGESETZT daneben, durch eine Linie
+   getrennt, weil sie ein anderes Ding sind als die Monatsgrenze. */
+.kontzeile{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.kontgross{font-size:38px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.kontgross.klein{font-size:24px}
+.kontwas{font-size:12px;color:var(--schwach);line-height:1.45;margin-top:4px}
+.kontbalken{width:170px;height:5px;border-radius:3px;background:var(--flaeche2);
+  overflow:hidden;margin-top:7px}
+.kontbalken i{display:block;height:100%;border-radius:3px}
+.kontlebens{display:flex;align-items:center;gap:9px;padding-left:18px;
+  border-left:1px solid var(--rand)}
+.kontfehlt{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.kontfehlt a{display:inline-flex;align-items:baseline;gap:7px;text-decoration:none;
+  padding:5px 11px;border:1px solid var(--rand);border-radius:999px;
+  color:var(--text);font-size:12px;background:var(--flaeche2)}
+.kontfehlt a:hover{border-color:var(--akzent);color:var(--akzent)}
+.kontfehlt a span{font-size:10px;color:var(--schwach);text-transform:uppercase;letter-spacing:.6px}
 pre.text{white-space:pre-wrap;word-wrap:break-word;font:inherit;line-height:1.7}
 #detail video{width:100%;border-radius:11px;margin-top:5px;background:#000}
 #zu{position:fixed;top:calc(14px + env(safe-area-inset-top));right:16px;z-index:41;
@@ -11734,6 +11753,65 @@ function kuriosSeiten(eigene){
 }
 
 /* ---- Zahlen: Songs, Zeiten, Stile ------------------------------- */
+/* ---- DOWNLOAD-KONTINGENT --------------------------------------------
+   Seit dem 03.09.2026 deckelt Suno die Downloads. Der Stand kommt mit der
+   Ernte (browser/morgens.js liest /api/billing/info/, weil es den Token
+   ohnehin hat) und liegt in library/kontingent.json.
+
+   ZWEI TOEPFE, GETRENNT: Die Monatsgrenze erneuert sich am Ankertag; die
+   lebenslangen Freigaben aus der Testphase kommen NIE wieder (Caspar_D:
+   „die 7 sind die lifetime free downloads für den trial user"). Sie
+   werden deshalb nie zur Monatsgrenze dazugezaehlt, sondern eigens
+   ausgewiesen - sonst verschwinden sie unbemerkt.
+
+   KEIN KNOPF, DER LAEDT. KlangTresor loest bei Suno nichts aus, was Geld
+   kostet; es verlinkt nur auf die Songseite, wo der Mensch selbst klickt.
+   Dieselbe Arbeitsteilung wie beim Entfolgen. */
+async function profilKontingentFuellen(){
+  const el = $('profilkontingent'); if (!el) return;
+  let d = null;
+  try { d = await (await fetch('/api/kontingent', { cache: 'no-store' })).json(); } catch (e) {}
+  if (!d || !d.stand){ el.hidden = true; return; }
+  const s = d.stand;
+  const frei = Math.max(0, (s.grenze || 0) - (s.verbraucht || 0));
+  const anteil = s.grenze ? (s.verbraucht || 0) / s.grenze : 0;
+  const farbe = anteil >= 0.9 ? 'var(--warn, #f97b14)' : anteil >= 0.7 ? '#f7c948' : 'var(--akzent)';
+  const tag = d.stichtag
+    ? new Date(d.stichtag + 'T12:00:00Z').toLocaleDateString('de-DE',
+        { day: 'numeric', month: 'long' })
+    : null;
+  const gelesen = s.gelesenAm
+    ? new Date(s.gelesenAm).toLocaleDateString('de-DE', { day: 'numeric', month: 'long' })
+    : null;
+
+  el.hidden = false;
+  el.innerHTML = `<h3>Downloads bei Suno</h3>
+    <div class="kontzeile">
+      <div class="kontgross" style="color:${farbe}">${frei}</div>
+      <div>
+        <div class="kontwas">von ${s.grenze} frei in dieser Periode</div>
+        <div class="kontbalken"><i style="width:${Math.round(anteil * 100)}%;background:${farbe}"></i></div>
+      </div>
+      ${s.lebenslang ? `<div class="kontlebens">
+        <div class="kontgross klein">${s.lebenslang}</div>
+        <div class="kontwas">lebenslang<br><b>kommen nie wieder</b></div></div>` : ''}
+    </div>
+    <p class="fussnote">
+      ${tag ? `Der Zähler springt am <b>${tag}</b> zurück.` : ''}
+      ${gelesen ? ` Stand vom ${gelesen}, aus der Ernte.` : ''}
+      ${d.fehlen && d.fehlen.length
+        ? ` <b>${d.fehlen.length} Lied${d.fehlen.length === 1 ? '' : 'er'}</b> ${d.fehlen.length === 1 ? 'hat' : 'haben'} hier noch keine Datei.`
+        : ' Alle Lieder liegen vollständig hier.'}
+    </p>
+    ${d.fehlen && d.fehlen.length ? `<div class="kontfehlt">${d.fehlen.slice(0, 12).map(f =>
+      `<a href="${f.link}" target="_blank" rel="noopener" title="Bei Suno öffnen — dort selbst herunterladen">
+         ${esc(f.titel || f.id.slice(0, 8))}
+         <span>${!f.mp3 && !f.wav ? 'nichts da' : !f.wav ? 'nur MP3' : 'nur WAV'}</span>
+       </a>`).join('')}</div>
+      <p class="fussnote">Herunterladen bleibt Handarbeit: Der Link führt zur Songseite,
+         dort über die drei Punkte. KlangTresor löst bei Suno nichts aus, was Geld kostet.</p>` : ''}`;
+}
+
 function profilZahlenFuellen(){
   const ziel = $('profilzahlen'); if (!ziel) return;
   const eigene = alle.filter(s => !s.fremd);
@@ -13430,6 +13508,13 @@ function profilAuf(){
       </div>
 
       <div class="pregfeld" data-preg="daten">
+      <!-- DOWNLOAD-KONTINGENT (Caspar_D, 06.09.2026: „immer, wenn du die
+           user Seite öffnest, überprüfst du, wieviele Downloads noch für
+           diesen Monat übrig sind und zeigst es an"). Seit dem 03.09.
+           deckelt Suno die Downloads; der Stand kommt mit der Ernte, weil
+           das Lesezeichen den Token ohnehin hat. Der Block bleibt leer,
+           solange keine Ernte ihn mitgebracht hat. -->
+      <div class="block" id="profilkontingent" hidden></div>
       <div class="block" id="profilzahlen"></div>
       <div class="block" id="profillaengen"></div>
       <!-- TONARTEN UND TEXT IN EINEM PANEL (Caspar_D, 26.08.2026: "mach
@@ -13503,6 +13588,7 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
   $('autorgrund').style.backgroundImage = "url('/profilbild')";
   $('zu').style.display = 'block';
   $('detail').scrollTop = 0;
+  profilKontingentFuellen();
   profilZahlenFuellen();
   profilLaengenFuellen();
   profilTonartenFuellen();

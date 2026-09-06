@@ -638,10 +638,53 @@
      Server genau dann nicht da - Neustart waehrend des Laufs -, und
      alles war weg. Jetzt wird die Rohdatei SOFORT geschrieben. Der
      Katalog aendert sich dadurch noch nicht; das tut erst der Lauf. */
+  /* ---- DOWNLOAD-KONTINGENT ------------------------------------------
+     Seit dem 03.09.2026 deckelt Suno die Downloads. Der Stand steht in
+     /api/billing/info/ unter download_usage. Das Lesezeichen hat den
+     Token ohnehin in der Hand, also bringt es ihn gleich mit - so
+     braucht KlangTresor selbst NIE einen Token, es liest nur, was die
+     Ernte mitgebracht hat.
+
+     Caspar_D, 06.09.2026: "immer, wenn du die user Seite oeffnest,
+     ueberpruefst du, wieviele Downloads noch fuer diesen Monat uebrig
+     sind und zeigst es an."
+
+     NUR LESEN. Das Lesezeichen loest keinen Download aus - das bleibt
+     Handarbeit, genau wie das Entfolgen in 03-folgen-pruefen.js
+     ("Entfolgt wird nichts - das bleibt Handarbeit und ist gut so").
+     Ein Download kostet Geld und ist nicht ruecknehmbar; ein Fehler in
+     einer Schleife waere hier nicht aergerlich, sondern teuer. */
+  let kontingent = null;
+  try {
+    const tk = await tokenHolen(4000);
+    if (tk){
+      const b = await (await fetch(`${API}/api/billing/info/`,
+        { headers: { Authorization: 'Bearer ' + tk } })).json();
+      const d = b.download_usage || {};
+      kontingent = {
+        gelesenAm:    new Date().toISOString(),
+        verbraucht:   d.current_period_downloads_used,
+        grenze:       d.current_period_downloads_limit,
+        /* LEBENSLANG: Freigaben aus der Testphase. Sie erneuern sich NIE
+           (Caspar_D: "die 7 sind die lifetime free downloads fuer den
+           trial user"). Getrennt fuehren, niemals zu 'grenze'
+           dazuzaehlen - sonst verschwinden sie unbemerkt. */
+        lebenslang:   d.additional_download_remaining,
+        zugekauft:    d.current_period_download_top_ups_purchased,
+        zukaufGrenze: d.current_period_download_top_up_purchase_limit,
+        anker:        b.subscription_anchor || null,
+        plan:         (b.plan && b.plan.plan_key) || null,
+      };
+      sagen(`Download-Kontingent: ${kontingent.verbraucht} von ${kontingent.grenze} verbraucht`
+        + (kontingent.lebenslang ? `, dazu ${kontingent.lebenslang} lebenslange` : '') + '.');
+    }
+  } catch (e) { /* Kontingent ist Beiwerk - die Ernte scheitert daran nicht */ }
+
   const ernte = {
     erzeugtAm: new Date().toISOString(),
     quelle: 'morgens.js',
     timing,
+    kontingent,
     profil: kopf ? { handle, display_name: kopf.display_name,
                      avatar_image_url: kopf.avatar_image_url, num_total_clips: gesamt }
                  : { handle },

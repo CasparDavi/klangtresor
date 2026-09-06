@@ -731,6 +731,37 @@ const server = http.createServer((req, res) => {
         const ziel = path.join(ordner, `profil-${stempel}.json`);
         if (!nurTiming) fs.writeFileSync(ziel, JSON.stringify(daten));
 
+        /* ---- DAS DOWNLOAD-KONTINGENT ---------------------------------
+           Seit dem 03.09.2026 deckelt Suno die Downloads. Das Lesezeichen
+           bringt den Stand aus /api/billing/info/ mit, weil es den Token
+           ohnehin hat - so braucht KlangTresor selbst nie einen. Hier
+           wird er herausgeloest und eigens abgelegt, damit die Anzeige
+           ihn findet, ohne die ganze Ernte lesen zu muessen.
+
+           Der Verlauf steht daneben: erst daran sieht man, WANN etwas
+           verbraucht wurde. Er wird bei 400 Eintraegen vorn beschnitten -
+           das reicht fuer Jahre und haelt die Datei klein (exFAT: ein
+           Megabyte je Block). */
+        if (daten.kontingent && daten.kontingent.grenze != null) {
+          const kPfad = path.join(WURZEL, 'library', 'kontingent.json');
+          let k = { stand: null, verlauf: [] };
+          try { k = JSON.parse(fs.readFileSync(kPfad, 'utf8')); } catch (e) {}
+          if (!Array.isArray(k.verlauf)) k.verlauf = [];
+          const neuStand = daten.kontingent;
+          const letzter = k.verlauf[k.verlauf.length - 1];
+          /* Nur eintragen, wenn sich etwas geaendert hat - sonst waechst
+             der Verlauf bei jedem Lesezeichenklick um eine gleiche Zeile. */
+          if (!letzter || letzter.verbraucht !== neuStand.verbraucht
+              || letzter.lebenslang !== neuStand.lebenslang
+              || letzter.grenze !== neuStand.grenze) {
+            k.verlauf.push({ am: neuStand.gelesenAm, verbraucht: neuStand.verbraucht,
+                             grenze: neuStand.grenze, lebenslang: neuStand.lebenslang });
+            if (k.verlauf.length > 400) k.verlauf = k.verlauf.slice(-400);
+          }
+          k.stand = neuStand;
+          try { fs.writeFileSync(kPfad, JSON.stringify(k, null, 1)); } catch (e) {}
+        }
+
         /* Schlaege, Abschnitte und Wellenstufen kommen als eigene
            timing-Datei - dasselbe Muster wie die Wort-Zeitmarken, und
            aufbereiten.js liest ALLE timing-Dateien. Nur anlegen, wenn
@@ -1317,6 +1348,58 @@ const server = http.createServer((req, res) => {
         warntonMerker = null;
       }
     });
+  }
+
+  /* ---- DOWNLOAD-KONTINGENT UND WAS LOKAL FEHLT ----------------------
+     Seit dem 03.09.2026 deckelt Suno die Downloads. Diese Auskunft
+     beantwortet beides in einem Zug: wieviel Kontingent noch da ist, und
+     welche Lieder ueberhaupt eine Datei braeuchten.
+
+     KlangTresor loest KEINEN Download aus - es zeigt nur den Stand und
+     verlinkt auf die Suno-Seite, wo der Mensch selbst klickt. Dieselbe
+     Arbeitsteilung wie beim Entfolgen (browser/03-folgen-pruefen.js:
+     "Entfolgt wird nichts - das bleibt Handarbeit und ist gut so").
+     Caspar_D, 06.09.2026: "Bisher haben wir immer so agiert, dass
+     KlangTresor nichts in Suno ausloest, was Credits oder Geld kostet." */
+  if (p === '/api/kontingent') {
+    let k = null;
+    try { k = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'kontingent.json'), 'utf8')); } catch (e) {}
+    const stand = k && k.stand;
+
+    /* Der naechste Stichtag ergibt sich aus dem Anker: der Zaehler
+       springt monatlich am selben Kalendertag um. Faellt der Tag im
+       Zielmonat aus (31. im Februar), nimmt er den letzten des Monats. */
+    let stichtag = null;
+    if (stand && stand.anker) {
+      const a = new Date(stand.anker), heute = new Date();
+      const tag = a.getUTCDate();
+      let j = heute.getUTCFullYear(), m = heute.getUTCMonth();
+      const imMonat = (jj, mm) => Math.min(tag, new Date(Date.UTC(jj, mm + 1, 0)).getUTCDate());
+      if (heute.getUTCDate() >= imMonat(j, m)) { m++; if (m > 11) { m = 0; j++; } }
+      stichtag = new Date(Date.UTC(j, m, imMonat(j, m))).toISOString().slice(0, 10);
+    }
+
+    /* Was lokal fehlt. Der Katalog kennt alle Lieder, der Ordner sagt,
+       welche eine Datei haben. Fremde Songs zaehlen nicht - fuer die
+       gibt es bei Suno nichts herunterzuladen, was uns gehoert. */
+    const fehlen = [];
+    try {
+      const kat = require('../bin/katalog.js').lesen();
+      const SONGS = path.join(WURZEL, 'library', 'songs');
+      for (const [id, so] of Object.entries((kat && kat.songs) || {})) {
+        if (so.fremd || so.imPapierkorb) continue;
+        const d = path.join(SONGS, id);
+        const mp3 = fs.existsSync(path.join(d, 'audio.mp3'));
+        const wav = fs.existsSync(path.join(d, 'audio.wav'));
+        if (mp3 && wav) continue;
+        fehlen.push({ id, titel: so.titel || null, erstellt: so.erstellt || null,
+                      mp3, wav, link: 'https://suno.com/song/' + id });
+      }
+      fehlen.sort((a, b) => String(b.erstellt || '').localeCompare(String(a.erstellt || '')));
+    } catch (e) {}
+
+    return jsonAntwort(res, { stand, stichtag, fehlen,
+      verlauf: (k && k.verlauf) ? k.verlauf.slice(-30) : [] });
   }
 
   if (p === '/api/raeume') {
