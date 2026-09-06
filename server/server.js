@@ -344,6 +344,13 @@ const MORGEN_SCHRITTE = [
      von dort und fragt nur die Songs ab, die welche haben. Vorher waere
      die Zahl vom Vortag. */
   { schluessel: 'kommentare', name: 'Neue Kommentare von Suno sichern', befehl: ['bin/reaktionen.js'] },
+  /* Heruntergeladene Audiodateien einsammeln. Seit dem 03.09.2026 gibt
+     Suno Audio nur noch ueber "Unlock & Download" heraus - den Klick
+     macht der Mensch, das Einsortieren die Ernte. Caspar_D, 07.09.2026:
+     "selbst dort schaue ich nicht hin, wenn ich die Ernte mache. Die
+     Ernte muss es finden." Steht NACH dem Katalogbau, weil die Zuordnung
+     ueber die Signatur den Katalog braucht. */
+  { schluessel: 'medien', name: 'Heruntergeladene Audiodateien übernehmen', befehl: ['bin/uebernehmen.js', '--tun'] },
   { schluessel: 'medien', name: 'Fehlende Medien laden (MP3, Cover, Videos)', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
   { schluessel: 'analyse', name: 'Klanganalyse für neue Songs rechnen', befehl: ['bin/vorrechnen.js'],
     einheiten: () => {
@@ -1400,6 +1407,40 @@ const server = http.createServer((req, res) => {
 
     return jsonAntwort(res, { stand, stichtag, fehlen,
       verlauf: (k && k.verlauf) ? k.verlauf.slice(-30) : [] });
+  }
+
+  /* ---- WAS IM DOWNLOAD-ORDNER LIEGT ---------------------------------
+     Caspar_D, 07.09.2026: "KlangTresor muss wissen, wo es schauen muss,
+     und das ist nicht sehr komfortabel." Also schaut es von selbst nach -
+     aber nur, wenn jemand die Seite oeffnet, nicht als Hintergrundwache.
+
+     GET  sagt, was gefunden wurde (nichts wird angefasst)
+     POST uebernimmt es (bin/uebernehmen.js --tun)
+
+     Zugeordnet wird ueber die Suno-Signatur im Dateikopf, nie ueber den
+     Dateinamen - Titel koennen doppelt vorkommen, umbenannt werden oder
+     ein " (1)" bekommen. */
+  if (p === '/api/downloads') {
+    const { execFile } = require('node:child_process');
+    const skript = path.join(WURZEL, 'bin', 'uebernehmen.js');
+    const argumente = req.method === 'POST' ? [skript, '--tun'] : [skript];
+    return execFile(process.execPath, argumente, { cwd: WURZEL, timeout: 300000 },
+      (fehler, aus, err) => {
+        const text = String(aus || '') + String(err || '');
+        /* Die Zeilen der Uebersicht herausloesen, damit die Oberflaeche
+           nicht den ganzen Text anzeigen muss. */
+        const bereit = [...text.matchAll(/^\s{4}(audio\.\w+)\s+([\d.,]+ [KM]B)\s+(.+)$/gm)]
+          .map(m => ({ datei: m[1], groesse: m[2], titel: m[3].trim() }));
+        const uebernommen = (text.match(/(\d+) Datei\w* uebernommen|(\d+) Datei\w* übernommen/) || [])[0] || null;
+        jsonAntwort(res, {
+          gefunden: bereit.length, bereit,
+          uebernommen: req.method === 'POST' ? (uebernommen || '0') : null,
+          ohneSignatur: (text.match(/Ohne Suno-Signatur[^(]*\((\d+)\)/) || [])[1] || 0,
+          nichtImKatalog: (text.match(/Nicht im Katalog \((\d+)\)/) || [])[1] || 0,
+          fehler: fehler ? String(fehler.message).slice(0, 200) : null,
+          ausgabe: text.slice(-1500),
+        });
+      });
   }
 
   if (p === '/api/raeume') {

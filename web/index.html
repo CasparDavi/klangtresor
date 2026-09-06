@@ -975,6 +975,10 @@ select,.knopf{
   color:var(--text);font-size:12px;background:var(--flaeche2)}
 .kontfehlt a:hover{border-color:var(--akzent);color:var(--akzent)}
 .kontfehlt a span{font-size:10px;color:var(--schwach);text-transform:uppercase;letter-spacing:.6px}
+.kontsumme{padding-left:18px;border-left:1px solid var(--rand);align-self:center}
+.kontfund{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  flex-wrap:wrap;margin-top:13px;padding:12px 14px;border:1px solid var(--akzent);
+  border-radius:11px;background:var(--flaeche2)}
 pre.text{white-space:pre-wrap;word-wrap:break-word;font:inherit;line-height:1.7}
 #detail video{width:100%;border-radius:11px;margin-top:5px;background:#000}
 #zu{position:fixed;top:calc(14px + env(safe-area-inset-top));right:16px;z-index:41;
@@ -11798,6 +11802,7 @@ async function profilKontingentFuellen(){
       ${s.lebenslang ? `<div class="kontlebens">
         <div class="kontgross klein">${s.lebenslang}</div>
         <div class="kontwas">lifetime<br>einmalig</div></div>` : ''}
+      ${s.lebenslang ? `<div class="kontwas kontsumme">Suno zeigt beides<br>zusammen als <b>${frei + s.lebenslang}</b></div>` : ''}
     </div>
     <p class="fussnote">
       ${tag ? `Der Zähler springt am <b>${tag}</b> zurück.` : ''}
@@ -11806,6 +11811,7 @@ async function profilKontingentFuellen(){
         ? ` <b>${d.fehlen.length} Lied${d.fehlen.length === 1 ? '' : 'er'}</b> ${d.fehlen.length === 1 ? 'hat' : 'haben'} hier noch keine Datei.`
         : ' Alle Lieder liegen vollständig hier.'}
     </p>
+    <div id="kontdownloads"></div>
     ${d.fehlen && d.fehlen.length ? `<div class="kontfehlt">${d.fehlen.slice(0, 12).map(f =>
       `<a href="${f.link}" target="_blank" rel="noopener" title="Bei Suno öffnen — dort selbst herunterladen">
          ${esc(f.titel || f.id.slice(0, 8))}
@@ -11813,6 +11819,39 @@ async function profilKontingentFuellen(){
        </a>`).join('')}</div>
       <p class="fussnote">Herunterladen bleibt Handarbeit: Der Link führt zur Songseite,
          dort über die drei Punkte. KlangTresor löst bei Suno nichts aus, was Geld kostet.</p>` : ''}`;
+
+  /* Der Blick in den Download-Ordner kommt nach - er dauert eine Sekunde
+     und soll die Kachel nicht aufhalten. Caspar_D, 07.09.2026:
+     „KlangTresor muss wissen, wo es schauen muss, und das ist nicht sehr
+     komfortabel." Also schaut es selbst nach, sobald jemand hinsieht. */
+  downloadOrdnerZeigen();
+}
+
+async function downloadOrdnerZeigen(uebernehmen){
+  const el = $('kontdownloads'); if (!el) return;
+  el.innerHTML = `<p class="fussnote">${uebernehmen ? 'Übernehme …' : 'Sehe im Download-Ordner nach …'}</p>`;
+  let d = null;
+  try {
+    d = await (await fetch('/api/downloads', { method: uebernehmen ? 'POST' : 'GET' })).json();
+  } catch (e) { el.innerHTML = ''; return; }
+
+  if (uebernehmen) {
+    el.innerHTML = `<p class="fussnote" style="color:var(--gut,#16be5c)">
+      ${esc(d.uebernommen || 'Übernommen')} — die Dateien liegen jetzt im Archiv.
+      Für Wellenform und Analyse fehlt noch <code>node bin/vorrechnen.js</code>.</p>`;
+    setTimeout(() => { if (typeof profilKontingentFuellen === 'function') profilKontingentFuellen(); }, 1200);
+    return;
+  }
+  if (!d || !d.gefunden) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `<div class="kontfund">
+    <div>
+      <b>${d.gefunden} Datei${d.gefunden === 1 ? '' : 'en'} im Download-Ordner</b>
+      <div class="kontwas">${d.bereit.map(b => esc(b.titel) + ' · ' + b.datei.replace('audio.', '') + ' ' + b.groesse).join('<br>')}</div>
+    </div>
+    <button class="pille an" onclick="downloadOrdnerZeigen(true)">Ins Archiv übernehmen</button>
+  </div>
+  <p class="fussnote">Zugeordnet wird über Sunos Signatur im Dateikopf, nicht über den Dateinamen.</p>`;
 }
 
 function profilZahlenFuellen(){

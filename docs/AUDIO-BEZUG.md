@@ -202,3 +202,92 @@ von Corinth" (`e51c9946…`, erstellt 02.09.2026):
 
 Der Katalogeintrag kann also vollständig entstehen, bevor überhaupt
 entschieden ist, ob das Stück heruntergeladen wird.
+
+---
+
+# Nachtrag 07.09.2026 — „Unlock & Download" und wie die Dateien hereinkommen
+
+## Was der Download-Dialog zeigt
+
+Bei *Drei Punkte → Download* erscheint ein Fenster mit den Formaten
+**M4A, MP3, WAV** (alle drei angehakt), darunter **MP4 video asset**
+(getrennt, nicht angehakt) und **Stems & MIDI** (ausgegraut, eigenes
+„Manage"). Der Knopf heißt **„Unlock & Download"**.
+
+**Das Guthaben kostet den SONG, nicht die Datei.** Ein Unlock schaltet
+alle drei Audioformate zusammen frei. Damit erklärt sich auch das Feld
+`is_download_unlocked`: Es sagt, ob dieser Song freigeschaltet ist — und
+steht bei älteren Liedern auf `false`, weil sie aus der Zeit vor der
+Umstellung stammen.
+
+Die Fußzeile des Dialogs nennt: **Plan Premier · Downloads 67 ·
+Refreshes 9/11/26**. Suno **addiert** dort die beiden Töpfe (60 + 7) und
+bestätigt den errechneten Stichtag. KlangTresor zeigt sie weiterhin
+getrennt, nennt die Summe aber in Klammern, damit man Sunos Zahl
+wiedererkennt.
+
+## Der Weg der Dateien: bin/uebernehmen.js
+
+Den Klick macht der Mensch, das Einsortieren die Ernte.
+
+**Zugeordnet wird über die Signatur, nie über den Dateinamen.** Suno
+schreibt in jede Datei `made with suno; created=…; id=<UUID>` — bei WAV
+in den INFO/ICMT-Block hinter dem RIFF-Kopf, bei MP3 in den ID3-Kopf.
+Gelesen werden die ersten 64 KB. Titel taugen nicht: Sie kommen doppelt
+vor („Lakritz" zweimal), tragen Sonderzeichen, werden umbenannt oder
+bekommen beim zweiten Download ein „ (1)".
+
+Wer **keine** Signatur hat, wird nicht angefaßt. Eine Datei ohne sie ist
+entweder von woanders oder ein Mitschnitt — beides gehört nicht ungeprüft
+ins Archiv.
+
+**M4A bleibt draußen.** Bei Suno ist es Opus im MP4-Container und damit
+weder Master noch Analysegrundlage; der Bestand führt `audio.mp3` und
+`audio.wav`. Nebenbefund: Der m4a-Datei fehlt die Klartext-Signatur in
+den ersten 64 KB, sie wäre so ohnehin nicht zuzuordnen.
+
+Nach dem Kopieren wird **gegengeprüft** — gleiche Größe, gleiche
+Signatur. Stimmt etwas nicht, wird die Kopie gelöscht statt behalten.
+
+```
+node bin/uebernehmen.js                 Trockenlauf, zeigt nur
+node bin/uebernehmen.js --tun           kopiert
+node bin/uebernehmen.js --ordner <p>    anderer Ordner, wird gemerkt
+node bin/uebernehmen.js --ersetzen      vorhandene überschreiben
+node bin/uebernehmen.js --raeumen       Originale in den Papierkorb
+```
+
+## Es läuft in der Morgenroutine mit
+
+Caspar_D, 07.09.2026: „selbst dort schaue ich nicht hin, wenn ich die
+Ernte mache. Die Ernte muß es finden oder nach dem Ordner fragen, wo die
+Downloads von Suno landen."
+
+Der Schritt **„Heruntergeladene Audiodateien übernehmen"** steht deshalb
+in `MORGEN_SCHRITTE` — **nach** dem Katalogbau, weil die Zuordnung den
+Katalog braucht, und **vor** „Fehlende Medien laden".
+
+**Der Ordner wird gemerkt.** Vorgabe ist `~/Downloads`. Liegt Sunos
+Ablage woanders, sagt man es einmal mit `--ordner`; der Pfad landet in
+`library/konfig.json` als `downloadOrdner` und gilt fortan. Kein Regler
+in der Oberfläche — die Software kennt den Ort danach.
+
+**Und sie fragt, wenn nichts da ist.** Stehen Lieder ohne vollständige
+Audiodatei da und im Ordner liegt nichts, meldet das Skript das laut im
+Protokoll, nennt die betroffenen Titel und den Befehl zum Ordnerwechsel —
+statt still nichts zu tun.
+
+## Erster Lauf, 07.09.2026
+
+Zwei neue Lieder, beide über die Ernte im Katalog (321 → 323), beide ohne
+Audio-Link (`forbidden`), Liedtext vollständig:
+
+| | id | Text |
+|---|---|---|
+| Glut und Eis – Die Braut von Corinth | `89ef9f63` | 3785 Zeichen |
+| Still you laugh | `71374645` | 2347 Zeichen |
+
+Nach dem Unlock lagen sechs Dateien im Download-Ordner (je M4A, MP3,
+WAV). Übernommen wurden vier — **139,4 MB**, die beiden M4A blieben
+liegen. Von 24 weiteren Audiodateien im selben Ordner wurde keine
+angefaßt: keine Signatur.
