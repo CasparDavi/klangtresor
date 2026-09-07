@@ -115,6 +115,13 @@ geprüft, bevor man Verfahren an ihr misst.
 
 ## 4. Die Verfahren, in der Reihenfolge ihrer Prüfung
 
+> **Vor dem Lesen:** Sämtliche Prozentzahlen in diesem Abschnitt sind
+> ohne Vergleichsboden gemessen. Abschnitt 7 holt die Nullkontrolle nach
+> — von 61,7 % bleiben nach Abzug einer Attrappe mit gleicher Bogenzahl
+> rund 20 %, und die Rangfolge der Merkmale dreht sich dabei. Die Zahlen
+> hier bleiben stehen, weil sie den Weg dokumentieren; als Beleg taugen
+> sie nur zusammen mit 7.1.
+
 ### 4.1 Was durchweg gilt: positionsdeckend schlägt geschwellt
 
 Dreimal aufgetreten, dreimal dasselbe Ergebnis:
@@ -310,7 +317,7 @@ Fensterlänge stammt nicht von ihm, sondern aus dem
 kNN-auf-Diagonalen-Verfahren: im Matrix Profile heißt sie *exclusion
 zone*, m/2 vor und nach der Position, und ist dort auch so begründet. Sie
 ist eine Notwendigkeit des Suchverfahrens, keine Aussage über Musik — und
-genau sie kostet uns die 18 % aus Abschnitt 8.
+genau sie kostet uns die 18 % aus Abschnitt 9.
 
 **Bogenhöhe = Versatz** (Vorschlag, nicht gebaut). Die Hi-C-Konvention
 der Genomik: obere Dreiecksmatrix um 45 Grad gedreht, Diagonale waagerecht
@@ -365,7 +372,7 @@ zweite Stimme, die dazukommt.
 Dafür gibt es seit 1999 ein Verfahren — Footes Schachbrett-Kernel, den
 man die Hauptdiagonale der Selbstähnlichkeitsmatrix entlangzieht und der
 überall dort ausschlägt, wo vorher und nachher sich unterscheiden. Foote
-steht seit heute in unserer Quellenliste (Abschnitt 9). Gerechnet haben
+steht seit heute in unserer Quellenliste (Abschnitt 10). Gerechnet haben
 wir ihn nie. Das ist keine Feinheit, das ist eine Lücke im Fundament.
 
 **Die Reihenfolge ist verkehrt herum.** Das Ohr hört nicht „diese Sekunde
@@ -421,7 +428,149 @@ angefasst.
 
 ---
 
-## 7. Der Stand
+## 7. Die Nullkontrolle, die gefehlt hat
+
+**Alle Zahlen in Abschnitt 4 sind ohne Vergleichsboden gemessen. Sie sind
+damit nicht falsch, aber sie bedeuten etwa ein Drittel dessen, was sie zu
+bedeuten scheinen.** Am Abend des 07.09.2026 nachgeholt, auf Caspar_Ds
+Anstoß: *„sollten die tiefenfreien FFTs von links und rechts die gleichen
+Bögen liefern, wir müssen einfach mal schauen, dass wir uns validiert
+bekommen."* Sechs Messungen, jede von einem Gegenleser nachgerechnet;
+vier der sechs mussten dabei berichtigt werden.
+
+### 7.1 Die Attrappe trifft fast so gut wie das Verfahren
+
+Die entscheidende Kontrolle: Bögen mit **richtiger Anzahl, richtigem
+Versatz und richtiger Länge, aber gewürfelter Lage im Lied**. Sie messen
+nichts und treffen trotzdem:
+
+| Bahn | roh | Attrappe | bereinigt | Bögen/Lied |
+|---|---|---|---|---|
+| Chroma | 61,7 % | 52,1 % | **20,0 %** | 42,5 |
+| lBands 4–8 | 55,5 % | 44,6 % | **19,7 %** | 34,2 |
+| bandFlux 6–8 | — | — | **23,1 %** | 32,6 |
+
+Über alle sieben geprüften Bahnen und acht Frequenzzuschnitte liegt der
+bereinigte Wert zwischen 15,6 und 23,1 %, bei einer Ziehungsstreuung von
+rund ±3 Punkten. **Sieben Bahnen mit völlig verschiedenem physikalischem
+Inhalt landen auf demselben Wert.** Das Merkmal ist nicht der Engpass —
+die Bogendichte ist es. 34 bis 44 Bögen je Lied, jeder mit 14,7 s Fenster
+plus 6 s Toleranz an beiden Enden, pflastern den Zeitstrahl so zu, dass
+die Grundwahrheit fast von allein getroffen wird.
+
+**Damit dreht sich die Rangfolge aus Abschnitt 4.2.** Chroma gewinnt roh
+nur, weil es am meisten zeichnet; bereinigt ist es die viertbeste Bahn.
+Der Merkmalsvergleich des Nachmittags hat im Wesentlichen gemessen, welche
+Bahn die meisten Bögen produziert.
+
+### 7.2 Der linke und der rechte Kanal sind sich nicht einig
+
+Median-Jaccard der Bogenmengen zwischen lBands und rBands: **0,434** bei
+maximaler Eins-zu-eins-Zuordnung und einer Toleranz von einer halben
+Fensterlänge, gegen ein faires Nullmodell von 0,128 (dieselben Bögen im
+selben Lied verschoben). Das 3,4-fache des Zufalls — und trotzdem findet
+knapp die Hälfte der Bögen nur einer der beiden Kanäle, **obwohl die
+Eingangsbahnen im Median zu 0,941 korreliert sind.**
+
+Ein fast monofones Lied, das als Kontrolle hätte dienen können, gibt es
+im Bestand nicht: die höchste L/R-Bandkorrelation liegt bei 0,981.
+
+### 7.3 Nicht das Rauschen ist das Problem, sondern das Taktgitter
+
+Die Störungskurve — Jaccard gegen die ungestörte Fassung, aufgetragen
+über der Störungsstärke in Bahn-Standardabweichungen:
+
+| Störung | 0,01 | 0,05 | 0,10 | 0,20 | 0,39 |
+|---|---|---|---|---|---|
+| Deckung | 0,94 | 0,79 | 0,67 | 0,51 | 0,39 |
+
+Ein Prozent Rauschen lässt 95 % der Bögen stehen — gegen
+Amplitudenstörungen ist das Verfahren robust. **Ein halber Taktschlag
+Versatz im Gitter halbiert dagegen die Bogenmenge (J = 0,429).** Dort
+sitzt die Empfindlichkeit, und das ist ein behebbarer Baufehler, kein
+Naturgesetz.
+
+Und der ernüchternde Abgleich: weißes Rauschen von genau der Stärke des
+Kanalunterschieds (0,390 sd) liefert J = 0,393 — praktisch dasselbe wie
+der echte Kanalunterschied (0,398). **Es bleibt nichts Kanalspezifisches
+übrig.** Was wir für den Unterschied zwischen links und rechts hielten,
+ist das, was eine beliebige Störung dieser Größe mit dem Verfahren macht.
+
+### 7.4 Was trotzdem trägt
+
+Der wichtigste Trost, und er ist belastbar: **die Bögen sind als
+Einzelobjekte wackelig und als Aussage über die Struktur stabil.** Links
+und rechts zeichnen zu 40 % verschiedene Bögen, urteilen aber zu 90,4 %
+gleich über die Frage, ob eine bestimmte Wiederholung abgedeckt ist; von
+den Abschnittspaaren, die mindestens ein Kanal findet, finden 84,2 %
+beide. Die Uneinigkeit sitzt fast vollständig im Überschuss — in den
+Bögen ohne Textentsprechung.
+
+(Cohens Kappa von 0,805 taucht in mehreren Teilmessungen als
+Zuverlässigkeitsbeleg auf und trägt nicht: eine verrauschte Kopie
+desselben Kanals erreicht 0,812, zufällig gesetzte Bögen 0,378. Das Maß
+ist zu grob für diese Frage.)
+
+**Der Konsens beider Kanäle ist ein besseres Auswahlkriterium als das
+eigene Gütemaß.** Bei gleicher Bogenzahl hält L∩R 50,3 % der
+Abschnittspaare, die güteste Auswahl des Verfahrens nur 44,2 % — 6,1
+Punkte. Genauigkeit steigt von 17,0 auf 21,5 % (davon nur 2,4 Punkte
+echter Konsens; bloßes Ausdünnen auf dieselbe Zahl bringt schon 19,1 %),
+die Bogenzahl fällt von 34,2 auf 23,1 je Lied. Da L und R fast dieselbe
+Eingabe sind, filtert der Konsens allerdings **Stabilität, nicht
+Wahrheit**: er entfernt, was eine kleine Störung nicht überlebt.
+
+**Text und Klang bestätigen einander schwach, aber ihr Schnitt ist die
+beste Teilmenge im Haus.** Jaccard 0,081 gegen 0,048 bis 0,093 im
+Nullmodell — neun von zehn Klangbögen haben im Text keine Entsprechung.
+Wo beide übereinstimmen, treffen die Bögen jedoch zu 79,8 bis 81,0 % auf
+Sunos Abschnittsetiketten und erreichen damit genau das Niveau von Sunos
+eigenen Etiketten (80,2 %), während die Einzelquellen bei 62 bis 63 %
+liegen. Gegen einen auswahlgleichen Scheinkonsens (dieselben Textbögen im
+selben Lied verschoben, der schon 67,0 bis 71,4 % erreicht) bleiben +9,6
+bis +12,8 Punkte. Der Konsens kostet 90 % der Klangbögen.
+
+### 7.5 Die empirische Obergrenze
+
+Zählt man nur die Bögen, die beide Kanäle liefern, findet das Verfahren
+**51,9 %** der Abschnittspaare (definitionsfrei gerechnet 51,1 %, also
+543 von 1.062). Alles zwischen dieser Zahl und den gemeldeten 61,7 % ist
+nicht wiederholbar.
+
+Die Minderungskorrektur nach Spearman ist auf diesen Fall **nicht**
+anwendbar, und der Grund fiel erst beim Rechnen auf: Sie gilt für
+Korrelationen zweier Größen mit Streuung. Unsere Grundwahrheit hat keine
+— alle 1.062 Abschnittspaare sind per Konstruktion echte Paare, es gibt
+keine Gegenbeispiele. Was wir 61,7 % nennen, ist eine Trefferquote ohne
+Gegenstück, keine Korrelation.
+
+### 7.6 Was das für die Zahlen in Abschnitt 4 heißt
+
+Zwei Warnungen, beide von den Gegenlesern belegt:
+
+**Es gibt derzeit keine Zuverlässigkeitszahl, nur eine Spanne.** Dieselbe
+L/R-Deckung liest sich in den sechs Messungen als 0,398 | 0,422 | 0,434 |
+0,485 | 0,67 — allein wegen unterschiedlicher Toleranz und
+Zuordnungsregel. Die Rampe zeigt den Hebel: Toleranz 4 ergibt 0,274,
+Toleranz 24 ergibt 0,538. Dasselbe gilt für den Zufallsboden der
+Trefferquote (28,7 | 38,6 | 34,6 %, je nachdem wie der Versatz gezogen
+wird — die versatztreuen Böden stimmen dagegen überein: 42,7 | 44,6 |
+44,8 %).
+
+**Vor jeder weiteren Messung gehört ein gemeinsames Messwerk gebaut:**
+eine einzige Deckungsdefinition mit fester Toleranz und maximaler
+Zuordnung, und neben jeder Trefferquote verpflichtend ein versatztreues
+Nullmodell mit mindestens 20 Ziehungen. Ohne das ist keine neue Messung
+mit einer früheren vergleichbar.
+
+Nebenbei gefunden: derselbe defekte Zufallsgenerator in zwei Skripten
+(Kurzzyklus, weil `saat·1103515245` über 2^53 läuft), und zweimal 325
+statt 323 `.bin`-Dateien gezählt — zwei macOS-Beifangdateien, die als
+Lieder mit zu wenigen Schlägen durchliefen.
+
+---
+
+## 8. Der Stand
 
 Bestes Verfahren nach heutigem Stand:
 
@@ -444,7 +593,7 @@ FFT liegt in `bin/stoerfrequenz.js`.
 
 ---
 
-## 8. Was offen ist
+## 9. Was offen ist
 
 1. **Die 18 % nahen Wiederholungen** — Tandem Repeats im Sinne der
    Bioinformatik. Ein Verfahren, das nicht überlappende Wiederholungen
@@ -481,21 +630,26 @@ FFT liegt in `bin/stoerfrequenz.js`.
 6. **Die Bogenzahl.** 20 je Lied ist für ein Diagramm noch viel.
 7. **Nichts davon ist im Analyzer.** Alles liegt als Skripte im
    Arbeitsverzeichnis.
-8. **Der Kontrast ist nicht gemessen** (Abschnitt 6). Footes
+8. **Der Kontrast ist nicht gemessen** (Abschnitt 6, belegt in 7.1). Footes
    Schachbrett-Kernel steht in der Quellenliste und ist nie gerechnet
    worden. Solange das so bleibt, misst der ganze Bau nur die halbe
    Definition von „Refrain".
-9. **Wir haben keine Zuverlässigkeitszahl.** Alle Trefferquoten oben
-   messen gegen eine Grundwahrheit, keine misst das Verfahren gegen sich
-   selbst. Caspar_D am 07.09.2026: *„sollten die tiefenfreien FFTs von
-   links und rechts die gleichen Bögen liefern, wir müssen einfach mal
-   schauen, dass wir uns validiert bekommen."* Genau das ist die fehlende
-   Zahl — und die Ablage hält `lBands` und `rBands` getrennt, der Test
-   ist also ohne neue Rechnung am Ton möglich.
+9. **Wir haben immer noch keine einzelne Zuverlässigkeitszahl** —
+   Abschnitt 7 hat gemessen, aber je nach Toleranz und Zuordnungsregel
+   liest sich dieselbe Größe als 0,398 bis 0,67. Das gemeinsame Messwerk
+   aus 7.6 steht aus und ist Vorbedingung für alles Weitere.
+10. **Das Taktgitter ist die empfindlichste Stelle** (7.3): ein halber
+   Schlag Versatz halbiert die Bogenmenge. Ob eine Mittelung über
+   mehrere Gitterphasen das behebt, ist ungeprüft.
+11. **Die Genauigkeit ist nie gegen eine vollständige Grundwahrheit
+   gemessen.** 17 bis 21,5 % der Bögen liegen auf einem belegten
+   Textpaar — aber die Grundwahrheit kennt nur wiederholte Textzeilen,
+   ein Bogen ohne Textentsprechung muss also nicht falsch sein. Solange
+   das so ist, kennen wir den Anteil echter Fehlbögen nicht.
 
 ---
 
-## 9. Quellen
+## 10. Quellen
 
 Gelesen oder geprüft im Lauf dieser Sitzung. Wo eine Angabe aus zweiter
 Hand stammt, steht es dabei.
@@ -640,7 +794,7 @@ Hand stammt, steht es dabei.
 
 ---
 
-## 10. Die Werkzeuge im Haus
+## 11. Die Werkzeuge im Haus
 
 - **FFT**: `bin/stoerfrequenz.js:75` (Radix-2, dazu `rfft` ab Zeile 131,
   am 26.08.2026 auf reelle FFT umgestellt) — **nicht exportiert**.
@@ -664,7 +818,7 @@ Hand stammt, steht es dabei.
 
 ---
 
-## 11. Arbeitsstand
+## 12. Arbeitsstand
 
 Alle Skripte liegen im Arbeitsverzeichnis der Sitzung
 (`/private/tmp/claude-501/…/scratchpad/`), nichts davon ist im Projekt:
