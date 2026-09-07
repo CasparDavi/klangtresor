@@ -161,10 +161,22 @@ function liefere(req, res, datei) {
      nur einmal über die Leitung, aber nach einem Neulauf eben noch
      einmal. */
   const analyse  = datei.startsWith(ANALYSE);
+  /* WANDELBARE DATEIEN muessen revalidiert werden, unwandelbare nicht.
+     audio.mp3, cover.jpg und artwork.mp4 kommen von Suno und aendern
+     sich nie - die duerfen ein Jahr im Browser liegen. kachel.jpg wird
+     dagegen von bin/kacheln.js ERZEUGT und kann neu gerechnet werden.
+
+     Caspar_D, 07.09.2026, nachdem 123 Kacheln neu gerechnet waren und er
+     weiter die alten sah: „es sind immer noch ziemlich viele, die sich
+     nicht in die Rahmen einfügen". Die Dateien auf der Platte waren
+     richtig - der Browser zeigte seinen Vorrat von vor drei Wochen, denn
+     bei max-age=31536000 ohne Last-Modified fragt er nie wieder nach. */
+  const abgeleitet = /(^|\/)kachel\.jpg$/.test(datei);
   const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
+  const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();
 
-  if (programm && req.headers['if-modified-since'] === stempel) {
+  if (wandelbar && req.headers['if-modified-since'] === stempel) {
     res.writeHead(304, { 'Cache-Control': 'no-cache', 'Last-Modified': stempel });
     return res.end();
   }
@@ -173,8 +185,8 @@ function liefere(req, res, datei) {
     'Content-Type':   typ,
     'Content-Length': laenge,
     'Accept-Ranges':  'bytes',
-    'Cache-Control':  programm ? 'no-cache' : 'public, max-age=31536000',
-    ...(programm ? { 'Last-Modified': stempel } : {}),
+    'Cache-Control':  wandelbar ? 'no-cache' : 'public, max-age=31536000',
+    ...(wandelbar ? { 'Last-Modified': stempel } : {}),
   });
   fs.createReadStream(datei).pipe(res);
 }
