@@ -28,8 +28,12 @@ sähe genauso aus).
 
 ## Was beim Auswerten zu tun ist
 
-1. Den Stem-Befund nachmessen. Erst Indexversatz ausschließen, dann
-   Übersprechen.
+1. ~~Erst Indexversatz ausschließen~~ — **am 07.09. erledigt, ohne
+   Messung:** `bin/stems.js` führt die Spurliste in der
+   Ausgabereihenfolge des Modells (`drums, bass, other, vocals, guitar,
+   piano`), mit einem Kommentar darüber, der genau vor dem Umsortieren
+   warnt. Ein Versatz ist ausgeschlossen. Bleibt echtes Übersprechen —
+   das gehört noch gemessen.
 2. Die vorgeschlagene Kette gegen den vorhandenen Bestand halten:
    Wortanker liegen in `library/whisper.ndjson`, YIN und Stimmlage
    rechnen bereits, `onnxruntime-node` ist über `bin/klang.js` da.
