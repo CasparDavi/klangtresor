@@ -96,38 +96,106 @@ function messbild(datei, alpha) {
    sein, und was uebrig bleibt, muss deutlich heller sein. Im Zweifel
    wird NICHT geschnitten - ein zu grosser Rand ist ein Schoenheitsfehler,
    ein abgeschnittenes Motiv ein Verlust. */
-const SCHWARZ_DUNKEL = 18;   /* bis hierhin gilt ein Punkt als schwarz */
-const SCHWARZ_HELL   = 55;   /* so hell muss das Motiv im Mittel sein */
-const SCHWARZ_MAX    = 0.40; /* mehr als 40 % je Seite wird nie geschnitten */
+/* Woran man einen Balken erkennt (Caspar_D, 07.09.2026): „balken sind
+   immer homogen schwarz und es gibt eine Grenze zum Bild, die grade
+   ist, ausser dort, wo das bild auch schwarz ist."
 
+   Das ist das tragfaehige Merkmal, und es ist besser als alles, was ich
+   vorher probiert hatte. Helligkeit allein taugt nicht - eine
+   naechtliche Barszene ist auch dunkel. Entscheidend ist die
+   STRUKTURLOSIGKEIT: Ein Balken hat in seiner ganzen Laenge denselben
+   Wert, ein Nachthimmel hat Verlauf, Sterne, Wolken. Also wird je
+   Spalte und Zeile gemessen, wie stark die Werte streuen. */
+const BALKEN_HELL   = 24;   /* so dunkel muss ein Balken im Mittel sein */
+const BALKEN_STREU  = 7;    /* und so wenig darf er in sich streuen */
+const SCHWARZ_MAX   = 0.45; /* mehr als 45 % je Seite wird nie geschnitten */
+
+function pixelFormat(datei) {
+  try {
+    return execFileSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0',
+      '-show_entries', 'stream=pix_fmt', '-of', 'csv=p=0', datei],
+      { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  } catch (e) { return ''; }
+}
+
+/* Das Messbild: entweder der Alphakanal (durchsichtiger Rahmen) oder die
+   Helligkeit (schwarze Balken). Suno rahmt hochkante Motive mal so, mal
+   so. */
+function messbild(datei, alpha) {
+  try {
+    return execFileSync('ffmpeg', ['-v', 'error', '-i', datei, '-vf',
+      (alpha ? 'alphaextract,' : '') + `scale=${MESSRASTER}:${MESSRASTER}`,
+      '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'gray', '-'],
+      { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 24 });
+  } catch (e) { return null; }
+}
+
+/* Liefert den Zuschnitt als ffmpeg-crop-Ausdruck, oder null.
+
+   Beim Alphakanal ist die Sache eindeutig: durchsichtig ist durchsichtig,
+   da genuegt „irgendwo deckend".
+
+   Bei schwarzen Balken zaehlt die Homogenitaet: Eine Randspalte gehoert
+   zum Balken, wenn sie dunkel UND strukturlos ist. Sobald Struktur
+   auftaucht, ist die gerade Grenze erreicht und es wird nicht weiter
+   geschnitten - auch wenn es dahinter wieder dunkel wird. */
 function zuschnitt(datei) {
   const hatAlpha = /rgba|argb|abgr|bgra|ya8|ya16/.test(pixelFormat(datei));
   const roh = messbild(datei, hatAlpha);
   const N = MESSRASTER;
   if (!roh || roh.length < N * N) return null;
 
-  /* Beim Alphakanal zaehlt „irgendwo deckend", bei Helligkeit „irgendwo
-     nicht schwarz" - beides dieselbe Frage an unterschiedliche Kanaele. */
-  const schwelle = hatAlpha ? 40 : SCHWARZ_DUNKEL;
-  const traegt = (x, y) => roh[y * N + x] > schwelle;
-  const spalte = (x) => { for (let y = 0; y < N; y++) if (traegt(x, y)) return true; return false; };
-  const zeile  = (y) => { for (let x = 0; x < N; x++) if (traegt(x, y)) return true; return false; };
-  let l = 0, r = N - 1, o = 0, u = N - 1;
-  while (l < N && !spalte(l)) l++;
-  while (r > l && !spalte(r)) r--;
-  while (o < N && !zeile(o)) o++;
-  while (u > o && !zeile(u)) u--;
+  /* Mittel und Streuung einer Spalte bzw. Zeile - daran entscheidet sich
+     alles. */
+  const kennwerte = (hole) => {
+    let summe = 0, quadrate = 0;
+    for (let i = 0; i < N; i++) { const v = hole(i); summe += v; quadrate += v * v; }
+    const m = summe / N;
+    return { mittel: m, streu: Math.sqrt(Math.max(0, quadrate / N - m * m)) };
+  };
+  const spalte = (x) => kennwerte((y) => roh[y * N + x]);
+  const zeile  = (y) => kennwerte((x) => roh[y * N + x]);
+
+  let l, r, o, u;
+  if (hatAlpha) {
+    const traegt = (x, y) => roh[y * N + x] > 40;
+    const spVoll = (x) => { for (let y = 0; y < N; y++) if (traegt(x, y)) return true; return false; };
+    const zeVoll = (y) => { for (let x = 0; x < N; x++) if (traegt(x, y)) return true; return false; };
+    l = 0; r = N - 1; o = 0; u = N - 1;
+    while (l < N && !spVoll(l)) l++;
+    while (r > l && !spVoll(r)) r--;
+    while (o < N && !zeVoll(o)) o++;
+    while (u > o && !zeVoll(u)) u--;
+  } else {
+    const istBalken = (k) => k.mittel < BALKEN_HELL && k.streu < BALKEN_STREU;
+    l = 0; r = N - 1; o = 0; u = N - 1;
+    while (l < N && istBalken(spalte(l))) l++;
+    while (r > l && istBalken(spalte(r))) r--;
+    while (o < N && istBalken(zeile(o))) o++;
+    while (u > o && istBalken(zeile(u))) u--;
+  }
   if (l >= r || o >= u) return null;                       /* ganz leer - Finger weg */
+
+  /* PAARIGKEIT, als zweite Bedingung neben der Homogenitaet. Ein
+     Letterbox-Balken sitzt auf BEIDEN Seiten, weil ein Bild mittig in
+     einen Rahmen gelegt wurde. Ein dunkler Bildinhalt sitzt einseitig.
+
+     Homogenitaet allein reicht naemlich nicht: „Noch lachst Du" hat
+     oben einen strukturlosen Nachthimmel (7,5 %, unten nichts), „Der
+     Schimmelreiter" unten einen dunklen Rand (4,2 %, oben nichts) -
+     beide waeren faelschlich beschnitten worden. „Ich atme dich"
+     dagegen hat links 20 und rechts 18 Prozent: ein echter Rahmen. */
+  if (!hatAlpha) {
+    const paarig = (a, b) => Math.min(a, b) >= MINDEST_RAND && Math.max(a, b) <= Math.min(a, b) * 2.5;
+    if (!paarig(l / N, (N - 1 - r) / N)) { l = 0; r = N - 1; }
+    if (!paarig(o / N, (N - 1 - u) / N)) { o = 0; u = N - 1; }
+    if (l === 0 && r === N - 1 && o === 0 && u === N - 1) return null;
+  }
+
   const anteile = [l / N, (N - 1 - r) / N, o / N, (N - 1 - u) / N];
   if (Math.max(...anteile) < MINDEST_RAND) return null;
+  if (!hatAlpha && Math.max(...anteile) > SCHWARZ_MAX) return null;
 
-  /* Die Strengeprüfung gilt nur für schwarze Balken. */
-  if (!hatAlpha) {
-    if (Math.max(...anteile) > SCHWARZ_MAX) return null;    /* zu viel - eher ein dunkles Bild */
-    let summe = 0, punkte = 0;
-    for (let y = o; y <= u; y++) for (let x = l; x <= r; x++) { summe += roh[y * N + x]; punkte++; }
-    if (!punkte || summe / punkte < SCHWARZ_HELL) return null;  /* Motiv selbst zu dunkel: nicht anfassen */
-  }
   /* Anteile, nicht Pixel: die Quellgroesse ist von Song zu Song anders.
      Eine Rasterbreite Zugabe, damit die Messungenauigkeit nicht ins
      Motiv schneidet. */
