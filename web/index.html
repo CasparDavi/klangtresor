@@ -11764,6 +11764,123 @@ function kuriosSeiten(eigene){
         }).catch(() => { box.innerHTML = ''; box.appendChild(satz('Keine Community-Daten.')); });
         return box;
       } },
+    /* --- Vier Trivia aus dem eigenen Bestand (Caspar_D, 07.09.2026:
+       "Pack es in Koriosa"). Alle vier rechnen nur mit dem, was die
+       Profilseite ohnehin geladen hat - kein Nachladen, keine neue
+       Datei, kein Endpunkt.
+
+       Was nicht gemessen ist, steht nicht da: keine Deutung, warum eine
+       Tonart haeufig ist, kein Urteil ueber Arbeitszeiten. Nur die
+       Zahl und wo sie herkommt. */
+    { titel: 'Der dichteste Moment', bau: () => {
+        /* Gleitendes Ein-Stunden-Fenster, nicht "der beste Tag": ein Tag
+           kann eine lange ruhige Sitzung sein, das Fenster findet den
+           Stoss. */
+        const z = mitDatum.map(s => ({ t: +new Date(s.erstellt), s }))
+                          .filter(x => !isNaN(x.t)).sort((a, b) => a.t - b.t);
+        if (z.length < 3) throw new Error('zu wenige Songs mit Datum');
+        let best = { n: 0, i: 0, j: 0 };
+        for (let i = 0, j = 0; i < z.length; i++){
+          while (z[i].t - z[j].t > 3600000) j++;
+          if (i - j + 1 > best.n) best = { n: i - j + 1, i, j };
+        }
+        const von = z[best.j], bis = z[best.i];
+        const min = Math.max(1, Math.round((bis.t - von.t) / 60000));
+        const tage = new Set(mitDatum.map(s => s.erstellt.slice(0, 10))).size;
+        const box = document.createElement('div');
+        box.appendChild(satz(`${best.n} Songs in ${min} Minuten.`));
+        const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
+        const d = new Date(von.t);
+        f.textContent = `Am ${d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}`
+          + `, von „${von.s.titel}" bis „${bis.s.titel}". `
+          + `Überhaupt entstanden ist an ${tage} Tagen etwas.`;
+        box.appendChild(f); return box;
+      } },
+    { titel: 'Die stillste Zeit', bau: () => {
+        /* Gegenstueck zur Uhrzeit-Signatur, die den staerksten Tagesteil
+           nennt. Hier der schwaechste - und zwar als Sechs-Stunden-
+           Fenster, das ueber Mitternacht laufen darf. Eine einzelne
+           Stunde waere Zufall. */
+        const st = Array(24).fill(0); let n = 0;
+        for (const s of mitDatum){ const d = new Date(s.erstellt); if (isNaN(d)) continue; st[d.getHours()]++; n++; }
+        if (!n) throw new Error('keine Zeitstempel');
+        let leer = { n: Infinity, ab: 0 };
+        for (let a = 0; a < 24; a++){
+          let sum = 0; for (let k = 0; k < 6; k++) sum += st[(a + k) % 24];
+          if (sum < leer.n) leer = { n: sum, ab: a };
+        }
+        const stillste = st.indexOf(Math.min(...st));
+        const box = document.createElement('div');
+        box.appendChild(satz(`Zwischen ${leer.ab} und ${(leer.ab + 6) % 24} Uhr entstanden ${leer.n} Songs.`));
+        const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
+        f.textContent = `Das sind ${Math.round(100 * leer.n / n)} % des Bestands in einem Viertel des Tages. `
+          + `Leerste einzelne Stunde: ${stillste}–${stillste + 1} Uhr mit ${st[stillste]} `
+          + `${st[stillste] === 1 ? 'Song' : 'Songs'} (Ortszeit).`;
+        box.appendChild(f); return box;
+      } },
+    { titel: 'Wortdichte', bau: () => {
+        /* lyricsWorte ist der GESUNGENE Text: Regieanweisungen in eckigen
+           Klammern und die zweite Sprachfassung sind schon abgezogen
+           (bin/katalog.js). Instrumentals und Songs ohne Text bleiben
+           draussen - eine Dichte von null waere keine Aussage. */
+        const mit = eigene.filter(s => s.hatLyrics && s.lyricsWorte > 0 && s.dauer > 30)
+                          .map(s => ({ s, d: s.lyricsWorte / (s.dauer / 60) }))
+                          .sort((a, b) => b.d - a.d);
+        if (mit.length < 5) throw new Error('zu wenige Songs mit Text');
+        const m = mit[Math.floor(mit.length / 2)];
+        const box = document.createElement('div');
+        box.appendChild(satz(`${Math.round(m.d)} gesungene Wörter je Minute im Median.`));
+        const zeile = (name, x) => {
+          const r = document.createElement('div'); r.className = 'bz klick';
+          r.style.gridTemplateColumns = '150px 1fr';
+          const a = document.createElement('span'); a.className = 'bn'; a.textContent = name;
+          const b = document.createElement('span');
+          b.textContent = `${x.s.titel} (${Math.round(x.d)})`;
+          b.style.cssText = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+          r.append(a, b);
+          r.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(x.s.id); };
+          return r;
+        };
+        /* KEIN UNTERER EXTREMWERT (07.09.2026). Das duennste Lied waere
+           „Ulrich & Ännchen" mit 5 Wörtern je Minute - und das ist
+           falsch: lyricsWorte() bricht dort an einer Trennlinie ab, die
+           Strophen trennt statt Sprachfassungen, und zaehlt 25 statt 292
+           Wörter. Ein einziger solcher Fall im Bestand, aber er landet
+           per Bauart genau auf dem Minimum. Das untere Zehntel ist
+           gegen ihn unempfindlich. */
+        box.appendChild(zeile('Am dichtesten', mit[0]));
+        const unten = mit[Math.floor(mit.length * 0.9)];
+        const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
+        f.textContent = `Das ruhigste Zehntel bleibt unter ${Math.round(unten.d)} Wörtern je Minute. `
+          + `Gerechnet über ${mit.length} Songs mit Text, ohne Regieanweisungen und ohne zweite Sprachfassung.`;
+        box.appendChild(f); return box;
+      } },
+    { titel: 'Die zwei Tonarten', bau: () => {
+        /* Das Diagramm oben zeigt Grundton und Tongeschlecht einzeln.
+           Hier steht nur die eine Zahl, die dort niemand ablesen kann:
+           wie schmal die Auswahl ist. Warum sie schmal ist, steht
+           ausdruecklich nicht da - das waere Deutung. */
+        const mit = eigene.filter(s => s.analyse && s.analyse.tonart && s.analyse.tonart.grund);
+        if (mit.length < 12) throw new Error('zu wenige gemessene Tonarten');
+        const z = new Map();
+        /* Der Analyse-Index fuehrt Grundton und Tongeschlecht getrennt
+           (grund, art) und kennt kein fertiges Namensfeld - bei 55 von
+           321 Songs ist das Geschlecht gar nicht bestimmt. Dann steht
+           nur der Grundton da, und das ist auch die ehrliche Auskunft. */
+        for (const s of mit){ const t = s.analyse.tonart;
+          const k = t.art ? `${t.grund} ${t.art}` : t.grund; z.set(k, (z.get(k) || 0) + 1); }
+        const rang = [...z.entries()].sort((a, b) => b[1] - a[1]);
+        const zwei = rang.slice(0, 2);
+        const anteil = Math.round(100 * (zwei[0][1] + (zwei[1] ? zwei[1][1] : 0)) / mit.length);
+        const box = document.createElement('div');
+        box.appendChild(satz(zwei[1]
+          ? `${anteil} % deiner Songs stehen in ${zwei[0][0]} oder ${zwei[1][0]}.`
+          : `${anteil} % deiner Songs stehen in ${zwei[0][0]}.`));
+        const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
+        f.textContent = `${zwei.map(x => `${x[0]}: ${x[1]}`).join(', ')} von ${mit.length} gemessenen Songs. `
+          + `Insgesamt kommen ${z.size} verschiedene Tonarten vor.`;
+        box.appendChild(f); return box;
+      } },
   ];
 }
 
