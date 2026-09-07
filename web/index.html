@@ -3573,7 +3573,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <path d="M12 5V2L8 6l4 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/>
       </svg>
     </button>
-    <button id="ich" onclick="profilAuf()" title="Über dieses Archiv">
+    <button id="ich" onclick="profilAuf()" title="Mein Autorenprofil">
       <img id="ichbild" src="/avatar" alt="" onerror="this.style.display='none'">
     </button>
   </div>
@@ -11487,7 +11487,7 @@ async function profilCommunityFuellen(){
   let d; try { d = await (await fetch('/api/community')).json(); } catch (e){ ziel.style.display='none'; return; }
   const leute = d.leute || [], follower = d.follower || [];
   if (!leute.length && !follower.length){ ziel.style.display = 'none'; return; }
-  ziel.innerHTML = '<h3>Community</h3>';
+  ziel.innerHTML = '<h3>Gemeinschaft</h3>';
 
   /* Umschalter: diesen Monat, dieses Jahr, fuer immer. Gezaehlt nach dem
      Datum der Reaktion. Kommentare haben wir vollstaendig; Likes nur so
@@ -11768,7 +11768,7 @@ function kuriosSeiten(eigene){
           const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
           f.textContent = 'Likes kennen wir nur, soweit Sunos Benachrichtigungen reichen - die „Schreiber ohne Like" können früher still geliked haben.';
           box.appendChild(f);
-        }).catch(() => { box.innerHTML = ''; box.appendChild(satz('Keine Community-Daten.')); });
+        }).catch(() => { box.innerHTML = ''; box.appendChild(satz('Keine Gemeinschaftsdaten.')); });
         return box;
       } },
     /* --- Vier Trivia aus dem eigenen Bestand (Caspar_D, 07.09.2026:
@@ -13681,7 +13681,7 @@ function profilAuf(){
            nichts. -->
       <div class="profilreg">
         <button class="reg an" data-preg="daten" onclick="profilRegister('daten')">Meine Daten</button>
-        <button class="reg" data-preg="community" onclick="profilRegister('community')">Meine Community</button>
+        <button class="reg" data-preg="community" onclick="profilRegister('community')">Meine Gemeinschaft</button>
       </div>
 
       <div class="pregfeld" data-preg="daten">
@@ -13747,11 +13747,11 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
 
       <div class="pregfeld" data-preg="community" hidden>
         <div class="block" id="profilcommunity">
-          <h3>Community</h3>
+          <h3>Gemeinschaft</h3>
           <p class="fussnote">Lade …</p>
         </div>
         <div class="block" id="profilnachbarn"></div>
-      </div><!-- /Register: Meine Community -->
+      </div><!-- /Register: Meine Gemeinschaft -->
     </div>`;
 
   $('detail').classList.add('auf');

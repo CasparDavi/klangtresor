@@ -29,7 +29,9 @@ folgen kann.
 | **die Alben** | `Alben` | Sunos „Playlists" heißen hier Alben. Beim ersten Auftreten einmal erklären, danach nur noch „Album" |
 | **der Klangraum** | `Klangraum` | |
 | **der Geschichten-Raum** | — | die zweite Sicht desselben Registers |
-| **mein Autorenprofil** | `Meine Daten` · `Meine Community` | *offen:* deckt „Autorenprofil" beide Reiter ab, oder nur den ersten? Wenn beide, sollte die App mitziehen |
+| **mein Autorenprofil** | Titel des Knopfs `#ich` | deckt **beide** Registerlaschen ab (Caspar_D, 07.09.2026). Die Oberfläche zog am selben Abend nach: der Knopf hieß vorher „Über dieses Archiv" |
+| **meine Daten** | `Meine Daten` | die erste Registerlasche: was den eigenen Bestand beschreibt |
+| **meine Gemeinschaft** | `Meine Gemeinschaft` | die zweite: was ihn einordnet. Hieß bis 07.09.2026 „Meine Community" |
 | **die Bühne** | — | die Karaoke-Ansicht mit mitlaufendem Text |
 | **das Karteiblatt** | — | die ganze Ansicht zu einem Titel: Lyrics, Stil-Prompt, Urheber, Nachbarschaft, Community, Entwicklung |
 | **die Titel-Messdaten** | — | das Messmodul darin (Wellenform, Spektrogramm, Lautheit). Löst „Analyzer" ab: der Name versprach Interaktivität, dabei schaut man nur. „Analyzer" stand ohnehin nie in der Oberfläche, nur in Kommentaren |
@@ -126,10 +128,16 @@ Gefunden am 07.09.2026 beim Durchsuchen des sichtbaren Textes. Mehr sind
 es nicht — die Oberfläche ist bereits durchgehend deutsch:
 
 1. **„Preset"** in der Erklärung zum Klangvorbild (`web/index.html`,
-   Tonstudio) → „Vorlage"
+   Tonstudio) → „Vorlage". *Noch offen.*
 2. **„Filter"** und **„Filter zurücksetzen"** als Beschriftung → bleibt.
    Filter ist im Deutschen ein gebräuchliches Wort, und „Sieb" wäre
    albern. Hier gilt die Ausnahme.
+3. **„Community"** → **„Gemeinschaft"**. *Am 07.09.2026 erledigt*, fünf
+   Beschriftungen: der Registerknopf, zwei Überschriften, eine Meldung
+   („Keine Gemeinschaftsdaten") und der Titel des Zugangs, der jetzt
+   „Mein Autorenprofil" heißt. Die inneren Schlüssel (`data-preg`,
+   Dateinamen wie `community-profile.json`) bleiben unberührt — sie sind
+   kein sichtbarer Text.
 
 ---
 
