@@ -2834,8 +2834,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <option value="nacht">Nacht (leise hören)</option>
           </optgroup>
         </select>
-        <button id="studioref" title="Merkt den laufenden Song als Klangvorbild. Das Preset „Wie der Referenzsong" gleicht dann jeden anderen Song an dessen Frequenzprofil an.">Laufenden Song als Referenz</button>
-        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Songs — beim Einschalten, beim Ziehen und bei Presets. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die CLIP-Lampe">Kein Übersteuern</button>
+        <button id="studioref" title="Merkt den laufenden Titel als Klangvorbild. Die Startwerte „Wie der Referenzsong" gleichen dann jeden anderen Titel an dessen Frequenzprofil an.">Laufenden Song als Referenz</button>
+        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Songs — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die CLIP-Lampe">Kein Übersteuern</button>
       </div>
       <!-- EIN editierbares Diagramm statt Slider + Chart - "eine
            lebende Lehrbuchabbildung" (Caspar_D, 20.08.2026). Die roten
@@ -11547,7 +11547,7 @@ async function profilCommunityFuellen(){
   const folgende = follower.filter(f => !seen.has(f.handle) && seen.add(f.handle));
   if (folgende.length){
     const h = document.createElement('div'); h.className = 'fussnote';
-    h.textContent = `Neue Folger (${folgende.length}, soweit Sunos Benachrichtigungen reichen): `;
+    h.textContent = `Neue Beobachter (${folgende.length}, soweit Sunos Benachrichtigungen reichen): `;
     folgende.slice(0, 12).forEach((e, i) => {
       const sp = document.createElement('span'); sp.className = 'rwer'; sp.textContent = e.name || e.handle;
       sp.onclick = () => { $('detail').classList.remove('auf'); reaktPersonAlleine(e.handle); };
@@ -12634,16 +12634,37 @@ async function profilNachbarnFuellen(){
 
        WO EIN VERB PASST, STEHT EIN VERB. Ueberall dort, wo Platz fuer
        einen Satz ist - Achsen, Tooltips, Fussnoten -, wird gezaehlt
-       statt benannt: "213 folgen · 154 gefolgt". Nur wo ein Wort allein
-       stehen muss, weil es eine Schaltflaeche beschriftet oder in einer
-       Tabellenspalte sitzt, steht das Substantiv "Folger". */
+       statt benannt. Nur wo ein Wort allein stehen muss, weil es eine
+       Schaltflaeche beschriftet oder in einer Tabellenspalte sitzt,
+       steht ein Substantiv.
+
+       AM 07.09.2026 NEU BENANNT: "Folger" heisst jetzt "Beobachter",
+       "gefolgt" heisst "im Blick" - also "213 Beobachter · 154 im
+       Blick". Caspar_D hatte "sehen mich" und "sehe ich" vorgeschlagen
+       und die Wahl dann abgegeben ("klingt alles Scheisse, such du das
+       geringere Uebel aus").
+
+       Der Grund fuer diese zwei: Die Ich-Form kippt. "213 sehen mich"
+       stimmt am eigenen Punkt und ist am fremden Punkt schlicht falsch,
+       und beide Punkte tragen dieselbe Zeile. "Beobachter" und "im
+       Blick" sind perspektivfrei - sie stimmen bei jedem Punkt des
+       Streubilds.
+
+       Und der Beiklang, der gegen "Beobachter" spricht, traegt hier
+       nicht: In einem Haus, dessen Sammlung ein Sternenhimmel ist und
+       dessen Gruppen Sternbilder heissen, ist ein Beobachter das
+       naheliegende Wort. "Jemanden im Blick haben" wiederum heisst im
+       Deutschen genau das, was Suno "following" nennt - man verfolgt,
+       was der macht, ohne Gefolgschaft geschworen zu haben. */
     /* ACHSEN ALS FRAGEN (Caspar_D, 26.08.2026: "Wieviele folgen? /
        Wievielen gefolgt? sollen die Achsenbeschriftungen sein").
-       Besser als jedes Substantiv: "Anhänger" und "Vorbilder" deuten
-       etwas hinein - wer 116.081 Menschen folgt, hat keine 116.081
-       Vorbilder. Die Frage sagt genau, was gezaehlt wird, und sonst
-       nichts. */
-    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'Wievielen gefolgt?', 'Wieviele folgen?', true));
+       Besser als jedes blosse Substantiv: "Anhänger" und "Vorbilder"
+       deuten etwas hinein - wer 116.081 Menschen folgt, hat keine
+       116.081 Vorbilder. Die Frage sagt genau, was gezaehlt wird, und
+       sonst nichts. Seit dem 07.09.2026 lauten sie "Wie viele
+       Beobachter?" und "Wie viele im Blick?" - die Frageform bleibt,
+       nur die Woerter sind neu. */
+    w.appendChild(streuBild(alleL, 'folgt', 'follower', 'Wie viele im Blick?', 'Wie viele Beobachter?', true));
     const f = document.createElement('div'); f.className = 'fussnote';
     const oben = alleL.filter(x => !x.ist && x.follower > 2 * Math.max(1, x.folgt)).length;
     f.textContent = `Waagerecht, wem jemand folgt — senkrecht, wer ihm folgt. Beide Achsen `
@@ -12939,7 +12960,7 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` fill="${fl}" stroke="${kn}" stroke-width="1"`
        + ` data-tipp="${esc(p.name)}${String.fromCharCode(10)}`
        + `${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · ${p.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
-       + `${p.follower.toLocaleString('de-DE')} folgen · ${p.folgt.toLocaleString('de-DE')} gefolgt${String.fromCharCode(10)}`
+       + `${p.follower.toLocaleString('de-DE')} Beobachter · ${p.folgt.toLocaleString('de-DE')} im Blick${String.fromCharCode(10)}`
        + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Plays je Song`
        + `${p.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + (p.hirschUnten ? '≥ ' : '') + p.hirsch : ''}">`
        + `<title>${esc(p.name)}</title></circle></a>`;
@@ -12958,7 +12979,7 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5"`
        + ` data-tipp="Du${String.fromCharCode(10)}`
        + `${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · ${ich.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
-       + `${ich.follower.toLocaleString('de-DE')} folgen · ${ich.folgt.toLocaleString('de-DE')} gefolgt${String.fromCharCode(10)}`
+       + `${ich.follower.toLocaleString('de-DE')} Beobachter · ${ich.folgt.toLocaleString('de-DE')} im Blick${String.fromCharCode(10)}`
        + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Plays je Song`
        + `${ich.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + (ich.hirschUnten ? '≥ ' : '') + ich.hirsch : ''}">`
        + `<title>Du</title></circle>`;

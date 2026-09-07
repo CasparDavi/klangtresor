@@ -81,7 +81,9 @@ Stern, und du hörst ihn".
 | Track, Song, Lied, Stück | **der Titel** | siehe oben. „Song" nur, wo von Sunos Oberfläche die Rede ist |
 | Playlist | **das Album** | „Playlist" nur im Zusammenhang mit Suno |
 | Stems | **die Instrumentspuren** | Fachwort einmal in Klammern beim ersten Auftreten |
-| Preset | **die Vorlage** | man nimmt eine Vorlage und passt sie an — „Standardeinstellung" wäre lang und falsch, das Ding ist kein Standard. „Klangvorbild" bleibt für den Referenztitel |
+| Preset | **die Startwerte** | man startet mit ihnen und regelt von dort weiter. „Standardeinstellung" wäre lang und falsch — das Feld hat elf Einträge, nicht einen Standard. „Klangvorbild" bleibt für den Referenztitel |
+| Follower, Folger | **der Beobachter** | perspektivfrei: „sehen mich" stimmt am eigenen Punkt und ist am fremden falsch, und beide tragen dieselbe Zeile. Passt zur Sternbild-Sprache des Hauses |
+| following, gefolgt | **im Blick** | „jemanden im Blick haben" heißt im Deutschen genau das, was Suno „following" nennt — ohne Gefolgschaft |
 | Panel | **das Feld** oder **das Fenster** | je nachdem, was es ist — nie beide für dasselbe |
 | Tab | **die Registerlasche** | so heißt es im Quelltext schon |
 | Slider | **der Regler** | so heißt es in der App schon |
@@ -127,8 +129,8 @@ Fachausdruck zu benutzen: nicht „der Endpunkt `/api/karte` liefert", sondern
 Gefunden am 07.09.2026 beim Durchsuchen des sichtbaren Textes. Mehr sind
 es nicht — die Oberfläche ist bereits durchgehend deutsch:
 
-1. **„Preset"** in der Erklärung zum Klangvorbild (`web/index.html`,
-   Tonstudio) → „Vorlage". *Noch offen.*
+1. **„Preset"** in der Erklärung zum Klangvorbild → **„Startwerte"**.
+   *Am 07.09.2026 erledigt*, zwei Hinweistexte im Tonstudio.
 2. **„Filter"** und **„Filter zurücksetzen"** als Beschriftung → bleibt.
    Filter ist im Deutschen ein gebräuchliches Wort, und „Sieb" wäre
    albern. Hier gilt die Ausnahme.
