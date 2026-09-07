@@ -310,7 +310,7 @@ Fensterlänge stammt nicht von ihm, sondern aus dem
 kNN-auf-Diagonalen-Verfahren: im Matrix Profile heißt sie *exclusion
 zone*, m/2 vor und nach der Position, und ist dort auch so begründet. Sie
 ist eine Notwendigkeit des Suchverfahrens, keine Aussage über Musik — und
-genau sie kostet uns die 18 % aus Abschnitt 7.
+genau sie kostet uns die 18 % aus Abschnitt 8.
 
 **Bogenhöhe = Versatz** (Vorschlag, nicht gebaut). Die Hi-C-Konvention
 der Genomik: obere Dreiecksmatrix um 45 Grad gedreht, Diagonale waagerecht
@@ -344,7 +344,84 @@ zweites Merkmal, sondern ein zweites Verfahren.
 
 ---
 
-## 6. Der Stand
+## 6. Was am Ansatz selbst fehlt
+
+Caspar_D am Abend des 07.09.2026: *„was mich eigentlich erschreckt, ich
+höre intuitiv, was ein Refrain, was Strophe ist, und die Physik hat große
+Probleme damit und ich verstehe nicht warum. Was machen wir falsch."*
+
+Die Antwort ist unangenehm konkret und betrifft nicht die Feinheiten
+oben, sondern den Zuschnitt der ganzen Aufgabe.
+
+**Wir messen nur die Hälfte des Begriffs.** Ein Refrain ist zwei Dinge
+zugleich: er *kommt wieder*, und er ist *anders als das drumherum*.
+Sämtliche Verfahren in Abschnitt 4 beantworten ausschließlich die erste
+Frage — Matrix Profile, Bildkorrelation, Phasenkorrelation, alle fragen
+sie, welche zwei Stellen einander ähneln. Keines fragt, an welcher Stelle
+sich etwas ändert. Genau das hört das Ohr zuerst: den Einsatz nach der
+Strophe, das Aufgehen der Instrumentierung, den Lautheitssprung, die
+zweite Stimme, die dazukommt.
+
+Dafür gibt es seit 1999 ein Verfahren — Footes Schachbrett-Kernel, den
+man die Hauptdiagonale der Selbstähnlichkeitsmatrix entlangzieht und der
+überall dort ausschlägt, wo vorher und nachher sich unterscheiden. Foote
+steht seit heute in unserer Quellenliste (Abschnitt 9). Gerechnet haben
+wir ihn nie. Das ist keine Feinheit, das ist eine Lücke im Fundament.
+
+**Die Reihenfolge ist verkehrt herum.** Das Ohr hört nicht „diese Sekunde
+ähnelt jener Sekunde". Es hört „hier fängt etwas Neues an", und danach
+„das kenne ich". Erst Grenzen, dann Zuordnung. Wir machen es umgekehrt
+und hoffen, dass aus lauter Fensterähnlichkeiten die Abschnitte von
+selbst herausfallen. Sie fallen nicht heraus — daher 20 Bögen je Lied,
+wo vier Abschnitte stehen sollten.
+
+Caspar_D hat daraus die richtige Bauform abgeleitet: *„die Trennung des
+musikalischen Kontexts setzt also die Grenzen der Regionen fest."* Die
+Kontrastmessung liefert die Schnitte, und erst innerhalb dieser Regionen
+wird verglichen. Das räumt nebenbei zwei Probleme mit ab, an denen wir
+uns oben abgearbeitet haben: die Fensterlänge wird nicht mehr gesetzt,
+sondern ergibt sich aus den Schnitten, und die Nichtüberlappung wird zur
+natürlichen Folge (zwei Regionen überlappen nicht), statt eine
+aufgezwungene Regel zu sein, die die nahen Wiederholungen kostet.
+
+**Die Lauflänge gehört in die Bewertung, nicht in die Nachbearbeitung.**
+Wir suchen erst k nächste Nachbarn je Fenster und fassen danach Läufe ab
+Länge 8 zusammen. Das Zusammenfassen kommt zu spät: es kann nur noch
+zusammenkleben, was die Nachbarschaftssuche einzeln bereits durchgelassen
+hat. Ein einzelnes stark ähnliches Fenster überlebt, acht mittelmäßige in
+Folge sterben — obwohl der zusammenhängende Lauf der viel bessere Beleg
+ist. Beide Nachbarfächer sagen dasselbe: Benson zählt in TRF die Summe
+der Längen aller Läufe ab k aufeinanderfolgenden Treffern auf derselben
+Diagonale, ein isolierter Treffer zählt gar nicht; die Musikinformatik
+nennt dasselbe *path enhancement* und glättet die Ähnlichkeitsmatrix
+entlang der Diagonalen, bevor überhaupt eine Schwelle angesetzt wird.
+Caspar_D am 07.09.2026, unabhängig auf denselben Schluss gekommen:
+*„taktabhängig und Takte zusammenfassen, bei Korrelation lange Stretches
+gewinnen über kurze."*
+
+**Wir mitteln weg, woran das Ohr es erkennt.** Der Chroma-Kosinus über
+14 Sekunden ist eine einzige Zahl. Darin verschwindet, dass der Titel
+gesungen wird, dass die Melodie ihren höchsten Ton erreicht, dass alle
+Instrumente gleichzeitig einsetzen. Das Ohr wertet drei oder vier sehr
+auffällige Merkmale; wir werten hundert unauffällige und teilen durch
+hundert.
+
+**Was uns nicht ganz anzulasten ist.** Der Hörer hört mit Gedächtnis und
+Erwartung: der erste Refrain ist beim ersten Hören noch keiner, er wird
+rückwirkend einer, wenn er wiederkommt. Bei eigenen Liedern kommt hinzu,
+dass man sie kennt. Ein Verfahren, das ein Lied einmal von vorn nach
+hinten liest, hat diesen Vorsprung nicht. Und die Aufgabe ist objektiv
+schwer: der Stand der Technik draußen liegt bei 60 bis 70 %, und
+menschliche Annotatoren stimmen untereinander nur zu etwa drei Vierteln
+überein — sie merken es bloß nicht, weil jeder seine eigene Einteilung
+für die selbstverständliche hält. Unsere 61,7 % sind also kein
+Ausreißer nach unten. Nur sind wir dort mit einem halben Werkzeug
+hingekommen; die andere Hälfte, der Kontrast, ist noch gar nicht
+angefasst.
+
+---
+
+## 7. Der Stand
 
 Bestes Verfahren nach heutigem Stand:
 
@@ -367,7 +444,7 @@ FFT liegt in `bin/stoerfrequenz.js`.
 
 ---
 
-## 7. Was offen ist
+## 8. Was offen ist
 
 1. **Die 18 % nahen Wiederholungen** — Tandem Repeats im Sinne der
    Bioinformatik. Ein Verfahren, das nicht überlappende Wiederholungen
@@ -404,10 +481,21 @@ FFT liegt in `bin/stoerfrequenz.js`.
 6. **Die Bogenzahl.** 20 je Lied ist für ein Diagramm noch viel.
 7. **Nichts davon ist im Analyzer.** Alles liegt als Skripte im
    Arbeitsverzeichnis.
+8. **Der Kontrast ist nicht gemessen** (Abschnitt 6). Footes
+   Schachbrett-Kernel steht in der Quellenliste und ist nie gerechnet
+   worden. Solange das so bleibt, misst der ganze Bau nur die halbe
+   Definition von „Refrain".
+9. **Wir haben keine Zuverlässigkeitszahl.** Alle Trefferquoten oben
+   messen gegen eine Grundwahrheit, keine misst das Verfahren gegen sich
+   selbst. Caspar_D am 07.09.2026: *„sollten die tiefenfreien FFTs von
+   links und rechts die gleichen Bögen liefern, wir müssen einfach mal
+   schauen, dass wir uns validiert bekommen."* Genau das ist die fehlende
+   Zahl — und die Ablage hält `lBands` und `rBands` getrennt, der Test
+   ist also ohne neue Rechnung am Ton möglich.
 
 ---
 
-## 8. Quellen
+## 9. Quellen
 
 Gelesen oder geprüft im Lauf dieser Sitzung. Wo eine Angabe aus zweiter
 Hand stammt, steht es dabei.
@@ -552,7 +640,7 @@ Hand stammt, steht es dabei.
 
 ---
 
-## 9. Die Werkzeuge im Haus
+## 10. Die Werkzeuge im Haus
 
 - **FFT**: `bin/stoerfrequenz.js:75` (Radix-2, dazu `rfft` ab Zeile 131,
   am 26.08.2026 auf reelle FFT umgestellt) — **nicht exportiert**.
@@ -576,7 +664,7 @@ Hand stammt, steht es dabei.
 
 ---
 
-## 10. Arbeitsstand
+## 11. Arbeitsstand
 
 Alle Skripte liegen im Arbeitsverzeichnis der Sitzung
 (`/private/tmp/claude-501/…/scratchpad/`), nichts davon ist im Projekt:
