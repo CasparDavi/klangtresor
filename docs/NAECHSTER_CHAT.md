@@ -1534,3 +1534,16 @@ Wiederholstreuung ±0,1–0,8 dB · Störabstände weiß/rosa 35–38 dB
 Der Verfahrensvergleich als eigener Panel-Plan wurde gelöscht (lebt im
 Dokument); die Session davor (vormittags) brachte Geschichten-Raum-
 Reaktivierung + gesundheit.js — steht weiter unten bzw. in HISTORY.
+
+---
+
+## 07.09.2026 — Eingang für Unerledigtes
+
+Neu: `docs/eingang/`. Dort liegt Rohmaterial, das ins Repo gehört, aber
+noch niemand ausgewertet hat, jede Datei mit Status im Kopf. Erster
+Eintrag: die Chatthreads vom 06.09., unterwegs in der App geführt —
+**der Rohtext fehlt noch**, weil die App nichts auf der Platte ablegt
+und von Hand herübergereicht werden muss.
+
+Wer das hier liest und Zeit hat: `docs/eingang/` durchsehen, verteilen,
+Status setzen.
