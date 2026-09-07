@@ -1090,8 +1090,14 @@ const server = http.createServer((req, res) => {
   if (p === '/api/index') {
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
+    /* Der Kachelstempel reist im Katalogkopf mit: Die Oberflaeche haengt
+       ihn an jede Kachel-Adresse, damit neu gerechnete Kacheln auch
+       ankommen. Siehe bin/kacheln.js - dort wird er gesetzt. */
+    let kachelStand = 0;
+    try { kachelStand = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'kachel-stand.json'), 'utf8')).stand || 0; } catch (e) {}
     return jsonAntwort(res, {
       version:    paketVersion(),
+      kachelStand,
       erstelltAm: k.erstelltAm,
       anzahl:     schlankeListe.length,
       spielzeit:  k.spielzeit || null,

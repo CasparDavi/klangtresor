@@ -199,6 +199,24 @@ function rechne(quelle, ziel) {
     process.stdout.write(`\r  ${fertig + misslungen}/${offen.length}`);
   }
 
+  /* STEMPEL FUER DEN BROWSER. Kacheln sind abgeleitete Dateien und
+     aendern sich, wenn dieses Skript laeuft - der Browser darf das nicht
+     verpassen. Der Server schickt zwar seit dem 07.09.2026 Last-Modified
+     mit, aber ein Eintrag, der einmal mit "ein Jahr gueltig" im Vorrat
+     liegt, wird gar nicht erst erfragt: Der neue Header erreicht ihn nie.
+     Deshalb bekommt jede Kachel-Adresse diesen Stempel angehaengt - wenn
+     er sich aendert, ist es fuer den Browser eine neue Adresse und er
+     holt sie. Ohne Handarbeit, ohne geleerten Vorrat.
+     (Caspar_D, 07.09.2026: "also bei deinem internen browser
+     funktioniert es erstmal nicht") */
+  if (fertig) {
+    try {
+      fs.writeFileSync(path.join(WURZEL, 'library', 'kachel-stand.json'),
+        JSON.stringify({ stand: Date.now(), gerechnet: fertig,
+          wozu: 'Haengt als ?k= an jeder Kachel-Adresse. Aendert sich, sobald Kacheln neu gerechnet wurden - so holt der Browser sie, ohne dass jemand seinen Vorrat leeren muss.' }, null, 1));
+    } catch (e) {}
+  }
+
   const dauer = Math.round((Date.now() - start) / 1000);
   console.log(`\n\nfertig:     ${fertig}`);
   if (misslungen) console.log(`misslungen: ${misslungen}`);

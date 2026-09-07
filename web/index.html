@@ -4064,6 +4064,7 @@ async function start(){
   songVonId = new Map(alle.map(s => [s.id, s]));
   playlists = d.playlists || [];
   playlists.forEach(p => playlistVonId.set(p.id, p));
+  kachelStand = d.kachelStand || 0;
   katalogInfo = d;
   if (d.profil && d.profil.display_name) {
     document.getElementById('ich').title = 'Über ' + d.profil.display_name;
@@ -10242,9 +10243,19 @@ function artworkBild(id){
    Ein selbst abgelegtes Titelbild hat die nicht - dann gilt es
    unverkleinert. Der onerror-Rueckfall auf cover.jpg bleibt an den
    Kacheln stehen, er faengt fehlende Verkleinerungen ab. */
+/* Der Kachelstempel aus dem Katalogkopf. Er haengt an jeder
+   Kachel-Adresse und aendert sich, sobald bin/kacheln.js gelaufen ist.
+   Warum ueberhaupt: Kacheln liegen beim Browser mit "ein Jahr gueltig"
+   im Vorrat, und der fragt dann nicht mehr nach - auch nicht beim
+   Neuladen. Caspar_D, 07.09.2026: „ich habe die seite mehrfach
+   reloaded, der Tastendruck ist nicht das problem, es ging einfach
+   nicht." Eine geaenderte Adresse holt er dagegen immer. */
+let kachelStand = 0;
+const kachelZusatz = () => kachelStand ? '?k=' + kachelStand : '';
+
 function artworkKachel(id){
   return (_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
-    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/kachel.jpg';
+    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/kachel.jpg' + kachelZusatz();
 }
 
 function bewegtAn(karte, id){
@@ -11906,7 +11917,7 @@ function profilZahlenFuellen(){
           const z = document.createElement('div'); z.className = 'topk';
           z.title = `${s.titel} · +${bew(s, fenb)} Bewegung seit ${b.seit}`
             + ` (${b.plays||0} Plays, ${b.likes||0} Likes, ${b.kommentare||0} Kommentare)`;
-          z.innerHTML = `<img loading="lazy" src="/media/${s.id}/kachel.jpg" alt=""`
+          z.innerHTML = `<img loading="lazy" src="/media/${s.id}/kachel.jpg${kachelZusatz()}" alt=""`
             + ` onerror="this.src='/media/${s.id}/cover.jpg'"><b>+${bew(s, fenb)}</b>`;
           z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); };
           reihe.appendChild(z);
@@ -11943,7 +11954,7 @@ function profilZahlenFuellen(){
       for (const s of top){
         const z = document.createElement('div'); z.className = 'topk';
         z.title = fen === 'w4' ? `${s.titel} · +${wert(s)} Likes seit ${s.bewegung28.seit} (${s.likes||0} gesamt)` : `${s.titel} · ${s.likes||0} Likes`;
-        z.innerHTML = `<img loading="lazy" src="/media/${s.id}/kachel.jpg" alt="" onerror="this.src='/media/${s.id}/cover.jpg'"><span>${SYM('herz')}${fen === 'w4' ? '+' : ''}${wert(s)}</span>`;
+        z.innerHTML = `<img loading="lazy" src="/media/${s.id}/kachel.jpg${kachelZusatz()}" alt="" onerror="this.src='/media/${s.id}/cover.jpg'"><span>${SYM('herz')}${fen === 'w4' ? '+' : ''}${wert(s)}</span>`;
         z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); };
         reihe.appendChild(z);
       }
@@ -15438,7 +15449,7 @@ async function reaktAuf(id, x, y, istZurueck){
   if (ak) $('reaktkasten').style.setProperty('--reakt-akzent', ak);
   else    $('reaktkasten').style.removeProperty('--reakt-akzent');
   $('reakttitel').textContent = s.titel || '';
-  $('reaktbild').src = '/media/' + id + '/kachel.jpg';
+  $('reaktbild').src = '/media/' + id + '/kachel.jpg' + kachelZusatz();
   $('reaktbild').style.display = '';
   $('reaktunter').textContent = `${s.plays||0} Plays · ${s.likes||0} Likes · ${s.kommentare||0} Kommentare`;
   const feld = $('reaktinhalt');
@@ -15626,7 +15637,7 @@ async function reaktPerson(handle, vonSong, istZurueck){
   const spur = (e, was) => {
     const w = document.createElement('div'); w.className = 'rspur';
     w.onclick = () => reaktAuf(e.song);
-    const img = document.createElement('img'); img.src = '/media/' + e.song + '/kachel.jpg'; img.alt = '';
+    const img = document.createElement('img'); img.src = '/media/' + e.song + '/kachel.jpg' + kachelZusatz(); img.alt = '';
     img.onerror = () => img.style.visibility='hidden';
     const r = document.createElement('div');
     const st = document.createElement('div'); st.className = 'rst'; st.textContent = e.songTitel || e.song;
@@ -15840,7 +15851,7 @@ async function morgenListeBauen(){
     k.className = 'mz';
     k.onclick = () => { morgenZu(); spielenNachId(id); };
     const bild = document.createElement('img');
-    bild.src = '/media/' + id + '/kachel.jpg';
+    bild.src = '/media/' + id + '/kachel.jpg' + kachelZusatz();
     bild.onerror = () => { bild.src = '/media/' + id + '/cover.jpg';
                            bild.onerror = () => { bild.style.visibility = 'hidden'; }; };
     const rechts = document.createElement('div');
