@@ -33,7 +33,8 @@ folgen kann.
 | **meine Daten** | `Meine Daten` | die erste Registerlasche: was den eigenen Bestand beschreibt |
 | **meine Gemeinschaft** | `Meine Gemeinschaft` | die zweite: was ihn einordnet. Hieß bis 07.09.2026 „Meine Community" |
 | **die Bühne** | — | die Karaoke-Ansicht mit mitlaufendem Text |
-| **das Karteiblatt** | — | die ganze Ansicht zu einem Titel: Lyrics, Stil-Prompt, Urheber, Nachbarschaft, Community, Entwicklung |
+| **das Register** | `Werke` · `Alben` · `Klangraum` … | die Reiter der Oberfläche. So heißt es im Quelltext schon 37-mal, dabei bleibt es |
+| *(kein Eigenname)* | — | die Ansicht zu einem einzelnen Titel bekommt keinen. Im Handbuch wird sie beschrieben: „klick auf einen Titel, und du siehst …". Ein erfundener Name für etwas, das man in vier Wörtern sagen kann, ist Ballast |
 | **die Titel-Messdaten** | — | das Messmodul darin (Wellenform, Spektrogramm, Lautheit). Löst „Analyzer" ab: der Name versprach Interaktivität, dabei schaut man nur. „Analyzer" stand ohnehin nie in der Oberfläche, nur in Kommentaren |
 | **das Tonstudio** | `KlangTresor Tonstudio` | |
 | **das Einmessen** | `Einmessen` | |
@@ -85,7 +86,7 @@ Stern, und du hörst ihn".
 | Follower, Folger | **der Beobachter** | perspektivfrei: „sehen mich" stimmt am eigenen Punkt und ist am fremden falsch, und beide tragen dieselbe Zeile. Passt zur Sternbild-Sprache des Hauses |
 | following, gefolgt | **im Blick** | „jemanden im Blick haben" heißt im Deutschen genau das, was Suno „following" nennt — ohne Gefolgschaft |
 | Panel | **das Feld** oder **das Fenster** | je nachdem, was es ist — nie beide für dasselbe |
-| Tab | **die Registerlasche** | so heißt es im Quelltext schon |
+| Tab | **die Registerlasche** | so heißt es im Quelltext schon; das Ganze ist **das Register** |
 | Slider | **der Regler** | so heißt es in der App schon |
 | Screenshot | **die Abbildung** | in Bildunterschriften; „Bildschirmfoto", wo es um das Aufnehmen geht |
 | Layout | **der Aufbau** | |
