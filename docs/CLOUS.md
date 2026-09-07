@@ -209,34 +209,72 @@ Duplikatsuche. Aber Sunos Herkunftsfelder sind für diesen Bestand tot —
 `concat_history`, null auflösbar. Der Katalog kennt neun markierte
 Übersetzungen, der Lauf findet deutlich mehr.
 
-**Der Satz „es gibt keine trennende Schwelle" ist am 07.09.2026
-widerlegt worden.** Er stand auf einem 30-Sekunden-Fenster. Im selben
-Lauf lief eine dritte Spalte mit — 60 Sekunden — und wurde verworfen,
-weil sie am 80-%-Ausbeutepunkt ähnlich schlecht aussah. Bei gleicher
-Ausbeute ist sie an jedem Punkt zwischen 10 und 45 Treffern deutlich
-schärfer, und dafür gibt es einen Grund statt Glück: ein doppelt so
-langes Fenster lässt sich durch eine Stilfamilie viel schwerer zufällig
-treffen.
+**Am selben Abend noch einmal umgeworfen — die Arbeit ist längst getan.**
+Caspar_D: *„haben wir die Doppelsterne nicht schon im Klangraum?"* und
+*„für den Geschichten-Raum hatten wir schon alle möglichen Liedfassungen
+zusammengeholt"*. Beides stimmt, und zusammen ändert es den Zuschnitt der
+ganzen Idee.
 
-Die Zahlen im 60-s-Fenster, Schwelle 0,702: **26 der 49 belegten
-Fassungspaare liegen oben, gegen 4 ungeklärte aus 33.362** — davon drei
-am selben Lied. Rund 590-fache Anreicherung, ROC-Fläche 0,944. Die
-Reinheit ist wegen der unvollständigen Wahrheitsliste eine Untergrenze
-und kann nur besser werden. Nachgeprüft: die vier Ankerwerte des
-Originallaufs reproduzieren sich aufs Tausendstel, die Grundwahrheit
-stammt aus Text und Handpflege (nicht aus derselben Quelle wie das
-Merkmal), und die Schwellenregel lag vor dem Lauf fest.
+**Drei Räume liegen fertig gerechnet da**, und keiner wurde je gefragt:
 
-**Was trotzdem schiefgeht:** Die volle Ausbeute ist unerreichbar. ClubMix,
-Retro-Fassung und Neuarrangement liegen in jeder Spalte unter dem
-Untergrundmedian — mehr als die Hälfte der bekannten Paare wird Chroma
-nie finden. Auf Stellenebene bleibt es tot: 92 der 200 stärksten Funde
-sind Naturklang gegen Naturklang. Die Idee ist also nicht als *Entscheider*
-rehabilitiert, sondern als **Finder für die eine Hälfte**: 26 Treffer, 4
-Fehlgriffe, eine Liste zum Abhaken. Danach steht ein **bestätigtes**
-Register im Katalog.
+| Raum | was er misst | Herkunft |
+|---|---|---|
+| **Text** | Bedeutung des gesungenen Textes, sprachübergreifend | `library/geschichten.json`, 768 Dim., Kondensat |
+| **Klang** | Klangfarbe und Machart | `library/karte.json`, 1280 Dim., √(1−cos) |
+| **Harmonie** | Akkordfolge | Chroma aus `library/analyse/*.bin` |
 
----
+Der Doppelstern im Klangraum (`web/index.html:9904`) benutzt bereits den
+zweiten davon — aber mit einer festen Klangschwelle von 0,17, und die ist
+so eng, dass im ganzen Bestand nur **acht** Hüllen entstehen. Caspar_D
+dazu: *„ich habe aber im Klangraum nichts selbst definiert, das hat
+KlangTresor selbst getan."* Genau so ist es, und genau darin liegt der
+Wert: es ist kein gepflegtes Register, sondern eine Messung.
+
+**Die Schwelle fällt ganz weg.** Caspar_D: *„ich will eigentlich nicht den
+Klassifikator spielen, das System soll das können."* Das Kriterium, das
+ohne Schwelle und ohne Handpflege auskommt, ist die gegenseitige
+Nachbarschaft: zwei Lieder gehören zusammen, wenn **jedes das andere unter
+seinen zwei ähnlichsten Partnern führt** — und wenn **mindestens zwei der
+drei Räume** das unabhängig sagen. Kein Regler, keine gesetzte Zahl außer
+der Familiengröße.
+
+Das Ergebnis: **43 Funde.** Gegen die Prüfliste des Eichkastens (35 Paare)
+sind 25 belegt; von den 18 übrigen sind an den Titeln 13 zweifelsfrei echt
+(*Lichtpunkte ~ Points of Light*, *Reactor ~ Reaktor*, *Herr von Ribbeck ~
+Sir Ribbeck*, *Escher ~ Escher – English version*, *Universe 25 english ~
+Universe 25* …). Fraglich bleiben fünf. Das sind rund **88 % Reinheit** —
+die Prüfliste war der Engpass, nicht das Verfahren. Im Nullmodell
+(gewürfelte Zuordnung, Verteilungsform erhalten) trifft dasselbe Kriterium
+0,05 ± 0,22 Paare.
+
+**Der Testfall, der die Schwäche zeigte.** Caspar_D hat am 06.09.2026
+*„Glut und Eis – Die Braut von Corinth"* hinzugefügt, das die deutsche und
+die englische Fassung von 2025 ergänzt. Mit nur dem *besten* Partner
+(k = 1) fällt es durch: die beiden alten Fassungen sind sich gegenseitig
+die nächsten (Harmonie 0,847), der Dritte bleibt draußen. Der Grund ist
+lehrreich — *Glut und Eis* hat einen **anderen Text** (Textnähe nur 0,664),
+es ist eine Neuvertonung, keine Übersetzung. Klang (0,712) und Harmonie
+(0,702) erkennen es trotzdem. Genau dafür braucht es drei Räume und k = 2.
+Mit k = 2 steht die Kante, und *Noch lachst Du ~ Still you laugh* — der
+zweite frische Zwilling desselben Tages — ebenfalls.
+
+**Was daraus zu bauen wäre**, ist deshalb kein neues Feature, sondern ein
+Austausch: der Doppelstern bekommt statt der Klangschwelle 0,17 dieses
+Kriterium. Aus acht Hüllen im Klangraum werden rund dreiundvierzig, und
+am Lied steht die Zeile, die es vorher nicht gab.
+
+**Was trotzdem schiefgeht.** Fünf der 43 sind vermutlich keine Fassungen,
+sondern Serienmitglieder (*Ich atme dich – Track 2 ~ Ich berühre dich –
+Track 4*) oder Stilnachbarn (*Pasta al Limone ~ Doppio passo*). Zehn der
+35 belegten Paare fehlen weiterhin. Und k = 2 ist ehrlicherweise doch eine
+gesetzte Zahl — sie sagt: eine Fassungsfamilie hat höchstens drei
+Mitglieder, die einander nah sind. Bei einer vierten Fassung desselben
+Liedes müsste sie mitwachsen.
+
+*Aktenkundig überholt:* Der Chroma-Alleingang (60-s-Fenster, Schwelle
+0,702, 26 von 49 Paaren) war die Empfehlung von 19 Uhr desselben Abends.
+Er ist nicht falsch, nur der schwächste der drei Räume und der einzige,
+der eine Schwelle braucht.
 
 ## 6. Der Gabelweg — am 07.09.2026 zurückgeholt
 
