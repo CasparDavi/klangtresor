@@ -1418,3 +1418,65 @@ Eichlatenz GESETZT statt detektiert; Rampen-Abbruch wurde zur bestätigten
 Kennlinie („Empfehlung, nicht Gängelung"). Erster voller Durchlauf über
 AirPlay: Latenz 2084 ms (Spanne 64), Kette linear bis 100 %,
 Wiederholstreuung ±0,1–0,8 dB.
+
+---
+
+## 07.09.2026 — Ein Drittel der Kacheln hatte einen Rahmen, den niemand wollte
+
+Caspar_D zeigte eine Kachel, bei der „zu allen Seiten Platz im
+Placeholder" war. Am Ende waren **181 von 323** betroffen — 96 mit
+durchsichtigem, 85 mit schwarzem Rahmen.
+
+**Warum es niemandem auffiel:** Es sah nicht kaputt aus. `bin/kacheln.js`
+legt das Motiv auf eine unscharfe, abgedunkelte Fassung desselben Bildes
+— der Rand wirkte dadurch wie eine Gestaltungsentscheidung, nicht wie ein
+Fehler. Wer nicht wußte, daß das Motiv größer sein sollte, sah nichts.
+
+**Die Ursache lag in der Quelle.** Suno liefert unter dem Namen
+`cover.jpg` teils PNG-Dateien mit Alphakanal, in denen ein hochkantes
+Motiv quadratisch gerahmt ist; teils Bilder mit echten schwarzen Balken.
+`bin/laden.js` speichert sie unverändert — das war richtig und ist es
+geblieben. Falsch war nur, sie ungeprüft einzupassen.
+
+### Vier Irrwege, bevor das Kriterium stimmte
+
+1. **Im CSS gesucht.** `.bild img` hat `object-fit: cover`, alle 250
+   Kacheln waren auf allen Reglerstufen korrekt gefüllt. Auch der
+   Hover-Zustand mit bewegtem Artwork und dessen Ladephase: nichts.
+   Erst Caspar_Ds Bildschirmfoto zeigte, daß der Rand *in der Datei*
+   steckt.
+2. **„Dunkler als 18".** Ließ „Auf Augenhöhe — Passt Du?" stehen, eine
+   Barszene bei Nacht mit mittlerer Helligkeit 46,5.
+3. **„Motiv heller als 55".** Dieselbe Falle andersherum.
+4. **„Abstand zwischen Balken und Motiv".** Schnitt dafür „Noch lachst
+   Du" den Nachthimmel ab und dem „Schimmelreiter" den unteren Bildrand.
+
+### Das tragfähige Merkmal kam vom Autor
+
+> „es geht um homogenität, balken sind immer homogen schwarz und es gibt
+> eine Grenze zum Bild, die grade ist, ausser dort, wo das bild auch
+> schwarz ist."
+
+Gemessen wird seither je Spalte und Zeile **Mittel und Streuung**. Ein
+Balken ist dunkel *und strukturlos*; ein Nachthimmel hat Verlauf, Sterne,
+Wolken. Dazu die **Paarigkeit** als zweite Bedingung: Ein Rahmen sitzt
+auf beiden Seiten, ein dunkler Bildinhalt einseitig.
+
+### Der zweite Fehler: die Korrektur kam nicht an
+
+Nach dem ersten Neulauf sah Caspar_D weiter die alten Kacheln — auch
+nach mehrfachem Neuladen. `/media` lieferte **alles** mit
+`Cache-Control: public, max-age=31536000` und ohne `Last-Modified`. Ein
+Jahr, ohne Rückfrage. Für `audio.mp3` und `cover.jpg` ist das richtig,
+für erzeugte Dateien nicht.
+
+Der Header allein reichte auch nicht: Ein Eintrag, der einmal mit „ein
+Jahr gültig" im Vorrat liegt, wird gar nicht erst erfragt. Deshalb trägt
+jede Kachel-Adresse jetzt einen **Stempel** (`?k=…`) aus
+`library/kachel-stand.json`, den `bin/kacheln.js` setzt. Ändert er sich,
+ist es für den Browser eine neue Adresse.
+
+**Lehre:** Abgeleitete Dateien brauchen einen Stempel oder eine
+Revalidierung — sonst bleibt jede Verbesserung an ihnen unsichtbar, bis
+der Cache von selbst verfällt. Und: Wer einen Anzeigefehler im CSS sucht,
+sollte früh prüfen, ob er nicht in der Datei steckt.
