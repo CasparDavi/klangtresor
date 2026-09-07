@@ -72,6 +72,7 @@ function jsonAntwort(res, daten, status) {
 }
 
 let zonenSpeicher = null;   /* library/notenzonen.json, einmal gelesen */
+let lyrikSpeicher = null;   /* library/lyrik.json, einmal gelesen */
 let whisperSpeicher = null; /* library/whisper.ndjson, einmal geparst */
 const TYPEN = {
   '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8',
@@ -1199,6 +1200,39 @@ const server = http.createServer((req, res) => {
       return jsonAntwort(res, zonenSpeicher.daten[id] || null);
     } catch (e) { return jsonAntwort(res, null); }
   }
+  /* DIE BEREINIGTE LYRIK EINES SONGS (bin/lyrik.js, 07.09.2026).
+     Sammeldatei wie bei den Notenzonen - 239 einzelne Dateien waeren auf
+     exFAT 239 MB, die Datei selbst ist 1 MB. Songweise ausgeliefert,
+     weil der Browser sonst alles laedt, um einen Text zu zeigen.
+
+     Sunos Daten bleiben unberuehrt (Caspar_D: "nichts, was von suno
+     kommt sollte veraendert werden") - `lyrics` und `worte` im Katalog
+     ruehrt niemand an, das hier ist eine zweite Auskunft daneben.
+     Songs, die das Verfahren zurueckgestellt hat, antworten mit null;
+     die Lasche erscheint dann gar nicht erst. */
+  if (p.startsWith('/api/lyrik/')) {
+    const id = p.slice('/api/lyrik/'.length);
+    if (!/^[0-9a-f-]{30,}$/i.test(id)) { res.writeHead(400); return res.end(); }
+    const f = path.join(WURZEL, 'library', 'lyrik.json');
+    if (!fs.existsSync(f)) return jsonAntwort(res, null);
+    try {
+      const stand = fs.statSync(f).mtimeMs;
+      if (!lyrikSpeicher || lyrikSpeicher.stand !== stand) {
+        const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+        lyrikSpeicher = { stand, daten: d.lieder || {}, verfahren: d.verfahren || '',
+                          unsicher: new Map((d.unsicher || []).map(u => [u.id, u])) };
+      }
+      const e = lyrikSpeicher.daten[id];
+      if (!e) {
+        const u = lyrikSpeicher.unsicher.get(id);
+        /* Warum nichts da ist, ist eine Auskunft wert - sonst sieht es
+           aus, als haette niemand gerechnet. */
+        return jsonAntwort(res, u ? { zurueckgestellt: true, grund: u.grund } : null);
+      }
+      return jsonAntwort(res, Object.assign({ verfahren: lyrikSpeicher.verfahren }, e));
+    } catch (e) { return jsonAntwort(res, null); }
+  }
+
   /* Die oeffentlichen Profilzahlen der Leute, die hier vorkommen -
      geholt von bin/community-profile.js. Dient dem Einordnen der eigenen
      Zahlen; ohne Vergleich sagt ein Hirschfaktor von 22 nichts.

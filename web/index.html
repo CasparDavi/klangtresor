@@ -1261,6 +1261,17 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    die verdeckten Zeichen sehen will, nimmt den Zeiger weg. */
 /* Woher der Text kommt, steht ueber ihm - nicht im Text versteckt. */
 #bprompts .herkunft{font-size:11.5px;color:var(--schwach);margin:0 0 8px;line-height:1.5}
+/* Zeitmarke vor der bereinigten Zeile. Sie steht da, damit man sieht,
+   wo im Stück man ist - fest breit, damit der Text senkrecht bleibt,
+   und zurückgenommen, damit sie den Text nicht überstimmt. Eine Tilde
+   heißt: die Marke ist zwischen den Nachbarn geschätzt, weil Whisper
+   die Zeile überhört hat. */
+#bprompts .lzeit{display:inline-block;min-width:4.4em;color:var(--schwach);
+  opacity:.7;font-variant-numeric:tabular-nums;user-select:none}
+/* Haengender Einzug: Eine lange Liedzeile bricht um, und die Fortsetzung
+   soll nicht unter die Zeitspalte rutschen - sonst liest sich die Zeit
+   wie ein Teil des Textes. */
+#bprompts .pseite[data-pseite="rein"] .prompt{text-indent:-4.4em;padding-left:calc(4.4em + 10px)}
 /* Der Vergleich: oben die Zeile, wie sie geschrieben steht, in der
    Akzentfarbe; darunter, was Whisper daraus gehoert hat, in der
    Textfarbe. (Caspar_D, 24.08.2026) */
@@ -16303,6 +16314,7 @@ function promptsFuellen(){
     teile.push('<div class="stueck">'
       + '<div id="promptregz">'
       +   '<button class="preg" data-preg="lyrics">Lyrics</button>'
+      +   '<button class="preg" data-preg="rein" disabled>bereinigte Lyrik</button>'
       +   '<button class="preg" data-preg="transkript" disabled>Transkript</button>'
       +   '<button class="preg" data-preg="vergleich" disabled>Vergleich</button>'
       + '</div>'
@@ -16314,6 +16326,7 @@ function promptsFuellen(){
          Aufbau (whisperEinsetzen schreibt sie spaeter). */
       + '<div class="pseite" data-pseite="lyrics"><div class="prompt">'
       +   esc(bSong.lyrics) + '</div></div>'
+      + '<div class="pseite" data-pseite="rein" hidden></div>'
       + '<div class="pseite" data-pseite="transkript" hidden></div>'
       + '<div class="pseite" data-pseite="vergleich" hidden></div>'
       + '</div>');
@@ -16332,6 +16345,7 @@ function promptsFuellen(){
     });
     promptLasche('lyrics');                 // bis das Transkript da ist
     whisperEinsetzen(bSong.id);             // laeuft nach, schaltet frei
+    lyrikEinsetzen(bSong.id);               // dito, aus library/lyrik.json
   }
 }
 
@@ -16413,6 +16427,67 @@ function promptLasche(name){
    Laschen kommen dazu, sobald die Antwort da ist.
    Bleibt die Antwort leer, bleiben sie grau: dass es ein Transkript
    GIBT, soll man auch dort sehen, wo dieser Song keines hat. */
+/** Die bereinigte Lyrik (Caspar_D, 07.09.2026: „dann heisst in der Bühne
+ *  die Neue Textdarstellung 'bereinigte Lyrik'" - und im Analyzer
+ *  ebenso als Registerlasche).
+ *
+ *  Was hier steht, ist Sunos Text, zurueckgeschnitten auf das, was
+ *  Whisper im Ton wiederfindet: ohne Regieanweisungen, ohne Vorrede,
+ *  ohne Widmung, ohne die zweite Sprachfassung. Gerechnet von
+ *  bin/lyrik.js, geliefert von /api/lyrik/<id>.
+ *
+ *  SUNOS FELDER BLEIBEN, WIE SIE SIND. Die Lasche „Lyrics" daneben
+ *  zeigt weiter den eingereichten Text, Zeichen fuer Zeichen. Diese
+ *  hier ist eine zweite Auskunft, keine Korrektur.
+ *
+ *  Wo das Verfahren sich nicht sicher war - Plattdeutsch, das Whisper
+ *  kaum versteht, oder japanische Schrift gegen lateinische Umschrift -
+ *  bleibt die Lasche aus und sagt im Titel, warum. Lieber nichts zeigen
+ *  als einen Text, dem Zeilen fehlen. */
+async function lyrikEinsetzen(id){
+  let d = null;
+  try { d = await (await fetch('/api/lyrik/' + id, { cache: 'no-store' })).json(); }
+  catch (e) { d = null; }
+  /* Dieselben drei Waechter wie beim Transkript: die Buehne kann
+     waehrend des Abrufs geschlossen oder weitergeschaltet worden sein. */
+  if (!$('promptregz') || !bSong || bSong.id !== id) return;
+
+  const seite = document.querySelector('#bprompts .pseite[data-pseite="rein"]');
+  const knopf = document.querySelector('#promptregz .preg[data-preg="rein"]');
+  if (!seite || !knopf) return;
+
+  if (!d || !d.zeilen || !d.zeilen.length){
+    knopf.title = d && d.grund
+      ? 'Nicht gereinigt: ' + d.grund
+      : 'Noch nicht gerechnet — node bin/lyrik.js --tun';
+    return;
+  }
+
+  const proz = Math.round((d.deckung || 0) * 100);
+  const her = 'Sunos Liedtext, zurückgeschnitten auf das, was Whisper im Ton wiederfindet: '
+            + esc(String(d.worte)) + ' Wörter, ' + proz + ' % des Textes gedeckt'
+            + (d.gestrichen ? ', ' + d.gestrichen + ' Zeile' + (d.gestrichen === 1 ? '' : 'n') + ' gestrichen' : '')
+            + '. Regieanweisungen, Vorrede und zweite Sprachfassung stehen nicht mehr darin; '
+            + 'die Lasche „Lyrics" zeigt den eingereichten Text unverändert.';
+
+  /* Die Zeitmarke steht vor der Zeile, nicht als Sprungziel: Ein Klick,
+     der den Player umsetzt, waere ein Eingriff in die Tonkette, und der
+     wird angesagt, bevor er gebaut wird. Geschaetzte Marken tragen ein
+     Zeichen - sie stammen aus der Luecke zwischen zwei Nachbarn, weil
+     Whisper die Zeile ueberhoert hat. */
+  const zeit = (t) => t === null || t === undefined ? '   ·  '
+    : String(Math.floor(t / 60)) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+  const text = d.zeilen.map(z =>
+    '<span class="lzeit">' + esc(zeit(z.von)) + (z.geschaetzt ? '~' : ' ') + '</span>'
+    + esc(z.text)).join('\n');
+
+  seite.innerHTML = '<div class="herkunft">' + her + '</div>'
+                  + '<div class="prompt">' + text + '</div>';
+  knopf.disabled = false;
+  knopf.title = 'Der gesungene Text mit Zeitmarken aus Whisper';
+  kopierknoepfeSetzen();
+}
+
 async function whisperEinsetzen(id){
   let w = null;
   try { w = await (await fetch('/api/whisper/' + id, { cache: 'no-store' })).json(); }
