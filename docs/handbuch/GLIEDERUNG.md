@@ -237,3 +237,57 @@ statt gegen die Wortliste bemessen — „Die Instrumentspuren" misst
 172,8 px und passte nicht in 170 px (jetzt 12em) —, und der Mustertext
 sagte durchgehend „Lied", weil er vor der Wortlisten-Entscheidung
 geschrieben wurde.
+
+---
+
+## Vorwort — erster Entwurf
+
+Geschrieben am 08.09.2026 aus Caspar_Ds eigenen Sätzen. **Das ist ein
+Vorschlag, kein Text.** Er trägt seinen Namen und muss deshalb von ihm
+kommen; hier steht nur, wie es aussehen könnte, wenn man seine Gedanken
+in die Reihenfolge bringt, in der sie tragen.
+
+Der Plattenboss-Teil ist dabei entschärft nach einer einfachen Regel:
+**über die Sache reden, nicht über die Leute.** „Geschäftemacher, die von
+Musik keine Ahnung haben" ist angreifbar und lenkt vom Argument ab; „eine
+Branche, die zuerst fragt, ob sich etwas verwerten lässt" sagt dasselbe,
+ist nicht zu bestreiten und wirkt souveräner. Die Trainingsfrage bleibt
+ganz draußen — ein Handbuch, das mit einer Urheberrechtsdebatte
+beginnt, zieht seine Leser in eine Frage, die es nicht beantworten kann
+und die in fünf Jahren anders aussieht.
+
+> Ich habe kein Instrument gelernt. Dafür war ich zu ungeduldig. Aber ich
+> hatte Texte.
+>
+> Suno hat daraus Musik gemacht, und dafür bin ich den Leuten dort
+> dankbar. Sie stecken ihre Kraft in ein Modell, das jemandem wie mir
+> etwas ermöglicht, was vorher an einer Fertigkeit hing, die ich nie
+> erworben habe.
+>
+> Was daran zählt, ist nicht die Technik. Es ist, dass jetzt jemand seine
+> eigenen Sachen verwirklichen kann, ohne den Umweg über eine Branche zu
+> nehmen, die zuerst fragt, ob sich etwas verwerten lässt. Das Tiefe kam
+> noch nie aus der Mitte. Es kam von unten, von Leuten, die etwas zu
+> sagen hatten und keinen Apparat dahinter.
+>
+> Und genau deshalb liegt mein Zeug jetzt hier, auf meiner eigenen
+> Platte. Nicht aus Misstrauen gegen Suno. Sondern weil alles, was auf
+> fremden Servern liegt, an Bedingungen hängt, die man einseitig ändern
+> kann — und weil ich gesehen habe, wie schnell das geht.
+>
+> Musik machen kann ich nicht. Aber ich kann das Drumherum einfacher
+> machen. Ich kann Daten analysieren, und ich kann sie zeigen. Das ist
+> KlangTresor.
+>
+> **Caspar_D**
+
+**Was daran noch fehlt:** die Stelle, an der es konkret wird. Ein Satz
+über den Moment, in dem der erste eigene Text zum ersten Mal als Musik
+zurückkam — oder über ein bestimmtes Stück. Ohne so eine Stelle bleibt
+auch der beste Entwurf eine Haltung; mit ihr wird es eine Geschichte. Die
+kann nur der Autor beisteuern.
+
+**Was bewusst draußen blieb:** das Downloadlimit als Aufhänger (es steht
+weiter unten als Randnotiz), die Trainingsfrage, und jede Wertung über
+Personen. Der letzte Absatz ist fast wörtlich Caspar_Ds eigener Satz vom
+08.09.2026 — er sollte auch fast wörtlich stehen bleiben.
