@@ -268,6 +268,11 @@ und die in fünf Jahren anders aussieht.
 > Tests, ob das Ganze überhaupt funktioniert. Dann kam „Erste Liebe".
 > Von da an war es keine Vertonung mehr.
 >
+> Und da ist noch etwas, das ich vorher nicht wusste: Ein Lied schützt
+> die Geschichte, die es erzählt. Ich muss nicht sagen, ob sie wahr ist.
+> Sie könnte es sein, sie könnte auch erfunden sein — man sieht es dem
+> Lied nicht an. Das Einzige, was zählt, ist: klingt es plausibel?
+>
 > Suno hat mir diesen Unterbau gegeben, und dafür bin ich den Leuten
 > dort dankbar. Sie stecken ihre Kraft in ein Modell, das jemandem wie
 > mir etwas ermöglicht, was vorher an einer Fertigkeit hing, die ich nie
@@ -325,11 +330,29 @@ Archiv so viel Arbeit im Text steckt: die zehn Substantive, die sagen,
 Wort-Zeitmarken. Wer von der Geschichte herkommt, baut ein anderes
 Werkzeug als wer vom Klang herkommt.
 
-**Was noch offen ist:** ob im Vorwort steht, **wovon** „Erste Liebe"
-handelt — und ob die Geschichte dahinter erzählt wird. Der Entwurf nennt
-nur den Namen und überlässt dem Leser, hineinzuhören. Das ist die
-zurückhaltende Fassung. Ob mehr dasteht, entscheidet der Autor; hier wird
-nichts unterstellt, was er nicht selbst gesagt hat.
+**Warum im Vorwort nicht steht, wovon „Erste Liebe" handelt** — und warum
+das keine Zurückhaltung ist, sondern der Punkt:
+
+Caspar_D am 08.09.2026: *„Ja, es ist meine, und das ist gut so. Das ist
+Suno, ich kann meine eigenen Geschichten erzählen, ohne dass ich
+offenlegen muss, dass es meine ist. Es ist ein Song, mein Song — die
+Geschichte könnte wahr sein, sie kann aber auch Fiktion sein. Man sieht
+es dem Song nicht mehr an. Das Einzige, was wichtig ist: klingt es
+plausibel?"*
+
+Das ist die Antwort auf den zweiten Satz des Vorworts. Wer keine Gedichte
+vortragen mag, hat einen guten Grund: **ein Gedicht, das ich vorlese, bin
+ich. Ein Lied ist ein Lied.** Die Form nimmt die Frage nach der Wahrheit
+weg, und erst dadurch wird möglich, ehrlich zu sein. Der Maßstab
+verschiebt sich von *ist es wahr* auf *klingt es plausibel* — und das ist
+der Maßstab, den Erzählen immer schon hatte.
+
+Für das Handbuch heißt das zweierlei. Erstens: Der Entwurf nennt nur den
+Namen des Stücks, nichts weiter. Wer hineinhören will, hört hinein.
+Zweitens, und das reicht über das Vorwort hinaus: **In keinem Kapitel
+wird ein Titel des Bestands gedeutet.** Weder wird behauptet, was ein
+Stück bedeutet, noch ob etwas erlebt ist. Das Handbuch beschreibt ein
+Werkzeug, nicht das Werk — und es ist ohnehin nicht seine Sache.
 
 **Was bewusst draußen blieb:** das Downloadlimit als Aufhänger (es steht
 weiter unten als Randnotiz), die Trainingsfrage, und jede Wertung über
