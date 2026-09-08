@@ -1911,7 +1911,8 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #morgenknopf:hover{background:#e31c7930;border-color:#e31c79}
 #morgenknopf .ico{width:17px;height:17px;fill:currentColor}
 #morgenknopf.laeuft .ico{animation:morgendreh 1.4s linear infinite}
-@keyframes morgendreh{to{transform:rotate(360deg)}}
+/* gegen den Uhrzeigersinn: der Pfeilkopf des Symbols zeigt nach links (Caspar_D, 08.09.2026: dreht sich entgegen der Pfeilrichtung) */
+@keyframes morgendreh{to{transform:rotate(-360deg)}}
 
 /* Das Fenster mit dem Vergleich. Dieselbe Bauart wie die Bühne:
    dunkler Grund, damit es über dem Raster steht statt darin. */
