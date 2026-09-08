@@ -256,12 +256,16 @@ ganz draußen — ein Handbuch, das mit einer Urheberrechtsdebatte
 beginnt, zieht seine Leser in eine Frage, die es nicht beantworten kann
 und die in fünf Jahren anders aussieht.
 
-> Ich habe kein Instrument gelernt. Dafür war ich zu ungeduldig. Aber ich
-> hatte Texte.
+> Ich habe kein Instrument gelernt, dafür war ich zu ungeduldig. Texte
+> hatte ich auch nicht — selbstgeschriebene Gedichte mag ich nicht, und
+> vortragen schon gar nicht.
 >
-> Suno hat daraus Musik gemacht, und dafür bin ich den Leuten dort
-> dankbar. Sie stecken ihre Kraft in ein Modell, das jemandem wie mir
-> etwas ermöglicht, was vorher an einer Fertigkeit hing, die ich nie
+> Aber ich liebe Geschichten. Und wenn eine Geschichte einen
+> musikalischen Unterbau bekommt, fängt sie an zu leben.
+>
+> Suno hat mir diesen Unterbau gegeben, und dafür bin ich den Leuten
+> dort dankbar. Sie stecken ihre Kraft in ein Modell, das jemandem wie
+> mir etwas ermöglicht, was vorher an einer Fertigkeit hing, die ich nie
 > erworben habe.
 >
 > Was daran zählt, ist nicht die Technik. Es ist, dass jetzt jemand seine
@@ -281,11 +285,27 @@ und die in fünf Jahren anders aussieht.
 >
 > **Caspar_D**
 
-**Was daran noch fehlt:** die Stelle, an der es konkret wird. Ein Satz
-über den Moment, in dem der erste eigene Text zum ersten Mal als Musik
-zurückkam — oder über ein bestimmtes Stück. Ohne so eine Stelle bleibt
-auch der beste Entwurf eine Haltung; mit ihr wird es eine Geschichte. Die
-kann nur der Autor beisteuern.
+**Der Anfang ist am 08.09.2026 berichtigt worden**, und die Berichtigung
+trägt den ganzen Text. Der erste Entwurf sagte „aber ich hatte Texte" —
+falsch. Caspar_D: *„Ich hatte nicht mal Texte, ich hasse
+selbstgeschriebene Gedichte. Ich mag es schon gar nicht, solche
+vorzutragen. Aber ich liebe Geschichten, und wenn man diese Geschichten
+mit einem musikalischen Unterbau ausstattet, dann beginnen sie zu
+leben."*
+
+Das erklärt rückwirkend die Bauform des ganzen Archivs. **Der
+Geschichten-Raum heißt nicht zufällig so** — er ist die Achse, nicht die
+zweite Ansicht neben dem Klangraum. Und es erklärt, warum in diesem
+Archiv so viel Arbeit im Text steckt: die zehn Substantive, die sagen,
+*wovon* ein Stück handelt; die Ortsbegriffe; die bereinigte Lyrik; die
+Wort-Zeitmarken. Wer von der Geschichte herkommt, baut ein anderes
+Werkzeug als wer vom Klang herkommt.
+
+**Was noch fehlt:** die Stelle, an der es konkret wird. Ein Satz über den
+Moment, in dem eine Geschichte zum ersten Mal ihren Unterbau bekam — oder
+über ein bestimmtes Stück. Ohne so eine Stelle bleibt auch der beste
+Entwurf eine Haltung; mit ihr wird es eine Geschichte. Die kann nur der
+Autor beisteuern.
 
 **Was bewusst draußen blieb:** das Downloadlimit als Aufhänger (es steht
 weiter unten als Randnotiz), die Trainingsfrage, und jede Wertung über
