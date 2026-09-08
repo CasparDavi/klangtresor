@@ -34,7 +34,14 @@ deshalb nicht nebenbei beim Schreiben klären.
 
 12. Die Einrichtungsskripte kuendigen „rund 284 MB“ Modelle an; nachgemessen sind es 580.201.605 Bytes. Die 284,4 MB sind genau die Summe ohne das Modell fuer den Geschichten-Raum - die Zahl stammt aus der Zeit davor. Entweder die drei Skripte berichtigen (einrichten-macos.command:177, einrichten-linux.sh:181, einrichten-windows.ps1:186) oder das Handbuch nennt die gemessene Zahl und weicht damit sichtbar von der Ansage der Skripte ab. Dasselbe gilt fuer README.md:15-17 und die Beschreibung in package.json: beide sagen „eine einzige Abhaengigkeit“, in den dependencies stehen zwei.
 
-13. Wo kommt KlangTresor her? Ohne eine Bezugsadresse faengt Kapitel 2 beim entpackten Ordner an und laesst offen, wie der Leser dorthin kommt. Nur Caspar_D kann diesen einen Satz liefern.
+13. ~~Wo kommt KlangTresor her?~~ **Erledigt, war ein Scheinargument.** Die
+Adresse steht seit dem ersten Tag im git: `github.com/CasparDavi/klangtresor`.
+Der Gegenleser hat nur README.md und START-HIER.md durchsucht und daraus
+geschlossen, es gebe keine — Caspar_D am 08.09.2026: *„das GitHub kennst du
+doch, das war ein Pseudoargument."* Was bleibt, ist eine Kleinigkeit: **im
+README selbst steht die Adresse nicht.** Wer die Datei ohne das Repo drumherum
+liest — etwa aus einem weitergegebenen Paket —, findet den Weg zurück nicht.
+Ein Satz im README, kein Thema fürs Handbuch.
 
 ---
 ## Falsche Behauptungen

@@ -9,7 +9,8 @@ Beispieltitel durch alle Kapitel: **„Morgen"** (15.06.2026, 5:14,
 Video-Artwork, WAV und sechs Instrumentspuren — er trägt jedes Kapitel.
 
 Anrede: **du**. Zielgruppe: **der Fremde**, der KlangTresor auf GitHub
-findet, ein eigenes Suno-Konto hat und Caspar_Ds Titel nie gehört hat.
+findet (`github.com/CasparDavi/klangtresor`), ein eigenes Suno-Konto hat
+und Caspar_Ds Titel nie gehört hat.
 Wortliste: [WOERTER.md](WOERTER.md), bindend.
 
 ---
