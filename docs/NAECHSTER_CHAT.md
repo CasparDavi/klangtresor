@@ -1554,36 +1554,34 @@ Status setzen.
 
 Sitzung endete am Limit. Was läuft, was wartet, was entschieden ist.
 
-## Im Bau, noch nicht eingecheckt (server.js, morgens.js, aufbereiten.js)
+## Der Albumweg — fertig und eingecheckt (`6055786`, 20:53)
 
-**Der Albumweg.** Gemessen: `browser/morgens.js` holte drei Wochen lang
-Alben über `/api/profiles/<handle>/playlists` — einen Weg, der in keiner
-Liste steht, geraten, antwortete leer. Neu gebaut, zweistufig mit Token:
-`/api/playlist/me?page=N` (Köpfe) + `/api/playlist/<id>?page=N`
-(Einträge), Server legt `playlists-<stempel>.json` ab, `aufbereiten.js`
-baut die Alben mit Riegel. Vier Runden Gegenlesung; jede fand eine neue
-Art, wie Suno per 200 lügen kann. Deshalb **Caspar_Ds Regel**: Löschungen
-und Verkleinerungen erst nach zwei übereinstimmenden vollständigen Ernten,
-mindestens 2 h auseinander — Kandidaten in `katalog.albenKandidaten`.
-Der Bau dieser Regel lief beim Sitzungsende (Workflow `albumweg-
-bestaetigung`). **Prüfen:** `git diff` der drei Dateien, `node --check`,
-Sandkästen in Scratchpad sind weg — neu anlegen aus Kopien.
-**Danach:** Sonde `download/clip/<probeId>` in morgens.js (Block „API-
-Probe, einmalig") löschen, seit 03.09. kostenpflichtig-unklar. Dann
-Commit. Dann erster echter Lauf: Caspar_D klickt, Claude schaut zu.
+Fünf Gegenleserunden am 08.09., alle im Sandkasten, keine gegen Suno.
+Stand: Lesezeichen holt zweistufig mit Token (`/api/playlist/me` +
+`/api/playlist/<id>`), Konto-Wächter über `/api/user/me`, Server schreibt
+`playlists-<stempel>.json` mit Server-Uhr, `aufbereiten.js` übernimmt
+Ergänzungen sofort und Wegnahmen erst nach zwei übereinstimmenden
+vollständigen Ernten ≥ 2 h (`katalog.albenKandidaten`). Wegnahme heißt:
+alte Id-Menge nicht Teilmenge der neuen — nicht: weniger.
 
-**Dazu in server.js schon fertig:** Whisper `--alle` im Morgenschritt
-(rechnet alle Titel mit Text, nicht nur die ohne Suno-Zeitmarken —
-Caspar_D: „Whisper analysiert alles außer Instrumentals"), und
-`bin/lyrik.js --tun` als 19. Schritt dahinter.
+**Noch nicht gelaufen.** Der erste echte Lauf steht aus: Caspar_D klickt,
+Claude schaut in `library/roh/playlists-*.json` und ins Protokoll. Die
+Zeile im Lesezeichen muss „Alben — 25 mit N Einträgen" sagen, grün.
 
-**Aufräumen** (Workflow `library-aufraeumen`, lief beim Ende): 1 GB PNG (die drei Rückfallzweige im Code stehen NOCH — cwebp ist in keiner Einrichtung, ohne sie bräche ein frischer Rechner; Entscheidung: cwebp in die Einrichtung, dann Zweige raus), `kondensate/arbeit/`, sechs Logs,
-`neue-songs.json` samt Schreiber in `sammeln.js`, vier Dateien nach
-`docs/`. Protokoll: `docs/AUFRAEUMEN-2026-09-08.md`. 1.003 MB weg, 7 Dateien nach docs/, Gegenleser hält.
+Randfälle aus der letzten Gegenlesung, nicht gebaut (Backlog):
+- Katalog aus `library/backup/` zurückgespielt → alte Kandidaten leben
+  wieder auf; eine wahre Ernte dazwischen ist vergessen. Regelfrage.
+- `seit` eines Kandidaten von Hand in die Vergangenheit gesetzt → nächste
+  gleiche Ernte löscht sofort. Keine Plausibilitätsgrenze. Handeingriff.
+- Album, dessen Inhalt dauerhaft nur Hüllen ohne `clip` liefert, wird nach
+  2 h geleert — ob das Sunos Wahrheit ist, entscheidet keine Regel.
+
+**Dazu eingecheckt:** Whisper `--alle` als Morgenschritt, `bin/lyrik.js
+--tun` als 19. Schritt, API-Probe im Lesezeichen gestrichen.
 
 ## Entschieden, noch zu bauen (Reihenfolge)
 
-1. Albumweg fertig + Commit (oben).
+1. Erster echter Albumlauf (oben), dann Ergebnis in DATENEXTRAKTION.md.
 2. **Vierte Quelle**: Albumeinträge werden zu Titeln — „neue Titel
    kommen nur über public oder über die Playlisten; Playlist schlägt
    alles". `aufbereiten.js:171` bekommt `ausAlben`. Kein Arbeitsbereich.
