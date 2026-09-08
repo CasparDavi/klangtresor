@@ -1591,6 +1591,18 @@ web/index.html um 15642, Kennzahlen 13673 ff.)? Der Gegenleser hatte
 alle Schlüssel geprüft, aber genau dort ansetzen. (c) Ein Titel, der
 drei Tage alt ist, hat drei Punkte — vielleicht ist das die Kappung.
 
+## ZUERST PRÜFEN — Bereinigte Lyrik (Caspar_D, 21:25)
+
+Nach dem ersten Lauf mit Whisper --alle und lyrik.js als Morgenschritt:
+lyrik.json hat 240 Titel (vorher 239). *Glut und Eis* fehlt — lyrik.js
+--unsicher sagt: nur 48 % gedeckt, zurückgestellt (Sperre < 60 %). Whisper
+hatte 531 Wörter gehört, 480 abgeglichen. Warum dann 48 %? Vermutlich
+zweite Textfassung oder Zitat im Lyrics-Feld (Braut von Corinth). Prüfen:
+node bin/lyrik.js <id> ausführlich. Und: *Kartoffeln mit Dip* hat keinen
+Whisper-Lauf trotz --alle — Whisper meldete nur 2 Titel. Instrumental-
+Filter, OHNE_PLAYLISTS, oder Titelmuster I–IV? Nachsehen in whisper.js
+Zeile 302 ff.
+
 ## Entschieden, noch zu bauen (Reihenfolge)
 
 1. Erster echter Albumlauf (oben), dann Ergebnis in DATENEXTRAKTION.md.
