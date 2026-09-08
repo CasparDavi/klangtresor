@@ -1906,3 +1906,7 @@ desto kleiner die Bündel — das ist der einzige Hebel.
 - Mitschnittdatei `/Volumes/Extreme_SSD/Entwicklung/apk/iphone/mitschnitt.flows`
   enthält Sitzungs-Token: nach Abschluss der Doku löschen (Caspar_D fragen).
 - mitmproxy (Homebrew) bleibt installiert; Zertifikat in `~/.mitmproxy`.
+- Nachtrag 01:10: Likes-Register nur bei eigenen Titeln; fremde (Tarja,
+  `tarja_ravenveil`) haben es nicht. Proxy beendet, Telefon zurückgesetzt
+  (Profil bleibt ohne Vertrauen). Kommentare der App tragen `num_replies`,
+  `replies` (eingebettet) und `reaction_type`.

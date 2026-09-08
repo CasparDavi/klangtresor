@@ -243,6 +243,7 @@ Sitzungs-Token — nicht kopieren). Proben im Haus: `library/suno-wege/`.
 | Cursor | base64 von `{"updated_at": "2026-06-26T18:01:50.587557+00:00"}` — die Herz-Zeit des letzten Eintrags der Seite; Sortierung neueste zuerst. Jede Seitengrenze verrät also eine Zeit; ob `page_size` angenommen wird (dann eine Zeit je Herz), ist ungeprüft |
 | eigenes Herz | enthalten (`caspar_d` bei „Morgen") — anders als in den Benachrichtigungen |
 | *Glut und Eis* | 13 Namen, `num_total_likes` 14 |
+| fremde Titel | **kein Likes-Register** in der App (Tarjas Titel, 01:05): die Liste gibt es nur für eigene Titel. Ob die Schnittstelle fremde Titel abweist, ist ungeprüft — und wird nicht angeklopft |
 | Kopfzeilen der App | `x-suno-client: iOS 1.87.0-424`, `session-id`, `anonymous-id`, `x-suno-timezone`, `x-suno-region`, Datadog-Spuren; Bearer-Token wie im Web |
 
 Weitere Befunde derselben Sitzung:
