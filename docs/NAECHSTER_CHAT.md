@@ -1837,3 +1837,15 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   Profil-Aktionen). Prüfung = eine GET-Anfrage mit Clerk-Token, **nur nach
   Freigabe** (App-Weg). Danach entscheiden: Lesezeichen von v2 auf v3?
 - Zweiter Herz-Weg der App: `POST gen/{gen_id}/like/` mit `LikeSpec {like}`.
+
+## notification/v3 geprüft (08.09.2026, 23:26, eine GET-Anfrage mit Freigabe)
+
+- **v3 nennt alle Liker**: je Person eine Zeile mit eigener Zeit; Bündel
+  tragen alle Avatare und Textaktionen. Handle in `action.url`
+  (`suno://suno.com/@handle`), Titel-ID in `suno://suno.com/song/<id>`.
+  Belegt in `docs/SUNO-APP-WEGE.md`, Zeile in `docs/SUNO-API.md`.
+- **Plan (noch nicht freigegeben):** Lesezeichen liest v3 statt v2, Server
+  legt je Zeile `von[]`/`namen[]` aus den Aktionen ab, `quelle: 'v3'`;
+  Leser lassen v2-Herzzeilen weg, deren Zeit im Bereich der v3-Zeilen
+  liegt (v3 reicht wie v2 vier Wochen zurück). Erst Ansage, dann Bau —
+  Eingriff in den Datenfluss.

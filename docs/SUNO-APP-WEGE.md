@@ -85,19 +85,44 @@ trailing_button → RemoteSduiTrailingButton {state, label, completed_label, act
 ```
 
 SDUI heißt „server-driven UI": der Server baut die Zeile fertig — Avatare
-mit je einer Aktion (Typ `profile` + `handle`), Textsegmente mit Namen,
-ein Folgen-Knopf. Die Web-App fragt `notification/v2` und bekommt je
-Bündel höchstens drei `user_profiles`; v3 kann mehr tragen, weil es die
-Zeile selbst beschreibt. **Ob v3 alle zwölf Beteiligten liefert, ist nicht
-belegt** — das zeigt nur eine Antwort. Eine GET-Anfrage mit dem
-Clerk-Token des Browsers wäre die Prüfung; sie ist ein App-Weg, kein
-Web-Weg, und wird deshalb nur nach Freigabe durch Caspar_D gemacht.
+mit je einer Aktion, Textsegmente mit Namen, ein Folgen-Knopf.
 
-Zweiter Kandidat: der Bildschirm ist ein generischer Feed
-(`POST unified/feed {feed_id, cursor, page_size, seed_item_params,
-target_user_id}`) mit `RemoteCreatorProfileFeedItem {…, reason,
-contextual_reason}` — dann käme die `feed_id` aus `action.url` der
-v3-Benachrichtigung. Auch das entscheidet erst die v3-Antwort.
+**Belegt (eine GET-Anfrage am 08.09.2026, 23:26, mit Freigabe von
+Caspar_D, Clerk-Token des Browsers):** Status 200, 25 Benachrichtigungen
+je Seite, `next_before_datetime_utc` zum Blättern wie bei v2. Eine Zeile
+sieht so aus (Beispiel, gekürzt):
+
+```
+id: 113f9c32-…, notification_type: clip_like, template: avatars_text_thumbnail_layout_1,
+updated_at: 2026-09-08T19:34:28Z, is_read: true,
+avatars: [ { image_url: https://cdn1.suno.ai/….webp,
+             action: { type: navigate, url: suno://suno.com/@fruusch } } ],
+text:    [ { text: "DerFruusch", bold: true, action: { type: navigate, url: suno://suno.com/@fruusch } },
+           { text: " Mir hat dein Lied gefallen ", bold: false },
+           { text: "Glut und Eis - Die Braut von Corinth", bold: true } ],
+thumbnail_url: https://cdn2.suno.ai/…jpeg,
+action:  { type: navigate, url: suno://suno.com/song/89ef9f63-…?play=1 }
+```
+
+Was v3 anders macht als v2:
+
+| | v2 (Web) | v3 (App) |
+|---|---|---|
+| Herzen auf denselben Titel | ein Bündel, höchstens drei `user_profiles`, `total_users` | **je Person eine Zeile** mit eigener Zeit (Jellee 20:57, DerFruusch 19:34 — in v2 wären beide im Bündel 75eef79b) |
+| Bündel | ja, gekürzt | auch, aber **mit allen Beteiligten**: „Alpha Aleph und Guedes" trägt zwei Avatare und zwei Textaktionen |
+| Handle | `user_profiles[].handle` | in `action.url` als `suno://suno.com/@handle` (Avatar und Textsegment) |
+| Anzeigename | `display_name` | das fette Textsegment mit Aktion |
+| Titel | `content_id`, `content_title` | `action.url` = `suno://suno.com/song/<id>`, Titel als letztes fettes Segment |
+| Text | `content_message` | Segmente, in der Sprache des Kontos („Mir hat dein Lied gefallen") |
+| Seite | 20 | 25 |
+
+Damit ist die Frage beantwortet: **die App zeigt alle Liker, weil v3 sie
+alle nennt** — nicht über einen eigenen Liker-Weg. Für KlangTresor heißt
+das: das Lesezeichen sollte v3 lesen (Plan in NAECHSTER_CHAT.md).
+Der Text ist übersetzt; die Art steht sicher in `notification_type`,
+das Handle sicher in der Aktion — daran hängt die Zuordnung, nie am Satz.
+
+Der zweite Kandidat (`unified/feed` als Personenliste) ist damit vom Tisch.
 
 ## Neue Wege mit Nutzen für KlangTresor (Auswahl aus den 96)
 

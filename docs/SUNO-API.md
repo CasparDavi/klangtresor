@@ -35,6 +35,7 @@ mit → markiert.
 | **`POST /api/gen/{clip_id}/convert_wav/`** | T | ● | WAV-Erzeugung anstoßen (WAV-PROTOKOLL) |
 | **`GET /api/notification/v2`** | T | ● | Benachrichtigungen: `clip_like`, `clip_comment`, `comment_like`, `comment_reply`, `follow` — **wer wann** mit Profil; `next_before_datetime_utc` zum Zurückblättern. **Bündel** (gemessen 08.09.2026): Herzen, die kurz nacheinander auf denselben Titel kommen, sind EIN Eintrag mit höchstens drei `user_profiles` und der echten Zahl in `total_users`; Suno schreibt ihn fort — gleiche `id`, neue `updated_at`, größere Zahl, andere drei Namen. Der Server trägt gewachsene Einträge nach (`nachtrag: true`). Alle Einzelnamen zeigt nur die Handy-App; ihr Weg steckt nicht in den Web-Skripten (offen) |
 | **`GET /api/notification/v2/badge-count`** | T | ● | Zahl ungelesener — eigener Weg, Lesen markiert nichts |
+| **`GET /api/notification/v3?include_hooks=false`** | T | ● | **App-Weg** (aus der Android-App gelesen, `docs/SUNO-APP-WEGE.md`; einmal geprüft 08.09.2026 mit Freigabe): dieselben Ereignisse als fertige Zeilen — `avatars[]`, `text[]` (Segmente mit `bold` und `action`), `action`, `thumbnail_url`. **Je Person eine Zeile**, Bündel mit allen Beteiligten; Handle in `action.url` (`suno://suno.com/@handle`), Titel in `suno://suno.com/song/<id>`. 25 je Seite, `before_datetime_utc` zum Blättern |
 
 ## → Lohnt sich wahrscheinlich
 
