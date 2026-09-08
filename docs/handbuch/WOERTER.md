@@ -96,6 +96,11 @@ Stern, und du hörst ihn".
 | Update | **die Auffrischung** | bei Daten; **die neue Fassung** bei Software |
 | Import | **das Einlesen** | |
 | Export | **die Ausgabe** | „exportieren" bleibt als Tätigkeit erlaubt |
+| Ernte, ernten | **der Datentransfer** (der Vorgang), **der Datensatz** (das Ergebnis) | Caspar_D, 08.09.2026, beim Redigieren des Morgenfensters: „Lesezeichen-Datentransfer", „Zwei Datensätze warteten, beide berücksichtigt". „Ernte" war Entwicklersprache aus dem Sammelskript — sie stand in vier Meldungen der Oberfläche und in `browser/morgens.js`; die App zieht mit dem Morgenfenster nach. Im Quelltext bleibt `ernte` als Bezeichner |
+| Zählerverlauf | **der Verlauf von Abrufen, Herzen und Kommentaren** | Caspar_D, 08.09.2026: „was für ein Zählerverlauf ???" — der Begriff sagt dem Leser nichts; immer ausschreiben, was gezählt wird |
+| eingewoben, einweben | **berücksichtigt** | dito |
+| Cover, Video-Artwork | **das Titelbild**, **das Bewegtbild** | wie bei den Bereichen; auch in den Schrittnamen des Morgenlaufs |
+| Kerbe | **der Kerbfilter** | Caspar_D, 08.09.2026: „Kerbe sagt aber der Toningenieur nicht" — der sagt Notch oder Kerbfilter. „Kerbe" war die Hausverkürzung für das Werkzeug, in acht sichtbaren Beschriftungen; die Bezeichner (`eqKerbe`, `kerbeAktiv`) bleiben. Artikelwechsel: *die* Kerbe → *der* Kerbfilter |
 
 ---
 

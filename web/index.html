@@ -10,7 +10,7 @@
 <!-- Das Zeichen im Browsertab (Tarja, 23.08.2026: "Fehlendes App Icon").
      Ein Stern mit Hof - dasselbe Bild wie im Klangraum. Als SVG in der Seite,
      damit es ohne zusaetzliche Datei auskommt und in jeder Groesse scharf ist. -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Ccircle cx='32' cy='32' r='17' fill='%23c9c9cd' opacity='.16'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%23c9c9cd' opacity='.34'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="/avatar">
 <style>
 /* Ausgangszustand unbunt - Farbe kommt erst mit dem Song.
@@ -2824,7 +2824,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <option value="sammlung">An die Sammlung angleichen</option>
             <option value="gruppe">An seine Stilgruppe angleichen</option>
             <option value="playlist">An sein Album angleichen</option>
-            <option value="referenz">Wie der Referenzsong</option>
+            <option value="referenz">Wie der Referenztitel</option>
           </optgroup>
           <optgroup label="Klassiker">
             <option value="loudness">Loudness (Badewanne)</option>
@@ -2834,8 +2834,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <option value="nacht">Nacht (leise hören)</option>
           </optgroup>
         </select>
-        <button id="studioref" title="Merkt den laufenden Titel als Klangvorbild. Die Startwerte „Wie der Referenzsong" gleichen dann jeden anderen Titel an dessen Frequenzprofil an.">Laufenden Song als Referenz</button>
-        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Songs — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die CLIP-Lampe">Kein Übersteuern</button>
+        <button id="studioref" title="Merkt den laufenden Titel als Klangvorbild. Die Startwerte „Wie der Referenztitel" gleichen dann jeden anderen Titel an dessen Frequenzprofil an.">Laufenden Titel als Referenz</button>
+        <button id="eqdeckel" class="pille" title="Alle Bänder bleiben unter der grauen Grenze des Titels — beim Einschalten, beim Ziehen und bei den Startwerten. MEGA BASS kommt als Aufsatz obendrauf und kennt die Grenze nicht — dafür gibt es die CLIP-Lampe">Kein Übersteuern</button>
       </div>
       <!-- EIN editierbares Diagramm statt Slider + Chart - "eine
            lebende Lehrbuchabbildung" (Caspar_D, 20.08.2026). Die roten
@@ -2866,7 +2866,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <option value="einzel">Einzel-Glocken</option>
             <option value="stapel">Glocken-Stapel</option>
           </select>
-          <label id="parmittel" title="Wie träge die graue Spektralfläche dem Song folgt: gleitender Mittelwert über die eingestellte Zeit. Kurz = flink und zappeliger, lang = ruhig und träge.">Anzeige-Mittelung
+          <label id="parmittel" title="Wie träge die graue Spektralfläche dem Titel folgt: gleitender Mittelwert über die eingestellte Zeit. Kurz = flink und zappeliger, lang = ruhig und träge.">Anzeige-Mittelung
             <input type="range" min="0.5" max="10" step="0.5" value="3">
             <span>3 s</span></label>
         </div>
@@ -2891,7 +2891,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
             <p><b style="color:var(--text)">Schwarze Haarlinien</b> (im Stapel): die Schichtkanten und die Resultierende,
             Filter für Filter aufgebaut — wo sie von den Kanten abweicht, wird gegengerechnet.</p>
             <p><span style="color:#8b8b90">Graue Treppe mit Ringen:</span> die Decke je Messband — Messpunkte, sie stehen fest.
-            Die stille graue Fläche dahinter: das laufende Spektrum des Songs, gemittelt über die am Regler „Anzeige-Mittelung" eingestellte Zeit — kurz folgt sie flink, lang wird sie ruhig. Kontext, keine Skala.</p>
+            Die stille graue Fläche dahinter: das laufende Spektrum des Titels, gemittelt über die am Regler „Anzeige-Mittelung" eingestellte Zeit — kurz folgt sie flink, lang wird sie ruhig. Kontext, keine Skala.</p>
           </div>
         </div>
       </div>
@@ -2902,7 +2902,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
            20.08.2026: "danach kommt nochmal dasselbe"). -->
       <div id="eqerkl" class="fussnote">
         Die Faktoren an der Skala übersetzen die Dezibel
-        (+6 dB = doppelte Amplitude). Wie viel Spielraum ein Band hat, bestimmt der Song
+        (+6 dB = doppelte Amplitude). Wie viel Spielraum ein Band hat, bestimmt der Titel
         selbst: Sein lautestes Band trägt die Pegelspitzen und verträgt kaum Anhebung —
         je leiser ein Band, desto mehr Luft nach oben. <b>Absenken ist immer gefahrlos.</b>
         Wer dennoch über die Grenze will, spannt vorher in der Lasche Kompressor ein
@@ -3393,7 +3393,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
           unter dem Histogramm: ziehen. Was unter dem Leisepunkt liegt, wird Stille; was über
           dem Lautpunkt liegt, wird Voll — das ist der Limiter.</p>
           <p class="prolegende"><b>Das graue Gebirge</b>: das Lautheitshistogramm — wie laut ist wieviel
-          Prozent des Liedes. <b>Die Stäbe</b> (Eingangsachse): die Lautheit des ganzen Songs
+          Prozent des Liedes. <b>Die Stäbe</b> (Eingangsachse): die Lautheit des ganzen Titels
           (LUFS) und — für den Limiter — seine Spitze. <b>Die Marken</b> (Ausgangsachse): die
           Ziele — Vollpegel, Streaming-Richtwert, die Lautheit seiner Stilgruppe. Forme die Kurve
           so, dass die Stäbe auf die Ziele treffen: liegt die projizierte Lautheit innerhalb von
@@ -3507,7 +3507,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <p class="lzgross">Installiere das KlangTresor-Lesezeichen im Chrome-Browser.</p>
       <p>Damit gliederst Du Suno-Assets ein, die nur Du sehen kannst — Lyrics mit
          Zeit-Verankerung, Wellenhüllkurven, Abschnitt/Zeit-Verankerungen, deine
-         privaten Songs, und wer auf deine Songs reagiert hat.</p>
+         privaten Titel, und wer auf deine Titel reagiert hat.</p>
       <p><b>Voraussetzung:</b> Du mußt in demselben Chrome bei suno.com angemeldet
          sein. Das Lesezeichen arbeitet mit deiner Anmeldung — deshalb kann es
          sehen, was nur du siehst, und deshalb geht es nur dort und nicht von hier:
@@ -3616,10 +3616,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
   </div>
 
   <div class="filter" id="filterTracks">
-    <select id="video" title="Eigenes Video-Artwork (nicht Sunos Lyric-Video)">
+    <select id="video" title="Eigenes Bewegtbild (nicht Sunos Lyric-Video)">
       <option value="">Alle</option>
-      <option value="mit">Mit Video-Artwork</option>
-      <option value="ohne">Ohne Video-Artwork</option>
+      <option value="mit">Mit Bewegtbild</option>
+      <option value="ohne">Ohne Bewegtbild</option>
     </select>
     <select id="sicht" title="Veröffentlichungsstand">
       <option value="oeff">Öffentlich</option>
@@ -3630,8 +3630,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <select id="sortierung">
       <option value="neu">Neueste zuerst</option>
       <option value="alt">Älteste zuerst</option>
-      <option value="plays">Meiste Plays</option>
-      <option value="likes">Meiste Likes</option>
+      <option value="plays">Meiste Abrufe</option>
+      <option value="likes">Meiste Herzen</option>
       <option value="titel">Titel A–Z</option>
     </select>
     <button class="knopf ruecksetzer" id="ruecksetzen" hidden
@@ -3647,10 +3647,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <option value="privat">Private</option>
     </select>
     <select id="plSortierung">
-      <option value="gross">Meiste Songs</option>
+      <option value="gross">Meiste Titel</option>
       <option value="name">Name A–Z</option>
-      <option value="plays">Meiste Plays</option>
-      <option value="likes">Meiste Likes</option>
+      <option value="plays">Meiste Abrufe</option>
+      <option value="likes">Meiste Herzen</option>
     </select>
     <span class="zahl" id="plZahl"></span>
   </div>
@@ -3701,7 +3701,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     </div>
     <div class="werinhalt">
       <div class="wereinstieg">Ein lokales Archiv der eigenen
-        <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>-Songs
+        <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>-Titel
         — mit Karaoke-Bühne, Klanganalyse und Tonstudio. Läuft im eigenen
         Netz, ohne Konto und ohne Server im Internet.</div>
       <!-- Das Projekt bekommt eine eigene Zeile, nicht nur einen Link
@@ -3771,7 +3771,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
           benutzt werden.</div>
         <!-- Und der Verweis auf das andere "Ueber": dieses Fenster
              erklaert die SOFTWARE, das Profilfenster das ARCHIV. -->
-        <div class="werrecht">Woher die Songs stammen, steht im Profil
+        <div class="werrecht">Woher die Titel stammen, steht im Profil
           unter <i>Über…</i></div>
       </div>
     </div>
@@ -3825,7 +3825,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <span class="knopfgruppe">
         <button class="schaltknopf" onclick="mischen()" id="bmisch" title="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
         <button class="schaltknopf" onclick="anschlussSchalten()" id="banschluss" title="Anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
-        <button class="schaltknopf" onclick="schleifen()" id="bschleif" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+        <button class="schaltknopf" onclick="schleifen()" id="bschleif" title="Schleife: dieser Titel wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
         <button class="schaltknopf" onclick="studioAuf()" id="bstudio" title="Tonstudio — Equalizer">EQ</button>
         </span>
       </div>
@@ -3879,7 +3879,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <div class="pextra">
       <button class="schaltknopf" onclick="mischen()" id="mischknopf" title="Zufall"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-zufall"/></svg></button>
       <button class="schaltknopf" onclick="anschlussSchalten()" id="anschlussknopf" title="Anschluss"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-anschluss"/></svg></button>
-      <button class="schaltknopf" onclick="schleifen()" id="schleifknopf" title="Schleife: dieser Song wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
+      <button class="schaltknopf" onclick="schleifen()" id="schleifknopf" title="Schleife: dieser Titel wiederholt sich"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-schleife"/></svg></button>
       <button class="schaltknopf" onclick="studioAuf()" id="studioknopf" title="Tonstudio — Equalizer">EQ</button>
     </div>
     <div class="laut nuranbreit">
@@ -3901,7 +3901,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="pmodiliste">
         <button data-modus="karaoke"  onclick="pmodiWaehlen('karaoke')"  title="Karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg></button>
         <button data-modus="lyrics"   onclick="pmodiWaehlen('lyrics')"   title="Lyrics"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg></button>
-        <button data-modus="analyzer" onclick="pmodiWaehlen('analyzer')" title="Analyzer"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-analyse"/></svg></button>
+        <button data-modus="analyzer" onclick="pmodiWaehlen('analyzer')" title="Titel-Analyse"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-analyse"/></svg></button>
       </div>
     </div>
     </div>
@@ -4244,14 +4244,14 @@ function songEqAnzeigen(){
   const e = eqJeSong[aktuellId];
   const teile = [];
   if (e && e.gains && e.gains.some(g => g)) teile.push('EQ');
-  if (e && e.kerbe) teile.push('Kerbe');
+  if (e && e.kerbe) teile.push('Kerbfilter');
   p.hidden = !teile.length;
   if (!teile.length) return;
-  p.textContent = 'Song-' + teile.join('+') + (songEqAn ? '' : ' aus');
+  p.textContent = 'Titel-' + teile.join('+') + (songEqAn ? '' : ' aus');
   p.classList.toggle('aus', !songEqAn);
   p.title = songEqAn
-    ? 'Dieser Song läuft mit eigenem ' + teile.join(' und ') + '. Klick schaltet songeigene Klangeingriffe ab — überall, bis zum nächsten Klick.'
-    : 'Dieser Song hätte eigenen ' + teile.join(' und ') + ', aber songeigene Klangeingriffe sind abgeschaltet. Klick schaltet sie wieder ein.';
+    ? 'Dieser Titel läuft mit eigenem ' + teile.join(' und ') + '. Klick schaltet titeleigene Klangeingriffe ab — überall, bis zum nächsten Klick.'
+    : 'Dieser Titel hätte eigenen ' + teile.join(' und ') + ', aber titeleigene Klangeingriffe sind abgeschaltet. Klick schaltet sie wieder ein.';
 }
 
 function songEqUmschalten(){
@@ -4330,19 +4330,19 @@ async function kerbeZeigen(){
   const hzText = (hz) => hz >= 1000 ? (hz / 1000).toFixed(2).replace('.', ',') + ' kHz' : hz + ' Hz';
   let h = '';
   const lied = typeof song === 'function' ? song(aktuellId) : null;
-  if (lied && lied.fremd) h = '<span>fremder Song — kein Scan (nur eigene Songs liegen als Datei vor)</span>';
+  if (lied && lied.fremd) h = '<span>fremder Titel — kein Scan (nur eigene Titel liegen als Datei vor)</span>';
   else if (liste === undefined){
     h = kerbeZeigen.laeuft
       ? `<span>Scan läuft … ${kerbeZeigen.laeuft}</span>`
-      : `<button type="button" class="pille" id="stoerscan" title="Rechnet erst diesen Song, dann alle anderen (bin/stoerfrequenz.js, ~5–10 s je Song, im Hintergrund)">Scan dieses und aller anderen Songs starten</button>`;
+      : `<button type="button" class="pille" id="stoerscan" title="Rechnet erst diesen Titel, dann alle anderen (bin/stoerfrequenz.js, ~5–10 s je Titel, im Hintergrund)">Scan dieses und aller anderen Titel starten</button>`;
   } else if (!liste.length) h = '<span>keine gefunden — sauber</span>';
-  else h = liste.map(c => `<span class="pille" style="cursor:default" title="${esc(c.art)} · ${c.hz} Hz (${esc(c.note)} ${c.cent >= 0 ? '+' : ''}${c.cent} Cent) · ${c.db} dB über der Nachbarschaft · in ${Math.round(c.dauer * 100)} % des Songs · ${c.breiteHz} Hz breit${c.linien ? ` · ${c.linien} Linien ${hzText(c.vonHz)}–${hzText(c.bisHz)} (ein Band, die stärkste vertritt es)` : ''} — Griffe am Tick im Bild: ♪ allein hören, ⊘ Kerbe">${hzText(c.hz)} · ${esc(c.art).replace('Stoerton', 'Störton')}${c.linien ? ` · ${c.linien} Linien` : ''}</span>`).join('')
-    + (eqKerbe ? `<span class="kerbewert" title="Die Kerbe ist ein Punkt im Bild wie die Bänder: senkrecht ziehen = Tiefe, seitlich = Frequenz, Scrollen = Güte, Doppelklick löst sie">Kerbe ${hzText(eqKerbe.hz)} · ${String(eqKerbe.db).replace('.', ',')} dB · Q ${eqKerbe.q}</span>` : '');
+  else h = liste.map(c => `<span class="pille" style="cursor:default" title="${esc(c.art)} · ${c.hz} Hz (${esc(c.note)} ${c.cent >= 0 ? '+' : ''}${c.cent} Cent) · ${c.db} dB über der Nachbarschaft · in ${Math.round(c.dauer * 100)} % des Titels · ${c.breiteHz} Hz breit${c.linien ? ` · ${c.linien} Linien ${hzText(c.vonHz)}–${hzText(c.bisHz)} (ein Band, die stärkste vertritt es)` : ''} — Griffe am Tick im Bild: ♪ allein hören, ⊘ Kerbfilter">${hzText(c.hz)} · ${esc(c.art).replace('Stoerton', 'Störton')}${c.linien ? ` · ${c.linien} Linien` : ''}</span>`).join('')
+    + (eqKerbe ? `<span class="kerbewert" title="Der Kerbfilter ist ein Punkt im Bild wie die Bänder: senkrecht ziehen = Tiefe, seitlich = Frequenz, Scrollen = Güte, Doppelklick löst ihn">Kerbfilter ${hzText(eqKerbe.hz)} · ${String(eqKerbe.db).replace('.', ',')} dB · Q ${eqKerbe.q}</span>` : '');
   z.innerHTML = h;
   const sc = $('stoerscan'); if (sc) sc.onclick = async () => {
     sc.disabled = true; sc.textContent = 'Scan läuft …';
     try { await fetch('/api/stoerfrequenz/start', { method: 'POST', body: JSON.stringify({ id: aktuellId }) }); } catch (e) {}
-    kerbeZeigen.laeuft = 'dieser Song zuerst';
+    kerbeZeigen.laeuft = 'dieser Titel zuerst';
     const id = aktuellId;
     let versuche = 0;
     const warte = async () => { try { stoerfrequenzen = await (await fetch('/api/stoerfrequenzen', { cache: 'no-store' })).json(); } catch (e) {}
@@ -5120,7 +5120,7 @@ async function studioAuf(){
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       $('studioref').innerHTML = 'Referenz: ' + t
         + ' <span id="studiorefx" title="Referenz löschen" style="margin-left:6px;opacity:.65">×</span>';
-    } else $('studioref').textContent = 'Laufenden Song als Referenz'; };
+    } else $('studioref').textContent = 'Laufenden Titel als Referenz'; };
   $('studioref').onclick = (e) => {
     if (e.target && e.target.id === 'studiorefx'){          /* das x loescht die Referenz */
       eqReferenz = null; localStorage.removeItem('mysuno-eq-referenz');
@@ -5284,14 +5284,14 @@ function studioPresetsPruefen(){
   const sperre = (wert, grund) => { const o = d.querySelector(`option[value="${wert}"]`); if (!o) return;
     if (!o.dataset.text) o.dataset.text = o.textContent;
     o.disabled = !!grund; o.textContent = grund ? `${o.dataset.text} — ${grund}` : o.dataset.text; };
-  const ohneProfil = !P ? 'kein Profil für diesen Song' : '';
+  const ohneProfil = !P ? 'kein Profil für diesen Titel' : '';
   sperre('sammlung', ohneProfil || (!(eqProfil && eqProfil.mittel) ? 'kein Sammlungsmittel' : ''));
   sperre('referenz', ohneProfil || (!eqReferenz ? 'noch keine Referenz gemerkt' : !(eqProfil && eqProfil.songs[eqReferenz]) ? 'Referenz ohne Profil' : ''));
   { const s = songVonId.get(aktuellId), plId = s && s.playlists && s.playlists[0];
     const n = plId ? alle.filter(x => (x.playlists || []).includes(plId)).filter(x => eqProfil && eqProfil.songs[x.id]).length : 0;
-    sperre('playlist', ohneProfil || (!plId ? 'Song steht in keinem Album' : n < 2 ? 'Album ohne genug Profile' : '')); }
+    sperre('playlist', ohneProfil || (!plId ? 'Titel steht in keinem Album' : n < 2 ? 'Album ohne genug Profile' : '')); }
   { const pK = karteDaten && karteDaten.songs.find(q => q.id === aktuellId), G = pK && karteDaten.gruppen[pK.gruppe];
-    sperre('gruppe', ohneProfil || (!karteDaten ? 'noch kein Klangraum' : !pK ? 'Song noch nicht vermessen' : !(G && G.profil) ? 'Gruppe ohne Klangprofil' : '')); }
+    sperre('gruppe', ohneProfil || (!karteDaten ? 'noch kein Klangraum' : !pK ? 'Titel noch nicht vermessen' : !(G && G.profil) ? 'Gruppe ohne Klangprofil' : '')); }
 }
 
 /* Die Preset-Anzeige aus dem IST-Zustand ableiten - eine Stelle statt
@@ -5337,12 +5337,12 @@ function studioMesswerte(){
   const feld = $('studiomess'); if (!feld) return;
   const s = songVonId.get(aktuellId);
   const a = s && s.analyse;
-  if (!a){ feld.innerHTML = '<span class="mw">Noch keine Klanganalyse für diesen Song.</span>'; return; }
+  if (!a){ feld.innerHTML = '<span class="mw">Noch keine Klanganalyse für diesen Titel.</span>'; return; }
   /* Glossar als Tooltips am Gegenstand (Hausregel; Review 23.08.) */
   const w = (name, wert, einheit, tip) => wert == null ? '' :
     `<span class="mw"${tip ? ` title="${tip}"` : ''}>${name}<b>${String(wert).replace('.', ',')}${einheit || ''}</b></span>`;
   feld.innerHTML =
-    w('Lautheit', a.lufs, ' LUFS', 'wie laut der Song dem Ohr erscheint — gehörgewichtet und in Dezibel, so wie L* die Helligkeit nach dem Auge statt nach dem Photonenzähler misst. Die meisten Streaming-Dienste normalisieren auf etwa −14 (Apple −16): Lauteres wird dort einfach leiser gedreht') +
+    w('Lautheit', a.lufs, ' LUFS', 'wie laut der Titel dem Ohr erscheint — gehörgewichtet und in Dezibel, so wie L* die Helligkeit nach dem Auge statt nach dem Photonenzähler misst. Die meisten Streaming-Dienste normalisieren auf etwa −14 (Apple −16): Lauteres wird dort einfach leiser gedreht') +
     w('Spanne', a.lra, ' LU', 'Kontrastumfang zwischen leisen und lauten Passagen') +
     w('True Peak', a.truePeak, ' dBTP', 'die hellste einzelne Spitze — über 0 dBTP brennt es aus (Verzerrungen, Überschreien)') +
     w('Korrelation', a.korrelation, '', '1 = mono-kompatibel, negativ = Auslöschungsgefahr') +
@@ -5594,7 +5594,7 @@ function parZeichnen(){
         inhalt += `<line x1="${x.toFixed(1)}" y1="${yO}" x2="${x.toFixed(1)}" y2="${yU}" stroke="${farbe}" stroke-width="${gesetzt ? 2 : 1}" stroke-dasharray="${gesetzt ? '' : '3 4'}" opacity="${stoer ? 0.85 : 0.5}"/>`
                 + `<text x="${(x + dx).toFixed(1)}" y="${yL.toFixed(1)}" font-size="10.5" fill="${farbe}">${c.hz >= 1000 ? (c.hz / 1000).toFixed(1).replace('.', ',') + ' kHz' : Math.round(c.hz) + ' Hz'}${stoer ? '' : ' · ' + (c.art === 'wahrscheinlich Musik' ? 'Musik?' : c.note)}${c.linien ? ' ·' + c.linien : ''}</text>`
                 + `<g class="stoergriff ${hoert ? 'an' : ''}" data-was="hoeren" data-hz="${c.hz}"><title>diesen Ton allein hören (Bandpass) — noch ein Klick: wieder alles</title><circle cx="${(x + dx + 9).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 9).toFixed(1)}" y="${(yL + 20).toFixed(1)}">♪</text></g>`
-                + `<g class="stoergriff ${gesetzt ? 'an' : ''}" data-was="kerbe" data-hz="${c.hz}"><title>Kerbe setzen (−12 dB, Güte 30) — danach ein Punkt wie die Bänder: ziehen, scrollen, Doppelklick löst</title><circle cx="${(x + dx + 33).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 33).toFixed(1)}" y="${(yL + 20).toFixed(1)}">⊘</text></g>`;
+                + `<g class="stoergriff ${gesetzt ? 'an' : ''}" data-was="kerbe" data-hz="${c.hz}"><title>Kerbfilter setzen (−12 dB, Güte 30) — danach ein Punkt wie die Bänder: ziehen, scrollen, Doppelklick löst</title><circle cx="${(x + dx + 33).toFixed(1)}" cy="${(yL + 15).toFixed(1)}" r="10"/><text x="${(x + dx + 33).toFixed(1)}" y="${(yL + 20).toFixed(1)}">⊘</text></g>`;
       });
     }
     /* Die gesetzte Kerbe ist ein PUNKT wie die acht Baender (Caspar_D, 23.08.:
@@ -6013,10 +6013,10 @@ function studioZeichnen(){
       let eng = 0, weit = 0;
       decke.forEach((d, i) => { if (d < decke[eng]) eng = i; if (d > decke[weit]) weit = i; });
       const db = (v) => (v >= 0 ? '+' : '') + v.toFixed(1).replace('.', ',') + ' dB';
-      spielraum.textContent = ` Bei diesem Song: engster Spielraum im ${namen[eng]}-Band (${db(decke[eng])})`
-        + `${decke[eng] < 0 ? ' — der Song reizt sein Budget schon unverändert aus' : ''},`
+      spielraum.textContent = ` Bei diesem Titel: engster Spielraum im ${namen[eng]}-Band (${db(decke[eng])})`
+        + `${decke[eng] < 0 ? ' — der Titel reizt sein Budget schon unverändert aus' : ''},`
         + ` am meisten Luft im ${namen[weit]}-Band (${decke[weit] > 12 ? 'mehr als +12 dB' : db(decke[weit])}).`;
-    } else spielraum.textContent = ' Für diesen Song fehlt Profil oder True Peak — keine Decke berechenbar.';
+    } else spielraum.textContent = ' Für diesen Titel fehlt Profil oder True Peak — keine Decke berechenbar.';
   }
   /* Legende in Caspar_Ds Worten (20.08.2026). Davor ggf. die Zeile des Presets (Stilgruppe, 22.08.). */
   $('studiofuss').innerHTML =
@@ -6024,11 +6024,11 @@ function studioZeichnen(){
     + '<p><b style="color:var(--text)">Die roten Punkte sind die Regler:</b> senkrecht ziehen, Doppelklick stellt auf 0. An der grauen Decke rasten sie ein.</p>'
     + '<p><span style="color:var(--akzent)">Farbig:</span> Frequenzprofil nach Regelung — die Kurve ist das echte Ergebnis der runden Filter, die Punkte sind die Einstellung je Band (Analyse blockig, Filterung glockig)</p>'
     + '<p><span style="color:#fff">Grau:</span> die Decke — wie viel Luft ein Band noch bis zum Vollpegel hat, geschätzt aus Bandprofil und True Peak</p>'
-    + '<p><span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Gefüllt</span>: die Kurve liegt über der Decke — der Song würde übersteuern (Verzerrungen, Überschreien)</p>'
+    + '<p><span style="color:#fff;background:color-mix(in srgb, var(--akzent) 50%, transparent);border:1px solid #fff;border-radius:999px;padding:0 8px">Gefüllt</span>: die Kurve liegt über der Decke — der Titel würde übersteuern (Verzerrungen, Überschreien)</p>'
     + '<p>Die Kreise darunter: <b style="color:var(--text)">Solo</b> — hier das Messband von Trennfrequenz zu Trennfrequenz, im Glockenstuhl die Glocke selbst; Invers spielt alle anderen.</p>'
-    + '<p style="opacity:.75">Bandprofil und True Peak stammen aus der Klanganalyse des Songs — vorgerechnet vom Analyzer, keine Live-Messung.</p>'
-    + (decke && Math.min(...decke) < 0 ? '<p>Achtung: dieser Song reizt sein Budget schon unverändert aus (True Peak ≥ 0).</p>' : '')
-    + (!decke ? '<p>Keine Grenze berechenbar: für diesen Song fehlt Profil oder True Peak.</p>' : '')
+    + '<p style="opacity:.75">Bandprofil und True Peak stammen aus der Klanganalyse des Titels — vorgerechnet von der Titel-Analyse, keine Live-Messung.</p>'
+    + (decke && Math.min(...decke) < 0 ? '<p>Achtung: dieser Titel reizt sein Budget schon unverändert aus (True Peak ≥ 0).</p>' : '')
+    + (!decke ? '<p>Keine Grenze berechenbar: für diesen Titel fehlt Profil oder True Peak.</p>' : '')
     + (eqAus ? '<p>A/B: Original läuft.</p>' : '');
   parZeichnen();                                 /* das Frequenzbild zieht immer mit */
 }
@@ -6063,12 +6063,12 @@ async function studioPreset(art){
     else if (art === 'gruppe'){
       const pK = karteDaten && karteDaten.songs.find(q => q.id === aktuellId), G = stilgruppeVon(aktuellId);
       if (!karteDaten) hinweis = 'Noch kein Klangraum — der Morgenlauf „Musikstil und Klangraum" rechnet ihn.';
-      else if (!pK) hinweis = 'Dieser Song ist noch nicht im Klangraum vermessen.';
+      else if (!pK) hinweis = 'Dieser Titel ist noch nicht im Klangraum vermessen.';
       else if (!G || !G.profil) hinweis = 'Für diese Stilgruppe gibt es noch kein Klangprofil.';
-      else { ziel = G.profil; hinweis = `Stilgruppe „${G.name}“ (${G.anzahl} Songs): Klangprofil der Gruppe als Ziel, halbe Stärke.`; }
+      else { ziel = G.profil; hinweis = `Stilgruppe „${G.name}“ (${G.anzahl} Titel): Klangprofil der Gruppe als Ziel, halbe Stärke.`; }
     }
     else if (art === 'referenz'){ ziel = eqProfil && eqProfil.songs[eqReferenz];
-      if (!eqReferenz) hinweis = 'Erst eine Referenz merken: Song abspielen, dann „Laufenden Song als Referenz".'; }
+      if (!eqReferenz) hinweis = 'Erst eine Referenz merken: Titel abspielen, dann „Laufenden Titel als Referenz".'; }
     else if (art === 'playlist'){
       /* Mittel der (ersten) Playlist, in der der Song steht - aus den
          echten Profilen ihrer Mitglieder. */
@@ -6078,9 +6078,9 @@ async function studioPreset(art){
                                     .map(x => eqProfil.songs[x.id]).filter(Boolean) : [];
       if (mitglieder.length >= 2)
         ziel = eqGains.map((_, b) => mitglieder.reduce((q, m) => q + m[b], 0) / mitglieder.length);
-      else hinweis = 'Der Song steht in keiner Playlist mit genug Profilen.';
+      else hinweis = 'Der Titel steht in keinem Album mit genug Profilen.';
     }
-    if (!P || !ziel){ $('studiofuss').textContent = !P ? 'Kein Profil für diesen Song.' : hinweis; return; }
+    if (!P || !ziel){ $('studiofuss').textContent = !P ? 'Kein Profil für diesen Titel.' : hinweis; return; }
     eqGains = P.map((v, i) => Math.max(-6, Math.min(6, +(((ziel[i] - v) / 2).toFixed(1)))));
     if (art === 'gruppe') studioHinweis = hinweis;
   }
@@ -6694,8 +6694,8 @@ function sortierungenAnbieten(){
   const bewegt = alle.some(s => s.bewegung && (s.bewegung.plays || s.bewegung.likes || s.bewegung.kommentare));
   if (bewegt) {
     const b = document.createElement('optgroup'); b.label = 'Bewegung, 7 Tage';
-    b.appendChild(opt('bewPlays', 'Meiste neue Plays'));
-    b.appendChild(opt('bewLikes', 'Meiste neue Likes'));
+    b.appendChild(opt('bewPlays', 'Meiste neue Abrufe'));
+    b.appendChild(opt('bewLikes', 'Meiste neue Herzen'));
     b.appendChild(opt('bewKommentare', 'Meiste neue Kommentare'));
     b.appendChild(opt('bewSumme', 'Meiste Bewegung'));     // die Kombizahl zuletzt
     sel.appendChild(b);
@@ -6837,7 +6837,7 @@ function zeichnen(){
     ? `<i class="plus" title="seit ${s.bewegung.seit}">+${s.bewegung[k]}</i>` : '';
   /* Bei der Kombizahl ein einziges +n am Zeilenende. */
   const plusSumme = (s) => (sort === 'bewSumme' && bewSumme(s))
-    ? `<span><i class="plus" title="Bewegung seit ${s.bewegung.seit}: Plays + 2·Likes + 3·Kommentare">+${bewSumme(s)}</i></span>` : '';
+    ? `<span><i class="plus" title="Bewegung seit ${s.bewegung.seit}: Abrufe + 2·Herzen + 3·Kommentare">+${bewSumme(s)}</i></span>` : '';
 
   /* Der Klangraum nimmt dieselbe Liste - eingegrenzt auf das, was
      ueberhaupt einen Stern hat, denn nur vermessene Songs stehen am
@@ -6864,7 +6864,7 @@ function zeichnen(){
     sichtbar = liste;
     /* Die Zahl gilt auch hier - sonst zeigt der Klangraum den Stand von
        vorhin, waehrend die Sterne schon gefiltert sind. */
-    $('zahl').textContent = liste.length + (liste.length === 1 ? ' Song' : ' Songs');
+    $('zahl').textContent = liste.length + ' Titel';
     ruecksetzerZeigen();
 
     /* Laeuft die Zeit rueckwaerts, verlaesst das Schiff den Raum. Einmal
@@ -6912,7 +6912,7 @@ function zeichnen(){
   karteAnflug = null;
 
   sichtbar = liste;
-  $('zahl').textContent = liste.length + (liste.length === 1 ? ' Song' : ' Songs');
+  $('zahl').textContent = liste.length + ' Titel';
   ruecksetzerZeigen();
 
   const r = $('raster');
@@ -6930,11 +6930,11 @@ function zeichnen(){
         <img loading="lazy" src="${artworkKachel(s.id)}" alt=""
              onerror="this.src='${artworkBild(s.id)}'">
         ${s.modell ? `<span class="marke">${s.modell}</span>` : ''}
-        ${hatBewegtbild(s) ? `<span class="videomarke" title="${istEigenesBewegtbild(s) ? 'selbst zugeordnetes Video-Artwork' : 'eigenes Video-Artwork'}">${SYM('eigenvideo')}</span>` : ''}
+        ${hatBewegtbild(s) ? `<span class="videomarke" title="${istEigenesBewegtbild(s) ? 'selbst zugeordnetes Bewegtbild' : 'eigenes Bewegtbild'}">${SYM('eigenvideo')}</span>` : ''}
         ${s.oeffentlich ? '' : '<span class="privatmarke" title="nicht auf Suno veröffentlicht">privat</span>'}
         ${capMarke(s)}
       </div>
-      <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="Treffer im Songtext">' + SYM('lyrics') + '</i>' : ''}</div>
+      <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="Treffer im Liedtext">' + SYM('lyrics') + '</i>' : ''}</div>
       <div class="unter"><span>${SYM('plays')}${s.plays||0}${plus(s,'plays')}</span><span class="zk" data-rk="${s.id}" title="Wer hat reagiert">${SYM('herz')}${s.likes||0}${plus(s,'likes')}</span><span class="zk" data-rk="${s.id}" title="Kommentare">${SYM('blase')}${s.kommentare||0}${plus(s,'kommentare')}</span>${plusSumme(s)}</div>
     </div>`).join('');
 
@@ -7370,20 +7370,20 @@ function karteLesarten(){
   const z = (farbe, titel, text) => `<div class="kartelesart"><span class="farbe" style="${farbe}"></span><span><b>${titel}</b><small>${text}</small></span></div>`;
   const block = (titel, inhalt) => `<div class="lblock"><h4>${titel}</h4><div class="lgrid">${inhalt}</div></div>`;
   return block('Sterne',
-    z('background:radial-gradient(#fff,#fff 20%,transparent 70%);transform:scale(1.25)', 'Größe = Plays', 'je öfter gehört, desto größer (logarithmisch, nach Rang)') +
-    z('background:radial-gradient(#fff,#fff 30%,transparent 70%)', 'Helligkeit = Likes', 'beliebte Songs leuchten') +
+    z('background:radial-gradient(#fff,#fff 20%,transparent 70%);transform:scale(1.25)', 'Größe = Abrufe', 'je öfter gehört, desto größer (logarithmisch, nach Rang)') +
+    z('background:radial-gradient(#fff,#fff 30%,transparent 70%)', 'Helligkeit = Herzen', 'beliebte Titel leuchten') +
     z('background:radial-gradient(circle,#fff 18%,#e0455a 30%,transparent 60%);border:none', 'Korona = Kommentare', 'Farbe = Stilgruppe, Stärke = wie viel besprochen wird') +
-    z('background:linear-gradient(90deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%),linear-gradient(0deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%);border:none', 'Kreuz = Bewegung', 'Plays in den letzten 7 Tagen; Länge = wie viele') +
+    z('background:linear-gradient(90deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%),linear-gradient(0deg,transparent 44%,#fff 48%,#fff 52%,transparent 56%);border:none', 'Kreuz = Bewegung', 'Abrufe in den letzten 7 Tagen; Länge = wie viele') +
     z('background:linear-gradient(90deg,#ff9a3c,#fff,#9bb7ff)', 'Sternfarbe = Alter', 'älteste rot, neueste blauweiß') +
     z('background:#000;border:1px solid #888', 'Schatten = privat', 'da, aber ohne Licht — Suno zeigt ihn nicht')) +
   block('Lebende Sterne',
-    z('background:radial-gradient(#fff,transparent 70%);opacity:.7', 'Flimmern = neu', 'Songs der letzten 7 Tage szintillieren') +
+    z('background:radial-gradient(#fff,transparent 70%);opacity:.7', 'Flimmern = neu', 'Titel der letzten 7 Tage szintillieren') +
     z('background:radial-gradient(#ffb070,transparent 70%)', 'Pulsieren = Hybrid', 'Strophe und Refrain klingen verschieden') +
-    z('background:radial-gradient(ellipse 70% 35% at 50% 50%,#ffffff55,transparent 70%);border:none', 'Doppelsystem = Zwillinge', 'zwei Fassungen desselben Songs in einer Hülle') +
+    z('background:radial-gradient(ellipse 70% 35% at 50% 50%,#ffffff55,transparent 70%);border:none', 'Doppelsystem = Zwillinge', 'zwei Fassungen desselben Titels in einer Hülle') +
     z('background:radial-gradient(#fff,#fff 25%,transparent 60%)', 'Fäden = Nachbarn', 'unter der Maus: Fäden zu den sechs nächsten, Deckung nach Nähe')) +
   block('Zuschaltbar',
     z('background:radial-gradient(#e0455a66,transparent 70%)', 'Nebel = Stilgruppe', 'Staubwolken addieren sich') +
-    z('background:linear-gradient(160deg,transparent 45%,#c8d7ff 47%,transparent 49%),linear-gradient(20deg,transparent 45%,#c8d7ff 47%,transparent 49%);border:none', 'Sternbild = Klassifikator', 'Linien durch seine stärksten Songs') +
+    z('background:linear-gradient(160deg,transparent 45%,#c8d7ff 47%,transparent 49%),linear-gradient(20deg,transparent 45%,#c8d7ff 47%,transparent 49%);border:none', 'Sternbild = Klassifikator', 'Linien durch seine stärksten Titel') +
     z('background:radial-gradient(circle,#000 30%,#e0455a 36%,transparent 52%);border:none', 'Attraktor = Massezentrum', 'eines je Gruppe, Jets = Hauptachse') +
     z('background:linear-gradient(155deg,transparent 44%,#c9c9cd 47%,#c9c9cd 53%,transparent 56%);border:none', 'Flugbahn = Reiseweg', 'die wirklich geflogene Bahn des Schiffs'));
 }
@@ -7525,7 +7525,7 @@ function kartePanelHtml(){
   return ladeHtml('einstellungen', 'Einstellungen', kurz, `<div class="panel">` +
     raumZeile +
     zeile('Visualisierung',
-      `<span class="schalter" title="Fläche oder Raum. Im Raum: Klick dreht den Song nach vorn, Ziehen dreht frei, Doppelklick zurück."><button class="pille ${karteDim === '2d' ? 'an' : ''}" data-dim="2d">2D</button><button class="pille ${karteDim === '3d' ? 'an' : ''}" data-dim="3d">3D</button></span>` +
+      `<span class="schalter" title="Fläche oder Raum. Im Raum: Klick dreht den Titel nach vorn, Ziehen dreht frei, Doppelklick zurück."><button class="pille ${karteDim === '2d' ? 'an' : ''}" data-dim="2d">2D</button><button class="pille ${karteDim === '3d' ? 'an' : ''}" data-dim="3d">3D</button></span>` +
       `<span class="schalter" title="NMDS: Rangfolge aller Abstände stimmt (Stress 2D ${String(d.stress ?? '?').replace('.', ',')}, 3D ${String(d.stress3d ?? '?').replace('.', ',')}). UMAP: nur Nachbarschaft, Abstände dazwischen erfunden."><button class="pille ${karteVerf === 'nmds' ? 'an' : ''}" data-verf="nmds">NMDS</button><button class="pille ${karteVerf === 'umap' ? 'an' : ''}" data-verf="umap">UMAP</button></span>`) +
     /* Die Zeile baut sich aus dem, was TATSAECHLICH in diesem Raum steht.
        karte.js verwirft Etiketten, die nicht mehr erklären als gemischte
@@ -7536,7 +7536,7 @@ function kartePanelHtml(){
       const da = new Set((d.tags || []).map(t => t.art));
       const knopf = ([a, pl]) => {
         const n = (d.tags || []).filter(t => t.art === a).length;
-        return `<button class="pille artpille ${karteArten[a] ? 'an' : ''}" data-a="${a}" style="--af:${artFarbe[a]}" title="${n} ${pl}, die diesen Raum erklären, als Sternbilder: Name am Schwerpunkt der stärksten Songs; Rang danach, wie stark der Tag die Gruppen erklärt">${pl}</button>`;
+        return `<button class="pille artpille ${karteArten[a] ? 'an' : ''}" data-a="${a}" style="--af:${artFarbe[a]}" title="${n} ${pl}, die diesen Raum erklären, als Sternbilder: Name am Schwerpunkt der stärksten Titel; Rang danach, wie stark der Tag die Gruppen erklärt">${pl}</button>`;
       };
       const knoepfe = [['Genre', 'Genres'], ['Instrument', 'Instrumente'], ['Stimmung', 'Stimmungen']]
         .filter(([a]) => da.has(a)).map(knopf).join('');
@@ -7544,10 +7544,10 @@ function kartePanelHtml(){
     })() +
     zeile('Weiteres',
       `<button class="pille ${karteLoecher ? 'an' : ''}" id="karteloecher" title="Attraktoren: ein Schwarzes Loch als Massezentrum je Stilgruppe, Jets entlang der Hauptachse (nur im Raum)">Attraktoren</button>` +
-      `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Songs eines Klassifikators">Sternbilder</button>` +
+      `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Titel eines Klassifikators">Sternbilder</button>` +
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>` +
-      `<button class="pille" id="karteexport" title="Den Klangraum als eine HTML-Datei erzeugen (nur öffentliche Songs, jeder Stern führt zu seiner Suno-Seite) — zum Verschicken">Export</button>`) +
+      `<button class="pille" id="karteexport" title="Den Klangraum als eine HTML-Datei erzeugen (nur öffentliche Titel, jeder Stern führt zu seiner Suno-Seite) — zum Verschicken">Export</button>`) +
     /* Der Name steht IN der Zeile, nicht mehr in ihrer Ueberschrift
        (Caspar_D, 26.08.2026: „vorausgefuellt mit dem ganzen Sunohandle,
        bei Klick darauf wird es zu einer editierbaren Box, in der
@@ -7673,7 +7673,7 @@ async function karteZeichnen(){
     /* Ring am laufenden Stern nur bei Direkter Route - im Orbiter/Warp ist die Bahn das Highlight (Caspar_D, 21.08.) */
     return `<circle class="stern${p.id === aktuellId && schiffArt === 'direkt' ? ' laeuft' : ''}" data-id="${p.id}" data-g="${p.gruppe}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${((6 + 8 * p.dichte) * rk * tf).toFixed(1)}" fill="transparent"/>`; }
   ).join('') + ((karteSternbilder || []).map(({ t, i }) => { const [x, y] = karteSternbildLage.get(i) || [-99, -99];
-    return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>Sternbild ${t.name} (${t.art}) — erklärt ${Math.round((t.erklaert || 0) * 100)} % der Gruppentrennung, markiert „${(d.gruppen[t.markiert] || {}).name || '?'}“; ${t.songs} Songs</title></circle>`; }).join(''))
+    return `<circle class="sternbild" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(14 * rk).toFixed(1)}" fill="transparent"><title>Sternbild ${t.name} (${t.art}) — erklärt ${Math.round((t.erklaert || 0) * 100)} % der Gruppentrennung, markiert „${(d.gruppen[t.markiert] || {}).name || '?'}“; ${t.songs} Titel</title></circle>`; }).join(''))
   + (L.gruppen && karteLoecher ? L.gruppen.map((G, gi) => G ? `<circle class="loch" data-g="${gi}" cx="${(karteZoom.tx + karteZoom.k * G.p[0]).toFixed(1)}" cy="${(karteZoom.ty + karteZoom.k * G.p[1]).toFixed(1)}" r="${(12 * rk).toFixed(1)}" fill="transparent"><title>${d.gruppen[gi].name} — Massezentrum der Gruppe; Klick hebt sie hervor. Jet = Hauptachse (${Math.round((G.ger || 0) * 100)} % der Ausdehnung)</title></circle>` : '').join('') : '');
   svg.querySelectorAll('.loch').forEach(c => c.onclick = () => { const g = +c.dataset.g; karteGruppeAn = karteGruppeAn === g ? null : g; karteZeichnen(); });
   svg.querySelectorAll('.sternbild').forEach(c => {
@@ -7696,7 +7696,7 @@ async function karteZeichnen(){
          schlicht leer, falls eine alte karte.json geladen wird. */
       e.mollAnteil != null && `${Math.round(e.mollAnteil * 100)} % Moll`, e.stimme && e.stimme].filter(Boolean).join(' · ');
     return `<div class="gruppe${karteGruppeAn === g.nr ? ' an' : ''}" data-g="${g.nr}"><span class="farbe" style="background:${karteFarbe(g.nr)}"></span>` +
-      `<span><b>${g.name}</b><small>${g.anzahl} Songs${erd ? ' — ' + erd : ''}</small></span></div>`;
+      `<span><b>${g.name}</b><small>${g.anzahl} Titel${erd ? ' — ' + erd : ''}</small></span></div>`;
   }).join('') + `</div></div>` + karteLesarten() + `</div>`;
   /* Das Panel NUR neu bauen, wenn sich sein Zustand geaendert hat
      (Caspar_D, 22.08.: "irgendwas klaut den Mausfokus" - Nachlauf und
@@ -7706,7 +7706,7 @@ async function karteZeichnen(){
   if (leg.dataset.sig !== panelSig){
     leg.dataset.sig = panelSig;
     { const sb0 = $('kartesteckbrief'); if (sb0 && sb0.parentElement !== $('karterechts')) $('karterechts').appendChild(sb0); }   // Steckbrief vor dem Neubau parken
-    leg.innerHTML = kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Songs · ${n} ${gruppenWort}`, gruppenHtml) +
+    leg.innerHTML = kartePanelHtml() + ladeHtml('legende', 'Legende', `${d.anzahl} Titel · ${n} ${gruppenWort}`, gruppenHtml) +
       ladeHtml('werk', 'Werk', aktuellId && song(aktuellId) ? song(aktuellId).titel : '', '<div id="kartesteckbriefhalter"></div>');
     /* der Steckbrief (eigenes Element, wird vom Hover befuellt) wandert in die Werk-Lade */
     const sb = $('kartesteckbrief'), halter = leg.querySelector('#kartesteckbriefhalter'); if (sb && halter){ halter.appendChild(sb); sb.hidden = false; }
@@ -7725,7 +7725,7 @@ async function karteZeichnen(){
   };
   const [wasNaehe, woher] = HERKUNFT[raumJetzt] || HERKUNFT.klang;
   const fehlen = raumJetzt !== 'klang' && karteDaten ? karteDaten.songs.length - d.songs.length : 0;
-  $('kartefuss').textContent = `${RAUM_NAME[raumJetzt]}: die geclusterten Suno-Tracks als Sterne. Jeder Stern stellt einen Track dar. ${wasNaehe}: ` +
+  $('kartefuss').textContent = `${RAUM_NAME[raumJetzt]}: die geclusterten Suno-Titel als Sterne. Jeder Stern stellt einen Titel dar. ${wasNaehe}: ` +
     `Die Karte wurde per ${verfahren} ${woher} gerechnet, lokal auf diesem Rechner. ` +
     (fehlen ? `${fehlen} Lieder ohne Text fehlen in diesem Raum — sie stehen nur im Klang-Raum. ` : '') +
     `Die Gruppen wurden im vollen Vektorraum gebildet — nicht auf der Karte, die wegen der Flachheit des Bildschirms nur eine fehlerbehaftete Projektion darstellt. ` +
@@ -7792,7 +7792,7 @@ function karteSteckbrief(s, p){
         + `;background:${diaFlaeche('var(--akzent)')}`
         + `;box-shadow:inset 0 1px 0 ${diaTopline('var(--akzent)')}"></i>`
         + `<em>${Math.round(w * 100)} %</em></div>`).join('') + `</div>`).join('') + `</div>` +
-    (p.streuung != null ? `<div class="zeile"><span>Wechselhaftigkeit</span> ${p.streuung.toFixed(2).replace('.', ',')} <i>(Streuung der 2-s-Fenster um das Songmittel)</i></div>` : '') +
+    (p.streuung != null ? `<div class="zeile"><span>Wechselhaftigkeit</span> ${p.streuung.toFixed(2).replace('.', ',')} <i>(Streuung der 2-s-Fenster um das Mittel des Titels)</i></div>` : '') +
     `<h4>Nächste Klangnachbarn</h4><ol>${nachbarn.map((n, i) => `<li>${n.titel}<i>${(p.nachbarn[i][1]).toFixed(2).replace('.', ',')}</i></li>`).join('')}</ol>`;
   el.hidden = false;
 }
@@ -8479,13 +8479,13 @@ async function schiffPruefung(o){
     const voll = radien.filter(r => Math.abs(r.rPx - r.Rmax) < 0.6), vorZ = voll.filter(r => r.k === +zoom0.k.toFixed(2)), nachZ = voll.filter(r => r.k !== +zoom0.k.toFixed(2));
     if (vorZ.length && nachZ.length){ const a = vorZ[vorZ.length - 1].rRaum, b = nachZ[0].rRaum; if (Math.abs(a - b) > 1e-4 * Math.max(1, a / 1e-3)) melde('zoom', `Raumradius aendert sich mit dem Zoom: ${a} -> ${b}`); }
     if (ziel0){
-      if (tAbGes == null) melde('transit', 'kein Transit vor Songende');
-      else if (uEnde < 0.99) melde('ankunft', `Transit am Songende erst bei u = ${uEnde.toFixed(2)}`);
+      if (tAbGes == null) melde('transit', 'kein Transit vor Titelende');
+      else if (uEnde < 0.99) melde('ankunft', `Transit am Titelende erst bei u = ${uEnde.toFixed(2)}`);
     }
     /* Songende -> Weiterschaltung wie im Betrieb */
     const vorherZiel = ziel0, letzteRoh = letztRoh && letztRoh.roh;
     vor(1);
-    if (vorherZiel && aktuellId !== vorherZiel) melde('wechsel', `neuer Song ${aktuellId && aktuellId.slice(0, 6)} ist nicht das Ziel ${vorherZiel.slice(0, 6)}`);
+    if (vorherZiel && aktuellId !== vorherZiel) melde('wechsel', `neuer Titel ${aktuellId && aktuellId.slice(0, 6)} ist nicht das Ziel ${vorherZiel.slice(0, 6)}`);
     karteSchiffFrame.fake.t = 0; t = 0; karteSchiffFrame.diag = null;
     try { karteSchiffFrame(); } catch (e) { melde('ausnahme', e.message); }
     const d2 = karteSchiffFrame.diag;
@@ -10084,8 +10084,8 @@ function zeichnePlaylistUebersicht(){
       </div>
       <div class="titel">${esc(p.name)}</div>
       <div class="unter">
-        <span>${p.eintraege.length} Songs</span>
-        ${fremd ? `<span title="Songs anderer Urheber - werden übers Netz abgespielt">${fremd} remote</span>` : ''}
+        <span>${p.eintraege.length} Titel</span>
+        ${fremd ? `<span title="Titel anderer Urheber - werden übers Netz abgespielt">${fremd} aus dem Netz</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -10128,8 +10128,8 @@ function zeichnePlaylistInhalt(){
 
   sichtbar = lieder;
   const fremd = lieder.filter(s => s.fremd).length;
-  $('plZahl').textContent = `${p.name} · ${lieder.length} Songs`
-    + (fremd ? ` · ${fremd} remote` : '') + (p.oeffentlich ? '' : ' · privat');
+  $('plZahl').textContent = `${p.name} · ${lieder.length} Titel`
+    + (fremd ? ` · ${fremd} aus dem Netz` : '') + (p.oeffentlich ? '' : ' · privat');
 
   const r = $('raster');
   r.innerHTML = lieder.map((s,i) => `
@@ -10139,10 +10139,10 @@ function zeichnePlaylistInhalt(){
              ${s.fremd ? '' : `onerror="this.src='${artworkBild(s.id)}'"`}>
         <span class="posmarke">${eintraege[i]?.position ?? i+1}</span>
         ${s.fremd
-          ? `<span class="remotemarke" title="von ${esc(s.anzeigename||s.handle||'')} — kommt übers Netz">remote</span>`
+          ? `<span class="remotemarke" title="von ${esc(s.anzeigename||s.handle||'')} — kommt übers Netz">aus dem Netz</span>`
           : (s.oeffentlich ? '' : '<span class="privatmarke" title="nicht auf Suno veröffentlicht">privat</span>')}
       </div>
-      <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="Treffer im Songtext">' + SYM('lyrics') + '</i>' : ''}</div>
+      <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="Treffer im Liedtext">' + SYM('lyrics') + '</i>' : ''}</div>
       <div class="unter">${s.fremd
         ? `<span>${esc(s.anzeigename || s.handle || '')}</span>`
         : `<span>${SYM('plays')}${s.plays||0}</span><span class="zk" data-rk="${s.id}">${SYM('herz')}${s.likes||0}</span><span class="zk" data-rk="${s.id}">${SYM('blase')}${s.kommentare||0}</span>`}</div>
@@ -10764,8 +10764,8 @@ function anschlussLampe(){
   k.classList.toggle('an', !!anAnschluss);
   k.classList.toggle('arbeitet', !!bereit);
   const n = anschlussNaht;
-  k.title = !anAnschluss ? 'Anschluss: aus — Songs folgen mit Pause aufeinander'
-    : !n ? 'Anschluss: an — wartet auf den nächsten Song'
+  k.title = !anAnschluss ? 'Anschluss: aus — Titel folgen mit Pause aufeinander'
+    : !n ? 'Anschluss: an — wartet auf den nächsten Titel'
     : !n.fall ? `Anschluss: ${n.grund} — nur Blende`
     : `${n.name}: ${n.randA === 'hart' ? 'hartes Ende' : 'Ausklang'} trifft ${n.randB === 'hart' ? 'harten Anfang' : 'Einblendung'}`
       + ` · ${Math.round(n.bpmA)} → ${Math.round(n.bpmB)} BPM, Treffpunkt ${Math.round(n.treffpunkt)}`
@@ -11276,7 +11276,7 @@ async function detailAuf(id){
       ${s.lyrics ? `<div class="block"><h3>Lyrics</h3><pre class="text">${esc(s.lyrics)}</pre></div>`:''}
       ${s.stilPrompt ? `<div class="block"><h3>Stil-Prompt</h3><pre class="text">${esc(s.stilPrompt)}</pre></div>`:''}
       ${s.stilAusschluss ? `<div class="block"><h3>Ausgeschlossene Stile</h3><pre class="text">${esc(s.stilAusschluss)}</pre></div>`:''}
-      ${hatBewegtbild(s) ? `<div class="block"><h3>${istEigenesBewegtbild(s) ? 'Dein Video-Artwork — selbst zugeordnet' : 'Dein Video-Artwork'}</h3>
+      ${hatBewegtbild(s) ? `<div class="block"><h3>${istEigenesBewegtbild(s) ? 'Dein Bewegtbild — selbst zugeordnet' : 'Dein Bewegtbild'}</h3>
          <video controls loop playsinline preload="metadata"
            poster="${artworkBild(s.id)}" src="${artworkVideo(s.id)}"></video></div>`:''}
       ${s.videoUrl ? `<div class="block"><h3>Lyric-Video von Suno</h3>
@@ -11288,7 +11288,7 @@ async function detailAuf(id){
               style="color:var(--akzent)">Direkt ansehen ↗</a>
          </p></div>`:''}
       ${(s.zaehlerVerlauf&&s.zaehlerVerlauf.length>1) ? `<div class="block"><h3>Entwicklung</h3>
-         <pre class="text">${s.zaehlerVerlauf.map(v=>`${v.stand}   ${v.plays} Plays   ${v.likes} Likes   ${v.kommentare} Kommentare`).join('\n')}</pre></div>`:''}
+         <pre class="text">${s.zaehlerVerlauf.map(v=>`${v.stand}   ${v.plays} Abrufe   ${v.likes} Herzen   ${v.kommentare} Kommentare`).join('\n')}</pre></div>`:''}
     </div>`;
 
   $('detail').classList.add('auf');
@@ -11530,7 +11530,7 @@ async function profilCommunityFuellen(){
        liken x2 am meisten") */
     const kombi = fremde.map(l => { const k = l.kommentare.filter(x => imFenster(x.am, fenster)).length + l.antworten.filter(x => imFenster(x.am, fenster)).length;
                                     const li = l.likes.filter(x => imFenster(x.am, fenster)).length;
-                                    return { ...person(l), n: 3 * k + 2 * li, titel: `@${l.handle}: ${k} Kommentare, ${li} Likes` }; })
+                                    return { ...person(l), n: 3 * k + 2 * li, titel: `@${l.handle}: ${k} Kommentare, ${li} Herzen` }; })
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
     besten.appendChild(balken('Kommentieren ×3 + Liken ×2', kombi, DIA_1));
   };
@@ -11563,7 +11563,7 @@ async function profilCommunityFuellen(){
   if (aw.length){
     const det = document.createElement('details'); det.style.marginTop = '10px';
     const sum = document.createElement('summary'); sum.className = 'fussnote'; sum.style.cssText = 'cursor:pointer;margin-top:0';
-    sum.textContent = `Auf fremden Songs (${aw.length}) — Reaktionen auf deine Kommentare dort`;
+    sum.textContent = `Auf fremden Titeln (${aw.length}) — Reaktionen auf deine Kommentare dort`;
     det.appendChild(sum);
     const w = document.createElement('div'); w.style.marginTop = '6px';
     for (const e of aw.slice(0, 30)){
@@ -11659,7 +11659,7 @@ function befundSeiten(eigene){
     return liste;
   };
   return [
-    { titel: 'Songs je Monat', bau: () => {
+    { titel: 'Titel je Monat', bau: () => {
         const z = new Map(); for (const s of mitDatum) z.set(mon(s.erstellt), (z.get(mon(s.erstellt)) || 0) + 1);
         /* Modellwechsel: erster Monat je Modell als Marke */
         const erst = new Map(); for (const s of [...mitDatum].sort((a,b)=>a.erstellt.localeCompare(b.erstellt))) if (s.modell && !erst.has(s.modell)) erst.set(s.modell, mon(s.erstellt));
@@ -11667,28 +11667,28 @@ function befundSeiten(eigene){
         const e = monateSeit().map(k => ({ titel: k, name: k.endsWith('-01') || k === monateSeit()[0] ? k.slice(0,4) : (MONK[+k.slice(5)-1][0]), n: z.get(k) || 0, marke: marke.get(k) || '' }));
         return zeitsaeulen(e, DIA_2, { hinweis: 'Oben: erstes Auftreten eines Modells.' });
       } },
-    { titel: 'Likes je Song nach Entstehungsmonat (Median)', bau: () => {
+    { titel: 'Herzen je Titel nach Entstehungsmonat (Median)', bau: () => {
         const g = new Map(); for (const s of mitDatum){ const k = mon(s.erstellt); if (!g.has(k)) g.set(k, []); g.get(k).push(s.likes || 0); }
-        const e = monateSeit().map(k => ({ titel: `${k} (${(g.get(k)||[]).length} Songs)`, name: k.endsWith('-01') || k === monateSeit()[0] ? k.slice(0,4) : MONK[+k.slice(5)-1][0], n: g.has(k) ? median(g.get(k)) : 0 }));
-        return zeitsaeulen(e, DIA_1, { hinweis: 'Ältere Songs hatten länger Zeit zu sammeln - das ist kein Qualitätsurteil, nur ein Bild.' });
+        const e = monateSeit().map(k => ({ titel: `${k} (${(g.get(k)||[]).length} Titel)`, name: k.endsWith('-01') || k === monateSeit()[0] ? k.slice(0,4) : MONK[+k.slice(5)-1][0], n: g.has(k) ? median(g.get(k)) : 0 }));
+        return zeitsaeulen(e, DIA_1, { hinweis: 'Ältere Titel hatten länger Zeit zu sammeln - das ist kein Qualitätsurteil, nur ein Bild.' });
       } },
-    { titel: 'Tempo × Likes (Median, ab 5 Songs)', bau: () => {
+    { titel: 'Tempo × Herzen (Median, ab 5 Titel)', bau: () => {
         const TEMPO = [[0,70,'< 70'],[70,85,'70–85'],[85,100,'85–100'],[100,115,'100–115'],[115,130,'115–130'],[130,150,'130–150'],[150,999,'150 +']];
         const e = TEMPO.map(([v, b, name]) => { const l = eigene.filter(s => s.analyse && s.analyse.bpm >= v && s.analyse.bpm < b).map(s => s.likes || 0);
-          return { name, titel: `${name} BPM (${l.length} Songs)`, n: l.length >= 5 ? Math.round(median(l)) : 0 }; });
-        return kachelzeile([{ titel: 'BPM', hinweis: 'Helligkeit = Median Likes', eintraege: e }], DIA_2);
+          return { name, titel: `${name} BPM (${l.length} Titel)`, n: l.length >= 5 ? Math.round(median(l)) : 0 }; });
+        return kachelzeile([{ titel: 'BPM', hinweis: 'Helligkeit = Median Herzen', eintraege: e }], DIA_2);
       } },
-    { titel: 'Wirkung je Modell: Likes je 100 Plays', bau: () => {
+    { titel: 'Wirkung je Modell: Herzen je 100 Abrufe', bau: () => {
         const g = new Map(); for (const s of eigene){ const k = s.modell || 'Unbekannt'; if (!g.has(k)) g.set(k, { p: 0, l: 0, n: 0 }); const x = g.get(k); x.p += s.plays || 0; x.l += s.likes || 0; x.n++; }
-        const e = [...g].filter(([, x]) => x.p >= 100).map(([name, x]) => ({ name: `${name} (${x.n} Songs)`, n: 100 * x.l / x.p, anzeige: (100 * x.l / x.p).toFixed(1) })).sort((a,b) => b.n - a.n);
-        return balken('Likes je 100 Plays', e, DIA_1, 'ab 100 Plays je Modell');
+        const e = [...g].filter(([, x]) => x.p >= 100).map(([name, x]) => ({ name: `${name} (${x.n} Titel)`, n: 100 * x.l / x.p, anzeige: (100 * x.l / x.p).toFixed(1) })).sort((a,b) => b.n - a.n);
+        return balken('Herzen je 100 Abrufe', e, DIA_1, 'ab 100 Abrufe je Modell');
       } },
-    { titel: 'Die Stillen: wenigste Plays', bau: () => {
+    { titel: 'Die Stillen: wenigste Abrufe', bau: () => {
         const alt = Date.now() - 30 * 86400000;
         const e = eigene.filter(s => s.oeffentlich && s.erstellt && new Date(s.erstellt).getTime() < alt)
           .sort((a,b) => (a.plays||0) - (b.plays||0)).slice(0, 10)
           .map(s => ({ name: s.titel, n: s.plays || 0, klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }));
-        return balken('Wenigste Plays', e, DIA_1, 'öffentlich, älter als 30 Tage', 'plays');
+        return balken('Wenigste Abrufe', e, DIA_1, 'öffentlich, älter als 30 Tage', 'plays');
       } },
   ];
 }
@@ -11700,7 +11700,7 @@ function kuriosSeiten(eigene){
     { titel: 'Gesamtlaufzeit', bau: () => {
         const sek = eigene.reduce((a, s) => a + (s.dauer || 0), 0), h = sek / 3600;
         const box = document.createElement('div');
-        box.appendChild(satz(`Alle ${eigene.length} Songs hintereinander: ${dauerText(sek)}.`));
+        box.appendChild(satz(`Alle ${eigene.length} Titel hintereinander: ${dauerText(sek)}.`));
         const v = [];
         v.push(`Das ist ${(h / 22.5).toFixed(1)} × der Nonstop-Flug Frankfurt–Sydney (22 h 30).`);
         v.push(`Oder ${Math.round(sek / 60 / 45)} Seiten einer LP zu 45 Minuten - ${Math.round(sek / 60 / 45 / 2)} Platten.`);
@@ -11719,7 +11719,7 @@ function kuriosSeiten(eigene){
         const box = document.createElement('div');
         box.appendChild(satz(`Du bist ein ${viertel[0][0]}-Komponist.`));
         const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
-        f.textContent = `${Math.round(100 * viertel[0][1] / n)} % deiner Songs entstanden am ${viertel[0][0]} (${viertel[0][0]==='Nacht'?'0–6':viertel[0][0]==='Morgen'?'6–12':viertel[0][0]==='Nachmittag'?'12–18':'18–24'} Uhr), ${Math.round(100 * viertel[1][1] / n)} % am ${viertel[1][0]}. Stärkste einzelne Stunde: ${spitze}–${spitze + 1} Uhr mit ${st[spitze]} Songs (Ortszeit).`;
+        f.textContent = `${Math.round(100 * viertel[0][1] / n)} % deiner Titel entstanden am ${viertel[0][0]} (${viertel[0][0]==='Nacht'?'0–6':viertel[0][0]==='Morgen'?'6–12':viertel[0][0]==='Nachmittag'?'12–18':'18–24'} Uhr), ${Math.round(100 * viertel[1][1] / n)} % am ${viertel[1][0]}. Stärkste einzelne Stunde: ${spitze}–${spitze + 1} Uhr mit ${st[spitze]} ${st[spitze] === 1 ? 'Titel' : 'Titeln'} (Ortszeit).`;
         box.appendChild(f); return box;
       } },
     { titel: 'Extreme', bau: () => {
@@ -11732,7 +11732,7 @@ function kuriosSeiten(eigene){
           { name: 'Kürzester Titel', n: (kurz.titel||'').length, anzeige: `${kurz.titel} (${(kurz.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(kurz.id); } },
           { name: 'Längster Prompt', n: (prompt.stilPrompt||'').length, anzeige: `${prompt.titel} (${(prompt.stilPrompt||'').length} Zeichen)`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(prompt.id); } },
           { name: 'Meiste Verbote im Prompt', n: ((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length, anzeige: `${verbote.titel} (${((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length} × „no")`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(verbote.id); } },
-          { name: 'Längster Song', n: byLen(s => s.dauer||0)[0].dauer, anzeige: `${byLen(s => s.dauer||0)[0].titel} (${Math.floor(byLen(s => s.dauer||0)[0].dauer/60)}:${String(Math.round(byLen(s => s.dauer||0)[0].dauer%60)).padStart(2,'0')})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(byLen(s => s.dauer||0)[0].id); } },
+          { name: 'Längster Titel', n: byLen(s => s.dauer||0)[0].dauer, anzeige: `${byLen(s => s.dauer||0)[0].titel} (${Math.floor(byLen(s => s.dauer||0)[0].dauer/60)}:${String(Math.round(byLen(s => s.dauer||0)[0].dauer%60)).padStart(2,'0')})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(byLen(s => s.dauer||0)[0].id); } },
         ];
         const box = document.createElement('div');
         for (const x of e){ const z = document.createElement('div'); z.className = 'bz klick'; z.style.gridTemplateColumns = '170px 1fr';
@@ -11785,7 +11785,7 @@ function kuriosSeiten(eigene){
            Stoss. */
         const z = mitDatum.map(s => ({ t: +new Date(s.erstellt), s }))
                           .filter(x => !isNaN(x.t)).sort((a, b) => a.t - b.t);
-        if (z.length < 3) throw new Error('zu wenige Songs mit Datum');
+        if (z.length < 3) throw new Error('zu wenige Titel mit Datum');
         let best = { n: 0, i: 0, j: 0 };
         for (let i = 0, j = 0; i < z.length; i++){
           while (z[i].t - z[j].t > 3600000) j++;
@@ -11795,7 +11795,7 @@ function kuriosSeiten(eigene){
         const min = Math.max(1, Math.round((bis.t - von.t) / 60000));
         const tage = new Set(mitDatum.map(s => s.erstellt.slice(0, 10))).size;
         const box = document.createElement('div');
-        box.appendChild(satz(`${best.n} Songs in ${min} Minuten.`));
+        box.appendChild(satz(`${best.n} Titel in ${min} Minuten.`));
         const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
         const d = new Date(von.t);
         f.textContent = `Am ${d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}`
@@ -11818,11 +11818,11 @@ function kuriosSeiten(eigene){
         }
         const stillste = st.indexOf(Math.min(...st));
         const box = document.createElement('div');
-        box.appendChild(satz(`Zwischen ${leer.ab} und ${(leer.ab + 6) % 24} Uhr entstanden ${leer.n} Songs.`));
+        box.appendChild(satz(`Zwischen ${leer.ab} und ${(leer.ab + 6) % 24} Uhr entstanden ${leer.n} Titel.`));
         const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
         f.textContent = `Das sind ${Math.round(100 * leer.n / n)} % des Bestands in einem Viertel des Tages. `
           + `Leerste einzelne Stunde: ${stillste}–${stillste + 1} Uhr mit ${st[stillste]} `
-          + `${st[stillste] === 1 ? 'Song' : 'Songs'} (Ortszeit).`;
+          + `${st[stillste] === 1 ? 'Titel' : 'Titeln'} (Ortszeit).`;
         box.appendChild(f); return box;
       } },
     { titel: 'Wortdichte', bau: () => {
@@ -11833,7 +11833,7 @@ function kuriosSeiten(eigene){
         const mit = eigene.filter(s => s.hatLyrics && s.lyricsWorte > 0 && s.dauer > 30)
                           .map(s => ({ s, d: s.lyricsWorte / (s.dauer / 60) }))
                           .sort((a, b) => b.d - a.d);
-        if (mit.length < 5) throw new Error('zu wenige Songs mit Text');
+        if (mit.length < 5) throw new Error('zu wenige Titel mit Text');
         const m = mit[Math.floor(mit.length / 2)];
         const box = document.createElement('div');
         box.appendChild(satz(`${Math.round(m.d)} gesungene Wörter je Minute im Median.`));
@@ -11859,7 +11859,7 @@ function kuriosSeiten(eigene){
         const unten = mit[Math.floor(mit.length * 0.9)];
         const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
         f.textContent = `Das ruhigste Zehntel bleibt unter ${Math.round(unten.d)} Wörtern je Minute. `
-          + `Gerechnet über ${mit.length} Songs mit Text, ohne Regieanweisungen und ohne zweite Sprachfassung.`;
+          + `Gerechnet über ${mit.length} Titel mit Text, ohne Regieanweisungen und ohne zweite Sprachfassung.`;
         box.appendChild(f); return box;
       } },
     { titel: 'Die zwei Tonarten', bau: () => {
@@ -11881,10 +11881,10 @@ function kuriosSeiten(eigene){
         const anteil = Math.round(100 * (zwei[0][1] + (zwei[1] ? zwei[1][1] : 0)) / mit.length);
         const box = document.createElement('div');
         box.appendChild(satz(zwei[1]
-          ? `${anteil} % deiner Songs stehen in ${zwei[0][0]} oder ${zwei[1][0]}.`
-          : `${anteil} % deiner Songs stehen in ${zwei[0][0]}.`));
+          ? `${anteil} % deiner Titel stehen in ${zwei[0][0]} oder ${zwei[1][0]}.`
+          : `${anteil} % deiner Titel stehen in ${zwei[0][0]}.`));
         const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
-        f.textContent = `${zwei.map(x => `${x[0]}: ${x[1]}`).join(', ')} von ${mit.length} gemessenen Songs. `
+        f.textContent = `${zwei.map(x => `${x[0]}: ${x[1]}`).join(', ')} von ${mit.length} gemessenen Titeln. `
           + `Insgesamt kommen ${z.size} verschiedene Tonarten vor.`;
         box.appendChild(f); return box;
       } },
@@ -12040,7 +12040,7 @@ function profilZahlenFuellen(){
           const b = fenb === 'w4' ? s.bewegung28 : s.bewegung;
           const z = document.createElement('div'); z.className = 'topk';
           z.title = `${s.titel} · +${bew(s, fenb)} Bewegung seit ${b.seit}`
-            + ` (${b.plays||0} Plays, ${b.likes||0} Likes, ${b.kommentare||0} Kommentare)`;
+            + ` (${b.plays||0} Abrufe, ${b.likes||0} Herzen, ${b.kommentare||0} Kommentare)`;
           z.innerHTML = `<img loading="lazy" src="/media/${s.id}/kachel.jpg${kachelZusatz()}" alt=""`
             + ` onerror="this.src='/media/${s.id}/cover.jpg'"><b>+${bew(s, fenb)}</b>`;
           z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); };
@@ -12077,7 +12077,7 @@ function profilZahlenFuellen(){
       if (!top.length){ reihe.innerHTML = '<span class="fussnote" style="margin:0">noch nichts</span>'; return; }
       for (const s of top){
         const z = document.createElement('div'); z.className = 'topk';
-        z.title = fen === 'w4' ? `${s.titel} · +${wert(s)} Likes seit ${s.bewegung28.seit} (${s.likes||0} gesamt)` : `${s.titel} · ${s.likes||0} Likes`;
+        z.title = fen === 'w4' ? `${s.titel} · +${wert(s)} Herzen seit ${s.bewegung28.seit} (${s.likes||0} gesamt)` : `${s.titel} · ${s.likes||0} Herzen`;
         z.innerHTML = `<img loading="lazy" src="/media/${s.id}/kachel.jpg${kachelZusatz()}" alt="" onerror="this.src='/media/${s.id}/cover.jpg'"><span>${SYM('herz')}${fen === 'w4' ? '+' : ''}${wert(s)}</span>`;
         z.onclick = () => { $('detail').classList.remove('auf'); spielenNachId(s.id); };
         reihe.appendChild(z);
@@ -12091,8 +12091,8 @@ function profilZahlenFuellen(){
 
   /* Die 10 Songs mit den meisten Likes / Plays / Kommentaren - mit
      denselben Zeichen wie auf den Kacheln. */
-  g.appendChild(balken('Meiste Likes', [...eigene].sort((a,b)=>(b.likes||0)-(a.likes||0)).map(songEintrag('likes')), DIA_1, stufenHinweis, 'herz'));
-  g.appendChild(balken('Meiste Plays', [...eigene].sort((a,b)=>(b.plays||0)-(a.plays||0)).map(songEintrag('plays')), DIA_1, stufenHinweis, 'plays'));
+  g.appendChild(balken('Meiste Herzen', [...eigene].sort((a,b)=>(b.likes||0)-(a.likes||0)).map(songEintrag('likes')), DIA_1, stufenHinweis, 'herz'));
+  g.appendChild(balken('Meiste Abrufe', [...eigene].sort((a,b)=>(b.plays||0)-(a.plays||0)).map(songEintrag('plays')), DIA_1, stufenHinweis, 'plays'));
   g.appendChild(balken('Meiste Kommentare', [...eigene].filter(s=>s.kommentare).sort((a,b)=>(b.kommentare||0)-(a.kommentare||0)).map(songEintrag('kommentare')), DIA_1, stufenHinweis, 'blase'));
   if (hatBewegung){
     const l = document.createElement('div'); l.className = 'fussnote breit'; l.style.cssText = 'grid-column:1/-1;margin-top:0';
@@ -12116,7 +12116,7 @@ function profilZahlenFuellen(){
   }
   g.appendChild(kachelzeile([
     { titel: 'Wochentage', eintraege: tage },
-    { titel: 'Tageszeit',  hinweis: 'wann Songs entstanden, Stunde in deiner Ortszeit', eintraege: stunden },
+    { titel: 'Tageszeit',  hinweis: 'wann Titel entstanden, Stunde in deiner Ortszeit', eintraege: stunden },
   ], DIA_2));
   g.appendChild(kachelzeile([
     { titel: 'Jahreszeiten', eintraege: jz },
@@ -12133,21 +12133,21 @@ function profilZahlenFuellen(){
 
   /* Wirkung statt Reichweite: Likes je 100 Plays - ab 50 Plays, sonst
      gewinnt der Song mit 3 Plays und 2 Likes. */
-  g.appendChild(balken('Likes je 100 Plays', eigene.filter(s => (s.plays||0) >= 50)
+  g.appendChild(balken('Herzen je 100 Abrufe', eigene.filter(s => (s.plays||0) >= 50)
     .map(s => ({ name: s.titel, n: 100 * (s.likes||0) / s.plays, anzeige: (100 * (s.likes||0) / s.plays).toFixed(1),
                  klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }))
-    .sort((a,b) => b.n - a.n), DIA_1, 'ab 50 Plays', 'herz'));
+    .sort((a,b) => b.n - a.n), DIA_1, 'ab 50 Abrufe', 'herz'));
 
   /* Likes je drei Minuten Songlaenge - Likes bezogen auf die Laenge,
      nicht auf die Zeit seit Entstehung (Caspar_D, 20.08.2026: "nicht Likes
      pro Woche, Likes pro 3 min Songlaenge"). Drei Minuten, weil das
      die Normlaenge ist und die Zahl dann in der Groessenordnung der
      Likes bleibt. */
-  g.appendChild(balken('Likes je 3 Minuten', eigene.filter(s => s.dauer > 0 && s.likes)
+  g.appendChild(balken('Herzen je 3 Minuten', eigene.filter(s => s.dauer > 0 && s.likes)
     .map(s => { const v = (s.likes||0) / (s.dauer / 180);
-      return { name: s.titel, n: v, anzeige: v.toFixed(1), titel: `${s.titel}: ${s.likes} Likes auf ${Math.floor(s.dauer/60)}:${String(Math.round(s.dauer%60)).padStart(2,'0')}`,
+      return { name: s.titel, n: v, anzeige: v.toFixed(1), titel: `${s.titel}: ${s.likes} Herzen auf ${Math.floor(s.dauer/60)}:${String(Math.round(s.dauer%60)).padStart(2,'0')}`,
                klick: () => { $('detail').classList.remove('auf'); spielenNachId(s.id); } }; })
-    .sort((a,b) => b.n - a.n), DIA_1, 'Songlänge', 'herz'));
+    .sort((a,b) => b.n - a.n), DIA_1, 'Titellänge', 'herz'));
 
   /* Laengste Lyrics - Woerter ohne [Regieanweisungen], gezaehlt vom
      Server (katalog.js). */
@@ -12275,7 +12275,7 @@ async function profilLaengenFuellen(){
   const bisS = Math.ceil(Math.max(...laengen) / LAENGEN_KLASSE) * LAENGEN_KLASSE;
   const nK = Math.max(1, Math.round((bisS - vonS) / LAENGEN_KLASSE));
 
-  ziel.innerHTML = '<h3>Songlängen</h3>';
+  ziel.innerHTML = '<h3>Titellängen</h3>';
   const rahmen = document.createElement('div'); rahmen.className = 'laengendrei';
   ziel.appendChild(rahmen);
 
@@ -12318,7 +12318,7 @@ async function profilLaengenFuellen(){
       const vonM = (vonS + kk * LAENGEN_KLASSE) / 60, bisM = (vonS + (kk + 1) * LAENGEN_KLASSE) / 60;
       const zeilen = lagen.map((l, i2) => feld[kk][i2]
         ? `${feld[kk][i2]} × ${l === ' ohne' ? 'ohne Angabe' : sp.name(l)}` : null).filter(Boolean);
-      sz.title = `${vonM.toFixed(1).replace('.', ',')}–${bisM.toFixed(1).replace('.', ',')} min · ${sum} ${sum === 1 ? 'Song' : 'Songs'}`
+      sz.title = `${vonM.toFixed(1).replace('.', ',')}–${bisM.toFixed(1).replace('.', ',')} min · ${sum} Titel`
         + (zeilen.length ? String.fromCharCode(10) + zeilen.join(String.fromCharCode(10)) : '');
       sz.appendChild(b); reihe.appendChild(sz);
       const achsp = document.createElement('span');
@@ -12347,7 +12347,7 @@ async function profilLaengenFuellen(){
   }
 
   const fuss = document.createElement('div'); fuss.className = 'fussnote';
-  fuss.textContent = `Dieselben ${eigene.length} Songs, dreimal aufgeteilt. Klassen zu ${LAENGEN_KLASSE} Sekunden, Achse in Minuten. `
+  fuss.textContent = `Dieselben ${eigene.length} Titel, dreimal aufgeteilt. Klassen zu ${LAENGEN_KLASSE} Sekunden, Achse in Minuten. `
     + `Kürzester ${(Math.min(...laengen) / 60).toFixed(1).replace('.', ',')} min, `
     + `längster ${(Math.max(...laengen) / 60).toFixed(1).replace('.', ',')} min, `
     + `Mittel ${(laengen.reduce((a, b) => a + b, 0) / laengen.length / 60).toFixed(1).replace('.', ',')} min. `
@@ -12685,8 +12685,8 @@ async function profilNachbarnFuellen(){
     const feld = document.createElement('div'); w.appendChild(feld);
     const fuss = document.createElement('div'); fuss.className = 'fussnote'; w.appendChild(fuss);
 
-    const GR = [['plays', 'Plays'], ['likes', 'Likes'], ['follower', 'Folger'],
-                ['songs', 'Songs'], ['proSong', 'Plays je Song']];
+    const GR = [['plays', 'Abrufe'], ['likes', 'Herzen'], ['follower', 'Beobachter'],
+                ['songs', 'Titel'], ['proSong', 'Abrufe je Titel']];
     /* Nur anbieten, wenn der Lauf auch gelaufen ist. */
     if (alleL.filter(x => x.hirsch > 0).length > 8) GR.push(['hirsch', 'Hirschfaktor']);
     let art = localStorage.getItem('nachbarnGroesse') || 'plays';
@@ -12752,8 +12752,8 @@ async function profilNachbarnFuellen(){
     kopf.innerHTML = 'Erst die Frage, dann die Rechnung: <b>Was soll „Reichweite" heißen?</b> '
       + 'Drei Antworten sind möglich, und sie fallen verschieden aus. '
       + 'Erklärt wird jede nur durch <b>Handlungen</b> — Dinge, die jemand tut, bevor etwas '
-      + 'zurückkommt. Niemals durch andere Ergebnisse: Daß wer viele Likes hat, auch viele '
-      + 'Folger hat, erklärt nichts, es ist dieselbe Sache zweimal gezählt.';
+      + 'zurückkommt. Niemals durch andere Ergebnisse: Daß wer viele Herzen hat, auch viele '
+      + 'Beobachter hat, erklärt nichts, es ist dieselbe Sache zweimal gezählt.';
     w.appendChild(kopf);
 
     const chips3 = document.createElement('div'); chips3.className = 'diachips'; w.appendChild(chips3);
@@ -12765,19 +12765,19 @@ async function profilNachbarnFuellen(){
        von der ersten Seite - deshalb gedeckelt und nur grob belastbar;
        sie stehen mit im Bild, damit man sieht, wie wenig sie tragen. */
     const HANDLUNG = [
-      { n: 'Songzahl',        f: (p) => lgz(p.songs) },
+      { n: 'Titelzahl',        f: (p) => lgz(p.songs) },
       { n: 'wem jemand folgt', f: (p) => lgz(p.folgt) },
-      { n: 'Playlists',       f: (p) => lgz(p.playlists) },
+      { n: 'Alben',           f: (p) => lgz(p.playlists) },
       { n: 'Personas',        f: (p) => lgz(p.personas) },
     ];
     const ZIELE = [
-      ['publikum', 'Publikum', 'die Folger — wer abonniert hat',
+      ['publikum', 'Publikum', 'die Beobachter — wer abonniert hat',
         (p) => lgz(p.follower), HANDLUNG],
       /* Ohne Songzahl: Sie steht im Nenner der Zielgroesse, ein Anteil
          waere dann teils die Rechnung selbst. */
-      ['wirkung', 'Wirkung je Stück', 'Plays je Song — was ein einzelner Song erreicht',
-        (p) => lgz(p.plays / Math.max(1, p.songs)), HANDLUNG.filter(g => g.n !== 'Songzahl')],
-      ['dauer', 'Beständigkeit', 'der Hirschfaktor — wieviele Songs zugleich tragen',
+      ['wirkung', 'Wirkung je Stück', 'Abrufe je Titel — was ein einzelner Titel erreicht',
+        (p) => lgz(p.plays / Math.max(1, p.songs)), HANDLUNG.filter(g => g.n !== 'Titelzahl')],
+      ['dauer', 'Beständigkeit', 'der Hirschfaktor — wieviele Titel zugleich tragen',
         (p) => (p.hirsch > 0 ? lgz(p.hirsch) : null), HANDLUNG],
     ];
     let zart = 'publikum';
@@ -12804,7 +12804,7 @@ async function profilNachbarnFuellen(){
         + `<br><span class="leise">Der Anteil ist über <b>alle</b> Reihenfolgen gemittelt, in denen `
         + `man die Größen ins Modell nehmen könnte (Verfahren nach Lindeman, Merenda und Gold; `
         + `derselbe Gedanke wie Shapleys Aufteilung). Sonst bekäme die zuerst genommene Größe den `
-        + `gemeinsamen Teil geschenkt. — <b>Anteil ist keine Ursache:</b> Wer viele Folger hat, `
+        + `gemeinsamen Teil geschenkt. — <b>Anteil ist keine Ursache:</b> Wer viele Beobachter hat, `
         + `folgt womöglich auch mehr zurück; welche Richtung wirkt, sagt eine Momentaufnahme nicht.</span>`;
     };
     for (const [k, t] of ZIELE.map(z => [z[0], z[1]])){
@@ -12959,9 +12959,9 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
        + `<circle class="nbpunkt" data-nb="${esc(p.handle)}" cx="${X(p[xf]).toFixed(1)}" cy="${Y(p[yf]).toFixed(1)}" r="4.5"`
        + ` fill="${fl}" stroke="${kn}" stroke-width="1"`
        + ` data-tipp="${esc(p.name)}${String.fromCharCode(10)}`
-       + `${p.songs} Songs · ${p.plays.toLocaleString('de-DE')} Plays · ${p.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
+       + `${p.songs} Titel · ${p.plays.toLocaleString('de-DE')} Abrufe · ${p.likes.toLocaleString('de-DE')} Herzen${String.fromCharCode(10)}`
        + `${p.follower.toLocaleString('de-DE')} Beobachter · ${p.folgt.toLocaleString('de-DE')} im Blick${String.fromCharCode(10)}`
-       + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Plays je Song`
+       + `${Math.round(p.plays / Math.max(1, p.songs)).toLocaleString('de-DE')} Abrufe je Titel`
        + `${p.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + (p.hirschUnten ? '≥ ' : '') + p.hirsch : ''}">`
        + `<title>${esc(p.name)}</title></circle></a>`;
   }
@@ -12978,9 +12978,9 @@ function streuBild(liste, xf, yf, xn, yn, diagonale){
     sv += `<circle class="nbpunkt" data-nb="${esc(ich.handle || '')}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="6.5"`
        + ` fill="${DIA_1}" stroke="#fff" stroke-width="1.5"`
        + ` data-tipp="Du${String.fromCharCode(10)}`
-       + `${ich.songs} Songs · ${ich.plays.toLocaleString('de-DE')} Plays · ${ich.likes.toLocaleString('de-DE')} Likes${String.fromCharCode(10)}`
+       + `${ich.songs} Titel · ${ich.plays.toLocaleString('de-DE')} Abrufe · ${ich.likes.toLocaleString('de-DE')} Herzen${String.fromCharCode(10)}`
        + `${ich.follower.toLocaleString('de-DE')} Beobachter · ${ich.folgt.toLocaleString('de-DE')} im Blick${String.fromCharCode(10)}`
-       + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Plays je Song`
+       + `${Math.round(ich.plays / Math.max(1, ich.songs)).toLocaleString('de-DE')} Abrufe je Titel`
        + `${ich.hirsch > 0 ? String.fromCharCode(10) + 'Hirschfaktor ' + (ich.hirschUnten ? '≥ ' : '') + ich.hirsch : ''}">`
        + `<title>Du</title></circle>`;
     /* Nach links, wenn rechts kein Platz mehr ist. */
@@ -13575,7 +13575,7 @@ function profilTonartenFuellen(){
         i.style.boxShadow = `inset 0 1px 0 ${topline(l.farbe)}`;   /* die Topline, nur oben */
         b.appendChild(i);
       }
-      sz.title = `${t} · ${e.n} ${e.n === 1 ? 'Song' : 'Songs'}`
+      sz.title = `${t} · ${e.n} Titel`
         + ` (${e.Moll} Moll, ${e.Dur} Dur, ${e.offen} unbestimmt)`;
       sz.append(v, b); reihe.appendChild(sz);
     }
@@ -13605,8 +13605,8 @@ function profilTonartenFuellen(){
        beschreiben). Die Fussnote sagt nur noch, was man dem Bild NICHT
        ansieht: wie sicher die Messung war. */
     fuss.textContent = (fen === 'sicher'
-        ? `${sicher.length} von ${mit.length} Songs: nur die, bei denen der Baß auf Sunos Eins eindeutig war — mindestens ${Math.round(TON_SICHER*100)} % der Einsen auf demselben Ton.`
-        : `Alle ${mit.length} Songs, auch die ${mit.length - sicher.length}, bei denen der Baß auf Sunos Eins zwischen mehreren Tönen wechselte; dort ist der Grundton geraten.`);
+        ? `${sicher.length} von ${mit.length} Titeln: nur die, bei denen der Baß auf Sunos Eins eindeutig war — mindestens ${Math.round(TON_SICHER*100)} % der Einsen auf demselben Ton.`
+        : `Alle ${mit.length} Titel, auch die ${mit.length - sicher.length}, bei denen der Baß auf Sunos Eins zwischen mehreren Tönen wechselte; dort ist der Grundton geraten.`);
   };
 
   for (const [f, tx] of FEN){
@@ -13670,16 +13670,16 @@ function profilAuf(){
       <div class="block">
         <h3>Auf Suno · Stand ${abruf}</h3>
         <div class="werte mithirsch">
-          <div class="wert"><b>${zahl(s.play_count__sum)}</b><span>Plays</span></div>
-          <div class="wert"><b>${zahl(s.upvote_count__sum)}</b><span>Likes</span></div>
-          <div class="wert"><b>${zahl(s.followers_count)}</b><span>Folger</span></div>
+          <div class="wert"><b>${zahl(s.play_count__sum)}</b><span>Abrufe</span></div>
+          <div class="wert"><b>${zahl(s.upvote_count__sum)}</b><span>Herzen</span></div>
+          <div class="wert"><b>${zahl(s.followers_count)}</b><span>Beobachter</span></div>
           <div class="wert"><b>${zahl(s.following_count)}</b><span>Ich folge</span></div>
           <div class="wertluecke"></div>
           <!-- Das (i) hinter der Beschriftung, nicht hinter der Zahl: Die
                Zahl soll gross und allein stehen. Der knappe title bleibt
                fuer den, der nur kurz hinzeigt; wer mehr will, klickt. -->
-          <div class="wert hirsch" title="h Songs mit mindestens h Likes"><b>${hirsch('likes')}</b><span>Hirschfaktor<br>${SYM('herz')} Likes<button type="button" class="infoknopf" onclick="hirschAuf('likes')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
-          <div class="wert hirsch" title="h Songs mit mindestens h Plays"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Plays<button type="button" class="infoknopf" onclick="hirschAuf('plays')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
+          <div class="wert hirsch" title="h Titel mit mindestens h Herzen"><b>${hirsch('likes')}</b><span>Hirschfaktor<br>${SYM('herz')} Herzen<button type="button" class="infoknopf" onclick="hirschAuf('likes')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
+          <div class="wert hirsch" title="h Titel mit mindestens h Abrufen"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Abrufe<button type="button" class="infoknopf" onclick="hirschAuf('plays')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
         </div>
         <p style="margin-top:13px">
           <!-- DER LINK WIRD ZUSAMMENGESETZT (Caspar_D, 26.08.2026: „füge
@@ -13731,7 +13731,7 @@ function profilAuf(){
       <div class="block">
         <h3>In diesem Archiv</h3>
         <div class="werte">
-          <div class="wert"><b>${zahl(d.anzahl)}</b><span>Songs</span></div>
+          <div class="wert"><b>${zahl(d.anzahl)}</b><span>Titel</span></div>
           <div class="wert"><b>${stunden}</b><span>Stunden Musik</span></div>
           <div class="wert"><b>${zahl(p.playlists)}</b><span>Playlists auf Suno</span></div>
           <div class="wert"><b>${(p.personas||[]).length}</b><span>Personas</span></div>
@@ -13748,7 +13748,7 @@ function profilAuf(){
 
       <div class="block">
         <h3>Urheber</h3>
-        <pre class="text">Die Songs in diesem Archiv wurden veröffentlicht von ${esc(p.klarname || p.display_name || '')}${
+        <pre class="text">Die Titel in diesem Archiv wurden veröffentlicht von ${esc(p.klarname || p.display_name || '')}${
   p.display_name && p.klarname ? ' (als ' + esc(p.display_name) + ')' : ''}.${
   /* NICHT "alle stammen von" - bei Gemeinschaftsstuecken stimmt das
      nicht (rooff/TrYa, 24.08.2026: "Das passt natuerlich nicht fuer
@@ -15092,7 +15092,7 @@ function karaokeTakt(n){
 const PMODI = {
   karaoke:  { name: 'Karaoke',  fehlt: 'Karaoke – keine Zeitmarken' },
   lyrics:   { name: 'Lyrics',   fehlt: 'Lyrics – kein Text hinterlegt' },
-  analyzer: { name: 'Analyzer', fehlt: 'Analyzer – nicht im Archiv' },
+  analyzer: { name: 'Titel-Analyse', fehlt: 'Titel-Analyse – nicht im Archiv' },
 };
 
 function pmodiAufbauen(){
@@ -15112,7 +15112,7 @@ function pmodiAufbauen(){
   // also bei fremden Songs ohne Text. Und dann auch zugeklappt.
   const auf = $('pmodiAuf');
   auf.disabled = !Object.values(geht).some(Boolean);
-  auf.title    = auf.disabled ? 'Bühne – für diesen Song kein Modus' : 'Bühne';
+  auf.title    = auf.disabled ? 'Bühne – für diesen Titel kein Modus' : 'Bühne';
   if (auf.disabled) $('pmodi').classList.remove('auf');
 }
 
@@ -15323,7 +15323,7 @@ function capMarke(s){
      das heisst (23.08.2026). 'Text' meint Sunos Caption, 'Notiz' die eigene. */
   const was = n ? 'Notiz' : (s.beschriftung ? 'Text' : '+');
   const tipp = n ? 'Deine Notiz — und Sunos Beschreibung, falls vorhanden'
-    : s.beschriftung ? 'Sunos Beschreibung des Songs (Caption) — klicken zum Lesen, eigene Notiz möglich'
+    : s.beschriftung ? 'Sunos Beschreibung des Titels (Caption) — klicken zum Lesen, eigene Notiz möglich'
     : 'Eigene Notiz anlegen — bleibt lokal, nur für dich';
   return `<span class="capmarke${n || s.beschriftung ? '' : ' ohne'}" data-cap="${s.id}"
     title="${tipp}">${was}</span>`;
@@ -15336,7 +15336,7 @@ function capAuf(id, x, y){
   c.innerHTML = `<h4>${esc(s.titel)}</h4>`
     + (s.beschriftung ? `<div class="captext">${esc(s.beschriftung)}</div>` : '')
     + `<h4 style="margin-top:${s.beschriftung ? 12 : 0}px">Meine Notiz <small style="text-transform:none;letter-spacing:0">— bleibt lokal</small></h4>`
-    + `<textarea id="capnotiz" placeholder="Was du dir zu diesem Song merken willst …">${esc(n ? n.text : '')}</textarea>`
+    + `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
     + `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`
     /* Der Instrumental-Haken sitzt bei der Notiz, weil beides dasselbe
        ist: Caspar_Ds Urteil über den Song, nicht Sunos Angabe. */
@@ -15351,7 +15351,7 @@ function capAuf(id, x, y){
        ohnehin schon auf jeder Kachel (Caspar_D, 26.08.2026: "wir haben
        schon ein abzeichen, um text hinzuzufügen, dort könnte man in
        diesem context auch einen videoupload einbauen"). */
-    + `<h4 style="margin-top:12px">Mein Artwork <small style="text-transform:none;letter-spacing:0">`
+    + `<h4 style="margin-top:12px">Meine Illustrationen <small style="text-transform:none;letter-spacing:0">`
     +   `— wird Sunos vorgezogen</small></h4>`
     /* ZWEI GETRENNTE PLAETZE (Caspar_D, 26.08.2026: "sieh einfach vor,
        ein neues cover-art und ein neues video artwork einzufügen, die
@@ -15362,7 +15362,7 @@ function capAuf(id, x, y){
     + `<div class="capartpaar">`
     +   `<div><div class="capartname">Titelbild</div>`
     +     `<div class="capart" id="capartbild" data-art="bild"></div></div>`
-    +   `<div><div class="capartname">Video</div>`
+    +   `<div><div class="capartname">Bewegtbild</div>`
     +     `<div class="capart" id="capartvideo" data-art="video"></div></div>`
     + `</div>`
     /* DIE EIGENE TONFASSUNG (Tarja über Caspar_D, 27.08.2026: "auch
@@ -15596,7 +15596,7 @@ async function reaktAuf(id, x, y, istZurueck){
   $('reakttitel').textContent = s.titel || '';
   $('reaktbild').src = '/media/' + id + '/kachel.jpg' + kachelZusatz();
   $('reaktbild').style.display = '';
-  $('reaktunter').textContent = `${s.plays||0} Plays · ${s.likes||0} Likes · ${s.kommentare||0} Kommentare`;
+  $('reaktunter').textContent = `${s.plays||0} Abrufe · ${s.likes||0} Herzen · ${s.kommentare||0} Kommentare`;
   const feld = $('reaktinhalt');
   feld.textContent = 'Lade …';
   $('reakt').classList.add('auf');
@@ -15639,7 +15639,7 @@ async function reaktAuf(id, x, y, istZurueck){
     const t0 = Date.parse(v[0].stand), t1 = Date.parse(letzt.stand) || t0 + 1;
     const xT = e => (P + (Date.parse(e.stand) - t0) / Math.max(1, t1 - t0) * (W-2*P)).toFixed(1);
     /* Dieselben Symbole wie auf der Kachel - Dreieck, Daumen, Sprechblase. */
-    const reihen = [['plays','Plays','#8b8b90','plays'],['likes','Likes','#16be5c','herz'],['kommentare','Kommentare','#f97b14','blase']];
+    const reihen = [['plays','Abrufe','#8b8b90','plays'],['likes','Herzen','#16be5c','herz'],['kommentare','Kommentare','#f97b14','blase']];
     const w = document.createElement('div'); w.className = 'rverlauf';
     const ersterMess = v.findIndex(e => !e.anker);
     for (const [k, name, farbe, sym] of reihen){
@@ -15675,7 +15675,7 @@ async function reaktAuf(id, x, y, istZurueck){
   } else leer('Noch kein Stand. Der erste entsteht beim nächsten Morgenlauf.');
 
   /* 2 · Likes, mit Namen soweit der Strom reicht. Namen anklickbar. */
-  h3('Likes');
+  h3('Herzen');
   if (d.likes && d.likes.length){
     /* Eine Zeile je Like, scrollbar; Zeit relativ, exakt im Tooltip.
        (Caspar_D, 20.08.2026: "ein scrollbares Fenster mit jedem Like eine
@@ -15715,7 +15715,7 @@ async function reaktAuf(id, x, y, istZurueck){
          Textanfang zugeordnet. Die Zahl kommt von Suno, die Namen nur
          fuer die letzten vier Wochen. */
       const namen = (k.geliktVon || []).map(g => g.name || g.von).filter(Boolean);
-      l.textContent = `${k.likes || namen.length} ${(k.likes || namen.length) === 1 ? 'Like' : 'Likes'} auf den Kommentar` +
+      l.textContent = `${k.likes || namen.length} ${(k.likes || namen.length) === 1 ? 'Herz' : 'Herzen'} auf den Kommentar` +
         (namen.length ? ' — ' + namen.join(', ') : '');
       r.appendChild(l); }
     w.append(img, r);
@@ -15774,7 +15774,7 @@ async function reaktPerson(handle, vonSong, istZurueck){
   t.innerHTML = `<div class="rpn"></div><div class="rpu"></div>`;
   t.querySelector('.rpn').textContent = p.name || handle;
   const folgt = (d.follower||[]).find(f => f.handle === handle);
-  t.querySelector('.rpu').textContent = `${p.kommentare.length} Kommentare · ${p.antworten.length} Antworten · ${p.likes.length} Likes` +
+  t.querySelector('.rpu').textContent = `${p.kommentare.length} Kommentare · ${p.antworten.length} Antworten · ${p.likes.length} Herzen` +
     (folgt ? ` · folgt dir seit ${reaktZeit(folgt.am)}` : '');
   kopf.append(img, t); feld.appendChild(kopf);
 
@@ -15793,7 +15793,7 @@ async function reaktPerson(handle, vonSong, istZurueck){
   const nachZeit = (a, b) => (b.am||'').localeCompare(a.am||'');
   if (p.kommentare.length){ h3('Kommentare'); p.kommentare.sort(nachZeit).forEach(e => spur(e, null)); }
   if (p.antworten.length){ h3('Antworten'); p.antworten.sort(nachZeit).forEach(e => spur(e, 'Antwort')); }
-  if (p.likes.length){ h3('Likes'); p.likes.sort(nachZeit).forEach(e => spur(e, 'Like')); }
+  if (p.likes.length){ h3('Herzen'); p.likes.sort(nachZeit).forEach(e => spur(e, 'Herz')); }
 }
 
 /* Der Suno-Alias im Morgen-Dialog: zeigt, wessen Sammlung das ist,
@@ -15822,7 +15822,7 @@ async function aliasZeigen(){
     let pr = {}; try { pr = await (await fetch('/api/profil-pruefen?handle=' + encodeURIComponent(h))).json(); } catch (e) {}
     if (!pr.ok){ $('aliasbefund').textContent = pr.status === 404 ? `@${h} gibt es bei Suno nicht.` : 'Suno antwortet nicht (' + (pr.status || pr.fehler || '?') + ').'; return; }
     $('aliasbefund').innerHTML = `${pr.avatar ? `<img src="${esc(pr.avatar)}" style="width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:8px">` : ''}
-      <b style="color:var(--text)">${esc(pr.name || pr.handle)}</b> · ${pr.songs ?? '?'} Songs · ${pr.follower ?? '?'} Folger
+      <b style="color:var(--text)">${esc(pr.name || pr.handle)}</b> · ${pr.songs ?? '?'} Titel · ${pr.follower ?? '?'} Beobachter
       <button class="pille an" id="aliasja" style="margin-left:10px">Das bin ich</button>`;
     $('aliasja').onclick = async () => {
       await fetch('/api/konfig', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ handle: pr.handle }) });
@@ -15970,7 +15970,7 @@ async function morgenListeBauen(){
     const q = document.createElement('div'); q.className = 'fussnote'; q.style.marginTop = '0';
     if (v.quelle === 'ernte'){
       const wann = (v.ernteVom || '').slice(11,16) || (v.ernteVom || '').slice(0,16);
-      q.append(`Grundlage: deine Lesezeichen-Ernte von ${wann} Uhr — sie kennt auch die privaten Songs. `);
+      q.append(`Grundlage: deine Lesezeichen-Ernte von ${wann} Uhr — sie kennt auch die privaten Titel. `);
       const a = document.createElement('span'); a.className = 'rwer'; a.textContent = 'Trotzdem frisch von Suno holen';
       a.onclick = () => morgenAuf(true);
       q.appendChild(a);
@@ -15984,8 +15984,8 @@ async function morgenListeBauen(){
     ueber('Neu');
     const z = document.createElement('div');
     z.id = 'morgenneu';
-    z.innerHTML = `<b>${v.neu}</b> ${v.neu === 1 ? 'neuer Song' : 'neue Songs'}` +
-      ` <span style="color:#6c6c72">— Artwork gibt es erst nach dem Laden</span>`;
+    z.innerHTML = `<b>${v.neu}</b> ${v.neu === 1 ? 'neuer Titel' : 'neue Titel'}` +
+      ` <span style="color:#6c6c72">— Titelbilder gibt es erst nach dem Laden</span>`;
     feld.appendChild(z);
   }
 
@@ -16047,8 +16047,8 @@ async function morgenListeBauen(){
     for (const z of v.zaehler.slice(0, HOECHSTENS)){
       const teile = [];
       if (z.dk) teile.push(marke(z.dk, z.dk === 1 || z.dk === -1 ? 'Kommentar' : 'Kommentare', 'mkomm'));
-      if (z.dl) teile.push(marke(z.dl, 'Likes'));
-      if (z.dp) teile.push(marke(z.dp, 'Plays'));
+      if (z.dl) teile.push(marke(z.dl, 'Herzen'));
+      if (z.dp) teile.push(marke(z.dp, 'Abrufe'));
       zeile(z.id, z.titel, null, teile);
     }
     rest(v.zaehler.length - HOECHSTENS);
@@ -16081,14 +16081,14 @@ async function morgenLzKopieren(k){
    Zugang. 'aus' = gemerkte Abwahlen (localStorage). */
 const MORGEN_KREUZE = [
   { gruppe: 'login',  schluessel: 'ernte',      pflicht: true, name: 'Lesezeichen-Ernte einweben',
-    text: 'Profil, private Songs, Follower und Zählerverlauf — wird beim Katalogbau verwoben.' },
-  { gruppe: 'public', schluessel: 'kommentare', name: 'Kommentare sichern',  text: 'Neue Kommentare und Antworten zu deinen Songs.' },
+    text: 'Profil, private Titel, Beobachter und Zählerverlauf — wird beim Katalogbau verwoben.' },
+  { gruppe: 'public', schluessel: 'kommentare', name: 'Kommentare sichern',  text: 'Neue Kommentare und Antworten zu deinen Titeln.' },
   { gruppe: 'public', schluessel: 'medien',     name: 'Medien laden',        text: 'Fehlende MP3, Cover, Videos — und WAVs, die in Suno schon erzeugt wurden. Kostet Netz und Platz.' },
   { gruppe: 'public', schluessel: 'nachbarn',   name: 'Nachbarschaft nachziehen', text: 'Öffentliche Profilzahlen und Hirschfaktor der Leute, die seit gestern dazugekommen sind — meist Sekunden. Das große Auffrischen bleibt der Knopf im Nachbarschafts-Panel.' },
   { gruppe: 'lokal',  schluessel: 'katalog',    pflicht: true, name: 'Katalog zusammenführen', text: 'Alle Ernten und Ergebnisse in den Katalog — die Grundlage für alles andere.' },
-  { gruppe: 'lokal',  schluessel: 'analyse',    name: 'Songs analysieren',   text: 'BPM, Tonart, Lautheit, Bandprofil, Histogramm, Suchindex.' },
-  { gruppe: 'lokal',  schluessel: 'whisper',    name: 'Karaoke-Zeitanker mit Whisper', text: 'Nur neue Songs mit Text, danach Lyrics-Abgleich. Etwa 3 Minuten je Song; der Mac bleibt dabei wach.' },
-  { gruppe: 'lokal',  schluessel: 'musikstil',  name: 'Musikstil und Musik-Karte', text: 'Klang-Embedding, Stil, Genre, Stimmung und Instrumente je neuem Song (KI lokal, etwa 8 Sekunden je Song); danach den Sternenhimmel neu zeichnen.' },
+  { gruppe: 'lokal',  schluessel: 'analyse',    name: 'Titel analysieren',   text: 'BPM, Tonart, Lautheit, Bandprofil, Histogramm, Suchindex.' },
+  { gruppe: 'lokal',  schluessel: 'whisper',    name: 'Karaoke-Zeitanker mit Whisper', text: 'Nur neue Titel mit Text, danach Lyrics-Abgleich. Etwa 3 Minuten je Titel; der Mac bleibt dabei wach.' },
+  { gruppe: 'lokal',  schluessel: 'musikstil',  name: 'Musikstil und Musik-Karte', text: 'Klang-Embedding, Stil, Genre, Stimmung und Instrumente je neuem Titel (KI lokal, etwa 8 Sekunden je Titel); danach den Sternenhimmel neu zeichnen.' },
   { gruppe: 'lokal',  schluessel: 'bald',       bald: true, name: 'Bald:', text: 'Archiv-Export.' },
 ];
 function morgenAuswahlLesen(){
@@ -17089,8 +17089,8 @@ function bedienungAufbauen(){
   //    ein Thumbnail. Grau statt versteckt, nach derselben Regel wie
   //    Karaoke ohne Zeitmarken.
   const imAnalyzer = bText === 'analyzer';
-  const bild = [['artwork','Artwork', imAnalyzer],
-                ['video','Video-Artwork', imAnalyzer],
+  const bild = [['artwork','Titelbild', imAnalyzer],
+                ['video','Bewegtbild', imAnalyzer],
                 ['vis','Visualizer', imAnalyzer]];
   bild.jetzt = bBild;
 
@@ -17108,7 +17108,7 @@ function bedienungAufbauen(){
                    kennt den Text, Whisper hat nur gehoert (bin/whisper.js). */
                 ['karaoke', karaokeMoeglich ? (bSong.worteQuelle === 'whisper' ? 'Karaoke (Whisper)' : 'Karaoke') : 'Karaoke (keine Zeitmarken)', !karaokeMoeglich],
                 ['lyrics', bSong && bSong.lyricsQuelle === 'whisper' ? 'Lyrics (Whisper gehört)' : 'Lyrics'],
-                ['analyzer', analyseMoeglich ? 'Analyzer' : 'Analyzer (nicht im Archiv)', !analyseMoeglich]];
+                ['analyzer', analyseMoeglich ? 'Titel-Analyse' : 'Titel-Analyse (nicht im Archiv)', !analyseMoeglich]];
   text.jetzt = bText;
 
   // 3. Tonqualität
@@ -17149,7 +17149,7 @@ function bedienungAufbauen(){
          Oeffnen springt das Feld auf die echte Wahl zurueck. */
       marken.push(['vergleich', 'Vergleich…']);
       marken.jetzt = bSpurJetzt();
-      markenWahl = wahl('bmarkenWahl', 'markenWaehlen', marken, 'Woher die Wort-Zeitmarken stammen — die Wahl gilt auch für die nächsten Songs');
+      markenWahl = wahl('bmarkenWahl', 'markenWaehlen', marken, 'Woher die Wort-Zeitmarken stammen — die Wahl gilt auch für die nächsten Titel');
     }
   }
 
@@ -17827,18 +17827,18 @@ async function messStartZeigen(){
   const stoerer = [];
   if (typeof songEqAn !== 'undefined' && songEqAn && typeof eqJeSong !== 'undefined' && eqJeSong[aktuellId]){
     const e = eqJeSong[aktuellId];
-    if (e.gains && e.gains.some(g => g)) stoerer.push('Song-EQ');
-    if (e.kerbe) stoerer.push('Song-Kerbe');
+    if (e.gains && e.gains.some(g => g)) stoerer.push('Titel-EQ');
+    if (e.kerbe) stoerer.push('Titel-Kerbe');
   }
-  if (typeof eqGains !== 'undefined' && eqGains.some(g => g)) { if (!stoerer.includes('Song-EQ')) stoerer.push('EQ-Regler'); }
-  if (typeof eqKerbe !== 'undefined' && eqKerbe && !stoerer.includes('Song-Kerbe')) stoerer.push('Kerbe');
+  if (typeof eqGains !== 'undefined' && eqGains.some(g => g)) { if (!stoerer.includes('Titel-EQ')) stoerer.push('EQ-Regler'); }
+  if (typeof eqKerbe !== 'undefined' && eqKerbe && !stoerer.includes('Titel-Kerbe')) stoerer.push('Kerbe');
   if (typeof megaBassAn !== 'undefined' && megaBassAn) stoerer.push('MEGA BASS');
   if (stoerer.length)
     z.push('<p class="fwarn">⚠ Aktiv und frequenzverbiegend: <b>' + stoerer.join(', ') + '</b>. '
       + 'Der geführte Neutral-Durchgang umgeht das Tonstudio ohnehin; für alles Weitere gilt: '
       + 'erst neutral stellen. <button class="knopf messknopfklein" onclick="messNeutralStellen()">Neutral stellen</button></p>');
   else
-    z.push('<p>✓ Kette neutral — kein EQ, keine Kerbe, kein MEGA BASS verbiegt den Frequenzgang.</p>');
+    z.push('<p>✓ Kette neutral — kein EQ, kein Kerbfilter, kein MEGA BASS verbiegt den Frequenzgang.</p>');
 
   try {
     const a = await ausgabeGeraetInfo();
@@ -19746,11 +19746,11 @@ async function dokKopfZeigen(){
   try {
     if (typeof songEqAn !== 'undefined' && songEqAn && eqJeSong[aktuellId]){
       const e = eqJeSong[aktuellId];
-      if (e.gains && e.gains.some(g => g)) stoerer.push('Song-EQ');
-      if (e.kerbe) stoerer.push('Song-Kerbe');
+      if (e.gains && e.gains.some(g => g)) stoerer.push('Titel-EQ');
+      if (e.kerbe) stoerer.push('Titel-Kerbe');
     }
-    if (eqGains.some(g => g) && !stoerer.includes('Song-EQ')) stoerer.push('EQ-Regler');
-    if (eqKerbe && !stoerer.includes('Song-Kerbe')) stoerer.push('Kerbe');
+    if (eqGains.some(g => g) && !stoerer.includes('Titel-EQ')) stoerer.push('EQ-Regler');
+    if (eqKerbe && !stoerer.includes('Titel-Kerbe')) stoerer.push('Kerbe');
     if (typeof megaBassAn !== 'undefined' && megaBassAn) stoerer.push('MEGA BASS');
   } catch (e) {}
 
@@ -19787,7 +19787,7 @@ async function dokKopfZeigen(){
   } else z.push('<p>· Systemlautstärke nicht abfragbar — bitte selbst voll aufdrehen.</p>');
   z.push(stoerer.length
     ? '<p class="dokwarn">⚠ Frequenzverbiegend aktiv: <b>' + stoerer.join(', ') + '</b> — die Messläufe umgehen das Tonstudio ohnehin; fürs Musikhören danach gilt die Einstellung weiter.</p>'
-    : '<p>● Wiedergabekette neutral — kein EQ, keine Kerbe verbiegt den Frequenzgang.</p>');
+    : '<p>● Wiedergabekette neutral — kein EQ, kein Kerbfilter verbiegt den Frequenzgang.</p>');
   z.push(dok.mikroFrei
     ? '<p>● Mikrofonzugriff gewährt.</p>'
     : '<p>· Mikrofonzugriff noch nicht erteilt — ohne ihn bleiben die Gerätenamen leer und keine Messung kann hören.'
@@ -20208,11 +20208,11 @@ function dokAutoDann(status, notiz){
   setTimeout(dokWeiter, 600);
 }
 /* ---- Der Zwischenspeicher --------------------------------------------
-   Jeder abgeschlossene Schritt schreibt den gewachsenen Gang als EINE
-   Datei nach library/messungen/ (PUT /api/messungen/gang). Die langen
-   FFTs werden dafuer auf ein 1024er-Logarithmusraster eingedampft
-   (Maximum je Zelle - Nadeln ueberleben), sonst wuerde die Datei
-   riesig. */
+   Jeder abgeschlossene Schritt schreibt den gewachsenen Gang per
+   dokSpeichern() (PUT /api/messungen/durchlauf) in
+   library/messungen/tontestdurchlaeufe.json. Die langen FFTs werden
+   dafuer auf ein 1024er-Logarithmusraster eingedampft (Maximum je
+   Zelle - Nadeln ueberleben), sonst wuerde die Datei riesig. */
 function dokFeinDampfen(lang){
   if (!lang || !lang.db) return null;
   const RASTER = 1024, F0 = 20, F1 = 20000, LF0 = Math.log(F0), LF1 = Math.log(F1);
@@ -24236,7 +24236,7 @@ function audioketteErklaeren(){
       +   '<g class="k">'
       +   '<rect x="150" y="164" width="156" height="26" rx="4"/><text x="228" y="181">Equalizer</text>'
       +   '<rect x="150" y="194" width="156" height="26" rx="4"/><text x="228" y="211">Abhör-Solo</text>'
-      +   '<rect x="150" y="224" width="156" height="26" rx="4"/><text x="228" y="241">Störfrequenz-Kerbe</text>'
+      +   '<rect x="150" y="224" width="156" height="26" rx="4"/><text x="228" y="241">Kerbfilter</text>'
       +   '<rect x="150" y="254" width="156" height="26" rx="4"/><text x="228" y="271">Kompressor</text>'
       +   '</g>'
       +   '<path d="M228 190v4M228 220v4M228 250v4" stroke="#4a4a50" stroke-width="1.2"/>'
@@ -24268,7 +24268,7 @@ function audioketteErklaeren(){
       + '<h4>Alles dazwischen ist das Tonstudio</h4>'
       + '<div class="regel">Was zwischen ① und ② steht, ist genau das, was im '
       + '<b>Tonstudio</b> eingestellt wird: der <b>Equalizer</b> samt Glockenstuhl, das '
-      + '<b>Abhör-Solo</b>, die <b>Störfrequenz-Kerbe</b>, der <b>Kompressor</b> und im '
+      + '<b>Abhör-Solo</b>, der <b>Kerbfilter</b>, der <b>Kompressor</b> und im '
       + '<b>Ghettoblaster</b> Stereobreite, Hall und Echo.</div>'
       + '<p>Es öffnet der Knopf <b>EQ</b> — er steht in der Abspielleiste unten und in der '
       + 'Leiste der Bühne. Das Fenster darf dabei offen stehen bleiben: Hinter ihm läßt sich '
@@ -24342,10 +24342,10 @@ function nachbarschaftInfoAuf(){
       + `<td><b>${(D / Math.max(1, M)).toFixed(2).replace('.', ',')}</b></td>`
       + `<td>${Math.round(anteil)} %</td></tr>`;
   };
-  const tab = zeile('Plays', mit.map(p => p.plays))
-            + zeile('Folger', mit.map(p => p.follower))
-            + zeile('Likes', mit.map(p => p.likes))
-            + zeile('Songs', mit.map(p => p.songs))
+  const tab = zeile('Abrufe', mit.map(p => p.plays))
+            + zeile('Beobachter', mit.map(p => p.follower))
+            + zeile('Herzen', mit.map(p => p.likes))
+            + zeile('Titel', mit.map(p => p.songs))
             + (Object.keys(hL).length > 8 ? zeile('Hirschfaktor', Object.values(hL).map(p => p.h)) : '');
   /* Untergrenzen ziehen Mitte und Mittel nach unten. Solange es keine
      gibt, steht hier nichts - aber wenn welche dazukommen, darf der
@@ -24364,7 +24364,7 @@ function nachbarschaftInfoAuf(){
       sind in deiner Liste also hundertfach überrepräsentiert.</p>
     <p class="leise">Scott Feld hat es 1991 beschrieben; Eom und Jo haben 2014 gezeigt, daß es
       nicht nur für die Zahl der Verbindungen gilt, sondern für fast jede damit
-      zusammenhängende Größe — bei Wissenschaftlern für Zitate, hier für Plays und Likes.</p>
+      zusammenhängende Größe — bei Wissenschaftlern für Zitate, hier für Abrufe und Herzen.</p>
 
     <h4>In deinen Daten messbar</h4>
     <p>Je weiter das Mittel über dem Median liegt, desto stärker beherrschen wenige Große die
@@ -24374,8 +24374,8 @@ function nachbarschaftInfoAuf(){
 
     <h4>Warum der Hirschfaktor die ehrlichste Zahl ist</h4>
     <p>Er ist mit Abstand die am wenigsten schiefe Größe. Genau das ist seine Stärke: Ein
-      einzelner Song, der einschlägt, hebt ihn nicht — dafür bräuchte es viele Songs zugleich.
-      Damit ist er auch am wenigsten von diesem Effekt betroffen. Bei den Plays wäre dein Rang
+      einzelner Titel, der einschlägt, hebt ihn nicht — dafür bräuchte es viele Titel zugleich.
+      Damit ist er auch am wenigsten von diesem Effekt betroffen. Bei den Abrufen wäre dein Rang
       stark verzerrt, beim Hirschfaktor am wenigsten.</p>
 
     <h4>Was das für die Bilder heißt</h4>
@@ -24394,7 +24394,7 @@ function nachbarschaftInfoAuf(){
 
 function hirschAuf(art){
   const eigene = alle.filter(s => !s.fremd);
-  const wort = art === 'likes' ? 'Likes' : art === 'plays' ? 'Plays' : 'Kommentare';
+  const wort = art === 'likes' ? 'Herzen' : art === 'plays' ? 'Abrufe' : 'Kommentare';
   const werte = eigene.map(s => s[art] || 0).sort((a, b) => b - a);
   let h = 0; while (h < werte.length && werte[h] >= h + 1) h++;
 
@@ -24414,22 +24414,22 @@ function hirschAuf(art){
   document.getElementById('hirschinhalt').innerHTML = `
     <h4>Was er ist</h4>
     <div class="regel">Der Hirschfaktor ist die größte Zahl <b>h</b>, für die gilt:
-      <b>h</b> Songs haben jeweils mindestens <b>h</b> ${wort}.</div>
-    <p>Mehr ist es nicht. Man sortiert alle Songs nach ${wort} absteigend und geht
+      <b>h</b> Titel haben jeweils mindestens <b>h</b> ${wort}.</div>
+    <p>Mehr ist es nicht. Man sortiert alle Titel nach ${wort} absteigend und geht
       die Liste hinunter, bis die Platznummer die Zahl überholt. Der letzte Platz
       davor ist der Wert.</p>
 
     <h4>An deinem Bestand</h4>
-    <p class="leise">${zahl(eigene.length)} Songs, ${zahl(summe)} ${wort} zusammen,
-      der beste Song hat ${zahl(werte[0] || 0)}. Die Plätze ${von} bis ${bis}:</p>
+    <p class="leise">${zahl(eigene.length)} Titel, ${zahl(summe)} ${wort} zusammen,
+      der beste Titel hat ${zahl(werte[0] || 0)}. Die Plätze ${von} bis ${bis}:</p>
     <table><tr><th>Platz</th>${kopf}</tr><tr><td>${wort}</td>${zeile}</tr></table>
     <p>Auf Platz ${h} stehen noch ${zahl(werte[h - 1] || 0)} ${wort} — es gibt also
-      ${h} Songs mit mindestens ${h}. Weiter unten bricht die Bedingung.
+      ${h} Titel mit mindestens ${h}. Weiter unten bricht die Bedingung.
       <b>Hirschfaktor ${h}.</b></p>
 
     <h4>Als Bild</h4>
     ${hirschBild(werte, h, wort)}
-    <p class="leise">Die Songs stehen nach ${wort} sortiert nebeneinander, der beste links.
+    <p class="leise">Die Titel stehen nach ${wort} sortiert nebeneinander, der beste links.
       Die Diagonale ist die Linie „so viele ${wort} wie Platznummer". Wo die Säulen unter
       sie fallen, ist Schluss — das eingefasste Quadrat ist ${h} × ${h}, und seine
       Kantenlänge ist der Hirschfaktor. Ein einzelner sehr hoher Balken macht das Quadrat
@@ -24437,28 +24437,28 @@ function hirschAuf(art){
 
     <h4>Wofür er gut ist</h4>
     <p>Die beiden naheliegenden Kennzahlen taugen beide nicht.</p>
-    <p><b>Die Summe</b> belohnt Masse. Wer dreihundert Songs mit je fünf ${wort} hat,
+    <p><b>Die Summe</b> belohnt Masse. Wer dreihundert Titel mit je fünf ${wort} hat,
       steht besser da als jemand mit zwanzig zu je fünfzig — obwohl das Zweite die
       größere Leistung ist.</p>
-    <p><b>Der Bestwert</b> belohnt Glück. Ein Song, der einschlägt, sagt nichts darüber,
+    <p><b>Der Bestwert</b> belohnt Glück. Ein Titel, der einschlägt, sagt nichts darüber,
       ob der nächste auch trägt. Ein Treffer unter dreihundert Fehlschlägen sieht aus
       wie Erfolg.</p>
     <p>Der Hirschfaktor verlangt <b>beides zugleich: Breite und Tiefe.</b> Er steigt nur,
-      wenn viele Songs gleichzeitig überzeugen. Das macht ihn unempfindlich gegen
-      Ausreißer in beide Richtungen: Ein Song mit tausend ${wort} hebt die ${h} nicht um
+      wenn viele Titel gleichzeitig überzeugen. Das macht ihn unempfindlich gegen
+      Ausreißer in beide Richtungen: Ein Titel mit tausend ${wort} hebt die ${h} nicht um
       einen einzigen Punkt — er ist nur einer von ${h}. Umgekehrt zieht auch kein
       Reinfall den Wert nach unten, denn was unterhalb von Platz ${h} steht, zählt gar
-      nicht mit. Um auf ${h + 1} zu kommen, braucht es ${h + 1} Songs mit je
+      nicht mit. Um auf ${h + 1} zu kommen, braucht es ${h + 1} Titel mit je
       ${h + 1} ${wort}.</p>
 
     <h4>Was er nicht kann</h4>
-    <p>Er ist <b>nach oben durch die Anzahl der Werke begrenzt.</b> Wer zehn Songs hat,
+    <p>Er ist <b>nach oben durch die Anzahl der Werke begrenzt.</b> Wer zehn Titel hat,
       kommt höchstens auf zehn, selbst bei tausend ${wort} pro Stück. Er bevorzugt damit,
       wer lange dabei ist — in der Wissenschaft ist das die bekannteste Kritik an ihm.</p>
     <p>Er <b>wächst träge.</b> Das ist gewollt, macht ihn aber als Fortschrittsanzeige
       unbrauchbar; dafür stehen die Bewegungszahlen weiter unten auf dieser Seite.</p>
-    <p>Und er ist <b>nur innerhalb einer Größe vergleichbar.</b> Der Wert für Plays und
-      der für Likes sagen nichts über ein Verhältnis aus — Plays sind schlicht viel
+    <p>Und er ist <b>nur innerhalb einer Größe vergleichbar.</b> Der Wert für Abrufe und
+      der für Herzen sagen nichts über ein Verhältnis aus — Abrufe sind schlicht viel
       häufiger. Auch zwischen zwei Personen vergleicht man ihn besser nur bei ähnlich
       großem Katalog.</p>
 

@@ -1,0 +1,116 @@
+[
+  {
+    "schluessel": "gesundheit",
+    "name": "Verbindungen prüfen — antworten die Suno-Adressen?",
+    "was": "Abfrage jeder Suno-Adresse, von der der Morgenlauf Daten holt: die Suno-Seite, dein Autorenprofil, die Kommentare zu einem Titel und die Speicher, aus denen Titelbilder und Bewegtbilder kommen. Jede Adresse bekommt einen grünen Haken oder ein rotes Kreuz; was seit dem letzten Lauf anders antwortet, wird dazu vermerkt. Die Audio-Adressen sperrt Suno seit dem 03.09.2026, sie werden nur beobachtet, damit es auffällt, sobald sie wieder antworten. Der Befund wird gesichert und beim nächsten Lauf zum Vergleich herangezogen.",
+    "kurzergebnis_muster": "✓ Suno-Seite\n✓ dein Autorenprofil\n✓ Kommentare zu einem Titel\n✓ Speicher für Titelbilder\n✗ Speicher für Bewegtbilder — <Antwort in Klartext>\n· Audio-Adresse — gesperrt seit 03.09.2026, wird beobachtet\n<n> von <m> Adressen antworten wie erwartet"
+  },
+  {
+    "schluessel": "katalog",
+    "name": "KlangTresor-Katalog neu bauen — alle Datentransfers zusammenführen, Verlauf von Abrufen, Herzen und Kommentaren fortschreiben",
+    "was": "Liest alle Transfers aus dem Rohordner und führt sie mit dem bestehenden Katalog zusammen: neue Titel kommen dazu, Daten für bekannte Titel werden ggf. ergänzt, je Titel wird der Verlauf von Abrufen, Herzen und Kommentaren fortgeschrieben, Titel fremder Autoren werden nicht berücksichtigt. Läuft auch ohne neuen Datensatz über den ganzen Bestand und pflegt dann nur nach (Wort-Zeitmarken von Whisper, Alben). Vor dem Schreiben wird der bisherige Katalog gesichert; die verarbeiteten Datensätze werden danach aus dem Rohordner entfernt, ein unbrauchbarer Alben-Datensatz bleibt gekennzeichnet liegen.",
+    "kurzergebnis_muster": "→ <n> Datensätze berücksichtigt: <n> neue Titel, <n> bekannte Titel ergänzt, jetzt <n> Titel im Katalog. | → Kein neuer Datensatz, Katalog mit <n> Titeln nachgepflegt."
+  },
+  {
+    "schluessel": "kommentare",
+    "name": "Neue Kommentare von Suno sichern",
+    "was": "Holt von Suno die Kommentare zu deinen Titeln, ohne Anmeldung. Normalerweise nur für die Titel, deren Kommentarzähler höher steht als im gesicherten Datenbestand; alle drei Tage einmal für alle Titel mit Kommentaren, damit auch geänderte Texte und Herzen auf Kommentare mitkommen. Zu neuen Kommentaren fragt es zusätzlich nach Antworten und hängt jeden neuen Stand an den gesicherten Datenbestand an; gelöschte Kommentare bleiben dort stehen.",
+    "kurzergebnis_muster": "→ <n> Kommentare gelesen, <n> neu gesichert, <n> Antworten neu gesichert. | → Keine neuen Kommentare seit dem letzten Lauf."
+  },
+  {
+    "schluessel": "medien",
+    "name": "Heruntergeladene Audiodateien übernehmen",
+    "was": "Durchsucht deinen Download-Ordner nach Audiodateien, die du bei Suno über „Unlock & Download“ geholt hast; wer seine Downloads woanders ablegt, nennt diesen Ordner einmal von Hand mit node bin/uebernehmen.js --ordner <Ordner> --tun, danach kennt KlangTresor den Ort und durchsucht ihn bei jedem Lauf mit. Erkennt den Titel an der Suno-Signatur im Dateikopf, nicht am Dateinamen, und legt MP3 und WAV bei ihrem Titel im Archiv ab; jede Kopie wird auf Größe und Signatur nachgeprüft. Was schon im Archiv liegt, keine Signatur trägt, zu keinem Titel im Katalog gehört oder ein anderes Format hat (M4A), bleibt liegen; der Grund steht im Protokoll. Fehlt zu Titeln im Katalog die Audiodatei und in den Ordnern liegt nichts, steht im Protokoll, wo gesucht wurde.",
+    "kurzergebnis_muster": "→ <n> Audiodateien übernommen (<Größe>), <n> liegen geblieben: <Grund>. | → Nichts zu übernehmen, gesucht in <Ordner>."
+  },
+  {
+    "schluessel": "medien",
+    "name": "Medien laden (MP3, Titelbilder, Bewegtbilder)",
+    "was": "Holt für alle Titel im Katalog fehlende Audio- und Visual-Daten: Titelbild, das Bewegtbild, dazu dein Profilbild und die Albumbilder. MP3 steht mit auf der Liste, kommt aber seit dem 03.09.2026 nicht mehr, weil Suno die Adressen sperrt. Danach entsteht für jeden Titel ohne Kachel das Bild für die Übersicht mit den Werken, und aus jedem Titelbild, das noch keine Farben hat, werden die Farben für die Nutzeroberfläche von KlangTresor gezogen und in den Katalog geschrieben.",
+    "kurzergebnis_muster": "→ <n> Titelbilder, <n> Bewegtbilder, <n> Albumbilder geladen; <n> Kacheln neu, Farben für <n> Titel gezogen. MP3: gesperrt. | → Alle Titel haben schon Titelbild und Bewegtbild, nichts zu tun. MP3: gesperrt."
+  },
+  {
+    "schluessel": "analyse",
+    "name": "Klanganalyse für neue Titel rechnen",
+    "was": "Ermittelt für jeden Titel ohne Messdaten aus der WAV (ersatzweise der MP3) Wellenform, Lautheit und Stereobreite sowie die Spektrogramm-Bilder; mehrere Titel werden gleichzeitig analysiert, ein Rechenkern bleibt für die Oberfläche frei. Was vollständig daliegt, wird übersprungen; geschrieben wird erst, wenn alle Teile eines Titels fertig sind, damit ein Abbruch nichts Halbes hinterlässt. Die Messdaten belegen rund 12 MB je Titel.",
+    "kurzergebnis_muster": "→ <n> Titel analysiert, <n> übersprungen (ohne Audio). | → Alle <n> Titel haben schon Messdaten, nichts zu tun."
+  },
+  {
+    "schluessel": "analyse",
+    "name": "Messwerte für Sortieren und Filtern zusammenfassen",
+    "was": "Fasst aus den Messdaten aller Titel die Kennwerte zusammen — Lautheit, Dynamik, Spitzenpegel, Stereobreite und Dauer, dazu die Tonart aus der eigenen Tonartbestimmung — jedes Mal für den ganzen Bestand neu. Damit lässt sich die Übersicht mit den Werken nach diesen Werten sortieren und filtern, ohne dass die großen Messdateien gelesen werden müssen.",
+    "kurzergebnis_muster": "→ Kennwerte für <n> Titel zusammengefasst<, <n> Titel ohne lesbare Messdaten>."
+  },
+  {
+    "schluessel": "analyse",
+    "name": "Klangprofil und Lautheitsverteilung nachziehen",
+    "was": "Ermittelt für jeden Titel, der noch kein Klangprofil hat, aus den Messdaten, wie viel Energie in acht Frequenzbändern steckt und wie laut welcher Anteil des Titels ist. Dazu das Mittel über alle Titel, die Klangfarbe der Sammlung. Das Tonstudio nimmt beides für den Equalizer und die Startwerte.",
+    "kurzergebnis_muster": "→ Klangprofil für <n> neue Titel gerechnet, <n> Titel insgesamt. | → Alle <n> Titel haben schon ein Klangprofil, nichts zu tun."
+  },
+  {
+    "schluessel": "analyse",
+    "name": "Störfrequenzen suchen — stehende Töne für den Kerbfilter im Tonstudio",
+    "was": "Durchsucht jeden Titel, der noch nicht geprüft wurde und dessen Audio da ist, nach stehenden Tönen — Brummen, Pfeifen, eine Resonanz, die über den ganzen Titel hinweg steht. Was gefunden wird, steht danach im Tonstudio als Vorschlag für den Kerbfilter; gefiltert wird nichts von selbst. Das Ergebnis je Titel wird gesichert, auch wenn er sauber ist.",
+    "kurzergebnis_muster": "→ <n> Titel geprüft, <n> mit stehenden Tönen. | → Alle Titel mit Audio sind schon geprüft, nichts zu tun."
+  },
+  {
+    "schluessel": "whisper",
+    "name": "Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel",
+    "was": "Ermittelt für jeden eigenen Titel mit Liedtext, den Whisper noch nicht gerechnet hat, aus dem Gesang die Zeit jedes Wortes, damit die Bühne den Text mitlaufen lassen kann — auch für Titel, die Sunos eigene Zeitmarken tragen, weil Suno sich dabei verhört und Whisper zuverlässiger zuordnet. Der Liedtext aus dem Katalog hilft beim Hören. Naturklänge der Fokus-Wanderung, Suiten-Stücke I bis IV und Titel ohne Text bleiben außen vor. Wo Suno Zeitmarken geliefert hat, bleiben sie erhalten; die Whisper-Zeitmarken stehen daneben, in der Bühne wählbar. Jeder fertige Titel wird sofort gesichert; in die Bühne gelangen die Zeitmarken beim nächsten Katalogbau. Das Rechnen dauert je Titel etwa das Anderthalbfache seiner Spieldauer.",
+    "kurzergebnis_muster": "→ <n> Titel abgehört, <n> min gerechnet; die Zeitmarken kommen beim nächsten Katalogbau in die Bühne. | → Alle Titel mit Text sind schon gehört, nichts zu tun."
+  },
+  {
+    "schluessel": "whisper",
+    "name": "Bereinigte Lyrik — Liedtext gegen die Whisper-Marken abgleichen",
+    "was": "Gleicht für jeden Titel mit Liedtext und Whisper-Marken den geschriebenen Text gegen das Gehörte ab (Needleman-Wunsch, ein Buchstabe Abstand erlaubt) und behält nur, was gesungen wird: Regieanweisungen in eckigen Klammern, Vorreden, Widmungen und zweite Sprachfassungen fallen weg, akustische Missverständnisse von Whisper werden aus dem Original berichtigt. Titel, bei denen weniger als 60 % des Textes gedeckt sind — japanische Schrift gegen Umschrift, Plattdeutsch, fremde Stimmen —, werden zurückgestellt und benannt. Rechnet immer den ganzen Bestand neu, in zwei Sekunden.",
+    "kurzergebnis_muster": "→ <n> Titel bereinigt, <n> zurückgestellt (unter 60 % Deckung). | → Nichts zu bereinigen, kein neuer Whisper-Lauf."
+  },
+  {
+    "schluessel": "musikstil",
+    "name": "Musikstil vermessen — Klang, Genre, Stimmung",
+    "was": "Ermittelt für jeden Titel ohne Eintrag, dessen Audio da ist, wie er klingt: die fünf wahrscheinlichsten Stile, Genres, Stimmungen und Instrumente sowie einen Klang-Fingerabdruck, aus dem der Klangraum seine Anordnung rechnet. Das dauert etwa 10 bis 20 Sekunden je Titel; die Modelle dafür liegen nach dem einmaligen Holen im Archiv, KlangTresor fragt dafür keinen fremden Dienst.",
+    "kurzergebnis_muster": "→ <n> Titel neu vermessen (<n> min), <n> insgesamt<, <n> schief>. | → Alle Titel sind schon vermessen, nichts zu tun. | → Modelldateien fehlen im Archiv, Schritt übersprungen."
+  },
+  {
+    "schluessel": "musikstil",
+    "name": "Klangraum neu zeichnen",
+    "was": "Zeichnet den Klangraum jedes Mal ganz neu, aus den Klang-Fingerabdrücken aller vermessenen Titel: Gruppen ähnlich klingender Titel mit Namen in Klartext, die Lage jedes Titels auf der Karte und seine acht nächsten Nachbarn. Dazu je Gruppe die Messwerte im Mittel und das Klangprofil für die Startwerte im Tonstudio.",
+    "kurzergebnis_muster": "→ Klangraum mit <n> Titeln in <n> Gruppen neu gezeichnet."
+  },
+  {
+    "schluessel": "geschichten",
+    "name": "Geschichten-Raum: Textabdruck für neue Titel",
+    "was": "Liest den Text jedes Titels, streift Regieangaben in eckigen Klammern und angehängte Übersetzungen ab und ermittelt aus dem Gesungenen einen Textabdruck, an dem sich Nähe im Geschichten-Raum bemisst. Wo für einen Titel zehn verdichtete Stichwörter vorliegen, nimmt er diese statt des ganzen Textes. Gerechnet wird nur für neue oder veränderte Texte, Titel ohne Text bleiben außen vor; die bisherigen Abdrücke bleiben erhalten.",
+    "kurzergebnis_muster": "→ Textabdruck für <n> neue oder veränderte Titel gerechnet, <n> Titel mit Text insgesamt. | → Alle Titel mit Text haben schon einen Textabdruck, nichts zu tun."
+  },
+  {
+    "schluessel": "geschichten",
+    "name": "Geschichten-Raum: Wortschatz für die Namen der Gegenden",
+    "was": "Sammelt die verdichteten Stichwörter aller Titel als Wortschatz des Bestands und ermittelt für jedes Wort, das noch fehlt, denselben Textabdruck wie für die Titel. Damit können Gegenden im Geschichten-Raum mit Wörtern aus deinen eigenen Titeln benannt werden. Wörter, die aus dem Bestand verschwunden sind, fallen weg.",
+    "kurzergebnis_muster": "→ <n> Wörter neu aufgenommen, <n> Wörter im Wortschatz. | → Wortschatz vollständig (<n> Wörter), nichts zu tun."
+  },
+  {
+    "schluessel": "geschichten",
+    "name": "Geschichten-Raum neu zeichnen (nur wenn offen)",
+    "was": "Ordnet alle Titel mit Text nach ihrem Textabdruck neu an: Gruppen, die von Ähnlichem handeln, die Lage jedes Titels im Geschichten-Raum und ein Name für jede Gegend aus Wörtern deiner Titel. Rechnet immer den ganzen Bestand neu, aber nur, wenn der Raum offen ist; ein beiseitegelegter Raum bleibt zu, der Morgenlauf macht nichts von selbst auf.",
+    "kurzergebnis_muster": "→ Geschichten-Raum mit <n> Titeln in <n> Gruppen neu gezeichnet. | → Geschichten-Raum ist nicht geöffnet, nichts zu tun."
+  },
+  {
+    "schluessel": "geschichten",
+    "name": "Geschichten-Raum: Einordnung nach Stoff, Haltung und Ton",
+    "was": "Ordnet jedem Titel im Geschichten-Raum drei Einordnungen zu: wovon er handelt (Stoff, etwa Liebe oder Maschine), wie gesprochen wird (Haltung, etwa Bekenntnis oder Anklage) und in welchem Ton (etwa zärtlich oder trotzig). Gilt für alle Titel mit Text, immer neu; jede Gruppe bekommt dazu ihre häufigste Einordnung. Beim ersten Mal wird außerdem ein Vergleichsmaßstab aus dem damaligen Bestand eingefroren, damit spätere Einordnungen vergleichbar bleiben.",
+    "kurzergebnis_muster": "→ <n> Titel eingeordnet, <n> Gruppen mit ihrer häufigsten Einordnung. | → Geschichten-Raum ist nicht geöffnet, nichts zu tun."
+  },
+  {
+    "schluessel": "nachbarn",
+    "name": "Nachbarschaft: Profile der Neuen holen",
+    "was": "Sucht in den gesicherten Kommentaren, Herzen und Beobachtern alle Leute, die dort vorkommen, und holt für jeden, der noch fehlt, die öffentlichen Zahlen seines Suno-Profils: Anzahl Titel, Abrufe, Herzen, Beobachter, im Blick. Eine Anfrage nach der anderen, mit Pause dazwischen; bremst Suno, hört der Schritt sofort auf und holt den Rest beim nächsten Lauf. Das große Auffrischen aller Profile bleibt der Knopf in deiner Gemeinschaft.",
+    "kurzergebnis_muster": "→ <n> neue Profile geholt, <n> Leute in der Nachbarschaft<; Suno hat gebremst, <n> folgen beim nächsten Lauf>. | → Niemand Neues seit dem letzten Lauf."
+  },
+  {
+    "schluessel": "nachbarn",
+    "name": "Nachbarschaft: Hirschfaktoren der Neuen rechnen",
+    "was": "Ermittelt für jeden Nachbarn mit eigenen Titeln, der noch keinen Wert hat, den Hirschfaktor: die größte Zahl h, für die h seiner Titel mindestens h Herzen haben. Dafür holt er dessen Titel seitenweise von Suno, nach Herzen sortiert, und hört auf, sobald keine weitere Seite den Wert noch heben kann; höchstens zwanzig Seiten je Person. So bekommt dein eigener Hirschfaktor einen Maßstab.",
+    "kurzergebnis_muster": "→ Hirschfaktor für <n> Nachbarn gerechnet, <n> Nachbarn mit Wert<; Suno hat gebremst, <n> folgen beim nächsten Lauf>. | → Alle Nachbarn haben schon einen Hirschfaktor, nichts zu tun."
+  }
+]

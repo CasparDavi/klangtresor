@@ -52,6 +52,17 @@ function schreiben(daten) {
     for (const f of alte.slice(0, Math.max(0, alte.length - BACKUPS_BEHALTEN))) {
       fs.unlinkSync(path.join(BACKUP, f));
     }
+
+    /* exFAT-Beifang. macOS legt zu jeder Datei mit erweiterten Attributen
+       eine Schattendatei ._<name> an, weil exFAT die Attribute nicht selbst
+       tragen kann. Die Ausdünnung oben sieht sie nicht (sie beginnen nicht
+       mit "katalog-"), also sammelten sie sich an - am 08.09.2026 lagen elf
+       davon hier, eine je Lauf. Sie sind wertlos (Finder-Metadaten eines
+       Archivs, das ohnehin nur ein Skript liest) und werden deshalb bei
+       jedem Lauf alle entfernt, ohne in die BACKUPS_BEHALTEN einzurechnen. */
+    for (const f of fs.readdirSync(BACKUP)) {
+      if (f.startsWith('._')) { try { fs.unlinkSync(path.join(BACKUP, f)); } catch (e) {} }
+    }
   }
 
   // Stufe 9 = stärkste Kompression. Bei dieser Datenmenge dauert

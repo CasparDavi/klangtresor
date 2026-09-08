@@ -1373,7 +1373,7 @@ Caspar_D, 28.08.2026: „also wir haben schon jetzt mehrere Mikrophone."
 
 Die drei sind so verschieden gebaut, wie man es sich für eine
 Gegenprobe wünscht. **Die Messung vom 27.08. lief über das TONOR TM20** —
-das steht in `library/messungen/2026-08-27-befunde.json`.
+das steht in `docs/messungen/2026-08-27-befunde.json`.
 
 Das schwächt den Vorbehalt bereits: Ein TM20 hat reichlich Kopfraum, und
 bei Zimmerlautstärke ist es weit von seiner Grenze entfernt. Die
@@ -1938,6 +1938,67 @@ richtig. Die englische Fassung wird *nicht* gesungen — die Wortdichte
 beweist es.
 
 ---
+
+### Nachtrag 08.09.2026 — Whisper rechnet jetzt alle, und die Vorgabe ist offen
+
+Das erste Kriterium ist seit dem 08.09.2026 abends hinfällig: Der
+Morgenschritt ruft `bin/whisper.js --still --alle` — jeder eigene Titel
+mit Liedtext wird gehört, ob Suno Zeitmarken geliefert hat oder nicht.
+Die 261 Einträge in `whisper.ndjson` stammten bis dahin aus einem
+Handlauf vom 19.–25.08.; drei neue Titel mit Suno-Zeitmarken waren
+seither ohne Whisper geblieben. Dazu läuft `bin/lyrik.js --tun` jetzt
+als eigener Schritt direkt dahinter.
+
+**Was dadurch nicht entschieden ist — die Vorgabe in der Bühne.** Heute
+gilt (`bin/aufbereiten.js:366`): Wo Suno Zeitmarken geliefert hat,
+bleiben sie die Vorgabe; Whispers stehen daneben als zweite Spur,
+wählbar. Die bereinigte Lyrik (`library/lyrik.json`, Needleman-Wunsch
+gegen die Whisper-Marken) trägt ihre Zeiten versteckt als
+`data-von`/`data-bis` und ist eine Registerlasche, keine Spur.
+
+Caspar_D, 08.09.2026: *„Am besten wäre die gesäuberte Lyrik als
+Standard mit Zeitmarken — aber das entscheiden wir nach einer Analyse,
+nicht ad hoc und nebenbei."*
+
+**Die Analyse, die vor der Entscheidung steht:**
+
+- Bei wie vielen Titeln weichen Suno- und Whisper-Zeitmarken um mehr
+  als ein Wort ab, und in welche Richtung? Die 18 mit doppelter
+  Textfassung sind bekannt; die Frage ist der Rest.
+- Was passiert mit den 20 zurückgestellten Titeln (unter 60 % Deckung:
+  japanische Schrift gegen Umschrift, Plattdeutsch, fremde Stimmen)?
+  Rückfall auf Whisper roh, auf Suno, oder gar keine Spur?
+- Was mit den 64 Instrumentalstücken — heute keine Spur, das bleibt.
+- Trägt die bereinigte Lyrik die Zeiten wortgenau, oder nur je Zeile?
+  Für Karaoke muss es das Wort sein.
+- Gehört eine Spurwahl in der Bühne dann überhaupt noch sichtbar, oder
+  wird sie zum Rückfall für den Fehlerfall?
+
+Erst wenn diese Zahlen vorliegen, wird die Vorgabe gedreht. Bis dahin
+bleibt Suno die Vorgabe, Whisper die Alternative, die bereinigte Lyrik
+das Register.
+
+## Kondensate — vertagt, ein lokales Modell ist zu planen (08.09.2026)
+
+Die Tiefenprüfung vom 08.09.2026 (`docs/HANDARBEIT-PRUEFUNG.md`) hat es
+als einzigen Befund ohne Werkzeugweg stehen lassen: Die zehn Substantive
+je Titel in `library/kondensate/kondensate.json` hat Claude am 28.08.
+nach dem Prompt in `bin/kondensat-prompt.js` geschrieben.
+`bin/kondensate-sammeln.js` sammelt nur ein, was von außen kommt. Ein
+fremder Bestand hat keine Kondensate, keine `wortvektoren.json`, keine
+Gegend-Namen im Geschichten-Raum — und `geschichten.json` durchgehend
+Volltext, was für sich stimmig ist.
+
+Caspar_D: **vertagen, ggf. ein lokales Modell planen.** Die Hausregel
+„Keine KI außer Whisper" steht dem entgegen; ein Netzmodell wurde am
+07.09. verworfen („ich will mich eigentlich nicht abhängig machen").
+Bleibt ein lokales Modell als Einrichtungsschritt wie Whisper — auf
+diesem Intel-Mac 56 s je Titel, vier Stunden für den Bestand; auf dem
+M3-Laptop deutlich weniger. Zu klären, bevor geplant wird: welches
+Modell die Kondensat-Regeln (`docs/KONDENSAT-REGELN.md`) ohne Nacharbeit
+trifft, ob es als optionales Werkzeug neben Whisper laufen darf, und ob
+der Geschichten-Raum bis dahin auf Volltext für alle umgestellt wird,
+damit die Skala einheitlich bleibt.
 
 ## Geschichten-Genres statt Klang-Etiketten
 
