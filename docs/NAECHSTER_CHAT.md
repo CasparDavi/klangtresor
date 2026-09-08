@@ -1623,13 +1623,12 @@ mono (Zeile 198–201); die audio.wav wird nie benutzt.
 2. **Vierte Quelle** — GEBAUT `0d14b1b` (spät am 08.09.): `ausAlben` in
    `aufbereiten.js` vor dem Titelbau, nur ergänzend. Prüfstein: der private
    Titel *Bei mir klingelt keiner* (My Industrial Songs) muss nach dem
-   nächsten Klick als Titel im Katalog stehen. Beim Sitzungsende: der
-   Katalogbau 21:26 kam ohne neue Albumdatei (nur EIN Lesezeichen-Klick am
-   08.09., 20:59; danach roter Knopf ohne Lesezeichen). Der Prüfstein
-   braucht einen echten zweiten Lesezeichen-Klick - dann muss im Protokoll
-   die Zeile Albumeintraege als Titelquelle stehen und der Titel im Katalog.
-   Und: die 19 neuen Beschreibungen (MORGENSCHRITTE.json) sind NOCH NICHT
-   im Morgenfenster - das ist Bau 4, das Fenster zeigt noch das alte Log.
+   nächsten Klick als Titel im Katalog stehen. BESTANDEN 21:33: zweiter
+   Lesezeichen-Klick, Katalogbau, 324 Titel / 74 privat, der Titel drin mit
+   Lyrics und Album. Noch ohne Ton: der CDN-Weg ist tot, audio.mp3 kommt
+   erst über Unlock und Download bei Suno plus bin/uebernehmen.js. Die 19
+   Beschreibungen (MORGENSCHRITTE.json) sind NOCH NICHT im Morgenfenster -
+   Bau 4.
 3. **Nachtschritt Stems** (`bin/stems.js`, 4 min/250 MB je Titel),
    **Morgenschritt Tonart** (`bin/toene.js` vor `analyse-index.js`),
    Haken 14–16 aus HANDARBEIT-PRUEFUNG.md.
