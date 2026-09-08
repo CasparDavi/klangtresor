@@ -105,40 +105,55 @@ Zugehörigkeit sichtbar bleibt.
 ## Das Vorwort
 
 Kapitel 1 ist kein Aufwärmen, sondern die Stelle, an der jemand
-entscheidet, ob er weiterliest. Vier Punkte, in dieser Reihenfolge:
+entscheidet, ob er weiterliest.
 
-1. **Der Anlass, konkret.** Suno begrenzt seit September 2026 auf 60
-   Downloads im Monat. Wer dreihundert eigene Titel dort liegen hat,
-   kommt an sie nicht mehr heran, wenn er sie braucht.
-2. **Was daraus folgt.** Alles liegt lokal: Ton, Cover, Texte, Prompts,
-   Alben, Kommentare. Kein Abo, keine Datenbank, keine fremde Wolke.
-3. **Was es nicht ist.** Kein Suno-Ersatz, kein Umgehen der Regeln, kein
+**Nicht mit dem Downloadlimit anfangen.** Das war der erste Entwurf und
+Caspar_D hat ihn am 07.09.2026 verworfen: *„der Anlass ist gar nicht mehr
+so wichtig, weil die meisten nach und nach ihre Songs noch ins Archiv
+bekommen."* Er hat recht, und der Grund liegt tiefer: „mir wurde etwas
+weggenommen" ist eine Reaktion. Ein Handbuch, das damit anfängt, macht
+sein Werkzeug zur Notlösung.
+
+Vier Punkte, in dieser Reihenfolge:
+
+1. **Unabhängigkeit.** Der eigentliche Grund, in Caspar_Ds Worten: *„Ich
+   bin lieber unabhängig und nicht irgendwelchen Fremdentscheidungen
+   unterworfen."* Das ist keine Trotzhaltung, sondern eine Entscheidung
+   über das eigene Werk — und sie zieht sich durch das ganze Projekt bis
+   in Einzelheiten hinein: kein Abo, keine Datenbank, kein Modell im
+   Betrieb, und am selben Abend die Absage an einen Netzdienst für die
+   Kondensate mit derselben Begründung.
+2. **KlangTresor kann mehr als Suno.** Ebenfalls seine Worte: *„Und
+   KlangTresor kann es besser als Suno, kann eigene Artwork an die
+   eigenen Songs hängen …"* Hier gehören zwei, drei Sachen hin, die es
+   dort nicht gibt — eigenes Artwork, eigene Alben mit eigener
+   Reihenfolge, gemessene Lautheit, der Klangraum.
+3. **Alles liegt lokal.** Ton, Cover, Texte, Prompts, Alben, Kommentare.
+   Was drin liegt, gehört dir.
+4. **Was es nicht ist.** Kein Suno-Ersatz, kein Umgehen der Regeln, kein
    Werkzeug für fremde Musik. Steht im README ausführlich — hier kurz,
-   mit Verweis.
-4. **Was hier geht, das anderswo nicht geht.** Der Klangraum in drei
-   Sätzen.
+   mit Verweis. Das Downloadlimit darf hier als Randnotiz stehen, nicht
+   als Aufhänger.
 
 **Es trägt Caspar_Ds Namen** (07.09.2026: „Ja, es trägt mein Suno-Alias
 Caspar_D"). Das Vorwort ist also kein Sachtext, sondern die Stimme
 dessen, der das Archiv gebaut hat, und wird mit **Caspar_D**
 gezeichnet — dem Namen, unter dem die Titel auf Suno stehen.
 
-Was daraus folgt: Die vier Punkte oben sind das Gerüst, nicht der Text.
-Drei Sachen kann nur der Autor selbst beisteuern, und ohne sie bleibt das
-Vorwort eine Funktionsliste mit Unterschrift:
+Der Ton ist damit gesetzt: die zwei Sätze unter Punkt 1 und 2 sind seine
+eigenen und tragen den ganzen Text. Was noch fehlt, ist eine einzige
+Sache, die nur er erzählen kann — **warum überhaupt eigene Musik**. Nicht
+„wozu ein Archiv", sondern was am Anfang stand.
 
-- **Warum überhaupt eigene Musik?** Nicht „wozu ein Archiv", sondern was
-  am Anfang stand.
-- **Der Moment, in dem klar wurde, dass es ein Archiv braucht.** Die 60
-  Downloads im Monat sind der Anlass, aber ein Anlass ist keine
-  Geschichte.
-- **Was ihm an seinen Titeln wichtig ist.** Das ist der Satz, der über
-  dem ganzen Handbuch steht — und im README steht er schon: *„Ein Tresor
-  für die eigene Musik — was drin liegt, gehört dir, und den Schlüssel
-  hast nur du."*
+Und der Satz, der über dem ganzen Handbuch steht, ist längst geschrieben,
+er steht als Untertitel im README: *„Ein Tresor für die eigene Musik —
+was drin liegt, gehört dir, und den Schlüssel hast nur du."*
 
-Das Vorwort wird deshalb zuletzt geschrieben, nicht zuerst: erst wenn die
-vierzehn anderen Kapitel stehen, weiß man, worauf es hinführt.
+**Das Vorwort wird zuletzt geschrieben** (Caspar_D am 07.09.2026: „es ist
+wohl wirklich besser, es am Ende zu erstellen"). Erst wenn die vierzehn
+anderen Kapitel stehen, weiß man, worauf es hinführt — und erst dann
+kann Punkt 2 aufzählen, was das Handbuch tatsächlich gezeigt hat, statt
+zu versprechen, was es zeigen soll.
 
 ---
 
