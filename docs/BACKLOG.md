@@ -2278,8 +2278,19 @@ kostenpflichtige Dinge und Download verballern könnte, damit wir an mehr
 Daten kommen. Verfallende Credits sind ja total schade."*
 
 Das Haus löst nichts aus, was Credits kostet (Hausregel, zweimal im
-Code). Dieser Punkt ändert das nicht — er meint einen **Hinweis am
-Monatsende**: `billing/info` kennt das Guthaben und den Stichtag; ein
+Code). Dieser Punkt ändert das nicht — er meint einen **Hinweis in der
+Morgenroutine**, so, wie Caspar_D ihn formuliert hat:
+
+> Es sind noch 5000 Credits übrig, die in 3 Tagen verfallen. Damit
+> könntest du noch:
+> — x Titel in Stems zerlegen
+> — x Downloads kaufen
+> — …
+
+Ein Abschnitt im neuen Morgenfenster (Bau 4 in NAECHSTER_CHAT.md), mit
+Zahlen aus `billing/info` und Preisen aus `billing/usage-plans`.
+Caspar_D: „das würde vielen helfen" — ein Feature für jeden Nutzer.
+Technisch: `billing/info` kennt das Guthaben und den Stichtag; ein
 Morgenschritt könnte in den letzten Tagen des Monats sagen: „N Credits
 verfallen am 30. — Sunos Stems für X Titel würden Y kosten, WAV-Downloads
 für Z Titel fehlen noch." Den Klick macht Caspar_D in Suno; das Haus

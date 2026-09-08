@@ -163,7 +163,15 @@ const ausPrivat  = [...privatJeId.values()];
 // Profilseite rutschen gelegentlich fremde Songs mit hinein -
 // aus dem Player oder aus "Gefällt mir"-Bereichen. Die gehören
 // nicht ins Archiv.
+/* profilRoh.handle gibt es in einer Ernte des Lesezeichens NICHT - dort
+   steht der Handle unter profil.handle (browser/morgens.js, Ernte-Objekt).
+   Fehlte der Rueckfall auf den Katalog, waere `eigener` beim allerersten
+   Lauf eines fremden Bestands null, und dann gilt weiter unten in den
+   Alben JEDER Eintrag als fremd: Ton und Bild kaemen fuer eigene Songs
+   vom Suno-CDN statt aus /media/<id>/. Leise falsch, nicht kaputt -
+   deshalb hier die dritte Quelle. */
 const eigener = (profilRoh && profilRoh.handle)
+  || (profilRoh && profilRoh.profil && profilRoh.profil.handle)
   || (K.lesen() && K.lesen().profil && K.lesen().profil.handle) || null;
 
 const eingang = new Map();
@@ -366,7 +374,7 @@ for (const timingDatei of alleRohdateien('timing')) {
   }
 }
 
-// --- Playlists --------------------------------------------------
+// --- Alben (Playlists) ------------------------------------------
 // Aus library/roh/playlists-*.json. Bewusst NICHT aus der Vorfassung
 // zusammengesetzt, sondern jedes Mal neu aus den Rohdaten gebaut -
 // damit fällt die Zuordnung gar nicht erst unter die Übernahmeregel
@@ -376,19 +384,170 @@ for (const timingDatei of alleRohdateien('timing')) {
 // fremde Songs anderer Urheber. Sie bleiben als Eintrag erhalten,
 // sonst bekäme die Reihenfolge Löcher und die Playlist wäre eine
 // andere als bei Suno. Erkennbar an eigen === false.
-const playlistDatei = neuesteRohdatei('playlists');
-let playlists = (alt && alt.playlists) || {};
+//
+// DER RIEGEL, 08.09.2026. Bis dahin genügte die blosse EXISTENZ einer
+// Rohdatei, um `playlists` auf {} zu setzen - vor jeder Prüfung des
+// Inhalts. Trug die Datei den falschen Schlüssel oder war sie leer,
+// lief die Schleife null Mal, der Katalog bekam ein leeres Objekt, und
+// 25 Alben mit 599 Einträgen waren weg. Ohne eine einzige
+// Fehlermeldung, und die Rohdatei löschte sich am Ende des Laufs auch
+// noch selbst (der Löschblock ganz unten kennt die Art 'playlists').
+// Seitdem gilt ein Riegel gegen stillen Verlust - und seit dem
+// 08.09.2026 abends hängt er an EINER Frage: Ist die Ernte vollständig?
+// DIE SPIEGELREGEL (Caspar_D, 08.09.2026, wörtlich): "die Suno-Alben
+// folgen genau dem, was Suno im Datenbestand hat." Eine Ernte, die sich
+// als vollständig ausweist (alle Köpfe geblättert, das Ende gesehen,
+// jeder Inhalt geholt - browser/morgens.js setzt die Flagge nur dann),
+// IST Sunos Stand: ein Album, das kleiner wurde, wird kleiner
+// geschrieben, ein leeres leer, ein fehlendes entfernt. Eine Ernte, die
+// das nicht von sich sagt, darf nichts verkleinern und nichts entfernen
+// - jedes Album, das kleiner würde oder fehlt, behält seinen alten
+// Stand, und der Lauf sagt es. Verglichen wird immer relativ, altes
+// Album gegen neues Album - nie gegen eine feste Zahl, denn ein fremder
+// Bestand hat andere Größen.
+//
+// DIE KANDIDATENREGEL (Caspar_D, 08.09.2026 abends, wörtlich):
+// "Löschungen in Alben nach zwei übereinstimmenden Läufen, die
+// mindestens 2 h auseinander liegen." WARUM der Zusatz zur Spiegelregel:
+// Die Flagge `vollstaendig` aus browser/morgens.js wurde am selben Tag
+// viermal gegengelesen, und jede Runde fand eine neue Antwortform, mit
+// der Suno per HTTP 200 lügen kann - eine Kopfzahl 0 neben leerem Inhalt,
+// eine Zahl als Zeichenkette, Leerraum, false, [], -1 als Anzahl, eine
+// verlorene zweite Seite beim einzigen mehrseitigen Album. Die
+// Einzelfixes konvergieren nicht: Suno hat mehr Formen als wir Riegel.
+// Deshalb gilt Sunos Stand für ERGÄNZUNGEN sofort (neues Album,
+// gewachsenes Album, neue Einträge - da kann eine Lüge nichts
+// wegnehmen), für WEGNAHMEN aber erst nach Bestätigung: Ein Album, das
+// fehlt oder kleiner kommt, wird als Kandidat vermerkt
+// (katalog.albenKandidaten) und erst dann gelöscht bzw. verkleinert,
+// wenn eine SPÄTERE vollständige Ernte, mindestens 2 h danach, DENSELBEN
+// Stand zeigt. Zeigt sie den alten Stand, war es ein Wackler und der
+// Kandidat fällt; zeigt sie einen dritten Stand, fängt die Uhr von vorn
+// an. Unvollständige Ernten zählen nie, weder als erste noch als zweite.
+// Die 2 h messen sich an abgerufenAm der Rohdateien - nicht an der
+// Katalogzeit (die ist immer "jetzt") und nicht an Date.now() (sonst
+// zählt eine falsche Uhr, wenn ein Lauf Tage später nachgeholt wird).
+// Ein wirklich leeres Album ist ein "kleiner" mit leerer Id-Menge und
+// braucht dieselbe Bestätigung - gewollt, denn genau so sah jede der
+// vier Lügen aus. Die Kandidaten überleben Neubauten des Katalogs, die
+// Oberfläche zeigt sie (noch) nicht, das Protokoll unten nennt sie.
+/* EINE Aufnahme des Ordners, für Auswahl UND Löschliste. Bis zum
+   08.09.2026 abends wurde die Löschliste ganz unten NEU aus dem Ordner
+   gelesen - eine playlists-Datei, die zwischen Auswahl und Löschen
+   ankam (das Lesezeichen läuft nebenher), wäre ungelesen gelöscht
+   worden. Gelöscht wird nur, was HIER gesehen wurde. */
+const playlistDateienGesehen = alleRohdateien('playlists');
+const playlistDatei = playlistDateienGesehen.length
+  ? playlistDateienGesehen[playlistDateienGesehen.length - 1] : null;
+/* Gelesen wird EINE Datei, die jüngste. Die älteren bleiben liegen und
+   kommen beim nächsten Lauf an die Reihe (dann sind sie die jüngsten) -
+   bis zum 08.09.2026 abends wurden sie hier mitgezählt und unten
+   ungelesen gelöscht: zwei Klicks hintereinander, der zweite halb, und
+   die gute Ernte des ersten war weg, ohne je gelesen worden zu sein. */
+if (playlistDateienGesehen.length > 1)
+  console.log(`  Alben:          ${playlistDateienGesehen.length - 1} ältere Albumernte(n) übersprungen, `
+            + `bleiben für den nächsten Lauf liegen`);
+const albenVorher   = (alt && alt.playlists) || {};
+let   playlists     = albenVorher;
+let   albenRohBehalten = false;      // unbrauchbare Rohdatei nicht löschen
+/* WANN die Alben zuletzt wirklich von Suno geholt wurden - nicht wann
+   der Katalog zuletzt gebaut wurde. Kommt aus abgerufenAm der Rohdatei
+   und wird im Katalog fortgeschrieben (katalog.albenStand), damit die
+   Meldung unten nicht bei jedem Bau "heute" sagt. */
+let   albenStand    = (alt && alt.albenStand) || null;
+/* Die Löschkandidaten (Kandidatenregel, siehe oben): je Album-Id
+   { zustand: 'fehlt', seit } oder { zustand: 'kleiner', seit, eintraege }
+   - `seit` ist das abgerufenAm der Ernte, die den Zustand zuerst zeigte,
+   `eintraege` die sortierte Menge der Song-Ids, die diese Ernte noch
+   lieferte. Sie kommen aus dem alten Katalog und werden unverändert
+   fortgeschrieben, solange keine vollständige Ernte etwas anderes sagt -
+   ein Neubau ohne Rohdatei, eine unvollständige oder überholte Ernte
+   lässt sie stehen. Ein verwaister Kandidat (sein Album ist gar nicht
+   mehr im Katalog) wird beim Schreiben unten fallengelassen. */
+const albenKandidatenVorher = (alt && alt.albenKandidaten && typeof alt.albenKandidaten === 'object'
+                               && !Array.isArray(alt.albenKandidaten)) ? alt.albenKandidaten : {};
+let   albenKandidaten = { ...albenKandidatenVorher };
+const BESTAETIGUNG_MS = 2 * 60 * 60 * 1000;   // Caspar_D: "mindestens 2 h auseinander"
+const stundenText = (ms) => (ms / 3600000).toFixed(1).replace('.', ',') + ' h';
+const seitText = (iso) => {
+  const t = Date.parse(iso);
+  return Number.isFinite(t)
+    ? new Date(t).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    : String(iso);
+};
+/* Die Id-Menge eines Albums: nur brauchbare Einträge (mit songId),
+   sortiert und ohne Doppelte - so vergleicht sich "derselbe Stand"
+   unabhängig von der Reihenfolge, in der Suno geliefert hat. */
+const albenIdMenge = (p) => Array.from(new Set((Array.isArray(p && p.eintraege) ? p.eintraege : [])
+  .map(e => e && e.songId).filter(Boolean))).sort();
+const gleicheMenge = (a, b) => Array.isArray(a) && Array.isArray(b)
+  && a.length === b.length && a.every((x, i) => x === b[i]);
+
+const albenEintragZahl = (p) => (Array.isArray(p && p.eintraege) ? p.eintraege.length : 0);
+const albenSumme = (o) => Object.values(o || {}).reduce((n, p) => n + albenEintragZahl(p), 0);
+/* FUER DEN VERGLEICH zaehlt nur, was BRAUCHBAR ist: ein Eintrag ohne
+   songId ist keiner. Legt ein Ernter die Clips nackt ab statt im
+   Umschlag {clip, relative_index, created_at}, hat das Album weiterhin
+   die richtige ANZAHL Eintraege - aber jeder einzelne traegt songId
+   null, titel '(ohne Titel)' und gilt als fremd, und kein einziger
+   Rueckverweis entsteht. Nach der blossen Laenge gemessen saehe das
+   aus wie 'gleich gross geblieben' und liefe glatt durch. */
+const albenBrauchbar = (p) => (Array.isArray(p && p.eintraege)
+  ? p.eintraege.filter(e => e && e.songId).length : 0);
+
+if (!playlistDatei) {
+  /* Vorher schwieg dieser Fall. Das Lesezeichen holte drei Wochen lang
+     null Alben, hier fiel deshalb nie eine Rohdatei an, der alte Stand
+     wurde stillschweigend fortgeschrieben - und die Schlusszeile meldete
+     ihn, als wäre er frisch. */
+  /* alt.erstelltAm wäre der letzte KATALOGBAU - der ist immer "heute",
+     und die Meldung, die das Schweigen brechen soll, sagte damit nie
+     etwas. Der Zeitpunkt der letzten ALBUMERNTE steht in albenStand;
+     fehlt er, ist die Ernte älter als dieses Feld (08.09.2026). */
+  const stand = albenStand ? 'letzte Albumernte vom ' + String(albenStand).slice(0, 10)
+                           : 'Zeitpunkt der letzten Albumernte unbekannt';
+  console.log(`  Alben:          keine Rohdatei — Stand unverändert, ${stand} `
+            + `(${Object.keys(albenVorher).length} Alben, ${albenSumme(albenVorher)} Einträge)`);
+}
 
 if (playlistDatei) {
-  const pRoh = lies(playlistDatei) || {};
-  playlists = {};
+  let pRoh = null;
+  try { pRoh = lies(playlistDatei); } catch (e) { pRoh = null; }
+  const koepfe = (pRoh && Array.isArray(pRoh.playlists)) ? pRoh.playlists : [];
+  const rohClips = (pRoh && pRoh.clips && typeof pRoh.clips === 'object'
+                    && !Array.isArray(pRoh.clips)) ? pRoh.clips : {};
+  /* Nur eine Ernte, die sich selbst als vollständig ausweist, ist Sunos
+     Stand (Spiegelregel, siehe oben): nur sie darf ein Album kleiner
+     schreiben oder ein fehlendes entfernen - und seit dem 08.09.2026
+     abends auch das nur als zweite von zwei übereinstimmenden Ernten,
+     mindestens 2 h auseinander (Kandidatenregel, siehe oben). Fehlt das
+     Feld (alte oder wiederhergestellte Rohdatei), gilt das Vorsichtige:
+     nichts schrumpft, nichts verschwindet, kein Kandidat rührt sich. */
+  const vollstaendig = !!(pRoh && pRoh.vollstaendig === true);
+  /* ÜBERHOLT? Weil ältere Ernten liegenbleiben (siehe die Auswahl oben),
+     kann hier eine Datei ankommen, die ÄLTER ist als der Albumstand im
+     Katalog - die jüngere wurde im Lauf davor schon übernommen. Sunos
+     Stand von damals über den von heute zu schreiben, wäre kein Spiegel,
+     sondern ein Rückschritt. So eine Datei wird gelesen, als überholt
+     erkannt und wie gelesen behandelt (unten gelöscht) - übernommen wird
+     aus ihr nichts. */
+  const ueberholt = !!(pRoh && pRoh.abgerufenAm && albenStand
+                       && String(pRoh.abgerufenAm) < String(albenStand));
 
-  for (const p of pRoh.playlists || []) {
-    const eintraege = (pRoh.clips?.[p.id] || [])
-      .slice()
+  const frisch = {};
+  for (const p of koepfe) {
+    if (!p || !p.id) continue;
+    /* Härten gegen krumme Einträge: ein Objekt statt einer Liste warf
+       bei .slice() einen TypeError, ein null-Eintrag bei e.clip - und
+       ein einziger solcher Eintrag liess den ganzen Lauf abstürzen.
+       Was keine Liste ist, zählt als leer (der Riegel unten behält
+       dann den alten Stand); was kein Objekt ist, fällt heraus. */
+    const rohListe = Array.isArray(rohClips[p.id]) ? rohClips[p.id] : [];
+    const eintraege = rohListe
+      .filter(e => e && typeof e === 'object')
       .sort((a, b) => (a.relative_index || 0) - (b.relative_index || 0))
       .map(e => {
-        const c = e.clip || {};
+        const c = (e.clip && typeof e.clip === 'object') ? e.clip : {};
         const eigen = c.handle === eigener;
         return {
           songId:       c.id || null,
@@ -411,7 +570,7 @@ if (playlistDatei) {
         };
       });
 
-    playlists[p.id] = {
+    frisch[p.id] = {
       id:            p.id,
       name:          p.name || '(ohne Namen)',
       beschreibung:  p.description || '',
@@ -426,19 +585,177 @@ if (playlistDatei) {
     };
   }
 
-  // Rückverweis am Song, damit die Oberfläche nicht suchen muss
-  for (const s of Object.values(songs)) s.playlists = [];
-  for (const p of Object.values(playlists))
-    for (const e of p.eintraege)
-      if (e.songId && songs[e.songId] && !songs[e.songId].playlists.includes(p.id))
-        songs[e.songId].playlists.push(p.id);
+  /* Lauter Alben ohne einen einzigen brauchbaren Eintrag: der
+     Kopf-ohne-Inhalt-Fall (die Köpfe von Suno tragen playlist_clips als
+     leeres Array). Diese Sperre hängt AUSDRÜCKLICH NICHT an
+     vollstaendig: Eine Ernte, in der kein einziges Album einen Eintrag
+     hat, ist nach aller Erfahrung eine halbe Ernte, keine Sammlung
+     lauter leerer Alben - und eine halbe Ernte mit richtiger Flagge
+     löschte sonst alles. Ein EINZELNES leeres Album in einer
+     vollständigen Ernte geht davon unberührt durch - und wird in der
+     Schleife unten zum Löschkandidaten "kleiner" mit leerer Id-Menge
+     (Kandidatenregel): geleert wird es erst, wenn eine zweite
+     vollständige Ernte 2 h später dasselbe sagt. */
+  const nurLeere = Object.keys(frisch).length
+                && !Object.values(frisch).some(p => albenBrauchbar(p));
 
-  const alleEintraege = Object.values(playlists).reduce((n, p) => n + p.eintraege.length, 0);
-  const fremdEintraege = Object.values(playlists)
-    .reduce((n, p) => n + p.eintraege.filter(e => !e.eigen).length, 0);
-  console.log(`  Playlists:      ${path.basename(playlistDatei)} `
-            + `(${Object.keys(playlists).length} Stück, ${alleEintraege} Einträge, `
-            + `davon ${fremdEintraege} fremd)`);
+  if (ueberholt) {
+    console.log(`  Alben:          ${path.basename(playlistDatei)} ist vom `
+              + `${String(pRoh.abgerufenAm).slice(0, 16).replace('T', ' ')}, der Katalog hat schon den Stand vom `
+              + `${String(albenStand).slice(0, 16).replace('T', ' ')} — überholt, nicht übernommen `
+              + `(${Object.keys(albenVorher).length} Alben, ${albenSumme(albenVorher)} Einträge bleiben)`);
+    playlists = albenVorher;
+  } else if (!Object.keys(frisch).length || nurLeere) {
+    /* Kein einziges Album, oder lauter Alben ohne einen einzigen
+       Eintrag - der Kopf-ohne-Inhalt-Fall (die Köpfe von Suno tragen
+       playlist_clips als leeres Array). Beides würde den Bestand
+       löschen. Also: Stand behalten, laut sagen, und die Rohdatei NICHT
+       wegräumen - sonst wäre nach genau einem Lauf weder der Katalog-
+       stand noch die einzige Kopie der Albumdaten da. */
+    console.log(`  Alben:          ${path.basename(playlistDatei)} enthält `
+              + `${Object.keys(frisch).length} Alben und ${albenSumme(frisch)} Einträge `
+              + `(davon ${Object.values(frisch).reduce((n, p) => n + albenBrauchbar(p), 0)} brauchbar) — `
+              + `NICHT übernommen, Stand unverändert `
+              + `(${Object.keys(albenVorher).length} Alben, ${albenSumme(albenVorher)} Einträge). `
+              + `Die Rohdatei wird nach dem Lauf in .abgelehnt umbenannt.`);
+    albenRohBehalten = true;
+    playlists = albenVorher;
+  } else {
+    playlists = { ...albenVorher };
+    albenStand = (pRoh && pRoh.abgerufenAm)
+      || (path.basename(playlistDatei).match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || albenStand;
+    const geschrumpft = [], verkleinert = [], neueAlben = [], entfallen = [], behaltenWeilFehlend = [];
+    const kandidatNeu = [], kandidatWartet = [], kandidatVerworfen = [];
+
+    /* Die Uhr der Kandidatenregel: abgerufenAm DIESER Ernte, als Zeit.
+       Fehlt es oder ist es kein Datum, kann diese Ernte weder einen
+       Kandidaten setzen noch bestätigen - sie zählt für Wegnahmen wie
+       eine unvollständige. (Der Server schreibt das Feld immer; nur
+       eine von Hand hergestellte Rohdatei kommt ohne.) */
+    const abgerufen = (pRoh && pRoh.abgerufenAm && Number.isFinite(Date.parse(pRoh.abgerufenAm)))
+      ? String(pRoh.abgerufenAm) : null;
+    const darfWegnehmen = vollstaendig && abgerufen != null;
+    if (vollstaendig && abgerufen == null)
+      console.log(`  Alben:          ${path.basename(playlistDatei)} nennt kein brauchbares abgerufenAm — `
+                + `zählt für Löschungen wie eine unvollständige Ernte`);
+    /* Wie lange der Kandidat schon steht, gemessen an den Rohdaten-Uhren;
+       null, wenn sein `seit` unlesbar ist (dann wird er neu gesetzt). */
+    const alterMs = (k) => {
+      const t = Date.parse(k && k.seit);
+      return Number.isFinite(t) ? Date.parse(abgerufen) - t : null;
+    };
+
+    for (const [id, p] of Object.entries(frisch)) {
+      const a = albenVorher[id];
+      if (!a) { playlists[id] = p; neueAlben.push(p.name); continue; }
+      if (albenBrauchbar(p) < albenBrauchbar(a)) {
+        if (!darfWegnehmen) {
+          /* Unvollständige Ernte und weniger als vorher: irgendwo ist
+             etwas verlorengegangen - eine Seite, ein Token, eine
+             Antwort. Der alte Stand bleibt, der Kandidat (falls einer
+             steht) bleibt unberührt, und es steht hier im Klartext. */
+          geschrumpft.push(`${a.name} ${albenBrauchbar(p)}<${albenBrauchbar(a)}`);
+          continue;
+        }
+        /* Kandidatenregel (siehe oben): die Ernte ist ganz und sagt
+           "kleiner" - das kann Sunos Wahrheit sein oder die fünfte Form
+           der Lüge. Übernommen wird erst, wenn eine spätere vollständige
+           Ernte, mindestens 2 h danach, DIESELBE Id-Menge liefert. */
+        const menge = albenIdMenge(p);
+        const k = albenKandidaten[id];
+        const alter = k && k.zustand === 'kleiner' && gleicheMenge(k.eintraege, menge) ? alterMs(k) : null;
+        if (alter != null && alter >= BESTAETIGUNG_MS) {
+          verkleinert.push(`${a.name}: bestätigt nach ${stundenText(alter)} — übernommen `
+                         + `(${albenBrauchbar(a)}→${albenBrauchbar(p)} Einträge)`);
+          delete albenKandidaten[id];
+          playlists[id] = p;
+          continue;
+        }
+        if (alter != null) {
+          kandidatWartet.push(`${a.name} (kleiner, ${albenBrauchbar(a)}→${albenBrauchbar(p)}, `
+                            + `noch ${stundenText(BESTAETIGUNG_MS - alter)})`);
+        } else {
+          /* Kein Kandidat, ein anderer Zustand oder eine andere Id-Menge
+             (ein dritter Stand): Uhr von vorn. */
+          kandidatNeu.push(`${a.name} (kleiner, ${albenBrauchbar(a)}→${albenBrauchbar(p)}`
+                         + `${k ? ', Kandidat neu gesetzt' : ''})`);
+          albenKandidaten[id] = { zustand: 'kleiner', seit: abgerufen, eintraege: menge };
+        }
+        continue;                                   // alter Stand bleibt
+      }
+      /* Gleich groß oder gewachsen: Sunos Stand gilt sofort (Ergänzungen
+         brauchen keine Bestätigung). Stand dazu ein Kandidat, war der
+         ein Wackler. */
+      if (albenKandidaten[id]) {
+        kandidatVerworfen.push(`${a.name} (war ${albenKandidaten[id].zustand}, ist wieder da)`);
+        delete albenKandidaten[id];
+      }
+      playlists[id] = p;
+    }
+
+    for (const id of Object.keys(albenVorher)) {
+      if (frisch[id]) continue;
+      const name = albenVorher[id].name;
+      if (!darfWegnehmen) { behaltenWeilFehlend.push(name); continue; }
+      /* Kandidatenregel für ein fehlendes Album: erst vermerken, beim
+         zweiten Mal (>= 2 h später, wieder vollständig, wieder fehlt)
+         entfernen. */
+      const k = albenKandidaten[id];
+      const alter = k && k.zustand === 'fehlt' ? alterMs(k) : null;
+      if (alter != null && alter >= BESTAETIGUNG_MS) {
+        entfallen.push(`${name}: bei Suno nicht mehr vorhanden, bestätigt nach ${stundenText(alter)} — entfernt`);
+        delete albenKandidaten[id];
+        delete playlists[id];
+      } else if (alter != null) {
+        kandidatWartet.push(`${name} (fehlt, noch ${stundenText(BESTAETIGUNG_MS - alter)})`);
+      } else {
+        kandidatNeu.push(`${name} (fehlt${k ? ', Kandidat neu gesetzt' : ''})`);
+        albenKandidaten[id] = { zustand: 'fehlt', seit: abgerufen };
+      }
+    }
+
+    // Rückverweis am Song, damit die Oberfläche nicht suchen muss
+    for (const s of Object.values(songs)) s.playlists = [];
+    for (const p of Object.values(playlists))
+      for (const e of p.eintraege || [])
+        if (e.songId && songs[e.songId] && !songs[e.songId].playlists.includes(p.id))
+          songs[e.songId].playlists.push(p.id);
+
+    const fremdEintraege = Object.values(playlists)
+      .reduce((n, p) => n + (p.eintraege || []).filter(e => !e.eigen).length, 0);
+    console.log(`  Alben:          ${path.basename(playlistDatei)} `
+              + `(${Object.keys(playlists).length} Stück, ${albenSumme(playlists)} Einträge, `
+              + `davon ${fremdEintraege} fremd)`);
+    if (neueAlben.length)
+      console.log(`                  neu: ${neueAlben.join(', ')}`);
+    if (verkleinert.length)
+      console.log(`                  bei Suno kleiner geworden: ${verkleinert.join('; ')}`);
+    if (geschrumpft.length)
+      console.log(`                  RIEGEL — kam kleiner herein als im Katalog, Ernte unvollständig, alter Stand behalten: `
+                + geschrumpft.join('; '));
+    if (behaltenWeilFehlend.length)
+      console.log(`                  in dieser Ernte nicht enthalten, Ernte unvollständig, alter Stand behalten: `
+                + behaltenWeilFehlend.join(', '));
+    if (entfallen.length)
+      console.log(`                  ${entfallen.join('; ')}`);
+    if (kandidatNeu.length)
+      console.log(`                  Löschkandidat vermerkt, alter Stand bleibt bis zur Bestätigung (zweite vollständige Ernte, mindestens 2 h später): `
+                + kandidatNeu.join('; '));
+    if (kandidatWartet.length)
+      console.log(`                  Löschkandidat bestätigt sich, aber zu früh — alter Stand bleibt: `
+                + kandidatWartet.join('; '));
+    if (kandidatVerworfen.length)
+      console.log(`                  Kandidat verworfen, war ein Wackler: ${kandidatVerworfen.join('; ')}`);
+    /* Kopfzahl gegen Geliefertes: Suno liefert bei Caspar_D sechs
+       Eintraege dauerhaft nicht aus (kein Sammelfehler). Bisher wurde
+       anzahlLautSuno abgelegt und nirgends geprueft - eine verlorene
+       Seite sah genauso aus wie diese bekannte Luecke. */
+    const luecken = Object.values(playlists)
+      .filter(p => p.anzahlLautSuno != null && albenEintragZahl(p) < p.anzahlLautSuno)
+      .map(p => `${p.name} ${albenEintragZahl(p)}/${p.anzahlLautSuno}`);
+    if (luecken.length)
+      console.log(`                  weniger Einträge als Suno im Kopf nennt: ${luecken.join(', ')}`);
+  }
 }
 
 /* --- WAV-Originale vermerken ---------------------------------
@@ -477,8 +794,38 @@ if (profilInfoDatei) console.log('  Profilangaben: ', path.basename(profilInfoDa
    sicherte einen fast leeren Ordner und haette den Katalog verloren.
 
    Unersetzlich ist library/katalog.json.gz. */
-const verarbeitet = ['profil','privat','timing','playlists','profilinfo','feed']
-  .flatMap(alleRohdateien);
+const verarbeitet = [
+  ...['profil','privat','timing','profilinfo','feed'].flatMap(alleRohdateien),
+  /* playlists: NUR die tatsaechlich GELESENE Datei (playlistDatei), nicht
+     alle gesehenen. Bis zum 08.09.2026 abends stand hier die ganze
+     Aufnahme von oben - gelesen wurde aber nur die juengste, und die
+     aelteren gingen ungelesen mit in den Papierkorb. Sie bleiben jetzt
+     liegen, der naechste Lauf nimmt sie sich vor (oder erkennt sie als
+     ueberholt). Und die gelesene Datei, aus der oben nichts Brauchbares
+     zu holen war, wird NICHT geloescht - sonst waere nach genau einem
+     Lauf weder der Albumstand im Katalog noch die einzige Kopie der
+     Albumdaten da. Sie wird stattdessen unten in .abgelehnt umbenannt
+     (albenAbgelehnt): so bleibt sie erhalten, zaehlt aber weder hier
+     noch in /api/morgen/unverarbeitet je wieder als "wartet auf den
+     roten Knopf". */
+  ...(playlistDatei && !albenRohBehalten ? [playlistDatei] : []),
+];
+const albenAbgelehnt = (albenRohBehalten && playlistDatei) ? playlistDatei : null;
+
+/* Verwaiste Kandidaten fallen lassen (ihr Album ist nicht mehr im
+   Katalog - nach einer bestätigten Löschung ist der Kandidat ohnehin
+   weg, das hier ist der Gürtel zum Hosenträger). Und die wartenden
+   nennen, bei JEDEM Lauf, auch ohne Rohdatei: sie sind sonst unsichtbar,
+   bis die Oberfläche sie einmal zeigt. */
+for (const id of Object.keys(albenKandidaten))
+  if (!playlists[id]) delete albenKandidaten[id];
+{
+  const wartend = Object.entries(albenKandidaten)
+    .map(([id, k]) => `${playlists[id].name} (${k.zustand} seit ${seitText(k.seit)})`);
+  if (wartend.length)
+    console.log(`  Alben:          ${wartend.length} Löschkandidat${wartend.length === 1 ? '' : 'en'} `
+              + `warte${wartend.length === 1 ? 't' : 'n'} auf Bestätigung: ${wartend.join(', ')}`);
+}
 
 const bericht = K.schreiben({
   erstelltAm:      new Date().toISOString(),
@@ -491,6 +838,8 @@ const bericht = K.schreiben({
   },
   profil,
   playlists,
+  albenStand,
+  albenKandidaten,
   songs,
 });
 
@@ -525,7 +874,8 @@ console.log(`  ${(bericht.bytes/1024).toFixed(0)} KB gepackt `
 console.log(`  Songs:          ${liste.length}`);
 console.log(`  veröffentlicht: ${liste.filter(s => s.veroeffentlicht).length}`);
 console.log(`  privat:         ${liste.filter(s => !s.oeffentlich).length}`);
-console.log(`  Playlists:      ${Object.keys(playlists).length}`
+console.log(`  Alben:          ${Object.keys(playlists).length}`
+          + ` mit ${albenSumme(playlists)} Einträgen`
           + ` (${Object.values(playlists).filter(p => !p.oeffentlich).length} privat)`);
 console.log(`  mit Lyrics:     ${liste.filter(s => s.lyrics && s.lyrics.trim()).length}`);
 console.log(`  mit Video:      ${liste.filter(s => s.videoUrl).length}`);
@@ -553,4 +903,12 @@ if (verarbeitet.length) {
     catch (e) { /* schon weg - egal */ }
   }
   console.log(`\nAufgeräumt: ${geloescht} verarbeitete Rohdateien gelöscht (${(bytes/1048576).toFixed(0)} MB — alles steckt im Katalog)`);
+}
+/* Die abgelehnte playlists-Rohdatei (siehe oben) bekommt die Endung
+   .abgelehnt: Inhalt bleibt, aber weder alleRohdateien() noch der
+   Zaehler im Server sehen sie noch - beide fragen nach .json. */
+if (albenAbgelehnt) {
+  try { fs.renameSync(albenAbgelehnt, albenAbgelehnt + '.abgelehnt');
+        console.log(`  ${path.basename(albenAbgelehnt)} → .abgelehnt (unbrauchbar, aber aufgehoben)`); }
+  catch (e) { console.log(`  ${path.basename(albenAbgelehnt)} konnte nicht umbenannt werden: ${e.message}`); }
 }

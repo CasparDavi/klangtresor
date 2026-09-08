@@ -228,6 +228,36 @@
     }
     return erg;
   }
+  /* WAS DER SERVER AN ALBEN ANGENOMMEN HAT - als Satz und Farbe für die
+     Ablagezeile. Der Server nennt, was er angenommen hat, nicht, was
+     abgeschickt wurde: `alben`/`albumEintraege` sind die Zahlen der
+     playlists-Datei, `albenGrund` sagt, warum KEINE entstand (Konto
+     nicht bestätigt, Sammlung ohne Handle). Fehlen die Zahlen ganz,
+     antwortet ein alter Serverstand. Bis zum 08.09.2026 abends wurden
+     beide Zahlen weggeworfen; und der Nachreich-Pfad (Ernte aus dem
+     Browser-Speicher) zeigte auch danach nur d.abgelegt - eine
+     nachgereichte Ernte ohne Albumdatei sah aus wie Erfolg. Deshalb
+     EIN Satzbauer für beide Stellen. `mitAlben`: ob die Ernte Alben
+     tragen sollte - sonst ist "keine Albumdatei" kein Befund. */
+  function ablageSatz(d, mitAlben){
+    let text = `${d.abgelegt}`, farbe = '#16be5c';
+    if (mitAlben){
+      const albenZahl = d.alben, eintragZahl = d.albumEintraege;
+      if (d.albenGrund){
+        text += ` — Alben: ${d.albenGrund}; der Albumstand im Katalog bleibt alt`;
+        farbe = '#e31c79';
+      } else if (eintragZahl == null){
+        text += ' — Alben: der Server nennt keine Zahlen (alter Serverstand?), keine Albumdatei entstanden';
+        farbe = '#f97b14';
+      } else if (!eintragZahl){
+        text += ` — Alben: ${albenZahl || 0} Köpfe, 0 Einträge, keine Albumdatei entstanden; der Albumstand im Katalog bleibt alt`;
+        farbe = '#f97b14';
+      } else {
+        text += ` — Alben: ${albenZahl} mit ${eintragZahl} Einträgen abgelegt`;
+      }
+    }
+    return { text, farbe };
+  }
 
   /* ---------------- Server erreichbar? ---------------- */
   let handle = null;
@@ -297,7 +327,11 @@
     if (rest && rest.songs){
       const z = sagen(`Ernte vom ${(rest.erzeugtAm||'').slice(0,16).replace('T',' ')} lag noch im Browser — sichere …`, '#f97b14');
       try { const d = await anServer(rest, t => z.textContent = t); await ernteVergessen();
-            z.textContent = `Ernte vom letzten Mal nachgereicht — ${d.abgelegt}`; z.style.color = '#16be5c'; }
+            /* Dieselbe Auskunft wie am Ende eines frischen Laufs (ablageSatz):
+               ob die Alben angekommen sind, entscheidet sich auch hier. */
+            const trugAlben = !!(rest.playlists && Array.isArray(rest.playlists.playlists) && rest.playlists.playlists.length);
+            const a = ablageSatz(d, trugAlben);
+            z.textContent = `Ernte vom letzten Mal nachgereicht — ${a.text}`; z.style.color = a.farbe; }
       catch (e){ z.textContent = 'Alte Ernte konnte nicht gesichert werden: ' + e.message; }
     }
   } catch (e) {}
@@ -333,7 +367,7 @@
     { k:'privat',  name:'Private Songs',                 was:'Plays und Likes der Unveroeffentlichten - die stehen nicht im oeffentlichen Profil', an:true },
     { k:'timing',  name:'Sunos eigene Analyse', was:'Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt, ~2 s je Song', an:true },
     { k:'benach',  name:'Wer hat reagiert',             was:'Likes, Kommentare, Follows - wer wann; die letzten vier Wochen', an:true },
-    { k:'playl',   name:'Playlists',                     was:'eigene Playlists mit Eintraegen', an:true },
+    { k:'playl',   name:'Alben',                        was:'eigene Alben - Suno nennt sie Playlists - mit allen Eintraegen, auch den privaten', an:true },
     /* Einmaliger Vergleich, standardmaessig AUS: Sunos Zeitmarken gibt
        es in zwei Fassungen (aligned_lyrics v2 und v3). Wir speichern
        v2; ob v3 genauer ist, steht im Backlog. Diese Probe holt BEIDE
@@ -378,6 +412,14 @@
      Dieselbe Schnittstelle wie bin/sammeln.js, nur von hier aus. Sie
      trägt Plays, Likes und Kommentare - genau die Zahlen, die sich
      täglich ändern und deshalb bei jedem Lauf neu geholt gehören. */
+  /* DIE EINE PAUSE FÜR ALLE SUNO-ANFRAGEN. Hausregel: mindestens 250 ms
+     zwischen ALLEN Anfragen an Suno - auch über Blockgrenzen hinweg,
+     denn Suno sieht keine Blöcke, nur Anfragen. setTimeout(250) liefert
+     gemessen 249 ms, weil der Timer aufrundet, nicht abwartet; deshalb
+     260. Vorher hatte jeder Block seinen eigenen Timer, und an den
+     Nahtstellen (Songliste → /api/user/me, Albumblock → erster
+     /api/clip) fehlte die Pause ganz. */
+  const pause = () => new Promise(r => setTimeout(r, 260));
   const zeile1 = sagen('Hole deine öffentliche Songliste von Suno (Titel und Zähler) …');
   const songs = new Map();
   let kopf = null, gesamt = null;
@@ -396,25 +438,435 @@
     if (!teil.length) break;
     for (const c of teil) songs.set(c.id, c);
     zeile1.textContent = `Songliste … ${songs.size}${gesamt?'/'+gesamt:''}`;
-    await new Promise(r => setTimeout(r, 250));   // Suno nicht drängen
+    await pause();                                // Suno nicht drängen
   }
   zeile1.textContent = `Songliste von Suno geholt — ${songs.size} Songs mit aktuellen Zählern`;
   zeile1.style.color = '#16be5c';
 
   /* ---------------- 2 · Was nur mit Anmeldung geht ----------------
-     Wort-Zeitmarken und Playlists antworten ohne Token mit 401. Genau
+     Wort-Zeitmarken und Alben antworten ohne Token mit 401. Genau
      dafür sitzt der Knopf hier. Schlägt es fehl, ist der Rest trotzdem
-     gültig - dann fehlt eben das Karaoke für die neuen Songs. */
-  const zeile2 = sagen('Hole deine Playlists (Reihenfolge und Einträge) …');
-  let playlists = [];
-  if (!wahl.playl){ zeile2.textContent = 'Playlists — übersprungen'; }
-  else try {
-    const a = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/playlists?page=1`,
-                          { credentials:'include' });
-    if (a.ok){ const d = await a.json(); playlists = d.playlists || d || []; }
-  } catch (e) {}
-  zeile2.textContent = `Playlists geholt — ${playlists.length}, mit allen Einträgen`;
-  zeile2.style.color = playlists.length ? '#16be5c' : '#8a8a90';
+     gültig - dann fehlt eben das Karaoke für die neuen Songs.
+
+     DER ALBUMWEG, neu gebaut am 08.09.2026. Vorher stand hier ein
+     einziger Aufruf auf /api/profiles/<handle>/playlists?page=1, OHNE
+     Token - obwohl der Kommentar zwei Zeilen darüber selbst sagt, dass
+     es ohne Token 401 gibt. Dieser Weg steht in KEINER Unterlage;
+     docs/suno-api-wege.txt hält 273 Wege aus Sunos eigenem Quelltext,
+     ein Profil-Unterpfad /playlists ist nicht dabei. Er war geraten.
+     Suno gab "playlists": [] zurück, `if (a.ok)` ohne else und ein
+     leerer catch warfen den Statuscode weg, und die Zeile färbte sich
+     bei null Alben nur grau - optisch dasselbe wie "übersprungen".
+     Drei Wochen lang schrieb der Katalog deshalb den Albumbestand vom
+     17.08.2026 unverändert ab, ohne dass irgendetwas krachte.
+
+     Jetzt der dokumentierte, ZWEISTUFIGE Weg (docs/DATENEXTRAKTION.md:26-30):
+       Köpfe   GET /api/playlist/me?page=N       mit Bearer, 12 je Seite
+       Inhalt  GET /api/playlist/<id>?page=N     mit Bearer, 50 je Seite
+     'me' und nicht '<handle>': der Profil-Weg zeigt nur die öffentlich
+     sichtbaren Alben, /api/playlist/me liefert auch die privaten.
+     Zwei Stufen, weil die Köpfe `playlist_clips` als LEERES Array
+     tragen (DATENEXTRAKTION.md:86) - wer den Kopf für die ganze
+     Wahrheit hält, baut Alben mit je null Einträgen.
+
+     page ZÄHLT AB 1. page=0 und page=1 liefern dieselbe Seite
+     (DATENEXTRAKTION.md:81-84), deshalb wird über die id entdoppelt,
+     genauso wie die Songliste oben mit songs.set(c.id, c). Eine Seite,
+     die nichts NEUES bringt, beendet die Schleife. num_total_results
+     wird zum Vergleich gemeldet, aber nie als Abbruchbedingung
+     verdrahtet - ein fremder Bestand hat andere Größen.
+
+     JEDER FEHLSCHLAG NENNT SEINEN STATUSCODE. 401 (Token abgelaufen),
+     404 (Weg geschlossen) und "wirklich leer" sahen vorher alle gleich
+     aus; genau daran ist der Ausfall vorbeigelaufen. */
+  const zeile2 = sagen('Hole deine Alben (Köpfe und Einträge) …');
+  /* Wer im Suno-Tab angemeldet war - laut /api/user/me, geholt im
+     Albumblock. Fährt in der Ernte mit, damit der Server eine Ernte
+     aus einem fremden Konto abweisen kann (409), statt sie einzuweben. */
+  let angemeldetAls = null;
+  /* Die Ernte trägt genau den Umschlag, den bin/aufbereiten.js beim
+     Lesen der playlists-Rohdatei erwartet (dort: "const koepfe = ...
+     pRoh.playlists", "const rohClips = ... pRoh.clips"): Köpfe als
+     Liste, Einträge als Objekt mit der Album-id als Schlüssel, jeder
+     Eintrag im Umschlag {clip, relative_index, created_at}.
+     Ein Album, dessen Inhalt nicht geholt werden konnte, kommt gar
+     nicht erst in die Ernte - weder Kopf noch Einträge. Ein Album,
+     das bei Suno WIRKLICH leer ist, kommt dagegen MIT leerer Liste
+     hinein: das ist Sunos Wahrheit, und der Riegel in aufbereiten.js
+     behält den alten Stand, wenn es im Katalog noch Einträge hatte. */
+  let albenKoepfe = [];
+  const albenEintraege = {};
+  /* Nur wenn ALLE Köpfe geblättert und ALLE Inhalte geholt wurden, ist
+     diese Ernte die ganze Wahrheit. Nur dann darf aufbereiten.js ein
+     Album, das hier fehlt, als in Suno gelöscht ansehen und wegwerfen.
+     "Alle Köpfe" heisst ZWEIERLEI, und beides muss stimmen:
+       (a) die Kopfliste ist so lang, wie Suno selbst sagt
+           (num_total_results) - wenn Suno die Zahl nennt;
+       (b) die letzte gelesene Kopfseite war LEER, das echte Ende.
+     Bis zum 08.09.2026 abends zählte hier nur, ob die INHALTE kamen.
+     Antwortete Kopfseite 2 mit 200 und einer leeren oder wiederholten
+     Liste, brach die Schleife bei 12 von 25 Köpfen ab, die Flagge stand
+     auf wahr, die Zeile wurde grün - und aufbereiten.js hätte die 13
+     fehlenden Alben als "in Suno gelöscht" entfernt. */
+  let albenVollstaendig = false;
+  if (!wahl.playl){ zeile2.textContent = 'Alben — übersprungen'; zeile2.style.color = '#8a8a90'; }
+  else {
+    try {
+      let tA = await tokenHolen();
+      /* Ohne Token gar nicht erst losfahren. tokenHolen.grund traegt
+         einen fertigen Klartextsatz (etwa "Das Lesezeichen gehoert auf
+         einen Tab von suno.com"); der gehoert in die Zeile, sonst steht
+         da nur "kein Token" und niemand weiss, was zu tun ist. */
+      if (!tA){ throw new Error('kein Token — '
+        + (tokenHolen.grund || 'Suno meldet in diesem Tab keine Anmeldung.')); }
+      /* DER TOKEN LEBT RUND 60 SEKUNDEN (docs/DATENEXTRAKTION.md:15-17),
+         alle Sammelskripte holen ihn vor jeder Anfrage neu. Dieser Lauf
+         macht bei 25 Alben gut 30 Anfragen mit je 250 ms Pause plus
+         Netz - das liegt über der Lebensdauer. Deshalb vor JEDER Anfrage
+         frisch bei Clerk fragen; Clerk gibt einen noch gültigen Token
+         sofort zurück und erneuert nur, wenn er abläuft. Kommt einmal
+         keiner (kurzes Wackeln), fährt der letzte gute weiter. */
+      const kopfMitToken = async () => {
+        const t = await tokenHolen(3000);
+        if (t) tA = t;
+        return { Authorization: 'Bearer ' + tA };
+      };
+      /* WER IST HIER ANGEMELDET? Die Songliste oben kommt vom Profil
+         der Sammlung, aber /api/playlist/me antwortet für das Konto,
+         dessen Token im Tab liegt. Ist das ein anderes als die
+         Sammlung, wären es fremde Alben unter dem richtigen Handle -
+         und aufbereiten.js hielte die eigenen für gelöscht. Deshalb
+         hier einmal /api/user/me fragen (derselbe Weg wie beim ersten
+         Lauf, oben) und den Namen in die Ernte schreiben: der Server
+         hält ihn gegen konfig.json und weist Fremdes mit 409 ab.
+
+         DER WÄCHTER SCHLIESST BEI STÖRUNG, ER ÖFFNET NICHT. Bis zum
+         08.09.2026 abends wurde hier jeder Fehler stumm gefangen -
+         HTTP 500, ein Netzfehler, eine 200er-Antwort ohne handle-Feld -
+         und `angemeldet` blieb null. Null hiess dann "nicht zu
+         erfahren", die Alben des Tabs wurden trotzdem geholt, die Ernte
+         fuhr mit vollstaendig=true und ohne angemeldetAls zum Server,
+         und der Server konnte nur noch profil.handle prüfen - der aus
+         dem EIGENEN Katalog stammt und nie fremd ist. War im Tab ein
+         anderes Konto angemeldet, wären dessen Alben als die eigenen
+         eingewoben und alle eigenen als "in Suno gelöscht" entfernt
+         worden. Ein Wächter, der bei Störung durchwinkt, ist keiner:
+         gerade wenn die Frage nicht beantwortet wird, darf die Antwort
+         nicht "ja" lauten. Deshalb jetzt: ohne bestätigtes Konto läuft
+         der Albumblock NICHT, mit Grund in der Zeile; der Rest der
+         Ernte (Songliste, Private, Analyse) läuft weiter. */
+      await pause();                       // die Songliste oben bricht an drei Stellen ohne Pause ab
+      let angemeldet = null, meGrund = null;
+      try {
+        const rMe = await fetch(`${API}/api/user/me`, { headers: await kopfMitToken() });
+        if (!rMe.ok) meGrund = `HTTP ${rMe.status}`;
+        else {
+          const me = await rMe.json();
+          angemeldet = (me && (me.handle || (me.profile && me.profile.handle))) || null;
+          if (!angemeldet) meGrund = `Antwort ohne handle (Felder: ${Object.keys(me||{}).join(', ') || 'keine'})`;
+        }
+      } catch (x) { meGrund = x.message || 'Netzfehler'; }
+      if (!angemeldet){
+        const u = new Error(`Alben — Konto nicht bestätigt (/api/user/me: ${meGrund}), übersprungen`);
+        u.uebersprungen = true;            // die Zeile bekommt den Satz unverändert, siehe catch
+        throw u;
+      }
+      angemeldetAls = angemeldet;
+      if (String(angemeldet).toLowerCase() !== String(handle).toLowerCase())
+        throw new Error(`in diesem Tab ist @${angemeldet} angemeldet, die Sammlung gehört @${handle} — `
+                      + `fremde Alben werden nicht geholt`);
+      await pause();                       // auch zwischen dieser Frage und der ersten Kopfseite
+
+      /* Sunos Gesamtzahlen kommen als Zahl, koennten aber auch als
+         Zeichenkette kommen ("2", "0") - und "2" > 0 ist in JavaScript
+         wahr, "0" > 0 falsch, "2" < 3 wahr; ein Vergleich mit !== oder
+         Math.max dagegen kippt. Deshalb EINE Stelle, die aus allem, was
+         Suno nennt, eine Zahl macht oder null: fehlt, leer oder kein
+         Zahlwert heisst "nicht genannt".
+         STRENG seit dem 08.09.2026 abends (Gegenleser, Runde 4): Number()
+         macht aus '  ', false und [] eine 0 - und eine 0 galt unten als
+         Sunos AUSDRUECKLICHES "leer", das Album kam leer in die Ernte,
+         die Flagge blieb gruen. Auch -1 rutschte durch (weder > 0 noch
+         null). Als Nennung zaehlt deshalb nur, was auch eine Anzahl sein
+         kann: eine endliche Zahl >= 0 oder eine Zeichenkette, die nach
+         trim() nur aus Ziffern besteht. Alles andere ist "nicht genannt"
+         - das schaerft die Warnungen; endgueltig harmlos macht solche
+         Antworten die Bestaetigungsregel in bin/aufbereiten.js. */
+      const zahl = (v) => {
+        if (typeof v === 'number') return (Number.isFinite(v) && v >= 0) ? v : null;
+        if (typeof v === 'string' && /^\d+$/.test(v.trim())) return Number(v.trim());
+        return null;
+      };
+
+      /* --- Stufe 1: die Köpfe --- */
+      const koepfe = new Map();
+      let lautSuno = null;
+      let kopfEndeGesehen = false;        // erst eine LEERE Seite beweist das Ende
+      /* Notbremse wie bei der Songliste oben (deren 60-Seiten-Schleife):
+         eine generische Obergrenze, keine Zahl aus irgendeinem Bestand. */
+      for (let seite = 1; seite <= 200; seite++){
+        if (seite > 1) await pause();    // vor jeder Folgeanfrage, auch vor der letzten
+        const a = await fetch(`${API}/api/playlist/me?page=${seite}`, { headers: await kopfMitToken() });
+        if (!a.ok){
+          /* Hinter der letzten Seite könnte Suno statt einer leeren
+             Liste auch einen Fehlercode geben - das ist nicht belegt.
+             Sind bis hierher so viele Köpfe da, wie Suno selbst nennt,
+             gilt das nicht als Fehlschlag, aber auch NICHT als
+             bewiesenes Ende: die Alben kommen in die Ernte, nur
+             gelöscht wird aus ihr nichts. */
+          if (seite > 1 && lautSuno != null && koepfe.size >= lautSuno) break;
+          throw new Error(`Albumliste Seite ${seite} — HTTP ${a.status}`);
+        }
+        const d = await a.json();
+        const teil = Array.isArray(d) ? d
+                   : (d && Array.isArray(d.playlists)) ? d.playlists : null;
+        /* KEIN `d.playlists || d`: Kommt eine Antwort ohne den Schlüssel,
+           war das vorher ein OBJEKT in playlists, dessen .length undefined
+           ist - die Zeile meldete "geholt — undefined" und färbte grau. */
+        if (!teil) throw new Error(`Albumliste Seite ${seite} — Antwort ohne Liste `
+                                 + `(Felder: ${Object.keys(d||{}).join(', ') || 'keine'})`);
+        { const n = zahl(d && d.num_total_results); if (n != null) lautSuno = n; }
+        let neuHier = 0;
+        for (const p of teil) if (p && p.id && !koepfe.has(p.id)){ koepfe.set(p.id, p); neuHier++; }
+        zeile2.textContent = `Alben … ${koepfe.size}${lautSuno != null ? '/' + lautSuno : ''}`;
+        if (!teil.length){ kopfEndeGesehen = true; break; }   // leer: das echte Ende
+        /* Gefüllt, aber nichts Neues: die Doppelseite page=0/1 oder eine
+           Wiederholung. Weiterblättern bringt nichts - aber ein Ende ist
+           das NICHT, deshalb bleibt kopfEndeGesehen falsch. */
+        if (!neuHier) break;
+      }
+      const alleKoepfe = [...koepfe.values()];
+      if (!alleKoepfe.length) throw new Error('Suno nennt kein einziges Album');
+      const kopfLuecke = lautSuno != null && alleKoepfe.length < lautSuno;
+      /* Die andere Richtung ist genauso ein Widerspruch: Suno nennt
+         WENIGER Alben, als es gerade geliefert hat. Bis zum 08.09.2026
+         abends galt das als harmlos ("Suno nennt 0 Alben" in der Zeile,
+         Flagge wahr) - nachgespielt: Liste nennt 0 bei 12 gelieferten
+         Koepfen, Seite 2 leer, und aufbereiten.js entfernte die 13 Alben,
+         die in dieser Ernte fehlten. Eine Zahl, die dem Gelieferten
+         widerspricht, taugt nicht als Zeuge fuer "alles da"; aus so einer
+         Ernte wird nichts geloescht. */
+      const kopfWiderspruch = lautSuno != null && lautSuno < alleKoepfe.length;
+
+      /* --- Stufe 2: je Album die Einträge --- */
+      let eintraegeGesamt = 0, ohneClipGesamt = 0, bisherGeholt = 0;
+      const luecken = [], ausgefallen = [];
+      /* Je Album ein Befund, die Entscheidung "in die Ernte / Luecke /
+         Ausfall" faellt ERST NACH allen Alben: Ob ein Album nach einer
+         VOLLEN Seite abgebrochen hat, laesst sich nur gegen die
+         Seitengroesse dieses Laufs sagen - und die kennt man erst, wenn
+         alle geblaettert sind (unten, "SEITENGROESSE"). */
+      const befunde = [];
+      for (const p of alleKoepfe){
+        await pause();                     // auch zwischen Stufe 1 und dem ersten Album
+        try {
+          const eintraege = new Map();
+          /* Roh gelieferte Einträge, auch die OHNE brauchbaren clip:
+             Suno liefert gelöschte und private Songs genau so aus
+             (docs/DATENEXTRAKTION.md, "Sechs Einträge liefert die API
+             nicht aus"). Ob eine Seite etwas Neues brachte, entscheidet
+             sich an DIESEN, nicht an den brauchbaren - sonst beendet
+             eine Seite voller Leerhüllen das Blättern mitten im Album. */
+          const rohGesehen = new Set();
+          /* DIE KOPFZAHL IST DIE MASSGEBLICHE. Bis zum 08.09.2026 abends
+             ueberschrieb die Zahl aus der Inhaltsantwort die Kopfzahl -
+             und eine Inhaltsantwort, die 200 mit leerer Liste UND
+             num_total_results 0 gab, senkte damit das Soll auf 0: der
+             Widerspruchsriegel unten (0 > 0) griff nicht, das Album stand
+             mit null Eintraegen in der Ernte, die Flagge blieb wahr, und
+             aufbereiten.js leerte es im Katalog (nachgespielt: 50
+             Eintraege wurden 48; bei 24 solchen Alben 2). Die Zahl aus
+             dem Inhalt darf das Soll nur ERHOEHEN, nie senken: Wer
+             sagt "ich habe 2", dem glaubt man nicht, wenn er gleich
+             darauf "0" sagt und nichts liefert. */
+          const kopfN = zahl(p.num_total_results);
+          let sollLautSuno = kopfN, ohneClip = 0;
+          /* Fuer die Seitengroesse (unten): wie viele Seiten brachten
+             etwas Neues, wie gross war die letzte davon, wie gross die
+             groesste. Gezaehlt wird, was Suno GELIEFERT hat (teil.length),
+             nicht, was brauchbar war. */
+          let seitenMitNeuem = 0, letzteSeite = 0, groessteSeite = 0;
+          for (let seite = 1; seite <= 200; seite++){
+            if (seite > 1) await pause();
+            const a = await fetch(`${API}/api/playlist/${encodeURIComponent(p.id)}?page=${seite}`,
+                                  { headers: await kopfMitToken() });
+            if (!a.ok) throw new Error(`Seite ${seite} — HTTP ${a.status}`);
+            const d = await a.json();
+            const teil = (d && Array.isArray(d.playlist_clips)) ? d.playlist_clips
+                       : Array.isArray(d) ? d : null;
+            if (!teil) throw new Error(`Seite ${seite} — Antwort ohne playlist_clips `
+                                     + `(Felder: ${Object.keys(d||{}).join(', ') || 'keine'})`);
+            { const inhaltN = zahl(d && d.num_total_results);
+              if (inhaltN != null) sollLautSuno = Math.max(sollLautSuno ?? 0, inhaltN); }
+            let neuRoh = 0;
+            for (const e of teil){
+              const c = e && e.clip;
+              /* Entdoppeln über clip-id UND Position: Die Doppelseite
+                 page=0/page=1 liefert denselben Eintrag mit derselben
+                 Position und fällt heraus; ein Song, den man zweimal in
+                 dasselbe Album gelegt hat, steht auf zwei Positionen und
+                 bleibt beides Mal erhalten. Ohne clip zählt die Position
+                 allein - für die Abbruchfrage reicht das. */
+              const schluessel = ((c && c.id) || '?') + '·' + ((e && e.relative_index) ?? '');
+              if (rohGesehen.has(schluessel)) continue;
+              rohGesehen.add(schluessel); neuRoh++;
+              if (!c || !c.id){ ohneClip++; continue; }
+              eintraege.set(schluessel, e);     // der volle Umschlag, roh wie er kam
+            }
+            zeile2.textContent = `Alben … ${alleKoepfe.length}, `
+              + `${bisherGeholt + eintraege.size} Einträge`;
+            if (!teil.length || !neuRoh) break;
+            seitenMitNeuem++; letzteSeite = teil.length;
+            groessteSeite = Math.max(groessteSeite, teil.length);
+          }
+          /* KOPF UND INHALT WIDERSPRECHEN SICH: Der Kopf nennt N > 0
+             Einträge, der Inhalt antwortet 200 mit einer LEEREN Liste.
+             Das ist kein leeres Album, das ist eine Antwort, die nicht
+             stimmt (vorübergehend, Suno liefert die Seite mal leer).
+             Bliebe sie stehen, stünde das Album mit null Einträgen in
+             der Ernte, die Flagge unten wüsste nichts davon (sie kennt
+             nur `ausgefallen`, nicht `luecken`), und aufbereiten.js
+             leerte das Album im Katalog mit der Spiegelregel - nach-
+             gespielt: 25 Alben, 50 Einträge wurden 48. Deshalb gilt
+             "0 von N > 0" als AUSFALL, genau wie ein HTTP-Fehler: das
+             Album fehlt in der Ernte, die Ernte gilt als unvollständig,
+             der Riegel greift. Gezählt wird das ROH Gelieferte: Kommen
+             nur Leerhüllen ohne clip, hat Suno geantwortet - das ist
+             eine Lücke (unten), kein Ausfall. Und Caspar_Ds sechs
+             dauerhaft fehlende Einträge liefern N-6 von N, nicht 0 von
+             N - auch die bleiben eine Lücke. Ein Kopf mit N = 0 und
+             leerem Inhalt ist wirklich leer und bleibt stehen.
+             sollLautSuno ist hier das Groessere aus Kopf- und
+             Inhaltszahl (siehe oben) - eine Inhaltszahl 0 kann den
+             Riegel nicht mehr aushebeln. */
+          if (sollLautSuno > 0 && !rohGesehen.size)
+            throw new Error(`leer geliefert, Suno nennt ${sollLautSuno} Einträge`);
+          /* NICHTS GELIEFERT UND NIRGENDS EINE ZAHL: Weder der Kopf noch
+             der Inhalt nennen num_total_results, die Liste ist leer. Das
+             KANN ein leeres Album sein - oder dieselbe vorübergehend
+             leere Antwort wie oben, nur ohne den Zeugen, der sie
+             ueberfuehrt. Bis zum 08.09.2026 abends blieb so ein Album
+             mit null Eintraegen in der Ernte (0 > null ist falsch), die
+             Flagge wahr, und aufbereiten.js leerte es im Katalog. Ohne
+             Zahl ist "leer" kein Beweis; im Zweifel Ausfall: das Album
+             fehlt in der Ernte, der Katalogstand bleibt, die Zeile
+             nennt es. Nennt Suno irgendwo ausdruecklich 0, bleibt das
+             Album leer stehen - das ist Sunos Wort. */
+          if (sollLautSuno == null && !rohGesehen.size)
+            throw new Error('leer geliefert, und weder Kopf noch Inhalt nennen eine Gesamtzahl');
+          befunde.push({ p, eintraege: [...eintraege.values()], roh: rohGesehen.size,
+                         soll: sollLautSuno, ohneClip, seitenMitNeuem, letzteSeite, groessteSeite });
+          bisherGeholt += eintraege.size;
+        } catch (x){
+          /* Ein Album, dessen Inhalt nicht kam, wird WEGGELASSEN - Kopf
+             wie Einträge. Ein Kopf ohne Inhalt hieße in aufbereiten.js
+             "dieses Album hat null Einträge", und der Riegel dort müsste
+             es erst wieder zurückholen. Fehlt es ganz, bleibt schlicht
+             der Katalogstand stehen. Der Lauf geht weiter: ein einzelnes
+             kaputtes Album darf nicht alle anderen verhindern. */
+          ausgefallen.push(`${p.name || p.id}: ${x.message}`);
+        }
+      }
+
+      /* SEITENGROESSE: ABBRUCH NACH VOLLER SEITE IST EIN AUSFALL, KEINE
+         LUECKE. Ein Album, das weniger liefert, als Suno nennt, kann
+         zweierlei sein: Caspar_Ds sechs dauerhaft fehlende Eintraege
+         (Suno liefert sie nie, mehrfaches Abrufen aendert nichts) - oder
+         eine Seite, die diesmal vorübergehend leer kam. Bis zum
+         08.09.2026 abends sahen beide gleich aus: Kopf N=101, Seite 1
+         und 2 voll, Seite 3 leer, ergab "40/101, Luecke", Flagge wahr,
+         und aufbereiten.js schrieb das Album per Spiegelregel auf 40
+         herunter. Das Merkmal, das beide trennt: Ein natuerliches Ende
+         kommt nach einer NICHT vollen Seite (die letzte ist kuerzer).
+         Bricht das Blaettern nach einer VOLLEN Seite ab und liegt das
+         Gelieferte unter N, fehlt eine Seite - das ist ein Ausfall.
+         "Voll" wird NICHT verdrahtet, sondern aus diesem Lauf gelesen:
+         die groesste gelieferte Seite ueber alle Alben - und nur, wenn
+         mindestens ein Album mehr als eine Seite brauchte, sonst ist
+         "voll" gar nicht definiert (lauter kleine Alben in einem Bestand:
+         die groesste Seite ist dann irgendein ganzes Album). Nur EINE
+         Seite geliefert, die so gross ist wie die groesste des Laufs,
+         und weniger als N: ambivalent (Seite 1 von 3, deren Seite 2
+         leer kam?) - im Zweifel Ausfall. Caspar_Ds echte Faelle
+         (AHNHEIM 25/26, Nice Songs 42/43, Vor langer Zeit 32/35, alle
+         eine Seite bei 50 je Seite, "voll" durch My Industrial Songs
+         101 = 3 Seiten definiert) sind alle kuerzer als 50 und bleiben
+         Luecke. Ein ausgefallenes Album fehlt in der Ernte wie bei
+         einem HTTP-Fehler: der Katalogstand bleibt, die Flagge faellt. */
+      const seitenGroesse = befunde.reduce((m, b) => Math.max(m, b.groessteSeite), 0);
+      const vollBekannt   = befunde.some(b => b.seitenMitNeuem > 1);
+      for (const b of befunde){
+        const name = b.p.name || b.p.id;
+        if (b.soll != null && b.roh < b.soll && vollBekannt && b.letzteSeite === seitenGroesse){
+          ausgefallen.push(`${name}: Blättern brach nach einer vollen Seite (${b.letzteSeite}) `
+                         + `bei ${b.roh} von ${b.soll} ab`);
+          continue;
+        }
+        albenEintraege[b.p.id] = b.eintraege;
+        eintraegeGesamt += b.eintraege.length;
+        ohneClipGesamt  += b.ohneClip;
+        /* Kopfzahl gegen Geliefertes halten. Bei Caspar_D liefert Suno
+           sechs Einträge dauerhaft nicht aus (DATENEXTRAKTION.md, "kein
+           Sammelfehler, mehrfaches Abrufen ändert nichts") - das ist
+           kein Grund, den Lauf abzubrechen, aber es gehört gesagt,
+           sonst sieht eine verlorene Seite genauso aus. */
+        if (b.soll != null && b.eintraege.length < b.soll)
+          luecken.push(`${name} ${b.eintraege.length}/${b.soll}`
+                     + (b.ohneClip ? ` (${b.ohneClip} ohne clip)` : ''));
+      }
+
+      /* Nur Alben, deren Inhalt geholt wurde - eine leere Liste ist
+         geholter Inhalt (siehe oben), ein fehlender Schlüssel nicht. */
+      albenKoepfe = alleKoepfe.filter(p => Array.isArray(albenEintraege[p.id]));
+      /* OHNE SUNOS GESAMTZAHL NIE VOLLSTÄNDIG: Nennt /api/playlist/me
+         kein num_total_results, bleibt lautSuno null, und kopfLuecke
+         kann gar nicht wahr werden - sie vergleicht gegen nichts. Dann
+         reicht eine vorübergehend leere Seite 2 nach zwölf Köpfen, und
+         die Ernte sähe vollständig aus; aufbereiten.js löschte die
+         dreizehn übrigen Alben. Ohne Vergleichszahl ist "leer" kein
+         Beweis, nur ein Ende ohne Zeugen. Die Ernte kommt trotzdem an
+         (Alben werden ergänzt und aktualisiert), gelöscht wird aus ihr
+         nichts. */
+      albenVollstaendig = lautSuno != null && !ausgefallen.length && !kopfLuecke && !kopfWiderspruch
+                       && kopfEndeGesehen;
+
+      /* Die Groesse gehoert in die Zeile: Die Alben fahren im ersten Post
+         mit, und der Server kappt bei 64 MB mit req.destroy() - der
+         Browser saehe dann nur "Failed to fetch". Wer die Zahl wachsen
+         sieht, erkennt das kommen. */
+      const mb = JSON.stringify({ playlists: albenKoepfe, clips: albenEintraege }).length / 1048576;
+      const groesse = mb >= 1 ? mb.toFixed(1) + ' MB' : Math.round(mb * 1024) + ' KB';
+      let text = `Alben — ${albenKoepfe.length} mit ${eintraegeGesamt} Einträgen (${groesse})`;
+      if (kopfLuecke) text += `; KOPFLISTE UNVOLLSTÄNDIG: ${alleKoepfe.length} von ${lautSuno} laut Suno`;
+      else if (lautSuno == null) text += '; Suno nennt keine Gesamtzahl';
+      else if (kopfWiderspruch) text += `; WIDERSPRUCH: Suno nennt ${lautSuno} Alben, geliefert ${alleKoepfe.length}`;
+      if (!kopfEndeGesehen && !kopfLuecke) text += '; Ende der Albumliste nicht bestätigt';
+      if (luecken.length)     text += `; unvollständig: ${luecken.join(', ')}`;
+      if (ohneClipGesamt)     text += `; ${ohneClipGesamt} Einträge ohne clip (gelöscht/privat bei Suno)`;
+      if (ausgefallen.length) text += `; NICHT geholt: ${ausgefallen.join(' · ')}`;
+      if (!albenVollstaendig) text += ' — aus dieser Ernte wird im Katalog nichts gelöscht';
+      zeile2.textContent = text;
+      /* NULL ALBEN BEI ANGEHAKTEM KASTEN IST EIN FEHLER, kein Zustand.
+         Dasselbe gilt für Alben ohne einen einzigen Eintrag - das ist
+         der Kopf-ohne-Inhalt-Fall, der im Katalog 599 Einträge löschen
+         würde, wenn der Riegel in aufbereiten.js ihn nicht abfinge.
+         Und dasselbe gilt für eine Kopfliste, die kürzer ist, als Suno
+         sagt: aus so einer Ernte würde gelöscht, wäre die Flagge oben
+         nicht - deshalb Pink, nicht Orange. Orange ist alles, was
+         unvollständig, aber ungefährlich ist. */
+      zeile2.style.color = (!albenKoepfe.length || !eintraegeGesamt || kopfLuecke) ? '#e31c79'
+                         : (ausgefallen.length || luecken.length || !kopfEndeGesehen || lautSuno == null
+                            || kopfWiderspruch) ? '#f97b14'
+                         : '#16be5c';
+    } catch (x){
+      /* Nichts halb Geholtes in die Ernte: Ein Fehlschlag auf der
+         Kopfliste heißt, dass niemand weiß, wie viele Alben es gibt. */
+      albenKoepfe = []; albenVollstaendig = false;
+      for (const k of Object.keys(albenEintraege)) delete albenEintraege[k];
+      zeile2.textContent = x.uebersprungen ? x.message : 'Alben — nicht geholt: ' + x.message;
+      zeile2.style.color = '#e31c79';
+    }
+  }
 
   /* ---------------- 2b · Was nur mit Token geht ----------------
      Drei Auskuenfte aus der Adressliste der Web-App
@@ -459,13 +911,16 @@
     if (t0){
       const H0 = { Authorization: 'Bearer ' + t0 };
       const priv = (daheim.songs||[]).filter(a => !a.oeffentlich && !a.fremd && !songs.has(a.id));
+      /* Die letzte Suno-Anfrage war die letzte Albumseite - ohne diese
+         Pause folgte der erste /api/clip unmittelbar darauf. */
+      if (priv.length) await pause();
       for (const a of priv){
         try {
           const r = await fetch(`${API}/api/clip/${a.id}`, { headers: H0 });
           if (r.ok){ const c = await r.json(); if (c && c.id){ privatSongs.set(c.id, c); privatGeholt++; } }
         } catch (x) {}
         zeileP.textContent = `Private Songs … ${privatGeholt}/${priv.length}`;
-        await new Promise(r => setTimeout(r, 250));
+        await pause();
       }
       zeileP.textContent = `Private Songs — ${privatGeholt} mit frischen Zählern`;
       zeileP.style.color = '#16be5c';
@@ -574,7 +1029,7 @@
             else if (d && !d.fehler) { (probe[id] = probe[id] || {})[fassung] = d; fertigZahl++; }
           } catch (x) {}
           if (n % 10 === 0) z2.textContent = `Wort-Zeitmarken ${fassung} … ${n}/${fehlt.length} (${fertigZahl} fertig, ${laeuft} rechnet Suno noch)`;
-          await new Promise(r => setTimeout(r, 250));
+          await pause();
         }
       }
       if (Object.keys(probe).length) timing.__zeitprobe = probe;
@@ -625,7 +1080,7 @@
         zeileN.textContent = `Wer hat reagiert … ${benachrichtigungen.length}`;
         if (!d.next_before_datetime_utc) break;
         vor = d.next_before_datetime_utc;
-        await new Promise(r => setTimeout(r, 250));
+        await pause();
       }
       zeileN.textContent = `Wer hat reagiert — ${benachrichtigungen.length}`;
       zeileN.style.color = '#16be5c';
@@ -690,7 +1145,23 @@
                  : { handle },
     songs: [...songs.values()],
     privat: [...privatSongs.values()],
-    playlists,
+    /* DER ALBUMUMSCHLAG, genau wie bin/aufbereiten.js ihn beim Lesen der
+       playlists-Rohdatei erwartet ("const koepfe = ... pRoh.playlists",
+       "const rohClips = ... pRoh.clips"): Koepfe als Liste, Eintraege als
+       Objekt mit der Album-id als Schluessel. Vorher stand hier eine nackte Liste von Koepfen - und
+       der Server hat sie nie irgendwohin geschrieben, wo aufbereiten sie
+       gefunden haette. Das Feld heisst weiter 'playlists', weil Katalog,
+       Oberflaeche und Rohdatenart es so nennen.
+       Die Alben fahren im ERSTEN Post mit (anServer spaltet nur timing
+       ab). Gemessen an Caspar_Ds Bestand: 599 Eintraege mit vollen
+       clip-Objekten waren am 17.08.2026 3,8 MB, rund 6 KB je Eintrag -
+       die Kappe im Server liegt bei 64 MB, das reicht fuer rund 10.000
+       Eintraege. Die Zeile oben nennt die tatsaechliche Groesse. */
+    playlists: { playlists: albenKoepfe, clips: albenEintraege,
+                 vollstaendig: albenVollstaendig },
+    /* Wer im Suno-Tab angemeldet war (siehe Albumblock). null, wenn es
+       nicht zu erfahren war - dann prueft der Server nur profil.handle. */
+    angemeldetAls,
     benachrichtigungen,
   };
   const zeileA = sagen('Übertrage die Ernte ans Archiv (erst in den Browser-Speicher, dann in Paketen an den Server) …');
@@ -701,8 +1172,11 @@
   try {
     abgelegt = await anServer(ernte, t => zeileA.textContent = t);
     await ernteVergessen();
-    zeileA.textContent = `Gesichert — ${abgelegt.abgelegt}`;
-    zeileA.style.color = '#16be5c';
+    /* Was der Server an Alben angenommen hat, sagt ablageSatz (oben,
+       bei anServer) - dieselbe Zeile wie beim Nachreichen. */
+    const a = ablageSatz(abgelegt, !!wahl.playl);
+    zeileA.textContent = `Gesichert — ${a.text}`;
+    zeileA.style.color = a.farbe;
   } catch (e){
     zeileA.textContent = 'Server nicht erreichbar — die Ernte liegt im Browser und wird '
       + 'beim nächsten Klick nachgereicht. (' + e.message + ')';

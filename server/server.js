@@ -365,7 +365,7 @@ const MORGEN_SCHRITTE = [
      ueber die Signatur den Katalog braucht. */
   { schluessel: 'medien', name: 'Heruntergeladene Audiodateien übernehmen', befehl: ['bin/uebernehmen.js', '--tun'] },
   { schluessel: 'medien', name: 'Fehlende Medien laden (MP3, Cover, Videos)', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
-  { schluessel: 'analyse', name: 'Klanganalyse für neue Songs rechnen', befehl: ['bin/vorrechnen.js'],
+  { schluessel: 'analyse', name: 'Klanganalyse für neue Titel rechnen', befehl: ['bin/vorrechnen.js'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
       const fertig = new Set(analyseListe());
@@ -385,13 +385,33 @@ const MORGEN_SCHRITTE = [
       return Object.values(k.songs || {}).filter(s => !s.fremd && !fertig[s.id]
         && fs.existsSync(path.join(WURZEL, 'library', 'songs', s.id, 'audio.mp3'))).length;   /* wie der Detektor selbst */
     } },
-  /* Whisper nur fuer neue Songs mit Text (ohne --alle); Instrumentals
-     und die Fokus-Wanderung schliesst whisper.js selbst aus. */
-  { schluessel: 'whisper', kaffee: true, name: 'Karaoke-Zeitanker mit Whisper für neue Songs', befehl: ['bin/whisper.js', '--still'],
+  /* Whisper fuer JEDEN neuen Titel mit Text - auch fuer die, die Sunos
+     eigene Zeitmarken tragen. Bis zum 08.09.2026 lief hier der enge
+     Modus (ohne --alle), der nur Titel ohne Suno-Zeitmarken nahm; die
+     261 fertigen Eintraege in whisper.ndjson stammten aus einem Handlauf
+     vom 19.-25.08., und drei neue Titel mit Suno-Zeitmarken blieben
+     danach ohne Whisper und ohne bereinigte Lyrik. Caspar_D, 08.09.2026:
+     "Whisper analysiert alles, ausser Instrumentals, einfach weil Suno
+     auch Fehler macht und Whisper die zuverlaessigere Zeitzuordnung
+     macht." Instrumentals und die Fokus-Wanderung schliesst whisper.js
+     selbst aus; --alle ueberspringt, was in whisper.ndjson schon steht. */
+  { schluessel: 'whisper', kaffee: true, name: 'Karaoke-Zeitanker mit Whisper für neue Titel', befehl: ['bin/whisper.js', '--still', '--alle'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
-      return Object.values(k.songs || {}).filter(s => !s.fremd && s.lyrics && !(s.worte && s.worte.length) && !/\s(I|II|III|IV)$/.test(s.titel || '')).length;
+      const fertig = new Set();
+      try { for (const z of fs.readFileSync(path.join(WURZEL, 'library', 'whisper.ndjson'), 'utf8').split('\n'))
+              if (z.trim()) { try { fertig.add(JSON.parse(z).id); } catch (e) {} } } catch (e) {}
+      return Object.values(k.songs || {}).filter(s => !s.fremd && s.lyrics && s.lyrics.trim() && !fertig.has(s.id)
+        && !/\s(I|II|III|IV)$/.test(s.titel || '')).length;
     } },
+  /* Die bereinigte Lyrik direkt hinter Whisper: bin/lyrik.js gleicht den
+     Liedtext gegen die Whisper-Marken ab (Needleman-Wunsch) und streicht,
+     was nicht gesungen wird. Bis zum 08.09.2026 stand der Schritt in
+     keinem Lauf - library/lyrik.json war ein Handstart vom 07.09., und
+     jeder Titel seither blieb ohne. Zwei Sekunden fuer den ganzen
+     Bestand; rechnet immer alles neu, weil Whisper-Eintraege und Texte
+     sich aendern koennen. */
+  { schluessel: 'whisper', name: 'Bereinigte Lyrik — Liedtext gegen die Whisper-Marken abgleichen', befehl: ['bin/lyrik.js', '--tun'] },
   /* Musikstil (Discogs-EffNet, lokal per onnxruntime-node): Embedding,
      Stil, Genre, Stimmung, Instrumente je Song - Grundlage der Karte.
      VOR Whisper waere schneller (6 s je Song), aber hinter Whisper ist
@@ -412,7 +432,7 @@ const MORGEN_SCHRITTE = [
      library/karte-geschichten.json da ist - ein beiseitegelegter Raum
      (library/entwurf/) bleibt zu; der Lauf pflegt, was der Autor
      aufgemacht hat, und macht nichts von selbst auf. */
-  { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Vektoren für neue Songs', befehl: ['bin/geschichten.js'] },
+  { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Vektoren für neue Titel', befehl: ['bin/geschichten.js'] },
   { schluessel: 'geschichten', name: 'Geschichten-Raum: Wortvektoren für die Ortsbegriffe', befehl: ['bin/ortsbegriffe.js'] },
   { schluessel: 'geschichten', name: 'Geschichten-Raum neu zeichnen (nur wenn offen)', befehl: ['bin/karte.js', '--raum', 'geschichten'] },
   { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Achsen (Stoff, Haltung, Ton)', befehl: ['bin/geschichten-achsen.js'] },
@@ -737,10 +757,36 @@ const server = http.createServer((req, res) => {
            SONGS aus, aber nicht fremde NUTZER. Traegt die Ernte einen
            anderen Handle als die Sammlung, wird sie NICHT angenommen. */
         const konf = konfigLesen();
-        if (konf.handle && daten.handle && String(daten.handle).toLowerCase() !== String(konf.handle).toLowerCase()) {
+        /* WO DER HANDLE STEHT. Bis zum 08.09.2026 abends prüfte diese
+           Zeile `daten.handle` - ein Feld, das morgens.js nie schreibt.
+           Der Handle steht in daten.profil.handle. Die Bedingung war
+           damit immer falsch, jede Ernte kam durch, und seit die
+           Alben mitfahren, hätte eine Ernte aus einem fremden Konto
+           die playlists-Datei geschrieben und aufbereiten.js alle
+           eigenen Alben gelöscht - keine ihrer Ids stünde in der
+           fremden Ernte. Zwei Namen werden gehalten: der Handle, für
+           den die Ernte gesammelt wurde (profil.handle), und das
+           Konto, das im Suno-Tab angemeldet war (angemeldetAls, aus
+           /api/user/me - denn /api/playlist/me antwortet für DIESES
+           Konto, egal welcher Handle in der Ernte steht). Weicht einer
+           von beiden ab, wird nichts geschrieben. */
+        const hErnte = daten.handle || (daten.profil && daten.profil.handle) || null;
+        const hKonto = daten.angemeldetAls || null;
+        const gleich = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+        /* WEM DIE SAMMLUNG GEHÖRT: konfig.json, sonst der Katalog. Bis
+           zum 08.09.2026 abends hing der Wächter allein an konf.handle -
+           fehlte die Datei (frisch kopierter Bestand, exFAT-Reste,
+           konfigLesen() gibt dann {} zurück), war er AUS, und jede Ernte
+           kam durch. Der Katalog kennt den Handle genauso (/api/konfig
+           schlägt ihn von dort vor); er ist der Rückfall. Fehlt beides,
+           ist das der erste Tag eines leeren Systems. */
+        const kat = katalogHolen();
+        const sammlung = konf.handle || (kat && kat.profil && kat.profil.handle) || null;
+        const fremd  = sammlung ? [hErnte, hKonto].find(h => h && !gleich(h, sammlung)) : null;
+        if (fremd) {
           return jsonAntwort(res, { fehler: 'fremder-nutzer',
-            meldung: `Diese Ernte stammt von @${daten.handle}, die Sammlung gehört @${konf.handle}. Nicht eingewoben — im KlangTresor den Alias wechseln oder in Suno mit dem richtigen Konto anmelden.`,
-            ernte: daten.handle, sammlung: konf.handle }, 409);
+            meldung: `Diese Ernte stammt von @${fremd}, die Sammlung gehört @${sammlung}. Nicht eingewoben — im KlangTresor den Alias wechseln oder in Suno mit dem richtigen Konto anmelden.`,
+            ernte: fremd, sammlung }, 409);
         }
         /* Ein reines Timing-Paket (songs leer) schreibt KEINE profil-Datei -
            die wuerde beim Neuaufbau als leere Songliste gelesen. */
@@ -795,6 +841,67 @@ const server = http.createServer((req, res) => {
             JSON.stringify({ alle: daten.privat, abgerufenAm: daten.erzeugtAm,
                              quelle: 'api/clip/<id> — unveroeffentlichte Songs, ueber das Lesezeichen' }));
         }
+        /* ---- DIE ALBEN --------------------------------------------
+           Eigene Rohdatenart playlists-<stempel>.json, nach demselben
+           Muster wie die Privaten daneben - nur mit dem Umschlag, den
+           bin/aufbereiten.js beim Lesen der playlists-Rohdatei erwartet
+           ("const koepfe = ... pRoh.playlists", "const rohClips = ...
+           pRoh.clips"): playlists (die Koepfe) und clips (je Album-id
+           die Eintraege). Bis zum 08.09.2026 hat
+           NIEMAND diese Datei geschrieben; die Alben fuhren in der Ernte
+           mit, landeten in profil-<stempel>.json und wurden dort nie als
+           Alben gelesen. Deshalb schrieb der Katalog seinen Albumbestand
+           vom 17.08.2026 bei jedem Lauf unveraendert ab.
+
+           NUR WENN BEIDES BRAUCHBAR IST. aufbereiten.js baut die Alben
+           bei jedem Lauf NEU aus dieser Datei - findet es sie, wirft es
+           den bisherigen Stand weg. Eine Datei ohne clips oder mit
+           leerem clips waere damit ein Loeschbefehl fuer saemtliche
+           Eintraege im Katalog. Lieber keine Datei als eine leere:
+           fehlt eines von beidem, entsteht hier nichts, aufbereiten
+           findet keine Rohdatei und laesst den Stand stehen. Die
+           Antwort unten nennt die Zahlen, damit ein zweiter Ausfall
+           nicht wieder aussieht wie Erfolg. */
+        const alben       = daten.playlists;
+        const albenKoepfe = (alben && Array.isArray(alben.playlists)) ? alben.playlists : [];
+        const albenClips  = (alben && alben.clips && typeof alben.clips === 'object'
+                             && !Array.isArray(alben.clips)) ? alben.clips : {};
+        const albenEintraege = Object.values(albenClips)
+          .reduce((n, l) => n + (Array.isArray(l) ? l.length : 0), 0);
+        /* NUR MIT BESTÄTIGTEM KONTO. hErnte (profil.handle) stammt aus
+           dem eigenen Katalog (/api/index) und ist damit nie fremd - der
+           einzige Name, der sagt, WESSEN Alben /api/playlist/me geliefert
+           hat, ist angemeldetAls aus /api/user/me. Fehlt er, hat der
+           Wächter oben nichts geprüft; die Albumdaten könnten aus jedem
+           Konto stammen. Ein Wächter muss bei Störung SCHLIESSEN, nicht
+           öffnen: Ohne bestätigtes Konto entsteht keine playlists-Datei,
+           denn aufbereiten.js hielte aus ihr die eigenen Alben für
+           gelöscht. Dasselbe, wenn die Sammlung selbst keinen Handle hat
+           (erster Tag): dann gibt es nichts, wogegen das Konto zu halten
+           wäre. Die Songliste fährt trotzdem ein - sie ist ungefährlich,
+           aufbereiten.js sortiert fremde Songs selbst aus. Warum keine
+           Datei entstand, sagt die Antwort (albenGrund), damit das
+           Lesezeichen es in die Zeile schreibt statt Erfolg zu zeigen.
+           Bis zum 08.09.2026 abends wurde hKonto null einfach
+           übersprungen - die Datei entstand dann ungeprüft. */
+        const albenDa = albenKoepfe.length > 0 && albenEintraege > 0;
+        const albenGrund = !albenDa ? null
+          : !hKonto   ? 'Konto nicht bestätigt (die Ernte nennt kein angemeldetAls aus /api/user/me) — keine Albumdatei angelegt'
+          : !sammlung ? 'die Sammlung hat noch keinen Handle (weder konfig.json noch Katalog) — keine Albumdatei angelegt'
+          : null;
+        let albumDatei = null;
+        if (albenDa && !albenGrund) {
+          albumDatei = `playlists-${stempel}.json`;
+          fs.writeFileSync(path.join(ordner, albumDatei),
+            JSON.stringify({ playlists: albenKoepfe, clips: albenClips,
+                             /* Sagt aufbereiten.js, ob diese Ernte die ganze
+                                Wahrheit ist: nur dann darf ein Album, das hier
+                                fehlt, als in Suno geloescht gelten. Fehlt das
+                                Feld (aeltere Ernte), gilt das Vorsichtige. */
+                             vollstaendig: alben.vollstaendig === true,
+                             abgerufenAm: daten.erzeugtAm,
+                             quelle: 'api/playlist/me + api/playlist/<id> — Alben mit Eintraegen, ueber das Lesezeichen' }));
+        }
         /* Benachrichtigungen an reaktionen.ndjson anhaengen - dieselbe
            Datei wie die Kommentare, dasselbe Prinzip: eine Zeile je
            Ereignis, nie ueberschrieben, nur was neu ist. Erkannt an der
@@ -821,7 +928,12 @@ const server = http.createServer((req, res) => {
         }
 
         jsonAntwort(res, { abgelegt: nurTiming ? `timing-${stempel}.json` : path.basename(ziel),
-                           songs: daten.songs.length, neu: (morgen.neueIds||[]).length });
+                           songs: daten.songs.length, neu: (morgen.neueIds||[]).length,
+                           /* Ohne diese beiden Zahlen sieht eine Ernte ganz ohne
+                              Alben genauso aus wie eine gelungene - siehe oben. */
+                           alben: albumDatei ? albenKoepfe.length : 0,
+                           albumEintraege: albumDatei ? albenEintraege : 0,
+                           albumDatei, albenGrund });
       } catch (e) { res.writeHead(400); res.end(String(e.message)); }
     });
   }
@@ -841,7 +953,7 @@ const server = http.createServer((req, res) => {
                            befehl: ['bin/sammeln.js', '--aus-roh'] }]);
     } else {
       morgen.quelle = { art: 'frisch', letzteErnte: ernte ? ernte.vom : null };
-      morgenLosschicken([{ name: 'Songliste frisch von Suno holen (öffentliches Profil)',
+      morgenLosschicken([{ name: 'Titelliste frisch von Suno holen (öffentliches Profil)',
                            befehl: ['bin/sammeln.js'] }]);
     }
     return jsonAntwort(res, morgenStand());
