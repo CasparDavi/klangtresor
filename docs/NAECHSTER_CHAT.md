@@ -1599,6 +1599,20 @@ Randfälle aus der letzten Gegenlesung, nicht gebaut (Backlog):
    benutzen kann — heute deutet nichts darauf hin). Danach die Schlusszeilen der 17
    Skripte (Vorschläge im Workflow-Ergebnis `morgenschritte-beschreiben`,
    `docs/handbuch/MORGENSCHRITTE.json`, Feld `kurzergebnis_muster`).
+   **Zwei Phasen** (Caspar_D, spät am 08.09.: schnelles Zeug zuerst, solange
+   keine Abhängigkeiten verletzt werden, dann das Langsame im Hintergrund):
+   Phase 1 in Minuten — gesundheit, katalog, kommentare, medien übernehmen,
+   analyse-index, eq-profil, geschichten (4), nachbarn (2), klangraum mit
+   dem alten Musikstil-Stand. Danach sagt das Fenster: Bestand aktuell,
+   im Hintergrund rechnen noch … Phase 2 in Stunden — medien laden,
+   klanganalyse, störfrequenzen, musikstil, whisper, lyrik; und danach
+   die billigen Abhängigen ein zweites Mal: analyse-index (braucht
+   klanganalyse), klangraum (braucht musikstil), lyrik (braucht whisper).
+   Abhängigkeiten, die nicht verletzt werden dürfen: katalog vor allem;
+   lyrik nach whisper; klangraum nach musikstil; geschichten-zeichnen nach
+   geschichten-vektoren; nachbarn nach katalog. Der Hintergrund-Knopf
+   zeigt Phase 2 an.
+
 5. **Tragende Endpunkt-Doku**: Rohdaten liegen in `library/suno-wege/`
    (elf Dateien, je Seite eine: Profil, Song, Playlist, me, create,
    discover, explore, hooks, labs, studio, notifications — 370 Pfade aus
