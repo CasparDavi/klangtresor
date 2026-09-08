@@ -1573,7 +1573,7 @@ const server = http.createServer((req, res) => {
       if (avatar && !l.avatar) l.avatar = avatar;
       return l;
     };
-    const gesehenKomm = new Set();
+    const gesehenKomm = new Set(), herzJeSong = new Map();
     {
       for (const e of reaktionenLesen()) {                           // Stromzeilen je Suno-ID im juengsten Stand
         if (e.art === 'kommentar' || e.art === 'antwort') {
@@ -1585,6 +1585,7 @@ const server = http.createServer((req, res) => {
             .push({ song: e.song, songTitel: e.songTitel, am: e.am, text: e.text, likes: e.likes });
           if (e.am > l.zuletzt) l.zuletzt = e.am;
         } else if (e.art === 'clip_like') {
+          if (e.song) { if (!herzJeSong.has(e.song)) herzJeSong.set(e.song, []); herzJeSong.get(e.song).push(e); }
           (e.von || []).forEach((h, i) => {
             const l = wer(h, (e.namen || [])[i]);
             if (!l) return;
@@ -1599,10 +1600,43 @@ const server = http.createServer((req, res) => {
         }
       }
     }
+    /* DIE HERZEN AUS DEN LIKER-LISTEN (seit 09.09.2026, library/liker):
+       vollstaendig ueber alle Zeiten und alle eigenen Titel - der Strom
+       kennt nur vier Wochen und von jedem Buendel drei Namen. Der Strom
+       bleibt fuer Kommentare, Antworten, Beobachter und fuer die Zeiten;
+       ein Herz, das er schon kennt (Handle + Titel), wird nicht doppelt
+       gezaehlt. Das eigene Herz zaehlt nicht mit. Die Zeit einer Zeile
+       aus der Liste ist, wo Suno sie hergibt, die Herz-Zeit (Seitenende),
+       sonst leer - der Strom liefert sie fuer die juengeren nach. */
+    const eigenerHandle = String((k && k.profil && k.profil.handle) || (k && k.handle) || '').toLowerCase();
+    const bekanntesHerz = new Set();
+    for (const l of leute.values()) for (const x of l.likes) bekanntesHerz.add(l.handle + '|' + x.song);
+    let ausListen = 0;
+    try {
+      for (const f of fs.readdirSync(LIKER)) {
+        if (!f.endsWith('.json') || f.startsWith('._')) continue;
+        let d; try { d = JSON.parse(fs.readFileSync(path.join(LIKER, f), 'utf8')); } catch (e) { continue; }
+        if (!d || !d.song) continue;
+        /* Dieselben Zeiten wie im Song-Fenster: Strom (einzeln) und Buendel */
+        const mz = likerMitZeiten(d.song, herzJeSong.get(d.song) || []);
+        if (mz && mz.likers) d = { ...d, likers: mz.likers };
+        const s = k && k.songs && k.songs[d.song];
+        for (const p of d.likers || []) {
+          if (!p.handle || p.handle.toLowerCase() === eigenerHandle) continue;
+          if (bekanntesHerz.has(p.handle + '|' + d.song)) continue;
+          const l = wer(p.handle, p.name, p.avatar); if (!l) continue;
+          bekanntesHerz.add(p.handle + '|' + d.song);
+          l.likes.push({ song: d.song, songTitel: (s && s.titel) || '', am: p.am || null, quelle: 'liste' });
+          if (p.am && p.am > l.zuletzt) l.zuletzt = p.am;
+          if (p.folgtMir) l.folgtMir = true;
+          ausListen++;
+        }
+      }
+    } catch (e) {}
     const liste = [...leute.values()].map(l => ({
       ...l, gewicht: l.kommentare.length * 3 + l.antworten.length + l.likes.length,
     })).sort((a, b) => b.gewicht - a.gewicht);
-    return jsonAntwort(res, { leute: liste, follower:
+    return jsonAntwort(res, { leute: liste, herzenAusListen: ausListen, follower:
       follower.sort((a, b) => (b.am || '').localeCompare(a.am || '')),
       auswaerts: auswaerts.sort((a, b) => (b.am || '').localeCompare(a.am || '')) });
   }

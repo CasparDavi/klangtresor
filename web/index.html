@@ -11538,8 +11538,11 @@ async function profilCommunityFuellen(){
   ziel.innerHTML = '<h3>Gemeinschaft</h3>';
 
   /* Umschalter: diesen Monat, dieses Jahr, fuer immer. Gezaehlt nach dem
-     Datum der Reaktion. Kommentare haben wir vollstaendig; Likes nur so
-     weit, wie Sunos Benachrichtigungen reichen - das steht dran. */
+     Datum der Reaktion. Kommentare haben wir vollstaendig; Herzen seit
+     09.09.2026 auch - aus den Liker-Listen (library/liker), alle Titel,
+     alle Zeiten. Nur die ZEIT eines Herzens kennt Suno nicht immer: der
+     Strom nennt sie fuer die letzten Wochen, die Liste am Seitenende;
+     ein Herz ohne Zeit zaehlt deshalb nur unter "Fuer immer". */
   const heute = new Date(), jetztJ = heute.getFullYear(), jetztM = heute.getMonth();
   const imFenster = (am, f) => {
     if (!am) return f === 'immer';
@@ -11571,8 +11574,8 @@ async function profilCommunityFuellen(){
     /* Die Bilder darunter folgen der neuen Auswahl. */
     requestAnimationFrame(() => { if (typeof nachbarnListeSpiegeln === 'function') nachbarnListeSpiegeln(); });
     besten.appendChild(balken('Kommentieren am meisten', komm, DIA_1, '', 'blase'));
-    besten.appendChild(balken('Liken am meisten', lik, DIA_1,
-      fenster === 'monat' ? '' : 'soweit Sunos Benachrichtigungen reichen', 'herz'));
+    besten.appendChild(balken('Herzen am meisten', lik, DIA_1,
+      fenster === 'immer' ? 'alle Herzen laut Liker-Listen' : 'nur Herzen, deren Zeit Suno nennt', 'herz'));
     /* Kombiwert: Kommentar dreifach, Like doppelt - wie die Bewegung
        auf der Albumseite. (Caspar_D, 20.08.2026: "kommentieren x3 und
        liken x2 am meisten") */
@@ -15887,7 +15890,9 @@ async function reaktPerson(handle, vonSong, istZurueck){
     const r = document.createElement('div');
     const st = document.createElement('div'); st.className = 'rst'; st.textContent = e.songTitel || e.song;
     const sw = document.createElement('div'); sw.className = 'rsw';
-    sw.textContent = reaktZeit(e.am) + (was ? ' · ' + was : '') + (e.text ? ' — ' + e.text.slice(0, 90) + (e.text.length > 90 ? '…' : '') : '');
+    /* Herzen aus den Liker-Listen haben oft keine Zeit (Suno nennt sie
+       nur am Seitenende oder im Strom) - dann steht das dran statt nichts. */
+    sw.textContent = (e.am ? reaktZeit(e.am) : 'Zeit unbekannt') + (was ? ' · ' + was : '') + (e.text ? ' — ' + e.text.slice(0, 90) + (e.text.length > 90 ? '…' : '') : '');
     r.append(st, sw); w.append(img, r); feld.appendChild(w);
   };
   const nachZeit = (a, b) => (b.am||'').localeCompare(a.am||'');
