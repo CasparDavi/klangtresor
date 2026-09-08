@@ -142,19 +142,31 @@ Was v3 anders macht als v2:
 | | v2 (Web) | v3 (App) |
 |---|---|---|
 | Herzen auf denselben Titel | ein Bündel, höchstens drei `user_profiles`, `total_users` | **je Person eine Zeile** mit eigener Zeit (Jellee 20:57, DerFruusch 19:34 — in v2 wären beide im Bündel 75eef79b von *Glut und Eis*, 8 → 12 Herzen) |
-| Bündel | ja, gekürzt | auch, aber **mit allen Beteiligten**: „Alpha Aleph und Guedes" trägt zwei Avatare und zwei Textaktionen |
+| Bündel | ja, gekürzt auf drei `user_profiles` | **bis drei Personen mit Namen und Handle** („Alpha Aleph und Guedes"; „Echo Grove Music und Nur ein Mensch"), **darüber gekürzt wie v2**: drei Avatare, fettes Segment „Black Frequency + 7 andere" mit der Aktion der ersten Person (Seite 2, 09.09.2026 00:05, zweite Anfrage mit Freigabe) |
 | Handle | `user_profiles[].handle` | in `action.url` als `suno://suno.com/@handle` (Avatar und Textsegment) |
 | Anzeigename | `display_name` | das fette Textsegment mit Aktion |
 | Titel | `content_id`, `content_title` | `action.url` = `suno://suno.com/song/<id>`, Titel als fettes Segment ohne Aktion |
 | Text | `content_message` | Segmente, in der Sprache des Kontos („Mir hat dein Lied gefallen") |
 | Seite | 20 | 25 |
 
-Damit ist die Frage beantwortet: **die App zeigt alle Liker, weil v3 sie
-alle nennt** — nicht über einen eigenen Liker-Weg. Seit dem 08.09.2026
-liest das Lesezeichen v3 (`browser/morgens.js`, Abschnitt 2d); der Server
-normiert v2 und v3 auf dieselbe Zeile (`benachrichtigungNormieren` in
-`server/server.js`). Die Art steht sicher in `notification_type`, das
-Handle sicher in der Aktion — daran hängt die Zuordnung, nie am Satz.
+**Ergebnis: v3 ist besser als v2, aber nicht die Lösung.** v2 und v3
+sind dieselben Benachrichtigungen mit denselben IDs, nur anders gebaut;
+Suno bündelt nur Herzen, die kurz nacheinander kommen (Streams). Bis drei
+Personen nennt v3 alle mit Handle, ab vier kürzt es genauso wie v2. Das
+8er-Bündel von *Glut und Eis* bleibt „Black Frequency + 7 andere".
+Der Bildschirm „Gefällt mir (12)" auf Caspar_Ds Handy hat damit **keinen
+Weg in der Android-App 1.88.0**: keine Schnittstelle, kein Schema, keine
+Feed-Kennung nennt Liker eines Titels (`ActionsConfigSchema {actions}`
+ist die einzige offene Stelle, ihr Inhalt kommt vom Server). Offen: Welche
+App zeigt die Liste — iOS, oder eine neuere Android-Fassung? Das
+entscheidet den nächsten Schritt (Mitschnitt vom Handy).
+
+Seit dem 08.09.2026 liest das Lesezeichen v3 (`browser/morgens.js`,
+Abschnitt 2d); der Server normiert v2 und v3 auf dieselbe Zeile
+(`benachrichtigungNormieren` in `server/server.js`). Die Art steht sicher
+in `notification_type`, das Handle sicher in der Aktion — daran hängt die
+Zuordnung, nie am Satz; nur die Zahl hinter „+ N andere" kommt aus dem
+Text.
 
 ## Neue Wege mit Nutzen für KlangTresor (Auswahl aus den 95)
 

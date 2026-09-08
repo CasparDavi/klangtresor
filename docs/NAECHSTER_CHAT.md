@@ -1868,3 +1868,17 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   erbeten. „Rote Albumeinträge" (Caspar_D): Ursache unklar, nachfragen,
   welches Fenster und welcher Text — Kandidaten: Lesezeichen-Albumzeile
   (morgens.js:860, pink/orange), Kandidatenmeldungen aus aufbereiten.js.
+
+## v3, Seite 2 (09.09.2026, 00:05, zweite Anfrage mit Freigabe)
+
+- **v3 kürzt große Bündel wie v2**: 8er-Bündel von *Glut und Eis* = drei
+  Avatare + „Black Frequency + 7 andere". Bis drei Personen nennt v3 alle.
+  v2/v3 = dieselben Benachrichtigungen (gleiche IDs). Server zählt jetzt
+  „+ N andere" mit (Regex, alle Segmente).
+- **Kein Weg in der Android-App 1.88.0** zur Liker-Liste eines Titels —
+  weder Schnittstelle noch Schema noch Feed-Kennung. Frage an Caspar_D:
+  welches Handy / welche App-Version zeigt „Gefällt mir (12)"? Danach:
+  iOS → Mitschnitt (mitmproxy) am Handy; neuere Android-Fassung → APK
+  erneut durch `bin/suno-app-wege.js`.
+- Lesezeichen 23:50 lief mit v3: 1 neue Zeile (VocalKidFolk314), Rest
+  bekannt. Rohform künftiger Läufe: `library/suno-wege/benachrichtigungen-letzter-lauf.json`.

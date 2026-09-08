@@ -691,8 +691,9 @@ function reaktionenLesen(alle) {
    der Sprache des Kontos ("Mir hat dein Lied gefallen") - an ihm haengt
    nichts; nur der Kommentar-Anfang hinter dem Doppelpunkt wird gebraucht,
    damit /api/kommentare ein Kommentar-Herz seinem Kommentar zuordnen kann
-   (wie content_message bei v2). Nennt der Satz "und N weitere", zaehlen
-   die mit - bisher (08.09.2026) nicht gesehen, v3 nennt alle. */
+   (wie content_message bei v2). Nennt der Satz "+ N andere", zaehlen
+   die mit: v3 nennt bis zu drei Personen, bei mehr steht die Zahl im
+   fetten Segment ("Black Frequency + 7 andere", 09.09.2026). */
 function benachrichtigungNormieren(n, gesehen) {
   const istV3 = Array.isArray(n.text) || Array.isArray(n.avatars);
   if (!istV3) {
@@ -709,7 +710,12 @@ function benachrichtigungNormieren(n, gesehen) {
   const segmente = n.text || [];
   const titel = segmente.filter(t => t.bold && !t.action).map(t => t.text).pop() || '';
   const rest  = segmente.filter(t => !t.bold).map(t => t.text || '').join('');
-  const weitere = rest.match(/(\d+)\s+(weitere|others|autres|otros|altri|outros)/i);
+  /* v3 kuerzt grosse Buendel wie v2: drei Avatare, und im fetten
+     Segment "Black Frequency + 7 andere" (gemessen 09.09.2026, 8er-Buendel
+     von "Glut und Eis"). Die Zahl steckt im FETTEN Segment, deshalb ueber
+     alle Segmente suchen; Woerter je Kontosprache. */
+  const satz = segmente.map(t => t.text || '').join('');
+  const weitere = satz.match(/\+?\s*(\d+)\s+(andere|anderen|weitere|others|other|autres|otros|altri|outros)/i);
   const dp = rest.indexOf(':');
   const zielUrl = n.action && typeof n.action.url === 'string' ? n.action.url : '';
   const songM = zielUrl.match(/suno:\/\/suno\.com\/song\/([0-9a-f-]{36})/);
