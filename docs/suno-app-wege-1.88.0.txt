@@ -3,25 +3,25 @@ common_networking.remote.attestation.NonceService
   POST   device_attestation/nonce   -> fetchNonce  => attestation.RemoteNonceResponse
 
 common_networking.remote.auth.AuthBirthdayService
-  POST   clerk/auth/birthday   [Body]   -> submitAuthBirthday  => auth.RemoteAuthBirthdayResponse
+  POST   clerk/auth/birthday   [Body:auth.RemoteAuthBirthdayBody]   -> submitAuthBirthday  => auth.RemoteAuthBirthdayResponse
 
 common_networking.remote.aws.AwsUploadService
-  POST   /   [Body, Part]   -> uploadFile  => e9f
+  POST   /   [PartMap, Part]   {Multipart}   -> uploadFile  => Unit
 
 common_networking.remote.billing.BillingService
   POST   billing/cancel-sub/   -> billingApiCancelSubscription  => entities.SubscriptionCancelSchema
   POST   billing/cancel-sub/undo/   -> billingApiCancelSubscriptionUndo  => entities.SubscriptionCancelSchema
-  POST   billing/change-plan/   [Body]   -> billingApiChangePlan  => entities.PlanChangeSchema
-  POST   billing/change-plan/preview/   [Body]   -> billingApiChangePlanPreview  => e9f
-  GET    billing/purchase-credits/{item_id}/   [Path(item_id)]   -> billingApiPurchaseCreditsStatus  => e9f
+  POST   billing/change-plan/   [Body:entities.PlanChangeSpec]   -> billingApiChangePlan  => entities.PlanChangeSchema
+  POST   billing/change-plan/preview/   [Body:entities.PlanChangeSpec]   -> billingApiChangePlanPreview  => Unit
+  GET    billing/purchase-credits/{item_id}/   [Path(item_id)]   -> billingApiPurchaseCreditsStatus  => Unit
   POST   billing/sync-sub/   -> billingApiSyncSubscriptionInfo  => entities.SubscriptionSyncSchema
   POST   billing/create-portal/   -> createPortalSession  => entities.PortalRedirectSchema
-  POST   billing/create-session/   [Body]   -> createStripeCheckoutSession  => entities.StripeCheckoutSessionResponse
+  POST   billing/create-session/   [Body:entities.StripePlanCreateSpec]   -> createStripeCheckoutSession  => entities.StripeCheckoutSessionResponse
   GET    billing/info/   -> getSubscriptionInfo  => entities.SubscriptionInfoResponse
   GET    billing/usage-plan-config/   -> getUsagePlanConfig  => entities.billing.UsagePlanConfigResponse
 
 common_networking.remote.captcha_check.CaptchaCheckService
-  POST   c/check   [Body]   -> checkCaptchaIsRequired  => entities.RemoteCheckCaptchaResult
+  POST   c/check   [Body:entities.CheckCaptchaRequest]   -> checkCaptchaIsRequired  => entities.RemoteCheckCaptchaResult
 
 common_networking.remote.clips.ClipsService
   GET    clips/{clip_id}/attribution   [Path(clip_id)]   -> getAttribution  => clips.attribution.NetworkClipAttribution
@@ -29,241 +29,241 @@ common_networking.remote.clips.ClipsService
   GET    clips/remixes/count   [Query(clip_id)]   -> getRemixCount  => entities.RemixCountResponse
   GET    clips/remixes   [Query(clip_id), Query(limit), Query(cursor)]   -> getRemixes  => entities.RemixesResponse
   GET    clips/get_similar/   [Query(id), Query(count), Query(exclude_remixes)]   -> getSimilarClips  => entities.SimilarClipsSchema
-  POST   clips/{clip_id}/toggle_remixes/   [Path(clip_id), Body]   -> toggleRemixes  => entities.RemoteToggleRemixResponse
+  POST   clips/{clip_id}/toggle_remixes/   [Path(clip_id), Body:entities.RemoteToggleRemixBody]   -> toggleRemixes  => entities.RemoteToggleRemixResponse
 
 common_networking.remote.comments.ClipCommentsService
   DELETE comment/{comment_id}   [Path(comment_id)]   -> deleteComment  => entities.CommentDeletionSchema
   GET    comment/{comment_id}/replies   [Path(comment_id), Query(cursor)]   -> getCommentRepliesByCommentId  => entities.RemoteCommentRepliesResponse
   GET    gen/{clip_id}/comments   [Path(clip_id), Query(cursor), Query(order)]   -> getCommentsByClipId  => entities.ClipCommentsSchema
-  GET    gen/{clip_id}/time-sync-comments   [Path(clip_id), Query(search_time), Query(search_range), Query(margin), Query(num_requested), Query(end_time)]   -> getTimeSyncComments  => Ljava/lang/Object;
-  POST   gen/{clip_id}/comment   [Path(clip_id), Body]   -> postComment  => entities.ClipCommentSchema
-  POST   comment/{clip_id}/reaction   [Path(clip_id), Body]   -> reactToComment  => entities.RemoteCommentReactionResponse
-  POST   comment/{comment_id}/report   [Path(comment_id), Body]   -> reportComment  => entities.RemoteReportCommentResponse
+  GET    gen/{clip_id}/time-sync-comments   [Path(clip_id), Query(search_time), Query(search_range), Query(margin), Query(num_requested), Query(end_time)]   -> getTimeSyncComments  => List<entities.ClipCommentSchema>
+  POST   gen/{clip_id}/comment   [Path(clip_id), Body:entities.RemoteCommentPostBody]   -> postComment  => entities.ClipCommentSchema
+  POST   comment/{clip_id}/reaction   [Path(clip_id), Body:entities.RemoteCommentReactionBody]   -> reactToComment  => entities.RemoteCommentReactionResponse
+  POST   comment/{comment_id}/report   [Path(comment_id), Body:entities.RemoteReportCommentBody]   -> reportComment  => entities.RemoteReportCommentResponse
 
 common_networking.remote.download.DownloadAuthorizationService
-  POST   download/authorize   [Body]   -> authorizeDownload  => entities.download.RemoteDownloadAuthorizeResponse
+  POST   download/authorize   [Body:entities.download.RemoteDownloadAuthorizeBody]   -> authorizeDownload  => entities.download.RemoteDownloadAuthorizeResponse
   GET    download/clip/{clip_id}   [Path(clip_id), Query(format)]   -> getDownloadUrl  => entities.download.RemoteDownloadUrlResponse
 
 common_networking.remote.download.FileDownloadService
-  GET    undefined   [Path]   -> downloadFile  => Ljava/lang/Object;
+  GET    (@Url)   [Url:String]   -> downloadFile  => yac
 
 common_networking.remote.drm.LicenseService
-  POST   /api/mango/rights   [Body]   -> fetchWrappedKey  => Ljava/lang/Object;
+  POST   /api/mango/rights   [Body:drm.RemoteRightsBody]   -> fetchWrappedKey  => Object
 
 common_networking.remote.edit.EditService
-  POST   edit/crop/{clip_id}/   [Path(clip_id), Body]   -> editingApiCropClip  => entities.EditActionRequestSchema
-  POST   edit/webhook/finish/   [Body]   -> editingApiFinishEditAction  => e9f
-  POST   edit/webhook/finish-stems/   [Body]   -> editingApiFinishStemAction  => e9f
+  POST   edit/crop/{clip_id}/   [Path(clip_id), Body:entities.CropClipSpec]   -> editingApiCropClip  => entities.EditActionRequestSchema
+  POST   edit/webhook/finish/   [Body:entities.EditActionCallbackSpec]   -> editingApiFinishEditAction  => Unit
+  POST   edit/webhook/finish-stems/   [Body:entities.StemActionCallbackSpec]   -> editingApiFinishStemAction  => Unit
   GET    edit/action/{action_clip_id}/   [Path(action_clip_id)]   -> editingApiGetActionStatus  => entities.EditActionStatusSchema
 
 common_networking.remote.explore_homepage.ExploreHomepageService
-  POST   unified/homepage/explore/mobile   [Body]   -> getExploreFeed  => entities.explore_homepage.RemoteExploreHomepageResponse
+  POST   unified/homepage/explore/mobile   [Body:entities.explore_homepage.RemoteExploreHomepageBody]   -> getExploreFeed  => entities.explore_homepage.RemoteExploreHomepageResponse
 
 common_networking.remote.external.ExternalService
-  POST   external/generate/   [Body]   -> runGenerationIntegration  => entities.ExternalClipSchema
-  POST   external/generate/promotion/   [Body]   -> runGenerationPromotion  => Ljava/lang/Object;
+  POST   external/generate/   [Body:entities.ExternalGenerationSpec]   -> runGenerationIntegration  => entities.ExternalClipSchema
+  POST   external/generate/promotion/   [Body:entities.ExternalGenerationSpec]   -> runGenerationPromotion  => List<entities.ExternalClipSchema>
 
 common_networking.remote.feed.FeedService
-  POST   feed/v3   [Body]   -> getFeed  => feed.GetFeedResponseEntity
+  POST   feed/v3   [Body:feed.GetFeedRequestBody]   -> getFeed  => feed.GetFeedResponseEntity
 
 common_networking.remote.following_feed.FollowingFeedService
-  POST   following-feed/seen   -> markSeen  => e9f
+  POST   following-feed/seen   -> markSeen  => Unit
 
 common_networking.remote.gems.GemsService
-  POST   gems/{gem_id}/madlib/   [Path(gem_id), Body]   -> createGemMadlib  => entities.gems.RemoteGemMadlibResponse
-  POST   gems/memories/   [Body]   -> createMemorySong  => entities.gems.RemoteMemorySongResponse
-  POST   gems/{gem_id}/generate/   [Path(gem_id), Body]   -> generateGemSong  => entities.gems.RemoteGemGenerateResponse
+  POST   gems/{gem_id}/madlib/   [Path(gem_id), Body:entities.gems.RemoteGemMadlibBody]   -> createGemMadlib  => entities.gems.RemoteGemMadlibResponse
+  POST   gems/memories/   [Body:entities.gems.RemoteMemorySongBody]   -> createMemorySong  => entities.gems.RemoteMemorySongResponse
+  POST   gems/{gem_id}/generate/   [Path(gem_id), Body:entities.gems.RemoteGemGenerateBody]   -> generateGemSong  => entities.gems.RemoteGemGenerateResponse
   GET    gems/calendar   [Query(start_date), Query(end_date)]   -> getGemsCalendar  => entities.gems.RemoteGemsCalendarResponse
 
 common_networking.remote.gems.GemsTakesService
-  POST   gems/takes/sessions/   [Body]   -> createSession  => entities.gems.RemoteTakesSession
-  POST   gems/takes/sessions/{session_id}/turns/   [Path(session_id), Body]   -> createTurn  => entities.gems.RemoteTakesTurnResponse
+  POST   gems/takes/sessions/   [Body:entities.gems.RemoteTakesSessionCreateBody]   -> createSession  => entities.gems.RemoteTakesSession
+  POST   gems/takes/sessions/{session_id}/turns/   [Path(session_id), Body:entities.gems.RemoteTakesTurnCreateBody]   -> createTurn  => entities.gems.RemoteTakesTurnResponse
   GET    gems/takes/sessions/{session_id}/   [Path(session_id)]   -> getSession  => entities.gems.RemoteTakesSession
   GET    gems/takes/sessions/   -> listSessions  => entities.gems.RemoteTakesSessionList
 
 common_networking.remote.gen.GenService
-  POST   gen/{clip_id}/convert_wav/   [Path(clip_id)]   -> generateWavFile  => Lv55;
+  POST   gen/{clip_id}/convert_wav/   [Path(clip_id)]   -> generateWavFile  => Flow<vac<Unit>>
   GET    gen/{clip_id}/aligned_lyrics/v2   [Path(clip_id)]   -> getAlignedLyrics  => entities.AlignedLyricsSchema
-  GET    gen/{clip_id}/wav_file/   [Path(clip_id)]   -> getClipWavFile  => Lv55;
+  GET    gen/{clip_id}/wav_file/   [Path(clip_id)]   -> getClipWavFile  => Flow<vac<Unit>>
   GET    gen/{gen_id}/share_asset/{asset_id}   [Path(gen_id), Path(asset_id)]   -> getShareAssetGenerationStatus  => entities.RemoteShareAssetResponse
-  POST   gen/{gen_id}/increment_action_count/   [Path(gen_id), Body]   -> incrementActionCount  => e9f
-  POST   gen/{gen_id}/increment_play_count/   [Path(gen_id)]   -> incrementPlayCount  => Lv55;
-  POST   gen/{gen_id}/increment_play_count/v2   [Path(gen_id), Body]   -> incrementPlayCountWithSpec  => e9f
-  POST   gen/{gen_id}/increment_play_count/v2   [Path(gen_id), Body]   -> incrementPlayCountWithSpecFlow  => Lv55;
-  POST   gen/{gen_id}/increment_skip_count/   [Path(gen_id), Body]   -> incrementSkipCount  => Lv55;
-  POST   gen/{gen_id}/like/   [Path(gen_id), Body]   -> likeGen  => Lv55;
-  POST   gen/prompt_image/   [Body]   -> promptImage  => Lv55;
-  POST   gen/{gen_id}/set_clip_prompt/   [Path(gen_id), Body]   -> setClipPrompt  => Lv55;
-  POST   gen/{gen_id}/set_metadata/   [Path(gen_id), Body]   -> setMetadata  => gen.ClipEditMetadataResponse
-  POST   gen/{gen_id}/set_visibility/   [Path(gen_id), Body]   -> setVisibility  => gen.ClipVisibilityResponseEntity
-  POST   gen/{gen_id}/share_asset/   [Path(gen_id), Body]   -> startShareAssetGeneration  => entities.RemoteShareAssetResponse
-  POST   gen/trash/   [Body]   -> trashGen  => gen.ClipDeleteResponse
-  POST   gen/{gen_id}/toggle_comments/   [Path(gen_id), Body]   -> updateAllowComments  => entities.CanCommentSpec
-  POST   gen/{gen_id}/update_feedback_state/   [Path(gen_id), Body]   -> updateFeedbackState  => common.RemoteClipReaction
-  POST   gen/{gen_id}/update_flag_state/   [Path(gen_id), Body]   -> updateFlagState  => common.RemoteClipReaction
-  POST   gen/{gen_id}/update_reaction_type/   [Path(gen_id), Body]   -> updateReactionType  => common.RemoteClipReaction
+  POST   gen/{gen_id}/increment_action_count/   [Path(gen_id), Body:entities.ActionSpec]   -> incrementActionCount  => Unit
+  POST   gen/{gen_id}/increment_play_count/   [Path(gen_id)]   -> incrementPlayCount  => Flow<vac<Unit>>
+  POST   gen/{gen_id}/increment_play_count/v2   [Path(gen_id), Body:entities.PlayCountSpec]   -> incrementPlayCountWithSpec  => Unit
+  POST   gen/{gen_id}/increment_play_count/v2   [Path(gen_id), Body:entities.PlayCountSpec]   -> incrementPlayCountWithSpecFlow  => Flow<vac<Unit>>
+  POST   gen/{gen_id}/increment_skip_count/   [Path(gen_id), Body:entities.TimeOfSkipSpec]   -> incrementSkipCount  => Flow<vac<Unit>>
+  POST   gen/{gen_id}/like/   [Path(gen_id), Body:entities.LikeSpec]   -> likeGen  => Flow<vac<Unit>>
+  POST   gen/prompt_image/   [Body:entities.PromptImageBody]   -> promptImage  => Flow<vac<gen.PromptImageResponse>>
+  POST   gen/{gen_id}/set_clip_prompt/   [Path(gen_id), Body:entities.UpdatedClipPromptSpec]   -> setClipPrompt  => Flow<vac<Unit>>
+  POST   gen/{gen_id}/set_metadata/   [Path(gen_id), Body:entities.ClipMetadataSpec]   -> setMetadata  => gen.ClipEditMetadataResponse
+  POST   gen/{gen_id}/set_visibility/   [Path(gen_id), Body:entities.ClipVisibilitySpec]   -> setVisibility  => gen.ClipVisibilityResponseEntity
+  POST   gen/{gen_id}/share_asset/   [Path(gen_id), Body:entities.RemoteShareAssetBody]   -> startShareAssetGeneration  => entities.RemoteShareAssetResponse
+  POST   gen/trash/   [Body:entities.TrashSpec]   -> trashGen  => gen.ClipDeleteResponse
+  POST   gen/{gen_id}/toggle_comments/   [Path(gen_id), Body:entities.CanCommentSpec]   -> updateAllowComments  => entities.CanCommentSpec
+  POST   gen/{gen_id}/update_feedback_state/   [Path(gen_id), Body:entities.FeedbackSpec]   -> updateFeedbackState  => common.RemoteClipReaction
+  POST   gen/{gen_id}/update_flag_state/   [Path(gen_id), Body:entities.FlagSpec]   -> updateFlagState  => common.RemoteClipReaction
+  POST   gen/{gen_id}/update_reaction_type/   [Path(gen_id), Body:entities.RemoteUpdateReactionBody]   -> updateReactionType  => common.RemoteClipReaction
 
 common_networking.remote.generate.GenerateService
-  POST   generate/concat/   [Body]   -> generateApiConcatGenerations  => Lv55;
-  POST   generate/concat/v2/   [Body]   -> generateApiConcatGenerationsV2  => Lv55;
-  GET    generate/clip/{clip_id}   [Path(clip_id)]   -> generateApiGetClip  => Lv55;
-  GET    generate/requests/   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> generateApiGetGenRequests  => Lv55;
-  GET    generate/get_recommend_styles/   -> generateApiGetRecommendStyles  => Lv55;
-  POST   generate/v2/   [Body]   -> generateApiRunGenerationV2  => entities.GenerationRequestSchema
-  POST   generate/v2/   [Body]   -> generateApiRunGenerationV2Flow  => Lv55;
+  POST   generate/concat/   [Body:entities.GenConcatSpec]   -> generateApiConcatGenerations  => Flow<vac<entities.GenerationRequestSimpleSchema>>
+  POST   generate/concat/v2/   [Body:entities.GenConcatSpec]   -> generateApiConcatGenerationsV2  => Flow<vac<common.RemoteClip>>
+  GET    generate/clip/{clip_id}   [Path(clip_id)]   -> generateApiGetClip  => Flow<vac<common.RemoteClip>>
+  GET    generate/requests/   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> generateApiGetGenRequests  => Flow<vac<List<entities.GenerationRequestSchema>>>
+  GET    generate/get_recommend_styles/   -> generateApiGetRecommendStyles  => Flow<vac<entities.RecommendStylesSchema>>
+  POST   generate/v2/   [Body:entities.GenParamsSpec]   -> generateApiRunGenerationV2  => entities.GenerationRequestSchema
+  POST   generate/v2/   [Body:entities.GenParamsSpec]   -> generateApiRunGenerationV2Flow  => Flow<vac<entities.GenerationRequestSchema>>
   GET    generate/lyrics/{request_id}   [Path(request_id)]   -> getLyricsGeneration  => entities.GenLyricsSchema
-  GET    generate/lyrics/{request_id}   [Path(request_id)]   -> getLyricsGenerationFlow  => Lv55;
+  GET    generate/lyrics/{request_id}   [Path(request_id)]   -> getLyricsGenerationFlow  => Flow<vac<entities.GenLyricsSchema>>
   POST   generate/campaign/{campaign_id}   [Path(campaign_id)]   -> runCampaignGeneration  => entities.GenerationRequestSchema
-  POST   generate/lyrics/   [Body]   -> runLyricsGeneration  => entities.GenLyricsRequestId
-  POST   generate/lyrics/   [Body]   -> runLyricsGenerationFlow  => Lv55;
-  POST   generate/upsample/   [Body]   -> runUpsampleGeneration  => entities.GenUpsampleSchema
-  POST   generate/upsample/   [Body]   -> runUpsampleGenerationFlow  => Lv55;
-  POST   generate/upsample-tags/   [Body]   -> runUpsampleTagsGeneration  => entities.GenUpsampleTagsSchema
-  POST   generate/upsample-tags/   [Body]   -> runUpsampleTagsGenerationFlow  => Lv55;
+  POST   generate/lyrics/   [Body:entities.GenLyricsSpec]   -> runLyricsGeneration  => entities.GenLyricsRequestId
+  POST   generate/lyrics/   [Body:entities.GenLyricsSpec]   -> runLyricsGenerationFlow  => Flow<vac<entities.GenLyricsRequestId>>
+  POST   generate/upsample/   [Body:entities.GenUpsampleSpec]   -> runUpsampleGeneration  => entities.GenUpsampleSchema
+  POST   generate/upsample/   [Body:entities.GenUpsampleSpec]   -> runUpsampleGenerationFlow  => Flow<vac<entities.GenUpsampleSchema>>
+  POST   generate/upsample-tags/   [Body:entities.GenUpsampleTagsSpec]   -> runUpsampleTagsGeneration  => entities.GenUpsampleTagsSchema
+  POST   generate/upsample-tags/   [Body:entities.GenUpsampleTagsSpec]   -> runUpsampleTagsGenerationFlow  => Flow<vac<entities.GenUpsampleTagsSchema>>
 
 common_networking.remote.heartbeat.HeartbeatService
-  POST   t   [Body]   -> sendHeartbeat  => e9f
+  POST   t   [Body:heartbeat.RemoteHeartbeatBody]   -> sendHeartbeat  => Unit
 
 common_networking.remote.hooks.HookCommentsService
   DELETE video/hooks/comments/{comment_id}   [Path(comment_id)]   -> deleteComment  => entities.CommentDeletionSchema
   GET    video/hooks/comments/{comment_id}/replies   [Path(comment_id), Query(cursor)]   -> getCommentRepliesByCommentId  => entities.RemoteCommentRepliesResponse
   GET    video/hooks/comments/{hook_id}/comments   [Path(hook_id), Query(cursor), Query(order)]   -> getCommentsByHookId  => entities.HookCommentsSchema
-  POST   video/hooks/comments/{hook_id}/comment   [Path(hook_id), Body]   -> postComment  => entities.HookCommentSchema
-  POST   video/hooks/comments/{comment_id}/reaction   [Path(comment_id), Body]   -> reactToComment  => entities.RemoteCommentReactionResponse
-  POST   video/hooks/comments/{comment_id}/report   [Path(comment_id), Body]   -> reportComment  => entities.RemoteReportCommentResponse
+  POST   video/hooks/comments/{hook_id}/comment   [Path(hook_id), Body:entities.RemoteCommentPostBody]   -> postComment  => entities.HookCommentSchema
+  POST   video/hooks/comments/{comment_id}/reaction   [Path(comment_id), Body:entities.RemoteCommentReactionBody]   -> reactToComment  => entities.RemoteCommentReactionResponse
+  POST   video/hooks/comments/{comment_id}/report   [Path(comment_id), Body:entities.RemoteReportCommentBody]   -> reportComment  => entities.RemoteReportCommentResponse
 
 common_networking.remote.hooks.HooksService
-  POST   video/hooks/create   [Body]   -> createHook  => entities.hooks.RemoteCreateHookResponse
+  POST   video/hooks/create   [Body:entities.hooks.RemoteCreateHookBody]   -> createHook  => entities.hooks.RemoteCreateHookResponse
   POST   video/hooks/delete/{hook_id}   [Path(hook_id)]   -> deleteHook  => entities.hooks.RemoteDeleteHookResponse
   GET    video/hooks/{hook_id}   [Path(hook_id)]   -> getHook  => entities.hooks.RemoteVideoHook
   GET    video/hooks/suggested_clips   [Query(search_term), Query(is_liked), Query(is_public_only), Query(page_size), Query(start_index)]   -> getHookCreateSuggestedClips  => entities.hooks.RemoteHooksCreateSuggestedClipsResponse
   GET    video/hooks/{hook_id}/download   [Path(hook_id)]   -> getHookDownloadUrl  => entities.hooks.RemoteHookDownloadResponse
-  POST   video/hooks/tab_carousel   [Body]   -> getHooksCarouselContent  => entities.hooks.RemoteTabCarouselResponse
+  POST   video/hooks/tab_carousel   [Body:entities.hooks.RemoteTabCarouselBody]   -> getHooksCarouselContent  => entities.hooks.RemoteTabCarouselResponse
   GET    video/hooks/from_clip/{clip_id}/hooks   [Path(clip_id), Query(startIndex), Query(pageSize)]   -> getHooksFromClip  => entities.hooks.HooksFeedSchema
-  POST   video/hooks/fetch_hook_lyrics   [Body]   -> getHooksLyrics  => entities.hooks.RemoteFetchHooksLyricsResponse
+  POST   video/hooks/fetch_hook_lyrics   [Body:entities.hooks.RemoteFetchHooksLyricsBody]   -> getHooksLyrics  => entities.hooks.RemoteFetchHooksLyricsResponse
   GET    video/hooks/me/liked/v2   [Query(start_index), Query(page_size), Query(user_handle)]   -> getUserLikedHooksV2  => entities.hooks.HooksFeedSchema
   GET    video/hooks/user_hooks   [Query(start_index), Query(page_size), Query(user_handle)]   -> getUserVideoHooksV2  => entities.hooks.HooksFeedSchema
-  POST   video/hooks/{hook_id}/share   [Path(hook_id), Body]   -> incrementShareCount  => entities.hooks.RemoteShareHookResponse
-  POST   video/hooks/{hook_id}/report   [Path(hook_id), Body]   -> reportHook  => e9f
-  POST   video/hooks/{hook_id}/reaction   [Path(hook_id), Body]   -> setHookReaction  => e9f
-  POST   video/hooks/watched   [Body]   -> updatePlayCounts  => entities.hooks.watched.RemoteUpdatePlayCountsResponse
+  POST   video/hooks/{hook_id}/share   [Path(hook_id), Body:entities.hooks.RemoteShareHookBody]   -> incrementShareCount  => entities.hooks.RemoteShareHookResponse
+  POST   video/hooks/{hook_id}/report   [Path(hook_id), Body:entities.RemoteReportHookBody]   -> reportHook  => Unit
+  POST   video/hooks/{hook_id}/reaction   [Path(hook_id), Body:entities.RemoteHookReactionBody]   -> setHookReaction  => Unit
+  POST   video/hooks/watched   [Body:entities.hooks.watched.RemoteUpdatePlayCountsBody]   -> updatePlayCounts  => entities.hooks.watched.RemoteUpdatePlayCountsResponse
 
 common_networking.remote.modals.ModalsService
   GET    modals/{slug}   [Path(slug)]   -> getModalBySlug  => entities.RemoteModalsGraphicSchema
-  POST   modals/upsells   [Body]   -> getUpsellModal  => entities.RemoteModalsGraphicSchema
+  POST   modals/upsells   [Body:entities.RemoteGetUpsellModalRequest]   -> getUpsellModal  => entities.RemoteModalsGraphicSchema
   POST   modals/{modal_id}/seen   [Path(modal_id)]   -> markModalAsSeen  => entities.MarkModalSeenResponse
 
 common_networking.remote.moderation.ModerationService
-  POST   moderation/ack-copyright-warning   -> acknowledgeCopyrightWarning  => e9f
+  POST   moderation/ack-copyright-warning   -> acknowledgeCopyrightWarning  => Unit
 
 common_networking.remote.notification.NotificationService
   GET    notification/v2   [Query(before_datetime_utc)]   -> getNotifications  => entities.UserNotificationSchema
   GET    notification/v3   [Query(before_datetime_utc), Query(include_hooks)]   -> getNotificationsV3  => entities.UserNotificationV3Schema
-  POST   notification/read/   [Body]   -> markNotificationsAsRead  => e9f
-  POST   notification/suppress/   [Body]   -> notificationApiMarkNotificationsAsNotInterested  => e9f
+  POST   notification/read/   [Body:entities.ReadNotificationsSpec]   -> markNotificationsAsRead  => Unit
+  POST   notification/suppress/   [Body:entities.SuppressNotificationsSpec]   -> notificationApiMarkNotificationsAsNotInterested  => Unit
 
 common_networking.remote.omnisearch.OmniSearchService
-  DELETE unified/search/suggest/history   -> clearHistory  => e9f
-  DELETE unified/search/suggest/history/item   [Body]   -> deleteHistoryItem  => e9f
-  POST   unified/search/omnisearch   [Body]   -> postOmniSearch  => entities.generic_feed.RemoteGenericFeedResponse
-  POST   unified/search/suggest   [Body]   -> postSuggest  => entities.generic_feed.RemoteGenericFeedResponse
-  POST   unified/search/suggest/history   [Body]   -> saveHistory  => e9f
+  DELETE unified/search/suggest/history   -> clearHistory  => Unit
+  DELETE unified/search/suggest/history/item   [Body:entities.omnisearch.RemoteSuggestHistoryDeleteItemBody]   -> deleteHistoryItem  => Unit
+  POST   unified/search/omnisearch   [Body:entities.omnisearch.RemoteOmniSearchBody]   -> postOmniSearch  => entities.generic_feed.RemoteGenericFeedResponse
+  POST   unified/search/suggest   [Body:entities.omnisearch.RemoteSuggestBody]   -> postSuggest  => entities.generic_feed.RemoteGenericFeedResponse
+  POST   unified/search/suggest/history   [Body:entities.omnisearch.RemoteSuggestHistoryWriteBody]   -> saveHistory  => Unit
 
 common_networking.remote.playlist.PlaylistService
-  POST   playlist/v2/{playlist_id}/tracks/add   [Path(playlist_id), Body]   -> addPlaylistTracks-_74HilE  => playlist.RemoteBulkTrackResponse
-  POST   playlist/create/   [Body]   -> createPlaylist  => entities.PlaylistSchema
+  POST   playlist/v2/{playlist_id}/tracks/add   [Path(playlist_id), Body:playlist.PlaylistTracksBody]   -> addPlaylistTracks-_74HilE  => playlist.RemoteBulkTrackResponse
+  POST   playlist/create/   [Body:entities.PlaylistCreateSpec]   -> createPlaylist  => entities.PlaylistSchema
   GET    playlist/me   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index), Query(show_trashed)]   -> getMyPlaylist  => entities.PlaylistsSchema
   GET    playlist/me/clip_status   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index), Query(show_trashed), Query(clip_id)]   -> getMyPlaylistClipStatus  => entities.PlaylistsSchema
   GET    playlist/{playlist_id}/   [Path(playlist_id), Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> getPlaylistById  => entities.PlaylistSchema
-  POST   playlist/v2/{playlist_id}/tracks/remove   [Path(playlist_id), Body]   -> removePlaylistTracks-_74HilE  => playlist.RemoteBulkTrackResponse
-  POST   playlist/v2/{playlist_id}/tracks/reorder-by-index   [Path(playlist_id), Body]   -> reorderPlaylistTracksByIndex-_74HilE  => e9f
-  POST   playlist/v2/{playlist_id}/save   [Path(playlist_id)]   -> savePlaylistV2  => e9f
-  POST   playlist/set_metadata/   [Body]   -> setPlaylistTitle  => entities.PlaylistMetadataResponse
-  POST   playlist/sync/v2   [Body]   -> syncPlaylists  => entities.RemotePlaylistSyncResponse
-  POST   playlist/trash/   [Body]   -> trashPlaylist  => e9f
-  POST   playlist/v2/{playlist_id}/trash   [Path(playlist_id), Body]   -> trashPlaylistV2  => e9f
-  DELETE playlist/v2/{playlist_id}/save   [Path(playlist_id)]   -> unsavePlaylistV2  => e9f
-  POST   playlist/update_clips/   [Body]   -> updatePlaylistClips  => e9f
-  PATCH  playlist/v2/{playlist_id}   [Path(playlist_id), Body]   -> updatePlaylistV2  => e9f
+  POST   playlist/v2/{playlist_id}/tracks/remove   [Path(playlist_id), Body:playlist.PlaylistTracksBody]   -> removePlaylistTracks-_74HilE  => playlist.RemoteBulkTrackResponse
+  POST   playlist/v2/{playlist_id}/tracks/reorder-by-index   [Path(playlist_id), Body:playlist.ReorderPlaylistTracksBody]   -> reorderPlaylistTracksByIndex-_74HilE  => Unit
+  POST   playlist/v2/{playlist_id}/save   [Path(playlist_id)]   -> savePlaylistV2  => Unit
+  POST   playlist/set_metadata/   [Body:playlist.PostUpdatePlaylistTitle]   -> setPlaylistTitle  => entities.PlaylistMetadataResponse
+  POST   playlist/sync/v2   [Body:entities.RemotePlaylistSyncRequest]   -> syncPlaylists  => entities.RemotePlaylistSyncResponse
+  POST   playlist/trash/   [Body:entities.PlaylistTrashSpec]   -> trashPlaylist  => Unit
+  POST   playlist/v2/{playlist_id}/trash   [Path(playlist_id), Body:playlist.TrashPlaylistV2Body]   -> trashPlaylistV2  => Unit
+  DELETE playlist/v2/{playlist_id}/save   [Path(playlist_id)]   -> unsavePlaylistV2  => Unit
+  POST   playlist/update_clips/   [Body:entities.PlaylistUpdateClipsSpec]   -> updatePlaylistClips  => Unit
+  PATCH  playlist/v2/{playlist_id}   [Path(playlist_id), Body:playlist.UpdatePlaylistV2Body]   -> updatePlaylistV2  => Unit
 
 common_networking.remote.playlist_reaction.PlaylistReactionService
-  POST   playlist_reaction/{playlist_id}/increment_play_count/   [Path(playlist_id), Body]   -> playlistReactionApiIncrementPlayCount  => e9f
-  POST   playlist_reaction/{playlist_id}/set_visibility/   [Path(playlist_id), Body]   -> setVisibility  => e9f
-  POST   playlist_reaction/{playlist_id}/update_flag_state/   [Path(playlist_id), Body]   -> updateFlagState  => e9f
+  POST   playlist_reaction/{playlist_id}/increment_play_count/   [Path(playlist_id), Body:entities.IncrementPlaylistPlayCountSpec]   -> playlistReactionApiIncrementPlayCount  => Unit
+  POST   playlist_reaction/{playlist_id}/set_visibility/   [Path(playlist_id), Body:entities.PlaylistVisibilitySpec]   -> setVisibility  => Unit
+  POST   playlist_reaction/{playlist_id}/update_flag_state/   [Path(playlist_id), Body:entities.FlagSpec]   -> updateFlagState  => Unit
 
 common_networking.remote.profiles.ProfilesService
-  POST   profiles/block   [Body]   -> blockUser  => e9f
+  POST   profiles/block   [Body:entities.RemoteBlockUserBody]   -> blockUser  => Unit
   GET    profiles/check-handle-availability/{handle}   [Path(handle)]   -> checkHandleAvailability  => profiles.RemoteCheckHandleAvailabilityResponse
-  POST   profiles/flag   [Body]   -> flagArtistProfile  => e9f
-  POST   profiles/follow   [Body]   -> followArtistProfile  => e9f
+  POST   profiles/flag   [Body:entities.FlagArtistProfileSpec]   -> flagArtistProfile  => Unit
+  POST   profiles/follow   [Body:entities.RemoteFollowArtistProfileBody]   -> followArtistProfile  => Unit
   GET    profiles/{handle}   [Path(handle), Query(playlists_sort_by), Query(clips_sort_by), Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> getArtistProfile  => profiles.GetArtistProfileResponseEntity
-  GET    profiles/{handle}/recent_clips   [Path(handle)]   -> getArtistRecentClips  => e9f
+  GET    profiles/{handle}/recent_clips   [Path(handle)]   -> getArtistRecentClips  => Unit
   GET    profiles/{handle}/followers   [Path(handle), Query(page)]   -> getFollowers  => profiles.GetProfileFollowResponse
   GET    profiles/{handle}/following   [Path(handle), Query(page)]   -> getFollowing  => profiles.GetProfileFollowResponse
   GET    profiles/listen-history   [Query(cursor), Query(limit)]   -> getListenHistory  => profiles.RemoteListenHistoryResponse
   GET    profiles/v2/{handle}   [Path(handle)]   -> getProfileDetails  => profiles.RemoteProfileDetailsResponse
   GET    profiles/v2/by-id/{uid}   [Path(uid)]   -> getProfileDetailsById  => profiles.RemoteProfileDetailsResponse
-  GET    profiles/followers   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> getProfilesFollowers  => e9f
+  GET    profiles/followers   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> getProfilesFollowers  => Unit
   GET    profiles/following   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index)]   -> getProfilesFollowing  => profiles.GetProfileFollowResponse
   POST   profiles/pin-clip/{clip_id}   [Path(clip_id)]   -> togglePinClip  => profiles.RemotePinnedClipsResponse
-  POST   profiles/   [Body]   -> updateArtistProfile  => e9f
-  PATCH  profiles/   [Body]   -> updateBirthday  => profiles.RemoteBirthdayUpdateResponse
-  PATCH  profiles/v2/me   [Body]   -> updateMyProfile  => e9f
-  PUT    profiles/pin-caption/{clip_id}   [Path(clip_id), Body]   -> updatePinCaption  => e9f
+  POST   profiles/   [Body:entities.UpdateArtistProfileSpec]   -> updateArtistProfile  => Unit
+  PATCH  profiles/   [Body:profiles.RemoteBirthdayUpdateBody]   -> updateBirthday  => profiles.RemoteBirthdayUpdateResponse
+  PATCH  profiles/v2/me   [Body:profiles.RemoteUpdateProfileV2Body]   -> updateMyProfile  => Unit
+  PUT    profiles/pin-caption/{clip_id}   [Path(clip_id), Body:entities.RemoteUpdatePinCaptionBody]   -> updatePinCaption  => Unit
 
 common_networking.remote.projects.ProjectsService
-  POST   project   [Body]   -> createProject  => entities.ProjectSchema
+  POST   project   [Body:entities.ProjectCreateSpec]   -> createProject  => entities.ProjectSchema
   GET    project/me   [Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(is_public), Query(is_not_disliked), Query(add_preset_clips), Query(is_trashed), Query(from_index), Query(show_trashed)]   -> getMyProjects  => entities.ProjectsSchema
   GET    project/{project_id}   [Path(project_id), Query(page), Query(query), Query(categories), Query(ids), Query(status), Query(is_liked), Query(hide_disliked), Query(is_public), Query(is_not_disliked), Query(is_full_song), Query(is_video_to_song), Query(is_suno_short), Query(add_preset_clips), Query(hide_gen_stems), Query(is_gen_stem), Query(hide_studio_clips), Query(is_trashed), Query(from_index), Query(page_size), Query(show_trashed), Query(is_cover), Query(is_extend), Query(is_infill), Query(is_persona), Query(is_scene), Query(is_upsample), Query(is_uploaded_audio)]   -> getProjectById  => entities.ProjectSchema
-  POST   project/trash   [Body]   -> trashProject  => e9f
+  POST   project/trash   [Body:entities.ProjectTrashSpec]   -> trashProject  => Unit
 
 common_networking.remote.prompts.LyricProjectsService
-  POST   lyrics-projects   [Body]   -> createLyricProject  => prompts.RemoteLyricProjectSummary
-  DELETE lyrics-projects/{project_id}   [Path(project_id)]   -> deleteLyricProject  => e9f
-  POST   lyrics-projects/{project_id}/flush   [Path(project_id), Body]   -> flushLyricProject  => prompts.RemoteFlushLyricProjectResponse
+  POST   lyrics-projects   [Body:prompts.RemoteCreateLyricProjectBody]   -> createLyricProject  => prompts.RemoteLyricProjectSummary
+  DELETE lyrics-projects/{project_id}   [Path(project_id)]   -> deleteLyricProject  => Unit
+  POST   lyrics-projects/{project_id}/flush   [Path(project_id), Body:prompts.RemoteFlushLyricProjectBody]   -> flushLyricProject  => prompts.RemoteFlushLyricProjectResponse
   GET    lyrics-projects/{project_id}   [Path(project_id)]   -> getLyricProject  => prompts.RemoteLyricProjectDetail
   GET    lyrics-projects   [Query(sort), Query(cursor), Query(limit)]   -> getLyricProjects  => prompts.RemoteListLyricProjects
-  PATCH  lyrics-projects/{project_id}   [Path(project_id), Body]   -> renameLyricProject  => prompts.RemoteLyricProjectSummary
+  PATCH  lyrics-projects/{project_id}   [Path(project_id), Body:prompts.RemoteRenameLyricProjectBody]   -> renameLyricProject  => prompts.RemoteLyricProjectSummary
 
 common_networking.remote.prompts.SavedStylesService
-  DELETE prompts/v2/{prompt_id}   [Path(prompt_id)]   -> deleteStyle  => e9f
+  DELETE prompts/v2/{prompt_id}   [Path(prompt_id)]   -> deleteStyle  => Unit
   GET    prompts/v2   [Query(cursor), Query(per_page)]   -> getStyles  => prompts.RemoteStyles
-  POST   prompts/v2   [Body]   -> upsertStyle  => prompts.RemoteStyle
+  POST   prompts/v2   [Body:prompts.RemoteUpsertStyleSpec]   -> upsertStyle  => prompts.RemoteStyle
 
 common_networking.remote.queue.QueueService
   GET    queue/state   [Query(device_id), Query(if_version_id), Query(force_refresh)]   -> getQueueState  => entities.queue.RemoteGetQueueStateResponse
-  POST   queue/inject   [Body]   -> injectQueueItems  => entities.queue.RemoteQueueMutationResponse
-  POST   queue/start   [Body]   -> startQueue  => entities.queue.RemoteQueueMutationResponse
+  POST   queue/inject   [Body:entities.queue.RemoteQueueInjectBody]   -> injectQueueItems  => entities.queue.RemoteQueueMutationResponse
+  POST   queue/start   [Body:entities.queue.RemoteQueueStartBody]   -> startQueue  => entities.queue.RemoteQueueMutationResponse
 
 common_networking.remote.radio.RadioService
   GET    radio/{tag}/   [Path(tag), Query(exclude_clip_ids)]   -> getRadio  => entities.RadioSchema
   GET    radio/tags/   -> getRadioTags  => entities.RadioTagsSchema
 
 common_networking.remote.recommend_styles.RecommendStylesService
-  POST   refresh_recommend_styles/   [Body]   -> refreshRecommendStyles  => recommend_styles.RecommendStylesResponse
+  POST   refresh_recommend_styles/   [Body:recommend_styles.RecommendStylesRequest]   -> refreshRecommendStyles  => recommend_styles.RecommendStylesResponse
 
 common_networking.remote.recommendations.RecommendationsService
-  POST   recommend/hide-creator   [Body]   -> hideCreator  => entities.RemoteHideCreatorResponse
+  POST   recommend/hide-creator   [Body:entities.RemoteHideCreatorBody]   -> hideCreator  => entities.RemoteHideCreatorResponse
 
 common_networking.remote.search.SearchService
-  POST   search/   [Body]   -> postSearch  => entities.SearchResult
-  POST   search/users   [Body]   -> postUserSearch  => Ljava/lang/Object;
+  POST   search/   [Body:entities.SearchRequest]   -> postSearch  => entities.SearchResult
+  POST   search/users   [Body:entities.UserSearchRequest]   -> postUserSearch  => List<entities.SimpleProfileInfoSchema>
 
 common_networking.remote.session.AppVersionUpdateService
-  POST   app_version_update/   [Body]   -> checkAppVersionUpdate  => entities.AppVersionUpdateResponse
+  POST   app_version_update/   [Body:entities.AppVersionUpdateRequest]   -> checkAppVersionUpdate  => entities.AppVersionUpdateResponse
 
 common_networking.remote.session.SessionConfigService
   GET    session/   -> getSunoSessionConfiguration  => session.SessionConfigurationResponse
 
 common_networking.remote.share.ShareLinkService
-  POST   share/link   [Body]   -> getShareLink  => entities.ShareLinkSchema
-  POST   share/attribute   [Body]   -> postShareAttribution  => entities.ShareAttributionSchema
-  POST   share/event   [Body]   -> postShareEvent  => entities.ShareEventSchema
+  POST   share/link   [Body:entities.RemoteShareLinkBody]   -> getShareLink  => entities.ShareLinkSchema
+  POST   share/attribute   [Body:entities.RemoteShareAttributionBody]   -> postShareAttribution  => entities.ShareAttributionSchema
+  POST   share/event   [Body:entities.RemoteShareEventBody]   -> postShareEvent  => entities.ShareEventSchema
   GET    share/code/{shortcode}   [Path(shortcode)]   -> unwrapShortcode  => entities.UnwrappedShortcodeSchema
 
 common_networking.remote.survey.SurveyService
   GET    /survey/survey-questions/{group_id}   [Path(group_id)]   -> getSurveyQuestionsByGroupId  => survey.PublicSurveyQuestionListResponse
-  POST   /survey/survey-responses   [Body]   -> sendSurveyResponse  => e9f
+  POST   /survey/survey-responses   [Body:survey.RemoteSurveyBody]   -> sendSurveyResponse  => Unit
 
 common_networking.remote.trending.TrendingService
   GET    trending/leaderboard/   -> getLeaderboardPlaylistEndpoint  => entities.PlaylistSchema
@@ -276,56 +276,56 @@ common_networking.remote.trending.TrendingService
   GET    trending/v2/   -> getTrendingPlaylistV2Endpoint  => entities.PlaylistSchema
 
 common_networking.remote.unified_feed.UnifiedFeedService
-  DELETE unified/items/comments   [Body]   -> deleteComment  => entities.generic_feed.RemoteUnifiedDeleteCommentResponse
-  POST   unified/items/follow   [Body]   -> followItem  => e9f
-  POST   unified/items/comments/replies   [Body]   -> getCommentReplies  => entities.RemoteCommentRepliesResponse
-  POST   unified/items/comments/feed   [Body]   -> getCommentsFeed  => entities.generic_feed.RemoteUnifiedCommentsResponse
-  POST   unified/feed   [Body]   -> getFeed  => entities.generic_feed.RemoteGenericFeedResponse
-  POST   unified/items/lyrics   [Body]   -> getItemLyrics  => entities.generic_feed.RemoteUnifiedFeedLyricsResponse
-  POST   unified/feed/consumed   [Body]   -> markItemsConsumed  => e9f
-  POST   unified/items/playlist-update-clips   [Body]   -> playlistUpdateClips  => e9f
-  POST   unified/items/comments   [Body]   -> postComment  => entities.generic_feed.RemoteUnifiedCommentSchema
-  POST   unified/items/comments/reaction   [Body]   -> reactToComment  => entities.RemoteCommentReactionResponse
-  POST   unified/items/comments/report   [Body]   -> reportComment  => entities.generic_feed.RemoteUnifiedReportCommentResponse
-  POST   unified/items/report   [Body]   -> reportItem  => e9f
-  POST   unified/items/share   [Body]   -> shareItem  => entities.generic_feed.RemoteUnifiedFeedShareResponse
-  POST   unified/items/reaction   [Body]   -> updateReaction  => entities.generic_feed.RemoteGenericReactionResponse
+  DELETE unified/items/comments   [Body:entities.generic_feed.RemoteUnifiedDeleteCommentBody]   -> deleteComment  => entities.generic_feed.RemoteUnifiedDeleteCommentResponse
+  POST   unified/items/follow   [Body:entities.generic_feed.RemoteUnifiedFeedFollowBody]   -> followItem  => Unit
+  POST   unified/items/comments/replies   [Body:entities.generic_feed.RemoteUnifiedCommentRepliesBody]   -> getCommentReplies  => entities.RemoteCommentRepliesResponse
+  POST   unified/items/comments/feed   [Body:entities.generic_feed.RemoteUnifiedCommentsFeedBody]   -> getCommentsFeed  => entities.generic_feed.RemoteUnifiedCommentsResponse
+  POST   unified/feed   [Body:entities.generic_feed.RemoteGenericFeedBody]   -> getFeed  => entities.generic_feed.RemoteGenericFeedResponse
+  POST   unified/items/lyrics   [Body:entities.generic_feed.RemoteUnifiedFeedLyricsBody]   -> getItemLyrics  => entities.generic_feed.RemoteUnifiedFeedLyricsResponse
+  POST   unified/feed/consumed   [Body:entities.generic_feed.RemoteGenericFeedConsumedBody]   -> markItemsConsumed  => Unit
+  POST   unified/items/playlist-update-clips   [Body:entities.generic_feed.RemoteUnifiedFeedPlaylistUpdateClipsBody]   -> playlistUpdateClips  => Unit
+  POST   unified/items/comments   [Body:entities.generic_feed.RemoteUnifiedPostCommentBody]   -> postComment  => entities.generic_feed.RemoteUnifiedCommentSchema
+  POST   unified/items/comments/reaction   [Body:entities.generic_feed.RemoteUnifiedCommentReactionBody]   -> reactToComment  => entities.RemoteCommentReactionResponse
+  POST   unified/items/comments/report   [Body:entities.generic_feed.RemoteUnifiedReportCommentBody]   -> reportComment  => entities.generic_feed.RemoteUnifiedReportCommentResponse
+  POST   unified/items/report   [Body:entities.generic_feed.RemoteGenericReportBody]   -> reportItem  => Unit
+  POST   unified/items/share   [Body:entities.generic_feed.RemoteUnifiedFeedShareBody]   -> shareItem  => entities.generic_feed.RemoteUnifiedFeedShareResponse
+  POST   unified/items/reaction   [Body:entities.generic_feed.RemoteGenericReactionBody]   -> updateReaction  => entities.generic_feed.RemoteGenericReactionResponse
 
 common_networking.remote.uploads.UploadsService
-  POST   uploads/audio/{upload_id}/upload-finish/   [Path(upload_id), Body]   -> finishProcessingAudioUpload  => e9f
+  POST   uploads/audio/{upload_id}/upload-finish/   [Path(upload_id), Body:entities.FinishAudioUploadSpec]   -> finishProcessingAudioUpload  => Unit
   POST   uploads/image/{upload_id}/upload-finish/   [Path(upload_id)]   -> finishProcessingImageUpload  => uploads.RemoteUploadImageResponse
-  POST   uploads/video/{upload_id}/upload-finish/   [Path(upload_id), Body]   -> finishProcessingVideoCoverUpload  => e9f
-  POST   uploads/video/{upload_id}/upload-finish/   [Path(upload_id), Body]   -> finishProcessingVideoUpload  => e9f
-  POST   uploads/webhook/finish/   [Body]   -> finishUploadModal  => e9f
+  POST   uploads/video/{upload_id}/upload-finish/   [Path(upload_id), Body:entities.FinishVideoCoverUploadSpec]   -> finishProcessingVideoCoverUpload  => Unit
+  POST   uploads/video/{upload_id}/upload-finish/   [Path(upload_id), Body:entities.FinishVideoUploadSpec]   -> finishProcessingVideoUpload  => Unit
+  POST   uploads/webhook/finish/   [Body:entities.UploadCallbackSpec]   -> finishUploadModal  => Unit
   GET    uploads/audio/{upload_id}/   [Path(upload_id)]   -> getAudioUploadStatus  => entities.UploadAudioRequestStatusSchema
   GET    uploads/video/{upload_id}/   [Path(upload_id)]   -> getVideoUploadStatus  => entities.UploadVideoRequestStatusSchema
-  POST   uploads/audio/{upload_id}/initialize-clip/   [Path(upload_id), Body]   -> initializeUploadClip  => entities.UploadClipSchema
-  POST   uploads/audio/   [Body]   -> requestInfoForAudioUpload  => entities.UploadRequestSchema
-  POST   uploads/image/   [Body]   -> requestInfoForImageUpload  => entities.UploadRequestSchema
-  POST   uploads/video/   [Body]   -> requestInfoForVideoUpload  => entities.UploadRequestSchema
+  POST   uploads/audio/{upload_id}/initialize-clip/   [Path(upload_id), Body:entities.UploadClipSchema]   -> initializeUploadClip  => entities.UploadClipSchema
+  POST   uploads/audio/   [Body:entities.RemoteUploadRequestBody]   -> requestInfoForAudioUpload  => entities.UploadRequestSchema
+  POST   uploads/image/   [Body:entities.RemoteUploadRequestBody]   -> requestInfoForImageUpload  => entities.UploadRequestSchema
+  POST   uploads/video/   [Body:entities.RemoteUploadRequestBody]   -> requestInfoForVideoUpload  => entities.UploadRequestSchema
 
 common_networking.remote.user.UserService
-  POST   user/accept_custom_mode_tos/   -> userApiAcceptCustomModeTos  => e9f
-  POST   user/delete-account/   [Body]   -> userApiDeleteUserAccount  => e9f
-  GET    user/clip_listen_history/   -> userApiGetUserPlayHistory  => e9f
-  POST   user/update_phone_number/   [Body]   -> userApiUpdatePhoneNumber  => e9f
-  POST   user/update_user_config/   [Body]   -> userApiUpdateUserConfig  => e9f
-  POST   user/user_config/   [Body]   -> userApiUserConfig  => entities.RemoteUserConfig
+  POST   user/accept_custom_mode_tos/   -> userApiAcceptCustomModeTos  => Unit
+  POST   user/delete-account/   [Body:entities.DeleteAccountSpec]   -> userApiDeleteUserAccount  => Unit
+  GET    user/clip_listen_history/   -> userApiGetUserPlayHistory  => Unit
+  POST   user/update_phone_number/   [Body:entities.UpdateUserPhoneReq]   -> userApiUpdatePhoneNumber  => Unit
+  POST   user/update_user_config/   [Body:Object]   -> userApiUpdateUserConfig  => Unit
+  POST   user/user_config/   [Body:Object]   -> userApiUserConfig  => entities.RemoteUserConfig
 
 common_networking.remote.user_actions.UserActionsService
-  POST   user_actions/action_check/   -> userActionsApiActionCheck
-  POST   user_actions/user_check/   [Body]   -> userActionsApiIsBotCheck  => Lv55;
+  POST   user_actions/action_check/   -> userActionsApiActionCheck  => Boolean
+  POST   user_actions/user_check/   [Body:entities.UserCheckSpec]   -> userActionsApiIsBotCheck  => Flow<vac<Unit>>
 
 common_networking.remote.video.VideoService
-  POST   video/generate/finish/   -> studioApiBotsVideosApiFinishVideoGeneration  => Lv55;
-  POST   video/generate/{clip_id}/   [Path(clip_id)]   -> studioApiBotsVideosApiGenerateVideo  => Lv55;
-  GET    video/generate/{clip_id}/status/   [Path(clip_id)]   -> studioApiBotsVideosApiGetVideoStatus  => Lv55;
+  POST   video/generate/finish/   -> studioApiBotsVideosApiFinishVideoGeneration  => Flow<vac<Unit>>
+  POST   video/generate/{clip_id}/   [Path(clip_id)]   -> studioApiBotsVideosApiGenerateVideo  => Flow<vac<Unit>>
+  GET    video/generate/{clip_id}/status/   [Path(clip_id)]   -> studioApiBotsVideosApiGetVideoStatus  => Flow<vac<Unit>>
 
 common_networking.remote.voice.VoiceService
-  POST   persona/create   [Body]   -> createPersona  => voice.RemotePersonaResponse
-  PUT    persona/edit-persona/{id}/   [Path(id), Body]   -> editPersona  => voice.RemotePersonaResponse
-  POST   processed_clip/voice-vox-stem   [Body]   -> extractVocals  => voice.RemoteProcessedClipResponse
-  POST   clip/{clip_id}/vox-stem   [Path(clip_id), Body]   -> extractVoxStemFromClip  => voice.RemoteProcessedClipResponse
+  POST   persona/create   [Body:voice.RemoteCreatePersonaBody]   -> createPersona  => voice.RemotePersonaResponse
+  PUT    persona/edit-persona/{id}/   [Path(id), Body:voice.RemoteEditPersonaBody]   -> editPersona  => voice.RemotePersonaResponse
+  POST   processed_clip/voice-vox-stem   [Body:voice.RemoteExtractVocalsBody]   -> extractVocals  => voice.RemoteProcessedClipResponse
+  POST   clip/{clip_id}/vox-stem   [Path(clip_id), Body:voice.RemoteClipVoxStemBody]   -> extractVoxStemFromClip  => voice.RemoteProcessedClipResponse
   GET    persona/get-followed-personas/   [Query(page)]   -> getFollowedPersonas  => voice.RemotePersonaListResponse
   GET    persona/get-loved-personas/   [Query(page), Query(query)]   -> getLovedPersonas  => voice.RemotePersonaListResponse
   GET    persona/get-personas/   [Query(continuation_token), Query(query)]   -> getMyPersonas  => voice.RemotePersonaListResponse
@@ -335,12 +335,45 @@ common_networking.remote.voice.VoiceService
   GET    voice-verification/phrase   [Query(language)]   -> getVerificationPhrase  => voice.RemoteVerificationPhraseResponse
   GET    voice-verification/{id}   [Path(id)]   -> getVerificationStatus  => voice.RemoteVerificationResponse
   GET    processed_clip/{id}/waveform-aggregates   [Path(id)]   -> getWaveformAggregates  => voice.RemoteWaveformAggregatesResponse
-  POST   processed_clip/voice-recording/{id}/rate   [Path(id), Body]   -> rateVoiceRecording  => voice.RemoteRateSkillResponse
-  PATCH  persona/{id}/preview-clip   [Path(id), Body]   -> setPersonaPreviewClip  => voice.RemotePersonaResponse
-  POST   voice-verification/   [Body]   -> submitVerification  => voice.RemoteVerificationResponse
+  POST   processed_clip/voice-recording/{id}/rate   [Path(id), Body:voice.RemoteRateSkillBody]   -> rateVoiceRecording  => voice.RemoteRateSkillResponse
+  PATCH  persona/{id}/preview-clip   [Path(id), Body:voice.RemoteSetPersonaPreviewClipBody]   -> setPersonaPreviewClip  => voice.RemotePersonaResponse
+  POST   voice-verification/   [Body:voice.RemoteSubmitVerificationBody]   -> submitVerification  => voice.RemoteVerificationResponse
   POST   persona/{id}/toggle_love/   [Path(id)]   -> togglePersonaLove  => voice.RemoteTogglePersonaLoveResponse
   PUT    persona/trash-persona/{id}/   [Path(id), Query(undo), Query(hide)]   -> trashPersona  => voice.RemotePersonaResponse
 
-Zuordnung Verben: {"Lu73;":"DELETE","Lji5;":"GET","Ln6a;":"PATCH","Lr6a;":"POST","Lu6a;":"PUT","Lgk9;":"OPTIONS"}
-Zuordnung Parameter: {"Lz26;":"Headers","Lad5;":"POST","Lnef;":"Path","Ljava/lang/Class;":"Url","Leha;":"Path","Ljava/lang/reflect/ParameterizedType;":"QueryMap","Lzga;":"Part","Lz11;":"Body","Lwba;":"Tag"}
-48 Dienste, 246 Wege, 721 Schemata
+com.lokalise.sdk.api.SdkEndpoints   (fremd: nicht com.suno)
+  GET    (@Url)   [Header(INTERNAL_ATTEMPTS), Url:String]   -> downloadBundle  => ke1<yac>
+  GET    v2.0/android/   [Header(INTERNAL_ATTEMPTS), Header(X-Request-Id)]   -> getBundleLink  => ke1<com.lokalise.sdk.api.poko.BundleResponse>
+  HEAD   (@Url)   [Header(INTERNAL_ATTEMPTS), Url:String]   -> getBundleSize  => ke1<Void>
+
+dc1   (fremd: nicht com.suno)
+  GET    cms/paywall   -> a  => entities.PaywallCmsSchema
+  GET    cms/subscription-page   -> b  => entities.SubscriptionPageCmsSchema
+  GET    cms/launch   -> c  => entities.RemoteLaunchSurfaceSchema
+  GET    cms/themed-creation   -> d  => entities.RemoteThemedCreationConfigSchema
+  GET    cms/paywall/unified   [Query(surface)]   -> e  => entities.RemoteUnifiedPaywallResponse
+  GET    cms/upsell   [Query(feature)]   -> f  => entities.UpsellCmsSchema
+  GET    cms/takeover/compact   -> g  => entities.RemoteCompactTakeoverSchema
+  GET    cms/style-samples   [Query(audio_variant)]   -> h  => entities.StyleSamplesSchema
+  POST   cms/takeover/fullscreen/{content_id}/seen   [Path(content_id)]   -> i  => entities.RemoteTakeoverSeenResponse
+  GET    cms/themed-creations   -> j  => entities.RemoteThemedCreationSetResponse
+  GET    cms/paywall/existing-subscriber   -> k  => entities.ExistingSubscriberPaywallSchema
+  GET    cms/create/info-chip   -> l  => entities.RemoteCreateInfoChipResponse
+  POST   cms/takeover/compact/{content_id}/seen   [Path(content_id)]   -> m  => entities.RemoteTakeoverSeenResponse
+
+mz1   (fremd: nicht com.suno)
+  POST   v1/client/sign_ups/{signup_id}/attempt_verification   [Path(signup_id), Field(code), Field(strategy), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> a  => com.suno.android.framework.auth.clerk.models.RemotePostAttemptVerifyPhoneSignUpResponse
+  POST   v1/client/sessions/{session_id}/tokens   [Path(session_id), Query(_is_native), Query(_clerk_js_version)]   -> b  => com.suno.android.framework.auth.clerk.models.RemotePostSessionTokenResponse
+  POST   v1/client/sign_ins   [Field(token), Field(strategy), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> c  => com.suno.android.framework.auth.clerk.models.RemoteGetSignInResponse
+  POST   v1/client/sign_ups   [Field(transfer), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> e  => com.suno.android.framework.auth.clerk.models.RemoteGetSignInResponse
+  POST   v1/client/sign_ups   [Field(token), Field(strategy), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> f  => com.suno.android.framework.auth.clerk.models.RemoteGetSignInResponse
+  GET    v1/client   [Query(_is_native), Query(_clerk_js_version)]   -> g  => com.suno.android.framework.auth.clerk.models.RemoteGetClerkClientResponse
+  POST   v1/client/sign_ups   [Field(strategy), Field(phone_number), Field(channel), Field(dispatch_id), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> h  => com.suno.android.framework.auth.clerk.models.RemotePostSignUpPhoneResponse
+  POST   v1/client/sign_ins   [Field(strategy), Field(identifier), Field(redirect_url), Field(action_complete_redirect_url), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> i  => com.suno.android.framework.auth.clerk.models.RemoteClerkOauthResponse
+  POST   v1/client/sign_ins   [Field(strategy), Field(identifier), Field(channel), Field(dispatch_id), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> j  => com.suno.android.framework.auth.clerk.models.RemotePostSignUpPhoneResponse
+  GET    v1/client/sign_ins/{signin_id}   [Path(signin_id), Query(rotating_token_nonce), Query(_is_native), Query(_clerk_js_version)]   -> k  => com.suno.android.framework.auth.clerk.models.RemoteGetSignInResponse
+  POST   v1/client/sign_ins/{sign_in_id}/attempt_first_factor   [Path(sign_in_id), Field(code), Field(strategy), Query(_is_native), Query(_clerk_js_version)]   {FormUrlEncoded}   -> l  => com.suno.android.framework.auth.clerk.models.RemotePostAttemptFirstFactorPhoneSignInResponse
+
+Zuordnung Verben: {"Lu73;":"DELETE","Lji5;":"GET","Ln6a;":"PATCH","Lr6a;":"POST","Lu6a;":"PUT","Lgk9;":"OPTIONS","Ls06;":"HEAD"}
+Zuordnung Annotationen: {"Lt06;":"HTTP","Lz26;":"Headers","Lh19;":"Multipart","Lad5;":"FormUrlEncoded","Lnef;":"Url","Leha;":"Path","Lbqb;":"Query","Leqb;":"QueryName","Ldqb;":"QueryMap","Lv26;":"Header","Lx26;":"HeaderMap","Lwz4;":"Field","Lyz4;":"FieldMap","Lzga;":"Part","Laha;":"PartMap","Lz11;":"Body","Lz7e;":"Tag"}
+51 Dienste (48 com.suno), 273 Wege (246 com.suno), 862 Schemata (721 com.suno)

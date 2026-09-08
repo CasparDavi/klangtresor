@@ -1849,3 +1849,22 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   Leser lassen v2-Herzzeilen weg, deren Zeit im Bereich der v3-Zeilen
   liegt (v3 reicht wie v2 vier Wochen zurück). Erst Ansage, dann Bau —
   Eingriff in den Datenfluss.
+
+## Gegenleser eingearbeitet (08.09.2026, 23:50)
+
+- `bin/suno-app-wege.js` umgebaut: alle Klassen (27 Wege mehr: cms/*,
+  Clerk, Lokalise), Zuordnung aller 17 Retrofit-Annotationen aus der
+  Quellreihenfolge in RequestFactory.Builder, Elemente als
+  Widerspruchsprobe, HEAD, MUTF-8, Vorzeichen, Antworttypen mit Generika.
+  273 Wege (246 com.suno), 228 Suno-Pfade, 95 nur App. Doku
+  `docs/SUNO-APP-WEGE.md` Zeile für Zeile berichtigt (search/users und
+  unified/feed sind Web; profiles/followers, recent_clips,
+  clip_listen_history antworten in der App mit Unit).
+- Gesundheit: die Zeile „Audio-Adresse gesperrt" ist weg (bekannt);
+  gemeldet wird nur noch, wenn sie wieder antwortet.
+- Backlog: Morgenfenster-Abschnitte nach und nach zeigen.
+- **Offen:** Caspar_Ds Lesezeichenlauf 23:34:30 lief noch mit dem alten
+  Skript (v2, 10 s nach dem Umbau) — keine v3-Zeilen; erneuter Lauf
+  erbeten. „Rote Albumeinträge" (Caspar_D): Ursache unklar, nachfragen,
+  welches Fenster und welcher Text — Kandidaten: Lesezeichen-Albumzeile
+  (morgens.js:860, pink/orange), Kandidatenmeldungen aus aufbereiten.js.

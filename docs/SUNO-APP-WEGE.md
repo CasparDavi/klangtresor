@@ -3,8 +3,10 @@
 Stand 08.09.2026. Quelle: Suno-App für Android, Version 1.88.0-410
 (APKMirror, von Caspar_D geladen, abgelegt unter
 `/Volumes/Extreme_SSD/Entwicklung/apk/`). Werkzeug: `bin/suno-app-wege.js`.
-Vollständige Liste: `docs/suno-app-wege-1.88.0.txt` (246 Wege, 48 Dienste);
-Rohfassung mit allen 721 Schemata: `library/suno-wege/app-1.88.0.json`.
+Vollständige Liste: `docs/suno-app-wege-1.88.0.txt` (273 Wege, 51 Dienste);
+Rohfassung mit allen 862 Schemata: `library/suno-wege/app-1.88.0.json`.
+Gegengelesen am 08.09.2026 von zwei adversarialen Lesern (dex-Format;
+Doku gegen Daten); alle Befunde sind eingearbeitet.
 
 ## Warum
 
@@ -17,80 +19,111 @@ sie aus der App selbst. Kein Netz, keine Ausführung von App-Code.
 ## Verfahren — belegt, nicht geraten
 
 1. **Auspacken.** Das `.apkm` ist ein Zip mit `base.apk` und Splits; die
-   `base.apk` ist ein Zip mit fünf `classes*.dex`. Natives Kotlin, kein
-   JavaScript-Bündel. Basis-URL im Code: `https://studio-api-prod.suno.com/api/`
-   (dazu `studio-api-staging.suno.com`).
-2. **Retrofit-Schnittstellen.** Jeder Dienst (`…/common_networking/remote/*Service`)
-   ist eine Java-Schnittstelle; jede Methode trägt Verb und Pfad als
-   Annotation, jeder Parameter `@Path`, `@Query` oder `@Body`. Das steht
-   im dex-Format in der `annotations_directory` der Klasse und wird ohne
-   fremde Werkzeuge gelesen (Dateiformat: source.android.com, dex-format).
+   `base.apk` ist ein Zip mit fünf `classes*.dex`. Natives Kotlin; in den
+   Assets liegt nur eine JavaScript-Brücke des Braze-SDK (In-App-Nachrichten),
+   kein App-Bündel. Basis-URL im Code: `https://studio-api-prod.suno.com/api/`
+   (dazu `studio-api-staging.suno.com`; Clerk-Anmeldung unter `v1/client/…`).
+2. **Retrofit-Schnittstellen.** Jeder Dienst ist eine Java-Schnittstelle;
+   jede Methode trägt Verb und Pfad als Annotation, jeder Parameter
+   `@Path`, `@Query`, `@Body` … Das steht in der `annotations_directory`
+   der Klasse und wird ohne fremde Werkzeuge gelesen (dex-format,
+   source.android.com). Gelesen werden **alle** Klassen — R8 benennt auch
+   Schnittstellen um: 13 `cms/*`-Wege liegen in `Ldc1;`, 12 Clerk-Wege in
+   `Lmz1;`, zwei Lokalise-Wege in `com.lokalise.sdk`.
 3. **R8 hat die Annotationsklassen umbenannt** (`Lji5;` statt
-   `Lretrofit2/http/GET;`). Die Zuordnung steht aber in Retrofits eigenem
-   Parser (`RequestFactory.parseMethodAnnotation`): je Verb ein
-   `instance-of` auf die Annotationsklasse, direkt gefolgt vom Verb als
-   Zeichenkette. Das Werkzeug liest diese Paare aus dem Bytecode:
-   `Lu73;`=DELETE, `Lji5;`=GET, `Ln6a;`=PATCH, `Lr6a;`=POST, `Lu6a;`=PUT,
-   `Lgk9;`=OPTIONS. Gegenprobe: `notification/v2` → GET, `notification/read/`
-   → POST, `gen/{gen_id}/update_reaction_type/` → POST — genau wie im Web.
-4. **Parameter.** Steht `{wert}` im Pfad, ist es `@Path`, sonst `@Query`;
-   ohne Wert `@Body` (Retrofits Parser bestätigt Body/Url/Tag/Part).
-5. **Schemata.** kotlinx.serialization schreibt die Feldnamen jeder Klasse
+   `Lretrofit2/http/GET;`). Die Zuordnung steht in Retrofits eigenem
+   Code (`RequestFactory.Builder`, nach R8 eine Methode): je Verb ein
+   `instance-of`, gefolgt vom Verb als Zeichenkette — sechs Paare; das
+   siebte (`HEAD`) hat R8 vor die Kette gezogen und bekommt den übrigen
+   Typ in der Kette. Danach folgen die `instance-of`-Prüfungen in
+   Retrofits Quellreihenfolge (if/else-if, R8 sortiert nicht um): HTTP,
+   Headers, Multipart, FormUrlEncoded, dann Url, Path, Query, QueryName,
+   QueryMap, Header, HeaderMap, Field, FieldMap, Part, PartMap, Body, Tag.
+   Ergebnis: `Lu73;`=DELETE `Lji5;`=GET `Ls06;`=HEAD `Ln6a;`=PATCH
+   `Lr6a;`=POST `Lu6a;`=PUT `Lgk9;`=OPTIONS; `Lt06;`=HTTP `Lz26;`=Headers
+   `Lh19;`=Multipart `Lad5;`=FormUrlEncoded `Lnef;`=Url `Leha;`=Path
+   `Lbqb;`=Query `Leqb;`=QueryName `Ldqb;`=QueryMap `Lv26;`=Header
+   `Lx26;`=HeaderMap `Lwz4;`=Field `Lyz4;`=FieldMap `Lzga;`=Part
+   `Laha;`=PartMap `Lz11;`=Body `Lz7e;`=Tag — von beiden Gegenlesern mit
+   eigener Disassembly bestätigt. Gegenprobe im Ergebnis: `GET
+   notification/v2` und `POST gen/{gen_id}/update_reaction_type/` wie in
+   `docs/SUNO-API.md`; alle 106 Pfadparameter stehen als `{name}` im Pfad.
+4. **Elemente als Widerspruchsprobe.** Jede Annotationsklasse hat ihre
+   Elemente (Path/Query/Field: `value`, `encoded`; Header: `value`,
+   `allowUnsafeNonAsciiValues`; Part: `value`, `encoding` …). Passen sie
+   nicht zur Kette, steht der Widerspruch in der Ausgabe (`Path?Query`).
+   Heute: keiner.
+5. **Antworten** aus der `Signature`-Annotation (bei `suspend`-Funktionen
+   der Typ hinter `Either<CallError, …>`), samt Generika: `List<…>`,
+   `Flow<Response<…>>`; `Unit` = leere Antwort (die App wertet nichts aus).
+6. **Schemata.** kotlinx.serialization schreibt die Feldnamen jeder Klasse
    in den statischen Initialisierer ihres `$$serializer`; das Werkzeug
-   liest dort alle `const-string` in Reihenfolge. Gegenprobe:
-   `RemoteNotification` = id, priority, updated_at, is_read,
-   notification_type, user_profiles, total_users, content_id, content_title,
-   content_image_url, content_message — das sind die Felder, die
-   `notification/v2` tatsächlich liefert (gemessen 08.09.2026).
-6. **Grenzen.** HEAD kommt nicht vor. Rückgabetypen sind teils umbenannt
-   (`Lv55;` = Flow-Hülle, `e9f` = Unit). Feldnamen ohne Typ; Aufzählungen
-   (z. B. `template`, `action.type`) stehen als lose Strings im Code
-   (`profile`, `clip`, `playlist`, `url`, `deeplink`, `navigate`, `expand`,
-   `see_all`, `single`), ihre Zuordnung ist nicht belegt.
+   liest dort alle `const-string` in Reihenfolge (MUTF-8 dekodiert).
+   Gegenprobe: die neun Felder, die `notification/v2` uns liefert (id,
+   updated_at, is_read, notification_type, user_profiles, total_users,
+   content_id, content_title, content_message), stehen alle im Schema
+   `RemoteNotification`; es kennt zwei weitere (priority,
+   content_image_url), die wir nie gemessen haben.
+7. **Grenzen.** Feldnamen ohne Typ (die Typen stünden in den
+   Signature-Annotationen der Konstruktoren — nicht gelesen).
+   Aufzählungen wie `template` oder `action.type` stehen als lose Strings
+   im Code; belegt sind nur die Werte aus der v3-Antwort unten.
 
 ## Zahlen
 
-| | |
-|---|---|
-| Dienste (Retrofit-Schnittstellen) | 48 |
-| Wege (Methoden) | 246 |
-| verschiedene Pfade | 229 |
-| davon **nicht** in den 370 Web-Wegen | 96 |
-| Schema-Klassen mit Feldnamen | 721 |
+| | com.suno | fremd (cms, Clerk, Lokalise) |
+|---|---|---|
+| Dienste (Retrofit-Schnittstellen) | 48 | 3 |
+| Wege (Methoden) | 246 | 27 |
+| verschiedene Pfade (ohne `@Url`-Download und AWS-Upload `/`) | 228 | 21 |
+| davon **nicht** in den 370 Web-Wegen | **95** | 21 |
+| Schema-Klassen mit Feldnamen | 721 | 141 |
+
+Unter den 246 sind drei Wege, die nicht zur Suno-API führen: der
+Datei-Download über `@Url` (beliebige Adresse), der Upload nach AWS
+(`POST /`, Multipart) und der Herzschlag `POST t` (Datadog/Stratovibe).
 
 ## Herzen — der Befund
 
 **Es gibt keinen Weg „alle Personen, die Titel X geherzt haben".** Nicht in
-der App, nicht im Web. Drei Wege setzen ein Herz:
+der App, nicht im Web. Herzen auf Titel setzen drei Wege (für Hooks,
+Kommentare und Alben gibt es eigene: `video/hooks/{hook_id}/reaction`,
+`comment/{clip_id}/reaction`, `unified/items/comments/reaction`,
+Albumherzen über `unified/items/reaction` mit `content_type`):
 
 | Weg | Verb | Körper | Wo |
 |---|---|---|---|
-| `gen/{gen_id}/update_reaction_type/` | POST | `RemoteUpdateReactionBody {reaction, …}` | Web und App |
-| `gen/{gen_id}/like/` | POST | `LikeSpec {like}` | nur App |
-| `unified/items/reaction` | POST | `RemoteGenericReactionBody {feed_params, action}` → `{success, content_id, current_user_liked, like_count}` | nur App (generischer Feed) |
+| `gen/{gen_id}/update_reaction_type/` | POST | `RemoteUpdateReactionBody {reaction, …}` → `RemoteClipReaction` | Web und App |
+| `gen/{gen_id}/like/` | POST | `LikeSpec {like}` → `Flow<Response<Unit>>` | nur App |
+| `unified/items/reaction` | POST | `RemoteGenericReactionBody {feed_params, action}` → `{success, message, content_id, current_user_liked, current_user_disliked, like_count}` | nur App |
 
-**Der stärkste Kandidat für die Liste, die die App zeigt:**
-`GET notification/v3?before_datetime_utc=…&include_hooks=…` (nur App).
+Der einzige personenbezogene Herz-Weg gilt Hooks, nicht Titeln:
+`GET video/hooks/me/liked/v2 [start_index, page_size, user_handle]` → die
+Hooks, die eine Person geherzt hat.
+
+### `notification/v3` — so zeigt die App alle Liker
+
+`GET notification/v3?include_hooks=false&before_datetime_utc=…` (nur App).
 Antwort `UserNotificationV3Schema {notified_at, notifications,
 next_before_datetime_utc}`, jede Benachrichtigung ein
-`RemoteSduiNotification`:
+`RemoteSduiNotification` (Typen aus den Signature-Annotationen, vom
+Gegenleser bestätigt):
 
 ```
 id, notification_type, template, updated_at, is_read,
-avatars[]      → RemoteSduiAvatar {image_url, action}
-text[]         → RemoteSduiTextSegment {text, bold, action}
+avatars[]        → RemoteSduiAvatar {image_url, action}
+text[]           → RemoteSduiTextSegment {text, bold, action}
 thumbnail_url,
-action         → RemoteSduiAction {type, url, handle}
-trailing_button → RemoteSduiTrailingButton {state, label, completed_label, action}
+action           → RemoteSduiAction {type, url, handle}
+trailing_button  → RemoteSduiTrailingButton {state, label, completed_label, action}
 ```
 
-SDUI heißt „server-driven UI": der Server baut die Zeile fertig — Avatare
-mit je einer Aktion, Textsegmente mit Namen, ein Folgen-Knopf.
+SDUI heißt „server-driven UI": der Server baut die Zeile fertig.
 
 **Belegt (eine GET-Anfrage am 08.09.2026, 23:26, mit Freigabe von
 Caspar_D, Clerk-Token des Browsers):** Status 200, 25 Benachrichtigungen
 je Seite, `next_before_datetime_utc` zum Blättern wie bei v2. Eine Zeile
-sieht so aus (Beispiel, gekürzt):
+(Beispiel, gekürzt):
 
 ```
 id: 113f9c32-…, notification_type: clip_like, template: avatars_text_thumbnail_layout_1,
@@ -108,52 +141,71 @@ Was v3 anders macht als v2:
 
 | | v2 (Web) | v3 (App) |
 |---|---|---|
-| Herzen auf denselben Titel | ein Bündel, höchstens drei `user_profiles`, `total_users` | **je Person eine Zeile** mit eigener Zeit (Jellee 20:57, DerFruusch 19:34 — in v2 wären beide im Bündel 75eef79b) |
+| Herzen auf denselben Titel | ein Bündel, höchstens drei `user_profiles`, `total_users` | **je Person eine Zeile** mit eigener Zeit (Jellee 20:57, DerFruusch 19:34 — in v2 wären beide im Bündel 75eef79b von *Glut und Eis*, 8 → 12 Herzen) |
 | Bündel | ja, gekürzt | auch, aber **mit allen Beteiligten**: „Alpha Aleph und Guedes" trägt zwei Avatare und zwei Textaktionen |
 | Handle | `user_profiles[].handle` | in `action.url` als `suno://suno.com/@handle` (Avatar und Textsegment) |
 | Anzeigename | `display_name` | das fette Textsegment mit Aktion |
-| Titel | `content_id`, `content_title` | `action.url` = `suno://suno.com/song/<id>`, Titel als letztes fettes Segment |
+| Titel | `content_id`, `content_title` | `action.url` = `suno://suno.com/song/<id>`, Titel als fettes Segment ohne Aktion |
 | Text | `content_message` | Segmente, in der Sprache des Kontos („Mir hat dein Lied gefallen") |
 | Seite | 20 | 25 |
 
 Damit ist die Frage beantwortet: **die App zeigt alle Liker, weil v3 sie
-alle nennt** — nicht über einen eigenen Liker-Weg. Für KlangTresor heißt
-das: das Lesezeichen sollte v3 lesen (Plan in NAECHSTER_CHAT.md).
-Der Text ist übersetzt; die Art steht sicher in `notification_type`,
-das Handle sicher in der Aktion — daran hängt die Zuordnung, nie am Satz.
+alle nennt** — nicht über einen eigenen Liker-Weg. Seit dem 08.09.2026
+liest das Lesezeichen v3 (`browser/morgens.js`, Abschnitt 2d); der Server
+normiert v2 und v3 auf dieselbe Zeile (`benachrichtigungNormieren` in
+`server/server.js`). Die Art steht sicher in `notification_type`, das
+Handle sicher in der Aktion — daran hängt die Zuordnung, nie am Satz.
 
-Der zweite Kandidat (`unified/feed` als Personenliste) ist damit vom Tisch.
+## Neue Wege mit Nutzen für KlangTresor (Auswahl aus den 95)
 
-## Neue Wege mit Nutzen für KlangTresor (Auswahl aus den 96)
+Antworten laut App; `Unit` heißt: die App wertet die Antwort nicht aus,
+der Nutzen ist dann aus dem Namen geraten, nicht belegt.
 
-| Weg | Verb | Antwort / Körper | Wofür |
+| Weg | Verb | Körper → Antwort | Wofür |
 |---|---|---|---|
-| `notification/v3` | GET | s. o. | Herzen mit allen Beteiligten (zu prüfen) |
-| `profiles/v2/{handle}` | GET | `RemoteProfileDetailsResponse {user_id, metadata, relationship, bio, social_links, stats, feed, pin_captions}` | Profil in einem Stück; `relationship` = folgt / gefolgt |
-| `profiles/v2/by-id/{uid}` | GET | dito | Profil über die Nutzer-ID (aus `user_id` in Clips/Kommentaren) |
-| `profiles/{handle}/recent_clips` | GET | — | jüngste Titel eines Profils, ohne Seitenlogik |
-| `profiles/followers`, `profiles/following` | GET | `GetProfileFollowResponse {current_page, num_total_profiles, profiles, user_id}` | eigene Beobachter ohne Handle im Pfad |
-| `user/clip_listen_history/` | GET | — | eigene Hörhistorie (Web: `profiles/listen-history`) |
-| `playlist/me/clip_status` | GET | — | in welchen eigenen Alben ein Titel steckt |
-| `playlist/sync/v2` | POST | — | Abgleich der Alben in einem Rutsch (Körper unbekannt) |
-| `gen/{clip_id}/time-sync-comments` | GET | `search_time, search_range, margin, num_requested, end_time` | Kommentare an Zeitmarken im Titel |
-| `trending/top/{period}/`, `trending/leaderboard/`, `trending/new/`, `trending/v2/` | GET | — | ob ein Caspar_D-Titel je in den Listen stand |
-| `download/authorize` | POST | — | Kontingent-Freigabe eines Downloads (Credits — nicht automatisieren) |
-| `search/users` | POST | `SearchQuerySchema {…, user_ids, …}` | Profile in Menge über IDs |
-| `unified/feed`, `unified/items/*` | POST | generischer Feed | Sunos neue Feed-Schicht; ersetzt absehbar `feed/v3` |
+| `notification/v3` | GET | s. o. | Herzen mit allen Beteiligten — **im Haus seit 08.09.2026** |
+| `profiles/v2/{handle}` | GET | → `RemoteProfileDetailsResponse {user_id, metadata, relationship, bio, social_links, stats, feed, pin_captions, nux_checklist}` | Profil in einem Stück; `relationship` = folgt / gefolgt |
+| `profiles/v2/by-id/{uid}` | GET | dito | Profil über die Nutzer-ID (aus `user_id` in Clips und Kommentaren) |
+| `profiles/following` | GET | → `GetProfileFollowResponse {current_page, handle, num_total_profiles, profiles, user_id}` | eigene Beobachtete ohne Handle im Pfad |
+| `profiles/followers` | GET | → `Unit` | dieselben Parameter wie `following`; Antwort in der App ungenutzt — vermutlich dasselbe Schema, **nicht belegt** |
+| `profiles/{handle}/recent_clips` | GET | → `Unit` | Name sagt „jüngste Titel"; nicht belegt |
+| `user/clip_listen_history/` | GET | → `Unit` | Name sagt „eigene Hörhistorie"; nicht belegt (Web: `profiles/listen-history`) |
+| `playlist/me/clip_status` | GET | `Query(clip_id, …)` → `PlaylistsSchema` | in welchen eigenen Alben ein Titel steckt |
+| `playlist/sync/v2` | POST | `RemotePlaylistSyncRequest {playlists: [{playlist_id, sync_token, feed_id}]}` → `RemotePlaylistSyncResponse {playlists}` | Abgleich der Alben in einem Rutsch, mit Sync-Marke je Album |
+| `gen/{clip_id}/time-sync-comments` | GET | `Query(search_time, search_range, margin, num_requested, end_time)` → `List<ClipCommentSchema>` | Kommentare an Zeitmarken im Titel |
+| `trending/top/{period}/`, `trending/leaderboard/`, `trending/new/`, `trending/v2/` | GET | → `PlaylistSchema` (`metaplaylist` → `PlaylistsSchema`) | Ist-Stand der Listen — keine Historie, ob ein Titel je drin stand, sagen sie nicht |
+| `download/authorize` | POST | `{item_id, item_type, surface}` → `{ok, already_unlocked, credit_deducted, reason}` | Kontingent-Freigabe eines Downloads (Credits — nicht automatisieren) |
+| `search/users` | POST | `UserSearchRequest {term, booster_user_handles}` → `List<SimpleProfileInfoSchema {external_user_id, stats, display_name, handle, avatar_image_url, is_following, is_verified}>` | Personensuche (Weg auch im Web; der Körper war dort unbekannt) |
+| `unified/items/*` (11 Wege) und `unified/feed/consumed` | POST | generischer Feed (`unified/feed` selbst kennt auch das Web) | Sunos neue Feed-Schicht: Kommentare, Reaktion, Folgen, Teilen, Liedtext je Feed-Element |
 
-Alles andere (`gems/*`, `queue/*`, `voice-verification/*`, `hooks/*`,
-`generate/*`, `billing/*`) sind Erzeugungs- und Bezahlwege — Credits,
-also nur von Hand in Suno.
+Die übrigen der 95: Erzeugen und Bezahlen (`generate/*`, `gems/*`,
+`billing/*`, `external/generate/*`, `edit/webhook/*`, `uploads/webhook/*`,
+`video/generate/*`, `voice-verification/*`, `persona/*`, `processed_clip/*`,
+`queue/*`, `radio/tags/`) — Credits, also nur von Hand in Suno; dazu
+Zähler (`gen/{x}/increment_play_count/`, `increment_skip_count/`), Meldungen
+(`update_flag_state`, `profiles/flag`, `moderation/*`), Konto und Gerät
+(`profiles/v2/me`, `user/update_phone_number/`, `user_actions/*`,
+`device_attestation/nonce`, `app_version_update/`), Benachrichtigungen
+(`notification/read/`, `notification/suppress/`), Oberfläche (`modals/*`,
+`video/hooks/tab_carousel`, `following-feed/seen`). Nichts davon liefert
+Archivdaten.
+
+Die 21 fremden Pfade: `cms/*` (Bezahlseiten, Takeover, Stilproben —
+Inhalte für die App), Clerk `v1/client/*` (Anmeldung, Form-kodiert),
+Lokalise (Übersetzungen).
 
 ## Regeln
 
 - **App-Wege sind App-Wege.** Sie werden nicht aus dem Browser angeklopft,
-  um zu sehen, was passiert. Erst Freigabe, dann eine Anfrage, dann Doku.
+  um zu sehen, was passiert. Erst Freigabe, dann eine Anfrage, dann Doku —
+  so lief es bei v3.
 - **Neue App-Version → Werkzeug erneut laufen lassen**, Liste daneben
   legen, Unterschied notieren. Aufruf:
   `unzip base.apk` in einen Ordner, dann
   `node bin/suno-app-wege.js <ordner> <ausgabe.json> > <liste.txt>`.
+  Steht in der Ausgabe ein `?` (Widerspruch Kette/Elemente) oder fehlt ein
+  Verb in der Zuordnung, hat sich Retrofit oder R8 geändert — dann erst
+  das Werkzeug prüfen, nicht die Liste glauben.
 - Die Web-Liste (`docs/suno-api-wege-2026-09-08.txt`) und diese Liste
   ergänzen sich; `docs/SUNO-ENDPUNKTE-ABGLEICH.md` bleibt die Stelle für
   „belegt / plausibel / geraten".

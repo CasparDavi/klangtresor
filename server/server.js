@@ -931,10 +931,14 @@ function gesundheitKurz() {
     if (ok) gut++;
     zeilen.push(ok ? `✓ ${wort}` : `✗ ${wort} — ${klartext(b[k])}`);
   }
-  if (b['Audio-CDN (außer Betrieb)'] !== undefined || b['Audio-Links im Katalog'] !== undefined) {
+  /* Die Audio-Adresse ist seit 03.09.2026 gesperrt (403) - das ist
+     bekannt und steht in docs/BACKLOG.md; jeden Morgen daran zu erinnern
+     hilft niemandem (Caspar_D, 08.09.2026: "das muss nicht mehr explizit
+     erwaehnt werden"). Gemeldet wird nur die Nachricht: wenn sie wieder
+     antwortet. */
+  if (b['Audio-CDN (außer Betrieb)'] !== undefined) {
     const c = b['Audio-CDN (außer Betrieb)'];
-    zeilen.push(c === 200 || c === 206 ? '✓ Audio-Adresse — antwortet wieder'
-                                        : '· Audio-Adresse — gesperrt seit 03.09.2026, wird beobachtet');
+    if (c === 200 || c === 206) zeilen.push('✓ Audio-Adresse — antwortet wieder');
   }
   if (!zeilen.length) return null;
   zeilen.push(`${gut} von ${gesamt} Adressen antworten wie erwartet`);

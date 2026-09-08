@@ -2301,3 +2301,12 @@ sie mehr Spuren als die lokale htdemucs (bis zu zwölf gegen sechs,
 `docs/OFFEN.md` 2.3)? Zählt ein WAV-Download vom Kontingent oder von den
 Credits? Beides steht in `billing/info` und `billing/usage-plans` — beide
 Wege liegen jetzt mit Umfeld in `library/suno-wege/`.
+
+## Morgenfenster: Abschnitte nach und nach zeigen (Caspar_D, 08.09.2026)
+
+Heute erscheinen alle Abschnitte auf einmal (die wartenden mit Schätzung).
+Wunsch: die Abschnitte nacheinander einblenden, in dem Tempo, in dem sie
+fertig werden — der Blick folgt dann dem Lauf statt einer Liste. Offen:
+was mit den noch nicht begonnenen passiert (gar nicht zeigen, oder nur als
+Zeile „N Schritte folgen"), und wie die Zwei-Phasen-Aufteilung (schnell
+zuerst, langsam im Hintergrund) dazu passt.
