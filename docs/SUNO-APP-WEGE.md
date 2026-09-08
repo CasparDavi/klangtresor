@@ -221,3 +221,58 @@ Lokalise (Übersetzungen).
 - Die Web-Liste (`docs/suno-api-wege-2026-09-08.txt`) und diese Liste
   ergänzen sich; `docs/SUNO-ENDPUNKTE-ABGLEICH.md` bleibt die Stelle für
   „belegt / plausibel / geraten".
+
+## iOS-App: Mitschnitt vom 09.09.2026 (00:34–00:50)
+
+Caspar_Ds iPhone 15 (Suno-App `iOS 1.87.0-424`), mitmproxy auf dem Mac,
+Zertifikat vom Telefon akzeptiert (kein Pinning), nur Suno-Verkehr
+aufgezeichnet; das Telefon lief währenddessen mit eingetragenem Proxy und
+wurde danach wieder zurückgesetzt. Mitschnittdatei außerhalb des Hauses
+(`/Volumes/Extreme_SSD/Entwicklung/apk/iphone/mitschnitt.flows`, enthält
+Sitzungs-Token — nicht kopieren). Proben im Haus: `library/suno-wege/`.
+
+**Die Antwort auf die Herzen-Frage:** Der Bildschirm „Gefällt mir (N)"
+(Kommentarknopf auf der Song-Seite, dann das Likes-Register) ruft
+`GET /api/gen/{clip_id}/likers/` — ein Weg, den nur die iOS-App kennt.
+
+| | Befund |
+|---|---|
+| Antwort | `{clip_id, likers[], next_cursor, num_total_likes}` |
+| je Person | `handle, display_name, avatar_image_url, external_user_id, is_following, is_following_viewer, is_verified, stats` — **keine Zeit je Herz** |
+| Seiten | 20 je Seite; „Morgen" (59 Herzen) in drei Seiten 20/20/19 |
+| Cursor | base64 von `{"updated_at": "2026-06-26T18:01:50.587557+00:00"}` — die Herz-Zeit des letzten Eintrags der Seite; Sortierung neueste zuerst. Jede Seitengrenze verrät also eine Zeit; ob `page_size` angenommen wird (dann eine Zeit je Herz), ist ungeprüft |
+| eigenes Herz | enthalten (`caspar_d` bei „Morgen") — anders als in den Benachrichtigungen |
+| *Glut und Eis* | 13 Namen, `num_total_likes` 14 |
+| Kopfzeilen der App | `x-suno-client: iOS 1.87.0-424`, `session-id`, `anonymous-id`, `x-suno-timezone`, `x-suno-region`, Datadog-Spuren; Bearer-Token wie im Web |
+
+Weitere Befunde derselben Sitzung:
+
+- **Benachrichtigungen:** die iOS-App liest **v2** (nicht v3), minütlich
+  `?after_datetime_utc=` für Neues; beim Öffnen der Glocke `POST
+  notification/v2/read` (tun wir nicht). Ein Bündel führt zum Titel, die
+  Avatare zu den drei Profilen — die App löst Bündel auch nicht auf.
+  Neues Feld `content_ancillary_id` = Kommentar-ID bei comment_like,
+  comment_reply, clip_comment; in v3 steht sie als `?comment_id=` in der
+  Ziel-URL. Beides seit 09.09.2026 in der Zeile als `kommentarId`.
+- **Album:** `POST unified/feed {feed_id: "generic_playlist:<id>", page_size: 50, cursor}` —
+  120 Titel in drei Seiten, mit `feed_metadata.owner`.
+- **Profil:** `GET profiles/v2/{handle}` liefert alles in einem Stück,
+  darin ein verschachtelter Feed mit `user_pinned_songs`, `user_songs`,
+  `user_playlists`, `user_hooks`, `user_personas`. Beobachter/Gefolgte über
+  die Web-Wege `profiles/{handle}/followers|following?page=N`, 20 je
+  Seite, mit `is_following_viewer`.
+- **Kommentare:** `GET gen/{clip_id}/comments?page_size=20&order=newest`
+  wie im Web; `track_timestamp` = Zeitmarke im Titel.
+- Startablauf: `clerk/v1/client/sessions/{id}/tokens`, `cms/launch`,
+  `cms/takeover/compact`, `playlist/sync/v2`, `app_version_update`,
+  `session`, `billing/info`, `unified/feed`, `unified/homepage/explore/mobile`,
+  `video/hooks/tab_carousel`, `feed/v3`, `mango/rights` (Rechteprüfung je
+  Titel), `bulk_increment_play_counts/v2`.
+
+**Für KlangTresor (Plan, Entscheidung Caspar_D):** `likers/` ist ein
+iOS-Weg; ein Aufruf aus dem Lesezeichen trägt die Kennung des Browsers,
+nicht die der App. Wenn wir ihn gehen: nur für Titel, deren Herzzahl sich
+seit dem letzten Stand geändert hat (Understatement — die Software rechnet
+aus, wo sie fragen muss), einmal ein voller Durchlauf (~250 Titel, 20 je
+Seite). Zeiten je Herz aus den Benachrichtigungen, wo einzeln; sonst aus
+der Seitengrenze des Cursors als Zeitfenster.

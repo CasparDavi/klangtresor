@@ -1882,3 +1882,27 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   erneut durch `bin/suno-app-wege.js`.
 - Lesezeichen 23:50 lief mit v3: 1 neue Zeile (VocalKidFolk314), Rest
   bekannt. Rohform künftiger Läufe: `library/suno-wege/benachrichtigungen-letzter-lauf.json`.
+
+## Mitschnitt iPhone (09.09.2026, 00:34–00:50) — der Liker-Weg ist gefunden
+
+- **`GET /api/gen/{clip_id}/likers/?cursor=`** (nur iOS): alle Liker eines
+  Titels, 20 je Seite, `num_total_likes`, Cursor = base64 `{updated_at}`
+  (Herz-Zeit des letzten der Seite), neueste zuerst, eigenes Herz dabei,
+  keine Zeit je Person. Doku `docs/SUNO-APP-WEGE.md` (iOS-Abschnitt),
+  `docs/SUNO-API.md`; Proben `library/suno-wege/likers-probe-*.json`.
+- Gebaut: `kommentarId` in der Reaktionszeile (v2 `content_ancillary_id`,
+  v3 `?comment_id=`), `/api/kommentare` ordnet Kommentar-Herzen darüber
+  zu (Textanfang nur noch als Rückfall). Wirkt ab dem nächsten Lauf.
+- Weitere Wege belegt: `unified/feed` mit `generic_playlist:<id>`,
+  `user_songs`, `user_playlists` …; `profiles/v2/{handle}` (alles in einem
+  Stück); `notification/v2?after_datetime_utc=`; iOS liest v2, nicht v3.
+- **Entscheidung offen (Caspar_D):** likers/ aus dem Lesezeichen holen?
+  Vorschlag: nur Titel mit geänderter Herzzahl, einmal voller Durchlauf;
+  Ablage je Titel (Stand + Änderungsliste mit Laufzeit als Zeitfenster);
+  Reaktionsfenster zeigt dann alle Namen. Vorher eine Probe, ob `page_size`
+  angenommen wird (Freigabe). Kopfzeilen der App werden NICHT
+  nachgeahmt — wir sind ein Web-Client auf einem iOS-Pfad, das muss
+  Caspar_D wissen.
+- Mitschnittdatei `/Volumes/Extreme_SSD/Entwicklung/apk/iphone/mitschnitt.flows`
+  enthält Sitzungs-Token: nach Abschluss der Doku löschen (Caspar_D fragen).
+- mitmproxy (Homebrew) bleibt installiert; Zertifikat in `~/.mitmproxy`.

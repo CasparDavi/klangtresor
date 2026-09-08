@@ -698,10 +698,15 @@ function benachrichtigungNormieren(n, gesehen) {
   const istV3 = Array.isArray(n.text) || Array.isArray(n.avatars);
   if (!istV3) {
     const von = (n.user_profiles || []).map(p => p.handle).filter(Boolean);
+    /* content_ancillary_id: bei comment_like, comment_reply, clip_comment die
+       ID des Kommentars (Mitschnitt iPhone 09.09.2026) - damit ordnet
+       /api/kommentare ein Kommentar-Herz seinem Kommentar sicher zu, statt
+       ueber die ersten 18 Zeichen des Textes. */
     return { art: n.notification_type || 'unbekannt', gesehen, sunoId: n.id, am: n.updated_at,
              song: n.content_id || null, songTitel: n.content_title || '', von,
              namen: (n.user_profiles || []).map(p => p.display_name).filter(Boolean),
-             anzahl: n.total_users || von.length || 1, text: n.content_message || '', gelesen: !!n.is_read };
+             anzahl: n.total_users || von.length || 1, text: n.content_message || '', gelesen: !!n.is_read,
+             kommentarId: n.content_ancillary_id || undefined };
   }
   const handleAus = a => { const m = a && typeof a.url === 'string' && a.url.match(/suno:\/\/suno\.com\/@([^/?#]+)/); return m ? m[1] : null; };
   const von = [], namen = [];
@@ -719,10 +724,12 @@ function benachrichtigungNormieren(n, gesehen) {
   const dp = rest.indexOf(':');
   const zielUrl = n.action && typeof n.action.url === 'string' ? n.action.url : '';
   const songM = zielUrl.match(/suno:\/\/suno\.com\/song\/([0-9a-f-]{36})/);
+  const kommM = zielUrl.match(/[?&]comment_id=([0-9a-f-]{36})/);       /* v3: Kommentar-ID in der Ziel-URL */
   const zeile = { art: n.notification_type || 'unbekannt', gesehen, sunoId: n.id, am: n.updated_at,
                   song: songM ? songM[1] : null, songTitel: titel, von, namen,
                   anzahl: von.length + (weitere ? +weitere[1] : 0),
-                  text: dp >= 0 ? rest.slice(dp + 1).trim() : '', gelesen: !!n.is_read, quelle: 'v3' };
+                  text: dp >= 0 ? rest.slice(dp + 1).trim() : '', gelesen: !!n.is_read, quelle: 'v3',
+                  kommentarId: kommM ? kommM[1] : undefined };
   if (!songM && zielUrl) zeile.ziel = zielUrl.replace(/\?.*$/, '');
   return zeile;
 }
@@ -1397,9 +1404,13 @@ const server = http.createServer((req, res) => {
     const anfang = t => (t || '').replace(/\.\.\.$/, '').trim().slice(0, 18).toLowerCase();
     const alleTexte = [...kommentare.values(), ...antworten.values()];
     for (const kl of kommentarLikes) {
+      /* Seit 09.09.2026 traegt die Zeile die Kommentar-ID (v2:
+         content_ancillary_id, v3: comment_id in der Ziel-URL) - dann ist
+         die Zuordnung sicher. Aeltere Zeilen: ueber den Textanfang. */
+      let ziel = kl.kommentarId ? alleTexte.find(k => k.id === kl.kommentarId) : null;
       const a = anfang(kl.text);
-      if (!a) continue;
-      const ziel = alleTexte.find(k => anfang(k.text).startsWith(a) || a.startsWith(anfang(k.text)));
+      if (!ziel && !a) continue;
+      if (!ziel) ziel = alleTexte.find(k => anfang(k.text).startsWith(a) || a.startsWith(anfang(k.text)));
       if (!ziel) continue;
       (ziel.geliktVon = ziel.geliktVon || []).push({ von: (kl.von||[])[0], name: (kl.namen||[])[0], am: kl.am });
     }
