@@ -118,8 +118,27 @@ entscheidet, ob er weiterliest. Vier Punkte, in dieser Reihenfolge:
 4. **Was hier geht, das anderswo nicht geht.** Der Klangraum in drei
    Sätzen.
 
-*Offen:* ob das Vorwort Caspar_Ds Namen trägt und seine Geschichte
-erzählt, oder sachlich bleibt.
+**Es trägt Caspar_Ds Namen** (07.09.2026: „Ja, es trägt mein Suno-Alias
+Caspar_D"). Das Vorwort ist also kein Sachtext, sondern die Stimme
+dessen, der das Archiv gebaut hat, und wird mit **Caspar_D**
+gezeichnet — dem Namen, unter dem die Titel auf Suno stehen.
+
+Was daraus folgt: Die vier Punkte oben sind das Gerüst, nicht der Text.
+Drei Sachen kann nur der Autor selbst beisteuern, und ohne sie bleibt das
+Vorwort eine Funktionsliste mit Unterschrift:
+
+- **Warum überhaupt eigene Musik?** Nicht „wozu ein Archiv", sondern was
+  am Anfang stand.
+- **Der Moment, in dem klar wurde, dass es ein Archiv braucht.** Die 60
+  Downloads im Monat sind der Anlass, aber ein Anlass ist keine
+  Geschichte.
+- **Was ihm an seinen Titeln wichtig ist.** Das ist der Satz, der über
+  dem ganzen Handbuch steht — und im README steht er schon: *„Ein Tresor
+  für die eigene Musik — was drin liegt, gehört dir, und den Schlüssel
+  hast nur du."*
+
+Das Vorwort wird deshalb zuletzt geschrieben, nicht zuerst: erst wenn die
+vierzehn anderen Kapitel stehen, weiß man, worauf es hinführt.
 
 ---
 
