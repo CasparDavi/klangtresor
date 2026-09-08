@@ -256,12 +256,17 @@ ganz draußen — ein Handbuch, das mit einer Urheberrechtsdebatte
 beginnt, zieht seine Leser in eine Frage, die es nicht beantworten kann
 und die in fünf Jahren anders aussieht.
 
-> Ich habe kein Instrument gelernt, dafür war ich zu ungeduldig. Texte
-> hatte ich auch nicht — selbstgeschriebene Gedichte mag ich nicht, und
-> vortragen schon gar nicht.
+> Ich mag Musik. Mich hat nur immer gestört, dass sie so selten etwas zu
+> sagen hat.
 >
+> Ein Instrument habe ich nie gelernt, dafür war ich zu ungeduldig.
+> Gedichte schreiben mag ich auch nicht, und vortragen schon gar nicht.
 > Aber ich liebe Geschichten. Und wenn eine Geschichte einen
 > musikalischen Unterbau bekommt, fängt sie an zu leben.
+>
+> Meine ersten Versuche taugen nicht zur Legendenbildung — das waren
+> Tests, ob das Ganze überhaupt funktioniert. Dann kam „Erste Liebe".
+> Von da an war es keine Vertonung mehr.
 >
 > Suno hat mir diesen Unterbau gegeben, und dafür bin ich den Leuten
 > dort dankbar. Sie stecken ihre Kraft in ein Modell, das jemandem wie
@@ -285,13 +290,32 @@ und die in fünf Jahren anders aussieht.
 >
 > **Caspar_D**
 
-**Der Anfang ist am 08.09.2026 berichtigt worden**, und die Berichtigung
-trägt den ganzen Text. Der erste Entwurf sagte „aber ich hatte Texte" —
-falsch. Caspar_D: *„Ich hatte nicht mal Texte, ich hasse
-selbstgeschriebene Gedichte. Ich mag es schon gar nicht, solche
-vorzutragen. Aber ich liebe Geschichten, und wenn man diese Geschichten
-mit einem musikalischen Unterbau ausstattet, dann beginnen sie zu
-leben."*
+**Der Anfang ist am 08.09.2026 zweimal berichtigt worden**, und beide
+Berichtigungen tragen den Text.
+
+Zuerst: nicht Texte, sondern Geschichten. Caspar_D: *„Ich hatte nicht mal
+Texte, ich hasse selbstgeschriebene Gedichte. Ich mag es schon gar nicht,
+solche vorzutragen. Aber ich liebe Geschichten, und wenn man diese
+Geschichten mit einem musikalischen Unterbau ausstattet, dann beginnen
+sie zu leben."*
+
+Dann die Richtung des ersten Satzes: *„Ich mag Musik, mich hat nur schon
+immer gestört, dass sie selten etwas zu sagen hat."* Das ist kein
+Eingeständnis, sondern ein **Einwand** — und damit fängt der Text besser
+an, als wenn er mit dem beginnt, was der Autor nicht kann. Wer mit einem
+Mangel anfängt, schreibt eine Entschuldigung; wer mit einem Einwand
+anfängt, hat einen Grund.
+
+**Die konkrete Stelle ist „Erste Liebe"** (22.04.2025, sechster Titel des
+Bestands, sechs Tage nach den ersten Versuchen). Caspar_D hat zwei
+vorgeschlagen — „Farben" und „Erste Liebe" — und „Erste Liebe" ist die
+bessere, weil sie den Einwand **beweist** statt ihn zu behaupten: ein
+Anruf nach Jahren, zwei Stunden, ein Krankenhauszimmer, ein zweiter und
+letzter Kuss. Das ist Musik, die etwas erzählt, und nicht Musik, die
+etwas begleitet. Dass die eigenen ersten Versuche danebenliegen, gehört
+mit dazu — *„eher peinlich, es waren eher Tests, ob das Ganze
+funktioniert und nicht zur Legendenbildung geeignet"*. Ein Vorwort, das
+seine Anfänge schönt, verliert den Leser sofort.
 
 Das erklärt rückwirkend die Bauform des ganzen Archivs. **Der
 Geschichten-Raum heißt nicht zufällig so** — er ist die Achse, nicht die
@@ -301,11 +325,11 @@ Archiv so viel Arbeit im Text steckt: die zehn Substantive, die sagen,
 Wort-Zeitmarken. Wer von der Geschichte herkommt, baut ein anderes
 Werkzeug als wer vom Klang herkommt.
 
-**Was noch fehlt:** die Stelle, an der es konkret wird. Ein Satz über den
-Moment, in dem eine Geschichte zum ersten Mal ihren Unterbau bekam — oder
-über ein bestimmtes Stück. Ohne so eine Stelle bleibt auch der beste
-Entwurf eine Haltung; mit ihr wird es eine Geschichte. Die kann nur der
-Autor beisteuern.
+**Was noch offen ist:** ob im Vorwort steht, **wovon** „Erste Liebe"
+handelt — und ob die Geschichte dahinter erzählt wird. Der Entwurf nennt
+nur den Namen und überlässt dem Leser, hineinzuhören. Das ist die
+zurückhaltende Fassung. Ob mehr dasteht, entscheidet der Autor; hier wird
+nichts unterstellt, was er nicht selbst gesagt hat.
 
 **Was bewusst draußen blieb:** das Downloadlimit als Aufhänger (es steht
 weiter unten als Randnotiz), die Trainingsfrage, und jede Wertung über
