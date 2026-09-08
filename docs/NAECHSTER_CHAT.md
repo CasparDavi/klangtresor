@@ -1547,3 +1547,91 @@ und von Hand herübergereicht werden muss.
 
 Wer das hier liest und Zeit hat: `docs/eingang/` durchsehen, verteilen,
 Status setzen.
+
+---
+
+# Stand 08.09.2026, spät — Übergabe
+
+Sitzung endete am Limit. Was läuft, was wartet, was entschieden ist.
+
+## Im Bau, noch nicht eingecheckt (server.js, morgens.js, aufbereiten.js)
+
+**Der Albumweg.** Gemessen: `browser/morgens.js` holte drei Wochen lang
+Alben über `/api/profiles/<handle>/playlists` — einen Weg, der in keiner
+Liste steht, geraten, antwortete leer. Neu gebaut, zweistufig mit Token:
+`/api/playlist/me?page=N` (Köpfe) + `/api/playlist/<id>?page=N`
+(Einträge), Server legt `playlists-<stempel>.json` ab, `aufbereiten.js`
+baut die Alben mit Riegel. Vier Runden Gegenlesung; jede fand eine neue
+Art, wie Suno per 200 lügen kann. Deshalb **Caspar_Ds Regel**: Löschungen
+und Verkleinerungen erst nach zwei übereinstimmenden vollständigen Ernten,
+mindestens 2 h auseinander — Kandidaten in `katalog.albenKandidaten`.
+Der Bau dieser Regel lief beim Sitzungsende (Workflow `albumweg-
+bestaetigung`). **Prüfen:** `git diff` der drei Dateien, `node --check`,
+Sandkästen in Scratchpad sind weg — neu anlegen aus Kopien.
+**Danach:** Sonde `download/clip/<probeId>` in morgens.js (Block „API-
+Probe, einmalig") löschen, seit 03.09. kostenpflichtig-unklar. Dann
+Commit. Dann erster echter Lauf: Caspar_D klickt, Claude schaut zu.
+
+**Dazu in server.js schon fertig:** Whisper `--alle` im Morgenschritt
+(rechnet alle Titel mit Text, nicht nur die ohne Suno-Zeitmarken —
+Caspar_D: „Whisper analysiert alles außer Instrumentals"), und
+`bin/lyrik.js --tun` als 19. Schritt dahinter.
+
+**Aufräumen** (Workflow `library-aufraeumen`, lief beim Ende): 1 GB PNG
+samt drei Rückfallzweigen, `kondensate/arbeit/`, sechs Logs,
+`neue-songs.json` samt Schreiber in `sammeln.js`, vier Dateien nach
+`docs/`. Protokoll in Scratchpad verloren — `git status` und
+`docs/HANDARBEIT-PRUEFUNG.md` zeigen, was gemeint war.
+
+## Entschieden, noch zu bauen (Reihenfolge)
+
+1. Albumweg fertig + Commit (oben).
+2. **Vierte Quelle**: Albumeinträge werden zu Titeln — „neue Titel
+   kommen nur über public oder über die Playlisten; Playlist schlägt
+   alles". `aufbereiten.js:171` bekommt `ausAlben`. Kein Arbeitsbereich.
+3. **Nachtschritt Stems** (`bin/stems.js`, 4 min/250 MB je Titel),
+   **Morgenschritt Tonart** (`bin/toene.js` vor `analyse-index.js`),
+   Haken 14–16 aus HANDARBEIT-PRUEFUNG.md.
+4. **Morgenfenster** neu: je Schritt Abschnitt mit Status ✓/✗/▸/·,
+   Beschreibung aus `docs/handbuch/MORGENSCHRITTE.json`, Kurzergebnis,
+   Einzelheiten aufklappbar; alle 19 sichtbar, scrollt; pflicht-Schritte
+   brechen ab, andere werden rot und der Lauf geht weiter; Lernkurve
+   nach `schluessel` statt Name; Ernte-Zähler „N Datensätze" statt
+   Dateien. Mockup war abgenommen. Danach die Schlusszeilen der 17
+   Skripte (Vorschläge im Workflow-Ergebnis `morgenschritte-beschreiben`,
+   Scratchpad — verloren; aus MORGENSCHRITTE.json `kurzergebnis_muster`).
+5. **Tragende Endpunkt-Doku**: Rohdaten liegen in
+   `library/suno-wege/2026-09-08.json` (301 Pfade, 412 Fundstellen mit
+   ±200 Zeichen Umfeld, aus 109 Skripten über Caspar_Ds Browser). Plan:
+   `bin/suno-wege.js` als Werkzeug (holt über Browser-Download,
+   diff zum Vortag), dann acht Domänen-Agenten → `SUNO-API.md` neu, mit
+   Abschnitt Abrechnung. Host-Wechsel: `studio-api.prod` (Punkt) ist
+   Altbestand, Web-App nutzt `studio-api-prod` (Bindestrich) — in 7
+   Skripten + Docs nachziehen. Die zehn Prüfklicks für Caspar_D stehen
+   in `docs/SUNO-ENDPUNKTE-ABGLEICH.md` unten.
+6. **KlangTresor-eigene Listen** neben Suno-Alben (`herkunft:
+   'klangtresor'`), Zeichen: oranger runder Drops mit S / weißer Drops
+   mit schlankem Tresorrad.
+7. Zwei Alt-Wege löschen: `bin/token.js` + `geheim/` +
+   `POST /api/geheim/cookie` (Prüfung: null Aufrufer), Docker/Einrichtung
+   nachziehen.
+
+## Vertagt (Backlog)
+
+Kondensate — lokales Modell planen. Bereinigte Lyrik als Bühnen-Vorgabe —
+nach Analyse. SSD auf exFAT/32 kB neu formatieren — nach dem Backup.
+
+## Backup
+
+`~/Skripte/backup-ssd.sh ~/Skripte/backup-ssd.log` — inkrementell auf
+`/Volumes/Daten/Extreme_SSD-Backup` (MyCloudPR4100). Beim Sitzungsende
+lief `oakvar_modules` (letzter Ordner). Kleinteile als Archive unter
+`_archive-kleinteile/`. NAS: SMB 2 in `~/Library/Preferences/nsmb.conf`
+gesetzt (59–70 MB/s statt 28), Signing verlangt das NAS selbst; NFS wäre
+der nächste Hebel (sudo, `resvport`).
+
+## Regeln von heute (im Memory)
+
+Nichts am KlangTresor vorbei · Credits nur von Hand · Nomenklatur-
+Präzision (Kerbe→Kerbfilter) · Ernte→Datentransfer · Agenten beenden
+Sandkasten-Server nur über eigene PID, nie `pkill -f`.
