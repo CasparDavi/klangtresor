@@ -638,40 +638,70 @@ function fortschritt() {
 /* Benachrichtigungen in library/reaktionen.ndjson schreiben. Je Eintrag
    eine Zeile mit art = notification_type (clip_like, clip_comment,
    comment_like, comment_reply, follow, …), den beteiligten Profilen und
-   dem Zeitpunkt. Bekannt ist ein Eintrag an seiner Suno-ID; die Datei
-   wird einmal gelesen, um sie zu kennen. Bei 226 KB ist das billig;
-   waechst sie auf Megabyte, ist ein Index faellig. */
+   dem Zeitpunkt. Bekannt ist ein Eintrag an seiner Suno-ID - aber Suno
+   schreibt Eintraege FORT: Herzen, die kurz nacheinander auf denselben
+   Titel kommen, sind EIN Buendel mit einer ID, und mit jedem weiteren
+   Herzen bekommt es eine neue Zeit, eine groessere Gesamtzahl
+   (total_users) und andere drei Namen (user_profiles - mehr als drei
+   gibt Suno nie her). Gemessen 08.09.2026 an "Glut und Eis": 8 Herzen
+   in der Datei, 12 im Katalog; die ID war bekannt, das Wachstum kam nie
+   an. Deshalb: Ein gewachsener Eintrag bekommt eine neue Zeile
+   (nachtrag: true, vorher: alte Zahl), und reaktionenLesen() laesst je
+   ID die juengste gewinnen. Die Datei wird je Aufruf einmal gelesen; bei
+   226 KB ist das billig, waechst sie auf Megabyte, ist ein Index faellig. */
 const REAKTIONEN = path.join(WURZEL, 'library', 'reaktionen.ndjson');
-function reaktionenAnhaengen(liste, gesehen) {
-  const bekannt = new Set();
-  if (fs.existsSync(REAKTIONEN)) {
-    for (const z of fs.readFileSync(REAKTIONEN, 'utf8').split('\n')) {
-      if (!z.trim()) continue;
-      try { const e = JSON.parse(z); if (e.sunoId) bekannt.add(e.sunoId); } catch (x) {}
-    }
+/* Alle Zeilen der Datei. Stromzeilen (mit sunoId) je ID nur im juengsten
+   Stand, an der Stelle der ersten; Kommentarzeilen von bin/reaktionen.js
+   (ohne sunoId) unveraendert, sie haben ihre eigene Regel (id, juengste
+   gewinnt beim Leser). */
+function reaktionenLesen() {
+  const zeilen = [], stelle = new Map();
+  if (!fs.existsSync(REAKTIONEN)) return zeilen;
+  for (const z of fs.readFileSync(REAKTIONEN, 'utf8').split('\n')) {
+    if (!z.trim()) continue;
+    let e; try { e = JSON.parse(z); } catch (x) { continue; }
+    if (!e.sunoId) { zeilen.push(e); continue; }
+    if (stelle.has(e.sunoId)) zeilen[stelle.get(e.sunoId)] = e;
+    else { stelle.set(e.sunoId, zeilen.length); zeilen.push(e); }
   }
-  let neu = 0;
+  return zeilen;
+}
+function reaktionenAnhaengen(liste, gesehen) {
+  const bekannt = new Map();
+  for (const e of reaktionenLesen()) if (e.sunoId) bekannt.set(e.sunoId, e);
+  let neu = 0, nachgetragen = 0;
   const strom = fs.createWriteStream(REAKTIONEN, { flags: 'a' });
+  const menge = v => [...v].sort().join(',');
   for (const n of liste) {
-    if (!n || !n.id || bekannt.has(n.id)) continue;
-    bekannt.add(n.id);
-    strom.write(JSON.stringify({
+    if (!n || !n.id) continue;
+    const von    = (n.user_profiles || []).map(p => p.handle).filter(Boolean);
+    const anzahl = n.total_users || von.length || 1;
+    const alt    = bekannt.get(n.id);
+    /* Gewachsen: mehr Personen, juengere Zeit oder andere Namen. Die
+       Reihenfolge der Namen zaehlt nicht - sonst schriebe jeder Lauf,
+       in dem Suno sie anders sortiert, eine Zeile. */
+    const gewachsen = alt && (anzahl > (alt.anzahl || 0) || (n.updated_at || '') > (alt.am || '')
+                              || menge(von) !== menge(alt.von || []));
+    if (alt && !gewachsen) continue;
+    const zeile = {
       art:      n.notification_type || 'unbekannt',
       gesehen,
       sunoId:   n.id,
       am:       n.updated_at,
       song:     n.content_id || null,
       songTitel: n.content_title || '',
-      von:      (n.user_profiles || []).map(p => p.handle).filter(Boolean),
+      von,
       namen:    (n.user_profiles || []).map(p => p.display_name).filter(Boolean),
-      anzahl:   n.total_users || (n.user_profiles || []).length || 1,
+      anzahl,
       text:     n.content_message || '',
       gelesen:  !!n.is_read,
-    }) + '\n');
-    neu++;
+    };
+    if (alt) { zeile.nachtrag = true; zeile.vorher = alt.anzahl || 0; nachgetragen++; } else neu++;
+    bekannt.set(n.id, zeile);
+    strom.write(JSON.stringify(zeile) + '\n');
   }
   strom.end();
-  return neu;
+  return { neu, nachgetragen };
 }
 
 /* Die Abschnitte fuer das Fenster. Solange nie ein Lauf gestartet
@@ -1129,8 +1159,9 @@ const server = http.createServer((req, res) => {
            Suno-ID des Eintrags. So waechst die Like-Historie ab heute,
            auch wenn Suno seinen Strom nach vier Wochen vergisst. */
         if (Array.isArray(daten.benachrichtigungen) && daten.benachrichtigungen.length) {
-          const neu = reaktionenAnhaengen(daten.benachrichtigungen, daten.erzeugtAm);
-          morgen.zeilen.push(`Benachrichtigungen: ${neu} neu gesichert`);
+          const r = reaktionenAnhaengen(daten.benachrichtigungen, daten.erzeugtAm);
+          morgen.zeilen.push(`Benachrichtigungen: ${r.neu} neu gesichert`
+                             + (r.nachgetragen ? `, ${r.nachgetragen} Bündel gewachsen` : ''));
         }
         if (daten.timing && Object.keys(daten.timing).length) {
           fs.writeFileSync(path.join(ordner, `timing-${stempel}.json`),
@@ -1289,16 +1320,12 @@ const server = http.createServer((req, res) => {
     if (!/^[0-9a-f-]{36}$/.test(id)) { res.writeHead(400); return res.end(); }
     const kommentare = new Map(), antworten = new Map();
     const reaktionen = [], kommentarLikes = [];
-    if (fs.existsSync(REAKTIONEN)) {
-      for (const z of fs.readFileSync(REAKTIONEN, 'utf8').split('\n')) {
-        if (!z.trim()) continue;
-        let e; try { e = JSON.parse(z); } catch (x) { continue; }
-        if (e.song !== id) continue;
-        if (e.art === 'kommentar') kommentare.set(e.id, e);          // juengster Stand gewinnt
-        else if (e.art === 'antwort') antworten.set(e.id, e);
-        else if (e.art === 'clip_like') reaktionen.push(e);
-        else if (e.art === 'comment_like') kommentarLikes.push(e);
-      }
+    for (const e of reaktionenLesen()) {                             // Stromzeilen je Suno-ID im juengsten Stand
+      if (e.song !== id) continue;
+      if (e.art === 'kommentar') kommentare.set(e.id, e);          // juengster Stand gewinnt
+      else if (e.art === 'antwort') antworten.set(e.id, e);
+      else if (e.art === 'clip_like') reaktionen.push(e);
+      else if (e.art === 'comment_like') kommentarLikes.push(e);
     }
     const liste = [...kommentare.values()].sort((a, b) => (b.am || '').localeCompare(a.am || ''));
     /* Wer hat einen Kommentar geliked? Der Strom nennt den Kommentar
@@ -1361,10 +1388,8 @@ const server = http.createServer((req, res) => {
       return l;
     };
     const gesehenKomm = new Set();
-    if (fs.existsSync(REAKTIONEN)) {
-      for (const z of fs.readFileSync(REAKTIONEN, 'utf8').split('\n')) {
-        if (!z.trim()) continue;
-        let e; try { e = JSON.parse(z); } catch (x) { continue; }
+    {
+      for (const e of reaktionenLesen()) {                           // Stromzeilen je Suno-ID im juengsten Stand
         if (e.art === 'kommentar' || e.art === 'antwort') {
           if (gesehenKomm.has(e.id)) continue;        // juengster Stand zaehlt einmal
           gesehenKomm.add(e.id);
