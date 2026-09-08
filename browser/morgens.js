@@ -1029,20 +1029,22 @@
                  zeileT.style.color = '#8a8a90'; }
 
   /* ---------------- 2d · Der Benachrichtigungsstrom ----------------
-     GET /api/notification/v2 - wer wann was getan hat: clip_like,
-     clip_comment, comment_like, comment_reply, follow, dazu hook_like
-     und playlist_like. Je Eintrag die Profile der Beteiligten und der
-     Zeitpunkt. Herzen, die kurz nacheinander kommen, buendelt Suno zu
-     EINEM Eintrag: hoechstens drei user_profiles, die echte Zahl in
-     total_users, fortgeschrieben unter derselben id. Die Web-API hat
-     keinen anderen Weg zu den Namen; die Handy-App zeigt alle Liker -
-     ihr Weg ist noch nicht gefunden (SUNO-API.md, 08.09.2026).
+     GET /api/notification/v3 - wer wann was getan hat: clip_like,
+     clip_comment, comment_like, comment_reply, follow, playlist_like.
+     v3 ist der Weg der Handy-App (aus ihrem Code gelesen, docs/
+     SUNO-APP-WEGE.md; einmal geprueft 08.09.2026 mit Freigabe): jede
+     Zeile kommt fertig - avatars[], text[] als Segmente mit bold und
+     action, dazu action fuer das Ziel. JE PERSON EINE ZEILE, Buendel
+     mit allen Beteiligten. Bis 08.09.2026 lief hier v2, das Herzen auf
+     denselben Titel zu EINEM Eintrag mit hoechstens drei user_profiles
+     kuerzte - deshalb fehlten Namen und Zeiten. Der Server normiert
+     beide Formen auf dieselbe Zeile (benachrichtigungNormieren).
 
      Zurueckgeblaettert wird mit before_datetime_utc - nicht 'before',
      das liefert stumm dieselbe Seite noch einmal. Suno haelt rund vier
      Wochen (gemessen 249 Eintraege bis 24.07.); was aelter ist, ist
      weg. Deshalb bei jedem Lauf ALLES holen, was da ist - der Server
-     haengt nur an, was er noch nicht kennt.
+     haengt nur an, was er noch nicht kennt. 25 je Seite.
 
      NUR LESEN. /read und /clear-badge werden nie aufgerufen; das
      Lesen selbst markiert nichts (badge-count ist ein eigener Weg). */
@@ -1056,7 +1058,7 @@
       const gesehen = new Set();
       let vor = null;
       for (let i = 0; i < 80; i++){
-        const u = `${API}/api/notification/v2` + (vor ? '?before_datetime_utc=' + encodeURIComponent(vor) : '');
+        const u = `${API}/api/notification/v3?include_hooks=false` + (vor ? '&before_datetime_utc=' + encodeURIComponent(vor) : '');
         const r = await fetch(u, { headers: Hn });
         if (!r.ok) break;
         const d = await r.json();

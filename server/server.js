@@ -653,8 +653,17 @@ const REAKTIONEN = path.join(WURZEL, 'library', 'reaktionen.ndjson');
 /* Alle Zeilen der Datei. Stromzeilen (mit sunoId) je ID nur im juengsten
    Stand, an der Stelle der ersten; Kommentarzeilen von bin/reaktionen.js
    (ohne sunoId) unveraendert, sie haben ihre eigene Regel (id, juengste
-   gewinnt beim Leser). */
-function reaktionenLesen() {
+   gewinnt beim Leser).
+
+   ZWEI QUELLEN IM STROM. Bis 08.09.2026 kam er aus notification/v2 (Web:
+   Herzen auf denselben Titel als EIN Buendel, hoechstens drei Namen),
+   seither aus notification/v3 (App: je Person eine Zeile, quelle 'v3').
+   Beide reichen vier Wochen zurueck - dieselben Herzen staenden also
+   doppelt da, als Buendel aus v2 und als Einzelzeilen aus v3. Regel: ab
+   der aeltesten v3-Zeile gilt nur v3; was aelter ist, bleibt aus v2.
+   `alle` = ungefiltert, fuer den Schreiber (er muss auch die v2-IDs
+   kennen). */
+function reaktionenLesen(alle) {
   const zeilen = [], stelle = new Map();
   if (!fs.existsSync(REAKTIONEN)) return zeilen;
   for (const z of fs.readFileSync(REAKTIONEN, 'utf8').split('\n')) {
@@ -664,38 +673,69 @@ function reaktionenLesen() {
     if (stelle.has(e.sunoId)) zeilen[stelle.get(e.sunoId)] = e;
     else { stelle.set(e.sunoId, zeilen.length); zeilen.push(e); }
   }
-  return zeilen;
+  if (alle) return zeilen;
+  let v3Ab = null;
+  for (const e of zeilen) if (e.quelle === 'v3' && e.am && (!v3Ab || e.am < v3Ab)) v3Ab = e.am;
+  if (!v3Ab) return zeilen;
+  return zeilen.filter(e => !(e.sunoId && e.quelle !== 'v3' && e.am && e.am >= v3Ab));
+}
+
+/* Eine Benachrichtigung in die Zeilenform bringen.
+   v2 (Web): user_profiles (hoechstens drei), total_users, content_id,
+   content_title, content_message.
+   v3 (App, docs/SUNO-APP-WEGE.md): fertige Zeile - avatars[], text[] als
+   Segmente {text, bold, action}, action fuer das Ziel. Das Handle steht
+   sicher in action.url als suno://suno.com/@handle, der Titel in
+   suno://suno.com/song/<id>. Der Anzeigename ist das fette Segment MIT
+   Aktion, der Titel das fette Segment OHNE. Der Satz dazwischen ist in
+   der Sprache des Kontos ("Mir hat dein Lied gefallen") - an ihm haengt
+   nichts; nur der Kommentar-Anfang hinter dem Doppelpunkt wird gebraucht,
+   damit /api/kommentare ein Kommentar-Herz seinem Kommentar zuordnen kann
+   (wie content_message bei v2). Nennt der Satz "und N weitere", zaehlen
+   die mit - bisher (08.09.2026) nicht gesehen, v3 nennt alle. */
+function benachrichtigungNormieren(n, gesehen) {
+  const istV3 = Array.isArray(n.text) || Array.isArray(n.avatars);
+  if (!istV3) {
+    const von = (n.user_profiles || []).map(p => p.handle).filter(Boolean);
+    return { art: n.notification_type || 'unbekannt', gesehen, sunoId: n.id, am: n.updated_at,
+             song: n.content_id || null, songTitel: n.content_title || '', von,
+             namen: (n.user_profiles || []).map(p => p.display_name).filter(Boolean),
+             anzahl: n.total_users || von.length || 1, text: n.content_message || '', gelesen: !!n.is_read };
+  }
+  const handleAus = a => { const m = a && typeof a.url === 'string' && a.url.match(/suno:\/\/suno\.com\/@([^/?#]+)/); return m ? m[1] : null; };
+  const von = [], namen = [];
+  for (const t of n.text || []) { const h = handleAus(t.action); if (h && !von.includes(h)) { von.push(h); namen.push(t.text || h); } }
+  for (const a of n.avatars || []) { const h = handleAus(a.action); if (h && !von.includes(h)) { von.push(h); namen.push(h); } }
+  const segmente = n.text || [];
+  const titel = segmente.filter(t => t.bold && !t.action).map(t => t.text).pop() || '';
+  const rest  = segmente.filter(t => !t.bold).map(t => t.text || '').join('');
+  const weitere = rest.match(/(\d+)\s+(weitere|others|autres|otros|altri|outros)/i);
+  const dp = rest.indexOf(':');
+  const zielUrl = n.action && typeof n.action.url === 'string' ? n.action.url : '';
+  const songM = zielUrl.match(/suno:\/\/suno\.com\/song\/([0-9a-f-]{36})/);
+  const zeile = { art: n.notification_type || 'unbekannt', gesehen, sunoId: n.id, am: n.updated_at,
+                  song: songM ? songM[1] : null, songTitel: titel, von, namen,
+                  anzahl: von.length + (weitere ? +weitere[1] : 0),
+                  text: dp >= 0 ? rest.slice(dp + 1).trim() : '', gelesen: !!n.is_read, quelle: 'v3' };
+  if (!songM && zielUrl) zeile.ziel = zielUrl.replace(/\?.*$/, '');
+  return zeile;
 }
 function reaktionenAnhaengen(liste, gesehen) {
   const bekannt = new Map();
-  for (const e of reaktionenLesen()) if (e.sunoId) bekannt.set(e.sunoId, e);
+  for (const e of reaktionenLesen(true)) if (e.sunoId) bekannt.set(e.sunoId, e);
   let neu = 0, nachgetragen = 0;
   const strom = fs.createWriteStream(REAKTIONEN, { flags: 'a' });
   const menge = v => [...v].sort().join(',');
   for (const n of liste) {
     if (!n || !n.id) continue;
-    const von    = (n.user_profiles || []).map(p => p.handle).filter(Boolean);
-    const anzahl = n.total_users || von.length || 1;
-    const alt    = bekannt.get(n.id);
+    const zeile = benachrichtigungNormieren(n, gesehen);
+    const alt   = bekannt.get(n.id);
     /* Gewachsen: mehr Personen, juengere Zeit oder andere Namen. Die
        Reihenfolge der Namen zaehlt nicht - sonst schriebe jeder Lauf,
        in dem Suno sie anders sortiert, eine Zeile. */
-    const gewachsen = alt && (anzahl > (alt.anzahl || 0) || (n.updated_at || '') > (alt.am || '')
-                              || menge(von) !== menge(alt.von || []));
+    const gewachsen = alt && (zeile.anzahl > (alt.anzahl || 0) || (zeile.am || '') > (alt.am || '')
+                              || menge(zeile.von) !== menge(alt.von || []));
     if (alt && !gewachsen) continue;
-    const zeile = {
-      art:      n.notification_type || 'unbekannt',
-      gesehen,
-      sunoId:   n.id,
-      am:       n.updated_at,
-      song:     n.content_id || null,
-      songTitel: n.content_title || '',
-      von,
-      namen:    (n.user_profiles || []).map(p => p.display_name).filter(Boolean),
-      anzahl,
-      text:     n.content_message || '',
-      gelesen:  !!n.is_read,
-    };
     if (alt) { zeile.nachtrag = true; zeile.vorher = alt.anzahl || 0; nachgetragen++; } else neu++;
     bekannt.set(n.id, zeile);
     strom.write(JSON.stringify(zeile) + '\n');
