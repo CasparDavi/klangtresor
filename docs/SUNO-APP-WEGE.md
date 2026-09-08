@@ -101,7 +101,7 @@ Der einzige personenbezogene Herz-Weg gilt Hooks, nicht Titeln:
 `GET video/hooks/me/liked/v2 [start_index, page_size, user_handle]` → die
 Hooks, die eine Person geherzt hat.
 
-### `notification/v3` — so zeigt die App alle Liker
+### `notification/v3` — was der App-Strom liefert
 
 `GET notification/v3?include_hooks=false&before_datetime_utc=…` (nur App).
 Antwort `UserNotificationV3Schema {notified_at, notifications,
