@@ -171,3 +171,39 @@ Damit die fünfzehn nicht auseinanderlaufen:
 - **Kein Referenzteil.** Die Oberfläche erklärt sich selbst — jede Sperre
   nennt ihren Grund, jede Messung ihre Herkunft. Das Handbuch zeigt den
   Weg und verweist für Einzelheiten auf die App.
+
+---
+
+## Offen an der Vorlage
+
+Nach dem Bau am 07./08.09.2026 nachgemessen und noch nicht erledigt —
+das meiste lohnt erst, wenn das erste Kapitel wirklich geschrieben ist:
+
+1. **Sechzehn `href="#"`** im Verzeichnis und an der Wortmarke. Sie
+   bekommen die echten Dateinamen, sobald die feststehen. Vorher lohnt
+   das Vervielfältigen nicht.
+2. **Das Verzeichnis braucht 835 px Höhe.** Auf einem 13-Zoll-Laptop
+   (rund 750 px) scrollt es innen, und ohne JavaScript holt nichts den
+   laufenden Eintrag herein — ab Kapitel 12 steht er unter der Kante,
+   also gerade dort, wo man ihn braucht. Abwägen: kompaktere Zeile oder
+   ein Verzeichnis, das nicht die volle Höhe beansprucht.
+3. **Unter 700 px sind die Abschnittskanten 83 px statt 84.** Der
+   MASS-Kommentar der Vorlage behauptet Vielfache von 14; das stimmt am
+   Telefon für zwei von drei Kanten nicht.
+4. **Die Ansage „— dieses Kapitel"** ist nie mit einem Vorleseprogramm
+   gehört worden. Die CSS-Regel greift nachweislich und genau einmal,
+   aber der Zugänglichkeitsbaum des Prüfwerkzeugs zeigt erzeugten Inhalt
+   grundsätzlich nicht. Einmal mit VoiceOver anhören, bevor fünfzehn
+   Kopien entstehen.
+5. **Der erste eingesetzte Screenshot gehört angesehen.** Die leise
+   Kante der Hausform ist mit einem erzeugten Bild geprüft; ein echtes
+   Bildschirmfoto bringt eigene Kanten mit und kann anders wirken.
+
+Erledigt sind dagegen die vier schweren Punkte: der Satzspiegel riss
+zwischen 620 und 1080 px auf 122 Zeichen je Zeile auf (jetzt begrenzt),
+der Stilblock hatte keinen Marker für einen Generator (jetzt
+`STIL ANFANG` / `STIL ENDE`), die Merkmalsspur war gegen den Mustertext
+statt gegen die Wortliste bemessen — „Die Instrumentspuren" misst
+172,8 px und passte nicht in 170 px (jetzt 12em) —, und der Mustertext
+sagte durchgehend „Lied", weil er vor der Wortlisten-Entscheidung
+geschrieben wurde.

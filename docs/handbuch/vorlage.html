@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- KAPITELNAME steht bei den beiden anderen Vorkommen VOR dem Text.
+     Hier nicht: der Inhalt von <title> ist reiner Text, ein Kommentar
+     darin waere sichtbar. Der Marker steht deshalb dahinter, und ein
+     Generator braucht fuer diese eine Stelle eine eigene Regel. -->
+<title>Der Klangraum · KlangTresor-Handbuch</title><!-- KAPITELNAME -->
+<!-- STIL ANFANG
+     Bis zur Marke STIL ENDE ist dieser Block auf allen fuenfzehn Seiten
+     Zeichen fuer Zeichen gleich. Wer hier etwas aendert, spielt den
+     ganzen Block neu ein; ein Vergleich der fuenfzehn Bloecke zeigt
+     sofort, ob es ueberall angekommen ist. Sonst hat man nach ein paar
+     Monaten fuenfzehn leicht verschiedene Handbuecher.
+     (In einem HTML-Kommentar darf kein zweiter Pfeil stehen - er wuerde
+     den Kommentar dort beenden und den Rest auf die Seite schreiben.
+     Genau das ist am 08.09.2026 einmal passiert.) -->
+<style>
+/* ============================================================
+   KLANGTRESOR-HANDBUCH — die Kapitelvorlage
+   Fünfzehnmal benutzt. Was einmal gerade noch geht, aber
+   fünfzehnmal ermüdet, ist hier ein Fehler.
+
+   Grundlage: der Entwurf „Die Tafel", ausgewählt am 08.09.2026.
+   Übernommen aus „Das Buch": das Seitenverhältnis statt Pixel im
+   Platzhalter, der Merksatz ohne Kasten. Übernommen aus „Die
+   Nacht": der warme Grundton und der eine unveränderliche Akzent.
+
+   MASS: Grundeinheit 4 px. Zeilenmaß 28 px (7 Einheiten). Alle
+   senkrechten Abstände sind Vielfache von 14 oder 28 — die Seite
+   läuft auf einem Zeilenraster, ohne dass es gezeichnet wird.
+
+   FORM: Wo eine Fläche etwas hervorhebt, bekommt sie die
+   halbdeckende Füllung (--fuell) PLUS die 1 px starke Oberkante
+   in voller Stärke (--kante), DIESELBE Farbe. Das ist die
+   Hausregel der Diagramme. Sie trägt hier das laufende Kapitel
+   und die fertige Abbildung. Kein Rahmen in einer dritten Farbe.
+
+   SCHRIFT: nichts wird nachgeladen. Sans ist die Systemschrift,
+   Mono ist MENLO — „SF Mono" liegt auf diesem Rechner nicht, und
+   ui-monospace löst ebenfalls nicht auf. Alle em-Maße sind gegen
+   Menlo gerechnet (12 px: 7,2265625 px je Zeichen), nicht gegen
+   eine Wunschschrift.
+
+   KEIN JavaScript. Die laufende Kapitelnummer kommt aus einem
+   CSS-Zähler, das Verzeichnis aus einem markierten Block.
+   ============================================================ */
+
+:root{
+  /* ---------- Farben ----------
+     Gerechnet, nicht geschätzt: relative Luminanz nach WCAG 2.1
+     gegen --grund #0d0c0b (L = 0,003727).
+       --text      #dcd5c8   13,40:1   Fließtext (gebrochenes Elfenbein)
+       --hell      #eae4d9   15,45:1   Überschriften, Auszeichnung
+       --neben     #a29a8f    7,03:1   Nebentext, Bildunterschrift
+       --akzent    #c79a6b    7,69:1   der eine Ton: Ziffern und Merksatz
+       --kante     #7a746a    4,22:1   die tragende Linie (Topline)
+       --baustelle #8a8378    5,21:1   die Kante des Platzhalters
+     Auf der halbdeckenden Füllung (--fuell ergibt #44403a):
+       --text 7,06:1 · --hell 8,14:1 — beide über der Schwelle.
+     Die Topline steht gegen ihre eigene Füllung bei 2,22:1; in
+     relativer Luminanz ist das Faktor 3,40 — die Hausregel verlangt
+     mindestens Faktor zwei. Vorher (#4a4a52 auf #2b2b30) waren es
+     Faktor 2,83 und nur 2,23:1 gegen den Grund; die Linie war
+     praktisch nicht zu sehen.
+     Kein reines Weiß. Reines Schwarz nur im Datenbereich der
+     fertigen Abbildung — Hausregel: schwarzer Datenbereich. */
+  color-scheme:dark;
+  --grund:#0d0c0b;
+  --text:#dcd5c8;
+  --hell:#eae4d9;
+  --neben:#a29a8f;
+  --schwach:#8b857b;
+  --akzent:#c79a6b;
+  --kante:#7a746a;
+  --fuell:rgba(122,116,106,.5);
+  --linie:#35322e;
+  --baustelle:#8a8378;
+  --gitter:rgba(138,131,120,.22);
+
+  --zeile:28px;
+  --satz:536px;          /* Satzspiegel; nachgemessen, siehe unten */
+  --spalt:48px;
+  --randspalte:232px;
+  --tafelbreite:calc(var(--satz) + var(--spalt) + var(--randspalte));
+  --rail:264px;
+
+  --sans:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:Menlo,Monaco,Consolas,"Courier New",monospace;
+
+  --kapitel:0;           /* Notwert: 00 ist sichtbar falsch, keine Erfindung */
+}
+
+/* ============================================================
+   DIE EINE STELLE — die laufende Kapitelnummer.
+   Sie steht am <body> als data-kapitel und sonst nirgends. Diese
+   Tabelle trägt sie in den Zähler; daraus kommen der
+   Kolumnentitel, die Abschnittsnummern, die Abbildungsnummern,
+   die Fußleiste und die Marke am laufenden Verzeichniseintrag.
+   Wer das Kapitel wechselt, ändert genau eine Ziffer.
+   ============================================================ */
+body[data-kapitel="1"] {--kapitel:1}
+body[data-kapitel="2"] {--kapitel:2}
+body[data-kapitel="3"] {--kapitel:3}
+body[data-kapitel="4"] {--kapitel:4}
+body[data-kapitel="5"] {--kapitel:5}
+body[data-kapitel="6"] {--kapitel:6}
+body[data-kapitel="7"] {--kapitel:7}
+body[data-kapitel="8"] {--kapitel:8}
+body[data-kapitel="9"] {--kapitel:9}
+body[data-kapitel="10"]{--kapitel:10}
+body[data-kapitel="11"]{--kapitel:11}
+body[data-kapitel="12"]{--kapitel:12}
+body[data-kapitel="13"]{--kapitel:13}
+body[data-kapitel="14"]{--kapitel:14}
+body[data-kapitel="15"]{--kapitel:15}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--grund);-webkit-text-size-adjust:100%}
+body{
+  background:var(--grund);
+  color:var(--text);
+  font:17px/var(--zeile) var(--sans);
+  -webkit-font-smoothing:antialiased;
+  display:grid;
+  grid-template-columns:var(--rail) minmax(0,1fr);
+  align-items:start;
+  counter-reset:kapitel var(--kapitel);
+  /* Trennung durchgehend, nicht erst am Telefon. Das Dokument ist
+     lang="de"; damit greift die deutsche Trennung (im Buch-Entwurf
+     nachgezählt: sechs echte Trennstriche). Überschriften und
+     Marken sind unten ausgenommen. */
+  hyphens:auto; -webkit-hyphens:auto;
+  /* Keine Zweibuchstaben-Brocken. Im ersten Durchgang standen
+     „et-was" im Fließtext und „Far-be" in einer Bildunterschrift.
+     Nachgemessen: 6 3 3 lässt „Far-be," durch — der Browser zählt das
+     Satzzeichen als Zeichen des Wortes mit, „be," gilt ihm als drei.
+     Mit vier hinter dem Strich ist es weg, und bei 390 px bleibt die
+     mittlere Zeilenlänge gleich (41,0 gegen 41,6 Zeichen): die
+     Trennung verliert nichts, was sie vorher geleistet hätte. */
+  hyphenate-limit-chars:6 3 4;
+  -webkit-hyphenate-limit-before:3;
+  -webkit-hyphenate-limit-after:4;
+  -webkit-hyphenate-limit-lines:2;
+  overflow-wrap:break-word;
+  /* Kein overflow-x:hidden. Überlauf soll unmöglich sein, nicht
+     unsichtbar. */
+}
+
+h1,h2,.marke,.wortmarke,nav{hyphens:none;-webkit-hyphens:none}
+
+/* Tastatur: der Standardring genügt nicht auf fast schwarzem
+   Grund. Der Akzent steht mit 7,69:1 gegen den Grund. */
+a:focus-visible{
+  outline:2px solid var(--akzent);
+  outline-offset:2px;
+  border-radius:2px;
+}
+
+/* ---------- Marginalien: Mono, klein, gesperrt ----------
+   Nie kleiner als 12 px — das ist die Lesegrenze des Hauses. */
+.marke{
+  font:12px/16px var(--mono);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  font-variant-numeric:tabular-nums;
+  color:var(--neben);
+}
+.ziffer{font-weight:400;color:var(--akzent)}
+.ziffer::before{content:counter(kapitel,decimal-leading-zero)}
+
+/* ================= Kapitelverzeichnis =================
+   Es steht im Quelltext HINTER dem Text und wird nur am Desktop
+   per order nach vorn geholt. Wer mit Tastatur oder Vorleseprogramm
+   liest, kommt damit sofort zur Überschrift statt erst durch
+   fünfzehn Links — auf jeder der fünfzehn Seiten. */
+nav{
+  order:-1;
+  position:sticky; top:0;
+  height:100vh; overflow-y:auto;
+  border-right:1px solid var(--linie);
+  padding:56px 20px 56px 32px;
+}
+.wortmarke{
+  display:block;
+  font:13px/16px var(--sans);
+  font-weight:600;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--text);
+  text-decoration:none;
+}
+.wortmarke span{display:block;color:var(--neben);font-weight:400;margin-top:4px;letter-spacing:.14em}
+nav h2{margin:42px 0 14px}
+.verzeichnis{list-style:none;counter-reset:kap}
+.verzeichnis li{counter-increment:kap}
+.verzeichnis a{
+  display:grid;
+  grid-template-columns:2.1em 1fr;   /* 2,1em = 29,4 px; „15" misst in Menlo 15,4 px */
+  gap:12px;
+  padding:6px 10px 7px;
+  margin:0 -10px;
+  color:var(--neben);
+  text-decoration:none;
+  font-size:14px;
+  line-height:20px;
+}
+.verzeichnis a::before{
+  content:counter(kap,decimal-leading-zero);
+  font:12px/20px var(--mono);
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.04em;
+}
+.verzeichnis a:hover{color:var(--text)}
+
+/* Das laufende Kapitel: halbdeckende Füllung + 1 px Oberkante in
+   voller Stärke, dieselbe Farbe. inset-Schatten statt border —
+   sonst schöbe die Linie die Zeile um 1 px aus dem Raster.
+   Die Zuordnung kommt aus data-kapitel, nicht aus der Hand. */
+body[data-kapitel="1"]  .verzeichnis li:nth-child(1)  > a,
+body[data-kapitel="2"]  .verzeichnis li:nth-child(2)  > a,
+body[data-kapitel="3"]  .verzeichnis li:nth-child(3)  > a,
+body[data-kapitel="4"]  .verzeichnis li:nth-child(4)  > a,
+body[data-kapitel="5"]  .verzeichnis li:nth-child(5)  > a,
+body[data-kapitel="6"]  .verzeichnis li:nth-child(6)  > a,
+body[data-kapitel="7"]  .verzeichnis li:nth-child(7)  > a,
+body[data-kapitel="8"]  .verzeichnis li:nth-child(8)  > a,
+body[data-kapitel="9"]  .verzeichnis li:nth-child(9)  > a,
+body[data-kapitel="10"] .verzeichnis li:nth-child(10) > a,
+body[data-kapitel="11"] .verzeichnis li:nth-child(11) > a,
+body[data-kapitel="12"] .verzeichnis li:nth-child(12) > a,
+body[data-kapitel="13"] .verzeichnis li:nth-child(13) > a,
+body[data-kapitel="14"] .verzeichnis li:nth-child(14) > a,
+body[data-kapitel="15"] .verzeichnis li:nth-child(15) > a{
+  background:var(--fuell);
+  box-shadow:inset 0 1px 0 var(--kante);
+  color:var(--text);
+}
+/* Die Ziffer bleibt hier hell statt Akzent: der Akzent misst auf
+   der Füllung nur 4,06:1 und liegt unter der Schwelle für 12 px. */
+body[data-kapitel="1"]  .verzeichnis li:nth-child(1)  > a::before,
+body[data-kapitel="2"]  .verzeichnis li:nth-child(2)  > a::before,
+body[data-kapitel="3"]  .verzeichnis li:nth-child(3)  > a::before,
+body[data-kapitel="4"]  .verzeichnis li:nth-child(4)  > a::before,
+body[data-kapitel="5"]  .verzeichnis li:nth-child(5)  > a::before,
+body[data-kapitel="6"]  .verzeichnis li:nth-child(6)  > a::before,
+body[data-kapitel="7"]  .verzeichnis li:nth-child(7)  > a::before,
+body[data-kapitel="8"]  .verzeichnis li:nth-child(8)  > a::before,
+body[data-kapitel="9"]  .verzeichnis li:nth-child(9)  > a::before,
+body[data-kapitel="10"] .verzeichnis li:nth-child(10) > a::before,
+body[data-kapitel="11"] .verzeichnis li:nth-child(11) > a::before,
+body[data-kapitel="12"] .verzeichnis li:nth-child(12) > a::before,
+body[data-kapitel="13"] .verzeichnis li:nth-child(13) > a::before,
+body[data-kapitel="14"] .verzeichnis li:nth-child(14) > a::before,
+body[data-kapitel="15"] .verzeichnis li:nth-child(15) > a::before{color:var(--hell)}
+
+/* Was ein Stylesheet nicht kann, ist ein aria-current setzen. Ein von
+   Hand gesetztes stünde auf vierzehn von fünfzehn Seiten falsch und
+   ließe zwei Einträge gleichzeitig leuchten — nachgemessen, genau so
+   passiert. Stattdessen sagt der laufende Eintrag es mit Worten: der
+   Zusatz steht nur für Vorleseprogramme da, einen Bildpunkt groß und weggeschnitten, und er kommt aus derselben einen
+   Stelle wie alles andere. Damit ist der Verzeichnisblock auf allen
+   fünfzehn Seiten Zeichen für Zeichen gleich. */
+.verzeichnis a{position:relative}
+body[data-kapitel="1"] .verzeichnis li:nth-child(1) > a::after,
+body[data-kapitel="2"] .verzeichnis li:nth-child(2) > a::after,
+body[data-kapitel="3"] .verzeichnis li:nth-child(3) > a::after,
+body[data-kapitel="4"] .verzeichnis li:nth-child(4) > a::after,
+body[data-kapitel="5"] .verzeichnis li:nth-child(5) > a::after,
+body[data-kapitel="6"] .verzeichnis li:nth-child(6) > a::after,
+body[data-kapitel="7"] .verzeichnis li:nth-child(7) > a::after,
+body[data-kapitel="8"] .verzeichnis li:nth-child(8) > a::after,
+body[data-kapitel="9"] .verzeichnis li:nth-child(9) > a::after,
+body[data-kapitel="10"] .verzeichnis li:nth-child(10) > a::after,
+body[data-kapitel="11"] .verzeichnis li:nth-child(11) > a::after,
+body[data-kapitel="12"] .verzeichnis li:nth-child(12) > a::after,
+body[data-kapitel="13"] .verzeichnis li:nth-child(13) > a::after,
+body[data-kapitel="14"] .verzeichnis li:nth-child(14) > a::after,
+body[data-kapitel="15"] .verzeichnis li:nth-child(15) > a::after{
+  content:" — dieses Kapitel";
+  position:absolute;
+  width:1px; height:1px;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
+
+/* ================= Seite ================= */
+main{
+  padding:56px clamp(24px,4vw,64px) 84px;
+  display:flex; justify-content:center;
+  counter-reset:abschnitt 0 abb 0;
+}
+article{width:100%;max-width:var(--tafelbreite)}
+
+/* Kolumnentitel */
+.kolumne{
+  display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--linie);
+}
+
+h1{
+  font-size:40px; line-height:44px; font-weight:650;
+  letter-spacing:-.02em;
+  text-wrap:balance;
+  color:var(--hell);
+  margin:42px 0 0;
+  max-width:var(--satz);
+}
+.anriss{
+  font-size:21px; line-height:32px;
+  color:var(--text);
+  margin:28px 0 0;
+  max-width:var(--satz);
+}
+
+/* Jeder Abschnitt beginnt mit einer haarfeinen Kante über die
+   ganze Tafelbreite. 56 + 1 + 55 = 112 px = 4 Zeilenmaße. */
+section{margin-top:56px;padding-top:55px;border-top:1px solid var(--linie);counter-increment:abschnitt}
+.abschnitt{display:block;margin-bottom:10px}
+.abschnitt::before{content:counter(kapitel) "." counter(abschnitt)}
+h2{
+  font-size:24px; line-height:32px; font-weight:600;
+  letter-spacing:-.01em;
+  text-wrap:balance;
+  color:var(--hell);
+  max-width:var(--satz);
+}
+p{max-width:var(--satz);margin-top:var(--zeile)}
+h2 + p{margin-top:24px}
+
+/* ---------- Die Tafel der Merkmale ----------
+   Drei Spalten: Merkmal, der Gedankenstrich der Vorlage, Erklärung.
+   Erste Spalte 10em = 170 px. Der längste Begriff des Musters
+   („Ein Flimmern") misst 145,0 px und stand bei 8,5em = 144,5 px
+   schon heute über der Kante; 25 px Luft tragen auch ein längeres
+   Wort, ohne dass die Zeile umbricht und das 28-px-Raster zerreißt. */
+dl{max-width:var(--satz);margin-top:24px;border-top:1px solid var(--kante)}
+/* 12em = 204 px. Bemessen gegen die WORTLISTE, nicht gegen den
+   Mustertext: „Die Instrumentspuren" misst in der gesetzten Schrift
+   172,8 px und haette die vorherige Spur von 170 px schon im
+   Tonstudio-Kapitel gesprengt. Die frueher hier notierten 145,0 px fuer
+   „Ein Flimmern" liessen sich nicht reproduzieren (nachgemessen 102,9),
+   deshalb steht die Zahl nicht mehr da - wer neu bemisst, misst selbst. */
+/* Der Gedankenstrich steht als dd::before, nicht als eigenes Element:
+   das Inhaltsmodell von dl>div laesst nur dt und dd zu, und ein span
+   dazwischen ist ungueltiges HTML - fuenfmal je Kapitel, also
+   fuenfundsiebzigmal im ganzen Handbuch. Am Telefon fliesst er genauso
+   mit, weil die Spur dort auf display:block umbricht. */
+dl > div{
+  display:grid;
+  grid-template-columns:12em 1.4em 1fr;
+  gap:0 8px;
+  padding:12px 0 13px;
+  border-bottom:1px solid var(--linie);
+}
+dl dd::before{content:"—";color:var(--strich);margin-left:calc(-1.4em - 0.2em);
+  width:1.4em;display:inline-block;text-align:center}
+dt{font-weight:600;color:var(--text);min-width:0}
+.strich{color:var(--schwach)}
+dd{color:var(--text);min-width:0}
+
+/* ---------- Der Merksatz: Haarlinie und Einzug, kein Kasten ----------
+   Aus „Das Buch". Eine gehobene Fläche braucht eine sichtbare
+   Oberkante; eine Haarlinie im Akzent kommt ohne aus und ist mit
+   7,69:1 gegen den Grund unmissverständlich da. */
+blockquote{
+  max-width:var(--satz);
+  margin-top:42px;
+  padding:2px 0 2px 27px;
+  border-left:1px solid var(--akzent);
+}
+blockquote p{margin:0;max-width:none}
+blockquote strong{color:var(--akzent);font-weight:600}
+
+/* ---------- Schlusssatz ---------- */
+.schluss{
+  max-width:var(--satz);
+  margin-top:42px; padding-top:26px;
+  border-top:1px solid var(--linie);
+  font-size:19px; line-height:30px;
+  color:var(--hell);
+}
+
+/* ================= Bildtafeln =================
+   ZWEI ZUSTAENDE, und sie sehen absichtlich verschieden aus.
+
+   .baustelle — solange kein Bild da ist. Sie markiert eine
+   Baustelle und täuscht keine Abbildung vor: Schraffur statt
+   Fläche, Kante mit 5,21:1 gegen den Grund. Die Hausform (halb
+   deckende Fläche plus Topline) ist für einen Datenbereich
+   gedacht, der von innen leuchtet; auf einem LEEREN Feld ergibt
+   sie ein Wort, das im Nichts schwebt — in allen drei Entwürfen
+   blieb die Bildkante unter 1,5:1.
+
+   .abbildung — sobald der Screenshot da ist. Schwarzer
+   Datenbereich, und die Kante in genau EINER Farbe: ringsum die
+   halbdeckende Füllung, oben dieselbe Farbe in voller Stärke.
+   Beim Einsetzen wechselt nur die Klasse. */
+figure{margin-top:56px;counter-increment:abb}
+.bildfeld{
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:6px; text-align:center;
+}
+
+.baustelle{
+  background-color:var(--grund);
+  background-image:repeating-linear-gradient(135deg,
+    rgba(0,0,0,0) 0 30px, var(--gitter) 30px 31px);
+  border:1px solid var(--baustelle);
+}
+.baustelle::before{
+  content:"Bild folgt";
+  font:12px/16px var(--mono);
+  letter-spacing:.16em; text-transform:uppercase;
+  color:var(--neben);
+}
+/* Das Seitenverhältnis, nicht die Pixel: „16 : 9" bleibt bei jeder
+   Fensterbreite wahr, „1048 x 590" ist unterhalb 1160 px schlicht
+   falsch — und erfundene Angaben gibt es hier nicht. Steht kein
+   Format fest, steht ein Strich. */
+.baustelle::after{
+  content:"—";
+  font:12px/16px var(--mono);
+  letter-spacing:.1em;
+  color:var(--neben);
+}
+.abbildung{
+  background:#000;
+  border:1px solid var(--fuell);
+  border-top-color:var(--kante);
+}
+.abbildung img{width:100%;height:100%;object-fit:contain;display:block}
+
+figcaption{
+  display:grid;
+  grid-template-columns:minmax(6em,max-content) 1fr;
+  gap:0 10px;
+  margin-top:8px;      /* näher am Bild als alles andere */
+}
+/* 6em = 102 px. „Abb. 15.10" misst in Menlo 12 px mit .06em Sperrung
+   79,5 px; bei 4,6em = 78,2 px brach es im hinteren Drittel des
+   Handbuchs um. minmax lässt die Spalte notfalls wachsen, statt
+   überzulaufen. */
+figcaption::before{
+  content:"Abb. " counter(kapitel) "." counter(abb);
+  font:12px/20px var(--mono);
+  letter-spacing:.06em;
+  font-variant-numeric:tabular-nums;
+  color:var(--akzent);
+  white-space:nowrap;
+}
+figcaption i{font-style:normal;font-size:14px;line-height:20px;color:var(--neben)}
+
+.breit{width:100%}
+.breit .bildfeld{aspect-ratio:16/9}
+.breit .baustelle::after{content:"16 : 9"}
+.spaltig{max-width:var(--satz)}
+.spaltig .bildfeld{aspect-ratio:16/10}
+.spaltig .baustelle::after{content:"16 : 10"}
+.schmal{max-width:var(--randspalte)}
+.schmal .bildfeld{aspect-ratio:3/4}
+.schmal .baustelle::after{content:"3 : 4"}
+.schmal figcaption{grid-template-columns:1fr;gap:2px}
+
+/* Satz und Randspalte nebeneinander */
+.paar{
+  display:grid;
+  grid-template-columns:minmax(0,var(--satz)) var(--randspalte);
+  gap:var(--spalt);
+  align-items:start;
+}
+.paar dl{margin-top:0}
+.paar figure{margin-top:0}
+
+/* ================= Fußleiste ================= */
+footer{
+  margin-top:64px; padding-top:14px;
+  border-top:1px solid var(--linie);
+  display:flex; gap:8px 28px; flex-wrap:wrap;
+}
+
+/* ================= Schmale Fenster =================
+   Unter 1080 px klappt nichts zusammen und nichts verschwindet:
+   das Verzeichnis steht dort, wo es im Quelltext ohnehin steht —
+   hinter dem Text, wo es in einem Buch hingehört. */
+@media (max-width:1080px){
+  /* NICHT auf 100 % aufreissen. Nachgemessen am 08.09.2026: mit
+     --satz:100% las sich jedes Fenster zwischen 620 und 1080 px mit 85
+     bis 122 Zeichen je Zeile statt der gewollten 62 bis 72 - also iPad
+     quer, halbes Fenster, jeder geteilte Bildschirm. Die Obergrenze
+     haelt den Satzspiegel dort, wo er lesbar ist, und laesst ihn erst
+     darunter mitgehen. */
+  :root{--satz:min(100%, 620px);--tafelbreite:100%}
+  body{grid-template-columns:minmax(0,1fr)}
+  main{padding:32px clamp(20px,5vw,40px) 56px}
+  nav{
+    order:0; position:static; height:auto; overflow:visible;
+    border-right:none; border-top:1px solid var(--linie);
+    padding:40px clamp(20px,5vw,40px) 56px;
+  }
+  nav .wortmarke{display:none}
+  nav h2{margin-top:0}
+  .verzeichnis{max-width:420px}
+  .paar{grid-template-columns:minmax(0,1fr);gap:32px}
+  .schmal{max-width:232px}
+}
+@media (max-width:700px){
+  h1{font-size:32px;line-height:36px;margin-top:32px}
+  .anriss{font-size:19px;line-height:30px}
+  h2{font-size:21px;line-height:28px}
+  section{margin-top:42px}
+  section + section{padding-top:40px}
+  /* Auf dem Telefon fällt die Spaltung weg — die Zeile fließt
+     wieder so, wie sie geschrieben ist: Merkmal, Gedankenstrich,
+     Erklärung. Kein Wort und kein Zeichen geht dabei verloren. */
+  dl > div{display:block}
+  dt,.strich,dd{display:inline}
+  .strich{margin:0 2px}
+  blockquote{padding-left:20px}
+  figcaption{grid-template-columns:1fr;gap:2px}
+}
+</style>
+<!-- STIL ENDE -->
+</head>
+
+<!-- ============================================================
+     HIER, und nur hier, steht die laufende Kapitelnummer.
+     1 bis 15, ohne führende Null. Alles Weitere folgt daraus:
+     Kolumnentitel, Abschnittsnummern, Abbildungsnummern,
+     Fußleiste und die Marke am laufenden Verzeichniseintrag.
+
+     FÜR DEN GENERATOR: er greift auf   <body data-kapitel="
+     — mit spitzer Klammer und Leerzeichen. NICHT auf
+     data-kapitel=" allein: diese Zeichenfolge steht auch in der
+     Zuordnungstabelle im Stylesheet, und zwar fünfzehnmal. Wer
+     dort blind ersetzt, verstellt die Tabelle statt der Seite;
+     die Nummer steht dann auf 00 und niemand sieht sofort, warum.
+     (Beim Nachmessen genau so hineingelaufen, 08.09.2026.)
+     ============================================================ -->
+<body data-kapitel="12">
+
+<main>
+<article>
+
+  <div class="kolumne">
+    <span class="marke">KlangTresor · Handbuch</span>
+    <span class="marke">Kapitel <b class="ziffer"></b> von 15</span>
+  </div>
+
+  <h1><!-- KAPITELNAME -->Der Klangraum</h1>
+
+  <!-- Mustertext, abgestimmt und wörtlich aus dem Entwurf übernommen.
+       Der Text folgt WOERTER.md: ein Stueck Musik heisst „der Titel".
+       „Liedtexte" bleibt stehen - dort ist der Gesang die Sache.-->
+  <p class="anriss">Wenn du dreihundert eigene Titel hast, kennst du sie alle — und
+  findest trotzdem keines wieder. Namen helfen nicht: du erinnerst dich, wie etwas
+  klang, nicht wie es hieß. Der Klangraum ist die Antwort darauf. Er legt deine
+  Sammlung als Sternenhimmel aus, und was ähnlich klingt, liegt nebeneinander.</p>
+
+  <figure class="breit">
+    <div class="bildfeld baustelle"></div>
+    <figcaption><i>Der Klangraum als Ganzes. Jeder Punkt ist ein Titel; die Lage
+    kommt aus dem Klang.</i></figcaption>
+  </figure>
+
+  <section>
+    <span class="marke abschnitt"></span>
+    <h2>Was du siehst</h2>
+
+    <p>Jeder Stern ist ein Titel. Seine Lage kommt aus dem Klang, sonst nichts — kein
+    Genre, kein Titel, kein Datum hat darauf Einfluss. Zwei Titel, die nebeneinander
+    stehen, klingen ähnlich; zwei, die weit auseinander liegen, haben nichts gemein.</p>
+
+    <p>Alles Weitere am Stern erzählt aus deinem Archiv:</p>
+
+    <div class="paar">
+      <dl>
+        <div><dt>Größe</dt><dd>wie oft er gespielt wurde</dd></div>
+        <div><dt>Helligkeit</dt><dd>wie oft es jemandem gefallen hat</dd></div>
+        <div><dt>Farbe</dt><dd>wie alt er ist. Junge Titel leuchten weiß, alte glimmen rot</dd></div>
+        <div><dt>Ein Kranz</dt><dd>es gibt Kommentare dazu</dd></div>
+        <div><dt>Ein Flimmern</dt><dd>es ist neuer als eine Woche</dd></div>
+      </dl>
+
+      <figure class="schmal">
+        <div class="bildfeld baustelle"></div>
+        <figcaption><i>Ein einzelner Stern mit seinen Merkmalen: Größe,
+        Helligkeit, Farbe, Kranz.</i></figcaption>
+      </figure>
+    </div>
+
+    <p>Ein Titel ohne Kranz ist nicht schlechter. Es hat nur noch niemand etwas dazu
+    geschrieben.</p>
+  </section>
+
+  <section>
+    <span class="marke abschnitt"></span>
+    <h2>Fliegen</h2>
+
+    <p>Klick auf einen Stern, und die Ansicht fliegt hin. Das ist kein Zoom — der Raum
+    hat drei Dimensionen, und du bewegst dich darin. Ein zweiter Klick auf denselben
+    Stern spielt ihn ab.</p>
+
+    <blockquote>
+      <p><strong>Merke:</strong> Was du im Klangraum siehst, ist immer das, was in der
+      Werke-Übersicht gerade übrig ist. Filterst du dort auf ein Album, stehen hier nur
+      dessen Sterne. So kannst du fragen: liegt mein Album eigentlich beieinander?</p>
+    </blockquote>
+  </section>
+
+  <section>
+    <span class="marke abschnitt"></span>
+    <h2>Die Gruppen</h2>
+
+    <p>Sterne, die dicht beieinander liegen, fasst KlangTresor zu Gruppen zusammen und
+    gibt ihnen einen Namen. Der Name ist nicht erfunden — er kommt aus den Wörtern
+    deiner eigenen Liedtexte, und zwar aus denen, die genau dort häufiger vorkommen als
+    anderswo. Findet sich kein solches Wort, sagt die Gruppe das und bleibt namenlos.</p>
+
+    <!-- So sieht die fertige Abbildung aus. Nur die Klasse wechselt:
+         <div class="bildfeld abbildung"><img src="bilder/8-3.png" alt="…"></div> -->
+    <figure class="spaltig">
+      <div class="bildfeld baustelle"></div>
+      <figcaption><i>Eine Gruppe mit ihrem Namen aus den eigenen Liedtexten —
+      daneben eine, die namenlos bleibt.</i></figcaption>
+    </figure>
+
+    <p class="schluss">Das ist Absicht. Ein erfundener Genrename wäre bequemer und
+    gelogen.</p>
+  </section>
+
+  <footer>
+    <span class="marke">KlangTresor · Handbuch</span>
+    <span class="marke">Kapitel <b class="ziffer"></b> · <!-- KAPITELNAME -->Der Klangraum</span>
+    <span class="marke">Stand —</span>
+  </footer>
+
+</article>
+</main>
+
+<nav aria-label="Kapitel">
+  <a class="wortmarke" href="#">KlangTresor<span>Handbuch</span></a>
+  <h2 class="marke">Kapitel</h2>
+
+  <!-- VERZEICHNIS ANFANG — erzeugter Bereich, nicht von Hand pflegen.
+       Fünfzehn Einträge, auf allen fünfzehn Seiten Zeichen für
+       Zeichen gleich. Die Nummern kommen aus einem CSS-Zähler, die
+       Hervorhebung des laufenden Kapitels aus data-kapitel am <body>:
+       in diesem Block steht nichts, was von Seite zu Seite abweicht.
+       Ein Generator ersetzt alles zwischen diesen beiden Kommentaren
+       und muss dabei auf keine Seite Rücksicht nehmen: hier steht
+       nichts Seitenabhängiges mehr, auch kein aria-current. Wer
+       Kapitel 9 umbenennt, ändert eine Zeile hier und sonst nichts. -->
+  <ol class="verzeichnis">
+    <li><a href="#">Wozu KlangTresor da ist</a></li>
+    <li><a href="#">Einrichten und der erste Start</a></li>
+    <li><a href="#">Der erste Abruf</a></li>
+    <li><a href="#">Mein Autorenprofil</a></li>
+    <li><a href="#">Die erste Runde: einen Titel hören</a></li>
+    <li><a href="#">Neues holen: der Morgenlauf</a></li>
+    <li><a href="#">Finden: Suche, Filter, Sortierungen</a></li>
+    <li><a href="#">Hören: Bühne, Visualisierer, Vollbild</a></li>
+    <li><a href="#">Alben zusammenstellen</a></li>
+    <li><a href="#">Die Titel-Messdaten</a></li>
+    <li><a href="#">Das Tonstudio</a></li>
+    <li><a href="#">Der Klangraum</a></li>
+    <li><a href="#">Der Geschichten-Raum</a></li>
+    <li><a href="#">Sichern und wiederherstellen</a></li>
+    <li><a href="#">Grenzen und häufige Fragen</a></li>
+  </ol>
+  <!-- VERZEICHNIS ENDE -->
+</nav>
+
+</body>
+</html>
