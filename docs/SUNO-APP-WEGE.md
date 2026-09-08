@@ -262,7 +262,9 @@ Weitere Befunde derselben Sitzung:
   die Web-Wege `profiles/{handle}/followers|following?page=N`, 20 je
   Seite, mit `is_following_viewer`.
 - **Kommentare:** `GET gen/{clip_id}/comments?page_size=20&order=newest`
-  wie im Web; `track_timestamp` = Zeitmarke im Titel.
+  wie im Web; `track_timestamp` = Zeitmarke im Titel. Antworten:
+  `GET comment/{comment_id}/replies?cursor=` (Web-Weg), Cursor = base64
+  von `{"created_at": …, "parent_id": …}`, Antwort `{replies, total_count}`.
 - Startablauf: `clerk/v1/client/sessions/{id}/tokens`, `cms/launch`,
   `cms/takeover/compact`, `playlist/sync/v2`, `app_version_update`,
   `session`, `billing/info`, `unified/feed`, `unified/homepage/explore/mobile`,
