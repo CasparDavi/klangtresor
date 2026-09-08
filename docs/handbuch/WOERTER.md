@@ -36,7 +36,7 @@ folgen kann.
 | **die Bühne** | — | die Karaoke-Ansicht mit mitlaufendem Text |
 | **das Register** | `Werke` · `Alben` · `Klangraum` … | die Reiter der Oberfläche. So heißt es im Quelltext schon 37-mal, dabei bleibt es |
 | *(kein Eigenname)* | — | die Ansicht zu einem einzelnen Titel bekommt keinen. Im Handbuch wird sie beschrieben: „klick auf einen Titel, und du siehst …". Ein erfundener Name für etwas, das man in vier Wörtern sagen kann, ist Ballast |
-| **die Titel-Messdaten** | — | das Messmodul darin (Wellenform, Spektrogramm, Lautheit). Löst „Analyzer" ab: der Name versprach Interaktivität, dabei schaut man nur. „Analyzer" stand ohnehin nie in der Oberfläche, nur in Kommentaren |
+| **die Titel-Messdaten** | `Analyzer` — **die App muss nachziehen** | das Messmodul (Wellenform, Spektrogramm, Lautheit). Löst „Analyzer" ab: der Name versprach Interaktivität, dabei schaut man nur. **Berichtigt am 08.09.2026:** hier stand, „Analyzer" komme in der Oberfläche gar nicht vor — falsch. Es steht an drei sichtbaren Stellen: als Hinweistext des Modusknopfs (`web/index.html:3904`), als Modusname (`15095`) und im Auswahlfeld samt „Analyzer – nicht im Archiv" (`17111`). Damit ist es keine Übersetzung, sondern eine **Umbenennung** — und nach der Grundregel muss die Oberfläche nachziehen, bevor ein Kapitel den neuen Namen benutzt |
 | **das Tonstudio** | `KlangTresor Tonstudio` | |
 | **das Einmessen** | `Einmessen` | |
 | **der Morgenlauf** | — | die tägliche Auffrischung |
@@ -126,7 +126,7 @@ Fachausdruck zu benutzen: nicht „der Endpunkt `/api/karte` liefert", sondern
 
 ---
 
-## Drei Stellen, an denen die App nachziehen müsste
+## Stellen, an denen die App nachziehen müsste
 
 Gefunden am 07.09.2026 beim Durchsuchen des sichtbaren Textes. Mehr sind
 es nicht — die Oberfläche ist bereits durchgehend deutsch:
@@ -136,7 +136,11 @@ es nicht — die Oberfläche ist bereits durchgehend deutsch:
 2. **„Filter"** und **„Filter zurücksetzen"** als Beschriftung → bleibt.
    Filter ist im Deutschen ein gebräuchliches Wort, und „Sieb" wäre
    albern. Hier gilt die Ausnahme.
-3. **„Community"** → **„Gemeinschaft"**. *Am 07.09.2026 erledigt*, fünf
+3. **„Analyzer"** → **„Titel-Messdaten"**. *Offen.* Drei sichtbare Stellen
+   (`web/index.html:3904`, `15095`, `17111`). Bis dahin darf sich kein
+   Kapitel auf den neuen Namen berufen — die Grundregel gilt in beide
+   Richtungen.
+4. **„Community"** → **„Gemeinschaft"**. *Am 07.09.2026 erledigt*, fünf
    Beschriftungen: der Registerknopf, zwei Überschriften, eine Meldung
    („Keine Gemeinschaftsdaten") und der Titel des Zugangs, der jetzt
    „Mein Autorenprofil" heißt. Die inneren Schlüssel (`data-preg`,
