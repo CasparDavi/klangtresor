@@ -352,13 +352,44 @@ dl{max-width:var(--satz);margin-top:24px;border-top:1px solid var(--kante)}
    mit, weil die Spur dort auf display:block umbricht. */
 dl > div{
   display:grid;
-  grid-template-columns:12em 1.4em 1fr;
-  gap:0 8px;
+  grid-template-columns:12em 1fr;
+  gap:0 1.6em;
   padding:12px 0 13px;
   border-bottom:1px solid var(--linie);
 }
-dl dd::before{content:"—";color:var(--strich);margin-left:calc(-1.4em - 0.2em);
-  width:1.4em;display:inline-block;text-align:center}
+/* Der Gedankenstrich haengt links am dd statt in einer eigenen Spalte:
+   seit der span dazwischen weg ist (ungueltiges HTML), hat die Zeile nur
+   noch zwei Kinder - eine dritte Spalte haette das dd in die Strichspur
+   geschoben. */
+dl dd{position:relative}
+dl dd::before{content:"—";position:absolute;left:-1.6em;width:1.6em;
+  text-align:center;color:var(--strich)}
+
+/* DIE VERTIEFUNG (Caspar_D, 08.09.2026: „kleiner geschriebene
+   Detailboxen, die das Verfahren beschreiben. Jeder sieht, das koennte
+   ich ueberspringen, aber der Interessent wird es lesen wollen.")
+   Eine fuenfte Textsorte neben Anriss, Fliesstext, Merksatz und
+   Bildunterschrift. Sie muss zwei Sachen zugleich koennen: sich als
+   ueberspringbar zu erkennen geben UND lesbar bleiben, wenn man sie
+   liest. Deshalb kleiner und schmaler, aber nicht blasser - der
+   Kontrast bleibt ueber der Grenze fuer Fliesstext. */
+.vertiefung{
+  max-width:calc(var(--satz) - 3em);
+  margin:28px 0 28px 3em;
+  font-size:14.5px; line-height:1.62;
+  color:var(--text);
+}
+.vertiefung > b:first-child{
+  display:block; margin-bottom:6px;
+  font:600 11.5px/1 var(--mono); letter-spacing:.14em;
+  text-transform:uppercase; color:var(--akzent);
+}
+.vertiefung p{margin:0 0 .7em}
+.vertiefung p:last-child{margin-bottom:0}
+.vertiefung::before{
+  content:""; position:absolute; margin-left:-3em; margin-top:.35em;
+  width:1.6em; height:1px; background:var(--akzent); opacity:.55;
+}
 dt{font-weight:600;color:var(--text);min-width:0}
 .strich{color:var(--schwach)}
 dd{color:var(--text);min-width:0}
@@ -553,10 +584,10 @@ footer{
   </div>
 
   <h1><!-- KAPITELNAME -->Der Klangraum</h1>
-<p class="anriss">Wenn du dreihundert eigene Titel hast, kennst du sie alle — und
-  findest trotzdem keinen wieder. Namen helfen dabei nicht: Du erinnerst dich, wie
-  etwas klang, nicht wie es hieß. Der Klangraum ist die Antwort darauf. Er legt deine
-  Sammlung als Sternenhimmel aus, und was ähnlich klingt, liegt nebeneinander.</p>
+<p class="anriss">Der Klangraum bildet deine Werke wie auf einer Sternenkarte ab.
+  Ein KI-Modell im Hintergrund sorgt dafür, dass ähnlich klingende Stücke nahe
+  beieinanderliegen. Hörst du Stücke in unmittelbarer Nachbarschaft, dann bleibst du
+  im gleichen Musikstil.</p>
 
   <p>Du findest ihn im Register <b>Räume</b>. Dort liegen zwei Sichten auf dieselbe
   Sammlung: <b>Klang</b> ordnet nach dem Ton, <b>Geschichten</b> nach dem, wovon die
@@ -595,18 +626,20 @@ footer{
     <p>Ein Titel ohne Korona ist nicht schlechter als einer mit. Es hat nur noch
     niemand etwas dazu geschrieben.</p>
 
-    <p class="merke"><b>Merke</b> Was der Klangraum zeigt, ist immer das, was in der
-    Übersicht mit den Werken gerade übrig ist. Filterst du dort auf ein Album, stehen
-    hier nur dessen Sterne. Damit lässt sich eine Frage stellen, die sonst schwer zu
-    stellen wäre: Liegt mein Album eigentlich beieinander?</p>
+    <p class="merke"><b>Merke</b> Was der Klangraum zeigt, ist immer das, was die
+    gesetzten Filter in der Übersicht durchlassen. Filterst du dort auf ein Album,
+    werden alle anderen Sterne abgedunkelt und es leuchten nur dessen Sterne. Damit
+    lässt sich eine Frage stellen, die sonst schwer zu stellen wäre: Haben alle Stücke
+    meines Albums eigentlich die gleichen Klangeigenschaften?</p>
   </section>
 
   <section>
     <h2>Sich bewegen</h2>
 
-    <p>Klick auf einen Stern, und die Ansicht fliegt hin. Das ist kein Vergrößern —
-    der Raum hat drei Dimensionen, und du bewegst dich darin. Ein zweiter Klick auf
-    denselben Stern spielt den Titel ab.</p>
+    <p>Klick auf einen Stern, und die Ansicht dreht sich zu ihm hin. Das ist kein
+    Vergrößern — der Raum hat drei Dimensionen, und du bewegst dich darin. Ein zweiter
+    Klick auf denselben Stern spielt den Titel ab, und ein Raumschiff beginnt sich um
+    diesen Stern zu bewegen.</p>
 
     <p>Fährst du mit dem Zeiger über einen Stern, spannen sich Fäden zu seinen sechs
     nächsten Nachbarn. Je näher der Nachbar, desto kräftiger der Faden. Das ist der
@@ -636,7 +669,6 @@ footer{
     stattdessen aus den Wörtern deiner eigenen Texte. Findet sich kein Wort, das die
     Gruppe wirklich kennzeichnet, sagt sie das und bleibt namenlos.</p>
 
-    <p>Das ist Absicht. Ein erfundener Genrename wäre bequemer und gelogen.</p>
   </section>
 
   <section>
@@ -647,9 +679,21 @@ footer{
     diesen Raum auf drei Dimensionen und der Bildschirm dann auf zwei. Dabei geht
     zwangsläufig etwas verloren.</p>
 
-    <p>Wie viel, steht unter der Karte: KlangTresor nennt dort das Verfahren und ein
-    Maß dafür, wie stark die Darstellung von den wahren Abständen abweicht. Je kleiner
-    dieser Wert, desto ehrlicher das Bild.</p>
+    <div class="vertiefung">
+      <b>Wie die Karte gerechnet wird</b>
+      <p>Ein KI-Modell hört jeden Titel ab und beschreibt seinen Klang als Punkt in
+      einem Raum mit mehreren hundert Achsen. Zwei Titel, die dort nahe beieinander
+      liegen, klingen ähnlich — nachrechnen kann man das, ansehen nicht.</p>
+      <p>Um daraus ein Bild zu machen, wird der Raum auf drei Dimensionen gepresst.
+      Das Verfahren heißt <i>nicht-metrische multidimensionale Skalierung</i>: Es
+      versucht nicht, die Abstände selbst zu erhalten, sondern nur ihre Reihenfolge —
+      was näher war, soll näher bleiben. Wie gut das gelingt, sagt eine einzige Zahl,
+      der Kruskal-Stress. Sie steht unter der Karte; je kleiner sie ist, desto
+      ehrlicher das Bild.</p>
+      <p>Gerechnet wird das auf deinem eigenen Rechner, ein Mal, wenn neue Titel
+      dazugekommen sind. Danach liegt die Karte als Datei bereit — beim Ansehen läuft
+      kein Modell mehr.</p>
+    </div>
 
     <p>Zwei Folgen davon solltest du kennen. Erstens: <b>Die Stilgruppen sind nicht auf
     der Karte gebildet worden</b>, sondern im vollen Raum, bevor gepresst wurde. Wenn
@@ -658,9 +702,9 @@ footer{
     Bildschirm ist ein Hinweis, kein Beweis.</b> Wer es genau wissen will, fährt über
     den Stern und sieht die Fäden — die kommen aus dem vollen Raum.</p>
 
-    <p class="schluss">Der Klangraum sortiert deine Sammlung nach etwas, das du nie
-    aufgeschrieben hast — und das trotzdem der Grund ist, warum du einen Titel
-    suchst.</p>
+    <p class="schluss">Der Klangraum sortiert deine Sammlung nach etwas, das du nie so
+    aufgeschrieben hast — und das dir trotzdem ermöglicht, deine Werke nach
+    Klangcharakteristika zu gruppieren.</p>
   </section>
   </main>
 
