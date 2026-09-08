@@ -6961,7 +6961,7 @@ function zeichnen(){
   }
 
   r.innerHTML = liste.map(s=>`
-    <div class="karte" data-id="${s.id}" onclick="spielenNachId('${s.id}')">
+    <div class="karte" data-id="${s.id}" onclick="kachelKlick('${s.id}')">
       <div class="bild">
         <img loading="lazy" src="${artworkKachel(s.id)}" alt=""
              onerror="this.src='${artworkBild(s.id)}'">
@@ -10169,7 +10169,7 @@ function zeichnePlaylistInhalt(){
 
   const r = $('raster');
   r.innerHTML = lieder.map((s,i) => `
-    <div class="karte" data-id="${s.id}" onclick="spielenNachId('${s.id}')">
+    <div class="karte" data-id="${s.id}" onclick="kachelKlick('${s.id}')">
       <div class="bild">
         <img loading="lazy" src="${s.fremd ? esc(s.bildUrl||'') : artworkKachel(s.id)}" alt=""
              ${s.fremd ? '' : `onerror="this.src='${artworkBild(s.id)}'"`}>
@@ -11158,6 +11158,16 @@ function spielenNachId(id){
 function umschalten(){
   if (!audio.src) return;
   audio.paused ? audio.play() : audio.pause();
+}
+
+/* Klick auf eine Kachel: ein anderer Titel faengt an; der laufende haelt
+   an und laeuft beim naechsten Klick an derselben Stelle weiter. Frueher
+   begann er von vorn (Caspar_D, 08.09.2026: "dann muesste er bei erneutem
+   Klick anhalten, oder?"). Ohne geladenen Ton - Pruefsystem, fehlende
+   Datei - wie bisher: anspielen. */
+function kachelKlick(id){
+  if (aktuellId === id && audio.src) umschalten();
+  else spielenNachId(id);
 }
 
 /* ---- Klangreise (Caspar_D, 21.08.2026) -----------------------------------
