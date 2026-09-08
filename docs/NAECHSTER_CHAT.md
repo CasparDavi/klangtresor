@@ -1731,3 +1731,53 @@ der nächste Hebel (sudo, `resvport`).
 Nichts am KlangTresor vorbei · Credits nur von Hand · Nomenklatur-
 Präzision (Kerbe→Kerbfilter) · Ernte→Datentransfer · Agenten beenden
 Sandkasten-Server nur über eigene PID, nie `pkill -f`.
+
+## ZUERST PRÜFEN — Herzen ohne Zeit (Caspar_D, 22:30)
+
+Befund: *Glut und Eis* (erstellt 06.09., 12 Herzen) zeigt im
+Reaktionsfenster drei Herzen mit Zeit und darunter „9 weitere — älter
+als Sunos Benachrichtigungen reichen“. Bei einem zwei Tage alten Titel
+kann das nicht stimmen. Dasselbe bei *Still you laugh* (1 Zeile, „4
+weitere“). Diagnose vom 08.09., spätabends:
+
+**Belegt.** Suno fasst mehrere Herzen auf denselben Titel zu EINER
+Benachrichtigung zusammen — mit höchstens drei Namen, einer Gesamtzahl
+und einer einzigen Zeit. In `library/reaktionen.ndjson` steht das so:
+die Zeile `75eef79b…` für *Glut und Eis* hat `von` = 3 Namen, `anzahl`
+= 8, `am` = 07.09. 19:22. Im ganzen Bestand: 142 Herz-Zeilen, 10 davon
+gebündelt, 51 Personen ohne Namen und ohne eigene Zeit. Keine einzige
+Zeile hat ein leeres `am` — die Zeit FEHLT also nirgends, sie steht nur
+einmal für ein ganzes Bündel. Der Server übernimmt das Bündel eins zu
+eins (`server/server.js:662` `am: n.updated_at`, `:665-667`
+`von`/`namen` aus Sunos gekürzter Liste, `anzahl` aus `total_users`).
+Die Oberfläche zeichnet je Bündel EINE Zeile mit dem ersten Namen und
+der Bündelzeit (`web/index.html:15724-15726`) und erklärt die Differenz
+zur Gesamtzahl aus dem Katalog (`bin/aufbereiten.js`, `upvote_count`,
+liest reaktionen.ndjson gar nicht) mit dem Satz „älter als Sunos
+Benachrichtigungen reichen“ (`web/index.html:15730`). Genau dieser Satz
+ist bei frischen Titeln falsch: die 9 Herzen sind nicht zu alt, sie
+stecken in Bündeln.
+
+**Vermutet.** (1) Wächst ein Bündel weiter (das 12. Herz kam am 08.09.),
+schickt Suno dieselbe Benachrichtigungs-ID mit neuer Zeit und neuer
+Gesamtzahl. `server/server.js:655` überspringt bekannte IDs — das
+Wachstum kommt nie in die Datei. Passt zum Bestand: Katalog 11 → 12
+Herzen, im Datentransfer von 19:32 heute 186 Benachrichtigungen, aber
+keine neue Herz-Zeile für *Glut und Eis*. Beweis fehlt, weil die
+Rohdatei nach dem Einweben gelöscht wird. (2) *Bei mir klingelt
+keiner* (1 Herz, keine Zeile): entweder eigenes Herz (Suno meldet das
+nicht) oder nach 19:32 gekommen. (3) Ob die drei Namen die JÜNGSTEN
+oder die ERSTEN des Bündels sind, sagt die API nicht.
+
+**Fix, in Reihenfolge.** (a) Oberfläche, `web/index.html:15720-15731`:
+je Bündel „Black Frequency und 5 weitere · vor 3 h“, und den Satz
+„älter als …“ nur noch für den Rest, der auch nach Abzug aller
+Bündelgrößen fehlt; die Bündel-Herzen als „ohne eigene Zeit, zwischen
+Erscheinen und HH:MM“ beschriften. Eine Stunde. (b) Server,
+`server/server.js:655`: bekannte ID nicht überspringen, wenn `updated_at`
+oder `total_users` gewachsen sind — neue Zeile anhängen, in
+`/api/kommentare/:id` (`:1296-1299`) je `sunoId` die jüngste gewinnen
+lassen, wie bei Kommentaren. Halber Tag mit Probe an einer Kopie der
+ndjson, nie am Bestand. (c) Nicht heilbar: die Einzelzeiten der
+gebündelten Herzen liefert Suno nicht. Je öfter das Lesezeichen läuft,
+desto kleiner die Bündel — das ist der einzige Hebel.
