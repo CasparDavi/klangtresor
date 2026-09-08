@@ -130,7 +130,23 @@ Vier Punkte, in dieser Reihenfolge:
    Reihenfolge, gemessene Lautheit, der Klangraum.
 3. **Alles liegt lokal.** Ton, Cover, Texte, Prompts, Alben, Kommentare.
    Was drin liegt, gehört dir.
-4. **Was es nicht ist.** Kein Suno-Ersatz, kein Umgehen der Regeln, kein
+4. **Suno würdigen.** Caspar_D am 08.09.2026, und das gehört ins
+   Vorwort, nicht in eine Fußnote: *„Ich möchte im Vorwort SUNO
+   würdigen, die Leute, die all ihre Kraft in die Entwicklung eines
+   KI-Musikmodells stecken, die selbst Leuten wie mir, die zu ungeduldig
+   sind, ein Instrument zu lernen, ermöglichen, die Musik zu machen, die
+   meine Texte hat."*
+
+   Das ist zugleich die Antwort auf die Frage, die hier bisher offen
+   stand — **warum überhaupt eigene Musik**: weil die Texte zuerst da
+   waren. Suno gibt ihnen die Musik. Damit erklärt sich auch, warum in
+   diesem Archiv so viel Arbeit im Text steckt (bereinigte Lyrik,
+   Wort-Zeitmarken, der Geschichten-Raum) — der Text ist nicht Beiwerk,
+   er ist der Anfang.
+
+   Ein Archivwerkzeug, das den Dienst würdigt, aus dem es schöpft, statt
+   sich von ihm abzugrenzen, steht besser da. Und es ist wahr.
+5. **Was es nicht ist.** Kein Suno-Ersatz, kein Umgehen der Regeln, kein
    Werkzeug für fremde Musik. Steht im README ausführlich — hier kurz,
    mit Verweis. Das Downloadlimit darf hier als Randnotiz stehen, nicht
    als Aufhänger.
@@ -140,10 +156,9 @@ Caspar_D"). Das Vorwort ist also kein Sachtext, sondern die Stimme
 dessen, der das Archiv gebaut hat, und wird mit **Caspar_D**
 gezeichnet — dem Namen, unter dem die Titel auf Suno stehen.
 
-Der Ton ist damit gesetzt: die zwei Sätze unter Punkt 1 und 2 sind seine
-eigenen und tragen den ganzen Text. Was noch fehlt, ist eine einzige
-Sache, die nur er erzählen kann — **warum überhaupt eigene Musik**. Nicht
-„wozu ein Archiv", sondern was am Anfang stand.
+Der Ton ist damit gesetzt: die Sätze unter Punkt 1, 2 und 4 sind seine
+eigenen und tragen den ganzen Text. Damit ist auch beantwortet, was am
+Anfang stand — die Texte.
 
 Und der Satz, der über dem ganzen Handbuch steht, ist längst geschrieben,
 er steht als Untertitel im README: *„Ein Tresor für die eigene Musik —
@@ -168,6 +183,21 @@ Damit die fünfzehn nicht auseinanderlaufen:
 - **Höchstens drei Abbildungen.** Jede veraltet beim nächsten Umbau. Ein
   Bild dort, wo man etwas *sehen* muss; Text dort, wo man etwas *tun*
   muss.
+
+### Die Regeln für die Bilder
+
+- **Immer derselbe Beispieltitel:** „Morgen".
+- **Feste Fensterbreite** — ein Wert für den Schreibtisch, einer fürs
+  Telefon. Sonst springt die Bildgröße von Kapitel zu Kapitel.
+- **Die Gestalt ist das klassische Raumschiff** (Caspar_D, 08.09.2026:
+  „wir nehmen aber das klassische Raumschiff, nicht den Raben und nicht
+  den Borg-Cube"). In der App umschaltbar über `gestalt`; für alle
+  Aufnahmen gilt `schiff`. Kubus und Rabe sind Spielarten und würden im
+  Handbuch etwas versprechen, das nicht der Normalzustand ist.
+- **Nichts einstellen, was hängen bleibt.** `localStorage` hängt am
+  Origin, nicht am Fenster: was zum Fotografieren umgeschaltet wird,
+  findet Caspar_D beim nächsten Laden in seinem eigenen Fenster wieder.
+  Umschaltungen notieren und hinterher zurücknehmen.
 - **Kein Referenzteil.** Die Oberfläche erklärt sich selbst — jede Sperre
   nennt ihren Grund, jede Messung ihre Herkunft. Das Handbuch zeigt den
   Weg und verweist für Einzelheiten auf die App.
