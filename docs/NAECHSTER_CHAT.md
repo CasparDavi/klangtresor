@@ -1579,6 +1579,18 @@ Randfälle aus der letzten Gegenlesung, nicht gebaut (Backlog):
 **Dazu eingecheckt:** Whisper `--alle` als Morgenschritt, `bin/lyrik.js
 --tun` als 19. Schritt, API-Probe im Lesezeichen gestrichen.
 
+## ZUERST PRÜFEN — Verlaufsanzeige (Caspar_D, 21:20)
+
+Bei *Glut und Eis* sehe die Abruf-Historie gekappt aus, die Herzen
+stimmten nicht. Die DATEN sind vollständig: zaehlerVerlauf hat drei
+Stände (06., 07., 08.09.), Abrufe 23 → 29, Herzen 11 konstant, geprüft
+gegen die Sicherung von 16:24. Also die ANZEIGE prüfen: (a) Seite neu
+geladen? (b) die Umbenennung Likes → Herzen (Commit 1a5a713) — hat sie
+eine Stelle getroffen, die als Schlüssel diente (Verlaufskurve,
+web/index.html um 15642, Kennzahlen 13673 ff.)? Der Gegenleser hatte
+alle Schlüssel geprüft, aber genau dort ansetzen. (c) Ein Titel, der
+drei Tage alt ist, hat drei Punkte — vielleicht ist das die Kappung.
+
 ## Entschieden, noch zu bauen (Reihenfolge)
 
 1. Erster echter Albumlauf (oben), dann Ergebnis in DATENEXTRAKTION.md.
