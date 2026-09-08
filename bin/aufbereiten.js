@@ -159,6 +159,32 @@ for (const f of alleRohdateien('privat'))
   for (const c of alsListe(lies(f))) if (c && c.id) privatJeId.set(c.id, c);
 const ausPrivat  = [...privatJeId.values()];
 
+/* DIE VIERTE QUELLE: ALBUMEINTRAEGE (Caspar_D, 08.09.2026: neue Titel kommen
+   nur ueber public oder ueber die Playlisten, auch wenn sie unpublished sind.
+   Playlist schlaegt alles, dann alle published). Ein eigener Titel, der in
+   einem Album liegt, gehoert ins Archiv - auch wenn er privat ist und das
+   oeffentliche Profil ihn nie zeigt. Die Albumernte traegt je Eintrag das
+   volle Clip-Objekt (DATENEXTRAKTION.md), daraus wird der Titeldatensatz.
+   Gelesen wird die juengste Albumdatei VOR dem Titelbau; der Albumblock
+   weiter unten liest sie fuer die Zugehoerigkeit noch einmal. Nur
+   ergaenzend: was Profil, Arbeitsbereich oder Privat-Ernte schon liefern,
+   bleibt (eingang.has). Erster Fall: Bei mir klingelt keiner, privat, im
+   Album My Industrial Songs, 08.09.2026 - der Titel, mit dem alles anfing. */
+const ausAlben = (() => {
+  const f = neuesteRohdatei('playlists'); if (!f) return [];
+  const r = lies(f) || {}; const clips = r.clips || {}; const seen = new Set(); const aus = [];
+  for (const liste of Object.values(clips)) {
+    if (!Array.isArray(liste)) continue;
+    for (const e of liste) {
+      const c = e && typeof e === 'object' ? e.clip : null;
+      if (!c || typeof c !== 'object' || !c.id || seen.has(c.id)) continue;
+      seen.add(c.id); aus.push(c);
+    }
+  }
+  return aus;
+})();
+if (ausAlben.length) console.log(`  Albumeintraege als Titelquelle: ${ausAlben.length} Clips`);
+
 // Der eigene handle steht in den Rohdaten. Beim Aufblättern der
 // Profilseite rutschen gelegentlich fremde Songs mit hinein -
 // aus dem Player oder aus "Gefällt mir"-Bereichen. Die gehören
@@ -176,7 +202,7 @@ const eigener = (profilRoh && profilRoh.handle)
 
 const eingang = new Map();
 let fremde = 0;
-for (const c of [...ausProfil, ...ausFeed, ...ausPrivat]) {
+for (const c of [...ausProfil, ...ausFeed, ...ausPrivat, ...ausAlben]) {
   if (!c || !c.id) continue;
   if (eigener && c.handle && c.handle !== eigener) { fremde++; continue; }
   if (!eingang.has(c.id)) eingang.set(c.id, c);
