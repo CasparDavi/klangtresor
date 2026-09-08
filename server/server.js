@@ -1206,6 +1206,18 @@ const server = http.createServer((req, res) => {
           const r = reaktionenAnhaengen(daten.benachrichtigungen, daten.erzeugtAm);
           morgen.zeilen.push(`Benachrichtigungen: ${r.neu} neu gesichert`
                              + (r.nachgetragen ? `, ${r.nachgetragen} Bündel gewachsen` : ''));
+          /* Die Rohform des letzten Laufs aufheben - nicht in roh/ (das
+             ist der Weg in den Katalog), sondern als Probe fuer die
+             Endpunkt-Doku: was v3 bei grossen Buendeln wirklich liefert
+             (docs/SUNO-APP-WEGE.md), sieht man nur an der Rohform. Eine
+             Datei, jeder Lauf ueberschreibt sie. */
+          try {
+            const probe = path.join(WURZEL, 'library', 'suno-wege');
+            fs.mkdirSync(probe, { recursive: true });
+            fs.writeFileSync(path.join(probe, 'benachrichtigungen-letzter-lauf.json'),
+                             JSON.stringify({ erzeugtAm: daten.erzeugtAm, anzahl: daten.benachrichtigungen.length,
+                                              benachrichtigungen: daten.benachrichtigungen }));
+          } catch (e) { console.log('Benachrichtigungen-Probe nicht geschrieben:', e.message); }
         }
         if (daten.timing && Object.keys(daten.timing).length) {
           fs.writeFileSync(path.join(ordner, `timing-${stempel}.json`),
