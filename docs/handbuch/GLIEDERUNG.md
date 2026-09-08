@@ -358,3 +358,48 @@ Werkzeug, nicht das Werk — und es ist ohnehin nicht seine Sache.
 weiter unten als Randnotiz), die Trainingsfrage, und jede Wertung über
 Personen. Der letzte Absatz ist fast wörtlich Caspar_Ds eigener Satz vom
 08.09.2026 — er sollte auch fast wörtlich stehen bleiben.
+
+---
+
+## Stand am 08.09.2026
+
+**Fertig und im Repo:**
+
+| | |
+|---|---|
+| [WOERTER.md](WOERTER.md) | die Wortliste, bindend für alle Kapitel |
+| diese Datei | Gliederung, Vorwort-Gerüst, Bildregeln, Stand |
+| [vorlage.html](vorlage.html) | die Kapitelvorlage, fünf Textsorten |
+| [12-klangraum.html](12-klangraum.html) | das Musterkapitel, 674 Wörter, drei Abbildungen |
+| [bilder/](bilder/) | drei Abbildungen, aus den Zeichenflächen ausgelesen |
+| [bildempfang.js](bildempfang.js) | das Werkzeug dafür, samt Anleitung im Kopf |
+
+**Was als Nächstes ansteht:**
+
+1. **Das Musterkapitel ist noch nicht abgenommen.** Caspar_D am
+   08.09.2026: *„ich bin noch nicht ganz zufrieden, aber lass uns erstmal
+   alle Inhalte festzurren."* Was genau noch nicht stimmt, ist offen —
+   und es zu klären lohnt vor dem vierzehnfachen Kopieren.
+2. Die dreizehn übrigen Kapitel, in der Reihenfolge der Gliederung.
+3. **Das Vorwort zuletzt**, mit der einen Geschichte, die nur der Autor
+   erzählen kann.
+
+**Fünf Textsorten hat die Vorlage** — sie dürfen nicht vermischt werden:
+Anriss · Fließtext · Merksatz · Vertiefung · Bildunterschrift. Die
+Vertiefung ist am 08.09.2026 dazugekommen (Caspar_D: „kleiner
+geschriebene Detailboxen, die das Verfahren beschreiben"), und sie ist
+kleiner, aber **nicht blasser** — wer sie grau macht, macht sie unlesbar
+für genau die Leser, die sie lesen wollen.
+
+**Die Abbildungsnummern erzeugt ein CSS-Zähler**, nicht die Hand. Am
+08.09.2026 stand die Nummer zusätzlich im HTML und doppelte sich; beim
+Verschieben eines Bildes wäre sie still falsch geworden. Wer eine
+Abbildung einsetzt, schreibt nur die Bildunterschrift.
+
+**Der Vorrat an Abbildungen** wächst mit den Kapiteln. Was schon da ist:
+
+| Datei | zeigt |
+|---|---|
+| `klangraum-ganz.png` | die ganze Sternenkarte, vier Stilgruppen |
+| `klangraum-schiff.png` | das Sound-Schiff im Orbit um „Morgen" |
+| `klangraum-faeden.png` | die sechs Fäden zu den nächsten Nachbarn |
