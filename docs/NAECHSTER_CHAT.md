@@ -1910,3 +1910,21 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   `tarja_ravenveil`) haben es nicht. Proxy beendet, Telefon zurückgesetzt
   (Profil bleibt ohne Vertrauen). Kommentare der App tragen `num_replies`,
   `replies` (eingebettet) und `reaction_type`.
+
+## Liker-Weg gebaut und gelaufen (09.09.2026, 01:18)
+
+- Lesezeichen-Abschnitt 2e „Wer hat geherzt" (Haken, an), nur Titel mit
+  geänderter Herzzahl gegen `/api/liker/stand`; Server `likerAblegen`
+  → `library/liker/<song>.json` (Stand) + `library/liker-verlauf.ndjson`
+  (dazu/weg ab dem zweiten Lauf); Reaktionsfenster zeigt alle Namen
+  (Zeit aus Benachrichtigung, Seitenende, Cursor-Fenster, sonst „Zeit
+  unbekannt"). Commit 9bc35e8.
+- Erster Lauf: 266 Titel, 2214 Personen, 31 exakte Zeiten, 793 Fenster,
+  1390 ohne Zeit (Titel mit einer Seite haben keinen Cursor). 14 Titel:
+  Sunos Zahl = Liste + 1 (nicht das eigene Herz — das steht in 259 Listen).
+- **Fehler gefunden und berichtigt:** v3-Bündelzahl war
+  `Handles + "andere"` (3 + 7 = 10 statt 8); richtig ist `genannte Personen
+  im Text + andere`, mindestens Handles. Die 14 falschen Nachträge des
+  Laufs wurden aus reaktionen.ndjson entfernt und aus der Rohform neu
+  erzeugt (Ergebnis: 0 Nachträge, nichts war gewachsen). Sicherung:
+  `library/backup/reaktionen-vor-anzahl-korrektur-2026-09-09.ndjson`.

@@ -799,9 +799,15 @@ function benachrichtigungNormieren(n, gesehen) {
   const zielUrl = n.action && typeof n.action.url === 'string' ? n.action.url : '';
   const songM = zielUrl.match(/suno:\/\/suno\.com\/song\/([0-9a-f-]{36})/);
   const kommM = zielUrl.match(/[?&]comment_id=([0-9a-f-]{36})/);       /* v3: Kommentar-ID in der Ziel-URL */
+  /* Die Zahl: v3 nennt im Text EINE Person "+ 7 andere" (= 8), zeigt aber
+     drei Avatare - die drei stecken in den acht. Also: genannte Personen
+     im Text plus "andere", mindestens aber so viele, wie Handles da sind.
+     Falsch war von.length + 7 = 10 (Lauf 09.09.2026 01:18, 14 Zeilen
+     nachgetragen und danach berichtigt). */
+  const genannt = segmente.filter(t => t.bold && t.action).length;
   const zeile = { art: n.notification_type || 'unbekannt', gesehen, sunoId: n.id, am: n.updated_at,
                   song: songM ? songM[1] : null, songTitel: titel, von, namen,
-                  anzahl: von.length + (weitere ? +weitere[1] : 0),
+                  anzahl: Math.max(von.length, genannt + (weitere ? +weitere[1] : 0)),
                   text: dp >= 0 ? rest.slice(dp + 1).trim() : '', gelesen: !!n.is_read, quelle: 'v3',
                   kommentarId: kommM ? kommM[1] : undefined };
   if (!songM && zielUrl) zeile.ziel = zielUrl.replace(/\?.*$/, '');
