@@ -1704,7 +1704,13 @@ mono (Zeile 198–201); die audio.wav wird nie benutzt.
    nutzt einen Prompt, der auf deutsche Wortstellung trimmt."* Option:
    lokales Mistral (Ollama, CPU) nur beim Schreiben. Die Hausregel „keine
    KI außer Whisper" gilt dem Betrieb; ein Gegenleser beim Schreiben ist
-   kein Betrieb. Vor dem Einsatz Caspar_Ds Wort dazu einholen.
+   kein Betrieb. Vor dem Einsatz Caspar_Ds Wort dazu einholen. Zweiter
+   Durchgang am selben Abend (Gegenlesen auf Wortstellung): neun weitere
+   Stellen umgestellt, darunter „Klicke auf einen Stern" (vorher ohne
+   Verb), die Korona-Zeile im Tabellenmuster („Leuchtet bei Kommentaren
+   …"), der Nachsatz zu Caspar_Ds Korona-Satz gestrichen, „Registerlasche"
+   nach Wortliste. Für die Korona-Zeile und die Registerlasche wäre sein
+   Blick beim nächsten Mal gut.
 
 ## Vertagt (Backlog)
 
