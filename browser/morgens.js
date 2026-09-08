@@ -350,7 +350,10 @@
          verwertet liegengebliebene Ernten selbst (--aus-roh, alle
          Zaehlerstaende fliessen in den Verlauf). Eine graue Zeile
          genuegt - keine Frage, kein Orange, kein Anhalten. */
-      sagen(`Auf dem Server warten noch ${u.anzahl} Ernte-Datei(en) auf den roten Knopf — der übernimmt sie beim nächsten Druck.`, '#8a8a90');
+      /* Datensaetze, nicht Dateien (WOERTER.md, Caspar_D 08.09.2026): ein
+         Datensatz = profil + privat + timing mit demselben Stempel. */
+      const n = u.datensaetze || u.anzahl;
+      sagen(`Auf dem Server ${n === 1 ? 'wartet noch ein Datensatz' : `warten noch ${n} Datensätze`} auf den roten Knopf — der übernimmt sie beim nächsten Druck.`, '#8a8a90');
     }
   } catch (e) {}
 

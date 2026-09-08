@@ -2706,6 +2706,36 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #morgenkasten h3:first-child{margin-top:0}
 #morgenneu{font-size:13px;color:#d8d8dc;margin:2px 0 0}
 #morgenneu b{color:#16be5c;font-size:20px;font-weight:600}
+/* DIE ABSCHNITTE DES LAUFS (Caspar_D, 08.09.2026, Mockup abgenommen).
+   Vorher: vierzehn rohe Protokollzeilen und ein Zustand fuer alles.
+   Jetzt je Schritt ein Abschnitt - Zeichen, Name, was er tut, sein
+   Kurzergebnis, die Dauer rechts, und die Einzelheiten zum Aufklappen
+   (bei einem Fehler offen). Alle neunzehn stehen da, das Fenster
+   scrollt; so sieht man auch, was noch kommt und was abgewaehlt ist.
+   Symbolfarben: gruen fertig, rot Fehler, hell laeuft, gedimmt wartet. */
+#morgenschritte{display:flex;flex-direction:column;margin:0 0 6px}
+.ms{display:grid;grid-template-columns:18px 1fr auto;column-gap:10px;row-gap:2px;
+  padding:9px 4px;border-bottom:1px solid #ffffff0c;align-items:start}
+.ms:last-child{border-bottom:0}
+.ms .msym{font-size:13px;line-height:1.4;text-align:center;color:#5a5a60}
+.ms.fertig .msym{color:#59d18c} .ms.fehler .msym{color:#e31c79} .ms.laeuft .msym{color:#ececed}
+.ms .mname{font-size:13px;font-weight:500;color:#d8d8dc;line-height:1.4}
+.ms.wartet .mname,.ms.abgewaehlt .mname{color:#8b8b90}
+.ms.abgewaehlt{opacity:.55}
+.ms .mdauer{font-size:11.5px;color:#8b8b90;white-space:nowrap;line-height:1.5;
+  font-variant-numeric:tabular-nums}
+.ms .mwas2{grid-column:2/4;font-size:12px;color:#8b8b90;line-height:1.5}
+.ms .mkurz{grid-column:2/4;font-size:12px;color:#d8d8dc;line-height:1.5;margin-top:3px;
+  white-space:pre-line}
+.ms.fehler .mkurz{color:#e31c79}
+.ms details{grid-column:2/4;margin-top:3px}
+.ms summary{cursor:pointer;font-size:11px;color:#6c6c72;list-style:none;user-select:none}
+.ms summary::-webkit-details-marker{display:none}
+.ms summary::before{content:'▸ '} .ms details[open] summary::before{content:'▾ '}
+/* Mit dem Kasten davor, sonst gewinnt die allgemeine pre-Regel oben. */
+#morgenkasten .ms details pre{margin:4px 0 0;font:11px/1.5 ui-monospace,Menlo,monospace;color:#9a9aa0;
+  max-height:240px;overflow:auto;white-space:pre-wrap}
+#morgendaten{font-size:12px;color:#8b8b90;margin:-6px 0 10px}
 #morgenkasten .knopfleiste{display:flex;gap:10px;margin-top:18px}
 /* Ein eigener Block, nicht eine graue Zeile am Ende - so uebersah man
    ihn. Beim ersten Mal offen; wer es einmal zugeklappt hat, sieht es
@@ -3487,7 +3517,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <div class="unter"><span id="morgenschritt"></span><span id="morgenrest"></span></div>
     </div>
     <h2>Was hat sich geändert?</h2>
+    <!-- Die Datensaetze, die der Katalogbau verarbeitet ("zwei warteten,
+         beide beruecksichtigt") - nur waehrend und nach dem Lauf. -->
+    <div id="morgendaten" style="display:none"></div>
     <pre id="morgentext">Frage Suno …</pre>
+    <!-- Die Abschnitte je Schritt, waehrend und nach dem Lauf. -->
+    <div id="morgenschritte" style="display:none"></div>
     <div id="morgenliste"></div>
     <!-- Die Auswahlliste vor dem roten Knopf (Caspar_D, 21.08.2026): drei
          Gruppen nach Zugang - mit Login (nur ueber die Lesezeichen-
@@ -15844,6 +15879,8 @@ async function morgenAuf(frisch){
   lz.ontoggle = () => { try { localStorage.setItem('mysuno-lz-zu', lz.open ? '0' : '1'); } catch(e){} };
   $('morgenleiste').style.display = 'none';
   $('morgenliste').innerHTML = '';
+  $('morgenschritte').style.display = 'none'; $('morgenschritte').innerHTML = '';
+  $('morgendaten').style.display = 'none';
   $('morgentext').style.display = '';
   $('morgentext').textContent = 'Frage Suno …';
   $('morgenknopf').classList.add('laeuft');
@@ -15896,50 +15933,151 @@ async function morgenSchauen(nachSammeln){
      ohne Restzeit: Ein Balken, der eine Zahl rät, ist schlimmer als
      einer, der zugibt, dass er es nicht weiss. */
   const b = $('morgenbalken');
+  const lauf = s.art === 'lauf';           /* die neunzehn Schritte, nicht das Sammeln */
   if (s.laeuft && s.fortschritt){
     b.style.display = '';
     const f = s.fortschritt;
     $('morgenfuell').style.width = Math.round(f.anteil*100) + '%';
     $('morgenfuell').classList.toggle('ungeeicht', !f.kalibriert);
-    $('morgenschritt').textContent = `${s.name} · ${s.schritt+1}/${s.von}`;
-    const zeit = ms => ms < 60000 ? 'unter einer Minute'
-                     : ms < 3600000 ? `noch ${Math.round(ms/60000)} min`
-                     : `noch ${(ms/3600000).toFixed(1)} h`;
+    /* Unter dem Balken: "Schritt N von 19 · seit M min · noch etwa K min"
+       (Caspar_D, 08.09.2026). Den Namen sagt der Abschnitt selbst. */
+    $('morgenschritt').textContent = lauf
+      ? `Schritt ${s.schritt+1} von ${s.von} · seit ${min} min`
+      : `${s.name} · ${s.schritt+1}/${s.von}`;
+    const zeit = ms => ms < 60000 ? 'noch unter einer Minute'
+                     : ms < 3600000 ? `noch etwa ${Math.round(ms/60000)} min`
+                     : `noch etwa ${(ms/3600000).toFixed(1)} h`;
     $('morgenrest').textContent = f.kalibriert ? zeit(f.rest) : 'erster Lauf — lernt die Dauern';
   } else {
     b.style.display = 'none';
   }
 
-  /* NUR DER VERGLEICH, NICHT DAS PROTOKOLL.
+  if (lauf){
+    /* DER LAUF ALS ABSCHNITTE, nicht als Protokoll. */
+    $('morgentext').style.display = 'none';
+    morgenAbschnitteZeichnen(s);
+    morgenDatenZeigen(s);
+  } else {
+    /* NUR DER VERGLEICH, NICHT DAS PROTOKOLL.
 
-     sammeln.js schreibt dreizehn Zeilen "Seite 7: 18 Songs" und danach
-     das, was man wirklich wissen will. Solange es läuft, ist der
-     Fortschritt die Auskunft; ist es durch, zählt nur noch der
-     Vergleich ab seiner Überschrift. */
-  let zeilen = s.zeilen;
-  if (!s.laeuft){
-    const ab = zeilen.findIndex(z => z.includes('Vergleich mit dem Katalog'));
-    if (ab >= 0) zeilen = zeilen.slice(ab + 1)
-                                .filter(z => !/^Weiter mit:|^— durch —$/.test(z.trim()));
+       sammeln.js schreibt dreizehn Zeilen "Seite 7: 18 Songs" und danach
+       das, was man wirklich wissen will. Solange es läuft, ist der
+       Fortschritt die Auskunft; ist es durch, zählt nur noch der
+       Vergleich ab seiner Überschrift. */
+    let zeilen = s.zeilen;
+    if (!s.laeuft){
+      const ab = zeilen.findIndex(z => z.includes('Vergleich mit dem Katalog'));
+      if (ab >= 0) zeilen = zeilen.slice(ab + 1)
+                                  .filter(z => !/^Weiter mit:|^— durch —$/.test(z.trim()));
+    }
+    $('morgentext').textContent =
+      (s.laeuft && s.name ? `▸ ${s.name}  (${s.schritt+1}/${s.von}, ${min} min)\n\n` : '') +
+      zeilen.join('\n').trim() + (s.fehler ? '\n\n✗ ' + s.fehler : '');
   }
-  $('morgentext').textContent =
-    (s.laeuft && s.name ? `▸ ${s.name}  (${s.schritt+1}/${s.von}, ${min} min)\n\n` : '') +
-    zeilen.join('\n').trim() + (s.fehler ? '\n\n✗ ' + s.fehler : '');
 
-  if (s.laeuft){ morgenWacht = setTimeout(() => morgenSchauen(nachSammeln), 1500); return; }
+  if (s.laeuft){
+    /* Waehrend des Laufs ein Knopf: "In den Hintergrund" - das Fenster
+       geht zu, der Lauf laeuft weiter, die Uebersicht ist frei
+       (Caspar_D, 08.09.2026: dann weiss man, dass man sie parallel
+       benutzen kann). Der Wächter am roten Knopf bleibt dran. */
+    if (lauf){ $('morgenleiste').style.display = 'flex'; $('morgenja').style.display = 'none';
+               $('morgennein').textContent = 'In den Hintergrund'; }
+    morgenWacht = setTimeout(() => morgenSchauen(nachSammeln), 1500); return;
+  }
 
   morgenKnopfPruefen();          /* der Wächter entscheidet, ob noch etwas läuft */
-  if (nachSammeln && !s.fehler){
+  if (nachSammeln && !lauf && !s.fehler){
     $('morgenkasten').querySelector('h2').textContent = 'Was hat sich geändert?';
     $('morgenleiste').style.display = 'flex';
+    $('morgennein').textContent = 'Schließen';
     await morgenListeBauen();
     await morgenAuswahlBauen();
   } else {
+    const rot = lauf ? s.schritte.filter(a => a.status === 'fehler').length : 0;
     $('morgenkasten').querySelector('h2').textContent =
-      s.fehler ? 'Abgebrochen' : 'Der Bestand ist aktuell';
+      s.fehler ? 'Abgebrochen' : rot ? `Durch — ${rot} ${rot === 1 ? 'Schritt' : 'Schritte'} mit Fehler` : 'Der Bestand ist aktuell';
     $('morgenleiste').style.display = 'flex';
     $('morgenja').style.display = 'none';
+    $('morgennein').textContent = lauf ? 'In den Hintergrund' : 'Schließen';
   }
+}
+
+/* Die Datensaetze, die der Katalogbau verarbeitet hat. Der Server
+   zaehlt sie beim Start (eine Ernte = profil + privat + timing mit
+   demselben Stempel); ist der Katalogschritt durch, sind sie
+   beruecksichtigt. Caspar_Ds Wortlaut: "Zwei Datensätze warteten, beide
+   berücksichtigt." */
+function morgenDatenZeigen(s){
+  const el = $('morgendaten');
+  const n = s.datensaetze;
+  if (!n){ el.style.display = 'none'; return; }
+  const katalog = (s.schritte || []).find(a => a.id === 'katalog');
+  const durch = katalog && (katalog.status === 'fertig');
+  const zahl = n === 1 ? 'Ein Datensatz' : n === 2 ? 'Zwei Datensätze' : `${n} Datensätze`;
+  el.textContent = durch
+    ? `${zahl} ${n === 1 ? 'wartete, er wurde' : n === 2 ? 'warteten, beide' : 'warteten, alle'} berücksichtigt.`
+    : `${zahl} ${n === 1 ? 'wartet' : 'warten'} auf den Katalogbau.`;
+  el.style.display = '';
+}
+
+/* Dauer in Worten: Sekunden, Minuten, ab einer Stunde Stunden. */
+function morgenDauerText(ms){
+  if (ms == null) return '';
+  if (ms < 1000) return '< 1 s';
+  if (ms < 60000) return Math.round(ms/1000) + ' s';
+  if (ms < 3600000) return (ms/60000).toFixed(ms < 600000 ? 1 : 0).replace('.0','') + ' min';
+  return (ms/3600000).toFixed(1) + ' h';
+}
+
+/* DIE ABSCHNITTE. Einmal gebaut, danach nur nachgefuehrt: Wer die
+   Einzelheiten eines Schritts aufgeklappt hat, soll sie nicht alle
+   anderthalb Sekunden wieder zugeklappt sehen. Bei einem Fehler klappt
+   der Abschnitt einmal von selbst auf. */
+function morgenAbschnitteZeichnen(s){
+  const feld = $('morgenschritte');
+  feld.style.display = '';
+  const liste = s.schritte || [];
+  const alt = [...feld.querySelectorAll('.ms')];
+  const neuBauen = alt.length !== liste.length || alt.some((el, i) => el.dataset.id !== liste[i].id);
+  if (neuBauen){
+    feld.innerHTML = '';
+    for (const a of liste){
+      const el = document.createElement('div'); el.className = 'ms'; el.dataset.id = a.id;
+      el.innerHTML = '<div class="msym"></div><div class="mname"></div><div class="mdauer"></div>'
+        + '<div class="mwas2"></div><div class="mkurz"></div>'
+        + '<details><summary>Einzelheiten</summary><pre></pre></details>';
+      el.querySelector('.mname').textContent = a.name;
+      el.querySelector('.mwas2').textContent = a.was || '';
+      feld.appendChild(el);
+    }
+  }
+  const SYMBOL = { fertig: '✓', fehler: '✗', laeuft: '▸', wartet: '·', abgewaehlt: '·' };
+  feld.querySelectorAll('.ms').forEach((el, i) => {
+    const a = liste[i]; if (!a) return;
+    const vorher = el.dataset.status;
+    el.className = 'ms ' + a.status; el.dataset.status = a.status;
+    el.querySelector('.msym').textContent = SYMBOL[a.status] || '·';
+    /* Dauer: gemessen bei fertig/fehler, laufend die vergangene Zeit,
+       wartend die Schaetzung aus der Lernkurve mit Tilde. */
+    let dauer = '';
+    if (a.status === 'fertig' || a.status === 'fehler') dauer = morgenDauerText(a.dauerMs);
+    else if (a.status === 'laeuft') dauer = morgenDauerText(Date.now() - a.seit)
+                                          + (a.geschaetztMs ? ` / ~${morgenDauerText(a.geschaetztMs)}` : '');
+    else if (a.status === 'wartet' && !s.laeuft && s.fehler) dauer = 'nicht gelaufen';   /* Pflichtschritt brach vorher ab */
+    else if (a.status === 'wartet' && a.geschaetztMs) dauer = '~' + morgenDauerText(a.geschaetztMs);
+    else if (a.status === 'abgewaehlt') dauer = 'abgewählt';
+    el.querySelector('.mdauer').textContent = dauer;
+    const kurz = el.querySelector('.mkurz');
+    kurz.textContent = a.status === 'fehler'
+      ? `✗ ${a.kurz || 'abgebrochen'}${a.code != null ? ` (Code ${a.code})` : ''}`
+      : (a.status === 'laeuft' || a.status === 'fertig') ? (a.kurz || '') : '';
+    kurz.style.display = kurz.textContent ? '' : 'none';
+    const det = el.querySelector('details');
+    const hatZeilen = a.zeilen && a.zeilen.length;
+    det.style.display = hatZeilen ? '' : 'none';
+    if (hatZeilen) det.querySelector('pre').textContent = a.zeilen.join('\n');
+    if (a.status === 'fehler' && vorher !== 'fehler') det.open = true;
+  });
 }
 
 /* ------------------------------------------------------------------
@@ -15971,7 +16109,8 @@ async function morgenListeBauen(){
     const q = document.createElement('div'); q.className = 'fussnote'; q.style.marginTop = '0';
     if (v.quelle === 'ernte'){
       const wann = (v.ernteVom || '').slice(11,16) || (v.ernteVom || '').slice(0,16);
-      q.append(`Grundlage: deine Lesezeichen-Ernte von ${wann} Uhr — sie kennt auch die privaten Titel. `);
+      /* Caspar_Ds Redaktion, 08.09.2026 (WOERTER.md: Datentransfer statt Ernte). */
+      q.append(`Daten-Basis: dein Lesezeichen-Datentransfer von ${wann} Uhr — er kennt auch die privaten Titel. `);
       const a = document.createElement('span'); a.className = 'rwer'; a.textContent = 'Trotzdem frisch von Suno holen';
       a.onclick = () => morgenAuf(true);
       q.appendChild(a);
@@ -16130,7 +16269,9 @@ async function morgenUebernehmen(){
   $('morgenleiste').style.display = 'none';
   $('morgenauswahl').style.display = 'none';
   $('morgenliste').innerHTML = '';
+  $('morgenschritte').innerHTML = '';
   $('morgentext').style.display = '';
+  $('morgentext').textContent = 'Wird gestartet …';
   $('morgenkasten').querySelector('h2').textContent = 'Wird nachgezogen …';
   $('morgenknopf').classList.add('laeuft');
   /* ZWEITE LISTE, die mitgezogen werden muss: Was hier nicht drinsteht,

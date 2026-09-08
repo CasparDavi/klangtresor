@@ -343,7 +343,32 @@ function juengsteProfilErnte() {
 /* Jeder Schritt traegt einen SCHLUESSEL - die Auswahlliste vor dem
    roten Knopf (Caspar_D, 21.08.2026) kann Schritte abwaehlen; 'katalog'
    ist Pflicht. 'kaffee' haelt den Mac wach (caffeinate -i) - der
-   Whisper-Nachtlauf stand von 2 bis 9 Uhr, weil der Mac schlief. */
+   Whisper-Nachtlauf stand von 2 bis 9 Uhr, weil der Mac schlief.
+
+   Dazu seit dem 08.09.2026 eine ID je Schritt. Die Lernkurve
+   (morgen-dauern.json) merkte sich die Dauer unter dem NAMEN - und
+   jede Umbenennung liess sie vergessen, was sie wusste; der Schluessel
+   taugt nicht, weil vier Schritte 'analyse' teilen. Die ID aendert sich
+   nicht, der Name darf es.
+
+   Die NAMEN und die Beschreibung ('was') stehen in
+   docs/handbuch/MORGENSCHRITTE.json - in Caspar_Ds Redaktion, dort
+   redigiert, hier woertlich uebernommen. Die Datei ist die Wahrheit
+   fuer den Ton; der Katalog hier traegt dieselben Namen, damit Anzeige
+   und Datei uebereinstimmen. Weicht ein Name ab, sagt der Start es. */
+const MORGEN_TEXTE = (() => {
+  const m = {};
+  try {
+    for (const e of JSON.parse(fs.readFileSync(path.join(WURZEL, 'docs', 'handbuch', 'MORGENSCHRITTE.json'), 'utf8')))
+      m[e.name] = { was: e.was || '', muster: e.kurzergebnis_muster || '' };
+  } catch (e) { console.warn('MORGENSCHRITTE.json nicht lesbar: ' + e.message); }
+  return m;
+})();
+/* PFLICHT: bricht der Schritt ab, bricht der Lauf ab - wie die
+   Auswahlliste (MORGEN_KREUZE in web/index.html) es traegt: 'katalog'
+   ist die Grundlage fuer alles andere. Alle anderen werden bei einem
+   Abbruch rot, und der Lauf geht weiter (Caspar_D, 08.09.2026:
+   "pflicht-Schritte brechen ab, andere werden rot"). */
 const MORGEN_SCHRITTE = [
   /* ZUERST DIE VERBINDUNGEN. Caspar_D, 29.08.2026: "Es darf nicht
      passieren, dass unbemerkt Links sterben und still Daten deswegen
@@ -351,33 +376,33 @@ const MORGEN_SCHRITTE = [
      von der die Routine holt, nach ihrem Statuscode und meldet
      AENDERUNGEN gegenueber dem letzten Lauf laut. Bricht nie ab -
      die Lautstaerke ist das Protokoll. */
-  { schluessel: 'gesundheit', name: 'Verbindungen prüfen — antworten die Suno-Adressen?', befehl: ['bin/gesundheit.js'] },
-  { schluessel: 'katalog', name: 'Katalog neu bauen — alle Ernten zusammenführen, Zählerverlauf fortschreiben', befehl: ['bin/aufbereiten.js'] },
+  { id: 'gesundheit', schluessel: 'gesundheit', name: 'Verbindungen prüfen — antworten die Suno-Adressen?', befehl: ['bin/gesundheit.js'] },
+  { id: 'katalog', schluessel: 'katalog', pflicht: true, name: 'KlangTresor-Katalog neu bauen — alle Datentransfers zusammenführen, Verlauf von Abrufen, Herzen und Kommentaren fortschreiben', befehl: ['bin/aufbereiten.js'] },
   /* Direkt hinter den Katalog: reaktionen.js liest die Kommentarzahl
      von dort und fragt nur die Songs ab, die welche haben. Vorher waere
      die Zahl vom Vortag. */
-  { schluessel: 'kommentare', name: 'Neue Kommentare von Suno sichern', befehl: ['bin/reaktionen.js'] },
+  { id: 'kommentare', schluessel: 'kommentare', name: 'Neue Kommentare von Suno sichern', befehl: ['bin/reaktionen.js'] },
   /* Heruntergeladene Audiodateien einsammeln. Seit dem 03.09.2026 gibt
      Suno Audio nur noch ueber "Unlock & Download" heraus - den Klick
      macht der Mensch, das Einsortieren die Ernte. Caspar_D, 07.09.2026:
      "selbst dort schaue ich nicht hin, wenn ich die Ernte mache. Die
      Ernte muss es finden." Steht NACH dem Katalogbau, weil die Zuordnung
      ueber die Signatur den Katalog braucht. */
-  { schluessel: 'medien', name: 'Heruntergeladene Audiodateien übernehmen', befehl: ['bin/uebernehmen.js', '--tun'] },
-  { schluessel: 'medien', name: 'Fehlende Medien laden (MP3, Cover, Videos)', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
-  { schluessel: 'analyse', name: 'Klanganalyse für neue Titel rechnen', befehl: ['bin/vorrechnen.js'],
+  { id: 'medien-uebernehmen', schluessel: 'medien', name: 'Heruntergeladene Audiodateien übernehmen', befehl: ['bin/uebernehmen.js', '--tun'] },
+  { id: 'medien-laden', schluessel: 'medien', name: 'Medien laden (MP3, Titelbilder, Bewegtbilder)', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
+  { id: 'analyse-rechnen', schluessel: 'analyse', name: 'Klanganalyse für neue Titel rechnen', befehl: ['bin/vorrechnen.js'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
       const fertig = new Set(analyseListe());
       return Object.values(k.songs || {}).filter(s => !s.fremd && !fertig.has(s.id)).length;
     } },
-  { schluessel: 'analyse', name: 'Messwerte in den Suchindex übernehmen', befehl: ['bin/analyse-index.js'] },
+  { id: 'analyse-index', schluessel: 'analyse', name: 'Messwerte für Sortieren und Filtern zusammenfassen', befehl: ['bin/analyse-index.js'] },
   /* Klangprofil + Lautheitshistogramm je Song (fuer Tonstudio-Decke,
      Presets und die Kennlinien-Gebirge) - rechnet nur Fehlendes nach. */
-  { schluessel: 'analyse', name: 'Klangprofil und Lautheitshistogramm nachziehen', befehl: ['bin/eq-profil.js'] },
+  { id: 'analyse-eqprofil', schluessel: 'analyse', name: 'Klangprofil und Lautheitsverteilung nachziehen', befehl: ['bin/eq-profil.js'] },
   /* Stehende Toene (Stoerfrequenzen) fuer die Kerbe im Glockenstuhl - nur
      Songs ohne Eintrag, ~5-10 s je Song (bin/stoerfrequenz.js, 23.08.2026). */
-  { schluessel: 'analyse', name: 'Störfrequenzen suchen — stehende Töne für die Kerbe', befehl: ['bin/stoerfrequenz.js'],
+  { id: 'analyse-stoerfrequenz', schluessel: 'analyse', name: 'Störfrequenzen suchen — stehende Töne für den Kerbfilter im Tonstudio', befehl: ['bin/stoerfrequenz.js'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
       let fertig = {};
@@ -395,7 +420,7 @@ const MORGEN_SCHRITTE = [
      auch Fehler macht und Whisper die zuverlaessigere Zeitzuordnung
      macht." Instrumentals und die Fokus-Wanderung schliesst whisper.js
      selbst aus; --alle ueberspringt, was in whisper.ndjson schon steht. */
-  { schluessel: 'whisper', kaffee: true, name: 'Karaoke-Zeitanker mit Whisper für neue Titel', befehl: ['bin/whisper.js', '--still', '--alle'],
+  { id: 'whisper-zeitmarken', schluessel: 'whisper', kaffee: true, name: 'Mitlaufender Text: Wort-Zeitmarken mit Whisper für neue Titel', befehl: ['bin/whisper.js', '--still', '--alle'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
       const fertig = new Set();
@@ -411,12 +436,12 @@ const MORGEN_SCHRITTE = [
      jeder Titel seither blieb ohne. Zwei Sekunden fuer den ganzen
      Bestand; rechnet immer alles neu, weil Whisper-Eintraege und Texte
      sich aendern koennen. */
-  { schluessel: 'whisper', name: 'Bereinigte Lyrik — Liedtext gegen die Whisper-Marken abgleichen', befehl: ['bin/lyrik.js', '--tun'] },
+  { id: 'whisper-lyrik', schluessel: 'whisper', name: 'Bereinigte Lyrik — Liedtext gegen die Whisper-Marken abgleichen', befehl: ['bin/lyrik.js', '--tun'] },
   /* Musikstil (Discogs-EffNet, lokal per onnxruntime-node): Embedding,
      Stil, Genre, Stimmung, Instrumente je Song - Grundlage der Karte.
      VOR Whisper waere schneller (6 s je Song), aber hinter Whisper ist
      ehrlicher: bricht Whisper ab, fehlt nicht auch noch die Karte. */
-  { schluessel: 'musikstil', kaffee: true, name: 'Musikstil vermessen — Klang, Genre, Stimmung', befehl: ['bin/klang.js', '--still'],
+  { id: 'musikstil-vermessen', schluessel: 'musikstil', kaffee: true, name: 'Musikstil vermessen — Klang, Genre, Stimmung', befehl: ['bin/klang.js', '--still'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
       let fertig = {};
@@ -425,17 +450,17 @@ const MORGEN_SCHRITTE = [
     } },
   /* Die Karte ist in Sekunden gerechnet - immer, wenn der Musikstil
      lief, damit neue Songs ihren Platz am Himmel bekommen. */
-  { schluessel: 'musikstil', name: 'Klangraum neu zeichnen', befehl: ['bin/karte.js'] },
+  { id: 'musikstil-klangraum', schluessel: 'musikstil', name: 'Klangraum neu zeichnen', befehl: ['bin/karte.js'] },
   /* DER GESCHICHTEN-RAUM, falls er offen ist. Vier Schritte: Vektoren
      fuer neue Texte, Wortvektoren fuer die Ortsbegriffe, die Karte, die
      Text-Achsen. bin/karte.js zeichnet den Raum nur, wenn
      library/karte-geschichten.json da ist - ein beiseitegelegter Raum
      (library/entwurf/) bleibt zu; der Lauf pflegt, was der Autor
      aufgemacht hat, und macht nichts von selbst auf. */
-  { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Vektoren für neue Titel', befehl: ['bin/geschichten.js'] },
-  { schluessel: 'geschichten', name: 'Geschichten-Raum: Wortvektoren für die Ortsbegriffe', befehl: ['bin/ortsbegriffe.js'] },
-  { schluessel: 'geschichten', name: 'Geschichten-Raum neu zeichnen (nur wenn offen)', befehl: ['bin/karte.js', '--raum', 'geschichten'] },
-  { schluessel: 'geschichten', name: 'Geschichten-Raum: Text-Achsen (Stoff, Haltung, Ton)', befehl: ['bin/geschichten-achsen.js'] },
+  { id: 'geschichten-textabdruck', schluessel: 'geschichten', name: 'Geschichten-Raum: Textabdruck für neue Titel', befehl: ['bin/geschichten.js'] },
+  { id: 'geschichten-wortschatz', schluessel: 'geschichten', name: 'Geschichten-Raum: Wortschatz für die Namen der Gegenden', befehl: ['bin/ortsbegriffe.js'] },
+  { id: 'geschichten-zeichnen', schluessel: 'geschichten', name: 'Geschichten-Raum neu zeichnen (nur wenn offen)', befehl: ['bin/karte.js', '--raum', 'geschichten'] },
+  { id: 'geschichten-einordnung', schluessel: 'geschichten', name: 'Geschichten-Raum: Einordnung nach Stoff, Haltung und Ton', befehl: ['bin/geschichten-achsen.js'] },
   /* DIE NACHBARSCHAFT GANZ ZUM SCHLUSS (Caspar_D, 26.08.2026). Zwei
      Schritte, gemeinsamer Schluessel - denn hirsch liest die Datei, die
      profile schreibt; einzeln abgewaehlt ergaebe der zweite keinen Sinn.
@@ -463,12 +488,26 @@ const MORGEN_SCHRITTE = [
      Laune darf den Morgen nicht abbrechen - der Rest holt sich beim
      naechsten Lauf. Was tatsaechlich passiert ist, steht in den Zeilen
      im Morgenfenster. */
-  { schluessel: 'nachbarn', name: 'Nachbarschaft: Profile der Neuen holen', befehl: ['bin/community-profile.js'] },
-  { schluessel: 'nachbarn', name: 'Nachbarschaft: Hirschfaktoren der Neuen rechnen', befehl: ['bin/community-hirsch.js'] },
+  { id: 'nachbarn-profile', schluessel: 'nachbarn', name: 'Nachbarschaft: Profile der Neuen holen', befehl: ['bin/community-profile.js'] },
+  { id: 'nachbarn-hirsch', schluessel: 'nachbarn', name: 'Nachbarschaft: Hirschfaktoren der Neuen rechnen', befehl: ['bin/community-hirsch.js'] },
 ];
+for (const s of MORGEN_SCHRITTE)
+  if (!MORGEN_TEXTE[s.name]) console.warn(`MORGENSCHRITTE.json kennt den Schritt nicht: ${s.name}`);
+
+/* Ein Schritt, wie das Morgenfenster ihn zeigt: ein Abschnitt mit
+   Zustand, Kurzergebnis und den eigenen Zeilen (Caspar_D, 08.09.2026,
+   Mockup abgenommen). 'zeilen' sind die Zeilen NUR dieses Schritts,
+   je Schritt gekappt - vorher lag alles in einem Topf, und das Fenster
+   zeigte die letzten vierzehn Zeilen von was auch immer. */
+function morgenAbschnitt(s, status) {
+  const t = MORGEN_TEXTE[s.name] || {};
+  return { id: s.id, schluessel: s.schluessel, name: s.name, was: t.was || '',
+           pflicht: !!s.pflicht, status: status || 'wartet', code: null,
+           seit: null, dauerMs: null, geschaetztMs: null, kurz: '', zeilen: [] };
+}
 
 const morgen = { laeuft:false, schritt:-1, seit:null, zeilen:[], fehler:null, neueIds:[], folge:[],
-                 schrittSeit:null };
+                 schrittSeit:null, schritte:[], art:null, datensaetze:null };
 
 /* Fuers Einmessen (29.08.2026): das Standard-Ausgabegeraet wird per
    system_profiler ermittelt (traege, darum 10 s Cache), und die
@@ -497,18 +536,81 @@ const DAUERN = path.join(WURZEL, 'library', 'morgen-dauern.json');
 function dauernLesen() {
   try { return JSON.parse(fs.readFileSync(DAUERN, 'utf8')); } catch (e) { return {}; }
 }
-function dauerMerken(name, ms, einheiten) {
+/* Die beiden Schritte des roten Knopfs vor dem eigentlichen Lauf
+   (bin/sammeln.js) tragen ihre ID hier, nicht im Katalog oben. */
+const SAMMELN_ID = { ernte: 'sammeln-ernte', frisch: 'sammeln-frisch' };
+/* MIGRATION (08.09.2026). Bis dahin lernte die Kurve nach dem NAMEN
+   des Schritts. Jede Umbenennung hinterliess einen verwaisten Eintrag,
+   und die Lesezeichen-Verwertung trug die Uhrzeit im Namen - 21
+   Eintraege 'Lesezeichen-Ernte von HH:MM Uhr', keiner je wieder
+   getroffen. Hier werden die alten Namen einmal auf die IDs umgeschrieben
+   (Werte bleiben), die Uhrzeit-Eintraege zu einem gemittelt. Fuenf
+   Namen von vor dem 20.08. ('Suno abfragen', 'Katalog bauen', ...)
+   hatten schon damals juengere Nachfolger und fallen weg. Laeuft bei
+   jedem Start, tut aber nur beim ersten Mal etwas. */
+const DAUERN_ALTE_NAMEN = {
+  'Verbindungen prüfen — antworten die Suno-Adressen?': 'gesundheit',
+  'Katalog neu bauen — alle Ernten zusammenführen, Zählerverlauf fortschreiben': 'katalog',
+  'Neue Kommentare von Suno sichern': 'kommentare',
+  'Heruntergeladene Audiodateien übernehmen': 'medien-uebernehmen',
+  'Fehlende Medien laden (MP3, Cover, Videos)': 'medien-laden',
+  'Klanganalyse für neue Titel rechnen': 'analyse-rechnen',
+  'Messwerte in den Suchindex übernehmen': 'analyse-index',
+  'Klangprofil und Lautheitshistogramm nachziehen': 'analyse-eqprofil',
+  'Störfrequenzen suchen — stehende Töne für die Kerbe': 'analyse-stoerfrequenz',
+  'Karaoke-Zeitanker mit Whisper für neue Titel': 'whisper-zeitmarken',
+  'Bereinigte Lyrik — Liedtext gegen die Whisper-Marken abgleichen': 'whisper-lyrik',
+  'Musikstil vermessen — Klang, Genre, Stimmung': 'musikstil-vermessen',
+  'Klangraum neu zeichnen': 'musikstil-klangraum',
+  'Geschichten-Raum: Text-Vektoren für neue Titel': 'geschichten-textabdruck',
+  'Geschichten-Raum: Wortvektoren für die Ortsbegriffe': 'geschichten-wortschatz',
+  'Geschichten-Raum neu zeichnen (nur wenn offen)': 'geschichten-zeichnen',
+  'Geschichten-Raum: Text-Achsen (Stoff, Haltung, Ton)': 'geschichten-einordnung',
+  'Nachbarschaft: Profile der Neuen holen': 'nachbarn-profile',
+  'Nachbarschaft: Hirschfaktoren der Neuen rechnen': 'nachbarn-hirsch',
+  'Titelliste frisch von Suno holen (öffentliches Profil)': SAMMELN_ID.frisch,
+};
+function dauernMigrieren() {
+  const alt = dauernLesen();
+  const ids = new Set([...MORGEN_SCHRITTE.map(s => s.id), ...Object.values(SAMMELN_ID)]);
+  const neu = {}, ernte = [], weg = [];
+  let umgeschrieben = 0;
+  for (const [k, v] of Object.entries(alt)) {
+    if (ids.has(k)) { neu[k] = v; continue; }
+    if (/^Lesezeichen-Ernte von \d\d:\d\d Uhr verwerten/.test(k)) { ernte.push(v); continue; }
+    const id = DAUERN_ALTE_NAMEN[k];
+    if (id) { if (neu[id] === undefined) neu[id] = v; umgeschrieben++; }
+    else weg.push(k);
+  }
+  if (ernte.length && neu[SAMMELN_ID.ernte] === undefined)
+    neu[SAMMELN_ID.ernte] = Math.round(ernte.reduce((a, b) => a + b, 0) / ernte.length);
+  if (!umgeschrieben && !ernte.length && !weg.length) return;
+  try { fs.writeFileSync(DAUERN, JSON.stringify(neu, null, 1)); } catch (e) { return; }
+  console.log(`morgen-dauern.json migriert: ${umgeschrieben} Namen auf IDs, ${ernte.length} Lesezeichen-Eintraege gemittelt`
+    + (weg.length ? `, verworfen: ${weg.join(', ')}` : ''));
+}
+dauernMigrieren();
+function dauerMerken(id, ms, einheiten) {
   const d = dauernLesen();
   /* Bei skalierenden Schritten die Dauer je Einheit merken; null
      Einheiten sagen nichts ueber die Dauer und werden nicht gelernt. */
   if (einheiten !== undefined) {
     if (einheiten <= 0) return;
     const je = ms / einheiten;
-    d[name] = d[name] ? Math.round(d[name] * 2/3 + je / 3) : Math.round(je);
+    d[id] = d[id] ? Math.round(d[id] * 2/3 + je / 3) : Math.round(je);
   } else {
-    d[name] = d[name] ? Math.round(d[name] * 2/3 + ms / 3) : ms;
+    d[id] = d[id] ? Math.round(d[id] * 2/3 + ms / 3) : ms;
   }
   try { fs.writeFileSync(DAUERN, JSON.stringify(d, null, 1)); } catch (e) {}
+}
+/* Was der Schritt voraussichtlich dauert - aus der Lernkurve mal der
+   Zahl der Einheiten, wenn er skaliert. null, wenn die Kurve ihn noch
+   nicht kennt. Das Fenster zeigt es mit einer Tilde bei wartenden
+   Schritten. */
+function dauerSchaetzen(d, s, einheiten) {
+  if (!d[s.id]) return null;
+  if (!s.einheiten) return d[s.id];
+  return d[s.id] * Math.max(1, einheiten !== undefined ? einheiten : 1);
 }
 /* Anteil 0..1 und erwartete Restzeit in ms, oder null, wenn nichts
    laeuft. Ein laufender Schritt darf nie ueber 95 % seines eigenen
@@ -518,12 +620,8 @@ function dauerMerken(name, ms, einheiten) {
 function fortschritt() {
   if (!morgen.laeuft || !morgen.folge || morgen.schritt < 0) return null;
   const d = dauernLesen();
-  const erwartet = morgen.folge.map((s, i) => {
-    if (!d[s.name]) return 0;
-    if (!s.einheiten) return d[s.name];
-    const n = (morgen.einheiten && morgen.einheiten[i] !== undefined) ? morgen.einheiten[i] : 1;
-    return d[s.name] * Math.max(1, n);
-  });
+  const erwartet = morgen.folge.map((s, i) =>
+    dauerSchaetzen(d, s, morgen.einheiten && morgen.einheiten[i]) || 0);
   const kennt = erwartet.some(x => x > 0);
   const gewichte = kennt ? erwartet.map(x => x || Math.max(...erwartet) / 4) : erwartet.map(() => 1);
   const gesamt = gewichte.reduce((a, b) => a + b, 0);
@@ -576,6 +674,40 @@ function reaktionenAnhaengen(liste, gesehen) {
   return neu;
 }
 
+/* Die Abschnitte fuer das Fenster. Solange nie ein Lauf gestartet
+   wurde, alle Schritte des Katalogs als 'wartet' - das Fenster zeigt
+   dann, was der Morgen tun WUERDE. Laeuft oder lief etwas, der Stand
+   dieses Laufs. Wartende Schritte tragen die Schaetzung aus der
+   Lernkurve; fertige ihre gemessene Dauer. */
+function morgenAbschnitte() {
+  const d = dauernLesen();
+  if (!morgen.schritte.length) return MORGEN_SCHRITTE.map(s => {
+    const a = morgenAbschnitt(s); a.geschaetztMs = dauerSchaetzen(d, s); return a; });
+  return morgen.schritte;
+}
+function unverarbeitetZaehlen() {
+  const ordner = path.join(WURZEL, 'library', 'roh');
+  let katalogStand = 0;
+  try { katalogStand = fs.statSync(K.KATALOG).mtimeMs; } catch (e) {}
+  let dateien = [];
+  try { dateien = fs.readdirSync(ordner).filter(f => /\.json$/.test(f) && !f.startsWith('._')); } catch (e) {}
+  const arten = {}, stempel = new Set();
+  let juengste = null, aelteste = null;
+  for (const f of dateien) {
+    const m = fs.statSync(path.join(ordner, f)).mtimeMs;
+    if (m <= katalogStand) continue;
+    const art = (f.match(/^([a-z]+)-/) || [,'sonst'])[1];
+    arten[art] = (arten[art] || 0) + 1;
+    /* Ein Datensatz = profil + privat + timing mit demselben Stempel
+       (Caspar_D, 08.09.2026: "Zwei Datensaetze warteten" - nicht sechs
+       Dateien). */
+    stempel.add(f.replace(/^[a-z]+-/, '').replace(/\.json$/, ''));
+    if (!juengste || m > juengste) juengste = m;
+    if (!aelteste || m < aelteste) aelteste = m;
+  }
+  return { katalogStand, arten, anzahl: Object.values(arten).reduce((a,b)=>a+b,0),
+           datensaetze: stempel.size, aelteste, juengste };
+}
 function morgenStand() {
   return {
     laeuft:  morgen.laeuft,
@@ -585,7 +717,10 @@ function morgenStand() {
     seit:    morgen.seit,
     fehler:  morgen.fehler,
     quelle:  morgen.quelle || null,
+    art:     morgen.art,
+    datensaetze: morgen.datensaetze,
     fortschritt: fortschritt(),
+    schritte: morgenAbschnitte(),
     /* Beim Sammeln die ganze Ausgabe - sie IST der Vergleich, den der
        Knopf zeigen soll. Beim langen Lauf nur der Schwanz. */
     zeilen:  morgen.laeuft || morgen.folge === undefined
@@ -593,9 +728,21 @@ function morgenStand() {
   };
 }
 
-function morgenLosschicken(schritte) {
+/* 'alle' ist der ganze Katalog, 'schritte' das, was davon laeuft:
+   Abgewaehlte Schritte stehen im Fenster als 'abgewaehlt', damit alle
+   Abschnitte sichtbar bleiben und niemand raetselt, wo Whisper hin ist. */
+function morgenLosschicken(schritte, art, alle) {
   morgen.laeuft = true; morgen.schritt = -1; morgen.seit = Date.now();
   morgen.zeilen = []; morgen.fehler = null; morgen.folge = schritte; morgen.einheiten = [];
+  morgen.art = art || 'lauf'; morgen.datensaetze = null;
+  const d = dauernLesen();
+  const laufend = new Set(schritte);
+  morgen.schritte = (alle || schritte).map(s => {
+    const a = morgenAbschnitt(s, laufend.has(s) ? 'wartet' : 'abgewaehlt');
+    a.geschaetztMs = dauerSchaetzen(d, s, s.einheiten ? s.einheiten() : undefined);
+    return a;
+  });
+  const abschnittVon = (s) => morgen.schritte.find(a => a.id === s.id);
 
   const weiter = (i) => {
     if (i >= schritte.length) {
@@ -606,8 +753,18 @@ function morgenLosschicken(schritte) {
     morgen.schritt = i;
     morgen.schrittSeit = Date.now();
     const s = schritte[i];
+    const ab = abschnittVon(s);
     morgen.einheiten = morgen.einheiten || [];
     morgen.einheiten[i] = s.einheiten ? s.einheiten() : undefined;
+    ab.status = 'laeuft'; ab.seit = morgen.schrittSeit;
+    ab.geschaetztMs = dauerSchaetzen(d, s, morgen.einheiten[i]);
+    /* Ein Schritt ist fertig oder uebersprungen: Zustand, Dauer, Kurz-
+       ergebnis in den Abschnitt; die Zeile danach ins alte Protokoll. */
+    const abschliessen = (status, code, kurz) => {
+      ab.status = status; ab.code = code;
+      ab.dauerMs = Date.now() - morgen.schrittSeit;
+      if (kurz) ab.kurz = kurz;
+    };
     morgen.zeilen.push(`▸ ${s.name}`);
     /* Laeuft dasselbe Werkzeug schon von Hand (z. B. whisper.js --alle
        im Terminal), kein zweites daneben starten - der Mac hat nur
@@ -616,7 +773,9 @@ function morgenLosschicken(schritte) {
       try {
         const ps = require('node:child_process').execSync('pgrep -f "[b]in/whisper.js"', { encoding: 'utf8' }).trim();
         if (ps) {
-          morgen.zeilen.push('  Whisper läuft bereits (von Hand gestartet) — übersprungen, der nächste Morgen holt es nach.');
+          const h = 'Whisper läuft bereits (von Hand gestartet) — übersprungen, der nächste Morgen holt es nach.';
+          morgen.zeilen.push('  ' + h); ab.zeilen.push(h);
+          abschliessen('fertig', null, h);
           return weiter(i + 1);
         }
       } catch (e) { /* pgrep ohne Treffer = Exit 1 = frei */ }
@@ -627,7 +786,9 @@ function morgenLosschicken(schritte) {
        denselben fremden Server gleichzeitig fragen - genau das, was die
        Regel "eine Anfrage zur Zeit" verbietet. */
     if (s.befehl[0].startsWith('bin/community-') && global.communityLauf) {
-      morgen.zeilen.push('  Die Nachbarschaft wird gerade aus dem Panel geholt — übersprungen.');
+      const h = 'Die Nachbarschaft wird gerade aus dem Panel geholt — übersprungen.';
+      morgen.zeilen.push('  ' + h); ab.zeilen.push(h);
+      abschliessen('fertig', null, h);
       return weiter(i + 1);
     }
     /* caffeinate gibt es nur auf dem Mac; auf Linux laeuft der Schritt
@@ -635,23 +796,79 @@ function morgenLosschicken(schritte) {
     const kind = s.kaffee && process.platform === 'darwin'
       ? require('node:child_process').spawn('caffeinate', ['-i', process.execPath, ...s.befehl], { cwd: WURZEL })
       : require('node:child_process').spawn(process.execPath, s.befehl, { cwd: WURZEL });
-    const sammeln = (d) => {
-      for (const z of String(d).split('\n')) if (z.trim()) morgen.zeilen.push(z.trimEnd());
-      if (morgen.zeilen.length > 400) morgen.zeilen = morgen.zeilen.slice(-200);
-    };
-    kind.stdout.on('data', sammeln);
-    kind.stderr.on('data', sammeln);
-    kind.on('close', (c) => {
-      dauerMerken(s.name, Date.now() - morgen.schrittSeit, morgen.einheiten[i]);
-      if (c !== 0) {
-        morgen.fehler = `${s.name} brach ab (${c})`;
-        morgen.laeuft = false; morgen.schritt = -1;
-        return;
+    /* Zeilen in den Abschnitt (je Schritt gekappt) UND ins flache
+       Protokoll (fuer /api/morgen/stand.zeilen, wie bisher). Das
+       Kurzergebnis ist die letzte nichtleere stdout-Zeile - stderr
+       nicht, dort stehen Warnungen, nicht das Ergebnis. */
+    const sammeln = (istStdout) => (d) => {
+      for (const z of String(d).split('\n')) if (z.trim()) {
+        morgen.zeilen.push(z.trimEnd());
+        ab.zeilen.push(z.trimEnd());
+        if (istStdout) ab.kurz = z.trim();
       }
+      if (morgen.zeilen.length > 400) morgen.zeilen = morgen.zeilen.slice(-200);
+      if (ab.zeilen.length > 400) ab.zeilen = ab.zeilen.slice(-400);
+    };
+    kind.stdout.on('data', sammeln(true));
+    kind.stderr.on('data', sammeln(false));
+    kind.on('close', (c) => {
+      dauerMerken(s.id, Date.now() - morgen.schrittSeit, morgen.einheiten[i]);
+      if (c !== 0) {
+        abschliessen('fehler', c, ab.kurz || `Abbruch mit Code ${c}`);
+        /* Pflicht bricht den Lauf ab wie bisher; alles andere wird rot
+           und der Morgen geht weiter (Caspar_D, 08.09.2026). */
+        if (s.pflicht) {
+          morgen.fehler = `${s.name} brach ab (${c})`;
+          morgen.laeuft = false; morgen.schritt = -1;
+          return;
+        }
+        return weiter(i + 1);
+      }
+      abschliessen('fertig', 0, s.id === 'gesundheit' ? gesundheitKurz() || ab.kurz : ab.kurz);
       weiter(i + 1);
     });
   };
   weiter(0);
+}
+
+/* Das Kurzergebnis des Verbindungsschritts: die Liste je Adresse mit
+   Haken oder Kreuz, wie das kurzergebnis_muster in MORGENSCHRITTE.json
+   sie beschreibt. bin/gesundheit.js gibt seine Zeilen mit den
+   technischen Namen aus (Profil-API, Bild-CDN); hier kommen die Worte
+   des Fensters aus library/gesundheit.json, das der Schritt gerade
+   geschrieben hat. Audio ist Beobachtung, kein Befund (gesperrt seit
+   dem 03.09.2026). null, wenn die Datei fehlt - dann bleibt die letzte
+   stdout-Zeile. */
+function gesundheitKurz() {
+  let g;
+  try { g = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'gesundheit.json'), 'utf8')); } catch (e) { return null; }
+  const b = g && g.befunde; if (!b) return null;
+  const WORTE = {
+    'Suno-Seite (Ernte)':        'Suno-Seite',
+    'Profil-API (Nachbarschaft)': 'dein Autorenprofil',
+    'Kommentar-API (Reaktionen)': 'Kommentare zu einem Titel',
+    'Bild-CDN (Medien)':         'Speicher für Titelbilder',
+    'Video-CDN (Medien)':        'Speicher für Bewegtbilder',
+  };
+  const klartext = (c) => c === 200 ? 'antwortet' : c === 206 ? 'antwortet' : c === 403 ? 'gesperrt (403)'
+    : c === 404 ? 'nicht gefunden (404)' : c === 429 ? 'Suno bremst (429)' : c === 0 || c === undefined ? 'keine Antwort'
+    : `antwortet mit ${c}`;
+  const zeilen = []; let gut = 0, gesamt = 0;
+  for (const [k, wort] of Object.entries(WORTE)) {
+    if (b[k] === undefined) continue;
+    gesamt++;
+    const ok = b[k] === 200 || b[k] === 206;
+    if (ok) gut++;
+    zeilen.push(ok ? `✓ ${wort}` : `✗ ${wort} — ${klartext(b[k])}`);
+  }
+  if (b['Audio-CDN (außer Betrieb)'] !== undefined || b['Audio-Links im Katalog'] !== undefined) {
+    const c = b['Audio-CDN (außer Betrieb)'];
+    zeilen.push(c === 200 || c === 206 ? '✓ Audio-Adresse — antwortet wieder'
+                                        : '· Audio-Adresse — gesperrt seit 03.09.2026, wird beobachtet');
+  }
+  if (!zeilen.length) return null;
+  zeilen.push(`${gut} von ${gesamt} Adressen antworten wie erwartet`);
+  return zeilen.join('\n');
 }
 
 
@@ -953,12 +1170,16 @@ const server = http.createServer((req, res) => {
       /* Der Schrittname sagt die Herkunft gleich selbst (Caspar_D,
          20.08.2026: "gut, anpassen") - nicht erst die Liste danach. */
       const wann = new Date(ernte.vom).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-      morgenLosschicken([{ name: `Lesezeichen-Ernte von ${wann} Uhr verwerten (kein neuer Suno-Abruf)`,
-                           befehl: ['bin/sammeln.js', '--aus-roh'] }]);
+      /* 'Datentransfer', nicht 'Ernte' - WOERTER.md, Caspar_D 08.09.2026.
+         Die Uhrzeit steht im Namen, die Lernkurve lernt unter der ID. */
+      morgenLosschicken([{ id: SAMMELN_ID.ernte, schluessel: 'sammeln',
+                           name: `Lesezeichen-Datentransfer von ${wann} Uhr verwerten (kein neuer Suno-Abruf)`,
+                           befehl: ['bin/sammeln.js', '--aus-roh'] }], 'sammeln');
     } else {
       morgen.quelle = { art: 'frisch', letzteErnte: ernte ? ernte.vom : null };
-      morgenLosschicken([{ name: 'Titelliste frisch von Suno holen (öffentliches Profil)',
-                           befehl: ['bin/sammeln.js'] }]);
+      morgenLosschicken([{ id: SAMMELN_ID.frisch, schluessel: 'sammeln',
+                           name: 'Titelliste frisch von Suno holen (öffentliches Profil)',
+                           befehl: ['bin/sammeln.js'] }], 'sammeln');
     }
     return jsonAntwort(res, morgenStand());
   }
@@ -972,7 +1193,12 @@ const server = http.createServer((req, res) => {
       let aus = [];
       try { aus = (JSON.parse(roh || '{}').aus || []).filter(k => k !== 'katalog'); } catch (e) {}
       const schritte = MORGEN_SCHRITTE.filter(s => !aus.includes(s.schluessel));
-      morgenLosschicken(schritte);
+      /* Wie viele Datensaetze der Katalogbau gleich verarbeitet - das
+         Fenster sagt es hinterher ("zwei warteten, beide beruecksichtigt");
+         gezaehlt wird VOR dem Start, danach sind die Dateien weg. */
+      const wartend = unverarbeitetZaehlen().datensaetze;
+      morgenLosschicken(schritte, 'lauf', MORGEN_SCHRITTE);
+      morgen.datensaetze = wartend;
       if (aus.length) morgen.zeilen.unshift('abgewählt: ' + aus.join(', '));
       jsonAntwort(res, morgenStand());
     });
@@ -1017,25 +1243,7 @@ const server = http.createServer((req, res) => {
      uebernehmen - sonst holt man munter weiter und wundert sich, warum
      der Analyzer nichts davon sieht. Gezaehlt wird nach Art, die
      Zeiten aus den Dateinamen. */
-  if (p === '/api/morgen/unverarbeitet') {
-    const ordner = path.join(WURZEL, 'library', 'roh');
-    let katalogStand = 0;
-    try { katalogStand = fs.statSync(K.KATALOG).mtimeMs; } catch (e) {}
-    let dateien = [];
-    try { dateien = fs.readdirSync(ordner).filter(f => /\.json$/.test(f) && !f.startsWith('._')); } catch (e) {}
-    const arten = {};
-    let juengste = null, aelteste = null;
-    for (const f of dateien) {
-      const m = fs.statSync(path.join(ordner, f)).mtimeMs;
-      if (m <= katalogStand) continue;
-      const art = (f.match(/^([a-z]+)-/) || [,'sonst'])[1];
-      arten[art] = (arten[art] || 0) + 1;
-      if (!juengste || m > juengste) juengste = m;
-      if (!aelteste || m < aelteste) aelteste = m;
-    }
-    return jsonAntwort(res, { katalogStand, arten, anzahl: Object.values(arten).reduce((a,b)=>a+b,0),
-                              aelteste, juengste });
-  }
+  if (p === '/api/morgen/unverarbeitet') return jsonAntwort(res, unverarbeitetZaehlen());
 
   /* Welche Songs haben schon Schlaege/Abschnitte/Wellenstufen - laut
      ROHDATEN, nicht laut Katalog. Der Katalog weiss es erst nach dem
