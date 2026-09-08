@@ -15739,7 +15739,8 @@ async function reaktAuf(id, x, y, istZurueck){
       sp.textContent = p.name || p.handle; sp.title = '@' + p.handle + (p.folgtMir ? ' · folgt dir' : '');
       sp.onclick = () => reaktPerson(p.handle, id);
       const sm = document.createElement('small');
-      if (p.am){ sm.textContent = zeitRelativ(p.am); sm.title = reaktZeit(p.am) + (p.quelle === 'benachrichtigung' ? '' : ' — Herz-Zeit laut Suno-Seite'); }
+      if (p.am && p.quelle === 'buendel'){ sm.textContent = 'bis ' + zeitRelativ(p.am); sm.title = 'im Bündel vom ' + reaktZeit(p.am) + ' — die Zeit des jüngsten Herzens darin, dieses kam kurz davor'; }
+      else if (p.am){ sm.textContent = zeitRelativ(p.am); sm.title = reaktZeit(p.am) + (p.quelle === 'benachrichtigung' ? '' : ' — Herz-Zeit laut Suno-Seite'); }
       else if (p.zeitBis || p.zeitAb){
         sm.textContent = p.zeitBis ? 'vor dem ' + kd(p.zeitBis) : 'nach dem ' + kd(p.zeitAb);
         sm.title = 'Zeitfenster laut Suno-Seite: ' + (p.zeitAb ? reaktZeit(p.zeitAb) : '…') + ' bis ' + (p.zeitBis ? reaktZeit(p.zeitBis) : 'jetzt');

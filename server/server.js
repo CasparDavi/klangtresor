@@ -744,14 +744,39 @@ function likerStand() {
   return s;
 }
 /* Der Stand eines Titels fuer die Anzeige, mit den Zeiten aus den
-   Benachrichtigungen (nur einzelne Zeilen - ein Buendel nennt keine
-   Zeit je Person). */
+   Benachrichtigungen. Einzelne Zeile: exakte Zeit. Buendel: Suno nennt
+   nur bis zu drei der Personen, aber die Zeit des Buendels gilt fuer
+   alle darin (sie ist das juengste Herz, die anderen kamen kurz davor).
+   Wer die Ungenannten sind, sagt die Liste selbst: sie ist nach Herz-
+   Zeit sortiert, ein Buendel ist darin ein zusammenhaengender Block -
+   die Ungenannten sind die Nachbarn der Genannten ohne eigene Zeit
+   (Caspar_D, 09.09.2026: "alle im Buendel liefern den Zeitpunkt des
+   Buendels mit"). Quelle 'buendel' heisst: bis zu dieser Zeit. */
 function likerMitZeiten(id, herzZeilen) {
   const d = likerLesen(id); if (!d) return null;
-  const zeit = new Map();
-  for (const e of herzZeilen) if ((e.von || []).length === 1 && e.am) { const h = e.von[0]; if (!zeit.has(h) || e.am > zeit.get(h)) zeit.set(h, e.am); }
-  return { abgerufenAm: d.abgerufenAm, anzahlSuno: d.anzahlSuno,
-           likers: (d.likers || []).map(p => zeit.has(p.handle) ? { ...p, am: zeit.get(p.handle), quelle: 'benachrichtigung' } : p) };
+  const zeit = new Map(), buendel = [];
+  for (const e of herzZeilen) {
+    if (!e.am) continue;
+    const von = e.von || [], anzahl = Math.max(e.anzahl || 1, von.length);
+    if (anzahl === 1 && von.length === 1) { const h = von[0]; if (!zeit.has(h) || e.am > zeit.get(h)) zeit.set(h, e.am); }
+    else if (anzahl > 1) buendel.push({ am: e.am, von, anzahl });
+  }
+  const likers = (d.likers || []).map(p => zeit.has(p.handle) ? { ...p, am: zeit.get(p.handle), quelle: 'benachrichtigung' } : { ...p });
+  const frei = p => !p.am && !p.zeitAb && !p.zeitBis;
+  for (const b of buendel.sort((x, y) => (y.am || '').localeCompare(x.am || ''))) {
+    const pos = []; likers.forEach((p, i) => { if (b.von.includes(p.handle)) pos.push(i); });
+    for (const i of pos) if (!likers[i].am || likers[i].quelle === 'buendel') { likers[i].am = b.am; likers[i].quelle = 'buendel'; }
+    if (!pos.length) continue;
+    let lo = Math.min(...pos), hi = Math.max(...pos), rest = b.anzahl - pos.length;
+    /* Ungenannte dazwischen zuerst, dann nach aussen - nur wer noch keine Zeit hat */
+    for (let i = lo + 1; i < hi && rest > 0; i++) if (frei(likers[i])) { likers[i].am = b.am; likers[i].quelle = 'buendel'; rest--; }
+    while (rest > 0) {
+      if (lo > 0 && frei(likers[lo - 1])) { lo--; likers[lo].am = b.am; likers[lo].quelle = 'buendel'; rest--; }
+      else if (hi < likers.length - 1 && frei(likers[hi + 1])) { hi++; likers[hi].am = b.am; likers[hi].quelle = 'buendel'; rest--; }
+      else break;
+    }
+  }
+  return { abgerufenAm: d.abgerufenAm, anzahlSuno: d.anzahlSuno, likers };
 }
 
 /* Eine Benachrichtigung in die Zeilenform bringen.
