@@ -1582,9 +1582,10 @@ Randfälle aus der letzten Gegenlesung, nicht gebaut (Backlog):
 ## Entschieden, noch zu bauen (Reihenfolge)
 
 1. Erster echter Albumlauf (oben), dann Ergebnis in DATENEXTRAKTION.md.
-2. **Vierte Quelle**: Albumeinträge werden zu Titeln — „neue Titel
-   kommen nur über public oder über die Playlisten; Playlist schlägt
-   alles". `aufbereiten.js:171` bekommt `ausAlben`. Kein Arbeitsbereich.
+2. **Vierte Quelle** — GEBAUT `0d14b1b` (spät am 08.09.): `ausAlben` in
+   `aufbereiten.js` vor dem Titelbau, nur ergänzend. Prüfstein: der private
+   Titel *Bei mir klingelt keiner* (My Industrial Songs) muss nach dem
+   nächsten Klick als Titel im Katalog stehen — beim Sitzungsende offen.
 3. **Nachtschritt Stems** (`bin/stems.js`, 4 min/250 MB je Titel),
    **Morgenschritt Tonart** (`bin/toene.js` vor `analyse-index.js`),
    Haken 14–16 aus HANDARBEIT-PRUEFUNG.md.
@@ -1593,7 +1594,9 @@ Randfälle aus der letzten Gegenlesung, nicht gebaut (Backlog):
    Einzelheiten aufklappbar; alle 19 sichtbar, scrollt; pflicht-Schritte
    brechen ab, andere werden rot und der Lauf geht weiter; Lernkurve
    nach `schluessel` statt Name; Ernte-Zähler „N Datensätze" statt
-   Dateien. Mockup war abgenommen. Danach die Schlusszeilen der 17
+   Dateien. Mockup war abgenommen. Dazu ein Knopf *In den Hintergrund*
+   (Caspar_D, spät am 08.09.: dann weiß man, dass man die Übersicht parallel
+   benutzen kann — heute deutet nichts darauf hin). Danach die Schlusszeilen der 17
    Skripte (Vorschläge im Workflow-Ergebnis `morgenschritte-beschreiben`,
    `docs/handbuch/MORGENSCHRITTE.json`, Feld `kurzergebnis_muster`).
 5. **Tragende Endpunkt-Doku**: Rohdaten liegen in `library/suno-wege/`
