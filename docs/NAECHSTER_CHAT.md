@@ -1603,6 +1603,20 @@ Whisper-Lauf trotz --alle — Whisper meldete nur 2 Titel. Instrumental-
 Filter, OHNE_PLAYLISTS, oder Titelmuster I–IV? Nachsehen in whisper.js
 Zeile 302 ff.
 
+## ZUERST PRÜFEN — Whisper hing bei Kartoffeln mit Dip (gelöst, 21:30)
+
+Nicht heute, sondern am 25.08. im Handlauf: whisper.ndjson trägt für
+d1f21beb (Kartoffeln mit Dip, 268 s Musik) einen Eintrag mit 0 Wörtern,
+kein Fehler, nicht instrumental, 4707 s gerechnet — das 17-fache der
+Echtzeit statt 1,4. Whisper large-v3 ist in eine Schleife geraten und
+hat nach 78 Minuten leer abgelegt. Seither gilt der Titel als fertig
+(whisper.js Zeile 297 ff., fertig.has), --alle überspringt ihn, lyrik.js
+sagt „kein Whisper-Lauf". FIX: Einträge mit 0 Wörtern und ohne
+instrumental/fehler sind kein Ergebnis — aus fertig ausschließen, neu
+rechnen; das Feld schleife ansehen. WAV gegen MP3 ist keine Frage:
+whisper.js nimmt immer audio.mp3 und resampelt per ffmpeg auf 16 kHz
+mono (Zeile 198–201); die audio.wav wird nie benutzt.
+
 ## Entschieden, noch zu bauen (Reihenfolge)
 
 1. Erster echter Albumlauf (oben), dann Ergebnis in DATENEXTRAKTION.md.
