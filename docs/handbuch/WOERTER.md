@@ -27,8 +27,9 @@ folgen kann.
 |---|---|---|
 | **die Übersicht mit den Werken** | `Werke` | im Fließtext ausgeschrieben; „die Werke-Übersicht" als Kurzform ist erlaubt, „die Werke" allein nicht |
 | **die Alben** | `Alben` | Sunos „Playlists" heißen hier Alben. Beim ersten Auftreten einmal erklären, danach nur noch „Album" |
-| **der Klangraum** | `Klangraum` | |
-| **der Geschichten-Raum** | — | die zweite Sicht desselben Registers |
+| **die Räume** | `Räume` | das Register. Am 08.09.2026 an der laufenden App nachgesehen: es heißt „Räume", nicht „Klangraum" — darin liegen zwei Sichten |
+| **der Klangraum** | `Klang` | die erste Sicht: ordnet nach dem Ton |
+| **der Geschichten-Raum** | `Geschichten (beta)` | die zweite: ordnet nach dem, wovon die Titel handeln |
 | **mein Autorenprofil** | Titel des Knopfs `#ich` | deckt **beide** Registerlaschen ab (Caspar_D, 07.09.2026). Die Oberfläche zog am selben Abend nach: der Knopf hieß vorher „Über dieses Archiv" |
 | **meine Daten** | `Meine Daten` | die erste Registerlasche: was den eigenen Bestand beschreibt |
 | **meine Gemeinschaft** | `Meine Gemeinschaft` | die zweite: was ihn einordnet. Hieß bis 07.09.2026 „Meine Community" |
