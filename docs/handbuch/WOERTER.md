@@ -166,3 +166,22 @@ es nicht — die Oberfläche ist bereits durchgehend deutsch:
 - Keine Ausrufezeichen. Keine Beteuerungen („ganz einfach", „im Nu").
 - Was nicht geht, steht genauso da wie das, was geht. Ein Handbuch, das
   nur Erfolge kennt, lässt den Leser bei der ersten Hürde allein.
+- **Deutsche Wortstellung.** Caspar_D, 08.09.2026, 22 Uhr, zur Abnahme
+  von Kapitel 12: *„du formulierst grundsätzlich zu englisch."* Das heißt:
+  Verb an zweiter Stelle im Hauptsatz, am Ende im Nebensatz. Kurze
+  Hauptsätze. Kein Satz ohne Verb. Kein Gedankenstrich als Satzersatz.
+  Keine englische Satzmelodie („X, nicht Y" als Schlussfloskel).
+- **Keine Relativsatzketten.** Caspar_D: *„du hast ein
+  Relativsatzproblem, vermeide das."* Beispiel aus der Tabelle der
+  Sterneigenschaften: nicht „Größe — wie oft der Titel gespielt wurde",
+  sondern „Größe — Größer bei vielen Abrufen"; nicht „Beugungskreuz — er
+  bewegt sich, neue Abrufe in den letzten sieben Tagen", sondern
+  „Beugungskreuz — Bewegt sich bei vielen Abrufen in den letzten 7 Tagen".
+  Alle Zeilen einer Tabelle folgen einem Muster.
+- **Keine Negationsketten.** Caspar_D: *„wenn schon ein Abschnitt da ist,
+  was etwas nicht ist, dann verschone den Leser mit Negationen."* Der
+  Satz „sonst nichts — kein Genre, kein Name, kein Datum hat darauf
+  Einfluss" ist gestrichen. Und ein Satz braucht ein Verb: „Ein Stern
+  ohne Corona wurde bisher kaum wahrgenommen" (*„das hier ist kein
+  Satz"*) wurde zu „Ein Titel ohne Korona ist nicht schlechter als einer
+  mit." Korona mit K, durchgehend.

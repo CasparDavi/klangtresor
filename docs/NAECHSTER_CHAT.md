@@ -1690,6 +1690,21 @@ mono (Zeile 198–201); die audio.wav wird nie benutzt.
 7. Zwei Alt-Wege löschen: `bin/token.js` + `geheim/` +
    `POST /api/geheim/cookie` (Prüfung: null Aufrufer), Docker/Einrichtung
    nachziehen.
+8. **Handbuch.** Musterkapitel `docs/handbuch/12-klangraum.html` von
+   Caspar_D am 08.09. um 22 Uhr abgenommen, mit elf Änderungen (alle
+   umgesetzt): Geschichten-Raum „ordnet inhaltlich", Negationssatz raus,
+   Sterneigenschaften ohne Relativsätze im Muster „Größer bei vielen
+   Abrufen", Korona mit K, Raumschiff „im Orbit", Fäden „erscheinen", „was
+   klingt ähnlich", Einstellungs-Absatz in seinen Worten, Geschichten-Raum
+   aus dem Gruppen-Absatz gestrichen. Grundsätzlich: *„du formulierst
+   grundsätzlich zu englisch"* — deutsche Wortstellung, jetzt Regel in
+   `WOERTER.md`, Abschnitt „Anrede und Ton". Für die zwölf weiteren
+   Kapitel schlug Caspar_D einen Gegenleser vor: *„vielleicht sollten wir
+   Mistral zu Rate ziehen und die Texte dort gegenlesen lassen, oder du
+   nutzt einen Prompt, der auf deutsche Wortstellung trimmt."* Option:
+   lokales Mistral (Ollama, CPU) nur beim Schreiben. Die Hausregel „keine
+   KI außer Whisper" gilt dem Betrieb; ein Gegenleser beim Schreiben ist
+   kein Betrieb. Vor dem Einsatz Caspar_Ds Wort dazu einholen.
 
 ## Vertagt (Backlog)
 
