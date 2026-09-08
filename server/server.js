@@ -680,6 +680,80 @@ function reaktionenLesen(alle) {
   return zeilen.filter(e => !(e.sunoId && e.quelle !== 'v3' && e.am && e.am >= v3Ab));
 }
 
+/* WER HAT GEHERZT - die vollstaendige Liste je eigenem Titel, ueber den
+   Weg der iOS-App (GET /api/gen/<id>/likers/, docs/SUNO-APP-WEGE.md).
+   Ablage: library/liker/<song>.json = der juengste Stand (wer, in Sunos
+   Reihenfolge, neueste zuerst) mit dem, was an Zeit zu haben ist: der
+   letzte einer Seite traegt die Herz-Zeit exakt (sie IST der naechste
+   Cursor), alle anderen das Fenster zwischen den Cursors der Seite. Wer
+   spaeter dazukommt, bekommt das Fenster zwischen zwei Laeufen; die
+   Aenderungen stehen in library/liker-verlauf.ndjson (dazu / weg). Die
+   Zeit aus den Benachrichtigungen (einzelne Zeile) legt der Leser
+   darueber. Understatement: das Lesezeichen fragt Suno nur, wo sich die
+   Herzzahl gegen /api/liker/stand geaendert hat. */
+const LIKER = path.join(WURZEL, 'library', 'liker');
+const LIKER_VERLAUF = path.join(WURZEL, 'library', 'liker-verlauf.ndjson');
+function likerLesen(id) { try { return JSON.parse(fs.readFileSync(path.join(LIKER, id + '.json'), 'utf8')); } catch (e) { return null; } }
+function cursorZeit(c) { try { return JSON.parse(Buffer.from(String(c), 'base64').toString('utf8')).updated_at || null; } catch (e) { return null; } }
+function likerAblegen(liker, gesehen) {
+  fs.mkdirSync(LIKER, { recursive: true });
+  const strom = fs.createWriteStream(LIKER_VERLAUF, { flags: 'a' });
+  let titel = 0, dazu = 0, weg = 0;
+  for (const [id, l] of Object.entries(liker)) {
+    if (!/^[0-9a-f-]{36}$/.test(id) || !l || !Array.isArray(l.seiten) || !l.seiten.length) continue;
+    const alt = likerLesen(id);
+    const personen = []; let anzahlSuno = null;
+    l.seiten.forEach((s, si) => {
+      const ab = cursorZeit(s.next_cursor), bis = cursorZeit(s.cursor);
+      if (s.num_total_likes != null) anzahlSuno = s.num_total_likes;
+      const liste = Array.isArray(s.likers) ? s.likers : [];
+      liste.forEach((p, pi) => {
+        if (!p || !p.handle || personen.some(x => x.handle === p.handle)) return;
+        const letzter = pi === liste.length - 1 && !!s.next_cursor;
+        personen.push({ handle: p.handle, name: p.display_name || p.handle, avatar: p.avatar_image_url || null,
+                        uid: p.external_user_id || null, folgtMir: !!p.is_following_viewer, folgeIch: !!p.is_following,
+                        verifiziert: !!p.is_verified, am: letzter ? ab : null, zeitAb: ab, zeitBis: bis, seite: si + 1 });
+      });
+    });
+    const neu = { song: id, abgerufenAm: gesehen, anzahlKatalog: l.anzahl || null, anzahlSuno, likers: personen };
+    if (alt && Array.isArray(alt.likers)) {
+      const altMap = new Map(alt.likers.map(p => [p.handle, p]));
+      for (const p of neu.likers) {
+        const a = altMap.get(p.handle);
+        if (a) { if (!p.am && a.am) p.am = a.am; if (a.zwischen) p.zwischen = a.zwischen; }
+        else { p.zwischen = [alt.abgerufenAm, gesehen]; dazu++;
+               strom.write(JSON.stringify({ art: 'dazu', song: id, handle: p.handle, name: p.name, zwischen: p.zwischen }) + '\n'); }
+      }
+      const neuMenge = new Set(neu.likers.map(p => p.handle));
+      for (const a of alt.likers) if (!neuMenge.has(a.handle)) { weg++;
+        strom.write(JSON.stringify({ art: 'weg', song: id, handle: a.handle, name: a.name, zwischen: [alt.abgerufenAm, gesehen] }) + '\n'); }
+    } else strom.write(JSON.stringify({ art: 'stand', song: id, anzahl: personen.length, abgerufenAm: gesehen }) + '\n');
+    fs.writeFileSync(path.join(LIKER, id + '.json'), JSON.stringify(neu));
+    titel++;
+  }
+  strom.end();
+  return { titel, dazu, weg };
+}
+/* Was der Server hat: Song -> Sunos Herzzahl beim letzten Stand. Das
+   Lesezeichen fragt Suno nur, wo upvote_count davon abweicht. */
+function likerStand() {
+  const s = {};
+  try { for (const f of fs.readdirSync(LIKER)) { if (!f.endsWith('.json') || f.startsWith('._')) continue;
+    const d = JSON.parse(fs.readFileSync(path.join(LIKER, f), 'utf8'));
+    if (d && d.song) s[d.song] = d.anzahlSuno != null ? d.anzahlSuno : (d.likers || []).length; } } catch (e) {}
+  return s;
+}
+/* Der Stand eines Titels fuer die Anzeige, mit den Zeiten aus den
+   Benachrichtigungen (nur einzelne Zeilen - ein Buendel nennt keine
+   Zeit je Person). */
+function likerMitZeiten(id, herzZeilen) {
+  const d = likerLesen(id); if (!d) return null;
+  const zeit = new Map();
+  for (const e of herzZeilen) if ((e.von || []).length === 1 && e.am) { const h = e.von[0]; if (!zeit.has(h) || e.am > zeit.get(h)) zeit.set(h, e.am); }
+  return { abgerufenAm: d.abgerufenAm, anzahlSuno: d.anzahlSuno,
+           likers: (d.likers || []).map(p => zeit.has(p.handle) ? { ...p, am: zeit.get(p.handle), quelle: 'benachrichtigung' } : p) };
+}
+
 /* Eine Benachrichtigung in die Zeilenform bringen.
    v2 (Web): user_profiles (hoechstens drei), total_users, content_id,
    content_title, content_message.
@@ -1232,6 +1306,11 @@ const server = http.createServer((req, res) => {
                                               benachrichtigungen: daten.benachrichtigungen }));
           } catch (e) { console.log('Benachrichtigungen-Probe nicht geschrieben:', e.message); }
         }
+        /* Wer hat geherzt: sofort ablegen, wie die Benachrichtigungen. */
+        if (daten.liker && typeof daten.liker === 'object' && Object.keys(daten.liker).length) {
+          const r = likerAblegen(daten.liker, daten.erzeugtAm);
+          morgen.zeilen.push(`Wer hat geherzt: ${r.titel} Titel` + (r.dazu || r.weg ? ` — ${r.dazu} dazu, ${r.weg} weg` : ''));
+        }
         if (daten.timing && Object.keys(daten.timing).length) {
           fs.writeFileSync(path.join(ordner, `timing-${stempel}.json`),
                            JSON.stringify({ abgerufenAm: daten.erzeugtAm, songs: daten.timing }));
@@ -1384,6 +1463,8 @@ const server = http.createServer((req, res) => {
      zuletzt sahen. Die Datei wird je Aufruf gelesen; bei 800 Zeilen
      sind das Millisekunden. Waechst sie auf Zehntausende, gehoert ein
      Index her. */
+  if (p === '/api/liker/stand') return jsonAntwort(res, likerStand());
+
   if (p.startsWith('/api/kommentare/')) {
     const id = p.slice('/api/kommentare/'.length);
     if (!/^[0-9a-f-]{36}$/.test(id)) { res.writeHead(400); return res.end(); }
@@ -1426,6 +1507,7 @@ const server = http.createServer((req, res) => {
       antworten: antworten.size,
       likes: reaktionen.filter(e => e.art === 'clip_like')
                .sort((a, b) => (b.am || '').localeCompare(a.am || '')),
+      liker: likerMitZeiten(id, reaktionen.filter(e => e.art === 'clip_like')),
       verlauf: (song && song.zaehlerVerlauf) || [],
       /* 'gesehen' der juengsten Zeile je Art: Alles, was nach dem letzten
          Oeffnen des Fensters dazukam, gilt als ungelesen. Was zuletzt

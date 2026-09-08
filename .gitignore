@@ -72,3 +72,5 @@ library/instrumental.json
 # Das Textmodell wird geholt, nicht mitgeliefert (129 MB)
 library/modelle/paraphrase-multilingual-mpnet*.json
 library/modelle/paraphrase-multilingual-mpnet*.onnx
+library/liker/
+library/liker-verlauf.ndjson

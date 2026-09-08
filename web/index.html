@@ -15722,9 +15722,36 @@ async function reaktAuf(id, x, y, istZurueck){
     feld.appendChild(sp);
   } else leer('Noch kein Stand. Der erste entsteht beim nächsten Morgenlauf.');
 
-  /* 2 · Likes, mit Namen soweit der Strom reicht. Namen anklickbar. */
+  /* 2 · Herzen. Seit 09.09.2026 zuerst die VOLLSTAENDIGE Liste ueber den
+     Weg der iOS-App (gen/<id>/likers/, docs/SUNO-APP-WEGE.md): wer, in
+     Sunos Reihenfolge (neueste zuerst). Die Zeit je Herz kommt, wo es
+     geht, aus den Benachrichtigungen (einzelne Zeile), sonst als Fenster
+     aus den Cursors der Suno-Seite, sonst als Fenster zwischen zwei
+     Laeufen - und wo nichts davon da ist, steht das dran. Ohne Stand
+     (Lesezeichen noch nicht gelaufen) wie frueher: die Zeilen des Stroms. */
   h3('Herzen');
-  if (d.likes && d.likes.length){
+  const kd = iso => { try { return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); } catch (e) { return '?'; } };
+  if (d.liker && d.liker.likers && d.liker.likers.length){
+    const l = document.createElement('div'); l.className = 'rll';
+    for (const p of d.liker.likers){
+      const z = document.createElement('div'); z.className = 'rlz';
+      const sp = document.createElement('span'); sp.className = 'rwer';
+      sp.textContent = p.name || p.handle; sp.title = '@' + p.handle + (p.folgtMir ? ' · folgt dir' : '');
+      sp.onclick = () => reaktPerson(p.handle, id);
+      const sm = document.createElement('small');
+      if (p.am){ sm.textContent = zeitRelativ(p.am); sm.title = reaktZeit(p.am) + (p.quelle === 'benachrichtigung' ? '' : ' — Herz-Zeit laut Suno-Seite'); }
+      else if (p.zeitBis || p.zeitAb){
+        sm.textContent = p.zeitBis ? 'vor dem ' + kd(p.zeitBis) : 'nach dem ' + kd(p.zeitAb);
+        sm.title = 'Zeitfenster laut Suno-Seite: ' + (p.zeitAb ? reaktZeit(p.zeitAb) : '…') + ' bis ' + (p.zeitBis ? reaktZeit(p.zeitBis) : 'jetzt');
+      }
+      else if (p.zwischen){ sm.textContent = 'zwischen ' + kd(p.zwischen[0]) + ' und ' + kd(p.zwischen[1]); sm.title = 'zwischen zwei Läufen des Lesezeichens'; }
+      else { sm.textContent = 'Zeit unbekannt'; sm.title = 'Stand vom ' + reaktZeit(d.liker.abgerufenAm) + ' — Suno nennt für dieses Herz keine Zeit'; }
+      z.append(sp, sm); l.appendChild(z);
+    }
+    feld.appendChild(l);
+    leer(`${d.liker.likers.length} Namen, Stand ${zeitRelativ(d.liker.abgerufenAm)}`
+         + (d.liker.anzahlSuno != null && d.liker.anzahlSuno !== d.liker.likers.length ? ` — Suno zählt ${d.liker.anzahlSuno}` : '') + '.');
+  } else if (d.likes && d.likes.length){
     /* Eine Zeile je Benachrichtigung, scrollbar; Zeit relativ, exakt im
        Tooltip. (Caspar_D, 20.08.2026: "ein scrollbares Fenster mit jedem
        Like eine Zeile waere besser".) Suno fasst Herzen, die kurz

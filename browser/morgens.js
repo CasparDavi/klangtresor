@@ -370,6 +370,7 @@
     { k:'privat',  name:'Private Songs',                 was:'Plays und Likes der Unveroeffentlichten - die stehen nicht im oeffentlichen Profil', an:true },
     { k:'timing',  name:'Sunos eigene Analyse', was:'Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt, ~2 s je Song', an:true },
     { k:'benach',  name:'Wer hat reagiert',             was:'Likes, Kommentare, Follows - wer wann; die letzten vier Wochen', an:true },
+    { k:'liker',   name:'Wer hat geherzt',              was:'alle Personen je eigenem Titel, vollstaendig (der Weg der iOS-App); nur Titel, deren Herzzahl sich seit dem letzten Stand geaendert hat', an:true },
     { k:'playl',   name:'Alben',                        was:'eigene Alben - Suno nennt sie Playlists - mit allen Eintraegen, auch den privaten', an:true },
     /* Einmaliger Vergleich, standardmaessig AUS: Sunos Zeitmarken gibt
        es in zwei Fassungen (aligned_lyrics v2 und v3). Wir speichern
@@ -1075,6 +1076,56 @@
     } else { zeileN.textContent = 'Wer hat reagiert — kein Token'; zeileN.style.color = '#8a8a90'; }
   } catch (x){ zeileN.textContent = 'Wer hat reagiert — ' + x.message; zeileN.style.color = '#e31c79'; }
 
+  /* ---------------- 2e · Wer hat geherzt ----------------
+     GET /api/gen/<id>/likers/ - der Weg der iOS-App (docs/SUNO-APP-WEGE.md,
+     Mitschnitt vom 09.09.2026): ALLE Personen, die einen eigenen Titel
+     geherzt haben, 20 je Seite, next_cursor zum Blaettern (base64 von
+     {updated_at} = Herz-Zeit des letzten der Seite), neueste zuerst,
+     eigenes Herz dabei. Fremde Titel haben die Liste in der App nicht.
+     Wir sind hier ein Web-Client auf einem iOS-Pfad - Caspar_D weiss
+     das (Entscheidung 09.09.2026, 01:15: "das will ich noch sehen").
+     Understatement: gefragt wird nur, wo sich Sunos Herzzahl seit dem
+     letzten Stand geaendert hat - der Server sagt, was er hat
+     (/api/liker/stand); beim ersten Lauf also alles mit Herzen. Lehnt
+     Suno die ersten drei Titel ab, wird abgebrochen, nicht weitergeklopft. */
+  const liker = {};
+  const zeileL = sagen('Wer hat geherzt — alle Namen je Titel, wo sich die Herzzahl geändert hat …');
+  if (!wahl.liker){ zeileL.textContent = 'Wer hat geherzt — übersprungen'; zeileL.style.color = '#8a8a90'; }
+  else try {
+    const tl = await tokenHolen();
+    if (!tl){ zeileL.textContent = 'Wer hat geherzt — kein Token'; zeileL.style.color = '#8a8a90'; }
+    else {
+      const Hl = { Authorization: 'Bearer ' + tl };
+      let stand = {};
+      try { const r = await fetch(DAHEIM + '/api/liker/stand'); if (r.ok) stand = await r.json(); } catch (e) {}
+      const kandidaten = [...songs.values(), ...privatSongs.values()]
+        .filter(s => s && s.id && (s.upvote_count || 0) > 0 && stand[s.id] !== (s.upvote_count || 0));
+      let n = 0, seiten = 0, ausgefallen = 0, letzterStatus = null;
+      for (const s of kandidaten){
+        const seitenListe = []; let cursor = null, ok = true;
+        for (let i = 0; i < 60; i++){
+          const u = `${API}/api/gen/${s.id}/likers/` + (cursor ? '?cursor=' + encodeURIComponent(cursor) : '');
+          const r = await fetch(u, { headers: Hl });
+          if (!r.ok){ ok = false; letzterStatus = r.status; break; }
+          const d = await r.json();
+          seitenListe.push({ cursor, likers: Array.isArray(d.likers) ? d.likers : [], next_cursor: d.next_cursor || null, num_total_likes: d.num_total_likes });
+          seiten++;
+          if (!d.next_cursor) break;
+          cursor = d.next_cursor;
+          await pause();
+        }
+        if (ok){ liker[s.id] = { anzahl: s.upvote_count || 0, seiten: seitenListe }; n++; } else ausgefallen++;
+        zeileL.textContent = `Wer hat geherzt … ${n} von ${kandidaten.length} Titeln, ${seiten} Seiten`;
+        if (!n && ausgefallen >= 3){ zeileL.textContent = `Wer hat geherzt — Suno lehnt ab (HTTP ${letzterStatus}), abgebrochen`; zeileL.style.color = '#e31c79'; break; }
+        await pause();
+      }
+      if (n || !ausgefallen){
+        zeileL.textContent = `Wer hat geherzt — ${n} Titel, ${seiten} Seiten` + (ausgefallen ? `, ${ausgefallen} nicht geholt` : '') + (kandidaten.length ? '' : ' (keine Herzzahl geändert)');
+        zeileL.style.color = ausgefallen ? '#f97b14' : '#16be5c';
+      }
+    }
+  } catch (x){ zeileL.textContent = 'Wer hat geherzt — ' + x.message; zeileL.style.color = '#e31c79'; }
+
   /* ---------------- 2c · SOFORT ablegen ----------------
      Die Ernte ist zehn Minuten Arbeit und lag bisher nur im Speicher
      dieses Fensters, bis jemand "Übernehmen" drückte. Einmal war der
@@ -1151,6 +1202,7 @@
        nicht zu erfahren war - dann prueft der Server nur profil.handle. */
     angemeldetAls,
     benachrichtigungen,
+    liker,
   };
   const zeileA = sagen('Übertrage die Ernte ans Archiv (erst in den Browser-Speicher, dann in Paketen an den Server) …');
   /* Zuerst in den Browser - das kann nicht fehlschlagen, weil kein
