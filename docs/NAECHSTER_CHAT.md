@@ -1617,6 +1617,24 @@ rechnen; das Feld schleife ansehen. WAV gegen MP3 ist keine Frage:
 whisper.js nimmt immer audio.mp3 und resampelt per ffmpeg auf 16 kHz
 mono (Zeile 198–201); die audio.wav wird nie benutzt.
 
+## Herzen im Buendel - was die Web-API hergibt (22:45, gemessen)
+
+Rohbestand vom 08.09. 20:59 (Mitschnitt): 192 Benachrichtigungen, 127 vom
+Typ Herz. Felder: id, updated_at, notification_type, user_profiles,
+total_users, content_id, content_title. **Suno liefert je Buendel hoechstens
+DREI user_profiles**, bei total_users bis 14 - ueber alle 127, ohne
+Ausnahme. server.js:665 nimmt alles, was kommt; das Haus kuerzt nicht.
+Die Web-App fragt notification/v2 nur mit before_datetime_utc (Blaettern);
+in den 370 Wegen aus elf Seiten gibt es KEINEN, der die Herzen eines Titels
+als Personen listet (update_reaction_type setzt nur, share/sharers sind
+Teilende). Caspar_D: die Handy-App zeigt alle Einzelnamen. Dann hat sie
+einen eigenen Weg, der nicht in den Web-Skripten steckt - zu finden nur
+mit einem Mitschnitt vom Handy (Proxy im Heimnetz, mitmproxy, oder die
+Fritzbox-Paketmitschnitt-Funktion), mit Caspar_Ds Mitwirkung. Buendel
+entstehen, wenn viele zugleich reagieren (Streams). Bis dahin gilt Fix (a)
+aus dem Pruefpunkt darueber: die Buendelgroesse zeigen und den falschen
+Satz „aelter als Sunos Benachrichtigungen reichen" streichen.
+
 ## Entschieden, noch zu bauen (Reihenfolge)
 
 1. Erster echter Albumlauf (oben), dann Ergebnis in DATENEXTRAKTION.md.
