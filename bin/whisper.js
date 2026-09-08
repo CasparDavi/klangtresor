@@ -345,7 +345,12 @@ function rechnen(s, tmp) {
   for (const s of liste) {
     n++;
     const kopf = `  [${n}/${liste.length}] ${(s.titel || s.id).slice(0, 48)}  (${Math.floor((s.dauer||0)/60)}:${String(Math.round((s.dauer||0)%60)).padStart(2,'0')})`;
-    if (!still) process.stdout.write(kopf + ' …');
+    /* Der Kopf kommt IMMER vor dem Rechnen, als eigene Zeile - auch mit
+       --still. Der Morgenlauf sammelt stdout zeilenweise; ohne Zeilenende
+       sah man den Titel erst mit dem Ergebnis, bis zu zehn Minuten spaeter.
+       Caspar_D, 08.09.2026: Whisper sollte anzeigen, welchen Titel er
+       gerade bearbeitet. */
+    console.log(kopf + ' … läuft');
     const r = rechnen(s, tmp);
     if (r.fehler) { schief++; console.log(`\r${kopf}  ✗ ${r.fehler}`); continue; }
     fs.appendFileSync(DATEI, JSON.stringify(r) + '\n');
