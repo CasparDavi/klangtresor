@@ -126,6 +126,20 @@ function handlesSammeln() {
     vonListe.forEach((h, i) => merke(h, nameListe[i]));
     if (Array.isArray(e.likes)) for (const l of e.likes) merke(l.von || l.handle, l.name);
   }
+  /* Seit 09.09.2026 dazu: alle, die einen eigenen Titel geherzt haben -
+     aus den Liker-Listen (library/liker/<song>.json, Lesezeichen
+     "Wer hat geherzt"). Der Strom kennt von jedem Buendel drei Namen und
+     nur vier Wochen; die Listen kennen alle. Gemessen beim Umbau: 208
+     Leute aus dem Strom, 440 aus den Listen. Dieselbe Regel: nur wer
+     noch fehlt, wird geholt - der erste Lauf danach dauert Minuten. */
+  try {
+    const ordner = path.join(WURZEL, 'library', 'liker');
+    for (const f of fs.readdirSync(ordner)) {
+      if (!f.endsWith('.json') || f.startsWith('._')) continue;
+      let d; try { d = JSON.parse(fs.readFileSync(path.join(ordner, f), 'utf8')); } catch (err) { continue; }
+      for (const l of (d && d.likers) || []) merke(l.handle, l.name);
+    }
+  } catch (e) { /* kein Liker-Ordner: dann nur der Strom */ }
   return raus;
 }
 
