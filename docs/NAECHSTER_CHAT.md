@@ -1639,7 +1639,17 @@ mono (Zeile 198–201); die audio.wav wird nie benutzt.
    nach `schluessel` statt Name; Ernte-Zähler „N Datensätze" statt
    Dateien. Mockup war abgenommen. Dazu ein Knopf *In den Hintergrund*
    (Caspar_D, spät am 08.09.: dann weiß man, dass man die Übersicht parallel
-   benutzen kann — heute deutet nichts darauf hin). Danach die Schlusszeilen der 17
+   benutzen kann — heute deutet nichts darauf hin).
+   **Neue Titel zuerst und prominent** (Caspar_D, 21:40): das Fenster zeigt
+   Cover für Titel mit geänderten Herzen/Abrufen, aber ganz neue Titel
+   nicht — inkonsequent; ein neuer Titel ist Herzblut und muss als Erstes
+   sichtbar sein, mit Titelbild, größer als die Geänderten. Befund: in
+   bin/sammeln.js Zeile 312 ist `neu` nur eine Zahl (neuIds.length), keine
+   Liste — die Anzeige hat nichts zu zeigen; und ein privater Neuer aus der
+   vierten Quelle (Albumeinträge) kommt in sammeln.js nie als neu vor, weil
+   der nur das öffentliche Profil vergleicht. Beides gehört in Bau 4:
+   `neu: [{id, titel}]` aus dem Katalogbau (aufbereiten.js weiß, was neu
+   ist), nicht aus sammeln.js. Danach die Schlusszeilen der 17
    Skripte (Vorschläge im Workflow-Ergebnis `morgenschritte-beschreiben`,
    `docs/handbuch/MORGENSCHRITTE.json`, Feld `kurzergebnis_muster`).
    **Zwei Phasen** (Caspar_D, spät am 08.09.: schnelles Zeug zuerst, solange
