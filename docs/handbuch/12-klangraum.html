@@ -345,11 +345,6 @@ dl{max-width:var(--satz);margin-top:24px;border-top:1px solid var(--kante)}
    Tonstudio-Kapitel gesprengt. Die frueher hier notierten 145,0 px fuer
    „Ein Flimmern" liessen sich nicht reproduzieren (nachgemessen 102,9),
    deshalb steht die Zahl nicht mehr da - wer neu bemisst, misst selbst. */
-/* Der Gedankenstrich steht als dd::before, nicht als eigenes Element:
-   das Inhaltsmodell von dl>div laesst nur dt und dd zu, und ein span
-   dazwischen ist ungueltiges HTML - fuenfmal je Kapitel, also
-   fuenfundsiebzigmal im ganzen Handbuch. Am Telefon fliesst er genauso
-   mit, weil die Spur dort auf display:block umbricht. */
 dl > div{
   display:grid;
   grid-template-columns:12em 1fr;
