@@ -115,7 +115,12 @@ function juengsteErnte(){
     const f = juengsteErnte();
     if (!f){ console.error('Keine Ernte gefunden - ohne --aus-roh laufen lassen.'); process.exit(1); }
     let j; try { j = JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) { console.error('Ernte unlesbar: ' + f); process.exit(1); }
-    ernteVom = j.geholtAm || j.abgerufenAm || null;
+    /* Die Ernte des Lesezeichens traegt ihren Zeitpunkt als erzeugtAm
+       (browser/morgens.js); geholtAm und abgerufenAm sind die Namen der
+       Node-Wege. Bis zum 08.09.2026 fehlte erzeugtAm hier - die Zeile
+       „Grundlage: deine Lesezeichen-Ernte von … Uhr" im Morgenfenster
+       stand deshalb seit dem ersten Lesezeichen-Tag ohne Uhrzeit da. */
+    ernteVom = j.erzeugtAm || j.geholtAm || j.abgerufenAm || null;
     for (const c of (j.alle || j.clips || j.songs || [])) if (c && c.id) songs.set(c.id, c);
     console.log('Verwerte deine Lesezeichen-Ernte statt Suno neu zu fragen.');
     console.log(`  ${path.basename(f)}${ernteVom ? '  (geholt ' + ernteVom.slice(0,16).replace('T',' ') + ')' : ''}`);
