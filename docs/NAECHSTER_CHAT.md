@@ -1823,3 +1823,17 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   und läuft weiter; andere Kachel = anderer Titel.
 - Tarja fragte nach dem Like-Weg: `GET /api/notification/v2`, Bearer-Token,
   Blättern mit `before_datetime_utc`.
+
+## Suno-App auseinandergenommen (08.09.2026, nachts)
+
+- **Werkzeug `bin/suno-app-wege.js`** liest Retrofit-Wege und Schema-Felder
+  aus den dex-Dateien der Android-App (1.88.0, von Caspar_D geladen, liegt
+  in `/Volumes/Extreme_SSD/Entwicklung/apk/`). Verb-Zuordnung aus Retrofits
+  eigenem Parser (R8 hatte die Annotationen umbenannt). 48 Dienste, 246 Wege,
+  96 Pfade nur in der App. Doku: `docs/SUNO-APP-WEGE.md`, Liste
+  `docs/suno-app-wege-1.88.0.txt`, JSON `library/suno-wege/app-1.88.0.json`.
+- **Herzen:** keinen Weg „alle Liker eines Titels" — auch nicht in der App.
+  Stärkster Kandidat `GET notification/v3` (SDUI: avatars[], text[] mit
+  Profil-Aktionen). Prüfung = eine GET-Anfrage mit Clerk-Token, **nur nach
+  Freigabe** (App-Weg). Danach entscheiden: Lesezeichen von v2 auf v3?
+- Zweiter Herz-Weg der App: `POST gen/{gen_id}/like/` mit `LikeSpec {like}`.
