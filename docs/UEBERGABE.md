@@ -197,9 +197,11 @@ Sichtbarkeit, Cover, Video-Artwork) und **Zählern** (Plays, Likes).
 Zähler ändern sich ständig und bedeuten nichts für die Dateien auf der
 Platte — sie landen im Verlauf, lösen aber kein Nachladen aus.
 
-**Die neuen IDs schreibt es nach `library/neue-songs.json`.** Nur für
-sie muss ein WAV angestoßen werden; alles andere liegt längst da.
-`wiederherstellen.js`, `laden.js` und `wav.js` überspringen ohnehin,
+Die Zahl der neuen Songs steht in `library/letzter-vergleich.json`
+(bis 08.09.2026 schrieb `sammeln.js` die IDs zusätzlich nach
+`library/neue-songs.json` — für das WAV-Anstoßen von Hand, ein Weg, der
+seit dem 03.09. zu ist; niemand las die Datei, sie ist gestrichen).
+`wiederherstellen.js` und `laden.js` überspringen ohnehin,
 was vorhanden ist — der Monatslauf lädt also nur das Diff.
 
 **Weiterhin über den Browser** (dort ist ein Token nötig):

@@ -1577,11 +1577,9 @@ Commit. Dann erster echter Lauf: Caspar_D klickt, Claude schaut zu.
 Caspar_D: „Whisper analysiert alles außer Instrumentals"), und
 `bin/lyrik.js --tun` als 19. Schritt dahinter.
 
-**Aufräumen** (Workflow `library-aufraeumen`, lief beim Ende): 1 GB PNG
-samt drei Rückfallzweigen, `kondensate/arbeit/`, sechs Logs,
+**Aufräumen** (Workflow `library-aufraeumen`, lief beim Ende): 1 GB PNG (die drei Rückfallzweige im Code stehen NOCH — cwebp ist in keiner Einrichtung, ohne sie bräche ein frischer Rechner; Entscheidung: cwebp in die Einrichtung, dann Zweige raus), `kondensate/arbeit/`, sechs Logs,
 `neue-songs.json` samt Schreiber in `sammeln.js`, vier Dateien nach
-`docs/`. Protokoll in Scratchpad verloren — `git status` und
-`docs/HANDARBEIT-PRUEFUNG.md` zeigen, was gemeint war.
+`docs/`. Protokoll: `docs/AUFRAEUMEN-2026-09-08.md`. 1.003 MB weg, 7 Dateien nach docs/, Gegenleser hält.
 
 ## Entschieden, noch zu bauen (Reihenfolge)
 
@@ -1599,10 +1597,18 @@ samt drei Rückfallzweigen, `kondensate/arbeit/`, sechs Logs,
    nach `schluessel` statt Name; Ernte-Zähler „N Datensätze" statt
    Dateien. Mockup war abgenommen. Danach die Schlusszeilen der 17
    Skripte (Vorschläge im Workflow-Ergebnis `morgenschritte-beschreiben`,
-   Scratchpad — verloren; aus MORGENSCHRITTE.json `kurzergebnis_muster`).
-5. **Tragende Endpunkt-Doku**: Rohdaten liegen in
-   `library/suno-wege/2026-09-08.json` (301 Pfade, 412 Fundstellen mit
-   ±200 Zeichen Umfeld, aus 109 Skripten über Caspar_Ds Browser). Plan:
+   `docs/handbuch/MORGENSCHRITTE.json`, Feld `kurzergebnis_muster`).
+5. **Tragende Endpunkt-Doku**: Rohdaten liegen in `library/suno-wege/`
+   (elf Dateien, je Seite eine: Profil, Song, Playlist, me, create,
+   discover, explore, hooks, labs, studio, notifications — 370 Pfade aus
+   75 Skripten mit ±200 Zeichen Umfeld, gelesen über Caspar_Ds Browser aus
+   dem Cache). Versioniert: `docs/suno-api-wege-2026-09-08.txt` (Pfad +
+   Seiten) und `docs/suno-seiten-2026-09-08.txt` (87 Linkmuster).
+   **Caspar_Ds Regel:** beim Abgrasen die Linkmuster merken und neue
+   Muster besuchen — noch nicht betreten: `/style/{name}`, `/voice/{uuid}`,
+   `/explore/feed/{for_you|following|because_you_like|editorial…}`,
+   `/hook/{uuid}`, `/hooks/create`. Das JS für Lesen+Download steht im
+   Sitzungsprotokoll; es gehört in `bin/suno-wege.js`. Plan:
    `bin/suno-wege.js` als Werkzeug (holt über Browser-Download,
    diff zum Vortag), dann acht Domänen-Agenten → `SUNO-API.md` neu, mit
    Abschnitt Abrechnung. Host-Wechsel: `studio-api.prod` (Punkt) ist

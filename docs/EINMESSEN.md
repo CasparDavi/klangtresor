@@ -723,6 +723,10 @@ und beim Abhören daran erinnern.
 `library/messungen/` — trotz `.gitignore` für `library/` mit im Repo,
 weil sie klein sind und im Gegensatz zum Audio **nicht reproduzierbar**:
 ein Raum an einem bestimmten Abend läßt sich nicht nachstellen.
+Dort liegt, was die Oberfläche selbst schreibt (`tontestdurchlaeufe.json`).
+Die beiden Protokolle des 27.08. unten sind von Hand ins Repo gelegt
+worden und liegen seit dem 08.09.2026 in `docs/messungen/` — sie sind
+Doku, kein Bestandsdatum.
 
 | Datei | Inhalt |
 |---|---|

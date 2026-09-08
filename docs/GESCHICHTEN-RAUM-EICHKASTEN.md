@@ -10,7 +10,7 @@ handgepflegte, bekannte Wahrheit.** Jede beschreibt Caspar_D mit einem
 Satz — und jeder Satz ist eine Vorhersage, die sich an den vorhandenen
 Vektoren prüfen lässt. Gemessen wurde in drei Räumen: **Kondensat**
 (der Produktivstand, Vektoren aus den zehn Substantiven), **Volltext**
-(der Stand von heute Mittag, `kondensate/vorher-vektoren/`) und **Klang**.
+(der Stand von heute Mittag, `kondensate/vorher-vektoren/` — seit 08.09.2026 unter `docs/eichkasten/vorher-vektoren/`) und **Klang**.
 Alle 257 Lieder des Geschichten-Raums haben Vektoren in allen dreien.
 
 ---
@@ -384,7 +384,7 @@ ohne Sprachmodell, Wortvektoren einmal gerechnet und gecacht.
 ## Wie gemessen wurde
 
 Rein lesend auf `library/geschichten.json`,
-`library/kondensate/vorher-vektoren/geschichten.json`,
+`docs/eichkasten/vorher-vektoren/geschichten.json` (bis 08.09. `library/kondensate/vorher-vektoren/`),
 `library/klang.json`, `library/katalog.json.gz`. Paare: Fassungen über
 Titelfamilien (v-Suffixe, ß/ss); Gegenüber und Ahnheim über
 Nachbarpositionen ihrer Playlists; Übersetzungen über Deutsche

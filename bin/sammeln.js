@@ -320,20 +320,14 @@ function juengsteErnte(){
   fs.writeFileSync(path.join(WURZEL, 'library', 'letzter-vergleich.json'),
                    JSON.stringify(vergleich, null, 1));
 
-  /* Die neuen IDs getrennt ablegen. Nur für sie muss ein WAV
-     angestoßen werden - alle anderen liegen längst auf der Platte. */
-  if (neuIds.length){
-    const wavDatei = path.join(WURZEL, 'library', 'neue-songs.json');
-    fs.writeFileSync(wavDatei, JSON.stringify({
-      erzeugtAm: new Date().toISOString(),
-      ids: neuIds.map(s => s.id),
-      titel: neuIds.map(s => s.title),
-    }, null, 1));
-    console.log(`\n  Die ${neuIds.length} neuen IDs stehen in library/neue-songs.json`);
-    console.log('  — nur für diese muss ein WAV angestoßen werden (WAV-PROTOKOLL.md).');
-  } else {
-    console.log('\n  Keine neuen Songs — es ist nichts anzustoßen.');
-  }
+  /* Bis 08.09.2026 stand hier ein zweiter Schreiber: library/neue-songs.json
+     mit den neuen IDs, gedacht als Zettel für das WAV-Anstoßen von Hand
+     (docs/WAV-PROTOKOLL.md). Der Weg ist seit dem 03.09. zu - Suno gibt
+     keine WAV-Links mehr heraus (bin/gesundheit.js) - und gelesen hat
+     die Datei nie ein Skript, keine Route, keine Oberfläche; der
+     Morgenlauf hält neue IDs im Speicher (morgen.neueIds, /api/morgen/neue).
+     Die Zahl der neuen Songs steht oben in letzter-vergleich.json. */
+  console.log(neuIds.length ? `\n  ${neuIds.length} neue Songs.` : '\n  Keine neuen Songs.');
   console.log('');
   console.log('\nWeiter mit:  node bin/wiederherstellen.js');
   if (gesamt && liste.length < gesamt)

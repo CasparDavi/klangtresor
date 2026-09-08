@@ -5,9 +5,11 @@
 # committet ist, bleibt in der Historie — deshalb von Anfang an draußen.
 #
 # Die Daten verlieren dadurch nichts: library/backup/ hält die letzten zehn
-# Katalogfassungen, und aus library/roh/ baut bin/aufbereiten.js den Katalog
-# vollständig neu. Datensicherung ist eine eigene Aufgabe und gehört auf eine
-# zweite Platte — ein git-Repo auf derselben SSD ist keine.
+# Katalogfassungen. (library/roh/ ist nur ein
+# Durchlauffach: bin/aufbereiten.js löscht, was es verarbeitet hat — daraus
+# lässt sich der Katalog NICHT neu bauen.) Datensicherung ist eine eigene
+# Aufgabe und gehört auf eine zweite Platte — ein git-Repo auf derselben
+# SSD ist keine.
 library/
 # ... mit einer Ausnahme: Meßdaten. Sie sind klein (Zehnerkilobyte) und
 # im Gegensatz zum Audio NICHT reproduzierbar - ein Raum an einem

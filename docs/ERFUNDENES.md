@@ -28,7 +28,10 @@ Gemessen über den ganzen Bestand (321 Songs), nicht geschätzt.
 > - `bin/whisper.js` rechnet Stücke ohne Liedtext gar nicht erst
 > - `bin/aufbereiten.js` übernimmt nichts für sie, falls doch Daten da sind
 >
-> **Gesichert:** `library/backup/vor-instrumental-bereinigung-*`
+> **Gesichert** war das in `library/backup/vor-instrumental-bereinigung-*`
+> (Katalog + whisper.ndjson vom 25.08., 51 MB). Am 08.09.2026 gelöscht:
+> niemand las die Kopie, die Sperren oben verhindern das Wiederkommen,
+> und der Stand von damals steht in Commit 884654a.
 >
 > Offen bleibt die **Stimmlage** (Abschnitt 2) — sie ist kein Text-Item
 > und steht weiter bei allen 64.

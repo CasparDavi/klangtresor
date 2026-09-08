@@ -2269,3 +2269,24 @@ Werte statt gleicher Normierung herstellen — oder gezielt mit dem
 App-Pegel > Eichpegel fahren. Offen; abends nicht mehr getestet
 („ich kann hier keinen Krach mehr machen, wir leben erstmal mit dem,
 was wir hier haben").
+
+## Verfallende Credits verwerten (Caspar_D, 08.09.2026)
+
+Suno-Credits verfallen am Monatsende. Caspar_D: *„ob man am Monatsende
+verfallende Suno-Credits nicht noch für Stem-Generierung oder andere
+kostenpflichtige Dinge und Download verballern könnte, damit wir an mehr
+Daten kommen. Verfallende Credits sind ja total schade."*
+
+Das Haus löst nichts aus, was Credits kostet (Hausregel, zweimal im
+Code). Dieser Punkt ändert das nicht — er meint einen **Hinweis am
+Monatsende**: `billing/info` kennt das Guthaben und den Stichtag; ein
+Morgenschritt könnte in den letzten Tagen des Monats sagen: „N Credits
+verfallen am 30. — Sunos Stems für X Titel würden Y kosten, WAV-Downloads
+für Z Titel fehlen noch." Den Klick macht Caspar_D in Suno; das Haus
+sammelt danach ein, was da ist (`bin/uebernehmen.js`, `bin/wav.js`).
+
+Zu klären vorher: Was kostet Sunos Stem-Trennung je Titel, und liefert
+sie mehr Spuren als die lokale htdemucs (bis zu zwölf gegen sechs,
+`docs/OFFEN.md` 2.3)? Zählt ein WAV-Download vom Kontingent oder von den
+Credits? Beides steht in `billing/info` und `billing/usage-plans` — beide
+Wege liegen jetzt mit Umfeld in `library/suno-wege/`.

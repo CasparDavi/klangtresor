@@ -9,7 +9,7 @@ const lies = p => JSON.parse(fs.readFileSync(path.join(REPO, p)));
 
 const katalog = JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(REPO, 'library/katalog.json.gz'))));
 const kond = lies('library/geschichten.json').songs;                       // Kondensat-Vektoren
-const voll = lies('library/kondensate/vorher-vektoren/geschichten.json').songs; // Volltext-Vektoren
+const voll = lies('docs/eichkasten/vorher-vektoren/geschichten.json').songs; // Volltext-Vektoren (Handkopie 28.08., seit 08.09. hier statt in library/kondensate/)
 const klang = lies('library/klang.json').songs;                            // Klang-Vektoren
 
 /* ---- Song-Menge: die 257 mit Geschichten-Vektor -------------------- */

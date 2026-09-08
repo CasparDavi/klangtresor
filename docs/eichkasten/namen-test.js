@@ -5,7 +5,7 @@
 'use strict';
 const fs = require('fs'), zlib = require('zlib');
 const REPO = '/Volumes/Extreme_SSD/Entwicklung/SunoArchive';
-const alt = JSON.parse(fs.readFileSync(REPO + '/library/entwurf/karte-geschichten.json.vor-schritt2'));
+const alt = JSON.parse(fs.readFileSync(__dirname + '/karte-geschichten.json.vor-schritt2'));
 const kondJson = JSON.parse(fs.readFileSync(REPO + '/library/kondensate/kondensate.json')).lieder;
 const gesch = JSON.parse(fs.readFileSync(REPO + '/library/geschichten.json')).songs;
 const katalog = JSON.parse(zlib.gunzipSync(fs.readFileSync(REPO + '/library/katalog.json.gz')));

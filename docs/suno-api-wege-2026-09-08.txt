@@ -1,300 +1,371 @@
-/api/auth/verify-token
-/api/billing/accept-sub-coupon/
-/api/billing/auto-reload
-/api/billing/auto-reload/disable
-/api/billing/auto-reload/enable
-/api/billing/auto-reload/nudge-check
-/api/billing/cancel-sub/
-/api/billing/cancel-sub/undo/
-/api/billing/change-plan/
-/api/billing/change-plan/preview/
-/api/billing/conversion-tracking
-/api/billing/create-portal/
-/api/billing/create-session/
-/api/billing/eligible-discounts
-/api/billing/get-churn-survey-options
-/api/billing/get-discount-offer
-/api/billing/info/
-/api/billing/pause-sub/
-/api/billing/purchase-info/{purchase_id}/
-/api/billing/set-default-payment-method/
-/api/billing/submit-survey/
-/api/billing/tax-info
-/api/billing/unpause-sub/
-/api/billing/usage-plan-descriptions/
-/api/billing/usage-plan-faq/
-/api/billing/usage-plan-web-table-comparison/
-/api/billing/usage-plans
-/api/c/check
-/api/clerk{x}
-/api/clip/{clip_id}
-/api/clip/{clip_id}/permissions
-/api/clip/{clip_id}/permissions/grants
-/api/clip/{clip_id}/permissions/grants/{grantee_uid}
-/api/clip/{clip_id}/permissions/visibility
-/api/clips/adjust-speed/
-/api/clips/aligned_clip_siblings
-/api/clips/aligned_clips
-/api/clips/autoplay/
-/api/clips/delete/
-/api/clips/get_songs_by_ids
-/api/clips/parent
-/api/clips/reverse-clip/
-/api/clips/{clip_id}/set_remix_type
-/api/clips/{clip_id}/toggle_remixes/
-/api/clips/{clip_id}/toggle_show_remixes
-/api/cms/nudges/{slug}
-/api/cms/nudges/{slug}/seen
-/api/cms/paywall/plan-options
-/api/comment/block-user
-/api/comment/unblock-user
-/api/comment/{comment_id}
-/api/comment/{comment_id}/reaction
-/api/comment/{comment_id}/replies
-/api/comment/{comment_id}/report
-/api/contests/
-/api/contests/is_contest_clip/{clip_id}/
-/api/contests/landing/{contest_identifier}/
-/api/custom-model/archive/
-/api/custom-model/create/
-/api/custom-model/pending/
-/api/deepgram-token
-/api/discover/shortcuts_songs
-/api/download/clip/{clip_id}
-/api/download/clips/zip/prepare
-/api/download/sample-pack/{clip_id}
-/api/edit/action/{action_clip_id}/
-/api/edit/crop/{clip_id}/
-/api/edit/fade/{clip_id}/
-/api/feed/v3
-/api/feed/v3/offset
-/api/forbidden
-/api/gen/bulk_increment_play_counts/v2
-/api/gen/increment_action_counts/
-/api/gen/trash
-/api/gen/{clip_id}/aligned_lyrics/v2
-/api/gen/{clip_id}/aligned_lyrics/v2/
-/api/gen/{clip_id}/aligned_lyrics/v3
-/api/gen/{clip_id}/comment
-/api/gen/{clip_id}/comments
-/api/gen/{clip_id}/comments/count
-/api/gen/{clip_id}/convert_wav/
-/api/gen/{clip_id}/downbeats
-/api/gen/{clip_id}/novelty-sections
-/api/gen/{clip_id}/toggle_comments/
-/api/gen/{clip_id}/wav_file/
-/api/gen/{clip_id}/waveform-aggregates
-/api/gen/{gen_id}/increment_action_count/
-/api/gen/{gen_id}/increment_play_count/v2
-/api/gen/{gen_id}/listen_milestone
-/api/gen/{gen_id}/set_audio_description
-/api/gen/{gen_id}/set_clip_prompt/
-/api/gen/{gen_id}/set_configurations/
-/api/gen/{gen_id}/set_display_tags
-/api/gen/{gen_id}/set_metadata/
-/api/gen/{gen_id}/set_visibility/
-/api/gen/{gen_id}/share_asset
-/api/gen/{gen_id}/share_asset/{asset_id}
-/api/gen/{gen_id}/unlock-preview
-/api/gen/{gen_id}/update_feedback_state/
-/api/gen/{gen_id}/update_reaction_type/
-/api/gen/{x}/downbeats_streaming/v2
-/api/generate/concat/v2/
-/api/generate/cowrite-lyrics/models/
-/api/generate/lyrics-infill/
-/api/generate/lyrics-mashup
-/api/generate/lyrics/{lyrics_id}
-/api/generate/sum/
-/api/generate/upsample
-/api/generate/v2-web/
-/api/instrument/describe-doodle
-/api/instruments
-/api/invite/
-/api/lyricists
-/api/lyricists/{lyricist_id}
-/api/lyrics-projects
-/api/lyrics-projects/{project_id}
-/api/lyrics-projects/{project_id}/flush
-/api/lyrics-projects/{x}
-/api/lyrics-projects/{x}/flush
-/api/mango/rights
-/api/music_player/playbar_state
-/api/notification/v2
-/api/notification/v2/badge-count
-/api/notification/v2/clear-badge
-/api/notification/v2/read
-/api/objects
-/api/onboarding/audio-upload/abort
-/api/onboarding/audio-upload/remove
-/api/onboarding/back
-/api/onboarding/complete
-/api/onboarding/current
-/api/onboarding/skip
-/api/onboarding/start
-/api/onboarding/submit
-/api/openai-speech/
-/api/persona/create/
-/api/persona/get-followed-personas/
-/api/persona/get-loved-personas/
-/api/persona/get-persona/{persona_id}/
-/api/persona/get-personas/
-/api/persona/{persona_id}/toggle_love/
-/api/personalization/memory
-/api/personalization/settings
-/api/playlist/create/
-/api/playlist/me
-/api/playlist/set_metadata
-/api/playlist/trash/
-/api/playlist/update_clips/
-/api/playlist/v2/pinned
-/api/playlist/v2/{playlist_id}
-/api/playlist/v2/{playlist_id}/cover-image
-/api/playlist/v2/{playlist_id}/pin
-/api/playlist/v2/{playlist_id}/save
-/api/playlist/v2/{playlist_id}/tracks/add
-/api/playlist/v2/{playlist_id}/tracks/remove
-/api/playlist/v2/{playlist_id}/tracks/reorder-by-index
-/api/playlist/v2/{playlist_id}/trash
-/api/playlist/{playlist_id}/
-/api/playlist/{playlist_id}/regenerate
-/api/playlist_reaction/{playlist_id}/increment_play_count/
-/api/playlist_reaction/{playlist_id}/set_visibility/
-/api/playlist_reaction/{playlist_id}/update_reaction_type/
-/api/preferences/clip-review/opt-out
-/api/preferences/clip-review/pending
-/api/preferences/clip-review/submit
-/api/processed_clip/{processed_clip_id}/waveform-aggregates
-/api/profiles/
-/api/profiles/block
-/api/profiles/follow
-/api/profiles/mutual-followers
-/api/profiles/pin-caption/{clip_id}
-/api/profiles/pin-clip/{clip_id}
-/api/profiles/pinned-clips
-/api/profiles/verify-profile
-/api/profiles/{handle}
-/api/profiles/{handle}/followers
-/api/profiles/{handle}/following
-/api/profiles/{handle}/info
-/api/profiles/{handle}/remixes-inspired-count/
-/api/profiles/{handle}/remixes-inspired/
-/api/project
-/api/project/feed
-/api/project/invites
-/api/project/invites/{invite_id}
-/api/project/library/images
-/api/project/library/videos
-/api/project/me
-/api/project/trash
-/api/project/{project_id}
-/api/project/{project_id}/clips
-/api/project/{project_id}/collaborators
-/api/project/{project_id}/collaborators/me
-/api/project/{project_id}/feed
-/api/project/{project_id}/invite
-/api/project/{project_id}/items
-/api/project/{project_id}/metadata
-/api/project/{project_id}/pinned-clips
-/api/prompts/suggestions
-/api/prompts/suggestions/contextual
-/api/prompts/upsample
-/api/prompts/v2
-/api/prompts/v2/{prompt_id}
-/api/radio/{tag}/
-/api/realtime/discover
-/api/recommend/feedback/song/{clip_id}
-/api/recommend/hide-creator
-/api/report_v2/refund_prompt
-/api/report_v2/refund_prompt/clicked
-/api/search/
-/api/search/history
-/api/search/users
-/api/session/
-/api/share/attribute/
-/api/share/code/{share_id}
-/api/share/event
-/api/share/link
-/api/share/sharers
-/api/share/stats
-/api/signout/
-/api/social/following-feed
-/api/song_copy/send-song
-/api/statsig/experiment/
-/api/statsig/experiment/forked-onboarding
-/api/studio/clip/{clip_id}/download
-/api/studio/clips/{clip_id}/projects
-/api/studio/create-or-load-project-for-clip/{clip_id}
-/api/studio/create-project
-/api/studio/project/{project_id}
-/api/studio/project_revision/{revision_id}
-/api/studio/project_revision/{revision_id}/clone
-/api/studio/render-state
-/api/studio/render-state-multitrack
-/api/studio/save-project
-/api/studio/{project_id}/version/{version_id}
-/api/survey/survey-questions/{group_id}
-/api/survey/survey-responses
-/api/unified/explore
-/api/unified/feed
-/api/unified/homepage
-/api/unified/homepage/explore
-/api/unified/homepage/explore/mobile
-/api/unified/search/omnisearch
-/api/unified/search/suggest
-/api/unified/search/suggest/history
-/api/unified/search/suggest/history/item
-/api/uploads/audio/
-/api/uploads/audio/{upload_id}/
-/api/uploads/audio/{upload_id}/initialize-clip/
-/api/uploads/audio/{upload_id}/upload-finish/
-/api/uploads/image/
-/api/uploads/image/{upload_id}/upload-finish/
-/api/uploads/video/
-/api/uploads/video/{upload_id}/
-/api/uploads/video/{upload_id}/upload-finish/
-/api/user/delete-account/
-/api/user/get_user_session_id/
-/api/user/me
-/api/user/metadata
-/api/user/reset_onboarding/
-/api/user/tos_acceptance
-/api/user/update_user_config/
-/api/user/user_config/
-/api/user/vip_program_acceptance
-/api/v2/integrations
-/api/v2/integrations/musixmatch
-/api/v2/integrations/musixmatch/authorize-url
-/api/v2/{x}
-/api/video/generate/{clip_id}/
-/api/video/generate/{clip_id}/status/
-/api/video/hooks/admin/reprocess-hook
-/api/video/hooks/admin/reset_moderation
-/api/video/hooks/admin/{hook_id}/add_quality_label
-/api/video/hooks/admin/{hook_id}/remove_quality_label
-/api/video/hooks/comments/{comment_id}
-/api/video/hooks/comments/{comment_id}/reaction
-/api/video/hooks/comments/{comment_id}/replies
-/api/video/hooks/comments/{comment_id}/report
-/api/video/hooks/comments/{hook_id}/comment
-/api/video/hooks/comments/{hook_id}/comments
-/api/video/hooks/comments/{hook_id}/comments/count
-/api/video/hooks/create
-/api/video/hooks/creator_label
-/api/video/hooks/delete/{hook_id}
-/api/video/hooks/feed
-/api/video/hooks/feed/admin
-/api/video/hooks/fetch_hook_lyrics
-/api/video/hooks/me/liked/v2
-/api/video/hooks/remove_creator_label
-/api/video/hooks/user_hooks
-/api/video/hooks/watched
-/api/video/hooks/{hook_id}
-/api/video/hooks/{hook_id}/download
-/api/video/hooks/{hook_id}/flag
-/api/video/hooks/{hook_id}/reaction
-/api/video/hooks/{hook_id}/report
-/api/video/hooks/{hook_id}/share
-/api/video/hooks/{hook_id}/toggle_test
-/api/video_gen/pending_batches
-/api/video_gen/poll_batches
-/api/{x}
+# 370 Pfade aus 75 Skripten, 11 Seiten, 08.09.2026 — Pfad<TAB>Seiten
+/api/active_listeners/{clip_id}	/song/{id}
+/api/agent/ably-token	/studio
+/api/agent/author-plugin	/studio
+/api/agent/author-plugin/{job_id}	/studio
+/api/agent/compact	/studio
+/api/agent/conversation/{project_id}	/studio
+/api/agent/conversation/{project_id}/entries	/studio
+/api/agent/conversation/{project_id}/used-actions	/studio
+/api/agent/plugin-load-failures	/studio
+/api/agent/profiles	/studio
+/api/agent/step	/studio
+/api/agent/tool-executions	/studio
+/api/auth/verify-token	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/accept-sub-coupon/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/auto-reload	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/auto-reload/disable	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/auto-reload/enable	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/auto-reload/nudge-check	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/cancel-sub/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/cancel-sub/undo/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/change-plan/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/change-plan/preview/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/conversion-tracking	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/create-portal/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/create-session/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/eligible-discounts	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/get-churn-survey-options	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/get-discount-offer	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/info/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/pause-sub/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/purchase-info/{purchase_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/set-default-payment-method/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/submit-survey/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/tax-info	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/unpause-sub/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/usage-plan-descriptions/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/usage-plan-faq/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/usage-plan-web-table-comparison/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/billing/usage-plans	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/c/check	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/challenge/progress	/create,/me
+/api/clerk{x}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clip/{clip_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clip/{clip_id}/permissions	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clip/{clip_id}/permissions/grants	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clip/{clip_id}/permissions/grants/{grantee_uid}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clip/{clip_id}/permissions/visibility	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clip/{clip_id}/stems	/song/{id},/studio
+/api/clip/{clip_id}/stems/pages	/song/{id},/studio
+/api/clips/adjust-speed/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/aligned_clip_siblings	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/aligned_clips	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/autoplay/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/clip_roots	/song/{id}
+/api/clips/delete/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/get_similar/	/song/{id}
+/api/clips/get_songs_by_ids	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/parent	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/remixes	/song/{id}
+/api/clips/remixes/count	/song/{id}
+/api/clips/reverse-clip/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/{clip_id}/attribution	/song/{id},/studio
+/api/clips/{clip_id}/set_remix_type	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/{clip_id}/toggle_remixes/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/clips/{clip_id}/toggle_show_remixes	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/cms/cover-art-suggestions	/me
+/api/cms/nudges/{slug}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/cms/nudges/{slug}/seen	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/cms/paywall/plan-options	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/comment/block-user	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/comment/unblock-user	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/comment/{comment_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/comment/{comment_id}/reaction	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/comment/{comment_id}/replies	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/comment/{comment_id}/report	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/contests/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/contests/contest_clips/	/song/{id}
+/api/contests/is_contest_clip/{clip_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/contests/landing/{contest_identifier}/	/discover,/explore,/me,/playlist/{id},/song/{id},https://suno.com/@caspar_d
+/api/contests/top_k_contest_clips/{contest_id}/{k}	/song/{id}
+/api/custom-model/archive/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/custom-model/create/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/custom-model/pending/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/deepgram-token	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/discover/shortcuts_songs	/discover,/explore,/me,/playlist/{id},https://suno.com/@caspar_d
+/api/download/clip/{clip_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/download/clip/{clip_id}/cover	/me,/song/{id}
+/api/download/clips/zip/prepare	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/download/sample-pack/{clip_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/edit/action/{action_clip_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/edit/crop/{clip_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/edit/fade/{clip_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/feed/v3	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/feed/v3/offset	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/forbidden	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/bulk_increment_play_counts/v2	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/increment_action_counts/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/prompt_image/	/playlist/{id}
+/api/gen/trash	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/aligned_lyrics/v2	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/aligned_lyrics/v2/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/aligned_lyrics/v3	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/comment	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/comments	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/comments/count	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/convert_wav/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/downbeats	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/midi	/studio
+/api/gen/{clip_id}/novelty-sections	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/toggle_comments/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/wav_file/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{clip_id}/waveform-aggregates	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/increment_action_count/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/increment_play_count/v2	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/listen_milestone	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/set_audio_description	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/set_clip_prompt/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/set_configurations/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/set_display_tags	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/set_metadata/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/set_visibility/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/share_asset	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/share_asset/{asset_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/unlock-preview	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/update_feedback_state/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{gen_id}/update_reaction_type/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/gen/{x}/downbeats_streaming/v2	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/concat/v2/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/cowrite-lyrics	/create
+/api/generate/cowrite-lyrics/	/create
+/api/generate/cowrite-lyrics/models/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/lyrics-infill/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/lyrics-mashup	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/lyrics/{lyrics_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/rhymes/	/create
+/api/generate/sum/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/upsample	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/generate/v2-web/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/image_insights/analyze	/me
+/api/instrument/describe-doodle	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/instruments	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/instruments/{artifact_id}	/create
+/api/invite/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/labs/configs	/labs
+/api/lyricists	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/lyricists/{lyricist_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/lyrics-projects	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/lyrics-projects/{project_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/lyrics-projects/{project_id}/flush	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/lyrics-projects/{x}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/lyrics-projects/{x}/flush	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/mango/rights	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/modals	/create,/discover,/explore,/me
+/api/modals/{modal_id}/seen	/create,/discover,/explore,/me
+/api/music_player/playbar_state	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/notification/v2	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/notification/v2/badge-count	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/notification/v2/clear-badge	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/notification/v2/read	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/objects	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/audio-upload/abort	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/audio-upload/remove	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/back	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/complete	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/current	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/skip	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/start	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/onboarding/submit	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/openai-speech/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/persona/create/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/persona/get-followed-personas/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/persona/get-loved-personas/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/persona/get-persona/{persona_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/persona/get-personas/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/persona/{persona_id}/toggle_love/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/personalization/memory	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/personalization/settings	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/create/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/me	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/set_metadata	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/trash/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/update_clips/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/pinned	/discover,/explore,/me,/playlist/{id},https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/cover-image	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/pin	/discover,/explore,/me,/playlist/{id},https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/save	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/tracks/add	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/tracks/remove	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/tracks/reorder-by-index	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/v2/{playlist_id}/trash	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/{playlist_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist/{playlist_id}/regenerate	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist_reaction/{playlist_id}/increment_play_count/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist_reaction/{playlist_id}/set_visibility/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/playlist_reaction/{playlist_id}/update_reaction_type/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/plugins/	/studio
+/api/plugins/catalog	/studio
+/api/plugins/version/{plugin_version_id}	/studio
+/api/plugins/{plugin_id}	/studio
+/api/plugins/{plugin_id}/archive	/studio
+/api/plugins/{plugin_id}/default-version	/studio
+/api/plugins/{plugin_id}/metadata	/studio
+/api/plugins/{plugin_id}/presets	/studio
+/api/plugins/{plugin_id}/presets/{preset_id}	/studio
+/api/plugins/{plugin_id}/save	/studio
+/api/plugins/{plugin_id}/unarchive	/studio
+/api/plugins/{plugin_id}/versions	/studio
+/api/preferences/clip-review/opt-out	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/preferences/clip-review/pending	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/preferences/clip-review/submit	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/processed_clip/{processed_clip_id}/waveform-aggregates	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/block	/discover,/explore,/me,/playlist/{id},https://suno.com/@caspar_d
+/api/profiles/follow	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/listen-history	/me
+/api/profiles/mutual-followers	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/pin-caption/{clip_id}	https://suno.com/@caspar_d
+/api/profiles/pin-clip/{clip_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/pinned-clips	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/verify-profile	https://suno.com/@caspar_d
+/api/profiles/{handle}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/{handle}/followers	https://suno.com/@caspar_d
+/api/profiles/{handle}/following	https://suno.com/@caspar_d
+/api/profiles/{handle}/info	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/{handle}/remixes-inspired-count/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/profiles/{handle}/remixes-inspired/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/feed	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/invites	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/invites/{invite_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/library/images	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/library/videos	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/me	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/trash	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/clips	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/collaborators	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/collaborators/me	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/feed	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/invite	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/items	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/metadata	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/project/{project_id}/pinned-clips	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/prompts/suggestions	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/prompts/suggestions/contextual	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/prompts/upsample	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/prompts/v2	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/prompts/v2/{prompt_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/radio/{tag}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/realtime/discover	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/recommend/feedback/song/{clip_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/recommend/hide-creator	/discover,/explore,/hook/{id},/me,/playlist/{id},https://suno.com/@caspar_d
+/api/report_v2/refund_prompt	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/report_v2/refund_prompt/clicked	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/search/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/search/history	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/search/users	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/session/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/share/attribute/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/share/code/{share_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/share/event	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/share/link	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/share/sharers	https://suno.com/@caspar_d
+/api/share/stats	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/signout/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/social/following-feed	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},https://suno.com/@caspar_d
+/api/song_copy/send-song	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/statsig/experiment/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/statsig/experiment/forked-onboarding	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio-assets/	/studio
+/api/studio-assets/library	/studio
+/api/studio-assets/uploads	/studio
+/api/studio-assets/{asset_id}	/studio
+/api/studio/clip/{clip_id}/download	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/clips/{clip_id}/projects	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/create-or-load-project-for-clip/{clip_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/create-project	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/list-projects	/me,/studio
+/api/studio/project/{project_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/project/{project_id}/archive	/me,/studio
+/api/studio/project/{project_id}/bookmark	/me,/studio
+/api/studio/project/{project_id}/metadata	/me,/studio
+/api/studio/project/{project_id}/unarchive	/studio
+/api/studio/project_revision/{revision_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/project_revision/{revision_id}/clone	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/render-state	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/render-state-multitrack	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/save-project	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/{project_id}/version/{version_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/studio/{project_id}/versions	/studio
+/api/survey/survey-questions/{group_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/survey/survey-responses	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/explore	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/feed	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/homepage	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/homepage/explore	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/homepage/explore/mobile	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/search/omnisearch	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/search/suggest	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/search/suggest/history	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/unified/search/suggest/history/item	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/audio/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/audio/{upload_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/audio/{upload_id}/initialize-clip/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/audio/{upload_id}/upload-finish/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/image/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/image/{upload_id}/upload-finish	/playlist/{id}
+/api/uploads/image/{upload_id}/upload-finish/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/video/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/video/{upload_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/uploads/video/{upload_id}/upload-finish/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/delete-account/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/get_user_session_id/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/me	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/metadata	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/reset_onboarding/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/tos_acceptance	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/update_user_config/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/user_config/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/user/vip_program_acceptance	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/v2/integrations	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/v2/integrations/musixmatch	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/v2/integrations/musixmatch/authorize-url	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/v2/{x}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/generate/{clip_id}/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/generate/{clip_id}/status/	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/admin/reprocess-hook	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/admin/reset_moderation	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/admin/{hook_id}/add_quality_label	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/admin/{hook_id}/remove_quality_label	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/comments/{comment_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/comments/{comment_id}/reaction	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/comments/{comment_id}/replies	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/comments/{comment_id}/report	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/comments/{hook_id}/comment	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/comments/{hook_id}/comments	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/comments/{hook_id}/comments/count	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/create	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/creator_label	https://suno.com/@caspar_d
+/api/video/hooks/delete/{hook_id}	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/feed	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/feed/admin	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/fetch_hook_lyrics	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/me/liked/v2	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/remove_creator_label	https://suno.com/@caspar_d
+/api/video/hooks/suggested_clips	/me
+/api/video/hooks/user_hooks	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/watched	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}/download	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}/flag	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}/reaction	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}/report	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}/share	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video/hooks/{hook_id}/toggle_test	/hook/{id},/me,https://suno.com/@caspar_d
+/api/video_gen/action	/me
+/api/video_gen/cost/image	/me
+/api/video_gen/cost/video	/me
+/api/video_gen/delete	/me
+/api/video_gen/favorite	/me
+/api/video_gen/history	/me
+/api/video_gen/image/generate	/me
+/api/video_gen/media/{media_type}/{media_id}/download	/me,/song/{id}
+/api/video_gen/model-configs	/me
+/api/video_gen/pending_batches	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video_gen/poll_batches	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d
+/api/video_gen/text/generate	/me
+/api/video_gen/video/generate	/me
+/api/{x}	/create,/discover,/explore,/hook/{id},/labs,/me,/notifications,/playlist/{id},/song/{id},/studio,https://suno.com/@caspar_d

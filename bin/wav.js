@@ -30,7 +30,12 @@ const K    = require('./katalog.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
-const STAND  = path.join(WURZEL, 'library', 'wav-stand.json');
+/* Bis 08.09.2026 stand hier STAND = library/wav-stand.json, ein Merker
+   (geprueft/geholt je Song), den das Skript nach jedem Song schrieb.
+   Gelesen hat ihn nie jemand - auch dieses Skript nicht: uebersprungen
+   wird nach fs.existsSync(audio.wav), nicht nach dem Merker. Der Weg
+   ueber cdn1.suno.ai ist seit dem 03.09. zu (bin/gesundheit.js);
+   Merker und Datei sind gestrichen. */
 
 const args = process.argv.slice(2);
 const NUR_PRUEFEN = args.includes('--pruefen');
@@ -101,9 +106,6 @@ function ladeDatei(url, ziel){
     .sort((a,b) => (a.erstellt||'').localeCompare(b.erstellt||''));
   if (TESTZAHL) liste = liste.slice(0, TESTZAHL);
 
-  const stand = fs.existsSync(STAND)
-    ? JSON.parse(fs.readFileSync(STAND, 'utf8')) : { geprueft:{}, geholt:{} };
-
   console.log(`${liste.length} Songs, älteste zuerst\n`);
 
   let da = 0, fehlt = 0, geholt = 0, bytes = 0, uebersprungen = 0;
@@ -115,12 +117,10 @@ function ladeDatei(url, ziel){
 
     if (fs.existsSync(ziel)){
       uebersprungen++;
-      stand.geholt[s.id] = fs.statSync(ziel).size;
       continue;                                  // schon auf der Platte
     }
 
     const p = await wavDa(s.id);
-    stand.geprueft[s.id] = p.status;
 
     if (!p.da){
       fehlt++;
@@ -138,21 +138,16 @@ function ladeDatei(url, ziel){
     const e = await ladeDatei(`https://cdn1.suno.ai/${s.id}.wav`, ziel);
     if (e.ok){
       geholt++; bytes += e.bytes;
-      stand.geholt[s.id] = e.bytes;
       console.log(`${nr} ⤓  ${s.erstellt.slice(0,10)}  ${s.titel.slice(0,42)}   ${mb(e.bytes)}`);
     } else {
       console.log(`${nr} ✗  ${s.titel.slice(0,42)}   Fehler: ${e.status}`);
     }
-    fs.writeFileSync(STAND, JSON.stringify(stand, null, 1));
     await schlaf(400);
   }
-
-  fs.writeFileSync(STAND, JSON.stringify(stand, null, 1));
 
   console.log('\n--- Ergebnis ---');
   console.log(`schon auf der Platte: ${uebersprungen}`);
   console.log(`WAV vorhanden:        ${da}`);
   console.log(`noch nicht angestoßen:${fehlt}`);
   if (!NUR_PRUEFEN) console.log(`neu geholt:           ${geholt}  (${mb(bytes)})`);
-  console.log(`\nStand notiert in library/wav-stand.json`);
 })();
