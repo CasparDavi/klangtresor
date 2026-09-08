@@ -357,13 +357,12 @@ dl > div{
   padding:12px 0 13px;
   border-bottom:1px solid var(--linie);
 }
-/* Der Gedankenstrich haengt links am dd statt in einer eigenen Spalte:
-   seit der span dazwischen weg ist (ungueltiges HTML), hat die Zeile nur
-   noch zwei Kinder - eine dritte Spalte haette das dd in die Strichspur
-   geschoben. */
-dl dd{position:relative}
-dl dd::before{content:"—";position:absolute;left:-1.6em;width:1.6em;
-  text-align:center;color:var(--strich)}
+/* HIER STAND EIN GEDANKENSTRICH zwischen Begriff und Erklaerung, erst
+   als eigenes Element, dann als dd::before. Am 08.09.2026 ganz heraus
+   (Caspar_D: „in der Tabelle die Anstriche weg"). Er hat nichts
+   getrennt, was der Spaltenabstand nicht schon trennt - und in einer
+   Liste, die fuenfzehnmal vorkommt, ist jedes Zeichen, das nichts sagt,
+   eines zu viel. */
 
 /* DIE VERTIEFUNG (Caspar_D, 08.09.2026: „kleiner geschriebene
    Detailboxen, die das Verfahren beschreiben. Jeder sieht, das koennte
