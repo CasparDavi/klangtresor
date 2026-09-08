@@ -648,7 +648,16 @@ if (playlistDatei) {
     for (const [id, p] of Object.entries(frisch)) {
       const a = albenVorher[id];
       if (!a) { playlists[id] = p; neueAlben.push(p.name); continue; }
-      if (albenBrauchbar(p) < albenBrauchbar(a)) {
+      /* WEGNAHME heisst: ein bisheriger Eintrag fehlt in der Ernte - nicht:
+         es sind weniger. Der Gegenleser der Kandidatenregel (08.09.2026,
+         spaet) hat es nachgespielt: gleich viele, aber ANDERE Eintraege
+         (ein Eintrag doppelt, ein fremder dazwischen, die Seite eines
+         anderen Albums) gingen als Ergaenzung sofort durch und warfen die
+         alten weg. Deshalb vergleicht die Entscheidung die Id-Mengen:
+         Ist die alte Menge Teil der neuen, ist es eine Ergaenzung; sonst
+         eine Wegnahme, und die braucht die Bestaetigung. */
+      const altMenge = albenIdMenge(a), neuMenge = new Set(albenIdMenge(p));
+      if (!altMenge.every(x => neuMenge.has(x))) {
         if (!darfWegnehmen) {
           /* Unvollständige Ernte und weniger als vorher: irgendwo ist
              etwas verlorengegangen - eine Seite, ein Token, eine

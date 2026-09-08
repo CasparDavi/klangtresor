@@ -899,7 +899,11 @@ const server = http.createServer((req, res) => {
                                 fehlt, als in Suno geloescht gelten. Fehlt das
                                 Feld (aeltere Ernte), gilt das Vorsichtige. */
                              vollstaendig: alben.vollstaendig === true,
-                             abgerufenAm: daten.erzeugtAm,
+                             /* Server-Uhr, nicht Browser-Uhr: an abgerufenAm misst
+                                aufbereiten.js die 2 h der Kandidatenregel. Die
+                                Uhr eines zweiten Rechners im Heimnetz darf sie
+                                nicht verschieben (Gegenleser, 08.09.2026). */
+                             abgerufenAm: new Date().toISOString(),
                              quelle: 'api/playlist/me + api/playlist/<id> — Alben mit Eintraegen, ueber das Lesezeichen' }));
         }
         /* Benachrichtigungen an reaktionen.ndjson anhaengen - dieselbe

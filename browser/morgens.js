@@ -973,34 +973,14 @@
       zeileT.style.color = '#16be5c';
       }
 
-    /* ---------------- 2b2 · API-Probe, einmalig ----------------
-     Drei nie geprobte Wege aus SUNO-API.md (Caspar_D, 20.08.2026: "gut,
-     mach das"). Ohne Token alle 401 - hier einmal MIT Token, je ein
-     GET auf einen eigenen Song, nur Status und Kopf der Antwort.
-     Ergebnis erscheint als Zeilen; gemerkt im Browser, laeuft also
-     genau einmal. Keine set_/delete-Wege - nur Lesen. */
-  try {
-    if (!localStorage.getItem('mysuno-api-probe-2026-08')){
-      const t3 = await tokenHolen();
-      const probeId = (daheim.songs || []).find(s => s.oeffentlich !== false)?.id;
-      if (t3 && probeId){
-        const zp = sagen('API-Probe (einmalig): drei ungeprüfte Wege …', '#8a8a90');
-        const H3 = { Authorization: 'Bearer ' + t3 };
-        for (const w of [`gen/${probeId}/wav_file/`, `download/clip/${probeId}`, `clips/get_songs_by_ids?ids=${probeId}`]){
-          try {
-            const r = await fetch(`${API}/api/${w}`, { headers: H3 });
-            let kopf = '';
-            try { const ct = r.headers.get('content-type') || '';
-                  kopf = ct.includes('json') ? JSON.stringify(await r.json()).slice(0, 120) : ct; } catch (x) {}
-            sagen(`  /api/${w.split('?')[0]} → ${r.status}  ${kopf}`, '#8a8a90');
-          } catch (x) { sagen(`  /api/${w.split('?')[0]} → Fehler ${x.message}`, '#8a8a90'); }
-          await new Promise(r => setTimeout(r, 400));
-        }
-        localStorage.setItem('mysuno-api-probe-2026-08', '1');
-        zp.textContent = 'API-Probe (einmalig) — Ergebnis unten, bitte Caspar_D zeigen:';
-      }
-    }
-  } catch (x) {}
+    /* Hier stand bis zum 08.09.2026 die „API-Probe, einmalig": drei GETs mit
+       Token auf einen eigenen Song (gen/<id>/wav_file/, download/clip/<id>,
+       clips/get_songs_by_ids), am 20.08. auf Caspar_Ds Wort gebaut, Ergebnis
+       in docs/SUNO-API.md. Gestrichen, weil download/clip seit dem 03.09. auf
+       das Download-Kontingent zaehlt und niemand weiss, ob der Aufruf ohne
+       format ein Guthaben kostet - in einem frischen Browser (Tarja, neues
+       Profil) waere die Probe wieder gelaufen. Die Hausregel: nichts
+       ausloesen, was Credits oder Kontingent kosten kann. */
 
   /* ---------------- 2c · Suno v3 nachladen ----------------
        Die neuere Fassung der Wort-Zeitmarken, fuer jeden Song, dem sie
