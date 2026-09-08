@@ -1625,7 +1625,8 @@ mono (Zeile 198–201); die audio.wav wird nie benutzt.
    Titel *Bei mir klingelt keiner* (My Industrial Songs) muss nach dem
    nächsten Klick als Titel im Katalog stehen. BESTANDEN 21:33: zweiter
    Lesezeichen-Klick, Katalogbau, 324 Titel / 74 privat, der Titel drin mit
-   Lyrics und Album. Noch ohne Ton: der CDN-Weg ist tot, audio.mp3 kommt
+   Lyrics und Album. Whisper: 283 Woerter, 281 s fuer 314 s Musik (0,9-fach,
+   keine Schleife), lyrik.js hat ihn bereinigt (241 Titel). Noch ohne Ton: der CDN-Weg ist tot, audio.mp3 kommt
    erst über Unlock und Download bei Suno plus bin/uebernehmen.js. Die 19
    Beschreibungen (MORGENSCHRITTE.json) sind NOCH NICHT im Morgenfenster -
    Bau 4.
