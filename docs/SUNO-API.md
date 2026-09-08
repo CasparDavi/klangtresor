@@ -33,7 +33,7 @@ mit → markiert.
 | **`GET /api/gen/{clip_id}/novelty-sections`** | T | ● | Sunos Strukturerkennung, auf Anfrage gerechnet (`running` → `complete`) |
 | **`GET /api/gen/{clip_id}/waveform-aggregates`** | T | ● | Hüllkurve in Zoomstufen (`mip_map_level`), Min/Max-Paare — 0,4 MB je Song |
 | **`POST /api/gen/{clip_id}/convert_wav/`** | T | ● | WAV-Erzeugung anstoßen (WAV-PROTOKOLL) |
-| **`GET /api/notification/v2`** | T | ● | Benachrichtigungen: `clip_like`, `clip_comment`, `comment_like`, `comment_reply`, `follow` — **wer wann** mit Profil; `next_before_datetime_utc` zum Zurückblättern |
+| **`GET /api/notification/v2`** | T | ● | Benachrichtigungen: `clip_like`, `clip_comment`, `comment_like`, `comment_reply`, `follow` — **wer wann** mit Profil; `next_before_datetime_utc` zum Zurückblättern. **Bündel** (gemessen 08.09.2026): Herzen, die kurz nacheinander auf denselben Titel kommen, sind EIN Eintrag mit höchstens drei `user_profiles` und der echten Zahl in `total_users`; Suno schreibt ihn fort — gleiche `id`, neue `updated_at`, größere Zahl, andere drei Namen. Der Server trägt gewachsene Einträge nach (`nachtrag: true`). Alle Einzelnamen zeigt nur die Handy-App; ihr Weg steckt nicht in den Web-Skripten (offen) |
 | **`GET /api/notification/v2/badge-count`** | T | ● | Zahl ungelesener — eigener Weg, Lesen markiert nichts |
 
 ## → Lohnt sich wahrscheinlich

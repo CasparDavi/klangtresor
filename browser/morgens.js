@@ -1032,8 +1032,11 @@
      GET /api/notification/v2 - wer wann was getan hat: clip_like,
      clip_comment, comment_like, comment_reply, follow, dazu hook_like
      und playlist_like. Je Eintrag die Profile der Beteiligten und der
-     Zeitpunkt. DAS ist die Like-Liste, die die App zeigt; die Web-API
-     hat keinen anderen Weg dafuer (SUNO-API.md).
+     Zeitpunkt. Herzen, die kurz nacheinander kommen, buendelt Suno zu
+     EINEM Eintrag: hoechstens drei user_profiles, die echte Zahl in
+     total_users, fortgeschrieben unter derselben id. Die Web-API hat
+     keinen anderen Weg zu den Namen; die Handy-App zeigt alle Liker -
+     ihr Weg ist noch nicht gefunden (SUNO-API.md, 08.09.2026).
 
      Zurueckgeblaettert wird mit before_datetime_utc - nicht 'before',
      das liefert stumm dieselbe Seite noch einmal. Suno haelt rund vier

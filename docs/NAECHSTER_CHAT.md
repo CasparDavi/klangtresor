@@ -1799,3 +1799,27 @@ lassen, wie bei Kommentaren. Halber Tag mit Probe an einer Kopie der
 ndjson, nie am Bestand. (c) Nicht heilbar: die Einzelzeiten der
 gebündelten Herzen liefert Suno nicht. Je öfter das Lesezeichen läuft,
 desto kleiner die Bündel — das ist der einzige Hebel.
+
+## Herzen im Bündel — gebaut (08.09.2026, spät)
+
+- **Gebaut, Commit fc63ac2:** `server.js` `reaktionenLesen()` (Stromzeilen je
+  Suno-ID im jüngsten Stand) und `reaktionenAnhaengen()` trägt gewachsene
+  Bündel nach (`nachtrag: true`, `vorher: alte Zahl`); beide Leser
+  (`/api/kommentare/:id`, Leute) gehen über `reaktionenLesen()`.
+  Probe an einer Kopie: 8→12 wird eine Zeile, zweiter Lauf schreibt nichts.
+  Oberfläche: je Bündel alle drei Namen anklickbar + „und N weitere";
+  Restsatz „ohne Benachrichtigung — das eigene Herz meldet Suno nicht".
+  Der falsche Satz „älter als Sunos Benachrichtigungen reichen" ist weg.
+- **Wirkung erst beim nächsten Lesezeichenlauf** — dann muss das Bündel
+  75eef79b für *Glut und Eis* von 8 auf 12 wachsen (Morgenzeile
+  „N Bündel gewachsen").
+- **Offen: der Weg der Handy-App zu allen Likern.** Netzrecherche
+  (Wrapper, GitHub, APK-Anleitungen, ~12 Suchen) ergebnislos; alle Wrapper
+  spiegeln die Web-App. Nächster Schritt, mit Caspar_D abgestimmt: die
+  Android-APK auseinandernehmen (unzip + strings; bei nativem Code jadx).
+  Die APK holt Caspar_D selbst (Regel: keine Downloads aus Drittquellen
+  durch Claude), Ablage `/Volumes/Extreme_SSD/Entwicklung/apk/`.
+- **Kachel-Klick als Toggle**, Commit ffd1103: laufender Titel hält an
+  und läuft weiter; andere Kachel = anderer Titel.
+- Tarja fragte nach dem Like-Weg: `GET /api/notification/v2`, Bearer-Token,
+  Blättern mit `before_datetime_utc`.
