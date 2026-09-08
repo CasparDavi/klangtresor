@@ -488,6 +488,12 @@ figcaption::before{
 figcaption i{font-style:normal;font-size:14px;line-height:20px;color:var(--neben)}
 
 .breit{width:100%}
+/* Quadratisch, weil der Klangraum quadratisch ist. Am 08.09.2026 beim
+   ersten echten Bild gelernt: die Formate der Vorlage waren geraten
+   (16:9, 16:10, 3:4), die Wirklichkeit ist 1654 x 1640. Wer Formate
+   festlegt, bevor er ein Bild gemacht hat, legt Wunschdenken fest. */
+.quadrat .bildfeld{aspect-ratio:1/1}
+.quadrat .baustelle::after{content:"1 : 1"}
 .breit .bildfeld{aspect-ratio:16/9}
 .breit .baustelle::after{content:"16 : 9"}
 .spaltig{max-width:var(--satz)}

@@ -488,6 +488,12 @@ figcaption::before{
 figcaption i{font-style:normal;font-size:14px;line-height:20px;color:var(--neben)}
 
 .breit{width:100%}
+/* Quadratisch, weil der Klangraum quadratisch ist. Am 08.09.2026 beim
+   ersten echten Bild gelernt: die Formate der Vorlage waren geraten
+   (16:9, 16:10, 3:4), die Wirklichkeit ist 1654 x 1640. Wer Formate
+   festlegt, bevor er ein Bild gemacht hat, legt Wunschdenken fest. */
+.quadrat .bildfeld{aspect-ratio:1/1}
+.quadrat .baustelle::after{content:"1 : 1"}
 .breit .bildfeld{aspect-ratio:16/9}
 .breit .baustelle::after{content:"16 : 9"}
 .spaltig{max-width:var(--satz)}
@@ -594,10 +600,11 @@ footer{
   Titel handeln. Dieses Kapitel behandelt den Klang; der Geschichten-Raum steht im
   nächsten.</p>
 
-  <figure class="abb breit">
-    <div class="baustelle"></div>
+  <figure class="abb quadrat">
+    <div class="bildfeld abbildung"><img src="bilder/klangraum-ganz.png"
+      alt="Sternenkarte: rund dreihundert Punkte in vier Farbgruppen auf schwarzem Grund."></div>
     <figcaption><b>Abb. 12.1</b><i>Der Klangraum. Jeder Punkt ist ein Titel; die Lage
-    kommt aus dem Klang.</i></figcaption>
+    kommt aus dem Klang. Die Farben sind die Stilgruppen.</i></figcaption>
   </figure>
 
   <section>
@@ -645,10 +652,11 @@ footer{
     nächsten Nachbarn. Je näher der Nachbar, desto kräftiger der Faden. Das ist der
     schnellste Weg von „das gefällt mir" zu „was klingt noch so".</p>
 
-    <figure class="abb schmal">
-      <div class="baustelle"></div>
-      <figcaption><b>Abb. 12.2</b><i>Ein Stern mit den Fäden zu seinen sechs nächsten
-      Nachbarn.</i></figcaption>
+    <figure class="abb quadrat">
+      <div class="bildfeld abbildung"><img src="bilder/klangraum-nachbarn.png"
+        alt="Ein kleines Raumschiff umkreist einen Stern; daneben steht „Sound-Schiff, im Orbit"."></div>
+      <figcaption><b>Abb. 12.2</b><i>Das Sound-Schiff im Orbit um den laufenden Titel.
+      Ringsum die Sterne derselben Stilgruppe, am Rand die nächsten.</i></figcaption>
     </figure>
 
     <p>Oben rechts unter <b>Einstellungen</b> stehen die Schalter für die Darstellung:
