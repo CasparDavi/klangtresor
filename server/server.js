@@ -2124,6 +2124,61 @@ const server = http.createServer((req, res) => {
     });
     return;
   }
+  /* DER ORDNERWAEHLER (Caspar_D, 09.09.2026: "die Pfadangabe fuer den
+     Stick ist ein NoGo, wir brauchen hier einen Filebrowser"). Ein
+     Browser darf dem Server keinen Pfad von der Platte nennen - also
+     zeigt der Server, was er sieht: ohne pfad die eingehaengten
+     Laufwerke (macOS /Volumes, Linux /media und /mnt, Windows die
+     Laufwerksbuchstaben) mit freiem Platz und Dateisystem; mit pfad die
+     Unterordner. Versteckte Ordner und ._-Beifang bleiben draussen.
+     Nur Lesen, nur Verzeichnisse. */
+  if (p === '/api/ordner') {
+    const pfad = String(u.searchParams.get('pfad') || '');
+    const frei = (o) => { try {
+      const r = require('node:child_process').spawnSync('df', ['-k', o], { encoding: 'utf8' });
+      /* Spalten von VORN lesen: Geraet, 1024-Bloecke, Belegt, Frei - die
+         Mount-Pfade hinten tragen Leerzeichen ("Macintosh HD - Data"). */
+      const z = (r.stdout || '').trim().split('\n').pop().trim().split(/\s+/);
+      return { gesamt: parseInt(z[1], 10) * 1024 || null, frei: parseInt(z[3], 10) * 1024 || null };
+    } catch (e) { return { gesamt: null, frei: null }; } };
+    const dateisystem = (o) => { try {
+      const r = require('node:child_process').spawnSync('mount', [], { encoding: 'utf8' });
+      const z = (r.stdout || '').split('\n').find(l => l.includes(' on ' + o + ' ('));
+      return z ? (z.match(/\(([a-z0-9_]+)/i) || [])[1] || '' : '';
+    } catch (e) { return ''; } };
+    if (!pfad) {
+      const laufwerke = [];
+      const wurzeln = process.platform === 'win32'
+        ? 'CDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(b => b + ':\\').filter(w => fs.existsSync(w))
+        : ['/Volumes', '/media/' + (process.env.USER || ''), '/media', '/mnt', '/run/media/' + (process.env.USER || '')]
+            .filter(w => fs.existsSync(w));
+      for (const w of wurzeln) {
+        if (process.platform === 'win32') { laufwerke.push({ name: w, pfad: w, ...frei(w), dateisystem: '' }); continue; }
+        let eintraege = []; try { eintraege = fs.readdirSync(w, { withFileTypes: true }); } catch (e) {}
+        for (const e of eintraege) {
+          if (!e.isDirectory() && !e.isSymbolicLink()) continue;
+          if (e.name.startsWith('.')) continue;
+          const voll = path.join(w, e.name);
+          const fsys = dateisystem(voll);
+          laufwerke.push({ name: e.name, pfad: voll, ...frei(voll), dateisystem: fsys,
+            system: /^Macintosh HD/.test(e.name) || /Time Machine/i.test(e.name) || /^com\.apple\./.test(e.name),
+            netz: /^(smbfs|nfs|afpfs|webdav)$/i.test(fsys) });
+        }
+      }
+      return jsonAntwort(res, { laufwerke });
+    }
+    if (!path.isAbsolute(pfad)) return jsonAntwort(res, { fehler: 'Pfad muss absolut sein' }, 400);
+    let st; try { st = fs.statSync(pfad); } catch (e) { return jsonAntwort(res, { fehler: 'gibt es nicht' }, 404); }
+    if (!st.isDirectory()) return jsonAntwort(res, { fehler: 'kein Ordner' }, 400);
+    let eintraege = []; try { eintraege = fs.readdirSync(pfad, { withFileTypes: true }); } catch (e) { return jsonAntwort(res, { fehler: 'nicht lesbar' }, 403); }
+    const ordner = eintraege.filter(e => e.isDirectory() && !e.name.startsWith('.') && !e.name.startsWith('._'))
+      .map(e => ({ name: e.name, pfad: path.join(pfad, e.name) })).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+    const eltern = path.dirname(pfad);
+    const istWurzel = /^\/Volumes\/[^/]+$/.test(pfad) || /^\/(media|mnt)\/[^/]+$/.test(pfad) || /^[A-Z]:\\?$/.test(pfad) || eltern === pfad;
+    const hatArchiv = fs.existsSync(path.join(pfad, 'Programm', 'library', 'export-stand.json'));
+    return jsonAntwort(res, { pfad, eltern: istWurzel ? null : eltern, ordner, ...frei(pfad), hatArchiv });
+  }
+
   if (p === '/api/export/stand') {
     const konf = konfigLesen();
     const ziel = konf.exportZiel || null;

@@ -390,6 +390,15 @@ select,.knopf{
    auf der Seite und brauchen eine Kante, an der sie sitzen. */
 .profilreg{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--rand)}
 .pregfeld[hidden]{display:none}
+/* Der Ordnerwaehler im Register Export */
+.ordnerwahl{margin:8px 0;border:1px solid var(--rand);border-radius:8px;padding:8px;background:var(--flaeche2);max-height:320px;overflow:auto}
+.ordnerwahl .ordnerkopf{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.ordnerzeile{display:flex;justify-content:space-between;align-items:baseline;gap:12px;width:100%;text-align:left;padding:7px 10px;margin:2px 0;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--text);cursor:pointer;font:inherit}
+.ordnerzeile:hover{border-color:var(--akzent);background:#ffffff0a}
+.ordnerzeile small{color:var(--schwach);white-space:nowrap}
+.ordnerzeile.system{opacity:.55}
+.ordnerzeile.knapp small{color:#e31c79}
+.fussnote.schlecht{color:#e31c79}
 /* DAS REGISTER EXPORT (Caspar_D, 09.09.2026): eine Zeile mit Ziel,
    Haken und Knopf, darunter der Lauf in denselben Abschnitten wie das
    Morgenfenster (.ms) - dieselbe Form fuer dieselbe Sache: ein
@@ -13968,11 +13977,14 @@ async function profilExportFuellen(){
         Daneben ein Ordner <code>Musik/</code> mit den MP3s nach Titel benannt, mit Titelbild im Dateikopf, für Fernseher,
         Autoradio und VLC. Ohne WAV. Ein zweiter Export frischt nur auf, was sich geändert hat.</p>
       <div class="exportzeile">
-        <input type="text" id="exportziel" placeholder="/Volumes/Stick/KlangTresor" spellcheck="false" title="Der Ordner auf dem Stick, in den das Archiv geschrieben wird">
+        <input type="hidden" id="exportziel">
+        <span class="fussnote" id="exportzielText" style="margin:0">Kein Ziel gewählt</span>
+        <button class="pille" id="exportwaehlen" title="Stick oder Ordner auswählen">Ziel wählen …</button>
         <label title="Die Instrumentspuren (Stems) sind rund 27 GB — nur mitnehmen, wenn der Stick sie fasst">
           <input type="checkbox" id="exportstems"> Stems mitnehmen (27 GB)</label>
         <button class="pille an" id="exportstart">Export starten</button>
       </div>
+      <div id="exportbrowser" class="ordnerwahl" hidden></div>
       <p class="fussnote" id="exportstand"></p>
       <div class="exportlauf" id="exportlauf"></div>
     </div>
@@ -13989,10 +14001,62 @@ async function profilExportFuellen(){
       </div>
     </div>`;
 
+  /* DER ORDNERWAEHLER (Caspar_D, 09.09.2026: "die Pfadangabe fuer den
+     Stick ist ein NoGo"). Erst die Laufwerke mit freiem Platz, dann die
+     Ordner darunter; "Hierher" nimmt den Ordner und haengt KlangTresor an,
+     ausser der Ordner IST schon ein Archiv (export-stand.json) - dann wird
+     genau der aufgefrischt. Die Wahl wandert sofort in konfig.json. */
+  const BEDARF = { ohne: 8.5e9, stems: 36e9 };
+  const zielSetzen = async (pfad) => {
+    $('exportziel').value = pfad;
+    $('exportzielText').textContent = pfad;
+    try { await fetch('/api/konfig', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exportZiel: pfad }) }); } catch (e) {}
+    $('exportbrowser').hidden = true;
+    exportSchauen(false);
+  };
+  const ordnerZeigen = async (pfad) => {
+    const box = $('exportbrowser'); box.hidden = false; box.innerHTML = '<div class="fussnote">Lese …</div>';
+    let d; try { d = await (await fetch('/api/ordner' + (pfad ? '?pfad=' + encodeURIComponent(pfad) : ''), { cache: 'no-store' })).json(); }
+    catch (e) { box.innerHTML = '<div class="fussnote">Server antwortet nicht.</div>'; return; }
+    box.innerHTML = '';
+    const bedarf = $('exportstems').checked ? BEDARF.stems : BEDARF.ohne;
+    const platz = (o) => o.frei == null ? '' : ` · ${exportGroesse(o.frei)} frei` + (o.gesamt ? ` von ${exportGroesse(o.gesamt)}` : '') + (o.frei < bedarf ? ' — zu wenig' : '');
+    if (!pfad){
+      const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = 'Wohin? Ein Laufwerk wählen:'; box.appendChild(k);
+      for (const l of (d.laufwerke || [])){
+        const z = document.createElement('button'); z.className = 'ordnerzeile' + (l.system ? ' system' : '') + (l.frei != null && l.frei < bedarf ? ' knapp' : '');
+        z.innerHTML = `<b>${esc(l.name)}</b><small>${esc((l.dateisystem || '').toUpperCase())}${platz(l)}${l.system ? ' · Systemplatte' : ''}${l.netz ? ' · Netz' : ''}</small>`;
+        z.onclick = () => ordnerZeigen(l.pfad);
+        box.appendChild(z);
+      }
+      if (!(d.laufwerke || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Kein Laufwerk gefunden — steckt der Stick?' }));
+      return;
+    }
+    const kopf = document.createElement('div'); kopf.className = 'ordnerkopf';
+    const zurueck = document.createElement('button'); zurueck.className = 'pille'; zurueck.textContent = d.eltern ? '↑ eine Ebene' : '↑ Laufwerke';
+    zurueck.onclick = () => ordnerZeigen(d.eltern || '');
+    const hier = document.createElement('button'); hier.className = 'pille an';
+    const zielHier = d.hatArchiv ? d.pfad : (d.pfad.replace(/[\\/]+$/, '') + (d.pfad.endsWith('/') || d.pfad.endsWith('\\') ? '' : '/') + 'KlangTresor');
+    hier.textContent = d.hatArchiv ? 'Dieses Archiv auffrischen' : 'Hierher: ' + zielHier;
+    hier.title = zielHier;
+    hier.onclick = () => zielSetzen(zielHier);
+    const wo = document.createElement('span'); wo.className = 'fussnote'; wo.style.margin = '0';
+    wo.textContent = d.pfad + platz(d);
+    kopf.append(zurueck, hier, wo); box.appendChild(kopf);
+    if (d.frei != null && d.frei < bedarf){ const w = document.createElement('div'); w.className = 'fussnote schlecht'; w.textContent = `Zu wenig Platz: gebraucht werden etwa ${exportGroesse(bedarf)}.`; box.appendChild(w); }
+    for (const o of (d.ordner || [])){
+      const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(o.name)}</b>`;
+      z.onclick = () => ordnerZeigen(o.pfad);
+      box.appendChild(z);
+    }
+    if (!(d.ordner || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine Unterordner.' }));
+  };
+  $('exportwaehlen').onclick = () => { const b = $('exportbrowser'); if (!b.hidden){ b.hidden = true; return; } ordnerZeigen(''); };
+
   const startKnopf = $('exportstart');
   startKnopf.onclick = async () => {
     const z = $('exportziel').value.trim();
-    if (!z){ $('exportstand').textContent = 'Wohin? Ein Zielpfad fehlt.'; $('exportziel').focus(); return; }
+    if (!z){ $('exportstand').textContent = 'Wohin? Erst ein Ziel wählen.'; ordnerZeigen(''); return; }
     startKnopf.disabled = true; startKnopf.textContent = 'Startet …';
     let a = null;
     try { a = await (await fetch('/api/export/start', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -14028,8 +14092,7 @@ async function exportSchauen(gleich){
 function exportZeichnen(d){
   const feld = $('exportlauf'), stand = $('exportstand'), zielFeld = $('exportziel'), knopf = $('exportstart');
   if (!feld || !stand) return;
-  if (zielFeld && d.ziel && !zielFeld.dataset.beruehrt && !zielFeld.value){ zielFeld.value = d.ziel; }
-  if (zielFeld && !zielFeld.oninput) zielFeld.oninput = () => { zielFeld.dataset.beruehrt = '1'; };
+  if (zielFeld && d.ziel && !zielFeld.value){ zielFeld.value = d.ziel; const t = $('exportzielText'); if (t) t.textContent = d.ziel; }
   const laeuft = !!d.laeuft;
   feld.dataset.laeuft = laeuft ? '1' : '0';
   if (knopf){ knopf.disabled = laeuft; knopf.textContent = laeuft ? 'Läuft …' : 'Export starten'; }
