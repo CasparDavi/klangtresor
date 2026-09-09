@@ -2306,3 +2306,8 @@ die der vorigen Art sind — eigene bleiben (`_artVor` merkt die vorige Art, wan
 **Nachtrag:** Theaternebel hat neben Heterogenität (Unterschiede *zwischen* Schwaden) jetzt **Turbulenz** (räumliche
 Frequenz *in* der Schwade — „viel Änderung pro Ort", Caspar_D): jede Schwade ist ein Bündel kleinerer Flecken, die um den
 Kern kreisen; je höher, desto mehr, kleiner, schneller (bis 9, dreifaches Tempo; Deckung je Fleck voll, sonst verblasst die Schwade). Turbulenz 0 = der ruhige Fleck von vorher.
+
+**Neu (10.09.2026):** Effekt **Feuer** (Läufe): prozedurale Flammen über einer Grundlinie (Boden/Mitte/Breite frei),
+je Zunge ein Stapel aufsteigender Glutflecken — unten breit/gelb, oben schmal/rot, Deckung fällt mit der Höhe; Zungen
+schwanken und flackern je eigen; Glut an der Basis; „lodert im Takt" lässt die Flammen auf Schlägen höher schießen.
+Additiv verrechnet, damit Überlagerung heiß wird. Caspar_D: „Kannst du Feuer?"
