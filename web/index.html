@@ -307,7 +307,6 @@ h1{
 #kartelegende .lblock h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--schwach);font-weight:600;margin:0 0 4px 8px}
 #kartelegende .lgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
 #kartelegende .karteart{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
-#kartelegende .karteart #karteexport{margin-left:auto}
 #kartelegende .karteart .pille{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--rand);background:none;color:var(--schwach);cursor:pointer}
 #kartelegende .karteart .pille.an{border:2px solid var(--akzent);color:var(--text)}
 #kartelegende .karteart .artpille.an{border-color:var(--af);color:var(--af)}
@@ -391,6 +390,30 @@ select,.knopf{
    auf der Seite und brauchen eine Kante, an der sie sitzen. */
 .profilreg{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--rand)}
 .pregfeld[hidden]{display:none}
+/* DAS REGISTER EXPORT (Caspar_D, 09.09.2026): eine Zeile mit Ziel,
+   Haken und Knopf, darunter der Lauf in denselben Abschnitten wie das
+   Morgenfenster (.ms) - dieselbe Form fuer dieselbe Sache: ein
+   Kindprozess, der Schritte meldet. Das Zielfeld ist ein Pfad, deshalb
+   breit und in Festbreitenschrift. */
+.exportzeile{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.exportzeile label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--schwach)}
+.exportzeile input[type=text]{flex:1 1 260px;min-width:0;background:var(--flaeche2);border:1px solid var(--rand);
+  color:var(--text);border-radius:6px;padding:5px 8px;font:12px ui-monospace,Menlo,monospace}
+.exportzeile input[type=checkbox]{accent-color:var(--akzent);cursor:pointer}
+.exportzeile .pille[disabled]{opacity:.45;cursor:default}
+.exportlauf{display:flex;flex-direction:column;margin-top:12px}
+.exportlauf .ms details pre{margin:4px 0 0;font:11px/1.5 ui-monospace,Menlo,monospace;color:#9a9aa0;
+  max-height:240px;overflow:auto;white-space:pre-wrap}
+.exportlauf .werte{margin-top:12px}
+.wert.gut b{color:#59d18c} .wert.schlecht b{color:#e31c79}
+.wert.schlecht{border-color:#e31c79}
+/* DAS EINGEFRORENE ARCHIV (Caspar_D, 09.09.2026): der Stick ist eine
+   Kopie, die nur abspielt. Das Banner steht ueber der Kopfzeile, damit
+   niemand einen Knopf sucht, den es hier nicht gibt. Kalt und ruhig -
+   keine Warnung, ein Zustand. */
+#eingefroren{margin:0 0 10px;padding:6px 12px;border:1px solid var(--rand);border-radius:8px;
+  background:var(--flaeche2);color:var(--schwach);font-size:12px;letter-spacing:.04em;text-align:center}
+#eingefroren b{color:var(--text);font-weight:600}
 /* DIE LISTEN BLEIBEN OBEN STEHEN (Caspar_D, 26.08.2026: "mach den
    diagramm bereich scrollbar, die listen oben bleiben stehen, dann kann
    ich mir das diagramm zur liste schieben").
@@ -1695,6 +1718,11 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #fortschritt{height:100%;width:0;background:linear-gradient(90deg,var(--akzent),var(--akzent2))}
 .preihe{display:flex;align-items:center;gap:13px;padding:9px 16px}
 #pbild{width:52px;height:52px;border-radius:8px;object-fit:cover;flex-shrink:0;cursor:pointer}
+/* Kein Titelbild (fremder Titel ohne Bildadresse, Datei fehlt): Chrome
+   zeigte dann ein leeres Kaestchen mit dem Symbol fuer ein kaputtes
+   Bild - "sieht wie ein Grafikfehler aus" (Tarja, 09.09.2026). Jetzt ein
+   bewusster Platzhalter: Umriss in der Akzentfarbe, Flaeche des Hauses. */
+#pbild.leer, img.leer{border:1px solid var(--akzent);background:var(--flaeche2);object-fit:contain;padding:22%;box-sizing:border-box;opacity:.85}
 .pinfo{flex:1;min-width:0;cursor:pointer}
 .pinfo b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pinfo span{color:var(--schwach);font-size:12px}
@@ -3574,6 +3602,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 </div>
 
 <header>
+  <!-- Nur im eingefrorenen Archiv (Stick) sichtbar; fuellt eingefrorenAnwenden(). -->
+  <div id="eingefroren" hidden></div>
   <div class="kopfzeile">
     <!-- Nur der Name. Version, Urheber und Mitstreiter stehen im
          Fenster dahinter (Caspar_D, 24.08.2026: "es steht nur mySuno da
@@ -3897,7 +3927,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 <div id="player">
   <div id="leiste"><div id="fortschritt"></div></div>
   <div class="preihe">
-    <img id="pbild" alt="" title="Bühne (großer Text)">
+    <img id="pbild" alt="" title="Bühne (großer Text)" onerror="pbildLeer(this)" onload="this.classList.remove('leer')">
     <div class="pinfo">
       <b id="ptitel"></b>
       <button id="psongeq" class="songeqpille" hidden onclick="songEqUmschalten()"></button>
@@ -4085,6 +4115,29 @@ const SYM = (n) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use
 let katalogInfo = null;   // Kopfdaten: Profil, Spielzeit, Zeitraum
 let paketVersion = null;  // aus package.json, ueber /api/index
 
+/* ---- DAS EINGEFRORENE ARCHIV -----------------------------------------
+   Caspar_D, 09.09.2026: der Export auf den Stick ist eine Kopie, die nur
+   liest - reinstecken, Startskript, Browser auf, hoeren. Der Server sagt
+   es im Katalog (/api/index: eingefroren = { seit, dateien, bytes }) und
+   beantwortet dort alles ausser GET mit 405. Die Seite soll aber gar
+   nicht erst anbieten, was nicht geht: kein roter Knopf, kein Register
+   Export, keine Notiz, die beim Verlassen des Felds ins Leere faellt.
+   Was hier haengen bleibt, ist ein Zustand, kein Fehler - deshalb ein
+   Banner oben und stille Knoepfe, keine Fehlermeldungen. */
+const archivEingefroren = () => !!(katalogInfo && katalogInfo.eingefroren);
+function eingefrorenAnwenden(){
+  const b = $('eingefroren'); if (!b) return;
+  const e = katalogInfo && katalogInfo.eingefroren;
+  if (!e){ b.hidden = true; return; }
+  const seit = e.seit ? new Date(e.seit) : null;
+  const tag = seit && !isNaN(seit) ? seit.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
+  b.innerHTML = `<b>Archiv vom ${tag}</b> — eingefroren, nur Abspielen`
+    + (katalogInfo.anzahl ? ` · ${Number(katalogInfo.anzahl).toLocaleString('de-DE')} Titel` : '');
+  b.hidden = false;
+  /* Der rote Knopf holt und schreibt - im Archiv gibt es nichts zu holen. */
+  const k = $('morgenknopf'); if (k) k.hidden = true;
+}
+
 async function start(){
   const r = await fetch('/api/index');
   const d = await r.json();
@@ -4111,6 +4164,7 @@ async function start(){
   playlists.forEach(p => playlistVonId.set(p.id, p));
   kachelStand = d.kachelStand || 0;
   katalogInfo = d;
+  eingefrorenAnwenden();
   if (d.profil && d.profil.display_name) {
     document.getElementById('ich').title = 'Über ' + d.profil.display_name;
   }
@@ -4141,6 +4195,7 @@ async function start(){
 let standZuletzt = null, morgenLiefZuvor = false;
 const profilOffen = () => !!($('detail') && $('detail').classList.contains('auf') && $('profilcommunity'));
 async function standPruefen(){
+  if (archivEingefroren()) return;          /* nichts aendert sich, niemand schreibt */
   if (typeof messLaeuft !== 'undefined' && messLaeuft) return;
   let s; try { s = await (await fetch('/api/stand', { cache: 'no-store' })).json(); } catch (e) { return; }
   if (!standZuletzt){ standZuletzt = s; return; }
@@ -4150,6 +4205,7 @@ async function standPruefen(){
   else if (gemeinschaftNeu && profilOffen()) profilCommunityFuellen();
 }
 async function katalogNachladen(){
+  if (archivEingefroren()) return;
   let d; try { d = await (await fetch('/api/index', { cache: 'no-store' })).json(); } catch (e) { return; }
   if (!d || !Array.isArray(d.songs)) return;
   alle = d.songs;
@@ -4396,7 +4452,10 @@ function eqMerken(){
   eqMerkzeit = setTimeout(() => {
     if (gains.some(g => g) || kerbe) eqJeSong[id] = { gains, ...(kerbe ? { kerbe } : {}) };
     else delete eqJeSong[id];
-    fetch('/api/eq/' + id, { method: 'PUT', body: JSON.stringify({ gains, kerbe }) }).catch(() => {});
+    /* Im eingefrorenen Archiv bleibt die Einstellung fuer die Sitzung im
+       Speicher; der Server nimmt kein PUT an (09.09.2026). */
+    if (!archivEingefroren())
+      fetch('/api/eq/' + id, { method: 'PUT', body: JSON.stringify({ gains, kerbe }) }).catch(() => {});
     songEqAnzeigen();          /* die Pille im Player folgt sofort */
   }, 600);
 }
@@ -4415,7 +4474,8 @@ async function kerbeZeigen(){
   const lied = typeof song === 'function' ? song(aktuellId) : null;
   if (lied && lied.fremd) h = '<span>fremder Titel — kein Scan (nur eigene Titel liegen als Datei vor)</span>';
   else if (liste === undefined){
-    h = kerbeZeigen.laeuft
+    h = archivEingefroren() ? '<span>Archiv eingefroren — kein Scan</span>'
+      : kerbeZeigen.laeuft
       ? `<span>Scan läuft … ${kerbeZeigen.laeuft}</span>`
       : `<button type="button" class="pille" id="stoerscan" title="Rechnet erst diesen Titel, dann alle anderen (bin/stoerfrequenz.js, ~5–10 s je Titel, im Hintergrund)">Scan dieses und aller anderen Titel starten</button>`;
   } else if (!liste.length) h = '<span>keine gefunden — sauber</span>';
@@ -7471,16 +7531,12 @@ function karteLesarten(){
     z('background:linear-gradient(155deg,transparent 44%,#c9c9cd 47%,#c9c9cd 53%,transparent 56%);border:none', 'Flugbahn = Reiseweg', 'die wirklich geflogene Bahn des Schiffs'));
 }
 
-async function karteExportKlick(){
-    const b = $('karteexport'); b.textContent = 'Erzeuge …'; b.disabled = true;
-    try {
-      const j = await (await fetch('/api/himmel-export', { method: 'POST' })).json();
-      if (!j.ok) throw new Error(j.meldung);
-      b.textContent = 'Exportiert — öffnet';
-      window.open(j.url, '_blank');
-      setTimeout(() => { b.textContent = 'Als Demo exportieren'; b.disabled = false; }, 2500);
-    } catch (e) { b.textContent = 'Fehler: ' + e.message; b.disabled = false; }
-}
+/* Der Knopf "Export" in der Klangraum-Legende (karteExportKlick,
+   #karteexport) ist am 09.09.2026 geloescht: Der Sternenhimmel-Export
+   wohnt jetzt im Autorenprofil, Register "Export", neben dem Archiv-
+   Export auf den Stick - beides sind Ausgaben des ganzen Bestands, und
+   die gehoeren zum Autor, nicht in die Ansicht (Caspar_D). Dort gibt es
+   ihn in zwei Fassungen: mit Suno-Links und mit Medienordner. */
 
 /* Das Bedienpanel (auch im Export - beide rufen dieselbe Funktion). */
 /* Drei Laden rechts (Caspar_D, 22.08.2026): Einstellungen · Legende · Werk,
@@ -7629,8 +7685,7 @@ function kartePanelHtml(){
       `<button class="pille ${karteLoecher ? 'an' : ''}" id="karteloecher" title="Attraktoren: ein Schwarzes Loch als Massezentrum je Stilgruppe, Jets entlang der Hauptachse (nur im Raum)">Attraktoren</button>` +
       `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Titel eines Klassifikators">Sternbilder</button>` +
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
-      `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>` +
-      `<button class="pille" id="karteexport" title="Den Klangraum als eine HTML-Datei erzeugen (nur öffentliche Titel, jeder Stern führt zu seiner Suno-Seite) — zum Verschicken">Export</button>`) +
+      `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>`) +
     /* Der Name steht IN der Zeile, nicht mehr in ihrer Ueberschrift
        (Caspar_D, 26.08.2026: „vorausgefuellt mit dem ganzen Sunohandle,
        bei Klick darauf wird es zu einer editierbaren Box, in der
@@ -7794,7 +7849,6 @@ async function karteZeichnen(){
     /* der Steckbrief (eigenes Element, wird vom Hover befuellt) wandert in die Werk-Lade */
     const sb = $('kartesteckbrief'), halter = leg.querySelector('#kartesteckbriefhalter'); if (sb && halter){ halter.appendChild(sb); sb.hidden = false; }
     kartePanelDran(leg);
-    if ($('karteexport')) $('karteexport').onclick = karteExportKlick;
   }
   /* Caspar_Ds Formulierung (21.08.2026). Das Verfahren ist eingesetzt,
      weil NMDS und UMAP umschaltbar sind. */
@@ -11057,7 +11111,8 @@ function spielen(i, uebernahme){
 
   stemsLaden(s.fremd ? null : s.id);
   $('player').classList.add('an');
-  $('pbild').src   = s.fremd ? (s.bildUrl || '') : artworkBild(s.id);
+  { const bild = s.fremd ? (s.bildUrl || '') : artworkBild(s.id);
+    if (bild) $('pbild').src = bild; else pbildLeer($('pbild')); }
   $('ptitel').textContent = s.titel + (s.fremd ? '  ·  ' + (s.anzeigename || s.handle || 'fremd') : '');
   if (typeof karteLaeuftSetzen === 'function') karteLaeuftSetzen();
   if ($('studio') && $('studio').style.display !== 'none') studioSongLaden();
@@ -11213,6 +11268,40 @@ function spielenNachId(id){
   if (i >= 0) spielen(i);
 }
 
+/* BILDER OHNE BILD - EIN RUECKFALL FUER ALLE (Tarja, 09.09.2026, zum
+   Player: "sieht wie ein Grafikfehler aus"). Ein <img>, dessen Datei
+   fehlt oder dessen Adresse leer ist, zeigt der Browser als leeren
+   Rahmen mit dem Symbol fuer ein kaputtes Bild. Das trifft fremde Titel
+   ohne Bildadresse, Avatare von Sunos CDN ohne Netz - und im
+   eingefrorenen Archiv auf dem Stick jedes Bild, das nicht mitkam.
+   Statt an jeder der rund 30 Stellen einzeln zu denken, faengt ein
+   Lauscher auf der Seite jeden Bildfehler (Fehler-Ereignisse steigen
+   nicht auf, deshalb in der Fangphase): Stellen mit eigenem onerror
+   (Kachel -> cover.jpg, Reaktionen -> ausblenden) kommen zuerst dran;
+   scheitert auch ihr Ersatz, greift dieser Platzhalter - Flaeche des
+   Hauses, Umriss in der Akzentfarbe, Noten-Symbol. Keine Schleife: der
+   Platzhalter selbst kann nicht scheitern, und er wird nur einmal gesetzt. */
+const BILD_LEER = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#9a9aa0" d="M12 3v10.55A4 4 0 1014 17V7h4V3h-6z"/></svg>');
+function bildRueckfall(img){
+  if (!img || img.dataset.rueckfall) return;
+  img.dataset.rueckfall = '1';
+  img.classList.add('leer');
+  img.src = BILD_LEER;
+}
+const pbildLeer = bildRueckfall;
+document.addEventListener('error', (e) => {
+  const img = e.target;
+  if (!img || img.tagName !== 'IMG' || img.dataset.rueckfall) return;
+  /* Eine Stelle mit eigenem onerror hat ihren Ersatz schon gesetzt und
+     laedt ihn gerade - erst wenn auch der scheitert, kommt der Lauscher
+     ein zweites Mal hierher. Ausgeblendete Bilder (visibility hidden)
+     bleiben ausgeblendet. */
+  if (img.style.visibility === 'hidden') return;
+  if (img.hasAttribute('onerror') && !img.dataset.zweiterVersuch){ img.dataset.zweiterVersuch = '1'; return; }
+  bildRueckfall(img);
+}, true);
+/* Bilder, die ein Ersatz ueber onload wieder scharf macht */
+document.addEventListener('load', (e) => { const img = e.target; if (img && img.tagName === 'IMG' && img.dataset.rueckfall && img.src !== BILD_LEER){ delete img.dataset.rueckfall; img.classList.remove('leer'); } }, true);
 function umschalten(){
   if (!audio.src) return;
   audio.paused ? audio.play() : audio.pause();
@@ -12150,7 +12239,7 @@ async function downloadOrdnerZeigen(uebernehmen){
       <b>${d.gefunden} Datei${d.gefunden === 1 ? '' : 'en'} im Download-Ordner</b>
       <div class="kontwas">${d.bereit.map(b => esc(b.titel) + ' · ' + b.datei.replace('audio.', '') + ' ' + b.groesse).join('<br>')}</div>
     </div>
-    <button class="pille an" onclick="downloadOrdnerZeigen(true)">Ins Archiv übernehmen</button>
+    ${archivEingefroren() ? '' : '<button class="pille an" onclick="downloadOrdnerZeigen(true)">Ins Archiv übernehmen</button>'}
   </div>
   <p class="fussnote">Zugeordnet wird über Sunos Signatur im Dateikopf, nicht über den Dateinamen.</p>`;
 }
@@ -13058,6 +13147,9 @@ async function profilNachbarnFuellen(){
      Neuen zu holen dauert Sekunden, alles aufzufrischen zweiundzwanzig
      Minuten und rund achthundert Anfragen an einen fremden Server. Was
      das kostet, steht am Knopf - nicht im Kleingedruckten. */
+  /* Im eingefrorenen Archiv gibt es keine Laeufe - die Knoepfe fehlen,
+     statt mit 405 zu antworten (09.09.2026). */
+  if (archivEingefroren()){ ziel.appendChild(f); return; }
   const neuKnopf = document.createElement('button');
   neuKnopf.className = 'chip'; neuKnopf.style.cursor = 'pointer';
   neuKnopf.textContent = 'Neue holen';
@@ -13840,6 +13932,179 @@ function reaktPersonAlleine(handle){
   reaktPerson(handle);
 }
 
+/* ---- REGISTER EXPORT ---------------------------------------------------
+   Caspar_D, 09.09.2026: "Ein Archiv-Export als eingefrorene, nur lesende
+   Kopie fuer einen USB-Stick" - reinstecken, Startskript, der Browser
+   oeffnet KlangTresor mit allen Titeln; daneben Musik/ mit den MP3s fuer
+   Fernseher, Autoradio, VLC; dazu der Sternenhimmel als eine Datei.
+
+   Der Lauf gehoert dem Server (POST /api/export/start startet
+   bin/export.js als Kindprozess, wie /api/community/start) und laeuft
+   weiter, wenn die Seite zu ist. Hier wird angestossen und nachgesehen:
+   alle 2 s GET /api/export/stand, solange laeuft. Dargestellt in den
+   Abschnitten des Morgenfensters (.ms) - ein Schritt, seine Zeilen,
+   gruen fertig, rot Fehler - und am Ende das Ergebnis in Kacheln.
+
+   Das Ziel kommt aus library/konfig.json (exportZiel) und wird beim
+   Start mitgeschickt; der Server merkt es sich. Der letzte Stand liegt
+   AUF DEM STICK (Programm/library/export-stand.json) - ist er nicht
+   eingehaengt, gibt es keinen Stand, und das steht dann da. */
+let _exportUhr = null;
+const exportGroesse = (b) => b == null ? '–'
+  : b >= 1e9 ? (b / 1e9).toFixed(1).replace('.', ',') + ' GB'
+  : (b / 1e6).toFixed(0) + ' MB';
+const exportTag = (iso, mitJahr) => { const d = iso ? new Date(iso) : null;
+  return d && !isNaN(d) ? d.toLocaleDateString('de-DE', mitJahr ? { day: '2-digit', month: '2-digit', year: 'numeric' } : { day: '2-digit', month: '2-digit' }) : '–'; };
+const exportMs = (t) => typeof t === 'number' ? t : (t ? Date.parse(t) : NaN);
+
+async function profilExportFuellen(){
+  const ziel = $('profilexport'); if (!ziel) return;
+  clearInterval(_exportUhr); _exportUhr = null;
+  ziel.innerHTML = `
+    <div class="block">
+      <h3>Archiv auf den Stick</h3>
+      <p class="fussnote" style="margin-top:0">Eine eingefrorene Kopie des ganzen Bestands: reinstecken, Startskript
+        ausführen, der Browser öffnet KlangTresor mit allen Titeln — nur Abspielen, nichts wird geholt oder gespeichert.
+        Daneben ein Ordner <code>Musik/</code> mit den MP3s nach Titel benannt, mit Titelbild im Dateikopf, für Fernseher,
+        Autoradio und VLC. Ohne WAV. Ein zweiter Export frischt nur auf, was sich geändert hat.</p>
+      <div class="exportzeile">
+        <input type="text" id="exportziel" placeholder="/Volumes/Stick/KlangTresor" spellcheck="false" title="Der Ordner auf dem Stick, in den das Archiv geschrieben wird">
+        <label title="Die Instrumentspuren (Stems) sind rund 27 GB — nur mitnehmen, wenn der Stick sie fasst">
+          <input type="checkbox" id="exportstems"> Stems mitnehmen (27 GB)</label>
+        <button class="pille an" id="exportstart">Export starten</button>
+      </div>
+      <p class="fussnote" id="exportstand"></p>
+      <div class="exportlauf" id="exportlauf"></div>
+    </div>
+    <div class="block">
+      <h3>Sternenhimmel</h3>
+      <p class="fussnote" style="margin-top:0"><b>Mit Suno-Links</b> ist die Datei zum Verschicken: nur öffentliche Titel,
+        jeder Stern führt zu seiner Seite auf suno.com — sie braucht nichts außer sich selbst.
+        <b>Mit Medienordner</b> spielt der Klick auf einen Stern lokal ab und zeigt die Titelbilder aus dem Archiv;
+        die Datei gehört dann neben den Ordner <code>songs/</code> — so liegt sie auch auf dem Stick.</p>
+      <div class="exportzeile">
+        <button class="pille" id="himmelsuno">mit Suno-Links</button>
+        <button class="pille" id="himmelmedien">mit Medienordner</button>
+        <span class="fussnote" id="himmelstand" style="margin:0"></span>
+      </div>
+    </div>`;
+
+  const startKnopf = $('exportstart');
+  startKnopf.onclick = async () => {
+    const z = $('exportziel').value.trim();
+    if (!z){ $('exportstand').textContent = 'Wohin? Ein Zielpfad fehlt.'; $('exportziel').focus(); return; }
+    startKnopf.disabled = true; startKnopf.textContent = 'Startet …';
+    let a = null;
+    try { a = await (await fetch('/api/export/start', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stems: $('exportstems').checked, ziel: z }) })).json(); }
+    catch (e) { a = { ok: false, grund: 'Server antwortet nicht: ' + e.message }; }
+    if (!a || !a.ok){ $('exportstand').textContent = '✗ ' + ((a && a.grund) || 'Start fehlgeschlagen');
+                      startKnopf.disabled = false; startKnopf.textContent = 'Export starten'; return; }
+    exportSchauen(true);
+  };
+  for (const [id, relativ] of [['himmelsuno', false], ['himmelmedien', true]]){
+    const k = $(id); if (!k) continue;
+    k.onclick = () => sternenhimmelAusgeben(relativ, k);
+  }
+  exportSchauen(false);
+}
+
+/* Der Stand: einmal beim Oeffnen, dann alle 2 s, solange laeuft. Das
+   Zielfeld wird nur vorbelegt, solange niemand hineingeschrieben hat. */
+async function exportSchauen(gleich){
+  clearInterval(_exportUhr); _exportUhr = null;
+  const schauen = async () => {
+    if (!$('exportlauf')){ clearInterval(_exportUhr); _exportUhr = null; return; }   /* Register zu */
+    let d = null;
+    try { d = await (await fetch('/api/export/stand', { cache: 'no-store' })).json(); }
+    catch (e) { $('exportstand').textContent = 'Server antwortet nicht.'; return; }
+    exportZeichnen(d || {});
+    if (!(d && d.laeuft)){ clearInterval(_exportUhr); _exportUhr = null; }
+  };
+  await schauen();
+  if (gleich || ($('exportlauf') && $('exportlauf').dataset.laeuft === '1')) _exportUhr = setInterval(schauen, 2000);
+}
+
+function exportZeichnen(d){
+  const feld = $('exportlauf'), stand = $('exportstand'), zielFeld = $('exportziel'), knopf = $('exportstart');
+  if (!feld || !stand) return;
+  if (zielFeld && d.ziel && !zielFeld.dataset.beruehrt && !zielFeld.value){ zielFeld.value = d.ziel; }
+  if (zielFeld && !zielFeld.oninput) zielFeld.oninput = () => { zielFeld.dataset.beruehrt = '1'; };
+  const laeuft = !!d.laeuft;
+  feld.dataset.laeuft = laeuft ? '1' : '0';
+  if (knopf){ knopf.disabled = laeuft; knopf.textContent = laeuft ? 'Läuft …' : 'Export starten'; }
+
+  /* Der letzte Stand vom Stick - oder warum es keinen gibt. */
+  const st = d.letzter || null;            /* so nennt es der Server: export-stand.json vom Stick */
+  if (d.zielEingehaengt === false) stand.textContent = 'Stick nicht eingehängt' + (d.ziel ? ` (${d.ziel})` : '') + '.';
+  else if (st && st.exportiertAm)
+    stand.textContent = `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
+      + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
+  else if (d.ziel) stand.textContent = 'Noch kein Export auf diesem Ziel.';
+  else stand.textContent = 'Noch kein Ziel gewählt.';
+
+  /* Der Lauf als EIN Abschnitt, nachgefuehrt statt neu gebaut: Wer die
+     Zeilen aufgeklappt hat, soll sie nicht alle zwei Sekunden wieder
+     zugeklappt sehen. Kein Lauf, kein Abschnitt. */
+  if (!laeuft && !d.fertig && !d.fehler && !d.schritt){ feld.innerHTML = ''; return; }
+  let el = feld.querySelector('.ms');
+  if (!el){
+    feld.innerHTML = '';
+    el = document.createElement('div'); el.className = 'ms';
+    el.innerHTML = '<div class="msym"></div><div class="mname"></div><div class="mdauer"></div>'
+      + '<div class="mkurz"></div><details><summary>Einzelheiten</summary><pre></pre></details>';
+    feld.appendChild(el);
+  }
+  const status = d.fehler ? 'fehler' : laeuft ? 'laeuft' : d.fertig ? 'fertig' : 'wartet';
+  const vorher = el.dataset.status;
+  el.className = 'ms ' + status; el.dataset.status = status;
+  el.querySelector('.msym').textContent = { fertig: '✓', fehler: '✗', laeuft: '▸' }[status] || '·';
+  el.querySelector('.mname').textContent = d.schritt || (laeuft ? 'Export läuft' : d.fertig ? 'Export fertig' : 'Export');
+  const seit = exportMs(d.seit), erg = d.ergebnis || null;
+  el.querySelector('.mdauer').textContent =
+    erg && erg.dauerS != null ? morgenDauerText(erg.dauerS * 1000)
+    : laeuft && !isNaN(seit) ? morgenDauerText(Date.now() - seit) : '';
+  const kurz = el.querySelector('.mkurz');
+  kurz.textContent = d.fehler ? '✗ ' + d.fehler : '';
+  kurz.style.display = kurz.textContent ? '' : 'none';
+  const det = el.querySelector('details');
+  const zeilen = Array.isArray(d.zeilen) ? d.zeilen : [];
+  det.style.display = zeilen.length ? '' : 'none';
+  if (zeilen.length){ const pre = det.querySelector('pre'); const unten = pre.scrollTop + pre.clientHeight >= pre.scrollHeight - 4;
+    pre.textContent = zeilen.join('\n'); if (unten) pre.scrollTop = pre.scrollHeight; }
+  if (status === 'fehler' && vorher !== 'fehler') det.open = true;
+
+  /* Das Ergebnis, wenn der Lauf durch ist: vier Kacheln, der Probestart
+     gruen oder rot - er ist die eigentliche Auskunft, ob der Stick laeuft. */
+  let w = feld.querySelector('.werte');
+  if (!laeuft && erg){
+    if (!w){ w = document.createElement('div'); w.className = 'werte'; feld.appendChild(w); }
+    const ps = String(erg.probestart || '');
+    const ok = ps === 'ok';
+    w.innerHTML = `<div class="wert"><b>${Number(erg.dateien || 0).toLocaleString('de-DE')}</b><span>Dateien</span></div>
+      <div class="wert"><b>${esc(exportGroesse(erg.bytes))}</b><span>Größe</span></div>
+      <div class="wert"><b>${esc(morgenDauerText((erg.dauerS || 0) * 1000))}</b><span>Dauer</span></div>
+      <div class="wert ${ps ? (ok ? 'gut' : 'schlecht') : ''}" title="${esc(ps)}"><b>${ps ? (ok ? '✓ ok' : '✗') : '–'}</b><span>Probestart${ps && !ok ? '<br>' + esc(ps.replace(/^fehlgeschlagen:?\s*/, '')) : ''}</span></div>`;
+  } else if (w) w.remove();
+}
+
+/* Der Sternenhimmel als eine Datei (bin/himmel-export.js). Das Fenster
+   geht nach der Antwort auf - blockt der Browser das, bleibt der Link
+   daneben stehen. */
+async function sternenhimmelAusgeben(relativ, knopf){
+  const stand = $('himmelstand');
+  knopf.disabled = true; const war = knopf.textContent; knopf.textContent = 'Erzeuge …';
+  if (stand) stand.textContent = '';
+  try {
+    const j = await (await fetch('/api/himmel-export', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ relativ: !!relativ }) })).json();
+    if (!j || !j.ok) throw new Error((j && (j.grund || j.meldung || j.fehler)) || 'fehlgeschlagen');
+    const w = window.open(j.url, '_blank');
+    if (stand) stand.innerHTML = `${w ? 'geöffnet' : 'erzeugt'} — <a href="${esc(j.url)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(j.url)} ↗</a>`;
+  } catch (e) { if (stand) stand.textContent = '✗ ' + e.message; }
+  knopf.disabled = false; knopf.textContent = war;
+}
+
 function profilAuf(){
   const d = katalogInfo || {};
   const p = d.profil || {};
@@ -13918,6 +14183,11 @@ function profilAuf(){
       <div class="profilreg">
         <button class="reg an" data-preg="daten" onclick="profilRegister('daten')">Meine Daten</button>
         <button class="reg" data-preg="community" onclick="profilRegister('community')">Meine Gemeinschaft</button>
+        <!-- DRITTES REGISTER (Caspar_D, 09.09.2026): die Ausgaben des
+             Bestands - Archiv auf den Stick, Sternenhimmel als Datei.
+             Im eingefrorenen Archiv gibt es nichts auszugeben, dann
+             fehlt die Lasche. -->
+        ${archivEingefroren() ? '' : `<button class="reg" data-preg="export" onclick="profilRegister('export')">Export</button>`}
       </div>
 
       <div class="pregfeld" data-preg="daten">
@@ -13993,6 +14263,8 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
         </div>
         <div class="block" id="profilnachbarn"></div>
       </div><!-- /Register: Meine Gemeinschaft -->
+
+      <div class="pregfeld" data-preg="export" id="profilexport" hidden></div><!-- fuellt profilExportFuellen() -->
     </div>`;
 
   $('detail').classList.add('auf');
@@ -14018,8 +14290,9 @@ lokalen Netz und ist für niemanden von außen erreichbar.</pre>
      bleiben im Speicher, nur der Bauzustand faellt. */
   _nachbarnGebaut = false;
   { let r = 'daten'; try { r = localStorage.getItem('profilRegister') || 'daten'; } catch (e) {}
-    profilRegister(r === 'community' ? 'community' : 'daten'); }
+    profilRegister(r === 'community' ? 'community' : (r === 'export' && !archivEingefroren()) ? 'export' : 'daten'); }
   profilCommunityFuellen();
+  if (!archivEingefroren()) profilExportFuellen();
 }
 
 // =============================================================
@@ -15620,8 +15893,14 @@ function capAuf(id, x, y){
     c.style.top  = Math.max(8, Math.min(y + 10, innerHeight - b.height - 8)) + 'px';
   };
   const feld = c.querySelector('#capnotiz');
+  /* Im eingefrorenen Archiv (09.09.2026) ist die Notiz zu lesen, nicht zu
+     schreiben: Ein Feld, das beim Verlassen ins Leere speichert, waere
+     eine Falle. Ebenso der Haken und die Ablageflaechen weiter unten. */
+  const eingefroren = archivEingefroren();
+  if (eingefroren){ feld.readOnly = true; feld.placeholder = 'Archiv eingefroren — keine Notizen'; }
   /* Speichern beim Verlassen des Felds oder Schliessen - kein Knopf. */
   const sichern = async () => {
+    if (eingefroren) return;
     const text = feld.value;
     if (text === (n ? n.text : '')) return;
     try { await fetch('/api/notiz/' + id, { method: 'PUT', body: JSON.stringify({ text }) });
@@ -15659,8 +15938,9 @@ function capAuf(id, x, y){
             : art === 'ton'
             ? `<audio src="/media/${id}/${datei}${t}" controls preload="metadata"></audio>`
             : `<img src="/media/${id}/${datei}${t}" alt="">`)
-          + `<span class="weg">entfernen</span>`;
-        feld.querySelector('.weg').onclick = async (ev) => {
+          + (eingefroren ? '' : `<span class="weg">entfernen</span>`);
+        const weg = feld.querySelector('.weg');
+        if (weg) weg.onclick = async (ev) => {
           ev.stopPropagation();
           try { await fetch(`/api/eigen-artwork/${id}?was=${art}`, { method: 'DELETE' });
                 if (_eigenArt[id]) { delete _eigenArt[id][art];
@@ -15671,7 +15951,7 @@ function capAuf(id, x, y){
         };
       } else {
         feld.className = 'capart';
-        feld.textContent = wort + ' hierher ziehen';
+        feld.textContent = eingefroren ? 'Archiv eingefroren' : wort + ' hierher ziehen';
       }
     }
   };
@@ -15707,7 +15987,7 @@ function capAuf(id, x, y){
   };
 
   for (const [art, feld, annehmen] of artFelder){
-    if (!feld) continue;
+    if (!feld || eingefroren) continue;
     feld.onclick = () => {
       if (feld.classList.contains('hat')) return;
       wohin = [art, feld]; dateiwahl.accept = annehmen; dateiwahl.value = ''; dateiwahl.click();
@@ -15728,7 +16008,8 @@ function capAuf(id, x, y){
   platzieren();
 
   const haken = c.querySelector('#capinstr');
-  if (haken) haken.onchange = async () => {
+  if (haken && eingefroren) haken.disabled = true;
+  if (haken && !eingefroren) haken.onchange = async () => {
     const wert = haken.checked;
     const stand = c.querySelector('#capinstrstand');
     if (stand) stand.textContent = 'wird gesetzt …';
@@ -16136,6 +16417,7 @@ async function aliasZeigen(){
 }
 
 async function morgenAuf(frisch){
+  if (archivEingefroren()) return;          /* der Knopf ist weg; der Weg auch */
   $('morgen').classList.add('auf');
   aliasZeigen();
   $('morgenlzcode').textContent = morgenLzAdresse();
@@ -16175,6 +16457,7 @@ let morgenKnopfWacht = null;
 async function morgenKnopfPruefen(){
   clearTimeout(morgenKnopfWacht); morgenKnopfWacht = null;
   const k = $('morgenknopf'); if (!k) return;
+  if (archivEingefroren()) return;          /* kein Lauf, den es zu bewachen gaebe */
   let s = null;
   try { s = await (await fetch('/api/morgen/stand')).json(); } catch (e) {}
   const laeuft = !!(s && s.laeuft);

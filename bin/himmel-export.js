@@ -5,6 +5,23 @@
  * "als Demo an Tarja"): library/export/sternenhimmel.html
  *
  *   node bin/himmel-export.js
+ *   node bin/himmel-export.js --relativ Programm/library/songs --ziel /Volumes/Stick/KlangTresor/Sternenhimmel.html
+ *
+ * ZWEI SPIELARTEN (Caspar_D, 09.09.2026, Archiv-Export auf den Stick):
+ *   ohne --relativ   die Demo zum Verschicken: nur oeffentliche Titel,
+ *                    Bild und Ton von Sunos CDN, Klick auf einen Stern
+ *                    spielt von dort.
+ *   mit --relativ P  die Datei liegt NEBEN dem Archiv (auf dem Stick):
+ *                    Bild = P/<id>/titelbild.jpg (sonst cover.jpg),
+ *                    Ton = P/<id>/audio.mp3 - relative Adressen, die auch
+ *                    ueber file:// gehen. Ein Klick spielt lokal, kein
+ *                    Netz noetig. Und weil die Titel ohnehin alle auf dem
+ *                    Stick liegen, kommen hier auch die privaten mit -
+ *                    ein Sternenhimmel des eigenen Bestands, nicht eine
+ *                    Demo fuer Fremde. Nur Titel ohne audio.mp3 bleiben
+ *                    draussen, sonst zeigte der Stern ins Leere.
+ *   --ziel <datei>   wohin; Vorgabe library/export/sternenhimmel.html,
+ *                    mit --relativ library/export/sternenhimmel-relativ.html.
  *
  * Laeuft ohne KlangTresor-Server: Daten eingebettet (Lage, Gruppen, KI-
  * Etiketten, Hausmesswerte, Suno-Adresse je Song), Cover von Sunos
@@ -23,6 +40,14 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');   /* fuer die Syntaxprobe unten */
 const WURZEL = path.join(__dirname, '..');
 const K = require('./katalog.js');
+
+/* Aufrufoptionen - siehe Kopf. Ein Praefix ohne Wert ist ein Tippfehler,
+   kein stiller Rueckfall auf die CDN-Fassung. */
+const args = process.argv.slice(2);
+const option = (name) => { const i = args.indexOf(name); if (i < 0) return null; const w = args[i + 1]; if (!w || w.startsWith('--')) { console.error('\n  ' + name + ' braucht einen Wert.\n'); process.exit(1); } return w; };
+const RELATIV = option('--relativ');                                  /* z.B. Programm/library/songs */
+const ZIEL_OPT = option('--ziel');
+const SONGS_ORDNER = path.join(WURZEL, 'library', 'songs');
 
 const html = fs.readFileSync(path.join(WURZEL, 'web', 'index.html'), 'utf8');
 const karte = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'karte.json'), 'utf8'));
@@ -130,18 +155,69 @@ const code = [
   funktion('strudelOrt'), funktion('nebelMalen'),
   funktion('blitzMalen'), funktion('wuerfelZeichnen'), funktion('wurmlochMalen'),
   'let karteTippUhr = 0;', funktion('karteTipp'), funktion('karteTippWeg'),
+  /* NACHGETRAGEN AM 09.09.2026, gefunden von der Selbstpruefung unten beim
+     Bau des Archiv-Exports: neun Namen, die seit dem 25.08. in die
+     geschnittenen Funktionen gewachsen sind - die Raeume (raumJetzt,
+     raumDaten, raumDa, raumK, RAUM_NAME), das beschnittene Titelbild
+     (artworkBild), das Symbol-Makro SYM, der Rabe (rabenmagieAnwenden)
+     und sunoHandle. Die Demo lief seither ohne Fehlermeldung durch den
+     Export und stieg im Browser beim ersten Zeichnen aus.
+
+     Raeume gibt es hier nicht: ein Himmel, ein Datensatz. raumDaten
+     bleibt leer und raumK faellt auf karteDaten zurueck (die Funktion
+     aus der Seite tut genau das); raumDa = null blendet die Raum-Zeile
+     im Panel aus. artworkBild wird nie gebraucht, weil jeder Titel sein
+     Bild als s.bild mitbringt - der Platzhalter faengt nur den ||-Zweig.
+     SYM zeigt auf Symbole, die die Seite als <svg><symbol> traegt und
+     diese Datei nicht; das Stift-Symbol am Schiffsnamen bleibt darum
+     leer, der Knopf tut trotzdem. */
+  konstante(/const RAUM_NAME = [^\n]*;/),
+  konstante(/const SYM = [^\n]*;/),
+  "const raumDaten = {}; let raumJetzt = 'klang'; let raumDa = null;",
+  funktion('raumK'),
+  "function artworkBild(){ return ''; }",
+  'function rabenmagieAnwenden(){}',
+  'function sunoHandle(){ return ' + JSON.stringify(String((konfig && konfig.handle) || '')) + '; }',
+  /* Dieselbe Runde, zweiter Fund - erst im Browser, nicht in der
+     Selbstpruefung: esc (der Schiffsname im Panel) und diaFlaeche (die
+     Flaechenfarbe des Panels) werden nur INNERHALB von Vorlagenzeichen-
+     ketten gerufen, ${esc(...)}, und die Pruefung strich Vorlagen bis
+     dahin komplett - samt Ausdruecken darin. Seit heute behaelt sie die
+     ${...}-Teile (unten). SPUR_DECKUNG kommt mit, diaFlaeche liest sie. */
+  /* esc kommt NICHT aus der Seite geschnitten: dort steht ein Anfuehrungs-
+     zeichen in einem Regex-Muster (/[&<>"]/), und die Pruefung unten, die
+     Zeichenketten mit einem Muster streicht, hielt es fuer den Anfang
+     einer - danach war fuer sie der halbe Export eine Zeichenkette und
+     'function zeichnen' unbekannt. Gleiche Wirkung, als \\x22 geschrieben. */
+  'function esc(t){ return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\\x22/g, "&quot;"); }',
+  konstante(/const SPUR_DECKUNG = [^\n]*;/), deklaration('diaFlaeche'), deklaration('diaTopline'),
+  deklaration('RAUM_WAS'),                     /* Hinweistext der Raum-Pillen; ohne raumDa bleiben sie aus, gelesen wird er trotzdem */
 ].join('\n\n')
   .replace(/\/media\/\$\{s\.id\}\/cover\.jpg/g, '${s.bild || \'\'}')   // Cover von Sunos CDN
   .replace(/`<button class="pille" id="karteexport"[^`]*`\)/, '``)');             // kein Export-Knopf in der Demo
 
-/* Daten: nur oeffentliche Songs, schlank. */
-const songs = karte.songs.filter(p => { const s = katalog.songs[p.id]; return s && s.oeffentlich && !s.fremd; });
+/* Daten: nur oeffentliche Songs, schlank - in der Demo. Auf dem Stick
+   (--relativ) alle eigenen, die eine MP3 mitbringen; siehe Kopf. */
+const songs = karte.songs.filter(p => {
+  const s = katalog.songs[p.id]; if (!s || s.fremd) return false;
+  if (RELATIV) return fs.existsSync(path.join(SONGS_ORDNER, p.id, 'audio.mp3'));
+  return !!s.oeffentlich;
+});
+/* Bild- und Tonadresse je Titel: relativ zum Praefix oder Sunos CDN. Das
+   Praefix bleibt, wie es kommt (Vorwaertsschraegstriche, kein Schluss-
+   strich) - es ist eine URL, kein Dateipfad, auch unter Windows. */
+const adressen = (s) => {
+  if (!RELATIV) return { bild: s.bildUrl || '', audio: s.audioUrl || '' };
+  const p = RELATIV.replace(/\/+$/, '');
+  const bildDatei = fs.existsSync(path.join(SONGS_ORDNER, s.id, 'titelbild.jpg')) ? 'titelbild.jpg' : 'cover.jpg';
+  return { bild: p + '/' + s.id + '/' + bildDatei, audio: p + '/' + s.id + '/audio.mp3' };
+};
 const stamm = {};
 for (const p of songs) {
   const s = katalog.songs[p.id];
   stamm[p.id] = { id: s.id, titel: s.titel, erstellt: s.erstellt, modell: s.modell, dauer: s.dauer, link: s.link || `https://suno.com/song/${s.id}`,
     plays: s.plays || 0, likes: s.likes || 0, kommentare: s.kommentare || 0, zaehlerVerlauf: (s.zaehlerVerlauf || []).slice(-12).map(e => ({ stand: e.stand, plays: e.plays })),
-    bild: s.bildUrl || '', audio: s.audioUrl || '', analyse: analyse[s.id] ? { bpm: analyse[s.id].bpm, tonart: analyse[s.id].tonart, lufs: analyse[s.id].lufs, stimme: analyse[s.id].stimme } : null };
+    ...adressen(s), analyse: analyse[s.id] ? { bpm: analyse[s.id].bpm, tonart: analyse[s.id].tonart, lufs: analyse[s.id].lufs, stimme: analyse[s.id].stimme } : null };
 }
 const oeff = new Set(songs.map(p => p.id));
 const tags = (karte.tags || []).map(t => ({ ...t, sterne: (t.sterne || []).filter(id => oeff.has(id)) }));   // nur oeffentliche Sterne im Sternbild
@@ -269,7 +345,7 @@ body{padding-bottom:64px}
 @media (max-width:900px){#karte{grid-template-columns:1fr}#kartefeld{height:70vh}#karterechts{height:auto}}
 </style></head>
 <body>
-<header><h1>Klangraum</h1><small>${daten.anzahl} Songs von <a style="color:inherit" href="https://suno.com/@${handle}">@${handle}</a> auf Suno, nach Klang geordnet — Klick auf einen Stern spielt ihn</small></header>
+<header><h1>Klangraum</h1><small>${daten.anzahl} Titel von <a style="color:inherit" href="https://suno.com/@${handle}">@${handle}</a>${RELATIV ? ' — aus dem Archiv auf diesem Datenträger' : ' auf Suno'}, nach Klang geordnet — Klick auf einen Stern spielt ihn</small></header>
 <div id="karte">
   <div id="kartefeld"><canvas id="karteschiffhinten"></canvas><canvas id="karteglut"></canvas><canvas id="karteschiff"></canvas><svg id="kartesvg"></svg></div>
   <div id="karterechts"><div id="kartelegende"></div><div id="kartesteckbrief" hidden></div></div>
@@ -368,9 +444,9 @@ window.addEventListener('resize', zeichnen);
 </body></html>
 `;
 
-const ordner = path.join(WURZEL, 'library', 'export');
-fs.mkdirSync(ordner, { recursive: true });
-const ziel = path.join(ordner, 'sternenhimmel.html');
+const ziel = ZIEL_OPT ? path.resolve(ZIEL_OPT)
+                      : path.join(WURZEL, 'library', 'export', RELATIV ? 'sternenhimmel-relativ.html' : 'sternenhimmel.html');
+fs.mkdirSync(path.dirname(ziel), { recursive: true });
 fs.writeFileSync(ziel, seite);
 
 /* ------------------------------------------------------------------
@@ -393,7 +469,16 @@ fs.writeFileSync(ziel, seite);
   const ohneBeiwerk = (t) => t
     .replace(/\/\*[\s\S]*?\*\//g, ' ')
     .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ')
-    .replace(/`(?:\\.|[^`\\])*`/g, ' ')
+    /* Vorlagen: der Text faellt weg, die ${...}-Ausdruecke bleiben - dort
+       stehen Aufrufe wie ${esc(schiffName())}, die sonst unsichtbar waeren
+       (09.09.2026, esc und diaFlaeche fehlten im Export, ohne dass die
+       Pruefung anschlug). */
+    .replace(/`(?:\\.|[^`\\])*`/g, (m) => (m.match(/\$\{[^}]*\}/g) || [])
+      /* ... und von den Ausdruecken nur die Namen: eine Zeichenkette darin
+         (${x ? 'an' : ''}) liesse sonst die Anfuehrungszeichen-Striche
+         unten aus dem Tritt kommen - dann verschwand der halbe Export aus
+         der Pruefung, und mit ihm 'function zeichnen'. */
+      .map(x => (x.replace(/'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/g, ' ').match(/[A-Za-z_$][\w$]*/g) || []).join(' ')).join(' '))
     .replace(/"(?:\\.|[^"\\])*"/g, ' ')
     .replace(/'(?:\\.|[^'\\])*'/g, ' ');
 
@@ -461,4 +546,4 @@ fs.writeFileSync(ziel, seite);
   }
 }
 
-console.log(`  Sternenhimmel exportiert: ${songs.length} öffentliche Songs → ${path.relative(WURZEL, ziel)} (${(fs.statSync(ziel).size / 1024).toFixed(0)} KB)`);
+console.log(`  Sternenhimmel exportiert: ${songs.length} ${RELATIV ? 'Titel, Bild und Ton relativ zu ' + RELATIV : 'öffentliche Titel'} → ${ZIEL_OPT ? ziel : path.relative(WURZEL, ziel)} (${(fs.statSync(ziel).size / 1024).toFixed(0)} KB)`);

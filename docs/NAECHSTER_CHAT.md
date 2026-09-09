@@ -1985,3 +1985,25 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
 - Offen: Abschnitte „nach und nach" im Morgenfenster (Backlog); Ideen
   Gemeinschaft (Backlog, Caspar_Ds Wunsch Stilgruppen zuerst); Mitschnitt-
   datei im apk/iphone-Ordner enthält Token — löschen, wenn Caspar_D zustimmt.
+
+## Archiv-Export gebaut (09.09.2026, 09:30)
+
+- Drei Teile, in einem Workflow parallel gebaut und von mir zusammengesetzt:
+  `server/server.js` (`--eingefroren`, `--port` mit Weitersuche, 405 auf
+  alles außer GET/HEAD, `/api/export/start|stand`, `/api/konfig
+  {exportZiel}`, `/api/himmel-export {relativ}`), `bin/export.js` (neu:
+  Programm/, Programm/library/ ohne WAV/Stems/roh/backup/modelle/…,
+  Musik/ mit ID3 samt Titelbild, node/ aus library/node-portabel,
+  Sternenhimmel.html relativ, Startskripte Mac/Windows/Linux, LIES-MICH,
+  export-stand.json, Probestart vom Ziel), `bin/himmel-export.js`
+  (`--relativ`, `--ziel`; elf seit 25.08. fehlende Namen ergänzt),
+  `web/index.html` (Register „Export" im Profil, Klangraum-Knopf
+  gestrichen, eingefrorener Modus mit Banner, Bild-Rückfall für alle).
+- Ende-zu-Ende über den Server-Weg auf die SSD: 3.673 Dateien, 7,54 GB,
+  65 s, Musik/ 324, Probestart ok; Probekopie danach gelöscht,
+  `exportZiel` in konfig.json wieder leer.
+- Portables Node v24.21.0 (LTS) in `library/node-portabel/` (gitignored):
+  win-x64, darwin-x64, darwin-arm64, Prüfsummen geprüft.
+- Offen: Windows-Startskript auf Castos Rechner testen (SmartScreen,
+  findstr, curl); Handbuch-Kapitel Export; Stick-Ziel setzt Caspar_D im
+  Register; Stems bleiben liegen, wenn ein früherer Lauf sie kopiert hat.

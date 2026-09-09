@@ -17,7 +17,28 @@ const path = require('node:path');
 const os   = require('node:os');
 const K    = require('../bin/katalog.js');
 
-const PORT   = 8788;
+/* Argumente (Caspar_D, 09.09.2026): fuer den Archiv-Export auf den
+   USB-Stick. Die Startskripte dort rufen
+       node Programm/server/server.js --eingefroren --port 8788
+   und lesen die Zeile "KlangTresor auf http://localhost:PORT" aus der
+   Ausgabe, um den Browser zu oeffnen. Ohne Argumente laeuft alles wie
+   bisher - Port 8788, belegt heisst Abbruch mit Hinweis.
+
+   --eingefroren   nur lesen: alles ausser GET/HEAD bekommt 405, keine
+                   Selbst-Neustart-Wache, keine Migration beim Start.
+                   Auch als Umgebung: KLANGTRESOR_EINGEFROREN=1.
+   --port N        Wunschport. Ist er belegt, wird der naechste freie
+                   genommen - auf einem fremden Rechner weiss niemand,
+                   was dort schon lauscht, und der Stick soll trotzdem
+                   aufgehen. */
+const ARGUMENTE = process.argv.slice(2);
+const EINGEFROREN = ARGUMENTE.includes('--eingefroren') || process.env.KLANGTRESOR_EINGEFROREN === '1';
+const PORTWUNSCH = (() => {
+  const i = ARGUMENTE.indexOf('--port');
+  const n = i >= 0 ? parseInt(ARGUMENTE[i + 1], 10) : NaN;
+  return n > 0 && n < 65536 ? n : null;
+})();
+let PORT = PORTWUNSCH || 8788;
 const WURZEL = path.join(__dirname, '..');
 const WEB    = path.join(WURZEL, 'web');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
@@ -589,7 +610,9 @@ function dauernMigrieren() {
   console.log(`morgen-dauern.json migriert: ${umgeschrieben} Namen auf IDs, ${ernte.length} Lesezeichen-Eintraege gemittelt`
     + (weg.length ? `, verworfen: ${weg.join(', ')}` : ''));
 }
-dauernMigrieren();
+/* Eingefroren wird nichts umgeschrieben - der Stick darf schreibgeschuetzt
+   sein, und die Lernkurve der Morgenroutine braucht dort niemand. */
+if (!EINGEFROREN) dauernMigrieren();
 function dauerMerken(id, ms, einheiten) {
   const d = dauernLesen();
   /* Bei skalierenden Schritten die Dauer je Einheit merken; null
@@ -1123,6 +1146,12 @@ const server = http.createServer((req, res) => {
 
   const vonSuno = morgenKopf(req, res);
   if (req.method === 'OPTIONS') { res.writeHead(vonSuno ? 204 : 403); return res.end(); }
+  /* Eingefroren (Caspar_D, 09.09.2026): das Archiv auf dem Stick ist
+     eine Kopie, nichts darf dort holen oder speichern. Eine Sperre fuer
+     alle Wege statt einer Ausnahme je Route - so kann keine spaeter
+     hinzugekommene Route die Regel vergessen. */
+  if (EINGEFROREN && req.method !== 'GET' && req.method !== 'HEAD')
+    return jsonAntwort(res, { fehler: 'Archiv eingefroren' }, 405);
 
   /* ----------------------------------------------------------------
      Der Morgenlauf
@@ -1157,11 +1186,30 @@ const server = http.createServer((req, res) => {
     /* Gibt es schon einen Katalog, steht der Nutzer fest - dann wird
        nicht gefragt, sondern still uebernommen (Caspar_D, 21.08.2026:
        „nur beim ersten Mal, wenn noch kein Nutzer angemeldet ist"). */
-    if (!k.handle && vorschlag) {
+    if (!k.handle && vorschlag && !EINGEFROREN) {
       fs.writeFileSync(KONFIG, JSON.stringify({ ...k, handle: vorschlag, seit: new Date().toISOString(), herkunft: 'katalog' }, null, 1));
       return jsonAntwort(res, { handle: vorschlag, vorschlag, seit: null });
     }
-    return jsonAntwort(res, { handle: k.handle || null, vorschlag, seit: k.seit || null });
+    return jsonAntwort(res, { handle: k.handle || null, vorschlag, seit: k.seit || null, exportZiel: k.exportZiel || null });
+  }
+  /* Das Exportziel (Caspar_D, 09.09.2026): der Ordner auf dem Stick, in
+     den bin/export.js kopiert. Eigener Weg (POST) neben dem PUT fuer
+     den Handle, damit die Handle-Pruefung nicht angefasst wird; alle
+     anderen Felder bleiben stehen. Leer = Ziel vergessen. */
+  if (p === '/api/konfig' && req.method === 'POST') {
+    let roh = ''; req.on('data', c => { roh += c; if (roh.length > 4096) req.destroy(); });
+    return req.on('end', () => {
+      try {
+        const d = JSON.parse(roh);
+        if (!('exportZiel' in d)) return jsonAntwort(res, { fehler: 'exportZiel fehlt' }, 400);
+        const ziel = String(d.exportZiel || '').trim();
+        if (ziel && !path.isAbsolute(ziel)) return jsonAntwort(res, { fehler: 'exportZiel muss ein absoluter Pfad sein' }, 400);
+        const alt = konfigLesen();
+        if (ziel) alt.exportZiel = ziel; else delete alt.exportZiel;
+        fs.writeFileSync(KONFIG, JSON.stringify(alt, null, 1));
+        jsonAntwort(res, { ok: true, exportZiel: ziel || null });
+      } catch (e) { jsonAntwort(res, { fehler: e.message }, 400); }
+    });
   }
   if (p === '/api/konfig' && req.method === 'PUT') {
     let roh = '';
@@ -1774,8 +1822,20 @@ const server = http.createServer((req, res) => {
          nimmt dann titelbild.jpg statt cover.jpg. */
       titelbild = Object.keys(ks.titelbild || {}).filter(id => ks.titelbild[id]);
     } catch (e) {}
+    /* Eingefroren: wann der Stick gefuellt wurde, steht in
+       library/export-stand.json (schreibt bin/export.js). Die Oberflaeche
+       zeigt daraus "Archiv vom ..." und blendet alles Holende aus. */
+    let eingefroren = null;
+    if (EINGEFROREN) {
+      eingefroren = { seit: null, dateien: null, bytes: null };
+      try {
+        const es = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'export-stand.json'), 'utf8'));
+        eingefroren = { seit: es.exportiertAm || null, dateien: es.dateien ?? null, bytes: es.bytes ?? null };
+      } catch (e) {}
+    }
     return jsonAntwort(res, {
       version:    paketVersion(),
+      eingefroren,
       kachelStand,
       titelbild,
       erstelltAm: k.erstelltAm,
@@ -1997,15 +2057,86 @@ const server = http.createServer((req, res) => {
   }
   /* Sternenhimmel als eine Datei zum Verschicken (bin/himmel-export.js):
      POST erzeugt ihn frisch, GET liefert ihn aus. */
+  /* Zwei Fassungen (Caspar_D, 09.09.2026): {relativ:true} baut die fuer
+     den Stick - Bild und Ton zeigen auf ../songs/<id>/..., ein Klick auf
+     einen Stern spielt lokal statt suno.com zu oeffnen. Sie liegt als
+     sternenhimmel-relativ.html daneben, damit die verschickbare Fassung
+     nicht ueberschrieben wird. */
   if (p === '/api/himmel-export' && req.method === 'POST') {
-    const r = require('node:child_process').spawnSync(process.execPath, ['bin/himmel-export.js'], { cwd: WURZEL, encoding: 'utf8' });
-    if (r.status !== 0) return jsonAntwort(res, { ok: false, meldung: (r.stderr || r.stdout || '').trim().slice(-300) }, 500);
-    return jsonAntwort(res, { ok: true, meldung: (r.stdout || '').trim(), url: '/export/sternenhimmel.html' });
+    let roh = ''; req.on('data', c => { roh += c; if (roh.length > 4096) req.destroy(); });
+    req.on('end', () => {
+      let d = null; try { d = JSON.parse(roh); } catch (e) {}
+      const relativ = !!(d && d.relativ);
+      const name = relativ ? 'sternenhimmel-relativ.html' : 'sternenhimmel.html';
+      const args = ['bin/himmel-export.js', '--ziel', path.join('library', 'export', name)];
+      if (relativ) args.push('--relativ', '../songs');
+      const r = require('node:child_process').spawnSync(process.execPath, args, { cwd: WURZEL, encoding: 'utf8' });
+      if (r.status !== 0) return jsonAntwort(res, { ok: false, meldung: (r.stderr || r.stdout || '').trim().slice(-300) }, 500);
+      jsonAntwort(res, { ok: true, meldung: (r.stdout || '').trim(), url: '/export/' + name });
+    });
+    return;
   }
-  if (p === '/export/sternenhimmel.html') {
-    const f = path.join(WURZEL, 'library', 'export', 'sternenhimmel.html');
+  if (p === '/export/sternenhimmel.html' || p === '/export/sternenhimmel-relativ.html') {
+    const f = path.join(WURZEL, 'library', 'export', p.slice('/export/'.length));
     if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
     return liefere(req, res, f);
+  }
+
+  /* ----------------------------------------------------------------
+     Der Archiv-Export (Caspar_D, 09.09.2026): eine eingefrorene Kopie
+     fuer den USB-Stick, gebaut von bin/export.js.
+
+     POST /api/export/start  {stems, ziel?}   den Lauf anstossen
+     GET  /api/export/stand                   wie weit ist es
+
+     Muster wie /api/community/start: ein Kindprozess, losgeloest von
+     der Seite, ein Lauf zur Zeit (global.exportLauf). Den Fortschritt
+     schreibt das Skript selbst nach library/export-lauf.json - so
+     stimmt er auch, wenn der Lauf von der Kommandozeile kam.
+  ---------------------------------------------------------------- */
+  const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
+  if (p === '/api/export/start' && req.method === 'POST') {
+    let roh = ''; req.on('data', c => { roh += c; if (roh.length > 4096) req.destroy(); });
+    req.on('end', () => {
+      let d = null; try { d = JSON.parse(roh); } catch (e) {}
+      if (global.exportLauf) return jsonAntwort(res, { ok: true, laeuft: true });
+      const stems = !!(d && d.stems);
+      const gewuenscht = String((d && d.ziel) || '').trim();
+      if (gewuenscht && !path.isAbsolute(gewuenscht))
+        return jsonAntwort(res, { ok: false, grund: 'Das Ziel muss ein absoluter Pfad sein.' });
+      const konf = konfigLesen();
+      /* Ein genanntes Ziel wird gemerkt - beim naechsten Mal reicht der Knopf. */
+      if (gewuenscht && gewuenscht !== konf.exportZiel) {
+        try { fs.writeFileSync(KONFIG, JSON.stringify({ ...konf, exportZiel: gewuenscht }, null, 1)); } catch (e) {}
+      }
+      const ziel = gewuenscht || konf.exportZiel || '';
+      if (!ziel) return jsonAntwort(res, { ok: false, grund: 'Kein Exportziel - erst einen Ordner auf dem Stick angeben.' });
+      if (!fs.existsSync(path.dirname(ziel)))
+        return jsonAntwort(res, { ok: false, grund: `Der Stick ist nicht eingehaengt (${path.dirname(ziel)} fehlt).` });
+      const cp = require('node:child_process');
+      const args = ['bin/export.js', '--ziel', ziel];
+      if (stems) args.push('--stems');
+      const k = cp.spawn(process.execPath, args, { cwd: WURZEL, stdio: 'ignore' });
+      global.exportLauf = { seit: Date.now(), pid: k.pid, ziel, stems };
+      k.on('error', () => { global.exportLauf = null; });
+      k.on('close', () => { global.exportLauf = null; });
+      jsonAntwort(res, { ok: true, laeuft: true });
+    });
+    return;
+  }
+  if (p === '/api/export/stand') {
+    const konf = konfigLesen();
+    const ziel = konf.exportZiel || null;
+    let lauf = { laeuft: false, seit: null, schritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
+    try { lauf = { ...lauf, ...JSON.parse(fs.readFileSync(EXPORT_LAUF, 'utf8')) }; } catch (e) {}
+    /* "Eingehaengt" heisst: der Ordner UEBER dem Ziel ist da - der Stick
+       selbst also, auch wenn noch nie exportiert wurde. */
+    const zielEingehaengt = !!ziel && fs.existsSync(path.dirname(ziel));
+    let letzter = null;
+    if (zielEingehaengt) {
+      try { letzter = JSON.parse(fs.readFileSync(path.join(ziel, 'Programm', 'library', 'export-stand.json'), 'utf8')); } catch (e) {}
+    }
+    return jsonAntwort(res, { ...lauf, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter });
   }
   /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js).
 
@@ -2686,7 +2817,10 @@ const server = http.createServer((req, res) => {
 const BEOBACHTET = [__filename, path.join(__dirname, '..', 'bin', 'katalog.js')];
 const standVon = (f) => { try { return fs.statSync(f).mtimeMs; } catch (e) { return 0; } };
 let eigeneStand = BEOBACHTET.map(standVon).join('|');
-setInterval(() => {
+/* Eingefroren gibt es keine Wache: Auf dem Stick steht keine Schleife
+   dahinter, die den Server wieder hochzieht - Exit 75 waere dort
+   schlicht das Ende. */
+if (!EINGEFROREN) setInterval(() => {
   const m = BEOBACHTET.map(standVon).join('|');
   if (m === eigeneStand) return;
   if (morgen.laeuft) { return; }             // nicht mitten im Lauf
@@ -2702,6 +2836,14 @@ setInterval(() => {
    Ordner fuer den aktiven und raeumt bei Gelegenheit den richtigen weg.
    (Gefunden beim Durchspielen der Update-Wege, 24.08.2026.) */
 server.on('error', (e) => {
+  /* Mit --port (Stick) wird weitergesucht: dort ist "ein anderer
+     KlangTresor" keine Verwechslungsgefahr, sondern der Normalfall,
+     wenn der Stick am Rechner der Werkstatt steckt. Hoechstens 50
+     Versuche, danach der alte Abbruch. */
+  if (e.code === 'EADDRINUSE' && PORTWUNSCH && PORT < PORTWUNSCH + 50) {
+    PORT++;
+    return server.listen(PORT, '0.0.0.0');
+  }
   if (e.code === 'EADDRINUSE') {
     console.error(`\n  Auf Port ${PORT} laeuft bereits ein KlangTresor.\n`);
     console.error('  Zwei koennen sich denselben Port nicht teilen. Entweder das');
@@ -2714,8 +2856,12 @@ server.on('error', (e) => {
   process.exit(1);
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.on('listening', () => {
   console.log('\n  KlangTresor läuft\n');
+  /* Diese Zeile lesen die Startskripte auf dem Stick - Wortlaut ist
+     Schnittstelle, nicht Schmuck. */
+  console.log(`  KlangTresor auf http://localhost:${PORT}`);
+  if (EINGEFROREN) console.log('  Eingefroren: nur lesen, nichts wird geholt oder gespeichert.');
   /* Hier stand "Auf diesem Mac" - was auf einem Windows-Rechner schlicht
      falsch ist und beim Einrichten sofort auffaellt (27.08.2026). Das
      Haus ist am Mac gewachsen, aber es laeuft nicht nur dort. */
@@ -2738,3 +2884,4 @@ server.listen(PORT, '0.0.0.0', () => {
   else   console.log('\n  Achtung: Katalog fehlt - erst "node bin/aufbereiten.js" laufen lassen.');
   console.log('\n  Beenden mit Strg+C\n');
 });
+server.listen(PORT, '0.0.0.0');

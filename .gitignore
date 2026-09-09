@@ -76,3 +76,6 @@ library/liker/
 library/liker-verlauf.ndjson
 library/beobachter.json
 library/beobachter-verlauf.ndjson
+library/node-portabel/
+library/export-lauf.json
+library/export-stand.json
