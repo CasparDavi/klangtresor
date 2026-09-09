@@ -2302,3 +2302,7 @@ zufälligen Teil der Schläge ein abklingender Stoß mit zufälliger Richtung/Wu
 jedes Teilchen zieht seinen Ton deterministisch aus der Spanne. Beim Wechsel der Art setzt `ART_FARBEN` passende Farben
 (Funken rot→gelb 0,85; Asche grau→dunkel 0,6; Schnee/Regen weiß mit kaltem Hauch), aber nur, solange die Farben noch
 die der vorigen Art sind — eigene bleiben (`_artVor` merkt die vorige Art, wandert nicht ins Rezept).
+
+**Nachtrag:** Theaternebel hat neben Heterogenität (Unterschiede *zwischen* Schwaden) jetzt **Turbulenz** (räumliche
+Frequenz *in* der Schwade — „viel Änderung pro Ort", Caspar_D): jede Schwade ist ein Bündel kleinerer Flecken, die um den
+Kern kreisen; je höher, desto mehr, kleiner, schneller (bis 9, dreifaches Tempo; Deckung je Fleck voll, sonst verblasst die Schwade). Turbulenz 0 = der ruhige Fleck von vorher.
