@@ -779,6 +779,47 @@ function likerMitZeiten(id, herzZeilen) {
   return { abgerufenAm: d.abgerufenAm, anzahlSuno: d.anzahlSuno, likers };
 }
 
+/* BEOBACHTER - wer folgt, wem wird gefolgt, vollstaendig (Lesezeichen
+   2f, Web-Wege followers/following). Ablage library/beobachter.json =
+   der juengste Stand beider Richtungen; Aenderungen (dazu/weg je
+   Richtung) in library/beobachter-verlauf.ndjson mit dem Fenster
+   zwischen zwei Laeufen. "weg" wird nur gewertet, wenn die Ernte
+   vollstaendig war - eine abgebrochene Liste ist kein Beweis fuer einen
+   Weggang (dieselbe Vorsicht wie bei den Alben). */
+const BEOBACHTER = path.join(WURZEL, 'library', 'beobachter.json');
+const BEOBACHTER_VERLAUF = path.join(WURZEL, 'library', 'beobachter-verlauf.ndjson');
+function beobachterLesen() { try { return JSON.parse(fs.readFileSync(BEOBACHTER, 'utf8')); } catch (e) { return null; } }
+function beobachterAblegen(b, gesehen) {
+  const norm = p => ({ handle: p.handle, name: p.display_name || p.handle, avatar: p.avatar_image_url || null,
+                       uid: p.external_user_id || null, folgeIch: !!p.is_following, folgtMir: !!p.is_following_viewer, verifiziert: !!p.is_verified });
+  const neu = { abgerufenAm: gesehen, vollstaendig: !!b.vollstaendig, lautSuno: b.lautSuno || {},
+                follower: (b.follower || []).filter(p => p && p.handle).map(norm),
+                following: (b.following || []).filter(p => p && p.handle).map(norm) };
+  const alt = beobachterLesen();
+  const strom = fs.createWriteStream(BEOBACHTER_VERLAUF, { flags: 'a' });
+  const zaehl = { dazu: 0, weg: 0 };
+  for (const richtung of ['follower', 'following']) {
+    const altListe = alt && Array.isArray(alt[richtung]) ? alt[richtung] : null;
+    if (!altListe) { strom.write(JSON.stringify({ art: 'stand', richtung, anzahl: neu[richtung].length, abgerufenAm: gesehen }) + '\n'); continue; }
+    const altMenge = new Set(altListe.map(p => p.handle)), neuMenge = new Set(neu[richtung].map(p => p.handle));
+    for (const p of neu[richtung]) if (!altMenge.has(p.handle)) { zaehl.dazu++; p.seit = [alt.abgerufenAm, gesehen];
+      strom.write(JSON.stringify({ art: 'dazu', richtung, handle: p.handle, name: p.name, zwischen: [alt.abgerufenAm, gesehen] }) + '\n'); }
+    else { const a = altListe.find(x => x.handle === p.handle); if (a && a.seit) p.seit = a.seit; }
+    if (neu.vollstaendig) for (const a of altListe) if (!neuMenge.has(a.handle)) { zaehl.weg++;
+      strom.write(JSON.stringify({ art: 'weg', richtung, handle: a.handle, name: a.name, zwischen: [alt.abgerufenAm, gesehen] }) + '\n'); }
+  }
+  strom.end();
+  if (!neu.vollstaendig && alt) {
+    /* Unvollstaendig: den alten Stand nicht durch einen kleineren ersetzen - nur Neue dazunehmen. */
+    for (const richtung of ['follower', 'following']) {
+      const neuMenge = new Set(neu[richtung].map(p => p.handle));
+      for (const a of alt[richtung] || []) if (!neuMenge.has(a.handle)) neu[richtung].push(a);
+    }
+  }
+  fs.writeFileSync(BEOBACHTER, JSON.stringify(neu));
+  return { follower: neu.follower.length, following: neu.following.length, ...zaehl, vollstaendig: neu.vollstaendig };
+}
+
 /* Eine Benachrichtigung in die Zeilenform bringen.
    v2 (Web): user_profiles (hoechstens drei), total_users, content_id,
    content_title, content_message.
@@ -1337,6 +1378,13 @@ const server = http.createServer((req, res) => {
                                               benachrichtigungen: daten.benachrichtigungen }));
           } catch (e) { console.log('Benachrichtigungen-Probe nicht geschrieben:', e.message); }
         }
+        /* Beobachter: sofort ablegen. */
+        if (daten.beobachter && typeof daten.beobachter === 'object'
+            && ((daten.beobachter.follower || []).length || (daten.beobachter.following || []).length)) {
+          const r = beobachterAblegen(daten.beobachter, daten.erzeugtAm);
+          morgen.zeilen.push(`Beobachter: ${r.follower} folgen, ${r.following} gefolgt`
+                             + (r.dazu || r.weg ? ` — ${r.dazu} dazu, ${r.weg} weg` : '') + (r.vollstaendig ? '' : ' (unvollständig)'));
+        }
         /* Wer hat geherzt: sofort ablegen, wie die Benachrichtigungen. */
         if (daten.liker && typeof daten.liker === 'object' && Object.keys(daten.liker).length) {
           const r = likerAblegen(daten.liker, daten.erzeugtAm);
@@ -1636,7 +1684,25 @@ const server = http.createServer((req, res) => {
     const liste = [...leute.values()].map(l => ({
       ...l, gewicht: l.kommentare.length * 3 + l.antworten.length + l.likes.length,
     })).sort((a, b) => b.gewicht - a.gewicht);
-    return jsonAntwort(res, { leute: liste, herzenAusListen: ausListen, follower:
+    /* Der vollstaendige Beobachterstand (Lesezeichen 2f), dazu die
+       Antworten, die nur aus zwei Listen entstehen: wer folgt nicht
+       zurueck, wer herzt ohne zu folgen, wer folgt und hat nie geherzt. */
+    let beobachterStand = null;
+    const bs = beobachterLesen();
+    if (bs) {
+      const folgen = new Set(bs.follower.map(p => p.handle)), gefolgt = new Set(bs.following.map(p => p.handle));
+      const herzer = new Set([...leute.values()].filter(l => l.likes.length).map(l => l.handle));
+      const neuSeit = bs.follower.filter(p => p.seit && p.seit[1] === bs.abgerufenAm);
+      beobachterStand = { abgerufenAm: bs.abgerufenAm, vollstaendig: bs.vollstaendig,
+        follower: bs.follower.length, following: bs.following.length,
+        lautSuno: bs.lautSuno || {},
+        neu: neuSeit.map(p => ({ handle: p.handle, name: p.name, seit: p.seit })),
+        nichtZurueck: bs.following.filter(p => !folgen.has(p.handle)).map(p => ({ handle: p.handle, name: p.name })),
+        herzenOhneFolgen: [...herzer].filter(h => !folgen.has(h)).length,
+        folgenOhneHerz: bs.follower.filter(p => !herzer.has(p.handle)).length,
+        followerListe: bs.follower.map(p => ({ handle: p.handle, name: p.name, folgeIch: p.folgeIch, seit: p.seit || null })) };
+    }
+    return jsonAntwort(res, { leute: liste, herzenAusListen: ausListen, beobachterStand, follower:
       follower.sort((a, b) => (b.am || '').localeCompare(a.am || '')),
       auswaerts: auswaerts.sort((a, b) => (b.am || '').localeCompare(a.am || '')) });
   }

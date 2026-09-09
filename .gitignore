@@ -74,3 +74,5 @@ library/modelle/paraphrase-multilingual-mpnet*.json
 library/modelle/paraphrase-multilingual-mpnet*.onnx
 library/liker/
 library/liker-verlauf.ndjson
+library/beobachter.json
+library/beobachter-verlauf.ndjson

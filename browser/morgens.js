@@ -371,6 +371,7 @@
     { k:'timing',  name:'Sunos eigene Analyse', was:'Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt, ~2 s je Song', an:true },
     { k:'benach',  name:'Wer hat reagiert',             was:'Likes, Kommentare, Follows - wer wann; die letzten vier Wochen', an:true },
     { k:'liker',   name:'Wer hat geherzt',              was:'alle Personen je eigenem Titel, vollstaendig (der Weg der iOS-App); nur Titel, deren Herzzahl sich seit dem letzten Stand geaendert hat', an:true },
+    { k:'beob',    name:'Beobachter',                   was:'wer dir folgt und wem du folgst - vollstaendig, 20 je Seite, mit "folgt zurueck"; der Strom kennt nur die letzten vier Wochen', an:true },
     { k:'playl',   name:'Alben',                        was:'eigene Alben - Suno nennt sie Playlists - mit allen Eintraegen, auch den privaten', an:true },
     /* Einmaliger Vergleich, standardmaessig AUS: Sunos Zeitmarken gibt
        es in zwei Fassungen (aligned_lyrics v2 und v3). Wir speichern
@@ -1126,6 +1127,51 @@
     }
   } catch (x){ zeileL.textContent = 'Wer hat geherzt — ' + x.message; zeileL.style.color = '#e31c79'; }
 
+  /* ---------------- 2f · Beobachter ----------------
+     GET /api/profiles/<handle>/followers?page=N und /following?page=N
+     (Web-Wege, SUNO-API.md): alle, die dir folgen, und alle, denen du
+     folgst, 20 je Seite, num_total_profiles im Kopf, je Person
+     is_following (folge ich) und is_following_viewer (folgt mir). Der
+     Strom nennt nur die neuen Beobachter der letzten vier Wochen; die
+     Listen nennen alle - und aus beiden Richtungen entsteht "folgt
+     nicht zurueck". Rund 24 Seiten, jedes Mal ganz: die Rueckrichtung
+     kann sich aendern, ohne dass eine Zahl es sagt. */
+  const beobachter = { follower: [], following: [] };
+  const zeileB = sagen('Beobachter — wer dir folgt, wem du folgst …');
+  if (!wahl.beob){ zeileB.textContent = 'Beobachter — übersprungen'; zeileB.style.color = '#8a8a90'; }
+  else try {
+    const tb = await tokenHolen();
+    if (!tb){ zeileB.textContent = 'Beobachter — kein Token'; zeileB.style.color = '#8a8a90'; }
+    else {
+      const Hb = { Authorization: 'Bearer ' + tb };
+      let gesamt = { follower: null, following: null }, seiten = 0, ausfall = null;
+      for (const richtung of ['followers', 'following']){
+        const ziel = richtung === 'followers' ? beobachter.follower : beobachter.following;
+        const gesehen = new Set();
+        for (let seite = 1; seite <= 60; seite++){
+          const r = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/${richtung}?page=${seite}`, { headers: Hb });
+          if (!r.ok){ ausfall = `${richtung} Seite ${seite}: HTTP ${r.status}`; break; }
+          const d = await r.json(); seiten++;
+          const liste = Array.isArray(d.profiles) ? d.profiles : [];
+          if (Number.isFinite(d.num_total_profiles)) gesamt[richtung === 'followers' ? 'follower' : 'following'] = d.num_total_profiles;
+          for (const p of liste){ if (p && p.handle && !gesehen.has(p.handle)){ gesehen.add(p.handle); ziel.push(p); } }
+          zeileB.textContent = `Beobachter … ${beobachter.follower.length} folgen dir, ${beobachter.following.length} folgst du (${seiten} Seiten)`;
+          if (!liste.length) break;
+          if (gesamt[richtung === 'followers' ? 'follower' : 'following'] != null && ziel.length >= gesamt[richtung === 'followers' ? 'follower' : 'following']) break;
+          await pause();
+        }
+        if (ausfall) break;
+        await pause();
+      }
+      beobachter.lautSuno = gesamt;
+      beobachter.vollstaendig = !ausfall && (gesamt.follower == null || beobachter.follower.length >= gesamt.follower)
+                                         && (gesamt.following == null || beobachter.following.length >= gesamt.following);
+      zeileB.textContent = `Beobachter — ${beobachter.follower.length} folgen dir, ${beobachter.following.length} folgst du`
+        + (ausfall ? ` — abgebrochen (${ausfall}), aus dieser Ernte wird nichts als "weg" gewertet` : '');
+      zeileB.style.color = ausfall ? '#f97b14' : '#16be5c';
+    }
+  } catch (x){ zeileB.textContent = 'Beobachter — ' + x.message; zeileB.style.color = '#e31c79'; }
+
   /* ---------------- 2c · SOFORT ablegen ----------------
      Die Ernte ist zehn Minuten Arbeit und lag bisher nur im Speicher
      dieses Fensters, bis jemand "Übernehmen" drückte. Einmal war der
@@ -1203,6 +1249,7 @@
     angemeldetAls,
     benachrichtigungen,
     liker,
+    beobachter,
   };
   const zeileA = sagen('Übertrage die Ernte ans Archiv (erst in den Browser-Speicher, dann in Paketen an den Server) …');
   /* Zuerst in den Browser - das kann nicht fehlschlagen, weil kein

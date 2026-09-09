@@ -11593,9 +11593,41 @@ async function profilCommunityFuellen(){
   ziel.appendChild(schalter); ziel.appendChild(besten);
   bestenZeichnen();
 
-  /* Follower: eine Zeile Namen, nicht mehr. */
+  /* Beobachter. Seit 09.09.2026 zuerst der VOLLSTAENDIGE Stand aus dem
+     Lesezeichen (Abschnitt "Beobachter": followers/following, alle
+     Seiten) - Zahl, Neue seit dem letzten Lauf, wer nicht zurueckfolgt,
+     und die zwei Fragen, die nur aus Listen entstehen: wer herzt, ohne
+     zu folgen, und wer folgt, ohne je geherzt zu haben. Ohne Stand wie
+     frueher: die Neuen aus dem Strom, vier Wochen weit. */
+  const namensZeile = (klasse, vortext, liste, nachtext) => {
+    const h = document.createElement('div'); h.className = klasse; h.textContent = vortext;
+    liste.slice(0, 12).forEach((e, i) => {
+      const sp = document.createElement('span'); sp.className = 'rwer'; sp.textContent = e.name || e.handle;
+      sp.onclick = () => { $('detail').classList.remove('auf'); reaktPersonAlleine(e.handle); };
+      if (i) h.appendChild(document.createTextNode(', '));
+      h.appendChild(sp);
+    });
+    if (liste.length > 12) h.appendChild(document.createTextNode(` … und ${liste.length - 12} weitere`));
+    if (nachtext) h.appendChild(document.createTextNode(nachtext));
+    return h;
+  };
+  const bs = d.beobachterStand;
+  if (bs){
+    const kopf = document.createElement('div'); kopf.className = 'fussnote';
+    kopf.textContent = `Beobachter: ${bs.follower}${bs.lautSuno && bs.lautSuno.follower != null && bs.lautSuno.follower !== bs.follower ? ` (Suno zählt ${bs.lautSuno.follower})` : ''}`
+      + ` · du folgst ${bs.following} · Stand ${zeitRelativ(bs.abgerufenAm)}${bs.vollstaendig ? '' : ' — letzter Lauf unvollständig'}`;
+    ziel.appendChild(kopf);
+    ziel.appendChild(bs.neu.length
+      ? namensZeile('fussnote', `Neu seit dem letzten Lauf (${bs.neu.length}): `, bs.neu)
+      : Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine neuen Beobachter seit dem letzten Lauf.' }));
+    if (bs.nichtZurueck.length) ziel.appendChild(namensZeile('fussnote', `Folgen dir nicht zurück (${bs.nichtZurueck.length}): `, bs.nichtZurueck));
+    const zwei = document.createElement('div'); zwei.className = 'fussnote';
+    zwei.textContent = `Herzen, ohne zu folgen: ${bs.herzenOhneFolgen} · folgen, ohne je geherzt zu haben: ${bs.folgenOhneHerz}`;
+    ziel.appendChild(zwei);
+  }
+  /* Follower aus dem Strom: eine Zeile Namen, nicht mehr - nur ohne Stand. */
   const seen = new Set();
-  const folgende = follower.filter(f => !seen.has(f.handle) && seen.add(f.handle));
+  const folgende = bs ? [] : follower.filter(f => !seen.has(f.handle) && seen.add(f.handle));
   if (folgende.length){
     const h = document.createElement('div'); h.className = 'fussnote';
     h.textContent = `Neue Beobachter (${folgende.length}, soweit Sunos Benachrichtigungen reichen): `;
