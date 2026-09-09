@@ -2096,3 +2096,43 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
 - Nächster Schritt mit Caspar_D: Register in seinem Fenster ansehen (Reload),
   dann den Stick-Export erneut starten und den Fortschritt live prüfen.
 
+## Export in Stufen, nach Wichtigkeit (09.09.2026, 12:00)
+
+- Caspar_D: „so aufbauen, dass die nötigen Dateien zuerst und die weniger
+  nötigen später geschrieben werden … zuerst Server und unabdingbare
+  Skripte, dann Aktuelles zuerst — MP3s, wenigstens eine Textspur —, Stems
+  zuletzt." Der Fall: „ich will los … reicht nicht auch eine Viertelstunde
+  für was Vorzeigbares." Plan abgestimmt (node/ in Stufe 1: ja; fehlende
+  Titel nicht anzeigen, stattdessen Fußnote „Teilkopie von @alias vom Datum").
+- `bin/export.js`: sieben Stufen — 1 Starten (Programm, Startskripte,
+  Bestand-Kern = library-Wurzel und kleine Ordner, Sternenhimmel, node/),
+  2 Titel neueste zuerst (audio.mp3, kachel.jpg, titelbild.jpg), 3 große
+  Titelbilder und Rest im Titelordner, 4 Analyse-Ablage, 5 Musik/ + docs/,
+  6 Stems (nur mit Pille), 7 Abschluss (rsync-Aufräumlauf mit --delete,
+  Beifang, Stand, LIES-MICH, Probestart). Stufen 1–4 und 6 kopiert das
+  Skript selbst (kopiereDatei: 4-MB-Stücke mit Meldung, .tmp + rename,
+  mtime der Quelle bleibt — sonst kopierte der Aufräumlauf alles noch
+  einmal; geprüft: Aufräumlauf überträgt 0 MB). Anhalten: erstes SIGTERM
+  setzt die Flagge, laufende Datei wird fertig, rsync/ffmpeg bekommen das
+  Signal und räumen selbst; Stand als Teilkopie; zweites SIGTERM bricht
+  hart ab. Zwischenstand export-stand.json {teilkopie, stufe, titel,
+  titelZuHause, handle, anzeigename} nach jeder Stufe und in Stufe 2 alle
+  25 Titel. Probestart prüft gegen die Zahl der Titel mit MP3 zu Hause.
+- `server/server.js`: eingefroren zeigt /api/index nur Titel mit MP3
+  (eingefrorenVorhanden, 30 s gemerkt) und liefert eingefroren.teilkopie/
+  stufe/titel/titelKatalog/handle; POST /api/export/stop schickt SIGTERM.
+- `web/index.html`: Banner „Teilkopie von @caspar_d vom 09.09.2026 — 187
+  von 324 Titeln, die neuesten · Stufe 2 von 7"; Register: Knopf
+  „Anhalten" während des Laufs, Standzeile mit Stufe, „Angehalten nach
+  Stufe n: N Titel spielbar — der Stick kann ausgeworfen werden",
+  Teilkopie-Stand vom Stick, .ms-Zustand „angehalten" (Akzent, nicht Rot).
+- Geprüft auf der SSD (eigene Mitschrift, Probeordner, danach gelöscht):
+  Anhalten nach 25 s → Stufe 4, Stand teilkopie, keine .tmp; eingefrorener
+  Server auf der Teilkopie (100 MP3 entfernt) meldet 224 von 324;
+  Fortsetzen → alle Stufen, 3.674 Dateien, 7,54 GB, Probestart ok.
+- Caspar_D hat den Stick-Export mit dem neuen Skript um 11:45 gestartet
+  (Stufe 2 mit 7 MB/s); Wächter bgjbqf2fo meldet Stufenwechsel und Ende.
+  Sein Fenster hat den Anhalten-Knopf erst nach einem Reload.
+- Offen: die Restzeit in Stufe 1 (node/) war beim ersten Lauf Unsinn — seit
+  der Kopie in Stücken behoben, im laufenden Export aber noch alter Stand.
+

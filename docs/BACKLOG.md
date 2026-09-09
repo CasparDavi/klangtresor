@@ -2421,4 +2421,10 @@ Medium; nur die Demo-Datei mit Suno-Links hat noch einen Knopf. Form 2
 Fernseher, Autoradio und VLC lesen den Ordner. Der Sternenhimmel-Knopf
 im Klangraum ist gestrichen.
 
+**In Stufen (09.09.2026, Caspar_D):** der Export schreibt nach Wichtigkeit —
+Starten, Titel neueste zuerst, große Bilder, Analyse, Musik/, Stems,
+Abschluss —, lässt sich anhalten und hinterlässt eine Teilkopie, die der
+eingefrorene Server als solche zeigt (nur vorhandene Titel, Fußnote mit
+Alias und Datum). Eine Viertelstunde reicht für etwas Vorzeigbares.
+
 **Offen:** Windows-Startskript bei Casto testen; Handbuch-Kapitel.
