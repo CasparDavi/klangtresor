@@ -10574,7 +10574,7 @@ function hatLebendbild(s){
 /* Das Studio-Modul steht am Ende des Skripts. Wer frueher ruft, ruft ins
    Leere - kein Fehler, kein halbes Bild. */
 function lebendAn(k, id){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAn(k, id); }
-function lebendAus(k){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) lebendAus(k); }
+function lebendAus(k){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAus(k); }
 /* Welches Bewegtbild gilt fuer diesen Song - das eigene, sonst Sunos. */
 function artworkVideo(id){
   return (_eigenArt && _eigenArt[id] && _eigenArt[id].video)
