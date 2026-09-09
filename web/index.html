@@ -26393,7 +26393,7 @@ const PALETTEN = {
 };
 const VERR = [
   ['ueber','Über (ersetzen)','source-over'],['add','Additiv','lighter'],['screen','Screen','screen'],
-  ['hell','Hell gewinnt','lighten'],['dunkel','Dunkel gewinnt','darken'],['multi','Multiplizieren','multiply'],['abwedeln','Abwedeln — Lichter heller','color-dodge'],['nachbelichten','Nachbelichten — Schatten dunkler','color-burn'],['weich','Weich','soft-light']
+  ['hell','Hell gewinnt','lighten'],['dunkel','Dunkel gewinnt','darken'],['multi','Multiplizieren','multiply'],['overlay','Überlagern','overlay'],['abwedeln','Abwedeln — Lichter heller','color-dodge'],['nachbelichten','Nachbelichten — Schatten dunkler','color-burn'],['weich','Weich','soft-light']
 ];
 const VMODE = Object.fromEntries(VERR.map(v=>[v[0],v[2]]));
 
@@ -26412,6 +26412,17 @@ const IKON={
  bloom:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" opacity=".5"/><circle cx="12" cy="12" r="10" opacity=".25"/>',
  nachzieh:'<path d="M4 12h10"/><path d="M10 8l4 4-4 4"/><path d="M3 7h4M3 17h4" opacity=".5"/>',
  feuer:'<path d="M12 3c1 3 4 5 4 9a4 4 0 0 1-8 0c0-2 1-3 1-3s.5 2 2 2c0-3-1-5 1-8z"/>',
+ wellen:'<path d="M3 9c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/><path d="M3 15c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/>',
+ kaustik:'<path d="M4 8c4-4 8 4 12 0s4 4 4 4M4 14c4-4 8 4 12 0s4 4 4 4" opacity=".9"/>',
+ linse:'<circle cx="12" cy="12" r="9"/><path d="M7 12a5 5 0 0 1 5-5"/>',
+ dunst:'<path d="M4 16h16M6 12h12M8 8h8" opacity=".8"/>',
+ flammen:'<path d="M12 3c2 4 5 6 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z" fill="currentColor" stroke="none"/>',
+ strahlen:'<path d="M12 4v4M5 7l2.5 2.5M19 7l-2.5 2.5M3 14h4M17 14h4M12 20v-6" opacity=".9"/><circle cx="12" cy="14" r="2" fill="currentColor" stroke="none"/>',
+ spiegel:'<path d="M3 12h18"/><path d="M8 4l4 6 4-6"/><path d="M8 20l4-6 4 6" opacity=".5"/>',
+ korn:'<g fill="currentColor" stroke="none"><circle cx="5" cy="5" r=".9"/><circle cx="11" cy="7" r=".9"/><circle cx="17" cy="4" r=".9"/><circle cx="7" cy="12" r=".9"/><circle cx="14" cy="13" r=".9"/><circle cx="20" cy="10" r=".9"/><circle cx="4" cy="18" r=".9"/><circle cx="10" cy="20" r=".9"/><circle cx="17" cy="18" r=".9"/></g>',
+ bloecke:'<rect x="3" y="4" width="18" height="5"/><rect x="7" y="10" width="18" height="4"/><rect x="1" y="15" width="16" height="5"/>',
+ farbton:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 8 8h-8z" fill="currentColor" stroke="none" opacity=".8"/>',
+ kippen:'<rect x="5" y="5" width="14" height="14" rx="1" transform="rotate(-8 12 12)"/>',
  laser:'<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 12 3 7M12 12l9-3M12 12 5 20M12 12l7 8M12 12 3 16"/>',
  streifen:'<path d="M3 7h18M3 12h18M3 17h18"/>',
  rauschen:'<g fill="currentColor" stroke="none"><circle cx="5" cy="6" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="19" cy="7" r="1"/><circle cx="8" cy="11" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="5" cy="17" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="19" cy="16" r="1"/></g>',
@@ -26422,7 +26433,7 @@ const IKON={
  saettigung:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
  strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
 };
-const TON={fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',dunst:'#b9c4d0',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 const EFFEKTE = {
@@ -26454,33 +26465,57 @@ const EFFEKTE = {
     params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.15,step:.005,def:.025},{k:'baender',lbl:'Bänder',min:1,max:48,step:1,def:14},{k:'tempo',lbl:'Tempo',min:.5,max:12,step:.5,def:5},{k:'takt',tog:'Kick im Takt',def:1}]},
   rgb:{ label:'Farbkanal-Puls', art:'post', besch:'Rot, Grün und Blau springen kurz gegeneinander — chromatische Aberration / RGB-Shift. Im Takt am schönsten.',
     params:[{k:'versatz',lbl:'Versatz',min:0,max:.08,step:.002,def:.012},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:0},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:7,when:e=>e.antrieb!=='atem'}]},
-  strobe:{ label:'Stroboskop', art:'mal', keineVerr:true, staerkeDef:.5, besch:'Hochfrequentes Flackern des ganzen Bildes. Kräftig — Vorsicht. Aufblitzen, Abdunkeln oder beides; auf Wunsch nur im Takt.',
+  strobe:{ label:'Stroboskop', art:'mal', verr:'add', staerkeDef:.5, besch:'Hochfrequentes Flackern des ganzen Bildes. Kräftig — Vorsicht. Aufblitzen, Abdunkeln oder beides; auf Wunsch nur im Takt.',
     params:[{k:'frequenz',lbl:'Frequenz (Hz)',min:1,max:24,step:1,def:8},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.5},{k:'modus',lbl:'Richtung',sel:[['hell','aufblitzen'],['dunkel','abdunkeln'],['beides','beides']],def:'beides'},{k:'farbe',lbl:'Blitzfarbe',farbe:true,def:'#ffffff'},{k:'takt',tog:'nur im Takt',def:0}]},
-  sicherung:{ label:'Sicherungswackeln', art:'mal', keineVerr:true, staerkeDef:.8, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon.',
+  sicherung:{ label:'Sicherungswackeln', art:'mal', verr:'multi', staerkeDef:.8, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon. Auch als: Lichtflackern unter Wasser, durch Wolken, hinter Laub.',
     params:[{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.6},{k:'dauer',lbl:'Dauer (ms)',min:40,max:800,step:10,def:180},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'nur im Takt',def:0}]},
-  nebel:{ label:'Theaternebel', art:'mal', verr:'screen', staerkeDef:.6, besch:'Weiche Schwaden ziehen langsam durchs Bild und liegen eher unten. Heterogenität: wie verschieden die Schwaden untereinander sind. Turbulenz: wie kleinteilig jede Schwade in sich wabert — viel Änderung pro Ort. Wirkt am besten leise.',
+  nebel:{ label:'Theaternebel', art:'mal', verr:'screen', staerkeDef:.6, besch:'Weiche Schwaden ziehen langsam durchs Bild und liegen eher unten. Heterogenität: wie verschieden die Schwaden untereinander sind. Turbulenz: wie kleinteilig jede Schwade in sich wabert — viel Änderung pro Ort. Wirkt am besten leise. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},{k:'dichte',lbl:'Dichte',min:1,max:12,step:1,def:5},{k:'het',lbl:'Heterogenität',min:0,max:1,step:.05,def:.5},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'groesse',lbl:'Größe',min:.3,max:1.2,step:.05,def:.7},{k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.75},{k:'tempo',lbl:'Tempo (s)',min:10,max:60,step:1,def:30}]},
-  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche oder Funken ziehen durchs Bild. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
-  scanlines:{ label:'Scanlines / Röhre', art:'mal', keineVerr:true, staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
+  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche oder Funken ziehen durchs Bild. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+  scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster (px)',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
-  bloom:{ label:'Bloom / Halation', art:'post', postVerr:'screen', staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
+  bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
     params:[{k:'radius',lbl:'Radius (px)',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
     params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]},
   feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Glut an der Basis; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'lodert im Takt',def:1}]}
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'lodert im Takt',def:1}]},
+  wellen:{ label:'Wellen (Brechung)', art:'gl', staerkeDef:.8, besch:'Das Bild bricht sich wie unter Wasser oder in heißer Luft — echte Verschiebung jedes Pixels durch Rauschen (WebGL). Zone 1 = nur unten, Aufwind lässt es wie Hitze steigen.',
+    params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.08,step:.002,def:.02},{k:'skala',lbl:'Skala',min:1,max:12,step:.5,def:4},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.6},{k:'zone',lbl:'Zone (1 unten)',min:0,max:1,step:.05,def:0},{k:'aufwind',lbl:'Aufwind',min:0,max:1,step:.05,def:0}]},
+  kaustik:{ label:'Kaustik (Lichtnetz)', art:'gl', staerkeDef:.6, besch:'Das wandernde Netz gebrochenen Lichts — Poolboden, Wasser an der Wand, Glas. Aus Rauschen gerechnet (WebGL), additiv aufs Bild.',
+    params:[{k:'skala',lbl:'Skala',min:2,max:20,step:.5,def:6},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.5},{k:'schaerfe',lbl:'Schärfe',min:2,max:12,step:.5,def:6},{k:'farbe',lbl:'Farbe',farbe:true,def:'#bfe6ff'}]},
+  linse:{ label:'Linse', art:'gl', staerkeDef:1, besch:'Röhrenwölbung oder Fischauge (Wölbung negativ = Tonne, positiv = Kissen) mit Farbrändern am Rand (WebGL).',
+    params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
+  dunst:{ label:'Dunst (Rauschnebel)', art:'gl', staerkeDef:.7, besch:'Echter Nebel aus fraktalem Rauschen (WebGL) — kleinteilig wabernd, liegt nach Lage eher unten. Turbulenz = Anteil der feinen Oktaven.',
+    params:[{k:'skala',lbl:'Skala',min:1,max:10,step:.5,def:3},{k:'dichte',lbl:'Dichte',min:0,max:2,step:.05,def:.8},{k:'tempo',lbl:'Tempo',min:.02,max:1,step:.02,def:.15},{k:'lage',lbl:'Lage (1 unten)',min:0,max:1,step:.05,def:.6},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'}]},
+  flammen:{ label:'Flammen (Rauschen)', art:'gl', staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; lodert im Takt höher.',
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'lodert im Takt',def:1}]},
+  strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
+    params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'spreiz',lbl:'Fächer (°)',min:10,max:360,step:5,def:120},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'},{k:'takt',tog:'flackert im Takt',def:0}]},
+  spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
+    params:[{k:'horizont',lbl:'Horizont',min:.3,max:.95,step:.01,def:.62},{k:'wellen',lbl:'Wellen',min:0,max:1,step:.05,def:.3},{k:'skala',lbl:'Wellenzahl',min:2,max:30,step:1,def:12},{k:'tempo',lbl:'Tempo',min:.5,max:5,step:.1,def:2},{k:'verblassen',lbl:'Verblassen',min:0,max:1,step:.05,def:.5}]},
+  korn:{ label:'Filmkorn', art:'mal', verr:'overlay', staerkeDef:.5, besch:'Feines Korn, das mit jedem Bild wechselt — der leise Film-Finish. Kein Defekt (das ist Rauschausfall), sondern Textur.',
+    params:[{k:'koernung',lbl:'Körnung',min:1,max:4,step:.25,def:1.5},{k:'tempo',lbl:'Wechsel',min:0,max:1,step:.05,def:1}]},
+  bloecke:{ label:'Glitch-Blöcke', art:'post', staerkeDef:1, besch:'Rechteckige Bildblöcke springen versetzt — der digitale Bruder der analogen Störungen. Frei oder im Takt, mit Farbversatz in den Blöcken.',
+    params:[{k:'anzahl',lbl:'Blöcke',min:1,max:12,step:1,def:5},{k:'groesse',lbl:'Größe',min:.05,max:.5,step:.01,def:.2},{k:'versatz',lbl:'Versatz',min:0,max:.3,step:.01,def:.08},{k:'dauer',lbl:'Dauer (ms)',min:40,max:600,step:10,def:160},{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'farbversatz',tog:'Farbversatz',def:1},{k:'takt',tog:'nur im Takt',def:1}]},
+  farbton:{ label:'Farbton schlägt', art:'grund', besch:'Auf den Schlag dreht der Farbton kurz weg und kehrt zurück. Winkel = wie weit (negativ = andere Richtung).',
+    params:[{k:'winkel',lbl:'Winkel (°)',min:-180,max:180,step:5,def:40},{k:'schlag',lbl:'Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
+  kippen:{ label:'Kippen schlägt', art:'geo', besch:'Das Bild neigt sich auf den Schlag um ein paar Grad und richtet sich wieder auf — ein physischer Ruck. Leicht nachgezoomt, damit keine Ecken frei werden.',
+    params:[{k:'neigung',lbl:'Neigung (°)',min:0,max:12,step:.5,def:4},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]}
 };
 const EGRUPPEN = [
-  ['Pulse', ['puls','schaerfe','kontrast','saettigung','rgb']],
+  ['Pulse', ['puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
   ['Läufe', ['fahrt','streifen','licht','schatten','laser','farbe','nebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
-  ['Partikel', ['partikel']]
+  ['Partikel', ['partikel']],
+  ['Entwürfe (WebGL)', ['wellen','kaustik','linse','dunst','flammen']],
+  ['Entwürfe (Leinwand)', ['strahlen','spiegel','korn','bloecke']]
 ];
 /* Gemeinsame Schalter für alle Pulse: Antrieb (Takt/Atem) + Invertieren */
-['puls','schaerfe','kontrast','saettigung','rgb'].forEach(k=>{ EFFEKTE[k].params.push(
+['puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen'].forEach(k=>{ EFFEKTE[k].params.push(
   {k:'antrieb',lbl:'Antrieb',sel:[['takt','im Takt'],['atem','atmend']],def:'takt'},
   {k:'atempo',lbl:'Atem (s)',min:1,max:12,step:.5,def:4,when:e=>e.antrieb==='atem'},
   {k:'invert',tog:'invertieren',def:0}); });
@@ -26491,7 +26526,7 @@ function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:f
   T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; }); return e; }
 /* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
    aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
-const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85] };
+const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7] };
 function artFarben(e){ const alt=ART_FARBEN[e._artVor||'schnee']||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; } e._artVor=e.art; }
 function E(typ,over){ return Object.assign(neuerEffekt(typ), over||{}); }
 function grundzustand(){ STAPEL=[ neuerEffekt('fahrt'), neuerEffekt('puls'), neuerEffekt('farbe'), neuerEffekt('licht') ]; renderStapel(); }
@@ -26575,7 +26610,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i)<Math.min(1,e.haeufigkeit/10)){ const u=(t-S[i][0])/dauer; if(u>=0&&u<=1) amt=e.tiefe*env(u)*zit; } }
     else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=e.tiefe*env(u)*zit; }
     amt*=Math.min(1,e.staerke);
-    if(amt>0.003){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
+    if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
   else if(e.typ==='nebel'){ const n=e.dichte, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
     const het=(e.het==null?.5:e.het);
     for(let i=0;i<n;i++){ const sp=1+het*(hs(i+90)-0.5)*1.2, ph=t*sp/e.tempo+hs(i), x=Wn*(0.5+0.6*Math.sin(2*Math.PI*ph*0.9+i*1.7)), y=Hn*(e.lage+0.18*Math.sin(2*Math.PI*ph*0.6+i*2.3)),
@@ -26597,9 +26632,12 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
       if(e.art==='schnee'){ const v=sp*e.tempo*Hn*0.06; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.7+i)*12+w*t*Hn*0.05)%Wn+Wn)%Wn; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); }
       else if(e.art==='regen'){ const v=sp*e.tempo*Hn*0.6; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+w*t*Hn*0.3)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); }
       else if(e.art==='asche'){ const v=sp*e.tempo*Hn*0.03; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.4+i*1.3)*20+w*t*Hn*0.04)%Wn+Wn)%Wn; cx.globalAlpha=a*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blasen'){ const v=sp*e.tempo*Hn*0.08; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*1.6+i*1.1)*10+w*t*Hn*0.04)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=a*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=a; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='staub'){ const v=sp*e.tempo*Hn*0.012; y=((y0+Math.sin(t*0.3+i)*8-t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.25+i*0.7)*14+w*t*Hn*0.02)%Wn+Wn)%Wn; const tief=hs(i+4500); cx.globalAlpha=a*(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blaetter'){ const v=sp*e.tempo*Hn*0.09; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*1.2+i)*28+w*t*Hn*0.08)%Wn+Wn)%Wn; const rot=t*(1.5+hs(i+4600)*2)+i; cx.save(); cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); }
       else { const v=sp*e.tempo*Hn*0.25; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*3+i*2.1)*6+w*t*Hn*0.1)%Wn+Wn)%Wn; const fl=0.5+0.5*Math.sin(t*23+i*5); cx.globalAlpha=a*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
-    cx.globalCompositeOperation='multiply';
+    cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
     if(e.linien>0){ cx.globalAlpha=e.linien*a; cx.fillStyle=cx.createPattern(e._mc,'repeat'); cx.fillRect(0,0,Wn,Hn); }
     if(e.vignette>0){ cx.globalAlpha=1; const R=Math.hypot(Wn,Hn)/2, vg=cx.createRadialGradient(Wn/2,Hn/2,R*0.45,Wn/2,Hn/2,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,'+(e.vignette*a).toFixed(3)+')'); cx.fillStyle=vg; cx.fillRect(0,0,Wn,Hn); }
     if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*8*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
@@ -26613,12 +26651,82 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
         const c=[0,1,2].map(q=>Math.round(pa[q]+(pb[q]-pa[q])*Math.min(1,h*1.3)));
         const gr=cx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba('+c.join(',')+','+al.toFixed(3)+')'); gr.addColorStop(1,'rgba('+c.join(',')+',0)');
         cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } } }
+  else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*(e.takt?(0.5+0.5*Math.min(1,pulswert(t,7,0))):1);
+    const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=e.spreiz*Math.PI/180, br=e.breite*Math.PI/180;
+    const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/e.tempo)*e.schwenk*0.6;
+    for(let i=0;i<n;i++){ const ang=basis+(n>1?(i/(n-1)-0.5):0)*spreiz+Math.sin(2*Math.PI*t/e.tempo*1.3+hs(i)*9)*e.schwenk*0.12, w=br*(0.6+0.8*hs(i+30));
+      const gr=cx.createRadialGradient(px,py,0,px,py,L); gr.addColorStop(0,rgba(e.farbe,0.55*a*(0.5+0.5*hs(i+60)))); gr.addColorStop(1,rgba(e.farbe,0));
+      cx.fillStyle=gr; cx.beginPath(); cx.moveTo(px,py); cx.lineTo(px+Math.cos(ang-w)*L,py+Math.sin(ang-w)*L); cx.lineTo(px+Math.cos(ang+w)*L,py+Math.sin(ang+w)*L); cx.closePath(); cx.fill(); } }
+  else if(e.typ==='korn'){ const a=Math.min(1,e.staerke); if(!e._kt){ e._kt=document.createElement('canvas'); e._kt.width=96; e._kt.height=96; e._kn=-1; }
+    const schritt=Math.max(1,Math.round(1+(1-e.tempo)*12)); const fr=Math.floor(t*60/schritt);
+    if(fr!==e._kn){ e._kn=fr; const kx=e._kt.getContext('2d'), im=kx.createImageData(96,96), d=im.data; for(let i=0;i<d.length;i+=4){ const v=110+Math.random()*90|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } kx.putImageData(im,0,0); }
+    cx.globalCompositeOperation=VMODE[e.verr]||'overlay'; cx.globalAlpha=a*0.7; cx.save(); cx.scale(e.koernung,e.koernung); cx.fillStyle=cx.createPattern(e._kt,'repeat'); cx.fillRect(0,0,Wn/e.koernung+1,Hn/e.koernung+1); cx.restore(); cx.globalAlpha=1; }
   else if(e.typ==='strobe'){ const gate=e.takt?Math.min(1,pulswert(t,7,0)):1, ph=Math.sin(2*Math.PI*e.frequenz*t), amt=e.tiefe*Math.min(1,e.staerke)*gate;
-    if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>=0){ cx.globalCompositeOperation='lighter'; cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
+    if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>=0){ cx.globalCompositeOperation=VMODE[e.verr]||'lighter'; cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
       else if((e.modus==='dunkel'||e.modus==='beides')&&ph<0){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(amt*(-ph))+')'; cx.fillRect(0,0,Wn,Hn); } } }
   cx.globalCompositeOperation='source-over'; cx.globalAlpha=1;
 }
 
+
+/* ---- WebGL-Stufe: ein Vollbild-Quad, das Bild als Textur, je Effekt ein Fragment-Shader.
+   Rauschen: Simplex-Rauschen aus web/fremd/webgl-noise (Ashima Arts / Stefan Gustavson, MIT),
+   zur Laufzeit als Shader-Vorspann geladen. Ohne WebGL oder vor dem Laden zeichnet die Stufe nichts. */
+const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
+  init(){ if(this.gl||this.tot) return !!this.gl; try{ this.cv=document.createElement('canvas'); this.gl=this.cv.getContext('webgl',{preserveDrawingBuffer:true,premultipliedAlpha:true,alpha:true}); }catch(e){}
+    if(!this.gl){ this.tot=true; return false; } const gl=this.gl;
+    const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW); this.vb=vb;
+    this.tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true); return true; },
+  noiseLaden(){ if(this.noise||this.laden) return; this.laden=true; fetch('/fremd/webgl-noise/noise3D.glsl').then(r=>r.ok?r.text():'').then(t=>{ this.noise=t||null; this.laden=false; }).catch(()=>{ this.laden=false; }); },
+  programm(typ){ if(this.prog[typ]!==undefined) return this.prog[typ]; const gl=this.gl, src=GL_SHADER[typ]; if(!src||!this.noise){ return null; }
+    const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,'attribute vec2 a_pos; varying vec2 v_uv; void main(){ v_uv=a_pos*0.5+0.5; gl_Position=vec4(a_pos,0.0,1.0); }'); gl.compileShader(vs);
+    const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, GL_VORSPANN+this.noise+GL_FBM+src); gl.compileShader(fs);
+    if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){ console.warn('Titelbild-Studio Shader '+typ+': '+gl.getShaderInfoLog(fs)); this.prog[typ]=null; return null; }
+    const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[typ]=null; return null; }
+    pr._loc={}; this.prog[typ]=pr; return pr; },
+  loc(pr,n){ if(pr._loc[n]===undefined) pr._loc[n]=this.gl.getUniformLocation(pr,n); return pr._loc[n]; },
+  run(e,srcCv,W,H,t){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; } const pr=this.programm(e.typ); if(!pr) return null; const gl=this.gl;
+    if(this.cv.width!==W||this.cv.height!==H){ this.cv.width=W; this.cv.height=H; } gl.viewport(0,0,W,H);
+    gl.useProgram(pr); gl.bindBuffer(gl.ARRAY_BUFFER,this.vb); const ap=gl.getAttribLocation(pr,'a_pos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcCv);
+    const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
+    u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
+    u('u_takt',l=>gl.uniform1f(l, e.takt?Math.min(1,pulswert(t,7,0)):0));
+    for(const p of EFFEKTE[e.typ].params){ const v=e[p.k]; if(p.farbe){ const c=[1,3,5].map(q=>parseInt(String(v).slice(q,q+2),16)/255); if(!c.some(isNaN)) u('u_'+p.k,l=>gl.uniform3f(l,c[0],c[1],c[2])); } else if(typeof v==='number') u('u_'+p.k,l=>gl.uniform1f(l,v)); }
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
+const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
+const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
+const GL_SHADER={
+  wellen:`uniform float u_amplitude,u_skala,u_tempo,u_zone,u_aufwind;
+void main(){ vec2 uv=v_uv; float w=mix(1.0, pow(1.0-uv.y,2.0), u_zone);
+  vec3 p=vec3(uv*u_skala, u_t*u_tempo); p.y-=u_t*u_aufwind*2.0;
+  vec2 d=vec2(snoise(p), snoise(p+vec3(7.3,2.1,0.0)))*u_amplitude*w;
+  gl_FragColor=texture2D(u_tex, clamp(uv+d,0.0,1.0)); }`,
+  kaustik:`uniform float u_skala,u_tempo,u_schaerfe; uniform vec3 u_farbe;
+void main(){ vec4 c=texture2D(u_tex,v_uv); vec3 p=vec3(v_uv*u_skala, u_t*u_tempo);
+  float n1=snoise(p), n2=snoise(p*1.7+vec3(3.1,5.2,1.0)); float k=pow(max(0.0,1.0-abs(n1+n2)*1.1), u_schaerfe);
+  gl_FragColor=vec4(c.rgb+u_farbe*k, c.a); }`,
+  linse:`uniform float u_woelbung,u_farbrand;
+vec2 warp(vec2 uv,float k){ vec2 c=uv-0.5; float r2=dot(c,c)*4.0; return 0.5+c*(1.0+k*r2); }
+void main(){ float k=u_woelbung*0.5; vec2 ur=warp(v_uv,k*(1.0+u_farbrand*0.15)), ug=warp(v_uv,k), ub=warp(v_uv,k*(1.0-u_farbrand*0.15));
+  float inside=step(0.0,ug.x)*step(ug.x,1.0)*step(0.0,ug.y)*step(ug.y,1.0);
+  vec3 col=vec3(texture2D(u_tex,clamp(ur,0.0,1.0)).r, texture2D(u_tex,clamp(ug,0.0,1.0)).g, texture2D(u_tex,clamp(ub,0.0,1.0)).b);
+  gl_FragColor=vec4(col*inside, 1.0); }`,
+  dunst:`uniform float u_skala,u_dichte,u_tempo,u_lage,u_turbulenz; uniform vec3 u_farbe;
+void main(){ vec4 c=texture2D(u_tex,v_uv); vec3 p=vec3(v_uv.x*u_skala + u_t*u_tempo*0.3, v_uv.y*u_skala*0.6, u_t*u_tempo);
+  float a=0.5, f=0.0, g=mix(0.35,0.62,u_turbulenz); vec3 q=p; for(int i=0;i<5;i++){ f+=a*snoise(q); q=q*2.02+vec3(1.7,9.2,0.3); a*=g; }
+  float hoehe=pow(1.0-v_uv.y, mix(0.2,3.0,u_lage)); float d=clamp((f*0.5+0.5)*u_dichte*hoehe, 0.0, 1.0);
+  gl_FragColor=vec4(mix(c.rgb,u_farbe,d), c.a); }`,
+  flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
+void main(){ vec4 c=texture2D(u_tex,v_uv);
+  float base=1.0-u_boden; float h=(v_uv.y-base)/max(0.05,u_hoehe*(1.0+0.5*u_takt));
+  float x=(v_uv.x-(u_mitte-u_breite*0.5))/max(0.05,u_breite); float rand=smoothstep(0.0,0.15,x)*smoothstep(1.0,0.85,x);
+  if(h<-0.05||h>1.2||rand<=0.0){ gl_FragColor=c; return; }
+  vec3 p=vec3(x*6.0, h*4.0 - u_t*u_tempo*2.0, u_t*0.4); float n=fbm(p)*mix(0.4,1.1,u_flackern);
+  float flame=clamp((1.0-h)*1.6 + n*0.9 - 0.75, 0.0, 1.0)*rand; float glut=u_glut*clamp(1.0-h*3.0,0.0,1.0)*rand*0.35;
+  vec3 col=mix(u_farbe2,u_farbe,pow(flame,1.5));
+  gl_FragColor=vec4(c.rgb + col*(flame*0.9+glut), c.a); }`
+};
 function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
   if(e.typ==='vlauf'){ const waag=(e.richtung==='links'||e.richtung==='rechts'), dir=(e.richtung==='hoch'||e.richtung==='links')?-1:1, L=waag?Wn:Hn;
     let off=((t/e.tempo*dir)%1+1)%1*L; if(e.takt) off=(off+pulswert(t,6,0)*L*0.3)%L; off=((off%L)+L)%L; const bs=e.band*L;
@@ -26637,12 +26745,22 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
     const d=e.versatz*Wn, rad=e.winkel*Math.PI/180;
     cres.globalAlpha=e.nachhall; cres.drawImage(e._spur,Math.cos(rad)*d,Math.sin(rad)*d); cres.globalAlpha=1-e.nachhall; cres.drawImage(srcCv,0,0); cres.globalAlpha=1;
     const sp=e._spur.getContext('2d'); frisch(sp); sp.clearRect(0,0,Wn,Hn); sp.drawImage(ores,0,0); }
+  else if(e.typ==='spiegel'){ cres.drawImage(srcCv,0,0); const hy=e.horizont*Hn, band=3;
+    for(let y=Math.floor(hy);y<Hn;y+=band){ const sy=2*hy-y-band; if(sy<0) break; const tief=(y-hy)/Math.max(1,Hn-hy), dx=e.wellen*Wn*0.02*Math.sin(y*e.skala/Hn*2*Math.PI+t*e.tempo)*(0.3+tief); cres.drawImage(srcCv,0,sy,Wn,band,dx,y,Wn,band); }
+    if(e.verblassen>0){ const g=cres.createLinearGradient(0,hy,0,Hn); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,'+e.verblassen.toFixed(2)+')'); cres.fillStyle=g; cres.fillRect(0,hy,Wn,Hn-hy); } }
+  else if(e.typ==='bloecke'){ cres.drawImage(srcCv,0,0); const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000); let slot=-1;
+    if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i+7000)<Math.min(1,e.haeufigkeit/10)&&t-S[i][0]<=dauer) slot=i; }
+    else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer); if(t>=start&&t<=start+dauer) slot=k; }
+    if(slot>=0){ for(let b=0;b<e.anzahl;b++){ const q=slot*131+b*17, bw=Wn*e.groesse*(0.4+0.6*hs(q+1)), bh=Hn*e.groesse*0.35*(0.4+0.6*hs(q+2)), bx=hs(q+3)*(Wn-bw), by=hs(q+4)*(Hn-bh), dx=(hs(q+5)-0.5)*2*e.versatz*Wn;
+        cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh);
+        if(e.farbversatz){ cres.globalCompositeOperation='screen'; cres.globalAlpha=0.6; cres.drawImage(srcCv,bx,by,bw,bh,bx-dx*0.6,by,bw,bh); cres.globalAlpha=1; cres.globalCompositeOperation='source-over'; } } } }
+  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t); if(g) cres.drawImage(g,0,0); }
   else if(e.typ==='bloom'){ cres.filter='blur('+Math.round(e.radius)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
 }
 function postKette(posts,t,Wn,Hn){ let sCv=oa;
   for(const e of posts){ const dCv=(sCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
     ergebnis(e,sCv,t,Wn,Hn);
-    frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(sCv,0,0); dCx.globalCompositeOperation=(EFFEKTE[e.typ].postVerr)||'source-over'; dCx.globalAlpha=Math.min(1,e.staerke); dCx.drawImage(ores,0,0); dCx.globalAlpha=1; dCx.globalCompositeOperation='source-over';
+    frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(sCv,0,0); dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[EFFEKTE[e.typ].verr]||'source-over'; dCx.globalAlpha=Math.min(1,e.staerke); dCx.drawImage(ores,0,0); dCx.globalAlpha=1; dCx.globalCompositeOperation='source-over';
     sCv=dCv; }
   return sCv;
 }
@@ -26679,7 +26797,7 @@ function renderStapel(){
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
     });
     h+='<div class="tbs-verr">';
-    if(T.art==='mal' && !T.keineVerr) h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+VERR.map(([v,l])=>'<option value="'+v+'"'+(e.verr===v?' selected':'')+'>'+l+'</option>').join('')+'</select></div>';
+    if(T.art!=='geo') h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+VERR.map(([v,l])=>'<option value="'+v+'"'+(e.verr===v?' selected':'')+'>'+l+'</option>').join('')+'</select></div>';
     h+='<div class="tbs-regler"><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1.5" step="0.05" value="'+e.staerke+'"><span class="tbs-wert">'+Math.round(e.staerke*100)+'%</span></div>';
     c.innerHTML=h+'</div></div>';
     c.querySelector('.tbs-pille').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); };
@@ -26736,30 +26854,35 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(be
 function zeichneFrame(t){
   if(!bereit) return;
   const Wn=lein.width, Hn=lein.height, bw=bild.naturalWidth, bh=bild.naturalHeight;
-  let crop=1,panx=0,pany=0,scaleMul=1;
+  let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   for(const e of STAPEL){ if(!aktiv(e))continue; const s=e.staerke;
     if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/e.tempo)*e.weite*s; pany+=tri(t/(e.tempo*1.3))*e.weite*s; }
     else if(e.typ==='puls'){ const hb=pulsHub(e,t), amt=e.wucht*s, z=e.invert?amt*(1-hb):amt*hb; scaleMul*=(1+z); }
+    else if(e.typ==='kippen'){ const hb=pulsHub(e,t); rotG+=(e.invert?-1:1)*e.neigung*s*hb; }
   }
   const eff=Math.max(.1,Math.min(1,crop/scaleMul)), cw=bw*eff, ch=bh*eff;
   const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
   const sx=Math.max(0,Math.min(bw-cw,cx0-cw/2)), sy=Math.max(0,Math.min(bh-ch,cy0-ch/2));
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
   if(bg!=='cover'){ ca.fillStyle= bg==='schwarz'?'#000': bg==='weiss'?'#fff':'#808080'; ca.fillRect(0,0,Wn,Hn); }
-  else { const sch=STAPEL.find(e=>aktiv(e)&&e.typ==='schaerfe');
+  else { ca.save(); if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const z=1+Math.abs(rotG)*0.022; ca.scale(z,z); ca.translate(-Wn/2,-Hn/2); }
+    const sch=STAPEL.find(e=>aktiv(e)&&e.typ==='schaerfe');
     if(sch){ const hb=pulsHub(sch,t), a=Math.min(1,sch.schlag*sch.staerke*hb);
       if(!sch.invert){ ca.filter=sch.unschaerfe>0?('blur('+sch.unschaerfe+'px)'):'none'; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none';
-        if(a>0){ ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.globalAlpha=1; } }
+        if(a>0){ ca.globalCompositeOperation=VMODE[sch.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; } }
       else { ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn);
-        if(a>0&&sch.unschaerfe>0){ ca.filter='blur('+sch.unschaerfe+'px)'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; } } }
+        if(a>0&&sch.unschaerfe>0){ ca.filter='blur('+sch.unschaerfe+'px)'; ca.globalCompositeOperation=VMODE[sch.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; } } }
     else ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn);
     for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='kontrast')continue; const kb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*kb); if(a<=0)continue;
-      ca.filter='url(#'+kurveFilter(e)+')'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; }
+      ca.filter='url(#'+kurveFilter(e)+')'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
     for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='saettigung')continue; const sb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*sb); if(a<=0)continue;
-      ca.filter='saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; } }
+      ca.filter='saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
+    for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='farbton')continue; const fb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*fb); if(a<=0)continue;
+      ca.filter='hue-rotate('+((e.invert?-1:1)*e.winkel)+'deg)'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
+    ca.restore(); }
   for(const e of STAPEL){ if(!aktiv(e))continue; if(EFFEKTE[e.typ].art!=='mal')continue; malen(e,ca,t,Wn,Hn); }
   frisch(ca);
-  const posts=STAPEL.filter(e=>aktiv(e)&&EFFEKTE[e.typ].art==='post');
+  const posts=STAPEL.filter(e=>aktiv(e)&&(EFFEKTE[e.typ].art==='post'||EFFEKTE[e.typ].art==='gl'));
   const finalCv = posts.length ? postKette(posts,t,Wn,Hn) : oa;
   frisch(g); g.clearRect(0,0,Wn,Hn); g.drawImage(finalCv,0,0);
 }
@@ -26770,7 +26893,7 @@ function zeichneFrame(t){
   /* Zeit: der Player ist die einzige Audioquelle. */
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05) return audio.currentTime; }catch(e){} const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
   function presetJSON(){ return JSON.stringify(STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_')))); }
-  function presetSetzen(arr){ STAPEL=arr.map(r=>({...r,id:++nr,zu:false})); renderStapel(); }
+  function presetSetzen(arr){ STAPEL=arr.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false})); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
       if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert \u00b7 '+s.length+' Zeichen \u2014 der Titel malt es jetzt live'); lebendNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
@@ -26778,7 +26901,7 @@ function zeichneFrame(t){
   function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea') return; const k=ev.key.toLowerCase();
     if(ev.key==='Escape'){ schliessen(); return; }
     if(k==='s'){ bg=bg==='schwarz'?'cover':'schwarz'; bgUI(); } else if(k==='w'){ bg=bg==='weiss'?'cover':'weiss'; bgUI(); } else if(k==='g'){ bg=bg==='grau'?'cover':'grau'; bgUI(); } }
-  function bauen(){
+  function bauen(){ GL.noiseLaden();
     root=document.createElement('div'); root.id='tbs'; root.hidden=true;
     root.innerHTML=
       '<div id="tbs-kasten">'
@@ -26813,7 +26936,7 @@ function zeichneFrame(t){
     else if(p.sel) e[p.k]=p.sel[Math.floor(Math.random()*p.sel.length)][0];
     else if(p.tog) e[p.k]=Math.random()<.5?1:0;
     else e[p.k]=+(p.min+Math.random()*(p.max-p.min)).toFixed(3); });
-  if(T.art==='mal'&&!T.keineVerr) e.verr=VERR[Math.floor(Math.random()*VERR.length)][0];
+  if(T.art!=='geo') e.verr=VERR[Math.floor(Math.random()*VERR.length)][0];
   e.staerke=+(0.4+Math.random()*1.1).toFixed(2);
 }); renderStapel(); };
     $('#tbs-alleAn').onclick=()=>{ soloId=null; STAPEL.forEach(e=>e.an=true); renderStapel(); };
@@ -26865,7 +26988,7 @@ function zeichneFrame(t){
     const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(), bild:new Image(), bereit:false, STAPEL:[], DATA:null, bg:'cover', soloId:null, pal:null, t0:performance.now() };
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d');
     lebende.push(m);
-    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.STAPEL=d.rezept.map(r=>({...r,id:++nr,zu:false}));
+    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.STAPEL=d.rezept.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false}));
       m.bild.onload=()=>{ const bw=m.bild.naturalWidth||1,bh=m.bild.naturalHeight||1, dpr=Math.min(2,window.devicePixelRatio||1), W=Math.min(720,Math.max(64,Math.round((kasten.clientWidth||300)*dpr))), H=Math.max(1,Math.round(W*bh/bw));
         [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true; };
       m.bild.src=(typeof artworkBild==='function')?artworkBild(id):('/media/'+id+'/cover.jpg'); });

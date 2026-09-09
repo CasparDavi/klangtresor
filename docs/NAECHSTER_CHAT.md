@@ -2311,3 +2311,18 @@ Kern kreisen; je höher, desto mehr, kleiner, schneller (bis 9, dreifaches Tempo
 je Zunge ein Stapel aufsteigender Glutflecken — unten breit/gelb, oben schmal/rot, Deckung fällt mit der Höhe; Zungen
 schwanken und flackern je eigen; Glut an der Basis; „lodert im Takt" lässt die Flammen auf Schlägen höher schießen.
 Additiv verrechnet, damit Überlagerung heiß wird. Caspar_D: „Kannst du Feuer?"
+
+**Nachtschicht 10.09.2026 — Entwürfe für Caspar_Ds Klickdurchgang.** Batch 1: **WebGL-Stufe** im Studio (Vollbild-Quad,
+Bild als Textur, je Effekt ein Fragment-Shader; ohne WebGL oder vor dem Laden zeichnet sie nichts) und fünf Shader-Entwürfe
+in der Gruppe „Entwürfe (WebGL)": Wellen (Brechung, mit Zone/Aufwind auch Hitzeflimmern), Kaustik (Lichtnetz), Linse
+(Wölbung + Farbränder), Dunst (fraktaler Rauschnebel), Flammen (Rauschen). Fremdcode: `web/fremd/webgl-noise/`
+(Ashima Arts / Stefan Gustavson, **MIT**, LICENSE + HERKUNFT.md daneben; zur Laufzeit als Shader-Vorspann geladen).
+Einsortierung in die Familien nach dem Klickdurchgang.
+Batch 2 (Leinwand): Gruppe „Entwürfe (Leinwand)" mit **Lichtstrahlen** (weiche Schächte aus einem Punkt, auch außerhalb),
+**Spiegelung (Wasserfläche)**, **Filmkorn**, **Glitch-Blöcke** (frei/im Takt, Farbversatz); Pulse ergänzt um **Farbton schlägt**
+(hue-rotate) und **Kippen schlägt** (Grundbild unter Drehung, leicht nachgezoomt); Partikel-Arten **Blasen, Staub, Blätter**
+mit eigenen Farbspannen; „auch als …"-Hinweise bei Sicherungswackeln, Partikel, Theaternebel (Effekte sind Formen).
+**Verrechnung für alle** (Caspar_D: „die effekte müssen aber alle die verrechnungen bekommen"): Post-/WebGL-Effekte
+verrechnen ihr Ergebnis per Instanz (Bloom Vorgabe Screen), die Puls-Schläge (Schärfe/Kontrast/Sättigung/Farbton) ihre
+Schlag-Ebene, Stroboskop (additiv), Sicherungswackeln/Scanlines (multiplizierend) und Filmkorn (**Überlagern**, neu in der
+Liste) sind nicht mehr fest verdrahtet. Nur Fahrt/Zoom/Kippen bleiben ohne — sie verschieben das Bild, keine zweite Ebene.
