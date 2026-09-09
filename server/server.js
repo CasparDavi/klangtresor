@@ -1723,6 +1723,23 @@ const server = http.createServer((req, res) => {
   }
 
   // Katalog - nur die schlanken Felder fürs Raster
+  /* DER DATENSTAND IN ZWEI ZAHLEN - fuer die Seite, die alle 60 s
+     nachsieht, ob sich etwas geaendert hat (Caspar_D, 09.09.2026: "sorge
+     dafuer, dass KlangTresor das immer schoen aktuell haelt"). katalog =
+     Aenderungszeit von katalog.json.gz; gemeinschaft = das Juengste von
+     allem, was das Profil ohne Katalogbau aendert: Strom, Liker-Listen,
+     Beobachter, Nachbarschaftsprofile und -hirschfaktoren. Nur
+     statSync, keine Datei wird gelesen. */
+  if (p === '/api/stand') {
+    const mt = f => { try { return Math.round(fs.statSync(f).mtimeMs); } catch (e) { return 0; } };
+    let likerMax = 0;
+    try { for (const f of fs.readdirSync(LIKER)) if (f.endsWith('.json') && !f.startsWith('._')) likerMax = Math.max(likerMax, mt(path.join(LIKER, f))); } catch (e) {}
+    const gemeinschaft = Math.max(mt(REAKTIONEN), mt(BEOBACHTER), likerMax,
+                                  mt(path.join(WURZEL, 'library', 'community-profile.json')),
+                                  mt(path.join(WURZEL, 'library', 'community-hirsch.json')));
+    return jsonAntwort(res, { katalog: mt(K.KATALOG), gemeinschaft, laeuft: !!(morgen && morgen.laeuft) });
+  }
+
   if (p === '/api/index') {
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }

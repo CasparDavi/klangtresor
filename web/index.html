@@ -4126,6 +4126,51 @@ async function start(){
   hashOeffnen();
 }
 
+/* ---- AKTUELL BLEIBEN -------------------------------------------------
+   Die Seite lud den Katalog einmal beim Start; danach aenderten ihn
+   Lesezeichen und Morgenlauf im Hintergrund, und Liste wie Profil
+   blieben stehen, bis jemand die Seite neu lud (Caspar_D, 09.09.2026:
+   "sorge dafuer, dass KlangTresor das immer schoen aktuell haelt").
+   Jetzt fragt die Seite alle 60 s /api/stand - zwei Zahlen, kein Katalog -
+   und zieht nach: neuer Katalog -> katalogNachladen() (Liste und
+   Profil neu, der Player bleibt, wo er ist); neue Gemeinschaftsdaten
+   (Strom, Liker, Beobachter, Nachbarschaft) -> der Gemeinschaftsblock,
+   wenn das Profil offen ist. Nie waehrend einer Messung: dann ist das
+   Abspielelement Messgeraet, und die Seite haelt still. Nach einem
+   Morgenlauf stoesst morgenSchauen() die Pruefung sofort an. */
+let standZuletzt = null, morgenLiefZuvor = false;
+const profilOffen = () => !!($('detail') && $('detail').classList.contains('auf') && $('profilcommunity'));
+async function standPruefen(){
+  if (typeof messLaeuft !== 'undefined' && messLaeuft) return;
+  let s; try { s = await (await fetch('/api/stand', { cache: 'no-store' })).json(); } catch (e) { return; }
+  if (!standZuletzt){ standZuletzt = s; return; }
+  const katalogNeu = s.katalog !== standZuletzt.katalog, gemeinschaftNeu = s.gemeinschaft !== standZuletzt.gemeinschaft;
+  standZuletzt = s;
+  if (katalogNeu) await katalogNachladen();
+  else if (gemeinschaftNeu && profilOffen()) profilCommunityFuellen();
+}
+async function katalogNachladen(){
+  let d; try { d = await (await fetch('/api/index', { cache: 'no-store' })).json(); } catch (e) { return; }
+  if (!d || !Array.isArray(d.songs)) return;
+  alle = d.songs;
+  analyseIndex = d.analyse || null;
+  for (const s of alle) s.analyse = (analyseIndex && analyseIndex[s.id]) || null;
+  await eigenArtworkLaden();
+  songVonId = new Map(alle.map(s => [s.id, s]));
+  playlists = d.playlists || [];
+  playlistVonId.clear(); playlists.forEach(p => playlistVonId.set(p.id, p));
+  kachelStand = d.kachelStand || 0;
+  katalogInfo = d;
+  /* Neue Modelle in die Auswahl, ohne Doppel; die Filter selbst bleiben stehen. */
+  const vorhanden = new Set([...$('modell').options].map(o => o.value));
+  for (const m of [...new Set(alle.map(s => s.modell).filter(Boolean))].sort())
+    if (!vorhanden.has(m)){ const o = document.createElement('option'); o.value = m; o.textContent = m; $('modell').appendChild(o); }
+  zeichnen();
+  if (profilOffen()) profilAuf();
+}
+setInterval(standPruefen, 60000);
+setTimeout(standPruefen, 5000);          /* den ersten Stand merken */
+
 /**
  * Adresse auswerten: #song=<suno-id> startet genau diesen Song.
  * Damit ist jeder Song verlinkbar - über Sunos eigene ID, nicht
@@ -16026,6 +16071,10 @@ async function morgenSchauen(nachSammeln){
   let s;
   try { s = await (await fetch('/api/morgen/stand')).json(); }
   catch (e){ return; }
+  /* Lauf zu Ende: sofort nachsehen, was sich geaendert hat, statt auf
+     den naechsten 60-Sekunden-Takt zu warten (AKTUELL BLEIBEN). */
+  if (morgenLiefZuvor && !s.laeuft){ morgenLiefZuvor = false; standPruefen(); }
+  if (s.laeuft) morgenLiefZuvor = true;
 
   const min = s.seit ? Math.round((Date.now()-s.seit)/60000) : 0;
 
