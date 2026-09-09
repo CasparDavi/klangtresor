@@ -320,6 +320,7 @@ const daten = { stand: karte.stand, anzahl: songs.length, gruppen: karte.gruppen
    Ein Rueckfall, der sich selbst etwas ausdenkt, ist kein Rueckfall.
    Fehlt der Handle, ist etwas kaputt - dann sagen wir das. */
 const handle = konfig.handle || '';
+const anzeige = (katalog && katalog.profil && katalog.profil.display_name) || handle;   /* Schreibweise wie im Klangraum */
 if (!handle) {
   console.error('\n  Kein Suno-Alias in library/konfig.json.');
   console.error('  Der Sternenhimmel traegt den Namen des Urhebers - ohne ihn');
@@ -352,28 +353,31 @@ body{padding:0}
 #karte{grid-template-columns:1fr;gap:0;padding:0;height:100vh}
 #kartefeld{height:100vh;border:0;border-radius:0}
 /* Das Panel als schwebendes Overlay, nicht als Spalte */
-#karterechts{position:fixed;top:14px;right:14px;z-index:35;width:min(330px,34vw);
+#karterechts{position:fixed;top:14px;right:14px;z-index:35;width:min(494px,49vw);
   max-height:calc(100vh - 28px);overflow:auto;height:auto;padding:0;gap:10px}
 /* durchscheinend: die Sterne glimmen hinter dem Panel durch */
 #kartelegende .drawer{background:rgba(14,14,18,.5);backdrop-filter:blur(5px);border-color:#ffffff20}
 #kartelegende .drawerkopf{background:rgba(255,255,255,.05)}
+/* Eingabefelder im Panel dunkel statt weiss (Caspar_D, 09.09.2026) */
+#karterechts{color-scheme:dark}
+#karterechts input,#karterechts select,#karterechts textarea{background:#0c0c0e;color:var(--text);border:1px solid var(--rand);border-radius:6px}
+#karterechts select option{background:#0c0c0e;color:var(--text)}
 #karte.leiste #kartelegende{background:rgba(14,14,18,.5);backdrop-filter:blur(5px)}
 /* Das Kopf-Feld oben in der Panelleiste: Einladung zur Reise */
 #suno-kopf{background:rgba(14,14,18,.5);backdrop-filter:blur(5px);border:1px solid #ffffff20;border-radius:12px;padding:12px 14px;margin-bottom:10px}
 #suno-kopf b{display:block;font-size:15px;font-weight:700;color:var(--text);line-height:1.25}
-#suno-kopf .raum{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--schwach);margin-top:3px}
+#suno-kopf .raum{font-weight:500;color:var(--schwach)}
 #suno-kopf .reise{font-size:12px;color:var(--schwach);margin-top:8px;line-height:1.45}
 /* Der Spieler oben links */
-#sunobox{position:fixed;left:14px;top:14px;z-index:40;border-radius:8px;overflow:hidden;background:#000;box-shadow:0 8px 30px #000a}
+#sunobox{position:fixed;left:14px;top:14px;z-index:40;border-radius:8px;overflow:hidden;background:#000;border:1px solid #ffffff20;box-shadow:0 8px 30px #000a}
 #sunobox[hidden]{display:none}
 #sunobox iframe{position:absolute;left:0;top:0;width:480px;height:270px;border:0;transform-origin:0 0}
 #sunobox .zu{position:absolute;right:5px;top:5px;z-index:3;width:20px;height:20px;border-radius:50%;
   border:1px solid #ffffff22;background:#000a;color:#ddd;cursor:pointer;font-size:12px;line-height:18px;text-align:center;padding:0}
 </style>`;
 const demoKopf = ARCHIV ? '' :
-  '<div id="suno-kopf"><b>' + handle + '\u2019s Suno</b>'
-  + '<div class="raum">Klang-Raum</div>'
-  + '<div class="reise">mache eine Reise durch ' + handle + '\u2019s Klangwelt</div></div>';
+  '<div id="suno-kopf"><b>' + anzeige + '\u2019s Suno <span class="raum">Klang-Raum</span></b>'
+  + '<div class="reise">mache eine Reise durch ' + anzeige + '\u2019s Klangwelt</div></div>';
 const demoMarkup = ARCHIV ? '' : '<div id="sunobox" hidden><button id="sunozu" class="zu" title="schließen">×</button>'
   + '<iframe id="sunoif" title="Suno-Spieler" allow="autoplay; encrypted-media"></iframe></div>';
 
