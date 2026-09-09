@@ -2094,7 +2094,101 @@ const server = http.createServer((req, res) => {
      schreibt das Skript selbst nach library/export-lauf.json - so
      stimmt er auch, wenn der Lauf von der Kommandozeile kam.
   ---------------------------------------------------------------- */
-  const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
+  /* Die Wurzel des Laufwerks zu einem Pfad: auf dem Mac /Volumes/<Name>,
+   auf Linux /media/<user>/<Name> oder /mnt/<Name>, auf Windows der
+   Buchstabe; sonst der Pfad selbst. */
+function prozessLebt(pid) { try { process.kill(Number(pid), 0); return true; } catch (e) { return e && e.code === 'EPERM'; } }
+function laufwerkWurzel(pfad) {
+  const m = String(pfad).match(/^(\/Volumes\/[^/]+|\/media\/[^/]+\/[^/]+|\/media\/[^/]+|\/mnt\/[^/]+|\/run\/media\/[^/]+\/[^/]+|[A-Za-z]:\\?)/);
+  return m ? m[1] : (String(pfad).startsWith('/') ? '/' : pfad);
+}
+function dfInfo(o) {
+  try {
+    const r = require('node:child_process').spawnSync('df', ['-k', o], { encoding: 'utf8' });
+    const z = (r.stdout || '').trim().split('\n').pop().trim().split(/\s+/);
+    return { gesamt: parseInt(z[1], 10) * 1024 || null, frei: parseInt(z[3], 10) * 1024 || null };
+  } catch (e) { return { gesamt: null, frei: null }; }
+}
+function dateisystemVon(o) {
+  try {
+    const r = require('node:child_process').spawnSync('mount', [], { encoding: 'utf8' });
+    const z = (r.stdout || '').split('\n').find(l => l.includes(' on ' + o + ' ('));
+    return z ? ((z.match(/\(([a-z0-9_]+)/i) || [])[1] || '').toLowerCase() : '';
+  } catch (e) { return ''; }
+}
+/* Was ein Dateisystem auf den drei Systemen kann - fuer den Stick, der
+   "irgendwo reinstecken" soll (Caspar_D, 09.09.2026). */
+function kompatibilitaet(fsys) {
+  switch (fsys) {
+    case 'exfat':  return { mac: true, windows: true, linux: true, grenze4GB: false, hinweis: 'exFAT: läuft auf Mac, Windows und Linux, keine Dateigrößengrenze — die richtige Wahl für den Stick.' };
+    case 'msdos': case 'fat32': case 'vfat': return { mac: true, windows: true, linux: true, grenze4GB: true, hinweis: 'FAT32: läuft überall, aber keine Datei über 4 GB — reicht für MP3 und Bilder, nicht für Stems.' };
+    case 'ntfs':   return { mac: 'nur lesen', windows: true, linux: true, grenze4GB: false, hinweis: 'NTFS: der Mac liest es, schreibt aber nicht — der Export kann von hier aus nicht laufen.' };
+    case 'apfs':   return { mac: true, windows: false, linux: false, grenze4GB: false, hinweis: 'APFS: nur der Mac liest es — ein Windows-Rechner sieht den Stick gar nicht.' };
+    case 'hfs': case 'hfs+': return { mac: true, windows: false, linux: 'nur lesen', grenze4GB: false, hinweis: 'HFS+: nur der Mac liest es richtig.' };
+    case 'smbfs': case 'nfs': case 'afpfs': case 'webdav': return { mac: true, windows: true, linux: true, grenze4GB: false, hinweis: 'Netzfreigabe: das Archiv liegt dann im Netz, nicht auf einem Stick — starten kann es nur, wer die Freigabe eingehängt hat.' };
+    default:       return { mac: null, windows: null, linux: null, grenze4GB: false, hinweis: fsys ? `Dateisystem ${fsys}: nicht eingeschätzt.` : 'Dateisystem unbekannt.' };
+  }
+}
+function mediumInfo(ziel, letzter) {
+  const wurzel = laufwerkWurzel(ziel);
+  const fsys = dateisystemVon(wurzel);
+  const g = dfInfo(wurzel);
+  const belegt = (g.gesamt != null && g.frei != null) ? g.gesamt - g.frei : null;
+  return { pfad: wurzel, name: wurzel === '/' ? 'Systemplatte' : (path.basename(wurzel) || wurzel), dateisystem: fsys, gesamt: g.gesamt, frei: g.frei, belegt,
+           archivBytes: (letzter && letzter.bytes) || 0, kompatibel: kompatibilitaet(fsys) };
+}
+/* Der Bedarf nach Teilen, gezaehlt im Haus. Rund 6.000 stat auf der
+   exFAT-SSD dauern zehn Sekunden - deshalb ASYNCHRON (fs.promises), damit
+   der Server waehrenddessen Musik ausliefert statt zu stehen; ein
+   laufendes Zaehlen wird geteilt (_bedarfLauf), das Ergebnis zehn Minuten
+   gemerkt. Dieselben Ausschluesse wie bin/export.js. */
+let _bedarfMerk = null, _bedarfLauf = null;
+function exportBedarf() {
+  if (_bedarfMerk && Date.now() - _bedarfMerk.zeit < 600000) return Promise.resolve(_bedarfMerk.wert);
+  if (_bedarfLauf) return _bedarfLauf;
+  _bedarfLauf = exportBedarfZaehlen().then(wert => { _bedarfMerk = { zeit: Date.now(), wert }; _bedarfLauf = null; return wert; },
+                                           e => { _bedarfLauf = null; return null; });
+  return _bedarfLauf;
+}
+async function exportBedarfZaehlen() {
+  const fsp = fs.promises;
+  const teile = { mp3: 0, bilder: 0, analyse: 0, texte: 0, programm: 0, node: 0, musik: 0, stems: 0 };
+  const zahl  = { mp3: 0, bilder: 0, analyse: 0, texte: 0, programm: 0, node: 0, musik: 0, stems: 0 };
+  const lauf = async (ordner, fn) => {
+    let e = []; try { e = await fsp.readdir(ordner, { withFileTypes: true }); } catch (x) { return; }
+    const unter = [];
+    for (const d of e) {
+      if (d.name.startsWith('.')) continue;                       /* auch ._-Beifang */
+      const voll = path.join(ordner, d.name);
+      if (d.isDirectory()) { if (fn(voll, d.name, true) !== false) unter.push(voll); }
+      else if (d.isFile()) { let s = 0; try { s = (await fsp.stat(voll)).size; } catch (x) {} fn(voll, d.name, false, s); }
+    }
+    for (const u of unter) await lauf(u, fn);
+  };
+  const LIB = path.join(WURZEL, 'library');
+  const AUS = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle']);
+  await lauf(LIB, (voll, name, istOrdner, groesse) => {
+    const rel = path.relative(LIB, voll);
+    if (istOrdner) { if (rel.split(path.sep).length === 1 && AUS.has(name)) return false; if (rel === path.join('kondensate', 'arbeit')) return false; return true; }
+    if (name === 'export-lauf.json') return;
+    const inStems = rel.includes(path.sep + 'stems' + path.sep);
+    if (inStems) { teile.stems += groesse; zahl.stems++; return; }
+    if (name === 'audio.wav') return;
+    if (name === 'audio.mp3') { teile.mp3 += groesse; zahl.mp3++; teile.musik += groesse; zahl.musik++; return; }
+    if (/^(cover|kachel|titelbild|eigen)\.(jpe?g|png|webp)$/.test(name) || /\.mp4$/.test(name)) { teile.bilder += groesse; zahl.bilder++; return; }
+    if (rel.startsWith('analyse' + path.sep)) { teile.analyse += groesse; zahl.analyse++; return; }
+    teile.texte += groesse; zahl.texte++;
+  });
+  for (const o of ['web', 'server', 'bin', 'browser', 'docs']) await lauf(path.join(WURZEL, o), (voll, name, istOrdner, groesse) => { if (!istOrdner) { teile.programm += groesse; zahl.programm++; } });
+  for (const f of ['package.json', 'LICENSE', 'README.md']) { try { teile.programm += (await fsp.stat(path.join(WURZEL, f))).size; zahl.programm++; } catch (e) {} }
+  await lauf(path.join(LIB, 'node-portabel'), (voll, name, istOrdner, groesse) => { if (!istOrdner && !/\.(zip|gz)$/.test(name)) { teile.node += groesse; zahl.node++; } });
+  const NAMEN = { mp3: 'MP3', bilder: 'Titelbilder und Bewegtbilder', analyse: 'Analyse', texte: 'Texte und Katalog', programm: 'Programm', node: 'Node', musik: 'Musik-Ordner', stems: 'Stems' };
+  const liste = Object.keys(NAMEN).map(k => ({ schluessel: k, name: NAMEN[k], bytes: teile[k], dateien: zahl[k], optional: k === 'stems' }));
+  const gesamt = liste.filter(x => !x.optional).reduce((a, x) => a + x.bytes, 0);
+  return { teile: liste, gesamt, gesamtMitStems: gesamt + teile.stems, gezaehltAm: new Date().toISOString() };
+}
+
+const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
   if (p === '/api/export/start' && req.method === 'POST') {
     let roh = ''; req.on('data', c => { roh += c; if (roh.length > 4096) req.destroy(); });
     req.on('end', () => {
@@ -2132,6 +2226,8 @@ const server = http.createServer((req, res) => {
      Laufwerksbuchstaben) mit freiem Platz und Dateisystem; mit pfad die
      Unterordner. Versteckte Ordner und ._-Beifang bleiben draussen.
      Nur Lesen, nur Verzeichnisse. */
+  if (p === '/api/export/bedarf') { exportBedarf().then(b => jsonAntwort(res, b)); return; }
+
   if (p === '/api/ordner') {
     const pfad = String(u.searchParams.get('pfad') || '');
     const frei = (o) => { try {
@@ -2191,6 +2287,15 @@ const server = http.createServer((req, res) => {
        war der Probelauf auf die SSD). Laufende Laeufe bleiben sichtbar. */
     const laufZiel = lauf.ziel || null;
     if (!lauf.laeuft && laufZiel && laufZiel !== ziel) lauf = { ...leer };
+    /* Ein Lauf, dessen Prozess nicht mehr lebt, laeuft nicht (09.09.2026:
+       Server-Neustart und Ruhemodus waehrend eines Stick-Exports - die
+       Mitschrift sagte "laeuft", der Prozess war weg). Einmal in die
+       Datei zurueckgeschrieben, dann steht es fest. */
+    if (lauf.laeuft && lauf.pid && !prozessLebt(lauf.pid)) {
+      lauf = { ...lauf, laeuft: false, fertig: false, schritt: 'abgebrochen', fortschritt: null,
+               fehler: lauf.fehler || 'Der Export wurde unterbrochen (Prozess beendet) - erneut starten setzt fort, es wird nur aufgefrischt, was fehlt.' };
+      try { fs.writeFileSync(EXPORT_LAUF, JSON.stringify(lauf, null, 1)); } catch (e) {}
+    }
     /* "Eingehaengt" heisst: der Ordner UEBER dem Ziel ist da - der Stick
        selbst also, auch wenn noch nie exportiert wurde. */
     const zielEingehaengt = !!ziel && fs.existsSync(path.dirname(ziel));
@@ -2198,7 +2303,16 @@ const server = http.createServer((req, res) => {
     if (zielEingehaengt) {
       try { letzter = JSON.parse(fs.readFileSync(path.join(ziel, 'Programm', 'library', 'export-stand.json'), 'utf8')); } catch (e) {}
     }
-    return jsonAntwort(res, { ...lauf, laufZiel, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter });
+    /* DAS MEDIUM UND DER BEDARF (Caspar_D, 09.09.2026: "ein Balkendiagramm,
+       was auf dem Medium drauf ist, wieviel Platz der KlangTresor
+       benoetigt und welche Dateien wie viel, und wieviel noch da ist").
+       Medium: Laufwerkswurzel des Ziels, Dateisystem, Groessen, und ob
+       Mac, Windows und Linux es lesen. Bedarf: der Datenbestand nach
+       Teilen gezaehlt - einmal je zehn Minuten, die Zahlen aendern sich
+       nicht schneller. */
+    const medium = zielEingehaengt ? mediumInfo(ziel, letzter) : null;
+    exportBedarf().then(bedarf => jsonAntwort(res, { ...lauf, laufZiel, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter, medium, bedarf }));
+    return;
   }
   /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js).
 

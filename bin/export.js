@@ -94,6 +94,18 @@ if (!zielRoh) {
 }
 const ZIEL = path.resolve(zielRoh);
 
+/* DER MAC BLEIBT WACH (Caspar_D, 09.09.2026: "der Mac war zwischenzeitlich
+   in den Ruhemodus gegangen" - und der Stick meldete sich als "nicht
+   ordnungsgemäß ausgeworfen"). Ein Export auf einen langsamen Stick dauert
+   eine Stunde; schläft der Rechner ein, verliert der Stick den Strom und
+   rsync schreibt ins Leere. caffeinate -i verhindert den Leerlaufschlaf,
+   solange dieser Prozess lebt (-w). Nur auf dem Mac, nur beim echten Lauf;
+   der Morgenlauf des Servers macht es genauso. */
+if (process.platform === 'darwin' && !probe) {
+  try { require('node:child_process').spawn('caffeinate', ['-i', '-w', String(process.pid)], { detached: true, stdio: 'ignore' }).unref(); }
+  catch (e) { /* ohne caffeinate läuft der Export trotzdem */ }
+}
+
 /* ---------------------------------------------------------------- Mitschrift */
 const lauf = { laeuft: true, seit: new Date(START).toISOString(), pid: process.pid, probe, stems, ziel: ZIEL, zielDateisystem: null,
                schritt: '', fortschritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
@@ -153,10 +165,16 @@ function fortschritt(mess, fertig) {
   };
   laufSchreiben(false);
 }
+/* Die Kindprozesse (rsync, ffmpeg) sterben mit - sonst schreibt ein
+   verwaister rsync weiter auf den Stick, waehrend die Oberflaeche schon
+   "angehalten" sagt (09.09.2026: drei rsync blieben nach dem Anhalten
+   uebrig, zwei davon im Plattenwarten auf dem eingeschlafenen Stick). */
+const kindProzesse = new Set();
 function abbruch(grund) {
   lauf.laeuft = false; lauf.fertig = false; lauf.fehler = String(grund && grund.message || grund);
-  lauf.schritt = 'abgebrochen';
+  lauf.schritt = 'abgebrochen'; lauf.fortschritt = null;
   console.error('\n  ABBRUCH: ' + lauf.fehler + '\n');
+  for (const k of kindProzesse) { try { k.kill('SIGTERM'); } catch (e) {} }
   laufSchreiben(true);
   process.exit(1);
 }
@@ -297,6 +315,7 @@ function rsync(quelle, ziel, zusatz, mess, trocken) {
                   ...((probe || trocken) ? ['--dry-run'] : []), ...BEIFANG, ...(zusatz || []), quelle + '/', ziel + '/'];
     if (!probe && !trocken) fs.mkdirSync(ziel, { recursive: true });
     const k = spawn('rsync', argv, { stdio: ['ignore', 'pipe', 'pipe'] });
+    kindProzesse.add(k); k.on('close', () => kindProzesse.delete(k));
     let aus = '', fehler = '', rest = '';
     k.stdout.setEncoding('utf8');
     k.stdout.on('data', (d) => {
@@ -383,6 +402,7 @@ function musikBauen(eintrag, zielDatei) {
       '-metadata', `date=${(s.erstellt || '').slice(0, 4)}`,
       '-f', 'mp3', tmp);
     const k = spawn('ffmpeg', argv, { stdio: ['ignore', 'ignore', 'pipe'] });
+    kindProzesse.add(k); k.on('close', () => kindProzesse.delete(k));
     let fehler = ''; k.stderr.setEncoding('utf8'); k.stderr.on('data', d => { fehler += d; });
     k.on('error', (e) => aufloesen({ ok: false, grund: e.message }));
     k.on('close', (code) => {

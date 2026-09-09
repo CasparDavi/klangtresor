@@ -419,9 +419,13 @@ select,.knopf{
    (ein Stick, 150 px breit), rechts die Erklaerung; auf schmalen
    Scheiben untereinander. Die Nummer traegt den Hausakzent wie ein
    eingeschalteter Knopf. */
-.exportkopf{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:start;margin-top:4px}
-@media (max-width:560px){.exportkopf{grid-template-columns:1fr}}
-.exportpikto svg{width:150px;height:auto;display:block}
+.exportkopf{display:grid;grid-template-columns:240px minmax(0,1fr);gap:18px;align-items:start;margin-top:4px;
+  margin-left:36px}   /* 26 px Nummernkreis + 10 px Luecke: der Stick fluchtet mit dem Text der Schritte, nicht mit den Kreisen (Caspar_D, 09.09.2026) */
+@media (max-width:640px){.exportkopf{grid-template-columns:1fr;margin-left:0}}
+/* Das Piktogramm: der Stick links (nur Farbe), die Namen daneben in
+   12 px, die Groessen in 10,5 (Regel 14: 12 px ist die Lesegrenze,
+   Nebenwerte 10,5). Beschriftung IM Block waere darunter gelandet. */
+.exportpikto svg{width:240px;height:auto;display:block}
 .exportpikto text{font-family:inherit}
 .exportschritt{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;margin-top:16px}
 .schrittnr{width:24px;height:24px;border-radius:50%;background:var(--akzent);color:#000;font-weight:600;font-size:13px;
@@ -429,27 +433,33 @@ select,.knopf{
 .schrittinhalt{min-width:0}
 .schrittname{font-weight:500;color:var(--text)}
 .exportmedium{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--schwach)}
-.exportpfad{margin:3px 0 0;font:11px ui-monospace,Menlo,monospace;word-break:break-all}
-.exportwas{display:flex;flex-direction:column;gap:4px;margin-top:5px;font-size:12.5px;color:var(--schwach)}
+.exportpfad{margin:3px 0 0;font:12px ui-monospace,Menlo,monospace;word-break:break-all}
+.exportwas{display:flex;flex-direction:column;gap:5px;margin-top:5px;font-size:12.5px;color:var(--schwach);align-items:flex-start}
 .exportwas .fest b{color:var(--text);font-weight:500}
-.exportwas code{font-size:11.5px}
-.exportwas label{display:flex;align-items:center;gap:7px;cursor:pointer}
-.exportwas input[type=checkbox]{accent-color:var(--akzent);cursor:pointer;margin:0}
-/* DAS PLATZDIAGRAMM: ein liegender Stapelbalken ueber die ganze Groesse
-   des Mediums - was schon belegt ist, was ein vorhandener KlangTresor
-   davon hat, was der Export dazulegt, was frei bleibt. Hausform: Flaeche
-   gedaempft, Topline oben (diaFlaeche / diaTopline), keine
-   Hintergrundspur ausser der Flaeche des Mediums. */
+.exportwas code{font-size:12px}
+/* Die Stems sind eine Pille, keine Checkbox (Regel 18: Checkboxen gibt
+   es im Haus nicht; an = gefuellt und leuchtend, aus = nur Rand). */
+.exportwas .pille{margin-top:2px}
+/* DAS PLATZDIAGRAMM, nach docs/HAUSREGELN.md: ein liegender Stapel-
+   balken ueber die ganze Groesse des Mediums. Regel 8: der Datenbereich
+   ist ein schwarzes Rect mit runden Ecken (rx 6) - das ist hier das
+   Medium selbst, sein Schwarz ist der freie Platz. Jedes Segment traegt
+   die Hausform (Flaeche gedaempft, Topline oben, diaFlaeche/diaTopline);
+   die Segmente liegen nebeneinander, nicht uebereinander, deshalb
+   SPUR_DECKUNG und kein Verlauf. Titel wie bei allen Diagrammen
+   (.diatitel), Legende wie bei den gestapelten Saeulen
+   (.stapellegende: Pille 22 x 11 mit echter Fuellung, Name in seiner
+   Farbe - Regel 23). Die Unterschrift haengt naeher am Bild als die
+   Ueberschrift: Titel 6 px darueber, Legende 5 px darunter; der
+   Erklaersatz unter der Legende 14 px, wie unter jeder Legende im Haus. */
 .exportplatz{margin-top:12px}
 .exportplatz[hidden]{display:none}
-.platztitel{font-size:12px;color:var(--schwach);margin-bottom:5px}
-.platzbalken{display:flex;height:14px;border-radius:2px;overflow:hidden;background:var(--flaeche2);border:1px solid var(--rand)}
+.exportplatz .diatitel{margin:0 0 6px}
+.platzbalken{display:flex;height:14px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,.72)}
 .platzbalken i{display:block;height:100%;min-width:0;flex:0 0 auto}
-.platzlegende{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:7px;font-size:12px;color:var(--schwach)}
-.platzlegende span{white-space:nowrap}
-.platzlegende i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
-.platzlegende b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
-.platzmarke{border:1px solid var(--rand);border-radius:999px;padding:1px 9px;font-size:11px;color:var(--schwach);white-space:nowrap}
+.exportplatz .stapellegende{margin-top:5px}
+.exportplatz .stapellegende + .platzhinweis{margin-top:14px}
+.platzmarke{border:1px solid var(--rand);border-radius:999px;padding:1px 9px;font-size:12px;color:var(--schwach);white-space:nowrap}
 .platzmarke.gut{color:#59d18c;border-color:#59d18c}
 .platzmarke.schlecht{color:#e31c79;border-color:#e31c79}
 .platzhinweis{font-size:12px;color:var(--schwach);margin-top:4px}
@@ -457,12 +467,13 @@ select,.knopf{
 .platzfehlt{font-size:12.5px;color:#e31c79;margin-top:6px}
 /* DER FORTSCHRITT: ein Balken in Akzentfarbe, solange der Lauf geht;
    darunter, was gerade kopiert wird, wie viel von wie viel, wie schnell,
-   wie lange noch. */
+   wie lange noch. Derselbe schwarze Datenbereich wie beim Platz (Regel
+   8), die Unterschrift 4 px darunter. */
 .exportfortschritt{margin-top:10px}
 .exportfortschritt[hidden]{display:none}
-.fortbalken{height:9px;border-radius:2px;overflow:hidden;background:var(--flaeche2);border:1px solid var(--rand)}
+.fortbalken{height:12px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,.72)}
 .fortbalken i{display:block;height:100%;transition:width .6s linear}
-.forttext{font-size:12px;color:var(--schwach);margin-top:5px;font-variant-numeric:tabular-nums}
+.forttext{font-size:12px;color:var(--schwach);margin-top:4px;font-variant-numeric:tabular-nums}
 /* DIE DEMO-ZEILE: der Sternenhimmel zum Verschicken, ein Bild, ein Satz,
    ein Knopf. */
 .exportdemo{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -14070,8 +14081,7 @@ async function profilExportFuellen(){
           <div class="exportwas">
             <span class="fest"><b>✓ Datenbestand</b> — Programm, Titel, Bilder, Analyse, <code>Musik/</code><span id="exportbestandText"></span></span>
             <span class="fest"><b>✓ Sternenhimmel</b> — eine Datei, spielt vom Medium</span>
-            <label title="Die Instrumentspuren (Stems) sind rund 27 GB — nur mitnehmen, wenn das Medium sie fasst">
-              <input type="checkbox" id="exportstems"> <span id="exportstemsText">Stems (27 GB)</span></label>
+            <button class="pille" id="exportstems" title="Die Instrumentspuren (Stems) sind rund 27 GB — nur mitnehmen, wenn das Medium sie fasst">Stems (27 GB)</button>
           </div>
           <div class="exportplatz" id="exportplatz" hidden></div><!-- fuellt exportPlatzZeichnen() -->
         </div>
@@ -14110,7 +14120,7 @@ async function profilExportFuellen(){
   const BEDARF = { ohne: 8.5e9, stems: 36e9 };
   const bedarfJetzt = () => {
     const b = _exportStand && _exportStand.bedarf;
-    const mitStems = $('exportstems').checked;
+    const mitStems = exportStemsAn();
     if (b && (mitStems ? b.gesamtMitStems : b.gesamt) > 0) return mitStems ? b.gesamtMitStems : b.gesamt;
     return mitStems ? BEDARF.stems : BEDARF.ohne;
   };
@@ -14159,10 +14169,10 @@ async function profilExportFuellen(){
     if (!(d.ordner || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine Unterordner.' }));
   };
   $('exportwaehlen').onclick = () => { const b = $('exportbrowser'); if (!b.hidden){ b.hidden = true; return; } ordnerZeigen(''); };
-  /* Der Stems-Haken aendert den Bedarf - Diagramm und Piktogramm ziehen
+  /* Die Stems-Pille aendert den Bedarf - Diagramm und Piktogramm ziehen
      sofort nach, ohne den Server zu fragen; der letzte Stand liegt in
      _exportStand. */
-  $('exportstems').onchange = () => { if (_exportStand) exportZeichnen(_exportStand); else exportPiktogrammZeichnen(null); };
+  $('exportstems').onclick = () => { $('exportstems').classList.toggle('an'); if (_exportStand) exportZeichnen(_exportStand); else exportPiktogrammZeichnen(null); };
 
   const startKnopf = $('exportstart');
   startKnopf.onclick = async () => {
@@ -14171,7 +14181,7 @@ async function profilExportFuellen(){
     startKnopf.disabled = true; startKnopf.textContent = 'Startet …';
     let a = null;
     try { a = await (await fetch('/api/export/start', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stems: $('exportstems').checked, ziel: z }) })).json(); }
+      body: JSON.stringify({ stems: exportStemsAn(), ziel: z }) })).json(); }
     catch (e) { a = { ok: false, grund: 'Server antwortet nicht: ' + e.message }; }
     if (!a || !a.ok){ $('exportstand').textContent = '✗ ' + ((a && a.grund) || 'Start fehlgeschlagen');
                       startKnopf.disabled = false; startKnopf.textContent = 'Export starten'; return; }
@@ -14279,25 +14289,62 @@ function exportZeichnen(d){
 }
 
 /* ---- DIE TEILE DES BESTANDS ------------------------------------------
-   Dieselbe Liste, dieselbe Reihenfolge, dieselbe Farbe - im Piktogramm
-   wie im Platzdiagramm. Die Farbe je Teil ist fest ueber die Rampe der
-   zwei Hausakzente (lagenRampe), damit ein Teil im Balken und im Stick
-   gleich aussieht, egal ob die Stems gerade dabei sind. */
+   Sechs Teile, dieselben im Stick wie im Balken: MP3, Titelbilder und
+   Bewegtbilder, Analyse, Programm & Texte, der Musik-Ordner, die Stems
+   (nur mit Pille). Der Server zaehlt acht (die Ausschluesse von
+   bin/export.js); Programm, Texte und Katalog und Node sind zusammen ein
+   halbes Gigabyte - drei Farben fuer nichts, deshalb EIN Teil, die
+   Einzelwerte stehen im Tooltip. */
 const EXPORT_TEILE = [
-  ['mp3',      'MP3',                        'MP3'],
-  ['bilder',   'Titelbilder und Bewegtbilder', 'Bilder'],
-  ['analyse',  'Analyse',                    'Analyse'],
-  ['texte',    'Texte und Katalog',          'Texte'],
-  ['programm', 'Programm',                   'Programm'],
-  ['node',     'Node',                       'Node'],
-  ['musik',    'Musik-Ordner',               'Musik/'],
-  ['stems',    'Instrumentspuren (Stems)',   'Stems'],
+  ['mp3',      'MP3',                          'MP3',              ['mp3']],
+  ['bilder',   'Titelbilder und Bewegtbilder', 'Bilder',           ['bilder']],
+  ['analyse',  'Analyse',                      'Analyse',          ['analyse']],
+  ['programm', 'Programm & Texte',             'Programm & Texte', ['programm', 'texte', 'node']],
+  ['musik',    'Musik-Ordner',                 'Musik/',           ['musik']],
+  ['stems',    'Instrumentspuren (Stems)',     'Stems',            ['stems']],
 ];
-const exportTeilFarbe = (schluessel) => {
-  const i = EXPORT_TEILE.findIndex(([k]) => k === schluessel);
-  return lagenRampe(EXPORT_TEILE.length)[i < 0 ? 0 : i];
-};
-const exportTeilName = (t, kurz) => (EXPORT_TEILE.find(([k]) => k === t.schluessel) || [])[kurz ? 2 : 1] || t.name || t.schluessel;
+function exportTeileZusammen(b, mitStems){
+  const quelle = b && Array.isArray(b.teile) ? b.teile : null;
+  const farben = exportPalette();
+  return EXPORT_TEILE.filter(([k]) => k !== 'stems' || mitStems).map(([k, name, kurz, aus]) => {
+    const st = quelle ? quelle.filter(x => x && aus.includes(x.schluessel)) : [];
+    const bytes = quelle ? st.reduce((s, x) => s + (Number(x.bytes) || 0), 0) : null;
+    const dateien = quelle && st.some(x => x.dateien != null) ? st.reduce((s, x) => s + (Number(x.dateien) || 0), 0) : null;
+    const einzeln = st.length > 1 ? st.map(x => `${x.name || x.schluessel} ${exportGroesse(x.bytes)}`).join(' · ') : '';
+    return { schluessel: k, name, kurz, bytes, dateien, einzeln, farbe: farben[k] || DIA_1 };
+  });
+}
+
+/* ---- DIE FARBEN DER TEILE (Caspar_D, 09.09.2026: "die Farben liegen zu
+   dicht zusammen, sind schlecht unterscheidbar, nimm die Farbpalette aus
+   den Likes-, Plays-, Comments-Diagrammen noch dazu") -------------------
+   Die Rampe zwischen den zwei Hausakzenten gab Toene, die man nicht
+   auseinanderhalten konnte. Der Zaehlerverlauf loest dasselbe Problem seit
+   dem 25.08. mit einer Triade in OKLCH (zvglKennfarben): gleiche
+   Helligkeit, gleiche Buntheit, Farbton um 120 und 240 Grad gedreht. Hier
+   dasselbe fuer beide Akzente - Akzent 1 mit seinen zwei Drehungen, Akzent
+   2 mit seinen zwei: sechs Toene, im Regelfall 60 Grad auseinander. Liegen
+   die Akzente selbst zu nah beieinander (unter 25 Grad, wie bei den
+   Kennfarben), rueckt der zweite um 60 Grad. MP3 und Musik-Ordner sind
+   dieselben Dateien zweimal, sie tragen die beiden Akzente selbst. Die
+   Akzente folgen der Musik, deshalb je Akzentpaar gemerkt. */
+let _exportPaletteMerk = null;
+function exportPalette(){
+  const cs = getComputedStyle(document.documentElement);
+  const a = (cs.getPropertyValue('--titel-a').trim() || '#f97b14').toLowerCase();
+  const b = (cs.getPropertyValue('--titel-b').trim() || '#e31c79').toLowerCase();
+  if (_exportPaletteMerk && _exportPaletteMerk.a === a && _exportPaletteMerk.b === b) return _exportPaletteMerk.p;
+  const oa = okFarbe(a) || okFarbe('#f97b14'), ob0 = okFarbe(b) || okFarbe('#e31c79');
+  const abstand = (x, y) => Math.abs(((x - y + 540) % 360) - 180);
+  const nah = abstand(oa.H, ob0.H) < 25;
+  const ob = nah ? { ...oa, H: oa.H + 60 } : ob0;
+  const kraeftig = (o) => ({ L: Math.max(0.62, Math.min(0.86, o.L)), C: Math.max(0.11, Math.min(0.22, o.C)) });
+  const dreh = (o, g) => okZuHex({ ...kraeftig(o), H: (o.H + g + 360) % 360 });
+  const p = { mp3: okFarbe(a) ? a : '#f97b14', musik: nah || !okFarbe(b) ? dreh(ob, 0) : b,
+              bilder: dreh(oa, 120), analyse: dreh(oa, 240), programm: dreh(ob, 120), stems: dreh(ob, 240) };
+  _exportPaletteMerk = { a, b, p };
+  return p;
+}
 /* Was das Betriebssystem meldet, in dem Wort, das auf der Packung steht. */
 const exportDateisystem = (fs) => ({ exfat: 'exFAT', msdos: 'FAT32', fat32: 'FAT32', vfat: 'FAT32', ntfs: 'NTFS', apfs: 'APFS', hfs: 'HFS+',
   smbfs: 'SMB', nfs: 'NFS', ext4: 'ext4' }[String(fs || '').toLowerCase()] || String(fs || '–').toUpperCase());
@@ -14305,59 +14352,101 @@ const exportDateisystem = (fs) => ({ exfat: 'exFAT', msdos: 'FAT32', fat32: 'FAT
 /* ---- DAS PIKTOGRAMM (Caspar_D, 09.09.2026: "ein gut visualisiertes
    Visual zum Datenbestand als Piktogramm ... links im Panel") ---------
    Ein Stick, darin die Teile des Bestands als Stapel, die Hoehe nach
-   Groesse (mit einer Mindesthoehe, damit das Programm mit 20 MB nicht
-   verschwindet), je Teil Name und Groesse, bei MP3 die Titelzahl. Die
-   Stems kommen dazu, sobald der Haken sitzt - und zeigen dann, wie sie
-   alles andere zusammendruecken. Ohne stand.bedarf (alter Server, erste
-   Sekunde) nur die Form mit den Namen. Hausform: Flaeche gedaempft,
-   Topline oben. */
+   Groesse; rechts daneben je Teil Name (12 px) und Groesse (10,5), bei
+   MP3 die Titelzahl. Die Stems kommen dazu, sobald die Pille an ist -
+   und zeigen dann, wie sie alles andere zusammendruecken. Ohne
+   stand.bedarf (alter Server, erste Sekunde) nur die Form mit den Namen.
+
+   DER SATZSPIEGEL (Caspar_D, 09.09.2026: "der Erklaertext muss zum
+   Speichermedium so aligniert werden, dass die Oberkante des Textes mit
+   der Oberkante des ersten Textes im Visual uebereinstimmt" und "zu viel
+   Negativraum in der Mitte rechts"): die erste Beschriftung liegt auf
+   der Hoehe der ersten Zeile der Erklaerung, die letzte auf der letzten -
+   Stick und Text enden gleich hoch (Regel 17, "Spalten so bemessen, dass
+   sie gleich hoch enden"). Dazu misst exportKopfMasse die Zeilen der
+   Erklaerung und schiebt sie so weit herunter, dass ihre erste Zeile
+   unter dem Steckerkopf des Sticks beginnt; die Blockhoehen werden dann
+   so skaliert, dass die Spanne zwischen erster und letzter Beschriftung
+   der Spanne der Textzeilen entspricht (Bisektion ueber den Massstab,
+   Mindesthoehe 14 px je Block). Passt der Text nicht (zu kurz fuer sechs
+   Bloecke), wird der Stick so hoch, wie er muss. Stehen die Spalten
+   untereinander (schmale Scheibe), gilt die feste Hoehe. Hausform:
+   Flaeche gedaempft, Topline oben. */
+let _exportPiktoBedarf = null;
+function exportKopfMasse(box, text){
+  if (!text) return null;
+  const kopf = box.parentElement.getBoundingClientRect(), sv = box.getBoundingClientRect();
+  if (text.getBoundingClientRect().left < sv.left + 100) { text.style.marginTop = '0px'; return null; }   /* untereinander */
+  const ERSTE = 46;                       /* Mitte der ersten Beschriftung: 26 px Steckerkopf + halber erster Block */
+  const zeilen = () => { const r = document.createRange(); r.selectNodeContents(text); return [...r.getClientRects()].filter(x => x.height > 0); };
+  text.style.marginTop = '0px';
+  let z = zeilen(); if (!z.length) return null;
+  const natur = z[0].top + z[0].height / 2 - kopf.top;
+  text.style.marginTop = Math.max(0, ERSTE - natur).toFixed(1) + 'px';
+  z = zeilen();
+  const oben = Math.min(...z.map(r => r.top)), unten = Math.max(...z.map(r => r.bottom)), zh = z[0].height;
+  return { c1: oben + zh / 2 - kopf.top, c2: unten - zh / 2 - kopf.top };
+}
 function exportPiktogrammZeichnen(b){
   const box = $('exportpikto'); if (!box) return;
-  const stemsHaken = $('exportstems') && $('exportstems').checked;
-  const teile = (b && Array.isArray(b.teile) ? b.teile : EXPORT_TEILE.map(([k]) => ({ schluessel: k, bytes: null, dateien: null })))
-    .filter(t => t && t.schluessel !== 'stems' || stemsHaken);
-  /* Programm, Node und Texte sind zusammen ein halbes Gigabyte - im
-     Stick EIN Block, im Balken bleiben sie getrennt. */
-  const klein = teile.filter(t => ['texte', 'programm', 'node'].includes(t.schluessel));
-  const bloecke = teile.filter(t => !['texte', 'programm', 'node'].includes(t.schluessel)).map(t => ({ ...t, name: exportTeilName(t, true), farbe: exportTeilFarbe(t.schluessel) }));
-  if (klein.length) bloecke.splice(Math.min(3, bloecke.length), 0, {
-    schluessel: 'texte', name: 'Programm & Texte', kurz: 'Programm', farbe: exportTeilFarbe('texte'),
-    bytes: klein.every(t => t.bytes == null) ? null : klein.reduce((a, t) => a + (Number(t.bytes) || 0), 0), dateien: null });
-  const W = 150, H = 176, X0 = 28, X1 = 122, Y0 = 26, Y1 = 164, LUECKE = 3;
+  _exportPiktoBedarf = b;
+  const bloecke = exportTeileZusammen(b, exportStemsAn());
+  const n = bloecke.length; if (!n) { box.innerHTML = ''; return; }
   const mitZahlen = bloecke.some(t => t.bytes != null);
-  const summe = bloecke.reduce((a, t) => a + (Number(t.bytes) || 0), 0);
-  const nutz = (Y1 - Y0) - LUECKE * (bloecke.length - 1);
-  /* Zwei Zeilen brauchen 24 px; passen so viele Bloecke nicht in den
-     Stick (mit Stems sind es sechs), ruecken alle auf eine Zeile. */
-  const MIN = Math.min(24, Math.floor(nutz / Math.max(1, bloecke.length)));
-  /* Erst jeder seine Mindesthoehe, der Rest nach Anteil. */
-  let hoehen = bloecke.map(t => mitZahlen && summe > 0 ? Math.max(MIN, nutz * (Number(t.bytes) || 0) / summe) : nutz / bloecke.length);
-  const ueber = hoehen.reduce((a, h) => a + h, 0) - nutz;
-  if (ueber > 0){ const gross = hoehen.map((h, i) => h > MIN ? i : -1).filter(i => i >= 0); const ab = ueber / (gross.length || 1); gross.forEach(i => { hoehen[i] = Math.max(MIN, hoehen[i] - ab); }); }
+  const summe = bloecke.reduce((s, t) => s + (Number(t.bytes) || 0), 0);
+  /* Masse: der Stick 4..70, die Bloecke darin 12..62, die Beschriftung ab
+     82 mit mindestens 5 px Luft zum rechten Rand (Hausregel "Beschriftungen
+     brauchen Rand"), nachgemessen mit getBBox auf der Probeseite. */
+  const W = 240, SX = 4, SB = 66, X0 = 12, X1 = 62, TX = 82, LUECKE = 3, MIN = 14, KOPF = 26, FUSS = 12;
+  const text = box.parentElement ? box.parentElement.querySelector('p') : null;
+  const ziel = exportKopfMasse(box, text);
+  const maxErst = ziel ? Math.max(MIN, 2 * (ziel.c1 - KOPF)) : Infinity;   /* der erste Block darf nicht in den Steckerkopf wachsen */
+  const hoehen = (k) => bloecke.map((t, i) => { const h = Math.max(MIN, mitZahlen && summe > 0 ? k * (Number(t.bytes) || 0) / summe : k / n); return i === 0 ? Math.min(maxErst, h) : h; });
+  const spanne = (h) => h[0] / 2 + h.slice(1, -1).reduce((s, x) => s + x, 0) + (n > 1 ? h[n - 1] / 2 : 0) + LUECKE * (n - 1);
+  let k;
+  if (ziel){
+    let lo = 0, hi = 4000;
+    for (let i = 0; i < 40; i++){ k = (lo + hi) / 2; if (spanne(hoehen(k)) < ziel.c2 - ziel.c1) lo = k; else hi = k; }
+    k = hi;
+  } else k = 138 - LUECKE * (n - 1);
+  const h = hoehen(k);
+  const c1 = ziel ? ziel.c1 : KOPF + h[0] / 2;
+  const Y0 = c1 - h[0] / 2;
+  const Y1 = Y0 + h.reduce((s, x) => s + x, 0) + LUECKE * (n - 1);
+  const H = Math.ceil(Y1 + FUSS + 1);
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Der Datenbestand auf dem Medium">`
-    + `<rect x="55" y="1" width="40" height="16" rx="3" fill="var(--flaeche2)" stroke="var(--rand)"/>`
-    + `<rect x="18" y="13" width="114" height="${H - 14}" rx="10" fill="var(--flaeche)" stroke="var(--rand)"/>`;
+    + `<rect x="${SX + 20}" y="1" width="26" height="14" rx="3" fill="var(--flaeche2)" stroke="var(--rand)"/>`
+    + `<rect x="${SX}" y="12" width="${SB}" height="${H - 13}" rx="8" fill="rgba(0,0,0,.72)"/>`;
   let y = Y0;
-  for (let i = 0; i < bloecke.length; i++){
-    const t = bloecke[i], h = hoehen[i];
-    const zeile1 = t.name, zeile2 = t.bytes == null ? '' : exportGroesse(t.bytes) + (t.schluessel === 'mp3' && t.dateien ? ` · ${Number(t.dateien).toLocaleString('de-DE')} Titel` : '');
-    const zwei = zeile2 && h >= 24;
-    svg += `<rect x="${X0}" y="${y.toFixed(1)}" width="${X1 - X0}" height="${h.toFixed(1)}" rx="3" fill="${diaFlaeche(t.farbe)}"/>`
-      + `<rect x="${X0}" y="${y.toFixed(1)}" width="${X1 - X0}" height="1" fill="${diaTopline(t.farbe)}"/>`
-      + `<title>${esc(t.schluessel === 'texte' && klein.length ? 'Programm, Texte und Katalog, Node' : zeile1)}${zeile2 ? ' · ' + esc(zeile2) : ''}</title>`;
-    const mitte = X0 + (X1 - X0) / 2;
-    if (zwei) svg += `<text x="${mitte}" y="${(y + h / 2 - 2).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="var(--text)">${esc(zeile1)}</text>`
-                   + `<text x="${mitte}" y="${(y + h / 2 + 9).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="var(--text)" opacity=".8">${esc(zeile2)}</text>`;
-    else svg += `<text x="${mitte}" y="${(y + h / 2 + 3.2).toFixed(1)}" text-anchor="middle" font-size="${h < 18 ? 8 : 9}" fill="var(--text)">${esc(t.kurz || zeile1)}${t.bytes != null && h >= 14 ? ' ' + esc(exportGroesse(t.bytes)) : ''}</text>`;
-    y += h + LUECKE;
+  for (let i = 0; i < n; i++){
+    const t = bloecke[i], hh = h[i];
+    const groesse = t.bytes == null ? '' : exportGroesse(t.bytes) + (t.schluessel === 'mp3' && t.dateien ? ` · ${Number(t.dateien).toLocaleString('de-DE')} Titel` : '');
+    const mitte = y + hh / 2;
+    /* Der Block: Flaeche gedaempft, Topline oben (Hausform). Die Topline
+       endet innerhalb der runden Ecken, sonst ragt sie ueber. */
+    svg += `<rect x="${X0}" y="${y.toFixed(1)}" width="${X1 - X0}" height="${hh.toFixed(1)}" rx="2" fill="${diaFlaeche(t.farbe)}"><title>${esc(t.einzeln || t.name)}${groesse ? ' · ' + esc(groesse) : ''}</title></rect>`
+      + `<rect x="${X0 + 2}" y="${y.toFixed(1)}" width="${X1 - X0 - 4}" height="1" fill="${diaTopline(t.farbe)}"/>`
+      /* Der Strich vom Block zur Beschriftung, in der Kante des Blocks. */
+      + `<rect x="${X1 + 2}" y="${(mitte - 0.5).toFixed(1)}" width="${TX - X1 - 6}" height="1" fill="${diaTopline(t.farbe)}"/>`
+      + `<text x="${TX}" y="${(mitte + 4).toFixed(1)}" font-size="12" fill="var(--text)">${esc(t.kurz)}`
+      + (groesse ? `<tspan font-size="10.5" fill="var(--schwach)" dx="5">${esc(groesse)}</tspan>` : '') + `</text>`;
+    y += hh + LUECKE;
   }
   svg += '</svg>';
   box.innerHTML = svg;
 }
+/* Aendert sich die Breite, brechen die Zeilen der Erklaerung anders um -
+   der Stick zieht nach. */
+window.addEventListener('resize', () => {
+  clearTimeout(window._exportPiktoUhr);
+  window._exportPiktoUhr = setTimeout(() => { if ($('exportpikto')) exportPiktogrammZeichnen(_exportPiktoBedarf); }, 150);
+});
 
+/* Die Stems-Pille: an oder aus (Regel 18, Pillen statt Checkboxen). */
+const exportStemsAn = () => !!($('exportstems') && $('exportstems').classList.contains('an'));
 /* Die Zeilen in Schritt 2 tragen die Groessen, sobald der Bedarf da ist. */
 function exportWasZeichnen(b){
-  const bt = $('exportbestandText'), st = $('exportstemsText');
+  const bt = $('exportbestandText'), st = $('exportstems');
   if (!b || !Array.isArray(b.teile)){ if (bt) bt.textContent = ''; return; }
   const stems = b.teile.find(t => t && t.schluessel === 'stems');
   if (bt && b.gesamt > 0) bt.textContent = ` · ${exportGroesse(b.gesamt)}`;
@@ -14415,10 +14504,8 @@ function exportPlatzZeichnen(d){
   const box = $('exportplatz'); if (!box) return true;
   const m = d && d.medium, b = d && d.bedarf;
   if (!m || !b || !(m.gesamt > 0) || !Array.isArray(b.teile)){ box.hidden = true; box.innerHTML = ''; return true; }
-  const stemsHaken = $('exportstems') && $('exportstems').checked;
-  const teile = b.teile.filter(t => t && !(t.schluessel === 'stems' && !stemsHaken));   /* Stems nur mit Haken */
-  const reihenfolge = (t) => { const i = EXPORT_TEILE.findIndex(([k]) => k === t.schluessel); return i < 0 ? 99 : i; };
-  teile.sort((x, y) => reihenfolge(x) - reihenfolge(y));
+  const stemsHaken = exportStemsAn();
+  const teile = exportTeileZusammen(b, stemsHaken);   /* dieselben sechs wie im Stick, Stems nur mit Pille */
 
   const bedarfGesamt = Math.max(0, Number(stemsHaken ? (b.gesamtMitStems != null ? b.gesamtMitStems : b.gesamt) : b.gesamt) || 0);
   const archiv  = Math.max(0, Number(m.archivBytes) || 0);
@@ -14434,9 +14521,7 @@ function exportPlatzZeichnen(d){
 
   box.innerHTML = '';
   box.hidden = false;
-  const titel = document.createElement('div'); titel.className = 'platztitel';
-  titel.textContent = `Platz auf ${m.name || m.pfad || 'dem Medium'}`;
-  box.appendChild(titel);
+  box.appendChild(diaTitel(`Platz auf ${m.name || m.pfad || 'dem Medium'}`));
   const balken = document.createElement('div'); balken.className = 'platzbalken';
   const segment = (bytes, farbe, deckung, titel) => {
     if (!(bytes > 0)) return;
@@ -14450,23 +14535,31 @@ function exportPlatzZeichnen(d){
   const GRAU = '#8b8b90';
   segment(anderes, GRAU, SPUR_DECKUNG, `Anderes auf dem Medium: ${exportGroesse(anderes)}`);
   const teilSumme = teile.reduce((a, t) => a + (Number(t.bytes) || 0), 0) || 1;
-  teile.forEach(t => segment(bedarfGesamt * (Number(t.bytes) || 0) / teilSumme, exportTeilFarbe(t.schluessel), SPUR_DECKUNG, `${exportTeilName(t)}: ${exportGroesse(t.bytes)}`));
+  teile.forEach(t => segment(bedarfGesamt * (Number(t.bytes) || 0) / teilSumme, t.farbe, SPUR_DECKUNG, `${t.name}: ${exportGroesse(t.bytes)}${t.einzeln ? ' (' + t.einzeln + ')' : ''}`));
   segment(bleibt, DIA_1, 0.3, `Bleibt vom früheren Export: ${exportGroesse(bleibt)}`);
   box.appendChild(balken);
 
-  const legende = document.createElement('div'); legende.className = 'platzlegende';
-  const eintrag = (farbe, deckung, text, wert) => {
-    const s = document.createElement('span');
+  /* Die Legende wie bei den gestapelten Saeulen: Pille mit echter
+     Fuellung und Topline, der Name in seiner Farbe, dahinter der Wert
+     (Regel 23: die Legende zeigt, statt zu beschreiben). Grau bleibt grau. */
+  const legende = document.createElement('div'); legende.className = 'stapellegende';
+  /* Der Name in seiner Farbe, aber lesbar: Coverfarben sind nicht fuer
+     Schrift gemacht - lesbarAuf hellt bis 4,5:1 gegen den Grund auf
+     (Hausregel "Schrift muss lesbar sein"). */
+  const eintrag = (farbe, deckung, text, wert, tipp) => {
+    const s = document.createElement('span'); if (tipp) s.title = tipp;
     const i = document.createElement('i'); i.style.background = diaFlaeche(farbe, deckung); i.style.boxShadow = `inset 0 1px 0 ${diaTopline(farbe, deckung)}`;
-    s.appendChild(i); s.appendChild(document.createTextNode(text + ' '));
-    const w = document.createElement('b'); w.textContent = wert; s.appendChild(w);
+    const n = document.createElement('b'); n.textContent = text; n.style.color = farbe === GRAU ? 'var(--schwach)' : lesbarAuf(farbe, '#161618', 4.5);
+    s.append(i, n, document.createTextNode(wert));
     legende.appendChild(s);
   };
   if (anderes > 0) eintrag(GRAU, SPUR_DECKUNG, 'Anderes belegt', exportGroesse(anderes));
-  teile.forEach(t => eintrag(exportTeilFarbe(t.schluessel), SPUR_DECKUNG, exportTeilName(t),
-    exportGroesse(t.bytes) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : '')));
+  teile.forEach(t => eintrag(t.farbe, SPUR_DECKUNG, t.name,
+    exportGroesse(t.bytes) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : ''), t.einzeln));
   if (bleibt > 0) eintrag(DIA_1, 0.3, 'Bleibt vom früheren Export', exportGroesse(bleibt));
-  const f = document.createElement('span'); f.textContent = 'Frei danach '; const fw = document.createElement('b'); fw.textContent = exportGroesse(freiDanach); f.appendChild(fw); legende.appendChild(f);
+  const f = document.createElement('span'); const fi = document.createElement('i'); fi.style.background = 'rgba(0,0,0,.72)';
+  const fn = document.createElement('b'); fn.textContent = 'Frei danach'; fn.style.color = 'var(--schwach)';
+  f.append(fi, fn, document.createTextNode(exportGroesse(freiDanach))); legende.appendChild(f);
   box.appendChild(legende);
   if (archiv > 0){
     const h = document.createElement('div'); h.className = 'platzhinweis';
@@ -17014,8 +17107,9 @@ function morgenDauerText(ms){
   if (ms == null) return '';
   if (ms < 1000) return '< 1 s';
   if (ms < 60000) return Math.round(ms/1000) + ' s';
-  if (ms < 3600000) return (ms/60000).toFixed(ms < 600000 ? 1 : 0).replace('.0','') + ' min';
-  return (ms/3600000).toFixed(1) + ' h';
+  /* Dezimalkomma ueberall (Hausregel 14) - hier stand bis 09.09.2026 der Punkt. */
+  if (ms < 3600000) return (ms/60000).toFixed(ms < 600000 ? 1 : 0).replace('.0','').replace('.', ',') + ' min';
+  return (ms/3600000).toFixed(1).replace('.0', '').replace('.', ',') + ' h';
 }
 
 /* DIE ABSCHNITTE. Einmal gebaut, danach nur nachgefuehrt: Wer die

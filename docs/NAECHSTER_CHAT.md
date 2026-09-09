@@ -2059,3 +2059,40 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
   „Export starten / Export läuft", wie Caspar_D selbst spricht. Nicht
   entschieden.
 
+## Register nach Hausregeln, Server-Patch drin (09.09.2026, 11:40)
+
+- Caspar_D: „Hausregeln.md anschauen, wie Diagramme auszusehen haben".
+  Umgesetzt: Stems als Pille (Regel 18), keine Schrift unter 12 px
+  (Nebenwerte 10,5), schwarzer Datenbereich rx 6 für Platz- und
+  Fortschrittsbalken (Regel 8), Legende als .stapellegende (Pille 22×11,
+  Name in seiner Farbe, lesbarAuf 4,5:1), Titel als .diatitel, Legende 5 px
+  unter dem Bild, Erklärsatz 14 px darunter, Dezimalkomma in
+  morgenDauerText (hauswiet: „1,0 h" statt „1.0 h").
+- Caspar_D zum ersten Entwurf: Farben zu dicht → **Kennfarben-Triade wie im
+  Zählerverlauf** (exportPalette: beide Akzente in OKLCH um 120/240 Grad
+  gedreht, sechs Töne im 60-Grad-Abstand, je Akzentpaar gemerkt); **sechs
+  Teile statt acht** (Programm, Texte, Node = „Programm & Texte", Einzel-
+  werte im Tooltip); **Satzspiegel**: erste Textzeile der Erklärung auf der
+  Höhe der ersten Beschriftung, letzte auf der letzten, Stick so hoch wie
+  der Text (exportKopfMasse misst die Zeilen, Bisektion über den Maßstab,
+  Resize zieht nach); Stick fluchtet mit dem Text der Schritte (36 px).
+- Caspar_D: „zeigen statt Gegenlesen" — Prüfer-Workflow gestoppt, Memory
+  zeigen-statt-gegenlesen.md. Ausgerenderte Zustände liegen im Scratchpad
+  (register-neu.html), nicht im Repo.
+- **Server-Patch angewendet** (11:35): medium {pfad, name, dateisystem,
+  gesamt, frei, belegt, archivBytes, kompatibel} und bedarf (asynchron mit
+  fs.promises, 0,7 s, 10 min gemerkt) in /api/export/stand, dazu
+  /api/export/bedarf; toter Export (pid lebt nicht) wird als abgebrochen
+  in die Mitschrift zurückgeschrieben. Server neu gestartet, antwortet.
+- **Stick-Export angehalten** (11:30, Caspar_D: „wir setzen den stick später
+  fort"): Der Mac war in den Ruhemodus gegangen, INTENSO hatte sich
+  ausgeworfen und neu eingehängt; rsync lief weiter, aber mit offenen
+  Dateien auf dem alten Einhängepunkt. export.js hält den Mac jetzt wach
+  (caffeinate -i -w) und nimmt beim Abbruch seine Kindprozesse mit. Zwei
+  verwaiste rsync (43204/43205) hingen danach im Plattenwarten (UN) — ohne
+  Zutun beenden sie sich, sobald der Stick antwortet; ggf. prüfen mit
+  `pgrep -x rsync`. Auf dem Stick liegen ~6,3 GB Teilkopie ohne
+  export-stand.json — der nächste Lauf frischt nur auf.
+- Nächster Schritt mit Caspar_D: Register in seinem Fenster ansehen (Reload),
+  dann den Stick-Export erneut starten und den Fortschritt live prüfen.
+
