@@ -152,7 +152,18 @@ if (process.platform === 'darwin' && !probe) {
 /* ---------------------------------------------------------------- Mitschrift */
 const STUFEN = 7;
 const lauf = { laeuft: true, seit: new Date(START).toISOString(), pid: process.pid, probe, stems, ziel: ZIEL, zielDateisystem: null,
-               schritt: '', stufe: null, fortschritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
+               schritt: '', stufe: null, plan: null, fortschritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
+/* DER PLAN (Caspar_D, 09.09.2026: "der User ist nur an der Gesamtzeit
+   interessiert und sieht an den Etappen, wofür die Daten schon reichen"):
+   vor dem ersten Byte werden alle Stufen vermessen - was zu Hause liegt
+   und laut Verzeichnis noch nicht im Behälter ist. lauf.plan = { stufen:
+   [{nr, name, bytes}], gesamt }; der Fortschritt trägt dazu gesamt =
+   { fertig, bytes, bytesProSekunde, restS } über den ganzen Lauf. Die
+   Stufen zählen mit ihren geplanten Bytes, damit der Balken stetig bleibt. */
+const plan = { stufen: [], gesamt: 0, listen: {} };
+let gesamtVorher = 0;
+const gesamtTempo = tempoMesserSpaeter();
+function tempoMesserSpaeter() { let m = null; return (b) => { if (!m) m = tempoMesser(); return m(b); }; }
 let zuletztGeschrieben = 0;
 function laufSchreiben(erzwingen) {
   /* Höchstens viermal je Sekunde - rsync meldet Fortschritt öfter, und
@@ -212,6 +223,8 @@ function fortschritt(mess, fertig) {
   const bytesFertig = fertig.bytes || 0;
   const tempo = mess.tempo ? mess.tempo(bytesFertig) : null;
   const prozent = fertig.prozent != null ? fertig.prozent : (gesamt ? Math.min(100, Math.round(100 * bytesFertig / gesamt)) : 0);
+  const gFertig = Math.min(plan.gesamt || Infinity, gesamtVorher + bytesFertig);
+  const gTempo = plan.gesamt ? gesamtTempo(gFertig) : null;
   lauf.fortschritt = {
     prozent, was: mess.was,
     bytesGesamt: gesamt, bytesFertig,
@@ -219,9 +232,13 @@ function fortschritt(mess, fertig) {
     restS: (gesamt && tempo) ? Math.max(0, Math.round((gesamt - bytesFertig) / tempo)) : null,
     dateienGesamt: mess.dateienGesamt != null ? mess.dateienGesamt : null,
     dateienFertig: fertig.dateien != null ? fertig.dateien : null,
+    gesamt: plan.gesamt ? { fertig: gFertig, bytes: plan.gesamt, bytesProSekunde: gTempo,
+                            restS: gTempo ? Math.max(0, Math.round((plan.gesamt - gFertig) / gTempo)) : null } : null,
   };
   laufSchreiben(false);
 }
+/* tempoMesser steht weiter unten; die Funktion wird gehoben, der Aufruf
+   passiert erst beim ersten Fortschritt. */
 /* Die Kindprozesse (rsync, ffmpeg) sterben mit - sonst schreibt ein
    verwaister rsync weiter auf den Stick, waehrend die Oberflaeche schon
    "angehalten" sagt (09.09.2026: drei rsync blieben nach dem Anhalten
@@ -540,6 +557,37 @@ function nodeKopieren() {
   zeile(`node/: ${da.map(p => p.ordner).join(', ') || 'nichts'}${version ? ' (' + version + ')' : ''}` +
         (fehlt.length ? ` - FEHLT für ${fehlt.map(p => p.system).join(', ')}: library/node-portabel/ ist dort noch leer, der Stick braucht dann ein installiertes Node.js` : ''));
   return { da, fehlt, version, bytes, dateien };
+}
+
+/* Was node/ und Musik/ schreiben würden - für den Plan, ohne zu schreiben.
+   Dieselben Vergleiche wie nodeKopieren() und musik(). */
+function nodeBedarf() {
+  let bytes = 0;
+  for (const p of NODE_PLATTFORMEN) {
+    const quelle = path.join(LIB, 'node-portabel', p.ordner);
+    if (!p.dateien.every(f => fs.existsSync(path.join(quelle, f)))) continue;
+    for (const f of p.dateien) {
+      const von = path.join(quelle, f), nach = path.join(ZIEL, 'node', p.ordner, f);
+      const sv = fs.statSync(von); let sn = null; try { sn = fs.statSync(nach); } catch (e) {}
+      if (sn && sn.size === sv.size && sn.mtimeMs >= sv.mtimeMs - 2000) continue;
+      bytes += sv.size;
+    }
+  }
+  return bytes;
+}
+function musikBedarf() {
+  const ordner = path.join(ZIEL, 'Musik');
+  const jung = (f) => { try { return fs.statSync(f).mtimeMs; } catch (e) { return 0; } };
+  let bytes = 0;
+  for (const e of musikPlan()) {
+    const mp3 = path.join(SONGS, e.song.id, 'audio.mp3');
+    let sv = null; try { sv = fs.statSync(mp3); } catch (x) { continue; }
+    const quelle = Math.max(sv.mtimeMs, jung(path.join(SONGS, e.song.id, 'titelbild.jpg')), jung(path.join(SONGS, e.song.id, 'cover.jpg')));
+    const da = jung(path.join(ordner, e.name));
+    if (da && da >= quelle) continue;
+    bytes += sv.size;
+  }
+  return bytes;
 }
 
 /* ---------------------------------------------------------------- Startskripte und LIES-MICH */
@@ -973,7 +1021,7 @@ function zaehlen(ordner, ohne) {
      der Rest hängt hinten an, in Reihenfolge, mit Meldung alle 4 MB. */
   let B = null;
   const behaelterAuf = () => { if (!B && !probe) B = Behaelter.oeffnen(path.join(PROGRAMM, 'library'), true); return B; };
-  const behaelterSchritt = async (name, paare, was, jeTitel) => {
+  const behaelterListe = (paare) => {
     const b = behaelterAuf();
     const offen = []; let gleich = 0, bytesGleich = 0, fehlt = 0;
     for (const q of paare) {
@@ -982,8 +1030,16 @@ function zaehlen(ordner, ohne) {
       if (b && b.gleich(q.rel, sv)) { gleich++; bytesGleich += sv.size; continue; }
       offen.push({ von: q.von, rel: q.rel, bytes: sv.size, stat: sv, titel: q.titel || null });
     }
-    const bytesOffen = offen.reduce((s, o) => s + o.bytes, 0);
-    zeile(`   ${offen.length} in den Behälter (${(bytesOffen / 1048576).toFixed(0)} MB), ${gleich} schon drin` + (fehlt ? `, ${fehlt} gibt es zu Hause nicht (kein Grund zur Sorge)` : ''));
+    return { offen, gleich, bytesGleich, fehlt, bytesOffen: offen.reduce((s, o) => s + o.bytes, 0) };
+  };
+  const behaelterSchritt = async (name, liste, was, jeTitel) => {
+    const b = behaelterAuf();
+    if (Array.isArray(liste)) liste = behaelterListe(liste);
+    const { offen, gleich, bytesGleich, bytesOffen } = liste;
+    /* Was es zu Hause nicht gibt (ein Titelbild ohne Beschnitt, eine
+       Kachel), wird stumm übergangen - Caspar_D, 09.09.2026: die Zeile
+       "143 gibt es zu Hause nicht" verwirrte mehr, als sie sagte. */
+    zeile(`   ${offen.length} in den Behälter (${(bytesOffen / 1048576).toFixed(0)} MB), ${gleich} schon drin`);
     const mess = { was, gesamt: bytesOffen, dateienGesamt: offen.length, tempo: tempoMesser() };
     let bytesFertig = 0, n = 0;
     fortschritt(mess, { bytes: 0, dateien: 0 });
@@ -1001,10 +1057,8 @@ function zaehlen(ordner, ohne) {
     return { dateien: n, bytes: bytesFertig };
   };
   const kopierSchritt = async (name, paare, was, jeTitel) => {
-    const liste = kopierListe(paare);
-    /* "fehlt" ist kein Mangel: nicht jeder Titel hat ein beschnittenes
-       Titelbild oder eine Kachel - die Liste fragt nach allen dreien. */
-    zeile(`   ${liste.offen.length} zu kopieren (${(liste.bytesOffen / 1048576).toFixed(0)} MB), ${liste.gleich} schon da` + (liste.fehlt ? `, ${liste.fehlt} gibt es zu Hause nicht (kein Grund zur Sorge)` : ''));
+    const liste = Array.isArray(paare) ? kopierListe(paare) : paare;
+    zeile(`   ${liste.offen.length} zu kopieren (${(liste.bytesOffen / 1048576).toFixed(0)} MB), ${liste.gleich} schon da`);
     const r = await kopieren(liste, was, jeTitel);
     dateien += liste.gleich + r.dateien; bytes += liste.bytesGleich + r.bytes;
     zeile(`   ${name}: ${r.dateien} ${probe ? 'zu kopieren' : 'kopiert'} (${(r.bytes / 1048576).toFixed(0)} MB)`);
@@ -1020,6 +1074,34 @@ function zaehlen(ordner, ohne) {
   });
   const programmPaare = programmOrdner.map(o => ({ quelle: path.join(WURZEL, o), ziel: path.join(PROGRAMM, o), zusatz: ['--exclude', 'node_modules/'] }));
   const programmSummen = await vorabmessen(programmPaare);
+  /* DER PLAN: alle Stufen vermessen, bevor etwas geschrieben wird. Die
+     Listen bleiben liegen, die Stufen nehmen sie gleich wieder her. */
+  {
+    const ab = Date.now();
+    const L = plan.listen;
+    L.kern  = kopierListe(kernPaare(PROGRAMM));
+    L.liker = behaelterListe(likerPaare());
+    const nodeBytes = nodeBedarf();
+    L.titel = behaelterListe(titelPaare(['audio.mp3', 'kachel.jpg', 'titelbild.jpg']));
+    L.rest  = behaelterListe(titelRestPaare(['audio.mp3', 'kachel.jpg', 'titelbild.jpg']));
+    L.analyse = behaelterListe(analysePaare());
+    const musikBytes = musikBedarf();
+    let docsBytes = 0;
+    if (fs.existsSync(path.join(WURZEL, 'docs'))) [docsBytes] = await vorabmessen([{ quelle: path.join(WURZEL, 'docs'), ziel: path.join(PROGRAMM, 'docs'), zusatz: [] }]);
+    L.stems = stems ? behaelterListe(stemsPaare()) : null;
+    const st = (nr, name, bytes) => { plan.stufen.push({ nr, name, bytes }); plan.gesamt += bytes; };
+    st(1, 'Starten', programmSummen.reduce((a, b) => a + b, 0) + L.kern.bytesOffen + L.liker.bytesOffen + nodeBytes);
+    st(2, 'Titel', L.titel.bytesOffen);
+    st(3, 'Titelbilder', L.rest.bytesOffen);
+    st(4, 'Analyse', L.analyse.bytesOffen);
+    st(5, 'Fernseher', musikBytes + docsBytes);
+    st(6, 'Stems', L.stems ? L.stems.bytesOffen : 0);
+    st(7, 'Abschluss', 0);
+    lauf.plan = { stufen: plan.stufen, gesamt: plan.gesamt };
+    zeile(`   Plan: ${(plan.gesamt / 1048576).toFixed(0)} MB zu schreiben - ` + plan.stufen.filter(s => s.bytes).map(s => `${s.nr} ${s.name} ${(s.bytes / 1048576).toFixed(0)} MB`).join(', ') + ` (vermessen in ${Math.round((Date.now() - ab) / 1000)} s)`);
+    laufSchreiben(true);
+  }
+  const stufeFertig = (nr) => { const s = plan.stufen.find(x => x.nr === nr); if (s) gesamtVorher += s.bytes; };
   const programmMess = { was: 'Programm', gesamt: programmSummen.reduce((a, b) => a + b, 0), vorher: 0, tempo: tempoMesser() };
   for (let i = 0; i < programmPaare.length && !anhalten; i++) {
     const p = programmPaare[i];
@@ -1045,9 +1127,9 @@ function zaehlen(ordner, ohne) {
     for (const f of ['START-Mac.command', 'START-Linux.sh']) { try { fs.chmodSync(path.join(ZIEL, f), 0o755); } catch (e) {} }
     try { fs.unlinkSync(path.join(ZIEL, 'START.md')); } catch (e) {}
   }
-  await kopierSchritt('Bestand-Kern (Katalog, Texte, Reaktionen, Beobachter, Klangraum)', kernPaare(PROGRAMM), 'Kern');
+  await kopierSchritt('Bestand-Kern (Katalog, Texte, Reaktionen, Beobachter, Klangraum)', plan.listen.kern, 'Kern');
   if (anhalten) return angehalten(null);
-  await behaelterSchritt('Herzen-Listen (liker/)', likerPaare(), 'Kern');
+  await behaelterSchritt('Herzen-Listen (liker/)', plan.listen.liker, 'Kern');
   if (anhalten) return angehalten(null);
   if (!probe) {
     /* Der Sternenhimmel auf dem Stick spielt aus Musik/ (echte Dateien,
@@ -1067,6 +1149,7 @@ function zaehlen(ordner, ohne) {
   dateien += rn.dateien; bytes += rn.bytes;
   standTitel = probe ? 0 : titelImZiel(PROGRAMM, B);
   teilstandSchreiben(PROGRAMM, rn);
+  stufeFertig(1);
   if (anhalten) return angehalten(rn);
 
   /* ---- Stufe 2: Titel, neueste zuerst */
@@ -1075,7 +1158,7 @@ function zaehlen(ordner, ohne) {
   {
     const fertigeTitel = new Set();
     let seitStand = 0;
-    await behaelterSchritt('Titel', titelPaare(['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Titel', (o) => {
+    await behaelterSchritt('Titel', plan.listen.titel, 'Titel', (o) => {
       if (!o.rel.endsWith('/audio.mp3') || fertigeTitel.has(o.titel)) return;
       fertigeTitel.add(o.titel); standTitel++;
       if (++seitStand >= 25) { seitStand = 0; if (B) B.indexSchreiben(true); teilstandSchreiben(PROGRAMM, rn); }
@@ -1084,20 +1167,23 @@ function zaehlen(ordner, ohne) {
     zeile(`   ${standTitel} Titel auf dem Stick spielbar`);
     teilstandSchreiben(PROGRAMM, rn);
   }
+  stufeFertig(2);
   if (anhalten) return angehalten(rn);
 
   /* ---- Stufe 3: große Titelbilder und der Rest im Titelordner */
   stufe(3, 'Große Titelbilder und Bewegtbilder, neueste zuerst');
   standStufe = lauf.stufe;
-  await behaelterSchritt('Titelbilder', titelRestPaare(['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Bilder');
+  await behaelterSchritt('Titelbilder', plan.listen.rest, 'Bilder');
   teilstandSchreiben(PROGRAMM, rn);
+  stufeFertig(3);
   if (anhalten) return angehalten(rn);
 
   /* ---- Stufe 4: Analyse-Ablage */
   stufe(4, 'Analyse-Ablage, neueste zuerst');
   standStufe = lauf.stufe;
-  await behaelterSchritt('Analyse', analysePaare(), 'Analyse');
+  await behaelterSchritt('Analyse', plan.listen.analyse, 'Analyse');
   teilstandSchreiben(PROGRAMM, rn);
+  stufeFertig(4);
   if (anhalten) return angehalten(rn);
 
   /* ---- Stufe 5: Musik/ für Fernseher und Autoradio, docs/ */
@@ -1113,16 +1199,18 @@ function zaehlen(ordner, ohne) {
     zeile(`   docs/: ${rd.dateien} Dateien, ${rd.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
   }
   teilstandSchreiben(PROGRAMM, rn);
+  stufeFertig(5);
   if (anhalten) return angehalten(rn);
 
   /* ---- Stufe 6: Stems */
   if (stems) {
     stufe(6, 'Stems, neueste zuerst');
     standStufe = lauf.stufe;
-    await behaelterSchritt('Stems', stemsPaare(), 'Stems');
+    await behaelterSchritt('Stems', plan.listen.stems, 'Stems');
     teilstandSchreiben(PROGRAMM, rn);
     if (anhalten) return angehalten(rn);
   } else zeile(`» Stufe 6 von ${STUFEN}: Stems - nicht gewählt, übersprungen`);
+  stufeFertig(6);
 
   /* ---- Stufe 7: Abschluss */
   stufe(7, 'Abschluss - Aufräumlauf, Stand, Probestart');

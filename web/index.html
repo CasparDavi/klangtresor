@@ -471,9 +471,27 @@ select,.knopf{
    8), die Unterschrift 4 px darunter. */
 .exportfortschritt{margin-top:10px}
 .exportfortschritt[hidden]{display:none}
-.fortbalken{height:12px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,.72)}
-.fortbalken i{display:block;height:100%;transition:width .6s linear}
+.fortbalken{position:relative;height:12px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,.72)}
+.fortbalken i.fuellung{display:block;height:100%;transition:width .6s linear}
+/* Etappengrenzen als Haarlinien (Regel 13), die Nummern darunter in
+   Nebenwertgroesse (Regel 14). */
+.fortbalken b.grenze{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.28)}
+.fortetappen{position:relative;height:14px;margin-top:2px}
+.fortetappen span{position:absolute;top:0;font-size:10.5px;line-height:14px;color:var(--schwach);padding-left:3px;overflow:hidden;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fortetappen span.schmal{color:transparent}
 .forttext{font-size:12px;color:var(--schwach);margin-top:4px;font-variant-numeric:tabular-nums}
+.forttext b{color:var(--text);font-weight:500}
+/* STARTEN UND ANHALTEN, deutlich (Caspar_D, 09.09.2026: "der Anhalten-
+   Knopf ist zu unauffällig, mach die beiden auffälliger"). Beide eine
+   Nummer größer als die übrigen Pillen; Starten leuchtet wie jede
+   eingeschaltete Pille im Haus, Anhalten trägt den ersten Hausakzent,
+   damit man ihn im Vorbeigehen findet, wenn man los muss. */
+.exportzeile .pille.gross{padding:10px 22px;font-size:14px;font-weight:600;letter-spacing:.01em}
+.exportzeile .pille.gross[disabled]{opacity:.55}
+#exportanhalten.gross{color:var(--titel-a,#f97b14);border:2px solid var(--titel-a,#f97b14);
+  background:color-mix(in srgb, var(--titel-a,#f97b14) 16%, var(--flaeche2));
+  box-shadow:0 0 12px color-mix(in srgb, var(--titel-a,#f97b14) 40%, transparent)}
+#exportanhalten.gross:hover{background:color-mix(in srgb, var(--titel-a,#f97b14) 28%, var(--flaeche2))}
 /* DIE DEMO-ZEILE: der Sternenhimmel zum Verschicken, ein Bild, ein Satz,
    ein Knopf. */
 .exportdemo{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -14103,8 +14121,8 @@ async function profilExportFuellen(){
         <div class="schrittnr">3</div>
         <div class="schrittinhalt">
           <div class="exportzeile" style="margin-top:0">
-            <button class="pille an" id="exportstart">Export starten</button>
-            <button class="pille" id="exportanhalten" hidden title="Die laufende Datei wird fertig, dann steht der Stand — der Stick ist bis dahin vorzeigbar">Anhalten</button>
+            <button class="pille an gross" id="exportstart">Export starten</button>
+            <button class="pille gross" id="exportanhalten" hidden title="Die laufende Datei wird fertig, dann steht der Stand — der Stick ist bis dahin vorzeigbar">Anhalten</button>
             <span class="fussnote" id="exportstand" style="margin:0"></span>
           </div>
           <div class="exportfortschritt" id="exportfortschritt" hidden></div><!-- fuellt exportFortschrittZeichnen() -->
@@ -14616,26 +14634,61 @@ function exportPlatzZeichnen(d){
 function exportFortschrittZeichnen(d){
   const box = $('exportfortschritt'); if (!box) return;
   const f = d && d.laeuft && d.fortschritt;
-  if (!f){ box.hidden = true; box.innerHTML = ''; return; }
-  let balken = box.querySelector('.fortbalken i');
-  if (!balken){
-    box.innerHTML = '<div class="fortbalken"><i></i></div><div class="forttext"></div>';
-    balken = box.querySelector('.fortbalken i');
-    balken.style.background = diaFlaeche('var(--akzent)');
-    balken.style.boxShadow  = `inset 0 1px 0 ${diaTopline('var(--akzent)')}`;
+  if (!f){ box.hidden = true; box.innerHTML = ''; }
+  else {
+    /* DER GESAMTBALKEN (Caspar_D, 09.09.2026: "der User ist nur an der
+       Gesamtzeit interessiert und sieht an den Etappen, wofuer die Daten
+       schon reichen"): ein Balken ueber alles, was der Lauf schreibt,
+       Etappen so breit wie ihr Anteil in Bytes, Haarlinien an den Grenzen
+       (Regel 13), die Nummer der Etappe darunter, die Fuellung laeuft
+       durch. Etappen ohne Bytes (beim Auffrischen fast alle) fehlen. Ohne
+       Plan (aelteres Skript) der Etappenbalken wie bisher. */
+    const plan = d.plan && Array.isArray(d.plan.stufen) && d.plan.gesamt > 0 ? d.plan : null;
+    const g = plan && f.gesamt && f.gesamt.bytes > 0 ? f.gesamt : null;
+    const etappen = plan ? plan.stufen.filter(s => s.bytes > 0) : [];
+    const schluessel = plan ? 'plan:' + etappen.map(s => s.nr + ':' + s.bytes).join(',') : 'stufe';
+    if (box.dataset.schluessel !== schluessel){
+      box.dataset.schluessel = schluessel;
+      box.innerHTML = '<div class="fortbalken"><i class="fuellung"></i></div><div class="fortetappen"></div><div class="forttext"></div>';
+      const balken = box.querySelector('.fortbalken'), fuellung = box.querySelector('.fuellung');
+      fuellung.style.background = diaFlaeche('var(--akzent)');
+      fuellung.style.boxShadow  = `inset 0 1px 0 ${diaTopline('var(--akzent)')}`;
+      if (plan){
+        const zeile = box.querySelector('.fortetappen');
+        let links = 0;
+        etappen.forEach((s, i) => {
+          const anteil = 100 * s.bytes / plan.gesamt;
+          if (i > 0){ const grenze = document.createElement('b'); grenze.className = 'grenze'; grenze.style.left = links.toFixed(2) + '%'; balken.appendChild(grenze); }
+          const n = document.createElement('span'); n.style.left = links.toFixed(2) + '%'; n.style.width = anteil.toFixed(2) + '%';
+          n.textContent = String(s.nr); n.title = `Stufe ${s.nr}: ${s.name} · ${exportGroesse(s.bytes)}`;
+          if (anteil < 3) n.classList.add('schmal');
+          zeile.appendChild(n);
+          links += anteil;
+        });
+      } else box.querySelector('.fortetappen').remove();
+    }
+    box.hidden = false;
+    const prozent = g ? Math.max(0, Math.min(100, 100 * g.fertig / g.bytes)) : Math.max(0, Math.min(100, Number(f.prozent) || 0));
+    box.querySelector('.fuellung').style.width = prozent.toFixed(2) + '%';
+    /* Die Unterschrift sagt, was der Balken ist (Caspar_D: "damit man die
+       Laenge nicht mit der Speicherbelegung oben verwechselt"): der ganze
+       Lauf, dann die Stufe, was gerade kopiert wird, wie schnell, wie
+       lange noch - fuer den ganzen Lauf. */
+    const stuecke = [];
+    if (d.stufe) stuecke.push(`Stufe ${d.stufe.nr} von ${d.stufe.von}` + (f.was ? `, ${f.was}` : ''));
+    else if (f.was) stuecke.push(f.was);
+    if (g) stuecke.push(`${exportGroesse(g.fertig)} von ${exportGroesse(g.bytes)}`);
+    else if (f.bytesGesamt > 0) stuecke.push(`${exportGroesse(f.bytesFertig || 0)} von ${exportGroesse(f.bytesGesamt)}`);
+    else stuecke.push(`${Math.round(prozent)} %`);
+    const tempo = g ? g.bytesProSekunde : f.bytesProSekunde, rest = g ? g.restS : f.restS;
+    if (tempo > 0){
+      stuecke.push((tempo / 1e6).toFixed(tempo < 1e7 ? 1 : 0).replace('.', ',') + ' MB/s');
+      if (rest != null && rest >= 0) stuecke.push('noch etwa ' + morgenDauerText(rest * 1000));
+    } else if ((g && g.bytes > 0) || f.bytesGesamt > 0) stuecke.push('misst …');
+    const ft = box.querySelector('.forttext'); ft.textContent = '';
+    const bb = document.createElement('b'); bb.textContent = g ? 'Fortschritt des ganzen Laufs' : 'Fortschritt' + (d.stufe ? ` der Stufe ${d.stufe.nr}` : ''); ft.appendChild(bb);
+    ft.appendChild(document.createTextNode(' · ' + stuecke.join(' · ')));
   }
-  box.hidden = false;
-  const prozent = Math.max(0, Math.min(100, Number(f.prozent) || 0));
-  balken.style.width = prozent.toFixed(1) + '%';
-  const stuecke = [];
-  if (f.was) stuecke.push(f.was);
-  if (f.bytesGesamt > 0) stuecke.push(`${exportGroesse(f.bytesFertig || 0)} von ${exportGroesse(f.bytesGesamt)}`);
-  else stuecke.push(`${Math.round(prozent)} %`);
-  if (f.bytesProSekunde > 0){
-    stuecke.push((f.bytesProSekunde / 1e6).toFixed(f.bytesProSekunde < 1e7 ? 1 : 0).replace('.', ',') + ' MB/s');
-    if (f.restS != null && f.restS >= 0) stuecke.push('noch etwa ' + morgenDauerText(f.restS * 1000));
-  } else if (f.bytesGesamt > 0) stuecke.push('misst …');
-  box.querySelector('.forttext').textContent = stuecke.join(' · ');
 }
 
 /* Das kleine Gegenstueck zum Stick: ein Nachthimmel mit ein paar Sternen,
