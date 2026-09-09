@@ -151,7 +151,7 @@ const code = [
   funktion('koronaFarbe'),
   funktion('schwarzkoerper'), funktion('moffat'), funktion('saat'),
   'let karteRauschen = null;', funktion('rauschen'),
-  "let karteLage = { W: 0, H: 0, xy: null }; let karteArt = '3d'; let karteZoom = { k: 1, tx: 0, ty: 0 }; const COVER_AB = 2.5; let karteDim = '3d', karteVerf = 'nmds', karteLoecher = false, karteLinien = false, karteNebel = false, karteBahn = true; let schiffPos = null, schiffAnker = null; let karteArten = { Genre: false, Stimmung: false, Instrument: false }; let karteSternbilder = []; const karteSternbildLage = new Map(); let karteRot = [1,0,0,0], karteRotZiel = null, karteRotStart = null, karteRotT0 = 0; const KAMERA = 3.2; const DREH_DAUER = 2600; const karteCover = new Map(); let karteNeuzeichnung = 0; let karteDaten = null;",
+  "let karteLage = { W: 0, H: 0, xy: null }; let karteArt = '3d'; let karteZoom = { k: 1, tx: 0, ty: 0 }; const COVER_AB = 2.5; let karteDim = '3d', karteVerf = 'nmds', karteLoecher = false, karteLinien = true, karteNebel = true, karteBahn = true; let schiffPos = null, schiffAnker = null; let karteArten = { Genre: true, Stimmung: false, Instrument: false }; let karteSternbilder = []; const karteSternbildLage = new Map(); let karteRot = [1,0,0,0], karteRotZiel = null, karteRotStart = null, karteRotT0 = 0; const KAMERA = 3.2; const DREH_DAUER = 2600; const karteCover = new Map(); let karteNeuzeichnung = 0; let karteDaten = null;",
   konstante(/const karteXY = [^\n]*;/), 'const COVER_STERNE = 20;', funktion('sichtbareSterne'), konstante(/const coverAn = [^\n]*;/),
   funktion('coverBild'), funktion('karteZoomEinrichten'),
   konstante(/const karteRoh = [^\n]*;/), konstante(/const karteRaum = [^\n]*;/), konstante(/const karteGruppeRaum = [^\n]*;/), konstante(/const karteDrehZentrum = [^\n]*;/),
@@ -648,7 +648,9 @@ karteDaten = DATEN;
 /* Im Demo-Himmel ist die Flugreise immer an: ein Klick auf einen Stern
    beginnt sie, danach traegt die Spieldauer weiter (siehe sunoEinbetten).
    Das Reise-Knoepfchen ist hier ausgeblendet - der Zustand steht fest. */
-if (EINBETTEN) sunoGroesse();
+/* Vorgaben der Demo (Caspar_D, 09.09.2026, aus dem eingestellten Panel):
+   Reise an, damit gleich beim ersten Stern die Flugreise beginnt. */
+if (EINBETTEN){ reise = true; sunoGroesse(); }
 zeichnen();
 window.addEventListener('resize', zeichnen);
 </script>
