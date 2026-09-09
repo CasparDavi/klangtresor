@@ -358,6 +358,11 @@ body{padding:0}
 #kartelegende .drawer{background:rgba(14,14,18,.5);backdrop-filter:blur(5px);border-color:#ffffff20}
 #kartelegende .drawerkopf{background:rgba(255,255,255,.05)}
 #karte.leiste #kartelegende{background:rgba(14,14,18,.5);backdrop-filter:blur(5px)}
+/* Das Kopf-Feld oben in der Panelleiste: Einladung zur Reise */
+#suno-kopf{background:rgba(14,14,18,.5);backdrop-filter:blur(5px);border:1px solid #ffffff20;border-radius:12px;padding:12px 14px;margin-bottom:10px}
+#suno-kopf b{display:block;font-size:15px;font-weight:700;color:var(--text);line-height:1.25}
+#suno-kopf .raum{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--schwach);margin-top:3px}
+#suno-kopf .reise{font-size:12px;color:var(--schwach);margin-top:8px;line-height:1.45}
 /* Der Spieler oben links */
 #sunobox{position:fixed;left:14px;top:14px;z-index:40;border-radius:8px;overflow:hidden;background:#000;box-shadow:0 8px 30px #000a}
 #sunobox[hidden]{display:none}
@@ -365,6 +370,10 @@ body{padding:0}
 #sunobox .zu{position:absolute;right:5px;top:5px;z-index:3;width:20px;height:20px;border-radius:50%;
   border:1px solid #ffffff22;background:#000a;color:#ddd;cursor:pointer;font-size:12px;line-height:18px;text-align:center;padding:0}
 </style>`;
+const demoKopf = ARCHIV ? '' :
+  '<div id="suno-kopf"><b>' + handle + '\u2019s Suno</b>'
+  + '<div class="raum">Klang-Raum</div>'
+  + '<div class="reise">mache eine Reise durch ' + handle + '\u2019s Klangwelt</div></div>';
 const demoMarkup = ARCHIV ? '' : '<div id="sunobox" hidden><button id="sunozu" class="zu" title="schließen">×</button>'
   + '<iframe id="sunoif" title="Suno-Spieler" allow="autoplay; encrypted-media"></iframe></div>';
 
@@ -474,7 +483,7 @@ body{padding-bottom:64px}
 <header><h1>Klangraum</h1><small>${daten.anzahl} Titel von <a style="color:inherit" href="https://suno.com/@${handle}">@${handle}</a>${ARCHIV ? ' — aus dem Archiv auf diesem Datenträger' : ' auf Suno'}, nach Klang geordnet — Klick auf einen Stern spielt ihn</small></header>
 <div id="karte">
   <div id="kartefeld"><canvas id="karteschiffhinten"></canvas><canvas id="karteglut"></canvas><canvas id="karteschiff"></canvas><svg id="kartesvg"></svg></div>
-  <div id="karterechts"><div id="kartelegende"></div><div id="kartesteckbrief" hidden></div></div>
+  <div id="karterechts">${demoKopf}<div id="kartelegende"></div><div id="kartesteckbrief" hidden></div></div>
   <div id="kartefuss"></div>
 </div>
 <div id="player">
