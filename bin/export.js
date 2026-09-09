@@ -160,8 +160,13 @@ const lauf = { laeuft: true, seit: new Date(START).toISOString(), pid: process.p
    [{nr, name, bytes}], gesamt }; der Fortschritt trägt dazu gesamt =
    { fertig, bytes, bytesProSekunde, restS } über den ganzen Lauf. Die
    Stufen zählen mit ihren geplanten Bytes, damit der Balken stetig bleibt. */
-const plan = { stufen: [], gesamt: 0, listen: {} };
-let gesamtVorher = 0;
+const plan = { stufen: [], gesamt: 0, listen: {}, teile: {} };
+/* gesamtVorher = geplante Bytes der fertigen Stufen; stufeVorher = geplante
+   Bytes der fertigen Teilschritte in der laufenden Stufe (Stufe 1 hat
+   vier: Programm, Kern, Herzen-Listen, Node; Stufe 5 zwei) - sonst
+   spränge der Gesamtzähler bei jedem Teilschritt zurück (09.09.2026,
+   beim ersten Lauf auf dem frischen Stick gesehen). */
+let gesamtVorher = 0, stufeVorher = 0;
 const gesamtTempo = tempoMesserSpaeter();
 function tempoMesserSpaeter() { let m = null; return (b) => { if (!m) m = tempoMesser(); return m(b); }; }
 let zuletztGeschrieben = 0;
@@ -223,7 +228,7 @@ function fortschritt(mess, fertig) {
   const bytesFertig = fertig.bytes || 0;
   const tempo = mess.tempo ? mess.tempo(bytesFertig) : null;
   const prozent = fertig.prozent != null ? fertig.prozent : (gesamt ? Math.min(100, Math.round(100 * bytesFertig / gesamt)) : 0);
-  const gFertig = Math.min(plan.gesamt || Infinity, gesamtVorher + bytesFertig);
+  const gFertig = Math.min(plan.gesamt || Infinity, gesamtVorher + stufeVorher + bytesFertig);
   const gTempo = plan.gesamt ? gesamtTempo(gFertig) : null;
   lauf.fortschritt = {
     prozent, was: mess.was,
@@ -1090,7 +1095,8 @@ function zaehlen(ordner, ohne) {
     if (fs.existsSync(path.join(WURZEL, 'docs'))) [docsBytes] = await vorabmessen([{ quelle: path.join(WURZEL, 'docs'), ziel: path.join(PROGRAMM, 'docs'), zusatz: [] }]);
     L.stems = stems ? behaelterListe(stemsPaare()) : null;
     const st = (nr, name, bytes) => { plan.stufen.push({ nr, name, bytes }); plan.gesamt += bytes; };
-    st(1, 'Starten', programmSummen.reduce((a, b) => a + b, 0) + L.kern.bytesOffen + L.liker.bytesOffen + nodeBytes);
+    plan.teile = { programm: programmSummen.reduce((a, b) => a + b, 0), kern: L.kern.bytesOffen, liker: L.liker.bytesOffen, node: nodeBytes, musik: musikBytes, docs: docsBytes };
+    st(1, 'Starten', plan.teile.programm + L.kern.bytesOffen + L.liker.bytesOffen + nodeBytes);
     st(2, 'Titel', L.titel.bytesOffen);
     st(3, 'Titelbilder', L.rest.bytesOffen);
     st(4, 'Analyse', L.analyse.bytesOffen);
@@ -1101,7 +1107,8 @@ function zaehlen(ordner, ohne) {
     zeile(`   Plan: ${(plan.gesamt / 1048576).toFixed(0)} MB zu schreiben - ` + plan.stufen.filter(s => s.bytes).map(s => `${s.nr} ${s.name} ${(s.bytes / 1048576).toFixed(0)} MB`).join(', ') + ` (vermessen in ${Math.round((Date.now() - ab) / 1000)} s)`);
     laufSchreiben(true);
   }
-  const stufeFertig = (nr) => { const s = plan.stufen.find(x => x.nr === nr); if (s) gesamtVorher += s.bytes; };
+  const stufeFertig = (nr) => { const s = plan.stufen.find(x => x.nr === nr); if (s) gesamtVorher += s.bytes; stufeVorher = 0; };
+  const teilFertig = (name) => { stufeVorher += plan.teile[name] || 0; };
   const programmMess = { was: 'Programm', gesamt: programmSummen.reduce((a, b) => a + b, 0), vorher: 0, tempo: tempoMesser() };
   for (let i = 0; i < programmPaare.length && !anhalten; i++) {
     const p = programmPaare[i];
@@ -1111,6 +1118,7 @@ function zaehlen(ordner, ohne) {
     zeile(`   ${programmOrdner[i]}/: ${r.dateien} Dateien, ${r.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
   }
   if (anhalten) return angehalten(null);
+  teilFertig('programm');
   for (const f of fs.readdirSync(WURZEL).filter(f => f === 'package.json' || f === 'LICENSE' || /^README/i.test(f))) {
     const von = path.join(WURZEL, f), nach = path.join(PROGRAMM, f);
     const sv = fs.statSync(von); let sn = null; try { sn = fs.statSync(nach); } catch (e) {}
@@ -1129,8 +1137,10 @@ function zaehlen(ordner, ohne) {
   }
   await kopierSchritt('Bestand-Kern (Katalog, Texte, Reaktionen, Beobachter, Klangraum)', plan.listen.kern, 'Kern');
   if (anhalten) return angehalten(null);
+  teilFertig('kern');
   await behaelterSchritt('Herzen-Listen (liker/)', plan.listen.liker, 'Kern');
   if (anhalten) return angehalten(null);
+  teilFertig('liker');
   if (!probe) {
     /* Der Sternenhimmel auf dem Stick spielt aus Musik/ (echte Dateien,
        Stufe 5) und trägt die Kacheln in sich - an die Behälter kommt eine
@@ -1192,6 +1202,7 @@ function zaehlen(ordner, ohne) {
   const rm = await musik();
   dateien += rm.dateien; bytes += rm.bytes;
   if (anhalten) return angehalten(rn);
+  teilFertig('musik');
   if (fs.existsSync(path.join(WURZEL, 'docs'))) {
     const [ds] = await vorabmessen([{ quelle: path.join(WURZEL, 'docs'), ziel: path.join(PROGRAMM, 'docs'), zusatz: [] }]);
     const rd = await rsync(path.join(WURZEL, 'docs'), path.join(PROGRAMM, 'docs'), [], { was: 'Programm', gesamt: ds, vorher: 0, tempo: tempoMesser() });
