@@ -2236,6 +2236,59 @@ function mediumInfo(ziel, letzter) {
   return { pfad: wurzel, name: wurzel === '/' ? 'Systemplatte' : (path.basename(wurzel) || wurzel), dateisystem: fsys, gesamt: g.gesamt, frei: g.frei, belegt,
            archivBytes: (letzter && letzter.bytes) || 0, kompatibel: kompatibilitaet(fsys) };
 }
+/* DAS ZIEL NACHMESSEN (Caspar_D, 09.09.2026: Balken 2 soll "schon drauf"
+   und "kommt noch" trennen). Seit den Behaeltern liegt ein KlangTresor
+   auf dem Stick in rund 550 Dateien, das laesst sich in Sekunden
+   nachmessen: die Behaelter ueber ihr Verzeichnis (je Eintrag der Teil:
+   MP3, Bilder, Analyse, Stems, Herzen-Listen), Programm/, node/, Kern und
+   Sternenhimmel als "programm", Musik/ als "musik". Asynchron, damit die
+   Musik nicht stockt, und 20 s gemerkt - waehrend eines Laufs fragt die
+   Oberflaeche alle 2 s. Ergebnis: { bytes, teile: {mp3, bilder, analyse,
+   programm, musik, stems}, behaelter: masse() | null, gemessenAm }. */
+let _zielMerk = new Map();
+function zielMessen(ziel) {
+  const m = _zielMerk.get(ziel);
+  if (m && Date.now() - m.zeit < 20000) return m.lauf;
+  const lauf = zielMessenJetzt(ziel).catch(() => null);
+  _zielMerk.set(ziel, { zeit: Date.now(), lauf });
+  return lauf;
+}
+async function zielMessenJetzt(ziel) {
+  const fsp = fs.promises;
+  const teile = { mp3: 0, bilder: 0, analyse: 0, programm: 0, musik: 0, stems: 0 };
+  let bytes = 0, behaelter = null;
+  const summe = async (ordner, schluessel, ohne) => {
+    let e = []; try { e = await fsp.readdir(ordner, { withFileTypes: true }); } catch (x) { return; }
+    for (const d of e) {
+      if (d.name.startsWith('.') || (ohne && ohne(d.name))) continue;
+      const voll = path.join(ordner, d.name);
+      if (d.isDirectory()) await summe(voll, schluessel, ohne);
+      else if (d.isFile()) { let s = 0; try { s = (await fsp.stat(voll)).size; } catch (x) {} teile[schluessel] += s; bytes += s; }
+    }
+  };
+  const PL = path.join(ziel, 'Programm', 'library');
+  /* Die Behaelter ueber ihr Verzeichnis, nicht ueber die Stuecke. */
+  try {
+    if (Behaelter.gibtEs(PL)) {
+      const b = Behaelter.oeffnen(PL, false);
+      for (const rel of b.liste()) {
+        const e = b.eintrag(rel); if (!e) continue;
+        const k = rel.startsWith('analyse/') ? 'analyse' : rel.startsWith('liker/') ? 'programm'
+              : rel.includes('/stems/') ? 'stems' : rel.endsWith('/audio.mp3') ? 'mp3' : rel.startsWith('songs/') ? 'bilder' : 'programm';
+        teile[k] += e.l;
+      }
+      behaelter = b.masse(); bytes += behaelter.stuecke;
+    }
+  } catch (x) {}
+  /* Kern und Programm: alles unter Programm/ ausser den Stuecken und dem Altbestand */
+  await summe(path.join(ziel, 'Programm'), 'programm', (n) => /^bestand-.*\.tar$/.test(n) || n === 'bestand-index.ndjson' || n === 'songs' || n === 'analyse' || n === 'liker');
+  await summe(path.join(ziel, 'node'), 'programm');
+  await summe(path.join(ziel, 'Musik'), 'musik');
+  for (const f of ['Sternenhimmel.html', 'LIES-MICH.md', 'START-Mac.command', 'START-Windows.cmd', 'START-Linux.sh']) {
+    try { const s = (await fsp.stat(path.join(ziel, f))).size; teile.programm += s; bytes += s; } catch (x) {}
+  }
+  return { bytes, teile, behaelter, gemessenAm: new Date().toISOString() };
+}
 /* Der Bedarf nach Teilen, gezaehlt im Haus. Rund 6.000 stat auf der
    exFAT-SSD dauern zehn Sekunden - deshalb ASYNCHRON (fs.promises), damit
    der Server waehrenddessen Musik ausliefert statt zu stehen; ein
@@ -2421,7 +2474,10 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
        Teilen gezaehlt - einmal je zehn Minuten, die Zahlen aendern sich
        nicht schneller. */
     const medium = zielEingehaengt ? mediumInfo(ziel, letzter) : null;
-    exportBedarf().then(bedarf => jsonAntwort(res, { ...lauf, laufZiel, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter, medium, bedarf }));
+    Promise.all([exportBedarf(), zielEingehaengt && fs.existsSync(ziel) ? zielMessen(ziel) : Promise.resolve(null)]).then(([bedarf, archiv]) => {
+      if (medium && archiv) { medium.archiv = archiv; medium.archivBytes = archiv.bytes; }
+      jsonAntwort(res, { ...lauf, laufZiel, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter, medium, bedarf });
+    });
     return;
   }
   /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js).

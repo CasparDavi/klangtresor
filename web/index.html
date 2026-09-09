@@ -14574,24 +14574,40 @@ function exportPlatzZeichnen(d){
   const m = d && d.medium, b = d && d.bedarf;
   if (!m || !b || !(m.gesamt > 0) || !Array.isArray(b.teile)){ box.hidden = true; box.innerHTML = ''; return true; }
   const stemsHaken = exportStemsAn();
-  const teile = exportTeileZusammen(b, stemsHaken);   /* dieselben sechs wie im Stick, Stems nur mit Pille */
-
-  const bedarfGesamt = Math.max(0, Number(stemsHaken ? (b.gesamtMitStems != null ? b.gesamtMitStems : b.gesamt) : b.gesamt) || 0);
-  const archiv  = Math.max(0, Number(m.archivBytes) || 0);
+  /* SCHON DRAUF UND KOMMT NOCH (Caspar_D, 09.09.2026: "oder zeigt 2 das,
+     was gerade geschrieben ist?" - jetzt ja). Der Server misst das Ziel
+     nach (medium.archiv.teile je Datentyp); je Teil steht, was schon auf
+     dem Medium liegt, in voller Hausdeckung, was der Lauf noch schreibt,
+     gedaempft in derselben Farbe. Ohne Messung (aelterer Server, Ziel
+     nicht eingehaengt) ist alles "kommt noch". Liegt mehr drauf als der
+     Bedarf (Stems von frueher, Musik/ mit Titelbild im Dateikopf), zaehlt
+     das als drauf - es ist ja da. */
+  const archiv = m.archiv && m.archiv.teile ? m.archiv.teile : null;
+  let teile = exportTeileZusammen(b, stemsHaken || !!(archiv && archiv.stems > 0));   /* Stems auch ohne Pille, wenn sie schon drauf liegen */
+  const archivBytes = Math.max(0, Number(m.archiv ? m.archiv.bytes : m.archivBytes) || 0);
   const belegt  = Math.max(0, Number(m.belegt != null ? m.belegt : (m.gesamt - (m.frei || 0))) || 0);
-  const anderes = Math.max(0, belegt - archiv);
-  const dazu    = Math.max(0, bedarfGesamt - archiv);           /* was der Export hoechstens neu schreibt */
-  const bleibt  = Math.max(0, archiv - bedarfGesamt);           /* frueherer Export, groesser als der Bedarf */
+  const anderes = Math.max(0, belegt - archivBytes);
   const frei    = Math.max(0, Number(m.frei) || 0);
-  const passt   = dazu <= frei;
-  const freiDanach = Math.max(0, frei - dazu);
-  const gesamt  = Math.max(m.gesamt, anderes + bedarfGesamt + bleibt);   /* passt es nicht, laeuft der Balken bis zum Rand voll */
+  const stueck  = teile.map(t => {
+    const bedarf = Number(t.bytes) || 0;
+    const da = archiv ? Math.max(0, Number(archiv[t.schluessel]) || 0) : 0;
+    const dazu = (t.schluessel === 'stems' && !stemsHaken) ? 0 : Math.max(0, bedarf - da);
+    return { t, da: Math.min(da, Math.max(bedarf, da)), dazu };
+  });
+  /* Ohne Messung liegt der Bestand als Ganzes vor (archivBytes aus dem Stand): dann alles anteilig als "drauf". */
+  if (!archiv && archivBytes > 0){
+    const bedarfSumme = stueck.reduce((s, x) => s + x.dazu, 0) || 1;
+    for (const x of stueck){ const anteil = Math.min(1, archivBytes / bedarfSumme); x.da = x.dazu * anteil; x.dazu = x.dazu - x.da; }
+  }
+  const dazuSumme = stueck.reduce((s, x) => s + x.dazu, 0);
+  const daSumme   = stueck.reduce((s, x) => s + x.da, 0);
+  const passt   = dazuSumme <= frei;
+  const freiDanach = Math.max(0, frei - dazuSumme);
+  const gesamt  = Math.max(m.gesamt, anderes + daSumme + dazuSumme);   /* passt es nicht, laeuft der Balken bis zum Rand voll */
   const anteil  = (x) => (100 * x / gesamt).toFixed(2) + '%';
 
   box.innerHTML = '';
   box.hidden = false;
-  /* Caspar_D, 09.09.2026: "Belegung von INTENSO nach Datentransfer" - der
-     Balken zeigt den Zustand nach dem Lauf, nicht den jetzigen. */
   box.appendChild(diaTitel(`Belegung von ${m.name || m.pfad || 'dem Medium'} nach Datentransfer`));
   const balken = document.createElement('div'); balken.className = 'platzbalken';
   const segment = (bytes, farbe, deckung, titel) => {
@@ -14605,18 +14621,18 @@ function exportPlatzZeichnen(d){
   };
   const GRAU = '#8b8b90';
   segment(anderes, GRAU, SPUR_DECKUNG, `Anderes auf dem Medium: ${exportGroesse(anderes)}`);
-  const teilSumme = teile.reduce((a, t) => a + (Number(t.bytes) || 0), 0) || 1;
-  teile.forEach(t => segment(bedarfGesamt * (Number(t.bytes) || 0) / teilSumme, t.farbe, SPUR_DECKUNG, `${t.name}: ${exportGroesse(t.bytes)}${t.einzeln ? ' (' + t.einzeln + ')' : ''}`));
-  segment(bleibt, DIA_1, 0.3, `Bleibt vom früheren Export: ${exportGroesse(bleibt)}`);
+  for (const x of stueck){
+    segment(x.da, x.t.farbe, SPUR_DECKUNG, `${x.t.name}: ${exportGroesse(x.da)} schon drauf`);
+    segment(x.dazu, x.t.farbe, 0.22, `${x.t.name}: ${exportGroesse(x.dazu)} kommt noch`);
+  }
   box.appendChild(balken);
 
   /* Die Legende wie bei den gestapelten Saeulen: Pille mit echter
      Fuellung und Topline, der Name in seiner Farbe, dahinter der Wert
-     (Regel 23: die Legende zeigt, statt zu beschreiben). Grau bleibt grau. */
+     (Regel 23: die Legende zeigt, statt zu beschreiben). Grau bleibt grau.
+     Der Name in seiner Farbe, aber lesbar: Coverfarben sind nicht fuer
+     Schrift gemacht - lesbarAuf hellt bis 4,5:1 gegen den Grund auf. */
   const legende = document.createElement('div'); legende.className = 'stapellegende';
-  /* Der Name in seiner Farbe, aber lesbar: Coverfarben sind nicht fuer
-     Schrift gemacht - lesbarAuf hellt bis 4,5:1 gegen den Grund auf
-     (Hausregel "Schrift muss lesbar sein"). */
   const eintrag = (farbe, deckung, text, wert, tipp) => {
     const s = document.createElement('span'); if (tipp) s.title = tipp;
     const i = document.createElement('i'); i.style.background = diaFlaeche(farbe, deckung); i.style.boxShadow = `inset 0 1px 0 ${diaTopline(farbe, deckung)}`;
@@ -14625,21 +14641,32 @@ function exportPlatzZeichnen(d){
     legende.appendChild(s);
   };
   if (anderes > 0) eintrag(GRAU, SPUR_DECKUNG, 'Anderes belegt', exportGroesse(anderes));
-  teile.forEach(t => eintrag(t.farbe, SPUR_DECKUNG, t.name,
-    exportGroesse(t.bytes) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : ''), t.einzeln));
-  if (bleibt > 0) eintrag(DIA_1, 0.3, 'Bleibt vom früheren Export', exportGroesse(bleibt));
+  for (const x of stueck){
+    const t = x.t;
+    const wert = exportGroesse(Number(t.bytes) || 0) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : '')
+      + (archiv ? (x.dazu > 0 ? (x.da > 0 ? ` · ${exportGroesse(x.da)} drauf, ${exportGroesse(x.dazu)} kommt` : ' · kommt noch') : ' · drauf') : '');
+    eintrag(t.farbe, SPUR_DECKUNG, t.name, wert, t.einzeln);
+  }
   const f = document.createElement('span'); const fi = document.createElement('i'); fi.style.background = 'rgba(0,0,0,.72)';
   const fn = document.createElement('b'); fn.textContent = 'Frei danach'; fn.style.color = 'var(--schwach)';
   f.append(fi, fn, document.createTextNode(exportGroesse(freiDanach))); legende.appendChild(f);
   box.appendChild(legende);
-  if (archiv > 0){
+  /* Die Behaelter, wie sie auf dem Medium liegen - und ob sich Ballast
+     angesammelt hat (Stufe 7 verdichtet ab einem Viertel). */
+  const bh = m.archiv && m.archiv.behaelter;
+  if (bh && bh.volumen > 0){
     const h = document.createElement('div'); h.className = 'platzhinweis';
-    h.textContent = `Davon liegen schon ${exportGroesse(Math.min(archiv, bedarfGesamt))} auf dem Medium — der Export frischt nur auf, was sich geändert hat.`;
+    h.textContent = `Behälter auf dem Medium: ${bh.volumen} ${bh.volumen === 1 ? 'Stück' : 'Stücke'}, ${exportGroesse(bh.stuecke)}, ${Number(bh.dateien).toLocaleString('de-DE')} Einträge`
+      + (bh.ballast > 50 * 1048576 ? ` · ${exportGroesse(bh.ballast)} Ballast (wird ab einem Viertel verdichtet)` : '');
+    box.appendChild(h);
+  } else if (archivBytes > 0){
+    const h = document.createElement('div'); h.className = 'platzhinweis';
+    h.textContent = `Davon liegen schon ${exportGroesse(daSumme)} auf dem Medium — der Export frischt nur auf, was sich geändert hat.`;
     box.appendChild(h);
   }
   if (!passt){
     const r = document.createElement('div'); r.className = 'platzfehlt';
-    r.textContent = `Passt nicht: der Export braucht ${exportGroesse(dazu)}, frei sind ${exportGroesse(frei)} — es fehlen ${exportGroesse(dazu - frei)}.`
+    r.textContent = `Passt nicht: der Export braucht ${exportGroesse(dazuSumme)}, frei sind ${exportGroesse(frei)} — es fehlen ${exportGroesse(dazuSumme - frei)}.`
       + (stemsHaken ? ' Ohne Stems wird es kleiner.' : '');
     box.appendChild(r);
   }
