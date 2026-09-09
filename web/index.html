@@ -16499,7 +16499,12 @@ const MORGEN_KREUZE = [
   { gruppe: 'lokal',  schluessel: 'analyse',    name: 'Titel analysieren',   text: 'BPM, Tonart, Lautheit, Bandprofil, Histogramm, Suchindex.' },
   { gruppe: 'lokal',  schluessel: 'whisper',    name: 'Karaoke-Zeitanker mit Whisper', text: 'Nur neue Titel mit Text, danach Lyrics-Abgleich. Etwa 3 Minuten je Titel; der Mac bleibt dabei wach.' },
   { gruppe: 'lokal',  schluessel: 'musikstil',  name: 'Musikstil und Musik-Karte', text: 'Klang-Embedding, Stil, Genre, Stimmung und Instrumente je neuem Titel (KI lokal, etwa 8 Sekunden je Titel); danach den Sternenhimmel neu zeichnen.' },
-  { gruppe: 'lokal',  schluessel: 'bald',       bald: true, name: 'Bald:', text: 'Archiv-Export.' },
+  /* Kein Archiv-Export hier. Der stand seit dem Plan vom August als
+     Platzhalter "Bald:" in dieser Liste; Caspar_D, 09.09.2026: "nicht
+     besonders sinnvoll, das in die Morgenroutine zu nehmen, die
+     Funktionalitaet sollte woanders sein". Der Export ist eine Handlung
+     auf Verlangen (bin/export.js, docs/BACKLOG.md "Archiv-Export"),
+     kein taeglicher Schritt. */
 ];
 function morgenAuswahlLesen(){
   try { return new Set(JSON.parse(localStorage.getItem('mysuno-morgen-aus') || '[]')); } catch (e) { return new Set(); }

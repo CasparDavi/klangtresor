@@ -2406,6 +2406,11 @@ Konten nach oben; erst gegen deren eigene Herzfreudigkeit
 - **Backup ist nicht Export**: die MyCloud-Sicherung (08.09., 860 GB)
   sichert alles; der Export ist die kuratierte, lauffähige Kopie.
 
+**Entschieden (Caspar_D, 09.09.2026):** nicht in die Morgenroutine —
+der Export ist eine Handlung auf Verlangen. Der Platzhalter „Bald:
+Archiv-Export" im Morgenfenster ist gestrichen. Wo die Handlung wohnt
+(Knopf in der Oberfläche mit Ziel, Fortschritt und Probestart — oder
+nur bin/export.js), ist offen.
+
 **Offen, Caspar_D:** Welches Ziel (Stick da, ≥ 40 GB)? Schaufenster für
-den Fernseher gewünscht — welches Gerät, welcher Browser? Soll der
-Schritt jeden Morgen laufen, wenn der Stick steckt, oder nur auf Knopf?
+den Fernseher gewünscht — welches Gerät, welcher Browser?

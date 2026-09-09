@@ -33,7 +33,9 @@ das bekommt auch ein Fremdnutzer ohne Lesezeichen):
   und Fokus-Wanderung bleiben draußen; danach Lyrics-Abgleich; ~3 min/Song)
 - Musikstil vermessen (NEU, s. 3.)
 - Musik-Karte erstellen (NEU, s. 3.)
-- Archiv-Export aktualisieren (USB/TV; standardmäßig AUS)
+- ~~Archiv-Export aktualisieren (USB/TV; standardmäßig AUS)~~ — gestrichen
+  09.09.2026 (Caspar_D): gehört nicht in die Morgenroutine, sondern ist
+  eine Handlung auf Verlangen; siehe BACKLOG „Archiv-Export“
 
 Abhängigkeiten sichtbar machen: abgewähltes „Medien laden" graut
 „Musikstil/Whisper" für neue Songs aus (mit Satz warum); Karte braucht
