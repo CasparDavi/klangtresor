@@ -2184,3 +2184,28 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
   kommt noch") über Nachmessen des Ziels — mit wenigen großen Dateien
   jetzt billig; Kachelgröße (50 KB) für den Sternenhimmel.
 
+## Erster vollständiger Stick mit Behältern (09.09.2026, 13:45)
+
+- Der Intenso war nach den Versuchen des Tages auf 3 MB/s gefallen (gemessen:
+  frische 300-MB-Datei 3,4 MB/s, Anhängen 2,7 MB/s) und stallte
+  minutenlang — Schreibcache erschöpft plus zerstückelter Platz durch die
+  3.700 Altdateien. Caspar_D: formatieren. Erledigt: `diskutil eraseDisk
+  ExFAT INTENSO MBR disk2`, Spotlight aus (`mdutil -i off`),
+  `.fseventsd/no_log`. 1-MB-Cluster scheiterten (newfs_exfat braucht
+  root), es bleiben 128 KB.
+- Voller Lauf danach: 16 min, 552 Dateien, 7,56 GB, 3 Stücke (4,96 GB,
+  3.127 Einträge), Musik/ 324, Probestart ok, 51 GB frei.
+- Register nachgezogen (alle committet): Gesamtbalken mit Etappen in den
+  Farben ihrer Datentypen (1 Programm, 2 MP3, 3 Bilder, 4 Analyse, 5 Musik,
+  6 Stems; ausstehend gedämpft), Unterschrift „Fortschritt des ganzen
+  Laufs · Stufe n von 7 …", Balken bleibt zwischen Stufen stehen (Fehler:
+  Schlüssel blieb am Kasten), Anhalten-Warnung orange / grün „sicher
+  auswerfen", Starten/Anhalten groß, 32 px zwischen den Schritten, 22 px
+  über dem Balken, Titel „Belegung von <Medium> nach Datentransfer".
+- `bin/export.js`: Plan vor dem ersten Byte (plan.stufen, plan.teile,
+  gesamt), Gesamtzähler läuft über Teilschritte durch; Meldung „gibt es zu
+  Hause nicht" gestrichen.
+- Offen: Balken 2 („schon drauf / kommt noch" durch Nachmessen des Ziels);
+  Register zeigt `behaelter` (Stücke, Ballast) noch nicht; Kachelgröße
+  für den Sternenhimmel (21,6 MB HTML); Windows-Start bei Casto.
+
