@@ -2360,3 +2360,52 @@ eine neue Suno-Anfrage**. Jede Zahl braucht ihren Vergleichsboden.
 **Warnung (Datenblick):** die rohe Herzsumme je Person spült sehr aktive
 Konten nach oben; erst gegen deren eigene Herzfreudigkeit
 (community-profile: Herzen, die sie vergeben) normiert wird sie eine Aussage.
+
+## Archiv-Export — Brainstorm, zurückgeholt und weitergedacht (09.09.2026)
+
+**Was es schon gibt:**
+- `bin/export.js` (20.08.): selbsttragende Kopie per rsync — Programm und
+  Datenbestand, ohne WAV, ohne geheim/, .git, roh/; schreibt START.md
+  („node server/server.js, Browser auf"). Probe 09.09.: 6.250 Dateien,
+  35,2 GB (ohne Analyse-Ablage 32,9 GB); ein zweiter Lauf kopiert nur
+  Änderungen.
+- `bin/paket.js` (24.08.): Weitergabe-ZIP des Programms allein aus
+  `git archive`, geprüft gegen Geheimnisse — der Weg für Tarja und Casto.
+- `bin/himmel-export.js`: der Sternenhimmel als eine Datei, läuft ohne
+  Server — die Demo.
+- `docs/MORGENROUTINE-PLAN.md`, Gruppe C: „Archiv-Export aktualisieren
+  (USB/TV; standardmäßig AUS)". Im Morgenfenster steht seither der
+  Platzhalter „Bald: Archiv-Export." (web/index.html, MORGEN_KREUZE).
+- Backlog „Weitergabe — erledigt (18.08.)": das Programm ist generisch.
+
+**Drei Zwecke, drei Formen:**
+1. **Nachlass, USB-Stick** — die selbsttragende Kopie (export.js). Braucht
+   Node am Ziel; sonst nichts. Das ist der Morgenschritt.
+2. **Fernseher, Tablet, ohne Node** — ein Schaufenster: eine statische
+   Fassung wie der Sternenhimmel (Katalog eingebettet, MP3 daneben,
+   Liste, Player, Bühne). Kein Server, kein Lesezeichen, keine
+   Aktualisierung. Aufwand groß; erst entscheiden, welches Gerät.
+3. **Weitergabe des Programms** — paket.js, fertig.
+
+**Entscheidungen für den Morgenschritt (Form 1):**
+- **Ziel** in `library/konfig.json` (`exportZiel`), nicht im Code. Läuft
+  nur, wenn das Ziel eingehängt ist; sonst grau „Stick nicht da", kein
+  Fehler. Understatement: statt eines Hakens „an/aus" reicht „wenn er
+  steckt, wird er aufgefrischt".
+- **Umfang**: alles, was das Archiv zum Laufen braucht, ohne WAV. Die
+  Analyse-Ablage (2,3 GB) bleibt drin — ohne sie müsste der Stick beim
+  ersten Öffnen jedes Titels rechnen. Stems: prüfen, wie groß.
+- **Danach prüfen, nicht glauben**: Dateizahl Ziel = Quelle, START.md
+  mit Datum, kein geheim/ — und ein Probestart des Servers vom Ziel auf
+  einem Nebenport mit `/api/index`: „Probestart ok, N Titel". Erst dann
+  grün.
+- **Im Morgenfenster** ein Abschnitt wie die anderen: „Archiv-Export —
+  Stick eingehängt, 6.250 Dateien, 214 geändert, 35,2 GB, Probestart ok".
+- **Anleitung am Ziel** für Mac, Windows, Linux in je drei Zeilen
+  (Casto testet Windows), Verweis auf docs/UEBERGABE.md.
+- **Backup ist nicht Export**: die MyCloud-Sicherung (08.09., 860 GB)
+  sichert alles; der Export ist die kuratierte, lauffähige Kopie.
+
+**Offen, Caspar_D:** Welches Ziel (Stick da, ≥ 40 GB)? Schaufenster für
+den Fernseher gewünscht — welches Gerät, welcher Browser? Soll der
+Schritt jeden Morgen laufen, wenn der Stick steckt, oder nur auf Knopf?
