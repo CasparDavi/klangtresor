@@ -2335,3 +2335,64 @@ Differenz, Ausschluss · Farbe: Farbton, Sättigung, Farbe, Luminanz). Neu sind 
 Licht, Differenz, Ausschluss und die vier Farbmodi; `verrOptionen()` baut die
 `<optgroup>`s aus der vierten Spalte von `VERR`. Rauchtest: jeder Modus verändert den
 Bildmittelwert messbar. Kein Rezept musste angepasst werden (alte Schlüssel unverändert).
+
+## Plan: Grund-Blätterer im Titelbild-Studio (Nachtschicht 10./11.09.2026, wartet auf Jörgs Go)
+
+Jörgs Wunsch: „für einen Song alles durchblättern, was da ist, standardmäßig kommt das
+Titelbild, mit Vor und Zurück, das Artwork oder ggf. weitere Artworks bzw. Videos“, und:
+„erstmal kann nur ein handmade Video gespeichert werden, Tarja ‚missbraucht‘ das gerade
+für Hook-Videos aus Suno“ → mehrere eigene Videos je Titel.
+
+**Bestand je Titel (Karte aus fünf Lesern, geprüft):**
+| Datei | wovon | Stück |
+|---|---|---|
+| cover.jpg | Sunos image_large_url, roh | 324 |
+| titelbild.jpg | cover.jpg ohne Rand (kacheln.js), nur wo ein Rand war | 181 |
+| kachel.jpg | 600×800 aus cover.jpg, nur fürs Raster | 324 |
+| artwork.mp4 | Sunos video_cover_url = Bewegtbild, 6–10 s, quer | 84 |
+| eigen.mp4 | eigenes Bewegtbild, ein Platz | 4 |
+| eigen.jpg / eigen.mp3 | eigenes Titelbild / Tonfassung | 0 / 0 |
+| eigen-effekt.json | Rezept des Studios | 4 |
+Nicht lokal: Suno-Lyric-Video (video_url, 254, absichtlich nicht geladen), hook_preview_thumbnail_url (16).
+
+**Zielbild (Studio-Kopf, Zeile „Grund“):**
+```
+Grund   ‹  Titelbild  1/4  ›   S  G  W        Würfeln  Grundzustand  Alle an  Einklappen
+           ─────────────────
+           Seiten:  Titelbild · Bewegtbild (Suno) · Eigenes Bewegtbild 1 · Eigenes Bewegtbild 2 · Eigenes Titelbild 1 …
+```
+- Der heutige Knopf „Cover“ wird zum Blätterer; S/G/W bleiben daneben. ←/→ blättern, solange das
+  Studio offen ist (der globale Tastengriff schweigt dann — heute wechseln ←/→ im offenen Studio den Song
+  und Escape schließt Studio UND Bühne zugleich).
+- cover.jpg und titelbild.jpg sind EINE Seite „Titelbild“ (bei 143 Titeln identisch, artworkBild entscheidet).
+  kachel.jpg ist keine Seite.
+- Video als Grund läuft mit: Frame = Spielzeit modulo Videodauer (wie lebendZeit), stumm, verstecktes
+  <video> je Maler. Der Maler ersetzt das sichtbare video.bewegt ganz (eine Bildschicht, nicht zwei).
+  Querformat auf der 3:4-Kachel: beschnitten wie heute canvas.tbs-lebend (object-fit: cover), Bühne passt
+  den Rahmen wie bisher an.
+
+**Speicherung:**
+- Rezept bekommt eine Hülle: `{ grund: {art:'titelbild'|'bewegtbild'|'bild'|'video'|'farbe', nr:1, wert:'schwarz'}, effekte:[…] }`.
+  Altes reines Array gilt weiter als `grund: titelbild`. Damit wird auch S/G/W endlich gesichert (heute nur Modulzustand).
+- Ohne Effekte zeigt das Haus die gewählte Quelle direkt (img/video, kein Maler) — so wird der Blätterer
+  auch zur Auswahl „welches Bewegtbild spielt an der Kachel“.
+- Fehlt die gesicherte Quelle später (Video gelöst): still zurück auf Titelbild, Studio zeigt es beim Öffnen an.
+- Mehrere eigene Dateien: `eigen-2.mp4`, `eigen-3.mp4` … (eigen.mp4 bleibt Nr. 1, keine Umbenennung),
+  ebenso `eigen-2.jpg`. Index meldet `videos:[1,2]`, `bilder:[1]`; PUT vergibt die nächste freie Nummer,
+  DELETE `?was=video&nr=2`. Die Karte „Bewegtbild“ wird zur Liste mit „+ hinzufügen“. Behälter/Stick-Regex nachziehen.
+
+**Bauschritte (jeder einzeln geprüft und eingecheckt):**
+1. Modul: Hülle im Rezept + Grund-Blätterer + Video-Grund (Studio und Maler). Haus: Tastengriff schweigt bei offenem Studio.
+2. Server: nummerierte eigene Dateien, Index, PUT/DELETE, Behälter-Regex; Karte „Bewegtbild“ als Liste.
+3. Haus: ohne Effekte Quelle direkt zeigen; Rückfall bei fehlender Quelle.
+4. Bühne im Standbildmodus auf artworkBild (heute fest cover.jpg — Doku und kacheln.js behaupten das Gegenteil). Eigener Commit.
+5. Handbuch-Wörter: Lebendbild (oder „dynamisches Titelbild“) in WOERTER.md festlegen; „Kachel“ meint drei Dinge.
+
+**Entscheidungen für Jörg:** (a) Seitenliste wie oben? (b) Video läuft mit (Empfehlung) oder festes Standbild zu einem Zeitpunkt?
+(c) Nummerierung eigen-2.mp4 (Empfehlung) oder Ordner eigen/? (d) Schritt 4 mitnehmen?
+
+**Nebenbefund sofort behoben (`2b4301a`):** die Hausfunktion `lebendAus(k)` rief sich selbst statt
+`TitelbildStudio.lebendAus(k)` — Endlosrekursion bei jedem mouseout und in markieren(), seit dem Einbau.
+Weitere Befunde, nicht angefasst: `bewegtAufraeumen()` ohne Aufrufer; titelbild.jpg fällt beim Server
+nicht unter die „wandelbar“-Cache-Regel (nur der ?k=-Stempel schützt); CLI bin/eigen-artwork.js kennt
+eigen.mp3/eigen-effekt.json nicht.
