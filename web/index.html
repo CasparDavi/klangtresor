@@ -427,7 +427,10 @@ select,.knopf{
    Nebenwerte 10,5). Beschriftung IM Block waere darunter gelandet. */
 .exportpikto svg{width:240px;height:auto;display:block}
 .exportpikto text{font-family:inherit}
-.exportschritt{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;margin-top:16px}
+/* Luft zwischen den Schritten, damit sie als Bloecke stehen (Caspar_D,
+   09.09.2026: "gib dem Panel ein bisschen mehr Luft zwischen den
+   Punkten") - das Doppelte des Zeilenabstands im Block. */
+.exportschritt{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;margin-top:32px}
 .schrittnr{width:24px;height:24px;border-radius:50%;background:var(--akzent);color:#000;font-weight:600;font-size:13px;
   display:flex;align-items:center;justify-content:center;margin-top:1px}
 .schrittinhalt{min-width:0}
