@@ -642,6 +642,28 @@ function zaehlen(ordner, ohne) {
        es riet zu "node server/server.js", und den Ordner gibt es so nicht mehr. */
     try { fs.unlinkSync(path.join(ZIEL, 'START.md')); } catch (e) {}
 
+    /* BEIFANG RAEUMEN. macOS legt auf exFAT/FAT neben jeder Datei mit
+       Attributen eine "._"-Datei ab (AppleDouble). Fernseher und
+       Autoradios zeigen die als Titel ("._Morgen.mp3", 4 KB, Stille), und
+       bei Umlauten im Namen stehen sie in einer anderen Normalform als
+       die Datei selbst - das Loeschen ueber die Shell scheiterte daran
+       (09.09.2026, Probekopie). Deshalb hier ueber Byte-Pfade, ohne
+       Normalisierung: was mit "._" beginnt, geht weg. */
+    schritt('Beifang räumen (._-Dateien)');
+    { let weg = 0;
+      const raeumen = (ordner) => {
+        let eintraege = []; try { eintraege = fs.readdirSync(ordner, { withFileTypes: true, encoding: 'buffer' }); } catch (e) { return; }
+        for (const e of eintraege) {
+          const name = e.name.toString('latin1');
+          const voll = Buffer.concat([Buffer.from(ordner), Buffer.from('/'), e.name]);
+          if (e.isDirectory()) raeumen(voll.toString());
+          else if (name.startsWith('._')) { try { fs.unlinkSync(voll); weg++; } catch (x) {} }
+        }
+      };
+      raeumen(ZIEL);
+      zeile(`   ${weg} Beifang-Dateien entfernt`);
+    }
+
     schritt('Zählen und export-stand.json');
     /* Gezählt wird, was jetzt da liegt, plus die zwei Dateien, die gleich
        noch (neu) geschrieben werden - LIES-MICH.md und export-stand.json

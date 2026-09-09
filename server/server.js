@@ -2069,7 +2069,7 @@ const server = http.createServer((req, res) => {
       const relativ = !!(d && d.relativ);
       const name = relativ ? 'sternenhimmel-relativ.html' : 'sternenhimmel.html';
       const args = ['bin/himmel-export.js', '--ziel', path.join('library', 'export', name)];
-      if (relativ) args.push('--relativ', '../songs');
+      if (relativ) args.push('--relativ', '/media');
       const r = require('node:child_process').spawnSync(process.execPath, args, { cwd: WURZEL, encoding: 'utf8' });
       if (r.status !== 0) return jsonAntwort(res, { ok: false, meldung: (r.stderr || r.stdout || '').trim().slice(-300) }, 500);
       jsonAntwort(res, { ok: true, meldung: (r.stdout || '').trim(), url: '/export/' + name });

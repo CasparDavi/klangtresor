@@ -2007,3 +2007,9 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
 - Offen: Windows-Startskript auf Castos Rechner testen (SmartScreen,
   findstr, curl); Handbuch-Kapitel Export; Stick-Ziel setzt Caspar_D im
   Register; Stems bleiben liegen, wenn ein früherer Lauf sie kopiert hat.
+- Nachtrag 09:50: Sternenhimmel-Export — artworkBild war im Export ein
+  Leerstummel (Steckbrief/Legende ohne Bild, „dead link", Caspar_D);
+  jetzt die Bildadresse des Titels. Tote Tonadressen (/api/forbidden)
+  kommen nicht mehr in die Demo, Klick öffnet Suno. Hausfassung „mit
+  Medienordner" läuft über /media. Export räumt am Ende „._"-Beifang
+  (exFAT/macOS, sonst Geistertitel auf Fernsehern). Probekopie gelöscht.

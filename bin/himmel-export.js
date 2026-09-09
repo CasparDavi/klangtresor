@@ -175,7 +175,11 @@ const code = [
   konstante(/const SYM = [^\n]*;/),
   "const raumDaten = {}; let raumJetzt = 'klang'; let raumDa = null;",
   funktion('raumK'),
-  "function artworkBild(){ return ''; }",
+  /* artworkBild wird im Steckbrief und in der Legende gerufen (zwei
+     Stellen im geschnittenen Code). Leer zurueckgeben hiess: ein <img>
+     ohne Adresse - "dead link auf die Cover" (Caspar_D, 09.09.2026).
+     Jeder Titel traegt seine Bildadresse im Stamm (CDN oder relativ). */
+  "function artworkBild(id){ const s = song(id); return (s && s.bild) || ''; }",
   'function rabenmagieAnwenden(){}',
   'function sunoHandle(){ return ' + JSON.stringify(String((konfig && konfig.handle) || '')) + '; }',
   /* Dieselbe Runde, zweiter Fund - erst im Browser, nicht in der
@@ -207,7 +211,12 @@ const songs = karte.songs.filter(p => {
    Praefix bleibt, wie es kommt (Vorwaertsschraegstriche, kein Schluss-
    strich) - es ist eine URL, kein Dateipfad, auch unter Windows. */
 const adressen = (s) => {
-  if (!RELATIV) return { bild: s.bildUrl || '', audio: s.audioUrl || '' };
+  /* Ohne --relativ: Bilder von Sunos CDN (oeffentlich, antwortet). Die
+     Tonadressen des Katalogs sind seit 03.09.2026 Sunos Sperre
+     (/api/forbidden, docs/AUDIO-BEZUG.md) - eine Adresse, die nicht
+     spielt, bekommt der Player gar nicht erst; der Klick auf einen Stern
+     oeffnet dann den Titel bei Suno (s.link). */
+  if (!RELATIV) return { bild: s.bildUrl || '', audio: (s.audioUrl && !/\/api\//.test(s.audioUrl)) ? s.audioUrl : '' };
   const p = RELATIV.replace(/\/+$/, '');
   const bildDatei = fs.existsSync(path.join(SONGS_ORDNER, s.id, 'titelbild.jpg')) ? 'titelbild.jpg' : 'cover.jpg';
   return { bild: p + '/' + s.id + '/' + bildDatei, audio: p + '/' + s.id + '/audio.mp3' };
@@ -369,7 +378,8 @@ const audio = $('audio');
 const sichtbar = DATEN.songs.map(p => STAMM[p.id]).filter(Boolean);
 const posVon = (id) => sichtbar.findIndex(s => s.id === id);
 function spielenNachId(id){
-  const s = song(id); if (!s || !s.audio) return;
+  const s = song(id); if (!s) return;
+  if (!s.audio){ if (s.link) window.open(s.link, '_blank'); return; }   /* Demo ohne Ton: zu Suno */
   aktuellId = id; audio.src = s.audio; audio.play().catch(() => {});
   $('pbild').src = s.bild || ''; $('ptitel').textContent = s.titel; $('pknopf').textContent = '❚❚';
   zeichnen();
