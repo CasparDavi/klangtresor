@@ -14590,7 +14590,9 @@ function exportPlatzZeichnen(d){
 
   box.innerHTML = '';
   box.hidden = false;
-  box.appendChild(diaTitel(`Platz auf ${m.name || m.pfad || 'dem Medium'}`));
+  /* Caspar_D, 09.09.2026: "Belegung von INTENSO nach Datentransfer" - der
+     Balken zeigt den Zustand nach dem Lauf, nicht den jetzigen. */
+  box.appendChild(diaTitel(`Belegung von ${m.name || m.pfad || 'dem Medium'} nach Datentransfer`));
   const balken = document.createElement('div'); balken.className = 'platzbalken';
   const segment = (bytes, farbe, deckung, titel) => {
     if (!(bytes > 0)) return;
