@@ -3031,8 +3031,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
            hochladen können, die das vorhandene nicht ersetzen aber
            überstimmen" - "wie bei den artwork und videos"). Dasselbe
            Muster: eigen.mp3 steht neben Sunos audio.mp3 und audio.wav. */
+        /* Das vierte Eigene ist kein Medium, sondern ein Rezept: eigen-effekt.json
+           traegt das dynamische Titelbild aus dem Titelbild-Studio (Caspar_D,
+           09.09.2026: "ein preset an den Titel gebunden" - die App malt es live). */
         for (const [feld, datei] of [['video', 'eigen.mp4'], ['bild', 'eigen.jpg'],
-                                     ['ton', 'eigen.mp3']]) {
+                                     ['ton', 'eigen.mp3'], ['effekt', 'eigen-effekt.json']]) {
           try { if (fs.statSync(path.join(o, datei)).size > 0) hat[feld] = true; } catch (e) {}
         }
         if (Object.keys(hat).length) raus[d] = hat;
@@ -3041,9 +3044,9 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     /* ... und was davon im Behaelter liegt (Stick): songs/<id>/eigen.* */
     const b = behaelterHolen();
     if (b) for (const rel of b.liste('songs/')) {
-      const m = /^songs\/([^/]+)\/eigen\.(mp4|jpg|mp3)$/.exec(rel); if (!m) continue;
+      const m = /^songs\/([^/]+)\/eigen(?:-effekt)?\.(mp4|jpg|mp3|json)$/.exec(rel); if (!m) continue;
       const e = b.eintrag(rel); if (!e || !e.l) continue;
-      (raus[m[1]] = raus[m[1]] || {})[{ mp4: 'video', jpg: 'bild', mp3: 'ton' }[m[2]]] = true;
+      (raus[m[1]] = raus[m[1]] || {})[{ mp4: 'video', jpg: 'bild', mp3: 'ton', json: 'effekt' }[m[2]]] = true;
     }
     return jsonAntwort(res, { songs: raus, anzahl: Object.keys(raus).length });
   }
@@ -3076,7 +3079,8 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       const namen = was === 'bild' ? ['eigen.jpg']
                   : was === 'video' ? ['eigen.mp4']
                   : was === 'ton' ? ['eigen.mp3']
-                  : ['eigen.mp4', 'eigen.jpg', 'eigen.mp3'];
+                  : was === 'effekt' ? ['eigen-effekt.json']
+                  : ['eigen.mp4', 'eigen.jpg', 'eigen.mp3', 'eigen-effekt.json'];
       let weg = 0;
       for (const n of namen) {
         const f = path.join(ordner, n);
@@ -3095,8 +3099,9 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
          "MPEG Layer III". */
       const name = /^video\//.test(typ) ? 'eigen.mp4'
                  : /^image\//.test(typ) ? 'eigen.jpg'
-                 : /^audio\//.test(typ) ? 'eigen.mp3' : null;
-      if (!name) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild oder Ton.' }, 415);
+                 : /^audio\//.test(typ) ? 'eigen.mp3'
+                 : /^application\/json/.test(typ) ? 'eigen-effekt.json' : null;
+      if (!name) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild, Ton oder Effekt-Rezept.' }, 415);
       const DECKEL = 300 * 1024 * 1024;
       const stuecke = []; let gross = 0, abgebrochen = false;
       req.on('data', (c) => {

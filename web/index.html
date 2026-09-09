@@ -2926,6 +2926,86 @@ h3 .infoknopf .ico{width:14px;height:14px}
   cursor:pointer;font:600 12.5px system-ui;border:1px solid}
 #morgenja{border-color:#16be5c;background:#16be5c22;color:#16be5c}
 #morgennein{border-color:#5a5a60;background:transparent;color:#9a9aa0}
+/* ---- Titelbild-Studio: Overlay wie #wer, Panel wie im Scratch (hausrein) ---- */
+#tbs{position:fixed;inset:0;z-index:84;background:rgba(0,0,0,.6);display:grid;place-items:center}
+#tbs[hidden]{display:none}
+#tbs-kasten{width:min(1320px,96vw);height:min(860px,94vh);background:var(--bg);border:1px solid var(--rand);border-radius:12px;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+#tbs-kopf{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--rand)}
+#tbs-kopf h3{margin:0;font-size:15px;flex:0 0 auto}#tbs-kopf h3 span{color:var(--schwach);font-weight:400;margin-left:8px}
+#tbs-kopf #tbs-unter{color:var(--schwach);font-size:12px;flex:1}
+#tbs-kopf button{width:28px;height:28px;border-radius:50%;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+#tbs-kopf button:active{transform:scale(.95)}
+#tbs-buehne{display:grid;grid-template-columns:1fr 460px;min-height:0}
+#tbs-feld{position:relative;background:#000;overflow:hidden;display:grid;place-items:center;min-height:0}
+#tbs-lein{max-width:100%;max-height:100%;display:block;background:#000}
+#tbs-pult{background:var(--flaeche);border-left:1px solid var(--rand);overflow:auto;padding:14px;font-size:13px;line-height:1.5;color:var(--text)}
+#tbs .tbs-unter{color:var(--schwach);font-size:11px;line-height:1.5}
+#tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
+#tbs #tbs-pStatus{display:block;color:var(--schwach);font-size:11px;line-height:1.4;margin:-3px 0 10px;min-height:14px}
+#tbs .tbs-reihe{display:flex;gap:8px;margin-bottom:9px}
+#tbs .tbs-reihe button{flex:1;padding:7px 0;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:12px}
+#tbs .tbs-reihe button:hover{border-color:var(--akzent)}
+#tbs .tbs-zeile{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:11.5px;color:var(--schwach)}
+#tbs .tbs-zeile .tbs-lbl{flex:0 0 auto}
+#tbs .tbs-mini{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:13px}
+#tbs .tbs-mini:hover{border-color:var(--akzent)}
+#tbs .tbs-seg{display:flex;gap:4px}
+#tbs .tbs-seg button{padding:4px 9px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:11.5px}
+#tbs .tbs-seg button.on{border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent);color:var(--text);background:var(--flaeche2)}
+#tbs select.tbs-wahl{flex:1;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:7px;padding:5px}
+#tbs .tbs-vorrat{border:1px dashed var(--rand);border-radius:10px;padding:10px;margin:4px 0 14px}
+#tbs .tbs-vorrat .tbs-titel{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--schwach);margin-bottom:8px}
+#tbs .vgruppe{margin-bottom:9px}
+#tbs .vgruppe:last-child{margin-bottom:0}
+#tbs .vgruppe .gname{font-size:11px;color:var(--schwach);margin-bottom:5px}
+#tbs .vgruppe .knoepfe{display:flex;gap:6px;flex-wrap:wrap}
+#tbs .vgruppe button{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:11.5px}
+#tbs .vgruppe button:hover{border-color:var(--akzent)}
+#tbs .tbs-ik{display:inline-flex;width:16px;height:16px;flex:0 0 auto}
+#tbs .tbs-ik svg{width:16px;height:16px;display:block}
+#tbs .tbs-karte{border:1px solid var(--rand);border-radius:10px;margin-bottom:9px;overflow:hidden;background:var(--flaeche)}
+#tbs .tbs-karte.an{border-color:#44454a}
+#tbs .tbs-kopf{display:flex;align-items:center;gap:8px;padding:9px 10px;user-select:none}
+#tbs .tbs-kopf b{flex:1;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+#tbs .tbs-kopf b .tbs-id{color:var(--schwach);font-weight:400;font-size:11px}
+#tbs .tbs-kopf b .tbs-chev{color:var(--schwach);font-size:10px;margin-left:auto}
+#tbs .tbs-karte:not(.an) .tbs-kopf b{color:var(--schwach)}
+#tbs .tbs-kopf .tbs-knopf{width:22px;height:22px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font-size:11px;line-height:1;flex:0 0 auto}
+#tbs .tbs-kopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
+#tbs .tbs-kopf .tbs-knopf[data-tu="weg"]{border-radius:50%}
+#tbs .tbs-kopf .tbs-knopf.an{border-color:var(--akzent);color:var(--text)}
+#tbs .tbs-pille{width:36px;height:20px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);position:relative;flex:0 0 auto;cursor:pointer;transition:background .15s}
+#tbs .tbs-pille::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--schwach);transition:transform .15s,background .15s}
+#tbs .tbs-karte.an .tbs-pille{background:color-mix(in srgb,var(--akzent) 40%,var(--flaeche2));border-color:var(--akzent)}
+#tbs .tbs-karte.an .tbs-pille::after{transform:translateX(16px);background:var(--text)}
+#tbs .tbs-inhalt{padding:0 11px 11px;display:block}
+#tbs .tbs-karte.zu .tbs-inhalt{display:none}
+#tbs .tbs-besch{color:var(--schwach);font-size:11.5px;line-height:1.45;margin:2px 0 10px}
+#tbs .tbs-regler{display:grid;grid-template-columns:96px 1fr 42px;gap:8px;align-items:center;margin:6px 0;font-size:12px;color:var(--schwach)}
+#tbs .tbs-regler input[type=range].tbs-zust{-webkit-appearance:none;appearance:none;background:transparent;height:14px}
+#tbs .tbs-regler input[type=range].tbs-zust::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--rand)}
+#tbs .tbs-regler input[type=range].tbs-zust::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--text);margin-top:-4.5px;border:none}
+#tbs .tbs-togp{justify-self:start;padding:2px 12px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11.5px}
+#tbs .tbs-togp.an{border-width:2px;border-color:var(--akzent);color:var(--text);padding:1px 11px}
+#tbs .tbs-togp:active, #tbs .tbs-kopf .tbs-knopf:active{transform:scale(.95)}
+#tbs .tbs-regler input[type=range]{width:100%;accent-color:var(--akzent)}
+#tbs .tbs-regler input[type=color]{width:100%;height:23px;padding:0;border:1px solid var(--rand);border-radius:6px;background:var(--flaeche2);cursor:pointer}
+#tbs .tbs-regler select{width:100%;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px}
+#tbs .tbs-regler .tbs-wert{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+#tbs .tbs-verr{margin-top:9px;padding-top:9px;border-top:1px solid var(--rand)}
+#tbs .tbs-verr .tbs-regler{grid-template-columns:96px 1fr 42px}
+#tbs .tbs-verr select[data-verr]{grid-column:2/4}
+#tbs .tbs-leer{color:var(--schwach);font-size:12px;text-align:center;padding:16px 8px;line-height:1.5}
+#tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
+/* Lebendbild auf Kachel und Buehne: fuellt den Kasten wie das Bewegtbild, verzerrt nichts (object-fit) */
+.bild canvas.tbs-lebend, .bart canvas.tbs-lebend{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
+/* Knoepfe brechen nicht um; Abspiel-Knopf als Pille im Kopf */
+#tbs .tbs-reihe button, #tbs .tbs-mini, #tbs .tbs-seg button{white-space:nowrap}
+#tbs-kopf #tbs-spiel{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:12px;white-space:nowrap;margin-right:6px}
+/* Knoepfe in Zeilen behalten ihre Breite - nichts drueckt sie zusammen, nichts bricht um */
+#tbs .tbs-zeile > button, #tbs .tbs-zeile .tbs-mini{flex:0 0 auto;white-space:nowrap}
+#tbs .tbs-reihe button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 </style>
 
 <!-- Reaktionen zu einem Song: wer hat geliked, wer kommentiert, mit den
@@ -10485,6 +10565,16 @@ function hatBewegtbild(s){
 function istEigenesBewegtbild(s){
   return !!(s && _eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
 }
+/* Und ob ein REZEPT beim Titel liegt (Titelbild-Studio, 09.09.2026): dann
+   malt die App das Titelbild live. Es hat Vorrang vor einem Video -
+   sonst bewegte sich zweierlei uebereinander. */
+function hatLebendbild(s){
+  return !!(s && !s.fremd && _eigenArt && _eigenArt[s.id] && _eigenArt[s.id].effekt);
+}
+/* Das Studio-Modul steht am Ende des Skripts. Wer frueher ruft, ruft ins
+   Leere - kein Fehler, kein halbes Bild. */
+function lebendAn(k, id){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAn(k, id); }
+function lebendAus(k){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) lebendAus(k); }
 /* Welches Bewegtbild gilt fuer diesen Song - das eigene, sonst Sunos. */
 function artworkVideo(id){
   return (_eigenArt && _eigenArt[id] && _eigenArt[id].video)
@@ -10571,7 +10661,7 @@ function bewegtAus(karte){
 /** Alle bewegten Kacheln aufräumen, außer der des laufenden Songs. */
 function bewegtAufraeumen(){
   document.querySelectorAll('.karte').forEach(k=>{
-    if (k.dataset.id !== aktuellId) bewegtAus(k);
+    if (k.dataset.id !== aktuellId) { bewegtAus(k); lebendAus(k); }
   });
 }
 
@@ -10587,8 +10677,12 @@ function markieren(){
     // Der laufende Song zeigt sein bewegtes Artwork dauerhaft.
     // Auf dem iPhone gibt es kein Überfahren mit der Maus - so
     // bekommst du die Videos dort trotzdem zu sehen.
-    if (dieser && hatBewegtbild(s)) bewegtAn(k, s.id);
-    else if (!dieser)              bewegtAus(k);
+    if (dieser && hatLebendbild(s)) { bewegtAus(k); lebendAn(k, s.id); }
+    else {
+      lebendAus(k);
+      if (dieser && hatBewegtbild(s)) bewegtAn(k, s.id);
+      else if (!dieser)              bewegtAus(k);
+    }
   });
 }
 
@@ -16568,6 +16662,10 @@ function capAuf(id, x, y){
     +   `<div class="capartname">Eigene Tonfassung <small>— tritt neben WAV und MP3</small></div>`
     +   `<div class="capart" id="capartton" data-art="ton"></div>`
     + `</div>`
+    /* Das vierte Eigene ist kein Upload, sondern ein Rezept: das dynamische
+       Titelbild aus dem Titelbild-Studio (Caspar_D, 09.09.2026). */
+    + `<div class="capartton"><div class="capartname">Titelbild-Studio</div>`
+    +   `<div class="capart" id="capartstudio" data-art="effekt"></div></div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
   /* ERST FUELLEN, DANN PLATZIEREN.
@@ -16703,6 +16801,34 @@ function capAuf(id, x, y){
 
   artZeichnen();
   platzieren();
+
+  /* ---- Titelbild-Studio: das Rezept am Titel ---------------------------
+     Kein Upload - der Knopf oeffnet das Studio; gesichert wird von dort.
+     Hat der Titel ein Rezept, zeigt das Feld es wie die anderen Eigenen
+     (hat/entfernen) und bietet "bearbeiten". */
+  const studioFeld = c.querySelector('#capartstudio');
+  const studioNach = (was) => {
+    _eigenArt = _eigenArt || {};
+    if (was === 'gesichert') _eigenArt[id] = Object.assign({}, _eigenArt[id], { effekt: true });
+    else if (was === 'geloest' && _eigenArt[id]) { delete _eigenArt[id].effekt; if (!Object.keys(_eigenArt[id]).length) delete _eigenArt[id]; }
+    studioZeichnen(); zeichnen();
+  };
+  const studioZeichnen = () => {
+    if (!studioFeld) return;
+    const hatE = !!(_eigenArt && _eigenArt[id] && _eigenArt[id].effekt);
+    studioFeld.className = 'capart' + (hatE ? ' hat' : '');
+    studioFeld.innerHTML = hatE
+      ? `<span>Dynamisches Titelbild liegt beim Titel</span> <span class="weg" data-tu="oeffnen">bearbeiten</span>`
+        + (eingefroren ? '' : ` · <span class="weg" data-tu="weg">entfernen</span>`)
+      : (eingefroren ? 'Archiv eingefroren' : 'Dynamisches Titelbild gestalten — Studio öffnen');
+    const oe = studioFeld.querySelector('[data-tu="oeffnen"]');
+    if (oe) oe.onclick = (ev) => { ev.stopPropagation(); TitelbildStudio.oeffnen(id, studioNach); };
+    const wg = studioFeld.querySelector('[data-tu="weg"]');
+    if (wg) wg.onclick = async (ev) => { ev.stopPropagation();
+      try { await fetch(`/api/eigen-artwork/${id}?was=effekt`, { method: 'DELETE' }); TitelbildStudio.lebendNeu(id); studioNach('geloest'); } catch (e) {} };
+  };
+  if (studioFeld && !eingefroren) studioFeld.onclick = () => { if (!studioFeld.classList.contains('hat')) TitelbildStudio.oeffnen(id, studioNach); };
+  studioZeichnen();
 
   const haken = c.querySelector('#capinstr');
   if (haken && eingefroren) haken.disabled = true;
@@ -18696,7 +18822,7 @@ function darstellungAufbauen(){
     // für DIESES Lied das Standbild - still, ohne Hinweis. Die
     // Einstellung bleibt stehen und greift beim nächsten Song, der
     // eines hat.
-    const eigenesVideo = bBild === 'video' && hatBewegtbild(bSong);
+    const eigenesVideo = bBild === 'video' && hatBewegtbild(bSong) && !hatLebendbild(bSong);
 
     if (eigenesVideo){
       kasten.innerHTML = medienEbenen('video', artworkVideo(bSong.id),
@@ -18712,6 +18838,8 @@ function darstellungAufbauen(){
       kasten.innerHTML = medienEbenen('img', quelle, 'alt=""');
       const b = kasten.querySelector('img.motiv');
       b.onload = () => formatUebernehmen(kasten, b.naturalWidth, b.naturalHeight);
+      /* Liegt ein Rezept beim Titel, malt das Studio live ueber das Standbild. */
+      if (hatLebendbild(bSong)) lebendAn(kasten, bSong.id);
     }
     return;
   }
@@ -26040,12 +26168,13 @@ $('raster').addEventListener('mouseover', (e)=>{
   const k = e.target.closest('.karte');
   if (!k || k.contains(e.relatedTarget)) return;
   const s = song(k.dataset.id);
-  if (hatBewegtbild(s)) bewegtAn(k, s.id);
+  if (hatLebendbild(s)) lebendAn(k, s.id);
+  else if (hatBewegtbild(s)) bewegtAn(k, s.id);
 });
 $('raster').addEventListener('mouseout', (e)=>{
   const k = e.target.closest('.karte');
   if (!k || k.contains(e.relatedTarget)) return;
-  if (k.dataset.id !== aktuellId) bewegtAus(k);
+  if (k.dataset.id !== aktuellId) { bewegtAus(k); lebendAus(k); }
 });
 
 $('ruecksetzen').onclick = filterZuruecksetzen;
@@ -26157,7 +26286,7 @@ deckMelder(deckA); deckMelder(deckB);
        bleibt, solange der Zeiger steht. Bei 176 Punkten ist das der
        Unterschied zwischen Suchen und Lesen. */
     const el = e.target.closest && e.target.closest(
-      '#player [title], #player [data-tipp], .nbpunkt[data-tipp], .nbsaeule[data-tipp]');
+      '#player [title], #player [data-tipp], .nbpunkt[data-tipp], .nbsaeule[data-tipp], #tbs [title]');
     if (el === dran) return;
     weg();
     if (!el) return;
@@ -26236,6 +26365,509 @@ start();
 /* Gleich beim Laden nachsehen, ob der Server arbeitet - sonst steht der rote
    Knopf still, obwohl im Hintergrund ein Lauf unterwegs ist (23.08.2026). */
 morgenKnopfPruefen();
+
+/* ---- Titelbild-Studio ----------------------------------------------
+   Das dynamische Titelbild: ein REZEPT aus Effekten - Vorrat an Typen,
+   beliebig oft eingehaengt, jede Instanz eigen eingestellt (das Muster
+   von Haeckels Operator-Kette) -, am Titel abgelegt als
+   library/songs/<id>/eigen-effekt.json und live gemalt. Caspar_D,
+   09.09.2026: "ein preset an den Titel gebunden ... schneller zu
+   aendern, weniger Datenflut". Kein Video wird gebacken.
+
+   Gekapselt: eigener Namensraum, alle Klassen/IDs tragen tbs-, damit
+   nichts mit dem Haus kollidiert (.pille gibt es dort schon).
+   TON: keine eigene Quelle. Laeuft der Titel im Player, lesen die Pulse
+   audio.currentTime - eine Audioquelle, wie ueberall im Haus. Sonst
+   eine freie Uhr, damit man auch ohne Musik gestalten kann. */
+var TitelbildStudio = (() => {
+  let root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
+  const $ = s => root ? root.querySelector(s) : null;
+const kf = v => String(v).replace('.',',');
+const ZUST = new Set(['tempo','atempo','frequenz','flimmerTempo','winkel','abkling']);
+const PALETTEN = {
+  'Cover-Akzente':['#9a9aa0','#c9c9cd'],
+  'Abendrot':['#ff6a3d','#f9c74f','#e63946','#9d4edd'],
+  'Nordlicht':['#2ec4b6','#3a86ff','#8338ec','#06d6a0'],
+  'Neon':['#ff006e','#fb5607','#ffbe0b','#3a86ff','#8338ec'],
+  'Asche':['#6c757d','#adb5bd','#495057','#ced4da']
+};
+const VERR = [
+  ['ueber','Über (ersetzen)','source-over'],['add','Additiv','lighter'],['screen','Screen','screen'],
+  ['hell','Hell gewinnt','lighten'],['dunkel','Dunkel gewinnt','darken'],['multi','Multiplizieren','multiply'],['abwedeln','Abwedeln — Lichter heller','color-dodge'],['nachbelichten','Nachbelichten — Schatten dunkler','color-burn'],['weich','Weich','soft-light']
+];
+const VMODE = Object.fromEntries(VERR.map(v=>[v[0],v[2]]));
+
+/* Monochrome, einfärbbare Icons (currentColor); je Effekt eine Kennfarbe */
+const IKON={
+ fahrt:'<rect x="4" y="4" width="12" height="12" rx="1"/><path d="M14 14l6 6M20 15v5h-5"/>',
+ puls:'<path d="M2 12h5l2-6 3 12 2-6h8"/>',
+ schaerfe:'<circle cx="8" cy="12" r="5" stroke-dasharray="2 2"/><circle cx="17" cy="12" r="3"/>',
+ farbe:'<path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/>',
+ licht:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+ schatten:'<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none" opacity=".85"/><circle cx="15" cy="10" r="5" fill="#0c0c0d" stroke="none"/>',
+ sicherung:'<path d="M12 3v8"/><path d="M7 6.5a7 7 0 1 0 10 0"/>',
+ nebel:'<path d="M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 17z"/>',
+ partikel:'<g fill="currentColor" stroke="none"><circle cx="6" cy="5" r="1.4"/><circle cx="14" cy="8" r="1.4"/><circle cx="9" cy="13" r="1.4"/><circle cx="18" cy="15" r="1.4"/><circle cx="5" cy="19" r="1.4"/><circle cx="13" cy="20" r="1.4"/></g>',
+ scanlines:'<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 8h18M3 12h18M3 16h18" opacity=".6"/>',
+ bloom:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" opacity=".5"/><circle cx="12" cy="12" r="10" opacity=".25"/>',
+ nachzieh:'<path d="M4 12h10"/><path d="M10 8l4 4-4 4"/><path d="M3 7h4M3 17h4" opacity=".5"/>',
+ laser:'<circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 12 3 7M12 12l9-3M12 12 5 20M12 12l7 8M12 12 3 16"/>',
+ streifen:'<path d="M3 7h18M3 12h18M3 17h18"/>',
+ rauschen:'<g fill="currentColor" stroke="none"><circle cx="5" cy="6" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="19" cy="7" r="1"/><circle cx="8" cy="11" r="1"/><circle cx="16" cy="12" r="1"/><circle cx="5" cy="17" r="1"/><circle cx="12" cy="19" r="1"/><circle cx="19" cy="16" r="1"/></g>',
+ vlauf:'<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 13h18" stroke-dasharray="3 2"/><path d="M9 8l3-3 3 3"/>',
+ wackeln:'<path d="M4 9c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3"/><path d="M4 15c2 0 2 3 4 3s2-3 4-3 2 3 4 3 2-3 4-3"/>',
+ rgb:'<rect x="4" y="6" width="10" height="10"/><rect x="10" y="10" width="10" height="10"/>',
+ kontrast:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M5 19C9 19 9 5 19 5"/>',
+ saettigung:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
+ strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
+};
+const TON={fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
+
+const EFFEKTE = {
+  fahrt:{ label:'Fahrt', art:'geo', besch:'Ein Ausschnitt wandert und zoomt langsam über das Bild — die Grundbewegung, damit nichts steht.',
+    params:[{k:'zoom',lbl:'Ausschnitt',min:.5,max:1,step:.02,def:.8},{k:'weite',lbl:'Weite',min:0,max:.5,step:.02,def:.24},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:18}]},
+  puls:{ label:'Zoom schlägt', art:'geo', besch:'Das Bild zoomt auf den Schlag — die Größe pulst im Takt. Ruhig kräftig, nicht zu subtil. Jeder Schlag oder nur die Eins.',
+    params:[{k:'wucht',lbl:'Wucht',min:0,max:.45,step:.01,def:.24},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:7,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
+  schaerfe:{ label:'Schärfe schlägt', art:'grund', besch:'Das Bild liegt weichgezeichnet da, und das scharfe Original schlägt im Takt durch. Nutzt den Puls direkt.',
+    params:[{k:'unschaerfe',lbl:'Weichheit',min:0,max:24,step:1,def:10},{k:'schlag',lbl:'Schärfe-Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
+  kontrast:{ label:'Kontrast schlägt', art:'grund', besch:'Eine Gradationskurve haut auf den Schlag rein — wie in Haeckel. Schwarz-/Weißpunkt als Marken ziehen, Modus Gamma oder Sigmoidal, Tonwert regeln. Je Kanal: V wirkt auf alles, R/G/B legen sich obendrauf. „Invertieren" spiegelt an der Diagonale.',
+    params:[{k:'grad',grad:true},{k:'schlag',lbl:'Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
+  saettigung:{ label:'Sättigung schlägt', art:'grund', besch:'Die Farbe springt auf den Schlag an — sattes Aufleuchten, oder auf 0 ins Graue kippen. Zwischen den Schlägen ruht das Bild.',
+    params:[{k:'saettigung',lbl:'Sättigung',min:0,max:4,step:.1,def:2.4},{k:'schlag',lbl:'Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
+  farbe:{ label:'Farbschleier', art:'mal', verr:'weich', staerkeDef:.4, besch:'Eine Farbfolge zieht als Schleier über das Bild, im Tempo eingerastet.',
+    params:[{k:'palette',lbl:'Folge',sel:[...Object.keys(PALETTEN).map(n=>[n,n]),['Eigen','Eigene Rampe']],def:'Abendrot'},{k:'rampe',rampe:true,def:['#ff6a3d','#f9c74f','#3a86ff']},{k:'tempo',lbl:'Tempo (s)',min:2,max:20,step:1,def:8}]},
+  licht:{ label:'Scheinwerfer', art:'mal', verr:'screen', staerkeDef:.7, besch:'Ein Licht wandert über das Bild. Mehrfach einhängen: gelb und länglich, blau und weich, jeder mit eigener Verrechnung.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'},{k:'takt',tog:'im Takt pulsen',def:1}]},
+  schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'},{k:'takt',tog:'im Takt pulsen',def:1}]},
+  laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Strahlen schießen aus einem wandernden Punkt — additiv gestapelt ein Inferno. Mehrfach in verschiedenen Farben einhängen.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Fächer',min:0,max:1,step:.05,def:1},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.08},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5,when:e=>e.quelle==='fest'},{k:'takt',tog:'im Takt',def:1}]},
+  streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle und dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
+    params:[{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
+  rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur als Ausbruch auf der Eins.',
+    params:[{k:'koernung',lbl:'Körnung',min:0,max:1,step:.05,def:.2},{k:'ausfall',lbl:'Dropout-Striche',min:0,max:1,step:.05,def:.25},{k:'takt',tog:'nur im Takt',def:0}]},
+  vlauf:{ label:'Bildlauf', art:'post', besch:'Das ganze Bild rollt durch, mit dunklem Riss-Band an der Naht — Fernseher ohne Bildfang. Richtung in 90°-Schritten.',
+    params:[{k:'tempo',lbl:'Tempo (s)',min:1,max:20,step:.5,def:6},{k:'richtung',lbl:'Richtung',sel:[['hoch','nach oben'],['runter','nach unten'],['links','nach links'],['rechts','nach rechts']],def:'hoch'},{k:'band',lbl:'Riss-Band',min:0,max:.3,step:.01,def:.08},{k:'takt',tog:'Ruck im Takt',def:0}]},
+  wackeln:{ label:'Verwackeln', art:'post', besch:'Zeilen verschieben sich seitlich (Band-Warble), oder das ganze Bild kickt im Takt.',
+    params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.15,step:.005,def:.025},{k:'baender',lbl:'Bänder',min:1,max:48,step:1,def:14},{k:'tempo',lbl:'Tempo',min:.5,max:12,step:.5,def:5},{k:'takt',tog:'Kick im Takt',def:1}]},
+  rgb:{ label:'Farbkanal-Puls', art:'post', besch:'Rot, Grün und Blau springen kurz gegeneinander — chromatische Aberration / RGB-Shift. Im Takt am schönsten.',
+    params:[{k:'versatz',lbl:'Versatz',min:0,max:.08,step:.002,def:.012},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:0},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:7,when:e=>e.antrieb!=='atem'}]},
+  strobe:{ label:'Stroboskop', art:'mal', keineVerr:true, staerkeDef:.5, besch:'Hochfrequentes Flackern des ganzen Bildes. Kräftig — Vorsicht. Aufblitzen, Abdunkeln oder beides; auf Wunsch nur im Takt.',
+    params:[{k:'frequenz',lbl:'Frequenz (Hz)',min:1,max:24,step:1,def:8},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.5},{k:'modus',lbl:'Richtung',sel:[['hell','aufblitzen'],['dunkel','abdunkeln'],['beides','beides']],def:'beides'},{k:'farbe',lbl:'Blitzfarbe',farbe:true,def:'#ffffff'},{k:'takt',tog:'nur im Takt',def:0}]},
+  sicherung:{ label:'Sicherungswackeln', art:'mal', keineVerr:true, staerkeDef:.8, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon.',
+    params:[{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.6},{k:'dauer',lbl:'Dauer (ms)',min:40,max:800,step:10,def:180},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'nur im Takt',def:0}]},
+  nebel:{ label:'Theaternebel', art:'mal', verr:'screen', staerkeDef:.6, besch:'Weiche Schwaden ziehen langsam durchs Bild und liegen eher unten. Dichte, Größe, Lage, Farbe und Tempo frei — wirkt am besten leise.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},{k:'dichte',lbl:'Dichte',min:1,max:12,step:1,def:5},{k:'het',lbl:'Heterogenität',min:0,max:1,step:.05,def:.5},{k:'groesse',lbl:'Größe',min:.3,max:1.2,step:.05,def:.7},{k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.75},{k:'tempo',lbl:'Tempo (s)',min:10,max:60,step:1,def:30}]},
+  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche oder Funken ziehen durchs Bild. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus.',
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+  scanlines:{ label:'Scanlines / Röhre', art:'mal', keineVerr:true, staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
+    params:[{k:'raster',lbl:'Raster (px)',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
+  bloom:{ label:'Bloom / Halation', art:'post', postVerr:'screen', staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
+    params:[{k:'radius',lbl:'Radius (px)',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
+  nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
+    params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]}
+};
+const EGRUPPEN = [
+  ['Pulse', ['puls','schaerfe','kontrast','saettigung','rgb']],
+  ['Blitze', ['strobe','sicherung']],
+  ['Läufe', ['fahrt','streifen','licht','schatten','laser','farbe','nebel']],
+  ['Störungen', ['vlauf','wackeln','rauschen']],
+  ['Anmutung', ['scanlines','bloom','nachzieh']],
+  ['Partikel', ['partikel']]
+];
+/* Gemeinsame Schalter für alle Pulse: Antrieb (Takt/Atem) + Invertieren */
+['puls','schaerfe','kontrast','saettigung','rgb'].forEach(k=>{ EFFEKTE[k].params.push(
+  {k:'antrieb',lbl:'Antrieb',sel:[['takt','im Takt'],['atem','atmend']],def:'takt'},
+  {k:'atempo',lbl:'Atem (s)',min:1,max:12,step:.5,def:4,when:e=>e.antrieb==='atem'},
+  {k:'invert',tog:'invertieren',def:0}); });
+
+let STAPEL = [], nr = 0, soloId = null;
+const aktiv = e => soloId ? (e.id===soloId) : e.an;
+function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:false, verr:T.verr||'ueber', staerke:(T.staerkeDef!=null?T.staerkeDef:1) };
+  T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; }); return e; }
+/* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
+   aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
+const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85] };
+function artFarben(e){ const alt=ART_FARBEN[e._artVor||'schnee']||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; } e._artVor=e.art; }
+function E(typ,over){ return Object.assign(neuerEffekt(typ), over||{}); }
+function grundzustand(){ STAPEL=[ neuerEffekt('fahrt'), neuerEffekt('puls'), neuerEffekt('farbe'), neuerEffekt('licht') ]; renderStapel(); }
+
+const PRESETS={
+ 'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
+ 'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
+ 'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
+ 'Alter Fernseher':()=>[E('vlauf',{tempo:6,band:.08,staerke:.8}),E('rauschen',{koernung:.2,ausfall:.3,staerke:.5}),E('rgb',{versatz:.012,takt:1,staerke:.8}),E('wackeln',{amplitude:.02,staerke:.5})],
+ 'Konzertlicht':()=>[E('fahrt',{}),E('puls',{wucht:.22}),E('licht',{farbe:'#ff4d6d',form:'strahl',streckung:3,verr:'add',staerke:.6}),E('licht',{farbe:'#4d7dff',form:'laeng',streckung:2.4,verr:'add',staerke:.6}),E('licht',{farbe:'#ffd24d',verr:'screen',staerke:.5})],
+ 'Kaputtes Band':()=>[E('wackeln',{amplitude:.04,baender:20,staerke:.7}),E('streifen',{anzahl:3,tempo:5,verr:'multi',staerke:.5}),E('streifen',{anzahl:8,tempo:13,staerke:.35}),E('rauschen',{koernung:.15,ausfall:.3,staerke:.5}),E('rgb',{versatz:.02,staerke:.7})],
+ 'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
+ 'Nachtfahrt':()=>[E('fahrt',{tempo:24}),E('partikel',{art:'regen',anzahl:200,tempo:1.4,wind:.25,staerke:.6}),E('scanlines',{linien:.25,vignette:.45,flimmern:.1,staerke:.6}),E('bloom',{radius:14,schwelle:1.8,staerke:.4})],
+ 'Rave / Inferno':()=>[E('puls',{wucht:.35}),E('laser',{farbe:'#ff2d2d',anzahl:10,staerke:.7}),E('laser',{farbe:'#2d9dff',anzahl:7,streuung:.6,staerke:.6}),E('strobe',{frequenz:10,tiefe:.4,takt:1,staerke:.5}),E('rgb',{versatz:.025,takt:1,staerke:.8})]
+};
+
+let HISTO=null;
+function histoRechnen(){ try{ const w=140,hh=140,tc=document.createElement('canvas'); tc.width=w; tc.height=hh; const tx=tc.getContext('2d'); tx.drawImage(bild,0,0,w,hh); const d=tx.getImageData(0,0,w,hh).data,B=64,H={v:new Array(B).fill(0),r:new Array(B).fill(0),g:new Array(B).fill(0),b:new Array(B).fill(0)};
+  for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],bb=d[i+2],lv=r*0.299+g*0.587+bb*0.114; H.r[Math.min(B-1,r*B/256|0)]++; H.g[Math.min(B-1,g*B/256|0)]++; H.b[Math.min(B-1,bb*B/256|0)]++; H.v[Math.min(B-1,lv*B/256|0)]++; } HISTO=H; }catch(e){ HISTO=null; } }
+
+const mk=()=>document.createElement('canvas');
+let oa=mk(),ob=mk(),oc=mk(),ores=mk(),okc=mk();
+let ca=oa.getContext('2d'),cb=ob.getContext('2d'),cc=oc.getContext('2d'),cres=ores.getContext('2d'),ckc=okc.getContext('2d');
+function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), bw=bild.naturalWidth||1200, bh=bild.naturalHeight||1200, sc=Math.min(f.width/bw,f.height/bh);
+  const W=Math.max(1,Math.round(bw*sc)), H=Math.max(1,Math.round(bh*sc));
+  [lein,oa,ob,oc,ores,okc].forEach(c=>{ c.width=W; c.height=H; }); }
+
+const tri=ph=>4*Math.abs(((ph%1)+1)%1-0.5)-1;
+function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
+  for(let i=S.length-1;i>=0;i--){ const bt=S[i][0]; if(bt>t) continue; const dt=t-bt; if(dt>1.5) break; if(nurEins && S[i][1]!==1) continue; s+=Math.exp(-dt*abkling); }
+  return Math.min(1.5,s); }
+function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/Math.max(0.1,e.atempo||4))) : pulswert(t,e.abkling,e.nurEins); }
+function mische(a,b,x){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+  return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*x)).join(',')+')'; }
+function rgba(hex,a){ const p=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); return 'rgba('+p[0]+','+p[1]+','+p[2]+','+Math.max(0,Math.min(1,a))+')'; }
+function frisch(cx){ cx.setTransform(1,0,0,1,0,0); cx.globalAlpha=1; cx.globalCompositeOperation='source-over'; }
+/* Gradationskurve je Kontrast-Instanz als SVG-feComponentTransfer (rendert auch auf fremden Covern) */
+const kurvenraum=(()=>{ const s=document.createElementNS('http://www.w3.org/2000/svg','svg'); s.setAttribute('width','0'); s.setAttribute('height','0'); s.style.position='absolute'; document.body.appendChild(s); return s; })();
+const kurvenCache={};
+function tpv(mode,tone){ return mode==='sig'?-tone*10:Math.exp(tone*Math.log(4)); }
+function levJS(v,b,w,mode,tp){ v=Math.max(0,Math.min(1,(v-b)/Math.max(w-b,1e-4))); if(mode<0.5){ v=Math.pow(v,tp); } else { const k=Math.abs(tp); if(k>=1e-3){ const a=1/(1+Math.exp(0.5*k)),bb=1/(1+Math.exp(-0.5*k)); if(tp>0){ const sg=1/(1+Math.exp(-k*(v-0.5))); v=(sg-a)/(bb-a); } else { const y=a+v*(bb-a); v=0.5+(1/k)*Math.log(y/(1-y)); } } } return Math.max(0,Math.min(1,v)); }
+function levApply(g,x){ return levJS(x, g.bp, g.wp, g.modus==='sig'?1:0, tpv(g.modus,g.tonwert)); }
+function gradInit(e){ if(!e.grad) e.grad={ v:{bp:0,wp:1,modus:'sig',tonwert:0.55}, r:{bp:0,wp:1,modus:'gamma',tonwert:0}, g:{bp:0,wp:1,modus:'gamma',tonwert:0}, b:{bp:0,wp:1,modus:'gamma',tonwert:0} }; if(!e.kanal) e.kanal='v'; }
+function kurveFilter(e){ gradInit(e); let f=kurvenCache[e.id]; const ns='http://www.w3.org/2000/svg';
+  if(!f){ f=document.createElementNS(ns,'filter'); f.id='kurve'+e.id; const ct=document.createElementNS(ns,'feComponentTransfer'); ['feFuncR','feFuncG','feFuncB'].forEach(fn=>{ const el=document.createElementNS(ns,fn); el.setAttribute('type','table'); ct.appendChild(el); }); f.appendChild(ct); kurvenraum.appendChild(f); kurvenCache[e.id]=f; }
+  const N=33, m=e.grad.v, mk=chan=>{ const g=e.grad[chan],v=[]; for(let i=0;i<N;i++){ const x=i/(N-1); let y=levApply(g, levApply(m,x)); if(e.invert) y=Math.max(0,Math.min(1,2*x-y)); v.push(y.toFixed(3)); } return v.join(' '); };
+  f.querySelector('feFuncR').setAttribute('tableValues',mk('r')); f.querySelector('feFuncG').setAttribute('tableValues',mk('g')); f.querySelector('feFuncB').setAttribute('tableValues',mk('b')); return f.id; }
+
+function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source-over'; cx.globalAlpha=1;
+  if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/e.tempo)%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
+    cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
+  else if(e.typ==='licht'||e.typ==='schatten'){ const blitz=e.takt?(0.4+0.6*Math.min(1,pulswert(t,7,0))):1, r=e.groesse*Math.min(Wn,Hn), str=e.form==='rund'?1:e.streckung, ph=t/e.tempo+e.id*0.13;
+    let x,y,rot=0;
+    if(e.fuehrung==='schwenk'){ const px=Wn*e.dpx, py=Hn*e.dpy, ba=-Math.PI/2+Math.sin(2*Math.PI*ph)*e.schwenk, reach=Math.hypot(Wn,Hn)*0.55; x=px+Math.cos(ba)*reach; y=py+Math.sin(ba)*reach; rot=ba; }
+    else if(e.fuehrung==='bogen'){ const s=Math.sin(2*Math.PI*ph); x=Wn*(0.5+0.46*s); y=Hn*(0.18+e.bogen*0.62*s*s); }
+    else { x=Wn*(0.5+0.42*Math.sin(2*Math.PI*ph)); y=Hn*(0.5+0.42*Math.sin(2*Math.PI*(ph*1.3+e.id*0.2))); }
+    let rx=r,ry=r; if(e.form==='laeng'){rx=r*str;ry=r/Math.sqrt(str);} if(e.form==='strahl'){rx=r*str*1.6;ry=r/(str*1.4);}
+    const R=Math.max(rx,ry), kern=Math.max(0,1-e.weichheit), grad=cx.createRadialGradient(0,0,0,0,0,R);
+    grad.addColorStop(0,rgba(e.farbe,e.staerke*blitz)); if(kern>0&&kern<1) grad.addColorStop(kern,rgba(e.farbe,e.staerke*blitz*0.8)); grad.addColorStop(1,rgba(e.farbe,0));
+    cx.save(); cx.translate(x,y); cx.rotate(rot); cx.scale(rx/R,ry/R); cx.fillStyle=grad; cx.beginPath(); cx.arc(0,0,R,0,7); cx.fill(); cx.restore(); }
+  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*(e.flimmerTempo||20)*t+e.id*7)), bp=(e.takt?(0.4+0.6*Math.min(1,pulswert(t,7,0))):1)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI;
+    let ox,oy,dir; if(e.quelle==='fest'){ ox=Wn*e.ux; oy=Hn*e.uy; dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(t/e.tempo)*e.schwenk; } else { ox=Wn*(0.5+0.32*Math.sin(t/e.tempo*0.7+e.id)); oy=Hn*(0.5+0.32*Math.cos(t/e.tempo*0.9+e.id*1.3)); dir=t/e.tempo*1.3+e.id; }
+    cx.lineCap='round';
+    for(let i=0;i<n;i++){ const ang=dir+(n>1?(i/(n-1)-0.5):0)*spread, x1=ox+Math.cos(ang)*len, y1=oy+Math.sin(ang)*len;
+      const grad=cx.createLinearGradient(ox,oy,x1,y1); grad.addColorStop(0,rgba(e.farbe,e.staerke*bp)); grad.addColorStop(1,rgba(e.farbe,0));
+      cx.strokeStyle=grad; cx.lineWidth=Math.max(1,e.breite*40); cx.beginPath(); cx.moveTo(ox,oy); cx.lineTo(x1,y1); cx.stroke(); }
+    cx.fillStyle=rgba(e.farbe,e.staerke*bp); cx.beginPath(); cx.arc(ox,oy,e.breite*28+2,0,7); cx.fill(); }
+  else if(e.typ==='streifen'){ const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/e.tempo)%1)*per, bw=e.breite*per;
+    cx.save(); cx.translate(Wn/2,Hn/2); cx.rotate(ang);
+    for(let i=-1;i<=e.anzahl+1;i++){ const y=-diag/2+i*per+off; const grad=cx.createLinearGradient(0,y,0,y+bw);
+      grad.addColorStop(0,'rgba(255,255,255,0)'); grad.addColorStop(0.5,'rgba(255,255,255,'+Math.min(1,e.staerke)+')'); grad.addColorStop(1,'rgba(255,255,255,0)');
+      cx.fillStyle=grad; cx.fillRect(-diag/2,y,diag,bw); }
+    cx.restore(); }
+  else if(e.typ==='rauschen'){ const bp=e.takt?Math.min(1,pulswert(t,7,0)):1, K=Math.floor(e.koernung*bp*Wn*Hn/650);
+    for(let i=0;i<K;i++){ const x=Math.random()*Wn,y=Math.random()*Hn,v=Math.random(); cx.globalAlpha=(0.25+0.75*v)*Math.min(1,e.staerke); cx.fillStyle=v>.5?'#fff':'#000'; cx.fillRect(x,y,1.6,1.6); }
+    const D=Math.floor(e.ausfall*bp*26);
+    for(let i=0;i<D;i++){ const y=Math.random()*Hn,x=Math.random()*Wn,w=10+Math.random()*90; cx.globalAlpha=Math.min(1,e.staerke)*(0.5+0.5*Math.random()); cx.fillStyle=Math.random()<.7?'#fff':'#000'; cx.fillRect(x,y,w,1+Math.random()*2); }
+    cx.globalAlpha=1; }
+  else if(e.typ==='sicherung'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000),
+      env=u=>(u<0.15?u/0.15:1-(u-0.15)/0.85), zit=1-e.zittern*0.5*(0.5+0.5*Math.sin(2*Math.PI*37*t)); let amt=0;
+    if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i)<Math.min(1,e.haeufigkeit/10)){ const u=(t-S[i][0])/dauer; if(u>=0&&u<=1) amt=e.tiefe*env(u)*zit; } }
+    else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=e.tiefe*env(u)*zit; }
+    amt*=Math.min(1,e.staerke);
+    if(amt>0.003){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
+  else if(e.typ==='nebel'){ const n=e.dichte, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
+    const het=(e.het==null?.5:e.het);
+    for(let i=0;i<n;i++){ const sp=1+het*(hs(i+90)-0.5)*1.2, ph=t*sp/e.tempo+hs(i), x=Wn*(0.5+0.6*Math.sin(2*Math.PI*ph*0.9+i*1.7)), y=Hn*(e.lage+0.18*Math.sin(2*Math.PI*ph*0.6+i*2.3)),
+        r=e.groesse*Math.min(Wn,Hn)*(1-0.55*het+1.1*het*hs(i+50)), op=a*(1-0.6*het+1.2*het*hs(i+70));
+      const grad=cx.createRadialGradient(x,y,0,x,y,r); grad.addColorStop(0,rgba(e.farbe,0.28*op)); grad.addColorStop(0.6,rgba(e.farbe,0.10*op)); grad.addColorStop(1,rgba(e.farbe,0));
+      cx.fillStyle=grad; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } }
+  else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse, w=e.wind;
+    const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa; const streu=(e.farbstreu==null?0:e.farbstreu);
+    const farbeVon=(i,al)=>{ const x=streu*hs(i+6000); return 'rgba('+Math.round(pa[0]+(pb[0]-pa[0])*x)+','+Math.round(pa[1]+(pb[1]-pa[1])*x)+','+Math.round(pa[2]+(pb[2]-pa[2])*x)+','+al+')'; };
+    cx.lineCap='round';
+    /* Windstoss: auf einem zufaelligen Teil der Schlaege ein Stoss mit zufaelliger Richtung und Wucht, klingt ab. */
+    const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege; for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const h=hs(j+7000); if(h<0.35) continue; g+=(hs(j+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
+    for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
+      if(e.art==='schnee'){ const v=sp*e.tempo*Hn*0.06; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.7+i)*12+w*t*Hn*0.05)%Wn+Wn)%Wn; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); }
+      else if(e.art==='regen'){ const v=sp*e.tempo*Hn*0.6; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+w*t*Hn*0.3)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); }
+      else if(e.art==='asche'){ const v=sp*e.tempo*Hn*0.03; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.4+i*1.3)*20+w*t*Hn*0.04)%Wn+Wn)%Wn; cx.globalAlpha=a*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else { const v=sp*e.tempo*Hn*0.25; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*3+i*2.1)*6+w*t*Hn*0.1)%Wn+Wn)%Wn; const fl=0.5+0.5*Math.sin(t*23+i*5); cx.globalAlpha=a*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
+  else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
+    cx.globalCompositeOperation='multiply';
+    if(e.linien>0){ cx.globalAlpha=e.linien*a; cx.fillStyle=cx.createPattern(e._mc,'repeat'); cx.fillRect(0,0,Wn,Hn); }
+    if(e.vignette>0){ cx.globalAlpha=1; const R=Math.hypot(Wn,Hn)/2, vg=cx.createRadialGradient(Wn/2,Hn/2,R*0.45,Wn/2,Hn/2,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,'+(e.vignette*a).toFixed(3)+')'); cx.fillStyle=vg; cx.fillRect(0,0,Wn,Hn); }
+    if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*8*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
+    cx.globalAlpha=1; }
+  else if(e.typ==='strobe'){ const gate=e.takt?Math.min(1,pulswert(t,7,0)):1, ph=Math.sin(2*Math.PI*e.frequenz*t), amt=e.tiefe*Math.min(1,e.staerke)*gate;
+    if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>=0){ cx.globalCompositeOperation='lighter'; cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
+      else if((e.modus==='dunkel'||e.modus==='beides')&&ph<0){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(amt*(-ph))+')'; cx.fillRect(0,0,Wn,Hn); } } }
+  cx.globalCompositeOperation='source-over'; cx.globalAlpha=1;
+}
+
+function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
+  if(e.typ==='vlauf'){ const waag=(e.richtung==='links'||e.richtung==='rechts'), dir=(e.richtung==='hoch'||e.richtung==='links')?-1:1, L=waag?Wn:Hn;
+    let off=((t/e.tempo*dir)%1+1)%1*L; if(e.takt) off=(off+pulswert(t,6,0)*L*0.3)%L; off=((off%L)+L)%L; const bs=e.band*L;
+    if(waag){ cres.drawImage(srcCv,off-L,0); cres.drawImage(srcCv,off,0);
+      if(bs>0){ cres.fillStyle='rgba(0,0,0,.8)'; cres.fillRect(off-bs,0,bs,Hn); if(off-bs<0) cres.fillRect(off-bs+L,0,bs,Hn); } }
+    else { cres.drawImage(srcCv,0,off-L); cres.drawImage(srcCv,0,off);
+      if(bs>0){ cres.fillStyle='rgba(0,0,0,.8)'; cres.fillRect(0,off-bs,Wn,bs); if(off-bs<0) cres.fillRect(0,off-bs+L,Wn,bs); } } }
+  else if(e.typ==='wackeln'){ const bp=e.takt?Math.min(1,pulswert(t,7,0)):1, amp=e.amplitude*Wn*bp, B=e.baender, bh=Hn/B;
+    for(let i=0;i<B;i++){ const y=i*bh, dx=Math.sin(t*e.tempo+i*1.3)*amp+(Math.random()-.5)*amp*0.4*bp; cres.drawImage(srcCv,0,y,Wn,bh+1,dx,y,Wn,bh+1); } }
+  else if(e.typ==='rgb'){ const bp=pulsHub(e,t), hub=(e.invert?1-bp:bp), d=e.versatz*Wn*hub, rad=e.winkel*Math.PI/180, ox=Math.cos(rad)*d, oy=Math.sin(rad)*d;
+    cres.globalCompositeOperation='lighter';
+    const chans=[['#ff0000',ox,oy],['#00ff00',0,0],['#0000ff',-ox,-oy]];
+    for(const [mask,mx,my] of chans){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,0,0); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(0,0,Wn,Hn); frisch(ckc); cres.drawImage(okc,mx,my); }
+    frisch(cres); }
+  else if(e.typ==='nachzieh'){ if(!e._spur||e._spur.width!==Wn||e._spur.height!==Hn){ e._spur=document.createElement('canvas'); e._spur.width=Wn; e._spur.height=Hn; }
+    const d=e.versatz*Wn, rad=e.winkel*Math.PI/180;
+    cres.globalAlpha=e.nachhall; cres.drawImage(e._spur,Math.cos(rad)*d,Math.sin(rad)*d); cres.globalAlpha=1-e.nachhall; cres.drawImage(srcCv,0,0); cres.globalAlpha=1;
+    const sp=e._spur.getContext('2d'); frisch(sp); sp.clearRect(0,0,Wn,Hn); sp.drawImage(ores,0,0); }
+  else if(e.typ==='bloom'){ cres.filter='blur('+Math.round(e.radius)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
+}
+function postKette(posts,t,Wn,Hn){ let sCv=oa;
+  for(const e of posts){ const dCv=(sCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
+    ergebnis(e,sCv,t,Wn,Hn);
+    frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(sCv,0,0); dCx.globalCompositeOperation=(EFFEKTE[e.typ].postVerr)||'source-over'; dCx.globalAlpha=Math.min(1,e.staerke); dCx.drawImage(ores,0,0); dCx.globalAlpha=1; dCx.globalCompositeOperation='source-over';
+    sCv=dCv; }
+  return sCv;
+}
+
+
+function renderStapel(){
+  stapelBox.innerHTML='';
+  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Kein Effekt eingehängt.<br>Oben einen aus dem Vorrat wählen.</div>'; return; }
+  STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ];
+    const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'');
+    let h='<div class="tbs-kopf"><span class="tbs-pille"></span>'+ikon(e.typ)
+      +'<b>'+T.label+' <span class="tbs-id">· '+e.id+'</span><span class="tbs-chev">'+(e.zu?'▸':'▾')+'</span></b>'
+      +'<button class="tbs-knopf'+(soloId===e.id?' an':'')+'" data-tu="solo" title="nur diesen zeigen">◉</button>'
+      +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">↑</button>'
+      +'<button class="tbs-knopf" data-tu="runter" title="nach unten">↓</button>'
+      +'<button class="tbs-knopf" data-tu="weg" title="entfernen">×</button></div>';
+    h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
+    T.params.forEach(p=>{ if(p.when && !p.when(e)) return;
+      if(p.grad){ gradInit(e); const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=e.grad[e.kanal], cc=K[e.kanal][1];
+        h+='<div style="margin:8px 0 2px"><div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(k=>'<button data-kanal="'+k+'" class="'+(e.kanal===k?'on':'')+'" style="flex:1'+(e.kanal===k?';color:'+K[k][1]:'')+'">'+K[k][0]+'</button>').join('')+'</div>';
+        h+='<canvas class="tbs-grad-ed" width="447" height="276" data-farbe="'+cc+'" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
+        h+='<div class="tbs-seg" style="margin-top:6px"><button data-modus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button data-modus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
+        h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-tonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
+        h+='<div style="color:var(--schwach);font-size:10.5px">Marken unten = Schwarz-/Weißpunkt ziehen</div></div>'; return; }
+      if(p.rampe){ const ramp=(e.palette==='Eigen')?e.rampe:(PALETTEN[e.palette]||PALETTEN['Abendrot']); const stops=ramp.map((cc,i)=>cc+' '+Math.round(i/Math.max(1,ramp.length-1)*100)+'%').join(',');
+        h+='<div style="margin:8px 0 2px"><div class="tbs-rampe-bar" style="height:16px;border-radius:4px;border:1px solid var(--rand);background:linear-gradient(90deg,'+stops+')"></div>';
+        if(e.palette==='Eigen'){ h+='<div style="display:flex;gap:5px;margin-top:6px;flex-wrap:wrap;align-items:flex-start">';
+          e.rampe.forEach((cc,i)=>{ h+='<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px"><input type="color" data-ramp="'+i+'" value="'+cc+'" style="width:30px;height:22px;padding:0;border:1px solid var(--rand);border-radius:5px;background:var(--flaeche2);cursor:pointer">'+(e.rampe.length>2?'<button data-rampweg="'+i+'" class="tbs-knopf" style="width:30px;height:16px;font-size:10px">×</button>':'<span style="height:16px"></span>')+'</span>'; });
+          h+='<button data-rampplus="1" class="tbs-knopf" style="width:30px;height:22px;font-size:14px">+</button></div>'; }
+        h+='</div>'; return; }
+      if(p.farbe){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="color" data-k="'+p.k+'" value="'+e[p.k]+'"><span></span></div>'; }
+      else if(p.sel){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+p.sel.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
+      else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
+      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
+    });
+    h+='<div class="tbs-verr">';
+    if(T.art==='mal' && !T.keineVerr) h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+VERR.map(([v,l])=>'<option value="'+v+'"'+(e.verr===v?' selected':'')+'>'+l+'</option>').join('')+'</select></div>';
+    h+='<div class="tbs-regler"><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1.5" step="0.05" value="'+e.staerke+'"><span class="tbs-wert">'+Math.round(e.staerke*100)+'%</span></div>';
+    c.innerHTML=h+'</div></div>';
+    c.querySelector('.tbs-pille').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); };
+    c.querySelector('b').onclick=()=>{ e.zu=!e.zu; renderStapel(); };
+    c.querySelectorAll('[data-tu]').forEach(btn=>btn.onclick=()=>{ const w=btn.dataset.tu;
+      if(w==='weg'){ if(soloId===e.id) soloId=null; STAPEL.splice(idx,1); }
+      else if(w==='solo'){ soloId = (soloId===e.id ? null : e.id); }
+      else if(w==='hoch'&&idx>0){ const a=STAPEL[idx-1]; STAPEL[idx-1]=STAPEL[idx]; STAPEL[idx]=a; }
+      else if(w==='runter'&&idx<STAPEL.length-1){ const a=STAPEL[idx+1]; STAPEL[idx+1]=STAPEL[idx]; STAPEL[idx]=a; }
+      renderStapel(); });
+    c.querySelectorAll('[data-k]').forEach(inp=>inp.oninput=()=>{ const k=inp.dataset.k, p=T.params.find(x=>x.k===k);
+      e[k]= (inp.type==='range') ? +inp.value : inp.value;
+      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
+      if(p.sel&&k==='art') artFarben(e);
+      if(p.sel) renderStapel();
+    });
+    c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });   /* neu zeichnen: an Pillen haengen abhaengige Regler (when) */
+    const vs=c.querySelector('[data-verr]'); if(vs) vs.onchange=()=>{ e.verr=vs.value; };
+    const ss=c.querySelector('[data-staerke]'); if(ss) ss.oninput=()=>{ e.staerke=+ss.value; ss.parentElement.querySelector('.tbs-wert').textContent=Math.round(e.staerke*100)+'%'; };
+    const rbar=c.querySelector('.tbs-rampe-bar');
+    const rbau=()=>{ if(!rbar) return; const ramp=(e.palette==='Eigen')?e.rampe:(PALETTEN[e.palette]||[]); rbar.style.background='linear-gradient(90deg,'+ramp.map((cc,i)=>cc+' '+Math.round(i/Math.max(1,ramp.length-1)*100)+'%').join(',')+')'; };
+    c.querySelectorAll('[data-ramp]').forEach(inp=>inp.oninput=()=>{ e.rampe[+inp.dataset.ramp]=inp.value; rbau(); });
+    c.querySelectorAll('[data-rampweg]').forEach(b=>b.onclick=()=>{ e.rampe.splice(+b.dataset.rampweg,1); renderStapel(); });
+    const rp=c.querySelector('[data-rampplus]'); if(rp) rp.onclick=()=>{ e.rampe.push('#ffffff'); renderStapel(); };
+    const ged=c.querySelector('.tbs-grad-ed');
+    if(ged){ gradInit(e); const kg=ged.getContext('2d'), cc=ged.dataset.farbe, cur=()=>e.grad[e.kanal];
+      const zg=()=>{ const W=ged.width,H=ged.height; kg.clearRect(0,0,W,H);
+        if(HISTO&&HISTO[e.kanal]){ const hh=HISTO[e.kanal],B=hh.length; let mx=1; for(const q of hh) if(q>mx)mx=q; const lm=Math.log(1+mx),bw=W/B; kg.fillStyle=cc+'47'; for(let i=0;i<B;i++){ const q=Math.log(1+hh[i])/lm; if(q>0) kg.fillRect(i*bw,H-q*H,bw+0.6,q*H); } }
+        kg.strokeStyle='rgba(255,255,255,.08)'; kg.lineWidth=1; for(let gg=1;gg<4;gg++){ kg.beginPath(); kg.moveTo(W*gg/4,0); kg.lineTo(W*gg/4,H); kg.moveTo(0,H*gg/4); kg.lineTo(W,H*gg/4); kg.stroke(); }
+        kg.strokeStyle='rgba(255,255,255,.14)'; kg.beginPath(); kg.moveTo(0,H); kg.lineTo(W,0); kg.stroke();
+        const g=cur(); kg.strokeStyle=cc; kg.lineWidth=2; kg.beginPath(); for(let i=0;i<=80;i++){ const x=i/80,y=levApply(g,x),px=x*W,py=(1-y)*H; i?kg.lineTo(px,py):kg.moveTo(px,py); } kg.stroke();
+        const tri=(xx,col)=>{ const px=xx*W,cy=H-6; kg.fillStyle=col; kg.strokeStyle='#0a0a0c'; kg.lineWidth=1; kg.beginPath(); kg.moveTo(px,cy-7); kg.lineTo(px-5,cy+3); kg.lineTo(px+5,cy+3); kg.closePath(); kg.fill(); kg.stroke(); };
+        tri(g.bp,'#333'); tri(g.wp,'#eee'); };
+      zg();
+      let dh=null; const xf=ev=>{ const r=ged.getBoundingClientRect(); return Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width)); };
+      const setbpwp=x=>{ const g=cur(); if(dh==='bp') g.bp=Math.min(x,g.wp-0.02); else g.wp=Math.max(x,g.bp+0.02); zg(); };
+      ged.onpointerdown=ev=>{ ged.setPointerCapture(ev.pointerId); const x=xf(ev),g=cur(); dh=Math.abs(x-g.bp)<=Math.abs(x-g.wp)?'bp':'wp'; setbpwp(x); };
+      ged.onpointermove=ev=>{ if(dh) setbpwp(xf(ev)); };
+      ged.onpointerup=()=>{ dh=null; };
+      c.querySelectorAll('[data-kanal]').forEach(b=>b.onclick=()=>{ e.kanal=b.dataset.kanal; renderStapel(); });
+      c.querySelectorAll('[data-modus]').forEach(b=>b.onclick=()=>{ cur().modus=b.dataset.modus; renderStapel(); });
+      const tw=c.querySelector('[data-tonwert]'); if(tw) tw.oninput=()=>{ cur().tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); };
+    }
+    stapelBox.appendChild(c);
+  });
+}
+
+let bg='cover';
+function bgUI(){ if(!root) return; root.querySelectorAll('#tbs-bgseg button').forEach(b=>b.classList.toggle('on',b.dataset.bg===bg)); }
+
+/* Cover-Blätterer */
+
+function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); }
+function zeichneFrame(t){
+  if(!bereit) return;
+  const Wn=lein.width, Hn=lein.height, bw=bild.naturalWidth, bh=bild.naturalHeight;
+  let crop=1,panx=0,pany=0,scaleMul=1;
+  for(const e of STAPEL){ if(!aktiv(e))continue; const s=e.staerke;
+    if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/e.tempo)*e.weite*s; pany+=tri(t/(e.tempo*1.3))*e.weite*s; }
+    else if(e.typ==='puls'){ const hb=pulsHub(e,t), amt=e.wucht*s, z=e.invert?amt*(1-hb):amt*hb; scaleMul*=(1+z); }
+  }
+  const eff=Math.max(.1,Math.min(1,crop/scaleMul)), cw=bw*eff, ch=bh*eff;
+  const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
+  const sx=Math.max(0,Math.min(bw-cw,cx0-cw/2)), sy=Math.max(0,Math.min(bh-ch,cy0-ch/2));
+  frisch(ca); ca.clearRect(0,0,Wn,Hn);
+  if(bg!=='cover'){ ca.fillStyle= bg==='schwarz'?'#000': bg==='weiss'?'#fff':'#808080'; ca.fillRect(0,0,Wn,Hn); }
+  else { const sch=STAPEL.find(e=>aktiv(e)&&e.typ==='schaerfe');
+    if(sch){ const hb=pulsHub(sch,t), a=Math.min(1,sch.schlag*sch.staerke*hb);
+      if(!sch.invert){ ca.filter=sch.unschaerfe>0?('blur('+sch.unschaerfe+'px)'):'none'; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none';
+        if(a>0){ ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.globalAlpha=1; } }
+      else { ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn);
+        if(a>0&&sch.unschaerfe>0){ ca.filter='blur('+sch.unschaerfe+'px)'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; } } }
+    else ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn);
+    for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='kontrast')continue; const kb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*kb); if(a<=0)continue;
+      ca.filter='url(#'+kurveFilter(e)+')'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; }
+    for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='saettigung')continue; const sb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*sb); if(a<=0)continue;
+      ca.filter='saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; } }
+  for(const e of STAPEL){ if(!aktiv(e))continue; if(EFFEKTE[e.typ].art!=='mal')continue; malen(e,ca,t,Wn,Hn); }
+  frisch(ca);
+  const posts=STAPEL.filter(e=>aktiv(e)&&EFFEKTE[e.typ].art==='post');
+  const finalCv = posts.length ? postKette(posts,t,Wn,Hn) : oa;
+  frisch(g); g.clearRect(0,0,Wn,Hn); g.drawImage(finalCv,0,0);
+}
+
+
+  let bild=new Image(); let bereit=false;
+  bild.onload=()=>{ bereit=true; groesse(); histoRechnen(); };
+  /* Zeit: der Player ist die einzige Audioquelle. */
+  const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05) return audio.currentTime; }catch(e){} const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
+  function presetJSON(){ return JSON.stringify(STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_')))); }
+  function presetSetzen(arr){ STAPEL=arr.map(r=>({...r,id:++nr,zu:false})); renderStapel(); }
+  function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
+  async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
+      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert \u00b7 '+s.length+' Zeichen \u2014 der Titel malt es jetzt live'); lebendNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
+  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); lebendNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
+  function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea') return; const k=ev.key.toLowerCase();
+    if(ev.key==='Escape'){ schliessen(); return; }
+    if(k==='s'){ bg=bg==='schwarz'?'cover':'schwarz'; bgUI(); } else if(k==='w'){ bg=bg==='weiss'?'cover':'weiss'; bgUI(); } else if(k==='g'){ bg=bg==='grau'?'cover':'grau'; bgUI(); } }
+  function bauen(){
+    root=document.createElement('div'); root.id='tbs'; root.hidden=true;
+    root.innerHTML=
+      '<div id="tbs-kasten">'
+      +'<div id="tbs-kopf"><h3>Titelbild-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
+      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
+      +'<div class="tbs-zeile"><span class="tbs-lbl">Grund</span><div class="tbs-seg" id="tbs-bgseg"><button data-bg="cover" class="on" title="Das Titelbild des Songs">Cover</button><button data-bg="schwarz" title="Schwarz - zeigt nur die Lichter (Taste s)">S</button><button data-bg="grau" title="Grau - neutraler Grund (Taste g)">G</button><button data-bg="weiss" title="Wei\u00df - zeigt nur die Schatten (Taste w)">W</button></div>'
+      +'<select class="tbs-wahl" id="tbs-preset" title="Fertige Kombinationen als Ausgangspunkt"><option value="">\u2014 Preset w\u00e4hlen \u2014</option></select></div>'
+      +'<div class="tbs-reihe"><button id="tbs-wuerfeln" title="Alle Regler der eingeh\u00e4ngten Effekte zuf\u00e4llig setzen">W\u00fcrfeln</button><button id="tbs-neu" title="Fahrt, Zoom, Farbschleier, Scheinwerfer - die Grundausstattung">Grundzustand</button><button id="tbs-alleAn" title="Alle Effekte einschalten und Solo aufheben">Alle an</button><button id="tbs-klapp" title="Alle Karten zu- oder aufklappen">Einklappen</button></div>'
+      +'<div class="tbs-zeile"><span class="tbs-lbl">Rezept</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Das Rezept beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Rezept vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
+      +'<div id="tbs-pStatus" class="tbs-unter"></div>'
+      +'<div class="tbs-vorrat"><div class="tbs-titel">Effekt einh\u00e4ngen</div><div id="tbs-vorrat"></div></div>'
+      +'<div id="tbs-stapel"></div>'
+      +'<div class="tbs-unter" style="margin-top:10px">L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>s</kbd><kbd>w</kbd><kbd>g</kbd> Grund \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div>'
+      +'</div></div></div>';
+    document.body.appendChild(root);
+    root.onclick=(ev)=>{ if(ev.target===root) schliessen(); };
+    $('#tbs-zu').onclick=schliessen;
+    $('#tbs-spiel').onclick=()=>{ if(typeof spielenNachId==='function') spielenNachId(songId); };
+    lein=$('#tbs-lein'); g=lein.getContext('2d');
+    stapelBox=$('#tbs-stapel');
+    const psel=$('#tbs-preset');
+    Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
+    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); renderStapel(); } psel.value=''; };
+    const vorrat=$('#tbs-vorrat');
+    const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">+ Effekt w\u00e4hlen \u2026</option>';
+      EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return; h+='<optgroup label="'+gname+'">'+da.map(x=>'<option value="'+x+'">'+EFFEKTE[x].label+'</option>').join('')+'</optgroup>'; });
+      vorrat.innerHTML=h+'</select>';
+      vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ STAPEL.push(neuerEffekt(x)); renderStapel(); } ev.target.value=''; }; };
+    bauVorrat();
+    $('#tbs-wuerfeln').onclick=()=>{ STAPEL.forEach(e=>{ const T=EFFEKTE[e.typ];
+  T.params.forEach(p=>{ if(p.rampe||p.grad) return; if(p.farbe) e[p.k]='#'+[0,0,0].map(()=>('0'+Math.floor(Math.random()*256).toString(16)).slice(-2)).join('');
+    else if(p.sel) e[p.k]=p.sel[Math.floor(Math.random()*p.sel.length)][0];
+    else if(p.tog) e[p.k]=Math.random()<.5?1:0;
+    else e[p.k]=+(p.min+Math.random()*(p.max-p.min)).toFixed(3); });
+  if(T.art==='mal'&&!T.keineVerr) e.verr=VERR[Math.floor(Math.random()*VERR.length)][0];
+  e.staerke=+(0.4+Math.random()*1.1).toFixed(2);
+}); renderStapel(); };
+    $('#tbs-alleAn').onclick=()=>{ soloId=null; STAPEL.forEach(e=>e.an=true); renderStapel(); };
+    $('#tbs-klapp').onclick=()=>{ const auf=STAPEL.some(e=>!e.zu); STAPEL.forEach(e=>e.zu=auf); $('#tbs-klapp').textContent=auf?'Ausklappen':'Einklappen'; renderStapel(); };
+
+    $('#tbs-neu').onclick=grundzustand;
+    $('#tbs-pSave').onclick=sichern;
+    $('#tbs-pDrop').onclick=loesen;
+    root.querySelectorAll('#tbs-bgseg button').forEach(b=>b.onclick=()=>{ bg=b.dataset.bg; bgUI(); });
+    window.addEventListener('resize',()=>{ if(offen) groesse(); });
+    document.addEventListener('keydown',tasten);
+  }
+  async function oeffnen(id, cb){
+    if(!root) bauen();
+    songId=id; nachSichern=cb||null; soloId=null; bg='cover';
+    /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
+       groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
+    root.hidden=false; offen=true; if(g&&lein) g.clearRect(0,0,lein.width,lein.height);
+    let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
+    DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
+    PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
+    $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
+    bereit=false; bild.src=(typeof artworkBild==='function')?artworkBild(id):('/media/'+id+'/cover.jpg');
+    let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
+    if(Array.isArray(rezept)&&rezept.length){ presetSetzen(rezept); pStat('Rezept des Titels geladen'); } else { grundzustand(); pStat('noch kein Rezept beim Titel'); }
+    bgUI(); t0=performance.now();
+    if(!bereit && bild.complete && bild.naturalWidth>0){ bereit=true; histoRechnen(); }   /* gleiche Adresse wie zuvor: load kam evtl. schon */
+    groesse();
+    cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
+  }
+  function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0; }
+  /* ---- Lebendbild: das Rezept live auf Kachel und Buehne malen --------
+     Ein Maler je Ziel (eigene Leinwand, eigene Puffer, eigener Stapel);
+     EINE Schleife malt alle, solange es welche gibt, und endet von selbst.
+     Die Engine arbeitet auf den Modulvariablen - fuer jeden Maler werden
+     sie umgehaengt und danach fuers Studio wieder zurueckgestellt. Zeit:
+     der Player, wenn er diesen Titel spielt (eine Audioquelle). */
+  const lebende=[]; let lebendRaf=0, gemerkt=null; const songCache={};
+  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,bg,soloId,pal:PALETTEN['Cover-Akzente']});
+  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,bg,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
+  async function songDaten(id){ if(songCache[id]) return songCache[id];
+    let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
+    let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
+    const DATA2={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
+    return songCache[id]={ DATA:DATA2, rezept:(Array.isArray(rezept)?rezept:[]), pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
+  const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
+  function lebendAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-lebend')) return;
+    const cv=document.createElement('canvas'); cv.className='tbs-lebend'; kasten.appendChild(cv);
+    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(), bild:new Image(), bereit:false, STAPEL:[], DATA:null, bg:'cover', soloId:null, pal:null, t0:performance.now() };
+    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d');
+    lebende.push(m);
+    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.STAPEL=d.rezept.map(r=>({...r,id:++nr,zu:false}));
+      m.bild.onload=()=>{ const bw=m.bild.naturalWidth||1,bh=m.bild.naturalHeight||1, dpr=Math.min(2,window.devicePixelRatio||1), W=Math.min(720,Math.max(64,Math.round((kasten.clientWidth||300)*dpr))), H=Math.max(1,Math.round(W*bh/bw));
+        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true; };
+      m.bild.src=(typeof artworkBild==='function')?artworkBild(id):('/media/'+id+'/cover.jpg'); });
+    if(!lebendRaf) lebendRaf=requestAnimationFrame(lebendTick); }
+  function lebendAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-lebend'); if(!cv) return; cv.remove(); const i=lebende.findIndex(m=>m.canvas===cv); if(i>=0) lebende.splice(i,1); }
+  function lebendZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05) return audio.currentTime; }catch(e){} const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
+  function lebendTick(){
+    for(let i=lebende.length-1;i>=0;i--) if(!lebende[i].canvas.isConnected) lebende.splice(i,1);
+    if(!lebende.length){ lebendRaf=0; return; }
+    lebendRaf=requestAnimationFrame(lebendTick);
+    gemerkt=bundel();
+    for(const m of lebende){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(lebendZeit(m)); }
+    setzen(gemerkt); gemerkt=null; }
+  /* Nach Sichern/Loesen: Vorrat vergessen und laufende Maler dieses Titels
+     abwerfen - die App haengt sie ueber markieren() frisch wieder ein. */
+  function lebendNeu(id){ delete songCache[id]; lebende.filter(m=>m.songId===id).forEach(m=>lebendAus(m.kasten)); }
+  return { oeffnen, schliessen, lebendAn, lebendAus, lebendNeu };
+})();
+
 </script>
 </body>
 </html>

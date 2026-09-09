@@ -2242,3 +2242,63 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
   "Mobiler KlangTresor" in docs/handbuch/SKIZZEN.md (Kapitel noch nicht
   geschrieben, der HTML-Entwurf des Agenten liegt im Scratchpad).
 
+
+## Titelbild-Studio (09.09.2026, Abend)
+
+**Was es ist.** Das dynamische Titelbild als Rezept am Song: `library/songs/<id>/eigen-effekt.json`
+(viertes Eigenes neben eigen.mp4/jpg/mp3, gleicher `eigen-artwork`-Weg). Die App malt es live —
+kein Video wird gebacken (Caspar_D: „Preset an den Titel gebunden … schneller zu ändern, weniger Datenflut").
+
+**Stand.** Station A (Server: Index meldet `effekt`, PUT `application/json`, DELETE `?was=effekt`) und
+Station B (Modul `const TitelbildStudio` am Ende des Hauptskripts, Klassen/IDs `tbs-`, Overlay wie `#wer`,
+Knopf als viertes Feld `#capartstudio` in der Abzeichen-Karte) sind eingebaut; Parse aller Inline-Skripte
+und Rauchtest im Scratch ok. Schnappschüsse: `.schnappschuss/index.html.vor-titelbildstudio`,
+`.schnappschuss/server.js.vor-titelbildstudio`.
+
+**Offen — Station C.** Live-Malen auf Kachel und Bühne, wenn `_eigenArt[id].effekt`: Canvas analog zu
+`bewegtAn()` (video.bewegt) in den `.bild`-Kasten, Zeit aus `audio.currentTime` (eine Audioquelle),
+Schläge per `/api/song/<id>`. Danach Hausregeln 9–13 der Studio-Durchsicht (Haus-Gradationswerkzeug,
+`#tipp`, Pille-Spezifität, Kosten am Knopf, Panel nachmessen).
+
+**Design-Labor** bleibt der Scratch `bewegt-proto.html` (Port 18811, lokale Cover-Kopien → Histogramm).
+
+**Nachtrag (später am Abend).** Station C ist eingebaut: `hatLebendbild(s)`, Hausfunktionen `lebendAn/lebendAus`
+(rufen ins Leere, bis das Modul am Skriptende steht — Modul ist deshalb `var`), Anschlüsse in `markieren()`,
+Raster-Hover, `bewegtAufraeumen()`, `darstellungAufbauen()` (Bühne). Lebendbild hat Vorrang vor Video. Der
+Einbau ist ein wiederholbares Skript (`scratchpad/einbau.py`, vom Schnappschuss aus). Offen: Abnahme durch
+Caspar_D in der App; danach Hausregeln 9–13 (Haus-Gradationswerkzeug, `#tipp`, Pille-Spezifität, Panel nachmessen).
+
+**Nach der ersten Abnahme (Caspar_D):** freie Uhr kreist über die Liedlänge (Puls hört nicht mehr auf), Knopf
+**„▶ Titel abspielen"** im Studio-Kopf ruft `spielenNachId(id)` (Haus-Player), Pult 460 px / Kasten 1320 px ohne
+Knopf-Umbrüche, Gradationskurve im goldenen Rechteck `447:276` (= `GRAD_MASSE`), neuer Effekt **Schatten**
+(Gegenstück zum Scheinwerfer, Verrechnung Multiplizieren) in den Läufen. Einbau weiterhin über `scratchpad/einbau.py`.
+
+**Lehre (09.09.2026, spät):** Ein Overlay mit Leinwand **erst zeigen, dann das Bild laden.** Ein Cover aus dem
+Browser-Vorrat lädt sofort; misst `groesse()` dann ein noch unsichtbares Feld (0×0), schrumpft die Leinwand auf
+1×1 und bleibt schwarz. Im Studio behoben (`oeffnen()`: zeigen → laden → `groesse()`; Riegel in der Schleife).
+
+**Grundsatz (Caspar_D, 09.09.2026):** „Man muss die ganzen Effekte subtil und nicht plump anwenden, dann ist es
+richtig gut." Der Schatten wirkt, *weil* er kaum da ist. Beim Feinschliff der Voreinstellungen/Presets beachten.
+
+**Neu (09.09.2026, spät):** Effekt **Sicherungswackeln** (Gruppe Blitze, Gegenteil vom Stroboskop): kurze
+unregelmäßige Helligkeitseinbrüche mit Zittern, frei (Häufigkeit je 10 s) oder im Takt (nur ein zufälliger Teil der
+Schläge, deterministisch aus Schlag-Index). Aus der Liste „Neue Effekte" noch offen: Theaternebel, Partikel
+(Schnee/Regen/Asche/Funken), Nachzieheffekt, Bloom/Halation, Scanlines/CRT.
+
+**Batch H (09.09.2026, Nacht):** fünf neue Effekte — Theaternebel (Läufe), Partikel Schnee/Regen/Asche/Funken (eigene
+Gruppe), Scanlines/Röhre, Bloom/Halation, Nachzieheffekt (Anmutung). Pipeline: Post-Effekte mit eigener Verrechnung
+(`postVerr`, Bloom = Screen), Arbeitsflächen `_spur`/`_mc` bleiben aus dem Rezept (presetJSON filtert `_`).
+**Leise Voreinstellungen** (`staerkeDef` je Typ, lautere Parameter runter) nach Caspar_Ds „subtil, nicht plump".
+Presets nachgestimmt, neu: „Kaum da", „Nachtfahrt", und aus dem Bestand wertgenau „Nur Atem" (Still you laugh:
+Sigmoidal, Tonwert −1, Weißpunkt 0,44, Atem) und „Schatten und Schlag" (Bei mir klingelt keiner: Sättigungs-Schlag +
+Schatten + Unschärfe-Schlag, zwei stille Lichter aus). Stärke-Zeile im Verrechnungsblock 3-spaltig (Wert neben Balken).
+Damit ist die Liste „Neue Effekte" abgearbeitet; Hausregeln 9–13 sind durch die Bauweise erfüllt.
+
+**Nachtrag:** Theaternebel hat einen **Heterogenität**-Regler (Streuung von Größe, Dichte und Tempo je Schwade,
+deterministisch); Partikel haben **Windstöße im Takt** (Pille) mit **Böenstärke** (nur sichtbar, wenn an): auf einem
+zufälligen Teil der Schläge ein abklingender Stoß mit zufälliger Richtung/Wucht aus dem Schlag-Index, Regenstriche kippen mit.
+
+**Nachtrag (10.09.2026):** Partikel haben eine **Farbspanne** („Farbe" bis „Farbe bis") mit **Farbheterogenität**;
+jedes Teilchen zieht seinen Ton deterministisch aus der Spanne. Beim Wechsel der Art setzt `ART_FARBEN` passende Farben
+(Funken rot→gelb 0,85; Asche grau→dunkel 0,6; Schnee/Regen weiß mit kaltem Hauch), aber nur, solange die Farben noch
+die der vorigen Art sind — eigene bleiben (`_artVor` merkt die vorige Art, wandert nicht ins Rezept).
