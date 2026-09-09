@@ -36,10 +36,26 @@
  *
  * DER LAUF SCHREIBT MIT: library/export-lauf.json, fortlaufend, damit
  * die Oberfläche (GET /api/export/stand) zusehen kann:
- *   { laeuft, seit, pid, schritt, zeilen: [...], fertig, fehler, ergebnis }
+ *   { laeuft, seit, pid, schritt, zielDateisystem, fortschritt, zeilen: [...], fertig, fehler, ergebnis }
  *   fertig = true nur bei gutem Ende; ein Abbruch lässt fertig = false
  *   und schreibt den Grund nach fehler. ergebnis =
  *   { dateien, bytes, dauerS, probestart: "ok" | "fehlgeschlagen: ..." | "übersprungen" }
+ *   fortschritt (Caspar_D, 09.09.2026: ein Balken mit Restzeit, nicht nur
+ *   eine Prozentzahl) = null zwischen den Schritten, sonst
+ *   { prozent, was: "Programm" | "Daten" | "Musik" | "Node",
+ *     bytesGesamt, bytesFertig, bytesProSekunde, restS,
+ *     dateienGesamt, dateienFertig }
+ *   bytesGesamt kommt aus einer Vorabmessung je rsync-Schritt (Trockenlauf
+ *   mit --stats, "Total transferred file size" - dauert Sekunden, dafür
+ *   stimmt der Balken); bytesProSekunde ist gleitend über die letzten
+ *   zehn Sekunden, restS daraus gerechnet. Bei Musik/ zählt der Anteil
+ *   der Dateien. Höchstens viermal je Sekunde geschrieben.
+ *
+ * DAS MEDIUM: vor dem ersten Byte steht das Dateisystem des Ziels im
+ * Protokoll (aus der mount-Ausgabe). Zwei Fälle brechen ab, bevor
+ * etwas halb Kopiertes liegt (Caspar_D, 09.09.2026): FAT32 ("msdos")
+ * kennt keine Datei über 4 GB - mit Stems wäre eine dabei; NTFS hängt
+ * der Mac nur lesend ein.
  *
  * DER PROBESTART: am Ende wird das ZIEL angelaufen, so wie es der Stick
  * täte - Programm/server/server.js --eingefroren auf einem freien Port
@@ -79,7 +95,7 @@ if (!zielRoh) {
 const ZIEL = path.resolve(zielRoh);
 
 /* ---------------------------------------------------------------- Mitschrift */
-const lauf = { laeuft: true, seit: new Date(START).toISOString(), pid: process.pid, probe, stems, ziel: ZIEL,
+const lauf = { laeuft: true, seit: new Date(START).toISOString(), pid: process.pid, probe, stems, ziel: ZIEL, zielDateisystem: null,
                schritt: '', fortschritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
 let zuletztGeschrieben = 0;
 function laufSchreiben(erzwingen) {
@@ -102,6 +118,41 @@ function zeile(text) {
   laufSchreiben(true);
 }
 function schritt(name) { lauf.schritt = name; lauf.fortschritt = null; zeile('» ' + name); }
+
+/* DAS TEMPO, GLEITEND. Caspar_D, 09.09.2026: die Restzeit soll nicht
+   bei jedem Ruckeln des Sticks springen - deshalb der Durchschnitt über
+   die letzten zehn Sekunden, nicht die Momentanzahl von rsync. Ein
+   Messer je Schritt: fuettern(bytesFertig) gibt Bytes je Sekunde oder
+   null, solange keine Sekunde gemessen ist. */
+function tempoMesser() {
+  const proben = [];
+  return (bytesFertig) => {
+    const t = Date.now();
+    proben.push({ t, b: bytesFertig });
+    while (proben.length > 1 && t - proben[0].t > 10000) proben.shift();
+    const dt = (t - proben[0].t) / 1000;
+    return dt >= 1 ? Math.max(0, Math.round((bytesFertig - proben[0].b) / dt)) : null;
+  };
+}
+/* Der Fortschritt eines Schritts in die Mitschrift: mess = { was, gesamt,
+   dateienGesamt, tempo } ist der Rahmen, fertig = { bytes, dateien, prozent }
+   der Stand. prozent kommt aus den Bytes, wo die Summe bekannt ist, sonst
+   aus dem, was rsync selbst meldet (im Trockenlauf gibt es keine Vorabmessung). */
+function fortschritt(mess, fertig) {
+  const gesamt = mess.gesamt || null;
+  const bytesFertig = fertig.bytes || 0;
+  const tempo = mess.tempo ? mess.tempo(bytesFertig) : null;
+  const prozent = fertig.prozent != null ? fertig.prozent : (gesamt ? Math.min(100, Math.round(100 * bytesFertig / gesamt)) : 0);
+  lauf.fortschritt = {
+    prozent, was: mess.was,
+    bytesGesamt: gesamt, bytesFertig,
+    bytesProSekunde: tempo,
+    restS: (gesamt && tempo) ? Math.max(0, Math.round((gesamt - bytesFertig) / tempo)) : null,
+    dateienGesamt: mess.dateienGesamt != null ? mess.dateienGesamt : null,
+    dateienFertig: fertig.dateien != null ? fertig.dateien : null,
+  };
+  laufSchreiben(false);
+}
 function abbruch(grund) {
   lauf.laeuft = false; lauf.fertig = false; lauf.fehler = String(grund && grund.message || grund);
   lauf.schritt = 'abgebrochen';
@@ -144,6 +195,86 @@ console.log(`\n  ${probe ? 'Probe (nichts wird ins Ziel geschrieben)' : 'Archiv-
 console.log(`  ${eigene.length} Titel von ${anzeigename} (@${handle})${stems ? ', mit Stems' : ', ohne Stems'}, ohne WAV\n`);
 laufSchreiben(true);
 
+/* ---------------------------------------------------------------- Das Medium */
+/* Welches Dateisystem unter dem Ziel liegt, sagt die mount-Ausgabe: auf
+   dem Mac "/dev/disk2s1 on /Volumes/INTENSO (exfat, local, ...)", unter
+   Linux "/dev/sdb1 on /media/x/STICK type vfat (rw,...)". Den
+   Einhängepunkt nennt df - nicht die längste passende mount-Zeile: auf
+   dem Mac liegt /Users über einen Firmlink auf /System/Volumes/Data, und
+   die Präfixsuche fände das versiegelte "/" (apfs, read-only) - ein
+   Export auf den Schreibtisch bräche dann grundlos ab (09.09.2026, beim
+   Prüfen gesehen). Die Präfixsuche bleibt als Rückfall, wenn df schweigt.
+   Gefragt wird nach dem nächsten Ordner, den es schon gibt - das Ziel
+   selbst gibt es beim ersten Export noch nicht. */
+function dateisystemVon(pfad) {
+  let da = pfad; while (da !== path.dirname(da) && !fs.existsSync(da)) da = path.dirname(da);
+  let punktDf = null;
+  { const df = (spawnSync('df', ['-P', da], { encoding: 'utf8' }).stdout || '').trim().split('\n').pop() || '';
+    const m = df.match(/^(.*?)\s+\d+\s+\d+\s+\d+\s+\d+%\s+(.+?)\s*$/); if (m) punktDf = m[2]; }
+  const aus = (spawnSync('mount', [], { encoding: 'utf8' }).stdout || '');
+  let bester = null;
+  for (const z of aus.split('\n')) {
+    const m = z.match(/^(.+?) on (.+?)(?: type (\S+))? \(([^)]*)\)\s*$/);
+    if (!m) continue;
+    const punkt = m[2];
+    if (punktDf ? punkt !== punktDf : (pfad !== punkt && !pfad.startsWith(punkt.endsWith('/') ? punkt : punkt + '/'))) continue;
+    if (bester && bester.pfad.length >= punkt.length) continue;
+    const optionen = m[4].split(',').map(o => o.trim().toLowerCase());
+    bester = { geraet: m[1], pfad: punkt, dateisystem: (m[3] || optionen[0] || '').toLowerCase(),
+               nurLesen: optionen.includes('read-only') || optionen.includes('ro') };
+  }
+  return bester;
+}
+/* Was über 4 GB wäre, darf auf FAT32 nicht mit - dieselben Ausschlüsse
+   wie beim rsync von library/ weiter unten (WAV nie, Stems nur mit
+   --stems, roh/, backup/, node-portabel/, suno-wege/, kondensate/arbeit/,
+   modelle/ nie). Nur gerufen, wenn das Ziel FAT32 ist. */
+function zuGrosseDateien(grenze) {
+  const treffer = [];
+  const aussen = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle'].map(n => path.join(LIB, n)));
+  aussen.add(path.join(LIB, 'kondensate', 'arbeit'));
+  const gehe = (d) => {
+    let e = []; try { e = fs.readdirSync(d, { withFileTypes: true }); } catch (x) { return; }
+    for (const x of e) {
+      const f = path.join(d, x.name);
+      const imSong = path.dirname(d) === SONGS;
+      if (x.isDirectory()) {
+        if (aussen.has(f)) continue;
+        if (!stems && imSong && x.name === 'stems') continue;
+        gehe(f);
+      } else if (x.isFile()) {
+        if (imSong && x.name === 'audio.wav') continue;
+        let groesse = 0; try { groesse = fs.statSync(f).size; } catch (y) {}
+        if (groesse > grenze) treffer.push({ pfad: path.relative(LIB, f), bytes: groesse });
+      }
+    }
+  };
+  gehe(LIB);
+  return treffer;
+}
+{
+  const medium = dateisystemVon(ZIEL);
+  if (!medium) zeile('Ziel: Dateisystem nicht ermittelt (kein Einhängepunkt in der mount-Ausgabe passt)');
+  else {
+    lauf.zielDateisystem = medium.dateisystem;
+    zeile(`Ziel liegt auf ${medium.pfad} (${medium.dateisystem}${medium.nurLesen ? ', nur lesen' : ''})`);
+    const ntfs = medium.dateisystem.startsWith('ntfs');     /* Linux nennt es ntfs3 */
+    if (ntfs && medium.nurLesen && process.platform === 'darwin') abbruch('NTFS ist auf dem Mac nur lesbar - der Stick müsste als exFAT formatiert werden');
+    if (medium.nurLesen) abbruch(`Das Ziel ist nur lesbar eingehängt (${medium.pfad}, ${medium.dateisystem})`);
+    if (ntfs && process.platform === 'darwin') zeile('   NTFS ist hier beschreibbar (fremder Treiber) - der Export läuft, aber ohne Gewähr');
+    if (medium.dateisystem === 'msdos' || medium.dateisystem === 'vfat' || medium.dateisystem === 'fat32') {
+      const GRENZE = 4 * 1073741824 - 1;
+      const gross = zuGrosseDateien(GRENZE);
+      if (gross.length) {
+        const liste = gross.slice(0, 3).map(g => `${g.pfad} (${(g.bytes / 1073741824).toFixed(1)} GB)`).join(', ');
+        abbruch(`FAT32 kennt keine Datei über 4 GB - ${gross.length} wären dabei: ${liste}${gross.length > 3 ? ' …' : ''}` +
+                (stems && gross.every(g => /(^|\/)stems\//.test(g.pfad)) ? '. Ohne --stems ginge es, oder den Stick als exFAT formatieren' : '. Den Stick als exFAT formatieren'));
+      }
+      zeile('   FAT32: keine Datei über 4 GB dabei, es kann losgehen');
+    }
+  }
+}
+
 /* ---------------------------------------------------------------- rsync */
 /* Ohne -p/-o/-g: der Stick ist exFAT oder FAT32 und kennt weder Rechte
    noch Besitzer - rsync -a endete dort mit "chmod failed" und Exit 23.
@@ -152,19 +283,32 @@ laufSchreiben(true);
    fehlt; --delete-excluded auch das, was inzwischen ausgeschlossen ist
    (eine WAV von einem früheren Export). */
 const BEIFANG = ['--exclude', '._*', '--exclude', '.DS_Store', '--exclude', '.git', '--exclude', '.git*', '--exclude', '*.lock', '--exclude', '*.tmp'];
-function rsync(quelle, ziel, zusatz) {
+/* --info=progress2 meldet den ganzen Lauf statt jeder Datei; dazu gehört
+   --no-inc-recursive, sonst kennt rsync die Summe erst am Ende und die
+   Prozentzahl liefe rückwärts (Caspar_D, 09.09.2026). Die Zeile kommt
+   mit \r auf dieselbe Stelle: "  1,234,567  45%   12.34MB/s    0:01:23 (xfr#12, to-chk=100/2000)".
+   mess = { was, gesamt, vorher, tempo }: der Rahmen für die Mitschrift -
+   gesamt aus der Vorabmessung, vorher = Bytes, die frühere rsyncs
+   desselben Schritts schon geschafft haben (Programm/ sind fünf Aufrufe,
+   ein Balken). Ohne mess läuft rsync stumm - der Trockenlauf der Messung. */
+function rsync(quelle, ziel, zusatz, mess, trocken) {
   return new Promise((aufloesen, verwerfen) => {
-    const argv = ['-rtL', '--modify-window=2', '--delete', '--delete-excluded', '--stats', '--info=progress2',
-                  ...(probe ? ['--dry-run'] : []), ...BEIFANG, ...(zusatz || []), quelle + '/', ziel + '/'];
-    if (!probe) fs.mkdirSync(ziel, { recursive: true });
+    const argv = ['-rtL', '--modify-window=2', '--delete', '--delete-excluded', '--stats', '--info=progress2', '--no-inc-recursive',
+                  ...((probe || trocken) ? ['--dry-run'] : []), ...BEIFANG, ...(zusatz || []), quelle + '/', ziel + '/'];
+    if (!probe && !trocken) fs.mkdirSync(ziel, { recursive: true });
     const k = spawn('rsync', argv, { stdio: ['ignore', 'pipe', 'pipe'] });
     let aus = '', fehler = '', rest = '';
     k.stdout.setEncoding('utf8');
     k.stdout.on('data', (d) => {
       aus += d;
-      /* progress2 schreibt mit \r auf dieselbe Zeile: "  1,234,567  45%  12MB/s  0:00:12 (xfr#12, to-chk=100/2000)" */
+      if (!mess) return;
       const teile = (rest + d).split(/[\r\n]/); rest = teile.pop();
-      for (const t of teile) { const m = t.match(/\s(\d+)%\s/); if (m) { lauf.fortschritt = { prozent: +m[1], was: path.basename(ziel) }; laufSchreiben(false); } }
+      for (const t of teile) {
+        const m = t.match(/^\s*([\d,.]+)\s+(\d+)%\s/);
+        if (!m) continue;
+        const hier = +m[1].replace(/[,.]/g, '');
+        fortschritt(mess, { bytes: (mess.vorher || 0) + hier, prozent: mess.gesamt ? null : +m[2] });
+      }
     });
     k.stderr.setEncoding('utf8'); k.stderr.on('data', (d) => { fehler += d; });
     k.on('error', verwerfen);
@@ -177,6 +321,21 @@ function rsync(quelle, ziel, zusatz) {
                   bytes: zahl('Total file size'), bytesUebertragen: zahl('Total transferred file size') });
     });
   });
+}
+/* DIE VORABMESSUNG: ein Trockenlauf je rsync-Schritt, "Total transferred
+   file size" ist dann die Summe, gegen die der Balken läuft. Kostet
+   Sekunden (rsync muss beide Seiten einmal ansehen), spart aber den
+   Balken, der bei 100 % noch eine Stunde weiterläuft. In der Probe
+   entfällt sie - die Probe IST der Trockenlauf. Rückgabe: Bytes je
+   Aufruf, in derselben Reihenfolge wie die Paare. */
+async function vorabmessen(paare) {
+  if (probe) return paare.map(() => 0);
+  const ab = Date.now();
+  const summen = [];
+  for (const p of paare) summen.push((await rsync(p.quelle, p.ziel, p.zusatz, null, true)).bytesUebertragen);
+  const gesamt = summen.reduce((a, b) => a + b, 0);
+  zeile(`   Vorabmessung: ${(gesamt / 1048576).toFixed(0)} MB zu übertragen (${Math.round((Date.now() - ab) / 1000)} s)`);
+  return summen;
 }
 
 /* ---------------------------------------------------------------- Musik/ */
@@ -254,13 +413,20 @@ async function musik() {
     /* Vier ffmpeg nebeneinander: es wird nur kopiert, nicht gerechnet -
        die Platte ist die Grenze, nicht der Prozessor. */
     let i = 0;
+    /* Der Balken zählt Dateien (jede MP3 dauert etwa gleich lang); die
+       Bytes laufen als Quellgröße mit, damit Tempo und Restzeit stimmen. */
+    const groesse = (e) => { try { return fs.statSync(path.join(SONGS, e.song.id, 'audio.mp3')).size; } catch (x) { return 0; } };
+    const mess = { was: 'Musik', gesamt: offen.reduce((a, o) => a + groesse(o.e), 0), dateienGesamt: offen.length, tempo: tempoMesser() };
+    let bytesFertig = 0;
+    fortschritt(mess, { bytes: 0, dateien: 0, prozent: 0 });
     const arbeiter = async () => {
       while (i < offen.length) {
         const { e, zielDatei } = offen[i++];
         const r = await musikBauen(e, zielDatei);
         if (r.ok) { neu++; bytes += fs.statSync(zielDatei).size; }
         else { fehl++; zeile(`   ffmpeg scheiterte an "${e.name}": ${r.grund}`); }
-        lauf.fortschritt = { prozent: Math.round(100 * (neu + fehl) / Math.max(1, offen.length)), was: 'Musik' }; laufSchreiben(false);
+        bytesFertig += groesse(e);
+        fortschritt(mess, { bytes: bytesFertig, dateien: neu + fehl, prozent: Math.round(100 * (neu + fehl) / Math.max(1, offen.length)) });
       }
     };
     await Promise.all([0, 1, 2, 3].map(arbeiter));
@@ -287,6 +453,10 @@ const NODE_PLATTFORMEN = [
 function nodeKopieren() {
   const da = [], fehlt = [];
   let bytes = 0, dateien = 0;
+  /* Erst sehen, was zu kopieren ist, dann kopieren - so hat der Balken
+     eine Summe (drei Node-Binaries sind ein paar hundert MB, auf einem
+     langsamen Stick eine Minute). */
+  const offen = [];
   for (const p of NODE_PLATTFORMEN) {
     const quelle = path.join(LIB, 'node-portabel', p.ordner);
     if (!p.dateien.every(f => fs.existsSync(path.join(quelle, f)))) { fehlt.push(p); continue; }
@@ -297,9 +467,19 @@ function nodeKopieren() {
       bytes += sv.size; dateien++;
       if (sn && sn.size === sv.size && sn.mtimeMs >= sv.mtimeMs - 2000) continue;
       if (probe) continue;
-      fs.mkdirSync(path.dirname(nach), { recursive: true });
-      fs.copyFileSync(von, nach);
-      try { fs.chmodSync(nach, 0o755); } catch (e) {}     /* auf exFAT wirkungslos, auf APFS nötig */
+      offen.push({ von, nach, bytes: sv.size });
+    }
+  }
+  if (offen.length) {
+    const mess = { was: 'Node', gesamt: offen.reduce((a, o) => a + o.bytes, 0), dateienGesamt: offen.length, tempo: tempoMesser() };
+    let bytesFertig = 0, fertig = 0;
+    fortschritt(mess, { bytes: 0, dateien: 0 });
+    for (const o of offen) {
+      fs.mkdirSync(path.dirname(o.nach), { recursive: true });
+      fs.copyFileSync(o.von, o.nach);
+      try { fs.chmodSync(o.nach, 0o755); } catch (e) {}     /* auf exFAT wirkungslos, auf APFS nötig */
+      bytesFertig += o.bytes; fertig++;
+      fortschritt(mess, { bytes: bytesFertig, dateien: fertig });
     }
   }
   /* Ein Node-Ordner, der zu Hause verschwunden ist, bleibt auf dem Stick -
@@ -580,11 +760,19 @@ function zaehlen(ordner, ohne) {
   let dateien = 0, bytes = 0;
 
   schritt('Programm kopieren');
-  for (const o of ['web', 'server', 'bin', 'browser', 'docs']) {
-    if (!fs.existsSync(path.join(WURZEL, o))) { zeile(`   ${o}/ gibt es zu Hause nicht - übersprungen`); continue; }
-    const r = await rsync(path.join(WURZEL, o), path.join(PROGRAMM, o), ['--exclude', 'node_modules/']);
+  const programmOrdner = ['web', 'server', 'bin', 'browser', 'docs'].filter(o => {
+    if (fs.existsSync(path.join(WURZEL, o))) return true;
+    zeile(`   ${o}/ gibt es zu Hause nicht - übersprungen`); return false;
+  });
+  const programmPaare = programmOrdner.map(o => ({ quelle: path.join(WURZEL, o), ziel: path.join(PROGRAMM, o), zusatz: ['--exclude', 'node_modules/'] }));
+  const programmSummen = await vorabmessen(programmPaare);
+  const programmMess = { was: 'Programm', gesamt: programmSummen.reduce((a, b) => a + b, 0), vorher: 0, tempo: tempoMesser() };
+  for (let i = 0; i < programmPaare.length; i++) {
+    const p = programmPaare[i];
+    const r = await rsync(p.quelle, p.ziel, p.zusatz, programmMess);
+    programmMess.vorher += programmSummen[i];
     dateien += r.dateien; bytes += r.bytes;
-    zeile(`   ${o}/: ${r.dateien} Dateien, ${r.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
+    zeile(`   ${programmOrdner[i]}/: ${r.dateien} Dateien, ${r.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
   }
   for (const f of fs.readdirSync(WURZEL).filter(f => f === 'package.json' || f === 'LICENSE' || /^README/i.test(f))) {
     const von = path.join(WURZEL, f), nach = path.join(PROGRAMM, f);
@@ -610,7 +798,8 @@ function zaehlen(ordner, ohne) {
   /* Stems, die ein früherer Lauf mit --stems gebracht hat, bleiben ohne
      --stems liegen: 28 GB löscht man nicht, weil ein Häkchen fehlt. */
   if (!stems) AUSSCHLUSS.push('--filter', 'P /songs/*/stems/');
-  const rl = await rsync(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS);
+  const [datenSumme] = await vorabmessen([{ quelle: LIB, ziel: path.join(PROGRAMM, 'library'), zusatz: AUSSCHLUSS }]);
+  const rl = await rsync(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Daten', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
   dateien += rl.dateien; bytes += rl.bytes;
   zeile(`   library/: ${rl.dateien} Dateien, ${(rl.bytes / 1073741824).toFixed(2)} GB, ${rl.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'} (${(rl.bytesUebertragen / 1048576).toFixed(0)} MB)`);
 

@@ -402,12 +402,9 @@ select,.knopf{
 /* DAS REGISTER EXPORT (Caspar_D, 09.09.2026): eine Zeile mit Ziel,
    Haken und Knopf, darunter der Lauf in denselben Abschnitten wie das
    Morgenfenster (.ms) - dieselbe Form fuer dieselbe Sache: ein
-   Kindprozess, der Schritte meldet. Das Zielfeld ist ein Pfad, deshalb
-   breit und in Festbreitenschrift. */
+   Kindprozess, der Schritte meldet. */
 .exportzeile{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
 .exportzeile label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--schwach)}
-.exportzeile input[type=text]{flex:1 1 260px;min-width:0;background:var(--flaeche2);border:1px solid var(--rand);
-  color:var(--text);border-radius:6px;padding:5px 8px;font:12px ui-monospace,Menlo,monospace}
 .exportzeile input[type=checkbox]{accent-color:var(--akzent);cursor:pointer}
 .exportzeile .pille[disabled]{opacity:.45;cursor:default}
 .exportlauf{display:flex;flex-direction:column;margin-top:12px}
@@ -416,6 +413,60 @@ select,.knopf{
 .exportlauf .werte{margin-top:12px}
 .wert.gut b{color:#59d18c} .wert.schlecht b{color:#e31c79}
 .wert.schlecht{border-color:#e31c79}
+/* DAS REGISTER "MOBILER KLANGTRESOR" (Caspar_D, 09.09.2026): dreigeteilt,
+   die Schritte nummeriert, weil es wirklich eine Reihenfolge ist - erst
+   wohin, dann was, dann los. Links im Kopf das Piktogramm des Bestands
+   (ein Stick, 150 px breit), rechts die Erklaerung; auf schmalen
+   Scheiben untereinander. Die Nummer traegt den Hausakzent wie ein
+   eingeschalteter Knopf. */
+.exportkopf{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:start;margin-top:4px}
+@media (max-width:560px){.exportkopf{grid-template-columns:1fr}}
+.exportpikto svg{width:150px;height:auto;display:block}
+.exportpikto text{font-family:inherit}
+.exportschritt{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;margin-top:16px}
+.schrittnr{width:24px;height:24px;border-radius:50%;background:var(--akzent);color:#000;font-weight:600;font-size:13px;
+  display:flex;align-items:center;justify-content:center;margin-top:1px}
+.schrittinhalt{min-width:0}
+.schrittname{font-weight:500;color:var(--text)}
+.exportmedium{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--schwach)}
+.exportpfad{margin:3px 0 0;font:11px ui-monospace,Menlo,monospace;word-break:break-all}
+.exportwas{display:flex;flex-direction:column;gap:4px;margin-top:5px;font-size:12.5px;color:var(--schwach)}
+.exportwas .fest b{color:var(--text);font-weight:500}
+.exportwas code{font-size:11.5px}
+.exportwas label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.exportwas input[type=checkbox]{accent-color:var(--akzent);cursor:pointer;margin:0}
+/* DAS PLATZDIAGRAMM: ein liegender Stapelbalken ueber die ganze Groesse
+   des Mediums - was schon belegt ist, was ein vorhandener KlangTresor
+   davon hat, was der Export dazulegt, was frei bleibt. Hausform: Flaeche
+   gedaempft, Topline oben (diaFlaeche / diaTopline), keine
+   Hintergrundspur ausser der Flaeche des Mediums. */
+.exportplatz{margin-top:12px}
+.exportplatz[hidden]{display:none}
+.platztitel{font-size:12px;color:var(--schwach);margin-bottom:5px}
+.platzbalken{display:flex;height:14px;border-radius:2px;overflow:hidden;background:var(--flaeche2);border:1px solid var(--rand)}
+.platzbalken i{display:block;height:100%;min-width:0;flex:0 0 auto}
+.platzlegende{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:7px;font-size:12px;color:var(--schwach)}
+.platzlegende span{white-space:nowrap}
+.platzlegende i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px}
+.platzlegende b{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.platzmarke{border:1px solid var(--rand);border-radius:999px;padding:1px 9px;font-size:11px;color:var(--schwach);white-space:nowrap}
+.platzmarke.gut{color:#59d18c;border-color:#59d18c}
+.platzmarke.schlecht{color:#e31c79;border-color:#e31c79}
+.platzhinweis{font-size:12px;color:var(--schwach);margin-top:4px}
+.platzhinweis:empty{display:none}
+.platzfehlt{font-size:12.5px;color:#e31c79;margin-top:6px}
+/* DER FORTSCHRITT: ein Balken in Akzentfarbe, solange der Lauf geht;
+   darunter, was gerade kopiert wird, wie viel von wie viel, wie schnell,
+   wie lange noch. */
+.exportfortschritt{margin-top:10px}
+.exportfortschritt[hidden]{display:none}
+.fortbalken{height:9px;border-radius:2px;overflow:hidden;background:var(--flaeche2);border:1px solid var(--rand)}
+.fortbalken i{display:block;height:100%;transition:width .6s linear}
+.forttext{font-size:12px;color:var(--schwach);margin-top:5px;font-variant-numeric:tabular-nums}
+/* DIE DEMO-ZEILE: der Sternenhimmel zum Verschicken, ein Bild, ein Satz,
+   ein Knopf. */
+.exportdemo{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.demohimmel svg{display:block;width:40px;height:24px}
 /* DAS EINGEFRORENE ARCHIV (Caspar_D, 09.09.2026): der Stick ist eine
    Kopie, die nur abspielt. Das Banner steht ueber der Kopfzeile, damit
    niemand einen Knopf sucht, den es hier nicht gibt. Kalt und ruhig -
@@ -13958,7 +14009,7 @@ function reaktPersonAlleine(handle){
    Start mitgeschickt; der Server merkt es sich. Der letzte Stand liegt
    AUF DEM STICK (Programm/library/export-stand.json) - ist er nicht
    eingehaengt, gibt es keinen Stand, und das steht dann da. */
-let _exportUhr = null;
+let _exportUhr = null, _exportStand = null;   /* die letzte Antwort von /api/export/stand */
 const exportGroesse = (b) => b == null ? '–'
   : b >= 1e9 ? (b / 1e9).toFixed(1).replace('.', ',') + ' GB'
   : (b / 1e6).toFixed(0) + ' MB';
@@ -13966,47 +14017,103 @@ const exportTag = (iso, mitJahr) => { const d = iso ? new Date(iso) : null;
   return d && !isNaN(d) ? d.toLocaleDateString('de-DE', mitJahr ? { day: '2-digit', month: '2-digit', year: 'numeric' } : { day: '2-digit', month: '2-digit' }) : '–'; };
 const exportMs = (t) => typeof t === 'number' ? t : (t ? Date.parse(t) : NaN);
 
+/* ---- DAS REGISTER "MOBILER KLANGTRESOR" (Caspar_D, 09.09.2026) ------
+   Dreigeteilt, in der Reihenfolge, in der man es tut: "erst sagen
+   wohin, dann sagen was, dann starten." Schritt 1 der Ordnerwaehler mit
+   dem Medium (Dateisystem, Platz, ob Mac/Windows/Linux es lesen),
+   Schritt 2 was mitkommt und das Platzdiagramm, Schritt 3 der Knopf,
+   der Fortschritt und der Lauf. Links neben der Erklaerung das
+   Piktogramm des Datenbestands - der Stick mit seinen Teilen.
+
+   Der Sternenhimmel ist KEIN eigener Export mehr: "groessentechnisch
+   pillepalle" (Caspar_D), er liegt immer mit auf dem Medium, mit Bild
+   und Ton relativ. Der alte Knopf "mit Medienordner" (Sternenhimmel
+   ueber /media des Hausservers) ist damit weg - dieselbe Datei entsteht
+   beim Export. Geblieben ist als eine Zeile unter dem Block die Datei
+   zum Verschicken: nur oeffentliche Titel, jeder Stern fuehrt zu Suno. */
 async function profilExportFuellen(){
   const ziel = $('profilexport'); if (!ziel) return;
   clearInterval(_exportUhr); _exportUhr = null;
   ziel.innerHTML = `
     <div class="block">
-      <h3>Archiv auf den Stick</h3>
-      <p class="fussnote" style="margin-top:0">Eine eingefrorene Kopie des ganzen Bestands: reinstecken, Startskript
-        ausführen, der Browser öffnet KlangTresor mit allen Titeln — nur Abspielen, nichts wird geholt oder gespeichert.
-        Daneben ein Ordner <code>Musik/</code> mit den MP3s nach Titel benannt, mit Titelbild im Dateikopf, für Fernseher,
-        Autoradio und VLC. Ohne WAV. Ein zweiter Export frischt nur auf, was sich geändert hat.</p>
-      <div class="exportzeile">
-        <input type="hidden" id="exportziel">
-        <span class="fussnote" id="exportzielText" style="margin:0">Kein Ziel gewählt</span>
-        <button class="pille" id="exportwaehlen" title="Stick oder Ordner auswählen">Ziel wählen …</button>
-        <label title="Die Instrumentspuren (Stems) sind rund 27 GB — nur mitnehmen, wenn der Stick sie fasst">
-          <input type="checkbox" id="exportstems"> Stems mitnehmen (27 GB)</label>
-        <button class="pille an" id="exportstart">Export starten</button>
+      <h3>KlangTresor auf einem externen Medium</h3>
+      <div class="exportkopf">
+        <div class="exportpikto" id="exportpikto" title="Der Datenbestand, wie er auf das Medium kommt"></div>
+        <!-- Der Text ist Caspar_Ds Wortlaut (09.09.2026), nur die Tippfehler
+             sind behoben. -->
+        <p class="fussnote" style="margin:0">Hier wird eine eingefrorene Kopie des ganzen Datenbestandes auf einem
+          mobilen Speichermedium erzeugt. Im Zielgerät einstecken, Startskript ausführen, der Browser öffnet KlangTresor
+          mit allen Titeln — einfach abspielen, nichts wird geholt oder gespeichert. Zusätzlich wird ein Ordner
+          <code>Musik/</code> angelegt, mit den MP3s nach Titel benannt, mit Titelbild im Dateikopf, für Fernseher,
+          Autoradio und VLC. Weitere Exporte auf dasselbe Medium frischen auf, was sich geändert hat.</p>
       </div>
-      <div id="exportbrowser" class="ordnerwahl" hidden></div>
-      <p class="fussnote" id="exportstand"></p>
-      <div class="exportlauf" id="exportlauf"></div>
+
+      <div class="exportschritt">
+        <div class="schrittnr">1</div>
+        <div class="schrittinhalt">
+          <div class="schrittname">Wohin</div>
+          <div class="exportzeile">
+            <input type="hidden" id="exportziel">
+            <button class="pille" id="exportwaehlen" title="Stick oder Ordner auswählen">Ziel wählen …</button>
+            <span class="exportmedium" id="exportmedium"></span><!-- fuellt exportMediumZeichnen() -->
+          </div>
+          <div class="fussnote exportpfad" id="exportzielText">Kein Ziel gewählt</div>
+          <div id="exportbrowser" class="ordnerwahl" hidden></div>
+          <div class="platzhinweis" id="exporthinweis"></div>
+        </div>
+      </div>
+
+      <div class="exportschritt">
+        <div class="schrittnr">2</div>
+        <div class="schrittinhalt">
+          <div class="schrittname">Was</div>
+          <div class="exportwas">
+            <span class="fest"><b>✓ Datenbestand</b> — Programm, Titel, Bilder, Analyse, <code>Musik/</code><span id="exportbestandText"></span></span>
+            <span class="fest"><b>✓ Sternenhimmel</b> — eine Datei, spielt vom Medium</span>
+            <label title="Die Instrumentspuren (Stems) sind rund 27 GB — nur mitnehmen, wenn das Medium sie fasst">
+              <input type="checkbox" id="exportstems"> <span id="exportstemsText">Stems (27 GB)</span></label>
+          </div>
+          <div class="exportplatz" id="exportplatz" hidden></div><!-- fuellt exportPlatzZeichnen() -->
+        </div>
+      </div>
+
+      <div class="exportschritt">
+        <div class="schrittnr">3</div>
+        <div class="schrittinhalt">
+          <div class="exportzeile" style="margin-top:0">
+            <button class="pille an" id="exportstart">Export starten</button>
+            <span class="fussnote" id="exportstand" style="margin:0"></span>
+          </div>
+          <div class="exportfortschritt" id="exportfortschritt" hidden></div><!-- fuellt exportFortschrittZeichnen() -->
+          <div class="exportlauf" id="exportlauf"></div>
+        </div>
+      </div>
     </div>
-    <div class="block">
-      <h3>Sternenhimmel</h3>
-      <p class="fussnote" style="margin-top:0"><b>Mit Suno-Links</b> ist die Datei zum Verschicken: nur öffentliche Titel,
-        jeder Stern führt zu seiner Seite auf suno.com — sie braucht nichts außer sich selbst.
-        <b>Mit Medienordner</b> spielt der Klick auf einen Stern lokal ab und zeigt die Titelbilder aus dem Archiv —
-        hier im Haus über den Server, auf dem Stick als <code>Sternenhimmel.html</code> neben dem Programm.</p>
-      <div class="exportzeile">
-        <button class="pille" id="himmelsuno">mit Suno-Links</button>
-        <button class="pille" id="himmelmedien">mit Medienordner</button>
-        <span class="fussnote" id="himmelstand" style="margin:0"></span>
-      </div>
+    <div class="block exportdemo">
+      <span class="demohimmel" aria-hidden="true">${EXPORT_HIMMEL_SVG}</span>
+      <span class="fussnote" style="margin:0;flex:1 1 260px">Sternenhimmel als Demo zum Verschicken: eine Datei, nur öffentliche Titel,
+        jeder Stern führt zu seiner Seite auf suno.com — sie braucht nichts außer sich selbst.</span>
+      <button class="pille" id="himmelsuno">Datei erzeugen</button>
+      <span class="fussnote" id="himmelstand" style="margin:0"></span>
     </div>`;
+  exportPiktogrammZeichnen(null);
 
   /* DER ORDNERWAEHLER (Caspar_D, 09.09.2026: "die Pfadangabe fuer den
      Stick ist ein NoGo"). Erst die Laufwerke mit freiem Platz, dann die
      Ordner darunter; "Hierher" nimmt den Ordner und haengt KlangTresor an,
      ausser der Ordner IST schon ein Archiv (export-stand.json) - dann wird
      genau der aufgefrischt. Die Wahl wandert sofort in konfig.json. */
+  /* Die festen Zahlen sind der Notnagel, solange der Server keinen
+     Bedarf mitschickt (stand.bedarf, seit 09.09.2026 vorgesehen); sobald
+     er da ist, rechnet der Ordnerwaehler mit demselben Bedarf wie das
+     Platzdiagramm. */
   const BEDARF = { ohne: 8.5e9, stems: 36e9 };
+  const bedarfJetzt = () => {
+    const b = _exportStand && _exportStand.bedarf;
+    const mitStems = $('exportstems').checked;
+    if (b && (mitStems ? b.gesamtMitStems : b.gesamt) > 0) return mitStems ? b.gesamtMitStems : b.gesamt;
+    return mitStems ? BEDARF.stems : BEDARF.ohne;
+  };
   const zielSetzen = async (pfad) => {
     $('exportziel').value = pfad;
     $('exportzielText').textContent = pfad;
@@ -14019,13 +14126,13 @@ async function profilExportFuellen(){
     let d; try { d = await (await fetch('/api/ordner' + (pfad ? '?pfad=' + encodeURIComponent(pfad) : ''), { cache: 'no-store' })).json(); }
     catch (e) { box.innerHTML = '<div class="fussnote">Server antwortet nicht.</div>'; return; }
     box.innerHTML = '';
-    const bedarf = $('exportstems').checked ? BEDARF.stems : BEDARF.ohne;
+    const bedarf = bedarfJetzt();
     const platz = (o) => o.frei == null ? '' : ` · ${exportGroesse(o.frei)} frei` + (o.gesamt ? ` von ${exportGroesse(o.gesamt)}` : '') + (o.frei < bedarf ? ' — zu wenig' : '');
     if (!pfad){
       const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = 'Wohin? Ein Laufwerk wählen:'; box.appendChild(k);
       for (const l of (d.laufwerke || [])){
         const z = document.createElement('button'); z.className = 'ordnerzeile' + (l.system ? ' system' : '') + (l.frei != null && l.frei < bedarf ? ' knapp' : '');
-        z.innerHTML = `<b>${esc(l.name)}</b><small>${esc((l.dateisystem || '').toUpperCase())}${platz(l)}${l.system ? ' · Systemplatte' : ''}${l.netz ? ' · Netz' : ''}</small>`;
+        z.innerHTML = `<b>${esc(l.name)}</b><small>${esc(exportDateisystem(l.dateisystem))}${platz(l)}${l.system ? ' · Systemplatte' : ''}${l.netz ? ' · Netz' : ''}</small>`;
         z.onclick = () => ordnerZeigen(l.pfad);
         box.appendChild(z);
       }
@@ -14052,6 +14159,10 @@ async function profilExportFuellen(){
     if (!(d.ordner || []).length) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine Unterordner.' }));
   };
   $('exportwaehlen').onclick = () => { const b = $('exportbrowser'); if (!b.hidden){ b.hidden = true; return; } ordnerZeigen(''); };
+  /* Der Stems-Haken aendert den Bedarf - Diagramm und Piktogramm ziehen
+     sofort nach, ohne den Server zu fragen; der letzte Stand liegt in
+     _exportStand. */
+  $('exportstems').onchange = () => { if (_exportStand) exportZeichnen(_exportStand); else exportPiktogrammZeichnen(null); };
 
   const startKnopf = $('exportstart');
   startKnopf.onclick = async () => {
@@ -14066,10 +14177,7 @@ async function profilExportFuellen(){
                       startKnopf.disabled = false; startKnopf.textContent = 'Export starten'; return; }
     exportSchauen(true);
   };
-  for (const [id, relativ] of [['himmelsuno', false], ['himmelmedien', true]]){
-    const k = $(id); if (!k) continue;
-    k.onclick = () => sternenhimmelAusgeben(relativ, k);
-  }
+  const hk = $('himmelsuno'); if (hk) hk.onclick = () => sternenhimmelAusgeben(hk);
   exportSchauen(false);
 }
 
@@ -14092,18 +14200,32 @@ async function exportSchauen(gleich){
 function exportZeichnen(d){
   const feld = $('exportlauf'), stand = $('exportstand'), zielFeld = $('exportziel'), knopf = $('exportstart');
   if (!feld || !stand) return;
+  _exportStand = d;
   if (zielFeld && d.ziel && !zielFeld.value){ zielFeld.value = d.ziel; const t = $('exportzielText'); if (t) t.textContent = d.ziel; }
   const laeuft = !!d.laeuft;
   feld.dataset.laeuft = laeuft ? '1' : '0';
-  if (knopf){ knopf.disabled = laeuft; knopf.textContent = laeuft ? 'Läuft …' : 'Export starten'; }
+  exportMediumZeichnen(d);
+  exportPiktogrammZeichnen(d.bedarf || null);
+  exportWasZeichnen(d.bedarf || null);
+  /* Das Platzdiagramm sagt, ob der Bedarf auf das Medium passt; passt er
+     nicht, bleibt der Knopf zu. Ohne Medium (kein Ziel, nichts
+     eingehaengt, alter Server ohne das Feld) ist nichts gesperrt. */
+  const passt = exportPlatzZeichnen(d);
+  exportFortschrittZeichnen(d);
+  if (knopf){ knopf.disabled = laeuft || !passt; knopf.textContent = laeuft ? 'Läuft …' : 'Export starten'; }
 
   /* Der letzte Stand vom Stick - oder warum es keinen gibt. */
   const st = d.letzter || null;            /* so nennt es der Server: export-stand.json vom Stick */
-  /* Reihenfolge: erst "kein Ziel", dann "nicht eingehaengt" - sonst
-     hiess es ohne jedes Ziel "Stick nicht eingehaengt" (Caspar_D,
-     09.09.2026). */
+  /* Reihenfolge: erst "kein Ziel", dann "nicht eingehaengt", dann der
+     Lauf - sonst hiess es ohne jedes Ziel "Stick nicht eingehaengt", und
+     waehrend des Laufs stand "Noch kein Export ... bereit" da (Caspar_D,
+     09.09.2026: "obwohl der Export laeuft, steht noch immer ein Status
+     da"). */
+  const seitUhr = (iso) => { const x = iso ? new Date(iso) : null;
+    return x && !isNaN(x) ? x.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : ''; };
   if (!d.ziel) stand.textContent = 'Noch kein Ziel gewählt.';
-  else if (d.zielEingehaengt === false) stand.textContent = `Stick nicht eingehängt (${d.ziel}).`;
+  else if (d.zielEingehaengt === false) stand.textContent = `Medium nicht eingehängt (${d.ziel}).`;
+  else if (laeuft) stand.textContent = `Export läuft seit ${seitUhr(d.seit) || 'eben'} …`;
   else if (st && st.exportiertAm)
     stand.textContent = `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
       + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
@@ -14156,16 +14278,260 @@ function exportZeichnen(d){
   } else if (w) w.remove();
 }
 
-/* Der Sternenhimmel als eine Datei (bin/himmel-export.js). Das Fenster
+/* ---- DIE TEILE DES BESTANDS ------------------------------------------
+   Dieselbe Liste, dieselbe Reihenfolge, dieselbe Farbe - im Piktogramm
+   wie im Platzdiagramm. Die Farbe je Teil ist fest ueber die Rampe der
+   zwei Hausakzente (lagenRampe), damit ein Teil im Balken und im Stick
+   gleich aussieht, egal ob die Stems gerade dabei sind. */
+const EXPORT_TEILE = [
+  ['mp3',      'MP3',                        'MP3'],
+  ['bilder',   'Titelbilder und Bewegtbilder', 'Bilder'],
+  ['analyse',  'Analyse',                    'Analyse'],
+  ['texte',    'Texte und Katalog',          'Texte'],
+  ['programm', 'Programm',                   'Programm'],
+  ['node',     'Node',                       'Node'],
+  ['musik',    'Musik-Ordner',               'Musik/'],
+  ['stems',    'Instrumentspuren (Stems)',   'Stems'],
+];
+const exportTeilFarbe = (schluessel) => {
+  const i = EXPORT_TEILE.findIndex(([k]) => k === schluessel);
+  return lagenRampe(EXPORT_TEILE.length)[i < 0 ? 0 : i];
+};
+const exportTeilName = (t, kurz) => (EXPORT_TEILE.find(([k]) => k === t.schluessel) || [])[kurz ? 2 : 1] || t.name || t.schluessel;
+/* Was das Betriebssystem meldet, in dem Wort, das auf der Packung steht. */
+const exportDateisystem = (fs) => ({ exfat: 'exFAT', msdos: 'FAT32', fat32: 'FAT32', vfat: 'FAT32', ntfs: 'NTFS', apfs: 'APFS', hfs: 'HFS+',
+  smbfs: 'SMB', nfs: 'NFS', ext4: 'ext4' }[String(fs || '').toLowerCase()] || String(fs || '–').toUpperCase());
+
+/* ---- DAS PIKTOGRAMM (Caspar_D, 09.09.2026: "ein gut visualisiertes
+   Visual zum Datenbestand als Piktogramm ... links im Panel") ---------
+   Ein Stick, darin die Teile des Bestands als Stapel, die Hoehe nach
+   Groesse (mit einer Mindesthoehe, damit das Programm mit 20 MB nicht
+   verschwindet), je Teil Name und Groesse, bei MP3 die Titelzahl. Die
+   Stems kommen dazu, sobald der Haken sitzt - und zeigen dann, wie sie
+   alles andere zusammendruecken. Ohne stand.bedarf (alter Server, erste
+   Sekunde) nur die Form mit den Namen. Hausform: Flaeche gedaempft,
+   Topline oben. */
+function exportPiktogrammZeichnen(b){
+  const box = $('exportpikto'); if (!box) return;
+  const stemsHaken = $('exportstems') && $('exportstems').checked;
+  const teile = (b && Array.isArray(b.teile) ? b.teile : EXPORT_TEILE.map(([k]) => ({ schluessel: k, bytes: null, dateien: null })))
+    .filter(t => t && t.schluessel !== 'stems' || stemsHaken);
+  /* Programm, Node und Texte sind zusammen ein halbes Gigabyte - im
+     Stick EIN Block, im Balken bleiben sie getrennt. */
+  const klein = teile.filter(t => ['texte', 'programm', 'node'].includes(t.schluessel));
+  const bloecke = teile.filter(t => !['texte', 'programm', 'node'].includes(t.schluessel)).map(t => ({ ...t, name: exportTeilName(t, true), farbe: exportTeilFarbe(t.schluessel) }));
+  if (klein.length) bloecke.splice(Math.min(3, bloecke.length), 0, {
+    schluessel: 'texte', name: 'Programm & Texte', kurz: 'Programm', farbe: exportTeilFarbe('texte'),
+    bytes: klein.every(t => t.bytes == null) ? null : klein.reduce((a, t) => a + (Number(t.bytes) || 0), 0), dateien: null });
+  const W = 150, H = 176, X0 = 28, X1 = 122, Y0 = 26, Y1 = 164, LUECKE = 3;
+  const mitZahlen = bloecke.some(t => t.bytes != null);
+  const summe = bloecke.reduce((a, t) => a + (Number(t.bytes) || 0), 0);
+  const nutz = (Y1 - Y0) - LUECKE * (bloecke.length - 1);
+  /* Zwei Zeilen brauchen 24 px; passen so viele Bloecke nicht in den
+     Stick (mit Stems sind es sechs), ruecken alle auf eine Zeile. */
+  const MIN = Math.min(24, Math.floor(nutz / Math.max(1, bloecke.length)));
+  /* Erst jeder seine Mindesthoehe, der Rest nach Anteil. */
+  let hoehen = bloecke.map(t => mitZahlen && summe > 0 ? Math.max(MIN, nutz * (Number(t.bytes) || 0) / summe) : nutz / bloecke.length);
+  const ueber = hoehen.reduce((a, h) => a + h, 0) - nutz;
+  if (ueber > 0){ const gross = hoehen.map((h, i) => h > MIN ? i : -1).filter(i => i >= 0); const ab = ueber / (gross.length || 1); gross.forEach(i => { hoehen[i] = Math.max(MIN, hoehen[i] - ab); }); }
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Der Datenbestand auf dem Medium">`
+    + `<rect x="55" y="1" width="40" height="16" rx="3" fill="var(--flaeche2)" stroke="var(--rand)"/>`
+    + `<rect x="18" y="13" width="114" height="${H - 14}" rx="10" fill="var(--flaeche)" stroke="var(--rand)"/>`;
+  let y = Y0;
+  for (let i = 0; i < bloecke.length; i++){
+    const t = bloecke[i], h = hoehen[i];
+    const zeile1 = t.name, zeile2 = t.bytes == null ? '' : exportGroesse(t.bytes) + (t.schluessel === 'mp3' && t.dateien ? ` · ${Number(t.dateien).toLocaleString('de-DE')} Titel` : '');
+    const zwei = zeile2 && h >= 24;
+    svg += `<rect x="${X0}" y="${y.toFixed(1)}" width="${X1 - X0}" height="${h.toFixed(1)}" rx="3" fill="${diaFlaeche(t.farbe)}"/>`
+      + `<rect x="${X0}" y="${y.toFixed(1)}" width="${X1 - X0}" height="1" fill="${diaTopline(t.farbe)}"/>`
+      + `<title>${esc(t.schluessel === 'texte' && klein.length ? 'Programm, Texte und Katalog, Node' : zeile1)}${zeile2 ? ' · ' + esc(zeile2) : ''}</title>`;
+    const mitte = X0 + (X1 - X0) / 2;
+    if (zwei) svg += `<text x="${mitte}" y="${(y + h / 2 - 2).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="var(--text)">${esc(zeile1)}</text>`
+                   + `<text x="${mitte}" y="${(y + h / 2 + 9).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="var(--text)" opacity=".8">${esc(zeile2)}</text>`;
+    else svg += `<text x="${mitte}" y="${(y + h / 2 + 3.2).toFixed(1)}" text-anchor="middle" font-size="${h < 18 ? 8 : 9}" fill="var(--text)">${esc(t.kurz || zeile1)}${t.bytes != null && h >= 14 ? ' ' + esc(exportGroesse(t.bytes)) : ''}</text>`;
+    y += h + LUECKE;
+  }
+  svg += '</svg>';
+  box.innerHTML = svg;
+}
+
+/* Die Zeilen in Schritt 2 tragen die Groessen, sobald der Bedarf da ist. */
+function exportWasZeichnen(b){
+  const bt = $('exportbestandText'), st = $('exportstemsText');
+  if (!b || !Array.isArray(b.teile)){ if (bt) bt.textContent = ''; return; }
+  const stems = b.teile.find(t => t && t.schluessel === 'stems');
+  if (bt && b.gesamt > 0) bt.textContent = ` · ${exportGroesse(b.gesamt)}`;
+  if (st && stems && stems.bytes > 0) st.textContent = `Stems (${exportGroesse(stems.bytes)})`;
+}
+
+/* ---- DAS MEDIUM (Schritt 1) ------------------------------------------
+   Neben dem Waehler: Name, Dateisystem, Groesse, frei - und die drei
+   Marken Mac/Windows/Linux aus stand.medium.kompatibel. Gruen: geht.
+   Grau mit Text: nur lesen (Windows kann APFS nicht schreiben, mehr
+   braucht der Stick auch nicht). Rot: geht nicht. Darunter der Hinweis
+   des Servers zum Dateisystem (FAT32 und die 4-GB-Grenze, NTFS am Mac). */
+function exportMediumZeichnen(d){
+  const zeile = $('exportmedium'), hinweis = $('exporthinweis'); if (!zeile) return;
+  const m = d && d.medium;
+  zeile.innerHTML = ''; if (hinweis) hinweis.textContent = '';
+  if (!m || !(m.gesamt > 0)){
+    if (d && d.ziel && d.zielEingehaengt === false) zeile.textContent = 'nicht eingehängt';
+    return;
+  }
+  const t = document.createElement('span');
+  t.textContent = `${m.name || m.pfad || '–'} · ${exportDateisystem(m.dateisystem)} · ${exportGroesse(m.gesamt)}, ${exportGroesse(m.frei)} frei`;
+  zeile.appendChild(t);
+  const k = m.kompatibel || {};
+  for (const [schluessel, name] of [['mac', 'Mac'], ['windows', 'Windows'], ['linux', 'Linux']]){
+    const wert = k[schluessel];
+    const marke = document.createElement('span');
+    marke.className = 'platzmarke ' + (wert === true ? 'gut' : wert === false ? 'schlecht' : '');
+    marke.textContent = (wert === true ? '✓ ' : wert === false ? '✗ ' : '') + name + (typeof wert === 'string' ? ' · ' + wert : '');
+    marke.title = wert === true ? `${name} kann das Medium lesen und schreiben` : wert === false ? `${name} kann das Medium nicht lesen` : typeof wert === 'string' ? `${name}: ${wert}` : 'unbekannt';
+    zeile.appendChild(marke);
+  }
+  if (hinweis && k.hinweis) hinweis.textContent = k.hinweis;
+}
+
+/* ---- DAS PLATZDIAGRAMM (Schritt 2) ------------------------------------
+   Ein liegender Stapelbalken ueber die Gesamtgroesse des Mediums:
+   [anderes belegt, grau] [der KlangTresor, je Teil in seiner Farbe]
+   [was von einem frueheren Export liegen bleibt] [frei danach]. Der
+   KlangTresor steht mit seinem ganzen Bedarf im Balken, ob er schon auf
+   dem Medium liegt oder nicht - Caspar_D wollte sehen, "wieviel Platz
+   der KlangTresor benoetigt und welche Dateien wie viel". Liegt schon
+   ein Archiv dort (archivBytes), sagt eine Zeile darunter, dass der
+   Export nur auffrischt; ist es groesser als der Bedarf (Stems von
+   frueher, jetzt ohne Haken), bleibt der Rest liegen und steht als
+   eigenes Stueck da. Frei danach = gesamt - anderes - max(Bedarf,
+   Archiv). Passt der Bedarf nicht, steht das rot da und der Startknopf
+   bleibt zu.
+
+   Die Felder medium und bedarf liefert der Server erst seit dem
+   09.09.2026; fehlen sie, ist das Diagramm weg, sonst nichts. Gibt
+   zurueck, ob der Bedarf auf das Medium passt (true auch ohne Medium -
+   dann sperrt nichts). */
+function exportPlatzZeichnen(d){
+  const box = $('exportplatz'); if (!box) return true;
+  const m = d && d.medium, b = d && d.bedarf;
+  if (!m || !b || !(m.gesamt > 0) || !Array.isArray(b.teile)){ box.hidden = true; box.innerHTML = ''; return true; }
+  const stemsHaken = $('exportstems') && $('exportstems').checked;
+  const teile = b.teile.filter(t => t && !(t.schluessel === 'stems' && !stemsHaken));   /* Stems nur mit Haken */
+  const reihenfolge = (t) => { const i = EXPORT_TEILE.findIndex(([k]) => k === t.schluessel); return i < 0 ? 99 : i; };
+  teile.sort((x, y) => reihenfolge(x) - reihenfolge(y));
+
+  const bedarfGesamt = Math.max(0, Number(stemsHaken ? (b.gesamtMitStems != null ? b.gesamtMitStems : b.gesamt) : b.gesamt) || 0);
+  const archiv  = Math.max(0, Number(m.archivBytes) || 0);
+  const belegt  = Math.max(0, Number(m.belegt != null ? m.belegt : (m.gesamt - (m.frei || 0))) || 0);
+  const anderes = Math.max(0, belegt - archiv);
+  const dazu    = Math.max(0, bedarfGesamt - archiv);           /* was der Export hoechstens neu schreibt */
+  const bleibt  = Math.max(0, archiv - bedarfGesamt);           /* frueherer Export, groesser als der Bedarf */
+  const frei    = Math.max(0, Number(m.frei) || 0);
+  const passt   = dazu <= frei;
+  const freiDanach = Math.max(0, frei - dazu);
+  const gesamt  = Math.max(m.gesamt, anderes + bedarfGesamt + bleibt);   /* passt es nicht, laeuft der Balken bis zum Rand voll */
+  const anteil  = (x) => (100 * x / gesamt).toFixed(2) + '%';
+
+  box.innerHTML = '';
+  box.hidden = false;
+  const titel = document.createElement('div'); titel.className = 'platztitel';
+  titel.textContent = `Platz auf ${m.name || m.pfad || 'dem Medium'}`;
+  box.appendChild(titel);
+  const balken = document.createElement('div'); balken.className = 'platzbalken';
+  const segment = (bytes, farbe, deckung, titel) => {
+    if (!(bytes > 0)) return;
+    const i = document.createElement('i');
+    i.style.width = anteil(bytes);
+    i.style.background = diaFlaeche(farbe, deckung);
+    i.style.boxShadow  = `inset 0 1px 0 ${diaTopline(farbe, deckung)}`;
+    i.title = titel;
+    balken.appendChild(i);
+  };
+  const GRAU = '#8b8b90';
+  segment(anderes, GRAU, SPUR_DECKUNG, `Anderes auf dem Medium: ${exportGroesse(anderes)}`);
+  const teilSumme = teile.reduce((a, t) => a + (Number(t.bytes) || 0), 0) || 1;
+  teile.forEach(t => segment(bedarfGesamt * (Number(t.bytes) || 0) / teilSumme, exportTeilFarbe(t.schluessel), SPUR_DECKUNG, `${exportTeilName(t)}: ${exportGroesse(t.bytes)}`));
+  segment(bleibt, DIA_1, 0.3, `Bleibt vom früheren Export: ${exportGroesse(bleibt)}`);
+  box.appendChild(balken);
+
+  const legende = document.createElement('div'); legende.className = 'platzlegende';
+  const eintrag = (farbe, deckung, text, wert) => {
+    const s = document.createElement('span');
+    const i = document.createElement('i'); i.style.background = diaFlaeche(farbe, deckung); i.style.boxShadow = `inset 0 1px 0 ${diaTopline(farbe, deckung)}`;
+    s.appendChild(i); s.appendChild(document.createTextNode(text + ' '));
+    const w = document.createElement('b'); w.textContent = wert; s.appendChild(w);
+    legende.appendChild(s);
+  };
+  if (anderes > 0) eintrag(GRAU, SPUR_DECKUNG, 'Anderes belegt', exportGroesse(anderes));
+  teile.forEach(t => eintrag(exportTeilFarbe(t.schluessel), SPUR_DECKUNG, exportTeilName(t),
+    exportGroesse(t.bytes) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : '')));
+  if (bleibt > 0) eintrag(DIA_1, 0.3, 'Bleibt vom früheren Export', exportGroesse(bleibt));
+  const f = document.createElement('span'); f.textContent = 'Frei danach '; const fw = document.createElement('b'); fw.textContent = exportGroesse(freiDanach); f.appendChild(fw); legende.appendChild(f);
+  box.appendChild(legende);
+  if (archiv > 0){
+    const h = document.createElement('div'); h.className = 'platzhinweis';
+    h.textContent = `Davon liegen schon ${exportGroesse(Math.min(archiv, bedarfGesamt))} auf dem Medium — der Export frischt nur auf, was sich geändert hat.`;
+    box.appendChild(h);
+  }
+  if (!passt){
+    const r = document.createElement('div'); r.className = 'platzfehlt';
+    r.textContent = `Passt nicht: der Export braucht ${exportGroesse(dazu)}, frei sind ${exportGroesse(frei)} — es fehlen ${exportGroesse(dazu - frei)}.`
+      + (stemsHaken ? ' Ohne Stems wird es kleiner.' : '');
+    box.appendChild(r);
+  }
+  return passt;
+}
+
+/* ---- DER FORTSCHRITT (Schritt 3) --------------------------------------
+   Waehrend der Lauf geht: ein Balken in Akzentfarbe ueber
+   stand.fortschritt.prozent, darunter "<was> · fertig von gesamt ·
+   MB/s · noch etwa ...". Die Bytes und die Geschwindigkeit liefert der
+   Server erst seit dem 09.09.2026; ein aelterer Stand hat nur prozent
+   und was, dann steht genau das da. Ohne Geschwindigkeit: "misst ...".
+   Kein Lauf oder kein Fortschritt: Balken weg. */
+function exportFortschrittZeichnen(d){
+  const box = $('exportfortschritt'); if (!box) return;
+  const f = d && d.laeuft && d.fortschritt;
+  if (!f){ box.hidden = true; box.innerHTML = ''; return; }
+  let balken = box.querySelector('.fortbalken i');
+  if (!balken){
+    box.innerHTML = '<div class="fortbalken"><i></i></div><div class="forttext"></div>';
+    balken = box.querySelector('.fortbalken i');
+    balken.style.background = diaFlaeche('var(--akzent)');
+    balken.style.boxShadow  = `inset 0 1px 0 ${diaTopline('var(--akzent)')}`;
+  }
+  box.hidden = false;
+  const prozent = Math.max(0, Math.min(100, Number(f.prozent) || 0));
+  balken.style.width = prozent.toFixed(1) + '%';
+  const stuecke = [];
+  if (f.was) stuecke.push(f.was);
+  if (f.bytesGesamt > 0) stuecke.push(`${exportGroesse(f.bytesFertig || 0)} von ${exportGroesse(f.bytesGesamt)}`);
+  else stuecke.push(`${Math.round(prozent)} %`);
+  if (f.bytesProSekunde > 0){
+    stuecke.push((f.bytesProSekunde / 1e6).toFixed(f.bytesProSekunde < 1e7 ? 1 : 0).replace('.', ',') + ' MB/s');
+    if (f.restS != null && f.restS >= 0) stuecke.push('noch etwa ' + morgenDauerText(f.restS * 1000));
+  } else if (f.bytesGesamt > 0) stuecke.push('misst …');
+  box.querySelector('.forttext').textContent = stuecke.join(' · ');
+}
+
+/* Das kleine Gegenstueck zum Stick: ein Nachthimmel mit ein paar Sternen,
+   einer davon im Akzent - die Demo-Datei in einem Bild. */
+const EXPORT_HIMMEL_SVG = '<svg viewBox="0 0 40 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+  + '<rect x=".5" y=".5" width="39" height="23" rx="4" fill="var(--flaeche2)" stroke="var(--rand)"/>'
+  + '<circle cx="9" cy="10" r="1.8" fill="var(--text)"/><circle cx="20" cy="15" r="1.3" fill="var(--text)" opacity=".8"/>'
+  + `<circle cx="29" cy="7" r="2.4" fill="${'var(--titel-b,#e31c79)'}"/><circle cx="33" cy="17" r="1" fill="var(--text)" opacity=".7"/>`
+  + '<circle cx="14" cy="5" r=".9" fill="var(--text)" opacity=".6"/></svg>';
+
+/* Die Demo-Datei (bin/himmel-export.js, mit Suno-Links). Das Fenster
    geht nach der Antwort auf - blockt der Browser das, bleibt der Link
    daneben stehen. */
-async function sternenhimmelAusgeben(relativ, knopf){
+async function sternenhimmelAusgeben(knopf){
   const stand = $('himmelstand');
   knopf.disabled = true; const war = knopf.textContent; knopf.textContent = 'Erzeuge …';
   if (stand) stand.textContent = '';
   try {
     const j = await (await fetch('/api/himmel-export', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ relativ: !!relativ }) })).json();
+      body: JSON.stringify({ relativ: false }) })).json();
     if (!j || !j.ok) throw new Error((j && (j.grund || j.meldung || j.fehler)) || 'fehlgeschlagen');
     const w = window.open(j.url, '_blank');
     if (stand) stand.innerHTML = `${w ? 'geöffnet' : 'erzeugt'} — <a href="${esc(j.url)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(j.url)} ↗</a>`;
@@ -14252,10 +14618,12 @@ function profilAuf(){
         <button class="reg an" data-preg="daten" onclick="profilRegister('daten')">Meine Daten</button>
         <button class="reg" data-preg="community" onclick="profilRegister('community')">Meine Gemeinschaft</button>
         <!-- DRITTES REGISTER (Caspar_D, 09.09.2026): die Ausgaben des
-             Bestands - Archiv auf den Stick, Sternenhimmel als Datei.
-             Im eingefrorenen Archiv gibt es nichts auszugeben, dann
-             fehlt die Lasche. -->
-        ${archivEingefroren() ? '' : `<button class="reg" data-preg="export" onclick="profilRegister('export')">Export</button>`}
+             Bestands - der mobile KlangTresor auf einem externen Medium,
+             der Sternenhimmel als Datei. Die Lasche heisst nach dem, was
+             dabei herauskommt, nicht nach der Taetigkeit ("Export" sagte
+             nur, DASS etwas hinausgeht). Im eingefrorenen Archiv gibt es
+             nichts auszugeben, dann fehlt die Lasche. -->
+        ${archivEingefroren() ? '' : `<button class="reg" data-preg="export" onclick="profilRegister('export')">Mobiler KlangTresor</button>`}
       </div>
 
       <div class="pregfeld" data-preg="daten">

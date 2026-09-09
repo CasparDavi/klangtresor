@@ -2013,3 +2013,49 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
   kommen nicht mehr in die Demo, Klick öffnet Suno. Hausfassung „mit
   Medienordner" läuft über /media. Export räumt am Ende „._"-Beifang
   (exFAT/macOS, sonst Geistertitel auf Fernsehern). Probekopie gelöscht.
+
+## Register „Mobiler KlangTresor" dreigeteilt (09.09.2026, 10:45)
+
+- Caspar_D: „das Ganze ist eigentlich dreigeteilt — erst sagen wohin, dann
+  sagen was, dann starten"; Mockup gezeigt, „das ist cool, genau so".
+- `web/index.html`: Kopf mit **Piktogramm des Datenbestands** (Stick,
+  Blöcke nach Größe, aus stand.bedarf; mit Stems-Haken kommt der Stems-
+  Block dazu) links neben der Erklärung. **Schritt 1 Wohin**: Ordner-
+  wähler, daneben Medium (Name · Dateisystem · Größe, frei) und die Marken
+  Mac/Windows/Linux aus stand.medium.kompatibel, darunter der Hinweis des
+  Servers. **Schritt 2 Was**: ✓ Datenbestand (mit Größe), ✓ Sternenhimmel
+  (immer dabei — „größentechnisch pillepalle", kein eigener Export mehr),
+  Haken Stems (Größe aus bedarf); darunter „Platz auf <Medium>": Stapel-
+  balken [anderes belegt][KlangTresor je Teil][bleibt vom früheren Export]
+  [frei danach], Legende je Teil mit Dateizahl, Zeile „Davon liegen schon
+  X auf dem Medium — der Export frischt nur auf". **Schritt 3**: Knopf,
+  Standzeile, Fortschrittsbalken (was · fertig von gesamt · MB/s · noch
+  etwa), Lauf-Abschnitt, Ergebniskacheln. Darunter EINE Zeile „Sternen-
+  himmel als Demo zum Verschicken" mit Knopf; der Knopf „mit Medien-
+  ordner" ist gestrichen (dieselbe Datei entsteht beim Export).
+- Farben je Teil fest über lagenRampe(8) (zwei Hausakzente), gleich im
+  Stick und im Balken; Mockup-Farben (violett, türkis) verworfen — „ein
+  dritter Akzent wäre wieder erfunden".
+- Geprüft auf einer Probeseite mit Attrappen-Stand (Scratchpad, Port
+  18811, danach beendet): voll / läuft (23 %, 1,1 MB/s, noch etwa 1.0 h)
+  / knapp FAT32 mit Stems („Passt nicht … es fehlen 25,4 GB", Knopf zu) /
+  alter Server ohne medium+bedarf (nur Form, nichts gesperrt). Kein
+  Text im Stick breiter als 94 px. Nicht in Caspar_Ds Fenster geladen.
+- `bin/export.js` (Workflow-Agent): rsync `--info=progress2`, Vorab-
+  messung je Schritt (`--stats`, Trockenlauf — auf dem langsamen Stick
+  spürbar, währenddessen fortschritt null), `fortschritt{prozent, was,
+  bytesGesamt, bytesFertig, bytesProSekunde, restS}` in export-lauf.json
+  (höchstens 4×/s), `zielDateisystem`, Abbruch bei NTFS-nur-lesen,
+  nur-lesen-Ziel, FAT32 mit Datei > 4 GB.
+- **Offen, sobald der Stick-Export durch ist** (Wächter b3mw0eis1):
+  Server-Patch anwenden — `scratchpad/server-medium-patch.py` (aus dem
+  Sitzungsprotokoll zurückgeholt, ein Agent hatte ihn gelöscht): medium
+  {pfad, name, dateisystem, gesamt, frei, belegt, archivBytes,
+  kompatibel} und bedarf {teile[], gesamt, gesamtMitStems, 10 min
+  gemerkt} in /api/export/stand, dazu /api/export/bedarf. Solange läuft
+  der Stick-Export (PID 43054), und eine Änderung an server.js startet
+  den Server neu. Danach committen und pushen (fetch vorher).
+- Wortfrage: WOERTER.md sagt „Export → die Ausgabe"; das Register sagt
+  „Export starten / Export läuft", wie Caspar_D selbst spricht. Nicht
+  entschieden.
+

@@ -2408,9 +2408,17 @@ Konten nach oben; erst gegen deren eigene Herzfreudigkeit
 
 **Entschieden (Caspar_D, 09.09.2026):** nicht in die Morgenroutine —
 der Export ist eine Handlung auf Verlangen. Der Platzhalter „Bald:
-Archiv-Export" im Morgenfenster ist gestrichen. Wo die Handlung wohnt
-(Knopf in der Oberfläche mit Ziel, Fortschritt und Probestart — oder
-nur bin/export.js), ist offen.
+Archiv-Export" im Morgenfenster ist gestrichen.
 
-**Offen, Caspar_D:** Welches Ziel (Stick da, ≥ 40 GB)? Schaufenster für
-den Fernseher gewünscht — welches Gerät, welcher Browser?
+**Gebaut (09.09.2026):** die Handlung wohnt im Profil als Registerlasche
+„Mobiler KlangTresor", dreigeteilt — 1 wohin (Ordnerwähler, Medium mit
+Dateisystem und Marken Mac/Windows/Linux), 2 was (Datenbestand und
+Sternenhimmel immer, Stems auf Wunsch; Platzdiagramm), 3 starten
+(Fortschritt mit Restzeit, Probestart). Piktogramm des Bestands im Kopf.
+Der Sternenhimmel ist kein eigener Export: er liegt immer mit auf dem
+Medium; nur die Demo-Datei mit Suno-Links hat noch einen Knopf. Form 2
+(Fernseher ohne Node) ist durch `Musik/` mit ID3 und Titelbild erledigt —
+Fernseher, Autoradio und VLC lesen den Ordner. Der Sternenhimmel-Knopf
+im Klangraum ist gestrichen.
+
+**Offen:** Windows-Startskript bei Casto testen; Handbuch-Kapitel.
