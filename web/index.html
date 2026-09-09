@@ -14648,7 +14648,12 @@ function exportPlatzZeichnen(d){
 function exportFortschrittZeichnen(d){
   const box = $('exportfortschritt'); if (!box) return;
   const f = d && d.laeuft && d.fortschritt;
-  if (!f){ box.hidden = true; box.innerHTML = ''; }
+  /* Zwischen zwei Stufen ist der Fortschritt einen Moment leer: dann
+     bleibt der Balken einfach stehen, wie er ist (09.09.2026: er
+     verschwand beim Eintritt in Stufe 3 und kam nicht wieder, weil der
+     Schluessel noch am Kasten hing und nichts neu gebaut wurde). Erst
+     ohne Lauf wird er weggeraeumt. */
+  if (!f){ if (!(d && d.laeuft)){ box.hidden = true; box.innerHTML = ''; delete box.dataset.schluessel; } }
   else {
     /* DER GESAMTBALKEN (Caspar_D, 09.09.2026: "der User ist nur an der
        Gesamtzeit interessiert und sieht an den Etappen, wofuer die Daten
@@ -14661,7 +14666,7 @@ function exportFortschrittZeichnen(d){
     const g = plan && f.gesamt && f.gesamt.bytes > 0 ? f.gesamt : null;
     const etappen = plan ? plan.stufen.filter(s => s.bytes > 0) : [];
     const schluessel = plan ? 'plan:' + etappen.map(s => s.nr + ':' + s.bytes).join(',') : 'stufe';
-    if (box.dataset.schluessel !== schluessel){
+    if (box.dataset.schluessel !== schluessel || !box.querySelector('.fuellung')){
       box.dataset.schluessel = schluessel;
       box.innerHTML = '<div class="fortbalken"><i class="fuellung"></i></div><div class="fortetappen"></div><div class="forttext"></div>';
       const balken = box.querySelector('.fortbalken'), fuellung = box.querySelector('.fuellung');
