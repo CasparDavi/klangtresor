@@ -14099,12 +14099,15 @@ function exportZeichnen(d){
 
   /* Der letzte Stand vom Stick - oder warum es keinen gibt. */
   const st = d.letzter || null;            /* so nennt es der Server: export-stand.json vom Stick */
-  if (d.zielEingehaengt === false) stand.textContent = 'Stick nicht eingehängt' + (d.ziel ? ` (${d.ziel})` : '') + '.';
+  /* Reihenfolge: erst "kein Ziel", dann "nicht eingehaengt" - sonst
+     hiess es ohne jedes Ziel "Stick nicht eingehaengt" (Caspar_D,
+     09.09.2026). */
+  if (!d.ziel) stand.textContent = 'Noch kein Ziel gewählt.';
+  else if (d.zielEingehaengt === false) stand.textContent = `Stick nicht eingehängt (${d.ziel}).`;
   else if (st && st.exportiertAm)
     stand.textContent = `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
       + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
-  else if (d.ziel) stand.textContent = 'Noch kein Export auf diesem Ziel.';
-  else stand.textContent = 'Noch kein Ziel gewählt.';
+  else stand.textContent = `Noch kein Export auf ${d.ziel} — bereit.`;
 
   /* Der Lauf als EIN Abschnitt, nachgefuehrt statt neu gebaut: Wer die
      Zeilen aufgeklappt hat, soll sie nicht alle zwei Sekunden wieder
