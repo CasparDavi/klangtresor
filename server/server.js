@@ -1766,11 +1766,18 @@ const server = http.createServer((req, res) => {
     /* Der Kachelstempel reist im Katalogkopf mit: Die Oberflaeche haengt
        ihn an jede Kachel-Adresse, damit neu gerechnete Kacheln auch
        ankommen. Siehe bin/kacheln.js - dort wird er gesetzt. */
-    let kachelStand = 0;
-    try { kachelStand = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'kachel-stand.json'), 'utf8')).stand || 0; } catch (e) {}
+    let kachelStand = 0, titelbild = [];
+    try {
+      const ks = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'kachel-stand.json'), 'utf8'));
+      kachelStand = ks.stand || 0;
+      /* Titel mit beschnittenem Titelbild (bin/kacheln.js): die Buehne
+         nimmt dann titelbild.jpg statt cover.jpg. */
+      titelbild = Object.keys(ks.titelbild || {}).filter(id => ks.titelbild[id]);
+    } catch (e) {}
     return jsonAntwort(res, {
       version:    paketVersion(),
       kachelStand,
+      titelbild,
       erstelltAm: k.erstelltAm,
       anzahl:     schlankeListe.length,
       spielzeit:  k.spielzeit || null,

@@ -36,7 +36,19 @@ const SONGS  = path.join(WURZEL, 'library', 'songs');
 
 const BREITE = 600, HOEHE = 800;          // 3:4 hochkant, reicht für Retina
 const NEU    = process.argv.includes('--neu');
+const PROBE  = process.argv.includes('--probe');   /* nur messen und sagen, nichts schreiben */
 const PARALLEL = 4;
+/* ---- DAS TITELBILD FUER DIE BUEHNE --------------------------------
+   Caspar_D, 09.09.2026, auf der Karaoke-Buehne: "auch dort haben die
+   Titelbilder z.T. schwarze Balken, die total besch... aussehen".
+   Die Buehne zeigt das Cover in voller Groesse (artworkBild), nicht die
+   Kachel - und damit den Rahmen, den die Kachel laengst wegschneidet.
+   Deshalb entsteht hier, mit DEMSELBEN Zuschnitt, zusaetzlich ein
+   titelbild.jpg in voller Aufloesung: das Cover ohne durchsichtigen
+   oder schwarzen Rand. Nur wo es einen Rand gibt; sonst bleibt cover.jpg
+   das Titelbild. Welche Titel eines haben, steht in kachel-stand.json
+   (titelbild: {id: true|false}) - der Server reicht die Liste im
+   Katalogkopf durch, die Oberflaeche nimmt dann titelbild.jpg. */
 
 /* ---- DER DURCHSICHTIGE RAND MUSS WEG ---------------------------------
    Caspar_D, 07.09.2026, an einer Kachel: „zu allen Seiten ist Platz im
@@ -220,52 +232,79 @@ function filterBauen(schnitt) {
     `[hg][vg]overlay=(W-w)/2:(H-h)/2`;
 }
 
-function rechne(quelle, ziel) {
+function rechne(quelle, ziel, titelbild) {
   return new Promise((fertig) => {
     let schnitt = null;
     try { schnitt = zuschnitt(quelle); } catch (e) {}
+    const ergebnis = { ok: true, beschnitten: !!schnitt, schnitt };
+    const danach = () => {
+      /* Das Titelbild: derselbe Zuschnitt, volle Aufloesung, beste Guete. */
+      if (!titelbild || !schnitt) return fertig(ergebnis);
+      execFile('ffmpeg', ['-v', 'error', '-y', '-i', quelle, '-vf', schnitt, '-frames:v', '1', '-q:v', '2', titelbild],
+        (fehler) => { if (fehler) { ergebnis.ok = false; ergebnis.beschnitten = false; } fertig(ergebnis); });
+    };
+    if (!ziel) return danach();
     execFile('ffmpeg', [
       '-v', 'error', '-y',
       '-i', quelle,
       '-filter_complex', filterBauen(schnitt),
       '-frames:v', '1', '-q:v', '4',
       ziel,
-    ], (fehler) => fertig(!fehler));
+    ], (fehler) => { if (fehler) ergebnis.ok = false; danach(); });
   });
 }
+const STAND_DATEI = path.join(WURZEL, 'library', 'kachel-stand.json');
+function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'utf8')); } catch (e) { return {}; } }
 
 (async () => {
   const katalog = K.lesen();
   if (!katalog) { console.error('Kein Katalog - erst bin/aufbereiten.js.'); process.exit(1); }
 
   const songs = Object.values(katalog.songs);
+  const stand = standLesen();
+  const titelbildStand = (!NEU && stand.titelbild && typeof stand.titelbild === 'object') ? { ...stand.titelbild } : {};
   const offen = [];
 
   for (const s of songs) {
     const quelle = path.join(SONGS, s.id, 'cover.jpg');
     const ziel   = path.join(SONGS, s.id, 'kachel.jpg');
+    const titelbild = path.join(SONGS, s.id, 'titelbild.jpg');
     if (!fs.existsSync(quelle)) continue;
-    if (!NEU && fs.existsSync(ziel) && fs.statSync(ziel).size > 0) continue;
-    offen.push({ titel: s.titel, quelle, ziel });
+    const kachelFehlt = NEU || !fs.existsSync(ziel) || fs.statSync(ziel).size === 0;
+    /* Titelbild: einmal je Titel entschieden (Eintrag im Stand); danach
+       nur neu bei --neu oder wenn die Datei trotz Entscheidung fehlt. */
+    const titelbildOffen = NEU || !(s.id in titelbildStand) || (titelbildStand[s.id] && !fs.existsSync(titelbild));
+    if (!kachelFehlt && !titelbildOffen) continue;
+    offen.push({ id: s.id, titel: s.titel, quelle, ziel: kachelFehlt ? ziel : null, titelbild: PROBE ? null : titelbild, titelbildOffen });
   }
 
-  console.log(`${songs.length} Songs, ${offen.length} Kacheln zu rechnen\n`);
+  console.log(`${songs.length} Songs, ${offen.filter(a => a.ziel).length} Kacheln zu rechnen, `
+            + `${offen.filter(a => a.titelbildOffen).length} Titelbilder zu pruefen${PROBE ? ' (nur Probe, nichts wird geschrieben)' : ''}\n`);
   if (!offen.length) { console.log('Nichts zu tun.'); return; }
 
-  let fertig = 0, misslungen = 0, bytes = 0;
+  let fertig = 0, misslungen = 0, bytes = 0, titelbilder = 0, raender = 0;
   const start = Date.now();
 
   // In kleinen Gruppen, damit alle Kerne arbeiten, ohne den Mac
   // lahmzulegen.
   for (let i = 0; i < offen.length; i += PARALLEL) {
     const gruppe = offen.slice(i, i + PARALLEL);
-    const ergebnis = await Promise.all(gruppe.map(a => rechne(a.quelle, a.ziel)));
-    ergebnis.forEach((ok, j) => {
-      if (ok && fs.existsSync(gruppe[j].ziel)) { fertig++; bytes += fs.statSync(gruppe[j].ziel).size; }
-      else { misslungen++; console.log(`  ✗ ${gruppe[j].titel}`); }
+    const ergebnis = await Promise.all(gruppe.map(a => rechne(a.quelle, PROBE ? null : a.ziel, a.titelbild)));
+    ergebnis.forEach((e, j) => {
+      const a = gruppe[j];
+      if (a.ziel && !PROBE) {
+        if (e.ok && fs.existsSync(a.ziel)) { fertig++; bytes += fs.statSync(a.ziel).size; }
+        else { misslungen++; console.log(`  ✗ ${a.titel}`); }
+      }
+      if (a.titelbildOffen) {
+        if (e.schnitt) raender++;
+        if (PROBE) { if (e.schnitt) console.log(`  Rand: ${a.titel}  (${e.schnitt})`); }
+        else { titelbildStand[a.id] = !!(e.beschnitten && fs.existsSync(a.titelbild)); if (titelbildStand[a.id]) titelbilder++; }
+      }
     });
-    process.stdout.write(`\r  ${fertig + misslungen}/${offen.length}`);
+    process.stdout.write(`\r  ${Math.min(i + PARALLEL, offen.length)}/${offen.length}`);
   }
+  if (PROBE) { console.log(`\n\nProbe: ${offen.length} geprueft, ${raender} mit Rand - nichts geschrieben.`); return; }
 
   /* STEMPEL FUER DEN BROWSER. Kacheln sind abgeleitete Dateien und
      aendern sich, wenn dieses Skript laeuft - der Browser darf das nicht
@@ -277,13 +316,13 @@ function rechne(quelle, ziel) {
      holt sie. Ohne Handarbeit, ohne geleerten Vorrat.
      (Caspar_D, 07.09.2026: "also bei deinem internen browser
      funktioniert es erstmal nicht") */
-  if (fertig) {
-    try {
-      fs.writeFileSync(path.join(WURZEL, 'library', 'kachel-stand.json'),
-        JSON.stringify({ stand: Date.now(), gerechnet: fertig,
-          wozu: 'Haengt als ?k= an jeder Kachel-Adresse. Aendert sich, sobald Kacheln neu gerechnet wurden - so holt der Browser sie, ohne dass jemand seinen Vorrat leeren muss.' }, null, 1));
-    } catch (e) {}
-  }
+  try {
+    fs.writeFileSync(STAND_DATEI,
+      JSON.stringify({ stand: (fertig || titelbilder) ? Date.now() : (stand.stand || Date.now()), gerechnet: fertig,
+        titelbild: titelbildStand,
+        wozu: 'Haengt als ?k= an jeder Kachel- und Titelbild-Adresse. Aendert sich, sobald Kacheln oder Titelbilder neu gerechnet wurden - so holt der Browser sie, ohne dass jemand seinen Vorrat leeren muss. titelbild: je Titel, ob ein beschnittenes titelbild.jpg neben cover.jpg liegt.' }, null, 1));
+  } catch (e) {}
+  if (titelbilder) console.log(`\n\nTitelbilder ohne Rand: ${titelbilder} neu (gesamt ${Object.values(titelbildStand).filter(Boolean).length})`);
 
   const dauer = Math.round((Date.now() - start) / 1000);
   console.log(`\n\nfertig:     ${fertig}`);

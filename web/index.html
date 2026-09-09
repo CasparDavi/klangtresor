@@ -10328,9 +10328,17 @@ function artworkVideo(id){
     ? '/media/' + id + '/eigen.mp4' : '/media/' + id + '/artwork.mp4';
 }
 /* Und welches Standbild. */
+/* Seit 09.09.2026 (Caspar_D auf der Karaoke-Buehne: "schwarze Balken,
+   die total besch... aussehen"): Hat bin/kacheln.js fuer den Titel ein
+   titelbild.jpg ohne durchsichtigen oder schwarzen Rand gerechnet, gilt
+   das - mit demselben Zuschnitt wie die Kachel. Die Liste kommt im
+   Katalogkopf (titelbild); der Kachelstempel haengt auch hier an. */
+let _titelbildMenge = null, _titelbildQuelle = null;
 function artworkBild(id){
-  return (_eigenArt && _eigenArt[id] && _eigenArt[id].bild)
-    ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/cover.jpg';
+  if (_eigenArt && _eigenArt[id] && _eigenArt[id].bild) return '/media/' + id + '/eigen.jpg';
+  const liste = katalogInfo && katalogInfo.titelbild;
+  if (liste !== _titelbildQuelle){ _titelbildQuelle = liste; _titelbildMenge = new Set(liste || []); }
+  return _titelbildMenge.has(id) ? '/media/' + id + '/titelbild.jpg' + kachelZusatz() : '/media/' + id + '/cover.jpg';
 }
 /* Fuer die Kacheln gibt es eine kleingerechnete Fassung (kachel.jpg).
    Ein selbst abgelegtes Titelbild hat die nicht - dann gilt es
