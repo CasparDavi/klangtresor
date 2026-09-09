@@ -2209,3 +2209,36 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
   Register zeigt `behaelter` (Stücke, Ballast) noch nicht; Kachelgröße
   für den Sternenhimmel (21,6 MB HTML); Windows-Start bei Casto.
 
+## Demo-Sternenhimmel: Sunos Player eingebettet (09.09.2026, Nachmittag)
+
+- Caspar_D: der verschickte Sternenhimmel soll die Titel abspielen, nicht
+  nur auf Suno verlinken ("wenn jeder Song auf Suno geht, ist der Reiz
+  kaputt"). Weg: Sunos offizielle Einbettung `suno.com/embed/<id>`, die
+  streamt ohne Anmeldung, nichts wird gespeichert. Tarjas Entschlüssel-
+  Rezept NICHT gebaut (umginge Sunos Schutz).
+- Untersucht (WebFetch + einmal Chrome, Skripte aus der Seite heraus
+  durchsucht): der Einbett-Player ist Sunos eigene Next.js-App, kein
+  Parameter/kein Theme, aber der Media-Player darin ist **Plyr** (MIT).
+  Der Ton hängt an `crypto.subtle` + `/rights` (Tarjas Befund bestätigt).
+  Also: eigener, frei gestalteter Player wäre leicht (Plyr), scheitert nur
+  am verschlüsselten Ton.
+- `bin/himmel-export.js`, Demo-Modus (ohne --relativ/--musik): der Himmel
+  bildfüllend (Kopf/Fuss/untere Leiste aus); das ganze KlangTresor-Panel
+  bleibt, schwebt aber als durchscheinendes Overlay oben rechts (kein
+  Drawer, der zudeckt); Sunos Player oben links, unangetastet, 16:9,
+  ein Fünftel Bildbreite, per transform:scale() verkleinert (nicht
+  beschnitten - Suno hat eine Mindestgröße), Naturmaß 480x270. Klick auf
+  einen Stern lädt `embed/<id>?autoplay=1` (allow="autoplay" + Klickgeste),
+  Flugreise: nach Spieldauer vor() zum nächsten Klangnachbarn, sonst zu
+  einem zufälligen noch nicht gespielten. Nachlade-Schutz: derselbe Stern
+  nicht neu, zwei Ladevorgänge >= 3 s auseinander (Suno drosselt das
+  Starten neuer Streams, sonst Weiterleitungsschleife über auth.suno.com).
+  Caspar_D: "das sieht schon sehr gut aus."
+- Grenze, die bleibt: der gestreamte Ton geht nur über Sunos Player und
+  wird gedrosselt. Betrifft nur die Demo; das eigene Archiv (Haus + Stick)
+  spielt lokale MP3, ohne Suno.
+- Ebenfalls fertig, mitcommittet: der --musik-Sternenhimmel bettet die
+  Kacheln auf 144 px verkleinert ein (2,4 statt 21,6 MB). Handbuch-Skizze
+  "Mobiler KlangTresor" in docs/handbuch/SKIZZEN.md (Kapitel noch nicht
+  geschrieben, der HTML-Entwurf des Agenten liegt im Scratchpad).
+

@@ -34,11 +34,18 @@
  *                    export.js beim Schreiben von Musik/ festhaelt
  *                    (Doppelnamen tragen dort " (2)"). Bild = die Kachel
  *                    (songs/<id>/kachel.jpg, sonst titelbild.jpg) als
- *                    data:-URI eingebettet: 324 Kacheln zu je ~50 KB sind
- *                    rund 21 MB HTML, und das ist gewollt - die Datei
- *                    braucht nichts ausser sich selbst und dem
- *                    Musik-Ordner. Titelauswahl wie bei --relativ, dazu
- *                    nur Titel, die in J einen Namen haben.
+ *                    data:-URI eingebettet - die Datei braucht nichts
+ *                    ausser sich selbst und dem Musik-Ordner. Vor dem
+ *                    Einbetten wird die Kachel mit ffmpeg auf 144 x 144
+ *                    verkleinert (Caspar_D, 09.09.2026): 324 Kacheln zu
+ *                    je ~50 KB waren 21,6 MB HTML fuer Bilder, die die
+ *                    Seite hoechstens 72 px gross zeigt (#player 44 px,
+ *                    #kartesteckbrief 72 px) - 144 px sind das Doppelte
+ *                    fuer Retina, und mit -q:v 4 bleiben ~5-7 KB je Bild,
+ *                    rund 2 MB fuer alles. Fehlt ffmpeg oder scheitert
+ *                    es, kommt die Originalkachel wie zuvor hinein, mit
+ *                    einer Zeile in der Ausgabe. Titelauswahl wie bei
+ *                    --relativ, dazu nur Titel, die in J einen Namen haben.
  *                    M ist eine URL relativ zur HTML-Datei (Vorwaerts-
  *                    schraegstriche, kein Schlussstrich), kein Dateipfad.
  *   --ziel <datei>   wohin; Vorgabe library/export/sternenhimmel.html,
@@ -59,7 +66,7 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');   /* fuer die Syntaxprobe unten */
+const { spawnSync, execFileSync } = require('node:child_process');   /* Syntaxprobe unten, Kacheln verkleinern (--musik) */
 const WURZEL = path.join(__dirname, '..');
 const K = require('./katalog.js');
 
@@ -244,12 +251,33 @@ const songs = karte.songs.filter(p => {
    eingebettetem Bild, oder Sunos CDN. Das Praefix bleibt, wie es kommt
    (Vorwaertsschraegstriche, kein Schlussstrich) - es ist eine URL, kein
    Dateipfad, auch unter Windows. */
+/* Die Kachel verkleinert, als Buffer - siehe Kopf (--musik): 144 x 144,
+   -q:v 4 (bei 3 ~6-8 KB, bei 5 ~4.5-6 KB; 4 ist die kleinste Stufe, die
+   noch im Zielband von 6-10 KB landet). ffmpeg schreibt als MJPEG nach
+   stdout, wie bin/kacheln.js sein Messbild holt. null, wenn ffmpeg fehlt
+   oder scheitert - dann nimmt der Rufer die Originaldatei. */
+const KACHEL_KANTE = 144, KACHEL_GUETE = 4;
+let kachelVerkleinerung = true;                                   /* nach dem ersten Fehlschlag: nicht 324-mal probieren */
+const kachelKlein = (datei) => {
+  if (!kachelVerkleinerung) return null;
+  try {
+    return execFileSync('ffmpeg', ['-v', 'error', '-i', datei, '-vf', `scale=${KACHEL_KANTE}:${KACHEL_KANTE}`,
+      '-q:v', String(KACHEL_GUETE), '-frames:v', '1', '-f', 'image2pipe', '-vcodec', 'mjpeg', 'pipe:1'],
+      { stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 1 << 24 });
+  } catch (e) {
+    /* Kein ffmpeg (ENOENT) oder ein Bild, das es nicht lesen mag: einmal
+       sagen, ab dann Originale - die Seite wird gross, aber sie wird. */
+    if (e.code === 'ENOENT') { kachelVerkleinerung = false; console.log('  ffmpeg nicht gefunden - Kacheln werden in Originalgroesse eingebettet.'); }
+    else console.log('  Kachel nicht verkleinert (' + path.relative(SONGS_ORDNER, datei) + '): ' + (e.message || e).toString().split('\n')[0] + ' - Original eingebettet.');
+    return null;
+  }
+};
 /* Die Kachel als data:-URI - siehe Kopf (--musik). Leer, wenn zu Hause
    weder Kachel noch Titelbild liegt; artworkBild faengt das ab. */
 const bildEingebettet = (id) => {
   for (const b of ['kachel.jpg', 'titelbild.jpg']) {
     const f = path.join(SONGS_ORDNER, id, b);
-    if (fs.existsSync(f)) return 'data:image/jpeg;base64,' + fs.readFileSync(f).toString('base64');
+    if (fs.existsSync(f)) return 'data:image/jpeg;base64,' + (kachelKlein(f) || fs.readFileSync(f)).toString('base64');
   }
   return '';
 };
@@ -299,6 +327,46 @@ if (!handle) {
   console.error('  Erst  node bin/sammeln.js <alias>,  dann erneut versuchen.\n');
   process.exit(1);
 }
+
+/* DER EINGEBETTETE SUNO-SPIELER (Caspar_D, 09.09.2026): in der DEMO klappt
+   beim Klick auf einen Stern Sunos eigener Spieler unten rechts auf und
+   streamt den Titel - "wenn jeder Song auf Suno geht, ist der Reiz kaputt".
+   Von Sunos Spieler bleibt nur die Bedienleiste stehen: der Mischmodus
+   'screen' macht seinen schwarzen Grund durchsichtig (die Kurve
+   brightness/contrast zieht das Blau erst nach Schwarz), und clip-path
+   schneidet Sunos Titelbild (links) und Titel (oben) weg - beide setzen
+   wir selbst, mit unserem Titelbild in Farbe direkt aus Sunos Bildadresse.
+   Das Suno-Logo unten rechts bleibt sichtbar (Caspar_D: die Corporate
+   Identity nicht untergraben). Die Zahlen sind an Caspar_Ds Regler-Bausatz
+   eingestellt. Nur in der Demo; die Stickfassungen spielen lokal ueber die
+   untere Leiste. */
+const demoStil = ARCHIV ? '' : `<style>
+/* DIE DEMO (Caspar_D, 09.09.2026): der Sternenhimmel bildfuellend; das
+   ganze KlangTresor-Panel bleibt wie es ist ("perfekt designt"), aber es
+   SCHWEBT als durchscheinendes Overlay oben rechts ueber den Sternen -
+   kein Drawer, der alles zudeckt. Kopf, Fusstext und die untere Leiste
+   fallen weg (keine Erklaerungen). Sunos eigener Spieler liegt oben LINKS
+   als kleines 16:9-Feld, unangetastet. */
+header,#kartefuss,#player{display:none}
+body{padding:0}
+#karte{grid-template-columns:1fr;gap:0;padding:0;height:100vh}
+#kartefeld{height:100vh;border:0;border-radius:0}
+/* Das Panel als schwebendes Overlay, nicht als Spalte */
+#karterechts{position:fixed;top:14px;right:14px;z-index:35;width:min(330px,34vw);
+  max-height:calc(100vh - 28px);overflow:auto;height:auto;padding:0;gap:10px}
+/* durchscheinend: die Sterne glimmen hinter dem Panel durch */
+#kartelegende .drawer{background:rgba(14,14,18,.5);backdrop-filter:blur(5px);border-color:#ffffff20}
+#kartelegende .drawerkopf{background:rgba(255,255,255,.05)}
+#karte.leiste #kartelegende{background:rgba(14,14,18,.5);backdrop-filter:blur(5px)}
+/* Der Spieler oben links */
+#sunobox{position:fixed;left:14px;top:14px;z-index:40;border-radius:8px;overflow:hidden;background:#000;box-shadow:0 8px 30px #000a}
+#sunobox[hidden]{display:none}
+#sunobox iframe{position:absolute;left:0;top:0;width:480px;height:270px;border:0;transform-origin:0 0}
+#sunobox .zu{position:absolute;right:5px;top:5px;z-index:3;width:20px;height:20px;border-radius:50%;
+  border:1px solid #ffffff22;background:#000a;color:#ddd;cursor:pointer;font-size:12px;line-height:18px;text-align:center;padding:0}
+</style>`;
+const demoMarkup = ARCHIV ? '' : '<div id="sunobox" hidden><button id="sunozu" class="zu" title="schließen">×</button>'
+  + '<iframe id="sunoif" title="Suno-Spieler" allow="autoplay; encrypted-media"></iframe></div>';
 
 const seite = `<!doctype html>
 <html lang="de"><head><meta charset="utf-8">
@@ -401,7 +469,7 @@ body{padding-bottom:64px}
 #kartetipp{position:fixed;pointer-events:none;background:var(--flaeche2);color:var(--text);font-size:12px;padding:6px 9px;border-radius:6px;border:1px solid var(--rand);z-index:50;white-space:nowrap}
 #kartetipp small{display:block;color:var(--schwach);font-size:11px}
 @media (max-width:900px){#karte{grid-template-columns:1fr}#kartefeld{height:70vh}#karterechts{height:auto}}
-</style></head>
+</style>${demoStil}</head>
 <body>
 <header><h1>Klangraum</h1><small>${daten.anzahl} Titel von <a style="color:inherit" href="https://suno.com/@${handle}">@${handle}</a>${ARCHIV ? ' — aus dem Archiv auf diesem Datenträger' : ' auf Suno'}, nach Klang geordnet — Klick auf einen Stern spielt ihn</small></header>
 <div id="karte">
@@ -417,18 +485,85 @@ body{padding-bottom:64px}
   <button id="preise" class="pille" title="Klangreise: am Songende fliegt das Sound-Schiff zum nächsten noch nicht besuchten Klangnachbarn">Reise</button>
   <audio id="audio" preload="none"></audio>
 </div>
+${demoMarkup}
 <script>
 const DATEN = ${JSON.stringify(daten)};
 const STAMM = ${JSON.stringify(stamm)};
 const $ = (id) => document.getElementById(id);
 const karteZeichnen = () => zeichnen();   // karteAnimieren ruft so
+/* Demo: Sunos Spieler in die Ecke, siehe demoStil oben. */
+const EINBETTEN = ${!ARCHIV};
+const SUNO_NAT = { w: 480, h: 270 };   /* Naturgroesse des Spielers, 16:9 */
+function sunoGroesse(){
+  const b = $('sunobox'); if (!b) return;
+  const pw = Math.round(window.innerWidth / 5);   /* ein Fuenftel der Bildschirmbreite (Caspar_D 09.09.2026) */
+  const s = pw / SUNO_NAT.w;
+  b.style.width = pw + 'px'; b.style.height = Math.round(SUNO_NAT.h * s) + 'px';
+  const f = $('sunoif'); if (f) f.style.transform = 'scale(' + s + ')';
+}
+window.addEventListener('resize', sunoGroesse);
+let sunoLetzte = 0;
+function sunoEinbetten(s){
+  const b = $('sunobox'); if (!b) return;
+  /* Suno drosselt, wie oft man in kurzer Zeit einen Stream startet - zu
+     schnelles Nachladen fuehrt zur Weiterleitungsschleife ueber
+     auth.suno.com (Caspar_D, 09.09.2026). Deshalb: denselben, schon
+     offenen Titel nicht neu laden, und zwei Ladevorgaenge mindestens drei
+     Sekunden auseinander (die Flugreise haelt das ohnehin ein). */
+  if (s.id === aktuellId && !b.hidden) return;
+  const jetzt = Date.now();
+  if (jetzt - sunoLetzte < 3000){ clearTimeout(reiseUhr); reiseUhr = setTimeout(() => sunoEinbetten(s), 3000 - (jetzt - sunoLetzte)); return; }
+  sunoLetzte = jetzt;
+  /* Sunos eigener Spieler, unveraendert - wir fassen ihn nicht an, nur
+     die Groesse des Rahmens skaliert ihn (sunoGroesse). Autoplay: das
+     iframe traegt allow="autoplay" (demoMarkup); zusammen mit dem Klick
+     auf den Stern (die Nutzergeste, die der Browser fuer Ton mit Klang
+     verlangt) startet Sunos Player von selbst. Der ?autoplay=1-Parameter
+     traegt das iframe (demoMarkup); ?autoplay=1 kommt mit, damit der
+     Titel von selbst spielt. Die Weiterleitungsschleife ueber
+     auth.suno.com kam von zu schnellem Nachladen, nicht vom Parameter -
+     dagegen steht der Nachlade-Schutz oben (Caspar_D, 09.09.2026). */
+  $('sunoif').src = 'https://suno.com/embed/' + s.id + '?autoplay=1';
+  aktuellId = s.id; b.hidden = false; sunoGroesse(); zeichnen();
+  /* DIE FLUGREISE (Caspar_D, 09.09.2026): im Original fliegt das Schiff am
+     Songende zum naechsten Klangnachbarn - ausgeloest vom Ton (audio.onended).
+     Sunos Player im iframe gibt uns das Songende nicht (fremder Ursprung),
+     also stellen wir eine Uhr auf die bekannte Spieldauer des Titels und
+     rufen dann vor(1) - dasselbe, was der Ton getan haette. Zwei Sekunden
+     Zugabe fuer das Laden. Wer von Hand einen Stern anklickt, stellt die
+     Uhr neu (sunoEinbetten laeuft dann erneut). */
+  clearTimeout(reiseUhr);
+  if (reise && s.dauer > 0) reiseUhr = setTimeout(reiseWeiter, (s.dauer + 2) * 1000);
+}
+let reiseUhr = null;
+/* Der naechste Stern der Flugreise (Caspar_D, 09.09.2026: "immer denselben
+   Song spielen ist doof"): zuerst der naechste noch nicht besuchte
+   Klangnachbar; ist keiner mehr frei, irgendein noch nicht gespielter
+   Titel; sind alle durch, faengt die Runde von vorn an. Nie der, der
+   gerade laeuft. */
+function reiseWeiter(){
+  let ziel = null;
+  try { ziel = reiseNaechster(); } catch (e) {}
+  if (!ziel){
+    let offen = sichtbar.filter(x => !reiseBesucht.has(x.id));
+    if (!offen.length){ reiseBesucht.clear(); if (aktuellId) reiseBesucht.add(aktuellId); offen = sichtbar.filter(x => x.id !== aktuellId); }
+    if (offen.length) ziel = offen[Math.floor(Math.random() * offen.length)].id;
+  }
+  if (!ziel || ziel === aktuellId) return;
+  reiseBesucht.add(ziel); reiseWeg.push(ziel);
+  const p = DATEN.songs.find(x => x.id === ziel);
+  if (p && karteDim === '3d' && schiffArt === 'direkt') karteNachVorn(karteRaum(p));
+  spielenNachId(ziel);
+}
+if (EINBETTEN){ const z = $('sunozu'); if (z) z.onclick = () => { $('sunobox').hidden = true; $('sunoif').src = 'about:blank'; clearTimeout(reiseUhr); }; }
 /* Kleiner Player: spielt die MP3 direkt von Sunos CDN (oeffentlich). */
 const audio = $('audio');
 const sichtbar = DATEN.songs.map(p => STAMM[p.id]).filter(Boolean);
 const posVon = (id) => sichtbar.findIndex(s => s.id === id);
 function spielenNachId(id){
   const s = song(id); if (!s) return;
-  if (!s.audio){ if (s.link) window.open(s.link, '_blank'); return; }   /* Demo ohne Ton: zu Suno */
+  if (EINBETTEN){ sunoEinbetten(s); return; }   /* Demo: Sunos Spieler in die Ecke, streamt */
+  if (!s.audio){ if (s.link) window.open(s.link, '_blank'); return; }   /* Rueckfall: zu Suno */
   aktuellId = id; audio.src = s.audio; audio.play().catch(() => {});
   $('pbild').src = s.bild || ''; $('ptitel').textContent = s.titel; $('pknopf').textContent = '❚❚';
   zeichnen();
@@ -497,6 +632,10 @@ function zeichnen(){
   });
 }
 karteDaten = DATEN;
+/* Im Demo-Himmel ist die Flugreise immer an: ein Klick auf einen Stern
+   beginnt sie, danach traegt die Spieldauer weiter (siehe sunoEinbetten).
+   Das Reise-Knoepfchen ist hier ausgeblendet - der Zustand steht fest. */
+if (EINBETTEN) sunoGroesse();
 zeichnen();
 window.addEventListener('resize', zeichnen);
 </script>
@@ -550,7 +689,7 @@ fs.writeFileSync(ziel, seite);
   }
 
   /* Die zwei Datenzeilen (DATEN, STAMM) kommen vor der Pruefung heraus:
-     sie sind JSON, kein Code, und mit --musik stehen darin 21 MB Base64 -
+     sie sind JSON, kein Code, und mit --musik stehen darin Megabytes Base64 -
      und Base64 enthaelt "//". Die Kommentarstreichung oben nahm das fuer
      einen Zeilenkommentar, kappte die Zeile mitten in einer Zeichenkette,
      und von da an war fuer die Pruefung der halbe Export eine Zeichenkette:

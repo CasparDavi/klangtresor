@@ -666,3 +666,32 @@ Kapitel 1 (das Vorwort) entsteht zuletzt, sein Gerüst steht in [GLIEDERUNG.md](
 - Der Ton des Kapitels. Es ist das einzige, das ueberwiegend von Grenzen handelt, und es steht am Schluss des Buches. Ob es mit einem Satz enden soll, der die Sache wieder aufrichtet - so wie Kapitel 12 endet -, oder trocken aufhoert, ist eine Entscheidung ueber das Buch, nicht ueber das Kapitel.
 
 ---
+
+## Kapitel 16 · Mobiler KlangTresor
+
+**Vorspann.** Nach diesem Kapitel weißt du, wie du deinen ganzen Bestand auf einen Stick bekommst, den du irgendwo einsteckst — Mac, Windows, Fernseher, Autoradio — und der dort spielt, ohne dass etwas installiert oder nachgeladen wird. Und du weißt, warum eine Viertelstunde reicht, wenn es schnell gehen muss.
+
+**Abschnitte**
+
+- Wozu, und was der Stick ist. Eine eingefrorene Kopie: sie zeigt und spielt, holt aber nichts nach und speichert nichts (server/server.js, `--eingefroren`, alles außer GET bekommt 405). Für die Vorführung, den Nachlass, den Fernseher, das Autoradio. Caspar_D, 09.09.2026: „ich will los, mir fällt ein, Mist, ich wollte ja meine Sammlung vorführen, habe aber keine Stunde mehr — reicht nicht auch schon eine Viertelstunde".
+- Das Register in drei Schritten (web/index.html, Registerlasche „Mobiler KlangTresor"). Erst **wohin**: ein Ordnerwähler statt einer Pfadeingabe, daneben das Medium mit Dateisystem und den Marken Mac/Windows/Linux (was es lesen und schreiben kann). Dann **was**: Datenbestand und Sternenhimmel liegen immer bei, die Instrumentspuren (Stems) nur auf Wunsch; darunter der Belegungsbalken „nach Datentransfer", der je Datentyp zeigt, was schon drauf ist und was noch kommt, und den Startknopf sperrt, wenn es nicht passt. Dann **los**: ein Gesamtbalken über den ganzen Lauf, die Etappen in den Farben ihrer Datentypen, darunter die Restzeit für alles.
+- Die sieben Stufen, die neuesten zuerst. Der Datentransfer schreibt nach Wichtigkeit (bin/export.js): 1 Starten (Programm, Kern mit Katalog und allen Liedtexten, Herzen-Listen, Sternenhimmel, das mitgebrachte Node), 2 die Titel neueste zuerst (Tonspur, Kachel, Titelbild), 3 die großen Titelbilder, 4 die Analyse-Ablage, 5 der Musik-Ordner für Fernseher und Autoradio, 6 die Stems, 7 Abschluss mit Aufräumlauf und Probestart. So ist der Stick nach der ersten Stufe schon lauffähig, und die neuesten Titel spielen als erste. Anhalten geht jederzeit: die laufende Datei wird fertig, dann steht der Stand. Wer fortsetzt, schreibt nur, was fehlt.
+- Anhalten und die Teilkopie. Der Knopf „Anhalten" hält nach der laufenden Datei; solange steht die Standzeile orange — den Stick jetzt nicht ziehen —, danach grün: sicher auswerfen. Ein so entstandener Stick ist eine **Teilkopie**: der eingefrorene KlangTresor zeigt nur die Titel, deren Tonspur wirklich da ist, und trägt oben das Banner „Teilkopie von @alias vom Datum".
+- Was auf dem Stick liegt. Drei Startskripte (START-Mac.command, START-Windows.cmd, START-Linux.sh), der Ordner `Musik/` mit den Titeln als MP3, benannt nach dem Namen des Titels, mit Titelbild im Dateikopf, `Sternenhimmel.html`, `LIES-MICH.md` und `Programm/` mit dem Bestand in Behältern. Doppelklick auf das Startskript, der Browser geht von selbst auf.
+- Was der Stick nicht kann. Er holt nichts und speichert nichts; die Registerlasche „Mobiler KlangTresor" fehlt dort, weil es nichts zu exportieren gibt. Ein langsamer Stick braucht seine Zeit (an einem Intenso gemessen: 3 bis 6 MB je Sekunde, der ganze Bestand in gut einer Viertelstunde, ein müder Stick auch länger). exFAT ist die richtige Wahl (Mac, Windows, Linux); FAT32 geht auch, weil die Behälter-Stücke unter zwei Gigabyte bleiben; NTFS beschreibt der Mac nicht; APFS liest nur der Mac.
+
+**Merksatz.** Orange heißt warten, Grün heißt auswerfen: Solange die Standzeile orange steht, wird die laufende Datei noch geschrieben — erst bei Grün darf der Stick aus dem Rechner.
+
+**Vertiefung.** Warum der Bestand in Behältern liegt. Ein USB-Stick schreibt eine große Datei mit rund 14 MB je Sekunde, aber jede einzelne Datei kostet ihn ein bis zwei Sekunden Kleinarbeit an seinen Tabellen — bei 4.000 Dateien vergeht so über eine Stunde, in der fast nichts fließt. Deshalb kommt der Bestand nicht als 4.000 Dateien auf den Stick, sondern als wenige große Behälter (bin/behaelter.js): `bestand-001.tar` und weitere Stücke bis zwei Gigabyte, dazu ein Verzeichnis, das sagt, welche Datei in welchem Stück an welcher Stelle liegt. Der eingefrorene KlangTresor liest den Ton direkt aus dem Stück, ohne es auszupacken. Es ist das tar-Format, das jedes System kennt — wer die einzelnen Dateien will, packt die Stücke aus, gebraucht wird das aber nie.
+
+**Abbildungen**
+
+- Breit: die Registerlasche „Mobiler KlangTresor" mit gewähltem Ziel, dem Piktogramm des Datenbestands links und den drei Schritten.
+- Spaltig: der Gesamtbalken während Stufe 2, die Etappen in den Farben ihrer Datentypen, die geschriebenen voll, die kommenden gedämpft.
+- Spaltig: der eingefrorene KlangTresor vom Stick mit dem Banner „Teilkopie von @alias vom Datum".
+
+**Offen**
+
+- Platz und Nummer im Buch. Sachlich gehört das Kapitel neben Kapitel 14 (Sichern und wiederherstellen), hier vorläufig als 16 angehängt. Die Nummer entscheidet Caspar_D; der Stilblock der Vorlage kennt bisher nur die Kapitel 1 bis 15 und braucht dann eine sechzehnte Zeile.
+- Der Demo-Sternenhimmel zum Verschicken. Offen, ob der verschickte Sternenhimmel die Titel über Sunos Einbettung streamt (suno.com/embed, ohne Anmeldung, nichts wird gespeichert) statt nur auf Suno zu verlinken. Caspar_D, 09.09.2026: „wenn jeder Song auf Suno geht, ist der Reiz kaputt".
+- Der Sternenhimmel auf dem Stick bettet die Kacheln ein (rund 2,4 MB für 324 Bilder, auf 144 px verkleinert); die feste Kantenlänge steht im Code, kein Regler.
