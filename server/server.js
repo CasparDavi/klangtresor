@@ -16,6 +16,7 @@ const fs   = require('node:fs');
 const path = require('node:path');
 const os   = require('node:os');
 const K    = require('../bin/katalog.js');
+const { Behaelter, INDEX: BEHAELTER_INDEX } = require('../bin/behaelter.js');
 
 /* Argumente (Caspar_D, 09.09.2026): fuer den Archiv-Export auf den
    USB-Stick. Die Startskripte dort rufen
@@ -41,9 +42,48 @@ const PORTWUNSCH = (() => {
 let PORT = PORTWUNSCH || 8788;
 const WURZEL = path.join(__dirname, '..');
 const WEB    = path.join(WURZEL, 'web');
-const SONGS  = path.join(WURZEL, 'library', 'songs');
-const PLAYLISTBILDER = path.join(WURZEL, 'library', 'playlistbilder');
-const ANALYSE = path.join(WURZEL, 'library', 'analyse');
+const LIB    = path.join(WURZEL, 'library');
+const SONGS  = path.join(LIB, 'songs');
+const PLAYLISTBILDER = path.join(LIB, 'playlistbilder');
+const ANALYSE = path.join(LIB, 'analyse');
+
+/* ------------------------------------------------------------
+   Der Behaelter: Ton, Bilder, Analyse-Ablage und Liker-Listen auf dem Stick
+   ------------------------------------------------------------
+   Auf dem Stick liegen die vielen kleinen Dateien nicht einzeln, sondern
+   in wenigen grossen tar-Stuecken (bin/behaelter.js - Caspar_D,
+   09.09.2026: "dann arbeiten wir mit Containern"). Der eingefrorene
+   Server muss sie dort finden. DIE REGEL: echte Datei zuerst, dann der
+   Behaelter, sonst 404 wie bisher. Zu Hause gibt es keinen Behaelter,
+   dort bleibt alles beim Alten - Behaelter.gibtEs() sind zwei stat,
+   und die fallen nur an, wo eine echte Datei fehlt.
+
+   Der Behaelter wird einmal geoeffnet und im Speicher gehalten; das
+   Verzeichnis (bestand-index.ndjson) wird neu gelesen, wenn sich seine
+   Aenderungszeit bewegt - ein statSync je Frage, billig. */
+let _behaelter = null, _behaelterStand = null;
+function behaelterHolen() {
+  if (!Behaelter.gibtEs(LIB)) { _behaelter = null; _behaelterStand = null; return null; }
+  let m = 0; try { m = fs.statSync(path.join(LIB, BEHAELTER_INDEX)).mtimeMs; } catch (e) { m = 0; }
+  if (!_behaelter || m !== _behaelterStand) {
+    try { _behaelter = Behaelter.oeffnen(LIB, false); } catch (e) { _behaelter = null; }
+    _behaelterStand = m;
+  }
+  return _behaelter;
+}
+/* Der Name einer Datei im Behaelter: relativ zu library/, mit
+   Vorwaertsschraegstrichen. null, wenn sie nicht unter library/ liegt. */
+function behaelterName(datei) {
+  const rel = path.relative(LIB, datei);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  return rel.split(path.sep).join('/');
+}
+/* Gibt es die Datei - echt oder im Behaelter? */
+function echtOderBehaelter(datei) {
+  if (fs.existsSync(datei)) return true;
+  const rel = behaelterName(datei), b = rel && behaelterHolen();
+  return !!(b && b.hat(rel));
+}
 
 /* ------------------------------------------------------------
    Katalog im Speicher halten
@@ -71,7 +111,9 @@ let _vorhanden = null, _vorhandenZeit = 0;
 function eingefrorenVorhanden() {
   if (_vorhanden && Date.now() - _vorhandenZeit < 30000) return _vorhanden;
   const da = new Set();
-  for (const s of (schlankeListe || [])) { try { if (fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'))) da.add(s.id); } catch (e) {} }
+  /* ... als Datei oder im Behaelter (auf dem Stick liegt der Ton dort) */
+  const b = behaelterHolen();
+  for (const s of (schlankeListe || [])) { try { if (fs.existsSync(path.join(SONGS, s.id, 'audio.mp3')) || (b && b.hat(`songs/${s.id}/audio.mp3`))) da.add(s.id); } catch (e) {} }
   _vorhanden = da; _vorhandenZeit = Date.now();
   return da;
 }
@@ -127,12 +169,27 @@ const TYPEN = {
  * die Wiedergabe gar nicht erst.
  */
 function liefere(req, res, datei) {
-  let stat;
+  let stat, imBehaelter = null;   /* imBehaelter: { b, rel }, wenn die Datei nur dort liegt */
   try { stat = fs.statSync(datei); } catch (e) {
-    res.writeHead(404, {'Content-Type':'text/plain; charset=utf-8'});
-    return res.end('Nicht gefunden');
+    /* Keine echte Datei - dann der Behaelter (Stick). Sein Eintrag traegt
+       Laenge und Aenderungszeit; daraus wird ein stat, und alles Weitere
+       (Kopfzeilen, Bereiche, Cache-Regeln) laeuft denselben Weg wie bei
+       einer echten Datei. */
+    const rel = behaelterName(datei), b = rel && behaelterHolen();
+    const eintrag = b ? b.eintrag(rel) : null;
+    if (!eintrag) {
+      res.writeHead(404, {'Content-Type':'text/plain; charset=utf-8'});
+      return res.end('Nicht gefunden');
+    }
+    imBehaelter = { b, rel };
+    stat = { size: eintrag.l, mtime: new Date(eintrag.m || 0), isFile: () => true };
   }
   if (!stat.isFile()) { res.writeHead(404); return res.end(); }
+  /* Der Lesestrom: aus der Datei oder aus dem Stueck des Behaelters -
+     von/bis sind Byte-Versaetze innerhalb der Datei, inklusive. */
+  const strom = (von, bis) => imBehaelter
+    ? imBehaelter.b.stream(imBehaelter.rel, von, bis)
+    : fs.createReadStream(datei, von != null ? { start: von, end: bis } : undefined);
 
   const typ    = TYPEN[path.extname(datei).toLowerCase()] || 'application/octet-stream';
   const laenge = stat.size;
@@ -156,7 +213,7 @@ function liefere(req, res, datei) {
         'Content-Length': bis - von + 1,
         'Cache-Control':  'public, max-age=31536000',
       });
-      return fs.createReadStream(datei, { start: von, end: bis }).pipe(res);
+      return strom(von, bis).pipe(res);
     }
   }
 
@@ -219,7 +276,7 @@ function liefere(req, res, datei) {
     'Cache-Control':  wandelbar ? 'no-cache' : 'public, max-age=31536000',
     ...(wandelbar ? { 'Last-Modified': stempel } : {}),
   });
-  fs.createReadStream(datei).pipe(res);
+  strom().pipe(res);
 }
 
 /** Verhindert, dass jemand über ../ aus dem Archiv ausbricht. */
@@ -297,7 +354,11 @@ function analyseSchreiben(req, res, rest) {
     Dateien liegen da. Eine halbe Analyse ist keine. */
 function analyseListe() {
   let dateien = [];
-  try { dateien = fs.readdirSync(ANALYSE); } catch (e) { return []; }
+  try { dateien = fs.readdirSync(ANALYSE); } catch (e) { dateien = []; }
+  /* ... dazu, was im Behaelter liegt (Stick): dort heissen sie analyse/<name> */
+  const b = behaelterHolen();
+  if (b) for (const rel of b.liste('analyse/')) dateien.push(rel.slice('analyse/'.length));
+  if (!dateien.length) return [];
   const teile = new Map();
   for (const d of dateien) {
     const n = analyseName(d);
@@ -725,7 +786,28 @@ function reaktionenLesen(alle) {
    Herzzahl gegen /api/liker/stand geaendert hat. */
 const LIKER = path.join(WURZEL, 'library', 'liker');
 const LIKER_VERLAUF = path.join(WURZEL, 'library', 'liker-verlauf.ndjson');
-function likerLesen(id) { try { return JSON.parse(fs.readFileSync(path.join(LIKER, id + '.json'), 'utf8')); } catch (e) { return null; } }
+function likerLesen(id) {
+  try { return JSON.parse(fs.readFileSync(path.join(LIKER, id + '.json'), 'utf8')); } catch (e) {}
+  /* keine Datei - dann der Behaelter (Stick) */
+  try { const b = behaelterHolen(), t = b && b.lesen('liker/' + id + '.json'); return t ? JSON.parse(t.toString('utf8')) : null; } catch (e) { return null; }
+}
+/* Alle Liker-Listen: aus library/liker/, und wenn der Ordner fehlt oder
+   leer ist, aus dem Behaelter (Stick). Je Liste: lesen() -> Inhalt oder
+   null, stand() -> Aenderungszeit in ms. Die drei Stellen, die vorher
+   selbst ueber den Ordner liefen (Stand, Gemeinschaft, /api/stand),
+   gehen seit dem Behaelter alle hier durch. */
+function likerAlle() {
+  const aus = [];
+  try { for (const f of fs.readdirSync(LIKER)) { if (!f.endsWith('.json') || f.startsWith('._')) continue;
+    const voll = path.join(LIKER, f);
+    aus.push({ lesen: () => { try { return JSON.parse(fs.readFileSync(voll, 'utf8')); } catch (e) { return null; } },
+               stand: () => { try { return fs.statSync(voll).mtimeMs; } catch (e) { return 0; } } }); } } catch (e) {}
+  if (!aus.length) { const b = behaelterHolen(); if (b) for (const rel of b.liste('liker/')) { if (!rel.endsWith('.json')) continue;
+    const e = b.eintrag(rel);
+    aus.push({ lesen: () => { try { return JSON.parse(b.lesen(rel).toString('utf8')); } catch (x) { return null; } },
+               stand: () => e.m || 0 }); } }
+  return aus;
+}
 function cursorZeit(c) { try { return JSON.parse(Buffer.from(String(c), 'base64').toString('utf8')).updated_at || null; } catch (e) { return null; } }
 function likerAblegen(liker, gesehen) {
   fs.mkdirSync(LIKER, { recursive: true });
@@ -770,9 +852,8 @@ function likerAblegen(liker, gesehen) {
    Lesezeichen fragt Suno nur, wo upvote_count davon abweicht. */
 function likerStand() {
   const s = {};
-  try { for (const f of fs.readdirSync(LIKER)) { if (!f.endsWith('.json') || f.startsWith('._')) continue;
-    const d = JSON.parse(fs.readFileSync(path.join(LIKER, f), 'utf8'));
-    if (d && d.song) s[d.song] = d.anzahlSuno != null ? d.anzahlSuno : (d.likers || []).length; } } catch (e) {}
+  for (const l of likerAlle()) { const d = l.lesen();
+    if (d && d.song) s[d.song] = d.anzahlSuno != null ? d.anzahlSuno : (d.likers || []).length; }
   return s;
 }
 /* Der Stand eines Titels fuer die Anzeige, mit den Zeiten aus den
@@ -1734,9 +1815,8 @@ const server = http.createServer((req, res) => {
        sonst leer - der Strom liefert sie fuer die juengeren nach. */
     let ausListen = 0, likerStand = null;
     try {
-      for (const f of fs.readdirSync(LIKER)) {
-        if (!f.endsWith('.json') || f.startsWith('._')) continue;
-        let d; try { d = JSON.parse(fs.readFileSync(path.join(LIKER, f), 'utf8')); } catch (e) { continue; }
+      for (const l of likerAlle()) {
+        let d = l.lesen();
         if (!d || !d.song) continue;
         /* Dieselben Zeiten wie im Song-Fenster: Strom (einzeln) und Buendel */
         const mz = likerMitZeiten(d.song, herzJeSong.get(d.song) || []);
@@ -1795,7 +1875,7 @@ const server = http.createServer((req, res) => {
     const n = analyseName(rest);
     if (!n) { res.writeHead(400); return res.end(); }
     const ziel = path.join(ANALYSE, `${n.id}.${n.endung}`);
-    if (!fs.existsSync(ziel)) { res.writeHead(404); return res.end(); }
+    if (!echtOderBehaelter(ziel)) { res.writeHead(404); return res.end(); }
     return liefere(req, res, ziel);
   }
 
@@ -1810,7 +1890,7 @@ const server = http.createServer((req, res) => {
   if (p === '/api/stand') {
     const mt = f => { try { return Math.round(fs.statSync(f).mtimeMs); } catch (e) { return 0; } };
     let likerMax = 0;
-    try { for (const f of fs.readdirSync(LIKER)) if (f.endsWith('.json') && !f.startsWith('._')) likerMax = Math.max(likerMax, mt(path.join(LIKER, f))); } catch (e) {}
+    for (const l of likerAlle()) likerMax = Math.max(likerMax, Math.round(l.stand()));
     const gemeinschaft = Math.max(mt(REAKTIONEN), mt(BEOBACHTER), likerMax,
                                   mt(path.join(WURZEL, 'library', 'community-profile.json')),
                                   mt(path.join(WURZEL, 'library', 'community-hirsch.json')));
@@ -2184,7 +2264,6 @@ async function exportBedarfZaehlen() {
     }
     for (const u of unter) await lauf(u, fn);
   };
-  const LIB = path.join(WURZEL, 'library');
   const AUS = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle']);
   await lauf(LIB, (voll, name, istOrdner, groesse) => {
     const rel = path.relative(LIB, voll);
@@ -2903,6 +2982,13 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
         if (Object.keys(hat).length) raus[d] = hat;
       }
     } catch (e) {}
+    /* ... und was davon im Behaelter liegt (Stick): songs/<id>/eigen.* */
+    const b = behaelterHolen();
+    if (b) for (const rel of b.liste('songs/')) {
+      const m = /^songs\/([^/]+)\/eigen\.(mp4|jpg|mp3)$/.exec(rel); if (!m) continue;
+      const e = b.eintrag(rel); if (!e || !e.l) continue;
+      (raus[m[1]] = raus[m[1]] || {})[{ mp4: 'video', jpg: 'bild', mp3: 'ton' }[m[2]]] = true;
+    }
     return jsonAntwort(res, { songs: raus, anzahl: Object.keys(raus).length });
   }
 
@@ -3021,7 +3107,8 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
    laedt (katalog.js) - die stecken nach dem Start genauso fest im
    Speicher. Fehlte bis 20.08.2026: Eine Aenderung in katalog.js griff
    erst nach einem Neustart von Hand. */
-const BEOBACHTET = [__filename, path.join(__dirname, '..', 'bin', 'katalog.js')];
+const BEOBACHTET = [__filename, path.join(__dirname, '..', 'bin', 'katalog.js'),
+                    path.join(__dirname, '..', 'bin', 'behaelter.js')];   /* seit 09.09.2026 mit geladen */
 const standVon = (f) => { try { return fs.statSync(f).mtimeMs; } catch (e) { return 0; } };
 let eigeneStand = BEOBACHTET.map(standVon).join('|');
 /* Eingefroren gibt es keine Wache: Auf dem Stick steht keine Schleife

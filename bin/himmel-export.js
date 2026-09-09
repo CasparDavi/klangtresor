@@ -6,8 +6,9 @@
  *
  *   node bin/himmel-export.js
  *   node bin/himmel-export.js --relativ Programm/library/songs --ziel /Volumes/Stick/KlangTresor/Sternenhimmel.html
+ *   node bin/himmel-export.js --musik Musik --namen namen.json --ziel /Volumes/Stick/KlangTresor/Sternenhimmel.html
  *
- * ZWEI SPIELARTEN (Caspar_D, 09.09.2026, Archiv-Export auf den Stick):
+ * DREI SPIELARTEN (Caspar_D, 09.09.2026, Archiv-Export auf den Stick):
  *   ohne --relativ   die Demo zum Verschicken: nur oeffentliche Titel,
  *                    Bild und Ton von Sunos CDN, Klick auf einen Stern
  *                    spielt von dort.
@@ -20,8 +21,29 @@
  *                    ein Sternenhimmel des eigenen Bestands, nicht eine
  *                    Demo fuer Fremde. Nur Titel ohne audio.mp3 bleiben
  *                    draussen, sonst zeigte der Stern ins Leere.
+ *   mit --musik M    die Stickfassung seit dem Behaelter (09.09.2026):
+ *   und --namen J    Ton und Bilder liegen auf dem Stick nicht mehr als
+ *                    Dateien im Titelordner, sondern in tar-Stuecken
+ *                    (bin/behaelter.js, bestand-001.tar ...), und an die
+ *                    kommt eine file://-Seite nicht heran - der Browser
+ *                    kann kein tar aufschlagen. Was auf dem Stick als
+ *                    echte Datei bleibt, ist Musik/<Titel>.mp3 (fuer
+ *                    Fernseher und Autoradio, bin/export.js). Also:
+ *                    Ton = M/<Dateiname, URL-kodiert>, wobei J die
+ *                    Zuordnung { "<id>": "<Dateiname>.mp3" } ist, die
+ *                    export.js beim Schreiben von Musik/ festhaelt
+ *                    (Doppelnamen tragen dort " (2)"). Bild = die Kachel
+ *                    (songs/<id>/kachel.jpg, sonst titelbild.jpg) als
+ *                    data:-URI eingebettet: 324 Kacheln zu je ~50 KB sind
+ *                    rund 21 MB HTML, und das ist gewollt - die Datei
+ *                    braucht nichts ausser sich selbst und dem
+ *                    Musik-Ordner. Titelauswahl wie bei --relativ, dazu
+ *                    nur Titel, die in J einen Namen haben.
+ *                    M ist eine URL relativ zur HTML-Datei (Vorwaerts-
+ *                    schraegstriche, kein Schlussstrich), kein Dateipfad.
  *   --ziel <datei>   wohin; Vorgabe library/export/sternenhimmel.html,
- *                    mit --relativ library/export/sternenhimmel-relativ.html.
+ *                    mit --relativ library/export/sternenhimmel-relativ.html,
+ *                    mit --musik library/export/sternenhimmel-stick.html.
  *
  * Laeuft ohne KlangTresor-Server: Daten eingebettet (Lage, Gruppen, KI-
  * Etiketten, Hausmesswerte, Suno-Adresse je Song), Cover von Sunos
@@ -46,8 +68,18 @@ const K = require('./katalog.js');
 const args = process.argv.slice(2);
 const option = (name) => { const i = args.indexOf(name); if (i < 0) return null; const w = args[i + 1]; if (!w || w.startsWith('--')) { console.error('\n  ' + name + ' braucht einen Wert.\n'); process.exit(1); } return w; };
 const RELATIV = option('--relativ');                                  /* z.B. Programm/library/songs */
+const MUSIK = option('--musik');                                      /* z.B. Musik - der MP3-Ordner auf dem Stick */
+const NAMEN_OPT = option('--namen');                                  /* { "<id>": "<Dateiname>.mp3" } */
 const ZIEL_OPT = option('--ziel');
 const SONGS_ORDNER = path.join(WURZEL, 'library', 'songs');
+/* --musik und --namen gehoeren zusammen: ohne die Namen wuesste der Ton
+   nicht, wie er heisst; ohne den Ordner nicht, wo er liegt. Und mit
+   --relativ zugleich waere nicht gesagt, welche Fassung gemeint ist. */
+if (!!MUSIK !== !!NAMEN_OPT) { console.error('\n  --musik und --namen gehoeren zusammen.\n'); process.exit(1); }
+if (MUSIK && RELATIV) { console.error('\n  --musik oder --relativ, nicht beides.\n'); process.exit(1); }
+const NAMEN = MUSIK ? JSON.parse(fs.readFileSync(path.resolve(NAMEN_OPT), 'utf8')) : {};
+const STICK = !!MUSIK;                                                /* Ton aus Musik/, Bilder eingebettet */
+const ARCHIV = !!(RELATIV || MUSIK);                                  /* beide Stickfassungen: der eigene Bestand, nicht die Demo */
 
 const html = fs.readFileSync(path.join(WURZEL, 'web', 'index.html'), 'utf8');
 const karte = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'karte.json'), 'utf8'));
@@ -204,13 +236,30 @@ const code = [
    (--relativ) alle eigenen, die eine MP3 mitbringen; siehe Kopf. */
 const songs = karte.songs.filter(p => {
   const s = katalog.songs[p.id]; if (!s || s.fremd) return false;
-  if (RELATIV) return fs.existsSync(path.join(SONGS_ORDNER, p.id, 'audio.mp3'));
+  if (STICK && !NAMEN[p.id]) return false;                      /* ohne Namen in Musik/ keine Tonadresse */
+  if (ARCHIV) return fs.existsSync(path.join(SONGS_ORDNER, p.id, 'audio.mp3'));
   return !!s.oeffentlich;
 });
-/* Bild- und Tonadresse je Titel: relativ zum Praefix oder Sunos CDN. Das
-   Praefix bleibt, wie es kommt (Vorwaertsschraegstriche, kein Schluss-
-   strich) - es ist eine URL, kein Dateipfad, auch unter Windows. */
+/* Bild- und Tonadresse je Titel: relativ zum Praefix, aus Musik/ mit
+   eingebettetem Bild, oder Sunos CDN. Das Praefix bleibt, wie es kommt
+   (Vorwaertsschraegstriche, kein Schlussstrich) - es ist eine URL, kein
+   Dateipfad, auch unter Windows. */
+/* Die Kachel als data:-URI - siehe Kopf (--musik). Leer, wenn zu Hause
+   weder Kachel noch Titelbild liegt; artworkBild faengt das ab. */
+const bildEingebettet = (id) => {
+  for (const b of ['kachel.jpg', 'titelbild.jpg']) {
+    const f = path.join(SONGS_ORDNER, id, b);
+    if (fs.existsSync(f)) return 'data:image/jpeg;base64,' + fs.readFileSync(f).toString('base64');
+  }
+  return '';
+};
+/* Der Dateiname in Musik/ als URL: Leerzeichen, Umlaute, Klammern und
+   das Prozentzeichen muessen kodiert sein, sonst liest der Browser
+   "Kein Shutdown.mp3" als zwei Woerter. Der Schraegstrich bleibt Trenner,
+   er kommt aber ohnehin nicht vor - dateiname() in export.js ersetzt ihn. */
+const musikAdresse = (name) => MUSIK.replace(/\/+$/, '') + '/' + name.split('/').map(encodeURIComponent).join('/');
 const adressen = (s) => {
+  if (STICK) return { bild: bildEingebettet(s.id), audio: musikAdresse(NAMEN[s.id]) };
   /* Ohne --relativ: Bilder von Sunos CDN (oeffentlich, antwortet). Die
      Tonadressen des Katalogs sind seit 03.09.2026 Sunos Sperre
      (/api/forbidden, docs/AUDIO-BEZUG.md) - eine Adresse, die nicht
@@ -354,7 +403,7 @@ body{padding-bottom:64px}
 @media (max-width:900px){#karte{grid-template-columns:1fr}#kartefeld{height:70vh}#karterechts{height:auto}}
 </style></head>
 <body>
-<header><h1>Klangraum</h1><small>${daten.anzahl} Titel von <a style="color:inherit" href="https://suno.com/@${handle}">@${handle}</a>${RELATIV ? ' — aus dem Archiv auf diesem Datenträger' : ' auf Suno'}, nach Klang geordnet — Klick auf einen Stern spielt ihn</small></header>
+<header><h1>Klangraum</h1><small>${daten.anzahl} Titel von <a style="color:inherit" href="https://suno.com/@${handle}">@${handle}</a>${ARCHIV ? ' — aus dem Archiv auf diesem Datenträger' : ' auf Suno'}, nach Klang geordnet — Klick auf einen Stern spielt ihn</small></header>
 <div id="karte">
   <div id="kartefeld"><canvas id="karteschiffhinten"></canvas><canvas id="karteglut"></canvas><canvas id="karteschiff"></canvas><svg id="kartesvg"></svg></div>
   <div id="karterechts"><div id="kartelegende"></div><div id="kartesteckbrief" hidden></div></div>
@@ -455,7 +504,7 @@ window.addEventListener('resize', zeichnen);
 `;
 
 const ziel = ZIEL_OPT ? path.resolve(ZIEL_OPT)
-                      : path.join(WURZEL, 'library', 'export', RELATIV ? 'sternenhimmel-relativ.html' : 'sternenhimmel.html');
+                      : path.join(WURZEL, 'library', 'export', STICK ? 'sternenhimmel-stick.html' : RELATIV ? 'sternenhimmel-relativ.html' : 'sternenhimmel.html');
 fs.mkdirSync(path.dirname(ziel), { recursive: true });
 fs.writeFileSync(ziel, seite);
 
@@ -500,7 +549,15 @@ fs.writeFileSync(ziel, seite);
     if (m) global.add(m[1]);
   }
 
-  const drin = ohneBeiwerk(seite.slice(seite.indexOf('<script'), seite.lastIndexOf('</script>')));
+  /* Die zwei Datenzeilen (DATEN, STAMM) kommen vor der Pruefung heraus:
+     sie sind JSON, kein Code, und mit --musik stehen darin 21 MB Base64 -
+     und Base64 enthaelt "//". Die Kommentarstreichung oben nahm das fuer
+     einen Zeilenkommentar, kappte die Zeile mitten in einer Zeichenkette,
+     und von da an war fuer die Pruefung der halbe Export eine Zeichenkette:
+     "$, zeichnen" galten als unbekannt (09.09.2026, Stickfassung). */
+  const skriptText = seite.slice(seite.indexOf('<script'), seite.lastIndexOf('</script>'))
+    .replace(/^const DATEN = .*$/m, 'const DATEN = 0;').replace(/^const STAMM = .*$/m, 'const STAMM = 0;');
+  const drin = ohneBeiwerk(skriptText);
   const erklaert = new Set();
   for (const r of [/\bfunction\s+([A-Za-z_$][\w$]*)/g,
                    /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g,
@@ -556,4 +613,5 @@ fs.writeFileSync(ziel, seite);
   }
 }
 
-console.log(`  Sternenhimmel exportiert: ${songs.length} ${RELATIV ? 'Titel, Bild und Ton relativ zu ' + RELATIV : 'öffentliche Titel'} → ${ZIEL_OPT ? ziel : path.relative(WURZEL, ziel)} (${(fs.statSync(ziel).size / 1024).toFixed(0)} KB)`);
+const wie = STICK ? 'Titel, Ton aus ' + MUSIK + '/, Kacheln eingebettet' : RELATIV ? 'Titel, Bild und Ton relativ zu ' + RELATIV : 'öffentliche Titel';
+console.log(`  Sternenhimmel exportiert: ${songs.length} ${wie} → ${ZIEL_OPT ? ziel : path.relative(WURZEL, ziel)} (${(fs.statSync(ziel).size / 1024).toFixed(0)} KB)`);

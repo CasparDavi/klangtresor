@@ -97,6 +97,7 @@ Stern, und du hörst ihn".
 | Import | **das Einlesen** | |
 | Export | **die Ausgabe** | „exportieren" bleibt als Tätigkeit erlaubt |
 | partielles Archiv, Teilexport | **die Teilkopie** | Caspar_D, 09.09.2026: der Stick nach dem Anhalten — „partielles Archiv von xxx vom xxxxx, mit Suno-Alias und Datum". Im Banner „Teilkopie von @alias vom Datum"; der Export schreibt in **Stufen**, neueste Titel zuerst |
+| Container, Pack, Archivdatei | **der Behälter**, **das Stück** (eine der tar-Dateien bis 2 GB) | Caspar_D, 09.09.2026: „gut, dann arbeiten wir mit Containern (Behältern)" — der Bestand liegt auf dem Stick in tar-Stücken, das Verzeichnis daneben |
 | Ernte, ernten | **der Datentransfer** (der Vorgang), **der Datensatz** (das Ergebnis) | Caspar_D, 08.09.2026, beim Redigieren des Morgenfensters: „Lesezeichen-Datentransfer", „Zwei Datensätze warteten, beide berücksichtigt". „Ernte" war Entwicklersprache aus dem Sammelskript — sie stand in vier Meldungen der Oberfläche und in `browser/morgens.js`; die App zieht mit dem Morgenfenster nach. Im Quelltext bleibt `ernte` als Bezeichner |
 | Liker, Likes | **Herzen**; die Liste heißt **„Wer hat geherzt"** (so der Haken im Lesezeichen und die Überschrift im Reaktionsfenster) | seit 09.09.2026: die vollständige Liste je eigenem Titel, aus Sunos App-Weg; im Code heißt die Ablage `liker` |
 | Zählerverlauf | **der Verlauf von Abrufen, Herzen und Kommentaren** | Caspar_D, 08.09.2026: „was für ein Zählerverlauf ???" — der Begriff sagt dem Leser nichts; immer ausschreiben, was gezählt wird |

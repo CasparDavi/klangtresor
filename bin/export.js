@@ -20,9 +20,19 @@
  *                           Name des Titels, ID3v2.3 mit Titelbild
  *   Programm/               web/, server/, bin/, browser/, docs/, package.json,
  *                           LICENSE, README - das Programm, wie es ist
- *   Programm/library/       der Bestand, ohne WAV, ohne Stems (nur --stems),
- *                           ohne roh/, backup/, node-portabel/, suno-wege/,
- *                           kondensate/arbeit/, export-lauf.json
+ *   Programm/library/       der Bestand-Kern als echte Dateien: Katalog mit
+ *                           allen Liedtexten, Whisper, Reaktionen, Beobachter,
+ *                           Klangraum, Alben, kleine Ordner - ohne roh/, backup/,
+ *                           node-portabel/, suno-wege/, modelle/, kondensate/arbeit/
+ *   Programm/library/bestand-001.tar ...   DIE BEHÄLTER (bin/behaelter.js): Ton,
+ *                           Kacheln, Titelbilder, Bewegtbilder, Analyse-Ablage,
+ *                           Herzen-Listen, Stems - als tar-Stücke bis 2 GB,
+ *                           rein sequenziell geschrieben. Caspar_D, 09.09.2026:
+ *                           "gut, dann arbeiten wir mit Behältern" - ein Stick
+ *                           schreibt 4.000 kleine Dateien in über einer Stunde,
+ *                           dieselben Bytes am Stück in zehn Minuten. Der
+ *                           eingefrorene Server liest per Versatz daraus.
+ *   Programm/library/bestand-index.ndjson  das Verzeichnis der Behälter
  *   Programm/library/export-stand.json   {exportiertAm, dateien, bytes, mitStems, handle}
  *   node/<plattform>/       das mitgebrachte Node aus library/node-portabel/
  *
@@ -45,11 +55,13 @@
  *   6 Stems         nur mit --stems, ganz zuletzt ("die hört sich eh keiner an")
  *   7 Abschluss     ein rsync-Aufräumlauf über alles (holt Reste, räumt weg,
  *                   was zu Hause fehlt), Beifang, LIES-MICH, Stand, Probestart
- * Die Stufen 1-4 und 6 kopiert dieses Skript selbst, Datei für Datei in
- * genau dieser Reihenfolge - rsync sortiert seine Liste immer nach Namen.
- * Kopiert wird nur, was fehlt oder sich geändert hat (Größe und Zeit, wie
- * rsync -t mit --modify-window=2); die Zeit der Quelle bleibt auf der
- * Kopie, sonst kopierte der Aufräumlauf alles noch einmal.
+ * Die Stufen 1-4 und 6 schreibt dieses Skript selbst in die Behälter, Datei
+ * für Datei in genau dieser Reihenfolge - rsync sortiert seine Liste immer
+ * nach Namen. Geschrieben wird nur, was fehlt oder sich geändert hat (Größe
+ * und Zeit, wie rsync -t mit --modify-window=2); Geändertes hängt hinten an,
+ * Gelöschtes verschwindet aus dem Verzeichnis, und ist mehr als ein Viertel
+ * der Stücke Ballast, verdichtet Stufe 7 sie. Der Bestand-Kern und Musik/
+ * bleiben echte Dateien (wenige bzw. für Fernseher nötig).
  *
  * ANHALTEN: SIGTERM (die Oberfläche: Knopf "Anhalten", POST /api/export/stop)
  * beendet die laufende Datei, schreibt den Stand und geht - der Stick ist
@@ -100,6 +112,7 @@ const net  = require('node:net');
 const http = require('node:http');
 const { spawn, spawnSync } = require('node:child_process');
 const K    = require('./katalog.js');
+const { Behaelter } = require('./behaelter.js');
 
 const WURZEL = path.join(__dirname, '..');
 const LIB    = path.join(WURZEL, 'library');
@@ -287,33 +300,10 @@ function dateisystemVon(pfad) {
   }
   return bester;
 }
-/* Was über 4 GB wäre, darf auf FAT32 nicht mit - dieselben Ausschlüsse
-   wie beim rsync von library/ weiter unten (WAV nie, Stems nur mit
-   --stems, roh/, backup/, node-portabel/, suno-wege/, kondensate/arbeit/,
-   modelle/ nie). Nur gerufen, wenn das Ziel FAT32 ist. */
-function zuGrosseDateien(grenze) {
-  const treffer = [];
-  const aussen = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle'].map(n => path.join(LIB, n)));
-  aussen.add(path.join(LIB, 'kondensate', 'arbeit'));
-  const gehe = (d) => {
-    let e = []; try { e = fs.readdirSync(d, { withFileTypes: true }); } catch (x) { return; }
-    for (const x of e) {
-      const f = path.join(d, x.name);
-      const imSong = path.dirname(d) === SONGS;
-      if (x.isDirectory()) {
-        if (aussen.has(f)) continue;
-        if (!stems && imSong && x.name === 'stems') continue;
-        gehe(f);
-      } else if (x.isFile()) {
-        if (imSong && x.name === 'audio.wav') continue;
-        let groesse = 0; try { groesse = fs.statSync(f).size; } catch (y) {}
-        if (groesse > grenze) treffer.push({ pfad: path.relative(LIB, f), bytes: groesse });
-      }
-    }
-  };
-  gehe(LIB);
-  return treffer;
-}
+/* Die 4-GB-Grenze von FAT32 trifft seit den Behältern nichts mehr: die
+   Stücke bleiben unter 2 GB, und alles, was größer sein könnte (Stems),
+   liegt in ihnen. Die frühere Prüfung zuGrosseDateien() ist damit weg
+   (09.09.2026). */
 {
   const medium = dateisystemVon(ZIEL);
   if (!medium) zeile('Ziel: Dateisystem nicht ermittelt (kein Einhängepunkt in der mount-Ausgabe passt)');
@@ -324,16 +314,8 @@ function zuGrosseDateien(grenze) {
     if (ntfs && medium.nurLesen && process.platform === 'darwin') abbruch('NTFS ist auf dem Mac nur lesbar - der Stick müsste als exFAT formatiert werden');
     if (medium.nurLesen) abbruch(`Das Ziel ist nur lesbar eingehängt (${medium.pfad}, ${medium.dateisystem})`);
     if (ntfs && process.platform === 'darwin') zeile('   NTFS ist hier beschreibbar (fremder Treiber) - der Export läuft, aber ohne Gewähr');
-    if (medium.dateisystem === 'msdos' || medium.dateisystem === 'vfat' || medium.dateisystem === 'fat32') {
-      const GRENZE = 4 * 1073741824 - 1;
-      const gross = zuGrosseDateien(GRENZE);
-      if (gross.length) {
-        const liste = gross.slice(0, 3).map(g => `${g.pfad} (${(g.bytes / 1073741824).toFixed(1)} GB)`).join(', ');
-        abbruch(`FAT32 kennt keine Datei über 4 GB - ${gross.length} wären dabei: ${liste}${gross.length > 3 ? ' …' : ''}` +
-                (stems && gross.every(g => /(^|\/)stems\//.test(g.pfad)) ? '. Ohne --stems ginge es, oder den Stick als exFAT formatieren' : '. Den Stick als exFAT formatieren'));
-      }
-      zeile('   FAT32: keine Datei über 4 GB dabei, es kann losgehen');
-    }
+    if (medium.dateisystem === 'msdos' || medium.dateisystem === 'vfat' || medium.dateisystem === 'fat32')
+      zeile('   FAT32: die Behälter-Stücke bleiben unter 2 GB, es kann losgehen');
   }
 }
 
@@ -734,8 +716,11 @@ Das Terminal offen lassen; der Browser geht von selbst auf (xdg-open).
 - \`Sternenhimmel.html\` - der Klangraum als eine Datei. Im Browser öffnen,
   Klick auf einen Stern spielt ihn - direkt von hier, ohne Netz.
 - \`Programm/\` - KlangTresor selbst samt Bestand (\`Programm/library/\`):
-  Katalog, Titel, Titelbilder, Texte, Wort-Zeitmarken, Herzen und
-  Abrufe, Beobachter, Alben, Notizen, Messwerte.
+  Katalog, Texte, Wort-Zeitmarken, Herzen und Abrufe, Beobachter, Alben,
+  Notizen, Messwerte als Dateien - und Ton, Titelbilder, Bewegtbilder,
+  Analyse und Herzen-Listen in \`bestand-001.tar\` (und weiteren Stücken
+  bis 2 GB). KlangTresor liest direkt daraus; wer die Dateien einzeln
+  will, packt die Stücke mit tar aus (Mac: Doppelklick, Windows: tar -xf).
 - \`node/\` - das mitgebrachte Node.js${nodeStand.version ? ' (' + nodeStand.version + ')' : ''}, damit nichts installiert werden muss.
 
 ## Was fehlt
@@ -876,7 +861,7 @@ const neuesteZuerst = eigene.slice().sort((a, b) => (b.erstellt || '').localeCom
 const hatMp3 = (s) => fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'));
 /* Was NICHT über den Kopierer geht (und nie auf den Stick): dieselben
    Ausnahmen wie der Aufräumlauf unten. */
-const KERN_AUSSEN = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle', 'songs', 'analyse']);
+const KERN_AUSSEN = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle', 'songs', 'analyse', 'liker']);
 function kernPaare(PROGRAMM) {
   const paare = [];
   const gehe = (rel) => {
@@ -892,54 +877,62 @@ function kernPaare(PROGRAMM) {
   gehe('');
   return paare;
 }
-function titelPaare(PROGRAMM, dateien) {
+/* Die Paare für die Behälter tragen rel = Pfad relativ zu library/ mit
+   Vorwärtsschrägstrichen - so heißen die Einträge im Stück. */
+function titelPaare(dateien) {
   const paare = [];
-  for (const s of neuesteZuerst) for (const f of dateien) paare.push({ von: path.join(SONGS, s.id, f), nach: path.join(PROGRAMM, 'library', 'songs', s.id, f), titel: s.id });
+  for (const s of neuesteZuerst) for (const f of dateien) paare.push({ von: path.join(SONGS, s.id, f), rel: `songs/${s.id}/${f}`, titel: s.id });
   return paare;
 }
 /* Alles Übrige im Titelordner (cover.jpg, Bewegtbild ...), ohne WAV und
    ohne stems/ - und ohne, was Stufe 2 schon hatte. */
-function titelRestPaare(PROGRAMM, ohne) {
+function titelRestPaare(ohne) {
   const paare = [];
   for (const s of neuesteZuerst) {
     let e = []; try { e = fs.readdirSync(path.join(SONGS, s.id), { withFileTypes: true }); } catch (x) { continue; }
     for (const x of e) if (x.isFile() && !x.name.startsWith('.') && x.name !== 'audio.wav' && !ohne.includes(x.name) && !x.name.endsWith('.tmp'))
-      paare.push({ von: path.join(SONGS, s.id, x.name), nach: path.join(PROGRAMM, 'library', 'songs', s.id, x.name), titel: s.id });
+      paare.push({ von: path.join(SONGS, s.id, x.name), rel: `songs/${s.id}/${x.name}`, titel: s.id });
   }
   return paare;
 }
-function analysePaare(PROGRAMM) {
+function analysePaare() {
   const A = path.join(LIB, 'analyse');
   let e = []; try { e = fs.readdirSync(A); } catch (x) { return []; }
   const rang = new Map(neuesteZuerst.map((s, i) => [s.id, i]));
   const r = (f) => { const m = f.match(/^([0-9a-f-]{36})/i); return m && rang.has(m[1]) ? rang.get(m[1]) : 1e9; };
   return e.filter(f => !f.startsWith('.') && !f.endsWith('.tmp')).sort((a, b) => r(a) - r(b) || a.localeCompare(b))
-          .map(f => ({ von: path.join(A, f), nach: path.join(PROGRAMM, 'library', 'analyse', f) }));
+          .map(f => ({ von: path.join(A, f), rel: `analyse/${f}` }));
 }
-function stemsPaare(PROGRAMM) {
+function likerPaare() {
+  const L = path.join(LIB, 'liker');
+  let e = []; try { e = fs.readdirSync(L); } catch (x) { return []; }
+  return e.filter(f => f.endsWith('.json') && !f.startsWith('.')).sort().map(f => ({ von: path.join(L, f), rel: `liker/${f}` }));
+}
+function stemsPaare() {
   const paare = [];
   for (const s of neuesteZuerst) {
     const d = path.join(SONGS, s.id, 'stems');
     let e = []; try { e = fs.readdirSync(d); } catch (x) { continue; }
-    for (const f of e) if (!f.startsWith('.') && !f.endsWith('.tmp')) paare.push({ von: path.join(d, f), nach: path.join(PROGRAMM, 'library', 'songs', s.id, 'stems', f), titel: s.id });
+    for (const f of e) if (!f.startsWith('.') && !f.endsWith('.tmp')) paare.push({ von: path.join(d, f), rel: `songs/${s.id}/stems/${f}`, titel: s.id });
   }
   return paare;
 }
-/* Wie viele Titel auf dem Stick spielbar sind: die MP3 liegt da. */
-function titelImZiel(PROGRAMM) {
+/* Wie viele Titel auf dem Stick spielbar sind: die MP3 liegt im Behälter
+   (oder, Altbestand, noch als Datei). */
+function titelImZiel(PROGRAMM, b) {
   let n = 0;
-  for (const s of eigene) if (fs.existsSync(path.join(PROGRAMM, 'library', 'songs', s.id, 'audio.mp3'))) n++;
+  for (const s of eigene) if ((b && b.hat(`songs/${s.id}/audio.mp3`)) || fs.existsSync(path.join(PROGRAMM, 'library', 'songs', s.id, 'audio.mp3'))) n++;
   return n;
 }
 /* DER ZWISCHENSTAND: eine Teilkopie sagt, was sie ist. Der eingefrorene
    Server liest sie (/api/index: eingefroren.teilkopie) und die App zeigt
    "Teilkopie von @alias vom Datum". Am Ende überschreibt der volle Stand
    die Datei. */
-let standTitel = 0, standStufe = null;
+let standTitel = 0, standStufe = null, behaelterStand = null;
 function teilstandSchreiben(PROGRAMM, rn) {
   if (probe) return;
   const stand = { exportiertAm: new Date().toISOString(), teilkopie: true, stufe: standStufe, titel: standTitel, titelZuHause: eigene.filter(hatMp3).length,
-                  dateien: null, bytes: null, mitStems: stems, handle, anzeigename, node: rn ? rn.da.map(p => p.ordner) : [] };
+                  dateien: null, bytes: null, mitStems: stems, handle, anzeigename, node: rn ? rn.da.map(p => p.ordner) : [], behaelter: behaelterStand };
   try { fs.mkdirSync(path.join(PROGRAMM, 'library'), { recursive: true }); fs.writeFileSync(path.join(PROGRAMM, 'library', 'export-stand.json'), JSON.stringify(stand, null, 1)); } catch (e) {}
 }
 
@@ -967,12 +960,45 @@ function zaehlen(ordner, ohne) {
   const dauerS = () => Math.round((Date.now() - START) / 1000);
   /* Angehalten: Stand schreiben, Ergebnis in die Mitschrift, gehen. */
   const angehalten = (rn) => {
+    if (B) { try { B.schliessen(); behaelterStand = B.masse(); } catch (e) {} }
     teilstandSchreiben(PROGRAMM, rn);
     lauf.ergebnis = { angehalten: true, stufe: standStufe, titel: standTitel, dauerS: dauerS() };
     lauf.laeuft = false; lauf.fertig = false; lauf.schritt = 'angehalten'; lauf.fortschritt = null;
     laufSchreiben(true);
     console.log(`\n  Angehalten nach ${standStufe ? 'Stufe ' + standStufe.nr + ' (' + standStufe.name + ')' : 'dem Start'}: ${standTitel} Titel auf dem Stick spielbar. Erneut starten setzt fort.\n`);
     process.exitCode = 4;
+  };
+  /* DER BEHÄLTER-SCHRITT: wie kopierSchritt, nur ins Stück statt auf
+     Dateien. Gleich ist, was Größe und Zeit nach dem Verzeichnis hat;
+     der Rest hängt hinten an, in Reihenfolge, mit Meldung alle 4 MB. */
+  let B = null;
+  const behaelterAuf = () => { if (!B && !probe) B = Behaelter.oeffnen(path.join(PROGRAMM, 'library'), true); return B; };
+  const behaelterSchritt = async (name, paare, was, jeTitel) => {
+    const b = behaelterAuf();
+    const offen = []; let gleich = 0, bytesGleich = 0, fehlt = 0;
+    for (const q of paare) {
+      let sv = null; try { sv = fs.statSync(q.von); } catch (e) { fehlt++; continue; }
+      if (!sv.isFile()) continue;
+      if (b && b.gleich(q.rel, sv)) { gleich++; bytesGleich += sv.size; continue; }
+      offen.push({ von: q.von, rel: q.rel, bytes: sv.size, stat: sv, titel: q.titel || null });
+    }
+    const bytesOffen = offen.reduce((s, o) => s + o.bytes, 0);
+    zeile(`   ${offen.length} in den Behälter (${(bytesOffen / 1048576).toFixed(0)} MB), ${gleich} schon drin` + (fehlt ? `, ${fehlt} gibt es zu Hause nicht (kein Grund zur Sorge)` : ''));
+    const mess = { was, gesamt: bytesOffen, dateienGesamt: offen.length, tempo: tempoMesser() };
+    let bytesFertig = 0, n = 0;
+    fortschritt(mess, { bytes: 0, dateien: 0 });
+    for (const o of offen) {
+      if (anhalten) break;
+      if (b) b.schreiben(o.rel, o.von, o.stat, (s) => { if (o.bytes > 8 * 1048576) fortschritt(mess, { bytes: bytesFertig + s, dateien: n }); });
+      bytesFertig += o.bytes; n++;
+      if (jeTitel) jeTitel(o);
+      fortschritt(mess, { bytes: bytesFertig, dateien: n });
+      await new Promise(r => setImmediate(r));
+    }
+    if (b) { b.indexSchreiben(true); behaelterStand = b.masse(); }
+    dateien += gleich + n; bytes += bytesGleich + bytesFertig;
+    zeile(`   ${name}: ${n} ${probe ? 'zu schreiben' : 'geschrieben'} (${(bytesFertig / 1048576).toFixed(0)} MB)`);
+    return { dateien: n, bytes: bytesFertig };
   };
   const kopierSchritt = async (name, paare, was, jeTitel) => {
     const liste = kopierListe(paare);
@@ -1019,17 +1045,27 @@ function zaehlen(ordner, ohne) {
     for (const f of ['START-Mac.command', 'START-Linux.sh']) { try { fs.chmodSync(path.join(ZIEL, f), 0o755); } catch (e) {} }
     try { fs.unlinkSync(path.join(ZIEL, 'START.md')); } catch (e) {}
   }
-  await kopierSchritt('Bestand-Kern (Katalog, Texte, Reaktionen, Herzen, Beobachter, Klangraum)', kernPaare(PROGRAMM), 'Kern');
+  await kopierSchritt('Bestand-Kern (Katalog, Texte, Reaktionen, Beobachter, Klangraum)', kernPaare(PROGRAMM), 'Kern');
+  if (anhalten) return angehalten(null);
+  await behaelterSchritt('Herzen-Listen (liker/)', likerPaare(), 'Kern');
   if (anhalten) return angehalten(null);
   if (!probe) {
-    const rh = spawnSync(process.execPath, ['bin/himmel-export.js', '--relativ', 'Programm/library/songs', '--ziel', path.join(ZIEL, 'Sternenhimmel.html')],
+    /* Der Sternenhimmel auf dem Stick spielt aus Musik/ (echte Dateien,
+       Stufe 5) und trägt die Kacheln in sich - an die Behälter kommt eine
+       file://-Seite nicht heran. Die Namen in Musik/ kennt nur dieses
+       Skript (musikPlan), deshalb reisen sie über eine kleine Datei. */
+    const namen = {}; for (const e of musikPlan()) namen[e.song.id] = e.name;
+    fs.mkdirSync(path.join(LIB, 'export'), { recursive: true });
+    const namenDatei = path.join(LIB, 'export', 'musik-namen.json');
+    fs.writeFileSync(namenDatei, JSON.stringify(namen));
+    const rh = spawnSync(process.execPath, ['bin/himmel-export.js', '--musik', 'Musik', '--namen', namenDatei, '--ziel', path.join(ZIEL, 'Sternenhimmel.html')],
                          { cwd: WURZEL, encoding: 'utf8' });
     if (rh.status === 0) zeile('   Sternenhimmel.html: ' + (rh.stdout || '').trim().split('\n').pop());
     else zeile(`   Sternenhimmel nicht gebaut (Exit ${rh.status}): ${((rh.stderr || rh.stdout || '').trim().split('\n').filter(Boolean).slice(-2).join(' | '))}`);
   }
   const rn = nodeKopieren();
   dateien += rn.dateien; bytes += rn.bytes;
-  standTitel = probe ? 0 : titelImZiel(PROGRAMM);
+  standTitel = probe ? 0 : titelImZiel(PROGRAMM, B);
   teilstandSchreiben(PROGRAMM, rn);
   if (anhalten) return angehalten(rn);
 
@@ -1039,12 +1075,12 @@ function zaehlen(ordner, ohne) {
   {
     const fertigeTitel = new Set();
     let seitStand = 0;
-    await kopierSchritt('Titel', titelPaare(PROGRAMM, ['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Titel', (o) => {
-      if (path.basename(o.nach) !== 'audio.mp3' || fertigeTitel.has(o.titel)) return;
+    await behaelterSchritt('Titel', titelPaare(['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Titel', (o) => {
+      if (!o.rel.endsWith('/audio.mp3') || fertigeTitel.has(o.titel)) return;
       fertigeTitel.add(o.titel); standTitel++;
-      if (++seitStand >= 25) { seitStand = 0; teilstandSchreiben(PROGRAMM, rn); }
+      if (++seitStand >= 25) { seitStand = 0; if (B) B.indexSchreiben(true); teilstandSchreiben(PROGRAMM, rn); }
     });
-    standTitel = probe ? standTitel : titelImZiel(PROGRAMM);
+    standTitel = probe ? standTitel : titelImZiel(PROGRAMM, B);
     zeile(`   ${standTitel} Titel auf dem Stick spielbar`);
     teilstandSchreiben(PROGRAMM, rn);
   }
@@ -1053,14 +1089,14 @@ function zaehlen(ordner, ohne) {
   /* ---- Stufe 3: große Titelbilder und der Rest im Titelordner */
   stufe(3, 'Große Titelbilder und Bewegtbilder, neueste zuerst');
   standStufe = lauf.stufe;
-  await kopierSchritt('Titelbilder', titelRestPaare(PROGRAMM, ['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Bilder');
+  await behaelterSchritt('Titelbilder', titelRestPaare(['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Bilder');
   teilstandSchreiben(PROGRAMM, rn);
   if (anhalten) return angehalten(rn);
 
   /* ---- Stufe 4: Analyse-Ablage */
   stufe(4, 'Analyse-Ablage, neueste zuerst');
   standStufe = lauf.stufe;
-  await kopierSchritt('Analyse', analysePaare(PROGRAMM), 'Analyse');
+  await behaelterSchritt('Analyse', analysePaare(), 'Analyse');
   teilstandSchreiben(PROGRAMM, rn);
   if (anhalten) return angehalten(rn);
 
@@ -1083,7 +1119,7 @@ function zaehlen(ordner, ohne) {
   if (stems) {
     stufe(6, 'Stems, neueste zuerst');
     standStufe = lauf.stufe;
-    await kopierSchritt('Stems', stemsPaare(PROGRAMM), 'Stems');
+    await behaelterSchritt('Stems', stemsPaare(), 'Stems');
     teilstandSchreiben(PROGRAMM, rn);
     if (anhalten) return angehalten(rn);
   } else zeile(`» Stufe 6 von ${STUFEN}: Stems - nicht gewählt, übersprungen`);
@@ -1092,36 +1128,65 @@ function zaehlen(ordner, ohne) {
   stufe(7, 'Abschluss - Aufräumlauf, Stand, Probestart');
   standStufe = lauf.stufe;
   const AUSSCHLUSS = [
-    '--exclude', '/songs/*/audio.wav',
-    ...(stems ? [] : ['--exclude', '/songs/*/stems/']),
+    /* Was in den Behältern liegt, hat als Datei nichts mehr im Ziel zu
+       suchen - der Aufräumlauf gilt nur dem Kern. */
+    '--exclude', '/songs/', '--exclude', '/analyse/', '--exclude', '/liker/',
     '--exclude', '/roh/', '--exclude', '/backup/', '--exclude', '/node-portabel/', '--exclude', '/suno-wege/',
     '--exclude', '/kondensate/arbeit/', '--exclude', '/export-lauf.json',
     /* KI-Modelle (ONNX, 564 MB) rechnen Musikstil und Klangraum - das
        eingefrorene Archiv rechnet nichts, es spielt (Caspar_D, 09.09.2026). */
     '--exclude', '/modelle/',
-    /* geschützt, nicht ausgeschlossen: der Stand des letzten Exports liegt
-       nur im Ziel und würde von --delete sonst jedes Mal erst gelöscht */
-    '--filter', 'P /export-stand.json',
+    /* geschützt, nicht ausgeschlossen: der Stand des letzten Exports und
+       die Behälter liegen nur im Ziel und würden von --delete sonst
+       jedes Mal erst gelöscht */
+    '--filter', 'P /export-stand.json', '--filter', 'P /bestand-*.tar', '--filter', 'P /bestand-index.ndjson', '--filter', 'P /bestand-index.ndjson.tmp',
   ];
-  /* Stems, die ein früherer Lauf mit --stems gebracht hat, bleiben ohne
-     --stems liegen: 28 GB löscht man nicht, weil ein Häkchen fehlt. */
-  if (!stems) AUSSCHLUSS.push('--filter', 'P /songs/*/stems/');
-  /* Der Aufräumlauf: rsync über den ganzen Bestand - holt, was die Stufen
-     nicht kannten, räumt weg, was zu Hause fehlt. Nach den Stufen
-     überträgt er fast nichts, muss aber beide Seiten einmal ansehen. */
+  /* Der Aufräumlauf über den Kern: holt, was Stufe 1 nicht kannte, räumt
+     weg, was zu Hause fehlt. */
   const [datenSumme] = await vorabmessen([{ quelle: LIB, ziel: path.join(PROGRAMM, 'library'), zusatz: AUSSCHLUSS }]);
   const rl = await rsync(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Abschluss', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
   if (anhalten) return angehalten(rn);
-  /* Ab hier zählt der Aufräumlauf, nicht die Summe der Stufen - er hat
-     alles gesehen. */
-  dateien = rl.dateien + rn.dateien + rm.dateien; bytes = rl.bytes + rn.bytes + rm.bytes;
-  zeile(`   library/: ${rl.dateien} Dateien, ${(rl.bytes / 1073741824).toFixed(2)} GB, ${rl.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'} (${(rl.bytesUebertragen / 1048576).toFixed(0)} MB)`);
+  zeile(`   Kern: ${rl.dateien} Dateien, ${rl.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'} (${(rl.bytesUebertragen / 1048576).toFixed(0)} MB)`);
+
+  /* GRABSTEINE: was zu Hause weg ist, verschwindet aus dem Verzeichnis
+     (die Bytes bleiben als Ballast im Stück, bis verdichtet wird). Stems
+     bleiben, solange es sie zu Hause gibt - auch ohne Pille: 28 GB löscht
+     man nicht, weil ein Häkchen fehlt. */
+  if (B) {
+    let weg = 0;
+    for (const rel of B.liste()) if (!fs.existsSync(path.join(LIB, rel))) { B.loeschen(rel); weg++; }
+    if (weg) zeile(`   ${weg} Einträge aus dem Verzeichnis genommen (zu Hause gelöscht)`);
+    /* VERDICHTEN, wenn mehr als ein Viertel Ballast: die lebenden Einträge
+       in neue Stücke, dann tauschen. Bricht das Anhalten es ab, bleibt
+       alles beim Alten. */
+    const m = B.masse();
+    if (m.ballast > 0.25 * m.stuecke && m.stuecke > 64 * 1048576) {
+      schritt(`Behälter verdichten (${(m.ballast / 1048576).toFixed(0)} MB Ballast in ${(m.stuecke / 1073741824).toFixed(2)} GB)`);
+      const mess = { was: 'Verdichten', gesamt: m.lebt, dateienGesamt: m.dateien, tempo: tempoMesser() };
+      const ok = B.verdichten((s) => fortschritt(mess, { bytes: s, dateien: null }), () => anhalten);
+      zeile(ok ? `   verdichtet: ${(B.masse().stuecke / 1073741824).toFixed(2)} GB in ${B.masse().volumen} Stück(en)` : '   Verdichten abgebrochen, alles beim Alten');
+      if (anhalten) return angehalten(rn);
+    }
+    /* ALTBESTAND: ein Stick aus der Zeit vor den Behältern hat songs/,
+       analyse/ und liker/ noch als Dateien. Erst jetzt, wo alles in den
+       Stücken liegt, kommen sie weg - vorher spielte der eingefrorene
+       Server noch daraus. */
+    for (const alt of ['songs', 'analyse', 'liker']) {
+      const d = path.join(PROGRAMM, 'library', alt);
+      if (!fs.existsSync(d)) continue;
+      try { fs.rmSync(d, { recursive: true, force: true }); zeile(`   Altbestand ${alt}/ (Dateien vor den Behältern) entfernt`); }
+      catch (e) { zeile(`   Altbestand ${alt}/ ließ sich nicht ganz entfernen: ${e.message} - beim nächsten Lauf noch einmal`); }
+    }
+    B.schliessen(); behaelterStand = B.masse();
+    zeile(`   Behälter: ${behaelterStand.dateien} Einträge, ${(behaelterStand.stuecke / 1073741824).toFixed(2)} GB in ${behaelterStand.volumen} Stück(en)`);
+  }
+  /* Ab hier zählt, was im Ziel liegt (zaehlen), nicht die Summe der Stufen. */
 
   let probestartErgebnis = 'übersprungen';
   if (!probe) {
     const stand = { exportiertAm: new Date().toISOString(), dateien: 0, bytes: 0,
-                    mitStems: stems || fs.existsSync(path.join(PROGRAMM, 'library', 'songs')) && fs.readdirSync(path.join(PROGRAMM, 'library', 'songs')).some(id => fs.existsSync(path.join(PROGRAMM, 'library', 'songs', id, 'stems'))),
-                    handle, anzeigename, titel: titelImZiel(PROGRAMM), node: rn.da.map(p => p.ordner) };
+                    mitStems: stems || !!(B && B.liste('songs/').some(p => p.includes('/stems/'))),
+                    handle, anzeigename, titel: titelImZiel(PROGRAMM, B), behaelter: behaelterStand, node: rn.da.map(p => p.ordner) };
 
     /* BEIFANG RAEUMEN. macOS legt auf exFAT/FAT neben jeder Datei mit
        Attributen eine "._"-Datei ab (AppleDouble). Fernseher und
@@ -1156,7 +1221,7 @@ function zaehlen(ordner, ohne) {
     fs.mkdirSync(path.join(PROGRAMM, 'library'), { recursive: true });
     fs.writeFileSync(path.join(PROGRAMM, 'library', 'export-stand.json'), JSON.stringify(stand, null, 1));
     dateien = stand.dateien; bytes = stand.bytes;
-    zeile(`Ziel: ${dateien} Dateien, ${(bytes / 1073741824).toFixed(2)} GB, ${stand.titel} Titel`);
+    zeile(`Ziel: ${dateien} Dateien, ${(bytes / 1073741824).toFixed(2)} GB, ${stand.titel} Titel${behaelterStand ? `, davon ${behaelterStand.dateien} Einträge in ${behaelterStand.volumen} Behälter-Stück(en)` : ''}`);
 
     if (!ohneProbestart) {
       schritt('Probestart vom Ziel');

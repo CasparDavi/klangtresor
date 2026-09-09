@@ -2136,3 +2136,51 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
 - Offen: die Restzeit in Stufe 1 (node/) war beim ersten Lauf Unsinn — seit
   der Kopie in Stücken behoben, im laufenden Export aber noch alter Stand.
 
+## Behälter: der Bestand als tar-Stücke (09.09.2026, 12:30)
+
+- Caspar_D: „das ist alles irre langsam … irgendwas, was diese Mikromengen
+  auf großen Blöcken vermeidet" → Optionen besprochen (ISO, SQLite, DuckDB,
+  tar) → „gut, dann arbeiten wir mit Containern (Behältern)". Grund: der
+  Intenso schreibt große Dateien mit 14 MB/s, aber jede Datei kostet ihn
+  1–2 s (exFAT-Metadaten); 4.000 Dateien = über eine Stunde, dieselben
+  Bytes am Stück = 10 Minuten. Windows hat tar.exe seit Win 10 1803, der
+  Stick braucht aber kein tar: der Server liest per Versatz.
+- `bin/behaelter.js` (neu): ustar-Stücke `bestand-001.tar …` bis 2 GB
+  (FAT32), pax-Vorsatz für Namen > 100 Byte, Verzeichnis
+  `bestand-index.ndjson` (alle 5 s ganz neu geschrieben, Reihenfolge =
+  Schreibreihenfolge), Wiederherstellung fehlender Einträge aus den
+  tar-Köpfen, Anhängen (Endblöcke abschneiden), Grabsteine, masse()
+  (Ballast), verdichten() (lebende Einträge in neue Stücke, tauschen;
+  Abbruch lässt alles beim Alten), stream(rel, von, bis) für Byte-Bereiche.
+  Nur Schreiber schreiben das Verzeichnis (schreibgeschützter Stick).
+  Geprüft: Schreiben, Lesen, Bereich, langer Name, Anhängen, Löschen,
+  Wiederherstellen ohne Verzeichnis, Verdichten; System-tar liest die Stücke.
+- `bin/export.js`: Stufen 1–4 und 6 schreiben in den Behälter
+  (behaelterSchritt: gleich = Größe+Zeit laut Verzeichnis; 4-MB-Meldung);
+  Kern und Musik/ bleiben echte Dateien; Herzen-Listen (liker/) in Stufe 1
+  in den Behälter; Sternenhimmel über `--musik Musik --namen
+  library/export/musik-namen.json` (Kacheln eingebettet, 21,6 MB HTML);
+  Stufe 7: Kern-Aufräumlauf (rsync, songs/analyse/liker ausgeschlossen,
+  Stücke geschützt; --delete-excluded räumt Altbestand vor den Behältern
+  selbst ab), Grabsteine für zu Hause Gelöschtes, Verdichten bei > 25 %
+  Ballast, Stand mit `behaelter` = masse(). FAT32-4-GB-Prüfung gestrichen
+  (Stücke < 2 GB).
+- `server/server.js` (Agent): behaelterHolen() (LIB, neu bei Index-mtime),
+  liefere() fällt nach statSync-Fehler auf den Behälter zurück (Range,
+  Cache-Regeln unverändert), eingefrorenVorhanden, likerLesen/likerAlle/
+  likerStand, analyseListe, /analyse/<name>, /api/eigen-artwork; BEOBACHTET
+  + behaelter.js. Zu Hause unverändert (kein Behälter → echte Dateien).
+- `bin/himmel-export.js` (Agent): Modus `--musik <ordner> --namen <json>`
+  (Ton aus Musik/, Kacheln als data:-URI).
+- Ende-zu-Ende auf der SSD (Probe, danach gelöscht): voller Lauf 28 s,
+  553 Dateien statt 3.700, 3 Stücke (4,96 GB); Auffrischen 4 s;
+  Altbestand weg; Anhalten nach 12 s → Teilkopie, Verzeichnis gelöscht →
+  aus Köpfen wiederhergestellt (2.481 = 2.481), Fortsetzen 20 s; Probestart
+  aus dem Ziel liest die Behälter: 324 Titel, ok.
+- Caspar_Ds Stick-Export (altes Stufen-Skript, Dateien einzeln) läuft
+  noch: Stufe 2 bei 50 % nach 40 min. Empfehlung: anhalten und mit der
+  Behälter-Fassung neu starten (räumt in Stufe 7 die alten Dateien ab).
+- Offen: Register zeigt `behaelter` noch nicht; Balken 2 („schon drauf /
+  kommt noch") über Nachmessen des Ziels — mit wenigen großen Dateien
+  jetzt billig; Kachelgröße (50 KB) für den Sternenhimmel.
+
