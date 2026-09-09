@@ -1946,3 +1946,26 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   `profiles/{handle}/followers|following?page=N` (24 Seiten, alle 352/102,
   `is_following_viewer`), Stand + Kommen/Gehen, im Profil vollstaendig.
 - Rote Albumeintraege, Abschnitte nach und nach: weiter offen (siehe oben).
+
+## Profil gegengelesen und berichtigt (09.09.2026, 02:50)
+
+Zwei Gegenleser (Meine Gemeinschaft, Meine Daten), 22 Befunde, alle
+umgesetzt (Server b8b629c, Oberfläche im Commit danach):
+- Strom zählte dieselbe Person je Titel doppelt (einzeln + Bündel) →
+  Schlüssel handle|song, Einzelzeile schlägt Bündel; eigener Handle
+  überall ausgefiltert; folgtMir aus der Beobachterliste (der Liker-Weg
+  liefert is_following_viewer immer false); Zeitfenster (zeitAb/zeitBis)
+  reisen mit, imFenster zählt ein Herz, wenn sein Fenster ganz im Zeitraum
+  liegt; Unterschriften nennen Stand und Ausgelassene.
+- Personenseite fragt zuerst die Beobachterliste („folgt dir seit …",
+  „du folgst zurück"); Spur zeigt Bündelzeit als „bis".
+- Meine Daten: „Alben auf Suno" statt immer 0; Verlaufsbeginn = Minimum;
+  „Tempo × Herzen" liest taktBpm (analyse.bpm tot, auch im Klangraum-
+  Schiff ersetzt); Hirschfaktor an drei Stellen nur öffentliche Titel
+  (hirschRechnen), mit Erklärung der privaten; Modelle-Kachel angehängt;
+  Personas-Kachel gelöscht; Fußnote „Alle N Titel, auch M private";
+  Wörter laut WOERTER.md (meistgeherzten, Titel, Titelseite, Im Blick,
+  Längster Name).
+- Nachbarschaft nennt „N Menschen aus den Liker-Listen noch ohne Profil".
+- Ideen für die Gemeinschaftsansicht: docs/BACKLOG.md (Caspar_Ds Wunsch:
+  Stilgruppen auf Zeit normiert, Vorlieben je Person).

@@ -9246,7 +9246,10 @@ function karteSchiffFrame(){
     schiffAnker = A;                                              // der umkreiste Stern
     if (B && zielId) karteSchiffFrame.letzteBildpos = { id: zielId, P: B };   // fuers Nachschieben beim Pivotwechsel
     const rest = dauer - zeit;
-    const s = song(aktuellId), bpm = (s && s.analyse && s.analyse.bpm) || 100;
+    /* Tempo fuer den Schiffsschlag: Sunos Schlagzeiten (taktBpm); das
+       frueher gelesene analyse.bpm ist seit 23.08.2026 tot (Gegenleser,
+       09.09.2026) - der Rueckfall 100 griff still fuer alle Titel. */
+    const s = song(aktuellId), bpm = (s && s.taktBpm) || 100;
 
     if (schiffArt === 'direkt' && B){
       const t = zeit / dauer;
@@ -11587,14 +11590,22 @@ async function profilCommunityFuellen(){
      09.09.2026 auch - aus den Liker-Listen (library/liker), alle Titel,
      alle Zeiten. Nur die ZEIT eines Herzens kennt Suno nicht immer: der
      Strom nennt sie fuer die letzten Wochen, die Liste am Seitenende;
-     ein Herz ohne Zeit zaehlt deshalb nur unter "Fuer immer". */
+     dazwischen bleibt ein FENSTER aus den Cursors der Suno-Seite
+     (zeitAb, zeitBis). Ein Herz mit Fenster zaehlt in einem Zeitraum,
+     wenn BEIDE Grenzen darin liegen (Gegenleser, 09.09.2026 - vorher
+     fiel jedes Herz ohne Zeit aus Monat und Jahr heraus, auch wenn sein
+     Fenster ganz im Monat lag); ein Herz ohne Zeit und ohne Fenster
+     zaehlt nur unter "Fuer immer". Die Funktion nimmt deshalb das ganze
+     Ereignis, nicht nur seine Zeit - Kommentare und Antworten tragen nur
+     `am`, das genuegt ihr. */
   const heute = new Date(), jetztJ = heute.getFullYear(), jetztM = heute.getMonth();
-  const imFenster = (am, f) => {
-    if (!am) return f === 'immer';
-    const x = new Date(am);
-    if (f === 'monat') return x.getFullYear() === jetztJ && x.getMonth() === jetztM;
-    if (f === 'jahr')  return x.getFullYear() === jetztJ;
-    return true;
+  const imFenster = (e, f) => {
+    if (f === 'immer') return true;
+    const drin = (iso) => { const x = new Date(iso);
+      if (f === 'monat') return x.getFullYear() === jetztJ && x.getMonth() === jetztM;
+      return x.getFullYear() === jetztJ; };
+    if (e.am) return drin(e.am);
+    return !!(e.zeitAb && e.zeitBis) && drin(e.zeitAb) && drin(e.zeitBis);
   };
   const schalter = document.createElement('div'); schalter.style.cssText = 'margin-top:6px;display:flex;gap:6px;flex-wrap:wrap';
   const besten = document.createElement('div'); besten.className = 'diagitter';
@@ -11611,24 +11622,31 @@ async function profilCommunityFuellen(){
     localStorage.setItem('bestenFenster', fenster);
     [...schalter.children].forEach(c => c.classList.toggle('an', c.dataset.f === fenster));
     besten.innerHTML = '';
-    const komm = fremde.map(l => ({ ...person(l), n: l.kommentare.filter(k => imFenster(k.am, fenster)).length
-                                                   + l.antworten.filter(k => imFenster(k.am, fenster)).length }))
+    const komm = fremde.map(l => ({ ...person(l), n: l.kommentare.filter(k => imFenster(k, fenster)).length
+                                                   + l.antworten.filter(k => imFenster(k, fenster)).length }))
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
-    const lik  = fremde.map(l => ({ ...person(l), n: l.likes.filter(k => imFenster(k.am, fenster)).length }))
+    const lik  = fremde.map(l => ({ ...person(l), n: l.likes.filter(k => imFenster(k, fenster)).length }))
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
+    /* Die Unterschrift sagt, was gezaehlt wurde: fuer immer alles, mit
+       dem Stand der Liker-Listen; sonst nur, was eine Zeit oder ein
+       Fenster hat - und wie viele Herzen deshalb fehlen (Gegenleser,
+       09.09.2026). */
+    const ohneZeit = fenster === 'immer' ? 0
+      : fremde.reduce((n, l) => n + l.likes.filter(k => !k.am && !(k.zeitAb && k.zeitBis)).length, 0);
     /* Die Bilder darunter folgen der neuen Auswahl. */
     requestAnimationFrame(() => { if (typeof nachbarnListeSpiegeln === 'function') nachbarnListeSpiegeln(); });
     besten.appendChild(balken('Kommentieren am meisten', komm, DIA_1, '', 'blase'));
     besten.appendChild(balken('Herzen am meisten', lik, DIA_1,
-      fenster === 'immer' ? 'alle Herzen laut Liker-Listen' : 'nur Herzen, deren Zeit Suno nennt', 'herz'));
-    /* Kombiwert: Kommentar dreifach, Like doppelt - wie die Bewegung
+      fenster === 'immer' ? 'alle Herzen laut Liker-Listen' + (d.likerStand ? ', Stand ' + tagMonat(d.likerStand) : '')
+                          : `nur Herzen mit bekannter Zeit oder Zeitfenster - ${ohneZeit} ohne Zeit nicht gezählt`, 'herz'));
+    /* Kombiwert: Kommentar dreifach, Herz doppelt - wie die Bewegung
        auf der Albumseite. (Caspar_D, 20.08.2026: "kommentieren x3 und
        liken x2 am meisten") */
-    const kombi = fremde.map(l => { const k = l.kommentare.filter(x => imFenster(x.am, fenster)).length + l.antworten.filter(x => imFenster(x.am, fenster)).length;
-                                    const li = l.likes.filter(x => imFenster(x.am, fenster)).length;
+    const kombi = fremde.map(l => { const k = l.kommentare.filter(x => imFenster(x, fenster)).length + l.antworten.filter(x => imFenster(x, fenster)).length;
+                                    const li = l.likes.filter(x => imFenster(x, fenster)).length;
                                     return { ...person(l), n: 3 * k + 2 * li, titel: `@${l.handle}: ${k} Kommentare, ${li} Herzen` }; })
                        .filter(e => e.n).sort((a,b) => b.n - a.n);
-    besten.appendChild(balken('Kommentieren ×3 + Liken ×2', kombi, DIA_1));
+    besten.appendChild(balken('Kommentieren ×3 + Herzen ×2', kombi, DIA_1));
   };
   for (const [f, t] of FENSTER){
     const c = document.createElement('span'); c.className = 'chip'; c.dataset.f = f; c.textContent = t; c.style.cursor = 'pointer';
@@ -11700,7 +11718,7 @@ async function profilCommunityFuellen(){
       wer.textContent = e.name || e.von || '?'; wer.onclick = () => reaktPersonAlleine(e.von);
       z.appendChild(wer);
       z.appendChild(document.createTextNode(
-        (e.art === 'comment_like' ? ' hat deinen Kommentar geliked' : ' hat dir geantwortet') +
+        (e.art === 'comment_like' ? ' hat deinen Kommentar geherzt' : ' hat dir geantwortet') +
         ' unter „' + (e.songTitel || '?') + '"' + (e.text ? ' — „' + e.text.slice(0,50) + (e.text.length>50?'…':'') + '"' : '') +
         ' · ' + reaktZeit(e.am).slice(0,8)));
       w.appendChild(z);
@@ -11800,11 +11818,16 @@ function befundSeiten(eigene){
         const e = monateSeit().map(k => ({ titel: `${k} (${(g.get(k)||[]).length} Titel)`, name: k.endsWith('-01') || k === monateSeit()[0] ? k.slice(0,4) : MONK[+k.slice(5)-1][0], n: g.has(k) ? median(g.get(k)) : 0 }));
         return zeitsaeulen(e, DIA_1, { hinweis: 'Ältere Titel hatten länger Zeit zu sammeln - das ist kein Qualitätsurteil, nur ein Bild.' });
       } },
+    /* TEMPO AUS SUNOS SCHLAGZEITEN (Gegenleser, 09.09.2026): Die Seite
+       filterte nach s.analyse.bpm, und das Feld ist seit dem 23.08.2026
+       tot (bin/analyse-index.js) - sie war leer. taktBpm steht im
+       Katalog fuer alle Titel, zu denen Suno Schlagzeiten liefert (rund
+       306); wer keine hat, faellt heraus statt bei 0 zu landen. */
     { titel: 'Tempo × Herzen (Median, ab 5 Titel)', bau: () => {
         const TEMPO = [[0,70,'< 70'],[70,85,'70–85'],[85,100,'85–100'],[100,115,'100–115'],[115,130,'115–130'],[130,150,'130–150'],[150,999,'150 +']];
-        const e = TEMPO.map(([v, b, name]) => { const l = eigene.filter(s => s.analyse && s.analyse.bpm >= v && s.analyse.bpm < b).map(s => s.likes || 0);
+        const e = TEMPO.map(([v, b, name]) => { const l = eigene.filter(s => s.taktBpm > 0 && s.taktBpm >= v && s.taktBpm < b).map(s => s.likes || 0);
           return { name, titel: `${name} BPM (${l.length} Titel)`, n: l.length >= 5 ? Math.round(median(l)) : 0 }; });
-        return kachelzeile([{ titel: 'BPM', hinweis: 'Helligkeit = Median Herzen', eintraege: e }], DIA_2);
+        return kachelzeile([{ titel: 'BPM', hinweis: 'Helligkeit = Median Herzen · Tempo laut Sunos Schlagzeiten', eintraege: e }], DIA_2);
       } },
     { titel: 'Wirkung je Modell: Herzen je 100 Abrufe', bau: () => {
         const g = new Map(); for (const s of eigene){ const k = s.modell || 'Unbekannt'; if (!g.has(k)) g.set(k, { p: 0, l: 0, n: 0 }); const x = g.get(k); x.p += s.plays || 0; x.l += s.likes || 0; x.n++; }
@@ -11856,8 +11879,11 @@ function kuriosSeiten(eigene){
         const prompt = byLen(s => (s.stilPrompt||'').length)[0];
         const verbote = byLen(s => ((s.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length)[0];
         const e = [
-          { name: 'Längster Titel', n: (lang.titel||'').length, anzeige: `${lang.titel} (${(lang.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(lang.id); } },
-          { name: 'Kürzester Titel', n: (kurz.titel||'').length, anzeige: `${kurz.titel} (${(kurz.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(kurz.id); } },
+          /* "Name" = die Zeichen des Titelnamens; "Längster Titel" weiter
+             unten ist die Spieldauer. Zweimal dasselbe Wort fuer zwei
+             Dinge stand hier bis 09.09.2026 (Gegenleser). */
+          { name: 'Längster Name', n: (lang.titel||'').length, anzeige: `${lang.titel} (${(lang.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(lang.id); } },
+          { name: 'Kürzester Name', n: (kurz.titel||'').length, anzeige: `${kurz.titel} (${(kurz.titel||'').length})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(kurz.id); } },
           { name: 'Längster Prompt', n: (prompt.stilPrompt||'').length, anzeige: `${prompt.titel} (${(prompt.stilPrompt||'').length} Zeichen)`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(prompt.id); } },
           { name: 'Meiste Verbote im Prompt', n: ((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length, anzeige: `${verbote.titel} (${((verbote.stilPrompt||'').match(/\bno\b|\bkein/gi) || []).length} × „no")`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(verbote.id); } },
           { name: 'Längster Titel', n: byLen(s => s.dauer||0)[0].dauer, anzeige: `${byLen(s => s.dauer||0)[0].titel} (${Math.floor(byLen(s => s.dauer||0)[0].dauer/60)}:${String(Math.round(byLen(s => s.dauer||0)[0].dauer%60)).padStart(2,'0')})`, klick: () => { $('detail').classList.remove('auf'); spielenNachId(byLen(s => s.dauer||0)[0].id); } },
@@ -11892,9 +11918,13 @@ function kuriosSeiten(eigene){
           const nurLike = leute.filter(l => l.likes.length && !(l.kommentare.length + l.antworten.length));
           const beides  = leute.filter(l => l.likes.length && (l.kommentare.length + l.antworten.length));
           box.innerHTML = '';
-          box.appendChild(satz(`${leute.length} Menschen haben reagiert: ${beides.length} liken und schreiben, ${nurKomm.length} schreiben nur, ${nurLike.length} liken nur.`));
+          box.appendChild(satz(`${leute.length} Menschen haben reagiert: ${beides.length} herzen und schreiben, ${nurKomm.length} schreiben nur, ${nurLike.length} herzen nur.`));
           const f = document.createElement('div'); f.className = 'fussnote'; f.style.marginTop = '4px';
-          f.textContent = 'Likes kennen wir nur, soweit Sunos Benachrichtigungen reichen - die „Schreiber ohne Like" können früher still geliked haben.';
+          /* Seit 09.09.2026 sind die Herzen vollstaendig (Liker-Listen je
+             Titel); die Luecke liegt jetzt bei den Kommentaren, die nur
+             der Strom kennt. Vorher stand hier das Gegenteil
+             (Gegenleser, 09.09.2026). */
+          f.textContent = 'Herzen vollständig aus den Liker-Listen je eigenem Titel; Kommentare und Antworten so weit, wie der Benachrichtigungsstrom reicht (vier Wochen).';
           box.appendChild(f);
         }).catch(() => { box.innerHTML = ''; box.appendChild(satz('Keine Gemeinschaftsdaten.')); });
         return box;
@@ -12034,7 +12064,7 @@ function kuriosSeiten(eigene){
    dort niemand (Caspar_D, 06.09.2026).
 
    KEIN KNOPF, DER LAEDT. KlangTresor loest bei Suno nichts aus, was Geld
-   kostet; es verlinkt nur auf die Songseite, wo der Mensch selbst klickt.
+   kostet; es verlinkt nur auf die Titelseite bei Suno, wo der Mensch selbst klickt.
    Dieselbe Arbeitsteilung wie beim Entfolgen. */
 async function profilKontingentFuellen(){
   const el = $('profilkontingent'); if (!el) return;
@@ -12071,8 +12101,8 @@ async function profilKontingentFuellen(){
       ${tag ? `Der Zähler springt am <b>${tag}</b> zurück.` : ''}
       ${gelesen ? ` Datenübertragung vom ${gelesen} Uhr.` : ''}
       ${d.fehlen && d.fehlen.length
-        ? ` <b>${d.fehlen.length} Lied${d.fehlen.length === 1 ? '' : 'er'}</b> ${d.fehlen.length === 1 ? 'hat' : 'haben'} hier noch keine Datei.`
-        : ' Alle Lieder liegen vollständig hier.'}
+        ? ` <b>${d.fehlen.length} Titel</b> ${d.fehlen.length === 1 ? 'hat' : 'haben'} hier noch keine Datei.`
+        : ' Alle Titel liegen vollständig hier.'}
     </p>
     <div id="kontdownloads"></div>
     ${d.fehlen && d.fehlen.length ? `<div class="kontfehlt">${d.fehlen.slice(0, 12).map(f =>
@@ -12080,7 +12110,7 @@ async function profilKontingentFuellen(){
          ${esc(f.titel || f.id.slice(0, 8))}
          <span>${!f.mp3 && !f.wav ? 'nichts da' : !f.wav ? 'nur MP3' : 'nur WAV'}</span>
        </a>`).join('')}</div>
-      <p class="fussnote">Herunterladen bleibt Handarbeit: Der Link führt zur Songseite,
+      <p class="fussnote">Herunterladen bleibt Handarbeit: Der Link führt zur Titelseite bei Suno,
          dort über die drei Punkte. KlangTresor löst bei Suno nichts aus, was Geld kostet.</p>` : ''}`;
 
   /* Der Blick in den Download-Ordner kommt nach - er dauert eine Sekunde
@@ -12122,6 +12152,26 @@ function profilZahlenFuellen(){
   const eigene = alle.filter(s => !s.fremd);
   if (!eigene.length){ ziel.style.display = 'none'; return; }
   ziel.innerHTML = '<h3>Zahlen</h3>';
+  /* WELCHER BESTAND (Gegenleser, 09.09.2026): Die Kopfzahlen darueber
+     sind Sunos oeffentliche; dieser Block rechnet ueber alle eigenen
+     Titel des Archivs, auch die privaten. Das steht voran, damit die
+     Summen hier und dort nicht als Widerspruch gelesen werden. */
+  { const privat = eigene.filter(s => !s.oeffentlich).length;
+    const v = document.createElement('p'); v.className = 'fussnote'; v.style.marginTop = '0';
+    v.textContent = `Alle ${eigene.length} Titel des Archivs` + (privat ? `, auch ${privat} private, die Suno nicht zeigt.` : '.');
+    ziel.appendChild(v); }
+  /* BEGINN DES VERLAUFS (Gegenleser, 09.09.2026): bewegung28.seit ist je
+     Titel der aelteste Stand im Fenster - bei einem jungen Titel sein
+     Erscheinen. Der Beginn des ganzen Verlaufs ist das MINIMUM ueber
+     alle Titel; vorher stand hier das Datum des ersten Titels der Liste,
+     und das ist der juengste. Solange der Verlauf keine 28 Tage alt ist,
+     heissen die Vier-Wochen-Chips "seit TT.MM." - "Letzte 4 Wochen"
+     verspraeche sonst mehr, als gemessen wurde. Die Staende sind
+     Tagesdaten (JJJJ-MM-TT), darum Zeichenkette statt Date. */
+  const verlaufSeit = eigene.map(s => s.bewegung28 && s.bewegung28.seit).filter(Boolean).sort()[0] || null;
+  const tagMonatVomStand = (d) => d ? d.slice(8, 10) + '.' + d.slice(5, 7) + '.' : '–';
+  const vierWochenText = verlaufSeit && verlaufSeit > new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10)
+    ? 'seit ' + tagMonatVomStand(verlaufSeit) : 'Letzte 4 Wochen';
   const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
   const songEintrag = (k) => (s) => ({ name: s.titel, n: s[k] || 0,
     teile: [ (s.bewegung28 && s.bewegung28[k]) || 0, (s.bewegung && s.bewegung[k]) || 0 ],
@@ -12129,7 +12179,7 @@ function profilZahlenFuellen(){
   const hatBewegung = eigene.some(s => s.bewegung && (s.bewegung.plays || s.bewegung.likes || s.bewegung.kommentare));
   const stufenHinweis = '';
 
-  /* DIE ZEHN BEWEGTESTEN, ueber den meistgelikten (Caspar_D,
+  /* DIE ZEHN BEWEGTESTEN, ueber den meistgeherzten (Caspar_D,
      26.08.2026: „ich haette gern noch die Top10 der dynamischsten
      Songs - Songs mit viel Bewegung -, vergangene Woche, vergangener
      Monat. Ueber den Top10 gelikte Songs.")
@@ -12155,7 +12205,7 @@ function profilZahlenFuellen(){
       kopf.appendChild(document.createTextNode('Die zehn bewegtesten'));
       const chips = document.createElement('span'); chips.style.cssText = 'margin-left:auto;display:flex;gap:6px';
       const reihe = document.createElement('div'); reihe.className = 'topreihe';
-      const FENB = [['w1','Letzte Woche'],['w4','Letzte 4 Wochen']];
+      const FENB = [['w1','Letzte Woche'],['w4', vierWochenText]];
       let fenb = localStorage.getItem('topBewegungFenster') || 'w1';
       const zeichnenB = () => {
         localStorage.setItem('topBewegungFenster', fenb);
@@ -12182,19 +12232,19 @@ function profilZahlenFuellen(){
     }
   }
 
-  /* Die zehn meistgelikten als Artwork-Reihe, umschaltbar nach
+  /* Die zehn meistgeherzten als Artwork-Reihe, umschaltbar nach
      Entstehungszeit: gesamt, dieses Jahr, diesen Monat. (Caspar_D,
      20.08.2026.) Bezug ist das Entstehungsdatum - "Likes, die dieses
      Jahr kamen" wuessten wir erst ab Beginn des Zaehlerverlaufs. */
   {
     const w = document.createElement('div'); w.className = 'dia breit';
     const kopf = document.createElement('div'); kopf.className = 'diatitel'; kopf.innerHTML = SYM('herz') + ' ';
-    kopf.appendChild(document.createTextNode('Die zehn meistgelikten'));
+    kopf.appendChild(document.createTextNode('Die zehn meistgeherzten'));
     const chips = document.createElement('span'); chips.style.cssText = 'margin-left:auto;display:flex;gap:6px';
     const reihe = document.createElement('div'); reihe.className = 'topreihe';
     /* Gesamt: alle Likes. Letzte 4 Wochen: die NEUEN Likes aus dem
        Zaehlerverlauf (bewegung28) - wer zuletzt gefallen hat. */
-    const FEN = [['immer','Gesamt'],['w4','Letzte 4 Wochen']];
+    const FEN = [['immer','Gesamt'],['w4', vierWochenText]];
     let fen = localStorage.getItem('topLikesFenster2') || 'immer';
     const wert = (s) => fen === 'w4' ? ((s.bewegung28 && s.bewegung28.likes) || 0) : (s.likes || 0);
     const zeichnen = () => {
@@ -12224,7 +12274,7 @@ function profilZahlenFuellen(){
   g.appendChild(balken('Meiste Kommentare', [...eigene].filter(s=>s.kommentare).sort((a,b)=>(b.kommentare||0)-(a.kommentare||0)).map(songEintrag('kommentare')), DIA_1, stufenHinweis, 'blase'));
   if (hatBewegung){
     const l = document.createElement('div'); l.className = 'fussnote breit'; l.style.cssText = 'grid-column:1/-1;margin-top:0';
-    l.textContent = 'Balken: gedämpft = gesamt · mittel = letzte 4 Wochen · hell = letzte Woche (aus dem Zählerverlauf, seit ' + (eigene.find(s=>s.bewegung28)?.bewegung28.seit || '–') + ')';
+    l.textContent = 'Balken: gedämpft = gesamt · mittel = letzte 4 Wochen · hell = letzte Woche (aus dem Verlauf von Abrufen, Herzen und Kommentaren, seit ' + tagMonatVomStand(verlaufSeit) + ')';
     g.appendChild(l);
   }
 
@@ -12252,11 +12302,15 @@ function profilZahlenFuellen(){
   ], DIA_2));
 
   /* Modelle als Kacheln, in Suno-Reihenfolge; was kein Modell traegt,
-     heisst Unbekannt und steht hinten. */
+     heisst Unbekannt und steht hinten. Die Zeile wurde seit dem 20.08.
+     gebaut, aber nie angehaengt (Gegenleser, 09.09.2026) - die Eintraege
+     haben dasselbe Format wie die Zeitkacheln darueber ({name, n}),
+     also haengt sie jetzt dahinter. */
   const mz = new Map();
   for (const s of eigene){ const m = s.modell || 'Unbekannt'; mz.set(m, (mz.get(m) || 0) + 1); }
   const modelle = [...mz].sort((a,b) => a[0] === 'Unbekannt' ? 1 : b[0] === 'Unbekannt' ? -1 : a[0].localeCompare(b[0], undefined, { numeric: true }))
                          .map(([name, n]) => ({ name, n }));
+  g.appendChild(kachelzeile([{ titel: 'Modelle', hinweis: 'Titel je Modell', eintraege: modelle }], DIA_2));
 
 
   /* Wirkung statt Reichweite: Likes je 100 Plays - ab 50 Plays, sonst
@@ -12724,10 +12778,12 @@ async function profilNachbarnFuellen(){
     plays: st.play_count__sum || 0, likes: st.upvote_count__sum || 0,
     follower: st.followers_count || 0, folgt: st.following_count || 0,
     /* Aus den EIGENEN Daten gerechnet, nicht abgerufen - dieselbe
-       Rechnung wie oben auf der Seite. Zur Probe wurde sie einmal gegen
-       den Abruf gehalten: beide 22. */
-    hirsch: (() => { const w = alle.filter(x => !x.fremd).map(x => x.likes || 0).sort((a, b) => b - a);
-      let h = 0; while (h < w.length && w[h] >= h + 1) h++; return h; })(),
+       Rechnung wie oben auf der Seite (hirschRechnen), seit 09.09.2026
+       nur ueber die oeffentlichen Titel: bin/community-hirsch.js liest
+       Sunos Profilseite, die nur Oeffentliches zeigt, und die eigene
+       Zahl darf keinen anderen Massstab haben (Gegenleser). Zur Probe
+       wurde die alte Rechnung einmal gegen den Abruf gehalten: beide 22. */
+    hirsch: hirschRechnen('likes').h,
     /* Der eigene Wert kommt aus dem eigenen Bestand - alle Songs liegen
        hier, es gibt keine Seitengrenze. Er ist nie eine Untergrenze. */
     hirschUnten: false };
@@ -12903,7 +12959,7 @@ async function profilNachbarnFuellen(){
         (p) => lgz(p.follower), HANDLUNG],
       /* Ohne Songzahl: Sie steht im Nenner der Zielgroesse, ein Anteil
          waere dann teils die Rechnung selbst. */
-      ['wirkung', 'Wirkung je Stück', 'Abrufe je Titel — was ein einzelner Titel erreicht',
+      ['wirkung', 'Wirkung je Titel', 'Abrufe je Titel — was ein einzelner Titel erreicht',
         (p) => lgz(p.plays / Math.max(1, p.songs)), HANDLUNG.filter(g => g.n !== 'Titelzahl')],
       ['dauer', 'Beständigkeit', 'der Hirschfaktor — wieviele Titel zugleich tragen',
         (p) => (p.hirsch > 0 ? lgz(p.hirsch) : null), HANDLUNG],
@@ -12966,9 +13022,26 @@ async function profilNachbarnFuellen(){
   f.style.marginTop = '16px';
   const hoerer = Object.entries(leute)
     .filter(([h, p]) => p && !p.songs && h.toLowerCase() !== ichHandle).length;
-  f.textContent = `${macher.length} Leute, die hier kommentiert, geliked oder gefolgt haben und `
+  f.textContent = `${macher.length} Leute, die hier kommentiert, geherzt oder gefolgt haben und `
     + `selbst Musik machen — dazu ${hoerer}, die nur hören. `
     + `Öffentliche Profilzahlen, Stand ${(_nachbarn.stand || '').slice(0, 10)}. `;
+  /* WER NOCH FEHLT (Gegenleser, 09.09.2026). Die Liker-Listen bringen
+     seit 09.09.2026 Menschen ins Bild, fuer die bin/community-profile.js
+     noch kein Profil geholt hat - sie stehen in /api/community, aber
+     nicht in library/community-profile.json. Ohne diese Zeile saehe das
+     Bild vollstaendig aus, waehrend ein Teil der Nachbarschaft noch
+     fehlt. Gerechnet aus den beiden Listen, Handles ohne Gross/Klein. */
+  try {
+    const gem = await (await fetch('/api/community')).json();
+    const bekannt = new Set(Object.keys(leute).map(h => h.toLowerCase()));
+    const ohneProfil = (gem.leute || []).filter(l => l.handle && l.handle.toLowerCase() !== ichHandle
+                                                       && !bekannt.has(l.handle.toLowerCase())).length;
+    if (ohneProfil){
+      const o = document.createElement('div'); o.className = 'fussnote';
+      o.textContent = `${ohneProfil} Menschen aus den Liker-Listen noch ohne Profil — der nächste Morgenlauf holt sie.`;
+      ziel.appendChild(o);
+    }
+  } catch (e) {}
   /* AUFFRISCHEN AUS DEM PANEL (Caspar_D, 26.08.2026: "Zahlen updaten
      sollte man mit einem Knopf aus dem Community panel machen können,
      das Ding läuft aber im Hintergrund").
@@ -13407,11 +13480,13 @@ function profilRegister(welches){
    WAS DIE ZAHL WIRKLICH ZAEHLT: die Woerter in Sunos Lyricbox, ohne
    [Anweisungen]. Das ist nicht immer das Gesungene - Caspar_D,
    26.08.2026: "manche Schreiben zuviel Kram in die Lyricboxen, die
-   nicht Text sind - bspw Englische Translation." Nachgeprueft an den
-   261 Stuecken, fuer die eine Whisper-Abschrift vorliegt: Im Mittel
-   stehen 90 % der gesungenen Woerter auch in der Box, und 11 % der
-   Box-Woerter werden nicht gesungen. Bei 25 Stuecken liegt der
-   Ueberhang ueber 40 % - dort ist die Saeule zu hoch. Auffaellig
+   nicht Text sind - bspw Englische Translation." Nachgeprueft am
+   28.08.2026 an den damals 261 Titeln, fuer die eine Whisper-Abschrift
+   vorlag: Im Mittel stehen 90 % der gesungenen Woerter auch in der Box,
+   und 11 % der Box-Woerter werden nicht gesungen. Bei 25 Titeln liegt
+   der Ueberhang ueber 40 % - dort ist die Saeule zu hoch. Die Zahlen
+   in der Fussnote tragen dieses Datum, weil der Bestand weiterwaechst
+   und sie nicht mitwachsen (Gegenleser, 09.09.2026). Auffaellig
    dabei: Die schlechtesten Werte kommen nicht von Fremdtexten, sondern
    von Plattdeutsch und Berlinerisch, wo Whisper danebenliegt. Die
    Fussnote sagt das, damit niemand die Zahl fuer bare Muenze nimmt.
@@ -13451,7 +13526,7 @@ async function profilWoerterFuellen(){
     lageVon = (s) => { const g = gruppeVon.get(s.id); return g == null ? ohneNr : platz.get(g); };
     lageName = (i) => lagen[i] == null ? 'ohne Gruppe' : (gruppenName.get(lagen[i]) || ('Gruppe ' + lagen[i]));
   } else {
-    lagen = [0]; farben = [DIA_1]; lageName = () => 'Stücke';
+    lagen = [0]; farben = [DIA_1]; lageName = () => 'Titel';
   }
   /* Clusterfarben leiser, die eigene Akzentfarbe im Hausmass. */
   const deckung = gruppeVon.size ? SPUR_FREMD : SPUR_DECKUNG;
@@ -13461,7 +13536,7 @@ async function profilWoerterFuellen(){
   for (const s of eigene){ const l = lageVon(s); feld[klasseVon(worte(s))][l]++; proLage[l]++; }
   const max = Math.max(...feld.map(z => z.reduce((a, b) => a + b, 0))) || 1;
 
-  ziel.innerHTML = '<h3>Wörter je Stück</h3>';
+  ziel.innerHTML = '<h3>Wörter je Titel</h3>';
   const g = document.createElement('div'); g.className = 'diagitter'; ziel.appendChild(g);
   const w = document.createElement('div'); w.className = 'dia breit'; g.appendChild(w);
   const kopf = document.createElement('div'); kopf.className = 'diatitel';
@@ -13488,7 +13563,7 @@ async function profilWoerterFuellen(){
     const spanne = k === 0 ? 'ohne Text'
       : `${(k - 1) * WORT_KLASSE + 1}–${k * WORT_KLASSE} Wörter`;
     const zeilen = lagen.map((l, i2) => feld[k][i2] ? `${feld[k][i2]} × ${lageName(i2)}` : null).filter(Boolean);
-    sz.title = `${spanne} · ${sum} ${sum === 1 ? 'Stück' : 'Stücke'}`
+    sz.title = `${spanne} · ${sum} Titel`
       + (zeilen.length ? String.fromCharCode(10) + zeilen.join(String.fromCharCode(10)) : '');
     sz.append(v, b); reihe.appendChild(sz);
     const asp = document.createElement('span');
@@ -13562,10 +13637,11 @@ async function profilWoerterFuellen(){
   const mit = eigene.length - ohne;
   const mittel = mit ? Math.round(eigene.filter(s => worte(s) > 0).reduce((a, s) => a + worte(s), 0) / mit) : 0;
   const fuss = document.createElement('div'); fuss.className = 'fussnote';
-  fuss.textContent = `${ohne} Stücke ohne Text, ${mit} mit — diese im Mittel ${mittel} Wörter, `
-    + `das längste ${maxW}. Gezählt wird, was in Sunos Textfeld steht, ohne [Anweisungen]; `
-    + `das ist nicht immer das Gesungene. Gegen die Whisper-Abschriften geprüft: im Mittel stehen `
-    + `90 % der gesungenen Wörter auch im Feld, bei 25 von 261 Stücken steht dort deutlich mehr, `
+  fuss.textContent = `${ohne} Titel ohne Text, ${mit} mit — diese im Mittel ${mittel} Wörter, `
+    + `der längste ${maxW}. Gezählt wird, was in Sunos Textfeld steht, ohne [Anweisungen]; `
+    + `das ist nicht immer das Gesungene. Gegen die Whisper-Abschriften geprüft `
+    + `(Stichprobe vom 28.08.2026, damals 261 Titel): im Mittel stehen `
+    + `90 % der gesungenen Wörter auch im Feld, bei 25 von 261 Titeln steht dort deutlich mehr, `
     + `als zu hören ist.`;
   w.appendChild(fuss);
 }
@@ -13763,11 +13839,14 @@ function profilAuf(){
   const zahl = (n) => (n ?? 0).toLocaleString('de-DE');
 
   const stunden = d.spielzeit ? (d.spielzeit/3600).toFixed(1) : '–';
-  /* Hirschfaktor: das groesste h, fuer das h Songs mindestens h Likes
-     (bzw. Plays) haben - der h-Index der Wissenschaft, auf Songs
-     uebertragen. Ein Song mit 2000 Likes hebt ihn nicht; zwanzig
-     Songs mit zwanzig schon. Steht mit Luecke hinter den Suno-Zahlen. */
-  const hirsch = (k) => { const w = alle.filter(s => !s.fremd).map(s => s[k]||0).sort((a,b)=>b-a); let h = 0; while (h < w.length && w[h] >= h+1) h++; return h; };
+  /* Hirschfaktor: das groesste h, fuer das h Titel mindestens h Herzen
+     (bzw. Abrufe) haben - der h-Index der Wissenschaft, auf Titel
+     uebertragen. Ein Titel mit 2000 Herzen hebt ihn nicht; zwanzig
+     Titel mit zwanzig schon. Steht mit Luecke hinter den Suno-Zahlen.
+     Gerechnet nur ueber die OEFFENTLICHEN Titel (hirschRechnen), damit
+     er zu Sunos Kopfzahlen im selben Block und zu den Nachbarn passt
+     (Gegenleser, 09.09.2026). */
+  const hirsch = (k) => hirschRechnen(k).h;
   const von = d.zeitraum?.von ? d.zeitraum.von.slice(0,10) : '–';
   const bis = d.zeitraum?.bis ? d.zeitraum.bis.slice(0,10) : '–';
   const sync = d.erstelltAm ? d.erstelltAm.slice(0,10) : '–';
@@ -13801,13 +13880,13 @@ function profilAuf(){
           <div class="wert"><b>${zahl(s.play_count__sum)}</b><span>Abrufe</span></div>
           <div class="wert"><b>${zahl(s.upvote_count__sum)}</b><span>Herzen</span></div>
           <div class="wert"><b>${zahl(s.followers_count)}</b><span>Beobachter</span></div>
-          <div class="wert"><b>${zahl(s.following_count)}</b><span>Ich folge</span></div>
+          <div class="wert"><b>${zahl(s.following_count)}</b><span>Im Blick</span></div>
           <div class="wertluecke"></div>
           <!-- Das (i) hinter der Beschriftung, nicht hinter der Zahl: Die
                Zahl soll gross und allein stehen. Der knappe title bleibt
                fuer den, der nur kurz hinzeigt; wer mehr will, klickt. -->
-          <div class="wert hirsch" title="h Titel mit mindestens h Herzen"><b>${hirsch('likes')}</b><span>Hirschfaktor<br>${SYM('herz')} Herzen<button type="button" class="infoknopf" onclick="hirschAuf('likes')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
-          <div class="wert hirsch" title="h Titel mit mindestens h Abrufen"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Abrufe<button type="button" class="infoknopf" onclick="hirschAuf('plays')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
+          <div class="wert hirsch" title="h Titel mit mindestens h Herzen — nur öffentliche Titel, wie bei den Nachbarn"><b>${hirsch('likes')}</b><span>Hirschfaktor<br>${SYM('herz')} Herzen<button type="button" class="infoknopf" onclick="hirschAuf('likes')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
+          <div class="wert hirsch" title="h Titel mit mindestens h Abrufen — nur öffentliche Titel, wie bei den Nachbarn"><b>${hirsch('plays')}</b><span>Hirschfaktor<br>${SYM('plays')} Abrufe<button type="button" class="infoknopf" onclick="hirschAuf('plays')" title="Was ist der Hirschfaktor?">${SYM('info')}</button></span></div>
         </div>
         <p style="margin-top:13px">
           <!-- DER LINK WIRD ZUSAMMENGESETZT (Caspar_D, 26.08.2026: „füge
@@ -13861,16 +13940,21 @@ function profilAuf(){
         <div class="werte">
           <div class="wert"><b>${zahl(d.anzahl)}</b><span>Titel</span></div>
           <div class="wert"><b>${stunden}</b><span>Stunden Musik</span></div>
-          <div class="wert"><b>${zahl(p.playlists)}</b><span>Playlists auf Suno</span></div>
-          <div class="wert"><b>${(p.personas||[]).length}</b><span>Personas</span></div>
+          <!-- ALBEN AUS DEM KATALOG (Gegenleser, 09.09.2026): hier stand
+               p.playlists, und das Feld gibt es im Profil nicht - die
+               Kachel zeigte immer 0. Die Alben liegen als katalogInfo
+               .playlists vor, mit .oeffentlich; gezaehlt werden die, die
+               Suno zeigt. Die Personas-Kachel daneben ist geloescht: kein
+               Skript fuellt das Feld, eine dauerhafte 0 ist keine
+               Auskunft. -->
+          <div class="wert"><b>${zahl((d.playlists || []).filter(a => a.oeffentlich).length)}</b><span>Alben auf Suno</span></div>
         </div>
         <p class="fussnote">
           Wort-Zeitmarken: ${alle.filter(s=>!s.fremd&&s.hatTiming&&s.worteQuelle!=='whisper').length} von Suno ·
           ${alle.filter(s=>!s.fremd&&s.worteQuelle==='whisper').length} von Whisper ·
           ${alle.filter(s=>!s.fremd&&!s.hatTiming).length} ohne.<br>
           Zeitraum ${von} bis ${bis}.<br>
-          Zuletzt abgeglichen am ${sync}.<br>
-          ${(p.personas||[]).length ? 'Personas: ' + p.personas.map(esc).join(', ') + '.' : ''}
+          Zuletzt abgeglichen am ${sync}.
         </p>
       </div>
 
@@ -13885,7 +13969,7 @@ function profilAuf(){
   (function(){
     const mit = (alle||[]).filter(s => /\(ft\.|\bfeat\.|&\s*@|\bmit\s+@/i.test(s.titel||''));
     return mit.length
-      ? '\nBei ' + mit.length + ' Stücken haben andere mitgewirkt; sie sind\nim Titel genannt.'
+      ? '\nBei ' + mit.length + ' Titeln haben andere mitgewirkt; sie sind\nim Namen genannt.'
       : '';
   })()}
 
@@ -15687,6 +15771,12 @@ const reaktZeit = (iso) => {
   return d.toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit', year:'2-digit'}) + ' ' +
          d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
 };
+/* Nur Tag und Monat, "09.09." - fuer Zeitfenster und Staende, bei denen
+   das Jahr nichts beitraegt: der Stand der Liker-Listen, das Fenster
+   eines Herzens, das "seit" eines Beobachters. Gemeinschaftsseite und
+   Personenseite brauchen dieselbe Kurzform wie das Song-Fenster (dort
+   `kd`). (Gegenleser, 09.09.2026) */
+const tagMonat = (iso) => { const d = new Date(iso); return isNaN(d) ? '?' : d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); };
 
 /* Was zuletzt gesehen wurde, je Song - im Browser. Alles, was danach
    bei uns ankam ('gesehen' der Zeile), ist neu. */
@@ -15808,7 +15898,10 @@ async function reaktAuf(id, x, y, istZurueck){
      geht, aus den Benachrichtigungen (einzelne Zeile), sonst als Fenster
      aus den Cursors der Suno-Seite, sonst als Fenster zwischen zwei
      Laeufen - und wo nichts davon da ist, steht das dran. Ohne Stand
-     (Lesezeichen noch nicht gelaufen) wie frueher: die Zeilen des Stroms. */
+     (Lesezeichen noch nicht gelaufen) wie frueher: die Zeilen des Stroms.
+     "folgt dir" am Namen kommt aus der Beobachterliste (server.js,
+     likerMitZeiten), nicht aus Sunos is_following_viewer - das ist auf
+     dem App-Weg immer falsch (Gegenleser, 09.09.2026). */
   h3('Herzen');
   const kd = iso => { try { return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); } catch (e) { return '?'; } };
   if (d.liker && d.liker.likers && d.liker.likers.length){
@@ -15935,10 +16028,20 @@ async function reaktPerson(handle, vonSong, istZurueck){
   try { d = await (await fetch('/api/community')).json(); }
   catch (e){ feld.textContent = 'Nicht erreichbar.'; return; }
   let p = (d.leute || []).find(l => l.handle === handle);
+  /* Ob jemand folgt, sagt seit 09.09.2026 die vollstaendige
+     Beobachterliste (beobachterStand.followerListe), nicht der Strom:
+     der kennt nur vier Wochen und wusste deshalb bei den meisten
+     Beobachtern nichts (Gegenleser, 09.09.2026). Das "seit" ist dort
+     ein Fenster zwischen zwei Laeufen des Lesezeichens, kein Zeitpunkt.
+     Der Strom bleibt Rueckfall, solange das Lesezeichen die Beobachter
+     noch nicht geholt hat. */
+  const bs = d.beobachterStand;
+  const beob = bs ? (bs.followerListe || []).find(f => f.handle === handle) : null;
+  const folgt = bs ? null : (d.follower || []).find(f => f.handle === handle);
   /* Wer nur folgt und sonst nichts getan hat, steht nicht in 'leute' -
      aber er ist jemand. Dann eine Person mit leerer Spur. */
   if (!p){
-    const f = (d.follower || []).find(x => x.handle === handle);
+    const f = beob || folgt;
     if (!f){ feld.textContent = 'Keine Spur von @' + handle + '.'; return; }
     p = { handle, name: f.name || handle, avatar: '', kommentare: [], antworten: [], likes: [] };
   }
@@ -15953,9 +16056,10 @@ async function reaktPerson(handle, vonSong, istZurueck){
   const t = document.createElement('div');
   t.innerHTML = `<div class="rpn"></div><div class="rpu"></div>`;
   t.querySelector('.rpn').textContent = p.name || handle;
-  const folgt = (d.follower||[]).find(f => f.handle === handle);
-  t.querySelector('.rpu').textContent = `${p.kommentare.length} Kommentare · ${p.antworten.length} Antworten · ${p.likes.length} Herzen` +
-    (folgt ? ` · folgt dir seit ${reaktZeit(folgt.am)}` : '');
+  const folgtText = beob
+    ? ' · folgt dir' + (beob.seit ? ` seit ${tagMonat(beob.seit[0])}–${tagMonat(beob.seit[1])}` : '') + (beob.folgeIch ? ' — du folgst zurück' : '')
+    : folgt ? ` · folgt dir seit ${reaktZeit(folgt.am)}` : '';
+  t.querySelector('.rpu').textContent = `${p.kommentare.length} Kommentare · ${p.antworten.length} Antworten · ${p.likes.length} Herzen` + folgtText;
   kopf.append(img, t); feld.appendChild(kopf);
 
   const h3 = (t) => { const h = document.createElement('h3'); h.textContent = t; feld.appendChild(h); };
@@ -15968,8 +16072,16 @@ async function reaktPerson(handle, vonSong, istZurueck){
     const st = document.createElement('div'); st.className = 'rst'; st.textContent = e.songTitel || e.song;
     const sw = document.createElement('div'); sw.className = 'rsw';
     /* Herzen aus den Liker-Listen haben oft keine Zeit (Suno nennt sie
-       nur am Seitenende oder im Strom) - dann steht das dran statt nichts. */
-    sw.textContent = (e.am ? reaktZeit(e.am) : 'Zeit unbekannt') + (was ? ' · ' + was : '') + (e.text ? ' — ' + e.text.slice(0, 90) + (e.text.length > 90 ? '…' : '') : '');
+       nur am Seitenende oder im Strom) - dann steht das Fenster aus den
+       Cursors der Suno-Seite dran, sonst "Zeit unbekannt". Ein Buendel
+       nennt die Zeit seines juengsten Herzens, die anderen kamen kurz
+       davor: deshalb "bis", wie im Song-Fenster (Gegenleser, 09.09.2026). */
+    const zeit = e.am ? (e.quelle === 'buendel' ? 'bis ' : '') + reaktZeit(e.am)
+      : (e.zeitAb && e.zeitBis) ? `zwischen ${tagMonat(e.zeitAb)} und ${tagMonat(e.zeitBis)}`
+      : e.zeitBis ? 'vor dem ' + tagMonat(e.zeitBis)
+      : e.zeitAb ? 'nach dem ' + tagMonat(e.zeitAb)
+      : 'Zeit unbekannt';
+    sw.textContent = zeit + (was ? ' · ' + was : '') + (e.text ? ' — ' + e.text.slice(0, 90) + (e.text.length > 90 ? '…' : '') : '');
     r.append(st, sw); w.append(img, r); feld.appendChild(w);
   };
   const nachZeit = (a, b) => (b.am||'').localeCompare(a.am||'');
@@ -24684,11 +24796,28 @@ function nachbarschaftInfoAuf(){
       Untergrenzen und ziehen Mitte und Mittel nach unten.` : ''}</div>`);
 }
 
-function hirschAuf(art){
+/* EINE RECHNUNG FUER DREI STELLEN (Gegenleser, 09.09.2026): Kopfblock
+   der Autorenseite, eigene Marke in der Nachbarschaft, Erklaerfenster.
+   Vorher rechnete jede Stelle selbst, und alle drei nahmen ALLE eigenen
+   Titel - auch die privaten, die Suno niemandem zeigt. Neben Sunos
+   Kopfzahlen (oeffentlich) und neben den Nachbarn (bin/community-
+   hirsch.js liest Sunos Profilseite, also nur Oeffentliches) war das
+   ein anderer Massstab. Jetzt nur die oeffentlichen; hat kein Titel die
+   Marke (aelterer Katalog ohne das Feld), alle eigenen. Die privaten
+   kommen mit zurueck, damit das Erklaerfenster den Unterschied nennt. */
+function hirschRechnen(art){
   const eigene = alle.filter(s => !s.fremd);
-  const wort = art === 'likes' ? 'Herzen' : art === 'plays' ? 'Abrufe' : 'Kommentare';
-  const werte = eigene.map(s => s[art] || 0).sort((a, b) => b - a);
+  const oeff = eigene.filter(s => s.oeffentlich);
+  const titel = oeff.length ? oeff : eigene;
+  const werte = titel.map(s => s[art] || 0).sort((a, b) => b - a);
   let h = 0; while (h < werte.length && werte[h] >= h + 1) h++;
+  return { h, werte, titel, privat: oeff.length ? eigene.filter(s => !s.oeffentlich) : [] };
+}
+
+function hirschAuf(art){
+  const wort = art === 'likes' ? 'Herzen' : art === 'plays' ? 'Abrufe' : 'Kommentare';
+  const { h, werte, titel: eigene, privat } = hirschRechnen(art);
+  const privatSumme = privat.reduce((a, s) => a + (s[art] || 0), 0);
 
   /* Vier Plaetze davor, drei danach - mehr braucht es nicht, um die
      Kippstelle zu zeigen. */
@@ -24712,8 +24841,10 @@ function hirschAuf(art){
       davor ist der Wert.</p>
 
     <h4>An deinem Bestand</h4>
-    <p class="leise">${zahl(eigene.length)} Titel, ${zahl(summe)} ${wort} zusammen,
-      der beste Titel hat ${zahl(werte[0] || 0)}. Die Plätze ${von} bis ${bis}:</p>
+    <p class="leise">${zahl(eigene.length)} öffentliche Titel, ${zahl(summe)} ${wort} zusammen,
+      der beste Titel hat ${zahl(werte[0] || 0)}.${privat.length
+        ? ` Dazu ${zahl(privat.length)} private Titel mit ${zahl(privatSumme)} ${wort}, die Suno nicht zeigt — sie zählen hier nicht mit, wie bei den Nachbarn.`
+        : ''} Die Plätze ${von} bis ${bis}:</p>
     <table><tr><th>Platz</th>${kopf}</tr><tr><td>${wort}</td>${zeile}</tr></table>
     <p>Auf Platz ${h} stehen noch ${zahl(werte[h - 1] || 0)} ${wort} — es gibt also
       ${h} Titel mit mindestens ${h}. Weiter unten bricht die Bedingung.
@@ -24745,7 +24876,7 @@ function hirschAuf(art){
 
     <h4>Was er nicht kann</h4>
     <p>Er ist <b>nach oben durch die Anzahl der Werke begrenzt.</b> Wer zehn Titel hat,
-      kommt höchstens auf zehn, selbst bei tausend ${wort} pro Stück. Er bevorzugt damit,
+      kommt höchstens auf zehn, selbst bei tausend ${wort} je Titel. Er bevorzugt damit,
       wer lange dabei ist — in der Wissenschaft ist das die bekannteste Kritik an ihm.</p>
     <p>Er <b>wächst träge.</b> Das ist gewollt, macht ihn aber als Fortschrittsanzeige
       unbrauchbar; dafür stehen die Bewegungszahlen weiter unten auf dieser Seite.</p>
