@@ -761,7 +761,9 @@ function likerMitZeiten(id, herzZeilen) {
     if (anzahl === 1 && von.length === 1) { const h = von[0]; if (!zeit.has(h) || e.am > zeit.get(h)) zeit.set(h, e.am); }
     else if (anzahl > 1) buendel.push({ am: e.am, von, anzahl });
   }
-  const likers = (d.likers || []).map(p => zeit.has(p.handle) ? { ...p, am: zeit.get(p.handle), quelle: 'benachrichtigung' } : { ...p });
+  const bsF = beobachterLesen(), folgen = new Set(bsF ? bsF.follower.map(p => p.handle) : []);
+  const likers = (d.likers || []).map(p => ({ ...(zeit.has(p.handle) ? { ...p, am: zeit.get(p.handle), quelle: 'benachrichtigung' } : { ...p }),
+                                              folgtMir: folgen.has(p.handle) }));
   const frei = p => !p.am && !p.zeitAb && !p.zeitBis;
   for (const b of buendel.sort((x, y) => (y.am || '').localeCompare(x.am || ''))) {
     const pos = []; likers.forEach((p, i) => { if (b.von.includes(p.handle)) pos.push(i); });
@@ -1622,6 +1624,18 @@ const server = http.createServer((req, res) => {
       return l;
     };
     const gesehenKomm = new Set(), herzJeSong = new Map();
+    /* Eine Regel fuer alles: der eigene Handle zaehlt nirgends als
+       Herz (Gegenleser 09.09.2026 - vorher nur bei den Listen gefiltert).
+       Beobachter-Stand vorab, damit folgtMir aus der Beobachterliste
+       kommt: der Liker-Weg liefert is_following_viewer immer false. */
+    const eigenerHandle = String((k && k.profil && k.profil.handle) || (k && k.handle) || '').toLowerCase();
+    const bs = beobachterLesen();
+    const folgen = new Set(bs ? bs.follower.map(p => p.handle) : []);
+    /* Ein Mensch herzt einen Titel EINMAL. Der Strom nennt dieselbe
+       Person fuer denselben Titel aber zweimal, wenn Suno sie erst einzeln
+       und spaeter im Buendel meldet (Gegenleser: 2 Faelle). Schluessel
+       handle|song; die Einzelzeile (genaue Zeit) schlaegt das Buendel. */
+    const bekanntesHerz = new Map();          // handle|song -> Herz-Eintrag
     {
       for (const e of reaktionenLesen()) {                           // Stromzeilen je Suno-ID im juengsten Stand
         if (e.art === 'kommentar' || e.art === 'antwort') {
@@ -1634,10 +1648,15 @@ const server = http.createServer((req, res) => {
           if (e.am > l.zuletzt) l.zuletzt = e.am;
         } else if (e.art === 'clip_like') {
           if (e.song) { if (!herzJeSong.has(e.song)) herzJeSong.set(e.song, []); herzJeSong.get(e.song).push(e); }
+          const einzeln = (e.von || []).length === 1 && (e.anzahl || 1) === 1;
           (e.von || []).forEach((h, i) => {
+            if (!h || h.toLowerCase() === eigenerHandle) return;
+            const key = h + '|' + e.song, alt = bekanntesHerz.get(key);
+            if (alt) { if (einzeln && alt.quelle === 'buendel') { alt.am = e.am; alt.quelle = 'benachrichtigung'; } return; }
             const l = wer(h, (e.namen || [])[i]);
             if (!l) return;
-            l.likes.push({ song: e.song, songTitel: e.songTitel, am: e.am });
+            const herz = { song: e.song, songTitel: e.songTitel, am: e.am, quelle: einzeln ? 'benachrichtigung' : 'buendel' };
+            l.likes.push(herz); bekanntesHerz.set(key, herz);
             if (e.am > l.zuletzt) l.zuletzt = e.am;
           });
         } else if (e.art === 'follow') {
@@ -1656,10 +1675,7 @@ const server = http.createServer((req, res) => {
        gezaehlt. Das eigene Herz zaehlt nicht mit. Die Zeit einer Zeile
        aus der Liste ist, wo Suno sie hergibt, die Herz-Zeit (Seitenende),
        sonst leer - der Strom liefert sie fuer die juengeren nach. */
-    const eigenerHandle = String((k && k.profil && k.profil.handle) || (k && k.handle) || '').toLowerCase();
-    const bekanntesHerz = new Set();
-    for (const l of leute.values()) for (const x of l.likes) bekanntesHerz.add(l.handle + '|' + x.song);
-    let ausListen = 0;
+    let ausListen = 0, likerStand = null;
     try {
       for (const f of fs.readdirSync(LIKER)) {
         if (!f.endsWith('.json') || f.startsWith('._')) continue;
@@ -1669,18 +1685,23 @@ const server = http.createServer((req, res) => {
         const mz = likerMitZeiten(d.song, herzJeSong.get(d.song) || []);
         if (mz && mz.likers) d = { ...d, likers: mz.likers };
         const s = k && k.songs && k.songs[d.song];
+        if (d.abgerufenAm && (!likerStand || d.abgerufenAm > likerStand)) likerStand = d.abgerufenAm;
         for (const p of d.likers || []) {
           if (!p.handle || p.handle.toLowerCase() === eigenerHandle) continue;
           if (bekanntesHerz.has(p.handle + '|' + d.song)) continue;
           const l = wer(p.handle, p.name, p.avatar); if (!l) continue;
-          bekanntesHerz.add(p.handle + '|' + d.song);
-          l.likes.push({ song: d.song, songTitel: (s && s.titel) || '', am: p.am || null, quelle: 'liste' });
+          /* Zeit: exakt (Benachrichtigung, Seitenende), sonst das Fenster
+             aus den Cursors der Suno-Seite - die Oberflaeche zaehlt ein
+             Herz in einem Zeitraum, wenn sein Fenster ganz darin liegt. */
+          const herz = { song: d.song, songTitel: (s && s.titel) || '', am: p.am || null, quelle: p.quelle || 'liste', liste: true,
+                         zeitAb: p.zeitAb || null, zeitBis: p.zeitBis || null };
+          l.likes.push(herz); bekanntesHerz.set(p.handle + '|' + d.song, herz);
           if (p.am && p.am > l.zuletzt) l.zuletzt = p.am;
-          if (p.folgtMir) l.folgtMir = true;
           ausListen++;
         }
       }
     } catch (e) {}
+    for (const l of leute.values()) l.folgtMir = folgen.has(l.handle);
     const liste = [...leute.values()].map(l => ({
       ...l, gewicht: l.kommentare.length * 3 + l.antworten.length + l.likes.length,
     })).sort((a, b) => b.gewicht - a.gewicht);
@@ -1688,9 +1709,8 @@ const server = http.createServer((req, res) => {
        Antworten, die nur aus zwei Listen entstehen: wer folgt nicht
        zurueck, wer herzt ohne zu folgen, wer folgt und hat nie geherzt. */
     let beobachterStand = null;
-    const bs = beobachterLesen();
     if (bs) {
-      const folgen = new Set(bs.follower.map(p => p.handle)), gefolgt = new Set(bs.following.map(p => p.handle));
+      const gefolgt = new Set(bs.following.map(p => p.handle));
       const herzer = new Set([...leute.values()].filter(l => l.likes.length).map(l => l.handle));
       const neuSeit = bs.follower.filter(p => p.seit && p.seit[1] === bs.abgerufenAm);
       beobachterStand = { abgerufenAm: bs.abgerufenAm, vollstaendig: bs.vollstaendig,
@@ -1702,7 +1722,7 @@ const server = http.createServer((req, res) => {
         folgenOhneHerz: bs.follower.filter(p => !herzer.has(p.handle)).length,
         followerListe: bs.follower.map(p => ({ handle: p.handle, name: p.name, folgeIch: p.folgeIch, seit: p.seit || null })) };
     }
-    return jsonAntwort(res, { leute: liste, herzenAusListen: ausListen, beobachterStand, follower:
+    return jsonAntwort(res, { leute: liste, herzenAusListen: ausListen, likerStand, beobachterStand, follower:
       follower.sort((a, b) => (b.am || '').localeCompare(a.am || '')),
       auswaerts: auswaerts.sort((a, b) => (b.am || '').localeCompare(a.am || '')) });
   }
