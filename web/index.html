@@ -2820,6 +2820,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 .ms:last-child{border-bottom:0}
 .ms .msym{font-size:13px;line-height:1.4;text-align:center;color:#5a5a60}
 .ms.fertig .msym{color:#59d18c} .ms.fehler .msym{color:#e31c79} .ms.laeuft .msym{color:#ececed}
+.ms.angehalten .msym{color:var(--titel-a,#f97b14)}   /* angehalten, nicht kaputt: Akzent statt Rot (Export, 09.09.2026) */
 .ms .mname{font-size:13px;font-weight:500;color:#d8d8dc;line-height:1.4}
 .ms.wartet .mname,.ms.abgewaehlt .mname{color:#8b8b90}
 .ms.abgewaehlt{opacity:.55}
@@ -4202,8 +4203,19 @@ function eingefrorenAnwenden(){
   if (!e){ b.hidden = true; return; }
   const seit = e.seit ? new Date(e.seit) : null;
   const tag = seit && !isNaN(seit) ? seit.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–';
-  b.innerHTML = `<b>Archiv vom ${tag}</b> — eingefroren, nur Abspielen`
-    + (katalogInfo.anzahl ? ` · ${Number(katalogInfo.anzahl).toLocaleString('de-DE')} Titel` : '');
+  /* Die Fussnote des Sticks (Caspar_D, 09.09.2026: "partielles Archiv von
+     xxx vom xxxxx, mit Suno-Alias und Datum"): eine Teilkopie sagt, wessen
+     sie ist, von wann, und wie viele der Titel schon drauf sind - der
+     Export schreibt die neuesten zuerst, die fehlenden zeigt die Liste
+     gar nicht erst. */
+  const wer = e.handle ? ` von @${esc(e.handle)}` : '';
+  const n = Number(katalogInfo.anzahl || 0), alle = Number(e.titelKatalog || 0);
+  if (e.teilkopie)
+    b.innerHTML = `<b>Teilkopie${wer} vom ${tag}</b> — ${n.toLocaleString('de-DE')} von ${alle.toLocaleString('de-DE')} Titeln, die neuesten`
+      + (e.stufe ? ` · Stufe ${e.stufe.nr} von ${e.stufe.von}` : '') + ' · eingefroren, nur Abspielen';
+  else
+    b.innerHTML = `<b>Archiv${wer} vom ${tag}</b> — eingefroren, nur Abspielen`
+      + (n ? ` · ${n.toLocaleString('de-DE')} Titel` : '');
   b.hidden = false;
   /* Der rote Knopf holt und schreibt - im Archiv gibt es nichts zu holen. */
   const k = $('morgenknopf'); if (k) k.hidden = true;
@@ -14092,6 +14104,7 @@ async function profilExportFuellen(){
         <div class="schrittinhalt">
           <div class="exportzeile" style="margin-top:0">
             <button class="pille an" id="exportstart">Export starten</button>
+            <button class="pille" id="exportanhalten" hidden title="Die laufende Datei wird fertig, dann steht der Stand — der Stick ist bis dahin vorzeigbar">Anhalten</button>
             <span class="fussnote" id="exportstand" style="margin:0"></span>
           </div>
           <div class="exportfortschritt" id="exportfortschritt" hidden></div><!-- fuellt exportFortschrittZeichnen() -->
@@ -14188,6 +14201,16 @@ async function profilExportFuellen(){
     exportSchauen(true);
   };
   const hk = $('himmelsuno'); if (hk) hk.onclick = () => sternenhimmelAusgeben(hk);
+  /* ANHALTEN (Caspar_D, 09.09.2026: "ich will los ... reicht nicht auch
+     eine Viertelstunde"): der Export beendet die laufende Datei, schreibt
+     den Stand, der Stick kann raus. Erneut starten setzt fort. */
+  const ak = $('exportanhalten');
+  if (ak) ak.onclick = async () => {
+    ak.disabled = true; ak.textContent = 'Hält an …';
+    let a = null;
+    try { a = await (await fetch('/api/export/stop', { method: 'POST' })).json(); } catch (e) { a = { ok: false, grund: e.message }; }
+    if (!a || !a.ok){ ak.disabled = false; ak.textContent = 'Anhalten'; $('exportstand').textContent = '✗ ' + ((a && a.grund) || 'Anhalten fehlgeschlagen'); }
+  };
   exportSchauen(false);
 }
 
@@ -14223,6 +14246,8 @@ function exportZeichnen(d){
   const passt = exportPlatzZeichnen(d);
   exportFortschrittZeichnen(d);
   if (knopf){ knopf.disabled = laeuft || !passt; knopf.textContent = laeuft ? 'Läuft …' : 'Export starten'; }
+  const ak = $('exportanhalten');
+  if (ak){ ak.hidden = !laeuft; if (!laeuft){ ak.disabled = false; ak.textContent = 'Anhalten'; } }
 
   /* Der letzte Stand vom Stick - oder warum es keinen gibt. */
   const st = d.letzter || null;            /* so nennt es der Server: export-stand.json vom Stick */
@@ -14233,12 +14258,18 @@ function exportZeichnen(d){
      da"). */
   const seitUhr = (iso) => { const x = iso ? new Date(iso) : null;
     return x && !isNaN(x) ? x.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : ''; };
+  const erg = d.ergebnis || null;
+  const stufeText = (s) => s ? `Stufe ${s.nr} von ${s.von}` : '';
   if (!d.ziel) stand.textContent = 'Noch kein Ziel gewählt.';
   else if (d.zielEingehaengt === false) stand.textContent = `Medium nicht eingehängt (${d.ziel}).`;
-  else if (laeuft) stand.textContent = `Export läuft seit ${seitUhr(d.seit) || 'eben'} …`;
+  else if (laeuft) stand.textContent = `Export läuft seit ${seitUhr(d.seit) || 'eben'}` + (d.stufe ? ` · ${stufeText(d.stufe)}` : '') + ' …';
+  else if (erg && erg.angehalten && (!st || st.teilkopie))
+    stand.textContent = `Angehalten nach ${stufeText(erg.stufe) || 'dem Start'}: ${Number(erg.titel || 0).toLocaleString('de-DE')} Titel spielbar — der Stick kann ausgeworfen werden. Erneut starten setzt fort.`;
+  else if (st && st.teilkopie)
+    stand.textContent = `Teilkopie vom ${exportTag(st.exportiertAm)}, ${stufeText(st.stufe)}, ${Number(st.titel || 0).toLocaleString('de-DE')} von ${Number(st.titelZuHause || 0).toLocaleString('de-DE')} Titeln spielbar. Erneut starten setzt fort.`;
   else if (st && st.exportiertAm)
     stand.textContent = `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
-      + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
+      + (st.titel ? `, ${Number(st.titel).toLocaleString('de-DE')} Titel` : '') + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
   else stand.textContent = `Noch kein Export auf ${d.ziel} — bereit.`;
 
   /* Der Lauf als EIN Abschnitt, nachgefuehrt statt neu gebaut: Wer die
@@ -14253,14 +14284,14 @@ function exportZeichnen(d){
       + '<div class="mkurz"></div><details><summary>Einzelheiten</summary><pre></pre></details>';
     feld.appendChild(el);
   }
-  const status = d.fehler ? 'fehler' : laeuft ? 'laeuft' : d.fertig ? 'fertig' : 'wartet';
+  const status = d.fehler ? 'fehler' : laeuft ? 'laeuft' : d.fertig ? 'fertig' : (d.ergebnis && d.ergebnis.angehalten) ? 'angehalten' : 'wartet';
   const vorher = el.dataset.status;
   el.className = 'ms ' + status; el.dataset.status = status;
-  el.querySelector('.msym').textContent = { fertig: '✓', fehler: '✗', laeuft: '▸' }[status] || '·';
+  el.querySelector('.msym').textContent = { fertig: '✓', fehler: '✗', laeuft: '▸', angehalten: '■' }[status] || '·';
   /* Mit Zeit, damit ein alter Lauf nie wie ein frischer aussieht. */
   const wann = d.seit ? ' vom ' + new Date(d.seit).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-  el.querySelector('.mname').textContent = (d.schritt && laeuft) ? d.schritt : (laeuft ? 'Export läuft' : d.fertig ? 'Export fertig' + wann : d.fehler ? 'Export abgebrochen' + wann : 'Export');
-  const seit = exportMs(d.seit), erg = d.ergebnis || null;
+  el.querySelector('.mname').textContent = (d.schritt && laeuft) ? d.schritt : (laeuft ? 'Export läuft' : d.fertig ? 'Export fertig' + wann : d.fehler ? 'Export abgebrochen' + wann : status === 'angehalten' ? 'Export angehalten' + wann : 'Export');
+  const seit = exportMs(d.seit);
   el.querySelector('.mdauer').textContent =
     erg && erg.dauerS != null ? morgenDauerText(erg.dauerS * 1000)
     : laeuft && !isNaN(seit) ? morgenDauerText(Date.now() - seit) : '';
@@ -14277,7 +14308,7 @@ function exportZeichnen(d){
   /* Das Ergebnis, wenn der Lauf durch ist: vier Kacheln, der Probestart
      gruen oder rot - er ist die eigentliche Auskunft, ob der Stick laeuft. */
   let w = feld.querySelector('.werte');
-  if (!laeuft && erg){
+  if (!laeuft && erg && !erg.angehalten){
     if (!w){ w = document.createElement('div'); w.className = 'werte'; feld.appendChild(w); }
     const ps = String(erg.probestart || '');
     const ok = ps === 'ok';

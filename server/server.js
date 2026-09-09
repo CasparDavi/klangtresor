@@ -66,6 +66,15 @@ function analyseIndexHolen() {
   return analyseIndex;
 }
 
+/* Eingefroren: welche Titel eine MP3 haben - je 30 s neu gezaehlt. */
+let _vorhanden = null, _vorhandenZeit = 0;
+function eingefrorenVorhanden() {
+  if (_vorhanden && Date.now() - _vorhandenZeit < 30000) return _vorhanden;
+  const da = new Set();
+  for (const s of (schlankeListe || [])) { try { if (fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'))) da.add(s.id); } catch (e) {} }
+  _vorhanden = da; _vorhandenZeit = Date.now();
+  return da;
+}
 function katalogHolen() {
   let m = 0;
   try { m = fs.statSync(K.KATALOG).mtimeMs; } catch (e) { return null; }
@@ -1825,13 +1834,23 @@ const server = http.createServer((req, res) => {
     /* Eingefroren: wann der Stick gefuellt wurde, steht in
        library/export-stand.json (schreibt bin/export.js). Die Oberflaeche
        zeigt daraus "Archiv vom ..." und blendet alles Holende aus. */
-    let eingefroren = null;
+    let eingefroren = null, liste = schlankeListe;
     if (EINGEFROREN) {
-      eingefroren = { seit: null, dateien: null, bytes: null };
+      eingefroren = { seit: null, dateien: null, bytes: null, teilkopie: false, stufe: null, handle: null, anzeigename: null };
       try {
         const es = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'export-stand.json'), 'utf8'));
-        eingefroren = { seit: es.exportiertAm || null, dateien: es.dateien ?? null, bytes: es.bytes ?? null };
+        eingefroren = { seit: es.exportiertAm || null, dateien: es.dateien ?? null, bytes: es.bytes ?? null,
+                        teilkopie: !!es.teilkopie, stufe: es.stufe || null, handle: es.handle || null, anzeigename: es.anzeigename || null };
       } catch (e) {}
+      /* NUR, WAS DA IST (Caspar_D, 09.09.2026: "nicht vorhandene Titel nicht
+         anzeigen"). Der Export schreibt in Stufen, neueste Titel zuerst -
+         ein angehaltener Stick hat 187 von 324 MP3s, und die App soll
+         nicht 137 tote Titel anbieten. Also je Titel: liegt audio.mp3 da?
+         324 stat auf dem Stick, deshalb 30 s gemerkt. */
+      const da = eingefrorenVorhanden();
+      liste = schlankeListe.filter(s => da.has(s.id));
+      eingefroren.titel = liste.length;
+      eingefroren.titelKatalog = schlankeListe.length;
     }
     return jsonAntwort(res, {
       version:    paketVersion(),
@@ -1839,11 +1858,11 @@ const server = http.createServer((req, res) => {
       kachelStand,
       titelbild,
       erstelltAm: k.erstelltAm,
-      anzahl:     schlankeListe.length,
+      anzahl:     liste.length,
       spielzeit:  k.spielzeit || null,
       zeitraum:   k.zeitraum  || null,
       profil:     k.profil    || null,
-      songs:      schlankeListe,
+      songs:      liste,
       /* Die Analyse-Skalare je Song, aus bin/analyse-index.js. 77 KB fuer
          321 Songs. Damit sortiert die Albumseite nach BPM, Lautheit,
          Dynamik, Tonart - ohne die 3 GB Ablage anzufassen. */
@@ -2227,6 +2246,18 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      Unterordner. Versteckte Ordner und ._-Beifang bleiben draussen.
      Nur Lesen, nur Verzeichnisse. */
   if (p === '/api/export/bedarf') { exportBedarf().then(b => jsonAntwort(res, b)); return; }
+  /* ANHALTEN (Caspar_D, 09.09.2026: "ich will los ... reicht nicht auch eine
+     Viertelstunde"): SIGTERM an den Export - der beendet die laufende
+     Datei, schreibt den Stand und geht; der Stick ist bis dahin
+     vorzeigbar. Der Prozess gehoert uns (bin/export.js, von hier
+     gestartet oder von Hand), sonst nichts. */
+  if (p === '/api/export/stop' && req.method === 'POST') {
+    let pid = global.exportLauf && global.exportLauf.pid;
+    if (!pid) { try { const l = JSON.parse(fs.readFileSync(EXPORT_LAUF, 'utf8')); if (l.laeuft) pid = l.pid; } catch (e) {} }
+    if (!pid || !prozessLebt(pid)) return jsonAntwort(res, { ok: false, grund: 'Es läuft kein Export.' });
+    try { process.kill(Number(pid), 'SIGTERM'); } catch (e) { return jsonAntwort(res, { ok: false, grund: e.message }); }
+    return jsonAntwort(res, { ok: true });
+  }
 
   if (p === '/api/ordner') {
     const pfad = String(u.searchParams.get('pfad') || '');

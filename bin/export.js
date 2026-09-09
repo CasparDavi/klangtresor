@@ -29,20 +29,50 @@
  * WAS NIE MITKOMMT: geheim/ (Zugangsdaten), .git (die Werkstatt), die
  * WAV-Originale (17 GB, nur für Messungen, die längst gerechnet sind).
  *
- * WERKZEUG: rsync - kopiert nur, was sich geändert hat, und räumt weg,
- * was zu Hause nicht mehr da ist. Ein zweiter Lauf frischt also auf.
- * Für Musik/ dasselbe von Hand: eine MP3 wird nur neu getaggt, wenn
+ * IN STUFEN, NACH WICHTIGKEIT (Caspar_D, 09.09.2026: "so aufbauen, dass die
+ * nötigen Dateien zuerst und die weniger nötigen später geschrieben werden,
+ * sodass bei Start trotzdem schon so viel wie möglich funktioniert" - der
+ * Fall: "ich will los, habe keine Stunde mehr, reicht nicht auch eine
+ * Viertelstunde für was Vorzeigbares"):
+ *   1 Starten       Programm, Startskripte, Bestand-Kern (Katalog mit allen
+ *                   Liedtexten, Whisper, Reaktionen, Herzen, Beobachter,
+ *                   Klangraum, Alben), Sternenhimmel.html, node/
+ *   2 Titel         je Titel audio.mp3, kachel.jpg, titelbild.jpg - NEUESTE
+ *                   ZUERST, das ist die Vorführung
+ *   3 Titelbilder   cover.jpg und was sonst im Titelordner liegt, neueste zuerst
+ *   4 Analyse       die Analyse-Ablage je Titel, neueste zuerst
+ *   5 Fernseher     Musik/ mit ID3, docs/
+ *   6 Stems         nur mit --stems, ganz zuletzt ("die hört sich eh keiner an")
+ *   7 Abschluss     ein rsync-Aufräumlauf über alles (holt Reste, räumt weg,
+ *                   was zu Hause fehlt), Beifang, LIES-MICH, Stand, Probestart
+ * Die Stufen 1-4 und 6 kopiert dieses Skript selbst, Datei für Datei in
+ * genau dieser Reihenfolge - rsync sortiert seine Liste immer nach Namen.
+ * Kopiert wird nur, was fehlt oder sich geändert hat (Größe und Zeit, wie
+ * rsync -t mit --modify-window=2); die Zeit der Quelle bleibt auf der
+ * Kopie, sonst kopierte der Aufräumlauf alles noch einmal.
+ *
+ * ANHALTEN: SIGTERM (die Oberfläche: Knopf "Anhalten", POST /api/export/stop)
+ * beendet die laufende Datei, schreibt den Stand und geht - der Stick ist
+ * dann vorzeigbar bis zur letzten fertigen Datei. Ein zweites SIGTERM
+ * bricht hart ab. Nach jeder Stufe (und in Stufe 2 alle 25 Titel) liegt
+ * Programm/library/export-stand.json als TEILKOPIE: { teilkopie: true,
+ * stufe: {nr, von, name}, titel, exportiertAm, handle, anzeigename }; der
+ * eingefrorene Server zeigt dann nur die Titel, deren MP3 da ist, und die
+ * App sagt "Teilkopie von @alias vom Datum".
+ *
+ * Für Musik/ gilt wie bisher: eine MP3 wird nur neu getaggt, wenn
  * Tonspur oder Bild zu Hause jünger sind als die Datei auf dem Stick.
  *
  * DER LAUF SCHREIBT MIT: library/export-lauf.json, fortlaufend, damit
  * die Oberfläche (GET /api/export/stand) zusehen kann:
- *   { laeuft, seit, pid, schritt, zielDateisystem, fortschritt, zeilen: [...], fertig, fehler, ergebnis }
+ *   { laeuft, seit, pid, schritt, stufe: {nr, von, name}, zielDateisystem, fortschritt, zeilen: [...], fertig, fehler, ergebnis }
  *   fertig = true nur bei gutem Ende; ein Abbruch lässt fertig = false
  *   und schreibt den Grund nach fehler. ergebnis =
  *   { dateien, bytes, dauerS, probestart: "ok" | "fehlgeschlagen: ..." | "übersprungen" }
+ *   oder nach Anhalten { angehalten: true, stufe: {nr, von, name}, titel, dauerS }
  *   fortschritt (Caspar_D, 09.09.2026: ein Balken mit Restzeit, nicht nur
  *   eine Prozentzahl) = null zwischen den Schritten, sonst
- *   { prozent, was: "Programm" | "Daten" | "Musik" | "Node",
+ *   { prozent, was: "Programm" | "Kern" | "Titel" | "Bilder" | "Analyse" | "Musik" | "Node" | "Stems" | "Abschluss",
  *     bytesGesamt, bytesFertig, bytesProSekunde, restS,
  *     dateienGesamt, dateienFertig }
  *   bytesGesamt kommt aus einer Vorabmessung je rsync-Schritt (Trockenlauf
@@ -107,8 +137,9 @@ if (process.platform === 'darwin' && !probe) {
 }
 
 /* ---------------------------------------------------------------- Mitschrift */
+const STUFEN = 7;
 const lauf = { laeuft: true, seit: new Date(START).toISOString(), pid: process.pid, probe, stems, ziel: ZIEL, zielDateisystem: null,
-               schritt: '', fortschritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
+               schritt: '', stufe: null, fortschritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
 let zuletztGeschrieben = 0;
 function laufSchreiben(erzwingen) {
   /* Höchstens viermal je Sekunde - rsync meldet Fortschritt öfter, und
@@ -130,6 +161,19 @@ function zeile(text) {
   laufSchreiben(true);
 }
 function schritt(name) { lauf.schritt = name; lauf.fortschritt = null; zeile('» ' + name); }
+function stufe(nr, name) { lauf.stufe = { nr, von: STUFEN, name }; schritt(`Stufe ${nr} von ${STUFEN}: ${name}`); }
+
+/* ANHALTEN, SANFT. Das erste SIGTERM setzt nur die Flagge: die laufende
+   Datei wird fertig (bei rsync und ffmpeg: das Kind bekommt das Signal
+   und räumt seine halbe Datei selbst weg), dann schreibt der Lauf den
+   Stand und geht. Das zweite SIGTERM bricht hart ab. */
+let anhalten = false;
+function anhaltenAnfordern(signal) {
+  if (anhalten) return abbruch('abgebrochen (' + signal + ', zum zweiten Mal)');
+  anhalten = true;
+  zeile(`Anhalten angefordert (${signal}) - die laufende Datei wird fertig, dann steht der Stand`);
+  for (const k of kindProzesse) { try { k.kill('SIGTERM'); } catch (e) {} }
+}
 
 /* DAS TEMPO, GLEITEND. Caspar_D, 09.09.2026: die Restzeit soll nicht
    bei jedem Ruckeln des Sticks springen - deshalb der Durchschnitt über
@@ -180,8 +224,8 @@ function abbruch(grund) {
 }
 process.on('uncaughtException', abbruch);
 process.on('unhandledRejection', abbruch);
-process.on('SIGINT',  () => abbruch('unterbrochen (SIGINT)'));
-process.on('SIGTERM', () => abbruch('beendet (SIGTERM)'));
+process.on('SIGINT',  () => anhaltenAnfordern('SIGINT'));
+process.on('SIGTERM', () => anhaltenAnfordern('SIGTERM'));
 
 /* Läuft schon einer? Zwei rsyncs auf denselben Stick zerlegen sich
    gegenseitig; der Server fragt vorher, aber der Aufruf von Hand nicht. */
@@ -332,6 +376,9 @@ function rsync(quelle, ziel, zusatz, mess, trocken) {
     k.stderr.setEncoding('utf8'); k.stderr.on('data', (d) => { fehler += d; });
     k.on('error', verwerfen);
     k.on('close', (code) => {
+      /* Angehalten: rsync hat sein Signal bekommen und die halbe Datei
+         selbst weggeräumt - kein Fehler, der Lauf endet gleich sauber. */
+      if (anhalten && code !== 0) return aufloesen({ dateien: 0, uebertragen: 0, bytes: 0, bytesUebertragen: 0, angehalten: true });
       /* 24 = "some files vanished" - jemand hat zu Hause gerade etwas
          umgeräumt; kein Grund, den ganzen Export wegzuwerfen. */
       if (code !== 0 && code !== 24) return verwerfen(new Error(`rsync ${path.basename(ziel)}: Exit ${code}\n${fehler.trim().split('\n').slice(-5).join('\n')}`));
@@ -440,9 +487,10 @@ async function musik() {
     let bytesFertig = 0;
     fortschritt(mess, { bytes: 0, dateien: 0, prozent: 0 });
     const arbeiter = async () => {
-      while (i < offen.length) {
+      while (i < offen.length && !anhalten) {
         const { e, zielDatei } = offen[i++];
         const r = await musikBauen(e, zielDatei);
+        if (anhalten && !r.ok) break;                     /* ffmpeg hat das Signal bekommen, tmp ist weg */
         if (r.ok) { neu++; bytes += fs.statSync(zielDatei).size; }
         else { fehl++; zeile(`   ffmpeg scheiterte an "${e.name}": ${r.grund}`); }
         bytesFertig += groesse(e);
@@ -452,8 +500,8 @@ async function musik() {
     await Promise.all([0, 1, 2, 3].map(arbeiter));
     /* Aufräumen: MP3s, die keinem Titel mehr gehören (umbenannt, gelöscht,
        aus einem älteren Export). Nur .mp3, nur in Musik/ - alles andere
-       dort hat jemand von Hand hingelegt und bleibt. */
-    for (const f of fs.readdirSync(ordner)) {
+       dort hat jemand von Hand hingelegt und bleibt. Nicht beim Anhalten. */
+    for (const f of anhalten ? [] : fs.readdirSync(ordner)) {
       if (!f.toLowerCase().endsWith('.mp3') || f.startsWith('._')) continue;
       if (vorhanden.has(f.toLowerCase())) continue;
       try { fs.unlinkSync(path.join(ordner, f)); weg++; } catch (e) {}
@@ -495,8 +543,9 @@ function nodeKopieren() {
     let bytesFertig = 0, fertig = 0;
     fortschritt(mess, { bytes: 0, dateien: 0 });
     for (const o of offen) {
-      fs.mkdirSync(path.dirname(o.nach), { recursive: true });
-      fs.copyFileSync(o.von, o.nach);
+      if (anhalten) break;
+      const sv = fs.statSync(o.von);
+      kopiereDatei(o.von, o.nach, sv.mtime, sv.atime, (summe) => fortschritt(mess, { bytes: bytesFertig + summe, dateien: fertig }));
       try { fs.chmodSync(o.nach, 0o755); } catch (e) {}     /* auf exFAT wirkungslos, auf APFS nötig */
       bytesFertig += o.bytes; fertig++;
       fortschritt(mess, { bytes: bytesFertig, dateien: fertig });
@@ -750,11 +799,148 @@ async function probestart() {
     if (!antwort) return `fehlgeschlagen: keine Antwort auf /api/index binnen 30 s - ${aus.trim().split('\n').slice(-3).join(' | ')}`;
     if (antwort.status !== 200 || !antwort.json) return `fehlgeschlagen: /api/index antwortet ${antwort.status}`;
     const j = antwort.json;
-    if (j.anzahl !== eigene.length) return `fehlgeschlagen: das Ziel meldet ${j.anzahl} Titel, der Katalog hat ${eigene.length}`;
+    /* Der eingefrorene Server zeigt nur Titel, deren MP3 da ist - also
+       so viele, wie zu Hause eine MP3 haben. */
+    const erwartet = eigene.filter(hatMp3).length;
+    if (j.anzahl !== erwartet) return `fehlgeschlagen: das Ziel meldet ${j.anzahl} Titel, zu Hause haben ${erwartet} eine MP3`;
     if (!j.eingefroren) return `fehlgeschlagen: ${j.anzahl} Titel da, aber der Server meldet keinen Modus eingefroren (Server-Teil fehlt noch?)`;
     zeile(`Probestart: ${j.anzahl} Titel auf Port ${port || wunsch}, eingefroren seit ${j.eingefroren.seit}`);
     return 'ok';
   } finally { await beenden(); }
+}
+
+/* ---------------------------------------------------------------- Der Kopierer */
+/* Die Stufen 1-4 und 6 laufen über diesen Kopierer statt über rsync, weil
+   nur er die REIHENFOLGE hält (neueste Titel zuerst). Gleich ist eine
+   Datei, wenn Größe und Zeit stimmen - dieselbe Regel wie rsync -t mit
+   --modify-window=2 (FAT und exFAT runden auf zwei Sekunden). Kopiert
+   wird über .tmp und rename, damit ein Abbruch nie eine halbe Datei
+   unter gutem Namen hinterlässt, und die Zeit der Quelle wird auf die
+   Kopie übertragen - sonst hielte der Aufräumlauf jede Kopie für
+   geändert und kopierte alles noch einmal. */
+/* Eine Datei in Stücken von 4 MB - nach jedem Stück eine Meldung, damit
+   Balken, Tempo und Restzeit auch bei einer 110-MB-Datei laufen (Node auf
+   dem Intenso: drei Minuten, in denen der Balken sonst stünde und die
+   Restzeit aus einem einzigen Messpunkt Unsinn rechnete, 09.09.2026).
+   Über .tmp und rename; die Zeit der Quelle kommt auf die Kopie. */
+function kopiereDatei(von, nach, mtime, atime, melde) {
+  fs.mkdirSync(path.dirname(nach), { recursive: true });
+  const tmp = nach + '.tmp';
+  const STUECK = 4 * 1048576;
+  const puffer = Buffer.allocUnsafe(STUECK);
+  const q = fs.openSync(von, 'r'); let z = null;
+  try {
+    z = fs.openSync(tmp, 'w');
+    let gelesen, summe = 0;
+    while ((gelesen = fs.readSync(q, puffer, 0, STUECK, null)) > 0) {
+      fs.writeSync(z, puffer, 0, gelesen);
+      summe += gelesen;
+      if (melde) melde(summe);
+    }
+  } finally { fs.closeSync(q); if (z !== null) fs.closeSync(z); }
+  try { fs.utimesSync(tmp, atime || mtime, mtime); } catch (e) {}
+  fs.renameSync(tmp, nach);
+}
+function kopierListe(paare) {
+  const offen = []; let gleich = 0, bytesGleich = 0, fehlt = 0;
+  for (const q of paare) {
+    let sv = null; try { sv = fs.statSync(q.von); } catch (e) { fehlt++; continue; }
+    if (!sv.isFile()) continue;
+    let sn = null; try { sn = fs.statSync(q.nach); } catch (e) {}
+    if (sn && sn.size === sv.size && Math.abs(sn.mtimeMs - sv.mtimeMs) <= 2000) { gleich++; bytesGleich += sv.size; continue; }
+    offen.push({ von: q.von, nach: q.nach, bytes: sv.size, mtime: sv.mtime, atime: sv.atime, titel: q.titel || null });
+  }
+  return { offen, gleich, bytesGleich, fehlt, bytesOffen: offen.reduce((a, o) => a + o.bytes, 0) };
+}
+/* Kopiert die Liste in ihrer Reihenfolge; meldet Fortschritt; hört auf,
+   sobald Anhalten angefordert ist. jeTitel(o) wird nach jeder Datei mit
+   dem Eintrag gerufen (Stufe 2 zählt damit die fertigen Titel). */
+async function kopieren(liste, was, jeTitel) {
+  const mess = { was, gesamt: liste.bytesOffen, dateienGesamt: liste.offen.length, tempo: tempoMesser() };
+  let bytesFertig = 0, dateien = 0;
+  fortschritt(mess, { bytes: 0, dateien: 0 });
+  for (const o of liste.offen) {
+    if (anhalten) break;
+    if (!probe) kopiereDatei(o.von, o.nach, o.mtime, o.atime, (summe) => { if (o.bytes > 8 * 1048576) fortschritt(mess, { bytes: bytesFertig + summe, dateien }); });
+    bytesFertig += o.bytes; dateien++;
+    if (jeTitel) jeTitel(o);
+    fortschritt(mess, { bytes: bytesFertig, dateien });
+    /* Ein Atemzug je Datei, damit das Signal zum Anhalten zwischen zwei
+       Dateien ankommt - copyFileSync blockt sonst die ganze Schleife. */
+    await new Promise(r => setImmediate(r));
+  }
+  return { dateien, bytes: bytesFertig };
+}
+/* Die eigenen Titel, neueste zuerst - die Reihenfolge der Vorführung. */
+const neuesteZuerst = eigene.slice().sort((a, b) => (b.erstellt || '').localeCompare(a.erstellt || ''));
+const hatMp3 = (s) => fs.existsSync(path.join(SONGS, s.id, 'audio.mp3'));
+/* Was NICHT über den Kopierer geht (und nie auf den Stick): dieselben
+   Ausnahmen wie der Aufräumlauf unten. */
+const KERN_AUSSEN = new Set(['roh', 'backup', 'node-portabel', 'suno-wege', 'modelle', 'songs', 'analyse']);
+function kernPaare(PROGRAMM) {
+  const paare = [];
+  const gehe = (rel) => {
+    const ordner = path.join(LIB, rel);
+    let e = []; try { e = fs.readdirSync(ordner, { withFileTypes: true }); } catch (x) { return; }
+    for (const x of e) {
+      if (x.name.startsWith('.') || x.name === 'export-lauf.json' || x.name === 'export-stand.json' || x.name.endsWith('.tmp')) continue;
+      const r = rel ? path.join(rel, x.name) : x.name;
+      if (x.isDirectory()) { if (!rel && KERN_AUSSEN.has(x.name)) continue; if (r === path.join('kondensate', 'arbeit')) continue; gehe(r); }
+      else if (x.isFile()) paare.push({ von: path.join(LIB, r), nach: path.join(PROGRAMM, 'library', r) });
+    }
+  };
+  gehe('');
+  return paare;
+}
+function titelPaare(PROGRAMM, dateien) {
+  const paare = [];
+  for (const s of neuesteZuerst) for (const f of dateien) paare.push({ von: path.join(SONGS, s.id, f), nach: path.join(PROGRAMM, 'library', 'songs', s.id, f), titel: s.id });
+  return paare;
+}
+/* Alles Übrige im Titelordner (cover.jpg, Bewegtbild ...), ohne WAV und
+   ohne stems/ - und ohne, was Stufe 2 schon hatte. */
+function titelRestPaare(PROGRAMM, ohne) {
+  const paare = [];
+  for (const s of neuesteZuerst) {
+    let e = []; try { e = fs.readdirSync(path.join(SONGS, s.id), { withFileTypes: true }); } catch (x) { continue; }
+    for (const x of e) if (x.isFile() && !x.name.startsWith('.') && x.name !== 'audio.wav' && !ohne.includes(x.name) && !x.name.endsWith('.tmp'))
+      paare.push({ von: path.join(SONGS, s.id, x.name), nach: path.join(PROGRAMM, 'library', 'songs', s.id, x.name), titel: s.id });
+  }
+  return paare;
+}
+function analysePaare(PROGRAMM) {
+  const A = path.join(LIB, 'analyse');
+  let e = []; try { e = fs.readdirSync(A); } catch (x) { return []; }
+  const rang = new Map(neuesteZuerst.map((s, i) => [s.id, i]));
+  const r = (f) => { const m = f.match(/^([0-9a-f-]{36})/i); return m && rang.has(m[1]) ? rang.get(m[1]) : 1e9; };
+  return e.filter(f => !f.startsWith('.') && !f.endsWith('.tmp')).sort((a, b) => r(a) - r(b) || a.localeCompare(b))
+          .map(f => ({ von: path.join(A, f), nach: path.join(PROGRAMM, 'library', 'analyse', f) }));
+}
+function stemsPaare(PROGRAMM) {
+  const paare = [];
+  for (const s of neuesteZuerst) {
+    const d = path.join(SONGS, s.id, 'stems');
+    let e = []; try { e = fs.readdirSync(d); } catch (x) { continue; }
+    for (const f of e) if (!f.startsWith('.') && !f.endsWith('.tmp')) paare.push({ von: path.join(d, f), nach: path.join(PROGRAMM, 'library', 'songs', s.id, 'stems', f), titel: s.id });
+  }
+  return paare;
+}
+/* Wie viele Titel auf dem Stick spielbar sind: die MP3 liegt da. */
+function titelImZiel(PROGRAMM) {
+  let n = 0;
+  for (const s of eigene) if (fs.existsSync(path.join(PROGRAMM, 'library', 'songs', s.id, 'audio.mp3'))) n++;
+  return n;
+}
+/* DER ZWISCHENSTAND: eine Teilkopie sagt, was sie ist. Der eingefrorene
+   Server liest sie (/api/index: eingefroren.teilkopie) und die App zeigt
+   "Teilkopie von @alias vom Datum". Am Ende überschreibt der volle Stand
+   die Datei. */
+let standTitel = 0, standStufe = null;
+function teilstandSchreiben(PROGRAMM, rn) {
+  if (probe) return;
+  const stand = { exportiertAm: new Date().toISOString(), teilkopie: true, stufe: standStufe, titel: standTitel, titelZuHause: eigene.filter(hatMp3).length,
+                  dateien: null, bytes: null, mitStems: stems, handle, anzeigename, node: rn ? rn.da.map(p => p.ordner) : [] };
+  try { fs.mkdirSync(path.join(PROGRAMM, 'library'), { recursive: true }); fs.writeFileSync(path.join(PROGRAMM, 'library', 'export-stand.json'), JSON.stringify(stand, null, 1)); } catch (e) {}
 }
 
 /* ---------------------------------------------------------------- Zählen */
@@ -778,22 +964,45 @@ function zaehlen(ordner, ohne) {
 (async () => {
   const PROGRAMM = path.join(ZIEL, 'Programm');
   let dateien = 0, bytes = 0;
+  const dauerS = () => Math.round((Date.now() - START) / 1000);
+  /* Angehalten: Stand schreiben, Ergebnis in die Mitschrift, gehen. */
+  const angehalten = (rn) => {
+    teilstandSchreiben(PROGRAMM, rn);
+    lauf.ergebnis = { angehalten: true, stufe: standStufe, titel: standTitel, dauerS: dauerS() };
+    lauf.laeuft = false; lauf.fertig = false; lauf.schritt = 'angehalten'; lauf.fortschritt = null;
+    laufSchreiben(true);
+    console.log(`\n  Angehalten nach ${standStufe ? 'Stufe ' + standStufe.nr + ' (' + standStufe.name + ')' : 'dem Start'}: ${standTitel} Titel auf dem Stick spielbar. Erneut starten setzt fort.\n`);
+    process.exitCode = 4;
+  };
+  const kopierSchritt = async (name, paare, was, jeTitel) => {
+    const liste = kopierListe(paare);
+    /* "fehlt" ist kein Mangel: nicht jeder Titel hat ein beschnittenes
+       Titelbild oder eine Kachel - die Liste fragt nach allen dreien. */
+    zeile(`   ${liste.offen.length} zu kopieren (${(liste.bytesOffen / 1048576).toFixed(0)} MB), ${liste.gleich} schon da` + (liste.fehlt ? `, ${liste.fehlt} gibt es zu Hause nicht (kein Grund zur Sorge)` : ''));
+    const r = await kopieren(liste, was, jeTitel);
+    dateien += liste.gleich + r.dateien; bytes += liste.bytesGleich + r.bytes;
+    zeile(`   ${name}: ${r.dateien} ${probe ? 'zu kopieren' : 'kopiert'} (${(r.bytes / 1048576).toFixed(0)} MB)`);
+    return r;
+  };
 
-  schritt('Programm kopieren');
-  const programmOrdner = ['web', 'server', 'bin', 'browser', 'docs'].filter(o => {
+  /* ---- Stufe 1: Starten */
+  stufe(1, 'Starten - Programm, Bestand-Kern, Sternenhimmel, Node');
+  standStufe = lauf.stufe;
+  const programmOrdner = ['web', 'server', 'bin', 'browser'].filter(o => {
     if (fs.existsSync(path.join(WURZEL, o))) return true;
     zeile(`   ${o}/ gibt es zu Hause nicht - übersprungen`); return false;
   });
   const programmPaare = programmOrdner.map(o => ({ quelle: path.join(WURZEL, o), ziel: path.join(PROGRAMM, o), zusatz: ['--exclude', 'node_modules/'] }));
   const programmSummen = await vorabmessen(programmPaare);
   const programmMess = { was: 'Programm', gesamt: programmSummen.reduce((a, b) => a + b, 0), vorher: 0, tempo: tempoMesser() };
-  for (let i = 0; i < programmPaare.length; i++) {
+  for (let i = 0; i < programmPaare.length && !anhalten; i++) {
     const p = programmPaare[i];
     const r = await rsync(p.quelle, p.ziel, p.zusatz, programmMess);
     programmMess.vorher += programmSummen[i];
     dateien += r.dateien; bytes += r.bytes;
     zeile(`   ${programmOrdner[i]}/: ${r.dateien} Dateien, ${r.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
   }
+  if (anhalten) return angehalten(null);
   for (const f of fs.readdirSync(WURZEL).filter(f => f === 'package.json' || f === 'LICENSE' || /^README/i.test(f))) {
     const von = path.join(WURZEL, f), nach = path.join(PROGRAMM, f);
     const sv = fs.statSync(von); let sn = null; try { sn = fs.statSync(nach); } catch (e) {}
@@ -801,8 +1010,87 @@ function zaehlen(ordner, ohne) {
     if (sn && sn.size === sv.size && sn.mtimeMs >= sv.mtimeMs - 2000) continue;
     if (!probe) { fs.mkdirSync(PROGRAMM, { recursive: true }); fs.copyFileSync(von, nach); }
   }
+  /* Die Startskripte gleich jetzt - ab hier startet der Stick. */
+  if (!probe) {
+    fs.mkdirSync(ZIEL, { recursive: true });
+    fs.writeFileSync(path.join(ZIEL, 'START-Mac.command'), MAC_SKRIPT);
+    fs.writeFileSync(path.join(ZIEL, 'START-Linux.sh'), LINUX_SKRIPT);
+    fs.writeFileSync(path.join(ZIEL, 'START-Windows.cmd'), WIN_SKRIPT);
+    for (const f of ['START-Mac.command', 'START-Linux.sh']) { try { fs.chmodSync(path.join(ZIEL, f), 0o755); } catch (e) {} }
+    try { fs.unlinkSync(path.join(ZIEL, 'START.md')); } catch (e) {}
+  }
+  await kopierSchritt('Bestand-Kern (Katalog, Texte, Reaktionen, Herzen, Beobachter, Klangraum)', kernPaare(PROGRAMM), 'Kern');
+  if (anhalten) return angehalten(null);
+  if (!probe) {
+    const rh = spawnSync(process.execPath, ['bin/himmel-export.js', '--relativ', 'Programm/library/songs', '--ziel', path.join(ZIEL, 'Sternenhimmel.html')],
+                         { cwd: WURZEL, encoding: 'utf8' });
+    if (rh.status === 0) zeile('   Sternenhimmel.html: ' + (rh.stdout || '').trim().split('\n').pop());
+    else zeile(`   Sternenhimmel nicht gebaut (Exit ${rh.status}): ${((rh.stderr || rh.stdout || '').trim().split('\n').filter(Boolean).slice(-2).join(' | '))}`);
+  }
+  const rn = nodeKopieren();
+  dateien += rn.dateien; bytes += rn.bytes;
+  standTitel = probe ? 0 : titelImZiel(PROGRAMM);
+  teilstandSchreiben(PROGRAMM, rn);
+  if (anhalten) return angehalten(rn);
 
-  schritt('Bestand kopieren (library/)');
+  /* ---- Stufe 2: Titel, neueste zuerst */
+  stufe(2, 'Titel, neueste zuerst - Tonspur, Kachel, Titelbild');
+  standStufe = lauf.stufe;
+  {
+    const fertigeTitel = new Set();
+    let seitStand = 0;
+    await kopierSchritt('Titel', titelPaare(PROGRAMM, ['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Titel', (o) => {
+      if (path.basename(o.nach) !== 'audio.mp3' || fertigeTitel.has(o.titel)) return;
+      fertigeTitel.add(o.titel); standTitel++;
+      if (++seitStand >= 25) { seitStand = 0; teilstandSchreiben(PROGRAMM, rn); }
+    });
+    standTitel = probe ? standTitel : titelImZiel(PROGRAMM);
+    zeile(`   ${standTitel} Titel auf dem Stick spielbar`);
+    teilstandSchreiben(PROGRAMM, rn);
+  }
+  if (anhalten) return angehalten(rn);
+
+  /* ---- Stufe 3: große Titelbilder und der Rest im Titelordner */
+  stufe(3, 'Große Titelbilder und Bewegtbilder, neueste zuerst');
+  standStufe = lauf.stufe;
+  await kopierSchritt('Titelbilder', titelRestPaare(PROGRAMM, ['audio.mp3', 'kachel.jpg', 'titelbild.jpg']), 'Bilder');
+  teilstandSchreiben(PROGRAMM, rn);
+  if (anhalten) return angehalten(rn);
+
+  /* ---- Stufe 4: Analyse-Ablage */
+  stufe(4, 'Analyse-Ablage, neueste zuerst');
+  standStufe = lauf.stufe;
+  await kopierSchritt('Analyse', analysePaare(PROGRAMM), 'Analyse');
+  teilstandSchreiben(PROGRAMM, rn);
+  if (anhalten) return angehalten(rn);
+
+  /* ---- Stufe 5: Musik/ für Fernseher und Autoradio, docs/ */
+  stufe(5, 'Musik/ für Fernseher und Autoradio, Anleitung');
+  standStufe = lauf.stufe;
+  const rm = await musik();
+  dateien += rm.dateien; bytes += rm.bytes;
+  if (anhalten) return angehalten(rn);
+  if (fs.existsSync(path.join(WURZEL, 'docs'))) {
+    const [ds] = await vorabmessen([{ quelle: path.join(WURZEL, 'docs'), ziel: path.join(PROGRAMM, 'docs'), zusatz: [] }]);
+    const rd = await rsync(path.join(WURZEL, 'docs'), path.join(PROGRAMM, 'docs'), [], { was: 'Programm', gesamt: ds, vorher: 0, tempo: tempoMesser() });
+    dateien += rd.dateien; bytes += rd.bytes;
+    zeile(`   docs/: ${rd.dateien} Dateien, ${rd.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'}`);
+  }
+  teilstandSchreiben(PROGRAMM, rn);
+  if (anhalten) return angehalten(rn);
+
+  /* ---- Stufe 6: Stems */
+  if (stems) {
+    stufe(6, 'Stems, neueste zuerst');
+    standStufe = lauf.stufe;
+    await kopierSchritt('Stems', stemsPaare(PROGRAMM), 'Stems');
+    teilstandSchreiben(PROGRAMM, rn);
+    if (anhalten) return angehalten(rn);
+  } else zeile(`» Stufe 6 von ${STUFEN}: Stems - nicht gewählt, übersprungen`);
+
+  /* ---- Stufe 7: Abschluss */
+  stufe(7, 'Abschluss - Aufräumlauf, Stand, Probestart');
+  standStufe = lauf.stufe;
   const AUSSCHLUSS = [
     '--exclude', '/songs/*/audio.wav',
     ...(stems ? [] : ['--exclude', '/songs/*/stems/']),
@@ -818,38 +1106,22 @@ function zaehlen(ordner, ohne) {
   /* Stems, die ein früherer Lauf mit --stems gebracht hat, bleiben ohne
      --stems liegen: 28 GB löscht man nicht, weil ein Häkchen fehlt. */
   if (!stems) AUSSCHLUSS.push('--filter', 'P /songs/*/stems/');
+  /* Der Aufräumlauf: rsync über den ganzen Bestand - holt, was die Stufen
+     nicht kannten, räumt weg, was zu Hause fehlt. Nach den Stufen
+     überträgt er fast nichts, muss aber beide Seiten einmal ansehen. */
   const [datenSumme] = await vorabmessen([{ quelle: LIB, ziel: path.join(PROGRAMM, 'library'), zusatz: AUSSCHLUSS }]);
-  const rl = await rsync(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Daten', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
-  dateien += rl.dateien; bytes += rl.bytes;
+  const rl = await rsync(LIB, path.join(PROGRAMM, 'library'), AUSSCHLUSS, { was: 'Abschluss', gesamt: datenSumme, vorher: 0, tempo: tempoMesser() });
+  if (anhalten) return angehalten(rn);
+  /* Ab hier zählt der Aufräumlauf, nicht die Summe der Stufen - er hat
+     alles gesehen. */
+  dateien = rl.dateien + rn.dateien + rm.dateien; bytes = rl.bytes + rn.bytes + rm.bytes;
   zeile(`   library/: ${rl.dateien} Dateien, ${(rl.bytes / 1073741824).toFixed(2)} GB, ${rl.uebertragen} ${probe ? 'zu übertragen' : 'übertragen'} (${(rl.bytesUebertragen / 1048576).toFixed(0)} MB)`);
-
-  schritt('Musik/ (MP3 mit Tags und Titelbild)');
-  const rm = await musik();
-  dateien += rm.dateien; bytes += rm.bytes;
-
-  schritt('node/ (mitgebrachtes Node.js)');
-  const rn = nodeKopieren();
-  dateien += rn.dateien; bytes += rn.bytes;
 
   let probestartErgebnis = 'übersprungen';
   if (!probe) {
-    schritt('Sternenhimmel.html (Bild und Ton relativ)');
-    const rh = spawnSync(process.execPath, ['bin/himmel-export.js', '--relativ', 'Programm/library/songs', '--ziel', path.join(ZIEL, 'Sternenhimmel.html')],
-                         { cwd: WURZEL, encoding: 'utf8' });
-    if (rh.status === 0) zeile('  ' + (rh.stdout || '').trim().split('\n').pop());
-    else zeile(`   Sternenhimmel nicht gebaut (Exit ${rh.status}): ${((rh.stderr || rh.stdout || '').trim().split('\n').filter(Boolean).slice(-2).join(' | '))}`);
-
-    schritt('Startskripte und LIES-MICH.md');
     const stand = { exportiertAm: new Date().toISOString(), dateien: 0, bytes: 0,
                     mitStems: stems || fs.existsSync(path.join(PROGRAMM, 'library', 'songs')) && fs.readdirSync(path.join(PROGRAMM, 'library', 'songs')).some(id => fs.existsSync(path.join(PROGRAMM, 'library', 'songs', id, 'stems'))),
-                    handle, node: rn.da.map(p => p.ordner) };
-    fs.writeFileSync(path.join(ZIEL, 'START-Mac.command'), MAC_SKRIPT);
-    fs.writeFileSync(path.join(ZIEL, 'START-Linux.sh'), LINUX_SKRIPT);
-    fs.writeFileSync(path.join(ZIEL, 'START-Windows.cmd'), WIN_SKRIPT);
-    for (const f of ['START-Mac.command', 'START-Linux.sh']) { try { fs.chmodSync(path.join(ZIEL, f), 0o755); } catch (e) {} }
-    /* Das alte START.md (Export vom August) hat hier nichts mehr verloren:
-       es riet zu "node server/server.js", und den Ordner gibt es so nicht mehr. */
-    try { fs.unlinkSync(path.join(ZIEL, 'START.md')); } catch (e) {}
+                    handle, anzeigename, titel: titelImZiel(PROGRAMM), node: rn.da.map(p => p.ordner) };
 
     /* BEIFANG RAEUMEN. macOS legt auf exFAT/FAT neben jeder Datei mit
        Attributen eine "._"-Datei ab (AppleDouble). Fernseher und
@@ -884,7 +1156,7 @@ function zaehlen(ordner, ohne) {
     fs.mkdirSync(path.join(PROGRAMM, 'library'), { recursive: true });
     fs.writeFileSync(path.join(PROGRAMM, 'library', 'export-stand.json'), JSON.stringify(stand, null, 1));
     dateien = stand.dateien; bytes = stand.bytes;
-    zeile(`Ziel: ${dateien} Dateien, ${(bytes / 1073741824).toFixed(2)} GB`);
+    zeile(`Ziel: ${dateien} Dateien, ${(bytes / 1073741824).toFixed(2)} GB, ${stand.titel} Titel`);
 
     if (!ohneProbestart) {
       schritt('Probestart vom Ziel');
@@ -895,10 +1167,9 @@ function zaehlen(ordner, ohne) {
     zeile(`Probe: ${dateien} Dateien, ${(bytes / 1073741824).toFixed(2)} GB würden im Ziel liegen (Sternenhimmel, Startskripte und LIES-MICH.md nicht mitgezählt)`);
   }
 
-  const dauerS = Math.round((Date.now() - START) / 1000);
-  lauf.ergebnis = { dateien, bytes, dauerS, probestart: probestartErgebnis };
+  lauf.ergebnis = { dateien, bytes, dauerS: dauerS(), probestart: probestartErgebnis };
   lauf.laeuft = false; lauf.fertig = true; lauf.schritt = 'fertig'; lauf.fortschritt = null;
   laufSchreiben(true);
-  console.log(`\n  ${probe ? 'Probe' : 'Export'} fertig nach ${dauerS} s.${probestartErgebnis.startsWith('fehlgeschlagen') ? ' Der Probestart aber nicht - siehe oben.' : ''}\n`);
+  console.log(`\n  ${probe ? 'Probe' : 'Export'} fertig nach ${dauerS()} s.${probestartErgebnis.startsWith('fehlgeschlagen') ? ' Der Probestart aber nicht - siehe oben.' : ''}\n`);
   if (probestartErgebnis.startsWith('fehlgeschlagen') || rm.fehl) process.exitCode = 3;
 })().catch(abbruch);
