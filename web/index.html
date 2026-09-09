@@ -14620,10 +14620,12 @@ function exportPlatzZeichnen(d){
     balken.appendChild(i);
   };
   const GRAU = '#8b8b90';
+  /* Zahl und Verb: "1,4 GB kommen", aber "1 GB kommt" (Caspar_D, 09.09.2026). */
+  const kommen = (bytes) => /^1 /.test(exportGroesse(bytes)) ? 'kommt' : 'kommen';
   segment(anderes, GRAU, SPUR_DECKUNG, `Anderes auf dem Medium: ${exportGroesse(anderes)}`);
   for (const x of stueck){
     segment(x.da, x.t.farbe, SPUR_DECKUNG, `${x.t.name}: ${exportGroesse(x.da)} schon drauf`);
-    segment(x.dazu, x.t.farbe, 0.22, `${x.t.name}: ${exportGroesse(x.dazu)} kommt noch`);
+    segment(x.dazu, x.t.farbe, 0.22, `${x.t.name}: ${exportGroesse(x.dazu)} ${kommen(x.dazu)} noch`);
   }
   box.appendChild(balken);
 
@@ -14644,7 +14646,7 @@ function exportPlatzZeichnen(d){
   for (const x of stueck){
     const t = x.t;
     const wert = exportGroesse(Number(t.bytes) || 0) + (t.dateien != null ? ` · ${Number(t.dateien).toLocaleString('de-DE')} ${Number(t.dateien) === 1 ? 'Datei' : 'Dateien'}` : '')
-      + (archiv ? (x.dazu > 0 ? (x.da > 0 ? ` · ${exportGroesse(x.da)} drauf, ${exportGroesse(x.dazu)} kommt` : ' · kommt noch') : ' · drauf') : '');
+      + (archiv ? (x.dazu > 0 ? (x.da > 0 ? ` · ${exportGroesse(x.da)} drauf, ${exportGroesse(x.dazu)} ${kommen(x.dazu)}` : ` · ${exportGroesse(x.dazu)} ${kommen(x.dazu)} noch`) : ' · drauf') : '');
     eintrag(t.farbe, SPUR_DECKUNG, t.name, wert, t.einzeln);
   }
   const f = document.createElement('span'); const fi = document.createElement('i'); fi.style.background = 'rgba(0,0,0,.72)';
