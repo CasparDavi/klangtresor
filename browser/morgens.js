@@ -260,12 +260,16 @@
   }
 
   /* ---------------- Server erreichbar? ---------------- */
-  let handle = null;
+  let handle = null, katalogAlben = new Map();
   try {
     const a = await fetch(DAHEIM + '/api/index');
     if (!a.ok) throw new Error(a.status);
     const d = await a.json();
     handle = d.profil && d.profil.handle;
+    /* Der Albumstand des Katalogs (anzahlLautSuno, eintraege) - der
+       Albumblock unten misst neue Luecken daran, statt bekannte jedes
+       Mal zu melden. */
+    katalogAlben = new Map(((d && d.playlists) || []).map(p => [p.id, p]));
     gut(`Server da — ${d.anzahl} Songs im Katalog, @${handle}`);
   } catch (e) {
     schlecht('Der Server läuft nicht. Erst starten:');
@@ -800,6 +804,7 @@
          einem HTTP-Fehler: der Katalogstand bleibt, die Flagge faellt. */
       const seitenGroesse = befunde.reduce((m, b) => Math.max(m, b.groessteSeite), 0);
       const vollBekannt   = befunde.some(b => b.seitenMitNeuem > 1);
+      const bekannteLuecken = []; let bekannteLueckenSumme = 0;
       for (const b of befunde){
         const name = b.p.name || b.p.id;
         if (b.soll != null && b.roh < b.soll && vollBekannt && b.letzteSeite === seitenGroesse){
@@ -815,9 +820,21 @@
            Sammelfehler, mehrfaches Abrufen ändert nichts") - das ist
            kein Grund, den Lauf abzubrechen, aber es gehört gesagt,
            sonst sieht eine verlorene Seite genauso aus. */
-        if (b.soll != null && b.eintraege.length < b.soll)
-          luecken.push(`${name} ${b.eintraege.length}/${b.soll}`
-                     + (b.ohneClip ? ` (${b.ohneClip} ohne clip)` : ''));
+        /* BEKANNTE LUECKE IST KEINE NACHRICHT (Caspar_D, 09.09.2026: "die
+           roten Albumeintraege irritieren jedes Mal"). Suno zaehlt in
+           einigen Alben Eintraege, die es nie liefert - dauerhaft, kein
+           Sammelfehler (DATENEXTRAKTION.md). Der Katalog kennt die Luecke
+           schon (anzahlLautSuno gegen eintraege). Nur eine Luecke, die
+           GROESSER ist als die bekannte, ist ein Befund und faerbt die
+           Zeile; die bekannten stehen grau als Zahl dran. */
+        if (b.soll != null && b.eintraege.length < b.soll){
+          const luecke = b.soll - b.eintraege.length;
+          const kAlt = katalogAlben.get(b.p.id);
+          const alteLuecke = kAlt && kAlt.anzahlLautSuno != null
+            ? kAlt.anzahlLautSuno - (Array.isArray(kAlt.eintraege) ? kAlt.eintraege.length : 0) : null;
+          if (alteLuecke != null && luecke <= alteLuecke){ bekannteLuecken.push(name); bekannteLueckenSumme += luecke; }
+          else luecken.push(`${name} ${b.eintraege.length}/${b.soll}` + (b.ohneClip ? ` (${b.ohneClip} ohne clip)` : ''));
+        }
       }
 
       /* Nur Alben, deren Inhalt geholt wurde - eine leere Liste ist
@@ -847,6 +864,7 @@
       else if (kopfWiderspruch) text += `; WIDERSPRUCH: Suno nennt ${lautSuno} Alben, geliefert ${alleKoepfe.length}`;
       if (!kopfEndeGesehen && !kopfLuecke) text += '; Ende der Albumliste nicht bestätigt';
       if (luecken.length)     text += `; unvollständig: ${luecken.join(', ')}`;
+      if (bekannteLuecken.length) text += `; ${bekannteLueckenSumme} Einträge zählt Suno, liefert sie aber nie (bekannt, ${bekannteLuecken.length} Alben)`;
       if (ohneClipGesamt)     text += `; ${ohneClipGesamt} Einträge ohne clip (gelöscht/privat bei Suno)`;
       if (ausgefallen.length) text += `; NICHT geholt: ${ausgefallen.join(' · ')}`;
       if (!albenVollstaendig) text += ' — aus dieser Ernte wird im Katalog nichts gelöscht';
