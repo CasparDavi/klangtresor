@@ -1969,3 +1969,19 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
 - Nachbarschaft nennt „N Menschen aus den Liker-Listen noch ohne Profil".
 - Ideen für die Gemeinschaftsansicht: docs/BACKLOG.md (Caspar_Ds Wunsch:
   Stilgruppen auf Zeit normiert, Vorlieben je Person).
+
+## Stand 09.09.2026, 03:55 — Ende der Nachtsitzung
+
+- Beobachterlauf (00:57): 352 Beobachter, 102 Gefolgte, 68 beidseitig,
+  34 folgen nicht zurück, 296 herzen ohne zu folgen, 207 folgen ohne Herz.
+  folgtMir jetzt aus der Beobachterliste (148 Liker).
+- Morgenlauf danach: Nachbarschaftsprofile 208 → 490, Hirschfaktoren
+  202 → 468; von 450 Leuten der Gemeinschaft haben 449 ein Profil.
+- Titelbild ohne Rand (4bd4d7d): 181 von 324 Covern beschnitten,
+  Katalogkopf `titelbild` (181), Bühne/Player nehmen titelbild.jpg.
+  Server-Neustart wartet, solange ein Morgenlauf läuft (server.js:2692) —
+  deshalb kam die Liste erst nach dem Lauf an.
+- Seite hält sich seit 39fb343 selbst aktuell (/api/stand, 60 s).
+- Offen: Abschnitte „nach und nach" im Morgenfenster (Backlog); Ideen
+  Gemeinschaft (Backlog, Caspar_Ds Wunsch Stilgruppen zuerst); Mitschnitt-
+  datei im apk/iphone-Ordner enthält Token — löschen, wenn Caspar_D zustimmt.
