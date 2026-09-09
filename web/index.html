@@ -2838,7 +2838,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
 .ms:last-child{border-bottom:0}
 .ms .msym{font-size:13px;line-height:1.4;text-align:center;color:#5a5a60}
 .ms.fertig .msym{color:#59d18c} .ms.fehler .msym{color:#e31c79} .ms.laeuft .msym{color:#ececed}
-.ms.angehalten .msym{color:var(--titel-a,#f97b14)}   /* angehalten, nicht kaputt: Akzent statt Rot (Export, 09.09.2026) */
+.ms.angehalten .msym{color:#59d18c}   /* angehalten = sicherer Zustand, gruen wie fertig (Caspar_D, 09.09.2026: "bis es Gruen wird") */
+#exportstand.warnung{color:var(--titel-a,#f97b14);font-weight:600}
+#exportstand.gut{color:#59d18c}
 .ms .mname{font-size:13px;font-weight:500;color:#d8d8dc;line-height:1.4}
 .ms.wartet .mname,.ms.abgewaehlt .mname{color:#8b8b90}
 .ms.abgewaehlt{opacity:.55}
@@ -14051,6 +14053,7 @@ function reaktPersonAlleine(handle){
    AUF DEM STICK (Programm/library/export-stand.json) - ist er nicht
    eingehaengt, gibt es keinen Stand, und das steht dann da. */
 let _exportUhr = null, _exportStand = null;   /* die letzte Antwort von /api/export/stand */
+let _exportAnhalten = false;                     /* Anhalten gedrueckt, Lauf noch nicht zu Ende */
 const exportGroesse = (b) => b == null ? '–'
   : b >= 1e9 ? (b / 1e9).toFixed(1).replace('.', ',') + ' GB'
   : (b / 1e6).toFixed(0) + ' MB';
@@ -14222,12 +14225,18 @@ async function profilExportFuellen(){
   /* ANHALTEN (Caspar_D, 09.09.2026: "ich will los ... reicht nicht auch
      eine Viertelstunde"): der Export beendet die laufende Datei, schreibt
      den Stand, der Stick kann raus. Erneut starten setzt fort. */
+  /* Waehrend es anhaelt, steht der Stick unter Strom: die laufende Datei
+     wird fertig, das Verzeichnis geschrieben. Wer jetzt zieht, hat eine
+     halbe Datei (Caspar_D, 09.09.2026: "waehrend Haelt an muss da eine
+     Message hin, dass man warten soll, bis es gruen wird"). */
   const ak = $('exportanhalten');
   if (ak) ak.onclick = async () => {
     ak.disabled = true; ak.textContent = 'Hält an …';
+    _exportAnhalten = true;
+    const st = $('exportstand'); st.className = 'fussnote warnung'; st.textContent = 'Hält an: die laufende Datei wird fertig, dann steht der Stand — den Stick jetzt NICHT abziehen, bis hier Grün steht.';
     let a = null;
     try { a = await (await fetch('/api/export/stop', { method: 'POST' })).json(); } catch (e) { a = { ok: false, grund: e.message }; }
-    if (!a || !a.ok){ ak.disabled = false; ak.textContent = 'Anhalten'; $('exportstand').textContent = '✗ ' + ((a && a.grund) || 'Anhalten fehlgeschlagen'); }
+    if (!a || !a.ok){ _exportAnhalten = false; ak.disabled = false; ak.textContent = 'Anhalten'; st.className = 'fussnote'; st.textContent = '✗ ' + ((a && a.grund) || 'Anhalten fehlgeschlagen'); }
   };
   exportSchauen(false);
 }
@@ -14278,15 +14287,20 @@ function exportZeichnen(d){
     return x && !isNaN(x) ? x.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) : ''; };
   const erg = d.ergebnis || null;
   const stufeText = (s) => s ? `Stufe ${s.nr} von ${s.von}` : '';
+  /* Farbe der Standzeile: rot-orange, solange es anhaelt (nicht ziehen!),
+     gruen, wenn angehalten oder fertig (sicher zu trennen), sonst neutral. */
+  if (!laeuft) _exportAnhalten = false;
+  stand.className = 'fussnote' + (laeuft && _exportAnhalten ? ' warnung' : (!laeuft && ((erg && erg.angehalten) || d.fertig)) ? ' gut' : '');
   if (!d.ziel) stand.textContent = 'Noch kein Ziel gewählt.';
   else if (d.zielEingehaengt === false) stand.textContent = `Medium nicht eingehängt (${d.ziel}).`;
+  else if (laeuft && _exportAnhalten) stand.textContent = 'Hält an: die laufende Datei wird fertig, dann steht der Stand — den Stick jetzt NICHT abziehen, bis hier Grün steht.';
   else if (laeuft) stand.textContent = `Export läuft seit ${seitUhr(d.seit) || 'eben'}` + (d.stufe ? ` · ${stufeText(d.stufe)}` : '') + ' …';
   else if (erg && erg.angehalten && (!st || st.teilkopie))
-    stand.textContent = `Angehalten nach ${stufeText(erg.stufe) || 'dem Start'}: ${Number(erg.titel || 0).toLocaleString('de-DE')} Titel spielbar — der Stick kann ausgeworfen werden. Erneut starten setzt fort.`;
+    stand.textContent = `✓ Angehalten nach ${stufeText(erg.stufe) || 'dem Start'}: ${Number(erg.titel || 0).toLocaleString('de-DE')} Titel spielbar — der Stick kann jetzt sicher ausgeworfen werden (Finder: Auswerfen). Erneut starten setzt fort.`;
   else if (st && st.teilkopie)
     stand.textContent = `Teilkopie vom ${exportTag(st.exportiertAm)}, ${stufeText(st.stufe)}, ${Number(st.titel || 0).toLocaleString('de-DE')} von ${Number(st.titelZuHause || 0).toLocaleString('de-DE')} Titeln spielbar. Erneut starten setzt fort.`;
   else if (st && st.exportiertAm)
-    stand.textContent = `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
+    stand.textContent = (d.fertig ? '✓ Fertig — der Stick kann sicher ausgeworfen werden. ' : '') + `Stand vom ${exportTag(st.exportiertAm)}, ${Number(st.dateien || 0).toLocaleString('de-DE')} Dateien, ${exportGroesse(st.bytes)}`
       + (st.titel ? `, ${Number(st.titel).toLocaleString('de-DE')} Titel` : '') + (st.mitStems ? ', mit Stems' : '') + (st.probestart ? `, Probestart ${st.probestart}` : '') + '.';
   else stand.textContent = `Noch kein Export auf ${d.ziel} — bereit.`;
 
