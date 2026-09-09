@@ -2310,3 +2310,53 @@ fertig werden — der Blick folgt dann dem Lauf statt einer Liste. Offen:
 was mit den noch nicht begonnenen passiert (gar nicht zeigen, oder nur als
 Zeile „N Schritte folgen"), und wie die Zwei-Phasen-Aufteilung (schnell
 zuerst, langsam im Hintergrund) dazu passt.
+
+## Ideen für „Meine Gemeinschaft" (09.09.2026, gesammelt, nicht entschieden)
+
+Alles unten geht mit dem, was seit heute Nacht im Haus liegt (Liker-Listen,
+Beobachterlisten, Strom, Nachbarschaftsprofile, Klangraum-Gruppen) — **ohne
+eine neue Suno-Anfrage**. Jede Zahl braucht ihren Vergleichsboden.
+
+**Caspar_Ds Wunsch (zuerst):**
+1. **Stilgruppen auf Zeit normiert.** Je Klangraum-Gruppe Herzen je Minute
+   Spielzeit, Kommentare je Minute, Herzen je 100 Abrufe — neben dem Boden
+   über alle Titel (Schnellrechnung 09.09.: Metal · Rock 2,21 Herzen/min
+   gegen 1,78 gesamt). Dazu die Frage „mögen Liker oder Kommentierer
+   bestimmte Musik besonders": je Person der Anteil ihrer Herzen je Gruppe
+   gegen den Anteil der Gruppe am Bestand — wer streut, wer hat eine
+   Vorliebe. Geschichten-Gruppen später, wenn gewünscht. Quelle: Katalog,
+   karte.json, library/liker. Aufwand mittel.
+
+**Klein, sofort möglich:**
+2. **Offene Kommentare** — Stränge, in denen die letzte Antwort nicht von
+   dir ist, nach Alter. Quelle: Strom.
+3. **Neu aufgetaucht** — erstes Herz oder erster Kommentar in den letzten
+   30 Tagen, mit dem Titel als Einstieg. Quelle: Strom, liker-verlauf.
+4. **Namen zu „herzen, ohne zu folgen" und „folgen, ohne je zu herzen"** —
+   die Zahlen stehen seit heute im Profil, die Listen dahinter fehlen.
+5. **Kommentar-Herzen als eigenes Signal** — wer deine Antworten herzt,
+   getrennt von Titel-Herzen. Quelle: Strom.
+6. **Bekannte Gesichter** — Liker mit großer eigener Reichweite oder
+   Verifizierung. Quelle: library/liker, community-profile.
+
+**Mittel:**
+7. **Treue** — je Person: geherzte Titel geteilt durch Titel seit ihrem
+   ersten Herz; als Verteilung, nicht nur Spitze. Boden: Mittel aller 440.
+8. **Still geworden** — früher regelmäßig, letztes Ereignis älter als acht
+   Wochen. Braucht Zeiten; wächst mit jedem Lauf.
+9. **Titel ohne Herz von treuen Leuten** — welche Titel den wichtigsten
+   Fans fehlen, nach Datum.
+10. **Zeit bis zum ersten Herz** — nur bei exakten Zeiten; Fenster bleiben
+    als Fenster ausgewiesen.
+11. **Bindungsdauer der Beobachter** — seit wann ununterbrochen, gebündelt.
+    Ab dem zweiten Beobachterlauf.
+
+**Groß, später:**
+12. **Rangsprünge in der Nachbarschaft** — Hirschfaktoren als Verlauf
+    (braucht aufgehobene Stände von community-hirsch.json).
+13. **Aktiv anderswo, still bei mir** — hoher Hirschfaktor, viele Titel,
+    bei dir nie geherzt.
+
+**Warnung (Datenblick):** die rohe Herzsumme je Person spült sehr aktive
+Konten nach oben; erst gegen deren eigene Herzfreudigkeit
+(community-profile: Herzen, die sie vergeben) normiert wird sie eine Aussage.
