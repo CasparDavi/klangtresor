@@ -2326,3 +2326,12 @@ mit eigenen Farbspannen; „auch als …"-Hinweise bei Sicherungswackeln, Partik
 verrechnen ihr Ergebnis per Instanz (Bloom Vorgabe Screen), die Puls-Schläge (Schärfe/Kontrast/Sättigung/Farbton) ihre
 Schlag-Ebene, Stroboskop (additiv), Sicherungswackeln/Scanlines (multiplizierend) und Filmkorn (**Überlagern**, neu in der
 Liste) sind nicht mehr fest verdrahtet. Nur Fahrt/Zoom/Kippen bleiben ohne — sie verschieben das Bild, keine zweite Ebene.
+
+### Verrechnungen vollständig (10.09.2026)
+Die Verrechnung an jeder Karte kennt jetzt alle 17 Canvas-Modi, im Menü gruppiert
+(Aufhellen: Additiv, Screen, Hell gewinnt, Abwedeln · Kontrast: Überlagern, Weich,
+Hartes Licht · Abdunkeln: Multiplizieren, Dunkel gewinnt, Nachbelichten · Umkehren:
+Differenz, Ausschluss · Farbe: Farbton, Sättigung, Farbe, Luminanz). Neu sind Hartes
+Licht, Differenz, Ausschluss und die vier Farbmodi; `verrOptionen()` baut die
+`<optgroup>`s aus der vierten Spalte von `VERR`. Rauchtest: jeder Modus verändert den
+Bildmittelwert messbar. Kein Rezept musste angepasst werden (alte Schlüssel unverändert).

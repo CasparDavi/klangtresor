@@ -26392,10 +26392,16 @@ const PALETTEN = {
   'Asche':['#6c757d','#adb5bd','#495057','#ced4da']
 };
 const VERR = [
-  ['ueber','Über (ersetzen)','source-over'],['add','Additiv','lighter'],['screen','Screen','screen'],
-  ['hell','Hell gewinnt','lighten'],['dunkel','Dunkel gewinnt','darken'],['multi','Multiplizieren','multiply'],['overlay','Überlagern','overlay'],['abwedeln','Abwedeln — Lichter heller','color-dodge'],['nachbelichten','Nachbelichten — Schatten dunkler','color-burn'],['weich','Weich','soft-light']
+  ['ueber','Über (ersetzen)','source-over',''],
+  ['add','Additiv','lighter','Aufhellen'],['screen','Screen','screen','Aufhellen'],['hell','Hell gewinnt','lighten','Aufhellen'],['abwedeln','Abwedeln — Lichter heller','color-dodge','Aufhellen'],
+  ['overlay','Überlagern','overlay','Kontrast'],['weich','Weich','soft-light','Kontrast'],['hart','Hartes Licht','hard-light','Kontrast'],
+  ['multi','Multiplizieren','multiply','Abdunkeln'],['dunkel','Dunkel gewinnt','darken','Abdunkeln'],['nachbelichten','Nachbelichten — Schatten dunkler','color-burn','Abdunkeln'],
+  ['differenz','Differenz','difference','Umkehren'],['ausschluss','Ausschluss','exclusion','Umkehren'],
+  ['farbton','Farbton','hue','Farbe'],['saettigung','Sättigung','saturation','Farbe'],['farbe','Farbe','color','Farbe'],['luminanz','Luminanz','luminosity','Farbe']
 ];
 const VMODE = Object.fromEntries(VERR.map(v=>[v[0],v[2]]));
+function verrOptionen(cur){ const gr={}, reihe=[]; VERR.forEach(([v,l,,g])=>{ const k=g||''; if(!gr[k]){ gr[k]=[]; reihe.push(k); } gr[k].push([v,l]); });
+  return reihe.map(k=>(k?'<optgroup label="'+k+'">':'')+gr[k].map(([v,l])=>'<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>').join('')+(k?'</optgroup>':'')).join(''); }
 
 /* Monochrome, einfärbbare Icons (currentColor); je Effekt eine Kennfarbe */
 const IKON={
@@ -26797,7 +26803,7 @@ function renderStapel(){
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
     });
     h+='<div class="tbs-verr">';
-    if(T.art!=='geo') h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+VERR.map(([v,l])=>'<option value="'+v+'"'+(e.verr===v?' selected':'')+'>'+l+'</option>').join('')+'</select></div>';
+    if(T.art!=='geo') h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+verrOptionen(e.verr)+'</select></div>';
     h+='<div class="tbs-regler"><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1.5" step="0.05" value="'+e.staerke+'"><span class="tbs-wert">'+Math.round(e.staerke*100)+'%</span></div>';
     c.innerHTML=h+'</div></div>';
     c.querySelector('.tbs-pille').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); };
