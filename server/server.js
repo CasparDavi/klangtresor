@@ -2182,8 +2182,15 @@ const server = http.createServer((req, res) => {
   if (p === '/api/export/stand') {
     const konf = konfigLesen();
     const ziel = konf.exportZiel || null;
-    let lauf = { laeuft: false, seit: null, schritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
+    const leer = { laeuft: false, seit: null, schritt: null, zeilen: [], fertig: false, fehler: null, ergebnis: null };
+    let lauf = { ...leer };
     try { lauf = { ...lauf, ...JSON.parse(fs.readFileSync(EXPORT_LAUF, 'utf8')) }; } catch (e) {}
+    /* Ein abgeschlossener Lauf gehoert zu SEINEM Ziel. Zeigt das Register
+       ein anderes Ziel, hat er dort nichts zu suchen (Caspar_D, 09.09.2026:
+       "eine fertig-Meldung, obwohl ich noch nie was exportiert habe" - das
+       war der Probelauf auf die SSD). Laufende Laeufe bleiben sichtbar. */
+    const laufZiel = lauf.ziel || null;
+    if (!lauf.laeuft && laufZiel && laufZiel !== ziel) lauf = { ...leer };
     /* "Eingehaengt" heisst: der Ordner UEBER dem Ziel ist da - der Stick
        selbst also, auch wenn noch nie exportiert wurde. */
     const zielEingehaengt = !!ziel && fs.existsSync(path.dirname(ziel));
@@ -2191,7 +2198,7 @@ const server = http.createServer((req, res) => {
     if (zielEingehaengt) {
       try { letzter = JSON.parse(fs.readFileSync(path.join(ziel, 'Programm', 'library', 'export-stand.json'), 'utf8')); } catch (e) {}
     }
-    return jsonAntwort(res, { ...lauf, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter });
+    return jsonAntwort(res, { ...lauf, laufZiel, prozess: !!global.exportLauf, ziel, zielEingehaengt, letzter });
   }
   /* Musik-Karte (bin/karte.js) und Musikstil je Song (bin/klang.js).
 
