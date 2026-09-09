@@ -472,7 +472,8 @@ select,.knopf{
 .exportfortschritt{margin-top:10px}
 .exportfortschritt[hidden]{display:none}
 .fortbalken{position:relative;height:12px;border-radius:6px;overflow:hidden;background:rgba(0,0,0,.72)}
-.fortbalken i.fuellung{display:block;height:100%;transition:width .6s linear}
+.fortbalken i.etappe{position:absolute;top:0;bottom:0;display:block}
+.fortbalken i.etappe b.voll{position:absolute;left:0;top:0;bottom:0;display:block;width:0;transition:width .6s linear}
 /* Etappengrenzen als Haarlinien (Regel 13), die Nummern darunter in
    Nebenwertgroesse (Regel 14). */
 .fortbalken b.grenze{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.28)}
@@ -14666,29 +14667,57 @@ function exportFortschrittZeichnen(d){
     const g = plan && f.gesamt && f.gesamt.bytes > 0 ? f.gesamt : null;
     const etappen = plan ? plan.stufen.filter(s => s.bytes > 0) : [];
     const schluessel = plan ? 'plan:' + etappen.map(s => s.nr + ':' + s.bytes).join(',') : 'stufe';
+    /* JEDE ETAPPE IN DER FARBE IHRES DATENTYPS (Caspar_D, 09.09.2026:
+       "Farbkongruenz der Phasen zu den Datentypen" - "genau so"): Stufe 1
+       Programm, 2 MP3, 3 Bilder, 4 Analyse, 5 Musik-Ordner, 6 Stems, in
+       denselben Farben wie Stick und Platzbalken. Ausstehend sehr
+       gedaempft, geschrieben in Hausdeckung mit Topline - die Flaeche
+       codiert den Wert, die Topline folgt mit doppelter Deckung. */
+    const ETAPPE_TEIL = { 1: 'programm', 2: 'mp3', 3: 'bilder', 4: 'analyse', 5: 'musik', 6: 'stems' };
     if (box.dataset.schluessel !== schluessel || !box.querySelector('.fuellung')){
       box.dataset.schluessel = schluessel;
-      box.innerHTML = '<div class="fortbalken"><i class="fuellung"></i></div><div class="fortetappen"></div><div class="forttext"></div>';
-      const balken = box.querySelector('.fortbalken'), fuellung = box.querySelector('.fuellung');
-      fuellung.style.background = diaFlaeche('var(--akzent)');
-      fuellung.style.boxShadow  = `inset 0 1px 0 ${diaTopline('var(--akzent)')}`;
+      box.innerHTML = '<div class="fortbalken"></div><div class="fortetappen"></div><div class="forttext"></div>';
+      const balken = box.querySelector('.fortbalken');
       if (plan){
-        const zeile = box.querySelector('.fortetappen');
+        const zeile = box.querySelector('.fortetappen'), farben = exportPalette();
         let links = 0;
         etappen.forEach((s, i) => {
           const anteil = 100 * s.bytes / plan.gesamt;
+          const farbe = farben[ETAPPE_TEIL[s.nr]] || 'var(--akzent)';
+          const e = document.createElement('i'); e.className = 'etappe fuellung';
+          e.style.left = links.toFixed(2) + '%'; e.style.width = anteil.toFixed(2) + '%';
+          e.style.background = diaFlaeche(farbe, 0.18);
+          const v = document.createElement('b'); v.className = 'voll';
+          v.style.background = diaFlaeche(farbe); v.style.boxShadow = `inset 0 1px 0 ${diaTopline(farbe)}`;
+          e.appendChild(v); balken.appendChild(e);
           if (i > 0){ const grenze = document.createElement('b'); grenze.className = 'grenze'; grenze.style.left = links.toFixed(2) + '%'; balken.appendChild(grenze); }
           const n = document.createElement('span'); n.style.left = links.toFixed(2) + '%'; n.style.width = anteil.toFixed(2) + '%';
           n.textContent = String(s.nr); n.title = `Stufe ${s.nr}: ${s.name} · ${exportGroesse(s.bytes)}`;
+          n.style.color = lesbarAuf(farbe, '#161618', 4.5);
           if (anteil < 3) n.classList.add('schmal');
           zeile.appendChild(n);
           links += anteil;
         });
-      } else box.querySelector('.fortetappen').remove();
+      } else {
+        const e = document.createElement('i'); e.className = 'etappe fuellung'; e.style.left = '0'; e.style.width = '100%';
+        e.style.background = diaFlaeche('var(--akzent)', 0.18);
+        const v = document.createElement('b'); v.className = 'voll'; v.style.background = diaFlaeche('var(--akzent)'); v.style.boxShadow = `inset 0 1px 0 ${diaTopline('var(--akzent)')}`;
+        e.appendChild(v); balken.appendChild(e);
+        box.querySelector('.fortetappen').remove();
+      }
     }
     box.hidden = false;
     const prozent = g ? Math.max(0, Math.min(100, 100 * g.fertig / g.bytes)) : Math.max(0, Math.min(100, Number(f.prozent) || 0));
-    box.querySelector('.fuellung').style.width = prozent.toFixed(2) + '%';
+    /* Die Fuellung je Etappe: ganz, sobald der Lauf ueber sie hinaus ist,
+       anteilig in der laufenden, leer davor. */
+    if (plan && g){
+      let start = 0;
+      box.querySelectorAll('.fortbalken .etappe').forEach((e, i) => {
+        const s = etappen[i]; const anteil = s.bytes > 0 ? Math.max(0, Math.min(1, (g.fertig - start) / s.bytes)) : 0;
+        e.querySelector('.voll').style.width = (100 * anteil).toFixed(2) + '%';
+        start += s.bytes;
+      });
+    } else box.querySelector('.fortbalken .voll').style.width = prozent.toFixed(2) + '%';
     /* Die Unterschrift sagt, was der Balken ist (Caspar_D: "damit man die
        Laenge nicht mit der Speicherbelegung oben verwechselt"): der ganze
        Lauf, dann die Stufe, was gerade kopiert wird, wie schnell, wie
