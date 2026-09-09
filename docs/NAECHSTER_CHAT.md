@@ -1928,3 +1928,21 @@ desto kleiner die Bündel — das ist der einzige Hebel.
   Laufs wurden aus reaktionen.ndjson entfernt und aus der Rohform neu
   erzeugt (Ergebnis: 0 Nachträge, nichts war gewachsen). Sicherung:
   `library/backup/reaktionen-vor-anzahl-korrektur-2026-09-09.ndjson`.
+
+## Nachtrag 09.09.2026, 02:20 — Gemeinschaft aus den Liker-Listen
+
+- Gebaut: `/api/community` zieht Herzen aus `library/liker` (1.760 mehr als
+  der Strom, Tarja 100), Strom bleibt für Kommentare/Beobachter/Zeiten;
+  Buendelzeiten wie im Song-Fenster; Personen-Spur „Zeit unbekannt";
+  Reaktionsfenster: Buendelzeit fuer alle im Buendel (Nachbarn in der
+  zeitlich sortierten Liste). Commits ca9270e, 9d20c87, 7c41450, e2bd70c.
+- `bin/community-profile.js` sammelt Handles auch aus den Liker-Listen:
+  491 statt 208; 283 Profile holt der naechste Morgenlauf (~7 min), danach
+  `nachbarn-hirsch` fuer die Neuen (~20 min, zwei bis vier Seiten je Person).
+- Entschieden (Caspar_D): Hirschfaktoren bleiben „herkoemmlich und
+  vorsichtig" — Seiten sind innerhalb nicht sortiert, deshalb kein
+  Sprungverfahren; der Abbruch am Seitenmaximum ist das Optimum.
+- Offen, Vorschlag gemacht: Lesezeichen-Abschnitt „Beobachter" ueber
+  `profiles/{handle}/followers|following?page=N` (24 Seiten, alle 352/102,
+  `is_following_viewer`), Stand + Kommen/Gehen, im Profil vollstaendig.
+- Rote Albumeintraege, Abschnitte nach und nach: weiter offen (siehe oben).
