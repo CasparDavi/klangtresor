@@ -2426,3 +2426,23 @@ Jörgs Go: „du baust die erste Phase, alles, bevor es ins Haus geht“. Gebaut
   Index `videos/bilder`, PUT nächste Nummer, DELETE `?was=video&nr=2`, Behälter-Regex; Karte „Bewegtbild“ als
   Liste), Schritt 3 (Haus zeigt Quelle ohne Effekte direkt), Schritt 4 (Bühne → artworkBild), Schritt 5 (WOERTER.md).
 Labor starten: im Scratch-Ordner `python3 -m http.server 18811`, dann http://127.0.0.1:18811/labor-haus.html.
+
+### Grundsatzentscheidung Quellen vs. Rezepte (Jörg, 11.09.2026 morgens) — ersetzt den Matrix-Gedanken
+Vom Ziel her: Bühne und Kachel zeigen je Titel **das starre Bild** (genau eines: Titelbild = eigenes Bild,
+sonst randlos, sonst Suno-Cover) **oder ein bewegtes Bild**. Bewegte Bilder je Titel: Sunos Bewegtbild,
+angehängte Videos (mehrere, Tarjas Hooks), das Lebendbild (Quelle + Rezept; Quelle darf Titelbild oder Video sein).
+Entschieden:
+- **Ein Rezept je Titel**, es nennt seine Quelle (Bild oder Video erlaubt). Keine Matrix Quellen × Effekte.
+- **Vorgabe ist eine Regel, kein Regler:** Rezept vorhanden → Lebendbild; sonst jüngstes angehängtes Video;
+  sonst Sunos Bewegtbild; sonst starres Bild. Die **Kachel zeigt die Vorgabe**.
+- **Blättern nur auf der Bühne** (flüchtig, durch starres Bild und alle bewegten) **und im Studio** (Wahl der
+  Malquelle für das eine Rezept). „Alle bewegten spielen durch“ kommt nicht, bis es jemand vermisst.
+- Mehrere angehängte Videos (eigen-2.mp4 …) sind der einzige neue Speicherplatz; Karte „Bewegtbild“ wird Liste.
+- Studio-Wunsch nebenbei: **Effektkarte duplizieren** (⧉ im Kartenkopf, Kopie mit allen Werten direkt darunter),
+  gebaut im Labor-Modul.
+Bauschritte neu: (1) Modul ins Haus (Studio-Blätterer als Malquelle, Rezept-Hülle, Video-Grund, Duplizieren) ·
+(2) Server: nummerierte eigene Videos, Index `videos`, PUT nächste Nummer, DELETE `?was=video&nr=`, Behälter-Regex;
+Karte „Bewegtbild“ als Liste · (3) Haus: Vorgaberegel (jüngstes eigenes Video vor Sunos) + Bühnen-Blätterer ‹ ›
+durch starres Bild und bewegte Bilder, flüchtig · (4) Bühne im Standbildmodus auf artworkBild · (5) WOERTER.md.
+Lebendbild-Ablage auf der Kachel wie heute das Video (volle Höhe, mittig, ragt seitlich heraus), Bühne passt den
+Rahmen an — „das Overlay hat immer das Format der Ursprungsdatei“ (Jörg).
