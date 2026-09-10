@@ -2551,3 +2551,20 @@ denselben Spalten wie die Karten (an/aus für alle, Effekt, Nr., rotes × für a
 Kartenkopf als Tabellenzeile: an | solo | Symbol | Effekt | Nr. (nur bei Mehrfachen) | Kopie | × (klein, rot, mit
 Abstand) | hoch | runter | auf/zu. **Akkordeon:** nur eine Karte offen (`offenId`), neue/kopierte öffnen sich und
 rollen ins Blickfeld. Regler: eigene zuerst, dann hinter der Linie Antrieb, Atem, Invertieren, Verrechnung, Stärke.
+
+### Vorbereitung + Nachbesserungen (11.09.2026) — im Haus
+- **Vorbereitung** (Jörg: „statischer Effektlayer … Gradation, Temperatur, Sättigung, all dieses 0-8-15 Zeug“, nach
+  Apples „Farbe anpassen“): eigener Kasten zwischen Quelle und Effektkette, zugeklappt mit Stand („neutral“ / „n
+  Änderungen“). Inhalt: Histogramm + Gradation (Haeckel-Widget, Kanäle V/R/G/B, Gamma/Sigmoidal, Tonwert, Auto-
+  Niveaus 0,5/99,5 %), Zustands-Regler Belichtung, Kontrast, Lichter, Schatten, Sättigung, Temperatur, Farbton, dazu
+  Sepia, Schärfe, „Alle zurücksetzen“. Technik: EIN Filter aufs Grundbild je Frame nach `ovb` (feColorMatrix für
+  Temperatur/Farbton, feComponentTransfer = Kurve je Kanal inkl. Lichter/Schatten, feConvolveMatrix für Schärfe, dazu
+  CSS brightness/contrast/saturate/sepia); die Effekte arbeiten auf `ovb`. Im Rezept als `vorbereitung` (nur wenn nicht
+  neutral), Maler auf Kachel/Bühne rechnen es mit (`VORB` im Bündel). `gradZeichnen()` teilt sich das Kurvenbild mit
+  „Kontrast schlägt“.
+- Beschriftung unter den Vorschaubildern (Jörg): linkestes linksbündig, letztes rechtsbündig, mittlere unter der
+  Bildachse, weichen sie aus, an die Bildkante; höchstens 60 px breit, brechen um. Eine Lücke mit Strich trennt echte
+  Quellen von den drei Testbildern.
+- Gegenlesen des Bedienungs-Umbaus (9 bestätigt, behoben): Farbfläche S/G/W restlos entfernt (alte `quelle.farbe`
+  wird ignoriert), Pult rollt nur noch, wenn eine andere Karte aufgeht, Kopfzeilen-Punkt folgt dem Kartenpunkt, totes
+  CSS gelöscht, Kopfzeilen-× rot und rund, Spalten enger, Effektname darf umbrechen und steht voll im Tipp.
