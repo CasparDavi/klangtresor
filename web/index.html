@@ -3074,8 +3074,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 /* Vorbereitung: Kasten zwischen Quelle und Effektkette, zugeklappt eine Zeile mit Stand */
 #tbs .tbs-vorbkopf{cursor:pointer}
 #tbs .tbs-vorbkopf > span:first-child{flex:1;display:flex;gap:10px;align-items:baseline}
-#tbs .tbs-vorbstand{text-transform:none;letter-spacing:0;font-size:11px;color:var(--schwach);white-space:nowrap}
-#tbs .tbs-vorbstand.an{color:var(--akzent)}
+#tbs .tbs-mini.tbs-vorbstand{width:auto;padding:0 9px;height:20px;font-size:11px;text-transform:none;letter-spacing:0;white-space:nowrap}
+#tbs .tbs-mini.tbs-vorbstand[hidden]{display:none}
 #tbs #tbs-abVorb .tbs-klapp{width:22px;height:20px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11px;line-height:1;padding:0;margin-left:8px}
 #tbs #tbs-vorbKoerper{padding-bottom:6px}
 
@@ -27349,7 +27349,8 @@ function zeichneFrame(t){
     kg.strokeStyle=cc; kg.lineWidth=2; kg.beginPath(); for(let i=0;i<=80;i++){ const x=i/80,y=levApply(g,x),px=x*W,py=(1-y)*H; i?kg.lineTo(px,py):kg.moveTo(px,py); } kg.stroke();
     const tri=(xx,col)=>{ const px=xx*W,cy=H-6; kg.fillStyle=col; kg.strokeStyle='#0a0a0c'; kg.lineWidth=1; kg.beginPath(); kg.moveTo(px,cy-7); kg.lineTo(px-5,cy+3); kg.lineTo(px+5,cy+3); kg.closePath(); kg.fill(); kg.stroke(); };
     tri(g.bp,'#333'); tri(g.wp,'#eee'); }
-  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; const n=vorbAenderungen(VORB); st.textContent=n?(n+' '+(n===1?'\u00c4nderung':'\u00c4nderungen')):'neutral'; st.classList.toggle('an',n>0); }
+  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; st.hidden=vorbAenderungen(VORB)===0; }   /* der Knopf zeigt zugleich an, dass etwas wirkt */
+  function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if($('#tbs-vorbKoerper')&&!$('#tbs-vorbKoerper').hidden) vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
     let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button></div>';
     h+='<canvas class="tbs-grad-ed" id="tbs-vorbGrad" width="447" height="276" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
@@ -27357,7 +27358,6 @@ function zeichneFrame(t){
     h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
     h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Marken unten = Schwarz-/Wei\u00dfpunkt ziehen</div>';
     VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
-    h+='<div class="tbs-zeile" style="justify-content:flex-end;margin-top:6px"><button type="button" class="tbs-mini" id="tbs-vorbNull" style="width:auto;padding:0 10px">Alle zur\u00fccksetzen</button></div>';
     k.innerHTML=h;
     const ged=$('#tbs-vorbGrad'), kg=ged.getContext('2d'); const zg=()=>gradZeichnen(kg,ged.width,ged.height,v.grad[v.kanal],cc,v.kanal); zg();
     let dh=null; const xf=ev=>{ const r=ged.getBoundingClientRect(); return Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width)); };
@@ -27369,7 +27369,6 @@ function zeichneFrame(t){
     const tw=k.querySelector('[data-vtonwert]'); tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
     k.querySelector('[data-vauto]').onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); };
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
-    $('#tbs-vorbNull').onclick=()=>{ const id=v._id; VORB=vorbNeu(); VORB._id=id; vorbRender(); vorbStand(); };
     vorbStand(); }
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
     const seite=SEITEN[seiteIndex()]; if(!seite) return;
@@ -27403,7 +27402,7 @@ function zeichneFrame(t){
       +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
       +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">hierauf wirken die Effekte</span></div>'
       +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div>'
-      +'<div class="tbs-abschnitt" id="tbs-abVorb"><div class="tbs-abtitel tbs-vorbkopf"><span>Vorbereitung <span class="tbs-abunter">die Quelle, bevor die Effekte wirken</span></span><span class="tbs-vorbstand" id="tbs-vorbStand">neutral</span><button type="button" class="tbs-knopf tbs-klapp" id="tbs-vorbKlapp" title="aufklappen">\u25b8</button></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abVorb"><div class="tbs-abtitel tbs-vorbkopf"><span>Vorbereitung <span class="tbs-abunter">die Quelle, bevor die Effekte wirken</span></span><button type="button" class="tbs-mini tbs-vorbstand" id="tbs-vorbStand" hidden title="Alle Anpassungen der Vorbereitung auf neutral">Anpassung l\u00f6schen</button><button type="button" class="tbs-knopf tbs-klapp" id="tbs-vorbKlapp" title="aufklappen">\u25b8</button></div>'
       +'<div id="tbs-vorbKoerper" hidden></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abKette"><div class="tbs-abtitel">Effektkette <span class="tbs-abunter">wird von oben nach unten angewandt</span></div>'
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
@@ -27432,6 +27431,7 @@ function zeichneFrame(t){
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
+    $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); vorbLoeschen(); };
     const kk=$('#tbs-kettekopf');
     kk.querySelector('.tbs-pwAlle').onclick=()=>{ const alle=STAPEL.length>0&&STAPEL.every(x=>x.an); STAPEL.forEach(x=>x.an=!alle); soloId=null; renderStapel(); };
     kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm('Alle '+STAPEL.length+' Effekte aus der Kette entfernen?')) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
