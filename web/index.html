@@ -27357,11 +27357,17 @@ function zeichneFrame(t){
     kg.strokeStyle=cc; kg.lineWidth=2; kg.beginPath(); for(let i=0;i<=80;i++){ const x=i/80,y=levApply(g,x),px=x*W,py=(1-y)*H; i?kg.lineTo(px,py):kg.moveTo(px,py); } kg.stroke();
     const tri=(xx,col)=>{ const px=xx*W,cy=H-6; kg.fillStyle=col; kg.strokeStyle='#0a0a0c'; kg.lineWidth=1; kg.beginPath(); kg.moveTo(px,cy-7); kg.lineTo(px-5,cy+3); kg.lineTo(px+5,cy+3); kg.closePath(); kg.fill(); kg.stroke(); };
     tri(g.bp,'#333'); tri(g.wp,'#eee'); }
-  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; st.hidden=vorbAenderungen(VORB)===0; fussStand(); }
+  /* Der Knopf im Kopf: zugeklappt nennt er, was da ist, und klappt auf; aufgeklappt loescht er.
+     Niemand loescht, was er nicht sieht (Caspar_D, 11.09.2026: "erst aufklappen, dann loeschen"). */
+  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; const n=vorbAenderungen(VORB); st.hidden=n===0;
+    const zu=!$('#tbs-vorbKoerper')||$('#tbs-vorbKoerper').hidden;
+    st.textContent=zu?(n+' '+(n===1?'Anpassung':'Anpassungen')+' \u2014 ansehen'):'Anpassung l\u00f6schen';
+    st.title=zu?'Aufklappen und die Anpassungen ansehen':'Alle Anpassungen der Vorbereitung auf neutral';
+    fussStand(); }
   /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
      Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
   function angewendet(){ if(STAPEL.length||vorbAenderungen(VORB)) return true; const s=SEITEN[seiteIndex()], vg=grundVorgabe(SEITEN.filter(x=>!x.test)); return !!(s&&!s.test&&vg&&(s.art!==vg.art||(s.nr||1)!==(vg.nr||1))); }
-  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); }   /* der Knopf zeigt zugleich an, dass etwas wirkt */
+  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); }
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if($('#tbs-vorbKoerper')&&!$('#tbs-vorbKoerper').hidden) vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
     let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button></div>';
@@ -27441,9 +27447,9 @@ function zeichneFrame(t){
     bauVorrat();
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
-    $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); };
+    $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
-    $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); vorbLoeschen(); };
+    $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); if($('#tbs-vorbKoerper').hidden) $('#tbs-vorbKlapp').click(); else vorbLoeschen(); };
     const kk=$('#tbs-kettekopf');
     kk.querySelector('.tbs-pwAlle').onclick=()=>{ const alle=STAPEL.length>0&&STAPEL.every(x=>x.an); STAPEL.forEach(x=>x.an=!alle); soloId=null; renderStapel(); };
     kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm('Alle '+STAPEL.length+' Effekte aus der Kette entfernen?')) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
