@@ -26793,8 +26793,8 @@ const EFFEKTE = {
    Schatten wird das Spiegelbild: Farbig nachbelichten. Selbstleuchter (Feuer, Flammen, Partikel) bleiben Screen.
    Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
 ['licht','laser','strahlen','kaustik','farbe','strobe','sicherung','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
-/* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie bleiben Screen (Caspar_D, 11.09.2026). */
-['feuer','flammen','partikel'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='screen'; });
+/* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie behalten ihre eigene
+   Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten';
 ['licht','laser','strahlen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was da ist \u2014 f\u00fcr sichtbare Strahlen im Raum Theaternebel davor in die Kette h\u00e4ngen.'; });
 const EGRUPPEN = [
