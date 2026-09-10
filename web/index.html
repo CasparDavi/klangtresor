@@ -3112,7 +3112,6 @@ h3 .infoknopf .ico{width:14px;height:14px}
 /* Raum-Block der Lichter, mit Profilgrafik */
 #tbs .tbs-rm{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rand)}
 #tbs canvas.tbs-rmvor{width:100%;height:70px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
-
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
 
@@ -26617,7 +26616,6 @@ start();
    Knopf still, obwohl im Hintergrund ein Lauf unterwegs ist (23.08.2026). */
 morgenKnopfPruefen();
 /* >>> Effektclip-Studio (tbs-modul.js) */
-
 /* ---- Effektclip-Studio ---------------------------------------------
    Der Effektclip (Caspar_D, 11.09.2026: "es wird immer etwas Bewegtes - ein Clip,
    egal ob die Quelle Bild oder Video ist, und wir legen Effekte drauf"): ein REZEPT aus Effekten - Vorrat an Typen,
@@ -26701,7 +26699,6 @@ const IKON={
  wellen:'<path d="M3 9c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/><path d="M3 15c3 0 3 3 6 3s3-3 6-3 3 3 6 3"/>',
  kaustik:'<path d="M4 8c4-4 8 4 12 0s4 4 4 4M4 14c4-4 8 4 12 0s4 4 4 4" opacity=".9"/>',
  linse:'<circle cx="12" cy="12" r="9"/><path d="M7 12a5 5 0 0 1 5-5"/>',
- dunst:'<path d="M4 16h16M6 12h12M8 8h8" opacity=".8"/>',
  flammen:'<path d="M12 3c2 4 5 6 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z" fill="currentColor" stroke="none"/>',
  strahlen:'<path d="M12 4v4M5 7l2.5 2.5M19 7l-2.5 2.5M3 14h4M17 14h4M12 20v-6" opacity=".9"/><circle cx="12" cy="14" r="2" fill="currentColor" stroke="none"/>',
  spiegel:'<path d="M3 12h18"/><path d="M8 4l4 6 4-6"/><path d="M8 20l4-6 4 6" opacity=".5"/>',
@@ -26719,7 +26716,7 @@ const IKON={
  saettigung:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
  strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
 };
-const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',dunst:'#b9c4d0',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 const EFFEKTE = {
@@ -26757,8 +26754,30 @@ const EFFEKTE = {
     params:[{k:'modus',lbl:'Richtung',sel:[['hell','aufblitzen'],['dunkel','abdunkeln'],['beides','beides']],def:'beides'},{k:'farbe',lbl:'Blitzfarbe',farbe:true,def:'#ffffff'}]},
   sicherung:{ label:'Sicherungswackeln', art:'mal', verr:'nachbelichten', staerkeDef:.5, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon. Auch als: Lichtflackern unter Wasser, durch Wolken, hinter Laub.',
     params:[{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'dauer',lbl:'Dauer (ms)',min:40,max:800,step:10,def:180},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'nur im Takt',def:0}]},
-  nebel:{ label:'Theaternebel', art:'mal', verr:'screen', staerkeDef:.6, besch:'Weiche Schwaden ziehen langsam durchs Bild und liegen eher unten. Heterogenität: wie verschieden die Schwaden untereinander sind. Turbulenz: wie kleinteilig jede Schwade in sich wabert — viel Änderung pro Ort. Stärke ist die Dichte des Nebels; wirkt am besten leise. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},{k:'schwaden',lbl:'Schwaden',min:1,max:12,step:1,def:5},{k:'het',lbl:'Heterogenität',min:0,max:1,step:.05,def:.5},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'groesse',lbl:'Größe',min:.3,max:1.2,step:.05,def:.7},{k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.75},{k:'tempo',lbl:'Tempo (s)',min:10,max:60,step:1,def:30}]},
+  /* NEBEL IST EIN MEDIUM (Caspar_D, 10.09.2026: "wenn Dunst im Shader laeuft - was realer ist - brauchen wir
+     dann den Theaternebel noch?"): nein. Ein Effekt, drei Sorten, im Shader gerechnet. Er leuchtet nicht selbst,
+     sondern nimmt das Licht auf, das ihn trifft: mische(Bild, Farbe*(Grundlicht + Licht*Streuung), Dichte).
+     Damit ist auch die alte Kruecke weg, den Nebel VOR das Licht haengen zu muessen. */
+  nebel:{ label:'Theaternebel', art:'gl', medium:true, staerkeDef:.5, besch:'Nebel ist ein Medium, kein Schleier: er leuchtet nicht selbst, sondern nimmt das Licht auf, das ihn trifft. Hängt ein Scheinwerfer, Laser oder Lichtstrahl in der Kette, wird sein Strahl im Nebel sichtbar — an welcher Stelle der Nebel steht, ist dafür gleich. „Ohne Licht“ ist die Helligkeit dort, wo kein Scheinwerfer steht, „Im Licht“, wie stark er aufleuchtet, wo einer hinfällt. Stärke ist die Dichte. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
+    params:[{k:'sorte',lbl:'Sorte',sel:[['dunst','Dunst'],['schwaden','Schwaden'],['boden','Bodennebel']],def:'schwaden'},
+      {k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},
+      {k:'grundlicht',lbl:'Ohne Licht',min:0,max:1,step:.05,def:.45},
+      {k:'streuung',lbl:'Im Licht',min:0,max:2,step:.05,def:1},
+      {k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.7},
+      {k:'dicke',lbl:'Dicke',min:.1,max:1.5,step:.05,def:.8},
+      {k:'kante',lbl:'Schichtkante',min:0,max:1,step:.05,def:.5,when:e=>e.sorte!=='dunst'},
+      {k:'skala',lbl:'Körnung',min:1,max:10,step:.5,def:2},
+      {k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.45},
+      {k:'tempo',lbl:'Wabern',min:.05,max:2,step:.05,def:.6},
+      {k:'auftrieb',lbl:'Auftrieb (− sinkt)',min:-1,max:1,step:.05,def:.12},
+      {k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.15},
+      {k:'sog',lbl:'Absaugung',sel:[['keine','keine'],['boden','am Boden'],['links','links'],['rechts','rechts'],['oben','oben']],def:'keine'},
+      {k:'sogStaerke',lbl:'Sog',min:0,max:1,step:.05,def:.4,when:e=>(e.sog||'keine')!=='keine'}],
+    /* Der Sog wird hier geschaltet, nicht am Regler: ein ausgeblendeter Regler behaelt seinen Wert, und die
+       allgemeine Uniform-Schleife laedt ihn trotzdem hoch. Bei "keine" zog der Nebel sonst zur Bildmitte. */
+    glZusatz:e=>({ u_sorte:(e.sorte==='dunst'?0:e.sorte==='boden'?2:1),
+      u_sogStaerke:((e.sog||'keine')==='keine'?0:(e.sogStaerke==null?.4:e.sogStaerke)),
+      u_sogX:(e.sog==='links'?0:e.sog==='rechts'?1:0.5), u_sogY:(e.sog==='boden'?0:e.sog==='oben'?1:0.5) }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche oder Funken ziehen durchs Bild. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
     params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
@@ -26775,8 +26794,6 @@ const EFFEKTE = {
     params:[{k:'skala',lbl:'Skala',min:2,max:20,step:.5,def:6},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.5},{k:'schaerfe',lbl:'Schärfe',min:2,max:12,step:.5,def:6},{k:'farbe',lbl:'Farbe',farbe:true,def:'#bfe6ff'}]},
   linse:{ label:'Linse', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Röhrenwölbung oder Fischauge (Wölbung negativ = Tonne, positiv = Kissen) mit Farbrändern am Rand (WebGL).',
     params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
-  dunst:{ label:'Dunst (Rauschnebel)', art:'gl', staerkeDef:.55, besch:'Echter Nebel aus fraktalem Rauschen (WebGL) — kleinteilig wabernd, liegt nach Lage eher unten (Lage 0 = überall gleich). Turbulenz = Anteil der feinen Oktaven. Stärke ist die Dichte.',
-    params:[{k:'skala',lbl:'Skala',min:1,max:10,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.02,max:2,step:.02,def:0.5},{k:'lage',lbl:'Lage (1 unten)',min:0,max:1,step:.05,def:.6},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'}]},
   flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; lodert im Takt höher.',
     params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
@@ -26806,15 +26823,17 @@ const EFFEKTE = {
 };
 /* LICHT IST BELEUCHTUNG (Caspar_D, 11.09.2026: "die meisten Effekte auf Abwedeln umstellen ... ausser beim
    Nebel natuerlich"): Farbig abwedeln hellt nur auf, was schon da ist - Schwarz bleibt schwarz, ein Strahl im
-   Leeren ist unsichtbar. Sichtbar wird er erst in einem Medium: Theaternebel DAVOR in der Kette (die Kette
-   wird von oben nach unten gemalt, der Nebel muss also ueber dem Licht haengen). Nebel und Dunst bleiben Screen,
+   Leeren ist unsichtbar. Sichtbar wird er erst in einem Medium: einem Theaternebel irgendwo in der Kette. Seit
+   dem 10.09.2026 ist das ein echtes Medium (Licht-Puffer), die Reihenfolge spielt dafuer keine Rolle mehr.
    Schatten wird das Spiegelbild: Farbig nachbelichten. Selbstleuchter (Feuer, Flammen, Partikel) bleiben Screen.
    Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
 ['licht','laser','strahlen','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+/* Wer leuchtet, schreibt seine Abstrahlung zusaetzlich in den Licht-Puffer, aus dem sich das Medium bedient. */
+['licht','laser','strahlen','feuer','strobe'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].leuchtet=true; });
 /* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie behalten ihre eigene
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten'; if(EFFEKTE.sicherung) EFFEKTE.sicherung.verr='nachbelichten';   /* Schwarz abgewedelt waere nichts - die Sicherung war unsichtbar (Tiefen-Check 10.09.2026) */
-['licht','laser','strahlen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was da ist \u2014 f\u00fcr sichtbare Strahlen im Raum Theaternebel davor in die Kette h\u00e4ngen.'; });
+['licht','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Theaternebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
 /* ---- RAUM (Caspar_D, 11.09.2026: "definiere zum zeitlichen Lichtverhalten jetzt mit einem Zusatzpanel das
    spatiale Verhalten der Lichtquelle"): Ursprung (wo das Geraet haengt), Ziel (wohin es leuchtet), Bewegung des
    Ziels (auch wie ein Moving Head: Fahrt mit Anlauf und Bremsen, Schritt auf den Schlag), Form des Flecks
@@ -26837,7 +26856,7 @@ const EGRUPPEN = [
   ['Anmutung', ['scanlines','bloom','nachzieh']],
   ['Partikel', ['partikel']],
   ['Glas', ['risse','beschlag','einschlag','tropfen']],
-  ['Entwürfe (WebGL)', ['wellen','kaustik','linse','dunst','flammen']],
+  ['Entwürfe (WebGL)', ['wellen','kaustik','linse','flammen']],
   ['Entwürfe (Leinwand)', ['strahlen','spiegel','korn','bloecke']]
 ];
 /* Gemeinsame Schalter für alle Pulse: Antrieb (Takt/Atem) + Invertieren */
@@ -26846,13 +26865,21 @@ const EGRUPPEN = [
   {k:'atempo',lbl:'Atem (s)',min:1,max:12,step:.5,def:4,when:e=>e.antrieb==='atem'},
   {k:'invert',tog:'invertieren',def:0}); });
 
-let STAPEL = [], nr = 0, soloId = null;
+let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false;   /* LICHTMAL: gerade wird in den Licht-Puffer gemalt */
 const aktiv = e => soloId ? (e.id===soloId) : e.an;
 function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:false, verr:T.verr||'ueber', staerke:(T.staerkeDef!=null?T.staerkeDef:1) };
   T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; }); return e; }
 /* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
    aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
 const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7] };
+/* Jede Nebelsorte bringt ihren Satz mit - gesetzt beim Wechsel, aber nur, solange die Werte noch die der
+   vorigen Sorte sind (eigene bleiben stehen). Wie bei den Partikel-Arten. */
+const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auftrieb:0,tempo:.4,grundlicht:.3},
+  schwaden:{skala:2,turbulenz:.45,lage:.7,dicke:.8,kante:.5,auftrieb:.12,tempo:.6,grundlicht:.45},
+  boden:{skala:2.5,turbulenz:.5,lage:.74,dicke:1.2,kante:.8,auftrieb:-.15,tempo:.4,grundlicht:.5} };
+function nebelSorte(e){ const alt=NEBEL_SORTEN[e._sorteVor||'schwaden']||NEBEL_SORTEN.schwaden, neu=NEBEL_SORTEN[e.sorte]||alt;
+  if(Object.keys(alt).every(k=>Math.abs(e[k]-alt[k])<1e-6)) Object.keys(neu).forEach(k=>{ e[k]=neu[k]; });
+  e._sorteVor=e.sorte; }
 function artFarben(e){ const alt=ART_FARBEN[e._artVor||'schnee']||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; } e._artVor=e.art; }
 function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
 /* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
@@ -26862,7 +26889,7 @@ const PRESETS={
  'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
  'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
  'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
- 'Licht im Nebel':()=>[E('nebel',{staerke:.5}),E('licht',{farbe:'#ffd9a0',rmGroesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
+ 'Licht im Nebel':()=>[E('nebel',{staerke:.45,sorte:'dunst',grundlicht:.25,lage:.55,dicke:1.3}),E('licht',{farbe:'#ffd9a0',rmGroesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
 };
 
@@ -26908,11 +26935,11 @@ function histoRechnen(){ try{ const w=140,hh=140,tc=document.createElement('canv
   for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],bb=d[i+2],lv=r*0.299+g*0.587+bb*0.114; H.r[Math.min(B-1,r*B/256|0)]++; H.g[Math.min(B-1,g*B/256|0)]++; H.b[Math.min(B-1,bb*B/256|0)]++; H.v[Math.min(B-1,lv*B/256|0)]++; } HISTO=H; }catch(e){ HISTO=null; } }
 
 const mk=()=>document.createElement('canvas');
-let oa=mk(),ob=mk(),oc=mk(),ores=mk(),okc=mk(),ovb=mk(); let VORB=vorbNeu();
-let ca=oa.getContext('2d'),cb=ob.getContext('2d'),cc=oc.getContext('2d'),cres=ores.getContext('2d'),ckc=okc.getContext('2d');
+let oa=mk(),ob=mk(),oc=mk(),ores=mk(),okc=mk(),ovb=mk(),olicht=mk(); let VORB=vorbNeu();
+let ca=oa.getContext('2d'),cb=ob.getContext('2d'),cc=oc.getContext('2d'),cres=ores.getContext('2d'),ckc=okc.getContext('2d'),clicht=olicht.getContext('2d');
 function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), [bw,bh]=(bereit?qMass(bild):[1200,1200]), sc=Math.min(f.width/bw,f.height/bh);
   const W=Math.max(1,Math.round(bw*sc)), H=Math.max(1,Math.round(bh*sc));
-  [lein,oa,ob,oc,ores,okc,ovb].forEach(c=>{ c.width=W; c.height=H; }); }
+  [lein,oa,ob,oc,ores,okc,ovb,olicht].forEach(c=>{ c.width=W; c.height=H; }); }
 
 const tri=ph=>4*Math.abs(((ph%1)+1)%1-0.5)-1;
 function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
@@ -26973,6 +27000,20 @@ function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t
 function mische(a,b,x){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*x)).join(',')+')'; }
 function rgba(hex,a){ const p=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); return 'rgba('+p[0]+','+p[1]+','+p[2]+','+Math.max(0,Math.min(1,a))+')'; }
+/* Rueckfall ohne WebGL: der Nebel als Leinwandbild. Er nimmt dabei kein Licht auf, das kann nur der Shader. */
+function nebelLeinwand(e,cx,t,W,H){ const so=e.sorte||'schwaden', f=skaliere(e.farbe, Math.min(1.4,(e.grundlicht==null?.45:e.grundlicht)+0.3)),
+    lage=(e.lage==null?.7:e.lage), dicke=(e.dicke==null?.8:e.dicke), tp=Math.max(0.05,e.tempo||.6),
+    hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
+  cx.save(); cx.globalCompositeOperation='source-over';
+  if(so==='boden'){ const y0=H*lage, g=cx.createLinearGradient(0,y0-H*0.05,0,Math.min(H,y0+H*dicke));
+    g.addColorStop(0,rgba(f,0)); g.addColorStop(0.18,rgba(f,0.8)); g.addColorStop(1,rgba(f,0.65)); cx.fillStyle=g; cx.fillRect(0,y0-H*0.05,W,H); }
+  else { const anz=(so==='dunst')?4:6;
+    for(let i=0;i<anz;i++){ const ph=t*tp*0.16+hs(i), x=W*(0.5+0.55*Math.sin(2*Math.PI*ph*0.9+i*1.7)+(e.wind||0)*0.1*Math.sin(ph)), y=H*(lage+0.15*Math.sin(2*Math.PI*ph*0.6+i*2.3)),
+        r=Math.min(W,H)*((so==='dunst')?1.15:0.55)*(0.6+0.7*hs(i+50))*Math.max(0.4,dicke);
+      const g=cx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,rgba(f,(so==='dunst')?0.26:0.40)); g.addColorStop(0.6,rgba(f,(so==='dunst')?0.14:0.13)); g.addColorStop(1,rgba(f,0));
+      cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } }
+  cx.restore(); }
+function skaliere(hex,x){ const p=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); return '#'+p.map(v=>('0'+Math.round(Math.max(0,Math.min(255,v*x))).toString(16)).slice(-2)).join(''); }
 function aufhellen(hex,x){ const p=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); return '#'+p.map(v=>('0'+Math.round(v+(255-v)*x).toString(16)).slice(-2)).join(''); }
 /* Farbstopp des Flecks: ueber Profil 1 (Hotspot) wird die Farbe heller, nicht nur deckender - bei voller Deckung waere der Hotspot sonst unsichtbar (Tiefen-Check). Ein Schatten wird nur dichter. */
 function fleckStop(e,farbe,a,f){ const ueber=Math.min(1,Math.max(0,f-1)/0.6); return rgba(e.typ==='schatten'?farbe:aufhellen(farbe,ueber*0.85), Math.min(1,a*f)); }
@@ -27061,7 +27102,7 @@ function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t);
     x.scale(rx,ry); const g=x.createRadialGradient(off,0,0,off,0,1-Math.abs(off)*0.2); for(let i=0;i<=12;i++){ const q=i/12; g.addColorStop(q, fleckStop(e,farbe,a,poolProfil(e,Math.min(0.999,q)))); }
     x.fillStyle=g; x.beginPath(); x.arc(0,0,1,0,7); x.fill(); x.restore(); }
   if(blende){ const mk=e._mk.getContext('2d'); blendeMaske(e,mk,W,H,Z,r,rot); x.globalCompositeOperation='destination-in'; x.drawImage(e._mk,0,0); x.globalCompositeOperation='source-over';
-    cx.globalCompositeOperation=VMODE[e.verr]||'source-over'; cx.globalAlpha=1; cx.drawImage(e._pc,0,0); } }
+    cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._pc,0,0); } }
 /* Profilgrafik in der Karte: links der Querschnitt des Flecks, rechts das Bild im Kleinen mit Ursprung, Ziel und Blende. */
 function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height, lw=Math.round(W*0.42); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(lw/2,0); x.lineTo(lw/2,H); x.moveTo(lw,0); x.lineTo(lw,H); x.stroke();
@@ -27073,7 +27114,7 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
   if(!k._pc){ k._pc=document.createElement('canvas'); k._mk=document.createElement('canvas'); e._vpc=k._pc; e._vmk=k._mk; }
   const tt=(e._lmT!=null?e._lmT:0); k.lmQuelle='stetig'; x.globalCompositeOperation=schatten?'multiply':'lighter'; lichtMalen(k,x,tt,Wv,Hv);
   const O=raumUrsprung(e,Wv,Hv); x.fillStyle='#fff'; x.beginPath(); x.arc(Math.max(4,Math.min(Wv-4,O[0])),Math.max(4,Math.min(Hv-4,O[1])),4,0,7); x.fill(); x.restore(); }
-function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source-over'; cx.globalAlpha=1;
+function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
     if(e.wachsen==='zeit') lim=Math.min(1,t/Math.max(1,e.dauer))*(R.maxOrd+1);
     else if(e.wachsen==='takt'){ let b=0; for(const s of DATA.schlaege){ if(s[0]<=t) b++; else break; } lim=b; }
@@ -27148,18 +27189,6 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=env(u)*zit; }
     amt*=Math.min(1,e.staerke);   /* Staerke IST die Tiefe des Einbruchs (Staerke-Regel) */
     if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
-  else if(e.typ==='nebel'){ /* Dichte 0 = kein Nebel (Caspar_D, 11.09.2026: "irgendwann muesste der Nebel bei Dichte 0 auf volle Durchsichtigkeit fallen") */
-    const a=Math.min(1,e.staerke); if(a<=0) return; const n=Math.max(1,e.schwaden|0||5), hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };   /* Staerke IST die Dichte (Staerke-Regel; 0 = kein Nebel) */
-    const het=(e.het==null?.5:e.het);
-    for(let i=0;i<n;i++){ const sp=1+het*(hs(i+90)-0.5)*1.2, ph=t*sp/e.tempo+hs(i), x=Wn*(0.5+0.6*Math.sin(2*Math.PI*ph*0.9+i*1.7)), y=Hn*(e.lage+0.18*Math.sin(2*Math.PI*ph*0.6+i*2.3)),
-        r=e.groesse*Math.min(Wn,Hn)*(1-0.55*het+1.1*het*hs(i+50)), op=a*(1-0.6*het+1.2*het*hs(i+70));
-      /* Turbulenz: die Schwade ist ein Buendel kleinerer Flecken, die um den Kern kreisen -
-         mehr, kleiner, schneller je hoeher; bei 0 der ruhige Fleck. */
-      const tu=(e.turbulenz==null?.5:e.turbulenz), K=1+Math.round(tu*8), opK=op;   /* verstreute Teilflecken ueberlagern sich kaum: volle Deckung je Fleck */
-      for(let j=0;j<K;j++){ const w1=hs(i*31+j+11), w2=hs(i*37+j+13), w3=hs(i*41+j+17);
-        const ang=2*Math.PI*(w1+t*(0.25+tu*0.75)*3*(0.5+w2)/e.tempo), dist=r*tu*0.75*(0.25+0.75*w3), sx=x+Math.cos(ang)*dist, sy=y+Math.sin(ang)*dist*0.6, sr=r*(1-0.65*tu)*(0.55+0.45*hs(i*43+j+19));
-        const grad=cx.createRadialGradient(sx,sy,0,sx,sy,sr); grad.addColorStop(0,rgba(e.farbe,0.28*opK)); grad.addColorStop(0.6,rgba(e.farbe,0.10*opK)); grad.addColorStop(1,rgba(e.farbe,0));
-        cx.fillStyle=grad; cx.beginPath(); cx.arc(sx,sy,sr,0,7); cx.fill(); } } }
   else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse, w=e.wind;
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa; const streu=(e.farbstreu==null?0:e.farbstreu);
     const farbeVon=(i,al)=>{ const x=streu*hs(i+6000); return 'rgba('+Math.round(pa[0]+(pb[0]-pa[0])*x)+','+Math.round(pa[1]+(pb[1]-pa[1])*x)+','+Math.round(pa[2]+(pb[2]-pa[2])*x)+','+al+')'; };
@@ -27201,8 +27230,8 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     cx.globalCompositeOperation=VMODE[e.verr]||'overlay'; cx.globalAlpha=a*0.7; cx.save(); cx.scale(e.koernung,e.koernung); cx.fillStyle=cx.createPattern(e._kt,'repeat'); cx.fillRect(0,0,Wn/e.koernung+1,Hn/e.koernung+1); cx.restore(); cx.globalAlpha=1; }
   else if(e.typ==='strobe'){ const q=e.lmQuelle||'stetig'; if(q==='stetig') return; if(q!=='hz'&&!(DATA&&DATA.schlaege&&DATA.schlaege.length)) return;   /* ohne Antrieb kein Flackern (Tiefen-Check: stetig gab einen Dauerschleier) */
     antriebWert(e,t); const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), ph=(e._lmRoh*2-1)*tiefe, amt=Math.min(1,e.staerke);   /* Welle -Tiefe..+Tiefe: >0 aufblitzen, <0 abdunkeln */
-    if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>0){ cx.globalCompositeOperation=VMODE[e.verr]||'lighter'; cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
-      else if((e.modus==='dunkel'||e.modus==='beides')&&ph<0){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(amt*(-ph)).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } } }
+    if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>0){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'lighter'); cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
+      else if(!LICHTMAL&&(e.modus==='dunkel'||e.modus==='beides')&&ph<0){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(amt*(-ph)).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } } }
   cx.globalCompositeOperation='source-over'; cx.globalAlpha=1;
 }
 
@@ -27214,6 +27243,8 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
   init(){ if(this.gl||this.tot) return !!this.gl; try{ this.cv=document.createElement('canvas'); this.gl=this.cv.getContext('webgl',{preserveDrawingBuffer:true,premultipliedAlpha:true,alpha:true}); }catch(e){}
     if(!this.gl){ this.tot=true; return false; } const gl=this.gl;
     const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW); this.vb=vb;
+    this.texL=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texL); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));   /* solange kein Licht-Puffer da ist: schwarz */
     this.tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true); return true; },
   noiseLaden(){ if(this.noise||this.laden) return; this.laden=true; fetch('/fremd/webgl-noise/noise3D.glsl').then(r=>r.ok?r.text():'').then(t=>{ this.noise=t||null; this.laden=false; }).catch(()=>{ this.laden=false; }); },
@@ -27224,14 +27255,18 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[typ]=null; return null; }
     pr._loc={}; this.prog[typ]=pr; return pr; },
   loc(pr,n){ if(pr._loc[n]===undefined) pr._loc[n]=this.gl.getUniformLocation(pr,n); return pr._loc[n]; },
-  run(e,srcCv,W,H,t){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; } const pr=this.programm(e.typ); if(!pr) return null; const gl=this.gl;
+  run(e,srcCv,W,H,t,lichtCv){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; } const pr=this.programm(e.typ); if(!pr) return null; const gl=this.gl;
     if(this.cv.width!==W||this.cv.height!==H){ this.cv.width=W; this.cv.height=H; } gl.viewport(0,0,W,H);
     gl.useProgram(pr); gl.bindBuffer(gl.ARRAY_BUFFER,this.vb); const ap=gl.getAttribLocation(pr,'a_pos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcCv);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.texL); if(lichtCv&&lichtCv.width>1) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,lichtCv);
+    gl.activeTexture(gl.TEXTURE0);
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
+    u('u_licht',l=>gl.uniform1i(l,1));
     u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
     u('u_takt',l=>gl.uniform1f(l, EFFEKTE[e.typ].params.some(p=>p.lm)?lmSchub(e,t):0));
     for(const p of EFFEKTE[e.typ].params){ const v=e[p.k]; if(p.farbe){ const c=[1,3,5].map(q=>parseInt(String(v).slice(q,q+2),16)/255); if(!c.some(isNaN)) u('u_'+p.k,l=>gl.uniform3f(l,c[0],c[1],c[2])); } else if(typeof v==='number') u('u_'+p.k,l=>gl.uniform1f(l,v)); }
+    const zus=EFFEKTE[e.typ].glZusatz; if(zus){ const o=zus(e); for(const k of Object.keys(o)) u(k,l=>gl.uniform1f(l,o[k])); }
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
 const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
 const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
@@ -27251,13 +27286,28 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
   float inside=step(0.0,ug.x)*step(ug.x,1.0)*step(0.0,ug.y)*step(ug.y,1.0);
   vec3 col=vec3(texture2D(u_tex,clamp(ur,0.0,1.0)).r, texture2D(u_tex,clamp(ug,0.0,1.0)).g, texture2D(u_tex,clamp(ub,0.0,1.0)).b);
   gl_FragColor=vec4(col*inside, 1.0); }`,
-  dunst:`uniform float u_skala,u_tempo,u_lage,u_turbulenz; uniform vec3 u_farbe;
-void main(){ vec4 c=texture2D(u_tex,v_uv);
-  /* Bewegung = seitliches Ziehen (x) + Wabern (Zeitachse z); feine Oktaven wabern schneller, sonst wirkt es starr. */
-  vec3 p=vec3(v_uv.x*u_skala + u_t*u_tempo*0.9, v_uv.y*u_skala*0.6 + u_t*u_tempo*0.15, u_t*u_tempo*1.2);
-  float a=0.5, f=0.0, g=mix(0.35,0.62,u_turbulenz); vec3 q=p; for(int i=0;i<5;i++){ f+=a*snoise(q); q=q*2.02+vec3(1.7,9.2,0.3); q.z+=u_t*u_tempo*0.8; a*=g; }
-  float hoehe=pow(max(0.001,1.0-v_uv.y), 3.0*u_lage); float d=clamp((f*0.5+0.5)*hoehe, 0.0, 1.0);   /* Lage 0 = ueberall gleich; Staerke ist die Dichte (Tiefen-Check) */
-  gl_FragColor=vec4(mix(c.rgb,u_farbe,d), c.a); }`,
+  nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_streuung,u_grundlicht,u_sorte,u_sogX,u_sogY; uniform vec3 u_farbe; uniform sampler2D u_licht;
+float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.34,0.64,u_turbulenz); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
+void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
+  /* Stroemung: gleichfoermiger Zug aus Wind und Auftrieb (starr, darf unbegrenzt laufen) plus Sog zur Absaugung.
+     Der Sog haengt vom Ort ab und wuerde das Feld endlos verschmieren - darum zwei Phasen, die sich abloesen. */
+  vec2 zug=vec2(u_wind,u_auftrieb)*u_t*0.09; vec2 sv=vec2(0.0);
+  /* Lineares Sogfeld: die Verschiebung waechst mit dem Abstand zum Abzug und wird am Abzug selbst null.
+     Ein 1/r-Feld waere physikalischer, reisst aber dort Schlieren durch die halbe Leinwand (Labor 10.09.2026). */
+  if(u_sogStaerke>0.001) sv=(vec2(u_sogX,u_sogY)-uv)*u_sogStaerke*0.35;
+  float ph=fract(u_t*0.11), w=abs(ph*2.0-1.0); vec3 zt=vec3(0.0,0.0,u_t*u_tempo*0.55);
+  float nn=mix(wolke(vec3((uv-zug-sv*ph)*u_skala,0.0)+zt), wolke(vec3((uv-zug-sv*fract(ph+0.5))*u_skala,0.0)+zt), w);
+  float g=clamp(nn*0.5+0.5,0.0,1.0);
+  float dz=(yy-u_lage)/max(0.08,u_dicke*0.8), prof=exp(-dz*dz), d;
+  if(u_sorte<0.5) d=mix(0.82,g,0.45)*prof;                                   /* Dunst: fast gleichmaessig */
+  else if(u_sorte<1.5){ float k=0.52-0.30*(1.0-u_kante); d=smoothstep(k,k+0.34-0.26*u_kante,g)*prof; }   /* Schwaden: Ballen mit Rand */
+  else { float rip=snoise(vec3((uv.x-u_wind*u_t*0.09)*u_skala*0.8, 4.3, u_t*u_tempo*0.3))*0.07*(0.3+u_kante);
+    float top=u_lage+rip, weich=mix(0.22,0.012,u_kante);
+    d=smoothstep(top-weich,top+weich,yy)*(1.0-smoothstep(top+u_dicke,top+u_dicke+0.3,yy))*(0.55+0.45*g); }   /* Bodennebel: Schicht mit Kante */
+  d=clamp(d,0.0,1.0);
+  /* Nebel leuchtet nicht selbst: die Farbe wird mit dem Licht multipliziert, das an dieser Stelle ankommt. */
+  vec3 L=texture2D(u_licht,uv).rgb;
+  gl_FragColor=vec4(mix(c.rgb, u_farbe*(u_grundlicht+L*u_streuung), d), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
   float base=1.0-u_boden; float h=(v_uv.y-base)/max(0.05,u_hoehe*(1.0+0.5*u_takt));
@@ -27299,15 +27349,9 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
           const sh=Math.max(1,Math.abs(dx)*0.5)*(dx<0?-1:1); cres.fillStyle='#000'; cres.fillRect(bx+dx-Math.abs(sh),by,bw+Math.abs(sh)*2,bh);
           for(const [mask,sv] of [['#ff0000',sh],['#00ffff',-sh]]){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,bx,by,bw,bh,bx+dx+sv,by,bw,bh); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(bx+dx+sv,by,bw,bh); frisch(ckc); cres.globalCompositeOperation='lighter'; cres.drawImage(okc,0,0); cres.globalCompositeOperation='source-over'; } }
         else cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh); } } }
-  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t); if(g) cres.drawImage(g,0,0); }
+  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,EFFEKTE[e.typ].medium?olicht:null); if(g) cres.drawImage(g,0,0);
+    else if(EFFEKTE[e.typ].medium){ cres.drawImage(srcCv,0,0); nebelLeinwand(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
   else if(e.typ==='bloom'){ cres.filter='blur('+Math.round(e.radius)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
-}
-function postKette(posts,t,Wn,Hn){ let sCv=oa;
-  for(const e of posts){ const dCv=(sCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
-    ergebnis(e,sCv,t,Wn,Hn);
-    frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(sCv,0,0); dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[EFFEKTE[e.typ].verr]||'source-over'; dCx.globalAlpha=Math.min(1,e.staerke*((EFFEKTE[e.typ].params.some(p=>p.lm)&&!EFFEKTE[e.typ].lmNurSchub)?antriebWert(e,t):1));   /* Flammen: der Antrieb hebt nur die Hoehe, nicht die Deckung (Tiefen-Check) */ dCx.drawImage(ores,0,0); dCx.globalAlpha=1; dCx.globalCompositeOperation='source-over';
-    sCv=dCv; }
-  return sCv;
 }
 
 
@@ -27413,6 +27457,7 @@ function renderStapel(){
       e[k]= (inp.type==='range') ? +inp.value : inp.value;
       const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
       if(p.sel&&k==='art') artFarben(e);
+      if(p.sel&&k==='sorte') nebelSorte(e);
       if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm')) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
@@ -27570,12 +27615,27 @@ function zeichneFrame(t){
       else if(e.typ==='saettigung') lege(e,'saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')',a);
       else if(e.typ==='helligkeit') lege(e,'brightness('+(e.invert?(1-0.6*e.wucht):(1+1.2*e.wucht)).toFixed(3)+')',a); }
     ca.restore(); }
-  for(const e of STAPEL){ if(!aktiv(e))continue; if(EFFEKTE[e.typ].art!=='mal')continue;
-    try{ malen(e,ca,t,Wn,Hn); }catch(x){ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } frisch(ca); } }
   frisch(ca);
-  const posts=STAPEL.filter(e=>aktiv(e)&&(EFFEKTE[e.typ].art==='post'||EFFEKTE[e.typ].art==='gl'));
-  const finalCv = posts.length ? postKette(posts,t,Wn,Hn) : oa;
-  frisch(g); g.clearRect(0,0,Wn,Hn); g.drawImage(finalCv,0,0);
+  /* MEDIUM: der Nebel leuchtet nicht selbst, er nimmt Licht auf. Alle aktiven Leuchten malen ihre Abstrahlung
+     zusaetzlich additiv auf Schwarz in den Licht-Puffer; der Shader multipliziert seine Dichte damit. Das gilt
+     fuer alle Leuchten der Kette, gleich wo sie stehen - es ist ein Raum, keine Stapelung. */
+  const medium=STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].medium);
+  if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true;
+    try{ for(const e of STAPEL){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
+    finally { LICHTMAL=false; } }
+  /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen
+     sie gegen ihr Ergebnis. Frueher sanken post und gl immer ans Ende - die Oberflaeche versprach etwas anderes. */
+  let curCv=oa, curCx=ca;
+  const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } };
+  for(const e of STAPEL){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
+    if(T.art==='mal'){ try{ malen(e,curCx,t,Wn,Hn); }catch(x){ schief(e,x); } frisch(curCx); }
+    else if(T.art==='post'||T.art==='gl'){ try{ ergebnis(e,curCv,t,Wn,Hn); }catch(x){ schief(e,x); continue; }
+      const dCv=(curCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
+      frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(curCv,0,0);
+      dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[T.verr]||'source-over';
+      dCx.globalAlpha=Math.min(1,e.staerke*((T.params.some(p=>p.lm)&&!T.lmNurSchub)?antriebWert(e,t):1));
+      dCx.drawImage(ores,0,0); frisch(dCx); curCv=dCv; curCx=dCx; } }
+  frisch(g); g.clearRect(0,0,Wn,Hn); g.drawImage(curCv,0,0);
 }
 
 
@@ -27636,12 +27696,22 @@ function zeichneFrame(t){
     if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, alt:!(r.fassung>=2)}; } return {grund:null, effekte:[], leer:true}; }
   /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
      verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
-  function effektAusRezept(r,alt){ if(!r||!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false;
+  /* Theaternebel und Dunst sind seit dem 10.09.2026 EIN Effekt mit drei Sorten. Alte Ablagen wandern hinueber:
+     Dunst wird Sorte Dunst, der alte Leinwand-Nebel wird Sorte Schwaden; Groesse und Tempo werden umgerechnet. */
+  function nebelAusAlt(r){ const o=Object.assign({},r); o._herkunft=r.typ;
+    if(r.typ==='nebel'&&typeof r.dichte==='number'&&r.dichte>1) o.dichte=0.7;   /* vor dem 11.09.2026 war 'dichte' die Anzahl der Schwaden */
+    if(r.typ==='dunst'){ o.typ='nebel'; o.sorte='dunst'; o.kante=0;
+      if(typeof r.lage==='number'){ o.lage=0.5+0.3*r.lage; o.dicke=1.5-0.8*r.lage; } }
+    else { o.sorte='schwaden';
+      if(typeof r.groesse==='number') o.skala=Math.max(1,Math.min(10,6.5-4*r.groesse));
+      if(typeof r.tempo==='number'&&r.tempo>5) o.tempo=Math.max(.05,Math.min(2,12/r.tempo)); }
+    ['schwaden','het','groesse'].forEach(k=>{ delete o[k]; }); return o; }
+  function effektAusRezept(r,alt){ if(!r||!r.typ) return null;
+    if(r.typ==='dunst'||(r.typ==='nebel'&&r.sorte==null)) r=nebelAusAlt(r);
+    if(!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false;
     /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
     if(EFFEKTE[r.typ].params.some(p=>p.lm)&&r.lmQuelle==null){ if(r.typ==='strobe'){ e.lmQuelle=r.takt?'takt':'hz'; e.lmForm=r.takt?'peak_an':'rechteck'; if(r.frequenz>0) e.lmHz=r.frequenz; e.lmTiefe=1; }
       else if(r.takt!=null){ e.lmQuelle=r.takt?'takt':'stetig'; e.lmForm='rampe_ab'; } delete e.takt; delete e.frequenz; }
-    /* Theaternebel vor dem 11.09.2026: 'dichte' war die Anzahl der Schwaden (1..12). */
-    if(r.typ==='nebel'&&r.schwaden==null&&typeof r.dichte==='number'&&r.dichte>1){ e.schwaden=Math.round(r.dichte); e.dichte=0.7; }
     /* Scheinwerfer/Schatten vor dem Raum-Block: form/groesse/weichheit/fuehrung/... in den Raum uebersetzen. */
     if((r.typ==='licht'||r.typ==='schatten')&&r.rmForm==null){
       if(r.form) e.rmForm=r.form==='laeng'?'ellipse':r.form==='strahl'?'kegel':'kreis'; if(r.groesse!=null) e.rmGroesse=r.groesse; if(r.streckung!=null) e.rmStreckung=r.streckung; if(r.weichheit!=null) e.rmRand=1-r.weichheit;
@@ -27653,12 +27723,12 @@ function zeichneFrame(t){
     { const T=EFFEKTE[r.typ];
       if(['schaerfe','kontrast','saettigung','farbton'].includes(r.typ)&&typeof r.schlag==='number'){ e.staerke*=r.schlag; } delete e.schlag;
       if((r.typ==='strobe'||r.typ==='sicherung')&&typeof r.tiefe==='number'){ e.staerke*=r.tiefe; delete e.tiefe; }
-      if(r.typ==='nebel'&&typeof e.dichte==='number'){ e.staerke*=Math.min(1,e.dichte/0.7); delete e.dichte; }
-      if(r.typ==='dunst'&&typeof e.dichte==='number'){ e.staerke*=Math.min(1,e.dichte); delete e.dichte; }
+      if(r.typ==='nebel'&&typeof e.dichte==='number'){ e.staerke*=Math.min(1, r._herkunft==='dunst' ? e.dichte : e.dichte/0.7); delete e.dichte; }
       if(r.typ==='beschlag'&&typeof e.dichte==='number'){ e.staerke*=e.dichte; delete e.dichte; }
       if(T.ohneStaerke){ const s=(typeof r.staerke==='number')?r.staerke:1; if(s!==1){ if(r.typ==='fahrt'){ e.zoom=1-(1-e.zoom)*s; e.weite*=s; } else if(r.typ==='puls') e.wucht*=s; else if(r.typ==='kippen') e.neigung*=s; } e.staerke=1; }
       e.staerke=Math.max(0,Math.min(1,+e.staerke||0));
       if((T.art==='post'||T.art==='gl'||T.art==='grund')&&!T.verrFrei) e.verr='ueber';
+      if(r.typ==='nebel') e._sorteVor=e.sorte;   /* sonst vergleicht nebelSorte nach dem Laden gegen die falsche Sorte */
       if(r.typ==='sicherung'&&r.verr==='abwedeln') e.verr='nachbelichten';   /* Ablagen aus der Abwedeln-Zeit: Schwarz abgewedelt ist nichts */
       if(alt&&r.typ==='farbton'&&r.invert){ e.winkel=-e.winkel; e.invert=0; } }   /* invert hiess bis Fassung 1 nur: andere Richtung */
     return e; }
@@ -27763,8 +27833,8 @@ function zeichneFrame(t){
      sie umgehaengt und danach fuers Studio wieder zurueckgestellt. Zeit:
      der Player, wenn er diesen Titel spielt (eine Audioquelle). */
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
-  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ovb,VORB,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
-  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ovb,VORB,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
+  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ovb,olicht,VORB,ca,cb,cc,cres,ckc,clicht,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
+  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ovb,olicht,VORB,ca,cb,cc,cres,ckc,clicht,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
   async function songDaten(id){ if(songCache[id]) return songCache[id];
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
@@ -27774,8 +27844,8 @@ function zeichneFrame(t){
   const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
   function clipAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-clip')) return;
     const cv=document.createElement('canvas'); cv.className='tbs-clip'; kasten.appendChild(cv);
-    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
-    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d');
+    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
+    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
     clips.push(m);
     songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.VORB=vorbAus(d.vorbereitung); m.STAPEL=d.rezept.map(r=>effektAusRezept(r,d.alt)).filter(Boolean);
       const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
@@ -27783,7 +27853,7 @@ function zeichneFrame(t){
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
         /* Die Leinwand liegt ganz im Kasten (object-fit: contain): so gross, dass das eingepasste Bild volle Schaerfe hat; lange Seite hoechstens 960 px. */
         const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk); const deckel=960/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
-        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true;
+        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true;
         /* Auf der Buehne liegt unter der Leinwand das Standbild (img.motiv, cover.jpg); es wird verdeckt, solange der
            Maler malt - sonst schaut es neben einer schmaleren Quelle heraus. Den Rahmen der Buehne ruehrt der Maler nicht an. */
         try{ if(kasten.classList.contains('bart')){ const mo=kasten.querySelector('img.motiv'); if(mo){ m.motiv=mo; mo.style.visibility='hidden'; } } }catch(e){} };
@@ -27805,7 +27875,6 @@ function zeichneFrame(t){
   function clipNeu(id){ delete songCache[id]; clips.filter(m=>m.songId===id).forEach(m=>clipAus(m.kasten)); }
   return { oeffnen, schliessen, clipAn, clipAus, clipNeu };
 })();
-
 /* <<< Effektclip-Studio (tbs-modul.js) */
 </script>
 </body>
