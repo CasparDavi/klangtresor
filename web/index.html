@@ -27887,7 +27887,7 @@ function zeichneFrame(t){
     /* Der Kodierer wird mit den letzten ein bis zwei Bildern nicht mehr fertig, bevor die Aufnahme endet.
        Fuer den Loop muss aber genau [0, L) drin sein. Das Haus schneidet darum mit ffmpeg auf die genaue
        Bildzahl. Antwortet es nicht - etwa im Pruefstand ohne Hausserver -, bleibt die Rohaufnahme. */
-    if(endung==='mp4'){ try{ const a=await fetch('/api/effektclip-schnitt?bilder='+N+'&rate='+BILDRATE,{method:'POST',headers:{'Content-Type':'video/mp4'},body:blob});
+    if(endung==='mp4'){ try{ const a=await fetch('/api/effektclip-schnitt?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),{method:'POST',headers:{'Content-Type':'video/mp4'},body:blob});
       if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000){ blob=b2; geschnitten=true; } } }catch(x){} }
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();

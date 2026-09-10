@@ -35,6 +35,16 @@ const https = require('node:https');
 const K     = require('./katalog.js');
 
 const WURZEL = path.join(__dirname, '..');
+
+/* Ausgabebuch der Effektclips: was das Studio selbst erzeugt hat. Siehe bin/laden.js. */
+function eigenerClip(songId, url){
+  if (!songId || !url) return false;
+  try {
+    const b = JSON.parse(require('node:fs').readFileSync(require('node:path').join(WURZEL, 'library', 'effektclips.json'), 'utf8'));
+    const e = b && b[songId];
+    return Array.isArray(e) && e.some(x => x.sunoUrl && x.sunoUrl === url);
+  } catch (e) { return false; }
+}
 const ROH    = path.join(WURZEL, 'library', 'roh');
 
 /* Ohne Browserkennung antwortet Sunos CDN teilweise gar nicht -
@@ -244,7 +254,10 @@ function juengsteErnte(){
     if (stilJetzt !== (a.stilPrompt||'')) inhalt.push('Stil');
     if (!!c.is_public !== !!a.oeffentlich) inhalt.push('Sichtbarkeit');
     if ((c.image_large_url||c.image_url||'') !== (a.bildUrl||'')) inhalt.push('Cover');
-    if ((c.video_cover_url||null) !== (a.videoCoverUrl||null)) inhalt.push('Video-Artwork');
+    /* Ein Video-Artwork, das aus unserem eigenen Studio stammt und von Hand zu Suno hochgeladen
+       wurde, ist kein Neuzugang (Caspar_D, 11.09.2026). Erkannt wird es am Ausgabebuch, sobald der
+       Medienlauf es einmal nachgemessen hat; davor meldet es sich einmal, und das ist richtig so. */
+    if ((c.video_cover_url||null) !== (a.videoCoverUrl||null) && !eigenerClip(a.id, c.video_cover_url)) inhalt.push('Video-Artwork');
 
     if (inhalt.length){ geaendert.push({ c, was: inhalt }); continue; }
 

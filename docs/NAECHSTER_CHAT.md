@@ -2907,3 +2907,32 @@ unter dem ersten Buchstaben. Ohne Platte, anders als das Favicon — das braucht
 fremdem Grund sitzt. Der Videoexport nimmt weiter die Fassung mit Platte, aus demselben Grund. Der Prüfstand hat dasselbe Zeichen im Kopf, damit sich Marke und
 Export dort prüfen lassen, und einen Schalter `?schnitt=<Port>`, um den Schnitt gegen ein zweites Haus zu
 testen.
+
+## Eigene Effektclips kommen nicht zurück ins Archiv (11.09.2026)
+Caspar_D: „jetzt kann ich mit KlangTresor Videos machen und sie auf suno hochladen, dummerweise erkennt
+KlangTresor beim Verbinden mit Suno seine eigenen Videos als neu und will sie gleich ins Archiv werfen."
+
+Ein selbstgemachter Header hilft nicht: wir schicken Header beim **Abholen**, die Datei liegt bei Suno.
+Eine Marke *in* der Datei wäre möglich, überlebt aber vermutlich Sunos Neukodierung nicht. Entschieden
+wurde stattdessen die Buchführung, und die Grundsatzfrage hat Jörg so beantwortet: **was wir jederzeit
+neu erzeugen können, archivieren wir nicht.** Das ist dieselbe Linie wie beim Effektclip selbst — Rezept
+statt gebackenem Video.
+
+**Ausgabebuch `library/effektclips.json`.** Der Schnitt-Endpunkt schreibt je Titel mit, was er ausgegeben
+hat: Zeit, Sekunden, Bildzahl, Bytes. Ohne Titel-Kennung wird nichts gebucht, dann kann auch nichts
+fälschlich unterdrückt werden.
+
+**Erkennung im Medienlauf (`bin/laden.js`).** Steht für einen Titel etwas im Buch, wird das geänderte
+Video-Artwork einmal geholt, mit ffprobe gemessen und dann verworfen oder behalten. Geraten wird nicht.
+Das starke Merkmal ist die **Länge**: unsere Clips sind ganze Takte genau dieses Liedes, auf ein Bild
+gerundet, also krumme Werte wie 9,767 s; die Toleranz ist 0,05 s. Wird es erkannt, merkt sich das Buch die
+Suno-Adresse, und beim nächsten Lauf wird gar nicht erst geladen. Neues Zeichen in der Laufzeile: `E`,
+dazu eine Zeile in der Bilanz. Ohne ffprobe fällt die Erkennung aus und es wird archiviert wie bisher.
+
+**Im Abgleich (`bin/sammeln.js`)** meldet sich ein erkanntes Video-Artwork nicht mehr als Änderung. Beim
+allerersten Mal meldet es sich noch, weil es da noch niemand gemessen hat — das ist richtig so.
+
+Geprüft: Ausgabebuch wird geschrieben (9,7667 s gebucht, Datei 9,766016 s), unser Clip wird als „eigen"
+erkannt und die Adresse gemerkt, ein Video anderer Länge am selben Titel bleibt „fremd", ein Titel ohne
+Eintrag bleibt „fremd". **Grenze:** lädt Jörg einen Clip bei einem *anderen* Titel hoch als dem, aus dem er
+stammt, wird er archiviert. Das ist die sichere Richtung.

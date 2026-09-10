@@ -1366,6 +1366,19 @@ const server = http.createServer((req, res) => {
           '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p',
           '-movflags', '+faststart', aus], { timeout: 120000 });
         const daten = fsx.readFileSync(aus);
+        /* Ausgabebuch: was wir erzeugt haben, damit der Medienlauf es spaeter wiedererkennt, wenn es
+           von Suno zurueckkaeme. Was wir jederzeit neu malen koennen, wandert nicht ins Archiv
+           (Caspar_D, 11.09.2026). Ohne Titel-Kennung wird nichts gebucht - dann kann auch nichts
+           faelschlich unterdrueckt werden. */
+        const id = String(u.searchParams.get('id') || '').trim();
+        if (id) {
+          const buch = pfad.join(WURZEL, 'library', 'effektclips.json');
+          let b = {}; try { b = JSON.parse(fsx.readFileSync(buch, 'utf8')) || {}; } catch (e) {}
+          if (!Array.isArray(b[id])) b[id] = [];
+          b[id] = b[id].filter(x => Math.abs((x.sekunden || 0) - bilder / rate) > 0.001).slice(-9);
+          b[id].push({ zeit: new Date().toISOString(), sekunden: +(bilder / rate).toFixed(4), bilder, bytes: daten.length });
+          try { fsx.writeFileSync(buch, JSON.stringify(b, null, 1)); } catch (e) {}
+        }
         res.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': daten.length, 'Cache-Control': 'no-store' });
         res.end(daten);
       } catch (e) {

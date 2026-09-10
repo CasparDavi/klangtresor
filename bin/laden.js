@@ -75,6 +75,50 @@ const schlaf = (ms) => new Promise(r => setTimeout(r, ms));
 
 function mb(bytes) { return (bytes / 1048576).toFixed(1) + ' MB'; }
 
+/* ---- EIGENE EFFEKTCLIPS NICHT ZURUECKHOLEN ----------------------------------------------------
+   Caspar_D, 11.09.2026: "jetzt kann ich mit KlangTresor Videos machen und sie auf suno hochladen,
+   dummerweise erkennt KlangTresor beim Verbinden mit Suno seine eigenen Videos als neu und will sie
+   gleich ins Archiv werfen." Ein Clip, den das Studio erzeugt hat, ist kein Suno-Material: er steht
+   als Rezept beim Titel und laesst sich jederzeit neu malen. Was wir jederzeit neu erzeugen koennen,
+   archivieren wir nicht (Caspar_Ds Entscheidung, 11.09.2026).
+
+   Erkannt wird er ueber das Ausgabebuch `library/effektclips.json`, das der Server beim Ausgeben
+   schreibt: je Titel Laenge, Bildzahl und Groesse. Die Laenge ist das starke Merkmal - unsere Clips
+   sind ganze Takte GENAU DIESES Liedes, auf ein Bild gerundet, also krumme Werte wie 9,767 s.
+   Geraten wird nicht: die geaenderte Datei wird einmal geholt, gemessen und dann verworfen oder
+   behalten. Die Adresse des erkannten Videos merkt sich das Buch, damit beim naechsten Lauf gar
+   nicht erst geladen wird. */
+const AUSGABEBUCH = path.join(WURZEL, 'library', 'effektclips.json');
+function ausgabebuch(){ try { return JSON.parse(fs.readFileSync(AUSGABEBUCH, 'utf8')) || {}; } catch (e) { return {}; } }
+function ausgabebuchSchreiben(b){ try { fs.writeFileSync(AUSGABEBUCH, JSON.stringify(b, null, 1)); } catch (e) {} }
+/* Laenge in Sekunden, oder null. Ohne ffprobe faellt die Erkennung aus - dann wird archiviert wie bisher. */
+function videoLaenge(datei){
+  try {
+    const t = require('node:child_process').execFileSync('ffprobe',
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nk=1:nw=1', datei],
+      { encoding: 'utf8', timeout: 20000 }).trim();
+    const z = parseFloat(t); return isFinite(z) && z > 0 ? z : null;
+  } catch (e) { return null; }
+}
+/* Ist dieses Video-Artwork unser eigener Clip? Antwort: 'eigen' | 'fremd' | 'unklar' */
+/* Schon einmal als eigener Clip erkannt? Dann gar nicht erst holen. */
+function schonErkannt(songId, url){
+  const e = ausgabebuch()[songId];
+  return Array.isArray(e) && e.some(x => x.sunoUrl && x.sunoUrl === url);
+}
+function eigenerClip(songId, url, datei){
+  const buch = ausgabebuch(), eintraege = buch[songId];
+  if (!Array.isArray(eintraege) || !eintraege.length) return 'fremd';
+  if (eintraege.some(e => e.sunoUrl && e.sunoUrl === url)) return 'eigen';
+  const dauer = videoLaenge(datei);
+  if (dauer == null) return 'unklar';
+  const treffer = eintraege.find(e => Math.abs((e.sekunden || 0) - dauer) <= 0.05);
+  if (!treffer) return 'fremd';
+  treffer.sunoUrl = url; treffer.erkannt = new Date().toISOString();
+  ausgabebuchSchreiben(buch);
+  return 'eigen';
+}
+
 /**
  * Lädt eine URL nach `ziel`. Bricht der Download ab, bleibt eine
  * .teil-Datei liegen; beim nächsten Lauf wird ab dort fortgesetzt.
@@ -155,11 +199,11 @@ async function ladeDatei(url, ziel) {
 
   console.log(`${liste.length} Songs zu prüfen`);
   console.log(NUR_OEFF ? '(nur veröffentlichte)' : '(alle)');
-  console.log('Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  ! = Fehler');
+  console.log('Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  E = eigener Effektclip, nicht archiviert,  ! = Fehler');
   if (MIT_LYRICVIDEO) console.log("(mit Sunos Lyric-Videos)");
   console.log('');
 
-  const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0 };
+  const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0 };
   let bytes = 0;
   const start = Date.now();
 
@@ -172,8 +216,10 @@ async function ladeDatei(url, ziel) {
       ['cover.jpg',  s.bildUrl],
       ['audio.mp3',  s.audioUrl],
     ];
-    // Eigenes Video-Artwork - gibt es nur bei einem Teil der Songs
-    if (s.videoCoverUrl) aufgaben.push(['artwork.mp4', s.videoCoverUrl]);
+    /* Eigenes Video-Artwork - gibt es nur bei einem Teil der Songs. Ist es ein Clip aus unserem
+       eigenen Studio, wird es gar nicht erst geholt (siehe oben). */
+    if (s.videoCoverUrl && !schonErkannt(s.id, s.videoCoverUrl)) aufgaben.push(['artwork.mp4', s.videoCoverUrl]);
+    else if (s.videoCoverUrl) zaehler.eigen++;
     // Sunos Lyric-Video nur auf ausdrücklichen Wunsch
     if (MIT_LYRICVIDEO) aufgaben.push(['video.mp4', s.videoUrl]);
 
@@ -186,6 +232,15 @@ async function ladeDatei(url, ziel) {
          das eine ist harmlos, das andere nicht, und in der Zeile sahen sie
          gleich aus (Caspar_D, 23.08.2026). */
       ergebnisse.push({ geladen: 'G', vorhanden: 'V', fehlt: '·', fehler: '!' }[e] || '?');
+      /* Frisch geholtes Video-Artwork nachmessen: ist es unser eigener Clip, kommt es wieder weg. */
+      if (e === 'geladen' && name === 'artwork.mp4' && fs.existsSync(ziel)) {
+        const urteil = eigenerClip(s.id, s.videoCoverUrl, ziel);
+        if (urteil === 'eigen') {
+          fs.unlinkSync(ziel); zaehler.geladen--; zaehler.eigen++;
+          ergebnisse[ergebnisse.length - 1] = 'E';
+          await schlaf(PAUSE_MS); continue;
+        }
+      }
       if (e === 'geladen' && fs.existsSync(ziel)) bytes += fs.statSync(ziel).size;
       if (e === 'geladen') await schlaf(PAUSE_MS);
     }
@@ -258,6 +313,7 @@ async function ladeDatei(url, ziel) {
   console.log('\n--- fertig ---');
   console.log(`neu geladen:   ${zaehler.geladen}  (${mb(bytes)})`);
   console.log(`schon da:      ${zaehler.vorhanden}`);
+  if (zaehler.eigen) console.log(`eigene Clips:  ${zaehler.eigen} — auf Suno hochgeladen, nicht archiviert (Rezept und Quelle liegen beim Titel)`);
   console.log(`nicht vorhanden:${zaehler.fehlt}   (z.B. Songs ohne Video)`);
   console.log(`Fehler:        ${zaehler.fehler}`);
   console.log(`Dauer:         ${Math.floor(dauer/60)} min ${dauer%60} s`);
