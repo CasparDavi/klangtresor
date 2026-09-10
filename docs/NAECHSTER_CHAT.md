@@ -2458,3 +2458,10 @@ Quelle darf starr oder bewegt sein, kein Effekt auf Effekt) · (2) hinzugefügte
   Kreis, Wechsel an Abschnittsgrenzen des Lieds, sonst alle acht Takte. Blättern von Hand setzt auf „eines“.
   Die Wahl gilt für die Bühnensitzung (über Titelwechsel), wird nicht gespeichert; beim nächsten Start Vorgabe.
 Bauschritt 3 heißt damit: Vorgaberegel + Bühnenleiste (eines/alle/blättern).
+- 11.09. vormittags, Labor: Pult zweigeteilt — Kasten **Quelle** (‹ Seite › S G W, „worauf das Rezept malt“) und
+  Kasten **Effektkette** (Preset, Würfeln/Grundzustand/Alle an/Einklappen, Einhängen, Karten); **Rezept** als
+  klebender Fuß mit Sichern/Lösen, Status und Hinweis „Rezept = Quelle + Effektkette“. Rezeptschlüssel heißt
+  jetzt `quelle` (Code: `grund` = Malgrund; alte Laborrezepte mit `grund` werden noch gelesen). Dunst bewegt sich
+  sichtbar (Drift + Wabern, Tempo-Vorgabe 0,5, bis 2). Karte duplizieren (⧉). Jörgs Wunschliste „Glas“ offen:
+  Risse (auch wachsend), Beschlag/Dampf, Tropfen-Einschlag, Tropfen laufen herunter — als Entwürfe möglich
+  (Leinwand für Risse/Tropfenbahnen, WebGL-Brechung wie bei Wellen für Glas und Tropfenlinsen).
