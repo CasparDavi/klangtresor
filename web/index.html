@@ -2926,6 +2926,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
   cursor:pointer;font:600 12.5px system-ui;border:1px solid}
 #morgenja{border-color:#16be5c;background:#16be5c22;color:#16be5c}
 #morgennein{border-color:#5a5a60;background:transparent;color:#9a9aa0}
+/* >>> Titelbild-Studio (tbs.css) */
 /* ---- Titelbild-Studio: Overlay wie #wer, Panel wie im Scratch (hausrein) ---- */
 #tbs{position:fixed;inset:0;z-index:84;background:rgba(0,0,0,.6);display:grid;place-items:center}
 #tbs[hidden]{display:none}
@@ -3028,6 +3029,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-werkzeuge .tbs-knopf{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:14px;line-height:1;flex:0 0 auto;padding:0}
 #tbs .tbs-werkzeuge .tbs-knopf:hover{border-color:var(--akzent)}
 
+/* <<< Titelbild-Studio (tbs.css) */
 </style>
 
 <!-- Reaktionen zu einem Song: wer hat geliked, wer kommentiert, mit den
@@ -26387,6 +26389,7 @@ start();
 /* Gleich beim Laden nachsehen, ob der Server arbeitet - sonst steht der rote
    Knopf still, obwohl im Hintergrund ein Lauf unterwegs ist (23.08.2026). */
 morgenKnopfPruefen();
+/* >>> Titelbild-Studio (tbs-modul.js) */
 
 /* ---- Titelbild-Studio ----------------------------------------------
    Das dynamische Titelbild: ein REZEPT aus Effekten - Vorrat an Typen,
@@ -27120,6 +27123,7 @@ function zeichneFrame(t){
   return { oeffnen, schliessen, lebendAn, lebendAus, lebendNeu };
 })();
 
+/* <<< Titelbild-Studio (tbs-modul.js) */
 </script>
 </body>
 </html>
