@@ -27420,9 +27420,9 @@ function zeichneFrame(t){
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
       +'<div id="tbs-stapel"></div></div>'
-      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Rezept</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Das Rezept beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Rezept vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
+      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
-      +'<div class="tbs-unter">Rezept = Quelle + Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Quelle \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
+      +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung und Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Quelle \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
       +'</div></div></div>';
     document.body.appendChild(root);
     root.onclick=(ev)=>{ if(ev.target===root) schliessen(); };
@@ -27471,7 +27471,7 @@ function zeichneFrame(t){
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
-    if(rezeptDa){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Rezept beim Titel'); }
+    if(rezeptDa){ presetSetzen(R.effekte); pStat('Effektkette des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch keine Effektkette beim Titel'); }
     quellenUI(); vorbStand(); { const k=$('#tbs-vorbKoerper'); if(k){ k.hidden=true; k.innerHTML=''; } const b=$('#tbs-vorbKlapp'); if(b){ b.textContent='\u25b8'; b.title='aufklappen'; } }   /* zugeklappt starten, sie braucht viel Platz */
     t0=performance.now();
     grundLaden();
