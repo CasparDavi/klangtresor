@@ -2962,3 +2962,39 @@ Zurückholen liegen. Der Lauf nennt die betroffenen Titel beim Namen.
 **Geprüft, alle vier Wege:** ohne Rezept → fremd · mit Rezept und passenden Maßen → eigen · Adresse
 danach gemerkt → ja · gleiche Länge, andere Bildgröße → fremd. Und über das Netz: ein Bruchstück
 fremder Herkunft wird verworfen und die Datei kommt bytegleich an, ein eigenes wird fortgesetzt.
+
+### Die sechs schon hochgeladenen Clips nachgetragen (11.09.2026)
+Jörg hatte sechs Clips ausgegeben und bei Suno längst als Artwork zugewiesen, **bevor** es das
+Ausgabebuch gab. Für den Medienlauf waren sie damit fremdes Material und wären ins Archiv gewandert.
+Neues Werkzeug **`bin/effektclip-buch.js`** trägt solche Clips nach:
+
+```bash
+node bin/effektclip-buch.js zeigen                    # was steht im Buch
+node bin/effektclip-buch.js nachtragen                # ~/Downloads messen und zuordnen, nur zeigen
+node bin/effektclip-buch.js nachtragen --schreiben    # und wirklich eintragen
+```
+
+Es liest nur, es verschiebt und löscht nichts. Erkannt werden Dateien nach dem Ausgabemuster
+`<Titel> — Effektclip.mp4`; der Titel wird mit **derselben Säuberung** wie beim Ausgeben
+(`[^\p{L}\p{N} _-]` weg, 60 Zeichen) gegen den Katalog gehalten. Deshalb findet „Die Gedanken" auch
+den Katalogtitel „Die Gedanken …" wieder. Ist ein Titel unbekannt oder **mehrdeutig**, wird nichts
+eingetragen, sondern berichtet — geraten wird nicht. Fehlt beim Titel `eigen-effekt.json`, gibt es
+eine Warnung, denn ohne Rezept lehnt `bin/laden.js` den Clip ohnehin ab (die Begründung „jederzeit
+neu zu malen" trägt dann nicht).
+
+Gebucht wird die **gemessene** Länge der Datei, nicht die gerechnete. Die sechs stammen aus der Zeit
+vor dem Schnitt-Endpunkt, sind also Rohaufnahmen; eine gerechnete Länge hätte danebengelegen.
+
+Nachgetragen: *Bei mir klingelt keiner* 9,367 s · *Die Gedanken* 9,353 s · *Noch lachst Du* 8,934 s ·
+*Okkultation* 9,767 s · *Seife* 9,567 s · *Still you laugh* 8,979 s. Alle sechs eindeutig, alle mit
+gesichertem Rezept.
+
+**Geprüft** im Sandkasten (Kopie des Buches, nachgelegte Rezepte, `bin/laden.js` im Original-Wortlaut):
+alle sechs Dateien → `eigen`; drei echte Suno-Videos gegen zwei unserer Titel gehalten → sechsmal
+`fremd`; zweiter Lauf → übersprungen, weil die Adresse im Buch steht. Das echte Buch blieb unberührt.
+Nebenbefund, der die Längenregel bestätigt: Sunos eigene Videos sind glatt (10,041667 s, 12,041667 s),
+unsere krumm — die beiden Mengen liegen weit auseinander.
+
+**Offen bleibt:** Beim ersten Abgleich meldet `bin/sammeln.js` diese sechs noch als „Video-Artwork
+geändert", weil die Suno-Adresse erst beim ersten Medienlauf ins Buch kommt. Das ist richtig so, auf
+Suno hat sich wirklich etwas geändert.
