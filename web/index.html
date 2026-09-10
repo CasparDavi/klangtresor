@@ -27275,14 +27275,14 @@ function quellenUI(){ if(!root) return; const box=$('#tbs-quellen'); if(!box) re
   box.querySelectorAll('.tbs-quelle').forEach(b=>b.onclick=()=>quelleWaehlen(+b.dataset.i));
   quellenNamen(); }
 /* Beschriftung unter den Vorschaubildern (Caspar_D, 11.09.2026): nur die gewaehlte Quelle traegt ihren
-   Namen, immer mittig unter der senkrechten Achse ihres Bildes. Nur wenn er so ueber die Leiste
-   hinausliefe, rueckt er linksbuendig an das linkeste bzw. rechtsbuendig an das rechteste Bild. */
+   Namen. Das linkeste Bild linksbuendig, das letzte rechtsbuendig, die mittleren mittig unter der
+   senkrechten Bildachse - passt das nicht in die Zeile, ruecken sie an die Bildkante. */
 function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen'); if(!box||!row) return; const i=seiteIndex();
   const th=[...box.querySelectorAll('.tbs-quelle')]; row.innerHTML=''; const b=th[i]; if(!b||!SEITEN[i]){ row.style.height='14px'; return; }
   const s=document.createElement('span'); s.className='tbs-qname'; s.textContent=SEITEN[i].lbl; if(SEITEN[i].test) s.title='zum Pr\u00fcfen \u2014 wird nicht gesichert'; row.appendChild(s);
-  const bl=box.getBoundingClientRect(), r=b.getBoundingClientRect(), L0=th[0].getBoundingClientRect().left-bl.left, Rn=th[th.length-1].getBoundingClientRect().right-bl.left, w=s.offsetWidth;
-  let x=(r.left+r.right)/2-bl.left-w/2; if(x<L0) x=L0; if(x+w>Rn) x=Rn-w; x=Math.max(0,x);
-  s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
+  const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length, r=b.getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left, w=s.offsetWidth; let x;
+  if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
+  x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
 function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); }
 function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
 
