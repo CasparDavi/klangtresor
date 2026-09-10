@@ -2568,3 +2568,12 @@ rollen ins Blickfeld. Regler: eigene zuerst, dann hinter der Linie Antrieb, Atem
 - Gegenlesen des Bedienungs-Umbaus (9 bestätigt, behoben): Farbfläche S/G/W restlos entfernt (alte `quelle.farbe`
   wird ignoriert), Pult rollt nur noch, wenn eine andere Karte aufgeht, Kopfzeilen-Punkt folgt dem Kartenpunkt, totes
   CSS gelöscht, Kopfzeilen-× rot und rund, Spalten enger, Effektname darf umbrechen und steht voll im Tipp.
+- 11.09. abends: **Licht ist Beleuchtung** — Vorgabe „Farbig abwedeln“ (color-dodge) für Scheinwerfer, Laser,
+  Lichtstrahlen, Feuer, Flammen, Kaustik, Farbschleier, Stroboskop, Sicherung, Bloom, Partikel; Schatten „Farbig
+  nachbelichten“; Nebel/Dunst bleiben Screen. Hinweis an den vier Lichteffekten: sichtbare Strahlen brauchen
+  Theaternebel DAVOR in der Kette (Kette wird von oben nach unten gemalt). Preset „Licht im Nebel“. Testbild und
+  Studiofeld tiefschwarz. Verrechnungsnamen wie in der Bildbearbeitung: Farbig abwedeln / Farbig nachbelichten.
+  **Fehler behoben:** ein gespeicherter Effekt ohne (später dazugekommene) Parameter warf im Maler und hielt den
+  ganzen Frame an — Effekte aus der Ablage liegen jetzt auf den Vorgaben ihres Typs (`effektAusRezept`), und ein
+  werfender Effekt wird einmal gemeldet und ausgelassen statt den Frame zu stoppen. Messung: Mal-Effekte wirken
+  aufeinander (zwei Vollflächen getauscht: völlig anderes Bild); ein dünner Strahl zählt im Mittelwert nur kaum.

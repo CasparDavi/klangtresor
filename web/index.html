@@ -26636,9 +26636,9 @@ const PALETTEN = {
 };
 const VERR = [
   ['ueber','Über (ersetzen)','source-over',''],
-  ['add','Additiv','lighter','Aufhellen'],['screen','Screen','screen','Aufhellen'],['hell','Hell gewinnt','lighten','Aufhellen'],['abwedeln','Abwedeln — Lichter heller','color-dodge','Aufhellen'],
+  ['add','Additiv','lighter','Aufhellen'],['screen','Screen','screen','Aufhellen'],['hell','Hell gewinnt','lighten','Aufhellen'],['abwedeln','Farbig abwedeln','color-dodge','Aufhellen'],
   ['overlay','Überlagern','overlay','Kontrast'],['weich','Weich','soft-light','Kontrast'],['hart','Hartes Licht','hard-light','Kontrast'],
-  ['multi','Multiplizieren','multiply','Abdunkeln'],['dunkel','Dunkel gewinnt','darken','Abdunkeln'],['nachbelichten','Nachbelichten — Schatten dunkler','color-burn','Abdunkeln'],
+  ['multi','Multiplizieren','multiply','Abdunkeln'],['dunkel','Dunkel gewinnt','darken','Abdunkeln'],['nachbelichten','Farbig nachbelichten','color-burn','Abdunkeln'],
   ['differenz','Differenz','difference','Umkehren'],['ausschluss','Ausschluss','exclusion','Umkehren'],
   ['farbton','Farbton','hue','Farbe'],['saettigung','Sättigung','saturation','Farbe'],['farbe','Farbe','color','Farbe'],['luminanz','Luminanz','luminosity','Farbe']
 ];
@@ -26786,6 +26786,14 @@ const EFFEKTE = {
   kippen:{ label:'Kippen schlägt', art:'geo', besch:'Das Bild neigt sich auf den Schlag um ein paar Grad und richtet sich wieder auf — ein physischer Ruck. Leicht nachgezoomt, damit keine Ecken frei werden.',
     params:[{k:'neigung',lbl:'Neigung (°)',min:0,max:12,step:.5,def:4},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]}
 };
+/* LICHT IST BELEUCHTUNG (Caspar_D, 11.09.2026: "die meisten Effekte auf Abwedeln umstellen ... ausser beim
+   Nebel natuerlich"): Farbig abwedeln hellt nur auf, was schon da ist - Schwarz bleibt schwarz, ein Strahl im
+   Leeren ist unsichtbar. Sichtbar wird er erst in einem Medium: Theaternebel DAVOR in der Kette (die Kette
+   wird von oben nach unten gemalt, der Nebel muss also ueber dem Licht haengen). Nebel und Dunst bleiben Screen,
+   Schatten wird das Spiegelbild: Farbig nachbelichten. Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
+['licht','laser','strahlen','feuer','flammen','kaustik','farbe','strobe','sicherung','bloom','partikel'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten';
+['licht','laser','strahlen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was da ist \u2014 f\u00fcr sichtbare Strahlen im Raum Theaternebel davor in die Kette h\u00e4ngen.'; });
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
@@ -26819,6 +26827,7 @@ const PRESETS={
  'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
  'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
  'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
+ 'Licht im Nebel':()=>[E('nebel',{staerke:.5}),E('licht',{farbe:'#ffd9a0',groesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
 };
 
@@ -27281,7 +27290,7 @@ function grundRezept(){ /* das Testbild wird nie gesichert - dann gilt die Vorga
 let TESTBILD=null;
 function testbildBauen(){ if(TESTBILD) return TESTBILD; const W=900,H=1200, c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
   const gr=v=>{ const k=Math.round(Math.max(0,Math.min(1,v))*255); return 'rgb('+k+','+k+','+k+')'; };
-  x.fillStyle='#15161a'; x.fillRect(0,0,W,H);
+  x.fillStyle='#000'; x.fillRect(0,0,W,H);
   const kx=W*0.5, ky=H*0.41, r=W*0.29;
   let s=x.createRadialGradient(kx+r*0.15,ky+r*1.08,r*0.05,kx+r*0.15,ky+r*1.08,r*1.1); s.addColorStop(0,'rgba(0,0,0,0.55)'); s.addColorStop(1,'rgba(0,0,0,0)');
   x.fillStyle=s; x.save(); x.translate(kx+r*0.15,ky+r*1.08); x.scale(1,0.28); x.beginPath(); x.arc(0,0,r*1.1,0,7); x.fill(); x.restore();
@@ -27366,7 +27375,8 @@ function zeichneFrame(t){
     for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='farbton')continue; const fb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*fb); if(a<=0)continue;
       ca.filter='hue-rotate('+((e.invert?-1:1)*e.winkel)+'deg)'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
     ca.restore(); }
-  for(const e of STAPEL){ if(!aktiv(e))continue; if(EFFEKTE[e.typ].art!=='mal')continue; malen(e,ca,t,Wn,Hn); }
+  for(const e of STAPEL){ if(!aktiv(e))continue; if(EFFEKTE[e.typ].art!=='mal')continue;
+    try{ malen(e,ca,t,Wn,Hn); }catch(x){ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } frisch(ca); } }
   frisch(ca);
   const posts=STAPEL.filter(e=>aktiv(e)&&(EFFEKTE[e.typ].art==='post'||EFFEKTE[e.typ].art==='gl'));
   const finalCv = posts.length ? postKette(posts,t,Wn,Hn) : oa;
@@ -27429,7 +27439,10 @@ function zeichneFrame(t){
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r};
     if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null}; } return {grund:null, effekte:[], leer:true}; }
-  function presetSetzen(arr){ STAPEL=arr.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false})); renderStapel(); }
+  /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
+     verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
+  function effektAusRezept(r){ if(!r||!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false; return e; }
+  function presetSetzen(arr){ STAPEL=arr.map(effektAusRezept).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
       if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
@@ -27544,7 +27557,7 @@ function zeichneFrame(t){
     const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d');
     clips.push(m);
-    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.VORB=vorbAus(d.vorbereitung); m.STAPEL=d.rezept.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false}));
+    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.VORB=vorbAus(d.vorbereitung); m.STAPEL=d.rezept.map(effektAusRezept).filter(Boolean);
       const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
       m.grund={art:seite.art,nr:seite.nr};
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
