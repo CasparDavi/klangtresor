@@ -2396,3 +2396,33 @@ Grund   ‹  Titelbild  1/4  ›   S  G  W        Würfeln  Grundzustand  Alle a
 Weitere Befunde, nicht angefasst: `bewegtAufraeumen()` ohne Aufrufer; titelbild.jpg fällt beim Server
 nicht unter die „wandelbar“-Cache-Regel (nur der ?k=-Stempel schützt); CLI bin/eigen-artwork.js kennt
 eigen.mp3/eigen-effekt.json nicht.
+
+### Schritt 1 gebaut und im Labor abgenommen (Nachtschicht 11.09.2026) — Haus noch unberührt
+Jörgs Go: „du baust die erste Phase, alles, bevor es ins Haus geht“. Gebaut in der Modulquelle
+(Scratch `tbs-modul.js`, gespiegelt nach `.labor/titelbild-studio/`, untracked):
+- **Grund-Zeile** `Grund ‹ Titelbild · 1/3 › S G W` (Knopf „Cover“ ersetzt). Seiten aus `seitenVon(id, song)`:
+  Titelbild (Sunos, `sunoTitelbild` = titelbild.jpg/cover.jpg, ohne eigen.jpg-Vorrang) · Bewegtbild (Suno)
+  bei `videoCoverUrl` · Eigenes Bewegtbild n aus `_eigenArt[id].video` bzw. künftig `.videos:[1,2]` (eigen.mp4,
+  eigen-2.mp4 …) · Eigenes Titelbild n aus `.bild`/`.bilder`. ←/→ blättern nur im offenen Studio (Capture-Griff
+  mit stopPropagation, ebenso Esc — das Haus muss nichts ändern); Auswahllisten geben nach der Wahl den Fokus ab.
+- **Video als Grund**: stummes `<video>` außerhalb des DOM je Studio/Maler; `quelleSync`: mit Player-Uhr wird
+  Drift > 0,2 s auf Spielzeit modulo Videodauer nachgesetzt (gemessen: ≤ 0,02 s), ohne Player-Uhr (Pause, anderer
+  Titel) läuft es frei weiter (kein Sprung), unter Farbfläche S/G/W ruht es. Entladen bei Blättern, Schließen,
+  lebendAus, Tick-Aufräumen; oeffnen() bricht ab, wenn zwischendurch geschlossen wurde.
+- **Rezept-Hülle** `{grund:{art,nr,farbe?}, effekte:[…]}` — `farbe` ist Auflage auf der Seite (nicht `art:'farbe'`
+  wie im Plan, damit S/G/W zusammen mit der Seite gesichert wird). Altes Array = Vorgabe-Seite. Vorgabe = was
+  das Haus als Titelbild zeigt (eigen.jpg vor Sunos Bild, `grundVorgabe`). Fehlt die gesicherte Quelle: still
+  zurück, Status „Quelle „…“ fehlt — Titelbild gezeigt“. Sichern ohne Effekte erlaubt („nur der Grund“).
+- **Maler-Leinwand** deckt die Kachel scharf: `sk=max(kW·dpr/bw, kH·dpr/bh)`, lange Seite ≤ 960 px (vorher
+  W=Kachelbreite, Querformat wurde 2,4× hochskaliert).
+- Prüfung: Trockentests (Seitenliste beide Indexformen, rezeptLesen), Labor-Rauchtests in `labor-haus.html`
+  (Haus-Attrappe mit Player, 12 Kacheln, Fetch-Ersatz im Speicher, Protokoll; Symlink `media -> library/songs`,
+  nur lesen), Gegenlesen mit 5 Blickwinkeln + 2 Skeptikern je Befund (13 bestätigt, alle behoben außer dem
+  Gestaltungspunkt unten).
+- **Offen für Jörgs Blick:** Studio passt ein Querformat-Video ganz ein, Kachel/Bühne schneiden 3:4 (object-fit:
+  cover) — soll das Studio den Kachelausschnitt anzeigen? Beschriftung „Eigenes Bewegtbild“ ohne Nummer, wenn es
+  nur eines gibt. Vorgabe-Seite bei eigen.jpg = eigenes Bild (wie das Haus), nicht Sunos.
+- **Nächste Schritte:** Schritt 1 ins Haus (einbau.py, Rauchtest mit Jörg), dann Schritt 2 (Server: eigen-2.mp4,
+  Index `videos/bilder`, PUT nächste Nummer, DELETE `?was=video&nr=2`, Behälter-Regex; Karte „Bewegtbild“ als
+  Liste), Schritt 3 (Haus zeigt Quelle ohne Effekte direkt), Schritt 4 (Bühne → artworkBild), Schritt 5 (WOERTER.md).
+Labor starten: im Scratch-Ordner `python3 -m http.server 18811`, dann http://127.0.0.1:18811/labor-haus.html.
