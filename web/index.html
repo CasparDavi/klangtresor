@@ -3081,8 +3081,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-leer .tbs-mini{display:inline-block;width:auto;padding:0 12px;margin-top:10px}
 #tbs .tbs-qluecke{width:1px;height:56px;align-self:center;margin:0 6px;background:var(--rand);flex:0 0 auto}
 /* Vorbereitung: Kasten zwischen Quelle und Effektkette, zugeklappt eine Zeile mit Stand */
-#tbs .tbs-vorbkopf{cursor:pointer}
-#tbs .tbs-vorbkopf > span:first-child{flex:1;display:flex;gap:10px;align-items:baseline}
+/* Kopf der Vorbereitung: Titel und Untertitel duerfen schrumpfen (Untertitel mit Auslassung), die Knoepfe nie -
+   sonst ragt der Klappschalter ueber den Kasten hinaus (Caspar_D, 11.09.2026). */
+#tbs .tbs-vorbkopf{cursor:pointer;display:flex;align-items:center;gap:8px;min-width:0}
+#tbs .tbs-vorbkopf > span:first-child{flex:1 1 auto;min-width:0;display:flex;gap:10px;align-items:baseline;overflow:hidden}
+#tbs .tbs-vorbkopf > span:first-child .tbs-abunter{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#tbs .tbs-vorbkopf .tbs-vorbstand, #tbs .tbs-vorbkopf .tbs-klapp{flex:0 0 auto}
 #tbs .tbs-mini.tbs-vorbstand{width:auto;padding:0 9px;height:20px;font-size:11px;text-transform:none;letter-spacing:0;white-space:nowrap}
 #tbs .tbs-mini.tbs-vorbstand[hidden]{display:none}
 #tbs #tbs-abVorb .tbs-klapp{width:22px;height:20px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11px;line-height:1;padding:0;margin-left:8px}
