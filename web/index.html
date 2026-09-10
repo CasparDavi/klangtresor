@@ -3078,6 +3078,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border:1px solid transparent;background:transparent;border-radius:50%}
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
+#tbs #tbs-kettekopf.leer > *{visibility:hidden}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -27111,7 +27112,8 @@ function postKette(posts,t,Wn,Hn){ let sCv=oa;
 }
 
 
-function kettekopfStand(){ const pa=$('#tbs-kettekopf .tbs-pwAlle'); if(!pa) return; const na=STAPEL.filter(x=>x.an).length; pa.classList.toggle('an',na>0&&na===STAPEL.length); pa.classList.toggle('teils',na>0&&na<STAPEL.length); }
+function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.toggle('leer',STAPEL.length<=1);   /* Kopfzeile erst ab zwei Effekten, davor leer (Caspar_D, 11.09.2026) */
+  const pa=$('#tbs-kettekopf .tbs-pwAlle'); if(!pa) return; const na=STAPEL.filter(x=>x.an).length; pa.classList.toggle('an',na>0&&na===STAPEL.length); pa.classList.toggle('teils',na>0&&na<STAPEL.length); }
 function renderStapel(){
   stapelBox.innerHTML='';
   kettekopfStand();
