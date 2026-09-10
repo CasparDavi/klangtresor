@@ -27051,10 +27051,12 @@ function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t);
 function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height, lw=Math.round(W*0.42); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(lw/2,0); x.lineTo(lw/2,H); x.moveTo(lw,0); x.lineTo(lw,H); x.stroke();
   x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath(); for(let i=0;i<=100;i++){ const rho=Math.abs(i/50-1); const f=Math.min(1.6,poolProfil(e,Math.min(0.999,rho)))/1.6; const px=i/100*lw, py=H-3-f*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
-  const mw=W-lw-4, mh=H; x.save(); x.beginPath(); x.rect(lw+4,0,mw,mh); x.clip(); x.translate(lw+4,0); x.fillStyle='#000'; x.fillRect(0,0,mw,mh);
-  const k={...e, staerke:1, _pc:e._vpc, _mk:e._vmk, id:e.id}; const sk=Math.min(mw/300,mh/200); const Wv=Math.round(mw/sk), Hv=Math.round(mh/sk); x.scale(sk,sk);
+  /* Rechts das Bild im Kleinen: der Fleck samt Blende, additiv auf Schwarz (ein Schatten multiplikativ auf Grau),
+     damit er sichtbar ist - die Verrechnung des Effekts (etwa Farbig abwedeln) zeigte auf Schwarz nichts. */
+  const schatten=(e.typ==='schatten'); const mw=W-lw-4, mh=H; x.save(); x.beginPath(); x.rect(lw+4,0,mw,mh); x.clip(); x.translate(lw+4,0); x.fillStyle=schatten?'#8a8a8e':'#000'; x.fillRect(0,0,mw,mh);
+  const k={...e, staerke:1, verr:schatten?'multi':'add', _pc:e._vpc, _mk:e._vmk, id:e.id}; const sk=Math.min(mw/300,mh/200); const Wv=Math.round(mw/sk), Hv=Math.round(mh/sk); x.scale(sk,sk);
   if(!k._pc){ k._pc=document.createElement('canvas'); k._mk=document.createElement('canvas'); e._vpc=k._pc; e._vmk=k._mk; }
-  const tt=(e._lmT!=null?e._lmT:0); const alt=k.lmQuelle; k.lmQuelle='stetig'; x.globalCompositeOperation='lighter'; lichtMalen(k,x,tt,Wv,Hv); k.lmQuelle=alt;
+  const tt=(e._lmT!=null?e._lmT:0); k.lmQuelle='stetig'; x.globalCompositeOperation=schatten?'multiply':'lighter'; lichtMalen(k,x,tt,Wv,Hv);
   const O=raumUrsprung(e,Wv,Hv); x.fillStyle='#fff'; x.beginPath(); x.arc(Math.max(4,Math.min(Wv-4,O[0])),Math.max(4,Math.min(Hv-4,O[1])),4,0,7); x.fill(); x.restore(); }
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source-over'; cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
