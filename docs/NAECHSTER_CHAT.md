@@ -2569,7 +2569,7 @@ rollen ins Blickfeld. Regler: eigene zuerst, dann hinter der Linie Antrieb, Atem
   wird ignoriert), Pult rollt nur noch, wenn eine andere Karte aufgeht, Kopfzeilen-Punkt folgt dem Kartenpunkt, totes
   CSS gelöscht, Kopfzeilen-× rot und rund, Spalten enger, Effektname darf umbrechen und steht voll im Tipp.
 - 11.09. abends: **Licht ist Beleuchtung** — Vorgabe „Farbig abwedeln“ (color-dodge) für Scheinwerfer, Laser,
-  Lichtstrahlen, Feuer, Flammen, Kaustik, Farbschleier, Stroboskop, Sicherung, Bloom, Partikel; Schatten „Farbig
+  Lichtstrahlen, Kaustik, Farbschleier, Stroboskop, Sicherung, Bloom; Feuer, Flammen, Partikel bleiben Screen (Selbstleuchter, Teilchen); Schatten „Farbig
   nachbelichten“; Nebel/Dunst bleiben Screen. Hinweis an den vier Lichteffekten: sichtbare Strahlen brauchen
   Theaternebel DAVOR in der Kette (Kette wird von oben nach unten gemalt). Preset „Licht im Nebel“. Testbild und
   Studiofeld tiefschwarz. Verrechnungsnamen wie in der Bildbearbeitung: Farbig abwedeln / Farbig nachbelichten.

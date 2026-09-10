@@ -26790,8 +26790,11 @@ const EFFEKTE = {
    Nebel natuerlich"): Farbig abwedeln hellt nur auf, was schon da ist - Schwarz bleibt schwarz, ein Strahl im
    Leeren ist unsichtbar. Sichtbar wird er erst in einem Medium: Theaternebel DAVOR in der Kette (die Kette
    wird von oben nach unten gemalt, der Nebel muss also ueber dem Licht haengen). Nebel und Dunst bleiben Screen,
-   Schatten wird das Spiegelbild: Farbig nachbelichten. Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
-['licht','laser','strahlen','feuer','flammen','kaustik','farbe','strobe','sicherung','bloom','partikel'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+   Schatten wird das Spiegelbild: Farbig nachbelichten. Selbstleuchter (Feuer, Flammen, Partikel) bleiben Screen.
+   Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
+['licht','laser','strahlen','kaustik','farbe','strobe','sicherung','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+/* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie bleiben Screen (Caspar_D, 11.09.2026). */
+['feuer','flammen','partikel'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='screen'; });
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten';
 ['licht','laser','strahlen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was da ist \u2014 f\u00fcr sichtbare Strahlen im Raum Theaternebel davor in die Kette h\u00e4ngen.'; });
 const EGRUPPEN = [
