@@ -2562,7 +2562,7 @@ rollen ins Blickfeld. Regler: eigene zuerst, dann hinter der Linie Antrieb, Atem
   CSS brightness/contrast/saturate/sepia); die Effekte arbeiten auf `ovb`. Im Rezept als `vorbereitung` (nur wenn nicht
   neutral), Maler auf Kachel/Bühne rechnen es mit (`VORB` im Bündel). `gradZeichnen()` teilt sich das Kurvenbild mit
   „Kontrast schlägt“.
-- Beschriftung unter den Vorschaubildern (Jörg): linkestes linksbündig, letztes rechtsbündig, mittlere unter der
+- Beschriftung unter den Vorschaubildern (Jörg, Nachtrag: nur die gewählte Quelle): linkestes linksbündig, letztes rechtsbündig, mittlere unter der
   Bildachse, weichen sie aus, an die Bildkante; höchstens 60 px breit, brechen um. Eine Lücke mit Strich trennt echte
   Quellen von den drei Testbildern.
 - Gegenlesen des Bedienungs-Umbaus (9 bestätigt, behoben): Farbfläche S/G/W restlos entfernt (alte `quelle.farbe`

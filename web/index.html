@@ -3045,10 +3045,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-quelle.on{border-color:var(--akzent);box-shadow:0 0 0 1px var(--akzent)}
 #tbs .tbs-quelle .tbs-qv{position:absolute;right:4px;bottom:3px;font-size:10px;color:#fff;text-shadow:0 0 3px #000}
 #tbs #tbs-quellenNamen{position:relative;margin:2px 0 4px;min-height:14px}
-/* Namen unter den Vorschaubildern: hoechstens so breit wie ein Bild samt Luecke, dann brechen sie um und stossen nicht aneinander */
-#tbs .tbs-qname{position:absolute;top:0;font-size:10px;line-height:1.15;color:var(--schwach);max-width:60px;white-space:normal;cursor:pointer;text-align:center}
-#tbs .tbs-qname.links{text-align:left}
-#tbs .tbs-qname.rechts{text-align:right}
+/* Name der gewaehlten Quelle unter ihrem Bild */
+#tbs .tbs-qname{position:absolute;top:0;font-size:11px;line-height:1.2;color:var(--text);white-space:nowrap}
 #tbs .tbs-qname.on{color:var(--text)}
 #tbs .tbs-quellen{margin-bottom:2px}
 /* Kopf der Karte als Tabellenzeile: an | solo | Symbol | Effekt | Nr. | Kopie | entfernen | hoch | runter | auf/zu */
@@ -27276,21 +27274,15 @@ function quellenUI(){ if(!root) return; const box=$('#tbs-quellen'); if(!box) re
   const tc=box.querySelector('canvas'); if(tc) tc.getContext('2d').drawImage(testbildBauen(),0,0,54,72);
   box.querySelectorAll('.tbs-quelle').forEach(b=>b.onclick=()=>quelleWaehlen(+b.dataset.i));
   quellenNamen(); }
-/* Beschriftung unter den Vorschaubildern (Caspar_D, 11.09.2026): das linkeste linksbuendig, das letzte
-   rechtsbuendig, die mittleren moeglichst mittig unter der senkrechten Bildachse - weicht ein Name
-   dem Nachbarn aus, rueckt er an die linke (bzw. beim vorletzten an die rechte) Bildkante. */
+/* Beschriftung unter den Vorschaubildern (Caspar_D, 11.09.2026): nur die gewaehlte Quelle traegt ihren
+   Namen. Das linkeste Bild linksbuendig, das letzte rechtsbuendig, die mittleren mittig unter der
+   senkrechten Bildachse - passt das nicht in die Zeile, ruecken sie an die Bildkante. */
 function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen'); if(!box||!row) return; const i=seiteIndex();
-  const th=[...box.querySelectorAll('.tbs-quelle')]; row.innerHTML=''; if(!th.length){ row.style.height='0'; return; }
-  const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length;
-  const labs=th.map((b,k)=>{ const s=document.createElement('span'); s.className='tbs-qname'+(k===i?' on':''); s.textContent=SEITEN[k].lbl; s.title=SEITEN[k].test?'zum Pr\u00fcfen \u2014 wird nicht gesichert':SEITEN[k].lbl; s.onclick=()=>quelleWaehlen(k); row.appendChild(s); return s; });
-  let prevRight=-1e9, h=0; const pos=[];
-  labs.forEach((s,k)=>{ const r=th[k].getBoundingClientRect(); const L=r.left-bl.left, R=r.right-bl.left, C=(L+R)/2, w=s.offsetWidth; let x;
-    if(k===0) x=L; else if(k===n-1) x=R-w;
-    else { x=C-w/2; if(x<prevRight+6) x=(k===n-2)?(R-w):L; if(x+w>W) x=R-w; }
-    x=Math.max(0,Math.min(W-w,x)); pos.push([x,w]); prevRight=x+w; h=Math.max(h,s.offsetHeight); });
-  /* der vorletzte weicht dem letzten aus, wenn sie sich beruehren */
-  if(n>=3){ const [xl]=pos[n-1], [xv,wv]=pos[n-2]; if(xv+wv>xl-6){ const r=th[n-2].getBoundingClientRect(); pos[n-2][0]=Math.max(0,Math.min(xl-6-wv, r.right-bl.left-wv)); } }
-  labs.forEach((s,k)=>{ s.style.left=pos[k][0]+'px'; const r=th[k].getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left; s.classList.toggle('links',Math.abs(pos[k][0]-L)<1); s.classList.toggle('rechts',Math.abs(pos[k][0]+pos[k][1]-R)<1); }); row.style.height=h+'px'; }
+  const th=[...box.querySelectorAll('.tbs-quelle')]; row.innerHTML=''; const b=th[i]; if(!b||!SEITEN[i]){ row.style.height='14px'; return; }
+  const s=document.createElement('span'); s.className='tbs-qname'; s.textContent=SEITEN[i].lbl; if(SEITEN[i].test) s.title='zum Pr\u00fcfen \u2014 wird nicht gesichert'; row.appendChild(s);
+  const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length, r=b.getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left, w=s.offsetWidth; let x;
+  if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
+  x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
 function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); }
 function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
 
