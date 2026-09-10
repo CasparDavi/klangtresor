@@ -69,7 +69,13 @@ beim nächsten Sichern wieder mitgehen.
 **13. Nichts speichern, was nicht gelesen wird.** Was `effekteJSON` schreibt, muss ein Maler auch
 brauchen. Tote Schlüssel in der Ablage sind Fallen für den Übernächsten.
 
-**14. Der Maler wirft nicht.** Jeder Effekt läuft in seinem eigenen try. Ein fehlender Parameter
+**14. Ein Filter gehört nicht in eine Schleife.** `ctx.filter` wirkt je Zeichenzug, nicht je Fläche:
+jeder einzelne Zug bekommt einen eigenen Weichzeichnungs-Durchgang. Die Scheinwerferblende malte so
+bis zu 6889 einzeln weichgezeichnete Kreise je Bild und brauchte für ein einziges Bild 465
+Millisekunden, im Kegel drei Sekunden. Regel: unscharf wird einmal am Ende über die fertige Fläche
+gezeichnet. Und was sich wiederholt, wird einmal in eine Kachel gemalt und als Muster gefüllt.
+
+**15. Der Maler wirft nicht.** Jeder Effekt läuft in seinem eigenen try. Ein fehlender Parameter
 darf nicht den ganzen Bildaufbau anhalten; darum legt `effektAusRezept` gespeicherte Werte über die
 Vorgaben des Typs und nicht umgekehrt.
 
@@ -113,6 +119,10 @@ Vier Fallen, in die der Autor dieser Zeilen an einem Abend alle vier getappt ist
   Beweis für das Medium, nicht sein Fehler.
 - **Das falsche Feld.** Wer „das hellste Bildviertel" misst, misst beim Testbild die Kugel und
   nicht den Strahl. Immer gegen den Bereich messen, um den es geht.
+- **Rechenzeit ohne Rücklesen.** `performance.now()` um Zeichenbefehle misst nur, wie schnell man
+  Befehle abschickt, nicht wie lange sie brauchen. Die Blende sah so nach 5,8 ms aus und brauchte in
+  Wahrheit 465. Nach jedem Durchgang einen Bildpunkt zurücklesen, dann stimmt die Zahl.
+  `labor/effektclip-studio/blendentest.html` macht das vor, ohne Studio und ohne laufenden Maler.
 
 Und eine Falle im Aufbau: fehlt dem Prüfstand der Verweis auf `web/fremd`, findet der Shader sein
 Rauschen nicht, das Studio fällt still auf den Leinwand-Nebel zurück, und man misst tagelang den

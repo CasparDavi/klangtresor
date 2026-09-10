@@ -27073,21 +27073,42 @@ function raumZiel(e,t,W,H,O){ const zx=W*(e.rmZx==null?0.5:e.rmZx), zy=H*(e.rmZy
 function poolProfil(e,rho){ const rand=(e.rmRand==null?0.5:e.rmRand), hot=(e.rmHotspot||0), kern=Math.max(0.02,Math.min(0.98,0.05+0.9*rand)); if(rho>=1) return 0;
   let f=1; if(rho>kern){ const q=(rho-kern)/(1-kern); f=1-q*q*(3-2*q); } return Math.min(1.6, f*(1+hot*0.8*Math.max(0,1-rho/Math.max(0.05,kern*0.6))*(rho<kern?1:0))); }
 function poolGradient(x,e,farbe,a){ const g=x.createRadialGradient(0,0,0,0,0,1); for(let i=0;i<=12;i++){ const r=i/12; g.addColorStop(r, fleckStop(e,farbe,a,poolProfil(e,Math.min(0.999,r)))); } return g; }
+/* BLENDEN SIND BILLIG ZU HABEN (Caspar_D, 10.09.2026: "die Scheinwerferblenden machen das ganze
+   System irre langsam, das ist jemand sehr greedy"). Zwei Fehler steckten darin: der Weichzeichner
+   stand als Kontext-Filter VOR der Schleife, also lief jeder einzelne Kreis durch einen eigenen
+   Weichzeichnungs-Durchgang - bei feiner Blende im Kegel fast siebentausend je Bild, je Maler.
+   Und die Muster wiederholen sich ohnehin. Jetzt wird eine Zelle einmal in eine kleine Kachel
+   gemalt und als Muster gefuellt (ein Zug statt Tausender), weichgezeichnet wird einmal am Ende. */
+const BLENDE_KACHELN={};
+function blendeKachel(art,zelle){ const z=Math.max(4,Math.round(zelle)), schl=art+'|'+z;
+  if(BLENDE_KACHELN[schl]) return BLENDE_KACHELN[schl];
+  const cv=document.createElement('canvas'); cv.width=z; cv.height=z; const x=cv.getContext('2d'); x.fillStyle='#fff'; x.strokeStyle='#fff';
+  if(art==='punkte'){ x.beginPath(); x.arc(z/2,z/2,z*0.32,0,7); x.fill(); }
+  else if(art==='streifen'){ x.fillRect(z*0.25,0,z*0.5,z); }
+  else { x.lineWidth=Math.max(1,z*0.18); x.beginPath(); x.moveTo(z/2,0); x.lineTo(z/2,z); x.moveTo(0,z/2); x.lineTo(z,z/2); x.stroke(); }
+  if(Object.keys(BLENDE_KACHELN).length>12) for(const k of Object.keys(BLENDE_KACHELN)) delete BLENDE_KACHELN[k];
+  return BLENDE_KACHELN[schl]=cv; }
+/* Zwischenflaeche fuer die ungezeichnete Maske - haengt an der Maskenflaeche selbst, damit Studio,
+   Kacheln und Vorschau sich nicht gegenseitig die Groesse umstellen. */
+function blendeRoh(mk,W,H){ const heim=mk.canvas; let cv=heim._roh; if(!cv) cv=heim._roh=document.createElement('canvas');
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  const x=cv.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); return x; }
 function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rmForm||'kreis', ell=(form==='ellipse'), st=(e.rmStreckung==null?2:e.rmStreckung); mk.setTransform(1,0,0,1,0,0); mk.globalCompositeOperation='source-over'; mk.filter='none'; mk.clearRect(0,0,W,H);
   /* Reichweite des Musters: der Kegel braucht das ganze Bild, der Fleck nur sich selbst; die Zelle nie kleiner als ein Vierzigstel davon
      (Tiefen-Check: am Regler-Minimum entstanden ueber 100 000 Kreise je Bild). Iris und Tor haben keine Zelle, ihre Weichheit haengt am Fleck. */
   const R=(form==='kegel')?Math.hypot(W,H):r*(ell?Math.max(1.3,st*1.1):1.3);
   const zelle=(art==='iris'||art==='tor')?r*0.3:Math.max(R/40,(e.rmBlGroesse==null?0.15:e.rmBlGroesse)*r*2), weich=(e.rmBlWeich==null?0.3:e.rmBlWeich); const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
-  mk.filter=weich>0?('blur('+(weich*zelle*0.35).toFixed(1)+'px)'):'none'; mk.fillStyle='#fff'; mk.strokeStyle='#fff';
-  mk.save(); mk.translate(Z[0],Z[1]); mk.rotate(rot+(e.rmBlDrehung||0)*Math.PI/180); const n=Math.ceil(R/zelle)+1;
-  if(art==='punkte'){ for(let i=-n;i<=n;i++) for(let j=-n;j<=n;j++){ mk.beginPath(); mk.arc(i*zelle,j*zelle,zelle*0.32,0,7); mk.fill(); } }
-  else if(art==='streifen'){ for(let i=-n;i<=n;i++) mk.fillRect(i*zelle-zelle*0.25,-R,zelle*0.5,2*R); }
-  else if(art==='gitter'){ mk.lineWidth=zelle*0.18; for(let i=-n;i<=n;i++){ mk.beginPath(); mk.moveTo(i*zelle,-R); mk.lineTo(i*zelle,R); mk.moveTo(-R,i*zelle); mk.lineTo(R,i*zelle); mk.stroke(); } }
-  else if(art==='wolken'){ for(let i=0;i<60;i++){ const px=(hs(i)*2-1)*r*1.3, py=(hs(i+100)*2-1)*r*1.3, rr=zelle*(0.6+hs(i+200)*1.4); const g=mk.createRadialGradient(px,py,0,px,py,rr); g.addColorStop(0,'rgba(255,255,255,'+(0.5+0.5*hs(i+300)).toFixed(2)+')'); g.addColorStop(1,'rgba(255,255,255,0)'); mk.fillStyle=g; mk.fillRect(px-rr,py-rr,rr*2,rr*2); } }
-  else if(art==='sprenkel'){ for(let i=0;i<220;i++){ const px=(hs(i)*2-1)*r*1.4, py=(hs(i+500)*2-1)*r*1.4, rr=zelle*(0.08+0.22*hs(i+900)); mk.beginPath(); mk.arc(px,py,rr,0,7); mk.fill(); } }
-  else if(art==='iris'){ mk.save(); mk.rotate(-(e.rmBlDrehung||0)*Math.PI/180); mk.beginPath(); if(ell) mk.ellipse(0,0,r*0.9*st,r*0.9/Math.sqrt(st),0,0,7); else mk.arc(0,0,r*0.9,0,7); mk.fill(); mk.restore(); }   /* die Iris liegt auf dem Fleck, nicht auf der Blende-Drehung */
-  else if(art==='tor'){ const q=ell?st:2; mk.fillRect(-r*0.9*Math.sqrt(q)/1.2,-r*0.9/Math.sqrt(q)*1.2,r*1.8*Math.sqrt(q)/1.2,r*1.8/Math.sqrt(q)*1.2); }
-  mk.restore(); mk.filter='none'; }
+  const mkr=(weich>0)?blendeRoh(mk,W,H):mk; mkr.fillStyle='#fff'; mkr.strokeStyle='#fff';
+  mkr.save(); mkr.translate(Z[0],Z[1]); mkr.rotate(rot+(e.rmBlDrehung||0)*Math.PI/180);
+  if(art==='punkte'||art==='streifen'||art==='gitter'){ const mu=mkr.createPattern(blendeKachel(art,zelle),'repeat'); 
+    /* Die Fuellung reicht immer ueber die ganze Flaeche: gedreht und verschoben ist die Leinwand nie weiter als ihre Diagonale weg. Ein Zug kostet dasselbe, egal wie gross das Rechteck ist. */
+    if(mu){ const D=Math.hypot(W,H); mkr.fillStyle=mu; mkr.fillRect(-D,-D,2*D,2*D); } }
+  else if(art==='wolken'){ for(let i=0;i<60;i++){ const px=(hs(i)*2-1)*r*1.3, py=(hs(i+100)*2-1)*r*1.3, rr=zelle*(0.6+hs(i+200)*1.4); const g=mkr.createRadialGradient(px,py,0,px,py,rr); g.addColorStop(0,'rgba(255,255,255,'+(0.5+0.5*hs(i+300)).toFixed(2)+')'); g.addColorStop(1,'rgba(255,255,255,0)'); mkr.fillStyle=g; mkr.fillRect(px-rr,py-rr,rr*2,rr*2); } }
+  else if(art==='sprenkel'){ for(let i=0;i<220;i++){ const px=(hs(i)*2-1)*r*1.4, py=(hs(i+500)*2-1)*r*1.4, rr=zelle*(0.08+0.22*hs(i+900)); mkr.beginPath(); mkr.arc(px,py,rr,0,7); mkr.fill(); } }
+  else if(art==='iris'){ mkr.save(); mkr.rotate(-(e.rmBlDrehung||0)*Math.PI/180); mkr.beginPath(); if(ell) mkr.ellipse(0,0,r*0.9*st,r*0.9/Math.sqrt(st),0,0,7); else mkr.arc(0,0,r*0.9,0,7); mkr.fill(); mkr.restore(); }   /* die Iris liegt auf dem Fleck, nicht auf der Blende-Drehung */
+  else if(art==='tor'){ const q=ell?st:2; mkr.fillRect(-r*0.9*Math.sqrt(q)/1.2,-r*0.9/Math.sqrt(q)*1.2,r*1.8*Math.sqrt(q)/1.2,r*1.8/Math.sqrt(q)*1.2); }
+  mkr.restore();
+  if(weich>0){ mk.filter='blur('+(weich*zelle*0.35).toFixed(1)+'px)'; mk.drawImage(mkr.canvas,0,0); mk.filter='none'; } }
 function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return; const O=raumUrsprung(e,W,H), Z=raumZiel(e,t,W,H,O), form=e.rmForm||'kreis', r=Math.max(2,(e.rmGroesse==null?0.3:e.rmGroesse)*Math.min(W,H)), rot=Math.atan2(Z[1]-O[1],Z[0]-O[0]);
   const blende=(e.rmBlende||'keine')!=='keine'; let x=cx;
   if(blende){ if(!e._pc){ e._pc=document.createElement('canvas'); e._mk=document.createElement('canvas'); } if(e._pc.width!==W||e._pc.height!==H){ e._pc.width=W; e._pc.height=H; e._mk.width=W; e._mk.height=H; } x=e._pc.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); }

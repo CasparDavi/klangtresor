@@ -1,0 +1,49 @@
+<!doctype html><meta charset="utf-8"><title>Blendentest</title>
+<body style="background:#111;color:#ddd;font:13px system-ui;padding:20px">
+<h3>Blendentest</h3>
+<p style="color:#8a8c92;max-width:60em">Warum die Scheinwerferblenden das System lahmlegten: der Weichzeichner stand als Kontext-Filter vor der Zeichenschleife, also lief jeder einzelne Kreis durch einen eigenen Weichzeichnungs-Durchgang. Links der alte Weg, rechts die Musterfüllung mit einem Weichzeichnen am Ende. Achtung: der alte Weg braucht je Durchgang Sekunden, die Seite rechnet darum kurz.</p><pre id="a">läuft …</pre>
+<script>
+const W=452,H=602, mk=document.createElement('canvas'); mk.width=W; mk.height=H;
+const x=mk.getContext('2d');
+const roh=document.createElement('canvas'); roh.width=W; roh.height=H; const xr=roh.getContext('2d');
+function kachel(z){ const c=document.createElement('canvas'); c.width=z; c.height=z; const q=c.getContext('2d'); q.fillStyle='#fff'; q.beginPath(); q.arc(z/2,z/2,z*0.32,0,7); q.fill(); return c; }
+function alt(zelle,R,weich){ x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,W,H);
+  x.filter='blur('+(weich*zelle*0.35).toFixed(1)+'px)'; x.fillStyle='#fff';
+  x.save(); x.translate(W/2,H/2); x.rotate(0.4); const n=Math.ceil(R/zelle)+1;
+  for(let i=-n;i<=n;i++) for(let j=-n;j<=n;j++){ x.beginPath(); x.arc(i*zelle,j*zelle,zelle*0.32,0,7); x.fill(); }
+  x.restore(); x.filter='none'; return (2*n+1)*(2*n+1); }
+const zwischen={};
+function neu(zelle,R,weich){ x.setTransform(1,0,0,1,0,0); x.clearRect(0,0,W,H);
+  const z=Math.max(4,Math.round(zelle)); if(!zwischen[z]) zwischen[z]=kachel(z);
+  xr.setTransform(1,0,0,1,0,0); xr.filter='none'; xr.clearRect(0,0,W,H);
+  xr.save(); xr.translate(W/2,H/2); xr.rotate(0.4);
+  const D=Math.hypot(W,H); xr.fillStyle=xr.createPattern(zwischen[z],'repeat'); xr.fillRect(-D,-D,2*D,2*D); xr.restore();
+  x.filter='blur('+(weich*zelle*0.35).toFixed(1)+'px)'; x.drawImage(roh,0,0); x.filter='none'; return 1; }
+/* Nach jedem Durchgang einen Bildpunkt zuruecklesen: das erzwingt, dass die Zeichenbefehle
+   wirklich abgearbeitet sind. Ohne das misst man nur, wie schnell man Befehle abschickt. */
+function messen(f,zelle,R,weich,runden){ f(zelle,R,weich); x.getImageData(0,0,1,1);
+  const t0=performance.now(); for(let k=0;k<runden;k++){ f(zelle,R,weich); x.getImageData(0,0,1,1); }
+  return (performance.now()-t0)/runden; }
+const zeilen=[];
+for(const [name,zelle,R] of [['Vorgabe, Fleck',54,234],['Vorgabe, Kegel',54,753],['fein, Fleck',18,234],['fein, Kegel',19,753]]){
+  const zuege=alt(zelle,R,1);
+  const a=messen(alt,zelle,R,1,2), b=messen(neu,zelle,R,1,20);   /* der alte Weg nur zweimal - er braucht Sekunden je Durchgang */
+  zeilen.push(name.padEnd(16)+String(zuege+' Züge').padEnd(13)+'alt '+a.toFixed(1).padStart(7)+' ms   neu '+b.toFixed(2).padStart(6)+' ms   '+(a/b).toFixed(0)+'x schneller');
+}
+document.getElementById('a').textContent=zeilen.join('\n');
+window.__erg=zeilen;
+/* Sehprobe: dasselbe Muster einmal alt, einmal neu, damit man sieht, dass sich nur die Rechenzeit
+   geaendert hat und nicht das Bild. */
+function zeigen(f,titel){ f(54,234,1); const c=document.createElement('canvas'); c.width=226; c.height=301;
+  c.getContext('2d').drawImage(mk,0,0,226,301); c.style.cssText='border:1px solid #444;margin:6px 10px 0 0;background:#000';
+  const d=document.createElement('div'); d.style.cssText='display:inline-block;vertical-align:top';
+  d.innerHTML='<div style="color:#8a8c92">'+titel+'</div>'; d.appendChild(c); document.body.appendChild(d); return c; }
+const cAlt=zeigen(alt,'alt: 169 einzeln weichgezeichnete Kreise');
+const cNeu=zeigen(neu,'neu: eine Musterfuellung, einmal weichgezeichnet');
+/* Zahl dazu: wie weit weichen die beiden Masken voneinander ab */
+{ const a=cAlt.getContext('2d').getImageData(0,0,226,301).data, b=cNeu.getContext('2d').getImageData(0,0,226,301).data;
+  let t=0; for(let i=3;i<a.length;i+=4) t+=Math.abs(a[i]-b[i]);
+  window.__abweichung=+(t/(a.length/4)).toFixed(2);
+  const p=document.createElement('div'); p.style.cssText='margin-top:10px;color:#8a8c92';
+  p.textContent='mittlere Abweichung der Maske: '+window.__abweichung+' von 255'; document.body.appendChild(p); }
+</script>

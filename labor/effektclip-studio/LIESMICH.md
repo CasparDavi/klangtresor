@@ -30,6 +30,7 @@ sonst ist die Änderung beim nächsten `aus` weg. Zwei Wahrheiten gibt es nicht.
 | `labor-eigen.json` | Startlage: welche Titel randlose Titelbilder oder eigene Dateien haben |
 | `messreihe.js` | die Messreihe zum Einwerfen in die Konsole, rund vier Minuten |
 | `messreihe-2026-09-10.json` | die Grundlinie zum Vergleichen |
+| `blendentest.html` | Einzeltest zur Blenden-Rechenzeit, ohne Studio und ohne Maler |
 | `tbs-modul.js`, `tbs.css` | Arbeitsstand, abgeleitet, nicht versioniert |
 | `_songs.json` | schmaler Auszug aus dem Katalog, Archivdaten, nicht versioniert |
 | `media`, `testbild`, `fremd` | Verweise ins Archiv und in die Seite, nicht versioniert |

@@ -2797,3 +2797,37 @@ Gerettet ist der Weg, nicht die Kopien. Neu:
   durch `bin/effektclip-labor.js` ersetzt. Übrig blieben nur die Patch-Skripte als Gerüst; ihr
   Ergebnis samt Begründungen steht in 37 Commits an `web/index.html` (stichprobenweise geprüft).
   **Der Vorher-Stand des Studios ist `bbb9963`.**
+
+## Scheinwerferblenden waren der Bremsklotz (10.09.2026, Caspar_D: „das ist jemand sehr greedy")
+Jörgs ganzes System lagte. Ursache: in `blendeMaske` stand der Weichzeichner als **Kontext-Filter vor
+der Zeichenschleife**. `ctx.filter` wirkt je Zeichenzug, nicht je Fläche — jeder einzelne Kreis der
+Blende bekam also seinen eigenen Weichzeichnungs-Durchgang über die ganze Leinwand. Dazu wurden die
+Muster Punkt für Punkt gemalt, obwohl sie sich wiederholen.
+
+Gemessen mit erzwungenem Rücklesen (`labor/effektclip-studio/blendentest.html`), Leinwand 452×602,
+je **ein** Scheinwerfer, je **ein** Bild:
+
+| Fall | Züge | alt | neu |
+|---|---|---|---|
+| Vorgabe, Fleck | 169 | 424 ms | 3,0 ms |
+| Vorgabe, Kegel | 961 | 2 826 ms | 2,9 ms |
+| feine Blende, Fleck | 841 | 2 106 ms | 2,9 ms |
+| feine Blende, Kegel | 6 889 | 18 475 ms | 3,5 ms |
+
+Das galt je Maler: Studio, jede Kachel und die Profilvorschau rechneten das getrennt. Behoben: die
+sich wiederholenden Muster (Punkte, Streifen, Gitter) werden einmal in eine kleine Kachel gemalt und
+als Muster gefüllt — ein Zug statt Tausender, die Kachel wird gemerkt; weichgezeichnet wird einmal am
+Ende über die fertige Maske, auf einer Zwischenfläche, die an der Maskenfläche hängt (damit Studio,
+Kacheln und Vorschau sich nicht die Größe umstellen). Die Füllung reicht jetzt über die ganze
+Leinwand statt nur bis `R`, dadurch fehlt am Rand kein Muster mehr. Sehprobe: gleiches Punktraster,
+gleiche Drehung, gleiche Weichheit.
+
+**Als Regel aufgenommen** (EFFEKTCLIP-REGELN, Nr. 14): ein Filter gehört nicht in eine Schleife, und
+was sich wiederholt, wird zur Kachel. Dazu eine fünfte Falle beim Messen: Rechenzeit ohne Rücklesen
+misst nur das Abschicken der Befehle.
+
+**Nicht von uns, aber dringend:** auf dem Rechner läuft seit acht Stunden ein zweiter Server
+`/Volumes/INTENSO/KlangTresor/… server.js --eingefroren --port 8788` (PID 77446) mit **98 % CPU und
+496 Minuten Rechenzeit**. Port 8788 hält der echte Entwicklungsserver (PID 34516, 30 Sekunden
+Rechenzeit in elf Stunden) — der eingefrorene kommt also gar nicht ans Netz und dreht vermutlich in
+einer Wiederholschleife. Nicht angefasst, wartet auf Jörgs Wort.
