@@ -2836,3 +2836,32 @@ diese PID; der echte Server blieb unberührt. **Lehre für den Ausfuhr-Stick:** 
 Server merkt nicht, wenn sein Laufwerk verschwindet, und er merkt auch nicht, dass sein Port schon
 belegt ist. Beides gehört ihm beigebracht, sonst passiert das jedem, der den Stick abzieht, ohne
 das Fenster zu schließen.
+
+## Nebel graute das Bild aus (10.09.2026, Caspar_D: „es sieht sehr fade und grau aus")
+Konstruktionsfehler im Medium: die Umgebungshelligkeit war eine **feste Zahl** (`u_grundlicht`), also
+mischte der Nebel überall gegen denselben Grauwert. Über hellen Stellen zog er herunter, über dunklen
+herauf — der Kontrast brach ein und die Farbe ging mit.
+
+Behoben: die Umgebung kommt jetzt **aus dem Bild selbst**, grob verwaschen aus neun Griffen in die
+Quelltextur (`umgebung(uv)` im Shader). Über Hellem ist der Nebel hell, über Dunklem dunkel. Er behält
+60 % der Farbe darunter, sonst grauen satte Bilder trotzdem aus. „Ohne Licht" ist damit kein absoluter
+Wert mehr, sondern ein Anteil der Umgebung: 1 lässt das Bild darunter so hell wie zuvor, darunter
+schluckt der Nebel, darüber glüht er (Regler jetzt bis 1,5).
+
+Gemessen am Testporträt in Farbe, **gleiche Stärke**, Kontrast und Buntheit als Streuung bzw. mittlerer
+Farbabstand:
+
+| | Kontrast | Buntheit |
+|---|---|---|
+| ohne Nebel | 64,1 | 55,3 |
+| alt, Stärke 0,5 | 50,1 | 38,9 |
+| **neu, Stärke 0,5** | **57,5** | **45,5** |
+| alt, Stärke 0,8 | 43,5 | 29,9 |
+| **neu, Stärke 0,8** | **54,8** | **39,8** |
+
+Bildzeit bleibt bei 16,7 ms trotz der neun zusätzlichen Texturgriffe. Vorgaben nachgezogen: Stärke 0,4
+statt 0,5, „Ohne Licht" je Sorte um 0,8 bis 0,95. **Ablagen tragen jetzt `fassung:3`**; ältere werden
+übersetzt (alter Grundlicht-Wert × 2,2, gekappt bei 1,5), im Labor geprüft: 0,45 lädt als 0,99, ein
+zweites Laden rechnet nicht noch einmal um.
+
+Als **Regel 6a** aufgenommen: ein Medium mischt gegen seine Umgebung, nicht gegen eine feste Zahl.

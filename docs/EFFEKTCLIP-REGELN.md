@@ -36,10 +36,16 @@ Spiegelbild und rechnet mit Farbig nachbelichten. Wer schwarz abwedelt, malt nic
 das Sicherungswackeln einen halben Tag lang).
 
 **6. Nebel leuchtet nicht selbst, er wird beleuchtet.** Der Theaternebel ist ein Medium:
-`mische(Bild, Farbe × (Grundlicht + Licht × Streuung), Dichte)`. Das Licht kommt aus dem
+`mische(Bild, Farbe × (Grundlicht × Umgebung + Licht × Streuung), Dichte)`. Das Licht kommt aus dem
 Licht-Puffer, in den alle Leuchten der Kette zusätzlich additiv malen. Darum wird ein Strahl im
 Nebel sichtbar, gleich an welcher Stelle der Nebel in der Kette hängt. Wer einen neuen Leuchter
 baut, setzt `leuchtet` in der Registry — sonst ist er im Nebel nicht zu sehen.
+
+**6a. Ein Medium mischt gegen seine Umgebung, nicht gegen eine feste Zahl.** „Umgebung" ist die grob
+verwaschene Helligkeit des Bildes an dieser Stelle, aus neun Griffen in die Quelltextur. Ein fester
+Grauwert zog helle Stellen herunter und dunkle herauf, und beides zusammen fraß Kontrast und Farbe:
+bei gleicher Dichte gingen 32 % Kontrast und 46 % Buntheit verloren, mit der Umgebung nur 14 % und
+28 %. Wer eine Schicht über das ganze Bild legt, fragt zuerst, wogegen sie mischt.
 
 **7. Selbstleuchter sind keine Beleuchtung.** Feuer, Flammen und Partikel leuchten selbst und
 behalten ihre eigene Verrechnung. Sie werden nicht auf Abwedeln umgestellt.

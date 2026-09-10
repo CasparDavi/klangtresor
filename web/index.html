@@ -26758,10 +26758,10 @@ const EFFEKTE = {
      dann den Theaternebel noch?"): nein. Ein Effekt, drei Sorten, im Shader gerechnet. Er leuchtet nicht selbst,
      sondern nimmt das Licht auf, das ihn trifft: mische(Bild, Farbe*(Grundlicht + Licht*Streuung), Dichte).
      Damit ist auch die alte Kruecke weg, den Nebel VOR das Licht haengen zu muessen. */
-  nebel:{ label:'Theaternebel', art:'gl', medium:true, staerkeDef:.5, besch:'Nebel ist ein Medium, kein Schleier: er leuchtet nicht selbst, sondern nimmt das Licht auf, das ihn trifft. Hängt ein Scheinwerfer, Laser oder Lichtstrahl in der Kette, wird sein Strahl im Nebel sichtbar — an welcher Stelle der Nebel steht, ist dafür gleich. „Ohne Licht“ ist die Helligkeit dort, wo kein Scheinwerfer steht, „Im Licht“, wie stark er aufleuchtet, wo einer hinfällt. Stärke ist die Dichte. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
+  nebel:{ label:'Theaternebel', art:'gl', medium:true, staerkeDef:.4, besch:'Nebel ist ein Medium, kein Schleier: er leuchtet nicht selbst, sondern nimmt das Licht auf, das ihn trifft. Hängt ein Scheinwerfer, Laser oder Lichtstrahl in der Kette, wird sein Strahl im Nebel sichtbar — an welcher Stelle der Nebel steht, ist dafür gleich. „Ohne Licht“ ist die Helligkeit dort, wo kein Scheinwerfer steht — sie folgt der Umgebung, ein Wert um 1 lässt das Bild darunter so hell wie zuvor, darunter schluckt der Nebel, darüber glüht er; „Im Licht“, wie stark er aufleuchtet, wo einer hinfällt. Stärke ist die Dichte. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
     params:[{k:'sorte',lbl:'Sorte',sel:[['dunst','Dunst'],['schwaden','Schwaden'],['boden','Bodennebel']],def:'schwaden'},
       {k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},
-      {k:'grundlicht',lbl:'Ohne Licht',min:0,max:1,step:.05,def:.45},
+      {k:'grundlicht',lbl:'Ohne Licht',min:0,max:1.5,step:.05,def:.85},
       {k:'streuung',lbl:'Im Licht',min:0,max:2,step:.05,def:1},
       {k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.7},
       {k:'dicke',lbl:'Dicke',min:.1,max:1.5,step:.05,def:.8},
@@ -26874,14 +26874,14 @@ function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:f
 const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7] };
 /* Jede Nebelsorte bringt ihren Satz mit - gesetzt beim Wechsel, aber nur, solange die Werte noch die der
    vorigen Sorte sind (eigene bleiben stehen). Wie bei den Partikel-Arten. */
-const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auftrieb:0,tempo:.4,grundlicht:.3},
-  schwaden:{skala:2,turbulenz:.45,lage:.7,dicke:.8,kante:.5,auftrieb:.12,tempo:.6,grundlicht:.45},
-  boden:{skala:2.5,turbulenz:.5,lage:.74,dicke:1.2,kante:.8,auftrieb:-.15,tempo:.4,grundlicht:.5} };
+const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auftrieb:0,tempo:.4,grundlicht:.95},
+  schwaden:{skala:2,turbulenz:.45,lage:.7,dicke:.8,kante:.5,auftrieb:.12,tempo:.6,grundlicht:.85},
+  boden:{skala:2.5,turbulenz:.5,lage:.74,dicke:1.2,kante:.8,auftrieb:-.15,tempo:.4,grundlicht:.8} };
 function nebelSorte(e){ const alt=NEBEL_SORTEN[e._sorteVor||'schwaden']||NEBEL_SORTEN.schwaden, neu=NEBEL_SORTEN[e.sorte]||alt;
   if(Object.keys(alt).every(k=>Math.abs(e[k]-alt[k])<1e-6)) Object.keys(neu).forEach(k=>{ e[k]=neu[k]; });
   e._sorteVor=e.sorte; }
 function artFarben(e){ const alt=ART_FARBEN[e._artVor||'schnee']||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; } e._artVor=e.art; }
-function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
+function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false,99); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
 /* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
 function beispiel(){ const e=neuerEffekt('helligkeit'); STAPEL=[e]; offenId=e.id; renderStapel(); }
 
@@ -27309,6 +27309,11 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
   gl_FragColor=vec4(col*inside, 1.0); }`,
   nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_streuung,u_grundlicht,u_sorte,u_sogX,u_sogY; uniform vec3 u_farbe; uniform sampler2D u_licht;
 float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.34,0.64,u_turbulenz); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
+/* Grob verwaschene Umgebung: neun Griffe reichen, der Nebel braucht keine Schaerfe, nur die Gegend. */
+vec3 umgebung(vec2 uv){ vec3 s=texture2D(u_tex,uv).rgb*2.0;
+  for(int i=0;i<8;i++){ float w=float(i)*0.7853981634; float rr=(i<4)?0.055:0.115;
+    s+=texture2D(u_tex, clamp(uv+vec2(cos(w),sin(w))*rr, 0.0, 1.0)).rgb; }
+  return s*0.1; }
 void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
   /* Stroemung: gleichfoermiger Zug aus Wind und Auftrieb (starr, darf unbegrenzt laufen) plus Sog zur Absaugung.
      Der Sog haengt vom Ort ab und wuerde das Feld endlos verschmieren - darum zwei Phasen, die sich abloesen. */
@@ -27326,9 +27331,15 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
     float top=u_lage+rip, weich=mix(0.22,0.012,u_kante);
     d=smoothstep(top-weich,top+weich,yy)*(1.0-smoothstep(top+u_dicke,top+u_dicke+0.3,yy))*(0.55+0.45*g); }   /* Bodennebel: Schicht mit Kante */
   d=clamp(d,0.0,1.0);
-  /* Nebel leuchtet nicht selbst: die Farbe wird mit dem Licht multipliziert, das an dieser Stelle ankommt. */
+  /* Nebel leuchtet nicht selbst, er nimmt Licht auf. Zwei Quellen: die Scheinwerfer aus dem Licht-Puffer
+     und das Umgebungslicht der Szene. Letzteres war frueher eine feste Zahl - dann zog der Nebel helle
+     Stellen herunter und dunkle herauf, und das Bild wurde flau und grau (Caspar_D, 10.09.2026). Jetzt
+     wird die Umgebung aus dem Bild selbst genommen, grob verwaschen: ueber Hellem ist der Nebel hell,
+     ueber Dunklem dunkel. Er behaelt einen Teil der Farbe darunter, sonst grauen satte Bilder aus. */
   vec3 L=texture2D(u_licht,uv).rgb;
-  gl_FragColor=vec4(mix(c.rgb, u_farbe*(u_grundlicht+L*u_streuung), d), c.a); }`,
+  vec3 um=umgebung(uv); float lum=dot(um,vec3(0.299,0.587,0.114));
+  vec3 grund=u_farbe*mix(vec3(lum),um,0.6)*u_grundlicht;
+  gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_streuung, d), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
   float base=1.0-u_boden; float h=(v_uv.y-base)/max(0.05,u_hoehe*(1.0+0.5*u_takt));
@@ -27711,10 +27722,10 @@ function zeichneFrame(t){
   /* Zeit: der Player ist die einzige Audioquelle. */
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
   function effekteJSON(){ return STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_'))); }
-  function presetJSON(){ return JSON.stringify({ fassung:2, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON() }); }
+  function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON() }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
-    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, alt:!(r.fassung>=2)}; } return {grund:null, effekte:[], leer:true}; }
+    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
   /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
      verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
   /* Theaternebel und Dunst sind seit dem 10.09.2026 EIN Effekt mit drei Sorten. Alte Ablagen wandern hinueber:
@@ -27727,7 +27738,7 @@ function zeichneFrame(t){
       if(typeof r.groesse==='number') o.skala=Math.max(1,Math.min(10,6.5-4*r.groesse));
       if(typeof r.tempo==='number'&&r.tempo>5) o.tempo=Math.max(.05,Math.min(2,12/r.tempo)); }
     ['schwaden','het','groesse'].forEach(k=>{ delete o[k]; }); return o; }
-  function effektAusRezept(r,alt){ if(!r||!r.typ) return null;
+  function effektAusRezept(r,alt,fassung){ if(!r||!r.typ) return null;
     if(r.typ==='dunst'||(r.typ==='nebel'&&r.sorte==null)) r=nebelAusAlt(r);
     if(!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false;
     /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
@@ -27749,11 +27760,14 @@ function zeichneFrame(t){
       if(T.ohneStaerke){ const s=(typeof r.staerke==='number')?r.staerke:1; if(s!==1){ if(r.typ==='fahrt'){ e.zoom=1-(1-e.zoom)*s; e.weite*=s; } else if(r.typ==='puls') e.wucht*=s; else if(r.typ==='kippen') e.neigung*=s; } e.staerke=1; }
       e.staerke=Math.max(0,Math.min(1,+e.staerke||0));
       if((T.art==='post'||T.art==='gl'||T.art==='grund')&&!T.verrFrei) e.verr='ueber';
+      /* Bis Fassung 2 war "Ohne Licht" ein fester Grauwert, seit Fassung 3 ein Anteil der Umgebung.
+         Auf mittelheller Umgebung entspricht der alte Wert ungefaehr dem 2,2-fachen. */
+      if(r.typ==='nebel'&&(fassung|0)<3&&typeof e.grundlicht==='number') e.grundlicht=Math.min(1.5,e.grundlicht*2.2);
       if(r.typ==='nebel') e._sorteVor=e.sorte;   /* sonst vergleicht nebelSorte nach dem Laden gegen die falsche Sorte */
       if(r.typ==='sicherung'&&r.verr==='abwedeln') e.verr='nachbelichten';   /* Ablagen aus der Abwedeln-Zeit: Schwarz abgewedelt ist nichts */
       if(alt&&r.typ==='farbton'&&r.invert){ e.winkel=-e.winkel; e.invert=0; } }   /* invert hiess bis Fassung 1 nur: andere Richtung */
     return e; }
-  function presetSetzen(arr,alt){ STAPEL=arr.map(r=>effektAusRezept(r,alt)).filter(Boolean); renderStapel(); }
+  function presetSetzen(arr,alt,fassung){ STAPEL=arr.map(r=>effektAusRezept(r,alt,fassung)).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
       if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
@@ -27839,7 +27853,7 @@ function zeichneFrame(t){
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
-    if(rezeptDa){ presetSetzen(R.effekte,R.alt); pStat('Effektkette des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch keine Effektkette beim Titel'); }
+    if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat('Effektkette des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch keine Effektkette beim Titel'); }
     quellenUI(); vorbStand(); { const k=$('#tbs-vorbKoerper'); if(k){ k.hidden=true; k.innerHTML=''; } const b=$('#tbs-vorbKlapp'); if(b){ b.textContent='\u25b8'; b.title='aufklappen'; } }   /* zugeklappt starten, sie braucht viel Platz */
     t0=performance.now();
     grundLaden();
@@ -27861,14 +27875,14 @@ function zeichneFrame(t){
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     const DATA2={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
     const R=rezeptLesen(rezept);
-    return songCache[id]={ DATA:DATA2, song:s, grund:R.grund, vorbereitung:R.vorbereitung, rezept:R.effekte, alt:R.alt, pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
+    return songCache[id]={ DATA:DATA2, song:s, grund:R.grund, vorbereitung:R.vorbereitung, rezept:R.effekte, alt:R.alt, fassung:R.fassung, pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
   const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
   function clipAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-clip')) return;
     const cv=document.createElement('canvas'); cv.className='tbs-clip'; kasten.appendChild(cv);
     const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
     clips.push(m);
-    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.VORB=vorbAus(d.vorbereitung); m.STAPEL=d.rezept.map(r=>effektAusRezept(r,d.alt)).filter(Boolean);
+    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.VORB=vorbAus(d.vorbereitung); m.STAPEL=d.rezept.map(r=>effektAusRezept(r,d.alt,d.fassung)).filter(Boolean);
       const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
       m.grund={art:seite.art,nr:seite.nr};
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
