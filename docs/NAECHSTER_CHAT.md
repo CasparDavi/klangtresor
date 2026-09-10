@@ -2517,3 +2517,14 @@ Offen: Schritt 2 (eigen-2.mp4 …, Karte als Liste), 3 (Vorgaberegel + Bühnenle
   Neubau beim Modusklick, Videofehler nimmt die Leiste mit, Wache bei Titel-Analyse), alle behoben. Nicht am Fenster
   getestet (kein zweites App-Fenster) — Jörg prüft. Offen: Schritt 5 (WOERTER.md: Lebendbild oder „dynamisches
   Titelbild“, Kachel = drei Dinge), Glas-Entwürfe, bin/eigen-artwork.js im Lauf prüfen.
+
+### Glas (11.09.2026, Jörg: „mach mal die Glasscheibeneffekte“) — im Haus
+Gruppe **Glas** im Studio, alle Leinwand-Maler (`art:'mal'`, Verrechnung „Über“): **Risse im Glas** (verzweigte Linien
+von Einschlägen, Licht- und Schattenkante, Wachsen stehend / mit der Zeit / Ast für Ast im Takt, Muster als Saat),
+**Beschlag** (Bild weichgezeichnet unter hellem Schleier, vom Rand her und in Flecken, stehend oder zuwachsend),
+**Tropfen treffen die Scheibe** (auf einen Teil der Schläge Ring + bleibende Linse), **Tropfen laufen herunter**
+(Linsen mit Spur, Stöße im Takt). Linse = Kopie der Malfläche, umgekehrt und 1,25× vergrößert im Kreis, dazu
+Lichtkante/Schattenkante/Glanzpunkt (`linse()`, `glasKopie()`). Labor-Rauchtest: alle vier zeichnen und bewegen sich;
+Sichtprobe auf „Die Braut von Corinth“ gut. Eingespleißt per einbau2.py.
+Namensfrage offen (Jörg brainstormt: Effekt-Bild, KlangTresor-Bild, Musik-Bild, Rhythmus-Bild, Beat-Bild,
+KlangTresor-Visual; mein Vorschlag Taktbild, zweiter Platz Lebendbild) — erst auf sein Wort umbenennen.
