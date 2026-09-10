@@ -91,14 +91,22 @@ function mb(bytes) { return (bytes / 1048576).toFixed(1) + ' MB'; }
 const AUSGABEBUCH = path.join(WURZEL, 'library', 'effektclips.json');
 function ausgabebuch(){ try { return JSON.parse(fs.readFileSync(AUSGABEBUCH, 'utf8')) || {}; } catch (e) { return {}; } }
 function ausgabebuchSchreiben(b){ try { fs.writeFileSync(AUSGABEBUCH, JSON.stringify(b, null, 1)); } catch (e) {} }
-/* Laenge in Sekunden, oder null. Ohne ffprobe faellt die Erkennung aus - dann wird archiviert wie bisher. */
-function videoLaenge(datei){
+/* Laenge, Breite und Hoehe, oder null. Ohne ffprobe faellt die Erkennung aus - dann wird archiviert. */
+function videoMass(datei){
   try {
     const t = require('node:child_process').execFileSync('ffprobe',
-      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nk=1:nw=1', datei],
-      { encoding: 'utf8', timeout: 20000 }).trim();
-    const z = parseFloat(t); return isFinite(z) && z > 0 ? z : null;
+      ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height',
+       '-show_entries', 'format=duration', '-of', 'default=nk=1:nw=1', datei],
+      { encoding: 'utf8', timeout: 20000 }).trim().split(/\s+/);
+    const breite = parseInt(t[0], 10), hoehe = parseInt(t[1], 10), dauer = parseFloat(t[2]);
+    if (!isFinite(dauer) || dauer <= 0) return null;
+    return { dauer, breite: breite || 0, hoehe: hoehe || 0 };
   } catch (e) { return null; }
+}
+/* Liegt das Rezept wirklich beim Titel? Nur dann stimmt die Begruendung, der Clip sei jederzeit neu
+   zu malen - sonst waere das Loeschen ein Verlust ohne Deckung (Gegenlesen, 11.09.2026). */
+function rezeptDa(songId){
+  try { return fs.statSync(path.join(SONGS, songId, 'eigen-effekt.json')).size > 0; } catch (e) { return false; }
 }
 /* Ist dieses Video-Artwork unser eigener Clip? Antwort: 'eigen' | 'fremd' | 'unklar' */
 /* Schon einmal als eigener Clip erkannt? Dann gar nicht erst holen. */
@@ -106,15 +114,24 @@ function schonErkannt(songId, url){
   const e = ausgabebuch()[songId];
   return Array.isArray(e) && e.some(x => x.sunoUrl && x.sunoUrl === url);
 }
+/* Ist dieses Video-Artwork unser eigener Clip? Antwort: 'eigen' | 'fremd' | 'unklar'
+   Drei Bedingungen muessen ZUSAMMEN gelten, denn ein Fehlurteil kostet fremdes Material:
+     1. das Rezept liegt beim Titel - nur dann ist der Clip wirklich jederzeit neu zu malen,
+     2. Laenge UND Bildgroesse passen zu einem gebuchten Eintrag,
+     3. es passt GENAU EINER, nicht mehrere.
+   Bei jedem Zweifel 'fremd', also archivieren: lieber eine Datei zu viel als eine zu wenig. */
 function eigenerClip(songId, url, datei){
   const buch = ausgabebuch(), eintraege = buch[songId];
   if (!Array.isArray(eintraege) || !eintraege.length) return 'fremd';
   if (eintraege.some(e => e.sunoUrl && e.sunoUrl === url)) return 'eigen';
-  const dauer = videoLaenge(datei);
-  if (dauer == null) return 'unklar';
-  const treffer = eintraege.find(e => Math.abs((e.sekunden || 0) - dauer) <= 0.05);
-  if (!treffer) return 'fremd';
-  treffer.sunoUrl = url; treffer.erkannt = new Date().toISOString();
+  if (!rezeptDa(songId)) return 'fremd';
+  const m = videoMass(datei);
+  if (!m) return 'unklar';
+  const passend = eintraege.filter(e => Math.abs((e.sekunden || 0) - m.dauer) <= 0.05
+    && (!e.breite || !m.breite || (e.breite === m.breite && e.hoehe === m.hoehe)));
+  if (passend.length !== 1) return 'fremd';
+  passend[0].sunoUrl = url; passend[0].erkannt = new Date().toISOString();
+  passend[0].gemessen = { dauer: +m.dauer.toFixed(3), breite: m.breite, hoehe: m.hoehe };
   ausgabebuchSchreiben(buch);
   return 'eigen';
 }
@@ -128,7 +145,21 @@ async function ladeDatei(url, ziel) {
   if (!url) return 'fehlt';
   if (fs.existsSync(ziel) && fs.statSync(ziel).size > 0) return 'vorhanden';
 
-  const teil = ziel + '.teil';
+  /* Ein liegengebliebenes Bruchstueck gehoert zu der Adresse, von der es kam. Wechselt das
+     Video-Artwork, ist das alte Bruchstueck wertlos: fortgesetzt entstuende ein Zwitter aus zwei
+     Dateien, dessen Kopf noch die alten Angaben traegt. Darum steht die Adresse daneben, und passt
+     sie nicht, faengt der Download von vorn an (gefunden beim Gegenlesen, 11.09.2026). */
+  const teil = ziel + '.teil', teilQuelle = teil + '.quelle';
+  if (fs.existsSync(teil)) {
+    let alteQuelle = null;
+    try { alteQuelle = fs.readFileSync(teilQuelle, 'utf8'); } catch (e) {}
+    if (alteQuelle !== url) {
+      try { fs.unlinkSync(teil); } catch (e) {}
+      try { fs.unlinkSync(teilQuelle); } catch (e) {}
+    }
+  }
+  try { fs.writeFileSync(teilQuelle, url); } catch (e) {}
+  const fertig = (ergebnis) => { try { fs.unlinkSync(teilQuelle); } catch (e) {} return ergebnis; };
 
   for (let versuch = 1; versuch <= VERSUCHE; versuch++) {
     /* Vor dem try, nicht darin: catch und finally lesen beides. */
@@ -148,9 +179,9 @@ async function ladeDatei(url, ziel) {
       // 416 = "Range nicht erfüllbar" -> Datei ist schon vollständig
       if (r.status === 416 && schonDa > 0) {
         fs.renameSync(teil, ziel);
-        return 'geladen';
+        return fertig('geladen');
       }
-      if (r.status === 403 || r.status === 404) return 'fehlt';
+      if (r.status === 403 || r.status === 404) return fertig('fehlt');
       if (r.status === 429) {                       // gedrosselt
         await schlaf(8000 * versuch);
         continue;
@@ -165,14 +196,20 @@ async function ladeDatei(url, ziel) {
       await new Promise(res => strom.end(res));
 
       if (fs.statSync(teil).size === 0) throw new Error('leere Datei');
+      /* Angekuendigte Groesse gegen die angekommene: eine zu kurze Datei ist keine Datei. */
+      const soll = Number(r.headers.get('content-length')) || 0;
+      if (soll > 0) {
+        const ist = fs.statSync(teil).size - (anhaengen ? schonDa : 0);
+        if (ist < soll) throw new Error('unvollstaendig: ' + ist + ' von ' + soll + ' Bytes');
+      }
       fs.renameSync(teil, ziel);
-      return 'geladen';
+      return fertig('geladen');
 
     } catch (e) {
       const grund = still ? `${STILLSTAND / 1000} s ohne Daten` : e.message;
       if (versuch === VERSUCHE) {
         console.log(`      ✗ ${path.basename(ziel)}: ${grund}`);
-        return 'fehler';
+        return fertig('fehler');
       }
       await schlaf(2000 * versuch);
     } finally {
@@ -204,6 +241,7 @@ async function ladeDatei(url, ziel) {
   console.log('');
 
   const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0 };
+  const eigeneTitel = [];
   let bytes = 0;
   const start = Date.now();
 
@@ -236,9 +274,22 @@ async function ladeDatei(url, ziel) {
       if (e === 'geladen' && name === 'artwork.mp4' && fs.existsSync(ziel)) {
         const urteil = eigenerClip(s.id, s.videoCoverUrl, ziel);
         if (urteil === 'eigen') {
-          fs.unlinkSync(ziel); zaehler.geladen--; zaehler.eigen++;
-          ergebnisse[ergebnisse.length - 1] = 'E';
-          await schlaf(PAUSE_MS); continue;
+          /* Nicht spurlos: neben dem Titel bleibt eine Notiz, was entschieden wurde und woher die
+             Datei wieder zu holen waere. Verloren ist nichts, sie liegt weiter bei Suno - aber ohne
+             Notiz wuerde ein Fehlurteil nie auffallen (Gegenlesen, 11.09.2026). */
+          try {
+            fs.writeFileSync(path.join(ordner, 'artwork.mp4.eigen.json'), JSON.stringify({
+              hinweis: 'Eigener Effektclip, bei Suno hochgeladen. Nicht archiviert, weil er sich aus '
+                + 'eigen-effekt.json jederzeit neu malen laesst. Zum Zurueckholen: diese Datei loeschen '
+                + 'und den Eintrag in library/effektclips.json entfernen, dann holt ihn der naechste Medienlauf.',
+              url: s.videoCoverUrl, entschieden: new Date().toISOString(),
+              gemessen: videoMass(ziel), bytes: fs.statSync(ziel).size
+            }, null, 1));
+            fs.unlinkSync(ziel);
+            zaehler.geladen--; zaehler.eigen++; eigeneTitel.push(s.titel);
+            ergebnisse[ergebnisse.length - 1] = 'E';
+            await schlaf(PAUSE_MS); continue;
+          } catch (x) { console.log(`      ! ${s.titel.slice(0,40)}: Notiz ging nicht, Datei bleibt liegen — ${x.message}`); }
         }
       }
       if (e === 'geladen' && fs.existsSync(ziel)) bytes += fs.statSync(ziel).size;
@@ -313,7 +364,10 @@ async function ladeDatei(url, ziel) {
   console.log('\n--- fertig ---');
   console.log(`neu geladen:   ${zaehler.geladen}  (${mb(bytes)})`);
   console.log(`schon da:      ${zaehler.vorhanden}`);
-  if (zaehler.eigen) console.log(`eigene Clips:  ${zaehler.eigen} — auf Suno hochgeladen, nicht archiviert (Rezept und Quelle liegen beim Titel)`);
+  if (zaehler.eigen) {
+    console.log(`eigene Clips:  ${zaehler.eigen} — auf Suno hochgeladen, nicht archiviert (Rezept und Quelle liegen beim Titel)`);
+    if (eigeneTitel.length) console.log('               ' + eigeneTitel.slice(0, 8).join(', ') + (eigeneTitel.length > 8 ? ' …' : ''));
+  }
   console.log(`nicht vorhanden:${zaehler.fehlt}   (z.B. Songs ohne Video)`);
   console.log(`Fehler:        ${zaehler.fehler}`);
   console.log(`Dauer:         ${Math.floor(dauer/60)} min ${dauer%60} s`);

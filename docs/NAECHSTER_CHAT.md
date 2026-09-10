@@ -2936,3 +2936,29 @@ Geprüft: Ausgabebuch wird geschrieben (9,7667 s gebucht, Datei 9,766016 s), uns
 erkannt und die Adresse gemerkt, ein Video anderer Länge am selben Titel bleibt „fremd", ein Titel ohne
 Eintrag bleibt „fremd". **Grenze:** lädt Jörg einen Clip bei einem *anderen* Titel hoch als dem, aus dem er
 stammt, wird er archiviert. Das ist die sichere Richtung.
+
+### Gegenlesen zum Ausgabebuch: drei bestätigte Befunde, alle behoben (11.09.2026)
+Der erste Wurf konnte **echtes Suno-Material still und dauerhaft löschen**. Vierzehn Agenten, drei von
+elf Befunden bestätigt, alle drei schwer:
+
+1. **Das Urteil hing allein an der Länge und war unumkehrbar.** Traf ein echtes Video-Artwork zufällig
+   eines von bis zu neun gebuchten Fenstern (±0,05 s), wurde es gelöscht, seine Adresse als „unsere"
+   gebucht, nie wieder geholt und nie wieder gemeldet. Die gebuchte Bildzahl lag ungenutzt daneben.
+2. **Ein liegengebliebenes Bruchstück (`.teil`) wurde ohne Adressprüfung fortgesetzt.** Wechselt das
+   Video-Artwork, entstand ein Zwitter aus zwei Dateien, dessen Kopf noch die alte Länge trug — ffprobe
+   maß die alte, und das *neue, echte* Video flog raus. Das war ein Fehler im Medienlauf, schon vor
+   heute, den der neue Löschzweig gefährlich machte.
+3. **Die Begründung wurde nie geprüft.** „Lässt sich jederzeit neu malen" gilt nur, wenn das Rezept
+   wirklich beim Titel liegt. Gebucht wurde aber schon beim bloßen Ausgeben.
+
+**Behoben:** Das Urteil braucht jetzt **drei Bedingungen zusammen** — das Rezept liegt beim Titel,
+Länge *und* Bildgröße passen, und es passt **genau ein** Eintrag. Bei jedem Zweifel „fremd", also
+archivieren: lieber eine Datei zu viel als eine zu wenig. Der Server bucht dafür Breite und Höhe mit.
+Ein Bruchstück trägt seine Adresse daneben (`.teil.quelle`) und wird verworfen, sobald sie nicht mehr
+stimmt; dazu wird die angekommene Größe gegen `Content-Length` geprüft. Und gelöscht wird nicht mehr
+spurlos: neben dem Titel bleibt `artwork.mp4.eigen.json` mit Adresse, Messwerten und der Anleitung zum
+Zurückholen liegen. Der Lauf nennt die betroffenen Titel beim Namen.
+
+**Geprüft, alle vier Wege:** ohne Rezept → fremd · mit Rezept und passenden Maßen → eigen · Adresse
+danach gemerkt → ja · gleiche Länge, andere Bildgröße → fremd. Und über das Netz: ein Bruchstück
+fremder Herkunft wird verworfen und die Datei kommt bytegleich an, ein eigenes wird fortgesetzt.

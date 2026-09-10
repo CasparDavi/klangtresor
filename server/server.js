@@ -261,7 +261,7 @@ function liefere(req, res, datei) {
      bei max-age=31536000 ohne Last-Modified fragt er nie wieder nach. */
   /* eigen*.mp4/jpg/mp3 und das Rezept sind ebenso wandelbar: sie werden ersetzt, geloest und
      unter derselben Nummer neu vergeben (nach Loeschen der hoechsten kehrt sie wieder). */
-  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json)$/.test(datei);
+  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json)$/.test(datei);
   const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
   const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();
@@ -1376,7 +1376,16 @@ const server = http.createServer((req, res) => {
           let b = {}; try { b = JSON.parse(fsx.readFileSync(buch, 'utf8')) || {}; } catch (e) {}
           if (!Array.isArray(b[id])) b[id] = [];
           b[id] = b[id].filter(x => Math.abs((x.sekunden || 0) - bilder / rate) > 0.001).slice(-9);
-          b[id].push({ zeit: new Date().toISOString(), sekunden: +(bilder / rate).toFixed(4), bilder, bytes: daten.length });
+          /* Bildgroesse mitbuchen: die Laenge allein ist als Merkmal zu schwach, ein Fehlurteil
+             wuerde beim Medienlauf fremdes Material verwerfen (Gegenlesen, 11.09.2026). */
+          let breite = 0, hoehe = 0;
+          try {
+            const t = require('node:child_process').execFileSync('ffprobe',
+              ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height',
+               '-of', 'default=nk=1:nw=1', aus], { encoding: 'utf8', timeout: 20000 }).trim().split(/\s+/);
+            breite = parseInt(t[0], 10) || 0; hoehe = parseInt(t[1], 10) || 0;
+          } catch (e) {}
+          b[id].push({ zeit: new Date().toISOString(), sekunden: +(bilder / rate).toFixed(4), bilder, breite, hoehe, bytes: daten.length });
           try { fsx.writeFileSync(buch, JSON.stringify(b, null, 1)); } catch (e) {}
         }
         res.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': daten.length, 'Cache-Control': 'no-store' });
