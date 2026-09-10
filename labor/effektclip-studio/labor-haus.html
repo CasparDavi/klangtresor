@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Labor: Effektclip-Studio</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">   <!-- dasselbe Zeichen wie im Haus, damit sich Marke und Videoexport hier pruefen lassen -->
 <link rel="stylesheet" href="tbs.css">
 <style>
   :root{
@@ -208,6 +209,15 @@ window.fetch = function(url, optionen){
     return Promise.resolve(antwort({songs:_eigenArt, anzahl:Object.keys(_eigenArt).length}, 200));
   }
 
+  /* Den Videoschnitt macht das Haus mit ffmpeg, der Pruefstand kann das nicht. Mit ?schnitt=<Port>
+     in der Adresse wird die Anfrage an ein Haus auf diesem Port weitergereicht - so laesst sich der
+     ganze Weg einmal pruefen. Ohne den Schalter faellt der Export auf die Rohaufnahme zurueck,
+     genau wie bei einem Nutzer ohne laufendes Haus. */
+  if(pfad === '/api/effektclip-schnitt'){
+    var sp = new URLSearchParams(location.search).get('schnitt');
+    if(!sp) return Promise.resolve(new Response('kein Haus', {status:503}));
+    return _echterFetch('http://127.0.0.1:'+encodeURIComponent(sp)+pfad+(roh.indexOf('?')>=0?roh.slice(roh.indexOf('?')):''), optionen);
+  }
   return _echterFetch(url, optionen);
 };
 </script>

@@ -80,7 +80,8 @@ h1{
    Kein Knopfaussehen - er soll die Ueberschrift bleiben. Die id heisst
    NICHT "marke" als Klasse: ".marke" ist seit langem das Modell-Abzeichen
    auf den Kacheln und absolut positioniert. Als id ist der Name frei. */
-#marke{cursor:pointer}
+#marke{cursor:pointer;display:flex;align-items:center;gap:.42em}
+#markezeichen{width:1.05em;height:1.05em;border-radius:.22em;flex:0 0 auto;display:block}
 #marke:hover{filter:brightness(1.18)}
 /* Das Feld ist EIN Rahmen: Pfeil, Marken und Eingabe darin. Der Pfeil
    ist leise, bis man ihn braucht. */
@@ -3906,7 +3907,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
            Einstiegssatz im Fenster dahinter, und das ist auch die
            Stelle, an die er gehoert: im Namen ist die fremde Marke
            unzulaessig, in der Beschreibung erlaubt. -->
-    <h1 id="marke" onclick="werAuf()" title="Version, Urheber, Mitstreiter">KlangTresor</h1>
+    <!-- Das Hauszeichen vor dem Namen (Caspar_D, 10.09.2026: "das klangtresor favicon gehoert auch vor
+         das Wort KlangTresor im UI"). Es holt sich das Bild aus dem Seitenkopf, damit es nur EINE
+         Fassung des Zeichens gibt: aendert sich das Favicon, aendert sich die Marke mit. -->
+    <h1 id="marke" onclick="werAuf()" title="Version, Urheber, Mitstreiter"><img id="markezeichen" alt="" aria-hidden="true">KlangTresor</h1>
     <!-- Das Suchfeld mit Filter DARIN (Caspar_D, 20.08.2026): vorn ein
          Pfeil, standardmaessig leer - Klick oeffnet die Kategorien. Ist
          eine gewaehlt, steht sie als Marke vorn im Feld, und direkt
@@ -4475,6 +4479,11 @@ async function start(){
   zeichnen();
   hashOeffnen();
 }
+
+/* Das Hauszeichen vor der Marke: eine Fassung im Seitenkopf, von dort geholt. Wer das Favicon
+   aendert, aendert damit auch die Marke - und der Videoexport nimmt dasselbe Bild (10.09.2026). */
+(function markeZeichnen(){ const im=document.getElementById('markezeichen'), l=document.querySelector('link[rel="icon"]');
+  if(im&&l&&l.href) im.src=l.href; })();
 
 /* ---- AKTUELL BLEIBEN -------------------------------------------------
    Die Seite lud den Katalog einmal beim Start; danach aenderten ihn
@@ -26941,6 +26950,19 @@ function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), [bw,bh]=(ber
   const W=Math.max(1,Math.round(bw*sc)), H=Math.max(1,Math.round(bh*sc));
   [lein,oa,ob,oc,ores,okc,ovb,olicht].forEach(c=>{ c.width=W; c.height=H; }); }
 
+/* ---- LOOP-MODUS (Caspar_D, 10.09.2026: "als seemless loop waere schon schoen, gerade bei Schneefall,
+   Feuer, Funkenflug"): fuer den Videoexport wird jede Geschwindigkeit auf ein ganzes Vielfaches von
+   1/Cliplaenge eingerastet. Dann steht nach L Sekunden jede Flocke, jede Flamme und jeder Streifen
+   wieder genau am Anfang - ein echter Loop, kein Ueberblenden. Die Aenderung ist unsichtbar, weil die
+   Flocke hoechstens ein Prozent schneller faellt. LOOP=0 heisst: normaler Betrieb, nichts rastet ein. */
+let LOOP=0;
+const lpR = r => LOOP>0 ? Math.max(1,Math.round(r*LOOP))/LOOP : r;                    /* Rate: Umlaeufe je Sekunde */
+const lpP = p => LOOP>0 ? LOOP/Math.max(1,Math.round(LOOP/Math.max(1e-3,p))) : p;     /* Periode in Sekunden */
+const lpW = w => LOOP>0 ? 2*Math.PI*lpR(w/(2*Math.PI)) : w;                            /* Kreisfrequenz im Sinus */
+const lpV = (v,weite) => LOOP>0 ? Math.max(1,Math.round(v*LOOP/weite))*weite/LOOP : v; /* Geschwindigkeit, die bei `weite` umbricht */
+/* Diese Effekte koennen nicht loopen: der Nachzieheffekt fuettert sich selbst, die vier Shader lesen
+   Rauschen entlang einer geraden Zeitachse (kommt im zweiten Schritt mit vierdimensionalem Rauschen). */
+const LOOP_NEIN=['nachzieh','wellen','kaustik','dunst','flammen'];
 const tri=ph=>4*Math.abs(((ph%1)+1)%1-0.5)-1;
 function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
   for(let i=S.length-1;i>=0;i--){ const bt=S[i][0]; if(bt>t) continue; const dt=t-bt; if(dt>1.5) break; if(nurEins && S[i][1]!==1) continue; s+=Math.exp(-dt*abkling); }
@@ -26968,7 +26990,7 @@ function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&
 /* Pegel 0..1 des Antriebs zur Zeit t; merkt Phase und Periodenindex am Effekt fuer die Vorschau. */
 function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=null; e._lmRoh=1; if(q==='stetig') return 1;
   const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), form=e.lmForm||'rampe_ab'; let p, idx, aktiv=true;
-  if(q==='hz'){ const hz=Math.max(0.1,e.lmHz||4), x=t*hz; idx=Math.floor(x); p=x-idx; }
+  if(q==='hz'){ const hz=lpR(Math.max(0.1,e.lmHz||4)), x=t*hz; idx=Math.floor(x); p=x-idx; }
   else { const S=DATA&&DATA.schlaege; if(!S||!S.length){ e._lmRoh=0; return 1; } const eins=(q==='eins'); let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0){ e._lmRoh=0; return 1; }
     const n=eins?1:Math.max(1,(e.lmTeiler|0)||1); let a=i, b; if(eins){ while(a>0&&S[a][1]!==1) a--; b=a+1; while(b<S.length&&S[b][1]!==1) b++; } else { a=i-(i%n); b=a+n; }
     const t0=S[a][0]; const schritt=(S[a+1]?S[a+1][0]-t0:0.5); const t1=(b<S.length)?S[b][0]:t0+schritt*(eins?4:n); const L=Math.max(0.05,t1-t0); p=Math.min(1,(t-t0)/L); idx=a;
@@ -26996,7 +27018,7 @@ function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height;
 function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); stapelBox.querySelectorAll('canvas.tbs-rmvor').forEach(cv=>{ if(cv._e) raumVorschau(cv,cv._e); }); }
 function lmParams(vor){ const d=Object.assign({lmQuelle:'stetig',lmForm:'rampe_ab',lmTeiler:1,lmHz:4,lmTiefe:.8,lmBreite:.3,lmAbkling:1,lmInvers:0,lmVersatz:0,lmAnteil:.5},vor||{});
   return [{k:'lm',lm:true},{k:'lmQuelle',versteckt:true,def:d.lmQuelle},{k:'lmForm',versteckt:true,def:d.lmForm},{k:'lmTeiler',versteckt:true,def:d.lmTeiler},{k:'lmHz',versteckt:true,def:d.lmHz},{k:'lmTiefe',versteckt:true,def:d.lmTiefe},{k:'lmBreite',versteckt:true,def:d.lmBreite},{k:'lmAbkling',versteckt:true,def:d.lmAbkling},{k:'lmInvers',versteckt:true,def:d.lmInvers},{k:'lmVersatz',versteckt:true,def:d.lmVersatz},{k:'lmAnteil',versteckt:true,def:d.lmAnteil},{k:'lmSchritte',versteckt:true,def:[1,.35,1,.35,1,.35,1,.35]},{k:'lmWeich',versteckt:true,def:0}]; }
-function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/Math.max(0.1,e.atempo||4))) : pulswert(t,e.abkling,e.nurEins); }
+function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/lpP(Math.max(0.1,e.atempo||4)))) : pulswert(t,e.abkling,e.nurEins); }
 function mische(a,b,x){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*x)).join(',')+')'; }
 function rgba(hex,a){ const p=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); return 'rgba('+p[0]+','+p[1]+','+p[2]+','+Math.max(0,Math.min(1,a))+')'; }
@@ -27059,7 +27081,7 @@ function risseBauen(e,Wn,Hn){ const key=[e.einschlaege,e.aeste,e.laenge,e.muster
 
 /* ---- Scheinwerfer und Schatten: Raum-Geometrie ---------------------------------------------- */
 function raumUrsprung(e,W,H){ if((e.rmUrsprung||'aussen')==='aussen'){ const a=(e.rmWinkel||0)*2*Math.PI; return [W*(0.5+0.8*Math.cos(a)), H*(0.5+0.8*Math.sin(a))]; } return [W*(e.rmUx==null?0.5:e.rmUx), H*(e.rmUy==null?0:e.rmUy)]; }
-function raumZiel(e,t,W,H,O){ const zx=W*(e.rmZx==null?0.5:e.rmZx), zy=H*(e.rmZy==null?0.5:e.rmZy), bw=e.rmBewegung||'fest', tp=Math.max(0.2,e.rmTempo||8), wt=(e.rmWeite==null?0.5:e.rmWeite), ph=t/tp+e.id*0.13;
+function raumZiel(e,t,W,H,O){ const zx=W*(e.rmZx==null?0.5:e.rmZx), zy=H*(e.rmZy==null?0.5:e.rmZy), bw=e.rmBewegung||'fest', tp=lpP(Math.max(0.2,e.rmTempo||8)), wt=(e.rmWeite==null?0.5:e.rmWeite), ph=t/tp+e.id*0.13;
   const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, ease=u=>u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
   if(bw==='wandernd') return [zx+W*0.42*wt*Math.sin(2*Math.PI*ph), zy+H*0.42*wt*Math.sin(2*Math.PI*(ph*1.3+e.id*0.2))];
   if(bw==='bogen'){ const s=Math.sin(2*Math.PI*ph); return [zx+W*0.46*wt*s, zy-H*0.3*wt*(1-s*s)]; }
@@ -27137,13 +27159,13 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
   const O=raumUrsprung(e,Wv,Hv); x.fillStyle='#fff'; x.beginPath(); x.arc(Math.max(4,Math.min(Wv-4,O[0])),Math.max(4,Math.min(Hv-4,O[1])),4,0,7); x.fill(); x.restore(); }
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
-    if(e.wachsen==='zeit') lim=Math.min(1,t/Math.max(1,e.dauer))*(R.maxOrd+1);
+    if(e.wachsen==='zeit') lim=(LOOP>0?1:Math.min(1,t/Math.max(1,e.dauer)))*(R.maxOrd+1);   /* im Loop ausgewachsen, sonst gaebe es eine Naht */
     else if(e.wachsen==='takt'){ let b=0; for(const s of DATA.schlaege){ if(s[0]<=t) b++; else break; } lim=b; }
     const zeichne=(farbe,al,br,dx,dy)=>{ cx.strokeStyle=rgba(farbe,al); cx.lineCap='round'; cx.lineJoin='round';
       for(const s of R.segs){ if(s.ord>=lim) continue; const f=Math.min(1,lim-s.ord); const x2=s.x1+(s.x2-s.x1)*f, y2=s.y1+(s.y2-s.y1)*f;
         cx.lineWidth=Math.max(0.3,br*s.w); cx.beginPath(); cx.moveTo(s.x1+dx,s.y1+dy); cx.lineTo(x2+dx,y2+dy); cx.stroke(); } };
     zeichne(e.dunkel,0.55*a,e.breite*1.7,0.8,0.8); zeichne(e.hell,0.9*a,e.breite*0.75,0,0); return; }
-  if(e.typ==='beschlag'){ const a=Math.min(1,e.staerke), p=(e.wachsen==='zeit')?Math.min(1,t/Math.max(1,e.dauer)):1; if(p<=0) return;
+  if(e.typ==='beschlag'){ const a=Math.min(1,e.staerke), p=(e.wachsen==='zeit'&&LOOP<=0)?Math.min(1,t/Math.max(1,e.dauer)):1;   /* im Loop ausgewachsen */ if(p<=0) return;
     /* Schleier: das Bild weichgezeichnet und aufgehellt - auf eine Kopie, dann durch eine Maske (Rand + Flecken) zurueck. */
     if(!e._bc){ e._bc=document.createElement('canvas'); e._bm=document.createElement('canvas'); e._bm.width=48; e._bm.height=64; }
     if(e._bc.width!==Wn||e._bc.height!==Hn){ e._bc.width=Wn; e._bc.height=Hn; }
@@ -27170,21 +27192,21 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const stoss=e.boeen?pulswert(t,4,0)*(e.boeenStaerke==null?.5:e.boeenStaerke)*Hn*0.06:0;
     const kopie=glasKopie(cx,Wn,Hn);
     for(let i=0;i<n;i++){ const r=e.groesse*(0.5+0.5*hs(i+3000)), v=(0.4+hs(i+1000))*e.tempo*Hn*0.07, L=Hn+4*r;
-      const y=((hs(i+2000)*L+t*v+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r, x=hs(i)*Wn+Math.sin(t*1.7+i)*e.zittern*3+Math.sin(t*0.23+i*2.3)*e.zittern*6;
+      const y=((hs(i+2000)*L+t*lpV(v,L)+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r, x=hs(i)*Wn+Math.sin(lpW(1.7)*t+i)*e.zittern*3+Math.sin(lpW(0.23)*t+i*2.3)*e.zittern*6;
       if(e.spur>0){ const sl=Math.min(y+r, e.spur*Hn*0.35*(0.6+0.4*hs(i+5000))); cx.strokeStyle='rgba(255,255,255,'+(0.16*a).toFixed(3)+')'; cx.lineCap='round'; cx.lineWidth=Math.max(0.8,r*0.55); cx.beginPath(); cx.moveTo(x,y-sl); cx.lineTo(x,y); cx.stroke(); }
       linse(cx,kopie,x,y,r,a,e.farbe); }
     return; }
-  if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/e.tempo)%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
+  if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/lpP(e.tempo))%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
   else if(e.typ==='licht'||e.typ==='schatten'){ lichtMalen(e,cx,t,Wn,Hn); }
-  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*(e.flimmerTempo||20)*t+e.id*7)), a=Math.min(1,e.staerke)*antriebWert(e,t)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI, tp=Math.max(0.5,e.tempo||8), sw=(e.schwenk==null?0.5:e.schwenk);
+  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*lpR(e.flimmerTempo||20)*t+e.id*7)), a=Math.min(1,e.staerke)*antriebWert(e,t)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI, tp=Math.max(0.5,e.tempo||8), sw=(e.schwenk==null?0.5:e.schwenk);
     /* Der Faecherpunkt liegt IMMER ausserhalb des Bildes (Caspar_D, 11.09.2026): wandernd auf einer Bahn um das
        Bild herum (Radien 0,8 > 0,5, also nie drin), fest auf dem gewaehlten Punkt - liegt der im Bild, wird er auf
        die naechste Kante hinausgeschoben. Die Strahlen zielen ins Bild und schwenken darum. Tempo = Sekunden je Schwenk. */
     let ox,oy,dir;
     if(e.quelle==='fest'){ let ux=e.ux, uy=e.uy; if(ux>0.02&&ux<0.98&&uy>0.02&&uy<0.98){ const dl=ux, dr=1-ux, du=uy, dd=1-uy, mn=Math.min(dl,dr,du,dd); if(mn===dl) ux=-0.08; else if(mn===dr) ux=1.08; else if(mn===du) uy=-0.08; else uy=1.08; }
-      ox=Wn*ux; oy=Hn*uy; dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/tp)*sw; }
-    else { const w=2*Math.PI*t/(tp*4)+e.id; ox=Wn*(0.5+0.8*Math.sin(w)); oy=Hn*(0.5+0.8*Math.cos(w*0.8+e.id*1.3)); dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/tp*0.7)*sw; }
+      ox=Wn*ux; oy=Hn*uy; dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/lpP(tp))*sw; }
+    else { const w=2*Math.PI*t/lpP(tp*4)+e.id; ox=Wn*(0.5+0.8*Math.sin(w)); oy=Hn*(0.5+0.8*Math.cos(w*0.8+e.id*1.3)); dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/lpP(tp/0.7))*sw; }
     /* Jeder Strahl: weicher Saum und heller Kern; der Ansatz liegt ausserhalb, darum bleibt der Strahl bis weit ins Bild voll
        und laeuft erst am Ende aus (Tiefen-Check: vorher lief er ab dem Ansatz aus und war im Bild fast unsichtbar). */
     cx.lineCap='round'; const w0=Math.max(1,e.breite*40);
@@ -27192,10 +27214,10 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       for(const [lw,al] of [[w0*3.2,a*0.22],[w0,a]]){ const grad=cx.createLinearGradient(ox,oy,x1,y1); grad.addColorStop(0,rgba(e.farbe,al)); grad.addColorStop(0.6,rgba(e.farbe,al*0.85)); grad.addColorStop(1,rgba(e.farbe,0));
         cx.strokeStyle=grad; cx.lineWidth=lw; cx.beginPath(); cx.moveTo(ox,oy); cx.lineTo(x1,y1); cx.stroke(); } }
     cx.fillStyle=rgba(e.farbe,a); cx.beginPath(); cx.arc(ox,oy,e.breite*28+2,0,7); cx.fill(); }
-  else if(e.typ==='streifen'){ const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/e.tempo)%1)*per, bw=e.breite*per, a=Math.min(1,e.staerke), ton=e.ton||'hell';
+  else if(e.typ==='streifen'){ const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/lpP(e.tempo))%1)*per, bw=e.breite*per, a=Math.min(1,e.staerke), ton=e.ton||'hell';
     cx.save(); cx.translate(Wn/2,Hn/2); cx.rotate(ang);
     /* Dunkle Baender multiplizieren, helle gehen ueber die Verrechnung (Tiefen-Check: "dunkle" gab es nur ueber die Verrechnung). */
-    for(let i=-1;i<=e.anzahl+1;i++){ const y=-diag/2+i*per+off, dunkel=(ton==='dunkel')||(ton==='beide'&&((((i-Math.floor(t/e.tempo))%2)+2)%2)===1), c=dunkel?'0,0,0':'255,255,255'; const grad=cx.createLinearGradient(0,y,0,y+bw);
+    for(let i=-1;i<=e.anzahl+1;i++){ const y=-diag/2+i*per+off, dunkel=(ton==='dunkel')||(ton==='beide'&&((((i-Math.floor(t/lpP(e.tempo)))%2)+2)%2)===1), c=dunkel?'0,0,0':'255,255,255'; const grad=cx.createLinearGradient(0,y,0,y+bw);
       grad.addColorStop(0,'rgba('+c+',0)'); grad.addColorStop(0.5,'rgba('+c+','+a+')'); grad.addColorStop(1,'rgba('+c+',0)');
       cx.globalCompositeOperation=dunkel?'multiply':(VMODE[e.verr]||'screen'); cx.fillStyle=grad; cx.fillRect(-diag/2,y,diag,bw); }
     cx.restore(); }
@@ -27207,7 +27229,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   else if(e.typ==='sicherung'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000),
       env=u=>(u<0.15?u/0.15:1-(u-0.15)/0.85), zit=1-e.zittern*0.5*(0.5+0.5*Math.sin(2*Math.PI*37*t)); let amt=0;
     if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i)<Math.min(1,e.haeufigkeit/10)){ const u=(t-S[i][0])/dauer; if(u>=0&&u<=1) amt=env(u)*zit; } }
-    else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=env(u)*zit; }
+    else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=env(u)*zit; }
     amt*=Math.min(1,e.staerke);   /* Staerke IST die Tiefe des Einbruchs (Staerke-Regel) */
     if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
   else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse, w=e.wind;
@@ -27217,32 +27239,32 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* Windstoss: auf einem zufaelligen Teil der Schlaege ein Stoss mit zufaelliger Richtung und Wucht, klingt ab. */
     const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege; for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const h=hs(j+7000); if(h<0.35) continue; g+=(hs(j+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
     for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
-      if(e.art==='schnee'){ const v=sp*e.tempo*Hn*0.06; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.7+i)*12+w*t*Hn*0.05)%Wn+Wn)%Wn; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); }
-      else if(e.art==='regen'){ const v=sp*e.tempo*Hn*0.6; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+w*t*Hn*0.3)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); }
-      else if(e.art==='asche'){ const v=sp*e.tempo*Hn*0.03; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.4+i*1.3)*20+w*t*Hn*0.04)%Wn+Wn)%Wn; cx.globalAlpha=0.4+0.6*hs(i+4000); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blasen'){ const v=sp*e.tempo*Hn*0.08; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*1.6+i*1.1)*10+w*t*Hn*0.04)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=1; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='staub'){ const v=sp*e.tempo*Hn*0.012; y=((y0+Math.sin(t*0.3+i)*8-t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*0.25+i*0.7)*14+w*t*Hn*0.02)%Wn+Wn)%Wn; const tief=hs(i+4500); cx.globalAlpha=(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blaetter'){ const v=sp*e.tempo*Hn*0.09; y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*1.2+i)*28+w*t*Hn*0.08)%Wn+Wn)%Wn; const rot=t*(1.5+hs(i+4600)*2)+i; cx.save(); cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); }
-      else { const v=sp*e.tempo*Hn*0.25; y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(t*3+i*2.1)*6+w*t*Hn*0.1)%Wn+Wn)%Wn; const fl=0.5+0.5*Math.sin(t*23+i*5); cx.globalAlpha=0.3+0.7*fl; cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
+      if(e.art==='schnee'){ const v=lpV(sp*e.tempo*Hn*0.06,Hn); y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); }
+      else if(e.art==='regen'){ const v=lpV(sp*e.tempo*Hn*0.6,Hn); y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); }
+      else if(e.art==='asche'){ const v=lpV(sp*e.tempo*Hn*0.03,Hn); y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; cx.globalAlpha=0.4+0.6*hs(i+4000); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blasen'){ const v=lpV(sp*e.tempo*Hn*0.08,Hn); y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=1; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='staub'){ const v=lpV(sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8-t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; const tief=hs(i+4500); cx.globalAlpha=(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blaetter'){ const v=lpV(sp*e.tempo*Hn*0.09,Hn); y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); }
+      else { const v=lpV(sp*e.tempo*Hn*0.25,Hn); y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=0.3+0.7*fl; cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
     cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
     if(e.linien>0){ cx.globalAlpha=e.linien*a; cx.fillStyle=cx.createPattern(e._mc,'repeat'); cx.fillRect(0,0,Wn,Hn); }
     if(e.vignette>0){ cx.globalAlpha=1; const R=Math.hypot(Wn,Hn)/2, vg=cx.createRadialGradient(Wn/2,Hn/2,R*0.45,Wn/2,Hn/2,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,'+(e.vignette*a).toFixed(3)+')'); cx.fillStyle=vg; cx.fillRect(0,0,Wn,Hn); }
-    if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*8*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
+    if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*lpR(8)*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
     cx.globalAlpha=1; }
   else if(e.typ==='feuer'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa;
     const bp=1+0.5*lmSchub(e,t), baseY=Hn*e.boden, hoehe=e.hoehe*Hn*bp,   /* Schub: auf dem Schlag bis anderthalbfach so hoch (Tiefen-Check) */ x0=Wn*(e.mitte-e.breite/2), bw=Wn*e.breite, n=e.dichte, tw=bw/n*1.6, M=6;
     if(e.glut>0){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2); }
-    for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(t*(9+7*hs(i+400))+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
-      for(let k=0;k<M;k++){ const h=(k/M+t*e.tempo*sp*0.9+hs(i+700))%1, sway=Math.sin(t*3*sp+hs(i+800)*10+k)*tw*0.5*(0.3+h), x=xi+sway, y=baseY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55;
+    for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(lpW(9+7*hs(i+400))*t+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
+      for(let k=0;k<M;k++){ const h=(k/M+t*lpR(e.tempo*sp*0.9)+hs(i+700))%1, sway=Math.sin(lpW(3*sp)*t+hs(i+800)*10+k)*tw*0.5*(0.3+h), x=xi+sway, y=baseY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55;
         const c=[0,1,2].map(q=>Math.round(pa[q]+(pb[q]-pa[q])*Math.min(1,h*1.3)));
         const gr=cx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba('+c.join(',')+','+al.toFixed(3)+')'); gr.addColorStop(1,'rgba('+c.join(',')+',0)');
         cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } } }
   else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*antriebWert(e,t);
     const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=e.spreiz*Math.PI/180, br=e.breite*Math.PI/180;
-    const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/e.tempo)*e.schwenk*0.6;
-    for(let i=0;i<n;i++){ const ang=basis+(n>1?(i/(n-1)-0.5):0)*spreiz+Math.sin(2*Math.PI*t/e.tempo*1.3+hs(i)*9)*e.schwenk*0.12, w=br*0.5*(0.6+0.8*hs(i+30));   /* halber Oeffnungswinkel, damit Breite (Grad) der ganze ist (Tiefen-Check) */
+    const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/lpP(e.tempo))*e.schwenk*0.6;
+    for(let i=0;i<n;i++){ const ang=basis+(n>1?(i/(n-1)-0.5):0)*spreiz+Math.sin(2*Math.PI*t/lpP(e.tempo/1.3)+hs(i)*9)*e.schwenk*0.12, w=br*0.5*(0.6+0.8*hs(i+30));   /* halber Oeffnungswinkel, damit Breite (Grad) der ganze ist (Tiefen-Check) */
       const gr=cx.createRadialGradient(px,py,0,px,py,L); gr.addColorStop(0,rgba(e.farbe,0.55*a*(0.5+0.5*hs(i+60)))); gr.addColorStop(1,rgba(e.farbe,0));
       cx.fillStyle=gr; cx.beginPath(); cx.moveTo(px,py); cx.lineTo(px+Math.cos(ang-w)*L,py+Math.sin(ang-w)*L); cx.lineTo(px+Math.cos(ang+w)*L,py+Math.sin(ang+w)*L); cx.closePath(); cx.fill(); } }
   else if(e.typ==='korn'){ const a=Math.min(1,e.staerke); if(!e._kt){ e._kt=document.createElement('canvas'); e._kt.width=96; e._kt.height=96; e._kn=-1; }
@@ -27352,7 +27374,7 @@ void main(){ vec4 c=texture2D(u_tex,v_uv);
 };
 function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
   if(e.typ==='vlauf'){ const waag=(e.richtung==='links'||e.richtung==='rechts'), dir=(e.richtung==='hoch'||e.richtung==='links')?-1:1, L=waag?Wn:Hn;
-    let off=((t/e.tempo*dir)%1+1)%1*L; if(e.takt) off=(off+pulswert(t,6,0)*L*0.3)%L; off=((off%L)+L)%L; const bs=e.band*L;
+    let off=((t/lpP(e.tempo)*dir)%1+1)%1*L; if(e.takt) off=(off+pulswert(t,6,0)*L*0.3)%L; off=((off%L)+L)%L; const bs=e.band*L;
     if(waag){ cres.drawImage(srcCv,off-L,0); cres.drawImage(srcCv,off,0);
       if(bs>0){ cres.fillStyle='rgba(0,0,0,.8)'; cres.fillRect(off-bs,0,bs,Hn); if(off-bs<0) cres.fillRect(off-bs+L,0,bs,Hn); } }
     else { cres.drawImage(srcCv,0,off-L); cres.drawImage(srcCv,0,off);
@@ -27360,7 +27382,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
   else if(e.typ==='wackeln'){ const bp=e.takt?Math.min(1,pulswert(t,7,0)):0, amp=e.amplitude*Wn, B=e.baender, bh=Hn/B;   /* Warble immer, der Kick am Schlag */
     /* Kick im Takt: das ganze Bild schlaegt auf dem Schlag zur Seite (Richtung wechselt je Schlag), darueber das Band-Warble (Tiefen-Check: vorher wurde nur das Warble skaliert, das Zittern doppelt). */
     let kick=0; if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; kick=((i>=0&&(i%2))?-1:1)*e.amplitude*Wn*1.5*bp; }
-    for(let i=0;i<B;i++){ const y=i*bh, dx=kick+Math.sin(t*e.tempo+i*1.3)*amp+(Math.random()-.5)*amp*0.4; cres.drawImage(srcCv,0,y,Wn,bh+1,dx,y,Wn,bh+1); } }
+    for(let i=0;i<B;i++){ const y=i*bh, dx=kick+Math.sin(lpW(e.tempo)*t+i*1.3)*amp+(Math.random()-.5)*amp*0.4; cres.drawImage(srcCv,0,y,Wn,bh+1,dx,y,Wn,bh+1); } }
   else if(e.typ==='rgb'){ const bp=pulsHub(e,t), hub=(e.invert?Math.max(0,1-bp):bp), d=e.versatz*Wn*hub, rad=e.winkel*Math.PI/180, ox=Math.cos(rad)*d, oy=Math.sin(rad)*d;
     cres.globalCompositeOperation='lighter';
     const chans=[['#ff0000',ox,oy],['#00ff00',0,0],['#0000ff',-ox,-oy]];
@@ -27371,11 +27393,11 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
     cres.drawImage(srcCv,0,0); cres.globalAlpha=e.nachhall; cres.drawImage(e._spur,Math.cos(rad)*d,Math.sin(rad)*d); cres.globalAlpha=1;   /* Geist ueber dem Bild, nicht beide auf Leere (Tiefen-Check: Alpha < 1, die Spur blutete zu schnell aus) */
     const sp=e._spur.getContext('2d'); frisch(sp); sp.clearRect(0,0,Wn,Hn); sp.drawImage(ores,0,0); }
   else if(e.typ==='spiegel'){ cres.drawImage(srcCv,0,0); const hy=e.horizont*Hn, band=3;
-    for(let y=Math.floor(hy);y<Hn;y+=band){ const sy=2*hy-y-band; const tief=(y-hy)/Math.max(1,Hn-hy), dx=e.wellen*Wn*0.02*Math.sin(y*e.skala/Hn*2*Math.PI+t*e.tempo)*(0.3+tief); if(sy<0) cres.drawImage(srcCv,0,0,Wn,1,dx,y,Wn,band); else cres.drawImage(srcCv,0,sy,Wn,band,dx,y,Wn,band); }   /* unter dem doppelten Horizont die oberste Zeile gestreckt (Himmel) statt einer Naht (Tiefen-Check) */
+    for(let y=Math.floor(hy);y<Hn;y+=band){ const sy=2*hy-y-band; const tief=(y-hy)/Math.max(1,Hn-hy), dx=e.wellen*Wn*0.02*Math.sin(y*e.skala/Hn*2*Math.PI+lpW(e.tempo)*t)*(0.3+tief); if(sy<0) cres.drawImage(srcCv,0,0,Wn,1,dx,y,Wn,band); else cres.drawImage(srcCv,0,sy,Wn,band,dx,y,Wn,band); }   /* unter dem doppelten Horizont die oberste Zeile gestreckt (Himmel) statt einer Naht (Tiefen-Check) */
     if(e.verblassen>0){ const g=cres.createLinearGradient(0,hy,0,Hn); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,'+e.verblassen.toFixed(2)+')'); cres.fillStyle=g; cres.fillRect(0,hy,Wn,Hn-hy); } }
   else if(e.typ==='bloecke'){ cres.drawImage(srcCv,0,0); const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000); let slot=-1;
     if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i+7000)<Math.min(1,e.haeufigkeit/10)&&t-S[i][0]<=dauer) slot=i; }
-    else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer); if(t>=start&&t<=start+dauer) slot=k; }
+    else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer); if(t>=start&&t<=start+dauer) slot=k; }
     if(slot>=0){ for(let b=0;b<e.anzahl;b++){ const q=slot*131+b*17, bw=Wn*e.groesse*(0.4+0.6*hs(q+1)), bh=Hn*e.groesse*0.35*(0.4+0.6*hs(q+2)), bx=hs(q+3)*(Wn-bw), by=hs(q+4)*(Hn-bh), dx=(hs(q+5)-0.5)*2*e.versatz*Wn;
         if(e.farbversatz){ /* echte Kanaltrennung: Rot und Cyan des Blocks gegeneinander versetzt, additiv auf Schwarz (Tiefen-Check: vorher ein heller Doppelblock) */
           const sh=Math.max(1,Math.abs(dx)*0.5)*(dx<0?-1:1); cres.fillStyle='#000'; cres.fillRect(bx+dx-Math.abs(sh),by,bw+Math.abs(sh)*2,bh);
@@ -27624,7 +27646,7 @@ function zeichneFrame(t){
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   for(const e of STAPEL){ if(!aktiv(e))continue; const s=EFFEKTE[e.typ].ohneStaerke?1:e.staerke;
-    if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/e.tempo)*e.weite*s; pany+=tri(t/(e.tempo*1.3))*e.weite*s; }
+    if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/lpP(e.tempo))*e.weite*s; pany+=tri(t/lpP(e.tempo*1.3))*e.weite*s; }
     else if(e.typ==='puls'){ const hb=pulsHub(e,t), amt=e.wucht*s, z=e.invert?amt*(1-hb):amt*hb; scaleMul*=(1+z); }
     else if(e.typ==='kippen'){ const hb=pulsHub(e,t); rotG+=(e.invert?-1:1)*e.neigung*s*hb; }
   }
@@ -27772,6 +27794,102 @@ function zeichneFrame(t){
     return e; }
   function presetSetzen(arr,alt,fassung){ STAPEL=arr.map(r=>effektAusRezept(r,alt,fassung)).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
+  /* ---- VIDEOEXPORT (Caspar_D, 10.09.2026: "ein 10 sec videoexport aus unseren effektclips, damit man
+     das in suno benutzen kann"). Seitenverhaeltnis der Quelle, stumm, ganze Takte bis zehn Sekunden,
+     das Hauszeichen unten rechts, MP4 ins Download-Verzeichnis. Aufgenommen wird von einem EIGENEN
+     Maler in Ausgabegroesse - die Breite des Pults soll nicht ueber die Ausgabe entscheiden.
+     Die Zeit im Bild folgt der Uhr, nicht der Bildzaehlung: dann stimmt die Laenge auch auf einer
+     langsamen Maschine, es fehlen hoechstens Zwischenbilder. */
+  const MAX_SEK=10, BILDRATE=30, LANGE_SEITE=1080;
+  function taktLaenge(){ const S=(DATA&&DATA.schlaege)||[]; const einsen=[]; for(let i=0;i<S.length;i++) if(S[i][1]===1) einsen.push(S[i][0]);
+    if(einsen.length<3) return {takt:0, einsen:[]};
+    const d=[]; for(let i=1;i<einsen.length;i++) d.push(einsen[i]-einsen[i-1]);
+    d.sort((a,b)=>a-b); return {takt:d[Math.floor(d.length/2)], einsen}; }
+  /* Start auf dem naechstgelegenen Taktanfang, Laenge in ganzen Takten bis hoechstens zehn Sekunden. */
+  /* Die Laenge wird auf ganze Bilder gerundet, weil der Loop an der Bildnummer haengt: aufgenommen wird
+     [0, L), das Bild bei L faellt weg - es ist ja dasselbe wie das erste (Caspar_D, 10.09.2026: "aber es
+     muss doch das letzte bild fehlen, damit das erste = das letzte ist"). */
+  function ausschnitt(){ const {takt,einsen}=taktLaenge(); const jetzt=zeit();
+    const runden=x=>Math.max(2,Math.round(x*BILDRATE))/BILDRATE;
+    if(!takt||takt<=0.05) return { t0:jetzt, L:runden(MAX_SEK), takte:0, takt:0 };
+    let a=einsen[0]; for(const e of einsen){ if(e<=jetzt) a=e; else break; }
+    const takte=Math.max(1,Math.floor(MAX_SEK/takt)), L=runden(Math.min(MAX_SEK,takte*takt));
+    return { t0:a, L, takte, takt:L/takte }; }
+  /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
+     Das erkannte Raster schwankt um Millisekunden; taktgetriebene Effekte traefen die Naht sonst nicht.
+     Hier steht der Takt exakt auf L/Takte, damit sich nach L alles genau wiederholt. */
+  function raster(t0,L,takte,taktLang){ const S=(DATA&&DATA.schlaege)||[]; if(!takte||!taktLang) return S;
+    let proTakt=4; { const d=[]; for(let i=1;i<S.length;i++){ const dt=S[i][0]-S[i-1][0]; if(dt>0.05&&dt<2) d.push(dt); }
+      if(d.length){ d.sort((a,b)=>a-b); proTakt=Math.max(1,Math.min(16,Math.round(taktLang/d[Math.floor(d.length/2)]))); } }
+    const schritt=taktLang/proTakt, neu=[];
+    for(let j=-proTakt*2; j<=proTakt*(takte+2); j++) neu.push([t0+j*schritt, (((j%proTakt)+proTakt)%proTakt)+1]);
+    return neu; }
+  let hauszeichen=null;
+  function zeichenHolen(){ if(hauszeichen) return hauszeichen; const l=document.querySelector('link[rel="icon"]'); if(!l||!l.href) return null;
+    const im=new Image(); im.src=l.href; hauszeichen=im; return im; }
+  function zeichenMalen(cx,W,H){ const im=zeichenHolen(); if(!im||!im.complete||!im.naturalWidth) return;
+    const k=Math.round(Math.min(W,H)*0.07), rand=Math.round(Math.min(W,H)*0.03);
+    cx.save(); cx.setTransform(1,0,0,1,0,0); cx.globalAlpha=0.85; cx.globalCompositeOperation='source-over';
+    cx.drawImage(im, W-rand-k, H-rand-k, k, k); cx.restore(); }
+  function ausgabeMass(){ const [bw,bh]=qMass(bild); const sk=Math.min(1,LANGE_SEITE/Math.max(bw,bh));
+    const g=x=>Math.max(2,Math.round(x*sk/2)*2);   /* H.264 will gerade Kantenlaengen */
+    return [g(bw),g(bh)]; }
+  async function video(){
+    if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
+    if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
+    const typ=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
+    if(!typ){ pStat('Kein Videoformat verfügbar'); return; }
+    const {t0,L,takte,takt}=ausschnitt(); const [W,H]=ausgabeMass(); const N=Math.round(L*BILDRATE);
+    const nicht=[...new Set(STAPEL.filter(e=>aktiv(e)&&LOOP_NEIN.includes(e.typ)).map(e=>EFFEKTE[e.typ].label))];
+    const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true;
+    pStat('nehme auf: '+W+'×'+H+', '+L.toFixed(2)+' s'+(takte?' ('+takte+' Takte)':'')+', '+N+' Bilder …');
+    const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+    const gemerkt=bundel();
+    const m=Object.assign({},gemerkt,{ lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),
+      DATA:Object.assign({},DATA,{ schlaege: raster(t0,L,takte,takt) }) });
+    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
+    [m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; });
+    /* Jedes Bild wird EINZELN angefordert. Nur so entspricht Bild i in der Datei auch Bild i des Clips;
+       laesst man den Strom selbst abtasten, verschiebt sich das gegeneinander und der Schnitt trifft
+       nicht die Naht. Dass der Kodierer die letzten Bilder verliert, faengt die Zugabe unten ab. */
+    const strom=cv.captureStream(0), spur=strom.getVideoTracks()[0];
+    const mr=new MediaRecorder(strom,{ mimeType:typ, videoBitsPerSecond: Math.min(12000000, Math.round(W*H*BILDRATE*0.12)) });
+    const teile=[]; mr.ondataavailable=ev=>{ if(ev.data&&ev.data.size) teile.push(ev.data); };
+    const fertig=new Promise(f=>{ mr.onstop=f; });
+    LOOP=L; let bilder=0;
+    try{
+      mr.start();
+      const start=performance.now();
+      /* Bild fuer Bild, nicht nach der Uhr: der Inhalt jedes Bildes steht fest, die Uhr bestimmt nur,
+         wann es abgeschickt wird. So sind es immer genau N Bilder und der Loop schliesst sich. */
+      /* Der Inhalt haengt an der Bildnummer, nicht an der Uhr: die Uhr sagt nur, welches Bild gerade
+         dran waere. Aufgenommen wird [0, L) - das Bild bei L faellt weg, es ist ja wieder das erste. */
+      /* Aufgenommen wird ueber die Naht hinaus: der Kodierer ist mit den letzten Bildern noch nicht
+         fertig, wenn die Aufnahme endet, und verliert sie. Der Inhalt wiederholt sich ja, also sind
+         die Zugaben schlicht der Anfang des naechsten Durchlaufs. Das Haus schneidet danach auf
+         genau N Bilder zurueck - damit steht [0, L) drin und das Bild bei L fehlt, wie es soll. */
+      const zugabe=Math.round(BILDRATE*0.7);
+      for(let i=0;i<N+zugabe;i++){
+        const soll=start+i*1000/BILDRATE, wartezeit=soll-performance.now();
+        if(wartezeit>3) await new Promise(r=>setTimeout(r,wartezeit)); else await new Promise(r=>requestAnimationFrame(r));
+        setzen(m); try{ zeichneFrame(t0+(i%N)/BILDRATE); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
+        spur.requestFrame(); bilder++; }
+      await new Promise(r=>setTimeout(r,120));
+      mr.stop(); await fertig;
+    } finally { LOOP=0; setzen(gemerkt); if(knopf) knopf.disabled=false; }
+    const endung=typ.indexOf('mp4')>=0?'mp4':'webm';
+    let blob=new Blob(teile,{type:typ}), geschnitten=false;
+    /* Der Kodierer wird mit den letzten ein bis zwei Bildern nicht mehr fertig, bevor die Aufnahme endet.
+       Fuer den Loop muss aber genau [0, L) drin sein. Das Haus schneidet darum mit ffmpeg auf die genaue
+       Bildzahl. Antwortet es nicht - etwa im Pruefstand ohne Hausserver -, bleibt die Rohaufnahme. */
+    if(endung==='mp4'){ try{ const a=await fetch('/api/effektclip-schnitt?bilder='+N+'&rate='+BILDRATE,{method:'POST',headers:{'Content-Type':'video/mp4'},body:blob});
+      if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000){ blob=b2; geschnitten=true; } } }catch(x){} }
+    const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),20000);
+    pStat('ausgegeben: '+name+' · '+(blob.size/1048576).toFixed(1)+' MB · '+N+' Bilder'
+      +(nicht.length?' — ohne Loop: '+nicht.join(', '):(geschnitten?' — nahtlos':' — Loop ungenau, das Haus hat nicht geschnitten')));
+  }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
       if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
   async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); rezeptDa=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
@@ -27796,7 +27914,8 @@ function zeichneFrame(t){
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
       +'<div id="tbs-stapel"></div></div>'
-      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
+      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
+      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Zehn Sekunden als MP4 ins Download-Verzeichnis - ganze Takte, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
       +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung und Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Quelle \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
       +'</div></div></div>';
@@ -27826,6 +27945,7 @@ function zeichneFrame(t){
     bauVorrat();
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
+    $('#tbs-pVideo').onclick=video;
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
     $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };

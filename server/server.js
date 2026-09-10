@@ -1338,6 +1338,41 @@ const server = http.createServer((req, res) => {
         });
       }).on('error', (e) => jsonAntwort(res, { ok: false, fehler: e.message }));
   }
+  /* ---- EFFEKTCLIP: Video auf die genaue Bildzahl schneiden ------------------------------------
+     Der Browser nimmt den Clip selbst auf, verliert dabei aber am Ende ein bis zwei Bilder - der
+     Kodierer ist damit noch nicht fertig, wenn die Aufnahme endet. Fuer einen nahtlosen Loop muss
+     genau [0, L) drinstehen: das Bild bei L ist dasselbe wie das erste und faellt weg (Caspar_D,
+     10.09.2026: "aber es muss doch das letzte bild fehlen, damit das erste = das letzte ist").
+     Darum schneidet ffmpeg hier auf `bilder` Bilder bei fester Bildrate. Der Koerper ist das
+     aufgenommene MP4, die Antwort das geschnittene. Nichts wird abgelegt. */
+  if (p === '/api/effektclip-schnitt' && req.method === 'POST') {
+    const bilder = Math.max(2, Math.min(3000, parseInt(u.searchParams.get('bilder'), 10) || 0));
+    const rate = Math.max(1, Math.min(120, parseInt(u.searchParams.get('rate'), 10) || 30));
+    if (!bilder) { jsonAntwort(res, { fehler: 'bilder fehlt' }, 400); return; }
+    const stuecke = []; let gross = 0;
+    req.on('data', c => { gross += c.length; if (gross > 256*1024*1024) { req.destroy(); return; } stuecke.push(c); });
+    return req.on('end', () => {
+      const fsx = require('node:fs'), pfad = require('node:path'), os = require('node:os');
+      const ordner = fsx.mkdtempSync(pfad.join(os.tmpdir(), 'effektclip-'));
+      const ein = pfad.join(ordner, 'roh.mp4'), aus = pfad.join(ordner, 'clip.mp4');
+      try {
+        fsx.writeFileSync(ein, Buffer.concat(stuecke));
+        require('node:child_process').execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', ein,
+          /* Geschnitten wird nach ZEIT, nicht nach Bildnummer, und ohne Neuabtasten. Die Aufnahme
+             verliert unterwegs gelegentlich ein Bild; nach Bildnummer geschnitten laege die Naht dann
+             daneben. Die Zeitstempel der Aufnahme stimmen aber, weil jedes Bild zu seiner Sollzeit
+             abgeschickt wurde - nach Zeit geschnitten steht also genau [0, L) in der Datei. */
+          '-t', ((bilder - 0.5) / rate).toFixed(4), '-fps_mode', 'passthrough', '-an',   /* ein halbes Bild vor der Naht: das Bild bei L gehoert schon zum naechsten Durchlauf */
+          '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p',
+          '-movflags', '+faststart', aus], { timeout: 120000 });
+        const daten = fsx.readFileSync(aus);
+        res.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': daten.length, 'Cache-Control': 'no-store' });
+        res.end(daten);
+      } catch (e) {
+        jsonAntwort(res, { fehler: 'ffmpeg: ' + String(e.message).slice(0, 200) }, 500);
+      } finally { try { fsx.rmSync(ordner, { recursive: true, force: true }); } catch (e) {} }
+    });
+  }
   if (p === '/api/morgen/roh' && req.method === 'POST') {
     let roh = '';
     req.on('data', s => { roh += s; if (roh.length > 64*1024*1024) req.destroy(); });

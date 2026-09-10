@@ -2865,3 +2865,41 @@ statt 0,5, „Ohne Licht" je Sorte um 0,8 bis 0,95. **Ablagen tragen jetzt `fass
 zweites Laden rechnet nicht noch einmal um.
 
 Als **Regel 6a** aufgenommen: ein Medium mischt gegen seine Umgebung, nicht gegen eine feste Zahl.
+
+## Videoexport für Suno (10.09.2026, Caspar_D: „ein 10 sec videoexport … damit man das in suno benutzen kann")
+Vorgaben von Jörg: Seitenverhältnis der Quelle, stumm, nahtloser Loop („gerade bei Schneefall, Feuer,
+Funkenflug"), das Hauszeichen in der Ecke, ins Download-Verzeichnis.
+
+**Gebaut.** Knopf „10 s ausgeben" im Fuß des Studios. Ein **eigener Maler in Ausgabegröße** (lange Seite
+1080, gerade Kantenlängen für H.264) — die Breite des Pults soll nicht über die Ausgabe entscheiden.
+Länge: ganze Takte bis höchstens zehn Sekunden, auf ganze Bilder gerundet, 30 Bilder je Sekunde.
+Aufgenommen wird mit `MediaRecorder` als **MP4 mit H.264 direkt aus dem Browser** — geprüft, kein Umweg
+über WebM. Das Hauszeichen kommt aus dem `link rel=icon` der Seite, es gibt also nur eine Fassung davon.
+
+**Der Loop.** Im Export läuft der Maler im `LOOP`-Modus: jede Geschwindigkeit rastet auf ein ganzes
+Vielfaches von 1/Cliplänge ein (`lpR`, `lpP`, `lpW`, `lpV`), und das Schlagraster wird durch ein
+**gleichmäßiges** ersetzt (das erkannte schwankt um Millisekunden). **Im Labor bewiesen: das Bild bei t
+und bei t + Cliplänge ist bitgleich, Unterschied 0** — ohne Loop-Modus 3,8. Aufgenommen wird [0, L), das
+Bild bei L fehlt, weil es dasselbe wie das erste ist (Jörgs Einwand, und er hatte recht).
+
+**Der Umweg über das Haus.** `MediaRecorder` ist mit den letzten Bildern noch nicht fertig, wenn die
+Aufnahme endet, und verliert unterwegs gelegentlich eines. Darum wird über die Naht hinaus aufgenommen
+(0,7 s Zugabe, inhaltlich der Anfang des nächsten Durchlaufs) und der neue Endpunkt
+**`POST /api/effektclip-schnitt?bilder=N&rate=30`** schneidet mit ffmpeg nach Zeit auf genau [0, L)
+zurück, ohne neu abzutasten (`-fps_mode passthrough`). Antwortet das Haus nicht — etwa im Prüfstand —,
+bleibt die Rohaufnahme und der Status sagt das.
+
+**Gemessen** (Partikel, Feuer, Helligkeitspuls, 1024×878, 293 Bilder, 9,767 s): der Sprung an der Naht
+liegt bei 7,7, der stärkste normale Bildwechsel derselben Datei bei 7,4, der Median bei 2,9. Die Naht ist
+also **etwa ein kräftiger Bildwechsel**, kein Sprung über mehrere Bilder. Exakt wird sie erst, wenn die
+Aufnahme kein Bild mehr verliert; das ist eine Eigenheit von `MediaRecorder`.
+
+**Was noch nicht loopt:** Nachzieheffekt (füttert sich selbst) und die vier Shader Wellen, Kaustik, Dunst,
+Flammen (lesen Rauschen entlang einer geraden Zeitachse). Der Status nennt sie beim Namen. **Vorbereitet:**
+`web/fremd/webgl-noise/noise4D.glsl` ist geholt und in HERKUNFT.md begründet — mit vier Dimensionen läuft
+die Zeit auf einem Kreis und das Feld ist nach einer Umdrehung exakt dasselbe. Das ist der zweite Schritt.
+
+**Nebenbei:** das Hauszeichen steht jetzt auch vor dem Wort KlangTresor in der Kopfzeile (`#markezeichen`,
+holt sich das Favicon aus dem Seitenkopf). Der Prüfstand hat dasselbe Zeichen im Kopf, damit sich Marke und
+Export dort prüfen lassen, und einen Schalter `?schnitt=<Port>`, um den Schnitt gegen ein zweites Haus zu
+testen.

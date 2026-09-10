@@ -46,3 +46,15 @@ und ein Regler, der eine andere Karte in der Kette braucht, misst allein null.
 
 Der Prüfstand hält seine Effektketten im `localStorage` des Browsers, nicht auf der Platte. Ein
 Neuladen verliert also nichts, ein anderer Browser sieht aber nichts davon.
+
+## Videoexport prüfen
+
+Den Schnitt am Ende des Exports macht das Haus mit ffmpeg, der Prüfstand kann das nicht. Ohne Haus
+bleibt die Rohaufnahme und der Status sagt „Loop ungenau". Für den ganzen Weg ein zweites Haus starten
+und den Schalter setzen:
+
+```bash
+node server/server.js --port 8790          # zweites Haus, nur zum Prüfen
+```
+
+dann `http://127.0.0.1:18811/labor-haus.html?schnitt=8790` öffnen.
