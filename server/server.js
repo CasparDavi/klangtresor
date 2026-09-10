@@ -1346,9 +1346,16 @@ const server = http.createServer((req, res) => {
      Darum schneidet ffmpeg hier auf `bilder` Bilder bei fester Bildrate. Der Koerper ist das
      aufgenommene MP4, die Antwort das geschnittene. Nichts wird abgelegt. */
   if (p === '/api/effektclip-schnitt' && req.method === 'POST') {
-    const bilder = Math.max(2, Math.min(3000, parseInt(u.searchParams.get('bilder'), 10) || 0));
+    /* Erst pruefen, dann begrenzen. Bis 11.09.2026 stand die Begrenzung davor
+       (Math.max(2, ...)), damit war `bilder` nie 0 und die Pruefung darunter konnte nie
+       greifen: ein Aufruf ganz ohne `bilder` bekam still einen Clip aus zwei Bildern statt
+       einer Absage. Gefunden beim Nachsehen, ob der neu gestartete Server den Endpunkt hat. */
+    const rohBilder = parseInt(u.searchParams.get('bilder'), 10);
+    if (!Number.isFinite(rohBilder) || rohBilder < 2) {
+      jsonAntwort(res, { fehler: 'bilder fehlt oder ist kleiner als 2' }, 400); return;
+    }
+    const bilder = Math.min(3000, rohBilder);
     const rate = Math.max(1, Math.min(120, parseInt(u.searchParams.get('rate'), 10) || 30));
-    if (!bilder) { jsonAntwort(res, { fehler: 'bilder fehlt' }, 400); return; }
     const stuecke = []; let gross = 0;
     req.on('data', c => { gross += c.length; if (gross > 256*1024*1024) { req.destroy(); return; } stuecke.push(c); });
     return req.on('end', () => {
