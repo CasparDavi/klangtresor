@@ -3035,7 +3035,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs-rezept .tbs-zeile{margin-bottom:6px}
 /* Werkzeugzeile der Effektkette: zwei Auswahllisten, vier Zeichen-Knoepfe, eine Zeile */
 #tbs .tbs-werkzeuge{flex-wrap:nowrap;gap:6px}
-#tbs .tbs-werkzeuge select{flex:1 1 100px;min-width:90px;width:auto}
+/* + Effekt ist das wichtigere: zwei Drittel, Presets ein Drittel */
+#tbs .tbs-werkzeuge select{flex:1 1 0;min-width:0;width:auto}
+#tbs .tbs-werkzeuge #tbs-vorratSel{flex:2 1 0}
+#tbs .tbs-werkzeuge #tbs-preset{flex:1 1 0}
 #tbs #tbs-vorrat{display:contents}
 /* ---- Bedienung (Caspar_D, 11.09.2026): Quelle als Vorschaubilder, Kette als Tabelle mit Kopfzeile, Akkordeon ---- */
 #tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
@@ -3079,6 +3082,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border:1px solid transparent;background:transparent;border-radius:50%}
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
 #tbs #tbs-kettekopf.leer > *{visibility:hidden}
+#tbs .tbs-leerhinweis{margin-top:12px;font-size:11.5px;color:var(--schwach)}
+#tbs .tbs-leerhinweis a{color:var(--akzent);text-decoration:underline}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -27117,8 +27122,10 @@ function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.tog
 function renderStapel(){
   stapelBox.innerHTML='';
   kettekopfStand();
-  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Noch keine Effekte.<br>Oben die Quelle w\u00e4hlen und mit \u201e+ Effekt\u201c einen einh\u00e4ngen \u2014 oder ein Beispiel laden, an dem man den Puls sofort sieht.<br><button type="button" class="tbs-mini" id="tbs-beispiel">Beispiel laden: Helligkeit schl\u00e4gt</button></div>';
-    const bb=$('#tbs-beispiel'); if(bb) bb.onclick=beispiel; return; }
+  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Noch keine Effekte.<br>Oben die Quelle w\u00e4hlen und mit \u201e+ Effekt\u201c einen einh\u00e4ngen \u2014 oder ein Beispiel laden, an dem man den Puls sofort sieht.<br><button type="button" class="tbs-mini" id="tbs-beispiel">Beispiel laden: Helligkeit schl\u00e4gt</button>'
+      +'<div class="tbs-leerhinweis">Braucht die Quelle vorab Anpassungen \u2014 Helligkeit, Farbe, Gradation \u2014, <a href="#" id="tbs-vorbAuf">die Vorbereitung aufklappen</a>. Sie wirkt, bevor die Effekte greifen.</div></div>';
+    const bb=$('#tbs-beispiel'); if(bb) bb.onclick=beispiel;
+    const va=$('#tbs-vorbAuf'); if(va) va.onclick=ev=>{ ev.preventDefault(); const k=$('#tbs-vorbKoerper'); if(k&&k.hidden) $('#tbs-vorbKlapp').click(); $('#tbs-abVorb').scrollIntoView({block:'start',behavior:'smooth'}); }; return; }
   STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ]; e.zu=(e.id!==offenId);   /* Akkordeon: nur die aktive Karte ist offen */
     const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'');
     const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
@@ -27452,7 +27459,8 @@ function zeichneFrame(t){
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     if(R.effekte.length||R.grund){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Rezept beim Titel'); }
-    quellenUI(); vorbStand(); if($('#tbs-vorbKoerper')&&!$('#tbs-vorbKoerper').hidden) vorbRender(); t0=performance.now();
+    quellenUI(); vorbStand(); { const k=$('#tbs-vorbKoerper'); if(k){ k.hidden=true; k.innerHTML=''; } const b=$('#tbs-vorbKlapp'); if(b){ b.textContent='\u25b8'; b.title='aufklappen'; } }   /* zugeklappt starten, sie braucht viel Platz */
+    t0=performance.now();
     grundLaden();
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
