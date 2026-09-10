@@ -2536,3 +2536,6 @@ Haus (`hatEffektclip`, Karte „Effektclip-Studio“ / „Effektclip liegt beim 
 „Effektclip-Studio (tbs.css|tbs-modul.js)“), Server-Kommentar, Labor-Attrappe, einbau*.py, WOERTER.md (vier Zeilen:
 Effektclip, Rezept, Effektclip-Studio, Bewegtbild). Geblieben: das Präfix `tbs-` für Klassen/IDs (Namensraum, kein
 Fachwort) und der Dateiname `eigen-effekt.json`. Ältere Abschnitte dieser Übergabe sagen noch „Lebendbild“ — historisch.
+- Effektclip abgeschlossen (11.09.2026): Schritte 1–5 im Haus (`652df25`, `e015dbb`, `87b46a8`, `598e31f`, `c5e919c`), CLI
+  `bin/eigen-artwork.js --liste` läuft mit Nummern (4 Titel). Offen nur noch: das Wort „Kachel“ (Rasterfeld, kachel.jpg,
+  Zahlenfelder im Profil — Jörgs Entscheidung) und Jörgs Prüfung von Karte/Bühne am eigenen Fenster.
