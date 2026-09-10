@@ -148,20 +148,39 @@ function passtTeilweise(a, b) {
   return kurz.length >= lang.length * 0.5;
 }
 
+/* Eigene Videos koennen mehrere sein: eigen.mp4 = Nr. 1, eigen-2.mp4 ... (Server vergibt
+   hoechste + 1; die App spielt die hoechste Nummer). Das Werkzeug haelt sich an dieselbe
+   Regel: ein Video kommt als neue Nummer dazu, ein Bild ersetzt eigen.jpg. */
+function eigenNummern(ordner, ext) {
+  let namen = []; try { namen = fs.readdirSync(ordner); } catch (e) {}
+  const nn = [];
+  for (const n of namen) {
+    const mm = new RegExp('^eigen(?:-(\\d+))?\\.' + ext + '$').exec(n); if (!mm) continue;
+    try { if (fs.statSync(path.join(ordner, n)).size <= 0) continue; } catch (e) { continue; }
+    nn.push(mm[1] ? parseInt(mm[1], 10) : 1);
+  }
+  return nn.sort((a, b) => a - b);
+}
+const eigenName = (ext, nr) => (nr > 1 ? `eigen-${nr}.${ext}` : `eigen.${ext}`);
+function eigenDateien(ordner) {
+  return [...eigenNummern(ordner, 'mp4').map((n) => eigenName('mp4', n)), ...eigenNummern(ordner, 'jpg').map((n) => eigenName('jpg', n))];
+}
+
 function zuordnen(wort, datei) {
   const s = einer(wort); if (!s) return;
   if (!fs.existsSync(datei)) { console.log(`  Datei nicht gefunden: ${datei}`); return; }
   const en = path.extname(datei).toLowerCase();
+  const ordner = path.join(SONGS, s.id);
+  const naechste = () => { const nn = eigenNummern(ordner, 'mp4'); return eigenName('mp4', nn.length ? nn[nn.length - 1] + 1 : 1); };
   let name;
-  if (VIDEO.has(en)) name = 'eigen.mp4';
+  if (VIDEO.has(en)) name = naechste();
   else if (BILD.has(en)) name = 'eigen.jpg';
   else if (en === '.mov') {
-    name = 'eigen.mp4';
+    name = naechste();
     console.log('  Hinweis: .mov — die meisten stecken H.264 im Quicktime-Behälter und laufen,');
     console.log('           manche nicht. Wenn das Bild schwarz bleibt, liegt es daran.');
   } else { console.log(`  Womit soll ich ${en} anfangen? Video oder Bild, sonst nichts.`); return; }
 
-  const ordner = path.join(SONGS, s.id);
   fs.mkdirSync(ordner, { recursive: true });
   const ziel = path.join(ordner, name);
   const gab = fs.existsSync(ziel);
@@ -169,14 +188,16 @@ function zuordnen(wort, datei) {
   const mb = fs.statSync(ziel).size / 1048576;
   console.log(`  ${gab ? 'ersetzt' : 'zugeordnet'}: ${s.titel}`);
   console.log(`    ${path.basename(datei)}  →  library/songs/${s.id}/${name}   (${mb.toFixed(1)} MB)`);
-  if (name === 'eigen.mp4' && fs.existsSync(path.join(ordner, 'artwork.mp4')))
+  if (name.endsWith('.mp4') && fs.existsSync(path.join(ordner, 'artwork.mp4')))
     console.log('    Sunos artwork.mp4 bleibt liegen — das eigene wird nur vorgezogen.');
+  if (name !== 'eigen.mp4' && name.endsWith('.mp4'))
+    console.log(`    Als ${name} dazugelegt — die App spielt die hoechste Nummer, also dieses.`);
 }
 
 function loesen(wort) {
   const s = einer(wort); if (!s) return;
   let weg = 0;
-  for (const n of ['eigen.mp4', 'eigen.jpg']) {
+  for (const n of eigenDateien(path.join(SONGS, s.id))) {
     const p = path.join(SONGS, s.id, n);
     if (fs.existsSync(p)) { fs.unlinkSync(p); weg++; console.log(`  entfernt: ${n}`); }
   }
@@ -191,7 +212,8 @@ function liste() {
   let n = 0;
   for (const d of fs.readdirSync(SONGS)) {
     const teile = [];
-    for (const [was, datei] of [['Video', 'eigen.mp4'], ['Bild', 'eigen.jpg']]) {
+    for (const datei of eigenDateien(path.join(SONGS, d))) {
+      const was = datei.endsWith('.mp4') ? 'Video' : 'Bild';
       try { const st = fs.statSync(path.join(SONGS, d, datei));
         if (st.size > 0) teile.push(`${was} ${(st.size / 1048576).toFixed(1)} MB`); } catch (e) {}
     }
@@ -255,7 +277,7 @@ function vorschlaege() {
     const t = genau.length ? genau : teil;
     if (!t.length) continue;
     n++;
-    const schon = t.some((s) => fs.existsSync(path.join(SONGS, s.id, 'eigen.mp4')));
+    const schon = t.some((s) => eigenNummern(path.join(SONGS, s.id), 'mp4').length > 0);
     console.log(`  ${genau.length ? '=' : '~'}${schon ? ' ✓' : '  '} ${d.name.slice(0, 40).padEnd(42)}`
       + t.map((s) => s.titel).join(' / ').slice(0, 42));
   }

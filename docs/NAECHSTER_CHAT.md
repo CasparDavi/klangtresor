@@ -2485,3 +2485,19 @@ Maler img.motiv (cover.jpg), solange er malt, und rührt den Rahmen nicht an. Le
 das Haus nicht mehr); Leertaste und m gehen weiter an den Player. Server unverändert (JSON wird roh abgelegt).
 Offen: Schritt 2 (eigen-2.mp4 …, Karte als Liste), 3 (Vorgaberegel + Bühnenleiste eines|alle|blättern),
 4 (Bühne → artworkBild), 5 (WOERTER.md), Glas-Entwürfe.
+
+### Schritt 2 im Haus (11.09.2026): mehrere eigene Videos je Titel
+- Server: `eigen.mp4` = Nr. 1, dann `eigen-2.mp4`, `eigen-3.mp4` … (Nummer erst beim Schreiben vergeben = höchste + 1,
+  eigener .teil-Name je Anfrage → zwei gleichzeitige Uploads bekommen verschiedene Nummern, im Sandkasten geprüft).
+  Index meldet `videos:[…]`/`bilder:[…]` neben `video`/`bild` (Ja/Nein für den Altbestand), auch aus dem Behälter.
+  PUT ohne `?nr` = dazulegen, `?nr=N` = ersetzen (Bilder schickt die Oberfläche mit `?nr=1`); DELETE `?was=video&nr=N`
+  (ohne nr = 1; ohne was = alles). `eigen*` und `eigen-effekt.json` sind jetzt „wandelbar“ (no-cache + Last-Modified,
+  304), weil eine Nummer nach Löschen der höchsten wiederkehren kann. Sandkasten: Kopie von server.js unter
+  scratchpad/sandkasten mit zwei Attrappen-Titeln, Port 18899, nur eigene PID.
+- Haus: `artworkVideo(id)` nimmt das jüngste eigene Video (höchste Nummer) — die Vorgaberegel für Videos steht
+  damit; Rezept vor Video galt schon (hatLebendbild). Karte „Bewegtbild“ = Liste („spielt · Nr. n“, je „entfernen“,
+  „+ weiteres Video hierher ziehen“); Upload-Sperre je Feld, solange einer läuft.
+- bin/eigen-artwork.js (CLI) und bin/export.js (.teil-Filter) nachgezogen; CLI nicht im Lauf getestet (braucht Katalog).
+- Gegenlesen (2 Blickwinkel, 2 Skeptiker): 7 bestätigt (Race, Nummern-Wiederkehr + Cache, CLI ×3, Export .teil),
+  alle behoben. Offen: Schritt 3 Bühnenleiste (eines | alle | blättern bei Maus im Bild), 4 (Bühne → artworkBild),
+  5 (WOERTER.md), Glas-Entwürfe.

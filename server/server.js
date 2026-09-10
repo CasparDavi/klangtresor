@@ -259,7 +259,9 @@ function liefere(req, res, datei) {
      nicht in die Rahmen einfügen". Die Dateien auf der Platte waren
      richtig - der Browser zeigte seinen Vorrat von vor drei Wochen, denn
      bei max-age=31536000 ohne Last-Modified fragt er nie wieder nach. */
-  const abgeleitet = /(^|\/)kachel\.jpg$/.test(datei);
+  /* eigen*.mp4/jpg/mp3 und das Rezept sind ebenso wandelbar: sie werden ersetzt, geloest und
+     unter derselben Nummer neu vergeben (nach Loeschen der hoechsten kehrt sie wieder). */
+  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json)$/.test(datei);
   const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
   const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();
@@ -3019,6 +3021,25 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      artwork.mp4 und cover.jpg: So faellt kein Medienlauf darueber her,
      man sieht jederzeit, was von wem stammt, und Loeschen macht es
      rueckgaengig. */
+  /* MEHRERE EIGENE VIDEOS UND BILDER (Caspar_D, 11.09.2026: "erstmal kann nur ein
+     handmade Video gespeichert werden, Tarja 'missbraucht' das gerade fuer
+     Hook-Videos aus Suno"). Nr. 1 bleibt eigen.mp4/eigen.jpg, danach eigen-2.mp4,
+     eigen-3.mp4 ... Vergeben wird immer hoechste + 1; die hoechste Nummer ist damit
+     das juengste - die Vorgabe fuers Zeigen. (Loest man die hoechste, kehrt ihre
+     Nummer beim naechsten Upload wieder; liefere() gibt eigen* darum nie lange
+     in den Browser-Vorrat.) */
+  const eigenName = (ext, nr) => (nr > 1 ? 'eigen-' + nr + '.' + ext : 'eigen.' + ext);
+  const eigenNummern = (ordner) => {
+    const aus = { mp4: [], jpg: [] };
+    let namen = []; try { namen = fs.readdirSync(ordner); } catch (e) {}
+    for (const n of namen) {
+      const mm = /^eigen(?:-(\d+))?\.(mp4|jpg)$/.exec(n); if (!mm) continue;
+      try { if (fs.statSync(path.join(ordner, n)).size <= 0) continue; } catch (e) { continue; }
+      aus[mm[2]].push(mm[1] ? parseInt(mm[1], 10) : 1);
+    }
+    aus.mp4.sort((a, b) => a - b); aus.jpg.sort((a, b) => a - b);
+    return aus;
+  };
   if (p === '/api/eigen-artwork') {
     const raus = {};
     try {
@@ -3034,19 +3055,27 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
         /* Das vierte Eigene ist kein Medium, sondern ein Rezept: eigen-effekt.json
            traegt das dynamische Titelbild aus dem Titelbild-Studio (Caspar_D,
            09.09.2026: "ein preset an den Titel gebunden" - die App malt es live). */
-        for (const [feld, datei] of [['video', 'eigen.mp4'], ['bild', 'eigen.jpg'],
-                                     ['ton', 'eigen.mp3'], ['effekt', 'eigen-effekt.json']]) {
+        for (const [feld, datei] of [['ton', 'eigen.mp3'], ['effekt', 'eigen-effekt.json']]) {
           try { if (fs.statSync(path.join(o, datei)).size > 0) hat[feld] = true; } catch (e) {}
         }
+        /* video/bild bleiben als Ja/Nein (Altbestand der Oberflaeche), dazu die Nummern. */
+        const nn = eigenNummern(o);
+        if (nn.mp4.length) { hat.video = true; hat.videos = nn.mp4; }
+        if (nn.jpg.length) { hat.bild = true; hat.bilder = nn.jpg; }
         if (Object.keys(hat).length) raus[d] = hat;
       }
     } catch (e) {}
     /* ... und was davon im Behaelter liegt (Stick): songs/<id>/eigen.* */
     const b = behaelterHolen();
     if (b) for (const rel of b.liste('songs/')) {
-      const m = /^songs\/([^/]+)\/eigen(?:-effekt)?\.(mp4|jpg|mp3|json)$/.exec(rel); if (!m) continue;
+      const m = /^songs\/([^/]+)\/eigen(?:-(\d+))?(?:-effekt)?\.(mp4|jpg|mp3|json)$/.exec(rel); if (!m) continue;
       const e = b.eintrag(rel); if (!e || !e.l) continue;
-      (raus[m[1]] = raus[m[1]] || {})[{ mp4: 'video', jpg: 'bild', mp3: 'ton', json: 'effekt' }[m[2]]] = true;
+      const feld = { mp4: 'video', jpg: 'bild', mp3: 'ton', json: 'effekt' }[m[3]];
+      const h = (raus[m[1]] = raus[m[1]] || {}); h[feld] = true;
+      if (m[3] === 'mp4' || m[3] === 'jpg') {
+        const liste = m[3] === 'mp4' ? 'videos' : 'bilder', nr = m[2] ? parseInt(m[2], 10) : 1;
+        h[liste] = (h[liste] || []); if (!h[liste].includes(nr)) h[liste].push(nr); h[liste].sort((x, y) => x - y);
+      }
     }
     return jsonAntwort(res, { songs: raus, anzahl: Object.keys(raus).length });
   }
@@ -3076,11 +3105,13 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
          beides. Titelbild und Video sind getrennte Entscheidungen -
          wer das Video wegnimmt, will nicht auch sein Titelbild los. */
       const was = (u.searchParams.get('was') || '').toLowerCase();
-      const namen = was === 'bild' ? ['eigen.jpg']
-                  : was === 'video' ? ['eigen.mp4']
+      const nr = Math.max(1, parseInt(u.searchParams.get('nr') || '1', 10) || 1);   /* ?nr=2 nimmt eigen-2.mp4 */
+      const nn = eigenNummern(ordner);
+      const namen = was === 'bild' ? [eigenName('jpg', nr)]
+                  : was === 'video' ? [eigenName('mp4', nr)]
                   : was === 'ton' ? ['eigen.mp3']
                   : was === 'effekt' ? ['eigen-effekt.json']
-                  : ['eigen.mp4', 'eigen.jpg', 'eigen.mp3', 'eigen-effekt.json'];
+                  : [...nn.mp4.map(n => eigenName('mp4', n)), ...nn.jpg.map(n => eigenName('jpg', n)), 'eigen.mp3', 'eigen-effekt.json'];
       let weg = 0;
       for (const n of namen) {
         const f = path.join(ordner, n);
@@ -3097,11 +3128,18 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
          ein WAV zieht, meint dasselbe - eine eigene Fassung. Alles
          landet unter eigen.mp3; der Name sagt "eigener Ton", nicht
          "MPEG Layer III". */
-      const name = /^video\//.test(typ) ? 'eigen.mp4'
-                 : /^image\//.test(typ) ? 'eigen.jpg'
-                 : /^audio\//.test(typ) ? 'eigen.mp3'
-                 : /^application\/json/.test(typ) ? 'eigen-effekt.json' : null;
-      if (!name) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild, Ton oder Effekt-Rezept.' }, 415);
+      /* Video und Bild: ohne ?nr kommt die Datei als NEUE Nummer dazu (hoechste + 1),
+         mit ?nr=N ersetzt sie genau diese. Ton und Rezept gibt es je einmal. */
+      const ext = /^video\//.test(typ) ? 'mp4' : /^image\//.test(typ) ? 'jpg' : null;
+      const wunsch = parseInt(u.searchParams.get('nr') || '', 10);
+      /* Die NUMMER wird erst vergeben, wenn der Rumpf ganz da ist - sonst rechnen zwei
+         gleichzeitige Uploads beide "hoechste + 1" und der zweite ueberschreibt den ersten. */
+      const nameFuer = () => {
+        if (!ext) return /^audio\//.test(typ) ? 'eigen.mp3' : /^application\/json/.test(typ) ? 'eigen-effekt.json' : null;
+        const nn = eigenNummern(ordner)[ext];
+        return eigenName(ext, wunsch > 0 ? wunsch : (nn.length ? nn[nn.length - 1] + 1 : 1));
+      };
+      if (!nameFuer()) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild, Ton oder Effekt-Rezept.' }, 415);
       const DECKEL = 300 * 1024 * 1024;
       const stuecke = []; let gross = 0, abgebrochen = false;
       req.on('data', (c) => {
@@ -3116,10 +3154,13 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
           /* Erst daneben schreiben, dann umbenennen: Bricht die
              Uebertragung ab, bleibt die alte Datei stehen statt einer
              halben neuen. */
-          const vorlaeufig = path.join(ordner, name + '.teil');
+          const name = nameFuer();
+          const nrM = /^eigen(?:-(\d+))?\.(mp4|jpg)$/.exec(name);
+          const nr = nrM ? (nrM[1] ? parseInt(nrM[1], 10) : 1) : undefined;
+          const vorlaeufig = path.join(ordner, name + '.' + process.pid + '-' + Date.now() + '.teil');
           fs.writeFileSync(vorlaeufig, Buffer.concat(stuecke));
           fs.renameSync(vorlaeufig, path.join(ordner, name));
-          jsonAntwort(res, { ok: true, datei: name, bytes: gross });
+          jsonAntwort(res, { ok: true, datei: name, bytes: gross, nr });
         } catch (e) { jsonAntwort(res, { ok: false, grund: String(e.message || e) }, 500); }
       });
       req.on('error', () => {});

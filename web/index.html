@@ -1012,6 +1012,11 @@ select,.knopf{
    Oeffnen neu laden - aus dem Zwischenspeicher kommt sie nie. */
 .capart.hat{min-height:110px}
 .capart .weg{color:var(--schwach);text-decoration:underline;cursor:pointer;font-size:11.5px}
+.capartvid{margin-bottom:6px}
+.capartvid video{max-height:72px}
+.capartvidz{font-size:11px;color:var(--schwach)}
+.capartmehr{margin-top:4px;padding:5px;border:1px dashed var(--rand);border-radius:6px;font-size:11px;color:var(--schwach);text-align:center;cursor:pointer}
+.capartmehr:hover{border-color:var(--akzent);color:var(--text)}
 .capart .weg:hover{color:var(--text)}
 .karte:hover .capmarke.ohne{display:block}
 #cap textarea{width:100%;min-height:70px;background:var(--flaeche2);border:1px solid var(--rand);
@@ -10599,10 +10604,19 @@ function hatLebendbild(s){
    Leere - kein Fehler, kein halbes Bild. */
 function lebendAn(k, id){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAn(k, id); }
 function lebendAus(k){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAus(k); }
-/* Welches Bewegtbild gilt fuer diesen Song - das eigene, sonst Sunos. */
+/* Welches Bewegtbild gilt fuer diesen Song - das eigene, sonst Sunos.
+   Eigene Videos koennen mehrere sein (eigen.mp4 = Nr. 1, eigen-2.mp4 ...; Tarja
+   legt Suno-Hooks ab, 11.09.2026). VORGABE IST EINE REGEL, KEIN REGLER: das
+   juengste (die hoechste Nummer, der Server vergibt sie steigend) spielt. */
+function eigenVideoName(nr){ return 'eigen' + (nr > 1 ? '-' + nr : '') + '.mp4'; }
+function eigenVideoNr(id){
+  const e = _eigenArt && _eigenArt[id]; if (!e || !e.video) return 0;
+  const l = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
+  return l[l.length - 1];
+}
 function artworkVideo(id){
-  return (_eigenArt && _eigenArt[id] && _eigenArt[id].video)
-    ? '/media/' + id + '/eigen.mp4' : '/media/' + id + '/artwork.mp4';
+  const nr = eigenVideoNr(id);
+  return nr ? '/media/' + id + '/' + eigenVideoName(nr) : '/media/' + id + '/artwork.mp4';
 }
 /* Und welches Standbild. */
 /* Seit 09.09.2026 (Caspar_D auf der Karaoke-Buehne: "schwarze Balken,
@@ -16748,6 +16762,32 @@ function capAuf(id, x, y){
         /* Zeitstempel dahinter, damit der Browser nach dem Austauschen
            nicht das alte aus seinem Speicher zeigt. */
         const t = '?t=' + Date.now();
+        if (art === 'video'){
+          /* MEHRERE EIGENE VIDEOS (11.09.2026): Nr. 1 = eigen.mp4, dann eigen-2.mp4 ...
+             Das juengste spielt (Vorgabe); jedes laesst sich einzeln entfernen, ein
+             weiteres kommt dazu, ohne das vorhandene zu ersetzen. */
+          const nrn = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
+          const juengst = nrn[nrn.length - 1];
+          feld.innerHTML = nrn.map(n =>
+              `<div class="capartvid"><video src="/media/${id}/${eigenVideoName(n)}${t}" muted loop autoplay playsinline></video>`
+            + `<span class="capartvidz">${n === juengst ? 'spielt · ' : ''}Nr. ${n}</span>`
+            + (eingefroren ? '' : ` <span class="weg" data-nr="${n}">entfernen</span>`) + `</div>`).join('')
+            + (eingefroren ? '' : `<div class="capartmehr">+ weiteres Video hierher ziehen</div>`);
+          feld.querySelectorAll('.weg').forEach(w => w.onclick = async (ev) => {
+            ev.stopPropagation(); const n = +w.dataset.nr;
+            try { await fetch(`/api/eigen-artwork/${id}?was=video&nr=${n}`, { method: 'DELETE' });
+                  if (_eigenArt[id]) {
+                    const rest = nrn.filter(x => x !== n);
+                    if (rest.length) _eigenArt[id].videos = rest;
+                    else { delete _eigenArt[id].video; delete _eigenArt[id].videos; }
+                    if (!Object.keys(_eigenArt[id]).length) delete _eigenArt[id]; }
+                  artZeichnen(); zeichnen();
+                } catch (err) {}
+          });
+          const mehr = feld.querySelector('.capartmehr');
+          if (mehr) mehr.onclick = (ev) => { ev.stopPropagation(); wohin = ['video', feld]; dateiwahl.accept = 'video/*'; dateiwahl.value = ''; dateiwahl.click(); };
+          continue;
+        }
         /* Eine Tonspur laesst sich nicht zeigen, nur hoeren - also ein
            kleiner Abspieler statt einer Vorschau. Er haengt an keinem
            Graphen und stoert die Wiedergabe nicht; wer vergleichen
@@ -16775,8 +16815,14 @@ function capAuf(id, x, y){
     }
   };
 
+  const ladend = new Set();               /* Felder, auf denen gerade ein Upload laeuft */
   const hochladen = async (art, feld, datei) => {
     if (!datei) return;
+    if (ladend.has(feld)) return;         /* ein zweites Video waehrend des ersten: warten, sonst gleiche Nummer */
+    ladend.add(feld);
+    try { await hochladenEigentlich(art, feld, datei); } finally { ladend.delete(feld); }
+  };
+  const hochladenEigentlich = async (art, feld, datei) => {
     const passt = art === 'video' ? /^video\//.test(datei.type)
                 : art === 'ton'   ? /^audio\//.test(datei.type)
                 : /^image\//.test(datei.type);
@@ -16790,12 +16836,18 @@ function capAuf(id, x, y){
     feld.className = 'capart';
     feld.textContent = `… ${(datei.size / 1048576).toFixed(1)} MB`;
     try {
-      const a = await fetch('/api/eigen-artwork/' + id,
+      /* Video: ohne ?nr kommt es als neue Nummer dazu. Bild: ?nr=1 ersetzt das eine. */
+      const a = await fetch('/api/eigen-artwork/' + id + (art === 'bild' ? '?nr=1' : ''),
         { method: 'PUT', headers: { 'Content-Type': datei.type }, body: datei });
       const d = await a.json();
       if (!d.ok){ feld.textContent = d.grund || 'ging schief'; setTimeout(artZeichnen, 2600); return; }
       _eigenArt = _eigenArt || {};
       _eigenArt[id] = Object.assign({}, _eigenArt[id], { [art]: true });
+      if (art === 'video'){
+        const l = (_eigenArt[id].videos || []).slice();
+        if (d.nr && !l.includes(d.nr)) l.push(d.nr); l.sort((x, y) => x - y);
+        _eigenArt[id].videos = l.length ? l : [1];
+      }
       artZeichnen();
       zeichnen();                    /* Kachel und Marke ziehen mit */
       /* Der Quellenumschalter im Tonstudio bekommt einen Eintrag mehr,

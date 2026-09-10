@@ -943,7 +943,7 @@ function titelRestPaare(ohne) {
   const paare = [];
   for (const s of neuesteZuerst) {
     let e = []; try { e = fs.readdirSync(path.join(SONGS, s.id), { withFileTypes: true }); } catch (x) { continue; }
-    for (const x of e) if (x.isFile() && !x.name.startsWith('.') && x.name !== 'audio.wav' && !ohne.includes(x.name) && !x.name.endsWith('.tmp'))
+    for (const x of e) if (x.isFile() && !x.name.startsWith('.') && x.name !== 'audio.wav' && !ohne.includes(x.name) && !x.name.endsWith('.tmp') && !x.name.endsWith('.teil'))
       paare.push({ von: path.join(SONGS, s.id, x.name), rel: `songs/${s.id}/${x.name}`, titel: s.id });
   }
   return paare;
