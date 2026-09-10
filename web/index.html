@@ -3102,6 +3102,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-rezept.gedimmt{opacity:.45}
 #tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
 #tbs #tbs-vorbKoerper .tbs-seg button:disabled{opacity:.4;cursor:default}
+/* Lichtmischpult: Antrieb-Block mit Muster-Knoepfen (Kurvenbild) und Vorschau */
+#tbs .tbs-lm{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rand)}
+#tbs .tbs-lmformen{display:flex;gap:4px;flex-wrap:wrap}
+#tbs .tbs-lmformen button{padding:2px 4px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;line-height:0}
+#tbs .tbs-lmformen button:hover{color:var(--text);border-color:var(--akzent)}
+#tbs .tbs-lmformen button.on{color:var(--akzent);border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent)}
+#tbs canvas.tbs-lmvor{width:100%;height:44px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -26720,11 +26727,11 @@ const EFFEKTE = {
   farbe:{ label:'Farbschleier', art:'mal', verr:'weich', staerkeDef:.4, besch:'Eine Farbfolge zieht als Schleier über das Bild, im Tempo eingerastet.',
     params:[{k:'palette',lbl:'Folge',sel:[...Object.keys(PALETTEN).map(n=>[n,n]),['Eigen','Eigene Rampe']],def:'Abendrot'},{k:'rampe',rampe:true,def:['#ff6a3d','#f9c74f','#3a86ff']},{k:'tempo',lbl:'Tempo (s)',min:2,max:20,step:1,def:8}]},
   licht:{ label:'Scheinwerfer', art:'mal', verr:'screen', staerkeDef:.7, besch:'Ein Licht wandert über das Bild. Mehrfach einhängen: gelb und länglich, blau und weich, jeder mit eigener Verrechnung.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'},{k:'takt',tog:'im Takt pulsen',def:1}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'}]},
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'},{k:'takt',tog:'im Takt pulsen',def:1}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'}]},
   laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Strahlen schießen aus einem wandernden Punkt — additiv gestapelt ein Inferno. Mehrfach in verschiedenen Farben einhängen.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Fächer',min:0,max:1,step:.05,def:1},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.08},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5,when:e=>e.quelle==='fest'},{k:'takt',tog:'im Takt',def:1}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Fächer',min:0,max:1,step:.05,def:1},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.08},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5,when:e=>e.quelle==='fest'}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle und dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
     params:[{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
   rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur als Ausbruch auf der Eins.',
@@ -26736,7 +26743,7 @@ const EFFEKTE = {
   rgb:{ label:'Farbkanal-Puls', art:'post', besch:'Rot, Grün und Blau springen kurz gegeneinander — chromatische Aberration / RGB-Shift. Im Takt am schönsten.',
     params:[{k:'versatz',lbl:'Versatz',min:0,max:.08,step:.002,def:.012},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:0},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:7,when:e=>e.antrieb!=='atem'}]},
   strobe:{ label:'Stroboskop', art:'mal', verr:'add', staerkeDef:.5, besch:'Hochfrequentes Flackern des ganzen Bildes. Kräftig — Vorsicht. Aufblitzen, Abdunkeln oder beides; auf Wunsch nur im Takt.',
-    params:[{k:'frequenz',lbl:'Frequenz (Hz)',min:1,max:24,step:1,def:8},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.5},{k:'modus',lbl:'Richtung',sel:[['hell','aufblitzen'],['dunkel','abdunkeln'],['beides','beides']],def:'beides'},{k:'farbe',lbl:'Blitzfarbe',farbe:true,def:'#ffffff'},{k:'takt',tog:'nur im Takt',def:0}]},
+    params:[{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.5},{k:'modus',lbl:'Richtung',sel:[['hell','aufblitzen'],['dunkel','abdunkeln'],['beides','beides']],def:'beides'},{k:'farbe',lbl:'Blitzfarbe',farbe:true,def:'#ffffff'}]},
   sicherung:{ label:'Sicherungswackeln', art:'mal', verr:'multi', staerkeDef:.8, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon. Auch als: Lichtflackern unter Wasser, durch Wolken, hinter Laub.',
     params:[{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.6},{k:'dauer',lbl:'Dauer (ms)',min:40,max:800,step:10,def:180},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'nur im Takt',def:0}]},
   nebel:{ label:'Theaternebel', art:'mal', verr:'screen', staerkeDef:.6, besch:'Weiche Schwaden ziehen langsam durchs Bild und liegen eher unten. Heterogenität: wie verschieden die Schwaden untereinander sind. Turbulenz: wie kleinteilig jede Schwade in sich wabert — viel Änderung pro Ort. Wirkt am besten leise. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
@@ -26750,7 +26757,7 @@ const EFFEKTE = {
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
     params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]},
   feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Glut an der Basis; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'lodert im Takt',def:1}]},
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   wellen:{ label:'Wellen (Brechung)', art:'gl', staerkeDef:.8, besch:'Das Bild bricht sich wie unter Wasser oder in heißer Luft — echte Verschiebung jedes Pixels durch Rauschen (WebGL). Zone 1 = nur unten, Aufwind lässt es wie Hitze steigen.',
     params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.08,step:.002,def:.02},{k:'skala',lbl:'Skala',min:1,max:12,step:.5,def:4},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.6},{k:'zone',lbl:'Zone (1 unten)',min:0,max:1,step:.05,def:0},{k:'aufwind',lbl:'Aufwind',min:0,max:1,step:.05,def:0}]},
   kaustik:{ label:'Kaustik (Lichtnetz)', art:'gl', staerkeDef:.6, besch:'Das wandernde Netz gebrochenen Lichts — Poolboden, Wasser an der Wand, Glas. Aus Rauschen gerechnet (WebGL), additiv aufs Bild.',
@@ -26760,9 +26767,9 @@ const EFFEKTE = {
   dunst:{ label:'Dunst (Rauschnebel)', art:'gl', staerkeDef:.7, besch:'Echter Nebel aus fraktalem Rauschen (WebGL) — kleinteilig wabernd, liegt nach Lage eher unten. Turbulenz = Anteil der feinen Oktaven.',
     params:[{k:'skala',lbl:'Skala',min:1,max:10,step:.5,def:3},{k:'dichte',lbl:'Dichte',min:0,max:2,step:.05,def:.8},{k:'tempo',lbl:'Tempo',min:.02,max:2,step:.02,def:0.5},{k:'lage',lbl:'Lage (1 unten)',min:0,max:1,step:.05,def:.6},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'}]},
   flammen:{ label:'Flammen (Rauschen)', art:'gl', staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'lodert im Takt',def:1}]},
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
-    params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'spreiz',lbl:'Fächer (°)',min:10,max:360,step:5,def:120},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'},{k:'takt',tog:'flackert im Takt',def:0}]},
+    params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'spreiz',lbl:'Fächer (°)',min:10,max:360,step:5,def:120},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
     params:[{k:'horizont',lbl:'Horizont',min:.3,max:.95,step:.01,def:.62},{k:'wellen',lbl:'Wellen',min:0,max:1,step:.05,def:.3},{k:'skala',lbl:'Wellenzahl',min:2,max:30,step:1,def:12},{k:'tempo',lbl:'Tempo',min:.5,max:5,step:.1,def:2},{k:'verblassen',lbl:'Verblassen',min:0,max:1,step:.05,def:.5}]},
   /* ---- Glas (Caspar_D, 11.09.2026: "gibt es Glasscheiben-Effekte? Risse, Risse, die sich ausbreiten,
@@ -26797,6 +26804,10 @@ const EFFEKTE = {
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten';
 ['licht','laser','strahlen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was da ist \u2014 f\u00fcr sichtbare Strahlen im Raum Theaternebel davor in die Kette h\u00e4ngen.'; });
+/* Antrieb (Lichtmischpult) an alle Lichter: Vorgaben wie bisher - Scheinwerfer, Schatten, Laser und Feuer
+   pulsen im Takt, Stroboskop laeuft als Rechteck mit 8 Hz, der Rest ist stetig. */
+[['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
+  .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
@@ -26886,6 +26897,38 @@ const tri=ph=>4*Math.abs(((ph%1)+1)%1-0.5)-1;
 function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
   for(let i=S.length-1;i>=0;i--){ const bt=S[i][0]; if(bt>t) continue; const dt=t-bt; if(dt>1.5) break; if(nurEins && S[i][1]!==1) continue; s+=Math.exp(-dt*abkling); }
   return Math.min(1.5,s); }
+/* ---- LICHTMISCHPULT (Caspar_D, 11.09.2026): ein Antrieb fuer alle Lichter, wie am Lichtpult - Quelle des
+   Takts (Schlaege, Taktanfang, zufaellige Schlaege, freie Frequenz), Muster der Kurve je Periode, Tiefe,
+   Versatz, Invers. Alles rein aus der Zeit gerechnet, damit Studio, Kachel und Buehne dasselbe zeigen. */
+const LM_FORMEN=[['rampe_auf','Rampe auf, dann aus'],['rampe_ab','An, dann Rampe ab'],['peak_an','Aus mit An-Spitzen'],['peak_aus','An mit Aus-Spitzen'],['rechteck','Rechteck'],['sinus','Sinus'],['zufall','Zufall je Periode']];
+const LM_QUELLEN=[['stetig','stetig'],['takt','im Takt'],['eins','auf der Eins'],['zufall','zuf\u00e4llige Schl\u00e4ge'],['hz','Frequenz']];
+const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.floor(v); };
+function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&&e.lmAbkling!=null)?e.lmAbkling:1;
+  switch(form){ case 'rampe_auf': return p; case 'rampe_ab': return Math.pow(Math.max(0,1-p),ab); case 'peak_an': return p<br?1:0; case 'peak_aus': return p<br?0:1;
+    case 'rechteck': return p<br?1:0; case 'sinus': return 0.5+0.5*Math.cos(2*Math.PI*p); default: return 1; } }
+/* Pegel 0..1 des Antriebs zur Zeit t; merkt Phase und Periodenindex am Effekt fuer die Vorschau. */
+function antriebWert(e,t){ const q=e.lmQuelle||'stetig'; e._lmPhase=null; if(q==='stetig') return 1;
+  const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), form=e.lmForm||'rampe_ab'; let p, idx, aktiv=true;
+  if(q==='hz'){ const hz=Math.max(0.1,e.lmHz||4), x=t*hz; idx=Math.floor(x); p=x-idx; }
+  else { const S=DATA&&DATA.schlaege; if(!S||!S.length) return 1; const eins=(q==='eins'); let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0) return 1;
+    const n=eins?1:Math.max(1,(e.lmTeiler|0)||1); let a=i, b; if(eins){ while(a>0&&S[a][1]!==1) a--; b=a+1; while(b<S.length&&S[b][1]!==1) b++; } else { a=i-(i%n); b=a+n; }
+    const t0=S[a][0]; const schritt=(S[a+1]?S[a+1][0]-t0:0.5); const t1=(b<S.length)?S[b][0]:t0+schritt*(eins?4:n); const L=Math.max(0.05,t1-t0); p=Math.min(1,(t-t0)/L); idx=a;
+    if(q==='zufall') aktiv = lmHash(idx*3+e.id*31) < (e.lmAnteil==null?0.5:e.lmAnteil); }
+  p=((p+(e.lmVersatz||0))%1+1)%1; e._lmPhase=p;
+  let f = aktiv ? (form==='zufall' ? lmHash(idx*7+e.id) : lmForm(form,p,e)) : (form==='zufall'?0:lmForm(form,0.999,e));
+  if(e.lmInvers) f=1-f; return (1-tiefe)+tiefe*f; }
+/* 0..1 innerhalb der Tiefe (fuer Shader, die einen Schub wollen); stetig = 0 */
+function lmSchub(e,t){ if((e.lmQuelle||'stetig')==='stetig') return 0; const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); return Math.max(0,Math.min(1,(antriebWert(e,t)-(1-tiefe))/Math.max(1e-3,tiefe))); }
+function lmIkon(form){ const pts=[]; for(let i=0;i<=32;i++){ const p=i/32; const f=(form==='zufall')?lmHash(Math.floor(p*4)*7+3):lmForm(form,p===1?0.999:p,null); pts.push((p*24).toFixed(1)+','+(11-f*10).toFixed(1)); }
+  return '<svg viewBox="0 0 24 12" width="30" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polyline points="'+pts.join(' ')+'"/></svg>'; }
+function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(W/2,0); x.lineTo(W/2,H); x.stroke();
+  const form=e.lmForm||'rampe_ab', tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath();
+  for(let i=0;i<=200;i++){ const q=i/200*2; const pp=((q%1)+(e.lmVersatz||0))%1; let f=(form==='zufall')?lmHash(Math.floor(q)*7+e.id):lmForm(form,pp,e); if(e.lmInvers) f=1-f; const lv=(1-tiefe)+tiefe*f; const px=q/2*W, py=H-3-lv*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
+  if(e._lmPhase!=null){ const px=e._lmPhase/2*W; x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=1; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); } }
+function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); }
+function lmParams(vor){ const d=Object.assign({lmQuelle:'stetig',lmForm:'rampe_ab',lmTeiler:1,lmHz:4,lmTiefe:.8,lmBreite:.3,lmAbkling:1,lmInvers:0,lmVersatz:0,lmAnteil:.5},vor||{});
+  return [{k:'lm',lm:true},{k:'lmQuelle',versteckt:true,def:d.lmQuelle},{k:'lmForm',versteckt:true,def:d.lmForm},{k:'lmTeiler',versteckt:true,def:d.lmTeiler},{k:'lmHz',versteckt:true,def:d.lmHz},{k:'lmTiefe',versteckt:true,def:d.lmTiefe},{k:'lmBreite',versteckt:true,def:d.lmBreite},{k:'lmAbkling',versteckt:true,def:d.lmAbkling},{k:'lmInvers',versteckt:true,def:d.lmInvers},{k:'lmVersatz',versteckt:true,def:d.lmVersatz},{k:'lmAnteil',versteckt:true,def:d.lmAnteil}]; }
 function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/Math.max(0.1,e.atempo||4))) : pulswert(t,e.abkling,e.nurEins); }
 function mische(a,b,x){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*x)).join(',')+')'; }
@@ -26971,7 +27014,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     return; }
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/e.tempo)%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
-  else if(e.typ==='licht'||e.typ==='schatten'){ const blitz=e.takt?(0.4+0.6*Math.min(1,pulswert(t,7,0))):1, r=e.groesse*Math.min(Wn,Hn), str=e.form==='rund'?1:e.streckung, ph=t/e.tempo+e.id*0.13;
+  else if(e.typ==='licht'||e.typ==='schatten'){ const blitz=antriebWert(e,t), r=e.groesse*Math.min(Wn,Hn), str=e.form==='rund'?1:e.streckung, ph=t/e.tempo+e.id*0.13;
     let x,y,rot=0;
     if(e.fuehrung==='schwenk'){ const px=Wn*e.dpx, py=Hn*e.dpy, ba=-Math.PI/2+Math.sin(2*Math.PI*ph)*e.schwenk, reach=Math.hypot(Wn,Hn)*0.55; x=px+Math.cos(ba)*reach; y=py+Math.sin(ba)*reach; rot=ba; }
     else if(e.fuehrung==='bogen'){ const s=Math.sin(2*Math.PI*ph); x=Wn*(0.5+0.46*s); y=Hn*(0.18+e.bogen*0.62*s*s); }
@@ -26980,7 +27023,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     const R=Math.max(rx,ry), kern=Math.max(0,1-e.weichheit), grad=cx.createRadialGradient(0,0,0,0,0,R);
     grad.addColorStop(0,rgba(e.farbe,e.staerke*blitz)); if(kern>0&&kern<1) grad.addColorStop(kern,rgba(e.farbe,e.staerke*blitz*0.8)); grad.addColorStop(1,rgba(e.farbe,0));
     cx.save(); cx.translate(x,y); cx.rotate(rot); cx.scale(rx/R,ry/R); cx.fillStyle=grad; cx.beginPath(); cx.arc(0,0,R,0,7); cx.fill(); cx.restore(); }
-  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*(e.flimmerTempo||20)*t+e.id*7)), bp=(e.takt?(0.4+0.6*Math.min(1,pulswert(t,7,0))):1)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI;
+  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*(e.flimmerTempo||20)*t+e.id*7)), bp=antriebWert(e,t)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI;
     /* Der Faecherpunkt liegt IMMER ausserhalb des Bildes (Caspar_D, 11.09.2026): wandernd auf einer Bahn um das
        Bild herum (Radien 0,8 > 0,5, also nie drin), fest auf dem gewaehlten Punkt - liegt der im Bild, wird er auf
        die naechste Kante hinausgeschoben. Die Strahlen zielen ins Bild und schwenken darum. */
@@ -27043,14 +27086,14 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     cx.globalAlpha=1; }
   else if(e.typ==='feuer'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa;
-    const bp=e.takt?(1+0.5*Math.min(1,pulswert(t,7,0))):1, baseY=Hn*e.boden, hoehe=e.hoehe*Hn*bp, x0=Wn*(e.mitte-e.breite/2), bw=Wn*e.breite, n=e.dichte, tw=bw/n*1.6, M=6;
+    const bp=0.5+0.5*antriebWert(e,t), baseY=Hn*e.boden, hoehe=e.hoehe*Hn*bp, x0=Wn*(e.mitte-e.breite/2), bw=Wn*e.breite, n=e.dichte, tw=bw/n*1.6, M=6;
     if(e.glut>0){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2); }
     for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(t*(9+7*hs(i+400))+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
       for(let k=0;k<M;k++){ const h=(k/M+t*e.tempo*sp*0.9+hs(i+700))%1, sway=Math.sin(t*3*sp+hs(i+800)*10+k)*tw*0.5*(0.3+h), x=xi+sway, y=baseY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55;
         const c=[0,1,2].map(q=>Math.round(pa[q]+(pb[q]-pa[q])*Math.min(1,h*1.3)));
         const gr=cx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba('+c.join(',')+','+al.toFixed(3)+')'); gr.addColorStop(1,'rgba('+c.join(',')+',0)');
         cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } } }
-  else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*(e.takt?(0.5+0.5*Math.min(1,pulswert(t,7,0))):1);
+  else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*antriebWert(e,t);
     const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=e.spreiz*Math.PI/180, br=e.breite*Math.PI/180;
     const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/e.tempo)*e.schwenk*0.6;
     for(let i=0;i<n;i++){ const ang=basis+(n>1?(i/(n-1)-0.5):0)*spreiz+Math.sin(2*Math.PI*t/e.tempo*1.3+hs(i)*9)*e.schwenk*0.12, w=br*(0.6+0.8*hs(i+30));
@@ -27060,7 +27103,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     const schritt=Math.max(1,Math.round(1+(1-e.tempo)*12)); const fr=Math.floor(t*60/schritt);
     if(fr!==e._kn){ e._kn=fr; const kx=e._kt.getContext('2d'), im=kx.createImageData(96,96), d=im.data; for(let i=0;i<d.length;i+=4){ const v=110+Math.random()*90|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } kx.putImageData(im,0,0); }
     cx.globalCompositeOperation=VMODE[e.verr]||'overlay'; cx.globalAlpha=a*0.7; cx.save(); cx.scale(e.koernung,e.koernung); cx.fillStyle=cx.createPattern(e._kt,'repeat'); cx.fillRect(0,0,Wn/e.koernung+1,Hn/e.koernung+1); cx.restore(); cx.globalAlpha=1; }
-  else if(e.typ==='strobe'){ const gate=e.takt?Math.min(1,pulswert(t,7,0)):1, ph=Math.sin(2*Math.PI*e.frequenz*t), amt=e.tiefe*Math.min(1,e.staerke)*gate;
+  else if(e.typ==='strobe'){ const ph=lmSchub(e,t)*2-1, amt=e.tiefe*Math.min(1,e.staerke);   /* Antrieb liefert die Welle: >0 aufblitzen, <0 abdunkeln */
     if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>=0){ cx.globalCompositeOperation=VMODE[e.verr]||'lighter'; cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
       else if((e.modus==='dunkel'||e.modus==='beides')&&ph<0){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(amt*(-ph))+')'; cx.fillRect(0,0,Wn,Hn); } } }
   cx.globalCompositeOperation='source-over'; cx.globalAlpha=1;
@@ -27090,7 +27133,7 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcCv);
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
     u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
-    u('u_takt',l=>gl.uniform1f(l, e.takt?Math.min(1,pulswert(t,7,0)):0));
+    u('u_takt',l=>gl.uniform1f(l, EFFEKTE[e.typ].params.some(p=>p.lm)?lmSchub(e,t):0));
     for(const p of EFFEKTE[e.typ].params){ const v=e[p.k]; if(p.farbe){ const c=[1,3,5].map(q=>parseInt(String(v).slice(q,q+2),16)/255); if(!c.some(isNaN)) u('u_'+p.k,l=>gl.uniform3f(l,c[0],c[1],c[2])); } else if(typeof v==='number') u('u_'+p.k,l=>gl.uniform1f(l,v)); }
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
 const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
@@ -27161,7 +27204,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
 function postKette(posts,t,Wn,Hn){ let sCv=oa;
   for(const e of posts){ const dCv=(sCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
     ergebnis(e,sCv,t,Wn,Hn);
-    frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(sCv,0,0); dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[EFFEKTE[e.typ].verr]||'source-over'; dCx.globalAlpha=Math.min(1,e.staerke); dCx.drawImage(ores,0,0); dCx.globalAlpha=1; dCx.globalCompositeOperation='source-over';
+    frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(sCv,0,0); dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[EFFEKTE[e.typ].verr]||'source-over'; dCx.globalAlpha=Math.min(1,e.staerke*(EFFEKTE[e.typ].params.some(p=>p.lm)?antriebWert(e,t):1)); dCx.drawImage(ores,0,0); dCx.globalAlpha=1; dCx.globalCompositeOperation='source-over';
     sCv=dCv; }
   return sCv;
 }
@@ -27192,8 +27235,22 @@ function renderStapel(){
       +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert']);
-    const paramHTML=p=>{ if(p.when && !p.when(e)) return;
+    const GEMEIN=new Set(['antrieb','atempo','invert','lm']);
+    const paramHTML=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
+      if(p.lm){ const q=e.lmQuelle||'stetig', form=e.lmForm||'rampe_ab';
+        h+='<div class="tbs-lm"><div class="tbs-regler"><span>Antrieb</span><select data-k="lmQuelle">'+LM_QUELLEN.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+        if(q!=='stetig'){
+          h+='<div class="tbs-regler"><span>Muster</span><div class="tbs-lmformen">'+LM_FORMEN.map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
+          h+='<canvas class="tbs-lmvor" width="300" height="44" title="Die Kurve \u00fcber zwei Perioden, der Strich ist jetzt"></canvas>';
+          if(q==='takt'||q==='zufall') h+='<div class="tbs-regler"><span>Teiler</span><select data-k="lmTeiler">'+[[1,'jeder Schlag'],[2,'jeder 2. Schlag'],[4,'jeder 4. Schlag'],[8,'jeder 8. Schlag']].map(([v,l])=>'<option value="'+v+'"'+((e.lmTeiler|0)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+          if(q==='hz') h+='<div class="tbs-regler"><span>pro Sekunde</span><input type="range" data-k="lmHz" min="0.5" max="30" step="0.5" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>';
+          if(q==='zufall') h+='<div class="tbs-regler"><span>Anteil der Schl\u00e4ge</span><input type="range" data-k="lmAnteil" min="0.1" max="1" step="0.05" value="'+e.lmAnteil+'"><span class="tbs-wert">'+kf(e.lmAnteil)+'</span></div>';
+          h+='<div class="tbs-regler"><span>Tiefe</span><input type="range" data-k="lmTiefe" min="0" max="1" step="0.05" value="'+e.lmTiefe+'"><span class="tbs-wert">'+kf(e.lmTiefe)+'</span></div>';
+          if(form==='peak_an'||form==='peak_aus'||form==='rechteck') h+='<div class="tbs-regler"><span>Breite</span><input type="range" data-k="lmBreite" min="0.05" max="0.95" step="0.05" value="'+e.lmBreite+'"><span class="tbs-wert">'+kf(e.lmBreite)+'</span></div>';
+          if(form==='rampe_ab') h+='<div class="tbs-regler"><span>Abklingen</span><input type="range" data-k="lmAbkling" min="0.3" max="4" step="0.1" value="'+e.lmAbkling+'"><span class="tbs-wert">'+kf(e.lmAbkling)+'</span></div>';
+          h+='<div class="tbs-regler"><span>Versatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
+          h+='<div class="tbs-regler"><span>invers</span><button class="tbs-togp'+(e.lmInvers?' an':'')+'" data-tog="lmInvers">'+(e.lmInvers?'an':'aus')+'</button><span></span></div>'; }
+        h+='</div>'; return; }
       if(p.grad){ gradInit(e); const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=e.grad[e.kanal], cc=K[e.kanal][1];
         h+='<div style="margin:8px 0 2px"><div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(k=>'<button data-kanal="'+k+'" class="'+(e.kanal===k?'on':'')+'" style="flex:1'+(e.kanal===k?';color:'+K[k][1]:'')+'">'+K[k][0]+'</button>').join('')+'</div>';
         h+='<canvas class="tbs-grad-ed" width="447" height="276" data-farbe="'+cc+'" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
@@ -27233,9 +27290,11 @@ function renderStapel(){
       e[k]= (inp.type==='range') ? +inp.value : inp.value;
       const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
       if(p.sel&&k==='art') artFarben(e);
-      if(p.sel) renderStapel();
+      if(p.sel) renderStapel(); else if(k&&k.slice(0,2)==='lm') lmVorschauen();
     });
-    c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });   /* neu zeichnen: an Pillen haengen abhaengige Regler (when) */
+    c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
+    c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
+    const lmv=c.querySelector('canvas.tbs-lmvor'); if(lmv){ lmv._e=e; lmVorschau(lmv,e); }   /* neu zeichnen: an Pillen haengen abhaengige Regler (when) */
     const vs=c.querySelector('[data-verr]'); if(vs) vs.onchange=()=>{ e.verr=vs.value; };
     const ss=c.querySelector('[data-staerke]'); if(ss) ss.oninput=()=>{ e.staerke=+ss.value; ss.parentElement.querySelector('.tbs-wert').textContent=Math.round(e.staerke*100)+'%'; };
     const rbar=c.querySelector('.tbs-rampe-bar');
@@ -27350,7 +27409,7 @@ function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((sei
 
 /* Cover-Blätterer */
 
-function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); }
+function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); lmVorschauen(); }
 function zeichneFrame(t){
   if(!bereit) return;
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
@@ -27450,7 +27509,11 @@ function zeichneFrame(t){
     if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null}; } return {grund:null, effekte:[], leer:true}; }
   /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
      verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
-  function effektAusRezept(r){ if(!r||!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false; return e; }
+  function effektAusRezept(r){ if(!r||!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false;
+    /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
+    if(EFFEKTE[r.typ].params.some(p=>p.lm)&&r.lmQuelle==null){ if(r.typ==='strobe'){ e.lmQuelle=r.takt?'takt':'hz'; e.lmForm=r.takt?'peak_an':'rechteck'; if(r.frequenz>0) e.lmHz=r.frequenz; e.lmTiefe=1; }
+      else if(r.takt!=null){ e.lmQuelle=r.takt?'takt':'stetig'; e.lmForm='rampe_ab'; } delete e.takt; delete e.frequenz; }
+    return e; }
   function presetSetzen(arr){ STAPEL=arr.map(effektAusRezept).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();

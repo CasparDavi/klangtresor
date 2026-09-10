@@ -2577,3 +2577,18 @@ rollen ins Blickfeld. Regler: eigene zuerst, dann hinter der Linie Antrieb, Atem
   ganzen Frame an — Effekte aus der Ablage liegen jetzt auf den Vorgaben ihres Typs (`effektAusRezept`), und ein
   werfender Effekt wird einmal gemeldet und ausgelassen statt den Frame zu stoppen. Messung: Mal-Effekte wirken
   aufeinander (zwei Vollflächen getauscht: völlig anderes Bild); ein dünner Strahl zählt im Mittelwert nur kaum.
+
+### Lichtmischpult (11.09.2026 abends, Jörg: „bau mal bitte ein ganzes Lichtmischpult“) — im Haus
+Ein **Antrieb** (Modulator, LFO) für alle Lichter: Scheinwerfer, Schatten, Laser, Lichtstrahlen, Feuer, Flammen,
+Kaustik, Bloom, Stroboskop. Block am Ende jeder Karte (Bekanntes am selben Platz): **Antrieb** stetig | im Takt |
+auf der Eins | zufällige Schläge | Frequenz · **Muster** als Kurvenbilder (Rampe auf dann aus · An dann Rampe ab ·
+Aus mit An-Spitzen · An mit Aus-Spitzen · Rechteck · Sinus · Zufall je Periode) · Vorschau über zwei Perioden mit
+laufendem Strich · Teiler (jeder/2./4./8. Schlag) bzw. pro Sekunde (0,5–30) · Anteil (bei Zufall) · Tiefe · Breite
+(Spitzen/Rechteck) · Abklingen (Rampe ab) · Versatz · invers. `antriebWert(e,t)` rechnet den Pegel 0..1 rein aus der
+Zeit (Schläge aus `DATA.schlaege`, Taktanfang = Zählzeit 1), `lmSchub` für Shader-Schübe. Alte Ablagen mit `takt`
+(und `frequenz` beim Stroboskop) werden beim Laden übersetzt (`effektAusRezept`); die Schalter sind aus den
+Registern entfernt, bei den Störungen (Rauschen, Bildlauf, Verwackeln, Sicherung) bleibt `takt`.
+Gemessen im Labor: Rampe ab hellt auf dem Schlag, An-mit-Aus-Spitzen dunkelt auf dem Schlag, Rechteck 4 Hz wechselt.
+**Ideen von Jörg dazu (nicht gebaut):** je Farbkanal R/G/B eigene Wellen, Phase/Gegenphase zwischen Scheinwerfern,
+ein Effekt als Auslöser für einen anderen (Modulationsmatrix wie am Synthesizer), der KlangTresor als Ansteuerung
+für echte Lichtsteuerung (DMX/Art-Net) — „Möglichkeiten ohne Ende“.
