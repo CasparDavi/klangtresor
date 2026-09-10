@@ -26900,12 +26900,23 @@ function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
 /* ---- LICHTMISCHPULT (Caspar_D, 11.09.2026): ein Antrieb fuer alle Lichter, wie am Lichtpult - Quelle des
    Takts (Schlaege, Taktanfang, zufaellige Schlaege, freie Frequenz), Muster der Kurve je Periode, Tiefe,
    Versatz, Invers. Alles rein aus der Zeit gerechnet, damit Studio, Kachel und Buehne dasselbe zeigen. */
-const LM_FORMEN=[['rampe_auf','Rampe auf, dann aus'],['rampe_ab','An, dann Rampe ab'],['peak_an','Aus mit An-Spitzen'],['peak_aus','An mit Aus-Spitzen'],['rechteck','Rechteck'],['sinus','Sinus'],['zufall','Zufall je Periode']];
+const LM_FORMEN=[['rampe_auf','Rampe auf, dann aus'],['rampe_ab','An, dann Rampe ab'],['peak_an','Aus mit An-Spitzen'],['peak_aus','An mit Aus-Spitzen'],['rechteck','Rechteck'],['sinus','Sinus'],['zufall','Zufall je Periode'],['sequenz','Sequenz \u2014 gemalte Schritte je Periode']];
+/* SEQUENZER (Caspar_D, 11.09.2026: "als wenn man eine Drum-Machine programmiert - Amplitude ist die Lichtstaerke"):
+   die Periode in Schritte geteilt, jeder Schritt eine Hoehe, mit der Maus in der Vorschau gemalt. */
+const LM_VORLAGEN=[['doppel','Doppelschlag',n=>Array.from({length:n},(_,i)=>{ const q=(i%(n/2))/(n/2); return q<0.25?1:q<0.5?0.45:q<0.75?0.15:0; })],
+  ['wechsel','Wechsel',n=>Array.from({length:n},(_,i)=>i%2?0.35:1)],
+  ['anlauf','Anlauf',n=>Array.from({length:n},(_,i)=>(i+1)/n)],
+  ['ausklang','Ausklang',n=>Array.from({length:n},(_,i)=>1-i/n)],
+  ['offbeat','Offbeat',n=>Array.from({length:n},(_,i)=>i%2?1:0)]];
+function lmSchritteHolen(e){ if(!Array.isArray(e.lmSchritte)||!e.lmSchritte.length) e.lmSchritte=LM_VORLAGEN[1][2](8); return e.lmSchritte; }
+function lmSchritteZahl(e,n){ const alt=lmSchritteHolen(e); e.lmSchritte=Array.from({length:n},(_,i)=>alt[Math.floor(i*alt.length/n)]); }
 const LM_QUELLEN=[['stetig','stetig'],['takt','im Takt'],['eins','auf der Eins'],['zufall','zuf\u00e4llige Schl\u00e4ge'],['hz','Frequenz']];
 const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.floor(v); };
 function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&&e.lmAbkling!=null)?e.lmAbkling:1;
   switch(form){ case 'rampe_auf': return p; case 'rampe_ab': return Math.pow(Math.max(0,1-p),ab); case 'peak_an': return p<br?1:0; case 'peak_aus': return p<br?0:1;
-    case 'rechteck': return p<br?1:0; case 'sinus': return 0.5+0.5*Math.cos(2*Math.PI*p); default: return 1; } }
+    case 'rechteck': return p<br?1:0; case 'sinus': return 0.5+0.5*Math.cos(2*Math.PI*p);
+    case 'sequenz': { const s=e?lmSchritteHolen(e):[1,.35,1,.35,1,.35,1,.35], n=s.length, x=p*n, i=Math.floor(x)%n; if(!(e&&e.lmWeich)) return s[i]; const j=(i+1)%n, f=x-Math.floor(x); return s[i]+(s[j]-s[i])*f; }
+    default: return 1; } }
 /* Pegel 0..1 des Antriebs zur Zeit t; merkt Phase und Periodenindex am Effekt fuer die Vorschau. */
 function antriebWert(e,t){ const q=e.lmQuelle||'stetig'; e._lmPhase=null; if(q==='stetig') return 1;
   const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), form=e.lmForm||'rampe_ab'; let p, idx, aktiv=true;
@@ -26919,16 +26930,23 @@ function antriebWert(e,t){ const q=e.lmQuelle||'stetig'; e._lmPhase=null; if(q==
   if(e.lmInvers) f=1-f; return (1-tiefe)+tiefe*f; }
 /* 0..1 innerhalb der Tiefe (fuer Shader, die einen Schub wollen); stetig = 0 */
 function lmSchub(e,t){ if((e.lmQuelle||'stetig')==='stetig') return 0; const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); return Math.max(0,Math.min(1,(antriebWert(e,t)-(1-tiefe))/Math.max(1e-3,tiefe))); }
-function lmIkon(form){ const pts=[]; for(let i=0;i<=32;i++){ const p=i/32; const f=(form==='zufall')?lmHash(Math.floor(p*4)*7+3):lmForm(form,p===1?0.999:p,null); pts.push((p*24).toFixed(1)+','+(11-f*10).toFixed(1)); }
+function lmIkon(form){ if(form==='sequenz'){ const s=[1,.35,1,.35,1,.35]; return '<svg viewBox="0 0 24 12" width="30" height="15" fill="currentColor" stroke="none">'+s.map((v,i)=>'<rect x="'+(i*4+0.5)+'" y="'+(11-v*10).toFixed(1)+'" width="3" height="'+(v*10).toFixed(1)+'"/>').join('')+'</svg>'; }
+  const pts=[]; for(let i=0;i<=32;i++){ const p=i/32; const f=(form==='zufall')?lmHash(Math.floor(p*4)*7+3):lmForm(form,p===1?0.999:p,null); pts.push((p*24).toFixed(1)+','+(11-f*10).toFixed(1)); }
   return '<svg viewBox="0 0 24 12" width="30" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polyline points="'+pts.join(' ')+'"/></svg>'; }
 function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
+  if((e.lmForm||'rampe_ab')==='sequenz'){ const s=lmSchritteHolen(e), n=s.length, bw=W/n, tiefe=(e.lmTiefe==null?0.8:e.lmTiefe);
+    if(n%4===0){ x.strokeStyle='rgba(255,255,255,.12)'; x.lineWidth=1; for(let q=1;q<4;q++){ x.beginPath(); x.moveTo(W*q/4,0); x.lineTo(W*q/4,H); x.stroke(); } }
+    for(let i=0;i<n;i++){ let v=s[i]; if(e.lmInvers) v=1-v; const lv=(1-tiefe)+tiefe*v; x.fillStyle='rgba(224,179,77,0.28)'; x.fillRect(i*bw+1,H-2-lv*(H-4),bw-2,lv*(H-4)); x.fillStyle='#e0b34d'; x.fillRect(i*bw+1,H-2-v*(H-4),bw-2,Math.max(1,v*(H-4))); }
+    if(e.lmWeich){ x.strokeStyle='#fff'; x.lineWidth=1.5; x.beginPath(); for(let i=0;i<=n;i++){ const v=s[i%n]; x[i?'lineTo':'moveTo'](i*bw,H-2-v*(H-4)); } x.stroke(); }
+    if(e._lmPhase!=null){ const px=e._lmPhase*W; x.strokeStyle='rgba(255,255,255,.7)'; x.lineWidth=1; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); }
+    return; }
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(W/2,0); x.lineTo(W/2,H); x.stroke();
   const form=e.lmForm||'rampe_ab', tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath();
   for(let i=0;i<=200;i++){ const q=i/200*2; const pp=((q%1)+(e.lmVersatz||0))%1; let f=(form==='zufall')?lmHash(Math.floor(q)*7+e.id):lmForm(form,pp,e); if(e.lmInvers) f=1-f; const lv=(1-tiefe)+tiefe*f; const px=q/2*W, py=H-3-lv*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
   if(e._lmPhase!=null){ const px=e._lmPhase/2*W; x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=1; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); } }
 function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); }
 function lmParams(vor){ const d=Object.assign({lmQuelle:'stetig',lmForm:'rampe_ab',lmTeiler:1,lmHz:4,lmTiefe:.8,lmBreite:.3,lmAbkling:1,lmInvers:0,lmVersatz:0,lmAnteil:.5},vor||{});
-  return [{k:'lm',lm:true},{k:'lmQuelle',versteckt:true,def:d.lmQuelle},{k:'lmForm',versteckt:true,def:d.lmForm},{k:'lmTeiler',versteckt:true,def:d.lmTeiler},{k:'lmHz',versteckt:true,def:d.lmHz},{k:'lmTiefe',versteckt:true,def:d.lmTiefe},{k:'lmBreite',versteckt:true,def:d.lmBreite},{k:'lmAbkling',versteckt:true,def:d.lmAbkling},{k:'lmInvers',versteckt:true,def:d.lmInvers},{k:'lmVersatz',versteckt:true,def:d.lmVersatz},{k:'lmAnteil',versteckt:true,def:d.lmAnteil}]; }
+  return [{k:'lm',lm:true},{k:'lmQuelle',versteckt:true,def:d.lmQuelle},{k:'lmForm',versteckt:true,def:d.lmForm},{k:'lmTeiler',versteckt:true,def:d.lmTeiler},{k:'lmHz',versteckt:true,def:d.lmHz},{k:'lmTiefe',versteckt:true,def:d.lmTiefe},{k:'lmBreite',versteckt:true,def:d.lmBreite},{k:'lmAbkling',versteckt:true,def:d.lmAbkling},{k:'lmInvers',versteckt:true,def:d.lmInvers},{k:'lmVersatz',versteckt:true,def:d.lmVersatz},{k:'lmAnteil',versteckt:true,def:d.lmAnteil},{k:'lmSchritte',versteckt:true,def:[1,.35,1,.35,1,.35,1,.35]},{k:'lmWeich',versteckt:true,def:0}]; }
 function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/Math.max(0.1,e.atempo||4))) : pulswert(t,e.abkling,e.nurEins); }
 function mische(a,b,x){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*x)).join(',')+')'; }
@@ -27246,6 +27264,11 @@ function renderStapel(){
           if(q==='hz') h+='<div class="tbs-regler"><span>pro Sekunde</span><input type="range" data-k="lmHz" min="0.5" max="30" step="0.5" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>';
           if(q==='zufall') h+='<div class="tbs-regler"><span>Anteil der Schl\u00e4ge</span><input type="range" data-k="lmAnteil" min="0.1" max="1" step="0.05" value="'+e.lmAnteil+'"><span class="tbs-wert">'+kf(e.lmAnteil)+'</span></div>';
           h+='<div class="tbs-regler"><span>Tiefe</span><input type="range" data-k="lmTiefe" min="0" max="1" step="0.05" value="'+e.lmTiefe+'"><span class="tbs-wert">'+kf(e.lmTiefe)+'</span></div>';
+          if(form==='sequenz'){ const n=lmSchritteHolen(e).length;
+            h+='<div class="tbs-regler"><span>Schritte</span><select data-lmschritte="1">'+[4,8,16,32].map(v=>'<option value="'+v+'"'+(n===v?' selected':'')+'>'+v+' je Periode</option>').join('')+'</select><span></span></div>';
+            h+='<div class="tbs-regler"><span>Vorlage</span><div class="tbs-lmformen">'+LM_VORLAGEN.map(([v,l])=>'<button type="button" data-lmvorlage="'+v+'" style="padding:2px 7px;line-height:1.3;font-size:11px">'+l+'</button>').join('')+'</div><span></span></div>';
+            h+='<div class="tbs-regler"><span>weich</span><button class="tbs-togp'+(e.lmWeich?' an':'')+'" data-tog="lmWeich">'+(e.lmWeich?'an':'aus')+'</button><span></span></div>';
+            h+='<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">In der Vorschau ziehen: die H\u00f6he ist die Lichtst\u00e4rke je Schritt.</div>'; }
           if(form==='peak_an'||form==='peak_aus'||form==='rechteck') h+='<div class="tbs-regler"><span>Breite</span><input type="range" data-k="lmBreite" min="0.05" max="0.95" step="0.05" value="'+e.lmBreite+'"><span class="tbs-wert">'+kf(e.lmBreite)+'</span></div>';
           if(form==='rampe_ab') h+='<div class="tbs-regler"><span>Abklingen</span><input type="range" data-k="lmAbkling" min="0.3" max="4" step="0.1" value="'+e.lmAbkling+'"><span class="tbs-wert">'+kf(e.lmAbkling)+'</span></div>';
           h+='<div class="tbs-regler"><span>Versatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
@@ -27294,7 +27317,12 @@ function renderStapel(){
     });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
     c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
-    const lmv=c.querySelector('canvas.tbs-lmvor'); if(lmv){ lmv._e=e; lmVorschau(lmv,e); }   /* neu zeichnen: an Pillen haengen abhaengige Regler (when) */
+    const lmv=c.querySelector('canvas.tbs-lmvor'); if(lmv){ lmv._e=e; lmVorschau(lmv,e);
+      if((e.lmForm||'rampe_ab')==='sequenz'){ lmv.style.cursor='crosshair'; lmv.style.touchAction='none'; let malt=false;
+        const setz=ev=>{ const r=lmv.getBoundingClientRect(), s=lmSchritteHolen(e), n=s.length; const i=Math.max(0,Math.min(n-1,Math.floor((ev.clientX-r.left)/r.width*n))); s[i]=Math.max(0,Math.min(1,1-(ev.clientY-r.top)/r.height)); lmVorschau(lmv,e); };
+        lmv.onpointerdown=ev=>{ lmv.setPointerCapture(ev.pointerId); malt=true; setz(ev); }; lmv.onpointermove=ev=>{ if(malt) setz(ev); }; lmv.onpointerup=()=>{ malt=false; }; }
+      const sz=c.querySelector('[data-lmschritte]'); if(sz) sz.onchange=()=>{ lmSchritteZahl(e,+sz.value); renderStapel(); };
+      c.querySelectorAll('[data-lmvorlage]').forEach(b=>b.onclick=()=>{ const v=LM_VORLAGEN.find(x=>x[0]===b.dataset.lmvorlage); if(v){ e.lmSchritte=v[2](lmSchritteHolen(e).length); lmVorschau(lmv,e); } }); }   /* neu zeichnen: an Pillen haengen abhaengige Regler (when) */
     const vs=c.querySelector('[data-verr]'); if(vs) vs.onchange=()=>{ e.verr=vs.value; };
     const ss=c.querySelector('[data-staerke]'); if(ss) ss.oninput=()=>{ e.staerke=+ss.value; ss.parentElement.querySelector('.tbs-wert').textContent=Math.round(e.staerke*100)+'%'; };
     const rbar=c.querySelector('.tbs-rampe-bar');

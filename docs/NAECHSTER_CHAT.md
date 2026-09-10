@@ -2592,3 +2592,8 @@ Gemessen im Labor: Rampe ab hellt auf dem Schlag, An-mit-Aus-Spitzen dunkelt auf
 **Ideen von Jörg dazu (nicht gebaut):** je Farbkanal R/G/B eigene Wellen, Phase/Gegenphase zwischen Scheinwerfern,
 ein Effekt als Auslöser für einen anderen (Modulationsmatrix wie am Synthesizer), der KlangTresor als Ansteuerung
 für echte Lichtsteuerung (DMX/Art-Net) — „Möglichkeiten ohne Ende“.
+- **Lichtsequenzer** (Jörg: „als wenn man eine Drum-Machine programmiert“): Muster „Sequenz“ im Antrieb — die Periode
+  (Takt bei „auf der Eins“, sonst Schlag oder Sekunde) in 4/8/16/32 Schritte, jeder Schritt eine Höhe = Lichtstärke,
+  in der Vorschau mit der Maus gemalt (Balken, Zählzeiten als Linien, laufender Strich). Vorlagen Doppelschlag,
+  Wechsel, Anlauf, Ausklang, Offbeat; Schalter „weich“ interpoliert zwischen den Schritten. Schrittfolge
+  `lmSchritte` im Rezept, Schrittzahl-Wechsel tastet die Form neu ab. Labor: Doppelschlag hell → schwächer → aus.
