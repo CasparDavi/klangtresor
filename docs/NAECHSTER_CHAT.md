@@ -2597,3 +2597,16 @@ für echte Lichtsteuerung (DMX/Art-Net) — „Möglichkeiten ohne Ende“.
   in der Vorschau mit der Maus gemalt (Balken, Zählzeiten als Linien, laufender Strich). Vorlagen Doppelschlag,
   Wechsel, Anlauf, Ausklang, Offbeat; Schalter „weich“ interpoliert zwischen den Schritten. Schrittfolge
   `lmSchritte` im Rezept, Schrittzahl-Wechsel tastet die Form neu ab. Labor: Doppelschlag hell → schwächer → aus.
+
+### Raum-Block für Scheinwerfer und Schatten (11.09.2026, Jörg: „definiere … das spatiale Verhalten der Lichtquelle“)
+Licht = Zeit (Antrieb) × Raum × Farbe × Verrechnung. Der **Raum**-Block sitzt über dem Antrieb: **Ursprung** (außerhalb
+auf einem Winkel um das Bild, oder im Bild x/y) · **Ziel** x/y · **Bewegung** fest, wandernd, Bogen, Schwenk (um den
+Ursprung), Fahrt (Moving Head: fährt mit Anlauf und Bremsen zu zufälligen Zielen; Tempo, Weite, Trägheit), Schritt
+(springt auf den Schlag, Taktquelle des Antriebs) · **Form** Kreis, Ellipse (schräger Einfall: gestreckt vom Ursprung
+weg, nahes Ende heller = Gefälle), Kegel von außen (schmal und hell am Gerät, breit und schwächer am Fleck, Flanken
+weich) · Größe, **Randschärfe** (Plateau mit Kante statt Gauß-Wolke), **Hotspot** · **Blende** (Gobo): Punkte,
+Streifen, Gitter, Wolken, Sprenkel, Iris, Torblende, mit Größe, Drehung, Weichheit (Maske per destination-in auf
+einer Zwischenleinwand) · **Profilgrafik**: links der Querschnitt des Flecks, rechts das Bild im Kleinen mit Ursprung,
+live. Alte Ablagen (form/groesse/weichheit/fuehrung/tempo/bogen/dpx/dpy/schwenk) werden beim Laden übersetzt.
+Offen (Schritt 2 des Raums): Laser, Lichtstrahlen, Stroboskop und Sicherung an den Raum-Block hängen (Ursprung,
+Bewegung, Blende als Zerhacker/Muster).

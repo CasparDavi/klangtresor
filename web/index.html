@@ -3109,6 +3109,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-lmformen button:hover{color:var(--text);border-color:var(--akzent)}
 #tbs .tbs-lmformen button.on{color:var(--akzent);border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent)}
 #tbs canvas.tbs-lmvor{width:100%;height:44px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
+/* Raum-Block der Lichter, mit Profilgrafik */
+#tbs .tbs-rm{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rand)}
+#tbs canvas.tbs-rmvor{width:100%;height:70px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -26726,10 +26729,10 @@ const EFFEKTE = {
     params:[{k:'saettigung',lbl:'Sättigung',min:0,max:4,step:.1,def:2.4},{k:'schlag',lbl:'Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
   farbe:{ label:'Farbschleier', art:'mal', verr:'weich', staerkeDef:.4, besch:'Eine Farbfolge zieht als Schleier über das Bild, im Tempo eingerastet.',
     params:[{k:'palette',lbl:'Folge',sel:[...Object.keys(PALETTEN).map(n=>[n,n]),['Eigen','Eigene Rampe']],def:'Abendrot'},{k:'rampe',rampe:true,def:['#ff6a3d','#f9c74f','#3a86ff']},{k:'tempo',lbl:'Tempo (s)',min:2,max:20,step:1,def:8}]},
-  licht:{ label:'Scheinwerfer', art:'mal', verr:'screen', staerkeDef:.7, besch:'Ein Licht wandert über das Bild. Mehrfach einhängen: gelb und länglich, blau und weich, jeder mit eigener Verrechnung.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'}]},
+  licht:{ label:'Scheinwerfer', art:'mal', verr:'screen', staerkeDef:.7, besch:'Ein Scheinwerfer: Lichtfleck mit Plateau und Kante, als Kreis, Ellipse mit Gefälle oder Kegel von außen; Blende als Muster im Strahl; Führung wie ein Moving Head. Mehrfach einhängen, jeder mit eigener Farbe und Verrechnung.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'}]},
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'},{k:'form',lbl:'Form',sel:[['rund','rund'],['laeng','länglich'],['strahl','Strahl']],def:'rund'},{k:'streckung',lbl:'Streckung',min:1,max:4,step:.1,def:2,when:e=>e.form!=='rund'},{k:'groesse',lbl:'Größe',min:.1,max:.8,step:.02,def:.3},{k:'weichheit',lbl:'Härte → weich',min:0,max:1,step:.05,def:.6},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:16},{k:'fuehrung',lbl:'Führung',sel:[['wander','wandernd'],['bogen','Bogen'],['schwenk','Schwenk (Drehpunkt)']],def:'wander'},{k:'bogen',lbl:'Bogenhöhe',min:0,max:1,step:.05,def:.6,when:e=>e.fuehrung==='bogen'},{k:'dpx',lbl:'Drehpunkt X',min:-0.3,max:1.3,step:.05,def:.5,when:e=>e.fuehrung==='schwenk'},{k:'dpy',lbl:'Drehpunkt Y',min:-0.3,max:1.3,step:.05,def:1.15,when:e=>e.fuehrung==='schwenk'},{k:'schwenk',lbl:'Schwenkweite',min:.1,max:1.4,step:.05,def:.7,when:e=>e.fuehrung==='schwenk'}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'}]},
   laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Strahlen schießen aus einem wandernden Punkt — additiv gestapelt ein Inferno. Mehrfach in verschiedenen Farben einhängen.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Fächer',min:0,max:1,step:.05,def:1},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.08},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5,when:e=>e.quelle==='fest'}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle und dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
@@ -26804,6 +26807,16 @@ const EFFEKTE = {
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten';
 ['licht','laser','strahlen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was da ist \u2014 f\u00fcr sichtbare Strahlen im Raum Theaternebel davor in die Kette h\u00e4ngen.'; });
+/* ---- RAUM (Caspar_D, 11.09.2026: "definiere zum zeitlichen Lichtverhalten jetzt mit einem Zusatzpanel das
+   spatiale Verhalten der Lichtquelle"): Ursprung (wo das Geraet haengt), Ziel (wohin es leuchtet), Bewegung des
+   Ziels (auch wie ein Moving Head: Fahrt mit Anlauf und Bremsen, Schritt auf den Schlag), Form des Flecks
+   (Plateau mit Kante, Hotspot, Ellipse mit Gefaelle, Kegel von aussen) und Blende (das Gobo im Strahl). */
+const RM_BEWEGUNG=[['fest','fest'],['wandernd','wandernd'],['bogen','Bogen'],['schwenk','Schwenk'],['fahrt','Fahrt (Moving Head)'],['schritt','Schritt auf den Schlag']];
+const RM_FORM=[['kreis','Kreis'],['ellipse','Ellipse (schräger Einfall)'],['kegel','Kegel von außen']];
+const RM_BLENDE=[['keine','keine'],['punkte','Punkte'],['streifen','Streifen'],['gitter','Gitter'],['wolken','Wolken'],['sprenkel','Sprenkel'],['iris','Iris'],['tor','Torblende']];
+function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,rmUx:.5,rmUy:0,rmZx:.5,rmZy:.5,rmBewegung:'wandernd',rmTempo:16,rmWeite:.5,rmTraegheit:.5,rmForm:'kreis',rmGroesse:.3,rmRand:.5,rmHotspot:.2,rmStreckung:2,rmGefaelle:.6,rmBlende:'keine',rmBlGroesse:.15,rmBlDrehung:0,rmBlWeich:.3},vor||{});
+  return [{k:'rm',rm:true}].concat(Object.keys(d).map(k=>({k,versteckt:true,def:d[k]}))); }
+[['licht',{}],['schatten',{}]].forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...rmParams(v)); });
 /* Antrieb (Lichtmischpult) an alle Lichter: Vorgaben wie bisher - Scheinwerfer, Schatten, Laser und Feuer
    pulsen im Takt, Stroboskop laeuft als Rechteck mit 8 Hz, der Rest ist stetig. */
 [['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
@@ -26918,7 +26931,7 @@ function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&
     case 'sequenz': { const s=e?lmSchritteHolen(e):[1,.35,1,.35,1,.35,1,.35], n=s.length, x=p*n, i=Math.floor(x)%n; if(!(e&&e.lmWeich)) return s[i]; const j=(i+1)%n, f=x-Math.floor(x); return s[i]+(s[j]-s[i])*f; }
     default: return 1; } }
 /* Pegel 0..1 des Antriebs zur Zeit t; merkt Phase und Periodenindex am Effekt fuer die Vorschau. */
-function antriebWert(e,t){ const q=e.lmQuelle||'stetig'; e._lmPhase=null; if(q==='stetig') return 1;
+function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=null; if(q==='stetig') return 1;
   const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), form=e.lmForm||'rampe_ab'; let p, idx, aktiv=true;
   if(q==='hz'){ const hz=Math.max(0.1,e.lmHz||4), x=t*hz; idx=Math.floor(x); p=x-idx; }
   else { const S=DATA&&DATA.schlaege; if(!S||!S.length) return 1; const eins=(q==='eins'); let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0) return 1;
@@ -26944,7 +26957,7 @@ function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height;
   const form=e.lmForm||'rampe_ab', tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath();
   for(let i=0;i<=200;i++){ const q=i/200*2; const pp=((q%1)+(e.lmVersatz||0))%1; let f=(form==='zufall')?lmHash(Math.floor(q)*7+e.id):lmForm(form,pp,e); if(e.lmInvers) f=1-f; const lv=(1-tiefe)+tiefe*f; const px=q/2*W, py=H-3-lv*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
   if(e._lmPhase!=null){ const px=e._lmPhase/2*W; x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=1; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); } }
-function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); }
+function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); stapelBox.querySelectorAll('canvas.tbs-rmvor').forEach(cv=>{ if(cv._e) raumVorschau(cv,cv._e); }); }
 function lmParams(vor){ const d=Object.assign({lmQuelle:'stetig',lmForm:'rampe_ab',lmTeiler:1,lmHz:4,lmTiefe:.8,lmBreite:.3,lmAbkling:1,lmInvers:0,lmVersatz:0,lmAnteil:.5},vor||{});
   return [{k:'lm',lm:true},{k:'lmQuelle',versteckt:true,def:d.lmQuelle},{k:'lmForm',versteckt:true,def:d.lmForm},{k:'lmTeiler',versteckt:true,def:d.lmTeiler},{k:'lmHz',versteckt:true,def:d.lmHz},{k:'lmTiefe',versteckt:true,def:d.lmTiefe},{k:'lmBreite',versteckt:true,def:d.lmBreite},{k:'lmAbkling',versteckt:true,def:d.lmAbkling},{k:'lmInvers',versteckt:true,def:d.lmInvers},{k:'lmVersatz',versteckt:true,def:d.lmVersatz},{k:'lmAnteil',versteckt:true,def:d.lmAnteil},{k:'lmSchritte',versteckt:true,def:[1,.35,1,.35,1,.35,1,.35]},{k:'lmWeich',versteckt:true,def:0}]; }
 function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/Math.max(0.1,e.atempo||4))) : pulswert(t,e.abkling,e.nurEins); }
@@ -26991,6 +27004,58 @@ function risseBauen(e,Wn,Hn){ const key=[e.einschlaege,e.aeste,e.laenge,e.muster
   const maxOrd=segs.reduce((m,s)=>Math.max(m,s.ord),0);
   e._risse={segs,maxOrd}; e._risseKey=key; return e._risse; }
 
+/* ---- Scheinwerfer und Schatten: Raum-Geometrie ---------------------------------------------- */
+function raumUrsprung(e,W,H){ if((e.rmUrsprung||'aussen')==='aussen'){ const a=(e.rmWinkel||0)*2*Math.PI; return [W*(0.5+0.8*Math.cos(a)), H*(0.5+0.8*Math.sin(a))]; } return [W*(e.rmUx==null?0.5:e.rmUx), H*(e.rmUy==null?0:e.rmUy)]; }
+function raumZiel(e,t,W,H,O){ const zx=W*(e.rmZx==null?0.5:e.rmZx), zy=H*(e.rmZy==null?0.5:e.rmZy), bw=e.rmBewegung||'fest', tp=Math.max(0.2,e.rmTempo||8), wt=(e.rmWeite==null?0.5:e.rmWeite), ph=t/tp+e.id*0.13;
+  const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, ease=u=>u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+  if(bw==='wandernd') return [zx+W*0.42*wt*Math.sin(2*Math.PI*ph), zy+H*0.42*wt*Math.sin(2*Math.PI*(ph*1.3+e.id*0.2))];
+  if(bw==='bogen'){ const s=Math.sin(2*Math.PI*ph); return [zx+W*0.46*wt*s, zy-H*0.3*wt*(1-s*s)]; }
+  if(bw==='schwenk'){ const base=Math.atan2(zy-O[1],zx-O[0]), reach=Math.hypot(zx-O[0],zy-O[1]), ang=base+Math.sin(2*Math.PI*ph)*wt*Math.PI/2; return [O[0]+Math.cos(ang)*reach, O[1]+Math.sin(ang)*reach]; }
+  if(bw==='fahrt'||bw==='schritt'){ let k,u; const tr=(e.rmTraegheit==null?0.5:e.rmTraegheit);
+    if(bw==='fahrt'){ k=Math.floor(t/tp); u=Math.min(1,(t/tp-k)/Math.max(0.05,1-tr)); }
+    else { const S=DATA&&DATA.schlaege; if(!S||!S.length){ k=Math.floor(t); u=1; } else { let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0){ k=0; u=1; } else { let a=i; if(e.lmQuelle==='eins') while(a>0&&S[a][1]!==1) a--; k=a; const L=Math.max(0.05,(S[a+1]?S[a+1][0]-S[a][0]:0.5)); u=Math.min(1,(t-S[a][0])/L/Math.max(0.03,tr*0.8)); } } }
+    const P=n=>[zx+W*0.45*wt*(hs(n*2)*2-1), zy+H*0.45*wt*(hs(n*2+1)*2-1)], A=P(k-1), B=P(k), s=ease(u); return [A[0]+(B[0]-A[0])*s, A[1]+(B[1]-A[1])*s]; }
+  return [zx,zy]; }
+/* Radiales Profil des Flecks: Hotspot in der Mitte, Plateau bis zur Kante, dann weicher Abfall (smoothstep). */
+function poolProfil(e,rho){ const rand=(e.rmRand==null?0.5:e.rmRand), hot=(e.rmHotspot||0), kern=Math.max(0.02,Math.min(0.98,0.05+0.9*rand)); if(rho>=1) return 0;
+  let f=1; if(rho>kern){ const q=(rho-kern)/(1-kern); f=1-q*q*(3-2*q); } return Math.min(1.6, f*(1+hot*0.8*Math.max(0,1-rho/Math.max(0.05,kern*0.6))*(rho<kern?1:0))); }
+function poolGradient(x,e,farbe,a){ const g=x.createRadialGradient(0,0,0,0,0,1); for(let i=0;i<=12;i++){ const r=i/12; g.addColorStop(r, rgba(farbe, Math.min(1,a*poolProfil(e,Math.min(0.999,r))))); } return g; }
+function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine'; mk.setTransform(1,0,0,1,0,0); mk.globalCompositeOperation='source-over'; mk.filter='none'; mk.clearRect(0,0,W,H);
+  const zelle=Math.max(2,(e.rmBlGroesse==null?0.15:e.rmBlGroesse)*r*2), weich=(e.rmBlWeich==null?0.3:e.rmBlWeich); const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
+  mk.filter=weich>0?('blur('+(weich*zelle*0.35).toFixed(1)+'px)'):'none'; mk.fillStyle='#fff'; mk.strokeStyle='#fff';
+  mk.save(); mk.translate(Z[0],Z[1]); mk.rotate(rot+(e.rmBlDrehung||0)*Math.PI/180); const R=Math.hypot(W,H); const n=Math.ceil(R/zelle)+1;
+  if(art==='punkte'){ for(let i=-n;i<=n;i++) for(let j=-n;j<=n;j++){ mk.beginPath(); mk.arc(i*zelle,j*zelle,zelle*0.32,0,7); mk.fill(); } }
+  else if(art==='streifen'){ for(let i=-n;i<=n;i++) mk.fillRect(i*zelle-zelle*0.25,-R,zelle*0.5,2*R); }
+  else if(art==='gitter'){ mk.lineWidth=zelle*0.18; for(let i=-n;i<=n;i++){ mk.beginPath(); mk.moveTo(i*zelle,-R); mk.lineTo(i*zelle,R); mk.moveTo(-R,i*zelle); mk.lineTo(R,i*zelle); mk.stroke(); } }
+  else if(art==='wolken'){ mk.filter='none'; for(let i=0;i<60;i++){ const px=(hs(i)*2-1)*r*1.3, py=(hs(i+100)*2-1)*r*1.3, rr=zelle*(0.6+hs(i+200)*1.4); const g=mk.createRadialGradient(px,py,0,px,py,rr); g.addColorStop(0,'rgba(255,255,255,'+(0.5+0.5*hs(i+300)).toFixed(2)+')'); g.addColorStop(1,'rgba(255,255,255,0)'); mk.fillStyle=g; mk.fillRect(px-rr,py-rr,rr*2,rr*2); } }
+  else if(art==='sprenkel'){ for(let i=0;i<220;i++){ const px=(hs(i)*2-1)*r*1.4, py=(hs(i+500)*2-1)*r*1.4, rr=zelle*(0.08+0.22*hs(i+900)); mk.beginPath(); mk.arc(px,py,rr,0,7); mk.fill(); } }
+  else if(art==='iris'){ mk.beginPath(); mk.arc(0,0,r*0.9,0,7); mk.fill(); }
+  else if(art==='tor'){ const st=(e.rmStreckung==null?2:e.rmStreckung); mk.fillRect(-r*0.9*Math.sqrt(st)/1.2,-r*0.9/Math.sqrt(st)*1.2,r*1.8*Math.sqrt(st)/1.2,r*1.8/Math.sqrt(st)*1.2); }
+  mk.restore(); mk.filter='none'; }
+function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return; const O=raumUrsprung(e,W,H), Z=raumZiel(e,t,W,H,O), form=e.rmForm||'kreis', r=Math.max(2,(e.rmGroesse==null?0.3:e.rmGroesse)*Math.min(W,H)), rot=Math.atan2(Z[1]-O[1],Z[0]-O[0]);
+  const blende=(e.rmBlende||'keine')!=='keine'; let x=cx;
+  if(blende){ if(!e._pc){ e._pc=document.createElement('canvas'); e._mk=document.createElement('canvas'); } if(e._pc.width!==W||e._pc.height!==H){ e._pc.width=W; e._pc.height=H; e._mk.width=W; e._mk.height=H; } x=e._pc.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); }
+  const alpha=blende?1:1; const farbe=e.farbe;
+  if(form==='kegel'){ /* Kegel vom Ursprung zum Ziel: schmal und hell am Geraet, breit und schwaecher am Fleck, Flanken weich */
+    const dx=Z[0]-O[0], dy=Z[1]-O[1], L=Math.max(1,Math.hypot(dx,dy)), nx=-dy/L, ny=dx/L, w0=r*0.08, w1=r;
+    x.save(); x.filter='blur('+((1-(e.rmRand==null?0.5:e.rmRand))*r*0.35).toFixed(1)+'px)'; const g=x.createLinearGradient(O[0],O[1],Z[0],Z[1]); g.addColorStop(0,rgba(farbe,a*0.95)); g.addColorStop(0.7,rgba(farbe,a*0.45)); g.addColorStop(1,rgba(farbe,a*0.25));
+    x.fillStyle=g; x.beginPath(); x.moveTo(O[0]+nx*w0,O[1]+ny*w0); x.lineTo(Z[0]+nx*w1,Z[1]+ny*w1); x.lineTo(Z[0]-nx*w1,Z[1]-ny*w1); x.lineTo(O[0]-nx*w0,O[1]-ny*w0); x.closePath(); x.fill(); x.restore();
+    x.save(); x.translate(Z[0],Z[1]); x.scale(r,r); x.fillStyle=poolGradient(x,e,farbe,a*0.7); x.beginPath(); x.arc(0,0,1,0,7); x.fill(); x.restore(); }
+  else { x.save(); x.translate(Z[0],Z[1]); let rx=r, ry=r, off=0;
+    if(form==='ellipse'){ const st=(e.rmStreckung==null?2:e.rmStreckung); x.rotate(rot); rx=r*st; ry=r/Math.sqrt(st); off=-(e.rmGefaelle==null?0.6:e.rmGefaelle)*0.35; }
+    x.scale(rx,ry); const g=x.createRadialGradient(off,0,0,off,0,1-Math.abs(off)*0.2); for(let i=0;i<=12;i++){ const q=i/12; g.addColorStop(q, rgba(farbe, Math.min(1,a*poolProfil(e,Math.min(0.999,q))))); }
+    x.fillStyle=g; x.beginPath(); x.arc(0,0,1,0,7); x.fill(); x.restore(); }
+  if(blende){ const mk=e._mk.getContext('2d'); blendeMaske(e,mk,W,H,Z,r,rot); x.globalCompositeOperation='destination-in'; x.drawImage(e._mk,0,0); x.globalCompositeOperation='source-over';
+    cx.globalCompositeOperation=VMODE[e.verr]||'source-over'; cx.globalAlpha=1; cx.drawImage(e._pc,0,0); } }
+/* Profilgrafik in der Karte: links der Querschnitt des Flecks, rechts das Bild im Kleinen mit Ursprung, Ziel und Blende. */
+function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height, lw=Math.round(W*0.42); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(lw/2,0); x.lineTo(lw/2,H); x.moveTo(lw,0); x.lineTo(lw,H); x.stroke();
+  x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath(); for(let i=0;i<=100;i++){ const rho=Math.abs(i/50-1); const f=Math.min(1.6,poolProfil(e,Math.min(0.999,rho)))/1.6; const px=i/100*lw, py=H-3-f*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
+  const mw=W-lw-4, mh=H; x.save(); x.beginPath(); x.rect(lw+4,0,mw,mh); x.clip(); x.translate(lw+4,0); x.fillStyle='#000'; x.fillRect(0,0,mw,mh);
+  const k={...e, staerke:1, _pc:e._vpc, _mk:e._vmk, id:e.id}; const sk=Math.min(mw/300,mh/200); const Wv=Math.round(mw/sk), Hv=Math.round(mh/sk); x.scale(sk,sk);
+  if(!k._pc){ k._pc=document.createElement('canvas'); k._mk=document.createElement('canvas'); e._vpc=k._pc; e._vmk=k._mk; }
+  const tt=(e._lmT!=null?e._lmT:0); const alt=k.lmQuelle; k.lmQuelle='stetig'; x.globalCompositeOperation='lighter'; lichtMalen(k,x,tt,Wv,Hv); k.lmQuelle=alt;
+  const O=raumUrsprung(e,Wv,Hv); x.fillStyle='#fff'; x.beginPath(); x.arc(Math.max(4,Math.min(Wv-4,O[0])),Math.max(4,Math.min(Hv-4,O[1])),4,0,7); x.fill(); x.restore(); }
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source-over'; cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
     if(e.wachsen==='zeit') lim=Math.min(1,t/Math.max(1,e.dauer))*(R.maxOrd+1);
@@ -27032,15 +27097,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     return; }
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/e.tempo)%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
-  else if(e.typ==='licht'||e.typ==='schatten'){ const blitz=antriebWert(e,t), r=e.groesse*Math.min(Wn,Hn), str=e.form==='rund'?1:e.streckung, ph=t/e.tempo+e.id*0.13;
-    let x,y,rot=0;
-    if(e.fuehrung==='schwenk'){ const px=Wn*e.dpx, py=Hn*e.dpy, ba=-Math.PI/2+Math.sin(2*Math.PI*ph)*e.schwenk, reach=Math.hypot(Wn,Hn)*0.55; x=px+Math.cos(ba)*reach; y=py+Math.sin(ba)*reach; rot=ba; }
-    else if(e.fuehrung==='bogen'){ const s=Math.sin(2*Math.PI*ph); x=Wn*(0.5+0.46*s); y=Hn*(0.18+e.bogen*0.62*s*s); }
-    else { x=Wn*(0.5+0.42*Math.sin(2*Math.PI*ph)); y=Hn*(0.5+0.42*Math.sin(2*Math.PI*(ph*1.3+e.id*0.2))); }
-    let rx=r,ry=r; if(e.form==='laeng'){rx=r*str;ry=r/Math.sqrt(str);} if(e.form==='strahl'){rx=r*str*1.6;ry=r/(str*1.4);}
-    const R=Math.max(rx,ry), kern=Math.max(0,1-e.weichheit), grad=cx.createRadialGradient(0,0,0,0,0,R);
-    grad.addColorStop(0,rgba(e.farbe,e.staerke*blitz)); if(kern>0&&kern<1) grad.addColorStop(kern,rgba(e.farbe,e.staerke*blitz*0.8)); grad.addColorStop(1,rgba(e.farbe,0));
-    cx.save(); cx.translate(x,y); cx.rotate(rot); cx.scale(rx/R,ry/R); cx.fillStyle=grad; cx.beginPath(); cx.arc(0,0,R,0,7); cx.fill(); cx.restore(); }
+  else if(e.typ==='licht'||e.typ==='schatten'){ lichtMalen(e,cx,t,Wn,Hn); }
   else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*(e.flimmerTempo||20)*t+e.id*7)), bp=antriebWert(e,t)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI;
     /* Der Faecherpunkt liegt IMMER ausserhalb des Bildes (Caspar_D, 11.09.2026): wandernd auf einer Bahn um das
        Bild herum (Radien 0,8 > 0,5, also nie drin), fest auf dem gewaehlten Punkt - liegt der im Bild, wird er auf
@@ -27253,8 +27310,22 @@ function renderStapel(){
       +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','lm']);
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm']);
     const paramHTML=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
+      if(p.rm){ const sel=(k,liste)=>'<div class="tbs-regler"><span>'+k[0]+'</span><select data-k="'+k[1]+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k[1]]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+        const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
+        h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">Raum</div>';
+        h+=sel(['Ursprung','rmUrsprung'],[['aussen','außerhalb des Bildes'],['bild','im Bild']]);
+        if((e.rmUrsprung||'aussen')==='aussen') h+=rg('Winkel','rmWinkel',0,1,0.01); else h+=rg('Ursprung X','rmUx',-0.3,1.3,0.01)+rg('Ursprung Y','rmUy',-0.3,1.3,0.01);
+        h+=rg('Ziel X','rmZx',0,1,0.01)+rg('Ziel Y','rmZy',0,1,0.01);
+        h+=sel(['Bewegung','rmBewegung'],RM_BEWEGUNG);
+        if((e.rmBewegung||'fest')!=='fest'){ if(e.rmBewegung!=='schritt') h+=rg('Tempo (s)','rmTempo',1,40,0.5,true); h+=rg('Weite','rmWeite',0,1,0.05); if(e.rmBewegung==='fahrt'||e.rmBewegung==='schritt') h+=rg('Trägheit','rmTraegheit',0,1,0.05); }
+        h+=sel(['Form','rmForm'],RM_FORM)+rg('Größe','rmGroesse',0.05,1,0.01)+rg('Randschärfe','rmRand',0,1,0.05)+rg('Hotspot','rmHotspot',0,1,0.05);
+        if((e.rmForm||'kreis')==='ellipse') h+=rg('Streckung','rmStreckung',1,4,0.1)+rg('Gefälle','rmGefaelle',0,1,0.05);
+        h+='<canvas class="tbs-rmvor" width="300" height="70" title="Links das Profil des Flecks (Hotspot, Plateau, Kante), rechts das Bild im Kleinen mit Ursprung"></canvas>';
+        h+=sel(['Blende','rmBlende'],RM_BLENDE);
+        if((e.rmBlende||'keine')!=='keine') h+=rg('Blende Größe','rmBlGroesse',0.02,0.5,0.01)+rg('Blende Drehung','rmBlDrehung',0,360,1,true)+rg('Blende weich','rmBlWeich',0,1,0.05);
+        h+='</div>'; return; }
       if(p.lm){ const q=e.lmQuelle||'stetig', form=e.lmForm||'rampe_ab';
         h+='<div class="tbs-lm"><div class="tbs-regler"><span>Antrieb</span><select data-k="lmQuelle">'+LM_QUELLEN.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         if(q!=='stetig'){
@@ -27313,10 +27384,11 @@ function renderStapel(){
       e[k]= (inp.type==='range') ? +inp.value : inp.value;
       const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
       if(p.sel&&k==='art') artFarben(e);
-      if(p.sel) renderStapel(); else if(k&&k.slice(0,2)==='lm') lmVorschauen();
+      if(p.sel) renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm')) lmVorschauen();
     });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
     c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
+    const rmv=c.querySelector('canvas.tbs-rmvor'); if(rmv){ rmv._e=e; raumVorschau(rmv,e); }
     const lmv=c.querySelector('canvas.tbs-lmvor'); if(lmv){ lmv._e=e; lmVorschau(lmv,e);
       if((e.lmForm||'rampe_ab')==='sequenz'){ lmv.style.cursor='crosshair'; lmv.style.touchAction='none'; let malt=false;
         const setz=ev=>{ const r=lmv.getBoundingClientRect(), s=lmSchritteHolen(e), n=s.length; const i=Math.max(0,Math.min(n-1,Math.floor((ev.clientX-r.left)/r.width*n))); s[i]=Math.max(0,Math.min(1,1-(ev.clientY-r.top)/r.height)); lmVorschau(lmv,e); };
@@ -27541,6 +27613,11 @@ function zeichneFrame(t){
     /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
     if(EFFEKTE[r.typ].params.some(p=>p.lm)&&r.lmQuelle==null){ if(r.typ==='strobe'){ e.lmQuelle=r.takt?'takt':'hz'; e.lmForm=r.takt?'peak_an':'rechteck'; if(r.frequenz>0) e.lmHz=r.frequenz; e.lmTiefe=1; }
       else if(r.takt!=null){ e.lmQuelle=r.takt?'takt':'stetig'; e.lmForm='rampe_ab'; } delete e.takt; delete e.frequenz; }
+    /* Scheinwerfer/Schatten vor dem Raum-Block: form/groesse/weichheit/fuehrung/... in den Raum uebersetzen. */
+    if((r.typ==='licht'||r.typ==='schatten')&&r.rmForm==null){
+      if(r.form) e.rmForm=r.form==='laeng'?'ellipse':r.form==='strahl'?'kegel':'kreis'; if(r.groesse!=null) e.rmGroesse=r.groesse; if(r.streckung!=null) e.rmStreckung=r.streckung; if(r.weichheit!=null) e.rmRand=1-r.weichheit;
+      if(r.fuehrung) e.rmBewegung=r.fuehrung==='wander'?'wandernd':r.fuehrung; if(r.tempo!=null) e.rmTempo=r.tempo; if(r.fuehrung==='bogen'&&r.bogen!=null) e.rmWeite=r.bogen; if(r.fuehrung==='schwenk'){ e.rmUrsprung='bild'; if(r.dpx!=null) e.rmUx=r.dpx; if(r.dpy!=null) e.rmUy=r.dpy; if(r.schwenk!=null) e.rmWeite=Math.min(1,r.schwenk); }
+      ['form','groesse','streckung','weichheit','fuehrung','tempo','bogen','dpx','dpy','schwenk'].forEach(k=>{ delete e[k]; }); }
     return e; }
   function presetSetzen(arr){ STAPEL=arr.map(effektAusRezept).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
