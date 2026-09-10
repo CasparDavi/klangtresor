@@ -26750,7 +26750,7 @@ const EFFEKTE = {
   sicherung:{ label:'Sicherungswackeln', art:'mal', verr:'multi', staerkeDef:.8, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon. Auch als: Lichtflackern unter Wasser, durch Wolken, hinter Laub.',
     params:[{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'tiefe',lbl:'Tiefe',min:0,max:1,step:.05,def:.6},{k:'dauer',lbl:'Dauer (ms)',min:40,max:800,step:10,def:180},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'nur im Takt',def:0}]},
   nebel:{ label:'Theaternebel', art:'mal', verr:'screen', staerkeDef:.6, besch:'Weiche Schwaden ziehen langsam durchs Bild und liegen eher unten. Heterogenität: wie verschieden die Schwaden untereinander sind. Turbulenz: wie kleinteilig jede Schwade in sich wabert — viel Änderung pro Ort. Wirkt am besten leise. Auch als: Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},{k:'dichte',lbl:'Dichte',min:1,max:12,step:1,def:5},{k:'het',lbl:'Heterogenität',min:0,max:1,step:.05,def:.5},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'groesse',lbl:'Größe',min:.3,max:1.2,step:.05,def:.7},{k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.75},{k:'tempo',lbl:'Tempo (s)',min:10,max:60,step:1,def:30}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},{k:'dichte',lbl:'Dichte',min:0,max:1,step:.05,def:.7},{k:'schwaden',lbl:'Schwaden',min:1,max:12,step:1,def:5},{k:'het',lbl:'Heterogenität',min:0,max:1,step:.05,def:.5},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'groesse',lbl:'Größe',min:.3,max:1.2,step:.05,def:.7},{k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.75},{k:'tempo',lbl:'Tempo (s)',min:10,max:60,step:1,def:30}]},
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche oder Funken ziehen durchs Bild. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
     params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
@@ -26854,7 +26854,7 @@ const PRESETS={
  'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
  'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
  'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
- 'Licht im Nebel':()=>[E('nebel',{staerke:.5}),E('licht',{farbe:'#ffd9a0',groesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
+ 'Licht im Nebel':()=>[E('nebel',{staerke:.5}),E('licht',{farbe:'#ffd9a0',rmGroesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
 };
 
@@ -27130,7 +27130,8 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     else { const L=10/Math.max(0.1,e.haeufigkeit), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=e.tiefe*env(u)*zit; }
     amt*=Math.min(1,e.staerke);
     if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
-  else if(e.typ==='nebel'){ const n=e.dichte, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
+  else if(e.typ==='nebel'){ /* Dichte 0 = kein Nebel (Caspar_D, 11.09.2026: "irgendwann muesste der Nebel bei Dichte 0 auf volle Durchsichtigkeit fallen") */
+    const dichte=(e.dichte==null?0.7:e.dichte); if(dichte<=0) return; const n=Math.max(1,e.schwaden|0||5), hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*Math.min(1,dichte/0.7);
     const het=(e.het==null?.5:e.het);
     for(let i=0;i<n;i++){ const sp=1+het*(hs(i+90)-0.5)*1.2, ph=t*sp/e.tempo+hs(i), x=Wn*(0.5+0.6*Math.sin(2*Math.PI*ph*0.9+i*1.7)), y=Hn*(e.lage+0.18*Math.sin(2*Math.PI*ph*0.6+i*2.3)),
         r=e.groesse*Math.min(Wn,Hn)*(1-0.55*het+1.1*het*hs(i+50)), op=a*(1-0.6*het+1.2*het*hs(i+70));
@@ -27615,6 +27616,8 @@ function zeichneFrame(t){
     /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
     if(EFFEKTE[r.typ].params.some(p=>p.lm)&&r.lmQuelle==null){ if(r.typ==='strobe'){ e.lmQuelle=r.takt?'takt':'hz'; e.lmForm=r.takt?'peak_an':'rechteck'; if(r.frequenz>0) e.lmHz=r.frequenz; e.lmTiefe=1; }
       else if(r.takt!=null){ e.lmQuelle=r.takt?'takt':'stetig'; e.lmForm='rampe_ab'; } delete e.takt; delete e.frequenz; }
+    /* Theaternebel vor dem 11.09.2026: 'dichte' war die Anzahl der Schwaden (1..12). */
+    if(r.typ==='nebel'&&r.schwaden==null&&typeof r.dichte==='number'&&r.dichte>1){ e.schwaden=Math.round(r.dichte); e.dichte=0.7; }
     /* Scheinwerfer/Schatten vor dem Raum-Block: form/groesse/weichheit/fuehrung/... in den Raum uebersetzen. */
     if((r.typ==='licht'||r.typ==='schatten')&&r.rmForm==null){
       if(r.form) e.rmForm=r.form==='laeng'?'ellipse':r.form==='strahl'?'kegel':'kreis'; if(r.groesse!=null) e.rmGroesse=r.groesse; if(r.streckung!=null) e.rmStreckung=r.streckung; if(r.weichheit!=null) e.rmRand=1-r.weichheit;
