@@ -80,8 +80,17 @@ h1{
    Kein Knopfaussehen - er soll die Ueberschrift bleiben. Die id heisst
    NICHT "marke" als Klasse: ".marke" ist seit langem das Modell-Abzeichen
    auf den Kacheln und absolut positioniert. Als id ist der Name frei. */
-#marke{cursor:pointer;display:flex;align-items:center;gap:.42em}
-#markezeichen{width:1.05em;height:1.05em;border-radius:.22em;flex:0 0 auto;display:block}
+#marke{cursor:pointer;display:flex;align-items:center;gap:.16em}
+/* Das Tresorrad vor dem Namen liegt IM Titelverlauf, nicht daneben (Caspar_D, 10.09.2026: "dichter an
+   das Wort und mit in die Gradientenfärbung einbeziehen"). Technisch: derselbe Verlauf wie bei h1, das
+   Zeichen wirkt nur als Maske darauf. Der Verlauf ist achtmal so breit wie das Zeichen, damit er dort
+   dieselbe Stelle zeigt wie unter dem ersten Buchstaben - der Übergang läuft also durch.
+   Ohne Platte, anders als das Favicon: das braucht sie, weil es auf fremdem Grund im Reiter sitzt.
+   Beide zeigen dieselbe Form; wer eines ändert, ändert das andere mit. */
+#markezeichen{width:1.02em;height:1.02em;flex:0 0 auto;display:block;
+  background:linear-gradient(92deg,var(--titel-a,#f97b14),var(--titel-b,#e31c79));
+  background-size:800% 100%;background-position:0 0;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat}
 #marke:hover{filter:brightness(1.18)}
 /* Das Feld ist EIN Rahmen: Pfeil, Marken und Eingabe darin. Der Pfeil
    ist leise, bis man ihn braucht. */
@@ -3910,7 +3919,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <!-- Das Hauszeichen vor dem Namen (Caspar_D, 10.09.2026: "das klangtresor favicon gehoert auch vor
          das Wort KlangTresor im UI"). Es holt sich das Bild aus dem Seitenkopf, damit es nur EINE
          Fassung des Zeichens gibt: aendert sich das Favicon, aendert sich die Marke mit. -->
-    <h1 id="marke" onclick="werAuf()" title="Version, Urheber, Mitstreiter"><img id="markezeichen" alt="" aria-hidden="true">KlangTresor</h1>
+    <h1 id="marke" onclick="werAuf()" title="Version, Urheber, Mitstreiter"><span id="markezeichen" aria-hidden="true"></span>KlangTresor</h1>
     <!-- Das Suchfeld mit Filter DARIN (Caspar_D, 20.08.2026): vorn ein
          Pfeil, standardmaessig leer - Klick oeffnet die Kategorien. Ist
          eine gewaehlt, steht sie als Marke vorn im Feld, und direkt
@@ -4480,10 +4489,6 @@ async function start(){
   hashOeffnen();
 }
 
-/* Das Hauszeichen vor der Marke: eine Fassung im Seitenkopf, von dort geholt. Wer das Favicon
-   aendert, aendert damit auch die Marke - und der Videoexport nimmt dasselbe Bild (10.09.2026). */
-(function markeZeichnen(){ const im=document.getElementById('markezeichen'), l=document.querySelector('link[rel="icon"]');
-  if(im&&l&&l.href) im.src=l.href; })();
 
 /* ---- AKTUELL BLEIBEN -------------------------------------------------
    Die Seite lud den Katalog einmal beim Start; danach aenderten ihn

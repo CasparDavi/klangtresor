@@ -2899,7 +2899,11 @@ Flammen (lesen Rauschen entlang einer geraden Zeitachse). Der Status nennt sie b
 `web/fremd/webgl-noise/noise4D.glsl` ist geholt und in HERKUNFT.md begründet — mit vier Dimensionen läuft
 die Zeit auf einem Kreis und das Feld ist nach einer Umdrehung exakt dasselbe. Das ist der zweite Schritt.
 
-**Nebenbei:** das Hauszeichen steht jetzt auch vor dem Wort KlangTresor in der Kopfzeile (`#markezeichen`,
-holt sich das Favicon aus dem Seitenkopf). Der Prüfstand hat dasselbe Zeichen im Kopf, damit sich Marke und
+**Nebenbei:** das Hauszeichen steht jetzt auch vor dem Wort KlangTresor in der Kopfzeile
+(`#markezeichen`). Es liegt **im** Titelverlauf, nicht daneben (Caspar_D: „dichter an das Wort und mit in
+die Gradientenfärbung einbeziehen"): dieselbe Verlaufsangabe wie bei `h1`, das Rad wirkt nur als Maske
+darauf, und der Verlauf ist achtmal so breit wie das Zeichen, damit er dort dieselbe Stelle zeigt wie
+unter dem ersten Buchstaben. Ohne Platte, anders als das Favicon — das braucht sie, weil es im Reiter auf
+fremdem Grund sitzt. Der Videoexport nimmt weiter die Fassung mit Platte, aus demselben Grund. Der Prüfstand hat dasselbe Zeichen im Kopf, damit sich Marke und
 Export dort prüfen lassen, und einen Schalter `?schnitt=<Port>`, um den Schnitt gegen ein zweites Haus zu
 testen.
