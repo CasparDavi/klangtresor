@@ -3043,6 +3043,33 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-vorrat{display:contents}
 #tbs .tbs-werkzeuge .tbs-knopf{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:14px;line-height:1;flex:0 0 auto;padding:0}
 #tbs .tbs-werkzeuge .tbs-knopf:hover{border-color:var(--akzent)}
+/* ---- Bedienung (Caspar_D, 11.09.2026): Quelle als Vorschaubilder, Kette als Tabelle mit Kopfzeile, Akkordeon ---- */
+#tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+#tbs .tbs-quelle{position:relative;width:54px;height:72px;padding:0;border:2px solid var(--rand);border-radius:8px;background:#000;overflow:hidden;cursor:pointer;flex:0 0 auto}
+#tbs .tbs-quelle img, #tbs .tbs-quelle canvas{width:100%;height:100%;object-fit:cover;display:block}
+#tbs .tbs-quelle:hover{border-color:var(--schwach)}
+#tbs .tbs-quelle.on{border-color:var(--akzent);box-shadow:0 0 0 1px var(--akzent)}
+#tbs .tbs-quelle .tbs-qv{position:absolute;right:4px;bottom:3px;font-size:10px;color:#fff;text-shadow:0 0 3px #000}
+#tbs #tbs-quelleName{min-height:14px}
+/* Kopf der Karte als Tabellenzeile: an | solo | Symbol | Effekt | Nr. | Kopie | entfernen | hoch | runter | auf/zu */
+#tbs .tbs-kopf, #tbs #tbs-kettekopf{display:grid;grid-template-columns:16px 40px 18px minmax(0,1fr) 22px 24px 30px 22px 22px 22px;align-items:center;gap:6px}
+#tbs .tbs-kopf{padding:8px 10px;user-select:none}
+#tbs .tbs-kopf b{display:block;font-size:13px;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tbs .tbs-kopf .tbs-ik{cursor:pointer;display:flex}
+#tbs .tbs-kopf .tbs-nr{color:var(--schwach);font-size:11px;text-align:center}
+#tbs .tbs-kopf .tbs-knopf.tbs-solo{width:auto;justify-self:start}
+#tbs .tbs-kopf .tbs-knopf.tbs-weg, #tbs #tbs-kettekopf .tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border-color:transparent;background:transparent;border-radius:50%}
+#tbs .tbs-kopf .tbs-knopf.tbs-weg:hover, #tbs #tbs-kettekopf .tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
+#tbs #tbs-kettekopf{padding:2px 10px 7px;margin-bottom:8px;border-bottom:1px solid var(--rand);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach)}
+#tbs #tbs-kettekopf .tbs-kk{text-align:left}
+#tbs #tbs-kettekopf .tbs-pw{opacity:.55}
+#tbs #tbs-kettekopf .tbs-pw.an, #tbs #tbs-kettekopf .tbs-pw.teils{opacity:1}
+#tbs #tbs-kettekopf .tbs-pw.an::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--akzent)}
+#tbs #tbs-kettekopf .tbs-pw.teils::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--akzent);opacity:.45}
+#tbs #tbs-kettekopf .tbs-knopf{width:22px;height:20px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11px;line-height:1;padding:0}
+#tbs #tbs-kettekopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
+#tbs .tbs-leer .tbs-mini{display:inline-block;width:auto;padding:0 12px;margin-top:10px}
+#tbs .tbs-qluecke{width:1px;height:56px;align-self:center;margin:0 6px;background:var(--rand);flex:0 0 auto}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -26589,6 +26616,7 @@ function verrOptionen(cur){ const gr={}, reihe=[]; VERR.forEach(([v,l,,g])=>{ co
 
 /* Monochrome, einfärbbare Icons (currentColor); je Effekt eine Kennfarbe */
 const IKON={
+ helligkeit:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
  risse:'<path d="M12 3l-2 6 3 3-4 5 2 4M10 9l-5 2M13 12l6-2M9 17l-4 3"/>',
  beschlag:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M6 9c2 0 2 2 4 2s2-2 4-2 2 2 4 2M6 14c2 0 2 2 4 2s2-2 4-2 2 2 4 2" opacity=".7"/>',
  einschlag:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/>',
@@ -26627,7 +26655,7 @@ const IKON={
  saettigung:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
  strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
 };
-const TON={risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',dunst:'#b9c4d0',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',dunst:'#b9c4d0',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 const EFFEKTE = {
@@ -26639,6 +26667,8 @@ const EFFEKTE = {
     params:[{k:'unschaerfe',lbl:'Weichheit',min:0,max:24,step:1,def:10},{k:'schlag',lbl:'Schärfe-Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
   kontrast:{ label:'Kontrast schlägt', art:'grund', besch:'Eine Gradationskurve haut auf den Schlag rein — wie in Haeckel. Schwarz-/Weißpunkt als Marken ziehen, Modus Gamma oder Sigmoidal, Tonwert regeln. Je Kanal: V wirkt auf alles, R/G/B legen sich obendrauf. „Invertieren" spiegelt an der Diagonale.',
     params:[{k:'grad',grad:true},{k:'schlag',lbl:'Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
+  helligkeit:{ label:'Helligkeit schlägt', art:'grund', staerkeDef:.6, besch:'Das Bild wird auf den Schlag kurz heller und ruht dazwischen — der einfachste Puls, an dem man sofort sieht, wie das Studio arbeitet. Invertiert wird es auf den Schlag dunkler.',
+    params:[{k:'wucht',lbl:'Wucht',min:0,max:1,step:.05,def:.35},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
   saettigung:{ label:'Sättigung schlägt', art:'grund', besch:'Die Farbe springt auf den Schlag an — sattes Aufleuchten, oder auf 0 ins Graue kippen. Zwischen den Schlägen ruht das Bild.',
     params:[{k:'saettigung',lbl:'Sättigung',min:0,max:4,step:.1,def:2.4},{k:'schlag',lbl:'Schlag',min:0,max:1,step:.05,def:1},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]},
   farbe:{ label:'Farbschleier', art:'mal', verr:'weich', staerkeDef:.4, besch:'Eine Farbfolge zieht als Schleier über das Bild, im Tempo eingerastet.',
@@ -26711,7 +26741,7 @@ const EFFEKTE = {
     params:[{k:'neigung',lbl:'Neigung (°)',min:0,max:12,step:.5,def:4},{k:'abkling',lbl:'Abklingen',min:2,max:16,step:.5,def:8,when:e=>e.antrieb!=='atem'},{k:'nurEins',tog:'nur die Eins',def:0,when:e=>e.antrieb!=='atem'}]}
 };
 const EGRUPPEN = [
-  ['Pulse', ['puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
+  ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
   ['Läufe', ['fahrt','streifen','licht','schatten','laser','farbe','nebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
@@ -26722,7 +26752,7 @@ const EGRUPPEN = [
   ['Entwürfe (Leinwand)', ['strahlen','spiegel','korn','bloecke']]
 ];
 /* Gemeinsame Schalter für alle Pulse: Antrieb (Takt/Atem) + Invertieren */
-['puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen'].forEach(k=>{ EFFEKTE[k].params.push(
+['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen'].forEach(k=>{ EFFEKTE[k].params.push(
   {k:'antrieb',lbl:'Antrieb',sel:[['takt','im Takt'],['atem','atmend']],def:'takt'},
   {k:'atempo',lbl:'Atem (s)',min:1,max:12,step:.5,def:4,when:e=>e.antrieb==='atem'},
   {k:'invert',tog:'invertieren',def:0}); });
@@ -26736,7 +26766,8 @@ function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:f
 const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7] };
 function artFarben(e){ const alt=ART_FARBEN[e._artVor||'schnee']||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; } e._artVor=e.art; }
 function E(typ,over){ return Object.assign(neuerEffekt(typ), over||{}); }
-function grundzustand(){ STAPEL=[ neuerEffekt('fahrt'), neuerEffekt('puls'), neuerEffekt('farbe'), neuerEffekt('licht') ]; renderStapel(); }
+/* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
+function beispiel(){ const e=neuerEffekt('helligkeit'); STAPEL=[e]; offenId=e.id; renderStapel(); }
 
 const PRESETS={
  'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
@@ -27037,18 +27068,24 @@ function postKette(posts,t,Wn,Hn){ let sCv=oa;
 
 function renderStapel(){
   stapelBox.innerHTML='';
-  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Kein Effekt eingehängt.<br>Oben einen aus dem Vorrat wählen.</div>'; return; }
-  STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ];
+  const pa=$('#tbs-kettekopf .tbs-pwAlle'); if(pa){ const na=STAPEL.filter(x=>x.an).length; pa.classList.toggle('an',na>0&&na===STAPEL.length); pa.classList.toggle('teils',na>0&&na<STAPEL.length); }
+  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Noch keine Effekte.<br>Oben die Quelle w\u00e4hlen und mit \u201e+ Effekt\u201c einen einh\u00e4ngen \u2014 oder ein Beispiel laden, an dem man den Puls sofort sieht.<br><button type="button" class="tbs-mini" id="tbs-beispiel">Beispiel laden: Helligkeit schl\u00e4gt</button></div>';
+    const bb=$('#tbs-beispiel'); if(bb) bb.onclick=beispiel; return; }
+  STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ]; e.zu=(e.id!==offenId);   /* Akkordeon: nur die aktive Karte ist offen */
     const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'');
-    let h='<div class="tbs-kopf"><span class="tbs-pw" title="Sichtbarkeit an/aus"></span>'+ikon(e.typ)
-      +'<b>'+T.label+' <span class="tbs-id">· '+e.id+'</span><span class="tbs-chev">'+(e.zu?'▸':'▾')+'</span></b>'
+    const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
+    let h='<div class="tbs-kopf"><span class="tbs-pw" title="an / aus"></span>'
       +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="Solo \u2014 nur diesen zeigen, fl\u00fcchtig">solo</button>'
-      +'<button class="tbs-knopf" data-tu="dup" title="Kopie darunter einhängen — gleiche Einstellungen, dann nur das Nötige ändern">⧉</button>'
-      +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">↑</button>'
-      +'<button class="tbs-knopf" data-tu="runter" title="nach unten">↓</button>'
-      +'<button class="tbs-knopf" data-tu="weg" title="entfernen">×</button></div>';
+      +ikon(e.typ)+'<b class="tbs-name" title="auf- / zuklappen">'+T.label+'</b><span class="tbs-nr" title="'+(nrTxt?'Nr. '+nrTxt+' von '+gleich.length+' gleichen':'')+'">'+nrTxt+'</span>'
+      +'<button class="tbs-knopf" data-tu="dup" title="Kopie darunter einh\u00e4ngen \u2014 gleiche Einstellungen, dann nur das N\u00f6tige \u00e4ndern">\u29c9</button>'
+      +'<button class="tbs-knopf tbs-weg" data-tu="weg" title="entfernen">\u00d7</button>'
+      +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">\u2191</button>'
+      +'<button class="tbs-knopf" data-tu="runter" title="nach unten">\u2193</button>'
+      +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
-    T.params.forEach(p=>{ if(p.when && !p.when(e)) return;
+    /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
+    const GEMEIN=new Set(['antrieb','atempo','invert']);
+    const paramHTML=p=>{ if(p.when && !p.when(e)) return;
       if(p.grad){ gradInit(e); const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=e.grad[e.kanal], cc=K[e.kanal][1];
         h+='<div style="margin:8px 0 2px"><div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(k=>'<button data-kanal="'+k+'" class="'+(e.kanal===k?'on':'')+'" style="flex:1'+(e.kanal===k?';color:'+K[k][1]:'')+'">'+K[k][0]+'</button>').join('')+'</div>';
         h+='<canvas class="tbs-grad-ed" width="447" height="276" data-farbe="'+cc+'" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
@@ -27065,18 +27102,22 @@ function renderStapel(){
       else if(p.sel){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+p.sel.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
-    });
+    };
+    T.params.filter(p=>!GEMEIN.has(p.k)).forEach(paramHTML);
     h+='<div class="tbs-verr">';
+    T.params.filter(p=>GEMEIN.has(p.k)).forEach(paramHTML);
     if(T.art!=='geo') h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+verrOptionen(e.verr)+'</select></div>';
     h+='<div class="tbs-regler"><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1.5" step="0.05" value="'+e.staerke+'"><span class="tbs-wert">'+Math.round(e.staerke*100)+'%</span></div>';
     c.innerHTML=h+'</div></div>';
     c.querySelector('.tbs-pw').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); };
-    c.querySelector('b').onclick=()=>{ e.zu=!e.zu; renderStapel(); };
+    const klapp=()=>{ offenId=(offenId===e.id)?null:e.id; renderStapel(); };
+    c.querySelector('.tbs-name').onclick=klapp; const ik=c.querySelector('.tbs-ik'); if(ik) ik.onclick=klapp;
     c.querySelectorAll('[data-tu]').forEach(btn=>btn.onclick=()=>{ const w=btn.dataset.tu;
       if(w==='weg'){ if(soloId===e.id) soloId=null; STAPEL.splice(idx,1); }
       else if(w==='solo'){ soloId = (soloId===e.id ? null : e.id); }
+      else if(w==='klapp'){ offenId=(offenId===e.id)?null:e.id; }
       else if(w==='dup'){ /* Kopie mit allen Werten (Rampen/Kurven tief), eigene Nummer, gleich darunter */
-        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false; STAPEL.splice(idx+1,0,k); }
+        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false; STAPEL.splice(idx+1,0,k); offenId=k.id; }
       else if(w==='hoch'&&idx>0){ const a=STAPEL[idx-1]; STAPEL[idx-1]=STAPEL[idx]; STAPEL[idx]=a; }
       else if(w==='runter'&&idx<STAPEL.length-1){ const a=STAPEL[idx+1]; STAPEL[idx+1]=STAPEL[idx]; STAPEL[idx]=a; }
       renderStapel(); });
@@ -27113,7 +27154,7 @@ function renderStapel(){
       c.querySelectorAll('[data-modus]').forEach(b=>b.onclick=()=>{ cur().modus=b.dataset.modus; renderStapel(); });
       const tw=c.querySelector('[data-tonwert]'); if(tw) tw.oninput=()=>{ cur().tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); };
     }
-    stapelBox.appendChild(c);
+    stapelBox.appendChild(c); if(!e.zu&&c.scrollIntoView) c.scrollIntoView({block:'nearest'});
   });
 }
 
@@ -27126,7 +27167,7 @@ function renderStapel(){
    Fehlt die gesicherte Quelle spaeter, faellt der Maler still aufs Titelbild.
    Ein Video als Grund laeuft stumm mit und wird bei Drift > 0,2 s auf
    Spielzeit modulo Videodauer gesetzt - der Player bleibt die einzige Uhr. */
-let grund={art:'titelbild',nr:1,farbe:null}, SEITEN=[], oeffnenLauf=0, uhrEcht=false;
+let grund={art:'titelbild',nr:1,farbe:null}, SEITEN=[], oeffnenLauf=0, uhrEcht=false, offenId=null;
 const GRUND_FARBE={schwarz:'#000',grau:'#808080',weiss:'#fff'};
 function eigenVon(id){ const e=(typeof _eigenArt==='object'&&_eigenArt&&_eigenArt[id])||{};
   const videos=Array.isArray(e.videos)?e.videos.slice():(e.video?[1]:[]), bilder=Array.isArray(e.bilder)?e.bilder.slice():(e.bild?[1]:[]);
@@ -27147,13 +27188,36 @@ function seitenVon(id,s){ const L=[{art:'titelbild',nr:1,lbl:'Titelbild',url:med
 function grundVorgabe(seiten){ return seiten.find(p=>p.art==='bild'&&p.nr===1)||seiten[0]; }   /* wie artworkBild im Haus: eigen.jpg vor Sunos Bild */
 function seiteFinden(seiten,gr){ return (gr&&seiten.find(p=>p.art===gr.art&&(p.nr||1)===(gr.nr||1)))||null; }
 function seiteIndex(){ const i=SEITEN.findIndex(p=>p.art===grund.art&&(p.nr||1)===(grund.nr||1)); return i<0?0:i; }
-function grundRezept(){ const o={art:grund.art,nr:grund.nr||1}; if(grund.farbe) o.farbe=grund.farbe; return o; }
+function grundRezept(){ /* das Testbild wird nie gesichert - dann gilt die Vorgabe */
+  const s=SEITEN[seiteIndex()]; const q=(s&&s.test)?grundVorgabe(SEITEN.filter(x=>!x.test)):(s||grund); return {art:q.art,nr:q.nr||1}; }
 /* Eine Quelle bauen: Bild oder stummes Video (bleibt ausserhalb des DOM). */
+/* TESTBILD (Caspar_D, 11.09.2026): kein Foto - Lena gehoert Playboy und ist seit 2019 in Rente -,
+   sondern eine eigene Form nach dem Vorbild der Fernseh-Testbilder: dunkel grundiert, eine weich
+   beleuchtete Kugel fuer Lichter und Schatten, Grautreppe, Verlauf, Linienfaecher fuer die Schaerfe,
+   ein kleiner Farbabschnitt fuer die Farbeffekte, das Wasserzeichen typografisch. Graustufen, wie gewuenscht. */
+let TESTBILD=null;
+function testbildBauen(){ if(TESTBILD) return TESTBILD; const W=900,H=1200, c=document.createElement('canvas'); c.width=W; c.height=H; const x=c.getContext('2d');
+  const gr=v=>{ const k=Math.round(Math.max(0,Math.min(1,v))*255); return 'rgb('+k+','+k+','+k+')'; };
+  x.fillStyle='#15161a'; x.fillRect(0,0,W,H);
+  const kx=W*0.5, ky=H*0.41, r=W*0.29;
+  let s=x.createRadialGradient(kx+r*0.15,ky+r*1.08,r*0.05,kx+r*0.15,ky+r*1.08,r*1.1); s.addColorStop(0,'rgba(0,0,0,0.55)'); s.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=s; x.save(); x.translate(kx+r*0.15,ky+r*1.08); x.scale(1,0.28); x.beginPath(); x.arc(0,0,r*1.1,0,7); x.fill(); x.restore();
+  let g=x.createRadialGradient(kx-r*0.38,ky-r*0.42,r*0.04,kx,ky,r); g.addColorStop(0,'#f5f5f5'); g.addColorStop(0.35,'#b9b9bb'); g.addColorStop(0.7,'#5a5a5e'); g.addColorStop(0.92,'#232326'); g.addColorStop(1,'#1a1a1d');
+  x.fillStyle=g; x.beginPath(); x.arc(kx,ky,r,0,7); x.fill();
+  const ty=H*0.735, th=H*0.05, tx0=W*0.08, tw=W*0.84/10; for(let i=0;i<10;i++){ x.fillStyle=gr(i/9); x.fillRect(tx0+i*tw,ty,tw+0.5,th); }
+  const lg=x.createLinearGradient(0,H*0.1,0,H*0.66); lg.addColorStop(0,'#ffffff'); lg.addColorStop(1,'#000000'); x.fillStyle=lg; x.fillRect(W*0.045,H*0.1,W*0.025,H*0.56);
+  x.strokeStyle='#e8e8e8'; x.lineCap='round'; const fx=W*0.935, fy=H*0.665, fr=W*0.17; for(let i=0;i<=12;i++){ const a=Math.PI+(i/12)*Math.PI/2; x.lineWidth=1.6-i*0.09; x.beginPath(); x.moveTo(fx+Math.cos(a)*fr*0.25,fy+Math.sin(a)*fr*0.25); x.lineTo(fx+Math.cos(a)*fr,fy+Math.sin(a)*fr); x.stroke(); }
+  const farben=['#e63946','#f4c430','#3fb950','#2ec4b6','#3a86ff','#d64fbb'], sw=W*0.06, sy=H*0.83; farben.forEach((f,i)=>{ x.fillStyle=f; x.fillRect(W*0.08+i*(sw+W*0.02),sy,sw,sw*0.8); });
+  x.fillStyle='rgba(255,255,255,0.16)'; x.textAlign='right'; x.font='700 54px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; x.fillText('Testbild',W*0.92,H*0.925);
+  x.font='400 22px system-ui,-apple-system,Segoe UI,Roboto,sans-serif'; x.fillStyle='rgba(255,255,255,0.22)'; x.fillText('nur zum Pr\u00fcfen der Effekte',W*0.92,H*0.958);
+  x.strokeStyle='rgba(255,255,255,0.12)'; x.lineWidth=2; x.strokeRect(W*0.03,H*0.03,W*0.94,H*0.94);
+  TESTBILD=c; return c; }
 function quelleBauen(seite,beiFertig,beiFehler){
+  if(seite.test&&!seite.url){ const c=testbildBauen(); setTimeout(()=>beiFertig(c),0); return c; }
   if(seite.video){ const v=document.createElement('video'); v.muted=true; v.loop=true; v.playsInline=true; v.preload='auto';
     v.onloadeddata=()=>beiFertig(v); v.onerror=()=>beiFehler(v); v.src=seite.url; v.play().catch(()=>{}); return v; }
   const im=new Image(); im.onload=()=>beiFertig(im); im.onerror=()=>beiFehler(im); im.src=seite.url; return im; }
-function qMass(q){ if(!q) return [1,1]; return q.tagName==='VIDEO'?[q.videoWidth||1,q.videoHeight||1]:[q.naturalWidth||1,q.naturalHeight||1]; }
+function qMass(q){ if(!q) return [1,1]; return q.tagName==='VIDEO'?[q.videoWidth||1,q.videoHeight||1]:q.tagName==='CANVAS'?[q.width||1,q.height||1]:[q.naturalWidth||1,q.naturalHeight||1]; }
 function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttribute('src'); q.load(); }catch(e){} } }
 /* Video-Grund: unter einer Farbflaeche ruht es (kein Dekodieren fuer nichts); ohne Player-Uhr laeuft es frei
    weiter (bei Pause kein Sprung); mit Player-Uhr wird Drift > 0,2 s nachgesetzt. */
@@ -27162,12 +27226,18 @@ function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO') return;
   if(q.paused) q.play().catch(()=>{});
   if(!uhrEcht||!(q.duration>0)) return; const soll=t%q.duration;
   if(Math.abs(q.currentTime-soll)>0.2&&Math.abs(q.currentTime-soll)<q.duration-0.2) q.currentTime=soll; }
-function grundUI(){ if(!root) return; const n=SEITEN.length, i=seiteIndex(), s=SEITEN[i];
-  const sb=$('#tbs-seite'); if(sb){ sb.textContent=s?(s.lbl+(n>1?' · '+(i+1)+'/'+n:'')):'—'; sb.classList.toggle('on',!grund.farbe); sb.title=s?('Worauf die Effekte malen: '+s.lbl+(grund.farbe?' — klicken: Farbfläche weg':'')):''; }
-  root.querySelectorAll('#tbs-grundseg [data-blatt]').forEach(b=>{ b.disabled=n<2; });
-  root.querySelectorAll('#tbs-grundseg [data-farbe]').forEach(b=>b.classList.toggle('on',b.dataset.farbe===grund.farbe)); }
-function blaettern(d){ const n=SEITEN.length; if(n<2) return; const p=SEITEN[(seiteIndex()+d+n)%n]; grund={art:p.art,nr:p.nr,farbe:null}; grundLaden(); grundUI(); }
-function farbeSetzen(f){ grund.farbe=(grund.farbe===f)?null:f; grundUI(); }
+/* Vorschaubilder der Quellen (Caspar_D, 11.09.2026: "Ich bin fuer Thumbnails"): Titelbild, Bewegtbilder,
+   Testbild. Das gewaehlte traegt Rahmen und Unterschrift; das Titelbild ist vorgewaehlt. */
+function quellenUI(){ if(!root) return; const box=$('#tbs-quellen'); if(!box) return; const i=seiteIndex();
+  /* Echte Quellen links, Testbilder rechts, dazwischen eine Luecke (Caspar_D, 11.09.2026). */
+  box.innerHTML=SEITEN.map((p,k)=>{ const inner=(p.test&&!p.url)?'<canvas width="54" height="72"></canvas>':('<img src="'+(p.video?sunoTitelbild(DATA?DATA.id:''):p.url)+'" alt="">'+(p.video?'<span class="tbs-qv">\u25b6</span>':''));
+    const luecke=(p.test&&k>0&&!SEITEN[k-1].test)?'<span class="tbs-qluecke" aria-hidden="true"></span>':'';
+    return luecke+'<button type="button" class="tbs-quelle'+(k===i?' on':'')+'" data-i="'+k+'" title="'+p.lbl+'">'+inner+'</button>'; }).join('');
+  const tc=box.querySelector('canvas'); if(tc) tc.getContext('2d').drawImage(testbildBauen(),0,0,54,72);
+  box.querySelectorAll('.tbs-quelle').forEach(b=>b.onclick=()=>quelleWaehlen(+b.dataset.i));
+  const nm=$('#tbs-quelleName'); if(nm) nm.textContent=SEITEN[i]?SEITEN[i].lbl+(SEITEN[i].test?' \u2014 zum Pr\u00fcfen, wird nicht gesichert':''):''; }
+function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr,farbe:null}; grundLaden(); quellenUI(); }
+function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
 
 /* Cover-Blätterer */
 
@@ -27198,6 +27268,8 @@ function zeichneFrame(t){
       ca.filter='url(#'+kurveFilter(e)+')'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
     for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='saettigung')continue; const sb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*sb); if(a<=0)continue;
       ca.filter='saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
+    for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='helligkeit')continue; const hb=pulsHub(e,t), a=Math.min(1,e.staerke*hb); if(a<=0)continue;
+      ca.filter='brightness('+(e.invert?(1-0.6*e.wucht):(1+1.2*e.wucht)).toFixed(3)+')'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
     for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='farbton')continue; const fb=pulsHub(e,t), a=Math.min(1,e.schlag*e.staerke*fb); if(a<=0)continue;
       ca.filter='hue-rotate('+((e.invert?-1:1)*e.winkel)+'deg)'; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); ca.filter='none'; ca.globalAlpha=1; ca.globalCompositeOperation='source-over'; }
     ca.restore(); }
@@ -27214,7 +27286,7 @@ function zeichneFrame(t){
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
     const seite=SEITEN[seiteIndex()]; if(!seite) return;
     const q=quelleBauen(seite, x=>{ if(x!==bild) return; bereit=true; groesse(); histoRechnen(); renderStapel(); },
-      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt'); grund={art:'titelbild',nr:1,farbe:grund.farbe}; grundLaden(); grundUI(); });
+      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt'); grund={art:'titelbild',nr:1,farbe:grund.farbe}; grundLaden(); quellenUI(); });
     bild=q; }
   /* Zeit: der Player ist die einzige Audioquelle. */
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
@@ -27234,26 +27306,22 @@ function zeichneFrame(t){
     if(ev.key==='Escape'){ ev.stopPropagation(); ev.preventDefault(); schliessen(); return; }
     if(ev.key==='ArrowLeft'||ev.key==='ArrowRight'){ ev.stopPropagation(); ev.preventDefault(); blaettern(ev.key==='ArrowRight'?1:-1); return; }
     if(ev.key==='ArrowUp'||ev.key==='ArrowDown'){ ev.stopPropagation(); return; }   /* rollt das Pult; das Haus wuerde die Lautstaerke verstellen */
-    if(k==='s') farbeSetzen('schwarz'); else if(k==='w') farbeSetzen('weiss'); else if(k==='g') farbeSetzen('grau'); }
+  }
   function bauen(){ GL.noiseLaden();
     root=document.createElement('div'); root.id='tbs'; root.hidden=true;
     root.innerHTML=
       '<div id="tbs-kasten">'
       +'<div id="tbs-kopf"><h3>Effektclip-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
       +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
-      +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">worauf das Rezept malt</span></div>'
-      +'<div class="tbs-zeile"><div class="tbs-seg" id="tbs-grundseg"><button type="button" data-blatt="-1" title="Vorige Seite (←)">‹</button><button type="button" id="tbs-seite" class="on">Titelbild</button><button type="button" data-blatt="1" title="Nächste Seite (→)">›</button><button type="button" data-farbe="schwarz" title="Schwarz - zeigt nur die Lichter (Taste s)">S</button><button type="button" data-farbe="grau" title="Grau - neutraler Grund (Taste g)">G</button><button type="button" data-farbe="weiss" title="Weiß - zeigt nur die Schatten (Taste w)">W</button></div></div></div>'
-      +'<div class="tbs-abschnitt" id="tbs-abKette"><div class="tbs-abtitel">Effektkette <span class="tbs-abunter">von oben nach unten gerechnet</span></div>'
-      +'<div class="tbs-zeile tbs-werkzeuge"><select class="tbs-wahl" id="tbs-preset" title="Preset \u2014 eine leise Kombination als Ausgangspunkt"><option value="">Preset \u2026</option></select>'
-      +'<div id="tbs-vorrat"></div>'
-      +'<button type="button" class="tbs-knopf" id="tbs-wuerfeln" title="W\u00fcrfeln \u2014 alle Regler der eingeh\u00e4ngten Effekte zuf\u00e4llig setzen">\u2684</button>'
-      +'<button type="button" class="tbs-knopf" id="tbs-neu" title="Grundzustand \u2014 Fahrt, Zoom, Farbschleier, Scheinwerfer">\u21ba</button>'
-      +'<button type="button" class="tbs-knopf" id="tbs-alleAn" title="Alle an \u2014 alle Effekte einschalten, Solo aufheben">\u25c9</button>'
-      +'<button type="button" class="tbs-knopf" id="tbs-klapp" title="Alle Karten zuklappen">\u21c5</button></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">hierauf wirken die Effekte</span></div>'
+      +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quelleName" class="tbs-unter"></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abKette"><div class="tbs-abtitel">Effektkette <span class="tbs-abunter">wird von oben nach unten angewandt</span></div>'
+      +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
+      +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
       +'<div id="tbs-stapel"></div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Rezept</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Das Rezept beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Rezept vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
-      +'<div class="tbs-unter">Rezept = Quelle + Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Seite \u00b7 <kbd>s</kbd><kbd>w</kbd><kbd>g</kbd> Farbfl\u00e4che \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
+      +'<div class="tbs-unter">Rezept = Quelle + Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Quelle \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
       +'</div></div></div>';
     document.body.appendChild(root);
     root.onclick=(ev)=>{ if(ev.target===root) schliessen(); };
@@ -27263,36 +27331,25 @@ function zeichneFrame(t){
     stapelBox=$('#tbs-stapel');
     const psel=$('#tbs-preset');
     Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
-    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); renderStapel(); } psel.value=''; psel.blur(); };
+    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); offenId=null; renderStapel(); } psel.value=''; psel.blur(); };
     const vorrat=$('#tbs-vorrat');
     const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">+ Effekt \u2026</option>';
       EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return; h+='<optgroup label="'+gname+'">'+da.map(x=>'<option value="'+x+'">'+EFFEKTE[x].label+'</option>').join('')+'</optgroup>'; });
       vorrat.innerHTML=h+'</select>';
-      vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ STAPEL.push(neuerEffekt(x)); renderStapel(); } ev.target.value=''; ev.target.blur(); }; };
+      vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; renderStapel(); } ev.target.value=''; ev.target.blur(); }; };
     bauVorrat();
-    $('#tbs-wuerfeln').onclick=()=>{ STAPEL.forEach(e=>{ const T=EFFEKTE[e.typ];
-  T.params.forEach(p=>{ if(p.rampe||p.grad) return; if(p.farbe) e[p.k]='#'+[0,0,0].map(()=>('0'+Math.floor(Math.random()*256).toString(16)).slice(-2)).join('');
-    else if(p.sel) e[p.k]=p.sel[Math.floor(Math.random()*p.sel.length)][0];
-    else if(p.tog) e[p.k]=Math.random()<.5?1:0;
-    else e[p.k]=+(p.min+Math.random()*(p.max-p.min)).toFixed(3); });
-  if(T.art!=='geo') e.verr=VERR[Math.floor(Math.random()*VERR.length)][0];
-  e.staerke=+(0.4+Math.random()*1.1).toFixed(2);
-}); renderStapel(); };
-    $('#tbs-alleAn').onclick=()=>{ soloId=null; STAPEL.forEach(e=>e.an=true); renderStapel(); };
-    $('#tbs-klapp').onclick=()=>{ const auf=STAPEL.some(e=>!e.zu); STAPEL.forEach(e=>e.zu=auf); $('#tbs-klapp').title=auf?'Alle Karten aufklappen':'Alle Karten zuklappen'; renderStapel(); };
-
-    $('#tbs-neu').onclick=grundzustand;
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
-    root.querySelectorAll('#tbs-grundseg [data-blatt]').forEach(b=>b.onclick=()=>blaettern(+b.dataset.blatt));
-    root.querySelectorAll('#tbs-grundseg [data-farbe]').forEach(b=>b.onclick=()=>farbeSetzen(b.dataset.farbe));
-    $('#tbs-seite').onclick=()=>{ if(grund.farbe){ grund.farbe=null; grundUI(); } };
+    const kk=$('#tbs-kettekopf');
+    kk.querySelector('.tbs-pwAlle').onclick=()=>{ const alle=STAPEL.length>0&&STAPEL.every(x=>x.an); STAPEL.forEach(x=>x.an=!alle); soloId=null; renderStapel(); };
+    kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm('Alle '+STAPEL.length+' Effekte aus der Kette entfernen?')) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
+    kk.querySelector('[data-alle="zu"]').onclick=()=>{ offenId=null; renderStapel(); };
     window.addEventListener('resize',()=>{ if(offen) groesse(); });
     document.addEventListener('keydown',tasten,true);
   }
   async function oeffnen(id, cb){
     if(!root) bauen();
-    songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1,farbe:null}; SEITEN=[]; grundUI();
+    songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1,farbe:null}; SEITEN=[]; quellenUI();
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
        groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
     root.hidden=false; offen=true; if(g&&lein) g.clearRect(0,0,lein.width,lein.height);
@@ -27302,13 +27359,15 @@ function zeichneFrame(t){
     DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
     PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
     $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
-    SEITEN=seitenVon(id,s); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr,farbe:null}; }
+    /* Zum Pruefen: das Testbild aus Code und zwei Testportraets (web/testbild/HERKUNFT.md) - nie gesichert. */
+    SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:'Testbild',test:true},{art:'testportraet',nr:1,lbl:'Testportr\u00e4t',test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:'Testportr\u00e4t (Farbe)',test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr,farbe:null}; }
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;
     const R=rezeptLesen(rezept); let hinweis='';
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr,farbe:GRUND_FARBE[R.grund.farbe]?R.grund.farbe:null}; else { grund.farbe=GRUND_FARBE[R.grund.farbe]?R.grund.farbe:null; hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; } }
-    if(R.effekte.length||R.grund){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { grundzustand(); pStat('noch kein Rezept beim Titel'); }
-    grundUI(); t0=performance.now();
+    offenId=null;
+    if(R.effekte.length||R.grund){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Rezept beim Titel'); }
+    quellenUI(); t0=performance.now();
     grundLaden();
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);

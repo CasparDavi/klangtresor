@@ -2539,3 +2539,15 @@ Fachwort) und der Dateiname `eigen-effekt.json`. Ältere Abschnitte dieser Über
 - Effektclip abgeschlossen (11.09.2026): Schritte 1–5 im Haus (`652df25`, `e015dbb`, `87b46a8`, `598e31f`, `c5e919c`), CLI
   `bin/eigen-artwork.js --liste` läuft mit Nummern (4 Titel). Offen nur noch: das Wort „Kachel“ (Rasterfeld, kachel.jpg,
   Zahlenfelder im Profil — Jörgs Entscheidung) und Jörgs Prüfung von Karte/Bühne am eigenen Fenster.
+
+### Bedienung des Effektclip-Studios (11.09.2026, Jörgs Durchgang) — im Haus
+Einstieg still: Standbild, leere Kette mit Erklärtext und „Beispiel laden: Helligkeit schlägt“ (neuer, einfachster Puls
+`helligkeit`); Grundzustand und Zufall entfernt. **Quelle** als Vorschaubilder mit Rahmen und Unterschrift (Titelbild
+vorgewählt, Bewegtbilder mit ▶), nach einem Strich drei Testbilder, die nie gesichert werden: Testbild aus Code
+(Graustufen: Kugel, Grautreppe, Verlauf, Linienfächer, kleiner Farbabschnitt, Wasserzeichen; `testbildBauen()`),
+Testporträt (Graustufen) und Testporträt (Farbe) aus `web/testbild/` (KI-erzeugt aus Jörgs Comic, HERKUNFT.md).
+S/G/W und die Tasten s/w/g sind weg. **Effektkette:** vorne „+ Effekt“, dann „Presets“; darüber die Kopfzeile mit
+denselben Spalten wie die Karten (an/aus für alle, Effekt, Nr., rotes × für alle mit Rückfrage, alle zuklappen).
+Kartenkopf als Tabellenzeile: an | solo | Symbol | Effekt | Nr. (nur bei Mehrfachen) | Kopie | × (klein, rot, mit
+Abstand) | hoch | runter | auf/zu. **Akkordeon:** nur eine Karte offen (`offenId`), neue/kopierte öffnen sich und
+rollen ins Blickfeld. Regler: eigene zuerst, dann hinter der Linie Antrieb, Atem, Invertieren, Verrechnung, Stärke.
