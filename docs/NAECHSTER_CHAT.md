@@ -2610,3 +2610,127 @@ einer Zwischenleinwand) · **Profilgrafik**: links der Querschnitt des Flecks, r
 live. Alte Ablagen (form/groesse/weichheit/fuehrung/tempo/bogen/dpx/dpy/schwenk) werden beim Laden übersetzt.
 Offen (Schritt 2 des Raums): Laser, Lichtstrahlen, Stroboskop und Sicherung an den Raum-Block hängen (Ursprung,
 Bewegung, Blende als Zerhacker/Muster).
+
+## Tiefen-Check aller Effekte (Nachtschicht 11.09.2026) — Befunde, noch nichts geändert
+Jörg: „mach jetzt mal den großen Tiefen-Check, ob alle Effekte mit ihren Parametern tatsächlich das machen, was sie
+sollen. Auch ist mir oft nicht klar, was Stärke macht, wenn es noch parallele Regler wie Wucht, Dichte usw. gibt."
+**Verfahren.** (1) Messreihe im Labor (`labor-haus.html`, Quelle Testporträt Farbe, Uhr steht auf Schlag 40 + 0,06 s):
+jeder Effekt einmal an/aus, jeder Regler Minimum → Mitte → Maximum, jede Auswahl, jeder Schalter, jede Farbe; Maß ist
+die mittlere Pixelabweichung (0..255) auf 64×86. (2) Zeitscan 8 s in 80-ms-Schritten für Ereignis-Effekte (Sicherung,
+Blöcke, Einschlag, Rauschen, Laser, Partikel, Risse, Tropfen). (3) Fünf Leser, Register gegen Maler/Shader, je Befund
+ein Skeptiker: 66 Befunde, 61 bestätigt. Rohdaten der Messreihe: `window.__sweep` im Labor-Tab, Lesebefunde in
+`scratchpad/tiefencheck-statisch.md` (Sitzungs-Scratchpad).
+
+### Kaputt — tut nicht, was Beschriftung oder Beschreibung sagen
+1. **Sicherungswackeln ist unsichtbar.** Die Sammelzuweisung „Farbig abwedeln" (Z. 186) trifft auch die Sicherung;
+   Schwarz abgewedelt ändert nichts. Messung: 0 in allen Zeitscans; mit Multiplizieren/Nachbelichten 68. → Vorgabe
+   „Farbig nachbelichten" wie beim Schatten.
+2. **Kaustik brennt das Bild aus.** Der Shader liefert Bild + Lichtnetz, danach wird dieses Vollbild mit Abwedeln über
+   das Bild gelegt — das Bild wedelt sich selbst ab (Grau 0,5 → 1). Messung: an/aus 39, Stärke min→max 65. → Shader
+   liefert nur das Licht auf Schwarz.
+3. **Stroboskop:** Antrieb-Tiefe ohne Wirkung (`lmSchub` rechnet sie wieder heraus; gilt auch für Flammen-Schub),
+   Tiefe 0 = dauernder Dunkelschleier, Antrieb „stetig" = Dauerschleier statt „kein Flackern". Messung: Tiefe 0→0,5 = 64,
+   0,5→1 = 0.
+4. **Vorlagen „Kaum da" und „Schatten und Schlag"** tragen alte Schlüssel (groesse, weichheit, tempo, fuehrung,
+   takt:0); `E()` übersetzt sie nicht (nur `effektAusRezept` tut das). Die Vorlagen-Lichter laufen mit Raum-Vorgaben
+   und pulsen im Takt, obwohl takt:0 gemeint war.
+5. **Tropfen / Einschlag:** der Linsenkörper wird in `linse()` mit Alpha 1 gemalt, Stärke greift nur an Glanz und
+   Kante. Messung Stärke min→max: Einschlag 0,06, Tropfen 0,45. Einschlag springt am Ende von „Bleibt" weg statt
+   sich zu verlieren.
+6. **Linse:** Wölbung verkehrt herum (negativ = Kissen, positiv = Tonne; die Beschreibung sagt das Gegenteil); bei −1
+   falten sich die Ecken auf die Bildmitte. Stärke < 1 gibt ein Doppelbild, keine kleinere Wölbung. Wellen ebenso:
+   Vorgabe 0,8 = 20 % stehendes Geisterbild.
+7. **Grund-Pulse überschreiben sich.** Jeder Puls (Schärfe, Kontrast, Sättigung, Helligkeit, Farbton) malt eine
+   gefilterte Kopie des Grundbilds, nicht des bisherigen Ergebnisses; auf dem Schlag bei Deckung 1 löscht Helligkeit den
+   Sättigungs-/Kontrast-Puls. Feste Reihenfolge unabhängig von der Kette; eine zweite Schärfe-Instanz ist stumm.
+8. **Kontrast schlägt:** Vorgabe Tonwert 0,55 ergibt die Logit-Kurve — auf dem Schlag *weniger* Mittenkontrast. Erst
+   negativer Tonwert gibt die S-Kurve (Vorlage „Nur Atem" hat −1).
+9. **Scheinwerfer/Schatten, Raum-Block:** Trägheit bei „Fahrt" verkehrt (1 = Sprung, 0 = Gleiten), bei „Schritt"
+   richtig; Hotspot bei Stärke ≥ 1 unsichtbar (Alpha gekappt; Messung 0,33); Ursprung/Winkel ohne Wirkung bei Kreis
+   ohne Schwenk/Blende (Messung 0, nur der Punkt in der Vorschau wandert); Blende-Weich bei „Wolken" tot; Blende-Größe
+   bei Iris/Tor wirkt nur noch als Weichheit; Torblende liest die Streckung, die nur bei Ellipse einstellbar ist; Iris
+   kappt die Ellipse; Blende-Größe am Minimum erzeugt >100 000 Kreise je Bild.
+10. **Spiegelung:** Horizont < 0,5 lässt den unteren Rest ungespiegelt mit harter Naht.
+11. **Beschlag:** „Vom Rand her" 0 gibt trotzdem einen Radialverlauf mit klarer Mitte; Dichte 0 schaltet auch die
+    Weichzeichnung ab (Milchglas ohne Schleier nicht einstellbar).
+12. **Glitch-Blöcke:** „Farbversatz" ist ein heller Doppelblock (screen), keine Kanaltrennung.
+13. **Rauschausfall:** Körnung praktisch unsichtbar (≈330 Körner à 1,6 px auf 1 Mpx; Messung max 0,49); Beschreibung
+    „nur auf der Eins" stimmt nicht, es ist jeder Schlag.
+14. **Verwackeln:** kein Ganzbild-Kick, Takt skaliert nur das Band-Warble; das Zittern geht mit bp².
+15. **Flammen (GL):** Antrieb wirkt doppelt — Höhe im Shader und Deckung in der Kette → zwischen den Schlägen halb
+    durchsichtig. **Feuer:** „lodert im Takt höher" — es sinkt nur zwischen den Schlägen, nie über „Höhe".
+16. **Partikel:** Asche, Blasen, Staub, Funken bekommen die Stärke doppelt (Farb-Alpha × globalAlpha = a²).
+17. **Laufstreifen:** nur helle Bänder; „dunkle" gibt es nur über die Verrechnung, kein Regler.
+18. **Laser:** bei Vorgabe kaum zu sehen (3 px breit, Alpha 0,7 → 0 über 1,1 Bildlängen, der helle Anfang liegt
+    außerhalb des Bildes): in allen Verrechnungen ≤ 1,3 mittlere Abweichung, Maximalpixel 109. Tempo ist keine
+    Sekundenperiode (2π·Tempo); Schwenk wirkt versteckt auch bei „wandernd".
+19. **Antrieb:** Versatz beim Muster „Zufall" tot; „An-Spitzen" und „Rechteck" sind derselbe Code; übersprungene
+    Schläge (Quelle Zufall) nehmen den Kurven-Endwert — bei „Rampe auf" also *an* statt aus.
+20. Kleineres: Kippen-Nachzoom bei 16:9 zu knapp (Ecken frei); Nachzieh-Nachhall wird intern quadriert; Filmkorn
+    hellt die Mitteltöne auf (Kornmittel 155 statt 128 bei Overlay); Lichtstrahlen-„Breite" ist der halbe Winkel;
+    Farbton-Invert nur Vorzeichen des Winkels; Farbkanal-Puls ohne „nur Eins", Invert springt bei Doppelschlägen
+    negativ; Dunst Lage 0 ist nicht „überall gleich"; Stroboskop-Verrechnung wirkt nur beim Aufblitzen; Stärke
+    100–150 % bei sieben Typen tot (`Math.min(1,…)`).
+
+### Stärke gegen Wucht, Dichte, Tiefe, Schlag — was der Code heute tut
+- **Reines Produkt mit Stärke, also Doppelung:** Schlag (Schärfe, Kontrast, Sättigung, Farbton); Tiefe (Stroboskop,
+  Sicherung); Dichte (Theaternebel — dazu 0,7..1 tot; Dunst; Beschlag: Dichte steuert Maske *und* Schleier, Stärke
+  legt dieselbe Ebene noch einmal auf); Wucht (Helligkeit: Ergebnis 1 + Stärke·1,2·Wucht; Zoom); Neigung (Kippen);
+  Fahrt: Stärke skaliert Ausschnitt-Zoom und Weite nochmals, ungekappt bis 1,5.
+- **Verschieden, aber verwandt:** Bloom Glut (Helligkeit der Glühschicht) vs Stärke (Deckung); Nachzieh Nachhall
+  (Abklingzeit) vs Stärke (Mischung).
+- **Keine Doppelung** (Stärke = Deckung, Typregler formen): Scheinwerfer, Schatten, Laser, Lichtstrahlen,
+  Farbschleier, Feuer, Laufstreifen, Rauschausfall, Scanlines, Filmkorn, Risse, Partikel.
+- **Verzerrer (post/GL):** Wellen, Linse, Bildlauf, Verwackeln, Blöcke, Spiegel — Stärke ist die Überblendung
+  verzerrt/unverzerrt: unter 1 ein Geisterbild, nicht „weniger Effekt".
+**Vorschlag Regel (wartet auf Jörg):** Stärke ist immer die Deckkraft — wie stark das fertige Ergebnis des Effekts ins
+Bild gemischt wird, zuletzt angewandt, 0..100 %. Alle anderen Regler formen den Effekt (wie groß, wie viele, wie
+schnell, wie weit, wie hell). Kein zweiter Regler darf nur Deckkraft sein. Folgen: Schlag ×4, Tiefe ×2, Dichte
+(Nebel, Dunst, Beschlag) entfallen, Stärke übernimmt (alte Ablagen: Stärke·alt); Geometrie-Pulse (Zoom, Kippen, Fahrt)
+und reine Verzerrer (Wellen, Linse, Bildlauf, Verwackeln, Blöcke) haben keine Deckkraft → dort verschwindet der
+Stärke-Regler, die Amplitude ist der Regler; Spiegel behält Stärke (durchsichtiges Wasser); 150 % entfällt.
+
+### Korrigiert und konsolidiert (10.09.2026, Jörg: „korrigiere die Fehler und konsolidiere die Regeln")
+Alle 20 Punkte oben sind im Modul behoben (`scratchpad/patch-tiefencheck.py`, 84 Ersetzungen; Sicherung: Diff
+`tiefencheck.diff`), dazu die **Stärke-Regel** wie vorgeschlagen — jetzt im Kopfkommentar des Moduls, im Handbuch
+(WOERTER.md, Zeile „die Stärke") und im Stärke-Tooltip jeder Karte. Was sich für den Nutzer ändert:
+- Stärke läuft 0–100 %, die 150 % sind weg. Schlag (Schärfe, Kontrast, Sättigung, Farbton), Tiefe (Stroboskop,
+  Sicherung) und Dichte (Theaternebel, Dunst, Beschlag) sind weg; alte Ablagen werden beim Laden in die Stärke
+  gefaltet (`effektAusRezept`, auch die Vorlagen laufen jetzt über diesen Weg → ihre alten Schlüssel werden übersetzt).
+- Fahrt, Zoom, Kippen, Wellen, Linse, Bildlauf, Verwackeln, Blöcke haben keinen Stärke-Regler mehr (`ohneStaerke`);
+  eine alte Stärke ≠ 1 wandert in Ausschnitt/Weite, Wucht bzw. Neigung. Verrechnung gibt es nur noch bei Malern,
+  Bloom und Kaustik (`verrFrei`); andere post/gl-Effekte werden auf „Über" gesetzt.
+- Sicherung: Vorgabe „Farbig nachbelichten", sichtbar (Messung 41 statt 0). Kaustik-Shader liefert nur das Licht
+  (an/aus 16 statt 39, Mittel +16). Stroboskop: Antrieb-Tiefe wirkt (0 → 0, 0,5 → 22, 1 → 45), „stetig" = nichts.
+  Laser: Doppelstrich (Saum + Kern), Ansatz bleibt voll bis 60 % der Länge, Tempo = Sekunden je Schwenk, Schwenk in
+  beiden Modi, Vorgaben Fächer 0,35 und Breite 0,12 (mit Fächer 1 lief die Hälfte am Bild vorbei). Tropfen/Einschlag:
+  Linsenkörper folgt der Stärke (0 → 0). Linse: Vorzeichen gedreht, Faltung gekappt (`max(0.15,…)`). Grund-Pulse laufen
+  in Kettenreihenfolge auf dem bisherigen Ergebnis (Momentaufnahme nach `okc`), jeder Typ mehrfach möglich (Messung:
+  Sättigung + Helligkeit ≠ Helligkeit allein, 29). Kontrast-Vorgabe Tonwert −0,55 (Streuung 63,5 → 66,8 auf dem
+  Schlag). Raum: Trägheit einheitlich, Hotspot hellt die Farbe auf (`fleckStop`), Ursprung-Zeile nur wenn er wirkt,
+  Blende: Reichweite auf den Fleck begrenzt (Zelle ≥ R/40), Wolken mit Weichheit, Iris folgt der Ellipse, Tor ohne
+  verborgene Streckung, Blende-Größe bei Iris/Tor ausgeblendet, Minimum 0,05. Spiegel ohne Naht. Beschlag: Rand 0 =
+  gleichmäßig. Glitch-Blöcke: echte Rot/Cyan-Trennung. Rauschkörnung ×11. Verwackeln: Ganzbild-Kick, Zittern einfach.
+  Flammen: Antrieb nur auf die Höhe (`lmNurSchub`). Feuer: auf dem Schlag bis 1,5× so hoch. Partikel-Alpha einfach.
+  Laufstreifen: Bänder hell/dunkel/abwechselnd. Antrieb: Spitzen halb so breit wie das Rechteck, übersprungene
+  Schläge ruhen aus, Versatz bei „Zufall" ausgeblendet; `lmSchub` behält die Tiefe. Kippen-Nachzoom nach
+  Seitenverhältnis. Nachzieh mit Alpha 1. Filmkorn um 128. Lichtstrahlen-Breite = ganzer Winkel. Farbkanal-Puls mit
+  „nur die Eins", Invert ohne Negativsprung. Dunst Lage 0 = überall gleich.
+- Nebenbefund beim Nachmessen, ebenfalls behoben: die Auswahlen des Raum-/Antrieb-Blocks (Blende, Form, Bewegung,
+  Antrieb) zeichneten die Karte nicht neu, ihre abhängigen Regler erschienen erst nach Zu-/Aufklappen.
+Verfahren: Labor-Tab neu geladen, gezielte Proben je Korrektur (`__p1`, `__p2`), Kachel-Maler mit fünf Effekten
+(Bewegung zwischen zwei Zeitpunkten 26,8), volle Messreihe erneut, Gegenleser über den Diff.
+Gegenleser über den Diff (25 Agenten, 13 von 21 Befunden bestätigt), alle behoben (`patch-tiefencheck2.py`): Grund-Pulse
+ohne Verrechnung (fest „Über", auch beim Laden), Schärfe nach der Stärke-Regel (weiche Ebene = Ergebnis, Stärke 0 =
+unverändert, auf dem Schlag scharf; invertiert umgekehrt), alte Sicherungs-Ablagen von „abwedeln" auf „nachbelichten",
+Ablagen tragen jetzt `fassung:2` — ältere gelten als alt und Farbton-„invert" wird dort in einen negativen Winkel
+übersetzt; Laufstreifen „abwechselnd" ohne Kippen am Umlauf; Linsenkante/Glanz ohne a²; Linse: Kissen als Division
+(monoton, keine Faltung); Verwackeln: Warble immer, nur der Kick am Schlag; Spiegel: unter dem doppelten Horizont die
+oberste Zeile gestreckt; Iris auf dem Fleck, nicht auf der Blende-Drehung; Vorschau des Schattens mit sichtbarem
+Hotspot. Nachgemessen im Labor: altes Rezept (Fassung 1) lädt gefaltet (Sicherung 0,8·0,5 → 0,4 nachbelichten,
+Kontrast 0,5, Nebel 0,3, Fahrt Ausschnitt 0,9/Weite 0,12, Farbton −40°/invert aus), Schärfe Stärke 0 → 0, Streifen-Umlauf
+0,84. Haus gesplict (`einbau2.py`), Parse ok, Spiegel `.labor/effektclip-studio/`.
+**Nächste Runde (Jörg):** „dann führen wir die Diskussion von Scheinwerfer (spatial) und (temporalen) Lichtpatterns auch
+für andere menschengemachte Elemente, wie z. B. Laserstrahlen, Konfettikanonen, halbdurchsichtige Vorhänge und all so ein
+Zeug. Wir checken auch die vorhandenen Effekte, ob da durch coole Parametrisierungen noch mehr rauszuholen ist" — erst
+Diskussion, dann bauen.
