@@ -2465,3 +2465,9 @@ Bauschritt 3 heißt damit: Vorgaberegel + Bühnenleiste (eines/alle/blättern).
   sichtbar (Drift + Wabern, Tempo-Vorgabe 0,5, bis 2). Karte duplizieren (⧉). Jörgs Wunschliste „Glas“ offen:
   Risse (auch wachsend), Beschlag/Dampf, Tropfen-Einschlag, Tropfen laufen herunter — als Entwürfe möglich
   (Leinwand für Risse/Tropfenbahnen, WebGL-Brechung wie bei Wellen für Glas und Tropfenlinsen).
+- 11.09. mittags, Labor (Jörgs Durchsicht): Sichtbarkeit je Karte = Kreis / Kreis mit Kuller (Hausform der
+  Solo-Kullerzeile, Haeckels ○/◉) statt Pille; Solo als Wort „solo“, damit kein zweiter Kreis. Werkzeugzeile der
+  Effektkette in einer Zeile: Preset …, + Effekt …, ⚄ Würfeln, ↺ Grundzustand, ◉ Alle an, ⇅ Zu-/Aufklappen
+  (Wörter im Tipp). Laute Presets entfernt (Alter Fernseher, Konzertlicht, Kaputtes Band, Nachtfahrt,
+  Rave / Inferno) — „wir entwerfen sie selbst“; geblieben: Kaum da, Nur Atem, Schatten und Schlag, Traum (weich).
+  Lehre: Jörg arbeitet live in der Labor-Scheibe (tab-25) — nicht mehr neu laden, Proben in eigenem Tab.
