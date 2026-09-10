@@ -2790,5 +2790,10 @@ Gerettet ist der Weg, nicht die Kopien. Neu:
   Mittelwerts und die Grundlinie als Tabelle.
 - Der Prüfstand läuft jetzt unter `18812` aus dem Repo. Der alte auf `18811` zeigt noch in den
   Sitzungsordner und kann weg, sobald Jörg ihn nicht mehr offen hat.
-- **Redundant, wartet auf Jörgs Wort:** `.labor/` (der alte, unversionierte Spiegel) und
-  `.schnappschuss/` (Stand vor dem Studio, liegt als `bbb9963` in git).
+- **Gelöscht (10.09.2026, Jörg: „entscheide, welche Redundanz du löschst"):** `.labor/` (42 MB) und
+  `.schnappschuss/` (6 MB). Vorher geprüft: die Schnappschüsse waren bytegleich mit `bbb9963`, der
+  Prüfstand und die Rohbefunde liegen versioniert im neuen Labor, Modul und CSS sind aus
+  `web/index.html` ableitbar, der Katalogauszug ist regenerierbar, `einbau.py`/`einbau2.py` sind
+  durch `bin/effektclip-labor.js` ersetzt. Übrig blieben nur die Patch-Skripte als Gerüst; ihr
+  Ergebnis samt Begründungen steht in 37 Commits an `web/index.html` (stichprobenweise geprüft).
+  **Der Vorher-Stand des Studios ist `bbb9963`.**
