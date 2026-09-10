@@ -2446,3 +2446,15 @@ Karte „Bewegtbild“ als Liste · (3) Haus: Vorgaberegel (jüngstes eigenes Vi
 durch starres Bild und bewegte Bilder, flüchtig · (4) Bühne im Standbildmodus auf artworkBild · (5) WOERTER.md.
 Lebendbild-Ablage auf der Kachel wie heute das Video (volle Höhe, mittig, ragt seitlich heraus), Bühne passt den
 Rahmen an — „das Overlay hat immer das Format der Ursprungsdatei“ (Jörg).
+
+### Zielbild Bühne, endgültig (Jörg, 11.09.2026) — ersetzt „Bühnen-Blätterer“ und „alle spielen durch“
+Bewegtbild-Slots je Titel und ihre Priorität (die meiste Absicht gewinnt): (1) Quelle + Effekt (das eine Rezept;
+Quelle darf starr oder bewegt sein, kein Effekt auf Effekt) · (2) hinzugefügte Videos, mehrere, jüngstes zuerst ·
+(3) Sunos Bewegtbild · sonst Rückfall auf das starre Bild (kein Slot).
+- Kachel: nur die Vorgabe. Studio: ‹ › nur als Wahl der Malquelle (aktiv, sobald der Titel mehr als das Titelbild hat).
+- Bühne, Stellung „Bewegtbild“: die Vorgabe läuft endlos, nichts erscheint. **Maus im Bild / Tipp:** schmale
+  Leiste unten im Bild (wie ein Videospieler, verschwindet 2 s nach der letzten Bewegung), nur wenn der Titel mehr
+  als ein Bewegtbild hat: `‹ Eigenes Bewegtbild 2/3 ›` zum Blättern und Schalter **eines | alle**. „alle“ = im
+  Kreis, Wechsel an Abschnittsgrenzen des Lieds, sonst alle acht Takte. Blättern von Hand setzt auf „eines“.
+  Die Wahl gilt für die Bühnensitzung (über Titelwechsel), wird nicht gespeichert; beim nächsten Start Vorgabe.
+Bauschritt 3 heißt damit: Vorgaberegel + Bühnenleiste (eines/alle/blättern).
