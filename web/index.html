@@ -26978,7 +26978,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=VMODE[e.verr]||'source
     grad.addColorStop(0,rgba(e.farbe,e.staerke*blitz)); if(kern>0&&kern<1) grad.addColorStop(kern,rgba(e.farbe,e.staerke*blitz*0.8)); grad.addColorStop(1,rgba(e.farbe,0));
     cx.save(); cx.translate(x,y); cx.rotate(rot); cx.scale(rx/R,ry/R); cx.fillStyle=grad; cx.beginPath(); cx.arc(0,0,R,0,7); cx.fill(); cx.restore(); }
   else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*(e.flimmerTempo||20)*t+e.id*7)), bp=(e.takt?(0.4+0.6*Math.min(1,pulswert(t,7,0))):1)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI;
-    let ox,oy,dir; if(e.quelle==='fest'){ ox=Wn*e.ux; oy=Hn*e.uy; dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(t/e.tempo)*e.schwenk; } else { ox=Wn*(0.5+0.32*Math.sin(t/e.tempo*0.7+e.id)); oy=Hn*(0.5+0.32*Math.cos(t/e.tempo*0.9+e.id*1.3)); dir=t/e.tempo*1.3+e.id; }
+    /* Der Faecherpunkt liegt IMMER ausserhalb des Bildes (Caspar_D, 11.09.2026): wandernd auf einer Bahn um das
+       Bild herum (Radien 0,8 > 0,5, also nie drin), fest auf dem gewaehlten Punkt - liegt der im Bild, wird er auf
+       die naechste Kante hinausgeschoben. Die Strahlen zielen ins Bild und schwenken darum. */
+    let ox,oy,dir;
+    if(e.quelle==='fest'){ let ux=e.ux, uy=e.uy; if(ux>0.02&&ux<0.98&&uy>0.02&&uy<0.98){ const dl=ux, dr=1-ux, du=uy, dd=1-uy, mn=Math.min(dl,dr,du,dd); if(mn===dl) ux=-0.08; else if(mn===dr) ux=1.08; else if(mn===du) uy=-0.08; else uy=1.08; }
+      ox=Wn*ux; oy=Hn*uy; dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(t/e.tempo)*e.schwenk; }
+    else { const w=t/e.tempo*0.35+e.id; ox=Wn*(0.5+0.8*Math.sin(w)); oy=Hn*(0.5+0.8*Math.cos(w*0.8+e.id*1.3)); dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(t/e.tempo*1.3)*(e.schwenk||0.4); }
     cx.lineCap='round';
     for(let i=0;i<n;i++){ const ang=dir+(n>1?(i/(n-1)-0.5):0)*spread, x1=ox+Math.cos(ang)*len, y1=oy+Math.sin(ang)*len;
       const grad=cx.createLinearGradient(ox,oy,x1,y1); grad.addColorStop(0,rgba(e.farbe,e.staerke*bp)); grad.addColorStop(1,rgba(e.farbe,0));
