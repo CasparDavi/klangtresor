@@ -79,3 +79,13 @@ library/beobachter-verlauf.ndjson
 library/node-portabel/
 library/export-lauf.json
 library/export-stand.json
+
+# Prüfstand des Effektclip-Studios: die Arbeitskopie des Moduls ist aus web/index.html
+# abgeleitet (bin/effektclip-labor.js aus|ein), der Katalogauszug sind Archivdaten,
+# die Verweise zeigen ins Archiv. Alles vier legt "effektclip-labor.js daten" neu an.
+labor/effektclip-studio/tbs-modul.js
+labor/effektclip-studio/tbs.css
+labor/effektclip-studio/_songs.json
+labor/effektclip-studio/media
+labor/effektclip-studio/testbild
+labor/effektclip-studio/fremd

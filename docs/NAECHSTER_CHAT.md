@@ -2734,3 +2734,61 @@ Kontrast 0,5, Nebel 0,3, Fahrt Ausschnitt 0,9/Weite 0,12, Farbton −40°/invert
 für andere menschengemachte Elemente, wie z. B. Laserstrahlen, Konfettikanonen, halbdurchsichtige Vorhänge und all so ein
 Zeug. Wir checken auch die vorhandenen Effekte, ob da durch coole Parametrisierungen noch mehr rauszuholen ist" — erst
 Diskussion, dann bauen.
+
+## Nebel wird ein Medium (10.09.2026, Caspar_D: „gut, zeig her")
+Vorausgegangen ist eine Nebeldiskussion. Jörgs Frage war, ob es den Leinwand-Theaternebel neben dem
+Shader-Dunst überhaupt noch braucht. Antwort: nein. Der eigentliche Fund dabei war ein anderer —
+**unser Nebel leuchtete selbst, echter Nebel wird beleuchtet.**
+
+**Das Medium.** Vor der Kette malen alle aktiven Leuchten (Registry-Merkmal `leuchtet`: Scheinwerfer,
+Laser, Lichtstrahlen, Feuer, Stroboskop) ihre Abstrahlung ein zweites Mal additiv auf Schwarz in den
+Licht-Puffer `olicht` (Modulschalter `LICHTMAL` zwingt dabei „lighter"). Der Nebel-Shader liest ihn
+als zweite Textur und rechnet `mische(Bild, Farbe·(Grundlicht + Licht·Streuung), Dichte)`. Damit ist
+die alte Krücke weg, den Nebel vor das Licht hängen zu müssen: die Reihenfolge ist für die
+Sichtbarkeit des Strahls gleichgültig. Gemessen: im Strahl 88,5 heller als ohne Leuchte, der Regler
+„Im Licht" skaliert 21 / 55 / 88 / 143 über seinen Weg, außerhalb des Strahls 6,8.
+
+**Ein Nebel, drei Sorten.** `dunst` (fast gleichmäßig, macht Strahlen sichtbar), `schwaden` (Ballen
+mit Rand über eine Schwelle), `boden` (Schicht mit kräuselnder Oberkante, sinkt). Dazu gemeinsam:
+Auftrieb, Wind, Absaugung (Ort und Sog), Lage, Dicke, Schichtkante, Körnung, Turbulenz, Wabern,
+Ohne Licht, Im Licht. Stärke ist die Dichte. Der Effekt `dunst` ist entfallen, `nebel` ist jetzt
+art `gl`; ohne WebGL malt `nebelLeinwand()` still als Rückfall (dann ohne Lichtaufnahme, gemessen 17,6).
+
+**Kettenreihenfolge.** `zeichneFrame` läuft die Kette jetzt in ihrer Reihenfolge durch: Maler malen
+auf die laufende Leinwand, Nachbearbeitung und Shader tauschen sie gegen ihr Ergebnis. `postKette`
+ist gelöscht. Vorher sanken post und gl immer ans Ende, die Oberfläche versprach etwas anderes.
+Gemessen: Laufstreifen und Linse getauscht ergeben 42,6 Unterschied.
+
+**Alte Ablagen.** `nebelAusAlt` übersetzt: `dunst` → Sorte Dunst (Lage und Dicke umgerechnet),
+Leinwand-Nebel → Sorte Schwaden (Größe → Körnung, Sekundentempo → Wabern), uralter Nebel mit
+`dichte` als Schwadenzahl ebenso; die Dichte wird je Herkunft in die Stärke gefaltet, tote Schlüssel
+werden entfernt. Im Labor mit einer Fassung-1-Ablage geprüft.
+
+**Gegenlesen (21 Agenten, 3 von 21 bestätigt), alles behoben:** bei Absaugung „keine" zog der Nebel
+trotzdem zur Bildmitte — `when` blendet nur den Regler aus, der Wert ging weiter an den Shader;
+jetzt schaltet `glZusatz` den Sog. Dazu: Kaustik verspricht keine Lichtaufnahme mehr (sie läuft im
+Shader und kann nicht in den Puffer malen), `LICHTMAL` wird in einem `finally` zurückgesetzt, die
+Kräuselung der Schichtkante zieht mit der Körnung mit, und die zuletzt gewählte Sorte überlebt das
+Laden. Nachgemessen: „keine" ist jetzt bildgleich mit Sog 0.
+
+**Offen aus der Diskussion:** Kryo-Stoß als Ereignis am Antrieb, Nebelvorhang von der Traverse (das
+ist zugleich Jörgs halbdurchsichtiger Vorhang), Scherung im Wind, Kantenfall des Bodennebels über
+die Bildkante. Und Jörgs Frage nach einem Premium-Etikett: abgelehnt, stattdessen den fertigen
+Effekten das Etikett „Entwürfe" abnehmen und für Scheinwerfer, Schatten, Laser, Lichtstrahlen und
+Theaternebel eine eigene Gruppe „Bühnenlicht" — noch nicht entschieden.
+
+## Kritzelordner aufgeräumt (10.09.2026, Caspar_D: „Magst du die Kritzelordner … systematisieren und retten")
+Gerettet ist der Weg, nicht die Kopien. Neu:
+- **`bin/effektclip-labor.js`** mit `aus`, `ein`, `daten`. Die Quelle bleibt `web/index.html`, die
+  Laborkopie ist abgeleitet; `ein` prüft vor dem Schreiben jedes Inline-Skript der Seite auf Syntax.
+  `daten` legt den Katalogauszug (zwölf Titel, über den Bestand verteilt), die Startlage und die drei
+  Verweise `media`, `testbild`, `fremd` an. **`fremd` fehlte bisher** — ohne ihn findet der Shader sein
+  Rauschen nicht und man misst still den Leinwand-Rückfall.
+- **`labor/effektclip-studio/`** versioniert: Prüfstand, Startlage, `messreihe.js`, die Grundlinie
+  `messreihe-2026-09-10.json` und die Rohbefunde des Tiefen-Checks. Abgeleitetes ist in `.gitignore`.
+- **`docs/EFFEKTCLIP-REGELN.md`**: vierzehn Gesetze, das Prüfverfahren, die vier Fallen des
+  Mittelwerts und die Grundlinie als Tabelle.
+- Der Prüfstand läuft jetzt unter `18812` aus dem Repo. Der alte auf `18811` zeigt noch in den
+  Sitzungsordner und kann weg, sobald Jörg ihn nicht mehr offen hat.
+- **Redundant, wartet auf Jörgs Wort:** `.labor/` (der alte, unversionierte Spiegel) und
+  `.schnappschuss/` (Stand vor dem Studio, liegt als `bbb9963` in git).

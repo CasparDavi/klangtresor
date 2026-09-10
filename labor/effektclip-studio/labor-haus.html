@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labor: Effektclip-Studio</title>
+<link rel="stylesheet" href="tbs.css">
+<style>
+  :root{
+    --bg:#111214;
+    --flaeche:#1a1b1e;
+    --flaeche2:#222328;
+    --rand:#34353b;
+    --text:#ddd;
+    --schwach:#8a8c92;
+    --akzent:#e8792c;
+  }
+  *{box-sizing:border-box}
+  html,body{background:#111;color:#ddd}
+  body{margin:0;padding:18px;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  h1{font-size:16px;margin:0 0 16px;font-weight:600;color:#eee}
+  h2{font-size:12px;margin:22px 0 8px;color:var(--schwach);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .player-zeile{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:10px 12px;background:var(--flaeche);border:1px solid var(--rand);border-radius:10px}
+  .player-zeile audio{height:32px}
+  #laufender-titel{color:var(--text)}
+  #laufender-titel.leer{color:var(--schwach)}
+  .raster{display:grid;grid-template-columns:repeat(auto-fill,200px);gap:14px}
+  .karte{width:200px;background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px}
+  .bild{position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:12px;background:#000}
+  .bild img{width:100%;height:100%;object-fit:cover;display:block}
+  .titel-zeile{font-size:12.5px;color:var(--text);line-height:1.3;min-height:1.3em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .knopf-zeile{display:flex;flex-wrap:wrap;gap:4px}
+  .knopf-zeile button{flex:1 1 auto;padding:4px 6px;font-size:10.5px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;white-space:nowrap;font:inherit;font-size:10.5px}
+  .knopf-zeile button:hover{border-color:var(--akzent)}
+  .merkmale{font-size:10.5px;color:var(--schwach);min-height:1.3em}
+  #log{background:#000;border:1px solid var(--rand);border-radius:10px;padding:10px;max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:11px;line-height:1.5;color:#9fd89f;margin:0}
+</style>
+</head>
+<body>
+
+<h1>Labor: Effektclip-Studio im Haus-Ersatz</h1>
+
+<div class="player-zeile">
+  <audio id="audio" controls></audio>
+  <span id="laufender-titel" class="leer">— kein Titel geladen —</span>
+</div>
+
+<div id="raster" class="raster"></div>
+
+<h2>Protokoll (abgefangene Aufrufe)</h2>
+<pre id="log"></pre>
+
+<script>
+/* ---- Teil 1: Stubs, die das Haus dem Modul bereitstellen muss ---- */
+var audio = document.getElementById('audio');
+var aktuellId = null;
+var _eigenArt = {};
+var _titelbildMenge = new Set();
+
+(function(){
+  try{
+    var x = new XMLHttpRequest();
+    x.open('GET', 'labor-eigen.json', false);
+    x.send(null);
+    if(x.status===200){
+      var d = JSON.parse(x.responseText);
+      _eigenArt = d.eigenArt || {};
+      (d.titelbild||[]).forEach(function(id){ _titelbildMenge.add(id); });
+    }
+  }catch(e){ /* Labor startet auch ohne diese Datei, nur ohne Sonderfaelle */ }
+})();
+
+function kachelZusatz(){ return '?k=1'; }
+
+function artworkBild(id){
+  if(_eigenArt[id] && _eigenArt[id].bild) return '/media/'+id+'/eigen.jpg';
+  if(_titelbildMenge.has(id)) return '/media/'+id+'/titelbild.jpg'+kachelZusatz();
+  return '/media/'+id+'/cover.jpg';
+}
+
+function spielenNachId(id){
+  audio.src = '/media/'+id+'/audio.mp3';
+  aktuellId = id;
+  audio.play().catch(function(e){ log('Abspielen blockiert: '+((e&&e.message)||e)); });
+  var el = document.getElementById('laufender-titel');
+  if(el){
+    el.textContent = (typeof TITEL_VON!=='undefined' && TITEL_VON[id]) ? TITEL_VON[id] : id;
+    el.classList.remove('leer');
+  }
+}
+</script>
+
+<script>
+/* ---- Teil 2: fetch-Ersatz fuer die Wege des Effektclip-Studios ---- */
+var _echterFetch = window.fetch.bind(window);
+
+var REZEPTE = {};
+(function(){
+  try{
+    var roh = localStorage.getItem('labor-rezepte');
+    if(roh) REZEPTE = JSON.parse(roh) || {};
+  }catch(e){}
+  /* Nach F5 muss die Beschriftung "Rezept" wieder stimmen, auch wenn
+     labor-eigen.json (die Startlage) davon nichts weiss. */
+  Object.keys(REZEPTE).forEach(function(id){
+    _eigenArt[id] = Object.assign({}, _eigenArt[id]||{}, {effekt:true});
+  });
+})();
+
+function rezepteSpeichern(){
+  try{ localStorage.setItem('labor-rezepte', JSON.stringify(REZEPTE)); }catch(e){}
+}
+
+function log(zeile){
+  var el = document.getElementById('log');
+  if(!el) return;
+  var zeit = new Date().toLocaleTimeString('de-DE');
+  var zeilen = el.textContent ? el.textContent.split('\n') : [];
+  zeilen.unshift('['+zeit+'] '+zeile);
+  if(zeilen.length>40) zeilen = zeilen.slice(0,40);
+  el.textContent = zeilen.join('\n');
+}
+
+var SONGS_BY_ID = null;
+var _songsLadenPromise = null;
+function songsLaden(){
+  if(!_songsLadenPromise){
+    _songsLadenPromise = _echterFetch('_songs.json').then(function(r){ return r.json(); }).then(function(arr){
+      SONGS_BY_ID = {};
+      arr.forEach(function(s){ SONGS_BY_ID[s.id] = s; });
+      return SONGS_BY_ID;
+    }).catch(function(){ SONGS_BY_ID = SONGS_BY_ID || {}; return SONGS_BY_ID; });
+  }
+  return _songsLadenPromise;
+}
+
+function zuPfadUndQuery(url){
+  var u;
+  try{ u = new URL(url, location.href); }catch(e){ u = null; }
+  if(u) return { pfad: u.pathname, query: u.searchParams };
+  var roh = String(url);
+  var qidx = roh.indexOf('?');
+  var pfad = qidx>=0 ? roh.slice(0,qidx) : roh;
+  return { pfad: pfad, query: new URLSearchParams(qidx>=0?roh.slice(qidx+1):'') };
+}
+
+function antwort(daten, status){
+  return new Response(JSON.stringify(daten), { status: status||200, headers: {'Content-Type':'application/json'} });
+}
+
+window.fetch = function(url, optionen){
+  optionen = optionen || {};
+  var methode = (optionen.method || 'GET').toUpperCase();
+  var roh = (typeof url==='string') ? url : (url && url.url) || String(url);
+  var zerlegt = zuPfadUndQuery(roh);
+  var pfad = zerlegt.pfad;
+  var query = zerlegt.query;
+
+  var mSong = pfad.match(/^\/api\/song\/([^\/]+)$/);
+  if(mSong && methode==='GET'){
+    var id = decodeURIComponent(mSong[1]);
+    return songsLaden().then(function(karte){
+      var s = karte[id];
+      var status = s ? 200 : 404;
+      log('GET '+pfad+' → '+status);
+      return antwort(s || {fehler:'unbekannt'}, status);
+    });
+  }
+
+  var mEffekt = pfad.match(/^\/media\/([^\/]+)\/eigen-effekt\.json$/);
+  if(mEffekt && methode==='GET'){
+    var id2 = decodeURIComponent(mEffekt[1]);
+    if(Object.prototype.hasOwnProperty.call(REZEPTE, id2)){
+      log('GET '+pfad+' → 200');
+      return Promise.resolve(new Response(REZEPTE[id2], {status:200, headers:{'Content-Type':'application/json'}}));
+    }
+    log('GET '+pfad+' → 404');
+    return Promise.resolve(new Response('nicht gefunden', {status:404}));
+  }
+
+  var mArt = pfad.match(/^\/api\/eigen-artwork\/([^\/]+)$/);
+  if(mArt && (methode==='PUT'||methode==='POST')){
+    var id3 = decodeURIComponent(mArt[1]);
+    var text = optionen.body!=null ? String(optionen.body) : '';
+    REZEPTE[id3] = text;
+    _eigenArt[id3] = Object.assign({}, _eigenArt[id3]||{}, {effekt:true});
+    rezepteSpeichern();
+    log(methode+' '+pfad+' → 200');
+    if(typeof merkmaleAktualisieren==='function') merkmaleAktualisieren(id3);
+    return Promise.resolve(antwort({ok:true, datei:'eigen-effekt.json', bytes:text.length}, 200));
+  }
+
+  if(mArt && methode==='DELETE'){
+    var id4 = decodeURIComponent(mArt[1]);
+    var was = query.get('was');
+    if(was==='effekt'){
+      delete REZEPTE[id4];
+      if(_eigenArt[id4]) delete _eigenArt[id4].effekt;
+      rezepteSpeichern();
+    }
+    log('DELETE '+pfad+(query.toString()?'?'+query.toString():'')+' → 200');
+    if(typeof merkmaleAktualisieren==='function') merkmaleAktualisieren(id4);
+    return Promise.resolve(antwort({ok:true, entfernt:['eigen-effekt.json']}, 200));
+  }
+
+  if(pfad==='/api/eigen-artwork' && methode==='GET'){
+    log('GET '+pfad+' → 200');
+    return Promise.resolve(antwort({songs:_eigenArt, anzahl:Object.keys(_eigenArt).length}, 200));
+  }
+
+  return _echterFetch(url, optionen);
+};
+</script>
+
+<script>
+/* ---- Teil 3: Seitenaufbau ---- */
+var TITEL_VON = {};
+var SONGS_LISTE = [];
+
+function escapeHtml(t){
+  return String(t).replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
+}
+
+function merkmaleText(s){
+  var teile = [];
+  if(s.videoCoverUrl) teile.push('Suno-Video');
+  var ea = _eigenArt[s.id];
+  if(ea && ea.video) teile.push('eigenes Video');
+  if(ea && ea.effekt) teile.push('Rezept');
+  return teile.length ? teile.join(' · ') : '—';
+}
+
+function merkmaleAktualisieren(id){
+  var el = document.getElementById('merkmale-'+id);
+  if(!el) return;
+  var s = null;
+  for(var i=0;i<SONGS_LISTE.length;i++){ if(SONGS_LISTE[i].id===id){ s=SONGS_LISTE[i]; break; } }
+  if(!s) return;
+  el.textContent = merkmaleText(s);
+}
+
+function karteBauen(s){
+  var karte = document.createElement('div');
+  karte.className = 'karte';
+  karte.dataset.id = s.id;
+  karte.innerHTML =
+    '<div class="bild"><img src="/media/'+s.id+'/kachel.jpg" alt=""></div>'
+    +'<div class="titel-zeile" title="'+escapeHtml(s.titel||s.id)+'">'+escapeHtml(s.titel||s.id)+'</div>'
+    +'<div class="knopf-zeile">'
+    +'<button type="button" data-aktion="studio">Studio</button>'
+    +'<button type="button" data-aktion="lebendAn">Lebendbild an</button>'
+    +'<button type="button" data-aktion="lebendAus">aus</button>'
+    +'<button type="button" data-aktion="abspielen">abspielen</button>'
+    +'</div>'
+    +'<div class="merkmale" id="merkmale-'+s.id+'"></div>';
+  return karte;
+}
+
+function rasterBauen(){
+  fetch('_songs.json').then(function(r){ return r.json(); }).then(function(arr){
+    SONGS_LISTE = arr;
+    arr.forEach(function(s){ TITEL_VON[s.id] = s.titel; });
+    var raster = document.getElementById('raster');
+    raster.innerHTML = '';
+    arr.forEach(function(s){ raster.appendChild(karteBauen(s)); });
+    arr.forEach(function(s){ merkmaleAktualisieren(s.id); });
+  }).catch(function(e){
+    document.getElementById('raster').textContent = 'Konnte _songs.json nicht laden: '+e;
+  });
+}
+
+document.getElementById('raster').addEventListener('click', function(ev){
+  var btn = ev.target.closest('button[data-aktion]');
+  if(!btn) return;
+  var karte = ev.target.closest('.karte');
+  if(!karte) return;
+  var id = karte.dataset.id;
+  var aktion = btn.dataset.aktion;
+  if(aktion==='studio'){
+    EffektclipStudio.oeffnen(id, function(was){
+      log('Studio: '+was);
+      merkmaleAktualisieren(id);
+    });
+  }else if(aktion==='lebendAn'){
+    EffektclipStudio.lebendAn(karte, id);
+  }else if(aktion==='lebendAus'){
+    EffektclipStudio.lebendAus(karte);
+  }else if(aktion==='abspielen'){
+    spielenNachId(id);
+  }
+});
+
+rasterBauen();
+</script>
+
+<script src="tbs-modul.js"></script>
+</body>
+</html>

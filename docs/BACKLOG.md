@@ -2428,3 +2428,26 @@ eingefrorene Server als solche zeigt (nur vorhandene Titel, Fußnote mit
 Alias und Datum). Eine Viertelstunde reicht für etwas Vorzeigbares.
 
 **Offen:** Windows-Startskript bei Casto testen; Handbuch-Kapitel.
+
+## Effektclip: Bewegtbild schneiden statt nur bemalen (Caspar_D, 10.09.2026)
+
+Bisher legt der Effektclip eine Schicht **auf** die Quelle. Der nächste Schritt geht an die
+Quelle selbst: das Video wird im Takt anders abgespielt. Jörgs Liste, unverändert:
+
+- **Ablaufartefakte im Takt.** Stottern, Beschleunigen, Vor- und Zurückläufe, taktgesteuert
+  eingestreut. Dazu Bildausfälle. Nicht als Zufall, sondern auf den Schlag.
+- **Abschnittsabhängig.** Was passiert, richtet sich nach dem Songabschnitt, nicht nur nach
+  dem Takt. Die Abschnitte liegen bereits vor (`abschnitte.peak_times`).
+- **Später Hook-Videos für Suno exportieren.** Das ist das Ziel dahinter: aus dem, was der
+  Effektclip live macht, eine Datei ziehen, die man wieder hochladen kann. (Tarja legt ihre
+  Suno-Hooks heute schon als eigene Bewegtbilder ab.)
+- **Aneinanderhängen und Überblenden**, auch invers aneinanderhängen. Und zwar **automatisch**,
+  nach Takt und Abschnitt, „nicht dass man ewig am Schneidprogramm sitzen muss".
+- **Dasselbe Video mehrfach hintereinander, jedes Mal mit anderen Effekten.**
+
+Anmerkung zur Machbarkeit: Stottern, Tempo und Rückläufe sind über `currentTime` des stummen
+Quellvideos zu machen, das der Maler ohnehin führt — das ist derselbe Weg wie `quelleSync`,
+nur mit einer anderen Sollzeit. Aneinanderhängen und Überblenden brauchen zwei Videoelemente
+gleichzeitig. Der Export ist die einzige Stelle, die wirklich neu ist: er braucht einen
+Aufnahmeweg (MediaRecorder auf der Malfläche) und eine Antwort auf die Frage, wie lang ein
+Clip sein darf. Erst besprechen, dann bauen.
