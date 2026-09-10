@@ -2501,3 +2501,19 @@ Offen: Schritt 2 (eigen-2.mp4 …, Karte als Liste), 3 (Vorgaberegel + Bühnenle
 - Gegenlesen (2 Blickwinkel, 2 Skeptiker): 7 bestätigt (Race, Nummern-Wiederkehr + Cache, CLI ×3, Export .teil),
   alle behoben. Offen: Schritt 3 Bühnenleiste (eines | alle | blättern bei Maus im Bild), 4 (Bühne → artworkBild),
   5 (WOERTER.md), Glas-Entwürfe.
+
+### Schritt 3 + 4 im Haus (11.09.2026): Bühne
+- **Bewegtbilder je Titel** (`bewegtbilder(s)`): Lebendbild (Rezept) · eigene Videos, jüngstes zuerst · Sunos Bewegtbild.
+  Stellung „Bewegtbild“: die Vorgabe (erstes) läuft endlos, nichts erscheint. **Leiste `#bbewegt`** erscheint bei Maus im Bild
+  (2 s, Tipp 4 s; bleibt, solange der Zeiger darauf ruht), nur bei ≥ 2 Bewegtbildern: `‹ Name k/n ›` und Schalter
+  **eines | alle**. „alle“ wechselt an den Abschnittsgrenzen (`abschnitte.peak_times`, alle 324 Titel; Grenzen < 1 s
+  zählen nicht; sonst jeder achte Taktanfang), geprüft in `el.ontimeupdate` (`bewegtWechselPruefen`), still bei zu-
+  gemachter Bühne oder verborgenem Kasten (Titel-Analyse). Blättern von Hand setzt auf „eines“. Modus gilt für die
+  Sitzung; Titelwechsel setzt die Handwahl zurück, Stand = laufende Zeit. Der Modusschalter zeichnet nur die Leiste neu.
+  Im ungeteilten Schirm sitzt die Leiste bei 19 % Höhe — darunter fährt die Pult-Schublade aus (untere 16 %).
+- **Standbild ist still** (Definition Jörg) — kein Lebendbild mehr in der Stellung „Standbild“; wer es sehen will, stellt
+  „Bewegtbild“. Und das Standbild ist jetzt **artworkBild** (eigenes, randloses, sonst Sunos) statt fest cover.jpg = Schritt 4.
+- Gegenlesen (2 Blickwinkel): 11 bestätigt (Leiste unter der Pult-Schublade, Ausblenden unter ruhender Maus, Stand −1,
+  Neubau beim Modusklick, Videofehler nimmt die Leiste mit, Wache bei Titel-Analyse), alle behoben. Nicht am Fenster
+  getestet (kein zweites App-Fenster) — Jörg prüft. Offen: Schritt 5 (WOERTER.md: Lebendbild oder „dynamisches
+  Titelbild“, Kachel = drei Dinge), Glas-Entwürfe, bin/eigen-artwork.js im Lauf prüfen.

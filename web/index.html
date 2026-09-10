@@ -1196,6 +1196,16 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   object-fit:cover;filter:blur(38px) saturate(1.2);transform:scale(1.18);
   opacity:.62;pointer-events:none}
 .bart .motiv{position:relative;z-index:1}
+/* Bewegtbild-Leiste der Buehne: unten im Bild, nur bei Maus im Bild (Klasse zeigt), wie bei einem Videospieler */
+.bart #bbewegt{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#eee;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s}
+.bart #bbewegt.zeigt{opacity:1;pointer-events:auto}
+/* Im ungeteilten Schirm faehrt bei den unteren 16 % die Pult-Schublade aus (z-index 5, deckend) -
+   die Leiste sitzt darum oberhalb dieser Zone, bei 19 % der Hoehe, sonst waere sie nie erreichbar. */
+#buehne:not(.text-lyrics) .bart #bbewegt{bottom:19%}
+.bart #bbewegt button{background:none;border:1px solid rgba(255,255,255,.28);color:#eee;border-radius:999px;padding:2px 8px;font:inherit;font-size:12px;line-height:1.3;cursor:pointer}
+.bart #bbewegt button:hover{border-color:#fff}
+.bart #bbewegt button.on{border-color:var(--akzent);color:#fff;box-shadow:inset 0 0 0 1px var(--akzent)}
+.bart #bbewegt .bbmodus{margin-left:6px;display:flex;gap:4px}
 
 /* ---- Textebene: aus / karaoke / lyrics ----------------------
    Nur bei "lyrics" ist der Schirm geteilt. Sonst nimmt das Bild die
@@ -16296,6 +16306,9 @@ $('buehne').addEventListener('touchstart', (e) => {
   if (bText === 'lyrics') return;
   if (!$('bpult').contains(e.target)) pultZeigen(4000);
 }, { passive: true });
+/* Die Bewegtbild-Leiste erscheint nur, wenn jemand ins Bild fasst. */
+$('bart').addEventListener('mousemove', () => bewegtLeisteZeigen());
+$('bart').addEventListener('touchstart', () => bewegtLeisteZeigen(4000), { passive: true });
 
 /* -------------------------------------------------------------
    Karaokeband
@@ -18882,6 +18895,80 @@ function butterchurnAufbauen(kasten, presetName){
 }
 
 
+/* ---- Bewegtbilder auf der Buehne (Caspar_D, 11.09.2026) ------------------
+   Ein Titel kann mehrere bewegte Bilder haben: das Lebendbild (Rezept), eigene
+   Videos (mehrere, juengstes zuerst), Sunos Bewegtbild. VORGABE IST EINE REGEL,
+   KEIN REGLER: das mit der meisten Absicht laeuft endlos, nichts erscheint. Erst
+   die Maus im Bild (oder ein Tipp) blendet unten eine schmale Leiste ein -
+   blaettern und der Schalter eines | alle. "alle" wechselt an den
+   Abschnittsgrenzen des Lieds (sonst alle acht Takte). Blaettern von Hand setzt
+   auf "eines". Die Wahl gilt fuer die Sitzung der Buehne, auch ueber Titelwechsel,
+   wird aber nicht gespeichert - beim naechsten Start gilt wieder die Vorgabe. */
+let bBewegtModus = 'eines';                 /* 'eines' | 'alle' */
+let bBewegtWahl = null;                     /* von Hand gewaehlt (Schluessel), nur fuer diesen Titel */
+let bBewegtSongId = null, bBewegtIndex = 0, bBewegtStand = -1, bBewegtTimer = 0;
+function bewegtbilder(s){
+  const L = []; if (!s || s.fremd) return L;
+  if (hatLebendbild(s)) L.push({ k: 'lebend', name: 'Lebendbild' });
+  const e = _eigenArt && _eigenArt[s.id];
+  if (e && e.video){
+    const nn = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
+    for (const n of [...nn].reverse())
+      L.push({ k: 'eigen' + n, name: 'Eigenes Bewegtbild' + (nn.length > 1 ? ' ' + n : ''), url: '/media/' + s.id + '/' + eigenVideoName(n) });
+  }
+  if (s.videoCoverUrl) L.push({ k: 'suno', name: 'Bewegtbild (Suno)', url: '/media/' + s.id + '/artwork.mp4' });
+  return L;
+}
+/* Wechselpunkte fuer "alle": die Abschnittsgrenzen der Analyse; sonst jeder achte Taktanfang. */
+function bewegtGrenzen(s){
+  const a = s && s.abschnitte;
+  if (a && Array.isArray(a.peak_times) && a.peak_times.length) return a.peak_times.filter(g => g > 1);
+  const g = []; let n = 0;
+  if (s && Array.isArray(s.schlaege)) for (const [t, z] of s.schlaege) if (z === 1){ if (n && n % 8 === 0) g.push(t); n++; }
+  return g;
+}
+function bewegtWechselPruefen(){
+  if (bBewegtModus !== 'alle' || !bSong || bBild !== 'video' || bBewegtSongId !== bSong.id) return;
+  if (!$('bart').getClientRects().length) return;            /* Buehne zu oder Bildkasten verborgen (Titel-Analyse) */
+  const liste = bewegtbilder(bSong); if (liste.length < 2) return;
+  const t = audio.currentTime;
+  if (t < bBewegtStand) bBewegtStand = t;                       /* Ruecksprung im Lied */
+  if (!bewegtGrenzen(bSong).some(g => g > bBewegtStand && g <= t)) return;
+  bBewegtStand = t; bBewegtWahl = null; bBewegtIndex = (bBewegtIndex + 1) % liste.length;
+  darstellungAufbauen();
+}
+function bewegtLeisteZeigen(dauer = 2000){
+  const l = $('bart').querySelector('#bbewegt'); if (!l) return;
+  l.classList.add('zeigt'); clearTimeout(bBewegtTimer);
+  const weg = () => {
+    const jetzt = $('bart').querySelector('#bbewegt'); if (!jetzt) return;
+    /* Nicht wegnehmen, solange jemand darauf zeigt - sonst faellt der Klick ins Leere. */
+    if (jetzt.matches(':hover')){ bBewegtTimer = setTimeout(weg, dauer); return; }
+    jetzt.classList.remove('zeigt');
+  };
+  bBewegtTimer = setTimeout(weg, dauer);
+}
+function bewegtLeiste(kasten, liste, i){
+  if (liste.length < 2) return;             /* nur, wenn es etwas zu waehlen gibt */
+  const l = document.createElement('div'); l.id = 'bbewegt';
+  l.innerHTML = `<button type="button" data-tu="-1" title="voriges Bewegtbild">‹</button>`
+    + `<span class="bbname">${esc(liste[i].name)} · ${i + 1}/${liste.length}</span>`
+    + `<button type="button" data-tu="1" title="nächstes Bewegtbild">›</button>`
+    + `<span class="bbmodus"><button type="button" data-modus="eines" class="${bBewegtModus === 'eines' ? 'on' : ''}" title="nur dieses, endlos">eines</button>`
+    + `<button type="button" data-modus="alle" class="${bBewegtModus === 'alle' ? 'on' : ''}" title="alle nacheinander — Wechsel an den Abschnittsgrenzen des Lieds">alle</button></span>`;
+  l.querySelectorAll('[data-tu]').forEach(b => b.onclick = (ev) => { ev.stopPropagation();
+    const n = liste.length; bBewegtModus = 'eines'; bBewegtWahl = liste[(i + (+b.dataset.tu) + n) % n].k;
+    darstellungAufbauen(); bewegtLeisteZeigen(); });
+  l.querySelectorAll('[data-modus]').forEach(b => b.onclick = (ev) => { ev.stopPropagation();
+    bBewegtModus = b.dataset.modus;
+    if (bBewegtModus === 'alle'){ bBewegtWahl = null; bBewegtStand = audio.currentTime; }
+    /* Nur die Leiste neu zeichnen - das laufende Bild bleibt, der Schalter aendert erst den naechsten Wechsel. */
+    l.remove(); bewegtLeiste(kasten, liste, i); bewegtLeisteZeigen(); });
+  l.onmousedown = (ev) => ev.stopPropagation();
+  l.onclick = (ev) => ev.stopPropagation();
+  kasten.appendChild(l);
+}
+
 function darstellungAufbauen(){
   if (!bSong) return;
   const kasten = $('bart');
@@ -18894,28 +18981,46 @@ function darstellungAufbauen(){
   if (bBild !== 'vis'){
     kasten.style.aspectRatio = '3/4';        // bis das Format bekannt ist
 
-    // Video-Artwork haben nur 83 der 321 Songs. Fehlt es, zeigen wir
-    // für DIESES Lied das Standbild - still, ohne Hinweis. Die
-    // Einstellung bleibt stehen und greift beim nächsten Song, der
-    // eines hat.
-    const eigenesVideo = bBild === 'video' && hatBewegtbild(bSong) && !hatLebendbild(bSong);
-
-    if (eigenesVideo){
-      kasten.innerHTML = medienEbenen('video', artworkVideo(bSong.id),
-        `muted loop playsinline autoplay poster="${artworkBild(bSong.id)}"`);
-      const v = kasten.querySelector('video.motiv');
-      v.onloadedmetadata = () => formatUebernehmen(kasten, v.videoWidth, v.videoHeight);
-      v.onerror = () => {
+    /* BEWEGTBILD: der Titel kann mehrere haben (Lebendbild, eigene Videos, Sunos).
+       Die Vorgabe ist eine Regel (das mit der meisten Absicht), nichts erscheint;
+       die Maus im Bild blendet die Leiste ein (blaettern, eines | alle). Hat der
+       Titel keines, zeigen wir still das Standbild - ohne Hinweis; die Einstellung
+       bleibt stehen und greift beim naechsten Song, der eines hat. */
+    const liste = bBild === 'video' ? bewegtbilder(bSong) : [];
+    const leisteWar = !!kasten.querySelector('#bbewegt.zeigt');
+    if (liste.length){
+      /* Neuer Titel: Handwahl weg, Vorgabe zuerst; der Stand fuer "alle" ist die laufende Zeit,
+         sonst laege beim ersten Tick jede vergangene Grenze im Fenster und die Vorgabe waere sofort weg. */
+      if (bBewegtSongId !== bSong.id){ bBewegtSongId = bSong.id; bBewegtWahl = null; bBewegtIndex = 0;
+        bBewegtStand = (typeof aktuellId !== 'undefined' && aktuellId === bSong.id) ? audio.currentTime : 0; }
+      let i = bBewegtWahl ? liste.findIndex(x => x.k === bBewegtWahl)
+            : (bBewegtModus === 'alle' ? bBewegtIndex % liste.length : 0);
+      if (i < 0) i = 0;
+      bBewegtIndex = i;
+      const w = liste[i];
+      if (w.k === 'lebend'){
         kasten.innerHTML = medienEbenen('img', artworkBild(bSong.id), 'alt=""');
-      };
+        const b = kasten.querySelector('img.motiv');
+        b.onload = () => formatUebernehmen(kasten, b.naturalWidth, b.naturalHeight);
+        lebendAn(kasten, bSong.id);           /* das Studio malt live ueber das Standbild */
+      } else {
+        kasten.innerHTML = medienEbenen('video', w.url,
+          `muted loop playsinline autoplay poster="${artworkBild(bSong.id)}"`);
+        const v = kasten.querySelector('video.motiv');
+        v.onloadedmetadata = () => formatUebernehmen(kasten, v.videoWidth, v.videoHeight);
+        v.onerror = () => { kasten.innerHTML = medienEbenen('img', artworkBild(bSong.id), 'alt=""'); bewegtLeiste(kasten, liste, i); };
+      }
+      bewegtLeiste(kasten, liste, i);
+      if (leisteWar) bewegtLeisteZeigen();   /* nach einem Neubau nicht unter der ruhenden Maus verschwinden */
     } else {
-      // Fremde Songs holen ihr Cover direkt von Sunos CDN.
-      const quelle = bSong.fremd ? (bSong.bildUrl || '') : `/media/${bSong.id}/cover.jpg`;
+      /* STANDBILD ist still - so will es die Definition (Caspar_D, 11.09.2026: "ein
+         starres Bild ist immer unbewegt"). Und es ist DAS Titelbild (artworkBild:
+         eigenes, randloses, sonst Sunos); bis heute nahm die Buehne hier fest
+         cover.jpg. Fremde Songs holen ihr Cover direkt von Sunos CDN. */
+      const quelle = bSong.fremd ? (bSong.bildUrl || '') : artworkBild(bSong.id);
       kasten.innerHTML = medienEbenen('img', quelle, 'alt=""');
       const b = kasten.querySelector('img.motiv');
       b.onload = () => formatUebernehmen(kasten, b.naturalWidth, b.naturalHeight);
-      /* Liegt ein Rezept beim Titel, malt das Studio live ueber das Standbild. */
-      if (hatLebendbild(bSong)) lebendAn(kasten, bSong.id);
     }
     return;
   }
@@ -26326,6 +26431,7 @@ function deckMelder(el){
     $('fortschritt').style.width = (audio.currentTime/audio.duration*100)+'%';
     $('pzeit').textContent = zeit(audio.currentTime)+' / '+zeit(audio.duration);
     buehneTakt();
+    bewegtWechselPruefen();
     anschlussWacht();
     /* Viermal je Sekunde reicht, um den Abstand unter 80 ms zu halten -
        oefter waere Arbeit ohne Gewinn. */
