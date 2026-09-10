@@ -3084,6 +3084,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-kettekopf.leer > *{visibility:hidden}
 #tbs .tbs-leerhinweis{margin-top:12px;font-size:11.5px;color:var(--schwach)}
 #tbs .tbs-leerhinweis a{color:var(--akzent);text-decoration:underline}
+#tbs .tbs-leer p{margin:0 0 8px;text-align:left}
+#tbs .tbs-leer a{color:var(--akzent);text-decoration:underline}
+#tbs #tbs-rezept.gedimmt{opacity:.45}
+#tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -27122,10 +27126,13 @@ function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.tog
 function renderStapel(){
   stapelBox.innerHTML='';
   kettekopfStand();
-  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Noch keine Effekte.<br>Oben die Quelle w\u00e4hlen und mit \u201e+ Effekt\u201c einen einh\u00e4ngen \u2014 oder ein Beispiel laden, an dem man den Puls sofort sieht.<br><button type="button" class="tbs-mini" id="tbs-beispiel">Beispiel laden: Helligkeit schl\u00e4gt</button>'
-      +'<div class="tbs-leerhinweis">Braucht die Quelle vorab Anpassungen \u2014 Helligkeit, Farbe, Gradation \u2014, <a href="#" id="tbs-vorbAuf">die Vorbereitung aufklappen</a>. Sie wirkt, bevor die Effekte greifen.</div></div>';
-    const bb=$('#tbs-beispiel'); if(bb) bb.onclick=beispiel;
-    const va=$('#tbs-vorbAuf'); if(va) va.onclick=ev=>{ ev.preventDefault(); const k=$('#tbs-vorbKoerper'); if(k&&k.hidden) $('#tbs-vorbKlapp').click(); $('#tbs-abVorb').scrollIntoView({block:'start',behavior:'smooth'}); }; return; }
+  if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">'
+      +'<p>Zur Voranpassung der Quelle, bevor \u00fcberhaupt visuelle Effekte aktiviert werden, kann das <a href="#" id="tbs-vorbAuf">Vorbereitungspanel aufgeklappt</a> werden.</p>'
+      +'<p>F\u00fcr die Anwendung eines Effekts \u201eEffekt hinzuf\u00fcgen\u201c aufklappen und Effekt ausw\u00e4hlen \u2014 f\u00fcr einen ersten Eindruck eines pulsierenden Helligkeitseffekts gleich <a href="#" id="tbs-beispiel">hier</a> klicken.</p></div>';
+    const bb=$('#tbs-beispiel'); if(bb) bb.onclick=ev=>{ ev.preventDefault(); beispiel(); };
+    const va=$('#tbs-vorbAuf'); if(va) va.onclick=ev=>{ ev.preventDefault(); const k=$('#tbs-vorbKoerper'); if(k&&k.hidden) $('#tbs-vorbKlapp').click(); $('#tbs-abVorb').scrollIntoView({block:'start',behavior:'smooth'}); };
+    fussStand(); return; }
+  fussStand();
   STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ]; e.zu=(e.id!==offenId);   /* Akkordeon: nur die aktive Karte ist offen */
     const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'');
     const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
@@ -27216,7 +27223,7 @@ function renderStapel(){
    Fehlt die gesicherte Quelle spaeter, faellt der Maler still aufs Titelbild.
    Ein Video als Grund laeuft stumm mit und wird bei Drift > 0,2 s auf
    Spielzeit modulo Videodauer gesetzt - der Player bleibt die einzige Uhr. */
-let grund={art:'titelbild',nr:1}, SEITEN=[], oeffnenLauf=0, uhrEcht=false, offenId=null, gerolltZu=null;
+let grund={art:'titelbild',nr:1}, SEITEN=[], oeffnenLauf=0, uhrEcht=false, offenId=null, gerolltZu=null, rezeptDa=false;
 function eigenVon(id){ const e=(typeof _eigenArt==='object'&&_eigenArt&&_eigenArt[id])||{};
   const videos=Array.isArray(e.videos)?e.videos.slice():(e.video?[1]:[]), bilder=Array.isArray(e.bilder)?e.bilder.slice():(e.bild?[1]:[]);
   return {videos,bilder}; }
@@ -27292,7 +27299,7 @@ function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen')
   const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length, r=b.getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left, w=s.offsetWidth; let x;
   if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
   x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
-function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); }
+function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); fussStand(); }
 function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
 
 /* Cover-Blätterer */
@@ -27349,7 +27356,11 @@ function zeichneFrame(t){
     kg.strokeStyle=cc; kg.lineWidth=2; kg.beginPath(); for(let i=0;i<=80;i++){ const x=i/80,y=levApply(g,x),px=x*W,py=(1-y)*H; i?kg.lineTo(px,py):kg.moveTo(px,py); } kg.stroke();
     const tri=(xx,col)=>{ const px=xx*W,cy=H-6; kg.fillStyle=col; kg.strokeStyle='#0a0a0c'; kg.lineWidth=1; kg.beginPath(); kg.moveTo(px,cy-7); kg.lineTo(px-5,cy+3); kg.lineTo(px+5,cy+3); kg.closePath(); kg.fill(); kg.stroke(); };
     tri(g.bp,'#333'); tri(g.wp,'#eee'); }
-  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; st.hidden=vorbAenderungen(VORB)===0; }   /* der Knopf zeigt zugleich an, dass etwas wirkt */
+  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; st.hidden=vorbAenderungen(VORB)===0; fussStand(); }
+  /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
+     Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
+  function angewendet(){ if(STAPEL.length||vorbAenderungen(VORB)) return true; const s=SEITEN[seiteIndex()], vg=grundVorgabe(SEITEN.filter(x=>!x.test)); return !!(s&&!s.test&&vg&&(s.art!==vg.art||(s.nr||1)!==(vg.nr||1))); }
+  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); }   /* der Knopf zeigt zugleich an, dass etwas wirkt */
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if($('#tbs-vorbKoerper')&&!$('#tbs-vorbKoerper').hidden) vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
     let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button></div>';
@@ -27385,8 +27396,8 @@ function zeichneFrame(t){
   function presetSetzen(arr){ STAPEL=arr.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false})); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
-      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
-  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
+      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
+  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); rezeptDa=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
   function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea'||ev.target.isContentEditable) return;
     if(ev.metaKey||ev.ctrlKey||ev.altKey) return; const k=ev.key.toLowerCase();
     /* Pfeile und Esc gehoeren im offenen Studio dem Studio - sonst wechselt das Haus den Song und schliesst die Buehne mit. */
@@ -27422,7 +27433,7 @@ function zeichneFrame(t){
     Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
     psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); offenId=null; renderStapel(); } psel.value=''; psel.blur(); };
     const vorrat=$('#tbs-vorrat');
-    const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">+ Effekt \u2026</option>';
+    const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">Effekt hinzuf\u00fcgen \u2026</option>';
       EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return; h+='<optgroup label="'+gname+'">'+da.map(x=>'<option value="'+x+'">'+EFFEKTE[x].label+'</option>').join('')+'</optgroup>'; });
       vorrat.innerHTML=h+'</select>';
       vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; renderStapel(); } ev.target.value=''; ev.target.blur(); }; };
@@ -27458,7 +27469,8 @@ function zeichneFrame(t){
     const R=rezeptLesen(rezept); let hinweis=''; VORB=vorbAus(R.vorbereitung);
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
-    if(R.effekte.length||R.grund){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Rezept beim Titel'); }
+    rezeptDa=!!(R.effekte.length||R.grund);
+    if(rezeptDa){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Rezept beim Titel'); }
     quellenUI(); vorbStand(); { const k=$('#tbs-vorbKoerper'); if(k){ k.hidden=true; k.innerHTML=''; } const b=$('#tbs-vorbKlapp'); if(b){ b.textContent='\u25b8'; b.title='aufklappen'; } }   /* zugeklappt starten, sie braucht viel Platz */
     t0=performance.now();
     grundLaden();
