@@ -2584,7 +2584,7 @@ Kaustik, Bloom, Stroboskop. Block am Ende jeder Karte (Bekanntes am selben Platz
 auf der Eins | zufällige Schläge | Frequenz · **Muster** als Kurvenbilder (Rampe auf dann aus · An dann Rampe ab ·
 Aus mit An-Spitzen · An mit Aus-Spitzen · Rechteck · Sinus · Zufall je Periode) · Vorschau über zwei Perioden mit
 laufendem Strich · Teiler (jeder/2./4./8. Schlag) bzw. pro Sekunde (0,5–30) · Anteil (bei Zufall) · Tiefe · Breite
-(Spitzen/Rechteck) · Abklingen (Rampe ab) · Versatz · invers. `antriebWert(e,t)` rechnet den Pegel 0..1 rein aus der
+(Spitzen/Rechteck) · Abklingen (Rampe ab) · Zeitversatz · invers. `antriebWert(e,t)` rechnet den Pegel 0..1 rein aus der
 Zeit (Schläge aus `DATA.schlaege`, Taktanfang = Zählzeit 1), `lmSchub` für Shader-Schübe. Alte Ablagen mit `takt`
 (und `frequenz` beim Stroboskop) werden beim Laden übersetzt (`effektAusRezept`); die Schalter sind aus den
 Registern entfernt, bei den Störungen (Rauschen, Bildlauf, Verwackeln, Sicherung) bleibt `takt`.
@@ -2664,7 +2664,7 @@ ein Skeptiker: 66 Befunde, 61 bestätigt. Rohdaten der Messreihe: `window.__swee
 18. **Laser:** bei Vorgabe kaum zu sehen (3 px breit, Alpha 0,7 → 0 über 1,1 Bildlängen, der helle Anfang liegt
     außerhalb des Bildes): in allen Verrechnungen ≤ 1,3 mittlere Abweichung, Maximalpixel 109. Tempo ist keine
     Sekundenperiode (2π·Tempo); Schwenk wirkt versteckt auch bei „wandernd".
-19. **Antrieb:** Versatz beim Muster „Zufall" tot; „An-Spitzen" und „Rechteck" sind derselbe Code; übersprungene
+19. **Antrieb:** Zeitversatz beim Muster „Zufall" tot; „An-Spitzen" und „Rechteck" sind derselbe Code; übersprungene
     Schläge (Quelle Zufall) nehmen den Kurven-Endwert — bei „Rampe auf" also *an* statt aus.
 20. Kleineres: Kippen-Nachzoom bei 16:9 zu knapp (Ecken frei); Nachzieh-Nachhall wird intern quadriert; Filmkorn
     hellt die Mitteltöne auf (Kornmittel 155 statt 128 bei Overlay); Lichtstrahlen-„Breite" ist der halbe Winkel;

@@ -63,6 +63,11 @@ ihrer ganzen Länge.
 bleibt stehen und wird weitergereicht. Wer eine Auswahl „keine" anbietet, muss den Wert selbst auf
 null zwingen. Der Nebel zog sonst bei „Absaugung: keine" trotzdem zur Bildmitte.
 
+**10a. Ein Wort steht für eine Sache.** „Versatz" heißt auf drei Karten ein Abstand im Bild; im Antrieb
+hieß es eine Verschiebung in der Zeit. Der heißt jetzt **Zeitversatz**, und auf einer Karte, die beides
+hat, liest sich das Paar von selbst. Fachjargon wie „Phase" wäre richtig gewesen und trotzdem falsch:
+im Studio soll niemand etwas nachschlagen müssen.
+
 **11. Die Beschriftung ist ein Versprechen.** Sagt der Regler „Breite in Grad", ist es der ganze
 Winkel und nicht der halbe. Sagt die Beschreibung „nur auf der Eins", darf der Code nicht jeden
 Schlag nehmen. Sagt sie „lodert höher", muss es höher werden und nicht zwischendurch niedriger.

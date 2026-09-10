@@ -34,6 +34,7 @@ folgen kann.
 | **meine Daten** | `Meine Daten` | die erste Registerlasche: was den eigenen Bestand beschreibt |
 | **meine Gemeinschaft** | `Meine Gemeinschaft` | die zweite: was ihn einordnet. Hieß bis 07.09.2026 „Meine Community" |
 | **die Bühne** | — | die Karaoke-Ansicht mit mitlaufendem Text |
+| **der Zeitversatz** | `Zeitversatz` | im Antrieb: verschiebt, an welcher Stelle der Periode das Muster steht, und läuft dabei um. Heißt bewusst nicht „Phase" — das wäre richtig und trotzdem Fachjargon (Caspar_D, 10.09.2026: „das eine ist ein Orts- das andere ein Zeitversatz"). „Versatz" ohne Zusatz bleibt der Abstand **im Bild** (Farbkanal-Puls, Nachzieheffekt, Glitch-Blöcke) |
 | **die Stärke** (eines Effekts) | `Stärke` | im Effektclip-Studio immer die Deckkraft: wie stark das fertige Ergebnis des Effekts ins Bild gemischt wird, 0–100 %. Alle anderen Regler formen den Effekt (wie groß, wie viele, wie schnell). Kein zweiter Regler darf nur Deckkraft sein — Schlag, Tiefe und Dichte gab es darum nur bis zum 10.09.2026 |
 | **das Register** | `Werke` · `Alben` · `Klangraum` … | die Reiter der Oberfläche. So heißt es im Quelltext schon 37-mal, dabei bleibt es |
 | *(kein Eigenname)* | — | die Ansicht zu einem einzelnen Titel bekommt keinen. Im Handbuch wird sie beschrieben: „klick auf einen Titel, und du siehst …". Ein erfundener Name für etwas, das man in vier Wörtern sagen kann, ist Ballast |

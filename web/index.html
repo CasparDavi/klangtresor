@@ -27447,7 +27447,10 @@ function renderStapel(){
             h+='<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">In der Vorschau ziehen: die H\u00f6he ist die Lichtst\u00e4rke je Schritt.</div>'; }
           if(form==='peak_an'||form==='peak_aus'||form==='rechteck') h+='<div class="tbs-regler"><span>Breite</span><input type="range" data-k="lmBreite" min="0.05" max="0.95" step="0.05" value="'+e.lmBreite+'"><span class="tbs-wert">'+kf(e.lmBreite)+'</span></div>';
           if(form==='rampe_ab') h+='<div class="tbs-regler"><span>Abklingen</span><input type="range" data-k="lmAbkling" min="0.3" max="4" step="0.1" value="'+e.lmAbkling+'"><span class="tbs-wert">'+kf(e.lmAbkling)+'</span></div>';
-          if(form!=='zufall') h+='<div class="tbs-regler"><span>Versatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
+          /* "Zeitversatz", nicht "Versatz": drei Karten nennen einen Abstand IM BILD so, dieser hier verschiebt
+             in der ZEIT. Auf einer Karte mit beidem liest sich das Paar von selbst (Caspar_D, 10.09.2026:
+             "das eine ist ein Orts- das andere ein Zeitversatz"). "Phase" waere richtig, aber Fachjargon. */
+          if(form!=='zufall') h+='<div class="tbs-regler"><span>Zeitversatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
           h+='<div class="tbs-regler"><span>invers</span><button class="tbs-togp'+(e.lmInvers?' an':'')+'" data-tog="lmInvers">'+(e.lmInvers?'an':'aus')+'</button><span></span></div>'; }
         h+='</div>'; return; }
       if(p.grad){ gradInit(e); const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=e.grad[e.kanal], cc=K[e.kanal][1];
