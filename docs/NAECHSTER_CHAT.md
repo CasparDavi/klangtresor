@@ -2826,8 +2826,13 @@ gleiche Drehung, gleiche Weichheit.
 was sich wiederholt, wird zur Kachel. Dazu eine fünfte Falle beim Messen: Rechenzeit ohne Rücklesen
 misst nur das Abschicken der Befehle.
 
-**Nicht von uns, aber dringend:** auf dem Rechner läuft seit acht Stunden ein zweiter Server
-`/Volumes/INTENSO/KlangTresor/… server.js --eingefroren --port 8788` (PID 77446) mit **98 % CPU und
-496 Minuten Rechenzeit**. Port 8788 hält der echte Entwicklungsserver (PID 34516, 30 Sekunden
-Rechenzeit in elf Stunden) — der eingefrorene kommt also gar nicht ans Netz und dreht vermutlich in
-einer Wiederholschleife. Nicht angefasst, wartet auf Jörgs Wort.
+**Der zweite Bremsklotz, nicht von uns:** ein eingefrorener Server vom Ausfuhr-Stick
+(`/Volumes/INTENSO/KlangTresor/… server.js --eingefroren --port 8788`, PID 77446) lief seit acht
+Stunden mit **95 % CPU und 500 Minuten Rechenzeit**. Der Grund: **der Stick war längst abgezogen**,
+`/Volumes/INTENSO` gab es nicht mehr. Der Node-Prozess drehte als Waise eines verschwundenen
+Laufwerks durch; Port 8788 hielt weiter der echte Entwicklungsserver (PID 34516, 30 Sekunden
+Rechenzeit in elf Stunden), der eingefrorene kam also nie ans Netz. Auf Jörgs Wort beendet, genau
+diese PID; der echte Server blieb unberührt. **Lehre für den Ausfuhr-Stick:** der eingefrorene
+Server merkt nicht, wenn sein Laufwerk verschwindet, und er merkt auch nicht, dass sein Port schon
+belegt ist. Beides gehört ihm beigebracht, sonst passiert das jedem, der den Stick abzieht, ohne
+das Fenster zu schließen.

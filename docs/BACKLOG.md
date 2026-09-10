@@ -2451,3 +2451,19 @@ nur mit einer anderen Sollzeit. Aneinanderhängen und Überblenden brauchen zwei
 gleichzeitig. Der Export ist die einzige Stelle, die wirklich neu ist: er braucht einen
 Aufnahmeweg (MediaRecorder auf der Malfläche) und eine Antwort auf die Frage, wie lang ein
 Clip sein darf. Erst besprechen, dann bauen.
+
+## Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)
+
+Auf Jörgs Rechner drehte ein eingefrorener Server vom Ausfuhr-Stick acht Stunden lang mit 95 %
+CPU — 500 Minuten Rechenzeit —, weil `/Volumes/INTENSO` inzwischen abgezogen war. Er merkte weder,
+dass sein Laufwerk verschwunden war, noch dass Port 8788 längst vom Entwicklungsserver gehalten
+wurde. Das trifft jeden, der den Stick abzieht, ohne vorher das Fenster zu schließen.
+
+Zwei kleine Wachen, beide im eingefrorenen Server:
+- **Beim Start prüfen, ob der Port frei ist.** Ist er belegt, mit einer verständlichen Zeile
+  aussteigen statt weiterzulaufen („Port 8788 ist belegt — läuft KlangTresor schon?").
+- **Regelmäßig prüfen, ob das eigene Verzeichnis noch da ist.** Fehlt es, sauber beenden statt
+  in einer Schleife zu drehen.
+
+Dazu die Frage, ob der Startskript-Weg das Fenster offenhalten muss; ein Prozess, der beim Abziehen
+des Sticks weiterläuft, ist ein Fehler ohne Fehlermeldung.
