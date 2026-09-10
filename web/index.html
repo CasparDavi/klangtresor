@@ -3038,9 +3038,17 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-werkzeuge{flex-wrap:nowrap;gap:6px}
 /* + Effekt ist das wichtigere: zwei Drittel, Presets ein Drittel */
 #tbs .tbs-werkzeuge select{flex:1 1 0;min-width:0;width:auto}
-#tbs .tbs-werkzeuge #tbs-vorratSel{flex:2 1 0}
+#tbs .tbs-werkzeuge #tbs-vorrat{display:block;position:relative;flex:2 1 0;min-width:0}
+#tbs .tbs-vorratKnopf{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:7px;padding:5px 8px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
+#tbs .tbs-vorratKnopf:hover,#tbs .tbs-vorratKnopf[aria-expanded="true"]{border-color:var(--akzent)}
+#tbs .tbs-vorratKnopf .tbs-pfeil{color:var(--schwach);font-size:10px}
+#tbs .tbs-vorratListe{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;max-height:min(60vh,520px);overflow:auto;background:var(--flaeche);border:1px solid var(--rand);border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#tbs .tbs-vgruppe{display:flex;align-items:center;gap:7px;padding:8px 8px 4px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);border-top:1px solid var(--rand);margin-top:4px}
+#tbs .tbs-vgruppe:first-child{border-top:none;margin-top:0}
+#tbs .tbs-veintrag{display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;border:none;border-radius:6px;background:none;color:var(--text);font:inherit;font-size:12.5px;text-align:left;cursor:pointer}
+#tbs .tbs-veintrag:hover,#tbs .tbs-veintrag:focus{background:var(--flaeche2);outline:none}
+#tbs .tbs-veintrag .tbs-ik{display:flex}
 #tbs .tbs-werkzeuge #tbs-preset{flex:1 1 0}
-#tbs #tbs-vorrat{display:contents}
 /* ---- Bedienung (Caspar_D, 11.09.2026): Quelle als Vorschaubilder, Kette als Tabelle mit Kopfzeile, Akkordeon ---- */
 #tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 #tbs .tbs-quelle{position:relative;width:54px;height:72px;padding:0;border:2px solid var(--rand);border-radius:8px;background:#000;overflow:hidden;cursor:pointer;flex:0 0 auto}
@@ -3089,6 +3097,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-leer a{color:var(--akzent);text-decoration:underline}
 #tbs #tbs-rezept.gedimmt{opacity:.45}
 #tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
+#tbs #tbs-vorbKoerper .tbs-seg button:disabled{opacity:.4;cursor:default}
 
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -26634,6 +26643,20 @@ function verrOptionen(cur){ const gr={}, reihe=[]; VERR.forEach(([v,l,,g])=>{ co
   return reihe.map(k=>(k?'<optgroup label="'+k+'">':'')+gr[k].map(([v,l])=>'<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>').join('')+(k?'</optgroup>':'')).join(''); }
 
 /* Monochrome, einfärbbare Icons (currentColor); je Effekt eine Kennfarbe */
+/* Symbole der Effektgruppen fuer die Koepfe der Auswahlliste (Caspar_D, 11.09.2026: "das geht so nicht,
+   finde einen Weg, dass das in der Dropdownbox an den Abschnittsgrenzen zu sehen ist"). */
+const IKON_GRUPPE={
+ 'Pulse':'<path d="M2 12h4l3-7 4 14 3-7h6"/>',
+ 'Blitze':'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+ 'Läufe':'<path d="M3 8h13M12 4l4 4-4 4M21 16H8M12 12l-4 4 4 4"/>',
+ 'Störungen':'<path d="M3 12h3l2-5 3 10 2-6 2 3h6" stroke-dasharray="3 2"/>',
+ 'Anmutung':'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M3 15h18M7 5v14M17 5v14"/>',
+ 'Partikel':'<circle cx="6" cy="7" r="1.5"/><circle cx="14" cy="5" r="1.5"/><circle cx="19" cy="11" r="1.5"/><circle cx="9" cy="14" r="1.5"/><circle cx="16" cy="18" r="1.5"/><circle cx="5" cy="19" r="1.5"/>',
+ 'Glas':'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M7 6l4 4M15 14l3 3" opacity=".7"/>',
+ 'Entwürfe (WebGL)':'<path d="M4 20l12-12M13 5l2-2 6 6-2 2M12 10l2 2"/>',
+ 'Entwürfe (Leinwand)':'<path d="M4 20l12-12M13 5l2-2 6 6-2 2M12 10l2 2"/>'
+};
+function ikonGruppe(name){ return '<span class="tbs-ik"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON_GRUPPE[name]||'')+'</svg></span>'; }
 const IKON={
  helligkeit:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
  risse:'<path d="M12 3l-2 6 3 3-4 5 2 4M10 9l-5 2M13 12l6-2M9 17l-4 3"/>',
@@ -27357,12 +27380,13 @@ function zeichneFrame(t){
     kg.strokeStyle=cc; kg.lineWidth=2; kg.beginPath(); for(let i=0;i<=80;i++){ const x=i/80,y=levApply(g,x),px=x*W,py=(1-y)*H; i?kg.lineTo(px,py):kg.moveTo(px,py); } kg.stroke();
     const tri=(xx,col)=>{ const px=xx*W,cy=H-6; kg.fillStyle=col; kg.strokeStyle='#0a0a0c'; kg.lineWidth=1; kg.beginPath(); kg.moveTo(px,cy-7); kg.lineTo(px-5,cy+3); kg.lineTo(px+5,cy+3); kg.closePath(); kg.fill(); kg.stroke(); };
     tri(g.bp,'#333'); tri(g.wp,'#eee'); }
-  /* Der Knopf im Kopf: zugeklappt nennt er, was da ist, und klappt auf; aufgeklappt loescht er.
-     Niemand loescht, was er nicht sieht (Caspar_D, 11.09.2026: "erst aufklappen, dann loeschen"). */
-  function vorbStand(){ const st=$('#tbs-vorbStand'); if(!st) return; const n=vorbAenderungen(VORB); st.hidden=n===0;
+  /* Der Knopf im Kopf nennt, was da ist, und klappt auf bzw. zu. Geloescht wird im Panel neben
+     Auto-Niveaus - niemand loescht, was er nicht sieht (Caspar_D, 11.09.2026). */
+  function vorbStand(){ const lb=$('#tbs-vorbKoerper [data-vloeschen]'); if(lb) lb.disabled=vorbAenderungen(VORB)===0;
+    const st=$('#tbs-vorbStand'); if(!st) return; const n=vorbAenderungen(VORB); st.hidden=n===0;
     const zu=!$('#tbs-vorbKoerper')||$('#tbs-vorbKoerper').hidden;
-    st.textContent=zu?(n+' '+(n===1?'Anpassung':'Anpassungen')+' \u2014 ansehen'):'Anpassung l\u00f6schen';
-    st.title=zu?'Aufklappen und die Anpassungen ansehen':'Alle Anpassungen der Vorbereitung auf neutral';
+    st.textContent=n+' '+(n===1?'Anpassung':'Anpassungen')+(zu?' \u2014 ansehen':'');
+    st.title=zu?'Aufklappen und die Anpassungen ansehen':'Zuklappen';
     fussStand(); }
   /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
      Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
@@ -27370,7 +27394,7 @@ function zeichneFrame(t){
   function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); }
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if($('#tbs-vorbKoerper')&&!$('#tbs-vorbKoerper').hidden) vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
-    let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button></div>';
+    let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>L\u00f6schen</button></div>';
     h+='<canvas class="tbs-grad-ed" id="tbs-vorbGrad" width="447" height="276" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
     h+='<div class="tbs-seg" style="margin-top:6px"><button type="button" data-vmodus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button type="button" data-vmodus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
     h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
@@ -27385,6 +27409,7 @@ function zeichneFrame(t){
     k.querySelectorAll('[data-vkanal]').forEach(b=>b.onclick=()=>{ v.kanal=b.dataset.vkanal; vorbRender(); });
     k.querySelectorAll('[data-vmodus]').forEach(b=>b.onclick=()=>{ v.grad[v.kanal].modus=b.dataset.vmodus; vorbRender(); });
     const tw=k.querySelector('[data-vtonwert]'); tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
+    k.querySelector('[data-vloeschen]').onclick=vorbLoeschen;
     k.querySelector('[data-vauto]').onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); };
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
     vorbStand(); }
@@ -27440,16 +27465,25 @@ function zeichneFrame(t){
     Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
     psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); offenId=null; renderStapel(); } psel.value=''; psel.blur(); };
     const vorrat=$('#tbs-vorrat');
-    const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">Effekt hinzuf\u00fcgen \u2026</option>';
-      EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return; h+='<optgroup label="'+gname+'">'+da.map(x=>'<option value="'+x+'">'+EFFEKTE[x].label+'</option>').join('')+'</optgroup>'; });
-      vorrat.innerHTML=h+'</select>';
-      vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; renderStapel(); } ev.target.value=''; ev.target.blur(); }; };
+    /* Eigene Auswahlliste statt <select>: eine native Liste kann keine Symbole zeigen. Gruppenkoepfe mit
+       Gruppensymbol, jeder Effekt mit seinem Symbol in seiner Farbe; Esc oder Klick daneben schliesst. */
+    const bauVorrat=()=>{ let h='<button type="button" class="tbs-wahl tbs-vorratKnopf" id="tbs-vorratKnopf" aria-haspopup="listbox" aria-expanded="false">Effekt hinzuf\u00fcgen \u2026<span class="tbs-pfeil">\u25be</span></button><div class="tbs-vorratListe" id="tbs-vorratListe" hidden role="listbox">';
+      EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return;
+        h+='<div class="tbs-vgruppe">'+ikonGruppe(gname)+'<span>'+gname+'</span></div>'+da.map(x=>'<button type="button" class="tbs-veintrag" role="option" data-typ="'+x+'" title="'+EFFEKTE[x].besch.replace(/"/g,'&quot;')+'">'+ikon(x)+'<span>'+EFFEKTE[x].label+'</span></button>').join(''); });
+      vorrat.innerHTML=h+'</div>';
+      const knopf=vorrat.querySelector('#tbs-vorratKnopf'), liste=vorrat.querySelector('#tbs-vorratListe');
+      const zu=()=>{ liste.hidden=true; knopf.setAttribute('aria-expanded','false'); document.removeEventListener('pointerdown',draussen,true); };
+      const draussen=ev=>{ if(!vorrat.contains(ev.target)) zu(); };
+      const auf=()=>{ liste.hidden=false; knopf.setAttribute('aria-expanded','true'); document.addEventListener('pointerdown',draussen,true); const e1=liste.querySelector('.tbs-veintrag'); if(e1) e1.focus(); };
+      knopf.onclick=ev=>{ ev.stopPropagation(); if(liste.hidden) auf(); else zu(); };
+      liste.querySelectorAll('.tbs-veintrag').forEach(b=>b.onclick=ev=>{ ev.stopPropagation(); const x=b.dataset.typ; zu(); if(EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; renderStapel(); } knopf.blur(); });
+      liste.addEventListener('keydown',ev=>{ if(ev.key==='Escape'){ ev.stopPropagation(); zu(); knopf.focus(); } }); };
     bauVorrat();
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
-    $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); if($('#tbs-vorbKoerper').hidden) $('#tbs-vorbKlapp').click(); else vorbLoeschen(); };
+    $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };
     const kk=$('#tbs-kettekopf');
     kk.querySelector('.tbs-pwAlle').onclick=()=>{ const alle=STAPEL.length>0&&STAPEL.every(x=>x.an); STAPEL.forEach(x=>x.an=!alle); soloId=null; renderStapel(); };
     kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm('Alle '+STAPEL.length+' Effekte aus der Kette entfernen?')) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
