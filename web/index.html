@@ -2945,7 +2945,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-reihe{display:flex;gap:8px;margin-bottom:9px}
 #tbs .tbs-reihe button{flex:1;padding:7px 0;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:12px}
 #tbs .tbs-reihe button:hover{border-color:var(--akzent)}
-#tbs .tbs-zeile{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-size:11.5px;color:var(--schwach)}
+#tbs .tbs-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:9px;font-size:11.5px;color:var(--schwach)}
 #tbs .tbs-zeile .tbs-lbl{flex:0 0 auto}
 #tbs .tbs-mini{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:13px}
 #tbs .tbs-mini:hover{border-color:var(--akzent)}
@@ -2974,10 +2974,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-kopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
 #tbs .tbs-kopf .tbs-knopf[data-tu="weg"]{border-radius:50%}
 #tbs .tbs-kopf .tbs-knopf.an{border-color:var(--akzent);color:var(--text)}
-#tbs .tbs-pille{width:36px;height:20px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);position:relative;flex:0 0 auto;cursor:pointer;transition:background .15s}
-#tbs .tbs-pille::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--schwach);transition:transform .15s,background .15s}
-#tbs .tbs-karte.an .tbs-pille{background:color-mix(in srgb,var(--akzent) 40%,var(--flaeche2));border-color:var(--akzent)}
-#tbs .tbs-karte.an .tbs-pille::after{transform:translateX(16px);background:var(--text)}
+/* Sichtbarkeit wie die Solo-Kullerzeile im Haus und Haeckels Operator-Kette: Kreis = aus, Kreis mit Kuller = an */
+#tbs .tbs-pw{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--akzent);position:relative;flex:0 0 auto;cursor:pointer;opacity:.55}
+#tbs .tbs-karte.an .tbs-pw{opacity:1}
+#tbs .tbs-karte.an .tbs-pw::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--akzent)}
+#tbs .tbs-kopf .tbs-knopf.tbs-solo{width:auto;padding:0 6px;font-size:10px;letter-spacing:.04em}
 #tbs .tbs-inhalt{padding:0 11px 11px;display:block}
 #tbs .tbs-karte.zu .tbs-inhalt{display:none}
 #tbs .tbs-besch{color:var(--schwach);font-size:11.5px;line-height:1.45;margin:2px 0 10px}
@@ -2998,13 +2999,34 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-leer{color:var(--schwach);font-size:12px;text-align:center;padding:16px 8px;line-height:1.5}
 #tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
 /* Lebendbild auf Kachel und Buehne: fuellt den Kasten wie das Bewegtbild, verzerrt nichts (object-fit) */
-.bild canvas.tbs-lebend, .bart canvas.tbs-lebend{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
+/* Das Lebendbild hat immer das Format seiner Quelle (Joerg, 11.09.2026) und liegt wie ein Standbild im Haus:
+   ganz im Kasten (object-fit: contain), nichts ragt heraus, nichts wird beschnitten. Auf der Kachel bleibt rundum
+   die unscharfe Fuellung der kachel.jpg sichtbar, auf der Buehne die .fuellung - genau wie beim Standbild. */
+.bild canvas.tbs-lebend, .bart canvas.tbs-lebend{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
 /* Knoepfe brechen nicht um; Abspiel-Knopf als Pille im Kopf */
 #tbs .tbs-reihe button, #tbs .tbs-mini, #tbs .tbs-seg button{white-space:nowrap}
 #tbs-kopf #tbs-spiel{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:12px;white-space:nowrap;margin-right:6px}
 /* Knoepfe in Zeilen behalten ihre Breite - nichts drueckt sie zusammen, nichts bricht um */
 #tbs .tbs-zeile > button, #tbs .tbs-zeile .tbs-mini{flex:0 0 auto;white-space:nowrap}
 #tbs .tbs-reihe button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Grund-Blaetterer: Seite zwischen den Pfeilen, Farbflaechen daneben */
+#tbs #tbs-grundseg #tbs-seite{min-width:150px;text-align:center}
+#tbs .tbs-seg button:disabled{opacity:.35;cursor:default}
+/* Zwei Teile im Pult: Quelle (worauf gemalt wird) und Effektkette; das Rezept als Fuss, der beides zusammenhaelt */
+#tbs .tbs-abschnitt{border:1px solid var(--rand);border-radius:12px;padding:10px 12px 4px;margin-bottom:12px}
+#tbs .tbs-abtitel{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--schwach);margin-bottom:9px}
+#tbs .tbs-abunter{text-transform:none;letter-spacing:0;font-size:11px;opacity:.8;white-space:nowrap}
+#tbs .tbs-abschnitt .tbs-vorrat{border:none;border-radius:0;padding:0;margin:0 0 10px}
+#tbs .tbs-abschnitt .tbs-zeile:last-child{margin-bottom:6px}
+#tbs-pult{padding-bottom:0}
+#tbs-rezept{position:sticky;bottom:0;margin:4px -14px 0;padding:10px 14px 12px;background:var(--flaeche);border-top:1px solid var(--rand)}
+#tbs-rezept .tbs-zeile{margin-bottom:6px}
+/* Werkzeugzeile der Effektkette: zwei Auswahllisten, vier Zeichen-Knoepfe, eine Zeile */
+#tbs .tbs-werkzeuge{flex-wrap:nowrap;gap:6px}
+#tbs .tbs-werkzeuge select{flex:1 1 100px;min-width:90px;width:auto}
+#tbs #tbs-vorrat{display:contents}
+#tbs .tbs-werkzeuge .tbs-knopf{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:14px;line-height:1;flex:0 0 auto;padding:0}
+#tbs .tbs-werkzeuge .tbs-knopf:hover{border-color:var(--akzent)}
 
 </style>
 
@@ -26494,7 +26516,7 @@ const EFFEKTE = {
   linse:{ label:'Linse', art:'gl', staerkeDef:1, besch:'Röhrenwölbung oder Fischauge (Wölbung negativ = Tonne, positiv = Kissen) mit Farbrändern am Rand (WebGL).',
     params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
   dunst:{ label:'Dunst (Rauschnebel)', art:'gl', staerkeDef:.7, besch:'Echter Nebel aus fraktalem Rauschen (WebGL) — kleinteilig wabernd, liegt nach Lage eher unten. Turbulenz = Anteil der feinen Oktaven.',
-    params:[{k:'skala',lbl:'Skala',min:1,max:10,step:.5,def:3},{k:'dichte',lbl:'Dichte',min:0,max:2,step:.05,def:.8},{k:'tempo',lbl:'Tempo',min:.02,max:1,step:.02,def:.15},{k:'lage',lbl:'Lage (1 unten)',min:0,max:1,step:.05,def:.6},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'}]},
+    params:[{k:'skala',lbl:'Skala',min:1,max:10,step:.5,def:3},{k:'dichte',lbl:'Dichte',min:0,max:2,step:.05,def:.8},{k:'tempo',lbl:'Tempo',min:.02,max:2,step:.02,def:0.5},{k:'lage',lbl:'Lage (1 unten)',min:0,max:1,step:.05,def:.6},{k:'turbulenz',lbl:'Turbulenz',min:0,max:1,step:.05,def:.5},{k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'}]},
   flammen:{ label:'Flammen (Rauschen)', art:'gl', staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; lodert im Takt höher.',
     params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'lodert im Takt',def:1}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
@@ -26541,12 +26563,7 @@ const PRESETS={
  'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
  'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
  'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
- 'Alter Fernseher':()=>[E('vlauf',{tempo:6,band:.08,staerke:.8}),E('rauschen',{koernung:.2,ausfall:.3,staerke:.5}),E('rgb',{versatz:.012,takt:1,staerke:.8}),E('wackeln',{amplitude:.02,staerke:.5})],
- 'Konzertlicht':()=>[E('fahrt',{}),E('puls',{wucht:.22}),E('licht',{farbe:'#ff4d6d',form:'strahl',streckung:3,verr:'add',staerke:.6}),E('licht',{farbe:'#4d7dff',form:'laeng',streckung:2.4,verr:'add',staerke:.6}),E('licht',{farbe:'#ffd24d',verr:'screen',staerke:.5})],
- 'Kaputtes Band':()=>[E('wackeln',{amplitude:.04,baender:20,staerke:.7}),E('streifen',{anzahl:3,tempo:5,verr:'multi',staerke:.5}),E('streifen',{anzahl:8,tempo:13,staerke:.35}),E('rauschen',{koernung:.15,ausfall:.3,staerke:.5}),E('rgb',{versatz:.02,staerke:.7})],
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
- 'Nachtfahrt':()=>[E('fahrt',{tempo:24}),E('partikel',{art:'regen',anzahl:200,tempo:1.4,wind:.25,staerke:.6}),E('scanlines',{linien:.25,vignette:.45,flimmern:.1,staerke:.6}),E('bloom',{radius:14,schwelle:1.8,staerke:.4})],
- 'Rave / Inferno':()=>[E('puls',{wucht:.35}),E('laser',{farbe:'#ff2d2d',anzahl:10,staerke:.7}),E('laser',{farbe:'#2d9dff',anzahl:7,streuung:.6,staerke:.6}),E('strobe',{frequenz:10,tiefe:.4,takt:1,staerke:.5}),E('rgb',{versatz:.025,takt:1,staerke:.8})]
 };
 
 let HISTO=null;
@@ -26556,7 +26573,7 @@ function histoRechnen(){ try{ const w=140,hh=140,tc=document.createElement('canv
 const mk=()=>document.createElement('canvas');
 let oa=mk(),ob=mk(),oc=mk(),ores=mk(),okc=mk();
 let ca=oa.getContext('2d'),cb=ob.getContext('2d'),cc=oc.getContext('2d'),cres=ores.getContext('2d'),ckc=okc.getContext('2d');
-function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), bw=bild.naturalWidth||1200, bh=bild.naturalHeight||1200, sc=Math.min(f.width/bw,f.height/bh);
+function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), [bw,bh]=(bereit?qMass(bild):[1200,1200]), sc=Math.min(f.width/bw,f.height/bh);
   const W=Math.max(1,Math.round(bw*sc)), H=Math.max(1,Math.round(bh*sc));
   [lein,oa,ob,oc,ores,okc].forEach(c=>{ c.width=W; c.height=H; }); }
 
@@ -26719,8 +26736,10 @@ void main(){ float k=u_woelbung*0.5; vec2 ur=warp(v_uv,k*(1.0+u_farbrand*0.15)),
   vec3 col=vec3(texture2D(u_tex,clamp(ur,0.0,1.0)).r, texture2D(u_tex,clamp(ug,0.0,1.0)).g, texture2D(u_tex,clamp(ub,0.0,1.0)).b);
   gl_FragColor=vec4(col*inside, 1.0); }`,
   dunst:`uniform float u_skala,u_dichte,u_tempo,u_lage,u_turbulenz; uniform vec3 u_farbe;
-void main(){ vec4 c=texture2D(u_tex,v_uv); vec3 p=vec3(v_uv.x*u_skala + u_t*u_tempo*0.3, v_uv.y*u_skala*0.6, u_t*u_tempo);
-  float a=0.5, f=0.0, g=mix(0.35,0.62,u_turbulenz); vec3 q=p; for(int i=0;i<5;i++){ f+=a*snoise(q); q=q*2.02+vec3(1.7,9.2,0.3); a*=g; }
+void main(){ vec4 c=texture2D(u_tex,v_uv);
+  /* Bewegung = seitliches Ziehen (x) + Wabern (Zeitachse z); feine Oktaven wabern schneller, sonst wirkt es starr. */
+  vec3 p=vec3(v_uv.x*u_skala + u_t*u_tempo*0.9, v_uv.y*u_skala*0.6 + u_t*u_tempo*0.15, u_t*u_tempo*1.2);
+  float a=0.5, f=0.0, g=mix(0.35,0.62,u_turbulenz); vec3 q=p; for(int i=0;i<5;i++){ f+=a*snoise(q); q=q*2.02+vec3(1.7,9.2,0.3); q.z+=u_t*u_tempo*0.8; a*=g; }
   float hoehe=pow(1.0-v_uv.y, mix(0.2,3.0,u_lage)); float d=clamp((f*0.5+0.5)*u_dichte*hoehe, 0.0, 1.0);
   gl_FragColor=vec4(mix(c.rgb,u_farbe,d), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
@@ -26777,9 +26796,10 @@ function renderStapel(){
   if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">Kein Effekt eingehängt.<br>Oben einen aus dem Vorrat wählen.</div>'; return; }
   STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ];
     const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'');
-    let h='<div class="tbs-kopf"><span class="tbs-pille"></span>'+ikon(e.typ)
+    let h='<div class="tbs-kopf"><span class="tbs-pw" title="Sichtbarkeit an/aus"></span>'+ikon(e.typ)
       +'<b>'+T.label+' <span class="tbs-id">· '+e.id+'</span><span class="tbs-chev">'+(e.zu?'▸':'▾')+'</span></b>'
-      +'<button class="tbs-knopf'+(soloId===e.id?' an':'')+'" data-tu="solo" title="nur diesen zeigen">◉</button>'
+      +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="Solo \u2014 nur diesen zeigen, fl\u00fcchtig">solo</button>'
+      +'<button class="tbs-knopf" data-tu="dup" title="Kopie darunter einhängen — gleiche Einstellungen, dann nur das Nötige ändern">⧉</button>'
       +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">↑</button>'
       +'<button class="tbs-knopf" data-tu="runter" title="nach unten">↓</button>'
       +'<button class="tbs-knopf" data-tu="weg" title="entfernen">×</button></div>';
@@ -26806,11 +26826,13 @@ function renderStapel(){
     if(T.art!=='geo') h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+verrOptionen(e.verr)+'</select></div>';
     h+='<div class="tbs-regler"><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1.5" step="0.05" value="'+e.staerke+'"><span class="tbs-wert">'+Math.round(e.staerke*100)+'%</span></div>';
     c.innerHTML=h+'</div></div>';
-    c.querySelector('.tbs-pille').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); };
+    c.querySelector('.tbs-pw').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); };
     c.querySelector('b').onclick=()=>{ e.zu=!e.zu; renderStapel(); };
     c.querySelectorAll('[data-tu]').forEach(btn=>btn.onclick=()=>{ const w=btn.dataset.tu;
       if(w==='weg'){ if(soloId===e.id) soloId=null; STAPEL.splice(idx,1); }
       else if(w==='solo'){ soloId = (soloId===e.id ? null : e.id); }
+      else if(w==='dup'){ /* Kopie mit allen Werten (Rampen/Kurven tief), eigene Nummer, gleich darunter */
+        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false; STAPEL.splice(idx+1,0,k); }
       else if(w==='hoch'&&idx>0){ const a=STAPEL[idx-1]; STAPEL[idx-1]=STAPEL[idx]; STAPEL[idx]=a; }
       else if(w==='runter'&&idx<STAPEL.length-1){ const a=STAPEL[idx+1]; STAPEL[idx+1]=STAPEL[idx]; STAPEL[idx]=a; }
       renderStapel(); });
@@ -26851,15 +26873,64 @@ function renderStapel(){
   });
 }
 
-let bg='cover';
-function bgUI(){ if(!root) return; root.querySelectorAll('#tbs-bgseg button').forEach(b=>b.classList.toggle('on',b.dataset.bg===bg)); }
+/* ---- Grund: worauf die Effekte malen ---------------------------------
+   Seiten je Titel: Titelbild (Sunos; ohne Rand, wo es titelbild.jpg gibt),
+   Bewegtbild (Sunos artwork.mp4), eigene Bewegtbilder (eigen.mp4, eigen-2.mp4
+   ...), eigene Titelbilder (eigen.jpg, eigen-2.jpg ...). Dazu die Farbflaechen
+   S/G/W als Auflage auf der Seite (`farbe`). Der Grund steht im Rezept
+   ({grund, effekte}); ein altes Rezept (reines Array) gilt als Titelbild.
+   Fehlt die gesicherte Quelle spaeter, faellt der Maler still aufs Titelbild.
+   Ein Video als Grund laeuft stumm mit und wird bei Drift > 0,2 s auf
+   Spielzeit modulo Videodauer gesetzt - der Player bleibt die einzige Uhr. */
+let grund={art:'titelbild',nr:1,farbe:null}, SEITEN=[], oeffnenLauf=0, uhrEcht=false;
+const GRUND_FARBE={schwarz:'#000',grau:'#808080',weiss:'#fff'};
+function eigenVon(id){ const e=(typeof _eigenArt==='object'&&_eigenArt&&_eigenArt[id])||{};
+  const videos=Array.isArray(e.videos)?e.videos.slice():(e.video?[1]:[]), bilder=Array.isArray(e.bilder)?e.bilder.slice():(e.bild?[1]:[]);
+  return {videos,bilder}; }
+function sunoTitelbild(id){ /* wie artworkBild im Haus, nur ohne den eigen.jpg-Vorrang */
+  const zusatz=(typeof kachelZusatz==='function')?kachelZusatz():'';
+  try{ if(typeof katalogInfo==='object'&&katalogInfo&&Array.isArray(katalogInfo.titelbild)&&katalogInfo.titelbild.includes(id)) return '/media/'+id+'/titelbild.jpg'+zusatz; }catch(e){}
+  try{ if(typeof _titelbildMenge==='object'&&_titelbildMenge&&_titelbildMenge.has(id)) return '/media/'+id+'/titelbild.jpg'+zusatz; }catch(e){}
+  return '/media/'+id+'/cover.jpg'; }
+function medienUrl(id,art,nr){ const n=(nr>1?'-'+nr:'');
+  return art==='bewegtbild'?'/media/'+id+'/artwork.mp4' : art==='video'?'/media/'+id+'/eigen'+n+'.mp4' : art==='bild'?'/media/'+id+'/eigen'+n+'.jpg' : sunoTitelbild(id); }
+function seitenVon(id,s){ const L=[{art:'titelbild',nr:1,lbl:'Titelbild',url:medienUrl(id,'titelbild',1)}];
+  if(s&&s.videoCoverUrl) L.push({art:'bewegtbild',nr:1,lbl:'Bewegtbild (Suno)',url:medienUrl(id,'bewegtbild',1),video:true});
+  const e=eigenVon(id);
+  e.videos.forEach(n=>L.push({art:'video',nr:n,lbl:'Eigenes Bewegtbild'+(e.videos.length>1?' '+n:''),url:medienUrl(id,'video',n),video:true}));
+  e.bilder.forEach(n=>L.push({art:'bild',nr:n,lbl:'Eigenes Titelbild'+(e.bilder.length>1?' '+n:''),url:medienUrl(id,'bild',n)}));
+  return L; }
+function grundVorgabe(seiten){ return seiten.find(p=>p.art==='bild'&&p.nr===1)||seiten[0]; }   /* wie artworkBild im Haus: eigen.jpg vor Sunos Bild */
+function seiteFinden(seiten,gr){ return (gr&&seiten.find(p=>p.art===gr.art&&(p.nr||1)===(gr.nr||1)))||null; }
+function seiteIndex(){ const i=SEITEN.findIndex(p=>p.art===grund.art&&(p.nr||1)===(grund.nr||1)); return i<0?0:i; }
+function grundRezept(){ const o={art:grund.art,nr:grund.nr||1}; if(grund.farbe) o.farbe=grund.farbe; return o; }
+/* Eine Quelle bauen: Bild oder stummes Video (bleibt ausserhalb des DOM). */
+function quelleBauen(seite,beiFertig,beiFehler){
+  if(seite.video){ const v=document.createElement('video'); v.muted=true; v.loop=true; v.playsInline=true; v.preload='auto';
+    v.onloadeddata=()=>beiFertig(v); v.onerror=()=>beiFehler(v); v.src=seite.url; v.play().catch(()=>{}); return v; }
+  const im=new Image(); im.onload=()=>beiFertig(im); im.onerror=()=>beiFehler(im); im.src=seite.url; return im; }
+function qMass(q){ if(!q) return [1,1]; return q.tagName==='VIDEO'?[q.videoWidth||1,q.videoHeight||1]:[q.naturalWidth||1,q.naturalHeight||1]; }
+function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttribute('src'); q.load(); }catch(e){} } }
+/* Video-Grund: unter einer Farbflaeche ruht es (kein Dekodieren fuer nichts); ohne Player-Uhr laeuft es frei
+   weiter (bei Pause kein Sprung); mit Player-Uhr wird Drift > 0,2 s nachgesetzt. */
+function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO') return;
+  if(grund.farbe){ if(!q.paused) q.pause(); return; }
+  if(q.paused) q.play().catch(()=>{});
+  if(!uhrEcht||!(q.duration>0)) return; const soll=t%q.duration;
+  if(Math.abs(q.currentTime-soll)>0.2&&Math.abs(q.currentTime-soll)<q.duration-0.2) q.currentTime=soll; }
+function grundUI(){ if(!root) return; const n=SEITEN.length, i=seiteIndex(), s=SEITEN[i];
+  const sb=$('#tbs-seite'); if(sb){ sb.textContent=s?(s.lbl+(n>1?' · '+(i+1)+'/'+n:'')):'—'; sb.classList.toggle('on',!grund.farbe); sb.title=s?('Worauf die Effekte malen: '+s.lbl+(grund.farbe?' — klicken: Farbfläche weg':'')):''; }
+  root.querySelectorAll('#tbs-grundseg [data-blatt]').forEach(b=>{ b.disabled=n<2; });
+  root.querySelectorAll('#tbs-grundseg [data-farbe]').forEach(b=>b.classList.toggle('on',b.dataset.farbe===grund.farbe)); }
+function blaettern(d){ const n=SEITEN.length; if(n<2) return; const p=SEITEN[(seiteIndex()+d+n)%n]; grund={art:p.art,nr:p.nr,farbe:null}; grundLaden(); grundUI(); }
+function farbeSetzen(f){ grund.farbe=(grund.farbe===f)?null:f; grundUI(); }
 
 /* Cover-Blätterer */
 
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); }
 function zeichneFrame(t){
   if(!bereit) return;
-  const Wn=lein.width, Hn=lein.height, bw=bild.naturalWidth, bh=bild.naturalHeight;
+  const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   for(const e of STAPEL){ if(!aktiv(e))continue; const s=e.staerke;
     if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/e.tempo)*e.weite*s; pany+=tri(t/(e.tempo*1.3))*e.weite*s; }
@@ -26870,7 +26941,7 @@ function zeichneFrame(t){
   const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
   const sx=Math.max(0,Math.min(bw-cw,cx0-cw/2)), sy=Math.max(0,Math.min(bh-ch,cy0-ch/2));
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
-  if(bg!=='cover'){ ca.fillStyle= bg==='schwarz'?'#000': bg==='weiss'?'#fff':'#808080'; ca.fillRect(0,0,Wn,Hn); }
+  if(grund.farbe){ ca.fillStyle=GRUND_FARBE[grund.farbe]||'#808080'; ca.fillRect(0,0,Wn,Hn); }
   else { ca.save(); if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const z=1+Math.abs(rotG)*0.022; ca.scale(z,z); ca.translate(-Wn/2,-Hn/2); }
     const sch=STAPEL.find(e=>aktiv(e)&&e.typ==='schaerfe');
     if(sch){ const hb=pulsHub(sch,t), a=Math.min(1,sch.schlag*sch.staerke*hb);
@@ -26895,32 +26966,50 @@ function zeichneFrame(t){
 
 
   let bild=new Image(); let bereit=false;
-  bild.onload=()=>{ bereit=true; groesse(); histoRechnen(); };
+  /* Studio: die gewaehlte Seite als Quelle einhaengen. Fehlt sie, zurueck aufs Titelbild. */
+  function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
+    const seite=SEITEN[seiteIndex()]; if(!seite) return;
+    const q=quelleBauen(seite, x=>{ if(x!==bild) return; bereit=true; groesse(); histoRechnen(); renderStapel(); },
+      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt'); grund={art:'titelbild',nr:1,farbe:grund.farbe}; grundLaden(); grundUI(); });
+    bild=q; }
   /* Zeit: der Player ist die einzige Audioquelle. */
-  const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05) return audio.currentTime; }catch(e){} const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
-  function presetJSON(){ return JSON.stringify(STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_')))); }
+  const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
+  function effekteJSON(){ return STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_'))); }
+  function presetJSON(){ return JSON.stringify({ quelle:grundRezept(), effekte:effekteJSON() }); }
+  /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
+  function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r};
+    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte}; } return {grund:null, effekte:[], leer:true}; }
   function presetSetzen(arr){ STAPEL=arr.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false})); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
-      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert \u00b7 '+s.length+' Zeichen \u2014 der Titel malt es jetzt live'); lebendNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
+      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); lebendNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
   async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); lebendNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
-  function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea') return; const k=ev.key.toLowerCase();
-    if(ev.key==='Escape'){ schliessen(); return; }
-    if(k==='s'){ bg=bg==='schwarz'?'cover':'schwarz'; bgUI(); } else if(k==='w'){ bg=bg==='weiss'?'cover':'weiss'; bgUI(); } else if(k==='g'){ bg=bg==='grau'?'cover':'grau'; bgUI(); } }
+  function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea'||ev.target.isContentEditable) return;
+    if(ev.metaKey||ev.ctrlKey||ev.altKey) return; const k=ev.key.toLowerCase();
+    /* Pfeile und Esc gehoeren im offenen Studio dem Studio - sonst wechselt das Haus den Song und schliesst die Buehne mit. */
+    if(ev.key==='Escape'){ ev.stopPropagation(); ev.preventDefault(); schliessen(); return; }
+    if(ev.key==='ArrowLeft'||ev.key==='ArrowRight'){ ev.stopPropagation(); ev.preventDefault(); blaettern(ev.key==='ArrowRight'?1:-1); return; }
+    if(ev.key==='ArrowUp'||ev.key==='ArrowDown'){ ev.stopPropagation(); return; }   /* rollt das Pult; das Haus wuerde die Lautstaerke verstellen */
+    if(k==='s') farbeSetzen('schwarz'); else if(k==='w') farbeSetzen('weiss'); else if(k==='g') farbeSetzen('grau'); }
   function bauen(){ GL.noiseLaden();
     root=document.createElement('div'); root.id='tbs'; root.hidden=true;
     root.innerHTML=
       '<div id="tbs-kasten">'
       +'<div id="tbs-kopf"><h3>Titelbild-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
       +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
-      +'<div class="tbs-zeile"><span class="tbs-lbl">Grund</span><div class="tbs-seg" id="tbs-bgseg"><button data-bg="cover" class="on" title="Das Titelbild des Songs">Cover</button><button data-bg="schwarz" title="Schwarz - zeigt nur die Lichter (Taste s)">S</button><button data-bg="grau" title="Grau - neutraler Grund (Taste g)">G</button><button data-bg="weiss" title="Wei\u00df - zeigt nur die Schatten (Taste w)">W</button></div>'
-      +'<select class="tbs-wahl" id="tbs-preset" title="Fertige Kombinationen als Ausgangspunkt"><option value="">\u2014 Preset w\u00e4hlen \u2014</option></select></div>'
-      +'<div class="tbs-reihe"><button id="tbs-wuerfeln" title="Alle Regler der eingeh\u00e4ngten Effekte zuf\u00e4llig setzen">W\u00fcrfeln</button><button id="tbs-neu" title="Fahrt, Zoom, Farbschleier, Scheinwerfer - die Grundausstattung">Grundzustand</button><button id="tbs-alleAn" title="Alle Effekte einschalten und Solo aufheben">Alle an</button><button id="tbs-klapp" title="Alle Karten zu- oder aufklappen">Einklappen</button></div>'
-      +'<div class="tbs-zeile"><span class="tbs-lbl">Rezept</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Das Rezept beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Rezept vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">worauf das Rezept malt</span></div>'
+      +'<div class="tbs-zeile"><div class="tbs-seg" id="tbs-grundseg"><button type="button" data-blatt="-1" title="Vorige Seite (←)">‹</button><button type="button" id="tbs-seite" class="on">Titelbild</button><button type="button" data-blatt="1" title="Nächste Seite (→)">›</button><button type="button" data-farbe="schwarz" title="Schwarz - zeigt nur die Lichter (Taste s)">S</button><button type="button" data-farbe="grau" title="Grau - neutraler Grund (Taste g)">G</button><button type="button" data-farbe="weiss" title="Weiß - zeigt nur die Schatten (Taste w)">W</button></div></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abKette"><div class="tbs-abtitel">Effektkette <span class="tbs-abunter">von oben nach unten gerechnet</span></div>'
+      +'<div class="tbs-zeile tbs-werkzeuge"><select class="tbs-wahl" id="tbs-preset" title="Preset \u2014 eine leise Kombination als Ausgangspunkt"><option value="">Preset \u2026</option></select>'
+      +'<div id="tbs-vorrat"></div>'
+      +'<button type="button" class="tbs-knopf" id="tbs-wuerfeln" title="W\u00fcrfeln \u2014 alle Regler der eingeh\u00e4ngten Effekte zuf\u00e4llig setzen">\u2684</button>'
+      +'<button type="button" class="tbs-knopf" id="tbs-neu" title="Grundzustand \u2014 Fahrt, Zoom, Farbschleier, Scheinwerfer">\u21ba</button>'
+      +'<button type="button" class="tbs-knopf" id="tbs-alleAn" title="Alle an \u2014 alle Effekte einschalten, Solo aufheben">\u25c9</button>'
+      +'<button type="button" class="tbs-knopf" id="tbs-klapp" title="Alle Karten zuklappen">\u21c5</button></div>'
+      +'<div id="tbs-stapel"></div></div>'
+      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Rezept</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Das Rezept beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Rezept vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
-      +'<div class="tbs-vorrat"><div class="tbs-titel">Effekt einh\u00e4ngen</div><div id="tbs-vorrat"></div></div>'
-      +'<div id="tbs-stapel"></div>'
-      +'<div class="tbs-unter" style="margin-top:10px">L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>s</kbd><kbd>w</kbd><kbd>g</kbd> Grund \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div>'
+      +'<div class="tbs-unter">Rezept = Quelle + Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Seite \u00b7 <kbd>s</kbd><kbd>w</kbd><kbd>g</kbd> Farbfl\u00e4che \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
       +'</div></div></div>';
     document.body.appendChild(root);
     root.onclick=(ev)=>{ if(ev.target===root) schliessen(); };
@@ -26930,12 +27019,12 @@ function zeichneFrame(t){
     stapelBox=$('#tbs-stapel');
     const psel=$('#tbs-preset');
     Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
-    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); renderStapel(); } psel.value=''; };
+    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); renderStapel(); } psel.value=''; psel.blur(); };
     const vorrat=$('#tbs-vorrat');
-    const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">+ Effekt w\u00e4hlen \u2026</option>';
+    const bauVorrat=()=>{ let h='<select class="tbs-wahl" id="tbs-vorratSel"><option value="">+ Effekt \u2026</option>';
       EGRUPPEN.forEach(([gname,typen])=>{ const da=typen.filter(x=>EFFEKTE[x]); if(!da.length) return; h+='<optgroup label="'+gname+'">'+da.map(x=>'<option value="'+x+'">'+EFFEKTE[x].label+'</option>').join('')+'</optgroup>'; });
       vorrat.innerHTML=h+'</select>';
-      vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ STAPEL.push(neuerEffekt(x)); renderStapel(); } ev.target.value=''; }; };
+      vorrat.querySelector('#tbs-vorratSel').onchange=ev=>{ const x=ev.target.value; if(x&&EFFEKTE[x]){ STAPEL.push(neuerEffekt(x)); renderStapel(); } ev.target.value=''; ev.target.blur(); }; };
     bauVorrat();
     $('#tbs-wuerfeln').onclick=()=>{ STAPEL.forEach(e=>{ const T=EFFEKTE[e.typ];
   T.params.forEach(p=>{ if(p.rampe||p.grad) return; if(p.farbe) e[p.k]='#'+[0,0,0].map(()=>('0'+Math.floor(Math.random()*256).toString(16)).slice(-2)).join('');
@@ -26946,34 +27035,41 @@ function zeichneFrame(t){
   e.staerke=+(0.4+Math.random()*1.1).toFixed(2);
 }); renderStapel(); };
     $('#tbs-alleAn').onclick=()=>{ soloId=null; STAPEL.forEach(e=>e.an=true); renderStapel(); };
-    $('#tbs-klapp').onclick=()=>{ const auf=STAPEL.some(e=>!e.zu); STAPEL.forEach(e=>e.zu=auf); $('#tbs-klapp').textContent=auf?'Ausklappen':'Einklappen'; renderStapel(); };
+    $('#tbs-klapp').onclick=()=>{ const auf=STAPEL.some(e=>!e.zu); STAPEL.forEach(e=>e.zu=auf); $('#tbs-klapp').title=auf?'Alle Karten aufklappen':'Alle Karten zuklappen'; renderStapel(); };
 
     $('#tbs-neu').onclick=grundzustand;
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
-    root.querySelectorAll('#tbs-bgseg button').forEach(b=>b.onclick=()=>{ bg=b.dataset.bg; bgUI(); });
+    root.querySelectorAll('#tbs-grundseg [data-blatt]').forEach(b=>b.onclick=()=>blaettern(+b.dataset.blatt));
+    root.querySelectorAll('#tbs-grundseg [data-farbe]').forEach(b=>b.onclick=()=>farbeSetzen(b.dataset.farbe));
+    $('#tbs-seite').onclick=()=>{ if(grund.farbe){ grund.farbe=null; grundUI(); } };
     window.addEventListener('resize',()=>{ if(offen) groesse(); });
-    document.addEventListener('keydown',tasten);
+    document.addEventListener('keydown',tasten,true);
   }
   async function oeffnen(id, cb){
     if(!root) bauen();
-    songId=id; nachSichern=cb||null; soloId=null; bg='cover';
+    songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1,farbe:null}; SEITEN=[]; grundUI();
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
        groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
     root.hidden=false; offen=true; if(g&&lein) g.clearRect(0,0,lein.width,lein.height);
+    const lauf=++oeffnenLauf;
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
+    if(lauf!==oeffnenLauf||!offen) return;   /* zwischendurch geschlossen oder ein anderer Titel geoeffnet */
     DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
     PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
     $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
-    bereit=false; bild.src=(typeof artworkBild==='function')?artworkBild(id):('/media/'+id+'/cover.jpg');
+    SEITEN=seitenVon(id,s); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr,farbe:null}; }
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
-    if(Array.isArray(rezept)&&rezept.length){ presetSetzen(rezept); pStat('Rezept des Titels geladen'); } else { grundzustand(); pStat('noch kein Rezept beim Titel'); }
-    bgUI(); t0=performance.now();
-    if(!bereit && bild.complete && bild.naturalWidth>0){ bereit=true; histoRechnen(); }   /* gleiche Adresse wie zuvor: load kam evtl. schon */
+    if(lauf!==oeffnenLauf||!offen) return;
+    const R=rezeptLesen(rezept); let hinweis='';
+    if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr,farbe:GRUND_FARBE[R.grund.farbe]?R.grund.farbe:null}; else { grund.farbe=GRUND_FARBE[R.grund.farbe]?R.grund.farbe:null; hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; } }
+    if(R.effekte.length||R.grund){ presetSetzen(R.effekte); pStat('Rezept des Titels geladen'+hinweis); } else { grundzustand(); pStat('noch kein Rezept beim Titel'); }
+    grundUI(); t0=performance.now();
+    grundLaden();
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
-  function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0; }
+  function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0; quelleWeg(bild); bereit=false; }
   /* ---- Lebendbild: das Rezept live auf Kachel und Buehne malen --------
      Ein Maler je Ziel (eigene Leinwand, eigene Puffer, eigener Stapel);
      EINE Schleife malt alle, solange es welche gibt, und endet von selbst.
@@ -26981,28 +27077,38 @@ function zeichneFrame(t){
      sie umgehaengt und danach fuers Studio wieder zurueckgestellt. Zeit:
      der Player, wenn er diesen Titel spielt (eine Audioquelle). */
   const lebende=[]; let lebendRaf=0, gemerkt=null; const songCache={};
-  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,bg,soloId,pal:PALETTEN['Cover-Akzente']});
-  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,bg,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
+  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
+  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
   async function songDaten(id){ if(songCache[id]) return songCache[id];
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     const DATA2={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
-    return songCache[id]={ DATA:DATA2, rezept:(Array.isArray(rezept)?rezept:[]), pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
+    const R=rezeptLesen(rezept);
+    return songCache[id]={ DATA:DATA2, song:s, grund:R.grund, rezept:R.effekte, pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
   const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
   function lebendAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-lebend')) return;
     const cv=document.createElement('canvas'); cv.className='tbs-lebend'; kasten.appendChild(cv);
-    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(), bild:new Image(), bereit:false, STAPEL:[], DATA:null, bg:'cover', soloId:null, pal:null, t0:performance.now() };
+    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1,farbe:null}, soloId:null, pal:null, t0:performance.now() };
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d');
     lebende.push(m);
     songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.STAPEL=d.rezept.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false}));
-      m.bild.onload=()=>{ const bw=m.bild.naturalWidth||1,bh=m.bild.naturalHeight||1, dpr=Math.min(2,window.devicePixelRatio||1), W=Math.min(720,Math.max(64,Math.round((kasten.clientWidth||300)*dpr))), H=Math.max(1,Math.round(W*bh/bw));
-        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true; };
-      m.bild.src=(typeof artworkBild==='function')?artworkBild(id):('/media/'+id+'/cover.jpg'); });
+      const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
+      m.grund={art:seite.art,nr:seite.nr,farbe:(d.grund&&GRUND_FARBE[d.grund.farbe])?d.grund.farbe:null};
+      const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
+        /* Die Leinwand liegt ganz im Kasten (object-fit: contain): so gross, dass das eingepasste Bild volle Schaerfe hat; lange Seite hoechstens 960 px. */
+        const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk); const deckel=960/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
+        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true;
+        /* Auf der Buehne liegt unter der Leinwand das Standbild (img.motiv, cover.jpg); es wird verdeckt, solange der
+           Maler malt - sonst schaut es neben einer schmaleren Quelle heraus. Den Rahmen der Buehne ruehrt der Maler nicht an. */
+        try{ if(kasten.classList.contains('bart')){ const mo=kasten.querySelector('img.motiv'); if(mo){ m.motiv=mo; mo.style.visibility='hidden'; } } }catch(e){} };
+      const fehler=q=>{ if(q!==m.bild||seite.art==='titelbild') return; quelleWeg(q); seite=seiten[0]; m.grund={...m.grund,art:'titelbild',nr:1}; m.bild=quelleBauen(seite,fertig,fehler); };
+      m.bild=quelleBauen(seite,fertig,fehler); });
     if(!lebendRaf) lebendRaf=requestAnimationFrame(lebendTick); }
-  function lebendAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-lebend'); if(!cv) return; cv.remove(); const i=lebende.findIndex(m=>m.canvas===cv); if(i>=0) lebende.splice(i,1); }
-  function lebendZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05) return audio.currentTime; }catch(e){} const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
+  function lebendAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-lebend'); if(!cv) return; cv.remove(); const i=lebende.findIndex(m=>m.canvas===cv);
+    if(i>=0){ const m=lebende[i]; quelleWeg(m.bild); lebende.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; } }
+  function lebendZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
   function lebendTick(){
-    for(let i=lebende.length-1;i>=0;i--) if(!lebende[i].canvas.isConnected) lebende.splice(i,1);
+    for(let i=lebende.length-1;i>=0;i--) if(!lebende[i].canvas.isConnected){ quelleWeg(lebende[i].bild); if(lebende[i].motiv) lebende[i].motiv.style.visibility=''; lebende.splice(i,1); }
     if(!lebende.length){ lebendRaf=0; return; }
     lebendRaf=requestAnimationFrame(lebendTick);
     gemerkt=bundel();

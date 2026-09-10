@@ -2471,3 +2471,17 @@ Bauschritt 3 heißt damit: Vorgaberegel + Bühnenleiste (eines/alle/blättern).
   (Wörter im Tipp). Laute Presets entfernt (Alter Fernseher, Konzertlicht, Kaputtes Band, Nachtfahrt,
   Rave / Inferno) — „wir entwerfen sie selbst“; geblieben: Kaum da, Nur Atem, Schatten und Schlag, Traum (weich).
   Lehre: Jörg arbeitet live in der Labor-Scheibe (tab-25) — nicht mehr neu laden, Proben in eigenem Tab.
+
+### Schritt 1 im Haus (11.09.2026, Jörg: „lass das Haus nicht länger warten“)
+web/index.html per einbau.py vom Schnappschuss neu gespleißt (Diff nur CSS-Block und Modul). Enthalten: Quelle-
+Blätterer im Studio, Video-Grund mit Player-Uhr, Rezept-Hülle `{quelle, effekte}` (Altbestand als Array bleibt lesbar,
+vier Produktivrezepte geprüft), Karte duplizieren, Kreis-Schalter, Werkzeugzeile, leise Presets, Dunst-Bewegung,
+Pult Quelle/Effektkette/Rezept. Gegenlesen des Einbaus (3 Blickwinkel, 2 Skeptiker je Befund, 12 bestätigt) traf
+fast nur meine späte Ablage-Änderung „Kachel wie video.bewegt“ (zeigtVideo-Klassen, bewegtEinpassen, Rahmenwettlauf
+auf der Bühne) — **gestrichen und vereinfacht:** das Lebendbild liegt wie ein Standbild ganz im Kasten
+(`object-fit: contain`, Kachel und Bühne), nichts ragt heraus, nichts wird beschnitten; auf der Bühne verdeckt der
+Maler img.motiv (cover.jpg), solange er malt, und rührt den Rahmen nicht an. Leinwandmaß = contain-Schärfe
+(sk = min), lange Seite ≤ 960. Tasten im offenen Studio: ←/→ Seite, Esc schließen, ↑/↓ rollen das Pult (erreichen
+das Haus nicht mehr); Leertaste und m gehen weiter an den Player. Server unverändert (JSON wird roh abgelegt).
+Offen: Schritt 2 (eigen-2.mp4 …, Karte als Liste), 3 (Vorgaberegel + Bühnenleiste eines|alle|blättern),
+4 (Bühne → artworkBild), 5 (WOERTER.md), Glas-Entwürfe.
