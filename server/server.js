@@ -3053,7 +3053,7 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
            überstimmen" - "wie bei den artwork und videos"). Dasselbe
            Muster: eigen.mp3 steht neben Sunos audio.mp3 und audio.wav. */
         /* Das vierte Eigene ist kein Medium, sondern ein Rezept: eigen-effekt.json
-           traegt das dynamische Titelbild aus dem Titelbild-Studio (Caspar_D,
+           traegt den Effektclip aus dem Effektclip-Studio (Caspar_D,
            09.09.2026: "ein preset an den Titel gebunden" - die App malt es live). */
         for (const [feld, datei] of [['ton', 'eigen.mp3'], ['effekt', 'eigen-effekt.json']]) {
           try { if (fs.statSync(path.join(o, datei)).size > 0) hat[feld] = true; } catch (e) {}

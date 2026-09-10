@@ -2528,3 +2528,11 @@ Lichtkante/Schattenkante/Glanzpunkt (`linse()`, `glasKopie()`). Labor-Rauchtest:
 Sichtprobe auf „Die Braut von Corinth“ gut. Eingespleißt per einbau2.py.
 Namensfrage offen (Jörg brainstormt: Effekt-Bild, KlangTresor-Bild, Musik-Bild, Rhythmus-Bild, Beat-Bild,
 KlangTresor-Visual; mein Vorschlag Taktbild, zweiter Platz Lebendbild) — erst auf sein Wort umbenennen.
+
+### Umbenennung (11.09.2026, Jörg: „okay — Effektclip-Studio, ziehe es durch“)
+Das gemalte Ding heißt **Effektclip** (Duden-Clip, zusammengeschrieben), das Werkzeug **Effektclip-Studio**. Durchgezogen
+in Modul (`var EffektclipStudio`, `clipAn/clipAus/clipNeu/clipZeit/clipTick`, `clips`, Leinwandklasse `tbs-clip`),
+Haus (`hatEffektclip`, Karte „Effektclip-Studio“ / „Effektclip liegt beim Titel“, Bühnenliste `k:'clip'`, Marker
+„Effektclip-Studio (tbs.css|tbs-modul.js)“), Server-Kommentar, Labor-Attrappe, einbau*.py, WOERTER.md (vier Zeilen:
+Effektclip, Rezept, Effektclip-Studio, Bewegtbild). Geblieben: das Präfix `tbs-` für Klassen/IDs (Namensraum, kein
+Fachwort) und der Dateiname `eigen-effekt.json`. Ältere Abschnitte dieser Übergabe sagen noch „Lebendbild“ — historisch.

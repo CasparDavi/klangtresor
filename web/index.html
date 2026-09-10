@@ -2941,8 +2941,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
   cursor:pointer;font:600 12.5px system-ui;border:1px solid}
 #morgenja{border-color:#16be5c;background:#16be5c22;color:#16be5c}
 #morgennein{border-color:#5a5a60;background:transparent;color:#9a9aa0}
-/* >>> Titelbild-Studio (tbs.css) */
-/* ---- Titelbild-Studio: Overlay wie #wer, Panel wie im Scratch (hausrein) ---- */
+/* >>> Effektclip-Studio (tbs.css) */
+/* ---- Effektclip-Studio: Overlay wie #wer, Panel wie im Scratch (hausrein) ---- */
 #tbs{position:fixed;inset:0;z-index:84;background:rgba(0,0,0,.6);display:grid;place-items:center}
 #tbs[hidden]{display:none}
 #tbs-kasten{width:min(1320px,96vw);height:min(860px,94vh);background:var(--bg);border:1px solid var(--rand);border-radius:12px;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
@@ -3014,11 +3014,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-verr select[data-verr]{grid-column:2/4}
 #tbs .tbs-leer{color:var(--schwach);font-size:12px;text-align:center;padding:16px 8px;line-height:1.5}
 #tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
-/* Lebendbild auf Kachel und Buehne: fuellt den Kasten wie das Bewegtbild, verzerrt nichts (object-fit) */
-/* Das Lebendbild hat immer das Format seiner Quelle (Joerg, 11.09.2026) und liegt wie ein Standbild im Haus:
+/* Effektclip auf Kachel und Buehne: fuellt den Kasten wie das Bewegtbild, verzerrt nichts (object-fit) */
+/* Der Effektclip hat immer das Format seiner Quelle (Joerg, 11.09.2026) und liegt wie ein Standbild im Haus:
    ganz im Kasten (object-fit: contain), nichts ragt heraus, nichts wird beschnitten. Auf der Kachel bleibt rundum
    die unscharfe Fuellung der kachel.jpg sichtbar, auf der Buehne die .fuellung - genau wie beim Standbild. */
-.bild canvas.tbs-lebend, .bart canvas.tbs-lebend{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
+.bild canvas.tbs-clip, .bart canvas.tbs-clip{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
 /* Knoepfe brechen nicht um; Abspiel-Knopf als Pille im Kopf */
 #tbs .tbs-reihe button, #tbs .tbs-mini, #tbs .tbs-seg button{white-space:nowrap}
 #tbs-kopf #tbs-spiel{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:12px;white-space:nowrap;margin-right:6px}
@@ -3044,7 +3044,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-werkzeuge .tbs-knopf{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:14px;line-height:1;flex:0 0 auto;padding:0}
 #tbs .tbs-werkzeuge .tbs-knopf:hover{border-color:var(--akzent)}
 
-/* <<< Titelbild-Studio (tbs.css) */
+/* <<< Effektclip-Studio (tbs.css) */
 </style>
 
 <!-- Reaktionen zu einem Song: wer hat geliked, wer kommentiert, mit den
@@ -10604,16 +10604,16 @@ function hatBewegtbild(s){
 function istEigenesBewegtbild(s){
   return !!(s && _eigenArt && _eigenArt[s.id] && _eigenArt[s.id].video);
 }
-/* Und ob ein REZEPT beim Titel liegt (Titelbild-Studio, 09.09.2026): dann
+/* Und ob ein REZEPT beim Titel liegt (Effektclip-Studio, 09.09.2026): dann
    malt die App das Titelbild live. Es hat Vorrang vor einem Video -
    sonst bewegte sich zweierlei uebereinander. */
-function hatLebendbild(s){
+function hatEffektclip(s){
   return !!(s && !s.fremd && _eigenArt && _eigenArt[s.id] && _eigenArt[s.id].effekt);
 }
 /* Das Studio-Modul steht am Ende des Skripts. Wer frueher ruft, ruft ins
    Leere - kein Fehler, kein halbes Bild. */
-function lebendAn(k, id){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAn(k, id); }
-function lebendAus(k){ if (typeof TitelbildStudio === 'object' && TitelbildStudio) TitelbildStudio.lebendAus(k); }
+function clipAn(k, id){ if (typeof EffektclipStudio === 'object' && EffektclipStudio) EffektclipStudio.clipAn(k, id); }
+function clipAus(k){ if (typeof EffektclipStudio === 'object' && EffektclipStudio) EffektclipStudio.clipAus(k); }
 /* Welches Bewegtbild gilt fuer diesen Song - das eigene, sonst Sunos.
    Eigene Videos koennen mehrere sein (eigen.mp4 = Nr. 1, eigen-2.mp4 ...; Tarja
    legt Suno-Hooks ab, 11.09.2026). VORGABE IST EINE REGEL, KEIN REGLER: das
@@ -10709,7 +10709,7 @@ function bewegtAus(karte){
 /** Alle bewegten Kacheln aufräumen, außer der des laufenden Songs. */
 function bewegtAufraeumen(){
   document.querySelectorAll('.karte').forEach(k=>{
-    if (k.dataset.id !== aktuellId) { bewegtAus(k); lebendAus(k); }
+    if (k.dataset.id !== aktuellId) { bewegtAus(k); clipAus(k); }
   });
 }
 
@@ -10725,9 +10725,9 @@ function markieren(){
     // Der laufende Song zeigt sein bewegtes Artwork dauerhaft.
     // Auf dem iPhone gibt es kein Überfahren mit der Maus - so
     // bekommst du die Videos dort trotzdem zu sehen.
-    if (dieser && hatLebendbild(s)) { bewegtAus(k); lebendAn(k, s.id); }
+    if (dieser && hatEffektclip(s)) { bewegtAus(k); clipAn(k, s.id); }
     else {
-      lebendAus(k);
+      clipAus(k);
       if (dieser && hatBewegtbild(s)) bewegtAn(k, s.id);
       else if (!dieser)              bewegtAus(k);
     }
@@ -16713,9 +16713,9 @@ function capAuf(id, x, y){
     +   `<div class="capartname">Eigene Tonfassung <small>— tritt neben WAV und MP3</small></div>`
     +   `<div class="capart" id="capartton" data-art="ton"></div>`
     + `</div>`
-    /* Das vierte Eigene ist kein Upload, sondern ein Rezept: das dynamische
-       Titelbild aus dem Titelbild-Studio (Caspar_D, 09.09.2026). */
-    + `<div class="capartton"><div class="capartname">Titelbild-Studio</div>`
+    /* Das vierte Eigene ist kein Upload, sondern ein Rezept: der Effektclip
+       aus dem Effektclip-Studio (Caspar_D, 09.09.2026; Name seit 11.09.2026). */
+    + `<div class="capartton"><div class="capartname">Effektclip-Studio</div>`
     +   `<div class="capart" id="capartstudio" data-art="effekt"></div></div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
@@ -16891,7 +16891,7 @@ function capAuf(id, x, y){
   artZeichnen();
   platzieren();
 
-  /* ---- Titelbild-Studio: das Rezept am Titel ---------------------------
+  /* ---- Effektclip-Studio: das Rezept am Titel ---------------------------
      Kein Upload - der Knopf oeffnet das Studio; gesichert wird von dort.
      Hat der Titel ein Rezept, zeigt das Feld es wie die anderen Eigenen
      (hat/entfernen) und bietet "bearbeiten". */
@@ -16907,16 +16907,16 @@ function capAuf(id, x, y){
     const hatE = !!(_eigenArt && _eigenArt[id] && _eigenArt[id].effekt);
     studioFeld.className = 'capart' + (hatE ? ' hat' : '');
     studioFeld.innerHTML = hatE
-      ? `<span>Dynamisches Titelbild liegt beim Titel</span> <span class="weg" data-tu="oeffnen">bearbeiten</span>`
+      ? `<span>Effektclip liegt beim Titel</span> <span class="weg" data-tu="oeffnen">bearbeiten</span>`
         + (eingefroren ? '' : ` · <span class="weg" data-tu="weg">entfernen</span>`)
-      : (eingefroren ? 'Archiv eingefroren' : 'Dynamisches Titelbild gestalten — Studio öffnen');
+      : (eingefroren ? 'Archiv eingefroren' : 'Effektclip gestalten — Studio öffnen');
     const oe = studioFeld.querySelector('[data-tu="oeffnen"]');
-    if (oe) oe.onclick = (ev) => { ev.stopPropagation(); TitelbildStudio.oeffnen(id, studioNach); };
+    if (oe) oe.onclick = (ev) => { ev.stopPropagation(); EffektclipStudio.oeffnen(id, studioNach); };
     const wg = studioFeld.querySelector('[data-tu="weg"]');
     if (wg) wg.onclick = async (ev) => { ev.stopPropagation();
-      try { await fetch(`/api/eigen-artwork/${id}?was=effekt`, { method: 'DELETE' }); TitelbildStudio.lebendNeu(id); studioNach('geloest'); } catch (e) {} };
+      try { await fetch(`/api/eigen-artwork/${id}?was=effekt`, { method: 'DELETE' }); EffektclipStudio.clipNeu(id); studioNach('geloest'); } catch (e) {} };
   };
-  if (studioFeld && !eingefroren) studioFeld.onclick = () => { if (!studioFeld.classList.contains('hat')) TitelbildStudio.oeffnen(id, studioNach); };
+  if (studioFeld && !eingefroren) studioFeld.onclick = () => { if (!studioFeld.classList.contains('hat')) EffektclipStudio.oeffnen(id, studioNach); };
   studioZeichnen();
 
   const haken = c.querySelector('#capinstr');
@@ -18896,7 +18896,7 @@ function butterchurnAufbauen(kasten, presetName){
 
 
 /* ---- Bewegtbilder auf der Buehne (Caspar_D, 11.09.2026) ------------------
-   Ein Titel kann mehrere bewegte Bilder haben: das Lebendbild (Rezept), eigene
+   Ein Titel kann mehrere bewegte Bilder haben: das Effektclip (Rezept), eigene
    Videos (mehrere, juengstes zuerst), Sunos Bewegtbild. VORGABE IST EINE REGEL,
    KEIN REGLER: das mit der meisten Absicht laeuft endlos, nichts erscheint. Erst
    die Maus im Bild (oder ein Tipp) blendet unten eine schmale Leiste ein -
@@ -18909,7 +18909,7 @@ let bBewegtWahl = null;                     /* von Hand gewaehlt (Schluessel), n
 let bBewegtSongId = null, bBewegtIndex = 0, bBewegtStand = -1, bBewegtTimer = 0;
 function bewegtbilder(s){
   const L = []; if (!s || s.fremd) return L;
-  if (hatLebendbild(s)) L.push({ k: 'lebend', name: 'Lebendbild' });
+  if (hatEffektclip(s)) L.push({ k: 'clip', name: 'Effektclip' });
   const e = _eigenArt && _eigenArt[s.id];
   if (e && e.video){
     const nn = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
@@ -18981,7 +18981,7 @@ function darstellungAufbauen(){
   if (bBild !== 'vis'){
     kasten.style.aspectRatio = '3/4';        // bis das Format bekannt ist
 
-    /* BEWEGTBILD: der Titel kann mehrere haben (Lebendbild, eigene Videos, Sunos).
+    /* BEWEGTBILD: der Titel kann mehrere haben (Effektclip, eigene Videos, Sunos).
        Die Vorgabe ist eine Regel (das mit der meisten Absicht), nichts erscheint;
        die Maus im Bild blendet die Leiste ein (blaettern, eines | alle). Hat der
        Titel keines, zeigen wir still das Standbild - ohne Hinweis; die Einstellung
@@ -18998,11 +18998,11 @@ function darstellungAufbauen(){
       if (i < 0) i = 0;
       bBewegtIndex = i;
       const w = liste[i];
-      if (w.k === 'lebend'){
+      if (w.k === 'clip'){
         kasten.innerHTML = medienEbenen('img', artworkBild(bSong.id), 'alt=""');
         const b = kasten.querySelector('img.motiv');
         b.onload = () => formatUebernehmen(kasten, b.naturalWidth, b.naturalHeight);
-        lebendAn(kasten, bSong.id);           /* das Studio malt live ueber das Standbild */
+        clipAn(kasten, bSong.id);           /* das Studio malt live ueber das Standbild */
       } else {
         kasten.innerHTML = medienEbenen('video', w.url,
           `muted loop playsinline autoplay poster="${artworkBild(bSong.id)}"`);
@@ -26349,13 +26349,13 @@ $('raster').addEventListener('mouseover', (e)=>{
   const k = e.target.closest('.karte');
   if (!k || k.contains(e.relatedTarget)) return;
   const s = song(k.dataset.id);
-  if (hatLebendbild(s)) lebendAn(k, s.id);
+  if (hatEffektclip(s)) clipAn(k, s.id);
   else if (hatBewegtbild(s)) bewegtAn(k, s.id);
 });
 $('raster').addEventListener('mouseout', (e)=>{
   const k = e.target.closest('.karte');
   if (!k || k.contains(e.relatedTarget)) return;
-  if (k.dataset.id !== aktuellId) { bewegtAus(k); lebendAus(k); }
+  if (k.dataset.id !== aktuellId) { bewegtAus(k); clipAus(k); }
 });
 
 $('ruecksetzen').onclick = filterZuruecksetzen;
@@ -26547,10 +26547,11 @@ start();
 /* Gleich beim Laden nachsehen, ob der Server arbeitet - sonst steht der rote
    Knopf still, obwohl im Hintergrund ein Lauf unterwegs ist (23.08.2026). */
 morgenKnopfPruefen();
-/* >>> Titelbild-Studio (tbs-modul.js) */
+/* >>> Effektclip-Studio (tbs-modul.js) */
 
-/* ---- Titelbild-Studio ----------------------------------------------
-   Das dynamische Titelbild: ein REZEPT aus Effekten - Vorrat an Typen,
+/* ---- Effektclip-Studio ---------------------------------------------
+   Der Effektclip (Caspar_D, 11.09.2026: "es wird immer etwas Bewegtes - ein Clip,
+   egal ob die Quelle Bild oder Video ist, und wir legen Effekte drauf"): ein REZEPT aus Effekten - Vorrat an Typen,
    beliebig oft eingehaengt, jede Instanz eigen eingestellt (das Muster
    von Haeckels Operator-Kette) -, am Titel abgelegt als
    library/songs/<id>/eigen-effekt.json und live gemalt. Caspar_D,
@@ -26562,7 +26563,7 @@ morgenKnopfPruefen();
    TON: keine eigene Quelle. Laeuft der Titel im Player, lesen die Pulse
    audio.currentTime - eine Audioquelle, wie ueberall im Haus. Sonst
    eine freie Uhr, damit man auch ohne Musik gestalten kann. */
-var TitelbildStudio = (() => {
+var EffektclipStudio = (() => {
   let root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
   const $ = s => root ? root.querySelector(s) : null;
 const kf = v => String(v).replace('.',',');
@@ -26947,7 +26948,7 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
   programm(typ){ if(this.prog[typ]!==undefined) return this.prog[typ]; const gl=this.gl, src=GL_SHADER[typ]; if(!src||!this.noise){ return null; }
     const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,'attribute vec2 a_pos; varying vec2 v_uv; void main(){ v_uv=a_pos*0.5+0.5; gl_Position=vec4(a_pos,0.0,1.0); }'); gl.compileShader(vs);
     const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, GL_VORSPANN+this.noise+GL_FBM+src); gl.compileShader(fs);
-    if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){ console.warn('Titelbild-Studio Shader '+typ+': '+gl.getShaderInfoLog(fs)); this.prog[typ]=null; return null; }
+    if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){ console.warn('Effektclip-Studio Shader '+typ+': '+gl.getShaderInfoLog(fs)); this.prog[typ]=null; return null; }
     const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[typ]=null; return null; }
     pr._loc={}; this.prog[typ]=pr; return pr; },
   loc(pr,n){ if(pr._loc[n]===undefined) pr._loc[n]=this.gl.getUniformLocation(pr,n); return pr._loc[n]; },
@@ -27225,8 +27226,8 @@ function zeichneFrame(t){
   function presetSetzen(arr){ STAPEL=arr.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false})); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
-      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); lebendNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
-  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); lebendNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
+      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
+  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
   function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea'||ev.target.isContentEditable) return;
     if(ev.metaKey||ev.ctrlKey||ev.altKey) return; const k=ev.key.toLowerCase();
     /* Pfeile und Esc gehoeren im offenen Studio dem Studio - sonst wechselt das Haus den Song und schliesst die Buehne mit. */
@@ -27238,7 +27239,7 @@ function zeichneFrame(t){
     root=document.createElement('div'); root.id='tbs'; root.hidden=true;
     root.innerHTML=
       '<div id="tbs-kasten">'
-      +'<div id="tbs-kopf"><h3>Titelbild-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
+      +'<div id="tbs-kopf"><h3>Effektclip-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
       +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
       +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">worauf das Rezept malt</span></div>'
       +'<div class="tbs-zeile"><div class="tbs-seg" id="tbs-grundseg"><button type="button" data-blatt="-1" title="Vorige Seite (←)">‹</button><button type="button" id="tbs-seite" class="on">Titelbild</button><button type="button" data-blatt="1" title="Nächste Seite (→)">›</button><button type="button" data-farbe="schwarz" title="Schwarz - zeigt nur die Lichter (Taste s)">S</button><button type="button" data-farbe="grau" title="Grau - neutraler Grund (Taste g)">G</button><button type="button" data-farbe="weiss" title="Weiß - zeigt nur die Schatten (Taste w)">W</button></div></div></div>'
@@ -27313,13 +27314,13 @@ function zeichneFrame(t){
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
   function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0; quelleWeg(bild); bereit=false; }
-  /* ---- Lebendbild: das Rezept live auf Kachel und Buehne malen --------
+  /* ---- Effektclip: das Rezept live auf Kachel und Buehne malen --------
      Ein Maler je Ziel (eigene Leinwand, eigene Puffer, eigener Stapel);
      EINE Schleife malt alle, solange es welche gibt, und endet von selbst.
      Die Engine arbeitet auf den Modulvariablen - fuer jeden Maler werden
      sie umgehaengt und danach fuers Studio wieder zurueckgestellt. Zeit:
      der Player, wenn er diesen Titel spielt (eine Audioquelle). */
-  const lebende=[]; let lebendRaf=0, gemerkt=null; const songCache={};
+  const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
   const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
   const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ca,cb,cc,cres,ckc,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
   async function songDaten(id){ if(songCache[id]) return songCache[id];
@@ -27329,11 +27330,11 @@ function zeichneFrame(t){
     const R=rezeptLesen(rezept);
     return songCache[id]={ DATA:DATA2, song:s, grund:R.grund, rezept:R.effekte, pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
   const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
-  function lebendAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-lebend')) return;
-    const cv=document.createElement('canvas'); cv.className='tbs-lebend'; kasten.appendChild(cv);
+  function clipAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-clip')) return;
+    const cv=document.createElement('canvas'); cv.className='tbs-clip'; kasten.appendChild(cv);
     const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1,farbe:null}, soloId:null, pal:null, t0:performance.now() };
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d');
-    lebende.push(m);
+    clips.push(m);
     songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.STAPEL=d.rezept.map(r=>({...r, verr:(r.verr!=null?r.verr:((EFFEKTE[r.typ]&&EFFEKTE[r.typ].verr)||'ueber')), id:++nr, zu:false}));
       const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
       m.grund={art:seite.art,nr:seite.nr,farbe:(d.grund&&GRUND_FARBE[d.grund.farbe])?d.grund.farbe:null};
@@ -27346,24 +27347,24 @@ function zeichneFrame(t){
         try{ if(kasten.classList.contains('bart')){ const mo=kasten.querySelector('img.motiv'); if(mo){ m.motiv=mo; mo.style.visibility='hidden'; } } }catch(e){} };
       const fehler=q=>{ if(q!==m.bild||seite.art==='titelbild') return; quelleWeg(q); seite=seiten[0]; m.grund={...m.grund,art:'titelbild',nr:1}; m.bild=quelleBauen(seite,fertig,fehler); };
       m.bild=quelleBauen(seite,fertig,fehler); });
-    if(!lebendRaf) lebendRaf=requestAnimationFrame(lebendTick); }
-  function lebendAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-lebend'); if(!cv) return; cv.remove(); const i=lebende.findIndex(m=>m.canvas===cv);
-    if(i>=0){ const m=lebende[i]; quelleWeg(m.bild); lebende.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; } }
-  function lebendZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
-  function lebendTick(){
-    for(let i=lebende.length-1;i>=0;i--) if(!lebende[i].canvas.isConnected){ quelleWeg(lebende[i].bild); if(lebende[i].motiv) lebende[i].motiv.style.visibility=''; lebende.splice(i,1); }
-    if(!lebende.length){ lebendRaf=0; return; }
-    lebendRaf=requestAnimationFrame(lebendTick);
+    if(!clipRaf) clipRaf=requestAnimationFrame(clipTick); }
+  function clipAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-clip'); if(!cv) return; cv.remove(); const i=clips.findIndex(m=>m.canvas===cv);
+    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; } }
+  function clipZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
+  function clipTick(){
+    for(let i=clips.length-1;i>=0;i--) if(!clips[i].canvas.isConnected){ quelleWeg(clips[i].bild); if(clips[i].motiv) clips[i].motiv.style.visibility=''; clips.splice(i,1); }
+    if(!clips.length){ clipRaf=0; return; }
+    clipRaf=requestAnimationFrame(clipTick);
     gemerkt=bundel();
-    for(const m of lebende){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(lebendZeit(m)); }
+    for(const m of clips){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(clipZeit(m)); }
     setzen(gemerkt); gemerkt=null; }
   /* Nach Sichern/Loesen: Vorrat vergessen und laufende Maler dieses Titels
      abwerfen - die App haengt sie ueber markieren() frisch wieder ein. */
-  function lebendNeu(id){ delete songCache[id]; lebende.filter(m=>m.songId===id).forEach(m=>lebendAus(m.kasten)); }
-  return { oeffnen, schliessen, lebendAn, lebendAus, lebendNeu };
+  function clipNeu(id){ delete songCache[id]; clips.filter(m=>m.songId===id).forEach(m=>clipAus(m.kasten)); }
+  return { oeffnen, schliessen, clipAn, clipAus, clipNeu };
 })();
 
-/* <<< Titelbild-Studio (tbs-modul.js) */
+/* <<< Effektclip-Studio (tbs-modul.js) */
 </script>
 </body>
 </html>
