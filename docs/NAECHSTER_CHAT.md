@@ -2998,3 +2998,61 @@ unsere krumm — die beiden Mengen liegen weit auseinander.
 **Offen bleibt:** Beim ersten Abgleich meldet `bin/sammeln.js` diese sechs noch als „Video-Artwork
 geändert", weil die Suno-Adresse erst beim ersten Medienlauf ins Buch kommt. Das ist richtig so, auf
 Suno hat sich wirklich etwas geändert.
+
+### Kehrtwende: der Mensch entscheidet, nicht der Lauf (11.09.2026, abends)
+**Alles oben über das automatische Urteil gilt nicht mehr.** Der erste Medienlauf mit der Erkennung
+hat gezeigt, warum. Suno liefert hochgeladenes Video-Artwork **neu kodiert** aus und macht es dabei
+null bis drei Bilder länger, die Bildgröße bleibt exakt:
+
+| Titel | unser Export | von Suno | Differenz |
+|---|---|---|---|
+| Bei mir klingelt keiner | 9,3667 s | 9,3670 s | 0 Bilder |
+| Okkultation | 9,7667 s | 9,7670 s | 0 Bilder |
+| Die Gedanken | 9,3527 s | 9,3850 s | 1 Bild |
+| Noch lachst Du | 8,9336 s | 9,0333 s | 3 Bilder |
+
+Drei wurden erkannt und entfernt, **Noch lachst Du rutschte durch** und landete im Archiv, denn das
+Fenster war ±0,05 s, also anderthalb Bilder. Ich habe es kurz auf ein einseitiges Fenster von −0,02
+bis +0,15 s erweitert (einseitig, weil unsere Datei das Original ist und Sunos Kopie nie kürzer sein
+kann). Dann kam Jörgs Einwand, und er hatte recht:
+
+> „Was mich irritiert, wenn du Buch führst, wann wir was exportieren und beim Laden ausgerechnet
+> zeitnah genau diese Clips wieder auftauchen, dann ist das schon Alarm, oder?"
+
+> „Du kannst mir auch bei der Laderoutine die Liste der Songs zeigen, die plötzlich neue Videos
+> haben und ich sage Daumen hoch oder runter. Ich werde ja nie in einer Nacht mehr als 5 neue Videos
+> zuweisen. Das ist wirklich eher ein kleines Problem."
+
+Die Länge war der schwache Zeuge und stand im Mittelpunkt. Der starke Zeuge ist die Verkettung:
+derselbe Titel, Rezept liegt da, Export im Buch, und dort taucht kurz darauf ein Video auf. Den Rest
+sieht ein Mensch in fünf Sekunden.
+
+**Jetzt so:** `bin/laden.js` urteilt nicht mehr und **löscht nie etwas**. Es merkt vor, welche Titel
+ein Video-Artwork tragen, für die ein Export im Buch steht, setzt dafür `?` in die Laufzeile und
+zeigt die Liste am Ende. Damit läuft er weiter unbeaufsichtigt und auch mit fremden Beständen durch.
+
+```bash
+node bin/effektclip-buch.js pruefen
+```
+
+zeigt je Titel unsere Zahlen neben denen der Datei samt Bilddifferenz und fragt. **Ja** schreibt
+`artwork.mp4.eigen.json`, löscht die Datei, merkt die Suno-Adresse im Buch. **Nein** schreibt
+`artwork.mp4.fremd.json`. Ohne Antwort bleibt alles liegen. Entschiedenes wird nicht neu gefragt.
+
+Entfernt, weil tot: `eigenerClip()`, `videoMass()`, `ausgabebuchSchreiben()`, `eigeneTitel` in
+`bin/laden.js`. Die Begründungen stehen als Kommentar an ihrer Stelle.
+
+**Zwei Fallen aus dem Umbau.** `schonErkannt()` ging beim Herausschneiden mit verloren, wurde aber
+noch aufgerufen — die Syntaxprüfung sieht so etwas nicht, erst ein Sandkasten-Durchlauf. Und dieser
+Durchlauf holte 27 Playlist-Cover von Suno, weil nur die Song-Adressen stillgelegt waren.
+
+### Offen und für später
+- **Nebel-Shader, graue Spuren.** Gefunden, noch nicht behoben: in `web/index.html` (Zeile ~27368)
+  entsättigt `mix(vec3(lum),um,0.6)` die Umgebung um 40 %, während der Kommentar darüber das
+  Gegenteil behauptet. Dazu Verwaschradien von 5,5 und 11,5 % der Bildbreite und eine Dunstdichte,
+  die bei 0,45 beginnt. Vorschlag: Entsättigung raus, Radius kleiner, und physikalischer rechnen
+  (Bild dämpfen plus Luftlicht) statt es durch eine verwaschene Kopie zu ersetzen.
+- **Gottesstrahlen** (Occlusion Map plus radialer Weichzeichner, GPU-Gems-Ansatz) wären ein
+  eigener Effekt, nicht die Lösung für die grauen Spuren. Unser Licht-Puffer `u_licht` ist bereits
+  die Lichtquellenkarte. Achtung: 100 Abtastungen je Bildpunkt sind die Größenordnung, die uns die
+  Scheinwerferblenden lahmgelegt hat. Herkunft und Lizenz wären vorher zu klären.
