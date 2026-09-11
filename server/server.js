@@ -261,7 +261,7 @@ function liefere(req, res, datei) {
      bei max-age=31536000 ohne Last-Modified fragt er nie wieder nach. */
   /* eigen*.mp4/jpg/mp3 und das Rezept sind ebenso wandelbar: sie werden ersetzt, geloest und
      unter derselben Nummer neu vergeben (nach Loeschen der hoechsten kehrt sie wieder). */
-  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json)$/.test(datei);
+  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4)$/.test(datei);
   const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
   const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();
@@ -1401,6 +1401,70 @@ const server = http.createServer((req, res) => {
         jsonAntwort(res, { fehler: 'ffmpeg: ' + String(e.message).slice(0, 200) }, 500);
       } finally { try { fsx.rmSync(ordner, { recursive: true, force: true }); } catch (e) {} }
     });
+  }
+  /* SPRUNGKOPIE. Ein Bewegtbild als Grund laeuft heute einfach mit. Sobald die Zeit aber gebeugt
+     wird - Pendel, Stottern, Rueckfall -, muss der Maler je Bild an eine beliebige Stelle springen.
+     Normal kodiertes Material hat Schluesselbilder nur alle ein bis zwei Sekunden; dazwischen muss
+     der Dekodierer von dort vorwaerts rechnen. Gemessen am 11.09.2026 im Browser, mit Nachweis des
+     wirklich angekommenen Bildes: 124,6 ms je Sprung gegen 14,9 ms bei einer Fassung aus lauter
+     Schluesselbildern. Bei 30 Bildern je Sekunde stehen 33,3 ms zur Verfuegung - ohne diese Kopie
+     geht es also nicht. Sie kostet 0,74 s Rechenzeit je zehn Sekunden Material und das 3,7fache an
+     Platz; sie ist abgeleitet und darf jederzeit geloescht werden. */
+  if (p === '/api/sprungkopie' && req.method === 'POST') {
+    const id = String(u.searchParams.get('id') || '');
+    const was = String(u.searchParams.get('was') || '');
+    const nr = Math.max(1, Math.min(99, parseInt(u.searchParams.get('nr'), 10) || 1));
+    if (!/^[0-9a-f-]{8,64}$/i.test(id)) { jsonAntwort(res, { fehler: 'id fehlt oder ist keine' }, 400); return; }
+    if (was !== 'bewegtbild' && was !== 'video') { jsonAntwort(res, { fehler: 'was muss bewegtbild oder video sein' }, 400); return; }
+    const basis = was === 'bewegtbild' ? 'artwork' : ('eigen' + (nr > 1 ? '-' + nr : ''));
+    const quelle = path.join(SONGS, id, basis + '.mp4');
+    const ziel = path.join(SONGS, id, basis + '.sprung.mp4');
+    const url = '/media/' + id + '/' + basis + '.sprung.mp4';
+    /* Die Bildrate wird GEMESSEN, nicht unterstellt. Erster Wurf rechnete bilder = dauer * 30 und
+       meldete 151 fuer eine Datei mit 121 Bildern - das Material lief mit 24 (11.09.2026). Fuer die
+       Zeitbeugung muss die Bildnummer stimmen, sonst rastet das Stottern neben dem Bild ein. */
+    const messen = (datei) => {
+      const t = require('node:child_process').execFileSync('ffprobe',
+        ['-v', 'error', '-select_streams', 'v:0',
+         '-show_entries', 'stream=width,height,r_frame_rate,nb_frames',
+         '-show_entries', 'format=duration', '-of', 'default=nk=1:nw=1', datei],
+        { encoding: 'utf8', timeout: 20000 }).trim().split(/\s+/);
+      const br = String(t[2] || '').split('/');
+      const rate = (+br[0] > 0 && +br[1] > 0) ? (+br[0] / +br[1]) : 0;
+      const dauer = parseFloat(t[4]) || 0;
+      const gezaehlt = parseInt(t[3], 10);
+      return { breite: parseInt(t[0], 10) || 0, hoehe: parseInt(t[1], 10) || 0, dauer, rate,
+               bilder: Number.isFinite(gezaehlt) && gezaehlt > 0 ? gezaehlt : Math.round(dauer * (rate || 30)) };
+    };
+    try {
+      if (!fs.existsSync(quelle)) { jsonAntwort(res, { fehler: 'Quelle fehlt: ' + basis + '.mp4' }, 404); return; }
+      const qs = fs.statSync(quelle);
+      /* Schon da und juenger als die Quelle? Dann nicht noch einmal rechnen. */
+      let fertig = false;
+      try { fertig = fs.statSync(ziel).mtimeMs >= qs.mtimeMs && fs.statSync(ziel).size > 0; } catch (e) {}
+      if (!fertig) {
+        const m = messen(quelle);
+        /* Hookmaterial sind Schnipsel von 5 bis 20 Sekunden (Caspar_D, 11.09.2026). Ein langer Film
+           wuerde als Sprungkopie das Vielfache an Platz fressen, ohne dass ihn jemand braucht. */
+        if (!(m.dauer > 0)) { jsonAntwort(res, { fehler: 'Quelle laesst sich nicht messen' }, 500); return; }
+        if (m.dauer > 60) { jsonAntwort(res, { fehler: 'zu lang fuer eine Sprungkopie: ' + m.dauer.toFixed(1) + ' s, hoechstens 60' }, 400); return; }
+        const vor = ziel + '.neu.mp4';
+        require('node:child_process').execFileSync('ffmpeg',
+          ['-v', 'error', '-y', '-i', quelle,
+           '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18',
+           '-g', '1', '-keyint_min', '1', '-sc_threshold', '0',   /* jedes Bild ein Schluesselbild */
+           '-an', '-movflags', '+faststart', vor],
+          { timeout: 180000 });
+        fs.renameSync(vor, ziel);
+      }
+      const m = messen(ziel);
+      jsonAntwort(res, { url, dauer: +m.dauer.toFixed(4), bilder: m.bilder, rate: +m.rate.toFixed(4),
+        breite: m.breite, hoehe: m.hoehe, bytes: fs.statSync(ziel).size, frisch: !fertig });
+    } catch (e) {
+      try { fs.unlinkSync(ziel + '.neu.mp4'); } catch (x) {}
+      jsonAntwort(res, { fehler: 'Sprungkopie: ' + String(e.message).slice(0, 200) }, 500);
+    }
+    return;
   }
   if (p === '/api/morgen/roh' && req.method === 'POST') {
     let roh = '';
