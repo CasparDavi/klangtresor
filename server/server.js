@@ -2951,11 +2951,34 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
   if (p === '/api/morgen/v2-fehlt') {
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
+    /* VORHANDEN heisst: die Hauptspur kommt von Suno, ODER die v2 liegt als zusaetzliche Spur
+       daneben (worteV2). Bis zum 11.09.2026 fragte diese Zeile nur nach der Hauptspur - und weil
+       eine nachgeladene v2 Whisper nie ersetzt, sondern als worteV2 danebengelegt wird, blieb jeder
+       Whisper-Titel fuer immer in der Liste. Das Lesezeichen holte dieselben Titel jede Nacht neu.
+       Caspar_D, 11.09.2026: "warum holt das Lesezeichen jedesmal / Wort-Zeitmarken - 7 geholt /
+       jedes mal, kommen die nie an?" - sie kamen an, nur zaehlte sie niemand.
+       Belegt an "Bei mir klingelt keiner": 333 Worte in worteV2, trotzdem jede Nacht neu geholt.
+       Wie bei v3 zaehlt auch, was als Rohdatei schon daliegt, aber noch nicht verarbeitet ist -
+       sonst holt ein zweiter Lauf vor dem Uebernehmen alles noch einmal. */
+    const hat = new Set(Object.values(k.songs)
+      .filter(s => (s.worte && s.worte.length && s.worteQuelle !== 'whisper')
+                || (s.worteV2 && s.worteV2.length))
+      .map(s => s.id));
+    try {
+      const ordner = path.join(WURZEL, 'library', 'roh');
+      for (const f of fs.readdirSync(ordner).filter(f => /^timing-.*\.json$/.test(f))) {
+        let j; try { j = JSON.parse(fs.readFileSync(path.join(ordner, f), 'utf8')); } catch (e) { continue; }
+        const probe = (j.songs && j.songs.__zeitprobe) || (j.timing && j.timing.__zeitprobe);
+        if (probe) for (const [id, o] of Object.entries(probe)) {
+          const v2 = o && o.v2 && !o.v2.fehler ? (Array.isArray(o.v2) ? o.v2 : o.v2.aligned_words) : null;
+          if (Array.isArray(v2) && v2.length) hat.add(id);
+        }
+      }
+    } catch (e) {}
     const fehlt = Object.values(k.songs)
-      .filter(s => !s.fremd && s.lyrics && s.lyrics.trim()
-                && (!(s.worte && s.worte.length) || s.worteQuelle === 'whisper'))
+      .filter(s => !s.fremd && s.lyrics && s.lyrics.trim() && !hat.has(s.id))
       .map(s => s.id);
-    return jsonAntwort(res, { fehlt });
+    return jsonAntwort(res, { fehlt, vorhanden: hat.size });
   }
 
   if (p === '/api/morgen/v3-fehlt') {

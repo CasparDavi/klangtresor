@@ -3190,3 +3190,29 @@ Commits `da7310c` bis `5a9320e`.
   Standbilder zeigen das zuletzt gemalte Bild. Wer Bewegung prüft, muss erst nachsehen, ob Bilder laufen.
 - Ein Ziehzustand in der Closure einer Funktion, die sich beim ersten Klick selbst neu baut, ist
   beim zweiten Ereignis wieder weg. Das Ziehen ging nie, und niemand hätte es gemerkt.
+
+### Warum das Lesezeichen jede Nacht dieselben Wort-Zeitmarken holte (11.09.2026)
+Jörg: *„warum holt das Lesezeichen jedesmal / Wort-Zeitmarken — 7 geholt / jedes mal, kommen die nie
+an?"* Sie kamen an. Gezählt hat sie niemand.
+
+`/api/morgen/v2-fehlt` fragte nur, ob die **Hauptspur** von Whisper stammt. Eine nachgeladene v2
+ersetzt Whisper aber absichtlich nicht (Regel vom 20.08.2026: *„v2 darf Whisper nicht ersetzen —
+Whisper kennt die Zeitpunkte genau, da schlampt Suno"*), sie wird als zusätzliche Spur `worteV2`
+danebengelegt. Damit blieb jeder Whisper-Titel für immer in der Fehlt-Liste. Bei v3 war es richtig
+gemacht: dort zählt auch, was schon da ist.
+
+Belegt an **„Bei mir klingelt keiner"**: 333 Worte in `worteV2`, und trotzdem jede Nacht neu geholt.
+
+**Behoben:** vorhanden heißt jetzt *Hauptspur von Suno ODER `worteV2` vorhanden*, dazu — wie bei v3 —
+zählt auch eine noch unverarbeitete Rohdatei. Am laufenden Haus geprüft: `v2-fehlt` meldet **4 statt
+5**, 256 gelten als vorhanden; v3 unverändert 2 von 260.
+
+Die sieben waren also fünf aus der v2-Liste plus zwei aus der v3-Liste.
+
+**Offen, zweite Hälfte der Frage:** drei Titel (*Ich dreh mich nicht um!*, *Selbstoptimiert*, *Erste
+Liebe*) haben Whisper und keine `worteV2`, *Kartoffeln mit Dip* hat gar keine Marken. Ob Suno für sie
+überhaupt eine brauchbare v2 liefert, ließ sich nicht feststellen: in `library/roh` liegt **keine
+einzige** `timing-*.json` mehr, sie sind nach dem Verarbeiten weggeräumt. Dazu zählt der
+Lesezeichen-Lauf eine Antwort schon als „geholt", wenn sie kein Fehler ist — auch wenn keine Worte
+darin stehen. Wer das klären will, muss beim nächsten Lauf in die frische Rohdatei sehen, bevor sie
+verarbeitet wird.
