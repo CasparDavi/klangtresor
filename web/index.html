@@ -27900,9 +27900,12 @@ function laufKurveMalen(){
   const px=v=>padX+(W-2*padX)*v, py=v=>H-pad-(H-2*pad)*((v-lo)/(hi-lo));
   x.strokeStyle='rgba(128,128,128,.45)'; x.lineWidth=1;
   x.beginPath(); x.moveTo(padX,pad); x.lineTo(padX,H-pad); x.lineTo(W-padX,H-pad); x.stroke();
-  /* Taktgrenzen als feine Striche - dieselben Grenzen wie die Felder darueber. */
-  { const n=laufFelder().length; x.strokeStyle='rgba(128,128,128,.25)';
-    for(let i=1;i<n;i++){ const X=px(i/n); x.beginPath(); x.moveTo(X,pad); x.lineTo(X,H-pad); x.stroke(); } }
+  /* Taktgrenzen nur als kurze Haekchen an der Achse. Als durchgehende Senkrechte sahen sie aus wie
+     Spruenge des Fadens - und ein Sprung heisst hier: Material wird uebersprungen. Caspar_D,
+     11.09.2026: "ich verstehe die senkrechten striche nicht, das waere doch Loeschung von
+     videosequenz". Im Faden bedeutet senkrecht genau das; im Hintergrund darf es das nicht. */
+  { const n=laufFelder().length; x.strokeStyle='rgba(128,128,128,.45)';
+    for(let i=1;i<n;i++){ const X=px(i/n); x.beginPath(); x.moveTo(X,H-pad); x.lineTo(X,H-pad-5); x.stroke(); } }
   x.save(); x.beginPath(); x.rect(padX,pad,W-2*padX,H-2*pad); x.clip();
   x.setLineDash([3,5]); x.strokeStyle='rgba(128,128,128,.55)';
   x.beginPath(); x.moveTo(px(0),py(0)); x.lineTo(px(1),py(L)); x.stroke(); x.setLineDash([]);
