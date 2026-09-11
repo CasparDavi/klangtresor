@@ -27897,11 +27897,13 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     +' title="Die gew\u00e4hlten Takte laufen r\u00fcckw\u00e4rts"><span class="tbs-lzeichen">\u21a9</span>umkehren</button>'
     +'</div>';
   /* Steht fuer sich, weil es nicht eine Form setzt, sondern Takte dazuschreibt. */
-  const platz=wahl?(F.length-1-wahl.b):0, passt=wahl&&platz>=1;
+  /* Geht immer, solange das Lied noch Takte hat - notfalls waechst der Clip dafuer. */
+  const brauchte=wahl?(wahl.b+1+(wahl.b-wahl.a+1)):0, passt=wahl&&brauchte<=maxT;
   h+='<div class="tbs-lformen"><button type="button" class="tbs-lp" id="tbs-lspiegel"'+(passt?'':' disabled')
-    +' title="Die gew\u00e4hlten Takte seitenverkehrt dahinter schreiben, damit der Faden zur\u00fcckkommt">'
+    +' title="Die gew\u00e4hlten Takte seitenverkehrt dahinter schreiben, damit der Faden zur\u00fcckkommt'
+    +' \u2014 der Clip w\u00e4chst dabei, wenn n\u00f6tig">'
     +'<span class="tbs-lzeichen">\u2928</span>gespiegelt anh\u00e4ngen</button>'
-    +(wahl&&!passt?'<span class="tbs-lwie">dahinter ist kein Takt mehr frei</span>':'')+'</div>';
+    +(wahl&&!passt?'<span class="tbs-lwie">daf\u00fcr hat das Lied nicht genug Takte</span>':'')+'</div>';
   const w=(k,liste,txt)=>'<label class="tbs-lz">'+txt+' <select data-l="'+k+'">'
     +liste.map(o=>'<option value="'+o[0]+'"'+(String(LAUF[k])===String(o[0])?' selected':'')+'>'+o[1]+'</option>').join('')
     +'</select></label>';
@@ -27969,7 +27971,7 @@ function laufWahlZeichnen(){
   box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>{ b.disabled=!wahl; });
   { const u=box.querySelector('#tbs-lumkehr'); if(u) u.disabled=!wahl;
     const sp=box.querySelector('#tbs-lspiegel');
-    if(sp) sp.disabled=!(wahl&&laufFelder().length-1-wahl.b>=1); } }
+    if(sp) sp.disabled=!(wahl&&wahl.b+1+(wahl.b-wahl.a+1)<=laufMaxTakte()); } }
 /* Die Auswahl, geordnet und auf die vorhandenen Takte begrenzt. */
 function laufWahl(){ const n=laufTakte(); if(!LAUF.wahl) return null;
   const a=Math.max(0,Math.min(LAUF.wahl.von,LAUF.wahl.bis)), b=Math.min(n-1,Math.max(LAUF.wahl.von,LAUF.wahl.bis));
@@ -28003,7 +28005,14 @@ function laufUmkehren(){ const wahl=laufWahl(); if(!wahl) return;
    vor". Es ist eine HANDLUNG, kein Modus: das Angehaengte ist danach ganz normal bearbeitbar, und
    ob es dann noch schliesst, sagt das Mass unter der Kurve. */
 function laufSpiegelnAnhaengen(){
-  const wahl=laufWahl(); if(!wahl) return;
+  let wahl=laufWahl(); if(!wahl) return;
+  /* Ist dahinter kein Platz, WAECHST der Clip. Bis zum 11.09.2026 stand da nur "dahinter ist kein
+     Takt mehr frei" - eine Absage, wo die Antwort auf der Hand liegt (Caspar_D: "es steht immer
+     noch da, dahinter sei kein takt mehr frei"). Die Grenze bleibt, was das Lied hergibt. */
+  const gebraucht=wahl.b+1+(wahl.b-wahl.a+1);
+  if(gebraucht>laufFelder().length){
+    LAUF.takte=Math.min(gebraucht,laufMaxTakte());
+    wahl=laufWahl(); if(!wahl) return; }
   const F=laufFelder(), n=F.length, platz=n-1-wahl.b;
   if(platz<1) return;
   const wieViele=Math.min(wahl.b-wahl.a+1,platz), ende=wahl.b+wieViele;
