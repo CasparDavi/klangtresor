@@ -3061,6 +3061,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-werkzeuge #tbs-preset{flex:1 1 0}
 /* ---- Bedienung (Caspar_D, 11.09.2026): Quelle als Vorschaubilder, Kette als Tabelle mit Kopfzeile, Akkordeon ---- */
 #tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+#tbs #tbs-lauf{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+#tbs .tbs-lz{display:flex;gap:5px;align-items:center;font-size:12px;opacity:.8}
+#tbs .tbs-lz select{font:inherit}
+#tbs .tbs-lhinweis{flex:1 0 100%;font-size:11px;opacity:.6;line-height:1.35;min-height:1px}
 #tbs .tbs-quelle{position:relative;width:54px;height:72px;padding:0;border:2px solid var(--rand);border-radius:8px;background:#000;overflow:hidden;cursor:pointer;flex:0 0 auto}
 #tbs .tbs-quelle img, #tbs .tbs-quelle canvas{width:100%;height:100%;object-fit:cover;display:block}
 #tbs .tbs-quelle:hover{border-color:var(--schwach)}
@@ -27611,13 +27615,71 @@ function testbildBauen(){ if(TESTBILD) return TESTBILD; const W=900,H=1200, c=do
 function quelleBauen(seite,beiFertig,beiFehler){
   if(seite.test&&!seite.url){ const c=testbildBauen(); setTimeout(()=>beiFertig(c),0); return c; }
   if(seite.video){ const v=document.createElement('video'); v.muted=true; v.loop=true; v.playsInline=true; v.preload='auto';
-    v.onloadeddata=()=>beiFertig(v); v.onerror=()=>beiFehler(v); v.src=seite.url; v.play().catch(()=>{}); return v; }
+    v.onloadeddata=()=>beiFertig(v); v.onerror=()=>beiFehler(v);
+    /* Mit gebogener Zeit die Arbeitskopie, sonst das Original - die ist groesser und waere sonst umsonst. */
+    const k=laufSchluessel();
+    v.src=(laufBeugt()&&k&&SPRUNG.fuer===k&&SPRUNG.url)?SPRUNG.url:seite.url;
+    if(!laufBeugt()) v.play().catch(()=>{}); return v; }
   const im=new Image(); im.onload=()=>beiFertig(im); im.onerror=()=>beiFehler(im); im.src=seite.url; return im; }
 function qMass(q){ if(!q) return [1,1]; return q.tagName==='VIDEO'?[q.videoWidth||1,q.videoHeight||1]:q.tagName==='CANVAS'?[q.width||1,q.height||1]:[q.naturalWidth||1,q.naturalHeight||1]; }
 function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttribute('src'); q.load(); }catch(e){} } }
-/* Video-Grund: unter einer Farbflaeche ruht es (kein Dekodieren fuer nichts); ohne Player-Uhr laeuft es frei
-   weiter (bei Pause kein Sprung); mit Player-Uhr wird Drift > 0,2 s nachgesetzt. */
+/* ---- DER LAUF: wie die Zeit laeuft -----------------------------------
+   Caspar_D, 11.09.2026: "Videos wie in Musikvideos vor und zurueck laufen lassen, absichtliche
+   Stoerungen und Ausfaelle einbauen, so dass man die Sequenzen auf Taktlaenge getrimmt kriegt."
+   Der Maler ist eine reine Funktion von t - jedes Teilchen rechnet seinen Ort aus t und Modulo,
+   nichts sammelt sich auf. Darum braucht es keine Bildbearbeitung, sondern nur eine Beugung der
+   Zeitachse: t -> f(t). Die gilt fuer ALLES zugleich, das Bewegtbild darunter und die Effekte
+   darueber, weil zeichneFrame() sie ganz oben anwendet und quelleSync() dasselbe t bekommt.
+   Alle Formen sind so gebaut, dass f(L) = f(0) gilt, solange L ganze Takte lang ist - der Ausschnitt
+   bleibt also von selbst nahtlos. Nebengewinn: unter dem Pendel schliesst sich auch, was sonst nie
+   schliesst (Wellen, Kaustik, Dunst, Flammen), weil der Rueckweg am Anfang endet. */
+let LAUF={form:'vor',teil:4,wdh:2,takte:2}, SPRUNG={url:null,fuer:null,fehler:null};
+const LAUF_FORMEN=[['vor','vorw\u00e4rts'],['pendel','Pendel'],['stottern','Stottern'],['rasten','Standbild']];
+function laufSchluessel(){ const p=SEITEN[seiteIndex()]; return (DATA&&p&&p.video)?(DATA.id+':'+p.art+':'+(p.nr||1)):null; }
+function laufBeugt(){ return LAUF.form!=='vor'; }
+/* Der Taktanker: die erste Eins. Ohne Taktmass wird nicht gebogen - lieber nichts tun als daneben. */
+function laufZeit(t){
+  if(!laufBeugt()) return t;
+  const T=taktLaenge(), takt=T.takt, a=(T.einsen&&T.einsen.length)?T.einsen[0]:0;
+  if(!(takt>0)) return t;
+  const v=t-a;
+  if(LAUF.form==='pendel'){ const P=takt*Math.max(1,LAUF.takte), u=((v%P)+P)%P;
+    return a+(u<=P/2?u:P-u); }                                    /* hin und zurueck, Ende = Anfang */
+  /* Gerechnet wird im RASTERINDEX, nicht in Sekunden. Erster Wurf rundete Sekunden ab und liess
+     die Rasterkante je nach Rundung kippen; an der Naht sprang das Bild dann um einen Rasterschritt.
+     Mit genau einem Abrunden je Bild stimmt f(t+L) = f(t) + L auf die letzte Stelle (11.09.2026). */
+  const g=takt/Math.max(1,LAUF.teil);
+  const i=Math.floor(v/g+1e-6);                                    /* in welchem Rasterfeld liegt t */
+  const rest=v-i*g;                                                /* und wo darin */
+  if(LAUF.form==='rasten') return a+i*g;                           /* auf dem Raster stehenbleiben */
+  if(LAUF.form==='stottern'){
+    /* Der Block muss den Takt kacheln, sonst rueckt der Lauf je Ausschnitt um einen Rest weiter und
+       die Naht reisst auf: drei Wiederholungen im Sechzehntelraster ergeben 5,33 Bloecke je Takt.
+       Teilt die Zahl das Raster nicht, gilt zwei - das teilt immer, alle Raster sind gerade. */
+    const teil=Math.max(1,LAUF.teil), wunsch=Math.max(2,LAUF.wdh|0);
+    const w=(teil%wunsch===0)?wunsch:2;
+    const blk=Math.floor(i/w);                                     /* der wievielte Block */
+    return a+blk*w*g+rest; }                                       /* immer das erste Feld des Blocks */
+  return t; }
+/* Springen im Video kostet nur dann wenig, wenn jedes Bild ein Schluesselbild ist: gemessen 124,6 ms
+   gegen 14,9 ms je Sprung. Das Haus baut die Arbeitskopie auf Zuruf, einmal je Quelle. */
+function sprungHolen(){
+  const k=laufSchluessel(); if(!k) return Promise.resolve(null);
+  if(SPRUNG.fuer===k) return Promise.resolve(SPRUNG.url);
+  const p=SEITEN[seiteIndex()];
+  return fetch('/api/sprungkopie?id='+encodeURIComponent(DATA.id)+'&was='+encodeURIComponent(p.art)+'&nr='+(p.nr||1),{method:'POST'})
+    .then(r=>r.json()).then(d=>{ if(!d||!d.url) throw new Error((d&&d.fehler)||'keine Antwort');
+      SPRUNG={url:d.url,fuer:k,fehler:null}; return d.url; })
+    .catch(e=>{ SPRUNG={url:null,fuer:k,fehler:String(e.message||e)}; return null; }); }
+/* Video-Grund: ohne Lauf wie bisher - es laeuft frei mit, und nur Drift > 0,2 s wird nachgesetzt.
+   Mit Lauf wird es angehalten und Bild fuer Bild an seine Stelle gesetzt; t ist dann schon gebogen. */
 function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO') return;
+  if(laufBeugt()){
+    if(!q.paused) q.pause();
+    if(!(q.duration>0)) return;
+    const soll=((t%q.duration)+q.duration)%q.duration;
+    if(Math.abs(q.currentTime-soll)>0.008) q.currentTime=soll;     /* rund ein Viertelbild Toleranz */
+    return; }
   if(q.paused) q.play().catch(()=>{});
   if(!uhrEcht||!(q.duration>0)) return; const soll=t%q.duration;
   if(Math.abs(q.currentTime-soll)>0.2&&Math.abs(q.currentTime-soll)<q.duration-0.2) q.currentTime=soll; }
@@ -27630,7 +27692,7 @@ function quellenUI(){ if(!root) return; const box=$('#tbs-quellen'); if(!box) re
     return luecke+'<button type="button" class="tbs-quelle'+(k===i?' on':'')+'" data-i="'+k+'" title="'+p.lbl+'">'+inner+'</button>'; }).join('');
   const tc=box.querySelector('canvas'); if(tc) tc.getContext('2d').drawImage(testbildBauen(),0,0,54,72);
   box.querySelectorAll('.tbs-quelle').forEach(b=>b.onclick=()=>quelleWaehlen(+b.dataset.i));
-  quellenNamen(); }
+  quellenNamen(); laufUI(); }
 /* Beschriftung unter den Vorschaubildern (Caspar_D, 11.09.2026): nur die gewaehlte Quelle traegt ihren
    Namen. Das linkeste Bild linksbuendig, das letzte rechtsbuendig, die mittleren mittig unter der
    senkrechten Bildachse - passt das nicht in die Zeile, ruecken sie an die Bildkante. */
@@ -27640,7 +27702,33 @@ function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen')
   const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length, r=b.getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left, w=s.offsetWidth; let x;
   if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
   x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
-function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); fussStand(); }
+function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr};
+  if(laufBeugt()&&p.video) sprungHolen().then(()=>{ grundLaden(); laufUI(); }); else grundLaden();
+  quellenUI(); fussStand(); }
+/* Die Bedienung des Laufs. Nur was zur gewaehlten Form gehoert, steht auch da - ein Raster hat beim
+   Pendel nichts zu suchen und eine Taktzahl beim Standbild nicht. */
+function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
+  const w=(k,liste,txt)=>'<label class="tbs-lz">'+txt+' <select data-l="'+k+'">'
+    +liste.map(o=>{ const v=Array.isArray(o)?o[0]:o, l=Array.isArray(o)?o[1]:o;
+      return '<option value="'+v+'"'+(String(LAUF[k])===String(v)?' selected':'')+'>'+l+'</option>'; }).join('')
+    +'</select></label>';
+  const T=taktLaenge(), ohneTakt=!(T.takt>0);
+  let h=w('form',LAUF_FORMEN,'L\u00e4uft');
+  if(LAUF.form==='pendel') h+=w('takte',[[1,'einen Takt'],[2,'zwei Takte'],[4,'vier Takte']],'hin und zur\u00fcck \u00fcber');
+  if(LAUF.form==='stottern'||LAUF.form==='rasten') h+=w('teil',[[2,'halbe Takte'],[4,'Viertel'],[8,'Achtel'],[16,'Sechzehntel']],'Raster');
+  /* Nur Wiederholungszahlen anbieten, die das Raster teilen - sonst kachelt der Block den Takt nicht. */
+  if(LAUF.form==='stottern') h+=w('wdh',[[2,'zweimal'],[4,'viermal'],[8,'achtmal']].filter(o=>LAUF.teil%o[0]===0),'jeder Schnipsel');
+  let hin='';
+  if(laufBeugt()&&ohneTakt) hin='F\u00fcr diesen Titel kennen wir kein Taktma\u00df \u2014 der Lauf bleibt wirkungslos.';
+  else if(laufBeugt()&&SPRUNG.fehler) hin='Arbeitskopie ging nicht: '+SPRUNG.fehler+' \u2014 das Springen wird z\u00e4h.';
+  else if(laufBeugt()&&(SEITEN[seiteIndex()]||{}).video) hin='Bewegtbild springt jetzt auf dem Raster; die Arbeitskopie daf\u00fcr baut das Haus einmal.';
+  box.innerHTML=h+'<div class="tbs-lhinweis">'+hin+'</div>';
+  box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value)); }
+function laufSetzen(k,v){ LAUF[k]=(k==='form')?String(v):(parseInt(v,10)||1);
+  if(LAUF.teil%LAUF.wdh!==0) LAUF.wdh=2;          /* Raster gewechselt: unmoegliche Zahl mitziehen */
+  const p=SEITEN[seiteIndex()];
+  if(p&&p.video){ if(laufBeugt()) sprungHolen().then(()=>{ grundLaden(); laufUI(); }); else { grundLaden(); laufUI(); } }
+  else laufUI(); }
 function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
 
 /* Cover-Blätterer */
@@ -27648,6 +27736,7 @@ function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((sei
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); lmVorschauen(); }
 function zeichneFrame(t){
   if(!bereit) return;
+  t=laufZeit(t);                       /* einmal hier - danach sehen Bild und Effekte dieselbe Zeit */
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   for(const e of STAPEL){ if(!aktiv(e))continue; const s=EFFEKTE[e.typ].ohneStaerke?1:e.staerke;
@@ -27818,7 +27907,15 @@ function zeichneFrame(t){
     const runden=x=>Math.max(2,Math.round(x*BILDRATE))/BILDRATE;
     if(!takt||takt<=0.05) return { t0:jetzt, L:runden(MAX_SEK), takte:0, takt:0 };
     let a=einsen[0]; for(const e of einsen){ if(e<=jetzt) a=e; else break; }
-    const takte=Math.max(1,Math.floor(MAX_SEK/takt)), L=runden(Math.min(MAX_SEK,takte*takt));
+    let takte=Math.max(1,Math.floor(MAX_SEK/takt));
+    /* Das Pendel faltet ueber seine eigene Periode. Passt die nicht ganzzahlig in den Ausschnitt,
+       endet der Rueckweg mitten im Bild und die Naht reisst auf. Also den Ausschnitt auf ein
+       Vielfaches der Pendelperiode kuerzen; passt nicht einmal eine, wird die Periode halbiert,
+       bis sie passt (die angebotenen Werte sind Zweierpotenzen). */
+    if(LAUF&&LAUF.form==='pendel'){ let p=Math.max(1,LAUF.takte|0);
+      while(p>1&&p>takte) p>>=1;
+      takte=Math.max(p,Math.floor(takte/p)*p); }
+    const L=runden(Math.min(MAX_SEK,takte*takt));
     return { t0:a, L, takte, takt:L/takte }; }
   /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
      Das erkannte Raster schwankt um Millisekunden; taktgetriebene Effekte traefen die Naht sonst nicht.
@@ -27913,6 +28010,8 @@ function zeichneFrame(t){
       +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
       +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">hierauf wirken die Effekte</span></div>'
       +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abLauf"><div class="tbs-abtitel">Lauf <span class="tbs-abunter">wie die Zeit l\u00e4uft \u2014 f\u00fcr Bild und Effekte zugleich</span></div>'
+      +'<div id="tbs-lauf"></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abVorb"><div class="tbs-abtitel tbs-vorbkopf"><span>Vorbereitung <span class="tbs-abunter">die Quelle, bevor die Effekte wirken</span></span><button type="button" class="tbs-mini tbs-vorbstand" id="tbs-vorbStand" hidden title="Alle Anpassungen der Vorbereitung auf neutral">Anpassung l\u00f6schen</button><button type="button" class="tbs-knopf tbs-klapp" id="tbs-vorbKlapp" title="aufklappen">\u25b8</button></div>'
       +'<div id="tbs-vorbKoerper" hidden></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abKette"><div class="tbs-abtitel">Effektkette <span class="tbs-abunter">wird von oben nach unten angewandt</span></div>'
