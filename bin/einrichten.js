@@ -71,7 +71,7 @@ const boese = (t) => schreib('     ' + BOESE('[x] ') + '  ' + t);
 const tut = (t) => schreib('     ' + MARKE('->  ') + '  ' + t);
 
 let SCHRITT = 0;
-const SCHRITTE = 9;
+const SCHRITTE = 10;
 function schritt(t) {
   SCHRITT++;
   leer();
@@ -568,19 +568,44 @@ function da(befehl) {
     if (w === 'wieder') laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
   } else gut('Modelle sind da.');
 
-  /* ================================================================ */
-  schritt('Dein Suno-Alias');
+  /* ================================================================
+     AB HIER WIRD ERKLAERT, NICHT NUR GEMACHT.
+
+     Caspar_D, 11.09.2026: „und nachher im script immer gut erklären,
+     was passiert". Wer zum ersten Mal ein fremdes Programm auf seinen
+     Rechner laesst und ihm dann auch noch seinen Musikbestand zeigt,
+     hat ein Recht darauf zu wissen, was es tut - vorher, nicht danach.
+
+     Drei Dinge werden deshalb ausdruecklich gesagt: WER hier bei Suno
+     anklopft (ein Besucher, kein Angemeldeter), WAS dabei herkommt, und
+     WAS NICHT - und was man tun muesste, wenn man auch das will. */
+  schritt('Dein Suno-Name');
+  matt('KlangTresor ist eingerichtet und bereit, deine Musik aufzunehmen.');
+  leer();
+  matt('Dazu melde ich mich bei Suno an wie jeder beliebige Besucher deiner');
+  matt('Profilseite: nur lesend, ohne Passwort, ohne Anmeldung. Was ein');
+  matt('Fremder sehen kann, kann ich holen. Alles andere kommt später.');
+  leer();
   let handle = '';
   try { handle = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library/konfig.json'), 'utf8')).handle || ''; } catch (e) {}
   if (handle) gut(`Gemerkt: @${handle}`);
   else {
-    matt('Der Name hinter dem @ auf deiner Suno-Profilseite.');
-    handle = (await fragen('     ' + AKZENT('Alias: '))).replace(/^@/, '');
+    matt('Dein Suno-Name ist das, was hinter dem @ steht — bei');
+    matt('suno.com/@caspar_d also caspar_d. Nicht deine E-Mail-Adresse und');
+    matt('nicht der Anzeigename, der über deinen Liedern steht.');
+    leer();
+    handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '))).replace(/^@/, '').trim();
   }
-  if (!handle) { boese('Ohne Alias geht es nicht weiter.'); wiederkommen(); schluss(1); }
+  if (!handle) { boese('Ohne den Namen geht es nicht weiter.'); wiederkommen(); schluss(1); }
 
   /* ================================================================ */
   schritt(`Songliste von @${handle} holen`);
+  matt('Dasselbe, was auch der Morgenlauf jeden Tag tut — nur zum ersten Mal.');
+  matt('Es kommen: Titel, Liedtexte, Stilangaben, Modell und Datum, dazu');
+  matt('Abrufe, Herzen und Kommentarzahlen, und die Alben, soweit sie');
+  matt('öffentlich stehen. Zwanzig Titel je Seite, eine Seite nach der');
+  matt('anderen — schnell geht das nicht, und das ist Absicht.');
+  leer();
   if (!laeuft(process.execPath, [path.join('bin', 'sammeln.js'), handle])) {
     const w = await wieWeiter('Songliste holen', 'Ohne sie gibt es nichts zu archivieren.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
@@ -603,21 +628,27 @@ function da(befehl) {
      Wer seit 2025 dabei ist, hat aber meist alles schon einmal
      heruntergeladen und irgendwo liegen — und DAS ist der Bestand, den
      KlangTresor sonst nie wiederbekäme. */
-  schritt('Dein eigenes Suno-Zeug einlesen');
-  matt('Suno gibt den Ton seit dem 03.09.2026 nicht mehr über Links heraus.');
-  matt('Was du früher heruntergeladen hast, ist deshalb Gold wert — und es');
-  matt('kostet nichts, es hereinzuholen.');
+  schritt('Deine Klangdateien');
+  matt('Die Bibliothek steht. Es fehlt das Wichtigste: der Ton.');
+  leer();
+  matt('Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
+  matt('heraus — auch dem Besitzer nicht. Ich kann sie also nicht einfach');
+  matt('holen. Aber du hast sie vermutlich längst: Wer eine Weile dabei ist,');
+  matt('hat seine Lieder heruntergeladen und irgendwo liegen.');
+  leer();
+  matt('Zeig mir, wo dein Suno-Zeug bisher lagert. Ich sehe dort nach, auch');
+  matt('in Unterordnern, sechs Ebenen tief.');
   leer();
   matt('Erkannt wird am INHALT, nie am Dateinamen: Suno schreibt seine');
-  matt('Kennung in den Kopf jeder Datei. Was sie nicht trägt, wird nicht');
-  matt('angefasst. Nichts wird verschoben oder gelöscht — nur kopiert.');
+  matt('Kennung in den Kopf jeder Datei. Was sie nicht trägt, fasse ich');
+  matt('nicht an — deine übrige Musik bleibt unberührt. Nichts wird');
+  matt('verschoben und nichts gelöscht, nur kopiert.');
   leer();
-  matt(`In ${path.join(os.homedir(), 'Downloads')} sehe ich ohnehin nach.`);
-  satz(MATT('Liegt dein Suno-Archiv noch woanders? Dann den Ordner hier'));
-  satz(MATT('hineinziehen oder den Pfad eintippen. Unterordner werden'));
-  satz(MATT('mitdurchsucht, sechs Ebenen tief.'));
+  matt(`In ${path.join(os.homedir(), 'Downloads')} sehe ich nebenbei mit nach.`);
+  matt('Liegt dasselbe Lied an beiden Stellen, ordne ich es einmal ein —');
+  matt('welche Datei gemeint ist, sagt die Kennung, nicht der Name.');
   leer();
-  let ordner = await fragen('     ' + AKZENT('Ordner (Eingabetaste = überspringen): '));
+  let ordner = await fragen('     ' + AKZENT('Dein Suno-Ordner (Eingabetaste = überspringen): '));
   /* Wer einen Ordner ins Fenster zieht, bekommt Anführungszeichen oder
      maskierte Leerzeichen mitgeliefert. Beides hier wegnehmen, statt den
      Menschen mit einem „Ordner nicht gefunden" heimzuschicken. */
@@ -631,17 +662,57 @@ function da(befehl) {
       matt('  node bin/uebernehmen.js --ordner /pfad/zum/ordner --tun');
     } else {
       einlesen.push('--ordner', ordner);
-      matt('Der Pfad wird gemerkt — die Morgenroutine sieht ab jetzt auch dort nach.');
+      matt('Der Pfad wird gemerkt — der Morgenlauf sieht ab jetzt auch dort nach.');
     }
   }
   leer();
   laeuft(process.execPath, einlesen);
 
   /* ================================================================ */
-  schritt('Medien laden (Titelbilder, Bewegtbilder, was an Ton zu holen ist)');
+  schritt('Titelbilder und Bewegtbilder laden');
   matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
   matt('erlaubt, was da ist wird nicht noch einmal geholt.');
   laeuft(process.execPath, [path.join('bin', 'wiederherstellen.js')]);
+
+  /* ================================================================
+     DER EHRLICHE SCHLUSS: was ein Besucher NICHT sieht.
+
+     Bis hierher lief alles ohne Anmeldung. Wer mehr will, muss das
+     Lesezeichen einrichten - und der Grund dafuer gehoert dazu, sonst
+     klingt es nach Schikane statt nach Vorsicht. */
+  schritt('Zum Schluss: was ein Fremder nicht sehen darf');
+  matt('Bis hierher war alles öffentlich. Was nur dir gehört, fehlt noch:');
+  leer();
+  satz(MATT('  · deine unveröffentlichten Titel, mit Abrufen und Herzen'));
+  satz(MATT('  · wer dir gefolgt ist, wer geherzt, wer kommentiert hat —'));
+  satz(MATT('    mit Namen und Zeitpunkt'));
+  satz(MATT('  · deine Alben, auch die privaten'));
+  satz(MATT('  · Sunos eigene Analyse: Tempo, Taktraster, Hüllkurve'));
+  satz(MATT('  · die Wort-Zeitmarken für den mitlaufenden Text'));
+  satz(MATT('  · und der Ton für alles, was du bei Suno schon freigeschaltet hast'));
+  leer();
+  matt('Dafür brauche ich dich, und das hat einen guten Grund. Der Ausweis,');
+  matt('den Suno dafür verlangt, lebt etwa eine Minute und gilt nur im');
+  matt('Browser. KlangTresor bekommt ihn nicht und soll ihn nicht bekommen:');
+  matt('So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto.');
+  leer();
+  matt('Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin');
+  matt('angemeldet bist. Es kostet einen Klick am Morgen.');
+  leer();
+  matt('Die KlangTresor-Seite geht gleich auf. Dort steht unter dem roten');
+  matt('Morgenknopf die Frage:');
+  leer();
+  satz(HELL('  „Willst Du auch die nur Dir zugänglichen Daten'));
+  satz(HELL('   im KlangTresor sehen?"'));
+  leer();
+  matt('Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung.');
+  matt('Chrome wird dafür gebraucht — in anderen Browsern gibt es das nicht.');
+  leer();
+  matt('Der Ton, den du bei Suno freigeschaltet hast, kostet dabei nichts —');
+  matt('ein Guthaben zahlst du nur beim Freischalten selbst, und das machst');
+  matt('du bei Suno, nicht hier.');
+  leer();
+  matt('Das geht auch später jederzeit. KlangTresor läuft auch ohne.');
 
   /* ================================================================ */
   leer();

@@ -164,7 +164,17 @@ function fragenWennEtwasFehlt(bekannt, orte) {
     return;
   }
 
-  const fertig = [], fremd = [], ohneSig = [], schonDa = [], falschesFormat = [];
+  const fertig = [], fremd = [], ohneSig = [], schonDa = [], falschesFormat = [], doppelt = [];
+  /* DIE DUPPLIKATFALLE. Gesucht wird an mehreren Orten - im
+     Download-Ordner UND im gemerkten Suno-Ordner -, und dieselbe Datei
+     liegt oft an beiden Stellen: einmal frisch heruntergeladen, einmal
+     einsortiert. Ohne diesen Riegel landeten beide in der Liste, beide
+     wuerden auf dasselbe Ziel kopiert, und die Meldung am Ende zaehlte
+     zwei Dateien fuer ein Lied.
+
+     Bei gleichem Ziel gewinnt die GROESSERE: ein abgebrochener Download
+     ist kuerzer als der vollstaendige, nie laenger. */
+  const jeZiel = new Map();
   for (const d of dateien) {
     const endung = path.extname(d).toLowerCase();
     const id = signatur(d);
@@ -173,9 +183,14 @@ function fragenWennEtwasFehlt(bekannt, orte) {
     if (!NEHMEN[endung]) { falschesFormat.push([d, id]); continue; }
     const ziel = path.join(SONGS, id, NEHMEN[endung]);
     if (fs.existsSync(ziel) && !ERSETZEN) { schonDa.push([d, id]); continue; }
-    fertig.push({ quelle: d, ziel, id, titel: bekannt[id].titel || id.slice(0, 8),
-                  bytes: fs.statSync(d).size });
+    const eintrag = { quelle: d, ziel, id, titel: bekannt[id].titel || id.slice(0, 8),
+                      bytes: fs.statSync(d).size };
+    const schon = jeZiel.get(ziel);
+    if (!schon) { jeZiel.set(ziel, eintrag); continue; }
+    if (eintrag.bytes > schon.bytes) { doppelt.push(schon.quelle); jeZiel.set(ziel, eintrag); }
+    else { doppelt.push(d); }
   }
+  fertig.push(...jeZiel.values());
 
   /* Erst zeigen, dann handeln. */
   if (fertig.length) {
@@ -184,6 +199,7 @@ function fragenWennEtwasFehlt(bekannt, orte) {
       console.log(`    ${path.basename(f.ziel).padEnd(10)} ${gross(f.bytes).padStart(8)}   ${f.titel}`);
   }
   if (schonDa.length)  console.log(`\n  Schon im Archiv (${schonDa.length}) — mit --ersetzen überschreiben.`);
+  if (doppelt.length) console.log(`\n  Doppelt gefunden (${doppelt.length}) — je Lied wird nur die größte Fassung genommen.`);
   if (falschesFormat.length) console.log(`  Übergangen, Format wird nicht geführt (${falschesFormat.length}): `
     + falschesFormat.map(([d]) => path.extname(d)).filter((v, i, a) => a.indexOf(v) === i).join(', '));
   if (fremd.length) {
