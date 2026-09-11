@@ -686,7 +686,12 @@ const WIN_SKRIPT = [
   'rem "Trotzdem ausfuehren". Es geht ein kleines Fenster "KlangTresor Server"',
   'rem auf - das bleibt offen, solange KlangTresor laufen soll.',
   'setlocal EnableDelayedExpansion',
-  'cd /d "%~dp0"',
+  /* pushd statt cd: liegt der Export auf einer Netzfreigabe (\\rechner\ordner\...), kann cmd
+     den Pfad NICHT als Arbeitsverzeichnis nehmen - es bleibt auf C:\ stehen, meldet "CMD
+     unterstuetzt keine UNC-Pfade als aktuelles Verzeichnis", und der Starter behauptet danach,
+     node.exe fehle. pushd haengt fuer UNC stillschweigend einen Laufwerksbuchstaben davor und
+     funktioniert. Nachgestellt in echtem Windows 10 (11.09.2026). popd steht ganz am Ende. */
+  'pushd "%~dp0"',
   'title KlangTresor (Archiv)',
   'set "NODE=%~dp0node\\win-x64\\node.exe"',
   'if not exist "%NODE%" (',
@@ -705,7 +710,13 @@ const WIN_SKRIPT = [
   'type nul > "%LOG%"',
   'echo.',
   'echo   KlangTresor (Archiv, eingefroren) startet ...',
-  'start "KlangTresor Server - offen lassen" /min cmd /c ""%NODE%" Programm\\server\\server.js --eingefroren --port 8788 > "%LOG%" 2>&1"',
+  /* ABSOLUTE PFADE, nicht relative. pushd legt fuer einen UNC-Pfad einen TEMPORAEREN
+     Laufwerksbuchstaben an, und den raeumt cmd weg, sobald das Starterfenster zugeht. Der Server
+     lief dann mit einem Pfad wie Y:\... weiter, der es nicht mehr gab - seine Medienwache hielt
+     das fuer einen abgezogenen Stick und beendete ihn nach zehn Sekunden. Mit "%~dp0..." steht dort
+     der echte Pfad (Laufwerk oder UNC), der bleibt. Gemessen in Windows 10 (11.09.2026): auf dem
+     UNC-Pfad 295 von 295 Abfragen fehlerfrei - es lag nie an der Freigabe. */
+  'start "KlangTresor Server - offen lassen" /min cmd /c ""%NODE%" "%~dp0Programm\\server\\server.js" --eingefroren --port 8788 > "%LOG%" 2>&1"',
   'set "PORT="',
   'for /l %%i in (1,1,40) do (',
   '  if not defined PORT (',
@@ -726,19 +737,41 @@ const WIN_SKRIPT = [
   '  )',
   ')',
   'if not defined PORT set "PORT=8788"',
+  /* NICHT MEHR BLIND ERFOLG MELDEN. Bis zum 11.09.2026 sprang der Starter nach der Warteschleife
+     auf :auf, riss den Browser auf und schrieb "KlangTresor laeuft" - auch wenn nie ein Server
+     hochgekommen war. Wer das las, suchte den Fehler ueberall, nur nicht dort. Jetzt wird
+     nachgesehen, und wenn nichts antwortet, steht das Protokoll im Fenster statt einer Luege. */
+  'set "DA="',
   'where curl >nul 2>nul',
-  'if errorlevel 1 (ping -n 4 127.0.0.1 >nul) else (',
+  'if errorlevel 1 (',
+  '  ping -n 4 127.0.0.1 >nul',
+  '  set "DA=ungeprueft"',
+  ') else (',
   '  for /l %%i in (1,1,30) do (',
-  '    curl -s -o nul "http://localhost:!PORT!/api/index" 2>nul && goto :auf',
-  '    ping -n 2 127.0.0.1 >nul',
+  '    if not defined DA (',
+  '      curl -s -o nul "http://localhost:!PORT!/api/index" 2>nul && set "DA=ja"',
+  '      if not defined DA ping -n 2 127.0.0.1 >nul',
+  '    )',
   '  )',
   ')',
-  ':auf',
+  'if not defined DA goto :fehlt',
   'start "" "http://localhost:!PORT!/"',
   'echo   KlangTresor laeuft: http://localhost:!PORT!/',
   'echo   Das kleine Fenster "KlangTresor Server" offen lassen - es schliessen beendet KlangTresor.',
   'echo   Dieses Fenster hier darf zu.',
   'echo.',
+  'goto :ende',
+  ':fehlt',
+  'echo.',
+  'echo   KlangTresor ist nicht hochgekommen. Was der Server gesagt hat:',
+  'echo.',
+  'if exist "%LOG%" (type "%LOG%") else (echo   ^(kein Protokoll unter %LOG%^))',
+  'echo.',
+  'echo   Haeufigste Ursachen: node.exe fehlt oder wurde geblockt, kein Platz in %%TEMP%%,',
+  'echo   oder ein Virenwaechter haelt den Server an.',
+  'echo.',
+  ':ende',
+  'popd',
   'pause',
   '',
 ].join('\r\n');

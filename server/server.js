@@ -1328,10 +1328,21 @@ const server = http.createServer((req, res) => {
      ohne Anmeldung: Anzeigename, Avatar, Songzahl zur Bestaetigung
      („Das bist du?"). */
   if (p === '/api/profil-pruefen') {
+    /* DIE EINZIGE STELLE IM SERVER, DIE NACH DRAUSSEN GREIFT - und darum eingefroren gesperrt.
+       Die allgemeine Sperre oben faengt nur Nicht-GETs; diese Route ist ein GET und rutschte
+       hindurch. Auf einem Rechner ohne Netz haette sie nach Suno gegriffen (Caspar_D, 11.09.2026:
+       "Ziel ist, ja - es soll autonom isoliert laufen koennen"). Sonst holt der eingefrorene
+       KlangTresor nichts: die Seite laedt keine fremden Schriften, Bilder oder Skripte, alle
+       Medien liegen daneben, es gibt keinen Dienstarbeiter. Wer hier eine zweite Aussenverbindung
+       einbaut, muss sie hier genauso sperren. */
+    if (EINGEFROREN) return jsonAntwort(res,
+      { fehler: 'Archiv eingefroren - es greift nicht ins Netz' }, 405);
     const handle = String(u.searchParams.get('handle') || '').trim().replace(/^@/, '');
     if (!handle) return jsonAntwort(res, { fehler: 'handle fehlt' }, 400);
     const https = require('node:https');
-    return https.get(`https://studio-api-prod.suno.com/api/profiles/${encodeURIComponent(handle)}?playlists_sort_by=upvote_count&clips_sort_by=created_at&page=1`,
+    /* Mit Zeitgrenze: ohne sie haengt die Anfrage in einem Netz, das Pakete verschluckt
+       (Gastzugang mit Anmeldeseite, Netz ohne Route), bis irgendwann das Betriebssystem aufgibt. */
+    const anfrage = https.get(`https://studio-api-prod.suno.com/api/profiles/${encodeURIComponent(handle)}?playlists_sort_by=upvote_count&clips_sort_by=created_at&page=1`,
       { headers: { 'User-Agent': 'Mozilla/5.0 (KlangTresor)' } }, (a) => {
         let t = ''; a.on('data', c => t += c);
         a.on('end', () => {
@@ -1344,6 +1355,8 @@ const server = http.createServer((req, res) => {
           } catch (e) { jsonAntwort(res, { ok: false, fehler: e.message }); }
         });
       }).on('error', (e) => jsonAntwort(res, { ok: false, fehler: e.message }));
+    anfrage.setTimeout(8000, () => { anfrage.destroy(new Error('Suno antwortet nicht (8 s)')); });
+    return anfrage;
   }
   /* ---- EFFEKTCLIP: Video auf die genaue Bildzahl schneiden ------------------------------------
      Der Browser nimmt den Clip selbst auf, verliert dabei aber am Ende ein bis zwei Bilder - der
@@ -3334,9 +3347,16 @@ if (!EINGEFROREN) setInterval(() => {
 if (EINGEFROREN) {
   let fehlgriffe = 0;
   setInterval(() => {
+    /* NUR "gibt es nicht" zaehlt. Jeder andere Fehler - Zeitueberschreitung einer Freigabe, kurz
+       belegt, Rechteproblem - ist ein Schluckauf und kein abgezogener Stick. Und fuenfmal
+       hintereinander, also zehn Sekunden. Am 11.09.2026 hat eine zu scharfe Fassung dieser Wache
+       einen voellig gesunden Server erschossen, weil der Starter einen temporaeren
+       Laufwerksbuchstaben weggeraeumt hatte; lieber zehn Sekunden zu lange leben als einmal
+       zu Unrecht sterben. */
     try { fs.statSync(__filename); fehlgriffe = 0; }
     catch (e) {
-      if (++fehlgriffe < 3) return;
+      if (e.code !== 'ENOENT') return;
+      if (++fehlgriffe < 5) return;
       console.error('\n  Das Medium ist weg - der KlangTresor auf diesem Stick beendet sich.');
       console.error('  (Stick wieder einstecken und neu starten, dann laeuft er weiter.)\n');
       process.exit(0);
