@@ -90,6 +90,77 @@ maßgebliche für dauerhaft archivierte Dateien.
 
 ---
 
+# Gemessen 11.09.2026 — der zweite Abruf kostet nichts
+
+Der Schluss vom 07.09. („das Guthaben kostet den SONG, nicht die Datei“)
+ist jetzt **gemessen**, nicht mehr geschlossen. Durchgeführt im
+angemeldeten Chrome, eine Anfrage nach der anderen, Zählerstand vor und
+nach jedem Schritt.
+
+## Der Freischaltstand ist verlässlich
+
+`is_download_unlocked` aus `GET /api/clip/<id>` sagt genau das, was es
+sagt — anders als am 06.09. vermutet:
+
+| Titel | freigeschaltet | erwartet |
+|---|---|---|
+| Still you laugh (04.09., von Hand geholt) | `true` | ja |
+| Glut und Eis (06.09., von Hand geholt) | `true` | ja |
+| Bei mir klingelt keiner (08.09., von Hand geholt) | `true` | ja |
+| Okkultation (16.08., nie freigeschaltet) | `false` | ja |
+
+Der Irrtum vom 06.09. („steht auch bei Liedern auf `false`, die längst
+hier liegen“) kam daher, dass jene Titel **vor** der Umstellung geholt
+wurden und daher nie einen Unlock hatten. Das Feld war immer richtig.
+
+**Im Katalog steht es trotzdem nicht:** nur 73 von 324 Datensätzen
+tragen `is_download_unlocked` überhaupt, alle auf `false` — und bei den
+drei freigeschalteten fehlt es ganz, weil ihre Einträge älter sind als
+der Unlock. Das gehört beim Katalogbau mitgeschrieben.
+
+## Die Messung
+
+Song: `a381ced9…` „Bei mir klingelt keiner“, am 08.09. von Hand
+freigeschaltet. Zähler davor: **3 von 60 verbraucht, 7 Erbstücke**.
+
+| Abruf | Runden bis `ready` | Antwort |
+|---|---|---|
+| `download/clip?format=mp3` | 1 | S3-Adresse, `suno-data-uploads.s3.amazonaws.com` |
+| `download/clip?format=wav` | 3 (`processing`, `processing`, `ready`) | dieselbe Ablage |
+| `download/clip?format=m4a` | 1 | Dateiname trägt `_lyrics` |
+
+Zähler danach: **3 von 60, 7 Erbstücke.** Differenz in beiden Töpfen:
+**null.** Drei Formate, vier Abrufe, kein Guthaben.
+
+**Ein Unlock gilt dauerhaft und für alle Formate.** Was einmal
+freigeschaltet ist, läßt sich beliebig oft wiederholen — auch WAV, auch
+Monate später.
+
+## Und das Lesezeichen kann die Datei selbst holen
+
+Die signierte S3-Adresse antwortet dem Browser mit CORS-Freigabe. Geholt
+und geprüft:
+
+    7 667 844 Bytes · ID3 mit TIT2 · „made with suno" · id stimmt
+
+Damit ist kein neuer Weg am Server nötig: Das Lesezeichen holt die
+Adresse mit dem Token, lädt die Bytes und reicht sie an `localhost:8788`
+weiter — das erreicht es, geprüft. Der Server legt sie ab, wie
+`bin/uebernehmen.js` es mit den Dateien aus dem Download-Ordner tut, und
+prüft dieselbe Signatur gegen.
+
+## Was daraus folgt
+
+- Die Morgenroutine kann jeden **freigeschalteten** Titel selbst holen,
+  im Original, ohne Download-Ordner und ohne Handarbeit.
+- Ein Unlock bleibt Handarbeit — er kostet, und das entscheidet ein
+  Mensch. Caspar_D, 11.09.2026: am Ende der Abrechnungsperiode soll
+  gefragt werden, ob die verbleibenden Freigaben noch verbraucht werden.
+- Die drei Formate sind zusammen frei: ein freigeschalteter Titel darf
+  also gleich **mp3 und wav** holen.
+
+---
+
 ## Weg 1 ist erlaubt, wird aber nicht gebaut
 
 **Entschieden am 11.09.2026.** Caspar_D, auf die Frage, ob die Hausregel
