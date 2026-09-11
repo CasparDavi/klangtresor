@@ -168,8 +168,10 @@ while [ -z "$NODE" ]; do
 done
 
 # --- Ab hier übernimmt das Programm ------------------------------------
+# Argumente werden durchgereicht ("$@"), damit --ohne-start und --probe N
+# auch über den Doppelklick-Weg ankommen. Beim Doppelklick sind es keine.
 echo ""
-"$NODE" bin/einrichten.js
+"$NODE" bin/einrichten.js "$@"
 KT_ENDE=$?
 [ "$KT_ENDE" -ne 0 ] && warten
 exit $KT_ENDE

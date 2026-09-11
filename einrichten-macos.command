@@ -13,4 +13,4 @@
 cd "$(dirname "$0")" || exit 1
 KT_SYSTEM=macos
 KT_ANHALTEN=1        # Doppelklick: das Fenster soll nicht wegspringen
-. bin/anlasser.sh
+. bin/anlasser.sh "$@"

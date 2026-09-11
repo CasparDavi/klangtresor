@@ -183,5 +183,5 @@ while (-not $NODE) {
 
 # --- Ab hier uebernimmt das Programm ----------------------------------
 Write-Host ""
-& $NODE 'bin\einrichten.js'
+& $NODE 'bin\einrichten.js' @args
 exit $LASTEXITCODE

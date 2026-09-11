@@ -12,4 +12,4 @@
 cd "$(dirname "$0")" || exit 1
 KT_SYSTEM=linux
 KT_ANHALTEN=0        # von Hand gestartet: die Ausgabe bleibt ohnehin stehen
-. bin/anlasser.sh
+. bin/anlasser.sh "$@"
