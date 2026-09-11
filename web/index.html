@@ -27668,7 +27668,11 @@ function sprungHolen(){
   if(SPRUNG.fuer===k) return Promise.resolve(SPRUNG.url);
   const p=SEITEN[seiteIndex()];
   return fetch('/api/sprungkopie?id='+encodeURIComponent(DATA.id)+'&was='+encodeURIComponent(p.art)+'&nr='+(p.nr||1),{method:'POST'})
-    .then(r=>r.json()).then(d=>{ if(!d||!d.url) throw new Error((d&&d.fehler)||'keine Antwort');
+    /* Antwortet etwas anderes als das Haus - der Pruefstand etwa liefert seine eigene Seite -, dann
+       scheitert JSON.parse mit "Unexpected token <". Das sagt dem Leser nichts. */
+    .then(r=>r.text().then(txt=>{ try{ return JSON.parse(txt); }
+      catch(e){ throw new Error(r.ok?'das Haus antwortet nicht in seiner Sprache':'das Haus sagt '+r.status); } }))
+    .then(d=>{ if(!d||!d.url) throw new Error((d&&d.fehler)||'keine Antwort');
       SPRUNG={url:d.url,fuer:k,fehler:null}; return d.url; })
     .catch(e=>{ SPRUNG={url:null,fuer:k,fehler:String(e.message||e)}; return null; }); }
 /* Video-Grund: ohne Lauf wie bisher - es laeuft frei mit, und nur Drift > 0,2 s wird nachgesetzt.
