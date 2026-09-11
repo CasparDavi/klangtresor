@@ -3067,19 +3067,21 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-lp{display:flex;align-items:center;gap:4px;font:inherit;font-size:11px;padding:3px 7px;
   border:1px solid var(--rand);border-radius:6px;background:transparent;color:inherit;cursor:pointer;opacity:.65}
 #tbs .tbs-lp.on{opacity:1;border-color:#f97b14;box-shadow:inset 0 0 0 1px #f97b14}
-#tbs .tbs-lfelder{flex:1 0 100%;display:flex;gap:3px;margin-bottom:4px;user-select:none}
+#tbs .tbs-lkopf{flex:1 0 100%;font-size:11px;opacity:.7;margin:2px 0 3px;display:flex;justify-content:space-between}
+#tbs .tbs-lkopf span{opacity:.7;font-variant-numeric:tabular-nums}
+#tbs .tbs-lfelder{flex:1 0 100%;display:flex;gap:2px;margin-bottom:0;user-select:none}
 #tbs .tbs-lf{flex:1 1 0;min-width:0;height:40px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:1px;border:1px solid var(--rand);border-radius:6px;background:transparent;
   color:inherit;cursor:pointer;font:inherit}
-#tbs .tbs-lf .tbs-lzeichen{font-size:15px;line-height:1}
-#tbs .tbs-lf .tbs-lnr{font-size:9px;opacity:.45}
+#tbs .tbs-lf .tbs-lzeichen{font-size:16px;line-height:1}
+#tbs .tbs-lf .tbs-lnr{font-size:9px;opacity:.55;letter-spacing:.02em}
 #tbs .tbs-lf.f-vor{opacity:.45}
 #tbs .tbs-lf.f-pendel{border-color:#f97b14;color:#f97b14}
 #tbs .tbs-lf.f-stottern{border-color:#e31c79;color:#e31c79}
 #tbs .tbs-lf.f-rasten{border-color:#3a86ff;color:#3a86ff}
 #tbs .tbs-lz select{font:inherit}
 #tbs .tbs-lhinweis{flex:1 0 100%;font-size:11px;opacity:.6;line-height:1.35;min-height:1px}
-#tbs #tbs-laufKurve{flex:1 0 100%;width:230px;height:75px;display:block;margin:4px 0 2px}
+#tbs #tbs-laufKurve{flex:1 0 100%;width:230px;height:72px;display:block;margin:0 0 2px}
 #tbs .tbs-lmass{flex:1 0 100%;font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
 #tbs .tbs-quelle{position:relative;width:54px;height:72px;padding:0;border:2px solid var(--rand);border-radius:8px;background:#000;overflow:hidden;cursor:pointer;flex:0 0 auto}
 #tbs .tbs-quelle img, #tbs .tbs-quelle canvas{width:100%;height:100%;object-fit:cover;display:block}
@@ -27758,9 +27760,15 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
   let h='<div class="tbs-lpinsel">'+LAUF_FORMEN.map(f=>
     '<button type="button" class="tbs-lp'+(LAUF.pinsel===f[0]?' on':'')+'" data-p="'+f[0]+'" title="'+f[1]+'">'
     +'<span class="tbs-lzeichen">'+f[2]+'</span>'+f[1]+'</button>').join('')+'</div>';
+  /* Ueberschrift, weil die Reihe sonst raetselhaft bleibt: Caspar_D, 11.09.2026, "was bedeuten die
+     vierecke sind das filmabschnite". Es sind keine Abschnitte des Films, sondern die Takte des
+     FERTIGEN Clips - der Film bleibt ein durchgehender Faden. */
+  const T0=taktStand(), gesamt=(T0.takt>0)?(folge.length*T0.takt):0;
+  h+='<div class="tbs-lkopf">Dein Clip, Takt f\u00fcr Takt'
+    +(gesamt?' <span>'+folge.length+' Takte \u00b7 '+kf(gesamt.toFixed(1))+' s</span>':'')+'</div>';
   h+='<div class="tbs-lfelder" id="tbs-lfelder">'+folge.map((v,i)=>
     '<button type="button" class="tbs-lf f-'+v+'" data-i="'+i+'" title="Takt '+(i+1)+': '+namen[v]+'">'
-    +'<span class="tbs-lzeichen">'+zeichen[v]+'</span><span class="tbs-lnr">'+(i+1)+'</span></button>').join('')+'</div>';
+    +'<span class="tbs-lnr">Takt '+(i+1)+'</span><span class="tbs-lzeichen">'+zeichen[v]+'</span></button>').join('')+'</div>';
   const w=(k,liste,txt)=>'<label class="tbs-lz">'+txt+' <select data-l="'+k+'">'
     +liste.map(o=>'<option value="'+o[0]+'"'+(String(LAUF[k])===String(o[0])?' selected':'')+'>'+o[1]+'</option>').join('')
     +'</select></label>';
@@ -27807,16 +27815,21 @@ function laufSetzen(k,v){ LAUF[k]=parseInt(v,10)||1;
   laufUI(); }
 function laufKurveMalen(){
   const c=$('#tbs-laufKurve'), mass=$('#tbs-laufMass'); if(!c) return;
-  const x=c.getContext('2d'), W=c.width, H=c.height, pad=8;
+  /* Waagerecht deckungsgleich mit der Taktzeile darueber: dann liest man ab, was in WELCHEM Takt
+     passiert, ohne es sich zusammenreimen zu muessen. */
+  const x=c.getContext('2d'), W=c.width, H=c.height, pad=10, padX=1;
   x.clearRect(0,0,W,H);
   const A=ausschnitt(), t0=A.t0, L=A.L||10, N=460;
   const ys=[]; for(let i=0;i<=N;i++) ys.push(laufZeit(t0+L*i/N)-t0);
   let lo=Math.min.apply(null,ys), hi=Math.max.apply(null,ys);
   const spanne=hi-lo; if(spanne<1e-6) hi=lo+1e-6;
-  const px=v=>pad+(W-2*pad)*v, py=v=>H-pad-(H-2*pad)*((v-lo)/(hi-lo));
+  const px=v=>padX+(W-2*padX)*v, py=v=>H-pad-(H-2*pad)*((v-lo)/(hi-lo));
   x.strokeStyle='rgba(128,128,128,.45)'; x.lineWidth=1;
-  x.beginPath(); x.moveTo(pad,pad); x.lineTo(pad,H-pad); x.lineTo(W-pad,H-pad); x.stroke();
-  x.save(); x.beginPath(); x.rect(pad,pad,W-2*pad,H-2*pad); x.clip();
+  x.beginPath(); x.moveTo(padX,pad); x.lineTo(padX,H-pad); x.lineTo(W-padX,H-pad); x.stroke();
+  /* Taktgrenzen als feine Striche - dieselben Grenzen wie die Felder darueber. */
+  { const n=laufFolge().length; x.strokeStyle='rgba(128,128,128,.25)';
+    for(let i=1;i<n;i++){ const X=px(i/n); x.beginPath(); x.moveTo(X,pad); x.lineTo(X,H-pad); x.stroke(); } }
+  x.save(); x.beginPath(); x.rect(padX,pad,W-2*padX,H-2*pad); x.clip();
   x.setLineDash([3,5]); x.strokeStyle='rgba(128,128,128,.55)';
   x.beginPath(); x.moveTo(px(0),py(0)); x.lineTo(px(1),py(L)); x.stroke(); x.setLineDash([]);
   x.strokeStyle='#f97b14'; x.lineWidth=2.5; x.lineJoin='round'; x.lineCap='round';
@@ -28021,6 +28034,14 @@ function zeichneFrame(t){
        Pendelperiode sein. Seit der Lauf eine Folge ueber die Takte ist, faltet das Pendel innerhalb
        seines Abschnitts, und der ist von selbst eine ganze Zahl von Takten (11.09.2026). */
     const takte=Math.max(1,Math.floor(MAX_SEK/takt));
+    /* Die Folge des Laufs muss auf dem Ausschnitt SITZEN. Bis hierher war sie am ersten Taktschlag
+       des Liedes verankert, der Ausschnitt aber am naechstgelegenen Taktanfang - je nachdem, wo im
+       Lied man stand, fing der Clip dann mitten in der Folge an, und Feld 1 war gar nicht der erste
+       Takt. Gesehen an der Kurve: die Reihe war verdreht (11.09.2026).
+       Also den Ausschnitt auf ein ganzes Vielfaches der Folgenlaenge legen, gezaehlt vom ersten
+       Taktschlag. Dann ist Takt 1 der Folge auch Takt 1 des Clips. */
+    if(laufBeugt()){ const a0=einsen[0], p=takte*takt;
+      if(p>0) a=a0+Math.max(0,Math.floor((jetzt-a0)/p))*p; }
     const L=runden(Math.min(MAX_SEK,takte*takt));
     return { t0:a, L, takte, takt:L/takte }; }
   /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
