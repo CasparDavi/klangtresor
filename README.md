@@ -18,6 +18,9 @@ die Musikstil-Erkennung).
 
 ---
 
+> **Die Dokumente liegen nach Modulen sortiert** — die Karte dazu steht in
+> [docs/LIESMICH.md](docs/LIESMICH.md).
+
 ## Was das hier *nicht* ist
 
 Damit keine Missverständnisse entstehen:
@@ -63,12 +66,12 @@ ihren Urhebern und sind nicht Teil dieses Repositoriums.
 Große Teile dieses Codes sind im Dialog mit einem KI-Sprachmodell
 geschrieben worden. Entwurf, Auswahl, Prüfung und alle
 Gestaltungsentscheidungen stammen von Caspar_D — nachzulesen in
-[docs/HAUSREGELN.md](docs/HAUSREGELN.md), wo jede Regel mit ihrem Anlaß
+[docs/HAUSREGELN.md](docs/haus/HAUSREGELN.md), wo jede Regel mit ihrem Anlaß
 steht, und in der Versionsgeschichte.
 
 Das steht hier, weil es zutrifft und weil die Dokumente ohnehin davon
 erzählen. Wer wissen will, wie so etwas zustande kommt, findet in
-[docs/HISTORY.md](docs/HISTORY.md) auch die Irrwege.
+[docs/HISTORY.md](docs/haus/HISTORY.md) auch die Irrwege.
 
 ---
 
@@ -184,7 +187,7 @@ node bin/community-hirsch.js     deren Hirschfaktoren (dauert deutlich länger)
 
 Beide holen nur, was noch fehlt; ein zweiter Lauf kostet also nichts.
 Sie lesen öffentlich und ohne Anmeldung — und halten sich dabei an die
-Umgangsform aus [docs/HAUSREGELN.md](docs/HAUSREGELN.md): eine Anfrage
+Umgangsform aus [docs/HAUSREGELN.md](docs/haus/HAUSREGELN.md): eine Anfrage
 zur Zeit, 1,5 s Pause, ehrlicher User-Agent, und bei einer Bremse des
 Dienstes sofort Schluß.
 
@@ -269,19 +272,19 @@ docs/      Fachdokumente
 
 | | |
 |---|---|
-| [docs/UEBERGABE.md](docs/UEBERGABE.md) | Einstieg, Abläufe, Fallstricke |
-| [docs/HAUSREGELN.md](docs/HAUSREGELN.md) | Die Gestaltungsregeln, jede mit ihrem Anlaß |
-| [docs/NORMEN.md](docs/NORMEN.md) | Lautheitsnormen, Tore, Zielpegel |
-| [docs/VISUALIZER.md](docs/VISUALIZER.md) | Bühne, Analyse, Darstellungsregeln |
-| [docs/FARBHANDLING.md](docs/FARBHANDLING.md) | Farbextraktion, Farbräume, jede Regel mit Meßwert |
-| [docs/TONSTUDIO.md](docs/TONSTUDIO.md) | Equalizer, Kompressor, Raum |
-| [docs/EINMESSEN.md](docs/EINMESSEN.md) | Einmessen am Hörplatz: Signale, Ablauf, Auswertung, Befunde |
-| [docs/WHISPER.md](docs/WHISPER.md) | Wort-Zeitmarken aus dem Hören |
-| [docs/SUNO-API.md](docs/SUNO-API.md) | Die Wege der Web-API — was wir nutzen, was lohnt, was das Konto verändert |
-| [docs/VERGLEICH-HUB.md](docs/VERGLEICH-HUB.md) | Funktionsvergleich mit einem verwandten Werkzeug — haben wir das, besser, oder verworfen? |
-| [docs/ZUSAMMENARBEIT.md](docs/ZUSAMMENARBEIT.md) | Zu zweit am Repo: fremde Commits prüfen, bevor gezogen wird |
+| [docs/UEBERGABE.md](docs/archiv/UEBERGABE.md) | Einstieg, Abläufe, Fallstricke |
+| [docs/HAUSREGELN.md](docs/haus/HAUSREGELN.md) | Die Gestaltungsregeln, jede mit ihrem Anlaß |
+| [docs/NORMEN.md](docs/analyse/NORMEN.md) | Lautheitsnormen, Tore, Zielpegel |
+| [docs/VISUALIZER.md](docs/analyse/VISUALIZER.md) | Bühne, Analyse, Darstellungsregeln |
+| [docs/FARBHANDLING.md](docs/analyse/FARBHANDLING.md) | Farbextraktion, Farbräume, jede Regel mit Meßwert |
+| [docs/TONSTUDIO.md](docs/ton/TONSTUDIO.md) | Equalizer, Kompressor, Raum |
+| [docs/EINMESSEN.md](docs/ton/EINMESSEN.md) | Einmessen am Hörplatz: Signale, Ablauf, Auswertung, Befunde |
+| [docs/WHISPER.md](docs/suno/WHISPER.md) | Wort-Zeitmarken aus dem Hören |
+| [docs/SUNO-API.md](docs/suno/WEGE.md) | Die Wege der Web-API — was wir nutzen, was lohnt, was das Konto verändert |
+| [docs/VERGLEICH-HUB.md](docs/forschung/VERGLEICH-HUB.md) | Funktionsvergleich mit einem verwandten Werkzeug — haben wir das, besser, oder verworfen? |
+| [docs/ZUSAMMENARBEIT.md](docs/haus/ZUSAMMENARBEIT.md) | Zu zweit am Repo: fremde Commits prüfen, bevor gezogen wird |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Was offen ist — und was verworfen wurde, mit Begründung |
-| [docs/HISTORY.md](docs/HISTORY.md) | Chronologie einschließlich aller Irrwege |
+| [docs/HISTORY.md](docs/haus/HISTORY.md) | Chronologie einschließlich aller Irrwege |
 
 Die Fachdokumente sind am Archiv ihres Autors
 ([@caspar_d](https://suno.com/@caspar_d)) entstanden und nennen dessen

@@ -7,15 +7,15 @@ den Fachdokumenten daneben.
 
 | Dokument | Inhalt |
 |---|---|
-| [DATENEXTRAKTION.md](DATENEXTRAKTION.md) | Wie die Daten aus Suno kommen, Endpunkte, Fallstricke |
-| [FARBHANDLING.md](FARBHANDLING.md) | Farbextraktion aus den Covern, Farbräume, Regeln |
-| [VISUALIZER.md](VISUALIZER.md) | Bühne, Audioanalyse, Darstellungsarten, Visualizer |
-| [NORMEN.md](NORMEN.md) | Lautheitsnormen, Tore, Zielpegel, CB Audio Analyzer |
-| [BACKLOG.md](BACKLOG.md) | Was offen ist, mit Begründung und Aufwand |
-| [HISTORY.md](HISTORY.md) | Chronologie der Entscheidungen und der Irrtümer |
-| [NAECHSTER_CHAT.md](NAECHSTER_CHAT.md) | Text zum Kopieren in eine neue Sitzung |
-| [EINMESSEN.md](EINMESSEN.md) | Einmessen am Hörplatz: Ablauf, Signale, Auswertung, Befunde |
-| [../WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md) | WAV-Originale: der offizielle Download über die Studio-API |
+| [DATENEXTRAKTION.md](../suno/DATENEXTRAKTION.md) | Wie die Daten aus Suno kommen, Endpunkte, Fallstricke |
+| [FARBHANDLING.md](../analyse/FARBHANDLING.md) | Farbextraktion aus den Covern, Farbräume, Regeln |
+| [VISUALIZER.md](../analyse/VISUALIZER.md) | Bühne, Audioanalyse, Darstellungsarten, Visualizer |
+| [NORMEN.md](../analyse/NORMEN.md) | Lautheitsnormen, Tore, Zielpegel, CB Audio Analyzer |
+| [BACKLOG.md](../BACKLOG.md) | Was offen ist, mit Begründung und Aufwand |
+| [HISTORY.md](../haus/HISTORY.md) | Chronologie der Entscheidungen und der Irrtümer |
+| [NAECHSTER_CHAT.md](../NAECHSTER_CHAT.md) | Text zum Kopieren in eine neue Sitzung |
+| [EINMESSEN.md](../ton/EINMESSEN.md) | Einmessen am Hörplatz: Ablauf, Signale, Auswertung, Befunde |
+| [../WAV-PROTOKOLL.md](WAV-PROTOKOLL.md) | WAV-Originale: der offizielle Download über die Studio-API |
 
 ---
 
@@ -67,11 +67,11 @@ Alles läuft mit Node-Bordmitteln. Zusätzlich installiert: **ffmpeg**
 ## Woran als Nächstes gearbeitet wird
 
 > **Stand 27.08.2026.** Zuletzt gearbeitet wurde am **Einmessen** (siehe
-> unten und [EINMESSEN.md](EINMESSEN.md)). Offen sind vor allem drei
+> unten und [EINMESSEN.md](../ton/EINMESSEN.md)). Offen sind vor allem drei
 > Dinge: `bin/wav.js` auf den neuen Download-Weg umstellen, das
 > Kreuzchen im Lesezeichen dafür, und die Frage, ob die gemessene
 > Baßbegrenzung wirklich im Lautsprecher sitzt. Der Rest steht in
-> [BACKLOG.md](BACKLOG.md) und [OFFEN.md](OFFEN.md).
+> [BACKLOG.md](../BACKLOG.md) und [OFFEN.md](OFFEN.md).
 
 **Der SunoAnalyzer wird angebunden — Schritt 1 steht seit dem
 18.08.2026.** Der Knopf **Analyse** im Pult der Bühne öffnet ihn in
@@ -105,7 +105,7 @@ nichts selbst.
 Stem-Trennung und Instrumenterkennung sind stillgelegt — damit stellt
 er **keine einzige Anfrage nach draußen** (gemessen). Offen sind noch
 die Lyrics fremder Songs und ein Zwischenspeicher, damit die Analyse
-beim zweiten Aufruf sofort steht; siehe [BACKLOG.md](BACKLOG.md).
+beim zweiten Aufruf sofort steht; siehe [BACKLOG.md](../BACKLOG.md).
 
 ---
 
@@ -179,7 +179,7 @@ node bin/wiederherstellen.js   # Katalog, Medien, Kacheln, Farben
 ```
 
 Das reicht für Songs, Metadaten, Lyrics und Medien. Der Profil-Endpunkt
-antwortet **ohne Anmeldung** — siehe [DATENEXTRAKTION.md](DATENEXTRAKTION.md).
+antwortet **ohne Anmeldung** — siehe [DATENEXTRAKTION.md](../suno/DATENEXTRAKTION.md).
 
 **`sammeln.js` vergleicht mit dem Katalog** und meldet, was sich
 geändert hat:
@@ -215,7 +215,7 @@ node bin/wiederherstellen.js
 ```
 </details>
 
-Für die WAVs der neuen Songs siehe [WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md).
+Für die WAVs der neuen Songs siehe [WAV-PROTOKOLL.md](WAV-PROTOKOLL.md).
 
 ### Alles wiederherstellen
 
@@ -279,7 +279,7 @@ lagen für die bisherigen Reihen aber noch nicht vor; eine Wiederholung
 beantwortet es.
 
 Alles Weitere — Signale, Auflösungsgrenzen, die Diagramme und was man
-mit dem Ergebnis tun darf — steht in **[EINMESSEN.md](EINMESSEN.md)**.
+mit dem Ergebnis tun darf — steht in **[EINMESSEN.md](../ton/EINMESSEN.md)**.
 Die Meßdaten des ersten Tages liegen in `library/messungen/`.
 
 ### WAV-Originale holen
@@ -306,9 +306,9 @@ Clerk-Token, gilt aber als offizieller Download — das ist der
 Unterschied, der ab dem 3. September für Sunos Limits zählt.
 
 **Vollständig, mit allen Kopfzeilen, Formaten und Stolperfallen:
-[WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md).** Gefunden hat den Weg Tarja.
+[WAV-PROTOKOLL.md](WAV-PROTOKOLL.md).** Gefunden hat den Weg Tarja.
 
-`bin/wav.js` umzustellen steht im [Backlog](BACKLOG.md); zu beachten ist
+`bin/wav.js` umzustellen steht im [Backlog](../BACKLOG.md); zu beachten ist
 dabei vor allem, daß die signierte Adresse nur **eine Stunde** gilt —
 also je Datei kurz vor dem Laden anfordern, nicht auf Vorrat.
 
@@ -354,7 +354,7 @@ als Packindex zu lesen versucht. Die Umlagerung ändert an der Historie
 nichts; `git fsck` bestätigt es.
 
 **Nicht verwechseln:** Das ist keine Datensicherung. Das Repo liegt auf
-derselben SSD wie alles andere. Siehe [BACKLOG.md](BACKLOG.md).
+derselben SSD wie alles andere. Siehe [BACKLOG.md](../BACKLOG.md).
 
 ---
 

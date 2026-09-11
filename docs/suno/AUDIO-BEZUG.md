@@ -2,7 +2,7 @@
 
 Betriebsnotiz zur Herkunft der Audiodaten. Fasst einen technischen
 Hinweis aus dem Partnerprojekt zusammen; nachgeprüft an einem eigenen
-Clip. Ergänzt und aktualisiert das ältere [WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md),
+Clip. Ergänzt und aktualisiert das ältere [WAV-PROTOKOLL.md](../archiv/WAV-PROTOKOLL.md),
 das nur den offiziellen Download behandelt.
 
 ## Kurzfassung
@@ -70,7 +70,7 @@ erzeugt. Kein Suno-Login nötig.
 
 ## Weg 2 — Offizieller Download (MP3 / M4A / WAV)
 
-Unverändert gültig, siehe [WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md) für die
+Unverändert gültig, siehe [WAV-PROTOKOLL.md](../archiv/WAV-PROTOKOLL.md) für die
 Einzelheiten. Kurz:
 
 - Braucht einen Clerk-JWT aus einer angemeldeten Suno-Sitzung

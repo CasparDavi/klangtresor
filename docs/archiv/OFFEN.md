@@ -766,7 +766,7 @@ den Schutz hinter **jedes** `await`.
 > **Protokolliert am 25.08.2026** (Caspar_D: *„den Befund, daß still
 > Dinge erfunden werden, muß aber protokolliert werden"*): Alle vier
 > Fälle sind über den ganzen Bestand vermessen und mit Songlisten
-> festgehalten in **[ERFUNDENES.md](ERFUNDENES.md)** — 19 Songs mit
+> festgehalten in **[ERFUNDENES.md](../analyse/ERFUNDENES.md)** — 19 Songs mit
 > nachweisbar erfundenem Text, 64 von 64 mit erfundener Stimmlage,
 > 50 von 50 Naturklang-Stücken mit einer Tonart auf Rauschen, dazu der
 > Piano-Befund. Darin auch die Gegenprobe, warum die naheliegende

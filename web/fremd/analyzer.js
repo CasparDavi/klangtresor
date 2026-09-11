@@ -100,7 +100,7 @@
 
 /* Die Zahl trägt die Farbe der Linie, die sie meint. Blau = Mittelwert.
    Ohne Farbe: Die Zahl ist KEIN Mittel der gezeigten Reihe - siehe
-   docs/VISUALIZER.md. */
+   docs/analyse/VISUALIZER.md. */
 .sunoanalyzer #sa-karten .card.ist-mittel .val{color:#4b93f0}
 
 /* Die Bereichsmarke wird zur Haarlinie: eine Linie, eine Marke, sonst
@@ -1023,7 +1023,7 @@
      vier Laschen - L, R, L+R und die Seitenlage -, aber R und L+R gibt es
      im Rechenkern nicht: magR wird gerechnet und weggeworfen, und die
      Rahmen sind nach dem Zeichnen nicht mehr greifbar (Befund 12 in
-     docs/ANALYZER-REVIEW.md). Bis das behoben ist, sind es die zwei
+     docs/analyse/ANALYZER-REVIEW.md). Bis das behoben ist, sind es die zwei
      vorhandenen Bilder.
 
      BEIDE BILDER LIEGEN UEBEREINANDER, die zugeklappte Lasche wird mit
@@ -1068,7 +1068,7 @@
     document.head.appendChild(s);
   }
 
-  /* TOTGELEGT — Prüfung vom 23.08.2026, Belege in docs/ANALYZER-REVIEW.md
+  /* TOTGELEGT — Prüfung vom 23.08.2026, Belege in docs/analyse/ANALYZER-REVIEW.md
      ------------------------------------------------------------------------
      Sechs Prüfer haben jede Messgröße gegen Referenzen nachgerechnet (Sunos
      Schlagzeiten, ffmpeg/EBU R128, ein Feinspektrum mit 2,7 Hz, Kunstsignale
@@ -1103,7 +1103,7 @@
     tilt: Stellt 10 Baß-Bins gegen 469 Höhen-Bins; rosa Rauschen gilt als höhenlastig.
     texture: Steht bei 286 von 321 Songs auf 100 %, weil die Akkordrate die Formel sprengt.
 
-     Belege und Messreihen stehen in docs/ANALYZER-REVIEW.md.
+     Belege und Messreihen stehen in docs/analyse/ANALYZER-REVIEW.md.
      v-entropy war NICHT dabei und bleibt. */
   /* Die totgelegten Bildabschnitte wurden hier einmal nach ihrer
      Beschriftung ausgeblendet. Sie sind inzwischen ganz entfernt
@@ -1460,7 +1460,7 @@
          'nein'    regelt gar nicht - der Pegel bleibt, wie er ist.
 
        GEPRUEFT am 18.08.2026 durch Netzrecherche (Quellen in
-       docs/NORMEN.md). Vorher standen hier ungepruefte Zahlen aus
+       docs/analyse/NORMEN.md). Vorher standen hier ungepruefte Zahlen aus
        allgemeinem Wissen; die Recherche hat sie bestaetigt und eine
        Luecke aufgedeckt - Apple Music liegt bei -16 LUFS und fehlte.
        Anbieter aendern solche Werte, also gehoert das Datum dazu. */
@@ -4260,7 +4260,7 @@
        als Verlauf auch - vier davon sind die Zeitform totgelegter Karten.
        Dazu die Impulsdichte, die mit einer ABSOLUTEN Schwelle zählt und damit
        Pegel misst statt Anschläge, und das Tempo, das den schlechtesten der
-       drei Schätzer zeigt. Belege in docs/ANALYZER-REVIEW.md.
+       drei Schätzer zeigt. Belege in docs/analyse/ANALYZER-REVIEW.md.
        Es bleiben Signalenergie und Dynamikumfang: einfache, nachvollziehbare
        Größen, die den geprüften Lautheitsteil ergänzen. */
     /* Was unter den beiden Spuren steht. Sie entstehen dynamisch, also
@@ -4910,7 +4910,7 @@
        Attack bei 297 von 321 Songs leer, Akkordrate als Rahmenflimmern,
        Inharmonizitaet mit einem Suchfenster von genau einem Bin,
        harmonische Dichte, die bei Rauschen 15,8 und bei einem reinen
-       Sinus 5,0 meldet. Zwei Beispiele stehen in ANALYZER-REVIEW.md
+       Sinus 5,0 meldet. Zwei Beispiele stehen in analyse/ANALYZER-REVIEW.md
        ausdruecklich: "if(inharmMed>0.03&&inharmMed<0.12) guitarScore+=2"
        entscheidet ueber Gitarre gegen Klavier gegen Synthesizer,
        obwohl die Groesse nur die Tonhoehenlage kennt; die harmonische
@@ -5019,7 +5019,7 @@
        dieses Weges (Review, bestaetigt). */
 
     /* ------------------------------------------------------------------
-       ZUSATZ FÜR MYSUNO (nicht im Original, siehe docs/VISUALIZER.md)
+       ZUSATZ FÜR MYSUNO (nicht im Original, siehe docs/analyse/VISUALIZER.md)
 
        Zweiter Einstieg neben analyzeFile(): Der Ton wird
        über eine fertige Adresse geholt, etwa /media/<id>/audio.wav aus
@@ -6232,7 +6232,7 @@
        Stuetzstellen war spurlos weg.
 
        Es ist auch derselbe Fehler wie beim Tonhoehenverlauf am selben
-       Tag und bei der Farbextraktion (FARBHANDLING.md): Wer verkleinert,
+       Tag und bei der Farbextraktion (analyse/FARBHANDLING.md): Wer verkleinert,
        muss ZUSAMMENFASSEN, nicht AUSWAEHLEN. Ein Stellvertreter
        verschweigt seine Nachbarn.
 

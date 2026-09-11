@@ -469,17 +469,17 @@
      Drei Wochen lang schrieb der Katalog deshalb den Albumbestand vom
      17.08.2026 unverändert ab, ohne dass irgendetwas krachte.
 
-     Jetzt der dokumentierte, ZWEISTUFIGE Weg (docs/DATENEXTRAKTION.md:26-30):
+     Jetzt der dokumentierte, ZWEISTUFIGE Weg (docs/suno/DATENEXTRAKTION.md:26-30):
        Köpfe   GET /api/playlist/me?page=N       mit Bearer, 12 je Seite
        Inhalt  GET /api/playlist/<id>?page=N     mit Bearer, 50 je Seite
      'me' und nicht '<handle>': der Profil-Weg zeigt nur die öffentlich
      sichtbaren Alben, /api/playlist/me liefert auch die privaten.
      Zwei Stufen, weil die Köpfe `playlist_clips` als LEERES Array
-     tragen (DATENEXTRAKTION.md:86) - wer den Kopf für die ganze
+     tragen (suno/DATENEXTRAKTION.md:86) - wer den Kopf für die ganze
      Wahrheit hält, baut Alben mit je null Einträgen.
 
      page ZÄHLT AB 1. page=0 und page=1 liefern dieselbe Seite
-     (DATENEXTRAKTION.md:81-84), deshalb wird über die id entdoppelt,
+     (suno/DATENEXTRAKTION.md:81-84), deshalb wird über die id entdoppelt,
      genauso wie die Songliste oben mit songs.set(c.id, c). Eine Seite,
      die nichts NEUES bringt, beendet die Schleife. num_total_results
      wird zum Vergleich gemeldet, aber nie als Abbruchbedingung
@@ -528,7 +528,7 @@
          da nur "kein Token" und niemand weiss, was zu tun ist. */
       if (!tA){ throw new Error('kein Token — '
         + (tokenHolen.grund || 'Suno meldet in diesem Tab keine Anmeldung.')); }
-      /* DER TOKEN LEBT RUND 60 SEKUNDEN (docs/DATENEXTRAKTION.md:15-17),
+      /* DER TOKEN LEBT RUND 60 SEKUNDEN (docs/suno/DATENEXTRAKTION.md:15-17),
          alle Sammelskripte holen ihn vor jeder Anfrage neu. Dieser Lauf
          macht bei 25 Alben gut 30 Anfragen mit je 250 ms Pause plus
          Netz - das liegt über der Lebensdauer. Deshalb vor JEDER Anfrage
@@ -672,7 +672,7 @@
           const eintraege = new Map();
           /* Roh gelieferte Einträge, auch die OHNE brauchbaren clip:
              Suno liefert gelöschte und private Songs genau so aus
-             (docs/DATENEXTRAKTION.md, "Sechs Einträge liefert die API
+             (docs/suno/DATENEXTRAKTION.md, "Sechs Einträge liefert die API
              nicht aus"). Ob eine Seite etwas Neues brachte, entscheidet
              sich an DIESEN, nicht an den brauchbaren - sonst beendet
              eine Seite voller Leerhüllen das Blättern mitten im Album. */
@@ -816,14 +816,14 @@
         eintraegeGesamt += b.eintraege.length;
         ohneClipGesamt  += b.ohneClip;
         /* Kopfzahl gegen Geliefertes halten. Bei Caspar_D liefert Suno
-           sechs Einträge dauerhaft nicht aus (DATENEXTRAKTION.md, "kein
+           sechs Einträge dauerhaft nicht aus (suno/DATENEXTRAKTION.md, "kein
            Sammelfehler, mehrfaches Abrufen ändert nichts") - das ist
            kein Grund, den Lauf abzubrechen, aber es gehört gesagt,
            sonst sieht eine verlorene Seite genauso aus. */
         /* BEKANNTE LUECKE IST KEINE NACHRICHT (Caspar_D, 09.09.2026: "die
            roten Albumeintraege irritieren jedes Mal"). Suno zaehlt in
            einigen Alben Eintraege, die es nie liefert - dauerhaft, kein
-           Sammelfehler (DATENEXTRAKTION.md). Der Katalog kennt die Luecke
+           Sammelfehler (suno/DATENEXTRAKTION.md). Der Katalog kennt die Luecke
            schon (anzahlLautSuno gegen eintraege). Nur eine Luecke, die
            GROESSER ist als die bekannte, ist ein Befund und faerbt die
            Zeile; die bekannten stehen grau als Zahl dran. */
@@ -999,7 +999,7 @@
     /* Hier stand bis zum 08.09.2026 die „API-Probe, einmalig": drei GETs mit
        Token auf einen eigenen Song (gen/<id>/wav_file/, download/clip/<id>,
        clips/get_songs_by_ids), am 20.08. auf Caspar_Ds Wort gebaut, Ergebnis
-       in docs/SUNO-API.md. Gestrichen, weil download/clip seit dem 03.09. auf
+       in docs/suno/WEGE.md. Gestrichen, weil download/clip seit dem 03.09. auf
        das Download-Kontingent zaehlt und niemand weiss, ob der Aufruf ohne
        format ein Guthaben kostet - in einem frischen Browser (Tarja, neues
        Profil) waere die Probe wieder gelaufen. Die Hausregel: nichts
@@ -1052,7 +1052,7 @@
      GET /api/notification/v3 - wer wann was getan hat: clip_like,
      clip_comment, comment_like, comment_reply, follow, playlist_like.
      v3 ist der Weg der Handy-App (aus ihrem Code gelesen, docs/
-     SUNO-APP-WEGE.md; einmal geprueft 08.09.2026 mit Freigabe): jede
+     suno/WEGE.md; einmal geprueft 08.09.2026 mit Freigabe): jede
      Zeile kommt fertig - avatars[], text[] als Segmente mit bold und
      action, dazu action fuer das Ziel. JE PERSON EINE ZEILE, Buendel
      mit allen Beteiligten. Bis 08.09.2026 lief hier v2, das Herzen auf
@@ -1096,7 +1096,7 @@
   } catch (x){ zeileN.textContent = 'Wer hat reagiert — ' + x.message; zeileN.style.color = '#e31c79'; }
 
   /* ---------------- 2e · Wer hat geherzt ----------------
-     GET /api/gen/<id>/likers/ - der Weg der iOS-App (docs/SUNO-APP-WEGE.md,
+     GET /api/gen/<id>/likers/ - der Weg der iOS-App (docs/suno/WEGE.md,
      Mitschnitt vom 09.09.2026): ALLE Personen, die einen eigenen Titel
      geherzt haben, 20 je Seite, next_cursor zum Blaettern (base64 von
      {updated_at} = Herz-Zeit des letzten der Seite), neueste zuerst,
@@ -1147,7 +1147,7 @@
 
   /* ---------------- 2f · Beobachter ----------------
      GET /api/profiles/<handle>/followers?page=N und /following?page=N
-     (Web-Wege, SUNO-API.md): alle, die dir folgen, und alle, denen du
+     (Web-Wege, suno/WEGE.md): alle, die dir folgen, und alle, denen du
      folgst, 20 je Seite, num_total_profiles im Kopf, je Person
      is_following (folge ich) und is_following_viewer (folgt mir). Der
      Strom nennt nur die neuen Beobachter der letzten vier Wochen; die

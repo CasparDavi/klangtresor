@@ -12,7 +12,7 @@
    der Modellgroessen mass am Ende den Unterschied der Prompts mit.
    Das darf nicht wieder passieren.
 
-   DIE BEGRUENDUNG JEDER REGEL steht in docs/KONDENSAT-REGELN.md,
+   DIE BEGRUENDUNG JEDER REGEL steht in docs/klangraum/KONDENSAT-REGELN.md,
    mit Datum, Zitat und Messwert. Wer hier etwas aendert, aendert
    sie dort mit und zaehlt FASSUNG hoch - sonst weiss hinterher
    niemand mehr, welches Kondensat nach welchen Regeln entstand.

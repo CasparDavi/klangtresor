@@ -144,7 +144,7 @@ ${WO_MODELL.filter(Boolean).map(o => '    ' + o).join('\n')}
   Am einfachsten: beides nach library/modelle/ legen (whisper-cli und
   ggml-large-v3.bin) — dann findet es sich von selbst. Oder die Orte angeben:
     WHISPER_CLI=… WHISPER_MODELL=… node bin/whisper.js
-  Ausführlich: START-HIER.md („Karaoke-Zeitmarken mit Whisper“) bzw. docs/WHISPER.md`);
+  Ausführlich: START-HIER.md („Karaoke-Zeitmarken mit Whisper“) bzw. docs/suno/WHISPER.md`);
   process.exit(0);
 }
 
@@ -312,7 +312,7 @@ function rechnen(s, tmp) {
        zu hoeren - und Whisper schweigt dann nicht, sondern erfindet:
        "Thank you. Thank you.", Danksagungen aus Video-Abspaennen,
        singhalesische Wortketten ueber Wind und Regen. 19 solcher
-       Faelle standen nachweisbar im Bestand (docs/ERFUNDENES.md),
+       Faelle standen nachweisbar im Bestand (docs/analyse/ERFUNDENES.md),
        35 Stuecke trugen halluzinierte Zeitmarken.
 
        Die eigene Erkennung weiter unten (worte.length < 5) faengt das

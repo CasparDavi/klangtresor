@@ -453,7 +453,7 @@ select,.knopf{
 /* Die Stems sind eine Pille, keine Checkbox (Regel 18: Checkboxen gibt
    es im Haus nicht; an = gefuellt und leuchtend, aus = nur Rand). */
 .exportwas .pille{margin-top:2px}
-/* DAS PLATZDIAGRAMM, nach docs/HAUSREGELN.md: ein liegender Stapel-
+/* DAS PLATZDIAGRAMM, nach docs/haus/HAUSREGELN.md: ein liegender Stapel-
    balken ueber die ganze Groesse des Mediums. Regel 8: der Datenbereich
    ist ein schwarzes Rect mit runden Ecken (rx 6) - das ist hier das
    Medium selbst, sein Schwarz ist der freie Platz. Jedes Segment traegt
@@ -667,7 +667,7 @@ select,.knopf{
 .sb{flex:1 1 auto;width:100%;display:flex;align-items:flex-end;background:#ffffff0a;border-radius:2px}.sb i{display:block;width:100%;border-radius:2px 2px 0 0;min-height:1px}
 .sv{font-size:10px;color:var(--schwach);height:14px;line-height:14px;font-variant-numeric:tabular-nums}
 .sn{font-size:10.5px;color:var(--schwach);margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%;text-overflow:clip}
-/* ---- GESTAPELTE SAEULEN, nach docs/HAUSREGELN.md -------------------
+/* ---- GESTAPELTE SAEULEN, nach docs/haus/HAUSREGELN.md -------------------
    Caspar_D, 26.08.2026: „geh mal in die Hausregeln, wie wir diagramme
    zeichnen und orientiere dich daran. Bleibe aber bei den
    Akzentfarben."
@@ -7009,7 +7009,7 @@ function filterAufbauen(){
     for (const [k, f] of Object.entries(FILTER)){
       /* Kategorien ohne einen einzigen Wert gar nicht erst anbieten: seit der
          Prüfung vom 23.08.2026 sind Tonart und Stimme totgelegt (Belege in
-         docs/ANALYZER-REVIEW.md), ihre Felder stehen nicht mehr im Index.
+         docs/analyse/ANALYZER-REVIEW.md), ihre Felder stehen nicht mehr im Index.
          Ein Filter, der nur „keine Werte" anzeigen kann, ist eine Falle. */
       if (!f.laden && !f.mehrere && !alle.some(s => { const w = f.wert(s); return w != null && w !== ''; })) continue;
       const z = document.createElement('div'); z.className = 'fw';
@@ -8139,7 +8139,7 @@ async function karteZeichnen(){
   const gruppenHtml = `<div class="legende2"><div class="lblock"><h4>${gruppenWort}</h4><div class="lgrid">` + d.gruppen.map(g => {
     const e = g.erdung || {};
     const erd = [e.bpm && `${e.bpm} BPM`, e.lufs != null && `${String(e.lufs).replace('.', ',')} LUFS`,
-      /* Moll-Anteil und Stimme sind totgelegt (docs/ANALYZER-REVIEW.md) und
+      /* Moll-Anteil und Stimme sind totgelegt (docs/analyse/ANALYZER-REVIEW.md) und
          stehen nicht mehr in der Karte - der Ausdruck bleibt stehen und ist
          schlicht leer, falls eine alte karte.json geladen wird. */
       e.mollAnteil != null && `${Math.round(e.mollAnteil * 100)} % Moll`, e.stimme && e.stimme].filter(Boolean).join(' · ');
@@ -11860,7 +11860,7 @@ async function detailAuf(id){
 const DIA_1 = 'var(--titel-a,#f97b14)', DIA_2 = 'var(--titel-b,#e31c79)';
 
 /* ---- DIE HAUSFORM DER DATENFLAECHEN -------------------------------
-   docs/HAUSREGELN.md, „Fläche gedämpft, Kontur in voller Stärke":
+   docs/haus/HAUSREGELN.md, „Fläche gedämpft, Kontur in voller Stärke":
    Jede Datenform besteht aus einer halb deckenden FLAECHE und darueber
    einer KONTUR von 1 px, der TOPLINE, in derselben Farbe. „Erst durch
    sie liest man einen Verlauf als Linie statt als Wolke." Sie liegt
@@ -12818,7 +12818,7 @@ const LAGE_GRAU = '#8b8b90';
    die sonst durchgehend in zwei Akzenten gehalten ist, und drei
    gesaettigte Fremdtoene ziehen den Blick staerker als der Inhalt es
    verdient. 0,45 statt 0,66 ist dabei kein ausgedachter Wert, sondern
-   der zweite Hausstandard: docs/HAUSREGELN.md nennt ihn fuer den Fall,
+   der zweite Hausstandard: docs/haus/HAUSREGELN.md nennt ihn fuer den Fall,
    dass viele Flaechen zusammenkommen (Chroma mit zwoelf Zeilen, der
    Stemblock mit sechs). Die Topline folgt ueber diaTopline() mit und
    haelt ihren Abstand. */
@@ -13759,7 +13759,7 @@ function lmgAnteile(spalten, y){
 
 /* Liegende Balken in der Hausform: Flaeche gedaempft, Topline eine
    Linie in voller Staerke - und zwar OBEN, auch wenn der Balken liegt
-   (HAUSREGELN.md). Was nicht erklaert ist, steht als letzter Balken in
+   (haus/HAUSREGELN.md). Was nicht erklaert ist, steht als letzter Balken in
    Grau: eine artfremde Groesse, deshalb SPUR_FREMD. */
 function anteilBild(zeilen, gesamt, n){
   const W = 900, H = Math.round(900 / 1.618 / 2), L = 118, R = 92, O = 22, U = 30;
@@ -17176,7 +17176,7 @@ async function reaktAuf(id, x, y, istZurueck){
   } else leer('Noch kein Stand. Der erste entsteht beim nächsten Morgenlauf.');
 
   /* 2 · Herzen. Seit 09.09.2026 zuerst die VOLLSTAENDIGE Liste ueber den
-     Weg der iOS-App (gen/<id>/likers/, docs/SUNO-APP-WEGE.md): wer, in
+     Weg der iOS-App (gen/<id>/likers/, docs/suno/WEGE.md): wer, in
      Sunos Reihenfolge (neueste zuerst). Die Zeit je Herz kommt, wo es
      geht, aus den Benachrichtigungen (einzelne Zeile), sonst als Fenster
      aus den Cursors der Suno-Seite, sonst als Fenster zwischen zwei
@@ -18238,7 +18238,7 @@ async function whisperEinsetzen(id){
   }
 
   /* Woher es kommt, steht ueber dem Text. Whisper hoert - und
-     verhoert sich; das gehoert dazugesagt (docs/WHISPER.md). */
+     verhoert sich; das gehoert dazugesagt (docs/suno/WHISPER.md). */
   /* "Sprache", nicht "erkannte Sprache": bin/whisper.js gibt sie vor
      (-l), sie wird nicht von Whisper bestimmt. Der Unterschied ist
      nicht akademisch - stand dort faelschlich "en", uebersetzt das
@@ -22646,7 +22646,7 @@ async function dokRampeStufen(id, schritt){
 /* DIE ZUSAMMENFASSUNG (Caspar_D, 29.08.2026 abends). Sie MISST
    nichts - sie spielt mit dem, was der Durchlauf gesammelt hat, und
    jede Aussage traegt einen Handgriff ("das meiste ist nur sinnvoll,
-   wenn man auch was tun kann"). Normen beachtet (NORMEN.md): Tore
+   wenn man auch was tun kann"). Normen beachtet (analyse/NORMEN.md): Tore
    waehlen aus statt anzuheben - ausserhalb des vergleichbaren
    Bereichs wird blass gezeigt, nichts korrigiert; die dB hier sind
    relative Mikrofon-Spektren, keine Lautheit; ISO 3382-1 liefert die
@@ -25920,7 +25920,7 @@ function werZu(){ document.getElementById('wer').classList.remove('auf'); }
    in der Ecke verschwindet. Der Ausschnitt steht in der Fussnote, damit
    niemand ihn fuer den ganzen Bestand haelt.
 
-   Hausform (docs/HAUSREGELN.md): schwarzer Datenbereich mit runden
+   Hausform (docs/haus/HAUSREGELN.md): schwarzer Datenbereich mit runden
    Ecken, Saeulen als gedaempfte Flaeche mit aufgehellter Topline oben,
    Beschriftung 12 px. Die Diagonale ist gestrichelt - sie ist eine
    Hilfslinie, keine Messung. */

@@ -7,7 +7,7 @@
  *   node bin/karte.js            → library/karte.json
  *   node bin/karte.js --gruppen 8   Gruppenzahl erzwingen (sonst Silhouette)
  *
- * Zwei getrennte Rechnungen, absichtlich (CLUSTERING-RECHERCHE.md: der
+ * Zwei getrennte Rechnungen, absichtlich (archiv/CLUSTERING-RECHERCHE.md: der
  * haeufigste Fehler ist, auf der 2-D-Karte zu clustern):
  *
  *   1. GRUPPEN im vollen 1280-dim-Raum: agglomerativ, complete linkage,
@@ -549,7 +549,7 @@ for (let g = 0; g < bestK; g++) {
     stile: mittelListe(m, 'stile'), instrumente: mittelListe(m, 'instrumente'),
     /* Die Erdung sagt, wie eine Gruppe klingt - aber nur mit Werten, die
        stimmen. Tempo, Tonart/Modus und Stimme sind seit der Prüfung vom
-       23.08.2026 totgelegt (docs/ANALYZER-REVIEW.md) und stehen nicht mehr
+       23.08.2026 totgelegt (docs/analyse/ANALYZER-REVIEW.md) und stehen nicht mehr
        im Index; das Tempo kommt jetzt aus SUNOS SCHLAGZEITEN (taktBpm im
        Katalog), das ist die verlässliche Quelle. Moll-Anteil und Stimme
        entfallen ersatzlos - lieber eine Angabe weniger als eine erfundene. */

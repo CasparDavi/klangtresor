@@ -31,7 +31,7 @@
    den Wort-Kontrast gegen den Gesamtschwerpunkt. Die Namen entstehen
    seitdem direkt in bin/karte.js über die ORTSBEGRIFFE
    (bin/ortsbegriffe.js): dieselbe Sockel-Idee, aber mit Belegpflicht
-   und Zufalls-Schwelle - gemessen in docs/GESCHICHTEN-RAUM-EICHKASTEN.md
+   und Zufalls-Schwelle - gemessen in docs/klangraum/GESCHICHTEN-RAUM.md
    ("Opfermut · Urgewalt" statt "Gesellschaft — pathetisch"). Zwei
    Namensgeber, die einander überschreiben, wären eine Falle; darum ist
    der alte Weg nicht abgeschaltet, sondern weg. Der Lied-Raum ist

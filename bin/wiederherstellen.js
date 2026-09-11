@@ -69,7 +69,7 @@ console.log(`\n  zusammen ${(bytes/1048576).toFixed(1)} MB\n`);
 const K = require('./katalog.js');
 if (fehltPflicht && !K.lesen()){
   console.error('Weder Rohdaten noch Katalog. Erst im Browser sammeln:');
-  console.error('  Lesezeichen auf suno.com (siehe docs/UEBERGABE.md)');
+  console.error('  Lesezeichen auf suno.com (siehe docs/archiv/UEBERGABE.md)');
   process.exit(1);
 }
 if (fehltPflicht) console.log('Keine neuen Rohdaten — der Katalog ist die Quelle.\n');

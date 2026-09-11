@@ -340,7 +340,7 @@ function juengsteErnte(){
 
   /* Bis 08.09.2026 stand hier ein zweiter Schreiber: library/neue-songs.json
      mit den neuen IDs, gedacht als Zettel für das WAV-Anstoßen von Hand
-     (docs/WAV-PROTOKOLL.md). Der Weg ist seit dem 03.09. zu - Suno gibt
+     (docs/docs/archiv/WAV-PROTOKOLL.md). Der Weg ist seit dem 03.09. zu - Suno gibt
      keine WAV-Links mehr heraus (bin/gesundheit.js) - und gelesen hat
      die Datei nie ein Skript, keine Route, keine Oberfläche; der
      Morgenlauf hält neue IDs im Speicher (morgen.neueIds, /api/morgen/neue).

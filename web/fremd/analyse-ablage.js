@@ -64,7 +64,7 @@ var ABLAGE_STAND = 1;          // hochzaehlen, wenn sich Reihen aendern
  * Der Stempel wird geschrieben und derzeit von niemandem gelesen: Der
  * Waechter, der ihn auswertete, ist am 24.08.2026 mit dem alten
  * Tonartverfahren entfernt worden (er zog eine Zahl nach, die sich als
- * unbrauchbar erwies - siehe docs/HISTORY.md). Er bleibt trotzdem
+ * unbrauchbar erwies - siehe docs/haus/HISTORY.md). Er bleibt trotzdem
  * stehen. Ihn zu entfernen hiesse, ablageVerpacken und ablageEntpacken
  * anzufassen, also das Format, an dem 4 GB haengen - fuer nichts. Wer
  * kuenftig einen Messweg aendert, findet hier eine Zaehlung vor,
@@ -300,7 +300,7 @@ function spektroBildFuellen(data, bw, bh, o){
            spurlos weg. Genau dieser Fehler ist bei der Farbextraktion
            schon einmal passiert - dort überlebte beim Verkleinern auf
            64×64 kein einziges rotes Pixel der Kameralinsen. Siehe
-           docs/FARBHANDLING.md. Beim Suchen nach Störungen darf die
+           docs/analyse/FARBHANDLING.md. Beim Suchen nach Störungen darf die
            Anzeige nichts verschlucken. */
         for(var col=0;col<bw;col++){
           var fA=Math.floor(col/bw*numFrames);

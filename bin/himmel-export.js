@@ -290,7 +290,7 @@ const adressen = (s) => {
   if (STICK) return { bild: bildEingebettet(s.id), audio: musikAdresse(NAMEN[s.id]) };
   /* Ohne --relativ: Bilder von Sunos CDN (oeffentlich, antwortet). Die
      Tonadressen des Katalogs sind seit 03.09.2026 Sunos Sperre
-     (/api/forbidden, docs/AUDIO-BEZUG.md) - eine Adresse, die nicht
+     (/api/forbidden, docs/suno/AUDIO-BEZUG.md) - eine Adresse, die nicht
      spielt, bekommt der Player gar nicht erst; der Klick auf einen Stern
      oeffnet dann den Titel bei Suno (s.link). */
   if (!RELATIV) return { bild: s.bildUrl || '', audio: (s.audioUrl && !/\/api\//.test(s.audioUrl)) ? s.audioUrl : '' };

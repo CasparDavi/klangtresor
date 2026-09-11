@@ -88,7 +88,7 @@ function schreiben(daten) {
    90-%-Abweichung als Mass fuer die Gleichmaessigkeit. Ueber 0,09 ist es
    kein Taktstueck. Nicht die gemessene BPM der Klanganalyse: die liegt bei
    30 % der Songs eine Oktave daneben und bei 7 % schlicht falsch
-   (docs/ANALYZER-REVIEW.md). */
+   (docs/analyse/ANALYZER-REVIEW.md). */
 function takt(schlaege) {
   if (!Array.isArray(schlaege) || schlaege.length < 16) return null;
   const d = [];

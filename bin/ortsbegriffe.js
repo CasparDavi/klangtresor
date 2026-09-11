@@ -8,7 +8,7 @@
    Raum, fuer Koordinaten in demselben heraus, welche Begriffe diese
    Stelle bestmoeglich beschreiben."
 
-   Der Weg, am Eichkasten gemessen (docs/GESCHICHTEN-RAUM-EICHKASTEN.md):
+   Der Weg, am Eichkasten gemessen (docs/klangraum/GESCHICHTEN-RAUM.md):
 
    1. VOKABULAR = die Kondensat-Woerter des eigenen Bestands. Kein
       fremdes Woerterbuch: jedes Wort ist durch mindestens ein Lied

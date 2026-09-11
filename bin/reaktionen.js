@@ -19,7 +19,7 @@
  * Gefunden am 19.08.2026, nachdem rund zwanzig geratene Adressen mit
  * 404 geantwortet hatten. Das Präfix ist /api/gen/ (nicht /api/clip/
  * oder /api/comment/) - dasselbe wie beim WAV-Anstoß, der seit dem
- * 18.08.2026 in WAV-PROTOKOLL.md steht. Die Antwort lag im Haus.
+ * 18.08.2026 in docs/archiv/WAV-PROTOKOLL.md steht. Die Antwort lag im Haus.
  *
  * ---------------------------------------------------------------------
  * EINE DATEI, NICHT DREIHUNDERT

@@ -127,7 +127,7 @@ beim Meßwert.
 
 ## 4. Spuren, die nur Übersprechen tragen
 
-Siehe [OFFEN.md 2.5](OFFEN.md) — der Piano-Befund ist derselbe
+Siehe [OFFEN.md 2.5](../archiv/OFFEN.md) — der Piano-Befund ist derselbe
 Mechanismus: `huelle()` normiert jede Stem-Spur auf **ihren eigenen**
 Spitzenwert und legt die absolute Spitze nicht ab. Eine Spur mit bloßem
 Übersprechen sieht danach aus wie eine tragende. Songs, deren Prompt

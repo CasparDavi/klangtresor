@@ -1,5 +1,63 @@
 # Backlog
 
+> **Wie dieses Dokument zu lesen ist** (neu am 11.09.2026). Der Körper unten ist chronologisch
+> gewachsen und bleibt es — er ist auch das Gedächtnis. Die Ansicht nach **Modul** steht hier oben
+> als Karte. Sortieren ist eine Ansicht, kein Umzug.
+>
+> Der **Zustand** sagt, wer am Zug ist:
+> **offen** = klar genug zum Bauen, es fehlt nur Zeit ·
+> **zu planen** = es fehlt eine Skizze, nicht Zeit ·
+> **Entscheidung** = es fehlt Caspar_Ds Wort ·
+> **erledigt** = verlässt die Liste und wird eine Zeile im Moduldokument.
+>
+> Ein leeres Feld heißt: noch nicht eingestuft. Das wird beim nächsten Anfassen nachgetragen —
+> geraten wird nicht.
+
+| Modul | Zustand | Abschnitt |
+|---|---|---|
+| Analyse | erledigt | [Die tote Tonart — ERLEDIGT 24.08.2026](#die-tote-tonart-erledigt-24082026) |
+| gemischt | — | [Dringend](#dringend) |
+| gemischt | — | [Klein und konkret](#klein-und-konkret) |
+| Suno | erledigt | [Sammeln und Einlesen auf Knopfdruck — ✅ erledigt (19.08.2026)](#sammeln-und-einlesen-auf-knopfdruck-erledigt-19082026) |
+| Bühne | — | [Bühne](#bühne) |
+| gemischt | — | [Mittel](#mittel) |
+| gemischt | — | [Größer](#größer) |
+| — | verworfen | [Verworfen — mit Begründung](#verworfen-mit-begründung) |
+| gemischt | — | [Offen seit dem 19.08.2026](#offen-seit-dem-19082026) |
+| gemischt | — | [Tarjas Wünsche (20.08.2026)](#tarjas-wünsche-20082026) |
+| gemischt | — | [Aus Tarjas erstem Testlauf (Discord, 23.08.2026)](#aus-tarjas-erstem-testlauf-discord-23082026) |
+| Klangraum | — | [Klangraum — offen nach der Kosmologie (22.08.2026)](#klangraum-offen-nach-der-kosmologie-22082026) |
+| Ton | erledigt bis auf den Export | [Tonstudio — Störfrequenz-Kerbe (Caspar_D, 23.08.2026)](#tonstudio-störfrequenz-kerbe-caspar_d-23082026) |
+| Haus | — | [Docker und Einrichtungsskripte (23.08.2026)](#docker-und-einrichtungsskripte-23082026) |
+| Haus | erledigt | [Entscheidungen und ihre Folgen (Caspar_D, 26.08.2026)](#entscheidungen-und-ihre-folgen-caspar_d-26082026) |
+| Suno | tot — der Weg ist zu | [WAV-Dateien für neue Songs — Weg ist zu (27.08.2026)](#wav-dateien-für-neue-songs-weg-ist-zu-27082026) |
+| Effektclip | — | [Bewegte Standbilder — 236 Songs ohne Video-Artwork](#bewegte-standbilder-236-songs-ohne-video-artwork) |
+| Katalog | — | [Fremde Songs im Tresor — Tarjas Vorschlag](#fremde-songs-im-tresor-tarjas-vorschlag) |
+| Ton | — | [Die Gegenprobe mit einem zweiten Mikrofon](#die-gegenprobe-mit-einem-zweiten-mikrofon) |
+| Forschung | — | [Was andere besser können — GitHub-Recherche vom 28.08.2026](#was-andere-besser-können-github-recherche-vom-28082026) |
+| Ton | Forschung | [Einmessen: was die Welt besser macht — Recherche vom 28.08.2026](#einmessen-was-die-welt-besser-macht-recherche-vom-28082026) |
+| Ton | Forschung | [Das Ohr einmessen — Recherche vom 28.08.2026](#das-ohr-einmessen-recherche-vom-28082026) |
+| Oberfläche | zu planen | [Englisch mit Sprachumschalter](#englisch-mit-sprachumschalter) |
+| Suno | — | [Sunos Zeitmarken sind bei 18 Liedern falsch — Karaoke läuft doppelt](#sunos-zeitmarken-sind-bei-18-liedern-falsch-karaoke-läuft-doppelt) |
+| Klangraum | zu planen | [Kondensate — vertagt, ein lokales Modell ist zu planen (08.09.2026)](#kondensate-vertagt-ein-lokales-modell-ist-zu-planen-08092026) |
+| Klangraum | — | [Geschichten-Genres statt Klang-Etiketten](#geschichten-genres-statt-klang-etiketten) |
+| Klangraum | — | [Gruppennamen: Kontrast statt Stoppwortliste](#gruppennamen-kontrast-statt-stoppwortliste) |
+| Klangraum | — | [Geschichten-Raum: nächste Schritte (Stand 29.08.2026)](#geschichten-raum-nächste-schritte-stand-29082026) |
+| Klangraum | Entscheidung | [Kondensate ohne Bezahl-Modell — HANDLUNGSBEDARF](#kondensate-ohne-bezahl-modell-handlungsbedarf) |
+| gemischt | — | [Kleinigkeiten, notiert am 29.08.2026](#kleinigkeiten-notiert-am-29082026) |
+| Ton | teils erledigt | [Anzeigen an den gemessenen Versatz koppeln (29.08.2026)](#anzeigen-an-den-gemessenen-versatz-koppeln-29082026) |
+| Ton | — | [Messpegel-Deckel und „echte" Messung (29.08.2026, ~Mitternacht)](#messpegel-deckel-und-echte-messung-29082026-mitternacht) |
+| Suno | Entscheidung | [Verfallende Credits verwerten (Caspar_D, 08.09.2026)](#verfallende-credits-verwerten-caspar_d-08092026) |
+| Haus | — | [Morgenfenster: Abschnitte nach und nach zeigen (Caspar_D, 08.09.2026)](#morgenfenster-abschnitte-nach-und-nach-zeigen-caspar_d-08092026) |
+| Community | zu planen | [Ideen für „Meine Gemeinschaft" (09.09.2026, gesammelt, nicht entschieden)](#ideen-für-meine-gemeinschaft-09092026-gesammelt-nicht-entschieden) |
+| Export | zu planen | [Archiv-Export — Brainstorm, zurückgeholt und weitergedacht (09.09.2026)](#archiv-export-brainstorm-zurückgeholt-und-weitergedacht-09092026) |
+| Effektclip | zu planen | [Effektclip: Bewegtbild schneiden statt nur bemalen (Caspar_D, 10.09.2026)](#effektclip-bewegtbild-schneiden-statt-nur-bemalen-caspar_d-10092026) |
+| Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
+
+**Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
+
+---
+
 > **Namenswechsel:** Das Projekt hieß bis zum 24.08.2026 *MySuno*. Es heißt jetzt **KlangTresor** — „Suno" ist seit dem 06.01.2026 eingetragene Marke von Suno Inc., ausdrücklich für Software zum Abspielen und Bearbeiten von Audioinhalten. Wo in Zitaten und in der Chronik noch der alte Name steht, bleibt er stehen.
 
 Stand 17.08.2026, Nachtrag 24.08.2026. Sortiert nach Nutzen im
@@ -92,7 +150,7 @@ Programm gewachsen ist — die Zahlen sind Beweise, keine Konfiguration.
 ### Playlists
 **Rohdaten sind geholt** (17.08.2026): 25 Playlists, 599 Einträge, in
 `library/roh/playlists-<stempel>.json`. Endpunkte und Fallstricke stehen in
-[DATENEXTRAKTION.md](DATENEXTRAKTION.md).
+[DATENEXTRAKTION.md](suno/DATENEXTRAKTION.md).
 
 ~~Offen ist der Einbau in Katalog und Oberfläche~~ — **ERLEDIGT**:
 `bin/aufbereiten.js` verarbeitet die Alben, das Register „Alben" zeigt sie.

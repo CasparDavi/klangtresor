@@ -595,7 +595,7 @@ function hoehenkante(binMittel, sr, N){
 
    Es suchte "stehende Toene" - Frequenzen, die dauerhaft aus ihrer
    Nachbarschaft herausragen - und fand statt dessen die Melodie. Vier
-   Fehler wirkten zusammen (Befunde 14-17 in docs/ANALYZER-REVIEW.md):
+   Fehler wirkten zusammen (Befunde 14-17 in docs/analyse/ANALYZER-REVIEW.md):
 
    Das Bandraster verduennte schmale Toene um 10*log10(Binzahl), also
    oben viel staerker als unten. Die gemeldete dB-Zahl war ein
@@ -856,7 +856,7 @@ onmessage=function(e){
          geprueften Stuecken auf "weiblich". Kein einziger der 321 Songs
          bekam je "instrumental", auch Regen und Wind nicht. Gegen Sunos
          Stilangaben traf sie 40 %; wer immer "maennlich" saegte, traefe
-         77 %. Die ganze Herleitung steht in docs/ANALYZER-REVIEW.md
+         77 %. Die ganze Herleitung steht in docs/analyse/ANALYZER-REVIEW.md
          unter "Geloest - und wodurch".
 
          Der Ersatz rechnet in bin/toene.js: YIN auf dem getrennten
@@ -882,7 +882,7 @@ onmessage=function(e){
          auf die Zahl der Summanden normiert (17 % Vorteil fuer schnelle
          Tempi), und das Energietor verglich einen Effektivwert mit
          einem Mittelquadrat und sperrte deshalb nie. Herleitung in
-         docs/ANALYZER-REVIEW.md unter "Geloest - und wodurch".
+         docs/analyse/ANALYZER-REVIEW.md unter "Geloest - und wodurch".
 
          Der Ersatz ist keine Rechnung, sondern eine Auskunft: Sunos
          Schlagraster (schlaege im Katalog, /api/gen/<id>/downbeats).

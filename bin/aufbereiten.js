@@ -164,7 +164,7 @@ const ausPrivat  = [...privatJeId.values()];
    Playlist schlaegt alles, dann alle published). Ein eigener Titel, der in
    einem Album liegt, gehoert ins Archiv - auch wenn er privat ist und das
    oeffentliche Profil ihn nie zeigt. Die Albumernte traegt je Eintrag das
-   volle Clip-Objekt (DATENEXTRAKTION.md), daraus wird der Titeldatensatz.
+   volle Clip-Objekt (suno/DATENEXTRAKTION.md), daraus wird der Titeldatensatz.
    Gelesen wird die juengste Albumdatei VOR dem Titelbau; der Albumblock
    weiter unten liest sie fuer die Zugehoerigkeit noch einmal. Nur
    ergaenzend: was Profil, Arbeitsbereich oder Privat-Ernte schon liefern,
@@ -385,7 +385,7 @@ for (const timingDatei of alleRohdateien('timing')) {
          Wortketten ueber Wind. Deshalb hier die Gegenprobe an Sunos
          eigenem Text: Wo der fehlt, ist das Stueck instrumental, und
          dann wird nichts uebernommen. So kamen 35 Stuecke zu
-         halluzinierten Zeitmarken (docs/ERFUNDENES.md). */
+         halluzinierten Zeitmarken (docs/analyse/ERFUNDENES.md). */
       if (!((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()))) {
         instrumental++; s.instrumental = true; s.whisperInstrumental = true; continue;
       }

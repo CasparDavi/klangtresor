@@ -11,7 +11,7 @@
  *   4. den Inhalt dieser Datei in die Konsole werfen, dann warten (rund vier Minuten)
  *   5. copy(JSON.stringify(window.__sweep)) und mit messreihe-<Datum>.json vergleichen
  *
- * Was sie NICHT sieht, steht in docs/EFFEKTCLIP-REGELN.md unter „Was der Mittelwert
+ * Was sie NICHT sieht, steht in docs/effektclip/EFFEKTCLIP-REGELN.md unter „Was der Mittelwert
  * nicht sieht": Ereignisse (Sicherung, Glitch-Blöcke) brauchen einen Zeitlauf,
  * punktuelle Effekte (Tropfen, Risse) brauchen den höchsten Bildpunkt statt des
  * Mittelwerts, und ein Regler, der auf ein anderes Element angewiesen ist (der

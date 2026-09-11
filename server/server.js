@@ -568,7 +568,7 @@ const MORGEN_SCHRITTE = [
      normalen Tagen eine Handvoll Profile, deutlich unter einer Minute.
      Das grosse Auffrischen (rund 800 Anfragen) bleibt der Knopf im
      Panel, mit Rueckfrage - "bewusste Entscheidung statt Nebenwirkung",
-     HAUSREGELN.md.
+     haus/HAUSREGELN.md.
 
      KEIN einheiten() hier: Die Zahl der fehlenden Handles auszurechnen
      hiesse, die beiden Zeilenformen von reaktionen.ndjson ein zweites
@@ -776,7 +776,7 @@ function reaktionenLesen(alle) {
 }
 
 /* WER HAT GEHERZT - die vollstaendige Liste je eigenem Titel, ueber den
-   Weg der iOS-App (GET /api/gen/<id>/likers/, docs/SUNO-APP-WEGE.md).
+   Weg der iOS-App (GET /api/gen/<id>/likers/, docs/suno/WEGE.md).
    Ablage: library/liker/<song>.json = der juengste Stand (wer, in Sunos
    Reihenfolge, neueste zuerst) mit dem, was an Zeit zu haben ist: der
    letzte einer Seite traegt die Herz-Zeit exakt (sie IST der naechste
@@ -940,7 +940,7 @@ function beobachterAblegen(b, gesehen) {
 /* Eine Benachrichtigung in die Zeilenform bringen.
    v2 (Web): user_profiles (hoechstens drei), total_users, content_id,
    content_title, content_message.
-   v3 (App, docs/SUNO-APP-WEGE.md): fertige Zeile - avatars[], text[] als
+   v3 (App, docs/suno/WEGE.md): fertige Zeile - avatars[], text[] als
    Segmente {text, bold, action}, action fuer das Ziel. Das Handle steht
    sicher in action.url als suno://suno.com/@handle, der Titel in
    suno://suno.com/song/<id>. Der Anzeigename ist das fette Segment MIT
@@ -1574,7 +1574,7 @@ const server = http.createServer((req, res) => {
           /* Die Rohform des letzten Laufs aufheben - nicht in roh/ (das
              ist der Weg in den Katalog), sondern als Probe fuer die
              Endpunkt-Doku: was v3 bei grossen Buendeln wirklich liefert
-             (docs/SUNO-APP-WEGE.md), sieht man nur an der Rohform. Eine
+             (docs/suno/WEGE.md), sieht man nur an der Rohform. Eine
              Datei, jeder Lauf ueberschreibt sie. */
           try {
             const probe = path.join(WURZEL, 'library', 'suno-wege');
@@ -2053,7 +2053,7 @@ const server = http.createServer((req, res) => {
      davon nie etwas (nur die Zeitmarken, weiter unten in /api/zeitprobe).
      Tarja wollte ihn sehen - sie untertitelt ihre Streams mit demselben
      Modell, und auf ihren Wunsch hin ist Whisper hier ueberhaupt
-     eingezogen (docs/WHISPER.md).
+     eingezogen (docs/suno/WHISPER.md).
 
      Wie die Notenzonen: Sammeldatei einmal lesen, nach Zeitstempel
      halten, songweise ausliefern. Die 2,2 MB sollen nicht bei jedem

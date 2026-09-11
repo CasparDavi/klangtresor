@@ -1050,7 +1050,7 @@ der Leute, die hier kommentiert, geliked oder gefolgt haben.
 - Die Falle: Beide `sort_by`-Parameter sind **Pflicht**. Ohne sie kommt
   422 mit einer leeren Hülle, in der jede Zahl `null` ist — das sieht
   aus wie ein stiller Nutzer, nicht wie ein Fehler. Steht jetzt in
-  [SUNO-API.md](SUNO-API.md).
+  [SUNO-API.md](suno/WEGE.md).
 - **Warum steht jeder im unteren Drittel?** Weil eine Community keine
   Zufallsstichprobe ist — Freundschaftsparadoxon. Das erklärt ein
   (i)-Kasten, der die Schiefe **aus den vorliegenden Daten rechnet**
@@ -1065,12 +1065,12 @@ dem Prozeß.
 
 - **Tonstudio** liegt jetzt über allem und bleibt stehen, wenn die
   Bühne zugeht.
-- **Hub-Vergleich**: [VERGLEICH-HUB.md](VERGLEICH-HUB.md), Funktion für
+- **Hub-Vergleich**: [VERGLEICH-HUB.md](forschung/VERGLEICH-HUB.md), Funktion für
   Funktion mit „haben wir / besser / verworfen". Ergebnis: Tempo und
   Tonart sind dort schwächer als hier, die echte Lücke ist **Harmonie**.
 - **61 veraltete Stimmlagen** korrigiert.
 - **Zusammenarbeit**: Tarja (`myinqi`) schreibt mit,
-  [ZUSAMMENARBEIT.md](ZUSAMMENARBEIT.md) samt `bin/fremdstand.js`.
+  [ZUSAMMENARBEIT.md](haus/ZUSAMMENARBEIT.md) samt `bin/fremdstand.js`.
 
 ### 5 · Abends: ein stiller Datenverlust, gefunden beim Aufräumen
 
@@ -1235,7 +1235,7 @@ Differenz (neutral gegen eingestellt) zeigt das Tonstudio allein.
   zu 330 Punkte. Jetzt oben verankert, Standardplatz mittig unter der
   Kopfleiste.
 - ~~Die Einmessung mit dem Mikrofon prüfen~~ — **durchgeführt**, und
-  daraus wurde der ganze Abend. Siehe [EINMESSEN.md](EINMESSEN.md).
+  daraus wurde der ganze Abend. Siehe [EINMESSEN.md](ton/EINMESSEN.md).
 - ~~Mehrere Einstellungen durchmessen~~ — **erledigt**, digital wie am
   Hörplatz. Der Equalizer wurde bandweise vermessen (19 Einstellungen),
   und die Lautstärkereihe brachte den Befund des Tages: der HomePod
@@ -1249,7 +1249,7 @@ Differenz (neutral gegen eingestellt) zeigt das Tonstudio allein.
   „etwas heller als die Farben, aber nicht weiß" vorgesehen.
 - **`bin/wav.js` auf Tarjas Weg umstellen** und das Kreuzchen im
   Lesezeichen bauen — siehe [BACKLOG.md](BACKLOG.md) und
-  [WAV-PROTOKOLL.md](../WAV-PROTOKOLL.md).
+  [WAV-PROTOKOLL.md](archiv/WAV-PROTOKOLL.md).
 - **Ob die Baßbegrenzung wirklich im Lautsprecher sitzt** und nicht im
   Mikrofon. Klirranteil und Kopfraum werden seit dem 27.08. mitgemessen,
   lagen für die bisherigen Reihen aber noch nicht vor. Eine Wiederholung

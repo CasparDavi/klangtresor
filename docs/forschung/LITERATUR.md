@@ -1,4 +1,7 @@
-# Was die Fachliteratur wirklich sagt
+# Was die Fachliteratur sagt
+
+> Diese systematische Fassung hat die erste vom August abgelöst.
+> Die erste liegt unter [archiv/LITERATUR-erste-fassung.md](../archiv/LITERATUR-erste-fassung.md).
 
 *Systematische Recherche zu Songanalyse, Raumakustik und Gehörakustik —
 jeweils bewertet gegen den Stand von KlangTresor.*

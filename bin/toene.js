@@ -534,7 +534,7 @@ function vermessen(s) {
        Schweigen, sondern Uebersprechen, und YIN findet darin tausende.
        Alle 64 textlosen Stuecke bekamen so eine Lage zugeschrieben,
        durchweg "maennlich" - "Wind im Wald" aus 5631 Tonhoehen im
-       Rauschen (docs/ERFUNDENES.md).
+       Rauschen (docs/analyse/ERFUNDENES.md).
 
        Gefragt wird die Handmarkierung zuerst, dann der Katalog. */
     stimme: instrumentalGefuehrt(s) ? { lage: 'instrumental', grund: 'als instrumental geführt' }

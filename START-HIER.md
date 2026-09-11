@@ -16,6 +16,9 @@ erkennt das Programm selbst, sobald du einmal sammelst.
 
 ---
 
+> **Die Dokumente liegen nach Modulen sortiert** — die Karte dazu steht in
+> [docs/LIESMICH.md](docs/LIESMICH.md).
+
 ## Der schnelle Weg — ein Skript, das alles macht
 
 Im Ordner liegen Einrichtungsskripte. **Eines** davon genügt — such dir die

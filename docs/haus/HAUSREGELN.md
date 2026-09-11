@@ -485,7 +485,7 @@ fünf Dinge:
 
 Gespeichert wird nur, was die Frage beantwortet: öffentliche Zahlen und
 der Anzeigename. Keine Songlisten, keine Texte, keine Kommentare
-Fremder. Der technische Teil steht in [SUNO-API.md](SUNO-API.md).
+Fremder. Der technische Teil steht in [SUNO-API.md](../suno/WEGE.md).
 
 ---
 
@@ -661,7 +661,7 @@ er *nicht* herausgerechnet — zwei Versuche das zu tun scheiterten beide
 daran, daß sie Rauschen mit heraufholten. Was in beiden Messungen
 steckt, stört nicht.
 
-**Beim Einmessen** (ausführlich in [EINMESSEN.md](EINMESSEN.md)):
+**Beim Einmessen** (ausführlich in [EINMESSEN.md](../ton/EINMESSEN.md)):
 Ein Mikrofon nimmt das Produkt aus Signal,
 Lautsprecher, Raum und Mikrofon auf. Ohne Meßmikrofon läßt sich das
 nicht trennen — eine einzelne Messung ist **keine Eichung**. Aber die
@@ -727,4 +727,4 @@ exportieren.
    für Schritt ausgebaut und von Caspar_D abgenommen; hinter dem
    letzten freigegebenen Schritt steht ein Baustellen-Block.
 
-Ausführlich in [EINMESSEN.md](EINMESSEN.md).
+Ausführlich in [EINMESSEN.md](../ton/EINMESSEN.md).
