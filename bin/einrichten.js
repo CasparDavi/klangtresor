@@ -600,16 +600,25 @@ function da(befehl) {
 
   /* ================================================================ */
   schritt(`Songliste von @${handle} holen`);
-  matt('Dasselbe, was auch der Morgenlauf jeden Tag tut — nur zum ersten Mal.');
-  matt('Es kommen: Titel, Liedtexte, Stilangaben, Modell und Datum, dazu');
-  matt('Abrufe, Herzen und Kommentarzahlen, und die Alben, soweit sie');
-  matt('öffentlich stehen. Zwanzig Titel je Seite, eine Seite nach der');
-  matt('anderen — schnell geht das nicht, und das ist Absicht.');
+  matt('Ich lese deine Profilseite durch, Seite für Seite, zwanzig Titel je');
+  matt('Seite. Schnell geht das nicht, und das ist Absicht: ein fremder');
+  matt('Server bekommt eine Anfrage nach der anderen, nie hundert auf einmal.');
+  leer();
+  matt('Was dabei hereinkommt: Titel, Liedtexte, Stilangaben, Modell und');
+  matt('Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben,');
+  matt('soweit sie öffentlich stehen.');
   leer();
   if (!laeuft(process.execPath, [path.join('bin', 'sammeln.js'), handle])) {
     const w = await wieWeiter('Songliste holen', 'Ohne sie gibt es nichts zu archivieren.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   }
+  /* Erst tun, dann benennen. Ein neuer Mensch kennt den „Morgenlauf"
+     nicht - er kann ihn erst einordnen, wenn er einmal gesehen hat,
+     was dabei passiert. */
+  leer();
+  matt('Genau das passiert von jetzt an jeden Morgen: KlangTresor sieht');
+  matt('nach, was neu dazugekommen ist, und hält dein Archiv auf Stand.');
+  matt('Einen Knopf dafür findest du später auf der Seite.');
 
   /* ================================================================
      DEIN EIGENES SUNO-ZEUG ZUERST.
@@ -662,7 +671,8 @@ function da(befehl) {
       matt('  node bin/uebernehmen.js --ordner /pfad/zum/ordner --tun');
     } else {
       einlesen.push('--ordner', ordner);
-      matt('Der Pfad wird gemerkt — der Morgenlauf sieht ab jetzt auch dort nach.');
+      matt('Der Pfad wird gemerkt: ich sehe von jetzt an bei jedem Abgleich');
+      matt('auch dort nach, ohne dass du ihn noch einmal nennen musst.');
     }
   }
   leer();
@@ -697,10 +707,10 @@ function da(befehl) {
   matt('So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto.');
   leer();
   matt('Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin');
-  matt('angemeldet bist. Es kostet einen Klick am Morgen.');
+  matt('angemeldet bist. Es kostet einen Klick, einmal am Tag.');
   leer();
-  matt('Die KlangTresor-Seite geht gleich auf. Dort steht unter dem roten');
-  matt('Morgenknopf die Frage:');
+  matt('Die KlangTresor-Seite geht gleich auf. Dort findest du den roten');
+  matt('Knopf für den täglichen Abgleich — und darunter diese Frage:');
   leer();
   satz(HELL('  „Willst Du auch die nur Dir zugänglichen Daten'));
   satz(HELL('   im KlangTresor sehen?"'));
