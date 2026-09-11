@@ -3086,6 +3086,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-lf.f-pendel{border-color:#f97b14;color:#f97b14}
 #tbs .tbs-lf.f-stottern{border-color:#e31c79;color:#e31c79}
 #tbs .tbs-lf.f-rasten{border-color:#3a86ff;color:#3a86ff}
+#tbs .tbs-lf.f-langsamer,#tbs .tbs-lf.f-schneller{border-color:#3fb950;color:#3fb950}
+#tbs .tbs-lf{position:relative}
+#tbs .tbs-lf .tbs-lrueck{position:absolute;right:3px;top:2px;font-size:9px;opacity:.8}
+#tbs .tbs-lf.rueck{background:rgba(255,255,255,.06)}
 #tbs .tbs-lz select{font:inherit}
 #tbs .tbs-lhinweis{flex:1 0 100%;font-size:11px;opacity:.6;line-height:1.35;min-height:1px}
 #tbs #tbs-laufKurve{flex:1 0 100%;width:230px;height:72px;display:block;margin:0 0 2px}
@@ -27687,8 +27691,9 @@ function laufTakte(){ const T=taktStand(); if(!(T.takt>0)) return 1;
   return Math.max(1,Math.floor(MAX_SEK/T.takt)); }
 /* Die Folge ist so lang wie der Ausschnitt Takte hat. Wird der Titel gewechselt, waechst oder
    schrumpft sie mit; fehlende Felder laufen vorwaerts und beginnen jeweils einen eigenen Abschnitt. */
-function laufFelder(){ const n=laufTakte(), f=LAUF.folge.slice(0,n).map(x=>({f:(x&&x.f)||'vor',s:!x||x.s!==false}));
-  while(f.length<n) f.push({f:'vor',s:true});
+function laufFelder(){ const n=laufTakte(),
+    f=LAUF.folge.slice(0,n).map(x=>({f:(x&&x.f)||'vor',s:!x||x.s!==false,r:!!(x&&x.r)}));
+  while(f.length<n) f.push({f:'vor',s:true,r:false});
   if(f.length) f[0].s=true;                      /* das erste Feld beginnt immer einen Abschnitt */
   return f; }
 /* Wie die Zeit INNERHALB eines Abschnitts laeuft. u ist der Abstand zum Abschnittsanfang. */
@@ -27745,7 +27750,8 @@ function laufAbschnitte(){
   let i=0;
   while(i<n){ let e=i; while(e<n-1&&!F[e+1].s) e++;
     const Lseg=(e-i+1)*takt, form=F[i].f;
-    A.push({von:i,bis:e,form,Lseg,verbrauch:laufVerbrauchForm(form,Lseg,takt)});
+    const rueck=!!F[i].r, vb=laufVerbrauchForm(form,Lseg,takt);
+    A.push({von:i,bis:e,form,Lseg,rueck,verbrauch:rueck?-vb:vb});
     i=e+1; }
   return A; }
 /* Wieviel Videozeit ein ganzer Durchlauf der Folge verbraucht. Ist das null, kehrt der Faden zum
@@ -27768,7 +27774,11 @@ function laufZeit(t){
   for(const x of A){ if(k>=x.von&&k<=x.bis){ seg=x; break; } c+=x.verbrauch; }
   if(!seg) return t;
   const segStartT=a0+(i-(k-seg.von))*takt;
-  return a0+c+laufLokal(seg.form,t-segStartT,seg.Lseg,takt); }
+  /* Rueckwaerts ist dieselbe Kurve mit umgekehrtem Vorzeichen: der Faden laeuft vom Stand aus nach
+     hinten statt nach vorn. Erst damit kann er ueberhaupt zurueckkommen - jede andere Form
+     verbraucht Material oder nichts, keine gibt welches zurueck (11.09.2026). */
+  const lok=laufLokal(seg.form,t-segStartT,seg.Lseg,takt);
+  return a0+c+(seg.rueck?-lok:lok); }
 /* Springen im Video kostet nur dann wenig, wenn jedes Bild ein Schluesselbild ist: gemessen 124,6 ms
    gegen 14,9 ms je Sprung. Das Haus baut die Arbeitskopie auf Zuruf, einmal je Quelle. */
 function sprungHolen(){
@@ -27829,9 +27839,11 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     const weiter=!v.s, vorWeiter=(i<F.length-1&&!F[i+1].s);
     const gew=wahl&&i>=wahl.a&&i<=wahl.b;
     return '<button type="button" class="tbs-lf f-'+v.f+(weiter?' weiter':'')+(vorWeiter?' vorweiter':'')
-      +(gew?' gewaehlt':'')+'" data-i="'+i+'" title="Takt '+(i+1)+': '+namen[v.f]+'">'
+      +(v.r?' rueck':'')+(gew?' gewaehlt':'')+'" data-i="'+i+'"'
+      +' title="Takt '+(i+1)+': '+namen[v.f]+(v.r?', r\u00fcckw\u00e4rts':'')+'">'
       +'<span class="tbs-lnr">Takt '+(i+1)+'</span>'
-      +'<span class="tbs-lzeichen">'+(weiter?'\u00b7':zeichen[v.f])+'</span></button>'; }).join('')+'</div>';
+      +'<span class="tbs-lzeichen">'+(weiter?'\u00b7':zeichen[v.f])+'</span>'
+      +(v.r&&!weiter?'<span class="tbs-lrueck">\u21a9</span>':'')+'</button>'; }).join('')+'</div>';
   /* Erst waehlen, dann ansagen. Ohne Auswahl sind die Formknoepfe aus - sonst wuesste niemand,
      worauf sie wirken (Caspar_D, 11.09.2026: "erst takte selektieren, dann ansagen, wie sie
      verschaltet werden sollen"). */
@@ -27842,7 +27854,14 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     +'<span class="tbs-lwie">mehrere: ziehen oder mit Umschalt klicken</span></div>';
   h+='<div class="tbs-lformen">'+LAUF_FORMEN.map(x=>
     '<button type="button" class="tbs-lp" data-f="'+x[0]+'"'+(wahl?'':' disabled')+' title="'+x[1]+'">'
-    +'<span class="tbs-lzeichen">'+x[2]+'</span>'+x[1]+'</button>').join('')+'</div>';
+    +'<span class="tbs-lzeichen">'+x[2]+'</span>'+x[1]+'</button>').join('')
+    +'<button type="button" class="tbs-lp" id="tbs-lumkehr"'+(wahl?'':' disabled')
+    +' title="Die gew\u00e4hlten Takte laufen r\u00fcckw\u00e4rts"><span class="tbs-lzeichen">\u21a9</span>umkehren</button>'
+    +'</div>';
+  /* Spiegeln gilt fuer den ganzen Clip, nicht fuer die Auswahl - darum steht es fuer sich. */
+  h+='<div class="tbs-lformen"><button type="button" class="tbs-lp" id="tbs-lspiegel"'
+    +' title="Die zweite H\u00e4lfte seitenverkehrt aus der ersten bauen, damit der Faden zur\u00fcckkommt">'
+    +'<span class="tbs-lzeichen">\u2928</span>zweite H\u00e4lfte spiegeln</button></div>';
   const w=(k,liste,txt)=>'<label class="tbs-lz">'+txt+' <select data-l="'+k+'">'
     +liste.map(o=>'<option value="'+o[0]+'"'+(String(LAUF[k])===String(o[0])?' selected':'')+'>'+o[1]+'</option>').join('')
     +'</select></label>';
@@ -27861,6 +27880,8 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     +'<div class="tbs-lmass" id="tbs-laufMass"></div>'
     +'<div class="tbs-lhinweis">'+hin+'</div>';
   box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>b.onclick=()=>laufAnwenden(b.dataset.f));
+  { const u=box.querySelector('#tbs-lumkehr'); if(u) u.onclick=()=>laufUmkehren();
+    const sp=box.querySelector('#tbs-lspiegel'); if(sp) sp.onclick=()=>laufSpiegeln(); }
   box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value));
   const felder=box.querySelector('#tbs-lfelder');
   if(felder){
@@ -27885,7 +27906,8 @@ function laufWahlZeichnen(){
   if(el) el.textContent=wahl
     ? (wie===1?('Takt '+(wahl.a+1)+' soll'):('Takt '+(wahl.a+1)+' bis '+(wahl.b+1)+' sollen'))
     : 'Takte w\u00e4hlen \u2014 dann sagen, was sie tun';
-  box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>{ b.disabled=!wahl; }); }
+  box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>{ b.disabled=!wahl; });
+  { const u=box.querySelector('#tbs-lumkehr'); if(u) u.disabled=!wahl; } }
 /* Die Auswahl, geordnet und auf die vorhandenen Takte begrenzt. */
 function laufWahl(){ const n=laufTakte(); if(!LAUF.wahl) return null;
   const a=Math.max(0,Math.min(LAUF.wahl.von,LAUF.wahl.bis)), b=Math.min(n-1,Math.max(LAUF.wahl.von,LAUF.wahl.bis));
@@ -27894,10 +27916,34 @@ function laufWahl(){ const n=laufTakte(); if(!LAUF.wahl) return null;
    Abschnittsmarke. Der Takt dahinter bekommt seine eigene, sonst haengt er an unserem Abschnitt. */
 function laufAnwenden(form){
   const wahl=laufWahl(); if(!wahl) return;
-  const F=laufFelder();
-  for(let i=wahl.a;i<=wahl.b;i++) F[i]={f:form,s:(i===wahl.a)};
+  const F=laufFelder(), alt=F[wahl.a]&&F[wahl.a].r;
+  for(let i=wahl.a;i<=wahl.b;i++) F[i]={f:form,s:(i===wahl.a),r:!!alt};
   if(wahl.b+1<F.length) F[wahl.b+1].s=true;
-  LAUF.folge=F; laufUI();
+  LAUF.folge=F; laufNachAendern();
+  return; }
+/* Die Richtung der gewaehlten Takte umkehren. */
+function laufUmkehren(){ const wahl=laufWahl(); if(!wahl) return;
+  const F=laufFelder(); const neu=!F[wahl.a].r;
+  for(let i=wahl.a;i<=wahl.b;i++) F[i].r=neu;
+  F[wahl.a].s=true; if(wahl.b+1<F.length) F[wahl.b+1].s=true;
+  LAUF.folge=F; laufNachAendern(); }
+/* SPIEGELN: die erste Haelfte seitenverkehrt in die zweite schreiben, Richtung gedreht. Danach steht
+   der Faden am Ende wieder am Anfang, der Clip schliesst also. Es ist eine HANDLUNG, kein Modus -
+   die gespiegelten Takte bleiben ganz normal bearbeitbar (Caspar_D, 11.09.2026: "ich wuerd das
+   anders machen, spiegeln aber die gespiegelten takte asymetrisch bearbeitbar"). Ob es danach noch
+   schliesst, sagt das Mass unter der Kurve. */
+function laufSpiegeln(){
+  const F=laufFelder(), n=F.length, h=Math.floor(n/2); if(h<1) return;
+  /* Abschnitte der ersten Haelfte einsammeln, dann seitenverkehrt hinten anlegen. */
+  const teile=[]; let i=0;
+  while(i<h){ let e=i; while(e<h-1&&!F[e+1].s) e++; teile.push({f:F[i].f,r:F[i].r,len:e-i+1}); i=e+1; }
+  let j=n-1;
+  for(const t of teile){ for(let k=0;k<t.len;k++){ if(j<n-h) break;
+      F[j]={f:t.f,r:!t.r,s:(k===t.len-1)}; j--; } }
+  if(n-h<n) F[n-h].s=true;
+  LAUF.folge=F; LAUF.wahl=null; laufNachAendern(); }
+/* Was nach jeder Aenderung zu tun ist: neu zeichnen und, wenn noetig, die Arbeitskopie holen. */
+function laufNachAendern(){ laufUI();
   const p=SEITEN[seiteIndex()];
   if(p&&p.video&&laufBeugt()&&SPRUNG.fuer!==laufSchluessel())
     sprungHolen().then(()=>{ grundLaden(); laufUI(); }); }
@@ -27955,11 +28001,13 @@ function laufKurveMalen(){
     /* Schliesst der Clip? Nur wenn der Faden nach einem Durchlauf wieder dort steht, wo er anfing.
        Das Pendel verbraucht nichts, vorwaerts verbraucht seine ganze Laenge. */
     const dv=laufBeugt()?laufVerbrauch():L;
-    const zu=Math.abs(dv)<0.02||Math.abs(dv-L)<0.02;
+    /* Der Clip schliesst, wenn der Faden am Ende wieder am Anfang steht (Verbrauch null), oder wenn
+       er genau einmal ganz durch das Video gelaufen ist und dabei umschlaegt. */
+    const zu=Math.abs(dv)<0.02||(d>0&&Math.abs(dv%d)<0.02)||Math.abs(dv-L)<0.02;
     mass.textContent='aus '+kf(gezeigt.toFixed(2))+' s Video werden '+kf(L.toFixed(2))+' s Clip'
       +(d?'  \u00b7  Video '+kf(d.toFixed(2))+' s'+inTakten(d):'')
       +'  \u00b7  der Faden r\u00fcckt '+kf(dv.toFixed(2))+' s weiter'
-      +(zu?'':'  \u2014 der Clip schlie\u00dft so nicht'); } }
+      +(zu?'  \u2014 der Clip schlie\u00dft':'  \u2014 der Clip schlie\u00dft so nicht'); } }
 function laufSetzen(k,v){ LAUF[k]=(k==='form')?String(v):(parseInt(v,10)||1);
   if(LAUF.teil%LAUF.wdh!==0) LAUF.wdh=2;          /* Raster gewechselt: unmoegliche Zahl mitziehen */
   const p=SEITEN[seiteIndex()];
