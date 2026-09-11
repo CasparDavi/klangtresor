@@ -304,6 +304,33 @@ function darfSchreiben(p) {
   catch (e) { return false; }
 }
 
+/* Antwortet auf 8788 schon ein KlangTresor? Dann zeigt der Browser
+   gleich das ANDERE Archiv, waehrend dieser hier mit „Adresse belegt"
+   stirbt - und das sieht von aussen nach Erfolg aus. */
+function jemandAufPort(port) {
+  return new Promise((fertig) => {
+    const net = require('node:net');
+    const draht = net.connect({ host: '127.0.0.1', port });
+    const schluss = (antwort) => { try { draht.destroy(); } catch (e) {} fertig(antwort); };
+    draht.setTimeout(1500);
+    draht.once('connect', () => schluss(true));
+    draht.once('timeout', () => schluss(false));
+    draht.once('error', () => schluss(false));
+  });
+}
+
+/* Die Seite im Browser aufmachen - jedes System auf seine Art. Schlaegt
+   es fehl, steht die Adresse ja auch im Text. */
+function seiteAufmachen(adresse) {
+  const w = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', adresse]]
+    : process.platform === 'darwin' ? ['open', [adresse]]
+      : ['xdg-open', [adresse]];
+  try {
+    const { spawn } = require('node:child_process');
+    spawn(w[0], w[1], { stdio: 'ignore', detached: true }).unref();
+  } catch (e) {}
+}
+
 function da(befehl) {
   const e = spawnSync(process.platform === 'win32' ? 'where' : 'which', [befehl],
     { stdio: 'pipe', encoding: 'utf8' });
@@ -465,6 +492,15 @@ function da(befehl) {
     }
   }
 
+  if (await jemandAufPort(8788)) {
+    leer();
+    wink('Auf Port 8788 antwortet bereits ein KlangTresor.');
+    matt('Solange der läuft, kann dieser hier nicht starten — und der Browser');
+    matt('würde den anderen zeigen. Erst dort das Fenster mit Strg-C beenden.');
+    leer();
+    if (!await jaNein('Trotzdem weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+  }
+
   /* ================================================================ */
   schritt('ffmpeg bereitstellen');
   matt('Für Klanganalyse, Wellenformen und den Videoschnitt.');
@@ -569,5 +605,8 @@ function da(befehl) {
   leer();
   leser.close();
   if (OHNE_START) return;
+  /* Erst aufmachen, dann starten: der Browser braucht laenger zum
+     Hochkommen als der Server zum Horchen. */
+  seiteAufmachen('http://localhost:8788');
   laeuft(process.execPath, [path.join('server', 'server.js')]);
 })();

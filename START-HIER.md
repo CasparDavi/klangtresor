@@ -41,11 +41,18 @@ Skripte ab, und das Fenster schließt sich, bevor man die Meldung lesen
 kann — man hält das Programm dann für kaputt. Der `.cmd`-Starter umgeht
 beides. (Beigesteuert von Casto, der genau darüber gestolpert ist.)
 
-**Der übliche Weg** prüft, was fehlt (Node ab 20, ffmpeg) und sagt dir für dein
-System, wie du es bekommst. Dann holt er die Pakete und die KI-Modelle, fragt
-nach deinem Suno-Alias, sammelt deine Songs, lädt die Medien und startet
-KlangTresor — in einem Durchgang. Abbrechen ist jederzeit erlaubt; beim nächsten
-Start wird nur nachgeholt, was fehlt.
+**Der übliche Weg** braucht keine Vorbereitung. Fehlt Node.js, holt er es sich
+selbst — als tragbare Fassung in den Projektordner, ohne Eintrag im System und
+ohne Verwalterrechte. Danach prüft er Rechte und Platz, sieht nach, ob hier schon
+ein Archiv liegt, sorgt für ffmpeg (unter Windows holt er es mit; auf Mac und
+Linux sagt er dir den einen Befehl, weil dort der Paketverwalter zuständig ist),
+holt Pakete und KI-Modelle, fragt nach deinem Suno-Alias, sammelt deine Songs,
+lädt die Medien und startet KlangTresor — in einem Durchgang. Abbrechen ist
+jederzeit erlaubt; beim nächsten Start wird nur nachgeholt, was fehlt.
+
+Alle Download-Adressen stehen in [`quellen.txt`](quellen.txt), eine Zeile je
+Sache. Zieht ein Anbieter um, ändert man dort die Zeile — und niemand muss in
+einem Skript suchen.
 
 **Der Docker-Weg** ist für alle, die sich nichts installieren wollen: Node und
 ffmpeg liegen dann im Container, auf deinem Rechner bleibt nichts davon zurück.

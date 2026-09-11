@@ -17,10 +17,17 @@
 # in den Projektordner gelegt und aendert nichts am System, kein PATH,
 # keine Administratorrechte. Gebraucht wird Fassung 20 oder neuer.
 # Lizenz: MIT (Node selbst), das Beiwerk freizuegig - beilegen erlaubt.
+#
+# Windows bekommt ein .zip, Mac und Linux ein .tar.gz - so, wie es der
+# Anlasser des jeweiligen Systems ohne Zusatzwerkzeug auspacken kann.
 # Uebersicht aller Fassungen: https://nodejs.org/dist/
 
 node-windows-x64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-win-x64.zip
 node-windows-arm64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-win-arm64.zip
+node-macos-arm64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-darwin-arm64.tar.gz
+node-macos-x64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-darwin-x64.tar.gz
+node-linux-x64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.gz
+node-linux-arm64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-arm64.tar.gz
 
 # ---------------------------------------------------------------------
 # FFMPEG - fuer Klanganalyse, Wellenformen und den Videoschnitt.

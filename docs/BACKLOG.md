@@ -1116,12 +1116,34 @@ ausführen — das geht doch nicht"):
 |---|---|---|
 | macOS | `einrichten-macos.command` | `einrichten-docker.command` |
 | Linux | `einrichten-linux.sh` | `einrichten-docker.sh` |
-| Windows | `einrichten-windows.ps1` | `einrichten-docker.ps1` |
+| Windows | `KlangTresor-einrichten.cmd` → `einrichten-windows.ps1` | `einrichten-docker.ps1` |
 
-Die drei üblichen prüfen die Voraussetzungen, holen Pakete und Modelle, fragen
-nach dem Alias, sammeln, laden und starten. Die drei Docker-Skripte prüfen, ob
-Docker da ist und läuft, legen `library/` und `geheim/` an, bauen die Kiste,
-warten auf den Server und verweisen dann in den Browser.
+Die drei Docker-Skripte prüfen, ob Docker da ist und läuft, legen `library/`
+und `geheim/` an, bauen die Kiste, warten auf den Server und verweisen dann in
+den Browser.
+
+**Die drei üblichen sind seit dem 11.09.2026 nur noch Anlasser** (Caspar_D:
+„am schönsten wäre natürlich, du downloadest nur node.js zuerst und machst
+dann ein schickes installations-js"). Vorher lag dieselbe Abfolge dreimal da,
+jede Änderung musste dreimal gemacht und dreimal geprüft werden — und der
+Windows-Zweig lief dabei regelmäßig auseinander. Jetzt:
+
+- `einrichten-windows.ps1` (7,4 KB) und `bin/anlasser.sh` (6,6 KB, von
+  `einrichten-macos.command` und `einrichten-linux.sh` mit je fünfzehn Zeilen
+  hereingeholt) beschaffen **nur Node.js** — vorhandenes im Projektordner,
+  sonst das des Systems ab Fassung 20, sonst als tragbare Fassung aus
+  `quellen.txt`. Kein Eintrag im System, keine Verwalterrechte.
+- `bin/einrichten.js` (26,3 KB) macht danach alles andere, für alle drei
+  Systeme aus einer Datei: Rechte und Platz prüfen, nachsehen wo wir stehen
+  (auch nebenan), ffmpeg, npm, Modelle, Alias, Sammeln, Laden, Starten.
+  Node schaltet auf Windows die Farbverarbeitung selbst ein — dort stehen
+  deshalb die echten Hausfarben und saubere Umlaute, was PowerShell 5.1
+  nicht kann.
+- Alle Adressen in `quellen.txt`, eine Zeile je Sache, mit Lizenzhinweis
+  (Node MIT — beilegen erlaubt; ffmpeg GPL — nur holen, nie mitliefern).
+
+Zahlen: die drei Einstiegsdateien samt Anlasser zusammen 38,3 KB → 15,2 KB,
+und die Abfolge steht einmal statt dreimal.
 
 **Dabei eine Lücke geschlossen:** `bin/sammeln.js` fand den Handle nur im
 Argument oder im schon vorhandenen Katalog — nicht in `library/konfig.json`,
@@ -1133,8 +1155,15 @@ dritte Quelle.
 Offen:
 - [ ] Den Docker-Weg einmal wirklich durchspielen (auf diesem Mac ist Docker
       nicht installiert; geprüft sind nur Syntax und Logik).
-- [ ] `einrichten-windows.ps1` und `einrichten-docker.ps1` sind ungetestet —
-      hier gibt es kein PowerShell. Casto könnte beide prüfen.
+- [x] `einrichten-windows.ps1` am 11.09.2026 in der Windows-10-VM durchgespielt
+      (Anlasser, Node-Download, Tresortür, Rechteprüfung, Umlaute) — läuft.
+- [x] Der Bash-Anlasser am 11.09.2026 im Sandkasten durchgespielt: falscher
+      Ordner, System-Node, Node-Download samt Auspacken, zweiter Lauf mit
+      eigener Fassung — alle vier wie gedacht.
+- [ ] `einrichten-docker.ps1` ist ungetestet — hier gibt es kein Docker.
+      Casto könnte es prüfen.
+- [ ] Ein vollständiger Lauf bis zum laufenden Server fehlt noch; dafür
+      braucht es einen echten Suno-Alias mit Download-Kontingent.
 
 
 ---
