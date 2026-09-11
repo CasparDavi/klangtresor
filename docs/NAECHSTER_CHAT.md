@@ -274,8 +274,9 @@ Ein Klick, und die Namen stehen da. Das ist kein Code, nur ein Lauf.
 
 **2 · Community-Fenster: Follower.** Der Strom trägt `follow`-
 Ereignisse, der Server sammelt sie (`/api/community` → `follower`),
-die Person zeigt „folgt dir seit". Eine Liste *aller* Follower fehlt
-noch — gehört ins Profil-Fenster (`profilAuf()`), nicht ins Song-Fenster.
+die Person zeigt „folgt dir seit". ~~Eine Liste *aller* Follower fehlt
+noch~~ — **ERLEDIGT** (09.09.2026): das Community-Fenster zeigt die
+Beobachter samt „Neu seit dem letzten Lauf" und „Folgen dir nicht zurück".
 
 **3 · Analyzer: Tonart-Karte prüfen.** Der Kern liefert jetzt die
 richtige Tonart in beiden Nachrichten. Ob die Karte „Tonart" das
@@ -293,10 +294,8 @@ Zählerverlauf — sortiert nach dem, was sich *gerade* bewegt, statt nach
 der Summe über sechzehn Monate. Die Daten wachsen täglich; in einer
 Woche lohnt es sich.
 
-**6 · Suchfeld: Lyrics.** Der Platzhalter versprach sie von Anfang an,
-durchsucht werden nur Titel und Stil. Die Lyrics stehen nicht in der
-schlanken Liste — entweder `/api/index` um ein `lyricsKurz` erweitern
-oder die Suche serverseitig machen.
+**6 · Suchfeld: Lyrics.** — **ERLEDIGT**: `/api/lyrics-index` liefert sie,
+die Suche liest `lyricsIndex` als Freitext mit.
 
 **7 · Aus dem CB-Vergleich:** BPM-Vertrauen, Balance, EQ-Hinweise.
 Sein Code ist GPL — nachbauen, nicht kopieren.
@@ -739,8 +738,8 @@ Klarnamen und Vorname aus README, START-HIER.md, docs/UEBERGABE.md und
 `*.zip` in die `.gitignore`. Eine Bündelsicherung der alten Historie
 liegt außerhalb des Repos unter `SunoArchive-privat/`.
 
-**Offen vor dem Push:** die **LICENSE-Datei**. Sie muß zur Zusage im
-README passen — „offen zum Ansehen, Verwendung nur mit Zustimmung" ist
+**Offen vor dem Push:** die **LICENSE-Datei**. — **ERLEDIGT**, MIT liegt im
+Repo. Sie muß zur Zusage im README passen — „offen zum Ansehen, Verwendung nur mit Zustimmung" ist
 *keine* Open-Source-Lizenz. Eine der üblichen (MIT, Apache) würde genau
 das Gegenteil zusichern. Das ist eine Entscheidung für Caspar_D, keine
 technische Frage.
@@ -1542,8 +1541,8 @@ Reaktivierung + gesundheit.js — steht weiter unten bzw. in HISTORY.
 Neu: `docs/eingang/`. Dort liegt Rohmaterial, das ins Repo gehört, aber
 noch niemand ausgewertet hat, jede Datei mit Status im Kopf. Erster
 Eintrag: die Chatthreads vom 06.09., unterwegs in der App geführt —
-**der Rohtext fehlt noch**, weil die App nichts auf der Platte ablegt
-und von Hand herübergereicht werden muss.
+~~**der Rohtext fehlt noch**~~ — am 07.09.2026 nachgetragen, er steht
+jetzt unter „## Rohtext" in der Datei. (Die Auswertung selbst bleibt offen.)
 
 Wer das hier liest und Zeit hat: `docs/eingang/` durchsehen, verteilen,
 Status setzen.
@@ -1564,9 +1563,9 @@ Ergänzungen sofort und Wegnahmen erst nach zwei übereinstimmenden
 vollständigen Ernten ≥ 2 h (`katalog.albenKandidaten`). Wegnahme heißt:
 alte Id-Menge nicht Teilmenge der neuen — nicht: weniger.
 
-**Noch nicht gelaufen.** Der erste echte Lauf steht aus: Caspar_D klickt,
-Claude schaut in `library/roh/playlists-*.json` und ins Protokoll. Die
-Zeile im Lesezeichen muss „Alben — 25 mit N Einträgen" sagen, grün.
+~~**Noch nicht gelaufen.**~~ — gelaufen: am 09.09.2026 wurden Befunde aus
+der Gegenlesung des Albumwegs behoben, und weiter unten steht die Korrektur
+„Alben auf Suno" statt immer 0.
 
 Randfälle aus der letzten Gegenlesung, nicht gebaut (Backlog):
 - Katalog aus `library/backup/` zurückgespielt → alte Kandidaten leben
@@ -1647,7 +1646,8 @@ Satz „aelter als Sunos Benachrichtigungen reichen" streichen.
    keine Schleife), lyrik.js hat ihn bereinigt (241 Titel). Noch ohne Ton: der CDN-Weg ist tot, audio.mp3 kommt
    erst über Unlock und Download bei Suno plus bin/uebernehmen.js. Die 19
    Beschreibungen (MORGENSCHRITTE.json) sind NOCH NICHT im Morgenfenster -
-   Bau 4.
+   Bau 4. -- ERLEDIGT: der Server laedt sie, das Morgenfenster zeigt je
+   Schritt Name, Beschreibung und Zustand.
 3. **Nachtschritt Stems** (`bin/stems.js`, 4 min/250 MB je Titel),
    **Morgenschritt Tonart** (`bin/toene.js` vor `analyse-index.js`),
    Haken 14–16 aus HANDARBEIT-PRUEFUNG.md.
@@ -2180,9 +2180,10 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
 - Caspar_Ds Stick-Export (altes Stufen-Skript, Dateien einzeln) läuft
   noch: Stufe 2 bei 50 % nach 40 min. Empfehlung: anhalten und mit der
   Behälter-Fassung neu starten (räumt in Stufe 7 die alten Dateien ab).
-- Offen: Register zeigt `behaelter` noch nicht; Balken 2 („schon drauf /
-  kommt noch") über Nachmessen des Ziels — mit wenigen großen Dateien
-  jetzt billig; Kachelgröße (50 KB) für den Sternenhimmel.
+- Offen: ~~Register zeigt `behaelter` noch nicht~~ (**erledigt**, es zeigt
+  „Behälter auf dem Medium" samt Ballast); Balken 2 („schon drauf / kommt
+  noch") über Nachmessen des Ziels — mit wenigen großen Dateien jetzt
+  billig; Kachelgröße (50 KB) für den Sternenhimmel.
 
 ## Erster vollständiger Stick mit Behältern (09.09.2026, 13:45)
 
@@ -2206,8 +2207,8 @@ umgesetzt (Server b8b629c, Oberfläche im Commit danach):
   gesamt), Gesamtzähler läuft über Teilschritte durch; Meldung „gibt es zu
   Hause nicht" gestrichen.
 - Offen: Balken 2 („schon drauf / kommt noch" durch Nachmessen des Ziels);
-  Register zeigt `behaelter` (Stücke, Ballast) noch nicht; Kachelgröße
-  für den Sternenhimmel (21,6 MB HTML); Windows-Start bei Casto.
+  ~~Register zeigt `behaelter` (Stücke, Ballast) noch nicht~~ (**erledigt**);
+  Kachelgröße für den Sternenhimmel (21,6 MB HTML); Windows-Start bei Casto.
 
 ## Demo-Sternenhimmel: Sunos Player eingebettet (09.09.2026, Nachmittag)
 

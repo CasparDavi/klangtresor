@@ -1749,6 +1749,8 @@ werden MP3 und WAV getrennt gerechnet statt einmal für beide.
 Modul. Der Browser lädt ihn als Worker, Node führt ihn unverändert aus.
 **Nur so lässt sich prüfen, ob die Norm eingehalten wird**, und nur so
 rechnet die geplante Datenbank später dasselbe wie der Schirm.
+*Eingelöst: `bin/vorrechnen.js` liest denselben Worker ein und rechnet damit
+den ganzen Bestand.*
 
 ### Was stillgelegt ist
 
@@ -1791,6 +1793,7 @@ die Datei ohnehin unerreichbar.
 `web/analyzer.html` ist seitdem nur noch **Wirtsseite**, 1,2 KB: ein
 leerer Behälter, das Modul, ein Aufruf. Sie ist der Prüfstand, solange
 die Bühne den Analyzer noch nicht führt, und entfällt danach.
+*Eingetreten: die Bühne führt den Analyzer, die Datei gibt es nicht mehr.*
 
 #### Drei Eingriffe waren beim Umzug nötig
 

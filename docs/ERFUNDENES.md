@@ -35,6 +35,10 @@ Gemessen über den ganzen Bestand (321 Songs), nicht geschätzt.
 >
 > Offen bleibt die **Stimmlage** (Abschnitt 2) — sie ist kein Text-Item
 > und steht weiter bei allen 64.
+>
+> **Nachtrag: auch erledigt**, am selben Tag. `instrumentalGefuehrt()` in
+> `bin/toene.js` trägt bei von Hand als instrumental geführten Titeln
+> `lage: 'instrumental'` ein, statt eine Stimme zu erfinden.
 
 ## 1. Erfundener Liedtext — 19 Songs
 
@@ -208,9 +212,9 @@ Paaren die plausiblere ist.
   den gewählten Ton und `einsAnteil` ab, nicht die ganze Verteilung.
   **Sie mit abzulegen kostet 12 Zahlen je Song** und macht die Frage
   ohne Neulauf beantwortbar.
-- **Die Sicherheit anzeigen.** Sie wird gemessen und nicht gezeigt. Ein
-  Grundton mit 30 % ist etwas anderes als einer mit 95 %, und der
-  Unterschied ist für den Betrachter heute unsichtbar.
+- ~~**Die Sicherheit anzeigen.**~~ — **ERLEDIGT** einen Tag später: die
+  Tonarten-Säulenreihe trennt „Eindeutige" von „Allen" an der Schwelle
+  `TON_SICHER`, und die Unsicherheit steht im Bild.
 - **Einen echten Maßstab bauen, falls die Frage je wichtig wird.** Der
   Fassungsvergleich prüft nur Konsistenz, nicht Richtigkeit. Belastbar
   wäre eine unabhängige Nachrechnung mit einem anderen Verfahren — oder

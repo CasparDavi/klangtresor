@@ -94,8 +94,9 @@ Programm gewachsen ist — die Zahlen sind Beweise, keine Konfiguration.
 `library/roh/playlists-<stempel>.json`. Endpunkte und Fallstricke stehen in
 [DATENEXTRAKTION.md](DATENEXTRAKTION.md).
 
-Offen ist der Einbau in Katalog und Oberfläche — und davor drei
-Entscheidungen, weil die Playlists mehr enthalten als das Archiv:
+~~Offen ist der Einbau in Katalog und Oberfläche~~ — **ERLEDIGT**:
+`bin/aufbereiten.js` verarbeitet die Alben, das Register „Alben" zeigt sie.
+Die drei Entscheidungen darunter sind damit gefallen:
 
 - **117 Einträge sind Songs anderer Leute** (primelli, bardinlia, snmsounds
   und andere). Caspar_Ds Playlists sind kuratierte Sammlungen, keine reinen
@@ -211,7 +212,9 @@ Caspar_Ds Befund: Der Text sitzt in der Bühne nicht sauber. Zusammen mit
 der Idee dreier Felder neben der Playerleiste — **Stage · Lyrics ·
 Analyzer**. Vorschlag: Stage und Analyzer schließen sich aus (beide
 besetzen die Fläche), Lyrics ist unabhängig zuschaltbar. Damit wird
-auch „Analyzer + Lyrics" möglich, also Karaoke mit Visuals. **Offen.**
+auch „Analyzer + Lyrics" möglich, also Karaoke mit Visuals.
+— **ERLEDIGT**: die Bühne trägt `text-lyrics` und `text-analyzer` als
+kombinierbare Klassen, genau so gebaut.
 
 ### Lyrics fremder Songs
 Gemessen: `api/clip/<id>` liefert **ohne Anmeldung** Titel, Lyrics,
@@ -605,7 +608,7 @@ und Beschreibung gelesen, nicht durch Ausführen:
 | Funktion | Warum sie reizvoll ist |
 |---|---|
 | **Zielpegel je Plattform** — Spotify · YouTube · Club · Broadcast · Streaming, dazu `desired_gain_db` mit „anheben/absenken" | Der eigene Analyzer misst LUFS, sagt aber nicht, **wohin** damit. Ein Soll-Ist-Vergleich je Ziel ist der praktische Teil der Lautheitsmessung |
-| **True Peak, 4-fach überabgetastet** | Der Spitzenwert zwischen zwei Abtastpunkten liegt höher als jeder einzelne — genau daran scheitern Songs beim Kodieren. Sample-Peak allein verschweigt das |
+| ~~**True Peak, 4-fach überabgetastet**~~ — **gebaut**, `truePeak` in `bin/analyse-index.js`, samt Anzeige und Spielraum-Rechnung | Der Spitzenwert zwischen zwei Abtastpunkten liegt höher als jeder einzelne — genau daran scheitern Songs beim Kodieren. Sample-Peak allein verschweigt das |
 | **Song Check mit Zeitmarken** — `fault_start_seconds`/`fault_end_seconds`, `clipped_samples`, `eq_tips` | Nicht „der Song hat ein Problem", sondern **wo**. Das passt genau zur Bühne, die einen Spielkopf über alle Diagramme führt |
 | **Phasenkorrelation** (`corr`, `corr_raw`) und `balance` | Beantwortet die im Backlog offene Frage nach Mitte/Seite von der anderen Seite — und Caspar_Ds Mischungen sind gemessen nahezu mono |
 | **BPM-Vertrauen** (`bpm_confidence`) | Der eigene Analyzer nennt einen BPM-Wert ohne Angabe, wie sicher er ist |
@@ -669,19 +672,19 @@ Offset nicht rotiert oder die Moll-Templates fehlen.
 ## Offen seit dem 19.08.2026
 
 ### Community-Fenster ausbauen
-Follower-Liste (ins Profil-Fenster, nicht ins Song-Fenster);
-`comment_like`, `hook_like`, `playlist_like` aus dem Strom zeigen;
-„Ungelesen" als Punkt am Zähler auf der Kachel selbst.
+~~Follower-Liste (ins Profil-Fenster, nicht ins Song-Fenster)~~ —
+**ERLEDIGT**, das Community-Fenster zeigt die Beobachter samt „Folgen dir
+nicht zurück". Weiter offen: `comment_like`, `hook_like`, `playlist_like`
+aus dem Strom zeigen; „Ungelesen" als Punkt am Zähler auf der Kachel selbst.
 
-### Sortierung nach Bewegung
+### Sortierung nach Bewegung — ERLEDIGT
 „Plays der letzten 7 Tage" aus dem Zählerverlauf — was sich *gerade*
-bewegt, nicht die Summe über sechzehn Monate. Lohnt in einer Woche,
-wenn der Verlauf Tiefe hat.
+bewegt, nicht die Summe über sechzehn Monate. Steht als Sortierung
+„Bewegung, 7 Tage" in der Liste.
 
-### Suchfeld: Lyrics
-Der Platzhalter versprach sie von Anfang an; durchsucht werden Titel und
-Stil. Lyrics stehen nicht in der schlanken Liste — `lyricsKurz` in
-`/api/index` oder serverseitige Suche.
+### Suchfeld: Lyrics — ERLEDIGT
+Der Platzhalter versprach sie von Anfang an. Gelöst mit `/api/lyrics-index`;
+die Suche liest `lyricsIndex` als Freitext mit.
 
 ### Analyzer: Tonart-Karte prüfen
 Der Kern liefert jetzt die richtige Tonart. Ob die Karte das richtige

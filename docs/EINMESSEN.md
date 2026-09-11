@@ -45,7 +45,8 @@ Bestätigungen und sammelt Fehlschläge zur Nachhol-Liste.
 Liste `/durchlaeufe`). Lange FFTs aufs 1024er-Logruster eingedampft (Maximum).
 
 **Offen (siehe BACKLOG):** Entfaltung → Klirr/RT60/C50/C80; Anzeigen an den
-gemessenen Versatz koppeln (Tabelle im BACKLOG); Messpegel-Deckel −12 dBFS
+gemessenen Versatz koppeln (Tabelle im BACKLOG — der **Textversatz der Bühne
+ist inzwischen gebaut**, der Rest steht noch aus); Messpegel-Deckel −12 dBFS
 („wenn wir immer noch cappen…"); Werkzeugmodus-Altteile abräumen.
 
 ---
@@ -707,14 +708,13 @@ in der **Unterscheidung**: Zeigen drei Mikrofone an drei Orten dasselbe
 Loch, ist es der Lautsprecher. Zeigen sie drei verschiedene, ist es der
 Raum. Das kann eine Einzelmessung grundsätzlich nicht trennen.
 
-**Die Modensuche robuster machen.** Der Vergleich Rauschen gegen Sweep
-hat gezeigt, daß beide Signale verschiedene Moden finden. Vermutlich
-müßte die Suche beide Spektren gemeinsam auswerten statt zweimal
-getrennt.
+**~~Die Modensuche robuster machen.~~ — ERLEDIGT.** `messModenBestaetigt()`
+vergleicht die Moden aus Rauschen- und Sweep-Lauf mit 5 % Toleranz; der
+Bericht sagt „in beiden Signalen bestätigt" oder „noch unbestätigt".
 
-**Eine Lautstärke-Empfehlung.** Der Punkt, ab dem die Kette ehrlich
-arbeitet, ist meßbar (bei Caspar_D 40 %). Das Programm könnte ihn nennen
-und beim Abhören daran erinnern.
+**Eine Lautstärke-Empfehlung.** — **halb erledigt**: der Knick wird gerechnet
+und im Meßbericht genannt („Darunter arbeitet die Kette am ehrlichsten").
+Weiter offen bleibt die Erinnerung beim Abhören.
 
 ---
 

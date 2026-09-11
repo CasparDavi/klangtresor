@@ -374,7 +374,11 @@ Kennzeichnung. Beides gemacht:
    Erzeugungskette — gemessen wird immer Modell + Pipeline, und genau
    dieser Verbund ist das Vergleichsobjekt.
 
-## 6. Entscheidungsfragen (kein Selbstläufer)
+## 6. Entscheidungsfragen (kein Selbstläufer) — entschieden
+
+> **Nachtrag 11.09.2026.** Die beiden ersten Punkte sind längst entschieden
+> und gebaut; weiter oben in diesem Dokument steht es schon (Abschnitt „was
+> seither erledigt ist"), hier war es nur nie nachgetragen.
 
 - **`#stems-section`** (~390 Zeilen Code + 53 Markup): der ganze
   Demucs-Player hängt an `OPT.demucs`, das nie übergeben wird.
@@ -382,14 +386,12 @@ Kennzeichnung. Beides gemacht:
   übergeben — und trägt die **letzte Fremdadresse**
   (`caspardavi.github.io`, zwei ONNX-Modelle, Z. 4422).
   `mixToMono`/`resampleLinear` gehören zum Cluster.
-  → OFFEN.md Abschnitt 3 sagt teils „ganz ausgebaut", der Code
-  widerspricht. Entweder beide Sektionen wirklich entfernen (damit
-  fällt die Fremdadresse) oder den Beschluss richtigstellen.
+  → **ENTSCHIEDEN: entfernt.** Beide Sektionen sind aus
+  `web/fremd/analyzer.js` raus, damit auch die Fremdadresse.
 - **`spurBild`/`spurTopline`**: kein einziger Aufrufer, aber
   HAUSREGELN.md führt sie als vorgehaltenen Werkzeugkasten („Nichts von
-  Hand nachbauen …"). Widerspruch im Haus: entweder die
-  Befundspur-Toplines wirklich darüber führen, oder streichen und die
-  Hausregel ändern.
+  Hand nachbauen …"). → **ENTSCHIEDEN: geführt.** Neun Aufrufer im
+  Analyzer, der Widerspruch ist aufgelöst.
 - **Horizontband-Reste** (`abstandZurUmgebung`, `gleitMittel`,
   UMGEBUNG_-Konstanten, ~71 Zeilen): technisch tot, aber der
   Abklemm-Beschluss Z. 302–306 deckt sie vermutlich. Urteil: unklar.
@@ -580,6 +582,13 @@ es ist das, was BS.1770 tut: Kanalleistungen addieren, nicht Signale.
 `ch` bleibt dabei `left` und darf es bleiben.
 
 ### Die 12 Befunde, die noch gelten
+
+> **Nachtrag 11.09.2026:** Fünf davon gelten nicht mehr — 12, 34, 43, 44 und
+> 49. Weiter oben steht das bereits („Fünf Befunde sind seither erledigt"),
+> nur hier unten blieben sie unangetastet stehen. Nachgeprüft: 324 Bilder je
+> `.rechts.webp` und `.summe.webp` liegen im Archiv, der Worker rechnet
+> Hüllkurve, Energie, Lautheit und Crest aus beiden Kanälen, und `maxEndlich()`
+> ersetzt `Math.max.apply`. Es sind also **sieben**.
 
 ### 12. Es gibt kein R und kein L+R — magR wird gerechnet und weggeworfen
 **mittel** · `analyzer-worker.js`:943, `bin/vorrechnen.js`

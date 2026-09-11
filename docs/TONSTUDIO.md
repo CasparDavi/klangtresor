@@ -211,9 +211,9 @@ dort zuerst lesen.** Hier nur die Urfassung:
 
 ## Offen (Stand 23.08.2026, siehe auch BACKLOG)
 
-- **Störfrequenz-Kerbe** (nächstes Thema): stehende schmale Spitzen aus
-  den vorberechneten Spektren erkennen, als Vorschlag anbieten, Notch als
-  neunte Glocke — BACKLOG „Tonstudio — Störfrequenz-Kerbe".
+- **Störfrequenz-Kerbe** — **ERLEDIGT**: `bin/stoerfrequenz.js` erkennt sie,
+  `/api/stoerfrequenzen` liefert sie, `eqKerbe` im Studio setzt die neunte
+  Glocke. (Nachgetragen 11.09.2026.)
 - LED-VU-Retro (Stufe 6, wenn Lust) · Demucs-Stems für echtes „Stimme
   weg" (L−R-Trick verworfen, DemucsServer liegt in Entwicklung/) ·
   Bounce nur falls Caspar_D je will (Suno-WAV-Originale sind TABU).
@@ -595,9 +595,12 @@ neutral 0 dB; `eqKerbe` {hz, db, q} je Song in eq.json (Server PUT
 (Tooltip mit Note, Cent, dB, Dauer, Breite), Klick setzt −18 dB / Q 30,
 × entfernt; A/B und EQ-Stufe schalten die Kerbe mit; sie geht in die
 gezeichnete Summenkurve ein. Geprüft an „Remix Mich": Kurve bei 8 kHz
-−18 dB, bei 7 kHz −0,4 dB, gemerkt im Server. Offen: Tiefe/Güte am
-Gerät einstellbar (heute fest), Detektor in den Morgenlauf, Kerbe im
-Export, Lauf über alle 321 Songs.
+−18 dB, bei 7 kHz −0,4 dB, gemerkt im Server. Davon **erledigt**: Tiefe und
+Güte sind am Gerät einstellbar (senkrecht ziehen, scrollen), der Detektor
+läuft als Morgenschritt `analyse-stoerfrequenz`, und der Lauf über den
+Bestand liegt vor (324 Titel in `library/stoerfrequenzen.json`).
+**Weiter offen: die Kerbe im Export** — in `bin/export.js` steht davon
+nichts. (Nachgetragen 11.09.2026.)
 - Glockenstuhl: Summenkurve in der ersten Akzentfarbe (vorher --akzent2).
 - Störfrequenzen **im Glockenstuhl-Bild**: je Kandidat ein senkrechter Stab
   an seiner Frequenz (Störton/Brummen in Akzent, Musik/Ton-auf-Note grau,

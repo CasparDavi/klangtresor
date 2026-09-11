@@ -1,5 +1,14 @@
 # WAV-Nachtlauf — abgeschlossen
 
+> ## Auch der neue Weg ist inzwischen zu (Nachtrag 11.09.2026)
+>
+> Alles unten beschreibt den Stand vom 27.08.2026. **Seit dem 03.09.2026
+> sperrt Suno alle Audio-Direktlinks**, auch für den Besitzer und auch für
+> MP3. `bin/wav.js` läuft weiter über `cdn1.suno.ai` und steht damit still.
+> Der aktuelle Stand steht in `docs/AUDIO-BEZUG.md`, gewacht wird von
+> `bin/gesundheit.js`. Dieses Dokument bleibt als Bericht stehen, taugt aber
+> nicht mehr als Anleitung.
+
 > ## Der Weg von August ist zu — es gibt einen neuen (27.08.2026)
 >
 > **Der alte Weg** (`convert_wav` anstoßen, dann `cdn1.suno.ai/<id>.wav`

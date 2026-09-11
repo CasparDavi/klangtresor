@@ -115,8 +115,8 @@ Handarbeit im Sinne der Regel = KEIN SKRIPT + HANDSTART = **13**. Dazu 11 Altlas
 ## Haken in AUTO (6) — Schreiber laeuft, Inhalt oder Erstlauf haengt trotzdem an der Hand
 
 1. **karte-geschichten.json** — erster Lauf nur mit `--neu` von Hand (karte.js:72-74). Ein fremder Bestand bekommt den Geschichten-Raum nie von selbst.
-2. **whisper.ndjson** — Bestand ist Handlauf; `--alle` erst seit heute, unbelegt; eine handeditierte Zeile (`vermerk`).
-3. **lyrik.json** — Morgenschritt seit heute Abend, noch nie gelaufen.
+2. **whisper.ndjson** — ERLEDIGT/belegt (11.09.2026): `whisper.js --still --alle` steht committet im Morgenlauf, die Datei traegt den 08.09. 21:39. Bestand ist Handlauf; `--alle` war am 09.09. noch unbelegt; eine handeditierte Zeile (`vermerk`).
+3. **lyrik.json** — ERLEDIGT/belegt (11.09.2026): der Morgenschritt `lyrik.js --tun` steht committet, `library/lyrik.json` traegt den 11.09. 06:33, ist also gelaufen.
 4. **avatar.webp** — Lesezeichen-Ernte traegt die URL, der Server verwirft sie; nur der Frisch-Modus (Ernte > 2 h) schreibt katalog.profil.
 5. **profilbild.webp** — Quelle tot, keine Meldung.
 6. **audio.wav (321 Bestand)** — Handlauf ueber einen CDN-Weg, der nicht mehr existiert.
@@ -156,7 +156,7 @@ Aufwand: S = unter einer Stunde, M = ein Abend, L = mehrere Abende / Rechenzeit 
 | karte-geschichten.json (`--neu`) | den Schutz in karte.js:72-74 so umbauen, dass der erste Lauf die Datei anlegt, wenn geschichten.json existiert — die „nicht aufmachen"-Sperre war fuer den Entwurfsordner gedacht, der weg kann | S |
 | avatar.webp | im Server (POST /api/morgen/roh) aus ernte.profil eine profilinfo-Rohdatei schreiben, damit aufbereiten.js:657 sie findet — oder aufbereiten.js zusaetzlich ernte.profil lesen lassen | S |
 | profilbild.webp | Quelle im Lesezeichen pruefen (cover_photo_url), sonst in der Profilseite sagen, dass es keins gibt (App laeuft ohne Claude: Erklaerung ins UI) | S |
-| whisper.ndjson / lyrik.json | nichts bauen, nur belegen: den naechsten roten Knopf abwarten, Datum muss springen; das handeditierte `vermerk` entweder als Feld in whisper.js einfuehren oder die Zeile zuruecksetzen. Committen nicht vergessen (git diff server/server.js) | S |
+| whisper.ndjson / lyrik.json | ERLEDIGT: beide Daten sind gesprungen, siehe oben. Urspruenglich: nichts bauen, nur belegen: den naechsten roten Knopf abwarten, Datum muss springen; das handeditierte `vermerk` entweder als Feld in whisper.js einfuehren oder die Zeile zuruecksetzen. Committen nicht vergessen (git diff server/server.js) | S |
 | audio.wav Bestand | nichts — der Weg ist bei Suno zu; bin/wav.js loeschen oder als „ausser Betrieb" belassen, wav-stand.json weg (siehe Altlast) | S |
 
 ### ALTLAST — loeschen (Totlegen nur mit Loeschen)

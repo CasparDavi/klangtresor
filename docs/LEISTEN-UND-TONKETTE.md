@@ -400,16 +400,24 @@ Nach Nutzen je Aufwand geordnet. Alles offen für Caspar_D.
 
 1. ~~Die Wellenform reparieren~~ — **erledigt am 25.08.2026**, siehe
    Abschnitt 0.
-2. **`babspielen` an `onplay`/`onpause` hängen** (2.1). Zwei Zeilen in
-   `deckMelder()` — danach stimmen beide Leisten immer überein.
+2. ~~**`babspielen` an `onplay`/`onpause` hängen**~~ (2.1) — **erledigt am
+   25.08.2026**, `deckMelder()`/`spielknoepfeStellen()`.
 3. **`buehneAuf()` schließt das Studio** (2.2). Eine Zeile, und die
    unsichtbare Rechenschleife ist erledigt.
 4. **Den EQ-Knopf ins Pult** — die ursprüngliche Frage. Sinnvoll erst
    nach 3, und mit einem `z-index` über der Bühne.
-5. **`eqJeSong` beim Start laden statt in `studioAuf()`** (2.4) — sonst
-   sind gespeicherte Einstellungen ein Zufallsprodukt.
-6. Kleinkram: `metaKey`-Prüfung bei den Kürzeln (2.7), `SELECT` in den
-   Tastaturschutz (2.8), `title` für `#bstumm`, `#bmeta` entscheiden.
+5. ~~**`eqJeSong` beim Start laden statt in `studioAuf()`**~~ (2.4) —
+   **erledigt am 25.08.2026**, Kommentar im Code: „FRÜH LADEN, nicht erst
+   beim Öffnen des Tonstudios".
+6. ~~Kleinkram: `metaKey`-Prüfung bei den Kürzeln (2.7), `SELECT` in den
+   Tastaturschutz (2.8), `title` für `#bstumm`, `#bmeta` entscheiden.~~ —
+   **erledigt am 25.08.2026**, alles im selben Commit.
+
+> **Nachtrag 11.09.2026:** Die Überschrift dieses Abschnitts sagt „nichts
+> davon ist entschieden". Das stimmt seit dem 25.08.2026 nicht mehr — der
+> Fix lag schon im Repo, als die Datei zuletzt angefasst wurde. Punkt 4
+> (EQ-Knopf) ist ebenfalls gebaut. Nur Punkt 3 bleibt bewusst offen: dass
+> `buehneAuf()` das Studio schließt, wurde am 26.08. anders entschieden.
 
 ---
 

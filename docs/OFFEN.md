@@ -281,12 +281,15 @@ Steht auf 0,93. Gemessen an 530 Vergleichen: 0,88 ergäbe rund 79 %
 ungeteilte Schläge, 0,82 rund 91 %.
 </details>
 
-### 2.8 PowerShell-Prüfung festhalten
+### 2.8 PowerShell-Prüfung festhalten — ERLEDIGT
 Der CP1252-Fehler bei TrYa wäre durch einen Prüfschritt vor dem Versand
 aufgefallen. Vorgeschlagen: Vermerk in den Hausregeln und ein
 `bin/pruefe-skripte.js`, das reines ASCII, BOM und einen
 CP1252-Parserlauf prüft. Ein `pwsh`-Syntaxcheck allein genügt **nicht** —
 PowerShell 7 liest UTF-8 auch ohne BOM und meldet nichts.
+
+> **Gebaut.** `bin/pruefe-skripte.js` gibt es, genau mit diesem Zweck.
+> (Nachgetragen 11.09.2026 beim Durchsehen der Dokumente.)
 
 ---
 
@@ -704,14 +707,18 @@ Die Punkte mit dem meisten Gewicht:
 
 - **Der Abspielknopf im Bühnenpult hängt am Fortschritt statt am
   Play-Ereignis** — beim Pausieren bleibt er auf „Pause" stehen und
-  behauptet, es liefe noch.
+  behauptet, es liefe noch. — **ERLEDIGT**, `spielknoepfeStellen()` hängt
+  über `deckMelder()` an `onplay`/`onpause`.
 - **Das Tonstudio verschwindet unter der Bühne** (z-index 56 gegen 60)
   und rechnet dort mit 100 ms weiter; `buehneAuf`/`buehneZu` fassen es
-  nicht an.
+  nicht an. — **ERLEDIGT**, `#studio` liegt auf `z-index:90`.
 - **Gemerkte EQ-Einstellungen greifen erst, nachdem das Studio einmal
   offen war** — wer über die Bühne einsteigt, hört sie nie.
+  — **ERLEDIGT**, `/api/eq` wird beim Seitenstart geholt („FRÜH LADEN,
+  nicht erst beim Öffnen des Tonstudios").
 - **Der EQ-Knopf fehlt im Pult** — die ursprüngliche Frage. Sinnvoll
-  erst, wenn das Studio über die Bühne kommt.
+  erst, wenn das Studio über die Bühne kommt. — **ERLEDIGT**, `#bstudio`
+  steht im Pult.
 
 
 ---
@@ -775,7 +782,8 @@ den Schutz hinter **jedes** `await`.
 - **`toeneDaten` wird nie nachgeladen**, wenn der erste Abruf ein leeres
   `{songs:{}}` lieferte (so antwortet der Server, solange `toene.json`
   fehlt). Der Wächter `if (!toeneDaten)` sieht danach ein wahres Objekt.
-  Trifft nur ein frisches Archiv.
+  Trifft nur ein frisches Archiv. — **ERLEDIGT**, eine leere Antwort wird
+  nicht mehr als geladen verbucht.
 
 ### 7.3 Kosmetisch
 

@@ -73,7 +73,8 @@ Mel-Pipeline 128 Bänder, Patches [1,128,96] (75 % Überlappung), Ausgabe
   1:1 aus dem Analyzer-JS, Strategie 3 Fenster bei 10/45/80 % der
   Länge, je Song gemitteltes Embedding + Top-Tags der Jamendo-Köpfe
   (Genre, Mood/Theme, Instrumente — Instrumente laut Caspar_D mitnehmen?
-  OFFEN, er hatte sie in der Bühne stillgelegt).
+  **Entschieden: ja**, `bin/klang.js` nimmt die Top 5 der 40
+  MTG-Jamendo-Instrumente mit.)
 - Modelle lokal nach `web/fremd/modelle/` bzw. `bin/modelle/` (Essentia-
   Zoo, CC BY-NC-SA — privat ok): EffNet + Genre- + Mood/Theme- (+
   Instrument-)Kopf als ONNX.
@@ -131,8 +132,9 @@ Mel-Pipeline 128 Bänder, Patches [1,128,96] (75 % Überlappung), Ausgabe
    geändert“ heißt der Knopf „Trotzdem nachziehen“ — die lokalen
    Schritte haben ja trotzdem Arbeit. /api/morgen/ernte-stand liefert
    Alter der letzten Ernte in Minuten.
-4. caffeinate in Whisper-Kette/Langläufer (der Morgenschritt hat es
-   schon; der Handstart `node bin/whisper.js --alle` noch nicht).
+4. caffeinate in Whisper-Kette/Langläufer — **ERLEDIGT**: auch der
+   Handstart stellt sich selbst unter `caffeinate -i`, sofern er nicht
+   schon darunter läuft.
 5. ERLEDIGT 21.08.: bin/klang.js. onnxruntime-node als einzige
    Abhängigkeit (package.json; node_modules auf 70 MB gestutzt:
    fremde Plattform-Binaries, tar & Co. raus — exFAT-1-MB-Cluster
@@ -151,7 +153,9 @@ Mel-Pipeline 128 Bänder, Patches [1,128,96] (75 % Überlappung), Ausgabe
    UMAP gesät, Gruppennamen, Erdung, 8 Nachbarn + Dichte je Song) und
    Register „Karte" als STERNENHIMMEL (Caspar_Ds Bild): Helligkeit/Größe
    = Nachbardichte, additive Gauß-Glut im Canvas ('lighter'), Hover
-   zeigt Nachbarn, Klick spielt. Offen: Clustering-Verfahren (Caspar_D
-   will es als Omics-Analyst selbst mitentscheiden — erstmal
-   Standard), UMAP-Parameter (Inseln vs. Kontinuum), Palette,
-   Stilgruppen-Preset im EQ, Morgenschritt 'karte'.
+   zeigt Nachbarn, Klick spielt. Davon **erledigt**: das Verfahren steht
+   (agglomerativ mit complete linkage statt HDBSCAN, begründet im Kopf von
+   `bin/karte.js`), die UMAP-Parameter stehen fest (nNeighbors 15,
+   minDist 0,1), der Morgenschritt „Klangraum neu zeichnen" läuft, und
+   `library/karte.json` liegt vor. **Weiter offen: Palette und
+   Stilgruppen-Preset im EQ.** (Nachgetragen 11.09.2026.)

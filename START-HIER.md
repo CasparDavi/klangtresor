@@ -179,12 +179,18 @@ Suno hält zu jedem Song auch eine verlustfreie Fassung bereit, aber
 erst, wenn sie einmal angefordert wurde. Ob es sie schon gibt, sagt
 dir:
 
+> **Seit dem 03.09.2026 geht das nicht mehr.** `bin/wav.js` holt die WAV über
+> `cdn1.suno.ai/<id>.wav`, und dieser Weg ist zu — wie alle Audio-Direktlinks
+> bei Suno, auch für den Besitzer. Das Skript steht deshalb still. Ein **403**
+> heißt heute also sehr wohl „gesperrt". `bin/gesundheit.js` wacht darüber,
+> der Stand steht in `docs/AUDIO-BEZUG.md`. Der Abschnitt unten beschreibt den
+> Stand von August und bleibt als Bericht stehen.
+
 ```bash
 node bin/wav.js --pruefen
 node bin/wav.js              # holt alles, was bereitsteht
 ```
 
-Ein **403** heißt dabei nicht „gesperrt", sondern „gibt es noch nicht".
 Wie du fehlende anstößt, steht in `WAV-PROTOKOLL.md` — dafür brauchst
 du einmal den Browser. Ein WAV wiegt rund 50 MB; in der Bühne kannst du
 oben zwischen MP3 und WAV umschalten.

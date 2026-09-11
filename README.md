@@ -240,7 +240,8 @@ Alles Übrige — Medien, Artworks, Kacheln, Paletten, Analysen — baut
 `node bin/wiederherstellen.js` neu auf, ohne jede Anmeldung.
 
 **Zwei Dinge holt es aber nicht zurück:** die WAV-Originale
-(`node bin/wav.js`, sofern Suno sie noch vorhält) und die
+(`node bin/wav.js` — **seit dem 03.09.2026 außer Betrieb**, der Weg über
+`cdn1.suno.ai` ist zu, siehe `docs/AUDIO-BEZUG.md`) und die
 Instrumentspuren (`node bin/stems.js`, rund vier Minuten je Song). Wer
 die behalten will, sichert `library/songs/` gleich mit — das sind dann
 allerdings zig Gigabyte.
