@@ -620,6 +620,23 @@ function da(befehl) {
     const w = await wieWeiter('Songliste holen', 'Ohne sie gibt es nichts zu archivieren.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   }
+  /* DEN KATALOG GLEICH BAUEN, NICHT ERST IN SCHRITT 9.
+
+     sammeln.js legt nur Rohdaten in library/roh/ ab; der Katalog
+     entsteht in bin/aufbereiten.js. Ohne diesen Aufruf steht der
+     naechste Schritt vor einem leeren Katalog - und bin/uebernehmen.js
+     ordnet nur zu, was dort steht. Am 11.09.2026 im ersten echten
+     Probelauf aufgefallen: alle 75 gefundenen Dateien landeten unter
+     „Nicht im Katalog", ein frischer Nutzer haette keinen einzigen Ton
+     bekommen, obwohl seine Dateien danebenlagen.
+
+     Dieselbe Reihenfolge wie im Morgenlauf: Katalog, dann uebernehmen,
+     dann laden. */
+  matt('Ich ordne das Gesammelte zu einem Katalog — das dauert einen Moment.');
+  if (!laeuft(process.execPath, [path.join('bin', 'aufbereiten.js')])) {
+    wink('Der Katalog ließ sich nicht bauen — der nächste Schritt findet dann nichts.');
+  }
+
   /* Erst tun, dann benennen. Ein neuer Mensch kennt den „Morgenlauf"
      nicht - er kann ihn erst einordnen, wenn er einmal gesehen hat,
      was dabei passiert. */
