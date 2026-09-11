@@ -3056,3 +3056,43 @@ Durchlauf holte 27 Playlist-Cover von Suno, weil nur die Song-Adressen stillgele
   eigener Effekt, nicht die Lösung für die grauen Spuren. Unser Licht-Puffer `u_licht` ist bereits
   die Lichtquellenkarte. Achtung: 100 Abtastungen je Bildpunkt sind die Größenordnung, die uns die
   Scheinwerferblenden lahmgelegt hat. Herkunft und Lizenz wären vorher zu klären.
+
+### Der Lauf wurde ein Sequenzer über die Takte (11.09.2026, nachts)
+Erster Wurf: **eine** Laufform für den ganzen Clip. Jörgs Einwand kam sofort und war richtig:
+
+> „ich kann dann ein Video nur auf eine art und weise manipulieren, nicht verschiedene Teile mal
+> stottern, mal pendeln, mal laufenlassen"
+
+**Jetzt:** ein Feld je Takt des Ausschnitts, mit der Maus bemalt, wie beim Lichtsequenzer. Vier
+Formen als Pinsel: vorwärts, Pendel, Stottern, Standbild. Ein zweiter Klick mit demselben Pinsel
+löscht das Feld wieder auf vorwärts.
+
+**Zusammenhängende gleiche Felder verschmelzen zu einem Abschnitt.** Ein Pendel über zwei Takte sind
+also einfach zwei gemalte Felder — der Regler „hin und zurück über N Takte" ist dadurch weggefallen,
+und mit ihm die Sonderregel in `ausschnitt()`, die den Ausschnitt auf ein Vielfaches der
+Pendelperiode kürzen musste.
+
+**Warum die Naht hält:** jeder Abschnitt behält sein eigenes Stück Videozeit und biegt nur darin.
+Die Quelle bleibt im Großen synchron, jeder Abschnitt schließt für sich, und an den Taktgrenzen
+steht ein harter Schnitt — der ist im Musikvideo gewollt. Weil sich die ganze Folge nach L
+wiederholt, gilt f(t+L) = f(t) + L von selbst, für jede Mischung.
+
+**Geprüft** (`scratchpad/nahtprobe.js`, aus dem echten Modultext herausgeschnitten): **3328
+gemischte Folgen** — vier Grundtempi, alle Formkombinationen über die vorhandenen Takte, vier
+Rastereinstellungen — halten f(t+L) = f(t) + L auf die letzte Stelle, gerechnet unter
+Exportbedingungen mit dem gleichmäßigen Raster takt = L/Takte.
+
+**Die Kurve im Pult** zeichnet die Zeitverzerrung mit: waagerecht die Zeit im fertigen Clip,
+senkrecht die Stelle im Video. Also x die unabhängige Größe und y = f(x). Andersherum wäre es keine
+Funktion, denn unter dem Pendel kommt dieselbe Stelle zweimal vor. Darunter die Zahl, auf die es bei
+Hookvideos ankommt, etwa „aus 4,16 s Video werden 9,77 s Clip".
+
+**Zwei Fallen aus diesem Umbau.** Der Zwischenspeicher fürs Taktmaß startete auf `null`, und weil
+`DATA` vor dem Öffnen ebenfalls `null` ist, hielt `null===null` den leeren Stand für gültig — beim
+ersten Bild flog das Studio auseinander. Die Syntaxprüfung sieht so etwas nicht, nur der Prüfstand.
+Und die erste Beschriftung unter der Kurve maß die Spanne statt der wirklich getroffenen Stellen und
+log damit beim Stottern um das Doppelte.
+
+**Offen an dieser Stelle:** die Folge wird noch nicht ins Rezept gesichert, geht also beim Neuladen
+verloren. Und die Formparameter (Raster, Wiederholungen) gelten für alle Felder gemeinsam, nicht je
+Takt.

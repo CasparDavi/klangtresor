@@ -3063,6 +3063,20 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 #tbs #tbs-lauf{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 #tbs .tbs-lz{display:flex;gap:5px;align-items:center;font-size:12px;opacity:.8}
+#tbs .tbs-lpinsel{flex:1 0 100%;display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+#tbs .tbs-lp{display:flex;align-items:center;gap:4px;font:inherit;font-size:11px;padding:3px 7px;
+  border:1px solid var(--rand);border-radius:6px;background:transparent;color:inherit;cursor:pointer;opacity:.65}
+#tbs .tbs-lp.on{opacity:1;border-color:#f97b14;box-shadow:inset 0 0 0 1px #f97b14}
+#tbs .tbs-lfelder{flex:1 0 100%;display:flex;gap:3px;margin-bottom:4px;user-select:none}
+#tbs .tbs-lf{flex:1 1 0;min-width:0;height:40px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:1px;border:1px solid var(--rand);border-radius:6px;background:transparent;
+  color:inherit;cursor:pointer;font:inherit}
+#tbs .tbs-lf .tbs-lzeichen{font-size:15px;line-height:1}
+#tbs .tbs-lf .tbs-lnr{font-size:9px;opacity:.45}
+#tbs .tbs-lf.f-vor{opacity:.45}
+#tbs .tbs-lf.f-pendel{border-color:#f97b14;color:#f97b14}
+#tbs .tbs-lf.f-stottern{border-color:#e31c79;color:#e31c79}
+#tbs .tbs-lf.f-rasten{border-color:#3a86ff;color:#3a86ff}
 #tbs .tbs-lz select{font:inherit}
 #tbs .tbs-lhinweis{flex:1 0 100%;font-size:11px;opacity:.6;line-height:1.35;min-height:1px}
 #tbs #tbs-laufKurve{flex:1 0 100%;width:230px;height:75px;display:block;margin:4px 0 2px}
@@ -27635,34 +27649,58 @@ function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttri
    Alle Formen sind so gebaut, dass f(L) = f(0) gilt, solange L ganze Takte lang ist - der Ausschnitt
    bleibt also von selbst nahtlos. Nebengewinn: unter dem Pendel schliesst sich auch, was sonst nie
    schliesst (Wellen, Kaustik, Dunst, Flammen), weil der Rueckweg am Anfang endet. */
-let LAUF={form:'vor',teil:4,wdh:2,takte:2}, SPRUNG={url:null,fuer:null,fehler:null};
-const LAUF_FORMEN=[['vor','vorw\u00e4rts'],['pendel','Pendel'],['stottern','Stottern'],['rasten','Standbild']];
+let LAUF={folge:[],teil:4,wdh:2,pinsel:'pendel'}, SPRUNG={url:null,fuer:null,fehler:null};
+const LAUF_FORMEN=[['vor','vorw\u00e4rts','\u2192'],['pendel','Pendel','\u21c4'],
+                   ['stottern','Stottern','\u27f2'],['rasten','Standbild','\u23f8']];
 function laufSchluessel(){ const p=SEITEN[seiteIndex()]; return (DATA&&p&&p.video)?(DATA.id+':'+p.art+':'+(p.nr||1)):null; }
-function laufBeugt(){ return LAUF.form!=='vor'; }
-/* Der Taktanker: die erste Eins. Ohne Taktmass wird nicht gebogen - lieber nichts tun als daneben. */
-function laufZeit(t){
-  if(!laufBeugt()) return t;
-  const T=taktLaenge(), takt=T.takt, a=(T.einsen&&T.einsen.length)?T.einsen[0]:0;
-  if(!(takt>0)) return t;
-  const v=t-a;
-  if(LAUF.form==='pendel'){ const P=takt*Math.max(1,LAUF.takte), u=((v%P)+P)%P;
-    return a+(u<=P/2?u:P-u); }                                    /* hin und zurueck, Ende = Anfang */
-  /* Gerechnet wird im RASTERINDEX, nicht in Sekunden. Erster Wurf rundete Sekunden ab und liess
-     die Rasterkante je nach Rundung kippen; an der Naht sprang das Bild dann um einen Rasterschritt.
-     Mit genau einem Abrunden je Bild stimmt f(t+L) = f(t) + L auf die letzte Stelle (11.09.2026). */
-  const g=takt/Math.max(1,LAUF.teil);
-  const i=Math.floor(v/g+1e-6);                                    /* in welchem Rasterfeld liegt t */
-  const rest=v-i*g;                                                /* und wo darin */
-  if(LAUF.form==='rasten') return a+i*g;                           /* auf dem Raster stehenbleiben */
-  if(LAUF.form==='stottern'){
-    /* Der Block muss den Takt kacheln, sonst rueckt der Lauf je Ausschnitt um einen Rest weiter und
-       die Naht reisst auf: drei Wiederholungen im Sechzehntelraster ergeben 5,33 Bloecke je Takt.
-       Teilt die Zahl das Raster nicht, gilt zwei - das teilt immer, alle Raster sind gerade. */
+function laufBeugt(){ return LAUF.folge.some(x=>x&&x!=='vor'); }
+/* Das Taktmass einmal je Titel, nicht je Bild. taktLaenge() laeuft ueber alle Schlaege - bei 571
+   Schlaegen und 30 Bildern je Sekunde waere das 17 000 Durchlaeufe je Sekunde fuer eine Zahl, die
+   sich nie aendert. Der Schluessel ist das DATA-Objekt selbst; der Export tauscht es aus, dann
+   rechnet der Cache von allein neu. */
+/* Der Merker startet auf einem eigenen Wert, nicht auf null: DATA ist vor dem Oeffnen selbst null,
+   und dann haette null===null den leeren Stand fuer gueltig gehalten. Beim ersten Bild flog das
+   Studio dann mit "Cannot read properties of null" auseinander (gesehen im Pruefstand, 11.09.2026). */
+let _taktStand=null, _taktFuer={};
+function taktStand(){ if(_taktFuer===DATA&&_taktStand) return _taktStand;
+  _taktFuer=DATA; _taktStand=taktLaenge()||{takt:0,einsen:[]}; return _taktStand; }
+function laufTakte(){ const T=taktStand(); if(!(T.takt>0)) return 1;
+  return Math.max(1,Math.floor(MAX_SEK/T.takt)); }
+/* Die Folge ist so lang wie der Ausschnitt Takte hat. Wird der Titel gewechselt, waechst oder
+   schrumpft sie mit; fehlende Felder laufen vorwaerts. */
+function laufFolge(){ const n=laufTakte(), f=LAUF.folge.slice(0,n);
+  while(f.length<n) f.push('vor'); return f; }
+/* Wie die Zeit INNERHALB eines Abschnitts laeuft. u ist der Abstand zum Abschnittsanfang. */
+function laufLokal(form,u,Lseg,takt){
+  if(form==='pendel') return u<=Lseg/2?u:Lseg-u;                 /* hin und zurueck, Ende = Anfang */
+  /* Gerechnet wird im Rasterindex, nicht in Sekunden: in Sekunden gerundet kippt die Rasterkante
+     je nach Rundung, und an der Naht sprang das Bild um einen ganzen Rasterschritt (11.09.2026). */
+  const g=takt/Math.max(1,LAUF.teil), i=Math.floor(u/g+1e-6), rest=u-i*g;
+  if(form==='rasten') return i*g;                                 /* auf dem Raster stehenbleiben */
+  if(form==='stottern'){
+    /* Der Block muss den Takt kacheln, sonst rueckt der Lauf je Takt um einen Rest weiter: drei
+       Wiederholungen im Sechzehntelraster ergeben 5,33 Bloecke je Takt. Teilt die Zahl nicht, gilt
+       zwei - das teilt immer, alle angebotenen Raster sind gerade. */
     const teil=Math.max(1,LAUF.teil), wunsch=Math.max(2,LAUF.wdh|0);
     const w=(teil%wunsch===0)?wunsch:2;
-    const blk=Math.floor(i/w);                                     /* der wievielte Block */
-    return a+blk*w*g+rest; }                                       /* immer das erste Feld des Blocks */
-  return t; }
+    return Math.floor(i/w)*w*g+rest; }                            /* immer das erste Feld des Blocks */
+  return u; }
+/* Die Zeitbeugung fuer den ganzen Clip. Jeder Takt traegt seine Form; gleiche Nachbarn verschmelzen
+   zu EINEM Abschnitt, damit ein Pendel ueber zwei Takte einfach zwei gemalte Felder sind.
+   Jeder Abschnitt behaelt sein eigenes Stueck Videozeit und biegt nur darin - dadurch bleibt die
+   Quelle im Grossen synchron, jeder Abschnitt schliesst fuer sich, und an den Taktgrenzen steht ein
+   harter Schnitt. Weil sich die ganze Folge nach L wiederholt, gilt f(t+L) = f(t) + L von selbst. */
+function laufZeit(t){
+  if(!laufBeugt()) return t;
+  const T=taktStand(), takt=T.takt, a0=(T.einsen&&T.einsen.length)?T.einsen[0]:0;
+  if(!(takt>0)) return t;
+  const folge=laufFolge(), n=folge.length;
+  const v=t-a0, i=Math.floor(v/takt+1e-6), k=((i%n)+n)%n, form=folge[k];
+  if(form==='vor') return t;
+  let s=k; while(s>0&&folge[s-1]===form) s--;
+  let e=k; while(e<n-1&&folge[e+1]===form) e++;
+  const segStart=a0+(i-(k-s))*takt, Lseg=(e-s+1)*takt;
+  return segStart+laufLokal(form,t-segStart,Lseg,takt); }
 /* Springen im Video kostet nur dann wenig, wenn jedes Bild ein Schluesselbild ist: gemessen 124,6 ms
    gegen 14,9 ms je Sprung. Das Haus baut die Arbeitskopie auf Zuruf, einmal je Quelle. */
 function sprungHolen(){
@@ -27714,34 +27752,59 @@ function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr
 /* Die Bedienung des Laufs. Nur was zur gewaehlten Form gehoert, steht auch da - ein Raster hat beim
    Pendel nichts zu suchen und eine Taktzahl beim Standbild nicht. */
 function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
+  const folge=laufFolge(), namen={}, zeichen={};
+  LAUF_FORMEN.forEach(f=>{ namen[f[0]]=f[1]; zeichen[f[0]]=f[2]; });
+  /* Der Pinsel: erst waehlen, womit gemalt wird, dann in die Takte malen - wie beim Lichtsequenzer. */
+  let h='<div class="tbs-lpinsel">'+LAUF_FORMEN.map(f=>
+    '<button type="button" class="tbs-lp'+(LAUF.pinsel===f[0]?' on':'')+'" data-p="'+f[0]+'" title="'+f[1]+'">'
+    +'<span class="tbs-lzeichen">'+f[2]+'</span>'+f[1]+'</button>').join('')+'</div>';
+  h+='<div class="tbs-lfelder" id="tbs-lfelder">'+folge.map((v,i)=>
+    '<button type="button" class="tbs-lf f-'+v+'" data-i="'+i+'" title="Takt '+(i+1)+': '+namen[v]+'">'
+    +'<span class="tbs-lzeichen">'+zeichen[v]+'</span><span class="tbs-lnr">'+(i+1)+'</span></button>').join('')+'</div>';
   const w=(k,liste,txt)=>'<label class="tbs-lz">'+txt+' <select data-l="'+k+'">'
-    +liste.map(o=>{ const v=Array.isArray(o)?o[0]:o, l=Array.isArray(o)?o[1]:o;
-      return '<option value="'+v+'"'+(String(LAUF[k])===String(v)?' selected':'')+'>'+l+'</option>'; }).join('')
+    +liste.map(o=>'<option value="'+o[0]+'"'+(String(LAUF[k])===String(o[0])?' selected':'')+'>'+o[1]+'</option>').join('')
     +'</select></label>';
-  const T=taktLaenge(), ohneTakt=!(T.takt>0);
-  let h=w('form',LAUF_FORMEN,'L\u00e4uft');
-  if(LAUF.form==='pendel') h+=w('takte',[[1,'einen Takt'],[2,'zwei Takte'],[4,'vier Takte']],'hin und zur\u00fcck \u00fcber');
-  if(LAUF.form==='stottern'||LAUF.form==='rasten') h+=w('teil',[[2,'halbe Takte'],[4,'Viertel'],[8,'Achtel'],[16,'Sechzehntel']],'Raster');
+  const brauchtRaster=folge.some(v=>v==='stottern'||v==='rasten');
+  if(brauchtRaster) h+=w('teil',[[2,'halbe Takte'],[4,'Viertel'],[8,'Achtel'],[16,'Sechzehntel']],'Raster');
   /* Nur Wiederholungszahlen anbieten, die das Raster teilen - sonst kachelt der Block den Takt nicht. */
-  if(LAUF.form==='stottern') h+=w('wdh',[[2,'zweimal'],[4,'viermal'],[8,'achtmal']].filter(o=>LAUF.teil%o[0]===0),'jeder Schnipsel');
-  let hin='';
-  if(laufBeugt()&&ohneTakt) hin='F\u00fcr diesen Titel kennen wir kein Taktma\u00df \u2014 der Lauf bleibt wirkungslos.';
+  if(folge.some(v=>v==='stottern'))
+    h+=w('wdh',[[2,'zweimal'],[4,'viermal'],[8,'achtmal']].filter(o=>LAUF.teil%o[0]===0),'jeder Schnipsel');
+  const T=taktStand(); let hin='';
+  if(laufBeugt()&&!(T.takt>0)) hin='F\u00fcr diesen Titel kennen wir kein Taktma\u00df \u2014 der Lauf bleibt wirkungslos.';
   else if(laufBeugt()&&SPRUNG.fehler) hin='Arbeitskopie ging nicht: '+SPRUNG.fehler+' \u2014 das Springen wird z\u00e4h.';
-  else if(laufBeugt()&&(SEITEN[seiteIndex()]||{}).video) hin='Bewegtbild springt jetzt auf dem Raster; die Arbeitskopie daf\u00fcr baut das Haus einmal.';
+  else if(!laufBeugt()) hin='Eine Form w\u00e4hlen und in die Takte malen.';
   box.innerHTML=h+'<canvas id="tbs-laufKurve" width="460" height="150"></canvas>'
     +'<div class="tbs-lmass" id="tbs-laufMass"></div>'
     +'<div class="tbs-lhinweis">'+hin+'</div>';
+  box.querySelectorAll('.tbs-lp').forEach(b=>b.onclick=()=>{ LAUF.pinsel=b.dataset.p; laufUI(); });
   box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value));
+  /* Malen: druecken und ziehen. Ein einzelner Klick auf ein Feld, das schon so aussieht, loescht es
+     wieder auf vorwaerts - sonst kaeme man nie zurueck, ohne den Pinsel zu wechseln. */
+  const felder=box.querySelector('#tbs-lfelder'); let malt=false;
+  const setze=(i,erster)=>{ const f=laufFolge();
+    f[i]=(erster&&f[i]===LAUF.pinsel)?'vor':LAUF.pinsel; LAUF.folge=f; };
+  if(felder){
+    felder.querySelectorAll('.tbs-lf').forEach(b=>{
+      b.onmousedown=ev=>{ ev.preventDefault(); malt=true; setze(+b.dataset.i,true); laufNachMalen(); };
+      b.onmouseenter=()=>{ if(malt){ setze(+b.dataset.i,false); laufNachMalen(); } }; });
+    const los=()=>{ if(!malt) return; malt=false; laufUI(); };
+    window.addEventListener('mouseup',los,{once:true}); }
   laufKurveMalen(); }
-/* ---- Die Kurve im Pult -----------------------------------------------
-   Caspar_D, 11.09.2026, nach dem Bild der vier Formen: "jetzt brauchen wir das video nur als faden,
-   der einfach da liegt / dann ploetzlich im zickzack hin und her laeuft / oder eine Luecke hat, die
-   durch immer dasselbe Fragment von vor der Luecke aufgefuellt wird".
-   Waagerecht die Zeit im fertigen Clip, senkrecht die Stelle im Video - also x die unabhaengige
-   Groesse und y = f(x). Andersherum waere es keine Funktion: unter dem Pendel kommt dieselbe Stelle
-   des Videos zweimal vor, einmal hin und einmal zurueck.
-   Gestrichelt liegt daneben, wo der Faden ohne Beugung laege. Laeuft die Kurve flacher als die
-   Gestrichelte, fuellt wenig Material viel Clip - genau das, was Hookvideos brauchen. */
+/* Waehrend des Malens nur die Felder und die Kurve nachziehen, nicht die ganze Bedienung neu bauen -
+   sonst verliert der Mauszeiger die Knoepfe unter sich. */
+function laufNachMalen(){ const folge=laufFolge(), namen={}, zeichen={};
+  LAUF_FORMEN.forEach(f=>{ namen[f[0]]=f[1]; zeichen[f[0]]=f[2]; });
+  const felder=$('#tbs-lfelder'); if(felder) felder.querySelectorAll('.tbs-lf').forEach(b=>{
+    const v=folge[+b.dataset.i]; b.className='tbs-lf f-'+v;
+    b.title='Takt '+(+b.dataset.i+1)+': '+namen[v];
+    b.querySelector('.tbs-lzeichen').textContent=zeichen[v]; });
+  const p=SEITEN[seiteIndex()];
+  if(p&&p.video&&laufBeugt()&&(!SPRUNG.fuer||SPRUNG.fuer!==laufSchluessel()))
+    sprungHolen().then(()=>{ grundLaden(); laufUI(); });
+  laufKurveMalen(); }
+function laufSetzen(k,v){ LAUF[k]=parseInt(v,10)||1;
+  if(LAUF.teil%LAUF.wdh!==0) LAUF.wdh=2;          /* Raster gewechselt: unmoegliche Zahl mitziehen */
+  laufUI(); }
 function laufKurveMalen(){
   const c=$('#tbs-laufKurve'), mass=$('#tbs-laufMass'); if(!c) return;
   const x=c.getContext('2d'), W=c.width, H=c.height, pad=8;
@@ -27954,14 +28017,10 @@ function zeichneFrame(t){
     const runden=x=>Math.max(2,Math.round(x*BILDRATE))/BILDRATE;
     if(!takt||takt<=0.05) return { t0:jetzt, L:runden(MAX_SEK), takte:0, takt:0 };
     let a=einsen[0]; for(const e of einsen){ if(e<=jetzt) a=e; else break; }
-    let takte=Math.max(1,Math.floor(MAX_SEK/takt));
-    /* Das Pendel faltet ueber seine eigene Periode. Passt die nicht ganzzahlig in den Ausschnitt,
-       endet der Rueckweg mitten im Bild und die Naht reisst auf. Also den Ausschnitt auf ein
-       Vielfaches der Pendelperiode kuerzen; passt nicht einmal eine, wird die Periode halbiert,
-       bis sie passt (die angebotenen Werte sind Zweierpotenzen). */
-    if(LAUF&&LAUF.form==='pendel'){ let p=Math.max(1,LAUF.takte|0);
-      while(p>1&&p>takte) p>>=1;
-      takte=Math.max(p,Math.floor(takte/p)*p); }
+    /* Frueher stand hier eine Sonderregel fuers Pendel: der Ausschnitt musste ein Vielfaches der
+       Pendelperiode sein. Seit der Lauf eine Folge ueber die Takte ist, faltet das Pendel innerhalb
+       seines Abschnitts, und der ist von selbst eine ganze Zahl von Takten (11.09.2026). */
+    const takte=Math.max(1,Math.floor(MAX_SEK/takt));
     const L=runden(Math.min(MAX_SEK,takte*takt));
     return { t0:a, L, takte, takt:L/takte }; }
   /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
