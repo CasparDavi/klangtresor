@@ -1,0 +1,47 @@
+# KlangTresor - woher die Werkzeuge kommen
+#
+# Diese Datei lesen die Einrichtungsskripte. Aendert ein Anbieter seine
+# Adresse, muss niemand im Skript suchen - hier steht es, eine Zeile je
+# Sache, und die Zeile darf mit jedem Texteditor geaendert werden.
+#
+# Form:   name = adresse
+# Alles hinter einem # ist Erlaeuterung und wird ueberlesen.
+# Leerzeilen ebenso.
+#
+# Stand geprueft: 11.09.2026 an einem frischen Windows 10.
+#
+# ---------------------------------------------------------------------
+# NODE.JS - ohne das laeuft KlangTresor nicht.
+#
+# Die tragbare Fassung (.zip), nicht das Installationsprogramm: sie wird
+# in den Projektordner gelegt und aendert nichts am System, kein PATH,
+# keine Administratorrechte. Gebraucht wird Fassung 20 oder neuer.
+# Lizenz: MIT (Node selbst), das Beiwerk freizuegig - beilegen erlaubt.
+# Uebersicht aller Fassungen: https://nodejs.org/dist/
+
+node-windows-x64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-win-x64.zip
+node-windows-arm64 = https://nodejs.org/dist/v22.11.0/node-v22.11.0-win-arm64.zip
+
+# ---------------------------------------------------------------------
+# FFMPEG - fuer Klanganalyse, Wellenformen und den Videoschnitt.
+#
+# Ohne ffmpeg laeuft KlangTresor, aber ohne Klangmessung und ohne Video.
+# Das Einrichten darf es also ueberspringen.
+#
+# ACHTUNG LIZENZ: diese Pakete sind GPL-Baue. Sie werden HERUNTERGELADEN,
+# nicht mitgeliefert - deshalb verteilt KlangTresor kein ffmpeg und
+# uebernimmt auch keine GPL-Pflichten. Wer ein eigenes Paket beilegt,
+# sollte das wissen.
+# Uebersicht: https://www.gyan.dev/ffmpeg/builds/
+
+ffmpeg-windows = https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
+
+# ---------------------------------------------------------------------
+# WEITERES
+#
+# Die KI-Modelle holt bin/modelle-holen.js; ihre Adressen stehen dort,
+# weil sie zu mehreren zusammengehoeren. Auch sie werden nur geholt,
+# nie mitgeliefert - die Essentia-Modelle stehen unter CC BY-NC-ND.
+
+nodejs-startseite = https://nodejs.org/
+ffmpeg-startseite = https://www.gyan.dev/ffmpeg/builds/

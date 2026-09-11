@@ -25,6 +25,14 @@ setlocal
 cd /d "%~dp0"
 title KlangTresor laeuft - dieses Fenster nicht schliessen
 
+rem ZUERST DAS MITGEBRACHTE NODE. einrichten-windows.ps1 legt es nach
+rem werkzeug\node, ohne am System oder am PATH zu drehen - dann findet
+rem "where node" es nicht, obwohl es danebensteht (11.09.2026).
+set "NODE=node"
+if exist "%~dp0werkzeug\node\node.exe" set "NODE=%~dp0werkzeug\node\node.exe"
+if exist "%~dp0werkzeug\ffmpeg\bin" set "PATH=%~dp0werkzeug\ffmpeg\bin;%PATH%"
+
+if not "%NODE%"=="node" goto :nodeda
 where node >nul 2>nul
 if errorlevel 1 (
   echo.
@@ -42,6 +50,8 @@ if errorlevel 1 (
   exit /b 1
 )
 
+:nodeda
+
 if not exist "server\server.js" (
   echo.
   echo   Hier liegt kein KlangTresor. Diese Datei gehoert in den Ordner
@@ -57,7 +67,7 @@ echo   Dieses Fenster bleibt offen, solange du hoerst.
 echo   Kleinmachen ist in Ordnung - schliessen beendet KlangTresor.
 echo.
 
-node server\server.js
+"%NODE%" server\server.js
 
 echo.
 echo   KlangTresor wurde beendet.
