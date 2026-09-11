@@ -76,35 +76,43 @@ const NEHMEN = { '.wav': 'audio.wav', '.mp3': 'audio.mp3' };
 const KENNT  = ['.wav', '.mp3', '.m4a'];
 
 /* Die Signatur steht im Kopf der Datei: bei WAV im INFO/ICMT-Block
-   direkt hinter RIFF, bei MP3 im ID3-Kopf. 64 KB reichen für beides
-   reichlich; die ganze Datei zu lesen wäre bei 66-MB-WAVs Verschwendung. */
-function signatur(datei) {
-  let fd;
-  try {
-    fd = fs.openSync(datei, 'r');
-    const puffer = Buffer.alloc(64 * 1024);
-    const gelesen = fs.readSync(fd, puffer, 0, puffer.length, 0);
-    const kopf = puffer.slice(0, gelesen).toString('latin1');
-    const m = kopf.match(/made with suno;[^\0]*?id=([0-9a-f-]{36})/i)
-           || kopf.match(/id=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
-    return m ? m[1].toLowerCase() : null;
-  } catch (e) { return null; }
-  finally { if (fd !== undefined) try { fs.closeSync(fd); } catch (e) {} }
-}
+   direkt hinter RIFF, bei MP3 im ID3-Kopf. Welche Spuren es gibt, warum
+   es drei sind und wie hoch die Falschmeldungsrate ist, steht in
+   bin/suno-signatur.js — dort einmal, weil der Server dieselbe Regel
+   braucht, wenn das Lesezeichen eine Datei hereinreicht. */
+const signatur = require('./suno-signatur.js').ausDatei;
 
-function suchen(ordner, tiefe = 2) {
+/* TIEF GENUG SUCHEN. Bis zum 11.09.2026 waren es zwei Ebenen — gedacht
+   für den Download-Ordner, wo alles flach nebeneinanderliegt. Ein
+   gewachsenes Suno-Archiv sieht anders aus: Caspar_Ds eigener Ordner
+   sortiert nach Projekt und Fassung, und erst ab Ebene vier lagen die
+   94 Dateien darin überhaupt im Blick. Sechs Ebenen decken auch
+   „Musik/Suno/2025/Album/Fassung 2" ab.
+
+   Verweisen wird NICHT gefolgt: ein Verweis auf das eigene Archiv würde
+   sonst jede Datei doppelt finden, und einer nach draußen führt in
+   fremde Ordner. Der Deckel von 20 000 Ordnern ist eine Reißleine gegen
+   versehentlich gewählte Wurzelverzeichnisse, keine erwartete Grenze. */
+const ORDNER_DECKEL = 20000;
+
+function suchen(ordner, tiefe = 6) {
   const gefunden = [];
+  let ordnerZahl = 0;
+  let gedeckelt = false;
   const gehe = (o, t) => {
+    if (ordnerZahl++ > ORDNER_DECKEL) { gedeckelt = true; return; }
     let eintraege;
     try { eintraege = fs.readdirSync(o, { withFileTypes: true }); } catch (e) { return; }
     for (const e of eintraege) {
       if (e.name.startsWith('.')) continue;              /* auch ._-Beifang auf exFAT */
+      if (e.isSymbolicLink()) continue;
       const p = path.join(o, e.name);
       if (e.isDirectory()) { if (t > 0) gehe(p, t - 1); continue; }
       if (KENNT.includes(path.extname(e.name).toLowerCase())) gefunden.push(p);
     }
   };
   gehe(ordner, tiefe);
+  if (gedeckelt) console.log(`  (${ordner}: über ${ORDNER_DECKEL} Ordner — hier wurde abgebrochen.)`);
   return gefunden;
 }
 

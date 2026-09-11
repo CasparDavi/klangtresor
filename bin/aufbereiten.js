@@ -94,6 +94,27 @@ function normalisieren(c) {
     plays:         c.play_count    || 0,
     likes:         c.upvote_count  || 0,
     kommentare:    c.comment_count || 0,
+
+    /* Seit dem 03.09.2026 gibt Suno den Ton nur noch nach einem Unlock
+       heraus, und der kostet ein Download-Guthaben. `is_download_unlocked`
+       sagt, ob dieser Titel schon freigeschaltet ist.
+
+       DREI ZUSTÄNDE, NICHT ZWEI. Fehlt das Feld in den Rohdaten, wissen
+       wir es nicht — dann `null` statt `false`. Am 11.09.2026 lag es nur
+       bei 73 von 324 Datensätzen überhaupt vor, und ausgerechnet bei den
+       drei freigeschalteten fehlte es, weil deren Einträge älter sind als
+       der Unlock. Ein `false` dorthin zu schreiben wäre eine Behauptung
+       statt einer Messung.
+
+       Gemessen am 11.09.2026 im angemeldeten Browser: das Feld ist
+       verlässlich. Drei von Hand geholte Titel `true`, ein nie
+       freigeschalteter `false`. Der Irrtum vom 06.09. („steht auch bei
+       Liedern auf false, die längst hier liegen") kam daher, daß jene
+       Titel aus der Zeit vor der Umstellung stammen. */
+    freigeschaltet:   typeof c.is_download_unlocked === 'boolean' ? c.is_download_unlocked : null,
+    /* Warum ein Titel gar nicht freigeschaltet werden KANN — im Bestand
+       14x 'remix_contest'. Für die lohnt kein Anbieten. */
+    freischaltSperre: c.download_disabled_reason || null,
   };
 }
 
@@ -257,6 +278,27 @@ for (const roh of eingang.values()) {
   for (const f of ['schlaege','abschnitte','wellenStufen','worteV3','worteV2','worteQuelle','lyricsQuelle','whisperInstrumental'])
     if (vorher && vorher[f] !== undefined) s[f] = vorher[f];
   if (vorher && vorher.farben) { s.farben = vorher.farben; }   // aus bin/farben.js
+
+  /* Der Freischaltstand darf nicht verlorengehen, und er darf sich nicht
+     zurückdrehen. Zwei getrennte Gründe:
+
+       1. WISSEN SCHLÄGT NICHTWISSEN. Kommt der neue Datensatz aus einer
+          Quelle ohne das Feld (die meisten Rohdaten tragen es nicht),
+          bliebe sonst ein bereits bekanntes `true` auf der Strecke.
+       2. EIN UNLOCK IST DAUERHAFT. Am 11.09.2026 gemessen: ein
+          freigeschalteter Titel läßt sich beliebig oft und in allen drei
+          Formaten abrufen, ohne daß der Zähler sich bewegt. Ein `false`
+          über ein bekanntes `true` zu schreiben hieße, ein bezahltes
+          Guthaben zu vergessen — und den Titel künftig wieder als
+          kostenpflichtig anzubieten. */
+  if (vorher && typeof vorher.freigeschaltet === 'boolean') {
+    if (s.freigeschaltet === null || vorher.freigeschaltet === true) {
+      s.freigeschaltet = vorher.freigeschaltet;
+    }
+  }
+  if (s.freischaltSperre === null && vorher && vorher.freischaltSperre) {
+    s.freischaltSperre = vorher.freischaltSperre;
+  }
 
   // Die Playlist-Zugehörigkeit steht in einer eigenen Rohdatei
   // (playlists-*.json) und wird weiter unten neu gesetzt. Fehlt die
