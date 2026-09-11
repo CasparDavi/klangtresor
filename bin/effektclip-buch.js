@@ -142,10 +142,90 @@ function nachtragen(ordner, schreiben) {
   }
 }
 
+/* ---- Daumen hoch oder runter -------------------------------------------------------------
+   Der Medienlauf urteilt seit dem 11.09.2026 nicht mehr selbst (siehe bin/laden.js). Er merkt nur
+   vor, welche Titel ploetzlich ein Video-Artwork tragen, obwohl bei uns ein Export im Buch steht.
+   Hier sieht Jörg die Zahlen nebeneinander und entscheidet je Titel. Sein Satz dazu: "Ich werde ja
+   nie in einer Nacht mehr als 5 neue Videos zuweisen. Das ist wirklich eher ein kleines Problem."
+   Entschiedenes bleibt entschieden: ein Ja hinterlaesst artwork.mp4.eigen.json, ein Nein
+   artwork.mp4.fremd.json. Danach wird nicht mehr gefragt. */
+const HINWEIS = 'Eigener Effektclip, bei Suno hochgeladen. Nicht archiviert, weil er sich aus '
+  + 'eigen-effekt.json jederzeit neu malen laesst. Zum Zurueckholen: diese Datei loeschen und den '
+  + 'Eintrag in library/effektclips.json entfernen, dann holt ihn der naechste Medienlauf.';
+
+function offeneFaelle() {
+  const buch = buchLesen(), raus = [];
+  for (const id of Object.keys(buch)) {
+    const ordner = path.join(SONGS, id), datei = path.join(ordner, 'artwork.mp4');
+    if (!fs.existsSync(datei)) continue;
+    if (fs.existsSync(datei + '.eigen.json') || fs.existsSync(datei + '.fremd.json')) continue;
+    raus.push({ id, ordner, datei, eintraege: buch[id] });
+  }
+  return raus;
+}
+
+/* Antwortet auch auf eine durchgereichte Zeile (echo j | ...), damit der Ja-Weg pruefbar ist,
+   ohne dass jemand tippen muss. Endet die Eingabe ohne Antwort, gilt das als "weiter". */
+function frage(text) {
+  return new Promise(r => {
+    const rl = require('node:readline').createInterface({ input: process.stdin, output: process.stdout });
+    let fertig = false;
+    const gib = a => { if (fertig) return; fertig = true; rl.close(); r(String(a || '').trim().toLowerCase()); };
+    rl.on('close', () => gib(''));
+    rl.question(text, gib);
+  });
+}
+
+async function pruefen() {
+  const faelle = offeneFaelle();
+  if (!faelle.length) { console.log('Nichts zu entscheiden — kein unbeurteiltes Video-Artwork bei einem Titel aus dem Buch.'); return; }
+  const titelVon = new Map(katalogSongs().map(s => [s.id, { titel: s.titel, url: s.videoCoverUrl }]));
+  console.log(`${faelle.length} Titel mit Video-Artwork, fuer die ein Export im Buch steht:\n`);
+
+  const buch = buchLesen();
+  let ja = 0, nein = 0;
+  for (const f of faelle) {
+    const k = titelVon.get(f.id) || {};
+    const m = messen(f.datei), groesse = fs.statSync(f.datei).size;
+    console.log('  ' + (k.titel || f.id));
+    console.log(`     von Suno:   ${m ? m.dauer.toFixed(4) + ' s · ' + m.breite + '×' + m.hoehe : '(nicht messbar)'} · ${(groesse / 1048576).toFixed(1)} MB`);
+    for (const e of (f.eintraege || [])) {
+      const dB = m ? Math.round((m.dauer - (e.sekunden || 0)) * 30) : null;
+      const gleich = m && e.breite && (e.breite !== m.breite || e.hoehe !== m.hoehe);
+      console.log(`     unser Export vom ${String(e.zeit).slice(0, 16).replace('T', ' ')}: `
+        + `${(e.sekunden || 0).toFixed(4)} s · ${e.breite || '?'}×${e.hoehe || '?'}`
+        + (dB === null ? '' : `   → ${dB >= 0 ? '+' : ''}${dB} Bild${Math.abs(dB) === 1 ? '' : 'er'}`)
+        + (gleich ? '   ⚠ andere Bildgroesse' : ''));
+    }
+    const a = await frage('     Unser Clip? [j] ja, rauswerfen  ·  [n] nein, behalten  ·  [w] weiter, spaeter  ›  ');
+    console.log('');
+    if (a === 'j' || a === 'ja') {
+      fs.writeFileSync(f.datei + '.eigen.json', JSON.stringify({
+        hinweis: HINWEIS, url: k.url || null, entschieden: new Date().toISOString(),
+        entschiedenVon: 'von Hand', gemessen: m, bytes: groesse }, null, 1));
+      fs.unlinkSync(f.datei);
+      const liste = Array.isArray(buch[f.id]) ? buch[f.id] : [];
+      const treffer = m ? liste.find(e => Math.abs((e.sekunden || 0) - m.dauer) < 1) : null;
+      if (treffer) { treffer.sunoUrl = k.url || null; treffer.erkannt = new Date().toISOString();
+        treffer.gemessen = { dauer: +m.dauer.toFixed(3), breite: m.breite, hoehe: m.hoehe }; }
+      ja++;
+    } else if (a === 'n' || a === 'nein') {
+      fs.writeFileSync(f.datei + '.fremd.json', JSON.stringify({
+        hinweis: 'Kein eigener Effektclip — von Hand behalten. Diese Datei loeschen, wenn die Frage neu gestellt werden soll.',
+        url: k.url || null, entschieden: new Date().toISOString() }, null, 1));
+      nein++;
+    }
+  }
+  if (ja) buchSchreiben(buch);
+  console.log(`${ja} rausgeworfen, ${nein} behalten.`
+    + (faelle.length - ja - nein ? `  ${faelle.length - ja - nein} bleiben offen.` : ''));
+}
+
 const was = process.argv[2];
 const rest = process.argv.slice(3).filter(a => a !== '--schreiben');
 try {
   if (was === 'zeigen') zeigen();
+  else if (was === 'pruefen') { pruefen(); }
   else if (was === 'nachtragen') nachtragen(rest[0] || path.join(os.homedir(), 'Downloads'), process.argv.includes('--schreiben'));
-  else { console.log('Aufruf: node bin/effektclip-buch.js zeigen | nachtragen [Ordner] [--schreiben]'); process.exit(1); }
+  else { console.log('Aufruf: node bin/effektclip-buch.js zeigen | pruefen | nachtragen [Ordner] [--schreiben]'); process.exit(1); }
 } catch (e) { console.error('Abbruch: ' + e.message); process.exit(1); }

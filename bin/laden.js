@@ -90,50 +90,27 @@ function mb(bytes) { return (bytes / 1048576).toFixed(1) + ' MB'; }
    nicht erst geladen wird. */
 const AUSGABEBUCH = path.join(WURZEL, 'library', 'effektclips.json');
 function ausgabebuch(){ try { return JSON.parse(fs.readFileSync(AUSGABEBUCH, 'utf8')) || {}; } catch (e) { return {}; } }
-function ausgabebuchSchreiben(b){ try { fs.writeFileSync(AUSGABEBUCH, JSON.stringify(b, null, 1)); } catch (e) {} }
-/* Laenge, Breite und Hoehe, oder null. Ohne ffprobe faellt die Erkennung aus - dann wird archiviert. */
-function videoMass(datei){
-  try {
-    const t = require('node:child_process').execFileSync('ffprobe',
-      ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height',
-       '-show_entries', 'format=duration', '-of', 'default=nk=1:nw=1', datei],
-      { encoding: 'utf8', timeout: 20000 }).trim().split(/\s+/);
-    const breite = parseInt(t[0], 10), hoehe = parseInt(t[1], 10), dauer = parseFloat(t[2]);
-    if (!isFinite(dauer) || dauer <= 0) return null;
-    return { dauer, breite: breite || 0, hoehe: hoehe || 0 };
-  } catch (e) { return null; }
-}
+/* videoMass() stand hier bis zum 11.09.2026 und mass das frisch geholte Video nach. Der Lauf
+   misst nicht mehr, er merkt nur vor - gemessen wird beim Entscheiden, in bin/effektclip-buch.js. */
 /* Liegt das Rezept wirklich beim Titel? Nur dann stimmt die Begruendung, der Clip sei jederzeit neu
    zu malen - sonst waere das Loeschen ein Verlust ohne Deckung (Gegenlesen, 11.09.2026). */
 function rezeptDa(songId){
   try { return fs.statSync(path.join(SONGS, songId, 'eigen-effekt.json')).size > 0; } catch (e) { return false; }
 }
-/* Ist dieses Video-Artwork unser eigener Clip? Antwort: 'eigen' | 'fremd' | 'unklar' */
-/* Schon einmal als eigener Clip erkannt? Dann gar nicht erst holen. */
+/* Steht fuer diesen Titel ein eigener Export im Buch? Mehr fragt der Lauf nicht mehr.
+   Bis zum 11.09.2026 stand hier eigenerClip(), das aus Laenge und Bildgroesse selbst ein Urteil
+   fasste und die Datei bei 'eigen' loeschte. Die Begruendung ist geblieben, das Urteil nicht:
+   Suno kodiert hochgeladenes Video-Artwork neu (gemessen null bis drei Bilder laenger, Bildgroesse
+   unveraendert), und ein Fenster, das drei Bilder verzeiht, verzeiht bald auch fremdes Material.
+   Das Urteil faellt jetzt ein Mensch, siehe bin/effektclip-buch.js pruefen. */
+/* Schon einmal als eigener Clip abgehakt? Dann gar nicht erst holen. */
 function schonErkannt(songId, url){
   const e = ausgabebuch()[songId];
   return Array.isArray(e) && e.some(x => x.sunoUrl && x.sunoUrl === url);
 }
-/* Ist dieses Video-Artwork unser eigener Clip? Antwort: 'eigen' | 'fremd' | 'unklar'
-   Drei Bedingungen muessen ZUSAMMEN gelten, denn ein Fehlurteil kostet fremdes Material:
-     1. das Rezept liegt beim Titel - nur dann ist der Clip wirklich jederzeit neu zu malen,
-     2. Laenge UND Bildgroesse passen zu einem gebuchten Eintrag,
-     3. es passt GENAU EINER, nicht mehrere.
-   Bei jedem Zweifel 'fremd', also archivieren: lieber eine Datei zu viel als eine zu wenig. */
-function eigenerClip(songId, url, datei){
-  const buch = ausgabebuch(), eintraege = buch[songId];
-  if (!Array.isArray(eintraege) || !eintraege.length) return 'fremd';
-  if (eintraege.some(e => e.sunoUrl && e.sunoUrl === url)) return 'eigen';
-  if (!rezeptDa(songId)) return 'fremd';
-  const m = videoMass(datei);
-  if (!m) return 'unklar';
-  const passend = eintraege.filter(e => Math.abs((e.sekunden || 0) - m.dauer) <= 0.05
-    && (!e.breite || !m.breite || (e.breite === m.breite && e.hoehe === m.hoehe)));
-  if (passend.length !== 1) return 'fremd';
-  passend[0].sunoUrl = url; passend[0].erkannt = new Date().toISOString();
-  passend[0].gemessen = { dauer: +m.dauer.toFixed(3), breite: m.breite, hoehe: m.hoehe };
-  ausgabebuchSchreiben(buch);
-  return 'eigen';
+function imBuch(songId){
+  const e = ausgabebuch()[songId];
+  return Array.isArray(e) && e.length > 0 && rezeptDa(songId);
 }
 
 /**
@@ -236,12 +213,12 @@ async function ladeDatei(url, ziel) {
 
   console.log(`${liste.length} Songs zu prüfen`);
   console.log(NUR_OEFF ? '(nur veröffentlichte)' : '(alle)');
-  console.log('Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  E = eigener Effektclip, nicht archiviert,  ! = Fehler');
+  console.log('Ein Zeichen je Datei (Cover, MP3, Artwork):  G = geladen,  V = war schon da,  · = nichts zu holen,  ? = zu pruefen, du entscheidest,  ! = Fehler');
   if (MIT_LYRICVIDEO) console.log("(mit Sunos Lyric-Videos)");
   console.log('');
 
-  const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0 };
-  const eigeneTitel = [];
+  const zaehler = { geladen: 0, vorhanden: 0, fehlt: 0, fehler: 0, eigen: 0, verdacht: 0 };
+  const verdaechtige = [];
   let bytes = 0;
   const start = Date.now();
 
@@ -270,27 +247,20 @@ async function ladeDatei(url, ziel) {
          das eine ist harmlos, das andere nicht, und in der Zeile sahen sie
          gleich aus (Caspar_D, 23.08.2026). */
       ergebnisse.push({ geladen: 'G', vorhanden: 'V', fehlt: '·', fehler: '!' }[e] || '?');
-      /* Frisch geholtes Video-Artwork nachmessen: ist es unser eigener Clip, kommt es wieder weg. */
-      if (e === 'geladen' && name === 'artwork.mp4' && fs.existsSync(ziel)) {
-        const urteil = eigenerClip(s.id, s.videoCoverUrl, ziel);
-        if (urteil === 'eigen') {
-          /* Nicht spurlos: neben dem Titel bleibt eine Notiz, was entschieden wurde und woher die
-             Datei wieder zu holen waere. Verloren ist nichts, sie liegt weiter bei Suno - aber ohne
-             Notiz wuerde ein Fehlurteil nie auffallen (Gegenlesen, 11.09.2026). */
-          try {
-            fs.writeFileSync(path.join(ordner, 'artwork.mp4.eigen.json'), JSON.stringify({
-              hinweis: 'Eigener Effektclip, bei Suno hochgeladen. Nicht archiviert, weil er sich aus '
-                + 'eigen-effekt.json jederzeit neu malen laesst. Zum Zurueckholen: diese Datei loeschen '
-                + 'und den Eintrag in library/effektclips.json entfernen, dann holt ihn der naechste Medienlauf.',
-              url: s.videoCoverUrl, entschieden: new Date().toISOString(),
-              gemessen: videoMass(ziel), bytes: fs.statSync(ziel).size
-            }, null, 1));
-            fs.unlinkSync(ziel);
-            zaehler.geladen--; zaehler.eigen++; eigeneTitel.push(s.titel);
-            ergebnisse[ergebnisse.length - 1] = 'E';
-            await schlaf(PAUSE_MS); continue;
-          } catch (x) { console.log(`      ! ${s.titel.slice(0,40)}: Notiz ging nicht, Datei bleibt liegen — ${x.message}`); }
-        }
+      /* Frisch geholtes Video-Artwork bei einem Titel, fuer den ein Export im Buch steht: nur
+         VORMERKEN, nicht urteilen. Bis zum 11.09.2026 entschied der Lauf hier selbst und loeschte
+         die Datei. Das Urteil hing an der Laenge auf 0,05 s genau - und Suno kodiert hochgeladenes
+         Video-Artwork neu und macht es dabei null bis drei Bilder laenger. Einer von vier rutschte
+         durch und landete im Archiv, und die Toleranz nachzuziehen hiesse, dem Kodierer ewig
+         hinterherzulaufen. Caspar_D dazu: "du kannst mir auch bei der Laderoutine die Liste der
+         Songs zeigen, die ploetzlich neue Videos haben und ich sage Daumen hoch oder runter. Ich
+         werde ja nie in einer Nacht mehr als 5 neue Videos zuweisen."
+         Also entscheidet der Mensch. Der Lauf bleibt unbeaufsichtigt und loescht nie etwas - das
+         ist auch die Bedingung dafuer, dass er mit fremden Suno-Bestaenden ohne Handarbeit
+         durchlaeuft. Aufraeumen danach: node bin/effektclip-buch.js pruefen */
+      if (e === 'geladen' && name === 'artwork.mp4' && imBuch(s.id)) {
+        zaehler.verdacht++; verdaechtige.push(s.titel);
+        ergebnisse[ergebnisse.length - 1] = '?';
       }
       if (e === 'geladen' && fs.existsSync(ziel)) bytes += fs.statSync(ziel).size;
       if (e === 'geladen') await schlaf(PAUSE_MS);
@@ -365,8 +335,14 @@ async function ladeDatei(url, ziel) {
   console.log(`neu geladen:   ${zaehler.geladen}  (${mb(bytes)})`);
   console.log(`schon da:      ${zaehler.vorhanden}`);
   if (zaehler.eigen) {
-    console.log(`eigene Clips:  ${zaehler.eigen} — auf Suno hochgeladen, nicht archiviert (Rezept und Quelle liegen beim Titel)`);
-    if (eigeneTitel.length) console.log('               ' + eigeneTitel.slice(0, 8).join(', ') + (eigeneTitel.length > 8 ? ' …' : ''));
+    console.log(`schon geklaert: ${zaehler.eigen} — bekannte eigene Clips, gar nicht erst geholt`);
+  }
+  if (zaehler.verdacht) {
+    console.log(`\nzu pruefen:    ${zaehler.verdacht} — diese Titel haben jetzt ein Video-Artwork, und fuer`);
+    console.log(`               genau sie steht bei uns ein Export im Buch:`);
+    for (const t of verdaechtige.slice(0, 12)) console.log('                 · ' + t.slice(0, 60));
+    if (verdaechtige.length > 12) console.log(`                 … und ${verdaechtige.length - 12} weitere`);
+    console.log('\n               Ansehen und entscheiden:  node bin/effektclip-buch.js pruefen');
   }
   console.log(`nicht vorhanden:${zaehler.fehlt}   (z.B. Songs ohne Video)`);
   console.log(`Fehler:        ${zaehler.fehler}`);
