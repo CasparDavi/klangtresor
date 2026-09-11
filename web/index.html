@@ -3063,7 +3063,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 #tbs #tbs-lauf{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 #tbs .tbs-lz{display:flex;gap:5px;align-items:center;font-size:12px;opacity:.8}
-#tbs .tbs-lwas{flex:1 0 100%;font-size:11px;opacity:.7;margin:6px 0 3px}
+#tbs .tbs-lwas{flex:1 0 100%;font-size:11px;opacity:.7;margin:6px 0 3px;display:flex;justify-content:space-between;gap:8px}
+#tbs .tbs-lwie{opacity:.6}
 #tbs .tbs-lformen{flex:1 0 100%;display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
 #tbs .tbs-lformen .tbs-lp[disabled]{opacity:.3;cursor:default}
 #tbs .tbs-lf.gewaehlt{box-shadow:0 0 0 2px #f97b14}
@@ -27662,7 +27663,11 @@ function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttri
    verschaltet werden sollen"). Ein Takt gewaehlt und gependelt heisst zwei Schlaege hin und zwei
    zurueck; zwei Takte gewaehlt heisst einen Takt hin und einen zurueck. Das Pendel faltet immer in
    der Mitte der Auswahl. Zwei getrennte Pendel sind zwei getrennte Auswahlen. */
-let LAUF={folge:[],teil:4,wdh:2,tempo:3,wahl:null}, SPRUNG={url:null,fuer:null,fehler:null};
+let LAUF={folge:[],teil:4,wdh:2,tempo:3,wahl:null,anker:0}, SPRUNG={url:null,fuer:null,fehler:null};
+/* Der Ziehzustand gehoert NEBEN die Bedienung, nicht hinein. Erster Wurf hielt ihn in der Closure von
+   laufUI - und weil der erste Klick die Bedienung neu baut, war er im naechsten Moment wieder false:
+   Ziehen ueber mehrere Takte ging gar nicht (11.09.2026). */
+let laufZieht=false, laufHoerchtSchon=false;
 const LAUF_FORMEN=[['vor','vorw\u00e4rts','\u2192'],['pendel','Pendel','\u21c4'],
                    ['langsamer','Langsamer','\u25c1'],['schneller','Schneller','\u25b7'],
                    ['stottern','Stottern','\u27f2'],['rasten','Standbild','\u23f8']];
@@ -27833,7 +27838,8 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
   const wieViele=wahl?(wahl.b-wahl.a+1):0;
   h+='<div class="tbs-lwas">'+(wahl
       ? (wieViele===1?('Takt '+(wahl.a+1)+' soll'):('Takt '+(wahl.a+1)+' bis '+(wahl.b+1)+' sollen'))
-      : 'Takte w\u00e4hlen \u2014 dann sagen, was sie tun')+'</div>';
+      : 'Takte w\u00e4hlen \u2014 dann sagen, was sie tun')
+    +'<span class="tbs-lwie">mehrere: ziehen oder mit Umschalt klicken</span></div>';
   h+='<div class="tbs-lformen">'+LAUF_FORMEN.map(x=>
     '<button type="button" class="tbs-lp" data-f="'+x[0]+'"'+(wahl?'':' disabled')+' title="'+x[1]+'">'
     +'<span class="tbs-lzeichen">'+x[2]+'</span>'+x[1]+'</button>').join('')+'</div>';
@@ -27856,13 +27862,30 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     +'<div class="tbs-lhinweis">'+hin+'</div>';
   box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>b.onclick=()=>laufAnwenden(b.dataset.f));
   box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value));
-  const felder=box.querySelector('#tbs-lfelder'); let zieht=false;
+  const felder=box.querySelector('#tbs-lfelder');
   if(felder){
     felder.querySelectorAll('.tbs-lf').forEach(b=>{
-      b.onmousedown=ev=>{ ev.preventDefault(); zieht=true; LAUF.wahl={von:+b.dataset.i,bis:+b.dataset.i}; laufUI(); };
-      b.onmouseenter=()=>{ if(zieht&&LAUF.wahl){ LAUF.wahl.bis=+b.dataset.i; laufUI(); } }; });
-    window.addEventListener('mouseup',()=>{ zieht=false; },{once:true}); }
+      b.onmousedown=ev=>{ ev.preventDefault(); const i=+b.dataset.i;
+        /* Umschalt zieht von der zuletzt angeklickten Marke bis hierher - die uebliche Geste fuer
+           "von da bis da" (Caspar_D, 11.09.2026: "wie waehle ich zwei aufeinanderfolgende takte
+           aus, ich dachte ctrl oder so"). Ohne Umschalt setzt der Klick eine neue Marke. */
+        if(ev.shiftKey) LAUF.wahl={von:LAUF.anker,bis:i}; else { LAUF.anker=i; LAUF.wahl={von:i,bis:i}; }
+        laufZieht=true; laufWahlZeichnen(); };
+      b.onmouseenter=()=>{ if(laufZieht){ LAUF.wahl={von:LAUF.anker,bis:+b.dataset.i}; laufWahlZeichnen(); } }; });
+    if(!laufHoerchtSchon){ laufHoerchtSchon=true;
+      window.addEventListener('mouseup',()=>{ if(laufZieht){ laufZieht=false; laufUI(); } }); } }
   laufKurveMalen(); }
+/* Waehrend des Ziehens nur die Auswahl nachziehen, nicht die ganze Bedienung neu bauen - sonst
+   verliert der Zeiger die Knoepfe unter sich und das Ziehen bricht ab. */
+function laufWahlZeichnen(){
+  const wahl=laufWahl(), box=$('#tbs-lauf'); if(!box) return;
+  box.querySelectorAll('.tbs-lf').forEach(b=>{ const i=+b.dataset.i;
+    b.classList.toggle('gewaehlt', !!wahl&&i>=wahl.a&&i<=wahl.b); });
+  const wie=wahl?(wahl.b-wahl.a+1):0, el=box.querySelector('.tbs-lwas');
+  if(el) el.textContent=wahl
+    ? (wie===1?('Takt '+(wahl.a+1)+' soll'):('Takt '+(wahl.a+1)+' bis '+(wahl.b+1)+' sollen'))
+    : 'Takte w\u00e4hlen \u2014 dann sagen, was sie tun';
+  box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>{ b.disabled=!wahl; }); }
 /* Die Auswahl, geordnet und auf die vorhandenen Takte begrenzt. */
 function laufWahl(){ const n=laufTakte(); if(!LAUF.wahl) return null;
   const a=Math.max(0,Math.min(LAUF.wahl.von,LAUF.wahl.bis)), b=Math.min(n-1,Math.max(LAUF.wahl.von,LAUF.wahl.bis));
