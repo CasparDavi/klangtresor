@@ -3096,3 +3096,14 @@ log damit beim Stottern um das Doppelte.
 **Offen an dieser Stelle:** die Folge wird noch nicht ins Rezept gesichert, geht also beim Neuladen
 verloren. Und die Formparameter (Raster, Wiederholungen) gelten für alle Felder gemeinsam, nicht je
 Takt.
+
+**Korrektur am selben Abend: das Verschmelzen ist wieder raus.** Gleiche Nachbarfelder wurden zu
+einem langen Abschnitt zusammengefasst, ein Pendel über zwei Takte wären also zwei gemalte Felder
+gewesen. Jörg: *„aber dann kann ich keine hin und herpendelaktionen mehrfach hintereinander machen"* —
+und er hat recht, das war meine Eleganz und nahm ihm das Naheliegende weg. Jetzt gilt: **ein Feld,
+ein Takt, eine Aktion.** Zwei Pendelfelder nebeneinander sind zweimal hin und zurück.
+
+Gemessen, Verlauf der Videostelle über zwei Pendelfelder bei 2 s Takt:
+`0 0,25 0,5 0,75 1 0,75 0,5 0,25 | 2 2,25 2,5 2,75 3 2,75 2,5 2,25 | 4` — zwei Scheitel, wie gewollt.
+Die Nahtprobe (3328 Folgen) hält weiterhin. Ein langsamerer Schwung über mehrere Takte wäre eine
+eigene Form, keine Nebenwirkung des Malens.

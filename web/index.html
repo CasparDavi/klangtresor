@@ -27687,11 +27687,14 @@ function laufLokal(form,u,Lseg,takt){
     const w=(teil%wunsch===0)?wunsch:2;
     return Math.floor(i/w)*w*g+rest; }                            /* immer das erste Feld des Blocks */
   return u; }
-/* Die Zeitbeugung fuer den ganzen Clip. Jeder Takt traegt seine Form; gleiche Nachbarn verschmelzen
-   zu EINEM Abschnitt, damit ein Pendel ueber zwei Takte einfach zwei gemalte Felder sind.
-   Jeder Abschnitt behaelt sein eigenes Stueck Videozeit und biegt nur darin - dadurch bleibt die
-   Quelle im Grossen synchron, jeder Abschnitt schliesst fuer sich, und an den Taktgrenzen steht ein
-   harter Schnitt. Weil sich die ganze Folge nach L wiederholt, gilt f(t+L) = f(t) + L von selbst. */
+/* Die Zeitbeugung fuer den ganzen Clip. JEDER TAKT IST SEIN EIGENER ABSCHNITT.
+   Bis zum 11.09.2026 verschmolzen gleiche Nachbarn zu einem langen Abschnitt - ein Pendel ueber zwei
+   Takte waeren dann zwei gemalte Felder gewesen. Das war meine Eleganz und nahm Jörg genau das weg,
+   was er wollte: "aber dann kann ich keine hin und herpendelaktionen mehrfach hintereinander
+   machen". Ein Feld, ein Takt, eine Aktion - und zwei nebeneinander sind zwei Aktionen.
+   Jeder Takt behaelt sein eigenes Stueck Videozeit und biegt nur darin. Dadurch bleibt die Quelle im
+   Grossen synchron, jeder Takt schliesst fuer sich, und an den Taktgrenzen steht ein harter Schnitt.
+   Weil sich die Folge nach L wiederholt, gilt f(t+L) = f(t) + L von selbst. */
 function laufZeit(t){
   if(!laufBeugt()) return t;
   const T=taktStand(), takt=T.takt, a0=(T.einsen&&T.einsen.length)?T.einsen[0]:0;
@@ -27699,10 +27702,7 @@ function laufZeit(t){
   const folge=laufFolge(), n=folge.length;
   const v=t-a0, i=Math.floor(v/takt+1e-6), k=((i%n)+n)%n, form=folge[k];
   if(form==='vor') return t;
-  let s=k; while(s>0&&folge[s-1]===form) s--;
-  let e=k; while(e<n-1&&folge[e+1]===form) e++;
-  const segStart=a0+(i-(k-s))*takt, Lseg=(e-s+1)*takt;
-  return segStart+laufLokal(form,t-segStart,Lseg,takt); }
+  return a0+i*takt+laufLokal(form,v-i*takt,takt,takt); }
 /* Springen im Video kostet nur dann wenig, wenn jedes Bild ein Schluesselbild ist: gemessen 124,6 ms
    gegen 14,9 ms je Sprung. Das Haus baut die Arbeitskopie auf Zuruf, einmal je Quelle. */
 function sprungHolen(){
