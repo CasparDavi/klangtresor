@@ -90,6 +90,27 @@ maßgebliche für dauerhaft archivierte Dateien.
 
 ---
 
+## Weg 1 ist erlaubt, wird aber nicht gebaut
+
+**Entschieden am 11.09.2026.** Caspar_D, auf die Frage, ob die Hausregel
+„keinen Suno-Audio-Downloader bauen" hier greift: *„die regel gilt für
+meine suno daten nicht, aber wir brauchen es momentan nicht"* — und
+nachgeschoben: *„zumindest nicht jetzt."*
+
+Die Einschränkung ist also nicht die Erlaubnis, sondern die Qualität.
+Zwei Gründe, die bleiben, bis sich etwas ändert:
+
+- Weg 1 liefert die CloudFront-**M4A**, bei Suno Opus im MP4-Container.
+  Daraus MP3 zu rechnen ist ein verlustbehafteter Umbau eines
+  verlustbehafteten Originals. `bin/uebernehmen.js` lässt M4A aus genau
+  diesem Grund schon heute draußen.
+- Weg 1 liefert **nie WAV**. Die Masterdateien des Archivs sind WAV.
+  Weg 1 ist eine Kopie des Streams, `download/clip` ist das Original.
+
+Für **fremde** Titel gilt die Hausregel unverändert weiter.
+
+---
+
 ## Faustregel
 
 - **Streamen / analysieren** → Weg 1.
