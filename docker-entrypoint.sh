@@ -7,7 +7,7 @@
 set -e
 cd /app
 mkdir -p library/roh library/songs library/playlistbilder \
-         library/analyse library/modelle library/export geheim
+         library/analyse library/modelle library/export
 
 if [ ! -f library/modelle/discogs-effnet-bsdynamic-1.onnx ]; then
   echo "  Hole Klangraum-Modelle nach library/modelle/ …"

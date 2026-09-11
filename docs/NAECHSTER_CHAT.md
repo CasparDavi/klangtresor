@@ -187,8 +187,10 @@ raten.**
 **Server-Login über `__client`-Cookie: nein.** Der angemeldete Client
 sitzt HttpOnly im Tab; jede Login- oder Clerk-Seite legt einen neuen,
 leeren an. Drei gültige, leere Cookies kopiert, keines mit Session.
-`bin/token.js`, `geheim/` (in .gitignore) und `bin/paket.js` bleiben
-liegen. Caspar_D: „ich hab keinen Bock mehr, wir nehmen das Lesezeichen."
+Caspar_D: „ich hab keinen Bock mehr, wir nehmen das Lesezeichen.“
+**Am 11.09.2026 gelöscht** — `bin/token.js`, `POST /api/geheim/cookie`,
+`geheim/`. Die Begründung steht jetzt dort, wo sie hingehört:
+`docs/suno/WEGE.md`, Abschnitt „Aufgegeben: Server-Login“.
 
 **Keine Skripte im angemeldeten Suno-Tab ausführen**, um Tokens oder
 Cookies zu ziehen. Dabei ist einmal eine URL mit `__clerk_handshake`
@@ -332,8 +334,13 @@ Schutz, und er hält.
 **Nicht wieder anfangen.** Caspar_D: „ich hab keinen Bock mehr, wir nehmen
 das Lesezeichen." Es läuft, holt alles mit Token, schickt die Ernte in
 Paketen, überlebt den Tab — und läßt keinen Kontoschlüssel auf der
-Platte. `bin/token.js`, `geheim/` und `bin/paket.js` bleiben liegen,
-falls Clerk das Cookie eines Tages hergibt.
+Platte.
+
+*Nachtrag 11.09.2026:* Die Dateien sollten „liegen bleiben, falls Clerk
+das Cookie eines Tages hergibt“. Das hat sich gerächt — wer den Code
+liest statt dieses Dokuments, findet in `bin/token.js` einen Kopf namens
+„WIE ES GEHT“ mit Schritt-für-Schritt-Anleitung und hält den Weg für
+offen. Jetzt gelöscht; die Begründung steht in `docs/suno/WEGE.md`.
 
 Wer den Token *einmalig* von Hand braucht: Im alten SunoAnalyzer gab es
 dafür ein Eingabefeld — der `__session`-JWT aus den Cookies, gültig eine
@@ -1705,9 +1712,9 @@ Satz „aelter als Sunos Benachrichtigungen reichen" streichen.
 6. **KlangTresor-eigene Listen** neben Suno-Alben (`herkunft:
    'klangtresor'`), Zeichen: oranger runder Drops mit S / weißer Drops
    mit schlankem Tresorrad.
-7. Zwei Alt-Wege löschen: `bin/token.js` + `geheim/` +
-   `POST /api/geheim/cookie` (Prüfung: null Aufrufer), Docker/Einrichtung
-   nachziehen.
+7. ~~Zwei Alt-Wege löschen: `bin/token.js` + `geheim/` +
+   `POST /api/geheim/cookie`~~ — **erledigt 11.09.2026**, samt Docker und
+   Einrichtung. Begründung in `docs/suno/WEGE.md`.
 8. **Handbuch.** Musterkapitel `docs/handbuch/12-klangraum.html` von
    Caspar_D am 08.09. um 22 Uhr abgenommen, mit elf Änderungen (alle
    umgesetzt): Geschichten-Raum „ordnet inhaltlich", Negationssatz raus,

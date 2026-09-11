@@ -10,7 +10,7 @@
 # Container. Gebraucht wird nur Docker.
 #
 # Das Archiv bleibt trotzdem draußen auf der Platte (./library), ebenso
-# ein etwaiges Cookie (./geheim). Der Container lässt sich wegwerfen und
+# Der Container lässt sich wegwerfen und
 # neu bauen, ohne dass Musik verlorengeht.
 #
 # Windows: dafür gibt es einrichten-docker.ps1
@@ -87,8 +87,8 @@ fi
 
 echo "  ✓ Docker läuft  ($DC)"
 
-mkdir -p library geheim
-echo "  ✓ Ordner library/ und geheim/ liegen bereit"
+mkdir -p library
+echo "  ✓ Ordner library/ liegt bereit"
 
 # Liegt das Projekt auf einer exFAT-Platte (externe SSD, USB-Stick), legt
 # macOS neben jeder Datei eine "._"-Datei an. Docker stolpert beim Lesen

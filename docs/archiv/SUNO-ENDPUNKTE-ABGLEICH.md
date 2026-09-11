@@ -4,7 +4,7 @@ Stand 08.09.2026. Kein Abruf gegen suno.com oder studio-api. Grundlage: die drei
 Blickwinkel (Wrapper, Playlist, Aktualität) Zeile für Zeile gegen
 `docs/suno-api-wege.txt` (273 Wege, 19.08.), `docs/SUNO-API.md`,
 `docs/DATENEXTRAKTION.md`, `docs/AUDIO-BEZUG.md`, `WAV-PROTOKOLL.md`,
-`browser/morgens.js`, `bin/gesundheit.js`, `bin/token.js`.
+`browser/morgens.js`, `bin/gesundheit.js` und das inzwischen gelöschte `bin/token.js`.
 
 **Legende.** Token: `–` ohne, `T` Bearer, `C` `__client`-Cookie, `?` unklar.
 Sicherheit: **belegt** = im Netz mit Mitschnitt oder Live-Prüfung 2026;
@@ -39,7 +39,7 @@ breiteste Inventur, die es gibt; die Wrapper ergänzen sie, ersetzen sie nicht.
 
 | Weg | Methode | Token | Was | Quelle | Sicherheit | im Haus bekannt? | Nutzen |
 |---|---|---|---|---|---|---|---|
-| `auth.suno.com/v1/client?__clerk_api_version=2025-11-10&_clerk_js_version=5.117.0` · `POST …/client/sessions/{sid}/tokens` | GET/POST | C | Clerk ohne Browser: Client-Objekt, dann JWT prägen | gcui-art PR #265 01/2026, rs-suno, paperfoot | belegt | **Betrieb** (`bin/token.js`, schon auf auth.suno.com) | Nur die Kennung ist alt: `CLERK_JS = '5.43.0'` (token.js:54) gegenüber 5.117.0 im Netz. Bisher folgenlos |
+| `auth.suno.com/v1/client?__clerk_api_version=2025-11-10&_clerk_js_version=5.117.0` · `POST …/client/sessions/{sid}/tokens` | GET/POST | C | Clerk ohne Browser: Client-Objekt, dann JWT prägen | gcui-art PR #265 01/2026, rs-suno, paperfoot | belegt | ~~Betrieb~~ — `bin/token.js` am 11.09.2026 **gelöscht**, Weg aufgegeben (docs/suno/WEGE.md) | Nur die Kennung ist alt: `CLERK_JS = '5.43.0'` (token.js:54) gegenüber 5.117.0 im Netz. Bisher folgenlos |
 | `cdn1.suno.ai/{clip_id}.mp4` (Lyric-Video) | GET | – | Weiterhin unsigniert, ACAO `*`, Tonspur dekodierbar; mp3/wav am selben CDN 403 | juroku PR #34, 29.08.2026 | plausibel | **Betrieb** (`videoUrl` im Katalog, gesundheit.js prüft ihn; Archivieren seit 17.08. abgestellt) | Einzige kontingentfreie, unsignierte Tonquelle. Neu ist nicht der Weg, sondern sein Rang |
 
 ---
@@ -76,7 +76,7 @@ breiteste Inventur, die es gibt; die Wrapper ergänzen sie, ersetzen sie nicht.
 | `/api/clips/parent?clip_id=` | GET | T | Ein Schritt aufwärts in der Abstammung; 401 für fremde Clips | rs-suno (Lineage) | belegt | Roh; API ○ „Verwandte Clips?" | LIED-FAMILIEN: Fassungen über Extend/Remaster zurückverfolgen. ○ → ◐ |
 | `/api/gen/{clip_id}/aligned_lyrics/v2/` | GET | T | Bestätigt als der Weg, den alle nutzen (Gist 12.08.2026, suno-cli, Chrome-Extension 07.07.2026). Seit Jahreswechsel doppelte `__session`-Cookies — betrifft Cookie-Leser, nicht `window.Clerk`. **v3 erwähnt niemand außer der Hausliste** | Gist dansleboby, suno-cli | belegt | Roh; API ● | Der v2/v3-Vergleich (Vorschlag 1) bleibt ein Hausprojekt, niemand hat ihn gemacht |
 | `/api/gen/trash` `{clip_ids, trash}` | POST | T | Ersetzt seit 07/2026 `POST /api/feed/trash` (jetzt 404) | suno-cli Commit 20.07.2026 | belegt | Roh; API ◐ (nicht aufrufen) | Nicht für uns. Aber der **Präzedenzfall**: Wege, die in der 19.08.-Liste fehlen, werden wirklich abgeschaltet — Begründung, `feed/v2` zu ersetzen |
-| Clerk-JWT-Lebensdauer | — | — | `exp`-Claim etwa 1 h (alle Wrapper); rs-suno erneuert 60 s vor Ablauf; **studio-api weist Tokens aber nach ~30 min mit „Token validation failed" ab** (suno-cli, geprüft 07.04.2026) | paperfoot, ai-ecoverse, rs-suno, suno-cli | belegt | DATENEXTRAKTION:16 sagt „**rund 60 Sekunden**" — von keiner Quelle gestützt | Browser-Skripte (Token vor jeder Anfrage) sind unberührt und bleiben richtig. `bin/token.js`-Läufe über 25 min laufen in den 30-min-Abweis |
+| Clerk-JWT-Lebensdauer | — | — | `exp`-Claim etwa 1 h (alle Wrapper); rs-suno erneuert 60 s vor Ablauf; **studio-api weist Tokens aber nach ~30 min mit „Token validation failed" ab** (suno-cli, geprüft 07.04.2026) | paperfoot, ai-ecoverse, rs-suno, suno-cli | belegt | DATENEXTRAKTION:16 sagt „**rund 60 Sekunden**" — von keiner Quelle gestützt | Browser-Skripte (Token vor jeder Anfrage) sind unberührt und bleiben richtig. (betraf nur das gelöschte `bin/token.js`) |
 
 ---
 

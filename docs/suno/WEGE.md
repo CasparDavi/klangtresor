@@ -92,6 +92,49 @@ Die vollständige Liste der Android-App (273 Wege, 51 Dienste) steht in
 
 ---
 
+## Aufgegeben: Server-Login über das `__client`-Cookie
+
+**Entschieden am 19.08.2026. Nicht wieder anfangen.**
+
+Mehrere Stunden ging der Versuch, dem Server einen eigenen Zugang zu
+verschaffen: `bin/token.js` konnte aus einem `__client`-Cookie
+Clerk-Token prägen, wie die bekannten Open-Source-Wrapper. Der Weg
+funktioniert technisch — aber er bekommt nie ein angemeldetes Cookie.
+Der angemeldete `__client` sitzt **HttpOnly im Tab**, und jede Login-
+oder Clerk-Seite legt stattdessen einen *neuen, leeren* Client an. Drei
+gültige, leere Cookies kopiert, keines mit Session. Das ist Clerks
+Schutz, und er hält.
+
+Caspar_D, 19.08.2026: *„ich hab keinen Bock mehr, wir nehmen das
+Lesezeichen."*
+
+**Der Token lebt ohnehin nur rund sechzig Sekunden** und ist an die
+Herkunft `suno.com` gebunden. Er läßt sich weder speichern noch
+weiterreichen. Er kommt aus einer **aktiven Suno-Sitzung** — heute über
+das Lesezeichen (`browser/morgens.js`), später vielleicht über eine
+Browser-Erweiterung. Eine dritte Möglichkeit gibt es nicht.
+
+**Am 11.09.2026 gelöscht**, weil die Begründung allein nicht reichte:
+
+| weg | war |
+|---|---|
+| `bin/token.js` | 126 Zeilen mit einem Kopf „WIE ES GEHT" samt Anleitung zum Cookie-Kopieren |
+| `POST /api/geheim/cookie` | nahm das Cookie vom Lesezeichen entgegen, null Aufrufer |
+| `geheim/` | leerer Ordner |
+
+Die Entscheidung vom 19.08. hatte ausdrücklich verfügt, die Dateien
+*„bleiben liegen, falls Clerk das Cookie eines Tages hergibt"*. Genau
+das hat sich gerächt: Wer den Code liest statt des Übergabedokuments,
+findet eine Anleitung und hält den Weg für offen. Dreimal ist das
+passiert. Hausregel ist deshalb: **totgelegt wird nur durch Löschen,
+die Begründung bleibt.** Sie steht hier.
+
+Was **bleibt**, und warum: die Sperren in `bin/paket.js`,
+`bin/export.js` und `bin/fremdstand.js` gegen `geheim/`. Sie kosten
+nichts und fangen einen künftigen Fehlgriff ab.
+
+---
+
 ## Beleg 1 — die Wege der Android-App
 
 ## Die Wege der Suno-App (Android)

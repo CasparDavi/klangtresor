@@ -10,7 +10,7 @@
 # Container. Gebraucht wird nur Docker.
 #
 # Das Archiv bleibt trotzdem draußen auf der Platte (./library), ebenso
-# ein etwaiges Cookie (./geheim). Der Container lässt sich wegwerfen und
+# Der Container lässt sich wegwerfen und
 # neu bauen, ohne dass Musik verlorengeht.
 #
 # macOS: einrichten-docker.command doppelklicken · Windows: einrichten-docker.ps1
@@ -95,8 +95,8 @@ fi
 
 echo "  ✓ Docker läuft  ($DC)"
 
-mkdir -p library geheim
-echo "  ✓ Ordner library/ und geheim/ liegen bereit"
+mkdir -p library
+echo "  ✓ Ordner library/ liegt bereit"
 
 echo ""
 echo "  → Kiste bauen und starten. Beim ersten Mal dauert das einige"

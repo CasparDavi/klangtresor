@@ -1701,23 +1701,14 @@ const server = http.createServer((req, res) => {
 
   if (p === '/api/morgen/stand') return jsonAntwort(res, morgenStand());
 
-  /* Das Cookie entgegennehmen - nur von suno.com, nur per POST, und
-     ohne es je zu protokollieren. Es wandert direkt nach
-     geheim/suno-cookie.txt. So muss es niemand aus den Entwicklertools
-     abschreiben, und es erscheint in keinem Chat. */
-  if (p === '/api/geheim/cookie' && req.method === 'POST') {
-    if (!vonSuno) { res.writeHead(403); return res.end(); }
-    let roh = '';
-    req.on('data', s => { roh += s; if (roh.length > 16384) req.destroy(); });
-    return req.on('end', () => {
-      const w = roh.trim();
-      if (!/^[A-Za-z0-9._\-]{50,4000}$/.test(w)) { res.writeHead(400); return res.end('kein Cookie'); }
-      const ordner = path.join(WURZEL, 'geheim');
-      fs.mkdirSync(ordner, { recursive: true, mode: 0o700 });
-      fs.writeFileSync(path.join(ordner, 'suno-cookie.txt'), w + '\n', { mode: 0o600 });
-      jsonAntwort(res, { gespeichert: true, laenge: w.length });
-    });
-  }
+  /* HIER STAND EINMAL /api/geheim/cookie.
+     Entfernt am 11.09.2026. Der Weg - dem Server ein __client-Cookie
+     geben, damit er sich selbst Clerk-Token praegt - ist am 19.08.2026
+     aufgegeben worden: Clerk gibt das ANGEMELDETE Cookie nicht heraus,
+     es sitzt HttpOnly im Tab, und jede Login-Seite legt ein neues,
+     leeres an. Die Begruendung steht in docs/suno/WEGE.md, Abschnitt
+     „Aufgegeben: Server-Login". Der Token kommt aus dem Lesezeichen,
+     und nur von dort. */
 
   if (p === '/api/morgen/neue') return jsonAntwort(res, { ids: morgen.neueIds || [] });
 

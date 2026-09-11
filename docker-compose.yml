@@ -3,7 +3,7 @@
 # (restart: unless-stopped). Erreichbar unter http://<dieser-Rechner>:8788
 #
 # Vor dem ersten Start, falls die Ordner noch fehlen:
-#   mkdir -p library geheim
+#   mkdir -p library
 #
 # Beenden:  docker compose down
 # Logs:     docker compose logs -f
@@ -23,7 +23,6 @@ services:
       # Das Archiv bleibt auf der Platte, nicht im Image.
       - ./library:/app/library
       # Cookie für den Morgenlauf / das Lesezeichen, falls du eines hast.
-      - ./geheim:/app/geheim
     healthcheck:
       test:
         [

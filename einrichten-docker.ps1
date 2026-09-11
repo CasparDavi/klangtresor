@@ -10,7 +10,7 @@
 # Gebraucht wird nur Docker Desktop.
 #
 # Das Archiv bleibt trotzdem draussen auf der Platte (.\library), ebenso
-# ein etwaiges Cookie (.\geheim). Der Container laesst sich wegwerfen und
+# Der Container laesst sich wegwerfen und
 # neu bauen, ohne dass Musik verlorengeht.
 
 Set-Location -Path $PSScriptRoot
@@ -97,8 +97,8 @@ else {
 
 Write-Host "  [ok] Docker laeuft"
 
-New-Item -ItemType Directory -Force -Path 'library','geheim' | Out-Null
-Write-Host "  [ok] Ordner library\ und geheim\ liegen bereit"
+New-Item -ItemType Directory -Force -Path 'library' | Out-Null
+Write-Host "  [ok] Ordner library\ liegt bereit"
 
 Write-Host ""
 Write-Host "  -> Kiste bauen und starten. Beim ersten Mal dauert das einige"

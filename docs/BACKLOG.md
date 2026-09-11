@@ -887,8 +887,8 @@ und durchprobiert. Was dabei auffiel — Caspar_Ds Durchsicht, sortiert:
   angemeldet", obwohl er es ist. Passt zu Tarjas „erst ging es, dann nicht". Jetzt
   wartet `tokenHolen()` bis zu acht Sekunden und unterscheidet zwei Fälle. Ob es IHR
   Fall war, zeigt erst ein Test bei ihr. Ursprünglich: Der Token selbst ist nicht das
-  Problem (`bin/token.js` holt alle ~50 s einen frischen JWT); ablaufen kann das
-  **Cookie** in `geheim/suno-cookie.txt`. Das erklärt Tarjas „erst ging es, dann
+  Problem; ablaufen kann die **Sitzung im Browser** — der Server hat keinen
+  eigenen Zugang (docs/suno/WEGE.md, „Aufgegeben: Server-Login“). Das erklärt Tarjas „erst ging es, dann
   nicht". Die Meldung muss sagen, was zu tun ist: Cookie abgelaufen, so erneuerst
   du es. (Der Token-Fall selbst **ruht** — dafür bräuchte es Tarjas Mitarbeit.)
 
