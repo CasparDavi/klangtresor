@@ -112,5 +112,11 @@
     "name": "Nachbarschaft: Hirschfaktoren der Neuen rechnen",
     "was": "Ermittelt für jeden Nachbarn mit eigenen Titeln, der noch keinen Wert hat, den Hirschfaktor: die größte Zahl h, für die h seiner Titel mindestens h Herzen haben. Dafür holt er dessen Titel seitenweise von Suno, nach Herzen sortiert, und hört auf, sobald keine weitere Seite den Wert noch heben kann; höchstens zwanzig Seiten je Person. So bekommt dein eigener Hirschfaktor einen Maßstab.",
     "kurzergebnis_muster": "→ Hirschfaktor für <n> Nachbarn gerechnet, <n> Nachbarn mit Wert<; Suno hat gebremst, <n> folgen beim nächsten Lauf>. | → Alle Nachbarn haben schon einen Hirschfaktor, nichts zu tun."
+  },
+  {
+    "schluessel": "aufraeumen",
+    "name": "Hausputz auf dem Medium — Apple-Beiakten und lose git-Objekte",
+    "was": "Räumt zwei Sorten Ballast weg, die auf diesem Medium unvermeidlich entstehen. Erstens die Apple-Beiakten: macOS stempelt jede geschriebene Datei mit einem erweiterten Attribut, exFAT kann so etwas nicht speichern, also legt macOS je Datei eine kleine Begleitdatei daneben. Weil ein Block hier ein ganzes Megabyte ist, belegt jede davon ein Megabyte. Sie stören außerdem die Versionsverwaltung, die schon einmal versucht hat, eine solche Begleitdatei als Paketdatei zu lesen. Zweitens die losen Objekte der Versionsverwaltung: jeder Checkin legt kleine Einzeldateien an, und auch die belegen je ein Megabyte. Sie werden zu einem Paket zusammengefasst, sobald sich genug angesammelt haben, und danach wird die Prüfsumme des Archivs kontrolliert. Angefasst werden ausschließlich Begleitdateien und ausschließlich innerhalb des Projektordners; Verweisen nach außen wird nicht gefolgt.",
+    "kurzergebnis_muster": "Apple-Beiakten: <n> entfernt, <n> MB frei | Objektspeicher: <n> lose Objekte gepackt, <n> → <n> MB | Prüfsumme: in Ordnung | → Frei geworden: <n> MB"
   }
 ]

@@ -583,6 +583,13 @@ const MORGEN_SCHRITTE = [
      im Morgenfenster. */
   { id: 'nachbarn-profile', schluessel: 'nachbarn', name: 'Nachbarschaft: Profile der Neuen holen', befehl: ['bin/community-profile.js'] },
   { id: 'nachbarn-hirsch', schluessel: 'nachbarn', name: 'Nachbarschaft: Hirschfaktoren der Neuen rechnen', befehl: ['bin/community-hirsch.js'] },
+  /* ZULETZT DER HAUSPUTZ. Auf exFAT belegt jede Datei ein ganzes Megabyte, und macOS legt zu jeder
+     geschriebenen Datei eine Beiakte (`._name`) daneben, die es ebenfalls tut. Dazu die losen
+     git-Objekte, je Commit ein paar. Gemessen am 11.09.2026: der Objektspeicher belegte 2572 MB
+     fuer 125 MB Inhalt; nach dem Packen 48 MB. Die Beiakten stoeren git ausserdem bei der Arbeit -
+     es hat eine `._pack-….idx` als Paketindex zu lesen versucht. Steht am Ende, weil vorher alle
+     anderen Schritte schreiben und dabei neue Beiakten erzeugen. */
+  { id: 'aufraeumen', schluessel: 'aufraeumen', name: 'Hausputz auf dem Medium — Apple-Beiakten und lose git-Objekte', befehl: ['bin/aufraeumen.js'] },
 ];
 for (const s of MORGEN_SCHRITTE)
   if (!MORGEN_TEXTE[s.name]) console.warn(`MORGENSCHRITTE.json kennt den Schritt nicht: ${s.name}`);
