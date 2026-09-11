@@ -311,12 +311,6 @@ for (const roh of eingang.values()) {
   if (s.freischaltSperre === null && vorher && vorher.freischaltSperre) {
     s.freischaltSperre = vorher.freischaltSperre;
   }
-  /* Das Lesezeichen hat direkt bei Suno nachgesehen - das schlaegt
-     alles, was die Ernte nicht weiss. Ein true bleibt ein true. */
-  if (typeof freischaltStand[s.id] === 'boolean' &&
-      (s.freigeschaltet === null || freischaltStand[s.id] === true)) {
-    s.freigeschaltet = freischaltStand[s.id];
-  }
 
   // Die Playlist-Zugehörigkeit steht in einer eigenen Rohdatei
   // (playlists-*.json) und wird weiter unten neu gesetzt. Fehlt die
@@ -325,6 +319,26 @@ for (const roh of eingang.values()) {
 
   songs[s.id] = s;
   if (vorher) aktualisiert++; else neu++;
+}
+
+/* Den Freischaltstand ueber ALLE Songs legen, nicht nur ueber die frisch
+   geernteten. Ohne neue Rohdaten laeuft die Schleife oben gar nicht - und
+   genau dann soll das Nachgefragte trotzdem ankommen. Am 11.09.2026 beim
+   Probelauf aufgefallen: zehn abgefragte Staende lagen in
+   freischaltstand.json und blieben im Katalog auf null stehen.
+
+   Ein true wird nie zu false: ein Unlock ist dauerhaft (gemessen), und
+   ein false darueber zu schreiben hiesse, ein bezahltes Guthaben zu
+   vergessen. */
+{
+  let gesetzt = 0;
+  for (const s of Object.values(songs)) {
+    const w = freischaltStand[s.id];
+    if (typeof w !== 'boolean') continue;
+    if (s.freigeschaltet === true && w === false) continue;
+    if (s.freigeschaltet !== w) { s.freigeschaltet = w; gesetzt++; }
+  }
+  if (gesetzt) console.log(`Freischaltstand übernommen: ${gesetzt} Titel.`);
 }
 
 const liste = Object.values(songs)
