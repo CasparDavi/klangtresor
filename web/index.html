@@ -3065,6 +3065,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-lz{display:flex;gap:5px;align-items:center;font-size:12px;opacity:.8}
 #tbs .tbs-lz select{font:inherit}
 #tbs .tbs-lhinweis{flex:1 0 100%;font-size:11px;opacity:.6;line-height:1.35;min-height:1px}
+#tbs #tbs-laufKurve{flex:1 0 100%;width:230px;height:75px;display:block;margin:4px 0 2px}
+#tbs .tbs-lmass{flex:1 0 100%;font-size:11px;opacity:.75;font-variant-numeric:tabular-nums}
 #tbs .tbs-quelle{position:relative;width:54px;height:72px;padding:0;border:2px solid var(--rand);border-radius:8px;background:#000;overflow:hidden;cursor:pointer;flex:0 0 auto}
 #tbs .tbs-quelle img, #tbs .tbs-quelle canvas{width:100%;height:100%;object-fit:cover;display:block}
 #tbs .tbs-quelle:hover{border-color:var(--schwach)}
@@ -27726,8 +27728,49 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
   if(laufBeugt()&&ohneTakt) hin='F\u00fcr diesen Titel kennen wir kein Taktma\u00df \u2014 der Lauf bleibt wirkungslos.';
   else if(laufBeugt()&&SPRUNG.fehler) hin='Arbeitskopie ging nicht: '+SPRUNG.fehler+' \u2014 das Springen wird z\u00e4h.';
   else if(laufBeugt()&&(SEITEN[seiteIndex()]||{}).video) hin='Bewegtbild springt jetzt auf dem Raster; die Arbeitskopie daf\u00fcr baut das Haus einmal.';
-  box.innerHTML=h+'<div class="tbs-lhinweis">'+hin+'</div>';
-  box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value)); }
+  box.innerHTML=h+'<canvas id="tbs-laufKurve" width="460" height="150"></canvas>'
+    +'<div class="tbs-lmass" id="tbs-laufMass"></div>'
+    +'<div class="tbs-lhinweis">'+hin+'</div>';
+  box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value));
+  laufKurveMalen(); }
+/* ---- Die Kurve im Pult -----------------------------------------------
+   Caspar_D, 11.09.2026, nach dem Bild der vier Formen: "jetzt brauchen wir das video nur als faden,
+   der einfach da liegt / dann ploetzlich im zickzack hin und her laeuft / oder eine Luecke hat, die
+   durch immer dasselbe Fragment von vor der Luecke aufgefuellt wird".
+   Waagerecht die Zeit im fertigen Clip, senkrecht die Stelle im Video - also x die unabhaengige
+   Groesse und y = f(x). Andersherum waere es keine Funktion: unter dem Pendel kommt dieselbe Stelle
+   des Videos zweimal vor, einmal hin und einmal zurueck.
+   Gestrichelt liegt daneben, wo der Faden ohne Beugung laege. Laeuft die Kurve flacher als die
+   Gestrichelte, fuellt wenig Material viel Clip - genau das, was Hookvideos brauchen. */
+function laufKurveMalen(){
+  const c=$('#tbs-laufKurve'), mass=$('#tbs-laufMass'); if(!c) return;
+  const x=c.getContext('2d'), W=c.width, H=c.height, pad=8;
+  x.clearRect(0,0,W,H);
+  const A=ausschnitt(), t0=A.t0, L=A.L||10, N=460;
+  const ys=[]; for(let i=0;i<=N;i++) ys.push(laufZeit(t0+L*i/N)-t0);
+  let lo=Math.min.apply(null,ys), hi=Math.max.apply(null,ys);
+  const spanne=hi-lo; if(spanne<1e-6) hi=lo+1e-6;
+  const px=v=>pad+(W-2*pad)*v, py=v=>H-pad-(H-2*pad)*((v-lo)/(hi-lo));
+  x.strokeStyle='rgba(128,128,128,.45)'; x.lineWidth=1;
+  x.beginPath(); x.moveTo(pad,pad); x.lineTo(pad,H-pad); x.lineTo(W-pad,H-pad); x.stroke();
+  x.save(); x.beginPath(); x.rect(pad,pad,W-2*pad,H-2*pad); x.clip();
+  x.setLineDash([3,5]); x.strokeStyle='rgba(128,128,128,.55)';
+  x.beginPath(); x.moveTo(px(0),py(0)); x.lineTo(px(1),py(L)); x.stroke(); x.setLineDash([]);
+  x.strokeStyle='#f97b14'; x.lineWidth=2.5; x.lineJoin='round'; x.lineCap='round';
+  x.beginPath(); for(let i=0;i<=N;i++){ const X=px(i/N), Y=py(ys[i]); i?x.lineTo(X,Y):x.moveTo(X,Y); }
+  x.stroke(); x.restore();
+  /* Wieviel Material WIRKLICH zu sehen ist - nicht die Spanne. Beim Stottern reicht die Spanne fast
+     ueber den ganzen Clip, gezeigt wird aber nur jede zweite Haelfte. Also die getroffenen Stellen
+     zaehlen, nicht den Abstand zwischen der ersten und der letzten. */
+  if(mass){
+    const fach=Math.max(1,Math.round(L*120)), belegt=new Uint8Array(fach+1);
+    for(let i=0;i<=N*4;i++){ const v=laufZeit(t0+L*i/(N*4))-t0;
+      const k=Math.round((v-lo)/Math.max(1e-9,L)*fach); if(k>=0&&k<=fach) belegt[k]=1; }
+    let n=0; for(let i=0;i<=fach;i++) n+=belegt[i];
+    const gezeigt=n*L/fach;
+    const d=(bild&&bild.tagName==='VIDEO'&&bild.duration>0)?bild.duration:0;
+    mass.textContent='aus '+kf(gezeigt.toFixed(2))+' s Video werden '+kf(L.toFixed(2))+' s Clip'
+      +(d?'  \u00b7  das Bewegtbild ist '+kf(d.toFixed(2))+' s lang':''); } }
 function laufSetzen(k,v){ LAUF[k]=(k==='form')?String(v):(parseInt(v,10)||1);
   if(LAUF.teil%LAUF.wdh!==0) LAUF.wdh=2;          /* Raster gewechselt: unmoegliche Zahl mitziehen */
   const p=SEITEN[seiteIndex()];
