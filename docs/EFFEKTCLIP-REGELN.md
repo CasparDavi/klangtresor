@@ -134,6 +134,19 @@ Vier Fallen, in die der Autor dieser Zeilen an einem Abend alle vier getappt ist
   Befehle abschickt, nicht wie lange sie brauchen. Die Blende sah so nach 5,8 ms aus und brauchte in
   Wahrheit 465. Nach jedem Durchgang einen Bildpunkt zurücklesen, dann stimmt die Zahl.
   `labor/effektclip-studio/blendentest.html` macht das vor, ohne Studio und ohne laufenden Maler.
+- **`seeked` ist nicht „Bild ist da".** Beim Messen, wie teuer ein Sprung im Video ist, sah ein
+  normal kodierter Clip mit 5,4 ms genauso schnell aus wie eine Fassung aus lauter Schlüsselbildern.
+  Das war falsch: das Ereignis `seeked` feuert, bevor das Bild wirklich steht, und das anschließende
+  `drawImage` malt noch das alte. Erst als der Prüfstand je Sprung einen **Fingerabdruck des Bildes**
+  nahm und nachwies, dass wirklich 40 verschiedene Bilder ankamen, standen die echten Zahlen da:
+  **124,6 ms gegen 14,9 ms**, also achtmal so teuer. Wer Video misst, muss beweisen, dass das
+  gemessene Bild auch das angeforderte ist (11.09.2026).
+- **Die verborgene Scheibe.** Eine Seite im Hintergrund wird gedrosselt, `setTimeout` läuft dann nur
+  noch einmal je Sekunde und `requestVideoFrameCallback` gar nicht. Messungen laufen scheinbar ewig.
+  Zum Messen die Scheibe nach vorn holen — die eigene, nie Jörgs.
+- **Der Horcher nach der Quelle.** `v.src = …` vor `addEventListener('canplaythrough', …)` hängt
+  beim zweiten Laden für immer, weil das Ereignis aus dem Vorrat schon gefeuert hat. Erst horchen,
+  dann laden, und `readyState` zusätzlich abfragen.
 
 Und eine Falle im Aufbau: fehlt dem Prüfstand der Verweis auf `web/fremd`, findet der Shader sein
 Rauschen nicht, das Studio fällt still auf den Leinwand-Nebel zurück, und man misst tagelang den
