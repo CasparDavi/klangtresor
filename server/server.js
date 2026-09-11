@@ -41,6 +41,7 @@ const PORTWUNSCH = (() => {
 })();
 let PORT = PORTWUNSCH || 8788;
 const WURZEL = path.join(__dirname, '..');
+const signatur = require('../bin/suno-signatur.js');
 const WEB    = path.join(WURZEL, 'web');
 const LIB    = path.join(WURZEL, 'library');
 const SONGS  = path.join(LIB, 'songs');
@@ -1700,6 +1701,147 @@ const server = http.createServer((req, res) => {
   }
 
   if (p === '/api/morgen/stand') return jsonAntwort(res, morgenStand());
+
+  /* ================================================================
+     TON VOM LESEZEICHEN ENTGEGENNEHMEN
+
+     Am 11.09.2026 gemessen, und es aendert den ganzen Weg: ein Song,
+     der einmal freigeschaltet ist, laesst sich beliebig oft und in
+     allen drei Formaten abrufen, ohne dass der Guthabenzaehler sich
+     bewegt. Und die signierte S3-Adresse antwortet dem Browser mit
+     CORS-Freigabe - das Lesezeichen kann die Datei also selbst laden.
+
+     Damit braucht es keinen eigenen Zugang fuer den Server (den gibt es
+     nicht und soll es nicht geben, siehe docs/suno/WEGE.md). Der Weg ist:
+
+       Lesezeichen  GET /api/download/clip/<id>?format=…   mit Token
+                    laedt die Bytes von S3
+                    POST hierher, Rohbytes im Rumpf
+       Server       prueft die Signatur GEGEN DIE ID und legt ab
+
+     DIE REIHENFOLGE IM HAUS (Caspar_D, 11.09.2026):
+       1. was auf der Platte liegt   bin/uebernehmen.js, kostet nichts
+       2. was freigeschaltet ist     dieser Weg, kostet nichts
+       3. was ein Guthaben verlangt  entscheidet ein Mensch, nie ein Skript
+
+     Was hier NICHT passiert: nichts wird bei Suno ausgeloest, was Geld
+     kostet. Dieser Weg nimmt nur entgegen. */
+
+  /* Was fehlt? Das Lesezeichen fragt zuerst, damit es nur das holt, was
+     wirklich gebraucht wird - und nur, was freigeschaltet ist. */
+  if (p === '/api/ton/fehlt') {
+    const k = katalogHolen();
+    if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
+    const fehlt = [], unklar = [];
+    for (const s of Object.values(k.songs || {})) {
+      if (!s || !s.id || s.fremd || s.imPapierkorb) continue;
+      const d = path.join(SONGS, s.id);
+      const ohneMp3 = !fs.existsSync(path.join(d, 'audio.mp3'));
+      const ohneWav = !fs.existsSync(path.join(d, 'audio.wav'));
+      if (!ohneMp3 && !ohneWav) continue;
+      const eintrag = { id: s.id, titel: s.titel || '', mp3: !ohneMp3, wav: !ohneWav };
+      /* Freigeschaltet: holen. Unbekannt: erst bei Suno nachsehen, das
+         kostet nichts. Ausdruecklich false: liegen lassen - dafuer
+         muesste jemand ein Guthaben ausgeben, und das entscheidet
+         kein Skript. */
+      if (s.freigeschaltet === true) fehlt.push(eintrag);
+      else if (s.freigeschaltet !== false && !s.freischaltSperre) unklar.push(eintrag);
+    }
+    return jsonAntwort(res, { fehlt, unklar });
+  }
+
+  /* Was das Lesezeichen bei Suno ueber den Freischaltstand erfahren
+     hat, hier ablegen. Sonst fragt es jeden Morgen dieselben
+     dreihundert Titel neu - und der Katalog erfaehrt es nie, weil das
+     Feld in den Rohdaten der Ernte gar nicht vorkommt.
+
+     Eigene Datei statt Katalogschreiben: den Katalog baut
+     bin/aufbereiten.js, und zwei Schreiber auf einer Datei sind ein
+     Fehler, der erst spaeter auffaellt. aufbereiten.js liest diese
+     Datei als zusaetzliche Quelle. */
+  if (p === '/api/ton/stand' && req.method === 'POST') {
+    if (!vonSuno) { res.writeHead(403); return res.end(); }
+    let roh = '';
+    req.on('data', (s) => { roh += s; if (roh.length > 1024 * 1024) req.destroy(); });
+    return req.on('end', () => {
+      let neu = null;
+      try { neu = JSON.parse(roh); } catch (e) {}
+      if (!neu || typeof neu !== 'object') { res.writeHead(400); return res.end('kein Stand'); }
+      const datei = path.join(LIB, 'freischaltstand.json');
+      let alt = {};
+      try { alt = JSON.parse(fs.readFileSync(datei, 'utf8')); } catch (e) {}
+      let gezaehlt = 0;
+      for (const [id, wert] of Object.entries(neu)) {
+        if (!/^[0-9a-f-]{36}$/i.test(id) || typeof wert !== 'boolean') continue;
+        /* Ein Unlock ist dauerhaft (11.09.2026 gemessen) - ein true
+           wird nie wieder zu false. */
+        if (alt[id] === true && wert === false) continue;
+        if (alt[id] !== wert) { alt[id] = wert; gezaehlt++; }
+      }
+      try {
+        fs.mkdirSync(LIB, { recursive: true });
+        fs.writeFileSync(datei, JSON.stringify(alt, null, 1));
+      } catch (e) { res.writeHead(500); return res.end('nicht geschrieben'); }
+      return jsonAntwort(res, { gemerkt: Object.keys(alt).length, neu: gezaehlt });
+    });
+  }
+
+  /* Die Bytes entgegennehmen. Sechs Sperren, dieselbe Strenge wie in
+     bin/uebernehmen.js - und eine davon ist die wichtigste: die Datei
+     muss SELBST sagen, zu welchem Song sie gehoert. */
+  const tonWeg = p.match(/^\/api\/ton\/([0-9a-f-]{36})\/(mp3|wav)$/i);
+  if (tonWeg && req.method === 'POST') {
+    if (!vonSuno) { res.writeHead(403); return res.end(); }
+    const id = tonWeg[1].toLowerCase(), format = tonWeg[2].toLowerCase();
+    const k = katalogHolen();
+    const song = k && k.songs && k.songs[id];
+    if (!song) { res.writeHead(404); return res.end('Song nicht im Katalog'); }
+
+    const ziel = path.join(SONGS, id, 'audio.' + format);
+    if (fs.existsSync(ziel)) return jsonAntwort(res, { angenommen: false, grund: 'liegt schon da' });
+
+    const DECKEL = 300 * 1024 * 1024;        /* eine 8-Minuten-WAV wiegt rund 90 MB */
+    const teile = [];
+    let gesamt = 0, abgebrochen = false;
+    req.on('data', (s) => {
+      gesamt += s.length;
+      if (gesamt > DECKEL) { abgebrochen = true; req.destroy(); return; }
+      teile.push(s);
+    });
+    return req.on('end', () => {
+      if (abgebrochen) { res.writeHead(413); return res.end('zu gross'); }
+      const bytes = Buffer.concat(teile);
+      if (bytes.length < 1024) return jsonAntwort(res, { angenommen: false, grund: 'zu klein' });
+
+      /* DIE SIGNATUR ENTSCHEIDET, NICHT DIE ADRESSE. Wer den Weg ruft,
+         koennte sich irren oder etwas anderes schicken; die Datei
+         selbst kann nicht luegen. */
+      const drin = signatur.ausPuffer(bytes.subarray(0, signatur.FENSTER));
+      if (drin !== id) {
+        return jsonAntwort(res, { angenommen: false,
+          grund: drin ? `Signatur nennt ${drin.slice(0, 8)}, erwartet ${id.slice(0, 8)}` : 'keine Suno-Signatur' });
+      }
+
+      try {
+        fs.mkdirSync(path.dirname(ziel), { recursive: true });
+        /* Erst daneben schreiben, dann pruefen, dann umbenennen. Ein
+           Abbruch mittendrin hinterlaesst so keine halbe audio.mp3, die
+           spaeter als vollstaendig gilt. */
+        const teil = ziel + '.teil';
+        fs.writeFileSync(teil, bytes);
+        const nach = fs.statSync(teil);
+        if (nach.size !== bytes.length || signatur.ausDatei(teil) !== id) {
+          fs.unlinkSync(teil);
+          return jsonAntwort(res, { angenommen: false, grund: 'Kopie stimmt nicht' });
+        }
+        fs.renameSync(teil, ziel);
+        console.log(`  Ton angenommen: ${song.titel || id.slice(0, 8)} (${format}, ${(bytes.length / 1048576).toFixed(1)} MB)`);
+        return jsonAntwort(res, { angenommen: true, bytes: bytes.length });
+      } catch (e) {
+        return jsonAntwort(res, { angenommen: false, grund: String(e.message).slice(0, 120) });
+      }
+    });
+  }
 
   /* HIER STAND EINMAL /api/geheim/cookie.
      Entfernt am 11.09.2026. Der Weg - dem Server ein __client-Cookie

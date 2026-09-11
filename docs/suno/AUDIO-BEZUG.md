@@ -90,6 +90,78 @@ maßgebliche für dauerhaft archivierte Dateien.
 
 ---
 
+# Gebaut 11.09.2026 — die Leiter, in dieser Reihenfolge
+
+Caspar_D: „du holst erstmal dort ab was geht mitsamt unterordnern? …
+und dann erst über den SunoServer?“ — genau so, und es ist auch die
+billigste Reihenfolge.
+
+| | woher | Kosten | wo |
+|---|---|---|---|
+| 1 | was auf der Platte liegt | nichts, kein Netz | `bin/uebernehmen.js` |
+| 2 | was bei Suno freigeschaltet ist | nichts (gemessen) | Lesezeichen, Schritt „Ton holen“ |
+| 3 | was ein Guthaben verlangt | ein Unlock je Titel | **ein Mensch**, nie ein Skript |
+
+## Stufe 1 — die eigene Platte
+
+`bin/uebernehmen.js` liest `~/Downloads` und einen gemerkten Ordner,
+**sechs Ebenen tief** (vorher zwei — ein gewachsenes Suno-Archiv ist
+tiefer sortiert). Die Einrichtung fragt beim ersten Lauf danach.
+
+Die Signatur kennt jetzt **drei Spuren** statt einer; die alte Fassung
+erkannte von 94 Dateien in Caspar_Ds eigenem Suno-Ordner genau null.
+Einzelheiten in `bin/suno-signatur.js`.
+
+## Stufe 2 — der Holweg über das Lesezeichen
+
+    Lesezeichen   GET /api/ton/fehlt              was fehlt, daheim gefragt
+                  GET /api/clip/<id>              Freischaltstand, kostenlos
+                  POST /api/ton/stand             gelernte Stände merken
+                  GET /api/download/clip/<id>?format=mp3|wav
+                  GET <signierte S3-Adresse>      die Bytes, ohne Token
+                  POST /api/ton/<id>/<format>     Rohbytes ans Archiv
+    Server        prüft die Signatur GEGEN DIE ID und legt ab
+
+Der Server bekommt keinen eigenen Zugang — er braucht keinen. Der Token
+bleibt im Browser, wo er hingehört.
+
+**Am 11.09.2026 im Sandkasten durchgespielt** (eigener Port, eigener
+Katalog, drei Titel ohne Ton):
+
+| Probe | Ergebnis |
+|---|---|
+| mp3 holen | 7 667 844 B, angenommen, **byteidentisch** mit der Archivfassung |
+| wav holen | 60 278 802 B, angenommen, `data`-Block **bitgleich** |
+| dieselbe Datei noch einmal | abgelehnt: „liegt schon da“ |
+| richtige Datei unter fremder id | abgelehnt: „Signatur nennt a381ced9, erwartet 89ef9f63“ |
+| 200 KB Zufallsbytes | abgelehnt: „keine Suno-Signatur“ |
+| id, die der Katalog nicht kennt | 404 |
+| Origin nicht suno.com | 403 |
+| Format m4a | 404 (Hausregel: M4A bleibt draußen) |
+
+**Zwei WAVs desselben Liedes sind nie byteidentisch.** Der `data`-Block
+schon, aber der INFO-Block trägt `created=` als Zeitpunkt der
+**WAV-Erzeugung** (hier 11.09. gegen 08.09.), und die C2PA-Signatur
+unterschreibt diesen Stempel mit. Wer WAVs über Prüfsummen vergleicht,
+vergleicht den `data`-Block — sonst nichts.
+
+## Stufe 3 — und was sie kostet
+
+Ein Unlock kostet ein Guthaben je Titel und schaltet alle drei Formate
+zusammen frei, dauerhaft. Das löst kein Skript aus. Caspar_D,
+11.09.2026: am Ende der Abrechnungsperiode soll gefragt werden, ob die
+verbleibenden Freigaben noch verbraucht werden sollen — mit Vorschlag,
+welche Titel es am nötigsten hätten. Steht aus.
+
+## Nebenbei abgestellt
+
+`bin/laden.js` rief für jeden Titel ohne Audiodatei die tote `audioUrl`
+ab — bei einem frischen Bestand dreihundert Anfragen an Suno, die alle
+dasselbe Nein bekommen. Der Grabstein `…/api/forbidden` wird jetzt
+erkannt und übersprungen.
+
+---
+
 # Gemessen 11.09.2026 — der zweite Abruf kostet nichts
 
 Der Schluss vom 07.09. („das Guthaben kostet den SONG, nicht die Datei“)

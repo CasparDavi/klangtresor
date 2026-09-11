@@ -382,6 +382,14 @@
        v2; ob v3 genauer ist, steht im Backlog. Diese Probe holt BEIDE
        fuer die Songs in VERGLEICHS_IDS und legt sie als eigene
        Rohdatei ab - bin/zeitmarken-vergleich.js wertet aus. */
+    /* Der Ton. Am 11.09.2026 gemessen und deshalb hier erlaubt: ein
+       Titel, der einmal freigeschaltet ist, laesst sich beliebig oft und
+       in allen drei Formaten abrufen, OHNE dass der Guthabenzaehler sich
+       bewegt (3 von 60 vorher, 3 von 60 nachher, vier Abrufe dazwischen).
+       Auch das Nachfragen des Freischaltstands ueber /api/clip kostet
+       nichts. Was NICHT passiert: ein Unlock ausloesen - das kostet, und
+       das entscheidet ein Mensch. */
+    { k:'ton',     name:'Ton holen (nur Freigeschaltetes)', was:'fuer Titel, deren Audiodatei fehlt und die bei Suno schon freigeschaltet sind - kostet KEIN Guthaben, gemessen am 11.09.2026; unbekannte Titel werden vorher nachgefragt, auch das ist kostenlos', an:true },
     { k:'zeitprobe', name:'Zeitmarken nachladen (v2 + v3)', was:'Wort-Zeitmarken fuer Karaoke: v2 fuer Songs, die noch keine haben, v3 fuer alle; was Suno erst rechnen muss, kommt beim naechsten Lauf', an:false },
   ];
   const gemerkt = (() => { try { return JSON.parse(localStorage.getItem('mysuno-morgens-auswahl')||'{}'); } catch(e){ return {}; } })();
@@ -1269,6 +1277,112 @@
     liker,
     beobachter,
   };
+  /* ---------------- Ton holen ----------------
+     DIE REIHENFOLGE IM HAUS (Caspar_D, 11.09.2026: „du holst erstmal
+     dort ab was geht mitsamt unterordnern? … und dann erst über den
+     SunoServer?"):
+
+       1. was auf der Platte liegt   bin/uebernehmen.js, kostet nichts
+       2. was freigeschaltet ist     HIER, kostet nichts
+       3. was ein Guthaben verlangt  entscheidet ein Mensch
+
+     Warum das hier laeuft und nicht im Server: die signierte S3-Adresse
+     braucht einen Clerk-Token, und den gibt es nur in einer angemeldeten
+     Suno-Sitzung. Der Server hat keinen und soll keinen haben
+     (docs/suno/WEGE.md). Geprueft am 11.09.2026: S3 antwortet dem
+     Browser mit CORS-Freigabe, das Laden geht also von hier. */
+  const DECKEL_TON = 25;          /* je Lauf, damit ein Morgen nicht zur Stunde wird */
+  const zeileTon = sagen('Ton holen — für Titel, deren Datei fehlt und die bei Suno schon freigeschaltet sind …');
+  if (!wahl.ton){ zeileTon.textContent = 'Ton holen — übersprungen'; zeileTon.style.color = '#8a8a90'; }
+  else {
+    const tTon = await tokenHolen();
+    if (!tTon){ zeileTon.textContent = 'Ton holen — kein Token, übersprungen'; zeileTon.style.color = '#d29922'; }
+    else {
+      const kopf = async () => ({ Authorization: 'Bearer ' + (await tokenHolen()) });
+      let liste = { fehlt: [], unklar: [] };
+      try { liste = await (await fetch(DAHEIM + '/api/ton/fehlt')).json(); } catch (e) {}
+
+      /* Erst nachsehen, was ueberhaupt freigeschaltet ist. Das Feld
+         steht NUR in /api/clip/<id>; die Ernte kennt es nicht. Das
+         Ergebnis wandert daheim in library/freischaltstand.json, damit
+         morgen nicht dieselben dreihundert Titel neu gefragt werden. */
+      const gelernt = {};
+      let i = 0;
+      for (const a of (liste.unklar || [])){
+        i++;
+        zeileTon.textContent = `Ton holen — frage Freischaltstand … ${i}/${liste.unklar.length}`;
+        try {
+          const r = await fetch(`${API}/api/clip/${a.id}`, { headers: await kopf() });
+          if (r.ok){
+            const d = await r.json();
+            if (typeof d.is_download_unlocked === 'boolean'){
+              gelernt[a.id] = d.is_download_unlocked;
+              if (d.is_download_unlocked) liste.fehlt.push(a);
+            }
+          }
+        } catch (e) {}
+        await new Promise(r => setTimeout(r, 300));
+      }
+      if (Object.keys(gelernt).length){
+        try { await fetch(DAHEIM + '/api/ton/stand', { method:'POST',
+          headers:{'Content-Type':'application/json'}, body: JSON.stringify(gelernt) }); } catch (e) {}
+      }
+
+      /* Und jetzt holen. Je Titel bis zu zwei Dateien: die mp3 zum
+         Hoeren, die wav als Urfassung. Beide sind von demselben Unlock
+         gedeckt. */
+      const aufgaben = [];
+      for (const a of (liste.fehlt || []))
+        for (const format of ['mp3','wav'])
+          if (!a[format]) aufgaben.push({ id:a.id, titel:a.titel, format });
+
+      const zuViel = Math.max(0, aufgaben.length - DECKEL_TON);
+      const dran = aufgaben.slice(0, DECKEL_TON);
+      let geholt = 0, bytes = 0, daneben = 0;
+
+      for (let n = 0; n < dran.length; n++){
+        const auf = dran[n];
+        zeileTon.textContent = `Ton holen … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`;
+        try {
+          /* Adresse anfordern. WAV steht die ersten Sekunden auf
+             „processing" - Suno rechnet sie erst. */
+          let adresse = null;
+          for (let runde = 0; runde < 10 && !adresse; runde++){
+            const r = await fetch(`${API}/api/download/clip/${auf.id}?format=${auf.format}`, { headers: await kopf() });
+            if (!r.ok) break;
+            const d = await r.json();
+            if (d.download_url){ adresse = d.download_url; break; }
+            await new Promise(r2 => setTimeout(r2, 3000));
+          }
+          if (!adresse){ daneben++; continue; }
+
+          /* Die signierte Adresse OHNE Authorization laden - mit Kopf
+             antwortet S3 mit 400. */
+          const rd = await fetch(adresse);
+          if (!rd.ok){ daneben++; continue; }
+          const blob = await rd.blob();
+
+          const ra = await fetch(`${DAHEIM}/api/ton/${auf.id}/${auf.format}`, {
+            method:'POST', headers:{'Content-Type':'application/octet-stream'}, body: blob });
+          const erg = await ra.json().catch(() => ({}));
+          if (erg.angenommen){ geholt++; bytes += blob.size; }
+          else { daneben++; console.log('[Ton] abgelehnt:', auf.titel, auf.format, erg.grund || ra.status); }
+        } catch (e){ daneben++; }
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      const mb = (bytes/1048576).toFixed(0);
+      if (!aufgaben.length && !Object.keys(gelernt).length)
+        zeileTon.textContent = 'Ton holen — nichts zu holen, alle Dateien sind da';
+      else
+        zeileTon.textContent = `Ton holen — ${geholt} Datei${geholt===1?'':'en'} (${mb} MB)`
+          + (daneben ? `, ${daneben} nicht bekommen` : '')
+          + (zuViel ? `, ${zuViel} bleiben für morgen (${DECKEL_TON} je Lauf)` : '')
+          + (Object.keys(gelernt).length ? ` · Freischaltstand für ${Object.keys(gelernt).length} Titel gemerkt` : '');
+      zeileTon.style.color = daneben ? '#d29922' : '#16be5c';
+    }
+  }
+
   const zeileA = sagen('Übertrage die Ernte ans Archiv (erst in den Browser-Speicher, dann in Paketen an den Server) …');
   /* Zuerst in den Browser - das kann nicht fehlschlagen, weil kein
      Server dafuer noetig ist. Dann hinueber. */

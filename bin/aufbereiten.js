@@ -239,6 +239,18 @@ const altSongs = (alt && alt.songs) || {};
 
 console.log(`\n${eingang.size} Songs in den Rohdaten, ${Object.keys(altSongs).length} bereits im Katalog.\n`);
 
+/* Was das Lesezeichen bei Suno ueber den Freischaltstand erfahren hat.
+   Das Feld `is_download_unlocked` kommt in den Rohdaten der Ernte gar
+   nicht vor - es steht nur in /api/clip/<id>, und das fragt das
+   Lesezeichen gezielt ab. Der Server legt die Antworten in
+   library/freischaltstand.json; hier werden sie eingepflegt. */
+let freischaltStand = {};
+try {
+  freischaltStand = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'freischaltstand.json'), 'utf8'));
+  const n = Object.values(freischaltStand).filter(Boolean).length;
+  if (n) console.log(`${n} Titel sind laut Lesezeichen bei Suno freigeschaltet.`);
+} catch (e) {}
+
 const songs = { ...altSongs };
 let neu = 0, aktualisiert = 0;
 
@@ -298,6 +310,12 @@ for (const roh of eingang.values()) {
   }
   if (s.freischaltSperre === null && vorher && vorher.freischaltSperre) {
     s.freischaltSperre = vorher.freischaltSperre;
+  }
+  /* Das Lesezeichen hat direkt bei Suno nachgesehen - das schlaegt
+     alles, was die Ernte nicht weiss. Ein true bleibt ein true. */
+  if (typeof freischaltStand[s.id] === 'boolean' &&
+      (s.freigeschaltet === null || freischaltStand[s.id] === true)) {
+    s.freigeschaltet = freischaltStand[s.id];
   }
 
   // Die Playlist-Zugehörigkeit steht in einer eigenen Rohdatei

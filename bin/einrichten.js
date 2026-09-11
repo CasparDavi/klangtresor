@@ -71,7 +71,7 @@ const boese = (t) => schreib('     ' + BOESE('[x] ') + '  ' + t);
 const tut = (t) => schreib('     ' + MARKE('->  ') + '  ' + t);
 
 let SCHRITT = 0;
-const SCHRITTE = 7;
+const SCHRITTE = 9;
 function schritt(t) {
   SCHRITT++;
   leer();
@@ -580,13 +580,67 @@ function da(befehl) {
   if (!handle) { boese('Ohne Alias geht es nicht weiter.'); wiederkommen(); schluss(1); }
 
   /* ================================================================ */
-  schritt(`Songliste von @${handle} holen und Medien laden`);
+  schritt(`Songliste von @${handle} holen`);
   if (!laeuft(process.execPath, [path.join('bin', 'sammeln.js'), handle])) {
     const w = await wieWeiter('Songliste holen', 'Ohne sie gibt es nichts zu archivieren.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   }
-  matt('Jetzt die Medien. Das dauert am längsten — abbrechen und später');
-  matt('fortsetzen ist erlaubt, was da ist wird nicht noch einmal geholt.');
+
+  /* ================================================================
+     DEIN EIGENES SUNO-ZEUG ZUERST.
+
+     Caspar_D, 11.09.2026: „zeig mal den suno archiv her und du holst
+     erstmal dort ab was geht mitsamt unterordnern? … und dann erst über
+     den SunoServer?"
+
+     Genau diese Reihenfolge, und sie ist auch die billigste:
+
+       1. Was schon auf der Platte liegt — kostet nichts, braucht kein Netz.
+       2. Was bei Suno freigeschaltet ist — kostet nichts (11.09. gemessen).
+       3. Was ein Guthaben verlangt — das entscheidet ein Mensch.
+
+     Seit dem 03.09.2026 gibt Suno den Ton nicht mehr über Links heraus.
+     Wer seit 2025 dabei ist, hat aber meist alles schon einmal
+     heruntergeladen und irgendwo liegen — und DAS ist der Bestand, den
+     KlangTresor sonst nie wiederbekäme. */
+  schritt('Dein eigenes Suno-Zeug einlesen');
+  matt('Suno gibt den Ton seit dem 03.09.2026 nicht mehr über Links heraus.');
+  matt('Was du früher heruntergeladen hast, ist deshalb Gold wert — und es');
+  matt('kostet nichts, es hereinzuholen.');
+  leer();
+  matt('Erkannt wird am INHALT, nie am Dateinamen: Suno schreibt seine');
+  matt('Kennung in den Kopf jeder Datei. Was sie nicht trägt, wird nicht');
+  matt('angefasst. Nichts wird verschoben oder gelöscht — nur kopiert.');
+  leer();
+  matt(`In ${path.join(os.homedir(), 'Downloads')} sehe ich ohnehin nach.`);
+  satz(MATT('Liegt dein Suno-Archiv noch woanders? Dann den Ordner hier'));
+  satz(MATT('hineinziehen oder den Pfad eintippen. Unterordner werden'));
+  satz(MATT('mitdurchsucht, sechs Ebenen tief.'));
+  leer();
+  let ordner = await fragen('     ' + AKZENT('Ordner (Eingabetaste = überspringen): '));
+  /* Wer einen Ordner ins Fenster zieht, bekommt Anführungszeichen oder
+     maskierte Leerzeichen mitgeliefert. Beides hier wegnehmen, statt den
+     Menschen mit einem „Ordner nicht gefunden" heimzuschicken. */
+  ordner = ordner.replace(/^['"]|['"]$/g, '').replace(/\\ /g, ' ').trim();
+
+  const einlesen = [path.join('bin', 'uebernehmen.js'), '--tun'];
+  if (ordner) {
+    if (!fs.existsSync(ordner)) {
+      wink(`Den Ordner gibt es nicht: ${ordner}`);
+      matt('Ich sehe trotzdem im Download-Ordner nach. Später jederzeit:');
+      matt('  node bin/uebernehmen.js --ordner /pfad/zum/ordner --tun');
+    } else {
+      einlesen.push('--ordner', ordner);
+      matt('Der Pfad wird gemerkt — die Morgenroutine sieht ab jetzt auch dort nach.');
+    }
+  }
+  leer();
+  laeuft(process.execPath, einlesen);
+
+  /* ================================================================ */
+  schritt('Medien laden (Titelbilder, Bewegtbilder, was an Ton zu holen ist)');
+  matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
+  matt('erlaubt, was da ist wird nicht noch einmal geholt.');
   laeuft(process.execPath, [path.join('bin', 'wiederherstellen.js')]);
 
   /* ================================================================ */

@@ -118,8 +118,23 @@ function imBuch(songId){
  * .teil-Datei liegen; beim nächsten Lauf wird ab dort fortgesetzt.
  * Gibt zurück: 'geladen' | 'vorhanden' | 'fehlt' | 'fehler'
  */
+/* Seit dem 03.09.2026 steht in `audioUrl` kein Link mehr, sondern ein
+   Grabstein: `https://studio-api.prod.suno.com/api/forbidden`, bei allen
+   324 Titeln, auch fuer den Besitzer selbst. Ihn abzurufen ist sinnlos -
+   und bei einem frischen Bestand waeren das dreihundert Anfragen an
+   Suno, die alle dasselbe Nein bekommen.
+
+   Der Ton kommt heute auf zwei anderen Wegen, beide kostenlos:
+     bin/uebernehmen.js      was auf der Platte liegt
+     das Lesezeichen         was bei Suno freigeschaltet ist
+
+   Siehe docs/suno/AUDIO-BEZUG.md. */
+function grabstein(url) {
+  return /\/api\/forbidden(\b|$)/.test(String(url));
+}
+
 async function ladeDatei(url, ziel) {
-  if (!url) return 'fehlt';
+  if (!url || grabstein(url)) return 'fehlt';
   if (fs.existsSync(ziel) && fs.statSync(ziel).size > 0) return 'vorhanden';
 
   /* Ein liegengebliebenes Bruchstueck gehoert zu der Adresse, von der es kam. Wechselt das
