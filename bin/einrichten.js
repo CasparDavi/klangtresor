@@ -44,6 +44,14 @@ const readline = require('node:readline');
 const WURZEL = path.resolve(__dirname, '..');
 const WERKZEUG = path.join(WURZEL, 'werkzeug');
 const OHNE_START = process.argv.includes('--ohne-start');
+/* Probelauf einer frischen Einrichtung: alles tun, aber nur N Titel
+   Medien holen. Damit laesst sich die ganze Kette pruefen, ohne einen
+   fremden Server fuer nichts dreihundertmal anzufassen.
+   Nicht fuer den Alltag gedacht - es steht deshalb in keinem Text. */
+const PROBE = (() => {
+  const i = process.argv.indexOf('--probe');
+  return i >= 0 && process.argv[i + 1] ? ['--test', process.argv[i + 1]] : [];
+})();
 process.chdir(WURZEL);
 
 /* ---- Farben ------------------------------------------------------
@@ -682,7 +690,8 @@ function da(befehl) {
   schritt('Titelbilder und Bewegtbilder laden');
   matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
   matt('erlaubt, was da ist wird nicht noch einmal geholt.');
-  laeuft(process.execPath, [path.join('bin', 'wiederherstellen.js')]);
+  if (PROBE.length) wink(`Probelauf: es werden nur ${PROBE[1]} Titel geholt.`);
+  laeuft(process.execPath, [path.join('bin', 'wiederherstellen.js'), ...PROBE]);
 
   /* ================================================================
      DER EHRLICHE SCHLUSS: was ein Besucher NICHT sieht.

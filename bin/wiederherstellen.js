@@ -84,9 +84,17 @@ if (NUR_PRUEFEN){
 /* --nur-medien (Morgenlauf): Der Katalog wurde dort gerade als
    eigener Schritt gebaut - ihn hier nochmal zu bauen waere doppelt. */
 const nurMedien = process.argv.includes('--nur-medien');
+/* Probelauf: nur N Titel Medien holen. Ohne Angabe wird alles geholt. */
+const TEST = (() => {
+  const i = process.argv.indexOf('--test');
+  return i >= 0 && process.argv[i + 1] ? ['--test', process.argv[i + 1]] : [];
+})();
 const SCHRITTE = [
   ...(nurMedien ? [] : [['aufbereiten.js', [], 'Katalog aus den Rohdaten']]),
-  ['laden.js',       ['--alle'],'Medien vom CDN (auch die privaten Songs)'],
+  /* --test N wird durchgereicht: fuer Probelaeufe einer frischen
+     Einrichtung, damit nicht der ganze Bestand ein zweites Mal vom CDN
+     gezogen wird, nur um zu sehen, DASS es geht. */
+  ['laden.js',       ['--alle', ...TEST],'Medien vom CDN (auch die privaten Songs)'],
   ['kacheln.js',     [],        'Kacheln im Format 3:4'],
   ['farben.js',      [],        'Farbpaletten aus den Covern'],
 ];
