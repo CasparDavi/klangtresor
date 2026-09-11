@@ -1306,11 +1306,19 @@
          steht NUR in /api/clip/<id>; die Ernte kennt es nicht. Das
          Ergebnis wandert daheim in library/freischaltstand.json, damit
          morgen nicht dieselben dreihundert Titel neu gefragt werden. */
+      /* DECKEL AUCH HIER. Bei einem frischen Archiv ist der Freischalt-
+         stand von JEDEM Titel unbekannt - bei dreihundert Liedern waeren
+         das dreihundert Anfragen am ersten Morgen, eine je 1,3 s, also
+         sieben Minuten, in denen nichts anderes geschieht. Der Stand
+         wird gemerkt, also ist der Rest morgen dran. */
+      const DECKEL_FRAGEN = 100;
+      const fragen = (liste.unklar || []).slice(0, DECKEL_FRAGEN);
+      const restFragen = Math.max(0, (liste.unklar || []).length - fragen.length);
       const gelernt = {};
       let i = 0;
-      for (const a of (liste.unklar || [])){
+      for (const a of fragen){
         i++;
-        zeileTon.textContent = `Ton holen — frage Freischaltstand … ${i}/${liste.unklar.length}`;
+        zeileTon.textContent = `Ton holen — frage Freischaltstand … ${i}/${fragen.length}`;
         try {
           const r = await fetch(`${API}/api/clip/${a.id}`, { headers: await kopf() });
           if (r.ok){
@@ -1378,7 +1386,8 @@
         zeileTon.textContent = `Ton holen — ${geholt} Datei${geholt===1?'':'en'} (${mb} MB)`
           + (daneben ? `, ${daneben} nicht bekommen` : '')
           + (zuViel ? `, ${zuViel} bleiben für morgen (${DECKEL_TON} je Lauf)` : '')
-          + (Object.keys(gelernt).length ? ` · Freischaltstand für ${Object.keys(gelernt).length} Titel gemerkt` : '');
+          + (Object.keys(gelernt).length ? ` · Freischaltstand für ${Object.keys(gelernt).length} Titel gemerkt` : '')
+          + (restFragen ? `, ${restFragen} Titel morgen` : '');
       zeileTon.style.color = daneben ? '#d29922' : '#16be5c';
     }
   }
