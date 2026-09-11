@@ -3076,6 +3076,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-lp.on{opacity:1;border-color:#f97b14;box-shadow:inset 0 0 0 1px #f97b14}
 #tbs .tbs-lkopf{flex:1 0 100%;font-size:11px;opacity:.7;margin:2px 0 3px;display:flex;justify-content:space-between}
 #tbs .tbs-lkopf span{opacity:.7;font-variant-numeric:tabular-nums}
+#tbs .tbs-llaenge{display:flex;align-items:center;gap:6px;opacity:1}
+#tbs .tbs-llaenge b{font-weight:600}
+#tbs .tbs-lmini{width:18px;height:18px;line-height:1;padding:0;border:1px solid var(--rand);
+  border-radius:5px;background:transparent;color:inherit;cursor:pointer;font:inherit;font-size:12px}
+#tbs .tbs-lmini[disabled]{opacity:.3;cursor:default}
 #tbs .tbs-lfelder{flex:1 0 100%;display:flex;gap:2px;margin-bottom:0;user-select:none}
 #tbs .tbs-lf{flex:1 1 0;min-width:0;height:40px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:1px;border:1px solid var(--rand);border-radius:6px;background:transparent;
@@ -3090,6 +3095,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-lf{position:relative}
 #tbs .tbs-lf .tbs-lrueck{position:absolute;right:3px;top:2px;font-size:9px;opacity:.8}
 #tbs .tbs-lf.rueck{background:rgba(255,255,255,.06)}
+#tbs .tbs-lf.laeuft{background:rgba(249,123,20,.22);border-color:#f97b14}
+#tbs .tbs-lf.laeuft .tbs-lnr{opacity:.9}
 #tbs .tbs-lz select{font:inherit}
 #tbs .tbs-lhinweis{flex:1 0 100%;font-size:11px;opacity:.6;line-height:1.35;min-height:1px}
 #tbs #tbs-laufKurve{flex:1 0 100%;width:230px;height:72px;display:block;margin:0 0 2px}
@@ -27667,7 +27674,7 @@ function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttri
    verschaltet werden sollen"). Ein Takt gewaehlt und gependelt heisst zwei Schlaege hin und zwei
    zurueck; zwei Takte gewaehlt heisst einen Takt hin und einen zurueck. Das Pendel faltet immer in
    der Mitte der Auswahl. Zwei getrennte Pendel sind zwei getrennte Auswahlen. */
-let LAUF={folge:[],teil:4,wdh:2,tempo:3,wahl:null,anker:0}, SPRUNG={url:null,fuer:null,fehler:null};
+let LAUF={folge:[],teil:4,wdh:2,tempo:3,wahl:null,anker:0,takte:0}, SPRUNG={url:null,fuer:null,fehler:null};
 /* Der Ziehzustand gehoert NEBEN die Bedienung, nicht hinein. Erster Wurf hielt ihn in der Closure von
    laufUI - und weil der erste Klick die Bedienung neu baut, war er im naechsten Moment wieder false:
    Ziehen ueber mehrere Takte ging gar nicht (11.09.2026). */
@@ -27688,7 +27695,23 @@ let _taktStand=null, _taktFuer={};
 function taktStand(){ if(_taktFuer===DATA&&_taktStand) return _taktStand;
   _taktFuer=DATA; _taktStand=taktLaenge()||{takt:0,einsen:[]}; return _taktStand; }
 function laufTakte(){ const T=taktStand(); if(!(T.takt>0)) return 1;
-  return Math.max(1,Math.floor(MAX_SEK/T.takt)); }
+  const auto=Math.max(1,Math.floor(MAX_SEK/T.takt));
+  /* Wieviele Takte der Clip hat, ist EINSTELLBAR. Vorher war es fest das, was in zehn Sekunden
+     passt - und damit gab es keinen Platz fuer einen Rueckweg (Caspar_D, 11.09.2026: "es muessen
+     aber takte hinzukommen koennen, sonst komm ich nicht zurueck"). Es waren auch nie die Takte des
+     LIEDES, was die naechste Verwechslung war: "oder ist der song nur 6 Takte lang, das kann nicht
+     sein". Die Obergrenze ist die Laenge, die Hookmaterial sinnvoll hat. */
+  if(LAUF.takte>0) return Math.max(1,Math.min(LAUF.takte,laufMaxTakte()));
+  return auto; }
+/* Die Obergrenze setzt die MUSIK (Caspar_D, 11.09.2026: "die takte der musik bestimmen die
+   maximallaenge"), nicht eine Zahl von mir: soviele ganze Takte, wie vom ersten Taktschlag bis zum
+   Ende des Liedes passen. Beim Ausgeben wird in Echtzeit aufgenommen - ein langer Clip dauert also
+   auch lange; das steht im Pult daneben. */
+function laufMaxTakte(){ const T=taktStand();
+  if(!(T.takt>0)) return 1;
+  const a0=(T.einsen&&T.einsen.length)?T.einsen[0]:0, dauer=(DATA&&DATA.dauer)||0;
+  if(!(dauer>a0)) return Math.max(1,Math.floor(MAX_SEK/T.takt));
+  return Math.max(1,Math.floor((dauer-a0)/T.takt)); }
 /* Die Folge ist so lang wie der Ausschnitt Takte hat. Wird der Titel gewechselt, waechst oder
    schrumpft sie mit; fehlende Felder laufen vorwaerts und beginnen jeweils einen eigenen Abschnitt. */
 function laufFelder(){ const n=laufTakte(),
@@ -27833,8 +27856,14 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
   const F=laufFelder(), namen={}, zeichen={};
   LAUF_FORMEN.forEach(x=>{ namen[x[0]]=x[1]; zeichen[x[0]]=x[2]; });
   const wahl=laufWahl(), T0=taktStand(), gesamt=(T0.takt>0)?(F.length*T0.takt):0;
-  let h='<div class="tbs-lkopf">Dein Clip, Takt f\u00fcr Takt'
-    +(gesamt?' <span>'+F.length+' Takte \u00b7 '+kf(gesamt.toFixed(1))+' s</span>':'')+'</div>';
+  const maxT=laufMaxTakte();
+  let h='<div class="tbs-lkopf"><span>So lang wird der Clip</span>'
+    +'<span class="tbs-llaenge">'
+    +'<button type="button" class="tbs-lmini" data-takte="-1"'+(F.length<=1?' disabled':'')+' title="ein Takt weniger">\u2212</button>'
+    +'<b>'+F.length+' Takte</b>'+(gesamt?' \u00b7 '+kf(gesamt.toFixed(1))+' s':'')
+    +'<button type="button" class="tbs-lmini" data-takte="1"'+(F.length>=maxT?' disabled':'')
+    +' title="ein Takt mehr \u2014 h\u00f6chstens '+maxT+', soviele hat das Lied">+</button>'
+    +'</span></div>';
   h+='<div class="tbs-lfelder" id="tbs-lfelder">'+F.map((v,i)=>{
     const weiter=!v.s, vorWeiter=(i<F.length-1&&!F[i+1].s);
     const gew=wahl&&i>=wahl.a&&i<=wahl.b;
@@ -27858,10 +27887,12 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     +'<button type="button" class="tbs-lp" id="tbs-lumkehr"'+(wahl?'':' disabled')
     +' title="Die gew\u00e4hlten Takte laufen r\u00fcckw\u00e4rts"><span class="tbs-lzeichen">\u21a9</span>umkehren</button>'
     +'</div>';
-  /* Spiegeln gilt fuer den ganzen Clip, nicht fuer die Auswahl - darum steht es fuer sich. */
-  h+='<div class="tbs-lformen"><button type="button" class="tbs-lp" id="tbs-lspiegel"'
-    +' title="Die zweite H\u00e4lfte seitenverkehrt aus der ersten bauen, damit der Faden zur\u00fcckkommt">'
-    +'<span class="tbs-lzeichen">\u2928</span>zweite H\u00e4lfte spiegeln</button></div>';
+  /* Steht fuer sich, weil es nicht eine Form setzt, sondern Takte dazuschreibt. */
+  const platz=wahl?(F.length-1-wahl.b):0, passt=wahl&&platz>=1;
+  h+='<div class="tbs-lformen"><button type="button" class="tbs-lp" id="tbs-lspiegel"'+(passt?'':' disabled')
+    +' title="Die gew\u00e4hlten Takte seitenverkehrt dahinter schreiben, damit der Faden zur\u00fcckkommt">'
+    +'<span class="tbs-lzeichen">\u2928</span>gespiegelt anh\u00e4ngen</button>'
+    +(wahl&&!passt?'<span class="tbs-lwie">dahinter ist kein Takt mehr frei</span>':'')+'</div>';
   const w=(k,liste,txt)=>'<label class="tbs-lz">'+txt+' <select data-l="'+k+'">'
     +liste.map(o=>'<option value="'+o[0]+'"'+(String(LAUF[k])===String(o[0])?' selected':'')+'>'+o[1]+'</option>').join('')
     +'</select></label>';
@@ -27879,9 +27910,11 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
   box.innerHTML=h+'<canvas id="tbs-laufKurve" width="460" height="150"></canvas>'
     +'<div class="tbs-lmass" id="tbs-laufMass"></div>'
     +'<div class="tbs-lhinweis">'+hin+'</div>';
+  box.querySelectorAll('[data-takte]').forEach(b=>b.onclick=()=>{
+    LAUF.takte=Math.max(1,laufFelder().length+(+b.dataset.takte)); LAUF.wahl=null; laufNachAendern(); });
   box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>b.onclick=()=>laufAnwenden(b.dataset.f));
   { const u=box.querySelector('#tbs-lumkehr'); if(u) u.onclick=()=>laufUmkehren();
-    const sp=box.querySelector('#tbs-lspiegel'); if(sp) sp.onclick=()=>laufSpiegeln(); }
+    const sp=box.querySelector('#tbs-lspiegel'); if(sp) sp.onclick=()=>laufSpiegelnAnhaengen(); }
   box.querySelectorAll('select[data-l]').forEach(el=>el.onchange=()=>laufSetzen(el.dataset.l,el.value));
   const felder=box.querySelector('#tbs-lfelder');
   if(felder){
@@ -27895,7 +27928,26 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
       b.onmouseenter=()=>{ if(laufZieht){ LAUF.wahl={von:LAUF.anker,bis:+b.dataset.i}; laufWahlZeichnen(); } }; });
     if(!laufHoerchtSchon){ laufHoerchtSchon=true;
       window.addEventListener('mouseup',()=>{ if(laufZieht){ laufZieht=false; laufUI(); } }); } }
+  _leuchtet=-1;                    /* die Felder sind neu - beim naechsten Bild wieder anleuchten */
+  { const vb=$('#tbs-pVideo'); if(vb&&gesamt){ const A=ausschnitt();
+      vb.textContent=kf(A.L.toFixed(1))+' s ausgeben';
+      vb.title='Diesen Ausschnitt als MP4 ins Download-Verzeichnis \u2014 ganze Takte, stumm, im Format der Quelle, mit Hauszeichen'; } }
   laufKurveMalen(); }
+/* Der Takt, der gerade laeuft, leuchtet (Caspar_D, 11.09.2026: "und die takte muessen aufleuchten,
+   die grade durchlaufen"). Angefasst wird die Seite nur, wenn der Takt WECHSELT - je Bild an den
+   Klassen zu schrauben waere Arbeit fuer nichts, und wir wissen seit den Scheinwerferblenden, wohin
+   das fuehrt. Der Export ruft zeichneFrame direkt auf und fasst die Seite gar nicht an. */
+let _leuchtet=-1;
+function laufLeuchten(t){
+  const box=$('#tbs-lfelder'); if(!box){ _leuchtet=-1; return; }
+  const T=taktStand(), takt=T.takt;
+  if(!(takt>0)){ if(_leuchtet!==-1){ _leuchtet=-1;
+    box.querySelectorAll('.tbs-lf.laeuft').forEach(b=>b.classList.remove('laeuft')); } return; }
+  const a0=(T.einsen&&T.einsen.length)?T.einsen[0]:0, n=laufTakte();
+  const i=Math.floor((t-a0)/takt+1e-6), k=((i%n)+n)%n;
+  if(k===_leuchtet) return;
+  _leuchtet=k;
+  box.querySelectorAll('.tbs-lf').forEach(b=>b.classList.toggle('laeuft',+b.dataset.i===k)); }
 /* Waehrend des Ziehens nur die Auswahl nachziehen, nicht die ganze Bedienung neu bauen - sonst
    verliert der Zeiger die Knoepfe unter sich und das Ziehen bricht ab. */
 function laufWahlZeichnen(){
@@ -27907,7 +27959,9 @@ function laufWahlZeichnen(){
     ? (wie===1?('Takt '+(wahl.a+1)+' soll'):('Takt '+(wahl.a+1)+' bis '+(wahl.b+1)+' sollen'))
     : 'Takte w\u00e4hlen \u2014 dann sagen, was sie tun';
   box.querySelectorAll('.tbs-lp[data-f]').forEach(b=>{ b.disabled=!wahl; });
-  { const u=box.querySelector('#tbs-lumkehr'); if(u) u.disabled=!wahl; } }
+  { const u=box.querySelector('#tbs-lumkehr'); if(u) u.disabled=!wahl;
+    const sp=box.querySelector('#tbs-lspiegel');
+    if(sp) sp.disabled=!(wahl&&laufFelder().length-1-wahl.b>=1); } }
 /* Die Auswahl, geordnet und auf die vorhandenen Takte begrenzt. */
 function laufWahl(){ const n=laufTakte(); if(!LAUF.wahl) return null;
   const a=Math.max(0,Math.min(LAUF.wahl.von,LAUF.wahl.bis)), b=Math.min(n-1,Math.max(LAUF.wahl.von,LAUF.wahl.bis));
@@ -27927,21 +27981,28 @@ function laufUmkehren(){ const wahl=laufWahl(); if(!wahl) return;
   for(let i=wahl.a;i<=wahl.b;i++) F[i].r=neu;
   F[wahl.a].s=true; if(wahl.b+1<F.length) F[wahl.b+1].s=true;
   LAUF.folge=F; laufNachAendern(); }
-/* SPIEGELN: die erste Haelfte seitenverkehrt in die zweite schreiben, Richtung gedreht. Danach steht
-   der Faden am Ende wieder am Anfang, der Clip schliesst also. Es ist eine HANDLUNG, kein Modus -
-   die gespiegelten Takte bleiben ganz normal bearbeitbar (Caspar_D, 11.09.2026: "ich wuerd das
-   anders machen, spiegeln aber die gespiegelten takte asymetrisch bearbeitbar"). Ob es danach noch
-   schliesst, sagt das Mass unter der Kurve. */
-function laufSpiegeln(){
-  const F=laufFelder(), n=F.length, h=Math.floor(n/2); if(h<1) return;
-  /* Abschnitte der ersten Haelfte einsammeln, dann seitenverkehrt hinten anlegen. */
-  const teile=[]; let i=0;
-  while(i<h){ let e=i; while(e<h-1&&!F[e+1].s) e++; teile.push({f:F[i].f,r:F[i].r,len:e-i+1}); i=e+1; }
-  let j=n-1;
-  for(const t of teile){ for(let k=0;k<t.len;k++){ if(j<n-h) break;
-      F[j]={f:t.f,r:!t.r,s:(k===t.len-1)}; j--; } }
-  if(n-h<n) F[n-h].s=true;
-  LAUF.folge=F; LAUF.wahl=null; laufNachAendern(); }
+/* GESPIEGELT ANHAENGEN: was ausgewaehlt ist, seitenverkehrt direkt dahinter schreiben - letzter
+   Abschnitt zuerst, jeder mit gedrehter Richtung. Der Faden laeuft den Weg dann genau zurueck, die
+   Auswahl samt Anhang verbraucht also nichts und der Clip schliesst.
+   Caspar_D, 11.09.2026: "alles was ausgewaehlt ist gespiegelt dranhaengen, so stell ich mir das
+   vor". Es ist eine HANDLUNG, kein Modus: das Angehaengte ist danach ganz normal bearbeitbar, und
+   ob es dann noch schliesst, sagt das Mass unter der Kurve. */
+function laufSpiegelnAnhaengen(){
+  const wahl=laufWahl(); if(!wahl) return;
+  const F=laufFelder(), n=F.length, platz=n-1-wahl.b;
+  if(platz<1) return;
+  const wieViele=Math.min(wahl.b-wahl.a+1,platz), ende=wahl.b+wieViele;
+  /* Die Abschnitte der Auswahl einsammeln, in ihrer Reihenfolge. */
+  const teile=[]; let i=wahl.a;
+  while(i<=wahl.b){ let e=i; while(e<wahl.b&&!F[e+1].s) e++;
+    teile.push({f:F[i].f,r:F[i].r,len:e-i+1}); i=e+1; }
+  /* Rueckwaerts durch die Abschnitte, jeder mit gedrehter Richtung. */
+  let j=wahl.b+1;
+  for(let ti=teile.length-1; ti>=0&&j<=ende; ti--){ const t=teile[ti];
+    for(let k=0;k<t.len&&j<=ende;k++,j++) F[j]={f:t.f,r:!t.r,s:(k===0)}; }
+  if(ende+1<n) F[ende+1].s=true;
+  LAUF.folge=F; LAUF.wahl={von:wahl.a,bis:ende}; LAUF.anker=wahl.a;
+  laufNachAendern(); }
 /* Was nach jeder Aenderung zu tun ist: neu zeichnen und, wenn noetig, die Arbeitskopie holen. */
 function laufNachAendern(){ laufUI();
   const p=SEITEN[seiteIndex()];
@@ -28017,7 +28078,8 @@ function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((sei
 
 /* Cover-Blätterer */
 
-function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); lmVorschauen(); }
+function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse();
+  const t=zeit(); zeichneFrame(t); laufLeuchten(t); lmVorschauen(); }
 function zeichneFrame(t){
   if(!bereit) return;
   t=laufZeit(t);                       /* einmal hier - danach sehen Bild und Effekte dieselbe Zeit */
@@ -28178,7 +28240,8 @@ function zeichneFrame(t){
      Maler in Ausgabegroesse - die Breite des Pults soll nicht ueber die Ausgabe entscheiden.
      Die Zeit im Bild folgt der Uhr, nicht der Bildzaehlung: dann stimmt die Laenge auch auf einer
      langsamen Maschine, es fehlen hoechstens Zwischenbilder. */
-  const MAX_SEK=10, BILDRATE=30, LANGE_SEITE=1080;
+  const MAX_SEK=10, BILDRATE=30, LANGE_SEITE=1080;   /* MAX_SEK ist die VORGABE, nicht die Grenze -
+     die Grenze setzen die Takte des Liedes, siehe laufMaxTakte(). */
   function taktLaenge(){ const S=(DATA&&DATA.schlaege)||[]; const einsen=[]; for(let i=0;i<S.length;i++) if(S[i][1]===1) einsen.push(S[i][0]);
     if(einsen.length<3) return {takt:0, einsen:[]};
     const d=[]; for(let i=1;i<einsen.length;i++) d.push(einsen[i]-einsen[i-1]);
@@ -28194,7 +28257,7 @@ function zeichneFrame(t){
     /* Frueher stand hier eine Sonderregel fuers Pendel: der Ausschnitt musste ein Vielfaches der
        Pendelperiode sein. Seit der Lauf eine Folge ueber die Takte ist, faltet das Pendel innerhalb
        seines Abschnitts, und der ist von selbst eine ganze Zahl von Takten (11.09.2026). */
-    const takte=Math.max(1,Math.floor(MAX_SEK/takt));
+    const takte=laufTakte();                       /* vom Pult eingestellt, sonst was in MAX_SEK passt */
     /* Die Folge des Laufs muss auf dem Ausschnitt SITZEN. Bis hierher war sie am ersten Taktschlag
        des Liedes verankert, der Ausschnitt aber am naechstgelegenen Taktanfang - je nachdem, wo im
        Lied man stand, fing der Clip dann mitten in der Folge an, und Feld 1 war gar nicht der erste
@@ -28203,7 +28266,7 @@ function zeichneFrame(t){
        Taktschlag. Dann ist Takt 1 der Folge auch Takt 1 des Clips. */
     if(laufBeugt()){ const a0=einsen[0], p=takte*takt;
       if(p>0) a=a0+Math.max(0,Math.floor((jetzt-a0)/p))*p; }
-    const L=runden(Math.min(MAX_SEK,takte*takt));
+    const L=runden(takte*takt);
     return { t0:a, L, takte, takt:L/takte }; }
   /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
      Das erkannte Raster schwankt um Millisekunden; taktgetriebene Effekte traefen die Naht sonst nicht.

@@ -3107,3 +3107,42 @@ Gemessen, Verlauf der Videostelle über zwei Pendelfelder bei 2 s Takt:
 `0 0,25 0,5 0,75 1 0,75 0,5 0,25 | 2 2,25 2,5 2,75 3 2,75 2,5 2,25 | 4` — zwei Scheitel, wie gewollt.
 Die Nahtprobe (3328 Folgen) hält weiterhin. Ein langsamerer Schwung über mehrere Takte wäre eine
 eigene Form, keine Nebenwirkung des Malens.
+
+### Der Lauf, zweiter Abend: Richtung, Spiegeln, Länge, Leuchten (11.09.2026)
+In schneller Folge von Jörg getrieben, jeder Punkt sein Wortlaut:
+
+- **„erst takte selektieren, dann ansagen, wie sie verschaltet werden sollen"** — der Pinsel ist weg.
+  Takte wählen (klicken, ziehen, **Umschalt-Klick**), dann legt ein Formknopf die Form auf die
+  Auswahl. Die gewählten Takte werden *ein* Abschnitt. Damit sind zwei getrennte Pendel zwei
+  Auswahlen und ein langes Pendel eine lange — der alte Konflikt zwischen beidem ist weg.
+- **„es darf ausser beim stottern nicht springen"** — der Faden läuft durch: jeder Abschnitt setzt
+  an, wo der vorige aufhörte. Vorher bekam jeder sein eigenes Stück Videozeit und es sprang an jeder
+  Grenze.
+- **„verlangsamen und verschnellern mit echter sanfter beschleunigung / keine gezackte kurve"** —
+  zwei neue Formen mit der Geschwindigkeit `1 + (s-1)·sin²(πx)`: beginnt und endet bei 1, dort auch
+  Steigung 0, fügt sich also ohne Ruck ein. Und das Pendel kehrt mit dem Kosinus um statt eckig;
+  Höhe `Lseg/π`, damit die schnellste Stelle genau normale Geschwindigkeit hat.
+- **„eigentlich sind doch alles zeitmarken und wir schreiben nur die neuzeit und ob vorwärts oder
+  rückwärts"** — genau so: je Takt stehen `{Form, beginnt-Abschnitt, Richtung}`. Rückwärts ist
+  dieselbe Kurve mit umgekehrtem Vorzeichen, auch im Verbrauch.
+- **„alles was ausgewählt ist gespiegelt dranhängen"** — `gespiegelt anhängen` schreibt die Auswahl
+  seitenverkehrt direkt dahinter, letzter Abschnitt zuerst, Richtung gedreht. Eine **Handlung**,
+  kein Modus: das Angehängte bleibt bearbeitbar.
+- **„es müssen aber takte hinzukommen können, sonst komm ich nicht zurück"** und **„die takte der
+  musik bestimmen die maximallänge"** — die Clip-Länge ist einstellbar (− / + im Kopf), Obergrenze
+  sind die Takte des Liedes. `MAX_SEK` ist nur noch die *Vorgabe*. Der Ausgabeknopf trägt die echte
+  Länge.
+- **„die takte müssen aufleuchten, die grade durchlaufen"** — `laufLeuchten()` in `rahmen()`, fasst
+  die Seite nur an, wenn der Takt *wechselt*.
+
+**Geprüft:** 6400 zufällige Einteilungen halten `f(t+L) = f(t) + Verbrauch`, konstant über den
+Ausschnitt. Umschalt-Klick und Ziehen im Prüfstand. Spiegeln: Faden rückt 11,61 s → nach dem Anhängen
+0,00 s, „der Clip schließt". Länge: 4 → 8 Takte, 9,8 → 19,6 s, Ausgabeknopf folgt, Höchstwert 143.
+
+**NICHT geprüft: das Leuchten.** In der Browser-Scheibe des Prüfstands feuert `requestAnimationFrame`
+**null Mal je Sekunde** — die Bildschleife steht dort still, Standbilder zeigen das zuletzt gemalte
+Bild. Das ist eine neue Messfalle: *wer Bewegung prüfen will, muss erst nachsehen, ob überhaupt Bilder
+laufen.* Der Code ist gebaut und gegengelesen, gesehen hat ihn niemand.
+
+**Weiter offen:** die Folge wird nicht ins Rezept gesichert, geht beim Neuladen verloren. Raster,
+Wiederholungen und Tempo gelten für alle Takte gemeinsam, nicht je Abschnitt.
