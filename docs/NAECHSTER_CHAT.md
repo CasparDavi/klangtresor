@@ -3146,3 +3146,47 @@ laufen.* Der Code ist gebaut und gegengelesen, gesehen hat ihn niemand.
 
 **Weiter offen:** die Folge wird nicht ins Rezept gesichert, geht beim Neuladen verloren. Raster,
 Wiederholungen und Tempo gelten für alle Takte gemeinsam, nicht je Abschnitt.
+
+### Der Lauf ist wieder ausgebaut (11.09.2026, nachts)
+Jörg: *„das ist Käse, inaktiviere das modul, wir kommen hier erstmal nicht weiter / wir brauchen ein
+Konzept, so vibe mässig wird das nix."* Er hat recht. Das Ding ist in einem Abend über sechs
+Umbauten gewachsen, jeder als Antwort auf den letzten Satz, und am Ende stand ein Modell, das ich
+selbst nicht mehr in drei Sätzen erklären konnte.
+
+Nach der Hausregel (*abgeklemmter Code bleibt nicht stehen, die Begründung schon*) ist der Code raus:
+`web/index.html` auf den Stand vor `da7310c`, `server/server.js` auf den vor `a79575e` — der
+Schnitt-Endpunkt und seine behobene `bilder`-Prüfung bleiben. Alles Gebaute steht im git, die
+Commits `da7310c` bis `5a9320e`.
+
+**Was sich als wahr erwiesen hat und ein Konzept nicht neu erfinden muss:**
+- `zeichneFrame(t)` ist eine reine Funktion von t. Zeit beugen genügt, Bildbearbeitung braucht es nicht.
+- Springen im Video ist nur mit einer Arbeitskopie aus lauter Schlüsselbildern bezahlbar:
+  **124,6 ms gegen 14,9 ms** je Sprung, gemessen mit Nachweis des angekommenen Bildes. Die Kopie baut
+  ffmpeg in 0,74 s je zehn Sekunden, sie wächst auf das 3,7-fache.
+- Weiche Formen, die sich ohne Ruck einfügen: Geschwindigkeit `1 + (s-1)·sin²(πx)` beginnt und endet
+  bei 1 mit Steigung 0. Pendel als Kosinus mit Höhe `Lseg/π` ist am Scheitel genau normal schnell.
+- Suno kodiert hochgeladenes Video-Artwork neu, null bis drei Bilder länger, Bildgröße unverändert.
+
+**Was ein Konzept klären muss, bevor wieder gebaut wird:**
+1. **Was ist die Einheit?** Wir sind zwischen „Takt des Clips, irgendwie behandelt" und „Verweis auf
+   einen Videotakt" hin und her gesprungen. Das Letzte war besser, aber dann ist unklar, was eine
+   *Form* auf einem Verweis überhaupt bedeutet.
+2. **Was darf springen?** Jörgs Regel war: außer beim Stottern nichts. Freie Positionierung erzeugt
+   aber genau dort Sprünge, wo Felder auf nicht benachbarte Videotakte zeigen. Der Widerspruch ist
+   nie aufgelöst worden.
+3. **Was schließt den Clip?** Drei Wege (alles Pendel, gespiegelt anhängen, genau einmal durch das
+   Video). Mit freier Positionierung ist das Schließen keine Garantie mehr, sondern eine Eigenschaft,
+   die man prüft. Ist das gewollt?
+4. **Folgen die Effekte der gebogenen Zeit, oder nur das Bild?** Bisher beides. Taktgetriebene
+   Lichtpulse rückwärts laufen zu lassen ist eine Entscheidung, keine Selbstverständlichkeit.
+5. **Wo hört der Sequenzer auf?** Jörg hält Schnittprogramme für unbedienbar. Das Ding darf nicht
+   heimlich eines werden.
+6. **Sichern.** Nichts davon landete je im Rezept.
+
+**Drei Messfallen aus diesem Abend, alle neu:**
+- `laufBeugt()` sah nur auf die Form, nicht auf Richtung und Videotakt — die Kurve blieb gerade,
+  obwohl die Nummern stimmten. Der Berg fehlte nicht in der Rechnung, er wurde nie gerechnet.
+- In der Browser-Scheibe des Prüfstands feuert `requestAnimationFrame` **null Mal je Sekunde**.
+  Standbilder zeigen das zuletzt gemalte Bild. Wer Bewegung prüft, muss erst nachsehen, ob Bilder laufen.
+- Ein Ziehzustand in der Closure einer Funktion, die sich beim ersten Klick selbst neu baut, ist
+  beim zweiten Ereignis wieder weg. Das Ziehen ging nie, und niemand hätte es gemerkt.
