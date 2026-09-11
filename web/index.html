@@ -3086,6 +3086,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
   justify-content:center;gap:1px;border:1px solid var(--rand);border-radius:6px;background:transparent;
   color:inherit;cursor:pointer;font:inherit}
 #tbs .tbs-lf .tbs-lzeichen{font-size:16px;line-height:1}
+#tbs .tbs-lf .tbs-lzeichen em{font-style:normal;font-size:10px;margin-left:1px;vertical-align:2px}
 #tbs .tbs-lf .tbs-lnr{font-size:9px;opacity:.55;letter-spacing:.02em}
 #tbs .tbs-lf.f-vor{opacity:.45}
 #tbs .tbs-lf.f-pendel{border-color:#f97b14;color:#f97b14}
@@ -27674,7 +27675,12 @@ function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttri
    verschaltet werden sollen"). Ein Takt gewaehlt und gependelt heisst zwei Schlaege hin und zwei
    zurueck; zwei Takte gewaehlt heisst einen Takt hin und einen zurueck. Das Pendel faltet immer in
    der Mitte der Auswahl. Zwei getrennte Pendel sind zwei getrennte Auswahlen. */
-let LAUF={folge:[],teil:4,wdh:2,tempo:3,wahl:null,anker:0,takte:0}, SPRUNG={url:null,fuer:null,fehler:null};
+/* Die Stufen, durch die ein Klick auf Langsamer oder Schneller weiterschaltet (Caspar_D,
+   11.09.2026: "kann man mit der mouse nicht durchschalten 1x 2x 3x 4x"). Der Faktor haengt am
+   ABSCHNITT, nicht an allen gemeinsam - sonst koennte nicht ein Takt halb und der naechste achtel
+   so schnell laufen. */
+const LAUF_STUFEN=[2,3,4,6,8];
+let LAUF={folge:[],teil:4,wdh:2,wahl:null,anker:0,takte:0}, SPRUNG={url:null,fuer:null,fehler:null};
 /* Der Ziehzustand gehoert NEBEN die Bedienung, nicht hinein. Erster Wurf hielt ihn in der Closure von
    laufUI - und weil der erste Klick die Bedienung neu baut, war er im naechsten Moment wieder false:
    Ziehen ueber mehrere Takte ging gar nicht (11.09.2026). */
@@ -27715,12 +27721,12 @@ function laufMaxTakte(){ const T=taktStand();
 /* Die Folge ist so lang wie der Ausschnitt Takte hat. Wird der Titel gewechselt, waechst oder
    schrumpft sie mit; fehlende Felder laufen vorwaerts und beginnen jeweils einen eigenen Abschnitt. */
 function laufFelder(){ const n=laufTakte(),
-    f=LAUF.folge.slice(0,n).map(x=>({f:(x&&x.f)||'vor',s:!x||x.s!==false,r:!!(x&&x.r)}));
-  while(f.length<n) f.push({f:'vor',s:true,r:false});
+    f=LAUF.folge.slice(0,n).map(x=>({f:(x&&x.f)||'vor',s:!x||x.s!==false,r:!!(x&&x.r),n:(x&&x.n)||2}));
+  while(f.length<n) f.push({f:'vor',s:true,r:false,n:2});
   if(f.length) f[0].s=true;                      /* das erste Feld beginnt immer einen Abschnitt */
   return f; }
 /* Wie die Zeit INNERHALB eines Abschnitts laeuft. u ist der Abstand zum Abschnittsanfang. */
-function laufLokal(form,u,Lseg,takt){
+function laufLokal(form,u,Lseg,takt,stufe){
   /* WEICHE UMKEHR statt Knick. Ein Dreieck kehrt schlagartig um; das sieht nach Fehler aus, nicht
      nach Absicht (Caspar_D, 11.09.2026: "also keine gezackte kurve sondern weicher"). Mit dem
      Kosinus wird am Wendepunkt echt abgebremst und wieder beschleunigt.
@@ -27734,7 +27740,7 @@ function laufLokal(form,u,Lseg,takt){
      Steigung 0. Der Abschnitt fuegt sich also ohne Ruck ein, egal was daneben liegt.
      Aufintegriert ergibt das die glatte Kurve unten; verbraucht wird Lseg*(1+s)/2. */
   if(form==='langsamer'||form==='schneller'){
-    const p=Math.max(2,Math.min(8,LAUF.tempo|0)), sp=(form==='schneller')?p:1/p, x=u/Lseg;
+    const p=Math.max(2,Math.min(16,stufe|0))||2, sp=(form==='schneller')?p:1/p, x=u/Lseg;
     return u+(sp-1)*Lseg*(x/2-Math.sin(2*Math.PI*x)/(4*Math.PI)); }
   /* Gerechnet wird im Rasterindex, nicht in Sekunden: in Sekunden gerundet kippt die Rasterkante
      je nach Rundung, und an der Naht sprang das Bild um einen ganzen Rasterschritt (11.09.2026). */
@@ -27753,10 +27759,10 @@ function laufLokal(form,u,Lseg,takt){
    sechs Abschnitten kam 8,999999 statt 9,000000 heraus, und beim Standbild haette eine kleinere
    Hilfsgroesse am Rasterzuschlag gekippt. Also exakt gerechnet. MUSS mit laufLokal in Schritt
    bleiben, darum steht es direkt daneben. */
-function laufVerbrauchForm(form,Lseg,takt){
+function laufVerbrauchForm(form,Lseg,takt,stufe){
   if(form==='pendel') return 0;                                   /* kehrt zum Anfang zurueck */
   if(form==='langsamer'||form==='schneller'){
-    const p=Math.max(2,Math.min(8,LAUF.tempo|0)), sp=(form==='schneller')?p:1/p;
+    const p=Math.max(2,Math.min(16,stufe|0))||2, sp=(form==='schneller')?p:1/p;
     return Lseg*(1+sp)/2; }                                       /* Mittel der Geschwindigkeit */
   const g=takt/Math.max(1,LAUF.teil), M=Math.max(1,Math.round(Lseg/g));
   if(form==='rasten') return (M-1)*g;                             /* bleibt auf dem letzten Schritt */
@@ -27773,8 +27779,8 @@ function laufAbschnitte(){
   let i=0;
   while(i<n){ let e=i; while(e<n-1&&!F[e+1].s) e++;
     const Lseg=(e-i+1)*takt, form=F[i].f;
-    const rueck=!!F[i].r, vb=laufVerbrauchForm(form,Lseg,takt);
-    A.push({von:i,bis:e,form,Lseg,rueck,verbrauch:rueck?-vb:vb});
+    const rueck=!!F[i].r, stufe=F[i].n||2, vb=laufVerbrauchForm(form,Lseg,takt,stufe);
+    A.push({von:i,bis:e,form,Lseg,rueck,stufe,verbrauch:rueck?-vb:vb});
     i=e+1; }
   return A; }
 /* Wieviel Videozeit ein ganzer Durchlauf der Folge verbraucht. Ist das null, kehrt der Faden zum
@@ -27800,7 +27806,7 @@ function laufZeit(t){
   /* Rueckwaerts ist dieselbe Kurve mit umgekehrtem Vorzeichen: der Faden laeuft vom Stand aus nach
      hinten statt nach vorn. Erst damit kann er ueberhaupt zurueckkommen - jede andere Form
      verbraucht Material oder nichts, keine gibt welches zurueck (11.09.2026). */
-  const lok=laufLokal(seg.form,t-segStartT,seg.Lseg,takt);
+  const lok=laufLokal(seg.form,t-segStartT,seg.Lseg,takt,seg.stufe);
   return a0+c+(seg.rueck?-lok:lok); }
 /* Springen im Video kostet nur dann wenig, wenn jedes Bild ein Schluesselbild ist: gemessen 124,6 ms
    gegen 14,9 ms je Sprung. Das Haus baut die Arbeitskopie auf Zuruf, einmal je Quelle. */
@@ -27869,9 +27875,11 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
     const gew=wahl&&i>=wahl.a&&i<=wahl.b;
     return '<button type="button" class="tbs-lf f-'+v.f+(weiter?' weiter':'')+(vorWeiter?' vorweiter':'')
       +(v.r?' rueck':'')+(gew?' gewaehlt':'')+'" data-i="'+i+'"'
-      +' title="Takt '+(i+1)+': '+namen[v.f]+(v.r?', r\u00fcckw\u00e4rts':'')+'">'
+      +' title="Takt '+(i+1)+': '+namen[v.f]
+      +((v.f==='langsamer'||v.f==='schneller')?' '+(v.n||2)+'-fach':'')+(v.r?', r\u00fcckw\u00e4rts':'')+'">'
       +'<span class="tbs-lnr">Takt '+(i+1)+'</span>'
-      +'<span class="tbs-lzeichen">'+(weiter?'\u00b7':zeichen[v.f])+'</span>'
+      +'<span class="tbs-lzeichen">'+(weiter?'\u00b7':zeichen[v.f])
+      +((!weiter&&(v.f==='langsamer'||v.f==='schneller'))?'<em>'+(v.n||2)+'\u00d7</em>':'')+'</span>'
       +(v.r&&!weiter?'<span class="tbs-lrueck">\u21a9</span>':'')+'</button>'; }).join('')+'</div>';
   /* Erst waehlen, dann ansagen. Ohne Auswahl sind die Formknoepfe aus - sonst wuesste niemand,
      worauf sie wirken (Caspar_D, 11.09.2026: "erst takte selektieren, dann ansagen, wie sie
@@ -27882,7 +27890,8 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
       : 'Takte w\u00e4hlen \u2014 dann sagen, was sie tun')
     +'<span class="tbs-lwie">mehrere: ziehen oder mit Umschalt klicken</span></div>';
   h+='<div class="tbs-lformen">'+LAUF_FORMEN.map(x=>
-    '<button type="button" class="tbs-lp" data-f="'+x[0]+'"'+(wahl?'':' disabled')+' title="'+x[1]+'">'
+    '<button type="button" class="tbs-lp" data-f="'+x[0]+'"'+(wahl?'':' disabled')
+    +' title="'+x[1]+((x[0]==='langsamer'||x[0]==='schneller')?' \u2014 nochmal klicken schaltet weiter: 2\u00d7, 3\u00d7, 4\u00d7, 6\u00d7, 8\u00d7':'')+'">'
     +'<span class="tbs-lzeichen">'+x[2]+'</span>'+x[1]+'</button>').join('')
     +'<button type="button" class="tbs-lp" id="tbs-lumkehr"'+(wahl?'':' disabled')
     +' title="Die gew\u00e4hlten Takte laufen r\u00fcckw\u00e4rts"><span class="tbs-lzeichen">\u21a9</span>umkehren</button>'
@@ -27901,8 +27910,7 @@ function laufUI(){ const box=$('#tbs-lauf'); if(!box) return;
   /* Nur Wiederholungszahlen anbieten, die das Raster teilen - sonst kachelt der Block den Takt nicht. */
   if(F.some(v=>v.f==='stottern'))
     h+=w('wdh',[[2,'zweimal'],[4,'viermal'],[8,'achtmal']].filter(o=>LAUF.teil%o[0]===0),'jeder Schnipsel');
-  if(F.some(v=>v.f==='langsamer'||v.f==='schneller'))
-    h+=w('tempo',[[2,'zweifach'],[3,'dreifach'],[4,'vierfach'],[8,'achtfach']],'Tempo');
+
   let hin='';
   if(laufBeugt()&&!(T0.takt>0)) hin='F\u00fcr diesen Titel kennen wir kein Taktma\u00df \u2014 der Lauf bleibt wirkungslos.';
   else if(laufBeugt()&&SPRUNG.fehler) hin='Arbeitskopie ging nicht: '+SPRUNG.fehler+' \u2014 das Springen wird z\u00e4h.';
@@ -27971,7 +27979,14 @@ function laufWahl(){ const n=laufTakte(); if(!LAUF.wahl) return null;
 function laufAnwenden(form){
   const wahl=laufWahl(); if(!wahl) return;
   const F=laufFelder(), alt=F[wahl.a]&&F[wahl.a].r;
-  for(let i=wahl.a;i<=wahl.b;i++) F[i]={f:form,s:(i===wahl.a),r:!!alt};
+  /* Nochmal auf dieselbe Form klicken schaltet die Stufe weiter: 2x, 3x, 4x, 6x, 8x und wieder von
+     vorn. Nur Langsamer und Schneller haben eine Stufe. */
+  let stufe=(F[wahl.a]&&F[wahl.a].n)||2;
+  if(form==='langsamer'||form==='schneller'){
+    const schonSo=F.slice(wahl.a,wahl.b+1).every(v=>v.f===form);
+    if(schonSo){ const k=LAUF_STUFEN.indexOf(stufe); stufe=LAUF_STUFEN[(k<0?0:k+1)%LAUF_STUFEN.length]; }
+    else stufe=LAUF_STUFEN[0]; }
+  for(let i=wahl.a;i<=wahl.b;i++) F[i]={f:form,s:(i===wahl.a),r:!!alt,n:stufe};
   if(wahl.b+1<F.length) F[wahl.b+1].s=true;
   LAUF.folge=F; laufNachAendern();
   return; }
@@ -27995,11 +28010,11 @@ function laufSpiegelnAnhaengen(){
   /* Die Abschnitte der Auswahl einsammeln, in ihrer Reihenfolge. */
   const teile=[]; let i=wahl.a;
   while(i<=wahl.b){ let e=i; while(e<wahl.b&&!F[e+1].s) e++;
-    teile.push({f:F[i].f,r:F[i].r,len:e-i+1}); i=e+1; }
+    teile.push({f:F[i].f,r:F[i].r,n:F[i].n,len:e-i+1}); i=e+1; }
   /* Rueckwaerts durch die Abschnitte, jeder mit gedrehter Richtung. */
   let j=wahl.b+1;
   for(let ti=teile.length-1; ti>=0&&j<=ende; ti--){ const t=teile[ti];
-    for(let k=0;k<t.len&&j<=ende;k++,j++) F[j]={f:t.f,r:!t.r,s:(k===0)}; }
+    for(let k=0;k<t.len&&j<=ende;k++,j++) F[j]={f:t.f,r:!t.r,s:(k===0),n:t.n}; }
   if(ende+1<n) F[ende+1].s=true;
   LAUF.folge=F; LAUF.wahl={von:wahl.a,bis:ende}; LAUF.anker=wahl.a;
   laufNachAendern(); }
