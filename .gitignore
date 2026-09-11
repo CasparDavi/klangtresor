@@ -89,3 +89,9 @@ labor/effektclip-studio/_songs.json
 labor/effektclip-studio/media
 labor/effektclip-studio/testbild
 labor/effektclip-studio/fremd
+
+# Eichkasten: die Verfahren bleiben, die Bestandsdaten nicht.
+# 257 Song-IDs mit 768er-Textvektoren aus den Liedtexten gehoeren so wenig
+# ins Paket wie library/ selbst (11.09.2026).
+docs/eichkasten/vorher-vektoren/
+docs/eichkasten/*.vor-schritt*

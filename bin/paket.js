@@ -33,6 +33,13 @@ const ziel = path.join(WURZEL, '..', `${PREFIX}-${stempel}.zip`);
 /* Was NIE im Paket sein darf. Pfadmuster auf den Einträgen im ZIP. */
 const VERBOTEN = [
   new RegExp('^' + PREFIX + '/geheim/'),               // der Schlüssel
+  /* Eigene Bestandsdaten, die NICHT unter library/ liegen und deshalb
+     durch die alte Liste fielen: docs/eichkasten/ trug 2,75 MB mit 257
+     Song-IDs und je einem 768er-Textvektor aus den Liedtexten - zwoelfmal
+     mehr als die Einmesskurven, die am selben Tag auffielen. Gefunden in
+     der Pruefung vor der Veroeffentlichung, 11.09.2026. */
+  new RegExp('^' + PREFIX + '/docs/eichkasten/vorher-vektoren/'),
+  new RegExp('^' + PREFIX + '/docs/eichkasten/.*\\.vor-schritt'),
   /suno-cookie/i,                    // auch unter anderem Namen
   /__client/,
   new RegExp('^' + PREFIX + '/library/'),              // Rohdaten, Katalog, Medien, Kommentare

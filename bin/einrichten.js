@@ -348,6 +348,21 @@ function da(befehl) {
 
 /* =================================================================== */
 (async function haupt() {
+  /* DAS MITGEBRACHTE NODE MUSS IN DEN PATH.
+
+     Hat der Anlasser Node selbst geholt - also genau auf dem Rechner,
+     fuer den er gebaut ist -, liegt es in werkzeug/node und ist NICHT im
+     PATH. Der Anlasser ruft es mit absolutem Pfad auf. Damit findet der
+     Schritt „Pakete holen" spaeter kein `npm`, obwohl es direkt daneben
+     liegt, und der Mensch liest „Ohne die Pakete startet der Server
+     nicht." - auf einem Rechner, auf dem alles vorhanden ist.
+
+     process.execPath ist das Node, das GERADE laeuft; npm liegt in
+     demselben Verzeichnis. Dieselbe Falle war in KlangTresor-starten.cmd
+     am 11.09.2026 schon erkannt und dort behoben - hier nicht.
+     Gefunden in der Pruefung vor der Veroeffentlichung. */
+  process.env.PATH = path.dirname(process.execPath) + path.delimiter + process.env.PATH;
+
   marke();
 
   if (!quellenLesen()) {
