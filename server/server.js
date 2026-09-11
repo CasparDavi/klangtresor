@@ -3319,6 +3319,31 @@ if (!EINGEFROREN) setInterval(() => {
   setTimeout(() => process.exit(75), 2000);  // haengende Verbindungen nicht abwarten
 }, 2000);
 
+/* WACHE UEBER DAS EIGENE MEDIUM - nur auf dem Stick.
+   Caspar_D, 11.09.2026: "wenn jemand den mobilen Klangtresor vom Stick startet und den Stick dann
+   entfernt, laeuft ein verwaister server auf dem System." Genau so ist es am 10.09.2026 passiert:
+   ein eingefrorener Server lief acht Stunden bei 95 % Last weiter, nachdem der Stick abgezogen war,
+   und belegte nebenbei seinen Port.
+   node liest sein Programm beim Start vollstaendig ein - der Prozess merkt es also nicht, wenn ihm
+   der Boden unter den Fuessen weggezogen wird. Darum fragt er alle zwei Sekunden seine EIGENE Datei.
+   Ist sie dreimal hintereinander nicht da, ist das Medium weg und er geht.
+   Dreimal, nicht einmal: ein einzelner Fehlgriff kann ein Schluckauf des Dateisystems sein, und ein
+   Server, der bei jedem Schluckauf stirbt, ist schlimmer als einer, der sechs Sekunden zu lange lebt.
+   NUR eingefroren. Das Haus laeuft auf einer Platte, die niemand im Betrieb abzieht, und es waere
+   das schlechtere Geschaeft, seinen Arbeitsserver wegen einer Unachtsamkeit zu verlieren. */
+if (EINGEFROREN) {
+  let fehlgriffe = 0;
+  setInterval(() => {
+    try { fs.statSync(__filename); fehlgriffe = 0; }
+    catch (e) {
+      if (++fehlgriffe < 3) return;
+      console.error('\n  Das Medium ist weg - der KlangTresor auf diesem Stick beendet sich.');
+      console.error('  (Stick wieder einstecken und neu starten, dann laeuft er weiter.)\n');
+      process.exit(0);
+    }
+  }, 2000).unref?.();
+}
+
 /* Ist der Port belegt, stirbt der Server sonst mit einem Stacktrace -
    und das Einrichtungsskript hat den Browser da schon geoeffnet. Der
    zeigt dann den ANDEREN KlangTresor, der auf dem Port lauscht, und es

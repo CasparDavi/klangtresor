@@ -709,16 +709,28 @@ const WIN_SKRIPT = [
   'set "PORT="',
   'for /l %%i in (1,1,40) do (',
   '  if not defined PORT (',
-  '    for /f "tokens=3 delims=: " %%p in (\'findstr /c:"KlangTresor auf http://localhost:" "%LOG%" 2^>nul\') do set "PORT=%%p"',
-  '    if not defined PORT timeout /t 1 /nobreak >nul',
+  /* DER DOPPELPUNKT ALLEIN ist das Trennzeichen, nicht "Doppelpunkt ODER Leerzeichen".
+     Bis zum 11.09.2026 stand hier delims=": ", und damit zerfaellt die Zeile
+     "  KlangTresor auf http://localhost:8788" in: [KlangTresor] [auf] [http] [//localhost] [8788].
+     Token 3 war also "http" - der Starter setzte PORT=http, wartete dreissig Sekunden vergeblich
+     auf http://localhost:http/api/index und riss dann den Browser auf eine kaputte Adresse auf.
+     Unter macOS und Linux war es immer richtig: die nehmen alles hinter dem LETZTEN Doppelpunkt.
+     Nachgestellt in echtem Windows 10 mit cmd: delims=": " liefert [http], delims=":" liefert [8788].
+     Die Ziffernpruefung darunter faengt ab, was sonst noch danebengehen koennte. */
+  '    for /f "tokens=3 delims=:" %%p in (\'findstr /c:"KlangTresor auf http://localhost:" "%LOG%" 2^>nul\') do set "PORT=%%p"',
+  '    if defined PORT (echo !PORT!| findstr /r "^[0-9][0-9]*$" >nul || set "PORT=")',
+  /* ping statt timeout: `timeout` bricht mit "Die Eingabeumleitung wird nicht unterstuetzt" ab,
+     sobald die Eingabe umgeleitet ist - also bei jedem Aufruf, der nicht vom Doppelklick kommt.
+     `ping -n 2 127.0.0.1` wartet rund eine Sekunde und schweigt in jeder Lage (11.09.2026). */
+  '    if not defined PORT ping -n 2 127.0.0.1 >nul',
   '  )',
   ')',
   'if not defined PORT set "PORT=8788"',
   'where curl >nul 2>nul',
-  'if errorlevel 1 (timeout /t 3 /nobreak >nul) else (',
+  'if errorlevel 1 (ping -n 4 127.0.0.1 >nul) else (',
   '  for /l %%i in (1,1,30) do (',
   '    curl -s -o nul "http://localhost:!PORT!/api/index" 2>nul && goto :auf',
-  '    timeout /t 1 /nobreak >nul',
+  '    ping -n 2 127.0.0.1 >nul',
   '  )',
   ')',
   ':auf',

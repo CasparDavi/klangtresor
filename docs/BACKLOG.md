@@ -2520,11 +2520,16 @@ CPU — 500 Minuten Rechenzeit —, weil `/Volumes/INTENSO` inzwischen abgezogen
 dass sein Laufwerk verschwunden war, noch dass Port 8788 längst vom Entwicklungsserver gehalten
 wurde. Das trifft jeden, der den Stick abzieht, ohne vorher das Fenster zu schließen.
 
-Zwei kleine Wachen, beide im eingefrorenen Server:
-- **Beim Start prüfen, ob der Port frei ist.** Ist er belegt, mit einer verständlichen Zeile
-  aussteigen statt weiterzulaufen („Port 8788 ist belegt — läuft KlangTresor schon?").
-- **Regelmäßig prüfen, ob das eigene Verzeichnis noch da ist.** Fehlt es, sauber beenden statt
-  in einer Schleife zu drehen.
+Zwei kleine Wachen, beide im eingefrorenen Server — **beide erledigt am 11.09.2026**:
+- ~~**Beim Start prüfen, ob der Port frei ist.**~~ — war schon da und ist besser als hier gedacht:
+  mit `--port` (also vom Stick) sucht der Server bis zu fünfzig Ports weiter, weil dort ein zweiter
+  KlangTresor der Normalfall ist; ohne `--port` steigt er mit Klartext aus und nennt die Adresse,
+  unter der der andere läuft.
+- ~~**Regelmäßig prüfen, ob das eigene Verzeichnis noch da ist.**~~ — **gebaut**: der eingefrorene
+  Server fragt alle zwei Sekunden seine eigene Datei ab und beendet sich nach dem dritten
+  Fehlgriff. Dreimal, nicht einmal, damit ein Schluckauf des Dateisystems ihn nicht umbringt.
+  Nur eingefroren — das Haus läuft auf einer Platte, die niemand im Betrieb abzieht.
+  Gemessen: Medium weggezogen, sieben Sekunden später ist der Prozess weg, mit Meldung.
 
 Dazu die Frage, ob der Startskript-Weg das Fenster offenhalten muss; ein Prozess, der beim Abziehen
 des Sticks weiterläuft, ist ein Fehler ohne Fehlermeldung.
