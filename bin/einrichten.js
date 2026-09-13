@@ -1350,7 +1350,12 @@ open -a Terminal ${JSON.stringify(starter)}
     }
     return laeuft(na.befehl, [...na.vorn, ...args]);
   }
-  if (!npmLaufen(['install', '--no-fund', '--no-audit'])) {
+  /* await, nicht vergessen: npmLaufen ist async. Ohne await steht hier ein
+     Promise, und !Promise ist immer falsch - ein gescheitertes npm install
+     wurde als „Pakete sind da." gemeldet, und der naechste Schritt lief in
+     einen Server ohne Pakete. Gefunden am 13.09.2026 beim Durchgehen der
+     Texte, nicht durch einen Fehlschlag. */
+  if (!await npmLaufen(['install', '--no-fund', '--no-audit'])) {
     const w = await wieWeiter('npm install', 'Ohne die Pakete startet der Server nicht.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   } else gut('Pakete sind da.');
