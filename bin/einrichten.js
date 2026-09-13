@@ -615,50 +615,66 @@ end try`;
   function mussUmziehen(p) {
     const q = p.replace(/\\/g, '/');
     if (process.platform === 'win32' && q.startsWith('//')) return 'auf einer Netzfreigabe';
-    if (/\/(downloads|download|temp|tmp)(\/|$)/i.test(q))  return 'im Download- oder Papierkorbordner';
+    if (/\/(downloads|download)(\/|$)/i.test(q))            return 'im Download-Ordner';
+    if (/\/(temp|tmp)(\/|$)/i.test(q))                       return 'in einem temporären Ordner';
     if (/^klangtresor[-_]?(main|master)$/i.test(path.basename(p))) return 'in einem Ordner, den GitHub benannt hat';
     return null;
   }
 
-  /* DER ORT WIRD IMMER GEFRAGT, GANZ AM ANFANG.
+  /* WO SOLL ES HIN - DREI ZEILEN, EINE TASTE.
 
-     Caspar_D, 13.09.2026: „was ist, wenn das Userverzeichnis zu klein
-     ist? warum fragen wir den Nutzer nicht am Anfang, wo das Zeug hin
-     soll, damit er ggf. auch ein externes Medium auswaehlen kann?"
+     Caspar_D, 13.09.2026: „ich faende gut, wenn du schon bei Start des
+     Einrichten-Scripts sagen wuerdest: Du bist hier in Ordner XYZ (dort
+     wo das Zip ausgepackt wurde). D - per default wird dein KlangTresor
+     genau hier installiert. N - alternativ kann der KlangTresor in
+     deinem Nutzerverzeichnis (n GB frei) installiert werden. Dann liegt
+     alles bei deinen Daten. Denke aber daran, dass der KlangTresor fuer
+     das Funktionieren ALLER Features ziemlich viel Platz braucht."
 
-     Bis eben kam der Dialog nur im Notfall - Download-Ordner, Freigabe.
-     Wer sein Archiv auf eine externe Platte legen wollte, weil die
-     Systemplatte klein ist, bekam nie Gelegenheit dazu. Ein Archiv, das
-     auf zehn, zwanzig Gigabyte anwaechst, ist aber genau das, was man
-     NICHT auf einer knappen Systemplatte haben will.
+     Genau so, plus eine dritte Zeile fuer die externe Platte, die er
+     vorher wollte. Die Vorgabe ist „hier" - ausser hier ist der
+     Download-Ordner oder eine Netzfreigabe, dann ist die Vorgabe das
+     Nutzerverzeichnis, und die erste Zeile sagt warum. */
+  const gbFrei = (p) => {
+    let q = p;
+    while (q && !fs.existsSync(q) && path.dirname(q) !== q) q = path.dirname(q);
+    const f = freierPlatz(q);
+    return f === null ? null : f / 1073741824;
+  };
+  const gbText = (g) => g === null ? '' : `  (${g.toFixed(0)} GB frei)`;
 
-     Also: immer fragen, mit ~/KlangTresor vorbelegt, und danach den
-     freien Platz AM GEWAEHLTEN ORT zeigen - nicht dort, wo das Zip
-     gerade liegt. */
   const grund = mussUmziehen(WURZEL);
   const schonZuhause = !grund && path.basename(WURZEL) === 'KlangTresor';
-
+  const heimZiel = path.join(os.homedir(), 'KlangTresor');
   let ziel = WURZEL;
+
   if (schonZuhause) {
     matt('KlangTresor liegt hier, und hier bleibt es:');
-    satz(HELL('  ' + WURZEL));
+    satz(HELL('  ' + WURZEL) + MATT(gbText(gbFrei(WURZEL))));
   } else {
-    if (grund) {
-      matt('KlangTresor liegt gerade ' + grund + ':');
-      satz(MATT('  ' + WURZEL));
-      matt('Dort gehört es nicht hin — dein Archiv wächst mit jedem Lied, und ein');
-      matt('Download-Ordner wird irgendwann aufgeräumt.');
-    } else {
-      matt('KlangTresor liegt gerade hier:');
-      satz(MATT('  ' + WURZEL));
-    }
+    matt('Du bist hier — dort, wo das Zip ausgepackt wurde:');
+    satz(HELL('  ' + WURZEL) + MATT(gbText(gbFrei(WURZEL))));
+    { const wo = ortInWorten(WURZEL); if (wo) matt('  ' + wo); }
     leer();
-    tut('Ein Fenster geht auf: wähle, wo dein KlangTresor-Archiv liegen soll.');
-    matt('Vorgeschlagen ist dein Benutzerordner. Ist deine Systemplatte knapp,');
-    matt('nimm ruhig eine externe Platte — das Archiv wird groß, und der Ordner');
-    matt('darf überall liegen. Mit Abbrechen nehme ich den Vorschlag.');
-    const eltern = ordnerWaehlen(os.homedir()) || os.homedir();
-    ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
+    const vorgabe = grund ? 'n' : 'd';
+    satz(HELL('  [D]') + MATT('  hier bleiben — KlangTresor wird genau in diesem Ordner eingerichtet'));
+    if (grund) matt('       Achtung: das liegt ' + grund + ' — dort wird gern aufgeräumt' +
+                    (grund.includes('Netz') ? ', und die Pakete scheitern' : '') + '.');
+    satz(HELL('  [N]') + MATT('  in dein Nutzerverzeichnis: ') + HELL(heimZiel) + MATT(gbText(gbFrei(heimZiel))));
+    matt('       Dann liegt alles bei deinen Daten.');
+    satz(HELL('  [W]') + MATT('  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)'));
+    leer();
+    matt('Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.');
+    matt('Die Einrichtung selbst rund 500 MB — dazu je Titel bis zu 100 MB, wenn');
+    matt('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.');
+    leer();
+    const antwort = (await fragen('     ' + AKZENT(`Wohin? [${vorgabe === 'd' ? 'D' : 'd'}/${vorgabe === 'n' ? 'N' : 'n'}/w] `))).toLowerCase() || vorgabe;
+    if (antwort.startsWith('n')) ziel = heimZiel;
+    else if (antwort.startsWith('w')) {
+      const eltern = ordnerWaehlen(os.homedir());
+      if (eltern) ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
+      else { matt('Kein Ordner gewählt — dann bleibt es hier.'); ziel = WURZEL; }
+    }
     leer();
     satz(MATT('Ziel:  ') + HELL(ziel));
   }
