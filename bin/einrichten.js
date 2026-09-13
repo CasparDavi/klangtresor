@@ -388,6 +388,59 @@ function da(befehl) {
   return String(e.stdout).split('\n')[0].trim() || null;
 }
 
+/* EINE VERKNUEPFUNG AUF DEM SCHREIBTISCH.
+
+   Caspar_D, 13.09.2026, nachdem er den umgezogenen Ordner suchen
+   musste: „das findet kein DAU".
+
+   Er hat recht. Ein Programm, das man nur wiederfindet, indem man einen
+   Pfad abtippt, ist fuer die meisten Menschen verloren. Im normalen Lauf
+   faellt das nicht auf - die Einrichtung zieht um und laeuft im selben
+   Fenster weiter -, aber SPAETER will er es ja wieder starten. Dafuer
+   muss etwas dort liegen, wo er ohnehin hinsieht.
+
+   Jedes System auf seine Art, und keines davon ist heikel: eine .lnk
+   ueber WScript.Shell, ein Verweis auf dem Mac, eine .desktop-Datei
+   unter Linux. Schlaegt es fehl, ist das kein Grund zur Aufregung - es
+   wird gesagt und weitergemacht. */
+function schreibtischVerknuepfung(ordner) {
+  const heim = os.homedir();
+  try {
+    if (process.platform === 'win32') {
+      const ziel = path.join(ordner, 'KlangTresor-starten.cmd');
+      const desk = path.join(heim, 'Desktop');
+      if (!fs.existsSync(desk)) return null;
+      const lnk = path.join(desk, 'KlangTresor.lnk');
+      const ps = [
+        '$w = New-Object -ComObject WScript.Shell',
+        `$s = $w.CreateShortcut(${JSON.stringify(lnk)})`,
+        `$s.TargetPath = ${JSON.stringify(ziel)}`,
+        `$s.WorkingDirectory = ${JSON.stringify(ordner)}`,
+        '$s.Description = "KlangTresor starten"',
+        '$s.Save()',
+      ].join('; ');
+      spawnSync('powershell', ['-NoProfile', '-Command', ps], { stdio: 'ignore' });
+      return fs.existsSync(lnk) ? lnk : null;
+    }
+    if (process.platform === 'darwin') {
+      const desk = path.join(heim, 'Desktop');
+      if (!fs.existsSync(desk)) return null;
+      const v = path.join(desk, 'KlangTresor');
+      try { fs.unlinkSync(v); } catch (e) {}
+      fs.symlinkSync(ordner, v);
+      return v;
+    }
+    const desk = fs.existsSync(path.join(heim, 'Schreibtisch')) ? path.join(heim, 'Schreibtisch')
+               : path.join(heim, 'Desktop');
+    if (!fs.existsSync(desk)) return null;
+    const d = path.join(desk, 'klangtresor.desktop');
+    fs.writeFileSync(d, ['[Desktop Entry]', 'Type=Application', 'Name=KlangTresor',
+      'Comment=Dein eigenes Suno-Archiv', `Exec=${path.join(ordner, 'bin', 'server-start.sh')}`,
+      `Path=${ordner}`, 'Terminal=true', ''].join('\n'), { mode: 0o755 });
+    return d;
+  } catch (e) { return null; }
+}
+
 /* =================================================================== */
 (async function haupt() {
   /* DAS MITGEBRACHTE NODE MUSS IN DEN PATH.
@@ -991,6 +1044,10 @@ end try`;
       if (a.family === 'IPv4' && !a.internal) netz.push(a.address);
     }
   }
+  { const v = schreibtischVerknuepfung(WURZEL);
+    if (v) gut('Auf dem Schreibtisch liegt jetzt „KlangTresor" — damit startest du es künftig.');
+    else matt('Zum späteren Starten: der Starter liegt in ' + WURZEL + '.'); }
+  leer();
   satz(MATT('Adresse:  ') + MARKE('http://localhost:8788'));
   if (netz[0]) satz(MATT('Im WLAN:  ') + MARKE(`http://${netz[0]}:8788`));
   matt('Zum Beenden Strg-C. Später genügt der Starter im Projektordner.');
