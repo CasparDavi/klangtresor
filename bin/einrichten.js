@@ -403,13 +403,39 @@ function da(befehl) {
    ueber WScript.Shell, ein Verweis auf dem Mac, eine .desktop-Datei
    unter Linux. Schlaegt es fehl, ist das kein Grund zur Aufregung - es
    wird gesagt und weitergemacht. */
-function schreibtischVerknuepfung(ordner) {
+/* WO DER SCHREIBTISCH WIRKLICH LIEGT.
+
+   ~/Desktop zu raten geht oft gut und manchmal schief. Unter Windows
+   biegt OneDrive ihn nach %USERPROFILE%\OneDrive\Desktop um - bei sehr
+   vielen Rechnern ist das die Voreinstellung -, und unter Linux heisst
+   er je nach Sprache anders. Das System weiss es; also fragen wir es,
+   statt zu raten. */
+function schreibtisch() {
   const heim = os.homedir();
+  if (process.platform === 'win32') {
+    const e = spawnSync('powershell', ['-NoProfile', '-Command',
+      "[Environment]::GetFolderPath('Desktop')"], { encoding: 'utf8' });
+    const w = String(e.stdout || '').trim();
+    if (w && fs.existsSync(w)) return w;
+  }
+  if (process.platform === 'linux') {
+    const e = spawnSync('xdg-user-dir', ['DESKTOP'], { encoding: 'utf8' });
+    const w = String(e.stdout || '').trim();
+    if (w && fs.existsSync(w)) return w;
+  }
+  for (const n of ['Desktop', 'Schreibtisch', 'Bureau', 'Escritorio']) {
+    const d = path.join(heim, n);
+    if (fs.existsSync(d)) return d;
+  }
+  return null;
+}
+
+function schreibtischVerknuepfung(ordner) {
+  const desk = schreibtisch();
+  if (!desk) return null;
   try {
     if (process.platform === 'win32') {
       const ziel = path.join(ordner, 'KlangTresor-starten.cmd');
-      const desk = path.join(heim, 'Desktop');
-      if (!fs.existsSync(desk)) return null;
       const lnk = path.join(desk, 'KlangTresor.lnk');
       const ps = [
         '$w = New-Object -ComObject WScript.Shell',
@@ -423,16 +449,11 @@ function schreibtischVerknuepfung(ordner) {
       return fs.existsSync(lnk) ? lnk : null;
     }
     if (process.platform === 'darwin') {
-      const desk = path.join(heim, 'Desktop');
-      if (!fs.existsSync(desk)) return null;
       const v = path.join(desk, 'KlangTresor');
       try { fs.unlinkSync(v); } catch (e) {}
       fs.symlinkSync(ordner, v);
       return v;
     }
-    const desk = fs.existsSync(path.join(heim, 'Schreibtisch')) ? path.join(heim, 'Schreibtisch')
-               : path.join(heim, 'Desktop');
-    if (!fs.existsSync(desk)) return null;
     const d = path.join(desk, 'klangtresor.desktop');
     fs.writeFileSync(d, ['[Desktop Entry]', 'Type=Application', 'Name=KlangTresor',
       'Comment=Dein eigenes Suno-Archiv', `Exec=${path.join(ordner, 'bin', 'server-start.sh')}`,
@@ -882,9 +903,9 @@ end try`;
   try { handle = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library/konfig.json'), 'utf8')).handle || ''; } catch (e) {}
   if (handle) gut(`Gemerkt: @${handle}`);
   else {
-    matt('Dein Suno-Name ist das, was hinter dem @ steht — bei');
-    matt('suno.com/@caspar_d also caspar_d. Nicht deine E-Mail-Adresse und');
-    matt('nicht der Anzeigename, der über deinen Liedern steht.');
+    matt('Dein Suno-Name ist das, was hinter dem @ steht: Wenn deine Profilseite');
+    matt('suno.com/@musikfreund heißt, ist es „musikfreund". Nicht deine');
+    matt('E-Mail-Adresse und nicht der Anzeigename über deinen Liedern.');
     leer();
     handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '))).replace(/^@/, '').trim();
   }
