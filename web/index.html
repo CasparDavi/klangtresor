@@ -2779,6 +2779,20 @@ h3 .infoknopf .ico{width:14px;height:14px}
 .ra img{width:26px;height:26px;border-radius:50%;object-fit:cover;background:#1a1a1e;display:block}
 .ra .rkw{font-size:12px} .ra .rkt{font-size:12.5px}
 .rleer{color:var(--schwach);font-size:13px;padding:6px 0}
+/* Der Hinweis, wenn Titel da sind, aber kein Ton (Caspar_D, 13.09.2026:
+   "warum zeigen wir nicht einfach schonmal alles an, ohne Soundfiles
+   natuerlich, dann ein Overlayfenster, das sagt, was zu tun waere"). */
+#tonfehlt{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:20px}
+#tonfehlt .tf{background:var(--karte,#15151b);color:var(--text,#e8e8ec);border:1px solid var(--rand,#2a2a30);border-radius:14px;max-width:560px;width:100%;padding:22px 26px;font-size:14px;line-height:1.6;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+#tonfehlt h2{margin:0 0 6px;font-size:18px;font-weight:500}
+#tonfehlt .tf p{margin:8px 0;color:var(--schwach,#9a9aa2)}
+#tonfehlt .tf b{color:var(--text,#e8e8ec);font-weight:500}
+#tonfehlt .weg{border-top:1px solid var(--rand,#2a2a30);padding-top:12px;margin-top:12px}
+#tonfehlt input{width:100%;box-sizing:border-box;padding:8px 10px;border-radius:8px;border:1px solid var(--rand,#2a2a30);background:#0d0d10;color:inherit;font:inherit;margin:6px 0}
+#tonfehlt .tfk{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+#tonfehlt button{padding:8px 14px;border-radius:8px;border:1px solid var(--rand,#2a2a30);background:#1d1d24;color:inherit;font:inherit;cursor:pointer}
+#tonfehlt button.los{background:var(--akzent,#e31c79);border-color:transparent;color:#fff}
+#tonfehlt .tfs{font-size:12.5px;color:var(--schwach,#9a9aa2);margin-top:10px;white-space:pre-wrap}
 /* Der Zaehlerverlauf: drei Linien, eine je Groesse, ueber die Tage. Klein,
    oben, ohne Achsenbeschriftung - es geht um die Form, die Zahlen
    stehen daneben. */
@@ -4487,6 +4501,67 @@ async function start(){
   }
   zeichnen();
   hashOeffnen();
+  tonHinweis();
+}
+
+/* TITEL DA, TON FEHLT - dann sagt die Seite, was zu tun ist.
+
+   Caspar_D, 13.09.2026, vor einem leeren KlangTresor in der Test-VM:
+   "eigentlich sollte er ja alle Metadaten schon haben, nur die
+   Soundfiles sollten fehlen, warum zeigen wir nicht einfach schonmal
+   alles an, ohne Soundfiles natuerlich, dann ein Overlayfenster, das
+   sagt, was zu tun waere, mit nochmals der Moeglichkeit, einen lokalen
+   Suno-Backup-Ordner anzugeben."
+
+   Genau das. Die Kacheln stehen darunter schon; das Fenster erklaert die
+   zwei Wege und nimmt den Ordner gleich entgegen - derselbe Weg wie
+   bin/uebernehmen.js --ordner, ueber /api/downloads. Weggeklickt bleibt
+   es fuer diese Sitzung weg; beim naechsten Laden kommt es wieder,
+   solange kein Ton da ist. */
+function tonHinweis(){
+  if (!alle.length) return;
+  if (katalogInfo && katalogInfo.eingefroren) return;
+  if (alle.some(s => s.hatMp3 || s.hatWav)) return;
+  try { if (sessionStorage.getItem('tonhinweis-weg')) return; } catch (e) {}
+  const alt = $('tonfehlt'); if (alt) alt.remove();
+  const box = document.createElement('div'); box.id = 'tonfehlt';
+  box.innerHTML = `<div class="tf">
+    <h2>Deine ${alle.length} Titel sind da — der Ton noch nicht.</h2>
+    <p>Bilder, Texte und Zahlen hat KlangTresor geholt. Die Audiodateien gibt Suno seit dem
+       03.09.2026 nicht mehr über Links heraus. Zwei Wege führen sie herein, und der erste kostet nichts.</p>
+    <div class="weg"><b>1 · Was du schon hast.</b>
+      <p>Hast du deine Lieder früher bei Suno heruntergeladen? Nenn den Ordner — ich erkenne
+         Suno-Dateien am Inhalt, auch umbenannte, auch in Unterordnern, und ordne sie deinen
+         Titeln zu. Deine übrige Musik fasse ich nicht an, nichts wird verschoben oder gelöscht.</p>
+      <input id="tfordner" type="text" placeholder="Pfad zum Ordner, etwa D:\\Musik\\Suno oder /Volumes/Platte/Suno" spellcheck="false">
+      <div class="tfk"><button class="los" onclick="tonEinlesen()">Einlesen</button>
+        <button onclick="tonEinlesen(true)">Nur im Download-Ordner nachsehen</button></div>
+      <div class="tfs" id="tfstand"></div></div>
+    <div class="weg"><b>2 · Was dir fehlt.</b>
+      <p>Was du nicht hast, schaltest du bei Suno einmal frei (Drei Punkte → Download → „Unlock and
+         Download", kostet ein Guthaben). Das Lesezeichen holt es dann von selbst — es sitzt unter dem
+         roten Knopf für den täglichen Abgleich und braucht Chrome.</p></div>
+    <div class="tfk"><button onclick="tonHinweisWeg()">Später</button></div>
+  </div>`;
+  document.body.appendChild(box);
+}
+function tonHinweisWeg(){ try { sessionStorage.setItem('tonhinweis-weg', '1'); } catch (e) {} const b = $('tonfehlt'); if (b) b.remove(); }
+async function tonEinlesen(nurDownloads){
+  const stand = $('tfstand'); const feld = $('tfordner');
+  const ordner = nurDownloads ? '' : (feld.value || '').trim().replace(/^['"]|['"]$/g, '');
+  if (!nurDownloads && !ordner){ stand.textContent = 'Erst den Ordner nennen — oder nur im Download-Ordner nachsehen.'; return; }
+  stand.textContent = 'Sehe nach und ordne zu … das kann bei vielen Dateien ein paar Minuten dauern.';
+  let d = null;
+  try { d = await (await fetch('/api/downloads', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ordner ? { ordner } : {}) })).json(); }
+  catch (e) { stand.textContent = 'Der Server antwortet nicht.'; return; }
+  if (d.fehler){ stand.textContent = 'Das ging nicht: ' + d.fehler; return; }
+  const n = parseInt(d.uebernommen, 10) || 0;
+  stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen.` : 'Nichts gefunden, was zu deinen Titeln gehört.')
+    + (d.nichtImKatalog > 0 ? ` ${d.nichtImKatalog} gehören zu Titeln, die der Katalog nicht kennt.` : '')
+    + (d.ohneSignatur > 0 ? ` ${d.ohneSignatur} ohne Suno-Kennung, nicht angefasst.` : '')
+    + (n ? ' Die Seite lädt gleich neu.' : ' Ist es ein anderer Ordner? Unterordner werden mitdurchsucht, sechs Ebenen tief.');
+  if (n) setTimeout(() => location.reload(), 2500);
 }
 
 

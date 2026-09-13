@@ -2161,7 +2161,13 @@ const server = http.createServer((req, res) => {
       spielzeit:  k.spielzeit || null,
       zeitraum:   k.zeitraum  || null,
       profil:     k.profil    || null,
-      songs:      liste,
+      /* Ob der Ton da ist, sagt das Dateisystem, nicht der Katalog - der
+         Katalog kennt die Datei nicht, die gestern per Ordner hereinkam.
+         Die Seite braucht es fuer den Hinweis „Titel da, Ton fehlt". */
+      songs:      liste.map((s) => {
+        const d = path.join(SONGS, s.id);
+        return { ...s, hatMp3: fs.existsSync(path.join(d, 'audio.mp3')), hatWav: fs.existsSync(path.join(d, 'audio.wav')) };
+      }),
       /* Die Analyse-Skalare je Song, aus bin/analyse-index.js. 77 KB fuer
          321 Songs. Damit sortiert die Albumseite nach BPM, Lautheit,
          Dynamik, Tonart - ohne die 3 GB Ablage anzufassen. */
@@ -2847,7 +2853,7 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     const { execFile } = require('node:child_process');
     const skript = path.join(WURZEL, 'bin', 'uebernehmen.js');
     const argumente = req.method === 'POST' ? [skript, '--tun'] : [skript];
-    return execFile(process.execPath, argumente, { cwd: WURZEL, timeout: 300000 },
+    const starten = () => execFile(process.execPath, argumente, { cwd: WURZEL, timeout: 300000 },
       (fehler, aus, err) => {
         const text = String(aus || '') + String(err || '');
         /* Die Zeilen der Uebersicht herausloesen, damit die Oberflaeche
@@ -2864,6 +2870,20 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
           ausgabe: text.slice(-1500),
         });
       });
+    if (req.method !== 'POST') return starten();
+    /* Die Seite darf einen Ordner nennen - das Suno-Backup des Nutzers.
+       uebernehmen.js merkt ihn sich (konfig.downloadOrdner), danach sieht
+       auch der Morgenlauf dort nach. Caspar_D, 13.09.2026: „ein
+       Overlayfenster, das sagt, was zu tun waere, mit nochmals der
+       Moeglichkeit, einen lokalen Suno-Backup-Ordner anzugeben". */
+    let roh = '';
+    req.on('data', (c) => { roh += c; if (roh.length > 4096) req.destroy(); });
+    return req.on('end', () => {
+      let ordner = null; try { ordner = JSON.parse(roh || '{}').ordner; } catch (e) {}
+      if (ordner && typeof ordner === 'string' && path.isAbsolute(ordner) && fs.existsSync(ordner))
+        argumente.push('--ordner', ordner);
+      starten();
+    });
   }
 
   if (p === '/api/raeume') {
