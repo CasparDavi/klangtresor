@@ -289,6 +289,49 @@ function einenOrdnerHeben(von, nach) {
    Ein Programm mit vollem Pfad braucht keine Schale. Node startet es
    selbst, und Node kommt mit UNC-Pfaden zurecht. Nur fuer Namen ohne
    Pfad - `npm`, `npm.cmd` - bleibt sie noetig. */
+/* LAUFEN LASSEN, MIT ESCAPE UNTERBRECHBAR.
+
+   Caspar_D, 13.09.2026, mitten in Schritt 9: „es waere gut, wenn hier
+   eine Message gestanden haette: mit Escape abbrechen ermoeglicht, den
+   Datendownload zu unterbrechen und den KlangTresor fuer einen ersten
+   Blick zu starten. Der Datendownload kann mit dem roten Knopf oben
+   rechts fortgesetzt werden."
+
+   Strg+C wuerde die ganze Einrichtung toeten - kein Server, keine
+   Verknuepfung. Escape hier beendet nur das Kind und macht weiter.
+   Dafuer muss die Tastatur kurz roh gelesen werden; ohne Bildschirm
+   (Roehre, ferngesteuert) faellt es auf den gewoehnlichen Lauf zurueck.
+   Danach kommt keine Frage mehr, ein verirrtes Escape-Byte stoert
+   also niemanden. */
+function laeuftAbbrechbar(befehl, argumente) {
+  const { spawn } = require('node:child_process');
+  const stdin = process.stdin;
+  if (!stdin.isTTY || typeof stdin.setRawMode !== 'function') {
+    return Promise.resolve({ ok: laeuft(befehl, argumente), abgebrochen: false });
+  }
+  return new Promise((fertig) => {
+    const kind = spawn(befehl, argumente, { stdio: 'inherit' });
+    let abgebrochen = false, zu = false;
+    const horcher = (b) => {
+      for (const x of b) if (x === 0x1b || x === 0x03) {
+        abgebrochen = true;
+        try { kind.kill(); } catch (e) {}
+        if (process.platform === 'win32') {
+          try { spawnSync('taskkill', ['/PID', String(kind.pid), '/T', '/F'], { stdio: 'ignore' }); } catch (e) {}
+        }
+        return;
+      }
+    };
+    const aufraeumen = () => {
+      if (zu) return; zu = true;
+      try { stdin.removeListener('data', horcher); stdin.setRawMode(false); stdin.pause(); } catch (e) {}
+    };
+    try { stdin.setRawMode(true); stdin.resume(); stdin.on('data', horcher); } catch (e) {}
+    kind.on('error', () => { aufraeumen(); fertig({ ok: false, abgebrochen }); });
+    kind.on('close', (code) => { aufraeumen(); fertig({ ok: code === 0 && !abgebrochen, abgebrochen }); });
+  });
+}
+
 function laeuft(befehl, argumente) {
   const brauchtSchale = process.platform === 'win32' && !path.isAbsolute(befehl);
   const e = spawnSync(befehl, argumente, { stdio: 'inherit', shell: brauchtSchale });
@@ -1247,7 +1290,20 @@ end try`;
   matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
   matt('erlaubt, was da ist wird nicht noch einmal geholt.');
   if (PROBE.length) wink(`Probelauf: es werden nur ${PROBE[1]} Titel geholt.`);
-  laeuft(process.execPath, [path.join('bin', 'wiederherstellen.js'), ...PROBE]);
+  if (process.stdin.isTTY) {
+    leer();
+    wink('Escape unterbricht das Laden und startet KlangTresor für einen ersten Blick.');
+    matt('Weitergeladen wird dann mit dem roten Knopf oben rechts im KlangTresor —');
+    matt('was schon da ist, wird nicht noch einmal geholt.');
+    leer();
+  }
+  {
+    const e = await laeuftAbbrechbar(process.execPath, [path.join('bin', 'wiederherstellen.js'), ...PROBE]);
+    if (e.abgebrochen) {
+      leer();
+      gut('Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.');
+    }
+  }
 
   /* ================================================================
      DER EHRLICHE SCHLUSS: was ein Besucher NICHT sieht.
