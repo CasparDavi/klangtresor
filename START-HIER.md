@@ -35,8 +35,15 @@ dir die Zeile für dein System und deinen Weg:
 | **Linux** | `./einrichten-linux.sh` | `./einrichten-docker.sh` |
 | **Windows** | Doppelklick auf `KlangTresor-einrichten.cmd` | Rechtsklick auf `einrichten-docker.ps1` → „Mit PowerShell ausführen" |
 
-Beim ersten Doppelklick auf dem Mac fragt das System, ob du der Datei traust —
-dann einmal Rechtsklick → Öffnen wählen.
+**Beim ersten Doppelklick meckert dein System — das ist normal**, das Paket ist
+nicht signiert, der Quelltext liegt offen daneben.
+
+- **Windows** zeigt „Datei öffnen – Sicherheitswarnung: Der Herausgeber konnte
+  nicht verifiziert werden. Möchten Sie diese Software ausführen?" — mit
+  „Unbekannter Herausgeber" und einem roten Schild darunter. **Ausführen**
+  klicken. Wer das Häkchen „Vor dem Öffnen dieser Datei immer bestätigen"
+  wegnimmt, sieht die Frage für diese Datei nicht wieder.
+- **macOS** sagt „nicht verifizierter Entwickler" — einmal Rechtsklick → Öffnen.
 
 Zum **späteren Starten** gibt es unter Windows `KlangTresor-starten.cmd`
 — die richtet nichts mehr ein, sondern startet nur den Server.
