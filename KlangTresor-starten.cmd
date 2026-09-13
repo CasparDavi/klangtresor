@@ -67,7 +67,8 @@ echo   Dieses Fenster bleibt offen, solange du hoerst.
 echo   Kleinmachen ist in Ordnung - schliessen beendet KlangTresor.
 echo.
 
-"%NODE%" server\server.js
+rem bin\starten.js: Server in der Neustart-Schleife, dann Browser auf - Chrome, wenn da.
+"%NODE%" bin\starten.js
 
 echo.
 echo   KlangTresor wurde beendet.

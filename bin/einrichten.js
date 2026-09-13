@@ -44,6 +44,19 @@ const readline = require('node:readline');
 const WURZEL = path.resolve(__dirname, '..');
 const WERKZEUG = path.join(WURZEL, 'werkzeug');
 const OHNE_START = process.argv.includes('--ohne-start');
+/* DIE OBERFLAECHE. Caspar_D, 13.09.2026: „es soll ein js sein und nicht
+   mehr alles ein cmd script" - und „der text bleibt der fallback".
+   Ohne --text oeffnet die Einrichtung eine Seite im Browser: Tresortuer,
+   Schrittleiste, Fortschritt, Erklaerungen, Anreisser. Die Konsole
+   laeuft trotzdem weiter - sie ist das Protokoll und die Rueckfalltuer.
+   Alles, was hier ausgegeben oder gefragt wird, geht an beide. */
+const NUR_TEXT = process.argv.includes('--text');
+const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, fertig: false, adresse: null, gesamt: 10 };
+const ohneFarbe = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
+function merken(art, text) {
+  ZUSTAND.zeilen.push({ art, text: ohneFarbe(text).replace(/^\s{5}/, ''), t: Date.now() });
+  if (ZUSTAND.zeilen.length > 400) ZUSTAND.zeilen.splice(0, ZUSTAND.zeilen.length - 400);
+}
 /* Probelauf einer frischen Einrichtung: alles tun, aber nur N Titel
    Medien holen. Damit laesst sich die ganze Kette pruefen, ohne einen
    fremden Server fuer nichts dreihundertmal anzufassen.
@@ -70,13 +83,13 @@ const WARN = f(210, 153, 34);
 const BOESE = f(229, 83, 75);
 
 const schreib = (t = '') => process.stdout.write(t + '\n');
-const matt = (t) => schreib('     ' + MATT(t));
-const satz = (t) => schreib('     ' + t);
-const leer = () => schreib('');
-const gut = (t) => schreib('     ' + GUT('[ok]') + '  ' + t);
-const wink = (t) => schreib('     ' + WARN('[!] ') + '  ' + t);
-const boese = (t) => schreib('     ' + BOESE('[x] ') + '  ' + t);
-const tut = (t) => schreib('     ' + MARKE('->  ') + '  ' + t);
+const matt = (t) => { schreib('     ' + MATT(t)); merken('matt', t); };
+const satz = (t) => { schreib('     ' + t); merken('satz', t); };
+const leer = () => { schreib(''); merken('leer', ''); };
+const gut = (t) => { schreib('     ' + GUT('[ok]') + '  ' + t); merken('gut', t); };
+const wink = (t) => { schreib('     ' + WARN('[!] ') + '  ' + t); merken('wink', t); };
+const boese = (t) => { schreib('     ' + BOESE('[x] ') + '  ' + t); merken('boese', t); };
+const tut = (t) => { schreib('     ' + MARKE('->  ') + '  ' + t); merken('tut', t); };
 
 let SCHRITT = 0;
 const SCHRITTE = 10;
@@ -84,6 +97,11 @@ function schritt(t) {
   SCHRITT++;
   leer();
   schreib('  ' + AKZENT(`[${SCHRITT}/${SCHRITTE}]`) + ' ' + HELL(t));
+  merken('schritt', `[${SCHRITT}/${SCHRITTE}] ${t}`);
+  if (ZUSTAND.schritte[SCHRITT - 2]) ZUSTAND.schritte[SCHRITT - 2].zustand = 'fertig';
+  ZUSTAND.schritte[SCHRITT - 1] = { nr: SCHRITT, name: t, zustand: 'laeuft' };
+  ZUSTAND.aktuell = SCHRITT;
+  ZUSTAND.fortschritt = null;
 }
 
 /* Die Tresortür. Rein aus ASCII gezeichnet, damit sie überall gleich
@@ -126,11 +144,26 @@ function marke() {
    puffert die Konsole die Zeile selbst, nichts wird umgedeutet, und die
    Rueckschritttaste funktioniert trotzdem - das erledigt die Konsole. */
 const leser = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
-const fragen = (t) => new Promise((r) => leser.question(t, (a) => r(String(a || '').trim())));
+/* EINE FRAGE, ZWEI WEGE. Die Konsole zeigt sie wie immer; die Seite
+   bekommt sie als Zustand mit Schaltflaechen. Wer zuerst antwortet,
+   gewinnt - eine Zeile in der Konsole oder ein POST /antwort. */
+let _antwort = null, _frageNr = 0;
+leser.on('line', (z) => { if (_antwort) { const f = _antwort; _antwort = null; ZUSTAND.frage = null; f(String(z || '').trim()); } });
+function antwortVonSeite(id, wert) {
+  if (!_antwort || !ZUSTAND.frage || ZUSTAND.frage.id !== id) return false;
+  const f = _antwort; _antwort = null; ZUSTAND.frage = null; f(String(wert == null ? '' : wert).trim());
+  return true;
+}
+function fragen(t, meta) {
+  process.stdout.write(t);
+  ZUSTAND.frage = Object.assign({ id: ++_frageNr, art: 'text', text: ohneFarbe(t).trim() }, meta || {});
+  return new Promise((r) => { _antwort = r; });
+}
 
 async function jaNein(text, vorgabe = 'j') {
   const zeige = vorgabe === 'j' ? '[J/n]' : '[j/N]';
-  const a = await fragen('     ' + AKZENT(`${text} ${zeige} `));
+  const a = await fragen('     ' + AKZENT(`${text} ${zeige} `),
+    { art: 'wahl', text, vorgabe, optionen: [{ wert: 'j', label: 'Ja', vor: vorgabe === 'j' }, { wert: 'n', label: 'Nein', vor: vorgabe !== 'j' }] });
   if (!a) return vorgabe === 'j';
   return /^[jJyY]/.test(a);
 }
@@ -145,7 +178,9 @@ async function wieWeiter(was, folge) {
   matt('  [w] noch einmal versuchen');
   matt('  [ü] jetzt überspringen und ohne weitermachen');
   matt('  [s] hier Schluss machen — später neu starten');
-  const a = await fragen('     ' + AKZENT('Was tun? [w/ü/s] '));
+  const a = await fragen('     ' + AKZENT('Was tun? [w/ü/s] '),
+    { art: 'wahl', text: `${was} hat nicht geklappt. ${folge}`, vorgabe: 'ü',
+      optionen: [{ wert: 'w', label: 'Noch einmal versuchen' }, { wert: 'ü', label: 'Überspringen und weiter', vor: true }, { wert: 's', label: 'Schluss — später neu starten' }] });
   if (/^[wW]/.test(a)) return 'wieder';
   if (/^[sS]/.test(a)) return 'schluss';
   return 'ueber';
@@ -223,6 +258,7 @@ function holen(url, ziel, was, tiefe = 0) {
         }
         const teil = ganz ? ` von ${MB(ganz)} (${Math.round(summe / ganz * 100)} %)` : '';
         const zeile = `     ${MARKE('->  ')}  ${was} … ${MB(summe)}${teil}${rest}`;
+        ZUSTAND.fortschritt = { was, bytes: summe, gesamt: ganz || null, rest: rest.replace(/^, /, '') };
         /* Auf dem Schirm überschreibt sich die Zeile. In einer Datei täte
            sie das nicht - dort hinge jede Zwischenmeldung an der vorigen
            und das Protokoll wäre unlesbar (gesehen am 11.09.2026). */
@@ -233,6 +269,7 @@ function holen(url, ziel, was, tiefe = 0) {
       datei.on('finish', () => {
         clearInterval(wacht); datei.close();
         if (BUNT) process.stdout.write('\r' + ' '.repeat(78) + '\r');
+        ZUSTAND.fortschritt = null;
         gut(`${was} geholt (${MB(summe)})`);
         fertig(true);
       });
@@ -307,7 +344,7 @@ function laeuftAbbrechbar(befehl, argumente) {
   const { spawn } = require('node:child_process');
   const stdin = process.stdin;
   if (!stdin.isTTY || typeof stdin.setRawMode !== 'function') {
-    return Promise.resolve({ ok: laeuft(befehl, argumente), abgebrochen: false });
+    return laeuft(befehl, argumente).then((ok) => ({ ok, abgebrochen: false }));
   }
   return new Promise((fertig) => {
     const kind = spawn(befehl, argumente, { stdio: 'inherit' });
@@ -332,10 +369,26 @@ function laeuftAbbrechbar(befehl, argumente) {
   });
 }
 
+/* Asynchron und mitgelesen: die Ausgabe der Kinder (npm, Modelle, sammeln)
+   geht weiter auf die Konsole und ausserdem zeilenweise in den Zustand. */
 function laeuft(befehl, argumente) {
   const brauchtSchale = process.platform === 'win32' && !path.isAbsolute(befehl);
-  const e = spawnSync(befehl, argumente, { stdio: 'inherit', shell: brauchtSchale });
-  return e.status === 0;
+  return new Promise((fertig) => {
+    const { spawn } = require('node:child_process');
+    const kind = spawn(befehl, argumente, { stdio: ['inherit', 'pipe', 'pipe'], shell: brauchtSchale });
+    let restAus = '', restErr = '';
+    const zeilenweise = (s, quelle) => {
+      process.stdout.write(s);
+      const puffer = (quelle === 'err' ? restErr : restAus) + String(s).replace(/\r/g, '\n');
+      const teile = puffer.split('\n'); const rest = teile.pop();
+      if (quelle === 'err') restErr = rest; else restAus = rest;
+      for (const z of teile) if (z.trim()) merken('kind', z);
+    };
+    kind.stdout.on('data', (s) => zeilenweise(s, 'aus'));
+    kind.stderr.on('data', (s) => zeilenweise(s, 'err'));
+    kind.on('error', () => fertig(false));
+    kind.on('close', (code) => fertig(code === 0));
+  });
 }
 
 /* ---- Rechte und Platz -------------------------------------------
@@ -402,41 +455,7 @@ function jemandAufPort(port) {
 
 /* Die Seite im Browser aufmachen - jedes System auf seine Art. Schlaegt
    es fehl, steht die Adresse ja auch im Text. */
-/* CHROME, WENN ES DA IST. Caspar_D, 13.09.2026, nach dem ersten
-   vollstaendigen Windows-Lauf: „dann startete der Webbrowser und zeigt
-   mir den KlangTresor. Nirgendwo steht, dass wir eigentlich Chrome
-   brauchen, damit es reibungslos geht."
-
-   Das Lesezeichen fuer die nur dem Nutzer zugaenglichen Daten laeuft
-   nur in Chrome. Oeffnet die Einrichtung am Ende den Standardbrowser -
-   unter Windows also Edge -, sitzt der Mensch im falschen Fenster und
-   erfaehrt es erst, wenn das Lesezeichen nicht geht. */
-function chromeFinden() {
-  if (process.platform === 'win32') {
-    return ['ProgramFiles', 'ProgramFiles(x86)', 'LOCALAPPDATA']
-      .map((v) => process.env[v]).filter(Boolean)
-      .map((b) => path.join(b, 'Google', 'Chrome', 'Application', 'chrome.exe'))
-      .find((p) => fs.existsSync(p)) || null;
-  }
-  if (process.platform === 'darwin') {
-    return fs.existsSync('/Applications/Google Chrome.app') ? 'Google Chrome' : null;
-  }
-  return ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'].find((n) => da(n)) || null;
-}
-
-function seiteAufmachen(adresse) {
-  const chrome = chromeFinden();
-  const w = chrome
-    ? (process.platform === 'darwin' ? ['open', ['-a', chrome, adresse]] : [chrome, [adresse]])
-    : process.platform === 'win32' ? ['cmd', ['/c', 'start', '', adresse]]
-      : process.platform === 'darwin' ? ['open', [adresse]]
-        : ['xdg-open', [adresse]];
-  try {
-    const { spawn } = require('node:child_process');
-    spawn(w[0], w[1], { stdio: 'ignore', detached: true }).unref();
-  } catch (e) {}
-  return !!chrome;
-}
+const { chromeFinden, seiteAufmachen } = require('./browser.js');
 
 /* WO LIEGT DAS HIER EIGENTLICH - UND ZWAR SO, DASS ER ES WIEDERFINDET.
 
@@ -559,17 +578,26 @@ function schreibtisch() {
 }
 
 function schreibtischVerknuepfung(ordner) {
+  /* IMMER, MIT SYMBOL, UND SIE STARTET ALLES. Caspar_D, 13.09.2026: „um
+     den Server zu starten, soll das Setup einen Link auf den Desktop
+     legen, immer - wer das nicht will, loesche ihn einfach - und wenn es
+     geht mit dem KlangTresor-Icon des Favicons. Der Link startet den
+     Server und ruft den Browser, praeferenziell Chrome, auf mit Fallback
+     auf den Systembrowser, und zeigt die Uebersicht."
+     Das tut bin/starten.js; die Verknuepfung zeigt darauf. Das Symbol
+     liegt als .ico/.icns/.png in web/symbol/, aus dem Favicon gebaut. */
   const desk = schreibtisch();
   if (!desk) return null;
+  const node = process.execPath;
   try {
     if (process.platform === 'win32') {
-      const ziel = path.join(ordner, 'KlangTresor-starten.cmd');
       const lnk = path.join(desk, 'KlangTresor.lnk');
       const ps = [
         '$w = New-Object -ComObject WScript.Shell',
         `$s = $w.CreateShortcut(${JSON.stringify(lnk)})`,
-        `$s.TargetPath = ${JSON.stringify(ziel)}`,
+        `$s.TargetPath = ${JSON.stringify(path.join(ordner, 'KlangTresor-starten.cmd'))}`,
         `$s.WorkingDirectory = ${JSON.stringify(ordner)}`,
+        `$s.IconLocation = ${JSON.stringify(path.join(ordner, 'web', 'symbol', 'klangtresor.ico') + ',0')}`,
         '$s.Description = "KlangTresor starten"',
         '$s.Save()',
       ].join('; ');
@@ -577,15 +605,43 @@ function schreibtischVerknuepfung(ordner) {
       return fs.existsSync(lnk) ? lnk : null;
     }
     if (process.platform === 'darwin') {
-      const v = path.join(desk, 'KlangTresor');
-      try { fs.unlinkSync(v); } catch (e) {}
-      fs.symlinkSync(ordner, v);
-      return v;
+      /* Ein kleines Programmbuendel: das ist auf dem Mac der einzige Weg zu
+         einem Doppelklick-Symbol mit eigenem Bild. */
+      const app = path.join(desk, 'KlangTresor.app');
+      fs.rmSync(app, { recursive: true, force: true });
+      fs.mkdirSync(path.join(app, 'Contents', 'MacOS'), { recursive: true });
+      fs.mkdirSync(path.join(app, 'Contents', 'Resources'), { recursive: true });
+      fs.writeFileSync(path.join(app, 'Contents', 'Info.plist'), `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleName</key><string>KlangTresor</string>
+  <key>CFBundleIdentifier</key><string>de.klangtresor.starter</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleExecutable</key><string>KlangTresor</string>
+  <key>CFBundleIconFile</key><string>klangtresor</string>
+  <key>LSMinimumSystemVersion</key><string>10.13</string>
+</dict></plist>
+`);
+      fs.copyFileSync(path.join(ordner, 'web', 'symbol', 'klangtresor.icns'), path.join(app, 'Contents', 'Resources', 'klangtresor.icns'));
+      const exe = path.join(app, 'Contents', 'MacOS', 'KlangTresor');
+      fs.writeFileSync(exe, `#!/bin/bash
+# KlangTresor starten - angelegt von bin/einrichten.js
+open -a Terminal ${JSON.stringify(path.join(ordner, 'KlangTresor-starten.command'))}
+`, { mode: 0o755 });
+      /* und der Starter selbst, der im Terminal laeuft */
+      fs.writeFileSync(path.join(ordner, 'KlangTresor-starten.command'), `#!/bin/bash
+# KlangTresor starten - Server hoch, Browser auf. Dieses Fenster ist der Server.
+cd "$(dirname "$0")" || exit 1
+NODE=node; [ -x werkzeug/node/bin/node ] && NODE=werkzeug/node/bin/node
+exec "$NODE" bin/starten.js
+`, { mode: 0o755 });
+      return app;
     }
     const d = path.join(desk, 'klangtresor.desktop');
     fs.writeFileSync(d, ['[Desktop Entry]', 'Type=Application', 'Name=KlangTresor',
-      'Comment=Dein eigenes Suno-Archiv', `Exec=${path.join(ordner, 'bin', 'server-start.sh')}`,
-      `Path=${ordner}`, 'Terminal=true', ''].join('\n'), { mode: 0o755 });
+      'Comment=Dein eigenes Suno-Archiv', `Exec=${JSON.stringify(node)} ${JSON.stringify(path.join(ordner, 'bin', 'starten.js'))}`,
+      `Path=${ordner}`, `Icon=${path.join(ordner, 'web', 'symbol', 'klangtresor-256.png')}`, 'Terminal=true', ''].join('\n'), { mode: 0o755 });
     return d;
   } catch (e) { return null; }
 }
@@ -606,6 +662,51 @@ function schreibtischVerknuepfung(ordner) {
      am 11.09.2026 schon erkannt und dort behoben - hier nicht.
      Gefunden in der Pruefung vor der Veroeffentlichung. */
   process.env.PATH = path.dirname(process.execPath) + path.delimiter + process.env.PATH;
+
+  /* DIE SEITE. Ein winziger Server nur fuer diesen Lauf, nur auf
+     127.0.0.1, auf dem ersten freien Port ab 8790. Er liefert
+     web/einrichtung/index.html, den Zustand als JSON, nimmt Antworten
+     entgegen und oeffnet auf Wunsch den Ordnerdialog des Systems. Geht
+     kein Browser auf, laeuft die Konsole wie immer weiter. */
+  if (!NUR_TEXT) {
+    const http = require('node:http');
+    const SEITE = path.join(WURZEL, 'web', 'einrichtung');
+    const rumpf = (req) => new Promise((f) => { let s = ''; req.on('data', (c) => { s += c; if (s.length > 65536) req.destroy(); }); req.on('end', () => f(s)); });
+    const antwort = (res, code, typ, inhalt) => { res.writeHead(code, { 'Content-Type': typ, 'Cache-Control': 'no-store' }); res.end(inhalt); };
+    const srv = http.createServer(async (req, res) => {
+      const u = new URL(req.url, 'http://x');
+      try {
+        if (u.pathname === '/' || u.pathname === '/index.html') return antwort(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(SEITE, 'index.html')));
+        if (u.pathname === '/anreisser.json') return antwort(res, 200, 'application/json; charset=utf-8', fs.readFileSync(path.join(SEITE, 'anreisser.json')));
+        if (u.pathname === '/stand') return antwort(res, 200, 'application/json; charset=utf-8', JSON.stringify(ZUSTAND));
+        if (u.pathname === '/antwort' && req.method === 'POST') {
+          let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
+          const ok = antwortVonSeite(d.id, d.wert);
+          if (ok) schreib(HELL(String(d.wert == null ? '' : d.wert)) + MATT('   (aus der Seite)'));
+          return antwort(res, 200, 'application/json', JSON.stringify({ ok }));
+        }
+        if (u.pathname === '/ordner' && req.method === 'POST') {
+          let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
+          const pfad = require('./ordnerdialog.js').ordnerWaehlen(os.homedir(), String(d.titel || 'Ordner wählen').slice(0, 120));
+          return antwort(res, 200, 'application/json', JSON.stringify({ pfad: pfad || null }));
+        }
+        return antwort(res, 404, 'text/plain', 'nicht da');
+      } catch (e) { return antwort(res, 500, 'text/plain', String(e.message)); }
+    });
+    const horchen = (port) => new Promise((f) => {
+      srv.once('error', () => f(false));
+      srv.listen(port, '127.0.0.1', () => f(true));
+    });
+    let port = 8790;
+    while (port < 8840 && !(await horchen(port))) port++;
+    if (srv.listening) {
+      ZUSTAND.adresse = `http://127.0.0.1:${port}/`;
+      const inChrome = seiteAufmachen(ZUSTAND.adresse);
+      matt(`Die Einrichtung läuft auch als Seite: ${ZUSTAND.adresse}` + (inChrome ? ' (Chrome)' : ''));
+      matt('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.');
+      srv.unref();
+    }
+  }
 
   marke();
 
@@ -1054,7 +1155,7 @@ function schreibtischVerknuepfung(ordner) {
   matt('Ein bis fünf Minuten, und zwischendurch ist es still.');
   /* NPM OHNE EINGABEAUFFORDERUNG AUFRUFEN.
 
-     `laeuft()` startet unter Windows mit shell:true, also ueber cmd.exe -
+     `await laeuft()` startet unter Windows mit shell:true, also ueber cmd.exe -
      und cmd.exe WEIGERT SICH, einen UNC-Pfad als Arbeitsverzeichnis zu
      nehmen. Es springt stillschweigend nach C:\Windows und npm versucht
      dort package-lock.json anzulegen:
@@ -1094,7 +1195,7 @@ function schreibtischVerknuepfung(ordner) {
      Laufwerksbuchstaben ab. Darunter ist cmd.exe zufrieden - auch in
      npms eigenen Kindprozessen, denn die erben das Arbeitsverzeichnis.
      Der Buchstabe verschwindet mit der cmd-Sitzung von selbst. */
-  function npmLaufen(args) {
+  async function npmLaufen(args) {
     const na = npmAufruf();
     if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
       tut('Der Ordner liegt auf einer Freigabe — ich blende ihn kurz als Laufwerk ein.');
@@ -1115,10 +1216,10 @@ function schreibtischVerknuepfung(ordner) {
   matt('Stemtrennung und Musikstil. Klappt das nicht, läuft alles andere trotzdem.');
   const modelle = path.join(WURZEL, 'library', 'modelle');
   if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
-  if (!laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
+  if (!await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
     const w = await wieWeiter('Modelle holen', 'Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.');
     if (w === 'schluss') { wiederkommen(); schluss(0); }
-    if (w === 'wieder') laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
+    if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
   } else { gut('Modelle sind da.'); insLager('modelle', modelle); }
 
   /* ================================================================
@@ -1166,7 +1267,7 @@ function schreibtischVerknuepfung(ordner) {
   matt('Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die Alben,');
   matt('soweit sie öffentlich stehen.');
   leer();
-  if (!laeuft(process.execPath, [path.join('bin', 'sammeln.js'), handle])) {
+  if (!await laeuft(process.execPath, [path.join('bin', 'sammeln.js'), handle])) {
     const w = await wieWeiter('Songliste holen', 'Ohne sie gibt es nichts zu archivieren.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   }
@@ -1183,7 +1284,7 @@ function schreibtischVerknuepfung(ordner) {
      Dieselbe Reihenfolge wie im Morgenlauf: Katalog, dann uebernehmen,
      dann laden. */
   matt('Ich ordne das Gesammelte zu einem Katalog — das dauert einen Moment.');
-  if (!laeuft(process.execPath, [path.join('bin', 'aufbereiten.js')])) {
+  if (!await laeuft(process.execPath, [path.join('bin', 'aufbereiten.js')])) {
     wink('Der Katalog ließ sich nicht bauen — der nächste Schritt findet dann nichts.');
   }
 
@@ -1264,7 +1365,7 @@ function schreibtischVerknuepfung(ordner) {
     }
   }
   leer();
-  laeuft(process.execPath, einlesen);
+  await laeuft(process.execPath, einlesen);
 
   /* ================================================================ */
   schritt('Titelbilder und Bewegtbilder laden');
@@ -1369,5 +1470,5 @@ function schreibtischVerknuepfung(ordner) {
     matt('Daten, die nur du sehen darfst, läuft ausschließlich in Chrome:');
     satz(MATT('  ') + MARKE('https://www.google.com/chrome/'));
   }
-  laeuft(process.execPath, [path.join('server', 'server.js')]);
+  await laeuft(process.execPath, [path.join('server', 'server.js')]);
 })();
