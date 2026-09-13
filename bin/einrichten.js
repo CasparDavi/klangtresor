@@ -51,6 +51,8 @@ const OHNE_START = process.argv.includes('--ohne-start');
    laeuft trotzdem weiter - sie ist das Protokoll und die Rueckfalltuer.
    Alles, was hier ausgegeben oder gefragt wird, geht an beide. */
 const NUR_TEXT = process.argv.includes('--text');
+/* Fuer Probelaeufe: Seite bereitstellen, aber keinen Browser aufreissen. */
+const OHNE_BROWSER = process.argv.includes('--ohne-browser');
 const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, fertig: false, adresse: null, gesamt: 10 };
 const ohneFarbe = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
 function merken(art, text) {
@@ -701,7 +703,7 @@ exec "$NODE" bin/starten.js
     while (port < 8840 && !(await horchen(port))) port++;
     if (srv.listening) {
       ZUSTAND.adresse = `http://127.0.0.1:${port}/`;
-      const inChrome = seiteAufmachen(ZUSTAND.adresse);
+      const inChrome = OHNE_BROWSER ? false : seiteAufmachen(ZUSTAND.adresse);
       matt(`Die Einrichtung läuft auch als Seite: ${ZUSTAND.adresse}` + (inChrome ? ' (Chrome)' : ''));
       matt('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.');
       srv.unref();
@@ -1430,6 +1432,9 @@ exec "$NODE" bin/starten.js
   /* ================================================================ */
   leer();
   schreib('  ' + MARKE('####') + '  ' + HELL('Fertig. KlangTresor ist eingerichtet.'));
+  merken('schritt', 'Fertig. KlangTresor ist eingerichtet.');
+  if (ZUSTAND.schritte[SCHRITT - 1]) ZUSTAND.schritte[SCHRITT - 1].zustand = 'fertig';
+  ZUSTAND.fertig = true;
   leer();
   const netz = [];
   for (const [, liste] of Object.entries(os.networkInterfaces())) {
