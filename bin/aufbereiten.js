@@ -217,15 +217,25 @@ if (ausAlben.length) console.log(`  Albumeintraege als Titelquelle: ${ausAlben.l
    Alben JEDER Eintrag als fremd: Ton und Bild kaemen fuer eigene Songs
    vom Suno-CDN statt aus /media/<id>/. Leise falsch, nicht kaputt -
    deshalb hier die dritte Quelle. */
-const eigener = (profilRoh && profilRoh.handle)
+/* KLEINGESCHRIEBEN VERGLEICHEN. Am 13.09.2026 tippte Caspar_D beim
+   Einrichten seinen Namen so, wie er ueber seinen Liedern steht:
+   "Caspar_D". Suno nahm das an - die Profilseite kam mit allen 251
+   Titeln -, aber dieser Vergleich hier war buchstabengenau:
+   "caspar_d" !== "Caspar_D", und alle 251 wurden als fremd aussortiert.
+   Ergebnis: ein leerer Katalog, eine leere Seite, und niemand wusste
+   warum. Suno-Handles sind nicht schreibungsempfindlich; also sind
+   wir es auch nicht. */
+const kleinHandle = (h) => (h ? String(h).trim().replace(/^@/, '').toLowerCase() : null);
+const eigener = kleinHandle(
+     (profilRoh && profilRoh.handle)
   || (profilRoh && profilRoh.profil && profilRoh.profil.handle)
-  || (K.lesen() && K.lesen().profil && K.lesen().profil.handle) || null;
+  || (K.lesen() && K.lesen().profil && K.lesen().profil.handle) || null);
 
 const eingang = new Map();
 let fremde = 0;
 for (const c of [...ausProfil, ...ausFeed, ...ausPrivat, ...ausAlben]) {
   if (!c || !c.id) continue;
-  if (eigener && c.handle && c.handle !== eigener) { fremde++; continue; }
+  if (eigener && c.handle && kleinHandle(c.handle) !== eigener) { fremde++; continue; }
   if (!eingang.has(c.id)) eingang.set(c.id, c);
 }
 if (fremde) console.log(`  ${fremde} fremde Songs aussortiert (nicht von ${eigener})`);
@@ -648,7 +658,7 @@ if (playlistDatei) {
       .sort((a, b) => (a.relative_index || 0) - (b.relative_index || 0))
       .map(e => {
         const c = (e.clip && typeof e.clip === 'object') ? e.clip : {};
-        const eigen = c.handle === eigener;
+        const eigen = kleinHandle(c.handle) === eigener;
         return {
           songId:       c.id || null,
           position:     e.relative_index ?? null,

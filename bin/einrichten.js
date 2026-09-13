@@ -1091,7 +1091,7 @@ end try`;
   } else gut('Pakete sind da.');
 
   /* ================================================================ */
-  schritt('KI-Modelle holen (rund 284 MB)');
+  schritt('KI-Modelle holen (rund 550 MB)');
   matt('Stemtrennung und Musikstil. Klappt das nicht, läuft alles andere trotzdem.');
   const modelle = path.join(WURZEL, 'library', 'modelle');
   if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
@@ -1127,7 +1127,12 @@ end try`;
     matt('suno.com/@musikfreund heißt, ist es „musikfreund". Nicht deine');
     matt('E-Mail-Adresse und nicht der Anzeigename über deinen Liedern.');
     leer();
-    handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '))).replace(/^@/, '').trim();
+    /* Kleingeschrieben und ohne @ - so, wie Suno ihn fuehrt. Wer "Caspar_D"
+       tippt, meint caspar_d; am 13.09.2026 fuehrte genau das zu einem
+       leeren Katalog, weil der Wächter in aufbereiten.js buchstabengenau
+       verglich. Dort ist es jetzt auch behoben; hier wird gar nicht erst
+       Zweideutiges weitergegeben. */
+    handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '))).replace(/^@/, '').trim().toLowerCase();
   }
   if (!handle) { boese('Ohne den Namen geht es nicht weiter.'); wiederkommen(); schluss(1); }
 
@@ -1297,6 +1302,20 @@ end try`;
   if (OHNE_START) return;
   /* Erst aufmachen, dann starten: der Browser braucht laenger zum
      Hochkommen als der Server zum Horchen. */
+  /* DIE FIREWALL FRAGT GLEICH. Sobald der Server auf 0.0.0.0:8788 horcht,
+     zeigt Windows "Die Windows Defender Firewall hat einige Features
+     dieser App blockiert" - fuer "Node.js JavaScript Runtime", mit
+     "Oeffentliche Netzwerke" vorangehakt und "Private" NICHT. Wer da
+     nur auf Zulassen klickt, hat KlangTresor im eigenen WLAN nicht
+     erreichbar. Am 13.09.2026 im ersten Windows-Lauf gesehen. Also
+     vorher sagen, was kommt und was anzuhaken ist. */
+  if (process.platform === 'win32') {
+    wink('Gleich fragt Windows, ob „Node.js JavaScript Runtime" ins Netzwerk darf.');
+    matt('Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst');
+    matt('erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke');
+    matt('„Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.');
+    leer();
+  }
   if (seiteAufmachen('http://localhost:8788')) gut('KlangTresor geht in Chrome auf.');
   else {
     wink('KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.');
