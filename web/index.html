@@ -26961,7 +26961,10 @@ const EFFEKTE = {
       {k:'auftrieb',lbl:'Auftrieb (− sinkt)',min:-1,max:1,step:.05,def:.12},
       {k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.15},
       {k:'sog',lbl:'Absaugung',sel:[['keine','keine'],['boden','am Boden'],['links','links'],['rechts','rechts'],['oben','oben']],def:'keine'},
-      {k:'sogStaerke',lbl:'Sog',min:0,max:1,step:.05,def:.4,when:e=>(e.sog||'keine')!=='keine'}],
+      {k:'sogStaerke',lbl:'Sog',min:0,max:1,step:.05,def:.4,when:e=>(e.sog||'keine')!=='keine'},
+      /* Tiefe: bei 0 der alte Nebel als Schicht, bei 1 die Daempfung entlang der Entfernung.
+         Vorgabe 0 - bestehende Rezepte sehen unveraendert aus, bis jemand den Regler anfasst. */
+      {k:'tiefeAn',lbl:'Tiefe (Karte)',min:0,max:1,step:.05,def:0}],
     /* Der Sog wird hier geschaltet, nicht am Regler: ein ausgeblendeter Regler behaelt seinen Wert, und die
        allgemeine Uniform-Schleife laedt ihn trotzdem hoch. Bei "keine" zog der Nebel sonst zur Bildmitte. */
     glZusatz:e=>({ u_sorte:(e.sorte==='dunst'?0:e.sorte==='boden'?2:1),
@@ -27468,6 +27471,12 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW); this.vb=vb;
     this.texL=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texL); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));   /* solange kein Licht-Puffer da ist: schwarz */
+    /* Die TIEFENKARTE. Hell ist nah, dunkel ist fern; bin/tiefenkarten.js
+       rechnet sie je Titelbild. Solange keine da ist: mittleres Grau -
+       dann ist die Tiefe ueberall gleich und die Rechnung liefert genau
+       das, was ohne Karte herauskaeme. */
+    this.texT=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texT); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([128,128,128,255]));
     this.tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true); return true; },
   noiseLaden(){ if(this.noise||this.laden) return; this.laden=true; fetch('/fremd/webgl-noise/noise3D.glsl').then(r=>r.ok?r.text():'').then(t=>{ this.noise=t||null; this.laden=false; }).catch(()=>{ this.laden=false; }); },
@@ -27478,20 +27487,31 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[typ]=null; return null; }
     pr._loc={}; this.prog[typ]=pr; return pr; },
   loc(pr,n){ if(pr._loc[n]===undefined) pr._loc[n]=this.gl.getUniformLocation(pr,n); return pr._loc[n]; },
-  run(e,srcCv,W,H,t,lichtCv){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; } const pr=this.programm(e.typ); if(!pr) return null; const gl=this.gl;
+  run(e,srcCv,W,H,t,lichtCv,tiefeBild){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; } const pr=this.programm(e.typ); if(!pr) return null; const gl=this.gl;
     if(this.cv.width!==W||this.cv.height!==H){ this.cv.width=W; this.cv.height=H; } gl.viewport(0,0,W,H);
     gl.useProgram(pr); gl.bindBuffer(gl.ARRAY_BUFFER,this.vb); const ap=gl.getAttribLocation(pr,'a_pos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcCv);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.texL); if(lichtCv&&lichtCv.width>1) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,lichtCv);
+    /* Die Karte wird nur hochgeladen, wenn sie sich geaendert hat - sie
+       ist je Titel konstant, und 518x518 je Bild waere Verschwendung. */
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,this.texT);
+    if(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1&&this._tiefeQuelle!==tiefeBild.src){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,tiefeBild); this._tiefeQuelle=tiefeBild.src; }catch(err){} }
+    else if(!tiefeBild&&this._tiefeQuelle){ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([128,128,128,255])); this._tiefeQuelle=null; }
     gl.activeTexture(gl.TEXTURE0);
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
-    u('u_licht',l=>gl.uniform1i(l,1));
+    u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2));
     u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
     u('u_takt',l=>gl.uniform1f(l, EFFEKTE[e.typ].params.some(p=>p.lm)?lmSchub(e,t):0));
     for(const p of EFFEKTE[e.typ].params){ const v=e[p.k]; if(p.farbe){ const c=[1,3,5].map(q=>parseInt(String(v).slice(q,q+2),16)/255); if(!c.some(isNaN)) u('u_'+p.k,l=>gl.uniform3f(l,c[0],c[1],c[2])); } else if(typeof v==='number') u('u_'+p.k,l=>gl.uniform1f(l,v)); }
+    /* OHNE KARTE KEIN TIEFENREGLER. Die Vorgabetextur ist mittleres Grau,
+       also z = 0,5 ueberall - die Daempfungsrechnung liefert damit nicht
+       dasselbe wie ohne Tiefe, sondern eine gleichmaessig staerkere
+       Trueubung. Wo keine Karte liegt, wird der Regler deshalb hart auf
+       null gesetzt: der Effekt sieht dann genau aus wie bisher. */
+    if(!(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1)) u('u_tiefeAn',l=>gl.uniform1f(l,0));
     const zus=EFFEKTE[e.typ].glZusatz; if(zus){ const o=zus(e); for(const k of Object.keys(o)) u(k,l=>gl.uniform1f(l,o[k])); }
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
-const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
+const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform sampler2D u_tiefe; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
 const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
 const GL_SHADER={
   wellen:`uniform float u_amplitude,u_skala,u_tempo,u_zone,u_aufwind;
@@ -27509,7 +27529,7 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
   float inside=step(0.0,ug.x)*step(ug.x,1.0)*step(0.0,ug.y)*step(ug.y,1.0);
   vec3 col=vec3(texture2D(u_tex,clamp(ur,0.0,1.0)).r, texture2D(u_tex,clamp(ug,0.0,1.0)).g, texture2D(u_tex,clamp(ub,0.0,1.0)).b);
   gl_FragColor=vec4(col*inside, 1.0); }`,
-  nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_streuung,u_grundlicht,u_sorte,u_sogX,u_sogY; uniform vec3 u_farbe; uniform sampler2D u_licht;
+  nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_streuung,u_grundlicht,u_sorte,u_sogX,u_sogY,u_tiefeAn; uniform vec3 u_farbe; uniform sampler2D u_licht;
 float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.34,0.64,u_turbulenz); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
 /* Grob verwaschene Umgebung: neun Griffe reichen, der Nebel braucht keine Schaerfe, nur die Gegend. */
 vec3 umgebung(vec2 uv){ vec3 s=texture2D(u_tex,uv).rgb*2.0;
@@ -27539,9 +27559,22 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
      wird die Umgebung aus dem Bild selbst genommen, grob verwaschen: ueber Hellem ist der Nebel hell,
      ueber Dunklem dunkel. Er behaelt einen Teil der Farbe darunter, sonst grauen satte Bilder aus. */
   vec3 L=texture2D(u_licht,uv).rgb;
-  vec3 um=umgebung(uv); float lum=dot(um,vec3(0.299,0.587,0.114));
-  vec3 grund=u_farbe*mix(vec3(lum),um,0.6)*u_grundlicht;
-  gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_streuung, d), c.a); }`,
+  vec3 um=umgebung(uv);
+  /* Die Entsaettigung ist raus (VIDEO-PLAN §10). Hier stand mix(vec3(lum),um,0.6) - 40 Prozent
+     Grau, waehrend der Kommentar darueber das Gegenteil behauptete. Mit der Tiefe entsteht die
+     Entsaettigung von selbst, dort wo sie hingehoert: in der Ferne. */
+  vec3 grund=u_farbe*um*u_grundlicht;
+  /* NEBEL IST KEINE SCHICHT, SONDERN EINE DAEMPFUNG ENTLANG DES SEHSTRAHLS.
+     Koschmieders Sichtweitengleichung: Ergebnis = Bild*e^(-dichte*z) + Luftlicht*(1-e^(-dichte*z)).
+     Jeder Bildpunkt wird nach SEINER EIGENEN Tiefe gedaempft - Vordergrund kaum, Hintergrund laeuft
+     gegen die Luftlichtfarbe. Die Figur steht dadurch automatisch vor dem Nebel: ohne Maske, ohne
+     Schichtreihenfolge, ohne eine einzige Kante (VIDEO-PLAN §9.7a).
+     Die Karte gibt hell = nah, also ist z = 1 - Helligkeit. Bei u_tiefeAn = 0 bleibt es exakt beim
+     alten d - der Regler ist der ehrliche Weg zurueck. */
+  float z=1.0-texture2D(u_tiefe,uv).r;
+  float dt=1.0-exp(-d*3.0*z);
+  float dd=mix(d, dt, clamp(u_tiefeAn,0.0,1.0));
+  gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_streuung, dd), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
   float base=1.0-u_boden; float h=(v_uv.y-base)/max(0.05,u_hoehe*(1.0+0.5*u_takt));
@@ -27583,7 +27616,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
           const sh=Math.max(1,Math.abs(dx)*0.5)*(dx<0?-1:1); cres.fillStyle='#000'; cres.fillRect(bx+dx-Math.abs(sh),by,bw+Math.abs(sh)*2,bh);
           for(const [mask,sv] of [['#ff0000',sh],['#00ffff',-sh]]){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,bx,by,bw,bh,bx+dx+sv,by,bw,bh); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(bx+dx+sv,by,bw,bh); frisch(ckc); cres.globalCompositeOperation='lighter'; cres.drawImage(okc,0,0); cres.globalCompositeOperation='source-over'; } }
         else cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh); } } }
-  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,EFFEKTE[e.typ].medium?olicht:null); if(g) cres.drawImage(g,0,0);
+  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,EFFEKTE[e.typ].medium?olicht:null, tiefeBildVon(DATA&&DATA.id)); if(g) cres.drawImage(g,0,0);
     else if(EFFEKTE[e.typ].medium){ cres.drawImage(srcCv,0,0); nebelLeinwand(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
   else if(e.typ==='bloom'){ cres.filter='blur('+Math.round(e.radius)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
 }
@@ -28170,6 +28203,22 @@ function zeichneFrame(t){
      Die Engine arbeitet auf den Modulvariablen - fuer jeden Maler werden
      sie umgehaengt und danach fuers Studio wieder zurueckgestellt. Zeit:
      der Player, wenn er diesen Titel spielt (eine Audioquelle). */
+  /* DIE TIEFENKARTE JE TITEL. Sie liegt neben dem Cover (bin/tiefenkarten.js)
+     und aendert sich nie - also einmal holen und behalten. Fehlt sie, bleibt
+     der Eintrag null, und der Shader rechnet mit gleichmaessiger Tiefe, also
+     genau wie ohne Karte. */
+  const TIEFEN={};
+  function tiefeBildVon(id){
+    if(!id) return null;
+    if(TIEFEN[id]!==undefined) return TIEFEN[id];
+    TIEFEN[id]=null;
+    const im=new Image();
+    im.onload=()=>{ TIEFEN[id]=im; };
+    im.onerror=()=>{ TIEFEN[id]=null; };   /* kein Bild: der Nebel bleibt eine Schicht */
+    im.src='/media/'+id+'/tiefe.png';
+    return null;
+  }
+
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
   const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ovb,olicht,VORB,ca,cb,cc,cres,ckc,clicht,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
   const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ovb,olicht,VORB,ca,cb,cc,cres,ckc,clicht,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
