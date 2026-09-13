@@ -2616,6 +2616,26 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     return jsonAntwort(res, { ok: true });
   }
 
+  /* DER SYSTEMDIALOG FUER DIE SEITE. Ein Browser darf keinen Pfad von der
+     Platte nennen; der Server aber steht auf derselben Maschine und darf
+     den Ordnerdialog des Systems oeffnen - fuer den, der davor sitzt.
+     Deshalb nur fuer Anfragen vom selben Rechner: ein Dialog auf dem
+     Server-Bildschirm nuetzt dem Handy im WLAN nichts, und ein Fremder im
+     Netz soll auf diesem Bildschirm keine Fenster aufmachen koennen.
+     Caspar_D, 13.09.2026: "ich bestehe auf einem Filechooser". */
+  if (p === '/api/ordner/dialog' && req.method === 'POST') {
+    const von = String(req.socket.remoteAddress || '');
+    const lokal = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(von);
+    if (!lokal) return jsonAntwort(res, { pfad: null, grund: 'nur vom selben Rechner' }, 403);
+    if (EINGEFROREN) return jsonAntwort(res, { pfad: null, grund: 'eingefroren' }, 403);
+    let roh = ''; req.on('data', (c) => { roh += c; if (roh.length > 2048) req.destroy(); });
+    return req.on('end', () => {
+      let titel = 'Ordner wählen'; try { titel = JSON.parse(roh || '{}').titel || titel; } catch (e) {}
+      const { ordnerWaehlen } = require('../bin/ordnerdialog.js');
+      const pfad = ordnerWaehlen(require('node:os').homedir(), String(titel).slice(0, 120));
+      jsonAntwort(res, { pfad: pfad || null });
+    });
+  }
   if (p === '/api/ordner') {
     const pfad = String(u.searchParams.get('pfad') || '');
     const frei = (o) => { try {

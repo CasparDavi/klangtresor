@@ -649,41 +649,8 @@ function schreibtischVerknuepfung(ordner) {
 
      Geht kein Dialog auf (kein Bildschirm, ferngesteuerte Sitzung,
      zenity fehlt), wird nicht gefragt, sondern die Vorgabe genommen. */
-  function ordnerWaehlen(vorgabe) {
-    const titel = 'Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.';
-    try {
-      if (process.platform === 'darwin') {
-        const s = `try
-  set d to choose folder with prompt ${JSON.stringify(titel)} default location POSIX file ${JSON.stringify(vorgabe)}
-  POSIX path of d
-end try`;
-        const e = spawnSync('osascript', ['-e', s], { encoding: 'utf8' });
-        const w = String(e.stdout || '').trim();
-        return w || null;
-      }
-      if (process.platform === 'win32') {
-        const ps = [
-          'Add-Type -AssemblyName System.Windows.Forms',
-          '$d = New-Object System.Windows.Forms.FolderBrowserDialog',
-          `$d.Description = ${JSON.stringify(titel)}`,
-          `$d.SelectedPath = ${JSON.stringify(vorgabe)}`,
-          '$d.ShowNewFolderButton = $true',
-          "if ($d.ShowDialog() -eq 'OK') { $d.SelectedPath }",
-        ].join('; ');
-        const e = spawnSync('powershell', ['-NoProfile', '-STA', '-Command', ps], { encoding: 'utf8' });
-        const w = String(e.stdout || '').trim();
-        return w || null;
-      }
-      for (const [bef, args] of [['zenity', ['--file-selection', '--directory', '--title', titel, '--filename', vorgabe + '/']],
-                                 ['kdialog', ['--getexistingdirectory', vorgabe]]]) {
-        if (!da(bef)) continue;
-        const e = spawnSync(bef, args, { encoding: 'utf8' });
-        const w = String(e.stdout || '').trim();
-        if (w) return w;
-      }
-    } catch (e) {}
-    return null;
-  }
+  const ordnerWaehlenRoh = require('./ordnerdialog.js').ordnerWaehlen;
+  const ordnerWaehlen = (vorgabe) => ordnerWaehlenRoh(vorgabe, 'Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.');
 
   function heimatVorschlag() {
     const heim = os.homedir();

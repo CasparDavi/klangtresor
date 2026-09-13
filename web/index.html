@@ -2793,6 +2793,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tonfehlt button{padding:8px 14px;border-radius:8px;border:1px solid var(--rand,#2a2a30);background:#1d1d24;color:inherit;font:inherit;cursor:pointer}
 #tonfehlt button.los{background:var(--akzent,#e31c79);border-color:transparent;color:#fff}
 #tonfehlt .tfs{font-size:12.5px;color:var(--schwach,#9a9aa2);margin-top:10px;white-space:pre-wrap}
+.ordnerbrowser{max-height:260px;overflow:auto;margin:6px 0;border:1px solid var(--rand,#2a2a30);border-radius:8px;padding:6px}
 /* Der Zaehlerverlauf: drei Linien, eine je Groesse, ueber die Tage. Klein,
    oben, ohne Achsenbeschriftung - es geht um die Form, die Zahlen
    stehen daneben. */
@@ -4534,7 +4535,9 @@ function tonHinweis(){
          Musikordnern</b> sehe ich von selbst nach. Liegen sie woanders, nenn den Ordner — ich
          erkenne Suno-Dateien am Inhalt, auch umbenannte, auch in Unterordnern, und ordne sie
          deinen Titeln zu. Deine übrige Musik fasse ich nicht an, nichts wird verschoben oder gelöscht.</p>
-      <input id="tfordner" type="text" placeholder="Pfad zum Ordner, etwa D:\\Musik\\Suno oder /Volumes/Platte/Suno" spellcheck="false">
+      <div class="tfk"><button onclick="ordnerWaehlerAuf('tfbrowser','tfordner')">Ordner wählen …</button>
+        <span id="tfordner" class="tfs" style="margin:0;align-self:center"></span></div>
+      <div id="tfbrowser" class="ordnerbrowser" hidden></div>
       <div class="tfk"><button class="los" onclick="tonEinlesen()">Einlesen</button>
         <button onclick="tonEinlesen(true)">Nur in Download- und Musikordnern nachsehen</button></div>
       <div class="tfs" id="tfstand"></div></div>
@@ -4547,10 +4550,71 @@ function tonHinweis(){
   document.body.appendChild(box);
 }
 function tonHinweisWeg(){ try { sessionStorage.setItem('tonhinweis-weg', '1'); } catch (e) {} const b = $('tonfehlt'); if (b) b.remove(); }
+/* DER ORDNERWAEHLER - kein Pfadfeld. Caspar_D, 13.09.2026: "ein DAU
+   scheitert an den Schraegstrichen, relativen und absolut adressierten
+   Ordnern, ich bestehe auf einem Filechooser, der einen Ordner
+   auswaehlen kann."
+
+   Zwei Wege, je nachdem, wo die Seite laeuft:
+     - auf demselben Rechner wie der Server: der Ordnerdialog des
+       Systems (POST /api/ordner/dialog) - das Fenster, das jeder kennt
+     - vom Handy oder Tablet aus: der Browser in der Seite ueber
+       /api/ordner (Laufwerke, Unterordner, "diesen nehmen") - derselbe,
+       den der Export fuer den Stick benutzt
+   Das gewaehlte Ergebnis landet als data-pfad an der Anzeige; ein
+   Mensch tippt nie einen Pfad. */
+function ordnerWahl(anzeigeId, pfad){
+  const a = $(anzeigeId); if (!a) return;
+  a.dataset.pfad = pfad || ''; a.textContent = pfad ? pfad : '';
+}
+const seiteIstLokal = () => ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+async function ordnerWaehlerAuf(boxId, anzeigeId){
+  const box = $(boxId); if (!box) return;
+  if (!box.hidden){ box.hidden = true; return; }
+  box.hidden = false;
+  if (seiteIstLokal()){
+    box.innerHTML = '<div class="fussnote">Ein Fenster geht auf — wähle den Ordner dort.</div>';
+    let d = null;
+    try { d = await (await fetch('/api/ordner/dialog', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titel: 'Wo liegen deine Suno-Dateien?' }) })).json(); } catch (e) {}
+    if (d && d.pfad){ ordnerWahl(anzeigeId, d.pfad); box.hidden = true; return; }
+    box.innerHTML = '<div class="fussnote">Kein Ordner gewählt. Oder hier in der Seite suchen:</div>';
+  }
+  ordnerBrowser(box, anzeigeId, '');
+}
+async function ordnerBrowser(box, anzeigeId, pfad){
+  const liste = document.createElement('div');
+  if (seiteIstLokal() && box.firstChild) { box.appendChild(liste); } else { box.innerHTML = ''; box.appendChild(liste); }
+  liste.innerHTML = '<div class="fussnote">Lese …</div>';
+  let d; try { d = await (await fetch('/api/ordner' + (pfad ? '?pfad=' + encodeURIComponent(pfad) : ''), { cache: 'no-store' })).json(); }
+  catch (e) { liste.innerHTML = '<div class="fussnote">Server antwortet nicht.</div>'; return; }
+  liste.innerHTML = '';
+  if (!pfad){
+    const k = document.createElement('div'); k.className = 'fussnote'; k.textContent = 'Ein Laufwerk wählen:'; liste.appendChild(k);
+    for (const l of (d.laufwerke || [])){
+      const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(l.name)}</b>`;
+      z.onclick = () => ordnerBrowser(box, anzeigeId, l.pfad); liste.appendChild(z);
+    }
+    return;
+  }
+  const kopf = document.createElement('div'); kopf.className = 'ordnerkopf';
+  const zurueck = document.createElement('button'); zurueck.className = 'pille'; zurueck.textContent = d.eltern ? '↑ eine Ebene' : '↑ Laufwerke';
+  zurueck.onclick = () => ordnerBrowser(box, anzeigeId, d.eltern || '');
+  const hier = document.createElement('button'); hier.className = 'pille an'; hier.textContent = 'Diesen Ordner nehmen';
+  hier.onclick = () => { ordnerWahl(anzeigeId, d.pfad); box.hidden = true; };
+  const wo = document.createElement('span'); wo.className = 'fussnote'; wo.style.margin = '0'; wo.textContent = d.pfad;
+  kopf.append(zurueck, hier, wo); liste.appendChild(kopf);
+  for (const o of (d.ordner || [])){
+    const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(o.name)}</b>`;
+    z.onclick = () => ordnerBrowser(box, anzeigeId, o.pfad); liste.appendChild(z);
+  }
+  if (!(d.ordner || []).length) liste.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Keine Unterordner.' }));
+}
+
 /* Der feste Platz in der Profilkachel: derselbe Weg wie im Overlay. */
 async function ordnerEinlesen(){
   const feld = $('kontordnerfeld'), stand = $('kontordnerstand');
-  const ordner = (feld.value || '').trim().replace(/^['"]|['"]$/g, '');
+  const ordner = (feld.dataset.pfad || '').trim();
   if (!ordner){ stand.textContent = 'Erst den Ordner nennen.'; return; }
   stand.textContent = 'Sehe nach und ordne zu …';
   let d = null;
@@ -4566,7 +4630,7 @@ async function ordnerEinlesen(){
 }
 async function tonEinlesen(nurDownloads){
   const stand = $('tfstand'); const feld = $('tfordner');
-  const ordner = nurDownloads ? '' : (feld.value || '').trim().replace(/^['"]|['"]$/g, '');
+  const ordner = nurDownloads ? '' : (feld.dataset.pfad || '').trim();
   if (!nurDownloads && !ordner){ stand.textContent = 'Erst den Ordner nennen — oder nur in Download- und Musikordnern nachsehen.'; return; }
   stand.textContent = 'Sehe nach und ordne zu … das kann bei vielen Dateien ein paar Minuten dauern.';
   let d = null;
@@ -12635,7 +12699,10 @@ async function profilKontingentFuellen(){
          nach. -->
     <details class="kontordner"><summary>Suno-Dateien aus einem weiteren Ordner einlesen</summary>
       <p class="fussnote">Download- und Musikordner werden ohnehin durchsucht, bei jedem Abgleich. Hier nennst du, was woanders liegt — erkannt wird am Inhalt, auch umbenannt, auch in Unterordnern. Der Ordner wird gemerkt.</p>
-      <input id="kontordnerfeld" type="text" placeholder="Pfad zum Ordner" spellcheck="false" style="width:100%;box-sizing:border-box">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
+        <button class="tbs-mini" onclick="ordnerWaehlerAuf('kontordnerbrowser','kontordnerfeld')">Ordner wählen …</button>
+        <span id="kontordnerfeld" class="fussnote" style="margin:0"></span></div>
+      <div id="kontordnerbrowser" class="ordnerbrowser" hidden></div>
       <div style="margin-top:6px"><button class="tbs-mini" onclick="ordnerEinlesen()">Einlesen</button></div>
       <div class="fussnote" id="kontordnerstand"></div>
     </details>
