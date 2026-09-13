@@ -1057,7 +1057,7 @@ open -a Terminal ${JSON.stringify(starter)}
     satz(HELL('  [W]') + MATT('  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)'));
     leer();
     matt('Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.');
-    matt('Die Einrichtung selbst rund 500 MB — dazu je Titel bis zu 100 MB, wenn');
+    matt('Die Einrichtung selbst rund 1 GB — dazu je Titel bis zu 100 MB, wenn');
     matt('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.');
     leer();
     const tasten = (funde.length ? [vorgabe === 'a' ? 'A' : 'a'] : []).concat([vorgabe === 'd' ? 'D' : 'd', vorgabe === 'n' ? 'N' : 'n', 'w']).join('/');
@@ -1090,7 +1090,7 @@ open -a Terminal ${JSON.stringify(starter)}
       const gb = frei / 1073741824;
       if (gb < 20) {
         wink(`Dort sind nur ${gb.toFixed(1)} GB frei.`);
-        matt('Die Einrichtung selbst braucht rund 500 MB, aber dein Archiv wächst mit');
+        matt('Die Einrichtung selbst braucht rund 1 GB, aber dein Archiv wächst mit');
         matt('jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.');
         matt('Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?');
         leer();
@@ -1282,7 +1282,8 @@ open -a Terminal ${JSON.stringify(starter)}
     zeile('rechte', 'Keine erhöhten Rechte', 'es laufen auch keine');
   }
 
-  /* Platz: rund 500 MB fuer Werkzeuge, Pakete und Modelle. Das ARCHIV
+  /* Platz: rund 1 GB fuer Werkzeuge, Pakete und Modelle (gemessen
+     13.09.2026: Node 30, ffmpeg 100, Pakete 240, Modelle 560). Das ARCHIV
      kommt danach und kann ein Vielfaches werden - darum wird die Zahl
      genannt und nicht nur geprueft. */
   const platz = freierPlatz(WURZEL);
