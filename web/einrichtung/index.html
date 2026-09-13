@@ -67,6 +67,7 @@
   @keyframes lauf{0%{margin-left:-30%}100%{margin-left:100%}}
   .zahlen{display:flex;justify-content:space-between;font-size:11.5px;color:var(--m);font-variant-numeric:tabular-nums;gap:12px}
   .frage{margin-top:16px;border:1px solid var(--p);border-radius:10px;padding:14px 16px;background:#1a1218}
+  .frage.dialog{border-color:var(--o);background:#1a1410}
   .frage .ft{font-size:13.5px;margin-bottom:10px;white-space:pre-wrap}
   .knoepfe{display:flex;gap:8px;flex-wrap:wrap}
   button{padding:8px 14px;border-radius:8px;border:1px solid var(--li);background:#1d1d24;color:var(--t);font:inherit;cursor:pointer}
@@ -104,6 +105,7 @@
       <div class="warum" id="warum"></div>
       <div class="balken" id="balken" hidden><div class="fuell" id="fuell"></div></div>
       <div class="zahlen" id="zahlen" hidden><span id="zwas"></span><span id="zrest"></span></div>
+      <div class="frage dialog" id="dialog" hidden><div class="ft" id="dt"></div><div class="hin">Siehst du es nicht? Dann liegt es hinter diesem Fenster — in der Taskleiste (Windows) oder im Dock (Mac) nachsehen. Dort wählst du den Ordner; hier geht es danach weiter.</div></div>
       <div class="frage" id="frage" hidden><div class="ft" id="ft"></div><div class="knoepfe" id="knoepfe"></div><div class="hin" id="fhin"></div></div>
       <div class="protokoll" id="protokoll"></div>
     </div>
@@ -223,6 +225,8 @@ async function tick(){
     else { fl.className = 'fuell unbestimmt'; fl.style.width = ''; $('zwas').textContent = `${f.was} — ${MB(f.bytes)}`; }
     $('zrest').textContent = f.rest || '';
   }
+  $('dialog').hidden = !s.dialog;
+  if (s.dialog) $('dt').textContent = 'Ein Auswahlfenster ist offen: „' + s.dialog + '"';
   frageZeigen(s.frage);
   protokoll(s.zeilen || []);
   const sek = Math.round((Date.now() - start) / 1000);

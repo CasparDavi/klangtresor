@@ -53,7 +53,7 @@ const OHNE_START = process.argv.includes('--ohne-start');
 const NUR_TEXT = process.argv.includes('--text');
 /* Fuer Probelaeufe: Seite bereitstellen, aber keinen Browser aufreissen. */
 const OHNE_BROWSER = process.argv.includes('--ohne-browser');
-const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, fertig: false, adresse: null, gesamt: 10 };
+const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, gesamt: 10 };
 const ohneFarbe = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
 function merken(art, text) {
   ZUSTAND.zeilen.push({ art, text: ohneFarbe(text).replace(/^\s{5}/, ''), t: Date.now() });
@@ -689,8 +689,8 @@ open -a Terminal ${JSON.stringify(starter)}
         }
         if (u.pathname === '/ordner' && req.method === 'POST') {
           let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
-          const pfad = require('./ordnerdialog.js').ordnerWaehlen(os.homedir(), String(d.titel || 'Ordner wählen').slice(0, 120));
-          return antwort(res, 200, 'application/json', JSON.stringify({ pfad: pfad || null }));
+          const r = await require('./ordnerdialog.js').ordnerWaehlenNebenher(os.homedir(), String(d.titel || 'Ordner wählen').slice(0, 120));
+          return antwort(res, 200, 'application/json', JSON.stringify({ pfad: r.pfad || null, ging: r.ging }));
         }
         return antwort(res, 404, 'text/plain', 'nicht da');
       } catch (e) { return antwort(res, 500, 'text/plain', String(e.message)); }
@@ -752,8 +752,34 @@ open -a Terminal ${JSON.stringify(starter)}
 
      Geht kein Dialog auf (kein Bildschirm, ferngesteuerte Sitzung,
      zenity fehlt), wird nicht gefragt, sondern die Vorgabe genommen. */
-  const ordnerWaehlenRoh = require('./ordnerdialog.js').ordnerWaehlen;
-  const ordnerWaehlen = (vorgabe) => ordnerWaehlenRoh(vorgabe, 'Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.');
+  /* DER DIALOG LAEUFT NEBENHER, UND DER TEXT BLEIBT DER RUECKFALL.
+
+     Caspar_D, 13.09.2026: „bei der Frage nach dem Ordner bleibt das js
+     haengen, ich haette erwartet, dass ein FileChooser aufgeht." Drei
+     Dinge steckten dahinter, alle in bin/ordnerdialog.js beschrieben -
+     und eines hier: solange der Dialog offen war, stand das ganze
+     Programm, also auch die Seite. Jetzt wartet es nebenher, die Seite
+     sagt derweil, dass ein Fenster offen ist und wo es liegen kann.
+
+     Und wenn kein Fenster aufgehen KANN (kein Bildschirm, zenity fehlt,
+     PowerShell verschluckt sich), heisst es nicht „abgebrochen", sondern
+     der Mensch darf tippen - „der text bleibt der fallback". */
+  const { ordnerWaehlenNebenher } = require('./ordnerdialog.js');
+  async function ordnerErfragen(titel) {
+    matt('Ein Auswahlfenster geht auf. Siehst du es nicht? Dann liegt es hinter');
+    matt('diesem Fenster - in der Taskleiste beziehungsweise im Dock nachsehen.');
+    ZUSTAND.dialog = titel;
+    let r;
+    try { r = await ordnerWaehlenNebenher(os.homedir(), titel); }
+    finally { ZUSTAND.dialog = null; }
+    if (r.pfad) return r.pfad;
+    if (r.ging) return null;
+    wink('Das Auswahlfenster ging nicht auf' + (r.grund ? ' (' + r.grund + ')' : '') + '.');
+    matt('Dann tippst du den Ordner hier - oder lässt es leer.');
+    const t = await fragen('     ' + AKZENT('Ordner: '), { art: 'text', text: 'Das Auswahlfenster ging nicht auf. Ordner tippen - oder leer lassen.' });
+    return String(t || '').trim().replace(/^["']|["']$/g, '') || null;
+  }
+  const ordnerWaehlen = () => ordnerErfragen('Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.');
 
   function heimatVorschlag() {
     const heim = os.homedir();
@@ -825,7 +851,7 @@ open -a Terminal ${JSON.stringify(starter)}
           { wert: 'w', label: 'Woanders - Ordner wählen …' }] })).toLowerCase() || vorgabe;
     if (antwort.startsWith('n')) ziel = heimZiel;
     else if (antwort.startsWith('w')) {
-      const eltern = ordnerWaehlen(os.homedir());
+      const eltern = await ordnerWaehlen();
       if (eltern) ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
       else { matt('Kein Ordner gewählt — dann bleibt es hier.'); ziel = WURZEL; }
     }
@@ -1355,7 +1381,7 @@ open -a Terminal ${JSON.stringify(starter)}
   leer();
   let ordner = '';
   if (await jaNein('Ordner wählen?', 'n')) {
-    ordner = ordnerWaehlenRoh(os.homedir(), 'Wo liegen deine Suno-Dateien?') || '';
+    ordner = (await ordnerErfragen('Wo liegen deine Suno-Dateien?')) || '';
     if (!ordner) {
       matt('Kein Ordner gewählt — dann nur Download- und Musikordner. Später jederzeit');
       matt('auf der Seite unter „Suno-Dateien aus einem weiteren Ordner einlesen".');

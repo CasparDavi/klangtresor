@@ -2632,8 +2632,9 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     return req.on('end', () => {
       let titel = 'Ordner wählen'; try { titel = JSON.parse(roh || '{}').titel || titel; } catch (e) {}
       const { ordnerWaehlen } = require('../bin/ordnerdialog.js');
-      const pfad = ordnerWaehlen(require('node:os').homedir(), String(titel).slice(0, 120));
-      jsonAntwort(res, { pfad: pfad || null });
+      /* { pfad, ging, grund } seit dem 13.09.2026 - ging=false heisst: es konnte gar kein Fenster aufgehen. */
+      const r = ordnerWaehlen(require('node:os').homedir(), String(titel).slice(0, 120));
+      jsonAntwort(res, { pfad: r.pfad || null, ging: r.ging });
     });
   }
   if (p === '/api/ordner') {
