@@ -95,6 +95,47 @@ const signatur = require('./suno-signatur.js').ausDatei;
    versehentlich gewählte Wurzelverzeichnisse, keine erwartete Grenze. */
 const ORDNER_DECKEL = 20000;
 
+/* DIE ORDNER, DIE DAS SYSTEM OHNEHIN BENUTZT. Caspar_D, 13.09.2026: „du
+   koenntest auch per Standard in Download immer nachschauen ... ggf. noch
+   im Ordner Musik, den gibts ja bei Windows. Dann muesste der Nutzer nur
+   noch seinen Archivordner angeben."
+
+   Wo Downloads und Musik liegen, weiss das System - OneDrive biegt sie
+   unter Windows gern um, Linux benennt sie je nach Sprache. Also fragen,
+   dann raten, und nur nehmen, was es gibt. */
+function systemOrdner() {
+  const heim = os.homedir();
+  const kandidaten = [];
+  if (process.platform === 'win32') {
+    try {
+      const e = require('node:child_process').spawnSync('powershell', ['-NoProfile', '-Command',
+        "[Environment]::GetFolderPath('MyMusic'); [Environment]::GetFolderPath('UserProfile')"], { encoding: 'utf8' });
+      const [musik, profil] = String(e.stdout || '').split(/\r?\n/).map((s) => s.trim());
+      if (musik) kandidaten.push(musik);
+      if (profil) kandidaten.push(path.join(profil, 'Downloads'), path.join(profil, 'OneDrive', 'Downloads'), path.join(profil, 'OneDrive', 'Music'));
+    } catch (e) {}
+  } else if (process.platform === 'linux') {
+    for (const k of ['DOWNLOAD', 'MUSIC']) {
+      try { const w = String(require('node:child_process').spawnSync('xdg-user-dir', [k], { encoding: 'utf8' }).stdout || '').trim(); if (w) kandidaten.push(w); } catch (e) {}
+    }
+  }
+  kandidaten.push(path.join(heim, 'Downloads'), path.join(heim, 'Music'), path.join(heim, 'Musik'));
+  const aus = [];
+  for (const k of kandidaten) { try { if (k && fs.statSync(k).isDirectory() && !aus.includes(k)) aus.push(k); } catch (e) {} }
+  return aus;
+}
+
+/* DAS GEDAECHTNIS. Der Musikordner kann tausende Dateien haben; jeden
+   Morgen 64 KB aus jeder zu lesen waere unfreundlich. Also wird je Datei
+   gemerkt, was beim letzten Mal drinstand - solange Groesse und Zeit
+   gleich sind, gilt das weiter. Eine Datei, die damals "ohne Signatur"
+   war, bleibt es; eine mit id wird gegen den heutigen Katalog neu
+   geprueft, ohne sie zu lesen. */
+const GESEHEN_DATEI = path.join(WURZEL, 'library', 'uebernehmen-gesehen.json');
+function gesehenLesen() { try { return JSON.parse(fs.readFileSync(GESEHEN_DATEI, 'utf8')); } catch (e) { return {}; } }
+function gesehenSchreiben(g) { try { fs.writeFileSync(GESEHEN_DATEI, JSON.stringify(g)); } catch (e) {} }
+function stempel(p) { try { const s = fs.statSync(p); return s.size + ':' + Math.round(s.mtimeMs); } catch (e) { return null; } }
+
 function suchen(ordner, tiefe = 6) {
   const gefunden = [];
   let ordnerZahl = 0;
@@ -154,7 +195,7 @@ function fragenWennEtwasFehlt(bekannt, orte) {
      Einzelwert downloadOrdner wird beim ersten Lauf hineingezogen. Der
      Download-Ordner steht immer vorn, ungefragt. */
   const konf = konfigLesen();
-  const orte = [path.join(os.homedir(), 'Downloads')];
+  const orte = systemOrdner();
   const gemerkt = Array.isArray(konf.sunoOrdner) ? [...konf.sunoOrdner] : [];
   if (konf.downloadOrdner && !gemerkt.includes(konf.downloadOrdner)) gemerkt.push(konf.downloadOrdner);
   if (EXTRA) {
@@ -183,9 +224,14 @@ function fragenWennEtwasFehlt(bekannt, orte) {
      Bei gleichem Ziel gewinnt die GROESSERE: ein abgebrochener Download
      ist kuerzer als der vollstaendige, nie laenger. */
   const jeZiel = new Map();
+  const gesehen = gesehenLesen();
+  let gelesen = 0, uebersprungen = 0;
   for (const d of dateien) {
     const endung = path.extname(d).toLowerCase();
-    const id = signatur(d);
+    const st = stempel(d);
+    let id;
+    if (st && gesehen[d] && gesehen[d].st === st) { id = gesehen[d].id; uebersprungen++; }
+    else { id = signatur(d); gelesen++; if (st) gesehen[d] = { st, id }; }
     if (!id) { ohneSig.push(d); continue; }
     if (!bekannt[id]) { fremd.push([d, id]); continue; }
     if (!NEHMEN[endung]) { falschesFormat.push([d, id]); continue; }
@@ -199,6 +245,8 @@ function fragenWennEtwasFehlt(bekannt, orte) {
     else { doppelt.push(d); }
   }
   fertig.push(...jeZiel.values());
+  gesehenSchreiben(gesehen);
+  if (uebersprungen) console.log(`  ${dateien.length} Dateien in ${orte.length} Ordnern — ${gelesen} neu gelesen, ${uebersprungen} unverändert seit dem letzten Mal.`);
 
   /* Erst zeigen, dann handeln. */
   if (fertig.length) {

@@ -4530,12 +4530,13 @@ function tonHinweis(){
     <p>Bilder, Texte und Zahlen hat KlangTresor geholt. Die Audiodateien gibt Suno seit dem
        03.09.2026 nicht mehr über Links heraus. Zwei Wege führen sie herein, und der erste kostet nichts.</p>
     <div class="weg"><b>1 · Was du schon hast.</b>
-      <p>Hast du deine Lieder früher bei Suno heruntergeladen? Nenn den Ordner — ich erkenne
-         Suno-Dateien am Inhalt, auch umbenannte, auch in Unterordnern, und ordne sie deinen
-         Titeln zu. Deine übrige Musik fasse ich nicht an, nichts wird verschoben oder gelöscht.</p>
+      <p>Hast du deine Lieder früher bei Suno heruntergeladen? In deinen <b>Download- und
+         Musikordnern</b> sehe ich von selbst nach. Liegen sie woanders, nenn den Ordner — ich
+         erkenne Suno-Dateien am Inhalt, auch umbenannte, auch in Unterordnern, und ordne sie
+         deinen Titeln zu. Deine übrige Musik fasse ich nicht an, nichts wird verschoben oder gelöscht.</p>
       <input id="tfordner" type="text" placeholder="Pfad zum Ordner, etwa D:\\Musik\\Suno oder /Volumes/Platte/Suno" spellcheck="false">
       <div class="tfk"><button class="los" onclick="tonEinlesen()">Einlesen</button>
-        <button onclick="tonEinlesen(true)">Nur im Download-Ordner nachsehen</button></div>
+        <button onclick="tonEinlesen(true)">Nur in Download- und Musikordnern nachsehen</button></div>
       <div class="tfs" id="tfstand"></div></div>
     <div class="weg"><b>2 · Was dir fehlt.</b>
       <p>Was du nicht hast, schaltest du bei Suno einmal frei (Drei Punkte → Download → „Unlock and
@@ -4566,7 +4567,7 @@ async function ordnerEinlesen(){
 async function tonEinlesen(nurDownloads){
   const stand = $('tfstand'); const feld = $('tfordner');
   const ordner = nurDownloads ? '' : (feld.value || '').trim().replace(/^['"]|['"]$/g, '');
-  if (!nurDownloads && !ordner){ stand.textContent = 'Erst den Ordner nennen — oder nur im Download-Ordner nachsehen.'; return; }
+  if (!nurDownloads && !ordner){ stand.textContent = 'Erst den Ordner nennen — oder nur in Download- und Musikordnern nachsehen.'; return; }
   stand.textContent = 'Sehe nach und ordne zu … das kann bei vielen Dateien ein paar Minuten dauern.';
   let d = null;
   try { d = await (await fetch('/api/downloads', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -12633,7 +12634,7 @@ async function profilKontingentFuellen(){
          genannte Ordner wird gemerkt; der Morgenlauf sieht fortan dort
          nach. -->
     <details class="kontordner"><summary>Suno-Dateien aus einem weiteren Ordner einlesen</summary>
-      <p class="fussnote">Erkannt wird am Inhalt, auch umbenannt, auch in Unterordnern. Der Ordner wird gemerkt.</p>
+      <p class="fussnote">Download- und Musikordner werden ohnehin durchsucht, bei jedem Abgleich. Hier nennst du, was woanders liegt — erkannt wird am Inhalt, auch umbenannt, auch in Unterordnern. Der Ordner wird gemerkt.</p>
       <input id="kontordnerfeld" type="text" placeholder="Pfad zum Ordner" spellcheck="false" style="width:100%;box-sizing:border-box">
       <div style="margin-top:6px"><button class="tbs-mini" onclick="ordnerEinlesen()">Einlesen</button></div>
       <div class="fussnote" id="kontordnerstand"></div>
