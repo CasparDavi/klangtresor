@@ -620,31 +620,72 @@ end try`;
     return null;
   }
 
+  /* DER ORT WIRD IMMER GEFRAGT, GANZ AM ANFANG.
+
+     Caspar_D, 13.09.2026: „was ist, wenn das Userverzeichnis zu klein
+     ist? warum fragen wir den Nutzer nicht am Anfang, wo das Zeug hin
+     soll, damit er ggf. auch ein externes Medium auswaehlen kann?"
+
+     Bis eben kam der Dialog nur im Notfall - Download-Ordner, Freigabe.
+     Wer sein Archiv auf eine externe Platte legen wollte, weil die
+     Systemplatte klein ist, bekam nie Gelegenheit dazu. Ein Archiv, das
+     auf zehn, zwanzig Gigabyte anwaechst, ist aber genau das, was man
+     NICHT auf einer knappen Systemplatte haben will.
+
+     Also: immer fragen, mit ~/KlangTresor vorbelegt, und danach den
+     freien Platz AM GEWAEHLTEN ORT zeigen - nicht dort, wo das Zip
+     gerade liegt. */
   const grund = mussUmziehen(WURZEL);
-  if (!grund) {
+  const schonZuhause = !grund && path.basename(WURZEL) === 'KlangTresor';
+
+  let ziel = WURZEL;
+  if (schonZuhause) {
     matt('KlangTresor liegt hier, und hier bleibt es:');
-    satz(HELL(WURZEL));
-    { const wo = ortInWorten(WURZEL); if (wo) matt(wo); }
+    satz(HELL('  ' + WURZEL));
   } else {
-    /* NICHT FRAGEN, TUN. Caspar_D, 13.09.2026: „puh, ist das nervig, du
-       legst es bitte sofort in den richtigen Nutzerordner, von dem
-       Nutzer, der grade aktiv ist." - Er hat recht: Wer ein Programm
-       gerade erst entpackt hat, hat keine Meinung dazu, wo es wohnen
-       soll. Eine Frage an dieser Stelle ist keine Freiheit, sondern eine
-       Zumutung. Gefragt wird nur, wenn am Ziel schon etwas liegt. */
-    matt('KlangTresor liegt gerade ' + grund + ':');
-    satz(MATT('  ' + WURZEL));
-    matt('Dort gehört es nicht hin — dein Archiv wächst mit jedem Lied, und ein');
-    matt('Download-Ordner wird irgendwann aufgeräumt.');
+    if (grund) {
+      matt('KlangTresor liegt gerade ' + grund + ':');
+      satz(MATT('  ' + WURZEL));
+      matt('Dort gehört es nicht hin — dein Archiv wächst mit jedem Lied, und ein');
+      matt('Download-Ordner wird irgendwann aufgeräumt.');
+    } else {
+      matt('KlangTresor liegt gerade hier:');
+      satz(MATT('  ' + WURZEL));
+    }
     leer();
-    tut('Ein Fenster geht auf: wähle, wo KlangTresor liegen soll.');
-    matt('Vorgeschlagen ist dein Benutzerordner. Mit Abbrechen nehme ich den.');
+    tut('Ein Fenster geht auf: wähle, wo dein KlangTresor-Archiv liegen soll.');
+    matt('Vorgeschlagen ist dein Benutzerordner. Ist deine Systemplatte knapp,');
+    matt('nimm ruhig eine externe Platte — das Archiv wird groß, und der Ordner');
+    matt('darf überall liegen. Mit Abbrechen nehme ich den Vorschlag.');
     const eltern = ordnerWaehlen(os.homedir()) || os.homedir();
-    const ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
+    ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
     leer();
     satz(MATT('Ziel:  ') + HELL(ziel));
-    leer();
+  }
 
+  /* Der freie Platz DORT, wo das Archiv hinkommt. Fuer einen Ordner, den
+     es noch nicht gibt, zaehlt sein naechster vorhandener Elternordner. */
+  {
+    let p = ziel;
+    while (p && !fs.existsSync(p) && path.dirname(p) !== p) p = path.dirname(p);
+    const frei = freierPlatz(p);
+    if (frei !== null) {
+      const gb = frei / 1073741824;
+      if (gb < 20) {
+        wink(`Dort sind nur ${gb.toFixed(1)} GB frei.`);
+        matt('Die Einrichtung selbst braucht rund 500 MB, aber dein Archiv wächst mit');
+        matt('jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.');
+        matt('Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?');
+        leer();
+        if (!await jaNein('Hier weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+      } else {
+        gut(`Dort sind ${gb.toFixed(0)} GB frei — das reicht lange.`);
+      }
+    }
+  }
+  leer();
+
+  if (path.resolve(ziel) !== path.resolve(WURZEL)) {
     const zielBelegt = fs.existsSync(ziel) && fs.readdirSync(ziel).filter((n) => n !== '.DS_Store').length;
     const zielIstKlangTresor = zielBelegt &&
       fs.existsSync(path.join(ziel, 'package.json')) && fs.existsSync(path.join(ziel, 'bin'));
@@ -655,51 +696,33 @@ end try`;
       matt('Oder lass KlangTresor hier liegen; es kann gutgehen.');
       leer();
       if (!await jaNein('Hier weitermachen?', 'n')) { wiederkommen(); schluss(0); }
-    } else if (zielIstKlangTresor) {
-      /* DER AKTUALISIERUNGSFALL. Dort liegt schon ein KlangTresor - mit
-         Archiv, Werkzeugen, Paketen. Das ist kein Hindernis, das ist das
-         Ziel: die Programmdateien kommen darueber, alles Geholte bleibt.
-         Vorher hiess es hier "raeum es weg" - fuer ein Update genau
-         verkehrt, und das haette jeder beim zweiten Zip getroffen. */
-      gut('Dort liegt schon ein KlangTresor — ich aktualisiere ihn.');
-      matt('Dein Archiv, die Werkzeuge und die Pakete bleiben, nur das Programm wird erneuert.');
+    } else {
+      /* Kopieren und dort neu starten. Liegt am Ziel schon ein
+         KlangTresor, ist das der Aktualisierungsfall: Programmdateien
+         darueber, alles Geholte bleibt - library/, werkzeug/,
+         node_modules/. Vorher hiess es hier "raeum es weg"; fuer ein
+         Update genau verkehrt. */
+      if (zielIstKlangTresor) {
+        gut('Dort liegt schon ein KlangTresor — ich aktualisiere ihn.');
+        matt('Dein Archiv, die Werkzeuge und die Pakete bleiben, nur das Programm wird erneuert.');
+      } else tut('Umziehen …');
       const bleibt = new Set(['library', 'werkzeug', 'node_modules', '.git', 'proben']);
       let gezogen = false;
       try {
+        fs.mkdirSync(ziel, { recursive: true });
         for (const n of fs.readdirSync(WURZEL)) {
-          if (bleibt.has(n) || n === '.DS_Store') continue;
+          if (n === '.DS_Store') continue;
+          if (zielIstKlangTresor && bleibt.has(n)) continue;
           fs.cpSync(path.join(WURZEL, n), path.join(ziel, n), { recursive: true, force: true, dereference: false });
         }
         gezogen = fs.existsSync(path.join(ziel, 'bin', 'einrichten.js'));
       } catch (e) {
-        boese('Das Aktualisieren ging nicht: ' + String(e.message).slice(0, 120));
-      }
-      if (gezogen) {
-        matt('Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.');
-        matt('Den entpackten Ordner darfst du danach wegwerfen.');
-        leer();
-        leser.close();
-        const e = spawnSync(process.execPath,
-          [path.join(ziel, 'bin', 'einrichten.js'), ...process.argv.slice(2)],
-          { stdio: 'inherit', cwd: ziel });
-        process.exit(e.status === null ? 1 : e.status);
-      }
-      matt('Ich mache hier weiter, wo ich bin.');
-      leer();
-    } else {
-      tut('Umziehen …');
-      let gezogen = false;
-      try {
-        fs.mkdirSync(ziel, { recursive: true });
-        fs.cpSync(WURZEL, ziel, { recursive: true, dereference: false, force: true });
-        gezogen = fs.existsSync(path.join(ziel, 'bin', 'einrichten.js'));
-      } catch (e) {
-        boese('Das Umziehen ging nicht: ' + String(e.message).slice(0, 120));
+        boese('Das ging nicht: ' + String(e.message).slice(0, 120));
       }
       if (gezogen) {
         gut('Liegt jetzt in ' + ziel + '.');
         matt('Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.');
-        matt('Den alten Ordner darfst du danach wegwerfen.');
+        matt('Den entpackten Ordner darfst du danach wegwerfen.');
         leer();
         leser.close();
         const e = spawnSync(process.execPath,
