@@ -1114,9 +1114,15 @@ ausführen — das geht doch nicht"):
 
 | System | üblich | Docker |
 |---|---|---|
-| macOS | `einrichten-macos.command` | `einrichten-docker.command` |
-| Linux | `einrichten-linux.sh` | `einrichten-docker.sh` |
-| Windows | `KlangTresor-einrichten.cmd` → `einrichten-windows.ps1` | `einrichten-docker.ps1` |
+| macOS | `einrichten-macos.command` | `einrichten-docker-macos.command` |
+| Linux | `einrichten-linux.sh` | `einrichten-docker-linux.sh` |
+| Windows | `einrichten-windows.cmd` → `bin/anlasser.ps1` | `einrichten-docker-windows.cmd` → `bin/einrichten-docker.ps1` |
+
+(Namen seit dem 13.09.2026 — vorher `KlangTresor-einrichten.cmd`,
+`einrichten-windows.ps1` und `einrichten-docker.*` nebeneinander im
+Projektordner; Caspar_D: „räume bitte alle Installationsdateien auf, dass es
+keine Verwechslungen geben kann". Die Docker-Bauanleitungen liegen seitdem
+in `docker/`, die `starten-*` fürs bloße Starten daneben.)
 
 Die drei Docker-Skripte prüfen, ob Docker da ist und läuft, legen `library/`
 und `geheim/` an, bauen die Kiste, warten auf den Server und verweisen dann in

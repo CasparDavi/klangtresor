@@ -590,14 +590,13 @@ function schreibtischVerknuepfung(ordner) {
      liegt als .ico/.icns/.png in web/symbol/, aus dem Favicon gebaut. */
   const desk = schreibtisch();
   if (!desk) return null;
-  const node = process.execPath;
   try {
     if (process.platform === 'win32') {
       const lnk = path.join(desk, 'KlangTresor.lnk');
       const ps = [
         '$w = New-Object -ComObject WScript.Shell',
         `$s = $w.CreateShortcut(${JSON.stringify(lnk)})`,
-        `$s.TargetPath = ${JSON.stringify(path.join(ordner, 'KlangTresor-starten.cmd'))}`,
+        `$s.TargetPath = ${JSON.stringify(path.join(ordner, 'starten-windows.cmd'))}`,
         `$s.WorkingDirectory = ${JSON.stringify(ordner)}`,
         `$s.IconLocation = ${JSON.stringify(path.join(ordner, 'web', 'symbol', 'klangtresor.ico') + ',0')}`,
         '$s.Description = "KlangTresor starten"',
@@ -627,22 +626,23 @@ function schreibtischVerknuepfung(ordner) {
 `);
       fs.copyFileSync(path.join(ordner, 'web', 'symbol', 'klangtresor.icns'), path.join(app, 'Contents', 'Resources', 'klangtresor.icns'));
       const exe = path.join(app, 'Contents', 'MacOS', 'KlangTresor');
+      /* Der Starter selbst ist starten-macos.command im Projektordner -
+         dieselbe Datei, die man auch von Hand doppelklicken kann. Das
+         Ausfuehrungsrecht kann beim Entpacken verlorengehen; hier wird es
+         sicherheitshalber gesetzt. */
+      const starter = path.join(ordner, 'starten-macos.command');
+      try { fs.chmodSync(starter, 0o755); } catch (e) {}
       fs.writeFileSync(exe, `#!/bin/bash
 # KlangTresor starten - angelegt von bin/einrichten.js
-open -a Terminal ${JSON.stringify(path.join(ordner, 'KlangTresor-starten.command'))}
-`, { mode: 0o755 });
-      /* und der Starter selbst, der im Terminal laeuft */
-      fs.writeFileSync(path.join(ordner, 'KlangTresor-starten.command'), `#!/bin/bash
-# KlangTresor starten - Server hoch, Browser auf. Dieses Fenster ist der Server.
-cd "$(dirname "$0")" || exit 1
-NODE=node; [ -x werkzeug/node/bin/node ] && NODE=werkzeug/node/bin/node
-exec "$NODE" bin/starten.js
+open -a Terminal ${JSON.stringify(starter)}
 `, { mode: 0o755 });
       return app;
     }
     const d = path.join(desk, 'klangtresor.desktop');
+    const starter = path.join(ordner, 'starten-linux.sh');
+    try { fs.chmodSync(starter, 0o755); } catch (e) {}
     fs.writeFileSync(d, ['[Desktop Entry]', 'Type=Application', 'Name=KlangTresor',
-      'Comment=Dein eigenes Suno-Archiv', `Exec=${JSON.stringify(node)} ${JSON.stringify(path.join(ordner, 'bin', 'starten.js'))}`,
+      'Comment=Dein eigenes Suno-Archiv', `Exec=${JSON.stringify(starter)}`,
       `Path=${ordner}`, `Icon=${path.join(ordner, 'web', 'symbol', 'klangtresor-256.png')}`, 'Terminal=true', ''].join('\n'), { mode: 0o755 });
     return d;
   } catch (e) { return null; }
@@ -660,7 +660,7 @@ exec "$NODE" bin/starten.js
      nicht." - auf einem Rechner, auf dem alles vorhanden ist.
 
      process.execPath ist das Node, das GERADE laeuft; npm liegt in
-     demselben Verzeichnis. Dieselbe Falle war in KlangTresor-starten.cmd
+     demselben Verzeichnis. Dieselbe Falle war in starten-windows.cmd
      am 11.09.2026 schon erkannt und dort behoben - hier nicht.
      Gefunden in der Pruefung vor der Veroeffentlichung. */
   process.env.PATH = path.dirname(process.execPath) + path.delimiter + process.env.PATH;
@@ -816,7 +816,13 @@ exec "$NODE" bin/starten.js
     matt('Die Einrichtung selbst rund 500 MB — dazu je Titel bis zu 100 MB, wenn');
     matt('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.');
     leer();
-    const antwort = (await fragen('     ' + AKZENT(`Wohin? [${vorgabe === 'd' ? 'D' : 'd'}/${vorgabe === 'n' ? 'N' : 'n'}/w] `))).toLowerCase() || vorgabe;
+    const antwort = (await fragen('     ' + AKZENT(`Wohin? [${vorgabe === 'd' ? 'D' : 'd'}/${vorgabe === 'n' ? 'N' : 'n'}/w] `),
+      { art: 'wahl', text: 'Wohin soll KlangTresor?', vorgabe,
+        hinweis: (grund ? `Achtung: das hier liegt ${grund} - dort wird gern aufgeräumt. ` : '') + `Nutzerverzeichnis: ${heimZiel}`,
+        optionen: [
+          { wert: 'd', label: 'Hier bleiben', vor: vorgabe === 'd' },
+          { wert: 'n', label: 'In mein Nutzerverzeichnis', vor: vorgabe === 'n' },
+          { wert: 'w', label: 'Woanders - Ordner wählen …' }] })).toLowerCase() || vorgabe;
     if (antwort.startsWith('n')) ziel = heimZiel;
     else if (antwort.startsWith('w')) {
       const eltern = ordnerWaehlen(os.homedir());
@@ -1177,7 +1183,9 @@ exec "$NODE" bin/starten.js
     const nd = path.dirname(process.execPath);
     for (const k of [path.join(nd, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
                      path.join(nd, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')]) {
-      if (fs.existsSync(k)) return { befehl: process.execPath, vorn: [k] };
+      /* --no-warnings: npm unter Node 22 meldet sonst eine ExperimentalWarning
+         zu ES-Modulen - Rauschen, das der Mensch fuer einen Fehler haelt. */
+      if (fs.existsSync(k)) return { befehl: process.execPath, vorn: ['--no-warnings', k] };
     }
     return { befehl: process.platform === 'win32' ? 'npm.cmd' : 'npm', vorn: [] };
   }

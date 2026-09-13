@@ -17,7 +17,7 @@ rem Diese Datei sagt es dreifach: im Fenstertitel, wo man ihn beim
 rem Wegklicken sieht; in der Zeile ueber der Ausgabe; und noch einmal,
 rem wenn der Server tatsaechlich endet.
 rem
-rem Bis dahin gab es fuer Windows nur KlangTresor-einrichten.cmd, und die
+rem Bis dahin gab es fuer Windows nur einrichten-windows.cmd, und die
 rem laeuft erst durch alle Einrichtungsschritte - fuer "nur mal eben
 rem starten" der falsche Weg.
 
@@ -25,7 +25,7 @@ setlocal
 cd /d "%~dp0"
 title KlangTresor laeuft - dieses Fenster nicht schliessen
 
-rem ZUERST DAS MITGEBRACHTE NODE. einrichten-windows.ps1 legt es nach
+rem ZUERST DAS MITGEBRACHTE NODE. bin\anlasser.ps1 legt es nach
 rem werkzeug\node, ohne am System oder am PATH zu drehen - dann findet
 rem "where node" es nicht, obwohl es danebensteht (11.09.2026).
 set "NODE=node"

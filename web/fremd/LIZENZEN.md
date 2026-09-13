@@ -97,7 +97,7 @@ erst am 07.12.2022, fällt also vollständig in die MIT-Zeit.
 ### NVIDIA CUDA-Images — NVIDIA Deep Learning Container License
 
 Seit dem 26.08.2026 gibt es ein **optionales** GPU-Overlay
-(`Dockerfile.cuda`, Tarja). Es baut auf
+(`docker/Dockerfile.cuda`, Tarja). Es baut auf
 `nvidia/cuda:12.4.1-devel-ubuntu22.04` und
 `nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04` auf.
 

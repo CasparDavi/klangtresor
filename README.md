@@ -145,15 +145,17 @@ fremde Songs danach aus.
 
 ### Unter Windows
 
-Doppelklick auf **`KlangTresor-einrichten.cmd`** — der Rest läuft von
-selbst: prüfen, was fehlt, Pakete holen, Modelle holen, nach dem
-Suno-Alias fragen, Songs sammeln, starten.
+Doppelklick auf **`einrichten-windows.cmd`** — der Rest läuft von
+selbst: prüfen, was fehlt, Node.js und Pakete holen, Modelle holen, nach
+dem Suno-Alias fragen, Songs sammeln, starten. Die Einrichtung öffnet
+sich als Seite im Browser; geht keiner auf, läuft sie im Fenster als Text.
 
-Nicht die `.ps1` direkt anklicken. Windows lehnt sie auf vielen Rechnern
-ab, und das Fenster schließt sich, bevor man die Meldung lesen kann —
-man hält das Programm dann für kaputt. Der `.cmd`-Starter umgeht beides;
-er hält das Fenster offen und erlaubt das Skript nur für diesen einen
-Aufruf, ohne an den Systemeinstellungen etwas zu ändern.
+Die `.cmd` ruft `bin\anlasser.ps1` — die `.ps1` nicht selbst anklicken.
+Windows lehnt sie auf vielen Rechnern ab, und das Fenster schließt sich,
+bevor man die Meldung lesen kann — man hält das Programm dann für kaputt.
+Die `.cmd` umgeht beides; sie hält das Fenster offen und erlaubt das
+Skript nur für diesen einen Aufruf, ohne an den Systemeinstellungen etwas
+zu ändern.
 
 Fehlt ffmpeg, sagt das Skript, wie man es nachholt — mit `winget` in
 einer Zeile, und für Rechner ohne `winget` Schritt für Schritt von Hand.
@@ -254,9 +256,12 @@ allerdings zig Gigabyte.
 ## Verzeichnis
 
 ```
-KlangTresor-einrichten.cmd   Einrichten unter Windows (Doppelklick)
-KlangTresor-starten.cmd      nur den Server starten (Doppelklick)
-einrichten-*.sh/.command     das Einrichten für macOS und Linux
+einrichten-windows.cmd         Einrichten unter Windows (Doppelklick)
+einrichten-macos.command       Einrichten auf dem Mac (Doppelklick)
+einrichten-linux.sh            Einrichten unter Linux
+einrichten-docker-*            dasselbe, ohne Installation - alles im Container
+starten-windows.cmd / -macos.command / -linux.sh   nur starten, nicht einrichten
+docker/    Dockerfile, docker-compose.yml, Einstiegsskript des Containers
 bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen
 browser/   Skripte für die Suno-Konsole und das Lesezeichen
 server/    Website fürs Heimnetz, Port 8788

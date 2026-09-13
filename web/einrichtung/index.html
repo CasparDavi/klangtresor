@@ -1,0 +1,224 @@
+<!doctype html>
+<!-- KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE -->
+<!-- =============================================================
+     DIE EINRICHTUNG ALS SEITE
+     web/einrichtung/index.html
+
+     Caspar_D, 13.09.2026: „Ich wollte das JavaScript eher wie eine
+     graphische Benutzeroberfläche mit KlangTresor und Logo und allem
+     Pipapo haben, nicht mehr im Textmodus. Richtig schön mit
+     Fortschrittsbalken, Rahmen, Erklärungen, wofür was ist, damit dem
+     Nutzer das Warten nicht lang wird, vielleicht sogar schon einige
+     Feature-Anreißer, um Interesse zu wecken."
+
+     Diese Seite liefert bin/einrichten.js selbst aus, auf 127.0.0.1 ab
+     Port 8790, nur für den einen Lauf. Sie fragt alle halbe Sekunde
+     /stand ab und zeigt, was die Konsole auch zeigt — nur mit Rahmen,
+     Balken und Schaltflächen statt Tastaturkürzeln. Antworten gehen
+     als POST /antwort zurück; der Ordnerdialog des Systems über
+     POST /ordner. Die Anreißer kommen aus anreisser.json.
+     ============================================================= -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KlangTresor wird eingerichtet</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">
+<style>
+  :root{--o:#f97b14;--p:#e31c79;--bg:#0c0c10;--kar:#15151b;--li:#24242c;--t:#e8e8ec;--m:#8b8b93;--g:#3fb950;--w:#d29922;--r:#e5534b}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.6}
+  .rahmen{max-width:960px;margin:24px auto;border:1px solid #26262e;border-radius:14px;overflow:hidden;background:var(--bg)}
+  .kopf{display:flex;align-items:center;gap:18px;padding:18px 24px;border-bottom:1px solid var(--li);background:linear-gradient(180deg,#131319,#0c0c10)}
+  .logo{flex:0 0 auto;border-radius:14px;box-shadow:0 0 0 1px #2a2a33,0 6px 20px rgba(0,0,0,.4)}
+  .titel{font-size:18px;font-weight:500;letter-spacing:.02em}
+  .unter{font-size:12.5px;color:var(--m);margin-top:2px}
+  .rumpf{display:grid;grid-template-columns:220px 1fr;min-height:360px}
+  @media (max-width:700px){.rumpf{grid-template-columns:1fr}.nav{border-right:0;border-bottom:1px solid var(--li)}}
+  .nav{border-right:1px solid var(--li);padding:12px 0;background:#0f0f14}
+  .st{display:flex;align-items:center;gap:9px;padding:6px 16px;font-size:12.5px;color:var(--m)}
+  .st.fertig{color:#6b6b73}
+  .st.laeuft{color:var(--t);background:#17171e;border-left:2px solid var(--o);padding-left:14px}
+  .punkt{width:13px;height:13px;border-radius:50%;border:1.5px solid #3a3a44;flex:0 0 auto;position:relative}
+  .st.fertig .punkt{border-color:var(--g);background:var(--g)}
+  .st.fertig .punkt:after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;border:solid #0c0c10;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+  .st.laeuft .punkt{border-color:var(--o)}
+  .st.laeuft .punkt:after{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--o);animation:puls 1.4s ease-in-out infinite}
+  @keyframes puls{50%{opacity:.35}}
+  .haupt{padding:22px 26px;min-width:0}
+  .jetzt{font-size:16px;font-weight:500;margin-bottom:6px}
+  .warum{font-size:13px;color:var(--m);line-height:1.65;max-width:60ch;min-height:2.4em}
+  .balken{height:7px;background:#1e1e26;border-radius:4px;margin:16px 0 7px;overflow:hidden}
+  .fuell{height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--o),var(--p));transition:width .4s}
+  .fuell.unbestimmt{width:30%;animation:lauf 1.6s linear infinite}
+  @keyframes lauf{0%{margin-left:-30%}100%{margin-left:100%}}
+  .zahlen{display:flex;justify-content:space-between;font-size:11.5px;color:var(--m);font-variant-numeric:tabular-nums;gap:12px}
+  .frage{margin-top:16px;border:1px solid var(--p);border-radius:10px;padding:14px 16px;background:#1a1218}
+  .frage .ft{font-size:13.5px;margin-bottom:10px;white-space:pre-wrap}
+  .knoepfe{display:flex;gap:8px;flex-wrap:wrap}
+  button{padding:8px 14px;border-radius:8px;border:1px solid var(--li);background:#1d1d24;color:var(--t);font:inherit;cursor:pointer}
+  button.vor{background:var(--p);border-color:transparent;color:#fff}
+  button:hover{filter:brightness(1.15)}
+  input[type=text]{padding:8px 10px;border-radius:8px;border:1px solid var(--li);background:#0d0d10;color:var(--t);font:inherit;min-width:220px}
+  .protokoll{margin-top:16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#8a8a93;background:#0a0a0e;border:1px solid var(--li);border-radius:7px;padding:9px 11px;line-height:1.55;max-height:150px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  .vorbereitung .protokoll{max-height:340px}
+  .protokoll .gut{color:var(--g)}.protokoll .wink{color:var(--w)}.protokoll .boese{color:var(--r)}.protokoll .tut{color:var(--o)}.protokoll .schritt{color:var(--t)}
+  .anreisser{margin:18px 26px 20px;border:1px solid var(--li);border-radius:10px;padding:14px 16px;background:var(--kar)}
+  .al{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--p);margin-bottom:7px}
+  .ah{font-size:13.5px;font-weight:500;margin-bottom:4px}
+  .at{font-size:12.5px;color:var(--m);line-height:1.6}
+  .punkte{display:flex;gap:5px;margin-top:11px}
+  .punkte i{width:5px;height:5px;border-radius:50%;background:#33333d}
+  .punkte i.an{background:var(--p)}
+  .fuss{border-top:1px solid var(--li);padding:11px 26px;font-size:11.5px;color:#5e5e68;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .fertig .haupt{background:radial-gradient(circle at 20% 0,#1b1215,transparent 60%)}
+  a{color:var(--o)}
+  .hin{color:var(--m);font-size:12.5px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="rahmen" id="rahmen">
+  <div class="kopf">
+    <svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0c0c0d" stroke="#2a2a33"/><g transform="translate(32 32)" stroke="#e8e8ec" stroke-width="4" stroke-linecap="round" fill="none"><circle r="22"/><g transform="rotate(15)"><path d="M-22 0H22M0-22V22"/></g></g><circle cx="32" cy="32" r="5" fill="#f97b14"/></svg>
+    <div>
+      <div class="titel" id="titel">KlangTresor wird eingerichtet</div>
+      <div class="unter" id="unter">dein eigenes Archiv, auf deinem Rechner</div>
+    </div>
+  </div>
+  <div class="rumpf">
+    <div class="nav" id="nav"></div>
+    <div class="haupt">
+      <div class="jetzt" id="jetzt">Gleich geht es los …</div>
+      <div class="warum" id="warum"></div>
+      <div class="balken" id="balken" hidden><div class="fuell" id="fuell"></div></div>
+      <div class="zahlen" id="zahlen" hidden><span id="zwas"></span><span id="zrest"></span></div>
+      <div class="frage" id="frage" hidden><div class="ft" id="ft"></div><div class="knoepfe" id="knoepfe"></div><div class="hin" id="fhin"></div></div>
+      <div class="protokoll" id="protokoll"></div>
+    </div>
+  </div>
+  <div class="anreisser" id="anreisser" hidden>
+    <div class="al">Was dich erwartet</div>
+    <div class="ah" id="ah"></div>
+    <div class="at" id="at"></div>
+    <div class="punkte" id="punkte"></div>
+  </div>
+  <div class="fuss"><span id="fl">Abbrechen ist erlaubt — es geht von diesem Stand weiter.</span><span id="fr"></span></div>
+</div>
+
+<script>
+/* Die Erklärungen je Schritt — was passiert, und warum. Hier, nicht im
+   Skript: die Konsole hat ihre eigenen Sätze, die Seite darf mehr Platz
+   haben. Nummern wie in bin/einrichten.js. */
+const WARUM = {
+  1: 'Schreibrecht, Rechte und Platz. KlangTresor schreibt nur in seinen eigenen Ordner — kein Systemordner, keine Registry, keine Administratorrechte. Erhöhte Rechte wären sogar schädlich: alles Angelegte gehörte danach dem Verwalter.',
+  2: 'Liegt hier schon ein Archiv? Dann wird ergänzt, nichts überschrieben. Und: antwortet auf Port 8788 schon ein KlangTresor, würde der Browser gleich den anderen zeigen — das wird vorher geprüft.',
+  3: 'ffmpeg ist das Werkzeug für alles, was mit Ton und Bild rechnet: Klanganalyse, Wellenformen, Videoschnitt. Unter Windows wird es geholt und in den eigenen Ordner gelegt; auf Mac und Linux ist der Paketverwalter zuständig.',
+  4: 'Die Pakete, die der Server braucht — rund zwanzig kleine Bausteine. Ein bis fünf Minuten, und zwischendurch ist es still.',
+  5: 'Zwei Werkzeuge, die später in deinem Archiv rechnen. Das eine zerlegt ein Lied in seine Spuren — Gesang, Schlagzeug, Bass, Rest —, das andere hört heraus, wonach ein Stück klingt: Genre, Stimmung, Instrumente. Beides läuft später bei dir, ohne dass ein Ton den Rechner verlässt.',
+  6: 'KlangTresor meldet sich bei Suno an wie jeder beliebige Besucher deiner Profilseite: nur lesend, ohne Passwort. Was ein Fremder sehen kann, kann es holen. Dein Suno-Name ist das, was hinter dem @ steht.',
+  7: 'Seite für Seite deine Profilseite, zwanzig Titel je Seite, eine Anfrage nach der anderen. Es kommen Titel, Liedtexte, Stilangaben, Modell, Datum, Abrufe, Herzen, Kommentare und die öffentlichen Alben. Genau das passiert von jetzt an bei jedem Abgleich.',
+  8: 'Der Ton. Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links heraus — aber du hast sie vermutlich längst. In Download- und Musikordnern wird von selbst nachgesehen; liegen sie woanders, wählst du den Ordner im Dialog. Erkannt wird am Inhalt, nie am Namen.',
+  9: 'Titelbilder und Bewegtbilder, für jeden Titel. Das dauert am längsten. Escape unterbricht — dann startet KlangTresor trotzdem, und der rote Knopf oben rechts holt später den Rest.',
+  10: 'Bis hierher war alles öffentlich. Was nur dir gehört — unveröffentlichte Titel, wer geherzt und kommentiert hat, private Alben —, holt ein Lesezeichen in Chrome, mit deiner eigenen Anmeldung. Auf deiner Platte liegt kein Schlüssel zu deinem Suno-Konto.',
+};
+const NAMEN = ['Rechte und Platz','Wo wir stehen','ffmpeg','Pakete','Klangmodelle','Dein Suno-Name','Songliste','Deine Klangdateien','Bilder','Zum Schluss'];
+
+const $ = (i) => document.getElementById(i);
+const MB = (n) => (n / 1048576).toFixed(1).replace('.', ',') + ' MB';
+let start = Date.now(), letzteFrage = null, karten = [], karte = 0, letzteZeilen = 0;
+
+function nav(schritte, gesamt){
+  const n = $('nav'); n.innerHTML = '';
+  for (let i = 1; i <= gesamt; i++){
+    const s = schritte[i-1];
+    const d = document.createElement('div');
+    d.className = 'st ' + (s ? s.zustand : '');
+    d.innerHTML = `<span class="punkt"></span><span>${NAMEN[i-1] || (s && s.name) || ''}</span>`;
+    n.appendChild(d);
+  }
+}
+
+function frageZeigen(f){
+  const box = $('frage');
+  if (!f){ box.hidden = true; letzteFrage = null; return; }
+  if (letzteFrage === f.id) return;
+  letzteFrage = f.id;
+  box.hidden = false;
+  const k = $('knoepfe'); k.innerHTML = ''; $('fhin').textContent = '';
+  const senden = (wert) => { fetch('/antwort', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id, wert }) }); box.hidden = true; letzteFrage = null; };
+
+  if (f.art === 'wahl'){
+    $('ft').textContent = f.text;
+    $('fhin').textContent = f.hinweis || '';
+    for (const o of f.optionen || []){
+      const b = document.createElement('button'); b.textContent = o.label; if (o.vor) b.className = 'vor';
+      b.onclick = () => senden(o.wert); k.appendChild(b);
+    }
+    return;
+  }
+  /* Freitext: der Suno-Name. */
+  $('ft').textContent = f.text.replace(/:\s*$/, '');
+  const e = document.createElement('input'); e.type = 'text'; e.autofocus = true; e.spellcheck = false;
+  const b = document.createElement('button'); b.className = 'vor'; b.textContent = 'Weiter';
+  const los = () => senden(e.value);
+  b.onclick = los; e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') los(); });
+  k.append(e, b); setTimeout(() => e.focus(), 50);
+}
+
+function protokoll(zeilen){
+  if (zeilen.length === letzteZeilen) return;
+  letzteZeilen = zeilen.length;
+  const p = $('protokoll');
+  p.innerHTML = zeilen.slice(-80).map((z) => `<div class="${z.art}">${z.art === 'gut' ? '[ok] ' : z.art === 'wink' ? '[!] ' : z.art === 'boese' ? '[x] ' : z.art === 'tut' ? '→ ' : ''}${esc(z.text)}</div>`).join('');
+  p.scrollTop = p.scrollHeight;
+}
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+function anreisserZeigen(){
+  if (!karten.length) return;
+  $('anreisser').hidden = false;
+  const k = karten[karte % karten.length];
+  $('ah').textContent = k.name; $('at').textContent = k.text;
+  $('punkte').innerHTML = karten.map((_, i) => `<i class="${i === karte % karten.length ? 'an' : ''}"></i>`).join('');
+}
+
+async function tick(){
+  let s; try { s = await (await fetch('/stand', { cache: 'no-store' })).json(); }
+  catch (e) { $('fr').textContent = 'Die Einrichtung antwortet nicht mehr — das Fenster ist vermutlich zu.'; return; }
+  const gesamt = s.gesamt || 10;
+  nav(s.schritte || [], gesamt);
+  const akt = s.schritte && s.schritte[s.aktuell - 1];
+  if (s.fertig){
+    document.getElementById('rahmen').classList.add('fertig');
+    $('jetzt').textContent = 'Fertig. KlangTresor ist eingerichtet.';
+    $('warum').innerHTML = 'Es öffnet sich gleich im Browser — sonst: <a href="http://localhost:8788/" target="_blank">http://localhost:8788/</a>. Auf dem Schreibtisch liegt „KlangTresor" — damit startest du es künftig.';
+    $('unter').textContent = 'dein eigenes Archiv, auf deinem Rechner · fertig';
+  } else if (akt){
+    $('rahmen').classList.remove('vorbereitung');
+    $('jetzt').textContent = akt.name;
+    $('warum').textContent = WARUM[akt.nr] || '';
+    $('unter').textContent = `dein eigenes Archiv, auf deinem Rechner · Schritt ${akt.nr} von ${gesamt}`;
+  } else {
+    $('rahmen').classList.add('vorbereitung');
+    $('jetzt').textContent = 'Vorbereitung';
+    $('warum').textContent = 'Wohin KlangTresor soll, und zwei Sätze zu deinen Titeln und ihren Audiodateien.';
+  }
+  const f = s.fortschritt;
+  $('balken').hidden = !f; $('zahlen').hidden = !f;
+  if (f){
+    const fl = $('fuell');
+    if (f.gesamt){ fl.className = 'fuell'; fl.style.width = Math.min(100, f.bytes / f.gesamt * 100).toFixed(1) + '%'; $('zwas').textContent = `${f.was} — ${MB(f.bytes)} von ${MB(f.gesamt)}`; }
+    else { fl.className = 'fuell unbestimmt'; fl.style.width = ''; $('zwas').textContent = `${f.was} — ${MB(f.bytes)}`; }
+    $('zrest').textContent = f.rest || '';
+  }
+  frageZeigen(s.frage);
+  protokoll(s.zeilen || []);
+  const sek = Math.round((Date.now() - start) / 1000);
+  $('fr').textContent = `läuft seit ${Math.floor(sek / 60)}:${String(sek % 60).padStart(2, '0')}`;
+}
+
+fetch('/anreisser.json').then((r) => r.json()).then((d) => { karten = d.karten || []; anreisserZeigen(); setInterval(() => { karte++; anreisserZeigen(); }, 14000); }).catch(() => {});
+tick(); setInterval(tick, 600);
+</script>
+</body>
+</html>

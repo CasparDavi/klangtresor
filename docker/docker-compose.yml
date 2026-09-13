@@ -1,0 +1,48 @@
+# KlangTresor im Heimnetz — der Weg ohne Installation.
+#
+# Die drei Einrichtungsdateien einrichten-docker-*.* im Projektordner rufen
+# genau das hier auf. Von Hand geht es AUS DEM PROJEKTORDNER so:
+#
+#   docker compose -f docker/docker-compose.yml up -d --build
+#
+# Danach startet der Container mit Docker automatisch nach jedem Systemboot
+# (restart: unless-stopped). Erreichbar unter http://<dieser-Rechner>:8788
+#
+# Beenden:  docker compose -f docker/docker-compose.yml down
+# Logs:     docker compose -f docker/docker-compose.yml logs -f
+#
+# NVIDIA-GPU (Whisper + Klangraum): docker-compose.cuda.yml dazulegen,
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.cuda.yml up -d --build
+#
+# Der Bau-Kontext ist der Projektordner (context: ..), nicht docker/ —
+# das Dockerfile kopiert bin/, server/, web/ von dort. .dockerignore liegt
+# deshalb auch dort, nicht hier.
+
+name: klangtresor
+
+services:
+  klangtresor:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: klangtresor
+    restart: unless-stopped
+    init: true
+    ports:
+      - "8788:8788"
+    volumes:
+      # Das Archiv bleibt auf der Platte, nicht im Image.
+      - ../library:/app/library
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:8788/',r=>process.exit(r.statusCode>=500?1:0)).on('error',()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    stop_grace_period: 10s

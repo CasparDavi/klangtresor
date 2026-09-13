@@ -31,9 +31,17 @@ dir die Zeile für dein System und deinen Weg:
 
 | dein System | der übliche Weg | mit Docker |
 |---|---|---|
-| **macOS** | `einrichten-macos.command` doppelklicken | `einrichten-docker.command` doppelklicken |
-| **Linux** | `./einrichten-linux.sh` | `./einrichten-docker.sh` |
-| **Windows** | Doppelklick auf `KlangTresor-einrichten.cmd` | Rechtsklick auf `einrichten-docker.ps1` → „Mit PowerShell ausführen" |
+| **Windows** | Doppelklick auf `einrichten-windows.cmd` | Doppelklick auf `einrichten-docker-windows.cmd` |
+| **macOS** | `einrichten-macos.command` doppelklicken | `einrichten-docker-macos.command` doppelklicken |
+| **Linux** | `./einrichten-linux.sh` | `./einrichten-docker-linux.sh` |
+
+Mehr liegt dort nicht: sechs Einrichtungsdateien, dazu `starten-*` für später.
+Jede hat drei Stufen, jede fängt die nächste auf — erst holt das Skript des
+Systems Node.js (falls es fehlt), dann übernimmt `bin/einrichten.js` und
+öffnet die Einrichtung **als Seite im Browser**: Schrittliste,
+Fortschrittsbalken, Erklärungen, Schaltflächen statt Tastenkürzel. Geht kein
+Browser auf, läuft dasselbe im Fenster als Text weiter — antworten kann man
+an beiden Stellen. Wer nur den Text will: `--text` anhängen.
 
 **Beim ersten Doppelklick meckert dein System — das ist normal**, das Paket ist
 nicht signiert, der Quelltext liegt offen daneben.
@@ -45,13 +53,17 @@ nicht signiert, der Quelltext liegt offen daneben.
   wegnimmt, sieht die Frage für diese Datei nicht wieder.
 - **macOS** sagt „nicht verifizierter Entwickler" — einmal Rechtsklick → Öffnen.
 
-Zum **späteren Starten** gibt es unter Windows `KlangTresor-starten.cmd`
-— die richtet nichts mehr ein, sondern startet nur den Server.
+Zum **späteren Starten** legt die Einrichtung eine Verknüpfung „KlangTresor"
+auf den Schreibtisch — mit Symbol; sie startet den Server und öffnet den
+Browser (Chrome, wenn da). Wer sie löscht, nimmt `starten-windows.cmd`,
+`starten-macos.command` oder `starten-linux.sh` aus dem Ordner — die richten
+nichts mehr ein, sie starten nur.
 
-Unter Windows **nicht** die `.ps1` direkt anklicken: Viele Rechner lehnen
+Unter Windows liegen die PowerShell-Skripte in `bin\` und werden von den
+`.cmd`-Dateien gerufen — **nicht** selbst anklicken: Viele Rechner lehnen
 Skripte ab, und das Fenster schließt sich, bevor man die Meldung lesen
-kann — man hält das Programm dann für kaputt. Der `.cmd`-Starter umgeht
-beides. (Beigesteuert von Casto, der genau darüber gestolpert ist.)
+kann — man hält das Programm dann für kaputt. Die `.cmd` umgeht beides.
+(Beigesteuert von Casto, der genau darüber gestolpert ist.)
 
 **Der übliche Weg** braucht keine Vorbereitung. Fehlt Node.js, holt er es sich
 selbst — als tragbare Fassung in den Projektordner, ohne Eintrag im System und
@@ -158,8 +170,9 @@ starten — es wird nur nachgeholt, was fehlt.
 node server/server.js
 ```
 
-Unter **Windows** geht es auch per Doppelklick auf
-**`KlangTresor-starten.cmd`** — dasselbe, nur ohne Terminal.
+Oder per Doppelklick auf die Verknüpfung „KlangTresor" auf dem Schreibtisch
+— beziehungsweise **`starten-windows.cmd`**, **`starten-macos.command`**,
+**`starten-linux.sh`** im Ordner: dasselbe, nur ohne Tippen.
 
 Die Adressen stehen in der Ausgabe: auf dem Rechner selbst
 `http://localhost:8788`, auf iPhone und iPad die Adresse mit den

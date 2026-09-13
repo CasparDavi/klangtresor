@@ -1,19 +1,19 @@
 ﻿# KlangTresor - Copyright (c) 2026 Caspar_D - MIT, siehe LICENSE
 # KlangTresor einrichten - mit Docker (Windows).
 #
-# Rechtsklick auf diese Datei -> "Mit PowerShell ausfuehren".
-# Wehrt sich Windows gegen Skripte, hilft einmalig:
-#   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+# Doppelklick auf einrichten-docker-windows.cmd - das ist der Weg. Diese
+# Datei liegt in bin\, weil sie niemand selbst anklicken soll; die .cmd
+# haelt das Fenster offen und umgeht die ExecutionPolicy fuer diesen Aufruf.
 #
-# Der Unterschied zu einrichten-windows.ps1: Hier wird auf DIESEM Rechner
-# nichts installiert - kein Node, kein ffmpeg. Alles liegt im Container.
+# Der Unterschied zu bin\anlasser.ps1 (dem ueblichen Weg): Hier wird auf
+# DIESEM Rechner nichts installiert - kein Node, kein ffmpeg. Alles liegt im Container.
 # Gebraucht wird nur Docker Desktop.
 #
-# Das Archiv bleibt trotzdem draussen auf der Platte (.\library), ebenso
-# Der Container laesst sich wegwerfen und
-# neu bauen, ohne dass Musik verlorengeht.
+# Das Archiv bleibt trotzdem draussen auf der Platte (.\library). Der
+# Container laesst sich wegwerfen und neu bauen, ohne dass Musik
+# verlorengeht. Die Bauanleitung liegt in docker\.
 
-Set-Location -Path $PSScriptRoot
+Set-Location -Path (Split-Path -Parent $PSScriptRoot)   # bin\ -> Projektordner
 $ErrorActionPreference = 'Continue'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -87,8 +87,8 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 & docker compose version *> $null
-if ($LASTEXITCODE -eq 0) { $DC = @('docker','compose') }
-elseif (Get-Command docker-compose -ErrorAction SilentlyContinue) { $DC = @('docker-compose') }
+if ($LASTEXITCODE -eq 0) { $DCEXE = 'docker'; $DCARG = @('compose') }
+elseif (Get-Command docker-compose -ErrorAction SilentlyContinue) { $DCEXE = 'docker-compose'; $DCARG = @() }
 else {
   Write-Host "  [--] Docker Compose fehlt (gehoert bei Docker Desktop dazu)."
   Read-Host "  [Eingabetaste]"
@@ -104,7 +104,8 @@ Write-Host ""
 Write-Host "  -> Kiste bauen und starten. Beim ersten Mal dauert das einige"
 Write-Host "     Minuten: Node, ffmpeg und die Pakete kommen hinein."
 Write-Host ""
-& $DC[0] $DC[1..($DC.Length-1)] up -d --build
+# Die Bauanleitung liegt in docker\, der Kontext ist der Projektordner.
+& $DCEXE @DCARG -f docker\docker-compose.yml up -d --build
 if ($LASTEXITCODE -ne 0) {
   Write-Host ""
   Write-Host "  Der Start ist gescheitert. Die Meldungen oben sagen warum."
@@ -133,7 +134,7 @@ if ($bereit) {
 } else {
   Write-Host "  Der Container laeuft, antwortet aber noch nicht."
   Write-Host "  Beim ersten Start holt er die KI-Modelle - das kann dauern."
-  Write-Host "  Nachsehen mit:  docker compose logs -f"
+  Write-Host "  Nachsehen mit:  docker compose -f docker\docker-compose.yml logs -f"
 }
 Write-Host ""
 Write-Host "  Adresse:  http://localhost:8788"
@@ -145,7 +146,8 @@ Write-Host "    2. Den roten Knopf druecken. Er holt die Songliste, laedt Medien
 Write-Host "       und rechnet die Analysen - alles im Hintergrund."
 Write-Host ""
 Write-Host "  Der Container startet ab jetzt mit dem Rechner von selbst wieder."
-Write-Host "  Anhalten:  docker compose down     -     Protokoll:  docker compose logs -f"
+Write-Host "  Anhalten:   docker compose -f docker\docker-compose.yml down"
+Write-Host "  Protokoll:  docker compose -f docker\docker-compose.yml logs -f"
 Write-Host ""
 Start-Process "http://localhost:8788"
 Read-Host "  [Eingabetaste zum Schliessen dieses Fensters]"

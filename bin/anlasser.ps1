@@ -1,7 +1,9 @@
 ﻿# KlangTresor - Copyright (c) 2026 Caspar_D - MIT, siehe LICENSE
 # KlangTresor einrichten - Windows. DER ANLASSER.
 #
-# Doppelklick auf KlangTresor-einrichten.cmd - das ist der Weg.
+# Doppelklick auf einrichten-windows.cmd - das ist der Weg. Diese Datei
+# liegt in bin\, weil sie niemand selbst anklicken soll; die .cmd haelt
+# das Fenster offen und umgeht die ExecutionPolicy fuer diesen Aufruf.
 #
 # DIESE DATEI TUT NUR EINES: sie beschafft Node.js. Danach uebernimmt
 # bin/einrichten.js, und das ist ein richtiges Programm statt eines
@@ -22,7 +24,7 @@
 #
 # Geprueft mit bin/pruefe-skripte.js.
 
-Set-Location -Path $PSScriptRoot
+Set-Location -Path (Split-Path -Parent $PSScriptRoot)   # bin\ -> Projektordner
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8

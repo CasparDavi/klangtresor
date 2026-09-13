@@ -2,18 +2,19 @@
 # KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
 # KlangTresor einrichten — mit Docker (Linux).
 #
-#   ./einrichten-docker.sh
-#   (Sollte er sich weigern, einmal: chmod +x einrichten-docker.sh)
+#   ./einrichten-docker-linux.sh
+#   (Sollte er sich weigern, einmal: chmod +x einrichten-docker-linux.sh)
 #
 # Der Unterschied zu den anderen drei Skripten: Hier wird auf DIESEM
 # Rechner nichts installiert — kein Node, kein ffmpeg. Alles liegt im
 # Container. Gebraucht wird nur Docker.
 #
-# Das Archiv bleibt trotzdem draußen auf der Platte (./library), ebenso
-# Der Container lässt sich wegwerfen und
-# neu bauen, ohne dass Musik verlorengeht.
+# Das Archiv bleibt trotzdem draußen auf der Platte (./library). Der
+# Container lässt sich wegwerfen und neu bauen, ohne dass Musik
+# verlorengeht. Die Bauanleitung liegt in docker/.
 #
-# macOS: einrichten-docker.command doppelklicken · Windows: einrichten-docker.ps1
+# macOS: einrichten-docker-macos.command · Windows: einrichten-docker-windows.cmd
+# Ohne Docker: einrichten-linux.sh
 
 cd "$(dirname "$0")" || exit 1
 set -u
@@ -102,7 +103,7 @@ echo ""
 echo "  → Kiste bauen und starten. Beim ersten Mal dauert das einige"
 echo "    Minuten: Node, ffmpeg und die Pakete kommen hinein."
 echo ""
-$DC up -d --build || { echo "  Der Start ist gescheitert. Meldungen oben lesen."; exit 1; }
+$DC -f docker/docker-compose.yml up -d --build || { echo "  Der Start ist gescheitert. Meldungen oben lesen."; exit 1; }
 
 echo ""
 echo "  → Warten, bis der Server antwortet …"
@@ -119,7 +120,7 @@ if [ "${bereit:-0}" = "1" ]; then
 else
   echo "  Der Container läuft, antwortet aber noch nicht."
   echo "  Beim ersten Start holt er die KI-Modelle — das kann dauern."
-  echo "  Nachsehen mit:  $DC logs -f"
+  echo "  Nachsehen mit:  $DC -f docker/docker-compose.yml logs -f"
 fi
 echo ""
 echo "  Adresse:  http://localhost:8788"
@@ -131,7 +132,8 @@ echo "    2. Den roten Knopf drücken. Er holt die Songliste, lädt Medien"
 echo "       und rechnet die Analysen — alles im Hintergrund."
 echo ""
 echo "  Der Container startet ab jetzt mit dem Rechner von selbst wieder."
-echo "  Anhalten:  $DC down     ·     Protokoll:  $DC logs -f"
+echo "  Anhalten:   $DC -f docker/docker-compose.yml down"
+echo "  Protokoll:  $DC -f docker/docker-compose.yml logs -f"
 echo ""
 (command -v open >/dev/null 2>&1 && open http://localhost:8788) \
   || (command -v xdg-open >/dev/null 2>&1 && xdg-open http://localhost:8788 >/dev/null 2>&1) &

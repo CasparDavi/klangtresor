@@ -28,7 +28,7 @@
  *               heraus, sieht der Empfänger etwas anderes.
  *
  * Aufruf:  node bin/pruefe-skripte.js
- *          node bin/pruefe-skripte.js einrichten-windows.ps1
+ *          node bin/pruefe-skripte.js bin/anlasser.ps1
  */
 'use strict';
 const fs   = require('node:fs');

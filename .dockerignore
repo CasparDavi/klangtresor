@@ -27,12 +27,15 @@ library/
 # Wird im Abbild frisch installiert (npm ci)
 node_modules/
 
-# Dokumentation, Pakete, Werkzeuge — für den Betrieb nicht nötig
+# Dokumentation, Pakete, Werkzeuge — für den Betrieb nicht nötig.
+# Aus docker/ braucht das Abbild nur docker-entrypoint.sh (COPY im
+# Dockerfile); die Bauanleitungen selbst bleiben draußen.
 docs/
 *.zip
 *.md
-Dockerfile
-Dockerfile.cuda
-docker-compose.yml
-docker-compose.cuda.yml
+docker/Dockerfile*
+docker/docker-compose*.yml
 .dockerignore
+werkzeug/
+einrichten-*
+starten-*

@@ -1,4 +1,6 @@
 # KlangTresor — Website + Archiv im Heimnetz.
+# Gebaut wird aus dem PROJEKTORDNER (docker-compose.yml: context: ..), nicht
+# aus docker/ — die COPY-Pfade unten sind von dort aus gerechnet.
 # Node 20 (glibc, nicht Alpine): onnxruntime-node liefert nur glibc-Binaries.
 FROM node:20-bookworm-slim
 
@@ -15,7 +17,7 @@ COPY bin ./bin
 COPY browser ./browser
 COPY server ./server
 COPY web ./web
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # chmod 755, nicht chmod +x: "+x" ADDIERT nur das Ausfuehrungsbit zu dem,
 # was die Datei mitbringt. Kommt sie mit 600 aus dem Kontext (auf exFAT-

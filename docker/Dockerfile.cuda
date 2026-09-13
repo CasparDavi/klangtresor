@@ -3,7 +3,8 @@
 # Dieses Abbild: CUDA 12.4 + cuDNN 9, passend zu onnxruntime-node 1.20.
 #
 # Bauen und starten:
-#   docker compose -f docker-compose.yml -f docker-compose.cuda.yml up -d --build
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.cuda.yml up -d --build
+#   (aus dem Projektordner; die COPY-Pfade sind von dort aus gerechnet)
 
 FROM nvidia/cuda:12.4.1-devel-ubuntu22.04 AS whisper-build
 ENV DEBIAN_FRONTEND=noninteractive
@@ -52,7 +53,7 @@ COPY bin ./bin
 COPY browser ./browser
 COPY server ./server
 COPY web ./web
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # chmod 755, nicht chmod +x: siehe Dockerfile (exFAT / ._ Dateien).
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh bin/server-start.sh \
