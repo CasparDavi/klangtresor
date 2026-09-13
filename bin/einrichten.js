@@ -782,9 +782,7 @@ end try`;
     leer();
     if (!await jaNein('Trotzdem versuchen?', 'n')) { wiederkommen(); schluss(0); }
   } else {
-    gut(`Platz: ${(platz / 1073741824).toFixed(1)} GB frei.`);
-    matt('Die Einrichtung braucht rund 500 MB. Dein Archiv wächst danach mit');
-    matt('jedem Song — bei ein paar hundert Titeln sind das schnell zehn GB.');
+    gut(`Platz: ${(platz / 1073741824).toFixed(1)} GB frei — die Einrichtung braucht rund 500 MB.`);
   }
 
   /* Ein Projekt auf einer Netzwerkfreigabe ist unter Windows heikel:
