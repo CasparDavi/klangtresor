@@ -567,10 +567,14 @@ function da(befehl) {
     wink('KlangTresor liegt nicht auf dieser Maschine.');
     matt(`  ${WURZEL}`);
     { const wo = ortInWorten(WURZEL); if (wo) matt(`  ${wo}`); }
-    matt('Windows kommt mit solchen Pfaden nur halb zurecht — manche Werkzeuge');
-    matt('springen dann stillschweigend nach C:\\Windows. Es kann gutgehen;');
-    matt('sicherer ist ein Ordner auf der eigenen Platte, etwa unter');
-    matt('C:\\Users\\<du>\\KlangTresor.');
+    matt('Windows kommt mit solchen Pfaden nur halb zurecht: manche Werkzeuge');
+    matt('springen stillschweigend nach C:\\Windows. npm gehört dazu, und ich');
+    matt('helfe ihm gleich mit einem Kniff darüber hinweg — verlassen würde');
+    matt('ich mich darauf nicht.');
+    leer();
+    matt('Sicherer ist ein Ordner auf der Platte dieses Rechners, etwa');
+    matt('C:\\Users\\<du>\\KlangTresor. Wenn du jetzt abbrichst, den Ordner');
+    matt('dorthin verschiebst und neu startest, bleibt alles Geholte erhalten.');
   }
 
   /* ================================================================ */
@@ -715,8 +719,34 @@ function da(befehl) {
     }
     return { befehl: process.platform === 'win32' ? 'npm.cmd' : 'npm', vorn: [] };
   }
-  const na = npmAufruf();
-  if (!laeuft(na.befehl, [...na.vorn, 'install', '--no-fund', '--no-audit'])) {
+  /* UND NPM SELBST STARTET DOCH WIEDER cmd.exe.
+
+     Auch wenn wir npm ohne Schale aufrufen: npm fuehrt die
+     Installationsskripte seiner Pakete grundsaetzlich ueber
+     `cmd.exe /d /s /c` aus. Bei onnxruntime-node ist das
+     `node ./script/install` - und cmd.exe springt wieder nach
+     C:\Windows, wo das Skript nicht liegt:
+
+         npm error Cannot find module 'C:\Windows\script\install'
+
+     Darauf haben wir keinen Zugriff; das steckt in npm.
+
+     Der Kniff: `pushd` bildet einen UNC-Pfad auf einen freien
+     Laufwerksbuchstaben ab. Darunter ist cmd.exe zufrieden - auch in
+     npms eigenen Kindprozessen, denn die erben das Arbeitsverzeichnis.
+     Der Buchstabe verschwindet mit der cmd-Sitzung von selbst. */
+  function npmLaufen(args) {
+    const na = npmAufruf();
+    if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
+      tut('Der Ordner liegt auf einer Freigabe — ich blende ihn kurz als Laufwerk ein.');
+      const teile = [`pushd "${WURZEL}"`, '&&',
+                     `"${na.befehl}"`, ...na.vorn.map((v) => `"${v}"`), ...args].join(' ');
+      const e = spawnSync('cmd', ['/d', '/c', teile], { stdio: 'inherit' });
+      return e.status === 0;
+    }
+    return laeuft(na.befehl, [...na.vorn, ...args]);
+  }
+  if (!npmLaufen(['install', '--no-fund', '--no-audit'])) {
     const w = await wieWeiter('npm install', 'Ohne die Pakete startet der Server nicht.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   } else gut('Pakete sind da.');
