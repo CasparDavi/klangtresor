@@ -38,7 +38,9 @@ const { execFileSync } = require('node:child_process');
 
 const WURZEL = path.resolve(__dirname, '..');
 const NUR_PRUEFEN = process.argv.includes('--pruefen');
-const BLOCK = 1048576;                 /* exFAT auf diesem Medium: 1 MB je Block */
+/* Die Blockgroesse DIESES Mediums - nicht die meines. Auf der exFAT-Platte
+   des Entwicklers sind es 1 MB, auf APFS und NTFS 4 KB; statfs weiss es. */
+const BLOCK = (() => { try { return fs.statfsSync(WURZEL).bsize || 4096; } catch (e) { return 4096; } })();
 const LOSE_GRENZE = 500;               /* darunter lohnt das Packen die Zeit nicht */
 
 /* Beiakten suchen. Verweisen wird NICHT gefolgt - das Labor legt Verweise ins

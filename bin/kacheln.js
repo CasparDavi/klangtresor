@@ -330,6 +330,18 @@ function standLesen() { try { return JSON.parse(fs.readFileSync(STAND_DATEI, 'ut
   console.log(`Größe:      ${(bytes/1048576).toFixed(1)} MB `
             + `(Schnitt ${Math.round(bytes/Math.max(fertig,1)/1024)} KB)`);
   console.log(`Dauer:      ${dauer} s`);
-  console.log(`\nHinweis: Auf dieser exFAT-Platte belegt jede Kachel einen`);
-  console.log(`ganzen 1-MB-Block, also rund ${fertig} MB statt ${(bytes/1048576).toFixed(0)} MB.`);
+  /* NUR SAGEN, WAS AUF DIESER PLATTE GILT. Bis zum 13.09.2026 stand hier
+     unbedingt "Auf dieser exFAT-Platte belegt jede Kachel einen ganzen
+     1-MB-Block" - auf jeder Platte, auch auf NTFS in einer Windows-VM.
+     Das war die exFAT-Platte des Entwicklers, in den Text gegossen.
+     statfs kennt die Blockgroesse: 1 048 576 auf jener exFAT-Platte, 4096
+     auf APFS und NTFS. Ab 64 KB lohnt der Hinweis, darunter nicht. */
+  try {
+    const bsize = fs.statfsSync(SONGS).bsize || 0;
+    if (bsize >= 65536 && fertig) {
+      const belegt = fertig * bsize / 1048576;
+      console.log(`\nHinweis: Auf dieser Platte ist ein Block ${(bsize/1024).toFixed(0)} KB groß - jede Kachel`);
+      console.log(`belegt einen ganzen, also rund ${belegt.toFixed(0)} MB statt ${(bytes/1048576).toFixed(0)} MB.`);
+    }
+  } catch (e) {}
 })();
