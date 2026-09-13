@@ -1,0 +1,25 @@
+{
+ "_": "Die Anreißer der Einrichtungsoberfläche. Caspar_D hat den ersten selbst geschrieben (13.09.2026) und den Ton für die übrigen vorgegeben: erst was es IST, dann was mit DEINEN Daten geschieht. Der Geschichten-Raum bleibt ausdrücklich draußen.",
+ "karten": [
+  {
+   "name": "Der KlangTresor",
+   "text": "KlangTresor verwaltet deine Suno-Daten, Audio-Dateien aus deinen persönlichen Suno-Backups, die schon auf deinem Computer sind und solche, für die Du schon von Dir auf Suno freigeschaltete Downloads erworben hast. Diese Daten werden mit allen Metadaten, die Suno dazu vorhält, vervollständigt, alle Deine Texte, Lyrics-Prompts, Bilder und Videos werden zusammen in deinem KlangTresor-Archiv gespeichert."
+  },
+  {
+   "name": "Der Klangraum",
+   "text": "Der Klangraum zeigt deine Lieder als Karte. Wo sie liegen, bestimmt nicht ein Ordner und kein Schlagwort, sondern der gemessene Klang — Tempo, Klangfarbe, Dichte, Stimmung. Was ähnlich klingt, liegt beieinander. Du siehst deinen Bestand von oben und findest Nachbarn, von denen Du nicht wusstest, dass sie welche sind. Gerechnet wird das auf deinem Rechner, aus deinen eigenen Dateien."
+  },
+  {
+   "name": "Die Bühne",
+   "text": "Auf der Bühne läuft der Text mit der Musik mit, Wort für Wort, in den Farben des Titelbildes. Die Zeitmarken dazu holt KlangTresor von Suno, und wo Suno keine hat, rechnet er sie selbst — mit Whisper, auf deinem Rechner. Dein Liedtext bleibt dabei dein Liedtext: was Du bei Suno geschrieben hast, steht auch hier."
+  },
+  {
+   "name": "Das Tonstudio",
+   "text": "Jedes Lied bekommt seine eigene Klangeinstellung: Equalizer, Kompressor, und ein Kerbfilter gegen stehende Töne, die KlangTresor vorher selbst gesucht hat. Die Einstellung gehört zum Lied und wandert mit ihm, nicht zum Abspielgerät. Am Original wird nichts verändert — es bleibt so liegen, wie Suno es geliefert hat."
+  },
+  {
+   "name": "Die Nachbarschaft",
+   "text": "KlangTresor merkt sich, wer auf deine Titel reagiert hat: wer geherzt, wer kommentiert, wer Dir gefolgt ist — mit Namen und Zeitpunkt. Suno zeigt Dir davon nur die letzten vier Wochen; dein Archiv behält es. Du siehst, wer zurückfolgt, wer herzt ohne zu folgen, und wie sich die Zahlen eines Liedes über Monate entwickelt haben."
+  }
+ ]
+}
