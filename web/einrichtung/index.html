@@ -25,14 +25,27 @@
 <title>KlangTresor wird eingerichtet</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">
 <style>
-  :root{--o:#f97b14;--p:#e31c79;--bg:#0c0c10;--kar:#15151b;--li:#24242c;--t:#e8e8ec;--m:#8b8b93;--g:#3fb950;--w:#d29922;--r:#e5534b}
+  /* Die Farben sind die des Hauses (web/index.html :root), nicht eigene:
+     dieselbe Seite, nur ein anderer Raum. */
+  :root{--o:#f97b14;--p:#e31c79;--bg:#0c0c0d;--kar:#161618;--li:#333336;--t:#ececed;--m:#8b8b90;--g:#3fb950;--w:#d29922;--r:#e5534b}
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.6}
-  .rahmen{max-width:960px;margin:24px auto;border:1px solid #26262e;border-radius:14px;overflow:hidden;background:var(--bg)}
-  .kopf{display:flex;align-items:center;gap:18px;padding:18px 24px;border-bottom:1px solid var(--li);background:linear-gradient(180deg,#131319,#0c0c10)}
-  .logo{flex:0 0 auto;border-radius:14px;box-shadow:0 0 0 1px #2a2a33,0 6px 20px rgba(0,0,0,.4)}
-  .titel{font-size:18px;font-weight:500;letter-spacing:.02em}
-  .unter{font-size:12.5px;color:var(--m);margin-top:2px}
+  /* DER KOPF IST DER DER UEBERSICHT. Caspar_D, 13.09.2026: "die Kopfzeile
+     koenntest du jetzt aber auch ein bisschen corporate design maessiger
+     hinbauen, so wie in der Uebersicht der Header." Also dieselben Regeln
+     wie header, .kopfzeile, h1 und #markezeichen in web/index.html: klebend,
+     Glas ueber dem Grund, der Name im Verlauf Orange->Magenta, das Tresorrad
+     davor als Maske IM selben Verlauf. Wer dort etwas aendert, aendert es
+     hier mit. */
+  header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--li);padding:14px 18px}
+  .kopfzeile{display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:960px;margin:0 auto}
+  h1{font-size:19px;font-weight:700;letter-spacing:.5px;white-space:nowrap;margin:0;display:flex;align-items:center;gap:.16em;
+    background:linear-gradient(92deg,var(--o),var(--p));-webkit-background-clip:text;background-clip:text;color:transparent}
+  #markezeichen{width:1.02em;height:1.02em;flex:0 0 auto;display:block;background:linear-gradient(92deg,var(--o),var(--p));background-size:800% 100%;background-position:0 0;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat}
+  .stand{margin-left:auto;font-size:12.5px;color:var(--m);white-space:nowrap}
+  .rahmen{max-width:960px;margin:18px auto;border:1px solid var(--li);border-radius:14px;overflow:hidden;background:var(--bg)}
   .rumpf{display:grid;grid-template-columns:220px 1fr;min-height:360px}
   @media (max-width:700px){.rumpf{grid-template-columns:1fr}.nav{border-right:0;border-bottom:1px solid var(--li)}}
   .nav{border-right:1px solid var(--li);padding:12px 0;background:#0f0f14}
@@ -77,14 +90,13 @@
 </style>
 </head>
 <body>
-<div class="rahmen" id="rahmen">
-  <div class="kopf">
-    <svg class="logo" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0c0c0d" stroke="#2a2a33"/><g transform="translate(32 32)" stroke="#e8e8ec" stroke-width="4" stroke-linecap="round" fill="none"><circle r="22"/><g transform="rotate(15)"><path d="M-22 0H22M0-22V22"/></g></g><circle cx="32" cy="32" r="5" fill="#f97b14"/></svg>
-    <div>
-      <div class="titel" id="titel">KlangTresor wird eingerichtet</div>
-      <div class="unter" id="unter">dein eigenes Archiv, auf deinem Rechner</div>
-    </div>
+<header>
+  <div class="kopfzeile">
+    <h1 id="marke"><span id="markezeichen" aria-hidden="true"></span>KlangTresor</h1>
+    <div class="stand" id="unter">wird eingerichtet</div>
   </div>
+</header>
+<div class="rahmen" id="rahmen">
   <div class="rumpf">
     <div class="nav" id="nav"></div>
     <div class="haupt">
@@ -192,12 +204,12 @@ async function tick(){
     document.getElementById('rahmen').classList.add('fertig');
     $('jetzt').textContent = 'Fertig. KlangTresor ist eingerichtet.';
     $('warum').innerHTML = 'Es öffnet sich gleich im Browser — sonst: <a href="http://localhost:8788/" target="_blank">http://localhost:8788/</a>. Auf dem Schreibtisch liegt „KlangTresor" — damit startest du es künftig.';
-    $('unter').textContent = 'dein eigenes Archiv, auf deinem Rechner · fertig';
+    $('unter').textContent = 'eingerichtet';
   } else if (akt){
     $('rahmen').classList.remove('vorbereitung');
     $('jetzt').textContent = akt.name;
     $('warum').textContent = WARUM[akt.nr] || '';
-    $('unter').textContent = `dein eigenes Archiv, auf deinem Rechner · Schritt ${akt.nr} von ${gesamt}`;
+    $('unter').textContent = `wird eingerichtet · Schritt ${akt.nr} von ${gesamt}`;
   } else {
     $('rahmen').classList.add('vorbereitung');
     $('jetzt').textContent = 'Vorbereitung';
