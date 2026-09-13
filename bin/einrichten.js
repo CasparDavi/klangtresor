@@ -53,7 +53,11 @@ const OHNE_START = process.argv.includes('--ohne-start');
 const NUR_TEXT = process.argv.includes('--text');
 /* Fuer Probelaeufe: Seite bereitstellen, aber keinen Browser aufreissen. */
 const OHNE_BROWSER = process.argv.includes('--ohne-browser');
-const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, gesamt: 10 };
+/* --seite N: die Seite soll auf Port N horchen, weil dort schon eine auf
+   uns wartet - der Fall nach dem Umzug (siehe dort). Dann geht auch kein
+   zweites Browserfenster auf. */
+const SEITE_WUNSCH = (() => { const i = process.argv.indexOf('--seite'); return i >= 0 ? Number(process.argv[i + 1]) || 0 : 0; })();
+const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, weiter: null, gesamt: 10 };
 const ohneFarbe = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
 function merken(art, text) {
   ZUSTAND.zeilen.push({ art, text: ohneFarbe(text).replace(/^\s{5}/, ''), t: Date.now() });
@@ -665,6 +669,10 @@ open -a Terminal ${JSON.stringify(starter)}
      Gefunden in der Pruefung vor der Veroeffentlichung. */
   process.env.PATH = path.dirname(process.execPath) + path.delimiter + process.env.PATH;
 
+  /* QUICKEDIT AUS, BEVOR DAS ERSTE WORT FAELLT. Warum: bin/konsole.js.
+     Nach dem Umzug (--seite) ist es dasselbe Fenster, schon erledigt. */
+  const QUICKEDIT_AUS = process.platform === 'win32' && !SEITE_WUNSCH ? require('./konsole.js').quickEditAus() : !!SEITE_WUNSCH;
+
   /* DIE SEITE. Ein winziger Server nur fuer diesen Lauf, nur auf
      127.0.0.1, auf dem ersten freien Port ab 8790. Er liefert
      web/einrichtung/index.html, den Zustand als JSON, nimmt Antworten
@@ -699,11 +707,12 @@ open -a Terminal ${JSON.stringify(starter)}
       srv.once('error', () => f(false));
       srv.listen(port, '127.0.0.1', () => f(true));
     });
-    let port = 8790;
+    let port = SEITE_WUNSCH || 8790;
     while (port < 8840 && !(await horchen(port))) port++;
     if (srv.listening) {
       ZUSTAND.adresse = `http://127.0.0.1:${port}/`;
-      const inChrome = OHNE_BROWSER ? false : seiteAufmachen(ZUSTAND.adresse);
+      const seiteWartet = SEITE_WUNSCH && port === SEITE_WUNSCH;   /* nach dem Umzug: die alte Seite kommt herueber */
+      const inChrome = (OHNE_BROWSER || seiteWartet) ? false : seiteAufmachen(ZUSTAND.adresse);
       matt(`Die Einrichtung läuft auch als Seite: ${ZUSTAND.adresse}` + (inChrome ? ' (Chrome)' : ''));
       matt('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.');
       srv.unref();
@@ -921,9 +930,30 @@ open -a Terminal ${JSON.stringify(starter)}
         matt('Den entpackten Ordner darfst du danach wegwerfen.');
         leer();
         leser.close();
-        const e = spawnSync(process.execPath,
-          [path.join(ziel, 'bin', 'einrichten.js'), ...process.argv.slice(2)],
-          { stdio: 'inherit', cwd: ziel });
+        const weiter = [path.join(ziel, 'bin', 'einrichten.js'),
+          ...process.argv.slice(2).filter((a, i, l) => a !== '--seite' && l[i - 1] !== '--seite')];
+        if (ZUSTAND.adresse) {
+          /* EIN FENSTER, NICHT ZWEI. Caspar_D, 13.09.2026: „wieso geht das
+             einrichten javascript zweimal im browser auf?" Weil der Lauf am
+             neuen Ort seine eigene Seite oeffnete. Jetzt bekommt er einen
+             Port genannt (--seite) und oeffnet nichts; diese Seite hier
+             wartet, bis er dort antwortet, und geht dann selbst hinueber.
+             Solange laeuft dieser Prozess weiter - nur als Bruecke. */
+          const net = require('node:net');
+          const frei = (p) => new Promise((f) => { const t = net.createServer(); t.once('error', () => f(false)); t.listen(p, '127.0.0.1', () => t.close(() => f(true))); });
+          let port = Number(new URL(ZUSTAND.adresse).port) + 1;
+          while (port < 8840 && !(await frei(port))) port++;
+          weiter.push('--seite', String(port));
+          const dort = `http://127.0.0.1:${port}/`;
+          const kind = require('node:child_process').spawn(process.execPath, weiter, { stdio: 'inherit', cwd: ziel });
+          const horch = setInterval(() => {
+            require('node:http').get(dort + 'stand', (r) => { r.resume(); if (r.statusCode === 200) { ZUSTAND.weiter = dort; clearInterval(horch); } }).on('error', () => {});
+          }, 400);
+          kind.on('error', () => { clearInterval(horch); process.exit(1); });
+          kind.on('close', (code) => { clearInterval(horch); process.exit(code === null ? 1 : code); });
+          return;
+        }
+        const e = spawnSync(process.execPath, weiter, { stdio: 'inherit', cwd: ziel });
         process.exit(e.status === null ? 1 : e.status);
       }
       matt('Ich mache hier weiter, wo ich bin.');
@@ -989,7 +1019,10 @@ open -a Terminal ${JSON.stringify(starter)}
   /* Nur Windows. Auf Mac und Linux gibt es den Markierungsmodus nicht,
      und eine Warnung vor etwas, das es nicht gibt, ist schlechter als
      keine. */
-  if (process.platform === 'win32') {
+  if (process.platform === 'win32' && QUICKEDIT_AUS) {
+    matt('Ein Klick in dieses Fenster würde Windows sonst in den Markierungsmodus');
+    matt('schalten und alles anhalten — für dieses Fenster ist das abgeschaltet.');
+  } else if (process.platform === 'win32') {
     wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
     matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
     matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');

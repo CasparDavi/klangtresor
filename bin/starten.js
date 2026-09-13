@@ -23,6 +23,8 @@ const path = require('node:path');
 const http = require('node:http');
 const { spawn } = require('node:child_process');
 const { seiteAufmachen } = require('./browser.js');
+/* Ein Klick ins Fenster darf den Server nicht anhalten: bin/konsole.js. */
+require('./konsole.js').quickEditAus();
 
 const WURZEL = path.resolve(__dirname, '..');
 const ADRESSE = 'http://localhost:8788/';

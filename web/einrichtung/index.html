@@ -199,6 +199,8 @@ function anreisserZeigen(){
 async function tick(){
   let s; try { s = await (await fetch('/stand', { cache: 'no-store' })).json(); }
   catch (e) { $('fr').textContent = 'Die Einrichtung antwortet nicht mehr — das Fenster ist vermutlich zu.'; return; }
+  /* Nach dem Umzug wartet der neue Lauf auf einem anderen Port - dorthin, im selben Reiter. */
+  if (s.weiter) { location.replace(s.weiter); return; }
   const gesamt = s.gesamt || 10;
   nav(s.schritte || [], gesamt);
   const akt = s.schritte && s.schritte[s.aktuell - 1];
