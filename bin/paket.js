@@ -28,27 +28,36 @@ const stempel = new Date().toISOString().slice(0, 10);
    merkte. Ein Paket mit dem Schluessel darin haette als sauber
    gegolten. Deshalb steht der Name jetzt genau einmal. */
 const PREFIX = 'KlangTresor';
-const ziel = path.join(WURZEL, '..', `${PREFIX}-${stempel}.zip`);
+/* OHNE OBERSTEN ORDNER, MIT FESTEM NAMEN. Caspar_D, 13.09.2026: "was
+   aetzend ist, wenn ich das zip auspacke entsteht folgende
+   ordnerstruktur C:\Users\...\klangtresor-main\klangtresor-main".
+   GitHubs Branch-Zip traegt einen Ordner klangtresor-main/ in sich, und
+   Windows' "Alle extrahieren" legt noch einen mit dem Zip-Namen darum.
+   Ein Zip OHNE obersten Ordner, das KlangTresor.zip heisst, entpackt
+   Windows nach KlangTresor\ und der Mac ebenso: eine Ebene, richtiger
+   Name. Dafuer ist es als Release-Datei gedacht, mit fester Adresse
+   .../releases/latest/download/KlangTresor.zip - nicht als Branch-Zip. */
+const ziel = path.join(WURZEL, '..', `${PREFIX}.zip`);
 
 /* Was NIE im Paket sein darf. Pfadmuster auf den Einträgen im ZIP. */
 const VERBOTEN = [
-  new RegExp('^' + PREFIX + '/geheim/'),               // der Schlüssel
+  new RegExp('^geheim/'),               // der Schlüssel
   /* Eigene Bestandsdaten, die NICHT unter library/ liegen und deshalb
      durch die alte Liste fielen: docs/eichkasten/ trug 2,75 MB mit 257
      Song-IDs und je einem 768er-Textvektor aus den Liedtexten - zwoelfmal
      mehr als die Einmesskurven, die am selben Tag auffielen. Gefunden in
      der Pruefung vor der Veroeffentlichung, 11.09.2026. */
-  new RegExp('^' + PREFIX + '/docs/eichkasten/vorher-vektoren/'),
-  new RegExp('^' + PREFIX + '/docs/eichkasten/.*\\.vor-schritt'),
+  new RegExp('^docs/eichkasten/vorher-vektoren/'),
+  new RegExp('^docs/eichkasten/.*\\.vor-schritt'),
   /suno-cookie/i,                    // auch unter anderem Namen
   /__client/,
-  new RegExp('^' + PREFIX + '/library/'),              // Rohdaten, Katalog, Medien, Kommentare
+  new RegExp('^library/'),              // Rohdaten, Katalog, Medien, Kommentare
   /\.ndjson$/,                       // reaktionen.ndjson o. ä.
   /katalog\.json/,
   /\.env$/,
 ];
 
-const a = spawnSync('git', ['archive', '--format=zip', `--prefix=${PREFIX}/`, '-o', ziel, 'HEAD'],
+const a = spawnSync('git', ['archive', '--format=zip', '-o', ziel, 'HEAD'],
                     { cwd: WURZEL, encoding: 'utf8' });
 if (a.status !== 0) { console.error('git archive:', a.stderr); process.exit(1); }
 
