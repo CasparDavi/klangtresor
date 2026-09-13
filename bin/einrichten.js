@@ -116,7 +116,16 @@ function marke() {
 }
 
 /* ---- Fragen ------------------------------------------------------ */
-const leser = readline.createInterface({ input: process.stdin, output: process.stdout });
+/* OHNE TERMINAL-MODUS. Im Terminal-Modus schaltet readline die Konsole
+   auf Rohbetrieb, deutet Tastenfolgen als Escape-Sequenzen und zeichnet
+   die Eingabezeile selbst. Auf der Windows-Konsole ging das am
+   13.09.2026 zweimal schief, beide Male nach dem Umzug in den neuen
+   Ordner: die erste Antwort kam nicht an, der Prozess stand still, Enter
+   half nicht - erst ein Escape setzte den Zustand zurueck, danach
+   erschien die Frage ein Dutzend Mal neu gezeichnet. Ohne Terminal-Modus
+   puffert die Konsole die Zeile selbst, nichts wird umgedeutet, und die
+   Rueckschritttaste funktioniert trotzdem - das erledigt die Konsole. */
+const leser = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: false });
 const fragen = (t) => new Promise((r) => leser.question(t, (a) => r(String(a || '').trim())));
 
 async function jaNein(text, vorgabe = 'j') {
