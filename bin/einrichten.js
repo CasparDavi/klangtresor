@@ -645,12 +645,47 @@ end try`;
     satz(MATT('Ziel:  ') + HELL(ziel));
     leer();
 
-    if (fs.existsSync(ziel) && fs.readdirSync(ziel).filter((n) => n !== '.DS_Store').length) {
-      wink('Dort liegt schon etwas — das fasse ich nicht an.');
+    const zielBelegt = fs.existsSync(ziel) && fs.readdirSync(ziel).filter((n) => n !== '.DS_Store').length;
+    const zielIstKlangTresor = zielBelegt &&
+      fs.existsSync(path.join(ziel, 'package.json')) && fs.existsSync(path.join(ziel, 'bin'));
+
+    if (zielBelegt && !zielIstKlangTresor) {
+      wink('Dort liegt schon etwas anderes — das fasse ich nicht an.');
       matt('Räum es weg oder benenn es um, dann starte noch einmal.');
       matt('Oder lass KlangTresor hier liegen; es kann gutgehen.');
       leer();
       if (!await jaNein('Hier weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+    } else if (zielIstKlangTresor) {
+      /* DER AKTUALISIERUNGSFALL. Dort liegt schon ein KlangTresor - mit
+         Archiv, Werkzeugen, Paketen. Das ist kein Hindernis, das ist das
+         Ziel: die Programmdateien kommen darueber, alles Geholte bleibt.
+         Vorher hiess es hier "raeum es weg" - fuer ein Update genau
+         verkehrt, und das haette jeder beim zweiten Zip getroffen. */
+      gut('Dort liegt schon ein KlangTresor — ich aktualisiere ihn.');
+      matt('Dein Archiv, die Werkzeuge und die Pakete bleiben, nur das Programm wird erneuert.');
+      const bleibt = new Set(['library', 'werkzeug', 'node_modules', '.git', 'proben']);
+      let gezogen = false;
+      try {
+        for (const n of fs.readdirSync(WURZEL)) {
+          if (bleibt.has(n) || n === '.DS_Store') continue;
+          fs.cpSync(path.join(WURZEL, n), path.join(ziel, n), { recursive: true, force: true, dereference: false });
+        }
+        gezogen = fs.existsSync(path.join(ziel, 'bin', 'einrichten.js'));
+      } catch (e) {
+        boese('Das Aktualisieren ging nicht: ' + String(e.message).slice(0, 120));
+      }
+      if (gezogen) {
+        matt('Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.');
+        matt('Den entpackten Ordner darfst du danach wegwerfen.');
+        leer();
+        leser.close();
+        const e = spawnSync(process.execPath,
+          [path.join(ziel, 'bin', 'einrichten.js'), ...process.argv.slice(2)],
+          { stdio: 'inherit', cwd: ziel });
+        process.exit(e.status === null ? 1 : e.status);
+      }
+      matt('Ich mache hier weiter, wo ich bin.');
+      leer();
     } else {
       tut('Umziehen …');
       let gezogen = false;
