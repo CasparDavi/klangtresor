@@ -4558,7 +4558,7 @@ async function tonEinlesen(nurDownloads){
   if (d.fehler){ stand.textContent = 'Das ging nicht: ' + d.fehler; return; }
   const n = parseInt(d.uebernommen, 10) || 0;
   stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen.` : 'Nichts gefunden, was zu deinen Titeln gehört.')
-    + (d.nichtImKatalog > 0 ? ` ${d.nichtImKatalog} gehören zu Titeln, die der Katalog nicht kennt.` : '')
+    + (d.nichtImKatalog > 0 ? ` ${d.nichtImKatalog} gehören zu Titeln, die der Katalog noch nicht kennt — vermutlich deine unveröffentlichten. Nach dem ersten Lauf des Lesezeichens kommen sie von selbst; der Ordner ist gemerkt.` : '')
     + (d.ohneSignatur > 0 ? ` ${d.ohneSignatur} ohne Suno-Kennung, nicht angefasst.` : '')
     + (n ? ' Die Seite lädt gleich neu.' : ' Ist es ein anderer Ordner? Unterordner werden mitdurchsucht, sechs Ebenen tief.');
   if (n) setTimeout(() => location.reload(), 2500);

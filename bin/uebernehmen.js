@@ -203,7 +203,16 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   if (falschesFormat.length) console.log(`  Übergangen, Format wird nicht geführt (${falschesFormat.length}): `
     + falschesFormat.map(([d]) => path.extname(d)).filter((v, i, a) => a.indexOf(v) === i).join(', '));
   if (fremd.length) {
-    console.log(`\n  Nicht im Katalog (${fremd.length}) — erst die Ernte laufen lassen:`);
+    console.log(`\n  Nicht im Katalog (${fremd.length}) — Dateien zu Titeln, die der Katalog noch nicht kennt.`);
+    /* Meist sind das die UNVEROEFFENTLICHTEN: die stehen nicht auf der
+       oeffentlichen Profilseite und kommen erst mit dem Lesezeichen in den
+       Katalog. Der Ordner ist gemerkt - am Morgen danach holt dieser
+       Lauf die Dateien von selbst nach. Caspar_D, 13.09.2026: "problem
+       wird dann sein, dass ich die soundfiles nur fuer schon vorhandene
+       metadaten reinziehen kann" - ja, und genau so loest es sich. */
+    console.log('  Vermutlich deine unveröffentlichten Titel. Nach dem ersten Lauf des');
+    console.log('  Lesezeichens kennt der Katalog sie — und am Morgen danach kommen');
+    console.log('  diese Dateien von selbst, der Ordner ist gemerkt.');
     for (const [d, id] of fremd.slice(0, 8)) console.log(`    ${id.slice(0, 8)}  ${path.basename(d)}`);
   }
   if (ohneSig.length) {
