@@ -339,29 +339,24 @@ function seiteAufmachen(adresse) {
   } catch (e) {}
 }
 
-/* WO LIEGT DAS HIER EIGENTLICH - IN WORTEN.
+/* WO LIEGT DAS HIER EIGENTLICH - UND ZWAR SO, DASS ER ES WIEDERFINDET.
 
-   Caspar_D, 13.09.2026: „auch gefaellt mir diese Pfadangabe nicht,
-   \\psf\Home\Downloads\... - keiner weiss, was gemeint ist, wofuer steht
-   psf, das versteht kein Dummie."
+   Caspar_D, 13.09.2026, zur ersten Fassung: „Der Klartext ist doof, der
+   ist ja nur fuer den besonderen parallels Fall gueltig. Versetze dich
+   in den Nutzer, was er wirklich sehen muss in der genauen Situation."
 
-   Er hat recht: `psf` heisst „Parallels Shared Folders", und das steht
-   nirgends. Ein Pfad, den der Mensch nicht einordnen kann, ist keine
-   Auskunft, sondern eine Zumutung. Der Pfad bleibt stehen - er muss ihn
-   ja wiederfinden -, aber daneben steht jetzt, was fuer ein Ort das ist. */
+   Richtig: „Das ist dein Benutzerordner auf dem Mac" hilft niemandem.
+   Was hilft, ist der Pfad, unter dem er den Ordner SPAETER OEFFNET - und
+   der ist bei einer Parallels-Freigabe ein ganz anderer als der, den
+   Windows anzeigt. Auf einem normalen Windows erklaert sich C:\Users\...
+   von selbst; dort steht gar nichts. */
 function ortInWorten(p) {
   const q = String(p).replace(/\\/g, '/');
-  if (/^\/\/psf\/Home\//i.test(q))
-    return 'Das ist dein Benutzerordner auf dem Mac — Windows greift über Parallels darauf zu.';
-  if (/^\/\/psf\//i.test(q))
-    return 'Das ist ein Ordner auf dem Mac, den Windows über Parallels mitbenutzt.';
-  if (/^\/\//.test(q)) {
-    const m = q.match(/^\/\/([^/]+)\/([^/]+)/);
-    return m ? `Das liegt auf dem Netzlaufwerk „${m[2]}" des Rechners „${m[1]}" — nicht auf dieser Maschine.`
-             : 'Das liegt auf einem Netzlaufwerk, nicht auf dieser Maschine.';
-  }
-  if (process.platform === 'darwin' && /^\/Volumes\//.test(q))
-    return 'Das liegt auf einem angeschlossenen Medium, nicht auf der eingebauten Platte.';
+  const m = q.match(/^\/\/psf\/Home\/(.*)$/i);
+  if (m) return 'Auf dem Mac öffnest du ihn unter:  ~/' + m[1];
+  if (/^\/\/psf\//i.test(q)) return 'Der Ordner liegt auf dem Mac, nicht in Windows.';
+  const n = q.match(/^\/\/([^/]+)\/([^/]+)/);
+  if (n) return `Der Ordner liegt auf dem Rechner „${n[1]}", Freigabe „${n[2]}" — nicht hier.`;
   return null;
 }
 
@@ -400,6 +395,18 @@ function da(befehl) {
   matt('Ich lege KlangTresor in diesen Ordner:');
   satz(HELL(WURZEL));
   { const wo = ortInWorten(WURZEL); if (wo) matt(wo); }
+  /* GitHub benennt den Ordner im Zip nach dem ZWEIG, nicht nach dem
+     Programm - heraus kommt „klangtresor-main", und beim Entpacken oft
+     noch einmal geschachtelt. Caspar_D, 13.09.2026: „und wieso heisst er
+     KlangTresor-Main, einfach KlangTresor dachte ich."
+     Umbenennen kann das Programm sich nicht selbst - der Ordner ist
+     waehrend des Laufs in Benutzung, unter Windows sperrt das. Also
+     sagen, nicht tun. */
+  if (/^klangtresor[-_]?(main|master)$/i.test(path.basename(WURZEL))) {
+    matt('Der Ordner heißt „' + path.basename(WURZEL) + '", weil GitHub ihn nach dem Zweig');
+    matt('benennt — nicht nach dem Programm. Du darfst ihn in „KlangTresor"');
+    matt('umbenennen; am besten später, jetzt ist er in Benutzung.');
+  }
   matt('Du kannst den Ordner jederzeit woanders hinschieben. Nur die innere');
   matt('Struktur sollte bleiben, wie sie ist — daran hängt alles.');
 
@@ -421,7 +428,7 @@ function da(befehl) {
      Ton" und verschwieg, dass der wichtigste Weg gar nichts kostet. Wer
      seine Sammlung seit Monaten herunterlaedt, hat alles schon - und
      haette hier aufgehoert zu lesen. */
-  wink('Bevor du anfängst — zwei Sätze über den Ton:');
+  wink('Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:');
   matt('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt');
   matt('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet');
   matt('nichts.');
