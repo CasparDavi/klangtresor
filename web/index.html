@@ -4571,7 +4571,7 @@ const seiteIstLokal = () => ['localhost', '127.0.0.1', '[::1]'].includes(locatio
 async function ordnerWaehlerAuf(boxId, anzeigeId){
   const box = $(boxId); if (!box) return;
   if (!box.hidden){ box.hidden = true; return; }
-  box.hidden = false;
+  box.hidden = false; box.innerHTML = '';
   if (seiteIstLokal()){
     box.innerHTML = '<div class="fussnote">Ein Fenster geht auf — wähle den Ordner dort.</div>';
     let d = null;
@@ -4583,8 +4583,12 @@ async function ordnerWaehlerAuf(boxId, anzeigeId){
   ordnerBrowser(box, anzeigeId, '');
 }
 async function ordnerBrowser(box, anzeigeId, pfad){
-  const liste = document.createElement('div');
-  if (seiteIstLokal() && box.firstChild) { box.appendChild(liste); } else { box.innerHTML = ''; box.appendChild(liste); }
+  /* Eine Liste je Kasten, die bei jedem Schritt ersetzt wird - ein Hinweis
+     darueber (etwa "Kein Ordner gewaehlt") bleibt stehen. Vorher wurde bei
+     jedem Klick eine neue Liste angehaengt, und der Kopf mit "Diesen
+     Ordner nehmen" rutschte aus dem Bild. */
+  let liste = box.querySelector('.ordnerliste');
+  if (!liste){ liste = document.createElement('div'); liste.className = 'ordnerliste'; box.appendChild(liste); }
   liste.innerHTML = '<div class="fussnote">Lese …</div>';
   let d; try { d = await (await fetch('/api/ordner' + (pfad ? '?pfad=' + encodeURIComponent(pfad) : ''), { cache: 'no-store' })).json(); }
   catch (e) { liste.innerHTML = '<div class="fussnote">Server antwortet nicht.</div>'; return; }
