@@ -963,6 +963,9 @@ const bericht = K.schreiben({
 });
 
 // --- Alte Einzeldateien aufräumen -------------------------------
+/* Blockgroesse DIESES Mediums - statfs weiss es. Fest 1 MB galt nur fuer
+   die exFAT-Platte des Entwicklers (13.09.2026 in der Windows-VM aufgefallen). */
+const BLOCK = (() => { try { return fs.statfsSync(WURZEL).bsize || 4096; } catch (e) { return 4096; } })();
 // Sie stammen aus der ersten Fassung und verschwenden auf exFAT
 // je ein volles Megabyte. Ihr Inhalt steckt jetzt im Katalog.
 let entfernt = 0, freigeworden = 0;
@@ -971,7 +974,7 @@ if (fs.existsSync(SONGS)) {
     for (const name of ['meta.json', 'lyrics.txt']) {
       const f = path.join(SONGS, d, name);
       if (fs.existsSync(f)) {
-        freigeworden += 1048576;                          // ein Block je Datei
+        freigeworden += BLOCK;                            // ein Block je Datei
         fs.unlinkSync(f);
         entfernt++;
       }
@@ -1005,7 +1008,7 @@ console.log(`  Zeitraum:       ${liste[liste.length-1]?.erstellt?.slice(0,10)}`
 
 if (entfernt) {
   console.log(`\nAufgeräumt: ${entfernt} alte Einzeldateien entfernt`);
-  console.log(`  (belegten auf dieser exFAT-Platte rund ${(freigeworden/1073741824).toFixed(2)} GB)`);
+  if (BLOCK >= 65536) console.log(`  (belegten auf dieser Platte mit ${(BLOCK/1024).toFixed(0)}-KB-Blöcken rund ${(freigeworden/1073741824).toFixed(2)} GB)`);
 }
 
 // --- Verarbeitete Rohdateien loeschen ---------------------------
