@@ -2562,3 +2562,26 @@ Zwei kleine Wachen, beide im eingefrorenen Server — **beide erledigt am 11.09.
 
 Dazu die Frage, ob der Startskript-Weg das Fenster offenhalten muss; ein Prozess, der beim Abziehen
 des Sticks weiterläuft, ist ein Fehler ohne Fehlermeldung.
+
+## Offen: die Datei als eigene Quelle („nur bei dir") — Stand 13.09.2026
+
+Caspar_D: *„problem wird dann sein, dass ich die soundfiles nur für schon
+vorhandene metadaten reinziehen kann, richtig? wie lösen wir dieses
+Problem?"* — Antwort in zwei Schichten, die erste ist gebaut (66d11fc):
+unveröffentlichte Titel kommen mit dem Lesezeichen in den Katalog, der
+gemerkte Ordner liefert am Morgen danach die Dateien nach.
+
+**Die zweite Schicht steht aus** — für Titel, die bei Suno gelöscht sind
+und nur noch auf der Platte liegen:
+
+- [ ] `bin/uebernehmen.js` legt unbekannte ids samt dem, was die Datei
+      über sich sagt (ID3: TIT2, TPE1, USLT, APIC; RIFF: ICMT; Dauer aus
+      dem Xing-Rahmen), in `library/nur-auf-platte.json` ab — statt sie
+      nur zu melden.
+- [ ] Das Lesezeichen fragt diese ids bei Suno nach (`/api/clip/<id>`,
+      mit Token). Was Suno kennt → normale Rohdaten → Katalog.
+- [ ] Was Suno nicht mehr kennt (404) → Katalogeintrag aus der Datei
+      selbst, Feld `nurBeiDir: true`, in der Oberfläche sichtbar markiert.
+      Am Morgen danach wandert die Datei ein.
+- [ ] Stems und Cover-von-Cover bleiben bewusst draußen — Teile eines
+      Titels, kein eigener; gehören in den Stemordner des Haupttitels.
