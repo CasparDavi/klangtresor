@@ -478,6 +478,20 @@ function da(befehl) {
     matt('jedem Song — bei ein paar hundert Titeln sind das schnell zehn GB.');
   }
 
+  /* Ein Projekt auf einer Netzwerkfreigabe ist unter Windows heikel:
+     cmd.exe nimmt UNC-Pfade nicht als Arbeitsverzeichnis, und manches
+     Werkzeug stolpert darueber. npm umgehen wir inzwischen, aber sagen
+     sollte man es trotzdem. */
+  if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
+    leer();
+    wink('KlangTresor liegt auf einer Netzwerkfreigabe.');
+    matt(`  ${WURZEL}`);
+    matt('Windows kommt mit solchen Pfaden nur halb zurecht — manche Werkzeuge');
+    matt('springen dann stillschweigend nach C:\\Windows. Es kann gutgehen;');
+    matt('sicherer ist ein Ordner auf der eigenen Platte, etwa unter');
+    matt('C:\\Users\\<du>\\KlangTresor.');
+  }
+
   /* ================================================================ */
   schritt('Nachsehen, wo wir stehen');
 
@@ -594,8 +608,34 @@ function da(befehl) {
   /* ================================================================ */
   schritt('Pakete holen (npm install)');
   matt('Ein bis fünf Minuten, und zwischendurch ist es still.');
-  const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  if (!laeuft(npm, ['install', '--no-fund', '--no-audit'])) {
+  /* NPM OHNE EINGABEAUFFORDERUNG AUFRUFEN.
+
+     `laeuft()` startet unter Windows mit shell:true, also ueber cmd.exe -
+     und cmd.exe WEIGERT SICH, einen UNC-Pfad als Arbeitsverzeichnis zu
+     nehmen. Es springt stillschweigend nach C:\Windows und npm versucht
+     dort package-lock.json anzulegen:
+
+         UNC-Pfade werden nicht unterstuetzt.
+         npm error EPERM: operation not permitted,
+                   open 'C:\Windows\package-lock.json'
+
+     Gemessen am 13.09.2026 in der Windows-10-Maschine, Projekt auf einer
+     Freigabe unter \\psf\Home\... Es trifft jeden, der von einem
+     Netzlaufwerk aus arbeitet - nicht nur Parallels.
+
+     Der Ausweg: npm ist selbst ein Node-Programm. Rufen wir npm-cli.js
+     direkt mit dem laufenden Node auf, ist gar keine Eingabeaufforderung
+     im Spiel, und Node kommt mit UNC-Pfaden zurecht. */
+  function npmAufruf() {
+    const nd = path.dirname(process.execPath);
+    for (const k of [path.join(nd, 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+                     path.join(nd, '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js')]) {
+      if (fs.existsSync(k)) return { befehl: process.execPath, vorn: [k] };
+    }
+    return { befehl: process.platform === 'win32' ? 'npm.cmd' : 'npm', vorn: [] };
+  }
+  const na = npmAufruf();
+  if (!laeuft(na.befehl, [...na.vorn, 'install', '--no-fund', '--no-audit'])) {
     const w = await wieWeiter('npm install', 'Ohne die Pakete startet der Server nicht.');
     if (w !== 'ueber') { wiederkommen(); schluss(1); }
   } else gut('Pakete sind da.');
