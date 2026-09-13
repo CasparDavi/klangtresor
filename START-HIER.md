@@ -67,12 +67,33 @@ kann — man hält das Programm dann für kaputt. Die `.cmd` umgeht beides.
 
 **Der übliche Weg** braucht keine Vorbereitung. Fehlt Node.js, holt er es sich
 selbst — als tragbare Fassung in den Projektordner, ohne Eintrag im System und
-ohne Verwalterrechte. Danach prüft er Rechte und Platz, sieht nach, ob hier schon
-ein Archiv liegt, sorgt für ffmpeg (unter Windows holt er es mit; auf Mac und
-Linux sagt er dir den einen Befehl, weil dort der Paketverwalter zuständig ist),
-holt Pakete und KI-Modelle, fragt nach deinem Suno-Alias, sammelt deine Songs,
-lädt die Medien und startet KlangTresor — in einem Durchgang. Abbrechen ist
-jederzeit erlaubt; beim nächsten Start wird nur nachgeholt, was fehlt.
+ohne Verwalterrechte.
+
+**Zuerst die Frage, wohin.** Liegt auf deinem Rechner schon ein Archiv — auch ein
+altes *MySuno*, egal wie der Ordner heißt —, wird es gefunden und als Erstes
+angeboten: dann wird nur das Programm erneuert, deine Titel, Bilder und
+Audiodateien bleiben. Gesucht wird neben dem entpackten Ordner, im
+Nutzerverzeichnis, in Downloads, auf dem Schreibtisch, in Dokumente und Musik, je
+zwei Ebenen tief; erkannt wird am Katalog, nie am Namen. Liegt dein altes Archiv
+auf einer anderen Platte, wählst du den Ordner selbst über „Woanders".
+
+**Dann zehn Schritte, und jeder sagt, was er tut:**
+
+1. Ordner prüfen — Schreibrecht, keine Verwalterrechte, Platz (rund 1 GB).
+2. Was ist schon da? Archiv, ffmpeg, Pakete, KI-Modelle, Port — mit Größen, was
+   fehlt und geholt wird. Danach weiß man, worauf man wartet.
+3. ffmpeg — unter Windows geholt, auf Mac und Linux über den Paketverwalter.
+4. Die Programmbausteine des Servers (19 Pakete).
+5. Die KI-Modelle (11 Dateien, rund 560 MB).
+6. Dein Suno-Name — die einzige Eingabe.
+7. Deine Songliste: Titel, Texte, Stile, Alben.
+8. Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet.
+9. Titelbilder und Bewegtbilder. Der längste Schritt — und der einzige, den man
+   getrost abbricht: „Jetzt starten, Rest später" holt den Rest im Betrieb nach.
+10. Zum Schluss: was nur du selbst holen kannst, und warum.
+
+Abbrechen ist überall erlaubt; beim nächsten Start wird nur nachgeholt, was fehlt.
+Hakt etwas, steht hinter der Registerlasche **Protokoll** alles im Klartext.
 
 Alle Download-Adressen stehen in [`quellen.txt`](quellen.txt), eine Zeile je
 Sache. Zieht ein Anbieter um, ändert man dort die Zeile — und niemand muss in

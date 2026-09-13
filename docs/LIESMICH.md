@@ -40,6 +40,12 @@ behandelt und ist über sechs Umbauten in einer Nacht auseinandergefallen. Er wa
 Im Wurzelverzeichnis bleiben nur zwei: **[BACKLOG.md](BACKLOG.md)**, die eine Liste des Offenen,
 und **[NAECHSTER_CHAT.md](NAECHSTER_CHAT.md)**, das Tagebuch und die Übergabe zwischen Sitzungen.
 
+Dazu seit dem 13.09.2026 **[EINRICHTUNG-TEXTE.md](EINRICHTUNG-TEXTE.md)**: die Vorlage der
+Einrichtungsseite — je Schritt die Überschrift, der Erklärtext in Caspar_Ds Worten, die Zahlen
+für Balken und Kacheln, die Ausnahmekarten, und daneben, was der Code an der Stelle wirklich
+tut. Oben stehen die Hausform-Regeln, gegen die die erste Fassung verstoßen hatte. Wer die
+Einrichtung anfasst, liest zuerst dort.
+
 ## Was am 11.09.2026 zusammengelegt wurde
 
 | aus | wurde |

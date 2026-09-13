@@ -263,9 +263,11 @@ einrichten-docker-*            dasselbe, ohne Installation - alles im Container
 starten-windows.cmd / -macos.command / -linux.sh   nur starten, nicht einrichten
 docker/    Dockerfile, docker-compose.yml, Einstiegsskript des Containers
 bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen
+  einrichten.js  die Einrichtung in zehn Schritten; melden.js liefert ihr die Zahlen
 browser/   Skripte für die Suno-Konsole und das Lesezeichen
 server/    Website fürs Heimnetz, Port 8788
 web/       die gesamte Oberfläche in einer Datei
+  einrichtung/  die Seite der Einrichtung (Balken, Haken, Ergebniszahlen)
   fremd/   Analyzer, Butterchurn
 library/   Katalog, Rohdaten, Medien — nicht im Repo
 docs/      Fachdokumente

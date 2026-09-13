@@ -1166,7 +1166,15 @@ Offen:
 - [x] Der Bash-Anlasser am 11.09.2026 im Sandkasten durchgespielt: falscher
       Ordner, System-Node, Node-Download samt Auspacken, zweiter Lauf mit
       eigener Fassung — alle vier wie gedacht.
-- [ ] `einrichten-docker.ps1` ist ungetestet — hier gibt es kein Docker.
+- [ ] `bin/einrichten-docker.ps1` ist ungetestet — hier gibt es kein Docker.
+- [x] **Die Einrichtung ist eine Oberfläche** (13./14.09.2026, v1.0.4/1.0.5). Je Schritt
+  Überschrift, Erklärtext, Hakenzeilen, Ergebniszahlen und ein Balken mit echten Zahlen; die
+  Kinderskripte melden sie über `bin/melden.js` (@@KT-Zeile, nur mit `KT_MELDEN=1`). Texte und
+  Formregeln: [EINRICHTUNG-TEXTE.md](EINRICHTUNG-TEXTE.md). Unter Windows 10 einmal komplett
+  durchgespielt, ohne Fehler.
+- [x] Ein vorhandenes Archiv (auch altes *MySuno*) wird vor der Wohin-Frage gesucht und zum
+  Weiterführen angeboten — `archiveFinden()`, erkannt am Katalog, nie am Namen.
+- [ ] **macOS aus dem Zip** und **Linux** sind mit der neuen Oberfläche ungetestet.
       Casto könnte es prüfen.
 - [ ] Ein vollständiger Lauf bis zum laufenden Server fehlt noch; dafür
       braucht es einen echten Suno-Alias mit Download-Kontingent.
