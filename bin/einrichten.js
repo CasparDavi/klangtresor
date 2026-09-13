@@ -350,14 +350,40 @@ function jemandAufPort(port) {
 
 /* Die Seite im Browser aufmachen - jedes System auf seine Art. Schlaegt
    es fehl, steht die Adresse ja auch im Text. */
+/* CHROME, WENN ES DA IST. Caspar_D, 13.09.2026, nach dem ersten
+   vollstaendigen Windows-Lauf: „dann startete der Webbrowser und zeigt
+   mir den KlangTresor. Nirgendwo steht, dass wir eigentlich Chrome
+   brauchen, damit es reibungslos geht."
+
+   Das Lesezeichen fuer die nur dem Nutzer zugaenglichen Daten laeuft
+   nur in Chrome. Oeffnet die Einrichtung am Ende den Standardbrowser -
+   unter Windows also Edge -, sitzt der Mensch im falschen Fenster und
+   erfaehrt es erst, wenn das Lesezeichen nicht geht. */
+function chromeFinden() {
+  if (process.platform === 'win32') {
+    return ['ProgramFiles', 'ProgramFiles(x86)', 'LOCALAPPDATA']
+      .map((v) => process.env[v]).filter(Boolean)
+      .map((b) => path.join(b, 'Google', 'Chrome', 'Application', 'chrome.exe'))
+      .find((p) => fs.existsSync(p)) || null;
+  }
+  if (process.platform === 'darwin') {
+    return fs.existsSync('/Applications/Google Chrome.app') ? 'Google Chrome' : null;
+  }
+  return ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'].find((n) => da(n)) || null;
+}
+
 function seiteAufmachen(adresse) {
-  const w = process.platform === 'win32' ? ['cmd', ['/c', 'start', '', adresse]]
-    : process.platform === 'darwin' ? ['open', [adresse]]
-      : ['xdg-open', [adresse]];
+  const chrome = chromeFinden();
+  const w = chrome
+    ? (process.platform === 'darwin' ? ['open', ['-a', chrome, adresse]] : [chrome, [adresse]])
+    : process.platform === 'win32' ? ['cmd', ['/c', 'start', '', adresse]]
+      : process.platform === 'darwin' ? ['open', [adresse]]
+        : ['xdg-open', [adresse]];
   try {
     const { spawn } = require('node:child_process');
     spawn(w[0], w[1], { stdio: 'ignore', detached: true }).unref();
   } catch (e) {}
+  return !!chrome;
 }
 
 /* WO LIEGT DAS HIER EIGENTLICH - UND ZWAR SO, DASS ER ES WIEDERFINDET.
@@ -749,6 +775,70 @@ end try`;
       matt('Ich mache hier weiter, wo ich bin.');
       leer();
     }
+  }
+
+  wink('Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:');
+  matt('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt');
+  matt('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet');
+  matt('nichts.');
+  leer();
+  satz(HELL('  1. Was du schon hast.'));
+  matt('  Hast du deine Lieder bei Suno früher heruntergeladen und liegen sie');
+  matt('  irgendwo auf der Platte? Dann zeig mir den Ordner — ich erkenne die');
+  matt('  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in');
+  matt('  Unterordnern, und ordne sie deinen Titeln zu. Das ist der');
+  matt('  Hauptweg, und er kostet nichts.');
+  leer();
+  satz(HELL('  2. Was dir fehlt.'));
+  matt('  Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
+  matt('  heraus, auch dem Besitzer nicht. Was du nicht schon hast, musst du');
+  matt('  bei Suno einmal freischalten: Drei Punkte, Download, „Unlock and');
+  matt('  Download". Das kostet ein Guthaben aus deinem Download-Kontingent,');
+  matt('  gilt dann aber dauerhaft und für alle Formate.');
+  leer();
+  matt('Ohne bezahlten Plan ist nur der zweite Weg versperrt. Der erste bleibt');
+  matt('offen, und alles andere funktioniert ohnehin.');
+  leer();
+  matt('Am besten legst du dir jetzt schon zurecht, wo dein Suno-Zeug liegt.');
+  matt('Und wenn du bei Suno etwas freischalten willst: jetzt ist ein guter');
+  matt('Moment, dann liegt es bereit, wenn ich danach frage.');
+  leer();
+  if (!chromeFinden()) {
+    wink('Noch etwas: Chrome ist nicht installiert.');
+    matt('Zum Hören und Stöbern reicht jeder Browser. Für die Daten, die nur du');
+    matt('sehen darfst — unveröffentlichte Titel, wer geherzt und kommentiert hat —');
+    matt('braucht es aber Chrome. Das lässt sich auch später nachholen.');
+    leer();
+  }
+  if (!await jaNein('Verstanden, weiter?')) {
+    matt('Dann bis später. Das Einrichten läuft nicht weg.');
+    wiederkommen(); schluss(0);
+  }
+
+  leer();
+  matt('Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt');
+  matt('an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.');
+  leer();
+  matt('Lass das Fenster am besten offen, dann siehst du sofort, ob es gut');
+  matt('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand');
+  matt('fortsetzen.');
+  leer();
+  /* Caspar_D, 13.09.2026, nach einer halben Stunde Fehlersuche an einem
+     Fenster, das gar nicht haengen geblieben war: „das musst du als
+     ausgabe ganz am Anfang hinschreiben, dass sowas passieren kann".
+
+     Windows-Konsolen haben QuickEdit standardmaessig an: EIN KLICK ins
+     Fenster schaltet in den Markierungsmodus und HAELT DEN PROZESS AN -
+     mitten in der Ausgabe, ohne Hinweis ausser einem Wort in der
+     Titelleiste. Es sieht nach Absturz aus und ist keiner. */
+  /* Nur Windows. Auf Mac und Linux gibt es den Markierungsmodus nicht,
+     und eine Warnung vor etwas, das es nicht gibt, ist schlechter als
+     keine. */
+  if (process.platform === 'win32') {
+    wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
+    matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
+    matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');
+    matt('löst es wieder. Am besten gar nicht erst hineinklicken.');
   }
 
   /* ================================================================ */
@@ -1207,6 +1297,12 @@ end try`;
   if (OHNE_START) return;
   /* Erst aufmachen, dann starten: der Browser braucht laenger zum
      Hochkommen als der Server zum Horchen. */
-  seiteAufmachen('http://localhost:8788');
+  if (seiteAufmachen('http://localhost:8788')) gut('KlangTresor geht in Chrome auf.');
+  else {
+    wink('KlangTresor geht in deinem Standardbrowser auf — Chrome habe ich nicht gefunden.');
+    matt('Zum Hören und Stöbern reicht jeder Browser. Nur das Lesezeichen für die');
+    matt('Daten, die nur du sehen darfst, läuft ausschließlich in Chrome:');
+    satz(MATT('  ') + MARKE('https://www.google.com/chrome/'));
+  }
   laeuft(process.execPath, [path.join('server', 'server.js')]);
 })();
