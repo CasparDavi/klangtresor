@@ -3290,3 +3290,13 @@ da ist."* Jetzt sucht `archiveFinden()` in `bin/einrichten.js` **vor** der Wohin
 tief; Fund → Option **[A] dieses Archiv weiterführen** (Vorgabe) → Aktualisierungsweg, `library/`
 bleibt. Ein Ordner mit Archiv gilt als Zuhause, auch in Downloads (sonst fragte der Lauf dort gleich
 wieder „Wohin?"). Schritt 2s Geschwister-Prüfung bleibt als Netz.
+
+**Windows-Lauf v1.0.4 durchgespielt (14.09.2026).** Caspar_D: *„ich habs durchlaufen lassen,
+erstmal keine Fehler gesehen."* Damit ist die neue Oberfläche (Balken, Haken, Ergebniszahlen,
+Registerlaschen) unter Windows 10 einmal komplett gelaufen — vom Doppelklick auf
+`einrichten-windows.cmd` bis zur fertigen Seite. Die drei Befunde vom Vorabend (QuickEdit,
+Ordnerdialog hinter dem Browser, zwei Browserfenster) sind damit auch im echten Lauf erledigt.
+
+Offen bleibt: **macOS** aus dem Zip, **Linux** überhaupt, und ein **Docker-Bau**. Nachgezogen,
+aber noch nicht veröffentlicht: der Platzbedarf sagt jetzt überall „rund 1 GB" statt 500 MB
+(gemessen 930 MB) — die Wohin-Frage widersprach Schritt 1.
