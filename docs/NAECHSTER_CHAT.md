@@ -3282,3 +3282,11 @@ Release ein paar Minuten hinterher — GitHub-Cache, kein Fehler.
 
 **Was Jörg als Nächstes prüft:** der volle Windows-Lauf aus v1.0.2 (Dialog vorn, kein Hänger nach
 Klick ins Fenster, ein Reiter), danach macOS. Linux und ein Docker-Bau sind weiter ungeprüft.
+
+**Nachtrag, 13.09.2026, spät (v1.0.3):** Jörg: *„früher hieß KlangTresor MySuno, früher haben sie Files
+genau in diesen Ordner ausgepackt … das Script sollte unbedingt darauf hinweisen, dass schon ein Ordner
+da ist."* Jetzt sucht `archiveFinden()` in `bin/einrichten.js` **vor** der Wohin-Frage nach Archiven
+(Katalog, nie Name) neben dem Ordner, im Home, in Downloads/Schreibtisch/Dokumente/Musik, zwei Ebenen
+tief; Fund → Option **[A] dieses Archiv weiterführen** (Vorgabe) → Aktualisierungsweg, `library/`
+bleibt. Ein Ordner mit Archiv gilt als Zuhause, auch in Downloads (sonst fragte der Lauf dort gleich
+wieder „Wohin?"). Schritt 2s Geschwister-Prüfung bleibt als Netz.
