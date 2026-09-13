@@ -149,14 +149,44 @@ Erkennen Musikstil, Instrumente und Stimmung.
 
 [essentia.upf.edu/models](https://essentia.upf.edu/models/)
 
-**Das ist die einzige Lizenz hier mit Einschränkungen**, und sie sind zu
-beachten: Namensnennung (BY), keine kommerzielle Nutzung (NC), keine
-Weitergabe veränderter Fassungen (ND). Für ein privates Archiv ist das
-unproblematisch. Wer die Modelle weitergibt, muß sie unverändert lassen
-und diese Nennung mitführen.
+**Neben Depth Anything (siehe unten) die einzigen Lizenzen hier mit
+Einschränkungen**, und sie sind zu beachten: Namensnennung (BY), keine
+kommerzielle Nutzung (NC), keine Weitergabe veränderter Fassungen (ND).
+Für ein privates Archiv ist das unproblematisch. Wer die Modelle
+weitergibt, muß sie unverändert lassen und diese Nennung mitführen.
 
 Die Programmbibliothek *Essentia* selbst steht unter AGPL-3.0. Sie wird
 hier nicht benutzt — nur die Modelle, über ONNX Runtime.
+
+### Depth Anything V2 Large — CC BY-NC-4.0
+
+Schätzt aus einem Standbild, was vorn und was hinten liegt. KlangTresor
+rechnet daraus je Titelbild eine Tiefenkarte; Dunst, Licht, Schatten und
+Partikel lesen sie.
+
+| Datei |
+|---|
+| `depth-anything-v2-large-fp16.onnx` |
+| `model_fp16.onnx_data` |
+
+> Lihe Yang, Bingyi Kang, Zilong Huang, Zhen Zhao, Xiaogang Xu,
+> Jiashi Feng, Hengshuang Zhao: *Depth Anything V2*, 2024.
+> Lizenz: [CC BY-NC-4.0](https://creativecommons.org/licenses/by-nc/4.0/)
+> Die ONNX-Fassung stammt von der Hugging-Face-Gruppe *onnx-community*
+> und trägt dieselbe Lizenz.
+
+[huggingface.co/depth-anything/Depth-Anything-V2-Large](https://huggingface.co/depth-anything/Depth-Anything-V2-Large) ·
+[onnx-community/depth-anything-v2-large-ONNX](https://huggingface.co/onnx-community/depth-anything-v2-large-ONNX)
+
+**Namensnennung und keine kommerzielle Nutzung** — wie bei den
+Essentia-Modellen, nur ohne die ND-Klausel. Die **kleine** Fassung des
+Modells steht unter Apache-2.0 und wäre ohne Einschränkung; sie liest
+Texturen aber hörbar gröber (gemessen am 14.09.2026 an zwölf Covern:
+einzelne nasse Steine werden bei *Small* ein weicher Brei, bei *Large*
+bekommen sie Relief). Wer die NC-Klausel nicht tragen will, tauscht in
+`bin/modelle-holen.js` die beiden Zeilen gegen
+`onnx-community/depth-anything-v2-small-ONNX` — alles andere bleibt
+gleich.
 
 ### npm-Pakete
 

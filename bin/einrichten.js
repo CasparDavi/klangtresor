@@ -1057,7 +1057,7 @@ open -a Terminal ${JSON.stringify(starter)}
     satz(HELL('  [W]') + MATT('  woanders — ein Fenster geht auf, du wählst (etwa eine externe Platte)'));
     leer();
     matt('Denk daran: für alle Funktionen braucht KlangTresor ziemlich viel Platz.');
-    matt('Die Einrichtung selbst rund 1 GB — dazu je Titel bis zu 100 MB, wenn');
+    matt('Die Einrichtung selbst rund 1,6 GB — dazu je Titel bis zu 100 MB, wenn');
     matt('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.');
     leer();
     const tasten = (funde.length ? [vorgabe === 'a' ? 'A' : 'a'] : []).concat([vorgabe === 'd' ? 'D' : 'd', vorgabe === 'n' ? 'N' : 'n', 'w']).join('/');
@@ -1090,7 +1090,7 @@ open -a Terminal ${JSON.stringify(starter)}
       const gb = frei / 1073741824;
       if (gb < 20) {
         wink(`Dort sind nur ${gb.toFixed(1)} GB frei.`);
-        matt('Die Einrichtung selbst braucht rund 1 GB, aber dein Archiv wächst mit');
+        matt('Die Einrichtung selbst braucht rund 1,6 GB, aber dein Archiv wächst mit');
         matt('jedem Lied — bei ein paar hundert Titeln sind es schnell zehn GB und mehr.');
         matt('Eine externe Platte ist dafür völlig in Ordnung. Trotzdem hier?');
         leer();
@@ -1282,22 +1282,22 @@ open -a Terminal ${JSON.stringify(starter)}
     zeile('rechte', 'Keine erhöhten Rechte', 'es laufen auch keine');
   }
 
-  /* Platz: rund 1 GB fuer Werkzeuge, Pakete und Modelle (gemessen
-     13.09.2026: Node 30, ffmpeg 100, Pakete 240, Modelle 560). Das ARCHIV
+  /* Platz: rund 1,6 GB fuer Werkzeuge, Pakete und Modelle (gemessen
+     14.09.2026: Node 30, ffmpeg 100, Pakete 240, Modelle 1200). Das ARCHIV
      kommt danach und kann ein Vielfaches werden - darum wird die Zahl
      genannt und nicht nur geprueft. */
   const platz = freierPlatz(WURZEL);
   if (platz === null) {
     matt('Freien Platz konnte ich nicht ermitteln — ich mache weiter.');
-  } else if (platz < 1073741824) {
-    boese(`Hier sind nur ${MB(platz)} frei. Für die Einrichtung braucht es rund 1 GB,`);
-    zeile('platz', 'Platz', `nur ${MB(platz)} frei — gebraucht wird rund 1 GB`, 'wink');
+  } else if (platz < 2147483648) {
+    boese(`Hier sind nur ${MB(platz)} frei. Für die Einrichtung braucht es rund 1,6 GB,`);
+    zeile('platz', 'Platz', `nur ${MB(platz)} frei — gebraucht wird rund 1,6 GB`, 'wink');
     matt('und das Archiv kommt danach erst noch dazu.');
     leer();
     if (!await jaNein('Trotzdem versuchen?', 'n')) { wiederkommen(); schluss(0); }
   } else {
     gut(`Platz: ${(platz / 1073741824).toFixed(1)} GB frei — die Einrichtung braucht rund 1 GB.`);
-    zeile('platz', 'Platz', `${(platz / 1073741824).toFixed(1).replace('.', ',')} GB frei, die Einrichtung braucht rund 1 GB`);
+    zeile('platz', 'Platz', `${(platz / 1073741824).toFixed(1).replace('.', ',')} GB frei, die Einrichtung braucht rund 1,6 GB`);
   }
 
   /* Ein Projekt auf einer Netzwerkfreigabe ist unter Windows heikel:
@@ -1391,11 +1391,11 @@ open -a Terminal ${JSON.stringify(starter)}
 
     let mDa = 0; try { mDa = fs.readdirSync(path.join(WURZEL, 'library', 'modelle')).filter((f) => !f.startsWith('.')).length; } catch (e) {}
     const mLager = !mDa && lagerHat('modelle');
-    if (mDa >= 11) zeile('modelle', 'KI-Modelle zur Klanganalyse und Stemtrennung', '11 von 11 sind da');
-    else if (mLager) zeile('modelle', 'KI-Modelle zur Klanganalyse und Stemtrennung', 'liegen auf diesem Rechner, werden kopiert (rund 560 MB)', 'laeuft');
-    else zeile('modelle', 'KI-Modelle zur Klanganalyse und Stemtrennung', `${mDa} von 11 — der Rest wird geholt (rund 560 MB)`, 'laeuft');
+    if (mDa >= 13) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', '13 von 13 sind da');
+    else if (mLager) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', 'liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)', 'laeuft');
+    else zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', `${mDa} von 13 — der Rest wird geholt (rund 1,2 GB)`, 'laeuft');
 
-    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= 11 || mLager ? 0 : 560);
+    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= 13 || mLager ? 0 : 1200);
     if (zuHolen) zeile('summe', 'Zu holen', `rund ${zuHolen} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung`, 'laeuft');
     else zeile('summe', 'Zu holen', 'nichts — alles liegt schon hier');
   }
@@ -1582,20 +1582,21 @@ open -a Terminal ${JSON.stringify(starter)}
   } else { gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt'); }
 
   /* ================================================================ */
-  schritt('KI-Modelle', 'KI-Modelle: Stemtrennung, Musikstil und Textverständnis — 11 Dateien, rund 560 MB',
+  schritt('KI-Modelle', 'KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — 13 Dateien, rund 1,2 GB',
     'Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird ' +
     'einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil ' +
     '(hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ' +
-    'ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest) und Textverständnis (macht ' +
-    'aus Liedtexten Zahlen, damit Ähnliches beieinander liegt).');
-  matt('Stemtrennung, Musikstil und Textverständnis. Klappt das nicht, läuft alles andere trotzdem.');
+    'ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest), Textverständnis (macht ' +
+    'aus Liedtexten Zahlen, damit Ähnliches beieinander liegt) und Tiefe (schätzt aus einem Bild, ' +
+    'was vorn und was hinten liegt — damit Licht, Dunst und Partikel den Raum im Titelbild kennen).');
+  matt('Stemtrennung, Musikstil, Textverständnis und Tiefe. Klappt das nicht, läuft alles andere trotzdem.');
   const modelle = path.join(WURZEL, 'library', 'modelle');
   if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
   if (!await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
     const w = await wieWeiter('Modelle holen', 'Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.');
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
-  } else { gut('Modelle sind da.'); zeile('modelle', 'KI-Modelle', '11 von 11 sind da'); insLager('modelle', modelle); }
+  } else { gut('Modelle sind da.'); zeile('modelle', 'KI-Modelle', '13 von 13 sind da'); insLager('modelle', modelle); }
 
   /* ================================================================
      AB HIER WIRD ERKLAERT, NICHT NUR GEMACHT.

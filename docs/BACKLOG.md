@@ -53,6 +53,7 @@
 | Export | zu planen | [Archiv-Export — Brainstorm, zurückgeholt und weitergedacht (09.09.2026)](#archiv-export-brainstorm-zurückgeholt-und-weitergedacht-09092026) |
 | Effektclip | zu planen | [Effektclip: Bewegtbild schneiden statt nur bemalen (Caspar_D, 10.09.2026)](#effektclip-bewegtbild-schneiden-statt-nur-bemalen-caspar_d-10092026) |
 | Effektclip | zu planen | [Effektclip: der Weg zum Video](effektclip/VIDEO-PLAN.md) — Konzeptsitzung 12.09.2026, eigenes Moduldokument |
+| Effektclip | in Arbeit | [Tiefenkarten — gemessen, gebaut, und wohin sie gehören (14.09.2026)](#tiefenkarten--gemessen-gebaut-und-wohin-sie-gehören-14092026) |
 | Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
@@ -2138,6 +2139,57 @@ wird, damit die Skala einheitlich bleibt.
 > *„komplett sinnfrei … schlicht quark"*, weil Volltext und Kondensat
 > nicht vergleichbar sind — zu klären, bevor über den Weg entschieden
 > wird.
+
+## Tiefenkarten — gemessen, gebaut, und wohin sie gehören (14.09.2026)
+
+**Zustand: die Karten liegen, der erste Verbraucher wird gebaut.**
+
+Caspar_D: *„ich will Tiefenkarten, auch wenn das im Dokument weiter hinten steht, ist es
+das Tool, was ich für ziemlich outstanding halte."* Der Videoplan
+([effektclip/VIDEO-PLAN.md](effektclip/VIDEO-PLAN.md), §9.7) stellt sie hinten an, weil
+sie an einer **ungeprüften Annahme** hingen: ob monokulare Tiefenschätzung auf
+stilisiertem Artwork überhaupt taugt. **Die Annahme ist jetzt geprüft** — zwölf Cover quer
+durch den Bestand, Kontaktbogen mit Karte daneben. Sie taugt: Figuren stehen frei, der See
+bekommt einen Verlauf zum Horizont, Seerosenblätter liegen auf verschiedenen Abständen.
+
+**Das Modell, gemessen am selben Material (Intel-Mac):**
+
+| | Größe | je Cover | 324 Cover | Lizenz |
+|---|---|---|---|---|
+| Small fp32 | 94 MB | 294 ms | 95 s | Apache-2.0 |
+| Base fp32 | 371 MB | 880 ms | 5 min | CC-BY-NC-4.0 |
+| **Large fp16** | **640 MB** | **3,5 s** | **19 min** | CC-BY-NC-4.0 |
+
+Genommen wurde **Large in fp16** — Caspar_D: *„selbst wenn es eine Stunde auf allen dauert,
+würde ich das beste Modell nehmen."* Der Gewinn liegt bei den Texturen: Bei nassen Steinen
+macht Small einen weichen Brei, Large gibt jedem Stein Relief — also genau dort, wo Dunst
+und Partikel später hinsehen. fp16 gegen fp32 weicht im Mittel um 0,08 von 255 ab, größte
+Einzelabweichung 3; der halbe Download ist damit umsonst zu haben. Nennung steht in
+[web/fremd/LIZENZEN.md](../web/fremd/LIZENZEN.md).
+
+**Gebaut:** `bin/tiefenkarten.js` schreibt je Titel `library/songs/<id>/tiefe.png`
+(518×518 grau, rund 24 KB). Daneben `library/tiefenkarten.json` mit der
+**Modellidentität** und je Karte der **Herkunft** (Größe und Zeitstempel des Covers) — die
+kleine Fassung des [Ableitungsbuchs](#), das als eigenes Dokument nach `docs/haus/` gehört.
+Ein Modellwechsel wird erkannt und rechnet alles neu.
+
+- [ ] **In die Morgenroutine und ins Setup aufnehmen** (Caspar_D, 14.09.2026) —
+  **sofern sich der erste Verbraucher bewährt.** Im Setup ist das Modell schon drin
+  (`bin/modelle-holen.js`, 13 Dateien statt 11, rund 1,2 GB statt 560 MB; der Platzbedarf
+  der Einrichtung steigt damit auf rund 1,6 GB). Was fehlt: der Aufruf von
+  `bin/tiefenkarten.js` als Schritt der Einrichtung und als Glied des Morgenlaufs, damit
+  neue Titel ihre Karte von selbst bekommen. Erst schalten, wenn Dunst mit Tiefe zeigt,
+  dass es trägt.
+- [ ] **Erster Verbraucher: Dunst als Dämpfung** (VIDEO-PLAN §9.7a). Nicht als Schicht,
+  sondern `Bild·e^(−dichte·z) + Luftlicht·(1−e^(−dichte·z))`. Löst zugleich den
+  Entsättigungs-Fehler aus §10 ersatzlos — die 40 % entstehen dann von selbst, dort wo sie
+  hingehören.
+- [ ] Danach der **generische Parameter** „wirkt auf: vorn / hinten / alles" (§9.7b) — er
+  setzt die zweispaltige Effektkarte aus §9a.5 voraus.
+- [ ] **Die Reihenfolge im Videoplan ist überholt.** §11 stellt die Tiefenkarte auf Platz 11
+  und §12 begründet das mit der ungeprüften Annahme. Der Grund ist weg; sie rückt vor die
+  Punkte, die von ihr abhängen (Gottesstrahlen mit Verdeckung, Auftreffpunkt des Lasers,
+  3D-Raum).
 
 ## Geschichten-Genres statt Klang-Etiketten
 

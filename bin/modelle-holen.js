@@ -53,6 +53,37 @@ const DATEIEN = [
   /* Der Geschichten-Raum (bin/geschichten.js): Liedtexte als Vektoren.
      Ein AEHNLICHKEITSmodell, kein Suchmodell - der Unterschied ist in
      bin/texte-einbetten.js begruendet und mit Zahlen belegt. */
+  /* Die Tiefenkarte (bin/tiefenkarten.js): aus einem Standbild schaetzen,
+     was vorn und was hinten liegt. Depth Anything V2, LARGE in fp16.
+
+     WARUM DAS GROSSE und nicht das kleine (gemessen am 14.09.2026 an
+     zwoelf Covern quer durch den Bestand):
+
+       Small  94 MB   294 ms je Cover   Texturen werden ein weicher Brei
+       Base  371 MB   880 ms            mehr Struktur
+       Large 640 MB  2700 ms            einzelne Steine mit Relief,
+                                        Figuren sauber vom Grund getrennt
+
+     Der Gewinn liegt genau dort, wo Dunst und Partikel spaeter hinsehen.
+     Caspar_D: "selbst wenn es eine Stunde auf allen dauert, wuerde ich
+     das beste Modell nehmen."
+
+     fp16 statt fp32: halber Download (640 MB statt 1,2 GB) bei
+     praktisch gleichem Bild - mittlere Abweichung 0,08 von 255, groesste
+     Einzelabweichung 3. Auf dieser Intel-CPU rechnet fp16 sogar
+     langsamer, weil sie intern ohnehin auf fp32 geht; auf Apple Silicon
+     ist es umgekehrt. Der Grund fuer fp16 ist allein die Dateigroesse.
+
+     ZWEI DATEIEN, und die Namen sind nicht frei waehlbar: model_fp16.onnx
+     traegt nur den Graphen und nennt die Gewichte darin beim Namen
+     model_fp16.onnx_data. Wer eine davon umbenennt, bekommt beim Laden
+     "filesystem error: No such file or directory" (14.09.2026 genau so
+     passiert). */
+  ['depth-anything-v2-large-fp16.onnx',
+   'https://huggingface.co/onnx-community/depth-anything-v2-large-ONNX/resolve/main/onnx/model_fp16.onnx', 150000],
+  ['model_fp16.onnx_data',
+   'https://huggingface.co/onnx-community/depth-anything-v2-large-ONNX/resolve/main/onnx/model_fp16.onnx_data', 600000000],
+
   ['paraphrase-multilingual-mpnet.onnx',
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/onnx/model_quantized.onnx', 200000000],
   ['paraphrase-multilingual-mpnet-tokenizer.json',

@@ -930,6 +930,23 @@ Hand mit Masken machen — und der billigste Griff, um ein flaches Cover fotogra
   Wie gut das sitzt, ist **unbekannt** — Fall für den Kontaktbogen aus §9.6, mit der Tiefenkarte als
   Falschfarbe daneben.
 
+> **NACHGETRAGEN 14.09.2026 — die offene Frage ist beantwortet.** Zwölf Cover quer durch
+> den Bestand, Kontaktbogen mit Karte daneben: **es taugt auf stilisiertem Artwork.**
+> Figuren stehen frei, der See bekommt einen Verlauf zum Horizont, Seerosenblätter liegen
+> auf verschiedenen Abständen. Gemessen wurden auch die drei Modellgrößen — Small macht aus
+> nassen Steinen einen weichen Brei, **Large gibt jedem Stein Relief**, also genau dort, wo
+> Dunst und Partikel hinsehen. Genommen: **Large in fp16**, 640 MB, 3,5 s je Cover, 19 min
+> für alle 324 (Intel-Mac). fp16 gegen fp32: mittlere Abweichung 0,08 von 255.
+>
+> **Damit fällt der Grund weg, die Tiefenkarte in §11 und §12 hinten zu halten** — dort
+> stand sie auf Platz 11, *weil* diese Annahme ungeprüft war. Sie rückt vor die Punkte, die
+> von ihr abhängen: Gottesstrahlen mit Verdeckung (§9b.2), Auftreffpunkt des Lasers
+> (§9b.5), 3D-Raum (§9c).
+>
+> Gebaut: `bin/tiefenkarten.js`, Karten unter `library/songs/<id>/tiefe.png`, daneben
+> `library/tiefenkarten.json` mit Modellidentität und Herkunft je Karte. Einzelheiten und
+> die offenen Punkte (Morgenroutine, Setup) stehen in der BACKLOG.
+
 **Dafür spricht ein Punkt, der gern übersehen wird: die Quelle ist ein Standbild.** Die Karte wird
 einmal gerechnet und ist danach konstant. Das größte Problem monokularer Tiefenschätzung im Video —
 **das Flackern von Bild zu Bild — existiert hier gar nicht.** Für das lebende Foto ist das Verfahren
