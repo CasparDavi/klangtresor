@@ -339,6 +339,32 @@ function seiteAufmachen(adresse) {
   } catch (e) {}
 }
 
+/* WO LIEGT DAS HIER EIGENTLICH - IN WORTEN.
+
+   Caspar_D, 13.09.2026: „auch gefaellt mir diese Pfadangabe nicht,
+   \\psf\Home\Downloads\... - keiner weiss, was gemeint ist, wofuer steht
+   psf, das versteht kein Dummie."
+
+   Er hat recht: `psf` heisst „Parallels Shared Folders", und das steht
+   nirgends. Ein Pfad, den der Mensch nicht einordnen kann, ist keine
+   Auskunft, sondern eine Zumutung. Der Pfad bleibt stehen - er muss ihn
+   ja wiederfinden -, aber daneben steht jetzt, was fuer ein Ort das ist. */
+function ortInWorten(p) {
+  const q = String(p).replace(/\\/g, '/');
+  if (/^\/\/psf\/Home\//i.test(q))
+    return 'Das ist dein Benutzerordner auf dem Mac — Windows greift über Parallels darauf zu.';
+  if (/^\/\/psf\//i.test(q))
+    return 'Das ist ein Ordner auf dem Mac, den Windows über Parallels mitbenutzt.';
+  if (/^\/\//.test(q)) {
+    const m = q.match(/^\/\/([^/]+)\/([^/]+)/);
+    return m ? `Das liegt auf dem Netzlaufwerk „${m[2]}" des Rechners „${m[1]}" — nicht auf dieser Maschine.`
+             : 'Das liegt auf einem Netzlaufwerk, nicht auf dieser Maschine.';
+  }
+  if (process.platform === 'darwin' && /^\/Volumes\//.test(q))
+    return 'Das liegt auf einem angeschlossenen Medium, nicht auf der eingebauten Platte.';
+  return null;
+}
+
 function da(befehl) {
   const e = spawnSync(process.platform === 'win32' ? 'where' : 'which', [befehl],
     { stdio: 'pipe', encoding: 'utf8' });
@@ -373,6 +399,7 @@ function da(befehl) {
 
   matt('Ich lege KlangTresor in diesen Ordner:');
   satz(HELL(WURZEL));
+  { const wo = ortInWorten(WURZEL); if (wo) matt(wo); }
   matt('Du kannst den Ordner jederzeit woanders hinschieben. Nur die innere');
   matt('Struktur sollte bleiben, wie sie ist — daran hängt alles.');
 
@@ -509,8 +536,9 @@ function da(befehl) {
      sollte man es trotzdem. */
   if (process.platform === 'win32' && WURZEL.startsWith('\\\\')) {
     leer();
-    wink('KlangTresor liegt auf einer Netzwerkfreigabe.');
+    wink('KlangTresor liegt nicht auf dieser Maschine.');
     matt(`  ${WURZEL}`);
+    { const wo = ortInWorten(WURZEL); if (wo) matt(`  ${wo}`); }
     matt('Windows kommt mit solchen Pfaden nur halb zurecht — manche Werkzeuge');
     matt('springen dann stillschweigend nach C:\\Windows. Es kann gutgehen;');
     matt('sicherer ist ein Ordner auf der eigenen Platte, etwa unter');
