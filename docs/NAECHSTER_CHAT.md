@@ -3255,3 +3255,30 @@ Release-Zip, nicht aus dem Repo.
 
 **Offen:** zweite Schicht der Tonübernahme (bei Suno gelöschte Titel als eigene Katalogquelle), siehe
 BACKLOG; die Fertig-Ansicht der Seite hat noch niemand gesehen.
+
+### Windows-Abend: Ordnerdialog, Markierungsmodus, ein Reiter (13.09.2026, spät)
+Jörg hat das Release-Zip in der Windows-10-VM durchgespielt. Drei Befunde, alle behoben, Release **v1.0.2**:
+
+- **„bei der Frage nach dem Ordner bleibt das js hängen"** (Schritt 8). Der Dialog ging HINTER Chrome
+  auf; Windows holt ein Fenster aus einem Hintergrundprozess nicht nach vorn. Dazu war die
+  PowerShell-Zeile zerbrechlich (JSON.stringify ist kein PowerShell-Maskierer), die Ausgabe kam in der
+  OEM-Codeseite („Jörg" → Salat), und `spawnSync` hielt die Seite an. `bin/ordnerdialog.js` neu:
+  Skriptdatei mit BOM, unsichtbares TopMost-Fenster als Besitzer, UTF-8, `ordnerWaehlenNebenher`
+  (Promise) — die Seite sagt derweil „Ein Auswahlfenster ist offen". Rückgabe `{pfad, ging, grund}`;
+  `ging=false` heißt: gar kein Fenster möglich, dann darf man tippen („der Text bleibt der Fallback").
+- **„bleibt alles hängen"** — dreimal, immer vor dem nächsten Satz an die Konsole. Das ist der
+  Windows-Markierungsmodus (QuickEdit): ein Klick ins Fenster hält den Prozess an. `bin/konsole.js`
+  schaltet QuickEdit für dieses Fenster ab (SetConsoleMode über `CONIN$`, in der VM gemessen
+  0x1F7 → 0x1B7); `einrichten.js` und `starten.js` rufen es vor dem ersten Wort. Nicht als Einstellung,
+  nur am Puffer dieses Fensters.
+- **„wieso geht das einrichten javascript zweimal im browser auf"** — der Lauf am neuen Ort öffnete
+  nach dem Umzug seine eigene Seite. Jetzt `--seite <Port>`: der alte Lauf bleibt als Brücke, die
+  Seite geht im selben Reiter hinüber (`ZUSTAND.weiter`). Im Sandkasten gesehen: 8790 → 8791.
+
+**Release-Regel seit heute:** je Änderung ein neues Release (`v1.0.x`), nie `gh release upload
+--clobber` — der Austausch reißt eine Lücke, in der die feste Adresse 404 liefert; Jörg hat dreimal
+genau da gezogen („existiert angeblich nicht mehr"). `latest/download/` hinkt nach einem neuen
+Release ein paar Minuten hinterher — GitHub-Cache, kein Fehler.
+
+**Was Jörg als Nächstes prüft:** der volle Windows-Lauf aus v1.0.2 (Dialog vorn, kein Hänger nach
+Klick ins Fenster, ein Reiter), danach macOS. Linux und ein Docker-Bau sind weiter ungeprüft.
