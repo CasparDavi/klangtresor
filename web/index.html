@@ -4546,6 +4546,23 @@ function tonHinweis(){
   document.body.appendChild(box);
 }
 function tonHinweisWeg(){ try { sessionStorage.setItem('tonhinweis-weg', '1'); } catch (e) {} const b = $('tonfehlt'); if (b) b.remove(); }
+/* Der feste Platz in der Profilkachel: derselbe Weg wie im Overlay. */
+async function ordnerEinlesen(){
+  const feld = $('kontordnerfeld'), stand = $('kontordnerstand');
+  const ordner = (feld.value || '').trim().replace(/^['"]|['"]$/g, '');
+  if (!ordner){ stand.textContent = 'Erst den Ordner nennen.'; return; }
+  stand.textContent = 'Sehe nach und ordne zu …';
+  let d = null;
+  try { d = await (await fetch('/api/downloads', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ordner }) })).json(); }
+  catch (e) { stand.textContent = 'Der Server antwortet nicht.'; return; }
+  if (d.fehler){ stand.textContent = 'Das ging nicht: ' + d.fehler; return; }
+  const n = parseInt(d.uebernommen, 10) || 0;
+  stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen — der Ordner ist gemerkt.` : 'Nichts gefunden, was zu deinen Titeln gehört — der Ordner ist trotzdem gemerkt.')
+    + (d.nichtImKatalog > 0 ? ` ${d.nichtImKatalog} gehören zu Titeln, die der Katalog noch nicht kennt.` : '')
+    + (d.ohneSignatur > 0 ? ` ${d.ohneSignatur} ohne Suno-Kennung, nicht angefasst.` : '');
+  if (n) setTimeout(() => location.reload(), 2500);
+}
 async function tonEinlesen(nurDownloads){
   const stand = $('tfstand'); const feld = $('tfordner');
   const ordner = nurDownloads ? '' : (feld.value || '').trim().replace(/^['"]|['"]$/g, '');
@@ -12610,6 +12627,17 @@ async function profilKontingentFuellen(){
         : ' Alle Titel liegen vollständig hier.'}
     </p>
     <div id="kontdownloads"></div>
+    <!-- Ein Ordner laesst sich jederzeit nennen, nicht nur im Overlay
+         (Caspar_D, 13.09.2026: "was ist, wenn ich noch ein anderes Archiv
+         habe, koennte ich das im Nachhinein noch hereinholen"). Jeder
+         genannte Ordner wird gemerkt; der Morgenlauf sieht fortan dort
+         nach. -->
+    <details class="kontordner"><summary>Suno-Dateien aus einem weiteren Ordner einlesen</summary>
+      <p class="fussnote">Erkannt wird am Inhalt, auch umbenannt, auch in Unterordnern. Der Ordner wird gemerkt.</p>
+      <input id="kontordnerfeld" type="text" placeholder="Pfad zum Ordner" spellcheck="false" style="width:100%;box-sizing:border-box">
+      <div style="margin-top:6px"><button class="tbs-mini" onclick="ordnerEinlesen()">Einlesen</button></div>
+      <div class="fussnote" id="kontordnerstand"></div>
+    </details>
     ${d.fehlen && d.fehlen.length ? `<div class="kontfehlt">${d.fehlen.slice(0, 12).map(f =>
       `<a href="${f.link}" target="_blank" rel="noopener" title="Bei Suno öffnen — dort selbst herunterladen">
          ${esc(f.titel || f.id.slice(0, 8))}

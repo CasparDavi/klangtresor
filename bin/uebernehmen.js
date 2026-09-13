@@ -147,14 +147,22 @@ function fragenWennEtwasFehlt(bekannt, orte) {
   try { katalog = require('./katalog.js').lesen() || katalog; } catch (e) {}
   const bekannt = katalog.songs || {};
 
+  /* MEHRERE ORDNER, NICHT EINER. Caspar_D, 13.09.2026: „was ist, wenn ich
+     noch ein anderes Archiv habe, koennte ich das im Nachhinein noch
+     hereinholen?" - Ja, aber bis eben ersetzte ein zweiter --ordner den
+     ersten. Jetzt ist es eine Liste (konfig.sunoOrdner); der alte
+     Einzelwert downloadOrdner wird beim ersten Lauf hineingezogen. Der
+     Download-Ordner steht immer vorn, ungefragt. */
   const konf = konfigLesen();
   const orte = [path.join(os.homedir(), 'Downloads')];
-  if (konf.downloadOrdner && !orte.includes(konf.downloadOrdner)) orte.push(konf.downloadOrdner);
+  const gemerkt = Array.isArray(konf.sunoOrdner) ? [...konf.sunoOrdner] : [];
+  if (konf.downloadOrdner && !gemerkt.includes(konf.downloadOrdner)) gemerkt.push(konf.downloadOrdner);
   if (EXTRA) {
     const p = path.resolve(EXTRA);
-    if (!orte.includes(p)) orte.push(p);
-    if (konf.downloadOrdner !== p) { konfigMerken({ downloadOrdner: p }); console.log(`  Ordner gemerkt: ${p}`); }
+    if (!gemerkt.includes(p)) { gemerkt.push(p); console.log(`  Ordner gemerkt: ${p}`); }
   }
+  if (JSON.stringify(gemerkt) !== JSON.stringify(konf.sunoOrdner || [])) konfigMerken({ sunoOrdner: gemerkt });
+  for (const g of gemerkt) if (!orte.includes(g)) orte.push(g);
   const dateien = [];
   for (const o of orte) dateien.push(...suchen(o));
 
