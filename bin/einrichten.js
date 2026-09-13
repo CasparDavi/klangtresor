@@ -795,6 +795,52 @@ open -a Terminal ${JSON.stringify(starter)}
     return path.join(heim, 'KlangTresor');
   }
 
+  /* EIN ARCHIV GIBT ES VIELLEICHT SCHON - UND DAS MUSS ALS ERSTES GESAGT
+     WERDEN. Caspar_D, 13.09.2026: „frueher hiess KlangTresor MySuno,
+     frueher haben sie Files genau in diesen Ordner ausgepackt ... das
+     Script sollte unbedingt darauf hinweisen, dass schon ein Ordner da
+     ist." Vorher sah nur Schritt 2 in den Geschwisterordnern nach, nach
+     dem Umzug, und bot dann nur „neu anfangen" oder „abbrechen".
+
+     Erkannt wird ein Archiv am KATALOG (library/katalog.json.gz), nie am
+     Namen - der Ordner darf MySuno, mysuno-main, KlangTresor oder sonstwie
+     heissen. Gesucht wird dort, wo solche Ordner liegen: neben diesem,
+     im Nutzerverzeichnis, in Downloads, auf dem Schreibtisch, in
+     Dokumente und Musik - je zwei Ebenen tief (Downloads/mysuno-main/),
+     hoechstens ein paar tausend Ordner. Das dauert unter einer Sekunde. */
+  function archiveFinden() {
+    const heim = os.homedir();
+    const orte = new Set([path.dirname(WURZEL), heim]);
+    for (const n of ['Downloads', 'Desktop', 'Schreibtisch', 'Documents', 'Dokumente', 'Music', 'Musik']) orte.add(path.join(heim, n));
+    for (const n of ['Downloads', 'Desktop', 'Documents']) orte.add(path.join(heim, 'OneDrive', n));
+    { const d = schreibtisch(); if (d) orte.add(d); }
+    const istArchiv = (p) => fs.existsSync(path.join(p, 'library', 'katalog.json.gz')) || fs.existsSync(path.join(p, 'library', 'katalog.json'));
+    const funde = [], gesehen = new Set();
+    let zaehler = 0;
+    const pruefe = (p) => {
+      const r = path.resolve(p);
+      if (gesehen.has(r) || r === path.resolve(WURZEL)) return;
+      gesehen.add(r);
+      if (!istArchiv(r)) return;
+      let titel = 0; try { titel = fs.readdirSync(path.join(r, 'library', 'songs')).filter((n) => !n.startsWith('.')).length; } catch (e) {}
+      let wann = null; try { wann = fs.statSync(path.join(r, 'library')).mtime; } catch (e) {}
+      funde.push({ pfad: r, titel, wann });
+    };
+    for (const o of orte) {
+      let kinder; try { kinder = fs.readdirSync(o, { withFileTypes: true }); } catch (e) { continue; }
+      for (const k of kinder) {
+        if (!k.isDirectory() || k.name.startsWith('.') || k.name === 'node_modules' || ++zaehler > 4000) continue;
+        const p = path.join(o, k.name);
+        pruefe(p);
+        let enkel; try { enkel = fs.readdirSync(p, { withFileTypes: true }); } catch (e) { continue; }
+        for (const e of enkel) if (e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules' && ++zaehler <= 4000) pruefe(path.join(p, e.name));
+      }
+    }
+    funde.sort((a, b) => b.titel - a.titel || (b.wann || 0) - (a.wann || 0));
+    return funde;
+  }
+  const archivText = (f) => f.pfad + MATT(` — ${f.titel} Titel` + (f.wann ? `, zuletzt ${f.wann.toLocaleDateString('de-DE')}` : ''));
+
   function mussUmziehen(p) {
     const q = p.replace(/\\/g, '/');
     if (process.platform === 'win32' && q.startsWith('//')) return 'auf einer Netzfreigabe';
@@ -827,19 +873,44 @@ open -a Terminal ${JSON.stringify(starter)}
   const gbText = (g) => g === null ? '' : `  (${g.toFixed(0)} GB frei)`;
 
   const grund = mussUmziehen(WURZEL);
-  const schonZuhause = !grund && path.basename(WURZEL) === 'KlangTresor';
+  /* Liegt HIER schon ein Archiv, ist hier das Zuhause - auch im
+     Download-Ordner. Wer eben „dieses Archiv weiterfuehren" gewaehlt hat
+     oder sein altes MySuno dort liegen hat, wird nicht gleich wieder zum
+     Umziehen gedraengt (im Sandkasten gesehen, 13.09.2026). Verschieben
+     kann man den ganzen Ordner jederzeit von Hand. */
+  const archivHier = fs.existsSync(path.join(WURZEL, 'library', 'katalog.json.gz')) || fs.existsSync(path.join(WURZEL, 'library', 'katalog.json'));
+  const schonZuhause = archivHier || (!grund && path.basename(WURZEL) === 'KlangTresor');
   const heimZiel = path.join(os.homedir(), 'KlangTresor');
   let ziel = WURZEL;
 
+  const funde = archiveFinden();
+
   if (schonZuhause) {
-    matt('KlangTresor liegt hier, und hier bleibt es:');
+    matt(archivHier ? 'Hier liegt dein Archiv, und hier bleibt es:' : 'KlangTresor liegt hier, und hier bleibt es:');
     satz(HELL('  ' + WURZEL) + MATT(gbText(gbFrei(WURZEL))));
+    if (archivHier && grund) matt('  (Das ist zwar ' + grund + ' — aber mit dem Archiv darin bleibt es hier. Umziehen: den ganzen Ordner verschieben.)');
+    if (funde.length && !archivHier) {
+      leer();
+      wink('Aber woanders gibt es schon ein Archiv' + (funde.length > 1 ? `, sogar ${funde.length}` : '') + ':');
+      for (const f of funde.slice(0, 3)) satz('    ' + HELL(archivText(f)));
+      matt('Vermutlich dein bisheriges KlangTresor oder MySuno. Führe ich es dort weiter,');
+      matt('wird nur das Programm erneuert — deine Titel, Bilder und Töne bleiben.');
+      leer();
+      if (await jaNein('Das vorhandene Archiv weiterführen?', 'j')) ziel = funde[0].pfad;
+    }
   } else {
     matt('Du bist hier — dort, wo das Zip ausgepackt wurde:');
     satz(HELL('  ' + WURZEL) + MATT(gbText(gbFrei(WURZEL))));
     { const wo = ortInWorten(WURZEL); if (wo) matt('  ' + wo); }
     leer();
-    const vorgabe = grund ? 'n' : 'd';
+    const vorgabe = funde.length ? 'a' : (grund ? 'n' : 'd');
+    if (funde.length) {
+      wink('Ein Archiv gibt es schon' + (funde.length > 1 ? `, sogar ${funde.length}` : '') + ' — vermutlich dein bisheriges KlangTresor oder MySuno:');
+      for (const f of funde.slice(0, 3)) satz('    ' + HELL(archivText(f)));
+      leer();
+      satz(HELL('  [A]') + MATT('  dieses Archiv weiterführen: ') + HELL(funde[0].pfad));
+      matt('       Nur das Programm wird erneuert — Titel, Bilder und Töne bleiben, wie sie sind.');
+    }
     satz(HELL('  [D]') + MATT('  hier bleiben — KlangTresor wird genau in diesem Ordner eingerichtet'));
     if (grund) matt('       Achtung: das liegt ' + grund + ' — dort wird gern aufgeräumt' +
                     (grund.includes('Netz') ? ', und die Pakete scheitern' : '') + '.');
@@ -851,14 +922,17 @@ open -a Terminal ${JSON.stringify(starter)}
     matt('Die Einrichtung selbst rund 500 MB — dazu je Titel bis zu 100 MB, wenn');
     matt('WAV und Instrumentspuren dabei sind. Bei 200 Titeln sind das rund 20 GB.');
     leer();
-    const antwort = (await fragen('     ' + AKZENT(`Wohin? [${vorgabe === 'd' ? 'D' : 'd'}/${vorgabe === 'n' ? 'N' : 'n'}/w] `),
+    const tasten = (funde.length ? [vorgabe === 'a' ? 'A' : 'a'] : []).concat([vorgabe === 'd' ? 'D' : 'd', vorgabe === 'n' ? 'N' : 'n', 'w']).join('/');
+    const antwort = (await fragen('     ' + AKZENT(`Wohin? [${tasten}] `),
       { art: 'wahl', text: 'Wohin soll KlangTresor?', vorgabe,
-        hinweis: (grund ? `Achtung: das hier liegt ${grund} - dort wird gern aufgeräumt. ` : '') + `Nutzerverzeichnis: ${heimZiel}`,
+        hinweis: (funde.length ? `Gefundenes Archiv: ${funde[0].pfad} (${funde[0].titel} Titel). ` : '') + (grund ? `Achtung: das hier liegt ${grund} - dort wird gern aufgeräumt. ` : '') + `Nutzerverzeichnis: ${heimZiel}`,
         optionen: [
+          ...(funde.length ? [{ wert: 'a', label: `Vorhandenes Archiv weiterführen (${funde[0].titel} Titel)`, vor: true }] : []),
           { wert: 'd', label: 'Hier bleiben', vor: vorgabe === 'd' },
           { wert: 'n', label: 'In mein Nutzerverzeichnis', vor: vorgabe === 'n' },
           { wert: 'w', label: 'Woanders - Ordner wählen …' }] })).toLowerCase() || vorgabe;
-    if (antwort.startsWith('n')) ziel = heimZiel;
+    if (antwort.startsWith('a') && funde.length) ziel = funde[0].pfad;
+    else if (antwort.startsWith('n')) ziel = heimZiel;
     else if (antwort.startsWith('w')) {
       const eltern = await ordnerWaehlen();
       if (eltern) ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
@@ -893,7 +967,8 @@ open -a Terminal ${JSON.stringify(starter)}
   if (path.resolve(ziel) !== path.resolve(WURZEL)) {
     const zielBelegt = fs.existsSync(ziel) && fs.readdirSync(ziel).filter((n) => n !== '.DS_Store').length;
     const zielIstKlangTresor = zielBelegt &&
-      fs.existsSync(path.join(ziel, 'package.json')) && fs.existsSync(path.join(ziel, 'bin'));
+      ((fs.existsSync(path.join(ziel, 'package.json')) && fs.existsSync(path.join(ziel, 'bin'))) ||
+       fs.existsSync(path.join(ziel, 'library', 'katalog.json.gz')) || fs.existsSync(path.join(ziel, 'library', 'katalog.json')));
 
     if (zielBelegt && !zielIstKlangTresor) {
       wink('Dort liegt schon etwas anderes — das fasse ich nicht an.');
