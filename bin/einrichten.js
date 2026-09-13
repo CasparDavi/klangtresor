@@ -416,10 +416,15 @@ function da(befehl) {
      Fenster schaltet in den Markierungsmodus und HAELT DEN PROZESS AN -
      mitten in der Ausgabe, ohne Hinweis ausser einem Wort in der
      Titelleiste. Es sieht nach Absturz aus und ist keiner. */
-  wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
-  matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
-  matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');
-  matt('löst es wieder. Am besten gar nicht erst hineinklicken.');
+  /* Nur Windows. Auf Mac und Linux gibt es den Markierungsmodus nicht,
+     und eine Warnung vor etwas, das es nicht gibt, ist schlechter als
+     keine. */
+  if (process.platform === 'win32') {
+    wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
+    matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
+    matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');
+    matt('löst es wieder. Am besten gar nicht erst hineinklicken.');
+  }
 
   /* ================================================================ */
   schritt('Rechte und Platz prüfen');
