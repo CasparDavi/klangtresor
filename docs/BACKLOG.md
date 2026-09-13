@@ -52,6 +52,7 @@
 | Community | zu planen | [Ideen für „Meine Gemeinschaft" (09.09.2026, gesammelt, nicht entschieden)](#ideen-für-meine-gemeinschaft-09092026-gesammelt-nicht-entschieden) |
 | Export | zu planen | [Archiv-Export — Brainstorm, zurückgeholt und weitergedacht (09.09.2026)](#archiv-export-brainstorm-zurückgeholt-und-weitergedacht-09092026) |
 | Effektclip | zu planen | [Effektclip: Bewegtbild schneiden statt nur bemalen (Caspar_D, 10.09.2026)](#effektclip-bewegtbild-schneiden-statt-nur-bemalen-caspar_d-10092026) |
+| Effektclip | zu planen | [Effektclip: der Weg zum Video](effektclip/VIDEO-PLAN.md) — Konzeptsitzung 12.09.2026, eigenes Moduldokument |
 | Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).

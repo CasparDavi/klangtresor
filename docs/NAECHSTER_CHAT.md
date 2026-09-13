@@ -3300,3 +3300,79 @@ Ordnerdialog hinter dem Browser, zwei Browserfenster) sind damit auch im echten 
 Offen bleibt: **macOS** aus dem Zip, **Linux** überhaupt, und ein **Docker-Bau**. Nachgezogen,
 aber noch nicht veröffentlicht: der Platzbedarf sagt jetzt überall „rund 1 GB" statt 500 MB
 (gemessen 930 MB) — die Wohin-Frage widersprach Schritt 1.
+
+### Konzeptsitzung Video (12.09.2026) — ein Tag nur Reden, kein Code
+
+Ein Tag nur Reden, kein Code. Ergebnis ist ein eigenes Moduldokument:
+**[docs/effektclip/VIDEO-PLAN.md](effektclip/VIDEO-PLAN.md)**, Zustand *zu planen*. Wer am
+Effektclip weiterbaut, liest das zuerst — hier steht nur, was man wissen muss, um es zu finden.
+
+**Zwei Uhren.** Der Suno-Zehnsekünder ist nicht taktsynchron zu bekommen (Takt- und Tempowechsel im
+Lied, Suno spielt immer denselben Clip) und gehört auch zu keiner Stelle im Lied. Er bekommt eine
+eigene Uhr: Periodizität aus sich selbst, taktlose Effekte, muss sich schließen. Alles Lange läuft
+auf Liedzeit. Der heutige Loop-Modus ist damit richtig, aber falsch begründet — nicht „damit der
+Export schließt", sondern *weil es hier keinen Takt gibt*.
+
+**Drei Befunde zur „Fahrt", nachgerechnet, noch nicht behoben** (Caspar_D: *„ich hab gestern keine
+Fahrten oder lokale Zoom-ins und -outs gesehen"* — der Eindruck stimmt):
+1. Die Fahrt **zoomt nicht**. `crop` ist zeitunabhängig, nur `panx`/`pany` laufen. Die Beschreibung
+   verspricht Zoom — Regel 11. Einen langsamen Zoom gibt es in der ganzen Bibliothek nicht.
+2. Bei den Vorgaben **4,8 % der Bildbreite** über 9 s, rund 2 px/s auf der Prüfleinwand. Nicht
+   kaputt, zu leise: `weite` wird mit dem ohnehin kleinen freien Weg `(bw−cw)/2` multipliziert.
+3. Im Loop rastet `lpP` die Periode auf Teiler von L ein: bei L = 10 s ergibt **Tempo 7…40 beide
+   Male 10 s** — der Regler ist über 34 von 35 Stufen tot (Regel 9) und die Lissajous-Bahn
+   kollabiert zur **geraden Diagonale**.
+
+**Fünfte Messfalle, gehört nach EFFEKTCLIP-REGELN.md.** Fahrt misst 51,2 an/aus und „Ausschnitt"
+59,8 — bei *stehender Uhr*. Das misst Beschnitt und Versatz, nicht Bewegung; ein Effekt, der den
+Ausschnitt nur verschiebt und nie animiert, ergäbe dieselben Zahlen. Also: **Geometrie braucht einen
+Zeitlauf**, nicht nur Ereignisse.
+
+**Regel 10a, zweiter Fall.** „Der Lauf" ist das am 11.09. ausgebaute Zeitbiege-Modul, „**Läufe**" ist
+eine Effektgruppe in der Oberfläche — und *fahrt* sitzt genau dort. Fall für Umbenennung.
+
+**Feuer kann mehr, als gedacht.** `boden`, `mitte` und `breite` gibt es längst und der Maler nutzt
+sie; die Grundlinie ist frei platzierbar. Was fehlt: **Wind bei Feuer und Flammen gar nicht** (nur
+symmetrisches `sway`), `breite`-Minimum 0,1 zu grob für einen Docht, Basis immer waagerecht.
+
+**Quellfläche und Sichtfeld.** Partikel sind vollflächig, weil das Recycling ein Modulo über die
+Leinwand ist. Trennt man *wo geboren* von *wo sichtbar*, fällt das Modulo weg und wird
+**Lebensdauer** — und das ist dieselbe Änderung, die die Loop-Reparatur braucht. Nicht getrennt
+bauen.
+
+**Die Karte wird zweispaltig**, spezifisch links, generisch rechts, **ohne Zuklappen** (Regel 10:
+ein versteckter Regler wirkt trotzdem). Caspar_Ds Begründung: das Problem der Schnittprogramme ist
+nicht die Anzahl der Parameter, sondern dass sie verstreut sind. Die eigentliche Arbeit daran ist
+nicht das Umsortieren, sondern dass ein generischer Name überall dasselbe bedeutet.
+
+**Automatik.** Das System baut vor, der Mensch greift ein; Ziel 80 % brauchbar. Die Automatik hat
+**keine ästhetische Aufgabe, nur eine handwerkliche** — damit ist sie messbar. Alles, was auffällt,
+ist Mensch.
+
+**Reihenfolge** steht in §11 des Plans. Ganz vorn die drei Fahrt-Befunde, weil sie einen Effekt
+betreffen, der heute benutzt wird und nicht tut, was draufsteht — unabhängig von jedem Videovorhaben.
+
+**Offen und wer am Zug ist:** §12 des Plans, elf Zeilen.
+
+*(Nachgetragen am 14.09.2026 aus einer Sitzung ohne Zugang zum Haus. Die vier
+Befunde zu Fahrt, Nebel, Antrieb und Wind sind am 14.09. am Code gegengeprüft
+und bestätigt — siehe unten.)*
+
+**Die Gegenprüfung am Code (14.09.2026).** Vier Behauptungen des Plans, am laufenden Bestand
+nachgesehen — alle vier bestätigt:
+
+| Behauptung | gemessen |
+|---|---|
+| Fahrt zoomt nicht, `crop` zeitunabhängig | `crop*=(1-(1-e.zoom)*s)` — nur `panx`/`pany` laufen über `tri()` (web/index.html:27829) |
+| Nebel entsättigt 40 % gegen seinen Kommentar | `mix(vec3(lum),um,0.6)` (web/index.html:27543) |
+| Antrieb hängt nur an neun Effekten | licht, schatten, laser, strahlen, feuer, flammen, kaustik, bloom, strobe — alles andere weiß nichts vom Lied |
+| Wind fehlt bei Feuer und Flammen, Partikel hat ihn | `partikel` hat `wind` und `boeen`, `feuer`/`flammen` nur `sway` |
+
+Der mitgelieferte Patch ließ sich nicht mehr anwenden — `NAECHSTER_CHAT.md` ist seit dem 12.09.
+gewachsen. Die Datei selbst ist byte-gleich mit dem Endstand des Patches (geprüft), die beiden
+Doku-Einträge sind von Hand gesetzt.
+
+**Eine Beobachtung zum Dokument selbst:** Es liest sich gegen seine eigene Rangfolge. Die
+Tiefenkarte nimmt den meisten Raum ein (§9.7–9.7d, dazu Teile von §9b und §9c), steht in der
+Reihenfolge aber bewusst weit hinten, weil sie an einer ungeprüften Annahme hängt — ob monokulare
+Tiefenschätzung auf stilisiertem Artwork taugt. Wer nur den Text liest, hält sie für den Kern.
