@@ -433,6 +433,56 @@ function da(befehl) {
      Umziehen heisst KOPIEREN und neu starten, nicht verschieben: der
      laufende Ordner ist in Benutzung, unter Windows gesperrt. Der alte
      bleibt liegen und wird am Ende genannt. */
+  /* DER ORDNERDIALOG DES SYSTEMS, nicht unser eigener.
+
+     Caspar_D, 13.09.2026: „Ich hatte mir das eigentlich so vorgestellt,
+     dass ein Filechooser aufgeht und ich selbst bestimme, wo die
+     Installation stattfindet, mit Default User-Home/KlangTresor."
+
+     Jedes System bringt einen mit, und der Mensch kennt ihn. Ein
+     selbstgebauter waere fremd und schlechter. Gewaehlt wird der
+     ELTERNORDNER - darin wird „KlangTresor" angelegt. Das ist
+     eindeutig; ein Dialog, bei dem unklar ist, ob man den Ordner selbst
+     oder seinen Platz waehlt, ist eine Falle.
+
+     Geht kein Dialog auf (kein Bildschirm, ferngesteuerte Sitzung,
+     zenity fehlt), wird nicht gefragt, sondern die Vorgabe genommen. */
+  function ordnerWaehlen(vorgabe) {
+    const titel = 'Wo soll KlangTresor liegen? Es wird ein Ordner „KlangTresor" darin angelegt.';
+    try {
+      if (process.platform === 'darwin') {
+        const s = `try
+  set d to choose folder with prompt ${JSON.stringify(titel)} default location POSIX file ${JSON.stringify(vorgabe)}
+  POSIX path of d
+end try`;
+        const e = spawnSync('osascript', ['-e', s], { encoding: 'utf8' });
+        const w = String(e.stdout || '').trim();
+        return w || null;
+      }
+      if (process.platform === 'win32') {
+        const ps = [
+          'Add-Type -AssemblyName System.Windows.Forms',
+          '$d = New-Object System.Windows.Forms.FolderBrowserDialog',
+          `$d.Description = ${JSON.stringify(titel)}`,
+          `$d.SelectedPath = ${JSON.stringify(vorgabe)}`,
+          '$d.ShowNewFolderButton = $true',
+          "if ($d.ShowDialog() -eq 'OK') { $d.SelectedPath }",
+        ].join('; ');
+        const e = spawnSync('powershell', ['-NoProfile', '-STA', '-Command', ps], { encoding: 'utf8' });
+        const w = String(e.stdout || '').trim();
+        return w || null;
+      }
+      for (const [bef, args] of [['zenity', ['--file-selection', '--directory', '--title', titel, '--filename', vorgabe + '/']],
+                                 ['kdialog', ['--getexistingdirectory', vorgabe]]]) {
+        if (!da(bef)) continue;
+        const e = spawnSync(bef, args, { encoding: 'utf8' });
+        const w = String(e.stdout || '').trim();
+        if (w) return w;
+      }
+    } catch (e) {}
+    return null;
+  }
+
   function heimatVorschlag() {
     const heim = os.homedir();
     return path.join(heim, 'KlangTresor');
@@ -458,13 +508,17 @@ function da(befehl) {
        gerade erst entpackt hat, hat keine Meinung dazu, wo es wohnen
        soll. Eine Frage an dieser Stelle ist keine Freiheit, sondern eine
        Zumutung. Gefragt wird nur, wenn am Ziel schon etwas liegt. */
-    const ziel = path.join(os.homedir(), 'KlangTresor');
     matt('KlangTresor liegt gerade ' + grund + ':');
     satz(MATT('  ' + WURZEL));
     matt('Dort gehört es nicht hin — dein Archiv wächst mit jedem Lied, und ein');
-    matt('Download-Ordner wird irgendwann aufgeräumt. Ich lege es dorthin, wo');
-    matt('es hingehört, und mache dort weiter:');
-    satz(HELL('  ' + ziel));
+    matt('Download-Ordner wird irgendwann aufgeräumt.');
+    leer();
+    tut('Ein Fenster geht auf: wähle, wo KlangTresor liegen soll.');
+    matt('Vorgeschlagen ist dein Benutzerordner. Mit Abbrechen nehme ich den.');
+    const eltern = ordnerWaehlen(os.homedir()) || os.homedir();
+    const ziel = path.basename(eltern) === 'KlangTresor' ? eltern : path.join(eltern, 'KlangTresor');
+    leer();
+    satz(MATT('Ziel:  ') + HELL(ziel));
     leer();
 
     if (fs.existsSync(ziel) && fs.readdirSync(ziel).filter((n) => n !== '.DS_Store').length) {
