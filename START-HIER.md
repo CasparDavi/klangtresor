@@ -21,8 +21,13 @@ erkennt das Programm selbst, sobald du einmal sammelst.
 
 ## Der schnelle Weg — ein Skript, das alles macht
 
-Im Ordner liegen Einrichtungsskripte. **Eines** davon genügt — such dir die
-Zeile für dein System und deinen Weg:
+Das Paket gibt es hier, immer in der jüngsten Fassung:
+
+    https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip
+
+Auspacken — es entsteht ein Ordner `KlangTresor`, eine Ebene, kein Ordner im
+Ordner. Darin liegen die Einrichtungsskripte. **Eines** davon genügt — such
+dir die Zeile für dein System und deinen Weg:
 
 | dein System | der übliche Weg | mit Docker |
 |---|---|---|
