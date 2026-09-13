@@ -407,6 +407,19 @@ function da(befehl) {
   matt('Lass das Fenster am besten offen, dann siehst du sofort, ob es gut');
   matt('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand');
   matt('fortsetzen.');
+  leer();
+  /* Caspar_D, 13.09.2026, nach einer halben Stunde Fehlersuche an einem
+     Fenster, das gar nicht haengen geblieben war: „das musst du als
+     ausgabe ganz am Anfang hinschreiben, dass sowas passieren kann".
+
+     Windows-Konsolen haben QuickEdit standardmaessig an: EIN KLICK ins
+     Fenster schaltet in den Markierungsmodus und HAELT DEN PROZESS AN -
+     mitten in der Ausgabe, ohne Hinweis ausser einem Wort in der
+     Titelleiste. Es sieht nach Absturz aus und ist keiner. */
+  wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
+  matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
+  matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');
+  matt('löst es wieder. Am besten gar nicht erst hineinklicken.');
 
   /* ================================================================ */
   schritt('Rechte und Platz prüfen');
