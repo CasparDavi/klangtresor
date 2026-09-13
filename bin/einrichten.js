@@ -260,8 +260,29 @@ function einenOrdnerHeben(von, nach) {
   try { fs.rmSync(von, { recursive: true, force: true }); } catch (e) {}
 }
 
+/* DIE EINGABEAUFFORDERUNG NUR DANN, WENN ES NICHT ANDERS GEHT.
+
+   shell:true war unter Windows pauschal gesetzt, damit Dinge wie
+   `npm.cmd` ueberhaupt starten - eine .cmd-Datei kann Node nicht direkt
+   ausfuehren. Der Preis ist hoch: cmd.exe WEIGERT SICH, einen UNC-Pfad
+   als Arbeitsverzeichnis zu nehmen, springt stillschweigend nach
+   C:\Windows, und das dort gestartete Programm schreibt seine Dateien an
+   die falsche Stelle:
+
+       UNC-Pfade werden nicht unterstuetzt.
+       npm error EPERM: open 'C:\Windows\package-lock.json'
+
+   Am 13.09.2026 zweimal in derselben Sitzung gemessen - beim zweiten Mal,
+   weil ich nur den npm-Aufruf umgestellt hatte und diese Zeile uebersah.
+   Der Aufruf ging danach an node.exe statt an npm.cmd und lief trotzdem
+   durch cmd.exe.
+
+   Ein Programm mit vollem Pfad braucht keine Schale. Node startet es
+   selbst, und Node kommt mit UNC-Pfaden zurecht. Nur fuer Namen ohne
+   Pfad - `npm`, `npm.cmd` - bleibt sie noetig. */
 function laeuft(befehl, argumente) {
-  const e = spawnSync(befehl, argumente, { stdio: 'inherit', shell: process.platform === 'win32' });
+  const brauchtSchale = process.platform === 'win32' && !path.isAbsolute(befehl);
+  const e = spawnSync(befehl, argumente, { stdio: 'inherit', shell: brauchtSchale });
   return e.status === 0;
 }
 
