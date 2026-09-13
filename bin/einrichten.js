@@ -837,7 +837,7 @@ end try`;
   satz(HELL('  1. Was du schon hast.'));
   matt('  Hast du deine Lieder bei Suno früher heruntergeladen? In deinen');
   matt('  Download- und Musikordnern sehe ich von selbst nach; liegen sie');
-  matt('  woanders, zeig mir den Ordner. Ich erkenne die'));
+  matt('  woanders, zeig mir den Ordner. Ich erkenne die');
   matt('  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in');
   matt('  Unterordnern, und ordne sie deinen Titeln zu. Das ist der');
   matt('  Hauptweg, und er kostet nichts.');
