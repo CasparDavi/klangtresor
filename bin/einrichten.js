@@ -1233,11 +1233,23 @@ function schreibtischVerknuepfung(ordner) {
   matt('dasselbe Lied zweimal auf, ordne ich es einmal ein — welche Datei');
   matt('gemeint ist, sagt die Kennung, nicht der Name.');
   leer();
-  let ordner = await fragen('     ' + AKZENT('Dein Suno-Ordner (Eingabetaste = überspringen): '));
-  /* Wer einen Ordner ins Fenster zieht, bekommt Anführungszeichen oder
-     maskierte Leerzeichen mitgeliefert. Beides hier wegnehmen, statt den
-     Menschen mit einem „Ordner nicht gefunden" heimzuschicken. */
-  ordner = ordner.replace(/^['"]|['"]$/g, '').replace(/\\ /g, ' ').trim();
+  /* KEIN PFADFELD. Caspar_D, 13.09.2026, zum dritten Mal: „hier wird
+     immer noch nach einem Textpfad gefragt, nochmal, das kann kein DAU."
+     Eine Ja/Nein-Frage, und bei Ja der Ordnerdialog des Systems - kein
+     Mensch tippt einen Pfad. Ohne Bildschirm (Roehre, ferngesteuert)
+     geht kein Dialog auf; dann bleibt es bei Download- und Musikordnern,
+     und die Kommandozeile mit --ordner steht im Text. */
+  matt('Liegen deine Suno-Dateien noch woanders — in einem Backup, auf einer');
+  matt('externen Platte? Dann öffne ich ein Fenster, in dem du den Ordner wählst.');
+  leer();
+  let ordner = '';
+  if (await jaNein('Ordner wählen?', 'n')) {
+    ordner = ordnerWaehlenRoh(os.homedir(), 'Wo liegen deine Suno-Dateien?') || '';
+    if (!ordner) {
+      matt('Kein Ordner gewählt — dann nur Download- und Musikordner. Später jederzeit');
+      matt('auf der Seite unter „Suno-Dateien aus einem weiteren Ordner einlesen".');
+    }
+  }
 
   const einlesen = [path.join('bin', 'uebernehmen.js'), '--tun'];
   if (ordner) {
