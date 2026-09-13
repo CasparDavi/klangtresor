@@ -22,6 +22,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const melden = require('./melden.js');   /* Zahlen fuer die Einrichtungsseite */
 
 const WURZEL = path.join(__dirname, '..');
 const ROH    = path.join(WURZEL, 'library', 'roh');
@@ -104,6 +105,10 @@ for (let i = 0; i < SCHRITTE.length; i++){
   const [datei, args, zweck] = SCHRITTE[i];
   console.log(`\n${'='.repeat(64)}`);
   console.log(`[${i+1}/${SCHRITTE.length}] ${datei} ${args.join(' ')} - ${zweck}`);
+  /* Jede Teilaufgabe bekommt ihre eigene Zeile mit Haken. Die vorherige
+     ist damit fertig. */
+  if (i) melden.zeile('teil' + i, SCHRITTE[i-1][2], 'fertig', 'fertig');
+  melden.zeile('teil' + (i+1), zweck, 'läuft …', 'laeuft');
   console.log('='.repeat(64) + '\n');
 
   const e = spawnSync(process.execPath, [path.join(__dirname, datei), ...args],

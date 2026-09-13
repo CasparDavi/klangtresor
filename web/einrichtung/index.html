@@ -1,22 +1,38 @@
 <!doctype html>
 <!-- KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE -->
 <!-- =============================================================
-     DIE EINRICHTUNG ALS SEITE
+     DIE EINRICHTUNG ALS OBERFLÄCHE
      web/einrichtung/index.html
 
-     Caspar_D, 13.09.2026: „Ich wollte das JavaScript eher wie eine
-     graphische Benutzeroberfläche mit KlangTresor und Logo und allem
-     Pipapo haben, nicht mehr im Textmodus. Richtig schön mit
-     Fortschrittsbalken, Rahmen, Erklärungen, wofür was ist, damit dem
-     Nutzer das Warten nicht lang wird, vielleicht sogar schon einige
-     Feature-Anreißer, um Interesse zu wecken."
+     Caspar_D, 13.09.2026: „Es war Sinn der Sache, alles in JS
+     auszugeben und nicht einfach Textausgaben umzubiegen. Ich wollte
+     echte Fortschrittsbalken pro Schritt. Wieso hast du eine Textbox
+     ins JS gebaut, die nur die cmd-Ausgaben zitiert, das ist Käse so,
+     dann hätten wir auch beim reinen cmd bleiben können."
 
-     Diese Seite liefert bin/einrichten.js selbst aus, auf 127.0.0.1 ab
-     Port 8790, nur für den einen Lauf. Sie fragt alle halbe Sekunde
-     /stand ab und zeigt, was die Konsole auch zeigt — nur mit Rahmen,
-     Balken und Schaltflächen statt Tastaturkürzeln. Antworten gehen
-     als POST /antwort zurück; der Ordnerdialog des Systems über
-     POST /ordner. Die Anreißer kommen aus anreisser.json.
+     Die erste Fassung war genau das: ein Fenster auf die Konsole. Diese
+     hier zeigt ZAHLEN. Sie kommen aus bin/einrichten.js — je Schritt
+     eine Überschrift, ein Erklärtext, Hakenzeilen, Ergebniszahlen und,
+     solange etwas läuft, ein Balken. Die Kinderskripte melden ihre
+     Zahlen über bin/melden.js.
+
+     Kein Konsolentext auf dieser Seite: das rohe Protokoll steht hinter
+     der zweiten Registerlasche, für die Fehlersuche.
+
+     HAUSFORM (docs/haus/HAUSREGELN.md, am 13.09.2026 nachgelesen, weil
+     die erste Fassung dagegen verstieß — Caspar_D: „schau bitte nochmal
+     in die Hausregeln, wie die UI gestaltet werden muß, insbesondere
+     Registerlaschen"):
+       · Registerlaschen sind unterstrichene Reiter, kein Pillen-Klon,
+         und stehen beim Scrollen fest.
+       · Schaltflächen sind Pillen; gewählt = RAND, nicht Füllung.
+         Checkboxen gibt es im Haus nicht.
+       · Druckfeedback scale .95. Nichts unter 12 px. Dezimalkomma.
+       · Abstände als Vielfache von 10 px: halb innerhalb einer Gruppe,
+         doppelt zwischen Gruppen, dreifach zum nächsten Block.
+       · --akzent ist hier das Hausorange: im Haus ist es veränderlich
+         und bleibt grau, bis ein Lied Farbe mitbringt — in der
+         Einrichtung läuft keins.
      ============================================================= -->
 <html lang="de">
 <head>
@@ -25,218 +41,441 @@
 <title>KlangTresor wird eingerichtet</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0c0d'/%3E%3Cg transform='translate(32 32)' stroke='%23e8e8ec' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23e8e8ec'/%3E%3C/svg%3E">
 <style>
-  /* Die Farben sind die des Hauses (web/index.html :root), nicht eigene:
-     dieselbe Seite, nur ein anderer Raum. */
-  :root{--o:#f97b14;--p:#e31c79;--bg:#0c0c0d;--kar:#161618;--li:#333336;--t:#ececed;--m:#8b8b90;--g:#3fb950;--w:#d29922;--r:#e5534b}
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--t);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.6}
-  /* DER KOPF IST DER DER UEBERSICHT. Caspar_D, 13.09.2026: "die Kopfzeile
-     koenntest du jetzt aber auch ein bisschen corporate design maessiger
-     hinbauen, so wie in der Uebersicht der Header." Also dieselben Regeln
-     wie header, .kopfzeile, h1 und #markezeichen in web/index.html: klebend,
-     Glas ueber dem Grund, der Name im Verlauf Orange->Magenta, das Tresorrad
-     davor als Maske IM selben Verlauf. Wer dort etwas aendert, aendert es
-     hier mit. */
-  header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--li);padding:14px 18px}
-  .kopfzeile{display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:960px;margin:0 auto}
-  h1{font-size:19px;font-weight:700;letter-spacing:.5px;white-space:nowrap;margin:0;display:flex;align-items:center;gap:.16em;
-    background:linear-gradient(92deg,var(--o),var(--p));-webkit-background-clip:text;background-clip:text;color:transparent}
-  #markezeichen{width:1.02em;height:1.02em;flex:0 0 auto;display:block;background:linear-gradient(92deg,var(--o),var(--p));background-size:800% 100%;background-position:0 0;
-    -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;
-    mask:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Cg%20transform='translate(32%2032)'%20stroke='%23fff'%20stroke-width='4'%20stroke-linecap='round'%20fill='none'%3E%3Ccircle%20r='22'/%3E%3Cg%20transform='rotate(15)'%3E%3Cpath%20d='M-22%200H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle%20cx='32'%20cy='32'%20r='5'%20fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat}
-  .stand{margin-left:auto;font-size:12.5px;color:var(--m);white-space:nowrap}
-  .rahmen{max-width:960px;margin:18px auto;border:1px solid var(--li);border-radius:14px;overflow:hidden;background:var(--bg)}
-  .rumpf{display:grid;grid-template-columns:220px 1fr;min-height:360px}
-  @media (max-width:700px){.rumpf{grid-template-columns:1fr}.nav{border-right:0;border-bottom:1px solid var(--li)}}
-  .nav{border-right:1px solid var(--li);padding:12px 0;background:#0f0f14}
-  .st{display:flex;align-items:center;gap:9px;padding:6px 16px;font-size:12.5px;color:var(--m)}
-  .st.fertig{color:#6b6b73}
-  .st.laeuft{color:var(--t);background:#17171e;border-left:2px solid var(--o);padding-left:14px}
-  .punkt{width:13px;height:13px;border-radius:50%;border:1.5px solid #3a3a44;flex:0 0 auto;position:relative}
-  .st.fertig .punkt{border-color:var(--g);background:var(--g)}
-  .st.fertig .punkt:after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;border:solid #0c0c10;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
-  .st.laeuft .punkt{border-color:var(--o)}
-  .st.laeuft .punkt:after{content:"";position:absolute;inset:2.5px;border-radius:50%;background:var(--o);animation:puls 1.4s ease-in-out infinite}
-  @keyframes puls{50%{opacity:.35}}
-  .haupt{padding:22px 26px;min-width:0}
-  .jetzt{font-size:16px;font-weight:500;margin-bottom:6px}
-  .warum{font-size:13px;color:var(--m);line-height:1.65;max-width:60ch;min-height:2.4em}
-  .balken{height:7px;background:#1e1e26;border-radius:4px;margin:16px 0 7px;overflow:hidden}
-  .fuell{height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--o),var(--p));transition:width .4s}
-  .fuell.unbestimmt{width:30%;animation:lauf 1.6s linear infinite}
-  @keyframes lauf{0%{margin-left:-30%}100%{margin-left:100%}}
-  .zahlen{display:flex;justify-content:space-between;font-size:11.5px;color:var(--m);font-variant-numeric:tabular-nums;gap:12px}
-  .frage{margin-top:16px;border:1px solid var(--p);border-radius:10px;padding:14px 16px;background:#1a1218}
-  .frage.dialog{border-color:var(--o);background:#1a1410}
-  .frage .ft{font-size:13.5px;margin-bottom:10px;white-space:pre-wrap}
-  .knoepfe{display:flex;gap:8px;flex-wrap:wrap}
-  button{padding:8px 14px;border-radius:8px;border:1px solid var(--li);background:#1d1d24;color:var(--t);font:inherit;cursor:pointer}
-  button.vor{background:var(--p);border-color:transparent;color:#fff}
-  button:hover{filter:brightness(1.15)}
-  input[type=text]{padding:8px 10px;border-radius:8px;border:1px solid var(--li);background:#0d0d10;color:var(--t);font:inherit;min-width:220px}
-  .protokoll{margin-top:16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:#8a8a93;background:#0a0a0e;border:1px solid var(--li);border-radius:7px;padding:9px 11px;line-height:1.55;max-height:150px;overflow:auto;white-space:pre-wrap;word-break:break-word}
-  .vorbereitung .protokoll{max-height:340px}
-  .protokoll .gut{color:var(--g)}.protokoll .wink{color:var(--w)}.protokoll .boese{color:var(--r)}.protokoll .tut{color:var(--o)}.protokoll .schritt{color:var(--t)}
-  .anreisser{margin:18px 26px 20px;border:1px solid var(--li);border-radius:10px;padding:14px 16px;background:var(--kar)}
-  .al{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--p);margin-bottom:7px}
-  .ah{font-size:13.5px;font-weight:500;margin-bottom:4px}
-  .at{font-size:12.5px;color:var(--m);line-height:1.6}
-  .punkte{display:flex;gap:5px;margin-top:11px}
-  .punkte i{width:5px;height:5px;border-radius:50%;background:#33333d}
-  .punkte i.an{background:var(--p)}
-  .fuss{border-top:1px solid var(--li);padding:11px 26px;font-size:11.5px;color:#5e5e68;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  .fertig .haupt{background:radial-gradient(circle at 20% 0,#1b1215,transparent 60%)}
-  a{color:var(--o)}
-  .hin{color:var(--m);font-size:12.5px;margin-top:8px}
+  :root{
+    --bg:#0c0c0d; --flaeche:#161618; --flaeche2:#242427; --rand:#333336;
+    --text:#ececed; --schwach:#8b8b90; --akzent:#f97b14; --akzent2:#e31c79;
+    --gut:#3fb950; --wink:#d29922; --boese:#e5534b;
+    --e:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none!important}
+  body{background:var(--bg);color:var(--text);font:14px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  ::selection{background:color-mix(in srgb,var(--akzent) 40%,transparent)}
+
+  /* ---- Kopf: dieselben Regeln wie header/.kopfzeile/h1 in web/index.html ---- */
+  header{position:sticky;top:0;z-index:6;background:color-mix(in srgb,var(--bg) 86%,transparent);
+    backdrop-filter:blur(14px);border-bottom:1px solid var(--rand);padding:14px 18px}
+  .kopfzeile{display:flex;align-items:center;gap:14px;max-width:1000px;margin:0 auto}
+  h1{font-size:19px;font-weight:700;letter-spacing:.5px;white-space:nowrap;display:flex;align-items:center;gap:.16em;
+    background:linear-gradient(92deg,#f97b14,#e31c79);-webkit-background-clip:text;background-clip:text;color:transparent}
+  #markezeichen{width:1.02em;height:1.02em;flex:0 0 auto;display:block;
+    background:linear-gradient(92deg,#f97b14,#e31c79);background-size:800% 100%;background-position:0 0;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg transform='translate(32 32)' stroke='%23fff' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg transform='translate(32 32)' stroke='%23fff' stroke-width='4' stroke-linecap='round' fill='none'%3E%3Ccircle r='22'/%3E%3Cg transform='rotate(15)'%3E%3Cpath d='M-22 0H22M0-22V22'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='32' cy='32' r='5' fill='%23fff'/%3E%3C/svg%3E") center/contain no-repeat}
+  .stand{margin-left:auto;font-size:12px;color:var(--schwach);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .stand.fertig{color:var(--gut)}
+
+  .rumpf{max-width:1000px;margin:calc(var(--e)*2) auto;display:grid;grid-template-columns:270px 1fr;
+    gap:calc(var(--e)*2);padding:0 16px;align-items:start}
+  @media (max-width:760px){.rumpf{grid-template-columns:1fr}.liste{position:static}}
+
+  /* ---- Links: nur abhaken. Keine Balken (ausdrücklich). ---- */
+  .liste{display:flex;flex-direction:column;gap:calc(var(--e)/2);font-size:13px;position:sticky;top:76px}
+  .st{display:flex;align-items:center;gap:var(--e);padding:calc(var(--e)*.7) var(--e);
+    border-radius:8px;color:var(--schwach);border-left:2px solid transparent}
+  .st .h{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--rand);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1}
+  .st.fertig{color:#a0a0a6}
+  .st.fertig .h{border-color:var(--gut);background:var(--gut);color:var(--bg)}
+  .st.laeuft{color:var(--text);background:var(--flaeche);border-left-color:var(--akzent)}
+  .st.laeuft .h{border-color:var(--akzent)}
+  .st.laeuft .h:after{content:"";width:7px;height:7px;border-radius:50%;background:var(--akzent);animation:puls 1.4s ease-in-out infinite}
+  @keyframes puls{50%{opacity:.3}}
+
+  /* ---- Registerlaschen: Hausform .reg ---- */
+  .register{position:sticky;top:63px;z-index:5;display:flex;gap:calc(var(--e)/2);
+    border-bottom:1px solid var(--rand);background:var(--bg);margin-bottom:calc(var(--e)*2)}
+  .reg{background:none;border:none;border-bottom:2px solid transparent;padding:7px 14px;margin-bottom:-1px;
+    cursor:pointer;color:var(--schwach);font-size:14px;font-weight:600;font-family:inherit}
+  .reg.an{color:var(--text);border-bottom-color:var(--akzent)}
+  .reg:hover{color:var(--text)}
+  .reg:active{transform:scale(.95)}
+
+  h2{font-size:17px;font-weight:500;text-wrap:balance}
+  h2 small{display:block;font-size:12px;color:var(--schwach);font-weight:400;
+    letter-spacing:.08em;text-transform:uppercase;margin-bottom:calc(var(--e)/2)}
+  .was{color:var(--schwach);font-size:13px;max-width:64ch;margin:var(--e) 0 calc(var(--e)*2)}
+
+  /* ---- Hakenzeilen ---- */
+  .zeilen{display:flex;flex-direction:column;gap:calc(var(--e)*.8);font-size:13.5px;margin-bottom:calc(var(--e)*2)}
+  .zeilen:empty{display:none}
+  .zl{display:flex;gap:var(--e);align-items:baseline}
+  .zl .m{flex:0 0 auto;width:1em;text-align:center;font-weight:700;color:var(--gut)}
+  .zl.laeuft .m{color:var(--akzent)}
+  .zl.offen .m{color:var(--rand)}
+  .zl.wink .m{color:var(--wink)}
+  .zl .w{color:var(--schwach)}
+  .zl .t{word-break:break-word}
+
+  /* ---- Der Balken. Nur, solange etwas läuft. ---- */
+  .lauf{border:1px solid var(--rand);border-radius:10px;padding:var(--e) calc(var(--e)*1.2);
+    background:var(--flaeche);margin-bottom:calc(var(--e)*2)}
+  .lauf .kopf{display:flex;justify-content:space-between;gap:var(--e);font-size:13px;margin-bottom:calc(var(--e)*.8);flex-wrap:wrap}
+  .lauf .kopf span:last-child{color:var(--schwach);font-variant-numeric:tabular-nums}
+  .balken{height:8px;background:var(--bg);border:1px solid var(--rand);border-radius:5px;overflow:hidden}
+  .balken div{height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--akzent),var(--akzent2));transition:width .4s}
+  .balken.unbestimmt div{width:32%;animation:wandern 1.7s ease-in-out infinite}
+  @keyframes wandern{0%{margin-left:-32%}100%{margin-left:100%}}
+  .lauf .zahlen{display:flex;justify-content:space-between;gap:var(--e);margin-top:calc(var(--e)*.7);
+    font-size:12.5px;color:var(--schwach);font-variant-numeric:tabular-nums;flex-wrap:wrap}
+  .lauf .hinweis{margin-top:var(--e);font-size:12.5px;color:var(--schwach)}
+
+  /* ---- Titel, die durchlaufen ---- */
+  .titel{display:flex;flex-direction:column;gap:calc(var(--e)*.3);font-size:12.5px;color:var(--schwach);margin-top:var(--e)}
+  .titel div{display:flex;gap:var(--e)}
+  .titel div:before{content:"+";color:var(--gut)}
+  .titel b{color:var(--text);font-weight:400}
+
+  /* ---- Ergebniszahlen ---- */
+  .kacheln{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:var(--e);margin-bottom:calc(var(--e)*2)}
+  .kacheln:empty{display:none}
+  .kachel{background:var(--flaeche);border:1px solid var(--rand);border-radius:8px;padding:calc(var(--e)*.8) var(--e)}
+  .kachel small{display:block;color:var(--schwach);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  .kachel b{font-size:17px;font-weight:500;font-variant-numeric:tabular-nums}
+
+  /* ---- Fragen und Hinweise ---- */
+  .karte{border:1px solid var(--akzent2);border-radius:10px;padding:var(--e) calc(var(--e)*1.2);
+    background:color-mix(in srgb,var(--akzent2) 8%,var(--bg));margin-bottom:calc(var(--e)*2)}
+  .karte.warte{border-color:var(--akzent);background:color-mix(in srgb,var(--akzent) 8%,var(--bg))}
+  .karte .ueber{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--akzent2);margin-bottom:calc(var(--e)/2)}
+  .karte.warte .ueber{color:var(--akzent)}
+  .karte p{font-size:13.5px;margin-bottom:var(--e);white-space:pre-wrap}
+  .karte .klein{font-size:12.5px;color:var(--schwach)}
+
+  .fehlt{display:flex;flex-direction:column;gap:calc(var(--e)/2);font-size:13px;margin-bottom:calc(var(--e)*2)}
+  .fehlt div{display:flex;gap:var(--e);align-items:baseline;color:var(--schwach)}
+  .fehlt div:before{content:"·";color:var(--akzent2);font-weight:700}
+  .fehlt b{color:var(--text);font-weight:400}
+  .warum{border-left:2px solid var(--akzent2);padding-left:var(--e);margin-bottom:calc(var(--e)*2);font-size:13px;color:var(--schwach)}
+  .zitat{border:1px solid var(--rand);border-radius:8px;padding:var(--e) calc(var(--e)*1.2);
+    background:var(--flaeche);font-size:13.5px;margin-bottom:calc(var(--e)*2)}
+
+  .knoepfe{display:flex;gap:var(--e);flex-wrap:wrap;align-items:center}
+  .pille{background:var(--flaeche2);border:1px solid var(--rand);color:var(--schwach);
+    border-radius:999px;padding:6px 13px;font-size:12px;cursor:pointer;font-family:inherit}
+  .pille.an{background:color-mix(in srgb,var(--akzent) 30%,var(--flaeche2));border:2px solid var(--akzent);
+    color:var(--text);padding:5px 12px;box-shadow:0 0 10px color-mix(in srgb,var(--akzent) 45%,transparent)}
+  .pille:hover{color:var(--text)}
+  .pille:active{transform:scale(.95)}
+
+  .feld{display:flex;align-items:stretch;max-width:460px;margin-bottom:var(--e)}
+  .feld .vor{background:var(--bg);border:1px solid var(--rand);border-right:0;border-radius:8px 0 0 8px;
+    padding:8px 10px;color:var(--schwach);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;display:flex;align-items:center}
+  .feld input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--rand);background:var(--bg);color:var(--text);
+    font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;border-radius:0}
+  .feld.ohnevor input{border-radius:8px 0 0 8px}
+  .feld input:focus{outline:none;border-color:var(--akzent)}
+  .feld .pille{border-radius:0 999px 999px 0;margin-left:-1px}
+
+  /* ---- Protokoll: hinter der zweiten Lasche, nicht auf der Oberfläche ---- */
+  #protokoll{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--schwach);
+    background:var(--bg);border:1px solid var(--rand);border-radius:8px;padding:var(--e);
+    line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:70vh;overflow:auto}
+  #protokoll .gut{color:var(--gut)}#protokoll .wink{color:var(--wink)}
+  #protokoll .boese{color:var(--boese)}#protokoll .tut{color:var(--akzent)}
+  #protokoll .schritt{color:var(--text)}
+
+  footer{max-width:1000px;margin:calc(var(--e)*3) auto 0;padding:var(--e) 16px calc(var(--e)*3);
+    border-top:1px solid var(--rand);color:var(--schwach);font-size:12px;
+    display:flex;justify-content:space-between;gap:var(--e);flex-wrap:wrap}
+  a{color:var(--akzent)}
 </style>
 </head>
 <body>
 <header>
   <div class="kopfzeile">
     <h1 id="marke"><span id="markezeichen" aria-hidden="true"></span>KlangTresor</h1>
-    <div class="stand" id="unter">wird eingerichtet</div>
+    <div class="stand" id="stand">wird eingerichtet</div>
   </div>
 </header>
-<div class="rahmen" id="rahmen">
-  <div class="rumpf">
-    <div class="nav" id="nav"></div>
-    <div class="haupt">
-      <div class="jetzt" id="jetzt">Gleich geht es los …</div>
-      <div class="warum" id="warum"></div>
-      <div class="balken" id="balken" hidden><div class="fuell" id="fuell"></div></div>
-      <div class="zahlen" id="zahlen" hidden><span id="zwas"></span><span id="zrest"></span></div>
-      <div class="frage dialog" id="dialog" hidden><div class="ft" id="dt"></div><div class="hin">Siehst du es nicht? Dann liegt es hinter diesem Fenster — in der Taskleiste (Windows) oder im Dock (Mac) nachsehen. Dort wählst du den Ordner; hier geht es danach weiter.</div></div>
-      <div class="frage" id="frage" hidden><div class="ft" id="ft"></div><div class="knoepfe" id="knoepfe"></div><div class="hin" id="fhin"></div></div>
-      <div class="protokoll" id="protokoll"></div>
+
+<div class="rumpf">
+  <div class="liste" id="liste"></div>
+  <div>
+    <div class="register">
+      <button class="reg an" id="regE" type="button">Einrichtung</button>
+      <button class="reg" id="regP" type="button">Protokoll</button>
     </div>
+
+    <div id="seiteE">
+      <h2><small id="nummer">Vorbereitung</small><span id="titel">Gleich geht es los …</span></h2>
+      <div class="was" id="was"></div>
+
+      <div class="karte warte" id="dialog" hidden>
+        <span class="ueber">ein Fenster ist offen</span>
+        <p id="dialogtext"></p>
+        <p class="klein">Siehst du es nicht? Dann liegt es hinter diesem Fenster — in der Taskleiste beziehungsweise im Dock nachsehen. Dort wählst du den Ordner; hier geht es danach weiter.</p>
+      </div>
+
+      <div class="zeilen" id="zeilen"></div>
+      <div class="lauf" id="lauf" hidden>
+        <div class="kopf"><span id="laufwas"></span><span id="laufwo"></span></div>
+        <div class="balken" id="balken"><div id="fuell"></div></div>
+        <div class="zahlen"><span id="laufzahl"></span><span id="laufrest"></span></div>
+        <div class="hinweis" id="laufhinweis" hidden></div>
+        <div class="titel" id="titellauf" hidden></div>
+      </div>
+      <div class="kacheln" id="kacheln"></div>
+
+      <div class="karte warte" id="abbrechen" hidden>
+        <span class="ueber">du musst nicht warten</span>
+        <p id="abbrtext"></p>
+        <p class="klein" id="abbrklein"></p>
+        <div class="knoepfe"><button class="pille an" type="button" id="abbrknopf"></button><button class="pille" type="button" id="abbrnein">Weiter warten</button></div>
+      </div>
+
+      <div id="abschluss" hidden>
+        <div class="fehlt" id="fehlt"></div>
+        <div class="warum" id="warum"></div>
+        <div class="zitat" id="zitat"></div>
+        <div class="was" id="nachsatz"></div>
+        <div class="karte warte" id="windows" hidden>
+          <span class="ueber">gleich, nur unter Windows</span>
+          <p id="windowstext"></p>
+        </div>
+      </div>
+
+      <div class="karte" id="frage" hidden>
+        <span class="ueber" id="frageueber">Frage</span>
+        <p id="fragetext"></p>
+        <div id="fragefeld" hidden></div>
+        <div class="knoepfe" id="fragknoepfe"></div>
+        <p class="klein" id="fragehinweis" hidden></p>
+      </div>
+    </div>
+
+    <div id="seiteP" hidden><div id="protokoll"></div></div>
   </div>
-  <div class="anreisser" id="anreisser" hidden>
-    <div class="al">Was dich erwartet</div>
-    <div class="ah" id="ah"></div>
-    <div class="at" id="at"></div>
-    <div class="punkte" id="punkte"></div>
-  </div>
-  <div class="fuss"><span id="fl">Abbrechen ist erlaubt — es geht von diesem Stand weiter.</span><span id="fr"></span></div>
 </div>
 
+<footer>
+  <span id="fussl">Abbrechen ist erlaubt — beim nächsten Start geht es von diesem Stand weiter.</span>
+  <span id="fussr"></span>
+</footer>
+
 <script>
-/* Die Erklärungen je Schritt — was passiert, und warum. Hier, nicht im
-   Skript: die Konsole hat ihre eigenen Sätze, die Seite darf mehr Platz
-   haben. Nummern wie in bin/einrichten.js. */
-const WARUM = {
-  1: 'Schreibrecht, Rechte und Platz. KlangTresor schreibt nur in seinen eigenen Ordner — kein Systemordner, keine Registry, keine Administratorrechte. Erhöhte Rechte wären sogar schädlich: alles Angelegte gehörte danach dem Verwalter.',
-  2: 'Liegt hier schon ein Archiv? Dann wird ergänzt, nichts überschrieben. Und: antwortet auf Port 8788 schon ein KlangTresor, würde der Browser gleich den anderen zeigen — das wird vorher geprüft.',
-  3: 'ffmpeg ist das Werkzeug für alles, was mit Ton und Bild rechnet: Klanganalyse, Wellenformen, Videoschnitt. Unter Windows wird es geholt und in den eigenen Ordner gelegt; auf Mac und Linux ist der Paketverwalter zuständig.',
-  4: 'Die Pakete, die der Server braucht — rund zwanzig kleine Bausteine. Ein bis fünf Minuten, und zwischendurch ist es still.',
-  5: 'Zwei Werkzeuge, die später in deinem Archiv rechnen. Das eine zerlegt ein Lied in seine Spuren — Gesang, Schlagzeug, Bass, Rest —, das andere hört heraus, wonach ein Stück klingt: Genre, Stimmung, Instrumente. Beides läuft später bei dir, ohne dass ein Ton den Rechner verlässt.',
-  6: 'KlangTresor meldet sich bei Suno an wie jeder beliebige Besucher deiner Profilseite: nur lesend, ohne Passwort. Was ein Fremder sehen kann, kann es holen. Dein Suno-Name ist das, was hinter dem @ steht.',
-  7: 'Seite für Seite deine Profilseite, zwanzig Titel je Seite, eine Anfrage nach der anderen. Es kommen Titel, Liedtexte, Stilangaben, Modell, Datum, Abrufe, Herzen, Kommentare und die öffentlichen Alben. Genau das passiert von jetzt an bei jedem Abgleich.',
-  8: 'Der Ton. Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links heraus — aber du hast sie vermutlich längst. In Download- und Musikordnern wird von selbst nachgesehen; liegen sie woanders, wählst du den Ordner im Dialog. Erkannt wird am Inhalt, nie am Namen.',
-  9: 'Titelbilder und Bewegtbilder, für jeden Titel. Das dauert am längsten. Escape unterbricht — dann startet KlangTresor trotzdem, und der rote Knopf oben rechts holt später den Rest.',
-  10: 'Bis hierher war alles öffentlich. Was nur dir gehört — unveröffentlichte Titel, wer geherzt und kommentiert hat, private Alben —, holt ein Lesezeichen in Chrome, mit deiner eigenen Anmeldung. Auf deiner Platte liegt kein Schlüssel zu deinem Suno-Konto.',
-};
-const NAMEN = ['Rechte und Platz','Wo wir stehen','ffmpeg','Pakete','Klangmodelle','Dein Suno-Name','Songliste','Deine Klangdateien','Bilder','Zum Schluss'];
-
+'use strict';
 const $ = (i) => document.getElementById(i);
-const MB = (n) => (n / 1048576).toFixed(1).replace('.', ',') + ' MB';
-let start = Date.now(), letzteFrage = null, karten = [], karte = 0, letzteZeilen = 0;
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+/* Dezimalkomma und Tausenderpunkt - Hausregel 14. */
+const zahl = (n) => Number(n).toLocaleString('de-DE');
+const mb = (b) => b >= 1073741824 ? (b / 1073741824).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' GB'
+                                  : (b / 1048576).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' MB';
+const dauerText = (s) => s >= 90 ? 'noch etwa ' + Math.round(s / 60) + ' Minuten'
+                                 : 'noch etwa ' + Math.max(5, Math.round(s / 5) * 5) + ' Sekunden';
 
-function nav(schritte, gesamt){
-  const n = $('nav'); n.innerHTML = '';
-  for (let i = 1; i <= gesamt; i++){
-    const s = schritte[i-1];
-    const d = document.createElement('div');
-    d.className = 'st ' + (s ? s.zustand : '');
-    d.innerHTML = `<span class="punkt"></span><span>${NAMEN[i-1] || (s && s.name) || ''}</span>`;
-    n.appendChild(d);
-  }
+let start = Date.now(), letzteFrage = null, letztesProtokoll = 0, laschE = true;
+const tempoSpur = [];
+
+$('regE').onclick = () => { laschE = true; malenLaschen(); };
+$('regP').onclick = () => { laschE = false; malenLaschen(); };
+function malenLaschen() {
+  $('regE').classList.toggle('an', laschE); $('regP').classList.toggle('an', !laschE);
+  $('seiteE').hidden = !laschE; $('seiteP').hidden = laschE;
 }
 
-function frageZeigen(f){
-  const box = $('frage');
-  if (!f){ box.hidden = true; letzteFrage = null; return; }
-  if (letzteFrage === f.id) return;
-  letzteFrage = f.id;
-  box.hidden = false;
-  const k = $('knoepfe'); k.innerHTML = ''; $('fhin').textContent = '';
-  const senden = (wert) => { fetch('/antwort', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: f.id, wert }) }); box.hidden = true; letzteFrage = null; };
+/* ---- links: die Schritte, nur mit Haken ---- */
+function malenListe(s) {
+  const n = s.gesamt || 10;
+  const l = $('liste');
+  let html = '';
+  for (let i = 1; i <= n; i++) {
+    const sc = (s.schritte || [])[i - 1];
+    const zu = sc ? sc.zustand : '';
+    const name = sc ? (sc.kurz || sc.name) : '';
+    html += '<div class="st ' + zu + '"><span class="h">' + (zu === 'fertig' ? '✓' : '') + '</span><span>'
+          + esc(name || '…') + '</span></div>';
+  }
+  if (l.dataset.stand !== html) { l.innerHTML = html; l.dataset.stand = html; }
+}
 
-  if (f.art === 'wahl'){
-    $('ft').textContent = f.text;
-    $('fhin').textContent = f.hinweis || '';
-    for (const o of f.optionen || []){
-      const b = document.createElement('button'); b.textContent = o.label; if (o.vor) b.className = 'vor';
-      b.onclick = () => senden(o.wert); k.appendChild(b);
+/* ---- rechts: der laufende Schritt ---- */
+function malenSchritt(s) {
+  const akt = (s.schritte || [])[s.aktuell - 1];
+  if (akt) {
+    $('nummer').textContent = s.fertig ? 'Fertig' : 'Schritt ' + akt.nr + ' von ' + (s.gesamt || 10);
+    $('titel').textContent = akt.name;
+    $('was').textContent = akt.erklaerung || '';
+  } else {
+    $('nummer').textContent = 'Vorbereitung';
+    $('titel').textContent = 'Wohin KlangTresor gehört';
+    $('was').textContent = 'Gleich wird gefragt, wo KlangTresor liegen soll — und ob nicht schon ein Archiv von dir auf diesem Rechner liegt.';
+  }
+  if (s.fertig) { $('stand').textContent = 'eingerichtet'; $('stand').classList.add('fertig'); }
+  else if (akt) $('stand').textContent = 'wird eingerichtet · Schritt ' + akt.nr + ' von ' + (s.gesamt || 10);
+
+  const zz = (akt && akt.zeilen) || [];
+  const marke = { fertig: '✓', laeuft: '→', offen: '◇', wink: '!' };
+  const hz = zz.map(function (z) {
+    return '<div class="zl ' + z.art + '"><span class="m">' + (marke[z.art] || '·') + '</span>'
+      + '<span class="t">' + esc(z.text) + (z.wert ? ' <span class="w">— ' + esc(z.wert) + '</span>' : '') + '</span></div>';
+  }).join('');
+  if ($('zeilen').dataset.stand !== hz) { $('zeilen').innerHTML = hz; $('zeilen').dataset.stand = hz; }
+
+  const L = akt && akt.lauf;
+  $('lauf').hidden = !L;
+  if (L) {
+    $('laufwas').textContent = L.was || '';
+    /* Rechts oben steht, WAS gezaehlt wird - Seiten, Dateien, Titel.
+       nEinheit gehoert zu n/von, einheit zur Stueckzahl darunter. */
+    $('laufwo').textContent = L.quelle
+      || (L.n && L.von ? (L.nEinheit ? L.nEinheit + ' ' + zahl(L.n) + ' von ' + zahl(L.von)
+                                     : zahl(L.n) + ' von ' + zahl(L.von)) : '');
+    const hatMass = (L.gesamt && L.bytes != null) || (L.von && L.n != null);
+    const teil = (L.gesamt && L.bytes != null) ? L.bytes / L.gesamt : (L.von ? L.n / L.von : 0);
+    $('balken').classList.toggle('unbestimmt', !hatMass);
+    $('fuell').style.width = hatMass ? Math.max(1, Math.min(100, teil * 100)).toFixed(1) + '%' : '';
+
+    const links = [];
+    if (L.stueck != null) links.push(zahl(L.stueck) + (L.stueckVon ? ' von ' + zahl(L.stueckVon) : '') + ' ' + (L.einheit || 'Titel'));
+    else if (L.n != null && L.von) links.push((L.nEinheit ? L.nEinheit + ' ' : '') + zahl(L.n) + ' von ' + zahl(L.von) + (L.einheit && !L.nEinheit ? ' ' + L.einheit : ''));
+    if (L.bytes != null) links.push(L.gesamt ? mb(L.bytes) + ' von ' + mb(L.gesamt) : mb(L.bytes));
+    if (L.jetzt) links.push(L.jetzt);
+    $('laufzahl').textContent = links.join(' · ');
+
+    /* Tempo und Restzeit aus dem, was wirklich ankommt - nicht geraten. */
+    const wert = L.bytes != null ? L.bytes : (L.n || 0);
+    tempoSpur.push({ t: Date.now(), wert: wert });
+    while (tempoSpur.length > 12) tempoSpur.shift();
+    let rest = L.rest || '';
+    if (!rest && tempoSpur.length > 3) {
+      const a = tempoSpur[0], b = tempoSpur[tempoSpur.length - 1];
+      const proSek = (b.wert - a.wert) / Math.max(0.5, (b.t - a.t) / 1000);
+      const ziel = L.gesamt || L.von || 0;
+      if (proSek > 0 && ziel) {
+        const sek = (ziel - wert) / proSek;
+        if (sek > 3 && sek < 36000) rest = (L.bytes != null ? mb(proSek) + '/s · ' : '') + dauerText(sek);
+      }
     }
+    $('laufrest').textContent = rest;
+    $('laufhinweis').hidden = !L.hinweis; $('laufhinweis').textContent = L.hinweis || '';
+  } else { tempoSpur.length = 0; }
+
+  const tt = (akt && akt.titel) || [];
+  $('titellauf').hidden = !(L && tt.length);
+  if (L && tt.length) {
+    const h = tt.map(function (t) { return '<div><b>' + esc(t.text) + '</b>' + (t.neben ? ' · ' + esc(t.neben) : '') + '</div>'; }).join('');
+    if ($('titellauf').dataset.stand !== h) { $('titellauf').innerHTML = h; $('titellauf').dataset.stand = h; }
+  }
+
+  /* „Jetzt starten, Rest später" - der Knopf zum Abbrechen von Schritt 9. */
+  const A = akt && akt.abbrechbar;
+  $('abbrechen').hidden = !A;
+  if (A) {
+    $('abbrtext').textContent = A.text || '';
+    $('abbrklein').textContent = A.klein || '';
+    $('abbrknopf').textContent = A.knopf || 'Abbrechen';
+  }
+
+  /* Der Schluss: was nur der Mensch selbst holen kann. */
+  const AB = akt && akt.abschluss;
+  $('abschluss').hidden = !AB;
+  if (AB) {
+    const fh = (AB.fehlt || []).map(function (f) {
+      return '<div><span><b>' + esc(f[0]) + '</b>' + (f[1] ? ', ' + esc(f[1]) : '') + '</span></div>';
+    }).join('');
+    if ($('fehlt').dataset.stand !== fh) { $('fehlt').innerHTML = fh; $('fehlt').dataset.stand = fh; }
+    $('warum').textContent = AB.warum || '';
+    $('zitat').textContent = AB.zitat || '';
+    $('nachsatz').textContent = AB.nachsatz || '';
+    $('windows').hidden = !AB.windows;
+    if (AB.windows) $('windowstext').textContent = AB.windows;
+  }
+
+  const kk = (akt && akt.kacheln) || [];
+  const kh = kk.map(function (k) { return '<div class="kachel"><small>' + esc(k.name) + '</small><b>' + esc(k.wert) + '</b></div>'; }).join('');
+  if ($('kacheln').dataset.stand !== kh) { $('kacheln').innerHTML = kh; $('kacheln').dataset.stand = kh; }
+}
+
+/* ---- Fragen ---- */
+function malenFrage(f) {
+  const box = $('frage');
+  if (!f) { box.hidden = true; letzteFrage = null; return; }
+  if (letzteFrage === f.id) return;
+  letzteFrage = f.id; box.hidden = false;
+  const kn = $('fragknoepfe'); kn.innerHTML = '';
+  const fd = $('fragefeld'); fd.innerHTML = ''; fd.hidden = true;
+  $('frageueber').textContent = f.art === 'wahl' ? 'bitte wählen' : 'deine Eingabe';
+  $('fragetext').textContent = f.text || '';
+  $('fragehinweis').hidden = !f.hinweis; $('fragehinweis').textContent = f.hinweis || '';
+
+  const senden = function (wert) {
+    box.hidden = true; letzteFrage = null;
+    fetch('/antwort', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: f.id, wert: wert }) }).catch(function () {});
+  };
+
+  if (f.art === 'wahl') {
+    (f.optionen || []).forEach(function (o) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pille' + (o.vor ? ' an' : ''); b.textContent = o.label;
+      b.onclick = function () { senden(o.wert); };
+      kn.appendChild(b);
+    });
     return;
   }
-  /* Freitext: der Suno-Name. */
-  $('ft').textContent = f.text.replace(/:\s*$/, '');
-  const e = document.createElement('input'); e.type = 'text'; e.autofocus = true; e.spellcheck = false;
-  const b = document.createElement('button'); b.className = 'vor'; b.textContent = 'Weiter';
-  const los = () => senden(e.value);
-  b.onclick = los; e.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') los(); });
-  k.append(e, b); setTimeout(() => e.focus(), 50);
+
+  /* Eingabefelder. Beim Suno-Namen steht suno.com/@ fest davor, damit
+     niemand das @ oder die ganze Adresse mit eintippt. */
+  fd.hidden = false;
+  const feld = document.createElement('div');
+  feld.className = 'feld' + (f.art === 'name' ? '' : ' ohnevor');
+  if (f.art === 'name') {
+    const v = document.createElement('span'); v.className = 'vor'; v.textContent = 'suno.com/@'; feld.appendChild(v);
+  }
+  const e = document.createElement('input');
+  e.type = 'text'; e.spellcheck = false; e.autocapitalize = 'off'; e.autocomplete = 'off';
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'pille an'; b.textContent = 'Weiter';
+  const los = function () { senden(e.value); };
+  b.onclick = los;
+  e.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === 'Return') los(); });
+  feld.appendChild(e); feld.appendChild(b);
+  fd.appendChild(feld);
+  setTimeout(function () { e.focus(); }, 60);
 }
 
-function protokoll(zeilen){
-  if (zeilen.length === letzteZeilen) return;
-  letzteZeilen = zeilen.length;
+/* ---- Protokoll: hinter der Lasche ---- */
+function malenProtokoll(zeilen) {
+  if (zeilen.length === letztesProtokoll) return;
+  letztesProtokoll = zeilen.length;
   const p = $('protokoll');
-  p.innerHTML = zeilen.slice(-80).map((z) => `<div class="${z.art}">${z.art === 'gut' ? '[ok] ' : z.art === 'wink' ? '[!] ' : z.art === 'boese' ? '[x] ' : z.art === 'tut' ? '→ ' : ''}${esc(z.text)}</div>`).join('');
-  p.scrollTop = p.scrollHeight;
-}
-const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-
-function anreisserZeigen(){
-  if (!karten.length) return;
-  $('anreisser').hidden = false;
-  const k = karten[karte % karten.length];
-  $('ah').textContent = k.name; $('at').textContent = k.text;
-  $('punkte').innerHTML = karten.map((_, i) => `<i class="${i === karte % karten.length ? 'an' : ''}"></i>`).join('');
+  p.innerHTML = zeilen.slice(-400).map(function (z) { return '<div class="' + z.art + '">' + esc(z.text) + '</div>'; }).join('');
+  if (!laschE) p.scrollTop = p.scrollHeight;
 }
 
-async function tick(){
-  let s; try { s = await (await fetch('/stand', { cache: 'no-store' })).json(); }
-  catch (e) { $('fr').textContent = 'Die Einrichtung antwortet nicht mehr — das Fenster ist vermutlich zu.'; return; }
-  /* Nach dem Umzug wartet der neue Lauf auf einem anderen Port - dorthin, im selben Reiter. */
+/* ---- der Herzschlag ---- */
+async function tick() {
+  let s;
+  try { s = await (await fetch('/stand', { cache: 'no-store' })).json(); }
+  catch (e) { $('fussr').textContent = 'Die Einrichtung antwortet nicht mehr — das Fenster ist vermutlich zu.'; return; }
+
+  /* Nach einem Umzug wartet der Lauf auf einem anderen Port - dorthin,
+     im selben Reiter (sonst gingen zwei Fenster auf). */
   if (s.weiter) { location.replace(s.weiter); return; }
-  const gesamt = s.gesamt || 10;
-  nav(s.schritte || [], gesamt);
-  const akt = s.schritte && s.schritte[s.aktuell - 1];
-  if (s.fertig){
-    document.getElementById('rahmen').classList.add('fertig');
-    $('jetzt').textContent = 'Fertig. KlangTresor ist eingerichtet.';
-    $('warum').innerHTML = 'Es öffnet sich gleich im Browser — sonst: <a href="http://localhost:8788/" target="_blank">http://localhost:8788/</a>. Auf dem Schreibtisch liegt „KlangTresor" — damit startest du es künftig.';
-    $('unter').textContent = 'eingerichtet';
-  } else if (akt){
-    $('rahmen').classList.remove('vorbereitung');
-    $('jetzt').textContent = akt.name;
-    $('warum').textContent = WARUM[akt.nr] || '';
-    $('unter').textContent = `wird eingerichtet · Schritt ${akt.nr} von ${gesamt}`;
-  } else {
-    $('rahmen').classList.add('vorbereitung');
-    $('jetzt').textContent = 'Vorbereitung';
-    $('warum').textContent = 'Wohin KlangTresor soll, und zwei Sätze zu deinen Titeln und ihren Audiodateien.';
-  }
-  const f = s.fortschritt;
-  $('balken').hidden = !f; $('zahlen').hidden = !f;
-  if (f){
-    const fl = $('fuell');
-    if (f.gesamt){ fl.className = 'fuell'; fl.style.width = Math.min(100, f.bytes / f.gesamt * 100).toFixed(1) + '%'; $('zwas').textContent = `${f.was} — ${MB(f.bytes)} von ${MB(f.gesamt)}`; }
-    else { fl.className = 'fuell unbestimmt'; fl.style.width = ''; $('zwas').textContent = `${f.was} — ${MB(f.bytes)}`; }
-    $('zrest').textContent = f.rest || '';
-  }
+
+  malenListe(s);
+  malenSchritt(s);
+  malenFrage(s.frage);
   $('dialog').hidden = !s.dialog;
-  if (s.dialog) $('dt').textContent = 'Ein Auswahlfenster ist offen: „' + s.dialog + '"';
-  frageZeigen(s.frage);
-  protokoll(s.zeilen || []);
+  if (s.dialog) $('dialogtext').textContent = 'Ein Auswahlfenster ist offen: „' + s.dialog + '"';
+  malenProtokoll(s.zeilen || []);
+
+  if (s.fertig) $('fussl').textContent = 'Fertig. Du kannst dieses Fenster schließen.';
   const sek = Math.round((Date.now() - start) / 1000);
-  $('fr').textContent = `läuft seit ${Math.floor(sek / 60)}:${String(sek % 60).padStart(2, '0')}`;
+  $('fussr').textContent = 'läuft seit ' + Math.floor(sek / 60) + ':' + String(sek % 60).padStart(2, '0');
 }
 
-fetch('/anreisser.json').then((r) => r.json()).then((d) => { karten = d.karten || []; anreisserZeigen(); setInterval(() => { karte++; anreisserZeigen(); }, 14000); }).catch(() => {});
-tick(); setInterval(tick, 600);
+$('abbrknopf').onclick = function () {
+  $('abbrechen').hidden = true;
+  fetch('/abbrechen', { method: 'POST' }).catch(function () {});
+};
+$('abbrnein').onclick = function () { $('abbrechen').hidden = true; };
+
+malenLaschen();
+tick();
+setInterval(tick, 600);
 </script>
 </body>
 </html>

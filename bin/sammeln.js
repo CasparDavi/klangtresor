@@ -33,6 +33,8 @@ const fs    = require('node:fs');
 const path  = require('node:path');
 const https = require('node:https');
 const K     = require('./katalog.js');
+/* Zahlen fuer die Einrichtungsseite; ohne KT_MELDEN=1 still (bin/melden.js). */
+const melden = require('./melden.js');
 
 const WURZEL = path.join(__dirname, '..');
 
@@ -179,6 +181,13 @@ function juengsteErnte(){
     console.log(`  Seite ${String(seite).padStart(2)}: ${String(clips.length).padStart(3)} Songs`
               + (doppelt ? `, ${doppelt} doppelt` : '')
               + `  —  ${songs.size}${gesamt ? '/' + gesamt : ''}`);
+    /* Der Balken zaehlt Seiten, die Zeile darunter Titel. Die Gesamtzahl
+       nennt Suno selbst, sobald die erste Seite da ist. */
+    melden.lauf({ was: 'Profilseite wird gelesen', n: seite, von: gesamt ? Math.ceil(gesamt / 20) : null, nEinheit: 'Seite',
+      stueck: songs.size, stueckVon: gesamt || null, einheit: 'Titel',
+      hinweis: 'Eine Anfrage nach der anderen, nie hundert auf einmal — Sunos Server soll von KlangTresor keine Last haben. Deshalb dauert es.' });
+    for (const c of clips.slice(-4)) melden.titel(String(c.title || '').slice(0, 60),
+      [(c.created_at || '').slice(0, 10).split('-').reverse().join('.'), (c.play_count || 0) + ' Abrufe'].filter(Boolean).join(' · '));
 
     // page=1 ist dasselbe wie ohne Angabe; bringt eine Seite nichts
     // Neues und sind wir jenseits der ersten, ist das Ende erreicht.
@@ -279,6 +288,10 @@ function juengsteErnte(){
   console.log(`\n${liste.length} Songs${gesamt ? ' von ' + gesamt : ''} ${ausRoh ? 'aus der Ernte übernommen' : 'gesammelt'}.`);
   if (!ausRoh) console.log(`  ${path.relative(WURZEL, ziel)}  (${(fs.statSync(ziel).size/1048576).toFixed(1)} MB)`);
 
+  melden.ausLauf();
+  melden.kachel('Titel', String(liste.length));
+  melden.kachel('davon neu', String(neuIds.length));
+  melden.kachel('Liedtexte', String(liste.filter((c) => (c.metadata && c.metadata.prompt || '').trim()).length));
   console.log('\n--- Vergleich mit dem Katalog ---');
   console.log(`  bereits bekannt:  ${liste.length - neuIds.length}`);
   console.log(`  NEU:              ${neuIds.length}`);

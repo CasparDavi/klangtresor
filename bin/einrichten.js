@@ -57,7 +57,48 @@ const OHNE_BROWSER = process.argv.includes('--ohne-browser');
    uns wartet - der Fall nach dem Umzug (siehe dort). Dann geht auch kein
    zweites Browserfenster auf. */
 const SEITE_WUNSCH = (() => { const i = process.argv.indexOf('--seite'); return i >= 0 ? Number(process.argv[i + 1]) || 0 : 0; })();
-const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, weiter: null, gesamt: 10 };
+/* DER ZUSTAND IST DIE OBERFLAECHE - nicht der Konsolentext.
+
+   Jeder Schritt traegt, was die Seite von ihm zeigt: seinen Namen in der
+   Liste (kurz), die Ueberschrift und den Erklaertext rechts, seine
+   Haken-/Teilzeilen, seine Ergebniszahlen und - solange etwas laeuft -
+   einen Balken mit Zahlen. Caspar_D, 13.09.2026: "links nur abhaken,
+   keine Fortschrittsbalken; die Balken nur, solange etwas laeuft."
+
+   ZUSTAND.zeilen bleibt daneben bestehen: das ist das rohe Protokoll,
+   das auf der Seite nur noch hinter der Registerlasche "Protokoll"
+   steht - fuer die Fehlersuche, nicht als Oberflaeche. */
+const ZUSTAND = { schritte: [], aktuell: 0, zeilen: [], fortschritt: null, frage: null, dialog: null, fertig: false, adresse: null, weiter: null, gesamt: 10, dauer: null };
+const SYS = process.platform === 'win32' ? 'win' : process.platform === 'darwin' ? 'mac' : 'linux';
+const jetztSchritt = () => ZUSTAND.schritte[ZUSTAND.aktuell - 1] || null;
+/* „Du musst nicht warten." Schritt 9 laesst sich abbrechen - bisher nur
+   mit Escape im Fenster. Caspar_D wollte es als Knopf; ausserdem gibt es
+   kein Escape, wenn die Einrichtung ohne Terminal laeuft. Die Seite
+   setzt diesen Wunsch ueber POST /abbrechen. */
+let ABBRUCHWUNSCH = false;
+
+/* Eine Haken- oder Teilzeile im laufenden Schritt. Gleiche id = dieselbe
+   Zeile, sie wird fortgeschrieben (aus "wird durchgesehen" wird "1.146
+   Dateien, 48 von Suno"). */
+function zeile(id, text, wert, art) {
+  const s = jetztSchritt(); if (!s) return;
+  const alt = s.zeilen.find((z) => z.id === id);
+  if (alt) { alt.text = text; if (wert !== undefined) alt.wert = wert; if (art) alt.art = art; return; }
+  s.zeilen.push({ id, text, wert: wert === undefined ? null : wert, art: art || 'fertig' });
+}
+/* Eine Ergebniszahl. Gleiche Bezeichnung = derselbe Kasten. */
+function kachel(name, wert) {
+  const s = jetztSchritt(); if (!s) return;
+  const alt = s.kacheln.find((k) => k.name === name);
+  if (alt) alt.wert = wert; else s.kacheln.push({ name, wert });
+}
+/* Der Balken. null loescht ihn - er steht nur, solange etwas laeuft. */
+function lauf(o) { const s = jetztSchritt(); if (s) s.lauf = o || null; ZUSTAND.fortschritt = o || null; }
+/* Ein Titel, der durchlaeuft (Schritt 7). Die letzten sechs genuegen. */
+function titelZeigen(text, neben) {
+  const s = jetztSchritt(); if (!s) return;
+  s.titel.unshift({ text, neben }); if (s.titel.length > 6) s.titel.length = 6;
+}
 const ohneFarbe = (s) => String(s).replace(/\x1b\[[0-9;]*m/g, '');
 function merken(art, text) {
   ZUSTAND.zeilen.push({ art, text: ohneFarbe(text).replace(/^\s{5}/, ''), t: Date.now() });
@@ -99,13 +140,27 @@ const tut = (t) => { schreib('     ' + MARKE('->  ') + '  ' + t); merken('tut', 
 
 let SCHRITT = 0;
 const SCHRITTE = 10;
-function schritt(t) {
+/* Die Liste links steht von Anfang an da - man soll sehen, was kommt,
+   nicht erst, was schon war. Die Namen hier sind dieselben, die
+   schritt() spaeter als "kurz" setzt. */
+const KURZ = ['Ordner prüfen', 'Was ist schon da?', 'ffmpeg', 'Pakete', 'KI-Modelle',
+              'Dein Suno-Name', 'Songliste', 'Deine Suno-Dateien', 'Bilder', 'Zum Schluss'];
+KURZ.forEach((k, i) => { ZUSTAND.schritte[i] = { nr: i + 1, kurz: k, name: k, erklaerung: '', zustand: '', zeilen: [], kacheln: [], titel: [], lauf: null }; });
+/* kurz  - wie der Schritt in der Liste links heisst
+   titel - die Ueberschrift rechts, in ganzen Worten
+   erklaerung - was hier geschieht und warum; steht nur auf der Seite,
+                die Konsole hat ihre eigenen, kuerzeren Saetze.
+   Beide Texte stehen HIER, nicht in der Seite: dann gibt es sie genau
+   einmal, und sie koennen sagen, was auf DIESEM System gilt. */
+function schritt(kurz, titel, erklaerung) {
   SCHRITT++;
   leer();
-  schreib('  ' + AKZENT(`[${SCHRITT}/${SCHRITTE}]`) + ' ' + HELL(t));
-  merken('schritt', `[${SCHRITT}/${SCHRITTE}] ${t}`);
-  if (ZUSTAND.schritte[SCHRITT - 2]) ZUSTAND.schritte[SCHRITT - 2].zustand = 'fertig';
-  ZUSTAND.schritte[SCHRITT - 1] = { nr: SCHRITT, name: t, zustand: 'laeuft' };
+  schreib('  ' + AKZENT(`[${SCHRITT}/${SCHRITTE}]`) + ' ' + HELL(titel || kurz));
+  merken('schritt', `[${SCHRITT}/${SCHRITTE}] ${titel || kurz}`);
+  if (ZUSTAND.schritte[SCHRITT - 2]) { const v = ZUSTAND.schritte[SCHRITT - 2]; v.zustand = 'fertig'; v.lauf = null; }
+  ZUSTAND.schritte[SCHRITT - 1] = Object.assign(ZUSTAND.schritte[SCHRITT - 1] || {},
+    { nr: SCHRITT, kurz, name: titel || kurz, erklaerung: erklaerung || '',
+      zustand: 'laeuft', zeilen: [], kacheln: [], titel: [], lauf: null });
   ZUSTAND.aktuell = SCHRITT;
   ZUSTAND.fortschritt = null;
 }
@@ -264,7 +319,7 @@ function holen(url, ziel, was, tiefe = 0) {
         }
         const teil = ganz ? ` von ${MB(ganz)} (${Math.round(summe / ganz * 100)} %)` : '';
         const zeile = `     ${MARKE('->  ')}  ${was} … ${MB(summe)}${teil}${rest}`;
-        ZUSTAND.fortschritt = { was, bytes: summe, gesamt: ganz || null, rest: rest.replace(/^, /, '') };
+        lauf({ was, bytes: summe, gesamt: ganz || null, rest: rest.replace(/^, /, '') });
         /* Auf dem Schirm überschreibt sich die Zeile. In einer Datei täte
            sie das nicht - dort hinge jede Zwischenmeldung an der vorigen
            und das Protokoll wäre unlesbar (gesehen am 11.09.2026). */
@@ -275,7 +330,7 @@ function holen(url, ziel, was, tiefe = 0) {
       datei.on('finish', () => {
         clearInterval(wacht); datei.close();
         if (BUNT) process.stdout.write('\r' + ' '.repeat(78) + '\r');
-        ZUSTAND.fortschritt = null;
+        lauf(null);
         gut(`${was} geholt (${MB(summe)})`);
         fertig(true);
       });
@@ -347,53 +402,118 @@ function einenOrdnerHeben(von, nach) {
    Danach kommt keine Frage mehr, ein verirrtes Escape-Byte stoert
    also niemanden. */
 function laeuftAbbrechbar(befehl, argumente) {
-  const { spawn } = require('node:child_process');
+  /* EIN WEG FUER BEIDE. Vorher gab es zwei: mit Terminal wurde die
+     Ausgabe des Kindes durchgereicht (stdio 'inherit'), ohne Terminal
+     mitgelesen. Das war falsch, sobald die Kinder Zahlen melden: mit
+     durchgereichter Ausgabe staenden die Meldezeilen (@@KT ...) roh im
+     Fenster - und die Seite bekaeme trotzdem keinen Balken.
+
+     Jetzt laeuft immer laeuft(): Ausgabe mitgelesen, Meldezeilen
+     herausgefischt, Konsole sauber. Abgebrochen wird auf zwei Wegen -
+     Escape im Fenster (nur mit Terminal) und der Knopf auf der Seite
+     (immer). Beide beenden dasselbe Kind. */
   const stdin = process.stdin;
-  if (!stdin.isTTY || typeof stdin.setRawMode !== 'function') {
-    return laeuft(befehl, argumente).then((ok) => ({ ok, abgebrochen: false }));
-  }
-  return new Promise((fertig) => {
-    const kind = spawn(befehl, argumente, { stdio: 'inherit' });
-    let abgebrochen = false, zu = false;
-    const horcher = (b) => {
-      for (const x of b) if (x === 0x1b || x === 0x03) {
-        abgebrochen = true;
-        try { kind.kill(); } catch (e) {}
-        if (process.platform === 'win32') {
-          try { spawnSync('taskkill', ['/PID', String(kind.pid), '/T', '/F'], { stdio: 'ignore' }); } catch (e) {}
-        }
-        return;
+  ABBRUCHWUNSCH = false;
+  const amFenster = stdin.isTTY && typeof stdin.setRawMode === 'function';
+  let abgebrochen = false, zu = false;
+
+  const beenden = () => {
+    abgebrochen = true;
+    for (const k of KINDER) {
+      /* Die ganze Gruppe, nicht nur den Mittelsmann - siehe laeuft(). */
+      if (k.eigeneGruppe) { try { process.kill(-k.pid, 'SIGTERM'); } catch (e) {} }
+      try { k.kill(); } catch (e) {}
+      if (process.platform === 'win32') {
+        try { spawnSync('taskkill', ['/PID', String(k.pid), '/T', '/F'], { stdio: 'ignore' }); } catch (e) {}
       }
-    };
-    const aufraeumen = () => {
-      if (zu) return; zu = true;
-      try { stdin.removeListener('data', horcher); stdin.setRawMode(false); stdin.pause(); } catch (e) {}
-    };
-    try { stdin.setRawMode(true); stdin.resume(); stdin.on('data', horcher); } catch (e) {}
-    kind.on('error', () => { aufraeumen(); fertig({ ok: false, abgebrochen }); });
-    kind.on('close', (code) => { aufraeumen(); fertig({ ok: code === 0 && !abgebrochen, abgebrochen }); });
-  });
+    }
+  };
+  const horcher = (b) => { for (const x of b) if (x === 0x1b || x === 0x03) { beenden(); return; } };
+  const wache = setInterval(() => { if (ABBRUCHWUNSCH && !zu) beenden(); }, 400);
+  const aufraeumen = () => {
+    if (zu) return; zu = true;
+    clearInterval(wache);
+    if (amFenster) { try { stdin.removeListener('data', horcher); stdin.setRawMode(false); stdin.pause(); } catch (e) {} }
+  };
+  if (amFenster) { try { stdin.setRawMode(true); stdin.resume(); stdin.on('data', horcher); } catch (e) {} }
+
+  return laeuft(befehl, argumente, { gruppe: true }).then((ok) => {
+    aufraeumen();
+    return { ok: ok && !abgebrochen, abgebrochen };
+  }, () => { aufraeumen(); return { ok: false, abgebrochen }; });
 }
+
+/* Was ein Kind gemeldet hat, in den Zustand legen. Fehlerhafte Zeilen
+   werden still verworfen - eine kaputte Meldung darf die Einrichtung
+   nicht anhalten. */
+function meldungAnnehmen(roh) {
+  let m; try { m = JSON.parse(roh); } catch (e) { return; }
+  if (!m || typeof m !== 'object') return;
+  if ('lauf' in m) lauf(m.lauf);
+  if (m.zeile) zeile(m.zeile.id, m.zeile.text, m.zeile.wert, m.zeile.art);
+  if (m.kachel) kachel(m.kachel.name, m.kachel.wert);
+  if (m.titel) titelZeigen(m.titel.text, m.titel.neben);
+}
+
+/* Alle laufenden Kinder - fuer den Abbruchwunsch von der Seite. */
+const KINDER = new Set();
 
 /* Asynchron und mitgelesen: die Ausgabe der Kinder (npm, Modelle, sammeln)
    geht weiter auf die Konsole und ausserdem zeilenweise in den Zustand. */
-function laeuft(befehl, argumente) {
+function laeuft(befehl, argumente, optionen) {
   const brauchtSchale = process.platform === 'win32' && !path.isAbsolute(befehl);
+  /* EIGENE PROZESSGRUPPE, wenn abgebrochen werden koennen soll.
+
+     Schritt 9 startet bin/wiederherstellen.js, und DAS startet seine
+     drei Teilschritte mit spawnSync. Ein SIGTERM an den Mittelsmann
+     kommt dort erst an, wenn spawnSync zurueckkehrt - also erst, wenn
+     das Laden von selbst fertig ist. Der Abbruch wirkte deshalb nicht
+     (13.09.2026 im Probelauf gemessen: „abbrechen" blieb sechs Sekunden
+     wirkungslos und danach auch).
+
+     Mit detached bekommt der Mittelsmann eine eigene Gruppe, und
+     process.kill(-pid) trifft ihn UND seine Enkel. Unter Windows tut das
+     schon taskkill /T. */
+  const eigeneGruppe = !!(optionen && optionen.gruppe) && process.platform !== 'win32';
   return new Promise((fertig) => {
     const { spawn } = require('node:child_process');
-    const kind = spawn(befehl, argumente, { stdio: ['inherit', 'pipe', 'pipe'], shell: brauchtSchale });
+    /* KT_MELDEN=1: die Kinder duerfen Zahlen melden (bin/melden.js).
+       Ohne das schweigen sie - fuer den Morgenlauf aendert sich nichts. */
+    const kind = spawn(befehl, argumente, { stdio: ['inherit', 'pipe', 'pipe'], shell: brauchtSchale,
+      detached: eigeneGruppe,
+      env: Object.assign({}, process.env, { KT_MELDEN: '1' }) });
+    kind.eigeneGruppe = eigeneGruppe;
     let restAus = '', restErr = '';
-    const zeilenweise = (s, quelle) => {
-      process.stdout.write(s);
-      const puffer = (quelle === 'err' ? restErr : restAus) + String(s).replace(/\r/g, '\n');
-      const teile = puffer.split('\n'); const rest = teile.pop();
-      if (quelle === 'err') restErr = rest; else restAus = rest;
-      for (const z of teile) if (z.trim()) merken('kind', z);
+    /* Zeichen fuer Zeichen durchgereicht, nur die Meldezeilen bleiben
+       haengen. Wichtig: der Wagenruecklauf (\r) geht MIT durch - davon
+       leben die sich selbst ueberschreibenden Fortschrittszeilen der
+       Kinder.
+
+       Die Marke wird UEBERALL in der Zeile gesucht, nicht nur am Anfang:
+       ein Kind, das gerade eine Fortschrittszeile ohne Zeilenende
+       geschrieben hat, haengt seine Meldung hinten an dieselbe Zeile.
+       Beim ersten Versuch stand sie deshalb auf der Konsole (13.09.2026,
+       gleich in der ersten Probe aufgefallen). */
+    const zeilenweise = (stueck, quelle) => {
+      let puffer = (quelle === 'err' ? restErr : restAus) + String(stueck);
+      let fuerDieKonsole = '', i;
+      while ((i = puffer.search(/[\n\r]/)) >= 0) {
+        const trenner = puffer[i];
+        let z = puffer.slice(0, i);
+        puffer = puffer.slice(i + 1);
+        const p = z.indexOf('@@KT ');
+        if (p >= 0) { meldungAnnehmen(z.slice(p + 5)); z = z.slice(0, p); if (!z) continue; }
+        fuerDieKonsole += z + trenner;
+        if (z.trim()) merken('kind', z);
+      }
+      if (quelle === 'err') restErr = puffer; else restAus = puffer;
+      if (fuerDieKonsole) process.stdout.write(fuerDieKonsole);
     };
     kind.stdout.on('data', (s) => zeilenweise(s, 'aus'));
     kind.stderr.on('data', (s) => zeilenweise(s, 'err'));
-    kind.on('error', () => fertig(false));
-    kind.on('close', (code) => fertig(code === 0));
+    KINDER.add(kind);
+    kind.on('error', () => { KINDER.delete(kind); lauf(null); fertig(false); });
+    kind.on('close', (code) => { KINDER.delete(kind); lauf(null); fertig(code === 0); });
   });
 }
 
@@ -544,6 +664,14 @@ function ausLager(name, ziel) {
   } catch (e) { return false; }
 }
 
+/* Liegt es schon im Zwischenlager dieses Rechners? Nur nachsehen, nicht
+   kopieren - Schritt 2 will es wissen, bevor irgendetwas geholt wird. */
+function lagerHat(name) {
+  const lager = lagerOrdner();
+  if (!lager) return false;
+  try { const p = path.join(lager, name); return fs.existsSync(p) && fs.readdirSync(p).length > 0; } catch (e) { return false; }
+}
+
 /* Ins Lager legen. Fehler sind hier belanglos - es ist nur Bequemlichkeit. */
 function insLager(name, quelle) {
   const lager = lagerOrdner();
@@ -678,6 +806,7 @@ open -a Terminal ${JSON.stringify(starter)}
      web/einrichtung/index.html, den Zustand als JSON, nimmt Antworten
      entgegen und oeffnet auf Wunsch den Ordnerdialog des Systems. Geht
      kein Browser auf, laeuft die Konsole wie immer weiter. */
+  let SEITENSERVER = null;
   if (!NUR_TEXT) {
     const http = require('node:http');
     const SEITE = path.join(WURZEL, 'web', 'einrichtung');
@@ -694,6 +823,11 @@ open -a Terminal ${JSON.stringify(starter)}
           const ok = antwortVonSeite(d.id, d.wert);
           if (ok) schreib(HELL(String(d.wert == null ? '' : d.wert)) + MATT('   (aus der Seite)'));
           return antwort(res, 200, 'application/json', JSON.stringify({ ok }));
+        }
+        if (u.pathname === '/abbrechen' && req.method === 'POST') {
+          ABBRUCHWUNSCH = true;
+          schreib(HELL('     Abbrechen — von der Seite aus.'));
+          return antwort(res, 200, 'application/json', JSON.stringify({ ok: true }));
         }
         if (u.pathname === '/ordner' && req.method === 'POST') {
           let d = {}; try { d = JSON.parse(await rumpf(req) || '{}'); } catch (e) {}
@@ -715,7 +849,11 @@ open -a Terminal ${JSON.stringify(starter)}
       const inChrome = (OHNE_BROWSER || seiteWartet) ? false : seiteAufmachen(ZUSTAND.adresse);
       matt(`Die Einrichtung läuft auch als Seite: ${ZUSTAND.adresse}` + (inChrome ? ' (Chrome)' : ''));
       matt('Hier im Fenster siehst du dasselbe — und hier kannst du auch antworten.');
+      /* unref: die Seite haelt die Einrichtung nicht am Leben. Sie endet,
+         wenn die Arbeit endet - danach laeuft der KlangTresor-Server
+         weiter, und die Seite ist ohnehin nicht mehr gemeint. */
       srv.unref();
+      SEITENSERVER = srv;
     }
   }
 
@@ -1105,7 +1243,10 @@ open -a Terminal ${JSON.stringify(starter)}
   }
 
   /* ================================================================ */
-  schritt('Rechte und Platz prüfen');
+  schritt('Ordner prüfen', 'Ordner prüfen: Schreibrecht, keine Verwalterrechte, Platz',
+    `Geprüft wird ${WURZEL}. KlangTresor schreibt nur in diesen Ordner — kein Systemordner, ` +
+    'keine Registry, keine Administratorrechte. Erhöhte Rechte wären sogar schädlich: Alles ' +
+    'Angelegte gehörte danach dem Verwalter, und du kämst an dein eigenes Archiv nicht mehr heran.');
 
   if (!darfSchreiben(WURZEL)) {
     boese('In diesen Ordner darf ich nicht schreiben.');
@@ -1117,6 +1258,7 @@ open -a Terminal ${JSON.stringify(starter)}
     leer(); schluss(1);
   }
   gut('Schreibrecht im Projektordner: ja.');
+  zeile('schreiben', 'Schreibrecht', 'ja');
 
   if (imSystemordner(WURZEL)) {
     wink('Dieser Ordner liegt in einem Systembereich.');
@@ -1137,6 +1279,7 @@ open -a Terminal ${JSON.stringify(starter)}
     if (!await jaNein('Trotzdem so weitermachen?', 'n')) { wiederkommen(); schluss(0); }
   } else {
     gut('Keine erhöhten Rechte nötig — und es laufen auch keine.');
+    zeile('rechte', 'Keine erhöhten Rechte', 'es laufen auch keine');
   }
 
   /* Platz: rund 500 MB fuer Werkzeuge, Pakete und Modelle. Das ARCHIV
@@ -1146,12 +1289,14 @@ open -a Terminal ${JSON.stringify(starter)}
   if (platz === null) {
     matt('Freien Platz konnte ich nicht ermitteln — ich mache weiter.');
   } else if (platz < 1073741824) {
-    boese(`Hier sind nur ${MB(platz)} frei. Für die Einrichtung braucht es rund 500 MB,`);
+    boese(`Hier sind nur ${MB(platz)} frei. Für die Einrichtung braucht es rund 1 GB,`);
+    zeile('platz', 'Platz', `nur ${MB(platz)} frei — gebraucht wird rund 1 GB`, 'wink');
     matt('und das Archiv kommt danach erst noch dazu.');
     leer();
     if (!await jaNein('Trotzdem versuchen?', 'n')) { wiederkommen(); schluss(0); }
   } else {
-    gut(`Platz: ${(platz / 1073741824).toFixed(1)} GB frei — die Einrichtung braucht rund 500 MB.`);
+    gut(`Platz: ${(platz / 1073741824).toFixed(1)} GB frei — die Einrichtung braucht rund 1 GB.`);
+    zeile('platz', 'Platz', `${(platz / 1073741824).toFixed(1).replace('.', ',')} GB frei, die Einrichtung braucht rund 1 GB`);
   }
 
   /* Ein Projekt auf einer Netzwerkfreigabe ist unter Windows heikel:
@@ -1174,7 +1319,9 @@ open -a Terminal ${JSON.stringify(starter)}
   }
 
   /* ================================================================ */
-  schritt('Nachsehen, wo wir stehen');
+  schritt('Was ist schon da?', 'Was wird gebraucht, was ist schon da? Archiv, Werkzeuge, KI-Modelle',
+    `${WURZEL} zeigt folgendes. Nichts wird doppelt geholt und nichts überschrieben: Was fehlt, ` +
+    'wird in den nächsten Schritten geholt — ich sage genau, worum es sich handelt.');
 
   for (const n of ['package.json', 'bin', 'server', 'web']) {
     if (!fs.existsSync(path.join(WURZEL, n))) {
@@ -1195,8 +1342,7 @@ open -a Terminal ${JSON.stringify(starter)}
   if (katalogDa || songs > 0) {
     gut(`Hier liegt ein KlangTresor-Archiv: ${songs} Songs.`);
     matt('Es wird ergänzt, nichts überschrieben.');
-    leer();
-    if (!await jaNein('Weiter?')) { wiederkommen(); schluss(0); }
+    zeile('archiv', 'KlangTresor-Archiv', `${songs} Titel sind da, nur Änderungen werden ergänzt`);
   } else {
     /* Caspar_D, 24.08.2026: „Hier kann wirklich am meisten schief gehen."
        Wer den ausgepackten Ordner NEBEN das Archiv legt und dort startet,
@@ -1220,12 +1366,37 @@ open -a Terminal ${JSON.stringify(starter)}
       matt('Fängst du hier neu an, wird alles neu geladen — und zurück kommen');
       matt('Titelbilder und Bewegtbilder, aber keine WAV und keine Instrumentspuren.');
       leer();
+      zeile('archiv', 'KlangTresor-Archiv', 'keins hier — aber eines nebenan: ' + nachbar, 'wink');
       if (!await jaNein('Trotzdem hier neu anfangen?', 'n')) { wiederkommen(); schluss(0); }
     } else {
       gut('Hier ist noch kein KlangTresor-Archiv. Ich lege eines an.');
-      leer();
-      if (!await jaNein('Weiter?')) { wiederkommen(); schluss(0); }
+      zeile('archiv', 'KlangTresor-Archiv', 'noch keins — es wird angelegt', 'laeuft');
     }
+  }
+
+  /* DIE BESTANDSAUFNAHME. Was die Schritte 3 bis 5 holen wuerden, wird
+     hier schon einmal nachgesehen und benannt - mit Groessen, damit man
+     vorher weiss, worauf man wartet. Geholt wird weiter dort. */
+  {
+    const ffDa = fs.existsSync(path.join(WERKZEUG, 'ffmpeg', 'bin', process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg')) || !!da('ffmpeg');
+    const ffLager = !ffDa && lagerHat('ffmpeg');
+    if (ffDa) zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'ist da');
+    else if (ffLager) zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'liegt auf diesem Rechner, wird kopiert', 'laeuft');
+    else if (process.platform === 'win32') zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'fehlt, wird geholt (rund 100 MB)', 'laeuft');
+    else zeile('ffmpeg', 'ffmpeg zur Medienbearbeitung', 'fehlt — der Paketverwalter holt es, ein Befehl', 'wink');
+
+    const paketeDa = fs.existsSync(path.join(WURZEL, 'node_modules', 'onnxruntime-node'));
+    zeile('pakete', 'Pakete: Programmbausteine des Servers', paketeDa ? 'sind da' : 'fehlen, werden geholt (19 Pakete, rund 240 MB)', paketeDa ? 'fertig' : 'laeuft');
+
+    let mDa = 0; try { mDa = fs.readdirSync(path.join(WURZEL, 'library', 'modelle')).filter((f) => !f.startsWith('.')).length; } catch (e) {}
+    const mLager = !mDa && lagerHat('modelle');
+    if (mDa >= 11) zeile('modelle', 'KI-Modelle zur Klanganalyse und Stemtrennung', '11 von 11 sind da');
+    else if (mLager) zeile('modelle', 'KI-Modelle zur Klanganalyse und Stemtrennung', 'liegen auf diesem Rechner, werden kopiert (rund 560 MB)', 'laeuft');
+    else zeile('modelle', 'KI-Modelle zur Klanganalyse und Stemtrennung', `${mDa} von 11 — der Rest wird geholt (rund 560 MB)`, 'laeuft');
+
+    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= 11 || mLager ? 0 : 560);
+    if (zuHolen) zeile('summe', 'Zu holen', `rund ${zuHolen} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung`, 'laeuft');
+    else zeile('summe', 'Zu holen', 'nichts — alles liegt schon hier');
   }
 
   if (await jemandAufPort(8788)) {
@@ -1234,11 +1405,21 @@ open -a Terminal ${JSON.stringify(starter)}
     matt('Solange der läuft, kann dieser hier nicht starten — und der Browser');
     matt('würde den anderen zeigen. Erst dort das Fenster mit Strg-C beenden.');
     leer();
+    zeile('port', 'Port 8788 für den Server', 'belegt — dort antwortet schon ein KlangTresor', 'wink');
     if (!await jaNein('Trotzdem weitermachen?', 'n')) { wiederkommen(); schluss(0); }
-  }
+  } else zeile('port', 'Port 8788 für den Server, der KlangTresor im Browser zeigt', 'frei');
 
   /* ================================================================ */
-  schritt('ffmpeg bereitstellen');
+  schritt('ffmpeg',
+    process.platform === 'win32'
+      ? 'Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft, ggf. wird das Paket geladen'
+      : 'Lokale Medienverarbeitung mit ffmpeg: Lokale Verfügbarkeit wird geprüft',
+    'ffmpeg arbeitet mit den Ton- und Bilddaten: Klanganalyse, Wellenformen, Videoschnitt. ' +
+    (process.platform === 'win32'
+      ? `Es wird geholt und nach ${path.join(WERKZEUG, 'ffmpeg')} gelegt.`
+      : process.platform === 'darwin'
+        ? 'Auf dem Mac ist dafür der Paketverwalter zuständig — ein Befehl im Terminal, und es gilt für den ganzen Rechner.'
+        : 'Unter Linux ist dafür der Paketverwalter zuständig — ein Befehl, und es gilt für den ganzen Rechner.'));
   matt('Für Klanganalyse, Wellenformen und den Videoschnitt.');
 
   const ffEigen = path.join(WERKZEUG, 'ffmpeg', 'bin',
@@ -1249,10 +1430,12 @@ open -a Terminal ${JSON.stringify(starter)}
   let ffmpeg = fs.existsSync(ffEigen) ? ffEigen : da('ffmpeg');
   if (ffmpeg) {
     gut(`ffmpeg ist da: ${ffmpeg}`);
+    zeile('ffmpeg', 'ffmpeg', ffmpeg.startsWith(WERKZEUG) ? 'liegt in werkzeug/ffmpeg' : 'auf diesem Rechner vorhanden');
   } else if (process.platform !== 'win32') {
     /* Auf Mac und Linux gibt es einen Paketverwalter, der es besser kann
        als ein Download an ihm vorbei. */
     wink('ffmpeg fehlt.');
+    zeile('ffmpeg', 'ffmpeg', 'fehlt — ein Befehl im Terminal holt es', 'wink');
     matt(process.platform === 'darwin' ? '  brew install ffmpeg' : '  sudo apt install ffmpeg');
     matt('Danach dieses Einrichten noch einmal starten — es macht hier weiter.');
   } else {
@@ -1270,6 +1453,7 @@ open -a Terminal ${JSON.stringify(starter)}
           try { fs.rmSync(zip, { force: true }); } catch (e) {}
           if (fs.existsSync(ffEigen)) {
             ffmpeg = ffEigen; gut('ffmpeg liegt jetzt in werkzeug/ffmpeg.');
+            zeile('ffmpeg', 'ffmpeg', 'geholt und abgelegt in werkzeug/ffmpeg');
             insLager('ffmpeg', path.join(WERKZEUG, 'ffmpeg'));
           }
         }
@@ -1293,7 +1477,10 @@ open -a Terminal ${JSON.stringify(starter)}
   }
 
   /* ================================================================ */
-  schritt('Pakete holen (npm install)');
+  schritt('Pakete', 'Programmbausteine des Servers: 19 Pakete werden geladen und eingerichtet',
+    'Fertige Bausteine, die KlangTresor benutzt statt sie selbst zu bauen: der Rechenkern für die ' +
+    'Klangmodelle, die Karte des Klangraums, Matrixrechnung. Sie liegen nicht im Paket, weil sie für ' +
+    `jedes System eigens gebaut werden — deshalb werden sie jetzt geholt, nach ${path.join(WURZEL, 'node_modules')}.`);
   matt('Ein bis fünf Minuten, und zwischendurch ist es still.');
   /* NPM OHNE EINGABEAUFFORDERUNG AUFRUFEN.
 
@@ -1355,21 +1542,59 @@ open -a Terminal ${JSON.stringify(starter)}
      wurde als „Pakete sind da." gemeldet, und der naechste Schritt lief in
      einen Server ohne Pakete. Gefunden am 13.09.2026 beim Durchgehen der
      Texte, nicht durch einen Fehlschlag. */
-  if (!await npmLaufen(['install', '--no-fund', '--no-audit'])) {
-    const w = await wieWeiter('npm install', 'Ohne die Pakete startet der Server nicht.');
-    if (w !== 'ueber') { wiederkommen(); schluss(1); }
-  } else gut('Pakete sind da.');
+  /* NPM SAGT NICHTS BRAUCHBARES - ALSO MESSEN WIR SELBST.
+     Alle halbe Sekunde nachsehen, wie viele Pakete schon liegen und wie
+     gross node_modules geworden ist. 19 Pakete und rund 240 MB sind die
+     Sollwerte aus package-lock.json (gemessen 13.09.2026). Das ist ein
+     echter Balken, kein geschaetzter. */
+  const NM = path.join(WURZEL, 'node_modules');
+  const paketBlick = setInterval(() => {
+    let zahl = 0, bytes = 0;
+    try {
+      for (const d of fs.readdirSync(NM)) {
+        if (d.startsWith('.')) continue;
+        zahl++;
+        try { for (const f of fs.readdirSync(path.join(NM, d), { recursive: true, withFileTypes: true })) {
+          if (f.isFile()) { try { bytes += fs.statSync(path.join(f.parentPath || f.path, f.name)).size; } catch (e) {} }
+        } } catch (e) {}
+      }
+    } catch (e) {}
+    lauf({ was: 'Pakete werden geladen und eingerichtet', n: zahl, von: 19, bytes, gesamt: 240 * 1048576,
+      hinweis: 'Zwischendurch ist es still: Manche Bausteine holen nach dem Laden noch eigene Teile nach. Das dauert, sieht aber nur nach Stillstand aus.' });
+  }, 3000);
+  const paketeGut = await npmLaufen(['install', '--no-fund', '--no-audit']);
+  clearInterval(paketBlick); lauf(null);
+  if (!paketeGut) {
+    /* Kein „ueberspringen" hier: ohne die Pakete startet der Server
+       nicht, die Wahl fuehrte also in eine Sackgasse. */
+    zeile('pakete', 'Pakete', 'konnten nicht geholt werden', 'wink');
+    wink('Die Pakete konnten nicht geholt werden.');
+    matt('Ohne sie startet der Server nicht — dieser Schritt ist der einzige,');
+    matt('der sich nicht überspringen lässt. Meist hilft: noch einmal versuchen.');
+    matt('Bleibt es dabei, blockiert oft ein Firmennetz oder ein Virenschutz den');
+    matt('Zugang zu registry.npmjs.org.');
+    leer();
+    if (await jaNein('Noch einmal versuchen?')) {
+      if (!await npmLaufen(['install', '--no-fund', '--no-audit'])) { wiederkommen(); schluss(1); }
+      gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt');
+    } else { wiederkommen(); schluss(1); }
+  } else { gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt'); }
 
   /* ================================================================ */
-  schritt('KI-Modelle holen (rund 550 MB)');
-  matt('Stemtrennung und Musikstil. Klappt das nicht, läuft alles andere trotzdem.');
+  schritt('KI-Modelle', 'KI-Modelle: Stemtrennung, Musikstil und Textverständnis — 11 Dateien, rund 560 MB',
+    'Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird ' +
+    'einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil ' +
+    '(hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ' +
+    'ein Lied in Gesang, Schlagzeug, Bass, Gitarre, Klavier und Rest) und Textverständnis (macht ' +
+    'aus Liedtexten Zahlen, damit Ähnliches beieinander liegt).');
+  matt('Stemtrennung, Musikstil und Textverständnis. Klappt das nicht, läuft alles andere trotzdem.');
   const modelle = path.join(WURZEL, 'library', 'modelle');
   if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
   if (!await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
     const w = await wieWeiter('Modelle holen', 'Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.');
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
-  } else { gut('Modelle sind da.'); insLager('modelle', modelle); }
+  } else { gut('Modelle sind da.'); zeile('modelle', 'KI-Modelle', '11 von 11 sind da'); insLager('modelle', modelle); }
 
   /* ================================================================
      AB HIER WIRD ERKLAERT, NICHT NUR GEMACHT.
@@ -1382,16 +1607,19 @@ open -a Terminal ${JSON.stringify(starter)}
      Drei Dinge werden deshalb ausdruecklich gesagt: WER hier bei Suno
      anklopft (ein Besucher, kein Angemeldeter), WAS dabei herkommt, und
      WAS NICHT - und was man tun muesste, wenn man auch das will. */
-  schritt('Dein Suno-Name');
-  matt('KlangTresor ist eingerichtet und bereit, deine Musik aufzunehmen.');
+  schritt('Dein Suno-Name', 'Wie heißt du bei Suno? Der Name entscheidet, wessen Daten geholt werden',
+    'KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen. Dazu ruft es deine ' +
+    'Suno-Profilseite auf wie jeder beliebige Besucher: nur lesend, ohne Passwort, ohne Anmeldung. ' +
+    'Was ein Fremder sehen kann, kann KlangTresor holen. Alles andere kommt später.');
+  matt('KlangTresor ist eingerichtet und bereit, dein Archiv anzulegen.');
   leer();
-  matt('Dazu melde ich mich bei Suno an wie jeder beliebige Besucher deiner');
-  matt('Profilseite: nur lesend, ohne Passwort, ohne Anmeldung. Was ein');
+  matt('Dazu rufe ich deine Profilseite auf wie jeder beliebige Besucher:');
+  matt('nur lesend, ohne Passwort, ohne Anmeldung. Was ein');
   matt('Fremder sehen kann, kann ich holen. Alles andere kommt später.');
   leer();
   let handle = '';
   try { handle = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library/konfig.json'), 'utf8')).handle || ''; } catch (e) {}
-  if (handle) gut(`Gemerkt: @${handle}`);
+  if (handle) { gut(`Gemerkt: @${handle}`); zeile('name', 'Dein Suno-Name', '@' + handle); }
   else {
     matt('Dein Suno-Name ist das, was hinter dem @ steht: Wenn deine Profilseite');
     matt('suno.com/@musikfreund heißt, ist es „musikfreund". Nicht deine');
@@ -1402,12 +1630,20 @@ open -a Terminal ${JSON.stringify(starter)}
        leeren Katalog, weil der Wächter in aufbereiten.js buchstabengenau
        verglich. Dort ist es jetzt auch behoben; hier wird gar nicht erst
        Zweideutiges weitergegeben. */
-    handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '))).replace(/^@/, '').trim().toLowerCase();
+    handle = (await fragen('     ' + AKZENT('Dein Suno-Name: '),
+      { art: 'name', text: 'Dein Suno-Name',
+        hinweis: 'Nicht deine E-Mail-Adresse. Nicht der Anzeigename über deinen Liedern — der darf Leerzeichen und Großbuchstaben haben, der Suno-Name nicht.' }))
+      .replace(/^@/, '').replace(/^.*suno\.com\//i, '').replace(/^@/, '').trim().toLowerCase();
+    if (handle) zeile('name', 'Dein Suno-Name', '@' + handle);
   }
   if (!handle) { boese('Ohne den Namen geht es nicht weiter.'); wiederkommen(); schluss(1); }
 
   /* ================================================================ */
-  schritt(`Songliste von @${handle} holen`);
+  schritt('Songliste', `Deine Songliste von @${handle}: Titel, Texte, Stile, Alben`,
+    'Gelesen wird deine Profilseite, Seite für Seite, zwanzig Titel je Seite. Es kommen Titel, ' +
+    'Liedtexte, Stilangaben, Modell und Datum — dazu Abrufe, Herzen und Kommentarzahlen, und die ' +
+    'Alben, soweit sie öffentlich stehen. Noch keine Audiodateien: die kommen in den nächsten ' +
+    'beiden Schritten.');
   matt('Ich lese deine Profilseite durch, Seite für Seite, zwanzig Titel je');
   matt('Seite. Schnell geht das nicht, und das ist Absicht: ein fremder');
   matt('Server bekommt eine Anfrage nach der anderen, nie hundert auf einmal.');
@@ -1433,6 +1669,7 @@ open -a Terminal ${JSON.stringify(starter)}
      Dieselbe Reihenfolge wie im Morgenlauf: Katalog, dann uebernehmen,
      dann laden. */
   matt('Ich ordne das Gesammelte zu einem Katalog — das dauert einen Moment.');
+  lauf({ was: 'Der Katalog wird gebaut' });
   if (!await laeuft(process.execPath, [path.join('bin', 'aufbereiten.js')])) {
     wink('Der Katalog ließ sich nicht bauen — der nächste Schritt findet dann nichts.');
   }
@@ -1462,8 +1699,13 @@ open -a Terminal ${JSON.stringify(starter)}
      Wer seit 2025 dabei ist, hat aber meist alles schon einmal
      heruntergeladen und irgendwo liegen — und DAS ist der Bestand, den
      KlangTresor sonst nie wiederbekäme. */
-  schritt('Deine Klangdateien');
-  matt('Die Bibliothek steht. Es fehlt das Wichtigste: der Ton.');
+  schritt('Deine Suno-Dateien', 'Bereits heruntergeladene Suno-Dateien werden erkannt und eingeordnet',
+    'Die Daten für deine KlangTresor-Bibliothek sind jetzt da — es fehlen die Audiodateien. Suno ' +
+    'gibt sie seit dem 03.09.2026 nicht mehr über Links heraus, selbst dem Besitzer nicht. Aber du ' +
+    'hast sie vermutlich längst auf der Platte. Erkannt werden sie durch KlangTresor am Inhalt, nie ' +
+    'am Dateinamen: Suno schreibt eine Kennung in den Kopf jeder Datei. KlangTresor wird nur lesen ' +
+    'und kopieren. Nichts wird verschoben, nichts gelöscht.');
+  matt('Die Daten für deine Bibliothek sind da — es fehlen die Audiodateien.');
   leer();
   matt('Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
   matt('heraus — auch dem Besitzer nicht. Ich kann sie also nicht einfach');
@@ -1517,7 +1759,11 @@ open -a Terminal ${JSON.stringify(starter)}
   await laeuft(process.execPath, einlesen);
 
   /* ================================================================ */
-  schritt('Titelbilder und Bewegtbilder laden');
+  schritt('Bilder', 'Titelbilder und Bewegtbilder werden geladen und aufbereitet',
+    'Zu jedem Titel gehört sein Bild — und wo Suno eines hat, ein kurzes Video. Beides liegt offen ' +
+    'auf Sunos Bildspeicher, dafür braucht es keine Anmeldung. Aus den Bildern rechnet KlangTresor ' +
+    'danach die Kacheln und die Farben, mit denen die Oberfläche sich später einfärbt. Das ist der ' +
+    'längste Schritt — und du musst ihn nicht abwarten.');
   matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
   matt('erlaubt, was da ist wird nicht noch einmal geholt.');
   if (PROBE.length) wink(`Probelauf: es werden nur ${PROBE[1]} Titel geholt.`);
@@ -1529,7 +1775,12 @@ open -a Terminal ${JSON.stringify(starter)}
     leer();
   }
   {
+    const s = jetztSchritt();
+    if (s) s.abbrechbar = { text: 'Du musst nicht warten.',
+      klein: 'KlangTresor kann jetzt schon starten — die Bilder holt der rote Knopf oben rechts später nach, und was da ist, wird nicht noch einmal geladen. Du siehst dann eine vollständige Bibliothek, nur mit ein paar grauen Kacheln.',
+      knopf: 'Jetzt starten, Rest später' };
     const e = await laeuftAbbrechbar(process.execPath, [path.join('bin', 'wiederherstellen.js'), ...PROBE]);
+    if (s) s.abbrechbar = null;
     if (e.abgebrochen) {
       leer();
       gut('Das Laden ist unterbrochen — der rote Knopf oben rechts holt später den Rest.');
@@ -1542,7 +1793,34 @@ open -a Terminal ${JSON.stringify(starter)}
      Bis hierher lief alles ohne Anmeldung. Wer mehr will, muss das
      Lesezeichen einrichten - und der Grund dafuer gehoert dazu, sonst
      klingt es nach Schikane statt nach Vorsicht. */
-  schritt('Zum Schluss: was ein Fremder nicht sehen darf');
+  schritt('Zum Schluss', 'Fertig — und was nur du selbst holen kannst',
+    'Bis hierher war alles öffentlich — KlangTresor hat nur gelesen, was jeder Besucher deiner ' +
+    'Profilseite sehen kann. Was nur dir gehört, holt ein Lesezeichen in Chrome, mit deiner eigenen ' +
+    'Anmeldung.');
+  { const a = jetztSchritt();
+    if (a) a.abschluss = {
+      fehlt: [
+        ['Deine unveröffentlichten Titel', 'mit Abrufen und Herzen'],
+        ['Wer dir gefolgt ist', 'wer geherzt, wer kommentiert hat — mit Namen und Zeitpunkt'],
+        ['Deine privaten Alben', ''],
+        ['Sunos eigene Analyse', 'Tempo, Taktraster, Hüllkurve'],
+        ['Die Wort-Zeitmarken', 'für den mitlaufenden Text'],
+        ['Die Audiodateien', 'für alles, was du bei Suno schon freigeschaltet hast'],
+      ],
+      warum: 'Dafür braucht KlangTresor dich — und das hat einen guten Grund. Der Ausweis, den Suno '
+           + 'verlangt, lebt etwa eine Minute und gilt nur im Browser. KlangTresor bekommt ihn nicht und '
+           + 'soll ihn nicht bekommen: So liegt auf deiner Platte kein Schlüssel zu deinem Suno-Konto. '
+           + 'Deshalb sitzt das Werkzeug als Lesezeichen dort, wo du ohnehin angemeldet bist — ein Klick, '
+           + 'einmal am Tag.',
+      zitat: 'Auf der KlangTresor-Seite findest du oben rechts den roten Knopf für den täglichen Abgleich '
+           + '— und darunter die Frage „Willst Du auch die nur Dir zugänglichen Daten im KlangTresor '
+           + 'sehen?". Dahinter liegt das Lesezeichen zum Hineinziehen, samt Anleitung. Chrome wird dafür '
+           + 'gebraucht.',
+      nachsatz: 'Was du bei Suno schon freigeschaltet hast, kostet dabei nichts — ein Guthaben zahlst du '
+              + 'nur beim Freischalten selbst, und das machst du bei Suno, nicht hier. Das alles geht auch '
+              + 'später jederzeit: KlangTresor läuft auch ohne.',
+    };
+  }
   matt('Bis hierher war alles öffentlich. Was nur dir gehört, fehlt noch:');
   leer();
   satz(MATT('  · deine unveröffentlichten Titel, mit Abrufen und Herzen'));
@@ -1589,16 +1867,46 @@ open -a Terminal ${JSON.stringify(starter)}
       if (a.family === 'IPv4' && !a.internal) netz.push(a.address);
     }
   }
+  /* Was am Ende dasteht, wird gezaehlt: Ordner in library/songs, und
+     darin, was wirklich liegt. */
+  { const a = jetztSchritt();
+    const S = path.join(WURZEL, 'library', 'songs');
+    let titel = 0, mitTon = 0, mitBild = 0;
+    try {
+      for (const d of fs.readdirSync(S)) {
+        if (d.startsWith('.')) continue;
+        titel++;
+        if (fs.existsSync(path.join(S, d, 'audio.mp3')) || fs.existsSync(path.join(S, d, 'audio.wav'))) mitTon++;
+        if (fs.existsSync(path.join(S, d, 'cover.jpg')) || fs.existsSync(path.join(S, d, 'cover.png'))) mitBild++;
+      }
+    } catch (e) {}
+    let alben = 0;
+    try { const k = require('./katalog.js').lesen(); alben = (k && k.playlists ? k.playlists.length : 0); } catch (e) {}
+    kachel('Titel', String(titel));
+    kachel('mit Audiodatei', String(mitTon));
+    if (alben) kachel('Alben', String(alben));
+    kachel('Bilder', String(mitBild));
+    if (a && a.abschluss) a.abschluss.adressen = [];
+  }
   { const v = schreibtischVerknuepfung(WURZEL);
-    if (v) gut('Auf dem Schreibtisch liegt jetzt „KlangTresor" — damit startest du es künftig.');
-    else matt('Zum späteren Starten: der Starter liegt in ' + WURZEL + '.'); }
+    if (v) { gut('Auf dem Schreibtisch liegt jetzt „KlangTresor" — damit startest du es künftig.');
+             zeile('desktop', 'Auf dem Schreibtisch liegt jetzt „KlangTresor"', 'damit startest du es künftig'); }
+    else { matt('Zum späteren Starten: der Starter liegt in ' + WURZEL + '.');
+           zeile('desktop', 'Zum späteren Starten', 'der Starter liegt in ' + WURZEL, 'wink'); } }
   leer();
   satz(MATT('Adresse:  ') + MARKE('http://localhost:8788'));
-  if (netz[0]) satz(MATT('Im WLAN:  ') + MARKE(`http://${netz[0]}:8788`));
+  zeile('adresse', 'Auf diesem Rechner', 'http://localhost:8788');
+  if (netz[0]) { satz(MATT('Im WLAN:  ') + MARKE(`http://${netz[0]}:8788`));
+                 zeile('wlan', 'Im WLAN, etwa vom Handy', `http://${netz[0]}:8788`); }
   matt('Zum Beenden Strg-C. Später genügt der Starter im Projektordner.');
   leer();
   leser.close();
-  if (OHNE_START) return;
+  if (OHNE_START) {
+    /* Probelauf ohne Serverstart: die Seite bleibt stehen, damit man das
+       Ergebnis ansehen kann. Sonst waere sie im selben Augenblick weg. */
+    if (SEITENSERVER) { SEITENSERVER.ref(); matt('Die Seite bleibt offen — mit Strg-C beenden.'); }
+    return;
+  }
   /* Erst aufmachen, dann starten: der Browser braucht laenger zum
      Hochkommen als der Server zum Horchen. */
   /* DIE FIREWALL FRAGT GLEICH. Sobald der Server auf 0.0.0.0:8788 horcht,
@@ -1609,6 +1917,10 @@ open -a Terminal ${JSON.stringify(starter)}
      erreichbar. Am 13.09.2026 im ersten Windows-Lauf gesehen. Also
      vorher sagen, was kommt und was anzuhaken ist. */
   if (process.platform === 'win32') {
+    { const a = jetztSchritt(); if (a && a.abschluss) a.abschluss.windows =
+      'Windows fragt in einem Moment, ob „Node.js JavaScript Runtime" ins Netzwerk darf. Das ist der '
+    + 'KlangTresor-Server. Hake „Private Netzwerke" an — sonst erreichst du ihn im eigenen WLAN nicht, '
+    + 'etwa vom Handy — und klicke „Zugriff zulassen". „Öffentliche Netzwerke" brauchst du nicht.'; }
     wink('Gleich fragt Windows, ob „Node.js JavaScript Runtime" ins Netzwerk darf.');
     matt('Das ist der KlangTresor-Server. Hake „Private Netzwerke" an — sonst');
     matt('erreichst du ihn im eigenen WLAN nicht, etwa vom Handy — und klicke');

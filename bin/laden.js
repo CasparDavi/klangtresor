@@ -23,6 +23,7 @@
 
 const fs   = require('node:fs');
 const path = require('node:path');
+const melden = require('./melden.js');   /* Zahlen fuer die Einrichtungsseite */
 const K    = require('./katalog.js');
 
 const WURZEL = path.join(__dirname, '..');
@@ -283,6 +284,8 @@ async function ladeDatei(url, ziel) {
 
     const nr = String(i + 1).padStart(String(liste.length).length);
     console.log(`[${nr}/${liste.length}] ${ergebnisse.join('')} ${s.titel.slice(0, 55)}`);
+    melden.lauf({ was: 'Titelbilder und Videos werden geladen', n: nr, von: liste.length,
+      nEinheit: 'Titel', jetzt: s.titel.slice(0, 55) });
   }
 
   // --- Profilbild -------------------------------------------------

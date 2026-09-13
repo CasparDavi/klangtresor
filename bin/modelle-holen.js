@@ -30,7 +30,11 @@
 'use strict';
 const fs = require('node:fs');
 const path = require('node:path');
+const melden = require('./melden.js');   /* Zahlen fuer die Einrichtungsseite */
 const ZIEL = path.join(__dirname, '..', 'library', 'modelle');
+/* Fuer den Balken der Einrichtungsseite: welche Datei gerade laeuft,
+   wie viel vor ihr schon lag, und wie viel es zusammen wird. */
+let NUMMER_JETZT = 0, GEHOLT_VORHER = 0, SOLL_GESAMT = 0;
 const E = 'https://essentia.upf.edu/models';
 const DATEIEN = [
   /* Die Stemtrennung. Mit Abstand die groesste Datei - wer nur den
@@ -100,12 +104,20 @@ async function perFetch(url, mindestens) {
       const teile = []; let n = 0, letzteMeldung = 0;
       for await (const stueck of r.body) {
         teile.push(stueck); n += stueck.length; stand = Date.now();
-        /* Nur im Terminal fortschreiben - in eine Datei umgeleitet
-           wuerde jedes \r zu einer weiteren Zeile Muell. */
-        if (process.stdout.isTTY && Date.now() - letzteMeldung > 250) {
+        if (Date.now() - letzteMeldung > 250) {
           letzteMeldung = Date.now();
-          const wieweit = ganz ? ` von ${mb(ganz)} (${Math.round(n / ganz * 100)} %)` : '';
-          process.stdout.write(`\r  hole       ${NAME_JETZT} … ${mb(n)}${wieweit}   `);
+          /* Nur im Terminal fortschreiben - in eine Datei umgeleitet
+             wuerde jedes \r zu einer weiteren Zeile Muell. */
+          if (process.stdout.isTTY) {
+            const wieweit = ganz ? ` von ${mb(ganz)} (${Math.round(n / ganz * 100)} %)` : '';
+            process.stdout.write(`\r  hole       ${NAME_JETZT} … ${mb(n)}${wieweit}   `);
+          }
+          /* Die Seite bekommt die Zahlen immer: diese Datei und die
+             Summe ueber alle. GEHOLT_VORHER ist, was vor dieser Datei
+             schon lag - sonst spraenge der Gesamtbalken zurueck. */
+          melden.lauf({ was: NAME_JETZT + ' wird geladen', n: NUMMER_JETZT, von: DATEIEN.length,
+            nEinheit: 'Datei', quelle: 'von huggingface.co',
+            bytes: GEHOLT_VORHER + n, gesamt: SOLL_GESAMT, jetzt: mb(n) + (ganz ? ' von ' + mb(ganz) : '') });
         }
       }
       const buf = Buffer.concat(teile);
@@ -148,22 +160,28 @@ function perCurl(url, f, mindestens) {
 (async () => {
   fs.mkdirSync(ZIEL, { recursive: true });
   let geholt = 0; const offen = [];
+  SOLL_GESAMT = DATEIEN.reduce((s, [, , m]) => s + m, 0);
   for (const [name, url, mindestens] of DATEIEN) {
+    NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
-    if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); continue; }
+    if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
+    melden.lauf({ was: name + ' wird geladen', n: NUMMER_JETZT, von: DATEIEN.length,
+      nEinheit: 'Datei', quelle: 'von huggingface.co', bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
     NAME_JETZT = name;
     process.stdout.write(`  hole       ${name} … `);
     const a = await perFetch(url, mindestens);
     /* Die Fortschrittszeile hat sich selbst ueberschrieben; erst
        loeschen, sonst klebt das Ergebnis hinter halben Prozentzahlen. */
     if (process.stdout.isTTY) process.stdout.write(`\r${' '.repeat(78)}\r  hole       ${name} … `);
-    if (a.buf) { fs.writeFileSync(f, a.buf); geholt++; console.log(mb(a.buf.length)); continue; }
+    if (a.buf) { fs.writeFileSync(f, a.buf); geholt++; GEHOLT_VORHER += a.buf.length; console.log(mb(a.buf.length)); continue; }
     process.stdout.write(`fetch: ${a.fehler} → curl … `);
     const b = perCurl(url, f, mindestens);
-    if (b.n) { geholt++; console.log(mb(b.n)); continue; }
+    if (b.n) { geholt++; GEHOLT_VORHER += b.n; console.log(mb(b.n)); continue; }
     console.log(`FEHLER (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }
   const da = DATEIEN.filter(([n, , m]) => fs.existsSync(path.join(ZIEL, n)) && fs.statSync(path.join(ZIEL, n)).size >= m).length;
+  melden.ausLauf();
+  melden.zeile('modelle', 'KI-Modelle', `${da} von ${DATEIEN.length} sind da`, da === DATEIEN.length ? 'fertig' : 'wink');
   console.log(`  Modelle: ${geholt} geholt, ${da} von ${DATEIEN.length} vorhanden → library/modelle/`);
   if (offen.length) {
     console.log(`\n  ${offen.length} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach\n    ${ZIEL}\n  mit genau diesem Dateinamen:`);
