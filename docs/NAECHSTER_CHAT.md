@@ -3224,3 +3224,34 @@ einzige** `timing-*.json` mehr, sie sind nach dem Verarbeiten weggeräumt. Dazu 
 Lesezeichen-Lauf eine Antwort schon als „geholt", wenn sie kein Fehler ist — auch wenn keine Worte
 darin stehen. Wer das klären will, muss beim nächsten Lauf in die frische Rohdatei sehen, bevor sie
 verarbeitet wird.
+
+### Die Einrichtung ist eine Seite, und die Einstiege sind aufgeräumt (13.09.2026)
+Der Stand, den ein neuer Chat kennen muss — Einzelheiten in `docs/BACKLOG.md` (Abschnitt Einrichtung)
+und `START-HIER.md`.
+
+**Was liegt wo.** Im Projektordner genau neun Einstiege, nach einem Muster: `einrichten-windows.cmd` /
+`-macos.command` / `-linux.sh`, dasselbe mit `-docker-` für den Weg ohne Installation, und `starten-*`
+fürs bloße Starten (die Schreibtisch-Verknüpfung zeigt darauf). Was niemand anklicken soll, ist aus dem
+Blick: `bin/anlasser.ps1` (Node holen, Windows) und `bin/anlasser.sh` (Mac/Linux) sind Geschwister; die
+Docker-Bauanleitungen liegen in `docker/` (Kontext bleibt der Projektordner, `name: klangtresor`).
+Jörg: *„räume bitte alle installationsdateien auf, dass es keine verwechslungen geben kann"*.
+
+**Drei Stufen, jede fängt die nächste auf** — *„fallbacks, wenn es nicht mit js geht und dann natürlich
+das schicke js"*: Skript des Systems (holt Node) → `bin/einrichten.js` (zehn Schritte) → Seite im
+Browser auf 127.0.0.1:8790+ (`web/einrichtung/index.html`, pollt `/stand`, antwortet per
+`POST /antwort`). Geht kein Browser auf, läuft dasselbe als Text; `--text` erzwingt das, `--ohne-browser`
+ist für Probeläufe. Fragen tragen Metadaten (`art: 'wahl'|'text'`, `optionen`, `hinweis`) — die Seite
+kennt keine Textmuster.
+
+**Verteilung:** Release-Zip, feste Adresse
+`https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip` (flach, eine
+Ebene). `node bin/paket.js` baut, `gh release upload v1.0.0 ../KlangTresor.zip --clobber` ersetzt.
+
+**Geprüft:** Seite im Sandkasten bis Schritt 6 durchgespielt (Wahl-, Ja/Nein-, Textfrage kommen aus
+der Seite an); `docker compose config` für beide Compose-Dateien; `bin/pruefe-skripte.js` für beide
+`.ps1`. **Nicht geprüft:** ein Docker-Bau (hier läuft kein Daemon), Linux überhaupt, und der volle
+Lauf aus dem Zip mit der Seite unter Windows und auf dem Mac — das macht Jörg selbst, aus dem
+Release-Zip, nicht aus dem Repo.
+
+**Offen:** zweite Schicht der Tonübernahme (bei Suno gelöschte Titel als eigene Katalogquelle), siehe
+BACKLOG; die Fertig-Ansicht der Seite hat noch niemand gesehen.
