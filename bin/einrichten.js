@@ -382,18 +382,43 @@ function da(befehl) {
      alles nicht infrage." Wer das erst nach einer halben Stunde
      erfährt, ist zu Recht verärgert. */
   leer();
-  wink('Bevor du anfängst — eine Sache, die Zeit spart:');
-  matt('Suno gibt seine Audiodateien seit dem 03.09.2026 nicht mehr über Links');
-  matt('heraus. Jeder Song muss bei Suno einmal von Hand freigeschaltet werden:');
-  matt('Drei Punkte, Download, „Unlock and Download". Das kostet ein Guthaben');
-  matt('aus deinem Download-Kontingent.');
+  /* ERST DER WEG, DER OFFENSTEHT - DANN DER, DER ETWAS KOSTET.
+
+     Caspar_D, 13.09.2026: „es fehlt, dass KlangTresor in der Lage ist,
+     auch lokale Suno-Dateisammlungen / Suno-Backups zu lesen und den
+     Daten zuzuordnen. Der Text könnte, so wie er ist, Nutzer
+     verschrecken, obwohl sie vielleicht alle Daten lokal vorliegen
+     haben."
+
+     Die alte Fassung fuehrte mit „ohne bezahlten Plan bekommst du keinen
+     Ton" und verschwieg, dass der wichtigste Weg gar nichts kostet. Wer
+     seine Sammlung seit Monaten herunterlaedt, hat alles schon - und
+     haette hier aufgehoert zu lesen. */
+  wink('Bevor du anfängst — zwei Sätze über den Ton:');
+  matt('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt');
+  matt('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet');
+  matt('nichts.');
   leer();
-  matt('Ohne bezahlten Plan hast du kein Kontingent. Dann archiviert dein');
-  matt('KlangTresor Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte —');
-  matt('aber keinen Ton. Alles andere funktioniert.');
+  satz(HELL('  1. Was du schon hast.'));
+  matt('  Hast du deine Lieder bei Suno früher heruntergeladen und liegen sie');
+  matt('  irgendwo auf der Platte? Dann zeig mir den Ordner — ich erkenne die');
+  matt('  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in');
+  matt('  Unterordnern, und ordne sie deinen Titeln zu. Das ist der');
+  matt('  Hauptweg, und er kostet nichts.');
   leer();
-  matt('Am besten schaltest du jetzt schon ein paar Titel bei Suno frei, dann');
-  matt('liegen sie bereit, wenn KlangTresor danach fragt.');
+  satz(HELL('  2. Was dir fehlt.'));
+  matt('  Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
+  matt('  heraus, auch dem Besitzer nicht. Was du nicht schon hast, musst du');
+  matt('  bei Suno einmal freischalten: Drei Punkte, Download, „Unlock and');
+  matt('  Download". Das kostet ein Guthaben aus deinem Download-Kontingent,');
+  matt('  gilt dann aber dauerhaft und für alle Formate.');
+  leer();
+  matt('Ohne bezahlten Plan ist nur der zweite Weg versperrt. Der erste bleibt');
+  matt('offen, und alles andere funktioniert ohnehin.');
+  leer();
+  matt('Am besten legst du dir jetzt schon zurecht, wo dein Suno-Zeug liegt.');
+  matt('Und wenn du bei Suno etwas freischalten willst: jetzt ist ein guter');
+  matt('Moment, dann liegt es bereit, wenn ich danach frage.');
   leer();
   if (!await jaNein('Verstanden, weiter?')) {
     matt('Dann bis später. Das Einrichten läuft nicht weg.');
