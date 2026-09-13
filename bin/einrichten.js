@@ -403,6 +403,56 @@ function da(befehl) {
    ueber WScript.Shell, ein Verweis auf dem Mac, eine .desktop-Datei
    unter Linux. Schlaegt es fehl, ist das kein Grund zur Aufregung - es
    wird gesagt und weitergemacht. */
+/* DAS ZWISCHENLAGER - EINMAL GEHOLT IST EINMAL GEHOLT.
+
+   Caspar_D, 13.09.2026: „wenn ich jetzt jedesmal warten muss, bis ffmpeg
+   runtergeladen ist, ist das eine Zumutung".
+
+   Er hat recht, und es trifft nicht nur ihn: Wer neu entpackt, wer eine
+   zweite Kopie anlegt, wer nach einem Fehlschlag von vorn beginnt - alle
+   holten bisher dieselben 384 MB noch einmal. ffmpeg und die Modelle
+   gehoeren aber nicht zum Archiv, sie gehoeren zum RECHNER.
+
+   Also landen sie zusaetzlich in einem Lager ausserhalb des
+   Projektordners, dort wo das System solche Dinge erwartet, und beim
+   naechsten Mal werden sie von dort kopiert statt geladen. Das Lager
+   darf jederzeit weg - dann wird eben neu geholt. */
+function lagerOrdner() {
+  const heim = os.homedir();
+  const p = process.platform === 'win32'
+    ? path.join(process.env.LOCALAPPDATA || path.join(heim, 'AppData', 'Local'), 'KlangTresor')
+    : process.platform === 'darwin'
+      ? path.join(heim, 'Library', 'Caches', 'KlangTresor')
+      : path.join(process.env.XDG_CACHE_HOME || path.join(heim, '.cache'), 'klangtresor');
+  try { fs.mkdirSync(p, { recursive: true }); return p; } catch (e) { return null; }
+}
+
+/* Aus dem Lager holen. Gibt true, wenn danach etwas da ist. */
+function ausLager(name, ziel) {
+  const lager = lagerOrdner();
+  if (!lager) return false;
+  const q = path.join(lager, name);
+  try {
+    if (!fs.existsSync(q) || !fs.readdirSync(q).length) return false;
+    tut(`${name} liegt schon auf diesem Rechner — ich kopiere statt zu laden.`);
+    fs.mkdirSync(path.dirname(ziel), { recursive: true });
+    fs.cpSync(q, ziel, { recursive: true, force: true });
+    return true;
+  } catch (e) { return false; }
+}
+
+/* Ins Lager legen. Fehler sind hier belanglos - es ist nur Bequemlichkeit. */
+function insLager(name, quelle) {
+  const lager = lagerOrdner();
+  if (!lager) return;
+  try {
+    if (!fs.existsSync(quelle)) return;
+    const z = path.join(lager, name);
+    fs.rmSync(z, { recursive: true, force: true });
+    fs.cpSync(quelle, z, { recursive: true, force: true });
+  } catch (e) {}
+}
+
 /* WO DER SCHREIBTISCH WIRKLICH LIEGT.
 
    ~/Desktop zu raten geht oft gut und manchmal schief. Unter Windows
@@ -768,6 +818,9 @@ end try`;
 
   const ffEigen = path.join(WERKZEUG, 'ffmpeg', 'bin',
     process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+  /* Liegt es schon auf diesem Rechner? Dann kopieren statt hundert
+     Megabyte noch einmal durch die Leitung zu ziehen. */
+  if (!fs.existsSync(ffEigen) && !da('ffmpeg')) ausLager('ffmpeg', path.join(WERKZEUG, 'ffmpeg'));
   let ffmpeg = fs.existsSync(ffEigen) ? ffEigen : da('ffmpeg');
   if (ffmpeg) {
     gut(`ffmpeg ist da: ${ffmpeg}`);
@@ -790,7 +843,10 @@ end try`;
         if (await holen(url, zip, 'ffmpeg') && auspacken(zip, roh)) {
           einenOrdnerHeben(roh, path.join(WERKZEUG, 'ffmpeg'));
           try { fs.rmSync(zip, { force: true }); } catch (e) {}
-          if (fs.existsSync(ffEigen)) { ffmpeg = ffEigen; gut('ffmpeg liegt jetzt in werkzeug/ffmpeg.'); }
+          if (fs.existsSync(ffEigen)) {
+            ffmpeg = ffEigen; gut('ffmpeg liegt jetzt in werkzeug/ffmpeg.');
+            insLager('ffmpeg', path.join(WERKZEUG, 'ffmpeg'));
+          }
         }
         if (!ffmpeg) {
           const w = await wieWeiter('ffmpeg holen',
@@ -875,11 +931,13 @@ end try`;
   /* ================================================================ */
   schritt('KI-Modelle holen (rund 284 MB)');
   matt('Stemtrennung und Musikstil. Klappt das nicht, läuft alles andere trotzdem.');
+  const modelle = path.join(WURZEL, 'library', 'modelle');
+  if (!fs.existsSync(modelle) || !fs.readdirSync(modelle).length) ausLager('modelle', modelle);
   if (!laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')])) {
     const w = await wieWeiter('Modelle holen', 'Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.');
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
-  } else gut('Modelle sind da.');
+  } else { gut('Modelle sind da.'); insLager('modelle', modelle); }
 
   /* ================================================================
      AB HIER WIRD ERKLAERT, NICHT NUR GEMACHT.

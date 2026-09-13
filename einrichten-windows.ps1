@@ -83,6 +83,22 @@ if (-not $NODE) {
   }
 }
 
+# Liegt Node schon im Zwischenlager dieses Rechners? Dann kopieren statt
+# holen - derselbe Gedanke wie bei ffmpeg und den Modellen in
+# bin/einrichten.js: einmal geholt ist einmal geholt.
+$LAGER = Join-Path $env:LOCALAPPDATA 'KlangTresor'
+if (-not $NODE -and (Test-Path (Join-Path $LAGER 'node\node.exe'))) {
+  $v = NodeTauglich (Join-Path $LAGER 'node\node.exe')
+  if ($v) {
+    Zeile "[->] Node.js liegt schon auf diesem Rechner - ich kopiere es her." $O
+    New-Item -ItemType Directory -Path $WERKZEUG -Force | Out-Null
+    if (Test-Path $EIGEN) { Remove-Item (Join-Path $WERKZEUG 'node') -Recurse -Force -ErrorAction SilentlyContinue }
+    Copy-Item (Join-Path $LAGER 'node') (Join-Path $WERKZEUG 'node') -Recurse -Force -ErrorAction SilentlyContinue
+    $v2 = NodeTauglich $EIGEN
+    if ($v2) { $NODE = $EIGEN; Zeile "[ok] Node.js v$v2 aus dem Zwischenlager." 'Green' }
+  }
+}
+
 while (-not $NODE) {
   # Die Adresse steht in quellen.txt, damit sie jemand aendern kann, wenn
   # nodejs.org umzieht - ohne in diesem Skript zu suchen.
@@ -158,7 +174,13 @@ while (-not $NODE) {
       Remove-Item $roh -Recurse -Force -ErrorAction SilentlyContinue
       Remove-Item $zip -Force -ErrorAction SilentlyContinue
       $v = NodeTauglich $EIGEN
-      if ($v) { $NODE = $EIGEN; Zeile "[ok] Node.js v$v liegt jetzt in werkzeug\node." 'Green' }
+      if ($v) {
+        $NODE = $EIGEN; Zeile "[ok] Node.js v$v liegt jetzt in werkzeug\node." 'Green'
+        # fuer das naechste Mal aufheben
+        New-Item -ItemType Directory -Path $LAGER -Force | Out-Null
+        Remove-Item (Join-Path $LAGER 'node') -Recurse -Force -ErrorAction SilentlyContinue
+        Copy-Item (Join-Path $WERKZEUG 'node') (Join-Path $LAGER 'node') -Recurse -Force -ErrorAction SilentlyContinue
+      }
     } catch {
       Zeile "[x]  Auspacken ging nicht: $($_.Exception.Message.Split([char]10)[0])" 'Red'
     }

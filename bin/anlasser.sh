@@ -78,6 +78,22 @@ elif command -v node >/dev/null 2>&1; then
   zeile "${O}[!]${X}  Das installierte Node.js ist zu alt ($(node -v)) — ich hole eine eigene Fassung daneben."
 fi
 
+# Liegt Node schon im Zwischenlager dieses Rechners? Dann kopieren statt
+# holen - derselbe Gedanke wie bei ffmpeg und den Modellen in
+# bin/einrichten.js: einmal geholt ist einmal geholt.
+LAGER="${XDG_CACHE_HOME:-$HOME/.cache}/klangtresor"
+[ "$(uname)" = "Darwin" ] && LAGER="$HOME/Library/Caches/KlangTresor"
+if [ -z "$NODE" ] && [ -x "$LAGER/node/bin/node" ] && node_tauglich "$LAGER/node/bin/node"; then
+  zeile "${O}->${X}   Node.js liegt schon auf diesem Rechner — ich kopiere es her."
+  mkdir -p "$WERKZEUG"
+  rm -rf "$WERKZEUG/node"
+  cp -R "$LAGER/node" "$WERKZEUG/node" 2>/dev/null
+  if [ -x "$EIGEN" ] && node_tauglich "$EIGEN"; then
+    NODE="$EIGEN"
+    zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) aus dem Zwischenlager."
+  fi
+fi
+
 while [ -z "$NODE" ]; do
   # Die Adresse steht in quellen.txt, damit sie jemand ändern kann, wenn
   # nodejs.org umzieht — ohne in diesem Skript zu suchen.
@@ -140,6 +156,8 @@ while [ -z "$NODE" ]; do
       if [ -x "$EIGEN" ] && node_tauglich "$EIGEN"; then
         NODE="$EIGEN"
         zeile "${G}[ok]${X} Node.js $("$EIGEN" -v) liegt jetzt in werkzeug/node."
+        # fuer das naechste Mal aufheben
+        mkdir -p "$LAGER" && rm -rf "$LAGER/node" && cp -R "$WERKZEUG/node" "$LAGER/node" 2>/dev/null
       fi
     else
       zeile "${R}[x]${X}  Auspacken ging nicht."
