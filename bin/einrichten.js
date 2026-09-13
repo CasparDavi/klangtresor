@@ -413,97 +413,90 @@ function da(befehl) {
     leer(); schluss(1);
   }
 
-  matt('Ich lege KlangTresor in diesen Ordner:');
-  satz(HELL(WURZEL));
-  { const wo = ortInWorten(WURZEL); if (wo) matt(wo); }
-  /* GitHub benennt den Ordner im Zip nach dem ZWEIG, nicht nach dem
-     Programm - heraus kommt „klangtresor-main", und beim Entpacken oft
-     noch einmal geschachtelt. Caspar_D, 13.09.2026: „und wieso heisst er
-     KlangTresor-Main, einfach KlangTresor dachte ich."
-     Umbenennen kann das Programm sich nicht selbst - der Ordner ist
-     waehrend des Laufs in Benutzung, unter Windows sperrt das. Also
-     sagen, nicht tun. */
-  if (/^klangtresor[-_]?(main|master)$/i.test(path.basename(WURZEL))) {
-    matt('Der Ordner heißt „' + path.basename(WURZEL) + '", weil GitHub ihn nach dem Zweig');
-    matt('benennt — nicht nach dem Programm. Du darfst ihn in „KlangTresor"');
-    matt('umbenennen; am besten später, jetzt ist er in Benutzung.');
-  }
-  matt('Du kannst den Ordner jederzeit woanders hinschieben. Nur die innere');
-  matt('Struktur sollte bleiben, wie sie ist — daran hängt alles.');
+  /* ================================================================
+     WOHIN KLANGTRESOR GEHOERT - UND ZWAR BEVOR ETWAS GEHOLT WIRD.
 
-  /* ---- Der Hinweis, der vor allem anderen stehen muss -------------
-     Caspar_D, 11.09.2026: „der Nutzer wird keinen Datenbestand mehr
-     runterladen können … wenn er nur einen Nopay-Account hat, kommt
-     alles nicht infrage." Wer das erst nach einer halben Stunde
-     erfährt, ist zu Recht verärgert. */
-  leer();
-  /* ERST DER WEG, DER OFFENSTEHT - DANN DER, DER ETWAS KOSTET.
+     Caspar_D, 13.09.2026: „warum erst irgendwo hinlegen und verschieben,
+     warum nicht gleich an die richtige stelle".
 
-     Caspar_D, 13.09.2026: „es fehlt, dass KlangTresor in der Lage ist,
-     auch lokale Suno-Dateisammlungen / Suno-Backups zu lesen und den
-     Daten zuzuordnen. Der Text könnte, so wie er ist, Nutzer
-     verschrecken, obwohl sie vielleicht alle Daten lokal vorliegen
-     haben."
+     Bis hierher hielt KlangTresor den Ort, an dem das Zip entpackt
+     wurde, fuer sein Zuhause. Das ist falsch. Der entpackte Ordner ist
+     etwas Voruebergehendes - ein Download. Ein Programm, dessen Archiv
+     auf zehn Gigabyte anwaechst, hat im Download-Ordner nichts verloren,
+     und schon gar nicht auf einer Netzfreigabe, wo unter Windows die
+     Pakete scheitern.
 
-     Die alte Fassung fuehrte mit „ohne bezahlten Plan bekommst du keinen
-     Ton" und verschwieg, dass der wichtigste Weg gar nichts kostet. Wer
-     seine Sammlung seit Monaten herunterlaedt, hat alles schon - und
-     haette hier aufgehoert zu lesen. */
-  wink('Bevor du anfängst — zwei Sätze zu deinen Suno-Titeln und ihren Audiodateien:');
-  matt('Deine Titelbilder, Texte, Zahlen und deine ganze Suno-Geschichte holt');
-  matt('KlangTresor selbst. Beim Ton gibt es zwei Wege, und der erste kostet');
-  matt('nichts.');
-  leer();
-  satz(HELL('  1. Was du schon hast.'));
-  matt('  Hast du deine Lieder bei Suno früher heruntergeladen und liegen sie');
-  matt('  irgendwo auf der Platte? Dann zeig mir den Ordner — ich erkenne die');
-  matt('  Dateien am Inhalt, nicht am Namen, auch umbenannte, auch in');
-  matt('  Unterordnern, und ordne sie deinen Titeln zu. Das ist der');
-  matt('  Hauptweg, und er kostet nichts.');
-  leer();
-  satz(HELL('  2. Was dir fehlt.'));
-  matt('  Suno gibt Audiodateien seit dem 03.09.2026 nicht mehr über Links');
-  matt('  heraus, auch dem Besitzer nicht. Was du nicht schon hast, musst du');
-  matt('  bei Suno einmal freischalten: Drei Punkte, Download, „Unlock and');
-  matt('  Download". Das kostet ein Guthaben aus deinem Download-Kontingent,');
-  matt('  gilt dann aber dauerhaft und für alle Formate.');
-  leer();
-  matt('Ohne bezahlten Plan ist nur der zweite Weg versperrt. Der erste bleibt');
-  matt('offen, und alles andere funktioniert ohnehin.');
-  leer();
-  matt('Am besten legst du dir jetzt schon zurecht, wo dein Suno-Zeug liegt.');
-  matt('Und wenn du bei Suno etwas freischalten willst: jetzt ist ein guter');
-  matt('Moment, dann liegt es bereit, wenn ich danach frage.');
-  leer();
-  if (!await jaNein('Verstanden, weiter?')) {
-    matt('Dann bis später. Das Einrichten läuft nicht weg.');
-    wiederkommen(); schluss(0);
+     Also entscheidet die Einrichtung das jetzt selbst: sie schlaegt ein
+     Zuhause vor, zieht sich dorthin um und macht dort weiter. Der
+     entpackte Ordner darf danach weg.
+
+     Umziehen heisst KOPIEREN und neu starten, nicht verschieben: der
+     laufende Ordner ist in Benutzung, unter Windows gesperrt. Der alte
+     bleibt liegen und wird am Ende genannt. */
+  function heimatVorschlag() {
+    const heim = os.homedir();
+    return path.join(heim, 'KlangTresor');
   }
 
-  leer();
-  matt('Beim ersten Mal werden rund 450 MB geholt. Wie lange das dauert, hängt');
-  matt('an deiner Leitung — von wenigen Minuten bis zu einer halben Stunde.');
-  leer();
-  matt('Lass das Fenster am besten offen, dann siehst du sofort, ob es gut');
-  matt('läuft oder ob es hakt. Bei Abbruch kann man einfach von diesem Stand');
-  matt('fortsetzen.');
-  leer();
-  /* Caspar_D, 13.09.2026, nach einer halben Stunde Fehlersuche an einem
-     Fenster, das gar nicht haengen geblieben war: „das musst du als
-     ausgabe ganz am Anfang hinschreiben, dass sowas passieren kann".
+  function mussUmziehen(p) {
+    const q = p.replace(/\\/g, '/');
+    if (process.platform === 'win32' && q.startsWith('//')) return 'auf einer Netzfreigabe';
+    if (/\/(downloads|download|temp|tmp)(\/|$)/i.test(q))  return 'im Download- oder Papierkorbordner';
+    if (/^klangtresor[-_]?(main|master)$/i.test(path.basename(p))) return 'in einem Ordner, den GitHub benannt hat';
+    return null;
+  }
 
-     Windows-Konsolen haben QuickEdit standardmaessig an: EIN KLICK ins
-     Fenster schaltet in den Markierungsmodus und HAELT DEN PROZESS AN -
-     mitten in der Ausgabe, ohne Hinweis ausser einem Wort in der
-     Titelleiste. Es sieht nach Absturz aus und ist keiner. */
-  /* Nur Windows. Auf Mac und Linux gibt es den Markierungsmodus nicht,
-     und eine Warnung vor etwas, das es nicht gibt, ist schlechter als
-     keine. */
-  if (process.platform === 'win32') {
-    wink('Wenn es plötzlich stehenbleibt: einmal Escape drücken.');
-    matt('Ein Klick ins Fenster schaltet Windows in den Markierungsmodus und');
-    matt('hält alles an — es sieht nach Absturz aus, ist aber keiner. Escape');
-    matt('löst es wieder. Am besten gar nicht erst hineinklicken.');
+  const grund = mussUmziehen(WURZEL);
+  if (!grund) {
+    matt('KlangTresor liegt hier, und hier bleibt es:');
+    satz(HELL(WURZEL));
+    { const wo = ortInWorten(WURZEL); if (wo) matt(wo); }
+  } else {
+    /* NICHT FRAGEN, TUN. Caspar_D, 13.09.2026: „puh, ist das nervig, du
+       legst es bitte sofort in den richtigen Nutzerordner, von dem
+       Nutzer, der grade aktiv ist." - Er hat recht: Wer ein Programm
+       gerade erst entpackt hat, hat keine Meinung dazu, wo es wohnen
+       soll. Eine Frage an dieser Stelle ist keine Freiheit, sondern eine
+       Zumutung. Gefragt wird nur, wenn am Ziel schon etwas liegt. */
+    const ziel = path.join(os.homedir(), 'KlangTresor');
+    matt('KlangTresor liegt gerade ' + grund + ':');
+    satz(MATT('  ' + WURZEL));
+    matt('Dort gehört es nicht hin — dein Archiv wächst mit jedem Lied, und ein');
+    matt('Download-Ordner wird irgendwann aufgeräumt. Ich lege es dorthin, wo');
+    matt('es hingehört, und mache dort weiter:');
+    satz(HELL('  ' + ziel));
+    leer();
+
+    if (fs.existsSync(ziel) && fs.readdirSync(ziel).filter((n) => n !== '.DS_Store').length) {
+      wink('Dort liegt schon etwas — das fasse ich nicht an.');
+      matt('Räum es weg oder benenn es um, dann starte noch einmal.');
+      matt('Oder lass KlangTresor hier liegen; es kann gutgehen.');
+      leer();
+      if (!await jaNein('Hier weitermachen?', 'n')) { wiederkommen(); schluss(0); }
+    } else {
+      tut('Umziehen …');
+      let gezogen = false;
+      try {
+        fs.mkdirSync(ziel, { recursive: true });
+        fs.cpSync(WURZEL, ziel, { recursive: true, dereference: false, force: true });
+        gezogen = fs.existsSync(path.join(ziel, 'bin', 'einrichten.js'));
+      } catch (e) {
+        boese('Das Umziehen ging nicht: ' + String(e.message).slice(0, 120));
+      }
+      if (gezogen) {
+        gut('Liegt jetzt in ' + ziel + '.');
+        matt('Ich mache dort weiter — dieses Fenster bleibt, du siehst alles.');
+        matt('Den alten Ordner darfst du danach wegwerfen.');
+        leer();
+        leser.close();
+        const e = spawnSync(process.execPath,
+          [path.join(ziel, 'bin', 'einrichten.js'), ...process.argv.slice(2)],
+          { stdio: 'inherit', cwd: ziel });
+        process.exit(e.status === null ? 1 : e.status);
+      }
+      matt('Ich mache hier weiter, wo ich bin.');
+      leer();
+    }
   }
 
   /* ================================================================ */
