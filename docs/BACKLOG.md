@@ -2094,16 +2094,50 @@ fremder Bestand hat keine Kondensate, keine `wortvektoren.json`, keine
 Gegend-Namen im Geschichten-Raum — und `geschichten.json` durchgehend
 Volltext, was für sich stimmig ist.
 
-Caspar_D: **vertagen, ggf. ein lokales Modell planen.** Die Hausregel
-„Keine KI außer Whisper" steht dem entgegen; ein Netzmodell wurde am
-07.09. verworfen („ich will mich eigentlich nicht abhängig machen").
-Bleibt ein lokales Modell als Einrichtungsschritt wie Whisper — auf
-diesem Intel-Mac 56 s je Titel, vier Stunden für den Bestand; auf dem
-M3-Laptop deutlich weniger. Zu klären, bevor geplant wird: welches
-Modell die Kondensat-Regeln (`docs/KONDENSAT-REGELN.md`) ohne Nacharbeit
-trifft, ob es als optionales Werkzeug neben Whisper laufen darf, und ob
-der Geschichten-Raum bis dahin auf Volltext für alle umgestellt wird,
-damit die Skala einheitlich bleibt.
+Caspar_D: **vertagen, ggf. ein lokales Modell planen.** Auf diesem
+Intel-Mac 56 s je Titel, vier Stunden für den Bestand; auf Apple Silicon
+deutlich weniger — und dort passt ein größeres Modell überhaupt erst
+hinein. Zu klären, bevor geplant wird: welches Modell die
+Kondensat-Regeln (`docs/KONDENSAT-REGELN.md`) ohne Nacharbeit trifft,
+und ob der Geschichten-Raum bis dahin auf Volltext für alle umgestellt
+wird, damit die Skala einheitlich bleibt.
+
+> **Die Hausregel „Keine KI außer Whisper" ist am 13.09.2026 gefallen.**
+> Caspar_D: *„kein Modell ausser whisper, das ist nicht haltbar, damit
+> würden wir uns von Ideen und Fortschritt abkoppeln, die Regel ist
+> idiotisch."*
+>
+> Sie stand hier aus einem echten Grund — **Reproduzierbarkeit**: Ein
+> Katalog, dessen Struktur aus einem Modell fällt, das niemand mehr hat,
+> ist nicht mehr nachvollziehbar. Nur verbot sie eine *Technologie*, wo
+> sie eine *Eigenschaft* verlangen wollte, und traf damit das Falsche:
+> Depth Anything ist so deterministisch und offline wie Whisper und wäre
+> blockiert gewesen, ein künftiger Whisper-Nachfolger dagegen
+> durchgelassen, nur weil er den Namen trägt.
+>
+> **An ihre Stelle tritt eine Unterscheidung, nicht ein Verbot:**
+>
+> **Neue Fähigkeit** — erzeugt etwas, das es vorher nicht gab; fehlt sie,
+> fehlt die Funktion. Tiefenkarte, Forced Alignment, Salienz. Caspar_D:
+> *„da wird etwas völlig Neues ermittelt, es gibt kein Problem mit
+> Kompatibilität, weil schlicht so etwas vorher nicht da war."* **Frei —
+> keine Regel nötig, nur ein Eintrag im Ableitungsbuch.**
+>
+> **Gemeinsame Grundlage** — speist etwas, in dem Titel miteinander
+> verrechnet werden: Kondensate, Einbettungen, alles, was in eine Karte
+> fließt. Dort zählt, dass alle Einträge **gleich** entstanden sind — nicht
+> wegen des Modells, sondern weil eine gemeinsame Karte eine gemeinsame
+> Grundlage braucht. **Betriebsregel: wer die Erzeugung ändert, erzeugt
+> den ganzen Bestand neu — oder gar nicht. Womit, steht im Buch.**
+>
+> **Zwei Fäden bleiben offen.** Das am 07.09. verworfene Netzmodell
+> (*„ich will mich eigentlich nicht abhängig machen"*) fällt **nicht**
+> automatisch mit der Regel: War der Grund Reproduzierbarkeit, ist er
+> erledigt; war es Qualität oder Aufwand, steht er. Und der
+> Volltext-Rückfall des Geschichten-Raums ist nach Caspar_D
+> *„komplett sinnfrei … schlicht quark"*, weil Volltext und Kondensat
+> nicht vergleichbar sind — zu klären, bevor über den Weg entschieden
+> wird.
 
 ## Geschichten-Genres statt Klang-Etiketten
 

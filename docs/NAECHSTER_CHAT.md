@@ -1727,9 +1727,9 @@ Satz „aelter als Sunos Benachrichtigungen reichen" streichen.
    Kapitel schlug Caspar_D einen Gegenleser vor: *„vielleicht sollten wir
    Mistral zu Rate ziehen und die Texte dort gegenlesen lassen, oder du
    nutzt einen Prompt, der auf deutsche Wortstellung trimmt."* Option:
-   lokales Mistral (Ollama, CPU) nur beim Schreiben. Die Hausregel „keine
-   KI außer Whisper" gilt dem Betrieb; ein Gegenleser beim Schreiben ist
-   kein Betrieb. Vor dem Einsatz Caspar_Ds Wort dazu einholen. Zweiter
+   lokales Mistral (Ollama, CPU) nur beim Schreiben. (Die dort zitierte Hausregel „keine
+   KI außer Whisper" ist am 13.09.2026 gefallen — siehe BACKLOG, Abschnitt
+   Kondensate. Ein Gegenleser beim Schreiben war ohnehin nie Betrieb.) Vor dem Einsatz Caspar_Ds Wort dazu einholen. Zweiter
    Durchgang am selben Abend (Gegenlesen auf Wortstellung): neun weitere
    Stellen umgestellt, darunter „Klicke auf einen Stern" (vorher ohne
    Verb), die Korona-Zeile im Tabellenmuster („Leuchtet bei Kommentaren
