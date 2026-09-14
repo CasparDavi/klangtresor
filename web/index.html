@@ -27139,7 +27139,11 @@ PULSE.forEach(k=>{ EFFEKTE[k].lmNurSchub=true; EFFEKTE[k].params.push(
 let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false;   /* LICHTMAL: gerade wird in den Licht-Puffer gemalt */
 const aktiv = e => soloId ? (e.id===soloId) : e.an;
 function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:false, verr:T.verr||'ueber', staerke:(T.staerkeDef!=null?T.staerkeDef:1) };
-  T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; }); return e; }
+  T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; });
+  /* Ohne Schlagraster bekommt ein NEUER Effekt die freie Frequenz statt eines Antriebs, der an
+     nichts haengt. Der Sinus ist dort das, was der Takt sonst waere: eine Uhr, die es gibt. */
+  if(e.lmQuelle&&e.lmQuelle!=='stetig'&&e.lmQuelle!=='hz'&&!taktDa()){ e.lmQuelle='hz'; e.lmForm='sinus'; }
+  return e; }
 /* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
    aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
 const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7], schwaden:['#9a9a9a','#3c3c3c',.4] };
@@ -27251,6 +27255,14 @@ const LM_VORLAGEN=[['doppel','Doppelschlag',n=>Array.from({length:n},(_,i)=>{ co
   ['offbeat','Offbeat',n=>Array.from({length:n},(_,i)=>i%2?1:0)]];
 function lmSchritteHolen(e){ if(!Array.isArray(e.lmSchritte)||!e.lmSchritte.length) e.lmSchritte=LM_VORLAGEN[1][2](8); return e.lmSchritte; }
 function lmSchritteZahl(e,n){ const alt=lmSchritteHolen(e); e.lmSchritte=Array.from({length:n},(_,i)=>alt[Math.floor(i*alt.length/n)]); }
+/* HAT DIESER TITEL UEBERHAUPT EIN SCHLAGRASTER? Caspar_D, 14.09.2026: "bei titeln ohne puls nur
+   effekte, die nicht pulsgesteuert sind, bsp Frequenz, zufall - wie z.B. die
+   Helligkeitsschwankungen beim Flackern einer Kerze oder Flamme."
+   Ein Antrieb "im Takt" verspricht auf so einem Titel einen Takt, den es nicht gibt. Das ist
+   kein leerer Regler, sondern eine Beschriftung, die nicht haelt (Regel 11) - also steht die
+   Quelle dort gar nicht erst zur Wahl. Was bleibt, laeuft auf eigener Uhr: die freie Frequenz,
+   und mit dem Muster "Zufall je Periode" ist genau das das Flackern einer Kerze. */
+function taktDa(){ return !!(DATA&&Array.isArray(DATA.schlaege)&&DATA.schlaege.length); }
 const LM_QUELLEN=[['stetig','stetig'],['takt','im Takt'],['eins','auf der Eins'],['zufall','zuf\u00e4llige Schl\u00e4ge'],['hz','Frequenz']];
 const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.floor(v); };
 function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&&e.lmAbkling!=null)?e.lmAbkling:1;
@@ -27960,7 +27972,13 @@ function renderStapel(){
         if((e.rmBlende||'keine')!=='keine') h+=((e.rmBlende==='iris'||e.rmBlende==='tor')?'':rg('Blende Größe','rmBlGroesse',0.05,0.5,0.01))+rg('Blende Drehung','rmBlDrehung',0,360,1,true)+rg('Blende weich','rmBlWeich',0,1,0.05);
         h+='</div>'; return; }
       if(p.lm){ const q=e.lmQuelle||'stetig', form=e.lmForm||'rampe_ab';
-        h+='<div class="tbs-lm"><div class="tbs-regler"><span>Antrieb</span><select data-k="lmQuelle">'+LM_QUELLEN.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+        /* Ohne Schlagraster stehen die drei taktgebundenen Quellen nicht zur Wahl. Ein gespeicherter
+           Wert bleibt trotzdem stehen und wird nicht stillschweigend umgeschrieben (Regel 12) -
+           stattdessen sagt eine Zeile, warum der Antrieb ruht und was stattdessen geht. */
+        const takt=taktDa(), quellen=takt?LM_QUELLEN:LM_QUELLEN.filter(([v])=>v==='stetig'||v==='hz');
+        const verwaist=(!takt&&q!=='stetig'&&q!=='hz');
+        h+='<div class="tbs-lm"><div class="tbs-regler"><span>Antrieb</span><select data-k="lmQuelle">'+(verwaist?'<option value="'+q+'" selected>'+(LM_QUELLEN.find(x=>x[0]===q)||['',q])[1]+' (ohne Takt)</option>':'')+quellen.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+        if(!takt) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Dieser Titel hat kein Schlagraster.'+(verwaist?' Der Antrieb ruht deshalb.':'')+' Frequenz mit dem Muster „Zufall je Periode“ gibt das Flackern einer Kerze, ganz ohne Takt.</div>';
         if(q!=='stetig'){
           h+='<div class="tbs-regler"><span>Muster</span><div class="tbs-lmformen">'+LM_FORMEN.map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
           h+='<canvas class="tbs-lmvor" width="300" height="44" title="Die Kurve \u00fcber zwei Perioden, der Strich ist jetzt"></canvas>';
