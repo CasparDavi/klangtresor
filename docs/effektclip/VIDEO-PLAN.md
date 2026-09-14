@@ -1053,6 +1053,29 @@ sieht das aus wie Asche rückwärts. Der überzeugende Weg ist eine schmale Raus
 näher an `flammen` als an `partikel`. **Eigener Effekt, kein Parameter.** (`rauch` fehlt in der
 Art-Liste von `partikel` — zu Recht.)
 
+**Nachtrag 14.09.2026 — die Quelle ist Bedingung, und Rauch ist ein Medium.** Caspar_D: *„dann
+brauchen wir noch rauch, der von definierbaren Quellen aufsteigt, ähnlich die Partikeleffekte — so
+ne art Theaternebel, aber von einer Quelle kommend konfigurierbar. Damit bspw Feuer auch Rauch
+machen kann."* Das schärft den Punkt an zwei Stellen:
+
+- **Er erbt die Quellfläche, nicht die Teilchen.** „Ähnlich die Partikeleffekte" heißt nicht, dass
+  Rauch aus Punkten besteht, sondern dass er dieselben Wörter benutzt: Quellfläche, Richtung,
+  Streuung, Sichtfeld. Das ist genau der Ertrag von §9a.5 — ein generischer Begriff bedeutet auf
+  jeder Karte dasselbe. Eine Rauschsäule, deren Fuß auf der Quellfläche steht und die sich nach oben
+  weitet, braucht keinen eigenen Wortschatz.
+- **Er gehört zu den Medien, nicht zu den Selbstleuchtern.** Der Theaternebel trägt `medium:true`
+  und liest den Licht-Puffer; wer `leuchtet` trägt, malt hinein. In der Registry steht heute
+  `['licht','laser','strahlen','feuer','strobe']` als Leuchter — **das Feuer ist schon dabei.**
+  Ein Rauch als Medium wird damit von dem Feuer beleuchtet, über dem er steht, ohne eine einzige
+  Verbindung zwischen beiden Effekten: die Fahne über der Flamme glüht unten und wird nach oben
+  kalt, weil das Licht nach oben ausgeht. Genau das meint **Regel 6** — der Rauch leuchtet nicht
+  selbst, er wird beleuchtet. Als Selbstleuchter oder als Partikelwolke wäre dieser Gewinn weg.
+  (`flammen` trägt `leuchtet` nicht und kann es auch nicht: der Licht-Puffer wird von den Malern
+  gefüllt, nicht von den Shadern. Das ist eine eigene Lücke, die hier auffällt.)
+
+Damit bleibt Rauch Punkt 5 der Reihenfolge, bekommt aber eine Bedingung dazu: **er wird erst gebaut,
+wenn Quellfläche und Sichtfeld stehen**, weil er sie mitbenutzt statt sie zu kopieren.
+
 **„Schein nur ums Feuer" ist bereits gebaut.** Das ist der Scheinwerfer aus dem Raum-Block, klein
 gestellt, mit Farbig abwedeln — **Regel 5** gilt, er hellt auf, was da ist. Der Antrieb aus dem
 Lichtmischpult lässt ihn mit dem Feuer flackern. Kein neuer Parameter nötig, sondern ein **Preset,
@@ -1129,7 +1152,8 @@ anders gelesen) ohne Umstände erfüllt ist.
 2. **`breite`-Minimum senken** — eine Zahl.
 3. **Preset „Feuer mit Schein"** — koppelt Vorhandenes, kein neuer Code.
 4. **Quellfläche und Sichtfeld** — zusammen mit der Loop-Reparatur §6.8 Klasse 2, nicht getrennt.
-5. **Rauchfahne** als eigener Shader-Effekt — zuletzt, weil eigenständig.
+5. **Rauchfahne** als eigener Shader-Effekt — zuletzt, weil sie Quellfläche und Sichtfeld
+   mitbenutzt (Nachtrag in §9a.4), und als **Medium**, damit das Feuer sie beleuchtet.
 
 Die **Zweispaltigkeit (9a.5)** läuft quer dazu: sie ist keine Stufe in dieser Liste, sondern die
 Form, in der Punkt 4 überhaupt erst in die Karte passt. Sinnvoll also **mit** Punkt 4, nicht danach.
@@ -1345,6 +1369,29 @@ weiß nichts vom Lied.
 Der Aufwand liegt nicht im Anhängen, sondern in der Entscheidung **je Effekt, was der Antrieb
 moduliert** — bei Nebel die Dichte, bei Partikeln die Rate, bei Rissen das Auslösen. Das ist eine
 Zeile Nachdenken je Effekt, keine Zeile Code.
+
+**Nachtrag 14.09.2026 — die Pulse zuerst, und dort ist es kein Anhängen, sondern ein Austausch.**
+Caspar_D: *„demnächst will ich dann noch die ganzen pulseffekte mit den lfo steuerungen der
+lichteffekte ausstatten."* Die acht Pulse (Helligkeit, Zoom, Schärfe, Kontrast, Sättigung, RGB,
+Farbton, Kippen) sind der Sonderfall in der Tabelle oben: sie stehen nicht antrieblos da, sie haben
+einen **eigenen, älteren Antrieb** — `antrieb` mit zwei Werten (im Takt / atmend), dazu `atempo` und
+`invert`. Das Lichtmischpult kann alles davon und mehr: Quelle (Schläge, Taktanfang, zufällige
+Schläge, freie Frequenz), Form der Kurve, Teiler, Tiefe, Versatz, Invers, Sequenzer.
+
+Das ist damit **kein Anhängen, sondern ein Ersetzen** — und fällt unter **Regel 12**: die
+gespeicherte Ablage wird übersetzt, nicht stillschweigend anders gelesen. Die Übersetzung ist klein
+und muss vorher aufgeschrieben werden:
+
+| alt | neu |
+|---|---|
+| `antrieb:'takt'` | `lmQuelle:'takt'`, `lmForm:'rampe_ab'`, `lmTeiler:1` |
+| `antrieb:'atem'`, `atempo:s` | `lmQuelle:'hz'`, `lmHz:1/s`, `lmForm:'sinus'` |
+| `invert:1` | `lmInvers:1` |
+
+Danach zeigt die rechte Spalte auf **allen** Karten dasselbe Antriebsfeld, und die Ungleichheit, die
+§9a.5 sichtbar macht, ist an dieser Stelle erledigt. Zu prüfen bleibt, ob „atmend" mit Sinus bei
+gleicher Periode wirklich gleich aussieht — sonst ist die Übersetzung falsch und braucht eine
+eigene Kurvenform.
 
 ### 9d.2 Woran sich Bühnenreife messen lässt
 
