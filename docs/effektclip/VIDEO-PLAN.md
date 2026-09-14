@@ -1486,7 +1486,9 @@ eigene Kurvenform.
   ruhen statt gedreht schlagen. Ein Wort, ein Ding (Regel 10a) — es bleibt ein eigener Schalter in
   der linken Spalte. Mit auf das Pult gehen dagegen `abkling` (→ `lmAbkling`, Muster „An, dann
   Rampe ab") und `nurEins` (→ Quelle „auf der Eins").
-- **Das Pult konnte den alten Atem gar nicht.** „pro Sekunde" fing bei 0,5 an, ein Atemzug von vier
+- **Dem Pult fehlte nicht die Kurve, sondern die Langsamkeit.** Caspar_D: *„wieso konnte das pult
+  den atem nicht, wir konnten kurven zuweisen, insbesondere die Sinuskurve — und die ist nichts
+  anderes als Atem."* Richtig: die Form war immer da. Was fehlte, war der Bereich. „pro Sekunde" fing bei 0,5 an, ein Atemzug von vier
   Sekunden braucht 0,25 und der langsamste alte Atem von zwölf Sekunden 0,083. Die Übersetzung hätte
   jeden alten Atemzug bis auf das Sechsfache beschleunigt. Der Regler reicht jetzt bis 0,05 hinunter,
   also bis zu einem Zug in zwanzig Sekunden. Das ist keine Anpassung an die Vergangenheit, sondern
