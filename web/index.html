@@ -28481,6 +28481,59 @@ function zeichneFrame(t){
   function ausgabeMass(){ const [bw,bh]=qMass(bild); const sk=Math.min(1,LANGE_SEITE/Math.max(bw,bh));
     const g=x=>Math.max(2,Math.round(x*sk/2)*2);   /* H.264 will gerade Kantenlaengen */
     return [g(bw),g(bh)]; }
+  /* ---- KODIEREN STATT ABFILMEN (Caspar_D, 14.09.2026: "den Export wollen wir so bauen, dass er auch
+     zeitasynchron erfolgen kann, das Speichern der 10 sec kann auch ruhig 30 sec dauern, wenn es
+     noetig ist - es muss kein Abfilmen dessen sein, was unsere Engine schafft (ich sag nur
+     Gottesstrahlen)").
+
+     Der alte Weg nimmt die Leinwand mit MediaRecorder auf und WARTET dabei auf die Uhr, weil der
+     Zeitstempel eines Bildes entsteht, wenn es abgeschickt wird. Wird ein Bild langsamer fertig als
+     1/Bildrate, wandert sein Zeitstempel mit: der Clip wird laenger als bestellt und der Schnitt
+     liegt neben der Naht. Genau das ist der Fall mit den teuren Effekten.
+
+     Der neue Weg kodiert jedes Bild EINZELN und setzt den Zeitstempel selbst. Gemessen am
+     14.09.2026 mit kuenstlich verteuerten Bildern: 90 Bilder hinein, 90 Pakete heraus,
+     Zeitstempel exakt wie gesetzt, Rechenzeit 1,75 s fuer 1,50 s Film - die Uhr spielt keine
+     Rolle mehr. Herauskommt ein roher H.264-Strom (Annex B); den Behaelter baut ffmpeg auf dem
+     Server, der dafuer ohnehin schon da ist.
+
+     Nicht genommen wurde der bequeme Weg ueber MediaStreamTrackGenerator: gemessen wurden aus
+     60 Bildern mit gesetzten Zeitstempeln 0,155 s statt 1,000 s Film - MediaRecorder uebernimmt
+     fremde Zeitstempel nicht. */
+  async function kodiererDa(){
+    if(typeof VideoEncoder==='undefined'||typeof VideoFrame==='undefined') return false;
+    try{ const a=await fetch('/api/effektclip-bauen?probe=1'); return a.status!==404; }catch(e){ return false; }
+  }
+  async function kodieren(m,gemerkt,t0,N,W,H,rate,melden){
+    let cfg=null;
+    for(const c of ['avc1.640028','avc1.4D0028','avc1.42E01E']){
+      const p={ codec:c, width:W, height:H, framerate:rate, bitrate:Math.min(16000000,Math.round(W*H*rate*0.15)),
+                avc:{format:'annexb'}, latencyMode:'quality' };
+      try{ const s=await VideoEncoder.isConfigSupported(p); if(s&&s.supported){ cfg=s.config||p; break; } }catch(e){}
+    }
+    if(!cfg) return null;
+    const teile=[]; let fehler=null;
+    const enc=new VideoEncoder({ output:(ch)=>{ const b=new Uint8Array(ch.byteLength); ch.copyTo(b); teile.push(b); },
+                                 error:(e)=>{ fehler=e; } });
+    enc.configure(cfg);
+    /* Alle zwei Sekunden ein Schluesselbild: der Loop springt vom Ende an den Anfang, und ein
+       Abspieler soll dort nicht erst einen halben Clip weit suchen muessen. */
+    const schluessel=Math.max(1,Math.round(rate*2));
+    for(let i=0;i<N;i++){
+      setzen(m); try{ zeichneFrame(t0+i/rate); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
+      const f=new VideoFrame(m.lein,{ timestamp:Math.round(i*1000000/rate), duration:Math.round(1000000/rate) });
+      enc.encode(f,{ keyFrame:(i%schluessel===0) }); f.close();
+      /* Die Warteschlange des Kodierers nicht volllaufen lassen - das ist die EINZIGE Wartestelle,
+         und sie haengt am Kodierer, nicht an einer Uhr. */
+      while(enc.encodeQueueSize>6 && !fehler) await new Promise(r=>setTimeout(r,0));
+      if(fehler) break;
+      if(melden && i%15===0) melden(i,N);
+    }
+    if(fehler){ try{ enc.close(); }catch(e){} throw fehler; }
+    await enc.flush(); enc.close();
+    let gross=0; for(const b of teile) gross+=b.length;
+    return { blob:new Blob(teile,{type:'video/h264'}), bytes:gross };
+  }
   async function video(){
     if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
     if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
@@ -28499,6 +28552,22 @@ function zeichneFrame(t){
     /* Jedes Bild wird EINZELN angefordert. Nur so entspricht Bild i in der Datei auch Bild i des Clips;
        laesst man den Strom selbst abtasten, verschiebt sich das gegeneinander und der Schnitt trifft
        nicht die Naht. Dass der Kodierer die letzten Bilder verliert, faengt die Zugabe unten ab. */
+    /* ERST KODIEREN, WENN BEIDE SEITEN ES KOENNEN. Schlaegt es fehl oder fehlt der Endpunkt,
+       laeuft der alte Weg darunter unveraendert weiter - es geht also nichts verloren. */
+    if(await kodiererDa()){
+      let k=null; LOOP=L;
+      try{ k=await kodieren(m,gemerkt,t0,N,W,H,BILDRATE,(i,z)=>pStat('kodiere Bild '+(i+1)+' von '+z+' … (die Uhr spielt dabei keine Rolle)')); }
+      catch(x){ console.warn('Effektclip-Export:',x); k=null; }
+      finally{ LOOP=0; setzen(gemerkt); }
+      if(k&&k.bytes>1000){
+        pStat('baue die Datei …');
+        try{ const a=await fetch('/api/effektclip-bauen?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),
+                                 {method:'POST',headers:{'Content-Type':'video/h264'},body:k.blob});
+          if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000){ if(knopf) knopf.disabled=false; return ausliefern(b2,'mp4',true,N,nicht); } }
+        }catch(x){ console.warn('Effektclip-Export:',x); }
+      }
+      pStat('Kodierer ging nicht — nehme auf wie bisher …');
+    }
     const strom=cv.captureStream(0), spur=strom.getVideoTracks()[0];
     const mr=new MediaRecorder(strom,{ mimeType:typ, videoBitsPerSecond: Math.min(12000000, Math.round(W*H*BILDRATE*0.12)) });
     const teile=[]; mr.ondataavailable=ev=>{ if(ev.data&&ev.data.size) teile.push(ev.data); };
@@ -28531,6 +28600,10 @@ function zeichneFrame(t){
        Bildzahl. Antwortet es nicht - etwa im Pruefstand ohne Hausserver -, bleibt die Rohaufnahme. */
     if(endung==='mp4'){ try{ const a=await fetch('/api/effektclip-schnitt?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),{method:'POST',headers:{'Content-Type':'video/mp4'},body:blob});
       if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000){ blob=b2; geschnitten=true; } } }catch(x){} }
+    return ausliefern(blob,endung,geschnitten,N,nicht);
+  }
+  /* Beide Wege - abfilmen wie bisher und kodieren - liefern ueber denselben Griff aus. */
+  function ausliefern(blob,endung,geschnitten,N,nicht){
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),20000);
