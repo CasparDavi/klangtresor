@@ -1070,10 +1070,24 @@ select,.knopf{
 .capkachel img,.capkachel video,.capkachel canvas{position:absolute;inset:0;width:100%;height:100%;
   object-fit:cover;border-radius:inherit;display:block}
 .capkachel .schatten{position:absolute;inset:0;background:#000;opacity:.72;pointer-events:none}
-.capkachel .plus{position:absolute;right:7px;bottom:7px;width:24px;height:24px;border-radius:50%;
-  border:1px solid var(--akzent);background:rgba(0,0,0,.62);color:var(--akzent);display:flex;
-  align-items:center;justify-content:center;font-size:15px;line-height:1;pointer-events:none}
-.capkachel:hover .plus{border-color:var(--akzent)}
+/* EIN ZEICHEN UNTEN RECHTS, auf beiden Seiten dieselbe Form (Caspar_D, 14.09.2026: "statt des
+   plus signs ein suno sign, und ich glaube, der kreis kann weg, mach das + so auffaellig wie in
+   der globalen Overview"). Die Form ist die der Marke auf den Kacheln der Uebersicht: ein
+   kleines dunkles Rechteck mit runden Ecken, fett gesetzt. Rechts das Plus im Akzent, weil dort
+   etwas dazukommen kann; links der Weg zu Suno in Grau, weil man dort etwas AENDERT, nicht hier. */
+/* Die Form ist die der uebrigen Marken im Haus (videomarke, privatmarke, capmarke): kleines
+   dunkles Rechteck mit runden Ecken, fett, gesperrt. Das Plus darf groesser sein - ein einzelnes
+   Zeichen braucht Groesse, um zu lesen zu sein - und traegt den Akzent, weil dort etwas
+   dazukommen kann. Das Suno-Abzeichen bleibt in der Hausgroesse und in Grau: geaendert wird bei
+   Suno, nicht hier, und es soll die Kachel nicht ueberstrahlen. */
+.capkachel .capzeichen{position:absolute;right:7px;bottom:7px;background:rgba(0,0,0,.78);
+  border-radius:5px;font-weight:700;letter-spacing:.4px;text-decoration:none;pointer-events:none}
+.capkachel .capzeichen.plus{padding:1px 9px;font-size:17px;line-height:1.25;color:var(--akzent);
+  border:1px solid color-mix(in srgb, var(--akzent) 60%, transparent)}
+.capkachel:hover .capzeichen.plus{background:var(--akzent);color:#000;border-color:var(--akzent)}
+.capkachel .capzeichen.suno{padding:2px 6px;font-size:10.5px;color:var(--schwach);
+  border:1px solid var(--rand);pointer-events:auto;cursor:pointer}
+.capkachel .capzeichen.suno:hover{color:var(--text);border-color:var(--akzent)}
 .capkachel:hover{border-color:var(--akzent)}
 .capkachel.drueber{border-color:var(--akzent);border-style:solid}
 /* EINE FUSSLEISTE, NICHT ZWEI UEBEREINANDER (Caspar_D, 14.09.2026: "unterm Effektclip steht nur
@@ -17048,6 +17062,12 @@ function capMarke(s){
     title="${tipp}">${hat ? 'Medien' : '+'}</span>`;
 }
 
+/* Der Weg zu Suno: geaendert wird dort, nicht hier. Steht auf beiden Suno-Kacheln an derselben
+   Stelle, an der die privaten ihr Plus tragen - dieselbe Ecke, dieselbe Form, andere Bedeutung. */
+function sunoZeichen(id){
+  return `<a class="capzeichen suno" href="https://suno.com/song/${id}" target="_blank" rel="noopener"`
+    + ` title="Bei Suno öffnen — dort lässt sich Titelbild und Bewegtbild ändern">Suno ↗</a>`;
+}
 function capAuf(id){
   const s = songVonId.get(id); if (!s) return;
   const n = notizen[id];
@@ -17093,13 +17113,15 @@ function capAuf(id){
     /* Reihe der Kacheln. Links zum Lesen, rechts zum Aendern - dieselbe Reihenfolge in beiden
        Haelften, damit das Auge die Paare von selbst findet. */
     +   `<div style="grid-column:1;grid-row:2"><div class="capkachel ruhig">`
-    +     `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">` + `</div>`
+    +     `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
+    +     sunoZeichen(id) + `</div>`
     +     `<div class="capkachelname">Titelbild</div></div>`
     +   `<div style="grid-column:2;grid-row:2"><div class="capkachel ruhig">`
     +     (s.videoCoverUrl
           ? `<video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline preload="auto"`
              + ` onerror="this.parentNode.classList.add('leerkachel');this.parentNode.textContent='keins'"></video>`
-          : `keins`) + `</div>`
+          : `keins`)
+    +     sunoZeichen(id) + `</div>`
     +     `<div class="capkachelname">Bewegtbild</div></div>`
     +   `<div class="capstart" style="grid-column:4;grid-row:2"><div class="capkachel" id="capartbild" data-art="bild"></div>`
     +     `<div class="capkachelname">Titelbild</div></div>`
@@ -17249,9 +17271,9 @@ function capAuf(id){
         feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
         feld.innerHTML = eingefroren ? 'Archiv eingefroren'
           : (art === 'ton'
-             ? `<span>Tondatei hierher ziehen</span><span class="plus">+</span>`
+             ? `<span>Tondatei hierher ziehen</span><span class="capzeichen plus">+</span>`
              : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
-               + `<div class="schatten"></div><span class="plus">+</span>`);
+               + `<div class="schatten"></div><span class="capzeichen plus">+</span>`);
       }
     }
   };
@@ -17346,7 +17368,7 @@ function capAuf(id){
         + `</div>`
       : (eingefroren ? 'Archiv eingefroren'
          : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
-           + `<div class="schatten"></div><span class="plus">+</span>`);
+           + `<div class="schatten"></div><span class="capzeichen plus">+</span>`);
     if (hatE){ const kasten = studioFeld.querySelector('.capartclip');
       if (kasten) EffektclipStudio.clipAn(kasten, id); }
     const oe = studioFeld.querySelector('[data-tu="oeffnen"]');
