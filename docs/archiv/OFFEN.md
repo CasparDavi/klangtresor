@@ -508,7 +508,6 @@ entstanden ist" über die KI-Beteiligung.
 Was einmal committet wurde, bleibt in git, auch wenn es später gelöscht
 wurde. Durchzusehen sind alle Commits auf:
 
-- `geheim/` (steht in `.gitignore`, aber: war es das immer?)
 - Tokens und Cookies aus der Clerk-Zeit, `bin/token.js`, `bin/paket.js`
 - die `__clerk_handshake`-URL, die laut HISTORY einmal in ein
   Werkzeugprotokoll geraten ist

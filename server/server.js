@@ -1918,15 +1918,6 @@ const server = http.createServer((req, res) => {
     });
   }
 
-  /* HIER STAND EINMAL /api/geheim/cookie.
-     Entfernt am 11.09.2026. Der Weg - dem Server ein __client-Cookie
-     geben, damit er sich selbst Clerk-Token praegt - ist am 19.08.2026
-     aufgegeben worden: Clerk gibt das ANGEMELDETE Cookie nicht heraus,
-     es sitzt HttpOnly im Tab, und jede Login-Seite legt ein neues,
-     leeres an. Die Begruendung steht in docs/suno/WEGE.md, Abschnitt
-     „Aufgegeben: Server-Login". Der Token kommt aus dem Lesezeichen,
-     und nur von dort. */
-
   if (p === '/api/morgen/neue') return jsonAntwort(res, { ids: morgen.neueIds || [] });
 
   /* Liegen Rohdaten, die juenger sind als der Katalog? Dann wurde nach

@@ -16,10 +16,9 @@
 .Spotlight-V100
 .Trashes
 
-# Geschichte und Geheimnisse
+# Die Werkstatt gehoert nicht ins Abbild
 .git
 .gitignore
-geheim/
 
 # Das Archiv liegt als Volume daneben, nicht im Abbild
 library/

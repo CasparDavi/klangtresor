@@ -35,17 +35,64 @@ was schon da ist. Ein Strahl im Leeren ist unsichtbar — das ist richtig so. Sc
 Spiegelbild und rechnet mit Farbig nachbelichten. Wer schwarz abwedelt, malt nichts (daran starb
 das Sicherungswackeln einen halben Tag lang).
 
-**6. Nebel leuchtet nicht selbst, er wird beleuchtet.** Der Theaternebel ist ein Medium:
-`mische(Bild, Farbe × (Grundlicht × Umgebung + Licht × Streuung), Dichte)`. Das Licht kommt aus dem
-Licht-Puffer, in den alle Leuchten der Kette zusätzlich additiv malen. Darum wird ein Strahl im
-Nebel sichtbar, gleich an welcher Stelle der Nebel in der Kette hängt. Wer einen neuen Leuchter
-baut, setzt `leuchtet` in der Registry — sonst ist er im Nebel nicht zu sehen.
+**6. Nebel leuchtet nicht selbst, er wird beleuchtet.** Ein Medium liest den Licht-Puffer, in den
+alle Leuchten der Kette zusätzlich additiv malen. Darum wird ein Strahl im Nebel sichtbar, gleich an
+welcher Stelle der Nebel in der Kette hängt. Wer einen neuen Leuchter baut, setzt `leuchtet` in der
+Registry — sonst ist er im Nebel nicht zu sehen.
 
-**6a. Ein Medium mischt gegen seine Umgebung, nicht gegen eine feste Zahl.** „Umgebung" ist die grob
-verwaschene Helligkeit des Bildes an dieser Stelle, aus neun Griffen in die Quelltextur. Ein fester
-Grauwert zog helle Stellen herunter und dunkle herauf, und beides zusammen fraß Kontrast und Farbe:
-bei gleicher Dichte gingen 32 % Kontrast und 46 % Buntheit verloren, mit der Umgebung nur 14 % und
-28 %. Wer eine Schicht über das ganze Bild legt, fragt zuerst, wogegen sie mischt.
+**6b. Ein Medium dämpft und gibt dazu — es mischt nicht gegen eine Farbe.**
+
+```
+Ergebnis = Bild × Durchlass  +  Farbe × (Umgebung + Streulicht × 4) × (1 − Durchlass)
+```
+
+Hier stand bis zum 14.09.2026 die Mischform `mische(Bild, Farbe × (Grundlicht × Umgebung + Licht ×
+Streuung), Dichte)`. Sie trägt nicht, und das ist gemessen:
+
+- **Der Nebel wurde zu schwarzer Farbe**, sobald man „Ohne Licht" auf 0 stellte — Weiß mal null ist
+  schwarz, und die Dichte entschied allein über die Deckung. Gemessen: −48 % Helligkeit, an der
+  dunkelsten Stelle −211 Graustufen. Caspar_D: *„warum wird nebel ohne licht immer schwarz obwohl
+  ich weiss eingestellt habe"*.
+- **Der neutrale Punkt lag nicht bei 1, sondern bei 1,20** — weil die Nebelfarbe mitmultipliziert
+  wurde (`#cfd6e0` hat 83,5 % der Leuchtdichte von Weiß). Vier Fünftel des Reglerwegs dunkelten, und
+  weil die drei Kanäle verschieden sind, gab es **überhaupt keinen** farbneutralen Wert.
+- **Der Strahl musste erst die Dämpfung bezahlen**: auf den Strahlen ohne Nebel 33,1 Graustufen, mit
+  Nebel bei „Im Licht" 0 nur 16,9. Erst ab 58 % Reglerweg war er wieder im Plus.
+
+Die neue Form hat die Mängel nicht kleiner gemacht, sondern **unkonstruierbar**. Weißer Nebel ist auf
+flächigem Grund exakt neutral (`Bild×T + Bild×(1−T) = Bild`, bei jeder Dichte — gemessen: 0,1 bis
+0,8 % Änderung über den ganzen Stärkeweg). Und der Faktor 4 gegen den Mindestanteil 0,25 ergibt 1:
+**was die Dämpfung dem Strahl nimmt, gibt die Einstreuung mindestens zurück.** Gemessen: 33,1 → 73,0
+bei der Vorgabe, 96,4 bei voller Dichte, und bei keiner Reglerstellung unter 33,1.
+
+Dunkler Nebel entsteht nicht über eine Helligkeit, sondern über das **Material**: die Farbe ist das
+Fluid. Weiß ist Wassernebel (Streu-Albedo 0,9999999 — er kann physikalisch nicht abdunkeln), dunkel
+ist Rauch und schluckt ehrlich. Godot nennt das „Albedo auf Schwarz", Houdini hat eine eigene
+„Absorption Color". In rund 25 geprüften Systemen (Unreal, Unity, Godot, Blender, Fusion, Nuke,
+Houdini, OpenGL/Direct3D, pbrt) gibt es **keinen einzigen Helligkeitsregler für Nebel** — wie hell
+eine Lampe im Nebel brennt, steht überall an der Lampe.
+
+**6a. Ein Medium rechnet gegen seine Umgebung, nicht gegen eine feste Zahl.** „Umgebung" ist die grob
+verwaschene Helligkeit des Bildes an dieser Stelle. Ein fester Grauwert zog helle Stellen herunter
+und dunkle herauf, und beides zusammen fraß Kontrast und Farbe: bei gleicher Dichte gingen 32 %
+Kontrast und 46 % Buntheit verloren, mit der Umgebung nur 14 % und 28 %. Wer eine Schicht über das
+ganze Bild legt, fragt zuerst, wogegen sie rechnet. **Der Abtastradius gehört auf das
+Seitenverhältnis umgerechnet** — sonst ist die Abtastscheibe bei einem hochkanten Bild eine Ellipse
+(bei 900×1200 mit Achsverhältnis 1,33).
+
+**6c. Wenige Regler, die etwas entscheiden, statt vieler, die dasselbe tun.** Lage, Dicke und
+Schichtkante waren drei Regler und sind eine Entscheidung: schwerer Nebel liegt tiefer, flacher und
+hat eine schärfere Oberkante. Körnung und Turbulenz sind zwei Namen für eine Zahl. Wind, Wabern und
+Auftrieb folgen aus dem Luftzug. Der Filmnebel hat fünf Regler plus Stärke, der Theaternebel hatte
+fünfzehn — zum Vergleich: Blender Volume Scatter 3, Unity 4, DIN SPEC 15800 für Nebelgeräte 4,
+Fusion Fog 5, Godot 10. Ein echter Hazer (Look Solutions Unique 2.1) hat zwei: Pumpe und Lüfter.
+
+**6d. Ein Regler, der einen Zustand umschaltet, darf nicht heimlich andere mitschreiben.** Der
+Sortenwechsel des Theaternebels setzte acht weitere Regler neu — aber nur, solange keiner davon
+angefasst war (`Object.keys(alt).every(...)`). Dieselbe Handlung hatte damit zwei Ausgänge, und das
+ist die Wurzel dessen, was Caspar_D am 14.09.2026 so beschrieb: *„ich habe irgendwie einen
+Glücksspieleindruck und kein deterministisches Agieren."* Der Schwesterfall bei den Partikeln
+(`artFarben`) macht es richtig: je Schlüssel geprüft, je Schlüssel gesetzt.
 
 **7. Selbstleuchter sind keine Beleuchtung.** Feuer, Flammen und Partikel leuchten selbst und
 behalten ihre eigene Verrechnung. Sie werden nicht auf Abwedeln umgestellt.

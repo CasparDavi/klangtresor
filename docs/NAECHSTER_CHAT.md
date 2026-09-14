@@ -188,8 +188,8 @@ raten.**
 sitzt HttpOnly im Tab; jede Login- oder Clerk-Seite legt einen neuen,
 leeren an. Drei gültige, leere Cookies kopiert, keines mit Session.
 Caspar_D: „ich hab keinen Bock mehr, wir nehmen das Lesezeichen.“
-**Am 11.09.2026 gelöscht** — `bin/token.js`, `POST /api/geheim/cookie`,
-`geheim/`. Die Begründung steht jetzt dort, wo sie hingehört:
+**Am 11.09.2026 gelöscht** — `bin/token.js` und der Server-Weg, der das
+Cookie entgegennahm. Die Begründung steht jetzt dort, wo sie hingehört:
 `docs/suno/WEGE.md`, Abschnitt „Aufgegeben: Server-Login“.
 
 **Keine Skripte im angemeldeten Suno-Tab ausführen**, um Tokens oder
@@ -1712,8 +1712,8 @@ Satz „aelter als Sunos Benachrichtigungen reichen" streichen.
 6. **KlangTresor-eigene Listen** neben Suno-Alben (`herkunft:
    'klangtresor'`), Zeichen: oranger runder Drops mit S / weißer Drops
    mit schlankem Tresorrad.
-7. ~~Zwei Alt-Wege löschen: `bin/token.js` + `geheim/` +
-   `POST /api/geheim/cookie`~~ — **erledigt 11.09.2026**, samt Docker und
+7. ~~Zwei Alt-Wege löschen: `bin/token.js` und den Server-Weg fürs
+   Cookie~~ — **erledigt 11.09.2026**, samt Docker und
    Einrichtung. Begründung in `docs/suno/WEGE.md`.
 8. **Handbuch.** Musterkapitel `docs/handbuch/12-klangraum.html` von
    Caspar_D am 08.09. um 22 Uhr abgenommen, mit elf Änderungen (alle
@@ -3462,3 +3462,204 @@ Flanke über 9 % der Bildbreite.
    wie `streuung` — eine Übersetzung nach Regel 12, eigener Schritt.
 4. Das Stroboskop braucht die Leuchter-Marke **je Ende** statt je Typ: die helle Hälfte gehört in
    den Licht-Puffer, die dunkle nicht.
+
+## Filmnebel — der Nebel neu nach dem Standardmodell (14.09.2026)
+
+Caspar_D: *„mit dem nebel ist massiv was faul, der macht nur dunkle schlieren, der laser wird
+überhaupt nicht verstärkt"* · *„warum wird nebel ohne licht immer schwarz obwohl ich weiss
+eingestellt habe"* · *„ich habe irgendwie einen Glücksspieleindruck"* · *„mach eine recherche, wie
+andere das mit nebel machen, was wir hier haben ist zu kompliziert"* · *„wir nehmen keine Rücksicht
+darauf, was schon da ist, wir bauen das mit deinen neuen Kenntnissen komplett neu, so wie die Profis
+das machen"* · *„das Ding heisst Filmnebel. Theaternebel bleibt erstmal und wird, wenn Filmnebel
+besser ist, gestrichen."*
+
+**Der neue Effekt `filmnebel` steht neben dem alten `nebel`.** Nichts wurde übersetzt, nichts
+gelöscht — beide laufen, der Theaternebel geht, wenn der Filmnebel gewonnen hat.
+
+### Die Rechnung
+
+```
+Weg        = Schichtlage(Schwere) · Ballen(Schwaden) · Entfernung(Tiefenkarte)
+Durchlass  = exp(−3·Weg)
+Streulicht = Lichtpuffer·(0,25 + 0,75·Bündelung) + Lichthof·0,75·(1 − Bündelung)
+Ergebnis   = Bild·Durchlass + Farbe·(Umgebung + Streulicht·4)·(1 − Durchlass)
+```
+
+Fünf Regler — Farbe, Schwere, Schwaden, Bündelung, Luftzug — plus Stärke als Dichte. Der alte hatte
+fünfzehn. Der **Lichthof** (Mehrfachstreuung um jede Leuchte) ist der Lichtpuffer, einmal je Bild
+auf ein Vierzehntel verkleinert und als vierte Textur gelesen; das Verkleinern IST der Weichzeichner.
+Die **Farbe ist das Fluid**, nicht die Helligkeit. Begründung und Belege stehen als Regel 6b in
+`docs/effektclip/EFFEKTCLIP-REGELN.md`.
+
+### Gemessen
+
+| | Theaternebel | Filmnebel |
+|---|---|---|
+| weißer Nebel ohne Leuchte, mittlere Änderung von 36 Graustufen | −6,9 (Vorgabe) bis −23,1 („Ohne Licht" 0) | **−0,05 bis −0,29** über den ganzen Stärkeweg |
+| Laser auf den Strahlen, ohne Nebel 33,1 | 16,9 bei „Im Licht" 0 · 45,0 bei 1 · 62,0 bei 2 | **73,0** bei Vorgabe · 39,8…96,4 über die Stärke · **nie unter 33,1** |
+| Bilder je Sekunde mit Laser | 60 | **60,2** |
+
+„Schwere" zeigt sich ohne Leuchte nicht in der Helligkeit, sondern im **Ortskontrast** — Luftperspektive.
+Kontrastverlust in sechs Streifen von oben nach unten bei Stärke 0,8: Schwere 0 → 55/51/50/47/24/31 %,
+Schwere 0,5 → 0/0/15/38/23/32 %, Schwere 1 → 0/0/0/6/24/30 %. Der Nebel sinkt.
+
+### Was der Filmnebel NICHT kann
+
+- **Absaugung und Sog** gibt es nicht mehr, ersatzlos.
+- **Ohne Leuchte in der Kette ist weißer Nebel in der Helligkeit unsichtbar.** Gewollt; wer eine
+  milchige Scheibe will, nimmt eine hellgraue Farbe statt eines Reglers.
+- **Der Höhenterm aus VIDEO-PLAN §9.7a fehlt** — Nebel, der am Boden klebt und zum Horizont
+  zusammenläuft. Bewusst weggelassen: die Lochkamera-Rückrechnung `h ≈ (y − y_horizont)·z` braucht
+  einen Schwellwert, der bei einer *geschätzten* Tiefenkarte je Bild woanders liegt — das wäre wieder
+  ein Glücksspielregler. „Schwere" ist stattdessen eine Bildhöhe mit Tiefendämpfung.
+
+### Offen aus der Code-Prüfung (161 Agenten, 21 von 52 Befunden hielten stand)
+
+Alles am **alten** Theaternebel und am Umfeld, nicht am Filmnebel:
+
+1. **`noiseLaden()` kennt keinen Endzustand für Misserfolg** — fehlt `/fremd/webgl-noise/noise3D.glsl`,
+   läuft ein Abruf je Bild (404 je Bild), und der Leinwand-Rückfall wird dauerhaft, ohne dass es in
+   der Oberfläche sichtbar wäre.
+2. **Die Kacheln der Albumseite fordern das Rauschen nicht an** — vorgeladen wird es nur beim Öffnen
+   des Studios. Die ersten Bilder jeder Nebel-Kachel malt garantiert der Rückfall.
+3. **„wirkt auf" wird im Lichtpuffer nicht angewandt.** Der Fülllauf kennt `tiefeWirkt` nicht; in der
+   Vorgabestellung „alles" folgenlos, sonst leuchtet der Nebel über die ganze Strahllänge weiter.
+4. **Theaternebel, „Dicke" bei Bodennebel**: über 89 % des Reglerwegs tot, die Vorgabe 1,20 liegt
+   mitten im toten Bereich (lebendig ist 0,10…0,26 bei Lage 0,74).
+5. **Theaternebel, Wanderung Fassung < 3**: `typeof e.grundlicht==='number'` ist immer wahr, weil
+   `neuerEffekt()` alle Vorgaben füllt; die Klemme bei 1,5 wirft 0,70 / 0,85 / 1,00 / 1,50 alle auf
+   denselben Wert.
+
+Ausdrücklich **in Ordnung geprüft** (nicht noch einmal aufmachen): Textureinheiten und `u_licht`, der
+Y-Tausch beim Hochladen, `texL` mit NPOT und premultipliedAlpha, „Lage (0 oben)", und „Stärke ist die
+Dichte" — das war der einzige Nebelregler, bei dem Wort und Rechnung sauber zusammenfielen.
+
+## Scanner-Laser: Nachglühen, Kosten, Feinstufe (14.09.2026)
+
+Caspar_D: *„der scanner laser glüht nicht nach, die augenträgheit muss eingebaut sein, also ein
+Nachglühen, man sieht keine abgetastete Fläche"* — die Spur reichte nur ein Bild (1/60 s) zurück, also
+ein Bogen statt einer Fläche. Jetzt reicht sie das **Nachglühen** zurück (Regler, Vorgabe 0,09 s) und
+verglimmt zum Ende hin.
+
+**Gemalt wird die Fläche, nicht die Bahn.** Als 240 Striche über die volle Strahllänge kostete der
+Scanner bei weitem Fächer **7,5 Bilder je Sekunde** — nahe am Ansatzpunkt lagen dieselben Stellen
+36-fach übereinander. Der Fächer wird deshalb in rund 4 px schmale Scheiben geteilt, jede
+Zwischenstelle wird in ihre Scheiben eingezahlt, und jede Scheibe bekommt genau einen Keil, flach auf
+eine Zwischenleinwand; der Auslauf nach außen wird einmal darübergezogen. **59,9 Bilder je Sekunde**,
+bei jeder Reglerstellung. Verweilhelligkeit Rand/Mitte 1,26, die Austastung reißt wieder echte dunkle
+Streifen hinein.
+
+**Zwei eigene Fehler unterwegs**, beide gemessen und behoben: der weiche Saum als breiter Keil über
+den *ganzen* belegten Bereich flutete ihn mit 22 % (Profil schnurgerade, Verweilhelligkeit 0,85 —
+verkehrt herum); und eine Zwischenstelle ist kein Punkt, sie muss in alle Scheiben einzahlen, die ihr
+Fleck überstreicht, sonst hängt die Helligkeit an der Feinheit der Scheiben statt am Strahl.
+
+**Feinstufe im Export** (`FEIN`, Caspar_D: *„im Export bei ausreichend Rechenzeit vielleicht richtig
+chic"*, Grenze: *„1 min für 10 sec wäre tragbar"*). Der kodierende Weg hängt an keiner Uhr und setzt
+`FEIN=true`; der Rückfall über den Aufnehmer nicht, dort dehnt ein langsames Bild den Film. Die
+Feinstufe tastet nur **feiner ab** (bis 2400 Zwischenstellen, 2 px statt 4 px breite Scheiben) — sie
+malt nicht anders. Ich hatte zwischendurch den teuren Zeichenweg als Feinstufe eingebaut: 2,0 s je
+Bild, also zehn Minuten je Clip — **und man sieht davon nichts**, weil sich die Scheiben nicht
+überlappen und „Farbig abwedeln" Bildpunkt für Bildpunkt rechnet. Gemessen jetzt: 16,7 ms je Bild auch
+bei Vollkreis und dickem Strahl, also 5 s für einen Zehnsekünder. Der Schalter trägt später die
+Gottesstrahlen (§9b.2).
+
+## Medien-Panel: „Auf Suno“ statt „Von Suno“ (14.09.2026)
+
+Caspar_D: *„VON SUNO -> AUF SUNO“* · *„Privat — wird Sunos vorgezogen -> AUF KLANGTRESOR
+ERGÄNZT — dominiert die Suno-Daten“* · *„bei leeren Suno Medien-Platzhaltern auch das
+Suno-Abzeichen drauf machen und den Song ansteuern, damit man dort ein Video/Bild anfügen
+kann“* · *„aber auch wenn eine caption da ist, vielleicht will ich die ja ändern auf Suno“*.
+
+**Der Wortwechsel ist der eigentliche Entwurf.** „Von Suno“ beschreibt eine Herkunft, „Auf
+Suno“ einen Ort, an den man gehen kann. Damit wird aus der linken Hälfte ein **Fenster statt
+einer Vitrine** — und erst dadurch ergibt es Sinn, das Abzeichen auch auf die leeren Plätze zu
+setzen. Die beiden Hälften haben jetzt je ein Verb: links **öffnen**, rechts **hinzufügen**.
+
+| vorher | jetzt |
+|---|---|
+| Beschreibung | **Kurzbeschreibung (Caption) auf Suno** — Abzeichen auch am vollen Kasten |
+| „keine Beschreibung“ | **„Keine Suno-Caption vorhanden“** |
+| Notiz — bleibt lokal | **eigene Werknotiz (bleibt in KlangTresor)** |
+| Tonfassung | **ersetzende Tonfassung**, darunter klein der Satz, was das heißt |
+| „Tondatei hierher ziehen“ | **„eine bessere Tondatei hierherziehen“** |
+| Bewegtbild ohne Video: das Wort „keins“ | **das Titelbild schwach dahinter** (20 %, entsättigt) |
+| leere Suno-Kachel | **Rahmen + Suno-Abzeichen**, das auf den Titel zeigt |
+
+`sunoZeichen(id, titel)` nimmt jetzt einen eigenen Hinweistext, damit jedes der drei Abzeichen
+sagt, was sich dort ändern läßt.
+
+**Mitbehobener Fehler:** die Fehlerbehandlung des Videos setzte `textContent='keins'` und löschte
+damit den ganzen Kachelinhalt **samt Suno-Abzeichen**. Bei jedem Titel ohne Bewegtbild fehlte
+also der Weg nach Suno — genau dort, wo man ihn braucht. Jetzt `this.remove()`.
+
+**Nicht in die Kachel, sondern darunter:** der Erklärsatz zur Tonfassung brach in der schmalen
+Spalte (ein Sechstel der Galerie) auf zehn Zeilen um. Er steht als Kleingedrucktes unter dem
+Untertitel.
+
+## Der Container startet jetzt sofort (14.09.2026)
+
+`docker/docker-entrypoint.sh`: das Nachladen der Modelle steht in einer Funktion `nachladen`,
+die mit `&` **neben** dem Server läuft; `exec "$@"` kommt sofort. Bis dahin lief es davor — der
+Server startete erst, wenn rund 1 GB geladen war, und die Seite antwortete solange gar nicht.
+Tarja saß zwei Minuten vor einer stummen Adresse und hielt es für kaputt. Der Kommentar im Kopf
+behauptete schon vorher das Richtige (*„die Website soll trotzdem laufen“*) — er galt nur für den
+FEHLSCHLAG, nicht fürs Warten. `init: true` in der compose-Datei setzt tini als PID 1 und räumt
+den Nachlader auf.
+
+## Windows-Testlauf mit Docker — was ein Fremder erlebt hätte (14.09.2026)
+
+Caspar_D hat den Docker-Weg unter Windows durchgespielt (Parallels-VM). Zweieinhalb Stunden, vier
+Stellen, an denen ein Fremder aufgegeben hätte. Sein Fazit: *„dieser ganze Computerscheiß kotzt
+mich nur noch an“* — und: *„eigentlich sollte das Ding direkt unter Windows installiert werden.“*
+
+**Gebaut** in `bin/einrichten-docker.ps1`:
+- **Es schreibt alles mit** (`einrichten-docker.log` neben dem Skript). Vorher stand die Ausgabe
+  nur im Fenster: *„das läuft einfach durch und ich kann nicht in cmd scrollen.“*
+- **Docker Desktop wird auch ohne Administrator gefunden** (`%LOCALAPPDATA%\Programs\DockerDesktop`).
+  Vorher suchte das Skript nur unter `C:\Program Files` und hätte „nicht gefunden“ gesagt,
+  obwohl es installiert war.
+- Antwortet Docker nicht, nennt es die zwei Windows-Features und `wsl --install`.
+
+**Ausdrücklich NICHT gebaut** — Caspar_D: *„versuch jetzt nicht die ganzen
+virtualisierungsbesonderheiten abzufedern … bin nur ich betroffen, ich wollte nur testen.“* Die
+Ursache seines Ausfalls lag drei Schichten tief: die VM reichte kein VT-x weiter, deshalb konnte
+Windows WSL 2 nicht anbieten, deshalb hatte Docker keinen Unterbau, deshalb antwortete die Pipe
+mit HTTP 500. Keine der beteiligten Meldungen sagte das. Für Nutzer auf echtem Blech ist der Fall
+irrelevant.
+
+**Offen geblieben:**
+- `failed to execute bake: exit status 1` — die Meldung, die nichts mitteilt, und unser „Die
+  Meldungen oben sagen warum“. Sie sagen es nicht.
+- Elf Minuten „sending tarball“: es lief ein Bau-Container (`moby/buildkit`), statt daß Docker
+  Desktops eingebauter Bauer direkt in die Engine schreibt — 3,5 GB wandern einmal hin und zurück.
+
+**Und eine Lehre für die Anleitung:** für Nutzer gibt es **genau eine Adresse**, und das ist die
+Release-Datei `https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip`
+— flach, feste Adresse. Der Quellcode-Download von GitHub entpackt in
+`klangtresor-main/klangtresor-main` und ist über diese doppelte Schachtel schon zweimal zur Falle
+geworden.
+
+**Im Release-ZIP v1.0.5 liegen Meßstände mit eigenen Daten** (49 Song-IDs in `docs/eichkasten/`
+und `labor/`, dazu `messlauf-ergebnis.json` mit Kondensat- und Volltextfeldern, hartkodierte
+Mac-Pfade, der Vorname in `docs/EINRICHTUNG-TEXTE.md`). Die Verbotsliste in `bin/paket.js` fängt
+nur `docs/eichkasten/vorher-vektoren/` und `*.vor-schritt`. Caspar_D dazu: *„ist mir egal, seh ich
+jetzt nicht so kritisch, können wir irgendwann mal aufräumen.“* — also **offen, nicht dringend**.
+
+## „geheim/“ ist getilgt (14.09.2026)
+
+Caspar_D, zum vierten Mal: *„geheim/ hat keinerlei Nutzen, weil der Clerk-Token nur eine Stunde
+gültig ist, er sollte mal darin stehen, tut er aber nicht … Lösche endlich sämtliche Referenzen
+darauf, auch aus gitignore.“*
+
+**Null Treffer im ganzen Repo**, Labor eingeschlossen. 15 Dateien: `.gitignore` (der ganze Block),
+`.dockerignore`, beide Dockerfiles (`mkdir`/`chown`), `bin/paket.js` (Verbotsmuster),
+`bin/export.js`, `bin/fremdstand.js` (Prüfmuster jetzt nur `^library/`), `server/server.js` (der
+Grabsteinkommentar) und sieben Dokumente.
+
+Der Befund war eindeutig: **null Commits über alle Zweige**, im Arbeitsverzeichnis nicht vorhanden,
+und `docs/suno/WEGE.md` hatte selbst *„leerer Ordner“* notiert. Die Sperren bewachten etwas, das es
+nie gab. Die Begründung, die sie stehenließ, lautete „sie kosten nichts“ — das stimmte für die
+Rechenzeit und war falsch für alles andere: sie haben den Gedanken am Leben gehalten, da läge ein
+Schlüssel. Die Begründung steht jetzt als Nachtrag in `docs/suno/WEGE.md`, ohne den Namen.
+

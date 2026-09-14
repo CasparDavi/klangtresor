@@ -14,7 +14,7 @@
  *      denn sie faellt beim Lesen der neuen Zeilen nicht auf
  *   4. Werden fremde Adressen aufgerufen (Netz, Pakete)
  *   5. Werden Dateien ausserhalb des Programms angefasst - library/,
- *      geheim/, .gitignore, Schluessel
+ *      .gitignore, Schluessel
  *
  * Es urteilt NICHT. Es legt vor, was da ist; die Bewertung bleibt beim
  * Lesen. Ein Werkzeug, das „unbedenklich" sagt, wird geglaubt.
@@ -123,7 +123,7 @@ for (const h of neu) {
 
   /* Anfassen, was nicht Programm ist. */
   const heikel = stat.map(z => z.split('|')[0].trim())
-    .filter(d => /^(library|geheim)\//.test(d) || /\.(env|pem|key)$/.test(d) || d === '.gitignore');
+    .filter(d => /^library\//.test(d) || /\.(env|pem|key)$/.test(d) || d === '.gitignore');
   if (heikel.length) {
     console.log('\n    ⚠ Berührt nicht-Programm-Dateien:');
     heikel.forEach(d => console.log('      ' + d));

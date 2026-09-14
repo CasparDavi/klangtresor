@@ -1050,6 +1050,18 @@ select,.knopf{
 /* Eine Ausrichtung fuer allen Text: oben links. Der leere Kasten stand mittig, der volle oben -
    zwei Ausrichtungen nebeneinander lesen sich als Versehen. */
 .captextfeld.leer{color:var(--schwach);font-size:12px}
+/* Der Textkasten traegt dasselbe Abzeichen wie die Kacheln - unten rechts, gleiche Groesse. */
+.captextfeld{position:relative}
+.captextfeld .capzeichen.suno{position:absolute;right:7px;bottom:7px;background:rgba(0,0,0,.78);
+  border:1px solid var(--rand);border-radius:6px;padding:2px 6px;font-size:10.5px;color:var(--schwach);
+  text-decoration:none;line-height:1.3}
+.captextfeld .capzeichen.suno:hover{color:var(--text);border-color:var(--akzent)}
+/* Was dort hingehoerte, aber fehlt: schwach dahinter statt eines Wortes davor. */
+.capkachel img.schwach{opacity:.2;filter:grayscale(.45)}
+/* Der Erklaersatz steht UNTER der Kachel, nicht darin: in der schmalen Spalte (ein Sechstel der
+   Galerie) brach er sonst auf zehn Zeilen um und las sich als Stoerung statt als Auskunft. */
+.capkachelname .capkleingedruckt{display:block;margin-top:2px;font-size:10.5px;line-height:1.35;
+  color:var(--schwach);opacity:.85}
 #cap .captextfeld textarea{min-height:0;height:100%;margin:0;border:0;padding:0;background:none;resize:none}
 /* Die Kachel: immer dasselbe Hochformat, ob voll oder leer. Eine leere Kachel zeigt gedaempft,
    WAS dort hingehoerte, traegt den gestrichelten Rahmen und unten rechts ein Plus - sie sagt es,
@@ -3124,6 +3136,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-inhalt{padding:0 11px 11px;display:block}
 #tbs .tbs-karte.zu .tbs-inhalt{display:none}
 #tbs .tbs-besch{color:var(--schwach);font-size:11.5px;line-height:1.45;margin:2px 0 10px}
+#tbs .tbs-fehltlicht{color:var(--text);background:var(--flaeche2);border-left:2px solid var(--akzent);border-radius:0 6px 6px 0;font-size:11.5px;line-height:1.45;margin:-4px 0 10px;padding:6px 8px}
 #tbs .tbs-regler{display:grid;grid-template-columns:96px 1fr 42px;gap:8px;align-items:center;margin:6px 0;font-size:12px;color:var(--schwach)}
 #tbs .tbs-regler input[type=range].tbs-zust{-webkit-appearance:none;appearance:none;background:transparent;height:14px}
 #tbs .tbs-regler input[type=range].tbs-zust::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--rand)}
@@ -17064,9 +17077,9 @@ function capMarke(s){
 
 /* Der Weg zu Suno: geaendert wird dort, nicht hier. Steht auf beiden Suno-Kacheln an derselben
    Stelle, an der die privaten ihr Plus tragen - dieselbe Ecke, dieselbe Form, andere Bedeutung. */
-function sunoZeichen(id){
+function sunoZeichen(id, titel){
   return `<a class="capzeichen suno" href="https://suno.com/song/${id}" target="_blank" rel="noopener"`
-    + ` title="Bei Suno öffnen — dort lässt sich Titelbild und Bewegtbild ändern">Suno ↗</a>`;
+    + ` title="${esc(titel || 'Bei Suno öffnen')}">Suno ↗</a>`;
 }
 function capAuf(id){
   const s = songVonId.get(id); if (!s) return;
@@ -17079,17 +17092,21 @@ function capAuf(id){
   c.innerHTML = `<button type="button" id="capzu" class="capzu" title="Schließen (Esc)">✕</button>`
     + `<h4>${esc(s.titel)}</h4>`
     + `<div class="capgal">`
-    +   `<div class="capkopf" style="grid-column:1/3">Von Suno</div>`
-    +   `<div class="capkopf capstart" style="grid-column:4/7">Privat <small>— wird Sunos vorgezogen</small></div>`
+    +   `<div class="capkopf" style="grid-column:1/3">Auf Suno</div>`
+    +   `<div class="capkopf capstart" style="grid-column:4/7">Auf KlangTresor ergänzt <small>— dominiert die Suno-Daten</small></div>`
+    /* DAS ABZEICHEN STEHT AUCH AUF DEM VOLLEN KASTEN (Caspar_D, 14.09.2026: "aber auch wenn eine
+       Caption da ist, vielleicht will ich die ja aendern auf Suno"). Der Kasten ist kein Schaukasten
+       fuer Geholtes, sondern das Fenster dorthin, wo es geaendert wird. */
     +   `<div style="grid-column:1/3;grid-row:3">`
     +     `<div class="captextfeld${s.beschriftung ? '' : ' leer'}">`
-    +       (s.beschriftung ? esc(s.beschriftung) : 'keine Beschreibung') + `</div>`
-    +     `<div class="capkachelname">Beschreibung</div></div>`
+    +       (s.beschriftung ? esc(s.beschriftung) : 'Keine Suno-Caption vorhanden')
+    +       sunoZeichen(id, 'Bei Suno öffnen — dort läßt sich die Caption ändern') + `</div>`
+    +     `<div class="capkachelname">Kurzbeschreibung (Caption) auf Suno</div></div>`
     +   `<div class="capstart" style="grid-column:4/6;grid-row:3">`
     +     `<div class="captextfeld">`
     +       `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
     +     `</div>`
-    +     `<div class="capkachelname">Notiz — bleibt lokal</div>`
+    +     `<div class="capkachelname">eigene Werknotiz (bleibt in KlangTresor)</div>`
     +   `</div>`
     /* DER INSTRUMENTAL-SCHALTER ZIEHT ZUR TONFLAECHE (Caspar_D, 14.09.2026: "die Instrumental-
        Schaltflaeche gehoert wohin, eigentlich in die Naehe der Tonflaeche, sie darf aber das
@@ -17109,19 +17126,30 @@ function capAuf(id){
                   instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
     +       `</div>`
     +     `</div>`
-    +     `<div class="capkachelname">Tonfassung</div></div>`
+    +     `<div class="capkachelname">ersetzende Tonfassung`
+    +       `<small class="capkleingedruckt">Solange sie hier liegt, ersetzt sie in KlangTresor die Suno-Fassung.</small>`
+    +     `</div></div>`
     /* Reihe der Kacheln. Links zum Lesen, rechts zum Aendern - dieselbe Reihenfolge in beiden
        Haelften, damit das Auge die Paare von selbst findet. */
+    /* FEHLT DAS BILD, BLEIBT DER RAHMEN - und das Abzeichen bleibt darauf, denn genau dann will
+       man hin (Caspar_D, 14.09.2026: "bei leeren Suno Medien-Platzhaltern auch das Suno-Abzeichen
+       drauf machen und den Song ansteuern, damit man dort ein Video/Bild anfuegen kann").
+       this.remove() statt textContent - sonst nimmt die Fehlerbehandlung das Abzeichen mit. */
     +   `<div style="grid-column:1;grid-row:2"><div class="capkachel ruhig">`
-    +     `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
-    +     sunoZeichen(id) + `</div>`
+    +     `<img src="/media/${id}/cover.jpg" alt="" onerror="this.parentNode.classList.add('leerkachel');this.remove()">`
+    +     sunoZeichen(id, 'Bei Suno öffnen — dort läßt sich das Titelbild ändern') + `</div>`
     +     `<div class="capkachelname">Titelbild</div></div>`
+    /* KEIN BEWEGTBILD HEISST NICHT „keins": dahinter liegt das Titelbild, schwach - die Kachel
+       zeigt damit, WAS dort hingehoerte, statt ein Wort hinzuschreiben. Das Video liegt darueber
+       und deckt es zu, sobald es da ist. Frueher loeschte die Fehlerbehandlung den ganzen
+       Kachelinhalt und nahm das Abzeichen mit. */
     +   `<div style="grid-column:2;grid-row:2"><div class="capkachel ruhig">`
+    +     `<img class="schwach" src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
     +     (s.videoCoverUrl
           ? `<video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline preload="auto"`
-             + ` onerror="this.parentNode.classList.add('leerkachel');this.parentNode.textContent='keins'"></video>`
-          : `keins`)
-    +     sunoZeichen(id) + `</div>`
+             + ` onerror="this.remove()"></video>`
+          : ``)
+    +     sunoZeichen(id, 'Bei Suno öffnen — dort läßt sich ein Bewegtbild anfügen') + `</div>`
     +     `<div class="capkachelname">Bewegtbild</div></div>`
     +   `<div class="capstart" style="grid-column:4;grid-row:2"><div class="capkachel" id="capartbild" data-art="bild"></div>`
     +     `<div class="capkachelname">Titelbild</div></div>`
@@ -17271,7 +17299,7 @@ function capAuf(id){
         feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
         feld.innerHTML = eingefroren ? 'Archiv eingefroren'
           : (art === 'ton'
-             ? `<span>Tondatei hierher ziehen</span><span class="capzeichen plus">+</span>`
+             ? `<span>eine bessere Tondatei hierherziehen</span><span class="capzeichen plus">+</span>`
              : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
                + `<div class="schatten"></div><span class="capzeichen plus">+</span>`);
       }
@@ -27100,6 +27128,7 @@ const IKON={
  schatten:'<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none" opacity=".85"/><circle cx="15" cy="10" r="5" fill="#0c0c0d" stroke="none"/>',
  sicherung:'<path d="M12 3v8"/><path d="M7 6.5a7 7 0 1 0 10 0"/>',
  nebel:'<path d="M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 17z"/>',
+ filmnebel:'<path d="M6 15h12a3.5 3.5 0 0 0 0-7 5.5 5.5 0 0 0-10.4 1.2A3 3 0 0 0 6 15z"/><path d="M5 19h9" opacity=".55"/>',
  partikel:'<g fill="currentColor" stroke="none"><circle cx="6" cy="5" r="1.4"/><circle cx="14" cy="8" r="1.4"/><circle cx="9" cy="13" r="1.4"/><circle cx="18" cy="15" r="1.4"/><circle cx="5" cy="19" r="1.4"/><circle cx="13" cy="20" r="1.4"/></g>',
  scanlines:'<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 8h18M3 12h18M3 16h18" opacity=".6"/>',
  bloom:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" opacity=".5"/><circle cx="12" cy="12" r="10" opacity=".25"/>',
@@ -27125,7 +27154,7 @@ const IKON={
  saettigung:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
  strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
 };
-const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',filmnebel:'#c8d6e6',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 const EFFEKTE = {
@@ -27148,7 +27177,7 @@ const EFFEKTE = {
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'}]},
   laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Strahlen schießen aus einem Punkt außerhalb des Bildes, jeder mit hellem Kern und weichem Saum; der Fächer schwenkt (Tempo = Sekunden je Schwenk). Mehrfach in verschiedenen Farben einhängen.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle oder dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
     params:[{k:'ton',lbl:'Bänder',sel:[['hell','helle'],['dunkel','dunkle'],['beide','abwechselnd']],def:'hell'},{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
   rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur im Takt: dann als Ausbruch auf jedem Schlag.',
@@ -27193,6 +27222,17 @@ const EFFEKTE = {
     glZusatz:e=>({ u_sorte:(e.sorte==='dunst'?0:e.sorte==='boden'?2:1),
       u_sogStaerke:((e.sog||'keine')==='keine'?0:(e.sogStaerke==null?.4:e.sogStaerke)),
       u_sogX:(e.sog==='links'?0:e.sog==='rechts'?1:0.5), u_sogY:(e.sog==='boden'?0:e.sog==='oben'?1:0.5) }) },
+  /* nurMitLicht: der Hinweis auf der Karte gilt NUR ihm. Der Theaternebel ist auch ohne Leuchte
+     sichtbar (er dunkelt ab), und Schwaden-Partikel malen sich selbst - dort waere der Satz falsch. */
+  filmnebel:{ label:'Filmnebel', art:'gl', medium:true, nurMitLicht:true, staerkeDef:.4, besch:'<b>Er wirkt nur zusammen mit einer Leuchte.</b> Hängt kein Scheinwerfer, Laser, Lichtstrahl, Feuer oder Stroboskop in der Kette, bleibt weißer Filmnebel unsichtbar — dann sieht man von ihm nur, daß die Ferne an Kontrast verliert (Luftperspektive). Das ist kein Fehler, sondern der Grund, warum auf jeder Bühne eine Nebelmaschine läuft: Nebel ist ein Medium, keine Farbe. Er dämpft, was hinter ihm liegt, und leuchtet von dem Licht, das ihn trifft — an welcher Stelle der Kette er hängt, ist dafür gleich. Die Farbe ist das Fluid: Weiß ist Wassernebel und kann nicht abdunkeln, dunkel ist Rauch und schluckt ehrlich Licht. Schwere sagt, wo er liegt — von Dunst im ganzen Raum bis zum flachen Teppich mit klarer Oberkante. Schwaden, wie ungleichmäßig er ist. Bündelung, wie scharf die Strahlen in ihm stehen: 0 ein weicher Hof um jede Leuchte, 1 gezeichnete Strahlen und Laserkegel. Luftzug, wohin er zieht — Wabern und Steigen folgen daraus. Stärke ist die Dichte. Liegt eine Tiefenkarte vor, dämpft er nach Entfernung, und die Figur steht von selbst vor dem Nebel. Auch als: Dunst, Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},
+      {k:'schwere',lbl:'Schwere',min:0,max:1,step:.05,def:.25},
+      {k:'schwaden',lbl:'Schwaden',min:0,max:1,step:.05,def:.45},
+      {k:'buendelung',lbl:'Bündelung',min:0,max:1,step:.05,def:.6},
+      {k:'luftzug',lbl:'Luftzug',min:-1,max:1,step:.05,def:.15}],
+    /* Die Tiefenrechnung ist kein Regler: sie ist richtig oder sie geht nicht. Ohne Karte
+       stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
+    glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche, Funken oder Schwaden ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schiesst sie hinaus und laeuft aus wie Luftwiderstand. Schwaden sind Rauch: wenige, grosse, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
     params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
@@ -27254,7 +27294,7 @@ EFFEKTE.partikel.medium = e=>e.art==='schwaden';
 /* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie behalten ihre eigene
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten'; if(EFFEKTE.sicherung) EFFEKTE.sicherung.verr='nachbelichten';   /* Schwarz abgewedelt waere nichts - die Sicherung war unsichtbar (Tiefen-Check 10.09.2026) */
-['licht','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Theaternebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
+['licht','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
 /* ---- RAUM (Caspar_D, 11.09.2026: "definiere zum zeitlichen Lichtverhalten jetzt mit einem Zusatzpanel das
    spatiale Verhalten der Lichtquelle"): Ursprung (wo das Geraet haengt), Ziel (wohin es leuchtet), Bewegung des
    Ziels (auch wie ein Moving Head: Fahrt mit Anlauf und Bremsen, Schritt auf den Schlag), Form des Flecks
@@ -27300,7 +27340,7 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
-  ['Läufe', ['fahrt','streifen','licht','schatten','laser','farbe','nebel','feuer']],
+  ['Läufe', ['fahrt','streifen','licht','schatten','laser','farbe','filmnebel','nebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
   ['Partikel', ['partikel']],
@@ -27331,7 +27371,13 @@ PULSE.forEach(k=>{ EFFEKTE[k].lmNurSchub=true; EFFEKTE[k].params.push(
   {k:'invert',tog:'invertieren',def:0},
   ...lmParams({lmQuelle:'takt',lmForm:'rampe_ab',lmAbkling:1.8,lmTiefe:1})); });
 
-let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false;   /* LICHTMAL: gerade wird in den Licht-Puffer gemalt */
+let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false, FEIN = false;   /* LICHTMAL: gerade wird in den Licht-Puffer gemalt */
+/* FEIN: gerade wird fuer den EXPORT gerechnet, nicht fuer die Vorschau. Der kodierende Weg haengt an
+   keiner Uhr (Caspar_D, 14.09.2026: "im Export bei ausreichend Rechenzeit vielleicht richtig chic",
+   und lange davor: "es muss kein Abfilmen dessen sein, was unsere Engine schafft"). Maler duerfen sich
+   hier also Zeit lassen. Kein Regler - die Software weiss selbst, ob sie exportiert.
+   Gilt NUR fuer den kodierenden Weg: der Rueckfall ueber den Aufnehmer haengt an der Wanduhr, dort
+   wuerde ein langsames Bild den Film dehnen. */
 const aktiv = e => soloId ? (e.id===soloId) : e.an;
 function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:false, verr:T.verr||'ueber', staerke:(T.staerkeDef!=null?T.staerkeDef:1) };
   T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; });
@@ -27573,6 +27619,22 @@ function pulsHub(e,t){ if((e.lmQuelle||'stetig')==='stetig') return 1; antriebWe
 function mische(a,b,x){ const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)), pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
   return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*x)).join(',')+')'; }
 function rgba(hex,a){ const p=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)); return 'rgba('+p[0]+','+p[1]+','+p[2]+','+Math.max(0,Math.min(1,a))+')'; }
+/* RUECKFALL DES FILMNEBELS. Ohne WebGL gibt es weder Rauschen noch Tiefenkarte - die halbe
+   Rechnung bleibt trotzdem richtig: Bild*Durchlass + Umgebung*Deckung. Die "Umgebung" ist hier
+   das Bild selbst, weichgezeichnet; damit dunkelt auch dieser Weg nicht ab. Was fehlt, ist das
+   Licht der Kette, denn in den Lichtpuffer sehen kann nur der Shader - und die Struktur, weil
+   es ohne Rauschen keine Schwaden gibt. Der alte Theaternebel malte hier stattdessen einen
+   bildunabhaengigen Farbschleier; derselbe Clip sah damit ohne Shader nicht schwaecher aus,
+   sondern falsch (Befund 14.09.2026). */
+function filmnebelLeinwand(e,cx,t,W,H){
+  const schwere=(e.schwere==null?.25:e.schwere), weg=(1-0.45*schwere);
+  const deck=1-Math.exp(-3.0*weg*0.55);
+  cx.save(); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
+  cx.filter='blur('+Math.max(6,Math.round(Math.min(W,H)*0.06))+'px)';
+  cx.globalAlpha=Math.max(0,Math.min(1,deck)); cx.drawImage(cx.canvas,0,0); cx.filter='none';
+  const f=e.farbe||'#ffffff';
+  if(f.toLowerCase()!=='#ffffff'){ cx.globalCompositeOperation='multiply'; cx.globalAlpha=deck; cx.fillStyle=f; cx.fillRect(0,0,W,H); }
+  cx.restore(); }
 /* Rueckfall ohne WebGL: der Nebel als Leinwandbild. Er nimmt dabei kein Licht auf, das kann nur der Shader. */
 function nebelLeinwand(e,cx,t,W,H){ const so=e.sorte||'schwaden', f=skaliere(e.farbe, Math.min(1.4,(e.grundlicht==null?.45:e.grundlicht)+0.3)),
     lage=(e.lage==null?.7:e.lage), dicke=(e.dicke==null?.8:e.dicke), tp=Math.max(0.05,e.tempo||.6),
@@ -27846,9 +27908,129 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* Jeder Strahl: weicher Saum und heller Kern; der Ansatz liegt ausserhalb, darum bleibt der Strahl bis weit ins Bild voll
        und laeuft erst am Ende aus (Tiefen-Check: vorher lief er ab dem Ansatz aus und war im Bild fast unsichtbar). */
     cx.lineCap='round'; const w0=Math.max(1,e.breite*40);
-    for(let i=0;i<n;i++){ const ang=dir+(n>1?(i/(n-1)-0.5):0)*spread, x1=ox+Math.cos(ang)*len, y1=oy+Math.sin(ang)*len;
-      for(const [lw,al] of [[w0*3.2,a*0.22],[w0,a]]){ const grad=cx.createLinearGradient(ox,oy,x1,y1); grad.addColorStop(0,rgba(e.farbe,al)); grad.addColorStop(0.6,rgba(e.farbe,al*0.85)); grad.addColorStop(1,rgba(e.farbe,0));
-        cx.strokeStyle=grad; cx.lineWidth=lw; cx.beginPath(); cx.moveTo(ox,oy); cx.lineTo(x1,y1); cx.stroke(); } }
+    /* ZWEI BAUARTEN, BEIDE ECHT (VIDEO-PLAN 9b.3). Gitter: ein Strahl wird vom Strahlteiler in
+       viele GLEICHZEITIG bestehende zerlegt - fester Faecher, alle Stellen dauernd besetzt. Das
+       war bisher der einzige gebaute Fall. Scanner: EIN Strahl, von einem Galvospiegel schnell
+       abgelenkt; was man sieht, ist Nachleuchten entlang der Bahn.
+       Gezeichnet wird der Scanner als Spur: ein paar Dutzend Zwischenstellen je Bild, jede mit
+       kleiner Deckkraft. Abgetastet wird GLEICHMAESSIG IN DER ZEIT, und der Spiegel schwingt
+       sinusfoermig - dadurch haeufen sich die Zwischenstellen von selbst an den Umkehrpunkten,
+       und der Faecher wird an den Raendern heller. Genau so sehen echte Laserfaecher aus, und
+       man bekommt es umsonst, wenn man es richtig herum baut.
+       Austastung: der Strahl ist auf einem Teil der Bahn aus. Erst dadurch werden aus dem
+       gleitenden Schwenk einzelne Strahlen, die zu springen scheinen - der Unterschied zwischen
+       Buehnenlaser und Taschenlampe.
+       Spruenge: eine feste Zahl erlaubter Stellen, je Schlag eine davon gewaehlt. Die Wahl haengt
+       an der SCHLAGNUMMER aus dem Pult (_lmIdx), nicht am Zufall - sonst loopt der Export nicht. */
+    const scan=(e.bauart==='scanner');
+    const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
+    const stellen=[];      /* einzelne Strahlen - Gitter und gehaltene Stellen */
+    let scheiben=null, NB=0;   /* der Scanner malt Faecherscheiben statt Striche, siehe unten */
+    if(scan){ const hz=lpR(Math.max(0.2,e.sweepTempo||2)), stuf=Math.max(2,Math.round(e.stufen||6)),
+        aus=Math.max(0,Math.min(0.9,e.austastung==null?0.35:e.austastung)),
+        nach=Math.max(0.02,e.nachgluehen==null?0.09:e.nachgluehen);
+      if(e.sprung){ /* Gehaltene Stellen: eine Stange steht, die vorige verglimmt. Wie lange sie das tut,
+           steht nicht im Regler, sondern ergibt sich aus Nachgluehen gegen die ECHTE Schlagdauer. */
+        const stelle=j=>dir+(Math.floor(hs(j*13+7)*stuf)/(stuf-1)-0.5)*spread,
+              idx=(e._lmIdx==null?0:e._lmIdx), ph=(e._lmPhase==null?0:e._lmPhase);
+        const S=DATA&&DATA.schlaege; let T=0.5;
+        if(S&&S.length>1){ let i=S.length-1; while(i>0&&S[i][0]>t) i--; T=Math.max(0.1,(S[Math.min(S.length-1,i+1)][0]-S[i][0])||0.5); }
+        stellen.push([stelle(idx),1]);
+        const rest=1-Math.min(1,(ph*T)/nach); if(rest>0.02) stellen.push([stelle(idx-1),rest*0.7]); }
+      else { /* NACHGLUEHEN (Caspar_D, 14.09.2026: "der scanner laser glueht nicht nach, die augentraegheit
+           muss eingebaut sein ... man sieht keine abgetastete Flaeche"). Eine Spur ueber ein Bild hinweg ist
+           ein Bogen, keine Flaeche - was man auf der Buehne sieht, malt das Auge, das rund 0,1 s integriert.
+           Also reicht die Spur nicht ein Bild, sondern das Nachgluehen weit zurueck, und das Ende verglimmt.
+           Zahl der Zwischenstellen wird NICHT eingestellt, sondern ausgerechnet: so viele, dass sie rund
+           2 px auseinanderliegen - enger als der Kern, dann schliesst sich die Flaeche.
+           Die Deckkraft je Stelle faellt mit der Zahl der Stellen, sonst wuerde ein langsamer Scanner (viel
+           Ueberlappung auf wenig Weg) gleissen und ein schneller verschwinden. Flaechenhelligkeit bleibt. */
+        const R=len*0.55, weg=2*spread*hz*nach*R,                       /* Bogenlaenge, die der Fleck im Nachgluehen zurueckl. */
+              M=Math.max(12,Math.min(FEIN?2400:240,Math.ceil(weg/(FEIN?0.75:Math.max(1.5,w0*0.6))))),
+              schritt=weg/M,                                            /* Weg je Zwischenstelle */
+              /* Waehrend einer Zwischenzeit WANDERT der Fleck - er steht dort nicht, er verschmiert ueber
+                 schritt Pixel. Also so breit malen und die Deckkraft im selben Verhaeltnis senken: dann
+                 stimmt die Lichtmenge, und es bleiben keine Luecken, wenn der Faecher weit und der Strahl
+                 duenn ist. Steht er dagegen fast still, ueberlappen die Stellen - dann deckelt 3/M, sonst
+                 gleisst ein langsamer Scanner. */
+              dicht=Math.min(1,Math.max(Math.min(w0,schritt)/Math.max(w0,schritt),3/M));
+        /* GEMALT WIRD DIE FLAECHE, NICHT DIE BAHN (gemessen 14.09.2026: als 240 Striche ueber die volle
+           Strahllaenge lief der Scanner mit 7,5 Bildern je Sekunde statt 60 - nahe am Ansatzpunkt lagen
+           die Striche 36-fach uebereinander). Statt jede Zwischenstelle zu zeichnen, wird der Faecher in
+           schmale Scheiben geteilt und jede Zwischenstelle in ihre Scheibe EINGEZAHLT. Danach bekommt
+           jede Scheibe genau einen Keil. Die Kosten sind damit die Flaeche des Faechers, einmal - egal
+           wie schnell der Spiegel schwingt und wie lang das Nachgluehen ist.
+           Die Verweilhelligkeit an den Umkehrpunkten faellt dabei von selbst heraus: dort landen mehr
+           Zwischenstellen in derselben Scheibe. */
+        NB=FEIN?Math.max(24,Math.min(512,Math.round(spread*len*0.8/2)))         /* Export: Scheiben rund 2 px */
+               :Math.max(24,Math.min(192,Math.round(spread*len*0.8/4)));         /* Vorschau: rund 4 px */
+        scheiben=new Float64Array(NB);
+        /* Eine Zwischenstelle ist kein Punkt: der Fleck wandert waehrend der Zwischenzeit ueber schritt
+           Pixel. Er wird deshalb in ALLE Scheiben eingezahlt, die er dabei ueberstreicht - sonst haenge
+           die Helligkeit daran, wie fein die Scheiben gerade geraten sind, und nicht am Strahl. */
+        const spann=Math.max(1,Math.round(schritt/Math.max(1,spread*len*0.8/NB)));
+        for(let k=0;k<M;k++){
+          const tt=t-(k/M)*nach, ph=((tt*hz)%1+1)%1,
+                u=0.5+0.5*Math.sin(2*Math.PI*ph);   /* der Spiegel schwingt, er faehrt nicht gleichmaessig */
+          if(aus>0){ const seg=Math.floor(ph*stuf*2); if(hs(seg*3+e.id)<aus) continue; }
+          const wert=dicht*(1-0.85*k/M), b0=Math.floor(u*NB)-(spann>>1);
+          for(let j=0;j<spann;j++){ const bb=b0+j; if(bb>=0&&bb<NB) scheiben[bb]+=wert; }
+        } } }
+    else for(let i=0;i<n;i++) stellen.push([dir+(n>1?(i/(n-1)-0.5):0)*spread, 1, w0]);
+    /* Der Verlauf haengt nur am ABSTAND vom Ansatz - alle Strahlen gehen von dort aus. Also einmal je Bild
+       als Kreisverlauf bauen statt hunderte Male als Strecke: bei 240 Zwischenstellen ist das der Unterschied
+       zwischen einem Effekt und einem Ruckler. Die Helligkeit der einzelnen Stelle kommt ueber globalAlpha. */
+    const verlauf=al=>{ const g=cx.createRadialGradient(ox,oy,0,ox,oy,len); g.addColorStop(0,rgba(e.farbe,al));
+      g.addColorStop(0.6,rgba(e.farbe,al*0.85)); g.addColorStop(1,rgba(e.farbe,0)); return g; };
+    const gSaum=verlauf(a*0.22), gKern=verlauf(a);
+    const strahl=(ang,anteil,lw,gr)=>{ cx.globalAlpha=anteil; cx.strokeStyle=gr; cx.lineWidth=lw;
+      cx.beginPath(); cx.moveTo(ox,oy); cx.lineTo(ox+Math.cos(ang)*len,oy+Math.sin(ang)*len); cx.stroke(); };
+    if(scheiben){ const schw=0.006;
+      /* ERST FLACH, DANN EINMAL AUSLAUFEN LASSEN. Mit dem Kreisverlauf als Fuellfarbe kostete jeder Keil
+         seine Flaeche an Verlaufsrechnung; bei 256 Keilen waren das 3,3 Millionen Bildpunkte je Bild und
+         30 statt 60 Bilder je Sekunde (gemessen 14.09.2026). Die Scheiben werden deshalb flach auf eine
+         eigene Leinwand gemalt, und der Auslauf nach aussen wird EINMAL ueber das Ganze gezogen
+         (destination-in multipliziert die Deckung). Dasselbe Bild, ein Zehntel der Rechnung.
+         Nebenbei wird es richtiger: die Flaeche verrechnet sich jetzt EINMAL mit dem Bild darunter und
+         nicht Keil fuer Keil - bei „Farbig abwedeln" stapelten sich sonst die Naehte. */
+      const keile=[];
+      { let b=0;
+        while(b<NB){ const v=Math.min(1,scheiben[b]); if(v<=schw){ b++; continue; }
+          let bis=b+1; while(bis<NB && Math.abs(Math.min(1,scheiben[bis])-v)<1/96) bis++;
+          keile.push([dir+(b/NB-0.5)*spread, dir+(bis/NB-0.5)*spread, v]); b=bis; } }
+      /* KEIN ZWEITER ZEICHENWEG FUER DEN EXPORT. Ich hatte hier einen: im Export jede Scheibe einzeln
+         mit eigenem Saum aufs Bild, weil die erste, teure Fassung so aussah. Gemessen: 2,0 Sekunden je
+         Bild, also zehn Minuten fuer einen Zehnsekuender - und SEHEN kann man davon nichts, weil die
+         Scheiben sich nicht ueberlappen und „Farbig abwedeln" Bildpunkt fuer Bildpunkt rechnet: einzeln
+         verrechnet kommt exakt dasselbe heraus wie einmal verrechnet. Die Feinstufe ist deshalb nur
+         feiner abgetastet (mehr Zwischenstellen, schmalere Scheiben), nicht anders gemalt. */
+      if(!e._sc) e._sc=document.createElement('canvas');
+      if(e._sc.width!==Wn||e._sc.height!==Hn){ e._sc.width=Wn; e._sc.height=Hn; }
+      const sx=e._sc.getContext('2d');
+      sx.setTransform(1,0,0,1,0,0); sx.globalCompositeOperation='source-over'; sx.globalAlpha=1;
+      sx.clearRect(0,0,Wn,Hn); sx.fillStyle=e.farbe;
+      const keil=(a0,a1)=>{ sx.beginPath(); sx.moveTo(ox,oy); sx.arc(ox,oy,len,a0,a1); sx.closePath(); sx.fill(); };
+      /* DER WEICHE SAUM GEHOERT AN DIE KANTEN, NICHT AUF DIE FLAECHE (Messung 14.09.2026: als breiter
+         Keil ueber den ganzen belegten Bereich gelegt, flutete er ihn mit 22 Prozent - das Profil war
+         danach schnurgerade und die Verweilhelligkeit an den Umkehrpunkten verschwunden).
+         Er wird deshalb auf den Scheiben gerechnet: eine schmale Verschmierung, die nur dort etwas
+         beitraegt, wo daneben nichts steht - also auch an den Raendern der ausgetasteten Luecken. */
+      const sbreit=Math.max(1,spread*len*0.8/NB), rad=Math.max(1,Math.round(w0*1.6/sbreit));
+      if(!FEIN){ const weich=new Float64Array(NB);
+        for(let b2=0;b2<NB;b2++){ let q=0,gw=0;
+          for(let dd=-rad;dd<=rad;dd++){ const j=b2+dd; if(j<0||j>=NB) continue;
+            const gg=1-Math.abs(dd)/(rad+1); q+=scheiben[j]*gg; gw+=gg; }
+          weich[b2]=gw>0?q/gw*0.55:0; }
+        for(let b2=0;b2<NB;b2++) if(weich[b2]>scheiben[b2]) scheiben[b2]=weich[b2]; }
+      for(const [a0,a1,v] of keile){ sx.globalAlpha=v; keil(a0,a1); }
+      sx.globalAlpha=1; sx.globalCompositeOperation='destination-in';
+      const g2=sx.createRadialGradient(ox,oy,0,ox,oy,len);
+      g2.addColorStop(0,'rgba(0,0,0,1)'); g2.addColorStop(0.6,'rgba(0,0,0,0.85)'); g2.addColorStop(1,'rgba(0,0,0,0)');
+      sx.fillStyle=g2; sx.fillRect(0,0,Wn,Hn); sx.globalCompositeOperation='source-over';
+      cx.globalAlpha=a; cx.drawImage(e._sc,0,0); cx.globalAlpha=1; }
+    for(const [ang,anteil,kw] of stellen){
+      strahl(ang,anteil,(kw||w0)+w0*2.2,gSaum); strahl(ang,anteil,kw||w0,gKern); }
+    cx.globalAlpha=1;
     cx.fillStyle=rgba(e.farbe,a); cx.beginPath(); cx.arc(ox,oy,e.breite*28+2,0,7); cx.fill(); }
   else if(e.typ==='streifen'){ const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/lpP(e.tempo))%1)*per, bw=e.breite*per, a=Math.min(1,e.staerke), ton=e.ton||'hell';
     cx.save(); cx.translate(Wn/2,Hn/2); cx.rotate(ang);
@@ -28023,6 +28205,13 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
        das, was ohne Karte herauskaeme. */
     this.texT=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texT); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([128,128,128,255]));
+    /* DER LICHTHOF - die Mehrfachstreuung um jede Leuchte. Sie ist der weichgezeichnete
+       Lichtpuffer; weichgezeichnet wird sie nicht im Shader (das kostet Dutzende Griffe je
+       Bildpunkt), sondern indem der Puffer einmal je Bild auf ein Vierzehntel verkleinert
+       wird - das Verkleinern IST der Weichzeichner, und LINEAR zieht ihn beim Lesen glatt. */
+    this.texH=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texH); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+    this.hofCv=document.createElement('canvas');
     this.tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true); return true; },
   noiseLaden(){ if(this.noise||this.laden) return; this.laden=true; fetch('/fremd/webgl-noise/noise3D.glsl').then(r=>r.ok?r.text():'').then(t=>{ this.noise=t||null; this.laden=false; }).catch(()=>{ this.laden=false; }); },
@@ -28040,12 +28229,18 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.texL); if(lichtCv&&lichtCv.width>1) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,lichtCv);
     /* Die Karte wird nur hochgeladen, wenn sie sich geaendert hat - sie
        ist je Titel konstant, und 518x518 je Bild waere Verschwendung. */
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,this.texH);
+    if(lichtCv&&lichtCv.width>1){ const hw=Math.max(2,Math.round(W/14)), hh=Math.max(2,Math.round(H/14));
+      if(this.hofCv.width!==hw||this.hofCv.height!==hh){ this.hofCv.width=hw; this.hofCv.height=hh; }
+      const hx=this.hofCv.getContext('2d'); hx.setTransform(1,0,0,1,0,0); hx.globalCompositeOperation='source-over'; hx.globalAlpha=1;
+      hx.clearRect(0,0,hw,hh); hx.drawImage(lichtCv,0,0,hw,hh);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,this.hofCv); }
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,this.texT);
     if(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1&&this._tiefeQuelle!==tiefeBild.src){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,tiefeBild); this._tiefeQuelle=tiefeBild.src; }catch(err){} }
     else if(!tiefeBild&&this._tiefeQuelle){ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([128,128,128,255])); this._tiefeQuelle=null; }
     gl.activeTexture(gl.TEXTURE0);
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
-    u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2));
+    u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2)); u('u_hof',l=>gl.uniform1i(l,3));
     u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
     u('u_takt',l=>gl.uniform1f(l, EFFEKTE[e.typ].params.some(p=>p.lm)?lmSchub(e,t):0));
     for(const p of EFFEKTE[e.typ].params){ const v=e[p.k]; if(p.farbe){ const c=[1,3,5].map(q=>parseInt(String(v).slice(q,q+2),16)/255); if(!c.some(isNaN)) u('u_'+p.k,l=>gl.uniform3f(l,c[0],c[1],c[2])); } else if(typeof v==='number') u('u_'+p.k,l=>gl.uniform1f(l,v)); }
@@ -28054,8 +28249,9 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
        dasselbe wie ohne Tiefe, sondern eine gleichmaessig staerkere
        Trueubung. Wo keine Karte liegt, wird der Regler deshalb hart auf
        null gesetzt: der Effekt sieht dann genau aus wie bisher. */
-    if(!(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1)) u('u_tiefeAn',l=>gl.uniform1f(l,0));
     const zus=EFFEKTE[e.typ].glZusatz; if(zus){ const o=zus(e); for(const k of Object.keys(o)) u(k,l=>gl.uniform1f(l,o[k])); }
+    /* ZULETZT, damit es auch einen glZusatz ueberstimmt: ohne Karte keine Tiefenrechnung. */
+    if(!(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1)) u('u_tiefeAn',l=>gl.uniform1f(l,0));
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
 const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform sampler2D u_tiefe; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
 const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
@@ -28147,6 +28343,65 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
   float dt=1.0-exp(-d*3.0*z);
   float dd=mix(d, dt, tAn);
   gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_imLicht, dd), c.a); }`,
+  /* FILMNEBEL - DAS STANDARDMODELL (Caspar_D, 14.09.2026: "wir bauen das mit deinen neuen
+     Kenntnissen komplett neu, so wie die Profis das machen"). Umschau ueber rund 25 Systeme:
+     ueberall wird das Bild GEDAEMPFT und das Licht danach DAZUGEGEBEN - Bild*Durchlass +
+     Leuchten*Deckung. Nirgends wird eine Nebelfarbe mit einer Helligkeit multipliziert und ins
+     Bild gemischt, und in keinem einzigen System gibt es einen Helligkeitsregler fuer Nebel.
+     Wie hell eine Lampe im Nebel brennt, steht ueberall an der LAMPE (Unreal "Volumetrische
+     Streuintensitaet", Godot "Volumetric Fog Energy", Unity "Dimmer"), nie am Nebel.
+     Dunkler Nebel entsteht nirgends ueber eine Helligkeit, sondern ueber das MATERIAL (Godot
+     "Albedo auf Schwarz", Houdini "Absorption Color"). Wassernebel hat eine Streu-Albedo von
+     0,9999999 - er kann physikalisch nicht abdunkeln, er verteilt nur um. Darum ist hier die
+     FARBE das Fluid und es gibt keinen Helligkeitsregler mehr. */
+  filmnebel:`uniform float u_schwere,u_buendelung,u_schwaden,u_luftzug,u_tiefeAn; uniform vec3 u_farbe;
+uniform sampler2D u_licht; uniform sampler2D u_hof;
+float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.36,0.62,u_schwaden); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
+/* Die Umgebung: das grob verwaschene Bild selbst, 25 Griffe auf drei Ringen, Startwinkel je
+   Bildpunkt gewuerfelt. Der Radius ist seitenverhaeltnis-korrigiert - ohne das ist die
+   Abtastscheibe bei einem hochkanten Bild eine Ellipse (Befund 14.09.2026). */
+vec3 umgebung(vec2 uv){
+  float a0=fract(sin(dot(uv,vec2(12.9898,78.233)))*43758.5453)*6.2831853;
+  vec2 seite=vec2(u_res.y/max(1.0,u_res.x), 1.0);
+  vec3 s=texture2D(u_tex,uv).rgb*3.0; float w=3.0;
+  for(int r=0;r<3;r++){
+    float rad=0.030+float(r)*0.042, gew=exp(-float(r)*0.55);
+    for(int i=0;i<8;i++){
+      float ang=a0+float(i)*0.7853981634+float(r)*0.3926990817;
+      s+=texture2D(u_tex, clamp(uv+vec2(cos(ang),sin(ang))*rad*seite, 0.0, 1.0)).rgb*gew; w+=gew; } }
+  return s/w; }
+void main(){
+  vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float unten=1.0-uv.y;
+  /* WIE UNGLEICHMAESSIG. Koernung, Zerrissenheit und Schwelle sind keine drei Regler, sondern
+     drei Gesichter einer Entscheidung: 0 gleichmaessiger Dunst, 1 dicke Ballen mit Rand. */
+  float skala=mix(1.6,6.0,u_schwaden);
+  float steigen=mix(0.22,-0.14,u_schwere);   /* leichter Nebel steigt, schwerer kriecht */
+  vec2 zug=vec2(u_luftzug,steigen)*u_t*0.09;
+  vec3 zt=vec3(0.0,0.0,u_t*(0.18+0.82*abs(u_luftzug))*0.55);   /* was zieht, wabert; stehende Luft steht */
+  float g=clamp(wolke(vec3((uv-zug)*skala,0.0)+zt)*0.5+0.5,0.0,1.0);
+  float ballen=mix(1.0, smoothstep(0.34,0.66,g), u_schwaden);
+  /* WO ER LIEGT. Lage, Dicke und Schichtkante waren drei Regler und sind eine Entscheidung:
+     schwerer Nebel liegt tiefer, flacher und hat eine schaerfere Oberkante. */
+  float lage=0.62*u_schwere, weich=mix(0.9,0.05,u_schwere);
+  float lager=mix(1.0, smoothstep(lage,lage+weich+0.02,unten), smoothstep(0.0,0.35,u_schwere));
+  /* WEGLAENGE. Nebel ist keine Schicht, sondern eine Daempfung entlang des Sehstrahls
+     (VIDEO-PLAN 9.7a, Koschmieder): jeder Bildpunkt wird nach SEINER EIGENEN Entfernung
+     gedaempft, und die Figur steht dadurch von selbst vor dem Nebel - ohne Maske, ohne Kante.
+     Ohne Tiefenkarte faellt der Weg auf die Schicht zurueck. */
+  float fern=1.0-texture2D(u_tiefe,uv).r;
+  float weg=lager*ballen*mix(1.0, 0.15+1.7*fern, clamp(u_tiefeAn,0.0,1.0));
+  float T=exp(-3.0*weg);
+  /* WAS IHN BELEUCHTET. Das Umgebungslicht der Szene und die Leuchten der Kette - beides geht
+     durch die Farbe, und die Farbe IST das Fluid. Bei Weiss ist die Rechnung auf flaechigem
+     Grund exakt neutral: Bild*T + Bild*(1-T) = Bild, bei jeder Dichte. Der Nebel nimmt dem
+     Bild also nichts, solange ihn nichts beleuchtet - genau das war die Beschwerde.
+     Der Faktor 4 gegen den Mindestanteil 0,25 ergibt 1: daraus folgt die Garantie, dass ein
+     Strahl im Nebel NIE schwaecher wird als ohne ihn. Was die Daempfung nimmt, gibt die
+     Einstreuung mindestens zurueck (Unreals Light Shafts sind genauso gebaut). */
+  vec3 L=texture2D(u_licht,uv).rgb, hof=texture2D(u_hof,uv).rgb;
+  vec3 streu=L*(0.25+0.75*u_buendelung)+hof*0.75*(1.0-u_buendelung);
+  vec3 leuchten=u_farbe*(umgebung(uv)+streu*4.0);
+  gl_FragColor=vec4(c.rgb*T+leuchten*(1.0-T), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_wind,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
   float base=1.0-u_boden; float hh=max(0.05,u_hoehe*(1.0+0.5*u_takt)); float h=(v_uv.y-base)/hh;
@@ -28194,7 +28449,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
           for(const [mask,sv] of [['#ff0000',sh],['#00ffff',-sh]]){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,bx,by,bw,bh,bx+dx+sv,by,bw,bh); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(bx+dx+sv,by,bw,bh); frisch(ckc); cres.globalCompositeOperation='lighter'; cres.drawImage(okc,0,0); cres.globalCompositeOperation='source-over'; } }
         else cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh); } } }
   else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,mediumJetzt(e)?olicht:null, tiefeBildVon(DATA&&DATA.id)); if(g) cres.drawImage(g,0,0);
-    else if(mediumJetzt(e)){ cres.drawImage(srcCv,0,0); nebelLeinwand(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
+    else if(mediumJetzt(e)){ cres.drawImage(srcCv,0,0); (e.typ==='filmnebel'?filmnebelLeinwand:nebelLeinwand)(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
   else if(e.typ==='bloom'){ cres.filter='blur('+Math.round(e.radius)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
 }
 
@@ -28223,6 +28478,12 @@ function renderStapel(){
       +'<button class="tbs-knopf" data-tu="runter" title="nach unten">\u2193</button>'
       +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
+    /* EIN MEDIUM OHNE LEUCHTE IST UNSICHTBAR - und das soll die Karte JETZT sagen, nicht ein
+       Beschreibungstext irgendwo (Caspar_D, 14.09.2026: "wichtig ist, das dort steht, das
+       filmnebel nur in Verbindung mit Lichtquellen wirkt"). Der Hinweis steht nur, solange keine
+       Leuchte aktiv in der Kette haengt, und verschwindet von selbst, sobald eine da ist. */
+    if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
+      h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
     const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt']);
     const paramHTML=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
@@ -28746,6 +29007,8 @@ function zeichneFrame(t){
     /* Alle zwei Sekunden ein Schluesselbild: der Loop springt vom Ende an den Anfang, und ein
        Abspieler soll dort nicht erst einen halben Clip weit suchen muessen. */
     const schluessel=Math.max(1,Math.round(rate*2));
+    FEIN=true;   /* hier haengt nichts an einer Uhr - die Maler duerfen teuer rechnen */
+    try{
     for(let i=0;i<N;i++){
       setzen(m); try{ zeichneFrame(t0+i/rate); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
       const f=new VideoFrame(m.lein,{ timestamp:Math.round(i*1000000/rate), duration:Math.round(1000000/rate) });
@@ -28756,6 +29019,7 @@ function zeichneFrame(t){
       if(fehler) break;
       if(melden && i%15===0) melden(i,N);
     }
+    } finally { FEIN=false; }
     if(fehler){ try{ enc.close(); }catch(e){} throw fehler; }
     await enc.flush(); enc.close();
     let gross=0; for(const b of teile) gross+=b.length;

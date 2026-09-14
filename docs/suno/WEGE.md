@@ -119,8 +119,8 @@ Browser-Erweiterung. Eine dritte Möglichkeit gibt es nicht.
 | weg | war |
 |---|---|
 | `bin/token.js` | 126 Zeilen mit einem Kopf „WIE ES GEHT" samt Anleitung zum Cookie-Kopieren |
-| `POST /api/geheim/cookie` | nahm das Cookie vom Lesezeichen entgegen, null Aufrufer |
-| `geheim/` | leerer Ordner |
+| der Server-Weg, der das Cookie entgegennahm | null Aufrufer |
+| der Ordner, in dem es liegen sollte | leer, immer gewesen |
 
 Die Entscheidung vom 19.08. hatte ausdrücklich verfügt, die Dateien
 *„bleiben liegen, falls Clerk das Cookie eines Tages hergibt"*. Genau
@@ -129,9 +129,15 @@ findet eine Anleitung und hält den Weg für offen. Dreimal ist das
 passiert. Hausregel ist deshalb: **totgelegt wird nur durch Löschen,
 die Begründung bleibt.** Sie steht hier.
 
-Was **bleibt**, und warum: die Sperren in `bin/paket.js`,
-`bin/export.js` und `bin/fremdstand.js` gegen `geheim/`. Sie kosten
-nichts und fangen einen künftigen Fehlgriff ab.
+**Nachtrag 14.09.2026.** Auch die Sperren in `bin/paket.js`,
+`bin/export.js` und `bin/fremdstand.js` sind weg, ebenso die Einträge in
+`.gitignore` und `.dockerignore`. Caspar_D: *„das hat keinerlei Nutzen,
+weil der Clerk-Token nur eine Stunde gültig ist — er sollte mal darin
+stehen, tut er aber nicht.“* Die Sperren bewachten einen Ordner, den es
+nie gab: null Commits über alle Zweige, im Arbeitsverzeichnis nicht
+vorhanden. Sie kosteten nichts und schützten auch nichts — sie hielten
+nur den Gedanken am Leben, es gäbe da einen Schlüssel. **Was bleibt, ist
+dieser Abschnitt**: der Weg ist tot, und das ist der Grund.
 
 ---
 

@@ -101,7 +101,7 @@ Fall trat am 26.08. mit den NVIDIA-CUDA-Images ein; er ist in
 referenziert wird.
 
 **f) Werden Dateien außerhalb des Programms angefaßt?** `library/`,
-`geheim/`, `.gitignore`, Schlüsseldateien. Das Archiv gehört nicht ins
+`.gitignore`, Schlüsseldateien. Das Archiv gehört nicht ins
 Repo (siehe `.gitignore`), und wer daran rührt, tut es entweder aus
 Versehen oder mit einem Grund, den man kennen sollte.
 

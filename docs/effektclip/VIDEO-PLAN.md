@@ -908,6 +908,32 @@ gäbe es nur Ferndunst, überall gleich hoch.**
 > gewürfelt. Dann zerfallen die Kopien zu gleichmäßiger Trübung, und die Entsättigung kann
 > ersatzlos weg.
 
+> **NACHTRAG 14.09.2026 — die Formel dieses Abschnitts ist jetzt die ganze Rechnung, und der
+> Höhenterm steht noch aus.** Der neue Effekt **Filmnebel** rechnet genau das, was oben steht:
+> `Bild·e^(−dichte·z) + Luftlicht·(1 − e^(−dichte·z))`, und zwar nicht mehr hinter einem Regler
+> „Dämpfung n. Tiefe" mit Vorgabe 0, sondern als einziger Weg — ohne Karte fällt der Weg auf die
+> Schicht zurück, sonst dämpft jeder Bildpunkt nach seiner eigenen Entfernung. Der Theaternebel
+> bleibt daneben stehen, bis der Filmnebel gewonnen hat (Caspar_D).
+>
+> Zwei Dinge, die dieser Abschnitt so nicht sagt und die beim Bauen zählten:
+>
+> **Das Luftlicht ist keine Helligkeit, sondern ein Material.** Oben steht „Luftlicht" als Größe,
+> ohne zu sagen, woher sie kommt. Der alte Nebel machte daraus zwei Regler („Ohne Licht", „Im
+> Licht") — und genau daran hing der gemeldete Fehler: bei „Ohne Licht" 0 wurde der Nebel zu
+> schwarzer Farbe. Richtig ist: Luftlicht = Farbe × (Umgebung + Streulicht). Die **Farbe ist das
+> Fluid** (Weiß = Wassernebel, Albedo ≈ 1, kann nicht abdunkeln; dunkel = Rauch, schluckt). In rund
+> 25 geprüften Systemen gibt es keinen Helligkeitsregler für Nebel. Belege und Zahlen: Regel 6b.
+>
+> **Der Höhenterm ist NICHT gebaut** — bewusst. Oben steht `h ≈ (y − y_horizont)·z` und „ein
+> Parameter mehr (die Horizontlinie) und das Verhalten stimmt". Das stimmt für eine *gemessene*
+> Tiefe. Bei einer monokular **geschätzten** Karte ist der Maßstab relativ: der Schwellwert, ab dem
+> ein Punkt „auf dem Boden" liegt, sitzt bei jedem Bild woanders, und die Horizontlinie als Regler
+> wäre damit genau die Sorte Regler, die den Nutzer raten lässt. „Schwere" im Filmnebel ist deshalb
+> eine Bildhöhe mit Tiefendämpfung, kein Bodennebel im Raum. **Wer das nachholt, braucht zuerst
+> einen belastbaren Weg zur Horizontlinie** (Vorschlag: aus der Karte selbst — die Zeile, deren
+> Median am weitesten entfernt ist — und dann an Bildern mit Figur im Vordergrund geprüft), nicht
+> einen weiteren Schieber.
+
 ### 9.7b Tiefe wird ein generischer Parameter, kein Einbau je Effekt
 
 Der Architekturpunkt, wichtiger als jede Einzelanwendung. Ist die Tiefe ein Grundkanal, wird sie

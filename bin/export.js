@@ -36,7 +36,7 @@
  *   Programm/library/export-stand.json   {exportiertAm, dateien, bytes, mitStems, handle}
  *   node/<plattform>/       das mitgebrachte Node aus library/node-portabel/
  *
- * WAS NIE MITKOMMT: geheim/ (Zugangsdaten), .git (die Werkstatt), die
+ * WAS NIE MITKOMMT: .git (die Werkstatt), die
  * WAV-Originale (17 GB, nur für Messungen, die längst gerechnet sind).
  *
  * IN STUFEN, NACH WICHTIGKEIT (Caspar_D, 09.09.2026: "so aufbauen, dass die
@@ -782,7 +782,6 @@ function liesMich(stand, nodeStand) {
   const fehlt = [
     'die WAV-Originale (nur für Messungen gebraucht, die längst gerechnet sind)',
     stand.mitStems ? null : 'die Stems (die getrennten Spuren; nur auf Wunsch, --stems)',
-    'die Zugangsdaten (geheim/) - und damit alles, was bei Suno etwas holen würde',
     ...nodeStand.fehlt.map(p => `ein mitgebrachtes Node für ${p.system} - dort braucht es ein installiertes Node.js (https://nodejs.org)`),
   ].filter(Boolean);
   return `# KlangTresor - Archiv von ${anzeigename} (@${handle})

@@ -1105,7 +1105,7 @@ Caspar_D: „führt gerade zu weit" — nach dem B-Block.
 ## Docker und Einrichtungsskripte (23.08.2026)
 Tarja hat die Docker-Dateien gebaut (`Dockerfile`, `docker-compose.yml`,
 `docker-entrypoint.sh`) — Node 20 auf bookworm, weil onnxruntime-node nur
-glibc-Binaries liefert; ffmpeg im Bild; `library/` und `geheim/` als Volumes,
+glibc-Binaries liefert; ffmpeg im Bild; `library/` als Volume,
 damit das Archiv den Container überlebt; Healthcheck und
 `restart: unless-stopped`.
 
@@ -1127,8 +1127,7 @@ keine Verwechslungen geben kann". Die Docker-Bauanleitungen liegen seitdem
 in `docker/`, die `starten-*` fürs bloße Starten daneben.)
 
 Die drei Docker-Skripte prüfen, ob Docker da ist und läuft, legen `library/`
-und `geheim/` an, bauen die Kiste, warten auf den Server und verweisen dann in
-den Browser.
+an, bauen die Kiste, warten auf den Server und verweisen dann in den Browser.
 
 **Die drei üblichen sind seit dem 11.09.2026 nur noch Anlasser** (Caspar_D:
 „am schönsten wäre natürlich, du downloadest nur node.js zuerst und machst
@@ -2196,6 +2195,38 @@ Ein Modellwechsel wird erkannt und rechnet alles neu.
   und §12 begründet das mit der ungeprüften Annahme. Der Grund ist weg; sie rückt vor die
   Punkte, die von ihr abhängen (Gottesstrahlen mit Verdeckung, Auftreffpunkt des Lasers,
   3D-Raum).
+- [ ] **Kantenblitz und Schlagschatten aus der Tiefenkarte** — *zu planen, Entwurf steht.*
+  Caspar_D, 14.09.2026: *„wenn Laser von einer seite kommt, wo in der tiefenmap eine
+  vorwölbung ist, müsste eigentlich ein Kantenblitz entstehen, wohingegen wo die tiefenmap
+  flieht, eher schatten zu sehen sein müsste."* Das ist Lambert plus Verdeckung, und die
+  Karte gibt beides her:
+
+  - **Normale** aus dem Gefälle der Karte: `N = normalize(−dz/dx, −dz/dy, k)`. Wo sie sich
+    vorwölbt, kippt N zur Seite.
+  - **Kantenblitz** = `max(0, N·L)` mit einem Regler für die Schärfe: breit gibt
+    Modellierung, eng gibt den aufblitzenden Rand.
+  - **Schlagschatten** = ein Marsch im Bildraum, ein Dutzend Schritte vom Bildpunkt Richtung
+    Licht durch die Karte; steigt sie über das, was der Sehstrahl erwartet, liegt der Punkt
+    im Schatten. Dasselbe Verfahren wie Kontaktschatten in Spielen.
+  - Regler **Einfall**: wie weit vor dem Bild die Leuchte steht. Streifend gibt harte Kanten
+    und lange Schatten, frontal gibt flache Modellierung.
+
+  **Die offene Entscheidung: woher kommt die Lichtrichtung?**
+  **(a)** Jede Leuchte meldet beim Füllen des Lichtpuffers ihren Ort mit — der Laser seinen
+  Fächerpunkt (der liegt außerhalb des Bildes), der Scheinwerfer seine Mitte. Exakt und
+  billig, kostet Verdrahtung in fünf Malern. **(b)** Aus dem Gefälle des Lichthofs (dem
+  weichgezeichneten Lichtpuffer, den der Filmnebel seit dem 14.09. ohnehin baut) — null
+  Verdrahtung, kommt mit mehreren Leuchten zurecht, versagt aber bei gleichmäßigem Licht.
+  Vorschlag: **(a)**, mit (b) als Rückfall, wenn keine Leuchte einen Ort gemeldet hat.
+
+  **Vorbehalt, der vor dem Festschreiben zu messen ist:** die Karte ist geschätzt, nicht
+  gemessen. Normalen aus ihr sind auf glatten, gemusterten Flächen unzuverlässig — der Blitz
+  wird weicher als bei einem 3D-Modell und kann auf manchen Covern falsch sitzen. An drei bis
+  vier verschiedenen Titelbildern prüfen.
+
+  **Nebenertrag:** dieselbe Verdeckungsrechnung, in den Lichtpuffer zurückgeschrieben, **sind
+  die Gottesstrahlen** (VIDEO-PLAN §9b.2) — der Strahl bricht an der Figur ab und läuft
+  dahinter weiter. Die beiden Punkte gehören zusammen gebaut.
 
 ## Geschichten-Genres statt Klang-Etiketten
 
@@ -2562,12 +2593,12 @@ Konten nach oben; erst gegen deren eigene Herzfreudigkeit
 
 **Was es schon gibt:**
 - `bin/export.js` (20.08.): selbsttragende Kopie per rsync — Programm und
-  Datenbestand, ohne WAV, ohne geheim/, .git, roh/; schreibt START.md
+  Datenbestand, ohne WAV, ohne .git und roh/; schreibt START.md
   („node server/server.js, Browser auf"). Probe 09.09.: 6.250 Dateien,
   35,2 GB (ohne Analyse-Ablage 32,9 GB); ein zweiter Lauf kopiert nur
   Änderungen.
 - `bin/paket.js` (24.08.): Weitergabe-ZIP des Programms allein aus
-  `git archive`, geprüft gegen Geheimnisse — der Weg für Tarja und Casto.
+  `git archive`, geprüft gegen private Dateien — der Weg für Tarja und Casto.
 - `bin/himmel-export.js`: der Sternenhimmel als eine Datei, läuft ohne
   Server — die Demo.
 - `docs/MORGENROUTINE-PLAN.md`, Gruppe C: „Archiv-Export aktualisieren
@@ -2593,7 +2624,7 @@ Konten nach oben; erst gegen deren eigene Herzfreudigkeit
   Analyse-Ablage (2,3 GB) bleibt drin — ohne sie müsste der Stick beim
   ersten Öffnen jedes Titels rechnen. Stems: prüfen, wie groß.
 - **Danach prüfen, nicht glauben**: Dateizahl Ziel = Quelle, START.md
-  mit Datum, kein geheim/ — und ein Probestart des Servers vom Ziel auf
+  mit Datum — und ein Probestart des Servers vom Ziel auf
   einem Nebenport mit `/api/index`: „Probestart ok, N Titel". Erst dann
   grün.
 - **Im Morgenfenster** ein Abschnitt wie die anderen: „Archiv-Export —

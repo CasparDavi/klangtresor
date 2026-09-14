@@ -1,11 +1,11 @@
 /* KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE */
 /**
- * Packt das Weitergabe-ZIP — und prüft vorher, daß nichts Geheimes hinein kann.
+ * Packt das Weitergabe-ZIP — und prüft vorher, daß nichts Privates hinein kann.
  *
  *   node bin/paket.js              → ../KlangTresor-<datum>.zip
  *
  * Das ZIP entsteht aus `git archive HEAD`. Damit kommt nur hinein, was
- * git kennt - library/, geheim/ und alles andere aus .gitignore sind von
+ * git kennt - library/ und alles andere aus .gitignore sind von
  * vornherein draußen. Das ist der eigentliche Schutz.
  *
  * Dieses Skript verläßt sich nicht darauf, sondern PRÜFT es: Es schaut
@@ -24,9 +24,9 @@ const stempel = new Date().toISOString().slice(0, 10);
    Der Ordnername im ZIP und die Verbotsmuster darunter muessen
    zusammenpassen. Standen sie getrennt da, wie bis zum 24.08.2026,
    dann genuegte eine Umbenennung an einer Stelle - und die Pruefung
-   auf geheim/ und library/ lief ins Leere, ohne dass jemand es
-   merkte. Ein Paket mit dem Schluessel darin haette als sauber
-   gegolten. Deshalb steht der Name jetzt genau einmal. */
+   auf library/ lief ins Leere, ohne dass jemand es merkte. Ein Paket
+   mit dem halben Archiv darin haette als sauber gegolten. Deshalb
+   steht der Name jetzt genau einmal. */
 const PREFIX = 'KlangTresor';
 /* OHNE OBERSTEN ORDNER, MIT FESTEM NAMEN. Caspar_D, 13.09.2026: "was
    aetzend ist, wenn ich das zip auspacke entsteht folgende
@@ -41,7 +41,6 @@ const ziel = path.join(WURZEL, '..', `${PREFIX}.zip`);
 
 /* Was NIE im Paket sein darf. Pfadmuster auf den Einträgen im ZIP. */
 const VERBOTEN = [
-  new RegExp('^geheim/'),               // der Schlüssel
   /* Eigene Bestandsdaten, die NICHT unter library/ liegen und deshalb
      durch die alte Liste fielen: docs/eichkasten/ trug 2,75 MB mit 257
      Song-IDs und je einem 768er-Textvektor aus den Liedtexten - zwoelfmal
@@ -66,7 +65,7 @@ const treffer = liste.filter(e => VERBOTEN.some(m => m.test(e)));
 
 if (treffer.length) {
   fs.rmSync(ziel, { force: true });
-  console.error('\n  ABGEBROCHEN — im Paket lägen geheime oder private Dateien:\n');
+  console.error('\n  ABGEBROCHEN — im Paket lägen private Dateien:\n');
   for (const t of treffer) console.error('    ' + t);
   console.error('\n  Das ZIP wurde gelöscht. .gitignore prüfen.\n');
   process.exit(2);

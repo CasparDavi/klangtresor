@@ -41,24 +41,6 @@ web/farbvergleich.html
 .DS_Store
 ._*
 
-# ======================================================================
-# GEHEIM — NIEMALS WEITERGEBEN
-# ======================================================================
-# geheim/ enthält den Zugang zum Suno-Konto: das Cookie, mit dem
-# sich der Server selbst einen Token holt (bin/token.js). Wer diese
-# Datei hat, ist als Caspar_D angemeldet.
-#
-# Der Eintrag steht ABSICHTLICH GETRENNT von library/, obwohl library/
-# schon draußen ist: Sollte jemand library/ jemals wieder hineinnehmen
-# (etwa um Rohdaten zu teilen), bleibt der Schlüssel trotzdem draußen.
-# Und weil das Weitergabe-ZIP mit `git archive` entsteht, kommt dort nie
-# hinein, was git nicht kennt — bin/paket.js prüft das zusätzlich und
-# bricht ab, wenn ein Schlüssel im Paket läge.
-#
-# Verfällt das Cookie, einfach neu aus dem Browser kopieren (Anleitung
-# in bin/token.js). Es gibt keinen Grund, es je zu committen.
-geheim/
-
 # Pakete (npm install holt sie neu; nur onnxruntime-node fuer bin/klang.js)
 node_modules/
 

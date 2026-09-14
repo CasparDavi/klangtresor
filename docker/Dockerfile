@@ -26,8 +26,8 @@ COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 # und ein Container, der sich endlos neu startet (gefunden 23.08.2026).
 RUN chmod 755 /usr/local/bin/docker-entrypoint.sh bin/server-start.sh \
  && chown -R node:node /app \
- && mkdir -p /app/library /app/geheim \
- && chown node:node /app/library /app/geheim
+ && mkdir -p /app/library \
+ && chown node:node /app/library
 
 USER node
 
