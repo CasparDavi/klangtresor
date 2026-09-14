@@ -27252,7 +27252,7 @@ function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
 /* ---- LICHTMISCHPULT (Caspar_D, 11.09.2026): ein Antrieb fuer alle Lichter, wie am Lichtpult - Quelle des
    Takts (Schlaege, Taktanfang, zufaellige Schlaege, freie Frequenz), Muster der Kurve je Periode, Tiefe,
    Versatz, Invers. Alles rein aus der Zeit gerechnet, damit Studio, Kachel und Buehne dasselbe zeigen. */
-const LM_FORMEN=[['rampe_auf','Rampe auf, dann aus'],['rampe_ab','An, dann Rampe ab'],['peak_an','Aus mit An-Spitzen'],['peak_aus','An mit Aus-Spitzen'],['rechteck','Rechteck'],['sinus','Sinus'],['zufall','Zufall je Periode'],['sequenz','Sequenz \u2014 gemalte Schritte je Periode']];
+const LM_FORMEN=[['rampe_auf','Rampe auf, dann aus'],['rampe_ab','An, dann Rampe ab'],['peak_an','Aus mit An-Spitzen'],['peak_aus','An mit Aus-Spitzen'],['rechteck','Rechteck'],['sinus','Sinus'],['flackern','Flackern'],['sequenz','Sequenz \u2014 gemalte Schritte je Periode']];
 /* SEQUENZER (Caspar_D, 11.09.2026: "als wenn man eine Drum-Machine programmiert - Amplitude ist die Lichtstaerke"):
    die Periode in Schritte geteilt, jeder Schritt eine Hoehe, mit der Maus in der Vorschau gemalt. */
 const LM_VORLAGEN=[['doppel','Doppelschlag',n=>Array.from({length:n},(_,i)=>{ const q=(i%(n/2))/(n/2); return q<0.25?1:q<0.5?0.45:q<0.75?0.15:0; })],
@@ -27272,6 +27272,22 @@ function lmSchritteZahl(e,n){ const alt=lmSchritteHolen(e); e.lmSchritte=Array.f
 function taktDa(){ return !!(DATA&&Array.isArray(DATA.schlaege)&&DATA.schlaege.length); }
 const LM_QUELLEN=[['stetig','stetig'],['takt','im Takt'],['eins','auf der Eins'],['zufall','zuf\u00e4llige Schl\u00e4ge'],['hz','Frequenz']];
 const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.floor(v); };
+/* FLACKERN (Caspar_D, 14.09.2026: "bei muster gibt es die einstellung zufall je periode, mache
+   daraus ein zufaelliges flackern"). Ein Wert je Periode war eine Treppe: die Helligkeit stand
+   eine ganze Periode still und sprang dann. Ein Flackern lebt davon, dass es INNERHALB der
+   Periode zappelt, und zwar auf mehreren Zeitskalen zugleich - eine Kerze hat ein langsames
+   Wogen und ein schnelles Zucken uebereinander.
+   Also Wertrauschen ueber drei Oktaven: drei Zufallsfolgen mit dreifach steigender Rate, weich
+   ineinander geblendet (die Kurve tt*tt*(3-2*tt) laeuft an beiden Enden waagerecht aus, sonst
+   knickt es sichtbar). Gelesen wird entlang der fortlaufenden Periodenzahl, nicht innerhalb
+   einer einzelnen - sonst waere in jeder Periode dasselbe Zappeln, also ein Rhythmus statt
+   Zufall. Am Ende gespreizt, weil gemitteltes Rauschen sich um die Mitte draengt und die
+   Enden des Kontinuums sonst nie erreicht wuerden (Regel 9). */
+function lmFlacker(seed,u){ let s=0,g=0,a=0.5,f=3;
+  for(let o=0;o<3;o++){ const x=u*f, i=Math.floor(x), tt=x-i, w=tt*tt*(3-2*tt);
+    const v0=lmHash(seed+i*131.7+o*977.3), v1=lmHash(seed+(i+1)*131.7+o*977.3);
+    s+=(v0+(v1-v0)*w)*a; g+=a; a*=0.5; f*=2.3; }
+  return Math.max(0,Math.min(1,(s/g-0.5)*1.7+0.5)); }
 function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&&e.lmAbkling!=null)?e.lmAbkling:1;
   switch(form){ case 'rampe_auf': return p; case 'rampe_ab': return Math.pow(Math.max(0,1-p),ab); case 'peak_an': return p<br*0.5?1:0; case 'peak_aus': return p<br*0.5?0:1;   /* Spitzen halb so breit wie das Rechteck (Tiefen-Check: beide waren derselbe Code) */
     case 'rechteck': return p<br?1:0; case 'sinus': return 0.5+0.5*Math.cos(2*Math.PI*p);
@@ -27299,12 +27315,12 @@ function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=nu
     if(q==='zufall') aktiv = lmHash(idx*3+e.id*31) < (e.lmAnteil==null?0.5:e.lmAnteil); }
   p=((p+(e.lmVersatz||0))%1+1)%1; e._lmPhase=p;
   /* Uebersprungene Schlaege (Quelle Zufall) ruhen aus - nur "An mit Aus-Spitzen" ruht an (Tiefen-Check: vorher der Kurven-Endwert, bei "Rampe auf" also an). */
-  let f = aktiv ? (form==='zufall' ? lmHash(idx*7+e.id) : lmForm(form,p,e)) : (form==='peak_aus'?1:0);
+  let f = aktiv ? (form==='flackern' ? lmFlacker(e.id*37+11, idx+p) : lmForm(form,p,e)) : (form==='peak_aus'?1:0);
   if(e.lmInvers) f=1-f; e._lmRoh=f; return (1-tiefe)+tiefe*f; }
 /* Schub 0..Tiefe fuer Maler, die einen Stoss wollen (Flammenhoehe, Feuer, Stroboskop); stetig = 0. Die Tiefe bleibt drin (Tiefen-Check: vorher herausgerechnet, der Regler war tot). */
 function lmSchub(e,t){ if((e.lmQuelle||'stetig')==='stetig') return 0; antriebWert(e,t); const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); return tiefe*Math.max(0,Math.min(1,e._lmRoh==null?0:e._lmRoh)); }
 function lmIkon(form){ if(form==='sequenz'){ const s=[1,.35,1,.35,1,.35]; return '<svg viewBox="0 0 24 12" width="30" height="15" fill="currentColor" stroke="none">'+s.map((v,i)=>'<rect x="'+(i*4+0.5)+'" y="'+(11-v*10).toFixed(1)+'" width="3" height="'+(v*10).toFixed(1)+'"/>').join('')+'</svg>'; }
-  const pts=[]; for(let i=0;i<=32;i++){ const p=i/32; const f=(form==='zufall')?lmHash(Math.floor(p*4)*7+3):lmForm(form,p===1?0.999:p,null); pts.push((p*24).toFixed(1)+','+(11-f*10).toFixed(1)); }
+  const pts=[]; for(let i=0;i<=32;i++){ const p=i/32; const f=(form==='flackern')?lmFlacker(48,p*2):lmForm(form,p===1?0.999:p,null); pts.push((p*24).toFixed(1)+','+(11-f*10).toFixed(1)); }
   return '<svg viewBox="0 0 24 12" width="30" height="15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><polyline points="'+pts.join(' ')+'"/></svg>'; }
 function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
   if((e.lmForm||'rampe_ab')==='sequenz'){ const s=lmSchritteHolen(e), n=s.length, bw=W/n, tiefe=(e.lmTiefe==null?0.8:e.lmTiefe);
@@ -27315,7 +27331,7 @@ function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height;
     return; }
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(W/2,0); x.lineTo(W/2,H); x.stroke();
   const form=e.lmForm||'rampe_ab', tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath();
-  for(let i=0;i<=200;i++){ const q=i/200*2; const pp=((q%1)+(e.lmVersatz||0))%1; let f=(form==='zufall')?lmHash(Math.floor(q)*7+e.id):lmForm(form,pp,e); if(e.lmInvers) f=1-f; const lv=(1-tiefe)+tiefe*f; const px=q/2*W, py=H-3-lv*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
+  for(let i=0;i<=200;i++){ const q=i/200*2; const pp=((q%1)+(e.lmVersatz||0))%1; let f=(form==='flackern')?lmFlacker(e.id*37+11,q):lmForm(form,pp,e); if(e.lmInvers) f=1-f; const lv=(1-tiefe)+tiefe*f; const px=q/2*W, py=H-3-lv*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
   if(e._lmPhase!=null){ const px=e._lmPhase/2*W; x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=1; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); } }
 function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); stapelBox.querySelectorAll('canvas.tbs-rmvor').forEach(cv=>{ if(cv._e) raumVorschau(cv,cv._e); });
   stapelBox.querySelectorAll('canvas.tbs-qvor').forEach(cv=>{ if(cv._e) quellVorschau(cv,cv._e); }); }
@@ -27998,7 +28014,7 @@ function renderStapel(){
         const takt=taktDa(), quellen=takt?LM_QUELLEN:LM_QUELLEN.filter(([v])=>v==='stetig'||v==='hz');
         const verwaist=(!takt&&q!=='stetig'&&q!=='hz');
         h+='<div class="tbs-lm"><div class="tbs-regler"><span>Antrieb</span><select data-k="lmQuelle">'+(verwaist?'<option value="'+q+'" selected>'+(LM_QUELLEN.find(x=>x[0]===q)||['',q])[1]+' (ohne Takt)</option>':'')+quellen.map(([v,l])=>'<option value="'+v+'"'+(q===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
-        if(!takt) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Dieser Titel hat kein Schlagraster.'+(verwaist?' Der Antrieb laeuft deshalb auf der festen Frequenz weiter, Muster und Tiefe gelten unveraendert.':'')+' Frequenz mit dem Muster „Zufall je Periode“ gibt das Flackern einer Kerze, ganz ohne Takt.</div>';
+        if(!takt) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Dieser Titel hat kein Schlagraster.'+(verwaist?' Der Antrieb laeuft deshalb auf der festen Frequenz weiter, Muster und Tiefe gelten unveraendert.':'')+' Frequenz mit dem Muster „Flackern“ gibt die Kerze, ganz ohne Takt.</div>';
         if(q!=='stetig'){
           h+='<div class="tbs-regler"><span>Muster</span><div class="tbs-lmformen">'+LM_FORMEN.map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
           h+='<canvas class="tbs-lmvor" width="300" height="44" title="Die Kurve \u00fcber zwei Perioden, der Strich ist jetzt"></canvas>';
@@ -28016,7 +28032,7 @@ function renderStapel(){
           /* "Zeitversatz", nicht "Versatz": drei Karten nennen einen Abstand IM BILD so, dieser hier verschiebt
              in der ZEIT. Auf einer Karte mit beidem liest sich das Paar von selbst (Caspar_D, 10.09.2026:
              "das eine ist ein Orts- das andere ein Zeitversatz"). "Phase" waere richtig, aber Fachjargon. */
-          if(form!=='zufall') h+='<div class="tbs-regler"><span>Zeitversatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
+          h+='<div class="tbs-regler"><span>Zeitversatz</span><input type="range" class="tbs-zust" data-k="lmVersatz" min="0" max="1" step="0.05" value="'+e.lmVersatz+'"><span class="tbs-wert">'+kf(e.lmVersatz)+'</span></div>';
           h+='<div class="tbs-regler"><span>invers</span><button class="tbs-togp'+(e.lmInvers?' an':'')+'" data-tog="lmInvers">'+(e.lmInvers?'an':'aus')+'</button><span></span></div>'; }
         h+='</div>'; return; }
       if(p.grad){ gradInit(e); const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=e.grad[e.kanal], cc=K[e.kanal][1];
@@ -28365,6 +28381,9 @@ function zeichneFrame(t){
          bekaeme ein altes Rezept die Vorgabe des Schnees, und Asche fiele kuenftig statt zu steigen. */
       /* PULSE VOR DEM LICHTMISCHPULT (Regel 12, Tabelle in VIDEO-PLAN 9d.1). Ohne Uebersetzung
          stuenden alle alten Pulse auf der Vorgabe des Pults statt auf ihrer eigenen Einstellung. */
+      /* Das Muster "Zufall je Periode" ist zum Flackern geworden - anderer Schluessel, damit die
+         Bedeutungsaenderung nicht stillschweigend geschieht (Regel 12). Zwei Ablagen im Bestand. */
+      if(r.lmForm==='zufall') e.lmForm='flackern';
       if(PULSE.includes(r.typ)&&r.lmQuelle==null){
         /* Der alte Atem lief bis zwoelf Sekunden je Zug, also bis 0,083 Schwingungen je Sekunde.
            Das Pult fing bei 0,5 an - die Uebersetzung haette jeden alten Atemzug bis auf das
