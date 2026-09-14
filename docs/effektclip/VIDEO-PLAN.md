@@ -881,6 +881,33 @@ h ≈ (y − y_horizont) · z
 zum Horizont zusammen, die Beine der Figur stehen darin, der Kopf ragt heraus. **Ohne den Höhenterm
 gäbe es nur Ferndunst, überall gleich hoch.**
 
+> **GEBAUT AM 14.09.2026 — und was dabei herauskam.** Der Dunst als Dämpfung steht im
+> Theaternebel, als Regler „Tiefe (Karte)" von 0 (wie bisher) bis 1 (volle Rechnung). Vier
+> Dinge, die dieser Abschnitt nicht vorhersehen konnte und die beim nächsten Verbraucher
+> Zeit sparen:
+>
+> **Die Karte gehört zu dem Bild, das die Oberfläche ZEIGT.** Nicht zu `cover.jpg`: bei 181
+> von 324 Titeln zeigt das Haus `titelbild.jpg` — dasselbe Motiv ohne den Rand, den
+> `bin/kacheln.js` seit dem 09.09. wegschneidet, also anderer Ausschnitt *und* anderes
+> Seitenverhältnis. Eine Karte des einen über dem anderen liest sich als Versatz und
+> stellenweise als verkehrte Tiefe.
+>
+> **Das Modell nimmt jedes Seitenverhältnis**, solange beide Kanten Vielfache von 14 sind
+> (nachgemessen: 518×518, 392×518, 378×504 laufen alle). Auf ein Quadrat zu quetschen ist
+> unnötig und schadet — 22 von 80 geprüften Covern sind hochkant.
+>
+> **Die Kartendatei bekommt die Maße des Bildes.** Gerechnet wird bei 518, geschrieben in
+> der Größe der Quelle. Dann muss sich niemand fragen, wo gestreckt wird.
+>
+> **§10 darf nicht allein stehen.** Die 40-Prozent-Entsättigung im Nebel stand dort, weil
+> `umgebung()` kein Weichzeichner war, sondern ein **Ringabtaster**: acht Griffe auf zwei
+> festen Ringen, für jeden Bildpunkt derselbe Winkel — also versetzte Kopien des Bildes, die
+> sich überall an derselben Stelle addieren. Grau fielen sie nicht auf, in Farbe sofort
+> („zwei Geisterbilder", „die Maske sitzt zu hoch"). Wer die Entsättigung entfernt, muss
+> **zuerst** den Abtaster reparieren: drei Ringe, je acht Griffe, Startwinkel je Bildpunkt
+> gewürfelt. Dann zerfallen die Kopien zu gleichmäßiger Trübung, und die Entsättigung kann
+> ersatzlos weg.
+
 ### 9.7b Tiefe wird ein generischer Parameter, kein Einbau je Effekt
 
 Der Architekturpunkt, wichtiger als jede Einzelanwendung. Ist die Tiefe ein Grundkanal, wird sie

@@ -2180,10 +2180,13 @@ Ein Modellwechsel wird erkannt und rechnet alles neu.
   `bin/tiefenkarten.js` als Schritt der Einrichtung und als Glied des Morgenlaufs, damit
   neue Titel ihre Karte von selbst bekommen. Erst schalten, wenn Dunst mit Tiefe zeigt,
   dass es trägt.
-- [ ] **Erster Verbraucher: Dunst als Dämpfung** (VIDEO-PLAN §9.7a). Nicht als Schicht,
-  sondern `Bild·e^(−dichte·z) + Luftlicht·(1−e^(−dichte·z))`. Löst zugleich den
-  Entsättigungs-Fehler aus §10 ersatzlos — die 40 % entstehen dann von selbst, dort wo sie
-  hingehören.
+- [x] **Erster Verbraucher: Dunst als Dämpfung** (VIDEO-PLAN §9.7a) — **gebaut am
+  14.09.2026.** Regler „Tiefe (Karte)" im Theaternebel, 0 = wie bisher, 1 = volle Rechnung.
+  Vier Fehler steckten übereinander, alle von Caspar_D am Bild gesehen: Karte aus dem
+  falschen Bild (cover statt titelbild), zum Quadrat gequetscht, anderes Dateiformat als das
+  Bild — und `umgebung()` war kein Weichzeichner, sondern ein Ringabtaster mit sichtbaren
+  Doppelgängern. Die Entsättigung aus §10 hatte die nur grau gehalten; sie ist jetzt
+  ersatzlos weg, weil der Abtaster repariert ist. Einzelheiten im Plan bei §9.7a.
 - [ ] Danach der **generische Parameter** „wirkt auf: vorn / hinten / alles" (§9.7b) — er
   setzt die zweispaltige Effektkarte aus §9a.5 voraus.
 - [ ] **Die Reihenfolge im Videoplan ist überholt.** §11 stellt die Tiefenkarte auf Platz 11
