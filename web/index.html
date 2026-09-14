@@ -27270,6 +27270,18 @@ function lmSchritteZahl(e,n){ const alt=lmSchritteHolen(e); e.lmSchritte=Array.f
    Quelle dort gar nicht erst zur Wahl. Was bleibt, laeuft auf eigener Uhr: die freie Frequenz,
    und mit dem Muster "Zufall je Periode" ist genau das das Flackern einer Kerze. */
 function taktDa(){ return !!(DATA&&Array.isArray(DATA.schlaege)&&DATA.schlaege.length); }
+/* Das Tempo des Titels aus dem Median der Schlagabstaende - robust gegen einzelne Ausreisser. */
+function schlagHz(){ const S=DATA&&DATA.schlaege; if(!S||S.length<8) return 0;
+  const d=[]; for(let i=1;i<S.length;i++){ const x=S[i][0]-S[i-1][0]; if(x>0.05&&x<3) d.push(x); }
+  if(!d.length) return 0; d.sort((a,b)=>a-b); const m=d[d.length>>1]; return m>0?1/m:0; }
+/* Der Export laeuft mit 30 Bildern je Sekunde. Oberhalb der halben Bildrate ist eine Schwingung
+   nicht mehr darstellbar, sie erscheint als falsche, langsamere - und bei genau 30 Hz steht sie
+   still. Als Flackern lesbar bleibt sie, solange etwa vier Bilder auf eine Schwingung kommen. */
+const BILD_NYQUIST=15, BILD_LESBAR=7.5;
+function rateUrteil(hz){ if(!(hz>0)) return ''; const z=hz.toFixed(1).replace('.',',')+' pro Sekunde';
+  if(hz>BILD_NYQUIST) return z+' — im Export nicht mehr darstellbar, es entsteht ein falsches, langsameres Muster.';
+  if(hz>BILD_LESBAR) return z+' — im Export nur noch ein Stottern, kein Flackern.';
+  return z+'.'; }
 const LM_QUELLEN=[['stetig','stetig'],['takt','im Takt'],['eins','auf der Eins'],['zufall','zuf\u00e4llige Schl\u00e4ge'],['hz','Frequenz']];
 const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.floor(v); };
 /* FLACKERN (Caspar_D, 14.09.2026: "bei muster gibt es die einstellung zufall je periode, mache
@@ -27307,11 +27319,22 @@ function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=nu
          die Periode kommt aus der Frequenz, die ohnehin an jedem Effekt steht. Der Teiler teilt
          auch hier - "jeder 4. Schlag" wird zu einem Viertel der Frequenz -, und "auf der Eins"
          rechnet mit vier, weil ein Takt hier nicht laenger zu erfragen ist. Kein neuer Regler. */
-      const n=(q==='eins')?4:Math.max(1,(e.lmTeiler|0)||1);
-      const hz=lpR(Math.max(0.05,(e.lmHz==null?4:e.lmHz)/n)), x=t*hz; idx=Math.floor(x); p=x-idx; }
+      const n=(q==='eins')?4:(Number(e.lmTeiler)||1);
+      const hz=lpR(Math.max(0.05,(e.lmHz==null?4:e.lmHz)/Math.max(0.05,n))), x=t*hz; idx=Math.floor(x); p=x-idx; }
     else { const eins=(q==='eins'); let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0){ e._lmRoh=0; return 1; }
-      const n=eins?1:Math.max(1,(e.lmTeiler|0)||1); let a=i, b; if(eins){ while(a>0&&S[a][1]!==1) a--; b=a+1; while(b<S.length&&S[b][1]!==1) b++; } else { a=i-(i%n); b=a+n; }
-      const t0=S[a][0]; const schritt=(S[a+1]?S[a+1][0]-t0:0.5); const t1=(b<S.length)?S[b][0]:t0+schritt*(eins?4:n); const L=Math.max(0.05,t1-t0); p=Math.min(1,(t-t0)/L); idx=a; }
+      const teil=eins?1:(Number(e.lmTeiler)||1);
+      if(teil<1){
+        /* BRUCHTEILE EINES SCHLAGS (Caspar_D, 14.09.2026: "jetzt brauchen wir noch die Bruchteile
+           von Schlaegen"). Ueber eins wird GEZAEHLT - jeder zweite, vierte, achte Schlag. Unter
+           eins wird GETEILT: der Abstand zum naechsten Schlag zerfaellt in k gleiche Stuecke.
+           Der Unterschied zur festen Frequenz ist der ganze Zweck: das hier haengt am Takt und
+           geht bei einem Tempowechsel mit, die feste Frequenz laeuft weg. */
+        const k=Math.max(1,Math.round(1/teil));
+        const t0=S[i][0], schritt=Math.max(0.02,(S[i+1]?S[i+1][0]-t0:0.5));
+        const roh=(t-t0)/schritt*k, j=Math.max(0,Math.min(k-1,Math.floor(roh)));
+        p=Math.max(0,Math.min(1,roh-j)); idx=i*k+j; }
+      else { const n=Math.max(1,Math.round(teil)); let a=i, b; if(eins){ while(a>0&&S[a][1]!==1) a--; b=a+1; while(b<S.length&&S[b][1]!==1) b++; } else { a=i-(i%n); b=a+n; }
+        const t0=S[a][0]; const schritt=(S[a+1]?S[a+1][0]-t0:0.5); const t1=(b<S.length)?S[b][0]:t0+schritt*(eins?4:n); const L=Math.max(0.05,t1-t0); p=Math.min(1,(t-t0)/L); idx=a; } }
     if(q==='zufall') aktiv = lmHash(idx*3+e.id*31) < (e.lmAnteil==null?0.5:e.lmAnteil); }
   p=((p+(e.lmVersatz||0))%1+1)%1; e._lmPhase=p;
   /* Uebersprungene Schlaege (Quelle Zufall) ruhen aus - nur "An mit Aus-Spitzen" ruht an (Tiefen-Check: vorher der Kurven-Endwert, bei "Rampe auf" also an). */
@@ -28018,8 +28041,11 @@ function renderStapel(){
         if(q!=='stetig'){
           h+='<div class="tbs-regler"><span>Muster</span><div class="tbs-lmformen">'+LM_FORMEN.map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
           h+='<canvas class="tbs-lmvor" width="300" height="44" title="Die Kurve \u00fcber zwei Perioden, der Strich ist jetzt"></canvas>';
-          if(q==='takt'||q==='zufall') h+='<div class="tbs-regler"><span>Teiler</span><select data-k="lmTeiler">'+[[1,'jeder Schlag'],[2,'jeder 2. Schlag'],[4,'jeder 4. Schlag'],[8,'jeder 8. Schlag']].map(([v,l])=>'<option value="'+v+'"'+((e.lmTeiler|0)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
-          if(q==='hz') h+='<div class="tbs-regler"><span>pro Sekunde</span><input type="range" data-k="lmHz" min="0.05" max="30" step="0.05" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>';
+          if(q==='takt'||q==='zufall') h+=(()=>{ const bh=schlagHz(), teil=Number(e.lmTeiler)||1, ist=bh>0?bh/teil:0;
+            const zeile='<div class="tbs-regler"><span>Teiler</span><select data-k="lmTeiler">'+[[8,'jeder 8. Schlag'],[4,'jeder 4. Schlag'],[2,'jeder 2. Schlag'],[1,'jeder Schlag'],[0.5,'zweimal je Schlag'],[0.25,'viermal je Schlag'],[0.125,'achtmal je Schlag']].map(([v,l])=>'<option value="'+v+'"'+(Number(e.lmTeiler)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+            return zeile+(ist>0?'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">Bei diesem Titel '+rateUrteil(ist)+'</div>':''); })();
+          if(q==='hz') h+='<div class="tbs-regler"><span>pro Sekunde</span><input type="range" data-k="lmHz" min="0.05" max="15" step="0.05" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>'
+            +'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">'+rateUrteil(Number(e.lmHz)||0)+'</div>';
           if(q==='zufall') h+='<div class="tbs-regler"><span>Anteil der Schl\u00e4ge</span><input type="range" data-k="lmAnteil" min="0.1" max="1" step="0.05" value="'+e.lmAnteil+'"><span class="tbs-wert">'+kf(e.lmAnteil)+'</span></div>';
           h+='<div class="tbs-regler"><span>Tiefe</span><input type="range" data-k="lmTiefe" min="0" max="1" step="0.05" value="'+e.lmTiefe+'"><span class="tbs-wert">'+kf(e.lmTiefe)+'</span></div>';
           if(form==='sequenz'){ const n=lmSchritteHolen(e).length;
