@@ -27099,8 +27099,15 @@ function qParams(vor){ const d=Object.assign({ qForm:'bild', qUrsprung:'bild', q
   return [{k:'q',q:true}].concat(Object.keys(d).map(k=>({k,versteckt:true,def:d[k]}))); }
 [['partikel',{}]].forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...qParams(v)); });
 /* Ganz zuletzt, damit die Zeile auf JEDER Karte als letzte der generischen Spalte steht -
-   vor Verrechnung und Staerke, die das Markup danach anhaengt. */
-for(const k of Object.keys(EFFEKTE)) if(EFFEKTE[k].params) EFFEKTE[k].params.push(Object.assign({}, TIEFE_PARAM));
+   vor Verrechnung und Staerke, die das Markup danach anhaengt.
+   ABER NUR DORT, WO DIE KETTE DIE MASKE AUCH ANLEGT. Sie tut das in genau zwei Zweigen: beim
+   Maler und bei Nachbearbeitung/Shader (maskeAnwenden). Die Grund-Pulse laufen in einer eigenen
+   Schleife davor und die Geometrie als aufgesammelte Transformation - dort wird keine Maske
+   angelegt, und die Zeile versprach acht Karten lang etwas, das nicht geschah (Regel 11).
+   Gefunden bei der Inventur der Zustandswechsel am 14.09.2026, eingebaut am selben Tag von mir. */
+for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue;
+  if(T.art==='grund'||T.art==='geo') continue;
+  T.params.push(Object.assign({}, TIEFE_PARAM)); }
 
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
@@ -27173,7 +27180,7 @@ const PRESETS={
  'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
  'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
  'Licht im Nebel':()=>[E('nebel',{staerke:.45,sorte:'dunst',grundlicht:.25,lage:.55,dicke:1.3}),E('licht',{farbe:'#ffd9a0',rmGroesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
- 'Feuer mit Schein':()=>[E('licht',{verr:'abwedeln',farbe:'#ffb257',staerke:.5,rmBewegung:'fest',rmUrsprung:'innen',rmUx:.5,rmUy:.9,rmZx:.5,rmZy:.82,rmForm:'kreis',rmGroesse:.38,rmRand:.1,rmHotspot:.1,lmQuelle:'takt',lmForm:'rampe_ab',lmTiefe:.3}),E('feuer',{staerke:.8,hoehe:.4,breite:.14,mitte:.5,boden:.9,dichte:16,tempo:1.1,flackern:.7,wind:.1,glut:.6})],
+ 'Feuer mit Schein':()=>[E('licht',{verr:'abwedeln',farbe:'#ffb257',staerke:.5,rmBewegung:'fest',rmUrsprung:'bild',rmUx:.5,rmUy:.9,rmZx:.5,rmZy:.82,rmForm:'kreis',rmGroesse:.38,rmRand:.1,rmHotspot:.1,lmQuelle:'takt',lmForm:'rampe_ab',lmTiefe:.3}),E('feuer',{staerke:.8,hoehe:.4,breite:.14,mitte:.5,boden:.9,dichte:16,tempo:1.1,flackern:.7,wind:.1,glut:.6})],
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
 };
 
