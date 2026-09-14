@@ -980,7 +980,7 @@ select,.knopf{
    Klick oeffnet den Text an der Maus, wie das Kommentarfenster.
    (Caspar_D, 20.08.2026: "[ Cap ] oder so aehnlich".) */
 .capmarke{position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.72);
-  border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;letter-spacing:.4px;
+  border-radius:5px;padding:2px 6px;font-size:10.5px;font-weight:700;letter-spacing:.4px;
   cursor:pointer;opacity:.85}
 .capmarke:hover{opacity:1;outline:1px solid var(--akzent)}
 /* HEISST 'ohne', NICHT 'leer' (26.08.2026). Sie hiess .leer - und
@@ -1007,7 +1007,8 @@ select,.knopf{
 .capartton .capart.hat{padding:8px 10px}
 .capartton audio{width:100%;height:32px;display:block;margin-bottom:6px}
 .capartname small{color:var(--schwach);font-weight:400}
-.capartname{font-size:11px;color:var(--schwach);margin-bottom:3px}
+#cap h4 small{text-transform:none;letter-spacing:0;font-weight:400}
+.capartname{font-size:12px;color:var(--schwach);margin-bottom:3px}   /* Regel 14: 12 px ist die Lesegrenze */
 .capart{margin-top:0;border:1px dashed var(--rand);border-radius:8px;
   padding:10px;text-align:center;font-size:12px;color:var(--schwach);
   cursor:pointer;transition:border-color .12s,color .12s}
@@ -1021,11 +1022,11 @@ select,.knopf{
    es nachtraeglich. Der Zeitstempel an der Adresse laesst sie bei JEDEM
    Oeffnen neu laden - aus dem Zwischenspeicher kommt sie nie. */
 .capart.hat{min-height:110px}
-.capart .weg{color:var(--schwach);text-decoration:underline;cursor:pointer;font-size:11.5px}
+.capart .weg{color:var(--schwach);text-decoration:underline;cursor:pointer;font-size:12px}
 .capartvid{margin-bottom:6px}
 .capartvid video{max-height:72px}
-.capartvidz{font-size:11px;color:var(--schwach)}
-.capartmehr{margin-top:4px;padding:5px;border:1px dashed var(--rand);border-radius:6px;font-size:11px;color:var(--schwach);text-align:center;cursor:pointer}
+.capartvidz{font-size:10.5px;color:var(--schwach)}   /* Nebenwert, darf 10,5 */
+.capartmehr{margin-top:4px;padding:5px;border:1px dashed var(--rand);border-radius:6px;font-size:12px;color:var(--schwach);text-align:center;cursor:pointer}
 .capartmehr:hover{border-color:var(--akzent);color:var(--text)}
 .capart .weg:hover{color:var(--text)}
 .karte:hover .capmarke.ohne{display:block}
@@ -1035,8 +1036,8 @@ select,.knopf{
    er steht gleichrangig neben der Notiz, beides ist Caspar_Ds Urteil. */
 #cap .capinstr{display:flex;align-items:center;gap:6px;margin-top:10px;
   font-size:12px;color:var(--schwach);cursor:pointer;user-select:none}
-#cap .capinstr input{accent-color:var(--akzent);cursor:pointer}
-#cap .capinstr .fussnote{margin-left:auto;font-size:10px;opacity:.7}
+#cap .capinstr .pille{font:inherit;font-size:12px}
+#cap .capinstr .fussnote{margin-left:auto;font-size:10.5px;opacity:.7}
 #cap textarea:focus{outline:none;border-color:var(--akzent)}
 /* Die Hoehenschranke gehoert dazu: Mit Beschreibung (bis 50vh) plus
    Notizfeld plus drei Artwork-Vorschauen kommt der Kasten auf einem
@@ -16938,19 +16939,26 @@ function istInstrumental(s){
   return !((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()));   // Songobjekt
 }
 
-/* Die Marke auf der Kachel: 'Cap' wenn Suno-Caption, 'Notiz' wenn
-   (auch) eine eigene da ist; sonst ein '+', das nur beim Ueberfahren
-   der Kachel erscheint - 321 leere Marken waeren Laerm. */
+/* DIE MARKE AUF DER KACHEL HEISST MEDIA (Caspar_D, 14.09.2026: "das kleine Abzeichen im
+   KlangTresor, lass es uns Media nennen, ich glaube, das trifft es am besten, wenn noch nichts
+   drin ist, ein + wie jetzt auch schon").
+   Sie hiess 'Text' oder 'Notiz', weil hinter ihr anfangs nur Sunos Beschreibung und die eigene
+   Notiz lagen. Inzwischen liegen dort auch Titelbild, Bewegtbild, Tonfassung und Effektclip -
+   die Beschriftung versprach also seit Wochen weniger, als das Fenster haelt (Regel 11). Ein
+   Name fuer alles, was zu diesem Titel dazugekommen ist, und ein '+', wenn noch nichts da ist.
+   Das '+' erscheint weiter nur beim Ueberfahren - 324 leere Marken waeren Laerm. */
+function medienDa(s){
+  if(!s) return false;
+  if(notizen[s.id] || s.beschriftung) return true;
+  const e = _eigenArt && _eigenArt[s.id];
+  return !!(e && (e.bild || e.video || e.ton || e.effekt));
+}
 function capMarke(s){
-  const n = notizen[s.id];
-  /* Ausgeschrieben statt 'Cap': Tarja musste beim ersten Testlauf fragen, was
-     das heisst (23.08.2026). 'Text' meint Sunos Caption, 'Notiz' die eigene. */
-  const was = n ? 'Notiz' : (s.beschriftung ? 'Text' : '+');
-  const tipp = n ? 'Deine Notiz — und Sunos Beschreibung, falls vorhanden'
-    : s.beschriftung ? 'Sunos Beschreibung des Titels (Caption) — klicken zum Lesen, eigene Notiz möglich'
-    : 'Eigene Notiz anlegen — bleibt lokal, nur für dich';
-  return `<span class="capmarke${n || s.beschriftung ? '' : ' ohne'}" data-cap="${s.id}"
-    title="${tipp}">${was}</span>`;
+  const hat = medienDa(s);
+  const tipp = hat ? 'Was zu diesem Titel dazugekommen ist: Notiz, Titelbild, Bewegtbild, Tonfassung, Effektclip'
+    : 'Noch nichts dazugelegt — Notiz, Titelbild, Bewegtbild, Tonfassung oder Effektclip anlegen';
+  return `<span class="capmarke${hat ? '' : ' ohne'}" data-cap="${s.id}"
+    title="${tipp}">${hat ? 'Media' : '+'}</span>`;
 }
 
 function capAuf(id, x, y){
@@ -16959,24 +16967,28 @@ function capAuf(id, x, y){
   const c = $('cap');
   c.innerHTML = `<h4>${esc(s.titel)}</h4>`
     + (s.beschriftung ? `<div class="captext">${esc(s.beschriftung)}</div>` : '')
-    + `<h4 style="margin-top:${s.beschriftung ? 12 : 0}px">Meine Notiz <small style="text-transform:none;letter-spacing:0">— bleibt lokal</small></h4>`
+    + `<h4 style="margin-top:${s.beschriftung ? 12 : 0}px">Notiz <small>— bleibt lokal</small></h4>`
     + `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
     + `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`
     /* Der Instrumental-Haken sitzt bei der Notiz, weil beides dasselbe
        ist: Caspar_Ds Urteil über den Song, nicht Sunos Angabe. */
-    + `<label class="capinstr" title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">`
-    +   `<input type="checkbox" id="capinstr"${istInstrumental(s) ? ' checked' : ''}> instrumental`
+    /* PILLE STATT HAKEN (Hausregel 18: Checkboxen gibt es im Haus nicht; gewaehlt = Rand, nicht
+       Fuellung; Druck spuerbar ueber :active scale 0.95). Hier stand als einzige Stelle der
+       Oberflaeche noch ein echtes Kaestchen. */
+    + `<div class="capinstr">`
+    +   `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
+    +     ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
+    +     ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
     +   `<span class="fussnote" id="capinstrstand">${
             instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
-    + `</label>`
+    + `</div>`
     /* MEIN ARTWORK sitzt aus demselben Grund hier wie der
        Instrumental-Haken: Es ist Caspar_Ds Beitrag zum Song, nicht
        Sunos Angabe. Und die Marke, die dieses Fenster oeffnet, sitzt
        ohnehin schon auf jeder Kachel (Caspar_D, 26.08.2026: "wir haben
        schon ein abzeichen, um text hinzuzufügen, dort könnte man in
        diesem context auch einen videoupload einbauen"). */
-    + `<h4 style="margin-top:12px">Meine Illustrationen <small style="text-transform:none;letter-spacing:0">`
-    +   `— wird Sunos vorgezogen</small></h4>`
+    + `<h4 style="margin-top:12px">Illustrationen <small>— werden Sunos vorgezogen</small></h4>`
     /* ZWEI GETRENNTE PLAETZE (Caspar_D, 26.08.2026: "sieh einfach vor,
        ein neues cover-art und ein neues video artwork einzufügen, die
        werden separat vom original gehalten aber sind immer prioritär").
@@ -16999,12 +17011,12 @@ function capAuf(id, x, y){
        muss - eine Tonspur laesst sich nicht in einer Vorschau zeigen
        wie ein Bild. */
     + `<div class="capartton">`
-    +   `<div class="capartname">Eigene Tonfassung <small>— tritt neben WAV und MP3</small></div>`
+    +   `<div class="capartname">Tonfassung <small>— tritt neben WAV und MP3</small></div>`
     +   `<div class="capart" id="capartton" data-art="ton"></div>`
     + `</div>`
     /* Das vierte Eigene ist kein Upload, sondern ein Rezept: der Effektclip
        aus dem Effektclip-Studio (Caspar_D, 09.09.2026; Name seit 11.09.2026). */
-    + `<div class="capartton"><div class="capartname">Effektclip-Studio</div>`
+    + `<div class="capartton"><div class="capartname">Effektclip <small>— aus dem Studio</small></div>`
     +   `<div class="capart" id="capartstudio" data-art="effekt"></div></div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
@@ -17210,8 +17222,9 @@ function capAuf(id, x, y){
 
   const haken = c.querySelector('#capinstr');
   if (haken && eingefroren) haken.disabled = true;
-  if (haken && !eingefroren) haken.onchange = async () => {
-    const wert = haken.checked;
+  if (haken && !eingefroren) haken.onclick = async () => {
+    const wert = !haken.classList.contains('an');
+    haken.classList.toggle('an', wert); haken.setAttribute('aria-pressed', wert ? 'true' : 'false');
     const stand = c.querySelector('#capinstrstand');
     if (stand) stand.textContent = 'wird gesetzt …';
     try {
@@ -17219,7 +17232,7 @@ function capAuf(id, x, y){
         method: 'PUT', body: JSON.stringify({ wert })
       })).json();
       instrumentalHand[id] = { wert, stand: new Date().toISOString() };
-      /* Was gelöscht wurde, wird benannt - wer einen Haken setzt, soll
+      /* Was gelöscht wurde, wird benannt - wer die Pille drückt, soll
          sehen, was er bewirkt hat. */
       if (stand) stand.textContent = (a.geloescht && a.geloescht.length)
         ? 'gelöscht: ' + a.geloescht.join(', ')
@@ -17227,7 +17240,12 @@ function capAuf(id, x, y){
       const so = songVonId.get(id);
       if (so) { so.instrumental = wert; if (wert) so.hatGesang = false; }
       zeichnen();
-    } catch (e) { if (stand) stand.textContent = 'ging nicht'; }
+    } catch (e) {
+      /* Der Zustand geht zurueck, wenn das Setzen nicht ankam: eine Pille, die AN zeigt,
+         waehrend im Archiv nichts steht, luegt (Wahrheit der Darstellung). */
+      haken.classList.toggle('an', !wert); haken.setAttribute('aria-pressed', !wert ? 'true' : 'false');
+      if (stand) stand.textContent = 'ging nicht';
+    }
   };
   const zu = (ev) => { if (!c.contains(ev.target)) { sichern(); c.style.display = 'none'; removeEventListener('click', zu, true); } };
   setTimeout(() => addEventListener('click', zu, true), 0);
