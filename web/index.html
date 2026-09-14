@@ -1029,9 +1029,11 @@ select,.knopf{
    laesst innen scrollen - sonst spraengte eine lange Beschreibung das Raster, und regelmaessig zu
    sein ist der ganze Sinn einer Galerie. */
 /* Die Haelften trennt ein ABSTAND, kein Wort: bis hierher standen alle fuenf Spalten gleich weit
-   auseinander, und man musste die Ueberschrift lesen, um die Gruppierung zu sehen. */
-.capgal{display:grid;grid-template-columns:repeat(5,1fr);gap:12px 14px;margin-top:12px;align-items:start}
-.capgal .capstart{padding-left:20px}
+   auseinander, und man musste die Ueberschrift lesen, um die Gruppierung zu sehen.
+   Der Abstand ist eine EIGENE SPALTE, kein Innenabstand: als Innenabstand machte er genau die
+   Kachel schmaler, die ihn trug (Caspar_D, 14.09.2026: "das privat panel fuer das titelbild ist
+   kleiner als die anderen"). Spalte 3 ist die Rinne, die fuenf Inhaltsspalten sind gleich breit. */
+.capgal{display:grid;grid-template-columns:1fr 1fr 22px 1fr 1fr 1fr;gap:12px 14px;margin-top:12px;align-items:start}
 .capkopf{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);
   font-weight:600;padding-bottom:5px;border-bottom:1px solid var(--rand)}
 .capkopf small{text-transform:none;letter-spacing:0;font-weight:400}
@@ -1116,7 +1118,7 @@ select,.knopf{
 /* Der Effektclip ist kein Standbild, sondern ein Rezept - gezeigt wird er, indem ihn derselbe
    Maler malt, der ihn auf der Kachel malt. Er fuellt die Kachel ganz. */
 .capartclip{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:#000}
-@media (max-width:860px){ .capgal{grid-template-columns:repeat(2,1fr)}
+@media (max-width:860px){ .capgal{grid-template-columns:repeat(2,1fr)} .capgal .capstart{padding-left:0}
   .capgal>*{grid-column:auto !important} .captextfeld{height:170px} .captonpanel{height:170px} }
 /* FESTE BREITE, NICHT NUR EINE OBERGRENZE: mit max-width schrumpfte das Fenster bei einem Titel
    mit kurzer Beschreibung auf 771 px, und damit wurden auch die Kacheln kleiner. Die Galerie soll
@@ -17058,12 +17060,12 @@ function capAuf(id){
     + `<h4>${esc(s.titel)}</h4>`
     + `<div class="capgal">`
     +   `<div class="capkopf" style="grid-column:1/3">Von Suno</div>`
-    +   `<div class="capkopf capstart" style="grid-column:3/6">Privat <small>— wird Sunos vorgezogen</small></div>`
+    +   `<div class="capkopf capstart" style="grid-column:4/7">Privat <small>— wird Sunos vorgezogen</small></div>`
     +   `<div style="grid-column:1/3;grid-row:3">`
     +     `<div class="captextfeld${s.beschriftung ? '' : ' leer'}">`
     +       (s.beschriftung ? esc(s.beschriftung) : 'keine Beschreibung') + `</div>`
     +     `<div class="capkachelname">Beschreibung</div></div>`
-    +   `<div class="capstart" style="grid-column:3/5;grid-row:3">`
+    +   `<div class="capstart" style="grid-column:4/6;grid-row:3">`
     +     `<div class="captextfeld">`
     +       `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
     +     `</div>`
@@ -17076,7 +17078,7 @@ function capAuf(id){
        Raster widersprach. Jetzt haengt er UNTER der Tonflaeche, in derselben Spalte: die drei
        Kaesten der Textreihe sind damit exakt gleich hoch, und was darunter waechst, waechst in
        einer Zelle, die ohnehin die schmalste ist. Pille statt Haken (Hausregel 18). */
-    +   `<div style="grid-column:5;grid-row:3">`
+    +   `<div style="grid-column:6;grid-row:3">`
     +     `<div class="captonpanel">`
     +       `<div class="capkachel capton" id="capartton" data-art="ton"></div>`
     +       `<div class="capinstr">`
@@ -17099,11 +17101,11 @@ function capAuf(id){
              + ` onerror="this.parentNode.classList.add('leerkachel');this.parentNode.textContent='keins'"></video>`
           : `keins`) + `</div>`
     +     `<div class="capkachelname">Bewegtbild</div></div>`
-    +   `<div class="capstart" style="grid-column:3;grid-row:2"><div class="capkachel" id="capartbild" data-art="bild"></div>`
+    +   `<div class="capstart" style="grid-column:4;grid-row:2"><div class="capkachel" id="capartbild" data-art="bild"></div>`
     +     `<div class="capkachelname">Titelbild</div></div>`
-    +   `<div style="grid-column:4;grid-row:2"><div class="capkachel" id="capartvideo" data-art="video"></div>`
+    +   `<div style="grid-column:5;grid-row:2"><div class="capkachel" id="capartvideo" data-art="video"></div>`
     +     `<div class="capkachelname">Bewegtbild</div></div>`
-    +   `<div style="grid-column:5;grid-row:2"><div class="capkachel" id="capartstudio" data-art="effekt"></div>`
+    +   `<div style="grid-column:6;grid-row:2"><div class="capkachel" id="capartstudio" data-art="effekt"></div>`
     +     `<div class="capkachelname">Effektclip</div></div>`
     + `</div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
