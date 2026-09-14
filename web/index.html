@@ -3167,6 +3167,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs canvas.tbs-lmvor{width:100%;height:44px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
 /* Raum-Block der Lichter, mit Profilgrafik */
 #tbs .tbs-rm{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rand)}
+#tbs canvas.tbs-qvor{width:100%;height:80px;display:block;border:1px solid var(--rand);border-radius:6px;margin:6px 0 2px}
 #tbs canvas.tbs-rmvor{width:100%;height:70px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
 /* <<< Effektclip-Studio (tbs.css) */
 </style>
@@ -27082,6 +27083,15 @@ const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'wirkt auf',
 
 [['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
   .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
+/* QUELLE UND FLUG als zusammengesetzter Block, nach dem Muster des Raum-Blocks. Ein Schluessel in
+   GEMEIN, damit die Zeilen in der generischen Spalte stehen und spaeter jeder Effekt denselben
+   Wortschatz erbt - der Rauch aus 9a.4 soll die Quelle mitbenutzen, nicht eine eigene erfinden.
+   Alle Werte sind versteckt: gezeichnet wird der Block von Hand, weil die Zeilen von der Form
+   abhaengen (eine Linie hat eine Ausdehnung, eine Ellipse zwei). */
+function qParams(vor){ const d=Object.assign({ qForm:'bild', qUrsprung:'bild', qWinkel:.62, qX:.5, qY:.5,
+  qAus:.3, qAusY:.2, qDreh:0, auftrieb:-1, druck:0, winkel:270, streuung:0, laenge:1, ausblenden:.35 }, vor||{});
+  return [{k:'q',q:true}].concat(Object.keys(d).map(k=>({k,versteckt:true,def:d[k]}))); }
+[['partikel',{}]].forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...qParams(v)); });
 /* Ganz zuletzt, damit die Zeile auf JEDER Karte als letzte der generischen Spalte steht -
    vor Verrechnung und Staerke, die das Markup danach anhaengt. */
 for(const k of Object.keys(EFFEKTE)) if(EFFEKTE[k].params) EFFEKTE[k].params.push(Object.assign({}, TIEFE_PARAM));
@@ -27118,7 +27128,11 @@ const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auf
 function nebelSorte(e){ const alt=NEBEL_SORTEN[e._sorteVor||'schwaden']||NEBEL_SORTEN.schwaden, neu=NEBEL_SORTEN[e.sorte]||alt;
   if(Object.keys(alt).every(k=>Math.abs(e[k]-alt[k])<1e-6)) Object.keys(neu).forEach(k=>{ e[k]=neu[k]; });
   e._sorteVor=e.sorte; }
-function artFarben(e){ const alt=ART_FARBEN[e._artVor||'schnee']||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; } e._artVor=e.art; }
+function artFarben(e){ const vor=e._artVor||'schnee', alt=ART_FARBEN[vor]||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; }
+  /* Das Gewicht zieht wie die Farben mit: beim Artwechsel gesetzt, aber nur, solange es noch das
+     der vorigen Art ist. Wer den Auftrieb von Hand gedreht hat, behaelt seinen Wert. */
+  if(e.auftrieb===ART_AUFTRIEB[vor]&&ART_AUFTRIEB[e.art]!=null) e.auftrieb=ART_AUFTRIEB[e.art];
+  e._artVor=e.art; }
 function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false,99); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
 /* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
 function beispiel(){ const e=neuerEffekt('helligkeit'); STAPEL=[e]; offenId=e.id; renderStapel(); }
@@ -27245,7 +27259,8 @@ function lmVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height;
   const form=e.lmForm||'rampe_ab', tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath();
   for(let i=0;i<=200;i++){ const q=i/200*2; const pp=((q%1)+(e.lmVersatz||0))%1; let f=(form==='zufall')?lmHash(Math.floor(q)*7+e.id):lmForm(form,pp,e); if(e.lmInvers) f=1-f; const lv=(1-tiefe)+tiefe*f; const px=q/2*W, py=H-3-lv*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
   if(e._lmPhase!=null){ const px=e._lmPhase/2*W; x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=1; x.beginPath(); x.moveTo(px,0); x.lineTo(px,H); x.stroke(); } }
-function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); stapelBox.querySelectorAll('canvas.tbs-rmvor').forEach(cv=>{ if(cv._e) raumVorschau(cv,cv._e); }); }
+function lmVorschauen(){ if(!stapelBox) return; stapelBox.querySelectorAll('canvas.tbs-lmvor').forEach(cv=>{ if(cv._e) lmVorschau(cv,cv._e); }); stapelBox.querySelectorAll('canvas.tbs-rmvor').forEach(cv=>{ if(cv._e) raumVorschau(cv,cv._e); });
+  stapelBox.querySelectorAll('canvas.tbs-qvor').forEach(cv=>{ if(cv._e) quellVorschau(cv,cv._e); }); }
 function lmParams(vor){ const d=Object.assign({lmQuelle:'stetig',lmForm:'rampe_ab',lmTeiler:1,lmHz:4,lmTiefe:.8,lmBreite:.3,lmAbkling:1,lmInvers:0,lmVersatz:0,lmAnteil:.5},vor||{});
   return [{k:'lm',lm:true},{k:'lmQuelle',versteckt:true,def:d.lmQuelle},{k:'lmForm',versteckt:true,def:d.lmForm},{k:'lmTeiler',versteckt:true,def:d.lmTeiler},{k:'lmHz',versteckt:true,def:d.lmHz},{k:'lmTiefe',versteckt:true,def:d.lmTiefe},{k:'lmBreite',versteckt:true,def:d.lmBreite},{k:'lmAbkling',versteckt:true,def:d.lmAbkling},{k:'lmInvers',versteckt:true,def:d.lmInvers},{k:'lmVersatz',versteckt:true,def:d.lmVersatz},{k:'lmAnteil',versteckt:true,def:d.lmAnteil},{k:'lmSchritte',versteckt:true,def:[1,.35,1,.35,1,.35,1,.35]},{k:'lmWeich',versteckt:true,def:0}]; }
 function pulsHub(e,t){ return e.antrieb==='atem' ? (0.5+0.5*Math.sin(2*Math.PI*t/lpP(Math.max(0.1,e.atempo||4)))) : pulswert(t,e.abkling,e.nurEins); }
@@ -27377,6 +27392,34 @@ function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t);
   if(blende){ const mk=e._mk.getContext('2d'); blendeMaske(e,mk,W,H,Z,r,rot); x.globalCompositeOperation='destination-in'; x.drawImage(e._mk,0,0); x.globalCompositeOperation='source-over';
     cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._pc,0,0); } }
 /* Profilgrafik in der Karte: links der Querschnitt des Flecks, rechts das Bild im Kleinen mit Ursprung, Ziel und Blende. */
+/* Die Quelle im Kleinen: der Fleck, aus dem sie kommen, und die Bahnen, die sie fliegen. Gerechnet
+   mit genau derselben Funktion wie das grosse Bild - eine Skizze, die aus eigenem Code entsteht,
+   kann nicht luegen (Konzepte als Skizze). */
+function quellVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height;
+  x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none';
+  x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
+  const hs=k=>{ const v=Math.sin(k*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
+  x.font='10px -apple-system,BlinkMacSystemFont,sans-serif';
+  if((e.qForm||'bild')==='bild'){ x.fillStyle='rgba(255,255,255,.3)';
+    for(let i=0;i<70;i++) x.fillRect(hs(i)*W, hs(i+1000)*H, 1.6, 1.6);
+    x.fillStyle='#8a8c92'; x.fillText('überall, im Umlauf', 8, H-8); return; }
+  const au=(typeof e.auftrieb==='number'?e.auftrieb:-1), aB=Math.abs(au), aS=-Math.sign(au);
+  const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25, wd=(e.wind||0);
+  /* der Fleck selbst */
+  x.strokeStyle='rgba(224,179,77,.85)'; x.lineWidth=1.5;
+  const P=[], N=48; for(let k=0;k<N;k++) P.push(quellPunkt(Object.assign({},e), k*211, kk=>((kk%N)+0.5)/N, W, H));
+  const O=quellPunkt(e,0,()=>0.5,W,H);
+  if(e.qForm==='punkt'){ x.beginPath(); x.arc(O[0],O[1],2.5,0,7); x.fillStyle='rgba(224,179,77,.85)'; x.fill(); }
+  else { let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9; for(const p of P){ mnx=Math.min(mnx,p[0]); mny=Math.min(mny,p[1]); mxx=Math.max(mxx,p[0]); mxy=Math.max(mxy,p[1]); }
+    x.beginPath(); x.moveTo(P[0][0],P[0][1]); for(const p of P) x.lineTo(p[0],p[1]); x.closePath(); x.stroke(); }
+  /* die Bahnen: je Teilchen ein Zug, unterbrochen wo es neu geboren wird */
+  x.strokeStyle='rgba(255,255,255,.45)'; x.lineWidth=1;
+  for(let i=0;i<16;i++){ const sp=0.5+hs(i+2000); let vor=null; x.beginPath();
+    for(let k=0;k<=60;k++){ const F=flugbahn(e,i,k/60*5,W,H,sp,hs,aB,aS,0,wd,B);
+      if(vor&&Math.hypot(F[0]-vor[0],F[1]-vor[1])>W/4) x.moveTo(F[0],F[1]); else if(vor) x.lineTo(F[0],F[1]); else x.moveTo(F[0],F[1]);
+      vor=F; }
+    x.stroke(); }
+  x.fillStyle='#8a8c92'; x.fillText(Q_FORM.reduce((a,q)=>q[0]===(e.qForm||'bild')?q[1]:a,'') , 8, H-8); }
 function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height, lw=Math.round(W*0.42); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
   x.strokeStyle='rgba(255,255,255,.1)'; x.lineWidth=1; x.beginPath(); x.moveTo(lw/2,0); x.lineTo(lw/2,H); x.moveTo(lw,0); x.lineTo(lw,H); x.stroke();
   x.strokeStyle='#e0b34d'; x.lineWidth=2; x.beginPath(); for(let i=0;i<=100;i++){ const rho=Math.abs(i/50-1); const f=Math.min(1.6,poolProfil(e,Math.min(0.999,rho)))/1.6; const px=i/100*lw, py=H-3-f*(H-6); i?x.lineTo(px,py):x.moveTo(px,py); } x.stroke();
@@ -27387,6 +27430,58 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
   if(!k._pc){ k._pc=document.createElement('canvas'); k._mk=document.createElement('canvas'); e._vpc=k._pc; e._vmk=k._mk; }
   const tt=(e._lmT!=null?e._lmT:0); k.lmQuelle='stetig'; x.globalCompositeOperation=schatten?'multiply':'lighter'; lichtMalen(k,x,tt,Wv,Hv);
   const O=raumUrsprung(e,Wv,Hv); x.fillStyle='#fff'; x.beginPath(); x.arc(Math.max(4,Math.min(Wv-4,O[0])),Math.max(4,Math.min(Hv-4,O[1])),4,0,7); x.fill(); x.restore(); }
+/* ---- QUELLE UND FLUG (VIDEO-PLAN 9a.2/9a.3, Fassung Caspar_D 14.09.2026).
+   "sie koennen einen Ursprung haben, wo kommen sie her, von allen 360 Grad auf dem Bild, von
+   ausserhalb des Bildes oder innerhalb des Bildes ... sie koennen aus einem Fleck kommen mit x
+   und y Ausdehnung, bei einer davon = 0 ist es eine Linie ... aber, manches kann noch Druck
+   haben und von der Seite kommen und dann per Gravitation fallen."
+
+   Solange die Quelle "das ganze Bild" ist, rechnet der Maler wie bisher: Umlauf per Modulo, jede
+   Zahl an ihrem Platz. Erst eine gewaehlte Quelle schaltet den Lebensweg ein - geboren auf der
+   Quelle, mit Druck hinausgeschossen, vom Auftrieb getragen oder gezogen, nach `laenge` zu Ende
+   und neu geboren. Damit faellt das Modulo weg, und genau das ist zugleich die Loop-Reparatur
+   aus 6.8 Klasse 2: Lebensdauer auf L/k eingerastet (lpP), Startphasen gleichverteilt.
+
+   Der Druck laeuft ueber die Lebenszeit aus, wie Luftwiderstand. Deshalb biegt ein seitlich
+   herausgeschossenes Teilchen von selbst in den Auftrieb ein - die Gravitationskurve entsteht,
+   ohne dass es einen zweiten Regler dafuer gibt (Understatement statt Konfiguration).
+
+   Alles rein aus t und hs(i) gerechnet: kein Zustand zwischen zwei Bildern, kein Geburtenzaehler.
+   Sonst waere das Springen in der Zeitleiste und das Neuzeichnen beim Export kaputt. */
+const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25 };
+/* Das Gewicht, das jede Art bis heute fest verdrahtet hatte: -1 faellt, +1 steigt. */
+const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1 };
+const Q_REGLER=new Set(['qForm','qUrsprung','qWinkel','qX','qY','qAus','qAusY','qDreh','auftrieb','druck','winkel','streuung','laenge','ausblenden','wind','tempo','art']);
+const Q_FORM=[['bild','das ganze Bild'],['punkt','Punkt'],['linie','Linie'],['kreis','Kreis'],['ellipse','Ellipse']];
+function quellPunkt(e,i,hs,Wn,Hn){
+  const O=(e.qUrsprung==='aussen')
+    ? (()=>{ const a=(e.qWinkel==null?0.62:e.qWinkel)*2*Math.PI; return [Wn*(0.5+0.8*Math.cos(a)), Hn*(0.5+0.8*Math.sin(a))]; })()
+    : [Wn*(e.qX==null?0.5:e.qX), Hn*(e.qY==null?0.5:e.qY)];
+  const f=e.qForm||'bild', ax=(e.qAus==null?0.3:e.qAus), ay=(e.qAusY==null?0.2:e.qAusY);
+  const d=(e.qDreh||0)*Math.PI/180, co=Math.cos(d), si=Math.sin(d);
+  let u=0, v=0;
+  if(f==='linie') u=(hs(i+9200)-0.5)*ax*Wn;
+  else if(f==='kreis'||f==='ellipse'){
+    /* Wurzel aus der Zufallszahl, sonst draengt sich alles in der Mitte. */
+    const r=Math.sqrt(hs(i+9200)), th=hs(i+9300)*6.2831853;
+    u=Math.cos(th)*r*ax*Wn*0.5;
+    v=Math.sin(th)*r*(f==='kreis'?ax*Wn*0.5:ay*Hn*0.5); }
+  return [O[0]+u*co-v*si, O[1]+u*si+v*co]; }
+function flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,basis){
+  const P=quellPunkt(e,i,hs,Wn,Hn);
+  const vT=aS*aB*sp*e.tempo*Hn*basis;                 /* getragene Geschwindigkeit senkrecht, px/s */
+  const vW=w*Hn*0.05;                                  /* Drift zur Seite, wie beim Schnee */
+  const druck=(e.druck==null?0:e.druck)*Hn*1.4;
+  /* Fächer wie beim Laser: 0 ist ein Strahl, 1 der volle halbe Kreis um die Richtung. */
+  const ang=(((e.winkel==null?270:e.winkel)+(hs(i+9400)-0.5)*180*(e.streuung==null?0:e.streuung))*Math.PI)/180;
+  const weg=Math.max(0.02,(e.laenge==null?1:e.laenge))*Hn;
+  const tempoWeg=Math.max(1e-3, Math.abs(vT)+Math.abs(vW)+druck*0.35);
+  const tau=lpP(weg/tempoWeg), ph=hs(i+9500)*tau, alter=((t-ph)%tau+tau)%tau;
+  const td=tau*0.35, s=td*(1-Math.exp(-alter/td));     /* zurueckgelegter Weg des auslaufenden Drucks */
+  const q=alter/tau, f=Math.max(0.05,(e.ausblenden==null?0.35:e.ausblenden))*0.5;
+  return [ P[0]+Math.cos(ang)*druck*s+vW*alter+gx,
+           P[1]+Math.sin(ang)*druck*s+vT*alter,
+           Math.max(0,Math.min(1, Math.min(q,1-q)/f)) ]; }
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
     if(e.wachsen==='zeit') lim=(LOOP>0?1:Math.min(1,t/Math.max(1,e.dauer)))*(R.maxOrd+1);   /* im Loop ausgewachsen, sonst gaebe es eine Naht */
@@ -27468,14 +27563,24 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     cx.lineCap='round';
     /* Windstoss: auf einem zufaelligen Teil der Schlaege ein Stoss mit zufaelliger Richtung und Wucht, klingt ab. */
     const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege; for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const h=hs(j+7000); if(h<0.35) continue; g+=(hs(j+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
-    for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
-      if(e.art==='schnee'){ const v=lpV(sp*e.tempo*Hn*0.06,Hn); y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); }
-      else if(e.art==='regen'){ const v=lpV(sp*e.tempo*Hn*0.6,Hn); y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); }
-      else if(e.art==='asche'){ const v=lpV(sp*e.tempo*Hn*0.03,Hn); y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; cx.globalAlpha=0.4+0.6*hs(i+4000); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blasen'){ const v=lpV(sp*e.tempo*Hn*0.08,Hn); y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=1; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='staub'){ const v=lpV(sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8-t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; const tief=hs(i+4500); cx.globalAlpha=(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blaetter'){ const v=lpV(sp*e.tempo*Hn*0.09,Hn); y=((y0+t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); }
-      else { const v=lpV(sp*e.tempo*Hn*0.25,Hn); y=((y0-t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=0.3+0.7*fl; cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
+    /* AUFTRIEB (Caspar_D, 14.09.2026: "leichter, genauso schwer, schwerer als Luft"). Bis heute stand
+       das Vorzeichen fest verdrahtet in jeder Art: Schnee faellt, Asche steigt. Der Regler macht daraus
+       eine Einstellung, ohne die Zahlen zu ruehren - der BETRAG geht in lpV, das VORZEICHEN bleibt
+       davor. Das ist keine Feinheit: lpV rastet Geschwindigkeiten auf den Loop ein und kann negative
+       Werte gar nicht darstellen (max(1,round(...))), eine vorzeichenbehaftete Geschwindigkeit im
+       Raster liesse vier von sieben Arten im Export verkehrt herum fliegen. */
+    const au=(typeof e.auftrieb==='number'?e.auftrieb:(ART_AUFTRIEB[e.art]!=null?ART_AUFTRIEB[e.art]:-1));
+    const aB=Math.abs(au), aS=-Math.sign(au), quelle=(e.qForm||'bild'), eigen=(quelle!=='bild');
+    for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
+      const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
+      if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]; y=F[1]; al=F[2]; }
+      if(e.art==='schnee'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='regen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); cx.globalAlpha=1; }
+      else if(e.art==='asche'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blasen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=al*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='staub'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blaetter'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
+      else { if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
     cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
     if(e.linien>0){ cx.globalAlpha=e.linien*a; cx.fillStyle=cx.createPattern(e._mc,'repeat'); cx.fillRect(0,0,Wn,Hn); }
@@ -27729,8 +27834,22 @@ function renderStapel(){
       +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','tiefeWirkt']);
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt']);
     const paramHTML=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
+      if(p.q){ const sel=(lbl,k,liste)=>'<div class="tbs-regler"><span>'+lbl+'</span><select data-k="'+k+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+        const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
+        const f=e.qForm||'bild';
+        h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">Quelle</div>'+sel('Quelle','qForm',Q_FORM);
+        if(f!=='bild'){ h+=sel('Ursprung','qUrsprung',[['bild','im Bild'],['aussen','außerhalb des Bildes']]);
+          if((e.qUrsprung||'bild')==='aussen') h+=rg('Winkel','qWinkel',0,1,0.01); else h+=rg('Ort X','qX',0,1,0.01)+rg('Ort Y','qY',0,1,0.01);
+          if(f==='linie') h+=rg('Ausdehnung','qAus',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true);
+          else if(f==='kreis') h+=rg('Ausdehnung','qAus',0.01,1,0.01);
+          else if(f==='ellipse') h+=rg('Ausdehnung X','qAus',0.01,1,0.01)+rg('Ausdehnung Y','qAusY',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true); }
+        else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Die Teilchen entstehen überall und laufen um. Erst eine Quelle schaltet Druck, Fächer und Länge frei.</div>';
+        h+='<div class="tbs-abunter" style="margin:8px 0 4px">Flug</div>'+rg('Auftrieb','auftrieb',-1,1,0.05);
+        if(f!=='bild') h+=rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Fächer','streuung',0,1,0.05)+rg('Länge','laenge',0.05,2,0.05)+rg('Ausblenden','ausblenden',0.1,1,0.05);
+        h+='<canvas class="tbs-qvor" width="300" height="80" title="Die Quelle und zwoelf Bahnen im Kleinen: wo die Teilchen entstehen, wohin sie fliegen, wo sie ausgehen"></canvas>';
+        h+='</div>'; return; }
       if(p.rm){ const sel=(k,liste)=>'<div class="tbs-regler"><span>'+k[0]+'</span><select data-k="'+k[1]+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k[1]]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
         h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">Raum</div>';
@@ -27818,10 +27937,11 @@ function renderStapel(){
       const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
       if(p.sel&&k==='art') artFarben(e);
       if(p.sel&&k==='sorte') nebelSorte(e);
-      if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm')) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
+      if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm'||Q_REGLER.has(k))) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
     c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
+    const qv=c.querySelector('canvas.tbs-qvor'); if(qv){ qv._e=e; quellVorschau(qv,e); }
     const rmv=c.querySelector('canvas.tbs-rmvor'); if(rmv){ rmv._e=e; raumVorschau(rmv,e); }
     const lmv=c.querySelector('canvas.tbs-lmvor'); if(lmv){ lmv._e=e; lmVorschau(lmv,e);
       if((e.lmForm||'rampe_ab')==='sequenz'){ lmv.style.cursor='crosshair'; lmv.style.touchAction='none'; let malt=false;
@@ -28102,6 +28222,10 @@ function zeichneFrame(t){
       /* Bis Fassung 2 war "Ohne Licht" ein fester Grauwert, seit Fassung 3 ein Anteil der Umgebung.
          Auf mittelheller Umgebung entspricht der alte Wert ungefaehr dem 2,2-fachen. */
       if(r.typ==='nebel'&&(fassung|0)<3&&typeof e.grundlicht==='number') e.grundlicht=Math.min(1.5,e.grundlicht*2.2);
+      /* PARTIKEL VOR DEM AUFTRIEB (Regel 12): das Gewicht stand fest in der Art. Ohne Uebersetzung
+         bekaeme ein altes Rezept die Vorgabe des Schnees, und Asche fiele kuenftig statt zu steigen. */
+      if(r.typ==='partikel'&&typeof r.auftrieb!=='number'&&ART_AUFTRIEB[e.art]!=null) e.auftrieb=ART_AUFTRIEB[e.art];
+      if(r.typ==='partikel') e._artVor=e.art;   /* sonst vergleicht artFarben gegen die falsche Art */
       if(r.typ==='nebel') e._sorteVor=e.sorte;   /* sonst vergleicht nebelSorte nach dem Laden gegen die falsche Sorte */
       if(r.typ==='sicherung'&&r.verr==='abwedeln') e.verr='nachbelichten';   /* Ablagen aus der Abwedeln-Zeit: Schwarz abgewedelt ist nichts */
       if(alt&&r.typ==='farbton'&&r.invert){ e.winkel=-e.winkel; e.invert=0; } }   /* invert hiess bis Fassung 1 nur: andere Richtung */
