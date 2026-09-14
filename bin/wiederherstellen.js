@@ -97,6 +97,12 @@ const SCHRITTE = [
      gezogen wird, nur um zu sehen, DASS es geht. */
   ['laden.js',       ['--alle', ...TEST],'Medien vom CDN (auch die privaten Songs)'],
   ['kacheln.js',     [],        'Kacheln im Format 3:4'],
+  /* TIEFENKARTEN HINTER DIE KACHELN, NICHT DAVOR. Die Karte gehoert zu dem Bild, das
+     die Oberflaeche zeigt - und titelbild.jpg (das Cover ohne Rand) entsteht erst in
+     kacheln.js. Wer frueher rechnet, rechnet fuer das falsche Bild; genau das ist am
+     14.09.2026 passiert und hat einen Nachmittag gekostet.
+     --test wird durchgereicht, damit ein Probelauf nicht 19 Minuten rechnet. */
+  ['tiefenkarten.js', [...TEST], 'Tiefenkarten aus den Titelbildern'],
   ['farben.js',      [],        'Farbpaletten aus den Covern'],
 ];
 

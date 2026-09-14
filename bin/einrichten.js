@@ -1764,8 +1764,10 @@ open -a Terminal ${JSON.stringify(starter)}
   schritt('Bilder', 'Titelbilder und Bewegtbilder werden geladen und aufbereitet',
     'Zu jedem Titel gehört sein Bild — und wo Suno eines hat, ein kurzes Video. Beides liegt offen ' +
     'auf Sunos Bildspeicher, dafür braucht es keine Anmeldung. Aus den Bildern rechnet KlangTresor ' +
-    'danach die Kacheln und die Farben, mit denen die Oberfläche sich später einfärbt. Das ist der ' +
-    'längste Schritt — und du musst ihn nicht abwarten.');
+    'danach die Kacheln, die Farben, mit denen die Oberfläche sich später einfärbt, und zu jedem ' +
+    'Titelbild eine Tiefenkarte — sie sagt, was darin vorn und was hinten liegt, damit Licht, Dunst ' +
+    'und Partikel den Raum im Bild kennen. Das ist der längste Schritt — und du musst ihn nicht ' +
+    'abwarten.');
   matt('Das dauert am längsten — abbrechen und später fortsetzen ist');
   matt('erlaubt, was da ist wird nicht noch einmal geholt.');
   if (PROBE.length) wink(`Probelauf: es werden nur ${PROBE[1]} Titel geholt.`);

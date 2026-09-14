@@ -369,9 +369,11 @@ Beides liegt offen auf Sunos Bildspeicher, dafür braucht es keine Anmeldung. Au
 rechnet KlangTresor danach die Kacheln und die Farben, mit denen die Oberfläche sich später
 einfärbt. Das ist der längste Schritt.
 
-**Drei Teilaufgaben, einzeln abhakend** (heute rauschen sie als `[1/3] [2/3] [3/3]` durch):
+**Vier Teilaufgaben, einzeln abhakend** (früher rauschten sie als `[1/3] [2/3] [3/3]` durch):
 - Titelbilder und Videos — 251 Titel, 137 geladen  (`laden.js --alle`)
 - Kacheln im Format 3:4 — wird gerechnet …  (`kacheln.js`)
+- Tiefenkarten aus den Titelbildern  (`tiefenkarten.js`, seit 14.09.2026) — **hinter** den
+  Kacheln, weil die Karte zu `titelbild.jpg` gehört, das dort erst entsteht
 - Farbpaletten aus den Bildern — danach  (`farben.js`)
 Dass am Ende *gerechnet* und nicht mehr geladen wird, erklärt die stillen Minuten.
 

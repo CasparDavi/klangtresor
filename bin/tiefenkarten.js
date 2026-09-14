@@ -148,8 +148,13 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
 
 (async () => {
   if (!fs.existsSync(MODELL)) {
-    console.log('  Das Tiefenmodell fehlt. Einmal:  node bin/modelle-holen.js');
-    process.exit(1);
+    /* KEIN ABBRUCH. Dieser Schritt haengt in bin/wiederherstellen.js und damit im
+       Morgenlauf; ein fehlendes Modell ist dort kein Fehler, sondern ein Zustand -
+       wer die Modelle uebersprungen hat, soll trotzdem Medien und Kacheln bekommen.
+       Echte Fehler geben weiterhin 1 zurueck. */
+    console.log('  Das Tiefenmodell fehlt — Tiefenkarten werden übersprungen.');
+    console.log('  Einmal nachholen mit:  node bin/modelle-holen.js\n');
+    return;
   }
   const ort = require('onnxruntime-node');
   const t0 = Date.now();

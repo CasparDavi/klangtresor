@@ -2173,13 +2173,16 @@ Einzelabweichung 3; der halbe Download ist damit umsonst zu haben. Nennung steht
 kleine Fassung des [Ableitungsbuchs](#), das als eigenes Dokument nach `docs/haus/` gehört.
 Ein Modellwechsel wird erkannt und rechnet alles neu.
 
-- [ ] **In die Morgenroutine und ins Setup aufnehmen** (Caspar_D, 14.09.2026) —
-  **sofern sich der erste Verbraucher bewährt.** Im Setup ist das Modell schon drin
-  (`bin/modelle-holen.js`, 13 Dateien statt 11, rund 1,2 GB statt 560 MB; der Platzbedarf
-  der Einrichtung steigt damit auf rund 1,6 GB). Was fehlt: der Aufruf von
-  `bin/tiefenkarten.js` als Schritt der Einrichtung und als Glied des Morgenlaufs, damit
-  neue Titel ihre Karte von selbst bekommen. Erst schalten, wenn Dunst mit Tiefe zeigt,
-  dass es trägt.
+- [x] **In die Morgenroutine und ins Setup aufgenommen** (14.09.2026). Der Dunst hat
+  getragen, also geschaltet — und zwar an EINER Stelle für beide Wege:
+  `bin/tiefenkarten.js` hängt in `bin/wiederherstellen.js`, **hinter `kacheln.js`**. Dort
+  entsteht `titelbild.jpg`; wer früher rechnet, rechnet für das falsche Bild. Damit läuft es
+  im Morgenlauf (Schritt „Medien laden … und Tiefenkarten rechnen") wie in Schritt 9 der
+  Einrichtung. `--test` wird durchgereicht, damit ein Probelauf nicht 19 Minuten rechnet,
+  und ein fehlendes Modell bricht die Kette **nicht** ab, sondern überspringt den Schritt —
+  wer die Modelle ausgelassen hat, bekommt trotzdem Medien, Kacheln und Farben.
+  **Kosten für einen neuen Nutzer:** rund 19 Minuten in der Einrichtung (324 Titel), danach
+  je neuem Titel drei Sekunden. Das Modell selbst (640 MB) war schon vorher drin.
 - [x] **Erster Verbraucher: Dunst als Dämpfung** (VIDEO-PLAN §9.7a) — **gebaut am
   14.09.2026.** Regler „Tiefe (Karte)" im Theaternebel, 0 = wie bisher, 1 = volle Rechnung.
   Vier Fehler steckten übereinander, alle von Caspar_D am Bild gesehen: Karte aus dem

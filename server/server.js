@@ -483,7 +483,10 @@ const MORGEN_SCHRITTE = [
      Ernte muss es finden." Steht NACH dem Katalogbau, weil die Zuordnung
      ueber die Signatur den Katalog braucht. */
   { id: 'medien-uebernehmen', schluessel: 'medien', name: 'Heruntergeladene Audiodateien übernehmen', befehl: ['bin/uebernehmen.js', '--tun'] },
-  { id: 'medien-laden', schluessel: 'medien', name: 'Medien laden (MP3, Titelbilder, Bewegtbilder)', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
+  /* Die Kette dahinter: laden.js, kacheln.js, tiefenkarten.js, farben.js. Die Tiefenkarte
+     steht HINTER den Kacheln, weil sie zu titelbild.jpg gehoert - dem Cover ohne Rand, das
+     dort erst entsteht (14.09.2026). */
+  { id: 'medien-laden', schluessel: 'medien', name: 'Medien laden (MP3, Titelbilder, Bewegtbilder) und Tiefenkarten rechnen', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
   { id: 'analyse-rechnen', schluessel: 'analyse', name: 'Klanganalyse für neue Titel rechnen', befehl: ['bin/vorrechnen.js'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
