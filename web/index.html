@@ -27012,16 +27012,16 @@ const EFFEKTE = {
     params:[{k:'radius',lbl:'Radius (px)',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
     params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]},
-  feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Glut an der Basis; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
+  feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Wind zieht die Zungen zur Seite, Glut sitzt an der Basis; lodert im Takt höher.',
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   wellen:{ label:'Wellen (Brechung)', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Das Bild bricht sich wie unter Wasser oder in heißer Luft — echte Verschiebung jedes Pixels durch Rauschen (WebGL). Zone 1 = nur unten, Aufwind lässt es wie Hitze steigen.',
     params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.08,step:.002,def:.02},{k:'skala',lbl:'Skala',min:1,max:12,step:.5,def:4},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.6},{k:'zone',lbl:'Zone (1 unten)',min:0,max:1,step:.05,def:0},{k:'aufwind',lbl:'Aufwind',min:0,max:1,step:.05,def:0}]},
   kaustik:{ label:'Kaustik (Lichtnetz)', art:'gl', verrFrei:true, staerkeDef:.6, besch:'Das wandernde Netz gebrochenen Lichts — Poolboden, Wasser an der Wand, Glas. Aus Rauschen gerechnet (WebGL), nur das Licht — die Verrechnung mischt es aufs Bild.',
     params:[{k:'skala',lbl:'Skala',min:2,max:20,step:.5,def:6},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.5},{k:'schaerfe',lbl:'Schärfe',min:2,max:12,step:.5,def:6},{k:'farbe',lbl:'Farbe',farbe:true,def:'#bfe6ff'}]},
   linse:{ label:'Linse', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Röhrenwölbung oder Fischauge (Wölbung negativ = Tonne, positiv = Kissen) mit Farbrändern am Rand (WebGL).',
     params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
-  flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.1,max:1,step:.05,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
+  flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; Wind legt die Zungen zur Seite; lodert im Takt höher.',
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'spreiz',lbl:'Fächer (°)',min:10,max:360,step:5,def:120},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
@@ -27128,6 +27128,7 @@ const PRESETS={
  'Nur Atem':()=>[E('kontrast',{antrieb:'atem',atempo:4,staerke:.95,kanal:'v',grad:{v:{bp:0,wp:.44,modus:'sig',tonwert:-1},r:{bp:0,wp:1,modus:'gamma',tonwert:0},g:{bp:0,wp:1,modus:'gamma',tonwert:0},b:{bp:0,wp:1,modus:'gamma',tonwert:0}}})],
  'Schatten und Schlag':()=>[E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#ffad61',form:'rund',groesse:.3,weichheit:.3,tempo:16,fuehrung:'bogen',takt:0}),E('licht',{an:false,verr:'abwedeln',staerke:.2,farbe:'#61c2ff',form:'rund',groesse:.34,weichheit:.4,tempo:16,fuehrung:'wander',takt:0}),E('saettigung',{staerke:.8,saettigung:1.3,antrieb:'takt'}),E('schatten',{staerke:.55,farbe:'#070708',form:'rund',groesse:.34,weichheit:.6,tempo:16,fuehrung:'wander'}),E('schaerfe',{staerke:1,unschaerfe:10,schlag:1,antrieb:'takt',invert:1})],
  'Licht im Nebel':()=>[E('nebel',{staerke:.45,sorte:'dunst',grundlicht:.25,lage:.55,dicke:1.3}),E('licht',{farbe:'#ffd9a0',rmGroesse:.3,staerke:.6}),E('laser',{farbe:'#ff3a3a',anzahl:5,streuung:.5,staerke:.45})],
+ 'Feuer mit Schein':()=>[E('licht',{verr:'abwedeln',farbe:'#ffb257',staerke:.5,rmBewegung:'fest',rmUrsprung:'innen',rmUx:.5,rmUy:.9,rmZx:.5,rmZy:.82,rmForm:'kreis',rmGroesse:.38,rmRand:.1,rmHotspot:.1,lmQuelle:'takt',lmForm:'rampe_ab',lmTiefe:.3}),E('feuer',{staerke:.8,hoehe:.4,breite:.14,mitte:.5,boden:.9,dichte:16,tempo:1.1,flackern:.7,wind:.1,glut:.6})],
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('fahrt',{tempo:26,zoom:.85}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('nebel',{staerke:.5})],
 };
 
@@ -27486,7 +27487,11 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const bp=1+0.5*lmSchub(e,t), baseY=Hn*e.boden, hoehe=e.hoehe*Hn*bp,   /* Schub: auf dem Schlag bis anderthalbfach so hoch (Tiefen-Check) */ x0=Wn*(e.mitte-e.breite/2), bw=Wn*e.breite, n=e.dichte, tw=bw/n*1.6, M=6;
     if(e.glut>0){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2); }
     for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(lpW(9+7*hs(i+400))*t+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
-      for(let k=0;k<M;k++){ const h=(k/M+t*lpR(e.tempo*sp*0.9)+hs(i+700))%1, sway=Math.sin(lpW(3*sp)*t+hs(i+800)*10+k)*tw*0.5*(0.3+h), x=xi+sway, y=baseY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55;
+      /* WIND (VIDEO-PLAN 9a.1): `sway` ist ein symmetrisches Wackeln um die eigene Achse - damit laesst
+         sich keine Fackel bauen, deren Flamme zur Seite gezogen wird. Der Versatz waechst mit der Hoehe
+         (am Boden null) und misst sich an der Hoehe genau dieser Zunge: Wind 1 legt die Spitze um eine
+         Flammenhoehe zur Seite, ein hohes Feuer also weiter als ein niedriges. */
+      for(let k=0;k<M;k++){ const h=(k/M+t*lpR(e.tempo*sp*0.9)+hs(i+700))%1, sway=Math.sin(lpW(3*sp)*t+hs(i+800)*10+k)*tw*0.5*(0.3+h), wnd=(e.wind||0)*th*Math.pow(h,1.4), x=xi+sway+wnd, y=baseY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55;
         const c=[0,1,2].map(q=>Math.round(pa[q]+(pb[q]-pa[q])*Math.min(1,h*1.3)));
         const gr=cx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba('+c.join(',')+','+al.toFixed(3)+')'); gr.addColorStop(1,'rgba('+c.join(',')+',0)');
         cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } } }
@@ -27647,10 +27652,15 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
   float dt=1.0-exp(-d*3.0*z);
   float dd=mix(d, dt, tAn);
   gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_streuung, dd), c.a); }`,
-  flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
+  flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_wind,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
-  float base=1.0-u_boden; float h=(v_uv.y-base)/max(0.05,u_hoehe*(1.0+0.5*u_takt));
-  float x=(v_uv.x-(u_mitte-u_breite*0.5))/max(0.05,u_breite); float rand=smoothstep(0.0,0.15,x)*smoothstep(1.0,0.85,x);
+  float base=1.0-u_boden; float hh=max(0.05,u_hoehe*(1.0+0.5*u_takt)); float h=(v_uv.y-base)/hh;
+  /* Wind wie beim gemalten Feuer: Versatz zur Seite, der mit der Hoehe waechst. Das Seitenverhaeltnis
+     rechnet die Hoehe in uv in eine gleich lange Strecke nach rechts um, sonst zoege ein breites Bild
+     die Flamme flacher als ein hohes. Die Klemme faellt von 0,05 auf 0,005, sonst waere ein Docht
+     (Breite unter 5 %) unten breiter als eingestellt. */
+  float versatz=u_wind*hh*(u_res.y/max(1.0,u_res.x))*pow(max(0.0,h),1.4);
+  float x=((v_uv.x-versatz)-(u_mitte-u_breite*0.5))/max(0.005,u_breite); float rand=smoothstep(0.0,0.15,x)*smoothstep(1.0,0.85,x);
   if(h<-0.05||h>1.2||rand<=0.0){ gl_FragColor=c; return; }
   vec3 p=vec3(x*6.0, h*4.0 - u_t*u_tempo*2.0, u_t*0.4); float n=fbm(p)*mix(0.4,1.1,u_flackern);
   float flame=clamp((1.0-h)*1.6 + n*0.9 - 0.75, 0.0, 1.0)*rand; float glut=u_glut*clamp(1.0-h*3.0,0.0,1.0)*rand*0.35;
