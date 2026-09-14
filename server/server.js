@@ -1369,6 +1369,78 @@ const server = http.createServer((req, res) => {
      10.09.2026: "aber es muss doch das letzte bild fehlen, damit das erste = das letzte ist").
      Darum schneidet ffmpeg hier auf `bilder` Bilder bei fester Bildrate. Der Koerper ist das
      aufgenommene MP4, die Antwort das geschnittene. Nichts wird abgelegt. */
+  /* ---- DEN CLIP BAUEN STATT IHN ZURECHTZUSCHNEIDEN (Caspar_D, 14.09.2026: "den Export wollen
+     wir so bauen, dass er auch zeitasynchron erfolgen kann ... es muss kein Abfilmen dessen sein,
+     was unsere Engine schafft (ich sag nur Gottesstrahlen)").
+
+     Der Schnitt-Endpunkt darunter bekommt eine ABFILMUNG: der Browser nimmt seine Leinwand mit
+     MediaRecorder auf und muss dabei auf die Uhr warten, weil der Zeitstempel eines Bildes
+     entsteht, wenn es abgeschickt wird. Wird ein Bild langsamer fertig als eine Bildlaenge, wandert
+     sein Zeitstempel mit - der Clip wird laenger als bestellt und die Naht liegt daneben.
+
+     Dieser Endpunkt bekommt stattdessen einen ROHEN H.264-Strom, den der Browser Bild fuer Bild
+     mit selbst gesetzten Zeitstempeln kodiert hat (WebCodecs). Die Rechenzeit spielt dort keine
+     Rolle mehr; zehn Sekunden Clip duerfen dreissig Sekunden brauchen.
+
+     Gebaut wird mit `-c:v copy`: der Strom ist schon H.264, es fehlt nur der Behaelter. Kein
+     zweites Kodieren, kein Qualitaetsverlust, und es dauert Millisekunden. Die Bildrate steht am
+     EINGANG - ein roher Strom traegt keine Zeitstempel, ffmpeg naehme sonst 25. Geht das Kopieren
+     nicht, wird einmal sauber neu kodiert. */
+  if (p === '/api/effektclip-bauen' && req.method === 'GET') {
+    /* Die Probe: der Browser fragt, ob es diesen Weg gibt, bevor er kodiert. */
+    jsonAntwort(res, { ok: true, was: 'effektclip-bauen' }, 200); return;
+  }
+  if (p === '/api/effektclip-bauen' && req.method === 'POST') {
+    const rohBilder = parseInt(u.searchParams.get('bilder'), 10);
+    if (!Number.isFinite(rohBilder) || rohBilder < 2) {
+      jsonAntwort(res, { fehler: 'bilder fehlt oder ist kleiner als 2' }, 400); return;
+    }
+    const bilder = Math.min(6000, rohBilder);
+    const rate = Math.max(1, Math.min(120, parseInt(u.searchParams.get('rate'), 10) || 30));
+    const stuecke = []; let gross = 0;
+    req.on('data', c => { gross += c.length; if (gross > 256*1024*1024) { req.destroy(); return; } stuecke.push(c); });
+    return req.on('end', () => {
+      const fsx = require('node:fs'), pfad = require('node:path'), os = require('node:os');
+      const ordner = fsx.mkdtempSync(pfad.join(os.tmpdir(), 'effektclip-'));
+      const ein = pfad.join(ordner, 'roh.h264'), aus = pfad.join(ordner, 'clip.mp4');
+      try {
+        fsx.writeFileSync(ein, Buffer.concat(stuecke));
+        const lauf = (args) => require('node:child_process').execFileSync('ffmpeg',
+          ['-v', 'error', '-y', '-f', 'h264', '-r', String(rate), '-i', ein, '-an'].concat(args)
+            .concat(['-movflags', '+faststart', aus]), { timeout: 120000 });
+        try { lauf(['-c:v', 'copy']); }
+        catch (e) { lauf(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p']); }
+        const daten = fsx.readFileSync(aus);
+        clipBuchen(u.searchParams.get('id'), bilder, rate, aus, daten, fsx, pfad);
+        res.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': daten.length, 'Cache-Control': 'no-store' });
+        res.end(daten);
+      } catch (e) {
+        jsonAntwort(res, { fehler: 'ffmpeg: ' + String(e.message).slice(0, 200) }, 500);
+      } finally { try { fsx.rmSync(ordner, { recursive: true, force: true }); } catch (e) {} }
+    });
+  }
+  /* Ausgabebuch: was wir erzeugt haben, damit der Medienlauf es spaeter wiedererkennt, wenn es von
+     Suno zurueckkaeme. Was wir jederzeit neu malen koennen, wandert nicht ins Archiv (Caspar_D,
+     11.09.2026). Ohne Titel-Kennung wird nichts gebucht - dann kann auch nichts faelschlich
+     unterdrueckt werden. Beide Wege, Schnitt und Bau, buchen ueber denselben Griff. */
+  function clipBuchen(rohId, bilder, rate, datei, daten, fsx, pfad) {
+    const id = String(rohId || '').trim(); if (!id) return;
+    const buch = pfad.join(WURZEL, 'library', 'effektclips.json');
+    let b = {}; try { b = JSON.parse(fsx.readFileSync(buch, 'utf8')) || {}; } catch (e) {}
+    if (!Array.isArray(b[id])) b[id] = [];
+    b[id] = b[id].filter(x => Math.abs((x.sekunden || 0) - bilder / rate) > 0.001).slice(-9);
+    /* Bildgroesse mitbuchen: die Laenge allein ist als Merkmal zu schwach, ein Fehlurteil wuerde
+       beim Medienlauf fremdes Material verwerfen (Gegenlesen, 11.09.2026). */
+    let breite = 0, hoehe = 0;
+    try {
+      const t = require('node:child_process').execFileSync('ffprobe',
+        ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height',
+         '-of', 'default=nk=1:nw=1', datei], { encoding: 'utf8', timeout: 20000 }).trim().split(/\s+/);
+      breite = parseInt(t[0], 10) || 0; hoehe = parseInt(t[1], 10) || 0;
+    } catch (e) {}
+    b[id].push({ zeit: new Date().toISOString(), sekunden: +(bilder / rate).toFixed(4), bilder, breite, hoehe, bytes: daten.length });
+    try { fsx.writeFileSync(buch, JSON.stringify(b, null, 1)); } catch (e) {}
+  }
   if (p === '/api/effektclip-schnitt' && req.method === 'POST') {
     /* Erst pruefen, dann begrenzen. Bis 11.09.2026 stand die Begrenzung davor
        (Math.max(2, ...)), damit war `bilder` nie 0 und die Pruefung darunter konnte nie
