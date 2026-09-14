@@ -1088,14 +1088,19 @@ select,.knopf{
 .capkachel .capzahl{position:absolute;left:6px;top:6px;min-width:20px;height:20px;padding:0 5px;
   border-radius:10px;background:rgba(0,0,0,.7);border:1px solid var(--rand);color:var(--text);
   font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.capkachel.capton{aspect-ratio:auto;height:240px;box-sizing:border-box}
-#cap .capinstr{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}
+/* TON UND INSTRUMENTAL SIND EIN TEILPANEL (Caspar_D, 14.09.2026: "Ton und Instrumental ein
+   Teilpanel, beides gemeinsam so hoch wie die Textbox"). Damit haengt nichts mehr unter der
+   Reihe heraus: die fuenfte Spalte ist oben genauso hoch wie die vier links daneben, und der
+   Schalter sitzt trotzdem bei dem, worueber er etwas sagt - dem Klang. */
+.captonpanel{height:240px;display:flex;flex-direction:column;gap:6px;box-sizing:border-box}
+.capkachel.capton{aspect-ratio:auto;flex:1 1 auto;min-height:0;box-sizing:border-box}
+#cap .capinstr{display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:0 0 auto}
 #cap .capinstr .fussnote{margin:0;font-size:10.5px;opacity:.7;line-height:1.3}
 /* Der Effektclip ist kein Standbild, sondern ein Rezept - gezeigt wird er, indem ihn derselbe
    Maler malt, der ihn auf der Kachel malt. Er fuellt die Kachel ganz. */
 .capartclip{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:#000}
 @media (max-width:860px){ .capgal{grid-template-columns:repeat(2,1fr)}
-  .capgal>*{grid-column:auto !important} .captextfeld{height:170px} .capkachel.capton{height:170px} }
+  .capgal>*{grid-column:auto !important} .captextfeld{height:170px} .captonpanel{height:170px} }
 #cap{position:fixed;z-index:82;display:none;max-width:min(980px,96vw);
   max-height:calc(100vh - 16px);overflow:auto;
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
@@ -17049,15 +17054,17 @@ function capAuf(id, x, y){
        Kaesten der Textreihe sind damit exakt gleich hoch, und was darunter waechst, waechst in
        einer Zelle, die ohnehin die schmalste ist. Pille statt Haken (Hausregel 18). */
     +   `<div style="grid-column:5">`
-    +     `<div class="capkachel capton" id="capartton" data-art="ton"></div>`
-    +     `<div class="capkachelname">Tonfassung</div>`
-    +     `<div class="capinstr">`
+    +     `<div class="captonpanel">`
+    +       `<div class="capkachel capton" id="capartton" data-art="ton"></div>`
+    +       `<div class="capinstr">`
     +       `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
     +         ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
     +         ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
-    +       `<span class="fussnote" id="capinstrstand">${
-                instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
-    +     `</div></div>`
+    +         `<span class="fussnote" id="capinstrstand">${
+                  instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
+    +       `</div>`
+    +     `</div>`
+    +     `<div class="capkachelname">Tonfassung</div></div>`
     /* Reihe der Kacheln. Links zum Lesen, rechts zum Aendern - dieselbe Reihenfolge in beiden
        Haelften, damit das Auge die Paare von selbst findet. */
     +   `<div style="grid-column:1"><div class="capkachel ruhig">`
