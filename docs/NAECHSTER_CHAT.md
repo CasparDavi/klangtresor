@@ -3765,3 +3765,26 @@ geht aus einem flachen Bild nicht hervor — es gibt dafür keine Grundwahrheit.
 Folgen zugleich: Größe, Helligkeit, Versatz und Streckung. 0 heißt: das Raster liegt auf der
 Scheibe wie vorher.
 
+## Glühwürmchen und Schmetterlinge (14.09.2026)
+
+Caspar_D: *„magst du bei partikeln noch Glühwürmchen und Schmetterlinge einfügen — unberechenbare
+Eigenbewegung."* Zwei neue Arten und ein neuer Regler, der allen Arten offensteht.
+
+**„Eigenbewegung" ist der eigentliche Zusatz.** Schnee hat keine: er fällt, wohin der Wind ihn
+trägt. Ein Tier entscheidet selbst. Gerechnet wird sie als **drei Schwingungen mit verschiedenen
+Raten**, je Teilchen anders verschoben — das Auge findet darin kein Muster. Und weil jede Rate
+durch `lpW` auf die Clipdauer gerastet wird, steht nach einem Durchlauf jedes Tier wieder da, wo
+es angefangen hat: **der Export loopt.** Echter Zufall täte das nicht — das ist der Grund, warum
+hier keiner steht.
+
+**Glühwürmchen** leuchten nicht dauernd, sie **blinken**, jedes mit eigener Rate und eigener
+Phase (auch die gerastet). Das unterscheidet sie von einem hellen Punkt. Weicher Hof plus harter
+Kern, warmes Gelbgrün, wenige und klein, steigen langsam.
+
+**Schmetterlinge** flattern: die Flügel öffnen und schließen, der Körper taumelt mit. Zwei
+Ellipsen und ein Strich — mehr sieht bei acht Bildpunkten ohnehin niemand. Bunt (Farbstreuung
+0,85), wenige und groß.
+
+Der Artwechsel trägt die Eigenbewegung mit — je Schlüssel geprüft, je Schlüssel gesetzt, wie bei
+Farben und Gewicht (Regel 6d). Wer sie von Hand gedreht hat, behält seinen Wert.
+

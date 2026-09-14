@@ -27245,7 +27245,7 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche, Funken oder Schwaden ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schiesst sie hinaus und laeuft aus wie Luftwiderstand. Schwaden sind Rauch: wenige, grosse, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster (px)',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27414,7 +27414,7 @@ function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:f
   return e; }
 /* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
    aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
-const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7], schwaden:['#9a9a9a','#3c3c3c',.4] };
+const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7], schwaden:['#9a9a9a','#3c3c3c',.4], gluehwuermchen:['#eaff7a','#ffd24a',.35], schmetterling:['#ff9a3c','#63d0ff',.85] };
 /* Jede Nebelsorte bringt ihren Satz mit - gesetzt beim Wechsel, aber nur, solange die Werte noch die der
    vorigen Sorte sind (eigene bleiben stehen). Wie bei den Partikel-Arten. */
 const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auftrieb:0,tempo:.4,grundlicht:.95},
@@ -27424,11 +27424,16 @@ function nebelSorte(e){ const alt=NEBEL_SORTEN[e._sorteVor||'schwaden']||NEBEL_S
   if(Object.keys(alt).every(k=>Math.abs(e[k]-alt[k])<1e-6)) Object.keys(neu).forEach(k=>{ e[k]=neu[k]; });
   e._sorteVor=e.sorte; }
 /* Schwaden wollen wenige und grosse, alle anderen Arten viele und kleine. */
-const ART_MASS={ schwaden:[40,6] };
+const ART_MASS={ schwaden:[40,6], gluehwuermchen:[45,2.5], schmetterling:[16,7] };
+/* WIEVIEL EIGENBEWEGUNG DIE ART MITBRINGT (Caspar_D, 14.09.2026: "Gluehwuermchen und
+   Schmetterlinge - unberechenbare Eigenbewegung"). Schnee hat keine: er faellt, wohin der Wind
+   ihn traegt. Ein Tier entscheidet selbst. */
+const ART_WANDERN={ gluehwuermchen:.55, schmetterling:.8 };
 function artFarben(e){ const vor=e._artVor||'schnee', alt=ART_FARBEN[vor]||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; }
   /* Das Gewicht zieht wie die Farben mit: beim Artwechsel gesetzt, aber nur, solange es noch das
      der vorigen Art ist. Wer den Auftrieb von Hand gedreht hat, behaelt seinen Wert. */
   if(e.auftrieb===ART_AUFTRIEB[vor]&&ART_AUFTRIEB[e.art]!=null) e.auftrieb=ART_AUFTRIEB[e.art];
+  if(e.wandern===(ART_WANDERN[vor]||0)) e.wandern=ART_WANDERN[e.art]||0;
   const mv=ART_MASS[vor]||[120,3], mn=ART_MASS[e.art]||[120,3];
   if(e.anzahl===mv[0]&&e.groesse===mv[1]){ e.anzahl=mn[0]; e.groesse=mn[1]; }
   e._artVor=e.art; }
@@ -27844,9 +27849,9 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
 
    Alles rein aus t und hs(i) gerechnet: kein Zustand zwischen zwei Bildern, kein Geburtenzaehler.
    Sonst waere das Springen in der Zeitleiste und das Neuzeichnen beim Export kaputt. */
-const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25, schwaden:0.05 };
+const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25, schwaden:0.05, gluehwuermchen:0.012, schmetterling:0.03 };
 /* Das Gewicht, das jede Art bis heute fest verdrahtet hatte: -1 faellt, +1 steigt. */
-const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1 };
+const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1, gluehwuermchen:.35, schmetterling:.15 };
 const Q_REGLER=new Set(['qForm','qUrsprung','qWinkel','qX','qY','qAus','qAusY','qDreh','auftrieb','druck','winkel','streuung','laenge','ausblenden','wind','tempo','art']);
 const Q_FORM=[['bild','das ganze Bild'],['punkt','Punkt'],['linie','Linie'],['kreis','Kreis'],['ellipse','Ellipse']];
 function quellPunkt(e,i,hs,Wn,Hn){
@@ -28195,14 +28200,45 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     if(schw){ if(!e._rc){ e._rc=document.createElement('canvas'); e._rl=document.createElement('canvas'); }
       if(e._rc.width!==Wn||e._rc.height!==Hn){ e._rc.width=Wn; e._rc.height=Hn; e._rl.width=Wn; e._rl.height=Hn; }
       zx=e._rc.getContext('2d'); zx.setTransform(1,0,0,1,0,0); zx.globalCompositeOperation='source-over'; zx.globalAlpha=1; zx.clearRect(0,0,Wn,Hn); }
-    for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
+    const wa=(e.wandern==null?0:e.wandern);
+    for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn; const sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
+      /* UNBERECHENBAR UND TROTZDEM RUND. Drei Schwingungen mit verschiedenen Raten, je Teilchen
+         anders verschoben - das Auge findet darin kein Muster. Und weil jede Rate durch lpW auf
+         die Clipdauer gerastet wird, steht nach einem Durchlauf jedes Tier wieder da, wo es
+         angefangen hat: der Export loopt. Zufall taete das nicht. */
+      let wx=0, wy=0;
+      if(wa>0.001){ const A=wa*Math.min(Wn,Hn)*0.085;
+        wx=A*(Math.sin(lpW(0.31)*t+i*2.3)+0.62*Math.sin(lpW(0.73)*t+i*5.1)+0.33*Math.sin(lpW(1.7)*t+i*1.7));
+        wy=A*(Math.cos(lpW(0.27)*t+i*3.1)+0.62*Math.cos(lpW(0.83)*t+i*4.3)+0.33*Math.cos(lpW(1.9)*t+i*2.9));
+        x0+=wx; y0+=wy; }
       const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
-      if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]; y=F[1]; al=F[2]; qs=F[3]; }
+      if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
       if(e.art==='schnee'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='regen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); cx.globalAlpha=1; }
       else if(e.art==='asche'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='blasen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=al*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='staub'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='gluehwuermchen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
+        /* Ein Gluehwuermchen leuchtet nicht dauernd, es blinkt - und jedes fuer sich, mit eigener
+           Rate und eigener Phase. Genau das unterscheidet es von einem hellen Punkt. */
+        const bp=((t*lpR(0.5+hs(i+7700)*0.55)+hs(i+7800))%1+1)%1;
+        const bl=bp<0.42?Math.sin(Math.PI*bp/0.42):0;
+        if(bl>0.015){ cx.globalAlpha=al*bl;
+          const g=cx.createRadialGradient(x,y,0,x,y,sz*4.5);
+          g.addColorStop(0,farbeVon(i,a)); g.addColorStop(0.22,farbeVon(i,a*0.55)); g.addColorStop(1,farbeVon(i,0));
+          cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,sz*4.5,0,7); cx.fill();
+          cx.fillStyle=fc; cx.beginPath(); cx.arc(x,y,sz*0.6,0,7); cx.fill(); }
+        cx.globalAlpha=1; cx.fillStyle=fc; }
+      else if(e.art==='schmetterling'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
+        /* Der Flatterschlag: die Fluegel oeffnen und schliessen, und der Koerper taumelt mit.
+           Zwei Ellipsen und ein Strich - mehr braucht es bei dieser Groesse nicht, und mehr
+           saehe bei acht Bildpunkten ohnehin niemand. */
+        const fl=Math.abs(Math.sin(lpW(3.2+hs(i+4700)*2.8)*t+i*1.9)), oe=0.22+0.78*fl;
+        cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(Math.sin(lpW(0.9)*t+i*1.3)*0.55);
+        for(const sg of [-1,1]){ cx.beginPath();
+          cx.ellipse(sg*sz*0.72*oe,-sz*0.12,sz*0.82*oe,sz*0.95,sg*0.32,0,7); cx.fill(); }
+        cx.globalAlpha=al*0.85; cx.beginPath(); cx.ellipse(0,0,Math.max(0.5,sz*0.15),sz*0.7,0,0,7); cx.fill();
+        cx.restore(); cx.globalAlpha=1; }
       else if(e.art==='blaetter'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
       else if(e.art==='schwaden'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
         /* SCHWADEN (Caspar_D, 14.09.2026: "und rauch kann sich genauso verhalten, nur dass es
