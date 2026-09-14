@@ -1515,6 +1515,43 @@ Bildhelligkeit über 60 Bilder:
 Der Regler wirkt über seinen ganzen Weg (Regel 9), und „stetig" ist neu: ein Puls, der einfach
 anbleibt, war vorher nicht einstellbar.
 
+**Berichtigt am selben Tag, auf Einspruch.** Caspar_D: *„Die Tiefe geht im Pult über die
+Kurvenamplitude, die Wucht ist eigentlich damit komplett abgedeckt, dachte ich … statt einer lokalen
+Helligkeitskomponente wie bei Scheinwerfern, Lasern handelt es sich bei den Puls-Effekten um
+bildglobale Effekte, die man ganz genauso steuern kann."* Richtig, und meine Begründung fürs
+Ausblenden war falsch. Das Pult gibt `(1 − Tiefe) + Tiefe · Kurve` zurück:
+
+- die **Wucht** setzt die Decke auf dem Schlag,
+- die **Tiefe** setzt den Boden dazwischen.
+
+Kein Produkt, sondern zwei Enden derselben Kurve — genau wie Stärke und Tiefe am Scheinwerfer. Die
+Zeile steht damit auf jeder Pulskarte, und bei Tiefe 1 kommt heraus, was vorher lief.
+
+**Ein Produkt gab es trotzdem, nur woanders.** Caspar_D: *„was soll der Unterschied zwischen Wucht
+und Stärke überhaupt sein? Das ist doch dasselbe, nur als Produkt, sinnvoll ist das nicht."*
+Nachgerechnet, Effekt für Effekt:
+
+| Effekt | zweiter Regler | ist es ein Produkt mit der Stärke? |
+|---|---|---|
+| Helligkeit | Wucht | **ja**, das Ergebnis ist `Bild · (1 + Stärke · 1,2 · Wucht)` |
+| Sättigung | Sättigung | **ja**, `saturate(1 + Stärke · (s − 1))`, exakt |
+| Schärfe | Weichheit (px) | nein, die Stärke mischt ein weichgezeichnetes Bild dazu |
+| Kontrast | Gradationskurve | nein, die Stärke mischt ein neu graduiertes Bild dazu |
+| Farbton | Winkel | nein, die Stärke mischt ein farbverdrehtes Bild dazu |
+| Farbkanal | Versatz, Richtung | nein, die Stärke mischt das verschobene Bild dazu |
+| Zoom, Kippen | Wucht, Neigung | war schon gefaltet, beide haben gar keine Stärke |
+
+Bei den ersten beiden ist die Stärke gefallen und wird beim Laden in den eigenen Regler gefaltet
+(Regel 2 und Regel 12). Bei den vier anderen bleibt sie, weil sie dort etwas anderes tut als der
+zweite Regler: sie sagt, **wie viel** von einem anderen Bild dazukommt, nicht **wie stark** dieses
+Bild ist.
+
+**Ein Fehler, den der Umbau selbst erzeugt hat.** Die Kette legt bei Effekten der Art `post`/`gl`
+zusätzlich `antriebWert` auf die Deckkraft der Ebene. Sobald die Pulse Pult-Parameter hatten, griff
+das auch bei ihnen — beim Farbkanal-Puls lag die Hüllkurve dadurch zweimal drin, einmal im Versatz
+und einmal in der Deckkraft. Gefunden beim Nachlesen derselben Stunde, behoben mit der vorhandenen
+Marke `lmNurSchub`: die Pulse lesen den Antrieb selbst.
+
 ### 9d.2 Woran sich Bühnenreife messen lässt
 
 Aus dem Regelwerk und den heutigen Befunden, **messbar**:
