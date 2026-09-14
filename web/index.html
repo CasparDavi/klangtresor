@@ -3032,9 +3032,31 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-regler input[type=color]{width:100%;height:23px;padding:0;border:1px solid var(--rand);border-radius:6px;background:var(--flaeche2);cursor:pointer}
 #tbs .tbs-regler select{width:100%;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px}
 #tbs .tbs-regler .tbs-wert{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
-#tbs .tbs-verr{margin-top:9px;padding-top:9px;border-top:1px solid var(--rand)}
-#tbs .tbs-verr .tbs-regler{grid-template-columns:96px 1fr 42px}
-#tbs .tbs-verr select[data-verr]{grid-column:2/4}
+/* ZWEI SPALTEN: SPEZIFISCH LINKS, GENERISCH RECHTS (VIDEO-PLAN §9a.5).
+
+   Caspar_D, 12.09.2026: „Schnittprogramme haben das Problem, dass generische Sachen irgendwo
+   zentral stehen und nur die spezifischen an den Filtern ... wir schreiben immer alles an jeden
+   Effekt, nur sortiert nach spezifisch und generisch - ich muss mir nicht merken, wo was steht."
+
+   Die Spalte traegt die Bedeutung selbst: links ist dieser Effekt, rechts ist das System. Das
+   muss niemand lernen, das sieht man.
+
+   KEIN ZUKLAPPEN (Regel 10: ein versteckter Regler wirkt trotzdem, daran zog der Nebel bei
+   „Absaugung: keine" schon einmal). Wird das Pult zu schmal, wird GESTAPELT - erst links, dann
+   rechts, Trennlinie dazwischen, gleiche Reihenfolge. Gemessen wird die Breite der Karte
+   selbst, nicht die des Fensters: das Pult kann schmal sein, waehrend der Bildschirm breit ist. */
+#tbs .tbs-karte{container-type:inline-size}
+#tbs .tbs-spalten{display:block}
+#tbs .tbs-rechts{margin-top:9px;padding-top:9px;border-top:1px solid var(--rand)}
+@container (min-width: 560px){
+  #tbs .tbs-spalten{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;align-items:start}
+  #tbs .tbs-rechts{margin-top:0;padding-top:0;border-top:0;border-left:1px solid var(--rand);padding-left:18px}
+  #tbs .tbs-spalten .tbs-regler{grid-template-columns:88px 1fr 38px}
+}
+/* Hier standen .tbs-verr-Regeln: der generische Block lag UNTER dem spezifischen, mit einer
+   feinen Linie dazwischen. Seit dem 14.09.2026 stehen sie nebeneinander (.tbs-links /
+   .tbs-rechts, siehe oben); die Klasse wird nicht mehr ausgegeben. */
+#tbs .tbs-rechts select[data-verr]{grid-column:2/4}
 /* Erklaertext linksbuendig mit atmenden Raendern (Caspar_D, 11.09.2026) */
 #tbs .tbs-leer{color:var(--schwach);font-size:12px;text-align:left;padding:14px 18px 8px;line-height:1.55}
 #tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
@@ -27731,12 +27753,20 @@ function renderStapel(){
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
     };
+    h+='<div class="tbs-spalten"><div class="tbs-links">';
     T.params.filter(p=>!GEMEIN.has(p.k)).forEach(paramHTML);
-    h+='<div class="tbs-verr">';
+    h+='</div><div class="tbs-rechts">';
+    /* Die rechte Spalte hat ueber alle Karten DIESELBE Reihenfolge - sonst ist der Gewinn weg,
+       denn der Sinn ist, dass der Blick nach zwei Karten weiss, wo der Antrieb steht. Was ein
+       Effekt nicht hat, laesst die Zeile aus; die Ordnung bleibt. */
     T.params.filter(p=>GEMEIN.has(p.k)).forEach(paramHTML);
+    /* Tiefe: der generische Parameter aus VIDEO-PLAN §9.7b. Er steht NUR bei Effekten, die ihn
+       wirklich lesen (heute der Nebel) - eine Beschriftung ist ein Versprechen (Regel 11), und
+       ein Regler, der nichts tut, waere eines, das nicht gehalten wird. Jeder Effekt, der die
+       Karte spaeter benutzt, bekommt hier seine Zeile an derselben Stelle. */
     if(T.art==='mal'||T.verrFrei) h+='<div class="tbs-regler"><span>Verrechnung</span><select data-verr="1">'+verrOptionen(e.verr)+'</select></div>';   /* Vollbild-Ergebnisse vertragen nur Ueber */
     if(!T.ohneStaerke) h+='<div class="tbs-regler" title="St\u00e4rke ist die Deckkraft: wie stark das fertige Ergebnis des Effekts ins Bild gemischt wird. Alle anderen Regler formen den Effekt."><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1" step="0.05" value="'+Math.min(1,e.staerke)+'"><span class="tbs-wert">'+Math.round(Math.min(1,e.staerke)*100)+'%</span></div>';
-    c.innerHTML=h+'</div></div>';
+    c.innerHTML=h+'</div></div></div>';   /* rechte Spalte, Spaltenkasten, Inhalt */
     c.querySelector('.tbs-pw').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); kettekopfStand(); };
     const klapp=()=>{ offenId=(offenId===e.id)?null:e.id; renderStapel(); };
     c.querySelector('.tbs-name').onclick=klapp; const ik=c.querySelector('.tbs-ik'); if(ik) ik.onclick=klapp;
