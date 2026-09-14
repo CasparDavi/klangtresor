@@ -3663,3 +3663,67 @@ nie gab. Die Begründung, die sie stehenließ, lautete „sie kosten nichts“ �
 Rechenzeit und war falsch für alles andere: sie haben den Gedanken am Leben gehalten, da läge ein
 Schlüssel. Die Begründung steht jetzt als Nachtrag in `docs/suno/WEGE.md`, ohne den Namen.
 
+## Streiflicht — die Tiefenkarte wird beleuchtet (14.09.2026)
+
+Caspar_D: *„wenn Laser von einer seite kommt, wo in der tiefenmap eine vorwölbung ist, müßte
+eigentlich ein Kantenblitz entstehen, wohingegen wo die tiefenmap flieht, eher schatten zu sehen
+sein müßte"* — und zur offenen Frage, woher die Lichtrichtung kommt: *„von der Lichtquelle aus
+gesehen würde ich denken."* Das war die Entscheidung; gebaut ist Weg (a).
+
+**Die Leuchte meldet ihren Ort, während sie malt.** Der Lichtpuffer sagt, WIEVIEL Licht
+irgendwo ankommt — aber nicht, aus welcher Richtung. Das weiß nur die Leuchte selbst, und zwar
+genau in dem Augenblick, in dem sie zeichnet. Also trägt sie es dort ein (`LICHTORTE`,
+`lichtOrtMelden`): der Scheinwerfer seinen Ursprung, der Laser seinen Fächerpunkt (der liegt
+außerhalb des Bildes — genau die streifende Lage), die Lichtstrahlen ihren Punkt, das Feuer seine
+Mitte über dem Boden. Das Stroboskop meldet nichts: es leuchtet von überall. Gewichtet wird mit
+der Helligkeit — bei mehreren Leuchten zieht die hellste die Richtung.
+
+**Gemessen** (Laser von links, additiv gerechnet, damit das Abwedeln die Zahlen nicht verbiegt) —
+Beitrag des Streiflichts nach `dot(Normale, Licht)`:
+
+| 0,0–0,2 | 0,2–0,4 | 0,4–0,6 | 0,6–0,8 | 0,8–1,0 |
+|---|---|---|---|---|
+| +0,08 | −0,11 | +0,32 | **+1,40** | **+2,69** |
+
+Streng steigend, null wo die Fläche weggedreht ist, Spitze +61,8 Graustufen. Caspar_D am Bild:
+*„am oberarm von ihr funktioniert es, sehr geil."*
+
+**Zwei Vorkehrungen gegen die geschätzte Karte.** Der Schlagschatten dunkelte anfangs das ganze
+Bild um 1,9 Graustufen ab, auch auf Flächen, die dem Licht voll zugewandt sind: eine monokular
+geschätzte Karte rauscht, und jedes Rauschkorn galt als Verdecker. Jetzt fängt der Marsch erst
+beim dritten Schritt an und trägt einen Vorhalt von 0,035 — erst eine echte Vorwölbung wirft
+Schatten. Der Anstieg ist flacher: eine geschätzte Karte gibt keine harte Schattenkante her, und
+eine harte Kante wäre hier gelogen (Regel 16).
+
+**„Einfall" ist die dritte Achse** und geht von −1 bis +1: links hinter die Bildfläche
+(*„auch leicht hinter der Bildfläche, wäre als effekt interessant"*) — dann fällt alles aus, was
+der Kamera zugewandt ist, und nur die Silhouette bleibt stehen, also Gegenlicht. Mitte streifend,
+rechts frontal. Ein Regler, drei Lichtsetzungen, und es ist ein Vorzeichen, kein zweiter Effekt.
+
+**Ein Meßfehler, der festgehalten gehört:** die erste Messung ergab überall negative Werte. Das
+war nicht der Effekt, sondern der Rauschboden — die Quelle dieses Titels bewegt sich, dieselbe
+Lage 0,9 s später weicht im Mittel um **1,62 Graustufen** ab, 12,2 % der Punkte um mehr als 3.
+Auf einer bewegten Quelle muß paarweise gemessen werden (an-Bild und aus-Bild rund 70 ms
+auseinander), sonst mißt man die Bewegung.
+
+## Laser-Punkte — das Beugungsgitter (14.09.2026)
+
+Caspar_D: *„es gibt doch diese punktuellen Laserdots, die einfach in die Tanzfläche gestreut
+werden, die finde ich total geil."* Keine neue Karte, sondern die **dritte Bauart am
+Laserstrahl** — damit erbt sie Farbe, Ursprung, Auffächern, Flimmern, Austasten, das
+Lichtmischpult und vor allem das Malen in den Lichtpuffer.
+
+Gerechnet wird eine **Ebene im Raum**, nicht ein Muster auf der Scheibe: das Raster dreht sich um
+seine Achse, kippt um die Waagerechte und wird perspektivisch geworfen. Der Fluchtpunkt kommt
+daher von selbst. Drei Regler: Punkte je Reihe, Neigung (0 Wand, 1 Boden), Drehen.
+
+**Gemessen** bei 12 Punkten je Reihe, Neigung 0,75: alle **144 von 144** im Bild, Punktgröße von
+der vordersten zur hintersten Reihe **2,24 → 1,09**, Abstand **56,6 → 27,4 px** — beides Faktor
+**2,07**. Vorher, ohne Verankerung, wuchs die Perspektive nach vorn ins Unendliche und **106 von
+144 Punkten flogen aus dem Bild**; jetzt ist die vorderste Reihe der Maßstab (`w = 1 + (Z +
+sin(Neigung))`). Gezeichnet wird EIN vorgerechnetes Punktbild als Kopie, nicht je Dot ein Verlauf.
+
+**Offen:** die Tiefenstufe — Dots landen auf den Flächen im Bild statt auf der Scheibe, kleiner
+und heller auf einer Schulter als im Hintergrund. Das wäre der dritte Verbraucher der Karte nach
+Filmnebel und Streiflicht.
+

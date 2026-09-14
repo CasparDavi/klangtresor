@@ -27129,6 +27129,7 @@ const IKON={
  sicherung:'<path d="M12 3v8"/><path d="M7 6.5a7 7 0 1 0 10 0"/>',
  nebel:'<path d="M7 17h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 1.5A3.5 3.5 0 0 0 7 17z"/>',
  filmnebel:'<path d="M6 15h12a3.5 3.5 0 0 0 0-7 5.5 5.5 0 0 0-10.4 1.2A3 3 0 0 0 6 15z"/><path d="M5 19h9" opacity=".55"/>',
+ streiflicht:'<path d="M4 20c3-6 7-9 10-9s4 2 6 2"/><path d="M3 5l4 3M8 3l2 4" opacity=".7"/><path d="M14 11c2 3 3 6 3 9" opacity=".45"/>',
  partikel:'<g fill="currentColor" stroke="none"><circle cx="6" cy="5" r="1.4"/><circle cx="14" cy="8" r="1.4"/><circle cx="9" cy="13" r="1.4"/><circle cx="18" cy="15" r="1.4"/><circle cx="5" cy="19" r="1.4"/><circle cx="13" cy="20" r="1.4"/></g>',
  scanlines:'<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 8h18M3 12h18M3 16h18" opacity=".6"/>',
  bloom:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7" opacity=".5"/><circle cx="12" cy="12" r="10" opacity=".25"/>',
@@ -27154,7 +27155,7 @@ const IKON={
  saettigung:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
  strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
 };
-const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',filmnebel:'#c8d6e6',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',nebel:'#b9c4d0',filmnebel:'#c8d6e6',streiflicht:'#ffd9a0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 const EFFEKTE = {
@@ -27176,8 +27177,8 @@ const EFFEKTE = {
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'}]},
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'}]},
-  laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Strahlen schießen aus einem Punkt außerhalb des Bildes, jeder mit hellem Kern und weichem Saum; der Fächer schwenkt (Tempo = Sekunden je Schwenk). Mehrfach in verschiedenen Farben einhängen.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
+  laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Drei Bauarten: <b>Gitter</b> (ein Strahlteiler macht aus einem Strahl viele gleichzeitige), <b>Scanner</b> (ein Strahl, von einem Galvospiegel schnell abgelenkt — was man sieht, ist Nachleuchten) und <b>Punkte</b> (ein Beugungsgitter streut hunderte Dots als Raster auf die Fläche; Neigung legt es flach wie eine Tanzfläche oder stellt es auf wie eine Wand). Strahlen schießen aus einem Punkt außerhalb des Bildes, jeder mit hellem Kern und weichem Saum; der Fächer schwenkt (Tempo = Sekunden je Schwenk). Mehrfach in verschiedenen Farben einhängen.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt'],['punkte','Punkte — ein Raster aus Dots']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'raster',lbl:'Punkte je Reihe',min:3,max:20,step:1,def:9,when:e=>e.bauart==='punkte'},{k:'neigung',lbl:'Neigung (0 Wand, 1 Boden)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'drehen',lbl:'Drehen',min:-1,max:1,step:.05,def:.15,when:e=>e.bauart==='punkte'},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle oder dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
     params:[{k:'ton',lbl:'Bänder',sel:[['hell','helle'],['dunkel','dunkle'],['beide','abwechselnd']],def:'hell'},{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
   rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur im Takt: dann als Ausbruch auf jedem Schlag.',
@@ -27222,6 +27223,16 @@ const EFFEKTE = {
     glZusatz:e=>({ u_sorte:(e.sorte==='dunst'?0:e.sorte==='boden'?2:1),
       u_sogStaerke:((e.sog||'keine')==='keine'?0:(e.sogStaerke==null?.4:e.sogStaerke)),
       u_sogX:(e.sog==='links'?0:e.sog==='rechts'?1:0.5), u_sogY:(e.sog==='boden'?0:e.sog==='oben'?1:0.5) }) },
+  streiflicht:{ label:'Streiflicht', art:'gl', medium:true, nurMitLicht:true, staerkeDef:.7, besch:'<b>Er wirkt nur zusammen mit einer Leuchte und nur, wenn eine Tiefenkarte vorliegt.</b> Dann beleuchtet er das Bild, als wäre es ein Relief: wo sich die Karte dem Licht entgegenwölbt, blitzt die Kante auf, wo sie wegfällt, legt sich Schatten. Die Richtung kommt von der Leuchte selbst — ein Laser von der Seite streift, ein Scheinwerfer von vorn modelliert. Einfall sagt, wo sie steht: bei 0 in der Bildebene — streifend, lange Schatten, harte Kanten; nach rechts tritt sie hervor bis frontal und modelliert flach; nach links tritt sie <b>hinter</b> die Bildfläche, dann bleibt nur die Silhouette stehen — Gegenlicht. Kante ist die Schärfe des Blitzes, Relief wie stark die Karte die Fläche kippt. Auch als: Rampenlicht, Gegenlicht, Konturlicht.',
+    params:[{k:'einfall',lbl:'Einfall',min:-1,max:1,step:.05,def:.25},
+      {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
+      {k:'relief',lbl:'Relief',min:0,max:1,step:.05,def:.5},
+      {k:'schatten',lbl:'Schlagschatten',min:0,max:1,step:.05,def:.5}],
+    /* Der Ort der Leuchte wird je Bild frisch gemeldet; ohne Meldung schaltet sich der Effekt
+       selbst ab (u_ortDa). Die Tiefenrechnung ist kein Regler - GL.run stellt sie hart auf
+       null, wenn keine Karte da ist, und diese Zeile laeuft nach dem Zusatz. */
+    glZusatz:e=>{ const o=lichtOrtMittel();
+      return { u_tiefeAn:1, u_ortDa:o?1:0, u_ortX:o?o[0]:0.5, u_ortY:o?o[1]:0 }; } },
   /* nurMitLicht: der Hinweis auf der Karte gilt NUR ihm. Der Theaternebel ist auch ohne Leuchte
      sichtbar (er dunkelt ab), und Schwaden-Partikel malen sich selbst - dort waere der Satz falsch. */
   filmnebel:{ label:'Filmnebel', art:'gl', medium:true, nurMitLicht:true, staerkeDef:.4, besch:'<b>Er wirkt nur zusammen mit einer Leuchte.</b> Hängt kein Scheinwerfer, Laser, Lichtstrahl, Feuer oder Stroboskop in der Kette, bleibt weißer Filmnebel unsichtbar — dann sieht man von ihm nur, daß die Ferne an Kontrast verliert (Luftperspektive). Das ist kein Fehler, sondern der Grund, warum auf jeder Bühne eine Nebelmaschine läuft: Nebel ist ein Medium, keine Farbe. Er dämpft, was hinter ihm liegt, und leuchtet von dem Licht, das ihn trifft — an welcher Stelle der Kette er hängt, ist dafür gleich. Die Farbe ist das Fluid: Weiß ist Wassernebel und kann nicht abdunkeln, dunkel ist Rauch und schluckt ehrlich Licht. Schwere sagt, wo er liegt — von Dunst im ganzen Raum bis zum flachen Teppich mit klarer Oberkante. Schwaden, wie ungleichmäßig er ist. Bündelung, wie scharf die Strahlen in ihm stehen: 0 ein weicher Hof um jede Leuchte, 1 gezeichnete Strahlen und Laserkegel. Luftzug, wohin er zieht — Wabern und Steigen folgen daraus. Stärke ist die Dichte. Liegt eine Tiefenkarte vor, dämpft er nach Entfernung, und die Figur steht von selbst vor dem Nebel. Auch als: Dunst, Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
@@ -27340,7 +27351,7 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
-  ['Läufe', ['fahrt','streifen','licht','schatten','laser','farbe','filmnebel','nebel','feuer']],
+  ['Läufe', ['fahrt','streifen','licht','schatten','laser','streiflicht','farbe','filmnebel','nebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
   ['Partikel', ['partikel']],
@@ -27372,6 +27383,22 @@ PULSE.forEach(k=>{ EFFEKTE[k].lmNurSchub=true; EFFEKTE[k].params.push(
   ...lmParams({lmQuelle:'takt',lmForm:'rampe_ab',lmAbkling:1.8,lmTiefe:1})); });
 
 let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false, FEIN = false;   /* LICHTMAL: gerade wird in den Licht-Puffer gemalt */
+/* WOHER DAS LICHT KOMMT (Caspar_D, 14.09.2026: "Lichtrichtung von der Lichtquelle aus gesehen
+   wuerde ich denken"). Der Lichtpuffer sagt, WIEVIEL Licht an einer Stelle ankommt - aber nicht,
+   aus welcher Richtung. Das weiss nur die Leuchte selbst, und zwar genau in dem Augenblick, in dem
+   sie malt. Also meldet sie es dort: waehrend des Fuelllaufs traegt jede Leuchte ihren Ort ein.
+   Der Scheinwerfer seinen Ursprung, der Laser seinen Faecherpunkt (der liegt ausserhalb des
+   Bildes - genau richtig fuer streifendes Licht), die Lichtstrahlen ihren Punkt, das Feuer seine
+   Mitte ueber dem Boden. Das Stroboskop meldet nichts: es leuchtet von ueberall.
+   Die Gewichtung ist die Helligkeit - bei mehreren Leuchten zieht die hellste die Richtung. */
+let LICHTORTE = [];
+function lichtOrtMelden(x, y, gewicht){ if(LICHTMAL && gewicht > 0.002) LICHTORTE.push([x, y, gewicht]); }
+function lichtOrtMittel(){
+  let sx = 0, sy = 0, sg = 0;
+  for(const [x, y, g] of LICHTORTE){ sx += x * g; sy += y * g; sg += g; }
+  if(sg <= 0 || !lein || lein.width < 2) return null;
+  return [ sx / sg / lein.width, sy / sg / lein.height ];
+}
 /* FEIN: gerade wird fuer den EXPORT gerechnet, nicht fuer die Vorschau. Der kodierende Weg haengt an
    keiner Uhr (Caspar_D, 14.09.2026: "im Export bei ausreichend Rechenzeit vielleicht richtig chic",
    und lange davor: "es muss kein Abfilmen dessen sein, was unsere Engine schafft"). Maler duerfen sich
@@ -27745,6 +27772,7 @@ function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rm
   mkr.restore();
   if(weich>0){ mk.filter='blur('+(weich*zelle*0.35).toFixed(1)+'px)'; mk.drawImage(mkr.canvas,0,0); mk.filter='none'; } }
 function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return; const O=raumUrsprung(e,W,H), Z=raumZiel(e,t,W,H,O), form=e.rmForm||'kreis', r=Math.max(2,(e.rmGroesse==null?0.3:e.rmGroesse)*Math.min(W,H)), rot=Math.atan2(Z[1]-O[1],Z[0]-O[0]);
+  lichtOrtMelden(O[0], O[1], a);     /* der Ursprung ist das Geraet, nicht der Fleck */
   const blende=(e.rmBlende||'keine')!=='keine'; let x=cx;
   if(blende){ if(!e._pc){ e._pc=document.createElement('canvas'); e._mk=document.createElement('canvas'); } if(e._pc.width!==W||e._pc.height!==H){ e._pc.width=W; e._pc.height=H; e._mk.width=W; e._mk.height=H; } x=e._pc.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none'; x.clearRect(0,0,W,H); }
   const alpha=blende?1:1; const farbe=e.farbe;
@@ -27907,6 +27935,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     else { const w=2*Math.PI*t/lpP(tp*4)+e.id; ox=Wn*(0.5+0.8*Math.sin(w)); oy=Hn*(0.5+0.8*Math.cos(w*0.8+e.id*1.3)); dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/lpP(tp/0.7))*sw; }
     /* Jeder Strahl: weicher Saum und heller Kern; der Ansatz liegt ausserhalb, darum bleibt der Strahl bis weit ins Bild voll
        und laeuft erst am Ende aus (Tiefen-Check: vorher lief er ab dem Ansatz aus und war im Bild fast unsichtbar). */
+    lichtOrtMelden(ox, oy, a);
     cx.lineCap='round'; const w0=Math.max(1,e.breite*40);
     /* ZWEI BAUARTEN, BEIDE ECHT (VIDEO-PLAN 9b.3). Gitter: ein Strahl wird vom Strahlteiler in
        viele GLEICHZEITIG bestehende zerlegt - fester Faecher, alle Stellen dauernd besetzt. Das
@@ -27922,8 +27951,51 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Buehnenlaser und Taschenlampe.
        Spruenge: eine feste Zahl erlaubter Stellen, je Schlag eine davon gewaehlt. Die Wahl haengt
        an der SCHLAGNUMMER aus dem Pult (_lmIdx), nicht am Zufall - sonst loopt der Export nicht. */
-    const scan=(e.bauart==='scanner');
+    const scan=(e.bauart==='scanner'), dots=(e.bauart==='punkte');
     const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
+    /* PUNKTE - EIN BEUGUNGSGITTER VOR DEM LASER (Caspar_D, 14.09.2026: "es gibt doch diese
+       punktuellen Laserdots, die einfach in die Tanzflaeche gestreut werden"). Aus einem Strahl
+       werden hunderte Punkte in einem Raster. Gerechnet wird eine Ebene im Raum, nicht ein Muster
+       auf der Scheibe: das Raster wird gedreht, um die Waagerechte gekippt und dann perspektivisch
+       geworfen. Daher kommt der Fluchtpunkt von selbst - bei Neigung 1 liegt es flach wie eine
+       Tanzflaeche, die hinteren Reihen ruecken zusammen; bei 0 steht es aufrecht wie eine Wand.
+       Gezeichnet wird EIN vorgerechneter Punkt als Bild, nicht je Dot ein Verlauf: bei 400 Dots
+       ist das der Unterschied zwischen 400 Verlaufsrechnungen und 400 Kopien. */
+    if(dots){
+      /* Die naechste Reihe ist der Massstab (gemessen 14.09.2026: ohne diese Verankerung
+         flogen 106 von 144 Punkten aus dem Bild - die Perspektive waechst nach vorn ins
+         Unendliche). Mit w = 1 + (Z + sin(Neigung)) hat die vorderste Reihe w = 1 und die
+         hinterste rund das Doppelte: halbe Groesse, halber Abstand. Genau das sieht man auf
+         einer Tanzflaeche. Das Raster sitzt in der Bildmitte und sinkt mit der Neigung nach
+         unten - ein Bodenraster liegt nicht auf Augenhoehe. */
+      const R=Math.max(3,Math.round(e.raster||9)), nei=(e.neigung==null?0.6:e.neigung),
+            dreh=2*Math.PI*((e.drehen||0)*t*0.12), th=nei*1.15,
+            ct=Math.cos(th), stt=Math.sin(th), cd=Math.cos(dreh), sd=Math.sin(dreh),
+            S=Math.max(8,(0.30+1.25*(e.streuung==null?0.3:e.streuung))*0.5*Math.max(Wn,Hn)),
+            Cx=Wn*0.5, Cy=Hn*(0.5+0.16*nei),
+            r0=Math.max(1.2,e.breite*16);                  /* Punktgroesse in der vordersten Reihe */
+      /* Das Punktbild einmal je Bild: Kern und weicher Hof, in der Laserfarbe. */
+      if(!e._pt) e._pt=document.createElement('canvas');
+      const PS=48; if(e._pt.width!==PS){ e._pt.width=PS; e._pt.height=PS; }
+      if(e._ptFarbe!==e.farbe){ e._ptFarbe=e.farbe;
+        const px2=e._pt.getContext('2d'); px2.clearRect(0,0,PS,PS);
+        const g2=px2.createRadialGradient(PS/2,PS/2,0,PS/2,PS/2,PS/2);
+        g2.addColorStop(0,rgba(e.farbe,1)); g2.addColorStop(0.18,rgba(e.farbe,0.92));
+        g2.addColorStop(0.45,rgba(e.farbe,0.28)); g2.addColorStop(1,rgba(e.farbe,0));
+        px2.fillStyle=g2; px2.fillRect(0,0,PS,PS); }
+      for(let iy=0;iy<R;iy++) for(let ix=0;ix<R;ix++){
+        const u=(ix/(R-1)-0.5)*2, v=(iy/(R-1)-0.5)*2;
+        const a2=u*cd-v*sd, b2=u*sd+v*cd;          /* das Raster dreht sich um seine Achse */
+        const Y=b2*ct, Zt=b2*stt;                  /* ... und kippt um die Waagerechte */
+        const w=1+(Zt+stt)*0.7; if(w<0.15) continue;
+        const X=a2;
+        const x2=Cx+X*S/w, y2=Cy+Y*S/w, rr=Math.max(0.6,r0/w);
+        if(x2<-rr*3||y2<-rr*3||x2>Wn+rr*3||y2>Hn+rr*3) continue;
+        cx.globalAlpha=Math.min(1,a/w);            /* ferne Punkte sind schwaecher - das ist die Perspektive */
+        cx.drawImage(e._pt,x2-rr*3,y2-rr*3,rr*6,rr*6); }
+      cx.globalAlpha=1;
+    }
+    else {
     const stellen=[];      /* einzelne Strahlen - Gitter und gehaltene Stellen */
     let scheiben=null, NB=0;   /* der Scanner malt Faecherscheiben statt Striche, siehe unten */
     if(scan){ const hz=lpR(Math.max(0.2,e.sweepTempo||2)), stuf=Math.max(2,Math.round(e.stufen||6)),
@@ -28031,6 +28103,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     for(const [ang,anteil,kw] of stellen){
       strahl(ang,anteil,(kw||w0)+w0*2.2,gSaum); strahl(ang,anteil,kw||w0,gKern); }
     cx.globalAlpha=1;
+    }
     cx.fillStyle=rgba(e.farbe,a); cx.beginPath(); cx.arc(ox,oy,e.breite*28+2,0,7); cx.fill(); }
   else if(e.typ==='streifen'){ const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/lpP(e.tempo))%1)*per, bw=e.breite*per, a=Math.min(1,e.staerke), ton=e.ton||'hell';
     cx.save(); cx.translate(Wn/2,Hn/2); cx.rotate(ang);
@@ -28123,6 +28196,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   else if(e.typ==='feuer'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa;
     const bp=1+0.5*lmSchub(e,t), baseY=Hn*e.boden, hoehe=e.hoehe*Hn*bp,   /* Schub: auf dem Schlag bis anderthalbfach so hoch (Tiefen-Check) */ x0=Wn*(e.mitte-e.breite/2), bw=Wn*e.breite, n=e.dichte, tw=bw/n*1.6, M=6;
+    lichtOrtMelden(Wn*e.mitte, baseY-hoehe*0.35, a);   /* nicht der Boden: ein Feuer leuchtet aus seiner Mitte */
     /* SCHEIN (Caspar_D, 14.09.2026: "ja, feuer sollte einen weichen Schein in den Puffer malen").
        Ein Feuer leuchtet weiter, als seine Flammen reichen. Bis heute strahlte es in den
        Licht-Puffer nur dort, wo eine Zunge stand - Rauch darueber bekam deshalb nichts ab, und
@@ -28149,6 +28223,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*antriebWert(e,t);
     const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=(e.streuung==null?0.33:e.streuung)*2*Math.PI, br=e.breite*Math.PI/180;
     const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/lpP(e.tempo))*e.schwenk*0.6;
+    lichtOrtMelden(px, py, a);
     /* WEICHE FLANKEN (Caspar_D, 14.09.2026: "der lichtstrahleneffekt braucht unscharfe kanten,
        das sieht sonst zu schablonenhaft aus"). Der Schacht hatte einen Verlauf der LAENGE nach,
        aber seine Flanken waren gerade Dreieckskanten - und eine gerade Kante ist das, was eine
@@ -28343,6 +28418,64 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
   float dt=1.0-exp(-d*3.0*z);
   float dd=mix(d, dt, tAn);
   gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_imLicht, dd), c.a); }`,
+  /* STREIFLICHT - DIE TIEFENKARTE BELEUCHTEN (Caspar_D, 14.09.2026: "wenn Laser von einer seite
+     kommt, wo in der tiefenmap eine vorwoelbung ist, muesste eigentlich ein Kantenblitz entstehen,
+     wohingegen wo die tiefenmap flieht, eher schatten zu sehen sein muesste"). Das ist Lambert
+     plus Verdeckung. Die Richtung kommt NICHT aus dem Lichtpuffer - der sagt nur, wieviel Licht
+     ankommt -, sondern von der Leuchte selbst: sie meldet ihren Ort, waehrend sie malt
+     (LICHTORTE). Der Laser meldet seinen Faecherpunkt, und der liegt ausserhalb des Bildes -
+     genau die streifende Lage, die Kanten aufblitzen laesst. */
+  streiflicht:`uniform float u_einfall,u_kante,u_relief,u_schatten,u_ortX,u_ortY,u_ortDa,u_tiefeAn;
+uniform sampler2D u_licht;
+void main(){
+  vec4 c=texture2D(u_tex,v_uv);
+  if(u_tiefeAn<0.5||u_ortDa<0.5){ gl_FragColor=c; return; }   /* ohne Karte oder ohne Leuchte: nichts */
+  vec2 ps=1.0/u_res;
+  /* Die Normale aus dem Gefaelle der Karte. Hell ist nah, die Karte ist also die Hoehe zur
+     Kamera; zwei Bildpunkte Abstand, weil eine geschaetzte Karte auf einem Punkt rauscht. */
+  float zl=texture2D(u_tiefe,v_uv-vec2(ps.x*2.0,0.0)).r, zr=texture2D(u_tiefe,v_uv+vec2(ps.x*2.0,0.0)).r;
+  float zo=texture2D(u_tiefe,v_uv-vec2(0.0,ps.y*2.0)).r, zu=texture2D(u_tiefe,v_uv+vec2(0.0,ps.y*2.0)).r;
+  float k=mix(6.0,90.0,u_relief);
+  vec3 N=normalize(vec3(-(zr-zl)*k,-(zu-zo)*k,1.0));
+  /* Der gemeldete Ort steht in Leinwandkoordinaten (0 oben), die Textur laeuft andersherum. */
+  vec2 d=(vec2(u_ortX,1.0-u_ortY)-v_uv)*vec2(u_res.x/max(1.0,u_res.y),1.0);
+  float w=length(d);
+  /* "Einfall" ist die DRITTE ACHSE der Lichtrichtung: wie weit die Leuchte vor dem Bild steht.
+     0 heisst in der Bildebene - streifend, lange Schatten, harte Kanten. Nach rechts tritt sie
+     hervor bis frontal, dann modelliert sie flach. Nach LINKS tritt sie HINTER die Bildflaeche
+     (Caspar_D, 14.09.2026: "auch leicht hinter der Bildflaeche, waere als effekt interessant"):
+     dann ist dot(N,L) auf allem, was der Kamera zugewandt ist, negativ und faellt aus - stehen
+     bleibt nur, was sich wegdreht, also die Silhouette. Das ist Gegenlicht, und es ist ein
+     Vorzeichen, kein zweiter Effekt. */
+  float hoehe=(u_einfall>=0.0)?mix(0.04,1.8,u_einfall):mix(0.04,-0.9,-u_einfall);
+  vec3 L=normalize(vec3(d,hoehe));
+  float blitz=pow(max(0.0,dot(N,L)),mix(1.2,14.0,u_kante));
+  /* Schlagschatten: ein Marsch im Bildraum Richtung Licht, vierzehn Schritte. Steigt die Karte
+     ueber das, was der Sehstrahl erwartet, liegt der Punkt dahinter. Weich abgestuft - eine
+     geschaetzte Karte gibt keine harten Kanten her, und eine harte Kante waere hier gelogen. */
+  /* ZWEI VORKEHRUNGEN GEGEN DIE GESCHAETZTE KARTE (gemessen 14.09.2026: ohne sie dunkelte der
+     Schatten ueberall ab, auch auf Flaechen, die dem Licht voll zugewandt sind - im Mittel
+     -1,9 Graustufen im ganzen Bild). Erstens faengt der Marsch erst beim dritten Schritt an:
+     unmittelbar daneben rauscht eine monokular geschaetzte Karte, und jedes Rauschkorn galt als
+     Verdecker. Zweitens ein Vorhalt von 0,035 - erst eine echte Vorwoelbung wirft Schatten, nicht
+     jede Unebenheit. Der Anstieg ist mit 4.0 statt 9.0 flacher: eine geschaetzte Karte gibt keine
+     harte Schattenkante her, und eine harte Kante waere hier gelogen (Regel 16). */
+  float dunkel=0.0;
+  if(u_schatten>0.002){
+    vec2 sr=(w>0.0001?d/w:vec2(0.0,1.0))*0.013;
+    float z0=texture2D(u_tiefe,v_uv).r;
+    for(int i=3;i<=14;i++){
+      float f=float(i);
+      float zq=texture2D(u_tiefe,v_uv+sr*f).r;
+      float erwartet=z0+f*0.013*mix(1.1,0.10,clamp(u_einfall,0.0,1.0))+0.035;
+      dunkel=max(dunkel,clamp((zq-erwartet)*4.0,0.0,1.0)*(1.0-f/17.0));
+    }
+  }
+  /* Die Flaeche wirft zurueck, was auf sie faellt: Bildfarbe mal Licht mal Lambert. Dunkle
+     Stellen bleiben dunkel - das ist die Albedo und der Grund, warum es nicht wie ein
+     aufgeklebter Schein aussieht. */
+  vec3 auf=c.rgb*texture2D(u_licht,v_uv).rgb*blitz*4.0;
+  gl_FragColor=vec4(c.rgb*(1.0-dunkel*u_schatten*0.85)+auf*(1.0-dunkel*0.9),c.a); }`,
   /* FILMNEBEL - DAS STANDARDMODELL (Caspar_D, 14.09.2026: "wir bauen das mit deinen neuen
      Kenntnissen komplett neu, so wie die Profis das machen"). Umschau ueber rund 25 Systeme:
      ueberall wird das Bild GEDAEMPFT und das Licht danach DAZUGEGEBEN - Bild*Durchlass +
@@ -28760,7 +28893,7 @@ function zeichneFrame(t){
      zusaetzlich additiv auf Schwarz in den Licht-Puffer; der Shader multipliziert seine Dichte damit. Das gilt
      fuer alle Leuchten der Kette, gleich wo sie stehen - es ist ein Raum, keine Stapelung. */
   const medium=STAPEL.some(e=>aktiv(e)&&mediumJetzt(e));
-  if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true;
+  if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; LICHTORTE=[];
     try{ for(const e of STAPEL){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
     finally { LICHTMAL=false; } }
   /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen
