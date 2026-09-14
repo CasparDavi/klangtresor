@@ -27148,7 +27148,7 @@ const EFFEKTE = {
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'}]},
   laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Strahlen schießen aus einem Punkt außerhalb des Bildes, jeder mit hellem Kern und weichem Saum; der Fächer schwenkt (Tempo = Sekunden je Schwenk). Mehrfach in verschiedenen Farben einhängen.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Fächer',min:0,max:1,step:.05,def:.35},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle oder dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
     params:[{k:'ton',lbl:'Bänder',sel:[['hell','helle'],['dunkel','dunkle'],['beide','abwechselnd']],def:'hell'},{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
   rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur im Takt: dann als Ausbruch auf jedem Schlag.',
@@ -27171,7 +27171,7 @@ const EFFEKTE = {
     params:[{k:'sorte',lbl:'Sorte',sel:[['dunst','Dunst'],['schwaden','Schwaden'],['boden','Bodennebel']],def:'schwaden'},
       {k:'farbe',lbl:'Farbe',farbe:true,def:'#cfd6e0'},
       {k:'grundlicht',lbl:'Ohne Licht',min:0,max:1.5,step:.05,def:.85},
-      {k:'streuung',lbl:'Im Licht',min:0,max:2,step:.05,def:1},
+      {k:'imLicht',lbl:'Im Licht',min:0,max:2,step:.05,def:1},
       {k:'lage',lbl:'Lage (0 oben)',min:0,max:1,step:.05,def:.7},
       {k:'dicke',lbl:'Dicke',min:.1,max:1.5,step:.05,def:.8},
       {k:'kante',lbl:'Schichtkante',min:0,max:1,step:.05,def:.5,when:e=>e.sorte!=='dunst'},
@@ -27212,7 +27212,7 @@ const EFFEKTE = {
   flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; Wind legt die Zungen zur Seite; lodert im Takt höher.',
     params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
-    params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'spreiz',lbl:'Fächer (°)',min:10,max:360,step:5,def:120},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
+    params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
     params:[{k:'horizont',lbl:'Horizont',min:.3,max:.95,step:.01,def:.62},{k:'wellen',lbl:'Wellen',min:0,max:1,step:.05,def:.3},{k:'skala',lbl:'Wellenzahl',min:2,max:30,step:1,def:12},{k:'tempo',lbl:'Tempo',min:.5,max:5,step:.1,def:2},{k:'verblassen',lbl:'Verblassen',min:0,max:1,step:.05,def:.5}]},
   /* ---- Glas (Caspar_D, 11.09.2026: "gibt es Glasscheiben-Effekte? Risse, Risse, die sich ausbreiten,
@@ -27768,7 +27768,7 @@ function flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,basis){
   const vW=w*Hn*0.05;                                  /* Drift zur Seite, wie beim Schnee */
   const druck=(e.druck==null?0:e.druck)*Hn*1.4;
   /* Fächer wie beim Laser: 0 ist ein Strahl, 1 der volle halbe Kreis um die Richtung. */
-  const ang=(((e.winkel==null?270:e.winkel)+(hs(i+9400)-0.5)*180*(e.streuung==null?0:e.streuung))*Math.PI)/180;
+  const ang=(((e.winkel==null?270:e.winkel)+(hs(i+9400)-0.5)*360*(e.streuung==null?0:e.streuung))*Math.PI)/180;
   const weg=Math.max(0.02,(e.laenge==null?1:e.laenge))*Hn;
   const tempoWeg=Math.max(1e-3, Math.abs(vT)+Math.abs(vW)+druck*0.35);
   const tau=lpP(weg/tempoWeg), ph=hs(i+9500)*tau, alter=((t-ph)%tau+tau)%tau;
@@ -27822,7 +27822,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/lpP(e.tempo))%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
   else if(e.typ==='licht'||e.typ==='schatten'){ lichtMalen(e,cx,t,Wn,Hn); }
-  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*lpR(e.flimmerTempo||20)*t+e.id*7)), a=Math.min(1,e.staerke)*antriebWert(e,t)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*Math.PI, tp=Math.max(0.5,e.tempo||8), sw=(e.schwenk==null?0.5:e.schwenk);
+  else if(e.typ==='laser'){ const fl=1-(e.flimmer||0)*(0.5+0.5*Math.sin(2*Math.PI*lpR(e.flimmerTempo||20)*t+e.id*7)), a=Math.min(1,e.staerke)*antriebWert(e,t)*fl, n=e.anzahl, len=e.laenge*Math.max(Wn,Hn), spread=e.streuung*2*Math.PI   /* Auffaechern 1 = Vollkreis (14.09.2026) */, tp=Math.max(0.5,e.tempo||8), sw=(e.schwenk==null?0.5:e.schwenk);
     /* Der Faecherpunkt liegt IMMER ausserhalb des Bildes (Caspar_D, 11.09.2026): wandernd auf einer Bahn um das
        Bild herum (Radien 0,8 > 0,5, also nie drin), fest auf dem gewaehlten Punkt - liegt der im Bild, wird er auf
        die naechste Kante hinausgeschoben. Die Strahlen zielen ins Bild und schwenken darum. Tempo = Sekunden je Schwenk. */
@@ -27952,7 +27952,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         const gr=cx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba('+c.join(',')+','+al.toFixed(3)+')'); gr.addColorStop(1,'rgba('+c.join(',')+',0)');
         cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } } }
   else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*antriebWert(e,t);
-    const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=e.spreiz*Math.PI/180, br=e.breite*Math.PI/180;
+    const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=(e.streuung==null?0.33:e.streuung)*2*Math.PI, br=e.breite*Math.PI/180;
     const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/lpP(e.tempo))*e.schwenk*0.6;
     /* WEICHE FLANKEN (Caspar_D, 14.09.2026: "der lichtstrahleneffekt braucht unscharfe kanten,
        das sieht sonst zu schablonenhaft aus"). Der Schacht hatte einen Verlauf der LAENGE nach,
@@ -28051,7 +28051,7 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
   float inside=step(0.0,ug.x)*step(ug.x,1.0)*step(0.0,ug.y)*step(ug.y,1.0);
   vec3 col=vec3(texture2D(u_tex,clamp(ur,0.0,1.0)).r, texture2D(u_tex,clamp(ug,0.0,1.0)).g, texture2D(u_tex,clamp(ub,0.0,1.0)).b);
   gl_FragColor=vec4(col*inside, 1.0); }`,
-  nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_streuung,u_grundlicht,u_sorte,u_sogX,u_sogY,u_tiefeAn; uniform vec3 u_farbe; uniform sampler2D u_licht;
+  nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_imLicht,u_grundlicht,u_sorte,u_sogX,u_sogY,u_tiefeAn; uniform vec3 u_farbe; uniform sampler2D u_licht;
 float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.34,0.64,u_turbulenz); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
 /* DIE UMGEBUNG - UND WARUM NEUN GRIFFE ZU WENIG WAREN.
 
@@ -28122,7 +28122,7 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
   float z=1.0-texture2D(u_tiefe,uv).r;
   float dt=1.0-exp(-d*3.0*z);
   float dd=mix(d, dt, tAn);
-  gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_streuung, dd), c.a); }`,
+  gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_imLicht, dd), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_wind,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
   float base=1.0-u_boden; float hh=max(0.05,u_hoehe*(1.0+0.5*u_takt)); float h=(v_uv.y-base)/hh;
@@ -28213,7 +28213,7 @@ function renderStapel(){
           else if(f==='ellipse') h+=rg('Ausdehnung X','qAus',0.01,1,0.01)+rg('Ausdehnung Y','qAusY',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true); }
         else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Die Teilchen entstehen überall und laufen um. Erst eine Quelle schaltet Druck, Fächer und Länge frei.</div>';
         h+='<div class="tbs-abunter" style="margin:8px 0 4px">Flug</div>'+rg('Auftrieb','auftrieb',-1,1,0.05);
-        if(f!=='bild') h+=rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Fächer','streuung',0,1,0.05)+rg('Länge','laenge',0.05,2,0.05)+rg('Ausblenden','ausblenden',0.1,1,0.05);
+        if(f!=='bild') h+=rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Auffächern','streuung',0,1,0.01)+rg('Länge','laenge',0.05,2,0.05)+rg('Ausblenden','ausblenden',0.1,1,0.05);
         h+='<canvas class="tbs-qvor" width="300" height="80" title="Die Quelle und zwoelf Bahnen im Kleinen: wo die Teilchen entstehen, wohin sie fliegen, wo sie ausgehen"></canvas>';
         h+='</div>'; return; }
       if(p.rm){ const sel=(k,liste)=>'<div class="tbs-regler"><span>'+k[0]+'</span><select data-k="'+k[1]+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k[1]]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
@@ -28612,6 +28612,21 @@ function zeichneFrame(t){
          stuenden alle alten Pulse auf der Vorgabe des Pults statt auf ihrer eigenen Einstellung. */
       /* Das Muster "Zufall je Periode" ist zum Flackern geworden - anderer Schluessel, damit die
          Bedeutungsaenderung nicht stillschweigend geschieht (Regel 12). Zwei Ablagen im Bestand. */
+      /* AUFFAECHERN: EIN WORT, EINE EINHEIT (Caspar_D, 14.09.2026: "einheit bei auffaecher von 0
+         bis 1 - ist 1 ein Kreis?"). Die Frage hat die Uneinheitlichkeit aufgedeckt: beim Laser
+         und bei den Partikeln war 1 ein HALBkreis (spread = streuung*PI), bei den Lichtstrahlen
+         ging der Regler in Grad bis zum VOLLkreis. Jetzt ueberall 0 bis 1 mit 1 = Vollkreis -
+         dann deckt der Regler alles ab, was die Geometrie hergibt, und niemand verliert
+         Spielraum. Drei Uebersetzungen nach Regel 12:
+           Nebel        `streuung` hiess dort "Im Licht" und meinte etwas voellig anderes -
+                        ein Wort fuer drei Dinge. Heisst jetzt `imLicht`, das Wort ist frei.
+           Laser        halber Kreis -> voller Kreis, also der halbe Zahlenwert.
+           Partikel     ebenso.
+           Lichtstrahlen Grad -> Anteil, also durch 360. */
+      if(r.typ==='nebel'&&typeof r.streuung==='number'&&r.imLicht==null){ e.imLicht=r.streuung; delete e.streuung; }
+      if((r.typ==='laser'||r.typ==='partikel')&&typeof r.streuung==='number'&&r.fassungFaecher==null) e.streuung=Math.max(0,Math.min(1,r.streuung/2));
+      if(r.typ==='strahlen'&&typeof r.spreiz==='number'&&r.streuung==null){ e.streuung=Math.max(0,Math.min(1,r.spreiz/360)); }
+      if(r.typ==='strahlen') delete e.spreiz;
       if(r.lmForm==='zufall') e.lmForm='flackern';
       if(PULSE.includes(r.typ)&&r.lmQuelle==null){
         /* Der alte Atem lief bis zwoelf Sekunden je Zug, also bis 0,083 Schwingungen je Sekunde.
