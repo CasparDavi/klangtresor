@@ -27178,7 +27178,7 @@ const EFFEKTE = {
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'}]},
   laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Drei Bauarten: <b>Gitter</b> (ein Strahlteiler macht aus einem Strahl viele gleichzeitige), <b>Scanner</b> (ein Strahl, von einem Galvospiegel schnell abgelenkt — was man sieht, ist Nachleuchten) und <b>Punkte</b> (ein Beugungsgitter streut hunderte Dots als Raster auf die Fläche; Neigung legt es flach wie eine Tanzfläche oder stellt es auf wie eine Wand). Strahlen schießen aus einem Punkt außerhalb des Bildes, jeder mit hellem Kern und weichem Saum; der Fächer schwenkt (Tempo = Sekunden je Schwenk). Mehrfach in verschiedenen Farben einhängen.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt'],['punkte','Punkte — ein Raster aus Dots']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'raster',lbl:'Punkte je Reihe',min:3,max:20,step:1,def:9,when:e=>e.bauart==='punkte'},{k:'neigung',lbl:'Neigung (0 Wand, 1 Boden)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'drehen',lbl:'Drehen',min:-1,max:1,step:.05,def:.15,when:e=>e.bauart==='punkte'},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt'],['punkte','Punkte — ein Raster aus Dots']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'raster',lbl:'Punkte je Reihe',min:3,max:20,step:1,def:9,when:e=>e.bauart==='punkte'},{k:'neigung',lbl:'Neigung (0 Wand, 1 Boden)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'drehen',lbl:'Drehen',min:-1,max:1,step:.05,def:.15,when:e=>e.bauart==='punkte'},{k:'aufsetzen',lbl:'Aufsetzen (Tiefenkarte)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle oder dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
     params:[{k:'ton',lbl:'Bänder',sel:[['hell','helle'],['dunkel','dunkle'],['beide','abwechselnd']],def:'hell'},{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
   rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur im Takt: dann als Ausbruch auf jedem Schlag.',
@@ -27972,8 +27972,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
             dreh=2*Math.PI*((e.drehen||0)*t*0.12), th=nei*1.15,
             ct=Math.cos(th), stt=Math.sin(th), cd=Math.cos(dreh), sd=Math.sin(dreh),
             S=Math.max(8,(0.30+1.25*(e.streuung==null?0.3:e.streuung))*0.5*Math.max(Wn,Hn)),
-            Cx=Wn*0.5, Cy=Hn*(0.5+0.16*nei),
-            r0=Math.max(1.2,e.breite*16);                  /* Punktgroesse in der vordersten Reihe */
+            /* Senkrecht weiter als waagerecht, und die NAECHSTE Reihe liegt UNTEN: ein
+               Bodenraster faengt am unteren Bildrand an und laeuft zum Horizont zusammen.
+               Vorher deckte es nur y 321..655 ab und erreichte den Vordergrund gar nicht. */
+            Sy=S*1.35, Cx=Wn*0.5, Cy=Hn*0.46,
+            r0=Math.max(1.2,e.breite*16),                  /* Punktgroesse in der vordersten Reihe */
+            auf=(e.aufsetzen==null?0.6:e.aufsetzen),
+            tp=tiefeProben(DATA&&DATA.id);                 /* ohne Karte bleibt das Raster auf der Scheibe */
       /* Das Punktbild einmal je Bild: Kern und weicher Hof, in der Laserfarbe. */
       if(!e._pt) e._pt=document.createElement('canvas');
       const PS=48; if(e._pt.width!==PS){ e._pt.width=PS; e._pt.height=PS; }
@@ -27986,13 +27991,57 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       for(let iy=0;iy<R;iy++) for(let ix=0;ix<R;ix++){
         const u=(ix/(R-1)-0.5)*2, v=(iy/(R-1)-0.5)*2;
         const a2=u*cd-v*sd, b2=u*sd+v*cd;          /* das Raster dreht sich um seine Achse */
-        const Y=b2*ct, Zt=b2*stt;                  /* ... und kippt um die Waagerechte */
+        const Y=-b2*ct, Zt=b2*stt;                 /* ... und kippt um die Waagerechte */
         const w=1+(Zt+stt)*0.7; if(w<0.15) continue;
         const X=a2;
-        const x2=Cx+X*S/w, y2=Cy+Y*S/w, rr=Math.max(0.6,r0/w);
-        if(x2<-rr*3||y2<-rr*3||x2>Wn+rr*3||y2>Hn+rr*3) continue;
-        cx.globalAlpha=Math.min(1,a/w);            /* ferne Punkte sind schwaecher - das ist die Perspektive */
-        cx.drawImage(e._pt,x2-rr*3,y2-rr*3,rr*6,rr*6); }
+        let x2=Cx+X*S/w, y2=Cy+Y*Sy/w, rr=Math.max(0.6,r0/w), al=Math.min(1,a/w);
+        /* AUF DEN FLAECHEN, NICHT AUF DER SCHEIBE. Liegt eine Tiefenkarte vor, trifft jeder Dot
+           dort auf, wo im Bild etwas steht. Drei Dinge folgen daraus, und alle drei sind eine
+           Rechnung, kein Regler:
+           - Der Kegel hat sich bis zu einer NAHEN Flaeche weniger geweitet: kleinerer Fleck.
+           - Dieselbe Lichtmenge auf weniger Flaeche: heller, und zwar im Quadrat.
+           - Leuchte und Kamera stehen nicht am selben Ort, also wandert ein Punkt auf einer
+             nahen Flaeche ein Stueck zur Leuchte hin. Das ist die Parallaxe, und sie ist der
+             Grund, warum sich das Raster ueber eine Schulter legt statt darueber hinwegzugehen. */
+        let streck=1, winkel=0;
+        if(tp&&auf>0.001){
+          const u2=x2/Wn, v2=y2/Hn, zz=tiefeBei(tp,u2,v2);   /* 1 nah, 0 fern, je Titel gedehnt */
+          /* REICHWEITE (Caspar_D, 14.09.2026: "hinten muss die laenge der strahlen so sein, dass
+             sie es nicht mehr erreichen, so vermeidet man punkte im Himmel"). Ein Dotprojektor
+             kommt nicht unendlich weit - was dahinter liegt, bleibt dunkel. Und das Fernste im
+             Bild ist fast immer der Himmel. "Laenge" ist dafuer schon da und braucht keinen
+             zweiten Regler: ganz rechts reicht er bis zum Horizont, links nur bis nach vorn.
+             Der Rand ist weich - was innerhalb des Bildes aufhoert, hoert weich auf (Regel 16). */
+          const zmin=(1-Math.max(0,Math.min(1,((e.laenge==null?1.1:e.laenge)-0.3)/1.3)))*0.85;
+          const reich=Math.max(0,Math.min(1,(zz-zmin)/0.12));
+          if(reich<=0.02) continue;
+          al*=reich;
+          /* "Aufsetzen" ist ein Regler und kein Rechenwert, weil der Abstand zwischen Leuchte
+             und Kamera aus einem flachen Bild nicht hervorgeht. Er skaliert alle Folgen zugleich. */
+          const f=1+auf*(0.9-1.8*zz);              /* nah: kleiner, fern: groesser */
+          rr=Math.max(0.6,rr*Math.max(0.25,f)); al=Math.min(1,al/Math.max(0.25,f*f));
+          const pa=auf*0.42*(zz-0.5);              /* Parallaxe */
+          x2+=(ox-x2)*pa; y2+=(oy-y2)*pa;
+          /* EIN PUNKT AUF EINER GEWOELBTEN FLAECHE IST KEINE SCHEIBE (Caspar_D, 14.09.2026:
+             "die regelmaessigkeit muss aus der seitlichen perspektive auch brechen, weil
+             Oberflaechen teilweise curvy sind"). Er trifft schraeg auf und wird entlang des
+             Gefaelles zur Ellipse gestreckt - um 1/cos des Auftreffwinkels, also 1/N.z. Dieselbe
+             Lichtmenge auf mehr Flaeche heisst dunkler. Und faellt die Flaeche vom Strahl weg,
+             kommt gar kein Punkt an: DAS bricht das Raster an den Silhouetten, nicht der Versatz. */
+          const ep=1.6/tp.w, gk=1+auf*7;
+          let nx=-(tiefeBei(tp,u2+ep,v2)-tiefeBei(tp,u2-ep,v2))*gk,
+              ny=-(tiefeBei(tp,u2,v2+ep)-tiefeBei(tp,u2,v2-ep))*gk, nz=1;
+          const nl=Math.hypot(nx,ny,nz); nx/=nl; ny/=nl; nz/=nl;
+          let lx=(ox/Wn-u2), ly=(oy/Hn-v2); const ll=Math.hypot(lx,ly,1.1)||1; lx/=ll; ly/=ll;
+          if(nx*lx+ny*ly+nz*(1.1/ll) < 0.06) continue;     /* weggedreht: kein Auftreffpunkt */
+          streck=Math.min(3.5,1/Math.max(0.28,nz));
+          if(streck>1.02){ winkel=Math.atan2(ny,nx); al=Math.min(1,al/streck); }
+        }
+        if(x2<-rr*4||y2<-rr*4||x2>Wn+rr*4||y2>Hn+rr*4) continue;
+        cx.globalAlpha=al;
+        if(streck>1.02){ cx.save(); cx.translate(x2,y2); cx.rotate(winkel);
+          cx.drawImage(e._pt,-rr*3*streck,-rr*3,rr*6*streck,rr*6); cx.restore(); }
+        else cx.drawImage(e._pt,x2-rr*3,y2-rr*3,rr*6,rr*6); }
       cx.globalAlpha=1;
     }
     else {
@@ -29339,6 +29388,41 @@ function zeichneFrame(t){
      der Eintrag null, und der Shader rechnet mit gleichmaessiger Tiefe, also
      genau wie ohne Karte. */
   const TIEFEN={};
+  /* DIE KARTE ALS ZAHLEN, NICHT ALS BILD. Der Laser malt auf der Leinwand, nicht im Shader -
+     er braucht die Tiefe also als Feld, das er abfragen kann. 160 Punkte Breite genuegen: die
+     Dots sind Dutzende von Pixeln auseinander, und eine geschaetzte Karte hat ohnehin keine
+     schaerferen Kanten. Einmal je Titel gerechnet und gemerkt. */
+  const TIEFEPROBEN = {};
+  function tiefeProben(id){
+    if(!id) return null;
+    if(TIEFEPROBEN[id]) return TIEFEPROBEN[id];
+    const im = tiefeBildVon(id);
+    if(!im || !im.complete || im.naturalWidth < 2) return null;   /* nicht merken - das Bild kommt vielleicht noch */
+    try{
+      const w = 160, h = Math.max(2, Math.round(w * im.naturalHeight / im.naturalWidth));
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(im, 0, 0, w, h);
+      const d = cx.getImageData(0, 0, w, h).data, z = new Float32Array(w * h);
+      for(let i = 0, q = 0; i < d.length; i += 4, q++) z[q] = d[i] / 255;
+      /* DIE KARTE IST RELATIV, NICHT GEMESSEN (Caspar_D, 14.09.2026: "da musst du aber jetzt die
+         richtige z-skalierung hinkriegen, das ist nicht einfach"). Ein fester Faktor auf den
+         Rohwert trifft auf jedem Cover etwas anderes: hier liegen 52 % der Bildpunkte im fernen
+         Drittel und nur 11 % im nahen, beim naechsten ist es umgekehrt. Also wird je Titel auf
+         die eigene Spanne gedehnt - das 5. und das 95. Hundertstel, damit einzelne Ausreisser
+         die Spanne nicht auffressen. Danach heisst 0 "am fernsten, was dieses Bild hat" und 1
+         "am naechsten", und ein Regler bedeutet ueberall dasselbe. */
+      const sort = Array.prototype.slice.call(z).sort((a, b) => a - b);
+      const zlo = sort[Math.floor(sort.length * 0.05)], zhi = sort[Math.floor(sort.length * 0.95)];
+      return TIEFEPROBEN[id] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi) };
+    }catch(x){ return null; }
+  }
+  /* u,v in Bildanteilen; 1 heisst nah, 0 heisst fern. */
+  function tiefeBei(tp, u, v){
+    const x = Math.max(0, Math.min(tp.w - 1, Math.round(u * tp.w)));
+    const y = Math.max(0, Math.min(tp.h - 1, Math.round(v * tp.h)));
+    return Math.max(0, Math.min(1, (tp.z[y * tp.w + x] - tp.zlo) / (tp.zhi - tp.zlo)));
+  }
   function tiefeBildVon(id){
     if(!id) return null;
     if(TIEFEN[id]!==undefined) return TIEFEN[id];

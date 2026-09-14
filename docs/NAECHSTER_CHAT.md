@@ -3723,7 +3723,45 @@ der vordersten zur hintersten Reihe **2,24 → 1,09**, Abstand **56,6 → 27,4 p
 144 Punkten flogen aus dem Bild**; jetzt ist die vorderste Reihe der Maßstab (`w = 1 + (Z +
 sin(Neigung))`). Gezeichnet wird EIN vorgerechnetes Punktbild als Kopie, nicht je Dot ein Verlauf.
 
-**Offen:** die Tiefenstufe — Dots landen auf den Flächen im Bild statt auf der Scheibe, kleiner
-und heller auf einer Schulter als im Hintergrund. Das wäre der dritte Verbraucher der Karte nach
-Filmnebel und Streiflicht.
+### Die Tiefenstufe — gebaut am selben Abend
+
+Der dritte Verbraucher der Tiefenkarte nach Filmnebel und Streiflicht. Vier Schritte, jeder aus
+einem Satz von Caspar_D:
+
+**1. Die z-Skalierung.** *„da mußt du aber jetzt die richtige z-skalierung hinkriegen, das ist
+nicht einfach."* Die Karte ist relativ, nicht gemessen: auf diesem Cover liegen 52 % der
+Bildpunkte im fernen Drittel und 11 % im nahen, beim nächsten ist es umgekehrt. Ein fester Faktor
+auf den Rohwert trifft überall etwas anderes. Deshalb wird je Titel auf die **eigene Spanne**
+gedehnt — 5. bis 95. Hundertstel, damit Ausreißer sie nicht auffressen. Danach heißt 0 „am
+fernsten, was dieses Bild hat" und 1 „am nächsten", und ein Regler bedeutet überall dasselbe.
+
+**2. Das Raster erreichte den Vordergrund gar nicht.** Gemessen: es deckte `y 321…655` ab, der
+nächste Tiefenbereich hat seinen Schwerpunkt bei `y 798`. Im Band 0,60–1,00 lag **kein einziger
+Punkt**. Jetzt liegt die nächste Reihe unten und das Raster läuft nach oben zum Horizont zusammen.
+
+**3. Ellipsen statt Scheiben.** *„die regelmäßigkeit muß aus der seitlichen perspektive auch
+brechen, weil Oberflächen teilweise curvy sind."* Ein Punkt auf einer gewölbten Fläche trifft
+schräg auf und wird entlang des Gefälles gestreckt — um 1/cos des Auftreffwinkels, also `1/N.z`,
+mit derselben Normale wie beim Streiflicht. Dieselbe Lichtmenge auf mehr Fläche heißt dunkler.
+Und wo die Fläche vom Strahl **wegkippt**, kommt gar kein Punkt an — das bricht das Raster an den
+Silhouetten, nicht der Versatz. Gemessen, Anteil länglicher Flecken (>1,5:1): **fern 34 %,
+mittel 47 %, nah 59 %** — je näher und gewölbter, desto mehr Ellipsen.
+
+**4. Die Reichweite.** *„hinten muß die länge der strahlen so sein, dass sie es nicht mehr
+erreichen, so vermeidet man punkte im Himmel."* Braucht keinen neuen Regler — **„Länge" ist
+das schon**. Gemessen, helle Punkte im Himmel (oberes Drittel und fernstes Viertel, 148.161
+Bildpunkte):
+
+| Länge | im Himmel | im ganzen Bild |
+|---|---|---|
+| 1,6 (volle Reichweite) | 300 | 20.450 |
+| 0,95 | **0** | 10.813 |
+| 0,5 | 0 | 423 |
+
+Der Rand ist weich, nicht geschnitten (Regel 16).
+
+Dazu **ein Regler, der einer bleiben muß: „Aufsetzen".** Der Abstand zwischen Leuchte und Kamera
+geht aus einem flachen Bild nicht hervor — es gibt dafür keine Grundwahrheit. Er skaliert alle
+Folgen zugleich: Größe, Helligkeit, Versatz und Streckung. 0 heißt: das Raster liegt auf der
+Scheibe wie vorher.
 
