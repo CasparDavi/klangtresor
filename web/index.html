@@ -26995,7 +26995,10 @@ const EFFEKTE = {
       {k:'sogStaerke',lbl:'Sog',min:0,max:1,step:.05,def:.4,when:e=>(e.sog||'keine')!=='keine'},
       /* Tiefe: bei 0 der alte Nebel als Schicht, bei 1 die Daempfung entlang der Entfernung.
          Vorgabe 0 - bestehende Rezepte sehen unveraendert aus, bis jemand den Regler anfasst. */
-      {k:'tiefeAn',lbl:'Tiefe (Karte)',min:0,max:1,step:.05,def:0}],
+      /* Nicht „Tiefe": auf derselben Karte steht rechts „wirkt auf", und das ist etwas anderes -
+         dort geht es darum, WO der Effekt wirkt, hier um die physikalische Rechnung. Ein Wort
+         darf nicht fuer zwei Dinge stehen (Regel 10a). */
+      {k:'tiefeAn',lbl:'Dämpfung n. Tiefe',min:0,max:1,step:.05,def:0}],
     /* Der Sog wird hier geschaltet, nicht am Regler: ein ausgeblendeter Regler behaelt seinen Wert, und die
        allgemeine Uniform-Schleife laedt ihn trotzdem hoch. Bei "keine" zog der Nebel sonst zur Bildmitte. */
     glZusatz:e=>({ u_sorte:(e.sorte==='dunst'?0:e.sorte==='boden'?2:1),
@@ -27069,8 +27072,20 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
 [['licht',{}],['schatten',{}]].forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...rmParams(v)); });
 /* Antrieb (Lichtmischpult) an alle Lichter: Vorgaben wie bisher - Scheinwerfer, Schatten, Laser und Feuer
    pulsen im Takt, Stroboskop laeuft als Rechteck mit 8 Hz, der Rest ist stetig. */
+/* „WIRKT AUF" AN ALLE EFFEKTE (VIDEO-PLAN §9.7b). Ein Begriff, ueberall gleich, an derselben
+   Stelle in der rechten Spalte - statt 38 Sonderloesungen. Die Wirkung steckt in der Kette
+   (tiefeMaske/maskeAnwenden), nicht im einzelnen Maler: deshalb gilt die Zeile sofort fuer
+   jeden Effekt und haelt, was sie verspricht (Regel 11).
+   Vorgabe „alles" - ohne Zutun aendert sich an keinem bestehenden Rezept etwas. */
+const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'wirkt auf',
+  sel:[['alles','alles'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles' };
+
 [['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
   .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
+/* Ganz zuletzt, damit die Zeile auf JEDER Karte als letzte der generischen Spalte steht -
+   vor Verrechnung und Staerke, die das Markup danach anhaengt. */
+for(const k of Object.keys(EFFEKTE)) if(EFFEKTE[k].params) EFFEKTE[k].params.push(Object.assign({}, TIEFE_PARAM));
+
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
@@ -27704,7 +27719,7 @@ function renderStapel(){
       +'<button class="tbs-knopf tbs-klapp" data-tu="klapp" title="'+(e.zu?'aufklappen':'zuklappen')+'">'+(e.zu?'\u25b8':'\u25be')+'</button></div>';
     h+='<div class="tbs-inhalt"><div class="tbs-besch">'+T.besch+'</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm']);
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','tiefeWirkt']);
     const paramHTML=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
       if(p.rm){ const sel=(k,liste)=>'<div class="tbs-regler"><span>'+k[0]+'</span><select data-k="'+k[1]+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k[1]]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
@@ -27963,13 +27978,24 @@ function zeichneFrame(t){
   let curCv=oa, curCx=ca;
   const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } };
   for(const e of STAPEL){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
-    if(T.art==='mal'){ try{ malen(e,curCx,t,Wn,Hn); }catch(x){ schief(e,x); } frisch(curCx); }
+    /* „wirkt auf": vorn, hinten oder alles. Ohne Karte oder bei „alles" ist es null und es
+       aendert sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten. */
+    const maske=tiefeMaske(DATA&&DATA.id, e.tiefeWirkt, Wn, Hn);
+    if(T.art==='mal'){
+      /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
+         darunter wirken. Also vorher eine Kopie beiseitelegen, malen, dann maskieren. */
+      if(maske){ frisch(cres); cres.clearRect(0,0,Wn,Hn); cres.drawImage(curCv,0,0); }
+      try{ malen(e,curCx,t,Wn,Hn); }catch(x){ schief(e,x); } frisch(curCx);
+      if(maske) maskeAnwenden(curCx, maske, ores);
+    }
     else if(T.art==='post'||T.art==='gl'){ try{ ergebnis(e,curCv,t,Wn,Hn); }catch(x){ schief(e,x); continue; }
       const dCv=(curCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
       frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(curCv,0,0);
       dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[T.verr]||'source-over';
       dCx.globalAlpha=Math.min(1,e.staerke*((T.params.some(p=>p.lm)&&!T.lmNurSchub)?antriebWert(e,t):1));
-      dCx.drawImage(ores,0,0); frisch(dCx); curCv=dCv; curCx=dCx; } }
+      dCx.drawImage(ores,0,0); frisch(dCx);
+      if(maske) maskeAnwenden(dCx, maske, curCv);
+      curCv=dCv; curCx=dCx; } }
   frisch(g); g.clearRect(0,0,Wn,Hn); g.drawImage(curCv,0,0);
 }
 
@@ -28282,6 +28308,53 @@ function zeichneFrame(t){
     im.onerror=()=>{ TIEFEN[id]=null; };   /* kein Bild: der Nebel bleibt eine Schicht */
     im.src='/media/'+id+'/tiefe.png';
     return null;
+  }
+
+  /* DIE TIEFE ALS GENERISCHER PARAMETER (VIDEO-PLAN §9.7b).
+
+     "Wenn die Tiefe ein Grundkanal wird, baut man sie NICHT in jeden Effekt einzeln ein,
+     sondern sie ist eine Zeile in der generischen Spalte: wirkt auf - vorn / hinten / alles."
+
+     Genau das geht hier, weil jeder Effekt sein Ergebnis an EINER Stelle ins Bild bringt.
+     Statt 38 Maler anzufassen, wird dort maskiert: das Ergebnis bleibt, wo die Maske deckt,
+     und darunter kommt das Bild von vor dem Effekt zurueck. Zwei Zeichenschritte, kein Shader.
+
+     Die Karte ist RELATIV - sie sagt, was naeher ist, nicht wie weit etwas weg ist. Ein fester
+     Schwellwert waere deshalb je Bild etwas anderes; genommen wird der MEDIAN der Karte, also
+     die Mitte des jeweiligen Bildes. Der Uebergang ist weich (smoothstep ueber 48 Graustufen):
+     eine harte Grenze erzeugt Artefakte genau dort, wo das Auge am genauesten hinsieht - die
+     Silhouetten monokularer Karten sind weich und oft ungenau (VIDEO-PLAN §9.7d). */
+  const TIEFEMASKEN={};
+  function tiefeMaske(id, modus, W, H){
+    if(!id||!modus||modus==='alles') return null;
+    const im=tiefeBildVon(id);
+    if(!im||!im.complete||im.naturalWidth<2) return null;
+    const k=id+'|'+modus+'|'+W+'x'+H;
+    if(TIEFEMASKEN[k]) return TIEFEMASKEN[k];
+    try{
+      const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+      const cx=cv.getContext('2d',{willReadFrequently:true});
+      cx.drawImage(im,0,0,W,H);
+      const bild=cx.getImageData(0,0,W,H), p=bild.data;
+      const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
+      let summe=0, mitte=(p.length>>2)/2, med=128;
+      for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } }
+      const weich=48, unten=med-weich, spanne=2*weich;
+      for(let i=0;i<p.length;i+=4){
+        let a=(p[i]-unten)/spanne; a=a<0?0:a>1?1:a; a=a*a*(3-2*a);   /* hell = nah */
+        if(modus==='hinten') a=1-a;
+        p[i]=255; p[i+1]=255; p[i+2]=255; p[i+3]=Math.round(a*255);
+      }
+      cx.putImageData(bild,0,0);
+      TIEFEMASKEN[k]=cv; return cv;
+    }catch(err){ return null; }
+  }
+  /* Der Maler hat gezeichnet, die Maske sagt wo: erst alles wegnehmen, was ausserhalb liegt,
+     dann das Bild von vorher darunterlegen. */
+  function maskeAnwenden(cx, maske, vorherCv){
+    cx.globalCompositeOperation='destination-in'; cx.drawImage(maske,0,0);
+    cx.globalCompositeOperation='destination-over'; cx.drawImage(vorherCv,0,0);
+    frisch(cx);
   }
 
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
