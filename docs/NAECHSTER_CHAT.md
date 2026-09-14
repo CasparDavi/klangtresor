@@ -3376,3 +3376,89 @@ Doku-Einträge sind von Hand gesetzt.
 Tiefenkarte nimmt den meisten Raum ein (§9.7–9.7d, dazu Teile von §9b und §9c), steht in der
 Reihenfolge aber bewusst weit hinten, weil sie an einer ungeprüften Annahme hängt — ob monokulare
 Tiefenschätzung auf stilisiertem Artwork taugt. Wer nur den Text liest, hält sie für den Kern.
+
+---
+
+## Stand am Ende des 14.09.2026 — 37 Einchecks
+
+Der Tag lief in vier Strängen. Was offen ist, steht ganz unten.
+
+### 1 · Tiefenkarten (vormittags)
+
+Depth Anything V2 **Large in fp16** (600 MB), gemessen gegen Small und Base an zwölf Covern:
+Small 294 ms und ein weicher Brei, Base 880 ms, Large 2,7 s mit einzelnen Steinen im Relief.
+Alle 324 Karten gerechnet, pixelgenau auf dem **Titelbild** (nicht dem Cover — das war ein Fehler,
+181 von 324 hatten beide). Der Nebel ist damit eine **Dämpfung nach Koschmieder** statt einer
+Schicht. `bin/tiefenkarten.js` läuft im Morgenlauf und in der Einrichtung.
+
+Nebenbefund, der Geld wert war: der Weichzeichner des Nebels war ein **Ringabtaster** und erzeugte
+Geisterbilder. Ich wollte den Fehler erst mit der alten Entsättigung kaschieren — Caspar_D:
+*„du sollst den fehler ausbügeln und ihn nicht verstecken"*. Jetzt ein echter gejitterter Mehrring.
+
+### 2 · Partikel: Quelle und Flug
+
+Der größte Bau des Tages. **Die Fassung stammt von Caspar_D, nicht von mir** — drei Entwürfe von
+Agenten, neun Gegenleser, keiner trug. Seine fünf Sätze trugen:
+
+- **Auftrieb** statt Richtung in Grad (leichter, genauso schwer, schwerer als Luft). Das löst
+  zugleich die härteste Falle: `lpV` kann als `max(1,round(…))` keine negativen Geschwindigkeiten.
+  Wer die vorzeichenbehaftete Geschwindigkeit in den Loop-Raster schickt, dreht Asche, Blasen,
+  Staub und Funken **im Export** um — im Pult unsichtbar.
+- **Ein Fleck** mit x/y-Ausdehnung und Drehwinkel statt vier Formen.
+- **Druck, der ausläuft** wie Luftwiderstand — die Gravitationskurve ohne zweiten Regler.
+- Fächer heißt `streuung` wie beim Laser, Länge heißt `laenge` wie bei den Strahlen.
+
+Nachgewiesen, nicht behauptet: **alle sieben Lagerechnungen sind Zeichen für Zeichen unverändert**,
+solange die Quelle „das ganze Bild" ist.
+
+Daraus fiel **Schwaden** (Rauch) fast umsonst heraus: dieselbe Quelle, derselbe Flug, nur anders
+gezeichnet. Mit zwei Physikregeln von Caspar_D: dünner beim Auffächern (dieselbe Menge auf größerer
+Fläche, also 1/g²) und erst auskondensieren (dichteste Stelle bei 25 % des Lebens). Und Schwaden
+sind ein **Medium**: sie nehmen Licht auf. Mein Einwand, ein Maler könne das nicht, war falsch —
+der Licht-Puffer ist eine Leinwand. Gemessen: im Scheinwerferkegel 32,8 Graustufen gegen 2,3.
+
+### 3 · Das Lichtmischpult für alle Pulse
+
+Die acht Pulse hingen an einem eigenen, älteren Antrieb. Jetzt am Pult. Dabei drei Berichtigungen
+**auf Einspruch von Caspar_D**, alle drei waren meine Denkfehler:
+
+| ich hatte | richtig ist |
+|---|---|
+| Tiefe ausgeblendet, sie sei ein zweiter Wucht-Regler | Wucht ist die Decke, Tiefe der Boden — kein Produkt |
+| „das Pult kann den Atem nicht" | die Sinuskurve war immer da, nur der Bereich fehlte |
+| Wucht und Stärke seien bei sechs Effekten ein Produkt | nur bei zwei (Helligkeit, Sättigung), dort gefaltet |
+
+Dazu neu: **Bruchteile von Schlägen** (bis achtmal je Schlag), **Flackern** als echtes Wertrauschen
+über drei Oktaven statt eines Werts je Periode, und die Regel für taktfreie Titel — taktgebundene
+Quellen stehen dort nicht zur Wahl, eine gespeicherte fällt auf die feste Frequenz zurück.
+
+**Die Grenze ist die Bildrate, nicht das Auge.** Export mit 30 Bildern: darstellbar bis 15 Hz,
+als Flackern lesbar bis 7,5. Das Auge verschmilzt erst bei 50 bis 60.
+
+### 4 · Oberfläche
+
+Das Abzeichen heißt **Medien** (Taufnotiz in den Hausregeln, erster Eintrag überhaupt an dem neu
+angelegten Ort). Das Fenster dahinter zeigt jetzt **beide Seiten**: links Suno zum Lesen, rechts
+das Private zum Ändern. Drei Wege hinaus durch einen Griff: Kreuz, Esc, Klick daneben.
+
+Der Regellauf über den Dialog fand drei echte Verstöße: die letzte Checkbox der Oberfläche
+(Regel 18), dreimal „mein" (Regel 25) und fünf Schriftgrößen unter der Lesegrenze (Regel 14).
+
+Und die **Lichtstrahlen** haben weiche Flanken bekommen: vorher eine Polygonkante, jetzt eine
+Flanke über 9 % der Bildbreite.
+
+### Was offen ist und auf Caspar_D wartet
+
+1. **Der Serverteil des Videoexports.** Die Browserseite steht und ist folgenlos (`kodiererDa()`
+   bekommt heute 404, der alte Weg läuft). Es fehlen rund 20 Zeilen in `server/server.js`: ein
+   Endpunkt `/api/effektclip-bauen`, der den rohen H.264-Strom mit `ffmpeg -f h264 -r RATE` umhüllt.
+   **Dabei startet Jörgs laufender Server neu** — deshalb angesagt und nicht gemacht.
+   Danach ist der Weg frei für 60 Bilder je Sekunde und damit 30 Hz schnellstes Flimmern.
+   Die Bildrate soll **nicht einstellbar** sein, sondern aus der schnellsten Kurve der Kette folgen.
+2. **Der Docker-Start.** Der Container lädt 1,09 GB Modelle, **bevor** der Server antwortet, obwohl
+   im Einstiegspunkt als Absicht steht, dass fehlende Modelle die Website nicht aufhalten sollen.
+   Tarja sah deshalb zwei stille Minuten. Fix: Server zuerst starten, Modelle daneben holen.
+3. Aus der Inventur der Zustandswechsel: `spreiz` bei den Lichtstrahlen meint denselben Trichter
+   wie `streuung` — eine Übersetzung nach Regel 12, eigener Schritt.
+4. Das Stroboskop braucht die Leuchter-Marke **je Ende** statt je Typ: die helle Hälfte gehört in
+   den Licht-Puffer, die dunkle nicht.
