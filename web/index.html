@@ -27245,7 +27245,7 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche, Funken oder Schwaden ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schiesst sie hinaus und laeuft aus wie Luftwiderstand. Schwaden sind Rauch: wenige, grosse, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Von Objekten verdeckt',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster (px)',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -28200,6 +28200,16 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     if(schw){ if(!e._rc){ e._rc=document.createElement('canvas'); e._rl=document.createElement('canvas'); }
       if(e._rc.width!==Wn||e._rc.height!==Hn){ e._rc.width=Wn; e._rc.height=Hn; e._rl.width=Wn; e._rl.height=Hn; }
       zx=e._rc.getContext('2d'); zx.setTransform(1,0,0,1,0,0); zx.globalCompositeOperation='source-over'; zx.globalAlpha=1; zx.clearRect(0,0,Wn,Hn); }
+    /* Wird geschnitten oder verdeckt, malen die Teilchen erst auf eine eigene Leinwand - die
+       Maske schneidet dort einmal, statt je Teilchen zu rechnen. */
+    const hor=(e.horizont==null?0:e.horizont), vd=(e.verdecken==null?0:e.verdecken);
+    const tpP=(hor>0.001||vd>0.001)?tiefeProben(DATA&&DATA.id):null;
+    const schnitt=!schw&&(hor>0.001||(vd>0.001&&tpP));
+    const echtCx=cx, echtModus=cx.globalCompositeOperation;
+    if(schnitt){ if(!e._vc) e._vc=document.createElement('canvas');
+      if(e._vc.width!==Wn||e._vc.height!==Hn){ e._vc.width=Wn; e._vc.height=Hn; }
+      cx=e._vc.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
+      cx.globalAlpha=1; cx.filter='none'; cx.clearRect(0,0,Wn,Hn); cx.lineCap='round'; }
     const wa=(e.wandern==null?0:e.wandern);
     for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn; const sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
       /* UNBERECHENBAR UND TROTZDEM RUND. Drei Schwingungen mit verschiedenen Raten, je Teilchen
@@ -28271,7 +28281,11 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       if(!LICHTMAL&&olicht&&olicht.width>1){ lx2.drawImage(olicht,0,0);
         lx2.globalCompositeOperation='destination-in'; lx2.drawImage(e._rc,0,0);   /* Licht mal Rauchdichte */
         zx.globalCompositeOperation='lighter'; zx.globalAlpha=0.9; zx.drawImage(e._rl,0,0); zx.globalAlpha=1; }
-      cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._rc,0,0); } }
+      cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._rc,0,0); }
+    if(schnitt){ const mk=partikelMaske(DATA&&DATA.id, hor, vd, Wn, Hn, tpP);
+      if(mk){ cx.globalCompositeOperation='destination-in'; cx.globalAlpha=1; cx.drawImage(mk,0,0); cx.globalCompositeOperation='source-over'; }
+      echtCx.globalCompositeOperation=echtModus; echtCx.globalAlpha=1; echtCx.drawImage(e._vc,0,0);
+      cx=echtCx; } }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
     cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
     if(e.linien>0){ cx.globalAlpha=e.linien*a; cx.fillStyle=cx.createPattern(e._mc,'repeat'); cx.fillRect(0,0,Wn,Hn); }
@@ -29458,6 +29472,47 @@ function zeichneFrame(t){
     const x = Math.max(0, Math.min(tp.w - 1, Math.round(u * tp.w)));
     const y = Math.max(0, Math.min(tp.h - 1, Math.round(v * tp.h)));
     return Math.max(0, Math.min(1, (tp.z[y * tp.w + x] - tp.zlo) / (tp.zhi - tp.zlo)));
+  }
+  /* WIE WEIT HINTEN DIE TEILCHEN AUFHOEREN - UND WAS VOR IHNEN STEHT (Caspar_D, 14.09.2026:
+     "koennen wir bei partikeln wirklich haerter sagen, ab welcher vertikalen ebene im Bild sie
+     nicht mehr zu sehen sein sollen, gerade hinten leuchtet z.T. noch nach vorne durch Objekte
+     hindurch"). Beides ist dieselbe Frage: ein Teilchen leuchtet durch eine Figur, weil es keine
+     TIEFE hat. Es bekommt hier eine, und zwar aus der Bildzeile, in der es steht - am Horizont
+     fern, unten nah. Steht die Szene an dieser Stelle NAEHER als das Teilchen, ist etwas davor
+     und das Teilchen verschwindet.
+     Gerechnet wird das nicht je Teilchen, sondern EINMAL als Maske ueber das Bild: die Tiefe
+     haengt nur an der Zeile, also ist die Sichtbarkeit eine Funktion von Ort - und die kann man
+     hinlegen und wiederverwenden. Drei Masken werden behalten; jede kostet vier Byte je
+     Bildpunkt, und wer am Regler zieht, erzeugt sonst ein Dutzend davon. */
+  const PMASKEN = [];
+  function partikelMaske(id, hor, vd, W, H, tp){
+    const k = (id || '-') + '|' + hor.toFixed(2) + '|' + vd.toFixed(2) + '|' + W + 'x' + H;
+    const da = PMASKEN.find(m => m.k === k);
+    if(da) return da.cv;
+    try{
+      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const g = cv.getContext('2d'), im = g.createImageData(W, H), d = im.data;
+      for(let y = 0; y < H; y++){
+        const vy = (y + 0.5) / H;
+        /* Der Schnitt ist schmal, aber nicht hart: was innerhalb des Bildes aufhoert, hoert
+           weich auf (Regel 16). Drei Hundertstel der Bildhoehe - man sieht keine Kante und
+           trotzdem eine Grenze. */
+        const hcut = hor > 0.001 ? Math.max(0, Math.min(1, (vy - hor) / 0.03)) : 1;
+        const zp = Math.max(0, Math.min(1, (vy - hor) / Math.max(0.05, 1 - hor)));
+        for(let x = 0; x < W; x++){
+          let al = hcut;
+          if(al > 0.002 && vd > 0.001 && tp){
+            const zs = tiefeBei(tp, (x + 0.5) / W, vy);
+            al *= 1 - vd * Math.max(0, Math.min(1, (zs - zp - 0.04) * 6));
+          }
+          const o = (y * W + x) * 4;
+          d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.round(Math.max(0, Math.min(1, al)) * 255);
+        }
+      }
+      g.putImageData(im, 0, 0);
+      PMASKEN.unshift({ k, cv }); PMASKEN.length = Math.min(PMASKEN.length, 3);
+      return cv;
+    }catch(x){ return null; }
   }
   function tiefeBildVon(id){
     if(!id) return null;

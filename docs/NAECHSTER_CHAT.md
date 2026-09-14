@@ -3788,3 +3788,37 @@ Ellipsen und ein Strich — mehr sieht bei acht Bildpunkten ohnehin niemand. Bun
 Der Artwechsel trägt die Eigenbewegung mit — je Schlüssel geprüft, je Schlüssel gesetzt, wie bei
 Farben und Gewicht (Regel 6d). Wer sie von Hand gedreht hat, behält seinen Wert.
 
+## Teilchen bekommen eine Tiefe (14.09.2026)
+
+Caspar_D: *„können wir bei partikeln wirklich härter sagen, ab welcher vertikalen ebene im Bild
+sie nicht mehr zu sehen sein sollen, gerade hinten leuchtet z.T. noch nach vorne durch Objekte
+hindurch."*
+
+**Beides ist dieselbe Frage.** Ein Teilchen leuchtet durch eine Figur, weil es keine Tiefe hat.
+Es bekommt hier eine — aus der **Bildzeile**, in der es steht: am Horizont fern, unten nah. Steht
+die Szene an dieser Stelle näher, ist etwas davor, und das Teilchen verschwindet. Zwei Regler:
+
+- **Horizont (0 oben)** — ab welcher Zeile nichts mehr zu sehen ist. Der Schnitt ist schmal (drei
+  Hundertstel der Bildhöhe), aber nicht hart: was innerhalb des Bildes aufhört, hört weich auf
+  (Regel 16).
+- **Von Objekten verdeckt** — wie stark die Tiefenkarte sie wegnimmt.
+
+Beide Vorgabe 0, damit kein bestehendes Rezept anders aussieht.
+
+**Gerechnet wird nicht je Teilchen, sondern einmal als Maske.** Die Tiefe hängt nur an der Zeile,
+also ist die Sichtbarkeit eine reine Funktion des Ortes — die kann man hinlegen und
+wiederverwenden. Drei Masken werden behalten; wer am Regler zieht, erzeugt sonst ein Dutzend zu je
+vier Byte pro Bildpunkt. Die Teilchen malen dafür auf eine eigene Leinwand, die Maske schneidet
+dort einmal, dann geht das Ganze mit der Verrechnung des Effekts aufs Bild.
+
+**Gemessen** (Glühwürmchen, 260 Stück, paarweise gegen den Rauschboden):
+
+| | ohne | mit (Horizont 0,45 · Verdeckung 1,0) |
+|---|---|---|
+| oberhalb des Horizonts | 0,318 | **−0,009** |
+| unterhalb | 2,493 | 1,492 |
+| wo die Szene **näher** ist als das Teilchen | 2,654 | **0,098** |
+| wo sie ferner ist (freie Sicht) | 1,467 | 1,663 |
+
+Oberhalb der Linie bleibt nichts, vor Objekten verschwinden 96 %, bei freier Sicht bleibt alles.
+
