@@ -90,6 +90,25 @@ gezeichnet. Und was sich wiederholt, wird einmal in eine Kachel gemalt und als M
 darf nicht den ganzen Bildaufbau anhalten; darum legt `effektAusRezept` gespeicherte Werte über die
 Vorgaben des Typs und nicht umgekehrt.
 
+**16. Ein Sichtfeld hat keinen Rand, den man sehen kann.** Wer einräumt, wo ein Effekt wirken darf,
+räumt damit auch ein, wo er aufhört — und genau dort entsteht der Fehler. Der Videoplan (§9a.2) sagt
+es als Unterschied zweier Bilder: „Funken nur über dem Feuer" gegen „Funken in einem sichtbaren
+Kasten". Dasselbe steht in §9d.2 unter dem, was sich nicht messen lässt: harte Kanten, wo Licht weich
+sein müsste. Die Regel zieht daraus die Konsequenz für jede räumliche Begrenzung — Sichtfeld,
+Quellfläche, Zone, Maske:
+
+- **Der Übergang ist Teil der Form, nicht ihre Verzierung.** Eine Begrenzung ohne Gefälle ist kein
+  Grenzfall der Einstellung, sondern eine Form, die es nicht geben darf. Der Regler für den Rand
+  fängt deshalb nicht bei null an.
+- **Die Kante folgt der Größe.** Das Gefälle ist ein Anteil der Ausdehnung, kein fester Abstand in
+  Bildpunkten — sonst ist derselbe Wert beim kleinen Fleck ein Nebel und beim großen eine Kante.
+- **Was hart begrenzt aussieht, ist entweder eine Bildkante oder ein Fehler.** Die Bildkante darf
+  hart sein, sie ist die Grenze des Mediums. Alles, was innerhalb des Bildes aufhört, hört weich auf.
+
+Die Regel ist die räumliche Schwester von **Regel 5**: dort hellt Licht auf, was da ist, statt Farbe
+zu malen; hier hört ein Effekt aus, statt abgeschnitten zu werden. Beide Male ist der Fehler, dass
+man dem Bild ansieht, wo die Software zu Ende denkt.
+
 ---
 
 ## Wie geprüft wird
