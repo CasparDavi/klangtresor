@@ -362,7 +362,7 @@ select,.knopf{
   border-radius:50%;border:1px solid var(--rand);
   background:var(--flaeche2);color:var(--text);
   padding:0;line-height:1;cursor:pointer}
-#zu:hover, #bzu:hover, .reaktzu:hover, #zvglzu:hover, #studiokopf button#studiozu:hover{
+#zu:hover, #bzu:hover, .reaktzu:hover, #zvglzu:hover, #studiokopf button#studiozu:hover, #cap .capzu:hover{
   border-color:var(--akzent)}
 .zahl{color:var(--schwach);font-size:13px;margin-left:auto;white-space:nowrap}
 #ich{background:none;border:none;padding:0;cursor:pointer;flex-shrink:0;line-height:0}
@@ -998,37 +998,11 @@ select,.knopf{
 /* Die Ablage fuers eigene Artwork. Gestrichelt, solange nichts drin
    ist - ein voller Rahmen sieht aus wie ein Feld, das schon etwas
    enthaelt. */
-/* Zwei Ablagen nebeneinander - Titelbild und Video getrennt. */
-.capartpaar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-/* Der Ton steht allein, in voller Breite: Bild und Video sind zwei
-   Ansichten desselben Songs, der Ton IST der Song. */
-.capartton{margin-top:8px}
-.capartton .capart{padding:8px}
-.capartton .capart.hat{padding:8px 10px}
-.capartton audio{width:100%;height:32px;display:block;margin-bottom:6px}
-.capartname small{color:var(--schwach);font-weight:400}
+/* Die alten Regeln fuer Ablagen und Vorschauen (.capart, .capartpaar, .capartton, .capartvid,
+   .capartmehr) sind am 14.09.2026 mit der Galerie entfallen - dort ist jede Ablage eine Kachel
+   (.capkachel). Abgeklemmter Code bleibt nicht stehen; die Begruendung schon. */
+.capkachelname small{color:var(--schwach);font-weight:400}
 #cap h4 small{text-transform:none;letter-spacing:0;font-weight:400}
-.capartname{font-size:12px;color:var(--schwach);margin-bottom:3px}   /* Regel 14: 12 px ist die Lesegrenze */
-.capart{margin-top:0;border:1px dashed var(--rand);border-radius:8px;
-  padding:10px;text-align:center;font-size:12px;color:var(--schwach);
-  cursor:pointer;transition:border-color .12s,color .12s}
-.capart:hover{border-color:var(--akzent);color:var(--text)}
-.capart.drueber{border-color:var(--akzent);border-style:solid;color:var(--text);
-  background:color-mix(in srgb, var(--akzent) 12%, transparent)}
-.capart.hat{border-style:solid;padding:8px;cursor:default}
-.capart video,.capart img{max-height:96px;max-width:100%;border-radius:5px;display:block;margin:0 auto 6px}
-/* Platz reservieren, solange die Vorschau noch laedt: Das Fenster wird
-   nach ihr bemessen, und ein Bild, das erst danach ankommt, verschoebe
-   es nachtraeglich. Der Zeitstempel an der Adresse laesst sie bei JEDEM
-   Oeffnen neu laden - aus dem Zwischenspeicher kommt sie nie. */
-.capart.hat{min-height:110px}
-.capart .weg{color:var(--schwach);text-decoration:underline;cursor:pointer;font-size:12px}
-.capartvid{margin-bottom:6px}
-.capartvid video{max-height:72px}
-.capartvidz{font-size:10.5px;color:var(--schwach)}   /* Nebenwert, darf 10,5 */
-.capartmehr{margin-top:4px;padding:5px;border:1px dashed var(--rand);border-radius:6px;font-size:12px;color:var(--schwach);text-align:center;cursor:pointer}
-.capartmehr:hover{border-color:var(--akzent);color:var(--text)}
-.capart .weg:hover{color:var(--text)}
 .karte:hover .capmarke.ohne{display:block}
 #cap textarea{width:100%;min-height:70px;background:var(--flaeche2);border:1px solid var(--rand);
   border-radius:8px;color:var(--text);font:inherit;font-size:13px;line-height:1.5;padding:8px;resize:vertical}
@@ -1044,26 +1018,58 @@ select,.knopf{
    Laptopschirm ueber die Kante - dann rechnet die Platzierung eine
    negative Position, faellt auf 8 px zurueck, und der untere Teil ist
    nicht erreichbar. Mit max-height scrollt er stattdessen. */
-/* ZWEI SPALTEN (14.09.2026): links Suno zum Lesen, rechts das Private zum Aendern. Dafuer
-   braucht der Kasten Breite; unter 620 px stapeln sich die Spalten, erst links, dann rechts. */
-.capspalten{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
-@media (max-width:620px){ .capspalten{grid-template-columns:1fr} }
-.capspalte h5{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);
-  font-weight:600;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid var(--rand)}
-.capspalte h5 small{text-transform:none;letter-spacing:0;font-weight:400}
-.capstueck{margin-bottom:10px}
-/* Die Suno-Seite ist zum Lesen, nicht zum Anfassen - sie traegt deshalb keinen gestrichelten
-   Rand wie die Ablageflaechen daneben, sondern einen ruhigen durchgezogenen. */
-.capruhig{border:1px solid var(--rand);border-radius:8px;padding:8px;text-align:center;
-  font-size:12px;color:var(--schwach)}
-.capruhig img,.capruhig video{max-height:120px;max-width:100%;border-radius:5px;display:block;margin:0 auto}
-/* Regel 21: Schliessen-Knopf rund mit Rand, Flex-zentriertes Kreuz, Druck spuerbar. */
-#capzu{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;
-  border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:13px}
-#capzu:active{transform:scale(.95)}
-#capzu[hidden]{display:none}
+/* ---- DIE GALERIE IM MEDIENFENSTER (Caspar_D, 14.09.2026) -----------------------------------
+   "wie waers, wenn wir in der mediabox wirklich als gallery darstellen, dass es richtig schoen
+   aussieht, auch wenn etwas fehlt" - und der Aufbau dazu: "ich wuerde alles nebeneinander machen,
+   wir haben maximal 5 Kacheln ... links also 2 von Suno und rechts die Privaten 3. 2 breit ueber
+   Suno Videos die Caption, 2 breit ueber privaten Videos die Notiz, der verbleibende Platz -
+   ziehe neues Soundfile hierher."
+
+   Fuenf Spalten, drei Reihen: Ueberschriften, Texte, Kacheln. Die Textreihe hat feste Hoehe und
+   laesst innen scrollen - sonst spraengte eine lange Beschreibung das Raster, und regelmaessig zu
+   sein ist der ganze Sinn einer Galerie. */
+.capgal{display:grid;grid-template-columns:repeat(5,1fr);gap:8px 10px;margin-top:10px;align-items:start}
+.capkopf{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);
+  font-weight:600;padding-bottom:5px;border-bottom:1px solid var(--rand)}
+.capkopf small{text-transform:none;letter-spacing:0;font-weight:400}
+.captextfeld{height:132px;overflow:auto;border:1px solid var(--rand);border-radius:8px;padding:8px}
+.captextfeld.leer{display:flex;align-items:center;justify-content:center;color:var(--schwach);font-size:12px}
+#cap .captextfeld textarea{min-height:0;height:74px;margin:0}
+/* Die Kachel: immer dasselbe Hochformat, ob voll oder leer. Eine leere Kachel zeigt gedaempft,
+   WAS dort hingehoerte, traegt den gestrichelten Rahmen und unten rechts ein Plus - sie sagt es,
+   ohne einen Satz zu brauchen. Eine volle Kachel hat einen durchgezogenen Rahmen. */
+.capkachel{position:relative;aspect-ratio:3/4;border:1px dashed var(--rand);border-radius:8px;
+  overflow:hidden;background:#0c0c0d;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--schwach);cursor:pointer;text-align:center;padding:0}
+.capkachel.hat{border-style:solid;cursor:default}
+.capkachel.ruhig{cursor:default;border-style:solid;opacity:.92}
+.capkachel img,.capkachel video,.capkachel canvas{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;border-radius:inherit;display:block}
+.capkachel .schatten{position:absolute;inset:0;background:#000;opacity:.72;pointer-events:none}
+.capkachel .plus{position:absolute;right:6px;bottom:6px;width:22px;height:22px;border-radius:50%;
+  border:1px solid var(--rand);background:rgba(0,0,0,.6);color:var(--text);display:flex;
+  align-items:center;justify-content:center;font-size:14px;line-height:1;pointer-events:none}
+.capkachel:hover .plus{border-color:var(--akzent)}
+.capkachel:hover{border-color:var(--akzent)}
+.capkachel.drueber{border-color:var(--akzent);border-style:solid}
+.capkachel .weg{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.66);
+  color:var(--text);font-size:12px;padding:3px 0;text-decoration:none}
+.capkachelname{font-size:12px;color:var(--schwach);margin-top:3px}
+/* Regel 21: Schliessen-Knopf rund mit Rand, flex-zentriertes Kreuz, Druck spuerbar. Die Form
+   kommt aus der Sammelregel des Hauses (Zeile ~360), hier nur Platz und Groesse. */
+#cap .capzu{position:absolute;top:10px;right:10px;width:28px;height:28px;font-size:13px}
+#cap .capzu:active{transform:scale(.95)}
+#cap .capzu[hidden]{display:none}
 #cap h4{padding-right:34px}
+.capkachel .capzahl{position:absolute;left:6px;top:6px;min-width:20px;height:20px;padding:0 5px;
+  border-radius:10px;background:rgba(0,0,0,.7);border:1px solid var(--rand);color:var(--text);
+  font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.capkachel.capton{aspect-ratio:auto;height:132px}
+/* Der Effektclip ist kein Standbild, sondern ein Rezept - gezeigt wird er, indem ihn derselbe
+   Maler malt, der ihn auf der Kachel malt. Er fuellt die Kachel ganz. */
+.capartclip{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:#000}
+@media (max-width:700px){ .capgal{grid-template-columns:repeat(2,1fr)}
+  .capgal>*{grid-column:auto !important} .capkachel.capton{height:110px} }
 #cap{position:fixed;z-index:82;display:none;max-width:min(760px,94vw);
   max-height:calc(100vh - 16px);overflow:auto;
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
@@ -3095,7 +3101,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 /* Der Effektclip hat immer das Format seiner Quelle (Joerg, 11.09.2026) und liegt wie ein Standbild im Haus:
    ganz im Kasten (object-fit: contain), nichts ragt heraus, nichts wird beschnitten. Auf der Kachel bleibt rundum
    die unscharfe Fuellung der kachel.jpg sichtbar, auf der Buehne die .fuellung - genau wie beim Standbild. */
-.bild canvas.tbs-clip, .bart canvas.tbs-clip{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
+.bild canvas.tbs-clip, .bart canvas.tbs-clip, .capartclip canvas.tbs-clip{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
 /* Knoepfe brechen nicht um; Abspiel-Knopf als Pille im Kopf */
 #tbs .tbs-reihe button, #tbs .tbs-mini, #tbs .tbs-seg button{white-space:nowrap}
 #tbs-kopf #tbs-spiel{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:12px;white-space:nowrap;margin-right:6px}
@@ -16990,38 +16996,22 @@ function capAuf(id, x, y){
   const s = songVonId.get(id); if (!s) return;
   const n = notizen[id];
   const c = $('cap');
-  /* ZWEI SPALTEN: LINKS SUNO, RECHTS WAS HIER DAZUKOMMT (Caspar_D, 14.09.2026: "wie waers, wenn
-     wir in der Box, die dort aufgeht, alles anzeigen, was da ist ... klar getrennt in einen Suno
-     Abschnitt links und einen privaten Abschnitt rechts, der aenderbar ist").
-     Vorher stand nur das Eigene im Fenster und daneben der Satz "wird Sunos vorgezogen" - eine
-     Behauptung, die man glauben musste. Jetzt liegt beides nebeneinander und man SIEHT, was
-     ersetzt wird. Links ist zu lesen, rechts zu aendern; das ist der ganze Unterschied. */
-  c.innerHTML = `<button type="button" id="capzu" title="Schließen (Esc)">\u2715</button>`
+  /* ZWEI HAELFTEN, FUENF KACHELN, EINE GALERIE (Caspar_D, 14.09.2026): links die zwei von Suno,
+     rechts die drei privaten. Ueber den Suno-Kacheln zwei Spalten breit die Beschreibung, ueber
+     den privaten zwei Spalten breit die Notiz, und der verbleibende Platz nimmt die Tonfassung.
+     Was fehlt, ist nicht leer, sondern gedaempft: die Kachel zeigt, WAS dort hingehoerte. */
+  c.innerHTML = `<button type="button" id="capzu" class="capzu" title="Schließen (Esc)">✕</button>`
     + `<h4>${esc(s.titel)}</h4>`
-    + `<div class="capspalten">`
-    +   `<div class="capspalte capsuno">`
-    +     `<h5>Von Suno</h5>`
-    +     `<div class="capstueck"><div class="capartname">Beschreibung</div>`
-    +       (s.beschriftung ? `<div class="captext">${esc(s.beschriftung)}</div>`
-                            : `<div class="capruhig">keine</div>`)
-    +     `</div>`
-    +     `<div class="capstueck"><div class="capartname">Titelbild</div>`
-    +       `<div class="capruhig"><img src="/media/${id}/cover.jpg" alt="" `
-    +         `onerror="this.parentNode.textContent='keins'"></div></div>`
-    +     `<div class="capstueck"><div class="capartname">Bewegtbild</div>`
-    +       (s.videoCoverUrl
-            ? `<div class="capruhig"><video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline></video></div>`
-            : `<div class="capruhig">keins</div>`)
-    +     `</div>`
-    +   `</div>`
-    +   `<div class="capspalte">`
-    +     `<h5>Privat <small>— wird Sunos vorgezogen</small></h5>`
-    +     `<div class="capstueck"><div class="capartname">Notiz <small>— bleibt lokal</small></div>`
+    + `<div class="capgal">`
+    +   `<div class="capkopf" style="grid-column:1/3">Von Suno</div>`
+    +   `<div class="capkopf" style="grid-column:3/6">Privat <small>— wird Sunos vorgezogen</small></div>`
+    +   `<div class="captextfeld${s.beschriftung ? '' : ' leer'}" style="grid-column:1/3">`
+    +     (s.beschriftung ? esc(s.beschriftung) : 'keine Beschreibung') + `</div>`
+    +   `<div style="grid-column:3/5">`
+    +     `<div class="captextfeld">`
     +       `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
-    +       `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`
-    /* Der Instrumental-Schalter sitzt bei der Notiz, weil beides dasselbe
-       ist: Caspar_Ds Urteil über den Song, nicht Sunos Angabe.
-       PILLE STATT HAKEN (Hausregel 18: Checkboxen gibt es im Haus nicht). */
+    /* Der Instrumental-Schalter sitzt bei der Notiz, weil beides dasselbe ist: Caspar_Ds Urteil
+       ueber den Song, nicht Sunos Angabe. Pille statt Haken (Hausregel 18). */
     +       `<div class="capinstr">`
     +         `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
     +           ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
@@ -17030,23 +17020,27 @@ function capAuf(id, x, y){
                   instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
     +       `</div>`
     +     `</div>`
-    /* ZWEI GETRENNTE PLAETZE (Caspar_D, 26.08.2026: "sieh einfach vor, ein neues cover-art und ein
-       neues video artwork einzufügen, die werden separat vom original gehalten aber sind immer
-       prioritär"). Eine Flaeche, die je nach Dateityp mal das eine, mal das andere wird, kann das
-       Vorhandene nicht zeigen und nicht einzeln entfernen - und man sieht nicht, was fehlt. */
-    +     `<div class="capstueck"><div class="capartname">Titelbild</div>`
-    +       `<div class="capart" id="capartbild" data-art="bild"></div></div>`
-    +     `<div class="capstueck"><div class="capartname">Bewegtbild</div>`
-    +       `<div class="capart" id="capartvideo" data-art="video"></div></div>`
-    /* DIE TONFASSUNG (Tarja über Caspar_D, 27.08.2026: "auch mp3's hochladen können, die das
-       vorhandene nicht ersetzen aber überstimmen" - "wie bei den artwork und videos"). */
-    +     `<div class="capstueck"><div class="capartname">Tonfassung <small>— tritt neben WAV und MP3</small></div>`
-    +       `<div class="capart" id="capartton" data-art="ton"></div></div>`
-    /* Das vierte Eigene ist kein Upload, sondern ein Rezept: der Effektclip
-       aus dem Effektclip-Studio (Caspar_D, 09.09.2026; Name seit 11.09.2026). */
-    +     `<div class="capstueck"><div class="capartname">Effektclip <small>— aus dem Studio</small></div>`
-    +       `<div class="capart" id="capartstudio" data-art="effekt"></div></div>`
+    +     `<div class="capkachelname">Notiz — bleibt lokal</div>`
     +   `</div>`
+    +   `<div style="grid-column:5">`
+    +     `<div class="capkachel capton" id="capartton" data-art="ton"></div>`
+    +     `<div class="capkachelname">Tonfassung</div></div>`
+    /* Reihe der Kacheln. Links zum Lesen, rechts zum Aendern - dieselbe Reihenfolge in beiden
+       Haelften, damit das Auge die Paare von selbst findet. */
+    +   `<div style="grid-column:1"><div class="capkachel ruhig">`
+    +     `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">` + `</div>`
+    +     `<div class="capkachelname">Titelbild</div></div>`
+    +   `<div style="grid-column:2"><div class="capkachel ruhig">`
+    +     (s.videoCoverUrl
+          ? `<video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline></video>`
+          : `keins`) + `</div>`
+    +     `<div class="capkachelname">Bewegtbild</div></div>`
+    +   `<div style="grid-column:3"><div class="capkachel" id="capartbild" data-art="bild"></div>`
+    +     `<div class="capkachelname">Titelbild</div></div>`
+    +   `<div style="grid-column:4"><div class="capkachel" id="capartvideo" data-art="video"></div>`
+    +     `<div class="capkachelname">Bewegtbild</div></div>`
+    +   `<div style="grid-column:5"><div class="capkachel" id="capartstudio" data-art="effekt"></div>`
+    +     `<div class="capkachelname">Effektclip</div></div>`
     + `</div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
@@ -17102,7 +17096,7 @@ function capAuf(id, x, y){
     for (const [art, feld, , datei, wort] of artFelder){
       if (!feld) continue;
       if (e[art]){
-        feld.className = 'capart hat';
+        feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '') + ' hat';
         /* Zeitstempel dahinter, damit der Browser nach dem Austauschen
            nicht das alte aus seinem Speicher zeigt. */
         const t = '?t=' + Date.now();
@@ -17110,13 +17104,15 @@ function capAuf(id, x, y){
           /* MEHRERE EIGENE VIDEOS (11.09.2026): Nr. 1 = eigen.mp4, dann eigen-2.mp4 ...
              Das juengste spielt (Vorgabe); jedes laesst sich einzeln entfernen, ein
              weiteres kommt dazu, ohne das vorhandene zu ersetzen. */
+          /* IN DER GALERIE IST EINE KACHEL EINE KACHEL. Die Liste aller Nummern untereinander
+             sprengte die Form, sobald mehr als eines da war. Gezeigt wird deshalb das juengste,
+             das ohnehin spielt; eine Zahl oben links sagt, wie viele es sind. Ein weiteres kommt
+             dazu, indem man es auf die Kachel zieht - entfernt wird immer das juengste. */
           const nrn = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
           const juengst = nrn[nrn.length - 1];
-          feld.innerHTML = nrn.map(n =>
-              `<div class="capartvid"><video src="/media/${id}/${eigenVideoName(n)}${t}" muted loop autoplay playsinline></video>`
-            + `<span class="capartvidz">${n === juengst ? 'spielt · ' : ''}Nr. ${n}</span>`
-            + (eingefroren ? '' : ` <span class="weg" data-nr="${n}">entfernen</span>`) + `</div>`).join('')
-            + (eingefroren ? '' : `<div class="capartmehr">+ weiteres Video hierher ziehen</div>`);
+          feld.innerHTML = `<video src="/media/${id}/${eigenVideoName(juengst)}${t}" muted loop autoplay playsinline></video>`
+            + (nrn.length > 1 ? `<span class="capzahl" title="${nrn.length} eigene Bewegtbilder — gezeigt wird das jüngste">${nrn.length}</span>` : '')
+            + (eingefroren ? '' : `<span class="weg" data-nr="${juengst}">entfernen</span>`);
           feld.querySelectorAll('.weg').forEach(w => w.onclick = async (ev) => {
             ev.stopPropagation(); const n = +w.dataset.nr;
             try { await fetch(`/api/eigen-artwork/${id}?was=video&nr=${n}`, { method: 'DELETE' });
@@ -17128,20 +17124,24 @@ function capAuf(id, x, y){
                   artZeichnen(); zeichnen();
                 } catch (err) {}
           });
-          const mehr = feld.querySelector('.capartmehr');
-          if (mehr) mehr.onclick = (ev) => { ev.stopPropagation(); wohin = ['video', feld]; dateiwahl.accept = 'video/*'; dateiwahl.value = ''; dateiwahl.click(); };
           continue;
         }
-        /* Eine Tonspur laesst sich nicht zeigen, nur hoeren - also ein
-           kleiner Abspieler statt einer Vorschau. Er haengt an keinem
-           Graphen und stoert die Wiedergabe nicht; wer vergleichen
-           will, nimmt den Quellenumschalter im Tonstudio. */
+        /* DIE TONFASSUNG ZEIGT NUR, DASS SIE DA IST (Caspar_D, 14.09.2026: "er zeigt nur, dass
+           eine Tonfassung da ist, sonst nichts, wenn man drauf drueckt, spielt er im normalen
+           Player"). Sie wird ohnehin gespielt, sobald sie da ist: quellenAnbieten() stellt die
+           Quelle beim Titelwechsel selbst auf 'eigen'. Ein eigener Abspieler hier waere eine
+           zweite Tonquelle neben der des Hauses -
+           und an der haengt alles, von der Analyse bis zu AirPlay. Also kein zweiter. */
         feld.innerHTML = (art === 'video'
             ? `<video src="/media/${id}/${datei}${t}" muted loop autoplay playsinline></video>`
             : art === 'ton'
-            ? `<audio src="/media/${id}/${datei}${t}" controls preload="metadata"></audio>`
+            ? `<span>Eigene Tonfassung<br><small>sie wird gespielt</small></span>`
             : `<img src="/media/${id}/${datei}${t}" alt="">`)
           + (eingefroren ? '' : `<span class="weg">entfernen</span>`);
+        if (art === 'ton') feld.onclick = (ev) => {
+          if (ev.target.classList.contains('weg')) return;
+          try { spielenNachId(id); } catch (err) {}
+        };
         const weg = feld.querySelector('.weg');
         if (weg) weg.onclick = async (ev) => {
           ev.stopPropagation();
@@ -17153,8 +17153,17 @@ function capAuf(id, x, y){
               } catch (err) {}
         };
       } else {
-        feld.className = 'capart';
-        feld.textContent = eingefroren ? 'Archiv eingefroren' : wort + ' hierher ziehen';
+        /* LEER IST NICHT NICHTS (Caspar_D, 14.09.2026: "die gedimmte Kachel hat den gestrichelten
+           Rahmen und auf der Ecke rechts unten ein Plus"). Die Kachel zeigt gedaempft, WAS dort
+           hingehoerte - das Titelbild des Titels -, und sagt mit dem Plus, dass man es ersetzen
+           kann. Ein gestrichelter Kasten mit einer Aufforderung darin liest sich als Formular;
+           fuenf davon nebeneinander erst recht. */
+        feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
+        feld.innerHTML = eingefroren ? 'Archiv eingefroren'
+          : (art === 'ton'
+             ? `<span>Tondatei hierher ziehen</span><span class="plus">+</span>`
+             : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
+               + `<div class="schatten"></div><span class="plus">+</span>`);
       }
     }
   };
@@ -17171,13 +17180,13 @@ function capAuf(id, x, y){
                 : art === 'ton'   ? /^audio\//.test(datei.type)
                 : /^image\//.test(datei.type);
     if (!passt){
-      feld.className = 'capart';
+      feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
       feld.textContent = art === 'video' ? 'Das ist kein Video.'
                        : art === 'ton'   ? 'Das ist keine Tondatei.'
                        : 'Das ist kein Bild.';
       setTimeout(artZeichnen, 2200); return;
     }
-    feld.className = 'capart';
+    feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
     feld.textContent = `… ${(datei.size / 1048576).toFixed(1)} MB`;
     try {
       /* Video: ohne ?nr kommt es als neue Nummer dazu. Bild: ?nr=1 ersetzt das eine. */
@@ -17236,11 +17245,20 @@ function capAuf(id, x, y){
   const studioZeichnen = () => {
     if (!studioFeld) return;
     const hatE = !!(_eigenArt && _eigenArt[id] && _eigenArt[id].effekt);
-    studioFeld.className = 'capart' + (hatE ? ' hat' : '');
+    studioFeld.className = 'capkachel' + (hatE ? ' hat' : '');
+    /* ZEIGEN STATT BESCHREIBEN (Caspar_D, 14.09.2026: "suno stellst du als vorschau dar, das
+       private nicht, das bitte auch"). Titelbild, Bewegtbild und Tonfassung zeigten sich schon;
+       der Effektclip stand als einziger nur da und sagte, dass es ihn gibt - ausgerechnet der,
+       der von allen am meisten zu sehen hat. Gemalt wird er von demselben Maler, der ihn auf der
+       Kachel malt (clipAn); ein zweiter waere eine zweite Wahrheit. */
     studioFeld.innerHTML = hatE
-      ? `<span>Effektclip liegt beim Titel</span> <span class="weg" data-tu="oeffnen">bearbeiten</span>`
+      ? `<div class="capartclip"></div><span class="weg" data-tu="oeffnen">bearbeiten</span>`
         + (eingefroren ? '' : ` · <span class="weg" data-tu="weg">entfernen</span>`)
-      : (eingefroren ? 'Archiv eingefroren' : 'Effektclip gestalten — Studio öffnen');
+      : (eingefroren ? 'Archiv eingefroren'
+         : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
+           + `<div class="schatten"></div><span class="plus">+</span>`);
+    if (hatE){ const kasten = studioFeld.querySelector('.capartclip');
+      if (kasten) EffektclipStudio.clipAn(kasten, id); }
     const oe = studioFeld.querySelector('[data-tu="oeffnen"]');
     if (oe) oe.onclick = (ev) => { ev.stopPropagation(); EffektclipStudio.oeffnen(id, studioNach); };
     const wg = studioFeld.querySelector('[data-tu="weg"]');
@@ -17281,6 +17299,9 @@ function capAuf(id, x, y){
      daneben. Alle drei sichern die Notiz, bevor das Fenster geht - sonst haengt das Speichern am
      Zufall, welchen Weg jemand nimmt. */
   const schliessen = () => { sichern(); c.style.display = 'none';
+    /* Der Clip-Maler laeuft in einer eigenen Bildschleife weiter, solange seine Leinwand im
+       Baum haengt - und display:none nimmt sie nicht heraus. Also abhaengen. */
+    try{ const k = c.querySelector('.capartclip'); if (k) EffektclipStudio.clipAus(k); }catch(e){}
     removeEventListener('click', zu, true); removeEventListener('keydown', taste, true); };
   const zu = (ev) => { if (!c.contains(ev.target)) schliessen(); };
   const taste = (ev) => { if (ev.key === 'Escape'){ ev.stopPropagation(); ev.preventDefault(); schliessen(); } };
