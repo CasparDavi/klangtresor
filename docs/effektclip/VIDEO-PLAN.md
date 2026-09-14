@@ -389,7 +389,7 @@ er kein Fehler, sondern Grammatik.
 | **Akzentfarbe statt Schwarz** | durch die Coverfarbe; bindet den Übergang ans Titelbild | `farben.akzent` |
 | **Unschärfe** | beide Seiten auf volle Defokussierung, in der Mitte tauschen — liest sich als Objektivwechsel, nicht als Schnitt | Vorbereitung |
 | **Rauschen / Korn** | hochziehen bis Vollabdeckung, tauschen, zurück | Filmkorn, Rauschausfall |
-| **Nebel als Medium** | Dichte auf 1, tauschen, zurück. **Ästhetisch der stärkste**, weil der Theaternebel ein Medium ist und keine Schicht: er verschluckt das Bild, statt es zu überdecken (Regel 6) | Theaternebel |
+| **Nebel als Medium** | Stärke auf 1, tauschen, zurück. **Ästhetisch der stärkste**, weil Nebel ein Medium ist und keine Schicht: er verschluckt das Bild, statt es zu überdecken (Regel 6). Seit dem 14.09.2026 der Filmnebel — der Theaternebel ist gestrichen | Filmnebel |
 | **Zoom bis zur Textur** | hineinzoomen, bis nur Fläche zu sehen ist, tauschen, heraus. Sehr sauber — der Neutralzustand ist der Bildinhalt selbst, kein Fremdmaterial | Zoom |
 | **Überbelichten** | Lichter hoch bis Clipping — der Lichtleck-Übergang ohne Fremd-Overlay | Vorbereitung |
 | **Entfärben → neues Schema** | Sättigung auf null, Standbild, im neuen Schema wieder einfärben. Erzählt „anderer Ort" | Vorbereitung |

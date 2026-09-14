@@ -3822,3 +3822,45 @@ dort einmal, dann geht das Ganze mit der Verrechnung des Effekts aufs Bild.
 
 Oberhalb der Linie bleibt nichts, vor Objekten verschwinden 96 %, bei freier Sicht bleibt alles.
 
+
+## Loopfähigkeit aller 38 Effekte — am Code gelesen, noch nicht gemessen (14.09.2026)
+
+Caspar_D: *„analysierst du bitte, ob alles im 10sec Export loopfähig ist"* — und der Verweis auf
+VIDEO-PLAN §6.8 (vier Klassen) und §6.7 (Übergänge nach Nahtquotient). Gelesen von sechs
+Gruppenlesern plus einem Leser für die gemeinsame Zeitmaschinerie, jede Gruppe gegengeprüft.
+**Das ist Code-Lesung, keine Messung** — die Nahtquotient-Reihe (§6.8) steht noch aus.
+
+**Ergebnis:**
+
+| | Effekte |
+|---|---|
+| **exakt** (8) | Fahrt, Farbschleier, Scanlines, Linse, Spiegelung, Bildlauf, Beschlag, Tropfen laufen |
+| **unsichtbare Naht**, Zufall je Bild (3) | Rauschausfall, Filmkorn, Glitch-Blöcke |
+| **Vorgabe loopt, Regler kann brechen** (17) | 7 Pulse, Farbkanal-Puls, Bloom, Stroboskop, Lichtstrahlen, Feuer (alle über `antriebWert`: Form *flackern*, Teiler 2/4/8 bei unteilbarer Schlagzahl, Titel ohne Takt) · Partikel (Staub immer, Schwaden ohne Quelle, Windstöße) · Laufstreifen *beide* bei ungerader Periodenzahl · Verwackeln-Kick bei ungerader Schlagzahl · Sicherungswackeln (Einbruch über der Naht) · Risse *im Takt* |
+| **bricht schon in der Vorgabe** (10) | Scheinwerfer + Schatten (*wandernd*: y-Term `ph*1.3`), Laserstrahl (*wandern*: `cos(w*0.8)`; Punkte `drehen` rohes t; Scanner-Sprung), Streiflicht (erbt jede Leuchte im Lichtpuffer), Filmnebel (Schwaden > 0), Wellen, Kaustik, Flammen (rohes `u_t`), Tropfen treffen (Hash am Rasterindex, nur 2 Takte Vorlauf), Nachzieheffekt |
+
+**Quelle zufall** bricht mit Raster *nicht* (Naht liegt auf einem Schlag, dort wird ohnehin neu
+gewürfelt) — Gegenprüfung hat das korrigiert.
+
+**Befunde in der gemeinsamen Maschinerie, schwerer als jeder Einzeleffekt:**
+
+1. **Bewegtbild als Quelle loopt nie** — `quelleSync` setzt das Video nur bei `uhrEcht` nach.
+2. **`Math.max(1,…)` in `lpR/lpP/lpV`** (Z. ~27473): Export weicht sichtbar von der Vorschau ab.
+   Wind links → fliegt rechts; Wind 0 → eine Bildbreite je Clip; Staub/Glühwürmchen/Tropfen bis
+   8× zu schnell, alle gleich schnell. Der Kommentar „höchstens ein Prozent" stimmt bei L ≤ 10 s
+   nicht (Raster 1/L → bis ±50 %).
+3. **`rahmen()` malt während des Exports weiter** auf denselben Effektobjekten → Nachzieh-Spur
+   wird zerrissen.
+4. **Titel mit < 3 Einsen:** `raster()` gibt die echten Schläge zurück, L=10 s liegt auf keinem.
+5. **Statuszeile:** Kodierweg meldet immer „nahtlos"; `LOOP_NEIN` hat totes `dunst`, kein
+   `filmnebel`, und prüft nur den Typ.
+
+**Reparaturen nach §6.8 (alle hinter `LOOP>0`, Vorschau unverändert):** rohes t → lp-Helfer
+(Einzeiler) · Hash-Indizes modulo Perioden im Clip (Klasse 4) · Taktzahl in `ausschnitt()` so, dass
+die Schlagzahl durch 8 teilbar ist · Raster mit Vorlauf ≥ 30 s · Shader: Wabern über `noise4D`
+(Zeit auf dem Kreis), gerichtete Drift (Steigen, Aufwind, Luftzug) über ein Nahtfenster von einem
+halben Takt (§6.3, für Nebel/Textur zulässig) · Nachzieh: Vorlaufrunde + Spur vom Live-Rahmen
+trennen · Risse *im Takt*: im Export ausgewachsen wie *mit der Zeit* · Video bildgenau setzen ·
+`loopNein(e)` je Karte statt Typliste. **Noch nichts gebaut — wartet auf Caspar_Ds Wort.**
+
+Rohbefund mit Zeilennummern: Workflow `wf_721af253-541`, journal.jsonl im Sitzungsordner.
