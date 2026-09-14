@@ -1037,6 +1037,42 @@ Dazu **Richtung plus Streuwinkel**, und dieselbe Beschreibung deckt alle Fälle 
 breiter Streuung, Regen fällt eng gebündelt, Rauch steigt langsam und weitet sich, Schnee driftet.
 Heute steckt das in jedem `e.art`-Zweig einzeln als fest verdrahtete Formel.
 
+**Gebaut am 14.09.2026, und zwar nach Caspar_Ds eigener Fassung.** Drei Entwürfe, neun Gegenleser,
+keiner trug. Die Fassung, die trägt, kam in fünf Sätzen aus dem Chat und ist an den Stellen besser,
+an denen alle drei Entwürfe gescheitert sind:
+
+| Begriff | Schlüssel | Herkunft |
+|---|---|---|
+| Quelle | `qForm` | neu: das ganze Bild · Punkt · Linie · Kreis · Ellipse |
+| Ursprung, Winkel, Ort X/Y | `qUrsprung`, `qWinkel`, `qX`, `qY` | wörtlich der Raum-Block des Scheinwerfers |
+| Ausdehnung (X/Y), Drehung | `qAus`, `qAusY`, `qDreh` | neu, aber nur im Block sichtbar |
+| Auftrieb | `auftrieb` | neu: leichter, genauso schwer, schwerer als Luft |
+| Druck, Richtung (°) | `druck`, `winkel` | `winkel` wie Streifen, Nachzieh, RGB |
+| Fächer | `streuung` | wie der Laser, gleicher Trichter, gleiche Spanne 0…1 |
+| Länge | `laenge` | wie Laserstrahl und Lichtstrahlen |
+| Ausblenden | `ausblenden` | neu, fängt bei 0,1 an (Regel 16) |
+
+**Warum der Auftrieb die eigentliche Lösung ist.** Die Gegenleser haben an allen drei Entwürfen
+denselben tödlichen Befund gefunden: `lpV` rastet Geschwindigkeiten auf den Loop ein und ist als
+`max(1, round(v·LOOP/weite))·weite/LOOP` geschrieben — es kann negative Werte gar nicht darstellen.
+Heute steht das Vorzeichen deshalb außerhalb, fest verdrahtet je Art. Jede generische „Richtung in
+Grad" schickt eine vorzeichenbehaftete Geschwindigkeit hinein und lässt Asche, Blasen, Staub und
+Funken im Export nach unten fallen — im Pult unsichtbar, erst im fertigen Video. Der Auftrieb trennt
+Betrag und Vorzeichen genau so, wie der Code es ohnehin tat.
+
+**Das Sichtfeld ist kein zweiter Bereich.** Es ist der Korridor, den die Teilchen fliegen, und er
+endet, indem sie ausgehen. Damit wird nie etwas Rechteckiges gezeichnet, und der „sichtbare Kasten"
+aus §9a.2 ist nicht durch einen besseren Regler vermieden, sondern durch einen Regler weniger.
+
+**Was offen bleibt:**
+- `spreiz` bei den Lichtstrahlen meint denselben Trichter in Grad. Eine Übersetzung nach Regel 12,
+  eigener Schritt, nicht in diesem Umbau.
+- **Schwaden.** Caspar_D: *„Partikeleffekte: Teilchen oder Schwaden."* Der Rauch aus §9a.4 erbt
+  diesen Block unverändert — Quelle, Auftrieb, Druck, Fächer, Länge — und unterscheidet sich nur
+  darin, wie gezeichnet wird. Genau dafür steht der Block in der generischen Spalte.
+- Der zurückgelegte Weg bleibt rund ein Achtel hinter der eingestellten Länge zurück, weil das
+  letzte Stück im Ausblenden liegt. Gemessen: 0,25 → 0,22 · 0,70 → 0,62 · 1,40 → 0,87 (am Bildrand).
+
 ### 9a.3 Warum das billiger ist, als es aussieht — es ist dieselbe Änderung wie §6.8
 
 Mit einer Quellfläche fällt das Modulo weg und wird durch **Lebensdauer** ersetzt: geboren an der
