@@ -27005,8 +27005,8 @@ const EFFEKTE = {
     glZusatz:e=>({ u_sorte:(e.sorte==='dunst'?0:e.sorte==='boden'?2:1),
       u_sogStaerke:((e.sog||'keine')==='keine'?0:(e.sogStaerke==null?.4:e.sogStaerke)),
       u_sogX:(e.sog==='links'?0:e.sog==='rechts'?1:0.5), u_sogY:(e.sog==='boden'?0:e.sog==='oben'?1:0.5) }) },
-  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche oder Funken ziehen durchs Bild. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche, Funken oder Schwaden ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schiesst sie hinaus und laeuft aus wie Luftwiderstand. Schwaden sind Rauch und wollen wenige, grosse und die Verrechnung „Über“. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster (px)',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27119,7 +27119,7 @@ function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:f
   T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; }); return e; }
 /* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
    aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
-const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7] };
+const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7], schwaden:['#9a9a9a','#3c3c3c',.4] };
 /* Jede Nebelsorte bringt ihren Satz mit - gesetzt beim Wechsel, aber nur, solange die Werte noch die der
    vorigen Sorte sind (eigene bleiben stehen). Wie bei den Partikel-Arten. */
 const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auftrieb:0,tempo:.4,grundlicht:.95},
@@ -27128,10 +27128,14 @@ const NEBEL_SORTEN={ dunst:{skala:3.5,turbulenz:.5,lage:.5,dicke:1.4,kante:0,auf
 function nebelSorte(e){ const alt=NEBEL_SORTEN[e._sorteVor||'schwaden']||NEBEL_SORTEN.schwaden, neu=NEBEL_SORTEN[e.sorte]||alt;
   if(Object.keys(alt).every(k=>Math.abs(e[k]-alt[k])<1e-6)) Object.keys(neu).forEach(k=>{ e[k]=neu[k]; });
   e._sorteVor=e.sorte; }
+/* Schwaden wollen wenige und grosse, alle anderen Arten viele und kleine. */
+const ART_MASS={ schwaden:[40,6] };
 function artFarben(e){ const vor=e._artVor||'schnee', alt=ART_FARBEN[vor]||ART_FARBEN.schnee; if(e.farbe===alt[0]&&e.farbe2===alt[1]&&e.farbstreu===alt[2]){ const n=ART_FARBEN[e.art]||alt; e.farbe=n[0]; e.farbe2=n[1]; e.farbstreu=n[2]; }
   /* Das Gewicht zieht wie die Farben mit: beim Artwechsel gesetzt, aber nur, solange es noch das
      der vorigen Art ist. Wer den Auftrieb von Hand gedreht hat, behaelt seinen Wert. */
   if(e.auftrieb===ART_AUFTRIEB[vor]&&ART_AUFTRIEB[e.art]!=null) e.auftrieb=ART_AUFTRIEB[e.art];
+  const mv=ART_MASS[vor]||[120,3], mn=ART_MASS[e.art]||[120,3];
+  if(e.anzahl===mv[0]&&e.groesse===mv[1]){ e.anzahl=mn[0]; e.groesse=mn[1]; }
   e._artVor=e.art; }
 function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false,99); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
 /* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
@@ -27448,9 +27452,9 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
 
    Alles rein aus t und hs(i) gerechnet: kein Zustand zwischen zwei Bildern, kein Geburtenzaehler.
    Sonst waere das Springen in der Zeitleiste und das Neuzeichnen beim Export kaputt. */
-const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25 };
+const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25, schwaden:0.05 };
 /* Das Gewicht, das jede Art bis heute fest verdrahtet hatte: -1 faellt, +1 steigt. */
-const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1 };
+const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1 };
 const Q_REGLER=new Set(['qForm','qUrsprung','qWinkel','qX','qY','qAus','qAusY','qDreh','auftrieb','druck','winkel','streuung','laenge','ausblenden','wind','tempo','art']);
 const Q_FORM=[['bild','das ganze Bild'],['punkt','Punkt'],['linie','Linie'],['kreis','Kreis'],['ellipse','Ellipse']];
 function quellPunkt(e,i,hs,Wn,Hn){
@@ -27478,10 +27482,13 @@ function flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,basis){
   const tempoWeg=Math.max(1e-3, Math.abs(vT)+Math.abs(vW)+druck*0.35);
   const tau=lpP(weg/tempoWeg), ph=hs(i+9500)*tau, alter=((t-ph)%tau+tau)%tau;
   const td=tau*0.35, s=td*(1-Math.exp(-alter/td));     /* zurueckgelegter Weg des auslaufenden Drucks */
-  const q=alter/tau, f=Math.max(0.05,(e.ausblenden==null?0.35:e.ausblenden))*0.5;
+  /* Anfang und Ende sind NICHT dasselbe: ein Teilchen ist da, sobald es die Quelle verlaesst, und
+     geht langsam aus. Ein gemeinsamer Regler hiess "Ausblenden" und blendete auch ein - die Fahne
+     loeste sich dann von ihrer Quelle, und die Beschriftung versprach etwas anderes (Regel 11). */
+  const q=alter/tau, f=Math.max(0.05,(e.ausblenden==null?0.35:e.ausblenden));
   return [ P[0]+Math.cos(ang)*druck*s+vW*alter+gx,
            P[1]+Math.sin(ang)*druck*s+vT*alter,
-           Math.max(0,Math.min(1, Math.min(q,1-q)/f)) ]; }
+           Math.max(0,Math.min(1, q/0.06, (1-q)/f)), q ]; }
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
     if(e.wachsen==='zeit') lim=(LOOP>0?1:Math.min(1,t/Math.max(1,e.dauer)))*(R.maxOrd+1);   /* im Loop ausgewachsen, sonst gaebe es eine Naht */
@@ -27571,15 +27578,40 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Raster liesse vier von sieben Arten im Export verkehrt herum fliegen. */
     const au=(typeof e.auftrieb==='number'?e.auftrieb:(ART_AUFTRIEB[e.art]!=null?ART_AUFTRIEB[e.art]:-1));
     const aB=Math.abs(au), aS=-Math.sign(au), quelle=(e.qForm||'bild'), eigen=(quelle!=='bild');
-    for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
+    for(let i=0;i<n;i++){ const x0=hs(i)*Wn, y0=hs(i+1000)*Hn, sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
       const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
-      if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]; y=F[1]; al=F[2]; }
+      if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]; y=F[1]; al=F[2]; qs=F[3]; }
       if(e.art==='schnee'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='regen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); cx.globalAlpha=1; }
       else if(e.art==='asche'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='blasen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=al*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='staub'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='blaetter'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
+      else if(e.art==='schwaden'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
+        /* SCHWADEN (Caspar_D, 14.09.2026: "und rauch kann sich genauso verhalten, nur dass es
+           schwaden statt teilchen sind"). Dieselbe Quelle, derselbe Flug - nur gezeichnet wird
+           anders: drei weiche Lappen statt eines Punktes, die mit dem Alter aufgehen und duenner
+           werden. Das Aufgehen ist das, was eine Fahne von einer Wolke aus Punkten unterscheidet. */
+        /* DUENNER BEIM AUFFAECHERN (Caspar_D, 14.09.2026: "der rauch muss auch duenner werden,
+           wenn er auffaechert"). Die Schwade traegt eine Menge Rauch, nicht eine Deckkraft: geht
+           sie auf den g-fachen Radius auf, verteilt sich dieselbe Menge auf die g-fache Flaeche
+           zum Quadrat, also faellt die Dichte mit 1/g^2. Ohne das wuchs die Fahne nach oben
+           heller statt blasser und loeste sich sichtbar von ihrer Quelle (gemessen: am Fuss 0,9,
+           im oberen Drittel 28 Graustufen Zuwachs je Zeile). */
+        /* AUSKONDENSIEREN (Caspar_D, 14.09.2026: "meist kondensiert auch erst etwas, also am
+           Anfang duenn weil noch alles gasfoermig, dann dicker, weil auskondensierend, dann
+           verduennend bei Auffaecherung"). Zwei Vorgaenge, die gegeneinander laufen: die Menge
+           sichtbaren Rauchs waechst ueber das erste Viertel des Lebens von null auf eins, die
+           Flaeche waechst die ganze Zeit. Dichte = Menge durch Flaeche, also erst zunehmend,
+           dann abnehmend - die Fahne setzt ein Stueck ueber der Quelle ein, steht dort am
+           dichtesten und wird nach oben blass. Kein Regler: das tut Rauch immer. */
+        const g6=(6+22*qs)/6, R=sz*6*g6, kond=Math.min(1,qs*4), di=a*al*0.34*kond/(g6*g6);
+        for(let L=0;L<3;L++){ const ha=hs(i+9700+L*37), hb=hs(i+9800+L*37);
+          const lx=x+(ha-0.5)*R*0.9, ly=y+(hb-0.5)*R*0.7, lr=R*(0.55+0.45*ha);
+          const g=cx.createRadialGradient(lx,ly,0,lx,ly,lr);
+          g.addColorStop(0,farbeVon(i,+(di*(0.7+0.3*hb)).toFixed(4))); g.addColorStop(1,farbeVon(i,0));
+          cx.fillStyle=g; cx.beginPath(); cx.arc(lx,ly,lr,0,7); cx.fill(); }
+        cx.fillStyle=fc; }
       else { if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
     cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
