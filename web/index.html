@@ -1101,7 +1101,10 @@ select,.knopf{
 .capartclip{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:#000}
 @media (max-width:860px){ .capgal{grid-template-columns:repeat(2,1fr)}
   .capgal>*{grid-column:auto !important} .captextfeld{height:170px} .captonpanel{height:170px} }
-#cap{position:fixed;z-index:82;display:none;max-width:min(980px,96vw);
+/* FESTE BREITE, NICHT NUR EINE OBERGRENZE: mit max-width schrumpfte das Fenster bei einem Titel
+   mit kurzer Beschreibung auf 771 px, und damit wurden auch die Kacheln kleiner. Die Galerie soll
+   bei jedem Titel gleich aussehen - gemessen am 14.09.2026, 771 gegen 980 px am selben Abend. */
+#cap{position:fixed;z-index:82;display:none;width:min(980px,96vw);
   max-height:calc(100vh - 16px);overflow:auto;
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
   box-shadow:0 18px 60px rgba(0,0,0,.55);padding:18px 20px}
@@ -16939,7 +16942,7 @@ let morgenWacht = null;
 ------------------------------------------------------------------ */
 document.addEventListener('click', (e) => {
   const cm = e.target.closest && e.target.closest('.capmarke[data-cap]');
-  if (cm){ e.preventDefault(); e.stopPropagation(); capAuf(cm.dataset.cap, e.clientX, e.clientY); return; }
+  if (cm){ e.preventDefault(); e.stopPropagation(); capAuf(cm.dataset.cap); return; }
   const z = e.target.closest && e.target.closest('.zk[data-rk]');
   if (!z) return;
   e.preventDefault(); e.stopPropagation();
@@ -17023,7 +17026,7 @@ function capMarke(s){
     title="${tipp}">${hat ? 'Medien' : '+'}</span>`;
 }
 
-function capAuf(id, x, y){
+function capAuf(id){
   const s = songVonId.get(id); if (!s) return;
   const n = notizen[id];
   const c = $('cap');
@@ -17098,10 +17101,15 @@ function capAuf(id, x, y){
 
      Aufgerufen wird das jetzt nach artZeichnen(), wenn drinsteht, was
      drinstehen soll. */
+  /* IMMER IN DIE MITTE (Caspar_D, 14.09.2026: "oeffne das Panel immer in der Mitte des Screens,
+     es ist gross genug, dass es sofort ins Auge faellt"). Solange das Fenster klein war, war es
+     richtig, es neben die angeklickte Kachel zu legen - man haette es sonst gesucht. Die Galerie
+     ist 980 px breit; neben einer Kachel am rechten Rand klebte sie an der Kante, und wo sie
+     aufging, haette man erst suchen muessen. In der Mitte ist sie ueberall dieselbe. */
   const platzieren = () => {
     const b = c.getBoundingClientRect();
-    c.style.left = Math.max(8, Math.min(x + 10, innerWidth - b.width - 8)) + 'px';
-    c.style.top  = Math.max(8, Math.min(y + 10, innerHeight - b.height - 8)) + 'px';
+    c.style.left = Math.max(8, Math.round((innerWidth  - b.width)  / 2)) + 'px';
+    c.style.top  = Math.max(8, Math.round((innerHeight - b.height) / 2)) + 'px';
   };
   const feld = c.querySelector('#capnotiz');
   /* Im eingefrorenen Archiv (09.09.2026) ist die Notiz zu lesen, nicht zu
