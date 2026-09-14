@@ -133,6 +133,28 @@ Auszeichnungssprache des Boten.
     Eigennamen (Glockenstuhl, Decke, Kuller). Umbenennungen mit
     Taufnotiz in der Doku festhalten.
 
+### Taufnotizen
+
+Regel 25 verlangt, Umbenennungen festzuhalten. Hier stehen sie.
+
+**„Medien" — die Marke auf der Kachel (14.09.2026).** Hieß erst `Cap`, dann `Text` beziehungsweise
+`Notiz`, kurz `Media`, jetzt **Medien**. Dahinter liegen Notiz, Titelbild, Bewegtbild, Tonfassung
+und Effektclip; `Text`/`Notiz` versprach also seit Wochen weniger, als das Fenster hält (Regel 11).
+Ohne Inhalt bleibt es beim `+`, das nur beim Überfahren erscheint.
+
+Mein Einwand gegen „Medien" war, das Wort sei im Haus schon vergeben: der Schritt **„Medien laden"**
+im Steuerpult holt fehlende MP3, Cover und Videos. Caspar_D hat ihn berichtigt: *„aber das ist es
+doch Medien laden — es wird genau das geladen, was hier noch dazugepackt wird, wir nehmen Medien."*
+Das stimmt, und der Einwand war falsch: es sind dieselben Kategorien, nur andere Herkunft, und die
+Herkunft steht im Dialog daneben („werden Sunos vorgezogen"). Ein Wort, ein Ding — Regel 10a ist
+damit erfüllt und nicht verletzt.
+
+Verworfen wurden auf dem Weg dorthin: **Material** (klingt nach Rohstoff, was drinliegt ist fertig),
+**Beiwerk** (wertet ab, und das Wort steht im Haus schon als Werturteil über Nebentexte),
+**Beilage**, **Bonus** und **Zugabe** (versprechen ein Geschenk; „Zugabe" heißt im Videoexport
+außerdem längst die Bilder über die Naht hinaus), **mehr dazu** (liest sich als Link),
+**Mappe**, **Ausstattung**, **Anhang**.
+
 ## Architektur
 
 26. **Register sind Stationen der Kette** — was drauf setzt, bekommt

@@ -16939,9 +16939,13 @@ function istInstrumental(s){
   return !((s.lyrics && s.lyrics.trim()) || (s.text && s.text.trim()));   // Songobjekt
 }
 
-/* DIE MARKE AUF DER KACHEL HEISST MEDIA (Caspar_D, 14.09.2026: "das kleine Abzeichen im
-   KlangTresor, lass es uns Media nennen, ich glaube, das trifft es am besten, wenn noch nichts
-   drin ist, ein + wie jetzt auch schon").
+/* DIE MARKE AUF DER KACHEL HEISST MEDIEN (Caspar_D, 14.09.2026).
+   Erst 'Media', dann auf Deutsch gebracht. Mein Einwand dagegen war, das Wort sei im Haus schon
+   vergeben - der Schritt 'Medien laden' im Steuerpult holt fehlende MP3, Cover und Videos.
+   Caspar_D hat ihn berichtigt: "aber das ist es doch Medien laden - es wird genau das geladen,
+   was hier noch dazugepackt wird, wir nehmen Medien." Richtig: es sind dieselben Kategorien,
+   nur andere Herkunft, und die steht im Dialog daneben ("werden Sunos vorgezogen"). Ein Wort,
+   ein Ding - Regel 10a ist erfuellt, nicht verletzt.
    Sie hiess 'Text' oder 'Notiz', weil hinter ihr anfangs nur Sunos Beschreibung und die eigene
    Notiz lagen. Inzwischen liegen dort auch Titelbild, Bewegtbild, Tonfassung und Effektclip -
    die Beschriftung versprach also seit Wochen weniger, als das Fenster haelt (Regel 11). Ein
@@ -16958,7 +16962,7 @@ function capMarke(s){
   const tipp = hat ? 'Was zu diesem Titel dazugekommen ist: Notiz, Titelbild, Bewegtbild, Tonfassung, Effektclip'
     : 'Noch nichts dazugelegt — Notiz, Titelbild, Bewegtbild, Tonfassung oder Effektclip anlegen';
   return `<span class="capmarke${hat ? '' : ' ohne'}" data-cap="${s.id}"
-    title="${tipp}">${hat ? 'Media' : '+'}</span>`;
+    title="${tipp}">${hat ? 'Medien' : '+'}</span>`;
 }
 
 function capAuf(id, x, y){
