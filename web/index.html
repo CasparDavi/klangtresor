@@ -1044,12 +1044,33 @@ select,.knopf{
    Laptopschirm ueber die Kante - dann rechnet die Platzierung eine
    negative Position, faellt auf 8 px zurueck, und der untere Teil ist
    nicht erreichbar. Mit max-height scrollt er stattdessen. */
-#cap{position:fixed;z-index:82;display:none;max-width:min(480px,86vw);
+/* ZWEI SPALTEN (14.09.2026): links Suno zum Lesen, rechts das Private zum Aendern. Dafuer
+   braucht der Kasten Breite; unter 620 px stapeln sich die Spalten, erst links, dann rechts. */
+.capspalten{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px}
+@media (max-width:620px){ .capspalten{grid-template-columns:1fr} }
+.capspalte h5{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);
+  font-weight:600;margin:0 0 8px;padding-bottom:5px;border-bottom:1px solid var(--rand)}
+.capspalte h5 small{text-transform:none;letter-spacing:0;font-weight:400}
+.capstueck{margin-bottom:10px}
+/* Die Suno-Seite ist zum Lesen, nicht zum Anfassen - sie traegt deshalb keinen gestrichelten
+   Rand wie die Ablageflaechen daneben, sondern einen ruhigen durchgezogenen. */
+.capruhig{border:1px solid var(--rand);border-radius:8px;padding:8px;text-align:center;
+  font-size:12px;color:var(--schwach)}
+.capruhig img,.capruhig video{max-height:120px;max-width:100%;border-radius:5px;display:block;margin:0 auto}
+/* Regel 21: Schliessen-Knopf rund mit Rand, Flex-zentriertes Kreuz, Druck spuerbar. */
+#capzu{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:13px}
+#capzu:active{transform:scale(.95)}
+#capzu[hidden]{display:none}
+#cap h4{padding-right:34px}
+#cap{position:fixed;z-index:82;display:none;max-width:min(760px,94vw);
   max-height:calc(100vh - 16px);overflow:auto;
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
   box-shadow:0 18px 60px rgba(0,0,0,.55);padding:14px 16px}
 #cap h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);margin:0 0 8px}
-#cap .captext{font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto}
+#cap .captext{font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:34vh;overflow:auto;
+  border:1px solid var(--rand);border-radius:8px;padding:8px}   /* gedeckelt, damit beide Spalten aehnlich hoch enden (Regel 17) */
 .privatmarke{position:absolute;bottom:7px;left:7px;background:rgba(0,0,0,.78);
   border-radius:5px;padding:2px 6px;font-size:10px;font-weight:700;letter-spacing:.4px;
   border:1px solid color-mix(in srgb, var(--akzent) 60%, transparent)}
@@ -16969,59 +16990,64 @@ function capAuf(id, x, y){
   const s = songVonId.get(id); if (!s) return;
   const n = notizen[id];
   const c = $('cap');
-  c.innerHTML = `<h4>${esc(s.titel)}</h4>`
-    + (s.beschriftung ? `<div class="captext">${esc(s.beschriftung)}</div>` : '')
-    + `<h4 style="margin-top:${s.beschriftung ? 12 : 0}px">Notiz <small>— bleibt lokal</small></h4>`
-    + `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
-    + `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`
-    /* Der Instrumental-Haken sitzt bei der Notiz, weil beides dasselbe
-       ist: Caspar_Ds Urteil über den Song, nicht Sunos Angabe. */
-    /* PILLE STATT HAKEN (Hausregel 18: Checkboxen gibt es im Haus nicht; gewaehlt = Rand, nicht
-       Fuellung; Druck spuerbar ueber :active scale 0.95). Hier stand als einzige Stelle der
-       Oberflaeche noch ein echtes Kaestchen. */
-    + `<div class="capinstr">`
-    +   `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
-    +     ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
-    +     ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
-    +   `<span class="fussnote" id="capinstrstand">${
-            instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
-    + `</div>`
-    /* MEIN ARTWORK sitzt aus demselben Grund hier wie der
-       Instrumental-Haken: Es ist Caspar_Ds Beitrag zum Song, nicht
-       Sunos Angabe. Und die Marke, die dieses Fenster oeffnet, sitzt
-       ohnehin schon auf jeder Kachel (Caspar_D, 26.08.2026: "wir haben
-       schon ein abzeichen, um text hinzuzufügen, dort könnte man in
-       diesem context auch einen videoupload einbauen"). */
-    + `<h4 style="margin-top:12px">Illustrationen <small>— werden Sunos vorgezogen</small></h4>`
-    /* ZWEI GETRENNTE PLAETZE (Caspar_D, 26.08.2026: "sieh einfach vor,
-       ein neues cover-art und ein neues video artwork einzufügen, die
-       werden separat vom original gehalten aber sind immer prioritär").
-       Eine Flaeche, die je nach Dateityp mal das eine, mal das andere
-       wird, kann das Vorhandene nicht zeigen und nicht einzeln
-       entfernen - und man sieht nicht, was fehlt. */
-    + `<div class="capartpaar">`
-    +   `<div><div class="capartname">Titelbild</div>`
-    +     `<div class="capart" id="capartbild" data-art="bild"></div></div>`
-    +   `<div><div class="capartname">Bewegtbild</div>`
-    +     `<div class="capart" id="capartvideo" data-art="video"></div></div>`
-    + `</div>`
-    /* DIE EIGENE TONFASSUNG (Tarja über Caspar_D, 27.08.2026: "auch
-       mp3's hochladen können, die das vorhandene nicht ersetzen aber
-       überstimmen" - "wie bei den artwork und videos").
-
-       Sie steht ALLEIN in ihrer Zeile, nicht als drittes neben Bild
-       und Video: die beiden sind Bildseiten desselben Songs, der Ton
-       ist der Song. Und sie braucht mehr Breite, weil sie mehr sagen
-       muss - eine Tonspur laesst sich nicht in einer Vorschau zeigen
-       wie ein Bild. */
-    + `<div class="capartton">`
-    +   `<div class="capartname">Tonfassung <small>— tritt neben WAV und MP3</small></div>`
-    +   `<div class="capart" id="capartton" data-art="ton"></div>`
-    + `</div>`
+  /* ZWEI SPALTEN: LINKS SUNO, RECHTS WAS HIER DAZUKOMMT (Caspar_D, 14.09.2026: "wie waers, wenn
+     wir in der Box, die dort aufgeht, alles anzeigen, was da ist ... klar getrennt in einen Suno
+     Abschnitt links und einen privaten Abschnitt rechts, der aenderbar ist").
+     Vorher stand nur das Eigene im Fenster und daneben der Satz "wird Sunos vorgezogen" - eine
+     Behauptung, die man glauben musste. Jetzt liegt beides nebeneinander und man SIEHT, was
+     ersetzt wird. Links ist zu lesen, rechts zu aendern; das ist der ganze Unterschied. */
+  c.innerHTML = `<button type="button" id="capzu" title="Schließen (Esc)">\u2715</button>`
+    + `<h4>${esc(s.titel)}</h4>`
+    + `<div class="capspalten">`
+    +   `<div class="capspalte capsuno">`
+    +     `<h5>Von Suno</h5>`
+    +     `<div class="capstueck"><div class="capartname">Beschreibung</div>`
+    +       (s.beschriftung ? `<div class="captext">${esc(s.beschriftung)}</div>`
+                            : `<div class="capruhig">keine</div>`)
+    +     `</div>`
+    +     `<div class="capstueck"><div class="capartname">Titelbild</div>`
+    +       `<div class="capruhig"><img src="/media/${id}/cover.jpg" alt="" `
+    +         `onerror="this.parentNode.textContent='keins'"></div></div>`
+    +     `<div class="capstueck"><div class="capartname">Bewegtbild</div>`
+    +       (s.videoCoverUrl
+            ? `<div class="capruhig"><video src="/media/${id}/artwork.mp4" muted loop autoplay playsinline></video></div>`
+            : `<div class="capruhig">keins</div>`)
+    +     `</div>`
+    +   `</div>`
+    +   `<div class="capspalte">`
+    +     `<h5>Privat <small>— wird Sunos vorgezogen</small></h5>`
+    +     `<div class="capstueck"><div class="capartname">Notiz <small>— bleibt lokal</small></div>`
+    +       `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
+    +       `<div class="fussnote" id="capstand">${n ? 'Stand ' + (n.stand || '').slice(0, 10) : ''}</div>`
+    /* Der Instrumental-Schalter sitzt bei der Notiz, weil beides dasselbe
+       ist: Caspar_Ds Urteil über den Song, nicht Sunos Angabe.
+       PILLE STATT HAKEN (Hausregel 18: Checkboxen gibt es im Haus nicht). */
+    +       `<div class="capinstr">`
+    +         `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
+    +           ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
+    +           ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
+    +         `<span class="fussnote" id="capinstrstand">${
+                  instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
+    +       `</div>`
+    +     `</div>`
+    /* ZWEI GETRENNTE PLAETZE (Caspar_D, 26.08.2026: "sieh einfach vor, ein neues cover-art und ein
+       neues video artwork einzufügen, die werden separat vom original gehalten aber sind immer
+       prioritär"). Eine Flaeche, die je nach Dateityp mal das eine, mal das andere wird, kann das
+       Vorhandene nicht zeigen und nicht einzeln entfernen - und man sieht nicht, was fehlt. */
+    +     `<div class="capstueck"><div class="capartname">Titelbild</div>`
+    +       `<div class="capart" id="capartbild" data-art="bild"></div></div>`
+    +     `<div class="capstueck"><div class="capartname">Bewegtbild</div>`
+    +       `<div class="capart" id="capartvideo" data-art="video"></div></div>`
+    /* DIE TONFASSUNG (Tarja über Caspar_D, 27.08.2026: "auch mp3's hochladen können, die das
+       vorhandene nicht ersetzen aber überstimmen" - "wie bei den artwork und videos"). */
+    +     `<div class="capstueck"><div class="capartname">Tonfassung <small>— tritt neben WAV und MP3</small></div>`
+    +       `<div class="capart" id="capartton" data-art="ton"></div></div>`
     /* Das vierte Eigene ist kein Upload, sondern ein Rezept: der Effektclip
        aus dem Effektclip-Studio (Caspar_D, 09.09.2026; Name seit 11.09.2026). */
-    + `<div class="capartton"><div class="capartname">Effektclip <small>— aus dem Studio</small></div>`
-    +   `<div class="capart" id="capartstudio" data-art="effekt"></div></div>`
+    +     `<div class="capstueck"><div class="capartname">Effektclip <small>— aus dem Studio</small></div>`
+    +       `<div class="capart" id="capartstudio" data-art="effekt"></div></div>`
+    +   `</div>`
+    + `</div>`
     + `<input type="file" id="capartdatei" style="display:none">`;
   c.style.display = 'block';
   /* ERST FUELLEN, DANN PLATZIEREN.
@@ -17251,8 +17277,15 @@ function capAuf(id, x, y){
       if (stand) stand.textContent = 'ging nicht';
     }
   };
-  const zu = (ev) => { if (!c.contains(ev.target)) { sichern(); c.style.display = 'none'; removeEventListener('click', zu, true); } };
-  setTimeout(() => addEventListener('click', zu, true), 0);
+  /* DREI WEGE HINAUS, EIN GRIFF: das Kreuz oben rechts (Regel 21), die Esc-Taste und der Klick
+     daneben. Alle drei sichern die Notiz, bevor das Fenster geht - sonst haengt das Speichern am
+     Zufall, welchen Weg jemand nimmt. */
+  const schliessen = () => { sichern(); c.style.display = 'none';
+    removeEventListener('click', zu, true); removeEventListener('keydown', taste, true); };
+  const zu = (ev) => { if (!c.contains(ev.target)) schliessen(); };
+  const taste = (ev) => { if (ev.key === 'Escape'){ ev.stopPropagation(); ev.preventDefault(); schliessen(); } };
+  const kreuz = c.querySelector('#capzu'); if (kreuz) kreuz.onclick = schliessen;
+  setTimeout(() => { addEventListener('click', zu, true); addEventListener('keydown', taste, true); }, 0);
 }
 
 /* Relative Zeit nach Caspar_Ds Staffel (20.08.2026): die Einheit waechst
