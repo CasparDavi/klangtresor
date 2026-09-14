@@ -1112,6 +1112,32 @@ machen kann."* Das schärft den Punkt an zwei Stellen:
 Damit bleibt Rauch Punkt 5 der Reihenfolge, bekommt aber eine Bedingung dazu: **er wird erst gebaut,
 wenn Quellfläche und Sichtfeld stehen**, weil er sie mitbenutzt statt sie zu kopieren.
 
+**Entschieden und gebaut am 14.09.2026 — und zwar anders als hier steht.** Caspar_D: *„und rauch
+kann sich genauso verhalten, nur das es schwaden statt teilchen sind."* Damit entfällt der eigene
+Shader. **Schwaden ist eine Erscheinung des Partikeleffekts**, gleichberechtigt neben Schnee und
+Asche, und erbt Quelle, Auftrieb, Druck, Fächer, Länge und Ausblenden unverändert. Der Einwand
+oben („als Punktwolke sieht das aus wie Asche rückwärts") war richtig für *Punkte* und falsch für
+das, was hier gezeichnet wird: drei weiche Lappen je Schwade, die mit dem Alter aufgehen.
+
+Zwei Physikregeln machen daraus eine Fahne statt einer Wolke, beide ohne eigenen Regler:
+
+- **Dünner beim Auffächern.** *„der rauch muß auch dünner werden, wenn er auffächert."* Eine Schwade
+  trägt eine *Menge* Rauch, keine Deckkraft. Geht sie auf den g-fachen Radius auf, verteilt sich
+  dieselbe Menge auf die g-fache Fläche im Quadrat. Ohne das wuchs die Fahne nach oben heller statt
+  blasser: am Fuß 0,9 Graustufen Zuwachs je Zeile, im oberen Drittel 28,1. Danach 1,1 gegen 9,6.
+- **Erst auskondensieren.** *„meist kondensiert auch erst etwas, also am Anfang dünn weil noch alles
+  gasförmig, dann dicker, weil auskondensierend, dann verdünnend bei Auffächerung."* Die Menge
+  sichtbaren Rauchs wächst über das erste Viertel des Lebens von null auf eins, die Fläche wächst
+  die ganze Zeit. Die Dichte nimmt damit erst zu, dann ab; die dichteste Stelle liegt bei 25 % des
+  Lebens, also ein Stück über der Quelle. Genau dort steht auch echter Rauch.
+
+**Was dabei liegen bleibt, und es ist nicht wenig:** der Gewinn aus dem Nachtrag oben. Als Maler
+kann Schwaden kein `medium:true` tragen — der Licht-Puffer wird von den Malern gefüllt und von den
+Shadern gelesen, ein Maler kann ihn nicht selbst auslesen. Der Rauch über dem Feuer wird also nicht
+vom Feuer beleuchtet, sondern nimmt seine Farbe aus dem Regler. Das ist der Preis für den einen
+Wortschatz, und er ist bewusst bezahlt. Der Weg zurück steht offen und wäre ein zweiter Effekt, kein
+Umbau dieses einen.
+
 **„Schein nur ums Feuer" ist bereits gebaut.** Das ist der Scheinwerfer aus dem Raum-Block, klein
 gestellt, mit Farbig abwedeln — **Regel 5** gilt, er hellt auf, was da ist. Der Antrieb aus dem
 Lichtmischpult lässt ihn mit dem Feuer flackern. Kein neuer Parameter nötig, sondern ein **Preset,
