@@ -1131,12 +1131,36 @@ Zwei Physikregeln machen daraus eine Fahne statt einer Wolke, beide ohne eigenen
   die ganze Zeit. Die Dichte nimmt damit erst zu, dann ab; die dichteste Stelle liegt bei 25 % des
   Lebens, also ein Stück über der Quelle. Genau dort steht auch echter Rauch.
 
-**Was dabei liegen bleibt, und es ist nicht wenig:** der Gewinn aus dem Nachtrag oben. Als Maler
-kann Schwaden kein `medium:true` tragen — der Licht-Puffer wird von den Malern gefüllt und von den
-Shadern gelesen, ein Maler kann ihn nicht selbst auslesen. Der Rauch über dem Feuer wird also nicht
-vom Feuer beleuchtet, sondern nimmt seine Farbe aus dem Regler. Das ist der Preis für den einen
-Wortschatz, und er ist bewusst bezahlt. Der Weg zurück steht offen und wäre ein zweiter Effekt, kein
-Umbau dieses einen.
+**Und der Rauch wird doch beleuchtet.** Ich hatte hier zuerst notiert, ein Maler könne kein Medium
+sein, weil der Licht-Puffer von den Malern gefüllt und von den Shadern gelesen wird. Caspar_D:
+*„häh, verstehe ich nicht, aber rauch muß vom feuer angeleuchtet werden können."* Der Einwand war
+berechtigt, die Notiz war falsch: der Licht-Puffer ist eine **Leinwand**, und ein Maler kann sie
+lesen wie jede andere. Gebaut in drei Griffen, denselben wie bei der Tiefenmaske:
+
+1. Die Schwaden werden auf eine eigene Leinwand gemalt, nicht direkt ins Bild.
+2. Der Licht-Puffer wird mit `destination-in` auf diese Leinwand beschnitten — damit ist er
+   **Licht mal Rauchdichte**: wo viel Rauch steht, streut viel Licht, wo dünner Rauch steht weniger,
+   wo keiner steht gar keins. Das ist Regel 6 in zwei Zeilen Leinwandarbeit.
+3. Das Ergebnis kommt additiv auf die Rauchleinwand, und die geht als Ganzes ins Bild.
+
+Dazu eine kleine Verallgemeinerung: **`medium` darf eine Frage an den Effekt sein statt einer festen
+Marke.** Der Theaternebel ist immer ein Medium, die Partikel nur, solange sie Schwaden sind — als
+Schnee wäre der Licht-Puffer reine Rechenzeit.
+
+**Gemessen** mit einem Scheinwerfer mitten in der Fahne, Beitrag des Rauchs in Graustufen:
+
+| Band | im Kegel | ohne Scheinwerfer | Gewinn |
+|---|---|---|---|
+| y 0,55–0,65 (Kern) | 32,8 | 2,3 | **30,4** |
+| y 0,45–0,55 | 30,0 | 4,3 | 25,8 |
+| y 0,35–0,45 (außerhalb) | 9,5 | 9,0 | 0,5 |
+
+Der Rauch leuchtet also genau dort auf, wo Licht auf ihn fällt, und sonst nirgends.
+
+**Ein Befund nebenbei, der bleibt:** das Feuer strahlt in den Licht-Puffer nur dort, wo seine
+Flammen selbst stehen — es hat keinen Schein darüber hinaus. Rauch über dem Feuer bekommt von ihm
+deshalb wenig ab; die Arbeit macht der kleine Scheinwerfer aus der Vorlage „Feuer mit Schein". Ob
+das Feuer einen weicheren Schein in den Puffer malen sollte als auf das Bild, ist eine eigene Frage.
 
 **„Schein nur ums Feuer" ist bereits gebaut.** Das ist der Scheinwerfer aus dem Raum-Block, klein
 gestellt, mit Farbig abwedeln — **Regel 5** gilt, er hellt auf, was da ist. Der Antrieb aus dem
