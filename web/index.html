@@ -1028,13 +1028,18 @@ select,.knopf{
    Fuenf Spalten, drei Reihen: Ueberschriften, Texte, Kacheln. Die Textreihe hat feste Hoehe und
    laesst innen scrollen - sonst spraengte eine lange Beschreibung das Raster, und regelmaessig zu
    sein ist der ganze Sinn einer Galerie. */
-.capgal{display:grid;grid-template-columns:repeat(5,1fr);gap:8px 10px;margin-top:10px;align-items:start}
+.capgal{display:grid;grid-template-columns:repeat(5,1fr);gap:12px 14px;margin-top:12px;align-items:start}
 .capkopf{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);
   font-weight:600;padding-bottom:5px;border-bottom:1px solid var(--rand)}
 .capkopf small{text-transform:none;letter-spacing:0;font-weight:400}
-.captextfeld{height:132px;overflow:auto;border:1px solid var(--rand);border-radius:8px;padding:8px}
+/* Alle drei Kaesten der Textreihe sind exakt gleich hoch - Beschreibung, Notiz und Tonflaeche.
+   240 px sind gemessen, nicht geraten (Caspar_D, 14.09.2026: "die Caption und die Notiz sollten
+   nicht gescrollt werden muessen"): die laengste Beschreibung im Bestand hat 499 Zeichen, das
+   sind in diesem Kasten zehn Zeilen zu 21,6 px plus Innenabstand. Der Median liegt bei 191
+   Zeichen, also vier Zeilen. Das Scrollen bleibt als Notnagel fuer laengere, die spaeter kommen. */
+.captextfeld{height:240px;overflow:auto;border:1px solid var(--rand);border-radius:8px;padding:9px 10px;box-sizing:border-box}
 .captextfeld.leer{display:flex;align-items:center;justify-content:center;color:var(--schwach);font-size:12px}
-#cap .captextfeld textarea{min-height:0;height:74px;margin:0}
+#cap .captextfeld textarea{min-height:0;height:100%;margin:0;border:0;padding:0;background:none;resize:none}
 /* Die Kachel: immer dasselbe Hochformat, ob voll oder leer. Eine leere Kachel zeigt gedaempft,
    WAS dort hingehoerte, traegt den gestrichelten Rahmen und unten rechts ein Plus - sie sagt es,
    ohne einen Satz zu brauchen. Eine volle Kachel hat einen durchgezogenen Rahmen. */
@@ -1052,8 +1057,18 @@ select,.knopf{
 .capkachel:hover .plus{border-color:var(--akzent)}
 .capkachel:hover{border-color:var(--akzent)}
 .capkachel.drueber{border-color:var(--akzent);border-style:solid}
-.capkachel .weg{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.66);
-  color:var(--text);font-size:12px;padding:3px 0;text-decoration:none}
+/* EINE FUSSLEISTE, NICHT ZWEI UEBEREINANDER (Caspar_D, 14.09.2026: "unterm Effektclip steht nur
+   noch entfernen, bearbeiten sollte auch noch da sein"). Beide Beschriftungen lagen absolut an
+   derselben Stelle, die zweite deckte die erste zu. Jetzt eine Leiste, in der sie sich die
+   Breite teilen: die Haupthandlung zwei Drittel, das Entfernen als Kreuz und hoechstens ein
+   Drittel - und weil ein Kreuz nicht mehr braucht, gedeckelt auf 38 px. */
+.capkachel .capfuss{position:absolute;left:0;right:0;bottom:0;display:flex;
+  background:rgba(0,0,0,.66);font-size:12px;z-index:3}
+.capkachel .capfuss .weg{flex:2 1 0;padding:4px 0;text-align:center;color:var(--text);
+  text-decoration:none;cursor:pointer;min-width:0}
+.capkachel .capfuss .weg.klein{flex:1 1 0;max-width:38px;color:var(--schwach);
+  border-left:1px solid rgba(255,255,255,.18)}
+.capkachel .capfuss .weg:hover{background:rgba(0,0,0,.88);color:var(--text)}
 .capkachelname{font-size:12px;color:var(--schwach);margin-top:3px}
 /* Regel 21: Schliessen-Knopf rund mit Rand, flex-zentriertes Kreuz, Druck spuerbar. Die Form
    kommt aus der Sammelregel des Hauses (Zeile ~360), hier nur Platz und Groesse. */
@@ -1061,19 +1076,30 @@ select,.knopf{
 #cap .capzu:active{transform:scale(.95)}
 #cap .capzu[hidden]{display:none}
 #cap h4{padding-right:34px}
+/* Die Clickflaechen zum Durchschalten: nur beim Ueberfahren da, und sie lassen unten Platz
+   fuer 'entfernen' - sonst laege ein Pfeil ueber dem Loeschen. */
+.capkachel .pfeil{position:absolute;top:0;bottom:22px;width:34px;display:none;
+  align-items:center;justify-content:center;background:rgba(0,0,0,.45);color:var(--text);
+  font-size:19px;line-height:1;cursor:pointer;z-index:2;user-select:none}
+.capkachel .pfeil.li{left:0;border-radius:8px 0 0 0}
+.capkachel .pfeil.re{right:0;border-radius:0 8px 0 0}
+.capkachel:hover .pfeil{display:flex}
+.capkachel .pfeil:hover{background:rgba(0,0,0,.68)}
 .capkachel .capzahl{position:absolute;left:6px;top:6px;min-width:20px;height:20px;padding:0 5px;
   border-radius:10px;background:rgba(0,0,0,.7);border:1px solid var(--rand);color:var(--text);
   font-size:11px;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.capkachel.capton{aspect-ratio:auto;height:132px}
+.capkachel.capton{aspect-ratio:auto;height:240px;box-sizing:border-box}
+#cap .capinstr{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}
+#cap .capinstr .fussnote{margin:0;font-size:10.5px;opacity:.7;line-height:1.3}
 /* Der Effektclip ist kein Standbild, sondern ein Rezept - gezeigt wird er, indem ihn derselbe
    Maler malt, der ihn auf der Kachel malt. Er fuellt die Kachel ganz. */
 .capartclip{position:absolute;inset:0;border-radius:inherit;overflow:hidden;background:#000}
-@media (max-width:700px){ .capgal{grid-template-columns:repeat(2,1fr)}
-  .capgal>*{grid-column:auto !important} .capkachel.capton{height:110px} }
-#cap{position:fixed;z-index:82;display:none;max-width:min(760px,94vw);
+@media (max-width:860px){ .capgal{grid-template-columns:repeat(2,1fr)}
+  .capgal>*{grid-column:auto !important} .captextfeld{height:170px} .capkachel.capton{height:170px} }
+#cap{position:fixed;z-index:82;display:none;max-width:min(980px,96vw);
   max-height:calc(100vh - 16px);overflow:auto;
   background:var(--flaeche);border:1px solid var(--rand);border-radius:12px;
-  box-shadow:0 18px 60px rgba(0,0,0,.55);padding:14px 16px}
+  box-shadow:0 18px 60px rgba(0,0,0,.55);padding:18px 20px}
 #cap h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);margin:0 0 8px}
 #cap .captext{font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:34vh;overflow:auto;
   border:1px solid var(--rand);border-radius:8px;padding:8px}   /* gedeckelt, damit beide Spalten aehnlich hoch enden (Regel 17) */
@@ -17005,26 +17031,33 @@ function capAuf(id, x, y){
     + `<div class="capgal">`
     +   `<div class="capkopf" style="grid-column:1/3">Von Suno</div>`
     +   `<div class="capkopf" style="grid-column:3/6">Privat <small>— wird Sunos vorgezogen</small></div>`
-    +   `<div class="captextfeld${s.beschriftung ? '' : ' leer'}" style="grid-column:1/3">`
-    +     (s.beschriftung ? esc(s.beschriftung) : 'keine Beschreibung') + `</div>`
+    +   `<div style="grid-column:1/3">`
+    +     `<div class="captextfeld${s.beschriftung ? '' : ' leer'}">`
+    +       (s.beschriftung ? esc(s.beschriftung) : 'keine Beschreibung') + `</div>`
+    +     `<div class="capkachelname">Beschreibung</div></div>`
     +   `<div style="grid-column:3/5">`
     +     `<div class="captextfeld">`
     +       `<textarea id="capnotiz" placeholder="Was du dir zu diesem Titel merken willst …">${esc(n ? n.text : '')}</textarea>`
-    /* Der Instrumental-Schalter sitzt bei der Notiz, weil beides dasselbe ist: Caspar_Ds Urteil
-       ueber den Song, nicht Sunos Angabe. Pille statt Haken (Hausregel 18). */
-    +       `<div class="capinstr">`
-    +         `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
-    +           ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
-    +           ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
-    +         `<span class="fussnote" id="capinstrstand">${
-                  instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
-    +       `</div>`
     +     `</div>`
     +     `<div class="capkachelname">Notiz — bleibt lokal</div>`
     +   `</div>`
+    /* DER INSTRUMENTAL-SCHALTER ZIEHT ZUR TONFLAECHE (Caspar_D, 14.09.2026: "die Instrumental-
+       Schaltflaeche gehoert wohin, eigentlich in die Naehe der Tonflaeche, sie darf aber das
+       Gesamtlayout nicht zerstoeren"). Er sagt etwas ueber den KLANG des Titels, nicht ueber die
+       Notiz - und in der Notizbox machte er sie hoeher als die Beschreibung daneben, was dem
+       Raster widersprach. Jetzt haengt er UNTER der Tonflaeche, in derselben Spalte: die drei
+       Kaesten der Textreihe sind damit exakt gleich hoch, und was darunter waechst, waechst in
+       einer Zelle, die ohnehin die schmalste ist. Pille statt Haken (Hausregel 18). */
     +   `<div style="grid-column:5">`
     +     `<div class="capkachel capton" id="capartton" data-art="ton"></div>`
-    +     `<div class="capkachelname">Tonfassung</div></div>`
+    +     `<div class="capkachelname">Tonfassung</div>`
+    +     `<div class="capinstr">`
+    +       `<button type="button" id="capinstr" class="pille${istInstrumental(s) ? ' an' : ''}"`
+    +         ` aria-pressed="${istInstrumental(s) ? 'true' : 'false'}"`
+    +         ` title="Ohne Gesang — dann rechnet KlangTresor keine Stimme und kein Transkript">instrumental</button>`
+    +       `<span class="fussnote" id="capinstrstand">${
+                instrumentalHand[id] ? 'von Hand' : (istInstrumental(s) ? 'erkannt: kein Liedtext' : '')}</span>`
+    +     `</div></div>`
     /* Reihe der Kacheln. Links zum Lesen, rechts zum Aendern - dieselbe Reihenfolge in beiden
        Haelften, damit das Auge die Paare von selbst findet. */
     +   `<div style="grid-column:1"><div class="capkachel ruhig">`
@@ -17105,14 +17138,29 @@ function capAuf(id, x, y){
              Das juengste spielt (Vorgabe); jedes laesst sich einzeln entfernen, ein
              weiteres kommt dazu, ohne das vorhandene zu ersetzen. */
           /* IN DER GALERIE IST EINE KACHEL EINE KACHEL. Die Liste aller Nummern untereinander
-             sprengte die Form, sobald mehr als eines da war. Gezeigt wird deshalb das juengste,
-             das ohnehin spielt; eine Zahl oben links sagt, wie viele es sind. Ein weiteres kommt
-             dazu, indem man es auf die Kachel zieht - entfernt wird immer das juengste. */
+             sprengte die Form, sobald mehr als eines da war.
+             DURCHSCHALTEN STATT STAPELN (Caspar_D, 14.09.2026: "mache doch je eine Clickflaeche
+             mit Pfeil links und rechts auf der Videobox, wenn es mehrere Videos sind, dann
+             koennte man durchschalten. Die Clickflaechen erscheinen nur bei mouse over. Die Zahl
+             der Videos steht als Zahl auf der Flaeche"). Die Zahl sagt beides - das wievielte von
+             wie vielen -, weil man beim Durchschalten sonst nicht weiss, wo man ist. Welches
+             gerade zu sehen ist, merkt sich die Kachel selbst; ohne das spraenge jedes Neuzeichnen
+             zurueck aufs juengste. Entfernt wird, was man SIEHT, nicht immer das juengste. */
           const nrn = (Array.isArray(e.videos) && e.videos.length) ? e.videos : [1];
-          const juengst = nrn[nrn.length - 1];
-          feld.innerHTML = `<video src="/media/${id}/${eigenVideoName(juengst)}${t}" muted loop autoplay playsinline></video>`
-            + (nrn.length > 1 ? `<span class="capzahl" title="${nrn.length} eigene Bewegtbilder — gezeigt wird das jüngste">${nrn.length}</span>` : '')
-            + (eingefroren ? '' : `<span class="weg" data-nr="${juengst}">entfernen</span>`);
+          if (!(feld._vidIdx >= 0) || feld._vidIdx >= nrn.length) feld._vidIdx = nrn.length - 1;
+          const idx = feld._vidIdx, zeigt = nrn[idx];
+          feld.innerHTML = `<video src="/media/${id}/${eigenVideoName(zeigt)}${t}" muted loop autoplay playsinline></video>`
+            + (nrn.length > 1
+               ? `<span class="capzahl" title="Bewegtbild ${idx + 1} von ${nrn.length} — mit den Pfeilen durchschalten">${idx + 1}/${nrn.length}</span>`
+                 + `<span class="pfeil li" title="vorheriges">‹</span><span class="pfeil re" title="nächstes">›</span>`
+               : '')
+            + (eingefroren ? '' : `<div class="capfuss"><span class="weg" data-nr="${zeigt}">entfernen</span></div>`);
+          feld.querySelectorAll('.pfeil').forEach(pf => pf.onclick = (ev) => {
+            ev.stopPropagation();
+            const schritt = pf.classList.contains('li') ? -1 : 1;
+            feld._vidIdx = ((idx + schritt) % nrn.length + nrn.length) % nrn.length;
+            artZeichnen();
+          });
           feld.querySelectorAll('.weg').forEach(w => w.onclick = async (ev) => {
             ev.stopPropagation(); const n = +w.dataset.nr;
             try { await fetch(`/api/eigen-artwork/${id}?was=video&nr=${n}`, { method: 'DELETE' });
@@ -17121,6 +17169,8 @@ function capAuf(id, x, y){
                     if (rest.length) _eigenArt[id].videos = rest;
                     else { delete _eigenArt[id].video; delete _eigenArt[id].videos; }
                     if (!Object.keys(_eigenArt[id]).length) delete _eigenArt[id]; }
+                  /* Nach dem Entfernen zeigt die Kachel das davor, nicht ins Leere. */
+                  feld._vidIdx = Math.max(0, idx - 1);
                   artZeichnen(); zeichnen();
                 } catch (err) {}
           });
@@ -17137,7 +17187,7 @@ function capAuf(id, x, y){
             : art === 'ton'
             ? `<span>Eigene Tonfassung<br><small>sie wird gespielt</small></span>`
             : `<img src="/media/${id}/${datei}${t}" alt="">`)
-          + (eingefroren ? '' : `<span class="weg">entfernen</span>`);
+          + (eingefroren ? '' : `<div class="capfuss"><span class="weg">entfernen</span></div>`);
         if (art === 'ton') feld.onclick = (ev) => {
           if (ev.target.classList.contains('weg')) return;
           try { spielenNachId(id); } catch (err) {}
@@ -17252,8 +17302,10 @@ function capAuf(id, x, y){
        der von allen am meisten zu sehen hat. Gemalt wird er von demselben Maler, der ihn auf der
        Kachel malt (clipAn); ein zweiter waere eine zweite Wahrheit. */
     studioFeld.innerHTML = hatE
-      ? `<div class="capartclip"></div><span class="weg" data-tu="oeffnen">bearbeiten</span>`
-        + (eingefroren ? '' : ` · <span class="weg" data-tu="weg">entfernen</span>`)
+      ? `<div class="capartclip"></div><div class="capfuss">`
+        + `<span class="weg" data-tu="oeffnen">bearbeiten</span>`
+        + (eingefroren ? '' : `<span class="weg klein" data-tu="weg" title="Effektclip entfernen">✕</span>`)
+        + `</div>`
       : (eingefroren ? 'Archiv eingefroren'
          : `<img src="/media/${id}/cover.jpg" alt="" onerror="this.remove()">`
            + `<div class="schatten"></div><span class="plus">+</span>`);
