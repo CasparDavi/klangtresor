@@ -27766,9 +27766,24 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   else if(e.typ==='strahlen'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke)*antriebWert(e,t);
     const px=Wn*e.px, py=Hn*e.py, n=e.anzahl, L=e.laenge*Math.hypot(Wn,Hn), spreiz=e.spreiz*Math.PI/180, br=e.breite*Math.PI/180;
     const basis=Math.atan2(Hn/2-py,Wn/2-px)+Math.sin(2*Math.PI*t/lpP(e.tempo))*e.schwenk*0.6;
+    /* WEICHE FLANKEN (Caspar_D, 14.09.2026: "der lichtstrahleneffekt braucht unscharfe kanten,
+       das sieht sonst zu schablonenhaft aus"). Der Schacht hatte einen Verlauf der LAENGE nach,
+       aber seine Flanken waren gerade Dreieckskanten - und eine gerade Kante ist das, was eine
+       Schablone von Licht unterscheidet (Regel 16: was innerhalb des Bildes aufhoert, hoert
+       weich auf; VIDEO-PLAN 9d.2 fuehrt es unter den Fehlern, die sich nicht messen lassen).
+       Gemalt wird deshalb erst auf eine eigene Leinwand und die EINMAL weichgezeichnet - nicht
+       je Schacht, das waere ein Filter in einer Schleife (Regel 14). Die Weichheit folgt der
+       Breite des Schachts: ein breiter Schacht ist weicher als ein schmaler, das muss niemand
+       einstellen. Die Schaechte addieren sich auf der eigenen Leinwand, wie Licht es tut. */
+    if(!e._sc) e._sc=document.createElement('canvas');
+    if(e._sc.width!==Wn||e._sc.height!==Hn){ e._sc.width=Wn; e._sc.height=Hn; }
+    const sx=e._sc.getContext('2d'); sx.setTransform(1,0,0,1,0,0); sx.globalAlpha=1; sx.filter='none';
+    sx.globalCompositeOperation='source-over'; sx.clearRect(0,0,Wn,Hn); sx.globalCompositeOperation='lighter';
     for(let i=0;i<n;i++){ const ang=basis+(n>1?(i/(n-1)-0.5):0)*spreiz+Math.sin(2*Math.PI*t/lpP(e.tempo/1.3)+hs(i)*9)*e.schwenk*0.12, w=br*0.5*(0.6+0.8*hs(i+30));   /* halber Oeffnungswinkel, damit Breite (Grad) der ganze ist (Tiefen-Check) */
-      const gr=cx.createRadialGradient(px,py,0,px,py,L); gr.addColorStop(0,rgba(e.farbe,0.55*a*(0.5+0.5*hs(i+60)))); gr.addColorStop(1,rgba(e.farbe,0));
-      cx.fillStyle=gr; cx.beginPath(); cx.moveTo(px,py); cx.lineTo(px+Math.cos(ang-w)*L,py+Math.sin(ang-w)*L); cx.lineTo(px+Math.cos(ang+w)*L,py+Math.sin(ang+w)*L); cx.closePath(); cx.fill(); } }
+      const gr=sx.createRadialGradient(px,py,0,px,py,L); gr.addColorStop(0,rgba(e.farbe,0.55*a*(0.5+0.5*hs(i+60)))); gr.addColorStop(1,rgba(e.farbe,0));
+      sx.fillStyle=gr; sx.beginPath(); sx.moveTo(px,py); sx.lineTo(px+Math.cos(ang-w)*L,py+Math.sin(ang-w)*L); sx.lineTo(px+Math.cos(ang+w)*L,py+Math.sin(ang+w)*L); sx.closePath(); sx.fill(); }
+    const weich=Math.max(2,Math.min(Wn*0.08,br*0.5*L*0.30));
+    cx.filter='blur('+weich.toFixed(1)+'px)'; cx.drawImage(e._sc,0,0); cx.filter='none'; }
   else if(e.typ==='korn'){ const a=Math.min(1,e.staerke); if(!e._kt){ e._kt=document.createElement('canvas'); e._kt.width=96; e._kt.height=96; e._kn=-1; }
     const schritt=Math.max(1,Math.round(1+(1-e.tempo)*12)); const fr=Math.floor(t*60/schritt);
     if(fr!==e._kn){ e._kn=fr; const kx=e._kt.getContext('2d'), im=kx.createImageData(96,96), d=im.data; for(let i=0;i<d.length;i+=4){ const v=68+Math.random()*120|0;   /* Mittel 128: Overlay neutral, hellt nicht auf (Tiefen-Check) */ d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } kx.putImageData(im,0,0); }
