@@ -27531,11 +27531,35 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
   gl_FragColor=vec4(col*inside, 1.0); }`,
   nebel:`uniform float u_skala,u_turbulenz,u_tempo,u_lage,u_dicke,u_kante,u_auftrieb,u_wind,u_sogStaerke,u_streuung,u_grundlicht,u_sorte,u_sogX,u_sogY,u_tiefeAn; uniform vec3 u_farbe; uniform sampler2D u_licht;
 float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.34,0.64,u_turbulenz); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
-/* Grob verwaschene Umgebung: neun Griffe reichen, der Nebel braucht keine Schaerfe, nur die Gegend. */
-vec3 umgebung(vec2 uv){ vec3 s=texture2D(u_tex,uv).rgb*2.0;
-  for(int i=0;i<8;i++){ float w=float(i)*0.7853981634; float rr=(i<4)?0.055:0.115;
-    s+=texture2D(u_tex, clamp(uv+vec2(cos(w),sin(w))*rr, 0.0, 1.0)).rgb; }
-  return s*0.1; }
+/* DIE UMGEBUNG - UND WARUM NEUN GRIFFE ZU WENIG WAREN.
+
+   Hier standen acht Griffe auf zwei festen Ringen (5,5 und 11,5 Prozent Bildbreite) plus die
+   Mitte. Das ist kein Weichzeichner, sondern ein Ringabtaster: jeder Griff traegt eine um
+   denselben Betrag VERSETZTE KOPIE des Bildes bei, und weil der Winkel fuer jeden Bildpunkt
+   derselbe ist, addieren sich diese Kopien im ganzen Bild an derselben Stelle. Ergebnis sind
+   sichtbare Doppelgaenger - ein Schriftzug erscheint ein zweites und drittes Mal, versetzt.
+
+   Caspar_D, 14.09.2026: „ich meine sogar zwei Geisterbilder zu sehen" und „die Tiefenmaske sitzt
+   zu hoch". Beides war dasselbe: diese Kopien. Bis dahin hatte die 40-Prozent-Entsaettigung
+   (siehe unten) sie grau und unauffaellig gehalten - sie hat den Fehler VERSTECKT, nicht behoben.
+
+   Jetzt ein echter Weichzeichner: drei Ringe, je acht Griffe, Gewichte fallen nach aussen ab -
+   und entscheidend: der Startwinkel wird JE BILDPUNKT gewuerfelt. Damit liegen die Kopien nicht
+   mehr uebereinander, sondern zerfallen zu einer gleichmaessigen Truebung. Das ist derselbe
+   Kniff, mit dem weiche Schatten aus wenigen Abtastungen entstehen: nicht mehr Griffe, sondern
+   unkorrelierte.
+
+   25 Griffe statt 9. Das ist mehr Arbeit je Bildpunkt, aber der Nebel laeuft nur, wenn er in der
+   Kette haengt - und Regel 14 (keine hundert Abtastungen je Bildpunkt) ist weit entfernt. */
+vec3 umgebung(vec2 uv){
+  float a0=fract(sin(dot(uv,vec2(12.9898,78.233)))*43758.5453)*6.2831853;
+  vec3 s=texture2D(u_tex,uv).rgb*3.0; float w=3.0;
+  for(int r=0;r<3;r++){
+    float rad=0.030+float(r)*0.042, gew=exp(-float(r)*0.55);
+    for(int i=0;i<8;i++){
+      float ang=a0+float(i)*0.7853981634+float(r)*0.3926990817;
+      s+=texture2D(u_tex, clamp(uv+vec2(cos(ang),sin(ang))*rad, 0.0, 1.0)).rgb*gew; w+=gew; } }
+  return s/w; }
 void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
   /* Stroemung: gleichfoermiger Zug aus Wind und Auftrieb (starr, darf unbegrenzt laufen) plus Sog zur Absaugung.
      Der Sog haengt vom Ort ab und wuerde das Feld endlos verschmieren - darum zwei Phasen, die sich abloesen. */
@@ -27560,9 +27584,11 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
      ueber Dunklem dunkel. Er behaelt einen Teil der Farbe darunter, sonst grauen satte Bilder aus. */
   vec3 L=texture2D(u_licht,uv).rgb;
   vec3 um=umgebung(uv);
-  /* Die Entsaettigung ist raus (VIDEO-PLAN §10). Hier stand mix(vec3(lum),um,0.6) - 40 Prozent
-     Grau, waehrend der Kommentar darueber das Gegenteil behauptete. Mit der Tiefe entsteht die
-     Entsaettigung von selbst, dort wo sie hingehoert: in der Ferne. */
+  /* KEINE ENTSAETTIGUNG MEHR (VIDEO-PLAN §10). Hier stand mix(vec3(lum),um,0.6) - 40 Prozent
+     Grau, waehrend der Kommentar darueber das Gegenteil behauptete. Sie stand da, weil der
+     Ringabtaster oben Doppelgaenger erzeugte und Grau sie unauffaellig machte. Der Abtaster ist
+     jetzt ein echter Weichzeichner; die Kaschierung kann weg. */
+  float tAn=clamp(u_tiefeAn,0.0,1.0);
   vec3 grund=u_farbe*um*u_grundlicht;
   /* NEBEL IST KEINE SCHICHT, SONDERN EINE DAEMPFUNG ENTLANG DES SEHSTRAHLS.
      Koschmieders Sichtweitengleichung: Ergebnis = Bild*e^(-dichte*z) + Luftlicht*(1-e^(-dichte*z)).
@@ -27573,7 +27599,7 @@ void main(){ vec4 c=texture2D(u_tex,v_uv); vec2 uv=v_uv; float yy=1.0-uv.y;
      alten d - der Regler ist der ehrliche Weg zurueck. */
   float z=1.0-texture2D(u_tiefe,uv).r;
   float dt=1.0-exp(-d*3.0*z);
-  float dd=mix(d, dt, clamp(u_tiefeAn,0.0,1.0));
+  float dd=mix(d, dt, tAn);
   gl_FragColor=vec4(mix(c.rgb, grund+u_farbe*L*u_streuung, dd), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_glut; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
