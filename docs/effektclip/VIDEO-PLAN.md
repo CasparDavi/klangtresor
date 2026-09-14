@@ -1479,6 +1479,40 @@ Danach zeigt die rechte Spalte auf **allen** Karten dasselbe Antriebsfeld, und d
 gleicher Periode wirklich gleich aussieht — sonst ist die Übersetzung falsch und braucht eine
 eigene Kurvenform.
 
+**Gebaut am 14.09.2026, und die Übersetzungstabelle oben war an zwei Stellen falsch.**
+
+- **`invert` wandert NICHT auf `lmInvers`.** Bei den Pulsen ist „invertieren" keine umgekehrte
+  Kurve, sondern eine andere Wirkung: dunkler statt heller, 1/Sättigung statt Sättigung, gedreht
+  ruhen statt gedreht schlagen. Ein Wort, ein Ding (Regel 10a) — es bleibt ein eigener Schalter in
+  der linken Spalte. Mit auf das Pult gehen dagegen `abkling` (→ `lmAbkling`, Muster „An, dann
+  Rampe ab") und `nurEins` (→ Quelle „auf der Eins").
+- **Das Pult konnte den alten Atem gar nicht.** „pro Sekunde" fing bei 0,5 an, ein Atemzug von vier
+  Sekunden braucht 0,25 und der langsamste alte Atem von zwölf Sekunden 0,083. Die Übersetzung hätte
+  jeden alten Atemzug bis auf das Sechsfache beschleunigt. Der Regler reicht jetzt bis 0,05 hinunter,
+  also bis zu einem Zug in zwanzig Sekunden. Das ist keine Anpassung an die Vergangenheit, sondern
+  eine Lücke, die erst beim Zusammenführen sichtbar wurde.
+
+**Regel 2 beim Zusammenführen.** Die „Tiefe" des Pults wäre bei einem Puls ein zweiter Wucht-Regler
+und damit ein reines Produkt aus zwei Deckkräften. Der Puls liest deshalb die **rohe** Kurve, und die
+Tiefe-Zeile bleibt auf seiner Karte weg (`lmOhneTiefe`). Bei Scheinwerfern und Flammen bedeutet sie
+etwas und steht weiter da.
+
+**Was sich am Bild ändert, und es ist nicht nichts.** Der alte Takt-Antrieb summierte abklingende
+Stöße mehrerer Schläge auf (`pulswert`, gedeckelt bei 1,5); das Pult rechnet aus der Phase im
+Schlagabstand. Bei dichten Passagen stapelt sich also nichts mehr, und die Kurve ist eine Potenz
+statt einer Exponentialfunktion. Gemessen an „Helligkeit schlägt", Wucht 0,45, Spanne der
+Bildhelligkeit über 60 Bilder:
+
+| Einstellung | Schnitt | Spanne |
+|---|---|---|
+| im Takt, Abklingen 1,8 | 36,8 | 9,8 |
+| Abklingen 0,4 (lang) | 40,4 | 9,7 |
+| Abklingen 3,6 (kurz) | 35,8 | 9,9 |
+| Antrieb stetig | 43,4 | 0 |
+
+Der Regler wirkt über seinen ganzen Weg (Regel 9), und „stetig" ist neu: ein Puls, der einfach
+anbleibt, war vorher nicht einstellbar.
+
 ### 9d.2 Woran sich Bühnenreife messen lässt
 
 Aus dem Regelwerk und den heutigen Befunden, **messbar**:
