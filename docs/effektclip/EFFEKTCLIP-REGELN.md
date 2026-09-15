@@ -199,7 +199,8 @@ des Rasters. Bis zum 15.09.2026 lag sie fest bei 0 und damit zufällig gegen das
   der Puls kommt 0 bis 1 Bild spät, und die Zahl stand dadurch im Median 6 Prozentpunkte zu hoch.
   Fenster 1/8 Schlag, höchstens 80 ms — sonst heißt „sitzt" bei langsamen Liedern etwas Weicheres.
 - **18c. Keine Zahl unter ihrem Zufallsboden.** Auf verwackelten Schlägen findet dieselbe Suche bis
-  43 %. Darunter sagt die Statuszeile „der Takt lässt sich nicht über das Lied legen", nicht „30 %".
+  43 %. Darunter sagt die Statuszeile „keine Länge bleibt über das Lied im Takt – die Pulse laufen im
+  Suno-Video gegen die Musik", nicht „30 %" (Wortlaut seit 15.09.2026, Caspar_D; vorher „der Takt lässt sich nicht über das Lied legen").
   Wer die Suche ändert (neue Kartenlage, neues Fenster), misst den Boden neu (`ZUFALL_BODEN`).
 - **18d. Ein Clipschlag bleibt ein Songschlag.** Halb- und Doppeltempo sind keine Lösung, auch wenn sie
   mehr Schläge treffen: ein Puls ohne Songschlag kostet in der Zielfunktion nichts, auf dem Bild aber

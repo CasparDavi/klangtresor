@@ -289,8 +289,8 @@ Schlag im Clip liegt. Die ehrliche Grundlinie ist deshalb „Phase 0", nicht „
   Median der Einsabstände mit der häufigsten Schlagzahl. P < 2 heißt „ohne Einsen" (P = 4).
 
 **Die Statuszeile** sagt „sitzt auf X % des Lieds im Takt", unter 50 % mit Grund („das Tempo wechselt im
-Lied", „das Tempo ist frei gespielt"). **Unter 44 % steht keine Zahl**, sondern „der Takt lässt sich nicht
-über das Lied legen": auf verwackelten Zufallsschlägen (±½ Schlag, 6 Kartenlagen, 324 Titel, 2 Saaten)
+Lied", „das Tempo ist frei gespielt"). **Unter 44 % steht keine Zahl**, sondern „keine Länge bleibt über das
+Lied im Takt – die Pulse laufen im Suno-Video gegen die Musik" (Wortlaut seit 15.09.2026, Caspar_D): auf verwackelten Zufallsschlägen (±½ Schlag, 6 Kartenlagen, 324 Titel, 2 Saaten)
 findet dieselbe Suche bis zu 43,0 %. Bei Eins-Karten zeigt sie das Kleinere aus Schlag- und Eins-Anteil.
 Der MediaRecorder-Notweg sagt „im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht
 sicher".

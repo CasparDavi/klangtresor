@@ -4262,3 +4262,100 @@ Prozesse vom 13.09. beendet; ein fremder Prozess auf 8791 versehentlich beendet 
    Titel mit wenigen Schlägen, Schritt auf der Eins) will er **bei Gelegenheit** über den Loop-Modus ansehen —
    *„behalts im Gedächtnis, dass ich das bei Gelegenheit mal anschauen soll"*. Daran erinnern.
 Danach: Release 1.0.7.
+
+## Studio als Akkordeon (15.09.2026)
+
+Das Pult des Effektclip-Studios (`#tbs-pult` in `web/index.html`) ist jetzt ein Akkordeon, wie mit Caspar_D abgestimmt.
+Nichts ist committet.
+
+1. **Vier Stufen:** Quelle · Vorbereitung · Effektkette · **Effektclip als Schleife**. Die letzte hieß vorher
+   „Schleife schließen" (`LOOP_STUFE`, Taufnotiz in `docs/haus/HAUSREGELN.md`).
+2. **Immer nur eine Stufe offen.** Der Kopf ist ein Knopf mit `aria-expanded`, Fokusrahmen und `:active` 0,95.
+   - Rechts im Kopf steht der Stand (`standSetzen()`). Er wird dort gesetzt, wo sich der Zustand ändert: `quellenUI`,
+     `vorbStand`, `kettekopfStand` und `schleifeUI`.
+   - Die Texte lauten „Bewegtbild (Suno)", „2 Anpassungen aktiv" / „keine Anpassung", „3 Effekte zugewiesen · 2 an ·
+     Solo: Name" / „kein Effekt" und „7,53 s · 19 Schläge · Blende". Beim Titelbild fällt der Übergang weg.
+3. **Erklärtexte** im Wortlaut von Caspar_D stehen in `STUFE_ERKLAER` und ersetzen die alten Untertitel.
+4. **Der eigene Klappschalter der Vorbereitung ist ganz entfernt** (`#tbs-vorbKlapp`, `#tbs-vorbStand`, CSS
+   `.tbs-vorbkopf`). „Löschen" bleibt im Panel neben Auto-Niveaus. Beim Öffnen der Stufe läuft `vorbRender()`.
+5. **Gemerkt wird die zuletzt geöffnete Stufe** in `localStorage` unter `mysuno-tbs-stufe` (mit try/catch). Beim ersten
+   Mal ist es die Quelle.
+6. **Die Vorschau folgt der Stufe:**
+   - Die Schleife schaltet `loopSchalten(true)`, jede andere Stufe und das Zuklappen schalten aus. Während eines
+     Exports wird nicht geschaltet.
+   - Ist die Quelle noch nicht bereit, merkt sich das Studio einen Wunsch (`loopWunsch`), den `grundLaden()` einlöst.
+   - **Taste V halten** in der offenen Vorbereitung zeigt die Quelle ohne Effekte. Das läuft über
+     `zeichneFrame(t, roh)` aus `rahmen()`, dazu kommt die Marke `#tbs-ohneMarke` über dem Feld. Die Taste wirkt auch,
+     wenn ein Schieber den Fokus hat, nicht aber in Textfeldern und Listen. Losgelassen wird bei keyup V/Meta, blur und
+     visibilitychange.
+7. **Die Schleife hat eine Spalte:** Erklärung, Lage, Pille „als 10-s-Clip zeigen", Schläge im Clip, Übergang an den
+   Schleifenenden mit Prinzip, Länge des Übergangs, Zeitleiste, Kostenhinweis.
+   - `taktSatz` unter dem Zufallsboden lautet jetzt „keine Länge bleibt über das Lied im Takt – die Pulse laufen im
+     Suno-Video gegen die Musik".
+8. **Zeitleiste repariert.** Ursache: `getComputedStyle($('#tbs'))`. `root` ist `#tbs`, also war das Ergebnis null, und
+   der Aufruf warf nach dem Schwarz. Jetzt steht dort `getComputedStyle(root)`.
+   - Dieselbe Ausnahme hatte auch die Loop-Einschaltung beim Übergangswechsel verhindert und das Dimmen der Lagezeile
+     hängen lassen.
+   - Probe (`scratchpad/leiste-probe2.mjs`, dpr 2): Titelbild 456–712 helle Pixel, Video mit Blende 87 568. Wieder
+     aufgeklappt malt die Leiste neu; keine Ausnahme.
+9. **Fuß:**
+   - „Lösen" heißt jetzt „Löschen"; der Tooltip sagt, dass nur das gesicherte Rezept beim Titel gelöscht wird.
+   - Die Beschriftung lautet „Effektclip".
+   - „Gesichert werden Quelle, Vorbereitung, Effektkette und Schleife."
+   - Die Meldungen lauten „Effektclip des Titels geladen" und „noch kein Effektclip beim Titel".
+   - Der Tastenhinweis nennt V.
+
+**Nebenbei mitgebaut** (Fallen aus der Kartierung):
+- `loopSchalten(false)` gibt das Video erst frei, wenn die Vermessung (`SCHLEIFE_STILL.laeuft`) fertig ist.
+- Wechselt die Quelle bei laufender Loop-Ansicht auf ein Video (Pfeiltasten), wird es vermessen.
+- `grundLaden` rendert die offene Vorbereitung neu, damit das Histogramm zur neuen Quelle passt.
+
+**Geprüft:**
+- `syntax.js`: alle bauen.
+- `--studiofeld`: Vorgabefeld weiter 898 × 889.
+- `--loop-ansicht` (puls, korn, kippen, strobe): 8/8 bitgleich, Satz gleich, dicht, aus gleich.
+- Leistenprobe dpr 1 und 2: keine Ausnahme.
+
+**Offen / nicht geprüft:**
+- Caspar_D muss das Akkordeon am echten Bild ansehen; der V-Vergleich mit einer echten Vorbereitung wurde automatisch
+  nicht geprüft.
+- **Abweichung von der Absprache, zur Entscheidung:** V wirkt auch, wenn ein Schieber (range) den Fokus hat — abgesprochen
+  war „nicht in Eingabefeldern". Grund: Schieber behalten nach dem Ziehen den Fokus, V täte sonst genau beim Vergleichen nichts.
+- **Benennung, zur Entscheidung:** der Knopf der Vorbereitung heißt jetzt „Zurücksetzen" (vorher ebenfalls „Löschen" —
+  zwei gleich beschriftete Knöpfe mit verschiedener Wirkung). Das ✕ an der Studio-Kachel im Haus heißt im Tooltip
+  weiter „Effektclip entfernen".
+- „Löschen" fragt weiterhin nicht nach, wie „Lösen" vorher.
+- Falle B aus der Kartierung ist nicht gebaut: „10 s ausgeben" während einer laufenden Vermessung.
+- `labor/effektclip-studio/tbs-modul.js` ist eine alte Kopie und nicht nachgezogen.
+- Schon vorher so: stellt `sprungHolen()` das Video mitten in einer Vermessung auf die Sprungkopie um, misst die Kurve
+  über den Wechsel hinweg und trägt den Schlüssel der alten Adresse (Probe: 194 statt 195 Stützstellen gegen eine saubere
+  Messung). Die Sperre hält jetzt; die Messung selbst wird nicht neu gestartet.
+
+**Nachgebessert nach der Gegenprüfung (15.09.2026):**
+- Loop-Ansicht mit Video: ein Ziel vor dem ersten Videobild (Suno-mp4 beginnt bei 0,083 s) ließ `loopBildMalen` jedes
+  Bild neu spulen, ohne je zu malen (harter Schnitt am Clipanfang, zweite Hälfte fast aller Übergänge) — schon vor dem
+  Akkordeon so. Ein fertiger Sprung zum selben Ziel gilt jetzt als angekommen.
+- Stufenwechsel während eines Exports wird nach dem Export nachgeholt (`stufeAbgleichen`); ohne Wechsel bleibt eine von Hand
+  ausgeschaltete Pille aus.
+- `schliessen()` schaltet die Loop-Ansicht aus und gibt VIDEO_GENAU sofort frei, auch wenn die Vermessung noch abbricht (VIDEO_GENAU blieb sonst stehen und `quelleSync` ließ Kachel-/Bühnenvideos liegen).
+- `angewendet()` zählt eine geänderte Schleife; „Für diesen Titel sichern" wird frei.
+- Preset und Beispiel setzen Solo zurück; ein Solo ohne Karte wird im Kopf der Kette verworfen statt verschwiegen.
+- Zweites „bereit" nach dem Umstellen auf die Sprungkopie löst keine zweite Vermessung und kein Neubauen der Vorbereitung
+  mehr aus; ein zweiter Aufruf von `schleifeKurveMessen` wartet auf die laufende Messung, die Sperre `SCHLEIFE_STILL` ist gezählt.
+- Geht das Studio während einer Vermessung zu und mit einem anderen Video wieder auf, wartet die neue Messung auf das Ende
+  der alten und misst dann das neue Element.
+- 12 px für Lagezeile, Pille und Fußtexte (Regel 14); verwaiste CSS (`#tbs-abLoop` container-type, Großschrift-Rückstellung) gelöscht.
+- Prüfstand `haken.js` erkennt den neuen Satz unter dem Zufallsboden; EFFEKTCLIP-REGELN 18c und VIDEO-PLAN nachgezogen.
+- Nachprobe (eigene Site-Kopie, headless): Ziel vor dem ersten Videobild malt (i=0, Abspielstrich 64 px; Blende-Ende i=225);
+  Export-Nachholen, Solo nach Preset, Sichern nach Schlag-Änderung, Schließen (Kachel-`quelleSync` greift wieder),
+  Sprungkopie (0 Bilder ohne Sperre, Vorbereitung nicht neu gebaut, Fokus bleibt): alle wie erwartet, 0 Meldungen.
+  `--studiofeld --neu`: Feld 898 × 889. Leistenprobe dpr 1/2: Exit 0.
+
+
+### Achsen der Zeitleiste (15.09.2026 spät, Version 1.0.8)
+
+Caspar_D: *„die linke Achse von unten nach oben bildet die Zeitskala des Videomaterials ab, die waagerechte Achse von links
+nach rechts die von Klangtresor geschleifte Version"* — das muss dastehen. Gebaut: `#tbs-leiste` 96 px hoch, links die Achse
+„Video" (0 s unten, Videodauer oben, nur bei Bewegtbild), unten „0 s · geschleifter Clip · L s", darunter sein Satz als
+Erklärung und rechts „Übergang X s" in Akzent. Die schwarze Leiste davor war `getComputedStyle($('#tbs'))` — `$` sucht nur
+unterhalb von `root`, und `root` *ist* `#tbs`; die Ausnahme brach auch `schleifeUI()` ab. Probe: `leiste-probe2.mjs` (Scratchpad).

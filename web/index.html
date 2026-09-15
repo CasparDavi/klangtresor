@@ -3195,10 +3195,26 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-zeile > button, #tbs .tbs-zeile .tbs-mini{flex:0 0 auto;white-space:nowrap}
 #tbs .tbs-reihe button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #tbs .tbs-seg button:disabled{opacity:.35;cursor:default}
-/* Zwei Teile im Pult: Quelle (worauf gemalt wird) und Effektkette; das Rezept als Fuss, der beides zusammenhaelt */
-#tbs .tbs-abschnitt{border:1px solid var(--rand);border-radius:12px;padding:10px 12px 4px;margin-bottom:12px}
-#tbs .tbs-abtitel{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--schwach);margin-bottom:9px}
-#tbs .tbs-abunter{text-transform:none;letter-spacing:0;font-size:11px;opacity:.8;white-space:nowrap}
+/* DAS PULT ALS AKKORDEON (Caspar_D, 15.09.2026): vier Stufen - Quelle, Vorbereitung, Effektkette, Effektclip als Schleife -,
+   immer nur eine offen; das Rezept als Fuss darunter haelt sie zusammen. Eine zugeklappte Stufe wirkt trotzdem (Regel 10),
+   darum nennt ihr Kopf rechts den Stand (Regel 3: nichts darf luegen). Der Kopf ist eine Zeile und ein Knopf (Regel 19). */
+#tbs .tbs-abschnitt{border:1px solid var(--rand);border-radius:12px;padding:0;margin-bottom:10px}
+#tbs .tbs-stufenkopf{display:flex;align-items:baseline;gap:8px;width:100%;margin:0;padding:9px 12px;border:0;border-radius:11px;background:transparent;color:var(--text);font:inherit;font-size:13px;line-height:1.4;text-align:left;cursor:pointer}
+#tbs .tbs-stufenkopf:hover{background:var(--flaeche2)}
+#tbs .tbs-stufenkopf:focus-visible{outline:2px solid var(--akzent);outline-offset:-2px}
+#tbs .tbs-stufenkopf:active{transform:scale(.95)}
+#tbs .tbs-abschnitt.offen .tbs-stufenkopf{border-bottom-left-radius:0;border-bottom-right-radius:0}
+#tbs .tbs-chev{flex:0 0 auto;width:14px;color:var(--schwach);font-size:14px;line-height:1}
+#tbs .tbs-stufentitel{flex:0 0 auto;font-weight:600}
+#tbs .tbs-stufenstand{flex:1 1 auto;min-width:0;text-align:right;color:var(--schwach);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tbs .tbs-stufenkoerper{padding:2px 12px 6px}
+#tbs .tbs-stufenkoerper[hidden]{display:none}
+#tbs .tbs-erklaer{color:var(--schwach);font-size:12px;line-height:1.5;margin:0 0 10px}
+#tbs .tbs-erklaer p{margin:0 0 6px}
+/* V halten in der Vorbereitung: die Quelle ohne Effekte - als Marke UEBER der Leinwand, nie hineingemalt */
+#tbs #tbs-ohneMarke{position:absolute;left:12px;top:12px;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.65);border:1px solid var(--rand);color:#fff;font-size:12px;pointer-events:none;z-index:2}
+#tbs #tbs-ohneMarke[hidden]{display:none}
+#tbs .tbs-abunter{font-size:11px;opacity:.8;white-space:nowrap}
 #tbs .tbs-abschnitt .tbs-vorrat{border:none;border-radius:0;padding:0;margin:0 0 10px}
 #tbs .tbs-abschnitt .tbs-zeile:last-child{margin-bottom:6px}
 #tbs-pult{padding-bottom:0}
@@ -3250,16 +3266,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-kettekopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
 #tbs .tbs-leer .tbs-mini{display:inline-block;width:auto;padding:0 12px;margin-top:10px}
 #tbs .tbs-qluecke{width:1px;height:56px;align-self:center;margin:0 6px;background:var(--rand);flex:0 0 auto}
-/* Vorbereitung: Kasten zwischen Quelle und Effektkette, zugeklappt eine Zeile mit Stand */
-/* Kopf der Vorbereitung: Titel und Untertitel duerfen schrumpfen (Untertitel mit Auslassung), die Knoepfe nie -
-   sonst ragt der Klappschalter ueber den Kasten hinaus (Caspar_D, 11.09.2026). */
-#tbs .tbs-vorbkopf{cursor:pointer;display:flex;align-items:center;gap:8px;min-width:0}
-#tbs .tbs-vorbkopf > span:first-child{flex:1 1 auto;min-width:0;display:flex;gap:10px;align-items:baseline;overflow:hidden}
-#tbs .tbs-vorbkopf > span:first-child .tbs-abunter{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
-#tbs .tbs-vorbkopf .tbs-vorbstand, #tbs .tbs-vorbkopf .tbs-klapp{flex:0 0 auto}
-#tbs .tbs-mini.tbs-vorbstand{width:auto;padding:0 9px;height:20px;font-size:11px;text-transform:none;letter-spacing:0;white-space:nowrap}
-#tbs .tbs-mini.tbs-vorbstand[hidden]{display:none}
-#tbs #tbs-abVorb .tbs-klapp{width:22px;height:20px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11px;line-height:1;padding:0;margin-left:8px}
+/* Die Vorbereitung hatte hier einen eigenen Klappschalter mit Stand im Kopf - seit dem Akkordeon (15.09.2026) klappt die Stufe. */
 #tbs #tbs-vorbKoerper{padding-bottom:6px}
 
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border:1px solid transparent;background:transparent;border-radius:50%}
@@ -3272,16 +3279,23 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-rezept.gedimmt{opacity:.45}
 #tbs #tbs-loopLage{color:var(--text);margin-bottom:2px}
 #tbs #tbs-loopLage.gedimmt{opacity:.5}
-#tbs #tbs-abLoop{container-type:inline-size}
-#tbs #tbs-abLoop .tbs-regler, #tbs #tbs-abLoop .tbs-spalten .tbs-regler{grid-template-columns:92px 1fr}
+#tbs #tbs-abLoop .tbs-regler{grid-template-columns:minmax(0,200px) 1fr}
+#tbs #tbs-abLoop .tbs-unter, #tbs #tbs-abLoop .tbs-togp, #tbs #tbs-loopLage{font-size:12px}
+#tbs #tbs-rezept .tbs-unter, #tbs #tbs-rezept .tbs-lbl, #tbs #tbs-rezept #tbs-pStatus{font-size:12px}   /* Regel 14: Lesegrenze 12 px */
+#tbs #tbs-abLoop #tbs-schleifeHinweis{margin:-2px 0 8px}
 #tbs #tbs-abLoop .tbs-regler.grau > span:first-child, #tbs #tbs-abLoop .tbs-regler.grau b{opacity:.45}
 #tbs .tbs-zaehler{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 #tbs .tbs-zaehler b{min-width:62px;text-align:center;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
 #tbs #tbs-abLoop button:disabled{opacity:.4;cursor:default;transform:none}
 #tbs #tbs-abLoop .tbs-togp.an{border-width:2px;border-color:var(--akzent);color:var(--text);padding:1px 11px}
-#tbs #tbs-leiste{display:block;width:100%;height:64px;border-radius:6px;background:#000}
-#tbs .tbs-leistunter{display:flex;justify-content:space-between;gap:8px;margin:3px 0 8px;font-size:12px;color:var(--text);font-variant-numeric:tabular-nums}
-#tbs #tbs-leisteRechts{color:var(--akzent)}
+#tbs #tbs-leiste{display:block;grid-column:2;width:100%;height:96px;border-radius:6px;background:#000}
+#tbs .tbs-leistrahmen{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 6px;margin-top:10px}
+#tbs .tbs-yachse{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:0 0 6px;font-size:12px;line-height:1;color:var(--schwach);font-variant-numeric:tabular-nums}
+#tbs .tbs-yachse[hidden]{display:none}
+#tbs .tbs-yname{writing-mode:vertical-rl;transform:rotate(180deg)}
+#tbs .tbs-xachse{grid-column:2;display:flex;justify-content:space-between;padding:2px 6px 0;font-size:12px;color:var(--schwach);font-variant-numeric:tabular-nums}
+#tbs .tbs-leistunter{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:4px 0 8px;font-size:12px;line-height:1.5;color:var(--schwach)}
+#tbs #tbs-leisteRechts{color:var(--akzent);white-space:nowrap}
 #tbs #tbs-loopWo{margin:0 0 8px;font-variant-numeric:tabular-nums}
 #tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
 #tbs #tbs-vorbKoerper .tbs-seg button:disabled{opacity:.4;cursor:default}
@@ -27433,7 +27447,7 @@ function artFarben(e){ const vor=e._artVor||'schnee', alt=ART_FARBEN[vor]||ART_F
   e._artVor=e.art; }
 function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false,99); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
 /* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
-function beispiel(){ const e=neuerEffekt('helligkeit'); STAPEL=[e]; offenId=e.id; renderStapel(); }
+function beispiel(){ const e=neuerEffekt('helligkeit'); soloId=null; STAPEL=[e]; offenId=e.id; renderStapel(); }
 
 const PRESETS={
  'Kaum da':()=>[E('kontrast',{antrieb:'atem',atempo:6,schlag:.5}),E('schatten',{groesse:.5,weichheit:.9,staerke:.5,tempo:28,fuehrung:'bogen'})],
@@ -28873,6 +28887,9 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
 
 
 function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.toggle('leer',STAPEL.length<=1);   /* Kopfzeile erst ab zwei Effekten, davor leer (Caspar_D, 11.09.2026) */
+  if(soloId&&!STAPEL.some(x=>x.id===soloId)) soloId=null;   /* ein Solo ohne Karte schaltete alles stumm, und der Kopf verschwieg es (Gegenpruefung 15.09.2026) */
+  { const n=STAPEL.length, an=STAPEL.filter(x=>x.an).length, so=soloId&&STAPEL.find(x=>x.id===soloId);   /* Stand im Kopf der Stufe (Caspar_D, 15.09.2026: "Effekte zugewiesen") */
+    standSetzen('Kette', !n?'kein Effekt':(n===1?'1 Effekt zugewiesen':n+' Effekte zugewiesen')+(an<n?' · '+an+' an':'')+(so?' · Solo: '+EFFEKTE[so.typ].label:'')); }
   const pa=$('#tbs-kettekopf .tbs-pwAlle'); if(!pa) return; const na=STAPEL.filter(x=>x.an).length; pa.classList.toggle('an',na>0&&na===STAPEL.length); pa.classList.toggle('teils',na>0&&na<STAPEL.length); }
 function renderStapel(){
   stapelBox.innerHTML='';
@@ -28881,7 +28898,7 @@ function renderStapel(){
       +'<p>Zur Voranpassung der Quelle, bevor \u00fcberhaupt visuelle Effekte aktiviert werden, kann das <a href="#" id="tbs-vorbAuf">Vorbereitungspanel aufgeklappt</a> werden.</p>'
       +'<p>F\u00fcr die Anwendung eines Effekts \u201eEffekt hinzuf\u00fcgen\u201c aufklappen und Effekt ausw\u00e4hlen \u2014 f\u00fcr einen ersten Eindruck eines pulsierenden Helligkeitseffekts gleich <a href="#" id="tbs-beispiel">hier</a> klicken.</p></div>';
     const bb=$('#tbs-beispiel'); if(bb) bb.onclick=ev=>{ ev.preventDefault(); beispiel(); };
-    const va=$('#tbs-vorbAuf'); if(va) va.onclick=ev=>{ ev.preventDefault(); const k=$('#tbs-vorbKoerper'); if(k&&k.hidden) $('#tbs-vorbKlapp').click(); $('#tbs-abVorb').scrollIntoView({block:'start',behavior:'smooth'}); };
+    const va=$('#tbs-vorbAuf'); if(va) va.onclick=ev=>{ ev.preventDefault(); stufeSetzen('Vorb'); const ab=$('#tbs-abVorb'); if(ab) ab.scrollIntoView({block:'start',behavior:'smooth'}); };
     fussStand(); return; }
   fussStand();
   STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ]; e.zu=(e.id!==offenId);   /* Akkordeon: nur die aktive Karte ist offen */
@@ -29149,14 +29166,16 @@ function schleifeFenster(L,lage){ if((SCHLEIFE.art||'keiner')==='keiner') return
 let SCHLEIFE_KURVE={schluessel:'',u:null,laeuft:false};
 function schleifeQuelle(x,dv){ const U=SCHLEIFE_KURVE.u; if(!U||U.length<2) return x*dv; const n=U.length-1;
   let lo=0,hi=n; while(hi-lo>1){ const m=(lo+hi)>>1; if(U[m]<=x) lo=m; else hi=m; } const f=U[hi]>U[lo]?(x-U[lo])/(U[hi]-U[lo]):0; return Math.min(dv,(lo+f)/n*dv); }
-async function schleifeKurveMessen(v){ if(!v||v.tagName!=='VIDEO'||!(v.duration>0)) return; const k=v.src+'|'+v.duration.toFixed(3); if(SCHLEIFE_KURVE.schluessel===k||SCHLEIFE_KURVE.laeuft) return;
-  SCHLEIFE_KURVE.laeuft=true; try{ const n=Math.max(8,Math.min(300,Math.round(v.duration*24))), c=document.createElement('canvas'); c.width=48; c.height=Math.max(8,Math.round(48*(v.videoHeight||1)/(v.videoWidth||1))); const x=c.getContext('2d',{willReadFrequently:true});
+/* Laeuft schon eine Vermessung, wartet ein zweiter Aufruf auf DIESE, statt sofort zurueckzukehren - sonst gab schleifeStills die Sperre frei,
+   waehrend die erste noch spulte (Gegenpruefung 15.09.2026). */
+async function schleifeKurveMessen(v){ if(!v||v.tagName!=='VIDEO'||!(v.duration>0)) return; const k=v.src+'|'+v.duration.toFixed(3); if(SCHLEIFE_KURVE.schluessel===k) return; if(SCHLEIFE_KURVE.laeuft){ if(SCHLEIFE_KURVE.v===v) return SCHLEIFE_KURVE.lauf; try{ await SCHLEIFE_KURVE.lauf; }catch(e){} return schleifeKurveMessen(v); }   /* ein anderes Element (Studio zu und wieder auf): erst die alte zu Ende, dann dieses */
+  SCHLEIFE_KURVE.laeuft=true; SCHLEIFE_KURVE.v=v; SCHLEIFE_KURVE.lauf=schleifeKurveLauf(v,k); try{ await SCHLEIFE_KURVE.lauf; } finally{ SCHLEIFE_KURVE.laeuft=false; SCHLEIFE_KURVE.lauf=null; SCHLEIFE_KURVE.v=null; } }
+async function schleifeKurveLauf(v,k){ { const n=Math.max(8,Math.min(300,Math.round(v.duration*24))), c=document.createElement('canvas'); c.width=48; c.height=Math.max(8,Math.round(48*(v.videoHeight||1)/(v.videoWidth||1))); const x=c.getContext('2d',{willReadFrequently:true});
     let vor=null; const d=[]; for(let i=0;i<=n;i++){ await quelleSetzen(v,i/n*(v.duration-1/60)); x.drawImage(v,0,0,c.width,c.height); const px=x.getImageData(0,0,c.width,c.height).data;
       if(vor){ let t=0; for(let j=0;j<px.length;j+=4) t+=Math.abs(px[j]-vor[j])+Math.abs(px[j+1]-vor[j+1])+Math.abs(px[j+2]-vor[j+2]); d.push(t/(px.length/4)/3); } vor=px; }
     const mittel=d.reduce((a,b)=>a+b,0)/d.length||1, eps=0.05*mittel; let zeit=d.map(z=>Math.pow(z+eps,0.7));   /* Ausgabezeit je Quellschritt ~ Aenderung^0,7 */
     for(let r=0;r<3;r++){ const m=zeit.reduce((a,b)=>a+b,0)/zeit.length; zeit=zeit.map(z=>Math.max(m/2,Math.min(2*m,z))); }   /* hoechstens dreifach schneller, hoechstens halb so schnell */
-    const summe=zeit.reduce((a,b)=>a+b,0), U=[0]; let acc=0; for(const z of zeit){ acc+=z; U.push(acc/summe); } SCHLEIFE_KURVE.u=U; SCHLEIFE_KURVE.schluessel=k; }
-  finally{ SCHLEIFE_KURVE.laeuft=false; } }
+    const summe=zeit.reduce((a,b)=>a+b,0), U=[0]; let acc=0; for(const z of zeit){ acc+=z; U.push(acc/summe); } SCHLEIFE_KURVE.u=U; SCHLEIFE_KURVE.schluessel=k; } }
 function schleifeZeit(tau,L,Dv,lage){ const q=schleifeZeitRoh(tau,L,Dv,lage), art=SCHLEIFE.art||'keiner'; q.tau=tau; q.fenster=art!=='keiner'&&art!=='pendel'&&tau>=L-schleifeFenster(L,lage); return q; }
 function schleifeZeitRoh(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
   if(art==='keiner') return { s:schleifeQuelle(tau/L,dv) };   /* das ganze Video ueber den ganzen Clip, dann der Schnitt */
@@ -29183,7 +29202,7 @@ function quelleSetzen(v,s){ return new Promise(ok=>{ if(!v||v.tagName!=='VIDEO')
   let zu=null; const fertig=()=>{ clearTimeout(zu); v.removeEventListener('seeked',fertig); ok(); };
   zu=setTimeout(fertig,4000); v.addEventListener('seeked',fertig); v.currentTime=ziel; }); }
 /* Die zwei Standbilder fuer "Abbremsen": das Ende des Vorwaertslaufs und der Anfang, in voller Videogroesse. */
-async function schleifeStills(v,lage){ if(v&&v.tagName==='VIDEO'){ SCHLEIFE_STILL.laeuft=true; try{ await schleifeKurveMessen(v); } finally{ SCHLEIFE_STILL.laeuft=false; } } }
+async function schleifeStills(v,lage){ if(v&&v.tagName==='VIDEO'){ SCHLEIFE_STILL.n=(SCHLEIFE_STILL.n||0)+1; SCHLEIFE_STILL.laeuft=true; try{ await schleifeKurveMessen(v); } finally{ if(--SCHLEIFE_STILL.n<=0){ SCHLEIFE_STILL.n=0; SCHLEIFE_STILL.laeuft=false; } } } }   /* gezaehlt: die Sperre faellt erst mit dem letzten Aufruf */
 /* DIE EFFEKTE GEHEN MIT DURCH DEN UEBERGANG (Caspar_D, 15.09.2026: "die effekte muessen im uebergang genauso behandelt werden, wie
    das video, also nicht uebergang und die effekte genauso laufen lassen sondern wenn wir einen fade out uebergang haben, muessen die
    effekte mit ausfaden"). Die Wirkung liegt darum auf dem FERTIGEN Bild (Video und Effekte), nach zeichneFrame und vor dem
@@ -29222,7 +29241,7 @@ function quellenUI(){ if(!root) return; const box=$('#tbs-quellen'); if(!box) re
     return luecke+'<button type="button" class="tbs-quelle'+(k===i?' on':'')+'" data-i="'+k+'" title="'+p.lbl+'">'+inner+'</button>'; }).join('');
   const tc=box.querySelector('canvas'); if(tc) tc.getContext('2d').drawImage(testbildBauen(),0,0,54,72);
   box.querySelectorAll('.tbs-quelle').forEach(b=>b.onclick=()=>quelleWaehlen(+b.dataset.i));
-  quellenNamen(); }
+  quellenNamen(); { const p=SEITEN[i]; standSetzen('Quelle', p?p.lbl+(p.test?' \u00b7 zum Pr\u00fcfen':''):'\u2026'); } }   /* Stand im Kopf der Stufe: derselbe Name wie unter dem Vorschaubild */
 /* Beschriftung unter den Vorschaubildern (Caspar_D, 11.09.2026): nur die gewaehlte Quelle traegt ihren
    Namen. Das linkeste Bild linksbuendig, das letzte rechtsbuendig, die mittleren mittig unter der
    senkrechten Bildachse - passt das nicht in die Zeile, ruecken sie an die Bildkante. */
@@ -29238,12 +29257,14 @@ function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((sei
 /* Cover-Blätterer */
 
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); loopWache();
-  if(loopAn&&bereit){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit()); lmVorschauen(); }
-function zeichneFrame(t){
+  if(loopAn&&bereit&&!ohneEffekte){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit(),ohneEffekte); lmVorschauen(); }
+/* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
+function zeichneFrame(t,roh){
   if(!bereit) return;
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t); EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
-  for(const e of STAPEL){ if(!aktiv(e))continue; const s=EFFEKTE[e.typ].ohneStaerke?1:e.staerke;
+  const kette=roh?[]:STAPEL;
+  for(const e of kette){ if(!aktiv(e))continue; const s=EFFEKTE[e.typ].ohneStaerke?1:e.staerke;
     if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/lpP(e.tempo))*e.weite*s; pany+=tri(t/lpP(e.tempo*1.3))*e.weite*s; }
     else if(e.typ==='puls'){ const hb=pulsHub(e,t), amt=e.wucht*s, z=e.invert?amt*(1-hb):amt*hb; scaleMul*=(1+z); }
     else if(e.typ==='kippen'){ const hb=pulsHub(e,t); rotG+=(e.invert?-1:1)*e.neigung*s*hb; }
@@ -29261,7 +29282,7 @@ function zeichneFrame(t){
        sonst loeschte der letzte Puls auf dem Schlag die vorigen (Tiefen-Check). Jeder Typ darf mehrfach haengen. */
     const schnapp=()=>{ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(oa,0,0); return okc; };
     const lege=(e,filter,a)=>{ const k=schnapp(); ca.save(); ca.setTransform(1,0,0,1,0,0); ca.filter=filter; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(k,0,0); ca.restore(); };
-    for(const e of STAPEL){ if(!aktiv(e)||EFFEKTE[e.typ].art!=='grund') continue; const hb=pulsHub(e,t), a=Math.min(1,e.staerke*Math.min(1,hb));
+    for(const e of kette){ if(!aktiv(e)||EFFEKTE[e.typ].art!=='grund') continue; const hb=pulsHub(e,t), a=Math.min(1,e.staerke*Math.min(1,hb));
       if(e.typ==='schaerfe'){ if(!(e.unschaerfe>0)) continue;   /* die weiche Ebene ist das Ergebnis: mit Staerke gemischt, auf dem Schlag weicht sie (invertiert: kommt sie) */
         const aw=e.invert?a:Math.min(1,e.staerke*(1-Math.min(1,hb))); if(aw>0) lege(e,'blur('+(e.unschaerfe*EINHEIT)+'px)',aw); continue; }
       if(e.typ==='farbton'){ const af=e.invert?Math.min(1,e.staerke*(1-Math.min(1,hb))):a; if(af>0) lege(e,'hue-rotate('+e.winkel+'deg)',af); continue; }   /* invertiert: gedreht ruhen, auf dem Schlag zurueck */
@@ -29274,15 +29295,15 @@ function zeichneFrame(t){
   /* MEDIUM: der Nebel leuchtet nicht selbst, er nimmt Licht auf. Alle aktiven Leuchten malen ihre Abstrahlung
      zusaetzlich additiv auf Schwarz in den Licht-Puffer; der Shader multipliziert seine Dichte damit. Das gilt
      fuer alle Leuchten der Kette, gleich wo sie stehen - es ist ein Raum, keine Stapelung. */
-  const medium=STAPEL.some(e=>aktiv(e)&&mediumJetzt(e));
+  const medium=kette.some(e=>aktiv(e)&&mediumJetzt(e));
   if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; LICHTORTE=[];
-    try{ for(const e of STAPEL){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
+    try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
     finally { LICHTMAL=false; } }
   /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen
      sie gegen ihr Ergebnis. Frueher sanken post und gl immer ans Ende - die Oberflaeche versprach etwas anderes. */
   let curCv=oa, curCx=ca;
   const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } };
-  for(const e of STAPEL){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
+  for(const e of kette){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
     /* „wirkt auf": vorn, hinten oder alles. Ohne Karte oder bei „alles" ist es null und es
        aendert sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten. */
     const maske=tiefeMaske(DATA&&DATA.id, e.tiefeWirkt, Wn, Hn);
@@ -29315,21 +29336,18 @@ function zeichneFrame(t){
     kg.strokeStyle=cc; kg.lineWidth=2; kg.beginPath(); for(let i=0;i<=80;i++){ const x=i/80,y=levApply(g,x),px=x*W,py=(1-y)*H; i?kg.lineTo(px,py):kg.moveTo(px,py); } kg.stroke();
     const tri=(xx,col)=>{ const px=xx*W,cy=H-6; kg.fillStyle=col; kg.strokeStyle='#0a0a0c'; kg.lineWidth=1; kg.beginPath(); kg.moveTo(px,cy-7); kg.lineTo(px-5,cy+3); kg.lineTo(px+5,cy+3); kg.closePath(); kg.fill(); kg.stroke(); };
     tri(g.bp,'#333'); tri(g.wp,'#eee'); }
-  /* Der Knopf im Kopf nennt, was da ist, und klappt auf bzw. zu. Geloescht wird im Panel neben
-     Auto-Niveaus - niemand loescht, was er nicht sieht (Caspar_D, 11.09.2026). */
-  function vorbStand(){ const lb=$('#tbs-vorbKoerper [data-vloeschen]'); if(lb) lb.disabled=vorbAenderungen(VORB)===0;
-    const st=$('#tbs-vorbStand'); if(!st) return; const n=vorbAenderungen(VORB); st.hidden=n===0;
-    const zu=!$('#tbs-vorbKoerper')||$('#tbs-vorbKoerper').hidden;
-    st.textContent=n+' '+(n===1?'Anpassung':'Anpassungen')+(zu?' \u2014 ansehen':'');
-    st.title=zu?'Aufklappen und die Anpassungen ansehen':'Zuklappen';
+  /* Den Stand nennt der Kopf der Stufe. Geloescht wird im Panel neben Auto-Niveaus - niemand loescht, was er nicht sieht
+     (Caspar_D, 11.09.2026). Der eigene Klappschalter mit "n Anpassungen - ansehen" fiel mit dem Akkordeon (15.09.2026). */
+  function vorbStand(){ const n=vorbAenderungen(VORB), lb=$('#tbs-vorbKoerper [data-vloeschen]'); if(lb) lb.disabled=n===0;
+    standSetzen('Vorb', n===0?'keine Anpassung':n===1?'1 Anpassung aktiv':n+' Anpassungen aktiv');
     fussStand(); }
   /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
      Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
-  function angewendet(){ if(STAPEL.length||vorbAenderungen(VORB)) return true; const s=SEITEN[seiteIndex()], vg=grundVorgabe(SEITEN.filter(x=>!x.test)); return !!(s&&!s.test&&vg&&(s.art!==vg.art||(s.nr||1)!==(vg.nr||1))); }
+  function angewendet(){ if(STAPEL.length||vorbAenderungen(VORB)) return true; if((SCHLEIFE.art||'keiner')!=='keiner'||SCHLEIFE.schlaege>0||SCHLEIFE.fenster>0) return true;   /* die Schleife wird mitgesichert - also schaltet sie das Sichern frei (Gegenpruefung 15.09.2026) */ const s=SEITEN[seiteIndex()], vg=grundVorgabe(SEITEN.filter(x=>!x.test)); return !!(s&&!s.test&&vg&&(s.art!==vg.art||(s.nr||1)!==(vg.nr||1))); }
   function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); }
-  function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if($('#tbs-vorbKoerper')&&!$('#tbs-vorbKoerper').hidden) vorbRender(); vorbStand(); }
+  function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if(stufeOffen==='Vorb') vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
-    let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>L\u00f6schen</button></div>';
+    let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral zur\u00fccksetzen - das L\u00f6schen im Fu\u00df betrifft dagegen den gesicherten Effektclip" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>Zur\u00fccksetzen</button></div>';
     h+='<canvas class="tbs-grad-ed" id="tbs-vorbGrad" width="447" height="276" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
     h+='<div class="tbs-seg" style="margin-top:6px"><button type="button" data-vmodus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button type="button" data-vmodus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
     h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
@@ -29350,7 +29368,13 @@ function zeichneFrame(t){
     vorbStand(); }
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
     const seite=SEITEN[seiteIndex()]; if(!seite) return;
-    const q=quelleBauen(seite, x=>{ if(x!==bild) return; bereit=true; groesse(); histoRechnen(); renderStapel(); schleifeUI(); },
+    const q=quelleBauen(seite, x=>{ if(x!==bild) return; bereit=true; groesse(); histoRechnen(); renderStapel(); schleifeUI();
+        /* NUR BEIM ERSTEN BEREIT (Gegenpruefung 15.09.2026): stellt sprungHolen() das Video auf die Sprungkopie um, meldet es sich
+           ein zweites Mal - der Inhalt ist derselbe. Das startete eine zweite Vermessung und baute die offene Vorbereitung unter der Hand neu. */
+        if(x.tagName==='VIDEO'){ if(x._bereitGemeldet) return; x._bereitGemeldet=true; }
+        if(stufeOffen==='Vorb') vorbRender();   /* das Histogramm gehoert zur neuen Quelle */
+        if(loopWunsch){ loopWunsch=false; if(stufeOffen==='Loop'&&!loopAn&&!exportLaeuft&&DATA&&DATA.id===songId) loopSchalten(true); }   /* die Stufe ging auf, bevor die Quelle da war */
+        else if(loopAn&&!exportLaeuft&&x.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(x,(loopSicht||loopLageNeu()).lage).catch(()=>{}); } },   /* Quelle gewechselt (Pfeiltasten) bei laufender Loop-Ansicht: das neue Video vermessen wie beim Einschalten */
       x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt'); grund={art:'titelbild',nr:1,}; grundLaden(); quellenUI(); });
     bild=q; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.m=null; sprungHolen(q,seite,songId); schleifeUI(); }
   /* Zeit: der Player ist die einzige Audioquelle. */
@@ -29758,7 +29782,7 @@ function zeichneFrame(t){
      Jetzt sperrt video() selbst, bevor irgendetwas wartet; oeffnen() und schliessen() warten auf exportLauf. */
   let exportLauf=null;
   async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true;
-    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } } }
+    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
   async function videoLauf(){
     if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
     if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
@@ -29842,7 +29866,7 @@ function zeichneFrame(t){
   function taktSatz(sitzt,grund,kodiert){ if(sitzt==null) return '';
     if(!kodiert) return ' · im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht sicher';
     const warum=grund==='tempowechsel'?'das Tempo wechselt im Lied':grund==='frei'?'das Tempo ist frei gespielt':'';
-    if(sitzt<ZUFALL_BODEN) return ' · der Takt lässt sich nicht über das Lied legen'+(warum?' — '+warum:'');
+    if(sitzt<ZUFALL_BODEN) return ' · keine Länge bleibt über das Lied im Takt – die Pulse laufen im Suno-Video gegen die Musik'+(warum?' — '+warum:'');   /* Caspar_D, 15.09.2026 */
     return ' · sitzt auf '+Math.round(sitzt*100)+' % des Lieds im Takt'+(warum?' ('+warum+')':''); }
   /* ---- DIE VIERTE STUFE: LOOP VERBINDEN (Caspar_D, 15.09.2026: "momentan gibt es ja in unserem Effektclip Quellenwahl-, den
      Vorbereitungs-, den Effektgeneration part, dann muss es noch den Videoloop-Verbinden Part geben am Ende" - und "ein
@@ -29859,8 +29883,15 @@ function zeichneFrame(t){
      laeuft wie im Export vor, aber in Happen von zehn Bildern je Vorschaubild, damit die Seite nicht steht; solange
      bleibt das letzte Bild stehen. Gleiches Clipbild zweimal wird nicht neu gemalt (die Vorschau laeuft mit 60, der
      Clip mit 30 Bildern, und die Spur des Nachzieheffekts saehe jedes Bild sonst doppelt). */
-  const LOOP_STUFE='Schleife schlie\u00dfen',   /* Caspar_D, 15.09.2026: "Schleife schliessen" */
+  const LOOP_STUFE='Effektclip als Schleife',   /* Caspar_D, 15.09.2026: erst "Schleife schliessen", seit dem Akkordeon "Effektclip als Schleife" (Taufnotiz in docs/haus/HAUSREGELN.md) */
     LOOP_ENTPRELLEN=300;
+  const STUFEN=['Quelle','Vorb','Kette','Loop'], STUFE_SPEICHER='mysuno-tbs-stufe', STUFE_NAMEN={ Quelle:'Quelle', Vorb:'Vorbereitung', Kette:'Effektkette', Loop:LOOP_STUFE };
+  /* Die Erklaertexte oben in jeder offenen Stufe, Wortlaut von Caspar_D (15.09.2026), ein Eintrag je Absatz */
+  const STUFE_ERKLAER={
+    Quelle:['Hier können Bilder oder Videos für den Effektclip ausgewählt werden.'],
+    Vorb:['Gegebenenfalls optimiert man die Quelle hier, z. B. Belichtung, Kontrast, Lichter, Schatten, Farbe, Schärfe und die Tonwertkurve je Kanal. Die Datei wird dabei nicht verändert, sondern nur durch eine Optimierungsschicht ergänzt.'],
+    Kette:['Jeder Effekt legt eine Schicht auf die ausgesuchte Quelle. Sie wirken von oben nach unten. Jede Schicht legt einen Effekt auf alle vorher definierten Effekte.','Pulse schlagen im Takt des Lieds.','Das Soloabzeichen zeigt einen Effekt allein.','Die Kombination aus Effekt und Quelle bildet den Effektclip.'],
+    Loop:['Suno spielt das Video zum Lied in einer Endlosschleife und erlaubt höchstens 10 Sekunden. Damit die Pulse über das ganze Lied im Takt bleiben, wird der Clip synchron zu ganzen Takt-Schlägen gebaut. Die Software wählt die Länge so, dass der Clip längstmöglich mit der Musik synchron läuft.','Am Clipende muss das Bild genau wieder am Anfang ankommen: Effekte schaffen das automatisch ohne Ruckler oder Nähte. Videos werden entsprechend getrimmt (Geschwindigkeit) und, falls sich Anfang und Ende unterscheiden, mit einem Übergang versehen.'] };
   let loopAn=false, loopSicht=null, loopSchluessel='', loopFaellig=0;   /* loopSicht: { lage, m (das Buendel), i (zuletzt gemaltes Clipbild) } */
   function loopSchluesselJetzt(){ return (DATA?DATA.id+'|'+(DATA.schlaege?DATA.schlaege.length:0)+'|'+(DATA.dauer||0):'-')+'|'+JSON.stringify(loopBedarf()); }
   function loopLageText(lage){ if(!lage) return '…';
@@ -29884,7 +29915,12 @@ function zeichneFrame(t){
       if(i===sicht.i) return i;
       let qw=null; if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; if(SCHLEIFE_STILL.laeuft) return i;   /* ohne Warten: ist das Videobild noch nicht da, bleibt das vorige stehen */
         qw=schleifeZeit(i/BILDRATE,lage.N/BILDRATE,bild.duration,lage); const ziel=Math.max(0,Math.min((bild.duration>0?bild.duration:qw.s+1)-1e-3,qw.s));
-        if(bild.seeking) return i; if(Math.abs(bild.currentTime-ziel)>=0.25/60){ if(!bild.paused) bild.pause(); bild.currentTime=ziel; return i; } }
+        if(bild.seeking) return i;
+        /* ANGEKOMMEN IST AUCH, WER NICHT GANZ HINKOMMT (Gegenpruefung 15.09.2026): liegt das Ziel vor dem ersten Videobild (Suno-mp4
+           beginnt bei 0,083 s), setzt Chrome die Zeit auf dieses erste Bild - der Abstand bleibt, und es wurde jedes Bild neu gespult,
+           ohne je zu malen. Ein fertiger Sprung zum selben Ziel gilt darum als angekommen, solange niemand die Zeit seither verstellt hat. */
+        const da=Math.abs(bild.currentTime-ziel)<0.25/60||(bild._loopZiel===ziel&&bild._loopAnkunft===bild.currentTime);
+        if(!da){ if(!bild.paused) bild.pause(); const v=bild; v._loopZiel=ziel; v._loopAnkunft=null; v.addEventListener('seeked',()=>{ if(v._loopZiel===ziel) v._loopAnkunft=v.currentTime; },{once:true}); v.currentTime=ziel; return i; } }
       QUELLE_WIRKUNG=qw; try{ exportBild(m,gm,lage.t0+i/BILDRATE,W,H); } finally{ QUELLE_WIRKUNG=null; } sicht.i=i; leisteMalen(); }
     finally{ LOOP=0; FEIN=false; }
     g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=1; g.filter='none'; g.globalCompositeOperation='copy'; g.drawImage(m.lein,0,0); g.restore();
@@ -29893,24 +29929,31 @@ function zeichneFrame(t){
     el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
   function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'), art=SCHLEIFE.art||'keiner', lg=loopSicht&&loopSicht.lage;
     const kz=v=>String(v).replace('.',','), fGilt=vid&&art!=='keiner'&&art!=='pendel', L=lg?lg.N/BILDRATE:0, beat=(lg&&lg.M)?L/lg.M:0, D=(lg&&fGilt)?schleifeFenster(L,lg):0;
+    fussStand();
     if(s){ s.value=art; s.disabled=!vid; s.title=vid?SCHLEIFE_PRINZIP[art]:'nur für Bewegtbilder'; }
     ['#tbs-fWeniger','#tbs-fMehr','#tbs-fSelbst'].forEach(q=>{ const b=$(q); if(b) b.disabled=!fGilt; });
     { const z=$('#tbs-fZeile'); if(z) z.classList.toggle('grau',!fGilt); const b=$('#tbs-fSelbst'); if(b) b.classList.toggle('an',fGilt&&!(SCHLEIFE.fenster>0)); }
     { const b=$('#tbs-mSelbst'); if(b) b.classList.toggle('an',!(SCHLEIFE.schlaege>0)); const z=$('#tbs-mZahl'); if(z) z.textContent=(lg&&lg.M)?String(lg.M):'–'; }
     { const z=$('#tbs-fZahl'); if(z){ const n=beat?Math.round(D/beat*2)/2:0; z.textContent=!vid?'–':art==='keiner'?'0 s':art==='pendel'?'ganzer Clip':!lg?'–':beat?kz(n)+(n===1?' Schlag':' Schläge'):kz(D.toFixed(2))+' s'; } }
     { const k=$('#tbs-loopKosten'); if(k) k.hidden=!vid; }
-    { const li=$('#tbs-leisteLinks'), re=$('#tbs-leisteRechts'); if(li) li.textContent=lg?(vid?'Videobild über Clipzeit · ':'Clip · ')+kz(L.toFixed(2))+' s':'';
+    { const li=$('#tbs-leisteLinks'), re=$('#tbs-leisteRechts'); if(li) li.textContent=!lg?'':vid?'Die linke Achse bildet von unten nach oben die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von KlangTresor geschleifte Version. Die Striche unten sind die Schl\u00e4ge.':'Die waagerechte Achse bildet von links nach rechts die von KlangTresor geschleifte Version ab, die Striche sind die Schl\u00e4ge. Ein Titelbild hat keine Videozeit.';   /* Caspar_D, 15.09.2026: "die linke Achse von unten nach oben bildet die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von Klangtresor geschleifte Version" - das muss dastehen */
+      { const xr=$('#tbs-xRechts'); if(xr) xr.textContent=lg?kz(L.toFixed(2))+' s':''; }
       if(re) re.textContent=!lg?'':!vid?'':fGilt?'Übergang '+kz(D.toFixed(2))+' s':art==='keiner'?'harter Schnitt am Clipende':'Pendel'; }
     if(h) h.textContent=vid?SCHLEIFE_PRINZIP[art]:'Übergänge gibt es nur für Bewegtbilder – beim Titelbild schließen die Effekte die Schleife von selbst';
+    { const nm=(SCHLEIFE_ARTEN.find(a=>a[0]===art)||[0,''])[1];   /* Stand im Kopf der Stufe: Laenge, Schlaege, beim Video der Uebergang */
+      standSetzen('Loop', !lg?'…':kz(L.toFixed(2))+' s'+(lg.M?' · '+lg.M+(lg.M===1?' Schlag':' Schläge'):'')+(vid&&nm?' · '+nm:'')); }
     leisteMalen(); }
   /* DIE ZEITLEISTE DES CLIPS: schwarzer Datenbereich (Regel 8), unten die Schlaege, darueber die Kurve "Videobild ueber Clipzeit"
      und der Uebergang als Flaeche mit Kontur (Formsprache: Flaeche gedaempft, Kontur in voller Staerke, aufgehellt). In der
      Loop-Ansicht laeuft der Abspielstrich mit. Takte werden NICHT hervorgehoben: welcher Clipschlag die Eins ist, steht nicht fest. */
-  function leisteMalen(){ const c=$('#tbs-leiste'); if(!c||!c.clientWidth) return; const dpr=window.devicePixelRatio||1, W=Math.round(c.clientWidth*dpr), H=Math.round(64*dpr);
+  /* Bis 15.09.2026 las die Leiste ihre Farben aus $('#tbs') - root IST #tbs, querySelector sucht nur darunter: null, getComputedStyle
+     warf nach dem Schwarz, und Schlaege, Kurve, Uebergang und Abspielstrich kamen nie. */
+  function leisteMalen(){ const c=$('#tbs-leiste'); if(!c||!c.clientWidth) return; const dpr=window.devicePixelRatio||1, W=Math.round(c.clientWidth*dpr), H=Math.round((c.clientHeight||96)*dpr);
+    { const ya=$('#tbs-yAchse'), yo=$('#tbs-yOben'), dv=(bild&&bild.tagName==='VIDEO'&&bild.duration>0)?bild.duration:0, t=dv?String(dv.toFixed(2)).replace('.',',')+' s':''; if(ya&&ya.hidden!==!dv) ya.hidden=!dv; if(yo&&yo.textContent!==t) yo.textContent=t; }
     if(c.width!==W||c.height!==H){ c.width=W; c.height=H; } const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalAlpha=1; x.fillStyle='#000'; x.fillRect(0,0,W,H);
     const lg=loopSicht&&loopSicht.lage; if(!lg||!lg.N) return;
     const farbe=(css,weiss)=>{ x.fillStyle=css; const f=x.fillStyle; if(f[0]!=='#') return f; const n=parseInt(f.slice(1),16), m=v=>Math.round(v+(255-v)*weiss); return 'rgb('+m(n>>16)+','+m(n>>8&255)+','+m(n&255)+')'; };
-    const st=getComputedStyle($('#tbs')), akz=st.getPropertyValue('--akzent').trim()||'#d9a441', txt=st.getPropertyValue('--text').trim()||'#ddd';
+    const st=getComputedStyle(root), akz=st.getPropertyValue('--akzent').trim()||'#d9a441', txt=st.getPropertyValue('--text').trim()||'#ddd';
     const L=lg.N/BILDRATE, rand=6*dpr, X=t=>rand+(W-2*rand)*t/L, y0=rand, y1=H-12*dpr, vid=!!(bild&&bild.tagName==='VIDEO'), art=SCHLEIFE.art||'keiner';
     if(lg.M){ x.fillStyle=farbe(txt,0); x.globalAlpha=0.55; for(let j=0;j<lg.M;j++){ const f=((lg.phiF||0)+j*lg.N/lg.M)%lg.N; x.fillRect(Math.round(X(f/BILDRATE)),H-8*dpr,Math.max(1,dpr),6*dpr); } x.globalAlpha=1; }
     if(vid&&art!=='keiner'&&art!=='pendel'){ const D=schleifeFenster(L,lg), xa=Math.round(X(L-D))+0.5, xb=Math.round(X(L))-0.5;
@@ -29921,10 +29964,43 @@ function zeichneFrame(t){
       x.beginPath(); pt.forEach((p,k)=>k?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1])); x.strokeStyle=farbe(txt,0.25); x.lineWidth=Math.max(1,1.5*dpr); x.stroke(); }
     if(loopAn&&loopSicht&&loopSicht.i>=0){ const xp=Math.round(X(loopSicht.i/BILDRATE)); x.fillStyle='#fff'; x.fillRect(xp,0,Math.max(1,dpr),H); } }
   function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
-    if(b){ b.classList.toggle('an',loopAn); b.textContent=loopAn?'an':'aus'; } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }
+    if(b){ b.classList.toggle('an',loopAn); b.setAttribute('aria-pressed',loopAn?'true':'false'); } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }   /* die Pille heisst "als 10-s-Clip zeigen", ihr Zustand ist der Rahmen (Regel 18) */
     if(loopAn){ loopLageNeu(); if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) Promise.resolve(GL.vierLaden()).catch(()=>{}); if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(bild,loopSicht.lage).catch(()=>{}); } }
-    else if(!exportLaeuft){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); }   /* die Exportform der Rauschshader, wie video() */
+    else if(!exportLaeuft){ const frei=()=>{ if(loopAn||exportLaeuft) return; VIDEO_GENAU=false; if(offen&&bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); };   /* die Exportform der Rauschshader, wie video() */
+      /* Laeuft die Vermessung des Videos noch, gehoert das Element ihr, bis sie fertig ist - sonst spult quelleSync dazwischen und die
+         Kurve misst falsche Bilder. Im Akkordeon klappt man die Stufe schnell wieder zu (Gegenpruefung 15.09.2026). */
+      if(SCHLEIFE_STILL.laeuft){ const warten=()=>{ if(SCHLEIFE_STILL.laeuft) setTimeout(warten,100); else frei(); }; warten(); } else frei(); }
     else if(loopSicht){ loopSicht.m=null; loopSicht.i=-1; } leisteMalen(); }
+  /* ---- DAS PULT ALS AKKORDEON (Caspar_D, 15.09.2026). Immer nur eine Stufe offen; der Kopf der offenen Stufe klappt sie zu.
+     Gemerkt wird die zuletzt GEOEFFNETE Stufe - auch wenn danach alles zugeklappt wurde -, beim allerersten Mal die Quelle.
+     DIE VORSCHAU FOLGT DER STUFE (Caspar_D: "ja"): die Schleife zeigt den 10-s-Clip, jede andere Stufe die Live-Vorschau.
+     Geschaltet wird nur beim Auf- und Zuklappen, nie je Bild (der Pruefstand schaltet loopSchalten() selbst); die Pille bleibt,
+     wer sie in der offenen Stufe ausschaltet, darf das. Waehrend eines Exports wird nicht umgeschaltet. Ist die Quelle noch
+     nicht bereit (das Studio geht gerade auf), bleibt es ein Wunsch, den grundLaden() einloest - sonst rechnete die Lage mit
+     dem vorigen Titel. */
+  let stufeOffen=null, loopWunsch=false, ohneEffekte=false, stufeNachExport=false;
+  /* Wurde waehrend eines Exports die Stufe gewechselt, holt das Ende des Exports das Umschalten nach (Gegenpruefung 15.09.2026) -
+     sonst blieb die Loop-Ansicht in der Effektkette an, und ihre Pille lag in der zugeklappten Stufe. */
+  function stufeAbgleichen(){ if(!offen||exportLaeuft) return;
+    if(stufeOffen==='Loop'){ if(!loopAn){ if(bereit&&DATA&&DATA.id===songId) loopSchalten(true); else loopWunsch=true; } }
+    else if(loopAn) loopSchalten(false); }
+  function stufeGemerkt(){ try{ const k=localStorage.getItem(STUFE_SPEICHER); return STUFEN.includes(k)?k:'Quelle'; }catch(e){ return 'Quelle'; } }
+  function standSetzen(k,txt){ const el=$('#tbs-ss'+k); if(el&&el.textContent!==txt){ el.textContent=txt; el.title=txt; } }
+  function stufeSetzen(k){ if(!STUFEN.includes(k)) k=null; stufeOffen=k;
+    STUFEN.forEach(n=>{ const auf=n===k, kopf=$('#tbs-sk'+n), koerper=$('#tbs-sb'+n), ab=$('#tbs-ab'+n);
+      if(koerper) koerper.hidden=!auf; if(ab) ab.classList.toggle('offen',auf);
+      if(kopf){ kopf.setAttribute('aria-expanded',auf?'true':'false'); const c=kopf.querySelector('.tbs-chev'); if(c) c.textContent=auf?'▾':'▸'; } });
+    if(k){ try{ localStorage.setItem(STUFE_SPEICHER,k); }catch(e){} }
+    if(k!=='Vorb') ohneSetzen(false);
+    if(k==='Quelle') quellenNamen();   /* die Unterschrift misst die Vorschaubilder - zugeklappt waren sie 0 breit */
+    if(k==='Vorb') vorbRender();
+    if(exportLaeuft) stufeNachExport=true;
+    if(k==='Loop'){ if(!exportLaeuft){ if(bereit&&DATA&&DATA.id===songId){ loopWunsch=false; if(!loopAn) loopSchalten(true); } else loopWunsch=true; }
+      schleifeUI(); }   /* schleifeUI malt auch die Zeitleiste neu: zugeklappt war sie 0 breit */
+    else { loopWunsch=false; if(loopAn&&!exportLaeuft) loopSchalten(false); } }
+  /* V HALTEN: DIE QUELLE OHNE EFFEKTE (Caspar_D, 15.09.2026) - nur in der offenen Vorbereitung und nur fuer die Vorschau: rahmen()
+     reicht roh an zeichneFrame(). STAPEL, Rezept, Export, Kachel und Buehne sehen davon nichts; die Marke liegt ueber der Leinwand. */
+  function ohneSetzen(an){ an=!!an&&offen&&stufeOffen==='Vorb'; if(an===ohneEffekte) return; ohneEffekte=an; if(loopSicht) loopSicht.i=-1; const m=$('#tbs-ohneMarke'); if(m) m.hidden=!an; }
   function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=L.toFixed(1).replace('.',',');
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
@@ -29941,8 +30017,13 @@ function zeichneFrame(t){
   }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
       if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
-  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gel\u00f6st \u2014 Titel zeigt wieder das Standbild'); rezeptDa=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('L\u00f6sen ging nicht'); } }
-  function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase(); if(tag==='input'||tag==='select'||tag==='textarea'||ev.target.isContentEditable) return;
+  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gelöscht — der Titel zeigt wieder das Standbild'); rezeptDa=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('Löschen ging nicht'); } }
+  function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase();
+    /* V halten in der Vorbereitung - auch wenn ein Schieber den Fokus hat (nach dem Ziehen behaelt er ihn, und genau dann will man
+       vergleichen); Textfelder und Listen bekommen ihr V. Haus und Studio belegen V sonst nicht. */
+    if((ev.key==='v'||ev.key==='V')&&stufeOffen==='Vorb'&&!ev.metaKey&&!ev.ctrlKey&&!ev.altKey&&!(tag==='input'&&(ev.target.type||'')!=='range')&&tag!=='select'&&tag!=='textarea'&&!ev.target.isContentEditable){
+      ev.stopPropagation(); ev.preventDefault(); if(!ev.repeat) ohneSetzen(true); return; }
+    if(tag==='input'||tag==='select'||tag==='textarea'||ev.target.isContentEditable) return;
     if(ev.metaKey||ev.ctrlKey||ev.altKey) return; const k=ev.key.toLowerCase();
     /* Pfeile und Esc gehoeren im offenen Studio dem Studio - sonst wechselt das Haus den Song und schliesst die Buehne mit. */
     if(ev.key==='Escape'){ ev.stopPropagation(); ev.preventDefault(); schliessen(); return; }
@@ -29950,40 +30031,42 @@ function zeichneFrame(t){
     if(ev.key==='ArrowUp'||ev.key==='ArrowDown'){ ev.stopPropagation(); return; }   /* rollt das Pult; das Haus wuerde die Lautstaerke verstellen */
   }
   function bauen(){ GL.noiseLaden();
+    const stufeKopf=k=>'<button type="button" class="tbs-stufenkopf" id="tbs-sk'+k+'" data-stufe="'+k+'" aria-expanded="false" aria-controls="tbs-sb'+k+'"><span class="tbs-chev" aria-hidden="true">▸</span><span class="tbs-stufentitel">'+STUFE_NAMEN[k]+'</span><span class="tbs-stufenstand" id="tbs-ss'+k+'"></span></button>';
+    const stufeAuf=k=>'<div class="tbs-stufenkoerper" id="tbs-sb'+k+'" role="region" aria-labelledby="tbs-sk'+k+'" hidden><div class="tbs-erklaer">'+STUFE_ERKLAER[k].map(p=>'<p>'+p+'</p>').join('')+'</div>';
     root=document.createElement('div'); root.id='tbs'; root.hidden=true;
     root.innerHTML=
       '<div id="tbs-kasten">'
       +'<div id="tbs-kopf"><h3>Effektclip-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
-      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas></div><div id="tbs-pult">'
-      +'<div class="tbs-abschnitt" id="tbs-abQuelle"><div class="tbs-abtitel">Quelle <span class="tbs-abunter">hierauf wirken die Effekte</span></div>'
-      +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div>'
-      +'<div class="tbs-abschnitt" id="tbs-abVorb"><div class="tbs-abtitel tbs-vorbkopf"><span>Vorbereitung <span class="tbs-abunter">die Quelle, bevor die Effekte wirken</span></span><button type="button" class="tbs-mini tbs-vorbstand" id="tbs-vorbStand" hidden title="Alle Anpassungen der Vorbereitung auf neutral">Anpassung l\u00f6schen</button><button type="button" class="tbs-knopf tbs-klapp" id="tbs-vorbKlapp" title="aufklappen">\u25b8</button></div>'
-      +'<div id="tbs-vorbKoerper" hidden></div></div>'
-      +'<div class="tbs-abschnitt" id="tbs-abKette"><div class="tbs-abtitel">Effektkette <span class="tbs-abunter">wird von oben nach unten angewandt</span></div>'
+      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas><div id="tbs-ohneMarke" hidden>ohne Effekte</div></div><div id="tbs-pult">'
+      +'<div class="tbs-abschnitt" id="tbs-abQuelle">'+stufeKopf('Quelle')+stufeAuf('Quelle')
+      +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abVorb">'+stufeKopf('Vorb')+stufeAuf('Vorb')
+      +'<div id="tbs-vorbKoerper"></div></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abKette">'+stufeKopf('Kette')+stufeAuf('Kette')
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
-      +'<div id="tbs-stapel"></div></div>'
-      +'<div class="tbs-abschnitt" id="tbs-abLoop"><div class="tbs-abtitel">'+LOOP_STUFE+' <span class="tbs-abunter">so läuft der Clip in Suno über das Lied</span></div>'
-      /* NACH DEN HAUSREGELN (Caspar_D, 15.09.2026: "jetzt hausregeln anschauen und die Schleife-Schliessen Bedienelemente entsprechend
-         anordnen"): Bedienung links, rechts das Ergebnis als Zeitleiste des Clips (Regel 24; "Punkte = Einstellung, Kurve = Ergebnis").
-         Was nicht gilt, wird grau statt versteckt (Regel 3); "von selbst" ist ein Zustand und darum eine Pille (Regel 18/19). */
-      +'<div class="tbs-spalten"><div class="tbs-links">'
-      +'<div class="tbs-regler"><span>Übergang</span><select id="tbs-schleife">'+schleifeOptionen()+'</select></div>'
-      +'<div class="tbs-regler" id="tbs-fZeile"><span>Länge</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" title="länger – höchstens ein Drittel des Clips">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" title="die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber">von selbst</button></span></div>'
-      +'<div class="tbs-regler"><span>Schläge im Clip</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-mWeniger" title="weniger Schläge – kürzerer Clip, das Video läuft schneller">−</button><b id="tbs-mZahl">–</b><button type="button" class="tbs-mini" id="tbs-mMehr" title="mehr Schläge – längerer Clip (höchstens 10 s), das Video läuft ruhiger">+</button><button type="button" class="tbs-togp" id="tbs-mSelbst" title="die Schlagzahl wählen lassen, die über das ganze Lied am besten im Takt sitzt">von selbst</button></span></div>'
-      +'<div class="tbs-regler"><span>10-s-Loop</span><button type="button" class="tbs-togp" id="tbs-loopAn" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt">aus</button></div>'
-      +'<div class="tbs-unter" id="tbs-loopKosten" hidden>beim ersten Einschalten wird das Video einmal vermessen (einige Sekunden); mit Video dauert „10 s ausgeben“ länger</div>'
-      +'</div><div class="tbs-rechts">'
-      +'<canvas id="tbs-leiste" title="Der Clip von links nach rechts mit seinen Schlägen; die Kurve zeigt, welches Videobild zu welcher Clipzeit läuft, die Fläche den Übergang"></canvas>'
-      +'<div class="tbs-leistunter"><span id="tbs-leisteLinks"></span><span id="tbs-leisteRechts"></span></div>'
+      +'<div id="tbs-stapel"></div></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abLoop">'+stufeKopf('Loop')+stufeAuf('Loop')
+      /* EINE SPALTE IN DER REIHENFOLGE VON CASPAR_D (15.09.2026): Erklaerung, Lage, Ansicht, Schlaege, Uebergang mit Prinzip, seine Laenge,
+         dann die Zeitleiste als Ergebnis (Regel 24). Was nicht gilt, wird grau statt versteckt (Regel 3); "von selbst" und die
+         Ansicht sind Zustaende und darum Pillen (Regel 18/19). Die zwei Spalten dieser Stufe (14.09.) fielen damit. */
       +'<div class="tbs-zeile" id="tbs-loopLage" title="Die Länge, die „10 s ausgeben“ jetzt wählen würde, und wie viel vom Lied der Clip im Takt trifft">…</div>'
+      +'<div class="tbs-zeile"><button type="button" class="tbs-togp" id="tbs-loopAn" aria-pressed="false" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt. Geht an, wenn diese Stufe aufgeht, und aus, wenn eine andere aufgeht.">als 10-s-Clip zeigen</button></div>'
+      +'<div class="tbs-regler"><span>Schläge im Clip</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-mWeniger" title="weniger Schläge – kürzerer Clip, das Video läuft schneller">−</button><b id="tbs-mZahl">–</b><button type="button" class="tbs-mini" id="tbs-mMehr" title="mehr Schläge – längerer Clip (höchstens 10 s), das Video läuft ruhiger">+</button><button type="button" class="tbs-togp" id="tbs-mSelbst" title="die Schlagzahl wählen lassen, die über das ganze Lied am besten im Takt sitzt">von selbst</button></span></div>'
+      +'<div class="tbs-regler"><span>Übergang an den Schleifenenden</span><select id="tbs-schleife">'+schleifeOptionen()+'</select></div>'
       +'<div class="tbs-unter" id="tbs-schleifeHinweis"></div>'
+      +'<div class="tbs-regler" id="tbs-fZeile"><span>Länge des Übergangs</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" title="länger – höchstens ein Drittel des Clips">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" title="die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber">von selbst</button></span></div>'
+      +'<div class="tbs-leistrahmen"><div class="tbs-yachse" id="tbs-yAchse" title="die Zeitskala des Videomaterials, von unten nach oben"><span id="tbs-yOben"></span><span class="tbs-yname">Video</span><span>0 s</span></div>'
+      +'<canvas id="tbs-leiste" title="Waagerecht die von KlangTresor geschleifte Version, senkrecht die Zeit im Videomaterial: die Kurve zeigt, welches Videobild zu welcher Clipzeit l\u00e4uft, die Fl\u00e4che den \u00dcbergang, die Striche unten die Schl\u00e4ge"></canvas>'
+      +'<div class="tbs-xachse" title="die von KlangTresor geschleifte Version, von links nach rechts"><span>0 s</span><span>geschleifter Clip</span><span id="tbs-xRechts"></span></div></div>'
+      +'<div class="tbs-leistunter"><span id="tbs-leisteLinks"></span><span id="tbs-leisteRechts"></span></div>'
+      +'<div class="tbs-unter" id="tbs-loopKosten" hidden>beim ersten Einschalten wird das Video einmal vermessen (einige Sekunden); mit Video dauert „10 s ausgeben“ länger</div>'
       +'<div class="tbs-unter" id="tbs-loopWo" hidden></div>'
-      +'</div></div></div>'
-      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
+      +'</div></div>'
+      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektclip</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung, Effektkette und Schleife beim Titel ablegen - Kachel und Bühne malen es dann live, im Takt des Songs">Für diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Den beim Titel gesicherten Effektclip löschen (Quelle, Vorbereitung, Effektkette und Schleife) - Kachel und Bühne zeigen wieder das Standbild. Gelöscht wird nur das gesicherte Rezept: Titelbild und Videos bleiben, und was hier im Studio eingestellt ist, bleibt stehen und lässt sich wieder sichern.">Löschen</button>'
       +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
-      +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung und Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Quelle \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
+      +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung, Effektkette und Schleife. Läuft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>←</kbd><kbd>→</kbd> Quelle · <kbd>V</kbd> halten: ohne Effekte (in der Vorbereitung) · <kbd>Esc</kbd> schließen</div></div>'
       +'</div></div></div>';
     document.body.appendChild(root);
     root.onclick=(ev)=>{ if(ev.target===root) schliessen(); };
@@ -29993,7 +30076,7 @@ function zeichneFrame(t){
     stapelBox=$('#tbs-stapel');
     const psel=$('#tbs-preset');
     Object.keys(PRESETS).forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; psel.appendChild(o); });
-    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); offenId=null; renderStapel(); } psel.value=''; psel.blur(); };
+    psel.onchange=()=>{ const n=psel.value; if(PRESETS[n]){ STAPEL=PRESETS[n](); soloId=null; offenId=null; renderStapel(); } psel.value=''; psel.blur(); };
     const vorrat=$('#tbs-vorrat');
     /* Eigene Auswahlliste statt <select>: eine native Liste kann keine Symbole zeigen. Gruppenkoepfe mit
        Gruppensymbol, jeder Effekt mit seinem Symbol in seiner Farbe; Esc oder Klick daneben schliesst. */
@@ -30023,15 +30106,19 @@ function zeichneFrame(t){
     $('#tbs-fSelbst').onclick=()=>{ SCHLEIFE.fenster=0; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); };
     if(window.ResizeObserver) new ResizeObserver(()=>leisteMalen()).observe($('#tbs-leiste'));
     $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={...SCHLEIFE,art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(bild&&bild.tagName==='VIDEO'&&!loopAn) loopSchalten(true); else if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };   /* DIE VORSCHAU ZIEHT MIT (Caspar_D, 15.09.2026: "die vorschau muss mitziehen, sonst weiss ich ja nicht, ob es gut aussieht"): wer bei einem Video einen Uebergang waehlt, sieht sofort die Loop-Ansicht */
-    $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
-    $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
-    $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };
+    /* Akkordeon: der Kopf einer Stufe klappt sie auf und die anderen zu, der offene Kopf klappt zu. Der eigene Klappschalter der
+       Vorbereitung (#tbs-vorbKlapp, #tbs-vorbStand) fiel damit weg (15.09.2026). */
+    root.querySelectorAll('.tbs-stufenkopf').forEach(b=>b.onclick=()=>stufeSetzen(stufeOffen===b.dataset.stufe?null:b.dataset.stufe));
     const kk=$('#tbs-kettekopf');
     kk.querySelector('.tbs-pwAlle').onclick=()=>{ const alle=STAPEL.length>0&&STAPEL.every(x=>x.an); STAPEL.forEach(x=>x.an=!alle); soloId=null; renderStapel(); };
     kk.querySelector('[data-alle="weg"]').onclick=()=>{ if(!STAPEL.length) return; if(!confirm('Alle '+STAPEL.length+' Effekte aus der Kette entfernen?')) return; STAPEL=[]; soloId=null; offenId=null; renderStapel(); };
     kk.querySelector('[data-alle="zu"]').onclick=()=>{ offenId=null; renderStapel(); };
-    window.addEventListener('resize',()=>{ if(offen) groesse(); });
+    window.addEventListener('resize',()=>{ if(offen){ groesse(); if(stufeOffen==='Quelle') quellenNamen(); } });
     document.addEventListener('keydown',tasten,true);
+    /* V losgelassen - oder Cmd dazwischen (dann kommt das keyup von V auf dem Mac nicht), Fenster verlassen, Tab gewechselt */
+    document.addEventListener('keyup',ev=>{ const k=ev.key||''; if(k==='v'||k==='V'||k==='Meta') ohneSetzen(false); },true);
+    window.addEventListener('blur',()=>ohneSetzen(false));
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden) ohneSetzen(false); });
   }
   async function oeffnen(id, cb){
     if(!root) bauen();
@@ -30039,7 +30126,7 @@ function zeichneFrame(t){
        Titel dazwischen wuerde ueberschrieben (Gegenpruefung 15.09.2026). Also erst fertig bauen, dann wechseln. */
     if(exportLauf){ pStat('das Video wird noch fertig gebaut …'); try{ await exportLauf; }catch(e){} }
     songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1}; SEITEN=[]; quellenUI();
-    loopSchalten(false); loopSicht=null; loopSchluessel=''; loopFaellig=0; { const el=$('#tbs-loopLage'); if(el){ el.textContent='\u2026'; el.classList.remove('gedimmt'); } }   /* jeder Titel beginnt ohne Loop-Ansicht, seine Lage rechnet die Wache */
+    ohneSetzen(false); loopWunsch=false; loopSchalten(false); loopSicht=null; loopSchluessel=''; loopFaellig=0; { const el=$('#tbs-loopLage'); if(el){ el.textContent='\u2026'; el.classList.remove('gedimmt'); } }   /* jeder Titel beginnt ohne Loop-Ansicht, seine Lage rechnet die Wache */
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
        groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
     root.hidden=false; offen=true; if(g&&lein) g.clearRect(0,0,lein.width,lein.height);
@@ -30057,16 +30144,21 @@ function zeichneFrame(t){
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
-    if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat('Effektkette des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch keine Effektkette beim Titel'); }
-    quellenUI(); vorbStand(); { const k=$('#tbs-vorbKoerper'); if(k){ k.hidden=true; k.innerHTML=''; } const b=$('#tbs-vorbKlapp'); if(b){ b.textContent='\u25b8'; b.title='aufklappen'; } }   /* zugeklappt starten, sie braucht viel Platz */
+    if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat('Effektclip des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Effektclip beim Titel'); }
+    quellenUI(); vorbStand(); stufeSetzen(stufeGemerkt());   /* Akkordeon: die zuletzt geoeffnete Stufe, beim ersten Mal die Quelle */
     t0=performance.now();
     grundLaden();
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
-  function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0;
+  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false;
+    /* Die Loop-Ansicht geht mit dem Studio aus (Gegenpruefung 15.09.2026): seit die Schleifen-Stufe sie selbst einschaltet und gemerkt
+       wird, schloss man das Studio meist mit ihr - VIDEO_GENAU blieb stehen, und quelleSync liess die Videos von Kachel und Buehne
+       liegen. Die gemerkte Stufe bleibt; beim naechsten Oeffnen schaltet stufeSetzen die Ansicht wieder ein. */
+    if(loopAn&&!exportLaeuft) loopSchalten(false);
+    offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0;
     /* ein laufender Export malt noch aus der Quelle - sie geht erst danach weg, und nur, wenn keiner wieder geoeffnet hat */
-    const weg=()=>{ if(offen) return; quelleWeg(bild); bereit=false; }; if(exportLauf) exportLauf.then(weg,weg); else weg(); }
+    const weg=()=>{ if(offen) return; if(loopAn){ if(exportLaeuft){ loopAn=false; VIDEO_GENAU=false; } else loopSchalten(false); } quelleWeg(bild); bereit=false; if(!exportLaeuft) VIDEO_GENAU=false; };   /* eine noch laufende Vermessung haelt das Video sonst bis zu ihrem Abbruch fest - es geht aber gerade weg */ if(exportLauf) exportLauf.then(weg,weg); else weg(); }
   /* ---- Effektclip: das Rezept live auf Kachel und Buehne malen --------
      Ein Maler je Ziel (eigene Leinwand, eigene Puffer, eigener Stapel);
      EINE Schleife malt alle, solange es welche gibt, und endet von selbst.

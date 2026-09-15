@@ -1,4 +1,4 @@
-# Konzept: längere Videos und die Stufe „Schleife schließen"
+# Konzept: längere Videos und die Stufe „Effektclip als Schleife" (bis 15.09.2026 „Schleife schließen")
 
 Stand 15.09.2026. Entscheidungen von Caspar_D im Gespräch, gesammelt, **bevor** gebaut wird. Anlass
 ist die Lehre vom 11.09.2026: Der „Lauf" (Zeit beugen, Pendel, Stottern) wuchs an einem Abend über sechs
@@ -13,6 +13,10 @@ Quelle → Vorbereitung → Effekte → **Schleife schließen** (Caspar_D: *„d
 Videoloop-Verbinden Part geben am Ende"*; Name: *„Schleife schließen"*). Die vierte Stufe trägt die
 Taktlage („sitzt auf X % des Lieds"), die 10-s-Loop-Ansicht und später Nahtsuche und Übergänge.
 Zukunftsvision: *„dann ist es nicht mehr weit, verschiedene Videos zusammenzusetzen"*.
+
+Seit dem Akkordeon (15.09.2026, Abschnitt unten) heißt die vierte Stufe **„Effektclip als Schleife"**; im Code steht
+der Name nur in `LOOP_STUFE`. Die Taufnotiz steht in `docs/haus/HAUSREGELN.md`. Ältere Abschnitte hier behalten den
+alten Namen, weil sie datiert sind.
 
 ## Die sechs Fragen vom 11.09. — beantwortet am 15.09.2026
 
@@ -90,3 +94,31 @@ Punkte 2–6 und die Zeitleiste aus Punkt 1 (`leisteMalen()` im Studio): schwarz
 in der Loop-Ansicht. „von selbst" ist bei Länge und Schlagzahl eine Pille (Zustand). Die Wahl des Übergangs behält jetzt
 Schlagzahl und Länge (vorher setzte sie beides zurück). **Nicht gebaut:** Fensterkante ziehen (die −/+-Zähler bleiben)
 und kräftige Taktstriche — welcher Clipschlag die Eins ist, steht in der Taktlage nicht fest, also wird nichts behauptet.
+
+## Das Pult als Akkordeon (15.09.2026)
+
+Caspar_D hat die Darstellung aller vier Stufen neu entschieden. Die zweispaltige Schleifen-Stufe von oben ist damit
+abgelöst.
+
+- **Vier Stufen, immer nur eine offen:** Quelle · Vorbereitung · Effektkette · Effektclip als Schleife. Der Kopf ist
+  eine einzige klickbare Zeile (Knopf mit `aria-expanded`, sichtbarer Tastaturfokus, `:active` 0,95). Klick auf einen
+  zugeklappten Kopf öffnet diese Stufe und schließt die anderen; Klick auf den offenen Kopf schließt sie.
+- **Der Kopf nennt den Stand** (Regel 3 und 10: auch Zugeklapptes wirkt):
+  - Quelle: der Name der Quelle wie unter dem Vorschaubild.
+  - Vorbereitung: „n Anpassungen aktiv" oder „keine Anpassung".
+  - Effektkette: „n Effekte zugewiesen", dazu „· m an", wenn welche aus sind, und „· Solo: Name".
+  - Schleife: Länge · Schläge, beim Video dazu der Übergang.
+- **Oben in jeder offenen Stufe steht ein Erklärtext** im Wortlaut von Caspar_D (`STUFE_ERKLAER`). Er ersetzt die
+  alten Untertitel.
+- **Die Vorschau folgt der Stufe:**
+  - Öffnet sich die Schleife, geht die 10-s-Ansicht an; jede andere Stufe schaltet sie aus. Während eines Exports
+    wird nicht umgeschaltet. Die Pille „als 10-s-Clip zeigen" bleibt in der Stufe.
+  - In der Vorbereitung zeigt **V halten** die Quelle ohne Effekte (nur die Vorbereitung wirkt). Das läuft über den
+    Parameter `roh` von `zeichneFrame`, nie über `STAPEL`, sodass Export und Rezept es nicht sehen.
+- **Die Schleife hat jetzt eine Spalte, in dieser Reihenfolge:** Erklärung, Lage, Pille, Schläge im Clip, Übergang an
+  den Schleifenenden mit Prinzip, Länge des Übergangs, Zeitleiste.
+- **Gemerkt wird die zuletzt geöffnete Stufe** (`mysuno-tbs-stufe`); beim ersten Mal ist es die Quelle.
+- **Der eigene Klappschalter der Vorbereitung ist entfallen.** Ihr „Zurücksetzen" (vorher „Löschen", zur Unterscheidung vom „Löschen" des Effektclips im Fuß) liegt im Panel neben Auto-Niveaus.
+- **Die Zeitleiste war nur ein schwarzer Streifen.** `leisteMalen()` las die Farben aus `$('#tbs')`, aber `root` ist
+  selbst `#tbs`, also war das Ergebnis null. `getComputedStyle` warf deshalb gleich nach dem Schwarz. Jetzt liest sie
+  aus `root` und malt neu, wenn die Stufe aufgeht.

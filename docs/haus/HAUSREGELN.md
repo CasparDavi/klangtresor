@@ -155,6 +155,11 @@ Verworfen wurden auf dem Weg dorthin: **Material** (klingt nach Rohstoff, was dr
 außerdem längst die Bilder über die Naht hinaus), **mehr dazu** (liest sich als Link),
 **Mappe**, **Ausstattung**, **Anhang**.
 
+**„Effektclip als Schleife" — die vierte Stufe im Effektclip-Studio (15.09.2026).** Die Stufe „Schleife schließen"
+heißt seit 15.09.2026 „Effektclip als Schleife". Davor hieß sie bis zum Abend des 15.09. „Loop verbinden". Der neue
+Name kam mit dem Akkordeon im Pult. Er beschreibt, was am Ende herauskommt: ein Clip, den Suno in Endlosschleife
+über das Lied spielt. Im Code steht der Name nur in `LOOP_STUFE`.
+
 ## Architektur
 
 26. **Register sind Stationen der Kette** — was drauf setzt, bekommt

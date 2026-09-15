@@ -311,7 +311,7 @@ window.__naht = (() => {
       loopSchalten(true);
       const lage = loopSicht.lage, zeile = (root.querySelector('#tbs-loopLage') || {}).textContent || '', satz = taktSatz(lageExport.anzeige, lageExport.grund, true);
       const felder = ['t0','N','M','proTakt','phiF','anzeige','grund','ganzeTakte'], lageGleich = felder.every(k => lage[k]===lageExport[k]);
-      const erg = { t0:r3(t0), L:r3(L), N, M:lageExport.M, zeile, satz, lageGleich, satzGleich:satz ? zeile.endsWith(satz) : !/sitzt auf|Takt lässt/.test(zeile), W:lein.width, H:lein.height, messung:[] };
+      const erg = { t0:r3(t0), L:r3(L), N, M:lageExport.M, zeile, satz, lageGleich, satzGleich:satz ? zeile.endsWith(satz) : !/sitzt auf|keine Länge bleibt/.test(zeile), W:lein.width, H:lein.height, messung:[] };
       const dauer = (DATA && DATA.dauer) || 180;
       const zeiten = o.zeiten || [0.06, jetztFall, 3*L - 0.4/BILDRATE, 3*L - 0.6/BILDRATE, 7.5*L, 12*L + 0.49/BILDRATE, dauer - 0.3].filter(s => s >= 0 && s < Math.max(dauer, 1)).filter((s, k) => !o.auswahl || o.auswahl.includes(k));
       const W = lein.width, H = lein.height; let dicht = true;
