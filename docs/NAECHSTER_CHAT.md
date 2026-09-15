@@ -4221,3 +4221,32 @@ nie über 1.23 wegen Intel-iMac); MacBook als Rechenknecht erst mit Ableitungsbu
 
 **Als Nächstes:** Caspar_D begutachtet im Studio (Maßstab in Kacheln, Stufe „Schleife schließen", Solo, die sieben
 Loop-Abweichungen jetzt direkt über den Loop-Modus), dann Release 1.0.7.
+
+## Schleife schließen für Bewegtbilder — gebaut am Abend (15.09.2026)
+
+Caspar_D: *„Wie machen wir das jetzt mit dem Schleifen-Schließen? Das Panel zeigt keinerlei Optionen, keine
+Videoüberblendungen"* — *„mach es trotzdem"* (trotz Kontingent). Commits `eb7d83a` … `c5eebe5`.
+
+**Stand im Studio, Stufe „Schleife schließen":**
+- **Sprungkopie** `POST /api/sprungkopie` aus `a79575e` wiederhergestellt (Sandkasten 8799 geprüft, dann live mit
+  Caspar_Ds OK). Das Studio holt sie beim Öffnen eines Videos (`sprungHolen`) und stellt das `<video>` darauf um.
+- **Übergang am Loop** (`SCHLEIFE_ARTEN`): harter Schnitt, Rücklauf mit Unschärfe (8 %), Abbremsen, Pendel,
+  Unschärfe, Blende, Kreuzzoom, Wisch, durch Schwarz, durch Weiß, Schnitt mit Blitz (für Grafik), Pixel (für Grafik).
+  Im Rezept als `schleife:{art,schlaege,fenster}`.
+- **Das ganze Video, gleich viel Änderung je Zeit** (*„das Video muss immer so ganz wie möglich zu sehen sein"*,
+  *„gleich viel Änderung pro Zeit aber das gesamte Videomaterial"*): Änderungskurve einmal je Video gemessen
+  (`schleifeKurveMessen`, Rate ~ 1/Änderung^0,7, halb bis doppelt so schnell); Vorwärtslauf zeigt immer Bild 0 bis Ende.
+- **Länge:** bei Videos wählt `taktLage` die längste Länge ≤ 10 s bis 10 Prozentpunkte unter der besten
+  (`bedarf.lang`); **Schläge im Clip** von Hand (− / + / von selbst, nie über 10 s); **Länge des Übergangs** in
+  Schlägen (harter Schnitt immer 0 s, *„die anderen müssen variabel sein"*, halbe Schläge gewünscht).
+- **Effekte gehen mit durch den Übergang** (*„wenn wir einen fade out übergang haben, müssen die effekte mit
+  ausfaden"*): `schleifeNachbild()` wirkt auf das fertige Bild; Blende/Wisch/Abbremsen mischen das letzte fertige Bild
+  vor dem Fenster mit dem ersten des Clips.
+- **Vorschau zieht mit:** Wahl eines Übergangs bei einem Video schaltet die Loop-Ansicht ein.
+- Export (Kodierweg und MediaRecorder) setzt das Video je Bild bildgenau (`quelleSetzen`, `VIDEO_GENAU`).
+
+**Nicht automatisch geprüft:** der ganze Video-Weg (nur Caspar_D am Bild). Titelbild-Weg per Stichprobe unverändert.
+**Offen:** Nahtsuche (bester Ausschnitt) fehlt, Pendel noch nicht asymmetrisch, Blende/Wisch mischen Standbilder
+(kein Material über den Clip hinaus), Darstellung der Stufe nach Hausregeln überarbeiten (Caspar_D, 15.09. spät),
+Songanalyse-Ansicht Takt gegen Clip (Backlog). Nebenbei am 15.09.: sechs liegengebliebene `bin/einrichten.js`-
+Prozesse vom 13.09. beendet; ein fremder Prozess auf 8791 versehentlich beendet (Hausregel eigene PID verletzt).

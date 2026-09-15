@@ -29121,7 +29121,7 @@ const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt *
    10 sek - also dass man die Laenge der Ueberblendung definieren kann, insgesamt aber trotzdem 10 sekunden bleiben"): in ganzen
    Schlaegen (musikalisch, VIDEO-PLAN 6.3), der Clip bleibt so lang wie er ist - das Video bekommt die gewonnene Zeit. */
 function schleifeFenster(L,lage){ if((SCHLEIFE.art||'keiner')==='keiner') return 0;   /* harter Schnitt: Uebergang der Laenge 0 (Caspar_D, 15.09.2026: "bei harter schnitt muessten auch uebergaenge der laenge 0 moeglich sein") */
-  const beat=(lage&&lage.M)?L/lage.M:0, takt=beat*((lage&&lage.proTakt)||4), n=SCHLEIFE.fenster|0;
+  const beat=(lage&&lage.M)?L/lage.M:0, takt=beat*((lage&&lage.proTakt)||4), n=Math.round((+SCHLEIFE.fenster||0)*2)/2;
   const D=(n>0&&beat>0)?n*beat:n>0?n*0.5:(takt>0?(takt<=2?takt:takt/2):1.2); return Math.max(0.2,Math.min(L/3,D)); }
 /* DAS GANZE VIDEO, GLEICH VIEL AENDERUNG JE ZEIT (Caspar_D, 15.09.2026: "das video wird zu frueh ausgeblendet, der Kuss ist
    schon nicht mehr richtig zu sehen" - "das Video muss immer so ganz wie moeglich zu sehen sein" - "also das, was du bei Dopamier
@@ -29342,7 +29342,7 @@ function zeichneFrame(t){
   function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
-    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art,schlaege:(r.schleife.schlaege|0)||0,fenster:(r.schleife.fenster|0)||0}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
+    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art,schlaege:(r.schleife.schlaege|0)||0,fenster:Math.max(0,Math.round((+r.schleife.fenster||0)*2)/2)}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
   /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
      verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
   /* DER THEATERNEBEL IST GESTRICHEN (Caspar_D, 14.09.2026: "schmeiss den Theaternebel raus").
@@ -29876,7 +29876,7 @@ function zeichneFrame(t){
     el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
   function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'); if(s){ s.value=SCHLEIFE.art; s.disabled=!vid; }
     { const z=$('#tbs-mZahl'), lg=loopSicht&&loopSicht.lage; if(z) z.textContent=(SCHLEIFE.schlaege>0?'':'von selbst: ')+((lg&&lg.M)?lg.M:'\u2013');
-      const fz=$('#tbs-fZahl'); if(fz&&lg){ const L=lg.N/BILDRATE, D=schleifeFenster(L,lg), beat=lg.M?L/lg.M:0; fz.textContent=SCHLEIFE.art==='keiner'?'0 s \u2014 harter Schnitt':(SCHLEIFE.fenster>0?'':'von selbst: ')+(beat?Math.round(D/beat)+' Schl\u00e4ge = ':'')+D.toFixed(2).replace('.',',')+' s von '+L.toFixed(2).replace('.',',')+' s'; } }
+      const fz=$('#tbs-fZahl'); if(fz&&lg){ const L=lg.N/BILDRATE, D=schleifeFenster(L,lg), beat=lg.M?L/lg.M:0; fz.textContent=SCHLEIFE.art==='keiner'?'0 s \u2014 harter Schnitt':(SCHLEIFE.fenster>0?'':'von selbst: ')+(beat?String(Math.round(D/beat*2)/2).replace('.',',')+' Schl\u00e4ge = ':'')+D.toFixed(2).replace('.',',')+' s von '+L.toFixed(2).replace('.',',')+' s'; } }
     if(h) h.textContent=vid?(SCHLEIFE.art==='keiner'?'das Video springt am Übergang vom Ende zum Anfang':'wirkt im ausgegebenen Clip und in der Loop-Ansicht'):'nur für Bewegtbilder — das Titelbild schliesst die Schleife über die Effekte von selbst'; }
   function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
     if(b){ b.classList.toggle('an',loopAn); b.textContent=loopAn?'an':'aus'; } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }
@@ -29966,8 +29966,8 @@ function zeichneFrame(t){
       SCHLEIFE.schlaege=Math.max(sp[0],Math.min(sp[1],lg.M+d*e)); SCHLEIFE_STILL.schluessel=''; loopLageNeu(); schleifeUI(); };
     $('#tbs-mWeniger').onclick=()=>schlagSchritt(-1); $('#tbs-mMehr').onclick=()=>schlagSchritt(1);
     $('#tbs-mSelbst').onclick=()=>{ SCHLEIFE.schlaege=0; loopLageNeu(); schleifeUI(); };
-    const fensterSchritt=d=>{ const lg=(loopSicht&&loopSicht.lage)||ausschnitt(), L=lg?lg.N/BILDRATE:10, beat=(lg&&lg.M)?L/lg.M:0.5, jetzt=SCHLEIFE.fenster>0?SCHLEIFE.fenster:Math.max(1,Math.round(schleifeFenster(L,lg)/beat));
-      SCHLEIFE.fenster=Math.max(1,Math.min(Math.max(1,Math.floor(L/3/beat)),jetzt+d)); SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); };
+    const fensterSchritt=d=>{ const lg=(loopSicht&&loopSicht.lage)||ausschnitt(), L=lg?lg.N/BILDRATE:10, beat=(lg&&lg.M)?L/lg.M:0.5, jetzt=SCHLEIFE.fenster>0?SCHLEIFE.fenster:Math.max(0.5,Math.round(schleifeFenster(L,lg)/beat*2)/2);   /* in halben Schlaegen (Caspar_D: "auch halbe Schlaege waeren akzeptabel") */
+      SCHLEIFE.fenster=Math.max(0.5,Math.min(Math.max(0.5,Math.floor(L/3/beat*2)/2),jetzt+d*0.5)); SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); };
     $('#tbs-fWeniger').onclick=()=>fensterSchritt(-1); $('#tbs-fMehr').onclick=()=>fensterSchritt(1);
     $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(bild&&bild.tagName==='VIDEO'&&!loopAn) loopSchalten(true); else if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };   /* DIE VORSCHAU ZIEHT MIT (Caspar_D, 15.09.2026: "die vorschau muss mitziehen, sonst weiss ich ja nicht, ob es gut aussieht"): wer bei einem Video einen Uebergang waehlt, sieht sofort die Loop-Ansicht */
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
