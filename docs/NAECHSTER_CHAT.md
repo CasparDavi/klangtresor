@@ -4385,3 +4385,33 @@ Hinweg die erste Hälfte, Rückweg die zweite, dazwischen echtes Tempo, an den U
 Spitze 1,18-fach), bei τ=0 und τ=L dasselbe Bild mit Tempo 0. Kein Ausblenden, keine Unschärfe. Die Länge steht als
 „Länge des Ausschnitts" in halben Schlägen im Pult (die Zeile war beim Pendel vorher grau), die Lage kommt aus der
 Änderungskurve: das bewegteste Fenster seiner Länge (`schleifePendelVon`).
+
+### Hol-Weg-Diagnose: Abschnitte und Schläge beim neuen Titel (16.09.2026)
+
+Caspar_D: *„früher wurden die abschnitte des songs auf der song analyse seite eingefärbt … ist ein Hol-Weg seitdem tot?"*
+Befund aus zwei Prüfspuren (nur lesend am echten Katalog, Nachspiel im Sandkasten):
+
+1. **Kein Weg ist tot.** Im selben Lesezeichen-Lauf (`abgerufenAm 2026-09-15T22:34:49.694Z`) antworteten
+   `waveform-aggregates` 1/1, `aligned_lyrics/v2` 5/5 (537 Wörter für den neuen Titel) und `v3` 2/3 — gleicher Token,
+   gleiche Kopfzeilen. Auth, CORS und Deckel sind damit ausgeschlossen.
+2. **`downbeats` und `novelty-sections` wurden für diesen Titel genau EINMAL gefragt** und die Antwort unbesehen
+   verworfen: `browser/morgens.js:988` wirft den Status weg, `:997` schluckt die Ausnahme, `:1002` nennt jeden Fehlschlag
+   „noch nicht fertig bei Suno". Vom 09. bis 15.09. wurden beide NULL mal gefragt, weil `fehlt` (`:981`) leer war.
+3. **Suno rechnet beides auf Anfrage.** Sunos eigene App pollt beide Adressen alle 2,5 s bis zu 300 s
+   (`library/suno-wege/suno-wege-_studio.json`), die erste Antwort ist `{state:"running"}`. Unser Lesezeichen fragt
+   einmal. Wahrscheinlichste Erklärung: nicht tot, nur ungeduldig.
+4. **Die Ernte von 00:34 ist nie übernommen worden.** Der Katalog trägt `erstelltAm 22:34:34.914Z`; die 17 s danach
+   gingen in `gzipSync(level 9)`, und die vier Rohdateien landeten um 00:34:50 mitten in diesem blinden Fenster.
+   `wellenStufen` und die 537 v2-Wörter liegen also noch unverarbeitet in `library/roh/` — ein Lauf holt sie.
+5. **Verlustfenster:** Verarbeitete Rohdateien werden gelöscht, nicht archiviert (`bin/aufbereiten.js:1018-1028`; der
+   Kommentar bei `:129` über `roh/verarbeitet/` ist veraltet, ebenso `bin/wiederherstellen.js:67`). Die Löschliste
+   (`:916-931`) liest den Ordner NEU — was zwischen Lesen und Löschen eintrifft, wird ungelesen gelöscht. Im Sandkasten
+   nachgestellt.
+6. **Zwei Dauerläufer:** `/api/morgen/v3-fehlt` (`server/server.js:3316`) zählt `alignment: []` als vorhanden, `worteV3`
+   wird aber nicht gesetzt — die zwei Ribbeck-Titel werden bei jedem Lauf wieder geholt. Dasselbe Muster bei leeren
+   v2-Antworten (HTTP 202 gilt in `morgens.js:1038` als Erfolg).
+7. Der Titel ist der **einzige v6-Clip von 325** — „nur v6" und „nur einmal gefragt" lassen sich aus den Daten nicht
+   trennen. Messweg: Lesezeichen mit offenem Netzwerk-Reiter, Status und Körper der zwei Adressen lesen.
+
+**Nicht gebaut, Entscheidung offen:** Status und `state` in die Ernte mitschreiben, Nachfragen wie Sunos App, das
+Löschfenster schließen, die beiden Leer-Antworten richtig zählen, Adressliste neu holen (letzter Stand 08.09.2026).
