@@ -27527,7 +27527,7 @@ function loopNein(e){ return !!GL.gl && !GL.noise4 && (GL_SHADER[e.typ]||'').ind
 /* WIE VIELE SCHLAEGE DER CLIP BRAUCHT, damit diese Karte aufgeht (Caspar_D, 14.09.2026: "dann muessen
    die schlaege so eingepasst werden, dass es passt"). "Jeder 8. Schlag" geht nur auf, wenn die
    Schlagzahl des Clips durch 8 teilbar ist; der Kick des Verwackelns wechselt die Richtung, braucht
-   also eine gerade Zahl. ausschnitt() waehlt danach die Taktzahl. */
+   also eine gerade Zahl. taktLage() waehlt danach die Schlagzahl. */
 /* Zwei Gruende, zwei Folgen, darum zwei Griffe (Gegenpruefung 15.09.2026): geht die GRUPPE nicht auf, kommt am
    Uebergang ein Schlag einmal frueher; geht die Kick-Zahl des Verwackelns nicht auf, ruckt es zweimal in dieselbe
    Richtung. Die Statuszeile sagt es je Grund. */
@@ -29307,69 +29307,175 @@ function zeichneFrame(t){
   function presetSetzen(arr,alt,fassung){ STAPEL=arr.map(r=>effektAusRezept(r,alt,fassung)).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
   /* ---- VIDEOEXPORT (Caspar_D, 10.09.2026: "ein 10 sec videoexport aus unseren effektclips, damit man
-     das in suno benutzen kann"). Seitenverhaeltnis der Quelle, stumm, ganze Takte bis zehn Sekunden,
+     das in suno benutzen kann"). Seitenverhaeltnis der Quelle, stumm, bis zehn Sekunden im Takt des Lieds (taktLage),
      das Hauszeichen unten rechts, MP4 ins Download-Verzeichnis. Aufgenommen wird von einem EIGENEN
      Maler in Ausgabegroesse - die Breite des Pults soll nicht ueber die Ausgabe entscheiden.
      Die Zeit im Bild folgt der Uhr, nicht der Bildzaehlung: dann stimmt die Laenge auch auf einer
      langsamen Maschine, es fehlen hoechstens Zwischenbilder. */
   const MAX_SEK=10, BILDRATE=30, LANGE_SEITE=1080;
-  function taktLaenge(){ const S=(DATA&&DATA.schlaege)||[]; const einsen=[]; for(let i=0;i<S.length;i++) if(S[i][1]===1) einsen.push(S[i][0]);
+  const medianVon=a=>{ if(!a.length) return 0; const b=a.slice().sort((x,y)=>x-y); return b[Math.floor(b.length/2)]; };
+  /* EINE TAKT-EINS hat einen Zwischenschlag: folgt ihr binnen 1,5 Schlaegen wieder eine 1, ist es keine (Nachbesserung
+     15.09.2026). Der Erkenner beschriftet Strecken, meist im Intro, durchgehend mit 1 - in 42 Katalogtiteln mehr als ein
+     Zehntel der Einsen. Sie drueckten die Taktlaenge auf einen Schlag (Die Affen: P = 1, jeder Clipschlag eine Eins) und
+     den Eins-Anteil, weil dort hoechstens jede P-te auf einer Clip-Eins sitzen kann. Die letzte 1 einer Strecke bleibt. */
+  const taktEins=(S,i,schlag)=>S[i][1]===1&&!(i+1<S.length&&S[i+1][1]===1&&S[i+1][0]-S[i][0]<1.5*schlag);
+  /* Die Taktlaenge ist der Median der Einsabstaende MIT DER HAEUFIGSTEN SCHLAGZAHL: wechselt ein Lied zwischen Zweier-
+     und Viererstrecken, laege der Median aller Abstaende sonst dazwischen (Der schwarze Tod: 114 Zweier, 100 Vierer,
+     Median 3 Schlaege - ein Takt, den es im Lied nicht gibt). */
+  function taktLaenge(S){ const sch=schlagMedian(S), einsen=[]; for(let i=0;i<S.length;i++) if(taktEins(S,i,sch)) einsen.push(S[i][0]);
     if(einsen.length<3) return {takt:0, einsen:[]};
     const d=[]; for(let i=1;i<einsen.length;i++) d.push(einsen[i]-einsen[i-1]);
-    d.sort((a,b)=>a-b); return {takt:d[Math.floor(d.length/2)], einsen}; }
-  /* Start auf dem naechstgelegenen Taktanfang, Laenge in ganzen Takten bis hoechstens zehn Sekunden. */
-  /* Die Laenge wird auf ganze Bilder gerundet, weil der Loop an der Bildnummer haengt: aufgenommen wird
-     [0, L), das Bild bei L faellt weg - es ist ja dasselbe wie das erste (Caspar_D, 10.09.2026: "aber es
-     muss doch das letzte bild fehlen, damit das erste = das letzte ist"). */
-  /* Schlaege je Takt aus dem Median der ECHTEN Schlagabstaende; ohne brauchbare Abstaende vier. Eine Stelle
-     fuer ausschnitt() und raster(): die Taktzahl wird nach der Schlagzahl gewaehlt, also muss ausschnitt()
-     dieselbe Zahl kennen, die raster() danach baut. */
-  function schlagMedian(){ const S=(DATA&&DATA.schlaege)||[], d=[]; for(let i=1;i<S.length;i++){ const dt=S[i][0]-S[i-1][0]; if(dt>0.05&&dt<2) d.push(dt); }
-    if(!d.length) return 0; d.sort((a,b)=>a-b); return d[Math.floor(d.length/2)]; }
-  function proTaktVon(taktLang){ const m=schlagMedian(); return m>0?Math.max(1,Math.min(16,Math.round(taktLang/m))):4; }
-  /* DIE SCHLAEGE SO EINPASSEN, DASS ES PASST (Caspar_D, 14.09.2026). Jede aktive Karte sagt mit
-     loopTeiler(), durch welche Zahl die Schlaege im Clip teilbar sein muessen ("jeder 8. Schlag": 8,
-     Kick des Verwackelns: gerade). Gesucht wird die laengste Taktzahl bis MAX_SEK, die das erfuellt; die
-     Laenge bleibt dabei hoechstens zehn Sekunden. Geht es nicht - ein Takt ueber fuenf Sekunden mit
-     "jeder 8. Schlag" -, wird die Forderung schrittweise gelockert (8, dann 4, 2, 1), und video() sagt
-     im Status, welche Karte an der Schnittstelle einmal frueher schlaegt.
-     TITEL MIT SCHLAEGEN, ABER OHNE EINSEN (Befund 14.09.2026): vorher blieben dort die echten,
-     schwankenden Schlaege im Export stehen, L=10 s lag auf keinem davon, und alles, was am Schlag hing,
-     riss an der Naht. Jetzt gibt es auch hier ein gleichmaessiges Raster: ein Takt aus vier
-     Median-Abstaenden, Start auf dem letzten Schlag vor jetzt. Wo es gar keine Schlaege gibt (oder zu
-     wenige fuer einen Median, dieselben acht wie schlagHz), laeuft der Antrieb auf seiner Frequenz, die
-     lpR ohnehin auf ganze Umlaeufe rastet - dort ist jedes t0 recht. */
-  function ausschnitt(){ let {takt,einsen}=taktLaenge(); const jetzt=zeit(), S=(DATA&&DATA.schlaege)||[];
-    const runden=x=>Math.max(2,Math.round(x*BILDRATE))/BILDRATE;
-    let t0=jetzt;
-    if(takt>0.05){ t0=einsen[0]; for(const e of einsen){ if(e<=jetzt) t0=e; else break; } }
-    else { const med=S.length>=8?schlagMedian():0; takt=0; if(med>0){ takt=4*med; t0=S[0][0]; for(const s of S){ if(s[0]<=jetzt) t0=s[0]; else break; } } }
-    if(!takt) return { t0:jetzt, L:runden(MAX_SEK), takte:0, takt:0, proTakt:0, M:0 };
-    const brauch=STAPEL.filter(e=>aktiv(e)).reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1);
-    const lage=z=>{ const L=runden(Math.min(MAX_SEK,z*takt)), tl=L/z, pt=proTaktVon(tl); return { t0, L, takte:z, takt:tl, proTakt:pt, M:pt*z }; };
-    const hoechst=Math.max(1,Math.floor(MAX_SEK/takt));
-    for(let d=brauch; d>=1; d--){ if(brauch%d) continue;
-      for(let z=hoechst; z>=1; z--){ const l=lage(z); if(l.M%d===0) return l; } }   /* ob es aufging, rechnet videoLauf() je Karte aus M nach */
-    return lage(hoechst); }
+    const zahl=new Map(); let P=0; if(sch>0) for(const x of d){ const p=Math.round(x/sch); if(p<2||p>16) continue; zahl.set(p,(zahl.get(p)||0)+1); if(!P||zahl.get(p)>zahl.get(P)||(zahl.get(p)===zahl.get(P)&&p<P)) P=p; }
+    return {takt:medianVon(P?d.filter(x=>Math.round(x/sch)===P):d), einsen}; }
+  /* Schlaege je Takt aus dem Median der ECHTEN Schlagabstaende; ohne brauchbare Abstaende vier. */
+  function schlagMedian(S){ const d=[]; for(let i=1;i<S.length;i++){ const dt=S[i][0]-S[i-1][0]; if(dt>0.05&&dt<2) d.push(dt); } return medianVon(d); }
+  /* DIE TAKTLAGE: WIE LANG DER CLIP IST UND WO SEIN SCHLAG LIEGT (Caspar_D, 15.09.2026: "im echten Leben
+     synchronisierst du ja auf Takt was bei 10 Sekuender nur insoweit passieren sollte, dass das Gros des Songs
+     taktsynchron laeuft" - "ja, suno startet song und video gleichzeitig" - "und er muss <=10sec bleiben").
+     Auf der Songseite liegt Clipbild 0 auf Songzeit 0, Bild i faellt auf Songzeit k*L + i/30 (Suno behaelt 30 fps
+     und die Bildzahl, VIDEO-PLAN §3 Nachtrag). Gesucht wird darum unter allen N <= 300 Bildern die Laenge L = N/30,
+     die ueber das GANZE Lied am wenigsten vom Takt wegdriftet, dazu die Lage phiF (ganze Bilder) des Clipschlags 0.
+     Clipschlag j liegt auf Bild phiF + j*N/M; Bild N ist wieder Bild 0, der Loop haengt an nichts davon.
+     Vorher wurde auf ganze Takte gerundet und die Lage im Clip war Zufall: im Katalog sassen im Median 21 % der
+     Songzeit auf dem Schlag, jetzt 98 % (324 Titel, 312 besser, 1 schlechter; mit Eins-Karte 16 -> 63 %). Gemessen
+     ueber diesen Code: labor/nahtpruefung/naht.mjs --taktlage, ergebnis-taktlage.json (der Prototyp
+     taktlage-prototyp.js kennt die Nachbesserung vom 15.09. abends nicht mehr).
+     GEWICHT (kein Regler): jeder Songschlag zaehlt mit seiner Dauer bis zum naechsten (hoechstens 1,5 Schlaege -
+     Pausen sind keine Songzeit mit Takt) mal der Zahl, wie oft sein Abschnitt im Lied vorkommt. Refrains ziehen
+     also am staerksten; der erste und der letzte Abschnitt (Intro/Outro) zaehlen wie ein einmaliger. Kostet am
+     ganzen Lied im Median nichts, im Refrain bringt es 8 Prozentpunkte.
+     SITZT: ein Songschlag sitzt, wenn der Puls auf dem Bild, auf dem er ERSCHEINT (das erste Bild ab der
+     Schlagzeit - pulswert liest bt <= t), weniger als 1/8 Schlag, hoechstens 80 ms neben ihm liegt. Gegenpruefung 15.09.2026: gegen
+     die rechnerische Schlagzeit gemessen, zeigte die Anzeige im Median 6 Prozentpunkte zu viel, weil der Puls
+     immer 0 bis 1 Bild spaet kommt; mit dem sichtbaren Bild gesucht, holt die Phase das zurueck.
+     1/8 Schlag sind bei 90 bis 130 BPM 60 bis 80 ms, der Bereich, in dem Bild und Schlag als gleichzeitig gelten. Bei
+     langsamen Liedern waere 1/8 Schlag breiter (66 BPM: 114 ms) - dort gilt das Fenster, nicht der Bruch (Nachbesserung
+     15.09.2026: 67 Titel unter 80 BPM, die Zahl hiess dort sonst etwas Weicheres).
+     ZWEI RASTER, AUS DEN KARTEN GELESEN (wie loopTeiler, kein Regler): Suno-Tempi sind ganzzahlige BPM, 111 BPM
+     sind 600/37 Bilder je Schlag. Muss M ein Vielfaches der Schlaege je Takt P sein, bleiben rund 45 Laengen und
+     die beste driftet etwa einen Schlag ueber das Lied (Katalog-Median 63 %, angezeigt mit den Einsen 60 %); darf M jede
+     Schlagzahl sein, gibt es fast immer eine Kettenbruch-Naeherung (Median 98 %). Ganze Takte darum nur, wenn eine Karte die Eins liest
+     (lmQuelle 'eins', Einschlag 'nur die Eins'). Dann sitzt eine Song-Eins nur auf einer Clip-Eins. Gruppen
+     ("jeder 4. Schlag") zaehlen ab Clipschlag 0: dort sitzt eine Song-Eins nur auf einem Gruppenanfang, sobald die
+     Gruppe mit dem Takt geht (ggT von Gruppe und P > 1) - sonst laege "jeder 4. Schlag" zufaellig neben der Eins
+     (Gegenpruefung: im Median nur 32 % der Einsen auf einem Gruppenanfang).
+     SUCHRAUM: N ab 120 (4 s; ab 60 wird kein Titel besser, ab 180 faellt der Median auf 64 %). Ein Clipschlag
+     bleibt ein Songschlag: hoechstens 12 % Tempoabweichung, kein Halb- oder Doppeltempo. Das Tempo schaetzt der
+     Median des ganzen Lieds und der jedes Drittels - bei einem Tempowechsel darf so auch das Tempo eines Liedteils
+     gewinnen (Wolkenbruch 30 -> 44 %); entschieden wird immer an den echten Schlaegen. Die 12 % gelten aber IMMER
+     auch gegen das ganze Lied (Takt/P oder Schlagmedian): ein Drittel mit halben Schlagabstaenden liess sonst das
+     Doppeltempo durch - der Clip pulste zwischen den Schlaegen, und weil ein Puls ohne Songschlag nichts kostet,
+     meldete die Zeile 99 % (Schlaf - Der kleine Tod, Morgendaemmerung, Rosstrappe; jetzt 85 bis 92 %, ehrlich).
+     GLEICHSTAND: was hoechstens 1 Prozentpunkt unter der Spitze liegt - gewichtet UND am ganzen Lied -, gilt als gleich
+     gut, dann gewinnt die laengere Laenge (weniger Wiederholung). Ohne die zweite Bedingung verlor ein Titel bis
+     8 Prozentpunkte vom ganzen Lied (Kerze 61 -> 53 %). Das Gewicht entscheidet nur unter Laengen, die am ganzen Lied
+     hoechstens 2 Prozentpunkte unter der besten liegen: die Zeile nennt das ganze Lied, und 2 bis 4 Punkte
+     Refrain-Gewicht wogen sonst bis 12 Punkte davon auf (Kerze 51 statt 63 %, Kaputte Systeme 46 statt 54 %). Der
+     Refrain-Median bleibt dabei stehen (100 / 71 %). Teilbarkeit (loopTeiler) geht vor Taktlage, gelockert wird
+     wie bisher erst, wenn gar keine Laenge da ist. */
+  const TOLERANZ=1/8, TOLERANZ_SEK=0.08, MIN_BILDER=120, TEMPO_SPIEL=0.12, GLEICHSTAND=0.01, ABSTAND_LIED=0.02;
+  const TAKTLAGEN=new WeakMap();   /* je Schlagfeld: die Suche kostet bis gut 100 ms, der Stapel fragt beim Export einmal */
+  function taktLage(S,abschnitte,dauer,bedarf){ S=S||[]; bedarf=bedarf||{};
+    /* Ein Takt aus EINEM Schlag ist keiner (P = 1): dann wie ohne Einsen, P = 4 und keine Eins-Bedingung */
+    const {takt}=taktLaenge(S), schlag=schlagMedian(S), Pe=schlag>0?Math.min(16,Math.round(takt/schlag)):4, einsDa=takt>0.05&&Pe>=2;
+    if(!einsDa&&!(S.length>=8&&schlag>0)) return null;   /* zu wenige Schlaege: kein Raster, exportBuendel laesst sie stehen */
+    const brauch=Math.max(1,bedarf.brauch||1), eins=!!bedarf.eins, gruppen=(bedarf.gruppen||[]).filter(n=>n>1);
+    const schluessel=brauch+'|'+(eins?1:0)+'|'+gruppen.join('.')+'|'+(dauer||0)+'|'+!!abschnitte;
+    let memo=TAKTLAGEN.get(S); if(!memo){ memo=new Map(); TAKTLAGEN.set(S,memo); } if(memo.has(schluessel)) return memo.get(schluessel);
+    const kgV=(a,b)=>a*b/ggT(a,b);
+    const P=einsDa?Pe:4, beat=einsDa?takt/P:schlag;
+    const modul=eins?P:gruppen.reduce((k,n)=>kgV(k,ggT(n,P)),1), mitEins=einsDa&&modul>1;
+    /* Abschnitte: Vorkommen des Buchstabens, Intro/Outro 1; der Refrain der Kennzahl ist der meistwiederholte innere */
+    const ab=abschnitte, abOk=!!(ab&&Array.isArray(ab.segment_labels)&&Array.isArray(ab.peak_times)&&ab.segment_labels.length===ab.peak_times.length+1);
+    const lab=abOk?ab.segment_labels:[], pk=abOk?ab.peak_times:[], zahl={}; lab.forEach(l=>{ zahl[l]=(zahl[l]||0)+1; });
+    let refrain=null; lab.forEach((l,k)=>{ if(k>0&&k<lab.length-1&&(refrain===null||zahl[l]>zahl[refrain])) refrain=l; });
+    const abschnitt=t=>{ let lo=0,hi=pk.length; while(lo<hi){ const m=(lo+hi)>>1; if(pk[m]<=t) lo=m+1; else hi=m; } return lo; };
+    const n=S.length, f=new Float64Array(n), dz=new Float64Array(n), gw=new Float64Array(n), istEins=new Uint8Array(n), imRefrain=new Uint8Array(n);
+    const dSchlag=schlag>0?schlag:beat, tol=Math.min(TOLERANZ,TOLERANZ_SEK/dSchlag);   /* Fenster in Schlaegen */
+    for(let i=0;i<n;i++){ const t=S[i][0], d=i+1<n?Math.min(S[i+1][0]-t,1.5*dSchlag):dSchlag, k=abOk?abschnitt(t):0;
+      f[i]=t*BILDRATE; dz[i]=Math.max(0,d); istEins[i]=taktEins(S,i,schlag)?1:0;
+      gw[i]=dz[i]*(abOk&&k>0&&k<lab.length-1?zahl[lab[k]]:1); imRefrain[i]=abOk&&k>0&&k<lab.length-1&&lab[k]===refrain?1:0; }
+    function bewerten(N,M,phiF){ const bpf=M/N, nb=N/M; let sg=0,gg=0,sz=0,gz=0,fe=0,se=0,ge=0,sr=0,gr=0;
+      for(let i=0;i<n;i++){ let c=(f[i]-phiF)%N; if(c<0) c+=N;
+        const j0=Math.floor(c*bpf), v0=Math.ceil(j0*nb-1e-9), v1=Math.ceil((j0+1)*nb-1e-9), e0=Math.abs(v0-c), e1=Math.abs(v1-c);
+        const j=e1<e0?j0+1:j0, e=Math.min(e0,e1)*bpf;   /* Fehler in Schlaegen, gegen das Bild, auf dem der Puls erscheint */
+        const s=(e<tol&&(!mitEins||!istEins[i]||((j%M)%modul)===0))?1:0;   /* j == M ist Clipschlag 0 der naechsten Runde */
+        sg+=s*gw[i]; gg+=gw[i]; sz+=s*dz[i]; gz+=dz[i]; fe+=e*dz[i];
+        if(istEins[i]){ se+=s*dz[i]; ge+=dz[i]; } if(imRefrain[i]){ sr+=s*dz[i]; gr+=dz[i]; } }
+      return { G:gg?sg/gg:0, sitzt:gz?sz/gz:0, fehler:gz?fe/gz:0, einsQuote:ge?se/ge:null, sitztRefrain:gr?sr/gr:null }; }
+    function lageBei(N,M){ let best=null; const F=Math.ceil(N*(mitEins?modul:1)/M-1e-9);
+      for(let phiF=0;phiF<F;phiF++){ const b=bewerten(N,M,phiF); if(!best||b.G>best.G+1e-12||(Math.abs(b.G-best.G)<=1e-12&&b.fehler<best.fehler)){ b.phiF=phiF; best=b; } }
+      best.N=N; best.M=M; return best; }
+    /* Tempo-Schaetzer: das ganze Lied, dazu jedes Drittel mit genug Schlaegen */
+    const schaetzer=[beat];
+    if(dauer>0) for(let k=0;k<3;k++){ const d=[]; for(let i=1;i<n;i++){ const t=S[i][0]; if(t<k*dauer/3||t>=(k+1)*dauer/3) continue; const x=t-S[i-1][0]; if(x>0.05&&x<2) d.push(x); }
+      if(d.length>=8) schaetzer.push(medianVon(d)); }
+    const ganz=schlag>0?[beat,schlag]:[beat];   /* das Tempo des ganzen Lieds: Takt/P und Schlagmedian */
+    let wahl=null;
+    for(let dd=brauch;dd>=1&&!wahl;dd--){ if(brauch%dd) continue;
+      const einheit=eins?kgV(P,dd):dd, alle=[];
+      for(let N=MIN_BILDER;N<=MAX_SEK*BILDRATE;N++){ const L=N/BILDRATE, Ms=new Set();
+        for(const b of schaetzer){ const M=einheit*Math.round(L/(einheit*b)); if(M<Math.max(einheit,2)||Math.abs(L/M/b-1)>TEMPO_SPIEL||!ganz.some(g=>Math.abs(L/M/g-1)<=TEMPO_SPIEL)) continue; Ms.add(M); }
+        for(const M of Ms) alle.push(lageBei(N,M)); }
+      if(!alle.length) continue;
+      let besteLied=0; for(const a of alle) if(a.sitzt>besteLied) besteLied=a.sitzt;
+      const gut=alle.filter(a=>a.sitzt>=besteLied-ABSTAND_LIED), spitze=gut.reduce((a,b)=>b.G>a.G?b:a);
+      wahl=gut.filter(a=>a.G>=spitze.G-GLEICHSTAND&&a.sitzt>=spitze.sitzt-GLEICHSTAND).sort((a,b)=>b.N-a.N||b.G-a.G)[0]; }
+    /* Kein Kandidat (ein Takt ueber zehn Sekunden): zehn Sekunden, so viele ganze Einheiten wie am naechsten liegen */
+    if(!wahl){ const einheit=eins?kgV(P,brauch):brauch, N=MAX_SEK*BILDRATE; wahl=lageBei(N,Math.max(einheit,einheit*Math.round(MAX_SEK/(einheit*beat)))); }
+    /* Bei Eins-Lesern zaehlt der Anteil der Schlaege nicht allein: eine um einen Schlag verschobene Eins saesse noch
+       zu 75 %. Angezeigt wird darum das Kleinere aus Schlaegen und Einsen (Gegenpruefung 15.09.2026). */
+    const anzeige=S.length<8?null:mitEins&&wahl.einsQuote!=null?Math.min(wahl.sitzt,wahl.einsQuote):wahl.sitzt;
+    /* Ein kleiner Anteil braucht einen Grund in Nutzerwoertern: Tempo je Drittel mehr als 3 % auseinander, oder mehr als
+       ein Fuenftel der Schlagabstaende 5 % neben dem Median (frei gespielt). */
+    let grund=null; if(anzeige!=null&&anzeige<0.5){ const dr=schaetzer.slice(1);
+      if(dr.length>=2&&Math.max(...dr)/Math.min(...dr)>1.03) grund='tempowechsel';
+      else if(schlag>0){ let ab5=0,z=0; for(let i=1;i<n;i++){ const x=S[i][0]-S[i-1][0]; if(x>0.05&&x<2){ z++; if(Math.abs(x/schlag-1)>0.05) ab5++; } } if(z&&ab5/z>0.2) grund='frei'; } }
+    const erg={ N:wahl.N, L:wahl.N/BILDRATE, M:wahl.M, proTakt:P, phiF:wahl.phiF, takte:wahl.M/P, takt:P*wahl.N/BILDRATE/wahl.M,
+      sitzt:wahl.sitzt, einsQuote:wahl.einsQuote, sitztRefrain:wahl.sitztRefrain, G:wahl.G, anzeige, grund, ganzeTakte:eins, mitEins, modul };
+    memo.set(schluessel,erg); return erg; }
+  /* ANZEIGE NUR UEBER DEM ZUFALL (Regel "Zahl ohne Erwartungswert"). Verwackelt man jeden Songschlag um bis zu einen
+     halben Schlag, findet dieselbe Suche noch im Median 33 % - eine einzelne Lage trifft schon 25 %, weil das Fenster
+     1/8 Schlag nach beiden Seiten breit ist. Gemessen je Kartenlage (frei, Eins, Gruppe 2, 3, 8, Teiler 8), alle 324
+     Titel, zwei Saaten: hoechstens 43,0 % (freies Schlagraster), mit Eins-Karte hoechstens 38,6 %. Der Boden liegt
+     darueber, fuer alle Lagen gleich - fuer Eins-Leser also streng. Unter diesem Boden sagt eine Zahl nichts.
+     Unter acht Schlaegen gibt taktLage gar keine Zahl (anzeige null), auch wenn drei Einsen ein Raster tragen. */
+  const ZUFALL_BODEN=0.44;
+  /* Start auf dem Taktanfang (ohne Einsen: dem Schlag) nahe der Wiedergabe. t0 bestimmt nur, WAS die Effekte zeigen -
+     wo der Schlag im Clip liegt, sagt die Taktlage (Exportbild i zeigt Inhaltszeit t0 + i/30, der Clipschlag j liegt
+     auf Bild phiF + j*N/M). Die Laenge liegt auf ganzen Bildern, weil der Loop an der Bildnummer haengt: aufgenommen
+     wird [0, L), das Bild bei L faellt weg (Caspar_D, 10.09.2026: "aber es muss doch das letzte bild fehlen, damit
+     das erste = das letzte ist"). TITEL MIT SCHLAEGEN, ABER OHNE EINSEN (Befund 14.09.2026): dort blieben frueher die
+     echten, schwankenden Schlaege im Export stehen, L lag auf keinem davon, und alles, was am Schlag hing, riss an der
+     Naht - darum bekommen auch sie ein gleichmaessiges Raster (P = 4), ab acht Schlaegen wie schlagHz. Wo es gar
+     keine oder zu wenige Schlaege gibt, laeuft der Antrieb auf seiner Frequenz, die lpR ohnehin auf ganze Umlaeufe
+     rastet - dort ist jedes t0 recht. */
+  function ausschnitt(){ const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), jetzt=zeit(), aktive=STAPEL.filter(e=>aktiv(e));
+    const bedarf={ brauch:aktive.reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1),
+      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1) };
+    const tl=taktLage(S,DATA&&DATA.abschnitte,(DATA&&DATA.dauer)||0,bedarf);
+    if(!tl) return { t0:jetzt, L:MAX_SEK, N:MAX_SEK*BILDRATE, M:0, proTakt:0, phiF:0, takte:0, takt:0, sitzt:null, anzeige:null, grund:null };
+    let t0=S[0][0]; if(takt>0.05){ t0=einsen[0]; for(const e of einsen){ if(e<=jetzt) t0=e; else break; } } else for(const s of S){ if(s[0]<=jetzt) t0=s[0]; else break; }
+    return Object.assign({ t0 }, tl); }
   /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
      Das erkannte Raster schwankt um Millisekunden; taktgetriebene Effekte traefen die Naht sonst nicht.
-     Hier steht der Takt exakt auf L/Takte, damit sich nach L alles genau wiederholt.
+     Clipschlag j liegt exakt auf Bild phiF + j*N/M, Schlag j+M also genau N Bilder spaeter.
      VORLAUF: wer zurueckschaut, muss am Clipanfang dieselben Schlaege finden wie am Ende - pulswert
-     1,5 s, Windstoesse 2 s, Einschlaege bleiben bis 30 s. Vorher waren es zwei Takte. Jetzt ganze Clips
-     bis ueber VORLAUF_SEK, dazu mindestens zwei Sekunden Nachlauf fuer Blicke nach vorn.
-     Jeder Eintrag traegt als drittes Feld die UMLAUFENDE Schlagnummer ((j mod M)+M) mod M, M = Schlaege
-     je Clip; wer einen Wuerfel oder eine Gruppe an den Schlag haengt, nimmt sie statt des Feldindex. Der
-     Vorschau fehlt das Feld, Leser fallen dort auf den Index zurueck. Weil der Vorlauf ganze Clips lang
-     ist, ist auch der Feldindex modulo M schon die umlaufende Nummer.
-     Die Schlagzeit wird wie die Bildzeit gerechnet (t0 + Bildnummer/Bildrate): liegt ein Schlag genau
-     auf einem Bild, ist er sonst in der einen Runde um eine Rundung frueher als in der anderen.
+     1,5 s, Windstoesse 2 s, Einschlaege bleiben bis 30 s. Ganze Clips bis ueber VORLAUF_SEK plus die Phase (sonst
+     fehlte bei ceil(32/L)*L nahe 32 und phiF ueber einem Schlag der frueheste noetige), dazu mindestens zwei
+     Sekunden und zwei Takte Nachlauf fuer Blicke nach vorn.
+     Jeder Eintrag traegt als drittes Feld die UMLAUFENDE Schlagnummer ((j mod M)+M) mod M; wer einen Wuerfel oder
+     eine Gruppe an den Schlag haengt, nimmt sie statt des Feldindex. Der Vorschau fehlt das Feld, Leser fallen dort
+     auf den Index zurueck. Die Zaehlzeit kommt aus derselben Nummer, ((q mod P)+1): im Schlagraster ist M kein
+     Vielfaches von P, und nur so bleibt auch sie in M periodisch (Eins-Leser gibt es dort nicht, siehe taktLage).
+     Die Schlagzeit wird wie die Bildzeit gerechnet (t0 + Bildnummer/Bildrate, phiF ganzzahlig): liegt ein Schlag
+     genau auf einem Bild, ist er sonst in der einen Runde um eine Rundung frueher als in der anderen.
      Ohne Takt gibt es im Export keine Schlaege: die wenigen, schwankenden echten Schlaege loopen nicht,
      der Antrieb faellt dann auf seine Frequenz zurueck. */
   const VORLAUF_SEK=32;
-  function raster(t0,L,takte,taktLang){ if(!takte||!taktLang) return [];
-    const proTakt=proTaktVon(taktLang), M=proTakt*takte, N=Math.round(L*BILDRATE), neu=[];
-    const vor=M*Math.ceil(VORLAUF_SEK/L), nach=proTakt*Math.max(2,Math.ceil(2/taktLang));
-    for(let j=-vor; j<=M+nach; j++) neu.push([t0+(j*N/M)/BILDRATE, (((j%proTakt)+proTakt)%proTakt)+1, ((j%M)+M)%M]);
+  function raster(t0,N,M,P,phiF){ if(!M) return [];
+    const L=N/BILDRATE, neu=[], vor=M*Math.ceil((VORLAUF_SEK+phiF/BILDRATE)/L), nach=P*Math.max(2,Math.ceil(2/(P*L/M)));
+    for(let j=-vor; j<=M+nach; j++){ const q=((j%M)+M)%M; neu.push([t0+(j*N/M+phiF)/BILDRATE, (q%P)+1, q]); }
     neu.jeClip=M; return neu; }
   let hauszeichen=null;
   function zeichenHolen(){ if(hauszeichen) return hauszeichen; const l=document.querySelector('link[rel="icon"]'); if(!l||!l.href) return null;
@@ -29395,10 +29501,10 @@ function zeichneFrame(t){
      stehendes Bild loopt. stand liegt am Ende der laengsten schlagfreien Strecke im Clip - das ist der Zustand,
      den das Pult in diesem Clip am laengsten zeigt (erster Versuch mit dem Clipanfang: lagen die wenigen Schlaege
      im Clip, zeigte der Export den Stand davor, das Pult acht Sekunden lang den danach). */
-  function exportBuendel(gemerkt,t0,L,takte,takt,W,H){ const cv=mk(); cv.width=W; cv.height=H; const R=raster(t0,L,takte,takt), echt=(DATA&&DATA.schlaege)||[];
+  function exportBuendel(gemerkt,lage,W,H){ const cv=mk(); cv.width=W; cv.height=H; const {t0,N}=lage, L=N/BILDRATE, R=raster(t0,N,lage.M,lage.proTakt,lage.phiF), echt=(DATA&&DATA.schlaege)||[];
     let stand=null; if(!R.length&&echt.length){ const z=[t0].concat(echt.map(s=>s[0]).filter(x=>x>t0&&x<t0+L),[t0+L]); let b=1; for(let i=2;i<z.length;i++) if(z[i]-z[i-1]>z[b]-z[b-1]) b=i; stand=z[b]-1e-3; }
     const m=Object.assign({},gemerkt,{ lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),
-      DATA:Object.assign({},DATA,{ schlaege:R, stand, echt }), t0, L, N:Math.round(L*BILDRATE), vorgelaufen:false });
+      DATA:Object.assign({},DATA,{ schlaege:R, stand, echt }), t0, L, N, vorgelaufen:false });
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
     [m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; });
     return m; }
@@ -29501,14 +29607,17 @@ function zeichneFrame(t){
     const typ=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
     if(!typ){ pStat('Kein Videoformat verfügbar'); return; }
     if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) await GL.vierLaden();   /* das 4D-Rauschen der Exportform vor dem ersten Bild - loopNein fragt danach */
-    const lage=ausschnitt(), {t0,L,takte,takt}=lage; const [W,H]=ausgabeMass(); const N=Math.round(L*BILDRATE);
+    /* Die Suche nach der Laenge dauert beim ersten Export eines Lieds bis knapp eine halbe Sekunde (Eins-Karte) - vorher sagen, was passiert */
+    pStat('suche die Länge, die im Takt bleibt …'); await new Promise(r=>setTimeout(r,0));
+    const lage=ausschnitt(), {t0,L,N}=lage; const [W,H]=ausgabeMass();
     const namen=f=>[...new Set(STAPEL.filter(e=>aktiv(e)&&f(e)).map(e=>EFFEKTE[e.typ].label))];
     const stand=!lage.M&&!!(DATA&&DATA.schlaege&&DATA.schlaege.length);   /* Schlaege, aber zu wenige fuer ein Raster: siehe exportBuendel */
     const urteil={ nicht:namen(loopNein), stolpern:lage.M?namen(e=>lage.M%loopGruppe(e)!==0):[], ruck:lage.M?namen(e=>loopKick(e)&&lage.M%2!==0):[],
       steht:stand?namen(e=>(e.typ==='risse'&&e.wachsen==='takt')||e.typ==='einschlag'||((e.typ==='licht'||e.typ==='schatten')&&e.rmBewegung==='schritt')):[],
-      frequenz:stand?namen(e=>['takt','eins','zufall'].includes(e.lmQuelle)):[], bewegt:!!(bild&&bild.tagName==='VIDEO'), L };
-    pStat('nehme auf: '+W+'×'+H+', '+L.toFixed(2)+' s'+(takte?' ('+takte+' Takte)':'')+', '+N+' Bilder …');
-    const gemerkt=bundel(), m=exportBuendel(gemerkt,t0,L,takte,takt,W,H), cv=m.lein;
+      frequenz:stand?namen(e=>['takt','eins','zufall'].includes(e.lmQuelle)):[], bewegt:!!(bild&&bild.tagName==='VIDEO'), L,
+      sitzt:lage.anzeige, grund:lage.grund, kodiert:false };
+    pStat('nehme auf: '+W+'×'+H+', '+L.toFixed(2)+' s'+(lage.M?' ('+lage.M+' Schläge)':'')+', '+N+' Bilder …');
+    const gemerkt=bundel(), m=exportBuendel(gemerkt,lage,W,H), cv=m.lein;
     /* Jedes Bild wird EINZELN angefordert. Nur so entspricht Bild i in der Datei auch Bild i des Clips;
        laesst man den Strom selbst abtasten, verschiebt sich das gegeneinander und der Schnitt trifft
        nicht die Naht. Dass der Kodierer die letzten Bilder verliert, faengt die Zugabe unten ab. */
@@ -29523,7 +29632,7 @@ function zeichneFrame(t){
         pStat('baue die Datei …');
         try{ const a=await fetch('/api/effektclip-bauen?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),
                                  {method:'POST',headers:{'Content-Type':'video/h264'},body:k.blob});
-          if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000) return ausliefern(b2,'mp4',true,N,urteil); }
+          if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000) return ausliefern(b2,'mp4',true,N,Object.assign({},urteil,{ kodiert:true })); }
         }catch(x){ console.warn('Effektclip-Export:',x); }
       }
       pStat('Kodierer ging nicht — nehme auf wie bisher …');
@@ -29566,7 +29675,16 @@ function zeichneFrame(t){
   /* Beide Wege - abfilmen wie bisher und kodieren - liefern ueber denselben Griff aus. */
   /* Das Urteil in Nutzerwoertern: "nahtlos" nur, wenn keine Karte bricht UND die Quelle ein Standbild ist -
      ein Video darunter laeuft nicht im Kreis, egal wie sauber die Effekte schliessen. */
-  function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L}=urteil, sek=L.toFixed(1).replace('.',',');
+  /* WIE VIEL VOM LIED IM TAKT LAEUFT (Caspar_D, 15.09.2026: "dass das Gros des Songs taktsynchron laeuft"). Die Zahl
+     gilt fuer die Songseite, wo Song und Video zusammen starten. Unter dem Zufallsboden keine Zahl, sondern der Grund.
+     Der Aufnahmeweg (MediaRecorder) kam bei Suno verbogen zurueck, 32 ms laenger (VIDEO-PLAN §3 Nachtrag) - nach
+     einer Minute Lied laege der Schlag daneben, also dort keine Zahl, sondern die Warnung. */
+  function taktSatz(sitzt,grund,kodiert){ if(sitzt==null) return '';
+    if(!kodiert) return ' · im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht sicher';
+    const warum=grund==='tempowechsel'?'das Tempo wechselt im Lied':grund==='frei'?'das Tempo ist frei gespielt':'';
+    if(sitzt<ZUFALL_BODEN) return ' · der Takt lässt sich nicht über das Lied legen'+(warum?' — '+warum:'');
+    return ' · sitzt auf '+Math.round(sitzt*100)+' % des Lieds im Takt'+(warum?' ('+warum+')':''); }
+  function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=L.toFixed(1).replace('.',',');
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),20000);
@@ -29575,6 +29693,7 @@ function zeichneFrame(t){
         :!geschnitten?' — Loop ungenau, das Haus hat nicht geschnitten'
         :bewegt?' — die Effekte schliessen, aber das Video darunter läuft nicht im Kreis: am Übergang springt sein Bild'
         :' — nahtlos')
+      +taktSatz(sitzt,grund,kodiert)
       +(stolpern.length?' · '+stolpern.join(', ')+': der Rhythmus geht in '+sek+' s nicht ganz auf, am Übergang kommt ein Schlag einmal früher':'')
       +(ruck.length?' · '+ruck.join(', ')+': die Schläge gehen in '+sek+' s nicht paarweise auf, am Übergang ruckt es zweimal in dieselbe Richtung':'')
       +((steht.length||frequenz.length)?' · zu wenige Schläge für einen Takt: '+[steht.length?steht.join(', ')+' '+(steht.length>1?'stehen':'steht')+' im Video still':'', frequenz.length?frequenz.join(', ')+' '+(frequenz.length>1?'laufen':'läuft')+' auf der eigenen Frequenz':''].filter(Boolean).join(', '):''));
@@ -29604,7 +29723,7 @@ function zeichneFrame(t){
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
       +'<div id="tbs-stapel"></div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
-      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Zehn Sekunden als MP4 ins Download-Verzeichnis - ganze Takte, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
+      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
       +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung und Effektkette. L\u00e4uft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>\u2190</kbd><kbd>\u2192</kbd> Quelle \u00b7 <kbd>Esc</kbd> schlie\u00dfen</div></div>'
       +'</div></div></div>';
@@ -29657,7 +29776,7 @@ function zeichneFrame(t){
     const lauf=++oeffnenLauf;
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;   /* zwischendurch geschlossen oder ein anderer Titel geoeffnet */
-    DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
+    DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], abschnitte:(s&&s.abschnitte)||null };   /* abschnitte: die Taktlage gewichtet Refrains */
     PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
     $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
     /* Zum Pruefen: das Testbild aus Code und zwei Testportraets (web/testbild/HERKUNFT.md) - nie gesichert. */

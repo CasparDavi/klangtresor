@@ -1,0 +1,304 @@
+[
+ {
+  "kurz": "dopamier",
+  "titel": "Dopamier mich! v2",
+  "datei": "artwork.mp4",
+  "neunte": "abbremsen",
+  "i": 71,
+  "j": 167,
+  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/c734cf5d-e8d0-4989-b5e4-e97bb12493fe/artwork.mp4",
+  "th": 418,
+  "T": 2.696629999999999,
+  "D": 1.2,
+  "d": 36,
+  "h": 18,
+  "n24": 241,
+  "Ki": 89,
+  "Kj": 209,
+  "Lf": 120,
+  "pad_vor": 0,
+  "pad_nach": 0,
+  "quotient": 4.659,
+  "labels": [
+   [
+    "harter Schnitt",
+    "kein Übergang · Q 4,7"
+   ],
+   [
+    "Schnitt + Blitz",
+    "3 Bilder weiß, abklingend"
+   ],
+   [
+    "Blende",
+    "½ Takt = 1,20 s"
+   ],
+   [
+    "durch Schwarz",
+    "½ Takt = 1,20 s"
+   ],
+   [
+    "Unschärfe",
+    "½ Takt = 1,20 s · Tausch in der Mitte"
+   ],
+   [
+    "Kreuzzoom",
+    "½ Takt = 1,20 s"
+   ],
+   [
+    "Wisch",
+    "½ Takt = 1,20 s"
+   ],
+   [
+    "Pixel",
+    "½ Takt = 1,20 s"
+   ],
+   [
+    "Abbremsen",
+    "sin² auf 0 · Mitte ×1,25"
+   ]
+  ],
+  "arten": [
+   "hart",
+   "blitz",
+   "blende",
+   "schwarz",
+   "unschaerfe",
+   "zoom",
+   "wisch",
+   "pixel",
+   "abbremsen"
+  ],
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/dopamier-norm.nut",
+  "bremse": {
+   "c": 1.2499999998977198,
+   "Bf": 12,
+   "Rf": 12,
+   "folge_min": 71,
+   "folge_max": 166
+  },
+  "n": 7
+ },
+ {
+  "kurz": "lenore",
+  "titel": "Lenore",
+  "datei": "artwork.mp4",
+  "neunte": "lumawisch",
+  "i": 119,
+  "j": 215,
+  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/b1ff440c-1695-4b31-96ee-f99fe07a976d/artwork.mp4",
+  "th": 310,
+  "T": 1.7778999999999883,
+  "D": 0.8889499999999941,
+  "d": 26,
+  "h": 13,
+  "n24": 239,
+  "Ki": 149,
+  "Kj": 269,
+  "Lf": 120,
+  "pad_vor": 0,
+  "pad_nach": 0,
+  "quotient": 1.367,
+  "labels": [
+   [
+    "harter Schnitt",
+    "kein Übergang · Q 1,4"
+   ],
+   [
+    "Schnitt + Blitz",
+    "3 Bilder weiß, abklingend"
+   ],
+   [
+    "Blende",
+    "½ Takt = 0,87 s"
+   ],
+   [
+    "durch Schwarz",
+    "½ Takt = 0,87 s"
+   ],
+   [
+    "Unschärfe",
+    "½ Takt = 0,87 s · Tausch in der Mitte"
+   ],
+   [
+    "Kreuzzoom",
+    "½ Takt = 0,87 s"
+   ],
+   [
+    "Wisch",
+    "½ Takt = 0,87 s"
+   ],
+   [
+    "Pixel",
+    "½ Takt = 0,87 s"
+   ],
+   [
+    "Luma-Wisch",
+    "Dunkles zuerst · 0,87 s"
+   ]
+  ],
+  "arten": [
+   "hart",
+   "blitz",
+   "blende",
+   "schwarz",
+   "unschaerfe",
+   "zoom",
+   "wisch",
+   "pixel",
+   "lumawisch"
+  ],
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/lenore-norm.nut",
+  "n": 7
+ },
+ {
+  "kurz": "erlkoenig",
+  "titel": "Erlkönigs Tochter '25 v2 (OLD MASTERS REINTERPRETED)",
+  "datei": "artwork.mp4",
+  "neunte": "weiss",
+  "i": 0,
+  "j": 96,
+  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/73bf9ab3-9a9e-49c8-a604-b713db4c8813/artwork.mp4",
+  "th": 356,
+  "T": 1.6003099999999897,
+  "D": 0.8001549999999948,
+  "d": 24,
+  "h": 12,
+  "n24": 145,
+  "Ki": 12,
+  "Kj": 132,
+  "Lf": 120,
+  "pad_vor": 12,
+  "pad_nach": 0,
+  "quotient": 3.376,
+  "labels": [
+   [
+    "harter Schnitt",
+    "kein Übergang · Q 3,4"
+   ],
+   [
+    "Schnitt + Blitz",
+    "3 Bilder weiß, abklingend"
+   ],
+   [
+    "Blende",
+    "½ Takt = 0,80 s · Vorlauf Standbild"
+   ],
+   [
+    "durch Schwarz",
+    "½ Takt = 0,80 s · Vorlauf Standbild"
+   ],
+   [
+    "Unschärfe",
+    "½ Takt = 0,80 s · Tausch in der Mitte"
+   ],
+   [
+    "Kreuzzoom",
+    "½ Takt = 0,80 s · Vorlauf Standbild"
+   ],
+   [
+    "Wisch",
+    "½ Takt = 0,80 s · Vorlauf Standbild"
+   ],
+   [
+    "Pixel",
+    "½ Takt = 0,80 s · Vorlauf Standbild"
+   ],
+   [
+    "Weiß",
+    "½ Takt = 0,80 s · Vorlauf Standbild"
+   ]
+  ],
+  "arten": [
+   "hart",
+   "blitz",
+   "blende",
+   "schwarz",
+   "unschaerfe",
+   "zoom",
+   "wisch",
+   "pixel",
+   "weiss"
+  ],
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/erlkoenig-norm.nut",
+  "n": 7
+ },
+ {
+  "kurz": "glut",
+  "titel": "Glut und Eis - Die Braut von Corinth",
+  "datei": "artwork.sprung.mp4",
+  "neunte": "abbremsen",
+  "i": 107,
+  "j": 215,
+  "src": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/library/songs/89ef9f63-c885-4fe5-b082-8e2bf9513c4d/artwork.sprung.mp4",
+  "th": 240,
+  "T": 1.6447200000000066,
+  "D": 0.8223600000000033,
+  "d": 24,
+  "h": 12,
+  "n24": 241,
+  "Ki": 134,
+  "Kj": 269,
+  "Lf": 135,
+  "pad_vor": 0,
+  "pad_nach": 0,
+  "quotient": 2.322,
+  "labels": [
+   [
+    "harter Schnitt",
+    "kein Übergang · Q 2,3"
+   ],
+   [
+    "Schnitt + Blitz",
+    "3 Bilder weiß, abklingend"
+   ],
+   [
+    "Blende",
+    "½ Takt = 0,80 s"
+   ],
+   [
+    "durch Schwarz",
+    "½ Takt = 0,80 s"
+   ],
+   [
+    "Unschärfe",
+    "½ Takt = 0,80 s · Tausch in der Mitte"
+   ],
+   [
+    "Kreuzzoom",
+    "½ Takt = 0,80 s"
+   ],
+   [
+    "Wisch",
+    "½ Takt = 0,80 s"
+   ],
+   [
+    "Pixel",
+    "½ Takt = 0,80 s"
+   ],
+   [
+    "Abbremsen",
+    "sin² auf 0 · Mitte ×1,13"
+   ]
+  ],
+  "arten": [
+   "hart",
+   "blitz",
+   "blende",
+   "schwarz",
+   "unschaerfe",
+   "zoom",
+   "wisch",
+   "pixel",
+   "abbremsen"
+  ],
+  "norm": "/Volumes/Extreme_SSD/Entwicklung/SunoArchive/labor/videonaht/uebergaenge/arbeit/glut-norm.nut",
+  "bremse": {
+   "c": 1.1334745762100848,
+   "Bf": 8,
+   "Rf": 8,
+   "folge_min": 107,
+   "folge_max": 214
+  },
+  "n": 6
+ }
+]

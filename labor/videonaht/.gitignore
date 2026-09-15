@@ -1,0 +1,11 @@
+bilder/
+cache/
+# Uebergangsmuster: die Videos und Pruefbilder sind abgeleitet und gross, die Werkzeuge in arbeit/ bleiben
+uebergaenge/*.mp4
+uebergaenge/*.png
+uebergaenge/pruef/
+uebergaenge/arbeit/*.png
+uebergaenge/arbeit/*.nut
+uebergaenge/arbeit/*.bin
+uebergaenge/arbeit/*.cmd
+.profil-*

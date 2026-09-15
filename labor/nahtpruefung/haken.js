@@ -43,6 +43,7 @@ window.__naht = (() => {
         : a==='sechs' ? S.map((s,i) => [s[0], (i%6)+1])
         : a==='nurEinsen' ? S.filter(s => s[1]===1)
         : a==='gestreckt' ? S.map(s => [jetzt + (s[0]-jetzt)*z, s[1]])
+        : a==='tempowechsel' ? S.map(s => [s[0] <= jetzt ? s[0] : jetzt + (s[0]-jetzt)*z, s[1]])   /* Taktlage 15.09.2026: ab jetzt f-mal so langsam */
         : a==='wenige' ? (() => { let k = S.findIndex(s => s[0]>jetzt); if(k<0) k = S.length; const v = Math.max(0, k-(z>>1)); return S.slice(v, v+z); })()
         : S; }
     DATA.schlaege = S;
@@ -73,9 +74,9 @@ window.__naht = (() => {
   }
   /* Ein Vorschaubild (LOOP=0, echte Schlaege) in Exportgroesse. Frisch gebaute Karten, gesaeter Zufall;
      der Nachzieheffekt bekommt anderthalb Sekunden Anlauf, sonst fehlte ihm die Spur, die er im Pult haette. */
-  function vorschauBild(f, t0, L, takte, takt, W, H, tv){
+  function vorschauBild(f, lage, W, H, tv){
     STAPEL = effekteBauen(f.effekte); soloId = null;
-    const gm = bundel(), mv = exportBuendel(gm, t0, L, takte, takt, W, H); mv.DATA = Object.assign({}, DATA);
+    const gm = bundel(), mv = exportBuendel(gm, lage, W, H); mv.DATA = Object.assign({}, DATA);
     LOOP = 0; FEIN = false; saat = 777;
     const anlauf = STAPEL.some(e => e.typ==='nachzieh') ? 45 : 0;
     for(let k=anlauf; k>=0; k--) exportBild(mv, gm, tv - k/BILDRATE, W, H);
@@ -85,6 +86,51 @@ window.__naht = (() => {
     for(let i=0, j=0; i<d.length; i+=4){ rgb[j++] = d[i]; rgb[j++] = d[i+1]; rgb[j++] = d[i+2]; } let s = ''; for(let i=0; i<rgb.length; i+=8192) s += String.fromCharCode.apply(null, rgb.subarray(i, i+8192)); return btoa(s); };
   const abwB64 = (a, b) => { const x = atob(a), y = atob(b); if(x.length!==y.length) return 255; let t = 0; for(let i=0; i<x.length; i++) t += Math.abs(x.charCodeAt(i)-y.charCodeAt(i)); return t/x.length; };
 
+  /* TAKTLAGE NACHGERECHNET (15.09.2026, Caspar_D: "suno startet song und video gleichzeitig"). Unabhaengig von
+     taktLage(): aus dem Raster, das der Export wirklich traegt, wird je Bild ermittelt, ob dort ein Puls ERSCHEINT
+     (ein Rasterschlag bt mit t0+(i-1)/30 < bt <= t0+i/30, so liest pulswert), und jeder echte Songschlag bei Songzeit s
+     faellt auf Clipbild (s*30) mod N. Sitzt, wenn das naechste Pulsbild naeher als 1/8 Schlag, hoechstens 80 ms liegt; bei
+     Eins-Lesern muss eine Song-Eins auf einem Pulsbild mit umlaufender Nummer q, q mod modul == 0 liegen - eine 1, der
+     binnen 1,5 Schlaegen wieder eine 1 folgt, ist keine Takt-Eins. Gewicht: Dauer bis zum naechsten Schlag, hoechstens
+     1,5 Median-Schlaege - so wie die Anzeige es verspricht. */
+  function nachrechnen(lage, R, t0, echt){
+    if(!lage || !lage.M || !R || !R.length || !echt || echt.length < 2) return null;
+    const N = lage.N, M = lage.M, nb = N/M, q = new Int32Array(N).fill(-1);
+    for(const b of R){ let i = Math.ceil((b[0]-t0)*BILDRATE - 1e-6); while(t0 + (i-1)/BILDRATE >= b[0]) i--; while(t0 + i/BILDRATE < b[0]) i++;
+      const k = ((i % N) + N) % N; if(q[k] < 0 || b[2] % lage.modul === 0) q[k] = b[2]; }
+    const d = []; for(let i=1; i<echt.length; i++){ const x = echt[i][0]-echt[i-1][0]; if(x>0.05 && x<2) d.push(x); } d.sort((a,b)=>a-b); const schlag = d.length ? d[d.length>>1] : nb/BILDRATE, fenster = Math.min(1/8, 0.08/schlag);
+    let sz = 0, gz = 0, se = 0, ge = 0, pulsbilder = 0; for(let k=0; k<N; k++) if(q[k] >= 0) pulsbilder++;
+    for(let i=0; i<echt.length; i++){ const s = echt[i][0], w = Math.max(0, i+1<echt.length ? Math.min(echt[i+1][0]-s, 1.5*schlag) : schlag);
+      const c = ((s*BILDRATE) % N + N) % N, grenze = Math.ceil(nb) + 2; let best = null;
+      for(let a=0; a<=grenze && best==null; a++){ const zur = Math.floor(c) - a, vor = Math.ceil(c) + a;   /* bei Gleichstand das fruehere, wie taktLage */
+        const kz = ((zur % N) + N) % N, kv = ((vor % N) + N) % N, ez = c - zur, ev = vor - c;
+        if(q[kz] >= 0 && (q[kv] < 0 || ez <= ev)) best = { e:ez/nb, q:q[kz] }; else if(q[kv] >= 0) best = { e:ev/nb, q:q[kv] }; }
+      const eins = echt[i][1] === 1 && !(i+1 < echt.length && echt[i+1][1] === 1 && echt[i+1][0]-s < 1.5*schlag), sitzt = best && best.e < fenster && (!lage.mitEins || !eins || best.q % lage.modul === 0) ? 1 : 0;
+      sz += sitzt*w; gz += w; if(eins){ se += sitzt*w; ge += w; } }
+    const sitzt = gz ? sz/gz : 0, einsQuote = ge ? se/ge : null;
+    return { sitzt:Math.round(sitzt*1000)/1000, einsQuote:einsQuote==null?null:Math.round(einsQuote*1000)/1000, anzeige:Math.round((lage.mitEins && einsQuote!=null ? Math.min(sitzt, einsQuote) : sitzt)*1000)/1000, pulsbilder };
+  }
+  /* KATALOGMESSUNG UEBER DEN EINGEBAUTEN CODE: node reicht Schlaege, Abschnitte und Dauer herein, gerechnet wird mit
+     taktLage() und raster() des Studios. Zum Vergleich die Lage von vorher (ganze Takte <= 10 s auf Bilder gerundet,
+     Clipschlag 0 auf Bild 0) - diese Formel lebt nur hier im Pruefstand. */
+  function katalog(liste, varianten){
+    const aus = [];
+    for(const s of liste){ const S = s.schlaege, einsen = S.filter(x => x[1]===1).map(x => x[0]), t0 = einsen.length ? einsen[0] : S[0][0], r = { id:s.id };
+      for(const [name, bedarf] of Object.entries(varianten)){
+        const tm = performance.now(), tl = taktLage(S, s.abschnitte, s.dauer, bedarf), ms = performance.now() - tm;
+        if(!tl){ r[name] = null; continue; }
+        const lage = Object.assign({ t0 }, tl), R = raster(t0, tl.N, tl.M, tl.proTakt, tl.phiF);
+        r[name] = { N:tl.N, M:tl.M, P:tl.proTakt, phiF:tl.phiF, sitzt:tl.sitzt, anzeige:tl.anzeige, einsQuote:tl.einsQuote, refrain:tl.sitztRefrain, G:tl.G, grund:tl.grund, ms, nach:nachrechnen(lage, R, t0, S) };
+        const satz = taktSatz(tl.anzeige, tl.grund, true); r[name].satz = satz;
+        /* vorher: dieselbe Kartenlage mit dem alten ausschnitt() (ohne Teiler, brauch 1) */
+        const { takt } = taktLaenge(S), schlag = schlagMedian(S), tk = takt > 0.05 ? takt : 4*schlag;
+        const z = Math.max(1, Math.floor(MAX_SEK/tk)), Lr = Math.max(2, Math.round(Math.min(MAX_SEK, z*tk)*BILDRATE))/BILDRATE, tlang = Lr/z;
+        const P = schlag > 0 ? Math.max(1, Math.min(16, Math.round(tlang/schlag))) : 4, alt = { N:Math.round(Lr*BILDRATE), M:P*z, proTakt:P, modul:tl.modul, mitEins:tl.mitEins };
+        r[name].vorher = Object.assign({ N:alt.N, M:alt.M }, nachrechnen(alt, raster(t0, alt.N, alt.M, P, 0), t0, S)); }
+      aus.push(r); }
+    return aus;
+  }
+
   async function fall(f, o){
     o = o || {}; const lange = o.lange || 360, vlang = o.vergleich || 256, r2 = x => Math.round(x*1000)/1000;
     const beginn = performance.now();
@@ -93,9 +139,11 @@ window.__naht = (() => {
     Math.random = zufall;
     try{
         STAPEL = effekteBauen(f.effekte); soloId = null;
-      const { t0, L, takte, takt } = ausschnitt(); const [W, H] = ausgabeMass(lange); const N = Math.round(L*BILDRATE);
-      const gemerkt = bundel(), m = exportBuendel(gemerkt, t0, L, takte, takt, W, H);
-      const S = m.DATA.schlaege, proTakt = (takte && S.length>1) ? Math.round(takt/(S[1][0]-S[0][0])) : 0;
+      const lage = ausschnitt(), { t0, L, N } = lage; const [W, H] = ausgabeMass(lange);
+      const gemerkt = bundel(), m = exportBuendel(gemerkt, lage, W, H);
+      const S = m.DATA.schlaege, proTakt = lage.proTakt;
+      /* SYNCHRON NACHGERECHNET (15.09.2026): aus dem exportierten Raster und den echten Schlaegen dieses Falls, unabhaengig von taktLage() */
+      const synchron = nachrechnen(lage, S, t0, DATA.schlaege);
       const V = vergleicher(W, H, vlang), mitte = Math.floor(N/2);
       /* Ueber N hinaus werden noch K Bilder gemalt: gleich vergleicht nur EIN Bild, und ein Ereignis (Zufallsschlag,
          Einbruch) kann dort zufaellig gleich stehen. gleichFolge nimmt das schlechteste der ersten K Bildpaare. */
@@ -133,12 +181,12 @@ window.__naht = (() => {
       const nicht = [...new Set(STAPEL.filter(e => aktiv(e) && (typeof loopNein==='function' ? loopNein(e) : LOOP_NEIN.includes(e.typ))).map(e => e.typ))];
       const sort = wechsel.slice().sort((a,b) => a-b), p95 = sort.length ? sort[Math.min(sort.length-1, Math.floor(0.95*(sort.length-1)))] : 0;
       /* Vorschau zur Clipmitte: wie weit weicht der Export vom Pult ab (Hinweis, kein Urteil) */
-      const vm = V.grab(vorschauBild(f, t0, L, takte, takt, W, H, t0 + mitte/BILDRATE));
-      const erg = { t0:r2(t0), L:r2(L), N, takte, proTakt, M:takte*proTakt, schlaegeImRaster:S.length, jeClip:S.jeClip||0, W, H, vergleich:[V.cw, V.ch],
+      const vm = V.grab(vorschauBild(f, lage, W, H, t0 + mitte/BILDRATE));
+      const erg = { t0:r2(t0), L:r2(L), N, takte:r2(lage.takte), proTakt, M:lage.M, phiF:lage.phiF, sitzt:lage.sitzt==null?null:r2(lage.sitzt), anzeige:lage.anzeige==null?null:r2(lage.anzeige), einsQuote:lage.einsQuote==null?null:r2(lage.einsQuote), synchron, satz:taktSatz(lage.anzeige, lage.grund, true), schlaegeImRaster:S.length, jeClip:S.jeClip||0, W, H, vergleich:[V.cw, V.ch],
         gleich:r2(gleich), gleichFolge:r2(gleichFolge), naht:r2(naht), erwartet:r2(erwartet), p95:r2(p95), quotient:r2(naht/Math.max(p95, 0.5)), gl, glSchleife, tiefe:!!TIEFEN[DATA.id],
         vorschauAbw:r2(V.mittel(Fm, vm)), loopNeinAnzeige:nicht, schlaegeImDATA:DATA.schlaege.length };
       if(bewegt){ const bx = bIdx.reduce((s, q) => s + V.mittel(bBild[q], bBild[q+BG]), 0) / bIdx.length;
-        const bv = bIdx.reduce((s, q) => { const a = V.grab(vorschauBild(f, t0, L, takte, takt, W, H, t0 + q/BILDRATE)); return s + V.mittel(a, V.grab(vorschauBild(f, t0, L, takte, takt, W, H, t0 + (q+BG)/BILDRATE))); }, 0) / bIdx.length;
+        const bv = bIdx.reduce((s, q) => { const a = V.grab(vorschauBild(f, lage, W, H, t0 + q/BILDRATE)); return s + V.mittel(a, V.grab(vorschauBild(f, lage, W, H, t0 + (q+BG)/BILDRATE))); }, 0) / bIdx.length;
         erg.bewegungExport = r2(bx); erg.bewegungVorschau = r2(bv); erg.tempoVerh = r2(bx / Math.max(1e-3, bv));
         /* KONTRAST UEBER DIE CLIPZEIT (nur Shader): zwei ueberblendete Rauschlagen koennen in der Mitte weicher werden, ohne
            dass gleich oder quotient es merken. Je Stichbild die Standardabweichung der Helligkeit und die des Musteranteils
@@ -148,17 +196,17 @@ window.__naht = (() => {
           const reihe = bilder => { const hs = bilder.map(hell), mit = new Float32Array(hs[0].length); for(const h of hs) for(let i=0; i<h.length; i++) mit[i] += h[i]/hs.length;
             const ks = hs.map(std), ms = hs.map(h => std(h.map((v, i) => v - mit[i]))); const z = a => [r2(Math.min(...a)), r2(Math.max(...a))]; return { kontrast:z(ks), muster:z(ms) }; };
           erg.kontrastExport = reihe(bIdx.map(q => bBild[q]));
-          erg.kontrastVorschau = reihe(bIdx.map(q => V.grab(vorschauBild(f, t0, L, takte, takt, W, H, t0 + q/BILDRATE)))); } }
+          erg.kontrastVorschau = reihe(bIdx.map(q => V.grab(vorschauBild(f, lage, W, H, t0 + q/BILDRATE)))); } }
       /* RECHENZEIT je Bild: im Export (Exportgroesse, LOOP=L) und in der Vorschau (Pultgroesse, LOOP=0) - Regel 14, die
          Vorschau muss live fluessig bleiben. ein Bildpunkt wird zurueckgelesen, damit die Zeit des Shaders mitzaehlt - gl.finish() wartet in Chrome nicht. */
       erg.msExport = r2(malMs / (N+K)); if(glZahl) erg.msGLExport = r2(glMs / glZahl);
-      if(shader){ const Wv = lein.width, Hv = lein.height; STAPEL = effekteBauen(f.effekte); const gm = bundel(), mv = exportBuendel(gm, t0, L, takte, takt, Wv, Hv); LOOP = 0; FEIN = false;
+      if(shader){ const Wv = lein.width, Hv = lein.height; STAPEL = effekteBauen(f.effekte); const gm = bundel(), mv = exportBuendel(gm, lage, Wv, Hv); LOOP = 0; FEIN = false;
         for(let k=0; k<3; k++) exportBild(mv, gm, t0 + k/BILDRATE, Wv, Hv);
         glMs = 0; glZahl = 0; const tv = performance.now(); for(let k=0; k<30; k++){ exportBild(mv, gm, t0 + k/BILDRATE, Wv, Hv); warteGL(); }
         erg.msVorschau = r2((performance.now() - tv) / 30); if(glZahl) erg.msGLVorschau = r2(glMs / glZahl); erg.vorschauMass = [Wv, Hv]; }
       if(o.vorschauSpeichern || o.vorschauVergleich){
         const zeiten = o.vorschauVergleich ? o.vorschauVergleich.zeiten : [t0, t0+2.3, t0+5.7];
-        const bilder = zeiten.map(tv => klein(vorschauBild(f, t0, L, takte, takt, W, H, tv)));
+        const bilder = zeiten.map(tv => klein(vorschauBild(f, lage, W, H, tv)));
         if(o.vorschauSpeichern) erg.vorschau = { zeiten, W, H, bilder };
         if(o.vorschauVergleich) erg.vorschauRegression = r2(bilder.reduce((s, b, i) => s + abwB64(b, o.vorschauVergleich.bilder[i]), 0) / bilder.length);
       }
@@ -167,6 +215,6 @@ window.__naht = (() => {
       return erg;
     } finally { Math.random = zufallEcht; datenSetzen('normal'); STAPEL = []; }
   }
-  return { typen, bereitMachen, fall };
+  return { typen, bereitMachen, fall, katalog };
 })();
 /* <<< Pruefhaken der Nahtpruefung */

@@ -9,6 +9,7 @@
  *   node labor/nahtpruefung/naht.mjs [--faelle a,b | --typ laser] [--aus datei.json]
  *        [--vorschau-speichern datei] [--vorschau-vergleich datei] [--lange 360] [--jobs 1]
  *        [--bilder verzeichnis]   (Bild 0, Bild N-1 und Bild N je Fall als PNG, zum Hinsehen)
+ *        [--taktlage [datei]]     (Katalogmessung der Taktlage ueber taktLage() im Studio, statt der Faelle)
  *
  * Jeder Lauf nimmt freie Ports, ein eigenes Profil (.profil-<pid>-<job>) und raeumt beides am Ende
  * weg - mehrere Laeufe duerfen nebeneinander stehen. Ports 8788 und 18811 fasst er nie an.
@@ -108,6 +109,53 @@ async function browserBeenden(b) {
 }
 async function aufraeumen() { for (const b of [...kinder]) await browserBeenden(b); server.closeAllConnections(); server.close(); }
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, async () => { await aufraeumen(); process.exit(130); });
+
+/* ---- --taktlage [datei]: Katalogmessung der Taktlage UEBER DEN EINGEBAUTEN CODE (15.09.2026) ----
+   node liest library/katalog.json.gz (nur lesen) und reicht je Titel Schlaege, Abschnitte und Dauer an taktLage()
+   im Studio. Zwei Kartenlagen: 'schlag' (keine Karte liest die Eins - freie Schlagzahl) und 'takt' (eine Karte
+   liest die Eins - ganze Takte). Je Titel dazu die Nachrechnung am exportierten Raster und die Lage von vorher.
+   Ergebnis nach ergebnis-taktlage.json (oder die angegebene Datei). */
+if (arg.taktlage) {
+  const zlib = await import('node:zlib');
+  const kat = JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(WURZEL, 'library/katalog.json.gz'))));
+  const songs = Object.values(kat.songs).filter(s => Array.isArray(s.schlaege) && s.schlaege.length).map(s => ({ id: s.id, titel: s.titel, dauer: s.dauer || 0, schlaege: s.schlaege, abschnitte: s.abschnitte || null }));
+  const varianten = { schlag: { brauch: 1 }, takt: { brauch: 1, eins: true } };
+  const b = await browserStarten(0); const aus = []; const start = Date.now();
+  try {
+    for (let i = 0; i < songs.length; i += 12) {
+      const teil = songs.slice(i, i + 12);
+      const r = await b.cdp.ausdruck('window.__naht.katalog(' + JSON.stringify(teil.map(({ titel, ...rest }) => rest)) + ',' + JSON.stringify(varianten) + ')');
+      r.forEach((x, k) => aus.push(Object.assign({ titel: teil[k].titel, dauer: teil[k].dauer }, x)));
+      process.stdout.write('\r' + aus.length + '/' + songs.length);
+    }
+  } finally { await aufraeumen(); }
+  const med = a => { const v = a.filter(x => x != null).sort((x, y) => x - y); return v.length ? v[Math.floor(v.length / 2)] : null; };
+  const quant = (a, p) => { const v = a.filter(x => x != null).sort((x, y) => x - y); return v[Math.min(v.length - 1, Math.floor(p * v.length))]; };
+  const pc = x => x == null ? '-' : (Math.round(x * 1000) / 10).toFixed(1) + ' %';
+  const kennzahlen = {};
+  for (const v of Object.keys(varianten)) {
+    const mit = aus.filter(x => x[v]), n = mit.map(x => x[v].sitzt), an = mit.map(x => x[v].anzeige), alt = mit.map(x => x[v].vorher.sitzt);
+    const abw = mit.map(x => Math.abs(x[v].nach.sitzt - x[v].sitzt)), abwA = mit.map(x => Math.abs(x[v].nach.anzeige - x[v].anzeige));
+    const fach = {}; mit.forEach(x => { const k = Math.floor(x[v].N / 30); fach[k] = (fach[k] || 0) + 1; });
+    const K = kennzahlen[v] = { titel: mit.length, sitztMedian: med(n), ueber80: n.filter(x => x > 0.8).length, unter50: n.filter(x => x < 0.5).length,
+      anzeigeMedian: med(an), anzeigeUeber80: an.filter(x => x > 0.8).length, unterBoden: an.filter(x => x != null && x < 0.44).length,
+      einsQuoteMedian: med(mit.map(x => x[v].einsQuote)), refrainMedian: med(mit.map(x => x[v].refrain)),
+      quantile: { q10: quant(n, 0.1), q25: quant(n, 0.25), q75: quant(n, 0.75), q90: quant(n, 0.9) }, hundert: n.filter(x => x >= 0.9995).length,
+      vorherMedian: med(alt), vorherUeber80: alt.filter(x => x > 0.8).length,
+      besser: mit.filter(x => x[v].sitzt > x[v].vorher.sitzt + 0.005).length, schlechter: mit.filter(x => x[v].sitzt < x[v].vorher.sitzt - 0.005).map(x => x.titel + ' ' + pc(x[v].vorher.sitzt) + ' -> ' + pc(x[v].sitzt)),
+      Lmedian: med(mit.map(x => x[v].N)) / 30, LVerteilung: fach, msMittel: mit.reduce((s, x) => s + x[v].ms, 0) / mit.length, msMax: Math.max(...mit.map(x => x[v].ms)),
+      nachgerechnetMaxAbweichung: Math.max(...abw), nachgerechnetMaxAbweichungAnzeige: Math.max(...abwA), nachgerechnetUeber1Pp: mit.filter(x => Math.abs(x[v].nach.anzeige - x[v].anzeige) > 0.01).map(x => x.titel + ' ' + pc(x[v].anzeige) + ' / ' + pc(x[v].nach.anzeige)),
+      schlechteste: mit.slice().sort((a, c) => a[v].anzeige - c[v].anzeige).slice(0, 10).map(x => ({ titel: x.titel, anzeige: x[v].anzeige, sitzt: x[v].sitzt, refrain: x[v].refrain, N: x[v].N, M: x[v].M, P: x[v].P, phiF: x[v].phiF, grund: x[v].grund, satz: x[v].satz })) };
+    console.log('\n' + v + ': ' + K.titel + ' Titel, sitzt Median ' + pc(K.sitztMedian) + ', >80 %: ' + K.ueber80 + ', <50 %: ' + K.unter50 + ', 100 %: ' + K.hundert + ', Anzeige Median ' + pc(K.anzeigeMedian) + ' (>80 %: ' + K.anzeigeUeber80 + ', unter Boden: ' + K.unterBoden + '), Eins-Quote ' + pc(K.einsQuoteMedian) + ', Refrain ' + pc(K.refrainMedian));
+    console.log('  vorher (Phase 0, gerundete Takte, am sichtbaren Bild) Median ' + pc(K.vorherMedian) + ', >80 %: ' + K.vorherUeber80 + ' | besser ' + K.besser + ', schlechter ' + K.schlechter.length + ' | L-Median ' + K.Lmedian.toFixed(2) + ' s ' + JSON.stringify(fach) + ' | ' + K.msMittel.toFixed(1) + ' ms, max ' + K.msMax.toFixed(0) + ' ms');
+    console.log('  nachgerechnet am Exportraster: groesste Abweichung sitzt ' + pc(K.nachgerechnetMaxAbweichung) + ', Anzeige ' + pc(K.nachgerechnetMaxAbweichungAnzeige));
+    console.log('  schlechteste: ' + K.schlechteste.map(x => x.titel + ' ' + pc(x.anzeige) + (x.grund ? ' [' + x.grund + ']' : '')).join('; '));
+  }
+  const datei = path.resolve(typeof arg.taktlage === 'string' ? arg.taktlage : path.join(HIER, 'ergebnis-taktlage.json'));
+  fs.writeFileSync(datei, JSON.stringify({ datum: new Date().toISOString(), dauerS: Math.round((Date.now() - start) / 1000), varianten, kennzahlen, titel: aus }, null, 1) + '\n');
+  console.log('Ergebnis: ' + path.relative(process.cwd(), datei));
+  process.exit(0);
+}
 
 /* ---- ein Job: seine Faelle, nach Titel gruppiert ---- */
 async function job(nr, liste, ergebnisse, fortschritt) {

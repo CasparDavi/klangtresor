@@ -31,6 +31,16 @@
    "L": 8.8,
    "proTakt": 3,
    "M": 21
+  },
+  "d": {
+   "id": "f76a6706-d9a0-480a-a73f-265de9c1c0fe",
+   "titel": "Okkultation",
+   "warum": "Taktlage 15.09.2026: im Taktraster liegt die Phase ueber einem Schlag (phiF 7 bei N/M 18,6), mit Daten tempowechsel ein Tempowechsel"
+  },
+  "e": {
+   "id": "535121bb-581f-407c-92c8-6f22f141dd25",
+   "titel": "Universe 25 english",
+   "warum": "Taktlage 15.09.2026: mit Eins-Leser liegt die Phase fast drei Schlaege spaet (phiF 57 bei N/M 14,3), Sitzanteil unter 50 %"
   }
  },
  "faelle": [
@@ -2602,6 +2612,145 @@
    "daten": "ohneEins,wenige:7",
    "jetzt": 61.5,
    "bemerkung": "wie rand-wenige7-schritt-bewegung, aber ohne Puls: tempoVerh zeigt nur den Schritt (Export steht auf dem laengsten Stand im Clip)"
+  },
+  {
+   "name": "taktlage-eins-phase",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    },
+    {
+     "typ": "puls",
+     "lmQuelle": "eins",
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "Eins-Leser: ganze Takte, phiF ueber N/M"
+  },
+  {
+   "name": "taktlage-schlag-gruppe2-kick",
+   "typ": "puls",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 2
+    },
+    {
+     "typ": "wackeln",
+     "takt": 1
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "Schlagraster, Gruppe 2 und Kick: M gerade, M%4 moeglich ungleich 0, Phase ueber zwei Schlaege"
+  },
+  {
+   "name": "taktlage-teiler8-phase",
+   "typ": "puls",
+   "titel": "d",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "zufall",
+     "lmTeiler": 8
+    },
+    {
+     "typ": "wackeln",
+     "takt": 1
+    },
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "Teiler 8 im Schlagraster, Gruppenanfang auf der Eins, Phase"
+  },
+  {
+   "name": "taktlage-dreiviertel-teiler3",
+   "typ": "puls",
+   "titel": "c",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 3
+    },
+    {
+     "typ": "einschlag",
+     "nurEins": 1
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "3/4 mit Eins-Leser und Gruppe 3",
+   "daten": "dreiviertel"
+  },
+  {
+   "name": "taktlage-ohneEins-eins",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    },
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "Eins-Leser ohne Eins-Marken: M%8, keine Eins-Bedingung",
+   "daten": "ohneEins"
+  },
+  {
+   "name": "taktlage-tempowechsel",
+   "typ": "puls",
+   "titel": "d",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 4
+    },
+    {
+     "typ": "einschlag",
+     "nurEins": 1
+    },
+    {
+     "typ": "wackeln",
+     "takt": 1
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "Tempowechsel ab jetzt (1,3-mal langsamer)",
+   "daten": "tempowechsel:1.3"
+  },
+  {
+   "name": "taktlage-eins-phase-weit",
+   "typ": "strobe",
+   "titel": "e",
+   "effekte": [
+    {
+     "typ": "strobe",
+     "lmQuelle": "eins",
+     "lmForm": "rechteck"
+    },
+    {
+     "typ": "risse",
+     "wachsen": "takt"
+    }
+   ],
+   "gruppe": "taktlage",
+   "bemerkung": "Eins-Leser, phiF ueber drei Schlaege, schwacher Sitzanteil"
   }
  ],
  "nichtHerstellbar": []

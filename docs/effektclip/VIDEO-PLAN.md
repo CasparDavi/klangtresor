@@ -117,7 +117,33 @@ unter Musik" und „Video ist auf Musik geschnitten" und kostet fast nichts: ein
 Hand beim Abspielen gesetzt, eine Zahl. Die Länge legt sich um die Marke herum.
 
 **Offen (Caspar_D):** wie sich die eigenen Videos auf diese Typen verteilen. Davon hängt ab, ob die
-Phasenmarke zentrales Bedienelement wird oder Nebensache für eine Handvoll Clips.
+Phasenmarke zentrales Bedienelement wird oder Nebensache für eine Handvoll Clips. — *beantwortet,
+siehe Nachtrag.*
+
+### Nachtrag 15.09.2026 — wie sich die Videos im Archiv verteilen
+
+Gemessen an allen 91 Bewegtbildern (85 Suno, 2 Sprungfassungen, 4 eigene), Werkzeug und Auswertung in
+`labor/videonaht/` (`statistik.md`, `LIESMICH.md`). Klasse aus Stationarität, globaler Bewegung und
+Schnitterkennung, 25 Fälle am Kontaktbogen nachgesehen.
+
+| Typ | Suno | eigene | davon loopen schon unsichtbar (q < 1) |
+|---|---:|---:|---:|
+| Mikrohandlung | 58 | 4 | 41 von 64 (mit Sprungfassungen) |
+| Textur | 18 | 0 | 17 von 18 |
+| **Kamerafahrt** (neu, nicht in der Tabelle oben) | 7 | 0 | 3 von 7 |
+| Standbild-nah | 1 | 0 | 1 |
+| mit Schnitten | 1 | 0 | 1 |
+
+- **Mikrohandlung ist die Regel**, nicht die Ausnahme — die Phasenmarke ist kein Nebenschauplatz.
+- **Aber Suno liefert meist fertige Loops:** 52 von 85 loopen als Ganzes unsichtbar, nach Nahtsuche
+  58. Bei 30 der 41 Videos mit 241 Bildern ist das Schlussbild Bild 0; der gemeinte Loop ist genau 10 s.
+- **Die eigenen Videos** (3 verschiedene) sind alle Mikrohandlung und schon als Loop gebaut.
+- **Übergang nötig:** 28 von 91 — 9 Neutralzustand, 19 Ereignis; 23 davon brauchen das sin²-Abbremsen
+  (Mikrohandlung), 4 sind Kamerafahrten, die nicht zurückkehren. 17 der 28 haben kein Material über
+  den Schnitt hinaus — dort geht nur Neutralzustand oder Blitz.
+- **Die Kamerafahrt** gehört als vierter Typ in die Tabelle: Pendel und Abbremsen helfen nicht, weil
+  Anfang und Ende verschiedene Orte sind; Taktnaht mit Blitz oder Whip Pan in Fahrtrichtung.
+- Unsicher bleibt die Trennung Textur/Mikrohandlung (Schwelle S = 1,5, Grenzfälle 1,4–1,6).
 
 ---
 
@@ -191,6 +217,125 @@ noch stärkeres Merkmal als vorher.
 
 **Was das nicht kostet:** keinen neuen Mechanismus. Das Einrasten auf L/n gibt es schon; es bekommt
 ein Kriterium für die Wahl von n, dazu L und φ.
+
+### Nachtrag 15.09.2026 — die Phase ist erreichbar, und die Bildrundung verschenkt das Gros
+
+**Caspar_D: „suno startet song und video gleichzeitig".** Auf der Songseite liegt Clipbild 0 also auf
+Songzeit 0, und der Clip beginnt alle L Sekunden neu. Damit ist φ keine Wunschgröße, sondern
+festgelegt: **der Clip muss auf die Schlagphase bei Songzeit 0 ausgerichtet sein**, nicht auf die
+Stelle, an der gerade exportiert wird. §1 bleibt für den Feed richtig (dort läuft er in irgendeinem
+Takt), für die Songseite gilt §3. „Das Gros des Songs taktsynchron" ist das Ziel.
+
+**Nachgerechnet am Katalog** (324 Titel mit Takt, nur Schlagdaten, heutiges `ausschnitt()`: ganze Takte
+≤ 10 s, auf ganze Bilder gerundet, ohne Phase):
+
+| | Median | schlechteste 10 % |
+|---|---|---|
+| Drift bis Songende allein durch die Bildrundung | 0,38 Schläge | 0,89 Schläge |
+| Songzeit mit weniger als 1/8 Schlag Phasenfehler | 35 % | — |
+| Takte innerhalb ±2 % des Median-Takts | 93 % | 67 Titel unter 70 % |
+
+Nur 77 von 324 Titeln sitzen zu mehr als 80 %. Das Tempo trägt meist, verschenkt wird es an der
+Rundung und an der fehlenden Phase. Daraus: L unter den bildgenauen Längen wählen (nicht runden),
+gewichtet über die Abschnitte (`abschnitte.segment_labels` und `peak_times` liegen für alle 324 Titel
+im Katalog), φ auf Songzeit 0.
+
+**Welche Bildrate behält Suno? Gemessen 15.09.2026** (ffprobe auf die drei verarbeiteten Uploads in
+`library/effektclips.json`, mit Caspar_Ds Freigabe). Sunos *eigene* Bewegtbilder sind 24 fps, aber
+**Hochgeladenes bleibt, wie es kam**, wenn es sauber kodiert ist:
+
+| Clip | unser Export | bei Suno |
+|---|---|---|
+| Bei mir klingelt keiner | 281 Bilder, 30 fps | 281 Bilder, 30 fps, 9,366667 s |
+| Okkultation | 293 Bilder, 30 fps | 293 Bilder, 30 fps, 9,766667 s |
+| Die Gedanken (alter Aufnahmeweg, schwankende Bildrate) | 281 Bilder, 9,3527 s | 244 Bilder, im Mittel 26 fps, 9,384608 s |
+
+Suno kodiert neu (Zeitbasis 1/120000), behält aber Bildzahl und Bildrate. Der alte MediaRecorder-Weg
+mit schwankenden Zeitstempeln kam verbogen zurück, 32 ms länger. Der kodierende Weg ist also Pflicht,
+und **L·30 ganzzahlig genügt**: die Loop-Periode auf Suno ist genau N/30.
+
+### Gebaut 15.09.2026 — Länge und Lage aus den Karten, gemessen am ganzen Katalog
+
+**Der Grundbefund vorweg:** `raster()` begann bei t0, Exportbild i zeigt t0 + i/30, auf Suno fällt Bild
+i auf Songzeit k·L + i/30. Die Phase lag also **fest bei 0 auf Songzeit 0**, gleich welches t0 — und
+damit zufällig gegen die Schläge des Lieds. t0 bestimmt nur, *was* die Effekte zeigen, nicht *wo* der
+Schlag im Clip liegt. Die ehrliche Grundlinie ist deshalb „Phase 0", nicht „Eins nahe jetzt".
+
+**Das Modell** (`taktLage()` im Studio-Block, Begründung als Kommentar dort). Gesucht wird das Tripel
+**(N, M, φ)**: N = 120…300 Bilder, M Schläge im Clip, φ in ganzen Bildern. Schlag j liegt bei Bild
+φ + j·N/M; der Loop bleibt exakt, weil Schlag j+M genau N Bilder später liegt.
+
+- **Sitzt:** ein Songschlag sitzt, wenn der Puls auf dem Bild, auf dem er *erscheint* (ceil), weniger als
+  **1/8 Schlag, höchstens 80 ms** neben ihm liegt. Gegen die rechnerische Schlagzeit gemessen zeigte die
+  Zahl im Median 6 Prozentpunkte zu viel — der Puls kommt immer 0 bis 1 Bild spät.
+- **Gewicht:** Dauer bis zum nächsten Schlag (höchstens 1,5 Schläge, Pausen sind keine Songzeit mit Takt)
+  mal wie oft der Abschnitt vorkommt; Intro und Outro zählen wie ein einmaliger. **Kein Eins-Gewicht** —
+  gemessen wirkungslos (Median gleich mit ×1, ×2, ×4); die Eins steckt in der Bedingung, nicht im Gewicht.
+- **Zwei Raster, aus den Karten gelesen** (wie `loopTeiler`, kein Regler): liest eine Karte die Eins
+  (`lmQuelle 'eins'`, Einschlag „nur die Eins"), ist M ein Vielfaches der Schläge je Takt P und eine
+  Song-Eins sitzt nur auf einer Clip-Eins. Sonst ist M frei. Gruppen, die mit dem Takt gehen
+  (ggT(n, P) > 1), setzen die Eins-Bedingung auf den Gruppenanfang.
+- **Warum zwei:** Suno-Tempi sind ganzzahlige BPM, 111 BPM sind 600/37 Bilder je Schlag. Mit ganzen Takten
+  bleiben rund 45 Längen, die beste driftet etwa einen Schlag über das Lied; mit freiem M gibt es rund 180
+  und fast immer eine Kettenbruch-Näherung (Reaktor: 18 Schläge in 292 Bildern, 0,4 ‰, sitzt 100 % —
+  mit ganzen Takten 29 %).
+- **Ein Clipschlag bleibt ein Songschlag:** höchstens 12 % Tempoabweichung, geschätzt aus dem ganzen Lied
+  und je Drittel (Tempowechsel), aber immer auch gegen das ganze Lied geprüft — sonst kam Doppeltempo durch
+  und die Zeile meldete 99 % für einen Clip, der zwischen den Schlägen pulst.
+- **Wahl:** je N die beste Phase; unter den Längen, die am ganzen Lied höchstens 2 Prozentpunkte unter der
+  besten liegen, entscheidet das Gewicht; bei Gleichstand (1 Prozentpunkt, gewichtet *und* ungewichtet)
+  gewinnt die längere. Teilbarkeit (`loopTeiler`) geht vor, gelockert wird wie bisher erst ohne Kandidat.
+- **Takt-Einsen:** eine 1, der binnen 1,5 Schlägen wieder eine 1 folgt, zählt nicht; die Taktlänge ist der
+  Median der Einsabstände mit der häufigsten Schlagzahl. P < 2 heißt „ohne Einsen" (P = 4).
+
+**Die Statuszeile** sagt „sitzt auf X % des Lieds im Takt", unter 50 % mit Grund („das Tempo wechselt im
+Lied", „das Tempo ist frei gespielt"). **Unter 44 % steht keine Zahl**, sondern „der Takt lässt sich nicht
+über das Lied legen": auf verwackelten Zufallsschlägen (±½ Schlag, 6 Kartenlagen, 324 Titel, 2 Saaten)
+findet dieselbe Suche bis zu 43,0 %. Bei Eins-Karten zeigt sie das Kleinere aus Schlag- und Eins-Anteil.
+Der MediaRecorder-Notweg sagt „im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht
+sicher".
+
+**Katalog, gemessen über den eingebauten Code** (`naht.mjs --taktlage`, headless, 324 Titel,
+`labor/nahtpruefung/ergebnis-taktlage.json`). „Vorher" ist das alte `ausschnitt()` mit Phase 0, gezählt
+nach denselben Regeln:
+
+| | vorher | ohne Eins-Karte | mit Eins-Karte |
+|---|---:|---:|---:|
+| Median sitzt | 19,4 % (Eins: 15,5 %) | **98,4 %** | 63,4 % Schläge / 59,7 % Einsen |
+| angezeigt (Median) | — | 98,4 % | **59,6 %** |
+| Titel über 80 % | 21 | 216 | 95 (angezeigt) |
+| Titel ohne Zahl (unter 44 %) | — | 14 | 91 |
+| Refrain-Median | — | 100 % | 70,9 % |
+| Länge (Median) | 9,00 s | 9,00 s | 8,70 s |
+| gegen vorher | | 312 besser, 1 schlechter | 310 besser, 4 schlechter |
+| Rechenzeit je Titel | | 32 ms, höchstens 79 | 84 ms, höchstens 176 |
+
+Die Zerlegung zeigt, dass beides nötig ist: neue Länge mit Phase 0 bringt nur 10 bis 14 %, erst Länge und
+Phase zusammen den Gewinn. Doppeltempo und P = 1 kommen danach in keinem Titel mehr vor; die unabhängige
+Nachrechnung am Exportraster weicht bei allen 324 Titeln um 0,0 Prozentpunkte ab. **Gruppen und Teiler
+kosten viel** (Anzeige-Median / ohne Zahl): Teiler 2 85 % / 22, Gruppe 2 83 % / 45, Gruppe 3 76 % / 48,
+Teiler 8 49 % / 127, Teiler 8 mit Gruppe 8 44 % / 164. Die schlechtesten Titel sind fast alle Tempowechsel
+oder frei gespielt (Schroffmund, Abend im Park, Rückkehr zur Wiese), mit Eins-Karte meist Bildraster bei
+ganzen Takten (1 Unter der Haut III, Reaktor).
+
+**Loop:** 177 Fälle (7 neue der Gruppe `taktlage`: φ > N/M, M % P ≠ 0 mit Gruppe und Kick, 3/4, ohne
+Einsen, Tempowechsel), `gleich` höchstens 0,092, `gleichFolge` höchstens 0,10, Vorschau in allen 85
+Vergleichsfällen unverändert (`ergebnis-taktlage-loop.json`).
+
+**Nicht gebaut:**
+- **Offbeat als Zielwert** (Abschnitt oben): gesucht wird nur auf dem Schlag. Der Zielabstand 0,5 wäre
+  dieselbe Rechnung — aber ob er ein Kartenwert oder eine Ableitung wird, ist nicht entschieden.
+- **Die Landkarte statt Einzelwert:** `taktLage()` liefert eine Lage. Welche Längen fast gleich gut sind,
+  sieht niemand; die Kopplung an das Material (§2: Mikrohandlung setzt L) fehlt damit auch.
+- **Streuung statt Mittelwert** in der Anzeige: es gibt einen Anteil und einen Grund, keine Kurve über
+  die Liedlänge.
+- Abschnitte aus drei Quellen (§5): gewichtet wird mit `abschnitte.segment_labels` allein.
+
+**Offen (Caspar_D):** ganze Takte immer oder, wie gebaut, nur bei Eins-Karten (eine Zeile); ob „jeder 8.
+Schlag" lieber am Schlag als an der Eins hängen soll; die zwei neuen festen Maße (80-ms-Fenster,
+2 Prozentpunkte Abstand am ganzen Lied). **Ungeprüft:** ob Suno Song und Video bildgenau zusammen
+startet — ein Anlaufversatz von 20 bis 50 ms wäre schon ein Drittel des Fensters. Prüfvorschlag: Clip mit
+Blitz auf jedem Schlag auf der Songseite abfilmen, nur mit Freigabe.
 
 ---
 
@@ -342,6 +487,16 @@ Bildmittel** — der Mittelwert misst Fläche, nicht Sichtbarkeit. Und **zweistu
 Kandidatensuche auf der rohen Quelle, Urteil am fertigen Bild nach der Kette, denn die Kette kann
 eine Naht zudecken oder selbst eine aufreißen.
 
+**Vermerk 15.09.2026 (`labor/videonaht/statistik.md`), am Bestand gemessen:**
+- **Rangfolge:** „Für Mikrohandlung: §6.4 direkt" ist zu früh. 41 von 64 Mikrohandlungen haben
+  einen Schnitt mit q < 1 — die Nahtsuche gehört **für alle Typen** an den Anfang, §6.4 erst danach.
+- **Der Nullpunkt ist nicht 0:** ein gewöhnlicher Bildwechsel hat q ≈ 0,5 (Bestandsmedian). q nahe 0
+  heißt Doppelbild an der Naht (Schlussbild = Anfangsbild) — das ruckt, statt unsichtbar zu sein.
+- **Das Block-Maximum sättigt** bei viel Bewegung (p95 50–100 von 255). Ein Bildtausch kann dann bei
+  q 1,4–1,7 landen; darum hebt im Labor zusätzlich ein **Flächentausch** (≥ 50 % der Blöcke springen)
+  auf Ereignis. Örtliche Sprünge in bewegten Videos (eine Figur dreht sich um, q 0,83) fängt das nicht;
+  offen ist ein je Block normierter Quotient — ändert diese Definition, erst mit Jörg abstimmen.
+
 ### 6.6 Übergangstakt und τ als Liste
 
 **τ(t) wird eine kurze Liste (Zeit, Gewicht)** — im Normalfall ein Eintrag, im Übergangsfenster
@@ -409,7 +564,7 @@ er kein Fehler, sondern Grammatik.
 
 #### Der Griff mit dem besten Verhältnis: GL Transitions
 
-Rund achtzig fertige GLSL-Übergänge — dieselbe Sammlung, aus der ffmpeg's `xfade` schöpft.
+**125** fertige GLSL-Übergänge (gl-transitions; 123 MIT, 2 BSD — gezählt 15.09.2026). ~~dieselbe Sammlung, aus der ffmpeg's `xfade` schöpft~~ — **berichtigt:** `xfade` ist eine eigene Sammlung von 58 eingebauten Übergängen und nutzt gl-transitions nicht; die lassen sich in ffmpeg nur mit eigenem Build einbinden. Für uns zählt: gl-transitions passt direkt in die WebGL-Stufe, Vorschau = Export (`docs/effektclip/VIDEOSTUDIO-RECHERCHE.md`).
 Uniform-Schnittstelle: zwei Texturen, ein Fortschritt 0…1. Unser Maler liefert beides ohnehin. **Ein
 Adapter, und der Vorrat ist auf einen Schlag groß.**
 
@@ -448,6 +603,21 @@ Adapter, und der Vorrat ist auf einen Schlag groß.**
 | < 1 | keiner |
 | 1 … 2 | Neutralzustand (a) |
 | > 2 | Ereignis (b) |
+
+*Vermerk 15.09.2026 (`labor/videonaht/`):* Die Stufen tragen am Bestand — am Kontaktbogen passten sie
+bis auf die Sättigungsfälle. Zwei Ergänzungen: **Flächentausch hebt auf (b)**, auch bei q 1–2 (fünf
+Videos, am Bild bestätigt); und die Zählung 63 keiner / 9 (a) / 19 (b) bei 91 Videos zeigt, dass
+**(b) doppelt so oft** gebraucht wird wie (a), und zwar fast immer als Abbremsen oder Blitz — nicht
+als mischender Übergang, weil 17 von 28 Videos kein Material über den Schnitt hinaus haben.
+
+*Geschmacksurteil am Muster, 15.09.2026* (`labor/videonaht/uebergaenge/`, vier Kachelvideos mit harter
+Schnitt, Blitz, Blende, Schwarz, Unschärfe, Kreuzzoom, Wisch, Pixel, Abbremsen). Caspar_D: *„schnitt
+mit blitz und klötzchen werden wohl nicht meine freunde, können aber mit synthetischeren Videos
+funktionieren. auf jeden Fall sieht das schonmal sehr gut aus"*. Folge für die Automatik: **Blitz und
+Pixel sind keine Vorgabe** für gefilmtes oder fotorealistisches Material — dort führen Abbremsen,
+Unschärfe, Kreuzzoom und durch Schwarz. Blitz und Pixel bleiben im Vorrat für synthetisches Material
+(Grafik, Glitch-Ästhetik, Industrial), wo sie Grammatik sind statt Störung. Wie „synthetisch" erkannt
+wird, ist offen — bis dahin eine Wahl von Hand.
 
 **Die Länge ist musikalisch** — ein Schlag oder ein halber Takt, nie eine Zahl in Sekunden (wie
 §6.3).
@@ -1726,6 +1896,9 @@ und genau deshalb der Kontaktbogen.
    den Loop. **Ohne Zielerkennung**, Ziel von Hand oder Bildmitte. Größter Effekt je Aufwand.
 7. **§5 Abschnitte aus drei Quellen** — Voraussetzung für Typisierung *und* Gewichte.
 8. **§3 Optimierung (L, n, φ)** — braucht die Gewichte aus §5 und die Grenzen aus §6.8.
+   *Teilweise erledigt 15.09.2026* („Gebaut 15.09.2026" in §3): Länge und Phase auf Songzeit 0, gewichtet
+   mit den Katalog-Abschnitten, Anzeige mit Zufallsboden. Offen: Offbeat-Zielwert, Landkarte statt
+   Einzelwert, Kopplung an den Materialtyp, Abschnitte aus drei Quellen.
 9. **§7 Lange Videos** — abschnittsweise Zuordnung wird hier zur Regie; das **Hook-Video fällt
    danach fast gratis ab**, es ist nur ein Schnitt auf derselben Zeitachse.
 10. **§6 Übergänge** — braucht den linearen Dekodierweg aus §4.

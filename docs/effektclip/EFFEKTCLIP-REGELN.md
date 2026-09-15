@@ -186,6 +186,26 @@ darunter zehn schon mit Vorgaben. Daraus fünf Unterregeln für jeden neuen Effe
   lassen, dazu `--vorschau-vergleich labor/nahtpruefung/vorschau-vorher.json`. Urteil ist `gleich` und
   `gleichFolge` ≈ 0, nicht der Quotient allein (siehe „Wie geprüft wird").
 
+**18. Der Zehnsekünder sitzt auf Songzeit 0.** Caspar_D: *„suno startet song und video gleichzeitig"*.
+Clipbild 0 liegt auf der Songseite auf Songzeit 0, und der Clip beginnt alle N/30 s neu. Wo der Schlag im
+Clip liegt, entscheidet darum nicht t0 — t0 bestimmt nur, was die Effekte zeigen —, sondern die Lage φ
+des Rasters. Bis zum 15.09.2026 lag sie fest bei 0 und damit zufällig gegen das Lied: im Median saßen
+19 % der Songzeit im Takt, heute 98 % (VIDEO-PLAN §3 „Gebaut 15.09.2026"). Daraus vier Unterregeln:
+
+- **18a. Nur der kodierende Weg ist taktsicher.** Suno behält Bildzahl und Bildrate, wenn sauber kodiert
+  wurde; der MediaRecorder-Weg kam 32 ms länger zurück und driftet über das Lied. Wer über den Notweg
+  ausgibt, bekommt keine Zahl, sondern den Hinweis, dass der Takt nicht sicher mitläuft.
+- **18b. Gemessen wird am Bild, auf dem der Puls erscheint.** Nicht an der rechnerischen Schlagzeit:
+  der Puls kommt 0 bis 1 Bild spät, und die Zahl stand dadurch im Median 6 Prozentpunkte zu hoch.
+  Fenster 1/8 Schlag, höchstens 80 ms — sonst heißt „sitzt" bei langsamen Liedern etwas Weicheres.
+- **18c. Keine Zahl unter ihrem Zufallsboden.** Auf verwackelten Schlägen findet dieselbe Suche bis
+  43 %. Darunter sagt die Statuszeile „der Takt lässt sich nicht über das Lied legen", nicht „30 %".
+  Wer die Suche ändert (neue Kartenlage, neues Fenster), misst den Boden neu (`ZUFALL_BODEN`).
+- **18d. Ein Clipschlag bleibt ein Songschlag.** Halb- und Doppeltempo sind keine Lösung, auch wenn sie
+  mehr Schläge treffen: ein Puls ohne Songschlag kostet in der Zielfunktion nichts, auf dem Bild aber
+  alles. Die Tempo-Schranke gilt darum immer gegen das ganze Lied. Und eine Karte, die die Eins liest,
+  bekommt ganze Takte — sonst zählt die Zählzeit im Clip anders als im Pult.
+
 ---
 
 ## Wie geprüft wird

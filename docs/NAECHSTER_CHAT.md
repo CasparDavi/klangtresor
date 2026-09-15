@@ -4068,3 +4068,114 @@ Lesen: `gleich` und `gleichFolge` ≈ 0 ist der exakte Loop; Quotient ≥ 1 nur 
 Vollmessung: `ergebnis-nachher.json` (Log `lauf-nachbesserung.log`), Grundlinie `ergebnis-vorher.json`.
 Die Rohbefunde der Bauer liegen in den Gruppenergebnissen (`ergebnis-zeit-alle`, `-leuchten`,
 `-partikel`, `-stoerungen`, `-shader`, `-raender*`).
+
+## Taktlage: der Zehnsekünder sitzt auf dem Lied (15.09.2026)
+
+Caspar_D: *„im echten Leben synchronisierst du ja auf Takt was bei 10 Sekuender nur insoweit passieren
+sollte, dass das Gros des Songs taktsynchron laeuft"* — und *„suno startet song und video gleichzeitig"*.
+Gebaut im Studio-Block von `web/index.html` (`taktLage()`, `raster()`, `ausschnitt()`, `taktSatz()`),
+gemessen am ganzen Katalog, gegengeprüft, nachgebessert. **Nicht committet.** Verfahren und Tabelle:
+VIDEO-PLAN §3 „Gebaut 15.09.2026", neue Regel 18 in EFFEKTCLIP-REGELN.
+
+### Der Befund
+
+Clipbild 0 liegt auf Songzeit 0, der Clip beginnt alle L = N/30 s neu. Das alte `raster()` begann bei t0,
+also lag Clipschlag 0 immer auf Songzeit 0 — die Phase war fest und gegen das Lied zufällig, egal welches
+t0 („Eins nahe jetzt") gewählt wurde. t0 bestimmt nur den Bildinhalt. Dazu die Bildrundung ganzer Takte:
+bei ganzzahligen BPM (111 BPM = 600/37 Bilder je Schlag) driftet die beste Takt-Länge etwa einen Schlag
+über das Lied. Ehrliche Grundlinie: **Median 19,4 % der Songzeit im Takt**, 21 von 324 Titeln über 80 %.
+
+### Das Modell
+
+- Gesucht (N, M, φ): N 120…300 Bilder, M Schläge, φ ganze Bilder. Schlag j bei t0 + (j·N/M + φ)/30,
+  Zählzeit aus der umlaufenden Nummer ((q % P) + 1). Loop exakt, weil Schlag j+M genau N Bilder später liegt.
+- **Sitzt:** Puls auf dem Bild, auf dem er erscheint (ceil), weniger als 1/8 Schlag und höchstens 80 ms
+  neben dem Songschlag.
+- **Gewicht:** Dauer bis zum nächsten Schlag (≤ 1,5 Schläge) × Vorkommen des Abschnitts; Intro/Outro 1.
+- **Zwei Raster aus den Karten** (kein Regler): liest eine Karte die Eins, ganze Takte und Song-Eins nur
+  auf Clip-Eins; sonst M frei. Gruppen mit ggT(n, P) > 1 binden die Eins an den Gruppenanfang.
+- **Tempo:** ≤ 12 % Abweichung, Schätzer ganzes Lied und je Drittel, Schranke immer auch gegen das ganze
+  Lied (kein Doppeltempo). Takt-Einsen: eine 1 mit folgender 1 binnen 1,5 Schlägen zählt nicht; P < 2 gilt
+  als „ohne Einsen".
+- **Wahl:** Kandidaten höchstens 2 Prozentpunkte unter dem besten am ganzen Lied (`ABSTAND_LIED`), dort
+  entscheidet das Gewicht; Gleichstand 1 Prozentpunkt → längeres N. Teilbarkeit vor Taktlage.
+- Gemerkt je Schlagfeld (WeakMap). `DATA` übernimmt jetzt `abschnitte` aus `/api/song/:id`.
+
+### Zahlen (324 Titel, `labor/nahtpruefung/ergebnis-taktlage.json`)
+
+| | vorher | ohne Eins-Karte | mit Eins-Karte |
+|---|---:|---:|---:|
+| Median angezeigt | 19,4 % / 15,5 % | **98,4 %** | **59,6 %** (Schläge 63,4, Einsen 59,7) |
+| über 80 % | 21 | 216 | 95 |
+| ohne Zahl (< 44 %) | — | 14 | 91 |
+| Refrain-Median | — | 100 % | 70,9 % |
+| Länge Median | 9,00 s | 9,00 s | 8,70 s |
+| gegen vorher | | 312 besser, 1 schlechter | 310 besser, 4 schlechter |
+
+Weitere Kartenlagen (Anzeige-Median / ohne Zahl): Teiler 2 85,3 % / 22, Gruppe 2 83,3 % / 45, Gruppe 3
+75,6 % / 48, Teiler 8 48,6 % / 127, Teiler 8 mit Gruppe 8 43,9 % / 164. Zufallsboden (±½ Schlag
+verwackelt), Maximum: frei 43,0 %, Eins 38,6 %, Teiler 8 42,1 %. Schlechteste ohne Eins-Karte: Wind im
+Wald 33,9 %, SMS Bist Du wach? 36,7 %, Ik will 36,8 % (Bildraster 2,4 ‰ daneben), Abend im Park und
+Schroffmund (Tempowechsel). Mit Eins-Karte: 1 Unter der Haut III 15,5 %, Urgewalt 16,0 %, Reaktor 16,4 %.
+
+**Was die Gegenprüfungen gekippt haben** (Entwurf 98,7 / 67,3 % → Bau 99,0 / 60,0 % → Nachbesserung
+98,4 / 59,6 %): Messung am sichtbaren Bild statt an der Schlagzeit (sonst 6 Punkte zu viel), Zufallsboden
+statt kleiner Zahlen, Gruppen an die Eins, Eins-Anteil in der Anzeige, Drittel-Schätzer, Doppeltempo
+ausgeschlossen (Schlaf 99 → 85 %, Morgendämmerung 99 → 90 %), P = 1 ausgeschlossen (Die Affen, Murmelnder
+Bach), Dauer-Einsen nicht als Takt-Eins, 80-ms-Fenster (Ich spüre dich Track 7 96 → 76 %), keine Zahl
+unter 8 Schlägen, Abstand am ganzen Lied (Kerze 51 → 62 %).
+
+### Statuszeile
+
+- „suche die Länge, die im Takt bleibt …" vor der Suche (bis 176 ms beim ersten Export mit Eins-Karte).
+- beim Aufnehmen „(M Schläge)" statt „(Takte)".
+- danach „ · sitzt auf X % des Lieds im Takt", unter 50 % mit Grund in Klammern („das Tempo wechselt im
+  Lied", „das Tempo ist frei gespielt").
+- unter 44 %: „ · der Takt lässt sich nicht über das Lied legen — <Grund>".
+- MediaRecorder-Rückfall: „ · im Notweg aufgenommen: ob der Takt über das ganze Lied mitläuft, ist nicht sicher".
+- Tooltip „10 s ausgeben": „so lang, dass der Clip über das ganze Lied im Takt bleibt".
+
+### Offen — Caspar_D entscheidet
+
+1. **Ganze Takte immer** (eine Zeile, `eins:true` in `ausschnitt()`) oder, wie gebaut, nur bei Eins-Karten?
+   Mit Eins-Karte 59,6 % und 91 Titel ohne Zahl, ohne 98,4 % und 14.
+2. **„Jeder 8. Schlag"** kostet die Hälfte (Teiler 8 mit Gruppe 8: 44 %, 164 ohne Zahl). Zwei Drittel macht
+   die Teilbarkeit, ein Drittel die Kopplung an die Eins. Lieber am Schlag als an der Eins? Lockern, wenn
+   Teilbarkeit viel Sitzanteil kostet?
+3. **Zwei feste Maße** sind neu: Fenster min(1/8 Schlag, 80 ms) (Auftrag nannte 1/8 Schlag) und
+   2 Prozentpunkte Abstand am ganzen Lied (Refrain hat weniger Vorrang).
+4. **Offbeat-Zielwert und Landkarte** (VIDEO-PLAN §3) sind nicht gebaut.
+
+### Offen — technisch
+
+- **Ob Suno Song und Video bildgenau zusammen startet, ist ungeprüft.** 20–50 ms Anlauf wären ein Drittel
+  des Fensters. Vorschlag: Clip mit Blitz auf jedem Schlag auf der Songseite abfilmen — nur mit Freigabe.
+- Ob der Puls sich ein Bild früher besser anfühlt: rechnerisch durch die Messung am sichtbaren Bild
+  beantwortet, wahrnehmungsseitig nicht.
+- `ZUFALL_BODEN` ist ein Wert für alle Kartenlagen; für Eins-Leser ist er streng (Zufall dort ≤ 38,6 %).
+- Der Nenner ist die Songzeit mit Schlägen, nicht die Dauer (Katalog ≥ 87 %, Präsenz). Bei fremden
+  Beständen mit lückenhafter Erkennung verspricht „des Lieds" womöglich zu viel.
+- `taktlage-prototyp.js --wie-eingebaut` kennt die Nachbesserung nicht mehr; Maßstab ist `naht.mjs --taktlage`.
+- Die 7 neuen Fälle stehen nur in `faelle.json`, nicht in `faelle-bauen.js` — ein Neuschreiben verlöre sie.
+  Sie haben auch kein Vorschau-Vergleichsbild.
+- Prüfdaten `nurEinsen` gelten jetzt als ohne Takt-Einsen: Eins-Leser pulsen im Clip jeden 4. Schlag, im Pult
+  jeden (nur Prüfdaten).
+- Die Grundlinie „vorher" in `haken.js katalog()` rechnet mit der neuen Eins-Regel und dem 80-ms-Fenster;
+  im Bau-Protokoll hieß sie noch 21,3 / 17,2 %.
+
+### Wie man misst
+
+```bash
+node labor/nahtpruefung/syntax.js                                          # Inline-Skripte bauen
+node labor/nahtpruefung/naht.mjs --taktlage                                # Katalog über taktLage(), ergebnis-taktlage.json
+node labor/nahtpruefung/naht.mjs --jobs 4 --wachhund 1500 \
+     --aus labor/nahtpruefung/ergebnis-taktlage-loop.json \
+     --vorschau-vergleich labor/nahtpruefung/vorschau-vorher.json          # alle 177 Fälle, rund 28 min
+node labor/nahtpruefung/naht.mjs --faelle taktlage-eins-phase,taktlage-tempowechsel   # einzelne
+```
+
+Lesen: `gleich`/`gleichFolge` ≈ 0 wie immer; dazu `synchron` = `anzeige` (unabhängige Nachrechnung am
+exportierten Raster, echte Schläge bei s = k·L + τ). Im Katalogergebnis je Titel `schlag` und `takt` mit
+N, M, P, φ, sitzt, anzeige, einsQuote, refrain, grund, ms, `nach` (Nachrechnung) und `vorher`.
+Prototyp zum Vergleich (nur lesend am Katalog): `node labor/nahtpruefung/taktlage-prototyp.js
+[--raster takt|schlag] [--varianten] [--brauch n] [--json datei] [--wie-eingebaut]`.
