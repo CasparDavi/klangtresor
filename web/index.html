@@ -3272,7 +3272,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-rezept.gedimmt{opacity:.45}
 #tbs #tbs-loopLage{color:var(--text);margin-bottom:2px}
 #tbs #tbs-loopLage.gedimmt{opacity:.5}
-#tbs #tbs-abLoop .tbs-regler{grid-template-columns:auto auto 1fr}
+#tbs #tbs-abLoop{container-type:inline-size}
+#tbs #tbs-abLoop .tbs-regler, #tbs #tbs-abLoop .tbs-spalten .tbs-regler{grid-template-columns:92px 1fr}
+#tbs #tbs-abLoop .tbs-regler.grau > span:first-child, #tbs #tbs-abLoop .tbs-regler.grau b{opacity:.45}
+#tbs .tbs-zaehler{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+#tbs .tbs-zaehler b{min-width:62px;text-align:center;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+#tbs #tbs-abLoop button:disabled{opacity:.4;cursor:default;transform:none}
+#tbs #tbs-abLoop .tbs-togp.an{border-width:2px;border-color:var(--akzent);color:var(--text);padding:1px 11px}
+#tbs #tbs-leiste{display:block;width:100%;height:64px;border-radius:6px;background:#000}
+#tbs .tbs-leistunter{display:flex;justify-content:space-between;gap:8px;margin:3px 0 8px;font-size:12px;color:var(--text);font-variant-numeric:tabular-nums}
+#tbs #tbs-leisteRechts{color:var(--akzent)}
 #tbs #tbs-loopWo{margin:0 0 8px;font-variant-numeric:tabular-nums}
 #tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
 #tbs #tbs-vorbKoerper .tbs-seg button:disabled{opacity:.4;cursor:default}
@@ -29114,7 +29123,15 @@ function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttri
    ueber die Sprungkopie vom 11.09. (lauter Schluesselbilder, 15 statt 125 ms je Sprung). */
 const BILDRATE_SCHLEIFE=30;
 let SCHLEIFE={art:'keiner'}, VIDEO_GENAU=false, QUELLE_WIRKUNG=null, SCHLEIFE_STILL={schluessel:'',laeuft:false};
-const SCHLEIFE_ARTEN=[['keiner','harter Schnitt'],['ruecklauf','Rücklauf mit Unschärfe'],['abbremsen','Abbremsen'],['pendel','Pendel'],['unschaerfe','Unschärfe'],['blende','Blende'],['kreuzzoom','Kreuzzoom'],['wisch','Wisch'],['schwarz','durch Schwarz'],['weiss','durch Weiß'],['blitz','Schnitt mit Blitz (für Grafik)'],['pixel','Pixel (für Grafik)']];   /* Caspar_D, 15.09.2026: "baue bitte mehr uebergaenge ein, da waren doch noch mehr" - die Formen aus labor/videonaht/uebergaenge; Blitz und Pixel nur fuer Grafik ("werden wohl nicht meine freunde, koennen aber mit synthetischeren Videos funktionieren") */
+const SCHLEIFE_ARTEN=[['keiner','harter Schnitt'],['ruecklauf','Rücklauf mit Unschärfe'],['abbremsen','Abbremsen'],['pendel','Pendel'],['unschaerfe','Unschärfe'],['blende','Blende'],['kreuzzoom','Kreuzzoom'],['wisch','Wisch'],['schwarz','durch Schwarz'],['weiss','durch Weiß'],['blitz','Schnitt mit Blitz'],['pixel','Pixel']];
+const SCHLEIFE_GRUPPEN=[[null,['keiner']],['Bewegung',['ruecklauf','pendel','abbremsen']],['Neutralzustand',['unschaerfe','blende','kreuzzoom','wisch','schwarz','weiss']],['f\u00fcr Grafik',['blitz','pixel']]];   /* Regel 19: echtes Dropdown mit Gruppen */
+const SCHLEIFE_PRINZIP={ keiner:'das ganze Video \u00fcber den ganzen Clip, am Clipende springt es auf den Anfang', ruecklauf:'vorw\u00e4rts durchs Video, im \u00dcbergang schnell zur\u00fcck an den Anfang \u2013 unter 8 % Unsch\u00e4rfe',
+  pendel:'hin und zur\u00fcck \u00fcber den ganzen Clip, an beiden Enden mit Tempo 0 \u2013 es braucht keinen \u00dcbergang', abbremsen:'das Video kommt zum Stehen und blendet ins erste Bild',
+  unschaerfe:'in der Mitte des \u00dcbergangs, verdeckt von Unsch\u00e4rfe, tauscht das Ende gegen den Anfang', blende:'das letzte Bild blendet weich ins erste', kreuzzoom:'ein Zoom mit Unsch\u00e4rfe verdeckt den Tausch in der Mitte',
+  wisch:'der Anfang schiebt das Ende nach links hinaus', schwarz:'abdunkeln bis Schwarz, dort der Tausch, wieder aufhellen', weiss:'aufhellen bis Wei\u00df, dort der Tausch, wieder zur\u00fcck',
+  blitz:'harter Tausch unter einem kurzen Wei\u00dfblitz \u2013 f\u00fcr Grafik, bei gefilmtem Material hart', pixel:'das Bild zerf\u00e4llt in Kl\u00f6tzchen, darin der Tausch \u2013 f\u00fcr Grafik' };
+function schleifeOptionen(){ const nm=Object.fromEntries(SCHLEIFE_ARTEN), o=k=>'<option value="'+k+'" title="'+SCHLEIFE_PRINZIP[k]+'">'+nm[k]+'</option>';
+  return SCHLEIFE_GRUPPEN.map(([g,ks])=>g?'<optgroup label="'+g+'">'+ks.map(o).join('')+'</optgroup>':ks.map(o).join('')).join(''); }   /* Caspar_D, 15.09.2026: "baue bitte mehr uebergaenge ein, da waren doch noch mehr" - die Formen aus labor/videonaht/uebergaenge; Blitz und Pixel nur fuer Grafik ("werden wohl nicht meine freunde, koennen aber mit synthetischeren Videos funktionieren") */
 
 const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt */
 /* DIE LAENGE DES UEBERGANGS VON HAND (Caspar_D, 15.09.2026: "kannst du den Anteil des Ueberblendens verkuerzen, bspw nur 1 sek von
@@ -29868,21 +29885,46 @@ function zeichneFrame(t){
       let qw=null; if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; if(SCHLEIFE_STILL.laeuft) return i;   /* ohne Warten: ist das Videobild noch nicht da, bleibt das vorige stehen */
         qw=schleifeZeit(i/BILDRATE,lage.N/BILDRATE,bild.duration,lage); const ziel=Math.max(0,Math.min((bild.duration>0?bild.duration:qw.s+1)-1e-3,qw.s));
         if(bild.seeking) return i; if(Math.abs(bild.currentTime-ziel)>=0.25/60){ if(!bild.paused) bild.pause(); bild.currentTime=ziel; return i; } }
-      QUELLE_WIRKUNG=qw; try{ exportBild(m,gm,lage.t0+i/BILDRATE,W,H); } finally{ QUELLE_WIRKUNG=null; } sicht.i=i; }
+      QUELLE_WIRKUNG=qw; try{ exportBild(m,gm,lage.t0+i/BILDRATE,W,H); } finally{ QUELLE_WIRKUNG=null; } sicht.i=i; leisteMalen(); }
     finally{ LOOP=0; FEIN=false; }
     g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=1; g.filter='none'; g.globalCompositeOperation='copy'; g.drawImage(m.lein,0,0); g.restore();
     return i; }
   function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=(s-mm*60).toFixed(1).replace('.',',');
     el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
-  function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'); if(s){ s.value=SCHLEIFE.art; s.disabled=!vid; }
-    { const z=$('#tbs-mZahl'), lg=loopSicht&&loopSicht.lage; if(z) z.textContent=(SCHLEIFE.schlaege>0?'':'von selbst: ')+((lg&&lg.M)?lg.M:'\u2013');
-      const fz=$('#tbs-fZahl'); if(fz&&lg){ const L=lg.N/BILDRATE, D=schleifeFenster(L,lg), beat=lg.M?L/lg.M:0; fz.textContent=SCHLEIFE.art==='keiner'?'0 s \u2014 harter Schnitt':(SCHLEIFE.fenster>0?'':'von selbst: ')+(beat?String(Math.round(D/beat*2)/2).replace('.',',')+' Schl\u00e4ge = ':'')+D.toFixed(2).replace('.',',')+' s von '+L.toFixed(2).replace('.',',')+' s'; } }
-    if(h) h.textContent=vid?(SCHLEIFE.art==='keiner'?'das Video springt am Übergang vom Ende zum Anfang':'wirkt im ausgegebenen Clip und in der Loop-Ansicht'):'nur für Bewegtbilder — das Titelbild schliesst die Schleife über die Effekte von selbst'; }
+  function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'), art=SCHLEIFE.art||'keiner', lg=loopSicht&&loopSicht.lage;
+    const kz=v=>String(v).replace('.',','), fGilt=vid&&art!=='keiner'&&art!=='pendel', L=lg?lg.N/BILDRATE:0, beat=(lg&&lg.M)?L/lg.M:0, D=(lg&&fGilt)?schleifeFenster(L,lg):0;
+    if(s){ s.value=art; s.disabled=!vid; s.title=vid?SCHLEIFE_PRINZIP[art]:'nur für Bewegtbilder'; }
+    ['#tbs-fWeniger','#tbs-fMehr','#tbs-fSelbst'].forEach(q=>{ const b=$(q); if(b) b.disabled=!fGilt; });
+    { const z=$('#tbs-fZeile'); if(z) z.classList.toggle('grau',!fGilt); const b=$('#tbs-fSelbst'); if(b) b.classList.toggle('an',fGilt&&!(SCHLEIFE.fenster>0)); }
+    { const b=$('#tbs-mSelbst'); if(b) b.classList.toggle('an',!(SCHLEIFE.schlaege>0)); const z=$('#tbs-mZahl'); if(z) z.textContent=(lg&&lg.M)?String(lg.M):'–'; }
+    { const z=$('#tbs-fZahl'); if(z){ const n=beat?Math.round(D/beat*2)/2:0; z.textContent=!vid?'–':art==='keiner'?'0 s':art==='pendel'?'ganzer Clip':!lg?'–':beat?kz(n)+(n===1?' Schlag':' Schläge'):kz(D.toFixed(2))+' s'; } }
+    { const k=$('#tbs-loopKosten'); if(k) k.hidden=!vid; }
+    { const li=$('#tbs-leisteLinks'), re=$('#tbs-leisteRechts'); if(li) li.textContent=lg?(vid?'Videobild über Clipzeit · ':'Clip · ')+kz(L.toFixed(2))+' s':'';
+      if(re) re.textContent=!lg?'':!vid?'':fGilt?'Übergang '+kz(D.toFixed(2))+' s':art==='keiner'?'harter Schnitt am Clipende':'Pendel'; }
+    if(h) h.textContent=vid?SCHLEIFE_PRINZIP[art]:'Übergänge gibt es nur für Bewegtbilder – beim Titelbild schließen die Effekte die Schleife von selbst';
+    leisteMalen(); }
+  /* DIE ZEITLEISTE DES CLIPS: schwarzer Datenbereich (Regel 8), unten die Schlaege, darueber die Kurve "Videobild ueber Clipzeit"
+     und der Uebergang als Flaeche mit Kontur (Formsprache: Flaeche gedaempft, Kontur in voller Staerke, aufgehellt). In der
+     Loop-Ansicht laeuft der Abspielstrich mit. Takte werden NICHT hervorgehoben: welcher Clipschlag die Eins ist, steht nicht fest. */
+  function leisteMalen(){ const c=$('#tbs-leiste'); if(!c||!c.clientWidth) return; const dpr=window.devicePixelRatio||1, W=Math.round(c.clientWidth*dpr), H=Math.round(64*dpr);
+    if(c.width!==W||c.height!==H){ c.width=W; c.height=H; } const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.globalAlpha=1; x.fillStyle='#000'; x.fillRect(0,0,W,H);
+    const lg=loopSicht&&loopSicht.lage; if(!lg||!lg.N) return;
+    const farbe=(css,weiss)=>{ x.fillStyle=css; const f=x.fillStyle; if(f[0]!=='#') return f; const n=parseInt(f.slice(1),16), m=v=>Math.round(v+(255-v)*weiss); return 'rgb('+m(n>>16)+','+m(n>>8&255)+','+m(n&255)+')'; };
+    const st=getComputedStyle($('#tbs')), akz=st.getPropertyValue('--akzent').trim()||'#d9a441', txt=st.getPropertyValue('--text').trim()||'#ddd';
+    const L=lg.N/BILDRATE, rand=6*dpr, X=t=>rand+(W-2*rand)*t/L, y0=rand, y1=H-12*dpr, vid=!!(bild&&bild.tagName==='VIDEO'), art=SCHLEIFE.art||'keiner';
+    if(lg.M){ x.fillStyle=farbe(txt,0); x.globalAlpha=0.55; for(let j=0;j<lg.M;j++){ const f=((lg.phiF||0)+j*lg.N/lg.M)%lg.N; x.fillRect(Math.round(X(f/BILDRATE)),H-8*dpr,Math.max(1,dpr),6*dpr); } x.globalAlpha=1; }
+    if(vid&&art!=='keiner'&&art!=='pendel'){ const D=schleifeFenster(L,lg), xa=Math.round(X(L-D))+0.5, xb=Math.round(X(L))-0.5;
+      x.fillStyle=farbe(akz,0); x.globalAlpha=0.45; x.fillRect(xa,y0,xb-xa,y1-y0); x.globalAlpha=1; x.strokeStyle=farbe(akz,0.25); x.lineWidth=Math.max(1,dpr); x.strokeRect(xa,y0+0.5,xb-xa,y1-y0-1); }
+    if(vid&&bild.duration>0){ const Dv=bild.duration, n=Math.max(40,Math.round(W/(2*dpr))), pt=[];
+      for(let k=0;k<=n;k++){ const tau=Math.min(L-1e-6,L*k/n), q=schleifeZeitRoh(tau,L,Dv,lg); pt.push([X(tau),y1-(y1-y0)*Math.max(0,Math.min(1,q.s/Dv))]); }
+      x.beginPath(); x.moveTo(pt[0][0],y1); pt.forEach(p=>x.lineTo(p[0],p[1])); x.lineTo(pt[n][0],y1); x.closePath(); x.fillStyle=farbe(txt,0); x.globalAlpha=0.3; x.fill(); x.globalAlpha=1;
+      x.beginPath(); pt.forEach((p,k)=>k?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1])); x.strokeStyle=farbe(txt,0.25); x.lineWidth=Math.max(1,1.5*dpr); x.stroke(); }
+    if(loopAn&&loopSicht&&loopSicht.i>=0){ const xp=Math.round(X(loopSicht.i/BILDRATE)); x.fillStyle='#fff'; x.fillRect(xp,0,Math.max(1,dpr),H); } }
   function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
     if(b){ b.classList.toggle('an',loopAn); b.textContent=loopAn?'an':'aus'; } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }
     if(loopAn){ loopLageNeu(); if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) Promise.resolve(GL.vierLaden()).catch(()=>{}); if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(bild,loopSicht.lage).catch(()=>{}); } }
     else if(!exportLaeuft){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); }   /* die Exportform der Rauschshader, wie video() */
-    else if(loopSicht){ loopSicht.m=null; loopSicht.i=-1; } }
+    else if(loopSicht){ loopSicht.m=null; loopSicht.i=-1; } leisteMalen(); }
   function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=L.toFixed(1).replace('.',',');
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
@@ -29921,14 +29963,23 @@ function zeichneFrame(t){
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
       +'<div id="tbs-stapel"></div></div>'
-      +'<div class="tbs-abschnitt" id="tbs-abLoop"><div class="tbs-abtitel">'+LOOP_STUFE+' <span class="tbs-abunter">so l\u00e4uft der Clip in Suno \u00fcber das Lied</span></div>'
-      +'<div class="tbs-zeile" id="tbs-loopLage" title="Die L\u00e4nge, die \u201e10 s ausgeben\u201c jetzt w\u00e4hlen w\u00fcrde, und wie viel vom Lied der Clip im Takt trifft">\u2026</div>'
-      +'<div class="tbs-regler"><span>10-s-Loop ansehen</span><button type="button" class="tbs-togp" id="tbs-loopAn" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt">aus</button><span></span></div>'
-      +'<div class="tbs-regler"><span>Übergang am Loop</span><select id="tbs-schleife" title="Wie ein Video vom Ende zum Anfang zurückfindet - ein Titelbild schliesst die Schleife über die Effekte von selbst">'+SCHLEIFE_ARTEN.map(([k,l])=>'<option value="'+k+'">'+l+'</option>').join('')+'</select><span></span></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abLoop"><div class="tbs-abtitel">'+LOOP_STUFE+' <span class="tbs-abunter">so läuft der Clip in Suno über das Lied</span></div>'
+      /* NACH DEN HAUSREGELN (Caspar_D, 15.09.2026: "jetzt hausregeln anschauen und die Schleife-Schliessen Bedienelemente entsprechend
+         anordnen"): Bedienung links, rechts das Ergebnis als Zeitleiste des Clips (Regel 24; "Punkte = Einstellung, Kurve = Ergebnis").
+         Was nicht gilt, wird grau statt versteckt (Regel 3); "von selbst" ist ein Zustand und darum eine Pille (Regel 18/19). */
+      +'<div class="tbs-spalten"><div class="tbs-links">'
+      +'<div class="tbs-regler"><span>Übergang</span><select id="tbs-schleife">'+schleifeOptionen()+'</select></div>'
+      +'<div class="tbs-regler" id="tbs-fZeile"><span>Länge</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" title="länger – höchstens ein Drittel des Clips">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" title="die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber">von selbst</button></span></div>'
+      +'<div class="tbs-regler"><span>Schläge im Clip</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-mWeniger" title="weniger Schläge – kürzerer Clip, das Video läuft schneller">−</button><b id="tbs-mZahl">–</b><button type="button" class="tbs-mini" id="tbs-mMehr" title="mehr Schläge – längerer Clip (höchstens 10 s), das Video läuft ruhiger">+</button><button type="button" class="tbs-togp" id="tbs-mSelbst" title="die Schlagzahl wählen lassen, die über das ganze Lied am besten im Takt sitzt">von selbst</button></span></div>'
+      +'<div class="tbs-regler"><span>10-s-Loop</span><button type="button" class="tbs-togp" id="tbs-loopAn" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt">aus</button></div>'
+      +'<div class="tbs-unter" id="tbs-loopKosten" hidden>beim ersten Einschalten wird das Video einmal vermessen (einige Sekunden); mit Video dauert „10 s ausgeben“ länger</div>'
+      +'</div><div class="tbs-rechts">'
+      +'<canvas id="tbs-leiste" title="Der Clip von links nach rechts mit seinen Schlägen; die Kurve zeigt, welches Videobild zu welcher Clipzeit läuft, die Fläche den Übergang"></canvas>'
+      +'<div class="tbs-leistunter"><span id="tbs-leisteLinks"></span><span id="tbs-leisteRechts"></span></div>'
+      +'<div class="tbs-zeile" id="tbs-loopLage" title="Die Länge, die „10 s ausgeben“ jetzt wählen würde, und wie viel vom Lied der Clip im Takt trifft">…</div>'
       +'<div class="tbs-unter" id="tbs-schleifeHinweis"></div>'
-      +'<div class="tbs-regler"><span>Länge des Übergangs</span><span><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer - mehr Zeit fürs Video">−</button> <b id="tbs-fZahl">von selbst</b> <button type="button" class="tbs-mini" id="tbs-fMehr" title="länger">+</button></span><span></span></div>'
-      +'<div class="tbs-regler"><span>Schläge im Clip</span><span><button type="button" class="tbs-mini" id="tbs-mWeniger" title="kürzer">−</button> <b id="tbs-mZahl">von selbst</b> <button type="button" class="tbs-mini" id="tbs-mMehr" title="länger, das Video läuft ruhiger">+</button> <button type="button" class="tbs-mini" id="tbs-mSelbst" style="width:auto;padding:0 8px" title="die Länge wieder selbst wählen lassen">von selbst</button></span><span></span></div>'
-      +'<div class="tbs-unter" id="tbs-loopWo" hidden></div></div>'
+      +'<div class="tbs-unter" id="tbs-loopWo" hidden></div>'
+      +'</div></div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
       +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
@@ -29969,7 +30020,9 @@ function zeichneFrame(t){
     const fensterSchritt=d=>{ const lg=(loopSicht&&loopSicht.lage)||ausschnitt(), L=lg?lg.N/BILDRATE:10, beat=(lg&&lg.M)?L/lg.M:0.5, jetzt=SCHLEIFE.fenster>0?SCHLEIFE.fenster:Math.max(0.5,Math.round(schleifeFenster(L,lg)/beat*2)/2);   /* in halben Schlaegen (Caspar_D: "auch halbe Schlaege waeren akzeptabel") */
       SCHLEIFE.fenster=Math.max(0.5,Math.min(Math.max(0.5,Math.floor(L/3/beat*2)/2),jetzt+d*0.5)); SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); };
     $('#tbs-fWeniger').onclick=()=>fensterSchritt(-1); $('#tbs-fMehr').onclick=()=>fensterSchritt(1);
-    $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(bild&&bild.tagName==='VIDEO'&&!loopAn) loopSchalten(true); else if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };   /* DIE VORSCHAU ZIEHT MIT (Caspar_D, 15.09.2026: "die vorschau muss mitziehen, sonst weiss ich ja nicht, ob es gut aussieht"): wer bei einem Video einen Uebergang waehlt, sieht sofort die Loop-Ansicht */
+    $('#tbs-fSelbst').onclick=()=>{ SCHLEIFE.fenster=0; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); };
+    if(window.ResizeObserver) new ResizeObserver(()=>leisteMalen()).observe($('#tbs-leiste'));
+    $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={...SCHLEIFE,art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(bild&&bild.tagName==='VIDEO'&&!loopAn) loopSchalten(true); else if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };   /* DIE VORSCHAU ZIEHT MIT (Caspar_D, 15.09.2026: "die vorschau muss mitziehen, sonst weiss ich ja nicht, ob es gut aussieht"): wer bei einem Video einen Uebergang waehlt, sieht sofort die Loop-Ansicht */
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
     $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };

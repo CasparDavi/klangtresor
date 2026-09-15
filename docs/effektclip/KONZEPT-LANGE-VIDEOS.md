@@ -64,7 +64,7 @@ Muster in `labor/videonaht/uebergaenge/` (Werkzeuge in `arbeit/`), am 15.09.2026
 3. Das **Datenmodell** der Zeitleiste im Rezept (Takte, Snippets mit Quelle/Ausschnitt/Zeitumbildung/Crop,
    Übergänge an Grenzen) — als Skizze vorlegen, bevor gebaut wird.
 
-## Darstellung der Stufe „Schleife schließen" nach den Hausregeln (Vorschlag, 15.09.2026, nicht gebaut)
+## Darstellung der Stufe „Schleife schließen" nach den Hausregeln (Vorschlag 15.09.2026, gebaut am selben Abend)
 
 Caspar_D: *„schau mal die Hausregeln an, wie man die Schleife-Schließen Erstellung besser darstellt"*. Heute: eine
 Zeile Lage, Dropdown, zwei −/+-Zähler, An/Aus-Knopf. Vorschlag aus `docs/haus/HAUSREGELN.md`:
@@ -84,4 +84,9 @@ Zeile Lage, Dropdown, zwei −/+-Zähler, An/Aus-Knopf. Vorschlag aus `docs/haus
    „sitzt auf X % des Lieds" darunter.
 6. **Was es kostet, steht am Knopf**: Sprungkopie und Änderungskurve („misst das Video einmal, einige Sekunden") und die
    längere Ausgabezeit mit Video an „10 s ausgeben".
-Vor dem Bau: als Skizze zeigen (Memory „Konzepte als Skizze").
+**Gebaut** (Caspar_D: *„jetzt hausregeln anschauen und die Schleife-Schließen Bedienelemente entsprechend anordnen"*):
+Punkte 2–6 und die Zeitleiste aus Punkt 1 (`leisteMalen()` im Studio): schwarzer Datenbereich, Schlagstriche, Kurve
+„Videobild über Clipzeit" als Fläche 0,3 mit aufgehellter Kontur, Übergang als Akzentfläche 0,45 mit Kontur, Abspielstrich
+in der Loop-Ansicht. „von selbst" ist bei Länge und Schlagzahl eine Pille (Zustand). Die Wahl des Übergangs behält jetzt
+Schlagzahl und Länge (vorher setzte sie beides zurück). **Nicht gebaut:** Fensterkante ziehen (die −/+-Zähler bleiben)
+und kräftige Taktstriche — welcher Clipschlag die Eins ist, steht in der Taktlage nicht fest, also wird nichts behauptet.
