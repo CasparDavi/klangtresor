@@ -2768,3 +2768,16 @@ System gemacht wurde."*
   - **Grundlagen** (Stems, Whisper-Marken, Musikstil, Tiefenkarte) aus Metal/Core ML weichen leicht
     von der CPU ab. Nach der Hausregel „Fähigkeit gegen Grundlage" vorher messen, ob gleich genug, und
     im Buch vermerken; notfalls den ganzen Bestand auf **einer** Maschine rechnen.
+
+## Songanalyse: Takt und 10-s-Clip übereinander sehen (Caspar_D, 15.09.2026)
+
+Caspar_D: *„wir brauchen in der Songanalyse eine View, wo bpm und 10s Video aufeinander abgebildet werden und
+ggf die schlecht sitzenden 10-Sekündler rot dargestellt sind."*
+
+- [ ] Ansicht in der Songanalyse: Liedzeitachse mit den erkannten Schlägen/Takten (BPM-Verlauf, Abschnitte),
+      darüber die Durchläufe des 10-s-Clips (Suno startet Clip und Lied gleichzeitig, Clip beginnt alle L
+      Sekunden neu) mit seinen Clipschlägen.
+- [ ] Wo Clipschlag und Songschlag mehr als das Fenster auseinanderliegen (Taktlage: min(1/8 Schlag, 80 ms)),
+      rot markieren — je Durchlauf und je Abschnitt; Tempowechsel werden so sichtbar.
+- [ ] Übersicht über den Bestand: welche Titel schlecht sitzen (Anzeige „sitzt auf X % des Lieds" unter dem
+      Zufallsboden 44 %) rot. Datengrundlage: `taktLage()` / `labor/nahtpruefung/ergebnis-taktlage.json`.

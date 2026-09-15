@@ -29103,7 +29103,49 @@ function qMass(q){ if(!q) return [1,1]; return q.tagName==='VIDEO'?[q.videoWidth
 function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttribute('src'); q.load(); }catch(e){} } }
 /* Video-Grund: unter einer Farbflaeche ruht es (kein Dekodieren fuer nichts); ohne Player-Uhr laeuft es frei
    weiter (bei Pause kein Sprung); mit Player-Uhr wird Drift > 0,2 s nachgesetzt. */
-function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO') return;
+/* SCHLEIFE SCHLIESSEN FUER BEWEGTBILDER (Caspar_D, 15.09.2026: "Wie machen wir das jetzt mit dem Schleifen-Schliessen?
+   Das Panel zeigt keinerlei Optionen, keine Videoueberblendungen" - "mach es trotzdem"). Ein Titelbild schliesst die Schleife
+   ueber die Effekte von selbst; ein Video hat ein Ende, das nicht zum Anfang passt. Hier bekommt jede Clipzeit tau eine
+   Videozeit s und eine Wirkung auf das Quellbild. Vorwaerts laeuft das Video in Echtzeit, im Fenster D (ein Takt, bei langen
+   Takten ein halber) vor der Naht fuehrt der gewaehlte Uebergang zum Anfang zurueck. Gewaehlt nach den Mustern vom 15.09.
+   (labor/videonaht/uebergaenge, docs/effektclip/KONZEPT-LANGE-VIDEOS.md): Ruecklauf mit 8 % Unschaerfe ("wir bleiben bei 8%
+   Unschaerfe und Ruecklauf"), Abbremsen mit Blende zwischen zwei Standbildern, Pendel, durch Schwarz; Blitz und Pixel nicht
+   ("werden wohl nicht meine freunde"). Bildgenau wird das Video nur im Export und in der Loop-Ansicht gesetzt (VIDEO_GENAU),
+   ueber die Sprungkopie vom 11.09. (lauter Schluesselbilder, 15 statt 125 ms je Sprung). */
+let SCHLEIFE={art:'keiner'}, VIDEO_GENAU=false, QUELLE_WIRKUNG=null, SCHLEIFE_STILL={a:null,b:null,schluessel:'',laeuft:false};
+const SCHLEIFE_ARTEN=[['keiner','harter Schnitt'],['ruecklauf','Rücklauf mit Unschärfe'],['abbremsen','Abbremsen'],['pendel','Pendel'],['schwarz','durch Schwarz']];
+const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt */
+function schleifeFenster(L,lage){ const beat=(lage&&lage.M)?L/lage.M:0, takt=beat*((lage&&lage.proTakt)||4);
+  const D=takt>0?(takt<=2?takt:takt/2):1.2; return Math.max(0.4,Math.min(L/3,D)); }
+function schleifeZeit(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
+  if(art==='keiner') return { s:tau%dv };
+  if(art==='pendel'){ const weg=Math.min(dv,L/2); return { s:weg*(1-Math.cos(2*Math.PI*tau/L))/2 }; }   /* Kosinus: an beiden Enden Tempo 0, im Mittel Echtzeit */
+  const D=schleifeFenster(L,lage), F=L-D, b=Math.min(dv,F), k=(art==='ruecklauf')?0.6:1;
+  if(tau<F){ const x=tau/F; return { s:b*(x-k*Math.sin(2*Math.PI*x)/(2*Math.PI)) }; }   /* an den Enden langsamer (k=1: bis 0), damit der Uebergang nicht in volle Fahrt schneidet */
+  const u=(tau-F)/D, glocke=Math.pow(Math.sin(Math.PI*u),2);
+  if(art==='ruecklauf') return { s:b*(1-(u-Math.sin(2*Math.PI*u)/(2*Math.PI))), unschaerfe:SCHLEIFE_UNSCHAERFE*glocke };
+  if(art==='abbremsen') return { s:u<0.5?b:0, still:{ w:u*u*(3-2*u) } };
+  if(art==='schwarz') return { s:u<0.5?b:0, schwarz:glocke };
+  return { s:tau%dv }; }
+function schleifeEnde(L,Dv,lage){ const dv=Math.max(0.05,(Dv>0?Dv:L)-1/60); return Math.min(dv,L-schleifeFenster(L,lage)); }
+/* Das Video bildgenau auf s setzen und warten, bis das Bild da ist. */
+function quelleSetzen(v,s){ return new Promise(ok=>{ if(!v||v.tagName!=='VIDEO') return ok();
+  const ziel=Math.max(0,Math.min((v.duration>0?v.duration:s+1)-1e-3,s)); if(!v.paused) v.pause();
+  if(Math.abs(v.currentTime-ziel)<0.25/60&&!v.seeking) return ok();
+  let zu=null; const fertig=()=>{ clearTimeout(zu); v.removeEventListener('seeked',fertig); ok(); };
+  zu=setTimeout(fertig,4000); v.addEventListener('seeked',fertig); v.currentTime=ziel; }); }
+/* Die zwei Standbilder fuer "Abbremsen": das Ende des Vorwaertslaufs und der Anfang, in voller Videogroesse. */
+async function schleifeStills(v,lage){ if(!v||v.tagName!=='VIDEO'||SCHLEIFE.art!=='abbremsen'||!lage) return; const L=lage.N/30, b=schleifeEnde(L,v.duration,lage), k=v.src+'|'+b.toFixed(4);
+  if(SCHLEIFE_STILL.schluessel===k&&SCHLEIFE_STILL.a) return; SCHLEIFE_STILL.laeuft=true;
+  try{ const fang=async t=>{ await quelleSetzen(v,t); const c=document.createElement('canvas'); c.width=v.videoWidth||1; c.height=v.videoHeight||1; c.getContext('2d').drawImage(v,0,0); return c; };
+    SCHLEIFE_STILL.a=await fang(b); SCHLEIFE_STILL.b=await fang(0); SCHLEIFE_STILL.schluessel=k; } finally{ SCHLEIFE_STILL.laeuft=false; } }
+function schleifeMisch(w){ const A=SCHLEIFE_STILL.a, B=SCHLEIFE_STILL.b; if(!A||!B) return null; const c=SCHLEIFE_STILL.misch||(SCHLEIFE_STILL.misch=document.createElement('canvas'));
+  if(c.width!==A.width||c.height!==A.height){ c.width=A.width; c.height=A.height; } const x=c.getContext('2d'); x.globalAlpha=1; x.drawImage(A,0,0); x.globalAlpha=w; x.drawImage(B,0,0); x.globalAlpha=1; return c; }
+/* Die Sprungkopie holen und das Video darauf umstellen (die Zeit bleibt). Fehlt der Endpunkt, bleibt das Original - nur langsamer. */
+function sprungHolen(v,seite,id){ if(!v||!seite||!seite.video||!id) return; const q='id='+encodeURIComponent(id)+'&was='+(seite.art==='bewegtbild'?'bewegtbild':'video')+(seite.art==='video'?'&nr='+(seite.nr||1):'');
+  fetch('/api/sprungkopie?'+q,{method:'POST'}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.url||v.src.endsWith(j.url)) return; const t=v.currentTime||0;
+    v.addEventListener('loadeddata',()=>{ try{ v.currentTime=t; }catch(e){} if(!VIDEO_GENAU) v.play().catch(()=>{}); },{once:true}); v.src=j.url; }).catch(()=>{}); }
+function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO'||VIDEO_GENAU) return;
   if(q.paused) q.play().catch(()=>{});
   if(!uhrEcht||!(q.duration>0)) return; const soll=t%q.duration;
   if(Math.abs(q.currentTime-soll)>0.2&&Math.abs(q.currentTime-soll)<q.duration-0.2) q.currentTime=soll; }
@@ -29148,9 +29190,11 @@ function zeichneFrame(t){
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
   /* Vorbereitung: das Grundbild einmal mit dem ruhigen Filter nach ovb, die Effekte arbeiten darauf. */
   let quell=bild, qsx=sx, qsy=sy, qcw=cw, qch=ch;
-  if(vorbAenderungen(VORB)){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB); cv.drawImage(bild,sx,sy,cw,ch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
+  { const qw=QUELLE_WIRKUNG; if(qw&&qw.still){ const mi=schleifeMisch(qw.still.w); if(mi) quell=mi; } }   /* Abbremsen: Blende zwischen den zwei Standbildern */
+  if(vorbAenderungen(VORB)){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB); cv.drawImage(quell,sx,sy,cw,ch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
   { ca.save(); if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const rad=Math.abs(rotG)*Math.PI/180, z=Math.cos(rad)+Math.max(Wn,Hn)/Math.min(Wn,Hn)*Math.sin(rad); ca.scale(z,z);   /* Deckung cos+r*sin: auch bei 16:9 keine freien Ecken (Tiefen-Check) */ ca.translate(-Wn/2,-Hn/2); }
-    ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn);
+    { const qw=QUELLE_WIRKUNG, fi=[]; if(qw&&qw.unschaerfe>0.0005) fi.push('blur('+(qw.unschaerfe*Wn).toFixed(1)+'px)'); if(qw&&qw.schwarz>0.001) fi.push('brightness('+(1-qw.schwarz).toFixed(3)+')');
+      if(fi.length) ca.filter=fi.join(' '); ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn); if(fi.length) ca.filter='none'; }   /* Ruecklauf: Unschaerfe; durch Schwarz: abdunkeln - nur das Quellbild, die Effekte liegen scharf darueber */
     /* Grund-Pulse in Kettenreihenfolge, jeder auf dem bisherigen Ergebnis (Momentaufnahme nach okc), nicht auf dem Grundbild -
        sonst loeschte der letzte Puls auf dem Schlag die vorigen (Tiefen-Check). Jeder Typ darf mehrfach haengen. */
     const schnapp=()=>{ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(oa,0,0); return okc; };
@@ -29244,16 +29288,16 @@ function zeichneFrame(t){
     vorbStand(); }
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
     const seite=SEITEN[seiteIndex()]; if(!seite) return;
-    const q=quelleBauen(seite, x=>{ if(x!==bild) return; bereit=true; groesse(); histoRechnen(); renderStapel(); },
+    const q=quelleBauen(seite, x=>{ if(x!==bild) return; bereit=true; groesse(); histoRechnen(); renderStapel(); schleifeUI(); },
       x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt'); grund={art:'titelbild',nr:1,}; grundLaden(); quellenUI(); });
-    bild=q; }
+    bild=q; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.m=null; sprungHolen(q,seite,songId); schleifeUI(); }
   /* Zeit: der Player ist die einzige Audioquelle. */
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
   function effekteJSON(){ return STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_'))); }
-  function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON() }); }
+  function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
-    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
+    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
   /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
      verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
   /* DER THEATERNEBEL IST GESTRICHEN (Caspar_D, 14.09.2026: "schmeiss den Theaternebel raus").
@@ -29620,7 +29664,8 @@ function zeichneFrame(t){
     try{
     await vorlaufen(m,gemerkt,melden?(k,z)=>melden(-k,z):null);   /* mit FEIN wie die gezaehlten Bilder, sonst traegt die Spur ein anderes Bild */
     for(let i=0;i<N;i++){
-      exportBild(m,gemerkt,t0+i/rate,W,H);
+      if(m.schleife){ const q=schleifeZeit(i/rate,N/rate,m.bild.duration,m.lage); await quelleSetzen(m.bild,q.s); QUELLE_WIRKUNG=q; }
+      exportBild(m,gemerkt,t0+i/rate,W,H); QUELLE_WIRKUNG=null;
       const f=new VideoFrame(m.lein,{ timestamp:Math.round(i*1000000/rate), duration:Math.round(1000000/rate) });
       enc.encode(f,{ keyFrame:(i%schluessel===0) }); f.close();
       /* Die Warteschlange des Kodierers nicht volllaufen lassen - das ist die EINZIGE Wartestelle,
@@ -29645,7 +29690,7 @@ function zeichneFrame(t){
      Jetzt sperrt video() selbst, bevor irgendetwas wartet; oeffnen() und schliessen() warten auf exportLauf. */
   let exportLauf=null;
   async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true;
-    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; } }
+    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } } }
   async function videoLauf(){
     if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
     if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
@@ -29659,10 +29704,11 @@ function zeichneFrame(t){
     const stand=!lage.M&&!!(DATA&&DATA.schlaege&&DATA.schlaege.length);   /* Schlaege, aber zu wenige fuer ein Raster: siehe exportBuendel */
     const urteil={ nicht:namen(loopNein), stolpern:lage.M?namen(e=>lage.M%loopGruppe(e)!==0):[], ruck:lage.M?namen(e=>loopKick(e)&&lage.M%2!==0):[],
       steht:stand?namen(e=>(e.typ==='risse'&&e.wachsen==='takt')||e.typ==='einschlag'||((e.typ==='licht'||e.typ==='schatten')&&e.rmBewegung==='schritt')):[],
-      frequenz:stand?namen(e=>['takt','eins','zufall'].includes(e.lmQuelle)):[], bewegt:!!(bild&&bild.tagName==='VIDEO'), L,
+      frequenz:stand?namen(e=>['takt','eins','zufall'].includes(e.lmQuelle)):[], bewegt:!!(bild&&bild.tagName==='VIDEO'), schleife:SCHLEIFE.art, L,
       sitzt:lage.anzeige, grund:lage.grund, kodiert:false };
     pStat('nehme auf: '+W+'×'+H+', '+L.toFixed(2)+' s'+(lage.M?' ('+lage.M+' Schläge)':'')+', '+N+' Bilder …');
     const gemerkt=bundel(), m=exportBuendel(gemerkt,lage,W,H), cv=m.lein;
+    m.lage=lage; m.schleife=!!(bild&&bild.tagName==='VIDEO'); if(m.schleife){ VIDEO_GENAU=true; await schleifeStills(bild,lage); }   /* Video bildgenau: jede Clipzeit bekommt ihre Videozeit */
     /* Jedes Bild wird EINZELN angefordert. Nur so entspricht Bild i in der Datei auch Bild i des Clips;
        laesst man den Strom selbst abtasten, verschiebt sich das gegeneinander und der Schnitt trifft
        nicht die Naht. Dass der Kodierer die letzten Bilder verliert, faengt die Zugabe unten ab. */
@@ -29703,7 +29749,8 @@ function zeichneFrame(t){
       for(let i=0;i<N+zugabe;i++){
         const soll=start+i*1000/BILDRATE, wartezeit=soll-performance.now();
         if(wartezeit>3) await new Promise(r=>setTimeout(r,wartezeit)); else await new Promise(r=>requestAnimationFrame(r));
-        exportBild(m,gemerkt,t0+(i%N)/BILDRATE,W,H);
+        if(m.schleife){ const q=schleifeZeit((i%N)/BILDRATE,N/BILDRATE,m.bild.duration,m.lage); await quelleSetzen(m.bild,q.s); QUELLE_WIRKUNG=q; }
+        exportBild(m,gemerkt,t0+(i%N)/BILDRATE,W,H); QUELLE_WIRKUNG=null;
         spur.requestFrame(); bilder++; }
       await new Promise(r=>setTimeout(r,120));
       mr.stop(); await fertig;
@@ -29767,15 +29814,21 @@ function zeichneFrame(t){
     LOOP=m.L; FEIN=true;
     try{ if(m.vorlauf.length){ const z=m.vorlauf.splice(0,10); setzen(m); try{ for(const tv of z) zeichneFrame(tv); }catch(x){ console.warn('Effektclip-Loop:',x); } setzen(gm); if(m.vorlauf.length) return i; }
       if(i===sicht.i) return i;
-      exportBild(m,gm,lage.t0+i/BILDRATE,W,H); sicht.i=i; }
+      let qw=null; if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; if(SCHLEIFE_STILL.laeuft) return i;   /* ohne Warten: ist das Videobild noch nicht da, bleibt das vorige stehen */
+        qw=schleifeZeit(i/BILDRATE,lage.N/BILDRATE,bild.duration,lage); const ziel=Math.max(0,Math.min((bild.duration>0?bild.duration:qw.s+1)-1e-3,qw.s));
+        if(bild.seeking) return i; if(Math.abs(bild.currentTime-ziel)>=0.25/60){ if(!bild.paused) bild.pause(); bild.currentTime=ziel; return i; } }
+      QUELLE_WIRKUNG=qw; try{ exportBild(m,gm,lage.t0+i/BILDRATE,W,H); } finally{ QUELLE_WIRKUNG=null; } sicht.i=i; }
     finally{ LOOP=0; FEIN=false; }
     g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=1; g.filter='none'; g.globalCompositeOperation='copy'; g.drawImage(m.lein,0,0); g.restore();
     return i; }
   function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=(s-mm*60).toFixed(1).replace('.',',');
     el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
+  function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'); if(s){ s.value=SCHLEIFE.art; s.disabled=!vid; }
+    if(h) h.textContent=vid?(SCHLEIFE.art==='keiner'?'das Video springt am Übergang vom Ende zum Anfang':'wirkt im ausgegebenen Clip und in der Loop-Ansicht'):'nur für Bewegtbilder — das Titelbild schliesst die Schleife über die Effekte von selbst'; }
   function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
     if(b){ b.classList.toggle('an',loopAn); b.textContent=loopAn?'an':'aus'; } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }
-    if(loopAn){ loopLageNeu(); if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) Promise.resolve(GL.vierLaden()).catch(()=>{}); }   /* die Exportform der Rauschshader, wie video() */
+    if(loopAn){ loopLageNeu(); if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) Promise.resolve(GL.vierLaden()).catch(()=>{}); if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(bild,loopSicht.lage).catch(()=>{}); } }
+    else if(!exportLaeuft){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); }   /* die Exportform der Rauschshader, wie video() */
     else if(loopSicht){ loopSicht.m=null; loopSicht.i=-1; } }
   function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=L.toFixed(1).replace('.',',');
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
@@ -29784,7 +29837,7 @@ function zeichneFrame(t){
     pStat('ausgegeben: '+name+' · '+(blob.size/1048576).toFixed(1)+' MB · '+N+' Bilder'
       +(nicht.length?' — ohne Loop: '+nicht.join(', ')
         :!geschnitten?' — Loop ungenau, das Haus hat nicht geschnitten'
-        :bewegt?' — die Effekte schliessen, aber das Video darunter läuft nicht im Kreis: am Übergang springt sein Bild'
+        :bewegt?(urteil.schleife&&urteil.schleife!=='keiner'?' — das Video schließt die Schleife: '+((SCHLEIFE_ARTEN.find(a=>a[0]===urteil.schleife)||[0,''])[1]):' — die Effekte schliessen, das Video springt am Übergang (harter Schnitt)')
         :' — nahtlos')
       +taktSatz(sitzt,grund,kodiert)
       +(stolpern.length?' · '+stolpern.join(', ')+': der Rhythmus geht in '+sek+' s nicht ganz auf, am Übergang kommt ein Schlag einmal früher':'')
@@ -29818,6 +29871,8 @@ function zeichneFrame(t){
       +'<div class="tbs-abschnitt" id="tbs-abLoop"><div class="tbs-abtitel">'+LOOP_STUFE+' <span class="tbs-abunter">so l\u00e4uft der Clip in Suno \u00fcber das Lied</span></div>'
       +'<div class="tbs-zeile" id="tbs-loopLage" title="Die L\u00e4nge, die \u201e10 s ausgeben\u201c jetzt w\u00e4hlen w\u00fcrde, und wie viel vom Lied der Clip im Takt trifft">\u2026</div>'
       +'<div class="tbs-regler"><span>10-s-Loop ansehen</span><button type="button" class="tbs-togp" id="tbs-loopAn" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt">aus</button><span></span></div>'
+      +'<div class="tbs-regler"><span>Übergang am Loop</span><select id="tbs-schleife" title="Wie ein Video vom Ende zum Anfang zurückfindet - ein Titelbild schliesst die Schleife über die Effekte von selbst">'+SCHLEIFE_ARTEN.map(([k,l])=>'<option value="'+k+'">'+l+'</option>').join('')+'</select><span></span></div>'
+      +'<div class="tbs-unter" id="tbs-schleifeHinweis"></div>'
       +'<div class="tbs-unter" id="tbs-loopWo" hidden></div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
       +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
@@ -29852,6 +29907,7 @@ function zeichneFrame(t){
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-pVideo').onclick=video;
     $('#tbs-loopAn').onclick=()=>loopSchalten(!loopAn);
+    $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
     $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };
@@ -29882,7 +29938,7 @@ function zeichneFrame(t){
     SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:'Testbild',test:true},{art:'testportraet',nr:1,lbl:'Testportr\u00e4t',test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:'Testportr\u00e4t (Farbe)',test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr}; }
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;
-    const R=rezeptLesen(rezept); let hinweis=''; VORB=vorbAus(R.vorbereitung);
+    const R=rezeptLesen(rezept); let hinweis=''; VORB=vorbAus(R.vorbereitung); SCHLEIFE=R.schleife||{art:'keiner'}; SCHLEIFE_STILL.schluessel='';
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
