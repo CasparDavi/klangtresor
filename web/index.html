@@ -29113,9 +29113,9 @@ function quelleWeg(q){ if(q&&q.tagName==='VIDEO'){ try{ q.pause(); q.removeAttri
    ("werden wohl nicht meine freunde"). Bildgenau wird das Video nur im Export und in der Loop-Ansicht gesetzt (VIDEO_GENAU),
    ueber die Sprungkopie vom 11.09. (lauter Schluesselbilder, 15 statt 125 ms je Sprung). */
 const BILDRATE_SCHLEIFE=30;
-let SCHLEIFE={art:'keiner'}, VIDEO_GENAU=false, QUELLE_WIRKUNG=null, SCHLEIFE_STILL={a:null,b:null,schluessel:'',laeuft:false};
+let SCHLEIFE={art:'keiner'}, VIDEO_GENAU=false, QUELLE_WIRKUNG=null, SCHLEIFE_STILL={schluessel:'',laeuft:false};
 const SCHLEIFE_ARTEN=[['keiner','harter Schnitt'],['ruecklauf','Rücklauf mit Unschärfe'],['abbremsen','Abbremsen'],['pendel','Pendel'],['unschaerfe','Unschärfe'],['blende','Blende'],['kreuzzoom','Kreuzzoom'],['wisch','Wisch'],['schwarz','durch Schwarz'],['weiss','durch Weiß'],['blitz','Schnitt mit Blitz (für Grafik)'],['pixel','Pixel (für Grafik)']];   /* Caspar_D, 15.09.2026: "baue bitte mehr uebergaenge ein, da waren doch noch mehr" - die Formen aus labor/videonaht/uebergaenge; Blitz und Pixel nur fuer Grafik ("werden wohl nicht meine freunde, koennen aber mit synthetischeren Videos funktionieren") */
-const SCHLEIFE_STILLS=new Set(['abbremsen','blende','wisch']);
+
 const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt */
 /* DIE LAENGE DES UEBERGANGS VON HAND (Caspar_D, 15.09.2026: "kannst du den Anteil des Ueberblendens verkuerzen, bspw nur 1 sek von
    10 sek - also dass man die Laenge der Ueberblendung definieren kann, insgesamt aber trotzdem 10 sekunden bleiben"): in ganzen
@@ -29139,7 +29139,8 @@ async function schleifeKurveMessen(v){ if(!v||v.tagName!=='VIDEO'||!(v.duration>
     for(let r=0;r<3;r++){ const m=zeit.reduce((a,b)=>a+b,0)/zeit.length; zeit=zeit.map(z=>Math.max(m/2,Math.min(2*m,z))); }   /* hoechstens dreifach schneller, hoechstens halb so schnell */
     const summe=zeit.reduce((a,b)=>a+b,0), U=[0]; let acc=0; for(const z of zeit){ acc+=z; U.push(acc/summe); } SCHLEIFE_KURVE.u=U; SCHLEIFE_KURVE.schluessel=k; }
   finally{ SCHLEIFE_KURVE.laeuft=false; } }
-function schleifeZeit(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
+function schleifeZeit(tau,L,Dv,lage){ const q=schleifeZeitRoh(tau,L,Dv,lage), art=SCHLEIFE.art||'keiner'; q.tau=tau; q.fenster=art!=='keiner'&&art!=='pendel'&&tau>=L-schleifeFenster(L,lage); return q; }
+function schleifeZeitRoh(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
   if(art==='keiner') return { s:tau%dv };
   if(art==='pendel') return { s:schleifeQuelle((1-Math.cos(2*Math.PI*tau/L))/2,dv) };   /* Kosinus: an beiden Enden Tempo 0 */
   const D=schleifeFenster(L,lage), F=L-D, b=dv, k=(art==='abbremsen'||art==='schwarz')?1:0.6;
@@ -29164,15 +29165,28 @@ function quelleSetzen(v,s){ return new Promise(ok=>{ if(!v||v.tagName!=='VIDEO')
   let zu=null; const fertig=()=>{ clearTimeout(zu); v.removeEventListener('seeked',fertig); ok(); };
   zu=setTimeout(fertig,4000); v.addEventListener('seeked',fertig); v.currentTime=ziel; }); }
 /* Die zwei Standbilder fuer "Abbremsen": das Ende des Vorwaertslaufs und der Anfang, in voller Videogroesse. */
-async function schleifeStills(v,lage){ if(v&&v.tagName==='VIDEO'&&SCHLEIFE.art!=='keiner'){ SCHLEIFE_STILL.laeuft=true; try{ await schleifeKurveMessen(v); } finally{ SCHLEIFE_STILL.laeuft=false; } }
-  if(!v||v.tagName!=='VIDEO'||!SCHLEIFE_STILLS.has(SCHLEIFE.art)||!lage) return; const b=Math.max(0.05,v.duration-1/60), k=v.src+'|'+b.toFixed(4);
-  if(SCHLEIFE_STILL.schluessel===k&&SCHLEIFE_STILL.a) return; SCHLEIFE_STILL.laeuft=true;
-  try{ const fang=async t=>{ await quelleSetzen(v,t); const c=document.createElement('canvas'); c.width=v.videoWidth||1; c.height=v.videoHeight||1; c.getContext('2d').drawImage(v,0,0); return c; };
-    SCHLEIFE_STILL.a=await fang(b); SCHLEIFE_STILL.b=await fang(0); SCHLEIFE_STILL.schluessel=k; } finally{ SCHLEIFE_STILL.laeuft=false; } }
-function schleifeMisch(w,wisch){ const A=SCHLEIFE_STILL.a, B=SCHLEIFE_STILL.b; if(!A||!B) return null; const c=SCHLEIFE_STILL.misch||(SCHLEIFE_STILL.misch=document.createElement('canvas'));
-  if(c.width!==A.width||c.height!==A.height){ c.width=A.width; c.height=A.height; } const x=c.getContext('2d'); x.globalAlpha=1;
-  if(wisch){ const d=w*c.width; x.clearRect(0,0,c.width,c.height); x.drawImage(A,-d,0); x.drawImage(B,c.width-d,0); }   /* Wisch: das Ende schiebt nach links hinaus, der Anfang kommt von rechts */
-  else { x.drawImage(A,0,0); x.globalAlpha=w; x.drawImage(B,0,0); x.globalAlpha=1; } return c; }
+async function schleifeStills(v,lage){ if(v&&v.tagName==='VIDEO'&&SCHLEIFE.art!=='keiner'){ SCHLEIFE_STILL.laeuft=true; try{ await schleifeKurveMessen(v); } finally{ SCHLEIFE_STILL.laeuft=false; } } }
+/* DIE EFFEKTE GEHEN MIT DURCH DEN UEBERGANG (Caspar_D, 15.09.2026: "die effekte muessen im uebergang genauso behandelt werden, wie
+   das video, also nicht uebergang und die effekte genauso laufen lassen sondern wenn wir einen fade out uebergang haben, muessen die
+   effekte mit ausfaden"). Die Wirkung liegt darum auf dem FERTIGEN Bild (Video und Effekte), nach zeichneFrame und vor dem
+   Hauszeichen. Blende, Wisch und Abbremsen mischen das letzte fertige Bild vor dem Fenster mit dem ersten fertigen Bild des Clips;
+   beide werden im Vorwaertslauf mitgeschrieben. */
+const SCHLEIFE_BILD={};
+function schleifePuffer(n,W,H){ let c=SCHLEIFE_BILD[n]; if(!c) c=SCHLEIFE_BILD[n]=document.createElement('canvas'); if(c.width!==W||c.height!==H){ c.width=W; c.height=H; } return c; }
+function schleifeNachbild(cv,qw){ if(!qw||!cv) return; const W=cv.width, H=cv.height, x=cv.getContext('2d');
+  if(!qw.fenster){ if(qw.tau<0.5/BILDRATE_SCHLEIFE){ schleifePuffer('anfang',W,H).getContext('2d').drawImage(cv,0,0); SCHLEIFE_BILD.hatAnfang=W+'x'+H; }
+    schleifePuffer('ende',W,H).getContext('2d').drawImage(cv,0,0); SCHLEIFE_BILD.hatEnde=W+'x'+H; return; }
+  const t=schleifePuffer('tmp',W,H), tx=t.getContext('2d'); tx.globalAlpha=1; tx.filter='none'; tx.globalCompositeOperation='source-over';
+  if(qw.still&&SCHLEIFE_BILD.hatAnfang===W+'x'+H&&SCHLEIFE_BILD.hatEnde===W+'x'+H){ const A=SCHLEIFE_BILD.ende, B=SCHLEIFE_BILD.anfang; tx.clearRect(0,0,W,H);
+    if(qw.still.wisch){ const d=qw.still.w*W; tx.drawImage(A,-d,0); tx.drawImage(B,W-d,0); } else { tx.drawImage(A,0,0); tx.globalAlpha=qw.still.w; tx.drawImage(B,0,0); tx.globalAlpha=1; } }
+  else tx.drawImage(cv,0,0);
+  const fi=[]; if(qw.unschaerfe>0.0005) fi.push('blur('+(qw.unschaerfe*W).toFixed(1)+'px)'); if(qw.schwarz>0.001) fi.push('brightness('+(1-qw.schwarz).toFixed(3)+')');
+  x.save(); x.setTransform(1,0,0,1,0,0); x.globalAlpha=1; x.globalCompositeOperation='source-over'; x.filter='none'; x.fillStyle='#000'; x.fillRect(0,0,W,H);
+  if(fi.length) x.filter=fi.join(' ');
+  if(qw.pixel>0.02){ const k=1+Math.round(38*qw.pixel), pw=Math.max(2,Math.round(W/k)), ph=Math.max(2,Math.round(H/k)), pc=schleifePuffer('pix',pw,ph); pc.getContext('2d').drawImage(t,0,0,pw,ph); x.imageSmoothingEnabled=false; x.drawImage(pc,0,0,pw,ph,0,0,W,H); }
+  else { if(qw.zoom>1){ x.translate(W/2,H/2); x.scale(qw.zoom,qw.zoom); x.translate(-W/2,-H/2); } x.drawImage(t,0,0); }
+  x.restore();
+  if(qw.weiss>0.001){ x.save(); x.setTransform(1,0,0,1,0,0); x.fillStyle='rgba(255,255,255,'+Math.min(1,qw.weiss).toFixed(3)+')'; x.fillRect(0,0,W,H); x.restore(); } }
 /* Die Sprungkopie holen und das Video darauf umstellen (die Zeit bleibt). Fehlt der Endpunkt, bleibt das Original - nur langsamer. */
 function sprungHolen(v,seite,id){ if(!v||!seite||!seite.video||!id) return; const q='id='+encodeURIComponent(id)+'&was='+(seite.art==='bewegtbild'?'bewegtbild':'video')+(seite.art==='video'?'&nr='+(seite.nr||1):'');
   fetch('/api/sprungkopie?'+q,{method:'POST'}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.url||v.src.endsWith(j.url)) return; const t=v.currentTime||0;
@@ -29222,15 +29236,9 @@ function zeichneFrame(t){
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
   /* Vorbereitung: das Grundbild einmal mit dem ruhigen Filter nach ovb, die Effekte arbeiten darauf. */
   let quell=bild, qsx=sx, qsy=sy, qcw=cw, qch=ch;
-  { const qw=QUELLE_WIRKUNG; if(qw&&qw.still){ const mi=schleifeMisch(qw.still.w,qw.still.wisch); if(mi) quell=mi; } }   /* Abbremsen: Blende zwischen den zwei Standbildern */
   if(vorbAenderungen(VORB)){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB); cv.drawImage(quell,sx,sy,cw,ch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
   { ca.save(); if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const rad=Math.abs(rotG)*Math.PI/180, z=Math.cos(rad)+Math.max(Wn,Hn)/Math.min(Wn,Hn)*Math.sin(rad); ca.scale(z,z);   /* Deckung cos+r*sin: auch bei 16:9 keine freien Ecken (Tiefen-Check) */ ca.translate(-Wn/2,-Hn/2); }
-    { const qw=QUELLE_WIRKUNG, fi=[]; if(qw&&qw.unschaerfe>0.0005) fi.push('blur('+(qw.unschaerfe*Wn).toFixed(1)+'px)'); if(qw&&qw.schwarz>0.001) fi.push('brightness('+(1-qw.schwarz).toFixed(3)+')');
-      let qq=quell, qx=qsx, qy=qsy, qwb=qcw, qhb=qch;
-      if(qw&&qw.pixel>0.02){ const k=1+Math.round(38*qw.pixel), pc=SCHLEIFE_STILL.pixel||(SCHLEIFE_STILL.pixel=document.createElement('canvas')); pc.width=Math.max(2,Math.round(Wn/k)); pc.height=Math.max(2,Math.round(Hn/k)); const px=pc.getContext('2d'); px.imageSmoothingEnabled=true; px.drawImage(quell,qsx,qsy,qcw,qch,0,0,pc.width,pc.height); qq=pc; qx=0; qy=0; qwb=pc.width; qhb=pc.height; }
-      ca.save(); if(qw&&qw.zoom>1){ ca.translate(Wn/2,Hn/2); ca.scale(qw.zoom,qw.zoom); ca.translate(-Wn/2,-Hn/2); } if(qq!==quell) ca.imageSmoothingEnabled=false;
-      if(fi.length) ca.filter=fi.join(' '); ca.drawImage(qq,qx,qy,qwb,qhb,0,0,Wn,Hn); if(fi.length) ca.filter='none';
-      if(qw&&qw.weiss>0.001){ ca.fillStyle='rgba(255,255,255,'+Math.min(1,qw.weiss).toFixed(3)+')'; ca.fillRect(-Wn,-Hn,3*Wn,3*Hn); } ca.restore(); }   /* Kreuzzoom, Pixel, durch Weiss, Blitz */   /* Ruecklauf: Unschaerfe; durch Schwarz: abdunkeln - nur das Quellbild, die Effekte liegen scharf darueber */
+    ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn);
     /* Grund-Pulse in Kettenreihenfolge, jeder auf dem bisherigen Ergebnis (Momentaufnahme nach okc), nicht auf dem Grundbild -
        sonst loeschte der letzte Puls auf dem Schlag die vorigen (Tiefen-Check). Jeder Typ darf mehrfach haengen. */
     const schnapp=()=>{ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(oa,0,0); return okc; };
@@ -29653,7 +29661,7 @@ function zeichneFrame(t){
   const vorlaufZeiten=(m,i0)=>{ const z=[]; for(let k=gedaechtnisBilder();k>=1;k--) z.push(m.t0+((((i0-k)%m.N)+m.N)%m.N)/BILDRATE); return z; };
   function exportBild(m,gemerkt,t,W,H){ setzen(m);
     try{ if(LOOP>0&&!m.vorgelaufen){ m.vorgelaufen=true; for(const tv of vorlaufZeiten(m,Math.round((t-m.t0)*BILDRATE))) zeichneFrame(tv); }
-      zeichneFrame(t); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); }
+      zeichneFrame(t); schleifeNachbild(m.lein,QUELLE_WIRKUNG); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); }
     setzen(gemerkt); }
   /* DER VORLAUF IN HAEPPCHEN (Gegenpruefung 15.09.2026). Bei Nachhall 0,98 sind es 309 Bilder, in Ausgabegroesse
      leicht 45 s - am Stueck gemalt stand die Seite ohne Meldung, und im Aufnahmeweg lief die Uhr schon: alle
