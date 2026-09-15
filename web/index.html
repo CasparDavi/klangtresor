@@ -29117,17 +29117,33 @@ const SCHLEIFE_ARTEN=[['keiner','harter Schnitt'],['ruecklauf','Rücklauf mit Un
 const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt */
 function schleifeFenster(L,lage){ const beat=(lage&&lage.M)?L/lage.M:0, takt=beat*((lage&&lage.proTakt)||4);
   const D=takt>0?(takt<=2?takt:takt/2):1.2; return Math.max(0.4,Math.min(L/3,D)); }
+/* DAS GANZE VIDEO, GLEICH VIEL AENDERUNG JE ZEIT (Caspar_D, 15.09.2026: "das video wird zu frueh ausgeblendet, der Kuss ist
+   schon nicht mehr richtig zu sehen" - "das Video muss immer so ganz wie moeglich zu sehen sein" - "also das, was du bei Dopamier
+   mich gemacht hast, gleich viel Aenderung pro Zeit aber das gesamte Videomaterial"). Der Vorwaertslauf zeigt immer das ganze Video;
+   wie schnell welche Stelle laeuft, sagt die Aenderungskurve: ruhige Stellen schneller, bewegte langsamer (Rate ~ 1/Aenderung^0,7,
+   wie im Muster labor/videonaht/uebergaenge/arbeit/zeitumbildung.py), geklemmt auf halb bis dreifach so schnell wie das Mittel.
+   Solange die Kurve noch nicht gemessen ist, laeuft das Video gleichmaessig. */
+let SCHLEIFE_KURVE={schluessel:'',u:null,laeuft:false};
+function schleifeQuelle(x,dv){ const U=SCHLEIFE_KURVE.u; if(!U||U.length<2) return x*dv; const n=U.length-1;
+  let lo=0,hi=n; while(hi-lo>1){ const m=(lo+hi)>>1; if(U[m]<=x) lo=m; else hi=m; } const f=U[hi]>U[lo]?(x-U[lo])/(U[hi]-U[lo]):0; return Math.min(dv,(lo+f)/n*dv); }
+async function schleifeKurveMessen(v){ if(!v||v.tagName!=='VIDEO'||!(v.duration>0)) return; const k=v.src+'|'+v.duration.toFixed(3); if(SCHLEIFE_KURVE.schluessel===k||SCHLEIFE_KURVE.laeuft) return;
+  SCHLEIFE_KURVE.laeuft=true; try{ const n=Math.max(8,Math.min(300,Math.round(v.duration*24))), c=document.createElement('canvas'); c.width=48; c.height=Math.max(8,Math.round(48*(v.videoHeight||1)/(v.videoWidth||1))); const x=c.getContext('2d',{willReadFrequently:true});
+    let vor=null; const d=[]; for(let i=0;i<=n;i++){ await quelleSetzen(v,i/n*(v.duration-1/60)); x.drawImage(v,0,0,c.width,c.height); const px=x.getImageData(0,0,c.width,c.height).data;
+      if(vor){ let t=0; for(let j=0;j<px.length;j+=4) t+=Math.abs(px[j]-vor[j])+Math.abs(px[j+1]-vor[j+1])+Math.abs(px[j+2]-vor[j+2]); d.push(t/(px.length/4)/3); } vor=px; }
+    const mittel=d.reduce((a,b)=>a+b,0)/d.length||1, eps=0.05*mittel; let zeit=d.map(z=>Math.pow(z+eps,0.7));   /* Ausgabezeit je Quellschritt ~ Aenderung^0,7 */
+    for(let r=0;r<3;r++){ const m=zeit.reduce((a,b)=>a+b,0)/zeit.length; zeit=zeit.map(z=>Math.max(m/3,Math.min(2*m,z))); }   /* hoechstens dreifach schneller, hoechstens halb so schnell */
+    const summe=zeit.reduce((a,b)=>a+b,0), U=[0]; let acc=0; for(const z of zeit){ acc+=z; U.push(acc/summe); } SCHLEIFE_KURVE.u=U; SCHLEIFE_KURVE.schluessel=k; }
+  finally{ SCHLEIFE_KURVE.laeuft=false; } }
 function schleifeZeit(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
   if(art==='keiner') return { s:tau%dv };
-  if(art==='pendel'){ const weg=Math.min(dv,L/2); return { s:weg*(1-Math.cos(2*Math.PI*tau/L))/2 }; }   /* Kosinus: an beiden Enden Tempo 0, im Mittel Echtzeit */
-  const D=schleifeFenster(L,lage), F=L-D, b=Math.min(dv,F), k=(art==='ruecklauf')?0.6:1;
-  if(tau<F){ const x=tau/F; return { s:b*(x-k*Math.sin(2*Math.PI*x)/(2*Math.PI)) }; }   /* an den Enden langsamer (k=1: bis 0), damit der Uebergang nicht in volle Fahrt schneidet */
+  if(art==='pendel') return { s:schleifeQuelle((1-Math.cos(2*Math.PI*tau/L))/2,dv) };   /* Kosinus: an beiden Enden Tempo 0 */
+  const D=schleifeFenster(L,lage), F=L-D, b=dv, k=(art==='ruecklauf')?0.6:1;
+  if(tau<F){ const x=tau/F; return { s:schleifeQuelle(x-k*Math.sin(2*Math.PI*x)/(2*Math.PI),dv) }; }   /* an den Enden langsamer (k=1: bis 0), damit der Uebergang nicht in volle Fahrt schneidet */
   const u=(tau-F)/D, glocke=Math.pow(Math.sin(Math.PI*u),2);
-  if(art==='ruecklauf') return { s:b*(1-(u-Math.sin(2*Math.PI*u)/(2*Math.PI))), unschaerfe:SCHLEIFE_UNSCHAERFE*glocke };
+  if(art==='ruecklauf') return { s:schleifeQuelle(1-(u-Math.sin(2*Math.PI*u)/(2*Math.PI)),dv), unschaerfe:SCHLEIFE_UNSCHAERFE*glocke };
   if(art==='abbremsen') return { s:u<0.5?b:0, still:{ w:u*u*(3-2*u) } };
   if(art==='schwarz') return { s:u<0.5?b:0, schwarz:glocke };
   return { s:tau%dv }; }
-function schleifeEnde(L,Dv,lage){ const dv=Math.max(0.05,(Dv>0?Dv:L)-1/60); return Math.min(dv,L-schleifeFenster(L,lage)); }
 /* Das Video bildgenau auf s setzen und warten, bis das Bild da ist. */
 function quelleSetzen(v,s){ return new Promise(ok=>{ if(!v||v.tagName!=='VIDEO') return ok();
   const ziel=Math.max(0,Math.min((v.duration>0?v.duration:s+1)-1e-3,s)); if(!v.paused) v.pause();
@@ -29135,7 +29151,8 @@ function quelleSetzen(v,s){ return new Promise(ok=>{ if(!v||v.tagName!=='VIDEO')
   let zu=null; const fertig=()=>{ clearTimeout(zu); v.removeEventListener('seeked',fertig); ok(); };
   zu=setTimeout(fertig,4000); v.addEventListener('seeked',fertig); v.currentTime=ziel; }); }
 /* Die zwei Standbilder fuer "Abbremsen": das Ende des Vorwaertslaufs und der Anfang, in voller Videogroesse. */
-async function schleifeStills(v,lage){ if(!v||v.tagName!=='VIDEO'||SCHLEIFE.art!=='abbremsen'||!lage) return; const L=lage.N/30, b=schleifeEnde(L,v.duration,lage), k=v.src+'|'+b.toFixed(4);
+async function schleifeStills(v,lage){ if(v&&v.tagName==='VIDEO'&&SCHLEIFE.art!=='keiner'){ SCHLEIFE_STILL.laeuft=true; try{ await schleifeKurveMessen(v); } finally{ SCHLEIFE_STILL.laeuft=false; } }
+  if(!v||v.tagName!=='VIDEO'||SCHLEIFE.art!=='abbremsen'||!lage) return; const b=Math.max(0.05,v.duration-1/60), k=v.src+'|'+b.toFixed(4);
   if(SCHLEIFE_STILL.schluessel===k&&SCHLEIFE_STILL.a) return; SCHLEIFE_STILL.laeuft=true;
   try{ const fang=async t=>{ await quelleSetzen(v,t); const c=document.createElement('canvas'); c.width=v.videoWidth||1; c.height=v.videoHeight||1; c.getContext('2d').drawImage(v,0,0); return c; };
     SCHLEIFE_STILL.a=await fang(b); SCHLEIFE_STILL.b=await fang(0); SCHLEIFE_STILL.schluessel=k; } finally{ SCHLEIFE_STILL.laeuft=false; } }
@@ -29467,7 +29484,7 @@ function zeichneFrame(t){
     const {takt}=taktLaenge(S), schlag=schlagMedian(S), Pe=schlag>0?Math.min(16,Math.round(takt/schlag)):4, einsDa=takt>0.05&&Pe>=2;
     if(!einsDa&&!(S.length>=8&&schlag>0)) return null;   /* zu wenige Schlaege: kein Raster, exportBuendel laesst sie stehen */
     const brauch=Math.max(1,bedarf.brauch||1), eins=!!bedarf.eins, gruppen=(bedarf.gruppen||[]).filter(n=>n>1);
-    const schluessel=brauch+'|'+(eins?1:0)+'|'+gruppen.join('.')+'|'+(dauer||0)+'|'+!!abschnitte;
+    const schluessel=brauch+'|'+(eins?1:0)+'|'+gruppen.join('.')+'|'+(dauer||0)+'|'+!!abschnitte+'|'+(bedarf.lang?1:0);
     let memo=TAKTLAGEN.get(S); if(!memo){ memo=new Map(); TAKTLAGEN.set(S,memo); } if(memo.has(schluessel)) return memo.get(schluessel);
     const kgV=(a,b)=>a*b/ggT(a,b);
     const P=einsDa?Pe:4, beat=einsDa?takt/P:schlag;
@@ -29507,7 +29524,8 @@ function zeichneFrame(t){
       if(!alle.length) continue;
       let besteLied=0; for(const a of alle) if(a.sitzt>besteLied) besteLied=a.sitzt;
       const gut=alle.filter(a=>a.sitzt>=besteLied-ABSTAND_LIED), spitze=gut.reduce((a,b)=>b.G>a.G?b:a);
-      wahl=gut.filter(a=>a.G>=spitze.G-GLEICHSTAND&&a.sitzt>=spitze.sitzt-GLEICHSTAND).sort((a,b)=>b.N-a.N||b.G-a.G)[0]; }
+      wahl=bedarf.lang ? alle.filter(a=>a.sitzt>=besteLied-0.10).sort((a,b)=>b.N-a.N||b.G-a.G)[0]   /* VIDEO: SO GANZ WIE MOEGLICH (Caspar_D, 15.09.2026: "das Video muss immer so ganz wie moeglich zu sehen sein, ggf adaptiv auf die Takte packen und auf oder unter 10 sek bleiben") - die laengste Laenge, die hoechstens 10 Prozentpunkte schlechter sitzt */
+        : gut.filter(a=>a.G>=spitze.G-GLEICHSTAND&&a.sitzt>=spitze.sitzt-GLEICHSTAND).sort((a,b)=>b.N-a.N||b.G-a.G)[0]; }
     /* Kein Kandidat (ein Takt ueber zehn Sekunden): zehn Sekunden, so viele ganze Einheiten wie am naechsten liegen */
     if(!wahl){ const einheit=eins?kgV(P,brauch):brauch, N=MAX_SEK*BILDRATE; wahl=lageBei(N,Math.max(einheit,einheit*Math.round(MAX_SEK/(einheit*beat)))); }
     /* Bei Eins-Lesern zaehlt der Anteil der Schlaege nicht allein: eine um einen Schlag verschobene Eins saesse noch
@@ -29540,7 +29558,7 @@ function zeichneFrame(t){
   /* Was die Karten vom Raster verlangen - eine Stelle fuer den Export und die Stufe "Loop verbinden", die daran merkt, dass neu zu rechnen ist */
   function loopBedarf(){ const aktive=STAPEL.filter(e=>aktiv(e));
     return { brauch:aktive.reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1),
-      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1) }; }
+      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1), lang:!!(bild&&bild.tagName==='VIDEO') }; }
   function ausschnitt(){ const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), jetzt=zeit(), bedarf=loopBedarf();
     const tl=taktLage(S,DATA&&DATA.abschnitte,(DATA&&DATA.dauer)||0,bedarf);
     if(!tl) return { t0:jetzt, L:MAX_SEK, N:MAX_SEK*BILDRATE, M:0, proTakt:0, phiF:0, takte:0, takt:0, sitzt:null, anzeige:null, grund:null };
@@ -29907,7 +29925,7 @@ function zeichneFrame(t){
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-pVideo').onclick=video;
     $('#tbs-loopAn').onclick=()=>loopSchalten(!loopAn);
-    $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };
+    $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(bild&&bild.tagName==='VIDEO'&&SCHLEIFE.art!=='keiner'&&!loopAn) loopSchalten(true); else if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };   /* DIE VORSCHAU ZIEHT MIT (Caspar_D, 15.09.2026: "die vorschau muss mitziehen, sonst weiss ich ja nicht, ob es gut aussieht"): wer bei einem Video einen Uebergang waehlt, sieht sofort die Loop-Ansicht */
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
     $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };
