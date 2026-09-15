@@ -63,3 +63,25 @@ Muster in `labor/videonaht/uebergaenge/` (Werkzeuge in `arbeit/`), am 15.09.2026
 2. Automatische Trennung **lebendes Foto / Mikrohandlung** (Pendel-Regel).
 3. Das **Datenmodell** der Zeitleiste im Rezept (Takte, Snippets mit Quelle/Ausschnitt/Zeitumbildung/Crop,
    Übergänge an Grenzen) — als Skizze vorlegen, bevor gebaut wird.
+
+## Darstellung der Stufe „Schleife schließen" nach den Hausregeln (Vorschlag, 15.09.2026, nicht gebaut)
+
+Caspar_D: *„schau mal die Hausregeln an, wie man die Schleife-Schließen Erstellung besser darstellt"*. Heute: eine
+Zeile Lage, Dropdown, zwei −/+-Zähler, An/Aus-Knopf. Vorschlag aus `docs/haus/HAUSREGELN.md`:
+
+1. **Eine Zeitleiste des Clips statt Zahlen** (Regel 1 „Punkte = Einstellung, Kurve = Ergebnis", „Alle Zeitspuren auf
+   denselben Kanten", „Takt und Taktschlag sind zwei Dinge"): ein Balken über L Sekunden mit Schlagstrichen (Takt
+   kräftig, Schlag fein), dem Vorwärtsteil und dem **Übergangsfenster als gedämpfte Fläche mit voller Kontur**; die
+   **Kurve „Videobild über Clipzeit"** zeigt die adaptive Geschwindigkeit und den Rücklauf; in der Loop-Ansicht wandert
+   ein Abspielstrich mit. Die Fensterkante lässt sich **ziehen** und rastet auf halbe Schläge — ersetzt den −/+-Zähler.
+2. **Nichts darf lügen** (Regel 3): Was nicht gilt, wird grau statt versteckt — Übergangslänge beim harten Schnitt
+   („0 s"), die ganze Auswahl beim Titelbild mit Grund.
+3. **Pille statt An/Aus-Knopf** für „10-s-Loop ansehen" (Regel 18: an = 2 px Akzentrahmen, ID-scoped `.an`-Regel).
+4. **Echtes Dropdown mit Gruppen** (Regel 19): *Bewegung* (Rücklauf, Pendel, Abbremsen) · *Neutralzustand*
+   (Unschärfe, Blende, Kreuzzoom, Wisch, Schwarz, Weiß) · *für Grafik* (Blitz, Pixel); Tooltips erklären das Prinzip
+   (Regel 22).
+5. **Zweispaltig** (Regel 24): links Bedienung (Übergang, Schläge im Clip „von selbst"), rechts die Zeitleiste mit
+   „sitzt auf X % des Lieds" darunter.
+6. **Was es kostet, steht am Knopf**: Sprungkopie und Änderungskurve („misst das Video einmal, einige Sekunden") und die
+   längere Ausgabezeit mit Video an „10 s ausgeben".
+Vor dem Bau: als Skizze zeigen (Memory „Konzepte als Skizze").
