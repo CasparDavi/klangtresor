@@ -1,0 +1,338 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-14T23:51:10.003Z",
+ "lange": 816,
+ "dauerS": 191,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "kaustik",
+   "typ": "kaustik",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 578,
+   "H": 816,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 16.509,
+   "erwartet": 16.509,
+   "p95": 23.714,
+   "quotient": 0.696,
+   "gl": true,
+   "glSchleife": [
+    "kaustik:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 24.501,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 9.193,
+   "bewegungVorschau": 9.102,
+   "tempoVerh": 1.01,
+   "kontrastExport": {
+    "kontrast": [
+     50.843,
+     53.105
+    ],
+    "muster": [
+     22.069,
+     23.615
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     51.656,
+     52.814
+    ],
+    "muster": [
+     21.709,
+     22.913
+    ]
+   },
+   "msExport": 80.729,
+   "msGLExport": 37.869,
+   "msVorschau": 73.13,
+   "msGLVorschau": 31.587,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 35997,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 578,
+   "H": 816,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 28.307,
+   "erwartet": 28.307,
+   "p95": 32.314,
+   "quotient": 0.876,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.425,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.491,
+   "bewegungVorschau": 2.081,
+   "tempoVerh": 1.197,
+   "kontrastExport": {
+    "kontrast": [
+     48.46,
+     51.175
+    ],
+    "muster": [
+     8.647,
+     11.12
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     49.536,
+     50.493
+    ],
+    "muster": [
+     9.002,
+     10.661
+    ]
+   },
+   "msExport": 104.127,
+   "msGLExport": 61.952,
+   "msVorschau": 83.217,
+   "msGLVorschau": 40.783,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 43074,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wellen-aufwind",
+   "typ": "wellen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Hitze steigt",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 578,
+   "H": 816,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 60.699,
+   "erwartet": 60.699,
+   "p95": 58.307,
+   "quotient": 1.041,
+   "gl": true,
+   "glSchleife": [
+    "wellen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 18.299,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 9.437,
+   "bewegungVorschau": 9.067,
+   "tempoVerh": 1.041,
+   "kontrastExport": {
+    "kontrast": [
+     44.837,
+     46.817
+    ],
+    "muster": [
+     23.139,
+     26.231
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     43.628,
+     47.089
+    ],
+    "muster": [
+     22.402,
+     26.045
+    ]
+   },
+   "msExport": 89.157,
+   "msGLExport": 48.521,
+   "msVorschau": 84.137,
+   "msGLVorschau": 38.69,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 38396,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch-zug",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch, Zug nach links",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 578,
+   "H": 816,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 5.376,
+   "erwartet": 5.376,
+   "p95": 8.043,
+   "quotient": 0.668,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 8.125,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.098,
+   "bewegungVorschau": 1.991,
+   "tempoVerh": 1.054,
+   "kontrastExport": {
+    "kontrast": [
+     21.769,
+     25.895
+    ],
+    "muster": [
+     8.76,
+     10.448
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     21.285,
+     25.928
+    ],
+    "muster": [
+     9.35,
+     10.425
+    ]
+   },
+   "msExport": 174.148,
+   "msGLExport": 131.422,
+   "msVorschau": 131.197,
+   "msGLVorschau": 91.057,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 67463,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

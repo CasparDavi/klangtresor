@@ -1,0 +1,330 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-14T23:36:44.278Z",
+ "lange": 360,
+ "dauerS": 73,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "filmnebel-rauch",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch: Ballen ohne Leuchte sichtbar",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0.697,
+   "erwartet": 0.697,
+   "p95": 0.889,
+   "quotient": 0.783,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 3.003,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.219,
+   "bewegungVorschau": 0.182,
+   "tempoVerh": 1.201,
+   "kontrastExport": {
+    "kontrast": [
+     17.517,
+     19.183
+    ],
+    "muster": [
+     2.961,
+     3.638
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     17.448,
+     19.404
+    ],
+    "muster": [
+     2.719,
+     3.854
+    ]
+   },
+   "msExport": 110.567,
+   "msVorschau": 383.497,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 54639,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch-torus",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch: Ballen ohne Leuchte sichtbar",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2.234,
+   "erwartet": 2.234,
+   "p95": 2.449,
+   "quotient": 0.912,
+   "gl": false,
+   "glSchleife": [
+    "filmnebel:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 2.884,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.723,
+   "bewegungVorschau": 0.182,
+   "tempoVerh": 3.966,
+   "kontrastExport": {
+    "kontrast": [
+     16.45,
+     19.202
+    ],
+    "muster": [
+     3.321,
+     3.803
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     17.448,
+     19.404
+    ],
+    "muster": [
+     2.719,
+     3.854
+    ]
+   },
+   "msExport": 109.606,
+   "msVorschau": 406.89,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 55175,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch-zug",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch, Zug nach links",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 4.891,
+   "erwartet": 4.891,
+   "p95": 7.664,
+   "quotient": 0.638,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 8.059,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.041,
+   "bewegungVorschau": 1.927,
+   "tempoVerh": 1.059,
+   "kontrastExport": {
+    "kontrast": [
+     21.323,
+     25.445
+    ],
+    "muster": [
+     8.735,
+     10.233
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     20.883,
+     25.522
+    ],
+    "muster": [
+     9.245,
+     10.319
+    ]
+   },
+   "msExport": 110.434,
+   "msVorschau": 382.81,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 54853,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch-zug-torus",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch, Zug nach links",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 9.152,
+   "erwartet": 9.152,
+   "p95": 10.98,
+   "quotient": 0.834,
+   "gl": false,
+   "glSchleife": [
+    "filmnebel:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 8.262,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 3.036,
+   "bewegungVorschau": 1.927,
+   "tempoVerh": 1.576,
+   "kontrastExport": {
+    "kontrast": [
+     22.379,
+     25.5
+    ],
+    "muster": [
+     9.072,
+     10.545
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     20.883,
+     25.522
+    ],
+    "muster": [
+     9.245,
+     10.319
+    ]
+   },
+   "msExport": 109.294,
+   "msVorschau": 375.32,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 54059,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

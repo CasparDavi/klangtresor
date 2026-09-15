@@ -1,0 +1,2608 @@
+{
+ "erzeugt": "labor/nahtpruefung/faelle-bauen.js",
+ "jetzt": 60.3,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "faelle": [
+  {
+   "name": "fahrt",
+   "typ": "fahrt",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "fahrt"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "puls",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "schaerfe",
+   "typ": "schaerfe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "schaerfe"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "kontrast",
+   "typ": "kontrast",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kontrast"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "helligkeit",
+   "typ": "helligkeit",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "helligkeit"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "saettigung",
+   "typ": "saettigung",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "saettigung"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "farbe",
+   "typ": "farbe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "farbe"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "licht",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)"
+  },
+  {
+   "name": "schatten",
+   "typ": "schatten",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "schatten"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)"
+  },
+  {
+   "name": "laser",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Ursprung wandern, Bauart gitter (Vorgabe)"
+  },
+  {
+   "name": "streifen",
+   "typ": "streifen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "streifen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "ton hell (Vorgabe)"
+  },
+  {
+   "name": "rauschen",
+   "typ": "rauschen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "rauschen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "vlauf",
+   "typ": "vlauf",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "vlauf"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "wackeln",
+   "typ": "wackeln",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "wackeln"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Kick im Takt (Vorgabe), 4/4"
+  },
+  {
+   "name": "rgb",
+   "typ": "rgb",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "rgb"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "strobe",
+   "typ": "strobe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strobe"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "hz 8, rechteck (Vorgabe)"
+  },
+  {
+   "name": "sicherung",
+   "typ": "sicherung",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "sicherung"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "streiflicht",
+   "typ": "streiflicht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "streiflicht"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "allein ohne Leuchte: schaltet sich ab"
+  },
+  {
+   "name": "filmnebel",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45"
+  },
+  {
+   "name": "partikel",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Art schnee, ohne Quelle (Vorgabe)"
+  },
+  {
+   "name": "scanlines",
+   "typ": "scanlines",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "scanlines"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "bloom",
+   "typ": "bloom",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "bloom"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "nachzieh",
+   "typ": "nachzieh",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "nachzieh"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "feuer",
+   "typ": "feuer",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "feuer"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "wellen",
+   "typ": "wellen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "wellen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "kaustik",
+   "typ": "kaustik",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kaustik"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "linse",
+   "typ": "linse",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "linse"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "flammen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "strahlen",
+   "typ": "strahlen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "spiegel",
+   "typ": "spiegel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "spiegel"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "risse",
+   "typ": "risse",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "risse"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "wachsen zeit (Vorgabe)"
+  },
+  {
+   "name": "beschlag",
+   "typ": "beschlag",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "beschlag"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "einschlag",
+   "typ": "einschlag",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "einschlag"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "bleiben 8 (Vorgabe)"
+  },
+  {
+   "name": "tropfen",
+   "typ": "tropfen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "tropfen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "korn",
+   "typ": "korn",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "korn"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "bloecke",
+   "typ": "bloecke",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "bloecke"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "im Takt (Vorgabe)"
+  },
+  {
+   "name": "farbton",
+   "typ": "farbton",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "farbton"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "kippen",
+   "typ": "kippen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kippen"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe"
+  },
+  {
+   "name": "puls-flackern-takt",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "antrieb"
+  },
+  {
+   "name": "puls-flackern-hz05",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "hz",
+     "lmHz": 0.5,
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "antrieb"
+  },
+  {
+   "name": "puls-teiler8-a",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "antrieb",
+   "bemerkung": "Gegenprobe: M durch 8 teilbar"
+  },
+  {
+   "name": "puls-teiler8-b",
+   "typ": "puls",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "antrieb",
+   "bemerkung": "M nicht durch 8 teilbar"
+  },
+  {
+   "name": "puls-zufall",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "zufall"
+    }
+   ],
+   "gruppe": "antrieb"
+  },
+  {
+   "name": "puls-ohneEins",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt"
+    }
+   ],
+   "gruppe": "antrieb",
+   "daten": "ohneEins",
+   "bemerkung": "Schlaege, aber keine Eins-Marken"
+  },
+  {
+   "name": "strobe-ohneEins",
+   "typ": "strobe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strobe",
+     "lmQuelle": "takt",
+     "lmForm": "rechteck"
+    }
+   ],
+   "gruppe": "antrieb",
+   "daten": "ohneEins",
+   "bemerkung": "Schlaege, aber keine Eins-Marken"
+  },
+  {
+   "name": "puls-ohneSchlaege",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt"
+    }
+   ],
+   "gruppe": "antrieb",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Rueckfall auf Frequenz"
+  },
+  {
+   "name": "puls-zufall-ohneSchlaege",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "zufall"
+    }
+   ],
+   "gruppe": "antrieb",
+   "daten": "ohneSchlaege"
+  },
+  {
+   "name": "strobe-ohneSchlaege",
+   "typ": "strobe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strobe",
+     "lmQuelle": "zufall",
+     "lmForm": "rechteck"
+    }
+   ],
+   "gruppe": "antrieb",
+   "daten": "ohneSchlaege"
+  },
+  {
+   "name": "feuer-flackern",
+   "typ": "feuer",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "feuer",
+     "lmQuelle": "takt",
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "antrieb"
+  },
+  {
+   "name": "licht-fahrt",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "fahrt"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "licht-schritt",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "licht-bogen",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "bogen"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "laser-wandern-scanner",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "scanner"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "laser-wandern-punkte",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "punkte",
+     "drehen": 0.15
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "laser-wandern-punkte-drehen0",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "punkte",
+     "drehen": 0
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "laser-fest-punkte",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "punkte",
+     "drehen": 0.15
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "drehen allein, ohne wandernden Ursprung"
+  },
+  {
+   "name": "laser-fest-punkte-drehen0",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "punkte",
+     "drehen": 0
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "Gegenprobe"
+  },
+  {
+   "name": "laser-fest-gitter",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "gitter"
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "Gegenprobe"
+  },
+  {
+   "name": "laser-scanner-sprung-hz",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "scanner",
+     "sprung": 1,
+     "lmQuelle": "hz",
+     "lmHz": 2
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "laser-scanner-sprung-takt",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "scanner",
+     "sprung": 1,
+     "lmQuelle": "takt"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "streiflicht-licht",
+   "typ": "streiflicht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht"
+    },
+    {
+     "typ": "streiflicht"
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "Scheinwerfer wandernd davor"
+  },
+  {
+   "name": "streiflicht-laserfest",
+   "typ": "streiflicht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest"
+    },
+    {
+     "typ": "streiflicht"
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "Laser Ursprung fest davor"
+  },
+  {
+   "name": "partikel-regen",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "regen"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-asche",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "asche"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-funken",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "funken"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-blasen",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "blasen"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-blaetter",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "blaetter"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-staub",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "staub"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-schwaden",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "schwaden"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-gluehwuermchen",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "gluehwuermchen"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-schmetterling",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "schmetterling"
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "ohne Quelle"
+  },
+  {
+   "name": "partikel-schwaden-quelle",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "schwaden",
+     "qForm": "punkt",
+     "qX": 0.5,
+     "qY": 0.85
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "Quelle Punkt"
+  },
+  {
+   "name": "partikel-boeen",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "boeen": 1
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "Windstoesse im Takt"
+  },
+  {
+   "name": "partikel-wind-06neg",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "wind": -0.6
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "vorschauAbw zaehlt"
+  },
+  {
+   "name": "partikel-wind0",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "wind": 0
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "vorschauAbw zaehlt"
+  },
+  {
+   "name": "streifen-beide",
+   "typ": "streifen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "streifen",
+     "ton": "beide",
+     "tempo": 9
+    }
+   ],
+   "gruppe": "stoerungen",
+   "bemerkung": "round(L/9) ungerade"
+  },
+  {
+   "name": "sicherung-frei-lang",
+   "typ": "sicherung",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "sicherung",
+     "takt": 0,
+     "haeufigkeit": 10,
+     "dauer": 800
+    }
+   ],
+   "gruppe": "stoerungen"
+  },
+  {
+   "name": "sicherung-takt-800",
+   "typ": "sicherung",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "sicherung",
+     "takt": 1,
+     "dauer": 800
+    }
+   ],
+   "gruppe": "stoerungen"
+  },
+  {
+   "name": "bloecke-frei",
+   "typ": "bloecke",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "bloecke",
+     "takt": 0
+    }
+   ],
+   "gruppe": "stoerungen"
+  },
+  {
+   "name": "wackeln-kick-ungerade",
+   "typ": "wackeln",
+   "titel": "c",
+   "effekte": [
+    {
+     "typ": "wackeln",
+     "takt": 1
+    }
+   ],
+   "gruppe": "stoerungen",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4, M ungerade"
+  },
+  {
+   "name": "filmnebel-schwaden0",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    }
+   ],
+   "gruppe": "glas"
+  },
+  {
+   "name": "risse-takt",
+   "typ": "risse",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "risse",
+     "wachsen": "takt"
+    }
+   ],
+   "gruppe": "glas"
+  },
+  {
+   "name": "einschlag-bleiben30",
+   "typ": "einschlag",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    }
+   ],
+   "gruppe": "glas"
+  },
+  {
+   "name": "nachzieh-09",
+   "typ": "nachzieh",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.9
+    }
+   ],
+   "gruppe": "glas"
+  },
+  {
+   "name": "filmnebel-licht",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel"
+    },
+    {
+     "typ": "licht"
+    }
+   ],
+   "gruppe": "kombination",
+   "bemerkung": "Nebel braucht Licht"
+  },
+  {
+   "name": "puls-flackern-eins",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "eins",
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "puls-flackern-teil025",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 0.25,
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "puls-zufall-teiler8-b",
+   "typ": "puls",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "zufall",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "puls-teiler8-dreiviertel",
+   "typ": "puls",
+   "titel": "c",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "zeit",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4: 8 passt in 10 s nicht, Forderung wird gelockert"
+  },
+  {
+   "name": "puls-flackern-ohneEins",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "zeit",
+   "daten": "ohneEins"
+  },
+  {
+   "name": "strobe-zufall",
+   "typ": "strobe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strobe",
+     "lmQuelle": "zufall",
+     "lmForm": "rechteck"
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "strobe-flackern-hz05",
+   "typ": "strobe",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strobe",
+     "lmQuelle": "hz",
+     "lmHz": 0.5,
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "feuer-flackern-hz07",
+   "typ": "feuer",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "feuer",
+     "lmQuelle": "hz",
+     "lmHz": 0.7,
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "nachzieh-098",
+   "typ": "nachzieh",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.98
+    }
+   ],
+   "gruppe": "zeit"
+  },
+  {
+   "name": "nachzieh-puls",
+   "typ": "nachzieh",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt"
+    },
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.85
+    }
+   ],
+   "gruppe": "zeit",
+   "bemerkung": "Spur ueber einem Puls"
+  },
+  {
+   "name": "licht-wandernd-tempo3",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "wandernd",
+     "rmTempo": 3
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "Senkrechte eigene Umlaufzahl, Waagerechte 3"
+  },
+  {
+   "name": "schatten-fahrt",
+   "typ": "schatten",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "schatten",
+     "rmBewegung": "fahrt"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "licht-fahrt-tempo2",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "fahrt",
+     "rmTempo": 2
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "mehrere Ziele je Clip"
+  },
+  {
+   "name": "licht-schritt-eins",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "licht-schritt-ohneSchlaege",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt"
+    }
+   ],
+   "gruppe": "leuchten",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Ziel je eingerasteter Sekunde"
+  },
+  {
+   "name": "laser-fest-punkte-dreh-neg",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "punkte",
+     "drehen": -0.6
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "Gegendrehung, schneller"
+  },
+  {
+   "name": "laser-wandern-gitter-tempo3",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "gitter",
+     "tempo": 3
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "laser-scanner-sprung-zufall",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "scanner",
+     "sprung": 1,
+     "lmQuelle": "zufall",
+     "lmTeiler": 0.5
+    }
+   ],
+   "gruppe": "leuchten"
+  },
+  {
+   "name": "streiflicht-laser-wandern-punkte",
+   "typ": "streiflicht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "punkte",
+     "drehen": 0.15
+    },
+    {
+     "typ": "streiflicht"
+    }
+   ],
+   "gruppe": "leuchten",
+   "bemerkung": "erbt den ganzen Lichtpuffer"
+  },
+  {
+   "name": "partikel-regen-wind0",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "regen",
+     "wind": 0
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "schnell: bleibt beim Umbruch"
+  },
+  {
+   "name": "partikel-schnee-tempo3",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "tempo": 3,
+     "wind": 0
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "gemischt: Umbruch und Lebensdauer"
+  },
+  {
+   "name": "partikel-staub-wind-neg",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "staub",
+     "wind": -0.4
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "langsam, Wind nach links"
+  },
+  {
+   "name": "partikel-staub-quelle",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "staub",
+     "qForm": "punkt",
+     "qX": 0.5,
+     "qY": 0.5
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "Funkeln mit Quelle"
+  },
+  {
+   "name": "partikel-schwaden-tempo02",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "schwaden",
+     "tempo": 0.2
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "Aufgehen langsam"
+  },
+  {
+   "name": "partikel-boeen-funken-wandern",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "funken",
+     "boeen": 1,
+     "boeenStaerke": 1,
+     "wandern": 0.6
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "Stoesse, Eigenbewegung"
+  },
+  {
+   "name": "tropfen-tempo3",
+   "typ": "tropfen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "tropfen",
+     "tempo": 3
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "schnell: Umbruch"
+  },
+  {
+   "name": "tropfen-boeen",
+   "typ": "tropfen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "tropfen",
+     "boeen": 1,
+     "zittern": 1,
+     "tempo": 0.3
+    }
+   ],
+   "gruppe": "partikel",
+   "bemerkung": "langsam, Stoesse, Zittern"
+  },
+  {
+   "name": "rauschen-takt",
+   "typ": "rauschen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "rauschen",
+     "takt": 1
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "bemerkung": "Ausbrueche im Takt, Zufall gesaet"
+  },
+  {
+   "name": "korn-langsam",
+   "typ": "korn",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "korn",
+     "tempo": 0
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "bemerkung": "Kornwechsel alle 13/60 s"
+  },
+  {
+   "name": "wackeln-ohneKick",
+   "typ": "wackeln",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "wackeln",
+     "takt": 0
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "bemerkung": "nur Warble und Zittern"
+  },
+  {
+   "name": "bloecke-takt-lang",
+   "typ": "bloecke",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "bloecke",
+     "takt": 1,
+     "haeufigkeit": 10,
+     "dauer": 800
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "bemerkung": "Glitch reicht ueber den naechsten Schlag"
+  },
+  {
+   "name": "sicherung-frei-zittern",
+   "typ": "sicherung",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "sicherung",
+     "takt": 0,
+     "haeufigkeit": 10,
+     "dauer": 600,
+     "zittern": 1
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "bemerkung": "Zittern 37 Hz eingerastet"
+  },
+  {
+   "name": "einschlag-ohneEins",
+   "typ": "einschlag",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "einschlag",
+     "bleiben": 20
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "daten": "ohneEins",
+   "bemerkung": "Raster aus Median-Abstand"
+  },
+  {
+   "name": "risse-takt-ohneEins",
+   "typ": "risse",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "risse",
+     "wachsen": "takt"
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "daten": "ohneEins",
+   "bemerkung": "ausgewachsen"
+  },
+  {
+   "name": "streifen-beide-tempo4",
+   "typ": "streifen",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "streifen",
+     "ton": "beide",
+     "tempo": 4
+    }
+   ],
+   "gruppe": "stoerungen2",
+   "bemerkung": "zweiter Titel"
+  },
+  {
+   "name": "filmnebel-luftzug1",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "luftzug": 1
+    },
+    {
+     "typ": "licht"
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "Zug nach rechts, schnell, mit Licht"
+  },
+  {
+   "name": "filmnebel-luftzug-neg",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "luftzug": -1
+    },
+    {
+     "typ": "licht"
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "Zug nach links, mit Licht"
+  },
+  {
+   "name": "filmnebel-schwer-still",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "luftzug": 0,
+     "schwere": 0.9,
+     "schwaden": 1
+    },
+    {
+     "typ": "licht"
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "kriecht langsam, dicke Ballen"
+  },
+  {
+   "name": "wellen-aufwind",
+   "typ": "wellen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "wellen",
+     "aufwind": 0.6,
+     "amplitude": 0.04
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "Hitze steigt"
+  },
+  {
+   "name": "kaustik-langsam",
+   "typ": "kaustik",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kaustik",
+     "tempo": 0.1
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "kleiner Zeitkreis"
+  },
+  {
+   "name": "flammen-langsam-wind",
+   "typ": "flammen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "flammen",
+     "tempo": 0.2,
+     "wind": 0.5
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "langsamer Aufstieg"
+  },
+  {
+   "name": "flammen-schnell",
+   "typ": "flammen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "flammen",
+     "tempo": 3
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "schneller Aufstieg"
+  },
+  {
+   "name": "filmnebel-rauch",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "farbe": "#181818",
+     "staerke": 1
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "dunkler Rauch: Ballen ohne Leuchte sichtbar"
+  },
+  {
+   "name": "filmnebel-rauch-zug",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "farbe": "#181818",
+     "staerke": 1,
+     "luftzug": -0.8,
+     "schwaden": 0.8
+    }
+   ],
+   "gruppe": "shader",
+   "bemerkung": "dunkler Rauch, Zug nach links"
+  },
+  {
+   "name": "linse-bewegung-licht",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht"
+    }
+   ],
+   "gruppe": "linse",
+   "bemerkung": "Tempo des wandernden Scheinwerfers allein (Nebel 0 schaltet nur die Bewegungsmessung ein)"
+  },
+  {
+   "name": "linse-bewegung-licht-fahrt",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "fahrt"
+    }
+   ],
+   "gruppe": "linse",
+   "bemerkung": "Tempo der Fahrt allein"
+  },
+  {
+   "name": "linse-bewegung-laser-wandern",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "scanner"
+    }
+   ],
+   "gruppe": "linse",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs allein"
+  },
+  {
+   "name": "linse-bewegung-laser-punkte",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "punkte",
+     "drehen": 0.15
+    }
+   ],
+   "gruppe": "linse",
+   "bemerkung": "Drehtempo der Punkte allein"
+  },
+  {
+   "name": "linse-bewegung-streifen-beide",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "streifen",
+     "ton": "beide",
+     "tempo": 9
+    }
+   ],
+   "gruppe": "linse",
+   "bemerkung": "Tempo der Laufstreifen beide allein"
+  },
+  {
+   "name": "rand-kurz-teiler8-flackern",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8,
+     "lmForm": "flackern"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "ein Takt 5,1 s, M 4: Teiler 8 geht nicht"
+  },
+  {
+   "name": "rand-kurz34-wackeln",
+   "typ": "wackeln",
+   "titel": "c",
+   "effekte": [
+    {
+     "typ": "wackeln",
+     "takt": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4, ein Takt 5,1 s: M 3 ungerade"
+  },
+  {
+   "name": "rand-kurz34-zufall-teiler8",
+   "typ": "puls",
+   "titel": "c",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "zufall",
+     "lmTeiler": 8
+    },
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "scanner",
+     "sprung": 1,
+     "lmQuelle": "takt",
+     "lmTeiler": 2
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4 kurz, Teiler 8 und 2"
+  },
+  {
+   "name": "rand-sechs-teiler8-wackeln",
+   "typ": "puls",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    },
+    {
+     "typ": "wackeln",
+     "takt": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "sechs",
+   "bemerkung": "6/8: M 18/12/6, 8 nicht erreichbar"
+  },
+  {
+   "name": "rand-sechs-kurz-teil0125",
+   "typ": "puls",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 0.125,
+     "lmForm": "flackern"
+    },
+    {
+     "typ": "strobe",
+     "lmQuelle": "eins",
+     "lmForm": "rechteck"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "sechs,gestreckt:2",
+   "bemerkung": "6/8 kurz, Achtel eines Schlags"
+  },
+  {
+   "name": "rand-wenige7",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt"
+    },
+    {
+     "typ": "puls",
+     "lmQuelle": "takt"
+    },
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    },
+    {
+     "typ": "partikel",
+     "boeen": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: kein Raster"
+  },
+  {
+   "name": "rand-nurEinsen",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen: proTakt 1"
+  },
+  {
+   "name": "rand-takt-ueber10",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 4
+    },
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    },
+    {
+     "typ": "sicherung",
+     "takt": 1,
+     "dauer": 800
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:7",
+   "bemerkung": "Takt 11 s, Median ueber 2 s"
+  },
+  {
+   "name": "rand-kombi",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmTempo": 2
+    },
+    {
+     "typ": "streiflicht"
+    },
+    {
+     "typ": "filmnebel",
+     "luftzug": -1
+    },
+    {
+     "typ": "partikel",
+     "art": "schwaden",
+     "boeen": 1,
+     "boeenStaerke": 1
+    },
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    },
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.98
+    }
+   ],
+   "gruppe": "raender",
+   "bemerkung": "Leuchte, Streiflicht, Nebel, Schwaden mit Stoessen, Einschlag, Nachzieh"
+  },
+  {
+   "name": "rand-kombi-kurz",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmTempo": 2
+    },
+    {
+     "typ": "streiflicht"
+    },
+    {
+     "typ": "filmnebel",
+     "luftzug": -1
+    },
+    {
+     "typ": "partikel",
+     "art": "schwaden",
+     "boeen": 1,
+     "boeenStaerke": 1
+    },
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    },
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.98
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "dasselbe bei L 5,1"
+  },
+  {
+   "name": "rand-staub-extrem-kurz",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "staub",
+     "tempo": 0.2,
+     "wind": -1,
+     "wandern": 1,
+     "boeen": 1,
+     "boeenStaerke": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo min, Wind -1, Eigenbewegung 1"
+  },
+  {
+   "name": "rand-funken-extrem-kurz",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "art": "funken",
+     "tempo": 3,
+     "wind": 1,
+     "boeen": 1,
+     "anzahl": 400
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo max, Wind 1"
+  },
+  {
+   "name": "rand-tropfen-langsam-kurz",
+   "typ": "tropfen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "tropfen",
+     "tempo": 0.1,
+     "anzahl": 40,
+     "boeen": 1,
+     "zittern": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo min"
+  },
+  {
+   "name": "rand-ohneSchlaege-takt",
+   "typ": "partikel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "partikel",
+     "boeen": 1
+    },
+    {
+     "typ": "einschlag"
+    },
+    {
+     "typ": "wackeln",
+     "takt": 1
+    },
+    {
+     "typ": "sicherung",
+     "takt": 1
+    },
+    {
+     "typ": "bloecke",
+     "takt": 1
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    },
+    {
+     "typ": "laser",
+     "quelle": "fest",
+     "bauart": "scanner",
+     "sprung": 1,
+     "lmQuelle": "takt",
+     "lmTeiler": 0.25
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "ohneSchlaege",
+   "bemerkung": "alles Schlaggebundene ohne Schlaege"
+  },
+  {
+   "name": "rand-hz-raender-kurz",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "hz",
+     "lmHz": 0.1,
+     "lmForm": "flackern"
+    },
+    {
+     "typ": "strobe",
+     "lmQuelle": "hz",
+     "lmHz": 13,
+     "lmForm": "rechteck"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Frequenz min und hoch"
+  },
+  {
+   "name": "rand-shader-kurz",
+   "typ": "kaustik",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kaustik",
+     "tempo": 0.1
+    },
+    {
+     "typ": "wellen",
+     "tempo": 3,
+     "aufwind": 1,
+     "amplitude": 0.08
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Shader bei L 5,1"
+  },
+  {
+   "name": "rand-flammen-kurz",
+   "typ": "flammen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "flammen",
+     "tempo": 0.2,
+     "wind": -1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Flammen langsam, Wind -1, L 5,1"
+  },
+  {
+   "name": "rand-stoerungen-kurz",
+   "typ": "sicherung",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "sicherung",
+     "takt": 0,
+     "haeufigkeit": 0.5,
+     "dauer": 800,
+     "zittern": 1
+    },
+    {
+     "typ": "bloecke",
+     "takt": 0,
+     "haeufigkeit": 0.5,
+     "dauer": 600
+    },
+    {
+     "typ": "korn",
+     "tempo": 0
+    },
+    {
+     "typ": "streifen",
+     "ton": "beide",
+     "tempo": 2
+    },
+    {
+     "typ": "rauschen"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "seltene Fenster laenger als L"
+  },
+  {
+   "name": "rand-laser-extrem-kurz",
+   "typ": "laser",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "punkte",
+     "drehen": 1,
+     "tempo": 2,
+     "flimmer": 1,
+     "flimmerTempo": 40
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Drehen max, Tempo min"
+  },
+  {
+   "name": "rand-leuchten-langsam-kurz",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "fahrt",
+     "rmTempo": 30
+    },
+    {
+     "typ": "schatten",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Fahrt langsamer als L"
+  },
+  {
+   "name": "rand-nachzieh-zufall-kurz",
+   "typ": "nachzieh",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.98
+    },
+    {
+     "typ": "strobe",
+     "lmQuelle": "zufall",
+     "lmForm": "rechteck"
+    },
+    {
+     "typ": "rauschen"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Gedaechtnis ueber mehrere Runden"
+  },
+  {
+   "name": "rand-jetzt-anfang",
+   "typ": "einschlag",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    },
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    },
+    {
+     "typ": "partikel",
+     "boeen": 1
+    }
+   ],
+   "gruppe": "raender",
+   "jetzt": 0.2,
+   "bemerkung": "Clip am Songanfang, Vorlauf vor 0"
+  },
+  {
+   "name": "rand-risse-beschlag-kurz",
+   "typ": "risse",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "risse",
+     "wachsen": "takt"
+    },
+    {
+     "typ": "beschlag",
+     "wachsen": "zeit"
+    },
+    {
+     "typ": "vlauf",
+     "takt": 1,
+     "tempo": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Wachsen und Ruck bei L 5,1"
+  },
+  {
+   "name": "linse-bewegung-laser-wandern-gitter",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "laser",
+     "quelle": "wandern",
+     "bauart": "gitter"
+    }
+   ],
+   "gruppe": "linse",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs, Gitter ohne Scanner-Nachleuchten"
+  },
+  {
+   "name": "rand-nurEinsen-puls",
+   "typ": "puls",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "puls",
+     "lmQuelle": "takt",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Teiler 8 allein"
+  },
+  {
+   "name": "rand-nurEinsen-schritt",
+   "typ": "licht",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "eins"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Schritt auf der Eins allein"
+  },
+  {
+   "name": "rand-kombi-nachzieh",
+   "typ": "nachzieh",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "licht",
+     "rmTempo": 2
+    },
+    {
+     "typ": "streiflicht"
+    },
+    {
+     "typ": "einschlag",
+     "bleiben": 30
+    },
+    {
+     "typ": "nachzieh",
+     "nachhall": 0.98
+    },
+    {
+     "typ": "puls",
+     "lmQuelle": "zufall",
+     "lmTeiler": 8
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Kombination ohne Nebel und Teilchen, kurz"
+  },
+  {
+   "name": "rand-wenige7-risse",
+   "typ": "risse",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "risse",
+     "wachsen": "takt"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: Vorschau gewachsen, Export ohne Raster"
+  },
+  {
+   "name": "rand-wenige7-einschlag",
+   "typ": "einschlag",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "einschlag",
+     "bleiben": 30,
+     "anteil": 1
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "ohneEins,wenige:7",
+   "jetzt": 61.5,
+   "bemerkung": "7 Schlaege ohne Eins, alle treffen, Clip kurz nach den Schlaegen"
+  },
+  {
+   "name": "rand-wenige7-schritt-bewegung",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "ohneEins,wenige:7",
+   "jetzt": 61.5,
+   "bemerkung": "Schritt auf 7 Schlaegen: Vorschau steht nach dem letzten, Export springt je Sekunde (Nebel 0 schaltet nur die Bewegungsmessung ein)"
+  },
+  {
+   "name": "rand-ohneSchlaege-schritt-bewegung",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt"
+    }
+   ],
+   "gruppe": "raender",
+   "daten": "ohneSchlaege",
+   "jetzt": 61.5,
+   "bemerkung": "Gegenprobe: ohne Schlaege springt auch die Vorschau je Sekunde"
+  },
+  {
+   "name": "nachbess-bewegung-licht-fest",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "fest"
+    }
+   ],
+   "gruppe": "nachbesserung",
+   "bemerkung": "Gegenprobe zu linse-bewegung-licht: dieselbe Leuchte ohne Bewegung - wieviel tempoVerh kommt vom Puls allein"
+  },
+  {
+   "name": "nachbess-bewegung-licht-tempo8",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht",
+     "rmTempo": 8
+    }
+   ],
+   "gruppe": "nachbesserung",
+   "bemerkung": "wandernd Tempo 8: 1,19 Umlaeufe waagerecht, 1,54 senkrecht - rastet, pendelt nicht"
+  },
+  {
+   "name": "nachbess-bewegung-streifen-beide-tempo30",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "streifen",
+     "ton": "beide",
+     "tempo": 30
+    }
+   ],
+   "gruppe": "nachbesserung",
+   "bemerkung": "Laufstreifen beide am Reglerende: vorher 6,3-mal so schnell"
+  },
+  {
+   "name": "nachbess-streifen-beide-tempo8",
+   "typ": "streifen",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "streifen",
+     "ton": "beide",
+     "tempo": 8
+    }
+   ],
+   "gruppe": "nachbesserung",
+   "bemerkung": "beide, Tempo 8: ein Durchlauf je Clip (ungerade) - Farbtausch einmal je Clip, sonst hell-Tempo"
+  },
+  {
+   "name": "nachbess-wenige7-schritt-stetig",
+   "typ": "filmnebel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "filmnebel",
+     "schwaden": 0
+    },
+    {
+     "typ": "licht",
+     "rmBewegung": "schritt",
+     "lmQuelle": "stetig"
+    }
+   ],
+   "gruppe": "nachbesserung",
+   "daten": "ohneEins,wenige:7",
+   "jetzt": 61.5,
+   "bemerkung": "wie rand-wenige7-schritt-bewegung, aber ohne Puls: tempoVerh zeigt nur den Schritt (Export steht auf dem laengsten Stand im Clip)"
+  }
+ ],
+ "nichtHerstellbar": []
+}

@@ -156,6 +156,36 @@ Die Regel ist die räumliche Schwester von **Regel 5**: dort hellt Licht auf, wa
 zu malen; hier hört ein Effekt aus, statt abgeschnitten zu werden. Beide Male ist der Fehler, dass
 man dem Bild ansieht, wo die Software zu Ende denkt.
 
+**17. Im Export kehrt jeder Effekt nach L zum Ursprung zurück.** Caspar_D: *„es muss halt der
+effekt wieder zum Ursprung zurückkehren auf dem letzten frame"*. Bild(t0+L) muss Bild(t0) sein, bei
+jeder Reglerstellung — nicht nur bei der Vorgabe. Am 14.09.2026 brachen 41 von 85 Messfällen,
+darunter zehn schon mit Vorgaben. Daraus fünf Unterregeln für jeden neuen Effekt (VIDEO-PLAN §6.8):
+
+- **17a. Keine rohe Zeit.** Wer `t` in einen Sinus, eine Drehung oder eine Verschiebung steckt,
+  nimmt `lpR` (Umläufe je s), `lpP` (Periode), `lpW` (Kreisfrequenz) oder `lpV` (Geschwindigkeit über eine Umbruchweite).
+  Unter `LOOP=0` geben sie den Wert unverändert zurück, die Vorschau bleibt also bitgleich. Achsen
+  unter einem Umlauf je Clip pendeln über `lpBahn` statt auf einen ganzen Umlauf zu rasen. Ein Faktor
+  wie `ph*1.3` ist verboten — daran brachen Scheinwerfer und Laser in der Vorgabe.
+- **17b. Keine Zufallsnummer an absoluter Zeit oder absolutem Index.** `hs(i)` am Feldindex,
+  `floor(t/p)` oder `Math.random` je Bild würfeln bei t0+L neu. Gewürfelt wird an der umlaufenden
+  Nummer: je Schlag `lpSchlag(S,i)` (das Feld `S[i][2]`), je Fenster `lpFenster(t,p)`, je Bild
+  `lpZufall(lpBildNr(t)…)`. Die Vorschau darf weiter frei würfeln.
+- **17c. Zustand nur mit Vorlaufrunde.** Wer aus dem letzten Bild rechnet (Spur, Nachhall), muss
+  abklingen und bekommt vor dem ersten gezählten Bild einen ungezählten Vorlauf (`vorlaufen()`), bis
+  der Rest unter einer halben Graustufe liegt. Seine Spur hängt an der Ergebnisfläche, nie am
+  Effektobjekt, das Pult und Export teilen. Was nur wächst, steht im Export ausgewachsen — es wird
+  nie am Clipende wieder kleiner.
+- **17d. Drift nur periodisch.** Gerichtete Bewegung ohne Rückkehr (Fallen, Steigen, Luftzug) läuft
+  im Export entweder in ganzen Umläufen, als Lebensdauer genau L (Partikel, Überblendung zum
+  Ursprung) oder in zwei um L/2 versetzten Lagen (Rauschshader). Rauschen wabert über `noise4D` mit
+  der Zeit auf dem Kreis. Verfälscht das Einrasten das Tempo sichtbar (über 15 %), ist Einrasten der
+  falsche Weg. Schlaggebundene Teiler meldet der Effekt über `loopGruppe(e)`/`loopKick(e)`, damit
+  `ausschnitt()` die Taktzahl passend wählt; was sich gar nicht schließen lässt, meldet `loopNein(e)`.
+- **17e. Geprüft wird vor dem Einbau.** Neuer Effekt oder neuer Regler: Fall in
+  `labor/nahtpruefung/faelle-bauen.js` anlegen, `node labor/nahtpruefung/naht.mjs --faelle …` laufen
+  lassen, dazu `--vorschau-vergleich labor/nahtpruefung/vorschau-vorher.json`. Urteil ist `gleich` und
+  `gleichFolge` ≈ 0, nicht der Quotient allein (siehe „Wie geprüft wird").
+
 ---
 
 ## Wie geprüft wird

@@ -1,0 +1,126 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-15T00:19:20.577Z",
+ "lange": 1080,
+ "dauerS": 229,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 764,
+   "H": 1080,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0.052,
+   "gleichFolge": 0.053,
+   "naht": 0.052,
+   "erwartet": 0,
+   "p95": 0.005,
+   "quotient": 0.104,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0.004,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 210.371,
+   "dauerMs": 94334,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh-098",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 764,
+   "H": 1080,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 4.573,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 345.821,
+   "dauerMs": 123681,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

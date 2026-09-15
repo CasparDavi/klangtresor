@@ -1,0 +1,190 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-15T00:39:41.886Z",
+ "lange": 360,
+ "dauerS": 939,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "rand-kombi",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Leuchte, Streiflicht, Nebel, Schwaden mit Stoessen, Einschlag, Nachzieh",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 25.255,
+   "erwartet": 25.255,
+   "p95": 30.827,
+   "quotient": 0.819,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 15.589,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 3.315,
+   "bewegungVorschau": 3.75,
+   "tempoVerh": 0.884,
+   "kontrastExport": {
+    "kontrast": [
+     38.08,
+     45.598
+    ],
+    "muster": [
+     12.953,
+     24.808
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     43.137,
+     49.968
+    ],
+    "muster": [
+     15.798,
+     22.465
+    ]
+   },
+   "msExport": 1166.809,
+   "msGLExport": 182.818,
+   "msVorschau": 569.207,
+   "msGLVorschau": 113.192,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 932218,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kombi-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "dasselbe bei L 5,1",
+   "t0": 57.035,
+   "L": 5.1,
+   "N": 153,
+   "takte": 1,
+   "proTakt": 4,
+   "M": 4,
+   "schlaegeImRaster": 41,
+   "jeClip": 4,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 43.423,
+   "erwartet": 43.423,
+   "p95": 22.19,
+   "quotient": 1.957,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.229,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 3.376,
+   "bewegungVorschau": 3.914,
+   "tempoVerh": 0.863,
+   "kontrastExport": {
+    "kontrast": [
+     40.223,
+     47.899
+    ],
+    "muster": [
+     13.615,
+     20.434
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     42.532,
+     50.954
+    ],
+    "muster": [
+     11.002,
+     20.615
+    ]
+   },
+   "msExport": 1557.307,
+   "msGLExport": 194.622,
+   "msVorschau": 845.103,
+   "msGLVorschau": 176.947,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 863317,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

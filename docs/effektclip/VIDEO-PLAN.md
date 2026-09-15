@@ -452,6 +452,23 @@ Adapter, und der Vorrat ist auf einen Schlag groß.**
 **Die Länge ist musikalisch** — ein Schlag oder ein halber Takt, nie eine Zahl in Sekunden (wie
 §6.3).
 
+#### Die Randbedingung: höchstens zehn Sekunden, der Übergang eingeschlossen (15.09.2026)
+
+Caspar_D: *„und er muß <=10sec bleiben"*. Der Übergang wird **nicht angehängt**, er liegt als Fenster
+um die Naht **innerhalb** von L — die letzten D/2 und die ersten D/2 des Clips. Ein halber Takt kostet
+also rund eine der zehn Sekunden. Daraus folgen zwei Fälle:
+
+- **Mischende Übergänge** (Überblenden, GL Transitions, Wisch, Verdrängung) brauchen am Clipende
+  Quellbilder von *vor* dem Anfang und am Clipanfang Bilder von *nach* dem Ende: das Quellvideo muss
+  rund L + D lang sein, der fertige Clip bleibt ≤ 10 s.
+- **Neutralzustände** (Nebel, Unschärfe, Zoom bis zur Textur, Blitz) brauchen kein Zusatzmaterial —
+  das Ende läuft hinein, der Anfang kommt heraus. Sie gehen auch bei knappen Videos.
+
+Eine Mikrohandlung über zehn Sekunden wird **geschnitten** (Nahtsuche wählt das Teilstück) oder im
+Rahmen der Ratentoleranz (§6.6) beschleunigt — nie auf elf Sekunden gestreckt. Das sin²-Abbremsen
+(§6.4) liegt ebenfalls innerhalb der zehn Sekunden. `ausschnitt()` hält die Grenze für Standbilder
+schon: passt eine Teilbarkeit nicht, wird der Clip kürzer, nie länger.
+
 ### 6.8 Loopfähigkeit aller 38 Effekte — eine zweite Messreihe (12.09.2026)
 
 Caspar_D: **Standbilder mit Effekten sind in der Regel voll loopfähig ohne Übergang** — also müssen
@@ -513,6 +530,68 @@ der Kette kommen.
 Der ruhige Standard fürs **lebende Foto** besteht ausschließlich aus Klasse 1 und den reparierten
 aus Klasse 2. Kein Übergang nötig, **Nahtquotient 0 per Konstruktion.** Das ist der Fall, der 236
 Titel betrifft — der einfachste und zugleich der häufigste.
+
+#### Nachtrag: gebaut 14.09.2026
+
+Gemessen, nicht mehr nur gelesen: `labor/nahtpruefung/` (headless Chrome über den echten
+Exportweg, 170 Fälle). Vorher brachen 41 der 85 Grundlinienfälle (`gleich` ≥ 1), nachher keiner;
+das schlechteste `gleich` ist 0,09 (Nachzieheffekt 0,9). Die Vorschau ist in allen 85 Fällen mit
+Vergleichsbild bitgleich — jede Änderung hängt an `LOOP>0`. Die Zahlen je Fall stehen in
+`docs/NAECHSTER_CHAT.md` unter „Loop-Reparatur gebaut und gemessen".
+
+**Gemeinsame Maschinerie.** `lpR/lpP/lpW` behalten Vorzeichen und null; `lpV` rundet ohne
+Mindestumlauf. Die Taktzahl in `ausschnitt()` wird so gewählt, dass die Schlagzahl durch den kgV
+aller `loopTeiler(e)` teilbar ist (lockert schrittweise, meldet dann „ein Schlag kommt einmal
+früher"). `raster()` läuft ganze Clips vor (≥ 32 s) und trägt je Schlag die **umlaufende Nummer**
+`S[i][2]`. `lmFlacker` liest seine Oktaven auf einem Ring. `loopNein(e)` gilt je Karte, die
+Statuszeile sagt je Grund einen eigenen Satz. `rahmen()` malt während des Exports nicht.
+
+**Klasse 1 — doch nicht „nichts zu tun".** Scheinwerfer/Schatten *wandernd* und der Laser-Ursprung
+hatten keine ganzen Umläufe. Unter einem Umlauf je Clip pendelt die Achse jetzt über `lpBahn` mit
+dem mittleren Tempo der Vorschau, darüber rastet sie ein. *Fahrt* braucht mindestens zwei Ziele je
+Clip, Laser-Punkte drehen in ganzen Vierteldrehungen.
+
+**Klasse 2 — Rauschshader: Drift über zwei Lagen, nicht über den Torus.** Wabern läuft über
+`noise4D` mit der Zeit auf dem Kreis. Für die gerichtete Drift (Luftzug, Aufwind, Steigen) sind
+beide Wege gebaut und am Bild gemessen, beide exakt (`gleich` 0):
+
+| | Torus | zwei überblendete Lagen |
+|---|---|---|
+| dunkler Rauch, p95 | 2,45 | 0,89 |
+| dunkler Rauch, Bewegung gegen Vorschau | 3,97× | 1,11× |
+| Filmnebel Vorgabe, p95 (Vorschau 0,15) | 0,56 | 0,17 |
+| Filmnebel Vorgabe, Bewegung | 3,8× | 1,10× |
+
+Der Torus muss bildbreit sein und braucht ganze Umläufe — die Vorgabedrift von 1/8 Bild je Clip
+zöge dort eine Bildbreite. Die Lagen laufen mit echter Geschwindigkeit, um L/2 versetzt, mit
+Dreiecksgewichten; das Muster pulsiert nicht (Streuung 2,89–3,55 gegen 2,72–3,85 in der Vorschau).
+Die Exportform ist ein eigenes Programm (`#define LOOPFORM`), weil sie 1,2- bis 1,5-mal so viel
+rechnet (SwiftShader, 578×816) — die Vorschau bleibt auf dem alten Weg. Torus-Code ist gelöscht,
+die Begründung steht bei `GL_SCHLEIFE`.
+
+**Klasse 2 — Partikel und Tropfen: Lebensdauer-Betrieb.** Wo `lpV` das Tempo um mehr als 15 %
+(und mehr als 0,02 Umläufe je Clip) verfälschen würde, lebt jedes Teilchen genau L, mit echter
+Geschwindigkeit, Windrichtung und Taumeln, Geburten gleichverteilt, Überblendung zum Ursprung über
+1,2 s (Schwaden 0,45·L). Schnelle Teilchen (Regen, Schnee mit Tempo 3) bleiben beim Umbruch. Tempo
+Export/Vorschau ohne und mit Lebensdauer-Betrieb: Staub 1,81 → 1,04, Asche 0,66 → 1,02, Tropfen 0,38 → 0,95.
+
+**Klasse 2 — Zufall je Bild.** Rauschausfall, Filmkorn und das Zittern beim Verwackeln säen aus
+(Bildnummer mod N) über `lpZufall`; Hash-Würfe je Fenster über `lpFenster`, je Schlag über
+`lpSchlag`.
+
+**Klasse 3 — Gedächtnis.** Nachzieheffekt: Vorlaufrunde von K = ⌈log(0,5/255)/log(Nachhall)⌉
+Bildern vor dem ersten gezählten Bild, in Häppchen (`vorlaufen()`), Spur an der Ergebnisfläche
+statt an der Karte; Quotient 40,8 → 0,11. **Risse *im Takt* stehen im Export ausgewachsen** wie
+*mit der Zeit* (Caspar_D: *„was wachsendes nicht plötzlich wieder kleiner werden sollte"*), Einschlag
+würfelt an der umlaufenden Nummer. Bei Titeln mit 1–7 Schlägen ohne Takt stehen Risse, Einschlag
+und Schritt im Zustand des Pults am Ende der längsten schlagfreien Strecke.
+
+**Klasse 4 — Ereignisse.** Sicherungswackeln, Glitch-Blöcke und Windstöße würfeln an der umlaufenden
+Schlag- bzw. Fensternummer; Laufstreifen *beide* tauschen bei ungerader Durchlaufzahl einmal je Clip
+weich hell und dunkel.
+
+**Offen:** Bewegtbild als Quelle loopt weiterhin nicht (die Statuszeile sagt es jetzt). Entscheidungen
+für Caspar_D stehen in NAECHSTER_CHAT.
 
 ---
 
@@ -1618,9 +1697,9 @@ und genau deshalb der Kontaktbogen.
   Umgebung um 40 %, während der Kommentar das Gegenteil behauptet. **Nur die Entsättigung hier
   herausnehmen** — die richtige Rechnung (dämpfen plus Luftlicht) steht in §9.7a und wartet auf die
   Tiefenkarte; beides nicht vermischen.
-- **noise4D für die vier Shader.** `web/fremd/webgl-noise/noise4D.glsl` liegt bereit: vier
-  Dimensionen lassen die Zeit auf einem Kreis laufen, das Feld ist nach einer Umdrehung exakt
-  dasselbe. Damit loopen Wellen, Kaustik, Dunst und Flammen.
+- ~~**noise4D für die vier Shader.**~~ **Erledigt 14.09.2026** (§6.8, Nachtrag): Wellen, Kaustik,
+  Filmnebel und Flammen loopen im Export über `noise4D` (Wabern auf dem Kreis) und zwei
+  überblendete Lagen (Drift); die Vorschau rechnet unverändert 3D.
 - **Dosierung an der Bildhelligkeit** als Vorgabe in der Vorbereitung — der offene Punkt der dunklen
   Cover („Lea Moreau", Helligkeit 0,36, Bewegung unter der Grundlinie).
 - **Die Messreihe als Regressionslauf** mit **zwei Spalten** — Wirkung (Tiefen-Check 10.09.) und

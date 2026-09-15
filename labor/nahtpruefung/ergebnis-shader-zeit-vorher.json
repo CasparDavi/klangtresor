@@ -1,0 +1,468 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-14T23:22:51.039Z",
+ "lange": 360,
+ "dauerS": 61,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "filmnebel",
+   "typ": "filmnebel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 3.064,
+   "gleichFolge": 3.074,
+   "naht": 3.049,
+   "erwartet": 0.081,
+   "p95": 0.151,
+   "quotient": 6.099,
+   "gl": true,
+   "tiefe": true,
+   "vorschauAbw": 0,
+   "loopNeinAnzeige": [
+    "filmnebel"
+   ],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.027,
+   "bewegungVorschau": 0.027,
+   "tempoVerh": 1,
+   "kontrastExport": {
+    "kontrast": [
+     40.561,
+     40.842
+    ],
+    "muster": [
+     0.449,
+     0.619
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     40.561,
+     40.842
+    ],
+    "muster": [
+     0.449,
+     0.619
+    ]
+   },
+   "msExport": 58.232,
+   "msVorschau": 282.01,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 31902,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wellen",
+   "typ": "wellen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 83.698,
+   "gleichFolge": 108.1,
+   "naht": 83.616,
+   "erwartet": 7.04,
+   "p95": 13.764,
+   "quotient": 6.075,
+   "gl": true,
+   "tiefe": true,
+   "vorschauAbw": 0,
+   "loopNeinAnzeige": [
+    "wellen"
+   ],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.381,
+   "bewegungVorschau": 2.381,
+   "tempoVerh": 1,
+   "kontrastExport": {
+    "kontrast": [
+     44.028,
+     46.062
+    ],
+    "muster": [
+     15.409,
+     18.884
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     44.028,
+     46.062
+    ],
+    "muster": [
+     15.409,
+     18.884
+    ]
+   },
+   "msExport": 33.313,
+   "msVorschau": 150.807,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 19650,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kaustik",
+   "typ": "kaustik",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 40.488,
+   "gleichFolge": 49.833,
+   "naht": 39.583,
+   "erwartet": 16.18,
+   "p95": 22.988,
+   "quotient": 1.722,
+   "gl": true,
+   "tiefe": true,
+   "vorschauAbw": 0,
+   "loopNeinAnzeige": [
+    "kaustik"
+   ],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 8.692,
+   "bewegungVorschau": 8.692,
+   "tempoVerh": 1,
+   "kontrastExport": {
+    "kontrast": [
+     50.841,
+     52.009
+    ],
+    "muster": [
+     21.077,
+     22.334
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     50.841,
+     52.009
+    ],
+    "muster": [
+     21.077,
+     22.334
+    ]
+   },
+   "msExport": 36.924,
+   "msVorschau": 145.337,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 20790,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 37.033,
+   "gleichFolge": 56.697,
+   "naht": 35.194,
+   "erwartet": 34.986,
+   "p95": 31.346,
+   "quotient": 1.123,
+   "gl": true,
+   "tiefe": true,
+   "vorschauAbw": 0.149,
+   "loopNeinAnzeige": [
+    "flammen"
+   ],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.318,
+   "bewegungVorschau": 2.058,
+   "tempoVerh": 1.126,
+   "kontrastExport": {
+    "kontrast": [
+     49.036,
+     50.034
+    ],
+    "muster": [
+     8.921,
+     10.544
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     49.065,
+     50.043
+    ],
+    "muster": [
+     8.936,
+     10.602
+    ]
+   },
+   "msExport": 26.714,
+   "msVorschau": 138.893,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 15979,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-licht",
+   "typ": "filmnebel",
+   "gruppe": "kombination",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Nebel braucht Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 3.853,
+   "gleichFolge": 4.553,
+   "naht": 60.88,
+   "erwartet": 59.88,
+   "p95": 62.914,
+   "quotient": 0.968,
+   "gl": true,
+   "tiefe": true,
+   "vorschauAbw": 14.581,
+   "loopNeinAnzeige": [
+    "filmnebel"
+   ],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.276,
+   "bewegungVorschau": 1.55,
+   "tempoVerh": 1.468,
+   "kontrastExport": {
+    "kontrast": [
+     54.296,
+     67.095
+    ],
+    "muster": [
+     25.191,
+     43.099
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.243,
+     67.855
+    ],
+    "muster": [
+     23.816,
+     46.421
+    ]
+   },
+   "msExport": 59.515,
+   "msVorschau": 241.943,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 29746,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-schnell",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schneller Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 44.479,
+   "gleichFolge": 54.117,
+   "naht": 34.809,
+   "erwartet": 49.594,
+   "p95": 34.777,
+   "quotient": 1.001,
+   "gl": true,
+   "tiefe": true,
+   "vorschauAbw": 0.156,
+   "loopNeinAnzeige": [
+    "flammen"
+   ],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 4.285,
+   "bewegungVorschau": 4.203,
+   "tempoVerh": 1.02,
+   "kontrastExport": {
+    "kontrast": [
+     48.8,
+     50.616
+    ],
+    "muster": [
+     8.174,
+     9.898
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.816,
+     50.622
+    ],
+    "muster": [
+     8.204,
+     9.895
+    ]
+   },
+   "msExport": 29.08,
+   "msVorschau": 161.057,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 18054,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

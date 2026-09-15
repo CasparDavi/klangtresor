@@ -1,0 +1,1309 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-14T23:43:55.093Z",
+ "lange": 360,
+ "dauerS": 154,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "streiflicht",
+   "typ": "streiflicht",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte: schaltet sich ab",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": true,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 36.973,
+   "vorschauRegression": 0,
+   "dauerMs": 15337,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel",
+   "typ": "filmnebel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0.091,
+   "erwartet": 0.091,
+   "p95": 0.168,
+   "quotient": 0.182,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 0.431,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.03,
+   "bewegungVorschau": 0.027,
+   "tempoVerh": 1.104,
+   "kontrastExport": {
+    "kontrast": [
+     40.613,
+     40.85
+    ],
+    "muster": [
+     0.483,
+     0.611
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     40.561,
+     40.842
+    ],
+    "muster": [
+     0.449,
+     0.619
+    ]
+   },
+   "msExport": 74.794,
+   "msVorschau": 262.437,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 36064,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wellen",
+   "typ": "wellen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 11.096,
+   "erwartet": 11.096,
+   "p95": 12.199,
+   "quotient": 0.91,
+   "gl": true,
+   "glSchleife": [
+    "wellen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 12.17,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.546,
+   "bewegungVorschau": 2.381,
+   "tempoVerh": 1.069,
+   "kontrastExport": {
+    "kontrast": [
+     44.238,
+     45.704
+    ],
+    "muster": [
+     14.827,
+     18.042
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     44.028,
+     46.062
+    ],
+    "muster": [
+     15.409,
+     18.884
+    ]
+   },
+   "msExport": 38.443,
+   "msVorschau": 135.827,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 20928,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kaustik",
+   "typ": "kaustik",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 15.758,
+   "erwartet": 15.758,
+   "p95": 22.997,
+   "quotient": 0.685,
+   "gl": true,
+   "glSchleife": [
+    "kaustik:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 24.157,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 8.745,
+   "bewegungVorschau": 8.692,
+   "tempoVerh": 1.006,
+   "kontrastExport": {
+    "kontrast": [
+     50.025,
+     52.232
+    ],
+    "muster": [
+     21.341,
+     22.994
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     50.841,
+     52.009
+    ],
+    "muster": [
+     21.077,
+     22.334
+    ]
+   },
+   "msExport": 34.259,
+   "msVorschau": 140.217,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 20112,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse",
+   "typ": "linse",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": true,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 24.153,
+   "vorschauRegression": 0,
+   "dauerMs": 10425,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 28.201,
+   "erwartet": 28.201,
+   "p95": 32.262,
+   "quotient": 0.874,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.408,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.464,
+   "bewegungVorschau": 2.058,
+   "tempoVerh": 1.197,
+   "kontrastExport": {
+    "kontrast": [
+     47.952,
+     50.739
+    ],
+    "muster": [
+     8.584,
+     11.065
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     49.065,
+     50.043
+    ],
+    "muster": [
+     8.936,
+     10.602
+    ]
+   },
+   "msExport": 40.29,
+   "msVorschau": 163.07,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 22458,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht-licht",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Scheinwerfer wandernd davor",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 64.788,
+   "erwartet": 64.788,
+   "p95": 66.943,
+   "quotient": 0.968,
+   "gl": true,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 11.107,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 48.555,
+   "vorschauRegression": 0,
+   "dauerMs": 18070,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht-laserfest",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Laser Ursprung fest davor",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 14.13,
+   "erwartet": 14.13,
+   "p95": 14.613,
+   "quotient": 0.967,
+   "gl": true,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 2.035,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 65.394,
+   "vorschauRegression": 0,
+   "dauerMs": 23279,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-schwaden0",
+   "typ": "filmnebel",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 0,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0,
+   "bewegungVorschau": 0,
+   "tempoVerh": 0,
+   "kontrastExport": {
+    "kontrast": [
+     40.062,
+     40.062
+    ],
+    "muster": [
+     0,
+     0
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     40.062,
+     40.062
+    ],
+    "muster": [
+     0,
+     0
+    ]
+   },
+   "msExport": 71.339,
+   "msVorschau": 309.54,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 36443,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-licht",
+   "typ": "filmnebel",
+   "gruppe": "kombination",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Nebel braucht Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 58.245,
+   "erwartet": 58.245,
+   "p95": 63.384,
+   "quotient": 0.919,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.915,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.283,
+   "bewegungVorschau": 1.55,
+   "tempoVerh": 1.473,
+   "kontrastExport": {
+    "kontrast": [
+     53.968,
+     67.164
+    ],
+    "muster": [
+     25.183,
+     43.026
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.243,
+     67.855
+    ],
+    "muster": [
+     23.816,
+     46.421
+    ]
+   },
+   "msExport": 95.301,
+   "msVorschau": 326.66,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 45314,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-luftzug1",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach rechts, schnell, mit Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 60.029,
+   "erwartet": 60.029,
+   "p95": 62.242,
+   "quotient": 0.964,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.943,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.326,
+   "bewegungVorschau": 1.608,
+   "tempoVerh": 1.447,
+   "kontrastExport": {
+    "kontrast": [
+     53.945,
+     67.093
+    ],
+    "muster": [
+     25.13,
+     43.017
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.346,
+     67.76
+    ],
+    "muster": [
+     23.866,
+     46.619
+    ]
+   },
+   "msExport": 87.356,
+   "msVorschau": 361.35,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 43969,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-luftzug-neg",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach links, mit Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 58.505,
+   "erwartet": 58.505,
+   "p95": 62.503,
+   "quotient": 0.936,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.907,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.318,
+   "bewegungVorschau": 1.602,
+   "tempoVerh": 1.446,
+   "kontrastExport": {
+    "kontrast": [
+     53.988,
+     67.09
+    ],
+    "muster": [
+     25.109,
+     43.078
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.291,
+     67.868
+    ],
+    "muster": [
+     23.995,
+     46.534
+    ]
+   },
+   "msExport": 89.955,
+   "msVorschau": 355.563,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 44736,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-schwer-still",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kriecht langsam, dicke Ballen",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 58.255,
+   "erwartet": 58.255,
+   "p95": 57.602,
+   "quotient": 1.011,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 7.895,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.801,
+   "bewegungVorschau": 1.243,
+   "tempoVerh": 1.449,
+   "kontrastExport": {
+    "kontrast": [
+     48.368,
+     60.978
+    ],
+    "muster": [
+     16.661,
+     35.81
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     50.329,
+     61.509
+    ],
+    "muster": [
+     14.405,
+     39.736
+    ]
+   },
+   "msExport": 94.472,
+   "msVorschau": 351.18,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 45806,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wellen-aufwind",
+   "typ": "wellen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Hitze steigt",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 54.681,
+   "erwartet": 54.681,
+   "p95": 53.655,
+   "quotient": 1.019,
+   "gl": true,
+   "glSchleife": [
+    "wellen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 17.364,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 8.235,
+   "bewegungVorschau": 7.825,
+   "tempoVerh": 1.052,
+   "kontrastExport": {
+    "kontrast": [
+     43.921,
+     45.806
+    ],
+    "muster": [
+     21.587,
+     24.637
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     42.64,
+     46.093
+    ],
+    "muster": [
+     20.934,
+     24.564
+    ]
+   },
+   "msExport": 32.925,
+   "msVorschau": 122.847,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 17841,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kaustik-langsam",
+   "typ": "kaustik",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kleiner Zeitkreis",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 3.138,
+   "erwartet": 3.138,
+   "p95": 5.697,
+   "quotient": 0.551,
+   "gl": true,
+   "glSchleife": [
+    "kaustik:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 24.714,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.137,
+   "bewegungVorschau": 1.959,
+   "tempoVerh": 1.091,
+   "kontrastExport": {
+    "kontrast": [
+     50.453,
+     52.084
+    ],
+    "muster": [
+     20.284,
+     22.106
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     51.095,
+     52.002
+    ],
+    "muster": [
+     20.408,
+     21.612
+    ]
+   },
+   "msExport": 31.883,
+   "msVorschau": 149.99,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 19854,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-langsam-wind",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsamer Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 32.702,
+   "erwartet": 32.702,
+   "p95": 29.539,
+   "quotient": 1.107,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 3.873,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.267,
+   "bewegungVorschau": 0.912,
+   "tempoVerh": 1.388,
+   "kontrastExport": {
+    "kontrast": [
+     48.973,
+     50.74
+    ],
+    "muster": [
+     8.871,
+     10.174
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.718,
+     50.465
+    ],
+    "muster": [
+     8.334,
+     10.251
+    ]
+   },
+   "msExport": 41.903,
+   "msVorschau": 162.073,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 22877,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-schnell",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schneller Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 43.598,
+   "erwartet": 43.598,
+   "p95": 37.371,
+   "quotient": 1.167,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.596,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 4.535,
+   "bewegungVorschau": 4.203,
+   "tempoVerh": 1.079,
+   "kontrastExport": {
+    "kontrast": [
+     48.5,
+     50.691
+    ],
+    "muster": [
+     8.832,
+     10.947
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.816,
+     50.622
+    ],
+    "muster": [
+     8.204,
+     9.895
+    ]
+   },
+   "msExport": 35.265,
+   "msVorschau": 132.517,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "vorschauRegression": 0,
+   "dauerMs": 18519,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch: Ballen ohne Leuchte sichtbar",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0.628,
+   "erwartet": 0.628,
+   "p95": 0.891,
+   "quotient": 0.705,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 2.971,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.203,
+   "bewegungVorschau": 0.182,
+   "tempoVerh": 1.115,
+   "kontrastExport": {
+    "kontrast": [
+     17.52,
+     19.376
+    ],
+    "muster": [
+     2.89,
+     3.553
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     17.448,
+     19.404
+    ],
+    "muster": [
+     2.719,
+     3.854
+    ]
+   },
+   "msExport": 44.121,
+   "msVorschau": 138.813,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 20176,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "filmnebel-rauch-zug",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch, Zug nach links",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 5.02,
+   "erwartet": 5.02,
+   "p95": 7.518,
+   "quotient": 0.668,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 8.083,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.029,
+   "bewegungVorschau": 1.927,
+   "tempoVerh": 1.053,
+   "kontrastExport": {
+    "kontrast": [
+     21.393,
+     25.512
+    ],
+    "muster": [
+     8.645,
+     10.334
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     20.883,
+     25.522
+    ],
+    "muster": [
+     9.245,
+     10.319
+    ]
+   },
+   "msExport": 65.638,
+   "msVorschau": 199.37,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 29839,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  }
+ ]
+}

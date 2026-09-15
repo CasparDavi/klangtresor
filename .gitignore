@@ -71,6 +71,15 @@ labor/effektclip-studio/_songs.json
 labor/effektclip-studio/media
 labor/effektclip-studio/testbild
 labor/effektclip-studio/fremd
+# Nahtpruefung: site/ baut stand.js jederzeit neu aus web/index.html (mit Pruefhaken), die Profile
+# gehoeren je einem Chrome-Lauf und werden danach geloescht, Bilder sind nur zum Hinsehen.
+labor/nahtpruefung/site/
+labor/nahtpruefung/.profil-*
+labor/nahtpruefung/bilder-*/
+# Vorschau-Grundlinien tragen je Fall drei kleine Bilder der Titelbilder (base64, zusammen ~7 MB) und die
+# Laufprotokolle sind nur Mitschrift - beides bleibt lokal. Die Zahlen (ergebnis-*.json) sind versioniert.
+labor/nahtpruefung/vorschau-*.json
+labor/nahtpruefung/lauf-*.log
 
 # Eichkasten: die Verfahren bleiben, die Bestandsdaten nicht.
 # 257 Song-IDs mit 768er-Textvektoren aus den Liedtexten gehoeren so wenig

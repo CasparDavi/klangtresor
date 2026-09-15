@@ -8,4 +8,4 @@ Verwendung: Effektclip-Studio, WebGL-Stufe (Wellen, Kaustik, Dunst, Flammen). Wi
 **Warum auch die vierdimensionale Fassung:** für den Videoexport soll ein Clip nahtlos loopen. Rauschen entlang
 einer geraden Zeitachse hat keine Periode, ein Loop ist damit unmöglich. Mit vier Dimensionen läuft die Zeit auf
 einem Kreis in den beiden zusätzlichen Achsen: nach einer Umdrehung ist das Feld exakt wieder dasselbe, während
-Ziehen und Wabern im Bild unverändert aussehen. Der Umweg über eine Überblendung entfällt damit.
+Wabern im Bild unverändert aussieht. Gerichtetes Ziehen (Luftzug, Aufstieg) kommt auch auf dem Kreis nicht zurück; dafür ziehen im Export zwei um einen halben Clip versetzte Lagen, die sich überblenden (Kommentar bei GL_SCHLEIFE in web/index.html, 15.09.2026).

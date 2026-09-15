@@ -3864,3 +3864,207 @@ trennen · Risse *im Takt*: im Export ausgewachsen wie *mit der Zeit* · Video b
 `loopNein(e)` je Karte statt Typliste. **Noch nichts gebaut — wartet auf Caspar_Ds Wort.**
 
 Rohbefund mit Zeilennummern: Workflow `wf_721af253-541`, journal.jsonl im Sitzungsordner.
+
+## Loop-Reparatur gebaut und gemessen (14.09.2026)
+
+Caspar_D: *„es muss halt der effekt wieder zum Ursprung zurückkehren auf dem letzten frame"* — und
+zu den Rissen: *„was wachsendes nicht ploetzlich wieder kleiner werden sollte"*. Gebaut in fünf
+Gruppen (Zeitmaschinerie, Leuchten, Partikel, Störungen, Shader), danach eine Gegenprüfung mit 30
+Randfällen und eine Nachbesserung, danach eine unabhängige Kontrollmessung aller Fälle. Alles hängt an
+`LOOP>0`; die Vorschau ist in allen 85 Fällen mit Vergleichsbild bitgleich (`vorschauRegression` 0).
+Zusammenfassung der Verfahren: VIDEO-PLAN §6.8 „Nachtrag: gebaut", neue Regel 17 in
+EFFEKTCLIP-REGELN.
+
+**Ergebnis:** 170 Fälle, keiner mit `gleich` ≥ 1 (Maximum 0,09, Nachzieheffekt mit Nachhall 0,9). Vorher brachen
+41 der 85 Grundlinienfälle. `gleichFolge` > 0 nur unter einer Graustufe (Scanlines, Nachzieh,
+Blätter, Einschlag ohne Eins). **Jeder Fall mit Quotient ≥ 1 hat `naht` = `erwartet`**: die Naht
+liegt auf einem gewöhnlichen Schlag, Puls oder Glitch — der Loop ist exakt, der Quotient sieht nur
+den Sprung. Konsolenfehler: keine.
+
+### Grundlinienfälle (Stand bdbb44c gegen nachher)
+
+`gleich` ist das Schlechtere aus `gleich` und `gleichFolge`.
+
+| Fall | Quotient vorher | nachher | gleich vorher → nachher |
+|---|---|---|---|
+| fahrt | 0,92 | 0,92 | 0 → 0 |
+| puls | 1,02 | 1,02 | 0 → 0 |
+| schaerfe | 1,09 | 1,09 | 0 → 0 |
+| kontrast | 1,09 | 1,09 | 0 → 0 |
+| helligkeit | 1,09 | 1,09 | 0 → 0 |
+| saettigung | 1,11 | 1,11 | 0 → 0 |
+| farbe | 0,26 | 0,26 | 0 → 0 |
+| licht | 1,81 | 1 | 98,7 → 0 |
+| schatten | 2,5 | 1,74 | 96,2 → 0 |
+| laser | 1,99 | 0,73 | 63,1 → 0 |
+| streifen | 0,96 | 0,96 | 0 → 0 |
+| rauschen | 0,82 | 1,05 | 20,8 → 0 |
+| vlauf | 0,85 | 0,85 | 0 → 0 |
+| wackeln | 1,03 | 1,1 | 63,9 → 0 |
+| rgb | 1,06 | 1,06 | 0 → 0 |
+| strobe | 0 | 0 | 0 → 0 |
+| sicherung | 0 | 0 | 59,5 → 0 |
+| streiflicht | 0 | 0 | 0 → 0 |
+| filmnebel | 6,1 | 0,18 | 3,1 → 0 |
+| partikel | 0,54 | 0,47 | 0 → 0 |
+| scanlines | 0,57 | 0,57 | 0 → 0,03 |
+| bloom | 0 | 0 | 0 → 0 |
+| nachzieh | 40,77 | 0,11 | 37,6 → 0,06 |
+| feuer | 0,72 | 0,72 | 0 → 0 |
+| wellen | 6,08 | 0,91 | 108,1 → 0 |
+| kaustik | 1,72 | 0,69 | 49,8 → 0 |
+| linse | 0 | 0 | 0 → 0 |
+| flammen | 1,12 | 0,87 | 56,7 → 0 |
+| strahlen | 0,49 | 0,49 | 0 → 0 |
+| spiegel | 0,89 | 0,89 | 0 → 0 |
+| risse | 0 | 0 | 0 → 0 |
+| beschlag | 0 | 0 | 0 → 0 |
+| einschlag | 1,5 | 1,58 | 24,9 → 0 |
+| tropfen | 0,58 | 0,65 | 0 → 0 |
+| korn | 0,99 | 0,93 | 7,1 → 0 |
+| bloecke | 0 | 0 | 0 → 0 |
+| farbton | 1,11 | 1,11 | 0 → 0 |
+| kippen | 1,04 | 1,04 | 0 → 0 |
+| puls-flackern-takt | 0,85 | 0,66 | 129,9 → 0 |
+| puls-flackern-hz05 | 1,36 | 0 | 141,5 → 0 |
+| puls-teiler8-a | 9,72 | 9,72 | 0 → 0 |
+| puls-teiler8-b | 4,29 | 4,54 | 68,2 → 0 |
+| puls-zufall | 0 | 0 | 118,2 → 0 |
+| puls-ohneEins | 0,88 | 1,02 | 124,2 → 0 |
+| strobe-ohneEins | 0 | 1 | 77 → 0 |
+| puls-ohneSchlaege | 0,4 | 0,4 | 0 → 0 |
+| puls-zufall-ohneSchlaege | 0,91 | 0 | 143,1 → 0 |
+| strobe-ohneSchlaege | 0 | 0 | 77 → 0 |
+| feuer-flackern | 0,52 | 0,5 | 15 → 0 |
+| licht-fahrt | 1,92 | 1,05 | 96,8 → 0 |
+| licht-schritt | 1,35 | 0,86 | 104,3 → 0 |
+| licht-bogen | 0,94 | 0,94 | 0 → 0 |
+| laser-wandern-scanner | 1,09 | 0,85 | 11,8 → 0 |
+| laser-wandern-punkte | 1,24 | 0,37 | 10,5 → 0 |
+| laser-wandern-punkte-drehen0 | 1,29 | 0,29 | 10,5 → 0 |
+| laser-fest-punkte | 2,28 | 0,86 | 5,8 → 0 |
+| laser-fest-punkte-drehen0 | 1,43 | 1,43 | 0 → 0 |
+| laser-fest-gitter | 0,98 | 0,98 | 0 → 0 |
+| laser-scanner-sprung-hz | 1,28 | 0 | 13,9 → 0 |
+| laser-scanner-sprung-takt | 0,32 | 0 | 20,6 → 0 |
+| streiflicht-licht | 1,91 | 0,98 | 127,3 → 0 |
+| streiflicht-laserfest | 0,97 | 0,97 | 0 → 0 |
+| partikel-regen | 0,53 | 1,04 | 0 → 0 |
+| partikel-asche | 0,49 | 0,39 | 0 → 0 |
+| partikel-funken | 0,69 | 1,07 | 0 → 0 |
+| partikel-blasen | 0,69 | 0,82 | 0 → 0 |
+| partikel-blaetter | 0,67 | 0,45 | 0,1 → 0,04 |
+| partikel-staub | 0,43 | 0,53 | 0,8 → 0 |
+| partikel-schwaden | 0,33 | 0,29 | 4 → 0 |
+| partikel-gluehwuermchen | 0,92 | 0,86 | 0 → 0 |
+| partikel-schmetterling | 0,5 | 0,92 | 0 → 0 |
+| partikel-schwaden-quelle | 0,57 | 0,57 | 0 → 0 |
+| partikel-boeen | 1,21 | 1,52 | 68,7 → 0 |
+| partikel-wind-06neg | 0,54 | 0,45 | 0 → 0 |
+| partikel-wind0 | 0,54 | 0,76 | 0 → 0 |
+| streifen-beide | 24,93 | 0,92 | 73,5 → 0 |
+| sicherung-frei-lang | 0,07 | 0,26 | 22,4 → 0 |
+| sicherung-takt-800 | 0 | 0 | 0 → 0 |
+| bloecke-frei | 0 | 0 | 19 → 0 |
+| wackeln-kick-ungerade | 0,96 | 0,85 | 66,3 → 0 |
+| filmnebel-schwaden0 | 0 | 0 | 0 → 0 |
+| risse-takt | 10,78 | 0 | 5,4 → 0 |
+| einschlag-bleiben30 | 1,75 | 1,06 | 29,4 → 0 |
+| nachzieh-09 | 18,19 | 0,18 | 43,1 → 0,09 |
+| filmnebel-licht | 2,75 | 0,99 | 176,5 → 0 |
+
+### Neue Fälle (ohne Grundlinie), nach Typ der ersten Karte
+
+Gruppen `zeit`, `leuchten`, `partikel`, `stoerungen2`, `shader`, `linse`, `raender`, `nachbesserung`.
+
+| Typ | Fälle | Quotient | gleich (max) |
+|---|---|---|---|
+| puls | 13 | 0 … 19,01 | 0 |
+| strobe | 2 | 0 … 0 | 0 |
+| feuer | 1 | 0,49 … 0,49 | 0 |
+| nachzieh | 4 | 0 … 2,1 | 0,064 |
+| licht | 9 | 0,38 … 5,03 | 0 |
+| schatten | 1 | 1,24 … 1,24 | 0 |
+| laser | 4 | 0 … 1,02 | 0,001 |
+| streiflicht | 1 | 0,32 … 0,32 | 0 |
+| partikel | 9 | 0,18 … 1,11 | 0 |
+| tropfen | 3 | 0,5 … 1,92 | 0 |
+| rauschen | 1 | 0,5 … 0,5 | 0 |
+| korn | 1 | 0 … 0 | 0 |
+| wackeln | 2 | 1,11 … 1,18 | 0 |
+| bloecke | 1 | 1,52 … 1,52 | 0 |
+| sicherung | 2 | 0,63 … 1,21 | 0 |
+| einschlag | 3 | 0 … 2,28 | 0,048 |
+| risse | 3 | 0 … 1,24 | 0 |
+| streifen | 2 | 0,69 … 0,92 | 0 |
+| filmnebel | 17 | 0 … 1,58 | 0 |
+| wellen | 1 | 1,02 … 1,02 | 0 |
+| kaustik | 2 | 0,55 … 0,78 | 0 |
+| flammen | 3 | 1,11 … 8,56 | 0 |
+
+Hohe Quotienten bei `gleich` 0 (rand-nurEinsen-puls 19,0, rand-flammen-kurz 8,6, in der Grundlinie
+puls-teiler8-a 9,7): Puls auf dem Schlag, `naht` = `erwartet`.
+
+### Was bewusst vom Pult abweicht
+
+- **Tempo gerastet:** `lpR/lpP/lpW` auf ganze Umläufe (Vorzeichen und Stillstand bleiben), `lpV`
+  ohne Mindestumlauf. Sehr langsame Laufstreifen und Lichtbögen laufen dadurch bis 3,3-mal so schnell.
+- **Scheinwerfer/Schatten *wandernd*, Laser-Ursprung:** unter einem Umlauf je Clip pendelt die Achse
+  (`lpBahn`) mit mittlerem Vorschau-Tempo, darüber rastet sie ein. *Fahrt*: mindestens zwei Ziele je
+  Clip, kürzeres Stehen. Laser-Punkte drehen in ganzen Vierteldrehungen. Scanner-Sprung verglimmt am
+  Clipanfang die Stange K−1.
+- **Antrieb:** Flackern auf einem Ring (Oktaven 3/7/16), andere Werte als im Pult. Zufall, Teiler-Gruppen
+  und Windstöße würfeln an der umlaufenden Nummer, zählen ab Clipanfang. Titel ohne Einsen: gleichmäßiges
+  4er-Raster aus dem Median-Abstand. Teiler 8 kann den Clip kürzen (Titel b: 6,7 statt 8,4 s).
+- **Rauschshader:** 4D-Rauschen mit der Zeit auf dem Kreis, Drift in zwei Lagen, anderes Muster zur
+  gleichen Songzeit (vorschauAbw Kaustik 24, Wellen 12–17), Tempo und Richtung echt.
+- **Partikel/Tropfen:** Lebensdauer genau L, echtes Tempo, Überblendung zum Ursprung einmal je Clip.
+- **Zufall je Bild** (Rauschausfall, Korn, Wackel-Zittern): gesäte Folge statt `Math.random`.
+- **Gedächtnis:** Nachzieh-Bild 0 zeigt die Spur des Clipendes. Risse *im Takt* stehen ausgewachsen.
+  Titel mit 1–7 Schlägen ohne Takt: Risse, Einschlag und Schritt stehen im Zustand am Ende der längsten
+  schlagfreien Strecke; der Antrieb läuft auf seiner Frequenz.
+- **Laufstreifen *beide*:** Tempo wie *hell*; bei ungerader Durchlaufzahl tauschen hell und dunkel
+  einmal je Clip weich über 1,2 s.
+- **Pult:** während des Exports ein Standbild, Video-Knopf sofort gesperrt, Öffnen eines anderen
+  Titels wartet aufs Video. Neue Statussätze: „bereite die Spur vor", „ruckt zweimal in dieselbe
+  Richtung", „zu wenige Schläge für einen Takt", „das Video darunter läuft nicht im Kreis".
+
+### Offen — Caspar_D entscheidet
+
+1. **Antrieb bei 1–7 Schlägen ohne Takt** läuft auf der Frequenz (tempoVerh 2,7–3,0), die Vorschau
+   pulst nur auf den wenigen Schlägen. Einfrieren wie Risse/Einschlag/Schritt?
+2. **Teiler-Lockerung** wählt Teilbarkeit vor Länge (puls-teiler8-dreiviertel: 5,03 s mit M 12 statt
+   7,57 s mit M 18). Lieber die längere?
+3. **Laufstreifen *beide*, ungerade:** weicher Farbtausch einmal je Clip — oder gerade Zahl, doppeltes Tempo?
+4. **Fahrt:** Zielwechsel alle 4,75 statt 8 s (Tempo 8, L 9,5) — oder stehender Fleck?
+5. **Schritt auf der Eins:** A ist der Schlag vor der Eins, nicht die vorige Eins; der Fleck springt an
+   jeder Eins (auch im Pult).
+6. **Schwaden bei Tempo 0,2:** Überblendung je Clip hebt tempoVerh auf 2,42 — am Bild ansehen.
+7. **Rauschshader-Tempo** gegen den alten Export: Filmnebel +11 %, Flammen +6 bis 11 %, Wellen +7 %.
+
+### Offen — technisch
+
+- **Bewegtbild als Quelle** loopt nicht (nur ehrlich gemeldet; `currentTime` je Bild ist ungebaut).
+- `lpBahn` rundet zwischen 1 und 1,5 Umläufen auf 1 (bis 1,5×); Bogen, Schwenk und Laser-Richtung
+  laufen über `lpP` mit Mindestumlauf (Tempo 16, L 9,5: 1,7×). Nicht angefasst.
+- Partikel mit Quelle (`flugbahn`): `tau=lpP(…)` kürzt lange Leben, die Fahne wird kürzer.
+- Taumeln, *wandern*, Glühwürmchen-Blinken und Flügel sind im Umbruch-Weg weiter gerastet.
+- Leistung der Shader-Exportform nur in SwiftShader gemessen (1,2–1,5×); auf der GPU eher mehr.
+- Nicht im Prüfstand messbar, nur gelesen: MediaRecorder-Zeitstempel nach dem Vorlauf, Doppelklick-Sperre,
+  `oeffnen()`/`schliessen()` während des Exports, die neuen Statussätze, Rückfall ohne noise4D.
+- 85 neue Fälle haben noch kein Vorschau-Vergleichsbild (`--vorschau-speichern` einmal nachziehen).
+
+### Wie man misst
+
+```bash
+node labor/nahtpruefung/syntax.js                                   # Inline-Skripte bauen
+node labor/nahtpruefung/naht.mjs --jobs 4 --aus labor/nahtpruefung/ergebnis-nachher.json \
+     --vorschau-vergleich labor/nahtpruefung/vorschau-vorher.json   # alle 170 Fälle
+node labor/nahtpruefung/naht.mjs --faelle streifen-beide,nachzieh   # einzelne
+```
+
+Lesen: `gleich` und `gleichFolge` ≈ 0 ist der exakte Loop; Quotient ≥ 1 nur dann ein Bruch, wenn
+`naht` ≠ `erwartet`. Details, Messgrößen und alle Ergebnisdateien: `labor/nahtpruefung/LIESMICH.md`.
+Vollmessung: `ergebnis-nachher.json` (Log `lauf-nachbesserung.log`), Grundlinie `ergebnis-vorher.json`.
+Die Rohbefunde der Bauer liegen in den Gruppenergebnissen (`ergebnis-zeit-alle`, `-leuchten`,
+`-partikel`, `-stoerungen`, `-shader`, `-raender*`).

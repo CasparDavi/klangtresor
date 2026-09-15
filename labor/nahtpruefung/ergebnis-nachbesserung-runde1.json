@@ -1,0 +1,1839 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-15T00:53:43.302Z",
+ "lange": 360,
+ "dauerS": 183,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "licht",
+   "typ": "licht",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 54.419,
+   "erwartet": 54.419,
+   "p95": 54.551,
+   "quotient": 0.998,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 8.242,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 14.95,
+   "vorschauRegression": 0,
+   "dauerMs": 9450,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "schatten",
+   "typ": "schatten",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 62.759,
+   "erwartet": 62.759,
+   "p95": 36.111,
+   "quotient": 1.738,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 4.413,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 17.054,
+   "vorschauRegression": 0,
+   "dauerMs": 10465,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser",
+   "typ": "laser",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Ursprung wandern, Bauart gitter (Vorgabe)",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 14.229,
+   "erwartet": 14.229,
+   "p95": 19.592,
+   "quotient": 0.726,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 2.487,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 27.79,
+   "vorschauRegression": 0,
+   "dauerMs": 13380,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streifen",
+   "typ": "streifen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ton hell (Vorgabe)",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2.85,
+   "erwartet": 2.85,
+   "p95": 2.958,
+   "quotient": 0.963,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 30.179,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 19.278,
+   "vorschauRegression": 0,
+   "dauerMs": 10624,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0.055,
+   "gleichFolge": 0.055,
+   "naht": 0.055,
+   "erwartet": 0,
+   "p95": 0.007,
+   "quotient": 0.109,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0.004,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 19.522,
+   "vorschauRegression": 0,
+   "dauerMs": 12058,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-fahrt",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 52.163,
+   "erwartet": 52.163,
+   "p95": 49.479,
+   "quotient": 1.054,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 4.58,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 8.533,
+   "vorschauRegression": 0,
+   "dauerMs": 5437,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-wandern-punkte",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2,
+   "erwartet": 2,
+   "p95": 5.413,
+   "quotient": 0.369,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0.112,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 8.99,
+   "vorschauRegression": 0,
+   "dauerMs": 5742,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht-licht",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Scheinwerfer wandernd davor",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 68.102,
+   "erwartet": 68.102,
+   "p95": 69.34,
+   "quotient": 0.982,
+   "gl": true,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 10.675,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 47.819,
+   "msGLExport": 37.159,
+   "vorschauRegression": 0,
+   "dauerMs": 17199,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streifen-beide",
+   "typ": "streifen",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "round(L/9) ungerade",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2.85,
+   "erwartet": 2.85,
+   "p95": 3.087,
+   "quotient": 0.923,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 19.053,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 13.165,
+   "vorschauRegression": 0,
+   "dauerMs": 6811,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wackeln-kick-ungerade",
+   "typ": "wackeln",
+   "gruppe": "stoerungen",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4, M ungerade",
+   "t0": 59.129,
+   "L": 7.567,
+   "N": 227,
+   "takte": 6,
+   "proTakt": 3,
+   "M": 18,
+   "schlaegeImRaster": 115,
+   "jeClip": 18,
+   "W": 270,
+   "H": 360,
+   "vergleich": [
+    192,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 47.094,
+   "erwartet": 47.094,
+   "p95": 55.43,
+   "quotient": 0.85,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 6.903,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 847,
+   "msExport": 13.747,
+   "vorschauRegression": 0,
+   "dauerMs": 5444,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh-098",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 4.513,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 33.952,
+   "dauerMs": 13947,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "nachzieh-puls",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Spur ueber einem Puls",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0.064,
+   "gleichFolge": 0.064,
+   "naht": 67.668,
+   "erwartet": 67.668,
+   "p95": 66.32,
+   "quotient": 1.02,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0.627,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 19.177,
+   "dauerMs": 9332,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "licht-wandernd-tempo3",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Senkrechte eigene Umlaufzahl, Waagerechte 3",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 54.884,
+   "erwartet": 54.884,
+   "p95": 54.307,
+   "quotient": 1.011,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 3.504,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 8.512,
+   "dauerMs": 5406,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "schatten-fahrt",
+   "typ": "schatten",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 67.109,
+   "erwartet": 67.109,
+   "p95": 54.297,
+   "quotient": 1.236,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 2.439,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 9.504,
+   "dauerMs": 5684,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "licht-fahrt-tempo2",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "mehrere Ziele je Clip",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 53.553,
+   "erwartet": 53.553,
+   "p95": 49.247,
+   "quotient": 1.087,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 6.406,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 8.979,
+   "dauerMs": 5754,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "laser-wandern-gitter-tempo3",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 33.604,
+   "erwartet": 33.604,
+   "p95": 32.883,
+   "quotient": 1.022,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 3.19,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 16.392,
+   "dauerMs": 8137,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "streifen-beide-tempo4",
+   "typ": "streifen",
+   "gruppe": "stoerungen2",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "zweiter Titel",
+   "t0": 59.129,
+   "L": 8.4,
+   "N": 252,
+   "takte": 5,
+   "proTakt": 4,
+   "M": 20,
+   "schlaegeImRaster": 109,
+   "jeClip": 20,
+   "W": 270,
+   "H": 360,
+   "vergleich": [
+    192,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 4.642,
+   "erwartet": 4.642,
+   "p95": 6.75,
+   "quotient": 0.688,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 19.275,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 847,
+   "msExport": 16.5,
+   "dauerMs": 7893,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "linse-bewegung-licht",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Scheinwerfers allein (Nebel 0 schaltet nur die Bewegungsmessung ein)",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 56.708,
+   "erwartet": 56.708,
+   "p95": 57.268,
+   "quotient": 0.99,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.789,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.951,
+   "bewegungVorschau": 1.519,
+   "tempoVerh": 1.284,
+   "kontrastExport": {
+    "kontrast": [
+     54.395,
+     67.178
+    ],
+    "muster": [
+     10.458,
+     23.456
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.166,
+     67.735
+    ],
+    "muster": [
+     24.413,
+     46.948
+    ]
+   },
+   "msExport": 89.155,
+   "msGLExport": 68.174,
+   "msVorschau": 347.857,
+   "msGLVorschau": 256.677,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 44730,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "linse-bewegung-licht-fahrt",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo der Fahrt allein",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 59.491,
+   "erwartet": 59.491,
+   "p95": 59.411,
+   "quotient": 1.001,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 16.097,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.769,
+   "bewegungVorschau": 1.24,
+   "tempoVerh": 1.427,
+   "kontrastExport": {
+    "kontrast": [
+     57.701,
+     67.732
+    ],
+    "muster": [
+     8.29,
+     24.284
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     57.376,
+     67.054
+    ],
+    "muster": [
+     0.436,
+     7.219
+    ]
+   },
+   "msExport": 87.86,
+   "msGLExport": 67.192,
+   "msVorschau": 344.953,
+   "msGLVorschau": 252.613,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 44358,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "linse-bewegung-laser-wandern",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs allein",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 21.197,
+   "erwartet": 21.197,
+   "p95": 28.742,
+   "quotient": 0.737,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 3.741,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.628,
+   "bewegungVorschau": 5,
+   "tempoVerh": 0.526,
+   "kontrastExport": {
+    "kontrast": [
+     39.834,
+     41.994
+    ],
+    "muster": [
+     1.797,
+     6.917
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     39.771,
+     43.549
+    ],
+    "muster": [
+     2.863,
+     13.76
+    ]
+   },
+   "msExport": 140.226,
+   "msGLExport": 93.019,
+   "msVorschau": 398.087,
+   "msGLVorschau": 256.487,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 62080,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "linse-bewegung-streifen-beide",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo der Laufstreifen beide allein",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2.829,
+   "erwartet": 2.829,
+   "p95": 3.096,
+   "quotient": 0.914,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 18.982,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.956,
+   "bewegungVorschau": 0.905,
+   "tempoVerh": 1.056,
+   "kontrastExport": {
+    "kontrast": [
+     39.47,
+     45.031
+    ],
+    "muster": [
+     13.405,
+     24.074
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     42.115,
+     45.241
+    ],
+    "muster": [
+     20.543,
+     23.998
+    ]
+   },
+   "msExport": 90.063,
+   "msGLExport": 63.144,
+   "msVorschau": 314.68,
+   "msGLVorschau": 220.587,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 44421,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-kurz34-wackeln",
+   "typ": "wackeln",
+   "gruppe": "raender",
+   "titel": "c",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4, ein Takt 5,1 s: M 3 ungerade",
+   "t0": 55.556,
+   "L": 5.1,
+   "N": 153,
+   "takte": 1,
+   "proTakt": 3,
+   "M": 3,
+   "schlaegeImRaster": 31,
+   "jeClip": 3,
+   "W": 270,
+   "H": 360,
+   "vergleich": [
+    192,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 55.792,
+   "erwartet": 55.792,
+   "p95": 47.104,
+   "quotient": 1.184,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 10.533,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 847,
+   "msExport": 12.411,
+   "dauerMs": 3359,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-wenige7",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: kein Raster",
+   "t0": 60.3,
+   "L": 10,
+   "N": 300,
+   "takte": 0,
+   "proTakt": 0,
+   "M": 0,
+   "schlaegeImRaster": 0,
+   "jeClip": 0,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 44.285,
+   "erwartet": 44.285,
+   "p95": 115.935,
+   "quotient": 0.382,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 36.203,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 7,
+   "bewegungExport": 22.234,
+   "bewegungVorschau": 8.174,
+   "tempoVerh": 2.72,
+   "msExport": 45.772,
+   "dauerMs": 18753,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-stoerungen-kurz",
+   "typ": "sicherung",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "seltene Fenster laenger als L",
+   "t0": 57.035,
+   "L": 5.1,
+   "N": 153,
+   "takte": 1,
+   "proTakt": 4,
+   "M": 4,
+   "schlaegeImRaster": 41,
+   "jeClip": 4,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 27.667,
+   "erwartet": 27.667,
+   "p95": 22.888,
+   "quotient": 1.209,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 21.36,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 52.337,
+   "dauerMs": 10380,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-leuchten-langsam-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Fahrt langsamer als L",
+   "t0": 57.035,
+   "L": 5.1,
+   "N": 153,
+   "takte": 1,
+   "proTakt": 4,
+   "M": 4,
+   "schlaegeImRaster": 41,
+   "jeClip": 4,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 127.978,
+   "erwartet": 127.978,
+   "p95": 25.469,
+   "quotient": 5.025,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 11.437,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 11.53,
+   "dauerMs": 3616,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-nachzieh-zufall-kurz",
+   "typ": "nachzieh",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Gedaechtnis ueber mehrere Runden",
+   "t0": 57.035,
+   "L": 5.1,
+   "N": 153,
+   "takte": 1,
+   "proTakt": 4,
+   "M": 4,
+   "schlaegeImRaster": 41,
+   "jeClip": 4,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 13.129,
+   "erwartet": 13.129,
+   "p95": 17.319,
+   "quotient": 0.758,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 4.916,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 107.35,
+   "dauerMs": 22005,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "linse-bewegung-laser-wandern-gitter",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs, Gitter ohne Scanner-Nachleuchten",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 62.931,
+   "erwartet": 62.931,
+   "p95": 39.896,
+   "quotient": 1.577,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 8.523,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 5.695,
+   "bewegungVorschau": 5.205,
+   "tempoVerh": 1.094,
+   "kontrastExport": {
+    "kontrast": [
+     40.806,
+     52.751
+    ],
+    "muster": [
+     9.291,
+     22.065
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     41.758,
+     47.138
+    ],
+    "muster": [
+     9.954,
+     22.166
+    ]
+   },
+   "msExport": 104.37,
+   "msGLExport": 74.564,
+   "msVorschau": 287.223,
+   "msGLVorschau": 207.46,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 47282,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-nurEinsen-puls",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Teiler 8 allein",
+   "t0": 59.286,
+   "L": 6.333,
+   "N": 190,
+   "takte": 4,
+   "proTakt": 1,
+   "M": 4,
+   "schlaegeImRaster": 31,
+   "jeClip": 4,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 117.99,
+   "erwartet": 117.99,
+   "p95": 6.206,
+   "quotient": 19.013,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 11.407,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 211,
+   "msExport": 4.431,
+   "dauerMs": 2892,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-wenige7-risse",
+   "typ": "risse",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: Vorschau gewachsen, Export ohne Raster",
+   "t0": 60.3,
+   "L": 10,
+   "N": 300,
+   "takte": 0,
+   "proTakt": 0,
+   "M": 0,
+   "schlaegeImRaster": 0,
+   "jeClip": 0,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0.86,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 7,
+   "msExport": 13.099,
+   "dauerMs": 7285,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-wenige7-einschlag",
+   "typ": "einschlag",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins, alle treffen, Clip kurz nach den Schlaegen",
+   "t0": 61.5,
+   "L": 10,
+   "N": 300,
+   "takte": 0,
+   "proTakt": 0,
+   "M": 0,
+   "schlaegeImRaster": 0,
+   "jeClip": 0,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0,
+   "erwartet": 0,
+   "p95": 0,
+   "quotient": 0,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 0.708,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 7,
+   "msExport": 19.344,
+   "dauerMs": 9604,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "rand-wenige7-schritt-bewegung",
+   "typ": "filmnebel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "Schritt auf 7 Schlaegen: Vorschau steht nach dem letzten, Export springt je Sekunde (Nebel 0 schaltet nur die Bewegungsmessung ein)",
+   "t0": 61.5,
+   "L": 10,
+   "N": 300,
+   "takte": 0,
+   "proTakt": 0,
+   "M": 0,
+   "schlaegeImRaster": 0,
+   "jeClip": 0,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 56.548,
+   "erwartet": 56.548,
+   "p95": 57.534,
+   "quotient": 0.983,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 21.712,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 7,
+   "bewegungExport": 3.384,
+   "bewegungVorschau": 1.11,
+   "tempoVerh": 3.047,
+   "kontrastExport": {
+    "kontrast": [
+     55.606,
+     66.759
+    ],
+    "muster": [
+     1.049,
+     7.996
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     60.072,
+     67.177
+    ],
+    "muster": [
+     9.751,
+     47.834
+    ]
+   },
+   "msExport": 50.336,
+   "msGLExport": 38.414,
+   "msVorschau": 137.803,
+   "msGLVorschau": 95.37,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 23535,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "nachbess-bewegung-licht-fest",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe zu linse-bewegung-licht: dieselbe Leuchte ohne Bewegung - wieviel tempoVerh kommt vom Puls allein",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 59.227,
+   "erwartet": 59.227,
+   "p95": 59.32,
+   "quotient": 0.998,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 0.177,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.687,
+   "bewegungVorschau": 1.232,
+   "tempoVerh": 1.37,
+   "kontrastExport": {
+    "kontrast": [
+     56.869,
+     66.907
+    ],
+    "muster": [
+     0.433,
+     7.571
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     57.362,
+     66.907
+    ],
+    "muster": [
+     0.426,
+     7.181
+    ]
+   },
+   "msExport": 72.958,
+   "msGLExport": 57.73,
+   "msVorschau": 310.953,
+   "msGLVorschau": 228.837,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 37691,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "nachbess-bewegung-licht-tempo8",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "wandernd Tempo 8: 1,19 Umlaeufe waagerecht, 1,54 senkrecht - rastet, pendelt nicht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 63.612,
+   "erwartet": 63.612,
+   "p95": 61.232,
+   "quotient": 1.039,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 13.867,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.749,
+   "bewegungVorschau": 1.945,
+   "tempoVerh": 1.413,
+   "kontrastExport": {
+    "kontrast": [
+     54.425,
+     65.546
+    ],
+    "muster": [
+     28.44,
+     44.587
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     56.024,
+     68.246
+    ],
+    "muster": [
+     23.507,
+     49.056
+    ]
+   },
+   "msExport": 85.741,
+   "msGLExport": 65.855,
+   "msVorschau": 267.557,
+   "msGLVorschau": 190.093,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 40467,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "nachbess-bewegung-streifen-beide-tempo30",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Laufstreifen beide am Reglerende: vorher 6,3-mal so schnell",
+   "t0": 60.873,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2.854,
+   "erwartet": 2.854,
+   "p95": 3.094,
+   "quotient": 0.923,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 15.083,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.91,
+   "bewegungVorschau": 0.275,
+   "tempoVerh": 3.305,
+   "kontrastExport": {
+    "kontrast": [
+     43.167,
+     44.915
+    ],
+    "muster": [
+     19.458,
+     23.443
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     43.73,
+     44.271
+    ],
+    "muster": [
+     11.268,
+     22.552
+    ]
+   },
+   "msExport": 84.498,
+   "msGLExport": 59.956,
+   "msVorschau": 251.647,
+   "msGLVorschau": 172.287,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 39504,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  },
+  {
+   "name": "nachbess-streifen-beide-tempo8",
+   "typ": "streifen",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "beide, Tempo 8: ein Durchlauf je Clip (ungerade) - Farbtausch einmal je Clip, sonst hell-Tempo",
+   "t0": 60.873,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 2.854,
+   "erwartet": 2.854,
+   "p95": 3.09,
+   "quotient": 0.924,
+   "gl": null,
+   "glSchleife": [],
+   "tiefe": true,
+   "vorschauAbw": 15.047,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "msExport": 5.765,
+   "dauerMs": 3157,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "vorschauRegression": "kein Vergleichsbild"
+  }
+ ]
+}

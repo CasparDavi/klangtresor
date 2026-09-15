@@ -1,0 +1,1050 @@
+{
+ "stand": "bdbb44c",
+ "indexGeaendert": true,
+ "datum": "2026-09-14T23:33:44.808Z",
+ "lange": 360,
+ "dauerS": 183,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  }
+ },
+ "jetzt": 60.3,
+ "faelle": [
+  {
+   "name": "filmnebel",
+   "typ": "filmnebel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0.098,
+   "erwartet": 0.098,
+   "p95": 0.169,
+   "quotient": 0.195,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 0.435,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.032,
+   "bewegungVorschau": 0.027,
+   "tempoVerh": 1.194,
+   "kontrastExport": {
+    "kontrast": [
+     40.619,
+     40.83
+    ],
+    "muster": [
+     0.499,
+     0.622
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     40.561,
+     40.842
+    ],
+    "muster": [
+     0.449,
+     0.619
+    ]
+   },
+   "msExport": 103.044,
+   "msVorschau": 368.08,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 50991,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-torus",
+   "typ": "filmnebel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 0.367,
+   "erwartet": 0.367,
+   "p95": 0.564,
+   "quotient": 0.651,
+   "gl": false,
+   "glSchleife": [
+    "filmnebel:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 0.382,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 0.104,
+   "bewegungVorschau": 0.027,
+   "tempoVerh": 3.802,
+   "kontrastExport": {
+    "kontrast": [
+     40.49,
+     40.865
+    ],
+    "muster": [
+     0.551,
+     0.691
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     40.561,
+     40.842
+    ],
+    "muster": [
+     0.449,
+     0.619
+    ]
+   },
+   "msExport": 106.195,
+   "msVorschau": 371.21,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 52029,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 28.934,
+   "erwartet": 28.934,
+   "p95": 31.928,
+   "quotient": 0.906,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.417,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.477,
+   "bewegungVorschau": 2.058,
+   "tempoVerh": 1.204,
+   "kontrastExport": {
+    "kontrast": [
+     47.94,
+     50.75
+    ],
+    "muster": [
+     8.596,
+     11.124
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     49.065,
+     50.043
+    ],
+    "muster": [
+     8.936,
+     10.602
+    ]
+   },
+   "msExport": 59.782,
+   "msVorschau": 193.837,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 31761,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-torus",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 29.595,
+   "erwartet": 29.595,
+   "p95": 30.536,
+   "quotient": 0.969,
+   "gl": false,
+   "glSchleife": [
+    "flammen:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.339,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.702,
+   "bewegungVorschau": 2.058,
+   "tempoVerh": 1.313,
+   "kontrastExport": {
+    "kontrast": [
+     48.926,
+     50.072
+    ],
+    "muster": [
+     8.316,
+     10.269
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     49.065,
+     50.043
+    ],
+    "muster": [
+     8.936,
+     10.602
+    ]
+   },
+   "msExport": 59.226,
+   "msVorschau": 201.903,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 31535,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-licht",
+   "typ": "filmnebel",
+   "gruppe": "kombination",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Nebel braucht Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 58.249,
+   "erwartet": 58.249,
+   "p95": 63.342,
+   "quotient": 0.92,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.918,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.285,
+   "bewegungVorschau": 1.55,
+   "tempoVerh": 1.474,
+   "kontrastExport": {
+    "kontrast": [
+     53.996,
+     67.162
+    ],
+    "muster": [
+     25.178,
+     43.027
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.243,
+     67.855
+    ],
+    "muster": [
+     23.816,
+     46.421
+    ]
+   },
+   "msExport": 126.322,
+   "msVorschau": 448.38,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 62797,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-licht-torus",
+   "typ": "filmnebel",
+   "gruppe": "kombination",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Nebel braucht Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 59.641,
+   "erwartet": 59.641,
+   "p95": 63.247,
+   "quotient": 0.943,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.752,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.341,
+   "bewegungVorschau": 1.55,
+   "tempoVerh": 1.51,
+   "kontrastExport": {
+    "kontrast": [
+     54.054,
+     67.171
+    ],
+    "muster": [
+     25.081,
+     42.994
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.243,
+     67.855
+    ],
+    "muster": [
+     23.816,
+     46.421
+    ]
+   },
+   "msExport": 128.42,
+   "msVorschau": 461.033,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 63308,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-luftzug1",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach rechts, schnell, mit Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 60.052,
+   "erwartet": 60.052,
+   "p95": 62.233,
+   "quotient": 0.965,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.945,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.327,
+   "bewegungVorschau": 1.608,
+   "tempoVerh": 1.448,
+   "kontrastExport": {
+    "kontrast": [
+     53.944,
+     67.098
+    ],
+    "muster": [
+     25.134,
+     43.012
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.346,
+     67.76
+    ],
+    "muster": [
+     23.866,
+     46.619
+    ]
+   },
+   "msExport": 113.313,
+   "msVorschau": 497.107,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 59109,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-luftzug1-torus",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach rechts, schnell, mit Licht",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 59.641,
+   "erwartet": 59.641,
+   "p95": 63.247,
+   "quotient": 0.943,
+   "gl": false,
+   "glSchleife": [
+    "filmnebel:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 14.876,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.341,
+   "bewegungVorschau": 1.608,
+   "tempoVerh": 1.456,
+   "kontrastExport": {
+    "kontrast": [
+     54.054,
+     67.171
+    ],
+    "muster": [
+     25.081,
+     42.994
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     55.346,
+     67.76
+    ],
+    "muster": [
+     23.866,
+     46.619
+    ]
+   },
+   "msExport": 113.296,
+   "msVorschau": 492.543,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 58735,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-schwer-still",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kriecht langsam, dicke Ballen",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 59.721,
+   "erwartet": 59.721,
+   "p95": 56.909,
+   "quotient": 1.049,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 7.885,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.83,
+   "bewegungVorschau": 1.243,
+   "tempoVerh": 1.472,
+   "kontrastExport": {
+    "kontrast": [
+     48.233,
+     60.99
+    ],
+    "muster": [
+     16.511,
+     35.936
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     50.329,
+     61.509
+    ],
+    "muster": [
+     14.405,
+     39.736
+    ]
+   },
+   "msExport": 75.112,
+   "msVorschau": 290.47,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 36596,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-schwer-still-torus",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kriecht langsam, dicke Ballen",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 50.354,
+   "erwartet": 50.354,
+   "p95": 57.602,
+   "quotient": 0.874,
+   "gl": true,
+   "glSchleife": [
+    "filmnebel:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 7.997,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 2.013,
+   "bewegungVorschau": 1.243,
+   "tempoVerh": 1.62,
+   "kontrastExport": {
+    "kontrast": [
+     48.191,
+     60.718
+    ],
+    "muster": [
+     16.561,
+     36.061
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     50.329,
+     61.509
+    ],
+    "muster": [
+     14.405,
+     39.736
+    ]
+   },
+   "msExport": 72.525,
+   "msVorschau": 285.45,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 35513,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-langsam-wind",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsamer Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 34.046,
+   "erwartet": 34.046,
+   "p95": 29.603,
+   "quotient": 1.15,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 3.865,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.273,
+   "bewegungVorschau": 0.912,
+   "tempoVerh": 1.395,
+   "kontrastExport": {
+    "kontrast": [
+     49.052,
+     50.73
+    ],
+    "muster": [
+     8.943,
+     10.145
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.718,
+     50.465
+    ],
+    "muster": [
+     8.334,
+     10.251
+    ]
+   },
+   "msExport": 55.729,
+   "msVorschau": 189.817,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 31129,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-langsam-wind-torus",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsamer Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 34.368,
+   "erwartet": 34.368,
+   "p95": 27.469,
+   "quotient": 1.251,
+   "gl": true,
+   "glSchleife": [
+    "flammen:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.071,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 1.252,
+   "bewegungVorschau": 0.912,
+   "tempoVerh": 1.372,
+   "kontrastExport": {
+    "kontrast": [
+     49.406,
+     50.638
+    ],
+    "muster": [
+     7.889,
+     10.856
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.718,
+     50.465
+    ],
+    "muster": [
+     8.334,
+     10.251
+    ]
+   },
+   "msExport": 56.033,
+   "msVorschau": 194.453,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 31489,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-schnell",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schneller Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 45.93,
+   "erwartet": 45.93,
+   "p95": 36.982,
+   "quotient": 1.242,
+   "gl": true,
+   "glSchleife": [
+    "flammen:ja"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.602,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 4.54,
+   "bewegungVorschau": 4.203,
+   "tempoVerh": 1.08,
+   "kontrastExport": {
+    "kontrast": [
+     48.543,
+     50.727
+    ],
+    "muster": [
+     8.921,
+     10.94
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.816,
+     50.622
+    ],
+    "muster": [
+     8.204,
+     9.895
+    ]
+   },
+   "msExport": 32.173,
+   "msVorschau": 137.953,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 17186,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-schnell-torus",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schneller Aufstieg",
+   "t0": 59.286,
+   "L": 9.5,
+   "N": 285,
+   "takte": 6,
+   "proTakt": 4,
+   "M": 24,
+   "schlaegeImRaster": 129,
+   "jeClip": 24,
+   "W": 254,
+   "H": 360,
+   "vergleich": [
+    181,
+    256
+   ],
+   "gleich": 0,
+   "gleichFolge": 0,
+   "naht": 47.749,
+   "erwartet": 47.749,
+   "p95": 37.882,
+   "quotient": 1.26,
+   "gl": false,
+   "glSchleife": [
+    "flammen:NEIN"
+   ],
+   "tiefe": true,
+   "vorschauAbw": 4.226,
+   "loopNeinAnzeige": [],
+   "schlaegeImDATA": 763,
+   "bewegungExport": 4.785,
+   "bewegungVorschau": 4.203,
+   "tempoVerh": 1.139,
+   "kontrastExport": {
+    "kontrast": [
+     49.407,
+     50.961
+    ],
+    "muster": [
+     8.422,
+     11.802
+    ]
+   },
+   "kontrastVorschau": {
+    "kontrast": [
+     48.816,
+     50.622
+    ],
+    "muster": [
+     8.204,
+     9.895
+    ]
+   },
+   "msExport": 31.952,
+   "msVorschau": 140.81,
+   "vorschauMass": [
+    578,
+    816
+   ],
+   "dauerMs": 17241,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

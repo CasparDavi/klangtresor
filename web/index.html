@@ -27076,7 +27076,7 @@ morgenKnopfPruefen();
    Vollbild-Ergebnisse (post/gl ausser Bloom und Kaustik, dazu die Grund-Pulse) vertragen nur die Verrechnung "Ueber";
    ihre Karte zeigt darum keine Verrechnung. Ablagen tragen fassung:2, aeltere werden beim Laden uebersetzt. */
 var EffektclipStudio = (() => {
-  let root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
+  let exportLaeuft=false, root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
   const $ = s => root ? root.querySelector(s) : null;
 const kf = v => String(v).replace('.',',');
 const ZUST = new Set(['tempo','atempo','frequenz','flimmerTempo','winkel','abkling']);
@@ -27468,16 +27468,73 @@ function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), [bw,bh]=(ber
 /* ---- LOOP-MODUS (Caspar_D, 10.09.2026: "als seemless loop waere schon schoen, gerade bei Schneefall,
    Feuer, Funkenflug"): fuer den Videoexport wird jede Geschwindigkeit auf ein ganzes Vielfaches von
    1/Cliplaenge eingerastet. Dann steht nach L Sekunden jede Flocke, jede Flamme und jeder Streifen
-   wieder genau am Anfang - ein echter Loop, kein Ueberblenden. Die Aenderung ist unsichtbar, weil die
-   Flocke hoechstens ein Prozent schneller faellt. LOOP=0 heisst: normaler Betrieb, nichts rastet ein. */
+   wieder genau am Anfang - ein echter Loop, kein Ueberblenden. LOOP=0 heisst: normaler Betrieb, nichts rastet ein.
+   UNSICHTBAR IST DAS NICHT IMMER (Befund 14.09.2026): der Clip ist 5 bis 10 s lang, das Raster also
+   0,1 bis 0,2 Umlaeufe je Sekunde grob. Eine Rate von 0,05 wird 0,1, eine Periode von 40 s wird 10 s -
+   bis zu fuenfzig Prozent, nicht "hoechstens ein Prozent", wie hier vorher stand. Darum gilt:
+   Vorzeichen bleibt (Wind nach links fliegt auch im Export nach links), 0 bleibt 0 (Stillstand ist
+   ein gueltiger Loop), und nur eine Schwingung, die ueberhaupt schwingt, bekommt mindestens einen
+   ganzen Umlauf - sonst stuende ein Flackern im Export still. Nicht endliche Werte gehen unveraendert
+   durch; ein Aufrufer, der NaN hineingibt, bekommt es wie in der Vorschau zurueck. */
 let LOOP=0;
-const lpR = r => LOOP>0 ? Math.max(1,Math.round(r*LOOP))/LOOP : r;                    /* Rate: Umlaeufe je Sekunde */
-const lpP = p => LOOP>0 ? LOOP/Math.max(1,Math.round(LOOP/Math.max(1e-3,p))) : p;     /* Periode in Sekunden */
+const lpR = r => (LOOP>0 && r!==0 && Math.abs(r)<Infinity) ? Math.sign(r)*Math.max(1,Math.round(Math.abs(r)*LOOP))/LOOP : r;   /* Rate: Umlaeufe je Sekunde */
+const lpP = p => (LOOP>0 && p!==0 && Math.abs(p)<Infinity) ? Math.sign(p)*LOOP/Math.max(1,Math.round(LOOP/Math.max(1e-3,Math.abs(p)))) : p;   /* Periode in Sekunden; Infinity = steht */
 const lpW = w => LOOP>0 ? 2*Math.PI*lpR(w/(2*Math.PI)) : w;                            /* Kreisfrequenz im Sinus */
-const lpV = (v,weite) => LOOP>0 ? Math.max(1,Math.round(v*LOOP/weite))*weite/LOOP : v; /* Geschwindigkeit, die bei `weite` umbricht */
-/* Diese Effekte koennen nicht loopen: der Nachzieheffekt fuettert sich selbst, die vier Shader lesen
-   Rauschen entlang einer geraden Zeitachse (kommt im zweiten Schritt mit vierdimensionalem Rauschen). */
-const LOOP_NEIN=['nachzieh','wellen','kaustik','dunst','flammen'];
+/* Umbruch-Geschwindigkeit (bricht bei `weite` um): ganze Umlaeufe OHNE Mindestens-einen. Eine Flocke,
+   die in der Vorschau in 10 s ein Achtel Bild faellt, stand vorher im Export auf einem ganzen Bild je
+   Clip - achtmal zu schnell. Jetzt rundet sie auf 0 und steht. Ob das besser ist als zu rasen, kann
+   nur der Maler entscheiden; dafuer sagt lpVUmlauf, wie weit die Rundung daneben liegt. */
+const lpV = (v,weite) => (LOOP>0 && v!==0 && Math.abs(v)<Infinity && weite>0) ? Math.sign(v)*Math.round(Math.abs(v)*LOOP/weite)*weite/LOOP : v;
+/* Auskunft zu lpV: m = ganze Umlaeufe je Clip (mit Vorzeichen), echt = die ungerundete Zahl,
+   verhaeltnis = m/echt (1 = unverfaelscht, 0 = steht still statt zu wandern, 2 = doppelt so schnell).
+   Ausserhalb des Loops und bei v=0 ist nichts verfaelscht: verhaeltnis 1. Ein Partikel, dessen
+   verhaeltnis weit von 1 liegt, kann auf Lebensdauer-Betrieb gehen, statt umzubrechen. */
+/* PENDELN STATT RASEN (Gegenpruefung 15.09.2026). Eine Bahn, die in der Vorschau keinen ganzen Umlauf je Clip
+   schafft - der wandernde Scheinwerfer bei Tempo 16 kommt in 9,5 s auf 0,59, der Laser-Ursprung bei Tempo 8 auf
+   0,3 -, bekam von lpR einen ganzen: 1,7- bis 4,2-mal so schnell wie im Pult. Stillstand waere ebenso falsch, die
+   Bahn wandert ja. Also pendelt sie im Export auf ihrem Bahnstueck hin und zurueck: Phase ph+A*sin(2*pi*t/L),
+   A so, dass die mittlere Phasengeschwindigkeit 4A/L die der Vorschau (2*pi*f) trifft, also A=pi*f*L/2. Das
+   schliesst nach L wie ein Umlauf und haelt das Tempo. Ab einem Umlauf je Clip rastet lpR wie bisher. Die
+   Vorschau rechnet an der Aufrufstelle ihren eigenen Ausdruck, hier kommt sie nur der Vollstaendigkeit halber an. */
+function lpBahn(f,t,ph){ if(!(LOOP>0) || f===0 || !(Math.abs(f)<Infinity)) return 2*Math.PI*f*t+ph;
+  const echt=Math.abs(f)*LOOP; return echt>=1 ? 2*Math.PI*lpR(f)*t+ph : ph+Math.sign(f)*Math.PI*echt/2*Math.sin(2*Math.PI*t/LOOP); }
+function lpVUmlauf(v,weite){ if(!(LOOP>0) || v===0 || !(Math.abs(v)<Infinity) || !(weite>0)) return { m:null, echt:null, verhaeltnis:1 };
+  const echt=v*LOOP/weite, m=Math.sign(v)*Math.round(Math.abs(echt)); return { m, echt, verhaeltnis:m/echt }; }
+/* UMLAUFENDE FENSTERNUMMER (Caspar_D, 14.09.2026: "es muss halt der effekt wieder zum Ursprung
+   zurueckkehren auf dem letzten frame"). Wer je Zeitfenster wuerfelt - ein Einbruch alle paar Sekunden,
+   ein Kornwechsel alle paar Bilder, das Zittern je Bild -, zaehlte die Fenster seit Songbeginn: bei t0+L
+   stand dort ein anderer Wurf als bei t0. Im Loop werden die Fenster auf eine ganze Zahl je Clip
+   gerastet (n) und die Nummer modulo n gelesen; dann ist Fenster k+n derselbe Wurf wie k, egal wo t0
+   liegt. Das kleine +1e-6 faengt die Gleitkomma-Rundung, wenn eine Bildzeit genau auf einer
+   Fenstergrenze liegt - sonst faellt dasselbe Bild in der einen Runde links, in der anderen rechts
+   davon. Ausserhalb des Loops die gewohnte Nummer floor(t/p). */
+function lpFenster(t,p){ if(!(LOOP>0)) return Math.floor(t/p); const P=lpP(p), n=Math.max(1,Math.round(LOOP/P)), k=Math.floor(t/P+1e-6); return ((k%n)+n)%n; }
+const lpBildNr = t => lpFenster(t,1/30);   /* Bildnummer im Clip (Exportrate 30), fuer Zufall je Bild */
+/* Gesaeter Zufall fuer den Loop: dieselbe Nummer gibt dieselbe Folge. Math.random bleibt der Vorschau -
+   dort ist jedes Bild neues Rauschen, und so soll es sich weiter anfuehlen; im Export ist es dasselbe
+   Rauschen, nur aus einer Saat, die mit dem Clip umlaeuft. */
+function lpZufall(a){ a|=0; return () => { a=(a+0x6D2B79F5)|0; let x=Math.imul(a^(a>>>15),1|a); x=(x+Math.imul(x^(x>>>7),61|x))^x; return ((x^(x>>>14))>>>0)/4294967296; }; }
+/* Die umlaufende Schlagnummer eines Rastereintrags (drittes Feld), in der Vorschau der Index. */
+const lpSchlag = (S,i) => (LOOP>0&&S[i]&&S[i].length>2) ? S[i][2] : i;
+/* WAS NACH ALLEN REPARATUREN WIRKLICH NICHT LOOPT - je Karte, nicht je Typ. Die Liste war je Typ gebaut
+   und konnte Reglerstellungen nicht ausdruecken; sie meldete das Tote ('dunst') und verschwieg das
+   Brechende (Filmnebel, zufaellige Schlaege, Flackern). Die vier Rauschshader (Filmnebel, Wellen, Kaustik,
+   Flammen) haben seit 15.09.2026 eine Exportform (GL_SCHLEIFE) und brechen nur noch, wenn es WebGL gibt,
+   das 4D-Rauschen aber nicht geladen werden konnte - dann malt der Export ihre Vorschauform. Ohne WebGL
+   malen sie gar nicht (Filmnebel als Leinwandbild ohne Zeit) und loopen. Wer einen Unterfall findet, der
+   bricht, traegt ihn hier mit seiner Reglerstellung ein. */
+function loopNein(e){ return !!GL.gl && !GL.noise4 && (GL_SHADER[e.typ]||'').indexOf('#ifdef LOOPFORM')>=0; }
+/* WIE VIELE SCHLAEGE DER CLIP BRAUCHT, damit diese Karte aufgeht (Caspar_D, 14.09.2026: "dann muessen
+   die schlaege so eingepasst werden, dass es passt"). "Jeder 8. Schlag" geht nur auf, wenn die
+   Schlagzahl des Clips durch 8 teilbar ist; der Kick des Verwackelns wechselt die Richtung, braucht
+   also eine gerade Zahl. ausschnitt() waehlt danach die Taktzahl. */
+/* Zwei Gruende, zwei Folgen, darum zwei Griffe (Gegenpruefung 15.09.2026): geht die GRUPPE nicht auf, kommt am
+   Uebergang ein Schlag einmal frueher; geht die Kick-Zahl des Verwackelns nicht auf, ruckt es zweimal in dieselbe
+   Richtung. Die Statuszeile sagt es je Grund. */
+function loopGruppe(e){ const q=e.lmQuelle||'stetig'; return ((q==='takt'||q==='zufall') && (Number(e.lmTeiler)||1)>=1) ? Math.max(1,Math.round(Number(e.lmTeiler)||1)) : 1; }
+const loopKick = e => e.typ==='wackeln' && !!e.takt;
+function loopTeiler(e){ const n=loopGruppe(e); return loopKick(e) ? n*2/ggT(n,2) : n; }
+const ggT=(a,b)=>{ a=Math.abs(Math.round(a)); b=Math.abs(Math.round(b)); while(b){ [a,b]=[b,a%b]; } return a||1; };
 const tri=ph=>4*Math.abs(((ph%1)+1)%1-0.5)-1;
 function pulswert(t,abkling,nurEins){ let s=0; const S=DATA.schlaege;
   for(let i=S.length-1;i>=0;i--){ const bt=S[i][0]; if(bt>t) continue; const dt=t-bt; if(dt>1.5) break; if(nurEins && S[i][1]!==1) continue; s+=Math.exp(-dt*abkling); }
@@ -27527,11 +27584,15 @@ const lmHash=x=>{ const v=Math.sin(x*12.9898+78.233)*43758.5453; return v-Math.f
    knickt es sichtbar). Gelesen wird entlang der fortlaufenden Periodenzahl, nicht innerhalb
    einer einzelnen - sonst waere in jeder Periode dasselbe Zappeln, also ein Rhythmus statt
    Zufall. Am Ende gespreizt, weil gemitteltes Rauschen sich um die Mitte draengt und die
-   Enden des Kontinuums sonst nie erreicht wuerden (Regel 9). */
-function lmFlacker(seed,u){ let s=0,g=0,a=0.5,f=3;
-  for(let o=0;o<3;o++){ const x=u*f, i=Math.floor(x), tt=x-i, w=tt*tt*(3-2*tt);
-    const v0=lmHash(seed+i*131.7+o*977.3), v1=lmHash(seed+(i+1)*131.7+o*977.3);
-    s+=(v0+(v1-v0)*w)*a; g+=a; a*=0.5; f*=2.3; }
+   Enden des Kontinuums sonst nie erreicht wuerden (Regel 9).
+   IM LOOP (K = Perioden je Clip) liegt das Rauschen auf einem Ring: die Oktaven stehen auf ganzen
+   Faktoren 3, 7, 16 statt 3, 6,9, 15,87, und jede Gitterstelle wird modulo K*f gelesen. Dann ist
+   u=K dieselbe Stelle wie u=0 und das Zappeln schliesst sich ohne Sprung - gleicher Charakter, nur
+   andere Werte als in der Vorschau, die davon nichts merkt (K fehlt dort). */
+function lmFlacker(seed,u,K){ let s=0,g=0,a=0.5,f=3; const ring=K>0;
+  for(let o=0;o<3;o++){ const x=u*f, i=Math.floor(x), tt=x-i, w=tt*tt*(3-2*tt), r=K*f, i1=ring?((i%r)+r)%r:i, i2=ring?(((i+1)%r)+r)%r:i+1;
+    const v0=lmHash(seed+i1*131.7+o*977.3), v1=lmHash(seed+i2*131.7+o*977.3);
+    s+=(v0+(v1-v0)*w)*a; g+=a; a*=0.5; f=ring?(o===0?7:16):f*2.3; }
   return Math.max(0,Math.min(1,(s/g-0.5)*1.7+0.5)); }
 function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&&e.lmAbkling!=null)?e.lmAbkling:1;
   switch(form){ case 'rampe_auf': return p; case 'rampe_ab': return Math.pow(Math.max(0,1-p),ab); case 'peak_an': return p<br*0.5?1:0; case 'peak_aus': return p<br*0.5?0:1;   /* Spitzen halb so breit wie das Rechteck (Tiefen-Check: beide waren derselbe Code) */
@@ -27541,7 +27602,14 @@ function lmForm(form,p,e){ const br=(e&&e.lmBreite!=null)?e.lmBreite:0.3, ab=(e&
 /* Pegel 0..1 des Antriebs zur Zeit t; merkt Phase und Periodenindex am Effekt fuer die Vorschau. */
 function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=null; e._lmRoh=1; if(q==='stetig') return 1;
   const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), form=e.lmForm||'rampe_ab'; let p, idx, aktiv=true;
-  if(q==='hz'){ const hz=lpR(Math.max(0.1,e.lmHz||4)), x=t*hz; idx=Math.floor(x); p=x-idx; }
+  /* IM LOOP LAEUFT DIE NUMMER UM (Caspar_D, 14.09.2026: "es muss halt der effekt wieder zum Ursprung
+     zurueckkehren auf dem letzten frame"). idx zaehlte Perioden bzw. Schlaege fortlaufend; was daran
+     haengt - der Wuerfel der zufaelligen Schlaege, das Flackern, die Saat des Laser-Sprungs - war bei
+     t0+L ein anderer als bei t0. Unter LOOP>0 wird idx darum auf die Perioden je Clip gefaltet (K):
+     bei der Frequenz K=hz*L (ganz, weil hz eingerastet ist), bei Schlaegen die umlaufende Nummer aus
+     dem Raster (drittes Feld), bei Bruchteilen mal k. Die Vorschau hat kein K und bleibt, wie sie war. */
+  let K=0;
+  if(q==='hz'){ const hz=lpR(Math.max(0.1,e.lmHz||4)), x=t*hz; idx=Math.floor(x); p=x-idx; if(LOOP>0){ K=Math.max(1,Math.round(hz*LOOP)); idx=((idx%K)+K)%K; } }
   else { const S=DATA&&DATA.schlaege;
     if(!S||!S.length){
       /* RUECKFALL AUF DIE FESTE FREQUENZ (Caspar_D, 14.09.2026: "damit haben wir den fallback fuer
@@ -27553,9 +27621,9 @@ function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=nu
          auch hier - "jeder 4. Schlag" wird zu einem Viertel der Frequenz -, und "auf der Eins"
          rechnet mit vier, weil ein Takt hier nicht laenger zu erfragen ist. Kein neuer Regler. */
       const n=(q==='eins')?4:(Number(e.lmTeiler)||1);
-      const hz=lpR(Math.max(0.05,(e.lmHz==null?4:e.lmHz)/Math.max(0.05,n))), x=t*hz; idx=Math.floor(x); p=x-idx; }
+      const hz=lpR(Math.max(0.05,(e.lmHz==null?4:e.lmHz)/Math.max(0.05,n))), x=t*hz; idx=Math.floor(x); p=x-idx; if(LOOP>0){ K=Math.max(1,Math.round(hz*LOOP)); idx=((idx%K)+K)%K; } }
     else { const eins=(q==='eins'); let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0){ e._lmRoh=0; return 1; }
-      const teil=eins?1:(Number(e.lmTeiler)||1);
+      const teil=eins?1:(Number(e.lmTeiler)||1), M=(LOOP>0&&S.jeClip>0&&S[i].length>2)?S.jeClip:0, nr=x=>M?S[x][2]:x;
       if(teil<1){
         /* BRUCHTEILE EINES SCHLAGS (Caspar_D, 14.09.2026: "jetzt brauchen wir noch die Bruchteile
            von Schlaegen"). Ueber eins wird GEZAEHLT - jeder zweite, vierte, achte Schlag. Unter
@@ -27565,18 +27633,23 @@ function antriebWert(e,t){ e._lmT=t; const q=e.lmQuelle||'stetig'; e._lmPhase=nu
         const k=Math.max(1,Math.round(1/teil));
         const t0=S[i][0], schritt=Math.max(0.02,(S[i+1]?S[i+1][0]-t0:0.5));
         const roh=(t-t0)/schritt*k, j=Math.max(0,Math.min(k-1,Math.floor(roh)));
-        p=Math.max(0,Math.min(1,roh-j)); idx=i*k+j; }
-      else { const n=Math.max(1,Math.round(teil)); let a=i, b; if(eins){ while(a>0&&S[a][1]!==1) a--; b=a+1; while(b<S.length&&S[b][1]!==1) b++; } else { a=i-(i%n); b=a+n; }
-        const t0=S[a][0]; const schritt=(S[a+1]?S[a+1][0]-t0:0.5); const t1=(b<S.length)?S[b][0]:t0+schritt*(eins?4:n); const L=Math.max(0.05,t1-t0); p=Math.min(1,(t-t0)/L); idx=a; } }
+        p=Math.max(0,Math.min(1,roh-j)); idx=nr(i)*k+j; if(M) K=M*k; }
+      else { const n=Math.max(1,Math.round(teil)); let a=i, b; if(eins){ while(a>0&&S[a][1]!==1) a--; b=a+1; while(b<S.length&&S[b][1]!==1) b++; }
+        /* Gruppen zaehlen im Loop ab der umlaufenden Nummer 0, nicht ab dem Feldanfang. Passt der Teiler
+           trotz eingepasster Taktzahl nicht auf (ausschnitt() sagt das an), ist die letzte Gruppe vor
+           der Naht kuerzer - ein einmal frueherer Schlag, aber kein Sprung im Bild. */
+        else { a=i-(nr(i)%n); b=a+n; if(M&&nr(a)+n>M) b=a+(M-nr(a)); }
+        const t0=S[a][0]; const schritt=(S[a+1]?S[a+1][0]-t0:0.5); const t1=(b<S.length)?S[b][0]:t0+schritt*(eins?4:b-a);   /* b-a statt n: die gekuerzte Gruppe vor der Naht bleibt auch hinter dem Rasterende gekuerzt (Gegenpruefung 15.09.2026); ohne Kuerzung ist b-a gleich n */ const L=Math.max(0.05,t1-t0); p=Math.min(1,(t-t0)/L); idx=nr(a); if(M) K=M; } }
     if(q==='zufall') aktiv = lmHash(idx*3+e.id*31) < (e.lmAnteil==null?0.5:e.lmAnteil); }
   /* DIE SCHLAGNUMMER GEHOERT MIT HERAUS (VIDEO-PLAN 9b.4). antriebWert rechnet `idx` (welcher
      Schlag) und `p` (Phase im Schlag) ohnehin - gab aber nur einen Helligkeitsfaktor zurueck.
      Mit beidem wird aus dem Pult eine POSITIONSquelle statt nur einer Helligkeitsquelle: `idx`
      als Saat fuer eine Winkelwahl gibt je Schlag einen neuen, aber REPRODUZIERBAREN Winkel -
-     reproduzierbar ist die Bedingung, sonst loopt nichts. */
-  p=((p+(e.lmVersatz||0))%1+1)%1; e._lmPhase=p; e._lmIdx=(idx==null?0:idx);
+     reproduzierbar ist die Bedingung, sonst loopt nichts. Allein reicht sie nicht: reproduzierbar heisst
+     nicht periodisch. Im Loop ist idx darum schon oben auf die Perioden je Clip gefaltet. */
+  p=((p+(e.lmVersatz||0))%1+1)%1; e._lmPhase=p; e._lmIdx=(idx==null?0:idx); e._lmK=K;   /* K mit heraus: wer idx-1 liest, laeuft im Loop auf K-1 um */
   /* Uebersprungene Schlaege (Quelle Zufall) ruhen aus - nur "An mit Aus-Spitzen" ruht an (Tiefen-Check: vorher der Kurven-Endwert, bei "Rampe auf" also an). */
-  let f = aktiv ? (form==='flackern' ? lmFlacker(e.id*37+11, idx+p) : lmForm(form,p,e)) : (form==='peak_aus'?1:0);
+  let f = aktiv ? (form==='flackern' ? lmFlacker(e.id*37+11, idx+p, K) : lmForm(form,p,e)) : (form==='peak_aus'?1:0);
   if(e.lmInvers) f=1-f; e._lmRoh=f; return (1-tiefe)+tiefe*f; }
 /* Schub 0..Tiefe fuer Maler, die einen Stoss wollen (Flammenhoehe, Feuer, Stroboskop); stetig = 0. Die Tiefe bleibt drin (Tiefen-Check: vorher herausgerechnet, der Regler war tot). */
 function lmSchub(e,t){ if((e.lmQuelle||'stetig')==='stetig') return 0; antriebWert(e,t); const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe); return tiefe*Math.max(0,Math.min(1,e._lmRoh==null?0:e._lmRoh)); }
@@ -27675,13 +27748,30 @@ function risseBauen(e,Wn,Hn){ const key=[e.einschlaege,e.aeste,e.laenge,e.muster
 function raumUrsprung(e,W,H){ if((e.rmUrsprung||'aussen')==='aussen'){ const a=(e.rmWinkel||0)*2*Math.PI; return [W*(0.5+0.8*Math.cos(a)), H*(0.5+0.8*Math.sin(a))]; } return [W*(e.rmUx==null?0.5:e.rmUx), H*(e.rmUy==null?0:e.rmUy)]; }
 function raumZiel(e,t,W,H,O){ const zx=W*(e.rmZx==null?0.5:e.rmZx), zy=H*(e.rmZy==null?0.5:e.rmZy), bw=e.rmBewegung||'fest', tp=lpP(Math.max(0.2,e.rmTempo||8)), wt=(e.rmWeite==null?0.5:e.rmWeite), ph=t/tp+e.id*0.13;
   const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, ease=u=>u<0.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
-  if(bw==='wandernd') return [zx+W*0.42*wt*Math.sin(2*Math.PI*ph), zy+H*0.42*wt*Math.sin(2*Math.PI*(ph*1.3+e.id*0.2))];
+  /* IM LOOP KEHRT DER FLECK ZURUECK (Caspar_D, 14.09.2026: "es muss halt der effekt wieder zum Ursprung
+     zurueckkehren auf dem letzten frame"). Die Senkrechte laeuft 1,3-mal so schnell wie die Waagerechte -
+     ueber L sind das 1,3 Umlaeufe, und der Fleck sprang an der Naht. Unter LOOP>0 laeuft jede Achse mit ihrer
+     eigenen Rate ueber lpBahn (ganze Umlaeufe oder Pendel, je nach Vorschau-Geschwindigkeit, nicht nach dem
+     Verhaeltnis); die Phase 1,3*0,13+0,2 = 0,369 je Karte bleibt. Die Vorschau rechnet den alten Ausdruck unveraendert. */
+  /* Beide Achsen gehen im Loop ueber lpBahn: unter einem Umlauf je Clip pendeln sie, statt auf einen ganzen zu rasen
+     (Gegenpruefung 15.09.2026, Vorgabe Tempo 16 bei L 9,5: vorher waagerecht und senkrecht je 1 Umlauf, 1,5-mal so viel Bewegung). */
+  if(bw==='wandernd'){ if(LOOP>0){ const rt=Math.max(0.2,e.rmTempo||8); return [zx+W*0.42*wt*Math.sin(lpBahn(1/rt,t,2*Math.PI*e.id*0.13)), zy+H*0.42*wt*Math.sin(lpBahn(1.3/rt,t,2*Math.PI*e.id*0.369))]; }
+    return [zx+W*0.42*wt*Math.sin(2*Math.PI*ph), zy+H*0.42*wt*Math.sin(2*Math.PI*(ph*1.3+e.id*0.2))]; }
   if(bw==='bogen'){ const s=Math.sin(2*Math.PI*ph); return [zx+W*0.46*wt*s, zy-H*0.3*wt*(1-s*s)]; }
   if(bw==='schwenk'){ const base=Math.atan2(zy-O[1],zx-O[0]), reach=Math.hypot(zx-O[0],zy-O[1]), ang=base+Math.sin(2*Math.PI*ph)*wt*Math.PI/2; return [O[0]+Math.cos(ang)*reach, O[1]+Math.sin(ang)*reach]; }
-  if(bw==='fahrt'||bw==='schritt'){ let k,u; const tr=(e.rmTraegheit==null?0.5:e.rmTraegheit);
-    if(bw==='fahrt'){ k=Math.floor(t/tp); u=Math.min(1,(t/tp-k)/Math.max(0.05,tr)); }   /* Traegheit hoch = langes Gleiten, wie beim Schritt (Tiefen-Check: war verkehrt herum) */
-    else { const S=DATA&&DATA.schlaege; if(!S||!S.length){ k=Math.floor(t); u=1; } else { let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0){ k=0; u=1; } else { let a=i; if(e.lmQuelle==='eins') while(a>0&&S[a][1]!==1) a--; k=a; const L=Math.max(0.05,(S[a+1]?S[a+1][0]-S[a][0]:0.5)); u=Math.min(1,(t-S[a][0])/L/Math.max(0.03,tr*0.8)); } } }
-    const P=n=>[zx+W*0.45*wt*(hs(n*2)*2-1), zy+H*0.45*wt*(hs(n*2+1)*2-1)], A=P(k-1), B=P(k), s=ease(u); return [A[0]+(B[0]-A[0])*s, A[1]+(B[1]-A[1])*s]; }
+  if(bw==='fahrt'||bw==='schritt'){ let k,u,K=0; const tr=(e.rmTraegheit==null?0.5:e.rmTraegheit);
+    /* ZIELPUNKTE LAUFEN IM LOOP UM: k zaehlte Ziele fortlaufend, hs(k) wuerfelte bei t0+L neue. Unter LOOP>0
+       wird k auf die Ziele je Clip gefaltet (K), P(k-1) mit. Die Fahrt braucht dafuer mindestens ZWEI Ziele
+       je Clip - bei einem waere A=B und der Fleck stuende, die Fahrt waere keine mehr; lieber etwas
+       schneller hin und her. Der Schritt nimmt die umlaufende Schlagnummer aus dem Raster (drittes Feld),
+       ohne Schlaege die eingerastete Sekunde. Die Vorschau hat kein K und rechnet wie bisher. */
+    /* Die Gleitzeit bleibt im Loop die der Vorschau (Traegheit mal ungerastetes Tempo), hoechstens eine Zielperiode:
+       zwei Ziele je Clip verkuerzen nur das Stehen, nicht das Gleiten (Gegenpruefung 15.09.2026: Vorgabe Tempo 8 bei
+       L 9,5 glitt 1,7-mal so schnell). */
+    if(bw==='fahrt'){ const rt=Math.max(0.2,e.rmTempo||8), tf=LOOP>0 ? LOOP/Math.max(2,Math.round(LOOP/rt)) : tp; k=Math.floor(t/tf); u=LOOP>0 ? Math.min(1,(t-k*tf)/Math.max(0.05*tf,Math.min(tf,tr*rt))) : Math.min(1,(t/tf-k)/Math.max(0.05,tr)); if(LOOP>0) K=Math.round(LOOP/tf); }   /* Traegheit hoch = langes Gleiten, wie beim Schritt (Tiefen-Check: war verkehrt herum) */
+    else { const st=(LOOP>0&&DATA)?DATA.stand:null, S=st!=null?DATA.echt:(DATA&&DATA.schlaege), tt=st!=null?st:t;   /* stand: Ziel wie im Pult zur Zeit stand, der Fleck steht */
+      if(!S||!S.length){ const ts=lpP(1); k=Math.floor(t/ts); u=1; if(LOOP>0) K=Math.round(LOOP/ts); } else { let i=S.length-1; while(i>=0&&S[i][0]>tt) i--; if(i<0){ k=0; u=1; } else { let a=i; if(e.lmQuelle==='eins') while(a>0&&S[a][1]!==1) a--; k=a; if(LOOP>0&&S.jeClip>0&&S[a].length>2){ k=S[a][2]; K=S.jeClip; } const L=Math.max(0.05,(S[a+1]?S[a+1][0]-S[a][0]:0.5)); u=Math.min(1,(tt-S[a][0])/L/Math.max(0.03,tr*0.8)); } } }
+    const um=n=>K?((n%K)+K)%K:n, P=n=>[zx+W*0.45*wt*(hs(n*2)*2-1), zy+H*0.45*wt*(hs(n*2+1)*2-1)], A=P(um(k-1)), B=P(um(k)), s=ease(u); return [A[0]+(B[0]-A[0])*s, A[1]+(B[1]-A[1])*s]; }
   return [zx,zy]; }
 /* Radiales Profil des Flecks: Hotspot in der Mitte, Plateau bis zur Kante, dann weicher Abfall (smoothstep). */
 function poolProfil(e,rho){ const rand=(e.rmRand==null?0.5:e.rmRand), hot=(e.rmHotspot||0), kern=Math.max(0.02,Math.min(0.98,0.05+0.9*rand)); if(rho>=1) return 0;
@@ -27797,6 +27887,35 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
    Alles rein aus t und hs(i) gerechnet: kein Zustand zwischen zwei Bildern, kein Geburtenzaehler.
    Sonst waere das Springen in der Zeitleiste und das Neuzeichnen beim Export kaputt. */
 const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25, schwaden:0.05, gluehwuermchen:0.012, schmetterling:0.03 };
+/* LEBENSDAUER STATT UMBRUCH (Caspar_D, 14.09.2026: "dann muessen die schwaden eben auch so generiert werden,
+   dass sie zum Ausgangszustand zurueckkehren, wind kann ein muster so treiben, das es zur taktzeit wieder
+   genauso anfaengt"). Ein frei fallendes Teilchen loopt beim Umbruch nur, wenn es in L Sekunden eine GANZE
+   Zahl von Bildhoehen zuruecklegt. lpV rundet darauf - Schnee mit 0,6 Bildhoehen je Clip stand damit still
+   oder fiel doppelt so schnell, Wind 0,1 wehte gar nicht mehr. Wo die Rundung das Tempo sichtbar verfaelscht,
+   lebt das Teilchen im Export stattdessen genau L (VIDEO-PLAN 6.8, Klasse 2: Lebensdauer L/k, Startzeiten
+   gleichverteilt): es bewegt sich mit seiner ECHTEN Geschwindigkeit und Richtung, und am Ende seines Lebens
+   blendet es aus, waehrend es an seinem Ursprung wieder einblendet. k=1, weil jede Geburt eine Ueberblendung
+   ist - je laenger das Leben, desto seltener sieht man eine.
+   Die Schwelle: 15 Prozent Tempofehler. Darunter liegt, was man zwischen Vorschau und Export nicht
+   nebeneinander sieht (Geschwindigkeitsunterschiede werden erst im direkten Vergleich ab rund 10 Prozent
+   erkannt, und hier liegen Minuten dazwischen); schnelle Teilchen (Regen, ab 3,5 Umlaeufen je Clip) bleiben
+   damit beim Umbruch, der nie ueberblendet. Dazu eine Untergrenze: 2 Prozent Bildbreite je Clip Drift sind
+   an keinem Teilchen zu sehen, da ist Umbruch mit 0 Umlaeufen besser als eine Ueberblendung. */
+function lpVerfaelscht(v,weite){ const u=lpVUmlauf(v,weite); return u.m!==null && Math.abs(u.m-u.echt)>Math.max(0.15*Math.abs(u.echt),0.02); }
+/* Die Leben eines Teilchens zur Zeit t: [Alter, Gewicht]. Leben c beginnt bei (c-h)*P und dauert P+F; die
+   letzten F Sekunden blendet es aus, waehrend Leben c+1 in denselben F Sekunden einblendet. Die Gewichte
+   ergeben zusammen immer 1 - die Dichte bleibt stehen, nichts ploppt. h aus hs(i) verteilt die
+   Ueberblendungen gleich ueber den Clip. F: 1,2 s ist langsamer als jedes Aufblitzen, hoechstens ein Fuenftel
+   des Lebens - laenger nicht, weil ein Punkt in der Ueberblendung zwei halbhelle Punkte ist. Eine Wolke ist
+   das nicht: zwei halbdichte Schwaden sehen aus wie Rauch, der sich verlagert. Dort gibt der Maler lang=true,
+   F wird fast das halbe Leben. Die Menge Ueberblendung je Bild bleibt dieselbe (jedes Teilchen blendet einmal
+   je Clip), aber sie verteilt sich so langsam, dass eine Schwade nie sichtbar weggeht (gemessen 15.09.2026:
+   bei Tempo 0,2 steht der Rauch in der Vorschau fast, jede Aenderung ist die Ueberblendung).
+   Bei t+P steht dasselbe Alter da: Bild(t0+L)==Bild(t0). */
+function lebensGeister(P,h,t,lang){ const F=lang?P*0.45:Math.min(1.2,P*0.2), s=t/P+h, a=(s-Math.floor(s))*P, u=Math.min(1,a/F), g=u*u*(3-2*u); return a<F?[[a,g],[a+P,1-g]]:[[a,1]]; }
+/* Seitliche Drift und Taumeln je Art, wie sie im Umbruch-Weg des Malers stehen: [Wind, Taumeln x: Weite, Rate,
+   Phase je Teilchen, Taumeln y: Weite, Rate, Phase]. Das Fallen selbst steht in BASIS_ART. */
+const BAHN_ART={ schnee:[0.05,12,0.7,1,0,0,0], regen:[0.3,0,0,0,0,0,0], asche:[0.04,20,0.4,1.3,0,0,0], blasen:[0.04,10,1.6,1.1,0,0,0], staub:[0.02,14,0.25,0.7,8,0.3,1], gluehwuermchen:[0.02,0,0,0,0,0,0], schmetterling:[0.03,0,0,0,9,1.1,2.1], blaetter:[0.08,28,1.2,1,0,0,0], schwaden:[0.05,26,0.3,1.3,0,0,0], funken:[0.1,6,3,2.1,0,0,0] };
 /* Das Gewicht, das jede Art bis heute fest verdrahtet hatte: -1 faellt, +1 steigt. */
 const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1, gluehwuermchen:.35, schmetterling:.15 };
 const Q_REGLER=new Set(['qForm','qUrsprung','qWinkel','qX','qY','qAus','qAusY','qDreh','auftrieb','druck','winkel','streuung','laenge','ausblenden','wind','tempo','art']);
@@ -27836,7 +27955,8 @@ function flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,basis){
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
     if(e.wachsen==='zeit') lim=(LOOP>0?1:Math.min(1,t/Math.max(1,e.dauer)))*(R.maxOrd+1);   /* im Loop ausgewachsen, sonst gaebe es eine Naht */
-    else if(e.wachsen==='takt'){ let b=0; for(const s of DATA.schlaege){ if(s[0]<=t) b++; else break; } lim=b; }
+    else if(e.wachsen==='takt'){ const st=LOOP>0?DATA.stand:null, zaehl=(Sx,bis)=>{ let b=0; for(const s of Sx){ if(s[0]<=bis) b++; else break; } return b; };
+      lim=(LOOP>0&&st==null) ? (DATA.schlaege.length?R.maxOrd+1:0) : st!=null ? zaehl(DATA.echt,st) : zaehl(DATA.schlaege,t); }   /* im Loop mit Raster ausgewachsen wie 'zeit' - Caspar_D, 14.09.2026: "was wachsendes nicht ploetzlich wieder kleiner werden sollte"; ein Aufbau je Clip muesste an der Naht schrumpfen. Ohne Raster, aber mit echten Schlaegen (stand): so weit gewachsen wie im Pult zur Zeit stand. Ganz ohne Schlaege waechst nirgends etwas */
     const zeichne=(farbe,al,br,dx,dy)=>{ cx.strokeStyle=rgba(farbe,al); cx.lineCap='round'; cx.lineJoin='round';
       for(const s of R.segs){ if(s.ord>=lim) continue; const f=Math.min(1,lim-s.ord); const x2=s.x1+(s.x2-s.x1)*f, y2=s.y1+(s.y2-s.y1)*f;
         cx.lineWidth=Math.max(0.3,br*s.w); cx.beginPath(); cx.moveTo(s.x1+dx,s.y1+dy); cx.lineTo(x2+dx,y2+dy); cx.stroke(); } };
@@ -27857,20 +27977,27 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const nf=Math.round(3+e.flecken*14); for(let i=0;i<nf;i++){ const fx=hs()*mw, fy=hs()*mh, fr=(2+hs()*10)*(0.3+0.7*p)*(0.5+e.flecken); const fg=mm.createRadialGradient(fx,fy,0,fx,fy,fr); fg.addColorStop(0,'rgba(0,0,0,'+(0.9*p).toFixed(3)+')'); fg.addColorStop(1,'rgba(0,0,0,0)'); mm.fillStyle=fg; mm.fillRect(fx-fr,fy-fr,fr*2,fr*2); }
     bc.globalCompositeOperation='destination-in'; bc.imageSmoothingEnabled=true; bc.drawImage(e._bm,0,0,Wn,Hn); bc.globalCompositeOperation='source-over';
     cx.globalAlpha=a; cx.drawImage(e._bc,0,0); cx.globalAlpha=1; return; }
-  if(e.typ==='einschlag'){ const a=Math.min(1,e.staerke), S=DATA.schlaege; if(!S.length) return; const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
-    let kopie=null;
-    for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>Math.max(0.6,e.bleiben)) break; if(e.nurEins&&S[j][1]!==1) continue; if(hs(j)>=e.anteil) continue;
-      const x=(0.08+0.84*hs(j+100))*Wn, y=(0.08+0.84*hs(j+200))*Hn, r0=e.groesse*(0.6+0.4*hs(j+300));
-      if(e.ringe&&dt<0.6){ const rr=r0*(1+dt*5), al=(1-dt/0.6)*0.6*a; cx.strokeStyle=rgba(e.farbe,al); cx.lineWidth=1.5; cx.beginPath(); cx.arc(x,y,rr,0,7); cx.stroke(); }
+  if(e.typ==='einschlag'){ const st=LOOP>0?DATA.stand:null, a=Math.min(1,e.staerke), S=st!=null?DATA.echt:DATA.schlaege, tt=st!=null?st:t; if(!S.length) return; const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
+    let kopie=null;   /* stand: die Tropfen, die im Pult zur Zeit stand liegen, stehen still; ein Ring ist ein Augenblick und bleibt dann weg */
+    for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>tt) continue; const dt=tt-bt; if(dt>Math.max(0.6,e.bleiben)) break; if(e.nurEins&&S[j][1]!==1) continue; const q=lpSchlag(S,j); if(hs(q)>=e.anteil) continue;   /* Wurf an der umlaufenden Schlagnummer: der Schlag nach L trifft dieselbe Stelle, und der Rastervorlauf (ganze Clips, mind. 32 s) legt am Clipanfang dieselben liegengebliebenen Tropfen hin wie am Ende */
+      const x=(0.08+0.84*hs(q+100))*Wn, y=(0.08+0.84*hs(q+200))*Hn, r0=e.groesse*(0.6+0.4*hs(q+300));
+      if(e.ringe&&dt<0.6&&st==null){ const rr=r0*(1+dt*5), al=(1-dt/0.6)*0.6*a; cx.strokeStyle=rgba(e.farbe,al); cx.lineWidth=1.5; cx.beginPath(); cx.arc(x,y,rr,0,7); cx.stroke(); }
       if(dt<e.bleiben){ const r=r0*(1-0.35*dt/Math.max(1,e.bleiben)); if(!kopie) kopie=glasKopie(cx,Wn,Hn); linse(cx,kopie,x,y,r,a*(1-dt/Math.max(1,e.bleiben)),e.farbe); } }
     return; }
   if(e.typ==='tropfen'){ const a=Math.min(1,e.staerke), n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
     const stoss=e.boeen?pulswert(t,4,0)*(e.boeenStaerke==null?.5:e.boeenStaerke)*Hn*0.06:0;
     const kopie=glasKopie(cx,Wn,Hn);
     for(let i=0;i<n;i++){ const r=e.groesse*(0.5+0.5*hs(i+3000)), v=(0.4+hs(i+1000))*e.tempo*Hn*0.07, L=Hn+4*r;
-      const y=((hs(i+2000)*L+t*lpV(v,L)+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r, x=hs(i)*Wn+Math.sin(lpW(1.7)*t+i)*e.zittern*3+Math.sin(lpW(0.23)*t+i*2.3)*e.zittern*6;
-      if(e.spur>0){ const sl=Math.min(y+r, e.spur*Hn*0.35*(0.6+0.4*hs(i+5000))); cx.strokeStyle='rgba(255,255,255,'+(0.16*a).toFixed(3)+')'; cx.lineCap='round'; cx.lineWidth=Math.max(0.8,r*0.55); cx.beginPath(); cx.moveTo(x,y-sl); cx.lineTo(x,y); cx.stroke(); }
-      linse(cx,kopie,x,y,r,a,e.farbe); }
+      /* Wie bei den Partikeln (lebensGeister): der Umbruch liegt unter dem Bildrand und ist unsichtbar, aber lpV
+         rundet eine Scheibe, die ein Tropfen in 0,2 bis 0,8 Clips herunterlaeuft, auf 0 oder 1 - er stuende oder
+         raste. Dann lebt er im Export genau L mit echtem Tempo und echtem Zittern und blendet am Ende aus, waehrend
+         er oben an seinem Ursprung wieder auf der Scheibe erscheint. */
+      const leb=LOOP>0&&lpVerfaelscht(v,L)?lebensGeister(LOOP,hs(i+9900),t):null, G=leb?leb.length:1;
+      for(let gi=0;gi<G;gi++){ let y, x, ga=a;
+        if(leb){ const q=leb[gi][0]; ga=a*leb[gi][1]; y=((hs(i+2000)*L+q*v+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r; x=hs(i)*Wn+Math.sin(1.7*q+i)*e.zittern*3+Math.sin(0.23*q+i*2.3)*e.zittern*6; }
+        else { y=((hs(i+2000)*L+t*lpV(v,L)+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r; x=hs(i)*Wn+Math.sin(lpW(1.7)*t+i)*e.zittern*3+Math.sin(lpW(0.23)*t+i*2.3)*e.zittern*6; }
+        if(e.spur>0){ const sl=Math.min(y+r, e.spur*Hn*0.35*(0.6+0.4*hs(i+5000))); cx.strokeStyle='rgba(255,255,255,'+(0.16*ga).toFixed(3)+')'; cx.lineCap='round'; cx.lineWidth=Math.max(0.8,r*0.55); cx.beginPath(); cx.moveTo(x,y-sl); cx.lineTo(x,y); cx.stroke(); }
+        linse(cx,kopie,x,y,r,ga,e.farbe); } }
     return; }
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/lpP(e.tempo))%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
@@ -27884,7 +28011,11 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     let ox,oy,dir;
     if(e.quelle==='fest'){ let ux=e.ux, uy=e.uy; if(ux>0.02&&ux<0.98&&uy>0.02&&uy<0.98){ const dl=ux, dr=1-ux, du=uy, dd=1-uy, mn=Math.min(dl,dr,du,dd); if(mn===dl) ux=-0.08; else if(mn===dr) ux=1.08; else if(mn===du) uy=-0.08; else uy=1.08; }
       ox=Wn*ux; oy=Hn*uy; dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/lpP(tp))*sw; }
-    else { const w=2*Math.PI*t/lpP(tp*4)+e.id; ox=Wn*(0.5+0.8*Math.sin(w)); oy=Hn*(0.5+0.8*Math.cos(w*0.8+e.id*1.3)); dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/lpP(tp/0.7))*sw; }
+    /* Die Bahn um das Bild ist eine Lissajous-Figur: senkrecht 0,8-mal so schnell wie waagerecht. Ueber L
+       sind das 0,8 Umlaeufe, und der Faecherpunkt sprang an der Naht samt Richtung. Unter LOOP>0 geht jede Achse
+       fuer sich ueber lpBahn (Phase 0,8+1,3 = 2,1 je Karte): bei der Vorgabe Tempo 8 schafft die Bahn 0,3 Umlaeufe
+       je Clip und pendelt, statt 3,4- bis 4,2-mal so schnell zu kreisen (Gegenpruefung 15.09.2026). Die Vorschau bleibt. */
+    else { const w=LOOP>0 ? lpBahn(1/(tp*4),t,e.id) : 2*Math.PI*t/lpP(tp*4)+e.id; ox=Wn*(0.5+0.8*Math.sin(w)); oy=Hn*(0.5+0.8*Math.cos(LOOP>0 ? lpBahn(0.8/(tp*4),t,e.id*2.1) : w*0.8+e.id*1.3)); dir=Math.atan2(Hn/2-oy,Wn/2-ox)+Math.sin(2*Math.PI*t/lpP(tp/0.7))*sw; }
     /* Jeder Strahl: weicher Saum und heller Kern; der Ansatz liegt ausserhalb, darum bleibt der Strahl bis weit ins Bild voll
        und laeuft erst am Ende aus (Tiefen-Check: vorher lief er ab dem Ansatz aus und war im Bild fast unsichtbar). */
     lichtOrtMelden(ox, oy, a);
@@ -27921,7 +28052,10 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
          einer Tanzflaeche. Das Raster sitzt in der Bildmitte und sinkt mit der Neigung nach
          unten - ein Bodenraster liegt nicht auf Augenhoehe. */
       const R=Math.max(3,Math.round(e.raster||9)), nei=(e.neigung==null?0.6:e.neigung),
-            dreh=2*Math.PI*((e.drehen||0)*t*0.12), th=nei*1.15,
+            /* Das quadratische Raster deckt sich nach jeder VIERTELdrehung mit sich selbst. Im Loop muss der
+               Winkel nach L also nur auf ein Vielfaches von 90 Grad kommen, nicht auf eine ganze Drehung -
+               sonst drehte die Vorgabe ,15 im Export mehr als fuenfmal so schnell. lpR haelt Vorzeichen und 0. */
+            dreh=(LOOP>0 ? (Math.PI/2)*lpR((e.drehen||0)*0.48)*t : 2*Math.PI*((e.drehen||0)*t*0.12)), th=nei*1.15,
             ct=Math.cos(th), stt=Math.sin(th), cd=Math.cos(dreh), sd=Math.sin(dreh),
             S=Math.max(8,(0.30+1.25*(e.streuung==null?0.3:e.streuung))*0.5*Math.max(Wn,Hn)),
             /* Senkrecht weiter als waagerecht, und die NAECHSTE Reihe liegt UNTEN: ein
@@ -28009,7 +28143,10 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         const S=DATA&&DATA.schlaege; let T=0.5;
         if(S&&S.length>1){ let i=S.length-1; while(i>0&&S[i][0]>t) i--; T=Math.max(0.1,(S[Math.min(S.length-1,i+1)][0]-S[i][0])||0.5); }
         stellen.push([stelle(idx),1]);
-        const rest=1-Math.min(1,(ph*T)/nach); if(rest>0.02) stellen.push([stelle(idx-1),rest*0.7]); }
+        /* Die verglimmende Stange ist die des VORIGEN Schlags. Im Loop ist das vor Nummer 0 die letzte des
+           Clips (K-1), nicht eine Nummer -1, die es nie gab - sonst verglimmt am Clipanfang eine fremde. */
+        const K=LOOP>0?(e._lmK||0):0, vor=K?((idx-1)%K+K)%K:idx-1;
+        const rest=1-Math.min(1,(ph*T)/nach); if(rest>0.02) stellen.push([stelle(vor),rest*0.7]); }
       else { /* NACHGLUEHEN (Caspar_D, 14.09.2026: "der scanner laser glueht nicht nach, die augentraegheit
            muss eingebaut sein ... man sieht keine abgetastete Flaeche"). Eine Spur ueber ein Bild hinweg ist
            ein Bogen, keine Flaeche - was man auf der Buehne sieht, malt das Auge, das rund 0,1 s integriert.
@@ -28106,36 +28243,55 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     cx.globalAlpha=1;
     }
     cx.fillStyle=rgba(e.farbe,a); cx.beginPath(); cx.arc(ox,oy,e.breite*28+2,0,7); cx.fill(); }
-  else if(e.typ==='streifen'){ const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/lpP(e.tempo))%1)*per, bw=e.breite*per, a=Math.min(1,e.staerke), ton=e.ton||'hell';
+  else if(e.typ==='streifen'){ const ton=e.ton||'hell', P=lpP(e.tempo);
+    /* 'BEIDE' WECHSELT HELL UND DUNKEL JE BAND. Nach einer ungeraden Zahl von Durchlaeufen je Clip steht an jeder
+       Stelle die andere Farbe. Vorher wurde darum auf eine gerade Zahl gerastet - bei Tempo 9 und L 9,5 liefen die
+       Streifen 1,9-mal, beim Reglerende 6,3-mal so schnell wie im Pult (Gegenpruefung 15.09.2026). Jetzt laufen sie
+       so schnell wie 'hell', und bei ungerader Zahl tauschen die Farben EINMAL je Clip weich (w, 1,2 s, Smoothstep):
+       in geraden Clipfenstern von 0 nach 1, in ungeraden zurueck - dann gilt w(t+L)=1-w(t), und mit der gekippten
+       Paritaet ist das Bild nach L wieder dasselbe. Wo der Tausch liegt, ist egal; er haengt an t, nicht an t0.
+       Die Vorschau hat kein w und malt jedes Band wie bisher in einer Farbe. */
+    const n=LOOP>0?Math.round(LOOP/P):0; let w=0;
+    if(ton==='beide'&&n%2===1){ const F=Math.min(1.2,0.45*LOOP), k=Math.floor(t/LOOP), r=Math.max(0,Math.min(1,(t-k*LOOP-(LOOP-F))/F)), sm=r*r*(3-2*r); w=(((k%2)+2)%2)?1-sm:sm; }
+    const ang=e.winkel*Math.PI/180, diag=Math.hypot(Wn,Hn), per=diag/e.anzahl, off=((t/P)%1)*per, bw=e.breite*per, a=Math.min(1,e.staerke);
     cx.save(); cx.translate(Wn/2,Hn/2); cx.rotate(ang);
     /* Dunkle Baender multiplizieren, helle gehen ueber die Verrechnung (Tiefen-Check: "dunkle" gab es nur ueber die Verrechnung). */
-    for(let i=-1;i<=e.anzahl+1;i++){ const y=-diag/2+i*per+off, dunkel=(ton==='dunkel')||(ton==='beide'&&((((i-Math.floor(t/lpP(e.tempo)))%2)+2)%2)===1), c=dunkel?'0,0,0':'255,255,255'; const grad=cx.createLinearGradient(0,y,0,y+bw);
-      grad.addColorStop(0,'rgba('+c+',0)'); grad.addColorStop(0.5,'rgba('+c+','+a+')'); grad.addColorStop(1,'rgba('+c+',0)');
-      cx.globalCompositeOperation=dunkel?'multiply':(VMODE[e.verr]||'screen'); cx.fillStyle=grad; cx.fillRect(-diag/2,y,diag,bw); }
+    const band=(y,dunkel,al)=>{ const c=dunkel?'0,0,0':'255,255,255', grad=cx.createLinearGradient(0,y,0,y+bw);
+      grad.addColorStop(0,'rgba('+c+',0)'); grad.addColorStop(0.5,'rgba('+c+','+al+')'); grad.addColorStop(1,'rgba('+c+',0)');
+      cx.globalCompositeOperation=dunkel?'multiply':(VMODE[e.verr]||'screen'); cx.fillStyle=grad; cx.fillRect(-diag/2,y,diag,bw); };
+    for(let i=-1;i<=e.anzahl+1;i++){ const y=-diag/2+i*per+off, par=ton==='beide'&&((((i-Math.floor(t/P))%2)+2)%2)===1, d=(ton==='dunkel')?1:ton==='beide'?(par?1-w:w):0;
+      if(d>0&&d<1){ band(y,false,a*(1-d)); band(y,true,a*d); } else band(y,d===1,a); }
     cx.restore(); }
-  else if(e.typ==='rauschen'){ const bp=e.takt?Math.min(1,pulswert(t,7,0)):1, K=Math.floor(e.koernung*bp*Wn*Hn/60);   /* Tiefen-Check: bei /650 waren es 330 Koerner auf einer Million Pixel - unsichtbar */
-    for(let i=0;i<K;i++){ const x=Math.random()*Wn,y=Math.random()*Hn,v=Math.random(); cx.globalAlpha=(0.25+0.75*v)*Math.min(1,e.staerke); cx.fillStyle=v>.5?'#fff':'#000'; cx.fillRect(x,y,2,2); }
+  else if(e.typ==='rauschen'){ const zuf=LOOP>0?lpZufall(lpBildNr(t)*7919+e.id*104729):Math.random;   /* im Loop dasselbe Rauschen je Bildnummer im Clip: Bild N ist wieder Bild 0 */
+    const bp=e.takt?Math.min(1,pulswert(t,7,0)):1, K=Math.floor(e.koernung*bp*Wn*Hn/60);   /* Tiefen-Check: bei /650 waren es 330 Koerner auf einer Million Pixel - unsichtbar */
+    for(let i=0;i<K;i++){ const x=zuf()*Wn,y=zuf()*Hn,v=zuf(); cx.globalAlpha=(0.25+0.75*v)*Math.min(1,e.staerke); cx.fillStyle=v>.5?'#fff':'#000'; cx.fillRect(x,y,2,2); }
     const D=Math.floor(e.ausfall*bp*26);
-    for(let i=0;i<D;i++){ const y=Math.random()*Hn,x=Math.random()*Wn,w=10+Math.random()*90; cx.globalAlpha=Math.min(1,e.staerke)*(0.5+0.5*Math.random()); cx.fillStyle=Math.random()<.7?'#fff':'#000'; cx.fillRect(x,y,w,1+Math.random()*2); }
+    for(let i=0;i<D;i++){ const y=zuf()*Hn,x=zuf()*Wn,w=10+zuf()*90; cx.globalAlpha=Math.min(1,e.staerke)*(0.5+0.5*zuf()); cx.fillStyle=zuf()<.7?'#fff':'#000'; cx.fillRect(x,y,w,1+zuf()*2); }
     cx.globalAlpha=1; }
   else if(e.typ==='sicherung'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000),
-      env=u=>(u<0.15?u/0.15:1-(u-0.15)/0.85), zit=1-e.zittern*0.5*(0.5+0.5*Math.sin(2*Math.PI*37*t)); let amt=0;
-    if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i)<Math.min(1,e.haeufigkeit/10)){ const u=(t-S[i][0])/dauer; if(u>=0&&u<=1) amt=env(u)*zit; } }
-    else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=env(u)*zit; }
+      env=u=>(u<0.15?u/0.15:1-(u-0.15)/0.85), zit=1-e.zittern*0.5*(0.5+0.5*Math.sin(lpW(2*Math.PI*37)*t)); let amt=0;
+    /* Im Loop wuerfeln Schlag und Fenster an ihrer umlaufenden Nummer: ein Einbruch, der ueber die Naht reicht, laeuft am Clipanfang genauso weiter */
+    if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(lpSchlag(S,i))<Math.min(1,e.haeufigkeit/10)){ const u=(t-S[i][0])/dauer; if(u>=0&&u<=1) amt=env(u)*zit; } }
+    else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L+(LOOP>0?1e-6:0)), kk=lpFenster(t,L), start=k*L+hs(kk)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=env(u)*zit; }
     amt*=Math.min(1,e.staerke);   /* Staerke IST die Tiefe des Einbruchs (Staerke-Regel) */
     if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
   else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse, w=e.wind;
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa; const streu=(e.farbstreu==null?0:e.farbstreu);
     const farbeVon=(i,al)=>{ const x=streu*hs(i+6000); return 'rgba('+Math.round(pa[0]+(pb[0]-pa[0])*x)+','+Math.round(pa[1]+(pb[1]-pa[1])*x)+','+Math.round(pa[2]+(pb[2]-pa[2])*x)+','+al+')'; };
     cx.lineCap='round';
-    /* Windstoss: auf einem zufaelligen Teil der Schlaege ein Stoss mit zufaelliger Richtung und Wucht, klingt ab. */
-    const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege; for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const h=hs(j+7000); if(h<0.35) continue; g+=(hs(j+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
+    /* Windstoss: auf einem zufaelligen Teil der Schlaege ein Stoss mit zufaelliger Richtung und Wucht, klingt ab.
+       Gewuerfelt wird an der UMLAUFENDEN Schlagnummer S[j][2], wo das Exportraster sie hat: der Schlag nach L
+       wuerfelt denselben Stoss wie der am Clipanfang, und weil das Raster ganze Clips Vorlauf hat, klingen am
+       Anfang dieselben Stoesse aus wie am Ende ("wind kann ein muster so treiben, das es zur taktzeit wieder
+       genauso anfaengt"). Die Vorschau hat kein drittes Feld und wuerfelt am Index wie bisher. */
+    const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege; for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const q=S[j][2]!=null?S[j][2]:j, h=hs(q+7000); if(h<0.35) continue; g+=(hs(q+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
     /* AUFTRIEB (Caspar_D, 14.09.2026: "leichter, genauso schwer, schwerer als Luft"). Bis heute stand
        das Vorzeichen fest verdrahtet in jeder Art: Schnee faellt, Asche steigt. Der Regler macht daraus
        eine Einstellung, ohne die Zahlen zu ruehren - der BETRAG geht in lpV, das VORZEICHEN bleibt
-       davor. Das ist keine Feinheit: lpV rastet Geschwindigkeiten auf den Loop ein und kann negative
-       Werte gar nicht darstellen (max(1,round(...))), eine vorzeichenbehaftete Geschwindigkeit im
-       Raster liesse vier von sieben Arten im Export verkehrt herum fliegen. */
+       davor. Das war keine Feinheit: lpV konnte bis zum 14.09.2026 negative Werte gar nicht darstellen
+       (max(1,round(...))), eine vorzeichenbehaftete Geschwindigkeit im Raster liess vier von sieben
+       Arten im Export verkehrt herum fliegen. Heute traegt lpV das Vorzeichen selbst; Betrag hinein
+       und Vorzeichen davor rechnet dasselbe. */
     const au=(typeof e.auftrieb==='number'?e.auftrieb:(ART_AUFTRIEB[e.art]!=null?ART_AUFTRIEB[e.art]:-1));
     const aB=Math.abs(au), aS=-Math.sign(au), quelle=(e.qForm||'bild'), eigen=(quelle!=='bild');
     /* SCHWADEN SIND EIN MEDIUM (Regel 6): sie leuchten nicht selbst, sie nehmen Licht auf. Dafuer
@@ -28158,7 +28314,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       cx=e._vc.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
       cx.globalAlpha=1; cx.filter='none'; cx.clearRect(0,0,Wn,Hn); cx.lineCap='round'; }
     const wa=(e.wandern==null?0:e.wandern);
-    for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn; const sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a); cx.fillStyle=fc; cx.strokeStyle=fc;
+    for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn; const sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=LOOP>0?((t*lpR(0.11*e.tempo)+hs(i+9600))%1+1)%1:((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a);   /* das Aufgehen der Schwade: im Export ganze Zyklen je Clip */ cx.fillStyle=fc; cx.strokeStyle=fc;
       /* UNBERECHENBAR UND TROTZDEM RUND. Drei Schwingungen mit verschiedenen Raten, je Teilchen
          anders verschoben - das Auge findet darin kein Muster. Und weil jede Rate durch lpW auf
          die Clipdauer gerastet wird, steht nach einem Durchlauf jedes Tier wieder da, wo es
@@ -28170,12 +28326,21 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         x0+=wx; y0+=wy; }
       const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
       if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
-      if(e.art==='schnee'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='regen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); cx.globalAlpha=1; }
-      else if(e.art==='asche'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blasen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=al*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='staub'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(t*4+i)); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='gluehwuermchen'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
+      /* Frei fallend im Export: verfaelscht der Umbruch das Tempo (lpVerfaelscht), lebt das Teilchen genau L mit
+         echter Fall- und Windgeschwindigkeit und echtem Taumeln, gezaehlt ab seiner Geburt (lebensGeister). Die
+         Schwade geht dann auch mit echtem Tempo auf. Eine Quelle hat schon Lebensdauer (flugbahn) und bleibt dort. */
+      let leben=null;
+      if(!eigen&&LOOP>0){ const ba=BAHN_ART[e.art]||BAHN_ART.funken, vy=aS*aB*sp*e.tempo*Hn*B, vx=w*Hn*ba[0];
+        if(lpVerfaelscht(vy,Hn)||lpVerfaelscht(vx,Wn)) leben=lebensGeister(LOOP,hs(i+9900),t,schw).map(g=>{ const q=g[0];
+          return [((x0+gx+Math.sin(ba[2]*q+i*ba[3])*ba[1]+vx*q)%Wn+Wn)%Wn, ((y0+Math.sin(ba[5]*q+i*ba[6])*ba[4]+vy*q)%Hn+Hn)%Hn, g[1], ((q*0.11*e.tempo+hs(i+9600))%1+1)%1]; }); }
+      const G=leben?leben.length:1;
+      for(let gi=0;gi<G;gi++){ if(leben){ x=leben[gi][0]; y=leben[gi][1]; al=leben[gi][2]; qs=leben[gi][3]; }
+      if(e.art==='schnee'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='regen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); cx.globalAlpha=1; }
+      else if(e.art==='asche'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blasen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=al*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='staub'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(lpW(4)*t+i));   /* Funkeln gerastet */ cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='gluehwuermchen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
         /* Ein Gluehwuermchen leuchtet nicht dauernd, es blinkt - und jedes fuer sich, mit eigener
            Rate und eigener Phase. Genau das unterscheidet es von einem hellen Punkt.
            WIE LANGSAM (Caspar_D, 14.09.2026: "die viecher blinken zu schnell"): gebaut waren 0,5 bis
@@ -28194,7 +28359,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,sz*4.5,0,7); cx.fill();
           cx.fillStyle=fc; cx.beginPath(); cx.arc(x,y,sz*0.6,0,7); cx.fill(); }
         cx.globalAlpha=1; cx.fillStyle=fc; }
-      else if(e.art==='schmetterling'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='schmetterling'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
         /* Der Flatterschlag: die Fluegel oeffnen und schliessen, und der Koerper taumelt mit.
            Zwei Ellipsen und ein Strich - mehr braucht es bei dieser Groesse nicht, und mehr
            saehe bei acht Bildpunkten ohnehin niemand. */
@@ -28206,8 +28371,8 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.ellipse(sg*sz*0.72*oe,-sz*0.12,sz*0.82*oe,sz*0.95,sg*0.32,0,7); cx.fill(); }
         cx.globalAlpha=al*0.85; cx.beginPath(); cx.ellipse(0,0,Math.max(0.5,sz*0.15),sz*0.7,0,0,7); cx.fill();
         cx.restore(); cx.globalAlpha=1; }
-      else if(e.art==='blaetter'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
-      else if(e.art==='schwaden'){ if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='blaetter'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
+      else if(e.art==='schwaden'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
         /* SCHWADEN (Caspar_D, 14.09.2026: "und rauch kann sich genauso verhalten, nur dass es
            schwaden statt teilchen sind"). Dieselbe Quelle, derselbe Flug - nur gezeichnet wird
            anders: drei weiche Lappen statt eines Punktes, die mit dem Alter aufgehen und duenner
@@ -28232,7 +28397,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           g.addColorStop(0,farbeVon(i,+(di*(0.7+0.3*hb)).toFixed(4))); g.addColorStop(1,farbeVon(i,0));
           zx.fillStyle=g; zx.beginPath(); zx.arc(lx,ly,lr,0,7); zx.fill(); }
         cx.fillStyle=fc; }
-      else { if(!eigen){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } }
+      else { if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
     if(schw){ const lx2=e._rl.getContext('2d'); lx2.setTransform(1,0,0,1,0,0); lx2.globalAlpha=1;
       lx2.globalCompositeOperation='source-over'; lx2.clearRect(0,0,Wn,Hn);
       if(!LICHTMAL&&olicht&&olicht.width>1){ lx2.drawImage(olicht,0,0);
@@ -28310,8 +28475,8 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const weich=Math.max(2,Math.min(Wn*0.08,br*0.5*L*0.30));
     cx.filter='blur('+weich.toFixed(1)+'px)'; cx.drawImage(e._sc,0,0); cx.filter='none'; }
   else if(e.typ==='korn'){ const a=Math.min(1,e.staerke); if(!e._kt){ e._kt=document.createElement('canvas'); e._kt.width=96; e._kt.height=96; e._kn=-1; }
-    const schritt=Math.max(1,Math.round(1+(1-e.tempo)*12)); const fr=Math.floor(t*60/schritt);
-    if(fr!==e._kn){ e._kn=fr; const kx=e._kt.getContext('2d'), im=kx.createImageData(96,96), d=im.data; for(let i=0;i<d.length;i+=4){ const v=68+Math.random()*120|0;   /* Mittel 128: Overlay neutral, hellt nicht auf (Tiefen-Check) */ d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } kx.putImageData(im,0,0); }
+    const schritt=Math.max(1,Math.round(1+(1-e.tempo)*12)), fr=LOOP>0?lpFenster(t,schritt/60):Math.floor(t*60/schritt), schl=(LOOP>0?'L'+LOOP+':':'')+fr;   /* im Loop Kornwechsel je Clip ganz und die Kachel aus der umlaufenden Wechselnummer gesaet; der Schluessel trennt Export- von Vorschaukacheln */
+    if(schl!==e._kn){ e._kn=schl; const zuf=LOOP>0?lpZufall(fr*7919+e.id*104729):Math.random, kx=e._kt.getContext('2d'), im=kx.createImageData(96,96), d=im.data; for(let i=0;i<d.length;i+=4){ const v=68+zuf()*120|0;   /* Mittel 128: Overlay neutral, hellt nicht auf (Tiefen-Check) */ d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } kx.putImageData(im,0,0); }
     cx.globalCompositeOperation=VMODE[e.verr]||'overlay'; cx.globalAlpha=a*0.7; cx.save(); cx.scale(e.koernung,e.koernung); cx.fillStyle=cx.createPattern(e._kt,'repeat'); cx.fillRect(0,0,Wn/e.koernung+1,Hn/e.koernung+1); cx.restore(); cx.globalAlpha=1; }
   else if(e.typ==='strobe'){ const q=e.lmQuelle||'stetig'; if(q==='stetig') return;   /* ohne Antrieb kein Flackern (Tiefen-Check: stetig gab einen Dauerschleier). Das zweite Tor - taktgebunden ohne Takt - ist entfallen: der Antrieb faellt jetzt selbst auf die feste Frequenz zurueck. */
     antriebWert(e,t); const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), ph=(e._lmRoh*2-1)*tiefe, amt=Math.min(1,e.staerke);   /* Welle -Tiefe..+Tiefe: >0 aufblitzen, <0 abdunkeln */
@@ -28324,7 +28489,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
 /* ---- WebGL-Stufe: ein Vollbild-Quad, das Bild als Textur, je Effekt ein Fragment-Shader.
    Rauschen: Simplex-Rauschen aus web/fremd/webgl-noise (Ashima Arts / Stefan Gustavson, MIT),
    zur Laufzeit als Shader-Vorspann geladen. Ohne WebGL oder vor dem Laden zeichnet die Stufe nichts. */
-const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
+const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder:0, noise4:null, _vier:null,
   init(){ if(this.gl||this.tot) return !!this.gl; try{ this.cv=document.createElement('canvas'); this.gl=this.cv.getContext('webgl',{preserveDrawingBuffer:true,premultipliedAlpha:true,alpha:true}); }catch(e){}
     if(!this.gl){ this.tot=true; return false; } const gl=this.gl;
     const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW); this.vb=vb;
@@ -28345,15 +28510,29 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     this.hofCv=document.createElement('canvas');
     this.tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true); return true; },
-  noiseLaden(){ if(this.noise||this.laden) return; this.laden=true; fetch('/fremd/webgl-noise/noise3D.glsl').then(r=>r.ok?r.text():'').then(t=>{ this.noise=t||null; this.laden=false; }).catch(()=>{ this.laden=false; }); },
-  programm(typ){ if(this.prog[typ]!==undefined) return this.prog[typ]; const gl=this.gl, src=GL_SHADER[typ]; if(!src||!this.noise){ return null; }
+  /* Ein fehlendes Rauschen (404, kein Server) wurde vorher JEDES Bild neu angefragt - jetzt erst nach 30 s wieder. */
+  noiseLaden(){ if(this.noise||this.laden||performance.now()<this.wieder) return; this.laden=true; fetch('/fremd/webgl-noise/noise3D.glsl').then(r=>r.ok?r.text():'').then(t=>{ this.noise=t||null; this.laden=false; if(!t) this.wieder=performance.now()+30000; }).catch(()=>{ this.laden=false; this.wieder=performance.now()+30000; }); },
+  /* DAS VIERDIMENSIONALE RAUSCHEN nur fuer den Export (Caspar_D, 14.09.2026: "es muss halt der effekt wieder zum
+     Ursprung zurueckkehren auf dem letzten frame"). Geladen wird es erst, wenn ein Export beginnt, und einmal je
+     Export - nie aus dem Bild heraus, also kein Nachladen je Bild. noise4D.glsl bringt mod289, permute und
+     taylorInvSqrt fuer vec4 ein zweites Mal mit (noise3D hat sie schon); GLSL laesst keine zweite Definition zu,
+     darum fallen genau diese drei heraus. Stimmt die Zahl nicht, ist die Datei eine andere - dann gilt es als
+     nicht geladen und der Export malt die Vorschauform (loopNein meldet es). */
+  vierLaden(){ if(this.noise4) return Promise.resolve(true); if(!this._vier) this._vier=fetch('/fremd/webgl-noise/noise4D.glsl').then(r=>r.ok?r.text():'').catch(()=>'').then(t=>{ let n=0; const rest=t.replace(/vec4 (mod289|permute|taylorInvSqrt)\s*\(\s*vec4 \w+\s*\)\s*\{[^}]*\}/g,()=>{ n++; return ''; });
+      this.noise4=(n===3&&/float snoise\(vec4/.test(rest))?rest:null; this._vier=null; return !!this.noise4; }); return this._vier; },
+  /* schleife: die Exportform desselben Shaders (#define LOOPFORM, dazu das 4D-Rauschen und GL_SCHLEIFE). Die
+     Vorschauform bleibt nach dem Praeprozessor Zeichen fuer Zeichen die alte - er wirft die LOOPFORM-Zweige heraus. */
+  programm(typ,schleife){ const schl=typ+(schleife?'@schleife':''); if(this.prog[schl]!==undefined) return this.prog[schl]; const gl=this.gl, src=GL_SHADER[typ]; if(!src||!this.noise||(schleife&&!this.noise4)){ return null; }
     const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,'attribute vec2 a_pos; varying vec2 v_uv; void main(){ v_uv=a_pos*0.5+0.5; gl_Position=vec4(a_pos,0.0,1.0); }'); gl.compileShader(vs);
-    const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, GL_VORSPANN+this.noise+GL_FBM+src); gl.compileShader(fs);
-    if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){ console.warn('Effektclip-Studio Shader '+typ+': '+gl.getShaderInfoLog(fs)); this.prog[typ]=null; return null; }
-    const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[typ]=null; return null; }
-    pr._loc={}; this.prog[typ]=pr; return pr; },
+    const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, schleife?'#define LOOPFORM\n'+GL_VORSPANN+this.noise+this.noise4+GL_FBM+GL_SCHLEIFE+src:GL_VORSPANN+this.noise+GL_FBM+src); gl.compileShader(fs);
+    if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){ console.warn('Effektclip-Studio Shader '+schl+': '+gl.getShaderInfoLog(fs)); this.prog[schl]=null; return null; }
+    const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[schl]=null; return null; }
+    pr._loc={}; this.prog[schl]=pr; return pr; },
   loc(pr,n){ if(pr._loc[n]===undefined) pr._loc[n]=this.gl.getUniformLocation(pr,n); return pr._loc[n]; },
-  run(e,srcCv,W,H,t,lichtCv,tiefeBild){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; } const pr=this.programm(e.typ); if(!pr) return null; const gl=this.gl;
+  run(e,srcCv,W,H,t,lichtCv,tiefeBild){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; }
+    /* Im Export die loopfaehige Form, wo der Shader eine hat; gelingt sie nicht, die Vorschauform - lieber ein Bild mit Naht als keins. */
+    const schleife=LOOP>0&&!!this.noise4&&GL_SHADER[e.typ].indexOf('#ifdef LOOPFORM')>=0;
+    const pr=(schleife&&this.programm(e.typ,true))||this.programm(e.typ,false); if(!pr) return null; const gl=this.gl;
     if(this.cv.width!==W||this.cv.height!==H){ this.cv.width=W; this.cv.height=H; } gl.viewport(0,0,W,H);
     gl.useProgram(pr); gl.bindBuffer(gl.ARRAY_BUFFER,this.vb); const ap=gl.getAttribLocation(pr,'a_pos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcCv);
@@ -28373,6 +28552,8 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
     u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2)); u('u_hof',l=>gl.uniform1i(l,3));
     u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
+    /* Die Clipphase in doppelter Genauigkeit: t/L modulo 1 haengt nicht an t0, und t0+L ergibt dieselbe Zahl wie t0. */
+    if(schleife){ u('u_loop',l=>gl.uniform1f(l,LOOP)); u('u_phase',l=>gl.uniform1f(l,((t/LOOP)%1+1)%1)); }
     u('u_takt',l=>gl.uniform1f(l, EFFEKTE[e.typ].params.some(p=>p.lm)?lmSchub(e,t):0));
     for(const p of EFFEKTE[e.typ].params){ const v=e[p.k]; if(p.farbe){ const c=[1,3,5].map(q=>parseInt(String(v).slice(q,q+2),16)/255); if(!c.some(isNaN)) u('u_'+p.k,l=>gl.uniform3f(l,c[0],c[1],c[2])); } else if(typeof v==='number') u('u_'+p.k,l=>gl.uniform1f(l,v)); }
     /* OHNE KARTE KEIN TIEFENREGLER. Die Vorgabetextur ist mittleres Grau,
@@ -28386,15 +28567,61 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false,
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
 const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform sampler2D u_tiefe; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
 const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
+/* DIE EXPORTFORM DER RAUSCHSHADER (Caspar_D, 14.09.2026: "wind kann ein muster so treiben, das es zur taktzeit
+   wieder genauso anfaengt"). Rauschen entlang einer geraden Zeitachse kommt nie zurueck. Zwei Bewegungen:
+   WABERN - die Zeit laeuft auf einem Kreis in zwei Achsen des 4D-Rauschens, Radius v*L/2pi. Der Punkt laeuft so
+   schnell wie in der Vorschau die Gerade, und nach einer Runde ist das Feld dasselbe.
+   ZIEHEN - eine Verschiebung kommt auch auf dem Kreis nicht zurueck. Zwei Lagen, um einen halben Clip versetzt,
+   ziehen je mit ECHTER Geschwindigkeit und springen dort zurueck, wo ihr Gewicht null ist (Flow-Map-Verfahren,
+   Dreiecksgewichte). Geteilt durch die Wurzel der Gewichtsquadrate behaelt die Summe die Streuung einer Lage,
+   das Muster wird in der Ueberblendung nicht flau (gemessen: Musterstreuung ueber den Clip 2,89-3,55, Vorschau
+   2,72-3,85 - kein Pulsieren).
+   WARUM NICHT DER TORUS (Rauschen raeumlich periodisch, Drift um ganze Bildbreiten je Clip): er schliesst nur,
+   wenn die Drift eine ganze Periode schafft, und die Periode muss mindestens bildbreit sein, sonst kachelt das
+   Muster. Filmnebel mit Vorgaben zieht in 9,5 s ein Achtel Bild - der Torus machte daraus eine ganze Bildbreite.
+   Am Bild gemessen (15.09.2026, beide exakt, gleich 0): dunkler Rauch Bildwechsel p95 2,45 gegen 0,89 der
+   zwei Lagen, Bewegung 4,0-fach der Vorschau gegen 1,1; Filmnebel Vorgabe 0,56 gegen 0,17 (Vorschau 0,15).
+   Bei den Flammen (schneller Aufstieg) waren beide gleich gut - die zwei Lagen gehen fuer jedes Tempo.
+   MASS: snoise(vec4) streut schwaecher und ist grober als snoise(vec3) (gemessen 15.09.2026, SwiftShader, 512x512:
+   Streuung 0,283 gegen 0,358, Steigung nach dem Angleich 0,199 gegen 0,241). rausch() gleicht beides an, sonst
+   waere der Export flauer und grober als das Pult.
+   Nur im Export (GL.programm mit schleife): die Vorschau rechnet weiter die 3D-Gerade, sie bleibt bitgleich und
+   so schnell wie bisher. */
+const GL_SCHLEIFE=`uniform float u_loop, u_phase;
+float rausch(vec4 q){ return snoise(q*1.21)*1.265; }
+vec2 zeitKreis(float v){ float a=6.2831853*u_phase; return vec2(cos(a),sin(a))*(v*u_loop/6.2831853); }
+float fbm4(vec4 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*rausch(p); p=p*2.02+vec4(1.7,9.2,0.3,0.0); a*=0.5; } return s; }
+/* Lage k (0 oder 1): x = Gewicht, y = Driftzeit in Sekunden um die Lagenmitte. Wer nicht zieht, braucht nur eine Lage. */
+vec2 lage(int k, bool zieht){ if(!zieht) return vec2(k==0?1.0:0.0, 0.0); float f=fract(u_phase+0.5*float(k)); return vec2(1.0-abs(2.0*f-1.0), u_loop*(f-0.5)); }
+/* Die Ueberblendung der Lagen verwandelt das Muster selbst: sie dreht die Mischung in L/2 um eine Vierteldrehung, das
+   sind pi/L Streuungen je Sekunde - bei L 9,5 s so viel wie Wabern mit 0,074 Rauscheinheiten je Sekunde (Steigung
+   der Grundoktave 4,48 Streuungen je Einheit). Beides addiert sich im Quadrat (gemessen: Rauch ohne Zug in einer Lage
+   Bewegung 1,08 der Vorschau, in zwei Lagen 1,20). Wer zieht, wabert darum um diesen Anteil langsamer. */
+float wabern(float v, bool zieht){ if(!zieht) return v; float c=3.14159265/(u_loop*4.48); return sqrt(max(0.0,v*v-c*c)); }
+`;
 const GL_SHADER={
   wellen:`uniform float u_amplitude,u_skala,u_tempo,u_zone,u_aufwind;
 void main(){ vec2 uv=v_uv; float w=mix(1.0, pow(1.0-uv.y,2.0), u_zone);
+#ifdef LOOPFORM
+  bool zieht=u_aufwind>0.0; vec2 l0=lage(0,zieht), l1=lage(1,zieht), d=vec2(0.0);   /* Aufwind zieht in zwei Lagen, das Wabern laeuft im Kreis */
+  if(l0.x>0.0){ vec4 q=vec4(uv*u_skala, zeitKreis(wabern(u_tempo,zieht))); q.y-=l0.y*u_aufwind*2.0; d+=l0.x*vec2(rausch(q), rausch(q+vec4(7.3,2.1,0.0,0.0))); }
+  if(l1.x>0.0){ vec4 q=vec4(uv*u_skala+vec2(31.7,-13.9), zeitKreis(wabern(u_tempo,zieht))+vec2(-21.3,17.1)); q.y-=l1.y*u_aufwind*2.0; d+=l1.x*vec2(rausch(q), rausch(q+vec4(7.3,2.1,0.0,0.0))); }
+  d*=u_amplitude*w/length(vec2(l0.x,l1.x));
+#else
   vec3 p=vec3(uv*u_skala, u_t*u_tempo); p.y-=u_t*u_aufwind*2.0;
   vec2 d=vec2(snoise(p), snoise(p+vec3(7.3,2.1,0.0)))*u_amplitude*w;
+#endif
   gl_FragColor=texture2D(u_tex, clamp(uv+d,0.0,1.0)); }`,
   kaustik:`uniform float u_skala,u_tempo,u_schaerfe; uniform vec3 u_farbe;
-void main(){ vec3 p=vec3(v_uv*u_skala, u_t*u_tempo);
-  float n1=snoise(p), n2=snoise(p*1.7+vec3(3.1,5.2,1.0)); float k=pow(max(0.0,1.0-abs(n1+n2)*1.1), u_schaerfe);
+void main(){
+#ifdef LOOPFORM
+  vec4 q=vec4(v_uv*u_skala, zeitKreis(u_tempo));   /* das Netz zieht nicht, es wabert nur: der Kreis genuegt */
+  float n1=rausch(q), n2=rausch(q*1.7+vec4(3.1,5.2,1.0,0.0));
+#else
+  vec3 p=vec3(v_uv*u_skala, u_t*u_tempo);
+  float n1=snoise(p), n2=snoise(p*1.7+vec3(3.1,5.2,1.0));
+#endif
+  float k=pow(max(0.0,1.0-abs(n1+n2)*1.1), u_schaerfe);
   gl_FragColor=vec4(u_farbe*k, k); }`   /* nur das Licht (vormultipliziert), die Kette mischt es - vorher wedelte sich das ganze Bild selbst ab (Tiefen-Check) */,
   linse:`uniform float u_woelbung,u_farbrand;
 vec2 warp(vec2 uv,float k){ vec2 c=uv-0.5; float r2=dot(c,c)*4.0; float f=(k>=0.0)?(1.0+k*r2):(1.0/(1.0-k*r2)); return 0.5+c*f; }   /* Tonne multipliziert, Kissen dividiert - beides monoton, keine Faltung */
@@ -28474,6 +28701,9 @@ void main(){
   filmnebel:`uniform float u_schwere,u_buendelung,u_schwaden,u_luftzug,u_tiefeAn; uniform vec3 u_farbe;
 uniform sampler2D u_licht; uniform sampler2D u_hof;
 float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.36,0.62,u_schwaden); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
+#ifdef LOOPFORM
+float wolke4(vec4 p){ float a=0.5, s=0.0, g=mix(0.36,0.62,u_schwaden); for(int i=0;i<5;i++){ s+=a*rausch(p); p=p*2.03+vec4(1.7,9.2,0.3,0.0); a*=g; } return s; }
+#endif
 /* Die Umgebung: das grob verwaschene Bild selbst, 25 Griffe auf drei Ringen, Startwinkel je
    Bildpunkt gewuerfelt. Der Radius ist seitenverhaeltnis-korrigiert - ohne das ist die
    Abtastscheibe bei einem hochkanten Bild eine Ellipse (Befund 14.09.2026). */
@@ -28493,9 +28723,17 @@ void main(){
      drei Gesichter einer Entscheidung: 0 gleichmaessiger Dunst, 1 dicke Ballen mit Rand. */
   float skala=mix(1.6,6.0,u_schwaden);
   float steigen=mix(0.22,-0.14,u_schwere);   /* leichter Nebel steigt, schwerer kriecht */
+#ifdef LOOPFORM
+  vec2 vzug=vec2(u_luftzug,steigen)*0.09; float vz=(0.18+0.82*abs(u_luftzug))*0.55;
+  bool zieht=length(vzug)>1e-6; vec2 l0=lage(0,zieht), l1=lage(1,zieht); float wl=0.0;   /* der Zug in zwei Lagen, das Wabern im Kreis */
+  if(l0.x>0.0) wl+=l0.x*wolke4(vec4((uv-vzug*l0.y)*skala, zeitKreis(wabern(vz,zieht))));
+  if(l1.x>0.0) wl+=l1.x*wolke4(vec4((uv-vzug*l1.y)*skala+vec2(37.1,-19.3), zeitKreis(wabern(vz,zieht))+vec2(-23.7,11.9)));
+  float g=clamp(wl/length(vec2(l0.x,l1.x))*0.5+0.5,0.0,1.0);
+#else
   vec2 zug=vec2(u_luftzug,steigen)*u_t*0.09;
   vec3 zt=vec3(0.0,0.0,u_t*(0.18+0.82*abs(u_luftzug))*0.55);   /* was zieht, wabert; stehende Luft steht */
   float g=clamp(wolke(vec3((uv-zug)*skala,0.0)+zt)*0.5+0.5,0.0,1.0);
+#endif
   float ballen=mix(1.0, smoothstep(0.34,0.66,g), u_schwaden);
   /* WO ER LIEGT. Lage, Dicke und Schichtkante waren drei Regler und sind eine Entscheidung:
      schwerer Nebel liegt tiefer, flacher und hat eine schaerfere Oberkante. */
@@ -28529,7 +28767,14 @@ void main(){ vec4 c=texture2D(u_tex,v_uv);
   float versatz=u_wind*hh*(u_res.y/max(1.0,u_res.x))*pow(max(0.0,h),1.4);
   float x=((v_uv.x-versatz)-(u_mitte-u_breite*0.5))/max(0.005,u_breite); float rand=smoothstep(0.0,0.15,x)*smoothstep(1.0,0.85,x);
   if(h<-0.05||h>1.2||rand<=0.0){ gl_FragColor=c; return; }
+#ifdef LOOPFORM
+  vec2 l0=lage(0,true), l1=lage(1,true); float n=0.0;   /* der Aufstieg in zwei Lagen, das Wabern im Kreis */
+  if(l0.x>0.0) n+=l0.x*fbm4(vec4(x*6.0, h*4.0-l0.y*u_tempo*2.0, zeitKreis(wabern(0.4,true))));
+  if(l1.x>0.0) n+=l1.x*fbm4(vec4(x*6.0+23.1, h*4.0-l1.y*u_tempo*2.0, zeitKreis(wabern(0.4,true))+vec2(-17.3,9.1)));
+  n=n/length(vec2(l0.x,l1.x))*mix(0.4,1.1,u_flackern);
+#else
   vec3 p=vec3(x*6.0, h*4.0 - u_t*u_tempo*2.0, u_t*0.4); float n=fbm(p)*mix(0.4,1.1,u_flackern);
+#endif
   float flame=clamp((1.0-h)*1.6 + n*0.9 - 0.75, 0.0, 1.0)*rand; float glut=u_glut*clamp(1.0-h*3.0,0.0,1.0)*rand*0.35;
   vec3 col=mix(u_farbe2,u_farbe,pow(flame,1.5));
   gl_FragColor=vec4(c.rgb + col*(flame*0.9+glut), c.a); }`
@@ -28543,23 +28788,28 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
       if(bs>0){ cres.fillStyle='rgba(0,0,0,.8)'; cres.fillRect(0,off-bs,Wn,bs); if(off-bs<0) cres.fillRect(0,off-bs+L,Wn,bs); } } }
   else if(e.typ==='wackeln'){ const bp=e.takt?Math.min(1,pulswert(t,7,0)):0, amp=e.amplitude*Wn, B=e.baender, bh=Hn/B;   /* Warble immer, der Kick am Schlag */
     /* Kick im Takt: das ganze Bild schlaegt auf dem Schlag zur Seite (Richtung wechselt je Schlag), darueber das Band-Warble (Tiefen-Check: vorher wurde nur das Warble skaliert, das Zittern doppelt). */
-    let kick=0; if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; kick=((i>=0&&(i%2))?-1:1)*e.amplitude*Wn*1.5*bp; }
-    for(let i=0;i<B;i++){ const y=i*bh, dx=kick+Math.sin(lpW(e.tempo)*t+i*1.3)*amp+(Math.random()-.5)*amp*0.4; cres.drawImage(srcCv,0,y,Wn,bh+1,dx,y,Wn,bh+1); } }
+    let kick=0; if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; kick=((i>=0&&(lpSchlag(S,i)%2))?-1:1)*e.amplitude*Wn*1.5*bp; }   /* Richtung an der umlaufenden Schlagnummer; ausschnitt() gibt dem Kick eine gerade Schlagzahl (loopTeiler) */
+    const zuf=LOOP>0?lpZufall(lpBildNr(t)*7919+e.id*104729):Math.random;   /* Zittern je Band: im Loop aus der Bildnummer im Clip gesaet */
+    for(let i=0;i<B;i++){ const y=i*bh, dx=kick+Math.sin(lpW(e.tempo)*t+i*1.3)*amp+(zuf()-.5)*amp*0.4; cres.drawImage(srcCv,0,y,Wn,bh+1,dx,y,Wn,bh+1); } }
   else if(e.typ==='rgb'){ const bp=pulsHub(e,t), hub=(e.invert?Math.max(0,1-bp):bp), d=e.versatz*Wn*hub, rad=e.winkel*Math.PI/180, ox=Math.cos(rad)*d, oy=Math.sin(rad)*d;
     cres.globalCompositeOperation='lighter';
     const chans=[['#ff0000',ox,oy],['#00ff00',0,0],['#0000ff',-ox,-oy]];
     for(const [mask,mx,my] of chans){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,0,0); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(0,0,Wn,Hn); frisch(ckc); cres.drawImage(okc,mx,my); }
     frisch(cres); }
-  else if(e.typ==='nachzieh'){ if(!e._spur||e._spur.width!==Wn||e._spur.height!==Hn){ e._spur=document.createElement('canvas'); e._spur.width=Wn; e._spur.height=Hn; }
+  else if(e.typ==='nachzieh'){
+    /* Die Spur haengt an der Ergebnisflaeche des Malers, nicht an der Karte (Gegenpruefung 15.09.2026): der Export
+       hat eigene Flaechen in Ausgabegroesse, und eine Spur an der Karte legte die Vorschau nach jedem Export leer neu an. */
+    const heim=ores._spuren||(ores._spuren=new WeakMap()); let spur=heim.get(e);
+    if(!spur||spur.width!==Wn||spur.height!==Hn){ spur=document.createElement('canvas'); spur.width=Wn; spur.height=Hn; heim.set(e,spur); }
     const d=e.versatz*Wn, rad=e.winkel*Math.PI/180;
-    cres.drawImage(srcCv,0,0); cres.globalAlpha=e.nachhall; cres.drawImage(e._spur,Math.cos(rad)*d,Math.sin(rad)*d); cres.globalAlpha=1;   /* Geist ueber dem Bild, nicht beide auf Leere (Tiefen-Check: Alpha < 1, die Spur blutete zu schnell aus) */
-    const sp=e._spur.getContext('2d'); frisch(sp); sp.clearRect(0,0,Wn,Hn); sp.drawImage(ores,0,0); }
+    cres.drawImage(srcCv,0,0); cres.globalAlpha=e.nachhall; cres.drawImage(spur,Math.cos(rad)*d,Math.sin(rad)*d); cres.globalAlpha=1;   /* Geist ueber dem Bild, nicht beide auf Leere (Tiefen-Check: Alpha < 1, die Spur blutete zu schnell aus) */
+    const sp=spur.getContext('2d'); frisch(sp); sp.clearRect(0,0,Wn,Hn); sp.drawImage(ores,0,0); }
   else if(e.typ==='spiegel'){ cres.drawImage(srcCv,0,0); const hy=e.horizont*Hn, band=3;
     for(let y=Math.floor(hy);y<Hn;y+=band){ const sy=2*hy-y-band; const tief=(y-hy)/Math.max(1,Hn-hy), dx=e.wellen*Wn*0.02*Math.sin(y*e.skala/Hn*2*Math.PI+lpW(e.tempo)*t)*(0.3+tief); if(sy<0) cres.drawImage(srcCv,0,0,Wn,1,dx,y,Wn,band); else cres.drawImage(srcCv,0,sy,Wn,band,dx,y,Wn,band); }   /* unter dem doppelten Horizont die oberste Zeile gestreckt (Himmel) statt einer Naht (Tiefen-Check) */
     if(e.verblassen>0){ const g=cres.createLinearGradient(0,hy,0,Hn); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,'+e.verblassen.toFixed(2)+')'); cres.fillStyle=g; cres.fillRect(0,hy,Wn,Hn-hy); } }
   else if(e.typ==='bloecke'){ cres.drawImage(srcCv,0,0); const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000); let slot=-1;
-    if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i>=0&&hs(i+7000)<Math.min(1,e.haeufigkeit/10)&&t-S[i][0]<=dauer) slot=i; }
-    else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L), start=k*L+hs(k)*Math.max(0,L-dauer); if(t>=start&&t<=start+dauer) slot=k; }
+    if(e.takt){ const S=DATA.schlaege; let i=S.length-1; while(i>=0&&S[i][0]>t) i--; const q=i>=0?lpSchlag(S,i):-1; if(i>=0&&hs(q+7000)<Math.min(1,e.haeufigkeit/10)&&t-S[i][0]<=dauer) slot=q; }   /* wie beim Sicherungswackeln: Wuerfel und Blocklage an der umlaufenden Nummer */
+    else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L+(LOOP>0?1e-6:0)), kk=lpFenster(t,L), start=k*L+hs(kk)*Math.max(0,L-dauer); if(t>=start&&t<=start+dauer) slot=kk; }
     if(slot>=0){ for(let b=0;b<e.anzahl;b++){ const q=slot*131+b*17, bw=Wn*e.groesse*(0.4+0.6*hs(q+1)), bh=Hn*e.groesse*0.35*(0.4+0.6*hs(q+2)), bx=hs(q+3)*(Wn-bw), by=hs(q+4)*(Hn-bh), dx=(hs(q+5)-0.5)*2*e.versatz*Wn;
         if(e.farbversatz){ /* echte Kanaltrennung: Rot und Cyan des Blocks gegeneinander versetzt, additiv auf Schwarz (Tiefen-Check: vorher ein heller Doppelblock) */
           const sh=Math.max(1,Math.abs(dx)*0.5)*(dx<0?-1:1); cres.fillStyle='#000'; cres.fillRect(bx+dx-Math.abs(sh),by,bw+Math.abs(sh)*2,bh);
@@ -28839,7 +29089,7 @@ function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((sei
 
 /* Cover-Blätterer */
 
-function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); lmVorschauen(); }
+function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); lmVorschauen(); }
 function zeichneFrame(t){
   if(!bereit) return;
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
@@ -29071,21 +29321,56 @@ function zeichneFrame(t){
   /* Die Laenge wird auf ganze Bilder gerundet, weil der Loop an der Bildnummer haengt: aufgenommen wird
      [0, L), das Bild bei L faellt weg - es ist ja dasselbe wie das erste (Caspar_D, 10.09.2026: "aber es
      muss doch das letzte bild fehlen, damit das erste = das letzte ist"). */
-  function ausschnitt(){ const {takt,einsen}=taktLaenge(); const jetzt=zeit();
+  /* Schlaege je Takt aus dem Median der ECHTEN Schlagabstaende; ohne brauchbare Abstaende vier. Eine Stelle
+     fuer ausschnitt() und raster(): die Taktzahl wird nach der Schlagzahl gewaehlt, also muss ausschnitt()
+     dieselbe Zahl kennen, die raster() danach baut. */
+  function schlagMedian(){ const S=(DATA&&DATA.schlaege)||[], d=[]; for(let i=1;i<S.length;i++){ const dt=S[i][0]-S[i-1][0]; if(dt>0.05&&dt<2) d.push(dt); }
+    if(!d.length) return 0; d.sort((a,b)=>a-b); return d[Math.floor(d.length/2)]; }
+  function proTaktVon(taktLang){ const m=schlagMedian(); return m>0?Math.max(1,Math.min(16,Math.round(taktLang/m))):4; }
+  /* DIE SCHLAEGE SO EINPASSEN, DASS ES PASST (Caspar_D, 14.09.2026). Jede aktive Karte sagt mit
+     loopTeiler(), durch welche Zahl die Schlaege im Clip teilbar sein muessen ("jeder 8. Schlag": 8,
+     Kick des Verwackelns: gerade). Gesucht wird die laengste Taktzahl bis MAX_SEK, die das erfuellt; die
+     Laenge bleibt dabei hoechstens zehn Sekunden. Geht es nicht - ein Takt ueber fuenf Sekunden mit
+     "jeder 8. Schlag" -, wird die Forderung schrittweise gelockert (8, dann 4, 2, 1), und video() sagt
+     im Status, welche Karte an der Schnittstelle einmal frueher schlaegt.
+     TITEL MIT SCHLAEGEN, ABER OHNE EINSEN (Befund 14.09.2026): vorher blieben dort die echten,
+     schwankenden Schlaege im Export stehen, L=10 s lag auf keinem davon, und alles, was am Schlag hing,
+     riss an der Naht. Jetzt gibt es auch hier ein gleichmaessiges Raster: ein Takt aus vier
+     Median-Abstaenden, Start auf dem letzten Schlag vor jetzt. Wo es gar keine Schlaege gibt (oder zu
+     wenige fuer einen Median, dieselben acht wie schlagHz), laeuft der Antrieb auf seiner Frequenz, die
+     lpR ohnehin auf ganze Umlaeufe rastet - dort ist jedes t0 recht. */
+  function ausschnitt(){ let {takt,einsen}=taktLaenge(); const jetzt=zeit(), S=(DATA&&DATA.schlaege)||[];
     const runden=x=>Math.max(2,Math.round(x*BILDRATE))/BILDRATE;
-    if(!takt||takt<=0.05) return { t0:jetzt, L:runden(MAX_SEK), takte:0, takt:0 };
-    let a=einsen[0]; for(const e of einsen){ if(e<=jetzt) a=e; else break; }
-    const takte=Math.max(1,Math.floor(MAX_SEK/takt)), L=runden(Math.min(MAX_SEK,takte*takt));
-    return { t0:a, L, takte, takt:L/takte }; }
+    let t0=jetzt;
+    if(takt>0.05){ t0=einsen[0]; for(const e of einsen){ if(e<=jetzt) t0=e; else break; } }
+    else { const med=S.length>=8?schlagMedian():0; takt=0; if(med>0){ takt=4*med; t0=S[0][0]; for(const s of S){ if(s[0]<=jetzt) t0=s[0]; else break; } } }
+    if(!takt) return { t0:jetzt, L:runden(MAX_SEK), takte:0, takt:0, proTakt:0, M:0 };
+    const brauch=STAPEL.filter(e=>aktiv(e)).reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1);
+    const lage=z=>{ const L=runden(Math.min(MAX_SEK,z*takt)), tl=L/z, pt=proTaktVon(tl); return { t0, L, takte:z, takt:tl, proTakt:pt, M:pt*z }; };
+    const hoechst=Math.max(1,Math.floor(MAX_SEK/takt));
+    for(let d=brauch; d>=1; d--){ if(brauch%d) continue;
+      for(let z=hoechst; z>=1; z--){ const l=lage(z); if(l.M%d===0) return l; } }   /* ob es aufging, rechnet videoLauf() je Karte aus M nach */
+    return lage(hoechst); }
   /* Gleichmaessiges Schlagraster fuer den Export (Caspar_D, 09.09.2026: "gleichmaessiges Taktraster").
      Das erkannte Raster schwankt um Millisekunden; taktgetriebene Effekte traefen die Naht sonst nicht.
-     Hier steht der Takt exakt auf L/Takte, damit sich nach L alles genau wiederholt. */
-  function raster(t0,L,takte,taktLang){ const S=(DATA&&DATA.schlaege)||[]; if(!takte||!taktLang) return S;
-    let proTakt=4; { const d=[]; for(let i=1;i<S.length;i++){ const dt=S[i][0]-S[i-1][0]; if(dt>0.05&&dt<2) d.push(dt); }
-      if(d.length){ d.sort((a,b)=>a-b); proTakt=Math.max(1,Math.min(16,Math.round(taktLang/d[Math.floor(d.length/2)]))); } }
-    const schritt=taktLang/proTakt, neu=[];
-    for(let j=-proTakt*2; j<=proTakt*(takte+2); j++) neu.push([t0+j*schritt, (((j%proTakt)+proTakt)%proTakt)+1]);
-    return neu; }
+     Hier steht der Takt exakt auf L/Takte, damit sich nach L alles genau wiederholt.
+     VORLAUF: wer zurueckschaut, muss am Clipanfang dieselben Schlaege finden wie am Ende - pulswert
+     1,5 s, Windstoesse 2 s, Einschlaege bleiben bis 30 s. Vorher waren es zwei Takte. Jetzt ganze Clips
+     bis ueber VORLAUF_SEK, dazu mindestens zwei Sekunden Nachlauf fuer Blicke nach vorn.
+     Jeder Eintrag traegt als drittes Feld die UMLAUFENDE Schlagnummer ((j mod M)+M) mod M, M = Schlaege
+     je Clip; wer einen Wuerfel oder eine Gruppe an den Schlag haengt, nimmt sie statt des Feldindex. Der
+     Vorschau fehlt das Feld, Leser fallen dort auf den Index zurueck. Weil der Vorlauf ganze Clips lang
+     ist, ist auch der Feldindex modulo M schon die umlaufende Nummer.
+     Die Schlagzeit wird wie die Bildzeit gerechnet (t0 + Bildnummer/Bildrate): liegt ein Schlag genau
+     auf einem Bild, ist er sonst in der einen Runde um eine Rundung frueher als in der anderen.
+     Ohne Takt gibt es im Export keine Schlaege: die wenigen, schwankenden echten Schlaege loopen nicht,
+     der Antrieb faellt dann auf seine Frequenz zurueck. */
+  const VORLAUF_SEK=32;
+  function raster(t0,L,takte,taktLang){ if(!takte||!taktLang) return [];
+    const proTakt=proTaktVon(taktLang), M=proTakt*takte, N=Math.round(L*BILDRATE), neu=[];
+    const vor=M*Math.ceil(VORLAUF_SEK/L), nach=proTakt*Math.max(2,Math.ceil(2/taktLang));
+    for(let j=-vor; j<=M+nach; j++) neu.push([t0+(j*N/M)/BILDRATE, (((j%proTakt)+proTakt)%proTakt)+1, ((j%M)+M)%M]);
+    neu.jeClip=M; return neu; }
   let hauszeichen=null;
   function zeichenHolen(){ if(hauszeichen) return hauszeichen; const l=document.querySelector('link[rel="icon"]'); if(!l||!l.href) return null;
     const im=new Image(); im.src=l.href; hauszeichen=im; return im; }
@@ -29093,9 +29378,55 @@ function zeichneFrame(t){
     const k=Math.round(Math.min(W,H)*0.07), rand=Math.round(Math.min(W,H)*0.03);
     cx.save(); cx.setTransform(1,0,0,1,0,0); cx.globalAlpha=0.85; cx.globalCompositeOperation='source-over';
     cx.drawImage(im, W-rand-k, H-rand-k, k, k); cx.restore(); }
-  function ausgabeMass(){ const [bw,bh]=qMass(bild); const sk=Math.min(1,LANGE_SEITE/Math.max(bw,bh));
+  function ausgabeMass(lange){ const [bw,bh]=qMass(bild); const sk=Math.min(1,(lange||LANGE_SEITE)/Math.max(bw,bh));
     const g=x=>Math.max(2,Math.round(x*sk/2)*2);   /* H.264 will gerade Kantenlaengen */
     return [g(bw),g(bh)]; }
+  /* EIN EXPORTBILD, EINE STELLE (Caspar_D, 14.09.2026: "es muss halt der effekt wieder zum Ursprung
+     zurueckkehren auf dem letzten frame"). Ob das stimmt, misst labor/nahtpruefung - und zwar nur dann
+     ehrlich, wenn der Pruefstand DENSELBEN Weg geht wie der Export. Darum stehen Buendel und Bild hier
+     als benannte Griffe, die der kodierende Weg, der Aufnehmer und der Pruefstand gemeinsam benutzen.
+     Das Buendel: eigene Leinwaende in Ausgabegroesse, dazu DATA mit dem gleichmaessigen Raster; geteilt
+     mit der Vorschau bleiben Stapel, Vorbereitung und Quelle. */
+  /* ZU WENIGE SCHLAEGE FUER EIN RASTER (Gegenpruefung 15.09.2026): ein Titel mit einem bis sieben Schlaegen und
+     ohne Takt bekommt im Export keine Schlaege. Der Antrieb faellt dann auf seine Frequenz, aber Risse 'im Takt',
+     Einschlaege und der Scheinwerfer 'Schritt' verschwanden ganz oder sprangen jede Sekunde - im Pult dagegen
+     stehen sie nach dem letzten Schlag still. Darum traegt das Buendel dort `stand` (eine Songzeit) und `echt`
+     (die echten Schlaege): diese Maler zeigen im Loop den Zustand der Vorschau zur Zeit stand und stehen. Ein
+     stehendes Bild loopt. stand liegt am Ende der laengsten schlagfreien Strecke im Clip - das ist der Zustand,
+     den das Pult in diesem Clip am laengsten zeigt (erster Versuch mit dem Clipanfang: lagen die wenigen Schlaege
+     im Clip, zeigte der Export den Stand davor, das Pult acht Sekunden lang den danach). */
+  function exportBuendel(gemerkt,t0,L,takte,takt,W,H){ const cv=mk(); cv.width=W; cv.height=H; const R=raster(t0,L,takte,takt), echt=(DATA&&DATA.schlaege)||[];
+    let stand=null; if(!R.length&&echt.length){ const z=[t0].concat(echt.map(s=>s[0]).filter(x=>x>t0&&x<t0+L),[t0+L]); let b=1; for(let i=2;i<z.length;i++) if(z[i]-z[i-1]>z[b]-z[b-1]) b=i; stand=z[b]-1e-3; }
+    const m=Object.assign({},gemerkt,{ lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),
+      DATA:Object.assign({},DATA,{ schlaege:R, stand, echt }), t0, L, N:Math.round(L*BILDRATE), vorgelaufen:false });
+    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
+    [m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; });
+    return m; }
+  /* GEDAECHTNIS BEKOMMT EINE RUNDE VORLAUF (VIDEO-PLAN 6.8, Klasse 3). Der Nachzieheffekt fuettert sich
+     selbst: Bild 0 zeigt die Spur dessen, was davor gemalt wurde. Beim Exportstart war das die Vorschau
+     oder gar nichts, am Ende der aufgelaufene Geist des Clips - an der Naht sprang die Spur (Befund:
+     Quotient 40). Also werden vor dem ersten gezaehlten Bild die Bilder gemalt, die im Loop davor
+     liegen (die letzten K des Clips, bei langem Nachhall auch mehrere Runden), und erst dann wird
+     aufgenommen. K so, dass vom Fremden weniger als eine halbe Graustufe bleibt: nachhall^K < 0,5/255.
+     Das geschieht beim ersten Bild von selbst, damit der kodierende Weg, der Aufnehmer und der
+     Pruefstand es gleich machen. Die Vorschau (LOOP=0) laeuft nie hier hinein. */
+  function gedaechtnisBilder(){ let K=0; for(const e of STAPEL){ if(!aktiv(e)||e.typ!=='nachzieh') continue;
+      const nh=Math.max(0.01,Math.min(0.995,Number(e.nachhall)||0)); K=Math.max(K,Math.ceil(Math.log(0.5/255)/Math.log(nh))); }
+    return Math.min(K,1200); }
+  const vorlaufZeiten=(m,i0)=>{ const z=[]; for(let k=gedaechtnisBilder();k>=1;k--) z.push(m.t0+((((i0-k)%m.N)+m.N)%m.N)/BILDRATE); return z; };
+  function exportBild(m,gemerkt,t,W,H){ setzen(m);
+    try{ if(LOOP>0&&!m.vorgelaufen){ m.vorgelaufen=true; for(const tv of vorlaufZeiten(m,Math.round((t-m.t0)*BILDRATE))) zeichneFrame(tv); }
+      zeichneFrame(t); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); }
+    setzen(gemerkt); }
+  /* DER VORLAUF IN HAEPPCHEN (Gegenpruefung 15.09.2026). Bei Nachhall 0,98 sind es 309 Bilder, in Ausgabegroesse
+     leicht 45 s - am Stueck gemalt stand die Seite ohne Meldung, und im Aufnahmeweg lief die Uhr schon: alle
+     Zeitstempel lagen um die Vorlaufdauer zu spaet, und der Schnitt des Hauses nach Zeit traf die Naht nicht.
+     Beide Exportwege laufen darum VOR dem ersten gezaehlten Bild (und vor mr.start()) hier vor, zehn Bilder je
+     Happen, dazwischen gibt die Seite ab und meldet sich. Gemalt werden dieselben Bilder in derselben Reihenfolge
+     wie im Nachholen von exportBild(), das nur noch greift, wenn keiner vorgelaufen ist (Pruefhaken alter Art). */
+  async function vorlaufen(m,gemerkt,melden){ if(!(LOOP>0)||m.vorgelaufen) return; m.vorgelaufen=true; const z=vorlaufZeiten(m,0);
+    for(let i=0;i<z.length;i+=10){ setzen(m); try{ for(let j=i;j<Math.min(z.length,i+10);j++) zeichneFrame(z[j]); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
+      if(melden) melden(Math.min(z.length,i+10),z.length); await new Promise(r=>setTimeout(r,0)); } }
   /* ---- KODIEREN STATT ABFILMEN (Caspar_D, 14.09.2026: "den Export wollen wir so bauen, dass er auch
      zeitasynchron erfolgen kann, das Speichern der 10 sec kann auch ruhig 30 sec dauern, wenn es
      noetig ist - es muss kein Abfilmen dessen sein, was unsere Engine schafft (ich sag nur
@@ -29136,8 +29467,9 @@ function zeichneFrame(t){
     const schluessel=Math.max(1,Math.round(rate*2));
     FEIN=true;   /* hier haengt nichts an einer Uhr - die Maler duerfen teuer rechnen */
     try{
+    await vorlaufen(m,gemerkt,melden?(k,z)=>melden(-k,z):null);   /* mit FEIN wie die gezaehlten Bilder, sonst traegt die Spur ein anderes Bild */
     for(let i=0;i<N;i++){
-      setzen(m); try{ zeichneFrame(t0+i/rate); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
+      exportBild(m,gemerkt,t0+i/rate,W,H);
       const f=new VideoFrame(m.lein,{ timestamp:Math.round(i*1000000/rate), duration:Math.round(1000000/rate) });
       enc.encode(f,{ keyFrame:(i%schluessel===0) }); f.close();
       /* Die Warteschlange des Kodierers nicht volllaufen lassen - das ist die EINZIGE Wartestelle,
@@ -29152,21 +29484,31 @@ function zeichneFrame(t){
     let gross=0; for(const b of teile) gross+=b.length;
     return { blob:new Blob(teile,{type:'video/h264'}), bytes:gross };
   }
-  async function video(){
+  /* WAEHREND DES EXPORTS MALT DIE VORSCHAU NICHT (Befund 14.09.2026, Punkte 5 und 6). Beide Exportwege
+     geben mit await ab, und rahmen() malte dazwischen mit DENSELBEN Effektobjekten - mit LOOP=L und in
+     Vorschaugroesse. Die Spur des Nachzieheffekts wurde dabei staendig neu angelegt oder mit
+     Vorschaubildern verschmutzt. Die Vorschau steht fuer die Dauer des Exports; das ist ehrlicher als
+     ein Bild, das sich mit dem Export streitet. */
+  /* EIN EXPORT ZUR ZEIT (Gegenpruefung 15.09.2026): der Knopf wurde erst nach dem Laden des 4D-Rauschens
+     gesperrt, ein Doppelklick startete zwei Laeufe, und das Ende des ersten setzte LOOP=0 mitten in den zweiten.
+     Jetzt sperrt video() selbst, bevor irgendetwas wartet; oeffnen() und schliessen() warten auf exportLauf. */
+  let exportLauf=null;
+  async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true;
+    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; } }
+  async function videoLauf(){
     if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
     if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
     const typ=['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm'].find(m=>MediaRecorder.isTypeSupported(m));
     if(!typ){ pStat('Kein Videoformat verfügbar'); return; }
-    const {t0,L,takte,takt}=ausschnitt(); const [W,H]=ausgabeMass(); const N=Math.round(L*BILDRATE);
-    const nicht=[...new Set(STAPEL.filter(e=>aktiv(e)&&LOOP_NEIN.includes(e.typ)).map(e=>EFFEKTE[e.typ].label))];
-    const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true;
+    if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) await GL.vierLaden();   /* das 4D-Rauschen der Exportform vor dem ersten Bild - loopNein fragt danach */
+    const lage=ausschnitt(), {t0,L,takte,takt}=lage; const [W,H]=ausgabeMass(); const N=Math.round(L*BILDRATE);
+    const namen=f=>[...new Set(STAPEL.filter(e=>aktiv(e)&&f(e)).map(e=>EFFEKTE[e.typ].label))];
+    const stand=!lage.M&&!!(DATA&&DATA.schlaege&&DATA.schlaege.length);   /* Schlaege, aber zu wenige fuer ein Raster: siehe exportBuendel */
+    const urteil={ nicht:namen(loopNein), stolpern:lage.M?namen(e=>lage.M%loopGruppe(e)!==0):[], ruck:lage.M?namen(e=>loopKick(e)&&lage.M%2!==0):[],
+      steht:stand?namen(e=>(e.typ==='risse'&&e.wachsen==='takt')||e.typ==='einschlag'||((e.typ==='licht'||e.typ==='schatten')&&e.rmBewegung==='schritt')):[],
+      frequenz:stand?namen(e=>['takt','eins','zufall'].includes(e.lmQuelle)):[], bewegt:!!(bild&&bild.tagName==='VIDEO'), L };
     pStat('nehme auf: '+W+'×'+H+', '+L.toFixed(2)+' s'+(takte?' ('+takte+' Takte)':'')+', '+N+' Bilder …');
-    const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
-    const gemerkt=bundel();
-    const m=Object.assign({},gemerkt,{ lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),
-      DATA:Object.assign({},DATA,{ schlaege: raster(t0,L,takte,takt) }) });
-    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
-    [m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; });
+    const gemerkt=bundel(), m=exportBuendel(gemerkt,t0,L,takte,takt,W,H), cv=m.lein;
     /* Jedes Bild wird EINZELN angefordert. Nur so entspricht Bild i in der Datei auch Bild i des Clips;
        laesst man den Strom selbst abtasten, verschiebt sich das gegeneinander und der Schnitt trifft
        nicht die Naht. Dass der Kodierer die letzten Bilder verliert, faengt die Zugabe unten ab. */
@@ -29174,14 +29516,14 @@ function zeichneFrame(t){
        laeuft der alte Weg darunter unveraendert weiter - es geht also nichts verloren. */
     if(await kodiererDa()){
       let k=null; LOOP=L;
-      try{ k=await kodieren(m,gemerkt,t0,N,W,H,BILDRATE,(i,z)=>pStat('kodiere Bild '+(i+1)+' von '+z+' … (die Uhr spielt dabei keine Rolle)')); }
+      try{ k=await kodieren(m,gemerkt,t0,N,W,H,BILDRATE,(i,z)=>pStat(i<0?'bereite die Spur vor: '+(-i)+' von '+z+' …':'kodiere Bild '+(i+1)+' von '+z+' … (die Uhr spielt dabei keine Rolle)')); }
       catch(x){ console.warn('Effektclip-Export:',x); k=null; }
       finally{ LOOP=0; setzen(gemerkt); }
       if(k&&k.bytes>1000){
         pStat('baue die Datei …');
         try{ const a=await fetch('/api/effektclip-bauen?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),
                                  {method:'POST',headers:{'Content-Type':'video/h264'},body:k.blob});
-          if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000){ if(knopf) knopf.disabled=false; return ausliefern(b2,'mp4',true,N,nicht); } }
+          if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000) return ausliefern(b2,'mp4',true,N,urteil); }
         }catch(x){ console.warn('Effektclip-Export:',x); }
       }
       pStat('Kodierer ging nicht — nehme auf wie bisher …');
@@ -29190,8 +29532,9 @@ function zeichneFrame(t){
     const mr=new MediaRecorder(strom,{ mimeType:typ, videoBitsPerSecond: Math.min(12000000, Math.round(W*H*BILDRATE*0.12)) });
     const teile=[]; mr.ondataavailable=ev=>{ if(ev.data&&ev.data.size) teile.push(ev.data); };
     const fertig=new Promise(f=>{ mr.onstop=f; });
-    LOOP=L; let bilder=0;
+    LOOP=L; let bilder=0; m.vorgelaufen=false;   /* ein abgebrochener Kodierlauf liess die Spur irgendwo stehen - neu vorlaufen */
     try{
+      await vorlaufen(m,gemerkt,(k,z)=>pStat('bereite die Spur vor: '+k+' von '+z+' …'));   /* VOR der Uhr: sonst liegen alle Zeitstempel um die Vorlaufdauer zu spaet */
       mr.start();
       const start=performance.now();
       /* Bild fuer Bild, nicht nach der Uhr: der Inhalt jedes Bildes steht fest, die Uhr bestimmt nur,
@@ -29206,11 +29549,11 @@ function zeichneFrame(t){
       for(let i=0;i<N+zugabe;i++){
         const soll=start+i*1000/BILDRATE, wartezeit=soll-performance.now();
         if(wartezeit>3) await new Promise(r=>setTimeout(r,wartezeit)); else await new Promise(r=>requestAnimationFrame(r));
-        setzen(m); try{ zeichneFrame(t0+(i%N)/BILDRATE); zeichenMalen(m.g,W,H); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
+        exportBild(m,gemerkt,t0+(i%N)/BILDRATE,W,H);
         spur.requestFrame(); bilder++; }
       await new Promise(r=>setTimeout(r,120));
       mr.stop(); await fertig;
-    } finally { LOOP=0; setzen(gemerkt); if(knopf) knopf.disabled=false; }
+    } finally { LOOP=0; setzen(gemerkt); }
     const endung=typ.indexOf('mp4')>=0?'mp4':'webm';
     let blob=new Blob(teile,{type:typ}), geschnitten=false;
     /* Der Kodierer wird mit den letzten ein bis zwei Bildern nicht mehr fertig, bevor die Aufnahme endet.
@@ -29218,15 +29561,23 @@ function zeichneFrame(t){
        Bildzahl. Antwortet es nicht - etwa im Pruefstand ohne Hausserver -, bleibt die Rohaufnahme. */
     if(endung==='mp4'){ try{ const a=await fetch('/api/effektclip-schnitt?bilder='+N+'&rate='+BILDRATE+'&id='+encodeURIComponent(songId||''),{method:'POST',headers:{'Content-Type':'video/mp4'},body:blob});
       if(a.ok){ const b2=await a.blob(); if(b2&&b2.size>1000){ blob=b2; geschnitten=true; } } }catch(x){} }
-    return ausliefern(blob,endung,geschnitten,N,nicht);
+    return ausliefern(blob,endung,geschnitten,N,urteil);
   }
   /* Beide Wege - abfilmen wie bisher und kodieren - liefern ueber denselben Griff aus. */
-  function ausliefern(blob,endung,geschnitten,N,nicht){
+  /* Das Urteil in Nutzerwoertern: "nahtlos" nur, wenn keine Karte bricht UND die Quelle ein Standbild ist -
+     ein Video darunter laeuft nicht im Kreis, egal wie sauber die Effekte schliessen. */
+  function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L}=urteil, sek=L.toFixed(1).replace('.',',');
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),20000);
     pStat('ausgegeben: '+name+' · '+(blob.size/1048576).toFixed(1)+' MB · '+N+' Bilder'
-      +(nicht.length?' — ohne Loop: '+nicht.join(', '):(geschnitten?' — nahtlos':' — Loop ungenau, das Haus hat nicht geschnitten')));
+      +(nicht.length?' — ohne Loop: '+nicht.join(', ')
+        :!geschnitten?' — Loop ungenau, das Haus hat nicht geschnitten'
+        :bewegt?' — die Effekte schliessen, aber das Video darunter läuft nicht im Kreis: am Übergang springt sein Bild'
+        :' — nahtlos')
+      +(stolpern.length?' · '+stolpern.join(', ')+': der Rhythmus geht in '+sek+' s nicht ganz auf, am Übergang kommt ein Schlag einmal früher':'')
+      +(ruck.length?' · '+ruck.join(', ')+': die Schläge gehen in '+sek+' s nicht paarweise auf, am Übergang ruckt es zweimal in dieselbe Richtung':'')
+      +((steht.length||frequenz.length)?' · zu wenige Schläge für einen Takt: '+[steht.length?steht.join(', ')+' '+(steht.length>1?'stehen':'steht')+' im Video still':'', frequenz.length?frequenz.join(', ')+' '+(frequenz.length>1?'laufen':'läuft')+' auf der eigenen Frequenz':''].filter(Boolean).join(', '):''));
   }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
       if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
@@ -29296,6 +29647,9 @@ function zeichneFrame(t){
   }
   async function oeffnen(id, cb){
     if(!root) bauen();
+    /* Waehrend eines Exports stellt jedes Exportbild DATA, STAPEL und Quelle des alten Titels wieder her - ein neuer
+       Titel dazwischen wuerde ueberschrieben (Gegenpruefung 15.09.2026). Also erst fertig bauen, dann wechseln. */
+    if(exportLauf){ pStat('das Video wird noch fertig gebaut …'); try{ await exportLauf; }catch(e){} }
     songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1}; SEITEN=[]; quellenUI();
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
        groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
@@ -29321,7 +29675,9 @@ function zeichneFrame(t){
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
-  function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0; quelleWeg(bild); bereit=false; }
+  function schliessen(){ offen=false; if(root) root.hidden=true; cancelAnimationFrame(rafId); rafId=0;
+    /* ein laufender Export malt noch aus der Quelle - sie geht erst danach weg, und nur, wenn keiner wieder geoeffnet hat */
+    const weg=()=>{ if(offen) return; quelleWeg(bild); bereit=false; }; if(exportLauf) exportLauf.then(weg,weg); else weg(); }
   /* ---- Effektclip: das Rezept live auf Kachel und Buehne malen --------
      Ein Maler je Ziel (eigene Leinwand, eigene Puffer, eigener Stapel);
      EINE Schleife malt alle, solange es welche gibt, und endet von selbst.
