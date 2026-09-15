@@ -4359,3 +4359,10 @@ nach rechts die von Klangtresor geschleifte Version"* — das muss dastehen. Geb
 „Video" (0 s unten, Videodauer oben, nur bei Bewegtbild), unten „0 s · geschleifter Clip · L s", darunter sein Satz als
 Erklärung und rechts „Übergang X s" in Akzent. Die schwarze Leiste davor war `getComputedStyle($('#tbs'))` — `$` sucht nur
 unterhalb von `root`, und `root` *ist* `#tbs`; die Ausnahme brach auch `schleifeUI()` ab. Probe: `leiste-probe2.mjs` (Scratchpad).
+
+### Abnahme (15.09.2026 spät)
+
+Caspar_D nach F5 auf 1.0.8: *„ja sehr schön geworden, genehmigt"*. Damit gelten die drei offenen Punkte so, wie gebaut:
+V wirkt auch mit fokussiertem Schieber, der Knopf der Vorbereitung heißt „Zurücksetzen", „Löschen" in der Fußleiste fragt
+nicht nach. Weiter offen: „10 s ausgeben" während der Vermessung eines Videos, ✕-Tooltip der Hauskachel („Effektclip
+entfernen" gegen „Löschen"), veraltete Laborkopie `labor/effektclip-studio/tbs-modul.js`.
