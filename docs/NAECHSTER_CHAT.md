@@ -4250,3 +4250,15 @@ Videoüberblendungen"* — *„mach es trotzdem"* (trotz Kontingent). Commits `e
 (kein Material über den Clip hinaus), Darstellung der Stufe nach Hausregeln überarbeiten (Caspar_D, 15.09. spät),
 Songanalyse-Ansicht Takt gegen Clip (Backlog). Nebenbei am 15.09.: sechs liegengebliebene `bin/einrichten.js`-
 Prozesse vom 13.09. beendet; ein fremder Prozess auf 8791 versehentlich beendet (Hausregel eigene PID verletzt).
+
+### Begutachtung durch Caspar_D (15.09.2026 spät) und was er später noch ansehen will
+
+1. Maßstab: *„massstab ist super so"*; Rezepte wie vorher, außer den ehemaligen Theaternebel-Rezepten — *„kann aber so bleiben"*.
+2. Solo: *„perfekt so"*. 3. Teiler ohne „jeder 8. Schlag": ja. 4. Schleife schließen mit Titelbild: *„alles geht"*.
+5. Schleife schließen mit Video: *„alles andere geht"* — **Effekte im Übergang noch nicht getestet.**
+6. Export mit Video: ja — **Pendel ist mit doppeltem Inhalt pro Zeit meist zu schnell** (*„da müssen wir wahrscheinlich
+   nochmal ran, aber nicht jetzt"*; Idee dazu: adaptiv + asymmetrisch aus dem Muster, oder Pendel nur über einen Teil).
+7. **Die sieben Loop-Abweichungen** (Streifen „beide", Scheinwerfer-Fahrt, langsame Schwaden, Nebel-Tempo, Teiler-Titel,
+   Titel mit wenigen Schlägen, Schritt auf der Eins) will er **bei Gelegenheit** über den Loop-Modus ansehen —
+   *„behalts im Gedächtnis, dass ich das bei Gelegenheit mal anschauen soll"*. Daran erinnern.
+Danach: Release 1.0.7.
