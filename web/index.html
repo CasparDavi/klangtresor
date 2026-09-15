@@ -29121,7 +29121,7 @@ function schleifeFenster(L,lage){ const beat=(lage&&lage.M)?L/lage.M:0, takt=bea
    schon nicht mehr richtig zu sehen" - "das Video muss immer so ganz wie moeglich zu sehen sein" - "also das, was du bei Dopamier
    mich gemacht hast, gleich viel Aenderung pro Zeit aber das gesamte Videomaterial"). Der Vorwaertslauf zeigt immer das ganze Video;
    wie schnell welche Stelle laeuft, sagt die Aenderungskurve: ruhige Stellen schneller, bewegte langsamer (Rate ~ 1/Aenderung^0,7,
-   wie im Muster labor/videonaht/uebergaenge/arbeit/zeitumbildung.py), geklemmt auf halb bis dreifach so schnell wie das Mittel.
+   wie im Muster labor/videonaht/uebergaenge/arbeit/zeitumbildung.py), geklemmt auf halb bis doppelt so schnell wie das Mittel (Caspar_D: "das video laeuft zu schnell").
    Solange die Kurve noch nicht gemessen ist, laeuft das Video gleichmaessig. */
 let SCHLEIFE_KURVE={schluessel:'',u:null,laeuft:false};
 function schleifeQuelle(x,dv){ const U=SCHLEIFE_KURVE.u; if(!U||U.length<2) return x*dv; const n=U.length-1;
@@ -29131,7 +29131,7 @@ async function schleifeKurveMessen(v){ if(!v||v.tagName!=='VIDEO'||!(v.duration>
     let vor=null; const d=[]; for(let i=0;i<=n;i++){ await quelleSetzen(v,i/n*(v.duration-1/60)); x.drawImage(v,0,0,c.width,c.height); const px=x.getImageData(0,0,c.width,c.height).data;
       if(vor){ let t=0; for(let j=0;j<px.length;j+=4) t+=Math.abs(px[j]-vor[j])+Math.abs(px[j+1]-vor[j+1])+Math.abs(px[j+2]-vor[j+2]); d.push(t/(px.length/4)/3); } vor=px; }
     const mittel=d.reduce((a,b)=>a+b,0)/d.length||1, eps=0.05*mittel; let zeit=d.map(z=>Math.pow(z+eps,0.7));   /* Ausgabezeit je Quellschritt ~ Aenderung^0,7 */
-    for(let r=0;r<3;r++){ const m=zeit.reduce((a,b)=>a+b,0)/zeit.length; zeit=zeit.map(z=>Math.max(m/3,Math.min(2*m,z))); }   /* hoechstens dreifach schneller, hoechstens halb so schnell */
+    for(let r=0;r<3;r++){ const m=zeit.reduce((a,b)=>a+b,0)/zeit.length; zeit=zeit.map(z=>Math.max(m/2,Math.min(2*m,z))); }   /* hoechstens dreifach schneller, hoechstens halb so schnell */
     const summe=zeit.reduce((a,b)=>a+b,0), U=[0]; let acc=0; for(const z of zeit){ acc+=z; U.push(acc/summe); } SCHLEIFE_KURVE.u=U; SCHLEIFE_KURVE.schluessel=k; }
   finally{ SCHLEIFE_KURVE.laeuft=false; } }
 function schleifeZeit(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
@@ -29314,7 +29314,7 @@ function zeichneFrame(t){
   function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
-    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
+    if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art,schlaege:(r.schleife.schlaege|0)||0}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
   /* Gespeicherte Effekte liegen auf den Vorgaben ihres Typs: fehlt ein Parameter (spaeter dazugekommen oder
      verkuerzt gespeichert), gilt seine Vorgabe statt NaN - sonst wirft der Maler und der ganze Frame bleibt stehen. */
   /* DER THEATERNEBEL IST GESTRICHEN (Caspar_D, 14.09.2026: "schmeiss den Theaternebel raus").
@@ -29484,7 +29484,7 @@ function zeichneFrame(t){
     const {takt}=taktLaenge(S), schlag=schlagMedian(S), Pe=schlag>0?Math.min(16,Math.round(takt/schlag)):4, einsDa=takt>0.05&&Pe>=2;
     if(!einsDa&&!(S.length>=8&&schlag>0)) return null;   /* zu wenige Schlaege: kein Raster, exportBuendel laesst sie stehen */
     const brauch=Math.max(1,bedarf.brauch||1), eins=!!bedarf.eins, gruppen=(bedarf.gruppen||[]).filter(n=>n>1);
-    const schluessel=brauch+'|'+(eins?1:0)+'|'+gruppen.join('.')+'|'+(dauer||0)+'|'+!!abschnitte+'|'+(bedarf.lang?1:0);
+    const schluessel=brauch+'|'+(eins?1:0)+'|'+gruppen.join('.')+'|'+(dauer||0)+'|'+!!abschnitte+'|'+(bedarf.lang?1:0)+'|'+((bedarf.schlaege|0)||0);
     let memo=TAKTLAGEN.get(S); if(!memo){ memo=new Map(); TAKTLAGEN.set(S,memo); } if(memo.has(schluessel)) return memo.get(schluessel);
     const kgV=(a,b)=>a*b/ggT(a,b);
     const P=einsDa?Pe:4, beat=einsDa?takt/P:schlag;
@@ -29522,10 +29522,15 @@ function zeichneFrame(t){
         for(const b of schaetzer){ const M=einheit*Math.round(L/(einheit*b)); if(M<Math.max(einheit,2)||Math.abs(L/M/b-1)>TEMPO_SPIEL||!ganz.some(g=>Math.abs(L/M/g-1)<=TEMPO_SPIEL)) continue; Ms.add(M); }
         for(const M of Ms) alle.push(lageBei(N,M)); }
       if(!alle.length) continue;
+      /* DIE SCHLAGZAHL VON HAND (Caspar_D, 15.09.2026: "das video laeuft zu schnell, mach es moeglich, dass man die Schlagzahl vergroessern kann"):
+         ist eine gewuenscht, gilt die Laenge, die mit genau dieser Zahl (sonst der naechsten moeglichen) am besten sitzt */
+      const mS=alle.map(a=>a.M), spanne=[Math.min(...mS),Math.max(...mS)];
+      if(bedarf.schlaege>0){ const ab=Math.min(...mS.map(m=>Math.abs(m-bedarf.schlaege))); wahl=alle.filter(a=>Math.abs(a.M-bedarf.schlaege)===ab).sort((a,b)=>b.G-a.G||b.N-a.N)[0]; wahl.spanne=spanne; wahl.einheit=einheit; wahl.vonHand=true; break; }
       let besteLied=0; for(const a of alle) if(a.sitzt>besteLied) besteLied=a.sitzt;
       const gut=alle.filter(a=>a.sitzt>=besteLied-ABSTAND_LIED), spitze=gut.reduce((a,b)=>b.G>a.G?b:a);
       wahl=bedarf.lang ? alle.filter(a=>a.sitzt>=besteLied-0.10).sort((a,b)=>b.N-a.N||b.G-a.G)[0]   /* VIDEO: SO GANZ WIE MOEGLICH (Caspar_D, 15.09.2026: "das Video muss immer so ganz wie moeglich zu sehen sein, ggf adaptiv auf die Takte packen und auf oder unter 10 sek bleiben") - die laengste Laenge, die hoechstens 10 Prozentpunkte schlechter sitzt */
-        : gut.filter(a=>a.G>=spitze.G-GLEICHSTAND&&a.sitzt>=spitze.sitzt-GLEICHSTAND).sort((a,b)=>b.N-a.N||b.G-a.G)[0]; }
+        : gut.filter(a=>a.G>=spitze.G-GLEICHSTAND&&a.sitzt>=spitze.sitzt-GLEICHSTAND).sort((a,b)=>b.N-a.N||b.G-a.G)[0];
+      if(wahl){ wahl.spanne=spanne; wahl.einheit=einheit; } }
     /* Kein Kandidat (ein Takt ueber zehn Sekunden): zehn Sekunden, so viele ganze Einheiten wie am naechsten liegen */
     if(!wahl){ const einheit=eins?kgV(P,brauch):brauch, N=MAX_SEK*BILDRATE; wahl=lageBei(N,Math.max(einheit,einheit*Math.round(MAX_SEK/(einheit*beat)))); }
     /* Bei Eins-Lesern zaehlt der Anteil der Schlaege nicht allein: eine um einen Schlag verschobene Eins saesse noch
@@ -29558,7 +29563,7 @@ function zeichneFrame(t){
   /* Was die Karten vom Raster verlangen - eine Stelle fuer den Export und die Stufe "Loop verbinden", die daran merkt, dass neu zu rechnen ist */
   function loopBedarf(){ const aktive=STAPEL.filter(e=>aktiv(e));
     return { brauch:aktive.reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1),
-      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1), lang:!!(bild&&bild.tagName==='VIDEO') }; }
+      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1), lang:!!(bild&&bild.tagName==='VIDEO'), schlaege:(SCHLEIFE.schlaege|0)||0 }; }
   function ausschnitt(){ const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), jetzt=zeit(), bedarf=loopBedarf();
     const tl=taktLage(S,DATA&&DATA.abschnitte,(DATA&&DATA.dauer)||0,bedarf);
     if(!tl) return { t0:jetzt, L:MAX_SEK, N:MAX_SEK*BILDRATE, M:0, proTakt:0, phiF:0, takte:0, takt:0, sitzt:null, anzeige:null, grund:null };
@@ -29819,7 +29824,7 @@ function zeichneFrame(t){
     return sek+' · '+(lage.ganzeTakte?kf(lage.takte)+' '+(lage.takte===1?'Takt':'Takte'):lage.M+' Schläge')+taktSatz(lage.anzeige,lage.grund,true); }
   function loopLageNeu(){ loopSchluessel=loopSchluesselJetzt(); loopFaellig=0;
     loopSicht={ lage:ausschnitt(), m:null, i:-1 };
-    const el=$('#tbs-loopLage'); if(el) el.textContent=loopLageText(loopSicht.lage); return loopSicht; }
+    const el=$('#tbs-loopLage'); if(el) el.textContent=loopLageText(loopSicht.lage); schleifeUI(); return loopSicht; }
   /* je Vorschaubild: hat sich etwas geaendert, das die Lage verschiebt? Dann nach LOOP_ENTPRELLEN ms neu rechnen. */
   function loopWache(){ if(!bereit||!DATA) return; const k=loopSchluesselJetzt(), jetzt=performance.now();
     if(k!==loopSchluessel){ loopSchluessel=k; loopFaellig=jetzt+LOOP_ENTPRELLEN; const el=$('#tbs-loopLage'); if(el&&loopSicht) el.classList.add('gedimmt'); }
@@ -29842,6 +29847,7 @@ function zeichneFrame(t){
   function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=(s-mm*60).toFixed(1).replace('.',',');
     el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
   function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'); if(s){ s.value=SCHLEIFE.art; s.disabled=!vid; }
+    { const z=$('#tbs-mZahl'), lg=loopSicht&&loopSicht.lage; if(z) z.textContent=(SCHLEIFE.schlaege>0?'':'von selbst: ')+((lg&&lg.M)?lg.M:'–'); }
     if(h) h.textContent=vid?(SCHLEIFE.art==='keiner'?'das Video springt am Übergang vom Ende zum Anfang':'wirkt im ausgegebenen Clip und in der Loop-Ansicht'):'nur für Bewegtbilder — das Titelbild schliesst die Schleife über die Effekte von selbst'; }
   function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
     if(b){ b.classList.toggle('an',loopAn); b.textContent=loopAn?'an':'aus'; } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }
@@ -29891,6 +29897,7 @@ function zeichneFrame(t){
       +'<div class="tbs-regler"><span>10-s-Loop ansehen</span><button type="button" class="tbs-togp" id="tbs-loopAn" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt">aus</button><span></span></div>'
       +'<div class="tbs-regler"><span>Übergang am Loop</span><select id="tbs-schleife" title="Wie ein Video vom Ende zum Anfang zurückfindet - ein Titelbild schliesst die Schleife über die Effekte von selbst">'+SCHLEIFE_ARTEN.map(([k,l])=>'<option value="'+k+'">'+l+'</option>').join('')+'</select><span></span></div>'
       +'<div class="tbs-unter" id="tbs-schleifeHinweis"></div>'
+      +'<div class="tbs-regler"><span>Schläge im Clip</span><span><button type="button" class="tbs-mini" id="tbs-mWeniger" title="kürzer">−</button> <b id="tbs-mZahl">von selbst</b> <button type="button" class="tbs-mini" id="tbs-mMehr" title="länger, das Video läuft ruhiger">+</button> <button type="button" class="tbs-mini" id="tbs-mSelbst" style="width:auto;padding:0 8px" title="die Länge wieder selbst wählen lassen">von selbst</button></span><span></span></div>'
       +'<div class="tbs-unter" id="tbs-loopWo" hidden></div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
       +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
@@ -29925,6 +29932,10 @@ function zeichneFrame(t){
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-pVideo').onclick=video;
     $('#tbs-loopAn').onclick=()=>loopSchalten(!loopAn);
+    const schlagSchritt=d=>{ const lg=(loopSicht&&loopSicht.lage)||ausschnitt(); if(!lg||!lg.M) return; const e=lg.einheit||1, sp=lg.spanne||[lg.M,lg.M];
+      SCHLEIFE.schlaege=Math.max(sp[0],Math.min(sp[1],lg.M+d*e)); SCHLEIFE_STILL.schluessel=''; loopLageNeu(); schleifeUI(); };
+    $('#tbs-mWeniger').onclick=()=>schlagSchritt(-1); $('#tbs-mMehr').onclick=()=>schlagSchritt(1);
+    $('#tbs-mSelbst').onclick=()=>{ SCHLEIFE.schlaege=0; loopLageNeu(); schleifeUI(); };
     $('#tbs-schleife').onchange=ev=>{ SCHLEIFE={art:ev.target.value}; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1; schleifeUI(); if(bild&&bild.tagName==='VIDEO'&&SCHLEIFE.art!=='keiner'&&!loopAn) loopSchalten(true); else if(loopAn&&bild&&bild.tagName==='VIDEO'&&loopSicht) schleifeStills(bild,loopSicht.lage).catch(()=>{}); };   /* DIE VORSCHAU ZIEHT MIT (Caspar_D, 15.09.2026: "die vorschau muss mitziehen, sonst weiss ich ja nicht, ob es gut aussieht"): wer bei einem Video einen Uebergang waehlt, sieht sofort die Loop-Ansicht */
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
