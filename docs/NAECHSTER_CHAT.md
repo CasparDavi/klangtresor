@@ -4366,3 +4366,22 @@ Caspar_D nach F5 auf 1.0.8: *„ja sehr schön geworden, genehmigt"*. Damit gelt
 V wirkt auch mit fokussiertem Schieber, der Knopf der Vorbereitung heißt „Zurücksetzen", „Löschen" in der Fußleiste fragt
 nicht nach. Weiter offen: „10 s ausgeben" während der Vermessung eines Videos, ✕-Tooltip der Hauskachel („Effektclip
 entfernen" gegen „Löschen"), veraltete Laborkopie `labor/effektclip-studio/tbs-modul.js`.
+
+### Bereinigte Lyrik als vierte Spur und das Pendel als Ausschnitt (16.09.2026)
+
+**Bereinigte Lyrik überall, wo v2/v3/Whisper stehen** (Caspar_D: *„die bereinigte Lyrics soll überall dort verfügbar sein,
+wo auch whisper, v2 und v3 lyrics verfügbar ist"* — *„im gleichen dropdown"*). Gebaut: `bLyrik` wird beim Bühnenaufbau
+aus `/api/lyrik/<id>` nachgeladen, `lyrikWorte()` macht aus jeder Zeile einen Eintrag `[von, bis, Zeile + '\n']` — damit
+läuft sie durch `inZeilen()`, `bWorte()`, `bSpurJetzt()` und Karaoke wie eine Wortspur. Im Pult steht sie als vierte
+Wahl („bereinigte Lyrik"), im Zeitmarken-Vergleich als vierte Quelle; der Versatzvergleich lässt sie aus, weil Zeile
+gegen Wort ein Kategorienfehler wäre. Sie ist ZEILENWEISE vermessen, darum leuchtet die ganze Zeile — ein geschätztes
+Wort leuchtet nicht („Nichts darf lügen"). Karaoke gilt jetzt auch, wenn nur sie Zeiten hat.
+
+**Pendel: ein Ausschnitt hin und her** (Caspar_D: *„das pendel soll natürlich das hin und her zeigen. man könnte
+natürlich einen 5 sec Ausschnitt nehmen und den hin und her pendeln. eine auszublenden ist nicht sinn der sache"*).
+Vorher lief das ganze Video hin und zurück in derselben Clipzeit: im Mittel doppeltes Tempo, in der Clipmitte
+π-faches — daher *„viel zu schnell"*. Jetzt pendelt ein Ausschnitt von halber Clipzeit (10 s Clip → 5 s Ausschnitt):
+Hinweg die erste Hälfte, Rückweg die zweite, dazwischen echtes Tempo, an den Umkehrpunkten weich (15 % je Weg,
+Spitze 1,18-fach), bei τ=0 und τ=L dasselbe Bild mit Tempo 0. Kein Ausblenden, keine Unschärfe. Die Länge steht als
+„Länge des Ausschnitts" in halben Schlägen im Pult (die Zeile war beim Pendel vorher grau), die Lage kommt aus der
+Änderungskurve: das bewegteste Fenster seiner Länge (`schleifePendelVon`).

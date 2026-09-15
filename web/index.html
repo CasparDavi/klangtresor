@@ -7033,6 +7033,15 @@ function zvglKennfarben(s){
 }
 async function zeitVergleichAuf(id){
   let d; try { d = await (await fetch('/api/zeitprobe/' + id)).json(); } catch (e) { return; }
+  /* Vierte Quelle: die bereinigte Lyrik (Caspar_D, 16.09.2026: überall dort, wo v2/v3/Whisper stehen). Zeilenweise,
+     darum ist ein Eintrag hier eine ganze Zeile - der Versatzvergleich unten lässt sie deshalb aus. */
+  let rein = null, reinGrund = '';
+  try {
+    const e = await (await fetch('/api/lyrik/' + id)).json();
+    if (e && e.zeilen && e.zeilen.length) rein = e.zeilen.filter(z => z && z.text && z.text.trim())
+      .map(z => [z.von || 0, (z.bis > z.von) ? z.bis : (z.von || 0) + 1, String(z.text).replace(/\s+$/, '') + '\n']);
+    else if (e && e.zurueckgestellt) reinGrund = 'zurückgestellt — ' + (e.grund || 'zu wenig gedeckt');
+  } catch (e) {}
   /* Fehlt eine Quelle noch (v3 rechnet bei Suno, Whisper laeuft in der
      Nacht), fragt das Fenster alle 30 s selbst nach - nicht der Mensch. */
   clearTimeout(zvglFrisch);
@@ -7045,6 +7054,7 @@ async function zeitVergleichAuf(id){
     { k:'v2', name:'Suno v2', typ:'aligned_lyrics/v2', zweck:'im Archiv',       worte: d.v2 },
     { k:'v3', name:'Suno v3', typ:'aligned_lyrics/v3', zweck:'Zeitprobe',       worte: d.v3 },
     { k:'wh', name:'Whisper', typ:'large-v3',          zweck:'Text als Prompt', worte: d.whisper },
+    { k:'rein', name:'bereinigte Lyrik', typ:'lyrik.json', zweck:'Zeilen, nicht Wörter', worte: rein },
   ];
   $('zvgltitel').textContent = 'Zeitmarken-Vergleich · ' + (d.titel || id);
   const feld = $('zvglzeilen'); feld.innerHTML = '';
@@ -7077,6 +7087,7 @@ async function zeitVergleichAuf(id){
       w.textContent = q.k === 'v3' ? (d.v3lauft ? 'Suno rechnet noch — das Fenster fragt alle 30 s nach; ein neuer Lesezeichen-Klick holt das Ergebnis'
                                                   : 'noch keine Zeitprobe — Lesezeichen mit „Zeitmarken-Probe" laufen lassen')
                     : q.k === 'wh' ? 'noch nicht gerechnet — node bin/whisper.js ' + id
+                    : q.k === 'rein' ? (reinGrund || 'noch nicht abgeglichen — Lauf „Bereinigte Lyrik"')
                     : 'keine Zeitmarken im Archiv';
     }
     z.append(n, w); feld.appendChild(z);
@@ -7089,7 +7100,7 @@ async function zeitVergleichAuf(id){
   const fuss = [];
   const basis = QUELLEN[0].worte;
   if (basis) for (const q of QUELLEN.slice(1)){
-    if (!q.worte) continue;
+    if (!q.worte || q.k === 'rein') continue;   /* Zeile gegen Wort waere kein Versatz, sondern ein Kategorienfehler */
     const A = basis.map(x => normW(x[2])), B = q.worte.map(x => normW(x[2]));
     const n = A.length, m = B.length;
     if (n * m > 4e6) continue;
@@ -16752,6 +16763,7 @@ $('bart').addEventListener('touchstart', () => bewegtLeisteZeigen(4000), { passi
 ------------------------------------------------------------- */
 let bSingbar = [];
 let bMarken = null;            // /api/zeitprobe des aktuellen Songs, wenn geladen
+let bLyrik = null;             // /api/lyrik des aktuellen Songs, wenn geladen - die vierte Spur
 /* Die gewaehlte Spur bleibt ueber Songs hinweg stehen (Caspar_D,
    20.08.2026: "wenn ich v3 gewaehlt habe, hat auch der folgende Song
    v3"). null = der Hauptspur des Katalogs folgen. Fehlt die gewaehlte
@@ -16924,7 +16936,7 @@ function textSetzen(art){
 function textEbeneAnwenden(){
   /* Bei instrumentalen Stücken fallen beide Textmodi weg - es gibt
      nichts mitzulesen (25.08.2026). */
-  const karaokeMoeglich = !!(bSong && bSong.worte && bSong.worte.length) && !istInstrumental(bSong);
+  const karaokeMoeglich = !!(bSong && ((bSong.worte && bSong.worte.length) || lyrikWorte().length)) && !istInstrumental(bSong);
   if ((bText === 'karaoke' || bText === 'lyrics') && istInstrumental(bSong)) bText = 'aus';
   else if (bText === 'karaoke' && !karaokeMoeglich) bText = 'aus';
 
@@ -19108,7 +19120,21 @@ function bildSetzen(art){
  */
 /* Woerter der gewaehlten Zeitmarken-Spur. 'auto' = was der Katalog
    traegt; v2/v3/wh = die Spur aus der Zeitprobe. */
+/* DIE BEREINIGTE LYRIK IST DIE VIERTE SPUR (Caspar_D, 16.09.2026: „die bereinigte Lyrics soll überall dort verfügbar
+   sein, wo auch whisper, v2 und v3 lyrics verfügbar ist" — „im gleichen dropdown"). Sie ist ZEILENWEISE vermessen: jede
+   Zeile trägt von/bis aus denselben Whisper-Marken. Damit sie durch dieselben Rohre läuft wie die Wortspuren, wird jede
+   Zeile ein Eintrag [von, bis, Zeile + '\n'] — inZeilen() macht daraus genau eine Zeile, weil der Umbruch im Wort steht.
+   Auf der Bühne leuchtet darum die ganze Zeile statt eines Wortes: ein Wort hätte hier keine eigene Zeit, und Geschätztes
+   leuchtet nicht (Hausregel „Nichts darf lügen"). */
+function lyrikWorte(){
+  const e = bLyrik;
+  if (!e || !e.zeilen || !e.zeilen.length) return [];
+  if (e.worte) return e.worte;
+  return (e.worte = e.zeilen.filter(z => z && z.text && z.text.trim())
+    .map(z => [z.von || 0, (z.bis > z.von) ? z.bis : (z.von || 0) + 1, String(z.text).replace(/\s+$/, '') + '\n']));
+}
 function bWorte(){
+  if (bMarkenQuelle === 'rein'){ const w = lyrikWorte(); if (w.length) return w; }
   if (bMarkenQuelle && bMarken){
     const w = { v2: bMarken.v2, v3: bMarken.v3, wh: bMarken.whisper }[bMarkenQuelle];
     if (w && w.length) return w;
@@ -19118,6 +19144,7 @@ function bWorte(){
 /* Welche Spur der Song gerade WIRKLICH zeigt - fuer das Pult. */
 function bSpurJetzt(){
   const haupt = bSong && bSong.worteQuelle === 'whisper' ? 'wh' : 'v2';
+  if (bMarkenQuelle === 'rein' && lyrikWorte().length) return 'rein';
   if (bMarkenQuelle && bMarken){
     const w = { v2: bMarken.v2, v3: bMarken.v3, wh: bMarken.whisper }[bMarkenQuelle];
     if (w && w.length) return bMarkenQuelle;
@@ -19281,15 +19308,16 @@ function bedienungAufbauen(){
      (v2 im Katalog, v3 aus der Zeitprobe, Whisper). Sonst kein Feld:
      eine Wahl ohne Alternativen ist keine. */
   let markenWahl = '';
-  if (bMarken){
+  if (bMarken || lyrikWorte().length){
     /* Die Werte sind die QUELLEN selbst (v2/v3/wh), kein 'auto': Die
        Wahl gilt songuebergreifend, und "Suno v2" muss auf jedem Song
        dasselbe heissen. Angezeigt wird die Spur, die WIRKLICH laeuft
        (fehlt die gewaehlte, die Hauptspur dieses Songs). */
     const marken = [];
-    if (bMarken.v2 && bMarken.v2.length) marken.push(['v2','Suno v2']);
-    if (bMarken.v3 && bMarken.v3.length) marken.push(['v3','Suno v3']);
-    if (bMarken.whisper && bMarken.whisper.length) marken.push(['wh','Whisper']);
+    if (bMarken && bMarken.v2 && bMarken.v2.length) marken.push(['v2','Suno v2']);
+    if (bMarken && bMarken.v3 && bMarken.v3.length) marken.push(['v3','Suno v3']);
+    if (bMarken && bMarken.whisper && bMarken.whisper.length) marken.push(['wh','Whisper']);
+    if (lyrikWorte().length) marken.push(['rein','bereinigte Lyrik']);
     if (marken.length > 1){
       /* Vierter Punkt: der Dreier-Vergleich - ein Analysewerkzeug, das
          im Alltag nicht herumstehen soll; hier ist sein einziger
@@ -19297,7 +19325,7 @@ function bedienungAufbauen(){
          Oeffnen springt das Feld auf die echte Wahl zurueck. */
       marken.push(['vergleich', 'Vergleich…']);
       marken.jetzt = bSpurJetzt();
-      markenWahl = wahl('bmarkenWahl', 'markenWaehlen', marken, 'Woher die Wort-Zeitmarken stammen — die Wahl gilt auch für die nächsten Titel');
+      markenWahl = wahl('bmarkenWahl', 'markenWaehlen', marken, 'Woher die Zeitmarken stammen — die Wahl gilt auch für die nächsten Titel. Die bereinigte Lyrik ist zeilenweise vermessen, dort leuchtet die ganze Zeile');
     }
   }
 
@@ -19700,12 +19728,19 @@ async function buehneAuf(id){
      Wahl an (Caspar_D, 20.08.2026: "koennen wir v2, v3 und whisper in der
      Karaoke-View waehlen?"). Die Spuren kommen von /api/zeitprobe,
      erst NACH dem Aufbau - die Buehne wartet nicht auf sie. */
-  bMarken = null;
+  bMarken = null; bLyrik = null;
   const markenFuer = bSong.id;
+  /* Die bereinigte Lyrik kommt aus derselben Richtung wie die Zeitproben: nachgeladen, die Bühne wartet nicht. */
+  if (!bSong.fremd) fetch('/api/lyrik/' + markenFuer).then(r => r.json()).then(e => {
+    if (!bSong || bSong.id !== markenFuer) return;
+    if (!e || !e.zeilen || !e.zeilen.length) return;
+    bLyrik = e; bedienungAufbauen();
+    if (bMarkenQuelle === 'rein'){ buehnenTextAufbauen(); textEbeneAnwenden(); }
+  }).catch(() => {});
   if (!bSong.fremd) fetch('/api/zeitprobe/' + markenFuer).then(r => r.json()).then(d => {
     if (!bSong || bSong.id !== markenFuer) return;      // Buehne zeigt inzwischen einen anderen Song
     bMarken = d;
-    const spuren = [d.v2, d.v3, d.whisper].filter(w => w && w.length).length;
+    const spuren = [d.v2, d.v3, d.whisper].filter(w => w && w.length).length + (lyrikWorte().length ? 1 : 0);
     if (spuren > 1) bedienungAufbauen();                // Pult bekommt das Zeitmarken-Feld
     /* Die gemerkte Spurwahl greift, sobald die Spuren da sind: Der
        Text wurde mit der Hauptspur aufgebaut - weicht die Wahl ab,
@@ -19758,7 +19793,7 @@ function buehneZu(){
   if (bTakt) { cancelAnimationFrame(bTakt); bTakt = null; }
   fremdVisAbraeumen();          // sonst läuft deren Schleife weiter
   $('bart').innerHTML = '';       // Video bzw. Zeichenfläche anhalten
-  bSong = null; bZeilen = []; bPartikel = [];
+  bSong = null; bZeilen = []; bPartikel = []; bLyrik = null;
   if (document.fullscreenElement) document.exitFullscreen().catch(()=>{});
 }
 
@@ -29143,7 +29178,7 @@ let SCHLEIFE={art:'keiner'}, VIDEO_GENAU=false, QUELLE_WIRKUNG=null, SCHLEIFE_ST
 const SCHLEIFE_ARTEN=[['keiner','harter Schnitt'],['ruecklauf','Rücklauf mit Unschärfe'],['abbremsen','Abbremsen'],['pendel','Pendel'],['unschaerfe','Unschärfe'],['blende','Blende'],['kreuzzoom','Kreuzzoom'],['wisch','Wisch'],['schwarz','durch Schwarz'],['weiss','durch Weiß'],['blitz','Schnitt mit Blitz'],['pixel','Pixel']];
 const SCHLEIFE_GRUPPEN=[[null,['keiner']],['Bewegung',['ruecklauf','pendel','abbremsen']],['Neutralzustand',['unschaerfe','blende','kreuzzoom','wisch','schwarz','weiss']],['f\u00fcr Grafik',['blitz','pixel']]];   /* Regel 19: echtes Dropdown mit Gruppen */
 const SCHLEIFE_PRINZIP={ keiner:'das ganze Video \u00fcber den ganzen Clip, am Clipende springt es auf den Anfang', ruecklauf:'vorw\u00e4rts durchs Video, im \u00dcbergang schnell zur\u00fcck an den Anfang \u2013 unter 8 % Unsch\u00e4rfe',
-  pendel:'hin und zur\u00fcck \u00fcber den ganzen Clip, an beiden Enden mit Tempo 0 \u2013 es braucht keinen \u00dcbergang', abbremsen:'das Video kommt zum Stehen und blendet ins erste Bild',
+  pendel:'hin und her \u00fcber einen Ausschnitt in echtem Tempo, an den Umkehrpunkten weich \u2013 es braucht keinen \u00dcbergang', abbremsen:'das Video kommt zum Stehen und blendet ins erste Bild',
   unschaerfe:'in der Mitte des \u00dcbergangs, verdeckt von Unsch\u00e4rfe, tauscht das Ende gegen den Anfang', blende:'das letzte Bild blendet weich ins erste', kreuzzoom:'ein Zoom mit Unsch\u00e4rfe verdeckt den Tausch in der Mitte',
   wisch:'der Anfang schiebt das Ende nach links hinaus', schwarz:'abdunkeln bis Schwarz, dort der Tausch, wieder aufhellen', weiss:'aufhellen bis Wei\u00df, dort der Tausch, wieder zur\u00fcck',
   blitz:'harter Tausch unter einem kurzen Wei\u00dfblitz \u2013 f\u00fcr Grafik, bei gefilmtem Material hart', pixel:'das Bild zerf\u00e4llt in Kl\u00f6tzchen, darin der Tausch \u2013 f\u00fcr Grafik' };
@@ -29154,9 +29189,10 @@ const SCHLEIFE_UNSCHAERFE=0.08;   /* Anteil der Bildbreite am staerksten Punkt *
 /* DIE LAENGE DES UEBERGANGS VON HAND (Caspar_D, 15.09.2026: "kannst du den Anteil des Ueberblendens verkuerzen, bspw nur 1 sek von
    10 sek - also dass man die Laenge der Ueberblendung definieren kann, insgesamt aber trotzdem 10 sekunden bleiben"): in ganzen
    Schlaegen (musikalisch, VIDEO-PLAN 6.3), der Clip bleibt so lang wie er ist - das Video bekommt die gewonnene Zeit. */
-function schleifeFenster(L,lage){ if((SCHLEIFE.art||'keiner')==='keiner') return 0;   /* harter Schnitt: Uebergang der Laenge 0 (Caspar_D, 15.09.2026: "bei harter schnitt muessten auch uebergaenge der laenge 0 moeglich sein") */
-  const beat=(lage&&lage.M)?L/lage.M:0, takt=beat*((lage&&lage.proTakt)||4), n=Math.round((+SCHLEIFE.fenster||0)*2)/2;
-  const D=(n>0&&beat>0)?n*beat:n>0?n*0.5:(takt>0?(takt<=2?takt:takt/2):1.2); return Math.max(0.2,Math.min(L/3,D)); }
+function schleifeFenster(L,lage){ const art=SCHLEIFE.art||'keiner'; if(art==='keiner') return 0;   /* harter Schnitt: Uebergang der Laenge 0 (Caspar_D, 15.09.2026: "bei harter schnitt muessten auch uebergaenge der laenge 0 moeglich sein") */
+  const beat=(lage&&lage.M)?L/lage.M:0, takt=beat*((lage&&lage.proTakt)||4), n=Math.round((+SCHLEIFE.fenster||0)*2)/2, pend=art==='pendel';
+  const D=(n>0&&beat>0)?n*beat:n>0?n*0.5:pend?L/2:(takt>0?(takt<=2?takt:takt/2):1.2);   /* beim Pendel ist dieselbe Zahl die Laenge des AUSSCHNITTS, Vorgabe die halbe Clipzeit */
+  return Math.max(0.2,Math.min(pend?L/2:L/3,D)); }
 /* DAS GANZE VIDEO, GLEICH VIEL AENDERUNG JE ZEIT (Caspar_D, 15.09.2026: "das video wird zu frueh ausgeblendet, der Kuss ist
    schon nicht mehr richtig zu sehen" - "das Video muss immer so ganz wie moeglich zu sehen sein" - "also das, was du bei Dopamier
    mich gemacht hast, gleich viel Aenderung pro Zeit aber das gesamte Videomaterial"). Der Vorwaertslauf zeigt immer das ganze Video;
@@ -29164,6 +29200,23 @@ function schleifeFenster(L,lage){ if((SCHLEIFE.art||'keiner')==='keiner') return
    wie im Muster labor/videonaht/uebergaenge/arbeit/zeitumbildung.py), geklemmt auf halb bis doppelt so schnell wie das Mittel (Caspar_D: "das video laeuft zu schnell").
    Solange die Kurve noch nicht gemessen ist, laeuft das Video gleichmaessig. */
 let SCHLEIFE_KURVE={schluessel:'',u:null,laeuft:false};
+/* DAS PENDEL ZEIGT HIN UND HER, IN ECHTEM TEMPO (Caspar_D, 16.09.2026: "das pendel soll natuerlich das hin und her zeigen.
+   man koennte natuerlich einen 5 sec Ausschnitt nehmen und den hin und her pendeln. eine auszublenden ist nicht sinn der
+   sache" - davor: "bei Pendel, doppelter Inhalt pro Zeit ist es meist zu schnell"). Vorher lief das GANZE Video hin und
+   zurueck in derselben Clipzeit: im Mittel doppeltes Tempo, in der Clipmitte pi-faches. Jetzt pendelt ein AUSSCHNITT von
+   halber Clipzeit: Hinweg die erste Haelfte, Rueckweg die zweite, dazwischen echtes Tempo, an den Umkehrpunkten weich
+   (15 % je Weg, Spitze 1,18-fach). Bei tau=0 und tau=L steht dasselbe Bild mit Tempo 0 - die Schleife schliesst ohne Naht.
+   Kein Ausblenden und keine Unschaerfe: "eine auszublenden ist nicht sinn der sache". Die Laenge des Ausschnitts steht
+   im Pult ("Ausschnitt", halbe Schlaege), wo er liegt, sagt die Aenderungskurve. */
+function schleifePendelWeg(x){ const e=0.15, f=2*e*(1-e);
+  if(x<e) return x*x/f; if(x>1-e){ const y=1-x; return 1-y*y/f; } return (x-e/2)/(1-e); }
+/* Das bewegteste Fenster seiner Laenge: die Kurve U steigt dort schneller, wo sich mehr aendert (schleifeKurveMessen).
+   Ohne Messung die Mitte des Videos - nie der Anfang, dort stehen bei Suno-Videos oft ruhige Bilder. */
+function schleifePendelVon(dauer,dv){ const U=SCHLEIFE_KURVE.u; if(!(dv>dauer)) return 0;
+  if(!U||U.length<3) return (dv-dauer)/2;
+  const n=U.length-1, k=Math.max(1,Math.min(n,Math.round(dauer/dv*n))); let best=0, wert=-1;
+  for(let j=0;j+k<=n;j++){ const w=U[j+k]-U[j]; if(w>wert){ wert=w; best=j; } }
+  return Math.min(dv-dauer, best/n*dv); }
 function schleifeQuelle(x,dv){ const U=SCHLEIFE_KURVE.u; if(!U||U.length<2) return x*dv; const n=U.length-1;
   let lo=0,hi=n; while(hi-lo>1){ const m=(lo+hi)>>1; if(U[m]<=x) lo=m; else hi=m; } const f=U[hi]>U[lo]?(x-U[lo])/(U[hi]-U[lo]):0; return Math.min(dv,(lo+f)/n*dv); }
 /* Laeuft schon eine Vermessung, wartet ein zweiter Aufruf auf DIESE, statt sofort zurueckzukehren - sonst gab schleifeStills die Sperre frei,
@@ -29179,7 +29232,8 @@ async function schleifeKurveLauf(v,k){ { const n=Math.max(8,Math.min(300,Math.ro
 function schleifeZeit(tau,L,Dv,lage){ const q=schleifeZeitRoh(tau,L,Dv,lage), art=SCHLEIFE.art||'keiner'; q.tau=tau; q.fenster=art!=='keiner'&&art!=='pendel'&&tau>=L-schleifeFenster(L,lage); return q; }
 function schleifeZeitRoh(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
   if(art==='keiner') return { s:schleifeQuelle(tau/L,dv) };   /* das ganze Video ueber den ganzen Clip, dann der Schnitt */
-  if(art==='pendel') return { s:schleifeQuelle((1-Math.cos(2*Math.PI*tau/L))/2,dv) };   /* Kosinus: an beiden Enden Tempo 0 */
+  if(art==='pendel'){ const A=Math.min(dv,schleifeFenster(L,lage)), h=L/2, x=tau<h?tau/h:(L-tau)/h;
+    return { s:schleifePendelVon(A,dv)+A*schleifePendelWeg(Math.max(0,Math.min(1,x))) }; }
   const D=schleifeFenster(L,lage), F=L-D, b=dv, k=(art==='abbremsen'||art==='schwarz')?1:0.6;
   if(tau<F){ const x=tau/F; return { s:schleifeQuelle(x-k*Math.sin(2*Math.PI*x)/(2*Math.PI),dv) }; }   /* an den Enden langsamer (k=1: bis 0), damit der Uebergang nicht in volle Fahrt schneidet */
   const u=(tau-F)/D, glocke=Math.pow(Math.sin(Math.PI*u),2);
@@ -29928,17 +29982,18 @@ function zeichneFrame(t,roh){
   function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=(s-mm*60).toFixed(1).replace('.',',');
     el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
   function schleifeUI(){ const s=$('#tbs-schleife'), h=$('#tbs-schleifeHinweis'), vid=!!(bild&&bild.tagName==='VIDEO'), art=SCHLEIFE.art||'keiner', lg=loopSicht&&loopSicht.lage;
-    const kz=v=>String(v).replace('.',','), fGilt=vid&&art!=='keiner'&&art!=='pendel', L=lg?lg.N/BILDRATE:0, beat=(lg&&lg.M)?L/lg.M:0, D=(lg&&fGilt)?schleifeFenster(L,lg):0;
+    const kz=v=>String(v).replace('.',','), pend=art==='pendel', fGilt=vid&&art!=='keiner', L=lg?lg.N/BILDRATE:0, beat=(lg&&lg.M)?L/lg.M:0, D=(lg&&fGilt)?schleifeFenster(L,lg):0;
     fussStand();
     if(s){ s.value=art; s.disabled=!vid; s.title=vid?SCHLEIFE_PRINZIP[art]:'nur für Bewegtbilder'; }
     ['#tbs-fWeniger','#tbs-fMehr','#tbs-fSelbst'].forEach(q=>{ const b=$(q); if(b) b.disabled=!fGilt; });
     { const z=$('#tbs-fZeile'); if(z) z.classList.toggle('grau',!fGilt); const b=$('#tbs-fSelbst'); if(b) b.classList.toggle('an',fGilt&&!(SCHLEIFE.fenster>0)); }
     { const b=$('#tbs-mSelbst'); if(b) b.classList.toggle('an',!(SCHLEIFE.schlaege>0)); const z=$('#tbs-mZahl'); if(z) z.textContent=(lg&&lg.M)?String(lg.M):'–'; }
-    { const z=$('#tbs-fZahl'); if(z){ const n=beat?Math.round(D/beat*2)/2:0; z.textContent=!vid?'–':art==='keiner'?'0 s':art==='pendel'?'ganzer Clip':!lg?'–':beat?kz(n)+(n===1?' Schlag':' Schläge'):kz(D.toFixed(2))+' s'; } }
+    { const z=$('#tbs-fZahl'); if(z){ const n=beat?Math.round(D/beat*2)/2:0; z.textContent=!vid?'–':art==='keiner'?'0 s':!lg?'–':beat?kz(n)+(n===1?' Schlag':' Schläge'):kz(D.toFixed(2))+' s'; }
+      const lb=$('#tbs-fLabel'); if(lb) lb.textContent=pend?'Länge des Ausschnitts':'Länge des Übergangs'; }
     { const k=$('#tbs-loopKosten'); if(k) k.hidden=!vid; }
     { const li=$('#tbs-leisteLinks'), re=$('#tbs-leisteRechts'); if(li) li.textContent=!lg?'':vid?'Die linke Achse bildet von unten nach oben die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von KlangTresor geschleifte Version. Die Striche unten sind die Schl\u00e4ge.':'Die waagerechte Achse bildet von links nach rechts die von KlangTresor geschleifte Version ab, die Striche sind die Schl\u00e4ge. Ein Titelbild hat keine Videozeit.';   /* Caspar_D, 15.09.2026: "die linke Achse von unten nach oben bildet die Zeitskala des Videomaterials ab, die waagerechte Achse von links nach rechts die von Klangtresor geschleifte Version" - das muss dastehen */
       { const xr=$('#tbs-xRechts'); if(xr) xr.textContent=lg?kz(L.toFixed(2))+' s':''; }
-      if(re) re.textContent=!lg?'':!vid?'':fGilt?'Übergang '+kz(D.toFixed(2))+' s':art==='keiner'?'harter Schnitt am Clipende':'Pendel'; }
+      if(re) re.textContent=!lg?'':!vid?'':pend?'Ausschnitt '+kz(D.toFixed(2))+' s, hin und her':fGilt?'Übergang '+kz(D.toFixed(2))+' s':'harter Schnitt am Clipende'; }
     if(h) h.textContent=vid?SCHLEIFE_PRINZIP[art]:'Übergänge gibt es nur für Bewegtbilder – beim Titelbild schließen die Effekte die Schleife von selbst';
     { const nm=(SCHLEIFE_ARTEN.find(a=>a[0]===art)||[0,''])[1];   /* Stand im Kopf der Stufe: Laenge, Schlaege, beim Video der Uebergang */
       standSetzen('Loop', !lg?'…':kz(L.toFixed(2))+' s'+(lg.M?' · '+lg.M+(lg.M===1?' Schlag':' Schläge'):'')+(vid&&nm?' · '+nm:'')); }
@@ -30055,7 +30110,7 @@ function zeichneFrame(t,roh){
       +'<div class="tbs-regler"><span>Schläge im Clip</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-mWeniger" title="weniger Schläge – kürzerer Clip, das Video läuft schneller">−</button><b id="tbs-mZahl">–</b><button type="button" class="tbs-mini" id="tbs-mMehr" title="mehr Schläge – längerer Clip (höchstens 10 s), das Video läuft ruhiger">+</button><button type="button" class="tbs-togp" id="tbs-mSelbst" title="die Schlagzahl wählen lassen, die über das ganze Lied am besten im Takt sitzt">von selbst</button></span></div>'
       +'<div class="tbs-regler"><span>Übergang an den Schleifenenden</span><select id="tbs-schleife">'+schleifeOptionen()+'</select></div>'
       +'<div class="tbs-unter" id="tbs-schleifeHinweis"></div>'
-      +'<div class="tbs-regler" id="tbs-fZeile"><span>Länge des Übergangs</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" title="länger – höchstens ein Drittel des Clips">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" title="die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber">von selbst</button></span></div>'
+      +'<div class="tbs-regler" id="tbs-fZeile"><span id="tbs-fLabel">Länge des Übergangs</span><span class="tbs-zaehler"><button type="button" class="tbs-mini" id="tbs-fWeniger" title="kürzer – in halben Schlägen; der Clip bleibt so lang, das Video bekommt die Zeit">−</button><b id="tbs-fZahl">–</b><button type="button" class="tbs-mini" id="tbs-fMehr" title="länger – höchstens ein Drittel des Clips">+</button><button type="button" class="tbs-togp" id="tbs-fSelbst" title="die Länge des Übergangs aus dem Takt wählen lassen: ein Takt, bei langen Takten ein halber">von selbst</button></span></div>'
       +'<div class="tbs-leistrahmen"><div class="tbs-yachse" id="tbs-yAchse" title="die Zeitskala des Videomaterials, von unten nach oben"><span id="tbs-yOben"></span><span class="tbs-yname">Video</span><span>0 s</span></div>'
       +'<canvas id="tbs-leiste" title="Waagerecht die von KlangTresor geschleifte Version, senkrecht die Zeit im Videomaterial: die Kurve zeigt, welches Videobild zu welcher Clipzeit l\u00e4uft, die Fl\u00e4che den \u00dcbergang, die Striche unten die Schl\u00e4ge"></canvas>'
       +'<div class="tbs-xachse" title="die von KlangTresor geschleifte Version, von links nach rechts"><span>0 s</span><span>geschleifter Clip</span><span id="tbs-xRechts"></span></div></div>'
