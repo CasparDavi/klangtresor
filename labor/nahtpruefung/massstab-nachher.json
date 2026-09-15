@@ -1,0 +1,6700 @@
+{
+ "stand": "3542c0a",
+ "indexGeaendert": true,
+ "datum": "2026-09-15T14:42:47.629Z",
+ "lange": 360,
+ "dauerS": 167,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  },
+  "d": {
+   "id": "f76a6706-d9a0-480a-a73f-265de9c1c0fe",
+   "titel": "Okkultation",
+   "warum": "Taktlage 15.09.2026: im Taktraster liegt die Phase ueber einem Schlag (phiF 7 bei N/M 18,6), mit Daten tempowechsel ein Tempowechsel"
+  },
+  "e": {
+   "id": "535121bb-581f-407c-92c8-6f22f141dd25",
+   "titel": "Universe 25 english",
+   "warum": "Taktlage 15.09.2026: mit Eins-Leser liegt die Phase fast drei Schlaege spaet (phiF 57 bei N/M 14,3), Sitzanteil unter 50 %"
+  }
+ },
+ "jetzt": 60.3,
+ "klein": 360,
+ "gross": 1080,
+ "vergleich": 256,
+ "jeTyp": [
+  {
+   "typ": "(kein Effekt)",
+   "faelle": 5,
+   "mittelMax": 6.86,
+   "blockMax": 16.013,
+   "vorgabe": null
+  },
+  {
+   "typ": "wackeln",
+   "faelle": 4,
+   "mittelMax": 2.278,
+   "blockMax": 14.355,
+   "vorgabe": 14.355
+  },
+  {
+   "typ": "kaustik",
+   "faelle": 3,
+   "mittelMax": 3.647,
+   "blockMax": 14.25,
+   "vorgabe": 9.245
+  },
+  {
+   "typ": "risse",
+   "faelle": 5,
+   "mittelMax": 2.459,
+   "blockMax": 14.122,
+   "vorgabe": 14.122
+  },
+  {
+   "typ": "puls",
+   "faelle": 26,
+   "mittelMax": 2.855,
+   "blockMax": 13.717,
+   "vorgabe": 7.934
+  },
+  {
+   "typ": "scanlines",
+   "faelle": 1,
+   "mittelMax": 4.222,
+   "blockMax": 13.339,
+   "vorgabe": 13.339
+  },
+  {
+   "typ": "partikel",
+   "faelle": 23,
+   "mittelMax": 2.975,
+   "blockMax": 12.076,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "strobe",
+   "faelle": 6,
+   "mittelMax": 5.504,
+   "blockMax": 11.185,
+   "vorgabe": 6.543
+  },
+  {
+   "typ": "wellen",
+   "faelle": 2,
+   "mittelMax": 2.289,
+   "blockMax": 10.943,
+   "vorgabe": 10.943
+  },
+  {
+   "typ": "linse",
+   "faelle": 1,
+   "mittelMax": 1.887,
+   "blockMax": 10.598,
+   "vorgabe": 10.598
+  },
+  {
+   "typ": "rgb",
+   "faelle": 1,
+   "mittelMax": 1.901,
+   "blockMax": 10.355,
+   "vorgabe": 10.355
+  },
+  {
+   "typ": "spiegel",
+   "faelle": 1,
+   "mittelMax": 1.903,
+   "blockMax": 10.053,
+   "vorgabe": 10.053
+  },
+  {
+   "typ": "rauschen",
+   "faelle": 2,
+   "mittelMax": 2.598,
+   "blockMax": 9.799,
+   "vorgabe": 9.799
+  },
+  {
+   "typ": "tropfen",
+   "faelle": 4,
+   "mittelMax": 2.125,
+   "blockMax": 9.762,
+   "vorgabe": 9.762
+  },
+  {
+   "typ": "farbe",
+   "faelle": 1,
+   "mittelMax": 2.471,
+   "blockMax": 9.652,
+   "vorgabe": 9.652
+  },
+  {
+   "typ": "sicherung",
+   "faelle": 5,
+   "mittelMax": 3.104,
+   "blockMax": 9.647,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "einschlag",
+   "faelle": 5,
+   "mittelMax": 2.225,
+   "blockMax": 9.539,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "kontrast",
+   "faelle": 1,
+   "mittelMax": 1.794,
+   "blockMax": 9.44,
+   "vorgabe": 9.44
+  },
+  {
+   "typ": "saettigung",
+   "faelle": 1,
+   "mittelMax": 1.827,
+   "blockMax": 9.413,
+   "vorgabe": 9.413
+  },
+  {
+   "typ": "korn",
+   "faelle": 2,
+   "mittelMax": 2.541,
+   "blockMax": 9.408,
+   "vorgabe": 9.408
+  },
+  {
+   "typ": "licht",
+   "faelle": 15,
+   "mittelMax": 1.869,
+   "blockMax": 9.385,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "farbton",
+   "faelle": 1,
+   "mittelMax": 1.81,
+   "blockMax": 9.353,
+   "vorgabe": 9.353
+  },
+  {
+   "typ": "bloom",
+   "faelle": 1,
+   "mittelMax": 1.873,
+   "blockMax": 9.336,
+   "vorgabe": 9.336
+  },
+  {
+   "typ": "helligkeit",
+   "faelle": 1,
+   "mittelMax": 1.854,
+   "blockMax": 9.335,
+   "vorgabe": 9.335
+  },
+  {
+   "typ": "schatten",
+   "faelle": 2,
+   "mittelMax": 1.717,
+   "blockMax": 9.332,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "laser",
+   "faelle": 13,
+   "mittelMax": 2.063,
+   "blockMax": 9.332,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "streifen",
+   "faelle": 4,
+   "mittelMax": 1.733,
+   "blockMax": 9.332,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "streiflicht",
+   "faelle": 4,
+   "mittelMax": 1.931,
+   "blockMax": 9.332,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "bloecke",
+   "faelle": 3,
+   "mittelMax": 1.955,
+   "blockMax": 9.332,
+   "vorgabe": 9.332
+  },
+  {
+   "typ": "strahlen",
+   "faelle": 1,
+   "mittelMax": 1.958,
+   "blockMax": 9.082,
+   "vorgabe": 9.082
+  },
+  {
+   "typ": "filmnebel",
+   "faelle": 20,
+   "mittelMax": 2.256,
+   "blockMax": 8.214,
+   "vorgabe": 7.971
+  },
+  {
+   "typ": "kippen",
+   "faelle": 1,
+   "mittelMax": 1.778,
+   "blockMax": 8.176,
+   "vorgabe": 8.176
+  },
+  {
+   "typ": "feuer",
+   "faelle": 3,
+   "mittelMax": 1.887,
+   "blockMax": 7.53,
+   "vorgabe": 7.383
+  },
+  {
+   "typ": "vlauf",
+   "faelle": 1,
+   "mittelMax": 1.684,
+   "blockMax": 7.388,
+   "vorgabe": 7.388
+  },
+  {
+   "typ": "nachzieh",
+   "faelle": 6,
+   "mittelMax": 1.726,
+   "blockMax": 7.318,
+   "vorgabe": 6.609
+  },
+  {
+   "typ": "flammen",
+   "faelle": 4,
+   "mittelMax": 1.741,
+   "blockMax": 6.806,
+   "vorgabe": 6.76
+  },
+  {
+   "typ": "beschlag",
+   "faelle": 1,
+   "mittelMax": 1.197,
+   "blockMax": 5.518,
+   "vorgabe": 5.518
+  },
+  {
+   "typ": "fahrt",
+   "faelle": 1,
+   "mittelMax": 1.457,
+   "blockMax": 5.255,
+   "vorgabe": 5.255
+  },
+  {
+   "typ": "schaerfe",
+   "faelle": 1,
+   "mittelMax": 0.337,
+   "blockMax": 1.757,
+   "vorgabe": 1.757
+  }
+ ],
+ "faelle": [
+  {
+   "name": "fahrt",
+   "typ": "fahrt",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.457,
+   "block": 5.255,
+   "dauerMs": 871,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.344,
+   "ueberBodenBlock": -4.077
+  },
+  {
+   "name": "puls",
+   "typ": "puls",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.746,
+   "block": 7.934,
+   "dauerMs": 334,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.055,
+   "ueberBodenBlock": -1.398
+  },
+  {
+   "name": "schaerfe",
+   "typ": "schaerfe",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 0.337,
+   "block": 1.757,
+   "dauerMs": 1044,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -1.464,
+   "ueberBodenBlock": -7.575
+  },
+  {
+   "name": "kontrast",
+   "typ": "kontrast",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.794,
+   "block": 9.44,
+   "dauerMs": 596,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.007,
+   "ueberBodenBlock": 0.108
+  },
+  {
+   "name": "helligkeit",
+   "typ": "helligkeit",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.854,
+   "block": 9.335,
+   "dauerMs": 556,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.053,
+   "ueberBodenBlock": 0.003
+  },
+  {
+   "name": "saettigung",
+   "typ": "saettigung",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.827,
+   "block": 9.413,
+   "dauerMs": 425,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.026,
+   "ueberBodenBlock": 0.081
+  },
+  {
+   "name": "farbe",
+   "typ": "farbe",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.471,
+   "block": 9.652,
+   "dauerMs": 535,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.67,
+   "ueberBodenBlock": 0.32
+  },
+  {
+   "name": "licht",
+   "typ": "licht",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.826,
+   "block": 9.332,
+   "dauerMs": 763,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.025,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "schatten",
+   "typ": "schatten",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.683,
+   "block": 9.332,
+   "dauerMs": 985,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.118,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser",
+   "typ": "laser",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Ursprung wandern, Bauart gitter (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.014,
+   "block": 9.332,
+   "dauerMs": 952,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.213,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "streifen",
+   "typ": "streifen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ton hell (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.733,
+   "block": 9.332,
+   "dauerMs": 551,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.068,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rauschen",
+   "typ": "rauschen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.598,
+   "block": 9.799,
+   "dauerMs": 730,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.797,
+   "ueberBodenBlock": 0.467
+  },
+  {
+   "name": "vlauf",
+   "typ": "vlauf",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.684,
+   "block": 7.388,
+   "dauerMs": 653,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.117,
+   "ueberBodenBlock": -1.944
+  },
+  {
+   "name": "wackeln",
+   "typ": "wackeln",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kick im Takt (Vorgabe), 4/4",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.255,
+   "block": 14.355,
+   "dauerMs": 733,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.454,
+   "ueberBodenBlock": 5.023
+  },
+  {
+   "name": "rgb",
+   "typ": "rgb",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.901,
+   "block": 10.355,
+   "dauerMs": 899,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.1,
+   "ueberBodenBlock": 1.023
+  },
+  {
+   "name": "strobe",
+   "typ": "strobe",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "hz 8, rechteck (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.282,
+   "block": 6.543,
+   "dauerMs": 366,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.519,
+   "ueberBodenBlock": -2.789
+  },
+  {
+   "name": "sicherung",
+   "typ": "sicherung",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 478,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "streiflicht",
+   "typ": "streiflicht",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte: schaltet sich ab",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 1549,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "filmnebel",
+   "typ": "filmnebel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.53,
+   "block": 7.971,
+   "dauerMs": 1726,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.271,
+   "ueberBodenBlock": -1.361
+  },
+  {
+   "name": "partikel",
+   "typ": "partikel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Art schnee, ohne Quelle (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.253,
+   "block": 9.332,
+   "dauerMs": 671,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.452,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "scanlines",
+   "typ": "scanlines",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 4.222,
+   "block": 13.339,
+   "dauerMs": 824,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 2.421,
+   "ueberBodenBlock": 4.007
+  },
+  {
+   "name": "bloom",
+   "typ": "bloom",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.873,
+   "block": 9.336,
+   "dauerMs": 680,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.072,
+   "ueberBodenBlock": 0.004
+  },
+  {
+   "name": "nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.166,
+   "block": 6.609,
+   "dauerMs": 8996,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.635,
+   "ueberBodenBlock": -2.723
+  },
+  {
+   "name": "feuer",
+   "typ": "feuer",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.884,
+   "block": 7.383,
+   "dauerMs": 1485,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.083,
+   "ueberBodenBlock": -1.949
+  },
+  {
+   "name": "wellen",
+   "typ": "wellen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.289,
+   "block": 10.943,
+   "dauerMs": 650,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.488,
+   "ueberBodenBlock": 1.611
+  },
+  {
+   "name": "kaustik",
+   "typ": "kaustik",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.526,
+   "block": 9.245,
+   "dauerMs": 927,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.725,
+   "ueberBodenBlock": -0.087
+  },
+  {
+   "name": "linse",
+   "typ": "linse",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.887,
+   "block": 10.598,
+   "dauerMs": 599,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.086,
+   "ueberBodenBlock": 1.266
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.741,
+   "block": 6.76,
+   "dauerMs": 567,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.06,
+   "ueberBodenBlock": -2.572
+  },
+  {
+   "name": "strahlen",
+   "typ": "strahlen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.958,
+   "block": 9.082,
+   "dauerMs": 905,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.157,
+   "ueberBodenBlock": -0.25
+  },
+  {
+   "name": "spiegel",
+   "typ": "spiegel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.903,
+   "block": 10.053,
+   "dauerMs": 439,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.102,
+   "ueberBodenBlock": 0.721
+  },
+  {
+   "name": "risse",
+   "typ": "risse",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "wachsen zeit (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.459,
+   "block": 14.122,
+   "dauerMs": 249,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.658,
+   "ueberBodenBlock": 4.79
+  },
+  {
+   "name": "beschlag",
+   "typ": "beschlag",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.197,
+   "block": 5.518,
+   "dauerMs": 666,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.604,
+   "ueberBodenBlock": -3.814
+  },
+  {
+   "name": "einschlag",
+   "typ": "einschlag",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "bleiben 8 (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.847,
+   "block": 9.332,
+   "dauerMs": 706,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.046,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "tropfen",
+   "typ": "tropfen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.916,
+   "block": 9.762,
+   "dauerMs": 834,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.115,
+   "ueberBodenBlock": 0.43
+  },
+  {
+   "name": "korn",
+   "typ": "korn",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.541,
+   "block": 9.408,
+   "dauerMs": 189,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.74,
+   "ueberBodenBlock": 0.076
+  },
+  {
+   "name": "bloecke",
+   "typ": "bloecke",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "im Takt (Vorgabe)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 260,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "farbton",
+   "typ": "farbton",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.81,
+   "block": 9.353,
+   "dauerMs": 273,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.009,
+   "ueberBodenBlock": 0.021
+  },
+  {
+   "name": "kippen",
+   "typ": "kippen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.778,
+   "block": 8.176,
+   "dauerMs": 259,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.023,
+   "ueberBodenBlock": -1.156
+  },
+  {
+   "name": "puls-flackern-takt",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 145,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "puls-flackern-hz05",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.525,
+   "block": 7.525,
+   "dauerMs": 144,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.276,
+   "ueberBodenBlock": -1.807
+  },
+  {
+   "name": "puls-teiler8-a",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe: M durch 8 teilbar",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.65,
+   "block": 6.618,
+   "dauerMs": 242,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.151,
+   "ueberBodenBlock": -2.714
+  },
+  {
+   "name": "puls-teiler8-b",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "M nicht durch 8 teilbar",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.595,
+   "block": 9.098,
+   "dauerMs": 613,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.001,
+   "ueberBodenBlock": 1.011
+  },
+  {
+   "name": "puls-zufall",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 161,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "puls-ohneEins",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Schlaege, aber keine Eins-Marken",
+   "t0": 60.079,
+   "zeit": 62.379,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.747,
+   "block": 7.971,
+   "dauerMs": 153,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.054,
+   "ueberBodenBlock": -1.361
+  },
+  {
+   "name": "strobe-ohneEins",
+   "typ": "strobe",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Schlaege, aber keine Eins-Marken",
+   "t0": 60.079,
+   "zeit": 62.379,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.282,
+   "block": 6.543,
+   "dauerMs": 179,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.519,
+   "ueberBodenBlock": -2.789
+  },
+  {
+   "name": "puls-ohneSchlaege",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Rueckfall auf Frequenz",
+   "t0": 60.3,
+   "zeit": 62.6,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.763,
+   "block": 9.758,
+   "dauerMs": 101,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.038,
+   "ueberBodenBlock": 0.426
+  },
+  {
+   "name": "puls-zufall-ohneSchlaege",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "",
+   "t0": 60.3,
+   "zeit": 62.6,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.763,
+   "block": 9.758,
+   "dauerMs": 123,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.038,
+   "ueberBodenBlock": 0.426
+  },
+  {
+   "name": "strobe-ohneSchlaege",
+   "typ": "strobe",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "",
+   "t0": 60.3,
+   "zeit": 62.6,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.282,
+   "block": 6.543,
+   "dauerMs": 111,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.519,
+   "ueberBodenBlock": -2.789
+  },
+  {
+   "name": "feuer-flackern",
+   "typ": "feuer",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.882,
+   "block": 7.362,
+   "dauerMs": 373,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.081,
+   "ueberBodenBlock": -1.97
+  },
+  {
+   "name": "licht-fahrt",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.805,
+   "block": 9.332,
+   "dauerMs": 573,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.004,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "licht-schritt",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.837,
+   "block": 9.332,
+   "dauerMs": 178,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.036,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "licht-bogen",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 438,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-wandern-scanner",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.063,
+   "block": 9.332,
+   "dauerMs": 496,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.262,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-wandern-punkte",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.803,
+   "block": 9.332,
+   "dauerMs": 508,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.002,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-wandern-punkte-drehen0",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.803,
+   "block": 9.332,
+   "dauerMs": 422,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.002,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-fest-punkte",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "drehen allein, ohne wandernden Ursprung",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.804,
+   "block": 9.332,
+   "dauerMs": 328,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.003,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-fest-punkte-drehen0",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.802,
+   "block": 9.332,
+   "dauerMs": 165,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.001,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-fest-gitter",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.912,
+   "block": 9.332,
+   "dauerMs": 374,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.111,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-scanner-sprung-hz",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.855,
+   "block": 9.332,
+   "dauerMs": 550,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.054,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-scanner-sprung-takt",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 149,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "streiflicht-licht",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Scheinwerfer wandernd davor",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.931,
+   "block": 9.332,
+   "dauerMs": 818,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.13,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "streiflicht-laserfest",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Laser Ursprung fest davor",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.924,
+   "block": 9.332,
+   "dauerMs": 794,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.123,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-regen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.975,
+   "block": 11.783,
+   "dauerMs": 173,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 1.174,
+   "ueberBodenBlock": 2.451
+  },
+  {
+   "name": "partikel-asche",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.903,
+   "block": 9.326,
+   "dauerMs": 390,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.102,
+   "ueberBodenBlock": -0.006
+  },
+  {
+   "name": "partikel-funken",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.916,
+   "block": 9.332,
+   "dauerMs": 337,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.115,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-blasen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.334,
+   "block": 9.332,
+   "dauerMs": 221,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.533,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-blaetter",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.02,
+   "block": 9.753,
+   "dauerMs": 204,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.219,
+   "ueberBodenBlock": 0.421
+  },
+  {
+   "name": "partikel-staub",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.867,
+   "block": 9.318,
+   "dauerMs": 175,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.066,
+   "ueberBodenBlock": -0.014
+  },
+  {
+   "name": "partikel-schwaden",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.075,
+   "block": 9.293,
+   "dauerMs": 905,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.274,
+   "ueberBodenBlock": -0.039
+  },
+  {
+   "name": "partikel-gluehwuermchen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.807,
+   "block": 9.332,
+   "dauerMs": 552,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.006,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-schmetterling",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.921,
+   "block": 9.332,
+   "dauerMs": 261,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.12,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-schwaden-quelle",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Quelle Punkt",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.203,
+   "block": 9.332,
+   "dauerMs": 965,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.402,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-boeen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Windstoesse im Takt",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.218,
+   "block": 9.332,
+   "dauerMs": 156,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.417,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-wind-06neg",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "vorschauAbw zaehlt",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.675,
+   "block": 11.785,
+   "dauerMs": 184,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.874,
+   "ueberBodenBlock": 2.453
+  },
+  {
+   "name": "partikel-wind0",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "vorschauAbw zaehlt",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.225,
+   "block": 10.104,
+   "dauerMs": 176,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.424,
+   "ueberBodenBlock": 0.772
+  },
+  {
+   "name": "streifen-beide",
+   "typ": "streifen",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "round(L/9) ungerade",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.718,
+   "block": 9.332,
+   "dauerMs": 523,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.083,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "sicherung-frei-lang",
+   "typ": "sicherung",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.465,
+   "block": 7.507,
+   "dauerMs": 179,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.336,
+   "ueberBodenBlock": -1.825
+  },
+  {
+   "name": "sicherung-takt-800",
+   "typ": "sicherung",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.188,
+   "block": 6.056,
+   "dauerMs": 165,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.613,
+   "ueberBodenBlock": -3.276
+  },
+  {
+   "name": "bloecke-frei",
+   "typ": "bloecke",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 274,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "wackeln-kick-ungerade",
+   "typ": "wackeln",
+   "gruppe": "stoerungen",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4, M ungerade",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.833,
+   "block": 10.354,
+   "dauerMs": 367,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.239,
+   "ueberBodenBlock": 2.267
+  },
+  {
+   "name": "filmnebel-schwaden0",
+   "typ": "filmnebel",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.513,
+   "block": 7.781,
+   "dauerMs": 581,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.288,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "risse-takt",
+   "typ": "risse",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.459,
+   "block": 14.122,
+   "dauerMs": 191,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.658,
+   "ueberBodenBlock": 4.79
+  },
+  {
+   "name": "einschlag-bleiben30",
+   "typ": "einschlag",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.93,
+   "block": 9.332,
+   "dauerMs": 238,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.129,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "nachzieh-09",
+   "typ": "nachzieh",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.116,
+   "block": 6.061,
+   "dauerMs": 8178,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.685,
+   "ueberBodenBlock": -3.271
+  },
+  {
+   "name": "filmnebel-licht",
+   "typ": "filmnebel",
+   "gruppe": "kombination",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Nebel braucht Licht",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.539,
+   "block": 7.971,
+   "dauerMs": 948,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.262,
+   "ueberBodenBlock": -1.361
+  },
+  {
+   "name": "puls-flackern-eins",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.458,
+   "block": 6.581,
+   "dauerMs": 245,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.343,
+   "ueberBodenBlock": -2.751
+  },
+  {
+   "name": "puls-flackern-teil025",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.548,
+   "block": 6.628,
+   "dauerMs": 166,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.253,
+   "ueberBodenBlock": -2.704
+  },
+  {
+   "name": "puls-zufall-teiler8-b",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.595,
+   "block": 9.098,
+   "dauerMs": 624,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.001,
+   "ueberBodenBlock": 1.011
+  },
+  {
+   "name": "puls-teiler8-dreiviertel",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4: 8 passt in 10 s nicht, Forderung wird gelockert",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.595,
+   "block": 9.098,
+   "dauerMs": 98,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.001,
+   "ueberBodenBlock": 1.011
+  },
+  {
+   "name": "puls-flackern-ohneEins",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "",
+   "t0": 60.079,
+   "zeit": 62.379,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.567,
+   "block": 6.633,
+   "dauerMs": 139,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.234,
+   "ueberBodenBlock": -2.699
+  },
+  {
+   "name": "strobe-zufall",
+   "typ": "strobe",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.282,
+   "block": 6.543,
+   "dauerMs": 168,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.519,
+   "ueberBodenBlock": -2.789
+  },
+  {
+   "name": "strobe-flackern-hz05",
+   "typ": "strobe",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.65,
+   "block": 8.46,
+   "dauerMs": 151,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.151,
+   "ueberBodenBlock": -0.872
+  },
+  {
+   "name": "feuer-flackern-hz07",
+   "typ": "feuer",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.887,
+   "block": 7.53,
+   "dauerMs": 990,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.086,
+   "ueberBodenBlock": -1.802
+  },
+  {
+   "name": "nachzieh-098",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.168,
+   "block": 5.264,
+   "dauerMs": 8138,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.633,
+   "ueberBodenBlock": -4.068
+  },
+  {
+   "name": "nachzieh-puls",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Spur ueber einem Puls",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.111,
+   "block": 4.941,
+   "dauerMs": 8173,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.69,
+   "ueberBodenBlock": -4.391
+  },
+  {
+   "name": "licht-wandernd-tempo3",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Senkrechte eigene Umlaufzahl, Waagerechte 3",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.826,
+   "block": 9.332,
+   "dauerMs": 175,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.025,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "schatten-fahrt",
+   "typ": "schatten",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.717,
+   "block": 9.332,
+   "dauerMs": 208,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.084,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "licht-fahrt-tempo2",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "mehrere Ziele je Clip",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.794,
+   "block": 9.332,
+   "dauerMs": 178,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.007,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "licht-schritt-eins",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.802,
+   "block": 9.332,
+   "dauerMs": 255,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.001,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "licht-schritt-ohneSchlaege",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Ziel je eingerasteter Sekunde",
+   "t0": 60.3,
+   "zeit": 62.6,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.805,
+   "block": 9.332,
+   "dauerMs": 140,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.004,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-fest-punkte-dreh-neg",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegendrehung, schneller",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.802,
+   "block": 9.332,
+   "dauerMs": 158,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.001,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-wandern-gitter-tempo3",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.903,
+   "block": 9.332,
+   "dauerMs": 388,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.102,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "laser-scanner-sprung-zufall",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.835,
+   "block": 9.332,
+   "dauerMs": 146,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.034,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "streiflicht-laser-wandern-punkte",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "erbt den ganzen Lichtpuffer",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.78,
+   "block": 9.332,
+   "dauerMs": 591,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.021,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-regen-wind0",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schnell: bleibt beim Umbruch",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.505,
+   "block": 10.3,
+   "dauerMs": 155,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.704,
+   "ueberBodenBlock": 0.968
+  },
+  {
+   "name": "partikel-schnee-tempo3",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "gemischt: Umbruch und Lebensdauer",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.211,
+   "block": 10.372,
+   "dauerMs": 159,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.41,
+   "ueberBodenBlock": 1.04
+  },
+  {
+   "name": "partikel-staub-wind-neg",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsam, Wind nach links",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.87,
+   "block": 9.332,
+   "dauerMs": 307,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.069,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-staub-quelle",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Funkeln mit Quelle",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.838,
+   "block": 9.332,
+   "dauerMs": 162,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.037,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "partikel-schwaden-tempo02",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Aufgehen langsam",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.096,
+   "block": 8.786,
+   "dauerMs": 1155,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.295,
+   "ueberBodenBlock": -0.546
+  },
+  {
+   "name": "partikel-boeen-funken-wandern",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Stoesse, Eigenbewegung",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.903,
+   "block": 9.349,
+   "dauerMs": 203,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.102,
+   "ueberBodenBlock": 0.017
+  },
+  {
+   "name": "tropfen-tempo3",
+   "typ": "tropfen",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schnell: Umbruch",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.915,
+   "block": 9.332,
+   "dauerMs": 573,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.114,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "tropfen-boeen",
+   "typ": "tropfen",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsam, Stoesse, Zittern",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.902,
+   "block": 9.516,
+   "dauerMs": 247,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.101,
+   "ueberBodenBlock": 0.184
+  },
+  {
+   "name": "rauschen-takt",
+   "typ": "rauschen",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Ausbrueche im Takt, Zufall gesaet",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.885,
+   "block": 9.388,
+   "dauerMs": 198,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.084,
+   "ueberBodenBlock": 0.056
+  },
+  {
+   "name": "korn-langsam",
+   "typ": "korn",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kornwechsel alle 13/60 s",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.541,
+   "block": 9.408,
+   "dauerMs": 178,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.74,
+   "ueberBodenBlock": 0.076
+  },
+  {
+   "name": "wackeln-ohneKick",
+   "typ": "wackeln",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "nur Warble und Zittern",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.278,
+   "block": 14.13,
+   "dauerMs": 263,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.477,
+   "ueberBodenBlock": 4.798
+  },
+  {
+   "name": "bloecke-takt-lang",
+   "typ": "bloecke",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Glitch reicht ueber den naechsten Schlag",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.955,
+   "block": 9.332,
+   "dauerMs": 1145,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.154,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "sicherung-frei-zittern",
+   "typ": "sicherung",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zittern 37 Hz eingerastet",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.598,
+   "block": 8.237,
+   "dauerMs": 154,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.203,
+   "ueberBodenBlock": -1.095
+  },
+  {
+   "name": "einschlag-ohneEins",
+   "typ": "einschlag",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Raster aus Median-Abstand",
+   "t0": 60.079,
+   "zeit": 62.379,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.913,
+   "block": 9.332,
+   "dauerMs": 238,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.112,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "risse-takt-ohneEins",
+   "typ": "risse",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "ausgewachsen",
+   "t0": 60.079,
+   "zeit": 62.379,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.459,
+   "block": 14.122,
+   "dauerMs": 246,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.658,
+   "ueberBodenBlock": 4.79
+  },
+  {
+   "name": "streifen-beide-tempo4",
+   "typ": "streifen",
+   "gruppe": "stoerungen2",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "zweiter Titel",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.535,
+   "block": 8.087,
+   "dauerMs": 410,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": -0.059,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "filmnebel-luftzug1",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach rechts, schnell, mit Licht",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.535,
+   "block": 7.993,
+   "dauerMs": 688,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.266,
+   "ueberBodenBlock": -1.339
+  },
+  {
+   "name": "filmnebel-luftzug-neg",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach links, mit Licht",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.535,
+   "block": 8.012,
+   "dauerMs": 743,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.266,
+   "ueberBodenBlock": -1.32
+  },
+  {
+   "name": "filmnebel-schwer-still",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kriecht langsam, dicke Ballen",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.699,
+   "block": 8.214,
+   "dauerMs": 923,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.102,
+   "ueberBodenBlock": -1.118
+  },
+  {
+   "name": "wellen-aufwind",
+   "typ": "wellen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Hitze steigt",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.283,
+   "block": 8.207,
+   "dauerMs": 437,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.482,
+   "ueberBodenBlock": -1.125
+  },
+  {
+   "name": "kaustik-langsam",
+   "typ": "kaustik",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kleiner Zeitkreis",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.532,
+   "block": 9.552,
+   "dauerMs": 420,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.731,
+   "ueberBodenBlock": 0.22
+  },
+  {
+   "name": "flammen-langsam-wind",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsamer Aufstieg",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.733,
+   "block": 6.771,
+   "dauerMs": 449,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.068,
+   "ueberBodenBlock": -2.561
+  },
+  {
+   "name": "flammen-schnell",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schneller Aufstieg",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.731,
+   "block": 6.806,
+   "dauerMs": 502,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.07,
+   "ueberBodenBlock": -2.526
+  },
+  {
+   "name": "filmnebel-rauch",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch: Ballen ohne Leuchte sichtbar",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 0.558,
+   "block": 4.852,
+   "dauerMs": 717,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -1.243,
+   "ueberBodenBlock": -4.48
+  },
+  {
+   "name": "filmnebel-rauch-zug",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch, Zug nach links",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 0.791,
+   "block": 6.298,
+   "dauerMs": 637,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -1.01,
+   "ueberBodenBlock": -3.034
+  },
+  {
+   "name": "linse-bewegung-licht",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Scheinwerfers allein (Nebel 0 schaltet nur die Bewegungsmessung ein)",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.522,
+   "block": 7.781,
+   "dauerMs": 692,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.279,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "linse-bewegung-licht-fahrt",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo der Fahrt allein",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.484,
+   "block": 7.781,
+   "dauerMs": 686,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.317,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "linse-bewegung-laser-wandern",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs allein",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.256,
+   "block": 7.921,
+   "dauerMs": 1059,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.455,
+   "ueberBodenBlock": -1.411
+  },
+  {
+   "name": "linse-bewegung-laser-punkte",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Drehtempo der Punkte allein",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.523,
+   "block": 7.781,
+   "dauerMs": 783,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.278,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "linse-bewegung-streifen-beide",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo der Laufstreifen beide allein",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.446,
+   "block": 7.781,
+   "dauerMs": 694,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.355,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "rand-kurz-teiler8-flackern",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "ein Takt 5,1 s, M 4: Teiler 8 geht nicht",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.642,
+   "block": 7.552,
+   "dauerMs": 181,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.159,
+   "ueberBodenBlock": -1.78
+  },
+  {
+   "name": "rand-kurz34-wackeln",
+   "typ": "wackeln",
+   "gruppe": "raender",
+   "titel": "c",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4, ein Takt 5,1 s: M 3 ungerade",
+   "t0": 55.556,
+   "zeit": 57.856,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.861,
+   "block": 10.454,
+   "dauerMs": 266,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.267,
+   "ueberBodenBlock": 2.367
+  },
+  {
+   "name": "rand-kurz34-zufall-teiler8",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "c",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4 kurz, Teiler 8 und 2",
+   "t0": 55.556,
+   "zeit": 57.856,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.594,
+   "block": 8.087,
+   "dauerMs": 154,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rand-sechs-teiler8-wackeln",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "b",
+   "daten": "sechs",
+   "bemerkung": "6/8: M 18/12/6, 8 nicht erreichbar",
+   "t0": 57.869,
+   "zeit": 60.169,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.984,
+   "block": 12.793,
+   "dauerMs": 264,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.39,
+   "ueberBodenBlock": 4.706
+  },
+  {
+   "name": "rand-sechs-kurz-teil0125",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "b",
+   "daten": "sechs,gestreckt:2",
+   "bemerkung": "6/8 kurz, Achtel eines Schlags",
+   "t0": 55.437,
+   "zeit": 57.737,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 2.855,
+   "block": 9.083,
+   "dauerMs": 448,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 1.261,
+   "ueberBodenBlock": 0.996
+  },
+  {
+   "name": "rand-wenige7",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: kein Raster",
+   "t0": 60.3,
+   "zeit": 62.6,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.869,
+   "block": 6.426,
+   "dauerMs": 206,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.068,
+   "ueberBodenBlock": -2.906
+  },
+  {
+   "name": "rand-nurEinsen",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen: proTakt 1",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.611,
+   "block": 7.145,
+   "dauerMs": 149,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.19,
+   "ueberBodenBlock": -2.187
+  },
+  {
+   "name": "rand-takt-ueber10",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:7",
+   "bemerkung": "Takt 11 s, Median ueber 2 s",
+   "t0": 53.202,
+   "zeit": 55.502,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.737,
+   "block": 6.497,
+   "dauerMs": 287,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.064,
+   "ueberBodenBlock": -2.835
+  },
+  {
+   "name": "rand-kombi",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Leuchte, Streiflicht, Nebel, Schwaden mit Stoessen, Einschlag, Nachzieh",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.222,
+   "block": 4.315,
+   "dauerMs": 87813,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.579,
+   "ueberBodenBlock": -5.017
+  },
+  {
+   "name": "rand-kombi-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "dasselbe bei L 5,1",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.187,
+   "block": 4.566,
+   "dauerMs": 84313,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.614,
+   "ueberBodenBlock": -4.766
+  },
+  {
+   "name": "rand-staub-extrem-kurz",
+   "typ": "partikel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo min, Wind -1, Eigenbewegung 1",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.887,
+   "block": 9.339,
+   "dauerMs": 390,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.086,
+   "ueberBodenBlock": 0.007
+  },
+  {
+   "name": "rand-funken-extrem-kurz",
+   "typ": "partikel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo max, Wind 1",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.895,
+   "block": 11.155,
+   "dauerMs": 286,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 1.094,
+   "ueberBodenBlock": 1.823
+  },
+  {
+   "name": "rand-tropfen-langsam-kurz",
+   "typ": "tropfen",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo min",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.125,
+   "block": 9.332,
+   "dauerMs": 406,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.324,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rand-ohneSchlaege-takt",
+   "typ": "partikel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "alles Schlaggebundene ohne Schlaege",
+   "t0": 60.3,
+   "zeit": 62.6,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.804,
+   "block": 12.076,
+   "dauerMs": 420,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 1.003,
+   "ueberBodenBlock": 2.744
+  },
+  {
+   "name": "rand-hz-raender-kurz",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Frequenz min und hoch",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.162,
+   "block": 4.659,
+   "dauerMs": 261,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.639,
+   "ueberBodenBlock": -4.673
+  },
+  {
+   "name": "rand-shader-kurz",
+   "typ": "kaustik",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Shader bei L 5,1",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 3.647,
+   "block": 14.25,
+   "dauerMs": 889,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 1.846,
+   "ueberBodenBlock": 4.918
+  },
+  {
+   "name": "rand-flammen-kurz",
+   "typ": "flammen",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Flammen langsam, Wind -1, L 5,1",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.739,
+   "block": 6.77,
+   "dauerMs": 464,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.062,
+   "ueberBodenBlock": -2.562
+  },
+  {
+   "name": "rand-stoerungen-kurz",
+   "typ": "sicherung",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "seltene Fenster laenger als L",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 3.104,
+   "block": 9.647,
+   "dauerMs": 700,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 1.303,
+   "ueberBodenBlock": 0.315
+  },
+  {
+   "name": "rand-laser-extrem-kurz",
+   "typ": "laser",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Drehen max, Tempo min",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 504,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rand-leuchten-langsam-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Fahrt langsamer als L",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.625,
+   "block": 9.332,
+   "dauerMs": 603,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.176,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rand-nachzieh-zufall-kurz",
+   "typ": "nachzieh",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Gedaechtnis ueber mehrere Runden",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.726,
+   "block": 7.318,
+   "dauerMs": 12369,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.075,
+   "ueberBodenBlock": -2.014
+  },
+  {
+   "name": "rand-jetzt-anfang",
+   "typ": "einschlag",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Clip am Songanfang, Vorlauf vor 0",
+   "t0": 0.878,
+   "zeit": 3.178,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.225,
+   "block": 9.539,
+   "dauerMs": 277,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.424,
+   "ueberBodenBlock": 0.207
+  },
+  {
+   "name": "rand-risse-beschlag-kurz",
+   "typ": "risse",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Wachsen und Ruck bei L 5,1",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.765,
+   "block": 8.661,
+   "dauerMs": 1089,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.036,
+   "ueberBodenBlock": -0.671
+  },
+  {
+   "name": "linse-bewegung-laser-wandern-gitter",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs, Gitter ohne Scanner-Nachleuchten",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.165,
+   "block": 7.781,
+   "dauerMs": 569,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.364,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "rand-nurEinsen-puls",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Teiler 8 allein",
+   "t0": 0.076,
+   "zeit": 2.376,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.648,
+   "block": 6.659,
+   "dauerMs": 140,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.153,
+   "ueberBodenBlock": -2.673
+  },
+  {
+   "name": "rand-nurEinsen-schritt",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Schritt auf der Eins allein",
+   "t0": 59.286,
+   "zeit": 61.586,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.819,
+   "block": 9.332,
+   "dauerMs": 165,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.018,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rand-kombi-nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Kombination ohne Nebel und Teilchen, kurz",
+   "t0": 57.035,
+   "zeit": 59.335,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.241,
+   "block": 5.19,
+   "dauerMs": 19434,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.56,
+   "ueberBodenBlock": -4.142
+  },
+  {
+   "name": "rand-wenige7-risse",
+   "typ": "risse",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: Vorschau gewachsen, Export ohne Raster",
+   "t0": 0.2,
+   "zeit": 2.5,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 2.327,
+   "block": 14.122,
+   "dauerMs": 197,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.526,
+   "ueberBodenBlock": 4.79
+  },
+  {
+   "name": "rand-wenige7-einschlag",
+   "typ": "einschlag",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins, alle treffen, Clip kurz nach den Schlaegen",
+   "t0": 61.5,
+   "zeit": 63.8,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.859,
+   "block": 9.332,
+   "dauerMs": 359,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.058,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "rand-wenige7-schritt-bewegung",
+   "typ": "filmnebel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "Schritt auf 7 Schlaegen: Vorschau steht nach dem letzten, Export springt je Sekunde (Nebel 0 schaltet nur die Bewegungsmessung ein)",
+   "t0": 61.5,
+   "zeit": 63.8,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.516,
+   "block": 7.781,
+   "dauerMs": 490,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.285,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "rand-ohneSchlaege-schritt-bewegung",
+   "typ": "filmnebel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Gegenprobe: ohne Schlaege springt auch die Vorschau je Sekunde",
+   "t0": 61.5,
+   "zeit": 63.8,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.499,
+   "block": 7.781,
+   "dauerMs": 650,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.302,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "nachbess-bewegung-licht-fest",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe zu linse-bewegung-licht: dieselbe Leuchte ohne Bewegung - wieviel tempoVerh kommt vom Puls allein",
+   "t0": 60.873,
+   "zeit": 63.173,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.492,
+   "block": 7.781,
+   "dauerMs": 796,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.309,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "nachbess-bewegung-licht-tempo8",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "wandernd Tempo 8: 1,19 Umlaeufe waagerecht, 1,54 senkrecht - rastet, pendelt nicht",
+   "t0": 60.873,
+   "zeit": 63.173,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.488,
+   "block": 7.781,
+   "dauerMs": 489,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.313,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "nachbess-bewegung-streifen-beide-tempo30",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Laufstreifen beide am Reglerende: vorher 6,3-mal so schnell",
+   "t0": 60.873,
+   "zeit": 63.173,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.399,
+   "block": 7.079,
+   "dauerMs": 658,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.402,
+   "ueberBodenBlock": -2.253
+  },
+  {
+   "name": "nachbess-streifen-beide-tempo8",
+   "typ": "streifen",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "beide, Tempo 8: ein Durchlauf je Clip (ungerade) - Farbtausch einmal je Clip, sonst hell-Tempo",
+   "t0": 60.873,
+   "zeit": 63.173,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.718,
+   "block": 9.332,
+   "dauerMs": 569,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.083,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "nachbess-wenige7-schritt-stetig",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "wie rand-wenige7-schritt-bewegung, aber ohne Puls: tempoVerh zeigt nur den Schritt (Export steht auf dem laengsten Stand im Clip)",
+   "t0": 61.5,
+   "zeit": 63.8,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.516,
+   "block": 7.781,
+   "dauerMs": 464,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.285,
+   "ueberBodenBlock": -1.551
+  },
+  {
+   "name": "taktlage-eins-phase",
+   "typ": "licht",
+   "gruppe": "taktlage",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Eins-Leser: ganze Takte, phiF ueber N/M",
+   "t0": 60.873,
+   "zeit": 63.173,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.492,
+   "block": 6.615,
+   "dauerMs": 406,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": -0.309,
+   "ueberBodenBlock": -2.717
+  },
+  {
+   "name": "taktlage-schlag-gruppe2-kick",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Schlagraster, Gruppe 2 und Kick: M gerade, M%4 moeglich ungleich 0, Phase ueber zwei Schlaege",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.718,
+   "block": 10.482,
+   "dauerMs": 241,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.124,
+   "ueberBodenBlock": 2.395
+  },
+  {
+   "name": "taktlage-teiler8-phase",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "d",
+   "daten": "normal",
+   "bemerkung": "Teiler 8 im Schlagraster, Gruppenanfang auf der Eins, Phase",
+   "t0": 59.849,
+   "zeit": 62.149,
+   "klein": [
+    360,
+    309
+   ],
+   "gross": [
+    1080,
+    926
+   ],
+   "vergleich": [
+    256,
+    220
+   ],
+   "mittel": 2.44,
+   "block": 13.717,
+   "dauerMs": 1513,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 2.055,
+   "bodenBlock": 13.112,
+   "ueberBodenMittel": 0.385,
+   "ueberBodenBlock": 0.605
+  },
+  {
+   "name": "taktlage-dreiviertel-teiler3",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4 mit Eins-Leser und Gruppe 3",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.666,
+   "block": 10.928,
+   "dauerMs": 272,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0.072,
+   "ueberBodenBlock": 2.841
+  },
+  {
+   "name": "taktlage-ohneEins-eins",
+   "typ": "licht",
+   "gruppe": "taktlage",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Eins-Leser ohne Eins-Marken: M%8, keine Eins-Bedingung",
+   "t0": 61.269,
+   "zeit": 63.569,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.851,
+   "block": 9.385,
+   "dauerMs": 192,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0.05,
+   "ueberBodenBlock": 0.053
+  },
+  {
+   "name": "taktlage-tempowechsel",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "d",
+   "daten": "tempowechsel:1.3",
+   "bemerkung": "Tempowechsel ab jetzt (1,3-mal langsamer)",
+   "t0": 59.849,
+   "zeit": 62.149,
+   "klein": [
+    360,
+    309
+   ],
+   "gross": [
+    1080,
+    926
+   ],
+   "vergleich": [
+    256,
+    220
+   ],
+   "mittel": 2.464,
+   "block": 12.281,
+   "dauerMs": 427,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 2.055,
+   "bodenBlock": 13.112,
+   "ueberBodenMittel": 0.409,
+   "ueberBodenBlock": -0.831
+  },
+  {
+   "name": "taktlage-eins-phase-weit",
+   "typ": "strobe",
+   "gruppe": "taktlage",
+   "titel": "e",
+   "daten": "normal",
+   "bemerkung": "Eins-Leser, phiF ueber drei Schlaege, schwacher Sitzanteil",
+   "t0": 59.134,
+   "zeit": 61.434,
+   "klein": [
+    244,
+    360
+   ],
+   "gross": [
+    733,
+    1080
+   ],
+   "vergleich": [
+    174,
+    256
+   ],
+   "mittel": 5.504,
+   "block": 11.185,
+   "dauerMs": 389,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 6.86,
+   "bodenBlock": 16.013,
+   "ueberBodenMittel": -1.356,
+   "ueberBodenBlock": -4.828
+  },
+  {
+   "name": "boden-a",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 60.873,
+   "zeit": 63.173,
+   "klein": [
+    255,
+    360
+   ],
+   "gross": [
+    764,
+    1080
+   ],
+   "vergleich": [
+    181,
+    256
+   ],
+   "mittel": 1.801,
+   "block": 9.332,
+   "dauerMs": 124,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.801,
+   "bodenBlock": 9.332,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "boden-b",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.594,
+   "block": 8.087,
+   "dauerMs": 146,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "boden-c",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "c",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.129,
+   "zeit": 61.429,
+   "klein": [
+    270,
+    360
+   ],
+   "gross": [
+    810,
+    1080
+   ],
+   "vergleich": [
+    192,
+    256
+   ],
+   "mittel": 1.594,
+   "block": 8.087,
+   "dauerMs": 150,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 1.594,
+   "bodenBlock": 8.087,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "boden-d",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "d",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.849,
+   "zeit": 62.149,
+   "klein": [
+    360,
+    309
+   ],
+   "gross": [
+    1080,
+    926
+   ],
+   "vergleich": [
+    256,
+    220
+   ],
+   "mittel": 2.055,
+   "block": 13.112,
+   "dauerMs": 300,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 2.055,
+   "bodenBlock": 13.112,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  },
+  {
+   "name": "boden-e",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "e",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.134,
+   "zeit": 61.434,
+   "klein": [
+    244,
+    360
+   ],
+   "gross": [
+    733,
+    1080
+   ],
+   "vergleich": [
+    174,
+    256
+   ],
+   "mittel": 6.86,
+   "block": 16.013,
+   "dauerMs": 268,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": [],
+   "bodenMittel": 6.86,
+   "bodenBlock": 16.013,
+   "ueberBodenMittel": 0,
+   "ueberBodenBlock": 0
+  }
+ ]
+}

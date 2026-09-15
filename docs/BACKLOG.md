@@ -2723,3 +2723,48 @@ und nur noch auf der Platte liegen:
       Am Morgen danach wandert die Datei ein.
 - [ ] Stems und Cover-von-Cover bleiben bewusst draußen — Teile eines
       Titels, kein eigener; gehören in den Stemordner des Haupttitels.
+
+## KI-Modelle auf der Radeon messen (Caspar_D, 15.09.2026)
+
+Caspar_D: *„der KI-Model Test wandert erstmal ins Backlog"*. Grundlage ist die Recherche
+`docs/forschung/GPU-MODELLE.md` (15.09.2026). Kurz: Heute rechnet kein KlangTresor-Modell auf der
+Radeon Pro 5500 XT; auf dem Intel-iMac trägt nur Vulkan über MoltenVK (Metal liefert bei llama.cpp und
+whisper.cpp Zeichensalat oder Abstürze). Der iMac bleibt Zielplattform, bis sein macOS veraltet
+(*„ich werde mich von meinem iMac erst trennen, wenn das OS veraltet"*) — deshalb auch:
+**onnxruntime-node nie über 1.23.x heben** (keine Intel-Mac-Builds mehr ab 1.24).
+
+Messplan, Einzelheiten in `GPU-MODELLE.md` §5 — Downloads nur mit Freigabe:
+
+- [ ] **M1** RIFE GPU gegen CPU (`rife-ncnn-vulkan` liegt schon unter `labor/videonaht/werkzeuge/`, kein Download)
+- [ ] **M2** onnxruntime Core ML mit der installierten 1.20.1 an Tiefenkarte und Stems (kein Download)
+- [ ] **M3** llama.cpp mit Vulkan für die Kondensate (Qwen3-8B-Q4_K_M 5,03 GB + MoltenVK 59,6 MB) — Ziel ≤ 20 s statt 56 s je Lied
+- [ ] **M4** whisper.cpp mit Vulkan (vorhandenes Modell; Rückfall Q5_0 1,08 GB) — Wortmarken gleich wie CPU?
+- [ ] **M5** Real-ESRGAN ×2/×4 für Cover (8,5 MB) — neue Fähigkeit
+
+Offene Fragen dazu: Sollen Kondensate in den Morgenlauf? Wie gleich müssen Grundlagen über Mac,
+Windows und Docker sein? (Hausregel „Fähigkeit gegen Grundlage": Grundlagen erst auf die GPU, wenn das
+Ergebnis gleich genug ist, mit Vermerk der Rechenart.)
+
+### Das MacBook als Rechenknecht (Caspar_D, 15.09.2026)
+
+Caspar_D: *„ich habe ein aktuelles MacBook, allerdings mit nur 16 GB Arbeitsspeicher, ein M5 (oder M4).
+Wenn ich das SSD-Drive dort anstecke, könnte ich natürlich dessen Rechenpower nutzen, wir müssten dann
+aber knallhart loggen, was passiert, damit ich hier an diesem Computer jederzeit weiß, was mit welchem
+System gemacht wurde."*
+
+- **Wofür es sich lohnt:** die beiden großen CPU-Läufe, Whisper (~26 h über den Bestand) und Stems
+  (~21 h). Apple Silicon hat Metal, Core ML und aktuelle onnxruntime-Builds; 16 GB reichen dafür, nicht
+  für große Sprachmodelle (8B quantisiert knapp ja, 14B nein).
+- **Voraussetzung ist das Ableitungsbuch** (entworfen 13.09.2026, nicht gebaut; gehört nach
+  `docs/haus/`): Laufmarke (Vorhaben, **Maschine**, Start, Zähler — übrig gebliebene Marke = Lauf nicht
+  durch), Herkunft je Erzeugnis mit Prüfsumme der Quelle, Modellidentität — ergänzt um **Rechenart**
+  (CPU/Core ML/Metal/Vulkan, Chip, OS, Programmfassungen). Genau das beantwortet „was wurde mit welchem
+  System gemacht". `bin/tiefenkarten.js` hat schon einen Anfang davon.
+- **Fallen:**
+  - `node_modules` ist maschinenabhängig: `onnxruntime-node` auf der SSD enthält nur `darwin/x64`. Das
+    MacBook braucht eine **eigene** Installation, sonst bricht es den iMac (und die Fassung ≤ 1.23 gilt
+    nur für den iMac).
+  - **Nie beide Maschinen gleichzeitig** am selben `library/` — die Laufmarke dient als Sperre.
+  - **Grundlagen** (Stems, Whisper-Marken, Musikstil, Tiefenkarte) aus Metal/Core ML weichen leicht
+    von der CPU ab. Nach der Hausregel „Fähigkeit gegen Grundlage" vorher messen, ob gleich genug, und
+    im Buch vermerken; notfalls den ganzen Bestand auf **einer** Maschine rechnen.

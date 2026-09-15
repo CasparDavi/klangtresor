@@ -9,3 +9,5 @@ uebergaenge/arbeit/*.nut
 uebergaenge/arbeit/*.bin
 uebergaenge/arbeit/*.cmd
 .profil-*
+# Fremdwerkzeuge (RIFE, 436 MB), nicht versioniert
+werkzeuge/

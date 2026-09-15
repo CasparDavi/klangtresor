@@ -1,0 +1,195 @@
+{
+ "stand": "3542c0a",
+ "indexGeaendert": true,
+ "datum": "2026-09-15T14:15:30.876Z",
+ "lange": 360,
+ "dauerS": 896,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  },
+  "d": {
+   "id": "f76a6706-d9a0-480a-a73f-265de9c1c0fe",
+   "titel": "Okkultation",
+   "warum": "Taktlage 15.09.2026: im Taktraster liegt die Phase ueber einem Schlag (phiF 7 bei N/M 18,6), mit Daten tempowechsel ein Tempowechsel"
+  },
+  "e": {
+   "id": "535121bb-581f-407c-92c8-6f22f141dd25",
+   "titel": "Universe 25 english",
+   "warum": "Taktlage 15.09.2026: mit Eins-Leser liegt die Phase fast drei Schlaege spaet (phiF 57 bei N/M 14,3), Sitzanteil unter 50 %"
+  }
+ },
+ "jetzt": 60.3,
+ "zusammen": {
+  "faelle": 3,
+  "abbrueche": [],
+  "bitgleichAlle": [],
+  "lageAnders": [],
+  "satzAnders": [],
+  "undicht": [],
+  "ausAnders": [],
+  "songzeiten": 3,
+  "songzeitenBitgleich": 3,
+  "folgeBlockMax": 0,
+  "folgeNichtGleich": [
+   "rand-kombi null",
+   "rand-kombi-kurz null",
+   "rand-kombi-nachzieh null"
+  ]
+ },
+ "faelle": [
+  {
+   "name": "rand-kombi",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Leuchte, Streiflicht, Nebel, Schwaden mit Stoessen, Einschlag, Nachzieh",
+   "t0": 59.286,
+   "L": 7.533,
+   "N": 226,
+   "M": 19,
+   "zeile": "7,53 s · 19 Schläge · sitzt auf 86 % des Lieds im Takt",
+   "satz": " · sitzt auf 86 % des Lieds im Takt",
+   "lageGleich": true,
+   "satzGleich": true,
+   "W": 629,
+   "H": 889,
+   "messung": [
+    {
+     "s": 60.3,
+     "i": 1,
+     "iErw": 1,
+     "runden": 31,
+     "bitgleich": true
+    }
+   ],
+   "bitgleich": true,
+   "bitgleichZahl": 1,
+   "zahl": 1,
+   "folgeBlockMax": null,
+   "folgeGleichZahl": 0,
+   "dicht": true,
+   "ausGleich": true,
+   "ausErstesBildVorher": true,
+   "dauerMs": 886179,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kombi-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "dasselbe bei L 5,1",
+   "t0": 57.035,
+   "L": 8.933,
+   "N": 268,
+   "M": 7,
+   "zeile": "8,93 s · 7 Schläge · sitzt auf 82 % des Lieds im Takt",
+   "satz": " · sitzt auf 82 % des Lieds im Takt",
+   "lageGleich": true,
+   "satzGleich": true,
+   "W": 629,
+   "H": 889,
+   "messung": [
+    {
+     "s": 60.3,
+     "i": 201,
+     "iErw": 201,
+     "runden": 31,
+     "bitgleich": true
+    }
+   ],
+   "bitgleich": true,
+   "bitgleichZahl": 1,
+   "zahl": 1,
+   "folgeBlockMax": null,
+   "folgeGleichZahl": 0,
+   "dicht": true,
+   "ausGleich": true,
+   "ausErstesBildVorher": true,
+   "dauerMs": 875343,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kombi-nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Kombination ohne Nebel und Teilchen, kurz",
+   "t0": 57.035,
+   "L": 9.9,
+   "N": 297,
+   "M": 8,
+   "zeile": "9,90 s · 8 Schläge · der Takt lässt sich nicht über das Lied legen",
+   "satz": " · der Takt lässt sich nicht über das Lied legen",
+   "lageGleich": true,
+   "satzGleich": true,
+   "W": 629,
+   "H": 889,
+   "messung": [
+    {
+     "s": 60.3,
+     "i": 27,
+     "iErw": 27,
+     "runden": 31,
+     "bitgleich": true
+    }
+   ],
+   "bitgleich": true,
+   "bitgleichZahl": 1,
+   "zahl": 1,
+   "folgeBlockMax": null,
+   "folgeGleichZahl": 0,
+   "dicht": true,
+   "ausGleich": true,
+   "ausErstesBildVorher": true,
+   "dauerMs": 287668,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

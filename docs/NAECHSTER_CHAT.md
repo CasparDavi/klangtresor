@@ -4179,3 +4179,45 @@ exportierten Raster, echte Schläge bei s = k·L + τ). Im Katalogergebnis je Ti
 N, M, P, φ, sitzt, anzeige, einsQuote, refrain, grund, ms, `nach` (Nachrechnung) und `vorher`.
 Prototyp zum Vergleich (nur lesend am Katalog): `node labor/nahtpruefung/taktlage-prototyp.js
 [--raster takt|schlag] [--varianten] [--brauch n] [--json datei] [--wie-eingebaut]`.
+
+## Maßstab, Stufe „Schleife schließen", Solo (15.09.2026)
+
+**Maßstab** (Caspar_D: *„unsere eigenen Effektclips skalieren nicht mit dem zoom … absurd grosse Schneeflocken"*,
+*„im Studio arbeite ich ja nach Augenschein, was dort rauskommt ist der Maßstab"*): Regel 19. Studiofeld gemessen
+898 × 889. Studio bitgleich in 182/182 Fällen, Loop weiter exakt (177 Fälle, `gleich` ≤ 0,092). Größenabhängigkeit
+(Block über Boden, 360 gegen 1080): Partikel 32,8 → 0,0, Einschlag 48,8 → 0,2, Laser 10,3 → 0,0, Tropfen 11,8 → 0,7,
+Bloom 8,5 → 0,0, Risse 15,2 → 4,8; Rest bei Verwackeln, Scanlines, Kaustik ~4–5. Caspar_D: *„die preview ist jetzt
+ohne riesenschneeflocken, super"*. Dateien: `labor/nahtpruefung/studiofeld.json`, `studio-vorher.json`,
+`massstab-vorher.json`, `massstab-nachher.json`, `ergebnis-massstab-loop.json`.
+**Offen (Gegenprüfung):** Untergrenzen ohne Deckkraft-Ausgleich machen feine Striche auf sehr kleinen Leinwänden
+zu hell (Regen/Laser Faktor ~3 bei u 0,4). Ausgleich `ws/lw` gebaut bei Rissen, Regen, Blasen, Schmetterling,
+Tropfenspur; **noch nicht** bei Laser-Kern/Saum, Laser-Punkten und `linse()` (Einschlag). Die Nachbesserung wurde
+aus Kontingentgründen abgebrochen. Kontrolllauf `--studio-vergleich` danach: ein Fall nicht mehr bitgleich, `rand-wenige7-risse` (7 Schläge ohne Eins, Risse im Takt; Mittel 0,59, max. 116) - Ursache nicht untersucht, Verdacht auf eine Änderung aus Loop-Modus oder abgebrochener Nachbesserung.
+
+**Vierte Stufe „Schleife schließen"** (Name von Caspar_D; eine Stelle: `LOOP_STUFE`): zeigt Länge und „sitzt auf X %
+des Lieds" (dieselbe Rechnung wie der Export, `loopBedarf()`), Umschalter „10-s-Loop ansehen": Vorschau = Exportbild
+zur Songzeit (`round((s mod L)·30)`), Ton nur gelesen. Gemessen 1218/1218 Songzeiten bitgleich zum Export
+(`naht.mjs --loop-ansicht`). Oberfläche nicht gegengeprüft — Caspar_D sieht sie an.
+
+**Solo wandert mit** (Caspar_D: *„es darf nicht sein, das ich an etwas Änderungen machen kann, was ich nicht sehe"*,
+*„neue karte kriegt solo und der effekt wird klarer visualisiert"*): Aufklappen, Einhängen oder Kopieren einer Karte
+bei laufendem Solo gibt ihr das Solo (`soloFolgt()`); Solo-Knopf gefüllt in Akzentfarbe, Solo-Karte mit Akzentkante,
+übrige Karten gedimmt.
+
+**„jeder 8. Schlag"** aus der Teiler-Auswahl entfernt (Caspar_D: *„achterschläge machen wir nicht, das bringt bei
+10 Sekunden gar nichts"*; kein gespeichertes Rezept nutzte ihn). Ganze Takte bleiben nur bei Eins-Karten (*„ganze
+takte nur, wenn karte auf der eins pulst"*).
+
+**Prüfstand:** Wachhund-Vorgabe 1800 s, Wiederaufnahme über `.zwischenstand/` (*„sei bei den Wächtern einfach immer
+etwas großzügiger und mach es idempotent"*).
+
+**Heute außerdem entschieden/abgelegt:** Übergänge für echte Videos — Rücklauf mit 8 % Unschärfe für Material wie
+Glut und Eis, Blitz/Pixel nicht für gefilmtes Material, Pendel adaptiv+asymmetrisch nur bei umkehrbarer Handlung, RIFE
+für ähnliche Bilder (`docs/effektclip/KONZEPT-LANGE-VIDEOS.md`, `labor/videonaht/`); Recherchen
+`docs/effektclip/VIDEOSTUDIO-RECHERCHE.md` und `docs/forschung/GPU-MODELLE.md` (Messplan im Backlog, onnxruntime-node
+nie über 1.23 wegen Intel-iMac); MacBook als Rechenknecht erst mit Ableitungsbuch (Backlog).
+**Kontingent:** Caspar_D, 15.09.2026 abends: *„du bist grade dabei, mein Wochenlimit einen Tag zu früh zu verballern"*
+— danach keine Agenten/Workflows mehr, kleine Schritte direkt.
+
+**Als Nächstes:** Caspar_D begutachtet im Studio (Maßstab in Kacheln, Stufe „Schleife schließen", Solo, die sieben
+Loop-Abweichungen jetzt direkt über den Loop-Modus), dann Release 1.0.7.

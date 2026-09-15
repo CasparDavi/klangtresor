@@ -61,8 +61,12 @@ function bauen() {
     try { ziel = fs.realpathSync(path.join(LABOR, name)); } catch (e) { ziel = path.join(WURZEL, ziele[name]); }
     if (!fs.existsSync(ziel)) throw new Error('Ziel für ' + name + ' fehlt: ' + ziel);
     const p = path.join(SITE, name);
+    /* Zeigt der Verweis schon richtig, bleibt er stehen (15.09.2026): ein zweiter Lauf, der site/ neu baut, riss ihn sonst kurz weg -
+       ein laufender Chrome, der gerade ein Titelbild nachlud, malte dann einen ganzen Job lang anders (Studio-Grundlinie, Job 2, 54 Faelle). */
+    let steht = false; try { steht = fs.realpathSync(p) === fs.realpathSync(ziel); } catch (e) {}
+    if (steht) continue;
     try { if (fs.lstatSync(p)) fs.unlinkSync(p); } catch (e) {}
-    fs.symlinkSync(ziel, p);
+    try { fs.symlinkSync(ziel, p); } catch (e) { if (e.code !== 'EEXIST' || fs.realpathSync(p) !== fs.realpathSync(ziel)) throw e; }
   }
   console.log('Prüfstand gebaut: ' + path.relative(process.cwd(), SITE));
 }

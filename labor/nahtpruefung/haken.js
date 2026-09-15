@@ -57,9 +57,10 @@ window.__naht = (() => {
       else e = effektAusRezept(Object.assign({}, r), false, 99);
       if(!e) throw new Error('Rezept baut keinen Effekt: '+JSON.stringify(r));
       return e; }); }
-  function vergleicher(W, H, lang){
+  function vergleicher(W, H, lang, guete){
     const sc = lang / Math.max(W, H), cw = Math.max(1, Math.round(W*sc)), ch = Math.max(1, Math.round(H*sc));
     const cv = document.createElement('canvas'); cv.width = cw; cv.height = ch; const cx = cv.getContext('2d', { willReadFrequently:true });
+    if(guete) cx.imageSmoothingQuality = guete;   /* Massstab: 360 und 1080 werden verschieden stark verkleinert - dann wenigstens mit gutem Filter */
     const bx = Math.ceil(cw/16), by = Math.ceil(ch/16), zahl = new Float64Array(bx*by), sum = new Float64Array(bx*by);
     for(let y=0; y<ch; y++) for(let x=0; x<cw; x++) zahl[(y>>4)*bx + (x>>4)]++;
     return {
@@ -215,6 +216,139 @@ window.__naht = (() => {
       return erg;
     } finally { Math.random = zufallEcht; datenSetzen('normal'); STAPEL = []; }
   }
-  return { typen, bereitMachen, fall, katalog };
+  /* ==== STUDIOMASS (15.09.2026) ====
+     Caspar_D: "unsere eigenen Effektclips skalieren nicht mit dem zoom auf die videos ... Das resultiert in absurd grossen
+     Schneeflocken." - "im Studio arbeite ich ja nach Augenschein, was dort rauskommt ist der Massstab, den wir am Ende
+     brauchen." - "ich benutzte bisher immer die vorgegebene Fenstergroesse." Drei Messungen, BEVOR das Studio umgebaut wird:
+     feld() liest ab, wie gross das Studio in einem Fenster wirklich malt; studio() malt jeden Fall in dieser Vorgabegroesse
+     und haelt einen bitgenauen Hash fest (dort muss der Umbau bitgleich bleiben); massstab() malt denselben Augenblick in
+     zwei Groessen und misst, wie sehr das Bild von der Groesse abhaengt. */
+  function feld(){ const r = s => { const e = document.querySelector(s); if(!e) return null; const b = e.getBoundingClientRect(); return { x:b.x, y:b.y, w:b.width, h:b.height }; };
+    const vorher = [lein.width, lein.height]; groesse(); const [bw, bh] = qMass(bild);
+    return { fenster:[innerWidth, innerHeight], dpr:devicePixelRatio, kasten:r('#tbs-kasten'), kopf:r('#tbs-kopf'), feld:r('#tbs-feld'), pult:r('#tbs-pult'), bild:[bw, bh], lein:[lein.width, lein.height], leinVorGroesse:vorher, offen:!!offen, bereit:!!bereit }; }
+  /* Ein Augenblick wie im Pult: LOOP=0, echte Schlaege, frische Karten, gesaeter Zufall, eigene Leinwaende in W x H.
+     Anders als vorschauBild ohne Hauszeichen - das Pult malt keins, und es skaliert ohnehin mit der Bildgroesse. */
+  function augenblick(f, lage, W, H, tv, s){
+    STAPEL = effekteBauen(f.effekte); soloId = null;
+    const gm = bundel(), mv = exportBuendel(gm, lage, W, H); mv.DATA = Object.assign({}, DATA);
+    LOOP = 0; FEIN = false; saat = s;
+    const anlauf = STAPEL.some(e => e.typ==='nachzieh') ? 45 : 0;
+    setzen(mv); try{ for(let k=anlauf; k>=0; k--) zeichneFrame(tv - k/BILDRATE); }catch(x){ console.warn('Studiomass:', x); } finally { setzen(gm); }
+    warteGL(); return mv.lein; }
+  const pixel = cv => cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+  const sha = async d => [...new Uint8Array(await crypto.subtle.digest('SHA-256', d))].map(b => b.toString(16).padStart(2, '0')).join('');
+  /* volle Aufloesung: mittlere Abweichung (0..255 je Kanal), groesster Bildpunkt (Mittel ueber RGB) und groesster 16x16-Block */
+  function abw(a, b, W, H){ const bx = Math.ceil(W/16), by = Math.ceil(H/16), sum = new Float64Array(bx*by), zahl = new Float64Array(bx*by); let t = 0, mx = 0;
+    for(let y=0; y<H; y++) for(let x=0; x<W; x++){ const i = (y*W+x)*4, v = Math.abs(a[i]-b[i]) + Math.abs(a[i+1]-b[i+1]) + Math.abs(a[i+2]-b[i+2]), k = (y>>4)*bx + (x>>4); t += v; if(v>mx) mx = v; sum[k] += v; zahl[k]++; }
+    let bm = 0; for(let k=0; k<sum.length; k++) bm = Math.max(bm, sum[k]/(zahl[k]*3)); return { mittel:t/(W*H*3), max:mx/3, block:bm }; }
+  /* Vergleichsbild: lange Seite 96, RGB, base64 - nur fuer das Abweichungsmass, wenn der Hash nicht gleich ist */
+  const KL = 96, kleinProp = q => { const s = KL/Math.max(q.width, q.height), w = Math.max(1, Math.round(q.width*s)), h = Math.max(1, Math.round(q.height*s)), cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const cx = cv.getContext('2d', { willReadFrequently:true }); cx.imageSmoothingQuality = 'high'; cx.drawImage(q, 0, 0, w, h); const d = cx.getImageData(0, 0, w, h).data, rgb = new Uint8Array(w*h*3);
+    for(let i=0, j=0; i<d.length; i+=4){ rgb[j++] = d[i]; rgb[j++] = d[i+1]; rgb[j++] = d[i+2]; } let s2 = ''; for(let i=0; i<rgb.length; i+=8192) s2 += String.fromCharCode.apply(null, rgb.subarray(i, i+8192)); return { w, h, b64:btoa(s2) }; };
+  const abwKlein = (a, b) => { if(!a || !b || a.w!==b.w || a.h!==b.h) return null; const x = atob(a.b64), y = atob(b.b64); let t = 0, mx = 0;
+    for(let i=0; i<x.length; i+=3){ const v = (Math.abs(x.charCodeAt(i)-y.charCodeAt(i)) + Math.abs(x.charCodeAt(i+1)-y.charCodeAt(i+1)) + Math.abs(x.charCodeAt(i+2)-y.charCodeAt(i+2)))/3; t += v; if(v>mx) mx = v; } return { mittel:t/(x.length/3), max:mx }; };
+  const r3 = x => x==null ? null : Math.round(x*1000)/1000;
+  function vorbereiten(f){ if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt }; datenSetzen(f.daten || 'normal'); Math.random = zufall; STAPEL = effekteBauen(f.effekte); soloId = null; return ausschnitt(); }
+  function aufraeumenMass(){ Math.random = zufallEcht; datenSetzen('normal'); STAPEL = []; LOOP = 0; FEIN = false; }
+
+  /* STUDIO IN VORGABEGROESSE: o.feld = [FW, FH] aus studiofeld.json; das Bild eingepasst wie groesse() es tut. Zweimal
+     hintereinander gemalt: gleiche Hashes heissen deterministisch. Sonst steht statt des Hashes das Eigenrauschen. */
+  async function studio(f, o){
+    const beginn = performance.now();
+    try{
+      const lage = vorbereiten(f), t0 = lage.t0, [bw, bh] = qMass(bild), sc = Math.min(o.feld[0]/bw, o.feld[1]/bh), W = Math.max(1, Math.round(bw*sc)), H = Math.max(1, Math.round(bh*sc));
+      const zeiten = (o.vergleich && o.vergleich.zeiten) || [t0, t0+2.3, t0+5.7], erg = { t0:r3(t0), W, H, zeiten, messung:[], bilder:[] };
+      for(let i=0; i<zeiten.length; i++){
+        const a = pixel(augenblick(f, lage, W, H, zeiten[i], 777)), cvB = augenblick(f, lage, W, H, zeiten[i], 777), b = pixel(cvB), ha = await sha(a), hb = await sha(b);
+        const z = { hash:ha, deterministisch:ha===hb }; if(!z.deterministisch){ const e = abw(a, b, W, H); z.eigenrauschen = { mittel:r3(e.mittel), max:r3(e.max), block:r3(e.block) }; }
+        const kl = kleinProp(cvB); erg.bilder.push(kl);
+        if(o.vergleich){ const v = o.vergleich.messung[i] || {}; z.gleich = !!v.hash && v.hash===ha;
+          if(!z.gleich){ const k = abwKlein(kl, o.vergleichBilder && o.vergleichBilder[i]); z.abw = k ? { mittel:r3(k.mittel), max:r3(k.max) } : 'kein Vergleichsbild'; } }
+        erg.messung.push(z); await warte(0); }
+      erg.deterministisch = erg.messung.every(z => z.deterministisch);
+      if(o.vergleich){ erg.gleich = erg.messung.every(z => z.gleich); erg.massGleich = o.vergleich.W===W && o.vergleich.H===H;
+        const ab = erg.messung.filter(z => z.abw && typeof z.abw==='object'); if(ab.length){ erg.abwMittel = r3(Math.max(...ab.map(z => z.abw.mittel))); erg.abwMax = r3(Math.max(...ab.map(z => z.abw.max))); } }
+      erg.dauerMs = Math.round(performance.now() - beginn);
+      return erg;
+    } finally { aufraeumenMass(); }
+  }
+  /* MASSSTAB: derselbe Augenblick (t0 + 2,3 s) mit langer Seite 360 und 1080, beide mit derselben Filterung auf lange Seite
+     256. Skaliert ein Effekt mit dem Bild, sehen beide gleich aus; der Kontrollfall ohne Effekt zeigt den Boden, den
+     Aufloesung und Filter allein machen. */
+  async function massstab(f, o){
+    const beginn = performance.now();
+    try{
+      const lage = vorbereiten(f), t0 = lage.t0, tv = t0 + (o.zeit==null ? 2.3 : o.zeit), [bw, bh] = qMass(bild);
+      const mass = lang => { const s = lang/Math.max(bw, bh); return [Math.max(1, Math.round(bw*s)), Math.max(1, Math.round(bh*s))]; };
+      const V = vergleicher(bw, bh, o.vergleich || 256, 'high'), [W1, H1] = mass(o.klein || 360), [W2, H2] = mass(o.gross || 1080);
+      const k = V.grab(augenblick(f, lage, W1, H1, tv, 777)).slice(), g = V.grab(augenblick(f, lage, W2, H2, tv, 777));
+      const erg = { t0:r3(t0), zeit:r3(tv), klein:[W1, H1], gross:[W2, H2], vergleich:[V.cw, V.ch], mittel:r3(V.mittel(k, g)), block:r3(V.block(k, g)) };
+      if(o.bilder){ const cv = document.createElement('canvas'); cv.width = V.cw*2; cv.height = V.ch; const cx = cv.getContext('2d');
+        cx.putImageData(new ImageData(new Uint8ClampedArray(k), V.cw, V.ch), 0, 0); cx.putImageData(new ImageData(new Uint8ClampedArray(g), V.cw, V.ch), V.cw, 0); erg.bilder = { paar:cv.toDataURL('image/png') }; }
+      erg.dauerMs = Math.round(performance.now() - beginn);
+      return erg;
+    } finally { aufraeumenMass(); }
+  }
+  /* ==== LOOP-ANSICHT (15.09.2026) ====
+     Caspar_D: "ein Modusknopf im Studio - 10 Sek. Loop waere gut". Die Stufe "Loop verbinden" zeigt zur Songzeit s das Bild,
+     das Suno dort aus dem ausgegebenen Clip zeigt: Clipbild i = round((s mod L)*30) mod N. Geprueft wird RECHNERISCH:
+     - lage: die Stufe rechnet dieselbe Lage wie ausschnitt() (t0, N, M, P, phiF, anzeige, grund), ihre Zeile endet auf taktSatz();
+     - bitgleich: je s das Bild der Ansicht (loopBildMalen ueber zeit(), frische Karten, Saat 777) gegen exportBild() auf einem
+       frischen Buendel derselben Groesse bei t0 + i/30, i unabhaengig hier gerechnet (Saat 777, LOOP=L, FEIN wie kodierend);
+     - folge (Hinweis): gegen den ECHTEN Export, Bild 0..i der Reihe nach nach vorlaufen() - dort tragen zustandsbehaftete Maler
+       (Nachzieh-Spur, gewuerfelter Zufall) ihre Vorgeschichte, die Ansicht springt dagegen mitten hinein;
+     - dicht: LOOP und FEIN stehen nach jedem Ansichtsbild wieder auf 0/false;
+     - aus: nach dem Ausschalten malt rahmen() (und danach zeichneFrame()) dasselbe Bild wie das Pult VOR dem Einschalten (frische
+       Karten, Saat 777, zweites Bild in Folge - ausErstesBildVorher sagt, ob schon das erste gleich war). */
+  async function loopAnsicht(f, o){
+    o = o || {}; const beginn = performance.now(), jetzt = window.audio.currentTime;
+    try{
+      const lageExport = vorbereiten(f), L = lageExport.N/BILDRATE, N = lageExport.N, t0 = lageExport.t0;
+      const jetztFall = window.audio.currentTime, malAus = async () => { STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777; zeichneFrame(zeit()); warteGL(); return sha(pixel(lein).slice()); };
+      /* Vorher, ohne Ansicht: zweimal das Pultbild zu jetzt + 2,3 s. Das erste Bild nach einem Kartenwechsel erbt Zeichenzustand der
+         Pultleinwaende vom vorigen Fall (frisch() setzt nur Transform, Alpha und Verrechnung) - Vergleichsmass ist darum das zweite. */
+      window.audio = { paused:false, currentTime:jetztFall + 2.3 }; const va = await malAus(), vb = await malAus(); window.audio = { paused:false, currentTime:jetztFall };
+      loopSchalten(true);
+      const lage = loopSicht.lage, zeile = (root.querySelector('#tbs-loopLage') || {}).textContent || '', satz = taktSatz(lageExport.anzeige, lageExport.grund, true);
+      const felder = ['t0','N','M','proTakt','phiF','anzeige','grund','ganzeTakte'], lageGleich = felder.every(k => lage[k]===lageExport[k]);
+      const erg = { t0:r3(t0), L:r3(L), N, M:lageExport.M, zeile, satz, lageGleich, satzGleich:satz ? zeile.endsWith(satz) : !/sitzt auf|Takt lässt/.test(zeile), W:lein.width, H:lein.height, messung:[] };
+      const dauer = (DATA && DATA.dauer) || 180;
+      const zeiten = o.zeiten || [0.06, jetztFall, 3*L - 0.4/BILDRATE, 3*L - 0.6/BILDRATE, 7.5*L, 12*L + 0.49/BILDRATE, dauer - 0.3].filter(s => s >= 0 && s < Math.max(dauer, 1)).filter((s, k) => !o.auswahl || o.auswahl.includes(k));
+      const W = lein.width, H = lein.height; let dicht = true;
+      for(const s of zeiten){
+        const iErw = Math.round((((s % L) + L) % L)*BILDRATE) % N;
+        STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777; loopSicht.m = null; loopSicht.i = -1; window.audio = { paused:false, currentTime:s };
+        let i = -1, runden = 0; do { i = loopBildMalen(zeit()); runden++; dicht = dicht && LOOP===0 && FEIN===false; } while(loopSicht.i!==i && runden<300);
+        warteGL(); const a = pixel(lein).slice(), ha = await sha(a);
+        STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777;
+        const gm = bundel(), m = exportBuendel(gm, lageExport, W, H); LOOP = L; FEIN = true;
+        try{ exportBild(m, gm, t0 + iErw/BILDRATE, W, H); } finally { LOOP = 0; FEIN = false; }
+        warteGL(); const b = pixel(m.lein), hb = await sha(b);
+        const z = { s:r3(s), i, iErw, runden, bitgleich:ha===hb && i===iErw }; if(ha!==hb){ const e = abw(a, b, W, H); z.abw = { mittel:r3(e.mittel), max:r3(e.max), block:r3(e.block) }; }
+        z.bild = a; erg.messung.push(z); await warte(0); }
+      if(o.folge !== false){
+        STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777;
+        const gm = bundel(), m = exportBuendel(gm, lageExport, W, H), bis = Math.max(...erg.messung.map(z => z.iErw));
+        LOOP = L; FEIN = true;
+        try{ await vorlaufen(m, gm);
+          for(let k=0; k<=bis; k++){ exportBild(m, gm, t0 + k/BILDRATE, W, H);
+            const treffer = erg.messung.filter(z => z.iErw===k); if(treffer.length){ warteGL(); const b = pixel(m.lein);
+              for(const z of treffer){ const e = abw(z.bild, b, W, H); z.folge = { mittel:r3(e.mittel), max:r3(e.max), block:r3(e.block) }; } }
+            if(k%4===3) await warte(0); } }
+        finally { LOOP = 0; FEIN = false; } }
+      erg.messung.forEach(z => { delete z.bild; });
+      loopSchalten(false);
+      /* Umschalter aus: rahmen() gegen zeichneFrame() */
+      window.audio = { paused:false, currentTime:jetztFall + 2.3 };
+      STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777; rahmen(); cancelAnimationFrame(rafId); rafId = 0; warteGL(); const ra = await sha(pixel(lein).slice());
+      const rb = await malAus();
+      Object.assign(erg, { bitgleich:erg.messung.every(z => z.bitgleich), bitgleichZahl:erg.messung.filter(z => z.bitgleich).length, zahl:erg.messung.length,
+        folgeBlockMax:erg.messung.some(z => z.folge) ? r3(Math.max(...erg.messung.filter(z => z.folge).map(z => z.folge.block))) : null,
+        folgeGleichZahl:erg.messung.filter(z => z.folge && z.folge.max===0).length, dicht:dicht && LOOP===0 && FEIN===false && !loopAn, ausGleich:ra===vb && rb===vb, ausErstesBildVorher:va===vb });
+      erg.dauerMs = Math.round(performance.now() - beginn);
+      return erg;
+    } finally { try{ loopSchalten(false); }catch(x){} window.audio = { paused:false, currentTime:jetzt }; aufraeumenMass(); }
+  }
+  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, loopAnsicht };
 })();
 /* <<< Pruefhaken der Nahtpruefung */

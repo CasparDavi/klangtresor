@@ -3128,6 +3128,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-kopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
 #tbs .tbs-kopf .tbs-knopf[data-tu="weg"]{border-radius:50%}
 #tbs .tbs-kopf .tbs-knopf.an{border-color:var(--akzent);color:var(--text)}
+#tbs .tbs-kopf .tbs-knopf.tbs-solo.an{background:var(--akzent);border-color:var(--akzent);color:#000;font-weight:600}
+#tbs .tbs-karte.solo{box-shadow:inset 3px 0 0 var(--akzent)}
+#tbs .tbs-karte.soloaus{opacity:.4}
 /* Sichtbarkeit wie die Solo-Kullerzeile im Haus und Haeckels Operator-Kette: Kreis = aus, Kreis mit Kuller = an */
 #tbs .tbs-pw{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--akzent);position:relative;flex:0 0 auto;cursor:pointer;opacity:.55}
 #tbs .tbs-karte.an .tbs-pw{opacity:1}
@@ -3267,6 +3270,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-leer p{margin:0 0 10px;text-align:left;max-width:40em}
 #tbs .tbs-leer a{color:var(--akzent);text-decoration:underline}
 #tbs #tbs-rezept.gedimmt{opacity:.45}
+#tbs #tbs-loopLage{color:var(--text);margin-bottom:2px}
+#tbs #tbs-loopLage.gedimmt{opacity:.5}
+#tbs #tbs-abLoop .tbs-regler{grid-template-columns:auto auto 1fr}
+#tbs #tbs-loopWo{margin:0 0 8px;font-variant-numeric:tabular-nums}
 #tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
 #tbs #tbs-vorbKoerper .tbs-seg button:disabled{opacity:.4;cursor:default}
 /* Lichtmischpult: Antrieb-Block mit Muster-Knoepfen (Kurvenbild) und Vorschau */
@@ -27214,11 +27221,11 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche, Funken oder Schwaden ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schiesst sie hinaus und laeuft aus wie Luftwiderstand. Schwaden sind Rauch: wenige, grosse, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe (px)',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Von Objekten verdeckt',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Von Objekten verdeckt',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
-    params:[{k:'raster',lbl:'Raster (px)',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
+    params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
-    params:[{k:'radius',lbl:'Radius (px)',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
+    params:[{k:'radius',lbl:'Radius',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
     params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]},
   feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Wind zieht die Zungen zur Seite, Glut sitzt an der Basis; lodert im Takt höher. „Schein“ ist das weiche Leuchten über die Flammen hinaus — es hellt das Bild auf und beleuchtet zugleich Nebel und Rauchschwaden, die darüber stehen.',
@@ -27240,13 +27247,13 @@ const EFFEKTE = {
      Formen, keine Motive: Risse sind verzweigte Linien, Beschlag ist Weichzeichnung unter einem Schleier,
      Tropfen sind kleine Linsen, die das Bild darunter umgekehrt und vergroessert zeigen. */
   risse:{ label:'Risse im Glas', art:'mal', verr:'ueber', staerkeDef:.8, besch:'Verzweigte Risse von einem oder mehreren Einschlägen aus, Lichtkante und Schattenkante. Wachsen stehend, mit der Zeit oder Ast für Ast im Takt. Auch als: Eis, Adern, Blitzgeäst, Trockenrisse.',
-    params:[{k:'einschlaege',lbl:'Einschläge',min:1,max:6,step:1,def:2},{k:'aeste',lbl:'Verzweigung',min:0,max:1,step:.05,def:.5},{k:'laenge',lbl:'Länge',min:.2,max:1,step:.05,def:.6},{k:'breite',lbl:'Breite (px)',min:.5,max:3,step:.1,def:1.2},{k:'wachsen',lbl:'Wachsen',sel:[['stehend','stehend'],['zeit','mit der Zeit'],['takt','im Takt']],def:'zeit'},{k:'dauer',lbl:'Dauer (s)',min:2,max:30,step:1,def:8,when:e=>e.wachsen==='zeit'},{k:'muster',lbl:'Muster',min:1,max:20,step:1,def:1},{k:'hell',lbl:'Lichtkante',farbe:true,def:'#ffffff'},{k:'dunkel',lbl:'Schattenkante',farbe:true,def:'#000000'}]},
+    params:[{k:'einschlaege',lbl:'Einschläge',min:1,max:6,step:1,def:2},{k:'aeste',lbl:'Verzweigung',min:0,max:1,step:.05,def:.5},{k:'laenge',lbl:'Länge',min:.2,max:1,step:.05,def:.6},{k:'breite',lbl:'Breite',min:.5,max:3,step:.1,def:1.2},{k:'wachsen',lbl:'Wachsen',sel:[['stehend','stehend'],['zeit','mit der Zeit'],['takt','im Takt']],def:'zeit'},{k:'dauer',lbl:'Dauer (s)',min:2,max:30,step:1,def:8,when:e=>e.wachsen==='zeit'},{k:'muster',lbl:'Muster',min:1,max:20,step:1,def:1},{k:'hell',lbl:'Lichtkante',farbe:true,def:'#ffffff'},{k:'dunkel',lbl:'Schattenkante',farbe:true,def:'#000000'}]},
   beschlag:{ label:'Beschlag', art:'mal', verr:'ueber', staerkeDef:.6, besch:'Dampf schlägt sich auf der Scheibe nieder: das Bild wird unter einem hellen Schleier unscharf, vom Rand her (0 = gleichmäßig) und in Flecken. Stehend oder mit der Zeit zuwachsend. Stärke ist die Dichte des Beschlags. Auch als: Milchglas, Frost, Dunstschicht, Erinnerung.',
-    params:[{k:'weich',lbl:'Weichzeichnung (px)',min:2,max:30,step:1,def:12},{k:'rand',lbl:'Vom Rand her',min:0,max:1,step:.05,def:.7},{k:'flecken',lbl:'Flecken',min:0,max:1,step:.05,def:.5},{k:'wachsen',lbl:'Wachsen',sel:[['stehend','stehend'],['zeit','mit der Zeit']],def:'zeit'},{k:'dauer',lbl:'Dauer (s)',min:5,max:120,step:5,def:30,when:e=>e.wachsen==='zeit'},{k:'muster',lbl:'Muster',min:1,max:20,step:1,def:1},{k:'farbe',lbl:'Schleierfarbe',farbe:true,def:'#dfe8f0'}]},
+    params:[{k:'weich',lbl:'Weichzeichnung',min:2,max:30,step:1,def:12},{k:'rand',lbl:'Vom Rand her',min:0,max:1,step:.05,def:.7},{k:'flecken',lbl:'Flecken',min:0,max:1,step:.05,def:.5},{k:'wachsen',lbl:'Wachsen',sel:[['stehend','stehend'],['zeit','mit der Zeit']],def:'zeit'},{k:'dauer',lbl:'Dauer (s)',min:5,max:120,step:5,def:30,when:e=>e.wachsen==='zeit'},{k:'muster',lbl:'Muster',min:1,max:20,step:1,def:1},{k:'farbe',lbl:'Schleierfarbe',farbe:true,def:'#dfe8f0'}]},
   einschlag:{ label:'Tropfen treffen die Scheibe', art:'mal', verr:'ueber', staerkeDef:.8, besch:'Auf einen Teil der Schläge trifft ein Tropfen: ein kurzer Ring, dann bleibt ein Tropfen als kleine Linse liegen und verliert sich. Auch als: Regen am Fenster, Einschläge, Blasen, die platzen.',
-    params:[{k:'anteil',lbl:'Anteil der Schläge',min:.05,max:1,step:.05,def:.5},{k:'nurEins',tog:'nur die Eins',def:0},{k:'groesse',lbl:'Größe (px)',min:4,max:40,step:1,def:14},{k:'ringe',tog:'Ring beim Aufprall',def:1},{k:'bleiben',lbl:'Bleibt (s)',min:0,max:30,step:1,def:8},{k:'farbe',lbl:'Lichtkante',farbe:true,def:'#ffffff'}]},
+    params:[{k:'anteil',lbl:'Anteil der Schläge',min:.05,max:1,step:.05,def:.5},{k:'nurEins',tog:'nur die Eins',def:0},{k:'groesse',lbl:'Größe',min:4,max:40,step:1,def:14},{k:'ringe',tog:'Ring beim Aufprall',def:1},{k:'bleiben',lbl:'Bleibt (s)',min:0,max:30,step:1,def:8},{k:'farbe',lbl:'Lichtkante',farbe:true,def:'#ffffff'}]},
   tropfen:{ label:'Tropfen laufen herunter', art:'mal', verr:'ueber', staerkeDef:.8, besch:'Tropfen laufen als kleine Linsen die Scheibe herunter und ziehen eine dünne Spur. Windstöße im Takt schubsen sie. Auch als: Tränen, Kondenswasser, Sirup, Regen an der Windschutzscheibe.',
-    params:[{k:'anzahl',lbl:'Anzahl',min:2,max:40,step:1,def:12},{k:'groesse',lbl:'Größe (px)',min:3,max:24,step:1,def:9},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.8},{k:'spur',lbl:'Spur',min:0,max:1,step:.05,def:.5},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.3},{k:'boeen',tog:'Stöße im Takt',def:0},{k:'boeenStaerke',lbl:'Stoßstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen},{k:'farbe',lbl:'Lichtkante',farbe:true,def:'#ffffff'}]},
+    params:[{k:'anzahl',lbl:'Anzahl',min:2,max:40,step:1,def:12},{k:'groesse',lbl:'Größe',min:3,max:24,step:1,def:9},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.8},{k:'spur',lbl:'Spur',min:0,max:1,step:.05,def:.5},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.3},{k:'boeen',tog:'Stöße im Takt',def:0},{k:'boeenStaerke',lbl:'Stoßstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen},{k:'farbe',lbl:'Lichtkante',farbe:true,def:'#ffffff'}]},
   korn:{ label:'Filmkorn', art:'mal', verr:'overlay', staerkeDef:.5, besch:'Feines Korn, das mit jedem Bild wechselt — der leise Film-Finish. Kein Defekt (das ist Rauschausfall), sondern Textur.',
     params:[{k:'koernung',lbl:'Körnung',min:1,max:4,step:.25,def:1.5},{k:'tempo',lbl:'Wechsel',min:0,max:1,step:.05,def:1}]},
   bloecke:{ label:'Glitch-Blöcke', art:'post', ohneStaerke:true, staerkeDef:1, besch:'Rechteckige Bildblöcke springen versetzt — der digitale Bruder der analogen Störungen. Frei oder im Takt, mit Farbversatz in den Blöcken.',
@@ -27352,6 +27359,22 @@ PULSE.forEach(k=>{ EFFEKTE[k].lmNurSchub=true; EFFEKTE[k].params.push(
   ...lmParams({lmQuelle:'takt',lmForm:'rampe_ab',lmAbkling:1.8,lmTiefe:1})); });
 
 let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false, FEIN = false;   /* LICHTMAL: gerade wird in den Licht-Puffer gemalt */
+/* DAS STUDIO IST DER MASSSTAB (Caspar_D, 15.09.2026: "unsere eigenen Effektclips skalieren nicht mit dem zoom auf die
+   videos. Die Schneeflockengroesse, die Laserbreite bleiben immer gleich ... Das resultiert in absurd grossen
+   Schneeflocken." - "im Studio arbeite ich ja nach Augenschein, was dort rauskommt ist der Massstab, den wir am Ende
+   brauchen." - "ich benutzte bisher immer die vorgegebene Fenstergroesse."). Jede absolute Groesse eines Malers
+   (Flocke, Laserbreite, Weichzeichnung, Taumelweite) war in Bildpunkten der Leinwand gemeint, auf der Caspar_D sie
+   eingestellt hat: dem Studio in Vorgabegroesse. EINHEIT ist darum je Leinwand die Bildbreite geteilt durch die Breite
+   desselben Bildes im Studio in Vorgabegroesse - dort genau 1 und bitgleich zu vorher, in Kachel, Buehne und Export das
+   Verhaeltnis. Kein Regler: die Software kennt beide Breiten. STUDIO_FELD ist #tbs-feld im Studio bei 2560x1440
+   (Kasten min(1720px,97vw) x min(940px,95vh), Pult 820, Kopf 49), gemessen 15.09.2026 in headless Chrome
+   (labor/nahtpruefung/studiofeld.json, vorgabe.feld). Das Studiobild ist das Quellbild darin eingepasst wie groesse().
+   Untergrenzen (mindestens 1 px Strich) bleiben Bildpunkte: sie gelten NACH dem Umrechnen, denn unter einem Bildpunkt
+   zeichnet keine Leinwand. zeichneFrame() setzt EINHEIT je Bild aus lein und bild; setzen()/bundel() tauschen beide, also
+   stimmt sie fuer Export und Kacheln von selbst. */
+const STUDIO_FELD = [898, 889];
+let EINHEIT = 1;
+function einheitVon(Wn, bw, bh){ const sc=Math.min(STUDIO_FELD[0]/bw, STUDIO_FELD[1]/bh), W=Math.max(1, Math.round(bw*sc)); return Wn/W; }
 /* WOHER DAS LICHT KOMMT (Caspar_D, 14.09.2026: "Lichtrichtung von der Lichtquelle aus gesehen
    wuerde ich denken"). Der Lichtpuffer sagt, WIEVIEL Licht an einer Stelle ankommt - aber nicht,
    aus welcher Richtung. Das weiss nur die Leuchte selbst, und zwar genau in dem Augenblick, in dem
@@ -27375,6 +27398,7 @@ function lichtOrtMittel(){
    Gilt NUR fuer den kodierenden Weg: der Rueckfall ueber den Aufnehmer haengt an der Wanduhr, dort
    wuerde ein langsames Bild den Film dehnen. */
 const aktiv = e => soloId ? (e.id===soloId) : e.an;
+const soloFolgt = () => { if(soloId&&offenId!=null) soloId=offenId; };   /* das Solo geht an die Karte, die gerade offen ist */
 function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:false, verr:T.verr||'ueber', staerke:(T.staerkeDef!=null?T.staerkeDef:1) };
   T.params.forEach(p=>{ e[p.k]=Array.isArray(p.def)?p.def.slice():p.def; });
   /* Ohne Schlagraster bekommt ein NEUER Effekt die freie Frequenz statt eines Antriebs, der an
@@ -27723,14 +27747,18 @@ function kurveFilter(e){ gradInit(e); let f=kurvenCache[e.id]; const ns='http://
 let GLAS_KOPIE=null;
 function glasKopie(cx,Wn,Hn){ if(!GLAS_KOPIE) GLAS_KOPIE=document.createElement('canvas'); if(GLAS_KOPIE.width!==Wn||GLAS_KOPIE.height!==Hn){ GLAS_KOPIE.width=Wn; GLAS_KOPIE.height=Hn; }
   const k=GLAS_KOPIE.getContext('2d'); k.setTransform(1,0,0,1,0,0); k.globalCompositeOperation='source-over'; k.globalAlpha=1; k.clearRect(0,0,Wn,Hn); k.drawImage(cx.canvas,0,0); return GLAS_KOPIE; }
-function linse(cx,kopie,x,y,r,a,farbe){ if(r<1) return;
-  cx.save(); cx.globalCompositeOperation='source-over'; cx.beginPath(); cx.arc(x,y,r,0,7); cx.clip(); cx.globalAlpha=Math.max(0,Math.min(1,a));   /* auch der Linsenkoerper folgt der Staerke (Tiefen-Check: blieb bei Staerke 0 stehen) */
+function linse(cx,kopie,x,y,r,a,farbe){ const rS=Math.max(EINHEIT,r); r=Math.max(1,rS); const kr=rS/r;   /* r kommt in Studio-Bildpunkten mal EINHEIT; rS ist der Radius, den das Studio zeigt (mindestens 1 Studio-Bildpunkt).
+     Geklemmt statt verworfen: im kleinen Export (EINHEIT unter 1) waere ein kleiner Tropfen sonst ganz weg. Greift die Klemme,
+     ist die Linse groesser als im Studio - dieselbe Lichtmenge auf mehr Flaeche, also Deckkraft mal (rS/r)^2 fuer den Koerper, wie bei
+     den Rissen (Gegenpruefung 15.09.2026: Einschlag Groesse 4 klein/gross 3,08 ueber dem Boden). Im Studio ist kr genau 1. */
+  const aK=a*kr*kr; cx.save(); cx.globalCompositeOperation='source-over'; cx.beginPath(); cx.arc(x,y,r,0,7); cx.clip(); cx.globalAlpha=Math.max(0,Math.min(1,aK));   /* auch der Linsenkoerper folgt der Staerke (Tiefen-Check: blieb bei Staerke 0 stehen) */
   cx.translate(x,y); cx.scale(1.25,-1.25); cx.translate(-x,-y); cx.drawImage(kopie,0,0); cx.restore();
-  cx.save(); cx.globalCompositeOperation='source-over'; cx.globalAlpha=a;
+  cx.save(); cx.globalCompositeOperation='source-over'; cx.globalAlpha=aK;
   const g=cx.createRadialGradient(x-r*0.35,y-r*0.35,r*0.1,x,y,r); g.addColorStop(0,'rgba(255,255,255,0.22)'); g.addColorStop(0.72,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(0,0,0,0.38)');
   cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); cx.globalAlpha=1;   /* Kante und Glanz tragen a in der Farbe (sonst a hoch 2) */
-  cx.strokeStyle=rgba(farbe,0.45*a); cx.lineWidth=Math.max(0.6,r*0.08); cx.beginPath(); cx.arc(x,y,r-0.5,0,7); cx.stroke();
-  cx.fillStyle=rgba(farbe,0.85*a); cx.beginPath(); cx.arc(x-r*0.4,y-r*0.45,Math.max(0.8,r*0.16),0,7); cx.fill(); cx.restore(); }
+  const kS=Math.max(0.6*EINHEIT,rS*0.08), kw=Math.max(0.6,kS), gS=Math.max(0.8*EINHEIT,rS*0.16), gw=Math.max(0.8,gS);   /* Kante und Glanzpunkt ebenso: erst die Studiogroesse, dann die Untergrenze, der Rest in die Deckkraft (Kante: Umfang mal Breite, also kr mal kS/kw; Glanz: eigene Flaeche) */
+  cx.strokeStyle=rgba(farbe,0.45*a*kr*(kS/kw)); cx.lineWidth=kw; cx.beginPath(); cx.arc(x,y,r-0.5*EINHEIT,0,7); cx.stroke();
+  cx.fillStyle=rgba(farbe,0.85*a*(gS/gw)*(gS/gw)); cx.beginPath(); cx.arc(x-r*0.4,y-r*0.45,gw,0,7); cx.fill(); cx.restore(); }
 /* Rissgeometrie: je Einschlag Strahlen, jeder Strahl ein Zufallsweg mit Aesten; `ord` = Abstand vom Einschlag in
    Schritten, danach waechst der Riss. Gebaut einmal je Muster und Groesse, dann gemerkt. */
 function risseBauen(e,Wn,Hn){ const key=[e.einschlaege,e.aeste,e.laenge,e.muster,Wn,Hn].join('|'); if(e._risse&&e._risseKey===key) return e._risse;
@@ -27959,14 +27987,17 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       lim=(LOOP>0&&st==null) ? (DATA.schlaege.length?R.maxOrd+1:0) : st!=null ? zaehl(DATA.echt,st) : zaehl(DATA.schlaege,t); }   /* im Loop mit Raster ausgewachsen wie 'zeit' - Caspar_D, 14.09.2026: "was wachsendes nicht ploetzlich wieder kleiner werden sollte"; ein Aufbau je Clip muesste an der Naht schrumpfen. Ohne Raster, aber mit echten Schlaegen (stand): so weit gewachsen wie im Pult zur Zeit stand. Ganz ohne Schlaege waechst nirgends etwas */
     const zeichne=(farbe,al,br,dx,dy)=>{ cx.strokeStyle=rgba(farbe,al); cx.lineCap='round'; cx.lineJoin='round';
       for(const s of R.segs){ if(s.ord>=lim) continue; const f=Math.min(1,lim-s.ord); const x2=s.x1+(s.x2-s.x1)*f, y2=s.y1+(s.y2-s.y1)*f;
-        cx.lineWidth=Math.max(0.3,br*s.w); cx.beginPath(); cx.moveTo(s.x1+dx,s.y1+dy); cx.lineTo(x2+dx,y2+dy); cx.stroke(); } };
-    zeichne(e.dunkel,0.55*a,e.breite*1.7,0.8,0.8); zeichne(e.hell,0.9*a,e.breite*0.75,0,0); return; }
+        /* Die Strichbreite, wie das Studio sie zeigt (mindestens 0,3 px), in EINHEIT umgerechnet. Greift die Untergrenze danach noch
+           einmal, wird der Strich breiter als im Studio - dann nimmt die Deckkraft dasselbe zurueck, die Linie traegt so viel Licht
+           wie dort (gemessen 15.09.2026: ohne das lag der Riss bei langer Seite 360 um 5 Block ueber dem Boden). Im Studio 1. */
+        const ws=Math.max(0.3,br*s.w)*EINHEIT, lw=Math.max(0.3,ws); cx.lineWidth=lw; cx.globalAlpha=ws/lw; cx.beginPath(); cx.moveTo(s.x1+dx,s.y1+dy); cx.lineTo(x2+dx,y2+dy); cx.stroke(); } cx.globalAlpha=1; };
+    zeichne(e.dunkel,0.55*a,e.breite*1.7,0.8*EINHEIT,0.8*EINHEIT); zeichne(e.hell,0.9*a,e.breite*0.75,0,0); return; }   /* Breite (in zeichne) und Schattenversatz in Studio-Bildpunkten */
   if(e.typ==='beschlag'){ const a=Math.min(1,e.staerke), p=(e.wachsen==='zeit'&&LOOP<=0)?Math.min(1,t/Math.max(1,e.dauer)):1;   /* im Loop ausgewachsen */ if(p<=0) return;
     /* Schleier: das Bild weichgezeichnet und aufgehellt - auf eine Kopie, dann durch eine Maske (Rand + Flecken) zurueck. */
     if(!e._bc){ e._bc=document.createElement('canvas'); e._bm=document.createElement('canvas'); e._bm.width=48; e._bm.height=64; }
     if(e._bc.width!==Wn||e._bc.height!==Hn){ e._bc.width=Wn; e._bc.height=Hn; }
     const bc=e._bc.getContext('2d'); bc.setTransform(1,0,0,1,0,0); bc.globalCompositeOperation='source-over'; bc.globalAlpha=1; bc.clearRect(0,0,Wn,Hn);
-    bc.filter='blur('+Math.round(e.weich)+'px)'; bc.drawImage(cx.canvas,0,0); bc.filter='none';
+    bc.filter='blur('+(e.weich*EINHEIT)+'px)';   /* ohne Math.round: gerundet sprang die Weichzeichnung im Export je Bildpunkt (Regler in ganzen Schritten, im Studio also dasselbe) */ bc.drawImage(cx.canvas,0,0); bc.filter='none';
     bc.fillStyle=rgba(e.farbe,0.55); bc.fillRect(0,0,Wn,Hn);
     const mm=e._bm.getContext('2d'), mw=48, mh=64; mm.setTransform(1,0,0,1,0,0); mm.globalCompositeOperation='source-over'; mm.clearRect(0,0,mw,mh);
     let n=0; const hs=()=>{ const v=Math.sin((n++)*12.9898+e.muster*78.233)*43758.5453; return v-Math.floor(v); };
@@ -27980,23 +28011,23 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   if(e.typ==='einschlag'){ const st=LOOP>0?DATA.stand:null, a=Math.min(1,e.staerke), S=st!=null?DATA.echt:DATA.schlaege, tt=st!=null?st:t; if(!S.length) return; const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
     let kopie=null;   /* stand: die Tropfen, die im Pult zur Zeit stand liegen, stehen still; ein Ring ist ein Augenblick und bleibt dann weg */
     for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>tt) continue; const dt=tt-bt; if(dt>Math.max(0.6,e.bleiben)) break; if(e.nurEins&&S[j][1]!==1) continue; const q=lpSchlag(S,j); if(hs(q)>=e.anteil) continue;   /* Wurf an der umlaufenden Schlagnummer: der Schlag nach L trifft dieselbe Stelle, und der Rastervorlauf (ganze Clips, mind. 32 s) legt am Clipanfang dieselben liegengebliebenen Tropfen hin wie am Ende */
-      const x=(0.08+0.84*hs(q+100))*Wn, y=(0.08+0.84*hs(q+200))*Hn, r0=e.groesse*(0.6+0.4*hs(q+300));
-      if(e.ringe&&dt<0.6&&st==null){ const rr=r0*(1+dt*5), al=(1-dt/0.6)*0.6*a; cx.strokeStyle=rgba(e.farbe,al); cx.lineWidth=1.5; cx.beginPath(); cx.arc(x,y,rr,0,7); cx.stroke(); }
+      const x=(0.08+0.84*hs(q+100))*Wn, y=(0.08+0.84*hs(q+200))*Hn, r0=e.groesse*EINHEIT*(0.6+0.4*hs(q+300));
+      if(e.ringe&&dt<0.6&&st==null){ const rr=r0*(1+dt*5), al=(1-dt/0.6)*0.6*a; cx.strokeStyle=rgba(e.farbe,al); cx.lineWidth=1.5*EINHEIT; cx.beginPath(); cx.arc(x,y,rr,0,7); cx.stroke(); }
       if(dt<e.bleiben){ const r=r0*(1-0.35*dt/Math.max(1,e.bleiben)); if(!kopie) kopie=glasKopie(cx,Wn,Hn); linse(cx,kopie,x,y,r,a*(1-dt/Math.max(1,e.bleiben)),e.farbe); } }
     return; }
   if(e.typ==='tropfen'){ const a=Math.min(1,e.staerke), n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
     const stoss=e.boeen?pulswert(t,4,0)*(e.boeenStaerke==null?.5:e.boeenStaerke)*Hn*0.06:0;
     const kopie=glasKopie(cx,Wn,Hn);
-    for(let i=0;i<n;i++){ const r=e.groesse*(0.5+0.5*hs(i+3000)), v=(0.4+hs(i+1000))*e.tempo*Hn*0.07, L=Hn+4*r;
+    for(let i=0;i<n;i++){ const r=e.groesse*EINHEIT*(0.5+0.5*hs(i+3000)), v=(0.4+hs(i+1000))*e.tempo*Hn*0.07, L=Hn+4*r, zw=e.zittern*EINHEIT;   /* Groesse und Zitterweite in Studio-Bildpunkten */
       /* Wie bei den Partikeln (lebensGeister): der Umbruch liegt unter dem Bildrand und ist unsichtbar, aber lpV
          rundet eine Scheibe, die ein Tropfen in 0,2 bis 0,8 Clips herunterlaeuft, auf 0 oder 1 - er stuende oder
          raste. Dann lebt er im Export genau L mit echtem Tempo und echtem Zittern und blendet am Ende aus, waehrend
          er oben an seinem Ursprung wieder auf der Scheibe erscheint. */
       const leb=LOOP>0&&lpVerfaelscht(v,L)?lebensGeister(LOOP,hs(i+9900),t):null, G=leb?leb.length:1;
       for(let gi=0;gi<G;gi++){ let y, x, ga=a;
-        if(leb){ const q=leb[gi][0]; ga=a*leb[gi][1]; y=((hs(i+2000)*L+q*v+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r; x=hs(i)*Wn+Math.sin(1.7*q+i)*e.zittern*3+Math.sin(0.23*q+i*2.3)*e.zittern*6; }
-        else { y=((hs(i+2000)*L+t*lpV(v,L)+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r; x=hs(i)*Wn+Math.sin(lpW(1.7)*t+i)*e.zittern*3+Math.sin(lpW(0.23)*t+i*2.3)*e.zittern*6; }
-        if(e.spur>0){ const sl=Math.min(y+r, e.spur*Hn*0.35*(0.6+0.4*hs(i+5000))); cx.strokeStyle='rgba(255,255,255,'+(0.16*ga).toFixed(3)+')'; cx.lineCap='round'; cx.lineWidth=Math.max(0.8,r*0.55); cx.beginPath(); cx.moveTo(x,y-sl); cx.lineTo(x,y); cx.stroke(); }
+        if(leb){ const q=leb[gi][0]; ga=a*leb[gi][1]; y=((hs(i+2000)*L+q*v+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r; x=hs(i)*Wn+Math.sin(1.7*q+i)*zw*3+Math.sin(0.23*q+i*2.3)*zw*6; }
+        else { y=((hs(i+2000)*L+t*lpV(v,L)+stoss*(0.5+hs(i+4000)))%L+L)%L-2*r; x=hs(i)*Wn+Math.sin(lpW(1.7)*t+i)*zw*3+Math.sin(lpW(0.23)*t+i*2.3)*zw*6; }
+        if(e.spur>0){ const sl=Math.min(y+r, e.spur*Hn*0.35*(0.6+0.4*hs(i+5000))); const ws=Math.max(0.8*EINHEIT,r*0.55), lw=Math.max(0.8,ws); cx.strokeStyle='rgba(255,255,255,'+(0.16*ga*(ws/lw)).toFixed(3)+')'; cx.lineCap='round'; cx.lineWidth=lw;   /* Spurbreite wie im Studio, die Untergrenze danach, der Rest in die Deckkraft */ cx.beginPath(); cx.moveTo(x,y-sl); cx.lineTo(x,y); cx.stroke(); }
         linse(cx,kopie,x,y,r,ga,e.farbe); } }
     return; }
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/lpP(e.tempo))%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
@@ -28019,7 +28050,9 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* Jeder Strahl: weicher Saum und heller Kern; der Ansatz liegt ausserhalb, darum bleibt der Strahl bis weit ins Bild voll
        und laeuft erst am Ende aus (Tiefen-Check: vorher lief er ab dem Ansatz aus und war im Bild fast unsichtbar). */
     lichtOrtMelden(ox, oy, a);
-    cx.lineCap='round'; const w0=Math.max(1,e.breite*40);
+    cx.lineCap='round'; const wS=Math.max(1,e.breite*40)*EINHEIT, w0=Math.max(1,wS), kd=wS/w0;   /* Kern in Studio-Bildpunkten (dort mindestens 1 px), der Saum (w0*3,2) folgt; mindestens 1 px dieser Leinwand.
+       Greift die Untergrenze erst hier, sind Kern und Saum breiter als im Studio: kd nimmt die Deckkraft im selben Verhaeltnis zurueck (beides Striche,
+       also linear; Gegenpruefung 15.09.2026: Breite 0,02 klein/gross 3,00). Der Scanner rechnet Abstand, Dichte und Saum mit wS - das ist Flaeche, keine Strichbreite. */
     /* ZWEI BAUARTEN, BEIDE ECHT (VIDEO-PLAN 9b.3). Gitter: ein Strahl wird vom Strahlteiler in
        viele GLEICHZEITIG bestehende zerlegt - fester Faecher, alle Stellen dauernd besetzt. Das
        war bisher der einzige gebaute Fall. Scanner: EIN Strahl, von einem Galvospiegel schnell
@@ -28062,7 +28095,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
                Bodenraster faengt am unteren Bildrand an und laeuft zum Horizont zusammen.
                Vorher deckte es nur y 321..655 ab und erreichte den Vordergrund gar nicht. */
             Sy=S*1.35, Cx=Wn*0.5, Cy=Hn*0.46,
-            r0=Math.max(1.2,e.breite*16),                  /* Punktgroesse in der vordersten Reihe */
+            r0=Math.max(1.2,e.breite*16)*EINHEIT,                  /* Punktgroesse in der vordersten Reihe, wie im Studio (dort mindestens 1,2 px); die Untergrenze dieser Leinwand kommt erst beim Malen */
             auf=(e.aufsetzen==null?0.6:e.aufsetzen),
             tp=tiefeProben(DATA&&DATA.id);                 /* ohne Karte bleibt das Raster auf der Scheibe */
       /* Das Punktbild einmal je Bild: Kern und weicher Hof, in der Laserfarbe. */
@@ -28080,7 +28113,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         const Y=-b2*ct, Zt=b2*stt;                 /* ... und kippt um die Waagerechte */
         const w=1+(Zt+stt)*0.7; if(w<0.15) continue;
         const X=a2;
-        let x2=Cx+X*S/w, y2=Cy+Y*Sy/w, rr=Math.max(0.6,r0/w), al=Math.min(1,a/w);
+        let x2=Cx+X*S/w, y2=Cy+Y*Sy/w, rr=Math.max(0.6*EINHEIT,r0/w), al=Math.min(1,a/w);   /* rr bleibt Studiogroesse mal EINHEIT */
         /* AUF DEN FLAECHEN, NICHT AUF DER SCHEIBE. Liegt eine Tiefenkarte vor, trifft jeder Dot
            dort auf, wo im Bild etwas steht. Drei Dinge folgen daraus, und alle drei sind eine
            Rechnung, kein Regler:
@@ -28105,7 +28138,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           /* "Aufsetzen" ist ein Regler und kein Rechenwert, weil der Abstand zwischen Leuchte
              und Kamera aus einem flachen Bild nicht hervorgeht. Er skaliert alle Folgen zugleich. */
           const f=1+auf*(0.9-1.8*zz);              /* nah: kleiner, fern: groesser */
-          rr=Math.max(0.6,rr*Math.max(0.25,f)); al=Math.min(1,al/Math.max(0.25,f*f));
+          rr=Math.max(0.6*EINHEIT,rr*Math.max(0.25,f)); al=Math.min(1,al/Math.max(0.25,f*f));
           const pa=auf*0.42*(zz-0.5);              /* Parallaxe */
           x2+=(ox-x2)*pa; y2+=(oy-y2)*pa;
           /* EIN PUNKT AUF EINER GEWOELBTEN FLAECHE IST KEINE SCHEIBE (Caspar_D, 14.09.2026:
@@ -28123,6 +28156,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           streck=Math.min(3.5,1/Math.max(0.28,nz));
           if(streck>1.02){ winkel=Math.atan2(ny,nx); al=Math.min(1,al/streck); }
         }
+        { const rp=Math.max(0.6,rr); al*=(rr/rp)*(rr/rp); rr=rp; }   /* erst jetzt die Untergrenze dieser Leinwand; ein groesserer Punkt als im Studio traegt dieselbe Lichtmenge (Flaeche, also im Quadrat) */
         if(x2<-rr*4||y2<-rr*4||x2>Wn+rr*4||y2>Hn+rr*4) continue;
         cx.globalAlpha=al;
         if(streck>1.02){ cx.save(); cx.translate(x2,y2); cx.rotate(winkel);
@@ -28155,15 +28189,19 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
            2 px auseinanderliegen - enger als der Kern, dann schliesst sich die Flaeche.
            Die Deckkraft je Stelle faellt mit der Zahl der Stellen, sonst wuerde ein langsamer Scanner (viel
            Ueberlappung auf wenig Weg) gleissen und ein schneller verschwinden. Flaechenhelligkeit bleibt. */
+        /* Abstand der Zwischenstellen und Breite der Scheiben in Studio-Bildpunkten (EINHEIT), obwohl sie nach Guete aussehen: die
+           Deckkraft je Stelle (dicht) und der Saum (rad) rechnen aus ihrem Verhaeltnis zu w0. Blieben sie Bildpunkte dieser Leinwand,
+           waere der Faecher bei langer Seite 360 heller als bei 1080 (gemessen 15.09.2026 mit Filmnebel: 13 Block ueber dem Boden).
+           Die Hoechstzahlen bleiben Zahlen - die Rechenzeit haengt an ihnen, nicht an der Leinwand. */
         const R=len*0.55, weg=2*spread*hz*nach*R,                       /* Bogenlaenge, die der Fleck im Nachgluehen zurueckl. */
-              M=Math.max(12,Math.min(FEIN?2400:240,Math.ceil(weg/(FEIN?0.75:Math.max(1.5,w0*0.6))))),
+              M=Math.max(12,Math.min(FEIN?2400:240,Math.ceil(weg/(FEIN?0.75*EINHEIT:Math.max(1.5*EINHEIT,wS*0.6))))),
               schritt=weg/M,                                            /* Weg je Zwischenstelle */
               /* Waehrend einer Zwischenzeit WANDERT der Fleck - er steht dort nicht, er verschmiert ueber
                  schritt Pixel. Also so breit malen und die Deckkraft im selben Verhaeltnis senken: dann
                  stimmt die Lichtmenge, und es bleiben keine Luecken, wenn der Faecher weit und der Strahl
                  duenn ist. Steht er dagegen fast still, ueberlappen die Stellen - dann deckelt 3/M, sonst
                  gleisst ein langsamer Scanner. */
-              dicht=Math.min(1,Math.max(Math.min(w0,schritt)/Math.max(w0,schritt),3/M));
+              dicht=Math.min(1,Math.max(Math.min(wS,schritt)/Math.max(wS,schritt),3/M));
         /* GEMALT WIRD DIE FLAECHE, NICHT DIE BAHN (gemessen 14.09.2026: als 240 Striche ueber die volle
            Strahllaenge lief der Scanner mit 7,5 Bildern je Sekunde statt 60 - nahe am Ansatzpunkt lagen
            die Striche 36-fach uebereinander). Statt jede Zwischenstelle zu zeichnen, wird der Faecher in
@@ -28172,13 +28210,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
            wie schnell der Spiegel schwingt und wie lang das Nachgluehen ist.
            Die Verweilhelligkeit an den Umkehrpunkten faellt dabei von selbst heraus: dort landen mehr
            Zwischenstellen in derselben Scheibe. */
-        NB=FEIN?Math.max(24,Math.min(512,Math.round(spread*len*0.8/2)))         /* Export: Scheiben rund 2 px */
-               :Math.max(24,Math.min(192,Math.round(spread*len*0.8/4)));         /* Vorschau: rund 4 px */
+        NB=FEIN?Math.max(24,Math.min(512,Math.round(spread*len*0.8/(2*EINHEIT))))         /* Export: Scheiben rund 2 Studio-Bildpunkte */
+               :Math.max(24,Math.min(192,Math.round(spread*len*0.8/(4*EINHEIT))));         /* Vorschau: rund 4 Studio-Bildpunkte */
         scheiben=new Float64Array(NB);
         /* Eine Zwischenstelle ist kein Punkt: der Fleck wandert waehrend der Zwischenzeit ueber schritt
            Pixel. Er wird deshalb in ALLE Scheiben eingezahlt, die er dabei ueberstreicht - sonst haenge
            die Helligkeit daran, wie fein die Scheiben gerade geraten sind, und nicht am Strahl. */
-        const spann=Math.max(1,Math.round(schritt/Math.max(1,spread*len*0.8/NB)));
+        const spann=Math.max(1,Math.round(schritt/Math.max(EINHEIT,spread*len*0.8/NB)));
         for(let k=0;k<M;k++){
           const tt=t-(k/M)*nach, ph=((tt*hz)%1+1)%1,
                 u=0.5+0.5*Math.sin(2*Math.PI*ph);   /* der Spiegel schwingt, er faehrt nicht gleichmaessig */
@@ -28193,7 +28231,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const verlauf=al=>{ const g=cx.createRadialGradient(ox,oy,0,ox,oy,len); g.addColorStop(0,rgba(e.farbe,al));
       g.addColorStop(0.6,rgba(e.farbe,al*0.85)); g.addColorStop(1,rgba(e.farbe,0)); return g; };
     const gSaum=verlauf(a*0.22), gKern=verlauf(a);
-    const strahl=(ang,anteil,lw,gr)=>{ cx.globalAlpha=anteil; cx.strokeStyle=gr; cx.lineWidth=lw;
+    const strahl=(ang,anteil,lw,gr)=>{ cx.globalAlpha=anteil*kd; cx.strokeStyle=gr; cx.lineWidth=lw;
       cx.beginPath(); cx.moveTo(ox,oy); cx.lineTo(ox+Math.cos(ang)*len,oy+Math.sin(ang)*len); cx.stroke(); };
     if(scheiben){ const schw=0.006;
       /* ERST FLACH, DANN EINMAL AUSLAUFEN LASSEN. Mit dem Kreisverlauf als Fuellfarbe kostete jeder Keil
@@ -28225,7 +28263,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
          danach schnurgerade und die Verweilhelligkeit an den Umkehrpunkten verschwunden).
          Er wird deshalb auf den Scheiben gerechnet: eine schmale Verschmierung, die nur dort etwas
          beitraegt, wo daneben nichts steht - also auch an den Raendern der ausgetasteten Luecken. */
-      const sbreit=Math.max(1,spread*len*0.8/NB), rad=Math.max(1,Math.round(w0*1.6/sbreit));
+      const sbreit=Math.max(EINHEIT,spread*len*0.8/NB), rad=Math.max(1,Math.round(wS*1.6/sbreit));
       if(!FEIN){ const weich=new Float64Array(NB);
         for(let b2=0;b2<NB;b2++){ let q=0,gw=0;
           for(let dd=-rad;dd<=rad;dd++){ const j=b2+dd; if(j<0||j>=NB) continue;
@@ -28242,7 +28280,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       strahl(ang,anteil,(kw||w0)+w0*2.2,gSaum); strahl(ang,anteil,kw||w0,gKern); }
     cx.globalAlpha=1;
     }
-    cx.fillStyle=rgba(e.farbe,a); cx.beginPath(); cx.arc(ox,oy,e.breite*28+2,0,7); cx.fill(); }
+    cx.fillStyle=rgba(e.farbe,a); cx.beginPath(); cx.arc(ox,oy,(e.breite*28+2)*EINHEIT,0,7); cx.fill(); }
   else if(e.typ==='streifen'){ const ton=e.ton||'hell', P=lpP(e.tempo);
     /* 'BEIDE' WECHSELT HELL UND DUNKEL JE BAND. Nach einer ungeraden Zahl von Durchlaeufen je Clip steht an jeder
        Stelle die andere Farbe. Vorher wurde darum auf eine gerade Zahl gerastet - bei Tempo 9 und L 9,5 liefen die
@@ -28263,10 +28301,10 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       if(d>0&&d<1){ band(y,false,a*(1-d)); band(y,true,a*d); } else band(y,d===1,a); }
     cx.restore(); }
   else if(e.typ==='rauschen'){ const zuf=LOOP>0?lpZufall(lpBildNr(t)*7919+e.id*104729):Math.random;   /* im Loop dasselbe Rauschen je Bildnummer im Clip: Bild N ist wieder Bild 0 */
-    const bp=e.takt?Math.min(1,pulswert(t,7,0)):1, K=Math.floor(e.koernung*bp*Wn*Hn/60);   /* Tiefen-Check: bei /650 waren es 330 Koerner auf einer Million Pixel - unsichtbar */
-    for(let i=0;i<K;i++){ const x=zuf()*Wn,y=zuf()*Hn,v=zuf(); cx.globalAlpha=(0.25+0.75*v)*Math.min(1,e.staerke); cx.fillStyle=v>.5?'#fff':'#000'; cx.fillRect(x,y,2,2); }
+    const bp=e.takt?Math.min(1,pulswert(t,7,0)):1, K=Math.floor(e.koernung*bp*Wn*Hn/(60*EINHEIT*EINHEIT)), kg=2*EINHEIT;   /* gezaehlt auf der Studioflaeche: dieselbe Zahl Koerner, je Korn 2 Studio-Bildpunkte - ein Zoom, keine andere Koernung */   /* Tiefen-Check: bei /650 waren es 330 Koerner auf einer Million Pixel - unsichtbar */
+    for(let i=0;i<K;i++){ const x=zuf()*Wn,y=zuf()*Hn,v=zuf(); cx.globalAlpha=(0.25+0.75*v)*Math.min(1,e.staerke); cx.fillStyle=v>.5?'#fff':'#000'; cx.fillRect(x,y,kg,kg); }
     const D=Math.floor(e.ausfall*bp*26);
-    for(let i=0;i<D;i++){ const y=zuf()*Hn,x=zuf()*Wn,w=10+zuf()*90; cx.globalAlpha=Math.min(1,e.staerke)*(0.5+0.5*zuf()); cx.fillStyle=zuf()<.7?'#fff':'#000'; cx.fillRect(x,y,w,1+zuf()*2); }
+    for(let i=0;i<D;i++){ const y=zuf()*Hn,x=zuf()*Wn,w=(10+zuf()*90)*EINHEIT; cx.globalAlpha=Math.min(1,e.staerke)*(0.5+0.5*zuf()); cx.fillStyle=zuf()<.7?'#fff':'#000'; cx.fillRect(x,y,w,(1+zuf()*2)*EINHEIT); }
     cx.globalAlpha=1; }
   else if(e.typ==='sicherung'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000),
       env=u=>(u<0.15?u/0.15:1-(u-0.15)/0.85), zit=1-e.zittern*0.5*(0.5+0.5*Math.sin(lpW(2*Math.PI*37)*t)); let amt=0;
@@ -28275,7 +28313,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     else { const L=lpP(10/Math.max(0.1,e.haeufigkeit)), k=Math.floor(t/L+(LOOP>0?1e-6:0)), kk=lpFenster(t,L), start=k*L+hs(kk)*Math.max(0,L-dauer), u=(t-start)/dauer; if(u>=0&&u<=1) amt=env(u)*zit; }
     amt*=Math.min(1,e.staerke);   /* Staerke IST die Tiefe des Einbruchs (Staerke-Regel) */
     if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
-  else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse, w=e.wind;
+  else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse*EINHEIT, w=e.wind, U=EINHEIT;   /* Groesse, Taumelweiten und Strichlaenge in Studio-Bildpunkten; Fall, Wind und Eigenbewegung rechnen ohnehin in Bildhoehen */
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa; const streu=(e.farbstreu==null?0:e.farbstreu);
     const farbeVon=(i,al)=>{ const x=streu*hs(i+6000); return 'rgba('+Math.round(pa[0]+(pb[0]-pa[0])*x)+','+Math.round(pa[1]+(pb[1]-pa[1])*x)+','+Math.round(pa[2]+(pb[2]-pa[2])*x)+','+al+')'; };
     cx.lineCap='round';
@@ -28332,14 +28370,14 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       let leben=null;
       if(!eigen&&LOOP>0){ const ba=BAHN_ART[e.art]||BAHN_ART.funken, vy=aS*aB*sp*e.tempo*Hn*B, vx=w*Hn*ba[0];
         if(lpVerfaelscht(vy,Hn)||lpVerfaelscht(vx,Wn)) leben=lebensGeister(LOOP,hs(i+9900),t,schw).map(g=>{ const q=g[0];
-          return [((x0+gx+Math.sin(ba[2]*q+i*ba[3])*ba[1]+vx*q)%Wn+Wn)%Wn, ((y0+Math.sin(ba[5]*q+i*ba[6])*ba[4]+vy*q)%Hn+Hn)%Hn, g[1], ((q*0.11*e.tempo+hs(i+9600))%1+1)%1]; }); }
+          return [((x0+gx+Math.sin(ba[2]*q+i*ba[3])*ba[1]*U+vx*q)%Wn+Wn)%Wn, ((y0+Math.sin(ba[5]*q+i*ba[6])*ba[4]*U+vy*q)%Hn+Hn)%Hn, g[1], ((q*0.11*e.tempo+hs(i+9600))%1+1)%1]; }); }
       const G=leben?leben.length:1;
       for(let gi=0;gi<G;gi++){ if(leben){ x=leben[gi][0]; y=leben[gi][1]; al=leben[gi][2]; qs=leben[gi][3]; }
-      if(e.art==='schnee'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='regen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.lineWidth=Math.max(0.5,sz*0.35); cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14+gx*0.15,y+8+sz*4); cx.stroke(); cx.globalAlpha=1; }
-      else if(e.art==='asche'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blasen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.lineWidth=Math.max(0.6,sz*0.25); cx.globalAlpha=al*0.8; cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke(); cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='staub'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(lpW(4)*t+i));   /* Funkeln gerastet */ cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      if(e.art==='schnee'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='regen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } const ws=Math.max(0.5*U,sz*0.35), lw=Math.max(0.5,ws); cx.globalAlpha=al*(ws/lw); cx.lineWidth=lw; cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14*U+gx*0.15,y+8*U+sz*4); cx.stroke(); cx.globalAlpha=1; }   /* ws: Strich wie im Studio (dort mindestens 0,5 px); greift die Untergrenze erst hier, traegt die Deckkraft den Rest - sonst war der Regen bei u 0,4 dreimal so hell (Gegenpruefung 15.09.2026) */
+      else if(e.art==='asche'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20*U+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blasen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10*U+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } const ws=Math.max(0.6*U,sz*0.25), lw=Math.max(0.6,ws); cx.lineWidth=lw; cx.globalAlpha=al*0.8*(ws/lw); cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke();   /* Randstrich wie beim Regen */ cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='staub'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8*U+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14*U+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(lpW(4)*t+i));   /* Funkeln gerastet */ cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
       else if(e.art==='gluehwuermchen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
         /* Ein Gluehwuermchen leuchtet nicht dauernd, es blinkt - und jedes fuer sich, mit eigener
            Rate und eigener Phase. Genau das unterscheidet es von einem hellen Punkt.
@@ -28359,7 +28397,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,sz*4.5,0,7); cx.fill();
           cx.fillStyle=fc; cx.beginPath(); cx.arc(x,y,sz*0.6,0,7); cx.fill(); }
         cx.globalAlpha=1; cx.fillStyle=fc; }
-      else if(e.art==='schmetterling'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='schmetterling'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
         /* Der Flatterschlag: die Fluegel oeffnen und schliessen, und der Koerper taumelt mit.
            Zwei Ellipsen und ein Strich - mehr braucht es bei dieser Groesse nicht, und mehr
            saehe bei acht Bildpunkten ohnehin niemand. */
@@ -28369,10 +28407,10 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(Math.sin(lpW(0.9)*t+i*1.3)*0.55);
         for(const sg of [-1,1]){ cx.beginPath();
           cx.ellipse(sg*sz*0.72*oe,-sz*0.12,sz*0.82*oe,sz*0.95,sg*0.32,0,7); cx.fill(); }
-        cx.globalAlpha=al*0.85; cx.beginPath(); cx.ellipse(0,0,Math.max(0.5,sz*0.15),sz*0.7,0,0,7); cx.fill();
+        const ws=Math.max(0.5*U,sz*0.15), lw=Math.max(0.5,ws); cx.globalAlpha=al*0.85*(ws/lw); cx.beginPath(); cx.ellipse(0,0,lw,sz*0.7,0,0,7); cx.fill();   /* nur die Breite des Koerpers ist geklemmt, also einfach ws/lw */
         cx.restore(); cx.globalAlpha=1; }
-      else if(e.art==='blaetter'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
-      else if(e.art==='schwaden'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='blaetter'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28*U+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
+      else if(e.art==='schwaden'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
         /* SCHWADEN (Caspar_D, 14.09.2026: "und rauch kann sich genauso verhalten, nur dass es
            schwaden statt teilchen sind"). Dieselbe Quelle, derselbe Flug - nur gezeichnet wird
            anders: drei weiche Lappen statt eines Punktes, die mit dem Alter aufgehen und duenner
@@ -28397,7 +28435,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           g.addColorStop(0,farbeVon(i,+(di*(0.7+0.3*hb)).toFixed(4))); g.addColorStop(1,farbeVon(i,0));
           zx.fillStyle=g; zx.beginPath(); zx.arc(lx,ly,lr,0,7); zx.fill(); }
         cx.fillStyle=fc; }
-      else { if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
+      else { if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6*U+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
     if(schw){ const lx2=e._rl.getContext('2d'); lx2.setTransform(1,0,0,1,0,0); lx2.globalAlpha=1;
       lx2.globalCompositeOperation='source-over'; lx2.clearRect(0,0,Wn,Hn);
       if(!LICHTMAL&&olicht&&olicht.width>1){ lx2.drawImage(olicht,0,0);
@@ -28410,7 +28448,11 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       cx=echtCx; } }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
     cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
-    if(e.linien>0){ cx.globalAlpha=e.linien*a; cx.fillStyle=cx.createPattern(e._mc,'repeat'); cx.fillRect(0,0,Wn,Hn); }
+    /* Das Zeilenraster ist in Studio-Bildpunkten gemeint und wird mit EINHEIT gezoomt, auch auf Bruchteile eines Bildpunkts. Der
+       erste Einbau rundete auf ganze Zeilen (mindestens 2) und glich den Dunkelanteil ueber die Deckkraft aus: gemessen 15.09.2026
+       lag das mit 7,7 Block ueber dem Boden schlechter als ganz ohne Umrechnung (4,7) - bei langer Seite 360 wurde aus Raster 3 ein
+       Raster 2, ein anderes Muster. Gezoomt 4,0. Im Studio (EINHEIT 1) bleibt das Muster unberuehrt. */
+    if(e.linien>0){ cx.globalAlpha=e.linien*a; const mu=cx.createPattern(e._mc,'repeat'); if(EINHEIT!==1) mu.setTransform(new DOMMatrix([EINHEIT,0,0,EINHEIT,0,0])); cx.fillStyle=mu; cx.fillRect(0,0,Wn,Hn); }
     if(e.vignette>0){ cx.globalAlpha=1; const R=Math.hypot(Wn,Hn)/2, vg=cx.createRadialGradient(Wn/2,Hn/2,R*0.45,Wn/2,Hn/2,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,'+(e.vignette*a).toFixed(3)+')'); cx.fillStyle=vg; cx.fillRect(0,0,Wn,Hn); }
     if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*lpR(8)*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
     cx.globalAlpha=1; }
@@ -28431,7 +28473,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       gs.addColorStop(0.55,'rgba('+pa.join(',')+','+(0.10*e.schein*a).toFixed(3)+')');
       gs.addColorStop(1,'rgba('+pa.join(',')+',0)');
       cx.fillStyle=gs; cx.beginPath(); cx.arc(cxm,cym,R,0,7); cx.fill(); }
-    if(e.glut>0){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2); }
+    if(e.glut>0){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2*EINHEIT); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2*EINHEIT); }
     for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(lpW(9+7*hs(i+400))*t+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
       /* WIND (VIDEO-PLAN 9a.1): `sway` ist ein symmetrisches Wackeln um die eigene Achse - damit laesst
          sich keine Fackel bauen, deren Flamme zur Seite gezogen wird. Der Versatz waechst mit der Hoehe
@@ -28477,7 +28519,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
   else if(e.typ==='korn'){ const a=Math.min(1,e.staerke); if(!e._kt){ e._kt=document.createElement('canvas'); e._kt.width=96; e._kt.height=96; e._kn=-1; }
     const schritt=Math.max(1,Math.round(1+(1-e.tempo)*12)), fr=LOOP>0?lpFenster(t,schritt/60):Math.floor(t*60/schritt), schl=(LOOP>0?'L'+LOOP+':':'')+fr;   /* im Loop Kornwechsel je Clip ganz und die Kachel aus der umlaufenden Wechselnummer gesaet; der Schluessel trennt Export- von Vorschaukacheln */
     if(schl!==e._kn){ e._kn=schl; const zuf=LOOP>0?lpZufall(fr*7919+e.id*104729):Math.random, kx=e._kt.getContext('2d'), im=kx.createImageData(96,96), d=im.data; for(let i=0;i<d.length;i+=4){ const v=68+zuf()*120|0;   /* Mittel 128: Overlay neutral, hellt nicht auf (Tiefen-Check) */ d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; } kx.putImageData(im,0,0); }
-    cx.globalCompositeOperation=VMODE[e.verr]||'overlay'; cx.globalAlpha=a*0.7; cx.save(); cx.scale(e.koernung,e.koernung); cx.fillStyle=cx.createPattern(e._kt,'repeat'); cx.fillRect(0,0,Wn/e.koernung+1,Hn/e.koernung+1); cx.restore(); cx.globalAlpha=1; }
+    cx.globalCompositeOperation=VMODE[e.verr]||'overlay'; cx.globalAlpha=a*0.7; const kk=e.koernung*EINHEIT; cx.save(); cx.scale(kk,kk); cx.fillStyle=cx.createPattern(e._kt,'repeat'); cx.fillRect(0,0,Wn/kk+1,Hn/kk+1); cx.restore();   /* Korngroesse in Studio-Bildpunkten: die Kachel (96 px Rauschen) wird mitgezoomt */ cx.globalAlpha=1; }
   else if(e.typ==='strobe'){ const q=e.lmQuelle||'stetig'; if(q==='stetig') return;   /* ohne Antrieb kein Flackern (Tiefen-Check: stetig gab einen Dauerschleier). Das zweite Tor - taktgebunden ohne Takt - ist entfallen: der Antrieb faellt jetzt selbst auf die feste Frequenz zurueck. */
     antriebWert(e,t); const tiefe=(e.lmTiefe==null?0.8:e.lmTiefe), ph=(e._lmRoh*2-1)*tiefe, amt=Math.min(1,e.staerke);   /* Welle -Tiefe..+Tiefe: >0 aufblitzen, <0 abdunkeln */
     if(amt>0){ if((e.modus==='hell'||e.modus==='beides')&&ph>0){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'lighter'); cx.globalAlpha=1; cx.fillStyle=rgba(e.farbe,amt*ph); cx.fillRect(0,0,Wn,Hn); }
@@ -28551,7 +28593,7 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
     gl.activeTexture(gl.TEXTURE0);
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
     u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2)); u('u_hof',l=>gl.uniform1i(l,3));
-    u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
+    u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_einheit',l=>gl.uniform1f(l,EINHEIT)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
     /* Die Clipphase in doppelter Genauigkeit: t/L modulo 1 haengt nicht an t0, und t0+L ergibt dieselbe Zahl wie t0. */
     if(schleife){ u('u_loop',l=>gl.uniform1f(l,LOOP)); u('u_phase',l=>gl.uniform1f(l,((t/LOOP)%1+1)%1)); }
     u('u_takt',l=>gl.uniform1f(l, EFFEKTE[e.typ].params.some(p=>p.lm)?lmSchub(e,t):0));
@@ -28636,12 +28678,12 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
      ankommt -, sondern von der Leuchte selbst: sie meldet ihren Ort, waehrend sie malt
      (LICHTORTE). Der Laser meldet seinen Faecherpunkt, und der liegt ausserhalb des Bildes -
      genau die streifende Lage, die Kanten aufblitzen laesst. */
-  streiflicht:`uniform float u_einfall,u_kante,u_relief,u_schatten,u_ortX,u_ortY,u_ortDa,u_tiefeAn;
+  streiflicht:`uniform float u_einfall,u_kante,u_relief,u_schatten,u_ortX,u_ortY,u_ortDa,u_tiefeAn,u_einheit;
 uniform sampler2D u_licht;
 void main(){
   vec4 c=texture2D(u_tex,v_uv);
   if(u_tiefeAn<0.5||u_ortDa<0.5){ gl_FragColor=c; return; }   /* ohne Karte oder ohne Leuchte: nichts */
-  vec2 ps=1.0/u_res;
+  vec2 ps=u_einheit/u_res;   /* ein Studio-Bildpunkt (EINHEIT), nicht einer dieser Leinwand */
   /* Die Normale aus dem Gefaelle der Karte. Hell ist nah, die Karte ist also die Hoehe zur
      Kamera; zwei Bildpunkte Abstand, weil eine geschaetzte Karte auf einem Punkt rauscht. */
   float zl=texture2D(u_tiefe,v_uv-vec2(ps.x*2.0,0.0)).r, zr=texture2D(u_tiefe,v_uv+vec2(ps.x*2.0,0.0)).r;
@@ -28804,7 +28846,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
     const d=e.versatz*Wn, rad=e.winkel*Math.PI/180;
     cres.drawImage(srcCv,0,0); cres.globalAlpha=e.nachhall; cres.drawImage(spur,Math.cos(rad)*d,Math.sin(rad)*d); cres.globalAlpha=1;   /* Geist ueber dem Bild, nicht beide auf Leere (Tiefen-Check: Alpha < 1, die Spur blutete zu schnell aus) */
     const sp=spur.getContext('2d'); frisch(sp); sp.clearRect(0,0,Wn,Hn); sp.drawImage(ores,0,0); }
-  else if(e.typ==='spiegel'){ cres.drawImage(srcCv,0,0); const hy=e.horizont*Hn, band=3;
+  else if(e.typ==='spiegel'){ cres.drawImage(srcCv,0,0); const hy=e.horizont*Hn, band=Math.max(1,Math.round(3*EINHEIT));   /* Wellenzeilen 3 Studio-Bildpunkte hoch, ganze Zeilen */
     for(let y=Math.floor(hy);y<Hn;y+=band){ const sy=2*hy-y-band; const tief=(y-hy)/Math.max(1,Hn-hy), dx=e.wellen*Wn*0.02*Math.sin(y*e.skala/Hn*2*Math.PI+lpW(e.tempo)*t)*(0.3+tief); if(sy<0) cres.drawImage(srcCv,0,0,Wn,1,dx,y,Wn,band); else cres.drawImage(srcCv,0,sy,Wn,band,dx,y,Wn,band); }   /* unter dem doppelten Horizont die oberste Zeile gestreckt (Himmel) statt einer Naht (Tiefen-Check) */
     if(e.verblassen>0){ const g=cres.createLinearGradient(0,hy,0,Hn); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,'+e.verblassen.toFixed(2)+')'); cres.fillStyle=g; cres.fillRect(0,hy,Wn,Hn-hy); } }
   else if(e.typ==='bloecke'){ cres.drawImage(srcCv,0,0); const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, dauer=Math.max(0.02,e.dauer/1000); let slot=-1;
@@ -28817,7 +28859,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
         else cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh); } } }
   else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,mediumJetzt(e)?olicht:null, tiefeBildVon(DATA&&DATA.id)); if(g) cres.drawImage(g,0,0);
     else if(mediumJetzt(e)){ cres.drawImage(srcCv,0,0); filmnebelLeinwand(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
-  else if(e.typ==='bloom'){ cres.filter='blur('+Math.round(e.radius)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
+  else if(e.typ==='bloom'){ cres.filter='blur('+(e.radius*EINHEIT)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
 }
 
 
@@ -28834,7 +28876,7 @@ function renderStapel(){
     fussStand(); return; }
   fussStand();
   STAPEL.forEach((e,idx)=>{ const T=EFFEKTE[e.typ]; e.zu=(e.id!==offenId);   /* Akkordeon: nur die aktive Karte ist offen */
-    const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'');
+    const c=document.createElement('div'); c.className='tbs-karte'+(e.an?' an':'')+(e.zu?' zu':'')+(soloId?(soloId===e.id?' solo':' soloaus'):'');   /* SOLO BLEIBT SOLO UND WANDERT MIT (Caspar_D, 15.09.2026: "es darf nicht sein, das ich an etwas Aenderungen machen kann, was ich nicht sehe" - "neue karte kriegt solo und der effekt wird klarer visualisiert"): wer bei laufendem Solo eine andere Karte aufklappt oder einhaengt, gibt ihr das Solo; die uebrigen Karten sind gedimmt */
     const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
     let h='<div class="tbs-kopf"><span class="tbs-pw" title="an / aus"></span>'
       +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="Solo \u2014 nur diesen zeigen, fl\u00fcchtig">solo</button>'
@@ -28897,7 +28939,7 @@ function renderStapel(){
           h+='<div class="tbs-regler"><span>Muster</span><div class="tbs-lmformen">'+LM_FORMEN.map(([v,l])=>'<button type="button" data-lmform="'+v+'" class="'+(form===v?'on':'')+'" title="'+l+'">'+lmIkon(v)+'</button>').join('')+'</div><span></span></div>';
           h+='<canvas class="tbs-lmvor" width="300" height="44" title="Die Kurve \u00fcber zwei Perioden, der Strich ist jetzt"></canvas>';
           if(q==='takt'||q==='zufall') h+=(()=>{ const bh=schlagHz(), teil=Number(e.lmTeiler)||1, ist=bh>0?bh/teil:0;
-            const zeile='<div class="tbs-regler"><span>Teiler</span><select data-k="lmTeiler">'+[[8,'jeder 8. Schlag'],[4,'jeder 4. Schlag'],[2,'jeder 2. Schlag'],[1,'jeder Schlag'],[0.5,'zweimal je Schlag'],[0.25,'viermal je Schlag'],[0.125,'achtmal je Schlag']].map(([v,l])=>'<option value="'+v+'"'+(Number(e.lmTeiler)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
+            const zeile='<div class="tbs-regler"><span>Teiler</span><select data-k="lmTeiler">'+[[4,'jeder 4. Schlag'],[2,'jeder 2. Schlag'],[1,'jeder Schlag'],[0.5,'zweimal je Schlag'],[0.25,'viermal je Schlag'],[0.125,'achtmal je Schlag']].map(([v,l])=>'<option value="'+v+'"'+(Number(e.lmTeiler)===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
             return zeile+(ist>0?'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">Bei diesem Titel '+rateUrteil(ist)+'</div>':''); })();
           if(q==='hz') h+='<div class="tbs-regler"><span>pro Sekunde</span><input type="range" data-k="lmHz" min="0.05" max="15" step="0.05" value="'+e.lmHz+'"><span class="tbs-wert">'+kf(e.lmHz)+'</span></div>'
             +'<div style="color:var(--schwach);font-size:10.5px;margin:-4px 0 6px">'+rateUrteil(Number(e.lmHz)||0)+'</div>';
@@ -28948,14 +28990,14 @@ function renderStapel(){
     if(!T.ohneStaerke) h+='<div class="tbs-regler" title="St\u00e4rke ist die Deckkraft: wie stark das fertige Ergebnis des Effekts ins Bild gemischt wird. Alle anderen Regler formen den Effekt."><span>Stärke</span><input type="range" data-staerke="1" min="0" max="1" step="0.05" value="'+Math.min(1,e.staerke)+'"><span class="tbs-wert">'+Math.round(Math.min(1,e.staerke)*100)+'%</span></div>';
     c.innerHTML=h+'</div></div></div>';   /* rechte Spalte, Spaltenkasten, Inhalt */
     c.querySelector('.tbs-pw').onclick=()=>{ e.an=!e.an; c.classList.toggle('an',e.an); kettekopfStand(); };
-    const klapp=()=>{ offenId=(offenId===e.id)?null:e.id; renderStapel(); };
+    const klapp=()=>{ offenId=(offenId===e.id)?null:e.id; soloFolgt(); renderStapel(); };
     c.querySelector('.tbs-name').onclick=klapp; const ik=c.querySelector('.tbs-ik'); if(ik) ik.onclick=klapp;
     c.querySelectorAll('[data-tu]').forEach(btn=>btn.onclick=()=>{ const w=btn.dataset.tu;
       if(w==='weg'){ if(soloId===e.id) soloId=null; STAPEL.splice(idx,1); }
       else if(w==='solo'){ soloId = (soloId===e.id ? null : e.id); }
-      else if(w==='klapp'){ offenId=(offenId===e.id)?null:e.id; }
+      else if(w==='klapp'){ offenId=(offenId===e.id)?null:e.id; soloFolgt(); }
       else if(w==='dup'){ /* Kopie mit allen Werten (Rampen/Kurven tief), eigene Nummer, gleich darunter */
-        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false; STAPEL.splice(idx+1,0,k); offenId=k.id; }
+        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false; STAPEL.splice(idx+1,0,k); offenId=k.id; soloFolgt(); }
       else if(w==='hoch'&&idx>0){ const a=STAPEL[idx-1]; STAPEL[idx-1]=STAPEL[idx]; STAPEL[idx]=a; }
       else if(w==='runter'&&idx<STAPEL.length-1){ const a=STAPEL[idx+1]; STAPEL[idx+1]=STAPEL[idx]; STAPEL[idx]=a; }
       renderStapel(); });
@@ -29089,10 +29131,11 @@ function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((sei
 
 /* Cover-Blätterer */
 
-function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); zeichneFrame(zeit()); lmVorschauen(); }
+function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); loopWache();
+  if(loopAn&&bereit){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit()); lmVorschauen(); }
 function zeichneFrame(t){
   if(!bereit) return;
-  const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
+  const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t); EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   for(const e of STAPEL){ if(!aktiv(e))continue; const s=EFFEKTE[e.typ].ohneStaerke?1:e.staerke;
     if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/lpP(e.tempo))*e.weite*s; pany+=tri(t/lpP(e.tempo*1.3))*e.weite*s; }
@@ -29114,7 +29157,7 @@ function zeichneFrame(t){
     const lege=(e,filter,a)=>{ const k=schnapp(); ca.save(); ca.setTransform(1,0,0,1,0,0); ca.filter=filter; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(k,0,0); ca.restore(); };
     for(const e of STAPEL){ if(!aktiv(e)||EFFEKTE[e.typ].art!=='grund') continue; const hb=pulsHub(e,t), a=Math.min(1,e.staerke*Math.min(1,hb));
       if(e.typ==='schaerfe'){ if(!(e.unschaerfe>0)) continue;   /* die weiche Ebene ist das Ergebnis: mit Staerke gemischt, auf dem Schlag weicht sie (invertiert: kommt sie) */
-        const aw=e.invert?a:Math.min(1,e.staerke*(1-Math.min(1,hb))); if(aw>0) lege(e,'blur('+e.unschaerfe+'px)',aw); continue; }
+        const aw=e.invert?a:Math.min(1,e.staerke*(1-Math.min(1,hb))); if(aw>0) lege(e,'blur('+(e.unschaerfe*EINHEIT)+'px)',aw); continue; }
       if(e.typ==='farbton'){ const af=e.invert?Math.min(1,e.staerke*(1-Math.min(1,hb))):a; if(af>0) lege(e,'hue-rotate('+e.winkel+'deg)',af); continue; }   /* invertiert: gedreht ruhen, auf dem Schlag zurueck */
       if(a<=0) continue;
       if(e.typ==='kontrast') lege(e,'url(#'+kurveFilter(e)+')',a);
@@ -29450,9 +29493,11 @@ function zeichneFrame(t){
      Naht - darum bekommen auch sie ein gleichmaessiges Raster (P = 4), ab acht Schlaegen wie schlagHz. Wo es gar
      keine oder zu wenige Schlaege gibt, laeuft der Antrieb auf seiner Frequenz, die lpR ohnehin auf ganze Umlaeufe
      rastet - dort ist jedes t0 recht. */
-  function ausschnitt(){ const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), jetzt=zeit(), aktive=STAPEL.filter(e=>aktiv(e));
-    const bedarf={ brauch:aktive.reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1),
-      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1) };
+  /* Was die Karten vom Raster verlangen - eine Stelle fuer den Export und die Stufe "Loop verbinden", die daran merkt, dass neu zu rechnen ist */
+  function loopBedarf(){ const aktive=STAPEL.filter(e=>aktiv(e));
+    return { brauch:aktive.reduce((k,e)=>{ const n=loopTeiler(e); return k*n/ggT(k,n); },1),
+      eins:aktive.some(e=>e.lmQuelle==='eins'||(e.typ==='einschlag'&&!!e.nurEins)), gruppen:aktive.map(loopGruppe).filter(n=>n>1) }; }
+  function ausschnitt(){ const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), jetzt=zeit(), bedarf=loopBedarf();
     const tl=taktLage(S,DATA&&DATA.abschnitte,(DATA&&DATA.dauer)||0,bedarf);
     if(!tl) return { t0:jetzt, L:MAX_SEK, N:MAX_SEK*BILDRATE, M:0, proTakt:0, phiF:0, takte:0, takt:0, sitzt:null, anzeige:null, grund:null };
     let t0=S[0][0]; if(takt>0.05){ t0=einsen[0]; for(const e of einsen){ if(e<=jetzt) t0=e; else break; } } else for(const s of S){ if(s[0]<=jetzt) t0=s[0]; else break; }
@@ -29684,6 +29729,54 @@ function zeichneFrame(t){
     const warum=grund==='tempowechsel'?'das Tempo wechselt im Lied':grund==='frei'?'das Tempo ist frei gespielt':'';
     if(sitzt<ZUFALL_BODEN) return ' · der Takt lässt sich nicht über das Lied legen'+(warum?' — '+warum:'');
     return ' · sitzt auf '+Math.round(sitzt*100)+' % des Lieds im Takt'+(warum?' ('+warum+')':''); }
+  /* ---- DIE VIERTE STUFE: LOOP VERBINDEN (Caspar_D, 15.09.2026: "momentan gibt es ja in unserem Effektclip Quellenwahl-, den
+     Vorbereitungs-, den Effektgeneration part, dann muss es noch den Videoloop-Verbinden Part geben am Ende" - und "ein
+     Modusknopf im Studio - 10 Sek. Loop waere gut"). Der Name der Stufe steht nur in LOOP_STUFE.
+     ANZEIGE: die Lage, die der Export jetzt waehlen wuerde - ausschnitt() und taktSatz(), keine zweite Rechnung. Neu gerechnet
+     wird, wenn sich loopBedarf(), der Titel oder seine Schlaege aendern, entprellt (ein Regler, der gezogen wird, fragt
+     sonst je Bild taktLage, und die erste Suche eines Lieds kostet bis eine halbe Sekunde). t0 bleibt dabei stehen, bis
+     neu gerechnet wird: so zeigt die Ansicht den Clip, den "10 s ausgeben" in diesem Augenblick bauen wuerde.
+     ANSICHT: Suno startet Song und Video gleichzeitig ("ja, suno startet song und video gleichzeitig"), der Clip
+     wiederholt sich, also zeigt Suno zur Songzeit s das Clipbild i = round((s mod L)*30) mod N, Inhaltszeit t0 + i/30.
+     Genau dieses Bild malt loopBildMalen() - ueber exportBuendel()/exportBild() mit LOOP=L und FEIN wie der kodierende
+     Weg, nur in Vorschaugroesse, und kopiert es auf die Leinwand. LOOP und FEIN gelten nur fuer diesen einen Aufruf.
+     Die Songzeit liest zeit() (Player oder freie Uhr) - der Ton wird nie angefasst. Das Gedaechtnis des Nachzieheffekts
+     laeuft wie im Export vor, aber in Happen von zehn Bildern je Vorschaubild, damit die Seite nicht steht; solange
+     bleibt das letzte Bild stehen. Gleiches Clipbild zweimal wird nicht neu gemalt (die Vorschau laeuft mit 60, der
+     Clip mit 30 Bildern, und die Spur des Nachzieheffekts saehe jedes Bild sonst doppelt). */
+  const LOOP_STUFE='Schleife schlie\u00dfen',   /* Caspar_D, 15.09.2026: "Schleife schliessen" */
+    LOOP_ENTPRELLEN=300;
+  let loopAn=false, loopSicht=null, loopSchluessel='', loopFaellig=0;   /* loopSicht: { lage, m (das Buendel), i (zuletzt gemaltes Clipbild) } */
+  function loopSchluesselJetzt(){ return (DATA?DATA.id+'|'+(DATA.schlaege?DATA.schlaege.length:0)+'|'+(DATA.dauer||0):'-')+'|'+JSON.stringify(loopBedarf()); }
+  function loopLageText(lage){ if(!lage) return '…';
+    const sek=lage.L.toFixed(2).replace('.',',')+' s';
+    if(!lage.M) return sek+' · '+((DATA&&DATA.schlaege&&DATA.schlaege.length)?'zu wenige Schläge für einen Takt':'keine Schlagerkennung');
+    return sek+' · '+(lage.ganzeTakte?kf(lage.takte)+' '+(lage.takte===1?'Takt':'Takte'):lage.M+' Schläge')+taktSatz(lage.anzeige,lage.grund,true); }
+  function loopLageNeu(){ loopSchluessel=loopSchluesselJetzt(); loopFaellig=0;
+    loopSicht={ lage:ausschnitt(), m:null, i:-1 };
+    const el=$('#tbs-loopLage'); if(el) el.textContent=loopLageText(loopSicht.lage); return loopSicht; }
+  /* je Vorschaubild: hat sich etwas geaendert, das die Lage verschiebt? Dann nach LOOP_ENTPRELLEN ms neu rechnen. */
+  function loopWache(){ if(!bereit||!DATA) return; const k=loopSchluesselJetzt(), jetzt=performance.now();
+    if(k!==loopSchluessel){ loopSchluessel=k; loopFaellig=jetzt+LOOP_ENTPRELLEN; const el=$('#tbs-loopLage'); if(el&&loopSicht) el.classList.add('gedimmt'); }
+    if(loopFaellig&&jetzt>=loopFaellig){ loopLageNeu(); const el=$('#tbs-loopLage'); if(el) el.classList.remove('gedimmt'); } }
+  function loopIndex(s,lage){ const L=lage.N/BILDRATE, tau=((s%L)+L)%L; return Math.round(tau*BILDRATE)%lage.N; }
+  function loopBildMalen(s){ const sicht=loopSicht||loopLageNeu(), lage=sicht.lage, W=lein.width, H=lein.height, gm=bundel(), i=loopIndex(s,lage);
+    let m=sicht.m;
+    if(!m||m.lein.width!==W||m.lein.height!==H){ m=sicht.m=exportBuendel(gm,lage,W,H); m.vorgelaufen=true; m.vorlauf=vorlaufZeiten(m,i); sicht.i=-1; }
+    else Object.assign(m,{ VORB:gm.VORB, bild:gm.bild, bereit:gm.bereit, STAPEL:gm.STAPEL, grund:gm.grund, soloId:gm.soloId, pal:gm.pal });
+    LOOP=m.L; FEIN=true;
+    try{ if(m.vorlauf.length){ const z=m.vorlauf.splice(0,10); setzen(m); try{ for(const tv of z) zeichneFrame(tv); }catch(x){ console.warn('Effektclip-Loop:',x); } setzen(gm); if(m.vorlauf.length) return i; }
+      if(i===sicht.i) return i;
+      exportBild(m,gm,lage.t0+i/BILDRATE,W,H); sicht.i=i; }
+    finally{ LOOP=0; FEIN=false; }
+    g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=1; g.filter='none'; g.globalCompositeOperation='copy'; g.drawImage(m.lein,0,0); g.restore();
+    return i; }
+  function loopZeile(s,i){ const el=$('#tbs-loopWo'); if(!el||!loopSicht) return; const L=loopSicht.lage.N/BILDRATE, mm=Math.floor(s/60), ss=(s-mm*60).toFixed(1).replace('.',',');
+    el.textContent='Lied '+mm+':'+(ss.length<4?'0':'')+ss+' · Durchlauf '+(Math.floor(s/L)+1)+' · Bild '+(i+1)+' von '+loopSicht.lage.N+(uhrEcht?'':' · der Player steht, es läuft eine freie Uhr'); }
+  function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
+    if(b){ b.classList.toggle('an',loopAn); b.textContent=loopAn?'an':'aus'; } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }
+    if(loopAn){ loopLageNeu(); if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) Promise.resolve(GL.vierLaden()).catch(()=>{}); }   /* die Exportform der Rauschshader, wie video() */
+    else if(loopSicht){ loopSicht.m=null; loopSicht.i=-1; } }
   function ausliefern(blob,endung,geschnitten,N,urteil){ const {nicht,stolpern,ruck,steht,frequenz,bewegt,L,sitzt,grund,kodiert}=urteil, sek=L.toFixed(1).replace('.',',');
     const name=((DATA&&DATA.titel)||'Effektclip').replace(/[^\p{L}\p{N} _-]/gu,'').trim().slice(0,60)+' — Effektclip.'+endung;
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
@@ -29722,6 +29815,10 @@ function zeichneFrame(t){
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
       +'<div id="tbs-stapel"></div></div>'
+      +'<div class="tbs-abschnitt" id="tbs-abLoop"><div class="tbs-abtitel">'+LOOP_STUFE+' <span class="tbs-abunter">so l\u00e4uft der Clip in Suno \u00fcber das Lied</span></div>'
+      +'<div class="tbs-zeile" id="tbs-loopLage" title="Die L\u00e4nge, die \u201e10 s ausgeben\u201c jetzt w\u00e4hlen w\u00fcrde, und wie viel vom Lied der Clip im Takt trifft">\u2026</div>'
+      +'<div class="tbs-regler"><span>10-s-Loop ansehen</span><button type="button" class="tbs-togp" id="tbs-loopAn" title="Die Vorschau zeigt das Bild aus dem ausgegebenen Clip, das Suno zur selben Liedzeit zeigt">aus</button><span></span></div>'
+      +'<div class="tbs-unter" id="tbs-loopWo" hidden></div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektkette</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung und Effektkette beim Titel ablegen - Kachel und B\u00fchne malen es dann live, im Takt des Songs">F\u00fcr diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Effektkette vom Titel nehmen - er zeigt wieder das Standbild">L\u00f6sen</button>'
       +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
@@ -29748,12 +29845,13 @@ function zeichneFrame(t){
       const draussen=ev=>{ if(!vorrat.contains(ev.target)) zu(); };
       const auf=()=>{ liste.hidden=false; knopf.setAttribute('aria-expanded','true'); document.addEventListener('pointerdown',draussen,true); const e1=liste.querySelector('.tbs-veintrag'); if(e1) e1.focus(); };
       knopf.onclick=ev=>{ ev.stopPropagation(); if(liste.hidden) auf(); else zu(); };
-      liste.querySelectorAll('.tbs-veintrag').forEach(b=>b.onclick=ev=>{ ev.stopPropagation(); const x=b.dataset.typ; zu(); if(EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; renderStapel(); } knopf.blur(); });
+      liste.querySelectorAll('.tbs-veintrag').forEach(b=>b.onclick=ev=>{ ev.stopPropagation(); const x=b.dataset.typ; zu(); if(EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; soloFolgt(); renderStapel(); } knopf.blur(); });
       liste.addEventListener('keydown',ev=>{ if(ev.key==='Escape'){ ev.stopPropagation(); zu(); knopf.focus(); } }); };
     bauVorrat();
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-pVideo').onclick=video;
+    $('#tbs-loopAn').onclick=()=>loopSchalten(!loopAn);
     $('#tbs-vorbKlapp').onclick=()=>{ const k=$('#tbs-vorbKoerper'); k.hidden=!k.hidden; $('#tbs-vorbKlapp').textContent=k.hidden?'\u25b8':'\u25be'; $('#tbs-vorbKlapp').title=k.hidden?'aufklappen':'zuklappen'; if(!k.hidden) vorbRender(); vorbStand(); };
     $('#tbs-abVorb .tbs-vorbkopf > span:first-child').onclick=()=>$('#tbs-vorbKlapp').click();
     $('#tbs-vorbStand').onclick=ev=>{ ev.stopPropagation(); $('#tbs-vorbKlapp').click(); };
@@ -29770,6 +29868,7 @@ function zeichneFrame(t){
        Titel dazwischen wuerde ueberschrieben (Gegenpruefung 15.09.2026). Also erst fertig bauen, dann wechseln. */
     if(exportLauf){ pStat('das Video wird noch fertig gebaut …'); try{ await exportLauf; }catch(e){} }
     songId=id; nachSichern=cb||null; soloId=null; grund={art:'titelbild',nr:1}; SEITEN=[]; quellenUI();
+    loopSchalten(false); loopSicht=null; loopSchluessel=''; loopFaellig=0; { const el=$('#tbs-loopLage'); if(el){ el.textContent='\u2026'; el.classList.remove('gedimmt'); } }   /* jeder Titel beginnt ohne Loop-Ansicht, seine Lage rechnet die Wache */
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
        groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
     root.hidden=false; offen=true; if(g&&lein) g.clearRect(0,0,lein.width,lein.height);

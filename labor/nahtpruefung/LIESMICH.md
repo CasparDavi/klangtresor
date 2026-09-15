@@ -20,7 +20,7 @@ node labor/nahtpruefung/naht.mjs --taktlage /pfad/x.json      # dasselbe, Ergebn
 
 Weitere Schalter: `--vorschau-speichern datei` (je Fall drei LOOP=0-Bilder, 64×86), `--lange 360`
 (lange Seite des Exports), `--bilder verzeichnis` (Bild 0, N−1 und N als PNG zum Hinsehen),
-`--faelle-datei`. `--wachhund <s>` verlängert den Abbruch ohne Fortschritt (Vorgabe 180 s; die Kombinationen `rand-kombi*` brauchen rund 900 s).
+`--faelle-datei`. `--wachhund <s>` setzt den Abbruch ohne Fortschritt (Vorgabe seit 15.09.2026 **1800 s**; die Kombinationen `rand-kombi*` brauchen rund 900 s). **Wiederaufnahme:** Jeder fertige Fall landet sofort in `.zwischenstand/`. Ein abgebrochener Lauf wird mit demselben Aufruf fortgesetzt und übernimmt die fertigen Fälle, solange Studio-Stand, Messart, Schalter und Falldefinition gleich sind; Fälle mit Abbruch werden nie übernommen, `--neu` verwirft den Zwischenstand. Caspar_D: *„sei bei den Wächtern einfach immer etwas großzügiger und mach es idempotent"*.
 
 Datenvarianten (`daten` im Fall, mit Komma kombinierbar, der Reihe nach): `ohneEins`, `ohneSchlaege`, `dreiviertel`, `sechs` (6/8), `nurEinsen`, `gestreckt:f` (Schlagzeiten um jetzt f-mal gedehnt, `gestreckt:3.22` gibt auf Titel a einen Takt von 5,1 s), `wenige:n` (nur die n Schläge um jetzt), `tempowechsel:f` (ab jetzt f-mal so langsam). Gruppe `raender` (Gegenprüfung 15.09.2026): Ergebnisse in `ergebnis-raender*.json`. Gruppe `nachbesserung` (Nachbesserung nach der Gegenprüfung, 15.09.2026): Tempo-Gegenproben (`nachbess-bewegung-licht-fest` zeigt, wie viel `tempoVerh` der Puls einer Leuchte allein ausmacht, rund 1,4) und der Farbtausch der Laufstreifen; Stand vorher `ergebnis-nachbesserung-vorher.json`, nachher `ergebnis-nachher.json`. Jeder Lauf nimmt freie Ports und ein eigenes Profil `.profil-<pid>-<job>` und räumt
 beides weg; Läufe dürfen parallel stehen. Die Ports 8788 und 18811 fasst er nicht an.
@@ -52,6 +52,9 @@ Grundlinie `ergebnis-vorher.json`. Tabelle, Abweichungen vom Pult und offene Pun
 | `ergebnis-raender*.json` | Gegenprüfung, 30 Randfälle |
 | `ergebnis-nachbesserung-*.json`, `ergebnis-nachher.json` | Nachbesserung und Vollmessung |
 | `ergebnis-taktlage.json` | Taktlage (15.09.2026): alle Katalogtitel über `taktLage()`, je Titel Lage, Sitzanteil, Nachrechnung am Exportraster, Lage von vorher |
+| `studiofeld.json`, `studio-vorher.json`, `massstab-vorher.json` | Studiomass (15.09.2026): Vorgabefeld des Studios, Hashes in Studiogröße, Größenabhängigkeit 360/1080 - Grundlinie vor der Einheit u |
+| `massstab-nachher.json`, `ergebnis-massstab-loop.json` | nach dem Einbau der Einheit: Größenabhängigkeit und Loop-Vollmessung |
+| `ergebnis-loop-ansicht.json`, `ergebnis-loopstufe-loop.json` | Stufe „Schleife schließen" (bis 15.09. abends „Loop verbinden") (15.09.2026): Loop-Ansicht gegen Export, Loop-Vollmessung danach |
 | `ergebnis-taktlage-loop.json` | Vollmessung nach dem Einbau der Taktlage, mit Gruppe `taktlage` (Phase, Schlagraster mit Gruppe und Kick, 3/4, ohne Einsen, Tempowechsel) |
 
 **Vor dem Einbau eines neuen Effekts oder Reglers** (Regel 17e): Fall in `faelle-bauen.js` eintragen (und
@@ -68,6 +71,87 @@ und `vorher` (altes `ausschnitt()` mit Phase 0, nach denselben Regeln gezählt).
 (7 Fälle, dazu Titel d und e): **sie steht nur in `faelle.json`, nicht in `faelle-bauen.js`** — wer faelle.json neu
 schreibt, trägt sie vorher dort nach. Zahlen, Modell und offene Punkte: `docs/NAECHSTER_CHAT.md` „Taktlage: der
 Zehnsekünder sitzt auf dem Lied", VIDEO-PLAN §3 „Gebaut 15.09.2026", Regel 18 in EFFEKTCLIP-REGELN.
+
+## Studiomass: skalieren die Effekte mit dem Bild? (15.09.2026)
+
+Caspar_D, 15.09.2026: „unsere eigenen Effektclips skalieren nicht mit dem zoom auf die videos. Die Schneeflockengröße,
+die Laserbreite bleiben immer gleich" – „im Studio arbeite ich ja nach Augenschein, was dort rauskommt ist der Maßstab,
+den wir am Ende brauchen." – „ich benutzte bisher immer die vorgegebene Fenstergröße." Drei Messungen, aufgenommen vor
+dem Umbau auf die Einheit u (Bildbreite der Leinwand durch Breite desselben Bildes im Studio in Vorgabegröße):
+
+```bash
+node labor/nahtpruefung/naht.mjs --studiofeld                                   # -> studiofeld.json
+node labor/nahtpruefung/naht.mjs --studio-speichern labor/nahtpruefung/studio-vorher.json --jobs 3 --wachhund 1500
+node labor/nahtpruefung/naht.mjs --studio-vergleich labor/nahtpruefung/studio-vorher.json --aus /scratch/studio-nachher.json --jobs 3 --wachhund 1500
+node labor/nahtpruefung/naht.mjs --massstab labor/nahtpruefung/massstab-nachher.json --jobs 3 --wachhund 1500 [--bilder verzeichnis]
+```
+
+- **`--studiofeld [datei]`** öffnet das Studio in headless Chrome mit Fenster 2560×1440, 1920×1080 und 1440×900 (je einmal
+  Sichtfläche = Fenster, einmal um 87 px Browserleiste gekürzt) und liest `#tbs-feld`, Kasten, Kopf, Pult und die Leinwand
+  nach `groesse()` für die Titel a–e ab. Bindend ist `vorgabe.feld` bei 2560×1440: **898 × 889** (Kasten 1720×940, Kopf 49,
+  Pult 820; mit und ohne Leiste gleich). Bei 1920×1080 ist das Feld 950×889 (Pult 40vw = 768), bei 1440×900 819×804 bzw. 819×721.
+- **`--studio-speichern datei`** malt je Fall mit LOOP=0 drei Augenblicke (t0, t0+2,3, t0+5,7) auf eigenen Leinwänden in
+  Studio-Vorgabegröße: Quellbild eingepasst in das Feld aus `studiofeld.json` wie `groesse()` (Titel a: 629×889). Frische
+  Karten, Zufall gesät (777), Nachzieh mit 45 Bildern Anlauf, ohne Hauszeichen. Je Augenblick SHA-256 über alle
+  RGBA-Bildpunkte. Jeder Augenblick wird zweimal gemalt: ungleiche Hashes heißen `deterministisch: false`, dann steht das
+  `eigenrauschen` (mittel, max, block) daneben. Die Vergleichsbilder (lange Seite 96, RGB) gehen nach `<datei>.bilder.json`.
+- **`--studio-vergleich datei`** malt dasselbe und vergleicht: `gleich` (alle Hashes gleich, das Urteil für „bei u = 1
+  bitgleich"); sonst `abwMittel`/`abwMax` gegen das Vergleichsbild (0..255). `massGleich` meldet eine andere Leinwandgröße.
+  Ergebnis nur mit `--aus`.
+- **`--massstab datei`** malt je Fall mit LOOP=0 den Augenblick t0+2,3 einmal mit langer Seite 360 und einmal mit 1080, beide
+  mit `imageSmoothingQuality high` auf lange Seite 256 verkleinert: `mittel` und `block` (größter 16×16-Block), 0..255.
+  Klein heißt: das Bild sieht in beiden Größen gleich aus, der Effekt skaliert. Je Titel läuft ein Kontrollfall `boden-<titel>`
+  ohne Effekt mit (auch in den Studio-Läufen; `--ohne-boden` lässt ihn weg); `ueberBodenMittel`/`ueberBodenBlock` ziehen ihn ab.
+  Weichzeichnende Effekte können unter dem Boden liegen, weil sie das Aliasing der kleinen Leinwand selbst glätten.
+  `jeTyp` sortiert die Typen nach dem schlechtesten Block. `--bilder` legt je Fall beide Fassungen nebeneinander als PNG ab.
+
+Stand 3542c0a (15.09.2026, 177 Fälle + 5 Böden): alle 182 Fälle in Studiogröße deterministisch, auch WebGL über SwiftShader;
+ein zweiter, unabhängiger Lauf gibt 182 von 182 gleiche Hashes. **Achtung:** Bitgleichheit hängt am Laden. Der erste
+Grundlinienlauf lief neben einem zweiten `naht.mjs`, dessen `stand.js` die Verweise in `site/` kurz abräumte; ein Job lud
+dabei ein Titelbild anders und 54 Fälle wichen um ~0,2 im Mittel ab (bis 38 im Pixel). `stand.js` lässt richtige Verweise
+seitdem stehen – trotzdem keinen zweiten Lauf starten, während ein Studio-Lauf seine Chrome hochfährt. Größenabhängigkeit, Vorgabefall über dem Boden (Block): partikel 32,8,
+schaerfe 21,2, risse 15,2, tropfen 11,8, laser 10,3, bloom 8,5, spiegel 7,5, einschlag 6,5, wackeln 5,0, scanlines 4,7,
+rauschen 2,3; schlechteste Fälle partikel `rand-ohneSchlaege-takt` 80,3, einschlag `rand-jetzt-anfang` 48,8, licht
+`rand-wenige7` 31,9, streiflicht `streiflicht-licht` 21,1. Null über dem Boden heißt nur „zu t0+2,3 nicht sichtbar"
+(licht, streiflicht, sicherung, streifen, bloecke im Vorgabefall) – kein Freispruch. Boden: Titel a 1,80/9,33, e 6,86/16,01.
+
+Grundlinien vor dem Umbau: `studiofeld.json`, `studio-vorher.json` (Hashes, versioniert; Bilder in `studio-vorher.bilder.json`,
+lokal), `massstab-vorher.json`. Die alte `vorschau-vorher.json` (Exportgröße, lange Seite 360, dort ist u ≈ 0,4) ist für
+größenabhängige Effekte nach dem Umbau nicht mehr vergleichbar – Maßstab für „Studio unverändert" ist `studio-vorher.json`.
+
+Nach dem Einbau der Einheit (EINHEIT in web/index.html, 15.09.2026): `--studio-vergleich studio-vorher.json` 182 von 182 bitgleich;
+`massstab-nachher.json` (über dem Boden, Block, Vorgabefall vorher → nachher): partikel 32,8 → 0,0, schaerfe 21,2 → −7,6, risse 15,2 → 4,8,
+tropfen 11,8 → 0,7, laser 10,3 → 0,0, bloom 8,5 → 0,0, spiegel 7,5 → 0,7, einschlag 6,5 → 0,0, scanlines 4,7 → 4,0, rauschen 2,3 → 0,5;
+schlechteste Fälle vorher partikel 80,3 → 2,7, einschlag 48,8 → 0,2, licht 31,9 → −2,9, streiflicht 21,1 → 0,0, filmnebel mit Scanner 15,2 → −1,6.
+Übrig: wackeln 5,0 (unverändert, Nachabtastung der Bandversätze), risse 4,8 (Striche unter einem Bildpunkt), kaustik+wellen 4,9.
+Loop-Vollmessung danach: `ergebnis-massstab-loop.json`, 177 Fälle, gleich und gleichFolge höchstens 0,092.
+
+## Loop-Ansicht: zeigt die Stufe „Loop verbinden" das Suno-Bild? (15.09.2026)
+
+Caspar_D, 15.09.2026: „ein Modusknopf im Studio - 10 Sek. Loop wäre gut". Die vierte Stufe im Pult zeigt die Lage, die der
+Export wählen würde, und mit „10-s-Loop ansehen" zur Songzeit s das Clipbild i = round((s mod L)·30) mod N.
+
+```bash
+node labor/nahtpruefung/naht.mjs --loop-ansicht labor/nahtpruefung/ergebnis-loop-ansicht.json --jobs 3 --wachhund 3600   # rand-kombi* brauchen mehr als 1500 s
+```
+
+Je Fall sieben Songzeiten (0,06 s, jetzt, knapp vor 3·L auf beiden Seiten der Rundung zu Bild 0/N−1, 7,5·L, 12·L + 0,49 Bild,
+Liedende). `lageGleich`: die Stufe rechnet dieselbe Lage wie `ausschnitt()`; `satzGleich`: ihre Zeile endet auf `taktSatz()`;
+`bitgleich`: Ansichtsbild (`loopBildMalen(zeit())`, frische Karten, Saat 777) gegen `exportBild()` auf frischem Bündel gleicher
+Größe bei t0 + i/30, i im Haken unabhängig gerechnet (SHA-256 aller RGBA-Bildpunkte); `folge` (Hinweis, kein Urteil): gegen den
+echten Export Bild 0…i der Reihe nach – dort tragen Nachzieh-Spur und gewürfelter Zufall ihre Vorgeschichte; `dicht`: LOOP und
+FEIN stehen nach jedem Ansichtsbild auf 0/false; `ausGleich`: ausgeschaltet malen `rahmen()` und danach `zeichneFrame()` bitgleich
+das Pultbild von vor dem Einschalten (zweites Bild in Folge; `ausErstesBildVorher` sagt, ob schon das erste gleich war – bei
+`scanlines` nicht: das erste Bild nach einem Kartenwechsel erbt Zeichenzustand der Pultleinwände, `frisch()` setzt nur Transform,
+Alpha und Verrechnung; das ist älter als die Stufe).
+
+Stand 15.09.2026 (web/index.html mit der Stufe): 174 Fälle × 7 Songzeiten = 1218 von 1218 bitgleich, Lage und Satz in allen
+gleich, dicht, aus gleich (`ergebnis-loop-ansicht.json`, 2867 s mit `--jobs 3`); die drei `rand-kombi*` (Nachhall 0,98 mit
+Nebel und Teilchen, je Songzeit rund eine Stunde) nur mit `--loop-zeiten 1 --ohne-folge`: 3 von 3 bitgleich
+(`ergebnis-loop-ansicht-kombi.json`). Gegen die echte Exportfolge weichen nur `scanlines` (0,05) und drei Nachzieh-Fälle (bis 0,17 Block)
+ab – Vorgeschichte, kein Rechenfehler. Danach `--studio-vergleich studio-vorher.json` 182 von 182 gleich, Loop-Vollmessung
+`ergebnis-loopstufe-loop.json` 177 Fälle, gleich und gleichFolge höchstens 0,092.
+Achtung: `zeit()` nimmt den Player erst ab 0,05 s – darunter läuft die freie Uhr, darum 0,06 statt 0.
 
 ## Was hier liegt
 

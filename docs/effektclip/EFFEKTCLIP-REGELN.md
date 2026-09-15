@@ -206,6 +206,15 @@ des Rasters. Bis zum 15.09.2026 lag sie fest bei 0 und damit zufällig gegen das
   alles. Die Tempo-Schranke gilt darum immer gegen das ganze Lied. Und eine Karte, die die Eins liest,
   bekommt ganze Takte — sonst zählt die Zählzeit im Clip anders als im Pult.
 
+**19. Größen sind relativ zur Bildfläche, das Studio in Vorgabegröße ist der Maßstab.** Caspar_D, 15.09.2026:
+*„im Studio arbeite ich ja nach Augenschein, was dort rauskommt ist der Maßstab, den wir am Ende brauchen"*.
+Jede absolute Größe (Radius, Strichbreite, Blur, Taumelweite, Korn, Raster) wird mit der Einheit
+`EINHEIT = Bildbreite der Leinwand / Breite desselben Bildes im Studiofeld 898 × 889` gerechnet
+(`einheitVon()`, gesetzt in `zeichneFrame()`). Im Studio in Vorgabegröße ist sie genau 1 — dort bitgleich.
+Untergrenzen erst **nach** dem Umrechnen, und wo eine Untergrenze greift, trägt die Deckkraft den Rest
+(`ws/lw`), sonst werden feine Striche auf kleinen Leinwänden zu hell. Geprüft wird mit
+`naht.mjs --studio-vergleich studio-vorher.json` (bitgleich) und `--massstab` (360 gegen 1080 px).
+
 ---
 
 ## Wie geprüft wird
