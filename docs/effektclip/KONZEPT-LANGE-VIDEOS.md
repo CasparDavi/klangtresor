@@ -163,3 +163,35 @@ Whisper-Wörter.
 **Offen (wird gerade gemessen, 16.09.2026):** Tragfähigkeit des Abschnittsrasters über alle 325 Titel, Millisekunden
 je Bild und der Weg zum Verpacken (Browser gegen ffmpeg), Warteschlange im Server statt im Tab, Karaoke-Einbrennen
 als Zeichnung auf die Leinwand statt DOM/CSS, Formatmatrix je Quellenform.
+
+## Zieldefinition: zwei Ebenen, nicht vier Ausgaben (16.09.2026, nichts entschieden)
+
+Caspar_D fragte, ob Bildschirm, 10-Sekünder, Hook und Voll-Titel je eine eigene Registerlasche mit eigenen
+Einstellungen bekommen sollten, und ob „Screen" dann besser „Generisch" hieße. Erste Antwort war: eine Form, zwei
+Ausschnittsregeln. **Das war falsch**, und er hat es korrigiert: *„die effekte können sich im total video von scene
+to scene ändern. Bei 10 Sekünder macht das keinen sinn, der ist zu kurz."* — genau der Kern der Recherche
+(`RECHERCHE-MUSIKVIDEO.md`): je Abschnitt ein visueller Zustand, eigene Effektfamilie, eigenes Aktivitätsbudget,
+Reserve fürs Finale.
+
+Damit liegt die Grenze nicht zwischen vier Ausgaben, sondern zwischen zwei Ebenen:
+
+| Ebene | beschreibt | wer sie braucht |
+|---|---|---|
+| **Zustand** (= der Effektclip von heute) | Quelle, Vorbereitung, Effektkette — ein Aussehen | alle |
+| **Szenenplan** (neu) | welcher Zustand wann gilt, mit Übergängen dazwischen | nur der Voll-Titel |
+| **Ausgabe** | Ton, Format, Schleifenzwang, Wassermarke, später Karaoke | je Ziel verschieden |
+
+Folge: **10-Sekünder und Hook sind je eine Szene — geschlossen.** Der 10-Sekünder nimmt den Zustand des Abschnitts,
+auf dem er sitzt; der Hook den seines Abschnitts. Der Bildschirm ist keine eigene Ausgabe, sondern dieselbe Form live
+statt als Datei. „Generisch" wäre ein Entwicklerwort und entfällt.
+
+Vorgabe bleibt **ein Zustand für das ganze Lied** — dann verhält sich alles wie heute und der Szenenplan ist leer.
+
+**Offen, bewusst nicht entschieden:**
+1. Woher ein zweiter Zustand kommt — Kopie des ersten mit Änderungen (einfach, deckt vermutlich die meisten Fälle)
+   oder eigene Quelle.
+2. Wie fest Szenen an Abschnitte gebunden sind. Gemessen sind die Abschnittsgrenzen bei rund der Hälfte der Titel
+   unsicher (52 % von Suno bestätigt, Zufallsboden 23 %; Taktraster bei 136 von 325 Titeln unsauber) — Szenen sollten
+   an Abschnitten hängen, aber verschiebbar sein, sonst erbt der Plan die Unsicherheit ungefragt.
+3. Ob das Rezept schon jetzt mehrere Zustände tragen soll („ein Zustand, vorerst der einzige"), damit später keine
+   Umstellung der gespeicherten Rezepte nötig wird.
