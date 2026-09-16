@@ -21,6 +21,20 @@ Wenn nein, ist es ein Werkzeug für uns, kein Vorschlag.
 `library/` ist sein echtes Archiv: lesen ja, schreiben nur über die Wege, die die App selbst benutzt. Neue Funktionen
 nie am Produktivbestand ausprobieren — Sandkasten mit Kopien, große Medien höchstens verlinkt.
 
+### Sandkasten: kopieren, nicht verlinken
+
+Ein Sandkasten **kopiert** `server/`, `bin/` und `web/`. Node löst `__dirname` über Symlinks auf — ein verlinkter
+`server/`-Ordner lässt den Sandkasten-Server Jörgs **echtes** `library/` bedienen. So wurde am 16.09.2026 ein Rezept
+im Archiv überschrieben (wiederhergestellt). Verlinkt werden höchstens einzelne Mediendateien. Vor und nach jedem Lauf
+`find library -newermt <Startzeit>` — was auftaucht, gehört erklärt.
+
+### Die Datei, mit der Jörg arbeitet
+
+`web/index.html` ist die ganze App, und sein Browser lädt sie beim Neuladen in einem Stück. Wer sie in vielen kleinen
+Schritten schreibt, während Jörg arbeitet, riskiert, dass er sich eine halbfertige Fassung holt (passiert am
+16.09.2026, kaputter Export). Bauaufträge laufen darum auf einer **Kopie**; die fertige Fassung kommt in einem Zug ins
+Repo, und erst dann heißt es: neu laden.
+
 ## 3. Was gemessen wird, wird nicht behauptet
 
 Jede Trefferquote braucht ihren Zufallsboden daneben. Erst das Verfahren klären, dann messen. Bei einer Fehlermeldung

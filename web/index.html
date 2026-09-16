@@ -3209,6 +3209,13 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-stufenstand{flex:1 1 auto;min-width:0;text-align:right;color:var(--schwach);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #tbs .tbs-stufenkoerper{padding:2px 12px 6px}
 #tbs .tbs-stufenkoerper[hidden]{display:none}
+/* WAEHREND EINER AUSGABE STEHT NUR DAS PULT (Caspar_D, 16.09.2026). Die stillgelegte Stufe wird blass und nimmt keine
+   Klicks mehr; pointer-events traegt auch dort, wo inert noch fehlt. Der Grund steht als Zeile darueber. */
+#tbs .tbs-stufenkoerper.gesperrt{opacity:.55;pointer-events:none}
+#tbs .tbs-sperrgrund{border-left:2px solid var(--akzent);background:var(--flaeche2);padding:7px 10px;margin:0 0 10px;border-radius:0 7px 7px 0;color:var(--text);font-size:12px}   /* Regel 14: Lesegrenze 12 px - .tbs-unter gibt 11 px her, und ausgerechnet der Text, der eine gesperrte Oberflaeche erklaert, war der kleinste im Pult (Gegenlesen 16.09.2026) */
+/* Das bleibende Zeichen fuer Ungesichertes im Fuss - neben dem Sichern-Knopf, nicht in der Statuszeile: die ist beim naechsten pStat() weg. */
+#tbs #tbs-pUngesichert{color:var(--akzent);white-space:nowrap}
+#tbs #tbs-pUngesichert[hidden]{display:none}
 #tbs .tbs-erklaer{color:var(--schwach);font-size:12px;line-height:1.5;margin:0 0 10px}
 #tbs .tbs-erklaer p{margin:0 0 6px}
 /* V halten in der Vorbereitung: die Quelle ohne Effekte - als Marke UEBER der Leinwand, nie hineingemalt */
@@ -27531,6 +27538,11 @@ function vorbAenderungen(v){ let n=0; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v
 function vorbExport(v){ if(!vorbAenderungen(v)) return undefined; const o={}; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v[k])>1e-6) o[k]=v[k]; });
   const g={}; for(const ch of ['v','r','g','b']) if(!gradNeutral(v.grad[ch])) g[ch]=v.grad[ch]; if(Object.keys(g).length) o.grad=g; return o; }
 const vorbCache={};
+/* Jedes _id legt in vorbFilter() ein <filter> in den kurvenraum. Wer eine Vorbereitung wegwirft (ein Maler auf
+   einer Kachel verschwindet beim Scrollen), muss auch seinen Filter wegwerfen - sonst waechst der kurvenraum
+   mit jeder Kachel, die je zu sehen war (Gegenlesen 16.09.2026). Wer eine Vorbereitung ERSETZT, behaelt
+   stattdessen ihr _id: derselbe Filter wird dann neu bespielt (vorbLoeschen, einfuegen, oeffnen). */
+function vorbFilterWeg(v){ const f=v&&vorbCache[v._id]; if(!f) return; try{ f.remove(); }catch(e){} delete vorbCache[v._id]; }
 function vorbFilter(v){ const ns='http://www.w3.org/2000/svg'; let f=vorbCache[v._id];
   if(!f){ f=document.createElementNS(ns,'filter'); f.id='vorb'+v._id; f.setAttribute('color-interpolation-filters','sRGB'); kurvenraum.appendChild(f); vorbCache[v._id]=f; }
   while(f.firstChild) f.removeChild(f.firstChild);
@@ -29333,7 +29345,9 @@ function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen')
   if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
   x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
 function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); fussStand(); }
-function blaettern(d){ const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
+/* Waehrend einer Ausgabe bleibt die Quelle stehen: die Pfeiltasten wuerden sonst mitten im Video das Bild wechseln -
+   dieselbe Regel wie fuer das gesperrte Pult, nur fuer die Tastatur (Caspar_D, 16.09.2026). */
+function blaettern(d){ if(exportLaeuft) return; const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
 
 /* Cover-Blätterer */
 
@@ -29425,7 +29439,92 @@ function zeichneFrame(t,roh){
   /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
      Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
   function angewendet(){ if(STAPEL.length||vorbAenderungen(VORB)) return true; if((SCHLEIFE.art||'keiner')!=='keiner'||SCHLEIFE.schlaege>0||SCHLEIFE.fenster>0) return true;   /* die Schleife wird mitgesichert - also schaltet sie das Sichern frei (Gegenpruefung 15.09.2026) */ const s=SEITEN[seiteIndex()], vg=grundVorgabe(SEITEN.filter(x=>!x.test)); return !!(s&&!s.test&&vg&&(s.art!==vg.art||(s.nr||1)!==(vg.nr||1))); }
-  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); vollStand(); }
+  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; ablageStand(a);
+    /* EIN BLEIBENDES ZEICHEN FUER UNGESICHERTES (Gegenlesen 16.09.2026): nach dem Einfuegen sah der Fuss genauso aus wie
+       nach dem Sichern - die ganze Auskunft trug die Statuszeile, und die ist beim naechsten pStat() weg. Gezeigt wird
+       es nur, wenn auch etwas zu sichern dasteht; steht nichts da, ist der Knopf grau und sagt selbst warum. */
+    { const u=$('#tbs-pUngesichert'); if(u) u.hidden=!(ungesichert&&a); }
+    /* Liegt etwas in der Ablage, bleibt der Fuss hell, auch wenn beim Titel nichts eingestellt und nichts gesichert ist -
+       genau dann will man "Einfuegen" druecken, und ein gedimmter Fuss sagte das Gegenteil (16.09.2026). */
+    f.classList.toggle('gedimmt',!a&&!rezeptDa&&!ABLAGE); vollStand(); }
+  /* ---- DIE ABLAGE: EIN EFFEKTREZEPT KOPIERBAR (Caspar_D, 16.09.2026: "mache ein Effektrezept kopierbar") ----------
+     EIN Platz, im Browser abgelegt, ueberdauert das Neuladen. Kopiert wird GENAU das, was presetJSON() sichert, dazu
+     Herkunft und Zeitpunkt - nur damit der Knopf sagen kann, woher das Rezept stammt; in die Rezeptdatei kommt davon
+     nichts. Eingefuegt wird NUR ins Studio, nie in die Datei: das Sichern bleibt eine eigene Entscheidung, und der
+     Fuss zeigt danach ehrlich, dass etwas Ungesichertes dasteht (Regel 3). Zurueck geht es ohne Widerrufen - das
+     Studio schliessen und den Titel wieder oeffnen holt sein gesichertes Rezept.
+     DIE QUELLE IST DAS EINZIGE, WAS NICHT MITKOMMEN KANN: sie ist eine Datei DIESES Titels. Effektkette,
+     Vorbereitung und Schleife kommen immer mit.
+     SPAETER: aus dem einen Platz wird mit "mehrere Zustaende je Titel" eine Liste - die Form unten bleibt dieselbe. */
+  const ABLAGE_SPEICHER='mysuno-tbs-ablage';   /* die Speicherschluessel heissen weiter mysuno-... (siehe oben) */
+  let ungesichert=false;   /* im Studio steht etwas, das so nicht beim Titel liegt - gesetzt beim Einfuegen, weg beim Oeffnen, Sichern und Loeschen */
+  const QUELLNAMEN={titelbild:'Titelbild',bewegtbild:'Bewegtbild (Suno)',video:'Eigenes Bewegtbild',bild:'Eigenes Titelbild'};   /* wie in seitenVon() - fuer eine Quelle, die es bei diesem Titel gar nicht gibt und die darum kein lbl hat */
+  let ABLAGE=(()=>{ try{ const o=JSON.parse(localStorage.getItem(ABLAGE_SPEICHER)||'null'); return (o&&typeof o==='object'&&Array.isArray(o.effekte))?o:null; }catch(e){ return null; } })();
+  /* ABLAGE wird beim Aufbau EINMAL gelesen. Wer in einem zweiten Fenster kopiert, saehe die Kopie hier sonst nie -
+     der Browser sagt es aber von selbst (Gegenlesen 16.09.2026). */
+  try{ window.addEventListener('storage',ev=>{ if(ev.key!==ABLAGE_SPEICHER) return;
+    try{ const o=JSON.parse(ev.newValue||'null'); ABLAGE=(o&&typeof o==='object'&&Array.isArray(o.effekte))?o:null; }catch(e){ ABLAGE=null; }
+    if(offen) fussStand(); }); }catch(e){}
+  function quellName(q){ const p=seiteFinden(SEITEN,q); if(p) return p.lbl; const n=QUELLNAMEN[q&&q.art]; return n?(n+((q.nr||1)>1?' '+q.nr:'')):'eine unbekannte Quelle'; }
+  function ablageHer(){ const t=String((ABLAGE&&ABLAGE.her&&ABLAGE.her.titel)||''); return t.length>26?t.slice(0,25)+'\u2026':t; }
+  /* Was drinsteckt, in Nutzerwoertern - ohne die Quelle: die steht getrennt daneben, weil nur sie danebengehen kann. */
+  function ablageInhalt(o){ const R=rezeptLesen(o), n=R.effekte.length, v=vorbAenderungen(vorbAus(R.vorbereitung)), art=(R.schleife&&R.schleife.art)||'keiner';
+    const t=[n?(n===1?'1 Effekt':n+' Effekte'):'keine Effekte']; if(v) t.push(v===1?'1 Anpassung':v+' Anpassungen');
+    if(art!=='keiner'){ const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===art)||[0,''])[1]; if(nm) t.push(nm); }
+    return t.join(' \u00b7 '); }
+  /* Regel 3 am Knopf: leer sagt er, warum er nicht geht; voll sagt er, woher das Rezept kommt. Die Erklaerung
+     im Titel nennt das Prinzip (was mitkommt, was nicht, dass nichts gesichert wird), nicht den Namen. */
+  function ablageStand(a){ const bk=$('#tbs-pKopie'), be=$('#tbs-pEin'); if(!bk||!be) return;
+    bk.disabled=!a;
+    bk.title=a?'Den jetzigen Stand des Studios merken \u2014 Quelle, Vorbereitung, Effektkette und Schleife \u2014, um ihn auf einen anderen Titel zu legen. Die Ablage hat einen Platz und \u00fcberdauert das Neuladen.'
+             :'Hier ist nichts eingestellt, was sich kopieren lie\u00dfe \u2014 erst eine andere Quelle w\u00e4hlen, etwas vorbereiten, einen Effekt hinzuf\u00fcgen oder einen \u00dcbergang setzen.';
+    const her=ablageHer();
+    be.disabled=!ABLAGE; be.textContent=(ABLAGE&&her)?('Einf\u00fcgen aus \u201e'+her+'\u201c'):'Einf\u00fcgen';
+    be.title=ABLAGE?('Das gemerkte Rezept auf diesen Titel legen: Effektkette, Vorbereitung und Schleife kommen immer mit, die Quelle nur, wenn es sie bei diesem Titel auch gibt. Gesichert wird dabei nichts \u2014 das entscheidet danach \u201eF\u00fcr diesen Titel sichern\u201c.'
+      +((ABLAGE.her&&ABLAGE.her.wann)?' Gemerkt am '+new Date(ABLAGE.her.wann).toLocaleString('de-DE')+'.':''))
+      :'In der Ablage liegt nichts \u2014 erst bei einem Titel \u201eKopieren\u201c dr\u00fccken.'; }
+  function kopieren(){ const o=JSON.parse(presetJSON()); o.her={id:songId,titel:(DATA&&DATA.titel)||'',wann:Date.now()};
+    /* Privater Modus oder volles Fach: die Ablage gilt dann nur in dieser Sitzung. Dann muss aber auch die ALTE von der
+       Platte weg - sonst kaeme nach dem naechsten Neuladen nicht nichts zurueck, sondern das vorige Rezept unter seinem
+       vorigen Namen, und der Knopf fuegte etwas anderes ein, als zuletzt kopiert wurde (Gegenlesen 16.09.2026). */
+    ABLAGE=o; let nurSitzung=false;
+    try{ localStorage.setItem(ABLAGE_SPEICHER,JSON.stringify(o)); }catch(e){ nurSitzung=true; try{ localStorage.removeItem(ABLAGE_SPEICHER); }catch(e2){} }
+    fussStand(); pStat('kopiert: '+ablageInhalt(o)+' \u00b7 Quelle: '+quellName(o.quelle)+' \u2014 jetzt einen anderen Titel \u00f6ffnen und \u201eEinf\u00fcgen\u201c dr\u00fccken'+(nurSitzung?' (nur f\u00fcr diese Sitzung gemerkt \u2014 der Browser nimmt nichts an)':'')); }
+  /* Dasselbe in denselben Woertern wie ablageInhalt(), nur aus dem, was JETZT im Studio steht. */
+  function studioInhalt(){ const n=STAPEL.length, v=vorbAenderungen(VORB), art=SCHLEIFE.art||'keiner';
+    const t=[n?(n===1?'1 Effekt':n+' Effekte'):'keine Effekte']; if(v) t.push(v===1?'1 Anpassung':v+' Anpassungen');
+    if(art!=='keiner'){ const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===art)||[0,''])[1]; if(nm) t.push(nm); }
+    return t.join(' \u00b7 '); }
+  function einfuegen(){ if(!ABLAGE) return; const R=rezeptLesen(ABLAGE); const alt={art:grund.art,nr:grund.nr||1}; let qtext='';
+    if(R.grund){ const p=seiteFinden(SEITEN,R.grund);
+      if(p){ grund={art:p.art,nr:p.nr}; qtext=' \u00b7 Quelle: '+p.lbl; }
+      else { const bleibt=SEITEN[seiteIndex()]; qtext=' \u00b7 Quelle: '+quellName(R.grund)+' gibt es hier nicht \u2014 '+((bleibt&&bleibt.lbl)||'die eigene Quelle')+' bleibt'; } }
+    /* DER UEBERGANG GEHT DENSELBEN WEG WIE DIE QUELLE (Gegenlesen 16.09.2026): es gibt ihn nur fuer Bewegtbilder.
+       Bedingungslos uebernommen stand er auf einem Titelbild-Titel unsichtbar da - die Wahl ist dort gesperrt
+       (schleifeUI: s.disabled=!vid), der Stufenkopf nennt ihn nicht, und allein dieses unerreichbare Pendel schaltete
+       ueber angewendet() das Sichern frei. Gesichert wurde dann ein Rezept ohne einen einzigen Effekt, das Kachel und
+       Buehne trotzdem auf Live-Malen umstellt. Die Schlagzahl bleibt: sie gilt auch beim Titelbild. */
+    const zs=seiteFinden(SEITEN,grund)||SEITEN[seiteIndex()], zielVideo=!!(zs&&zs.video); let utext='';
+    SCHLEIFE=R.schleife||{art:'keiner'};
+    if(!zielVideo&&((SCHLEIFE.art||'keiner')!=='keiner'||SCHLEIFE.fenster>0)){
+      const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===(SCHLEIFE.art||'keiner'))||[0,''])[1];
+      SCHLEIFE={art:'keiner',schlaege:SCHLEIFE.schlaege||0};
+      utext=' \u00b7 \u00dcbergang'+(nm?' \u201e'+nm+'\u201c':'')+' gibt es nur f\u00fcr Bewegtbilder \u2014 hier bleibt der harte Schnitt'; }
+    { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi; }   /* das _id behalten wie in vorbLoeschen: sonst bliebe je Einfuegen ein <filter> im kurvenraum stehen */
+    SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1;   /* wie beim Wechsel des \u00dcbergangs: die gerechnete Lage holt sich loopWache */
+    soloId=null; offenId=null; presetSetzen(R.effekte,R.alt,R.fassung);
+    if(grund.art!==alt.art||(grund.nr||1)!==(alt.nr||1)) grundLaden();   /* nur bei echtem Wechsel - sonst finge ein laufendes Video von vorn an */
+    quellenUI(); if(stufeOffen==='Vorb') vorbRender(); vorbStand(); schleifeUI(); ungesichert=true; fussStand();
+    /* GEZAEHLT WIRD, WAS WIRKLICH DASTEHT, nicht was in der Ablage lag: effektAusRezept() wirft stumm weg, was dieser
+       Stand nicht mehr kennt (siehe den gestrichenen Theaternebel), und die Ablage ueberdauert ein Programm-Update.
+       Sonst versprach die Zeile mehr Effekte, als der Kopf der Kette gleich daneben zeigte. Und der zweite Satz haengt
+       an angewendet(): steht nach dem Einfuegen nichts mehr da, ist genau der Knopf grau, auf den er verwies. */
+    const fehlt=R.effekte.length-STAPEL.length, her=ablageHer(), a=angewendet();
+    pStat('eingef\u00fcgt'+(her?' aus \u201e'+her+'\u201c':'')+': '+studioInhalt()+qtext+utext
+      +(fehlt>0?' \u00b7 '+(fehlt===1?'1 Effekt kennt dieser Stand nicht mehr und blieb weg':fehlt+' Effekte kennt dieser Stand nicht mehr und blieben weg'):'')
+      +' \u00b7 '+(a?'noch nicht gesichert. \u201eF\u00fcr diesen Titel sichern\u201c legt es ab; Schlie\u00dfen und wieder \u00d6ffnen holt das gesicherte Rezept zur\u00fcck.'
+        :rezeptDa?'hier steht jetzt nichts mehr \u2014 beim Titel liegt weiter das alte Rezept. \u201eL\u00f6schen\u201c nimmt es weg, Schlie\u00dfen und wieder \u00d6ffnen holt es zur\u00fcck.'
+        :'hier steht jetzt nichts mehr \u2014 und beim Titel liegt auch nichts.')); }
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if(stufeOffen==='Vorb') vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
     let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral zur\u00fccksetzen - das L\u00f6schen im Fu\u00df betrifft dagegen den gesicherten Effektclip" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>Zur\u00fccksetzen</button></div>';
@@ -29461,6 +29560,11 @@ function zeichneFrame(t,roh){
   /* Zeit: der Player ist die einzige Audioquelle. */
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
   function effekteJSON(){ return STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_'))); }
+  /* DIESE FORM TRAEGT EINEN ZUSTAND JE TITEL. Die Ablage (Kopieren/Einfuegen, 16.09.2026) reicht genau sie weiter
+     und legt nur fuer sich Herkunft und Zeitpunkt daneben - in der Datei steht davon nichts, fassung bleibt 3.
+     SPAETER (docs/effektclip/KONZEPT-LANGE-VIDEOS.md): mehrere Zustaende je Titel, je Abschnitt ein Rezept, innerhalb
+     eines Abschnitts duerfen Parameter fahren. Das wird diese Form ERWEITERN (eine Liste von Abschnitten, jeder mit
+     genau diesen Feldern), nicht ersetzen - wer hier etwas dazulegt, denke daran und hebe dann die fassung. */
   function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
@@ -29965,6 +30069,73 @@ function zeichneFrame(t,roh){
      DAS STUDIO STEHT SOLANGE, UND DER KNOPF SAGT ES VORHER. exportLaeuft sperrt rahmen(); die Vorschau malte sonst
      mit DENSELBEN Effektobjekten in Vorschaugroesse dazwischen und verschmutzte die Spur des Nachzieheffekts
      (Befund 14.09.2026). Ein halb mitlaufendes Studio waere eine Luege - also steht es. */
+  /* ---- DER LAUF GIBT DEN HAUPTFADEN ZURUECK (Caspar_D, 16.09.2026: "kannst du den export nicht auf einen worker legen,
+     damit nichts stillsteht?"). In einen Worker kann der Maler in DIESER Stufe nicht: er malt in Leinwaende des Dokuments,
+     haengt an einem WebGL-Zusammenhang dieser Seite und liest die Quelle aus einem <video> - nichts davon gibt es im Worker,
+     ohne den Maler auf OffscreenCanvas und einen eigenen Bilddekodierer umzubauen. Was OHNE Umbau geht, ist das Gegenteil
+     von "am Stueck": gemalt wird in HAEPPCHEN, und zwischen zwei Haeppchen bekommt die Seite den Faden zurueck. Dann laeuft
+     der Player weiter, das Album rollt, andere Ansichten gehen auf - still steht nur das Pult, und es sagt warum.
+
+     WOMIT ABGEGEBEN WIRD - GEMESSEN, NICHT GERATEN (16.09.2026, schweres Rezept, je drei Laeufe). Gebraucht wird ein
+     MAKROTASK; ein Promise allein ist ein Mikrotask und laeuft noch vor dem naechsten Ereignis der Seite ab - da kaeme
+     kein Klick und kein Bildaufbau dazwischen. Drei Makrotasks kamen in Frage, und sie sind NICHT gleichwertig:
+       - scheduler.postTask: Wanduhr 2607 ms, aber die Seite bekam nur 49 Hz Bildaufbau und sieben Fenster ueber 50 ms,
+         in denen ihre eigenen Zeitgeber nicht drankamen.
+       - MessageChannel: 2606 ms, 50 Hz, fuenf solche Fenster - praktisch dasselbe.
+       - setTimeout(...,0): 2633 ms (ein Prozent langsamer), dafuer 57 Hz und KEIN Fenster ueber 50 ms.
+     Der Grund ist die Warteschlange: postTask und MessageChannel stellen die Fortsetzung des Laufs VOR die Zeitgeber der
+     App, setTimeout dahinter. Wer will, dass nichts stillsteht, stellt sich hinten an - also setTimeout. Der Preis ist
+     die Klemme auf 4 ms bei tief verschachtelten Zeitgebern, und diese Kette erreicht den Nistgrad sofort.
+     WAS DIE KLEMME WIRKLICH KOSTET (nachgemessen 16.09.2026, weil hier eine zu freundliche Zahl stand): ein Atemzug
+     kostet 4,7 ms. Beim leichten Rezept faellt einer auf fuenf Bilder, beim schweren auf JEDES. Isoliert gemessen -
+     reine Rechenlast ohne Kodierer, je 300 Bilder, neue gegen alte Schleifenform - sind das +10 % (leicht), +17 %
+     (mittel) und +11 % (schwer) Wanduhr; der aeltere Wert von einem Prozent war mit dem Softwarekodierer gemessen, der
+     ueber die Wartestelle an seiner Warteschlange den Atem ohnehin zurueckstellte. Auf einem Geraet mit
+     Hardwarekodierer faellt genau dieser Schutz weg - dort gilt die grosse Zahl.
+     BEZAHLT WIRD DAS GERN, und auch das ist gemessen: ohne Kodiererbremse ging der Bildaufbau der Seite waehrend des
+     Laufs von 18,5 auf 48,1 Hz, die Zahl der Blockaden ueber 50 ms von 303 auf 49 und die laengste Blockade von 578 auf
+     125 ms, bei gleicher Laufzeit. Seltener abzugeben (nur jedes n-te Bild) nimmt genau diesen Gewinn wieder weg.
+       - requestAnimationFrame kommt NICHT in Frage: es traegt hoechstens 60-mal je Sekunde, und in einem verdeckten Tab
+         gar nicht mehr - der Lauf liefe damit langsamer als die Rechnung es hergibt.
+
+     WIE GROSS EIN HAEPPCHEN IST: gemessen in ZEIT, nicht in Bildern. Ein Bild kostet je nach Rezept 3 bis 40 ms; eine feste
+     Bildzahl waere beim leichten Rezept Verschwendung und beim schweren Stillstand. Nach ATEM_MS verbrauchter Rechenzeit
+     gibt der Lauf ab - mindestens aber nach jedem Bild, denn ein angefangenes Bild wird immer fertig gemalt. Die laengste
+     Blockade ist damit ein Bild lang statt zehn. */
+  const ATEM_MS=16;    /* so lang darf am Stueck gerechnet werden: ein Bildschirmtakt bei 60 Hz */
+  const MELD_MS=250;   /* so oft wird die Fortschrittszeile neu geschrieben - oefter sieht kein Mensch, kostet aber Layout */
+  /* IN EINEM VERDECKTEN TAB IST GENAU DIESES MITTEL GEDROSSELT (Gegenlesen 16.09.2026). Chrome laesst in einer
+     verdeckten Seite nur noch einen Zeitgeber je Sekunde durch, bei tief verschachtelten - und das sind diese, siehe
+     die Klemme oben - nach fuenf Minuten sogar nur noch einen je Minute. Beim schweren Rezept faellt ein Atemzug auf
+     jedes Bild: ein Vier-Minuten-Titel hat 7200 davon, das waeren Stunden statt Minuten, und die Fortschrittszeile
+     stuende einfach still, weil auch sie erst in der naechsten Runde geschrieben wird. Verdeckt wird darum ueber
+     einen Nachrichtenkanal abgegeben: der ist kein Zeitgeber und wird nicht gedrosselt. Dass er sich VOR die
+     Zeitgeber der App stellt (die Messung oben), stoert dort nicht - eine verdeckte Seite malt ohnehin nichts.
+     Gefragt wird bei JEDEM Atemzug, nicht einmal beim Start: der Tab darf mittendrin nach vorn und wieder weg. */
+  const atemKanal=new MessageChannel(); let atemWarte=null;
+  atemKanal.port1.onmessage=()=>{ const r=atemWarte; atemWarte=null; if(r) r(); };
+  const atemzug=()=>document.hidden
+    ? new Promise(r=>{ atemWarte=r; atemKanal.port2.postMessage(0); })   /* es ist immer nur einer offen: der Lauf wartet jeden Atemzug ab, bevor er den naechsten nimmt */
+    : new Promise(r=>setTimeout(r,0));   /* hinten anstellen, siehe oben */
+  /* DAS PULT STEHT, DIE SEITE NICHT (Caspar_D, 16.09.2026). Gesperrt wird nur, was mitten im Lauf das Bild wechseln wuerde:
+     Quelle, Vorbereitung, Effektkette, Schleife. Die Koepfe des Akkordeons bleiben anklickbar - hinsehen aendert nichts -,
+     und der Fuss behaelt "Abbrechen". Die Sperre sagt in einem Satz, warum sie da ist; eine graue Flaeche ohne Grund waere
+     dasselbe Raetsel wie vorher (Hausregel: die App erklaert sich selbst). */
+  const SPERRGRUND='W\u00e4hrend der Ausgabe stehen Quelle, Vorbereitung, Effektkette und Schleife still: eine \u00c4nderung mitten im Lauf w\u00fcrde das Bild im fertigen Video wechseln. Auch der Fu\u00df nimmt bis zum Ende keine Entscheidung an \u2014 nur \u201eAbbrechen\u201c geht. Die \u00fcbrige App l\u00e4uft weiter \u2014 Player, Album und die anderen Ansichten bleiben bedienbar.';
+  /* Derselbe Grund noch einmal kurz, als Erklaerung an den gesperrten Fussknoepfen: ein grauer Knopf, an dem die alte
+     Werbung stehenblieb ("Hier ist nichts eingestellt, was sich kopieren liesse"), log ueber den Grund seiner Sperre
+     (Gegenlesen 16.09.2026). Grau nur mit Grund - und mit dem richtigen. */
+  const SPERRGRUND_FUSS='W\u00e4hrend der Ausgabe nimmt der Fu\u00df keine Entscheidung an \u2014 nur \u201eAbbrechen\u201c geht. Danach ist der Knopf wieder da.';
+  const FUSS_TITEL={};   /* die eigene Erklaerung des Knopfes, gemerkt beim Sperren und beim Aufschliessen zurueckgelegt */
+  function fussTitel(b,an){ if(!b||!b.id) return;
+    if(an){ if(FUSS_TITEL[b.id]===undefined) FUSS_TITEL[b.id]=b.title||''; b.title=SPERRGRUND_FUSS; }
+    else if(FUSS_TITEL[b.id]!==undefined&&b.title===SPERRGRUND_FUSS) b.title=FUSS_TITEL[b.id]; }
+  function pultSperren(an){ if(!root) return; const z=$('#tbs-pultSperre');
+    if(z){ z.textContent=an?SPERRGRUND:''; z.hidden=!an; }
+    root.querySelectorAll('.tbs-stufenkoerper').forEach(k=>{ k.inert=an; k.classList.toggle('gesperrt',an); });
+    /* Der Grund haengt am KOPF der Stufe, nicht am Koerper: ein inerter Koerper nimmt keine Maus mehr an und zeigte
+       seinen eigenen Hinweis nie. Der Kopf bleibt anklickbar - auf- und zuklappen aendert am Bild nichts. */
+    root.querySelectorAll('.tbs-stufenkopf').forEach(k=>{ if(an) k.title=SPERRGRUND; else k.removeAttribute('title'); }); }
   const VOLL_TEIL=600;   /* Bilder je Paket: 20 s Film. So liegt nie der ganze Film im Speicher (/api/vollvideo/teil) */
   let VOLL={ laeuft:false, abbruch:false, ton:true, tonDa:null, msBild:0, kennung:null };
   const mmss=t=>{ const s=Math.max(0,Math.round(t)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
@@ -30080,6 +30251,7 @@ function zeichneFrame(t,roh){
         +(bytes>0&&i>=30?' · etwa '+Math.round((bytes/i*N+tonBytes)/1048576)+' MB':'')); };
     melden(0);
     FEIN=true;   /* hier haengt nichts an einer Uhr - die Maler duerfen teuer rechnen */
+    let atem=performance.now(), meldUhr=performance.now();
     try{
       for(let i=0;i<N;i++){
         if(VOLL.abbruch) break;
@@ -30088,14 +30260,19 @@ function zeichneFrame(t,roh){
            feste Ausschnitt. tau ist die Zeit IN der Runde - genau das, was schleifeZeit() sonst im Clip bekommt. */
         if(vid){ const rel=t-nullpunkt, tau=rel<0?rel+Math.ceil(-rel/runde.L)*runde.L:rel-Math.floor(rel/runde.L)*runde.L,
             q=schleifeZeit(Math.min(tau,runde.L-1e-6),runde.L,pendel?dv:runde.quell,lageP,fenster);
-          q.s=Math.max(0,Math.min(dv,q.s)); await quelleSetzen(bild,q.s); QUELLE_WIRKUNG=q; }
+          q.s=Math.max(0,Math.min(dv,q.s)); await quelleSetzen(bild,q.s); atem=performance.now(); QUELLE_WIRKUNG=q; }   /* das Warten auf 'seeked' ist KEINE verbrauchte Rechenzeit - waehrenddessen hat die Seite den Faden laengst (wie die beiden Wartestellen unten) */
         exportBild(m,gemerkt,t,W,H); QUELLE_WIRKUNG=null;
         const f=new VideoFrame(m.lein,{ timestamp:Math.round(i*1000000/rate), duration:Math.round(1000000/rate) });
         enc.encode(f,{ keyFrame:(i%schluessel===0) }); f.close();
-        while(enc.encodeQueueSize>6 && !fehler) await new Promise(r=>setTimeout(r,0));   /* die einzige Wartestelle, und sie haengt am Kodierer */
+        /* DIE ZWEITE BREMSE BLEIBT DER KODIERER: laeuft seine Warteschlange voll, wird gewartet, bis er nachkommt - sie
+           haengt nicht am Haeppchen, sondern am Geraet. Gewartet wird mit demselben Atemzug: solange der Kodierer nicht
+           nachkommt, hat der Lauf ohnehin nichts zu tun, und die Seite bekommt den Faden. */
+        while(enc.encodeQueueSize>6 && !fehler){ await atemzug(); atem=performance.now(); }
         if(fehler) break;
-        if(i>0&&i%VOLL_TEIL===0&&!await teilSchicken()){ fehler=fehler||new Error('Paket '+nr+' kam nicht an'); break; }
-        if(i%10===0){ melden(i); await new Promise(r=>setTimeout(r,0)); }   /* die Seite darf atmen, sonst klickt "Abbrechen" nicht */
+        if(i>0&&i%VOLL_TEIL===0){ if(!await teilSchicken()){ fehler=fehler||new Error('Paket '+nr+' kam nicht an'); break; } atem=performance.now(); }
+        const jetzt=performance.now();
+        if(jetzt-meldUhr>=MELD_MS){ meldUhr=jetzt; melden(i); }   /* die Fortschrittszeile nach der Uhr, nicht nach der Bildzahl: bei teuren Bildern stand sie sonst sekundenlang */
+        if(jetzt-atem>=ATEM_MS){ await atemzug(); atem=performance.now(); }   /* HIER bekommt die Seite den Faden zurueck */
       }
     } catch(e){ fehler=fehler||e; }   /* OHNE DIESEN ZWEIG bliebe der Lauf beim Haus stehen: ein Wurf (etwa aus enc.encode auf einem
                                          schon geschlossenen Kodierer) sprang am Aufraeumblock darunter vorbei, und der Titel war bis zum
@@ -30136,13 +30313,14 @@ function zeichneFrame(t,roh){
   /* Die Fortschrittszeile mit dem Abbrechen-Knopf: sie ist da, solange etwas laeuft, und sonst weg. */
   function vollFortschritt(x){ const z=$('#tbs-vollLauf'), el=$('#tbs-vollText'), st=$('#tbs-vollStop');
     if(el) el.textContent=x||''; if(z) z.hidden=!x; if(st&&!x) st.disabled=false; }   /* die Sperre aus dem Bau gilt nur fuer diesen Lauf */
-  function vollStand(){ const b=$('#tbs-pVoll'); if(!b) return;
-    const p=$('#tbs-pVollTon'), v=$('#tbs-pVideo'), s=$('#tbs-pSave'), d=$('#tbs-pDrop'), k=$('#tbs-vollKosten'), laeuft=!!exportLaeuft;
+  function vollStand(){ pultSperren(!!exportLaeuft);   /* beide Ausgabewege kommen hier durch: video() und vollvideo() melden sich hier an und wieder ab */
+    const b=$('#tbs-pVoll'); if(!b) return;
+    const p=$('#tbs-pVollTon'), v=$('#tbs-pVideo'), s=$('#tbs-pSave'), d=$('#tbs-pDrop'), kp=$('#tbs-pKopie'), ei=$('#tbs-pEin'), k=$('#tbs-vollKosten'), laeuft=!!exportLaeuft;
     b.disabled=laeuft||!bereit; b.textContent=VOLL.laeuft?'gibt den Titel aus …':'ganzen Titel ausgeben';
     /* Waehrend eines Laufs ist die uebrige Fussleiste zu. Das Sperren KOMMT AUF die Entscheidung von fussStand()
        obendrauf (vollStand steht am Ende von fussStand), das Aufschliessen ueberlaesst es wieder ihr - sonst ginge
        "Für diesen Titel sichern" nach einem Lauf auf, obwohl gar kein Rezept angewendet ist. */
-    if(v) v.disabled=laeuft; if(laeuft){ if(s) s.disabled=true; if(d) d.disabled=true; }
+    if(v) v.disabled=laeuft; [s,d,kp,ei].forEach(b=>{ if(!b) return; if(laeuft) b.disabled=true; fussTitel(b,laeuft); });
     if(p){ const an=!!VOLL.ton&&VOLL.tonDa!==false; p.disabled=laeuft||VOLL.tonDa===false;
       p.classList.toggle('an',an); p.setAttribute('aria-pressed',an?'true':'false');
       p.textContent=VOLL.tonDa===false?'Ton dazu — keine Datei':'Ton dazu';
@@ -30305,8 +30483,8 @@ function zeichneFrame(t,roh){
       +((steht.length||frequenz.length)?' · zu wenige Schläge für einen Takt: '+[steht.length?steht.join(', ')+' '+(steht.length>1?'stehen':'steht')+' im Video still':'', frequenz.length?frequenz.join(', ')+' '+(frequenz.length>1?'laufen':'läuft')+' auf der eigenen Frequenz':''].filter(Boolean).join(', '):''));
   }
   async function sichern(){ try{ const s=presetJSON(); const a=await fetch('/api/eigen-artwork/'+songId,{method:'PUT',headers:{'Content-Type':'application/json'},body:s}); const d=await a.json();
-      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
-  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gelöscht — der Titel zeigt wieder das Standbild'); rezeptDa=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('Löschen ging nicht'); } }
+      if(!d.ok){ pStat(d.grund||'ging schief'); return; } pStat('gesichert · '+s.length+' Zeichen — '+(STAPEL.length?'der Titel malt es jetzt live':'nur der Grund, keine Effekte')); rezeptDa=true; ungesichert=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('gesichert'); }catch(e){ pStat('Speichern ging nicht'); } }
+  async function loesen(){ try{ await fetch('/api/eigen-artwork/'+songId+'?was=effekt',{method:'DELETE'}); pStat('gelöscht — der Titel zeigt wieder das Standbild'); rezeptDa=false; ungesichert=false; fussStand(); clipNeu(songId); if(nachSichern) nachSichern('geloest'); }catch(e){ pStat('Löschen ging nicht'); } }
   function tasten(ev){ if(!offen) return; const tag=(ev.target.tagName||'').toLowerCase();
     /* V halten in der Vorbereitung - auch wenn ein Schieber den Fokus hat (nach dem Ziehen behaelt er ihn, und genau dann will man
        vergleichen); Textfelder und Listen bekommen ihr V. Haus und Studio belegen V sonst nicht. */
@@ -30327,6 +30505,7 @@ function zeichneFrame(t,roh){
       '<div id="tbs-kasten">'
       +'<div id="tbs-kopf"><h3>Effektclip-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
       +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas><div id="tbs-ohneMarke" hidden>ohne Effekte</div></div><div id="tbs-pult">'
+      +'<div class="tbs-unter tbs-sperrgrund" id="tbs-pultSperre" hidden></div>'
       +'<div class="tbs-abschnitt" id="tbs-abQuelle">'+stufeKopf('Quelle')+stufeAuf('Quelle')
       +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abVorb">'+stufeKopf('Vorb')+stufeAuf('Vorb')
@@ -30352,7 +30531,11 @@ function zeichneFrame(t,roh){
       +'<div class="tbs-unter" id="tbs-loopKosten" hidden>beim ersten Einschalten wird das Video einmal vermessen (einige Sekunden); mit Video dauert „10 s ausgeben“ länger</div>'
       +'<div class="tbs-unter" id="tbs-loopWo" hidden></div>'
       +'</div></div>'
-      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektclip</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung, Effektkette und Schleife beim Titel ablegen - Kachel und Bühne malen es dann live, im Takt des Songs">Für diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Den beim Titel gesicherten Effektclip löschen (Quelle, Vorbereitung, Effektkette und Schleife) - Kachel und Bühne zeigen wieder das Standbild. Gelöscht wird nur das gesicherte Rezept: Titelbild und Videos bleiben, und was hier im Studio eingestellt ist, bleibt stehen und lässt sich wieder sichern.">Löschen</button>'
+      +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektclip</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung, Effektkette und Schleife beim Titel ablegen - Kachel und Bühne malen es dann live, im Takt des Songs">Für diesen Titel sichern</button><span class="tbs-unter" id="tbs-pUngesichert" hidden title="Im Studio steht etwas, das so nicht beim Titel liegt \u2014 \u201eF\u00fcr diesen Titel sichern\u201c legt es ab, Schlie\u00dfen und wieder \u00d6ffnen holt das gesicherte Rezept zur\u00fcck">noch nicht gesichert</span><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Den beim Titel gesicherten Effektclip löschen (Quelle, Vorbereitung, Effektkette und Schleife) - Kachel und Bühne zeigen wieder das Standbild. Gelöscht wird nur das gesicherte Rezept: Titelbild und Videos bleiben, und was hier im Studio eingestellt ist, bleibt stehen und lässt sich wieder sichern.">Löschen</button>'
+      /* KOPIEREN/EINFUEGEN NEBEN SICHERN UND LOESCHEN (Caspar_D, 16.09.2026): sie gehoeren zum Rezept, nicht zur Ausgabe.
+         Beschriftung und Erklaerung setzt ablageStand() - der Einfuegen-Knopf nennt, woher das Gemerkte kommt. */
+      +'<button class="tbs-mini" id="tbs-pKopie" style="width:auto;padding:0 10px" title="Den jetzigen Stand des Studios merken, um ihn auf einen anderen Titel zu legen">Kopieren</button>'
+      +'<button class="tbs-mini" id="tbs-pEin" style="width:auto;padding:0 10px" title="Das gemerkte Rezept auf diesen Titel legen - gesichert wird dabei nichts">Einf\u00fcgen</button>'
       +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button>'
       /* DER ZWEITE KNOPF, WEIL ES ZWEI SEHR VERSCHIEDEN TEURE DINGE SIND (Hausregel "Was es kostet, steht am Knopf"):
          zehn Sekunden kosten Sekunden, das ganze Lied Minuten und Dutzende Megabyte. Der Preis steht darunter, nicht im
@@ -30390,6 +30573,8 @@ function zeichneFrame(t,roh){
     bauVorrat();
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
+    $('#tbs-pKopie').onclick=kopieren;
+    $('#tbs-pEin').onclick=einfuegen;
     $('#tbs-pVideo').onclick=video;
     $('#tbs-pVoll').onclick=vollvideo;
     $('#tbs-pVollTon').onclick=()=>{ if(VOLL.tonDa===false) return; VOLL.ton=!VOLL.ton; vollStand(); };
@@ -30432,7 +30617,15 @@ function zeichneFrame(t,roh){
     /* Erst zeigen, dann laden: Ein Cover aus dem Browser-Vorrat laedt sofort - und
        groesse() darf kein unsichtbares Feld (0x0) messen, sonst wird die Leinwand 1x1. */
     root.hidden=false; offen=true; if(g&&lein) g.clearRect(0,0,lein.width,lein.height);
-    const lauf=++oeffnenLauf;
+    const lauf=++oeffnenLauf; ungesichert=false;
+    /* ERST DER KATALOG, DANN DIE SEITEN (Gegenlesen 16.09.2026). sunoTitelbild() entscheidet an der Titelbild-Liste des
+       Katalogs zwischen titelbild.jpg und cover.jpg - zwei verschiedene Bilder mit verschiedenem Seitenverhaeltnis.
+       Faellt die Entscheidung zu frueh, kommt der ganze Vollzeitlauf quadratisch und mit anderem Motiv heraus, und
+       nirgends steht etwas anderes. Ueber die Oberflaeche ist das nicht zu erreichen (die Songseite gibt es erst,
+       wenn songVonId steht, und das ist derselbe Atemzug wie katalogInfo) - ueber eine Adresse von aussen oder eine
+       traege Platte schon. Kommt der Katalog gar nicht, wird trotzdem geoeffnet: ein Studio, das nicht aufgeht, waere
+       schlimmer als ein anderes Bild. */
+    for(let w=0; w<40 && !(typeof katalogInfo==='object'&&katalogInfo); w++){ await new Promise(r=>setTimeout(r,50)); if(lauf!==oeffnenLauf||!offen) return; }
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;   /* zwischendurch geschlossen oder ein anderer Titel geoeffnet */
     DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], abschnitte:(s&&s.abschnitte)||null };   /* abschnitte: die Taktlage gewichtet Refrains */
@@ -30443,7 +30636,8 @@ function zeichneFrame(t,roh){
     SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:'Testbild',test:true},{art:'testportraet',nr:1,lbl:'Testportr\u00e4t',test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:'Testportr\u00e4t (Farbe)',test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr}; }
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;
-    const R=rezeptLesen(rezept); let hinweis=''; VORB=vorbAus(R.vorbereitung); SCHLEIFE=R.schleife||{art:'keiner'}; SCHLEIFE_STILL.schluessel='';
+    const R=rezeptLesen(rezept); let hinweis=''; { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi; }   /* das _id behalten: sonst bliebe je geoeffnetem Titel ein <filter> im kurvenraum stehen */
+    SCHLEIFE=R.schleife||{art:'keiner'}; SCHLEIFE_STILL.schluessel='';
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
@@ -30622,7 +30816,7 @@ function zeichneFrame(t,roh){
     const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
     m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
     clips.push(m);
-    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; m.VORB=vorbAus(d.vorbereitung); m.STAPEL=d.rezept.map(r=>effektAusRezept(r,d.alt,d.fassung)).filter(Boolean);
+    songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; { const vi=m.VORB._id; m.VORB=vorbAus(d.vorbereitung); m.VORB._id=vi; } m.STAPEL=d.rezept.map(r=>effektAusRezept(r,d.alt,d.fassung)).filter(Boolean);
       const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
       m.grund={art:seite.art,nr:seite.nr};
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
@@ -30636,12 +30830,17 @@ function zeichneFrame(t,roh){
       m.bild=quelleBauen(seite,fertig,fehler); });
     if(!clipRaf) clipRaf=requestAnimationFrame(clipTick); }
   function clipAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-clip'); if(!cv) return; cv.remove(); const i=clips.findIndex(m=>m.canvas===cv);
-    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; } }
+    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); vorbFilterWeg(m.VORB); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; } }
   function clipZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
   function clipTick(){
-    for(let i=clips.length-1;i>=0;i--) if(!clips[i].canvas.isConnected){ quelleWeg(clips[i].bild); if(clips[i].motiv) clips[i].motiv.style.visibility=''; clips.splice(i,1); }
+    for(let i=clips.length-1;i>=0;i--) if(!clips[i].canvas.isConnected){ quelleWeg(clips[i].bild); vorbFilterWeg(clips[i].VORB); if(clips[i].motiv) clips[i].motiv.style.visibility=''; clips.splice(i,1); }
     if(!clips.length){ clipRaf=0; return; }
     clipRaf=requestAnimationFrame(clipTick);
+    /* WAEHREND EINER AUSGABE STEHEN AUCH DIE KACHELN (Gegenlesen 16.09.2026). Waehrend des Laufs steht FEIN auf true -
+       der Exportschalter, der einem Effekt statt 240 bis zu 2400 Scheiben gibt. Jede eingehaengte Kachel mit Rezept
+       waere sonst mit dem Zehnfachen ihrer Kosten gemalt, in 300 px, wo man nichts davon sieht, und das im Streit mit
+       dem Lauf um denselben Faden und dieselbe GPU. rahmen() steht aus demselben Grund still (29346). */
+    if(exportLaeuft) return;
     gemerkt=bundel();
     for(const m of clips){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(clipZeit(m)); }
     setzen(gemerkt); gemerkt=null; }
