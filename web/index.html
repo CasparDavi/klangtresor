@@ -19131,8 +19131,12 @@ function bildSetzen(art){
 function lyrikWorte(){
   const e = bLyrik;
   if (!e || !e.zeilen || !e.zeilen.length) return [];
-  if (e.worte) return e.worte;
-  return (e.worte = e.zeilen.filter(z => z && z.text && z.text.trim())
+  /* NICHT e.worte ALS ZWISCHENSPEICHER (Fehler vom 16.09.2026, gefunden von Caspar_D: "die gereinigte Lyrics sind
+     immer noch nicht da"). Der Eintrag aus lyrik.json trägt selbst ein Feld `worte` — und das ist die ANZAHL der
+     Wörter, eine Zahl. Der Zwischenspeicher gab sie zurück, `lyrikWorte().length` war damit undefined, und die vierte
+     Spur erschien bei keinem einzigen Titel. Der Zwischenspeicher heißt darum jetzt `__spur` und wird geprüft. */
+  if (Array.isArray(e.__spur)) return e.__spur;
+  return (e.__spur = e.zeilen.filter(z => z && z.text && z.text.trim())
     .map(z => [z.von || 0, (z.bis > z.von) ? z.bis : (z.von || 0) + 1, String(z.text).replace(/\s+$/, '') + '\n']));
 }
 function bWorte(){
