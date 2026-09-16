@@ -4464,3 +4464,10 @@ Anfang desselben Materials zurück — Material über das Lied zu verteilen ist 
 Rundenlänge ist fest und wandert gegen das leicht unregelmäßige Schlagraster um etwa 30 ms je Runde; ab ungefähr
 einer Minute ist die Lage wieder beliebig. Kein Karaoke-Einbrennen, keine Formatwahl, keine Warteschlange,
 keine Szenen.
+
+### Offen aus dem Partikel-Ausbau (16.09.2026)
+
+Caspar_D während des laufenden Baus: *„bei schmetterlinge müsste auch noch die Flattergeschwindigkeit eingestellt
+werden können"* — kommt beim Einfügen der Partikel-Kopie dazu: ein Regler „Flattern" (Schläge je Sekunde), Vorgabe
+aus dem natürlichen Bereich, je Falter leicht gestreut, damit der Schwarm nicht im Gleichtakt schlägt. Wahlweise an
+den Takt gekoppelt über den Antrieb, den jeder Effekt hat.
