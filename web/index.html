@@ -27304,7 +27304,7 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, lmNurSchub:true, besch:'Teilchen ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schießt sie hinaus und läuft aus wie Luftwiderstand. Anzahl, Größe, Tempo, Wind und Farbe frei. Die Farbquelle sagt, WOHER die Farben kommen: das Akzentpaar des Titelbildes, seine gemessenen Haupttöne, ein fester bunter Satz, eine einzige Farbe (schwarzer Schnee) oder ein eigenes Paar. Was die gewählte Art ausmacht, steht unter dem Auswahlfeld.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Von Objekten verdeckt',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Tiefe aus der Bildzeile',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27377,13 +27377,190 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
 [['licht',{}],['schatten',{}]].forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...rmParams(v)); });
 /* Antrieb (Lichtmischpult) an alle Lichter: Vorgaben wie bisher - Scheinwerfer, Schatten, Laser und Feuer
    pulsen im Takt, Stroboskop laeuft als Rechteck mit 8 Hz, der Rest ist stetig. */
-/* „WIRKT AUF" AN ALLE EFFEKTE (VIDEO-PLAN §9.7b). Ein Begriff, ueberall gleich, an derselben
-   Stelle in der rechten Spalte - statt 38 Sonderloesungen. Die Wirkung steckt in der Kette
-   (tiefeMaske/maskeAnwenden), nicht im einzelnen Maler: deshalb gilt die Zeile sofort fuer
-   jeden Effekt und haelt, was sie verspricht (Regel 11).
-   Vorgabe „alles" - ohne Zutun aendert sich an keinem bestehenden Rezept etwas. */
-const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'wirkt auf',
-  sel:[['alles','alles'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles' };
+/* AUFENTHALT UND VERDECKUNG (Caspar_D, 16.09.2026: „wir haben verdeckung und wir haben
+   betretungsverbot" — und: „be aware, dass es keine dopplungen gibt, vorn und hinten sowie beide
+   gibt es ja schon, die musst du dann entsprechend umbiegen").
+
+   Die Zeile, die bis heute „wirkt auf" hiess, IST der Aufenthalt: sie sagt, WO der Effekt ist.
+   Sie wird darum UMBENANNT, nicht verdoppelt — Schluessel und Werte bleiben, damit gespeicherte
+   Rezepte weiter gelten. Neu ist allein die VERDECKUNG: der Vordergrund steht VOR dem Effekt (der
+   Vogel fliegt hinters Haus und kommt wieder heraus). Zwei Dinge, nicht eines:
+     Aufenthalt  — das Teilchen ist dort GAR NICHT (Betretungsverbot).
+     Verdeckung  — das Teilchen IST da, etwas liegt davor.
+
+   WER KOERPER HAT UND WER NICHT. Nur die Partikel haben einzelne Koerper; bei ihnen ist der
+   Aufenthalt eine HARTE Entscheidung je Teilchen (es kommt in der verbotenen Zone nicht zur Welt
+   und wird dort nicht gezeichnet; die Schar weicht aus). Alles andere — Shader, Nachbearbeitung,
+   Maler, die das ganze Bild ueberziehen — hat keine einzelnen Koerper: dort kann die Zone nur
+   AUSGESCHNITTEN werden, und genau das tut die Kette seit dem 14.09.2026. Bei diesen Effekten
+   steht die Verdeckung grau mit Grund, und der Aufenthalt rechnet bitgleich wie bisher.
+
+   ZWEI AEMTER, ZWEI ZEILEN - UND DIE ALTE ABLAGE BEHAELT IHR BILD (Gegenlesen 16.09.2026).
+   Bis heute waehlte die Verdeckung nur das MITTEL, mit dem der Aufenthalt durchgesetzt wird: an =
+   weiche Maske im Modus des Aufenthalts, aus = hartes Betretungsverbot. Das ist keine Verdeckung.
+   Gemessen: bei Aufenthalt „ueberall" war der Schalter Bildpunkt fuer Bildpunkt wirkungslos - und
+   genau das ist Caspar_Ds Fall („der Vogel fliegt hinters Haus und kommt wieder heraus"). Bei
+   „nur vorn" schnitt er auf den NAHEN Bereich, also das Gegenteil dessen, was sein Name sagt.
+   Jetzt tragen die beiden Zeilen zwei verschiedene Aemter:
+     Aufenthalt  - WO der Effekt ist. Bei Koerpern hart im Maler (Betretungsverbot), sonst als
+                   ausgeschnittene Zone. Haengt an nichts anderem.
+     Verdeckung  - WAS VOR IHM LIEGT. Immer die Maske im Modus „hinten": behalte, was fern ist,
+                   nimm weg, was nah ist - der Vordergrund deckt. Unabhaengig vom Aufenthalt, also
+                   auch und gerade bei „ueberall".
+   Bei Aufenthalt „nur vorn" steht die Verdeckung grau: der Effekt haelt sich selbst im Vordergrund
+   auf, vor ihm steht nichts.
+
+   DIE VORGABE IST „aus", UND DIE ALTEN REZEPTE BRECHEN TROTZDEM NICHT. Eine Vorgabe kann das
+   nicht leisten: die alte Zeile hat den Effekt an der Tiefenkarte AUSGESCHNITTEN, und dieser
+   Schnitt ist weder das eine noch das andere Amt - er ist ein drittes Verhalten (weiche Zone ohne
+   Betretungsverbot). Also traegt die ABLAGE es: presetJSON schreibt ab heute fassung 4, und ein
+   Rezept aelterer Fassung bekommt beim Laden fuer jeden Partikel-Effekt mit Zone den Wert „zone"
+   gesetzt (zoneUebersetzen). Der rechnet Zeile fuer Zeile wie gestern - gemessen an 16 echten
+   eigen-effekt.json und 79 gebauten Faellen: bitgleich. Der Wert steht in der Auswahl NUR dann,
+   wenn der Effekt ihn wirklich traegt, damit die Karte nicht luegt; wer etwas anderes waehlt,
+   wandert endgueltig in die neue Rechnung. Ein frischer Effekt beginnt bei „aus": nichts liegt
+   vor ihm, bis es jemand sagt. */
+const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'Aufenthalt',
+  sel:[['alles','überall'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles',
+  grau:e=>tiefeGrund(), notiz:e=>aufenthaltNotiz(e) };
+const VERDECK_WERTE = [['aus','aus'],['vorn','vom Vordergrund verdeckt']];
+const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'];
+/* `sel` BLEIBT EINE LISTE (Gegenlesen 16.09.2026, zweite Runde). Der Altwert soll nur dort in der
+   Auswahl stehen, wo der Effekt ihn wirklich traegt - daraus eine Funktion zu machen brach jeden,
+   der die Werte einer Zeile abliest, ohne sie zu zeichnen: labor/nahtpruefung/haken.js liest
+   `p.sel.map(s=>s[0])` und die ganze Nahtpruefung fiel mit „p.sel.map is not a function" aus.
+   Also traegt eine ZWEITE Eigenschaft die Zugabe; `sel` ist und bleibt die Liste der Werte. */
+const VERDECK_PARAM = { k:'tiefeVerdeckung', lbl:'Verdeckung',
+  sel:VERDECK_WERTE, selMehr:e=>(e.tiefeVerdeckung==='zone')?[VERDECK_ALTWERT]:null, def:'aus',
+  grau:e=>tiefeGrund()||verdeckGrund(e), notiz:e=>verdeckNotiz(e) };
+/* GRENZE UND WEICHHEIT (gemessen 16.09.2026 an „Okkultation"): die Karte ist richtig — Figur und
+   Balustrade hell, Himmel schwarz —, aber ihr Median liegt bei 19 von 255. Mit dem festen Band von
+   ±48 Stufen laege die untere Kante bei −29: kein Bildpunkt gilt als sicher fern, 43 % als sicher
+   nah, 57 % liegt im weichen Band. Genau darum tat „nur hinten" dort nichts. Beide Regler auf
+   „von selbst" (der Anschlag links) rechnen weiter Median und ±48 — ohne Zutun aendert sich nichts,
+   und die Zeile darunter sagt jederzeit, welche Zahl gerade gilt.
+   IN DER WERTSPALTE STEHT NUR EIN STRICH (Gegenlesen 16.09.2026): „von selbst" misst 57,9 px und
+   die Spalte ist 34 px breit - die Vorgabe lief an zwei Zeilen jeder Karte ueber den Schieber
+   daneben. Der ganze Satz steht ohnehin in der Notiz darunter. */
+const TIEFE_WERT = v => (v==null||v<0) ? '–' : Math.round(v*255)+'';
+const GRENZE_PARAM = { k:'tiefeGrenze', lbl:'Grenze', min:-.02, max:1, step:.02, def:-.02,
+  wert:TIEFE_WERT, grau:e=>tiefeGrund(), notiz:e=>grenzeNotiz(e) };
+const WEICH_PARAM = { k:'tiefeWeich', lbl:'Weichheit', min:-.02, max:1, step:.02, def:-.02,
+  wert:v=>(v==null||v<0)?'–':('±'+Math.round(v*255)), grau:e=>tiefeGrund(), notiz:e=>weichNotiz(e) };
+/* RAUMTIEFE: die Karte gibt jedem Teilchen Groesse, Tempo und ein wenig Dunst. Abgelesen wird
+   EINMAL an seinem Geburtsort, nicht je Bild — die Probe steht still, also bleibt der Loop exakt.
+   0 ist flach wie bisher (Vorgabe), 1 ist stark. */
+const RAUM_PARAM = { k:'raumtiefe', lbl:'Raumtiefe', min:0, max:1, step:.05, def:0,
+  grau:e=>tiefeGrund()||raumGrund(e), notiz:e=>raumNotiz(e) };
+/* Einzelne Koerper hat heute nur der Partikel-Effekt. Steht hier spaeter eine zweite Art Effekt mit
+   Teilchen, gehoert sie in diese eine Zeile und nirgendwo sonst hin. */
+const TIEFE_KOERPER = e => e.typ==='partikel';
+/* Arten, die ihren Ort ganz selbst rechnen und keinen Geburtsort im Bild haben (EIGENUHR) oder ihn
+   erst aus der Muendung bekommen (Kanone): fuer sie gibt es nichts abzulesen, was stillstuende. */
+const RAUM_OHNE = new Set(['schwarm','sternschnuppen','konfettiKanone']);
+/* Der Aufenthalt gilt bei Koerpern hart - aber nicht, solange ein altes Rezept seine weiche Zone
+   traegt. EINE Stelle, die das entscheidet; Maler und Kette fragen beide hier. */
+const ZONE_HART = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung!=='zone' && !!e.tiefeWirkt && e.tiefeWirkt!=='alles';
+/* Verdeckt wird nur, wo auch etwas davorstehen kann: nicht ohne Koerper (dort ist der Aufenthalt
+   schon der Schnitt), nicht im alten Rezept, und nicht, wenn der Effekt selbst vorn wohnt. */
+const VERDECKT = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung==='vorn' && e.tiefeWirkt!=='vorn';
+/* EINE KARTE, KEINE, ODER NOCH UNTERWEGS — UND DAS WIRD GESAGT (Regel 11; Caspar_D, 16.09.2026:
+   „das Problem ist, es wirkt nicht"). Ohne Tiefenkarte stehen alle Tiefenzeilen grau mit Grund.
+   Solange sie laedt, bleiben sie BEDIENBAR und sagen das — sie stillzulegen waere dieselbe
+   Falschaussage mit umgekehrtem Vorzeichen. */
+function tiefeGrund(){ return (tiefeStand()==='keine')
+  ? 'Zu diesem Titel liegt keine Tiefenkarte (tiefe.png). Ohne sie weiß der Effekt nicht, was vorn und was hinten ist — die Zeile bleibt still, statt etwas zu versprechen.'
+  : null; }
+const LAEDT = () => tiefeStand()==='unterwegs' ? 'Die Tiefenkarte wird gerade geladen — die Zahlen unten stehen, sobald sie da ist.' : null;
+function verdeckGrund(e){
+  if(e.tiefeVerdeckung==='zone') return null;   /* der Altwert muss sichtbar und aenderbar bleiben */
+  if(!TIEFE_KOERPER(e)) return 'Dieser Effekt hat keine einzelnen Körper — er legt sich über das ganze Bild. Seine Zone kann nur ausgeschnitten werden: der Aufenthalt ist hier schon der Schnitt.';
+  if(e.tiefeWirkt==='vorn') return 'Der Effekt hält sich selbst im Vordergrund auf — vor ihm steht nichts, was ihn verdecken könnte.';
+  return null; }
+function raumGrund(e){ return RAUM_OHNE.has(e.art) ? 'Diese Art rechnet ihren Ort ganz selbst und hat keinen Geburtsort im Bild, an dem eine stehende Tiefenprobe abzulesen wäre.' : null; }
+/* WIE der Aufenthalt bei DIESER Art durchgesetzt wird. Drei Mechanismen, drei Saetze - der eine
+   Satz von gestern versprach allen achtzehn Arten beides zugleich („kommen nicht zur Welt" UND
+   „die Schar weicht aus"), und fuer Sternschnuppe und Kanone stimmte keine der beiden Haelften. */
+function aufenthaltWie(art){
+  if(art==='schwarm') return 'Die Schar dreht vor der verbotenen Zone ab, statt hineinzufliegen.';
+  if(art==='sternschnuppen') return 'Die Schnuppe zieht ihre Bahn; ihr Schweif endet an der Zonengrenze, und ein Kopf in der verbotenen Zone fällt ganz aus.';
+  if(art==='konfettiKanone') return 'Die Kanone schießt aus ihrer Mündung; was in die verbotene Zone fliegt, wird dort nicht gezeichnet.';
+  return 'Die Teilchen kommen in der verbotenen Zone gar nicht erst zur Welt und werden dort auch nicht gezeichnet.'; }
+/* Arten mit weichem Saum: geprueft wird der Koerper, gemalt wird ein Verlauf, der darueber
+   hinausreicht. NACHGEMESSEN am 16.09.2026 (alle 18 Arten, zwei Titel, je „nur vorn" und „nur
+   hinten", 480x480): seit der Ring aus acht Punkten die Diagonalen mitprueft, bleibt bei den
+   Gluehwuermchen nur noch 0,00 bis 0,18 % der gemalten Flaeche in der verbotenen Zone - so viel
+   wie bei jeder anderen Art auch, also Raster und nicht Saum. Sie stehen darum nicht mehr hier.
+   Uebrig bleiben die Lichtkreise (bis 2,13 %) und die Schwaden (bis 0,22 %, vorher 14,88 %). */
+const ZONE_UNGENAU = new Set(['bokeh','schwaden']);
+/* UND DIE GRENZE, DIE FUER ALLE GILT (Gegenlesen 16.09.2026). Der Maler entscheidet auf dem Raster
+   der Tiefenprobe - 160 Punkte breit, einmal je Titel -, gemalt wird in voller Groesse. Wo die
+   Zonengrenze durch feine Struktur laeuft, faellt darum ein Rest Farbe auf die falsche Seite:
+   gemessen ueber alle 18 Arten hoechstens 2,13 % der gemalten Flaeche. Ein feineres Raster waere
+   die saubere Abhilfe, kostet aber die Bitgleichheit - dasselbe Raster traegt den Laser (tiefeBei)
+   und den Regler „Tiefe aus der Bildzeile", und ein gespeichertes Rezept saehe danach anders aus.
+   Also wird die Grenze GENANNT, nicht verschwiegen (Regel 11). */
+const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) — wo die Zonengrenze durch feine Struktur läuft, bleibt ein Rest Farbe auf der anderen Seite (gemessen bis 2 % der gemalten Fläche).';
+/* Wie viel des Bildes die erlaubte Zone einnimmt - und ob dort ueberhaupt etwas zu sehen sein wird.
+   Gerechnet aus dem Raster, nicht geraten. */
+function zonenLageVon(e){ const tp=tiefeProben(DATA&&DATA.id); if(!tp) return null;
+  const sp=tiefeSpanne(e,tp); return zonenLage(DATA&&DATA.id, e.tiefeWirkt, sp.g, sp.w); }
+function leerWarnung(e){ const zl=zonenLageVon(e); if(!zl) return '';
+  if(zl.erlaubt<0.01) return ' ACHTUNG: die erlaubte Zone ist nur '+vH(zl.erlaubt)+' des Bildes groß — hier wird so gut wie nichts zu sehen sein. Grenze oder Weichheit verschieben.';
+  return ' Die erlaubte Zone ist '+vH(zl.erlaubt)+' des Bildes groß.'; }
+function aufenthaltNotiz(e){
+  const l=LAEDT(); if(l) return l;
+  if(!tiefeKarteDa()||!e.tiefeWirkt||e.tiefeWirkt==='alles') return null;
+  if(!TIEFE_KOERPER(e)) return 'Die Zone wird aus dem Ergebnis ausgeschnitten — dieser Effekt hat keine einzelnen Körper, die man woanders hinschicken könnte.'+leerWarnung(e);
+  if(e.tiefeVerdeckung==='zone'){
+    const zl=zonenLageVon(e);
+    /* NICHT BEHAUPTEN, SONDERN NACHRECHNEN (Gegenlesen 16.09.2026). Der Satz von gestern sagte,
+       die Maske schneide die Zone „ohnehin aus". Auf zwei von vier gepruefte Karten nimmt sie in
+       einer der beiden Richtungen null Prozent des Bildes GANZ weg - sie dunkelt nur ab. */
+    return 'Altes Rezept: die Zone wird weich ausgeschnitten, ohne Betretungsverbot — Bild für Bild wie am Tag der Sicherung.'
+      + (zl ? (zl.ganzWeg<0.05
+          ? ' ACHTUNG: auf dieser Karte nimmt der Schnitt nur '+vH(zl.ganzWeg)+' des Bildes ganz weg, den Rest dunkelt er bloß ab. Für eine harte Zone die Verdeckung auf „aus" stellen.'
+          : ' Der Schnitt nimmt '+vH(zl.ganzWeg)+' des Bildes ganz weg.') : ''); }
+  return aufenthaltWie(e.art)
+    + (ZONE_UNGENAU.has(e.art) ? ' Diese Art malt einen weichen Saum über ihren Körper hinaus; ein Rest davon kann in die verbotene Zone reichen.' : '')
+    + RASTER_SATZ + leerWarnung(e); }
+function verdeckNotiz(e){
+  const l=LAEDT(); if(l&&TIEFE_KOERPER(e)) return l;
+  if(!tiefeKarteDa()||!TIEFE_KOERPER(e)||e.tiefeVerdeckung==='zone') return null;
+  if(e.tiefeVerdeckung==='vorn'&&e.tiefeWirkt!=='vorn')
+    return 'Was die Tiefenkarte als nah führt, liegt vor dem Effekt und nimmt ihn dort weg — auch bei Aufenthalt „überall". Das ist der Vogel, der hinter dem Haus verschwindet und wieder herauskommt.';
+  if(e.tiefeVerdeckung!=='vorn'&&(!e.tiefeWirkt||e.tiefeWirkt==='alles'))
+    return 'Nichts liegt vor dem Effekt: er wird über das ganze Bild gemalt, auch über die Figur davor.';
+  return null; }
+/* Wo dieselbe Karte im selben Clip zwei verschiedene Trennlinien bekommt, wird das gesagt. Die
+   Grenze beschreibt das BILD, haengt aber am Effekt - solange das so ist, darf es nicht still
+   passieren (Gegenlesen 16.09.2026; ob sie ans Rezept gehoert, ist Caspar_Ds Entscheidung). */
+function grenzeUneins(e){ try{
+  const and=(STAPEL||[]).filter(x=>x!==e&&x.tiefeWirkt&&x.tiefeWirkt!=='alles'
+    &&((x.tiefeGrenze==null?-1:x.tiefeGrenze)!==(e.tiefeGrenze==null?-1:e.tiefeGrenze)
+      ||(x.tiefeWeich==null?-1:x.tiefeWeich)!==(e.tiefeWeich==null?-1:e.tiefeWeich)));
+  return and.length ? (and.length===1
+    ? ' In diesem Clip steht ein weiterer Effekt mit Zone auf einer ANDEREN Grenze — dieselbe Karte wird dann verschieden geteilt.'
+    : ' In diesem Clip stehen '+and.length+' weitere Effekte mit Zone auf einer ANDEREN Grenze — dieselbe Karte wird dann verschieden geteilt.') : '';
+}catch(x){ return ''; } }
+function grenzeNotiz(e){ const l=LAEDT(); if(l) return l;
+  if(!tiefeKarteDa()) return null; const m=tiefeMitte();
+  /* EHRLICH UEBER DIE ZWEITE ZAHL (Gegenlesen 16.09.2026): die Maske rechnet ihren Median in der
+     jeweiligen AUSGABEGROESSE neu, dieses Raster ist 160 Punkte breit. Auf zwei von vier geprueften
+     Karten weichen die beiden um ein bis zwei Graustufen ab. Solange beide Zahlen nebeneinander
+     leben, wird die angezeigte nicht als DIE Zahl ausgegeben. */
+  return ((e.tiefeGrenze==null||e.tiefeGrenze<0)
+    ? 'von selbst: die Mitte dieser Karte'+(m==null?'':' — rund '+Math.round(m*255)+' von 255 (die Maske misst sie je Ausgabegröße neu und kann ein bis zwei Stufen abweichen)')+'.'
+    : 'von Hand: '+Math.round(e.tiefeGrenze*255)+' von 255'+(m==null?'':'; von selbst wären es rund '+Math.round(m*255))+'.') + grenzeUneins(e); }
+function weichNotiz(e){ const l=LAEDT(); if(l) return l; if(!tiefeKarteDa()) return null;
+  return (e.tiefeWeich==null||e.tiefeWeich<0)
+    ? 'von selbst: ±48 von 255 um die Grenze.'
+    : 'von Hand: ±'+Math.round(e.tiefeWeich*255)+' von 255 um die Grenze (von selbst wären es ±48).'; }
+function raumNotiz(e){ const l=LAEDT(); if(l) return l;
+  if(!tiefeKarteDa()||RAUM_OHNE.has(e.art)) return null;
+  return (e.raumtiefe>0.001)
+    ? 'Bei 1 ist das nächste Teilchen 1,6-fach groß und 1,5-fach schnell, das fernste 0,4-fach groß, 0,5-fach schnell und bis zu 35 % blasser. Abgelesen wird einmal am Geburtsort — die Probe steht, der Loop bleibt exakt.'
+    : 'flach wie bisher: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen.'; }
 
 /* DER ANTRIEB AM PARTIKEL-EFFEKT (Caspar_D, 16.09.2026: "mach beides, fallen und kanone"). Die
    Konfetti-Kanone ist die erste Partikel-Art mit einem ZEITPUNKT statt nur einer Bahn - ihre
@@ -27431,7 +27608,12 @@ function qParams(vor){ const d=Object.assign({ qForm:'bild', qUrsprung:'bild', q
    Gefunden bei der Inventur der Zustandswechsel am 14.09.2026, eingebaut am selben Tag von mir. */
 for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue;
   if(T.art==='grund'||T.art==='geo') continue;
-  T.params.push(Object.assign({}, TIEFE_PARAM)); }
+  T.params.push(Object.assign({}, TIEFE_PARAM), Object.assign({}, VERDECK_PARAM),
+                Object.assign({}, GRENZE_PARAM), Object.assign({}, WEICH_PARAM));
+  /* Die Raumtiefe steht nur dort, wo es einzelne Koerper gibt, denen sie Groesse und Tempo geben
+     kann. `when`/Auslassen ist richtig, wo eine Zeile fuer diese Bauart gar nicht existiert; grau
+     mit Grund ist fuer Zeilen, die es gibt und die gerade nichts bestimmen (Hausgesetz 16.09.2026). */
+  if(TIEFE_KOERPER({typ:k})) T.params.push(Object.assign({}, RAUM_PARAM)); }
 
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
@@ -27524,6 +27706,20 @@ const ART_MASS={ schwaden:[40,6], gluehwuermchen:[45,2.5], schmetterling:[16,7],
 /* Der Glitzer kommt am 16.09.2026 dazu: seine Blitze sind Salven aus Licht statt aus Papier,
    und sie lesen dieselbe Periode aus demselben Pult (antriebPeriode). */
 const ART_ANTRIEB={ konfettiKanone:1, glitzer:1 };
+/* ZWEI DINGE MIT AEHNLICHEM NAMEN (Nomenklatur-Praezision, gefunden 16.09.2026 beim Einbau der
+   Verdeckung). Der Partikel-Regler „Von Objekten verdeckt" ist aelter als die Zeile „Verdeckung"
+   in der rechten Spalte und fragt etwas ANDERES: er schaetzt die Tiefe des TEILCHENS aus seiner
+   Bildzeile (am Horizont fern, unten nah) und laesst es dort verschwinden, wo die Szene naeher
+   steht. Die Zeile rechts fragt nicht nach dem Teilchen, sondern nach seiner ZONE. Solange beide
+   nebeneinanderstehen, sagt die Karte, welche was tut; zusammenlegen kann man sie erst, wenn
+   entschieden ist, welche der beiden Tiefen die Wahrheit sein soll - das ist ein eigener Gang und
+   steht nicht in diesem Auftrag. */
+{ const pv=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.k==='verdecken');
+  /* DIE NOTIZ STAND NUR, WENN DER REGLER SCHON GEZOGEN WAR (Gegenlesen 16.09.2026) - also genau
+     dann nicht, wenn sie gebraucht wird: wer die Karte frisch aufschlaegt, sah zwei fast gleich
+     heissende Bedienteile und keinen Hinweis. Sie steht jetzt immer, und der Regler heisst nach
+     dem, wonach er wirklich fragt. */
+  if(pv) pv.notiz=e=>'Schätzt die Tiefe jedes Teilchens aus seiner Bildzeile — oben fern, unten nah — und lässt es hinter näheren Stellen der Szene verschwinden, Teilchen für Teilchen. Die Zeile „Verdeckung“ rechts fragt nicht das einzelne Teilchen, sondern die Tiefenkarte des Titels. Zwei verschiedene Tiefen, zwei Regler.'; }
 /* UND SIE BRINGEN IHN AUCH MIT (gemessen 16.09.2026). Beide Arten LESEN den Antrieb, aber keine
    brachte ihn mit: ab Werk stand er auf "stetig", also schoss die Kanone alle 1,6 s und der
    Glitzer blitzte alle 1,6 s - beides neben dem Takt, auf dem sie laut ihrer eigenen Beschreibung
@@ -28785,7 +28981,67 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       cx=e._vc.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
       cx.globalAlpha=1; cx.filter='none'; cx.clearRect(0,0,Wn,Hn); cx.lineCap='round'; }
     const wa=(e.wandern==null?0:e.wandern);
-    for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn; const sp=0.5+hs(i+2000), sz=gr*(0.5+hs(i+3000)), gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=LOOP>0?((t*lpR(0.11*e.tempo)+hs(i+9600))%1+1)%1:((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a);   /* das Aufgehen der Schwade: im Export ganze Zyklen je Clip */ cx.fillStyle=fc; cx.strokeStyle=fc;
+    /* ---- AUFENTHALT (Betretungsverbot) UND RAUMTIEFE (16.09.2026) ----
+       Gefragt wird EINMAL je Bild nach dem Raster (tiefeProben, 160 Punkte breit, einmal je Titel)
+       und dann je Teilchen an einem Punkt - nie ein Bildlesen je Teilchen, nie eines je Bild.
+       Das Verbot gilt HART und je Art verschieden:
+         - alle fallenden und treibenden Arten: wer in der verbotenen Zone zur Welt kaeme, wuerfelt
+           seinen Platz neu (bis zu acht Mal, reine Funktion von i); wer im Flug hinuebergeraet,
+           wird dort NICHT GEZEICHNET - er ist nicht da, das ist der Unterschied zur Verdeckung.
+         - Schwarm: AUSWEICHEN. Eine Schar loest sich nicht auf, sie dreht ab - die Voegel folgen
+           dem Gefaelle der Karte aus der Zone heraus (zAusweichen).
+         - Sternschnuppe und Kanone: kein eigener Geburtsort im Bild (die eine faengt weit vor dem
+           Rand an, die andere an der Muendung) - fuer sie gilt allein die Ortspruefung am Kopf.
+         - mit gewaehlter Quelle wird der Geburtsort nicht verlegt: den hat Caspar_D gesetzt.
+       Alles reine Funktionen von i und t, also bleibt der Loop exakt. */
+    const RAUM=Math.max(0,Math.min(1,(e.raumtiefe==null?0:e.raumtiefe)));
+    const zoneWunsch=ZONE_HART(e)?e.tiefeWirkt:null;
+    const TPR=(zoneWunsch||RAUM>0.001)?tiefeProben(DATA&&DATA.id):null;
+    const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(e,TPR):null;
+    const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
+    /* Wie weit ein Koerper um seinen Ort herum reicht, in Vielfachen von sz - abgelesen an den
+       Malern: der Vogel spannt die Fluegel (sz*2,3), der Regen zieht einen Strich nach unten
+       (sz*4), Blase und Bokeh haben einen Hof, die runden Arten enden bei ihrem Radius. */
+    const ZKOERPER=({schwarm:2.6, regen:4.2, blasen:1.4, bokeh:2.2, blaetter:1.7, glitzer:2.2,
+      gluehwuermchen:4.5, schwaden:3.2, schmetterling:2.2, sternschnuppen:1.2, daunen:1.5, pusteblume:1.8}[e.art])||1.2;
+    const zNah=(px,py)=>tiefeNahAn(TPR,px/Wn,py/Hn,ZG.g,ZG.w);
+    /* Verboten ist, was jenseits der GRENZE liegt: bei „nur hinten" alles, was naeher als die
+       Grenze ist, bei „nur vorn" alles, was ferner ist. Dieselbe Kurve wie die Maske, an der
+       Mitte abgeschnitten - so heisst „nur hinten" genau das, was die Zeile sagt. */
+    /* EIN TEILCHEN IST KEIN PUNKT (gemessen 16.09.2026: mit der Probe nur im Mittelpunkt lagen bei
+       120 Voegeln noch 62 Bildpunkte Farbe ueber dem nahen Bereich - die Schwinge ragte hinueber).
+       Gefragt wird darum der ganze Koerper: Mitte und vier Punkte im Abstand seines Radius. Wer mit
+       einem Fluegel in die verbotene Zone reicht, ist dort auch. */
+    const zPunkt=(px,py)=>ZONE==='hinten'?zNah(px,py)>=0.5:zNah(px,py)<0.5;
+    /* EIN RING, KEIN KREUZ (Gegenlesen 16.09.2026). Vier Punkte auf den Achsen lassen die
+       Diagonalen frei; bei den breiten Arten stand danach noch Farbe in der verbotenen Zone.
+       Acht Punkte plus Mitte kosten vier weitere Rasterzugriffe je Teilchen und schliessen sie. */
+    const zSperre=(px,py,r)=>{ if(zPunkt(px,py)) return true; if(!(r>0)) return false; const d=r*0.7071;
+      return zPunkt(px-r,py)||zPunkt(px+r,py)||zPunkt(px,py-r)||zPunkt(px,py+r)
+          || zPunkt(px-d,py-d)||zPunkt(px+d,py-d)||zPunkt(px-d,py+d)||zPunkt(px+d,py+d); };
+    /* Ausweichen: bis zu zwoelf Schritte von je einem Vierundzwanzigstel der kurzen Bildseite dem
+       Gefaelle der Karte nach - aus der Zone heraus, nicht hindurch. */
+    const zAusweichen=(px,py,r)=>{ if(!ZONE) return [px,py]; const S=Math.min(Wn,Hn)/24, ri=(ZONE==='hinten')?-1:1, d=S*0.5;
+      for(let k=0;k<12&&zSperre(px,py,r);k++){
+        const dgx=zNah(px+d,py)-zNah(px-d,py), dgy=zNah(px,py+d)-zNah(px,py-d);
+        const nn=Math.hypot(dgx,dgy); if(nn<1e-6) break;
+        px+=ri*dgx/nn*S; py+=ri*dgy/nn*S; }
+      return [px,py]; };
+    for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn;
+      /* DERSELBE RADIUS WIE BEIM ZEICHNEN (Gegenlesen 16.09.2026). Bis eben rechnete der
+         Geburtsort ohne Raumtiefe, gezeichnet wurde mit ihr: ein nahes Teilchen kam mit dem
+         flachen Radius zur Welt und wurde beim Zeichnen mit dem bis zu 1,6-fachen doch verworfen.
+         Die Naehe am Geburtsort ist bekannt, sobald der Ort feststeht - also wird sie dort gefragt. */
+      const zRoh=ZONE?gr*(0.5+hs(i+3000))*ZKOERPER:0;
+      const zRBei=(px,py)=>raumAn?zRoh*(1+RAUM*(2*tiefeNahAn(TPR,px/Wn,py/Hn,ZG.g,ZG.w)-1)*0.6):zRoh;
+      if(ZONE&&!eigen&&!eigUhr&&!kanone) for(let v=1; v<=8 && zSperre(x0,y0,zRBei(x0,y0)); v++){ x0=hs(i+v*13000)*Wn; y0=hs(i+v*13000+700)*Hn; }
+      /* Der Geburtsort ist der Quellfleck, wenn einer gewaehlt ist, sonst der gewuerfelte Platz.
+         Groesse und Tempo haengen daran, nicht am jeweiligen Ort - sonst atmete das Teilchen im
+         Flug und die Naht ginge auf. Dunst nimmt dem Fernen bis zu 35 % Deckkraft. */
+      const geb=raumAn?(eigen?quellPunkt(e,i,hs,Wn,Hn):[x0,y0]):null;
+      const nz=geb?tiefeNahAn(TPR,geb[0]/Wn,geb[1]/Hn,ZG?ZG.g:0.5,ZG?ZG.w:48/255):0.5;
+      const rG=geb?1+RAUM*(2*nz-1)*0.6:1, rT=geb?1+RAUM*(2*nz-1)*0.5:1, rD=geb?1-RAUM*0.35*(1-nz):1;
+      const sp=(0.5+hs(i+2000))*rT, sz=gr*(0.5+hs(i+3000))*rG, gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=LOOP>0?((t*lpR(0.11*e.tempo)+hs(i+9600))%1+1)%1:((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a);   /* das Aufgehen der Schwade: im Export ganze Zyklen je Clip */ cx.fillStyle=fc; cx.strokeStyle=fc;
       /* UNBERECHENBAR UND TROTZDEM RUND. Drei Schwingungen mit verschiedenen Raten, je Teilchen
          anders verschoben - das Auge findet darin kein Muster. Und weil jede Rate durch lpW auf
          die Clipdauer gerastet wird, steht nach einem Durchlauf jedes Tier wieder da, wo es
@@ -28807,12 +29063,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           return [((x0+gx+Math.sin(ba[2]*q+i*ba[3])*ba[1]*U+vx*q)%Wn+Wn)%Wn, ((y0+Math.sin(ba[5]*q+i*ba[6])*ba[4]*U+vy*q)%Hn+Hn)%Hn, g[1], ((q*0.11*e.tempo+hs(i+9600))%1+1)%1]; }); }
       const G=leben?leben.length:1;
       for(let gi=0;gi<G;gi++){ if(leben){ x=leben[gi][0]; y=leben[gi][1]; al=leben[gi][2]; qs=leben[gi][3]; }
-      if(e.art==='schnee'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='regen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } const ws=Math.max(0.5*U,sz*0.35), lw=Math.max(0.5,ws); cx.globalAlpha=al*(ws/lw); cx.lineWidth=lw; cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14*U+gx*0.15,y+8*U+sz*4); cx.stroke(); cx.globalAlpha=1; }   /* ws: Strich wie im Studio (dort mindestens 0,5 px); greift die Untergrenze erst hier, traegt die Deckkraft den Rest - sonst war der Regen bei u 0,4 dreimal so hell (Gegenpruefung 15.09.2026) */
-      else if(e.art==='asche'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20*U+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='blasen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10*U+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } const ws=Math.max(0.6*U,sz*0.25), lw=Math.max(0.6,ws); cx.lineWidth=lw; cx.globalAlpha=al*0.8*(ws/lw); cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke();   /* Randstrich wie beim Regen */ cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='staub'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8*U+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14*U+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(lpW(4)*t+i));   /* Funkeln gerastet */ cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
-      else if(e.art==='gluehwuermchen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
+      if(rD!==1) al*=rD;   /* Dunst der Ferne (Raumtiefe) */
+      if(e.art==='schnee'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.06,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.7)*t+i)*12*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='regen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.6,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.3,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; const ws=Math.max(0.5*U,sz*0.35), lw=Math.max(0.5,ws); cx.globalAlpha=al*(ws/lw); cx.lineWidth=lw; cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+w*14*U+gx*0.15,y+8*U+sz*4); cx.stroke(); cx.globalAlpha=1; }   /* ws: Strich wie im Studio (dort mindestens 0,5 px); greift die Untergrenze erst hier, traegt die Deckkraft den Rest - sonst war der Regen bei u 0,4 dreimal so hell (Gegenpruefung 15.09.2026) */
+      else if(e.art==='asche'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.4)*t+i*1.3)*20*U+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; cx.globalAlpha=al*(0.4+0.6*hs(i+4000)); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='blasen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.08,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.6)*t+i*1.1)*10*U+lpV(w*Hn*0.04,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; const ws=Math.max(0.6*U,sz*0.25), lw=Math.max(0.6,ws); cx.lineWidth=lw; cx.globalAlpha=al*0.8*(ws/lw); cx.beginPath(); cx.arc(x,y,sz*1.3,0,7); cx.stroke();   /* Randstrich wie beim Regen */ cx.globalAlpha=al; cx.beginPath(); cx.arc(x-sz*0.45,y-sz*0.45,sz*0.3,0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='staub'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012*0.4,Hn)/0.4; y=((y0+Math.sin(lpW(0.3)*t+i)*8*U+aS*t*v*0.4)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.25)*t+i*0.7)*14*U+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; const tief=hs(i+4500); cx.globalAlpha=al*(0.15+0.85*tief)*(0.7+0.3*Math.sin(lpW(4)*t+i));   /* Funkeln gerastet */ cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*tief),0,7); cx.fill(); cx.globalAlpha=1; }
+      else if(e.art==='gluehwuermchen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* Ein Gluehwuermchen leuchtet nicht dauernd, es blinkt - und jedes fuer sich, mit eigener
            Rate und eigener Phase. Genau das unterscheidet es von einem hellen Punkt.
            WIE LANGSAM (Caspar_D, 14.09.2026: "die viecher blinken zu schnell"): gebaut waren 0,5 bis
@@ -28831,7 +29088,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,sz*4.5,0,7); cx.fill();
           cx.fillStyle=fc; cx.beginPath(); cx.arc(x,y,sz*0.6,0,7); cx.fill(); }
         cx.globalAlpha=1; cx.fillStyle=fc; }
-      else if(e.art==='schmetterling'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='schmetterling'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* VIER FLUEGEL STATT ZWEI ELLIPSEN (Caspar_D, 16.09.2026: "die schmetterlings aus 2
            Ellipsen sind zu offensichtlich 2 Ellipsen, kannst du das auch mit vier gerundeten
            Dreiecken machen, oder hast du eine bessere Idee"). Die bessere Idee ist der ECHTE
@@ -28874,7 +29131,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         cx.beginPath(); cx.moveTo(-lw*0.6,-sz*0.48); cx.quadraticCurveTo(-sz*0.34,-sz*0.98,-sz*0.52,-sz*1.16);
         cx.moveTo(lw*0.6,-sz*0.48); cx.quadraticCurveTo(sz*0.34,-sz*0.98,sz*0.52,-sz*1.16); cx.stroke();
         cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; cx.strokeStyle=fc; }
-      else if(e.art==='konfetti'||e.art==='konfettiKanone'){ if(!eigen&&!kanone&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.07,Hn); y=((y0+Math.sin(lpW(0.9)*t+i*2)*6*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.6)*t+i)*30*U+lpV(w*Hn*0.07,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='konfetti'||e.art==='konfettiKanone'){ if(!eigen&&!kanone&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.07,Hn); y=((y0+Math.sin(lpW(0.9)*t+i*2)*6*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.6)*t+i)*30*U+lpV(w*Hn*0.07,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* EIN PLAETTCHEN, KEIN PUNKT (Caspar_D, 16.09.2026: "bei partikeln haette ich gerne noch
            Konfetti"). Was ein Rechteck raeumlich macht, ist nicht seine Drehung in der Bildebene -
            die hat es auch -, sondern das TAUMELN um die eigene Achse: es wird schmal, wenn es
@@ -28895,7 +29152,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         cx.fillStyle=farbeVon(i,a,0.55*(1-sx)*(1-sx));
         cx.beginPath(); if(cx.roundRect) cx.roundRect(-bw,-bh,bw*2,bh*2,rd); else cx.rect(-bw,-bh,bw*2,bh*2); cx.fill();
         cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; }
-      else if(e.art==='daunen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.028,Hn); y=((y0+Math.sin(lpW(0.45)*t+i*2.3)*7*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i)*40*U+lpV(w*Hn*0.09,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='daunen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.028,Hn); y=((y0+Math.sin(lpW(0.45)*t+i*2.3)*7*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i)*40*U+lpV(w*Hn*0.09,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* DAUNENFEDER (Caspar_D, 16.09.2026: "daunenfedern sind noch gut"). Fast schwerelos, und
            genau das steht in den Zahlen: sie faellt mit 0,028 Bildhoehen je Sekunde langsamer als
            jede andere Art (Schnee 0,06) und segelt dabei 40 Studio-Punkte weit zur Seite, mit
@@ -28929,7 +29186,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.beginPath(); cx.moveTo(br*0.22*(1-u),py-d); cx.lineTo(br*(1.35+0.55*u),py+lg*0.2); cx.lineTo(br*0.22*(1-u),py+d); cx.fill();
           cx.beginPath(); cx.moveTo(-br*0.14*(1-u),py-d*0.8); cx.lineTo(-br*(0.52+0.3*u),py+lg*0.16); cx.lineTo(-br*0.14*(1-u),py+d*0.8); cx.fill(); }
         cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; cx.strokeStyle=fc; }
-      else if(e.art==='bokeh'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.018,Hn); y=((y0+Math.sin(lpW(0.13)*t+i*1.7)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.18)*t+i)*16*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='bokeh'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.018,Hn); y=((y0+Math.sin(lpW(0.13)*t+i*1.7)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.18)*t+i)*16*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* BOKEH (Caspar_D, 16.09.2026, Auftragsliste 5). Ein Lichtpunkt ausserhalb der Schaerfe ist
            kein weicher Fleck, sondern die BLENDE selbst, abgebildet: eine fast gleichmaessig helle
            Scheibe mit einer hellen Kante und einem weichen Saum. Deshalb steht hier ein Verlauf,
@@ -28950,7 +29207,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           g.addColorStop(0.86,farbeVon(i,+di.toFixed(4)));
           g.addColorStop(1,farbeVon(i,0));
           cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,R,0,7); cx.fill(); cx.fillStyle=fc; } }
-      else if(e.art==='glitzer'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='glitzer'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* GLITZER (Caspar_D, 16.09.2026, Auftragsliste 6). Die einzige Art OHNE Koerper: was man
            sieht, ist kein Teilchen, das vorbeifliegt, sondern ein AUFBLITZEN an einer Stelle - ein
            Kristall, der sich einen Augenblick lang zum Licht dreht. Darum steht die Stelle fast
@@ -28996,7 +29253,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
             cx.beginPath(); cx.moveTo(ax2*lg,ay2*lg); cx.lineTo(-ay2*bw,ax2*bw); cx.lineTo(ay2*bw,-ax2*bw); cx.fill(); }
           cx.fillStyle=farbeVon(i,a,0.75); cx.beginPath(); cx.arc(0,0,Math.max(0.35,sz*0.4*(0.4+0.6*bl)),0,7); cx.fill();
           cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; } }
-      else if(e.art==='pusteblume'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.02,Hn); y=((y0+Math.sin(lpW(0.35)*t+i*2.1)*5*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.22)*t+i)*46*U+lpV(w*Hn*0.11,Wn)*t)%Wn+Wn)%Wn; }
+      else if(e.art==='pusteblume'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.02,Hn); y=((y0+Math.sin(lpW(0.35)*t+i*2.1)*5*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.22)*t+i)*46*U+lpV(w*Hn*0.11,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue;
         /* PUSTEBLUMENSAMEN (Caspar_D, 16.09.2026, Auftragsliste 7: "seeds that sail rather than
            fall"). Das Segeln steht in den Zahlen und nicht in einem Regler: 0,02 Bildhoehen je
            Sekunde Fall - langsamer als die Daune (0,028), langsamer als alles andere - bei 46
@@ -29026,7 +29283,16 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
            Kopf ein kleiner Glutball darueber. Er waechst in den ersten 18 Prozent des Fluges aus
            dem Kopf heraus, statt sofort in voller Laenge dazustehen. */
         if(i<E){ const F=sternBahn(e,i,t,Wn,Hn,hs,aB,aS,w,E), bx=F[0]+wx, by=F[1]+wy, ba=F[2], an=F[3];
-          if(ba>0.004){ const D=Math.hypot(Wn,Hn), sl=D*(0.10+0.09*hs(i+9950))*Math.min(1,F[4]/0.18);
+          if(ZONE&&zSperre(bx,by,sz*ZKOERPER)) continue;   /* die Schnuppe zieht ihre Bahn; in der verbotenen Zone ist sie nicht */
+          if(ba>0.004){ const D=Math.hypot(Wn,Hn); let sl=D*(0.10+0.09*hs(i+9950))*Math.min(1,F[4]/0.18);
+            /* DER SCHWEIF IST LAENGER ALS DER KOPF (Gegenlesen 16.09.2026). Bis eben entschied
+               allein der Kopf ueber den ganzen Koerper: lag er in der verbotenen Zone, verschwand
+               auch der bis zu 19 % der Bilddiagonale lange Schweif, der ganz in der ERLAUBTEN Zone
+               liegen konnte - der Effekt fiel damit stumm und vollstaendig aus. Jetzt wird die
+               Bahn abgetastet und der Schweif endet an der Grenze, statt den Kopf mitzunehmen. */
+            if(ZONE&&sl>0){ const SP=8; for(let q=1;q<=SP;q++){ const f=q/SP;
+              if(zPunkt(bx-Math.cos(an)*sl*f, by-Math.sin(an)*sl*f)){ sl=sl*(q-1)/SP; break; } } }
+            if(sl<=0) continue;
             const tx=bx-Math.cos(an)*sl, ty=by-Math.sin(an)*sl;
             const hb=Math.max(0.5*U,sz*0.52), hw=Math.max(0.5,hb);
             const g=cx.createLinearGradient(bx,by,tx,ty);
@@ -29046,7 +29312,9 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
            Schmetterling keine Drehung, sondern eine Stauchung quer zur Flugrichtung samt kurzem
            Aufhellen: von der Seite gesehen wird eine schlagende Schwinge SCHMAL und faengt dabei
            das Licht. Rate durch lpW gerastet, also steht nach L jeder Fluegel wieder gleich. */
-        if(S&&i<S.n){ const bx=S.X[i]+wx, by=S.Y[i]+wy, hd=Math.atan2(S.VY[i],S.VX[i]);
+        if(S&&i<S.n){ const AW=ZONE?zAusweichen(S.X[i]+wx,S.Y[i]+wy,sz*ZKOERPER):null;
+          const bx=AW?AW[0]:S.X[i]+wx, by=AW?AW[1]:S.Y[i]+wy, hd=Math.atan2(S.VY[i],S.VX[i]);
+          if(ZONE&&zSperre(bx,by,sz*ZKOERPER)) continue;   /* wo auch das Ausweichen nicht hilft (eine Zone, die das halbe Bild ist), ist der Vogel nicht */
           const fl=Math.abs(Math.sin(lpW((2.1+hs(i+4700)*1.5)*Math.max(0.2,e.tempo))*t+i*1.9));
           const sn=sz*2.3*(0.22+0.78*fl);
           cx.save(); cx.globalAlpha=al; cx.translate(bx,by); cx.rotate(hd);
@@ -29058,7 +29326,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.fillStyle=farbeVon(i,a*(kb/kw),0.1);
           cx.beginPath(); cx.moveTo(sz*1.0,0); cx.quadraticCurveTo(0,kw,-sz*1.1,0); cx.quadraticCurveTo(0,-kw,sz*1.0,0); cx.fill();
           cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; } }
-      else if(e.art==='blaetter'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28*U+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
+      else if(e.art==='blaetter'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28*U+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
       else if(e.art==='schwaden'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
         /* SCHWADEN (Caspar_D, 14.09.2026: "und rauch kann sich genauso verhalten, nur dass es
            schwaden statt teilchen sind"). Dieselbe Quelle, derselbe Flug - nur gezeichnet wird
@@ -29078,13 +29346,21 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
            dann abnehmend - die Fahne setzt ein Stueck ueber der Quelle ein, steht dort am
            dichtesten und wird nach oben blass. Kein Regler: das tut Rauch immer. */
         const g6=(6+22*qs)/6, R=sz*6*g6, kond=Math.min(1,qs*4), di=a*al*0.34*kond/(g6*g6);
+        /* DIE SCHWADE IST KEIN PUNKT UND KEIN KOERPER (Gegenlesen 16.09.2026). Geprueft wurde sie
+           mit sz*3,2, gemalt wird sie als drei Lappen, deren Mitten bis R*0,45 danebenliegen und
+           deren Radius bis R reicht - bei aufgegangener Schwade das Zwoelffache des Prueframens.
+           Also wird hier mit dem Radius geprueft, den dieselbe Rechnung gerade ergeben hat. Nur
+           solange die Schwade ueberhaupt etwas traegt: unter zwei Graustufen Dichte ist sie nicht
+           mehr zu sehen, und ein Ring von R*0,9 wuerde sie dann grundlos aus dem halben Bild
+           verbannen. */
+        if(ZONE&&zSperre(x,y,(di>0.008?R*0.9:sz*ZKOERPER))) continue;
         for(let L=0;L<3;L++){ const ha=hs(i+9700+L*37), hb=hs(i+9800+L*37);
           const lx=x+(ha-0.5)*R*0.9, ly=y+(hb-0.5)*R*0.7, lr=R*(0.55+0.45*ha);
           const g=zx.createRadialGradient(lx,ly,0,lx,ly,lr);
           g.addColorStop(0,farbeVon(i,+(di*(0.7+0.3*hb)).toFixed(4))); g.addColorStop(1,farbeVon(i,0));
           zx.fillStyle=g; zx.beginPath(); zx.arc(lx,ly,lr,0,7); zx.fill(); }
         cx.fillStyle=fc; }
-      else { if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6*U+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
+      else { if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6*U+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
     if(schw){ const lx2=e._rl.getContext('2d'); lx2.setTransform(1,0,0,1,0,0); lx2.globalAlpha=1;
       lx2.globalCompositeOperation='source-over'; lx2.clearRect(0,0,Wn,Hn);
       if(!LICHTMAL&&olicht&&olicht.width>1){ lx2.drawImage(olicht,0,0);
@@ -29546,7 +29822,7 @@ function renderStapel(){
     if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt']);
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','tiefeGrenze','tiefeWeich','raumtiefe']);
     const paramBauen=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
       if(p.q){ const sel=(lbl,k,liste)=>'<div class="tbs-regler"><span>'+lbl+'</span><select data-k="'+k+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
@@ -29656,9 +29932,12 @@ function renderStapel(){
           h+='<button data-rampplus="1" class="tbs-knopf" style="width:30px;height:22px;font-size:14px">+</button></div>'; }
         h+='</div>'; return; }
       if(p.farbe){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="color" data-k="'+p.k+'" value="'+e[p.k]+'"><span></span></div>'; }
-      else if(p.sel){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+p.sel.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
+      else if(p.sel){ const pliste=p.selMehr ? p.sel.concat(p.selMehr(e)||[]) : p.sel;   /* `selMehr` haengt Werte an, die nur dieser Effekt traegt (der Altwert der Verdeckung) */
+        h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+pliste.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
-      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
+      /* `wert` beschriftet den Regler selbst, wo die blosse Zahl nichts sagt: der Anschlag links
+         der Tiefengrenze ist kein Wert, sondern „von selbst" (16.09.2026). */
+      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k]):kf(e[p.k]))+'</span></div>'; }
     };
     /* GRAU MIT GRUND STATT WEG (Hausgesetz der Effektclips, 16.09.2026: "Nichts darf in der
        Oberflaeche luegen: was eine Art nicht benutzt, wird ausgegraut mit Grund, nicht
@@ -29721,7 +30000,7 @@ function renderStapel(){
       renderStapel(); });
     c.querySelectorAll('[data-k]').forEach(inp=>inp.oninput=()=>{ const k=inp.dataset.k, p=T.params.find(x=>x.k===k);
       e[k]= (inp.type==='range') ? +inp.value : inp.value;
-      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
+      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? (p&&p.wert?p.wert(+inp.value):kf(inp.value)) : inp.value;
       /* EINE NOTIZ, DIE AM REGLERWERT HAENGT, MUSS AM REGLER MITZIEHEN (Regel 11, nachgesehen
          16.09.2026 in der Oberflaechenprobe). Unter „Anzahl“ steht bei der Sternschnuppe, wie
          viele je Cliplänge fliegen - beim Schieben blieb der alte Satz stehen, weil nur
@@ -30049,9 +30328,18 @@ function zeichneFrame(t,roh){
   let curCv=oa, curCx=ca;
   const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } };
   for(const e of kette){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
-    /* „wirkt auf": vorn, hinten oder alles. Ohne Karte oder bei „alles" ist es null und es
-       aendert sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten. */
-    const maske=tiefeMaske(DATA&&DATA.id, e.tiefeWirkt, Wn, Hn);
+    /* AUFENTHALT UND VERDECKUNG in der Kette. Ohne Karte oder bei „ueberall" ist die Maske null
+       und es aendert sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten.
+       DREI WEGE, IN DIESER REIHENFOLGE (16.09.2026):
+         1. Verdeckt (nur Koerper): die Maske im Modus „hinten" - behalte, was fern ist, nimm weg,
+            was nah ist. Das ist die Verdeckung, und sie haengt NICHT am Aufenthalt.
+         2. Harter Aufenthalt (Koerper ohne Altwert): hier wird nichts geschnitten, der Maler hat
+            die Teilchen schon gar nicht erst in die verbotene Zone gelassen.
+         3. Alles andere - kein Koerper, oder ein altes Rezept mit seinem weichen Schnitt: die Zone
+            wird ausgeschnitten wie seit dem 14.09.2026. */
+    const maske = VERDECKT(e) ? tiefeMaske(DATA&&DATA.id, 'hinten', Wn, Hn, e.tiefeGrenze, e.tiefeWeich)
+      : ZONE_HART(e) ? null
+      : tiefeMaske(DATA&&DATA.id, e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);
     if(T.art==='mal'){
       /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
          darunter wirken. Also vorher eine Kopie beiseitelegen, malen, dann maskieren. */
@@ -30211,11 +30499,13 @@ function zeichneFrame(t,roh){
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
   function effekteJSON(){ return STAPEL.map(({id,zu,...r})=>Object.fromEntries(Object.entries(r).filter(([k])=>k[0]!=='_'))); }
   /* DIESE FORM TRAEGT EINEN ZUSTAND JE TITEL. Die Ablage (Kopieren/Einfuegen, 16.09.2026) reicht genau sie weiter
-     und legt nur fuer sich Herkunft und Zeitpunkt daneben - in der Datei steht davon nichts, fassung bleibt 3.
+     und legt nur fuer sich Herkunft und Zeitpunkt daneben - in der Datei steht davon nichts.
+     FASSUNG 4 seit dem 16.09.2026: der Aufenthalt hat die Verdeckung neben sich bekommen, und der
+     weiche Zonenschnitt aelterer Rezepte heisst jetzt ausdruecklich tiefeVerdeckung:'zone'.
      SPAETER (docs/effektclip/KONZEPT-LANGE-VIDEOS.md): mehrere Zustaende je Titel, je Abschnitt ein Rezept, innerhalb
      eines Abschnitts duerfen Parameter fahren. Das wird diese Form ERWEITERN (eine Liste von Abschnitten, jeder mit
      genau diesen Feldern), nicht ersetzen - wer hier etwas dazulegt, denke daran und hebe dann die fassung. */
-  function presetJSON(){ return JSON.stringify({ fassung:3, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
+  function presetJSON(){ return JSON.stringify({ fassung:4, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
     if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art,schlaege:(r.schleife.schlaege|0)||0,fenster:Math.max(0,Math.round((+r.schleife.fenster||0)*2)/2)}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
@@ -30317,6 +30607,17 @@ function zeichneFrame(t,roh){
       if(r.typ==='partikel') e._artVor=e.art;   /* sonst vergleicht artFarben gegen die falsche Art */
       if(r.typ==='sicherung'&&r.verr==='abwedeln') e.verr='nachbelichten';   /* Ablagen aus der Abwedeln-Zeit: Schwarz abgewedelt ist nichts */
       if(alt&&r.typ==='farbton'&&r.invert){ e.winkel=-e.winkel; e.invert=0; } }   /* invert hiess bis Fassung 1 nur: andere Richtung */
+    zoneUebersetzen(e,r,fassung);
+    return e; }
+  /* DAS ALTE REZEPT BEHAELT SEIN BILD (16.09.2026). Bis Fassung 3 hiess ein Aufenthalt vorn/hinten
+     am Partikel-Effekt: schneide die Zone weich aus, ohne Betretungsverbot. Das ist keines der
+     beiden heutigen Aemter, sondern ein drittes Verhalten - also wird es beim Laden benannt statt
+     stillschweigend uminterpretiert. Steht die Verdeckung schon in der Datei (Fassung 4 und
+     aufwaerts), wird nichts angefasst. */
+  function zoneUebersetzen(e,r,fassung){
+    if(!e||e.typ!=='partikel'||(fassung|0)>=4) return e;
+    if(r&&r.tiefeVerdeckung!=null) return e;
+    if(r&&r.tiefeWirkt&&r.tiefeWirkt!=='alles') e.tiefeVerdeckung='zone';
     return e; }
   function presetSetzen(arr,alt,fassung){ STAPEL=arr.map(r=>effektAusRezept(r,alt,fassung)).filter(Boolean); renderStapel(); }
   function pStat(x){ const el=$('#tbs-pStatus'); if(el) el.textContent=x; }
@@ -31349,9 +31650,54 @@ function zeichneFrame(t,roh){
          "am naechsten", und ein Regler bedeutet ueberall dasselbe. */
       const sort = Array.prototype.slice.call(z).sort((a, b) => a - b);
       const zlo = sort[Math.floor(sort.length * 0.05)], zhi = sort[Math.floor(sort.length * 0.95)];
-      return TIEFEPROBEN[id] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi) };
+      /* Die MITTE der Karte (Median) liegt hier mit, weil der Aufenthalt sie braucht: die Maske
+         nimmt sie in voller Aufloesung, der Maler auf diesem Raster - dieselbe Frage, dieselbe
+         Antwort auf ein Hundertstel. Ein zweites Raster waere ein zweiter Begriff (16.09.2026). */
+      const med = sort[sort.length >> 1];
+      return TIEFEPROBEN[id] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi), med };
     }catch(x){ return null; }
   }
+  /* ---- EINE STELLE, DIE SAGT, WIE NAH EIN PUNKT IST (16.09.2026) ----
+     Maske und Maler fragen ab heute DIESELBE Kurve: Grenze, weiches Band, Smoothstep, „hell ist
+     nah". Die Maske rechnet sie in voller Aufloesung ueber das ganze Bild (tiefeMaske), der Maler
+     an einem Punkt auf dem groben Raster von tiefeProben - 160 Punkte breit, EINMAL je Titel
+     gerechnet und behalten, unabhaengig von der Leinwandgroesse. Nie ein Bildlesen je Teilchen,
+     nie eines je Bild. Weil die Probe steht, bleibt der Loop exakt. */
+  function tiefeKarteDa(){ return tiefeStand()==='da'; }
+  function tiefeMitte(){ const tp=tiefeProben(DATA&&DATA.id); return tp?tp.med:null; }
+  /* Grenze und Weichheit eines Effekts in Kartenwerten 0..1. Unter null heisst „von selbst": die
+     Mitte dieser Karte und das feste Band von 48 Graustufen - genau die Zahlen von gestern. */
+  function tiefeSpanne(e, tp){
+    const g=(e.tiefeGrenze==null||e.tiefeGrenze<0)?(tp?tp.med:0.5):Math.max(0,Math.min(1,e.tiefeGrenze));
+    const w=(e.tiefeWeich==null||e.tiefeWeich<0)?(48/255):Math.max(1/255,Math.min(1,e.tiefeWeich));
+    return { g, w }; }
+  /* u,v in Bildanteilen; 1 heisst sicher nah, 0 sicher fern. */
+  function tiefeNahAn(tp, u, v, g, w){
+    if(!tp) return 0.5;
+    const x=Math.max(0,Math.min(tp.w-1,Math.round(u*tp.w))), y=Math.max(0,Math.min(tp.h-1,Math.round(v*tp.h)));
+    let a=(tp.z[y*tp.w+x]-(g-w))/(2*w); a=a<0?0:a>1?1:a; return a*a*(3-2*a); }
+  /* WIE GROSS IST DIE ERLAUBTE ZONE - UND WIE VIEL NIMMT DIE MASKE WIRKLICH WEG?
+     Beides wird GERECHNET, nicht behauptet (Gegenlesen 16.09.2026). Die Karte sagte bisher, die
+     Maske schneide die verbotene Zone „ohnehin aus"; auf „Okkultation" (Median 19, Band +-48)
+     liegt die untere Bandkante bei -29, also bleibt der fernste Bildpunkt bei 24 % Deckung stehen
+     und es wird gar nichts ausgeschnitten. Gerechnet auf demselben Raster, das der Maler benutzt -
+     einmal je Titel, Modus und Spanne, danach aus dem Vorrat. */
+  const ZONENLAGE={};
+  function zonenLage(id, modus, g, w){
+    if(!id||!modus||modus==='alles') return null;
+    const tp=tiefeProben(id); if(!tp) return null;
+    const k=id+'|'+modus+'|'+g.toFixed(4)+'|'+w.toFixed(4);
+    if(ZONENLAGE[k]) return ZONENLAGE[k];
+    const unten=g-w, spanne=2*w; let erlaubt=0, ganzWeg=0;
+    for(let q=0;q<tp.z.length;q++){
+      let a=(tp.z[q]-unten)/spanne; a=a<0?0:a>1?1:a; a=a*a*(3-2*a);
+      const deckung=(modus==='hinten')?1-a:a;          /* genau die Kurve der Maske */
+      if((modus==='hinten')?(a<0.5):(a>=0.5)) erlaubt++;
+      if(deckung<=5/255) ganzWeg++;
+    }
+    return ZONENLAGE[k]={ erlaubt:erlaubt/tp.z.length, ganzWeg:ganzWeg/tp.z.length, punkte:tp.z.length };
+  }
+  const vH=v=>(v*100).toFixed(v<0.1?1:0).replace('.',',')+' %';
   /* u,v in Bildanteilen; 1 heisst nah, 0 heisst fern. */
   function tiefeBei(tp, u, v){
     const x = Math.max(0, Math.min(tp.w - 1, Math.round(u * tp.w)));
@@ -31399,15 +31745,38 @@ function zeichneFrame(t,roh){
       return cv;
     }catch(x){ return null; }
   }
+  /* DREI ZUSTAENDE, NICHT ZWEI (Gegenlesen 16.09.2026). Bis heute hiess `TIEFEN[id]===null` zweierlei:
+     „die Karte ist noch unterwegs" und „es gibt keine". Die Effektkarte las das zweite und legte
+     alle Tiefenzeilen still - fuer einen Titel, dessen tiefe.png im selben Augenblick geladen wurde.
+     Das ist genau die Falschaussage, gegen die diese Arbeit angetreten ist, nur mit einem falschen
+     Grund statt ohne Grund. `TIEFENLAUF` haelt darum fest, was gerade unterwegs ist, und onload wie
+     onerror melden sich, damit die Karte sich selbst berichtigt statt stumm falsch zu bleiben. */
+  const TIEFENLAUF={};
   function tiefeBildVon(id){
     if(!id) return null;
     if(TIEFEN[id]!==undefined) return TIEFEN[id];
-    TIEFEN[id]=null;
+    TIEFEN[id]=null; TIEFENLAUF[id]=true;
     const im=new Image();
-    im.onload=()=>{ TIEFEN[id]=im; };
-    im.onerror=()=>{ TIEFEN[id]=null; };   /* kein Bild: der Nebel bleibt eine Schicht */
+    const fertig=()=>{ delete TIEFENLAUF[id]; tiefeKarteGemeldet(id); };
+    im.onload=()=>{ TIEFEN[id]=im; fertig(); };
+    im.onerror=()=>{ TIEFEN[id]=null; fertig(); };   /* kein Bild: der Nebel bleibt eine Schicht */
     im.src='/media/'+id+'/tiefe.png';
     return null;
+  }
+  /* Die Karte ist da (oder endgueltig nicht da): die Effektkarte hat bis eben das Gegenteil
+     behauptet, also wird sie neu gezeichnet. Nur wenn das Pult wirklich offen im Dokument steht -
+     auf der Albumseite laufen Clips ohne Pult. */
+  function tiefeKarteGemeldet(id){
+    try{ if(!(DATA&&DATA.id===id)) return; }catch(x){ return; }
+    try{ if(stapelBox&&stapelBox.isConnected&&STAPEL&&STAPEL.length) renderStapel(); }catch(x){}
+  }
+  /* „da" | „unterwegs" | „keine" - eine Frage, drei ehrliche Antworten. */
+  function tiefeStand(){
+    try{ const id=DATA&&DATA.id; if(!id) return 'keine';
+      const im=tiefeBildVon(id);
+      if(im&&im.complete&&im.naturalWidth>1) return 'da';
+      return TIEFENLAUF[id] ? 'unterwegs' : 'keine';
+    }catch(x){ return 'keine'; }
   }
 
   /* DIE TIEFE ALS GENERISCHER PARAMETER (VIDEO-PLAN §9.7b).
@@ -31424,29 +31793,56 @@ function zeichneFrame(t,roh){
      die Mitte des jeweiligen Bildes. Der Uebergang ist weich (smoothstep ueber 48 Graustufen):
      eine harte Grenze erzeugt Artefakte genau dort, wo das Auge am genauesten hinsieht - die
      Silhouetten monokularer Karten sind weich und oft ungenau (VIDEO-PLAN §9.7d). */
-  const TIEFEMASKEN={};
-  function tiefeMaske(id, modus, W, H){
+  /* VORRAT MIT ENDE (Gegenlesen 16.09.2026). Vorher gab es je Titel, Modus und Leinwandgroesse
+     genau eine Maske; seit Grenze und Weichheit im Schluessel stehen, erzeugt EIN Zug am Regler
+     einundfuenfzig Masken in voller Leinwandgroesse - bei 889x889 rund 161 MB, die liegen blieben.
+     Also derselbe Ring wie bei PMASKEN, nur laenger: ein Rezept kann mehrere Zonen-Effekte haben
+     (r17 hat sechs) und jede Ansicht - Kachel, Buehne, Ausgabe - ihre eigene Groesse, und ein zu
+     kurzer Ring baute die Maske dann in jedem Bild neu. Vierundzwanzig Plaetze mit einer Obergrenze
+     von rund 96 MB; beim Titelwechsel wird geleert, weil eine fremde Karte ohnehin nichts taugt. */
+  const TIEFEMASKEN=[]; let TIEFEMASKEN_ID=null;
+  const TM_PLAETZE=24, TM_BYTE=96*1024*1024;
+  function tiefeMaskeAblegen(k,cv){
+    TIEFEMASKEN.unshift({k,cv,byte:cv.width*cv.height*4});
+    let summe=0;
+    for(let i=0;i<TIEFEMASKEN.length;i++){ summe+=TIEFEMASKEN[i].byte;
+      if(i>=TM_PLAETZE||summe>TM_BYTE){ TIEFEMASKEN.length=Math.max(1,i); break; } }
+  }
+  /* GRENZE UND WEICHHEIT SIND EINSTELLBAR (16.09.2026). Unter null heisst „von selbst": Median der
+     Karte und +-48 Graustufen - Zeile fuer Zeile die Rechnung von gestern, damit jedes gespeicherte
+     Rezept bitgleich bleibt. Erst eine Zahl >= 0 legt die Grenze (0..1 der Kartenhelligkeit) oder
+     das halbe Band (0..1, also 0..255 Stufen) von Hand fest. Der Schluessel des Vorrats traegt
+     beides mit, sonst haenge man an der Maske von vorhin. */
+  function tiefeMaske(id, modus, W, H, grenze, weich2){
     if(!id||!modus||modus==='alles') return null;
     const im=tiefeBildVon(id);
     if(!im||!im.complete||im.naturalWidth<2) return null;
-    const k=id+'|'+modus+'|'+W+'x'+H;
-    if(TIEFEMASKEN[k]) return TIEFEMASKEN[k];
+    const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
+    const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
+    const k=modus+'|'+W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
+    if(TIEFEMASKEN_ID!==id){ TIEFEMASKEN.length=0; TIEFEMASKEN_ID=id; }
+    { const da=TIEFEMASKEN.find(m=>m.k===k); if(da) return da.cv; }
     try{
       const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
       const cx=cv.getContext('2d',{willReadFrequently:true});
       cx.drawImage(im,0,0,W,H);
       const bild=cx.getImageData(0,0,W,H), p=bild.data;
-      const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
-      let summe=0, mitte=(p.length>>2)/2, med=128;
-      for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } }
-      const weich=48, unten=med-weich, spanne=2*weich;
+      let med=128;
+      if(gv<0){ const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
+        let summe=0, mitte=(p.length>>2)/2;
+        for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } } }
+      /* GANZZAHLIG WIE DER MEDIAN (Gegenlesen 16.09.2026): bei „von selbst" kommt die Grenze als
+         ganze Graustufe aus dem Histogramm, von Hand kam sie als gv*255 - 19/255 ergab 18,9975 und
+         damit einen Anschlag, der seinen eigenen Automatikwert um drei Tausendstel verfehlte. */
+      else med=Math.round(gv*255);
+      const weich=(wv<0)?48:wv*255, unten=med-weich, spanne=2*weich;
       for(let i=0;i<p.length;i+=4){
         let a=(p[i]-unten)/spanne; a=a<0?0:a>1?1:a; a=a*a*(3-2*a);   /* hell = nah */
         if(modus==='hinten') a=1-a;
         p[i]=255; p[i+1]=255; p[i+2]=255; p[i+3]=Math.round(a*255);
       }
       cx.putImageData(bild,0,0);
-      TIEFEMASKEN[k]=cv; return cv;
+      tiefeMaskeAblegen(k,cv); return cv;
     }catch(err){ return null; }
   }
   /* Der Maler hat gezeichnet, die Maske sagt wo: erst alles wegnehmen, was ausserhalb liegt,
