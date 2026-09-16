@@ -4415,3 +4415,31 @@ Befund aus zwei Prüfspuren (nur lesend am echten Katalog, Nachspiel im Sandkast
 
 **Nicht gebaut, Entscheidung offen:** Status und `state` in die Ernte mitschreiben, Nachfragen wie Sunos App, das
 Löschfenster schließen, die beiden Leer-Antworten richtig zählen, Adressliste neu holen (letzter Stand 08.09.2026).
+
+### Hol-Weg repariert (16.09.2026 nachts, Freigabe: *„gut, ich gebe das okay"*)
+
+**Lesezeichen** (`browser/morgens.js`, +438/−44): Jede Adresse bekommt ihren eigenen Versuch (vorher riss ein Fehler bei
+`downbeats` die beiden folgenden Adressen desselben Titels mit), dazu eine **Nachfragephase**: Suno rechnet `downbeats`
+und `novelty-sections` auf Anfrage, die erste Antwort ist `{state:"running"}` — Sunos App pollt 2,5 s / 300 s. Wir fragen
+für diese beiden bis zu **8 Runden** nach, für `aligned_lyrics` **1 Runde** (so hält es Sunos Client), Deckel: 120 s
+Gesamtfrist, 15 s je Anfrage (AbortController). Jede Antwort wird beurteilt: `geholt | rechnet | leer | fehler` — HTTP 202
+und „Lyrics alignment not available" zählen als *rechnet*, nicht als Erfolg. Der `holstand` (Adresse, Versuche,
+HTTP-Status, Sunos `state`, Fehlername) reist in `library/roh/timing-*.json` mit, und die Bildschirmzeile sagt je Adresse,
+was ankam. Der Lauf misst jetzt also, statt zu behaupten („noch nicht fertig bei Suno" war eine Annahme).
+
+**Aufräumen** (`bin/aufbereiten.js`, +357/−44): Gelöscht wird nur, was in diesem Lauf **gelesen** wurde. Eine Ernte, die
+während des Laufs eintrifft, überlebt (genau das war Jörgs Fall: sie kam um 00:34:50 mitten in die 17 s `gzipSync`) und
+steht in `library/nachzuegler.json`, damit `/api/morgen/unverarbeitet` sie auch dann meldet, wenn sie älter ist als der
+Katalog. Krummes JSON wird als `.unlesbar` beiseitegelegt statt den Lauf abzubrechen. Die veralteten Kommentare über
+`roh/verarbeitet/` sind berichtigt (`bin/aufbereiten.js:129`, `bin/wiederherstellen.js:67`).
+
+**Server** (`server/server.js`, +101/−24, Patch nach Freigabe eingesetzt, Neustart geprüft): „vorhanden" heißt jetzt
+„ergibt Wörter" — `alignment: []` gilt nicht mehr als v3-Spur (sonst holte der Lauf die zwei Ribbeck-Titel ewig neu),
+leere/202-Antworten halten den Titel auf der Fehlt-Liste, und `abschnitte` gelten nur mit `peak_times` **und**
+`segment_labels`. Prüfung nach dem Neustart: Startseite 200, `/api/morgen/v3-fehlt` → 3 fehlen, 258 vorhanden.
+
+**Stand des Bestands:** Der Morgenlauf um 01:19 hat Jörgs wartende Ernte übernommen — der neue Titel hat jetzt
+`worteV2` (537 Wörter) und `wellenStufen` (12 Stufen). Weiter offen, weil nie geholt: `schlaege`, `abschnitte`, `worteV3`.
+Das klärt der nächste Lesezeichen-Lauf mit der Nachfragephase — und, falls es dann Fehler statt „rechnet" gibt, steht der
+HTTP-Code im `holstand`. Die Adressliste ist vom 08.09.2026; ein neuer Lauf von `bin/suno-app-wege.js` (braucht Jörgs
+Login) würde zeigen, ob Suno die beiden Adressen für v6-Clips umbenannt hat.

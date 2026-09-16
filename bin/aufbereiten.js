@@ -24,12 +24,28 @@ const ALT_INDEX = path.join(WURZEL, 'library', 'index.json');
 
 // --- Hilfsmittel ------------------------------------------------
 
-function alleRohdateien(zweck) {
+/* EINE AUFNAHME DES ORDNERS FUER DEN GANZEN LAUF (16.09.2026).
+   Bis dahin las jede Abfrage library/roh/ frisch - und die Loeschliste
+   ganz unten noch ein letztes Mal. Das Lesezeichen laeuft aber
+   nebenher, und ein Lauf braucht auf dieser Platte gut 20 Sekunden
+   (allein das Packen des Katalogs dauert ~17 s). Eine Ernte, die
+   dazwischen ankam, stand in der Loeschliste, ohne je gelesen worden
+   zu sein. Fuer die Albumernten gab es diese Aufnahme seit dem
+   08.09.2026 schon einzeln (siehe playlistDateienGesehen weiter
+   unten); jetzt gilt sie fuer ALLE Rohdatenarten: Was nach dem Start
+   ankommt, sieht dieser Lauf nicht - und ruehrt er darum auch nicht
+   an. Der naechste Lauf nimmt es sich vor. */
+const ROH_AUFNAHME = (() => {
   if (!fs.existsSync(ROH)) return [];
   return fs.readdirSync(ROH)
-    .filter(f => f.startsWith(zweck + '-') && f.endsWith('.json'))
+    .filter(f => f.endsWith('.json'))
     .filter(f => !f.startsWith('._'))          // AppleDouble-Reste auf exFAT
-    .sort()
+    .sort();
+})();
+
+function alleRohdateien(zweck) {
+  return ROH_AUFNAHME
+    .filter(f => f.startsWith(zweck + '-'))
     .map(f => path.join(ROH, f));
 }
 
@@ -39,6 +55,57 @@ function neuesteRohdatei(zweck) {
 }
 
 const lies = (d) => d ? JSON.parse(fs.readFileSync(d, 'utf8')) : null;
+
+/* WAS DIESER LAUF WIRKLICH GELESEN HAT. Nur das darf er unten
+   loeschen. Die Loeschliste wuchs bis zum 16.09.2026 aus dem Ordner -
+   alle Arten, alle Dateien. Von den feed- und profilinfo-Dateien liest
+   der Lauf aber nur die JUENGSTE (neuesteRohdatei), und die aelteren
+   gingen ungelesen mit in den Papierkorb. Sie bleiben jetzt liegen;
+   weil die juengste geloescht wird, ist beim naechsten Lauf die
+   naechstaeltere die juengste und kommt an die Reihe - genau die
+   Regel, die fuer die Albumernten seit dem 08.09.2026 gilt.
+
+   Vermerkt wird der VERSUCH, nicht der Erfolg: Eine Rohdatei mit
+   krummem JSON hat dieser Lauf gesehen und uebersprungen. Sie laege
+   sonst bis zum Ende der Tage im Ordner, und jeder Lauf stolperte neu
+   ueber sie.
+
+   UND SIE STOLPERTEN WIRKLICH (16.09.2026, zweiter Durchgang). Der
+   Satz "die Leser unten fangen den Fehler ab" stand hier, stimmte aber
+   nur fuer zwei von acht Lesestellen (Zaehlerverlauf und Alben); an den
+   uebrigen flog die SyntaxError bis nach oben und der Lauf starb VOR
+   jedem Aufraeumen - genau das Bild, das der Satz ausschloss. Jetzt
+   faengt liesRoh selbst: eine Zeile ins Protokoll, null zurueck, und
+   die Datei wird am Ende nach dem Muster der abgelehnten Albumernte
+   in .unlesbar umbenannt. Nicht geloescht - ein krummes JSON laesst
+   sich von Hand noch retten, ein geloeschtes nicht -, aber aus dem Weg:
+   weder alleRohdateien() noch der Zaehler im Server sehen sie noch,
+   beide fragen nach .json.
+
+   Was das fuer den Lauf heisst, steht ausdruecklich hier: Faellt eine
+   profil-, feed- oder privat-Datei aus, fehlen ihre Songs in dieser
+   Runde. Der Katalog wird trotzdem geschrieben, denn er wird aus dem
+   alten fortgeschrieben (songs = {...altSongs}) - es geht nichts
+   verloren, es kommt nur nichts Neues dazu. */
+const gelesen = new Set();
+const unlesbar = new Set();
+const liesRoh = (d) => {
+  if (!d) return null;
+  gelesen.add(d);
+  try { return lies(d); }
+  catch (e) {
+    /* Nur beim ERSTEN Mal melden: manche Rohdatei wird zweimal gelesen
+       (der Zaehlerverlauf liest alle profil- und privat-Dateien, der
+       Titelbau die juengste noch einmal) - zwei gleiche Zeilen und ein
+       zweiter Umbenennversuch waeren nur Laerm. */
+    if (!unlesbar.has(d)){
+      unlesbar.add(d);
+      console.log(`  ${path.basename(d)} ist unlesbar (${e.name}: ${e.message.slice(0, 70)}) `
+                + `— uebersprungen, wird nach dem Lauf in .unlesbar umbenannt`);
+    }
+    return null;
+  }
+};
 
 function alsListe(d) {
   if (!d) return [];
@@ -126,11 +193,17 @@ const feedDatei   = neuesteRohdatei('feed');
 const profilDatei = neuesteRohdatei('profil');
 const privatDatei = neuesteRohdatei('privat');
 
-/* Keine Rohdaten mehr im aktiven Ordner? Seit dem 20.08.2026 wandern
-   verarbeitete Dateien nach roh/verarbeitet/ - dann traegt der Katalog
-   selbst alles, und dieser Lauf pflegt nur nach (Whisper, Zeitproben,
-   Kommentarzaehler). Ein leerer Lauf ist also KEIN Fehler mehr; nur
-   wer noch gar keinen Katalog hat, braucht erst eine Ernte. */
+/* Keine Rohdaten mehr im aktiven Ordner? Verarbeitete Dateien werden
+   am Ende des Laufs GELOESCHT (siehe den Loeschblock ganz unten) -
+   dann traegt der Katalog selbst alles, und dieser Lauf pflegt nur
+   nach (Whisper, Zeitproben, Kommentarzaehler). Ein leerer Lauf ist
+   also KEIN Fehler mehr; nur wer noch gar keinen Katalog hat, braucht
+   erst eine Ernte.
+   HIER STAND BIS ZUM 16.09.2026, die Dateien wanderten nach
+   roh/verarbeitet/. Das war einmal so und ist seit dem 20.08.2026
+   nicht mehr wahr (Caspar_D: "wozu das mitfuehren und Speicherplatz
+   vergeuden"). Der Ordner roh/verarbeitet/ entsteht nirgends mehr;
+   unersetzlich ist library/katalog.json.gz, und nur den sichert man. */
 if (!feedDatei && !profilDatei && !K.lesen()) {
   console.error('Keine Rohdaten in library/roh/ und noch kein Katalog.');
   console.error('Erst im Browser sammeln (siehe README).');
@@ -149,7 +222,7 @@ if (privatDatei) console.log('  Unveröffentl.: ', path.basename(privatDatei));
    Song chronologisch in den Verlauf eingewoben. */
 const staendeJeSong = new Map();          // id -> [{stand, plays, likes, kommentare}]
 for (const f of [...alleRohdateien('profil'), ...alleRohdateien('privat')]) {
-  let j; try { j = lies(f); } catch (e) { continue; }
+  let j; try { j = liesRoh(f); } catch (e) { continue; }
   const datum = ((j && (j.abgerufenAm || j.erzeugtAm)) ||
                  (path.basename(f).match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || '').slice(0, 10);
   if (!datum) continue;
@@ -161,9 +234,9 @@ for (const f of [...alleRohdateien('profil'), ...alleRohdateien('privat')]) {
   }
 }
 
-const profilRoh  = lies(profilDatei);
+const profilRoh  = liesRoh(profilDatei);
 const ausProfil  = alsListe(profilRoh);
-const ausFeed    = alsListe(lies(feedDatei));
+const ausFeed    = alsListe(liesRoh(feedDatei));
 
 // Unveröffentlichte Songs, die in Caspar_Ds Playlists stehen. Sie kommen
 // NICHT von der Profilseite - dort steht nur Veröffentlichtes. Sie sind
@@ -177,7 +250,7 @@ const ausFeed    = alsListe(lies(feedDatei));
    Song - der frischere Zaehler gewinnt. */
 const privatJeId = new Map();
 for (const f of alleRohdateien('privat'))
-  for (const c of alsListe(lies(f))) if (c && c.id) privatJeId.set(c.id, c);
+  for (const c of alsListe(liesRoh(f))) if (c && c.id) privatJeId.set(c.id, c);
 const ausPrivat  = [...privatJeId.values()];
 
 /* DIE VIERTE QUELLE: ALBUMEINTRAEGE (Caspar_D, 08.09.2026: neue Titel kommen
@@ -193,7 +266,7 @@ const ausPrivat  = [...privatJeId.values()];
    Album My Industrial Songs, 08.09.2026 - der Titel, mit dem alles anfing. */
 const ausAlben = (() => {
   const f = neuesteRohdatei('playlists'); if (!f) return [];
-  const r = lies(f) || {}; const clips = r.clips || {}; const seen = new Set(); const aus = [];
+  const r = liesRoh(f) || {}; const clips = r.clips || {}; const seen = new Set(); const aus = [];
   for (const liste of Object.values(clips)) {
     if (!Array.isArray(liste)) continue;
     for (const e of liste) {
@@ -362,10 +435,146 @@ const liste = Object.values(songs)
 // ALLE timing-Dateien werden gelesen, nicht nur die neueste: Ein
 // Nachzügler-Abruf für wenige Songs würde sonst die große Sammlung
 // verdrängen. Spätere Dateien überschreiben frühere je Song.
+/* --- DER HOLSTAND ------------------------------------------------
+   Seit dem 16.09.2026 legt das Lesezeichen je Song und je Adresse ab,
+   WAS bei Suno herauskam: geantwortet, rechnet noch, oder ein Fehler
+   mit HTTP-Code (browser/morgens.js, Feld `holstand`). Vorher fiel
+   jeder Fehlschlag in dieselbe Zeile "noch nicht fertig bei Suno" -
+   ein 403 sah aus wie Geduld, und die Frage "ist der Weg tot?" liess
+   sich nur im Gespraech beantworten. Hier wird der Holstand
+   zusammengezaehlt und ins Laufprotokoll geschrieben (Hausregel: die
+   App laeuft ohne Claude). In den KATALOG kommt er nicht - er gehoert
+   zum LAUF, nicht zum Lied, und morgen ist er ein anderer.
+
+   SO LEGT DAS LESEZEICHEN IHN AB (browser/morgens.js, 16.09.2026):
+     songs[id].holstand.<feld>            je Song, Feld schlaege /
+                                          abschnitte / wellenStufen
+     songs.__zeitprobe[id].holstand.<f>   Feld v2 / v3
+   und je Eintrag ein Stand
+     { weg:'downbeats', versuche:1, status:403, state:'running',
+       fehler:{name,meldung}, ergebnis:'geholt'|'rechnet'|'leer'|'fehler' }
+   Beschriftet wird nach `weg` - das ist die ADRESSE bei Suno; der
+   Feldname ist nur unser Name dafuer.
+
+   TOLERANT GELESEN, weil nur EINE Seite dieser Bruecke hier steht und
+   die andere im Browser lebt, wo sie sich weiterdreht. Gefunden wird
+   der Holstand auch an der Datei ({holstand:…} neben {abgerufenAm,
+   songs}) und im Songbeutel (songs.__holstand / songs.holstand); als
+   Wert gilt neben dem Stand-Objekt auch eine Zeichenkette ('geholt',
+   'rechnet', 'fehler 403') oder eine nackte Zahl (der HTTP-Code). Was
+   sich gar nicht einordnen laesst, wird WOERTLICH genannt statt
+   verschluckt - dann steht der neue Vermerk im Protokoll und jemand
+   kann ihn hier nachtragen. Fehlt das Feld ganz (aelteres Lesezeichen
+   im Browser), sagt der Lauf genau das - auch das ist eine Auskunft. */
+const holJeAdresse = new Map();     // Adresse -> {fertig, rechnet, leer, fehler:Map, unklar:Map, songs:Set}
+const holGesehen   = new Set();     // gegen Doppelzaehlung derselben Objekte
+const holFach = (adresse) => {
+  if (!holJeAdresse.has(adresse)) holJeAdresse.set(adresse,
+    { fertig: 0, rechnet: 0, leer: 0, fehler: new Map(), unklar: new Map(), songs: new Set() });
+  return holJeAdresse.get(adresse);
+};
+/* Ein einzelner Ausgang, auf drei Sorten gebracht. 202 zaehlt als
+   "rechnet": genau das meint Suno bei aligned_lyrics damit ("Aligned
+   lyrics are still processing"), und genau das hat das Lesezeichen
+   bis zum 16.09.2026 als Erfolg verbucht. */
+function holEinordnen(wert) {
+  if (wert == null) return null;
+  if (typeof wert === 'boolean') return wert ? { art: 'fertig' } : { art: 'unklar', wort: 'false' };
+  if (typeof wert === 'number') return Number.isFinite(wert)
+    ? (wert === 202 ? { art: 'rechnet' } : (wert >= 200 && wert < 300) ? { art: 'fertig' } : { art: 'fehler', code: wert })
+    : { art: 'unklar', wort: String(wert) };
+  if (typeof wert === 'string') {
+    const w = wert.trim().toLowerCase();
+    if (!w) return null;
+    const zahl = (w.match(/(\d{3})/) || [])[1];
+    if (/^(geholt|fertig|complete|completed|da|ok|geantwortet|vorhanden)$/.test(w)) return { art: 'fertig' };
+    if (/^(rechnet|running|laeuft|läuft|pending|wartet|processing)$/.test(w)) return { art: 'rechnet' };
+    if (/^(leer|empty|nichts)$/.test(w)) return { art: 'leer' };
+    if (/^(fehler|fehlt|http|status)/.test(w) || zahl) {
+      const c = zahl ? Number(zahl) : null;
+      if (c === 202) return { art: 'rechnet' };
+      if (c != null && c >= 200 && c < 300) return { art: 'fertig' };
+      return { art: 'fehler', code: c };
+    }
+    return { art: 'unklar', wort: w };
+  }
+  if (typeof wert === 'object') {
+    if (Array.isArray(wert)) return wert.length ? { art: 'fertig' } : { art: 'leer' };
+    /* `ergebnis` ZUERST: das ist des Lesezeichens eigenes Urteil, und
+       es weiss mehr als der Statuscode. Ein 'complete' ohne Inhalt
+       steht als status 200 und state 'complete' da, ist aber 'leer' -
+       wer hier zuerst auf state schaut, zaehlt es als geantwortet. */
+    const wort = wert.ergebnis ?? wert.zustand ?? wert.stand ?? wert.art ?? wert.state ?? null;
+    const code = [wert.status, wert.code, wert.http]
+      .find(x => typeof x === 'number' && Number.isFinite(x));
+    const name = (wert.fehler && typeof wert.fehler === 'object' && wert.fehler.name)
+              || (typeof wert.fehler === 'string' ? wert.fehler : null)
+              || (wert.lesefehler ? 'Antwort unlesbar' : null) || null;
+    const marke = (typeof wert.weg === 'string' && wert.weg.trim())
+      ? wert.weg.trim().replace(/^\/+|\/+$/g, '') : null;
+    let aus = wort != null ? holEinordnen(wort) : null;
+    if (!aus && code != null) aus = holEinordnen(code);
+    if (!aus && typeof wert.fehler === 'number') aus = { art: 'fehler', code: wert.fehler };
+    if (!aus) return null;
+    /* Ein Fehler braucht seinen Grund. Der Reihe nach: der Name der
+       geworfenen Ausnahme (TypeError - dann kam nie eine Antwort), ein
+       2xx mit krummem state (wie das Lesezeichen es selbst beschriftet:
+       "state error"), sonst der HTTP-Code. */
+    if (aus.art === 'fehler' && aus.code == null) {
+      if (name) aus = { art: 'fehler', wort: name };
+      else if (code != null && code >= 200 && code < 300 && typeof wert.state === 'string')
+        aus = { art: 'fehler', wort: 'state ' + wert.state };
+      else if (code != null) aus = { art: 'fehler', code };
+    }
+    return marke ? { ...aus, marke } : aus;
+  }
+  return null;
+}
+/* Der Beutel kann je Adresse oder je Song geschichtet sein - eine
+   Id-artige Schluessel-Zeichenkette heisst: eine Ebene tiefer. */
+function holSammeln(beutel, songId) {
+  if (!beutel || typeof beutel !== 'object' || Array.isArray(beutel)) return;
+  if (holGesehen.has(beutel)) return;
+  holGesehen.add(beutel);
+  for (const [schluessel, wert] of Object.entries(beutel)) {
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(schluessel)) {
+      holGesehen.delete(wert);              // dieselbe Ebene, anderer Song
+      holSammeln(wert, schluessel);
+      continue;
+    }
+    const aus = holEinordnen(wert);
+    if (!aus) continue;
+    /* Beschriftet wird nach der Adresse bei Suno (`weg`), nicht nach
+       unserem Feldnamen - "downbeats" findet man in der Adressliste
+       wieder, "schlaege" nicht. Fehlt sie, nimmt der Schluessel ihren
+       Platz ein. */
+    const f = holFach(aus.marke || schluessel);
+    if (songId) f.songs.add(songId);
+    if (aus.art === 'fehler') {
+      const s = aus.code != null ? 'HTTP ' + aus.code : (aus.wort || 'ohne Code');
+      f.fehler.set(s, (f.fehler.get(s) || 0) + 1);
+    } else if (aus.art === 'unklar') {
+      f.unklar.set(aus.wort, (f.unklar.get(aus.wort) || 0) + 1);
+    } else f[aus.art]++;
+  }
+}
+let holErnten = 0, holErntenOhne = 0;      // Ernten mit / ohne Holstand
+
 for (const timingDatei of alleRohdateien('timing')) {
-  const timing = lies(timingDatei) || {};
+  const timing = liesRoh(timingDatei) || {};
   let mit = 0, mitSuno = 0;
   const timingSongs = timing.songs || timing;
+  /* Holstand dieser Ernte einsammeln - alle vier Stellen, an denen
+     das Lesezeichen ihn ablegen kann (siehe oben). */
+  const holVorher = holGesehen.size;
+  holSammeln(timing.holstand);
+  holSammeln(timingSongs.__holstand);
+  holSammeln(timingSongs.holstand);
+  if (timingSongs.__zeitprobe)
+    for (const [id, o] of Object.entries(timingSongs.__zeitprobe)) holSammeln(o && o.holstand, id);
+  for (const [id, t] of Object.entries(timingSongs))
+    if (id !== '__zeitprobe' && t && typeof t === 'object') holSammeln(t.holstand, id);
+  if (holGesehen.size > holVorher) holErnten++; else holErntenOhne++;
   /* Die Zeitproben des Lesezeichens (Suno v3) reisen unter dem
      Schluessel __zeitprobe mit - in den Katalog als worteV3, dann
      bietet die Buehne die Spur an, auch wenn die Rohdatei spaeter
@@ -414,7 +623,19 @@ for (const timingDatei of alleRohdateien('timing')) {
        andere nicht. */
     if (Array.isArray(t.schlaege) && t.schlaege.length)   songs[id].schlaege     = t.schlaege;
     if (t.v3) { const w = K.v3ZuWorten(t.v3); if (w && w.length) songs[id].worteV3 = w; }
-    if (t.abschnitte && typeof t.abschnitte === 'object')  songs[id].abschnitte   = t.abschnitte;
+    /* ABSCHNITTE NUR MIT INHALT (16.09.2026). Hier genuegte
+       `typeof === 'object'`: eine Antwort {state:'complete'} ohne
+       peak_times wanderte in den Katalog, katalog.js setzte
+       hatAbschnitte - und der Titel war fuer immer aus jeder
+       Fehlt-Liste draussen, obwohl die Buehne mit dem Objekt nichts
+       anfangen kann (web/index.html braucht peak_times, die Taktlage
+       zusaetzlich segment_labels). Dieselbe Messlatte legt das
+       Lesezeichen beim Ernten an (browser/morgens.js, `ernten`), damit
+       nicht zwei Stellen verschiedene Antworten geben. */
+    if (t.abschnitte && typeof t.abschnitte === 'object'
+        && Array.isArray(t.abschnitte.peak_times) && t.abschnitte.peak_times.length
+        && Array.isArray(t.abschnitte.segment_labels) && t.abschnitte.segment_labels.length)
+      songs[id].abschnitte = t.abschnitte;
     if (Array.isArray(t.wellenStufen) && t.wellenStufen.length) songs[id].wellenStufen = t.wellenStufen;
   }
   /* Zwei Sorten in derselben Dateiart: Wort-Zeitmarken (Karaoke) und
@@ -422,6 +643,35 @@ for (const timingDatei of alleRohdateien('timing')) {
      Lesezeichen tragen nur letztere - '0 Songs' waere irrefuehrend. */
   console.log(`  Zeitmarken:     ${path.basename(timingDatei)} (${mit} Karaoke, ${mitSuno} Suno-Analyse`
             + (mitV3 || mitV2nach ? `, ${mitV3} v3-Spuren, ${mitV2nach} v2 nachgeladen` : '') + ')');
+}
+
+/* Der Holstand ins Protokoll (siehe die Erklaerung oben). Eine Zeile
+   je Adresse: geantwortet / rechnet Suno noch / Fehler mit Code. Wer
+   wissen will, ob ein Weg tot ist, liest hier - nicht im Chat. */
+if (holJeAdresse.size) {
+  const songZahl = new Set();
+  for (const f of holJeAdresse.values()) for (const id of f.songs) songZahl.add(id);
+  console.log(`  Holstand:       was Suno geantwortet hat — ${holErnten} Ernte(n)`
+            + (songZahl.size ? `, ${songZahl.size} Song(s)` : '')
+            + (holErntenOhne ? `; ${holErntenOhne} Ernte(n) ohne Holstand` : ''));
+  const breite = Math.max(...[...holJeAdresse.keys()].map(a => a.length));
+  for (const adresse of [...holJeAdresse.keys()].sort()) {
+    const f = holJeAdresse.get(adresse);
+    const teile = [];
+    if (f.fertig)  teile.push(`${f.fertig} geantwortet`);
+    if (f.rechnet) teile.push(`${f.rechnet} rechnet Suno noch`);
+    if (f.leer)    teile.push(`${f.leer} leer geantwortet`);
+    for (const [s, n] of [...f.fehler.entries()].sort()) teile.push(`${n} Fehler ${s}`);
+    for (const [s, n] of [...f.unklar.entries()].sort()) teile.push(`${n}× unbekannter Vermerk "${s}"`);
+    console.log(`                  ${adresse.padEnd(breite)}  ${teile.join(', ')}`);
+  }
+} else if (holErntenOhne) {
+  /* Kein Vorwurf, nur eine Auskunft: Aus so einer Ernte laesst sich
+     nicht sagen, ob eine Adresse noch rechnet oder gar nicht mehr
+     antwortet. Das Lesezeichen im Browser ist dann aelter als der
+     16.09.2026 und muss neu gesetzt werden. */
+  console.log(`  Holstand:       ${holErntenOhne} Ernte(n) sagen nicht, was Suno geantwortet hat `
+            + `(Feld holstand fehlt — Lesezeichen im Browser älter als der 16.09.2026, bitte neu setzen)`);
 }
 
 // --- Whisper ---------------------------------------------------
@@ -622,7 +872,7 @@ if (!playlistDatei) {
 
 if (playlistDatei) {
   let pRoh = null;
-  try { pRoh = lies(playlistDatei); } catch (e) { pRoh = null; }
+  try { pRoh = liesRoh(playlistDatei); } catch (e) { pRoh = null; }
   const koepfe = (pRoh && Array.isArray(pRoh.playlists)) ? pRoh.playlists : [];
   const rohClips = (pRoh && pRoh.clips && typeof pRoh.clips === 'object'
                     && !Array.isArray(pRoh.clips)) ? pRoh.clips : {};
@@ -897,39 +1147,48 @@ if (mitWav) console.log(`  WAV-Originale:  ${mitWav} Songs `
 // Bleibt erhalten, auch wenn bei einem Lauf keine neue Fassung
 // vorliegt.
 const profilInfoDatei = neuesteRohdatei('profilinfo');
-const profil = lies(profilInfoDatei) || (alt && alt.profil) || null;
+const profil = liesRoh(profilInfoDatei) || (alt && alt.profil) || null;
 if (profilInfoDatei) console.log('  Profilangaben: ', path.basename(profilInfoDatei));
 
-/* Welche Dateien dieser Lauf gelesen hat. Sie werden weiter unten
-   GELOESCHT, erst nach erfolgreichem Schreiben des Katalogs.
-
-   Der Kommentar hier sagte bis zum 25.08.2026 etwas anderes: sie
-   wanderten nach roh/verarbeitet/ und blieben als Tagebuch erhalten.
-   Das war einmal so und ist seit dem 20.08.2026 nicht mehr wahr
-   (Caspar_D: "wozu das mitfuehren und Speicherplatz vergeuden"). Der
-   Code darunter loescht, der Kommentar behauptete das Gegenteil - und
-   aus dieser Behauptung ist eine falsche Sicherungsanweisung in README
-   und START-HIER gewachsen: "Nur library/roh/ sichern". Wer dem folgte,
+/* Welche Dateien dieser Lauf GELESEN hat - genau die werden weiter
+   unten geloescht, und erst nach erfolgreichem Schreiben des Katalogs.
+   Sie wandern NICHT nach roh/verarbeitet/; sie sind danach weg. Der
+   Kommentar hier behauptete bis zum 25.08.2026 das Gegenteil, und aus
+   der Behauptung war eine falsche Sicherungsanweisung in README und
+   START-HIER gewachsen: "Nur library/roh/ sichern". Wer dem folgte,
    sicherte einen fast leeren Ordner und haette den Katalog verloren.
 
-   Unersetzlich ist library/katalog.json.gz. */
-const verarbeitet = [
-  ...['profil','privat','timing','profilinfo','feed'].flatMap(alleRohdateien),
-  /* playlists: NUR die tatsaechlich GELESENE Datei (playlistDatei), nicht
-     alle gesehenen. Bis zum 08.09.2026 abends stand hier die ganze
-     Aufnahme von oben - gelesen wurde aber nur die juengste, und die
-     aelteren gingen ungelesen mit in den Papierkorb. Sie bleiben jetzt
-     liegen, der naechste Lauf nimmt sie sich vor (oder erkennt sie als
-     ueberholt). Und die gelesene Datei, aus der oben nichts Brauchbares
-     zu holen war, wird NICHT geloescht - sonst waere nach genau einem
-     Lauf weder der Albumstand im Katalog noch die einzige Kopie der
-     Albumdaten da. Sie wird stattdessen unten in .abgelehnt umbenannt
-     (albenAbgelehnt): so bleibt sie erhalten, zaehlt aber weder hier
-     noch in /api/morgen/unverarbeitet je wieder als "wartet auf den
-     roten Knopf". */
-  ...(playlistDatei && !albenRohBehalten ? [playlistDatei] : []),
-];
+   Unersetzlich ist library/katalog.json.gz.
+
+   DIE LISTE WIRD NICHT MEHR AUS DEM ORDNER GEBAUT (16.09.2026). Bis
+   dahin standen hier alle Dateien von fuenf Arten, frisch aus dem
+   Ordner gelesen - und damit auch die, die dieser Lauf nie angesehen
+   hatte: von feed- und profilinfo-Dateien liest er nur die juengste,
+   und eine Ernte, die zwischen Lesen und Loeschliste ankam, geriet
+   ungelesen in den Papierkorb. Jetzt gilt die Menge `gelesen` (siehe
+   liesRoh oben) - was drin steht, wurde angefasst; was nicht, bleibt
+   liegen. Das ist dieselbe Regel, die fuer die Albumernten seit dem
+   08.09.2026 gilt, nur fuer alle Arten.
+
+   Eine Ausnahme bleibt: die gelesene playlists-Datei, aus der nichts
+   Brauchbares zu holen war (albenRohBehalten), wird NICHT geloescht -
+   sonst waere nach genau einem Lauf weder der Albumstand im Katalog
+   noch die einzige Kopie der Albumdaten da. Sie wird unten in
+   .abgelehnt umbenannt: so bleibt sie erhalten, zaehlt aber weder hier
+   noch in /api/morgen/unverarbeitet je wieder als "wartet auf den
+   roten Knopf". */
 const albenAbgelehnt = (albenRohBehalten && playlistDatei) ? playlistDatei : null;
+/* Die unlesbaren auch nicht: sie werden unten in .unlesbar umbenannt
+   (siehe liesRoh oben) - Loeschen waere das Verwerfen einer Ernte, die
+   sich von Hand vielleicht noch retten laesst. */
+const verarbeitet = [...gelesen]
+  .filter(f => f !== albenAbgelehnt && !unlesbar.has(f)).sort();
+/* Was dieser Lauf im Ordner gesehen, aber nicht gelesen hat: die
+   aelteren feed-, profilinfo- und playlists-Ernten. Sie bleiben
+   liegen; weil die juengste geloescht wird, ist beim naechsten Lauf
+   die naechstaeltere die juengste. */
+const liegenGeblieben = ROH_AUFNAHME
+  .filter(f => !gelesen.has(path.join(ROH, f)));
 
 /* Verwaiste Kandidaten fallen lassen (ihr Album ist nicht mehr im
    Katalog - nach einer bestätigten Löschung ist der Kandidat ohnehin
@@ -1018,6 +1277,12 @@ if (entfernt) {
 // noch aufzuheben waere doppelte Buchfuehrung auf einer exFAT-Platte
 // (Caspar_D, 20.08.2026: "wozu das mitfuehren und Speicherplatz
 // vergeuden"). roh/ enthaelt damit immer genau das Unverarbeitete.
+// GELOESCHT WIRD NUR, WAS DIESER LAUF GELESEN HAT (16.09.2026, siehe
+// die Liste `verarbeitet` oben). Eine Ernte, die waehrend des Laufs
+// ankam - das Lesezeichen laeuft nebenher, und das Packen des Katalogs
+// dauert allein ~17 s -, ist in der Aufnahme des Ordners gar nicht
+// enthalten: Sie wird nicht gelesen und nicht angefasst, und der
+// naechste Lauf nimmt sie sich vor.
 if (verarbeitet.length) {
   let geloescht = 0, bytes = 0;
   for (const f of verarbeitet) {
@@ -1026,6 +1291,46 @@ if (verarbeitet.length) {
   }
   console.log(`\nAufgeräumt: ${geloescht} verarbeitete Rohdateien gelöscht (${(bytes/1048576).toFixed(0)} MB — alles steckt im Katalog)`);
 }
+/* Und was liegenbleibt, damit niemand raten muss: die ungelesenen
+   aelteren Ernten aus der Aufnahme und alles, was WAEHREND des Laufs
+   dazukam. Der Ordner wird dafuer noch einmal gelesen - nur zum
+   Zaehlen, nie zum Loeschen. */
+{
+  let jetzt = [];
+  try { jetzt = fs.readdirSync(ROH).filter(f => f.endsWith('.json') && !f.startsWith('._')); } catch (e) {}
+  const dazu = jetzt.filter(f => !ROH_AUFNAHME.includes(f)).sort();
+  const nennen = (t) => t.length <= 4 ? t.join(', ') : t.slice(0, 4).join(', ') + `, … (${t.length - 4} weitere)`;
+  if (liegenGeblieben.length)
+    console.log(`  ${liegenGeblieben.length} Rohdatei(en) hat dieser Lauf nicht gelesen und liegen lassen `
+              + `(der nächste nimmt sie sich vor): ${nennen(liegenGeblieben)}`);
+  if (dazu.length)
+    console.log(`  ${dazu.length} Rohdatei(en) kamen WÄHREND des Laufs an und bleiben unangetastet `
+              + `(der nächste Lauf verarbeitet sie): ${nennen(dazu)}`);
+
+  /* DAMIT DER NACHZUEGLER NICHT UNSICHTBAR WARTET (16.09.2026).
+     /api/morgen/unverarbeitet im Server ueberspringt jede Rohdatei, die
+     aelter ist als der Katalog - und der Katalog wird am ENDE des Laufs
+     geschrieben. Eine Ernte, die WAEHREND des Laufs ankam, ist damit per
+     Konstruktion aelter: der Server meldete 0, das Lesezeichen sagte
+     nicht "Auf dem Server wartet noch ein Datensatz", und die einzige
+     Erwaehnung war die Protokollzeile desjenigen Laufs, der sie liegen
+     liess. Der naechste Lauf uebernimmt sie zwar - aber niemand weiss
+     das, bevor er laeuft.
+
+     Also schreibt der Lauf auf, was er zurueckliess. Nur die
+     Nachzuegler: die aelteren feed- und profilinfo-Ernten
+     (liegenGeblieben) sollen weiter unsichtbar bleiben, sie sind
+     "ungelesen, weil zu alt" und nicht "ungelesen, weil zu spaet".
+     Immer schreiben, auch leer - eine alte Liste waere sonst eine
+     Behauptung ueber diesen Lauf. Stehenbleibende Namen schaden nicht:
+     der Server zaehlt nur, was im Ordner auch wirklich noch liegt. */
+  try {
+    fs.writeFileSync(path.join(WURZEL, 'library', 'nachzuegler.json'),
+      JSON.stringify({ lauf: new Date().toISOString(), dateien: dazu }, null, 2));
+  } catch (e) {
+    console.log(`  Nachzügler-Vermerk konnte nicht geschrieben werden: ${e.message}`);
+  }
+}
 /* Die abgelehnte playlists-Rohdatei (siehe oben) bekommt die Endung
    .abgelehnt: Inhalt bleibt, aber weder alleRohdateien() noch der
    Zaehler im Server sehen sie noch - beide fragen nach .json. */
@@ -1033,4 +1338,12 @@ if (albenAbgelehnt) {
   try { fs.renameSync(albenAbgelehnt, albenAbgelehnt + '.abgelehnt');
         console.log(`  ${path.basename(albenAbgelehnt)} → .abgelehnt (unbrauchbar, aber aufgehoben)`); }
   catch (e) { console.log(`  ${path.basename(albenAbgelehnt)} konnte nicht umbenannt werden: ${e.message}`); }
+}
+/* Dasselbe fuer die unlesbaren (siehe liesRoh oben): Inhalt bleibt
+   erhalten, der naechste Lauf stolpert nicht mehr darueber, und
+   /api/morgen/unverarbeitet zaehlt sie nicht mehr als wartend. */
+for (const f of unlesbar) {
+  try { fs.renameSync(f, f + '.unlesbar');
+        console.log(`  ${path.basename(f)} → .unlesbar (krummes JSON, aber aufgehoben)`); }
+  catch (e) { console.log(`  ${path.basename(f)} konnte nicht umbenannt werden: ${e.message}`); }
 }

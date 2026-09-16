@@ -1048,11 +1048,30 @@ function unverarbeitetZaehlen() {
   try { katalogStand = fs.statSync(K.KATALOG).mtimeMs; } catch (e) {}
   let dateien = [];
   try { dateien = fs.readdirSync(ordner).filter(f => /\.json$/.test(f) && !f.startsWith('._')); } catch (e) {}
+  /* DER NACHZUEGLER IST AELTER ALS DER KATALOG UND TROTZDEM UNGELESEN
+     (16.09.2026). Die Messlatte unten ist die mtime des Katalogs - und
+     der wird am ENDE des Laufs geschrieben. Eine Ernte, die WAEHREND
+     des Laufs ankam (das Lesezeichen laeuft nebenher, allein das Packen
+     dauert ~17 s), ist damit per Konstruktion aelter als er und fiel
+     durch: /api/morgen/unverarbeitet meldete 0, das Lesezeichen sagte
+     nichts, und die einzige Erwaehnung war die Protokollzeile
+     desjenigen Laufs, der sie liegen liess.
+     bin/aufbereiten.js schreibt deshalb am Ende auf, was er
+     zurueckliess; diese Namen zaehlen mit, auch wenn sie aelter sind.
+     Nur die Nachzuegler - "ungelesen, weil zu spaet". Die aelteren
+     feed- und profilinfo-Ernten ("ungelesen, weil zu alt") bleiben
+     unsichtbar, wie bisher. Namen, deren Datei nicht mehr im Ordner
+     liegt, zaehlen von selbst nicht mehr. */
+  let nachzuegler = new Set();
+  try {
+    const n = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'nachzuegler.json'), 'utf8'));
+    if (n && Array.isArray(n.dateien)) nachzuegler = new Set(n.dateien);
+  } catch (e) {}
   const arten = {}, stempel = new Set();
   let juengste = null, aelteste = null;
   for (const f of dateien) {
     const m = fs.statSync(path.join(ordner, f)).mtimeMs;
-    if (m <= katalogStand) continue;
+    if (m <= katalogStand && !nachzuegler.has(f)) continue;
     const art = (f.match(/^([a-z]+)-/) || [,'sonst'])[1];
     arten[art] = (arten[art] || 0) + 1;
     /* Ein Datensatz = profil + privat + timing mit demselben Stempel
@@ -1064,6 +1083,61 @@ function unverarbeitetZaehlen() {
   }
   return { katalogStand, arten, anzahl: Object.values(arten).reduce((a,b)=>a+b,0),
            datensaetze: stempel.size, aelteste, juengste };
+}
+/* WAS AN WORT-ZEITMARKEN SCHON DALIEGT - laut den noch unverarbeiteten
+   Rohdateien, je Fassung eine Menge von Ids. Gemeinsame Grundlage von
+   v2-fehlt und v3-fehlt, damit beide dieselben Dateien, dieselben
+   Schluessel und dieselbe Messlatte benutzen.
+
+   DIE MESSLATTE (Caspar_D, 16.09.2026: "gut, ich gebe das okay"):
+   VORHANDEN heisst nicht "Suno hat geantwortet", sondern "daraus werden
+   Woerter". Suno rechnet die Ausrichtung erst auf Anfrage: der erste
+   Abruf antwortet {state:'running'}, manchmal mit einem LEEREN
+   alignment, und HTTP 202 ("Aligned lyrics are still processing")
+   traegt gar keinen Inhalt. Bis zum 16.09.2026 zaehlte v3-fehlt jedes
+   vorhandene alignment-Feld als erledigt, auch das leere: K.v3ZuWorten
+   gab daraus [], worteV3 wurde nie gesetzt, die Rohdatei war nach dem
+   Uebernehmen weg - und dieselben Titel wurden jede Nacht neu geholt
+   (die zwei Fassungen von "Herr von Ribbeck", Wochen lang).
+   Gefragt wird deshalb genau das, was aufbereiten.js beim Uebernehmen
+   fragt - K.v3ZuWorten fuer v3, aligned_words fuer v2. Ergibt es keine
+   Woerter, bleibt der Titel auf der Fehlt-Liste.
+
+   Gelesen wird nur der aktive Ordner: was dort liegt, wird beim
+   naechsten Uebernehmen Katalog. Schluessel mit __ sind Beipack der
+   Ernte (__zeitprobe, __holstand), keine Song-Ids. */
+function rohZeitmarken() {
+  const hat = { v2: new Set(), v3: new Set() };
+  const ordner = path.join(WURZEL, 'library', 'roh');
+  let dateien = [];
+  try { dateien = fs.readdirSync(ordner)
+                    .filter(f => /^timing-.*\.json$/.test(f) && !f.startsWith('._')); } catch (e) {}
+  const ergibtV3 = (d) => { const w = d && !d.fehler ? K.v3ZuWorten(d) : null; return !!(w && w.length); };
+  const ergibtV2 = (d) => {
+    if (!d || d.fehler) return false;
+    const r = Array.isArray(d) ? d : d.aligned_words;
+    return !!(Array.isArray(r) && r.length);
+  };
+  for (const f of dateien) {
+    let j; try { j = JSON.parse(fs.readFileSync(path.join(ordner, f), 'utf8')); } catch (e) { continue; }
+    /* Zwei Ablageorte in derselben Dateiart, und aufbereiten.js nimmt
+       beide: die Zeitproben des Lesezeichens unter __zeitprobe und die
+       Felder am Song-Eintrag selbst - dort heisst die fertige v2-Spur
+       'worte' (aufbereiten.js: worteQuelle = 'suno'). */
+    const songs = j.songs || j.timing || {};
+    const probe = (j.songs && j.songs.__zeitprobe) || (j.timing && j.timing.__zeitprobe) || {};
+    for (const [id, o] of Object.entries(probe)) {
+      if (id.startsWith('__') || !o || typeof o !== 'object') continue;
+      if (ergibtV3(o.v3)) hat.v3.add(id);
+      if (ergibtV2(o.v2)) hat.v2.add(id);
+    }
+    for (const [id, t] of Object.entries(songs)) {
+      if (id.startsWith('__') || !t || typeof t !== 'object') continue;
+      if (ergibtV3(t.v3)) hat.v3.add(id);
+      if (Array.isArray(t.worte) && t.worte.length) hat.v2.add(id);
+    }
+  }
+  return hat;
 }
 function morgenStand() {
   return {
@@ -2007,8 +2081,21 @@ const server = http.createServer((req, res) => {
         const d = JSON.parse(fs.readFileSync(path.join(ordner, f), 'utf8'));
         for (const [id, t] of Object.entries(d.songs || d)) {
           if (!t || typeof t !== 'object') continue;
+          /* Beipack der Ernte, keine Song-Id: __zeitprobe traegt die
+             Wort-Zeitmarken, __holstand seit dem 16.09.2026 die
+             Statusmeldungen der Abrufe. Was hier als Song gelesen
+             wuerde, waere eine erfundene Id in der Vorhanden-Liste. */
+          if (id.startsWith('__')) continue;
           if (Array.isArray(t.schlaege) && t.schlaege.length) hat.schlaege.add(id);
-          if (t.abschnitte && t.abschnitte.state === 'complete') hat.abschnitte.add(id);
+          /* 'complete' IST KEIN INHALT. Dieselbe Messlatte wie beim
+             Ernten (browser/morgens.js) und beim Uebernehmen
+             (bin/aufbereiten.js): ohne peak_times und segment_labels
+             kann die Buehne mit dem Objekt nichts anfangen, und
+             "vorhanden" waere eine Behauptung, die den Titel fuer immer
+             von der Fehlt-Liste nimmt. */
+          if (t.abschnitte && Array.isArray(t.abschnitte.peak_times) && t.abschnitte.peak_times.length
+              && Array.isArray(t.abschnitte.segment_labels) && t.abschnitte.segment_labels.length)
+            hat.abschnitte.add(id);
           if (Array.isArray(t.wellenStufen) && t.wellenStufen.length) hat.wellenStufen.add(id);
         }
       } catch (e) {}
@@ -3283,22 +3370,15 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
        jedes mal, kommen die nie an?" - sie kamen an, nur zaehlte sie niemand.
        Belegt an "Bei mir klingelt keiner": 333 Worte in worteV2, trotzdem jede Nacht neu geholt.
        Wie bei v3 zaehlt auch, was als Rohdatei schon daliegt, aber noch nicht verarbeitet ist -
-       sonst holt ein zweiter Lauf vor dem Uebernehmen alles noch einmal. */
+       sonst holt ein zweiter Lauf vor dem Uebernehmen alles noch einmal. Was in den Rohdaten
+       zaehlt, entscheidet rohZeitmarken() - und zwar nach einer einzigen Messlatte: es muss
+       Woerter ergeben. Eine noch rechnende Antwort (HTTP 202, leere aligned_words) ist keine
+       Zeitmarke, der Titel bleibt auf der Liste und der naechste Lauf sammelt sie ein. */
     const hat = new Set(Object.values(k.songs)
       .filter(s => (s.worte && s.worte.length && s.worteQuelle !== 'whisper')
                 || (s.worteV2 && s.worteV2.length))
       .map(s => s.id));
-    try {
-      const ordner = path.join(WURZEL, 'library', 'roh');
-      for (const f of fs.readdirSync(ordner).filter(f => /^timing-.*\.json$/.test(f))) {
-        let j; try { j = JSON.parse(fs.readFileSync(path.join(ordner, f), 'utf8')); } catch (e) { continue; }
-        const probe = (j.songs && j.songs.__zeitprobe) || (j.timing && j.timing.__zeitprobe);
-        if (probe) for (const [id, o] of Object.entries(probe)) {
-          const v2 = o && o.v2 && !o.v2.fehler ? (Array.isArray(o.v2) ? o.v2 : o.v2.aligned_words) : null;
-          if (Array.isArray(v2) && v2.length) hat.add(id);
-        }
-      }
-    } catch (e) {}
+    for (const id of rohZeitmarken().v2) hat.add(id);
     const fehlt = Object.values(k.songs)
       .filter(s => !s.fremd && s.lyrics && s.lyrics.trim() && !hat.has(s.id))
       .map(s => s.id);
@@ -3309,18 +3389,15 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
     /* Vorhanden = im Katalog (worteV3) ODER als noch unverarbeitete
-       Rohdatei im aktiven Ordner. */
+       Rohdatei im aktiven Ordner - beides nur, wenn Woerter
+       herauskommen. Bis zum 16.09.2026 genuegte hier ein vorhandenes
+       alignment-Feld, auch ein leeres: der Titel galt als erledigt,
+       K.v3ZuWorten machte daraus [], worteV3 blieb ungesetzt, und beim
+       naechsten Lauf ging alles von vorn los. Die Messlatte steht jetzt
+       einmal in rohZeitmarken(). */
     const hat = new Set(Object.values(k.songs).filter(s => s.worteV3 && s.worteV3.length).map(s => s.id));
+    for (const id of rohZeitmarken().v3) hat.add(id);
     /* Ohne Lyrics keine Ausrichtung - die Naturklaenge bleiben draussen. */
-    try {
-      const ordner = path.join(WURZEL, 'library', 'roh');
-      for (const f of fs.readdirSync(ordner).filter(f => /^timing-.*\.json$/.test(f))) {
-        let j; try { j = JSON.parse(fs.readFileSync(path.join(ordner, f), 'utf8')); } catch (e) { continue; }
-        const probe = (j.songs && j.songs.__zeitprobe) || (j.timing && j.timing.__zeitprobe);
-        if (probe) for (const [id, o] of Object.entries(probe))
-          if (o && o.v3 && (Array.isArray(o.v3.alignment) || Array.isArray(o.v3.aligned_words))) hat.add(id);
-      }
-    } catch (e) {}
     const fehlt = Object.values(k.songs)
       .filter(s => !s.fremd && s.lyrics && s.lyrics.trim() && !hat.has(s.id)).map(s => s.id);
     return jsonAntwort(res, { fehlt, vorhanden: hat.size });

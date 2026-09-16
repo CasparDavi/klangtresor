@@ -372,7 +372,11 @@
      keine IDs fuer den Rest. Alles andere ist abwaehlbar. */
   const AUSWAHL = [
     { k:'privat',  name:'Private Songs',                 was:'Plays und Likes der Unveroeffentlichten - die stehen nicht im oeffentlichen Profil', an:true },
-    { k:'timing',  name:'Sunos eigene Analyse', was:'Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt, ~2 s je Song', an:true },
+    /* WAS HIER STEHT, LIEST JOERG VOR DEM DRUECKEN. Bis zum 16.09.2026
+       versprach die Zeile "~2 s je Song" - das galt fuer drei Anfragen
+       hinter EINER Pause. Heute liegt die Hauspause je Anfrage, und was
+       Suno erst rechnet (Schlaege, Abschnitte), wird nachgefragt. */
+    { k:'timing',  name:'Sunos eigene Analyse', was:'Tempo, Struktur und Huellkurve, wie Suno sie rechnet - die Referenz fuer unseren Analyzer; nur fuer Songs, denen sie fehlt. Schlaege und Abschnitte rechnet Suno erst auf Anfrage: dafuer wird nachgefragt, hoechstens 8 Runden und hoechstens 2 Minuten lang', an:true },
     { k:'benach',  name:'Wer hat reagiert',             was:'Likes, Kommentare, Follows - wer wann; die letzten vier Wochen', an:true },
     { k:'liker',   name:'Wer hat geherzt',              was:'alle Personen je eigenem Titel, vollstaendig (der Weg der iOS-App); nur Titel, deren Herzzahl sich seit dem letzten Stand geaendert hat', an:true },
     { k:'beob',    name:'Beobachter',                   was:'wer dir folgt und wem du folgst - vollstaendig, 20 je Seite, mit "folgt zurueck"; der Strom kennt nur die letzten vier Wochen', an:true },
@@ -390,7 +394,7 @@
        nichts. Was NICHT passiert: ein Unlock ausloesen - das kostet, und
        das entscheidet ein Mensch. */
     { k:'ton',     name:'Ton holen (nur Freigeschaltetes)', was:'fuer Titel, deren Audiodatei fehlt und die bei Suno schon freigeschaltet sind - kostet KEIN Guthaben, gemessen am 11.09.2026; unbekannte Titel werden vorher nachgefragt, auch das ist kostenlos', an:true },
-    { k:'zeitprobe', name:'Zeitmarken nachladen (v2 + v3)', was:'Wort-Zeitmarken fuer Karaoke: v2 fuer Songs, die noch keine haben, v3 fuer alle; was Suno erst rechnen muss, kommt beim naechsten Lauf', an:false },
+    { k:'zeitprobe', name:'Zeitmarken nachladen (v2 + v3)', was:'Wort-Zeitmarken fuer Karaoke: v2 fuer Songs, die noch keine haben, v3 fuer alle; wer "wird gerechnet" antwortet, wird EINMAL nachgefragt - so haelt es Sunos eigene App auch. Was dann noch rechnet, bleibt auf der Liste', an:false },
   ];
   const gemerkt = (() => { try { return JSON.parse(localStorage.getItem('mysuno-morgens-auswahl')||'{}'); } catch(e){ return {}; } })();
   for (const a of AUSWAHL) if (gemerkt[a.k] !== undefined) a.an = !!gemerkt[a.k];
@@ -903,12 +907,16 @@
      Drei Auskuenfte aus der Adressliste der Web-App
      (docs/suno-api-wege.txt), alle mit 401 ohne Anmeldung:
 
-       downbeats            Sunos Schlagerkennung, Zeitstempel je Schlag
+       downbeats            Sunos Schlagerkennung, Zeitstempel je Schlag -
+                            wird auf Anfrage gerechnet
        novelty-sections     Sunos Strukturerkennung - wird auf Anfrage
                             gerechnet, antwortet erst 'running', dann
-                            'complete'; fehlt es, kommt es beim naechsten
-                            Lauf
-       waveform-aggregates  die Huellkurve in Zoomstufen
+                            'complete'
+       waveform-aggregates  die Huellkurve in Zoomstufen - liegt fertig
+
+     ZWEI VON DREI MUSS MAN ZWEIMAL FRAGEN, und genau das tat dieser
+     Block bis zum 16.09.2026 nicht; was unten in der Nachfragephase
+     steht, ist die Antwort darauf.
 
      Geholt wird nur, was im Katalog fehlt - die Merker hatSchlaege,
      hatAbschnitte, hatWellenStufen sagen es. Beim ersten Mal sind das
@@ -969,7 +977,267 @@
     const t = await tokenHolen();
     if (t){
       tokenDa = true;
-      const H = { Authorization: 'Bearer ' + t };
+      /* Nicht const: die Nachfragephase weiter unten liegt bis zu zwei
+         Minuten hinter der letzten Hauptanfrage und frischt den Token
+         vorher noch einmal auf (tokenHolen() holt bei jedem Aufruf ein
+         frisches bei Clerk). Wie lange Sunos Bearer trägt, ist nicht
+         gemessen; der Griff kostet nichts, ein 401 in der Nachfrage
+         kostet die ganze Runde. */
+      let H = { Authorization: 'Bearer ' + t };
+
+      /* ---------------- EINMAL FRAGEN REICHT NICHT ----------------
+         SUNO RECHNET DREI DIESER AUSKÜNFTE ERST, WENN JEMAND FRAGT.
+         downbeats und novelty-sections antworten auf den ersten Ruf
+         {state:'running'}, aligned_lyrics antwortet HTTP 202 ("Aligned
+         lyrics are still processing") mit leerem Körper. Dieses
+         Lesezeichen fragte genau EINMAL und nannte jede solche Antwort
+         "noch nicht fertig bei Suno" - als wäre das ein Zustand bei
+         Suno und nicht unsere eigene Ungeduld.
+
+         Am 16.09.2026 belegt am neuesten Titel ("Halt die Klappe,
+         Willem", der einzige v6-Clip von 325): Hüllkurve 1/1 und v2 5/5
+         kamen im selben Lauf an - die liegen fertig -, Schläge,
+         Abschnitte und v3 fehlten, denn die werden gerechnet. Es war
+         kein Token-, CORS- oder Drosselproblem.
+         (Caspar_D, 16.09.2026: "gut, ich gebe das okay.")
+
+         WIE OFT NACHGEFRAGT WIRD, SAGT SUNOS EIGENER CLIENT - UND ER
+         SAGT FÜR DIE ZWEI ADRESSARTEN VERSCHIEDENES. Nachgelesen im
+         Studio-Bündel (Brocken 1gr2t_xe08_nr.js, festgehalten in
+         library/suno-wege/suno-wege-_studio.json):
+
+           downbeats, novelty-sections
+             `if(Date.now()-r>3e5)throw Error("Timeout");
+              if(a.data?.state==="running")return await sleep(2500),p(...)`
+             - eine Warteschleife: alle 2,5 s, bis zu 300 s. Dafür
+             stehen unten NACHFRAGE_RUNDEN Runden.
+
+           aligned_lyrics/v2 (und v3 gleicher Bauart)
+             `{...processingRetries:u=1}=a||{} ... if(202===a)throw
+              new o("Aligned lyrics are still processing",a) ...
+              retry:(e,t)=>t instanceof o&&202===t.status&&e<u`
+             - EIN Nachfassversuch, nicht acht. Und angestoßen wird die
+             Ausrichtung bei Suno mit einem POST (`fetchV3LyricsInitiate`
+             = POST .../aligned_lyrics/v3 mit {lyrics,...};
+             `useRegenerateAlignedLyrics` = POST auf v2). Wir fragen nur
+             per GET. Ein Titel, dessen Ausrichtung nie angestoßen
+             wurde, kann per GET nicht fertig werden - acht Runden wären
+             acht verlorene Anfragen je Lauf und Titel. Der POST
+             SCHREIBT bei Suno; ob das Lesezeichen das tun darf,
+             entscheidet Jörg, nicht dieser Code. Bis dahin: einmal
+             nachfassen, dann ehrlich "rechnet weiter" sagen.
+
+         DER MORGENKNOPF BLEIBT EINE MORGENROUTINE, KEIN WARTEZIMMER.
+         Im Hauptdurchgang wird jede Adresse EINMAL gefragt; was
+         "rechnet" antwortet, kommt in die Nachfrageliste und wird
+         danach rundenweise abgeklopft - mit der Hauspause zwischen den
+         Anfragen und NACHFRAGE_ABSTAND zwischen den Runden. Jede
+         Adresse trägt ihr eigenes Budget (RUNDEN_JE_FELD); darüber
+         steht NACHFRAGE_FRIST für die GANZE Phase. Was dann noch
+         rechnet, wird als rechnend gemeldet - nicht als geholt. */
+      const NACHFRAGE_RUNDEN  = 8;        // Warteschleife: downbeats, novelty-sections
+      const NACHFRAGE_FRIST   = 120000;   // ms für die ganze Nachfragephase
+      const NACHFRAGE_ABSTAND = 2500;     // ms zwischen zwei Runden, wie Sunos App
+      /* Je Adressart ihr eigenes Budget - siehe den Beleg oben. */
+      const RUNDEN_JE_FELD = { schlaege:NACHFRAGE_RUNDEN, abschnitte:NACHFRAGE_RUNDEN,
+                               wellenStufen:NACHFRAGE_RUNDEN, v2:1, v3:1 };
+      const budget = (feld) => RUNDEN_JE_FELD[feld] || 1;
+      const nachfragen = [];              // offene Adressen: {id, feld, weg, ziel, stand}
+      const zeitprobe  = {};              // wird nach der Nachfrage als __zeitprobe angehängt
+      let z2 = null;                      // die Zeile der Wort-Zeitmarken
+
+      /* WAS AUS EINER ANTWORT WIRKLICH ANKOMMT. Nur was auch Inhalt
+         trägt, gilt als geholt: aufbereiten.js übernimmt Schläge und
+         Hüllkurve erst ab Länge > 0, und der Katalog merkt sich den
+         Song sonst als "hat es" - eine leere Antwort wäre also ein
+         stilles Loch. Fehlt der Inhalt, heißt das Ergebnis 'leer' und
+         steht so in der Zeile. */
+      const ernten = (feld, d) => {
+        if (!d || typeof d !== 'object') return null;
+        if (feld === 'schlaege')
+          return Array.isArray(d.downbeats) && d.downbeats.length ? d.downbeats : null;
+        /* ABSCHNITTE: 'complete' IST KEIN INHALT (16.09.2026). Bis dahin
+           genügte d.state === 'complete' - eine Antwort ohne peak_times
+           galt als geholt, der Katalog setzte hatAbschnitte, und der
+           Titel war für immer aus jeder Fehlt-Liste draußen, obwohl die
+           Bühne mit dem Objekt nichts anfangen kann: die Bildkette
+           (web/index.html) braucht peak_times, die Taktlage zusätzlich
+           segment_labels. Also dieselbe Messlatte wie der Abnehmer. */
+        if (feld === 'abschnitte')
+          return Array.isArray(d.peak_times) && d.peak_times.length
+              && Array.isArray(d.segment_labels) && d.segment_labels.length ? d : null;
+        if (feld === 'wellenStufen')
+          return Array.isArray(d.waveform_aggregates) && d.waveform_aggregates.length
+               ? d.waveform_aggregates : null;
+        /* v3: die Wortliste kommt in drei Formen (bloßes Feld,
+           aligned_words, alignment) - K.v3ZuWorten kennt alle drei.
+           v2 NUR IN ZWEI: aufbereiten.js nimmt für v2 `o.v2` als Liste
+           oder `o.v2.aligned_words`, sonst nichts. Eine v2-Antwort in
+           der alignment-Form hier als "geholt" zu buchen hieße: grün
+           melden, ablegen, beim Übernehmen stillschweigend verwerfen,
+           Rohdatei löschen - und im nächsten Lauf dasselbe von vorn.
+           Genau dieser Kreislauf (Ribbeck) ist der Grund dieses Patches.
+           Eine leere Liste ist KEINE Zeitmarke: sie ergäbe worteV3 = []
+           und würde im Katalog nie sichtbar. */
+        const roh = Array.isArray(d) ? d
+                  : Array.isArray(d.aligned_words) ? d.aligned_words
+                  : (feld !== 'v2' && Array.isArray(d.alignment)) ? d.alignment : null;
+        return roh && roh.length ? d : null;
+      };
+
+      /* AUS EINER ANTWORT WIRD EIN BEFUND - vier Wörter, mehr gibt es
+         nicht: 'geholt', 'rechnet', 'leer', 'fehler'. */
+      const RECHNET = ['running','queued','pending','processing','submitted','in_progress'];
+      /* Sunos Wort dafür, dass die Ausrichtung noch nicht gerechnet ist,
+         wenn kein state-Feld dabei ist. Im Studio-Bündel steht es in
+         DERSELBEN Bedingung wie 'running'
+         (`if("running"===t.state||"Lyrics alignment not available, try
+         again l…` - der festgehaltene Ausschnitt bricht dort ab, das
+         Feld, auf dem Suno vergleicht, ist deshalb NICHT belegt). Wir
+         sehen in den üblichen Textfeldern nach und im Körper selbst,
+         falls er nur diese Zeichenkette ist. */
+      const ALIGNMENT_RECHNET = 'Lyrics alignment not available';
+      const rechnetText = (d) => {
+        const w = (v) => typeof v === 'string' && v.indexOf(ALIGNMENT_RECHNET) > -1;
+        if (w(d)) return true;
+        if (!d || typeof d !== 'object') return false;
+        return w(d.detail) || w(d.message) || w(d.error) || w(d.status);
+      };
+      const befund = (stand, feld, d) => {
+        if (stand.fehler) return 'fehler';
+        /* HTTP 202 ist Sunos "wird gerechnet" bei aligned_lyrics - eine
+           2xx-Antwort ohne Inhalt. Bis zum 16.09.2026 galt sie als
+           Erfolg (r.ok ist für 202 wahr), und ein leerer Körper wanderte
+           als geholt in die Ernte. */
+        if (stand.status === 202) return 'rechnet';
+        if (!(stand.status >= 200 && stand.status < 300)) return 'fehler';
+        if (stand.state && RECHNET.indexOf(stand.state) > -1) return 'rechnet';
+        /* DER INHALT ENTSCHEIDET, NICHT DAS ETIKETT (16.09.2026, zweiter
+           Durchgang). Hier stand kurzzeitig `state !== 'complete' →
+           fehler` VOR dem Blick in die Antwort - für ALLE fünf
+           Adressen. Eine 2xx-Antwort mit vollständiger Nutzlast, deren
+           state nur anders heißt ('succeeded', 'done', …), wäre damit
+           weggeworfen worden, und Hüllkurve wie aligned_lyrics tragen in
+           Sunos eigenem Client überhaupt kein state: der liest dort
+           schlicht die Daten. Welchen Wert Suno im Fertigfall schreibt,
+           steht nirgends im Archiv - also darf kein Pfad daran hängen.
+           Erst wenn NICHTS Brauchbares da ist, redet der state mit. */
+        const inhalt = ernten(feld, d);
+        if (inhalt != null) return 'geholt';
+        if (rechnetText(d)) { stand.hinweis = ALIGNMENT_RECHNET; return 'rechnet'; }
+        if (stand.state && stand.state !== 'complete') return 'fehler';
+        return 'leer';
+      };
+
+      /* EINE ADRESSE, EIN EIGENER VERSUCH. Anfrage, Lesen und Beurteilen
+         liegen zusammen in EINEM try: bis zum 16.09.2026 lag ein
+         gemeinsames try um alle drei Adressen eines Songs - warf
+         downbeats, wurden Abschnitte und Hüllkurve für diesen Song nie
+         gefragt, und niemand erfuhr davon. Der Stand beschreibt immer
+         die LETZTE Antwort, `versuche` zählt mit. */
+      /* EINE ANFRAGE DARF NICHT EWIG HÄNGEN. Die beiden Grenzen der
+         Nachfrage (Runden, Frist) werden ZWISCHEN den Anfragen geprüft -
+         sie begrenzen die ZAHL der Anfragen, nicht die Dauer einer
+         einzelnen. Ohne diesen Wächter hielte ein einziges hängendes
+         fetch die ganze Phase auf und mit ihr alles Nachgelagerte:
+         __zeitprobe, die restlichen Erntebausteine, der Post an
+         /api/morgen/roh. Ein Abbruch ist ein Fehler wie jeder andere und
+         steht mit Namen in der Zeile. */
+      const ANFRAGE_DECKEL = 15000;       // ms je einzelner Suno-Anfrage
+      const eineAdresse = async (id, feld, stand) => {
+        stand.versuche = (stand.versuche || 0) + 1;
+        stand.status = null;
+        delete stand.state; delete stand.fehler; delete stand.lesefehler; delete stand.hinweis;
+        let d = null;
+        let wache = null, abbruch = null;
+        try {
+          const opt = { headers: H };
+          if (typeof AbortController === 'function'){
+            abbruch = new AbortController();
+            opt.signal = abbruch.signal;
+            wache = setTimeout(() => abbruch.abort(), ANFRAGE_DECKEL);
+          }
+          const r = await fetch(`${API}/api/gen/${id}/${stand.weg}`, opt);
+          stand.status = r.status;
+          try { d = await r.json(); }
+          catch (x) { stand.lesefehler = (x.name || 'Fehler') + ': ' + (x.message || String(x)); }
+          if (d && typeof d === 'object' && !Array.isArray(d) && typeof d.state === 'string')
+            stand.state = d.state;
+        } catch (x) {
+          stand.fehler = (x && x.name === 'AbortError')
+            ? { name: 'Zeitwächter', meldung: `keine Antwort binnen ${ANFRAGE_DECKEL/1000} s` }
+            : { name: (x && x.name) || 'Fehler', meldung: (x && x.message) || String(x) };
+        } finally {
+          if (wache) clearTimeout(wache);
+        }
+        try { stand.ergebnis = befund(stand, feld, d); }
+        catch (x) { stand.fehler = { name: x.name || 'Fehler', meldung: x.message || String(x) };
+                    stand.ergebnis = 'fehler'; }
+        return stand.ergebnis === 'geholt' ? ernten(feld, d) : null;
+      };
+
+      /* DIE BILANZ JE ADRESSE - sie ist die Quelle der Zeile. Gezählt
+         wird nach Befund; `codes` sammelt, WOMIT es schiefging (HTTP 429,
+         TypeError, state error), denn "fehlgeschlagen" allein hilft
+         niemandem weiter. */
+      const bilanz = {};
+      const konto = (feld) => (bilanz[feld] = bilanz[feld]
+        || { gefragt:0, geholt:0, rechnet:0, leer:0, fehler:0, codes:{} });
+      const buchen = (feld, stand, vorher) => {
+        const k = konto(feld);
+        if (vorher) k[vorher]--; else k.gefragt++;
+        k[stand.ergebnis]++;
+        if (stand.ergebnis === 'fehler'){
+          const c = stand.fehler ? stand.fehler.name
+                  : (stand.status >= 200 && stand.status < 300 && stand.state) ? 'state ' + stand.state
+                  : 'HTTP ' + stand.status;
+          k.codes[c] = (k.codes[c] || 0) + 1;
+        }
+      };
+      const satz = (feld, name) => {
+        const k = bilanz[feld];
+        if (!k || !k.gefragt) return null;
+        const t = [`${name} ${k.geholt}/${k.gefragt}`];
+        if (k.rechnet) t.push(`${k.rechnet} rechnet Suno noch`);
+        if (k.leer)    t.push(`${k.leer} leer beantwortet`);
+        if (k.fehler)  t.push(`${k.fehler} Fehler (`
+          + Object.keys(k.codes).map(c => k.codes[c] > 1 ? `${c}×${k.codes[c]}` : c).join(', ') + ')');
+        return t.join(', ');
+      };
+      const farbeAus = (felder) => {
+        let schlimm = 0, offen = 0;
+        for (const f of felder){ const k = bilanz[f]; if (!k) continue;
+          schlimm += k.fehler + k.leer; offen += k.rechnet; }
+        return schlimm ? '#f97b14' : offen ? '#b0b0b6' : '#16be5c';
+      };
+      /* EINE STELLE SCHREIBT DIE WAHRHEIT IN DIE ZEILEN, und sie wird
+         nach dem Hauptdurchgang UND nach jeder Nachfragerunde gerufen -
+         so wächst die Zeile mit, statt am Ende zu behaupten. Der
+         Nachfragesatz (mit den beiden Grenzen) hängt nur an der Zeile,
+         deren Adressen auch nachgefragt wurden - sonst stünde er über
+         einem Block, der gar nicht wartete. */
+      let nachSatz = null, nachFelder = null;
+      const anhang = (felder) => (nachSatz && nachFelder && felder.some(f => nachFelder.has(f)))
+        ? ' — ' + nachSatz : '';
+      const berichten = () => {
+        if (wahl.timing){
+          const felder = ['schlaege','abschnitte','wellenStufen'];
+          const teile = [satz('schlaege','Schläge'), satz('abschnitte','Abschnitte'),
+                         satz('wellenStufen','Hüllkurve')].filter(Boolean);
+          const ergaenzt = Object.keys(timing).filter(id => id !== '__zeitprobe'
+            && (timing[id].schlaege || timing[id].abschnitte || timing[id].wellenStufen)).length;
+          zeileT.textContent = `Sunos eigene Analyse — ${ergaenzt} ${ergaenzt === 1 ? 'Song' : 'Songs'} ergänzt`
+            + (teile.length ? ' · ' + teile.join(' · ') : '') + anhang(felder);
+          zeileT.style.color = farbeAus(felder);
+        }
+        if (z2){
+          const teile = [satz('v2','Zeitmarken v2'), satz('v3','v3')].filter(Boolean);
+          z2.textContent = 'Wort-Zeitmarken — ' + (teile.join(' · ') || 'nichts zu holen')
+            + anhang(['v2','v3']);
+          z2.style.color = farbeAus(['v2','v3']);
+        }
+      };
+
       if (!wahl.timing) zeileT.textContent = 'Sunos eigene Analyse — übersprungen';
       else {
       /* Was schon in den ROHDATEN liegt, zaehlt als vorhanden - auch
@@ -982,26 +1250,40 @@
         (!(a.hatSchlaege || rS.has(a.id)) || !(a.hatAbschnitte || rA.has(a.id)) || !(a.hatWellenStufen || rW.has(a.id))));
       let n = 0;
       for (const a of fehlt){
-        const e = {};
-        const hol = async (weg) => {
-          const r = await fetch(`${API}/api/gen/${a.id}/${weg}`, { headers: H });
-          return r.ok ? r.json() : null;
-        };
-        try {
-          if (!(a.hatSchlaege || rS.has(a.id))){ const d = await hol('downbeats');
-            if (d && d.state === 'complete' && Array.isArray(d.downbeats)) e.schlaege = d.downbeats; }
-          if (!(a.hatAbschnitte || rA.has(a.id))){ const d = await hol('novelty-sections');
-            if (d && d.state === 'complete') e.abschnitte = d; }
-          if (!(a.hatWellenStufen || rW.has(a.id))){ const d = await hol('waveform-aggregates');
-            if (d && Array.isArray(d.waveform_aggregates)) e.wellenStufen = d.waveform_aggregates; }
-        } catch (x) {}
-        if (Object.keys(e).length){ timing[a.id] = e; n++; }
-        zeileT.textContent = `Sunos eigene Analyse … ${n}/${fehlt.length}`;
-        await new Promise(r => setTimeout(r, 300));
+        const e = {}, holstand = {};
+        /* Drei Adressen, jede für sich - und jede mit der Hauspause
+           danach. Vorher lagen drei Anfragen hinter EINER Pause von
+           300 ms; die Hausregel gilt aber je Anfrage, nicht je Song. */
+        const auftraege = [];
+        if (!(a.hatSchlaege     || rS.has(a.id))) auftraege.push(['schlaege',     'downbeats']);
+        if (!(a.hatAbschnitte   || rA.has(a.id))) auftraege.push(['abschnitte',   'novelty-sections']);
+        if (!(a.hatWellenStufen || rW.has(a.id))) auftraege.push(['wellenStufen', 'waveform-aggregates']);
+        for (const [feld, weg] of auftraege){
+          const stand = { weg };
+          const inhalt = await eineAdresse(a.id, feld, stand);
+          holstand[feld] = stand;
+          buchen(feld, stand);
+          if (stand.ergebnis === 'geholt') e[feld] = inhalt;
+          else if (stand.ergebnis === 'rechnet') nachfragen.push({ id:a.id, feld, weg, ziel:e, stand });
+          await pause();
+        }
+        if (Object.keys(e).length) n++;
+        /* AUCH EIN FEHLSCHLAG REIST MIT. holstand liegt neben schlaege,
+           abschnitte und wellenStufen in derselben timing-Rohdatei und
+           landet damit in library/roh/ und im Laufprotokoll -
+           aufbereiten.js liest nur die drei bekannten Felder, holstand
+           stört dort nichts. So ist nachher nachlesbar, WAS Suno
+           geantwortet hat, und nicht nur, was fehlt. */
+        if (Object.keys(holstand).length){ e.holstand = holstand; timing[a.id] = e; }
+        /* TITEL ZÄHLEN, NICHT ADRESSEN: in `nachfragen` steht ein
+           Eintrag je ADRESSE - ein Song mit zwei offenen Adressen
+           erschien hier als "2 rechnet Suno noch". Die Schlusszeile
+           trennt beides sauber, diese Zeile tat es nicht. */
+        const offeneTitel = new Set(nachfragen.map(x => x.id)).size;
+        zeileT.textContent = `Sunos eigene Analyse … ${n}/${fehlt.length}`
+          + (offeneTitel ? ` (${offeneTitel} ${offeneTitel === 1 ? 'Titel rechnet' : 'Titel rechnen'} bei Suno noch)` : '');
       }
-      zeileT.textContent = `Sunos eigene Analyse — ${n} Songs ergänzt`
-        + (fehlt.length - n ? ` (${fehlt.length - n} noch nicht fertig bei Suno)` : '');
-      zeileT.style.color = '#16be5c';
+      berichten();
       }
 
     /* Hier stand bis zum 08.09.2026 die „API-Probe, einmalig": drei GETs mit
@@ -1016,15 +1298,18 @@
   /* ---------------- 2c · Suno v3 nachladen ----------------
        Die neuere Fassung der Wort-Zeitmarken, fuer jeden Song, dem sie
        noch fehlt. Suno rechnet v3 erst auf Anfrage und antwortet bis
-       dahin {state:'running'} - der ERSTE Lauf stoesst also vor allem
-       an, ein SPAETERER sammelt ein. Deshalb: je Song EIN Versuch,
-       running zaehlt nicht als vorhanden, der naechste Lauf holt es.
+       dahin {state:'running'} oder HTTP 202 - im Hauptdurchgang wird
+       deshalb einmal gefragt, den Rest holt die Nachfragephase unten.
        Ablage als __zeitprobe im timing-Objekt (Server: v3-fehlt,
-       /api/zeitprobe; Buehnen-Spurwahl liest daraus). */
+       /api/zeitprobe; Buehnen-Spurwahl liest daraus).
+
+       HTTP 202 HIESS HIER "GEHOLT". r.ok ist für 202 wahr, der Körper
+       ist leer ("Aligned lyrics are still processing"), d.fehler also
+       undefined - und so wurde eine leere Antwort als Zeitmarke
+       gezählt und abgelegt. Seit dem 16.09.2026 entscheidet nicht der
+       Statuscode allein, sondern ob Worte drin sind (ernten). */
     if (wahl.zeitprobe){
-      const z2 = sagen('Hole Wort-Zeitmarken von Suno (fürs Karaoke) …');
-      const probe = {};
-      let fertigZahl = 0, laeuft = 0;
+      z2 = sagen('Hole Wort-Zeitmarken von Suno (fürs Karaoke) …');
       /* Beide Fassungen, jeweils nur was fehlt. v2 zuerst - sie ist
          die, die das Karaoke sofort nutzt. */
       for (const fassung of ['v2','v3']){
@@ -1033,22 +1318,131 @@
         let n = 0;
         for (const id of fehlt){
           n++;
-          try {
-            const r = await fetch(`${API}/api/gen/${id}/aligned_lyrics/${fassung}/`, { headers: H });
-            const d = r.ok ? await r.json() : { fehler: r.status };
-            if (d && d.state === 'running') laeuft++;
-            else if (d && !d.fehler) { (probe[id] = probe[id] || {})[fassung] = d; fertigZahl++; }
-          } catch (x) {}
-          if (n % 10 === 0) z2.textContent = `Wort-Zeitmarken ${fassung} … ${n}/${fehlt.length} (${fertigZahl} fertig, ${laeuft} rechnet Suno noch)`;
+          const ziel = (zeitprobe[id] = zeitprobe[id] || {});
+          const stand = { weg: `aligned_lyrics/${fassung}/` };
+          const inhalt = await eineAdresse(id, fassung, stand);
+          (ziel.holstand = ziel.holstand || {})[fassung] = stand;
+          buchen(fassung, stand);
+          if (stand.ergebnis === 'geholt') ziel[fassung] = inhalt;
+          else if (stand.ergebnis === 'rechnet')
+            nachfragen.push({ id, feld:fassung, weg:stand.weg, ziel, stand });
+          if (n % 10 === 0 || n === fehlt.length)
+            z2.textContent = `Wort-Zeitmarken ${fassung} … ${n}/${fehlt.length}`
+              + ` (${bilanz[fassung].geholt} fertig, ${bilanz[fassung].rechnet} rechnet Suno noch)`;
           await pause();
         }
       }
-      if (Object.keys(probe).length) timing.__zeitprobe = probe;
-      z2.textContent = `Wort-Zeitmarken — ${fertigZahl} geholt` + (laeuft ? `, ${laeuft} rechnet Suno noch (der nächste Lauf sammelt sie ein)` : '');
-      z2.style.color = '#16be5c';
+      berichten();
+      /* SOFORT ANHÄNGEN, NICHT ERST NACH DER NACHFRAGE (16.09.2026).
+         Die Zeile stand bis dahin hinter der Nachfragephase, begründet
+         mit "die Nachfrage füllt zeitprobe noch" - das stimmt nicht: die
+         Nachfrage schreibt über x.ziel[x.feld] in genau DIESE Objekte,
+         Referenz, keine Kopie. Was sie nachliefert, reist also mit,
+         gleich wann die Zeile steht. Umgekehrt war es ein Verlustfenster:
+         wirft irgendetwas in der Nachfrage, fehlt __zeitprobe ganz, und
+         alle bereits geholten v2/v3-Worte sind weg. */
+      if (Object.keys(zeitprobe).length) timing.__zeitprobe = zeitprobe;
+    }
+
+    /* ---------------- 2e · Die Nachfrage ----------------
+       WER AUF ANFRAGE RECHNET, MUSS AUCH GEFRAGT WERDEN, WENN ER
+       FERTIG IST. Alles, was oben 'rechnet' geantwortet hat, liegt in
+       nachfragen; hier wird es rundenweise abgeklopft, wie Sunos App
+       es tut (NACHFRAGE_ABSTAND zwischen den Runden, Hauspause
+       zwischen den Anfragen).
+
+       DREI GRENZEN, UND JEDE BEGRENZT ETWAS ANDERES:
+         · das Budget je Adresse (RUNDEN_JE_FELD) - acht Runden für die
+           Warteschleifen-Adressen, EINE für aligned_lyrics, wie Sunos
+           eigener Client (Beleg oben beim Budget);
+         · NACHFRAGE_FRIST für die ganze Phase, geprüft vor jeder Runde
+           und vor jeder einzelnen Anfrage;
+         · ANFRAGE_DECKEL je Anfrage (in eineAdresse) - die beiden
+           ersten begrenzen die ZAHL der Anfragen, nicht die Dauer einer
+           einzigen; ohne den Deckel hinge die Phase an einem fetch.
+       Was danach noch rechnet, wird als rechnend gemeldet; die
+       Schlusszeile nennt die Grenzen und den Grund, aus dem Schluss
+       war. Und sie verspricht NICHT mehr, der nächste Lauf sammle es
+       ein: bei aligned_lyrics stimmt das nur, wenn Suno die Ausrichtung
+       überhaupt angestoßen hat (der Anstoß ist bei Suno ein POST - ein
+       Schreibzugriff, und der ist Jörgs Entscheidung). */
+    if (nachfragen.length){
+      const zN = sagen(`Suno rechnet noch an ${new Set(nachfragen.map(x => x.id)).size} Titeln — frage nach …`, '#f97b14');
+      /* FRISCHER TOKEN FÜR DIE NACHFRAGE. Sie ist der vom Token-Griff
+         am weitesten entfernte Punkt des Laufs; ein 401 hier gälte als
+         Fehler und würde nicht wiederholt. tokenHolen() kostet keine
+         Suno-Anfrage. Schlägt es fehl, wird mit dem alten weitergefragt
+         - das ist immer noch besser als gar nicht. */
+      try { const tn = await tokenHolen(); if (tn) H = { Authorization: 'Bearer ' + tn }; } catch (x) {}
+      const start = Date.now();
+      const frist = () => Date.now() - start >= NACHFRAGE_FRIST;
+      const titelZahl = (liste) => new Set(liste.map(x => x.id)).size;
+      const hoechstBudget = Math.max(...nachfragen.map(x => budget(x.feld)));
+      let offen = nachfragen.slice(), runde = 0, geholtNach = 0;
+      /* WAS SCHIEFGING, ZÄHLT MIT. `grund` stand vorher auf "alles
+         beantwortet", sobald die Liste leer lief - auch wenn die
+         Adressen nur deshalb verschwanden, weil sie mit 429, 500 oder
+         einem TypeError geantwortet haben. Eine Drosselung ist keine
+         Antwort. */
+      const abbrueche = {};
+      const ausBudget = [];               // Adressen, deren Budget zu Ende ging
+      let fristHin = false;
+      nachFelder = new Set(nachfragen.map(x => x.feld));
+      while (offen.length && runde < hoechstBudget){
+        if (frist()){ fristHin = true; break; }
+        await new Promise(r => setTimeout(r, NACHFRAGE_ABSTAND));
+        runde++;
+        const weiter = [];
+        for (let i = 0; i < offen.length; i++){
+          const x = offen[i];
+          if (frist()){ weiter.push(x); fristHin = true; continue; }
+          zN.textContent = `frage nach: ${titelZahl(offen)} Titel, Runde ${runde} von ${hoechstBudget}`
+            + ` — ${i + 1}/${offen.length} Adressen`;
+          const inhalt = await eineAdresse(x.id, x.feld, x.stand);
+          buchen(x.feld, x.stand, 'rechnet');
+          if (x.stand.ergebnis === 'geholt'){ x.ziel[x.feld] = inhalt; geholtNach++; }
+          else if (x.stand.ergebnis === 'fehler'){
+            const c = x.stand.fehler ? x.stand.fehler.name : 'HTTP ' + x.stand.status;
+            abbrueche[c] = (abbrueche[c] || 0) + 1;
+          }
+          else if (x.stand.ergebnis === 'rechnet'){
+            /* JEDE ADRESSE HAT IHR EIGENES BUDGET. Wer es aufgebraucht
+               hat, fällt aus der Liste - nicht als beantwortet, sondern
+               als "rechnet weiter". */
+            if (runde < budget(x.feld)) weiter.push(x); else ausBudget.push(x);
+          }
+          await pause();
+        }
+        offen = weiter;
+        berichten();                      // die Blockzeilen wachsen mit
+      }
+      const codes = Object.keys(abbrueche)
+        .map(c => abbrueche[c] > 1 ? `${c}×${abbrueche[c]}` : c).join(', ');
+      const rest = titelZahl([...offen, ...ausBudget]);
+      const grund = fristHin ? `Frist von ${NACHFRAGE_FRIST/1000} s erreicht`
+                  : rest ? 'Nachfassversuche aufgebraucht'
+                  : codes ? `abgebrochen mit ${codes}`
+                  : 'alles beantwortet';
+      nachSatz = `nachgefragt: ${runde} von ${hoechstBudget} Runden`
+        + ` (aligned_lyrics: ${budget('v2')}), Frist ${NACHFRAGE_FRIST/1000} s`
+        + `, ${geholtNach} nachgeliefert`
+        + (codes && grund.indexOf(codes) < 0 ? `, ${codes}` : '')   // nicht zweimal dasselbe
+        + (rest ? `, ${rest} ${rest === 1 ? 'Titel rechnet' : 'Titel rechnen'} weiter (${grund})` : ` (${grund})`);
+      zN.textContent = 'Nachfrage — ' + nachSatz;
+      zN.style.color = (rest || codes) ? '#f97b14' : '#16be5c';
+      berichten();
     }
     }
-  } catch (x) {}
+  } catch (x) {
+    /* AUCH HIER NICHT MEHR STUMM (16.09.2026). Um den ganzen Block lag
+       ein leerer catch: ein Fehler im Token-Griff, in der
+       Vorhanden-Abfrage oder in der Nachfrage verschwand spurlos, und
+       die Zeile stand weiter auf dem Satz von vorher. Eine eigene
+       Zeile sagt es jetzt - nur nicht, wenn schon der Token fehlte,
+       denn den Satz schreibt die Zeile darunter. */
+    if (tokenDa) schlecht('Sunos eigene Analyse — abgebrochen: '
+      + ((x && x.name ? x.name + ': ' : '') + ((x && x.message) || String(x))));
+  }
   /* Sagen, was zu tun ist - "kein Token" allein hat Tarja nur ratlos gemacht
      (23.08.2026), zumal sie angemeldet WAR: die Anmeldebibliothek war nur
      noch nicht geladen. */

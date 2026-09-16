@@ -63,10 +63,16 @@ for (const a of ARTEN){
 }
 console.log(`\n  zusammen ${(bytes/1048576).toFixed(1)} MB\n`);
 
-/* Seit dem 20.08.2026 wandern verarbeitete Rohdateien nach
-   roh/verarbeitet/ - ein leerer roh-Ordner ist dann NORMAL. Der
-   Katalog traegt alles Noetige (URLs stecken je Song in rohdaten).
-   Abbruch nur, wenn es WEDER Rohdaten NOCH einen Katalog gibt. */
+/* Verarbeitete Rohdateien werden von bin/aufbereiten.js GELOESCHT -
+   ein leerer roh-Ordner ist also NORMAL. Der Katalog traegt alles
+   Noetige (URLs stecken je Song in rohdaten). Abbruch nur, wenn es
+   WEDER Rohdaten NOCH einen Katalog gibt.
+   HIER STAND BIS ZUM 16.09.2026, sie wanderten nach roh/verarbeitet/.
+   Das war einmal so und ist seit dem 20.08.2026 nicht mehr wahr
+   (Caspar_D: "wozu das mitfuehren und Speicherplatz vergeuden"). Wer
+   dem Satz glaubte, suchte seine Ernte in einem Ordner, den niemand
+   anlegt - und sicherte nach README und START-HIER nur library/roh/,
+   also fast nichts. Unersetzlich ist library/katalog.json.gz. */
 const K = require('./katalog.js');
 if (fehltPflicht && !K.lesen()){
   console.error('Weder Rohdaten noch Katalog. Erst im Browser sammeln:');
