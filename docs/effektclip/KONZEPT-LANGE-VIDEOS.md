@@ -122,3 +122,44 @@ abgelöst.
 - **Die Zeitleiste war nur ein schwarzer Streifen.** `leisteMalen()` las die Farben aus `$('#tbs')`, aber `root` ist
   selbst `#tbs`, also war das Ergebnis null. `getComputedStyle` warf deshalb gleich nach dem Schwarz. Jetzt liest sie
   aus `root` und malt neu, wenn die Stufe aufgeht.
+
+## Stufe 1: der ganze Titel als Video (Entscheidungen Caspar_D, 16.09.2026, noch nicht gebaut)
+
+Caspar_D: *„ich möchte beim video export nicht nur die 10sekunden version sondern auch die volle version mit
+clipanpassung und ggf übergängen"* — als kleinste Ausbaustufe eines Plans, dessen letzte Stufe ein frei
+komponiertes Voll-Titel-Video ist (Intervalle mit Mustern, Ereignisse an Grenzen; siehe unten „Stufe 2 und 3").
+
+**Der Befund, der die Stufe klein macht:** Das lange Video ist nicht der große Bruder des 10-Sekünders, sondern
+der von Kachel und Bühne — die malen das Rezept längst über die ganze Liedlänge, im echten Takt, auf Spielzeit.
+Es fehlt das Mitschreiben. Und die schwerste Eigenschaft des 10-Sekünders fällt weg: **es gibt keine Naht**.
+
+| Frage | Entscheidung |
+|---|---|
+| Wohin geht das Video? | *„das Video soll in alles möglichen gehen dürfen"* — Format frei, Vorgabe „wie die Quelle" |
+| Ton | *„Ton optional dazu oder nicht, suno braucht ihn nicht"* |
+| Karaoke | *„karaoke mit einbrennen oder nicht ist auch noch eine Option"* — Spurwahl wie auf der Bühne (v2/v3/Whisper/bereinigte Lyrik) |
+| Dauer der Ausgabe | *„genauso lange wie der Song, ggf auch 2x so lange, dann aber im Queue"* |
+| Abschnittsraster | *„da sunos abschnittsgrenzen meist nicht stimmen, lieber aus der Lyrics und Whisper und ggf Suno zusammen abgeleitet"* |
+| Hook-Videos | *„sind ein Sonderfall, weil die auch nur einen Abschnitt des Songs abdecken können"* → Quelle mit eigenem Zeitfenster; außerhalb übernimmt die zweite Quelle |
+| Hauszeichen | *„dezentes Hauszeichen"* |
+| Bewegtbild auf Abschnittslänge | *„dehnen oder schrumpfen (nie mehr als 1/3) oder mehrmals loopen, ggf mitten drinnen auch adaptiv Geschwindigkeit ändern"* |
+| Verlangsamung im Intro | *„du kannst die verlangsamung gleich mitdenken"* |
+
+**Die Anpassungsregel, wie ich sie verstehe** (Abschnitt der Länge S, Bewegtbild der Länge D):
+1. Durchläufe `n = max(1, round(S/D))`, je Durchgang also `S/n`.
+2. Der Dehnfaktor `f = (S/n)/D` muss in **[2/3, 4/3]** liegen — höchstens ein Drittel gedehnt oder geschrumpft,
+   also Tempo zwischen 0,75× und 1,5×. Passt er nicht, wird `n` angepasst, bis er passt.
+3. Innerhalb eines Durchgangs darf die Geschwindigkeit **adaptiv** schwanken (Änderungskurve, „gleich viel
+   Änderung je Zeit") — aber nur innerhalb derselben Schranke.
+4. Bleibt `S < 2/3 · D` (Abschnitt kürzer als das geschrumpfte Bewegtbild), wird ein Ausschnitt genommen, nicht
+   schneller gespult.
+5. An jeder Wiederholungsnaht liegt ein Übergang aus der Schleifen-Stufe (harter Schnitt, Rücklauf, Pendel …).
+
+**Verlangsamung und Drosseln** (Intro, ruhige Passagen): Die Videogeschwindigkeit bleibt an die Schranke aus (2)
+gebunden; die **Stärke der Effekte** hat keine Schranke und darf in ruhigen Abschnitten weit herunter. Woran „ruhig"
+erkannt wird, ist offen — Kandidaten: Abschnittsmarke aus dem Liedtext, Lautheit aus der Klanganalyse, Dichte der
+Whisper-Wörter.
+
+**Offen (wird gerade gemessen, 16.09.2026):** Tragfähigkeit des Abschnittsrasters über alle 325 Titel, Millisekunden
+je Bild und der Weg zum Verpacken (Browser gegen ffmpeg), Warteschlange im Server statt im Tab, Karaoke-Einbrennen
+als Zeichnung auf die Leinwand statt DOM/CSS, Formatmatrix je Quellenform.
