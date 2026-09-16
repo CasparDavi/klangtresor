@@ -4443,3 +4443,24 @@ leere/202-Antworten halten den Titel auf der Fehlt-Liste, und `abschnitte` gelte
 Das klärt der nächste Lesezeichen-Lauf mit der Nachfragephase — und, falls es dann Fehler statt „rechnet" gibt, steht der
 HTTP-Code im `holstand`. Die Adressliste ist vom 08.09.2026; ein neuer Lauf von `bin/suno-app-wege.js` (braucht Jörgs
 Login) würde zeigen, ob Suno die beiden Adressen für v6-Clips umbenannt hat.
+
+### Voll-Titel-Video, Stufe 1 gebaut (16.09.2026)
+
+Caspar_D: *„Okay, gibt das Vollzeitvideo so einfach wie möglich aus, aber nicht so, dass man sich damit blamiert."*
+Gebaut: Knopf „ganzen Titel ausgeben" in der Fußleiste, Renderschleife über die ganze Liedlänge (t = 0 … dauer,
+kein Loop, keine Naht), bildgenau über WebCodecs — MediaRecorder ist für diesen Weg gesperrt, er hält die Bildrate
+bei schweren Rezepten nicht. Das Bewegtbild wiederholt sich rundenweise (`vollRunde`): Rundenlänge ist ein Vielfaches
+des Takts, Dehnung höchstens ±1/3, sonst ein Ausschnitt. Effekte laufen auf Liedzeit im echten Takt.
+Neue Server-Wege: `/api/vollvideo/start|teil|fertig|holen|abbrechen`, Teile alle ~600 Bilder, Ausgabe unter
+`.ausgabe/<lauf>/` (gitignoriert), Ton aus `library/songs/<id>/audio.mp3` optional dazu. Fortschritt, Abbrechen und
+Kostenangabe am Knopf; das Studio ist während des Laufs ehrlich gesperrt.
+
+**Befund, der den Vertrag änderte:** `-shortest` verliert bei rohem Annex-B-Eingang die Tonspur komplett (ffmpeg
+9.0.1, ohne Warnung — der Strom trägt keine Zeitstempel). Gemuxt wird deshalb mit `-t <bilder/rate>` als
+Eingangsoption vor dem Ton.
+
+**Grenzen dieser Stufe, bewusst:** Der Ausschnitt wandert nicht von Runde zu Runde (jeder Übergang führt an den
+Anfang desselben Materials zurück — Material über das Lied zu verteilen ist Abschnittsarbeit, Stufe 2). Die
+Rundenlänge ist fest und wandert gegen das leicht unregelmäßige Schlagraster um etwa 30 ms je Runde; ab ungefähr
+einer Minute ist die Lage wieder beliebig. Kein Karaoke-Einbrennen, keine Formatwahl, keine Warteschlange,
+keine Szenen.

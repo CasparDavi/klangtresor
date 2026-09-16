@@ -90,3 +90,11 @@ labor/nahtpruefung/*.bilder.json
 # ins Paket wie library/ selbst (11.09.2026).
 docs/eichkasten/vorher-vektoren/
 docs/eichkasten/*.vor-schritt*
+
+# Die Ausgabe: fertige Vollzeitvideos und ihre Rohstroeme (16.09.2026).
+# Ein Vollzeitvideo ist ein ganzer Titel als MP4 - hunderte Megabyte, und
+# jederzeit neu zu malen. Es gehoert damit so wenig ins Repo wie ins Archiv
+# (Caspar_D, 11.09.2026: was wir jederzeit neu malen koennen, wandert nicht
+# ins Archiv). Der Server raeumt hier selbst auf: was fertig ist, liegt
+# einen Tag bereit, dann ist es weg.
+.ausgabe/

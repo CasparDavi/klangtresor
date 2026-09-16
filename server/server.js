@@ -1317,6 +1317,62 @@ function morgenKopf(req, res) {
   return true;
 }
 
+/* ------------------------------------------------------------
+   DAS VOLLZEITVIDEO - der ganze Titel am Stueck
+   ------------------------------------------------------------
+   Caspar_D, 16.09.2026: "Okay, gib das Vollzeitvideo so einfach wie moeglich aus, aber nicht so,
+   dass man sich damit blamiert."
+
+   Der Zehnsekundenweg (/api/effektclip-bauen) nimmt den ganzen H.264-Strom in EINEM Stueck
+   entgegen und haelt ihn dabei im Speicher - bei 256 MB ist Schluss. Ein ganzer Titel sind fuenf
+   Minuten statt zehn Sekunden; so geht es nicht. Darum ein LAUF aus fuenf Wegen:
+
+     POST /api/vollvideo/start          meldet ihn an, legt .ausgabe/<lauf>/ an
+     POST /api/vollvideo/teil?nr=n      haengt alle ~600 Bilder ein Stueck an roh.h264
+     POST /api/vollvideo/fertig         baut daraus die MP4, mit Ton, und loescht den Rohstrom
+     GET  /api/vollvideo/holen          gibt sie als Anhang heraus
+     POST /api/vollvideo/abbrechen      raeumt den Lauf weg
+
+   Gemalt und kodiert wird weiterhin im Browser, Bild fuer Bild mit selbst gesetzten Zeitstempeln
+   (WebCodecs) - der Server legt nur den Behaelter drumherum, mit `-c:v copy`. Kein zweites
+   Kodieren, kein Qualitaetsverlust. Abgefilmt (MediaRecorder) wird hier NICHT: das haengt an der
+   Uhr, und fuenf Minuten Video duerfen laenger brauchen als fuenf Minuten.
+
+   Erste Stufe heisst: keine Warteschlange, kein Abschnittswissen, kein Karaoke. Ein Lauf je Titel
+   zur Zeit, und was fertig ist, liegt einen Tag bereit.
+
+   .ausgabe/ liegt NEBEN library/. Ein Vollzeitvideo ist jederzeit neu zu malen und gehoert damit
+   nicht ins Archiv (Caspar_D, 11.09.2026) - und schon gar nicht in git (.gitignore).
+------------------------------------------------------------ */
+const AUSGABE = path.join(WURZEL, '.ausgabe');
+const VOLLGRENZE = 2 * 1024 * 1024 * 1024;   /* 2 GB je Lauf - darueber ist etwas schiefgegangen, nicht gross */
+const VOLLVIDEOS = new Map();   /* lauf -> Stand; nur im Speicher. Ein Neustart vergisst die laufenden, ihre Ordner raeumt der naechste Start weg. */
+/* Die Laufkennung ist ein Dateiname, und sie kommt aus dem Netz. Sie gilt erst, wenn sie
+   ausschliesslich aus Hex besteht - damit sind "..", "/" und alles andere schon erledigt. */
+const vollKennung = (s) => /^[0-9a-f]{8,32}$/.test(String(s || '')) ? String(s) : null;
+const vollOrdner = (lauf) => { const k = vollKennung(lauf), z = k && sicherer(AUSGABE, k); return z && z !== path.resolve(AUSGABE) ? z : null; };
+/* Der Name des Downloads - dieselbe Regel wie im Studio (ausliefern() in web/index.html): nur
+   Buchstaben, Ziffern, Leerzeichen, Unter- und Bindestrich, hoechstens 60 Zeichen. */
+function vollDateiname(id) {
+  const k = katalogHolen(), s = k && k.songs && k.songs[id];
+  return (((s && s.titel) || 'Video').replace(/[^\p{L}\p{N} _-]/gu, '').trim().slice(0, 60) || 'Video') + ' — Vollzeitvideo.mp4';
+}
+/* Alte Laeufe wegraeumen: was fertig ist, liegt einen Tag bereit, dann ist es weg - gerechnet ab
+   der letzten Aenderung des Ordners. Was gerade laeuft, wird nicht angefasst, und was nicht wie
+   eine Laufkennung heisst, gehoert uns nicht: .ausgabe/ wird nicht blind leergeraeumt. */
+function vollAufraeumen() {
+  let namen = []; try { namen = fs.readdirSync(AUSGABE); } catch (e) { return; }
+  for (const n of namen) {
+    if (!vollKennung(n)) continue;
+    const l = VOLLVIDEOS.get(n); if (l && !l.fertig) continue;
+    const o = vollOrdner(n); if (!o) continue;
+    try {
+      if (Date.now() - fs.statSync(o).mtimeMs <= 24 * 3600 * 1000) continue;
+      fs.rmSync(o, { recursive: true, force: true }); VOLLVIDEOS.delete(n);
+    } catch (e) {}
+  }
+}
+
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = decodeURIComponent(u.pathname);
@@ -1485,7 +1541,7 @@ const server = http.createServer((req, res) => {
         try { lauf(['-c:v', 'copy']); }
         catch (e) { lauf(['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p']); }
         const daten = fsx.readFileSync(aus);
-        clipBuchen(u.searchParams.get('id'), bilder, rate, aus, daten, fsx, pfad);
+        clipBuchen(u.searchParams.get('id'), bilder, rate, aus, daten.length, fsx, pfad);
         res.writeHead(200, { 'Content-Type': 'video/mp4', 'Content-Length': daten.length, 'Cache-Control': 'no-store' });
         res.end(daten);
       } catch (e) {
@@ -1497,7 +1553,7 @@ const server = http.createServer((req, res) => {
      Suno zurueckkaeme. Was wir jederzeit neu malen koennen, wandert nicht ins Archiv (Caspar_D,
      11.09.2026). Ohne Titel-Kennung wird nichts gebucht - dann kann auch nichts faelschlich
      unterdrueckt werden. Beide Wege, Schnitt und Bau, buchen ueber denselben Griff. */
-  function clipBuchen(rohId, bilder, rate, datei, daten, fsx, pfad) {
+  function clipBuchen(rohId, bilder, rate, datei, bytes, fsx, pfad, beigabe) {
     const id = String(rohId || '').trim(); if (!id) return;
     const buch = pfad.join(WURZEL, 'library', 'effektclips.json');
     let b = {}; try { b = JSON.parse(fsx.readFileSync(buch, 'utf8')) || {}; } catch (e) {}
@@ -1512,8 +1568,176 @@ const server = http.createServer((req, res) => {
          '-of', 'default=nk=1:nw=1', datei], { encoding: 'utf8', timeout: 20000 }).trim().split(/\s+/);
       breite = parseInt(t[0], 10) || 0; hoehe = parseInt(t[1], 10) || 0;
     } catch (e) {}
-    b[id].push({ zeit: new Date().toISOString(), sekunden: +(bilder / rate).toFixed(4), bilder, breite, hoehe, bytes: daten.length });
+    b[id].push(Object.assign({ zeit: new Date().toISOString(), sekunden: +(bilder / rate).toFixed(4), bilder, breite, hoehe, bytes }, beigabe || {}));
     try { fsx.writeFileSync(buch, JSON.stringify(b, null, 1)); } catch (e) {}
+  }
+  /* ---- VOLLZEITVIDEO: anmelden ---------------------------------------------------------------
+     Der Browser sagt, was er zu malen gedenkt; der Server legt den Ordner an und gibt die
+     Laufkennung zurueck. Mehr passiert hier nicht - gerechnet wird drueben. */
+  if (p === '/api/vollvideo/start' && req.method === 'POST') {
+    let roh = '';
+    req.on('data', c => { roh += c; if (roh.length > 65536) req.destroy(); });
+    return req.on('end', () => {
+      let w = null; try { w = JSON.parse(roh); } catch (e) {}
+      if (!w || typeof w !== 'object') { jsonAntwort(res, { fehler: 'Auftrag ist kein JSON' }, 400); return; }
+      /* Den Titel muss es geben - sonst legen wir Ordner fuer Phantome an und buchen am Ende ins
+         Ausgabebuch, was niemandem gehoert. */
+      const id = String(w.id || '').trim();
+      if (!/^[0-9a-f-]{36}$/.test(id) || !fs.existsSync(path.join(SONGS, id))) { jsonAntwort(res, { fehler: 'id fehlt oder ist kein Titel im Archiv' }, 400); return; }
+      const rate = Math.max(1, Math.min(120, parseInt(w.rate, 10) || 30));
+      const masz = (v) => { const n = parseInt(v, 10); return Number.isFinite(n) && n >= 16 && n <= 4096 ? n : 0; };
+      const breite = masz(w.breite), hoehe = masz(w.hoehe);
+      if (!breite || !hoehe) { jsonAntwort(res, { fehler: 'breite und hoehe fehlen oder liegen nicht zwischen 16 und 4096' }, 400); return; }
+      vollAufraeumen();
+      /* Einer je Titel (erste Stufe): zwei Laeufe auf denselben Titel malen dasselbe Video zweimal
+         und streiten sich hinterher im Ausgabebuch. */
+      for (const [k, l] of VOLLVIDEOS) if (l.id === id && !l.fertig) { jsonAntwort(res, { fehler: 'Fuer diesen Titel laeuft schon ein Video', lauf: k }, 409); return; }
+      const lauf = require('node:crypto').randomBytes(8).toString('hex');
+      const ordner = vollOrdner(lauf);
+      const stand = { id, rate, breite, hoehe, ton: !!w.ton, ordner, naechste: null, bytes: 0,
+                      begonnen: Date.now(), fertig: false, baut: false, schreibt: false, verdorben: null };
+      try {
+        fs.mkdirSync(ordner, { recursive: true });
+        /* Der Zettel im Ordner: damit das Holen nach einem Neustart des Servers noch weiss, zu
+           welchem Titel die Datei gehoert - der Speicher ist dann leer, die Datei liegt noch da. */
+        fs.writeFileSync(path.join(ordner, 'lauf.json'), JSON.stringify({ id, rate, breite, hoehe, ton: stand.ton, zeit: new Date().toISOString() }, null, 1));
+      } catch (e) { jsonAntwort(res, { fehler: 'Ausgabeordner: ' + String(e.message).slice(0, 200) }, 500); return; }
+      VOLLVIDEOS.set(lauf, stand);
+      jsonAntwort(res, { lauf, rate, breite, hoehe, ton: stand.ton });
+    });
+  }
+  /* ---- VOLLZEITVIDEO: ein Stueck annehmen ----------------------------------------------------
+     Der Browser schickt alle ~600 Bilder, was der Kodierer bis dahin ausgeworfen hat. Angehaengt
+     wird STRENG DER REIHE NACH: ein H.264-Strom ist eine Kette, ein vertauschtes oder fehlendes
+     Glied macht sie nicht kaputt, sondern falsch - und das sieht man erst im fertigen Video.
+     Darum lieber eine Absage. */
+  if (p === '/api/vollvideo/teil' && req.method === 'POST') {
+    const kennung = vollKennung(u.searchParams.get('lauf'));
+    const l = kennung && VOLLVIDEOS.get(kennung);
+    const nr = parseInt(u.searchParams.get('nr'), 10);
+    /* Erst den Koerper zu Ende lesen, dann urteilen: eine Antwort mitten im Upload kappt die
+       Verbindung, und der Browser sieht statt der Absage einen Netzfehler. */
+    const stuecke = []; let gross = 0, zuviel = false;
+    req.on('data', c => { gross += c.length; if (!l || l.bytes + gross > VOLLGRENZE) { zuviel = !!l; stuecke.length = 0; return; } stuecke.push(c); });
+    return req.on('end', () => {
+      if (!l) { jsonAntwort(res, { fehler: 'unbekannter Lauf' }, 404); return; }
+      if (l.fertig) { jsonAntwort(res, { fehler: 'Lauf ist schon gebaut' }, 409); return; }
+      if (l.verdorben) { jsonAntwort(res, { fehler: 'Lauf ist unvollstaendig: ' + l.verdorben }, 409); return; }
+      /* Ueber der Grenze ist der LAUF verdorben, nicht nur dieses Stueck: was jetzt noch kaeme,
+         saesse hinter einem Loch. Ein Video aus einem halben Strom sieht heil aus und ist es nicht -
+         lieber eine klare Absage, dann malt das Studio neu. */
+      if (zuviel) { l.verdorben = 'ueber die Groessengrenze hinaus (2 GB)'; jsonAntwort(res, { fehler: 'Lauf ' + l.verdorben + ' - so lang ist kein Titel, hier ist etwas schiefgegangen' }, 413); return; }
+      if (!Number.isFinite(nr)) { jsonAntwort(res, { fehler: 'nr fehlt' }, 400); return; }
+      /* Die Zaehlung beginnt beim ersten Stueck - bei 0 oder bei 1, wie der Browser es haelt.
+         Danach geht es lueckenlos weiter. */
+      if (l.naechste === null && (nr === 0 || nr === 1)) l.naechste = nr;
+      if (nr !== l.naechste) { jsonAntwort(res, { fehler: 'Stueck ' + nr + ' kommt nicht an der Reihe, erwartet ist ' + (l.naechste === null ? 0 : l.naechste) }, 409); return; }
+      if (l.schreibt) { jsonAntwort(res, { fehler: 'das vorige Stueck wird noch geschrieben' }, 409); return; }
+      if (!gross) { jsonAntwort(res, { fehler: 'Stueck ist leer' }, 400); return; }
+      l.schreibt = true;
+      fs.appendFile(path.join(l.ordner, 'roh.h264'), Buffer.concat(stuecke), (e) => {
+        l.schreibt = false;
+        if (e) { jsonAntwort(res, { fehler: 'schreiben: ' + String(e.message).slice(0, 200) }, 500); return; }
+        l.naechste = nr + 1; l.bytes += gross;
+        jsonAntwort(res, { ok: true, naechste: l.naechste, bytes: l.bytes });
+      });
+    });
+  }
+  /* ---- VOLLZEITVIDEO: bauen ------------------------------------------------------------------
+     Wie beim Zehnsekundenclip: der Strom ist schon H.264, es fehlt nur der Behaelter, also
+     `-c:v copy`. Die Bildrate steht am EINGANG - ein roher Strom traegt keine Zeitstempel, ffmpeg
+     naehme sonst 25.
+     NEU ist der Ton: er kommt aus dem Archiv (audio.mp3) und wird nach AAC gewandelt. Fehlt die
+     Datei, wird ohne Ton gebaut und das GESAGT - ein stummes Video ohne ein Wort daneben sieht
+     nach einem Fehler des Studios aus.
+     NEU ist auch, dass nicht synchron gebaut wird. Beim Zehnsekundenclip dauert der Bau
+     Millisekunden; hier sind fuenf Minuten Ton zu kodieren, und solange stuende der ganze Server -
+     samt der Musik, die er gerade ausliefert. */
+  if (p === '/api/vollvideo/fertig' && req.method === 'POST') {
+    const kennung = vollKennung(u.searchParams.get('lauf'));
+    const l = kennung && VOLLVIDEOS.get(kennung);
+    if (!l) { jsonAntwort(res, { fehler: 'unbekannter Lauf' }, 404); return; }
+    if (l.baut) { jsonAntwort(res, { fehler: 'wird schon gebaut' }, 409); return; }
+    if (l.verdorben) { jsonAntwort(res, { fehler: 'Lauf ist unvollstaendig: ' + l.verdorben + ' - abbrechen und neu malen' }, 409); return; }
+    if (l.fertig) { jsonAntwort(res, { ok: true, url: '/api/vollvideo/holen?lauf=' + kennung, bytes: l.ausBytes, sekunden: l.sekunden, name: vollDateiname(l.id), schon: true }); return; }
+    const rohBilder = parseInt(u.searchParams.get('bilder'), 10);
+    if (!Number.isFinite(rohBilder) || rohBilder < 2) { jsonAntwort(res, { fehler: 'bilder fehlt oder ist kleiner als 2' }, 400); return; }
+    const bilder = Math.min(120 * 3600, rohBilder);   /* eine Stunde bei 120 Bildern je Sekunde; darueber ist es kein Lied mehr */
+    const ein = path.join(l.ordner, 'roh.h264'), aus = path.join(l.ordner, 'out.mp4');
+    if (!l.bytes || !fs.existsSync(ein)) { jsonAntwort(res, { fehler: 'kein Bildstrom angekommen' }, 400); return; }
+    const tonDatei = path.join(SONGS, l.id, 'audio.mp3');
+    const mitTon = l.ton && fs.existsSync(tonDatei);
+    /* DER TON HAENGT AN -t, NICHT AN -shortest. Gemessen am 16.09.2026 mit ffmpeg 9.0.1: ein roher
+       H.264-Strom traegt keine Zeitstempel, "-f h264 -r" setzt sie erst beim Schreiben. Mit
+       -shortest sieht ffmpeg deshalb eine Bildspur der Laenge null und laesst den Ton GANZ weg -
+       heraus kommt ein stummes Video, ohne Fehlermeldung, ohne Warnung (41540 Bytes statt 118156).
+       Stattdessen wird der TON-EINGANG auf die Spielzeit begrenzt: -t VOR -i gilt nur fuer diesen
+       einen Eingang, die Bildspur bleibt unangetastet, und der Ton endet dort, wo das letzte Bild
+       steht. */
+    const spielzeit = (bilder / l.rate).toFixed(4);
+    const args = ['-v', 'error', '-y', '-f', 'h264', '-r', String(l.rate), '-i', ein]
+      .concat(mitTon ? ['-t', spielzeit, '-i', tonDatei, '-c:a', 'aac', '-b:a', '192k'] : ['-an'])
+      .concat(['-c:v', 'copy', '-movflags', '+faststart', aus]);
+    l.baut = true;
+    /* Grosszuegige Zeitgrenze: kopiert wird in Sekunden, aber der Ton eines langen Titels und ein
+       Rechner, der nebenher malt, duerfen sich Zeit lassen. */
+    return require('node:child_process').execFile('ffmpeg', args, { timeout: 900000 }, (e) => {
+      l.baut = false;
+      if (e) { jsonAntwort(res, { fehler: 'ffmpeg: ' + String(e.message).slice(0, 200) }, 500); return; }
+      let bytes = 0; try { bytes = fs.statSync(aus).size; } catch (x) {}
+      if (!bytes) { jsonAntwort(res, { fehler: 'ffmpeg hat nichts gebaut' }, 500); return; }
+      try { fs.unlinkSync(ein); } catch (x) {}   /* der Rohstrom ist ein Vielfaches der Datei gross und wertlos, sobald sie steht */
+      /* NACHSEHEN, OB DER TON WIRKLICH DRIN IST. Wer Ton bestellt hat und ein stummes Video
+         bekommt, merkt es erst beim Abspielen - und dann vor Publikum. Gefragt wird die Datei
+         selbst, nicht der Auftrag. */
+      let tonDrin = false;
+      try { tonDrin = require('node:child_process').execFileSync('ffprobe',
+        ['-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=codec_name',
+         '-of', 'default=nk=1:nw=1', aus], { encoding: 'utf8', timeout: 20000 }).trim().length > 0; } catch (x) {}
+      l.fertig = true; l.bilder = bilder; l.ausBytes = bytes; l.sekunden = +(bilder / l.rate).toFixed(4); l.tonDrin = tonDrin;
+      /* Gebucht wird ueber denselben Griff wie der Zehnsekundenclip - mit einer Marke, damit der
+         Medienlauf ein Vollzeitvideo nicht fuer einen Clip haelt. */
+      clipBuchen(l.id, bilder, l.rate, aus, bytes, fs, path, { vollzeit: true, ton: tonDrin });
+      jsonAntwort(res, { ok: true, url: '/api/vollvideo/holen?lauf=' + kennung, bytes, sekunden: l.sekunden,
+        name: vollDateiname(l.id), ton: tonDrin,
+        ohneTon: !l.ton ? undefined
+               : !mitTon ? 'audio.mp3 fehlt - ohne Ton gebaut'
+               : !tonDrin ? 'ffmpeg hat den Ton nicht mitgenommen - ohne Ton gebaut' : undefined });
+    });
+  }
+  /* ---- VOLLZEITVIDEO: holen ------------------------------------------------------------------
+     Als Anhang mit sprechendem Namen. Der Name steht zweimal im Kopf: einmal auf ASCII
+     zurechtgestutzt fuer alte Browser, einmal als UTF-8 (RFC 5987) fuer alle anderen - sonst
+     verliert "Der Vulkan und das Mädchen" sein Umlaut-a. */
+  if (p === '/api/vollvideo/holen' && (req.method === 'GET' || req.method === 'HEAD')) {
+    const kennung = vollKennung(u.searchParams.get('lauf')), ordner = vollOrdner(kennung);
+    if (!ordner) { jsonAntwort(res, { fehler: 'lauf fehlt oder ist keine Laufkennung' }, 400); return; }
+    const aus = path.join(ordner, 'out.mp4');
+    let st = null; try { st = fs.statSync(aus); } catch (e) {}
+    if (!st || !st.isFile()) { jsonAntwort(res, { fehler: 'unbekannter Lauf oder noch nicht gebaut' }, 404); return; }
+    let id = (VOLLVIDEOS.get(kennung) || {}).id;
+    if (!id) { try { id = JSON.parse(fs.readFileSync(path.join(ordner, 'lauf.json'), 'utf8')).id; } catch (e) {} }
+    const name = vollDateiname(id || '');
+    res.writeHead(200, {
+      'Content-Type': 'video/mp4', 'Content-Length': st.size, 'Cache-Control': 'no-store',
+      'Content-Disposition': 'attachment; filename="' + name.replace(/[^\x20-\x7e]/g, '-').replace(/"/g, '') + '"; filename*=UTF-8\'\'' + encodeURIComponent(name),
+    });
+    if (req.method === 'HEAD') { res.end(); return; }
+    return fs.createReadStream(aus).pipe(res);
+  }
+  /* ---- VOLLZEITVIDEO: abbrechen --------------------------------------------------------------
+     Zweimal abbrechen ist kein Fehler - der Browser darf beim Schliessen des Studios blind
+     aufraeumen. Nur ein Bau, der gerade laeuft, wird nicht unterm Messer weggezogen. */
+  if (p === '/api/vollvideo/abbrechen' && req.method === 'POST') {
+    const kennung = vollKennung(u.searchParams.get('lauf')), ordner = vollOrdner(kennung);
+    if (!ordner) { jsonAntwort(res, { fehler: 'lauf fehlt oder ist keine Laufkennung' }, 400); return; }
+    const l = VOLLVIDEOS.get(kennung);
+    if (l && l.baut) { jsonAntwort(res, { fehler: 'wird gerade gebaut' }, 409); return; }
+    VOLLVIDEOS.delete(kennung);
+    let weg = false;
+    try { weg = fs.existsSync(ordner); fs.rmSync(ordner, { recursive: true, force: true }); } catch (e) {}
+    jsonAntwort(res, { ok: true, weg });
+    return;
   }
   if (p === '/api/effektclip-schnitt' && req.method === 'POST') {
     /* Erst pruefen, dann begrenzen. Bis 11.09.2026 stand die Begrenzung davor

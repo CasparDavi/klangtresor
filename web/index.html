@@ -3281,7 +3281,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-loopLage.gedimmt{opacity:.5}
 #tbs #tbs-abLoop .tbs-regler{grid-template-columns:minmax(0,200px) 1fr}
 #tbs #tbs-abLoop .tbs-unter, #tbs #tbs-abLoop .tbs-togp, #tbs #tbs-loopLage{font-size:12px}
-#tbs #tbs-rezept .tbs-unter, #tbs #tbs-rezept .tbs-lbl, #tbs #tbs-rezept #tbs-pStatus{font-size:12px}   /* Regel 14: Lesegrenze 12 px */
+#tbs #tbs-rezept .tbs-unter, #tbs #tbs-rezept .tbs-lbl, #tbs #tbs-rezept #tbs-pStatus, #tbs #tbs-rezept .tbs-togp, #tbs #tbs-vollText{font-size:12px}   /* Regel 14: Lesegrenze 12 px - die Pille und die Laufzeile erben sonst 11,5 px von .tbs-togp/.tbs-zeile */
+#tbs #tbs-vollLauf[hidden]{display:none}   /* display:flex wuerde hidden sonst ueberstimmen - der tote "Abbrechen" stuende sonst dauerhaft im Fuss (Gegenlesen 16.09.2026) */
 #tbs #tbs-abLoop #tbs-schleifeHinweis{margin:-2px 0 8px}
 #tbs #tbs-abLoop .tbs-regler.grau > span:first-child, #tbs #tbs-abLoop .tbs-regler.grau b{opacity:.45}
 #tbs .tbs-zaehler{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
@@ -29219,6 +29220,16 @@ function schleifePendelVon(dauer,dv){ const U=SCHLEIFE_KURVE.u; if(!(dv>dauer)) 
   return Math.min(dv-dauer, best/n*dv); }
 function schleifeQuelle(x,dv){ const U=SCHLEIFE_KURVE.u; if(!U||U.length<2) return x*dv; const n=U.length-1;
   let lo=0,hi=n; while(hi-lo>1){ const m=(lo+hi)>>1; if(U[m]<=x) lo=m; else hi=m; } const f=U[hi]>U[lo]?(x-U[lo])/(U[hi]-U[lo]):0; return Math.min(dv,(lo+f)/n*dv); }
+/* Der Hinweg derselben Kurve: wieviel Aenderung bis zur Quellzeit t liegt (schleifeQuelle ist der Rueckweg). */
+function schleifeU(t,dv){ const U=SCHLEIFE_KURVE.u; if(!U||U.length<2||!(dv>0)) return Math.max(0,Math.min(1,t/Math.max(0.05,dv)));
+  const n=U.length-1, y=Math.max(0,Math.min(n,t/dv*n)), i=Math.min(n-1,Math.floor(y)); return U[i]+(U[i+1]-U[i])*(y-i); }
+/* DIE KURVE GEHOERT ZUM GANZEN VIDEO, DER AUSSCHNITT NUR ZU EINEM STUECK DAVON. Laeuft nicht das ganze Video,
+   sondern ein Fenster [von, von+laenge], wird die Kurve auf dieses Fenster BESCHNITTEN und dort neu normiert.
+   Vorher wurde sie hineingestaucht: "ruhige Stellen schneller, bewegte langsamer" bremste dann an Stellen, die im
+   Fenster gar nicht liegen (Gegenlesen 16.09.2026). Ohne Fenster (von=0, laenge=gesamt) faellt es auf den alten Weg zurueck. */
+function schleifeQuelleFenster(x,von,laenge,gesamt){ const u0=schleifeU(von,gesamt), u1=schleifeU(von+laenge,gesamt);
+  if(!(u1>u0)) return Math.max(0,Math.min(gesamt,von+x*laenge));
+  return Math.max(von,Math.min(von+laenge,schleifeQuelle(u0+x*(u1-u0),gesamt))); }
 /* Laeuft schon eine Vermessung, wartet ein zweiter Aufruf auf DIESE, statt sofort zurueckzukehren - sonst gab schleifeStills die Sperre frei,
    waehrend die erste noch spulte (Gegenpruefung 15.09.2026). */
 async function schleifeKurveMessen(v){ if(!v||v.tagName!=='VIDEO'||!(v.duration>0)) return; const k=v.src+'|'+v.duration.toFixed(3); if(SCHLEIFE_KURVE.schluessel===k) return; if(SCHLEIFE_KURVE.laeuft){ if(SCHLEIFE_KURVE.v===v) return SCHLEIFE_KURVE.lauf; try{ await SCHLEIFE_KURVE.lauf; }catch(e){} return schleifeKurveMessen(v); }   /* ein anderes Element (Studio zu und wieder auf): erst die alte zu Ende, dann dieses */
@@ -29229,18 +29240,22 @@ async function schleifeKurveLauf(v,k){ { const n=Math.max(8,Math.min(300,Math.ro
     const mittel=d.reduce((a,b)=>a+b,0)/d.length||1, eps=0.05*mittel; let zeit=d.map(z=>Math.pow(z+eps,0.7));   /* Ausgabezeit je Quellschritt ~ Aenderung^0,7 */
     for(let r=0;r<3;r++){ const m=zeit.reduce((a,b)=>a+b,0)/zeit.length; zeit=zeit.map(z=>Math.max(m/2,Math.min(2*m,z))); }   /* hoechstens dreifach schneller, hoechstens halb so schnell */
     const summe=zeit.reduce((a,b)=>a+b,0), U=[0]; let acc=0; for(const z of zeit){ acc+=z; U.push(acc/summe); } SCHLEIFE_KURVE.u=U; SCHLEIFE_KURVE.schluessel=k; } }
-function schleifeZeit(tau,L,Dv,lage){ const q=schleifeZeitRoh(tau,L,Dv,lage), art=SCHLEIFE.art||'keiner'; q.tau=tau; q.fenster=art!=='keiner'&&art!=='pendel'&&tau>=L-schleifeFenster(L,lage); return q; }
-function schleifeZeitRoh(tau,L,Dv,lage){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
-  if(art==='keiner') return { s:schleifeQuelle(tau/L,dv) };   /* das ganze Video ueber den ganzen Clip, dann der Schnitt */
+function schleifeZeit(tau,L,Dv,lage,fenster){ const q=schleifeZeitRoh(tau,L,Dv,lage,fenster), art=SCHLEIFE.art||'keiner'; q.tau=tau; q.fenster=art!=='keiner'&&art!=='pendel'&&tau>=L-schleifeFenster(L,lage); return q; }
+function schleifeZeitRoh(tau,L,Dv,lage,fenster){ const art=SCHLEIFE.art||'keiner', dv=Math.max(0.05,(Dv>0?Dv:L)-1/60);
+  /* EINE STELLE FUER BEIDE FAELLE: ohne Fenster das ganze Video, mit Fenster ein Stueck daraus - und alles, was sonst
+     "Anfang" (0) und "Ende" (dv) hiess, kommt von hier, damit der Tausch in der Fenstermitte im Fenster bleibt.
+     Das Pendel sucht sein Stueck selbst (schleifePendelVon) und bekommt darum nie ein Fenster. */
+  const QU=fenster?(x=>schleifeQuelleFenster(x,fenster.von,fenster.laenge,fenster.gesamt)):(x=>schleifeQuelle(x,dv));
+  if(art==='keiner') return { s:QU(tau/L) };   /* das ganze Video ueber den ganzen Clip, dann der Schnitt */
   if(art==='pendel'){ const A=Math.min(dv,schleifeFenster(L,lage)), h=L/2, x=tau<h?tau/h:(L-tau)/h;
     return { s:schleifePendelVon(A,dv)+A*schleifePendelWeg(Math.max(0,Math.min(1,x))) }; }
-  const D=schleifeFenster(L,lage), F=L-D, b=dv, k=(art==='abbremsen'||art==='schwarz')?1:0.6;
-  if(tau<F){ const x=tau/F; return { s:schleifeQuelle(x-k*Math.sin(2*Math.PI*x)/(2*Math.PI),dv) }; }   /* an den Enden langsamer (k=1: bis 0), damit der Uebergang nicht in volle Fahrt schneidet */
+  const D=schleifeFenster(L,lage), F=L-D, b=QU(1), anf=QU(0), k=(art==='abbremsen'||art==='schwarz')?1:0.6;
+  if(tau<F){ const x=tau/F; return { s:QU(x-k*Math.sin(2*Math.PI*x)/(2*Math.PI)) }; }   /* an den Enden langsamer (k=1: bis 0), damit der Uebergang nicht in volle Fahrt schneidet */
   const u=(tau-F)/D, glocke=Math.pow(Math.sin(Math.PI*u),2);
-  if(art==='ruecklauf') return { s:schleifeQuelle(1-(u-Math.sin(2*Math.PI*u)/(2*Math.PI)),dv), unschaerfe:SCHLEIFE_UNSCHAERFE*glocke };
-  if(art==='abbremsen') return { s:u<0.5?b:0, still:{ w:u*u*(3-2*u) } };
-  if(art==='schwarz') return { s:u<0.5?b:0, schwarz:glocke };
-  const halb=u<0.5?b:0, weich=u*u*(3-2*u);   /* die Formen, die in der Fenstermitte vom Ende an den Anfang tauschen */
+  if(art==='ruecklauf') return { s:QU(1-(u-Math.sin(2*Math.PI*u)/(2*Math.PI))), unschaerfe:SCHLEIFE_UNSCHAERFE*glocke };
+  if(art==='abbremsen') return { s:u<0.5?b:anf, still:{ w:u*u*(3-2*u) } };
+  if(art==='schwarz') return { s:u<0.5?b:anf, schwarz:glocke };
+  const halb=u<0.5?b:anf, weich=u*u*(3-2*u);   /* die Formen, die in der Fenstermitte vom Ende an den Anfang tauschen */
   if(art==='unschaerfe') return { s:halb, unschaerfe:SCHLEIFE_UNSCHAERFE*glocke };
   if(art==='weiss') return { s:halb, weiss:glocke };
   if(art==='blende') return { s:halb, still:{ w:weich } };
@@ -29398,7 +29413,7 @@ function zeichneFrame(t,roh){
   /* Sichern erst, wenn etwas angewendet ist (Effekt, Vorbereitung oder eine andere Quelle als die Vorgabe);
      Loesen nur, wenn beim Titel ein Rezept liegt. Sonst ist der Fuss gedimmt (Caspar_D, 11.09.2026). */
   function angewendet(){ if(STAPEL.length||vorbAenderungen(VORB)) return true; if((SCHLEIFE.art||'keiner')!=='keiner'||SCHLEIFE.schlaege>0||SCHLEIFE.fenster>0) return true;   /* die Schleife wird mitgesichert - also schaltet sie das Sichern frei (Gegenpruefung 15.09.2026) */ const s=SEITEN[seiteIndex()], vg=grundVorgabe(SEITEN.filter(x=>!x.test)); return !!(s&&!s.test&&vg&&(s.art!==vg.art||(s.nr||1)!==(vg.nr||1))); }
-  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); }
+  function fussStand(){ const f=$('#tbs-rezept'); if(!f) return; const a=angewendet(); const ps=$('#tbs-pSave'), pd=$('#tbs-pDrop'); if(ps) ps.disabled=!a; if(pd) pd.disabled=!rezeptDa; f.classList.toggle('gedimmt',!a&&!rezeptDa); vollStand(); }
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if(stufeOffen==='Vorb') vorbRender(); vorbStand(); }
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
     let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral zur\u00fccksetzen - das L\u00f6schen im Fu\u00df betrifft dagegen den gesicherten Effektclip" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>Zur\u00fccksetzen</button></div>';
@@ -29796,12 +29811,7 @@ function zeichneFrame(t,roh){
     try{ const a=await fetch('/api/effektclip-bauen?probe=1'); return a.status!==404; }catch(e){ return false; }
   }
   async function kodieren(m,gemerkt,t0,N,W,H,rate,melden){
-    let cfg=null;
-    for(const c of ['avc1.640028','avc1.4D0028','avc1.42E01E']){
-      const p={ codec:c, width:W, height:H, framerate:rate, bitrate:Math.min(16000000,Math.round(W*H*rate*0.15)),
-                avc:{format:'annexb'}, latencyMode:'quality' };
-      try{ const s=await VideoEncoder.isConfigSupported(p); if(s&&s.supported){ cfg=s.config||p; break; } }catch(e){}
-    }
+    const cfg=await avcKonfig(W,H,rate);   /* dieselbe Einstellung wie das Vollzeitvideo - eine Stelle, ein Profil */
     if(!cfg) return null;
     const teile=[]; let fehler=null;
     const enc=new VideoEncoder({ output:(ch)=>{ const b=new Uint8Array(ch.byteLength); ch.copyTo(b); teile.push(b); },
@@ -29839,8 +29849,8 @@ function zeichneFrame(t,roh){
      gesperrt, ein Doppelklick startete zwei Laeufe, und das Ende des ersten setzte LOOP=0 mitten in den zweiten.
      Jetzt sperrt video() selbst, bevor irgendetwas wartet; oeffnen() und schliessen() warten auf exportLauf. */
   let exportLauf=null;
-  async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true;
-    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
+  async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true; vollStand();
+    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; fussStand(); QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
   async function videoLauf(){
     if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
     if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
@@ -29926,6 +29936,214 @@ function zeichneFrame(t,roh){
     const warum=grund==='tempowechsel'?'das Tempo wechselt im Lied':grund==='frei'?'das Tempo ist frei gespielt':'';
     if(sitzt<ZUFALL_BODEN) return ' · keine Länge bleibt über das Lied im Takt – die Pulse laufen im Suno-Video gegen die Musik'+(warum?' — '+warum:'');   /* Caspar_D, 15.09.2026 */
     return ' · sitzt auf '+Math.round(sitzt*100)+' % des Lieds im Takt'+(warum?' ('+warum+')':''); }
+  /* ---- DAS GANZE LIED ALS VIDEO, ERSTE STUFE (Caspar_D, 16.09.2026: "Okay, gib das Vollzeitvideo so einfach wie
+     moeglich aus, aber nicht so, dass man sich damit blamiert."). Ausgegeben wird dasselbe Bild, das die Kachel malt,
+     ueber die ganze Liedlaenge, mit dem Ton des Titels. NICHT in dieser Stufe: Abschnittslogik, eingebrannter
+     Liedtext, Formatwahl, Warteschlange.
+
+     WAS ANDERS IST ALS BEIM 10-s-CLIP. Dort liegt LOOP=L ueber dem Clip und ein gleichmaessiges Raster ueber den
+     Schlaegen, damit die Naht schliesst. Hier gibt es keine Naht: t laeuft von 0 bis zur Liedlaenge, LOOP bleibt 0,
+     und die Effekte sehen die ECHTEN Schlaege - Bild fuer Bild genau das, was zeichneFrame() in der Kachel malt.
+
+     WARUM NICHT DER AUFNEHMER. MediaRecorder haengt an der Wanduhr: ein Bild, das langsamer fertig wird als 1/30 s,
+     schiebt alle folgenden Zeitstempel. Bei zehn Sekunden faellt das kaum auf, bei vier Minuten laeuft das Bild
+     gegen die Musik. Ohne WebCodecs wird darum nichts aufgenommen, sondern abgesagt - das ist ehrlicher als eine
+     Datei, die nicht zur Musik passt.
+
+     DAS STUDIO STEHT SOLANGE, UND DER KNOPF SAGT ES VORHER. exportLaeuft sperrt rahmen(); die Vorschau malte sonst
+     mit DENSELBEN Effektobjekten in Vorschaugroesse dazwischen und verschmutzte die Spur des Nachzieheffekts
+     (Befund 14.09.2026). Ein halb mitlaufendes Studio waere eine Luege - also steht es. */
+  const VOLL_TEIL=600;   /* Bilder je Paket: 20 s Film. So liegt nie der ganze Film im Speicher (/api/vollvideo/teil) */
+  let VOLL={ laeuft:false, abbruch:false, ton:true, tonDa:null, msBild:0, kennung:null };
+  const mmss=t=>{ const s=Math.max(0,Math.round(t)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+  const vollRest=s=>s<90?Math.max(1,Math.round(s))+' s':Math.round(s/60)+' min';
+  const vollBitrate=(W,H,rate)=>Math.min(16000000,Math.round(W*H*rate*0.15));
+  /* Liegt zu diesem Titel ueberhaupt eine audio.mp3 im Archiv? Ein HEAD reicht - auf HEAD schickt der Server keinen Koerper. */
+  async function tonPruefen(id){ VOLL.tonDa=null; if(!id){ vollStand(); return; }
+    let da=false; try{ const a=await fetch('/media/'+id+'/audio.mp3',{method:'HEAD'}); da=!!a.ok; }catch(e){}
+    if(id!==songId) return; VOLL.tonDa=da; VOLL.ton=da; vollStand(); }
+  /* DIE KODIERER-EINSTELLUNG, EINE STELLE FUER BEIDE AUSGABEN (10-s-Clip und Vollzeitvideo): das beste Profil, das
+     die Maschine kann, roher Strom (Annex B), Bitrate nach Flaeche mal Bildrate, gedeckelt bei 16 Mbit. */
+  async function avcKonfig(W,H,rate){
+    for(const c of ['avc1.640028','avc1.4D0028','avc1.42E01E']){
+      const p={ codec:c, width:W, height:H, framerate:rate, bitrate:vollBitrate(W,H,rate), avc:{format:'annexb'}, latencyMode:'quality' };
+      try{ const s=await VideoEncoder.isConfigSupported(p); if(s&&s.supported) return s.config||p; }catch(e){} }
+    return null; }
+  /* DIE LAENGE EINER RUNDE (Caspar_D, 16.09.2026: "dehnen oder schrumpfen (nie mehr als 1/3) oder mehrmals loopen").
+     Eine Runde ist ein ganzer Takt oder ein Vielfaches davon; an ihrem Ende steht der Uebergang aus der Schleifen-Stufe,
+     dann faengt sie von vorn an - das ist das "mehrmals loopen". Gesucht wird die Runde, deren Laenge der Quelle am
+     naechsten kommt, denn dann ist die Dehnung am kleinsten. Grenzen: hoechstens ein Drittel dehnen (4/3), hoechstens
+     ein Drittel schrumpfen (2/3). Ist die Quelle laenger, als sich schrumpfen laesst, wird sie NICHT vorgespult,
+     sondern es laeuft ein AUSSCHNITT von anderthalb Runden. Ist die Quelle kuerzer als drei Viertel eines Takts, wird
+     der Takt geteilt (halb, viertel): ganze Takte bleiben es dann nicht mehr, auf dem Schlagraster liegt es aber noch. */
+  function vollRunde(dv,takt,dauer){
+    const T=takt>0.05?takt:Math.max(0.5,dv||2), kand=[];
+    for(const k of [1,2,4]) for(let n=1;n<=32;n++){ const L=n*T/k; if(L<0.4||L>dauer) continue; kand.push(L); }
+    if(!kand.length) kand.push(Math.max(0.4,Math.min(dauer,dv||2)));
+    const q=Math.max(0.05,dv), dehn=L=>L/Math.min(q,1.5*L), passt=kand.filter(L=>dehn(L)<=4/3+1e-9), feld=passt.length?passt:kand;
+    let L=feld[0]; for(const x of feld) if(Math.abs(Math.log(x/q))<Math.abs(Math.log(L/q))) L=x;
+    const quell=Math.min(q,1.5*L);
+    return { L, quell, dehnung:L/quell, ausschnitt:quell<q-1e-3, geklemmt:!passt.length }; }
+  /* WARUM DER AUSSCHNITT STEHENBLEIBT. Jeder Uebergang der Schleifen-Stufe fuehrt an den ANFANG DESSELBEN Materials
+     zurueck (schleifeZeitRoh liefert im Fenster s=0, und Blende/Wisch/Abbremsen mischen gegen das mitgeschriebene
+     erste Bild). Ein Ausschnitt, der von Runde zu Runde weiterwandert, haette also nach jedem Uebergang einen Sprung.
+     Darum zeigt die erste Stufe immer denselben Ausschnitt - den bewegtesten, den die Aenderungskurve findet. Das
+     Material ueber das Lied zu verteilen ist Abschnittsarbeit und gehoert in die zweite Stufe. */
+  /* Das Buendel fuer das ganze Lied: eigene Leinwaende in Ausgabegroesse wie beim 10-s-Clip, aber mit den ECHTEN
+     Schlaegen und ohne Raster und ohne Stand - beides gilt nur unter LOOP>0. */
+  function vollBuendel(gemerkt,W,H,N){ const m=exportBuendel(gemerkt,{t0:0,N,M:0,proTakt:0,phiF:0},W,H);
+    m.DATA=Object.assign({},DATA); m.t0=0; m.N=N; m.L=N/BILDRATE; m.vorgelaufen=true; return m; }
+  async function vollAbbrechenMelden(lauf){ if(!lauf) return; try{ await fetch('/api/vollvideo/abbrechen?lauf='+encodeURIComponent(lauf),{method:'POST'}); }catch(e){} }
+  /* Ein Lauf zur Zeit, und derselbe Griff wie beim 10-s-Clip: oeffnen() wartet auf exportLauf, bevor es den Titel wechselt. */
+  async function vollvideo(){ if(exportLaeuft) return; exportLaeuft=true; VOLL.laeuft=true; VOLL.abbruch=false; vollStand();
+    exportLauf=vollLauf(); try{ return await exportLauf; }
+    finally{ exportLaeuft=false; exportLauf=null; VOLL.laeuft=false; VOLL.abbruch=false; VOLL.kennung=null; QUELLE_WIRKUNG=null; LOOP=0;
+      if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); }
+      vollFortschritt(''); fussStand(); if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
+  async function vollLauf(){
+    const dauer=(DATA&&DATA.dauer)||0;
+    if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
+    if(!(dauer>1)){ pStat('Die Länge dieses Titels steht nicht im Katalog — ohne sie gibt es kein Vollzeitvideo'); return; }
+    if(typeof VideoEncoder==='undefined'||typeof VideoFrame==='undefined'){
+      pStat('Dieser Browser hat keinen Bildkodierer (WebCodecs). Ein ganzes Lied ließe sich nur in Echtzeit abfilmen — dabei wandern die Zeitstempel, und das Bild läuft gegen die Musik. Darum wird hier nichts ausgegeben.'); return; }
+    const [W,H]=ausgabeMass(), N=Math.round(dauer*BILDRATE), rate=BILDRATE, vid=!!(bild&&bild.tagName==='VIDEO');
+    /* Die Runde und der Ausschnitt: dafuer muss die Aenderungskurve des Videos gemessen sein (dieselbe Messung wie
+       in der Loop-Ansicht, sie merkt sich ihr Ergebnis je Quelle). */
+    let runde=null, lageP=null, von=0, dv=0, nullpunkt=0, fenster=null, pendel=false;
+    if(vid){ VIDEO_GENAU=true; pStat('vermesse das Video …'); await schleifeStills(bild,null);
+      dv=Math.max(0.05,(bild.duration||0)-1/60);
+      const S=(DATA&&DATA.schlaege)||[], {takt,einsen}=taktLaenge(S), schlag=schlagMedian(S), beat=schlag>0.02?schlag:(takt>0.05?takt/4:0.5);
+      runde=vollRunde(dv,takt,dauer);
+      lageP={ M:Math.max(1,Math.round(runde.L/beat)), proTakt:(takt>0.05&&beat>0)?Math.max(2,Math.min(16,Math.round(takt/beat))):4 };
+      /* DIE RUNDE HAT AUCH EINE LAGE, NICHT NUR EINE LAENGE. Gezaehlt wurde bis 16.09.2026 ab Songzeit 0 - jeder
+         Uebergang fiel damit ueber das ganze Lied um denselben Bruchteil eines Takts neben den Schlag. Der
+         Zehnsekundenweg macht es richtig (ausschnitt(): t0=einsen[0]), also hier genauso: die Rundengrenze sitzt
+         auf einer Eins. Vor der ersten Eins laeuft die Runde von hinten hinein - das sind hoechstens ein paar Zehntel. */
+      nullpunkt=(takt>0.05&&einsen.length)?einsen[0]:0;
+      pendel=(SCHLEIFE.art||'keiner')==='pendel';
+      /* Das Pendel bekommt die VOLLE Videolaenge wie im Zehnsekundenweg - es sucht sein Stueck selbst. Alle anderen
+         Formen laufen durch einen Ausschnitt, und der bekommt sein eigenes Stueck der Aenderungskurve. */
+      von=pendel?0:schleifePendelVon(runde.quell,dv);
+      fenster=pendel?null:{ von, laenge:runde.quell, gesamt:dv }; }
+    pStat('melde den Lauf beim Haus an …');
+    let lauf=null, abgelehnt='', tonBestellt=!!(VOLL.ton&&VOLL.tonDa!==false);
+    /* OB WIRKLICH EINE audio.mp3 DALIEGT, WEISS NUR DAS HAUS. Der HEAD in tonPruefen() geht durch liefere() und sagt
+       auch dann ja, wenn der Ton nur im Behaelter liegt - gebaut wird aber aus der Datei. Das Haus sieht nach und
+       schickt tonDa mit; die Pille stellt sich danach um, bevor vier Minuten umsonst gemalt werden. */
+    try{ const a=await fetch('/api/vollvideo/start',{method:'POST',headers:{'Content-Type':'application/json'},
+           body:JSON.stringify({ id:songId, rate, breite:W, hoehe:H, ton:tonBestellt })});
+      if(a.status===409) abgelehnt='Für diesen Titel läuft schon eine Ausgabe — eine zur Zeit reicht';
+      else if(a.ok){ const j=await a.json(); lauf=j&&j.lauf;
+        if(j&&j.tonDa===false){ VOLL.tonDa=false; tonBestellt=false; vollStand(); } } }catch(e){}
+    if(!lauf){ pStat(abgelehnt||'Das Haus kann kein Vollzeitvideo bauen (/api/vollvideo antwortet nicht) — nichts ausgegeben'); return; }
+    const cfg=await avcKonfig(W,H,rate);
+    if(!cfg){ await vollAbbrechenMelden(lauf); pStat('Der Bildkodierer nimmt dieses Format nicht ('+W+'×'+H+')'); return; }
+    VOLL.kennung=lauf;   /* ab hier weiss der Abschied beim Schliessen des Tabs, was abzumelden ist */
+    const gemerkt=bundel(), m=vollBuendel(gemerkt,W,H,N); m.lage=lageP; m.schleife=vid;
+    let teile=[], bytes=0, nr=1, nullBasiert=false, fehler=null, geschickt=0;
+    const enc=new VideoEncoder({ output:ch=>{ const b=new Uint8Array(ch.byteLength); ch.copyTo(b); teile.push(b); bytes+=b.length; },
+                                 error:e=>{ fehler=e; } });
+    enc.configure(cfg);
+    const schluessel=Math.max(1,Math.round(rate*2)), uhr=performance.now();
+    /* EIN PAKET LOSSCHICKEN. Der Strom ist ein Bytestrom - wo er geteilt wird, ist gleichgueltig, solange die Pakete
+       in der Reihenfolge ankommen. Darum nur ein Versuch je Paket und bei Ablehnung ein sauberer Abbruch.
+       Ob das Haus ab eins oder ab null zaehlt, steht nicht im Contract: bleibt das erste Paket mit 409 liegen, geht
+       es einmal als Paket 0 noch einmal hinaus. */
+    async function teilSchicken(){
+      if(!teile.length) return true;
+      const blob=new Blob(teile,{type:'video/h264'}); teile=[]; if(!blob.size) return true;
+      for(let versuch=0;versuch<2;versuch++){
+        try{ const a=await fetch('/api/vollvideo/teil?lauf='+encodeURIComponent(lauf)+'&nr='+nr,{method:'POST',headers:{'Content-Type':'video/h264'},body:blob});
+          if(a.ok){ nr++; geschickt+=blob.size; return true; }
+          if(a.status===409&&versuch===0&&!nullBasiert&&geschickt===0){ nullBasiert=true; nr=0; continue; } }catch(e){}
+        return false; }
+      return false; }
+    /* WAS ES KOSTET, STEHT AM KNOPF (Hausregel). Vor dem Start die Bytes aus der eingestellten Bitrate, nach den
+       ersten Bildern die Zeit aus der gemessenen Rechenzeit je Bild und die Groesse aus den wirklich entstandenen
+       Bytes - die Schaetzung wird waehrend des Laufs laufend nachgebessert, nicht einmal geraten. */
+    const tonBytes=tonBestellt?192000*dauer/8:0;   /* dieselbe Formel wie vollKosten() - sonst sprang die Zahl beim Start nach UNTEN, obwohl die Datei groesser wird */
+    const melden=i=>{ const ms=i>0?(performance.now()-uhr)/i:0; if(i>=60&&ms>0) VOLL.msBild=ms;
+      vollFortschritt(mmss(i/rate)+' von '+mmss(dauer)
+        +(ms>0&&i>=30?' · noch etwa '+vollRest((N-i)*ms/1000):' · die Rechenzeit wird noch gemessen …')
+        +(bytes>0&&i>=30?' · etwa '+Math.round((bytes/i*N+tonBytes)/1048576)+' MB':'')); };
+    melden(0);
+    FEIN=true;   /* hier haengt nichts an einer Uhr - die Maler duerfen teuer rechnen */
+    try{
+      for(let i=0;i<N;i++){
+        if(VOLL.abbruch) break;
+        const t=i/rate;
+        /* Das Bewegtbild ueber das ganze Lied: Runde fuer Runde, in jeder der gewaehlte Uebergang, dazwischen der
+           feste Ausschnitt. tau ist die Zeit IN der Runde - genau das, was schleifeZeit() sonst im Clip bekommt. */
+        if(vid){ const rel=t-nullpunkt, tau=rel<0?rel+Math.ceil(-rel/runde.L)*runde.L:rel-Math.floor(rel/runde.L)*runde.L,
+            q=schleifeZeit(Math.min(tau,runde.L-1e-6),runde.L,pendel?dv:runde.quell,lageP,fenster);
+          q.s=Math.max(0,Math.min(dv,q.s)); await quelleSetzen(bild,q.s); QUELLE_WIRKUNG=q; }
+        exportBild(m,gemerkt,t,W,H); QUELLE_WIRKUNG=null;
+        const f=new VideoFrame(m.lein,{ timestamp:Math.round(i*1000000/rate), duration:Math.round(1000000/rate) });
+        enc.encode(f,{ keyFrame:(i%schluessel===0) }); f.close();
+        while(enc.encodeQueueSize>6 && !fehler) await new Promise(r=>setTimeout(r,0));   /* die einzige Wartestelle, und sie haengt am Kodierer */
+        if(fehler) break;
+        if(i>0&&i%VOLL_TEIL===0&&!await teilSchicken()){ fehler=fehler||new Error('Paket '+nr+' kam nicht an'); break; }
+        if(i%10===0){ melden(i); await new Promise(r=>setTimeout(r,0)); }   /* die Seite darf atmen, sonst klickt "Abbrechen" nicht */
+      }
+    } catch(e){ fehler=fehler||e; }   /* OHNE DIESEN ZWEIG bliebe der Lauf beim Haus stehen: ein Wurf (etwa aus enc.encode auf einem
+                                         schon geschlossenen Kodierer) sprang am Aufraeumblock darunter vorbei, und der Titel war bis zum
+                                         Neustart des Servers gesperrt (Gegenlesen 16.09.2026). */
+    finally { FEIN=false; setzen(gemerkt); }
+    /* ABBRUCH UND FEHLER GEHEN DENSELBEN WEG: der Kodierer zu, der halbe Rohstrom im Haus geloescht, nichts liegt herum. */
+    if(VOLL.abbruch||fehler){ try{ enc.close(); }catch(e){}
+      await vollAbbrechenMelden(lauf);
+      pStat(VOLL.abbruch?'abgebrochen — das halb gebaute Video ist gelöscht, es liegt nichts herum'
+                        :'abgebrochen: '+((fehler&&fehler.message)||'der Kodierer oder die Übertragung ging schief')+' — das halb gebaute Video ist gelöscht');
+      return; }
+    try{ await enc.flush(); enc.close(); }catch(e){}
+    if(!await teilSchicken()){ await vollAbbrechenMelden(lauf); pStat('Das letzte Paket kam nicht an — abgebrochen, es liegt nichts herum'); return; }
+    /* AB HIER IST DER ABBRUCH VORBEI. Das Haus baut, und die Antwort bringt die fertige Datei; der Server verweigert
+       einen Abbruch in diesem Fenster ohnehin (409 "wird gerade gebaut"). Ein Knopf, der "breche ab" schreibt und
+       dann doch 170 MB herunterlaedt, ist eine Luege - also wird er gesperrt und die Zeile sagt warum. */
+    { const st=$('#tbs-vollStop'); if(st) st.disabled=true; }
+    vollFortschritt('das Haus baut die Datei — das läßt sich jetzt nicht mehr abbrechen …');
+    let j=null;
+    try{ const a=await fetch('/api/vollvideo/fertig?lauf='+encodeURIComponent(lauf)+'&bilder='+N,{method:'POST'}); if(a.ok) j=await a.json(); }catch(e){}
+    if(!j||!j.ok||!j.url){ await vollAbbrechenMelden(lauf); pStat('Das Haus konnte die Datei nicht bauen — abgebrochen, es liegt nichts herum'); return; }
+    VOLL.kennung=null;   /* die Datei liegt bereit und wird gleich geholt - ab jetzt nicht mehr blind abmelden */
+    /* Geholt wird ueber die Adresse, die das Haus nennt - kein Riesen-Blob im Speicher. Den Dateinamen setzt das
+       Haus (Content-Disposition), nach derselben Regel wie ausliefern(). Gebucht wird hier nichts: in library/
+       schreibt nur der Server. */
+    const a=document.createElement('a'); a.href=j.url; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
+    const brauchte=(performance.now()-uhr)/1000; VOLL.msBild=brauchte*1000/Math.max(1,N);
+    const uname=(SCHLEIFE_ARTEN.find(x=>x[0]===(SCHLEIFE.art||'keiner'))||[0,''])[1];
+    pStat('ausgegeben: der ganze Titel · '+mmss(j.sekunden||dauer)+' · '+((j.bytes||geschickt)/1048576).toFixed(1)+' MB · '+W+'×'+H+' · '+N+' Bilder · '
+      +(j.ton?'mit Ton':'ohne Ton'+(j.ohneTon?' ('+j.ohneTon+')':''))   /* der BEFUND des Hauses (ffprobe auf der fertigen Datei), nicht die Bestellung: ein stummes Video, das sich als vertont meldet, blamiert vor Publikum */
+      +(vid?' · Video in Runden von '+kf(runde.L.toFixed(1))+' s'
+            +(pendel?', hin und her in echtem Tempo'   /* das Pendel dehnt nichts und nimmt sich sein Stueck selbst (schleifePendelVon) */
+                    :', '+(runde.dehnung>=1?'gedehnt':'geschrumpft')+' auf '+Math.round(runde.dehnung*100)+' %'
+                     +(runde.ausschnitt?' (Ausschnitt ab '+mmss(von)+', nicht vorgespult)':'')+(runde.geklemmt?' — mehr als ein Drittel, die Quelle paßt in keinen Takt':''))
+            +(nullpunkt>0.01?' · Runden ab der ersten Eins bei '+kf(nullpunkt.toFixed(2))+' s':'')
+            +' · Übergang: '+uname:'')
+      +' — ins Download-Verzeichnis, gerechnet in '+vollRest(brauchte)); }
+  /* Die Fortschrittszeile mit dem Abbrechen-Knopf: sie ist da, solange etwas laeuft, und sonst weg. */
+  function vollFortschritt(x){ const z=$('#tbs-vollLauf'), el=$('#tbs-vollText'), st=$('#tbs-vollStop');
+    if(el) el.textContent=x||''; if(z) z.hidden=!x; if(st&&!x) st.disabled=false; }   /* die Sperre aus dem Bau gilt nur fuer diesen Lauf */
+  function vollStand(){ const b=$('#tbs-pVoll'); if(!b) return;
+    const p=$('#tbs-pVollTon'), v=$('#tbs-pVideo'), s=$('#tbs-pSave'), d=$('#tbs-pDrop'), k=$('#tbs-vollKosten'), laeuft=!!exportLaeuft;
+    b.disabled=laeuft||!bereit; b.textContent=VOLL.laeuft?'gibt den Titel aus …':'ganzen Titel ausgeben';
+    /* Waehrend eines Laufs ist die uebrige Fussleiste zu. Das Sperren KOMMT AUF die Entscheidung von fussStand()
+       obendrauf (vollStand steht am Ende von fussStand), das Aufschliessen ueberlaesst es wieder ihr - sonst ginge
+       "Für diesen Titel sichern" nach einem Lauf auf, obwohl gar kein Rezept angewendet ist. */
+    if(v) v.disabled=laeuft; if(laeuft){ if(s) s.disabled=true; if(d) d.disabled=true; }
+    if(p){ const an=!!VOLL.ton&&VOLL.tonDa!==false; p.disabled=laeuft||VOLL.tonDa===false;
+      p.classList.toggle('an',an); p.setAttribute('aria-pressed',an?'true':'false');
+      p.textContent=VOLL.tonDa===false?'Ton dazu — keine Datei':'Ton dazu';
+      p.title=VOLL.tonDa===false?'Zu diesem Titel liegt keine audio.mp3 im Archiv — das Video bleibt stumm'
+             :VOLL.tonDa===null?'Es wird noch nachgesehen, ob eine audio.mp3 zu diesem Titel da ist'
+             :'Die audio.mp3 des Titels kommt als Tonspur ins Video (AAC, 192 kbit/s)'; }
+    if(k) k.textContent=vollKosten(); }
+  function vollKosten(){ const dauer=(DATA&&DATA.dauer)||0; if(!bereit||!(dauer>1)) return '';
+    const [W,H]=ausgabeMass(), mb=(vollBitrate(W,H,BILDRATE)*dauer/8+((VOLL.ton&&VOLL.tonDa!==false)?192000*dauer/8:0))/1048576;
+    const rechnen=VOLL.msBild>0?VOLL.msBild*Math.round(dauer*BILDRATE)/1000:0;
+    return 'ganzer Titel: '+mmss(dauer)+' · '+W+'×'+H+' · etwa '+Math.round(mb)+' MB · '
+      +(rechnen>0?'etwa '+vollRest(rechnen)+' Rechenzeit (nach der letzten Messung)':'wie lange gerechnet wird, steht nach den ersten 60 Bildern')
+      +' · das Studio steht so lange still'; }
   /* ---- DIE VIERTE STUFE: LOOP VERBINDEN (Caspar_D, 15.09.2026: "momentan gibt es ja in unserem Effektclip Quellenwahl-, den
      Vorbereitungs-, den Effektgeneration part, dann muss es noch den Videoloop-Verbinden Part geben am Ende" - und "ein
      Modusknopf im Studio - 10 Sek. Loop waere gut"). Der Name der Stufe steht nur in LOOP_STUFE.
@@ -30123,7 +30341,14 @@ function zeichneFrame(t,roh){
       +'<div class="tbs-unter" id="tbs-loopWo" hidden></div>'
       +'</div></div>'
       +'<div id="tbs-rezept"><div class="tbs-zeile"><span class="tbs-lbl">Effektclip</span><button class="tbs-mini" id="tbs-pSave" style="width:auto;padding:0 10px" title="Quelle, Vorbereitung, Effektkette und Schleife beim Titel ablegen - Kachel und Bühne malen es dann live, im Takt des Songs">Für diesen Titel sichern</button><button class="tbs-mini" id="tbs-pDrop" style="width:auto;padding:0 10px" title="Den beim Titel gesicherten Effektclip löschen (Quelle, Vorbereitung, Effektkette und Schleife) - Kachel und Bühne zeigen wieder das Standbild. Gelöscht wird nur das gesicherte Rezept: Titelbild und Videos bleiben, und was hier im Studio eingestellt ist, bleibt stehen und lässt sich wieder sichern.">Löschen</button>'
-      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button></div>'
+      +'<button class="tbs-mini" id="tbs-pVideo" style="width:auto;padding:0 10px" title="Bis zehn Sekunden als MP4 ins Download-Verzeichnis - so lang, dass der Clip über das ganze Lied im Takt bleibt, stumm, im Format der Quelle, mit Hauszeichen">10 s ausgeben</button>'
+      /* DER ZWEITE KNOPF, WEIL ES ZWEI SEHR VERSCHIEDEN TEURE DINGE SIND (Hausregel "Was es kostet, steht am Knopf"):
+         zehn Sekunden kosten Sekunden, das ganze Lied Minuten und Dutzende Megabyte. Der Preis steht darunter, nicht im
+         Kleingedruckten, und wird waehrend des Laufs nachgebessert. "Ton dazu" ist ein Zustand, also eine Pille (Regel 18). */
+      +'<button class="tbs-mini" id="tbs-pVoll" style="width:auto;padding:0 10px" title="Das ganze Lied als MP4 ins Download-Verzeichnis: dasselbe Bild wie in der Kachel, über die volle Länge, im Format der Quelle, mit Hauszeichen. Das Studio steht so lange still.">ganzen Titel ausgeben</button>'
+      +'<button type="button" class="tbs-togp" id="tbs-pVollTon" aria-pressed="true" title="Die audio.mp3 des Titels kommt als Tonspur ins Video">Ton dazu</button></div>'
+      +'<div class="tbs-unter" id="tbs-vollKosten"></div>'
+      +'<div class="tbs-zeile" id="tbs-vollLauf" hidden><span id="tbs-vollText"></span><button type="button" class="tbs-mini" id="tbs-vollStop" style="width:auto;padding:0 10px" title="Den Lauf abbrechen — das halb gebaute Video wird im Haus gelöscht, es liegt nichts herum">Abbrechen</button></div>'
       +'<div id="tbs-pStatus" class="tbs-unter"></div>'
       +'<div class="tbs-unter">Gesichert werden Quelle, Vorbereitung, Effektkette und Schleife. Läuft der Titel im Player, schlagen die Pulse im echten Takt. Tasten: <kbd>←</kbd><kbd>→</kbd> Quelle · <kbd>V</kbd> halten: ohne Effekte (in der Vorbereitung) · <kbd>Esc</kbd> schließen</div></div>'
       +'</div></div></div>';
@@ -30154,6 +30379,9 @@ function zeichneFrame(t,roh){
     $('#tbs-pSave').onclick=sichern;
     $('#tbs-pDrop').onclick=loesen;
     $('#tbs-pVideo').onclick=video;
+    $('#tbs-pVoll').onclick=vollvideo;
+    $('#tbs-pVollTon').onclick=()=>{ if(VOLL.tonDa===false) return; VOLL.ton=!VOLL.ton; vollStand(); };
+    $('#tbs-vollStop').onclick=()=>{ if(!VOLL.laeuft) return; VOLL.abbruch=true; vollFortschritt('breche ab …'); };
     $('#tbs-loopAn').onclick=()=>loopSchalten(!loopAn);
     const schlagSchritt=d=>{ const lg=(loopSicht&&loopSicht.lage)||ausschnitt(); if(!lg||!lg.M) return; const e=lg.einheit||1, sp=lg.spanne||[lg.M,lg.M];
       SCHLEIFE.schlaege=Math.max(sp[0],Math.min(sp[1],lg.M+d*e)); SCHLEIFE_STILL.schluessel=''; loopLageNeu(); schleifeUI(); };
@@ -30177,6 +30405,9 @@ function zeichneFrame(t,roh){
     /* V losgelassen - oder Cmd dazwischen (dann kommt das keyup von V auf dem Mac nicht), Fenster verlassen, Tab gewechselt */
     document.addEventListener('keyup',ev=>{ const k=ev.key||''; if(k==='v'||k==='V'||k==='Meta') ohneSetzen(false); },true);
     window.addEventListener('blur',()=>ohneSetzen(false));
+    /* TAB ZU ODER NEU GELADEN MITTEN IM MALEN: das Haus erfuehre es sonst nie und hielte den Titel gesperrt. sendBeacon
+       geht auch noch, waehrend die Seite schon abgeraeumt wird - ein fetch kaeme nicht mehr hinaus. */
+    window.addEventListener('pagehide',()=>{ if(VOLL.kennung&&navigator.sendBeacon) navigator.sendBeacon('/api/vollvideo/abbrechen?lauf='+encodeURIComponent(VOLL.kennung)); });
     document.addEventListener('visibilitychange',()=>{ if(document.hidden) ohneSetzen(false); });
   }
   async function oeffnen(id, cb){
@@ -30194,6 +30425,7 @@ function zeichneFrame(t,roh){
     if(lauf!==oeffnenLauf||!offen) return;   /* zwischendurch geschlossen oder ein anderer Titel geoeffnet */
     DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], abschnitte:(s&&s.abschnitte)||null };   /* abschnitte: die Taktlage gewichtet Refrains */
     PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
+    VOLL.abbruch=false; VOLL.msBild=0; tonPruefen(id);   /* die Ton-Pille braucht die Antwort nicht sofort */
     $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
     /* Zum Pruefen: das Testbild aus Code und zwei Testportraets (web/testbild/HERKUNFT.md) - nie gesichert. */
     SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:'Testbild',test:true},{art:'testportraet',nr:1,lbl:'Testportr\u00e4t',test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:'Testportr\u00e4t (Farbe)',test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr}; }
