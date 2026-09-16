@@ -195,3 +195,18 @@ Vorgabe bleibt **ein Zustand für das ganze Lied** — dann verhält sich alles 
    an Abschnitten hängen, aber verschiebbar sein, sonst erbt der Plan die Unsicherheit ungefragt.
 3. Ob das Rezept schon jetzt mehrere Zustände tragen soll („ein Zustand, vorerst der einzige"), damit später keine
    Umstellung der gespeicherten Rezepte nötig wird.
+
+### Entschieden am 16.09.2026 (zu Punkt 1 und 2)
+
+Caspar_D: *„mache ein Effektrezept kopierbar, die grenzen können wir doch ggf verschiebar machen, dann gilt
+innerhalb der grenzen das Rezept, immer."*
+
+1. **Ein zweiter Zustand entsteht durch Kopieren.** Das Rezept wird kopierbar; die Kopie wird geändert, statt eine
+   zweite Quelle zu verlangen. Damit bleibt der Weg zu Strophe/Refrain-Varianten kurz: kopieren, Effektfamilie oder
+   Stärke ändern, der Szene zuweisen.
+2. **Grenzen sind verschiebbar, und innerhalb der Grenzen gilt das Rezept — immer.** Die Szene ist damit ein
+   Intervall mit genau einem Rezept, ohne Ausnahme und ohne Überblendung der Rezepte selbst; was an der Grenze
+   passiert, ist Sache des Übergangs. Die Abschnittsgrenzen aus Liedtext und Whisper sind der **Vorschlag**, nicht
+   das Gesetz — sie lassen sich ziehen (und rasten dabei auf Schlag und Takt).
+3. Folge für die Ablage: Das Rezept muss mehrere Zustände tragen können („ein Zustand, vorerst der einzige"), sonst
+   müssten die gespeicherten Rezepte später umgestellt werden.
