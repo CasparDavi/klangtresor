@@ -29721,7 +29721,7 @@ function zeichneFrame(t,roh){
   function zeichenHolen(){ if(hauszeichen) return hauszeichen; const im=new Image(); im.src=ZEICHEN_URI; hauszeichen=im; return im; }
   function zeichenMalen(cx,W,H){ const im=zeichenHolen(); if(!im||!im.complete||!im.naturalWidth) return;
     const k=Math.round(Math.min(W,H)*0.07), rand=Math.round(Math.min(W,H)*0.03);
-    cx.save(); cx.setTransform(1,0,0,1,0,0); cx.globalAlpha=0.85; cx.globalCompositeOperation='source-over';
+    cx.save(); cx.setTransform(1,0,0,1,0,0); cx.globalAlpha=0.66; cx.globalCompositeOperation='source-over';   /* Caspar_D, 16.09.2026: "ja, mach 66 Prozent" - die Wassermarke soll sichtbar bleiben, aber zurueckhaltend */
     cx.drawImage(im, W-rand-k, H-rand-k, k, k); cx.restore(); }
   function ausgabeMass(lange){ const [bw,bh]=qMass(bild); const sk=Math.min(1,(lange||LANGE_SEITE)/Math.max(bw,bh));
     const g=x=>Math.max(2,Math.round(x*sk/2)*2);   /* H.264 will gerade Kantenlaengen */
