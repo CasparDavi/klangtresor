@@ -3151,6 +3151,11 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-regler input[type=color]{width:100%;height:23px;padding:0;border:1px solid var(--rand);border-radius:6px;background:var(--flaeche2);cursor:pointer}
 #tbs .tbs-regler select{width:100%;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px}
 #tbs .tbs-regler .tbs-wert{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+/* GRAU MIT GRUND (Hausgesetz der Effektclips, 16.09.2026): was eine Art nicht benutzt, wird
+   ausgegraut und stillgelegt - nicht versteckt. Die Zeile darunter sagt, warum. */
+#tbs .tbs-grau{opacity:.55}
+#tbs .tbs-grau input,#tbs .tbs-grau select,#tbs .tbs-grau button{cursor:not-allowed}
+#tbs .tbs-graugrund{color:var(--schwach);font-size:10.5px;line-height:1.35;margin:-2px 0 7px}
 /* ZWEI SPALTEN: SPEZIFISCH LINKS, GENERISCH RECHTS (VIDEO-PLAN §9a.5).
 
    Caspar_D, 12.09.2026: „Schnittprogramme haben das Problem, dass generische Sachen irgendwo
@@ -27298,8 +27303,8 @@ const EFFEKTE = {
     /* Die Tiefenrechnung ist kein Regler: sie ist richtig oder sie geht nicht. Ohne Karte
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
-  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, besch:'Schnee, Regen, Asche, Funken oder Schwaden ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schiesst sie hinaus und laeuft aus wie Luftwiderstand. Schwaden sind Rauch: wenige, grosse, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch. Anzahl, Größe, Tempo, Wind und Farbe frei; Asche sieht mit Verrechnung „Über“ am besten aus. Auch als: Blasen, Detritus, Plankton, Sporen, Schwebstaub im Licht.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge']],def:'schnee'},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff'},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Von Objekten verdeckt',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+  partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, lmNurSchub:true, besch:'Teilchen ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schießt sie hinaus und läuft aus wie Luftwiderstand. Anzahl, Größe, Tempo, Wind und Farbe frei. Die Farbquelle sagt, WOHER die Farben kommen: das Akzentpaar des Titelbildes, seine gemessenen Haupttöne, ein fester bunter Satz, eine einzige Farbe (schwarzer Schnee) oder ein eigenes Paar. Was die gewählte Art ausmacht, steht unter dem Auswahlfeld.',
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Von Objekten verdeckt',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27380,8 +27385,34 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
 const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'wirkt auf',
   sel:[['alles','alles'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles' };
 
-[['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
+/* DER ANTRIEB AM PARTIKEL-EFFEKT (Caspar_D, 16.09.2026: "mach beides, fallen und kanone"). Die
+   Konfetti-Kanone ist die erste Partikel-Art mit einem ZEITPUNKT statt nur einer Bahn - ihre
+   Salven sollen auf dem Schlag sitzen und nicht irgendwo. Dafuer erbt die Karte das gemeinsame
+   Pult, statt sich einen eigenen Takt-Schalter auszudenken (Nomenklatur: ein Ding, ein Name).
+   `lmNurSchub` am Effekt, weil die Kanone den Antrieb SELBST liest (antriebPeriode) - bei art
+   'mal' legt die Kette ihn zwar ohnehin nicht auf die Deckkraft, aber die Marke sagt es an.
+   Arten ohne Salve grauen das Pult mit Grund aus, statt es zu verstecken. */
+[['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['partikel',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
   .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
+{ const pl=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.lm);
+  if(pl) pl.grau=e=>ART_ANTRIEB[e.art]?null:('Diese Art fliegt gleichmäßig weiter — nur die Konfetti-Kanone (ihre Salven) und der Glitzer (seine Blitze) hängen am Antrieb.'
+    /* NICHT AUF EINEN SCHALTER ZEIGEN, DER HIER NICHTS TUT (Gegenlesen 16.09.2026). Der Satz stand
+       bis heute bei ALLEN sechzehn Arten ohne Salve - auch bei Sternschnuppe und Schwarm, die ihre
+       Bahn selbst rechnen und den Windstoss gar nicht bekommen. Eine Zeile, die zu einem Regler
+       schickt, der an dieser Art still steht, ist dieselbe Luege wie der Regler selbst (Regel 11). */
+    +(EIGENUHR.has(e.art)?'':' Windstöße im Takt stehen links und hängen unmittelbar am Schlagraster.'));
+  /* WINDSTOESSE GIBT ES NUR AUF DER GEMEINSAMEN UHR (gemessen 16.09.2026: Rezept mit und ohne Boe
+     gab bei sternschnuppen und schwarm BITGLEICHE Clip-Pruefsummen, bei den sechzehn anderen Arten
+     verschiedene). Der Stoss `boe` faehrt als `gx` in die Bahn; sternBahn und schwarmLagen bekommen
+     ihn nicht, weil sie ihren Ort ganz aus t rechnen. Also stehen Schalter und Staerke bei diesen
+     zwei Arten grau mit Grund statt bedienbar und wirkungslos. Wind (stetig) wirkt sehr wohl - das
+     steht dabei, sonst sucht man ihn als naechstes. */
+  const pb=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.k==='boeen');
+  const pbs=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.k==='boeenStaerke');
+  const boeGrund=e=>EIGENUHR.has(e.art)?(e.art==='sternschnuppen'
+    ?'Eine Schnuppe fällt nicht durch die Luft, sie zieht ihre Bahn — ein Stößchen im Takt greift an ihr nicht an. Der Wind-Regler legt sie trotzdem schräg.'
+    :'Die Schar hält gegen den Wind und folgt ihrer eigenen Bahn — ein Stoß im Takt verreißt sie nicht. Der Wind-Regler lehnt ihre Bahn trotzdem zur Seite.'):null;
+  if(pb) pb.grau=boeGrund; if(pbs) pbs.grau=boeGrund; }
 /* QUELLE UND FLUG als zusammengesetzter Block, nach dem Muster des Raum-Blocks. Ein Schluessel in
    GEMEIN, damit die Zeilen in der generischen Spalte stehen und spaeter jeder Effekt denselben
    Wortschatz erbt - der Rauch aus 9a.4 soll die Quelle mitbenutzen, nicht eine eigene erfinden.
@@ -27485,9 +27516,148 @@ function neuerEffekt(typ){ const T=EFFEKTE[typ], e={ typ, id:++nr, an:true, zu:f
   return e; }
 /* Jede Partikel-Art bringt ihre Farbspanne mit - gesetzt beim Wechsel der Art,
    aber nur, solange die Farben noch die der vorigen Art sind (eigene bleiben). */
-const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7], schwaden:['#9a9a9a','#3c3c3c',.4], gluehwuermchen:['#eaff7a','#ffd24a',.35], schmetterling:['#ff9a3c','#63d0ff',.85] };
+const ART_FARBEN={ schnee:['#ffffff','#dfeaff',0], regen:['#ffffff','#cfe6ff',.2], asche:['#9a9a9a','#3a3a3a',.6], funken:['#ff3b1f','#ffd23a',.85], blasen:['#ffffff','#bfe6ff',.3], staub:['#e8e2d0','#a89f8a',.5], blaetter:['#d98a3d','#7a4a1a',.7], schwaden:['#9a9a9a','#3c3c3c',.4], gluehwuermchen:['#eaff7a','#ffd24a',.35], schmetterling:['#ff9a3c','#63d0ff',.85], konfetti:['#ff3b5c','#ffd23a',.9], konfettiKanone:['#ff3b5c','#ffd23a',.9], daunen:['#ffffff','#e8eef7',.25], bokeh:['#ffe9b0','#9fd0ff',.55], glitzer:['#ffffff','#ffe9a0',.4], pusteblume:['#ffffff','#e6e2d2',.2], sternschnuppen:['#ffffff','#bfe0ff',.3], schwarm:['#12151b','#39404c',.35] };
 /* Schwaden wollen wenige und grosse, alle anderen Arten viele und kleine. */
-const ART_MASS={ schwaden:[40,6], gluehwuermchen:[45,2.5], schmetterling:[16,7] };
+const ART_MASS={ schwaden:[40,6], gluehwuermchen:[45,2.5], schmetterling:[16,7], konfetti:[110,3.5], konfettiKanone:[150,3.5], daunen:[70,4], bokeh:[30,7], glitzer:[140,2.5], pusteblume:[60,4], sternschnuppen:[40,3], schwarm:[60,4] };
+/* Welche Art einen ZEITPUNKT aus dem Antrieb liest. Alle anderen fliegen gleichmaessig; ihr
+   Pult steht grau mit Grund (Regel 11 - eine Beschriftung ist ein Versprechen). */
+/* Der Glitzer kommt am 16.09.2026 dazu: seine Blitze sind Salven aus Licht statt aus Papier,
+   und sie lesen dieselbe Periode aus demselben Pult (antriebPeriode). */
+const ART_ANTRIEB={ konfettiKanone:1, glitzer:1 };
+/* UND SIE BRINGEN IHN AUCH MIT (gemessen 16.09.2026). Beide Arten LESEN den Antrieb, aber keine
+   brachte ihn mit: ab Werk stand er auf "stetig", also schoss die Kanone alle 1,6 s und der
+   Glitzer blitzte alle 1,6 s - beides neben dem Takt, auf dem sie laut ihrer eigenen Beschreibung
+   sitzen sollen. Bei den Vorgaben war der Glitzer in fuenf von acht Augenblicken ueber den Clip
+   exakt leer; mit dem Schlagraster blitzt er regelmaessig. Eine Art, die beim ersten Hinhaengen
+   nicht das tut, was ihr Name verspricht, laesst den Nutzer raten, ob sie kaputt ist.
+   Ohne Schlagraster bleibt "stetig" stehen - die 1,6 s sind dann richtig, und genau das sagt die
+   Zeile unter der Quelle auch. */
+const ART_LMQUELLE={ konfettiKanone:'takt', glitzer:'takt' };
+/* WAS DIESE ART AUSMACHT - EINE ZEILE, UND ZWAR IHRE (gegengelesen 16.09.2026). Die Beschreibung
+   der Karte war auf 1344 Zeichen gewachsen und erklaerte alle achtzehn Arten in einem Absatz, auch
+   die siebzehn, die gerade nicht gewaehlt sind: 183 Bildpunkte hoch, ueber ein Fuenftel der offenen
+   Karte, und ganz oben. Ein Handbuch an der Stelle, an der ein Satz stehen soll. Die Saetze sind
+   dieselben geblieben, sie stehen nur dort, wo sie gelten - der Mechanismus dafuer (p.notiz) war
+   schon da und trug bisher nur Menge und Farbquelle. Arten, bei denen der Name alles sagt (Schnee,
+   Regen, Staub, Blätter, Funken, Glühwürmchen), bekommen keine Zeile: Schweigen ist
+   hier keine Luecke, sondern die richtige Auskunft. */
+const ART_BESCH={
+  blasen:'Auch als: Detritus, Plankton, Sporen, Schwebstaub im Licht.',
+  schwaden:'Rauch: wenige, große, Verrechnung „Über“ — und sie leuchten nicht selbst, sondern nehmen das Licht auf, das in der Kette hängt. Ein Feuer darunter beleuchtet damit seinen eigenen Rauch.',
+  asche:'Asche sieht mit Verrechnung „Über“ am besten aus.',
+  schmetterling:'Vier gebogene Flügel statt zweier Ellipsen; der Schlag ist eine Stauchung, keine Drehung.',
+  konfetti:'Plättchen aus Papier: sie taumeln im Fallen und drehen sich dabei. Der feste bunte Satz bringt sechs Farben mit — die Farbquelle stellt auch auf einfarbig oder zweifarbig um.',
+  konfettiKanone:'Schießt stoßweise aus EINEM Punkt; ihre Salven liegen auf dem Antrieb rechts.',
+  daunen:'Fast schwerelos: sie fällt langsamer als jede andere Art und segelt dabei weit zur Seite.',
+  bokeh:'Unscharfe Lichtkreise — je größer, desto blasser, weil sich dasselbe Licht auf mehr Fläche verteilt.',
+  glitzer:'Kurze Blitze statt fliegender Körper; sie liegen auf demselben Antrieb wie die Salven der Kanone.',
+  pusteblume:'Samen, die segeln statt zu fallen — der Schirm ist das, was sie trägt.',
+  sternschnuppen:'Ein Ereignis und kein Nieselregen: je Cliplänge fliegt eine, ab Menge 200 zwei.',
+  schwarm:'Die einzige Art, die kein Wetter zeigt, sondern Leben: jeder Vogel weicht seinen Nachbarn aus und richtet sich nach ihnen, während die Schar einer wandernden Mitte folgt.' };
+/* WOHER DIE FARBEN KOMMEN (Caspar_D, 16.09.2026: "bei partikeln haette ich gerne noch Konfetti und
+   auch mit mehr als 2 Farben" - "ich finde aber auch den 2Farbakzent gut" - "auch ist einfarbiges
+   Konfetti - gut (da kann man aber auch das Farbpaar gleich einstellen), man koennte auch Schnee
+   nehmen - bspw schwarz ... geil"). Bis heute trug jede Karte genau zwei Farbfelder, und die Art
+   brachte ihre Werte mit. Das reicht fuer Schnee und Rauch und fuer nichts, was bunt sein soll.
+   Jetzt sagt EINE Wahl, woher die Farben kommen; die zwei Felder bleiben und bestimmen nur noch
+   dort, wo sie etwas bestimmen. Schwarzer Schnee faellt dabei kostenlos ab: einfarbig, #000000.
+   Der feste Satz ist mit Absicht bildunabhaengig - ein Fest hat seine eigenen Farben, und ein
+   Titelbild in zwei Rottoenen soll daraus kein rotes Konfetti machen. */
+const FEST_SATZ=['#ff3b5c','#ffd23a','#3ad1ff','#5fe08a','#c27aff','#ff8a3c'];
+const FARB_GRUND={ paar:'Die beiden Akzentfarben des Titelbildes malen. Für eigene Farben die Farbquelle auf „Eigenes Paar“ stellen.',
+  bunt:'Die gemessenen Haupttöne des Titelbildes und seine beiden Akzente malen.',
+  fest:'Der feste bunte Satz bringt seine sechs Farben selbst mit — mit Absicht unabhängig vom Titelbild.', ein:null, eigen:null };
+/* Welche Farbquelle eine Art mitbringt: Konfetti will bunt sein, alles andere bleibt beim Paar. */
+/* Die Schar bringt ihre eigenen dunklen Toene mit und darum auch "Eigenes Paar": ein Vogel ist
+   eine Silhouette gegen den Himmel, keine Leuchte. Wer bunte Voegel will, stellt die Farbquelle
+   in einem Griff auf das Titelbild-Paar um - die Felder stehen ja da. */
+const ART_FARBSATZ={ konfetti:'fest', konfettiKanone:'fest', schwarm:'eigen' };
+/* Und welche Verrechnung. "Screen" ist fuer Schnee, Funken und Staub richtig: leuchtende Teilchen
+   hellen auf. Ein Konfettiplaettchen und eine Daunenfeder leuchten NICHT, sie liegen vor dem Bild
+   und decken es - mit Screen wird buntes Konfetti ueber einer hellen Stelle blass und verschwindet
+   (nachgesehen 16.09.2026 am Titelbild von "Stumm"). Dieselbe Sache, die in der Beschreibung schon
+   fuer Asche steht, nur diesmal von der Art mitgebracht statt von Hand nachgestellt. */
+const ART_VERR={ konfetti:'ueber', konfettiKanone:'ueber', daunen:'ueber', pusteblume:'ueber', schwarm:'ueber' };
+/* Was die Kanone an Flug mitbringt: Druck, Auffaechern, Laenge, Ort Y. Ohne das schoesse sie mit
+   Druck 0, also gar nicht - und der Regler haette nichts gehalten, was sein Name verspricht. */
+const ART_FLUG={ konfettiKanone:[.55,.3,1.2,.92] };
+const hexZuTon=h=>{ const p=[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)); return p.some(isNaN)?null:p; };
+/* WAS "TITELBILD BUNT" AN DIESEM TITEL WIRKLICH HERGIBT (Regel 11: eine Beschriftung ist ein
+   Versprechen). Die gemessenen Haupttoene sind je Titel zwei oder drei - bei 20 von 325 Titeln im
+   Bestand aber KEINER, bei 27 nur einer (gezaehlt 16.09.2026 im Katalog). Ohne Toene faellt die
+   Wahl auf die beiden Akzente zurueck und malt dasselbe Bild wie "Titelbild-Paar"; das darf der
+   Regler nicht verschweigen, sonst sucht man den Fehler im Effekt. Also steht die Zahl daneben -
+   nicht als Warnung, sondern als Auskunft. */
+/* SCHWARZER SCHNEE MALT MIT SCREEN NICHTS (gemessen 16.09.2026: Streifen Schnee, einfarbig
+   #000000, Vorgabeverrechnung gegen den Kontrollfall ohne jeden Effekt - RMSE 0, Pruefsummen
+   gleich). Das ist keine Schwaeche der Rechnung, das IST Screen: aufhellen kann nichts, was
+   nichts hergibt, und dieselbe Farbe mit "Ueber" gibt RMSE 1942. Caspars eigenes Beispiel
+   ("man koennte auch Schnee nehmen - bspw schwarz ... geil") lief damit ins Leere, und die
+   Oberflaeche sagte kein Wort dazu.
+   NICHT DIE VERRECHNUNG NACHZIEHEN (abgewogen, nicht vergessen): sie steht im gemeinsamen Pult
+   und gehoert dem Nutzer - sie hinter seinem Ruecken umzustellen, weil er eine dunkle Farbe
+   gewaehlt hat, waere dieselbe Bevormundung, die "Understatement statt Konfiguration" gerade
+   nicht meint. Die Art bringt ihre Verrechnung beim ARTWECHSEL mit (ART_VERR), das ist der
+   angesagte Zeitpunkt; eine Farbe ist keiner. Also sagt die Karte, was Sache ist, und der
+   Nutzer stellt einen Regler um, den er ohnehin vor sich hat (Regel 11).
+   Gewarnt wird nur, wo der Nutzer die Farbe SELBST gewaehlt hat (einfarbig, eigenes Paar) - bei
+   den drei Quellen aus dem Titelbild stellt er sie nicht, und die Zeile waere Rauschen. */
+const AUFHELLER=new Set(VERR.filter(v=>v[3]==='Aufhellen').map(v=>v[0]));
+const tonHell=h=>{ const c=hexZuTon(h); return c?(0.2126*c[0]+0.7152*c[1]+0.0722*c[2])/255:1; };
+function dunkelNotiz(e){ if(e.typ!=='partikel') return null;
+  const q=e.farbSatz||'paar'; if(q!=='ein'&&q!=='eigen') return null;
+  if(!AUFHELLER.has(e.verr)) return null;
+  const hell=(q==='ein')?tonHell(e.farbe):Math.max(tonHell(e.farbe),tonHell(e.farbe2));
+  if(hell>0.22) return null;
+  const nam=(VERR.find(v=>v[0]===e.verr)||['','diese Verrechnung'])[1];
+  return '„'+nam+'“ kann nur aufhellen — eine so dunkle Farbe bleibt damit unsichtbar. Für dunkle Teilchen die Verrechnung rechts auf „Über (ersetzen)“ stellen.'; }
+function farbSatzNotiz(e){
+  /* DIE SCHAR IST EINE SILHOUETTE (gemessen 16.09.2026: bei Vorgaben und dunklem Titelbild
+     sinken die sichtbaren Bildpunkte ueber den Clip von 1,1 auf 0,1 Promille - Faktor 11, mit
+     blossem Auge nicht mehr zu finden; auf einem hellen Titel stehen sie stabil bei 11,7).
+     Der dunkle Ton ist die richtige ENTSCHEIDUNG - ein Vogel ist eine Silhouette gegen den
+     Himmel -, nur darf die Karte nicht schweigen, wenn der Himmel gerade schwarz ist. Die
+     beiden Farbfelder stehen bei dieser Art ohnehin offen (Farbquelle "Eigenes Paar"), es ist
+     also ein Griff. Automatisch umzuschalten waere schoener, braucht aber ein Mass fuer die
+     Helligkeit des Titelbildes: farben.grund und farben.flaeche sind es NICHT (sie sind die
+     dunkle Grundierung der Oberflaeche und bei jedem Titel im Bestand fast schwarz) - das
+     waeren farben.toene[].hell mal anteil oder farben.umfang, und bei 20 von 325 Titeln ist
+     toene leer. Diese Wahl gehoert Caspar_D, nicht dem Gegenlesen. */
+  if(e.typ==='partikel'&&e.art==='schwarm'&&(e.farbSatz||'paar')==='eigen'&&tonHell(e.farbe)<0.3&&tonHell(e.farbe2)<0.3)
+    return 'Die Schar malt eine dunkle Silhouette — vor einem dunklen Titelbild verschwindet sie. Dann die beiden Farben hell stellen (oder die Farbquelle auf „Titelbild-Paar“).';
+  if((e.farbSatz||'paar')!=='bunt') return null;
+  const t=(DATA&&DATA.farben&&Array.isArray(DATA.farben.toene))?DATA.farben.toene.slice(0,3).filter(x=>x&&x.hex).length:0;
+  return t ? ('Dieser Titel gibt '+(t+2)+' Farben her: '+t+' gemessene Hauptt\u00f6ne und seine beiden Akzente.')
+           : 'Dieser Titel hat keine gemessenen Hauptt\u00f6ne \u2014 es malen nur seine beiden Akzente, also dasselbe Bild wie \u201eTitelbild-Paar\u201c.'; }
+/* WIE VIELE SCHNUPPEN JE CLIPLAENGE (Caspar_D, 16.09.2026, Auftragsliste 8: "rare, fast, with a
+   trail - an event, not a drizzle"). Zweihundert Sternschnuppen sind Nieselregen, und damit waere
+   genau das weg, was die Art ausmacht. Der Mengenregler darf hier deshalb nicht die Zahl der
+   Koerper sein - er waehlt eine oder zwei, und die Zeile darunter sagt das (Regel 11). */
+function sternZahl(n){ return (Number(n)||0)>=200 ? 2 : 1; }
+/* WAS "MENGE" AN DIESER ART BEDEUTET. Bei Schnee ist es die Zahl der Flocken im Bild; bei drei
+   Arten ist es das nicht, und dann steht es da. */
+function mengeNotiz(e){ if(e.typ!=='partikel') return null;
+  if(e.art==='sternschnuppen') return 'Sternschnuppen sind ein Ereignis, kein Nieselregen: je Clipl\u00e4nge '+(sternZahl(e.anzahl)===1?'fliegt EINE':'fliegen ZWEI')+'. Ab Menge 200 kommt die zweite dazu, mehr wird es nicht \u2014 mehr w\u00e4re Regen.';
+  if(e.art==='glitzer') return 'Die Menge ist die Zahl der Stellen, an denen es blitzen kann. Wie oft sie blitzen, sagt der Antrieb rechts \u2014 ohne ihn alle 1,6 s.';
+  if(e.art==='schwarm') return 'Die Menge ist die St\u00e4rke der Schar. Jeder Vogel weicht seinen Nachbarn aus, die Schar wird also gr\u00f6\u00dfer statt gedr\u00e4ngter \u2014 bis sie das Bild f\u00fcllt, dann wird sie dichter.';
+  return null; }
+/* Die Farben dieser Karte als Liste von Tonwerten. ZWEI Eintraege sind eine SPANNE - die
+   Farbheterogenitaet blendet zwischen ihnen, genau wie seit jeher, Zahl fuer Zahl. MEHR (oder
+   genau einer) sind ein SATZ - jedes Teilchen zieht daraus eine Farbe, und die Heterogenitaet
+   streut nur noch ihre Helligkeit. Ein altes Rezept liegt immer auf der Spanne und malt darum
+   bitgleich weiter. */
+function partikelSatz(e){ const q=e.farbSatz||'paar', pal=PALETTEN['Cover-Akzente']||['#9a9aa0','#c9c9cd'];
+  const akz=()=>[hexZuTon(pal[0])||[154,154,160], hexZuTon(pal[1])||hexZuTon(pal[0])||[201,201,205]];
+  if(q==='eigen'){ const a=hexZuTon(e.farbe)||[255,255,255]; return [a, hexZuTon(e.farbe2)||a]; }
+  if(q==='ein') return [hexZuTon(e.farbe)||[255,255,255]];
+  if(q==='fest') return FEST_SATZ.map(hexZuTon);
+  if(q==='bunt'){ const t=(DATA&&DATA.farben&&Array.isArray(DATA.farben.toene))?DATA.farben.toene:[];
+    const s=t.slice(0,3).map(x=>hexZuTon(x&&x.hex)).filter(Boolean).concat(akz());
+    return s.length>2?s:akz(); }
+  return akz(); }
+/* Einen Ton heller (x>0, zum Weiss) oder dunkler (x<0) ziehen. Dieselbe Kurve in beide
+   Richtungen, damit die Heterogenitaet auf beiden Seiten gleich viel tut. */
+const tonZiehen=(c,x)=>x>=0?[c[0]+(255-c[0])*x, c[1]+(255-c[1])*x, c[2]+(255-c[2])*x]:[c[0]*(1+x), c[1]*(1+x), c[2]*(1+x)];
 /* WIEVIEL EIGENBEWEGUNG DIE ART MITBRINGT (Caspar_D, 14.09.2026: "Gluehwuermchen und
    Schmetterlinge - unberechenbare Eigenbewegung"). Schnee hat keine: er faellt, wohin der Wind
    ihn traegt. Ein Tier entscheidet selbst. */
@@ -27499,6 +27669,14 @@ function artFarben(e){ const vor=e._artVor||'schnee', alt=ART_FARBEN[vor]||ART_F
   if(e.wandern===(ART_WANDERN[vor]||0)) e.wandern=ART_WANDERN[e.art]||0;
   const mv=ART_MASS[vor]||[120,3], mn=ART_MASS[e.art]||[120,3];
   if(e.anzahl===mv[0]&&e.groesse===mv[1]){ e.anzahl=mn[0]; e.groesse=mn[1]; }
+  /* Die Farbquelle zieht wie die Farben mit - aber nur, solange sie noch die der vorigen Art ist.
+     Wer sie von Hand gestellt hat (und jedes geladene Rezept, das auf "Eigenes Paar" uebersetzt
+     wurde), behaelt sie beim Artwechsel. */
+  if((e.farbSatz||'paar')===(ART_FARBSATZ[vor]||'paar')) e.farbSatz=ART_FARBSATZ[e.art]||'paar';
+  if(e.verr===(ART_VERR[vor]||EFFEKTE.partikel.verr)) e.verr=ART_VERR[e.art]||EFFEKTE.partikel.verr;
+  if(taktDa()&&(e.lmQuelle||'stetig')===(ART_LMQUELLE[vor]||'stetig')) e.lmQuelle=ART_LMQUELLE[e.art]||'stetig';
+  const gv=ART_FLUG[vor]||[0,0,1,.5], gn=ART_FLUG[e.art]||[0,0,1,.5];
+  if(e.druck===gv[0]&&e.streuung===gv[1]&&e.laenge===gv[2]&&e.qY===gv[3]){ e.druck=gn[0]; e.streuung=gn[1]; e.laenge=gn[2]; e.qY=gn[3]; }
   e._artVor=e.art; }
 function E(typ,over){ return effektAusRezept(Object.assign({typ}, over||{}),false,99); }   /* ueber den Rezept-Import: alte Schluessel der Vorlagen werden uebersetzt (Tiefen-Check) */
 /* Das Beispiel fuer den Einstieg: ein Effekt, bei dem sofort klar ist, was passiert. */
@@ -27945,10 +28123,32 @@ function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t);
    mit genau derselben Funktion wie das grosse Bild - eine Skizze, die aus eigenem Code entsteht,
    kann nicht luegen (Konzepte als Skizze). */
 function quellVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.height;
+  /* Die Kanone schiesst auch bei Quelle "das ganze Bild" aus einem Punkt - die Vorschau zeigt
+     deshalb Punkt und Bahnen und nicht "ueberall, im Umlauf". Das waere schlicht gelogen. */
+  if(e.typ==='partikel'&&e.art==='konfettiKanone'&&(e.qForm||'bild')==='bild') e=Object.assign({},e,{qForm:'punkt'});
   x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none';
   x.clearRect(0,0,W,H); x.fillStyle='#0a0a0c'; x.fillRect(0,0,W,H);
   const hs=k=>{ const v=Math.sin(k*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); };
   x.font='10px -apple-system,BlinkMacSystemFont,sans-serif';
+  /* Arten mit eigener Uhr zeichnen ihre EIGENE Bahn. Die Skizze mit flugbahn zu malen waere hier
+     schlicht gelogen - und eine Skizze, die aus fremdem Code entsteht, kann genau das (Konzepte
+     als Skizze: sie muss aus derselben Rechnung kommen wie das grosse Bild). */
+  if(e.typ==='partikel'&&EIGENUHR.has(e.art)){
+    const au2=(typeof e.auftrieb==='number'?e.auftrieb:-1), aB2=Math.abs(au2), aS2=-Math.sign(au2), w2=(e.wind||0);
+    if(e.art==='sternschnuppen'){ const E=sternZahl(e.anzahl);
+      x.strokeStyle='rgba(255,255,255,.6)'; x.lineWidth=1.2; x.beginPath();
+      for(let i=0;i<E;i++){ let vor=false;
+        for(let k=0;k<=200;k++){ const F=sternBahn(e,i,k/200*8,W,H,hs,aB2,aS2,w2,E);
+          if(F[2]<=0.002){ vor=false; continue; }
+          if(vor) x.lineTo(F[0],F[1]); else { x.moveTo(F[0],F[1]); vor=true; } } }
+      x.stroke(); x.fillStyle='#8a8c92'; x.fillText(E===1?'eine Schnuppe je Clipl\u00e4nge':'zwei Schnuppen je Clipl\u00e4nge',8,H-8); return; }
+    x.strokeStyle='rgba(224,179,77,.8)'; x.lineWidth=1.2; x.beginPath();
+    for(let k=0;k<=120;k++){ const M=schwarmMitte(e,k/120*14,W,H,w2,au2); k?x.lineTo(M[0],M[1]):x.moveTo(M[0],M[1]); }
+    x.stroke();
+    const S=schwarmLagen(Object.assign({},e,{anzahl:Math.min(40,Math.round(e.anzahl||60))}),3.1,W,H,hs,au2,w2);
+    x.fillStyle='rgba(255,255,255,.85)';
+    for(let i=0;i<S.n;i++){ x.beginPath(); x.arc(S.X[i],S.Y[i],1.3,0,7); x.fill(); }
+    x.fillStyle='#8a8c92'; x.fillText('die Bahn der Mitte, die Schar darauf',8,H-8); return; }
   if((e.qForm||'bild')==='bild'){ x.fillStyle='rgba(255,255,255,.3)';
     for(let i=0;i<70;i++) x.fillRect(hs(i)*W, hs(i+1000)*H, 1.6, 1.6);
     x.fillStyle='#8a8c92'; x.fillText('überall, im Umlauf', 8, H-8); return; }
@@ -27997,7 +28197,7 @@ function raumVorschau(cv,e){ const x=cv.getContext('2d'), W=cv.width, H=cv.heigh
 
    Alles rein aus t und hs(i) gerechnet: kein Zustand zwischen zwei Bildern, kein Geburtenzaehler.
    Sonst waere das Springen in der Zeitleiste und das Neuzeichnen beim Export kaputt. */
-const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25, schwaden:0.05, gluehwuermchen:0.012, schmetterling:0.03 };
+const BASIS_ART={ schnee:0.06, regen:0.6, asche:0.03, blasen:0.08, staub:0.0048, blaetter:0.09, funken:0.25, schwaden:0.05, gluehwuermchen:0.012, schmetterling:0.03, konfetti:0.07, konfettiKanone:0.07, daunen:0.028, bokeh:0.018, glitzer:0.012, pusteblume:0.02, sternschnuppen:0.25, schwarm:0.03 };
 /* LEBENSDAUER STATT UMBRUCH (Caspar_D, 14.09.2026: "dann muessen die schwaden eben auch so generiert werden,
    dass sie zum Ausgangszustand zurueckkehren, wind kann ein muster so treiben, das es zur taktzeit wieder
    genauso anfaengt"). Ein frei fallendes Teilchen loopt beim Umbruch nur, wenn es in L Sekunden eine GANZE
@@ -28026,9 +28226,9 @@ function lpVerfaelscht(v,weite){ const u=lpVUmlauf(v,weite); return u.m!==null &
 function lebensGeister(P,h,t,lang){ const F=lang?P*0.45:Math.min(1.2,P*0.2), s=t/P+h, a=(s-Math.floor(s))*P, u=Math.min(1,a/F), g=u*u*(3-2*u); return a<F?[[a,g],[a+P,1-g]]:[[a,1]]; }
 /* Seitliche Drift und Taumeln je Art, wie sie im Umbruch-Weg des Malers stehen: [Wind, Taumeln x: Weite, Rate,
    Phase je Teilchen, Taumeln y: Weite, Rate, Phase]. Das Fallen selbst steht in BASIS_ART. */
-const BAHN_ART={ schnee:[0.05,12,0.7,1,0,0,0], regen:[0.3,0,0,0,0,0,0], asche:[0.04,20,0.4,1.3,0,0,0], blasen:[0.04,10,1.6,1.1,0,0,0], staub:[0.02,14,0.25,0.7,8,0.3,1], gluehwuermchen:[0.02,0,0,0,0,0,0], schmetterling:[0.03,0,0,0,9,1.1,2.1], blaetter:[0.08,28,1.2,1,0,0,0], schwaden:[0.05,26,0.3,1.3,0,0,0], funken:[0.1,6,3,2.1,0,0,0] };
+const BAHN_ART={ schnee:[0.05,12,0.7,1,0,0,0], regen:[0.3,0,0,0,0,0,0], asche:[0.04,20,0.4,1.3,0,0,0], blasen:[0.04,10,1.6,1.1,0,0,0], staub:[0.02,14,0.25,0.7,8,0.3,1], gluehwuermchen:[0.02,0,0,0,0,0,0], schmetterling:[0.03,0,0,0,9,1.1,2.1], blaetter:[0.08,28,1.2,1,0,0,0], schwaden:[0.05,26,0.3,1.3,0,0,0], funken:[0.1,6,3,2.1,0,0,0], konfetti:[0.07,30,0.6,1,6,0.9,2], konfettiKanone:[0.07,30,0.6,1,6,0.9,2], daunen:[0.09,40,0.3,1,7,0.45,2.3], bokeh:[0.05,16,0.18,1,9,0.13,1.7], glitzer:[0.02,0,0,0,0,0,0], pusteblume:[0.11,46,0.22,1,5,0.35,2.1], sternschnuppen:[0,0,0,0,0,0,0], schwarm:[0,0,0,0,0,0,0] };
 /* Das Gewicht, das jede Art bis heute fest verdrahtet hatte: -1 faellt, +1 steigt. */
-const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1, gluehwuermchen:.35, schmetterling:.15 };
+const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1, gluehwuermchen:.35, schmetterling:.15, konfetti:-1, konfettiKanone:-1, daunen:-1, bokeh:.6, glitzer:.35, pusteblume:-1, sternschnuppen:-1, schwarm:.2 };
 const Q_REGLER=new Set(['qForm','qUrsprung','qWinkel','qX','qY','qAus','qAusY','qDreh','auftrieb','druck','winkel','streuung','laenge','ausblenden','wind','tempo','art']);
 const Q_FORM=[['bild','das ganze Bild'],['punkt','Punkt'],['linie','Linie'],['kreis','Kreis'],['ellipse','Ellipse']];
 function quellPunkt(e,i,hs,Wn,Hn){
@@ -28063,6 +28263,136 @@ function flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,basis){
   return [ P[0]+Math.cos(ang)*druck*s+vW*alter+gx,
            P[1]+Math.sin(ang)*druck*s+vT*alter,
            Math.max(0,Math.min(1, q/0.06, (1-q)/f)), q ]; }
+/* DIE SALVE (Caspar_D, 16.09.2026: "mach beides, fallen und kanone"). Eine Kanone schiesst nicht
+   gleichmaessig, sie schiesst STOSSWEISE - und der Stoss soll auf dem Schlag sitzen statt
+   irgendwo. Die Zeit zwischen zwei Salven kommt darum aus dem Antrieb, den die Karte ohnehin
+   traegt: die feste Frequenz gibt sie unmittelbar, ein Teiler auf dem Schlagraster gibt sie aus
+   dem Tempo des Titels, "auf der Eins" rechnet mit vier Schlaegen. Steht der Antrieb auf stetig -
+   oder hat der Titel kein Raster -, bleiben 1,6 s: langsam genug, dass man die einzelne Salve
+   sieht, und ohne jede Bedingung. Kein eigener Regler; die Zahl steht schon im Pult.
+   lpP rastet die Periode auf eine GANZE Zahl Salven je Clip. Damit ist der Umlauf der Geburten
+   genau die Clipdauer, und die Naht schliesst sich von selbst - dieselbe Rechnung, mit der die
+   Lebensdauer der frei fallenden Teilchen einrastet. */
+function antriebPeriode(e){ const q=e.lmQuelle||'stetig';
+  if(q==='hz') return lpP(1/Math.max(0.1,(e.lmHz==null?4:e.lmHz)));
+  const bh=schlagHz();
+  if(q!=='stetig'&&bh>0) return lpP(((q==='eins')?4:Math.max(0.125,Number(e.lmTeiler)||1))/bh);
+  return lpP(1.6); }
+/* Die Bahn eines Plaettchens aus der Kanone. Geburt auf der Muendung (quellPunkt - bei Quelle
+   "das ganze Bild" ist das genau der Ort X/Y, also schiesst sie auch ohne gewaehlte Quelle aus
+   einem Punkt), hinausgeschossen mit Druck in Richtung und Faecher, der Druck laeuft aus wie
+   Luftwiderstand, danach traegt nur noch der Auftrieb: genau die Kurve von flugbahn, nur mit
+   einer anderen UHR. Statt gleichverteilter Startphasen sitzt jede Geburt auf einer Salve -
+   Teilchen i auf Salve floor(hs*K), K die Zahl der Salven je Umlauf. Im Export ist der Umlauf die
+   Clipdauer (K = L/P, ganz, weil lpP die Periode gerastet hat), in der Vorschau ein Ersatzumlauf
+   von rund acht Sekunden. Zwischen dem Ende eines Fluges und der naechsten Salve ist das Teilchen
+   WEG - genau das unterscheidet eine Kanone von einem Springbrunnen.
+   Alles rein aus t und hs(i): kein Zustand zwischen zwei Bildern, wie bei jeder anderen Art. */
+function kanoneBahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,basis){
+  const P=quellPunkt(e,i,hs,Wn,Hn), sal=antriebPeriode(e);
+  const K=Math.max(1,Math.round((LOOP>0?LOOP:Math.max(sal,8))/sal)), umlauf=K*sal;
+  const geburt=Math.floor(hs(i+9500)*K)*sal, alter=((t-geburt)%umlauf+umlauf)%umlauf;
+  const vT=aS*aB*sp*e.tempo*Hn*basis, vW=w*Hn*0.05, druck=(e.druck==null?0:e.druck)*Hn*1.4;
+  const ang=(((e.winkel==null?270:e.winkel)+(hs(i+9400)-0.5)*360*(e.streuung==null?0:e.streuung))*Math.PI)/180;
+  const weg=Math.max(0.02,(e.laenge==null?1:e.laenge))*Hn, tempoWeg=Math.max(1e-3, Math.abs(vT)+Math.abs(vW)+druck*0.35);
+  const tau=Math.min(umlauf, Math.max(sal*0.5, weg/tempoWeg)), td=tau*0.35, s=td*(1-Math.exp(-alter/td));
+  const q=Math.min(1,alter/tau), f=Math.max(0.05,(e.ausblenden==null?0.35:e.ausblenden));
+  return [ P[0]+Math.cos(ang)*druck*s+vW*alter+gx,
+           P[1]+Math.sin(ang)*druck*s+vT*alter,
+           alter>tau?0:Math.max(0,Math.min(1, q/0.06, (1-q)/f)), q ]; }
+/* ---- ARTEN MIT EIGENER UHR (Caspar_D, 16.09.2026, Auftragsliste 8 und 9). Eine Sternschnuppe
+   und eine Schar Voegel haben keinen Umlauf, den man mit Modulo durchs Bild schieben koennte: die
+   eine ist ein EREIGNIS mit Anfang und Ende, die andere folgt einer MITTE. Beide rechnen darum
+   ihren Ort selbst, wie die Kanone - und beide bleiben dabei reine Funktionen von t und hs(i):
+   kein Zustand zwischen zwei Bildern, sonst zeigten Springen in der Zeitleiste und Export nicht
+   dasselbe Bild. Wer hier steht, geht weder ueber flugbahn noch ueber den Umbruch-Weg samt
+   Lebensdauer; sein Zweig im Maler rechnet alles selbst. */
+const EIGENUHR=new Set(['sternschnuppen','schwarm']);
+/* DIE SCHNUPPE (Caspar_D: "rare, fast, with a trail - an event, not a drizzle"). Die Uhr ist
+   dieselbe Rechnung wie bei der Kanone: die Periode wird mit lpP auf eine ganze Zahl je Clip
+   gerastet, der Umlauf ist damit genau die Cliplaenge, und die Naht schliesst sich von selbst.
+   Zwischen zwei Fluegen ist der Himmel LEER - genau das macht aus dem Teilchen ein Ereignis.
+   Die Bahn ist gerade und schnell. Was die Regler daran tun, steht auch in der Karte: Tempo macht
+   sie schnell (die Flugdauer ist 0,5 bis 0,85 s geteilt durch Tempo), der Auftrieb neigt sie
+   (-1 faellt steil, 0 waagerecht, +1 steigt), Wind legt sie schraeg, Ausblenden sagt, wie lang der
+   Schweif nachglueht. Ohne gewaehlte Quelle setzt sie so weit vor dem Bild an, dass sie durchs Bild
+   zieht; mit Quelle ist der Quellfleck ihr Radiant. */
+function sternBahn(e,i,t,Wn,Hn,hs,aB,aS,w,E){
+  const K=Math.max(1,E), per=lpP((LOOP>0?LOOP:8)/K), umlauf=per*K;
+  const geburt=(i%K)*per+hs(i+9500)*per*0.25;
+  const alter=((t-geburt)%umlauf+umlauf)%umlauf;
+  const D=Math.hypot(Wn,Hn), tau=Math.max(0.1,(0.5+0.35*hs(i+9800))/Math.max(0.2,e.tempo));
+  const sr=hs(i+9400)<0.5?-1:1;
+  const dx=sr*(0.55+0.45*hs(i+9300))+(w||0)*0.5, dy=aS*aB*(0.5+0.5*hs(i+9200));
+  const nn=Math.max(1e-3,Math.hypot(dx,dy)), ux=dx/nn, uy=dy/nn;
+  const P=(e.qForm||'bild')==='bild'
+    ? [Wn*(0.5-ux*0.62)+(hs(i+9100)-0.5)*Wn*0.3, Hn*(0.5-uy*0.62)+(hs(i+9000)-0.5)*Hn*0.2]
+    : quellPunkt(e,i,hs,Wn,Hn);
+  const q=Math.min(1,alter/tau), f=Math.max(0.05,(e.ausblenden==null?0.35:e.ausblenden));
+  const al=alter>tau?0:Math.max(0,Math.min(1, q/0.05, (1-q)/f));
+  return [P[0]+ux*q*D*1.25, P[1]+uy*q*D*1.25, al, Math.atan2(uy,ux), q]; }
+/* DIE MITTE DER SCHAR. Alle Raten durch lpW auf ganze Umlaeufe je Clip gerastet, also ist die
+   Bahn per Konstruktion periodisch. Der Wind VERSCHIEBT die Bahn, statt zu schieben: eine Schar
+   haelt gegen den Wind, sie wird nicht aus dem Bild geweht - und eine stetige Verschiebung wuerde
+   ohnehin nie zum Anfang zurueckkommen. Der Auftrieb sagt, wie hoch die Schar haengt. */
+function schwarmMitte(e,t,Wn,Hn,w,au){ const sp=Math.max(0.1,e.tempo||1);
+  const mx=0.5+(w||0)*0.18+0.30*Math.sin(lpW(0.11*sp)*t)+0.11*Math.sin(lpW(0.29*sp)*t+1.7);
+  const my=(0.5-au*0.32)+0.17*Math.cos(lpW(0.17*sp)*t+0.9)+0.06*Math.cos(lpW(0.43*sp)*t+2.3);
+  return [mx*Wn, my*Hn]; }
+/* DER SCHWARM (Caspar_D, Auftragsliste 9: die einzige Art, die Leben zeigt statt Wetter).
+   Echte Schwarmregeln schreiben normalerweise einen Zustand Bild fuer Bild fort - und genau das
+   darf hier keine Art: der Export muss beim Springen in der Zeitleiste dasselbe Bild zeigen, und
+   Bild(t0+L) muss Bild(t0) sein. Darum steht der Schwarm anders herum:
+
+   ZUSAMMENHALT ist gebaut, nicht gerechnet. Jeder Vogel haengt mit zwei periodischen Schleifen an
+   der gemeinsamen Mitte; dass die Schar zusammenbleibt, folgt daraus und ist exakt loopfest.
+   AUSWEICHEN und AUSRICHTEN sind dagegen ECHT und nachbarschaftlich: sie werden in jedem Bild aus
+   den Lagen und Richtungen ALLER Voegel gerechnet, zwei Durchgaenge, alle Verschiebungen erst
+   gesammelt und dann gemeinsam angewandt - also reihenfolgeunabhaengig. Weil die Lagen reine
+   Funktionen von t sind, ist auch das Ergebnis eine reine Funktion von t und damit periodisch.
+
+   Das ist der ehrliche Tausch, und er steht hier, damit ihn niemand nachtraeglich fuer ein
+   Versehen haelt: von den drei Regeln ist die Kohaesion die einzige, die ohne Zustand ueberhaupt
+   nicht zu haben waere (sie wirkt ueber die Zeit, nicht ueber das Bild) - die Mitte nimmt ihre
+   Rolle ein. Dafuer ist die Naht exakt null statt "klein".
+
+   Der Ausweichabstand misst sich an der Vogelgroesse mal EINHEIT, die Streuweite an der kurzen
+   Bildseite: dieselbe Schar, nur gezoomt, in Kachel, Buehne und Export. */
+function schwarmLagen(e,t,Wn,Hn,hs,au,w){
+  const n=Math.max(1,Math.round(e.anzahl||60)), R=Math.min(Wn,Hn), sp=Math.max(0.1,e.tempo||1);
+  const fest=(e.qForm||'bild')!=='bild';
+  const M=fest?quellPunkt(e,0,()=>0.5,Wn,Hn):schwarmMitte(e,t,Wn,Hn,w,au);
+  const M2=fest?M:schwarmMitte(e,t+1/60,Wn,Hn,w,au);
+  const cvx=(M2[0]-M[0])*60, cvy=(M2[1]-M[1])*60;
+  /* DIE SCHAR BRAUCHT SO VIEL PLATZ, WIE SIE VOEGEL HAT (nachgesehen 16.09.2026: bei fester Weite
+     lagen vierzig grosse Voegel dichter, als der Ausweichabstand zulaesst - dann schiebt das
+     Ausweichen sie in eine gleichmaessige Packung, und aus der Schar wird ein Gitter. Ein Gitter
+     ist das genaue Gegenteil dessen, was die Art zeigen soll). Die Flaeche waechst darum mit der
+     Zahl, der Radius also mit ihrer Wurzel, gemessen am Ausweichabstand - dann bleibt die Dichte
+     dieselbe und das Ausweichen bleibt eine gelegentliche Korrektur. Nach oben gedeckelt, sonst
+     waere die Schar irgendwann das ganze Bild und keine Schar mehr; ab da wird sie dichter, und
+     genau das sagt die Zeile am Mengenregler auch. */
+  const d1=Math.max(2*EINHEIT,(e.groesse||4)*EINHEIT*3.4);
+  const weite=Math.min(R*0.42, Math.max(R*0.09, d1*1.25*Math.sqrt(n)));
+  const X=new Float64Array(n), Y=new Float64Array(n), VX=new Float64Array(n), VY=new Float64Array(n);
+  for(let i=0;i<n;i++){
+    const r1=lpW(0.21*sp+0.13*hs(i+3100)), r2=lpW(0.39*sp+0.21*hs(i+3200));
+    const p1=hs(i+3300)*6.2831853, p2=hs(i+3400)*6.2831853;
+    const a1=weite*(0.35+0.65*hs(i+3500)), a2=weite*0.4*(0.3+0.7*hs(i+3600));
+    X[i]=M[0]+a1*Math.sin(r1*t+p1)+a2*Math.sin(r2*t+p2);
+    Y[i]=M[1]+a1*0.6*Math.cos(r1*t+p1*1.3)+a2*0.66*Math.cos(r2*t+p2);
+    VX[i]=cvx+a1*r1*Math.cos(r1*t+p1)+a2*r2*Math.cos(r2*t+p2);
+    VY[i]=cvy-a1*0.6*r1*Math.sin(r1*t+p1*1.3)-a2*0.66*r2*Math.sin(r2*t+p2); }
+  const d0=d1, d2=d0*d0, dq=d2*4;
+  const dx=new Float64Array(n), dy=new Float64Array(n), ax=new Float64Array(n), ay=new Float64Array(n), cn=new Int32Array(n);
+  for(let pass=0;pass<2;pass++){ dx.fill(0); dy.fill(0); ax.fill(0); ay.fill(0); cn.fill(0);
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){ const ex=X[i]-X[j], ey=Y[i]-Y[j], q=ex*ex+ey*ey;
+      if(q>=dq) continue;
+      if(q<d2&&q>1e-9){ const d=Math.sqrt(q), f=(d0-d)/d*0.45; dx[i]+=ex*f; dy[i]+=ey*f; dx[j]-=ex*f; dy[j]-=ey*f; }
+      ax[i]+=VX[j]; ay[i]+=VY[j]; cn[i]++; ax[j]+=VX[i]; ay[j]+=VY[i]; cn[j]++; }
+    for(let i=0;i<n;i++){ X[i]+=dx[i]; Y[i]+=dy[i];
+      if(cn[i]){ VX[i]+=(ax[i]/cn[i]-VX[i])*0.35; VY[i]+=(ay[i]/cn[i]-VY[i])*0.35; } } }
+  return { n:n, X:X, Y:Y, VX:VX, VY:VY }; }
 function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1;
   if(e.typ==='risse'){ const R=risseBauen(e,Wn,Hn), a=Math.min(1,e.staerke); let lim=R.maxOrd+1;
     if(e.wachsen==='zeit') lim=(LOOP>0?1:Math.min(1,t/Math.max(1,e.dauer)))*(R.maxOrd+1);   /* im Loop ausgewachsen, sonst gaebe es eine Naht */
@@ -28397,8 +28727,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     amt*=Math.min(1,e.staerke);   /* Staerke IST die Tiefe des Einbruchs (Staerke-Regel) */
     if(amt>0.003){ cx.globalCompositeOperation=VMODE[e.verr]||'multiply'; cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+amt.toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); } }
   else if(e.typ==='partikel'){ const n=e.anzahl, hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke), gr=e.groesse*EINHEIT, w=e.wind, U=EINHEIT;   /* Groesse, Taumelweiten und Strichlaenge in Studio-Bildpunkten; Fall, Wind und Eigenbewegung rechnen ohnehin in Bildhoehen */
-    const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa; const streu=(e.farbstreu==null?0:e.farbstreu);
-    const farbeVon=(i,al)=>{ const x=streu*hs(i+6000); return 'rgba('+Math.round(pa[0]+(pb[0]-pa[0])*x)+','+Math.round(pa[1]+(pb[1]-pa[1])*x)+','+Math.round(pa[2]+(pb[2]-pa[2])*x)+','+al+')'; };
+    /* DIE FARBQUELLE STEHT VOR DEN FARBFELDERN (16.09.2026, partikelSatz). Zwei Toene sind eine
+       Spanne und werden geblendet wie eh und je - ein altes Rezept liegt immer dort und malt
+       darum Zahl fuer Zahl dasselbe Bild. Ein Satz aus mehr (oder genau einem) Ton gibt jedem
+       Teilchen eine eigene Farbe, und die Heterogenitaet streut nur noch ihre Helligkeit.
+       Der dritte Parameter `hell` hebt einen Ton fuer einen Augenblick an: das Konfettiplaettchen
+       hochkant, der Schmetterling im Schlag - das ist es, was beides raeumlich macht. */
+    const satz=partikelSatz(e), spanne=(satz.length===2), streu=(e.farbstreu==null?0:e.farbstreu);
+    const farbeVon=(i,al,hell)=>{ let c;
+      if(spanne){ const x=streu*hs(i+6000); c=[satz[0][0]+(satz[1][0]-satz[0][0])*x, satz[0][1]+(satz[1][1]-satz[0][1])*x, satz[0][2]+(satz[1][2]-satz[0][2])*x]; }
+      else c=tonZiehen(satz[Math.min(satz.length-1,Math.floor(hs(i+6000)*satz.length))],(hs(i+6100)-0.5)*streu);
+      if(hell) c=tonZiehen(c,Math.max(0,Math.min(1,hell)));
+      return 'rgba('+Math.round(Math.max(0,Math.min(255,c[0])))+','+Math.round(Math.max(0,Math.min(255,c[1])))+','+Math.round(Math.max(0,Math.min(255,c[2])))+','+al+')'; };
     cx.lineCap='round';
     /* Windstoss: auf einem zufaelligen Teil der Schlaege ein Stoss mit zufaelliger Richtung und Wucht, klingt ab.
        Gewuerfelt wird an der UMLAUFENDEN Schlagnummer S[j][2], wo das Exportraster sie hat: der Schlag nach L
@@ -28415,6 +28755,16 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        und Vorzeichen davor rechnet dasselbe. */
     const au=(typeof e.auftrieb==='number'?e.auftrieb:(ART_AUFTRIEB[e.art]!=null?ART_AUFTRIEB[e.art]:-1));
     const aB=Math.abs(au), aS=-Math.sign(au), quelle=(e.qForm||'bild'), eigen=(quelle!=='bild');
+    /* Die Kanone geht IMMER ihren eigenen Weg (kanoneBahn): sie hat einen Zeitpunkt, keinen
+       Umlauf, und sie braucht dafuer keine gewaehlte Quelle. Darum steht sie vor `eigen` und
+       schaltet den Umbruch-Weg samt Lebensdauer ab - der rechnet mit Modulo, die Salve nicht. */
+    const kanone=(e.art==='konfettiKanone');
+    /* Sternschnuppe und Schwarm rechnen ihren Ort ganz selbst (EIGENUHR): weder flugbahn noch
+       der Umbruch-Weg samt Lebensdauer duerfen ihnen dazwischenreden. Die Lagen der Schar
+       haengen voneinander ab - Ausweichen und Ausrichten brauchen ALLE Nachbarn -, also werden
+       sie EINMAL je Bild vor der Schleife gerechnet und in der Schleife nur noch abgelesen. */
+    const eigUhr=EIGENUHR.has(e.art);
+    const SCHWARM=(e.art==='schwarm')?schwarmLagen(e,t,Wn,Hn,hs,au,w):null;
     /* SCHWADEN SIND EIN MEDIUM (Regel 6): sie leuchten nicht selbst, sie nehmen Licht auf. Dafuer
        werden sie erst auf eine eigene Leinwand gemalt; danach wird der Licht-Puffer auf ihre
        Dichte beschnitten und dazugegeben. Wo viel Rauch steht, streut viel Licht; wo duenner
@@ -28446,12 +28796,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         wy=A*(Math.cos(lpW(0.27)*t+i*3.1)+0.62*Math.cos(lpW(0.83)*t+i*4.3)+0.33*Math.cos(lpW(1.9)*t+i*2.9));
         x0+=wx; y0+=wy; }
       const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
-      if(eigen){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
+      if(kanone){ const F=kanoneBahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
+      else if(eigen&&!eigUhr){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
       /* Frei fallend im Export: verfaelscht der Umbruch das Tempo (lpVerfaelscht), lebt das Teilchen genau L mit
          echter Fall- und Windgeschwindigkeit und echtem Taumeln, gezaehlt ab seiner Geburt (lebensGeister). Die
          Schwade geht dann auch mit echtem Tempo auf. Eine Quelle hat schon Lebensdauer (flugbahn) und bleibt dort. */
       let leben=null;
-      if(!eigen&&LOOP>0){ const ba=BAHN_ART[e.art]||BAHN_ART.funken, vy=aS*aB*sp*e.tempo*Hn*B, vx=w*Hn*ba[0];
+      if(!eigen&&!kanone&&!eigUhr&&LOOP>0){ const ba=BAHN_ART[e.art]||BAHN_ART.funken, vy=aS*aB*sp*e.tempo*Hn*B, vx=w*Hn*ba[0];
         if(lpVerfaelscht(vy,Hn)||lpVerfaelscht(vx,Wn)) leben=lebensGeister(LOOP,hs(i+9900),t,schw).map(g=>{ const q=g[0];
           return [((x0+gx+Math.sin(ba[2]*q+i*ba[3])*ba[1]*U+vx*q)%Wn+Wn)%Wn, ((y0+Math.sin(ba[5]*q+i*ba[6])*ba[4]*U+vy*q)%Hn+Hn)%Hn, g[1], ((q*0.11*e.tempo+hs(i+9600))%1+1)%1]; }); }
       const G=leben?leben.length:1;
@@ -28481,17 +28832,232 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           cx.fillStyle=fc; cx.beginPath(); cx.arc(x,y,sz*0.6,0,7); cx.fill(); }
         cx.globalAlpha=1; cx.fillStyle=fc; }
       else if(e.art==='schmetterling'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.03,Hn); y=((y0+Math.sin(lpW(1.1)*t+i*2.1)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.03,Wn)*t)%Wn+Wn)%Wn; }
-        /* Der Flatterschlag: die Fluegel oeffnen und schliessen, und der Koerper taumelt mit.
-           Zwei Ellipsen und ein Strich - mehr braucht es bei dieser Groesse nicht, und mehr
-           saehe bei acht Bildpunkten ohnehin niemand. */
-        /* Der Fluegelschlag war mit 0,5 bis 1 Schlaegen je Sekunde bei acht Bildpunkten Groesse
-           ein Flackern (dieselbe Klage). Ruhiger: ein gemaechliches Oeffnen und Schliessen. */
-        const fl=Math.abs(Math.sin(lpW(1.7+hs(i+4700)*1.6)*t+i*1.9)), oe=0.22+0.78*fl;
-        cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(Math.sin(lpW(0.9)*t+i*1.3)*0.55);
-        for(const sg of [-1,1]){ cx.beginPath();
-          cx.ellipse(sg*sz*0.72*oe,-sz*0.12,sz*0.82*oe,sz*0.95,sg*0.32,0,7); cx.fill(); }
-        const ws=Math.max(0.5*U,sz*0.15), lw=Math.max(0.5,ws); cx.globalAlpha=al*0.85*(ws/lw); cx.beginPath(); cx.ellipse(0,0,lw,sz*0.7,0,0,7); cx.fill();   /* nur die Breite des Koerpers ist geklemmt, also einfach ws/lw */
-        cx.restore(); cx.globalAlpha=1; }
+        /* VIER FLUEGEL STATT ZWEI ELLIPSEN (Caspar_D, 16.09.2026: "die schmetterlings aus 2
+           Ellipsen sind zu offensichtlich 2 Ellipsen, kannst du das auch mit vier gerundeten
+           Dreiecken machen, oder hast du eine bessere Idee"). Die bessere Idee ist der ECHTE
+           Umriss: je Seite ein Vorder- und ein Hinterfluegel als gebogener Weg, dazwischen ein
+           schmaler Koerper und zwei duenne Fuehler. Ein Dreieck waere genauso eine Behauptung wie
+           die Ellipse; woran man einen Schmetterling erkennt, ist die ausgestellte Vorderkante
+           und der kleinere, runde Hinterfluegel darunter - und das traegt auch bei zwoelf
+           Bildpunkten noch.
+           DER SCHLAG IST KEINE DREHUNG. Ein Fluegel, der sich um seine Wurzel dreht, sieht aus
+           wie ein Scheibenwischer. Von vorn gesehen wird ein schlagender Fluegel SCHMAL - eine
+           waagerechte Stauchung - und ist im selben Augenblick HELLER, weil er sich zum Licht
+           kippt. Dieselbe Regel, die dem Konfettiplaettchen seine Raeumlichkeit gibt, hier
+           zweimal gespiegelt. Beide Raten durch lpW gerastet: nach L steht jeder Fluegel wieder
+           in derselben Lage.
+           DER FLUG KNICKT AB. Ein Schmetterling zieht einen kleinen Bogen und aendert dann
+           unvermittelt die Richtung; eine Sinuslinie tut das nie. Der Knick sitzt auf einem
+           Fenster, dessen Periode auf die Clipdauer gerastet ist (lpP) und dessen Nummer im Clip
+           umlaeuft (lpFenster) - im Export faellt derselbe Knick auf dieselbe Stelle, und nach L
+           steht dasselbe Tier am selben Ort. Der Bogen ist an beiden Enden null, also gibt es
+           keinen Sprung, sondern nur einen Richtungswechsel. */
+        const kp=lpP(1.1+hs(i+7300)*1.3), ko=hs(i+7400)*kp, kk=lpFenster(t+ko,kp), ku=(((t+ko)/kp)%1+1)%1;
+        const ri=hs(kk*7.7+i*3.3)*6.2831853, bg=Math.sin(Math.PI*ku)*sz*2.4;
+        x+=Math.cos(ri)*bg; y+=Math.sin(ri)*bg*0.7;
+        /* FLATTERGESCHWINDIGKEIT VON HAND (Caspar_D, 16.09.2026: "bei schmetterlinge muesste auch noch die Flattergeschwindigkeit
+           eingestellt werden koennen"). Der Regler zaehlt SCHLAEGE JE SEKUNDE; die Kreisfrequenz ist pi mal so gross, weil der
+           Betrag des Sinus zweimal je Umlauf schlaegt. Die Streuung je Falter bleibt, sonst schlagen alle im Gleichtakt wie eine
+           Maschine. Die Vorgabe 0,55 trifft die bisherige Spanne von 1,7 bis 3,3 fast genau - ohne Zutun aendert sich nichts.
+           lpW rastet die Frequenz auf ganze Umlaeufe je Clip, die Naht bleibt also dicht. */
+        const fps=+e.flattern>0?+e.flattern:0.55;
+        const fl=Math.abs(Math.sin(lpW(Math.PI*fps*(0.98+hs(i+4700)*0.94))*t+i*1.9)), oe=0.16+0.84*fl;
+        cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(Math.sin(lpW(0.9)*t+i*1.3)*0.32);
+        cx.fillStyle=farbeVon(i,a,0.45*(1-oe)*(1-oe));
+        for(const sg of [-1,1]){ cx.save(); cx.scale(sg*oe,1);
+          cx.beginPath(); cx.moveTo(0,-sz*0.22); cx.bezierCurveTo(sz*0.30,-sz*1.30, sz*1.40,-sz*1.00, sz*1.02,-sz*0.08); cx.bezierCurveTo(sz*0.90,sz*0.12, sz*0.40,sz*0.08, 0,-sz*0.02); cx.fill();
+          cx.beginPath(); cx.moveTo(0,sz*0.02); cx.bezierCurveTo(sz*0.62,sz*0.06, sz*0.98,sz*0.55, sz*0.58,sz*0.98); cx.bezierCurveTo(sz*0.28,sz*1.16, sz*0.04,sz*0.68, 0,sz*0.10); cx.fill();
+          cx.restore(); }
+        const ws=Math.max(0.5*U,sz*0.15), lw=Math.max(0.5,ws); cx.fillStyle=farbeVon(i,a*0.85*(ws/lw));   /* nur die Breite des Koerpers ist geklemmt, also einfach ws/lw */
+        cx.beginPath(); cx.ellipse(0,sz*0.06,lw,sz*0.66,0,0,7); cx.fill();
+        const fs=Math.max(0.4*U,sz*0.05), flw=Math.max(0.5,fs); cx.lineWidth=flw; cx.strokeStyle=farbeVon(i,a*0.6*(fs/flw));
+        cx.beginPath(); cx.moveTo(-lw*0.6,-sz*0.48); cx.quadraticCurveTo(-sz*0.34,-sz*0.98,-sz*0.52,-sz*1.16);
+        cx.moveTo(lw*0.6,-sz*0.48); cx.quadraticCurveTo(sz*0.34,-sz*0.98,sz*0.52,-sz*1.16); cx.stroke();
+        cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; cx.strokeStyle=fc; }
+      else if(e.art==='konfetti'||e.art==='konfettiKanone'){ if(!eigen&&!kanone&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.07,Hn); y=((y0+Math.sin(lpW(0.9)*t+i*2)*6*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.6)*t+i)*30*U+lpV(w*Hn*0.07,Wn)*t)%Wn+Wn)%Wn; }
+        /* EIN PLAETTCHEN, KEIN PUNKT (Caspar_D, 16.09.2026: "bei partikeln haette ich gerne noch
+           Konfetti"). Was ein Rechteck raeumlich macht, ist nicht seine Drehung in der Bildebene -
+           die hat es auch -, sondern das TAUMELN um die eigene Achse: es wird schmal, wenn es
+           hochkant steht, und faengt in genau diesem Augenblick das Licht. Ohne das Aufhellen
+           sieht das Schmalwerden aus wie ein Fehler in der Breite; mit ihm kippt das Plaettchen
+           sichtbar durch den Raum. Deshalb gehoert beides zusammen und steht in einer Zeile.
+           Der Luftwiderstand steckt im seitlichen Pendeln der Bahn (BAHN_ART, 30 Studio-Punkte
+           Weite bei 0,6 Schwingungen je Sekunde): ein Plaettchen faellt nicht, es segelt. Auch
+           das ist kein Regler - ein Blatt Papier tut das immer.
+           Beide Schwingungen durch lpW gerastet, also steht nach L jedes Plaettchen wieder in
+           derselben Lage; die Kanone bringt ihre Loopfestigkeit aus kanoneBahn mit.
+           Die Untergrenze greift wie beim Regen erst NACH dem Umrechnen (mindestens 0,4 Bild-
+           punkte breit); wo sie greift, traegt die Deckkraft den Rest, sonst waere ein Plaettchen
+           in der Kachel dreimal so hell wie im Export. */
+        const tm=lpW(1.05+hs(i+4800)*1.5)*t+i*2.7, sx=Math.abs(Math.cos(tm)), dr=lpW(0.35+hs(i+4900)*0.5)*t+i*1.3;
+        const bs=Math.max(0.4*U,sz*1.15*Math.max(0.07,sx)), bw=Math.max(0.4,bs), bh=Math.max(0.4,sz*0.8), rd=Math.min(bw,bh)*0.3;
+        cx.save(); cx.globalAlpha=al*(bs/bw); cx.translate(x,y); cx.rotate(dr);
+        cx.fillStyle=farbeVon(i,a,0.55*(1-sx)*(1-sx));
+        cx.beginPath(); if(cx.roundRect) cx.roundRect(-bw,-bh,bw*2,bh*2,rd); else cx.rect(-bw,-bh,bw*2,bh*2); cx.fill();
+        cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; }
+      else if(e.art==='daunen'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.028,Hn); y=((y0+Math.sin(lpW(0.45)*t+i*2.3)*7*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i)*40*U+lpV(w*Hn*0.09,Wn)*t)%Wn+Wn)%Wn; }
+        /* DAUNENFEDER (Caspar_D, 16.09.2026: "daunenfedern sind noch gut"). Fast schwerelos, und
+           genau das steht in den Zahlen: sie faellt mit 0,028 Bildhoehen je Sekunde langsamer als
+           jede andere Art (Schnee 0,06) und segelt dabei 40 Studio-Punkte weit zur Seite, mit
+           0,3 Schwingungen je Sekunde - das IST der hohe Luftwiderstand, ohne dass es dafuer einen
+           Regler gaebe (Understatement statt Konfiguration).
+           Gezeichnet ist sie eine schmale gebogene Fahne um einen Kiel: zwei Kurven, die sich an
+           Spitze und Fuss treffen. Der Kern deckt staerker und ist heller, die Fahne aussen
+           duenner - so sieht eine Daune durchscheinend aus, ohne dass ein Verlauf gerechnet
+           werden muss. Drei kurze Striche quer zum Kiel sind der ausgefranste Rand; mehr wuerde
+           bei dieser Groesse zu Brei.
+           Das Taumeln um den Kiel ist dasselbe wie beim Konfetti, nur traege (0,24 statt 1,05) -
+           und es geht nie ganz auf null, denn eine Feder hat auch hochkant noch Breite. */
+        const tm=lpW(0.24+hs(i+4800)*0.3)*t+i*1.9, sx=0.46+0.54*Math.abs(Math.cos(tm)), dr=lpW(0.16+hs(i+4900)*0.22)*t+i*2.4;
+        const lg=sz*1.6, bq=Math.max(0.4*U,sz*0.9*sx), br=Math.max(0.4,bq);
+        cx.save(); cx.globalAlpha=al*(bq/br); cx.translate(x,y); cx.rotate(dr);
+        /* Der Rand zuerst und breit, darueber der schmalere dichte Kern: zwei Fuellungen statt
+           eines Verlaufs - das ist billiger und sieht an dieser Groesse genauso aus. */
+        cx.fillStyle=farbeVon(i,a*0.42,0.08*(1-sx));
+        cx.beginPath(); cx.moveTo(0,-lg); cx.quadraticCurveTo(br*1.75,-lg*0.30, br*0.42,lg); cx.quadraticCurveTo(-br*0.62,lg*0.30, 0,-lg); cx.fill();
+        cx.fillStyle=farbeVon(i,a*0.88,0.3);
+        cx.beginPath(); cx.moveTo(0,-lg); cx.quadraticCurveTo(br*0.72,-lg*0.24, br*0.16,lg*0.86); cx.quadraticCurveTo(-br*0.22,lg*0.24, 0,-lg); cx.fill();
+        /* DIE FRANSEN SIND GEFUELLT, NICHT GESTRICHEN (gemessen 16.09.2026). Als Striche von unter
+           einem Bildpunkt Breite standen sie zwar an derselben Stelle wie bei t+L - die Fahnen
+           daneben kamen bitgleich heraus -, aber der Strichrasterer traf die Deckung nicht jedesmal
+           gleich: der Nahtquotient stieg von 0 auf 0,007. Als schmale Dreiecke gefuellt rastert
+           dieselbe Kante wie die Fahne, und die Naht ist wieder bitgleich. Unter etwa vier
+           Bildpunkten Federlaenge verschwinden sie von selbst - das ist richtig so, eine Daune hat
+           dort keine sichtbaren Aeste mehr. */
+        cx.fillStyle=farbeVon(i,a*0.34,0.16);
+        for(let k=0;k<5;k++){ const u=0.16+k*0.17, py=-lg+u*lg*2, d=lg*0.05;
+          cx.beginPath(); cx.moveTo(br*0.22*(1-u),py-d); cx.lineTo(br*(1.35+0.55*u),py+lg*0.2); cx.lineTo(br*0.22*(1-u),py+d); cx.fill();
+          cx.beginPath(); cx.moveTo(-br*0.14*(1-u),py-d*0.8); cx.lineTo(-br*(0.52+0.3*u),py+lg*0.16); cx.lineTo(-br*0.14*(1-u),py+d*0.8); cx.fill(); }
+        cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; cx.strokeStyle=fc; }
+      else if(e.art==='bokeh'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.018,Hn); y=((y0+Math.sin(lpW(0.13)*t+i*1.7)*9*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.18)*t+i)*16*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
+        /* BOKEH (Caspar_D, 16.09.2026, Auftragsliste 5). Ein Lichtpunkt ausserhalb der Schaerfe ist
+           kein weicher Fleck, sondern die BLENDE selbst, abgebildet: eine fast gleichmaessig helle
+           Scheibe mit einer hellen Kante und einem weichen Saum. Deshalb steht hier ein Verlauf,
+           der nach aussen HELLER wird, und nicht der uebliche, der ausgeht - das ist der ganze
+           Unterschied zwischen Bokeh und Watte.
+           WARUM DER GROSSE KREIS BLASSER IST: es ist dieselbe Lichtmenge, nur weiter aus dem Fokus
+           und damit auf mehr Flaeche verteilt - die Dichte faellt mit 1/r^2. Kein Regler; das tut
+           eine Linse immer. Genau das haelt den Effekt auch bei voller Staerke zusammen: die
+           grossen Kreise, die sich gegenseitig ueberlagern wuerden, sind die schwaechsten.
+           UND EINE DECKE (Auftrag: "not become white blobs at high strength"). Die Kante liegt bei
+           hoechstens 0,5, die Mitte darunter - ein Kreis mit Screen oder Additiv bleibt so ein
+           Kreis mit Zeichnung, statt zum weissen Klecks auszubrennen. Die Staerke regelt darunter
+           weiter, sie stoesst nur nicht mehr durch. */
+        const rel=0.75+1.9*hs(i+4500), R=sz*2.2*rel, di=Math.min(0.5,0.45/(rel*rel))*a*al;
+        if(di>0.002){ const g=cx.createRadialGradient(x,y,0,x,y,R);
+          g.addColorStop(0,farbeVon(i,+(di*0.58).toFixed(4)));
+          g.addColorStop(0.60,farbeVon(i,+(di*0.72).toFixed(4)));
+          g.addColorStop(0.86,farbeVon(i,+di.toFixed(4)));
+          g.addColorStop(1,farbeVon(i,0));
+          cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,R,0,7); cx.fill(); cx.fillStyle=fc; } }
+      else if(e.art==='glitzer'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.012,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+lpV(w*Hn*0.02,Wn)*t)%Wn+Wn)%Wn; }
+        /* GLITZER (Caspar_D, 16.09.2026, Auftragsliste 6). Die einzige Art OHNE Koerper: was man
+           sieht, ist kein Teilchen, das vorbeifliegt, sondern ein AUFBLITZEN an einer Stelle - ein
+           Kristall, der sich einen Augenblick lang zum Licht dreht. Darum steht die Stelle fast
+           still, und alles, was passiert, passiert in der Zeit.
+           DER BLITZ HAENGT AM ANTRIEB, nicht an einer eigenen Zahl. Es ist dieselbe Periode, die
+           die Kanone fuer ihre Salven liest (antriebPeriode) - eine Salve aus Licht statt aus
+           Papier, und darum auch derselbe Name fuer dasselbe Ding. Jede Stelle blitzt einmal je
+           Umlauf, und der Umlauf ist K Perioden lang; weil lpP die Periode auf ganze Salven je Clip
+           rastet, ist K*Periode genau die Cliplaenge - dieselbe Rechnung, mit der die Naht der
+           Kanone zugeht. Der Startpunkt liegt im ersten Drittel NACH dem Schlag: dadurch draengen
+           sich die Blitze am Schlag und verteilen sich nicht gleichmaessig ueber die Periode.
+           WIE LANG EIN BLITZ DAUERT, ist kein Regler: ein Fuenftel der Periode, hoechstens 0,26 s.
+           Ein Glitzern, das man einstellen muss, ist keines mehr (Understatement statt
+           Konfiguration). Vier Arme, unter etwa zweieinhalb Bildpunkten zwei - ein Vierstrahl, der
+           kleiner wird als er Arme hat, ist nur noch ein Fleck.
+           Alles GEFUELLT, keine Striche: ein Strich unter einem Bildpunkt rastert nicht jedesmal
+           gleich und trieb schon bei den Daunenfransen die Naht von 0 auf 0,007 (16.09.2026). */
+        const per=antriebPeriode(e), K=Math.max(1,Math.round((LOOP>0?LOOP:Math.max(per,8))/per));
+        /* JEDE STELLE KANN AUF JEDER SALVE BLITZEN, nicht einmal je Clip (nachgesehen 16.09.2026:
+           einmal je Clip ergab bei 0,26 s Blitz auf 7,5 s Umlauf drei Prozent Einschaltdauer - im
+           Bild standen ein bis zwei Funken, und das ist kein Glitzern, sondern ein Versehen). Ob
+           sie blitzt, entscheidet ein Wurf aus Stelle UND Salvennummer; die Salvennummer laeuft mit
+           dem Clip um (K Salven je Clip, wie beim Fensterzaehler lpFenster), darum faellt nach L
+           derselbe Wurf. Ohne diesen Wurf blitzte jede Stelle auf jedem Schlag und das Glitzern
+           waere ein Metronom. Der Beginn liegt im ersten Drittel NACH der Salve: dadurch draengen
+           sich die Blitze am Schlag, statt sich ueber die Periode zu verteilen. */
+        const kn=Math.floor(t/per+(LOOP>0?1e-6:0)), kk=((kn%K)+K)%K;
+        const wurf=hs(i*0.37+kk*13.7+9700);
+        const start=kn*per+hs(i+9800)*per*0.30;
+        const alt2=t-start, leb=Math.min(0.26,per*0.35);
+        const u2=alt2/leb, bl=(wurf<0.55&&u2>=0&&u2<1)?Math.min(1,u2/0.14)*Math.pow(1-u2,2):0;
+        /* DIE ZAHL DER ARME IST EINE FORM, KEINE HELLIGKEIT (gemessen 16.09.2026). Die Schwelle
+           stand in rohen Bildpunkten: derselbe Blitz bekam in der Kachel ZWEI Arme und im
+           1080p-Export VIER - also eine andere Gestalt, nicht nur eine andere Groesse. Genau das
+           verbietet das Groessengesetz. Gemessen bei Vorgabegroesse 2,5: der Glitzer war im Export
+           doppelt so stark wie im Studio (Verhaeltnis 2,04/1,96/1,98), bei Groesse 8 - wo beide
+           Seiten vier Arme bekamen - nur noch 1,09. Die Schwelle gehoert darum wie jede Laenge
+           dieser Karte in Studio-Bildpunkte, also mal EINHEIT. */
+        if(bl>0.01){ const arme=(sz*1.6<2.4*U)?2:4, dr=hs(i+4900)*6.2831853;
+          const lg=sz*(1.3+2.4*bl), bs=Math.max(0.35*U,sz*0.30), bw=Math.max(0.35,bs);
+          cx.save(); cx.globalAlpha=al*bl*(bs/bw); cx.translate(x,y); cx.fillStyle=farbeVon(i,a,0.4);
+          for(let k=0;k<arme;k++){ const an=dr+k*6.2831853/arme, ax2=Math.cos(an), ay2=Math.sin(an);
+            cx.beginPath(); cx.moveTo(ax2*lg,ay2*lg); cx.lineTo(-ay2*bw,ax2*bw); cx.lineTo(ay2*bw,-ax2*bw); cx.fill(); }
+          cx.fillStyle=farbeVon(i,a,0.75); cx.beginPath(); cx.arc(0,0,Math.max(0.35,sz*0.4*(0.4+0.6*bl)),0,7); cx.fill();
+          cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; } }
+      else if(e.art==='pusteblume'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.02,Hn); y=((y0+Math.sin(lpW(0.35)*t+i*2.1)*5*U+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.22)*t+i)*46*U+lpV(w*Hn*0.11,Wn)*t)%Wn+Wn)%Wn; }
+        /* PUSTEBLUMENSAMEN (Caspar_D, 16.09.2026, Auftragsliste 7: "seeds that sail rather than
+           fall"). Das Segeln steht in den Zahlen und nicht in einem Regler: 0,02 Bildhoehen je
+           Sekunde Fall - langsamer als die Daune (0,028), langsamer als alles andere - bei 46
+           Studio-Punkten Seitenweg mit 0,22 Schwingungen je Sekunde. Das IST der Fallschirm.
+           Gezeichnet ist er von oben nach unten, wie er haengt: ein Faecher aus neun Strahlen um
+           eine Nabe, darunter ein duenner Stiel und daran das Korn. Die Strahlen sind schmale
+           gefuellte Spaene, keine Striche (Naht, siehe Glitzer). Das Taumeln staucht den ganzen
+           Schirm waagerecht, geht aber nie unter 0,55: ein Schirm hat auch von der Seite noch
+           Breite, sonst waere er ein Strich. */
+        const dr=lpW(0.12+hs(i+4900)*0.18)*t+i*2.1, tm=lpW(0.2+hs(i+4800)*0.26)*t+i*1.4;
+        const sx=0.55+0.45*Math.abs(Math.cos(tm)), kr=sz*1.5, st=sz*1.15;
+        cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(dr); cx.scale(sx,1);
+        const fb=Math.max(0.4*U,sz*0.16), fw=Math.max(0.4,fb);
+        cx.fillStyle=farbeVon(i,a*0.5*(fb/fw),0.2);
+        for(let k=0;k<9;k++){ const an=-Math.PI/2+(k-4)*0.30, ex=Math.cos(an)*kr, ey=Math.sin(an)*kr;
+          cx.beginPath(); cx.moveTo(-Math.sin(an)*fw*0.5,Math.cos(an)*fw*0.5); cx.lineTo(ex,ey); cx.lineTo(Math.sin(an)*fw*0.5,-Math.cos(an)*fw*0.5); cx.fill(); }
+        const sb=Math.max(0.4*U,sz*0.09), sw=Math.max(0.4,sb);
+        cx.fillStyle=farbeVon(i,a*0.7*(sb/sw),0.05);
+        cx.beginPath(); cx.moveTo(-sw*0.5,0); cx.lineTo(sw*0.5,0); cx.lineTo(sw*0.35,st); cx.lineTo(-sw*0.35,st); cx.fill();
+        cx.fillStyle=farbeVon(i,a*0.9,0.3); cx.beginPath(); cx.arc(0,0,Math.max(0.4,sz*0.2),0,7); cx.fill();
+        cx.fillStyle=farbeVon(i,a*0.95); cx.beginPath(); cx.ellipse(0,st+sz*0.22,Math.max(0.4,sz*0.16),Math.max(0.4,sz*0.34),0,0,7); cx.fill();
+        cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; cx.strokeStyle=fc; }
+      else if(e.art==='sternschnuppen'){ const E=sternZahl(e.anzahl);
+        /* STERNSCHNUPPEN (Caspar_D, 16.09.2026, Auftragsliste 8). Nur die ersten E Teilchen fliegen
+           ueberhaupt - die Menge macht daraus keine zweihundert, siehe sternZahl und mengeNotiz.
+           Der Schweif ist ein spitzes gefuelltes Dreieck mit einem Verlauf der Laenge nach, der
+           Kopf ein kleiner Glutball darueber. Er waechst in den ersten 18 Prozent des Fluges aus
+           dem Kopf heraus, statt sofort in voller Laenge dazustehen. */
+        if(i<E){ const F=sternBahn(e,i,t,Wn,Hn,hs,aB,aS,w,E), bx=F[0]+wx, by=F[1]+wy, ba=F[2], an=F[3];
+          if(ba>0.004){ const D=Math.hypot(Wn,Hn), sl=D*(0.10+0.09*hs(i+9950))*Math.min(1,F[4]/0.18);
+            const tx=bx-Math.cos(an)*sl, ty=by-Math.sin(an)*sl;
+            const hb=Math.max(0.5*U,sz*0.52), hw=Math.max(0.5,hb);
+            const g=cx.createLinearGradient(bx,by,tx,ty);
+            g.addColorStop(0,farbeVon(i,+(a*ba*0.95).toFixed(4),0.35));
+            g.addColorStop(0.35,farbeVon(i,+(a*ba*0.30).toFixed(4)));
+            g.addColorStop(1,farbeVon(i,0));
+            cx.globalAlpha=hb/hw; cx.fillStyle=g;
+            cx.beginPath(); cx.moveTo(bx-Math.sin(an)*hw,by+Math.cos(an)*hw); cx.lineTo(bx+Math.sin(an)*hw,by-Math.cos(an)*hw); cx.lineTo(tx,ty); cx.fill();
+            const kg=cx.createRadialGradient(bx,by,0,bx,by,hw*3.2);
+            kg.addColorStop(0,farbeVon(i,+(a*ba).toFixed(4),0.6)); kg.addColorStop(0.3,farbeVon(i,+(a*ba*0.5).toFixed(4),0.2)); kg.addColorStop(1,farbeVon(i,0));
+            cx.globalAlpha=1; cx.fillStyle=kg; cx.beginPath(); cx.arc(bx,by,hw*3.2,0,7); cx.fill();
+            cx.fillStyle=fc; } } }
+      else if(e.art==='schwarm'){ const S=SCHWARM;
+        /* DER VOGEL (Caspar_D, 16.09.2026, Auftragsliste 9). Die Lage kommt aus schwarmLagen, die
+           Richtung aus der dort ausgerichteten Geschwindigkeit - ein Vogel fliegt dorthin, wohin er
+           schaut, und schaut dorthin, wohin seine Nachbarn fliegen. Der Schlag ist wie beim
+           Schmetterling keine Drehung, sondern eine Stauchung quer zur Flugrichtung samt kurzem
+           Aufhellen: von der Seite gesehen wird eine schlagende Schwinge SCHMAL und faengt dabei
+           das Licht. Rate durch lpW gerastet, also steht nach L jeder Fluegel wieder gleich. */
+        if(S&&i<S.n){ const bx=S.X[i]+wx, by=S.Y[i]+wy, hd=Math.atan2(S.VY[i],S.VX[i]);
+          const fl=Math.abs(Math.sin(lpW((2.1+hs(i+4700)*1.5)*Math.max(0.2,e.tempo))*t+i*1.9));
+          const sn=sz*2.3*(0.22+0.78*fl);
+          cx.save(); cx.globalAlpha=al; cx.translate(bx,by); cx.rotate(hd);
+          cx.fillStyle=farbeVon(i,a,0.22*(1-fl)*(1-fl));
+          for(const sg of [-1,1]){ cx.beginPath(); cx.moveTo(sz*0.3,0);
+            cx.quadraticCurveTo(-sz*0.05,sg*sn*0.75,-sz*1.05,sg*sn);
+            cx.quadraticCurveTo(-sz*0.30,sg*sn*0.34,-sz*0.40,0); cx.fill(); }
+          const kb=Math.max(0.45*U,sz*0.30), kw=Math.max(0.45,kb);
+          cx.fillStyle=farbeVon(i,a*(kb/kw),0.1);
+          cx.beginPath(); cx.moveTo(sz*1.0,0); cx.quadraticCurveTo(0,kw,-sz*1.1,0); cx.quadraticCurveTo(0,-kw,sz*1.0,0); cx.fill();
+          cx.restore(); cx.globalAlpha=1; cx.fillStyle=fc; } }
       else if(e.art==='blaetter'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.09,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(1.2)*t+i)*28*U+lpV(w*Hn*0.08,Wn)*t)%Wn+Wn)%Wn; } const rot=lpW(1.5+hs(i+4600)*2)*t+i; cx.save(); cx.globalAlpha=al; cx.translate(x,y); cx.rotate(rot); cx.beginPath(); cx.ellipse(0,0,sz*1.6,sz*0.7,0,0,7); cx.fill(); cx.restore(); cx.globalAlpha=1; }
       else if(e.art==='schwaden'){ if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.05,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(0.3)*t+i*1.3)*26*U+lpV(w*Hn*0.05,Wn)*t)%Wn+Wn)%Wn; }
         /* SCHWADEN (Caspar_D, 14.09.2026: "und rauch kann sich genauso verhalten, nur dass es
@@ -28981,19 +29547,52 @@ function renderStapel(){
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
     const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt']);
-    const paramHTML=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
+    const paramBauen=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
       if(p.q){ const sel=(lbl,k,liste)=>'<div class="tbs-regler"><span>'+lbl+'</span><select data-k="'+k+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
-        const f=e.qForm||'bild';
+        /* DIE KANONE HAT IMMER EINE MUENDUNG (Caspar_D, 16.09.2026: "mach beides, fallen und
+           kanone"). Bei Quelle "das ganze Bild" entstehen Teilchen ueberall - eine Kanone kann
+           das nicht, sie schiesst aus einem Punkt. quellPunkt gibt bei "das ganze Bild" genau den
+           Ort X/Y zurueck, es braucht also keine zweite Quellform: es braucht nur die Zeilen, die
+           sonst erst eine gewaehlte Quelle freischaltet. Ohne sie stuende Druck auf 0, und die
+           Kanone schoesse nicht - ein Regler, den man nicht sieht, ist so gut wie keiner. */
+        const f=e.qForm||'bild', kan=(e.typ==='partikel'&&e.art==='konfettiKanone');
+        /* NICHTS LUEGEN, AUCH NICHT DURCH SCHWEIGEN (Hausgesetz 16.09.2026). Sternschnuppe und
+           Schwarm rechnen ihren Flug selbst - Druck, Richtung, Auffaechern und Laenge tun bei
+           ihnen NICHTS. Sie stehen darum nicht als tote Regler da, sondern es steht dort, was
+           statt ihrer wirkt. Auftrieb und Ausblenden wirken sehr wohl, nur anders, und auch das
+           steht da. */
+        const eu=(e.typ==='partikel'&&EIGENUHR.has(e.art));
+        /* GRAU MIT GRUND, NICHT WEG - AUCH HIER (gegengelesen 16.09.2026). Bis eben standen die
+           vier Flugregler bei diesen zwei Arten gar nicht da; der Grund stand zwar an ihrer Stelle,
+           aber die Karte war um vier Zeilen kuerzer als bei jeder anderen Art, und wer sie gestern
+           hatte, suchte sie. Dasselbe Gesetz, mit dem nebenan die Windstoesse stillgelegt werden,
+           gilt hier: sie bleiben stehen, still und mit Grund. Gebaut wie in paramHTML - dieselbe
+           Klammer, dasselbe `disabled` an jedem Bedienteil, damit es nicht nur blass ist. */
+        const still=t2=>'<div class="tbs-grau">'+t2.replace(/<(input|select|button|textarea)\b/g,'<$1 disabled')+'</div>';
         h+='<div class="tbs-rm"><div class="tbs-abunter" style="margin-bottom:4px">Quelle</div>'+sel('Quelle','qForm',Q_FORM);
         if(f!=='bild'){ h+=sel('Ursprung','qUrsprung',[['bild','im Bild'],['aussen','außerhalb des Bildes']]);
           if((e.qUrsprung||'bild')==='aussen') h+=rg('Winkel','qWinkel',0,1,0.01); else h+=rg('Ort X','qX',0,1,0.01)+rg('Ort Y','qY',0,1,0.01);
           if(f==='linie') h+=rg('Ausdehnung','qAus',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true);
           else if(f==='kreis') h+=rg('Ausdehnung','qAus',0.01,1,0.01);
           else if(f==='ellipse') h+=rg('Ausdehnung X','qAus',0.01,1,0.01)+rg('Ausdehnung Y','qAusY',0.01,1,0.01)+rg('Drehung (°)','qDreh',0,360,5,true); }
+        else if(kan) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Die Kanone schießt aus einem Punkt — auch ohne gewählte Quelle. Der Punkt ist der Ort hier; eine Linie oder ein Kreis darüber macht daraus mehrere Rohre.</div>'+rg('Ort X','qX',0,1,0.01)+rg('Ort Y','qY',0,1,0.01);
+        else if(eu) h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">'+(e.art==='sternschnuppen'
+          ?'Eine Schnuppe kommt aus EINEM Punkt. Ohne gewählte Quelle setzt sie vor dem Bildrand an und zieht hindurch; eine Quelle macht den Fleck zu ihrem Radianten.'
+          :'Die Schar kreist um eine wandernde Mitte. Eine gewählte Quelle nagelt diese Mitte fest — dann kreist sie um den Fleck, statt zu ziehen.')+'</div>';
         else h+='<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Die Teilchen entstehen überall und laufen um. Erst eine Quelle schaltet Druck, Fächer und Länge frei.</div>';
         h+='<div class="tbs-abunter" style="margin:8px 0 4px">Flug</div>'+rg('Auftrieb','auftrieb',-1,1,0.05);
-        if(f!=='bild') h+=rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Auffächern','streuung',0,1,0.01)+rg('Länge','laenge',0.05,2,0.05)+rg('Ausblenden','ausblenden',0.1,1,0.05);
+        if(eu){ h+='<div class="tbs-graugrund">'+(e.art==='sternschnuppen'
+            ?'Der Auftrieb neigt hier die Bahn: −1 fällt steil, 0 zieht waagerecht, +1 steigt. Tempo macht die Schnuppe schnell, Wind legt sie schräg, Ausblenden sagt, wie lang der Schweif nachglüht.'
+            :'Der Auftrieb sagt hier, wie hoch die Schar hängt. Tempo ist ihr Zug und ihr Flügelschlag, Wind lehnt ihre Bahn zur Seite.')+'</div>';
+          if(e.art==='sternschnuppen') h+=rg('Ausblenden','ausblenden',0.1,1,0.05);
+          h+=still(rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Auffächern','streuung',0,1,0.01)+rg('Länge','laenge',0.05,2,0.05)
+              +(e.art==='sternschnuppen'?'':rg('Ausblenden','ausblenden',0.1,1,0.05))
+              +'<div class="tbs-graugrund">'+(e.art==='sternschnuppen'
+                ?'Druck, Richtung, Auffächern und Länge rechnet diese Art nicht mit — die Schnuppe zieht ihre eigene gerade Bahn.'
+                :'Druck, Richtung, Auffächern, Länge und Ausblenden rechnet diese Art nicht mit — die Schar folgt ihren eigenen Regeln.')+'</div>'); }
+        if((f!=='bild'||kan)&&!eu) h+=rg('Druck','druck',0,1,0.02)+rg('Richtung (°)','winkel',0,360,5,true)+rg('Auffächern','streuung',0,1,0.01)+rg('Länge','laenge',0.05,2,0.05)+rg('Ausblenden','ausblenden',0.1,1,0.05);
+        if(kan) h+='<div style="color:var(--schwach);font-size:10.5px;margin:-2px 0 6px">Die Salven liegen auf dem Antrieb rechts: feste Frequenz oder Schlagraster. Ohne Antrieb schießt sie ruhig alle 1,6 s.</div>';
         h+='<canvas class="tbs-qvor" width="300" height="80" title="Die Quelle und zwoelf Bahnen im Kleinen: wo die Teilchen entstehen, wohin sie fliegen, wo sie ausgehen"></canvas>';
         h+='</div>'; return; }
       if(p.rm){ const sel=(k,liste)=>'<div class="tbs-regler"><span>'+k[0]+'</span><select data-k="'+k[1]+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k[1]]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
@@ -29061,6 +29660,29 @@ function renderStapel(){
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+kf(e[p.k])+'</span></div>'; }
     };
+    /* GRAU MIT GRUND STATT WEG (Hausgesetz der Effektclips, 16.09.2026: "Nichts darf in der
+       Oberflaeche luegen: was eine Art nicht benutzt, wird ausgegraut mit Grund, nicht
+       versteckt"). `when` blendet eine Zeile aus - das bleibt richtig, wo sie fuer diese Bauart
+       gar nicht existiert (ein Scanner hat keine Strahlenzahl). Wo sie existiert, aber gerade
+       nichts bestimmt, muss sie STEHEN BLEIBEN: ausgegraut, stillgelegt, mit einer Zeile
+       darunter, die sagt warum. Sonst sucht man einen Regler, den man gestern noch hatte, und
+       haelt ihn fuer verloren.
+       Gebaut als Klammer um das fertige Markup, nicht in jeden Zweig hinein: jeder Regler und
+       jeder Block (Quelle, Antrieb, Raum) kann `grau` erben, ohne dass sein Zweig davon etwas
+       wissen muss. `disabled` an jedem Bedienteil darin - sonst waere es nur blass und wuerde
+       trotzdem etwas tun. */
+    const paramHTML=p=>{ const an=(!p.versteckt&&(!p.when||p.when(e))), grund=(p.grau&&an)?p.grau(e):null, vor=h.length;
+      paramBauen(p);
+      /* `notiz` ist die kleine Schwester von `grau`: der Regler TUT etwas, aber was dabei
+         herauskommt, haengt am Titel - dann steht die Auskunft darunter, ohne ihn stillzulegen. */
+      if(an&&p.notiz){ const nz=p.notiz(e); if(nz) h+='<div class="tbs-graugrund">'+nz+'</div>'; }
+      /* EIN GRUND FUER EINEN SACHVERHALT (gegengelesen 16.09.2026). Bei drei der fuenf Farbquellen
+         stand unter „Farbe“ UND unter „Farbe bis“ derselbe Satz Wort fuer Wort - die Karte las sich
+         wie ein Stottern, und der Blick suchte einen Unterschied, den es nicht gibt. `grau` darf
+         darum `true` zurueckgeben statt eines Textes: die Zeile wird stillgelegt wie immer, die
+         Begruendung steht aber erst unter der letzten Zeile des Sachverhalts. */
+      if(!grund) return; const teil=h.slice(vor); if(!teil) return;
+      h=h.slice(0,vor)+'<div class="tbs-grau">'+teil.replace(/<(input|select|button|textarea)\b/g,'<$1 disabled')+(grund===true?'':'<div class="tbs-graugrund">'+grund+'</div>')+'</div>'; };
     h+='<div class="tbs-spalten"><div class="tbs-links">';
     T.params.filter(p=>!GEMEIN.has(p.k)).forEach(paramHTML);
     h+='</div><div class="tbs-rechts">';
@@ -29083,13 +29705,34 @@ function renderStapel(){
       else if(w==='solo'){ soloId = (soloId===e.id ? null : e.id); }
       else if(w==='klapp'){ offenId=(offenId===e.id)?null:e.id; soloFolgt(); }
       else if(w==='dup'){ /* Kopie mit allen Werten (Rampen/Kurven tief), eigene Nummer, gleich darunter */
-        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false; STAPEL.splice(idx+1,0,k); offenId=k.id; soloFolgt(); }
+        const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false;
+        /* DIE KOPIE WEISS AUCH, WOHER SIE KOMMT (gegengelesen 16.09.2026). Der Filter streicht die
+           Schluessel mit "_", weil dort fluechtige Leinwaende liegen (_rc, _rl, _vc) - die ueberlebten
+           JSON.stringify ohnehin nicht. Seit dem 16.09.2026 liegt dort aber auch `_artVor`, die vorige
+           Art, an der `artFarben` erkennt, ob Farben, Massen und Verrechnung noch die mitgebrachten
+           sind. Ohne sie hielt sich jede Kopie fuer Schnee: beim naechsten Artwechsel schlug jede
+           Waechterbedingung fehl, und die Karte trug den neuen Namen mit den alten Zahlen (nachgesehen:
+           Konfetti kopiert, Kopie auf Bokeh gestellt - Anzahl blieb 110 statt 30, Groesse 3,5 statt 7).
+           Kopiert wird darum die Art selbst, nicht der gemerkte Stand: die Kopie IST gerade diese Art. */
+        if(k.typ==='partikel') k._artVor=e.art;
+        STAPEL.splice(idx+1,0,k); offenId=k.id; soloFolgt(); }
       else if(w==='hoch'&&idx>0){ const a=STAPEL[idx-1]; STAPEL[idx-1]=STAPEL[idx]; STAPEL[idx]=a; }
       else if(w==='runter'&&idx<STAPEL.length-1){ const a=STAPEL[idx+1]; STAPEL[idx+1]=STAPEL[idx]; STAPEL[idx]=a; }
       renderStapel(); });
     c.querySelectorAll('[data-k]').forEach(inp=>inp.oninput=()=>{ const k=inp.dataset.k, p=T.params.find(x=>x.k===k);
       e[k]= (inp.type==='range') ? +inp.value : inp.value;
       const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? kf(inp.value) : inp.value;
+      /* EINE NOTIZ, DIE AM REGLERWERT HAENGT, MUSS AM REGLER MITZIEHEN (Regel 11, nachgesehen
+         16.09.2026 in der Oberflaechenprobe). Unter „Anzahl“ steht bei der Sternschnuppe, wie
+         viele je Cliplänge fliegen - beim Schieben blieb der alte Satz stehen, weil nur
+         Auswahlen die Karte neu bauen. Ein Schieber DARF die Karte nicht neu bauen, er verlöre
+         sonst mitten im Ziehen den Griff; also wird die Zeile an Ort und Stelle nachgezogen,
+         genau wie die Zahl rechts daneben. */
+      if(p&&p.notiz){ const zeile=inp.closest('.tbs-regler'), nz=p.notiz(e);
+        let d=zeile&&zeile.nextElementSibling; if(d&&!d.classList.contains('tbs-graugrund')) d=null;
+        if(nz&&d) d.textContent=nz;
+        else if(nz&&zeile){ const nd=document.createElement('div'); nd.className='tbs-graugrund'; nd.textContent=nz; zeile.parentNode.insertBefore(nd, zeile.nextSibling); }
+        else if(d) d.remove(); }
       if(p.sel&&k==='art') artFarben(e);
       if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm'||Q_REGLER.has(k))) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
@@ -29103,7 +29746,14 @@ function renderStapel(){
         lmv.onpointerdown=ev=>{ lmv.setPointerCapture(ev.pointerId); malt=true; setz(ev); }; lmv.onpointermove=ev=>{ if(malt) setz(ev); }; lmv.onpointerup=()=>{ malt=false; }; }
       const sz=c.querySelector('[data-lmschritte]'); if(sz) sz.onchange=()=>{ lmSchritteZahl(e,+sz.value); renderStapel(); };
       c.querySelectorAll('[data-lmvorlage]').forEach(b=>b.onclick=()=>{ const v=LM_VORLAGEN.find(x=>x[0]===b.dataset.lmvorlage); if(v){ e.lmSchritte=v[2](lmSchritteHolen(e).length); lmVorschau(lmv,e); } }); }   /* neu zeichnen: an Pillen haengen abhaengige Regler (when) */
-    const vs=c.querySelector('[data-verr]'); if(vs) vs.onchange=()=>{ e.verr=vs.value; };
+    /* EINE NOTIZ, DIE AN DER VERRECHNUNG HAENGT, MUSS MIT IHR MITZIEHEN (gegengelesen 16.09.2026).
+       Die Zeile unter dem Farbfeld sagt bei einer dunklen Farbe, dass Screen sie verschluckt - und
+       schickt den Nutzer auf genau dieses Auswahlfeld. Stellte er danach um, blieb die Zeile stehen
+       und log ab dem Augenblick, in dem sie recht bekommen hatte. Das Auswahlfeld baut die Karte
+       bisher NICHT neu (anders als die Regler links), also wird sie hier neu gebaut - der Griff geht
+       dabei nicht verloren, eine Auswahl ist kein Ziehen. */
+    const vs=c.querySelector('[data-verr]'); if(vs) vs.onchange=()=>{ e.verr=vs.value;
+      const T2=EFFEKTE[e.typ]; if(T2&&T2.params.some(p=>p.notiz||p.grau)) renderStapel(); };
     const ss=c.querySelector('[data-staerke]'); if(ss) ss.oninput=()=>{ e.staerke=+ss.value; ss.parentElement.querySelector('.tbs-wert').textContent=Math.round(e.staerke*100)+'%'; };
     const rbar=c.querySelector('.tbs-rampe-bar');
     const rbau=()=>{ if(!rbar) return; const ramp=(e.palette==='Eigen')?e.rampe:(PALETTEN[e.palette]||[]); rbar.style.background='linear-gradient(90deg,'+ramp.map((cc,i)=>cc+' '+Math.round(i/Math.max(1,ramp.length-1)*100)+'%').join(',')+')'; };
@@ -29658,6 +30308,12 @@ function zeichneFrame(t,roh){
         e.lmTiefe=1; }
       if(PULSE.includes(r.typ)){ ['antrieb','atempo','abkling','nurEins'].forEach(k=>{ delete e[k]; }); }
       if(r.typ==='partikel'&&typeof r.auftrieb!=='number'&&ART_AUFTRIEB[e.art]!=null) e.auftrieb=ART_AUFTRIEB[e.art];
+      /* FARBQUELLE RUECKWAERTS VERTRAEGLICH (16.09.2026). Ein gespeichertes Rezept kennt den
+         Schluessel nicht und hat seine beiden Farbfelder von Hand gestellt - es bekommt darum
+         "Eigenes Paar" und sieht aus wie an dem Tag, an dem es gesichert wurde, Bildpunkt fuer
+         Bildpunkt. Eine NEUE Karte beginnt dagegen beim Titelbild-Paar (Vorgabe am Regler), weil
+         Caspar_D den 2Farbakzent gut findet - nur eben nicht rueckwirkend an fremden Clips. */
+      if(r.typ==='partikel'&&r.farbSatz==null) e.farbSatz='eigen';
       if(r.typ==='partikel') e._artVor=e.art;   /* sonst vergleicht artFarben gegen die falsche Art */
       if(r.typ==='sicherung'&&r.verr==='abwedeln') e.verr='nachbelichten';   /* Ablagen aus der Abwedeln-Zeit: Schwarz abgewedelt ist nichts */
       if(alt&&r.typ==='farbton'&&r.invert){ e.winkel=-e.winkel; e.invert=0; } }   /* invert hiess bis Fassung 1 nur: andere Richtung */
