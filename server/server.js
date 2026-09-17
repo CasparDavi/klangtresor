@@ -261,8 +261,19 @@ function liefere(req, res, datei) {
      richtig - der Browser zeigte seinen Vorrat von vor drei Wochen, denn
      bei max-age=31536000 ohne Last-Modified fragt er nie wieder nach. */
   /* eigen*.mp4/jpg/mp3 und das Rezept sind ebenso wandelbar: sie werden ersetzt, geloest und
-     unter derselben Nummer neu vergeben (nach Loeschen der hoechsten kehrt sie wieder). */
-  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4)$/.test(datei);
+     unter derselben Nummer neu vergeben (nach Loeschen der hoechsten kehrt sie wieder).
+
+     UND DIE TIEFENKARTEN (17.09.2026). Seit die Karte an der QUELLE haengt statt am Titel, gibt es
+     mehrere je Titel: tiefe.png zum Titelbild, eigen<n>.tiefe.png zu einem eigenen Standbild,
+     artwork.tiefe.mp4 und eigen<n>.tiefe.mp4 als Tiefenspur eines Bewegtbilds. Jede ist ABGELEITET —
+     sie entsteht neu, wenn ihr Quellbild ersetzt wird oder ein anderes Modell rechnet. Ohne diese
+     Zeile liefert der Server sie ein Jahr lang als unwandelbar aus, und wer sein eigenes Titelbild
+     austauscht, bekommt die Tiefe des alten dazu: derselbe Fall wie am 07.09.2026, nur schlechter zu
+     erkennen — eine falsche Tiefenkarte sieht nicht nach einem alten Bild aus, sondern nach einem
+     Effekt, der grundlos danebensitzt. Trockentest der Regel (17.09.2026): die sieben Tiefenformen
+     werden wandelbar; cover.jpg, titelbild.jpg, artwork.mp4, audio.mp3, meintiefe.png und
+     tiefe.png.bak bleiben fest. */
+  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
   const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
   const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();

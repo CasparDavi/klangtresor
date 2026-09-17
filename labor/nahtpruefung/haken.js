@@ -23,12 +23,20 @@ window.__naht = (() => {
     cancelAnimationFrame(rafId); rafId=0;   /* die Vorschau steht still - sonst malt rahmen() mit denselben Effekten dazwischen */
     GL.init(); GL.noiseLaden(); for(let i=0; i<300 && GL.gl && !GL.noise; i++) await warte(50);
     if(GL.gl && GL.vierLaden) await GL.vierLaden();   /* die Exportform der Rauschshader, wie video() vor dem ersten Bild */
-    tiefeBildVon(id); for(let i=0; i<80 && !TIEFEN[id]; i++) await warte(50);
+    /* Auf die Tiefenkarte DER GEWAEHLTEN QUELLE warten - und nur so lange, wie es etwas zu
+       erwarten gibt. `TIEFEN[id]` gilt seit dem 17.09.2026 nicht mehr: der Vorrat haengt an der
+       Quelle, nicht an der Titelkennung.
+       UND „ES GIBT HIER KEINE" IST EIN ENDE, KEIN WARTEN (Gegenlesen 17.09.2026). Bewegtbild und
+       Pruefbild erreichen `da` nie; die Schleife lief dort jedes Mal ihre volle Reissleine ab -
+       80 x 50 ms = 4 s je Titel, ohne je etwas zu holen. tiefeStand() unterscheidet die drei
+       Faelle: nur „unterwegs" ist Warten wert, „da" und „keine" sind fertig. tiefeBildVon()
+       stoesst das Laden an und nimmt seit dem Umbau keine Titelkennung mehr entgegen. */
+    tiefeBildVon(); for(let i=0; i<80 && tiefeStand()==='unterwegs'; i++) await warte(50);
     /* Das Hauszeichen laedt beim ersten Exportbild erst an - dann fehlte es in Bild 0 und nirgends sonst. */
     const zeichen = zeichenHolen(); for(let i=0; i<80 && zeichen && !zeichen.complete; i++) await warte(50);
     ORIG = DATA.schlaege.map(s => s.slice());
     window.aktuellId = id; window.audio = { paused:false, currentTime:jetzt };
-    return { gl:!!GL.gl, noise:!!GL.noise, tiefe:!!TIEFEN[id], schlaege:ORIG.length, titel:DATA.titel, einsen:ORIG.filter(s=>s[1]===1).length };
+    return { gl:!!GL.gl, noise:!!GL.noise, tiefe:tiefeKarteDa(), schlaege:ORIG.length, titel:DATA.titel, einsen:ORIG.filter(s=>s[1]===1).length };
   }
   /* Titelvarianten aus befund.md: ohne Eins-Marken (Schlaege, aber kein Takt), ganz ohne Schlaege, als 3/4 gezaehlt. */
   /* Raender der Loop-Mathematik (15.09.2026, Gegenpruefung): Varianten mit Komma kombinierbar, der Reihe nach angewandt -
@@ -184,7 +192,7 @@ window.__naht = (() => {
       /* Vorschau zur Clipmitte: wie weit weicht der Export vom Pult ab (Hinweis, kein Urteil) */
       const vm = V.grab(vorschauBild(f, lage, W, H, t0 + mitte/BILDRATE));
       const erg = { t0:r2(t0), L:r2(L), N, takte:r2(lage.takte), proTakt, M:lage.M, phiF:lage.phiF, sitzt:lage.sitzt==null?null:r2(lage.sitzt), anzeige:lage.anzeige==null?null:r2(lage.anzeige), einsQuote:lage.einsQuote==null?null:r2(lage.einsQuote), synchron, satz:taktSatz(lage.anzeige, lage.grund, true), schlaegeImRaster:S.length, jeClip:S.jeClip||0, W, H, vergleich:[V.cw, V.ch],
-        gleich:r2(gleich), gleichFolge:r2(gleichFolge), naht:r2(naht), erwartet:r2(erwartet), p95:r2(p95), quotient:r2(naht/Math.max(p95, 0.5)), gl, glSchleife, tiefe:!!TIEFEN[DATA.id],
+        gleich:r2(gleich), gleichFolge:r2(gleichFolge), naht:r2(naht), erwartet:r2(erwartet), p95:r2(p95), quotient:r2(naht/Math.max(p95, 0.5)), gl, glSchleife, tiefe:tiefeKarteDa(),
         vorschauAbw:r2(V.mittel(Fm, vm)), loopNeinAnzeige:nicht, schlaegeImDATA:DATA.schlaege.length };
       if(bewegt){ const bx = bIdx.reduce((s, q) => s + V.mittel(bBild[q], bBild[q+BG]), 0) / bIdx.length;
         const bv = bIdx.reduce((s, q) => { const a = V.grab(vorschauBild(f, lage, W, H, t0 + q/BILDRATE)); return s + V.mittel(a, V.grab(vorschauBild(f, lage, W, H, t0 + (q+BG)/BILDRATE))); }, 0) / bIdx.length;

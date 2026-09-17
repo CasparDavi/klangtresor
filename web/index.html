@@ -27288,7 +27288,7 @@ const EFFEKTE = {
   schatten:{ label:'Schatten', art:'mal', verr:'multi', staerkeDef:.7, besch:'Das Gegenstück zum Scheinwerfer: ein Schatten wandert über das Bild und dunkelt ab. Gleiche Form, Weichheit und Führung — Farbe frei, Schwarz voreingestellt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#000000'}]},
   laser:{ label:'Laserstrahl', art:'mal', verr:'add', staerkeDef:.7, besch:'Drei Bauarten: <b>Gitter</b> (ein Strahlteiler macht aus einem Strahl viele gleichzeitige), <b>Scanner</b> (ein Strahl, von einem Galvospiegel schnell abgelenkt — was man sieht, ist Nachleuchten) und <b>Punkte</b> (ein Beugungsgitter streut hunderte Dots als Raster auf die Fläche; Neigung legt es flach wie eine Tanzfläche oder stellt es auf wie eine Wand). Strahlen schießen aus einem Punkt außerhalb des Bildes, jeder mit hellem Kern und weichem Saum; der Fächer schwenkt (Tempo = Sekunden je Schwenk). Mehrfach in verschiedenen Farben einhängen.',
-    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt'],['punkte','Punkte — ein Raster aus Dots']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'raster',lbl:'Punkte je Reihe',min:3,max:20,step:1,def:9,when:e=>e.bauart==='punkte'},{k:'neigung',lbl:'Neigung (0 Wand, 1 Boden)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'drehen',lbl:'Drehen',min:-1,max:1,step:.05,def:.15,when:e=>e.bauart==='punkte'},{k:'aufsetzen',lbl:'Aufsetzen (Tiefenkarte)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2d2d'},{k:'bauart',lbl:'Bauart',sel:[['gitter','Gitter — viele Strahlen zugleich'],['scanner','Scanner — ein Strahl, schnell abgelenkt'],['punkte','Punkte — ein Raster aus Dots']],def:'gitter'},{k:'anzahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,when:e=>(e.bauart||'gitter')==='gitter'},{k:'sweepTempo',lbl:'Schwenke je Sekunde',min:.2,max:20,step:.2,def:2,when:e=>e.bauart==='scanner'},{k:'austastung',lbl:'Austastung',min:0,max:.9,step:.05,def:.35,when:e=>e.bauart==='scanner'},{k:'stufen',lbl:'Stellen im Fächer',min:2,max:16,step:1,def:6,when:e=>e.bauart==='scanner'},{k:'nachgluehen',lbl:'Nachglühen (s)',min:.02,max:.3,step:.01,def:.09,when:e=>e.bauart==='scanner'},{k:'sprung',tog:'je Schlag auf eine Stelle springen',def:0,when:e=>e.bauart==='scanner'},{k:'raster',lbl:'Punkte je Reihe',min:3,max:20,step:1,def:9,when:e=>e.bauart==='punkte'},{k:'neigung',lbl:'Neigung (0 Wand, 1 Boden)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte'},{k:'drehen',lbl:'Drehen',min:-1,max:1,step:.05,def:.15,when:e=>e.bauart==='punkte'},{k:'aufsetzen',lbl:'Aufsetzen (Tiefenkarte)',min:0,max:1,step:.05,def:.6,when:e=>e.bauart==='punkte',brauchtKarte:true},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.18},{k:'laenge',lbl:'Länge',min:.3,max:1.6,step:.05,def:1.1},{k:'breite',lbl:'Breite',min:.02,max:.4,step:.02,def:.12},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:8},{k:'flimmer',lbl:'Flimmern',min:0,max:1,step:.05,def:.35},{k:'flimmerTempo',lbl:'Flimmer-Tempo',min:2,max:40,step:1,def:20},{k:'quelle',lbl:'Ursprung',sel:[['wandern','wandernd'],['fest','fest gesetzt']],def:'wandern'},{k:'ux',lbl:'Ursprung X',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'uy',lbl:'Ursprung Y',min:-0.6,max:1.6,step:.05,def:-0.2,when:e=>e.quelle==='fest'},{k:'schwenk',lbl:'Schwenk',min:0,max:1.4,step:.05,def:.5}]},
   streifen:{ label:'Laufstreifen', art:'mal', verr:'screen', staerkeDef:.5, besch:'Helle oder dunkle Bänder ziehen über das Bild — Hum-Bars, Tracking-Linien. Zwei in verschiedenem Tempo: kaputtes Signal.',
     params:[{k:'ton',lbl:'Bänder',sel:[['hell','helle'],['dunkel','dunkle'],['beide','abwechselnd']],def:'hell'},{k:'anzahl',lbl:'Anzahl',min:1,max:24,step:1,def:5},{k:'breite',lbl:'Breite',min:.05,max:.9,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:2,max:30,step:1,def:9},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:15,def:0}]},
   rauschen:{ label:'Rauschausfall', art:'mal', verr:'ueber', staerkeDef:.5, besch:'Schnee-Körnung und weiße wie schwarze Dropout-Striche. Auf Wunsch nur im Takt: dann als Ausbruch auf jedem Schlag.',
@@ -27304,10 +27304,20 @@ const EFFEKTE = {
   sicherung:{ label:'Sicherungswackeln', art:'mal', verr:'nachbelichten', staerkeDef:.5, besch:'Das Gegenteil vom Stroboskop: kurze, unregelmäßige Einbrüche der Helligkeit, als zuckte die Sicherung — mit Zittern im Einbruch. Frei (Häufigkeit je zehn Sekunden) oder im Takt: dann genau auf Schlägen, aber nur auf einen zufälligen Teil davon. Auch als: Lichtflackern unter Wasser, durch Wolken, hinter Laub.',
     params:[{k:'haeufigkeit',lbl:'Häufigkeit',min:.5,max:10,step:.5,def:3},{k:'dauer',lbl:'Dauer (ms)',min:40,max:800,step:10,def:180},{k:'zittern',lbl:'Zittern',min:0,max:1,step:.05,def:.5},{k:'takt',tog:'nur im Takt',def:0}]},
   streiflicht:{ label:'Streiflicht', art:'gl', medium:true, nurMitLicht:true, staerkeDef:.7, besch:'<b>Er wirkt nur zusammen mit einer Leuchte und nur, wenn eine Tiefenkarte vorliegt.</b> Dann beleuchtet er das Bild, als wäre es ein Relief: wo sich die Karte dem Licht entgegenwölbt, blitzt die Kante auf, wo sie wegfällt, legt sich Schatten. Die Richtung kommt von der Leuchte selbst — ein Laser von der Seite streift, ein Scheinwerfer von vorn modelliert. Einfall sagt, wo sie steht: bei 0 in der Bildebene — streifend, lange Schatten, harte Kanten; nach rechts tritt sie hervor bis frontal und modelliert flach; nach links tritt sie <b>hinter</b> die Bildfläche, dann bleibt nur die Silhouette stehen — Gegenlicht. Kante ist die Schärfe des Blitzes, Relief wie stark die Karte die Fläche kippt. Auch als: Rampenlicht, Gegenlicht, Konturlicht.',
-    params:[{k:'einfall',lbl:'Einfall',min:-1,max:1,step:.05,def:.25},
-      {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
-      {k:'relief',lbl:'Relief',min:0,max:1,step:.05,def:.5},
-      {k:'schatten',lbl:'Schlagschatten',min:0,max:1,step:.05,def:.5}],
+    /* OHNE KARTE TUT DIESER EFFEKT NACHWEISLICH NICHTS (Gegenlesen 17.09.2026, am Code
+       nachgerechnet). GL.run bekommt tiefeBildVon() und setzt u_tiefeAn ZULETZT hart auf 0, wenn
+       zu dieser Quelle kein Tiefenbild vorliegt; die erste Zeile des Shaders gibt daraufhin das
+       Bild unveraendert zurueck (`if(u_tiefeAn<0.5||u_ortDa<0.5){ gl_FragColor=c; return; }`).
+       Vier bedienbare Regler ueber einem Effekt, der nichts rechnet, sind dieselbe Falschaussage
+       wie eine Beschriftung ohne Wirkung (Regel 11). Es ist EIN Sachverhalt, nicht vier: die
+       Zeilen tragen darum nur die Marke `brauchtKarte`, und paramHTML legt den Grund EINMAL je
+       Karte unter die letzte sichtbare Zeile mit dieser Marke. Solange die Karte laedt, bleiben
+       sie bedienbar und sagen das - nach derselben Regel; stilllegen waere dieselbe Luege mit
+       umgekehrtem Vorzeichen. */
+    params:[{k:'einfall',lbl:'Einfall',min:-1,max:1,step:.05,def:.25,brauchtKarte:true},
+      {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5,brauchtKarte:true},
+      {k:'relief',lbl:'Relief',min:0,max:1,step:.05,def:.5,brauchtKarte:true},
+      {k:'schatten',lbl:'Schlagschatten',min:0,max:1,step:.05,def:.5,brauchtKarte:true}],
     /* Der Ort der Leuchte wird je Bild frisch gemeldet; ohne Meldung schaltet sich der Effekt
        selbst ab (u_ortDa). Die Tiefenrechnung ist kein Regler - GL.run stellt sie hart auf
        null, wenn keine Karte da ist, und diese Zeile laeuft nach dem Zusatz. */
@@ -27325,7 +27335,7 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, lmNurSchub:true, besch:'Teilchen ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schießt sie hinaus und läuft aus wie Luftwiderstand. Anzahl, Größe, Tempo, Wind und Farbe frei. Die Farbquelle sagt, WOHER die Farben kommen: das Akzentpaar des Titelbildes, seine gemessenen Haupttöne, ein fester bunter Satz, eine einzige Farbe (schwarzer Schnee) oder ein eigenes Paar. Was die gewählte Art ausmacht, steht unter dem Auswahlfeld.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Tiefe aus der Bildzeile',min:0,max:1,step:.05,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Tiefe aus der Bildzeile',min:0,max:1,step:.05,def:0,brauchtKarte:true},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27443,7 +27453,7 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
    vor ihm, bis es jemand sagt. */
 const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'Aufenthalt',
   sel:[['alles','überall'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles',
-  grau:e=>tiefeGrund(), notiz:e=>aufenthaltNotiz(e) };
+  brauchtKarte:true, notiz:e=>aufenthaltNotiz(e) };
 const VERDECK_WERTE = [['aus','aus'],['vorn','vom Vordergrund verdeckt']];
 const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'];
 /* `sel` BLEIBT EINE LISTE (Gegenlesen 16.09.2026, zweite Runde). Der Altwert soll nur dort in der
@@ -27453,7 +27463,7 @@ const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'
    Also traegt eine ZWEITE Eigenschaft die Zugabe; `sel` ist und bleibt die Liste der Werte. */
 const VERDECK_PARAM = { k:'tiefeVerdeckung', lbl:'Verdeckung',
   sel:VERDECK_WERTE, selMehr:e=>(e.tiefeVerdeckung==='zone')?[VERDECK_ALTWERT]:null, def:'aus',
-  grau:e=>tiefeGrund()||verdeckGrund(e), notiz:e=>verdeckNotiz(e) };
+  brauchtKarte:true, grau:e=>verdeckGrund(e), notiz:e=>verdeckNotiz(e) };
 /* GRENZE UND WEICHHEIT (gemessen 16.09.2026 an „Okkultation"): die Karte ist richtig — Figur und
    Balustrade hell, Himmel schwarz —, aber ihr Median liegt bei 19 von 255. Mit dem festen Band von
    ±48 Stufen laege die untere Kante bei −29: kein Bildpunkt gilt als sicher fern, 43 % als sicher
@@ -27465,14 +27475,14 @@ const VERDECK_PARAM = { k:'tiefeVerdeckung', lbl:'Verdeckung',
    daneben. Der ganze Satz steht ohnehin in der Notiz darunter. */
 const TIEFE_WERT = v => (v==null||v<0) ? '–' : Math.round(v*255)+'';
 const GRENZE_PARAM = { k:'tiefeGrenze', lbl:'Grenze', min:-.02, max:1, step:.02, def:-.02,
-  wert:TIEFE_WERT, grau:e=>tiefeGrund(), notiz:e=>grenzeNotiz(e) };
+  wert:TIEFE_WERT, brauchtKarte:true, notiz:e=>grenzeNotiz(e) };
 const WEICH_PARAM = { k:'tiefeWeich', lbl:'Weichheit', min:-.02, max:1, step:.02, def:-.02,
-  wert:v=>(v==null||v<0)?'–':('±'+Math.round(v*255)), grau:e=>tiefeGrund(), notiz:e=>weichNotiz(e) };
+  wert:v=>(v==null||v<0)?'–':('±'+Math.round(v*255)), brauchtKarte:true, notiz:e=>weichNotiz(e) };
 /* RAUMTIEFE: die Karte gibt jedem Teilchen Groesse, Tempo und ein wenig Dunst. Abgelesen wird
    EINMAL an seinem Geburtsort, nicht je Bild — die Probe steht still, also bleibt der Loop exakt.
    0 ist flach wie bisher (Vorgabe), 1 ist stark. */
 const RAUM_PARAM = { k:'raumtiefe', lbl:'Raumtiefe', min:0, max:1, step:.05, def:0,
-  grau:e=>tiefeGrund()||raumGrund(e), notiz:e=>raumNotiz(e) };
+  brauchtKarte:true, grau:e=>raumGrund(e), notiz:e=>raumNotiz(e) };
 /* Einzelne Koerper hat heute nur der Partikel-Effekt. Steht hier spaeter eine zweite Art Effekt mit
    Teilchen, gehoert sie in diese eine Zeile und nirgendwo sonst hin. */
 const TIEFE_KOERPER = e => e.typ==='partikel';
@@ -27488,11 +27498,33 @@ const VERDECKT = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung==='vorn' && e.tiefeW
 /* EINE KARTE, KEINE, ODER NOCH UNTERWEGS — UND DAS WIRD GESAGT (Regel 11; Caspar_D, 16.09.2026:
    „das Problem ist, es wirkt nicht"). Ohne Tiefenkarte stehen alle Tiefenzeilen grau mit Grund.
    Solange sie laedt, bleiben sie BEDIENBAR und sagen das — sie stillzulegen waere dieselbe
-   Falschaussage mit umgekehrtem Vorzeichen. */
-function tiefeGrund(){ return (tiefeStand()==='keine')
-  ? 'Zu diesem Titel liegt keine Tiefenkarte (tiefe.png). Ohne sie weiß der Effekt nicht, was vorn und was hinten ist — die Zeile bleibt still, statt etwas zu versprechen.'
-  : null; }
-const LAEDT = () => tiefeStand()==='unterwegs' ? 'Die Tiefenkarte wird gerade geladen — die Zahlen unten stehen, sobald sie da ist.' : null;
+   Falschaussage mit umgekehrtem Vorzeichen.
+
+   ES GEHT UM DIE QUELLE, NICHT UM DEN TITEL (17.09.2026). Der Satz von gestern sagte „Zu diesem
+   Titel liegt keine Tiefenkarte" — und das war schon falsch, sobald ein Titel mehrere Quellen hat:
+   sein Titelbild kann eine haben und sein Bewegtbild keine. Der Grund nennt darum die Quelle, die
+   gerade gemalt wird, und sagt, WAS ihr fehlt. Er verspricht nichts: fuer Bewegtbilder gibt es hier
+   heute keinen Rechenweg, und ein „kommt noch" in der Oberflaeche waere eine Zusage, die diese
+   Zeile nicht halten kann. */
+function tiefeGrund(){
+  if(tiefeStand()!=='keine') return null;
+  const q=tiefeQuelle();
+  /* tiefeQuelle() gibt nur dann nichts zurueck, wenn gar kein TITEL geladen ist - eine Quelle
+     ist immer gewaehlt (grund faellt auf das Titelbild zurueck). Der Satz von heute morgen
+     schickte den Nutzer eine Wahl treffen, die es nicht gibt (Gegenlesen 17.09.2026). */
+  if(!q) return 'Es ist kein Titel geladen — ohne Bild gibt es auch keine Tiefenkarte. Die Zeile bleibt still, statt etwas zu versprechen.';
+  const nm='„'+quellName(q)+'“';
+  const was=(q.art==='bewegtbild'||q.art==='video')
+    ? 'Die Quelle '+nm+' ist ein Bewegtbild, und für Bewegtbilder gibt es hier keine Tiefenkarte.'
+    : (!q.url
+      ? 'Zur Quelle '+nm+' gibt es keine Tiefenkarte — sie ist ein Prüfbild und liegt nicht beim Titel.'
+      /* GEMESSEN IST NUR DER FEHLSCHLAG (Gegenlesen 17.09.2026). Was hier ankommt, ist ein
+         onerror des Bildes - ob die Datei fehlt, der Server sie mit 403 verweigert oder mit 500
+         aussteigt, steht darin nicht. Der Satz von heute morgen entschied sich fuer die erste
+         Moeglichkeit und behauptete damit mehr, als gemessen wurde. */
+      : 'Zur Quelle '+nm+' ließ sich keine Tiefenkarte laden — '+q.url.split('/').pop()+' kam nicht an: entweder liegt die Datei nicht neben dem Bild, oder sie kommt gerade nicht durch.');
+  return was+' Ohne sie weiß der Effekt nicht, was vorn und was hinten ist — die Zeile bleibt still, statt etwas zu versprechen.'; }
+const LAEDT = () => tiefeStand()==='unterwegs' ? 'Die Tiefenkarte dieser Quelle wird gerade geladen — die Zahlen unten stehen, sobald sie da ist.' : null;
 function verdeckGrund(e){
   if(e.tiefeVerdeckung==='zone') return null;   /* der Altwert muss sichtbar und aenderbar bleiben */
   if(!TIEFE_KOERPER(e)) return 'Dieser Effekt hat keine einzelnen Körper — er legt sich über das ganze Bild. Seine Zone kann nur ausgeschnitten werden: der Aufenthalt ist hier schon der Schnitt.';
@@ -27515,7 +27547,7 @@ function aufenthaltWie(art){
    Uebrig bleiben die Lichtkreise (bis 2,13 %) und die Schwaden (bis 0,22 %, vorher 14,88 %). */
 const ZONE_UNGENAU = new Set(['bokeh','schwaden']);
 /* UND DIE GRENZE, DIE FUER ALLE GILT (Gegenlesen 16.09.2026). Der Maler entscheidet auf dem Raster
-   der Tiefenprobe - 160 Punkte breit, einmal je Titel -, gemalt wird in voller Groesse. Wo die
+   der Tiefenprobe - 160 Punkte breit, einmal je Quelle -, gemalt wird in voller Groesse. Wo die
    Zonengrenze durch feine Struktur laeuft, faellt darum ein Rest Farbe auf die falsche Seite:
    gemessen ueber alle 18 Arten hoechstens 2,13 % der gemalten Flaeche. Ein feineres Raster waere
    die saubere Abhilfe, kostet aber die Bitgleichheit - dasselbe Raster traegt den Laser (tiefeBei)
@@ -27524,13 +27556,12 @@ const ZONE_UNGENAU = new Set(['bokeh','schwaden']);
 const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) — wo die Zonengrenze durch feine Struktur läuft, bleibt ein Rest Farbe auf der anderen Seite (gemessen bis 2 % der gemalten Fläche).';
 /* Wie viel des Bildes die erlaubte Zone einnimmt - und ob dort ueberhaupt etwas zu sehen sein wird.
    Gerechnet aus dem Raster, nicht geraten. */
-function zonenLageVon(e){ const tp=tiefeProben(DATA&&DATA.id); if(!tp) return null;
-  const sp=tiefeSpanne(e,tp); return zonenLage(DATA&&DATA.id, e.tiefeWirkt, sp.g, sp.w); }
+function zonenLageVon(e){ const tp=tiefeProben(); if(!tp) return null;
+  const sp=tiefeSpanne(e,tp); return zonenLage(e.tiefeWirkt, sp.g, sp.w); }
 function leerWarnung(e){ const zl=zonenLageVon(e); if(!zl) return '';
   if(zl.erlaubt<0.01) return ' ACHTUNG: die erlaubte Zone ist nur '+vH(zl.erlaubt)+' des Bildes groß — hier wird so gut wie nichts zu sehen sein. Grenze oder Weichheit verschieben.';
   return ' Die erlaubte Zone ist '+vH(zl.erlaubt)+' des Bildes groß.'; }
 function aufenthaltNotiz(e){
-  const l=LAEDT(); if(l) return l;
   if(!tiefeKarteDa()||!e.tiefeWirkt||e.tiefeWirkt==='alles') return null;
   if(!TIEFE_KOERPER(e)) return 'Die Zone wird aus dem Ergebnis ausgeschnitten — dieser Effekt hat keine einzelnen Körper, die man woanders hinschicken könnte.'+leerWarnung(e);
   if(e.tiefeVerdeckung==='zone'){
@@ -27546,7 +27577,6 @@ function aufenthaltNotiz(e){
     + (ZONE_UNGENAU.has(e.art) ? ' Diese Art malt einen weichen Saum über ihren Körper hinaus; ein Rest davon kann in die verbotene Zone reichen.' : '')
     + RASTER_SATZ + leerWarnung(e); }
 function verdeckNotiz(e){
-  const l=LAEDT(); if(l&&TIEFE_KOERPER(e)) return l;
   if(!tiefeKarteDa()||!TIEFE_KOERPER(e)||e.tiefeVerdeckung==='zone') return null;
   if(e.tiefeVerdeckung==='vorn'&&e.tiefeWirkt!=='vorn')
     return 'Was die Tiefenkarte als nah führt, liegt vor dem Effekt und nimmt ihn dort weg — auch bei Aufenthalt „überall". Das ist der Vogel, der hinter dem Haus verschwindet und wieder herauskommt.';
@@ -27564,7 +27594,7 @@ function grenzeUneins(e){ try{
     ? ' In diesem Clip steht ein weiterer Effekt mit Zone auf einer ANDEREN Grenze — dieselbe Karte wird dann verschieden geteilt.'
     : ' In diesem Clip stehen '+and.length+' weitere Effekte mit Zone auf einer ANDEREN Grenze — dieselbe Karte wird dann verschieden geteilt.') : '';
 }catch(x){ return ''; } }
-function grenzeNotiz(e){ const l=LAEDT(); if(l) return l;
+function grenzeNotiz(e){
   if(!tiefeKarteDa()) return null; const m=tiefeMitte();
   /* EHRLICH UEBER DIE ZWEITE ZAHL (Gegenlesen 16.09.2026): die Maske rechnet ihren Median in der
      jeweiligen AUSGABEGROESSE neu, dieses Raster ist 160 Punkte breit. Auf zwei von vier geprueften
@@ -27573,12 +27603,17 @@ function grenzeNotiz(e){ const l=LAEDT(); if(l) return l;
   return ((e.tiefeGrenze==null||e.tiefeGrenze<0)
     ? 'von selbst: die Mitte dieser Karte'+(m==null?'':' — rund '+Math.round(m*255)+' von 255 (die Maske misst sie je Ausgabegröße neu und kann ein bis zwei Stufen abweichen)')+'.'
     : 'von Hand: '+Math.round(e.tiefeGrenze*255)+' von 255'+(m==null?'':'; von selbst wären es rund '+Math.round(m*255))+'.') + grenzeUneins(e); }
-function weichNotiz(e){ const l=LAEDT(); if(l) return l; if(!tiefeKarteDa()) return null;
+function weichNotiz(e){ if(!tiefeKarteDa()) return null;
   return (e.tiefeWeich==null||e.tiefeWeich<0)
     ? 'von selbst: ±48 von 255 um die Grenze.'
     : 'von Hand: ±'+Math.round(e.tiefeWeich*255)+' von 255 um die Grenze (von selbst wären es ±48).'; }
-function raumNotiz(e){ const l=LAEDT(); if(l) return l;
-  if(!tiefeKarteDa()||RAUM_OHNE.has(e.art)) return null;
+/* ERST DIE ART, DANN DAS WARTEN (Gegenlesen 17.09.2026). Bei Schwarm, Sternschnuppe und Kanone
+   steht die Zeile wegen raumGrund() ohnehin grau - der Wartesatz darunter versprach trotzdem
+   „die Zahlen unten stehen, sobald sie da ist", und das wird sie nie. Der Grund der Art gilt
+   vor dem Warten auf die Karte; seit dem 18.09.2026 haelt die Traegerwahl in paramHTML das ein
+   (eine aus eigenem Grund stillgelegte Zeile traegt den Wartesatz nicht). */
+function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
+  if(!tiefeKarteDa()) return null;
   return (e.raumtiefe>0.001)
     ? 'Bei 1 ist das nächste Teilchen 1,6-fach groß und 1,5-fach schnell, das fernste 0,4-fach groß, 0,5-fach schnell und bis zu 35 % blasser. Abgelesen wird einmal am Geburtsort — die Probe steht, der Loop bleibt exakt.'
     : 'flach wie bisher: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen.'; }
@@ -27740,7 +27775,11 @@ const ART_ANTRIEB={ konfettiKanone:1, glitzer:1 };
      dann nicht, wenn sie gebraucht wird: wer die Karte frisch aufschlaegt, sah zwei fast gleich
      heissende Bedienteile und keinen Hinweis. Sie steht jetzt immer, und der Regler heisst nach
      dem, wonach er wirklich fragt. */
-  if(pv) pv.notiz=e=>'Schätzt die Tiefe jedes Teilchens aus seiner Bildzeile — oben fern, unten nah — und lässt es hinter näheren Stellen der Szene verschwinden, Teilchen für Teilchen. Die Zeile „Verdeckung“ rechts fragt nicht das einzelne Teilchen, sondern die Tiefenkarte des Titels. Zwei verschiedene Tiefen, zwei Regler.'; }
+  /* UND SIE SCHWEIGT NICHT MEHR, WAEHREND DIE KARTE LAEDT (Gegenlesen 17.09.2026). Die Zeile ist
+     die einzige Tiefenzeile, die in dieser Zeit nichts sagte und danach ohne Uebergang auf grau
+     sprang. Den Wartesatz traegt sie seit dem 18.09.2026 nicht mehr selbst - er steht EINMAL je
+     Karte (`brauchtKarte` und die Traegerwahl in paramHTML); hier bleibt, was der Regler TUT. */
+  if(pv) pv.notiz=e=>'Schätzt die Tiefe jedes Teilchens aus seiner Bildzeile — oben fern, unten nah — und lässt es hinter näheren Stellen der Szene verschwinden, Teilchen für Teilchen. Die Zeile „Verdeckung“ rechts fragt nicht das einzelne Teilchen, sondern die Tiefenkarte der gemalten Quelle. Zwei verschiedene Tiefen, zwei Regler.'; }
 /* UND SIE BRINGEN IHN AUCH MIT (gemessen 16.09.2026). Beide Arten LESEN den Antrieb, aber keine
    brachte ihn mit: ab Werk stand er auf "stetig", also schoss die Kanone alle 1,6 s und der
    Glitzer blitzte alle 1,6 s - beides neben dem Takt, auf dem sie laut ihrer eigenen Beschreibung
@@ -28727,7 +28766,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
             Sy=S*1.35, Cx=Wn*0.5, Cy=Hn*0.46,
             r0=Math.max(1.2,e.breite*16)*EINHEIT,                  /* Punktgroesse in der vordersten Reihe, wie im Studio (dort mindestens 1,2 px); die Untergrenze dieser Leinwand kommt erst beim Malen */
             auf=(e.aufsetzen==null?0.6:e.aufsetzen),
-            tp=tiefeProben(DATA&&DATA.id);                 /* ohne Karte bleibt das Raster auf der Scheibe */
+            tp=tiefeProben();                 /* ohne Karte zu dieser Quelle bleibt das Raster auf der Scheibe */
       /* Das Punktbild einmal je Bild: Kern und weicher Hof, in der Laserfarbe. */
       if(!e._pt) e._pt=document.createElement('canvas');
       const PS=48; if(e._pt.width!==PS){ e._pt.width=PS; e._pt.height=PS; }
@@ -28754,7 +28793,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
              Grund, warum sich das Raster ueber eine Schulter legt statt darueber hinwegzugehen. */
         let streck=1, winkel=0;
         if(tp&&auf>0.001){
-          const u2=x2/Wn, v2=y2/Hn, zz=tiefeBei(tp,u2,v2);   /* 1 nah, 0 fern, je Titel gedehnt */
+          const u2=x2/Wn, v2=y2/Hn, zz=tiefeBei(tp,u2,v2);   /* 1 nah, 0 fern, je Quelle gedehnt */
           /* REICHWEITE (Caspar_D, 14.09.2026: "hinten muss die laenge der strahlen so sein, dass
              sie es nicht mehr erreichen, so vermeidet man punkte im Himmel"). Ein Dotprojektor
              kommt nicht unendlich weit - was dahinter liegt, bleibt dunkel. Und das Fernste im
@@ -28994,7 +29033,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* Wird geschnitten oder verdeckt, malen die Teilchen erst auf eine eigene Leinwand - die
        Maske schneidet dort einmal, statt je Teilchen zu rechnen. */
     const hor=(e.horizont==null?0:e.horizont), vd=(e.verdecken==null?0:e.verdecken);
-    const tpP=(hor>0.001||vd>0.001)?tiefeProben(DATA&&DATA.id):null;
+    const tpP=(hor>0.001||vd>0.001)?tiefeProben():null;
     const schnitt=!schw&&(hor>0.001||(vd>0.001&&tpP));
     const echtCx=cx, echtModus=cx.globalCompositeOperation;
     if(schnitt){ if(!e._vc) e._vc=document.createElement('canvas');
@@ -29003,7 +29042,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       cx.globalAlpha=1; cx.filter='none'; cx.clearRect(0,0,Wn,Hn); cx.lineCap='round'; }
     const wa=(e.wandern==null?0:e.wandern);
     /* ---- AUFENTHALT (Betretungsverbot) UND RAUMTIEFE (16.09.2026) ----
-       Gefragt wird EINMAL je Bild nach dem Raster (tiefeProben, 160 Punkte breit, einmal je Titel)
+       Gefragt wird EINMAL je Bild nach dem Raster (tiefeProben, 160 Punkte breit, einmal je Quelle)
        und dann je Teilchen an einem Punkt - nie ein Bildlesen je Teilchen, nie eines je Bild.
        Das Verbot gilt HART und je Art verschieden:
          - alle fallenden und treibenden Arten: wer in der verbotenen Zone zur Welt kaeme, wuerfelt
@@ -29017,7 +29056,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Alles reine Funktionen von i und t, also bleibt der Loop exakt. */
     const RAUM=Math.max(0,Math.min(1,(e.raumtiefe==null?0:e.raumtiefe)));
     const zoneWunsch=ZONE_HART(e)?e.tiefeWirkt:null;
-    const TPR=(zoneWunsch||RAUM>0.001)?tiefeProben(DATA&&DATA.id):null;
+    const TPR=(zoneWunsch||RAUM>0.001)?tiefeProben():null;
     const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(e,TPR):null;
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
     /* Wie weit ein Koerper um seinen Ort herum reicht, in Vielfachen von sz - abgelesen an den
@@ -29388,7 +29427,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         lx2.globalCompositeOperation='destination-in'; lx2.drawImage(e._rc,0,0);   /* Licht mal Rauchdichte */
         zx.globalCompositeOperation='lighter'; zx.globalAlpha=0.9; zx.drawImage(e._rl,0,0); zx.globalAlpha=1; }
       cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._rc,0,0); }
-    if(schnitt){ const mk=partikelMaske(DATA&&DATA.id, hor, vd, Wn, Hn, tpP);
+    if(schnitt){ const mk=partikelMaske(hor, vd, Wn, Hn, tpP);
       if(mk){ cx.globalCompositeOperation='destination-in'; cx.globalAlpha=1; cx.drawImage(mk,0,0); cx.globalCompositeOperation='source-over'; }
       echtCx.globalCompositeOperation=echtModus; echtCx.globalAlpha=1; echtCx.drawImage(e._vc,0,0);
       cx=echtCx; } }
@@ -29484,7 +29523,7 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
     this.texL=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texL); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));   /* solange kein Licht-Puffer da ist: schwarz */
     /* Die TIEFENKARTE. Hell ist nah, dunkel ist fern; bin/tiefenkarten.js
-       rechnet sie je Titelbild. Solange keine da ist: mittleres Grau -
+       rechnet sie je Standbild - Titelbild wie eigenes. Solange keine da ist: mittleres Grau -
        dann ist die Tiefe ueberall gleich und die Rechnung liefert genau
        das, was ohne Karte herauskaeme. */
     this.texT=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texT); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
@@ -29526,7 +29565,7 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,srcCv);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.texL); if(lichtCv&&lichtCv.width>1) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,lichtCv);
     /* Die Karte wird nur hochgeladen, wenn sie sich geaendert hat - sie
-       ist je Titel konstant, und 518x518 je Bild waere Verschwendung. */
+       ist je Quelle konstant, und 518x518 je Bild waere Verschwendung. */
     gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D,this.texH);
     if(lichtCv&&lichtCv.width>1){ const hw=Math.max(2,Math.round(W/14)), hh=Math.max(2,Math.round(H/14));
       if(this.hofCv.width!==hw||this.hofCv.height!==hh){ this.hofCv.width=hw; this.hofCv.height=hh; }
@@ -29803,7 +29842,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
           const sh=Math.max(1,Math.abs(dx)*0.5)*(dx<0?-1:1); cres.fillStyle='#000'; cres.fillRect(bx+dx-Math.abs(sh),by,bw+Math.abs(sh)*2,bh);
           for(const [mask,sv] of [['#ff0000',sh],['#00ffff',-sh]]){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,bx,by,bw,bh,bx+dx+sv,by,bw,bh); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(bx+dx+sv,by,bw,bh); frisch(ckc); cres.globalCompositeOperation='lighter'; cres.drawImage(okc,0,0); cres.globalCompositeOperation='source-over'; } }
         else cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh); } } }
-  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,mediumJetzt(e)?olicht:null, tiefeBildVon(DATA&&DATA.id)); if(g) cres.drawImage(g,0,0);
+  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,mediumJetzt(e)?olicht:null, tiefeBildVon()); if(g) cres.drawImage(g,0,0);
     else if(mediumJetzt(e)){ cres.drawImage(srcCv,0,0); filmnebelLeinwand(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
   else if(e.typ==='bloom'){ cres.filter='blur('+(e.radius*EINHEIT)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
 }
@@ -29970,7 +30009,7 @@ function renderStapel(){
            wird, stand nirgends - der Nutzer erlebte es, ohne dass ihm jemand sagte, dass er die
            Maske selbst sieht. Auch die waagerechte Achse fehlte, und die Zahlenzeile trug gar
            keinen Titel. Beide tragen jetzt denselben: sie gehoeren zu einem Kasten. */
-        if(p.k==='tiefeGrenze'&&tiefeProben(DATA&&DATA.id)){
+        if(p.k==='tiefeGrenze'&&tiefeProben()){
           const tt='Verteilung der Tiefenwerte dieses Bildes. Waagerecht der Tiefenwert \u2013 links dunkel/hinten, rechts hell/vorn; senkrecht die H\u00e4ufigkeit im Wurzelma\u00dfstab, damit auch kleine H\u00e4ufungen zu sehen sind. Rot: hier gilt der Punkt als nah, blau: als fern, dazwischen das weiche Band. Der wei\u00dfe Strich ist die Grenze, der blasse die Mitte der Karte \u2013 auf \u201evon selbst\u201c sind beide dasselbe, dann steht nur der wei\u00dfe und eine Spur f\u00fchrt vom Griff zu ihm. Solange du ziehst, zeigt das Bild daneben dieselbe Maske: entf\u00e4rbt, rot vorn, blau hinten. Die drei Anteile sind auf demselben groben Raster gez\u00e4hlt wie der Streifen; das Bild rechnet sie je Ausgabegr\u00f6\u00dfe neu und weicht um ein bis zwei Prozent ab.';
           h+='<div class="tbs-regler tbs-tsicht"><span></span><div><canvas class="tbs-thist" title="'+tt+'"></canvas><div class="tbs-tzahlen" title="'+tt+'"></div></div><span></span></div>'; } }
     };
@@ -29985,11 +30024,47 @@ function renderStapel(){
        jeder Block (Quelle, Antrieb, Raum) kann `grau` erben, ohne dass sein Zweig davon etwas
        wissen muss. `disabled` an jedem Bedienteil darin - sonst waere es nur blass und wuerde
        trotzdem etwas tun. */
-    const paramHTML=p=>{ const an=(!p.versteckt&&(!p.when||p.when(e))), grund=(p.grau&&an)?p.grau(e):null, vor=h.length;
+    /* DIE TIEFENKARTE IST EIN SACHVERHALT DER GANZEN KARTE, KEINER JE ZEILE (18.09.2026, aus dem
+       Gegenlesen vom 17.09.). Bis heute trug JEDE Zeile, die an der Karte haengt, den ganzen Satz
+       aus tiefeGrund() selbst - am DOM gezaehlt (17.09.2026) standen ohne Tiefenkarte bis zu SECHS
+       wortgleiche Absaetze auf einer Karte (Partikel 6, Streiflicht 5, Laser 4-5), der Wartesatz aus
+       LAEDT() bis zu sechsmal. Jetzt ist es genau einer, gemessen ueber dreizehn Karten. Das
+       ist dasselbe Stottern, das die Farbquellen schon hinter sich haben (Regel darunter). Die
+       Zeilen tragen jetzt nur die Marke `brauchtKarte`; wer den Satz traegt, wird EINMAL je Karte
+       entschieden, nicht je Zeile.
+       DER TRAEGER IST DIE LETZTE SICHTBARE, NICHT DIE LETZTE VORHANDENE. Eine Zeile mit `when`
+       kann ausgelassen sein - der Laser zeigt „Aufsetzen" nur bei Bauart „Punkte" -, und mit ihr
+       verschwaende der Grund fuer alle uebrigen. Geprueft wird darum mit derselben Bedingung, die
+       das Markup benutzt, und in der Reihenfolge des Markups: erst die linke Spalte (eigene
+       Zeilen), dann die rechte (gemeinsame).
+       UND ER IST NICHT SELBST SCHON STILLGELEGT. Eine Zeile, die aus EIGENEM Grund grau steht
+       (Raumtiefe bei Schwarm, Sternschnuppe, Kanone), kann den Wartesatz nicht tragen: „die
+       Zahlen stehen, sobald sie da ist" wird bei ihr nie wahr. Sie wird uebersprungen; bleibt
+       keine andere, traegt die letzte sichtbare, damit der Grund nicht ganz ausfaellt. */
+    const sichtbar=p=>(!p.versteckt&&(!p.when||p.when(e)));
+    const tFehlt=tiefeGrund(), tLaedt=tFehlt?null:LAEDT();
+    let tTraeger=null;
+    if(tFehlt||tLaedt){ const kz=s=>T.params.filter(p=>p.brauchtKarte&&GEMEIN.has(p.k)===s&&sichtbar(p));
+      const reihe=kz(false).concat(kz(true));
+      tTraeger=reihe.filter(p=>!(p.grau&&p.grau(e))).pop()||reihe[reihe.length-1]||null; }
+    const paramHTML=p=>{ const an=sichtbar(p), eigen=(p.grau&&an)?p.grau(e):null, vor=h.length,
+      /* DER EIGENE GRUND GEHT VOR (18.09.2026, aus der Zaehlung am DOM). Zuerst stand es umgekehrt:
+         ohne Tiefenkarte schlug der Sachverhalt der Karte jeden eigenen Grund - dann stand bei
+         Schwarm, Sternschnuppe und Kanone die LETZTE Zeile der Karte („Raumtiefe") grau und
+         vollkommen stumm da, weil ihr eigener Grund verschluckt wurde und der Traeger schon
+         darueber lag. Eine stillgelegte Zeile ohne jede Begruendung ist genau das, was Regel 4
+         verbietet. Jetzt: wer einen eigenen Grund hat, zeigt ihn - er ist der genauere, denn der
+         Sachverhalt der Karte steht ohnehin einmal auf ihr. Wer keinen hat, wird stillgelegt; den
+         Satz traegt der Traeger. */
+      grund = eigen || ((an&&p.brauchtKarte&&tFehlt) ? (p===tTraeger?tFehlt:true) : null);
       paramBauen(p);
       /* `notiz` ist die kleine Schwester von `grau`: der Regler TUT etwas, aber was dabei
          herauskommt, haengt am Titel - dann steht die Auskunft darunter, ohne ihn stillzulegen. */
       if(an&&p.notiz){ const nz=p.notiz(e); if(nz) h+='<div class="tbs-graugrund">'+nz+'</div>'; }
+      /* Waehrend die Karte unterwegs ist, bleiben die Zeilen BEDIENBAR und sagen das - einmal je
+         Karte, unter demselben Traeger. `tbs-warte` sagt dem Nachziehen beim Schieben, dass diese
+         Zeile nicht die Notiz des Reglers ist und stehen bleibt. */
+      if(an&&tLaedt&&p===tTraeger) h+='<div class="tbs-graugrund tbs-warte">'+tLaedt+'</div>';
       /* EIN GRUND FUER EINEN SACHVERHALT (gegengelesen 16.09.2026). Bei drei der fuenf Farbquellen
          stand unter „Farbe“ UND unter „Farbe bis“ derselbe Satz Wort fuer Wort - die Karte las sich
          wie ein Stottern, und der Blick suchte einen Unterschied, den es nicht gibt. `grau` darf
@@ -30048,7 +30123,9 @@ function renderStapel(){
            zweite daneben. */
         let vor=zeile, d=zeile&&zeile.nextElementSibling;
         if(d&&d.classList.contains('tbs-tsicht')){ vor=d; d=d.nextElementSibling; }
-        if(d&&!d.classList.contains('tbs-graugrund')) d=null;
+        /* Der Wartesatz der Tiefenkarte gehoert der KARTE, nicht diesem Regler (18.09.2026) -
+           beim Schieben darf er nicht als „Notiz weg" weggeraeumt werden. */
+        if(d&&(!d.classList.contains('tbs-graugrund')||d.classList.contains('tbs-warte'))) d=null;
         if(nz&&d) d.textContent=nz;
         else if(nz&&vor){ const nd=document.createElement('div'); nd.className='tbs-graugrund'; nd.textContent=nz; vor.parentNode.insertBefore(nd, vor.nextSibling); }
         else if(d) d.remove(); }
@@ -30142,7 +30219,12 @@ function sunoTitelbild(id){ /* wie artworkBild im Haus, nur ohne den eigen.jpg-V
   try{ if(typeof katalogInfo==='object'&&katalogInfo&&Array.isArray(katalogInfo.titelbild)&&katalogInfo.titelbild.includes(id)) return '/media/'+id+'/titelbild.jpg'+zusatz; }catch(e){}
   try{ if(typeof _titelbildMenge==='object'&&_titelbildMenge&&_titelbildMenge.has(id)) return '/media/'+id+'/titelbild.jpg'+zusatz; }catch(e){}
   return '/media/'+id+'/cover.jpg'; }
-function medienUrl(id,art,nr){ const n=(nr>1?'-'+nr:'');
+/* DIE LAUFENDE NUMMER EINES EIGENEN BILDES - EINE STELLE DER WAHRHEIT (17.09.2026). Nr. 1 heisst
+   eigen.jpg/eigen.mp4 ohne Zusatz, danach -2, -3. Dieselbe Bildung braucht die Tiefenkarte, die
+   neben dem Bild liegt (tiefeUrl) - sie stand dort ein zweites Mal ausgeschrieben, und zwei
+   Stellen fuer eine Regel heisst, dass eine von beiden sie eines Tages anders bildet. */
+const eigenNr = nr => (nr>1?'-'+nr:'');
+function medienUrl(id,art,nr){ const n=eigenNr(nr);
   return art==='bewegtbild'?'/media/'+id+'/artwork.mp4' : art==='video'?'/media/'+id+'/eigen'+n+'.mp4' : art==='bild'?'/media/'+id+'/eigen'+n+'.jpg' : sunoTitelbild(id); }
 function seitenVon(id,s){ const L=[{art:'titelbild',nr:1,lbl:'Titelbild',url:medienUrl(id,'titelbild',1)}];
   if(s&&s.videoCoverUrl) L.push({art:'bewegtbild',nr:1,lbl:'Bewegtbild (Suno)',url:medienUrl(id,'bewegtbild',1),video:true});
@@ -30341,7 +30423,11 @@ function quellenNamen(){ const box=$('#tbs-quellen'), row=$('#tbs-quellenNamen')
   const bl=box.getBoundingClientRect(), W=box.clientWidth, n=th.length, r=b.getBoundingClientRect(), L=r.left-bl.left, R=r.right-bl.left, w=s.offsetWidth; let x;
   if(i===0) x=L; else if(i===n-1) x=R-w; else { x=(L+R)/2-w/2; if(x<0) x=L; if(x+w>W) x=R-w; }
   x=Math.max(0,Math.min(W-w,x)); s.style.left=x+'px'; row.style.height=s.offsetHeight+'px'; }
-function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; grundLaden(); quellenUI(); fussStand(); }
+/* DIE TIEFENZEILEN GEHOEREN ZUR QUELLE, ALSO ZIEHEN SIE SOFORT NACH (17.09.2026). grundLaden()
+   zeichnet die Effektkarte erst, wenn das neue Bild GELADEN ist; bis dahin stand an den
+   Tiefenzeilen der Stand der vorigen Quelle - grau, wo es jetzt eine Karte gibt, oder bedienbar,
+   wo es keine mehr gibt. Also hier, vor dem Laden: der Stand haengt an der Quelle, nicht am Bild. */
+function quelleWaehlen(k){ const p=SEITEN[k]; if(!p) return; grund={art:p.art,nr:p.nr}; tiefeZeilenNeu(); grundLaden(); quellenUI(); fussStand(); }
 /* Waehrend einer Ausgabe bleibt die Quelle stehen: die Pfeiltasten wuerden sonst mitten im Video das Bild wechseln -
    dieselbe Regel wie fuer das gesperrte Pult, nur fuer die Tastatur (Caspar_D, 16.09.2026). */
 function blaettern(d){ if(exportLaeuft) return; const n=SEITEN.length; if(n<2) return; quelleWaehlen((seiteIndex()+d+n)%n); }
@@ -30410,9 +30496,9 @@ function zeichneFrame(t,roh){
             die Teilchen schon gar nicht erst in die verbotene Zone gelassen.
          3. Alles andere - kein Koerper, oder ein altes Rezept mit seinem weichen Schnitt: die Zone
             wird ausgeschnitten wie seit dem 14.09.2026. */
-    const maske = VERDECKT(e) ? tiefeMaske(DATA&&DATA.id, 'hinten', Wn, Hn, e.tiefeGrenze, e.tiefeWeich)
+    const maske = VERDECKT(e) ? tiefeMaske('hinten', Wn, Hn, e.tiefeGrenze, e.tiefeWeich)
       : ZONE_HART(e) ? null
-      : tiefeMaske(DATA&&DATA.id, e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);
+      : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);
     if(T.art==='mal'){
       /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
          darunter wirken. Also vorher eine Kopie beiseitelegen, malen, dann maskieren. */
@@ -30566,7 +30652,13 @@ function zeichneFrame(t,roh){
         if(stufeOffen==='Vorb') vorbRender();   /* das Histogramm gehoert zur neuen Quelle */
         if(loopWunsch){ loopWunsch=false; if(stufeOffen==='Loop'&&!loopAn&&!exportLaeuft&&DATA&&DATA.id===songId) loopSchalten(true); }   /* die Stufe ging auf, bevor die Quelle da war */
         else if(loopAn&&!exportLaeuft&&x.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(x,(loopSicht||loopLageNeu()).lage).catch(()=>{}); } },   /* Quelle gewechselt (Pfeiltasten) bei laufender Loop-Ansicht: das neue Video vermessen wie beim Einschalten */
-      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt'); grund={art:'titelbild',nr:1,}; grundLaden(); quellenUI(); });
+      x=>{ if(x!==bild) return; if(seite.art==='titelbild') return; pStat('Quelle „'+seite.lbl+'“ fehlt — Titelbild gezeigt');
+        /* DIE TIEFENZEILEN GEHOEREN ZUR QUELLE, ALSO ZIEHEN SIE MIT (Gegenlesen 17.09.2026). Bis das
+           Titelbild geladen ist, stuenden sie sonst auf dem Stand der ausgefallenen Quelle - grau,
+           wo es jetzt eine Karte gibt, oder bedienbar, wo es keine mehr gibt. Genau der Weg, den
+           quelleWaehlen() schon geht: erst die Zeilen, dann das Laden. Trifft die Karte des
+           Titelbildes spaeter ein, meldet sie sich ohnehin noch einmal. */
+        grund={art:'titelbild',nr:1}; tiefeZeilenNeu(); grundLaden(); quellenUI(); });
     bild=q; SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.m=null; sprungHolen(q,seite,songId); schleifeUI(); }
   /* Zeit: der Player ist die einzige Audioquelle. */
   const zeit=()=>{ try{ if(typeof aktuellId!=='undefined' && aktuellId===songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-t0)/1000; return (DATA&&DATA.dauer>0)?(frei%DATA.dauer):frei; };
@@ -31692,7 +31784,55 @@ function zeichneFrame(t,roh){
      Die Engine arbeitet auf den Modulvariablen - fuer jeden Maler werden
      sie umgehaengt und danach fuers Studio wieder zurueckgestellt. Zeit:
      der Player, wenn er diesen Titel spielt (eine Audioquelle). */
-  /* DIE TIEFENKARTE JE TITEL. Sie liegt neben dem Cover (bin/tiefenkarten.js)
+  /* ================= DIE TIEFE HAENGT AN DER QUELLE (17.09.2026) =================
+
+     Caspar_D: „wir sollten die tiefenkarte immer an die quelle haengen, alles andere macht gar
+     keinen sinn, auch sollten tiefenrelevante einstellungen bei quellen ohne tiefeninfo schlicht
+     ausgegraut sein."
+
+     Bis heute war die Tiefenkarte an den TITEL geknuepft: tiefe.png neben dem Cover, geholt ueber
+     DATA.id. Ein Titel hat aber mehrere Quellen - Titelbild, Bewegtbild, eigene Bilder und Videos,
+     dazu die Pruefbilder. Wer das Bewegtbild malte, bekam die Karte des TITELBILDS ueber ein ganz
+     anderes Motiv gelegt: „vorn" lag dann dort, wo im Titelbild etwas vorn ist, nicht im Video.
+     Das ist keine ungenaue Karte, das ist die Karte eines fremden Bildes.
+
+     ALSO EINE STELLE, DIE SAGT, WELCHE QUELLE GERADE GEMALT WIRD. Es ist dieselbe Entscheidung,
+     aus der der Maler sein Bild holt: die Modulvariable `grund` neben `DATA`. Im Studio ist das
+     die gewaehlte Quelle, in Kachel, Buehne und Ausgabe die Quelle DES REZEPTS - bundel()/setzen()
+     haengen beide fuer jeden Maler zusammen um, also stimmen sie immer zueinander. Keine der
+     Tiefenfunktionen nimmt darum noch eine Kennung entgegen; sie fragen hier. Damit KANN der Maler
+     keine fremde Karte mehr erwischen.
+
+     WELCHE QUELLE EINE KARTE HAT:
+       titelbild   /media/<id>/tiefe.png            - die 325 vorhandenen, hier aendert sich nichts
+       bild n      /media/<id>/eigen<n>.tiefe.png   - bin/tiefenkarten.js rechnet sie mit
+       bewegtbild  keine
+       video n     keine
+       Pruefbild   keine
+     Keine Karte heisst KEINE - nicht ersatzweise die des Titelbilds. Lieber eine stille Zeile mit
+     Grund als eine Zeile, die etwas Falsches tut (Regel 11).
+
+     Die laufende Nummer <n> kommt aus eigenNr() - derselben Stelle, aus der auch medienUrl() sie
+     holt; hier steht sie nicht ein zweites Mal. */
+  function tiefeUrl(id, art, nr){
+    if(art==='titelbild') return '/media/'+id+'/tiefe.png';
+    if(art==='bild') return '/media/'+id+'/eigen'+eigenNr(nr)+'.tiefe.png';
+    return null;   /* Bewegtbild, Video, Pruefbild: es gibt keine */
+  }
+  /* Ein Schluessel je Quelle - er traegt alles, was die Karte bestimmt, und nichts sonst. Die
+     Vorraete (TIEFEN, TIEFENLAUF, TIEFEPROBEN, ZONENLAGE, die Masken) haengen daran statt an der
+     Titelkennung. Das Ergebnis wird gemerkt, weil es je Bild mehrfach erfragt wird; es gibt so
+     viele Eintraege wie besuchte Quellen, also dieselbe Groessenordnung wie TIEFEN. */
+  const QUELLEN={};
+  function tiefeQuelle(){
+    let id=null, art='titelbild', nr=1;
+    try{ id=DATA&&DATA.id; }catch(x){}
+    if(!id) return null;
+    try{ if(grund&&grund.art){ art=grund.art; nr=grund.nr||1; } }catch(x){}
+    const k=id+'|'+art+'|'+nr;
+    return QUELLEN[k]||(QUELLEN[k]={ k, id, art, nr, url:tiefeUrl(id,art,nr) });
+  }
+  /* DIE TIEFENKARTE JE QUELLE. Sie liegt neben ihrem Bild (bin/tiefenkarten.js)
      und aendert sich nie - also einmal holen und behalten. Fehlt sie, bleibt
      der Eintrag null, und der Shader rechnet mit gleichmaessiger Tiefe, also
      genau wie ohne Karte. */
@@ -31700,12 +31840,12 @@ function zeichneFrame(t,roh){
   /* DIE KARTE ALS ZAHLEN, NICHT ALS BILD. Der Laser malt auf der Leinwand, nicht im Shader -
      er braucht die Tiefe also als Feld, das er abfragen kann. 160 Punkte Breite genuegen: die
      Dots sind Dutzende von Pixeln auseinander, und eine geschaetzte Karte hat ohnehin keine
-     schaerferen Kanten. Einmal je Titel gerechnet und gemerkt. */
+     schaerferen Kanten. Einmal je Quelle gerechnet und gemerkt. */
   const TIEFEPROBEN = {};
-  function tiefeProben(id){
-    if(!id) return null;
-    if(TIEFEPROBEN[id]) return TIEFEPROBEN[id];
-    const im = tiefeBildVon(id);
+  function tiefeProben(){
+    const q = tiefeQuelle(); if(!q) return null;
+    if(TIEFEPROBEN[q.k]) return TIEFEPROBEN[q.k];
+    const im = tiefeBildVon();
     if(!im || !im.complete || im.naturalWidth < 2) return null;   /* nicht merken - das Bild kommt vielleicht noch */
     try{
       const w = 160, h = Math.max(2, Math.round(w * im.naturalHeight / im.naturalWidth));
@@ -31713,11 +31853,11 @@ function zeichneFrame(t,roh){
       const cx = cv.getContext('2d', { willReadFrequently: true });
       cx.drawImage(im, 0, 0, w, h);
       const d = cx.getImageData(0, 0, w, h).data, z = new Float32Array(w * h);
-      for(let i = 0, q = 0; i < d.length; i += 4, q++) z[q] = d[i] / 255;
+      for(let i = 0, j = 0; i < d.length; i += 4, j++) z[j] = d[i] / 255;
       /* DIE KARTE IST RELATIV, NICHT GEMESSEN (Caspar_D, 14.09.2026: "da musst du aber jetzt die
          richtige z-skalierung hinkriegen, das ist nicht einfach"). Ein fester Faktor auf den
          Rohwert trifft auf jedem Cover etwas anderes: hier liegen 52 % der Bildpunkte im fernen
-         Drittel und nur 11 % im nahen, beim naechsten ist es umgekehrt. Also wird je Titel auf
+         Drittel und nur 11 % im nahen, beim naechsten ist es umgekehrt. Also wird je Quelle auf
          die eigene Spanne gedehnt - das 5. und das 95. Hundertstel, damit einzelne Ausreisser
          die Spanne nicht auffressen. Danach heisst 0 "am fernsten, was dieses Bild hat" und 1
          "am naechsten", und ein Regler bedeutet ueberall dasselbe. */
@@ -31727,17 +31867,17 @@ function zeichneFrame(t,roh){
          nimmt sie in voller Aufloesung, der Maler auf diesem Raster - dieselbe Frage, dieselbe
          Antwort auf ein Hundertstel. Ein zweites Raster waere ein zweiter Begriff (16.09.2026). */
       const med = sort[sort.length >> 1];
-      return TIEFEPROBEN[id] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi), med };
+      return TIEFEPROBEN[q.k] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi), med };
     }catch(x){ return null; }
   }
   /* ---- EINE STELLE, DIE SAGT, WIE NAH EIN PUNKT IST (16.09.2026) ----
      Maske und Maler fragen ab heute DIESELBE Kurve: Grenze, weiches Band, Smoothstep, „hell ist
      nah". Die Maske rechnet sie in voller Aufloesung ueber das ganze Bild (tiefeMaske), der Maler
-     an einem Punkt auf dem groben Raster von tiefeProben - 160 Punkte breit, EINMAL je Titel
+     an einem Punkt auf dem groben Raster von tiefeProben - 160 Punkte breit, EINMAL je Quelle
      gerechnet und behalten, unabhaengig von der Leinwandgroesse. Nie ein Bildlesen je Teilchen,
      nie eines je Bild. Weil die Probe steht, bleibt der Loop exakt. */
   function tiefeKarteDa(){ return tiefeStand()==='da'; }
-  function tiefeMitte(){ const tp=tiefeProben(DATA&&DATA.id); return tp?tp.med:null; }
+  function tiefeMitte(){ const tp=tiefeProben(); return tp?tp.med:null; }
   /* Grenze und Weichheit eines Effekts in Kartenwerten 0..1. Unter null heisst „von selbst": die
      Mitte dieser Karte und das feste Band von 48 Graustufen - genau die Zahlen von gestern. */
   function tiefeSpanne(e, tp){
@@ -31760,16 +31900,17 @@ function zeichneFrame(t,roh){
      Maske schneide die verbotene Zone „ohnehin aus"; auf „Okkultation" (Median 19, Band +-48)
      liegt die untere Bandkante bei -29, also bleibt der fernste Bildpunkt bei 24 % Deckung stehen
      und es wird gar nichts ausgeschnitten. Gerechnet auf demselben Raster, das der Maler benutzt -
-     einmal je Titel, Modus und Spanne, danach aus dem Vorrat. */
+     einmal je Quelle, Modus und Spanne, danach aus dem Vorrat. */
   const ZONENLAGE={};
-  function zonenLage(id, modus, g, w){
-    if(!id||!modus||modus==='alles') return null;
-    const tp=tiefeProben(id); if(!tp) return null;
-    const k=id+'|'+modus+'|'+g.toFixed(4)+'|'+w.toFixed(4);
+  function zonenLage(modus, g, w){
+    if(!modus||modus==='alles') return null;
+    const q=tiefeQuelle(); if(!q) return null;
+    const tp=tiefeProben(); if(!tp) return null;
+    const k=q.k+'|'+modus+'|'+g.toFixed(4)+'|'+w.toFixed(4);
     if(ZONENLAGE[k]) return ZONENLAGE[k];
     const unten=g-w, spanne=2*w; let erlaubt=0, ganzWeg=0;
-    for(let q=0;q<tp.z.length;q++){
-      let a=(tp.z[q]-unten)/spanne; a=a<0?0:a>1?1:a; a=a*a*(3-2*a);
+    for(let i=0;i<tp.z.length;i++){
+      let a=(tp.z[i]-unten)/spanne; a=a<0?0:a>1?1:a; a=a*a*(3-2*a);
       const deckung=(modus==='hinten')?1-a:a;          /* genau die Kurve der Maske */
       if((modus==='hinten')?(a<0.5):(a>=0.5)) erlaubt++;
       if(deckung<=5/255) ganzWeg++;
@@ -31795,8 +31936,13 @@ function zeichneFrame(t,roh){
      hinlegen und wiederverwenden. Drei Masken werden behalten; jede kostet vier Byte je
      Bildpunkt, und wer am Regler zieht, erzeugt sonst ein Dutzend davon. */
   const PMASKEN = [];
-  function partikelMaske(id, hor, vd, W, H, tp){
-    const k = (id || '-') + '|' + hor.toFixed(2) + '|' + vd.toFixed(2) + '|' + W + 'x' + H;
+  function partikelMaske(hor, vd, W, H, tp){
+    const q = tiefeQuelle();
+    /* OB EINE TIEFENPROBE VORLAG, GEHOERT IN DEN SCHLUESSEL (Gegenlesen 17.09.2026). Wird die
+       Maske gebaut, waehrend die Karte noch unterwegs ist, kommt tp als null an und es entsteht
+       eine REINE Horizontmaske - bei gleichem Schluessel blieb die danach im Vorrat stehen, und
+       die Verdeckung fehlte fuer den Rest der Sitzung. */
+    const k = (q ? q.k : '-') + '|' + hor.toFixed(2) + '|' + vd.toFixed(2) + '|' + W + 'x' + H + '|' + (tp ? 't' : '-');
     const da = PMASKEN.find(m => m.k === k);
     if(da) return da.cv;
     try{
@@ -31824,37 +31970,49 @@ function zeichneFrame(t,roh){
       return cv;
     }catch(x){ return null; }
   }
-  /* DREI ZUSTAENDE, NICHT ZWEI (Gegenlesen 16.09.2026). Bis heute hiess `TIEFEN[id]===null` zweierlei:
+  /* DREI ZUSTAENDE, NICHT ZWEI (Gegenlesen 16.09.2026). Bis heute hiess `TIEFEN[<Quelle>]===null` zweierlei:
      „die Karte ist noch unterwegs" und „es gibt keine". Die Effektkarte las das zweite und legte
      alle Tiefenzeilen still - fuer einen Titel, dessen tiefe.png im selben Augenblick geladen wurde.
      Das ist genau die Falschaussage, gegen die diese Arbeit angetreten ist, nur mit einem falschen
      Grund statt ohne Grund. `TIEFENLAUF` haelt darum fest, was gerade unterwegs ist, und onload wie
      onerror melden sich, damit die Karte sich selbst berichtigt statt stumm falsch zu bleiben. */
   const TIEFENLAUF={};
-  function tiefeBildVon(id){
-    if(!id) return null;
-    if(TIEFEN[id]!==undefined) return TIEFEN[id];
-    TIEFEN[id]=null; TIEFENLAUF[id]=true;
+  function tiefeBildVon(){
+    const q=tiefeQuelle();
+    /* Ohne Adresse wird gar nicht erst gefragt: eine Quelle ohne Karte hat keine, und ein
+       Fehlschlag je Bewegtbild waere nur Laerm im Netzprotokoll. */
+    if(!q||!q.url) return null;
+    if(TIEFEN[q.k]!==undefined) return TIEFEN[q.k];
+    const k=q.k;
+    TIEFEN[k]=null; TIEFENLAUF[k]=true;
     const im=new Image();
-    const fertig=()=>{ delete TIEFENLAUF[id]; tiefeKarteGemeldet(id); };
-    im.onload=()=>{ TIEFEN[id]=im; fertig(); };
-    im.onerror=()=>{ TIEFEN[id]=null; fertig(); };   /* kein Bild: der Nebel bleibt eine Schicht */
-    im.src='/media/'+id+'/tiefe.png';
+    const fertig=()=>{ delete TIEFENLAUF[k]; tiefeKarteGemeldet(k); };
+    im.onload=()=>{ TIEFEN[k]=im; fertig(); };
+    im.onerror=()=>{ TIEFEN[k]=null; fertig(); };   /* kein Bild: der Nebel bleibt eine Schicht */
+    im.src=q.url;
     return null;
   }
-  /* Die Karte ist da (oder endgueltig nicht da): die Effektkarte hat bis eben das Gegenteil
-     behauptet, also wird sie neu gezeichnet. Nur wenn das Pult wirklich offen im Dokument steht -
+  /* Die Tiefenzeilen der Effektkarte neu zeichnen. Zwei Anlaesse, EIN Weg: eine Karte ist
+     eingetroffen (oder endgueltig ausgeblieben), oder die QUELLE hat gewechselt und die Zeilen
+     stehen noch auf dem Stand der vorigen. Nur wenn das Pult wirklich offen im Dokument steht -
      auf der Albumseite laufen Clips ohne Pult. */
-  function tiefeKarteGemeldet(id){
-    try{ if(!(DATA&&DATA.id===id)) return; }catch(x){ return; }
+  function tiefeZeilenNeu(){
     try{ if(stapelBox&&stapelBox.isConnected&&STAPEL&&STAPEL.length) renderStapel(); }catch(x){}
+  }
+  /* Die Karte ist da (oder endgueltig nicht da): die Effektkarte hat bis eben das Gegenteil
+     behauptet, also wird sie neu gezeichnet - aber nur, wenn die Meldung zu der Quelle gehoert,
+     die JETZT gemalt wird. Ein Maler auf der Albumseite laedt die Karte einer ganz anderen. */
+  function tiefeKarteGemeldet(k){
+    let q=null; try{ q=tiefeQuelle(); }catch(x){ return; }
+    if(!q||q.k!==k) return;
+    tiefeZeilenNeu();
   }
   /* „da" | „unterwegs" | „keine" - eine Frage, drei ehrliche Antworten. */
   function tiefeStand(){
-    try{ const id=DATA&&DATA.id; if(!id) return 'keine';
-      const im=tiefeBildVon(id);
+    try{ const q=tiefeQuelle(); if(!q||!q.url) return 'keine';
+      const im=tiefeBildVon();
       if(im&&im.complete&&im.naturalWidth>1) return 'da';
-      return TIEFENLAUF[id] ? 'unterwegs' : 'keine';
+      return TIEFENLAUF[q.k] ? 'unterwegs' : 'keine';
     }catch(x){ return 'keine'; }
   }
 
@@ -31878,7 +32036,7 @@ function zeichneFrame(t,roh){
      Also derselbe Ring wie bei PMASKEN, nur laenger: ein Rezept kann mehrere Zonen-Effekte haben
      (r17 hat sechs) und jede Ansicht - Kachel, Buehne, Ausgabe - ihre eigene Groesse, und ein zu
      kurzer Ring baute die Maske dann in jedem Bild neu. Vierundzwanzig Plaetze mit einer Obergrenze
-     von rund 96 MB; beim Titelwechsel wird geleert, weil eine fremde Karte ohnehin nichts taugt. */
+     von rund 96 MB; beim Quellenwechsel wird geleert, weil eine fremde Karte ohnehin nichts taugt. */
   const TIEFEMASKEN=[]; let TIEFEMASKEN_ID=null;
   const TM_PLAETZE=24, TM_BYTE=96*1024*1024;
   function tiefeMaskeAblegen(k,cv){
@@ -31892,14 +32050,17 @@ function zeichneFrame(t,roh){
      Rezept bitgleich bleibt. Erst eine Zahl >= 0 legt die Grenze (0..1 der Kartenhelligkeit) oder
      das halbe Band (0..1, also 0..255 Stufen) von Hand fest. Der Schluessel des Vorrats traegt
      beides mit, sonst haenge man an der Maske von vorhin. */
-  function tiefeMaske(id, modus, W, H, grenze, weich2){
-    if(!id||!modus||modus==='alles') return null;
-    const im=tiefeBildVon(id);
+  function tiefeMaske(modus, W, H, grenze, weich2){
+    /* Erst die billige Frage: ohne Zone gibt es nichts zu maskieren, und dann wird auch nicht
+       nach der Quelle gefragt - die Kette ruft hier je Effekt und Bild an. */
+    if(!modus||modus==='alles') return null;
+    const q=tiefeQuelle(); if(!q) return null;
+    const im=tiefeBildVon();
     if(!im||!im.complete||im.naturalWidth<2) return null;
     const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
     const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
     const k=modus+'|'+W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
-    if(TIEFEMASKEN_ID!==id){ TIEFEMASKEN.length=0; TIEFEMASKEN_ID=id; }
+    if(TIEFEMASKEN_ID!==q.k){ TIEFEMASKEN.length=0; TIEFEMASKEN_ID=q.k; }   /* eine fremde Quelle taugt so wenig wie ein fremder Titel */
     { const da=TIEFEMASKEN.find(m=>m.k===k); if(da) return da.cv; }
     try{
       const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
@@ -31976,13 +32137,19 @@ function zeichneFrame(t,roh){
      Drei Plaetze: Buehne und Kachel haben verschiedene Groessen, und beim Ziehen kommt man
      regelmaessig auf einen Wert zurueck. */
   const TSICHT_SCHICHTEN=[]; let TSICHT_SCHICHTEN_ID=null;
-  function tiefesichtSchicht(id,W,H,grenze,weich2){
+  function tiefesichtSchicht(W,H,grenze,weich2){
+    const q=tiefeQuelle(); if(!q) return null;
     const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
     const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
-    const k=W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
-    if(TSICHT_SCHICHTEN_ID!==id){ TSICHT_SCHICHTEN.length=0; TSICHT_SCHICHTEN_ID=id; }
+    /* DIE QUELLE GEHOERT IN DEN SCHLUESSEL, NICHT NUR IN DIE LEERUNG (Gegenlesen 17.09.2026).
+       TSICHT_SCHICHTEN wird beim Quellenwechsel geleert, TSICHT_FERTIG aber NICHT - und dessen
+       Marke besteht aus genau diesem k. Zwei Quellen mit gleicher Leinwandgroesse und gleicher
+       Grenze ergaben dieselbe Marke, also blieb die Trennebenen-Ansicht der vorigen Quelle auf
+       der Scheibe stehen. Das war der einzige Tiefenvorrat ohne Quelle im Schluessel. */
+    const k=q.k+'|'+W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
+    if(TSICHT_SCHICHTEN_ID!==q.k){ TSICHT_SCHICHTEN.length=0; TSICHT_SCHICHTEN_ID=q.k; }
     { const da=TSICHT_SCHICHTEN.find(x=>x.k===k); if(da) return da; }
-    const maske=tiefeMaske(id,'vorn',W,H,grenze,weich2); if(!maske) return null;
+    const maske=tiefeMaske('vorn',W,H,grenze,weich2); if(!maske) return null;
     try{
       const mp=maske.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;
       const farbe=document.createElement('canvas'); farbe.width=W; farbe.height=H;
@@ -32060,10 +32227,13 @@ function zeichneFrame(t,roh){
      sonst griff der Vorrat nicht einmal dann, wenn das Video steht (Gegenlesen 17.09.2026). */
   let TSICHT_FERTIG=null;
   function tiefesichtMalen(){
-    const e=TSICHT.e, id=DATA&&DATA.id;
-    if(!e||!id||!bereit||!lein||!g||lein.width<2||!bild) return;
+    const e=TSICHT.e;
+    if(!e||!bereit||!lein||!g||lein.width<2||!bild) return;
     const W=lein.width, H=lein.height;
-    const sch=tiefesichtSchicht(id,W,H,e.tiefeGrenze,e.tiefeWeich); if(!sch) return;
+    /* Ohne Karte zu DIESER Quelle gibt es keine Schicht - und damit auch keine Ansicht. Die Zeile
+       daneben steht dann grau mit Grund; eine Trennebene ueber einem Bild ohne Tiefe waere genau
+       die Falschaussage, gegen die die Ansicht angetreten ist. */
+    const sch=tiefesichtSchicht(W,H,e.tiefeGrenze,e.tiefeWeich); if(!sch) return;
     const grau=tiefesichtGrau(W,H), video=!(TSICHT_GRAU&&TSICHT_GRAU.quelle);
     const marke=sch.k+'|'+W+'x'+H+(video?'|v'+(bild.currentTime||0).toFixed(3):'|bild');
     if(!TSICHT_FERTIG||TSICHT_FERTIG.marke!==marke||TSICHT_FERTIG.cv.width!==W||TSICHT_FERTIG.cv.height!==H){
@@ -32083,24 +32253,26 @@ function zeichneFrame(t,roh){
      "Okkultation" mit der Trennung von selbst sind das 43 % / 57 % / 0 % - und genau diese Null
      ist der Grund, warum "nur hinten" dort nichts tat. */
   const TSICHT_ANTEILE={};
-  function tiefeAnteile(id,gz,wz){
-    const tp=tiefeProben(id); if(!tp) return null;
-    const k=id+'|'+gz.toFixed(4)+'|'+wz.toFixed(4);
+  function tiefeAnteile(gz,wz){
+    const q=tiefeQuelle(); if(!q) return null;
+    const tp=tiefeProben(); if(!tp) return null;
+    const k=q.k+'|'+gz.toFixed(4)+'|'+wz.toFixed(4);
     if(TSICHT_ANTEILE[k]) return TSICHT_ANTEILE[k];
     const unten=gz-wz, oben=gz+wz; let nah=0, fern=0;
-    for(let q=0;q<tp.z.length;q++){ const v=tp.z[q]; if(v>=oben) nah++; else if(v<=unten) fern++; }
+    for(let i=0;i<tp.z.length;i++){ const v=tp.z[i]; if(v>=oben) nah++; else if(v<=unten) fern++; }
     const n=tp.z.length;
     return TSICHT_ANTEILE[k]={ nah:nah/n, band:(n-nah-fern)/n, fern:fern/n, punkte:n };
   }
-  /* Die Verteilung der Tiefenwerte des Titels - einmal je Titel, 64 Faecher. */
+  /* Die Verteilung der Tiefenwerte der Quelle - einmal je Quelle, 64 Faecher. */
   const TSICHT_HIST={};
-  function tiefeHistogramm(id){
-    const tp=tiefeProben(id); if(!tp) return null;
-    if(TSICHT_HIST[id]) return TSICHT_HIST[id];
+  function tiefeHistogramm(){
+    const q=tiefeQuelle(); if(!q) return null;
+    const tp=tiefeProben(); if(!tp) return null;
+    if(TSICHT_HIST[q.k]) return TSICHT_HIST[q.k];
     const n=64, h=new Uint32Array(n);
-    for(let q=0;q<tp.z.length;q++){ let b=Math.floor(tp.z[q]*n); if(b<0)b=0; if(b>=n)b=n-1; h[b]++; }
+    for(let i=0;i<tp.z.length;i++){ let b=Math.floor(tp.z[i]*n); if(b<0)b=0; if(b>=n)b=n-1; h[b]++; }
     let max=1; for(let i=0;i<n;i++) if(h[i]>max) max=h[i];
-    return TSICHT_HIST[id]={ h, n, max, punkte:tp.z.length };
+    return TSICHT_HIST[q.k]={ h, n, max, punkte:tp.z.length };
   }
   /* DER STREIFEN UNTER DEM SCHIEBER. Sein Weg ist der Weg des Reglers (-0,02 bis 1; der Anschlag
      links ist "von selbst"), und er ist um den halben Griff eingerueckt - sonst sitzt der Griff
@@ -32125,9 +32297,9 @@ function zeichneFrame(t,roh){
     try{
       if(!box) return;
       const cv=box.querySelector('canvas.tbs-thist'), zahl=box.querySelector('.tbs-tzahlen');
-      const id=DATA&&DATA.id, tp=id?tiefeProben(id):null, hi=id?tiefeHistogramm(id):null;
+      const tp=tiefeProben(), hi=tiefeHistogramm();
       if(!cv||!tp||!hi) return;
-      const sp=tiefeSpanne(e,tp), an=tiefeAnteile(id,sp.g,sp.w);
+      const sp=tiefeSpanne(e,tp), an=tiefeAnteile(sp.g,sp.w);
       const dpr=Math.min(2,window.devicePixelRatio||1);
       /* KEIN NOTNAGEL FUER DIE BREITE (Gegenlesen 17.09.2026). Stand hier `cv.clientWidth||160`,
          entstand der Streifen bei einer Breite von 0 still in 160 Punkten und wurde von CSS

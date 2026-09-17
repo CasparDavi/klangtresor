@@ -274,6 +274,35 @@ Vier Fallen, in die der Autor dieser Zeilen an einem Abend alle vier getappt ist
   beim zweiten Laden für immer, weil das Ereignis aus dem Vorrat schon gefeuert hat. Erst horchen,
   dann laden, und `readyState` zusätzlich abfragen.
 
+- **Der Prüfstand hat einen eigenen Rauschboden.** `labor/nahtpruefung/naht.mjs` liefert **zwischen**
+  Läufen nicht immer dasselbe Bild, obwohl es **innerhalb** eines Laufs voll deterministisch ist
+  (11 Läufe, 396 Fallmessungen, kein einziger nicht-deterministischer Fall). Gemessen am 17.09.2026,
+  gleicher Code gegen gleichen Code: **je Lauf kann ein beliebiger Titel in eine zweite, ebenso
+  stabile Variante fallen** — und dann Rezept *und* Kontrollfall zugleich, also auch dort, wo gar kein
+  Effekt läuft. Abweichung 0,18 bis 0,33 im Mittel, 1,7 bis 7,7 von 255 im Größten.
+  Zwei Irrtümer, die ich selbst zuerst hatte: Es ist **nicht** auf den kalten Erstlauf beschränkt, und
+  es trifft **nicht** bestimmte Titel (die Vermutung „nur die mit breiterem als hohem Titelbild" hat
+  die größere Messreihe widerlegt). Wer eine Änderung gegen einen einzelnen Vorlauf misst, hält diesen
+  Boden für sein Ergebnis. **Jede Fassung mindestens dreimal messen, und einen Fall nur dann
+  „abweichend" nennen, wenn er in allen Paarungen abweicht.**
+
+- **Restfarbe in der verbotenen Zone — zwei Ursachen, und die kleinere hatte ich zuerst genannt.**
+  Am 16.09.2026 standen bei den Lichtkreisen noch **2,13 %** der gemalten Fläche in der verbotenen
+  Zone. Ich hatte das dem groben Raster zugeschrieben. Nachgerechnet am 17.09.2026 ist die Hauptursache
+  eine andere: **der geprüfte Körper ist kleiner als der gemalte.** `zSperre` fragt einen Ring vom
+  Radius `sz·ZKOERPER` ab, bei Bokeh also `sz·2,2` — gemalt wird aber `sz·2,2·rel` mit `rel` bis 2,65,
+  also bis `sz·5,83`. Dasselbe gilt für Konfetti (Diagonale bis `sz·1,4` gegen `ZKOERPER` 1,2),
+  Glitzer (Arme bis `sz·3,7` gegen 2,2) und den Schmetterling, dessen Knick sogar **hinter** der
+  Zonenprüfung sitzt und den gemalten Ort um bis zu `sz·2,4` verschiebt. Das ist ein Fehler und wird
+  behoben, keine Grenze.
+  Die **Rastergrenze ist echt, aber die kleinere**: Der Maler fragt die Tiefe auf dem 160-Punkt-Raster
+  von `tiefeProben` (eine Zelle ist bei 898 px Studiobreite rund 5,6 px breit) und entscheidet sie als
+  Ganzes. Läuft die Trennkante schräg durch eine Zelle, fällt sie für die ganze Zelle auf eine Seite.
+  Enger geht es nicht, ohne je Teilchen ins Bild zu lesen — und genau das darf der Maler nicht.
+  Bei den Lichtkreisen ist der Überstand übrigens teilweise **richtig**: eine Unschärfe läuft über
+  Kanten hinaus, das ist ihr Wesen. Der Ringtest selbst wirkt: ohne ihn standen bei 120 Vögeln noch
+  62 Bildpunkte Farbe in der verbotenen Zone, mit ihm null.
+
 Und eine Falle im Aufbau: fehlt dem Prüfstand der Verweis auf `web/fremd`, findet der Shader sein
 Rauschen nicht, das Studio fällt still auf den Leinwand-Nebel zurück, und man misst tagelang den
 falschen Maler. `bin/effektclip-labor.js daten` legt den Verweis darum immer mit an.
