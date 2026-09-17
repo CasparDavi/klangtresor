@@ -62,7 +62,7 @@ Tiefenmap, auf der z.B. Regentropfen auftreffen würden."* Unten am Bildrand nah
 | | wer |
 |---|---|
 | von oberhalb des Bildes | Regen, Schnee, Blätter, Konfetti, Daunen, Pusteblume |
-| auf der unteren Fläche | Funken, Asche, Blasen, Schwaden |
+| auf der unteren Fläche | Funken, Asche, Schwaden |
 | immer da, im freien Raum verteilt | Staub, Glitzer, Bokeh, Glühwürmchen, Schmetterlinge |
 | eigene Bahn | Sternschnuppe, Konfetti-Kanone, Schwarm |
 
@@ -220,7 +220,7 @@ Strecke je 10-Sekunden-Clip bei Tempo 1, aus `BASIS_ART` und `ART_AUFTRIEB`.
 | Regen | fällt | 6,0 Bildhöhen | von oben |
 | Funken | steigt | 2,5 | untere Fläche |
 | Blätter | fällt | 0,9 | von oben |
-| Blasen | steigt | 0,8 | untere Fläche (aber siehe 10.3) |
+| Blasen | steigt | 0,8 | **Quelle** (Aquariumausströmer) |
 | Konfetti (fallend) | fällt | 0,7 | von oben |
 | Schnee | fällt | 0,6 | von oben |
 | Schwaden (Rauch) | steigt | 0,5 | untere Fläche |
@@ -332,16 +332,42 @@ Alles andere steht hier oder ist Augenschein.
 3. **Gleichverteilt im Tiefenmaßstab ist eine Setzung**, keine Wahrheit — die Karte hat keinen
    Maßstab. Das gilt genauso für „wie weit nach hinten fächert ein Funke".
 
-### Offene Punkte
+### Vier Punkte, entschieden am 17.09.2026
 
-1. **Wie das letzte Bild aussieht.** Der Kopf steht auf der Fläche; nimmt die Deckkraft über die
-   letzten Körperlängen ab, oder endet es hart? Bei strichförmigen Arten (Regen) wird der Strich
-   gekürzt statt ausgeblendet — dasselbe Verfahren, mit dem die Sternschnuppe heute ihren Schweif an
-   der Grenze kürzt (acht Stützstellen, `sternBahn`).
-2. **Was aus den fünf gespeicherten Partikel-Karten wird**, die das alte Betretungsverbot benutzen
-   (3× „hinten", 2× „vorn"), und aus den drei mit „Tiefe aus der Bildzeile".
-3. **Blasen** steigen aus Wasser, und Wasser erkennt die Karte nicht. Eher eine Quelle als die
-   Bodenfläche.
-4. **„Tiefe aus der Bildzeile"** (`verdecken`) gibt dem Teilchen heute eine *zweite* Tiefe aus seiner
-   Bildzeile, mit einer anderen Normierung (`tiefeBei` statt `tiefeNahAn`). Mit einer echten Entfernung
-   je Teilchen hat diese Zeile keinen Grund mehr. Streichen oder umbiegen — noch nicht entschieden.
+**1 · Das Ankommen hört hart auf — und wird gezeigt, bevor etwas weichgezeichnet wird.**
+Eine Flocke ist im einen Bild noch 3 px über dem Boden und im nächsten darunter: sie geht in EINEM
+Bild von voll auf weg. Das ist richtig so, denn Ankommen ist ein plötzliches Ereignis, und Ausblenden
+ist verworfen. Der Vorbehalt ist das Raster: eine Zelle ist bei Studiobreite rund 5,6 px, der
+Haltepunkt kann also eine Zelle neben der Kante liegen, die man im Bild sieht — dann hört die Flocke
+sichtbar in der Luft auf. **Erst hart bauen und Caspar_D zeigen.** Sieht man den Rasterfehler, kommt
+eine abnehmende Deckkraft über die letzte Körperlänge als Nachtrag dazu; sie verwischt den
+Rasterfehler, ohne nach Verdampfen auszusehen.
+Bei strichförmigen Arten (Regen) wird ohnehin der Strich gekürzt statt ausgeblendet — dasselbe
+Verfahren, mit dem die Sternschnuppe heute ihren Schweif an der Grenze kürzt (acht Stützstellen,
+`sternBahn`).
+
+**2 · Die acht betroffenen Altrezepte werden NICHT auf Bitgleichheit geprüft.**
+Caspar_D: *„keine Prüfung auf bitgleichheit, die werden sich leicht ändern aber wenn es so
+funktioniert wie spezifiziert, wird es besser aussehen."* Betroffen sind die fünf mit dem alten
+Betretungsverbot (3× „hinten", 2× „vorn") und die drei mit „Tiefe aus der Bildzeile".
+**Bitgleich bleiben müssen weiterhin alle Rezepte OHNE Tiefeneinstellung** — dort wäre eine Änderung
+ein Unfall, und der Nachweis ist der Wächter dagegen.
+
+**3 · Blasen kommen aus einer Quelle, nicht aus der Bodenfläche.**
+Caspar_D: *„ja, ein Aquariumausströmer bspw."* Wasser erkennt die Karte nicht; ein Ausströmer ist ein
+Punkt oder ein Strich, und den setzt der Nutzer. Damit bleiben als Arten der unteren Fläche: Funken,
+Asche, Schwaden.
+
+**4 · „Tiefe aus der Bildzeile" (`verdecken`) wird gestrichen.**
+Der Regler stammt aus der Zeit vor den Tiefenkarten. Er gibt jedem Teilchen eine **erfundene**
+Entfernung aus seiner Bildzeile — oben fern, unten nah, linear — und vergleicht die mit der echten
+Karte (`tiefeBei`, eine andere Normierung als `tiefeNahAn`). Mit einer echten Entfernung je Teilchen
+wäre das eine **zweite** Entfernung für dasselbe Teilchen. Die Zeile fällt weg, die Begründung bleibt
+als Kommentar (Hausregel: abgeklemmter Code wird gelöscht, seine Begründung bleibt).
+**Nicht betroffen ist „Horizont"** daneben: „oberhalb dieser Linie kein Material" ist ein
+Bildgestaltungsmittel, keine erfundene Tiefe. Der bleibt.
+
+### Damit fallen DREI Zeilen weg, nicht zwei
+
+„Verdeckung", das Betretungsverbot in seiner alten Bedeutung, und „Tiefe aus der Bildzeile" —
+gegen fünf Regler, von denen vier Caspar_Ds Namen tragen.
