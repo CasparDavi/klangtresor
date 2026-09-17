@@ -3155,7 +3155,28 @@ h3 .infoknopf .ico{width:14px;height:14px}
    ausgegraut und stillgelegt - nicht versteckt. Die Zeile darunter sagt, warum. */
 #tbs .tbs-grau{opacity:.55}
 #tbs .tbs-grau input,#tbs .tbs-grau select,#tbs .tbs-grau button{cursor:not-allowed}
-#tbs .tbs-graugrund{color:var(--schwach);font-size:10.5px;line-height:1.35;margin:-2px 0 7px}
+#tbs .tbs-graugrund{color:var(--schwach);font-size:12px;line-height:1.4;margin:-2px 0 7px}   /* 12 px ist die Lesegrenze (Hausregel 14); Caspar_D am 17.09.2026 zur Frage, ob der Umbruch der Karten das wert ist: "ja, ist dann so" */
+/* DIE TRENNEBENE SEHEN (Caspar_D, 17.09.2026: "sind die ganzen partikelpanel denn jetzt so, dass
+   ich die ebene, die vorn und hinten trennt sehen kann"). Der Streifen unter "Grenze" gehoert zur
+   ZEILE, nicht zur Ansicht: der Griff soll auf der Verteilung sitzen, sonst sagt die Zahl nichts
+   darueber, wo die Trennung im wirklichen Bild landet. Er traegt darum auch die Klasse des
+   Reglers - dieselben Spalten, also liegt er exakt unter dem Schieber, in beiden Breiten. */
+#tbs .tbs-regler.tbs-tsicht{margin:-3px 0 7px;align-items:start}
+#tbs .tbs-tsicht canvas.tbs-thist{display:block;width:100%;height:30px;border-radius:4px;background:var(--flaeche2)}
+/* Regel 14: Lesegrenze 12 px - die drei Anteile standen in 10 px und waren damit die kleinste
+   Schrift im ganzen Pult (Gegenlesen 17.09.2026). Sie sind keine Fussnote: sie sind die Auskunft,
+   wegen der der Streifen ueberhaupt dasteht. */
+#tbs .tbs-tzahlen{margin-top:4px;font-size:12px;line-height:1.3;color:var(--schwach);font-variant-numeric:tabular-nums;display:flex;gap:9px;flex-wrap:wrap}
+#tbs .tbs-tzahlen i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
+/* DER PUNKT ZEIGT DIE FARBE, DIE WIRKLICH AUFS BILD KOMMT (Gegenlesen 17.09.2026). Er trug bisher
+   die Schriftfarbe - ein kraeftiges Lachsrot und ein helles Kornblau, waehrend auf einem dunklen
+   Cover ein fast schwarzes Blutrot und ein Marineblau erscheint. Die Legende erklaerte also eine
+   dritte Ansicht. Der Punkt traegt darum den REINEN Kanal, den die Ansicht mischt (rot, blau, und
+   dazwischen die Mitte der Kurve); die Schrift bleibt in ihrer lesbaren Farbe. */
+#tbs .tbs-tzahlen i::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--tz-tinte,currentColor);flex:0 0 auto}
+#tbs .tbs-tzahlen .tz-nah{color:#ff5a52;--tz-tinte:#ff0000}
+#tbs .tbs-tzahlen .tz-band{color:#b78bff;--tz-tinte:#800080}
+#tbs .tbs-tzahlen .tz-fern{color:#6f9bff;--tz-tinte:#0000ff}
 /* ZWEI SPALTEN: SPEZIFISCH LINKS, GENERISCH RECHTS (VIDEO-PLAN §9a.5).
 
    Caspar_D, 12.09.2026: „Schnittprogramme haben das Problem, dass generische Sachen irgendwo
@@ -29937,7 +29958,21 @@ function renderStapel(){
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
       /* `wert` beschriftet den Regler selbst, wo die blosse Zahl nichts sagt: der Anschlag links
          der Tiefengrenze ist kein Wert, sondern „von selbst" (16.09.2026). */
-      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k]):kf(e[p.k]))+'</span></div>'; }
+      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k]):kf(e[p.k]))+'</span></div>';
+        /* UNTER DER GRENZE LIEGT DIE VERTEILUNG, AUF DER SIE ENTSCHEIDET (17.09.2026). Ein Regler
+           von 0 bis 255 sagt nicht, wo seine Zahl im BILD landet - auf "Okkultation" liegen zwei
+           Haufen und der Median bei 19 von 255. Also steht die Verteilung unter dem Schieber, der
+           Griff sitzt auf ihr, und daneben die drei Anteile. Ohne Tiefenkarte gibt es keinen
+           Streifen: die Zeile steht dann ohnehin grau mit ihrem vorhandenen Grund, und ein leerer
+           Kasten waere die Behauptung, es gaebe etwas zu sehen (Regel 11). */
+        /* EIN TITEL ERKLAERT DAS VERFAHREN, NICHT NUR SEIN BILD (Gegenlesen 17.09.2026). Erklaert
+           war bisher der Streifen; dass sich beim Ziehen DAS BILD entfaerbt und rot/blau eingefaerbt
+           wird, stand nirgends - der Nutzer erlebte es, ohne dass ihm jemand sagte, dass er die
+           Maske selbst sieht. Auch die waagerechte Achse fehlte, und die Zahlenzeile trug gar
+           keinen Titel. Beide tragen jetzt denselben: sie gehoeren zu einem Kasten. */
+        if(p.k==='tiefeGrenze'&&tiefeProben(DATA&&DATA.id)){
+          const tt='Verteilung der Tiefenwerte dieses Bildes. Waagerecht der Tiefenwert \u2013 links dunkel/hinten, rechts hell/vorn; senkrecht die H\u00e4ufigkeit im Wurzelma\u00dfstab, damit auch kleine H\u00e4ufungen zu sehen sind. Rot: hier gilt der Punkt als nah, blau: als fern, dazwischen das weiche Band. Der wei\u00dfe Strich ist die Grenze, der blasse die Mitte der Karte \u2013 auf \u201evon selbst\u201c sind beide dasselbe, dann steht nur der wei\u00dfe und eine Spur f\u00fchrt vom Griff zu ihm. Solange du ziehst, zeigt das Bild daneben dieselbe Maske: entf\u00e4rbt, rot vorn, blau hinten. Die drei Anteile sind auf demselben groben Raster gez\u00e4hlt wie der Streifen; das Bild rechnet sie je Ausgabegr\u00f6\u00dfe neu und weicht um ein bis zwei Prozent ab.';
+          h+='<div class="tbs-regler tbs-tsicht"><span></span><div><canvas class="tbs-thist" title="'+tt+'"></canvas><div class="tbs-tzahlen" title="'+tt+'"></div></div><span></span></div>'; } }
     };
     /* GRAU MIT GRUND STATT WEG (Hausgesetz der Effektclips, 16.09.2026: "Nichts darf in der
        Oberflaeche luegen: was eine Art nicht benutzt, wird ausgegraut mit Grund, nicht
@@ -30008,13 +30043,41 @@ function renderStapel(){
          sonst mitten im Ziehen den Griff; also wird die Zeile an Ort und Stelle nachgezogen,
          genau wie die Zahl rechts daneben. */
       if(p&&p.notiz){ const zeile=inp.closest('.tbs-regler'), nz=p.notiz(e);
-        let d=zeile&&zeile.nextElementSibling; if(d&&!d.classList.contains('tbs-graugrund')) d=null;
+        /* ZWISCHEN REGLER UND NOTIZ STEHT SEIT DEM 17.09.2026 DER VERTEILUNGSSTREIFEN. Er wird
+           uebersprungen, sonst faende die Zeile ihre Notiz nicht und legte bei jedem Zug eine
+           zweite daneben. */
+        let vor=zeile, d=zeile&&zeile.nextElementSibling;
+        if(d&&d.classList.contains('tbs-tsicht')){ vor=d; d=d.nextElementSibling; }
+        if(d&&!d.classList.contains('tbs-graugrund')) d=null;
         if(nz&&d) d.textContent=nz;
-        else if(nz&&zeile){ const nd=document.createElement('div'); nd.className='tbs-graugrund'; nd.textContent=nz; zeile.parentNode.insertBefore(nd, zeile.nextSibling); }
+        else if(nz&&vor){ const nd=document.createElement('div'); nd.className='tbs-graugrund'; nd.textContent=nz; vor.parentNode.insertBefore(nd, vor.nextSibling); }
         else if(d) d.remove(); }
+      /* Wer an Grenze oder Weichheit zieht, bekommt die Trennebene zu sehen (tiefesichtMalen) und
+         den Streifen nachgezogen - beides haengt am Wert, also zieht es mit dem Wert mit. */
+      if(k==='tiefeGrenze'||k==='tiefeWeich'){ tiefesichtWecken(e); const box=c.querySelector('.tbs-tsicht'); if(box) tiefeStreifenMalen(box,e); }
       if(p.sel&&k==='art') artFarben(e);
       if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm'||Q_REGLER.has(k))) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
+    /* Der Verteilungsstreifen wird gezeichnet, sobald die Karte IM DOKUMENT STEHT - nicht hier
+       (Gegenlesen 17.09.2026). Die Karte wird in einem losgeloesten `div` gebaut und erst unten
+       mit `stapelBox.appendChild(c)` eingehaengt; an dieser Stelle hat die Leinwand noch kein
+       Layout, `cv.clientWidth` ist 0, und der Streifen entstand in der Notbreite von 160 Punkten.
+       Von CSS auf die wirkliche Spaltenbreite gedehnt (327 px im breiten Pult, Faktor 2,04) sass
+       der Griff dann neben seiner eigenen Marke - und zwar genau beim ERSTEN Hinsehen, wo man
+       ihn braucht. Er berichtigte sich erst beim ersten Zug. Der Aufruf steht darum jetzt hinter
+       dem Einhaengen; die Breite wird ausserdem beobachtet (Fensterwechsel, ein-/zweispaltig). */
+    c.querySelectorAll('[data-k="tiefeGrenze"],[data-k="tiefeWeich"]').forEach(inp=>{
+      /* DAS LOSLASSEN WIRD AM FENSTER ABGEFANGEN, NICHT AM SCHIEBER (Gegenlesen 17.09.2026).
+         `pointerup` am Eingabefeld erreicht niemanden mehr, wenn die Karte waehrend des Zugs neu
+         gebaut wird - und das ist kein Sonderfall: kommt die Tiefenkarte an, ruft
+         tiefeKarteGemeldet() renderStapel(), und genau dann erscheint der Streifen zum ersten Mal.
+         Die Klinke blieb dann bis zur 30-Sekunden-Reissleine liegen und die Ansicht ueber dem Bild,
+         ohne dass eine Hand am Regler war. */
+      inp.addEventListener('pointerdown',()=>{ TSICHT.haelt=true; tiefesichtWecken(e);
+        const los=()=>{ TSICHT.haelt=false; tiefesichtWecken(e);
+          removeEventListener('pointerup',los); removeEventListener('pointercancel',los); };
+        addEventListener('pointerup',los); addEventListener('pointercancel',los); });
+      inp.addEventListener('blur',()=>{ TSICHT.haelt=false; tiefesichtWecken(e); }); });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
     c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
     const qv=c.querySelector('canvas.tbs-qvor'); if(qv){ qv._e=e; quellVorschau(qv,e); }
@@ -30053,6 +30116,11 @@ function renderStapel(){
       const tw=c.querySelector('[data-tonwert]'); if(tw) tw.oninput=()=>{ cur().tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); };
     }
     stapelBox.appendChild(c); if(!e.zu&&offenId!==gerolltZu&&c.scrollIntoView){ c.scrollIntoView({block:'nearest'}); gerolltZu=offenId; }
+    /* JETZT hat der Streifen eine Breite - vorher nicht. Und er bekommt einen Beobachter: das
+       Pult wechselt zwischen ein- und zweispaltig und das Fenster wird schmaler, beides ohne
+       dass ein Regler angefasst wird. Der Beobachter geht mit der Karte, weil er an ihr haengt. */
+    { const box=c.querySelector('.tbs-tsicht');
+      if(box){ box._e=e; tiefeStreifenMalen(box,e); tiefeBreitenWache(box); } }
   });
 }
 
@@ -30281,7 +30349,12 @@ function blaettern(d){ if(exportLaeuft) return; const n=SEITEN.length; if(n<2) r
 /* Cover-Blätterer */
 
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); loopWache();
-  if(loopAn&&bereit&&!ohneEffekte){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit(),ohneEffekte); lmVorschauen(); }
+  if(loopAn&&bereit&&!ohneEffekte){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit(),ohneEffekte);
+  /* GANZ ZULETZT UND NUR HIER: die Trennebene liegt ueber dem fertigen Bild, solange jemand an
+     Grenze oder Weichheit zieht. rahmen() ist der einzige Weg, der sie kennt - und er steht bei
+     jeder Ausgabe still, also erreicht sie kein Video und keine Kachel. */
+  if(tiefesichtZeigt()) tiefesichtMalen(); else tiefesichtRaeumen();
+  lmVorschauen(); }
 /* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
 function zeichneFrame(t,roh){
   if(!bereit) return;
@@ -31605,7 +31678,7 @@ function zeichneFrame(t,roh){
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
-  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false;
+  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false; tiefesichtAus();   /* die Trennebene haengt an einem Effekt dieses Studios - sie geht mit ihm */
     /* Die Loop-Ansicht geht mit dem Studio aus (Gegenpruefung 15.09.2026): seit die Schleifen-Stufe sie selbst einschaltet und gemerkt
        wird, schloss man das Studio meist mit ihr - VIDEO_GENAU blieb stehen, und quelleSync liess die Videos von Kachel und Buehne
        liegen. Die gemerkte Stufe bleibt; beim naechsten Oeffnen schaltet stufeSetzen die Ansicht wieder ein. */
@@ -31671,11 +31744,17 @@ function zeichneFrame(t,roh){
     const g=(e.tiefeGrenze==null||e.tiefeGrenze<0)?(tp?tp.med:0.5):Math.max(0,Math.min(1,e.tiefeGrenze));
     const w=(e.tiefeWeich==null||e.tiefeWeich<0)?(48/255):Math.max(1/255,Math.min(1,e.tiefeWeich));
     return { g, w }; }
+  /* DIE KURVE SELBST, EINMAL AUFGESCHRIEBEN (17.09.2026). Sie stand bis heute in tiefeNahAn und
+     - in Ganzzahlen - in tiefeMaske; die Sichtbarkeitsansicht braucht sie ein drittes Mal, fuer
+     den Balken eines Histogrammfachs, wo es keinen Bildpunkt gibt. Ein drittes Mal abschreiben
+     hiesse, dass die Ansicht vom Ergebnis abdriften kann. Dieselben Rechenschritte in derselben
+     Reihenfolge wie bisher - der Loop bleibt bitgleich. */
+  function nahKurve(z, g, w){ let a=(z-(g-w))/(2*w); a=a<0?0:a>1?1:a; return a*a*(3-2*a); }
   /* u,v in Bildanteilen; 1 heisst sicher nah, 0 sicher fern. */
   function tiefeNahAn(tp, u, v, g, w){
     if(!tp) return 0.5;
     const x=Math.max(0,Math.min(tp.w-1,Math.round(u*tp.w))), y=Math.max(0,Math.min(tp.h-1,Math.round(v*tp.h)));
-    let a=(tp.z[y*tp.w+x]-(g-w))/(2*w); a=a<0?0:a>1?1:a; return a*a*(3-2*a); }
+    return nahKurve(tp.z[y*tp.w+x], g, w); }
   /* WIE GROSS IST DIE ERLAUBTE ZONE - UND WIE VIEL NIMMT DIE MASKE WIRKLICH WEG?
      Beides wird GERECHNET, nicht behauptet (Gegenlesen 16.09.2026). Die Karte sagte bisher, die
      Maske schneide die verbotene Zone „ohnehin aus"; auf „Okkultation" (Median 19, Band +-48)
@@ -31851,6 +31930,248 @@ function zeichneFrame(t,roh){
     cx.globalCompositeOperation='destination-in'; cx.drawImage(maske,0,0);
     cx.globalCompositeOperation='destination-over'; cx.drawImage(vorherCv,0,0);
     frisch(cx);
+  }
+
+  /* ================= DIE TRENNEBENE SEHEN (17.09.2026) =================
+
+     Caspar_D, 16.09.2026: "ich wuerde eher denken, der Regler der vorn und hinten trennt sollte
+     das originalbild greyleveln. Die Tiefenkarte wird in zwei Farben dargestellt weiss=vorne=rot,
+     schwarz=hinten=blau. diese Farben werden auf das Greylevelbild gelegt, solange ich am slider
+     fuer die vorne/hinten-Trennung schiebe, wenn ich den Weichslider betaetige, wird der Teil der
+     Tiefenkarten zwischen rot und blau immer gradientenhafter eingefaerbt."
+     Und 17.09.2026: "sind die ganzen partikelpanel denn jetzt so, dass ich die ebene, die vorn und
+     hinten trennt sehen kann" - bis heute: nein.
+
+     EINE QUELLE DER WAHRHEIT. Die Farbschicht liest die ALPHA DER MASKE (tiefeMaske im Modus
+     "vorn") - also genau das Feld, mit dem die Kette den Effekt beschneidet. Rot IST die Deckung
+     der Maske, Blau ihr Gegenteil, und der Verlauf dazwischen IST das weiche Band, kein Bild
+     davon. Eine zweite Rechnung koennte vom Ergebnis abdriften; dann zeigte die Ansicht etwas,
+     das der Clip nicht tut - die Falschaussage, gegen die die ganze Tiefenarbeit angetreten ist.
+
+     SIE KOMMT NUR, WENN JEMAND ZIEHT (Understatement). Kein Knopf, keine Dauerschicht: waehrend
+     Grenze oder Weichheit bewegt werden und einen Nachklang lang danach, damit man das Ergebnis
+     ohne Schleier sieht. Liegt keine Hand am Regler, kostet sie null - es wird nichts gerechnet
+     und nichts gezeichnet.
+
+     UND SIE ERREICHT DIE AUSGABE NIE. Gemalt wird ausschliesslich in rahmen(), und rahmen() steigt
+     bei exportLaeuft aus. zeichneFrame - der Weg von Kachel, Export und Loop-Bild - weiss von der
+     Ansicht nichts. */
+  const TSICHT={ e:null, haelt:false, bis:0 };
+  const TSICHT_NACHKLANG=1400, TSICHT_HALTEN=30000;   /* Nachklang nach dem Loslassen; die zweite Zahl ist nur die Reissleine, falls ein pointerup ausfaellt */
+  function tiefesichtWecken(e){ TSICHT.e=e; TSICHT.bis=performance.now()+(TSICHT.haelt?TSICHT_HALTEN:TSICHT_NACHKLANG); }
+  function tiefesichtZeigt(){ return !!TSICHT.e && performance.now()<TSICHT.bis; }
+  function tiefesichtAus(){ TSICHT.e=null; TSICHT.haelt=false; TSICHT.bis=0; TSICHT_GRAU=null; TSICHT_FERTIG=null; TSICHT_SCHICHTEN.length=0; }
+  /* „AUS" HIESS BIS HEUTE NUR: ES WIRD NICHT MEHR GEMALT (Gegenlesen 17.09.2026). Geraeumt wurde
+     nichts - nach dem Nachklang lagen drei Schichtenpaare, das Graubild und das fertige Bild
+     weiter herum, acht Leinwaende in voller Groesse: gemessen 17,4 MB bei 796x683 und 22,1 MB bei
+     898x770, und zwar bis zum Schliessen des Studios. Der Satz „aus kostet null" stimmte nur,
+     solange die Ansicht nie an war. Auf dem Intel-iMac mit geteiltem Speicher ist das kein Nichts.
+     Geraeumt wird beim ERSTEN Bild nach dem Nachklang, also genau einmal; danach ist die Bedingung
+     billig (`TSICHT.e` ist null) und kostet je Bild einen Vergleich. `TSICHT.e` geht mit - sonst
+     haelt die Ansicht einen Effekt fest, den der Nutzer laengst geloescht haben kann. */
+  function tiefesichtRaeumen(){ if(TSICHT.e||TSICHT_GRAU||TSICHT_FERTIG||TSICHT_SCHICHTEN.length) tiefesichtAus(); }
+  /* Zwei Schichten je Einstellung: die Farben und die Haarlinie. Getrennt, weil die Farben
+     halbdurchsichtig ueber dem Graubild liegen (sonst waere das Bild weg) und die Linie NICHT -
+     eine halbdurchsichtige Haarlinie im Verlauf sieht man gerade dort nicht, wo sie hingehoert.
+     Drei Plaetze: Buehne und Kachel haben verschiedene Groessen, und beim Ziehen kommt man
+     regelmaessig auf einen Wert zurueck. */
+  const TSICHT_SCHICHTEN=[]; let TSICHT_SCHICHTEN_ID=null;
+  function tiefesichtSchicht(id,W,H,grenze,weich2){
+    const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
+    const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
+    const k=W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
+    if(TSICHT_SCHICHTEN_ID!==id){ TSICHT_SCHICHTEN.length=0; TSICHT_SCHICHTEN_ID=id; }
+    { const da=TSICHT_SCHICHTEN.find(x=>x.k===k); if(da) return da; }
+    const maske=tiefeMaske(id,'vorn',W,H,grenze,weich2); if(!maske) return null;
+    try{
+      const mp=maske.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;
+      const farbe=document.createElement('canvas'); farbe.width=W; farbe.height=H;
+      const linie=document.createElement('canvas'); linie.width=W; linie.height=H;
+      const fx=farbe.getContext('2d'), lx=linie.getContext('2d');
+      const fb=fx.createImageData(W,H), lb=lx.createImageData(W,H), fd=fb.data, ld=lb.data;
+      for(let y=0,i=0;y<H;y++) for(let x=0;x<W;x++,i++){
+        const o=i*4, a=mp[o+3];
+        /* REINE KANAELE, DAMIT DIE ANSICHT NACHRECHENBAR BLEIBT: r ist die Alpha der Maske, b ihr
+           Gegenteil. Wer die Ansicht prueft, liest die Zahl direkt ab, statt sie aus einer
+           Mischfarbe zu schaetzen. */
+        fd[o]=a; fd[o+1]=0; fd[o+2]=255-a; fd[o+3]=255;
+        /* DIE HAARLINIE BEI GENAU 50 % (Alpha 128 - die Mitte der Kurve, also die wahre Grenze).
+           Im Verlauf ist die Mitte unsichtbar; erst die Linie macht sie lesbar. Gezogen wird sie
+           dort, wo die Deckung zwischen zwei Nachbarn die Haelfte kreuzt - das ist die Kante
+           selbst, nicht eine nachgezeichnete Naeherung. */
+        const nah=a>=128;
+        if((x+1<W&&(mp[o+7]>=128)!==nah)||(y+1<H&&(mp[o+W*4+3]>=128)!==nah)){
+          ld[o]=255; ld[o+1]=255; ld[o+2]=255; ld[o+3]=255; }
+      }
+      /* DIE LINIE BRAUCHT EINEN SAUM (Gegenlesen 17.09.2026). Rot und Blau unterscheiden sich fast
+         nur im Farbton, nicht in der Helligkeit - gemessen 1,5 : 1 auf jedem Motiv. Wer die beiden
+         nicht trennen kann, hat als einzige Auskunft die Haarlinie; und die wurde ausgerechnet auf
+         HELLEN Motiven schwach, weil ueber dem hellen Graubild 60 % Rot liegen (Weiss gegen Rot
+         dort nur 3,2 : 1). Nicht die Farbe des Covers ist das Problem, seine Helligkeit ist es.
+         Der Saum ist ein dunkler Rand um die weisse Linie, kein Verbreitern: die Linie selbst
+         bleibt einen Punkt breit und exakt auf der 50-%-Kante - sie ist die wahre Grenze, und die
+         verschiebt man nicht, um sie besser zu sehen. Ein Durchgang ueber den fertigen Puffer,
+         einmal je Einstellung, nicht je Bild. */
+      const saum=new Uint8Array(W*H);
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const o=(y*W+x)*4; if(ld[o+3]!==255) continue;
+        if(x>0) saum[y*W+x-1]=1; if(x+1<W) saum[y*W+x+1]=1;
+        if(y>0) saum[(y-1)*W+x]=1; if(y+1<H) saum[(y+1)*W+x]=1; }
+      for(let i=0;i<W*H;i++){ const o=i*4; if(saum[i]&&ld[o+3]!==255){ ld[o]=10; ld[o+1]=10; ld[o+2]=12; ld[o+3]=210; } }
+      fx.putImageData(fb,0,0); lx.putImageData(lb,0,0);
+      const sch={k,farbe,linie,W,H};
+      TSICHT_SCHICHTEN.unshift(sch); TSICHT_SCHICHTEN.length=Math.min(TSICHT_SCHICHTEN.length,3);
+      return sch;
+    }catch(x){ return null; }
+  }
+  /* Das Graubild ist das ORIGINAL, ungeschnitten - genau wie die Maske, die ueber das ganze Bild
+     geht. Beide zeigen dieselbe Flaeche; waere hier der Ausschnitt der Fahrt drin, laege die Farbe
+     neben der Sache.
+     EINMAL ENTFAERBT, NICHT JE BILD (gemessen 17.09.2026): der Filter kostete auf der Leinwand des
+     Studios 40 ms je Bild - beim Ziehen also zwei Bilder von dreien. Ein Standbild aendert sich
+     nicht, also wird es behalten; eine Videoquelle laeuft weiter und wird jedes Bild neu entfaerbt
+     (dann kostet die Ansicht wieder, was sie eben kostet - aber nur, solange jemand zieht). */
+  let TSICHT_GRAU=null;
+  function tiefesichtGrau(W,H){
+    const video=!!(bild&&bild.tagName==='VIDEO');
+    if(!video&&TSICHT_GRAU&&TSICHT_GRAU.W===W&&TSICHT_GRAU.H===H&&TSICHT_GRAU.quelle===bild) return TSICHT_GRAU.cv;
+    const cv=(TSICHT_GRAU&&TSICHT_GRAU.cv)?TSICHT_GRAU.cv:document.createElement('canvas');
+    cv.width=W; cv.height=H;
+    const cx=cv.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.clearRect(0,0,W,H);
+    cx.filter='grayscale(1) contrast(.85) brightness(1.05)';
+    try{ cx.drawImage(bild,0,0,W,H); }catch(x){}
+    cx.filter='none';
+    TSICHT_GRAU={ cv, W, H, quelle:video?null:bild };
+    return cv;
+  }
+  /* EIN FERTIGES BILD, EIN AUFTRAG JE RAHMEN - SOLANGE DER WERT STEHT (gemessen 17.09.2026,
+     nachgemessen beim Gegenlesen). Grau, Farbe und Haarlinie aendern sich bei GLEICHEM Wert nicht,
+     also werden sie einmal uebereinandergelegt und danach in einem Stueck auf die Scheibe gelegt:
+     ein Auftrag, gemessen 27,7 ms auf 796x683 unter SwiftShader.
+     EHRLICH DAZU GEHOERT: beim Ziehen aendert ein Mensch den Wert in fast jedem Bild, und dann
+     wird der Vorrat je Bild verworfen und neu aufgebaut - drei Auftraege plus der Blit, gemessen
+     87,1 ms, also gut das Dreifache. Das ist die Zahl, die zur Forderung „beim Ziehen muss es
+     fluessig bleiben" gehoert; die erste misst den Fall, in dem die Ansicht nichts zu tun hat.
+     SwiftShader ist dabei die Obergrenze - auf Joergs Radeon faellt es deutlich kleiner aus, und
+     mit einem Rezept aus mehreren Zoneneffekten kostet die Kette selbst schon ~400 ms je Bild,
+     dort traegt die Ansicht nichts Messbares bei. Solange das so bleibt, wird nicht umgebaut:
+     ein Zusammenlegen von Grau, Farbe und Linie in EIN ImageData koeste die reinen Kanaele, an
+     denen sich die Ansicht heute nachrechnen laesst.
+     Eine Videoquelle laeuft weiter; dort haengt die Marke an der VIDEOZEIT, nicht an der Uhr -
+     sonst griff der Vorrat nicht einmal dann, wenn das Video steht (Gegenlesen 17.09.2026). */
+  let TSICHT_FERTIG=null;
+  function tiefesichtMalen(){
+    const e=TSICHT.e, id=DATA&&DATA.id;
+    if(!e||!id||!bereit||!lein||!g||lein.width<2||!bild) return;
+    const W=lein.width, H=lein.height;
+    const sch=tiefesichtSchicht(id,W,H,e.tiefeGrenze,e.tiefeWeich); if(!sch) return;
+    const grau=tiefesichtGrau(W,H), video=!(TSICHT_GRAU&&TSICHT_GRAU.quelle);
+    const marke=sch.k+'|'+W+'x'+H+(video?'|v'+(bild.currentTime||0).toFixed(3):'|bild');
+    if(!TSICHT_FERTIG||TSICHT_FERTIG.marke!==marke||TSICHT_FERTIG.cv.width!==W||TSICHT_FERTIG.cv.height!==H){
+      const cv=(TSICHT_FERTIG&&TSICHT_FERTIG.cv)?TSICHT_FERTIG.cv:document.createElement('canvas');
+      cv.width=W; cv.height=H;
+      const cx=cv.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
+      cx.globalAlpha=1; cx.drawImage(grau,0,0);
+      cx.globalAlpha=.6; cx.drawImage(sch.farbe,0,0); cx.globalAlpha=1;
+      cx.drawImage(sch.linie,0,0);
+      TSICHT_FERTIG={ cv, marke };
+    }
+    frisch(g); g.drawImage(TSICHT_FERTIG.cv,0,0); frisch(g);
+  }
+  /* WIE VIEL DES BILDES IST NAH, WIE VIEL BAND, WIE VIEL FERN. Gezaehlt auf demselben Raster, auf
+     dem der Maler entscheidet (tiefeProben, 160 Punkte breit) - nicht geschaetzt. "Nah" heisst:
+     die Maske deckt ganz (Alpha 1), "fern": sie deckt gar nicht; dazwischen liegt das Band. Auf
+     "Okkultation" mit der Trennung von selbst sind das 43 % / 57 % / 0 % - und genau diese Null
+     ist der Grund, warum "nur hinten" dort nichts tat. */
+  const TSICHT_ANTEILE={};
+  function tiefeAnteile(id,gz,wz){
+    const tp=tiefeProben(id); if(!tp) return null;
+    const k=id+'|'+gz.toFixed(4)+'|'+wz.toFixed(4);
+    if(TSICHT_ANTEILE[k]) return TSICHT_ANTEILE[k];
+    const unten=gz-wz, oben=gz+wz; let nah=0, fern=0;
+    for(let q=0;q<tp.z.length;q++){ const v=tp.z[q]; if(v>=oben) nah++; else if(v<=unten) fern++; }
+    const n=tp.z.length;
+    return TSICHT_ANTEILE[k]={ nah:nah/n, band:(n-nah-fern)/n, fern:fern/n, punkte:n };
+  }
+  /* Die Verteilung der Tiefenwerte des Titels - einmal je Titel, 64 Faecher. */
+  const TSICHT_HIST={};
+  function tiefeHistogramm(id){
+    const tp=tiefeProben(id); if(!tp) return null;
+    if(TSICHT_HIST[id]) return TSICHT_HIST[id];
+    const n=64, h=new Uint32Array(n);
+    for(let q=0;q<tp.z.length;q++){ let b=Math.floor(tp.z[q]*n); if(b<0)b=0; if(b>=n)b=n-1; h[b]++; }
+    let max=1; for(let i=0;i<n;i++) if(h[i]>max) max=h[i];
+    return TSICHT_HIST[id]={ h, n, max, punkte:tp.z.length };
+  }
+  /* DER STREIFEN UNTER DEM SCHIEBER. Sein Weg ist der Weg des Reglers (-0,02 bis 1; der Anschlag
+     links ist "von selbst"), und er ist um den halben Griff eingerueckt - sonst sitzt der Griff
+     neben seiner eigenen Zahl. Die Faecher tragen die Farbe der Kurve: rot, wo die Maske dort
+     deckt, blau, wo sie es nicht tut - dieselbe nahKurve wie Maske und Maler. */
+  const TS_WEG = v => (v+0.02)/1.02;
+  /* EINE WACHE FUER ALLE STREIFEN, NICHT EINE JE KARTE (Gegenlesen 17.09.2026). Der Streifen
+     muss neu gemalt werden, wenn seine Spalte die Breite wechselt - das Fenster wird schmaler,
+     das Pult schaltet ein-/zweispaltig um, eine Karte klappt auf. Ein eigener Beobachter je
+     Karte bliebe bei jedem `renderStapel` als Leiche zurueck; EIN Beobachter, der die Karten
+     beim Neubau vergisst, kann das nicht. Der Effekt haengt am Kasten selbst (`box._e`), damit
+     die Wache nicht wissen muss, welche Karte sie gerade vor sich hat. */
+  let TS_WACHE=null;
+  function tiefeBreitenWache(box){
+    const cv=box&&box.querySelector('canvas.tbs-thist'); if(!cv||typeof ResizeObserver==='undefined') return;
+    if(!TS_WACHE) TS_WACHE=new ResizeObserver(eintraege=>{ for(const ei of eintraege){
+      const b=ei.target.closest('.tbs-tsicht');
+      if(b&&b._e&&b.isConnected) tiefeStreifenMalen(b,b._e); else TS_WACHE.unobserve(ei.target); } });
+    TS_WACHE.observe(cv);
+  }
+  function tiefeStreifenMalen(box, e){
+    try{
+      if(!box) return;
+      const cv=box.querySelector('canvas.tbs-thist'), zahl=box.querySelector('.tbs-tzahlen');
+      const id=DATA&&DATA.id, tp=id?tiefeProben(id):null, hi=id?tiefeHistogramm(id):null;
+      if(!cv||!tp||!hi) return;
+      const sp=tiefeSpanne(e,tp), an=tiefeAnteile(id,sp.g,sp.w);
+      const dpr=Math.min(2,window.devicePixelRatio||1);
+      /* KEIN NOTNAGEL FUER DIE BREITE (Gegenlesen 17.09.2026). Stand hier `cv.clientWidth||160`,
+         entstand der Streifen bei einer Breite von 0 still in 160 Punkten und wurde von CSS
+         gedehnt - ein falsches Bild, das nach nichts aussah. Hat die Leinwand noch kein Layout,
+         wird gar nicht gemalt; der Beobachter an der Karte holt es nach, sobald sie eine hat. */
+      const bw=Math.round(cv.clientWidth), bh=30;
+      if(!(bw>=60)) return;
+      if(cv.width!==Math.round(bw*dpr)||cv.height!==Math.round(bh*dpr)){ cv.width=Math.round(bw*dpr); cv.height=Math.round(bh*dpr); }
+      const cx=cv.getContext('2d'); cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,bw,bh);
+      const rand=6.5, nutz=Math.max(1,bw-2*rand), X=v=>rand+TS_WEG(v)*nutz;
+      /* das weiche Band als Flaeche - so breit, wie die Weichheit es macht */
+      cx.fillStyle='rgba(150,120,255,.18)';
+      const x1=X(Math.max(0,sp.g-sp.w)), x2=X(Math.min(1,sp.g+sp.w));
+      cx.fillRect(x1,0,Math.max(1,x2-x1),bh);
+      /* die Faecher */
+      for(let i=0;i<hi.n;i++){
+        const v=(i+0.5)/hi.n, a=nahKurve(v,sp.g,sp.w);
+        /* WURZELMASSSTAB, UND ES STEHT DABEI. Auf "Okkultation" liegen 7518 von 21920 Punkten im
+           dunkelsten Fach - linear aufgetragen ist der zweite Haufen (die Figur, das Gelaender) ein
+           Strich von einem Bildpunkt und die Verteilung sagt nichts mehr. Die Wurzel laesst beide
+           Haufen sehen; dass der Massstab keiner von gleichen Schritten ist, sagt der Titel. */
+        const hh=Math.max(hi.h[i]?1:0, Math.round(Math.sqrt(hi.h[i]/hi.max)*(bh-3)));
+        if(!hh) continue;
+        const xa=X(i/hi.n), xb=X((i+1)/hi.n);
+        cx.fillStyle='rgb('+Math.round(a*255)+',0,'+Math.round(255-a*255)+')';
+        cx.globalAlpha=.85; cx.fillRect(xa,bh-hh,Math.max(1,xb-xa),hh); cx.globalAlpha=1;
+      }
+      /* Die Mitte der Karte ("von selbst") als feiner Strich, damit man sieht, wovon man abweicht -
+         ABER NUR, WENN SIE NICHT DIE GRENZE SELBST IST (Gegenlesen 17.09.2026). Auf "von selbst"
+         ist die Grenze die Kartenmitte; dann fielen beide Striche aufeinander, und der Titel
+         versprach zwei, von denen nur einer da war. */
+      const vonSelbst = Math.abs(sp.g-tp.med)<1e-9 && (e.tiefeGrenze==null||e.tiefeGrenze<0);
+      if(!vonSelbst){ cx.fillStyle='rgba(255,255,255,.28)'; cx.fillRect(X(tp.med)-0.5,0,1,bh); }
+      /* UND DER GRIFF GEHOERT AN SEINE MARKE (Gegenlesen 17.09.2026). Auf "von selbst" steht der
+         Griff am linken Anschlag ueber einem leeren Stueck Streifen, waehrend die Grenze in der
+         Kartenmitte liegt - nichts sagte, dass die beiden zusammengehoeren. Eine duenne Spur am
+         oberen Rand fuehrt vom Griff zu seiner Linie; sie erscheint nur, wenn beide auseinander
+         stehen, also gerade in dem Zustand, in dem Joerg die Karte zuerst sieht. */
+      const xg=X(e.tiefeGrenze==null?-0.02:Math.max(-0.02,Math.min(1,e.tiefeGrenze))), xl=X(sp.g);
+      if(Math.abs(xl-xg)>2){ cx.fillStyle='rgba(255,255,255,.35)'; cx.fillRect(Math.min(xg,xl),0,Math.abs(xl-xg),1); cx.fillRect(xg-0.5,0,1,3); }
+      /* und die Grenze selbst - dieselbe Haarlinie wie im Bild */
+      cx.fillStyle='#fff'; cx.fillRect(X(sp.g)-0.5,0,1,bh);
+      if(zahl&&an) zahl.innerHTML='<i class="tz-nah">'+vH(an.nah)+' vorn</i><i class="tz-band">'+vH(an.band)+' Übergang</i><i class="tz-fern">'+vH(an.fern)+' hinten</i>';
+    }catch(x){}
   }
 
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};

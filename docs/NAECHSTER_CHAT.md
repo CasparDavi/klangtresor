@@ -4471,3 +4471,25 @@ Caspar_D während des laufenden Baus: *„bei schmetterlinge müsste auch noch d
 werden können"* — kommt beim Einfügen der Partikel-Kopie dazu: ein Regler „Flattern" (Schläge je Sekunde), Vorgabe
 aus dem natürlichen Bereich, je Falter leicht gestreut, damit der Schwarm nicht im Gleichtakt schlägt. Wahlweise an
 den Takt gekoppelt über den Antrieb, den jeder Effekt hat.
+
+### Trennebene sichtbar (17.09.2026)
+
+Caspar_D: *„sind die ganzen partikelpanel denn jetzt so, dass ich die ebene, die vorn und hinten trennt sehen kann"* —
+jetzt ja. Während man an „Grenze" oder „Weichheit" zieht (und 1,4 s danach), zeigt die Scheibe das Quellbild in
+Graustufen, rot wo die Maske nah zählt, blau wo fern, im weichen Band der Verlauf, dazu eine Haarlinie bei genau 50 %.
+Unter dem Grenze-Regler steht dauerhaft ein Verteilungsstreifen (Histogramm der Tiefenwerte, Wurzelmaßstab) mit dem
+Griff darauf, dazu drei Prozentzahlen (vorn · Übergang · hinten). **Eine Quelle der Wahrheit:** der rote Kanal *ist*
+das Alpha-Byte von `tiefeMaske` — Abweichung an 2560 Proben exakt 0. Anteile gegen eine unabhängige Zählung: 0,0000.
+Haarlinie: kein Punkt abseits der 50-%-Kante. Kosten: aus = null, beim Ziehen ein Auftrag je Bild (3,7 ms bei 480,
+12,6 ms bei 960 unter SwiftShader, also Obergrenze). Export und Kacheln sehen die Ansicht nie (sie lebt nur in
+`rahmen()`); sechs Bildhashes gegen den Repostand identisch, Loop `gleich 0`.
+Dazu: `.tbs-graugrund` von 10,5 auf **12 px** (Hausregel 14) — Caspar_D: *„ja, ist dann so"*.
+
+**Als Nächstes vereinbart:** das Betretungsverbot an der BAHN statt am Bild. Caspar_D: *„es darf überhaupt keine
+richtungen geben, die in die verbotszone führen"* — und als Weg dorthin sein eigener Vorschlag: *„oder du baust die
+bahnen aus einem gültigen parameterset"*. Gebaut wird eine **Geburtenkarte**: einmal je Titel und Einstellung wird
+je Rasterzelle geprüft, ob eine dort beginnende Bahn über ihr ganzes Leben erlaubt bleibt; geboren wird nur aus
+bestehenden Zellen. Gerade Bahnen (Sternschnuppe) über die freie Strecke in Flugrichtung, gekrümmte durch Abtasten.
+Ist die Karte leer, sagt die Karte es. Die Abschneide-Idee ist gestrichen (Caspar_D hat sie zu Recht verworfen).
+Ebenfalls offen: Sternschnuppen-Kopf, Grenze/Weichheit ans Rezept statt an den Effekt, erstes Exportbild nach
+Titelwechsel.
