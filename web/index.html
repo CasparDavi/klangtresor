@@ -27207,6 +27207,19 @@ const VERR = [
   ['farbton','Farbton','hue','Farbe'],['saettigung','Sättigung','saturation','Farbe'],['farbe','Farbe','color','Farbe'],['luminanz','Luminanz','luminosity','Farbe']
 ];
 const VMODE = Object.fromEntries(VERR.map(v=>[v[0],v[2]]));
+/* WELCHE VERRECHNUNGEN EINE GRUPPE VORKOMPONIEREN LASSEN (18.09.2026). Wer Teilchen erst auf eine
+   Hilfsleinwand malt und die Leinwand dann auflegt, rechnet (Grund op a) op b als
+   Grund op (a op b) - das ergibt nur dasselbe Bild, wenn die Rechenart das Zusammenlegen erlaubt.
+   Diese fuenf tun es: over ist assoziativ, lighter ist die Summe, screen ist 1-(1-a)(1-b),
+   exclusion ist unter 1-2x ein Produkt, multiply ein Produkt.
+   WIE GENAU, UND DIE ZAHL HAENGT AN DER TEILCHENZAHL (gegengelesen 18.09.2026 - der erste Bau nannte
+   „hoechstens 3 von 255“ ohne Vorbehalt, gemessen hatte er nur 2 bis 12 Teilchen). Die Abweichung
+   ist reine 8-Bit-Rundung der Hilfsleinwand und waechst darum mit der Zahl der Lagen:
+     bei 2 Teilchen 2-3 von 255, bei 12 bis 7, bei 50 bis 12, bei 200 bis 15, bei 400 bis 17.
+   Alle anderen Rechenarten weichen um ein Vielfaches davon ab (bei 400 Teilchen bis ueber 200) -
+   die Tabelle steht beim Partikel-Maler an der Hilfsleinwand.
+   Wer eine Rechenart hier eintraegt, muss sie gemessen haben: labor-Weg in der Notiz dort. */
+const VERR_GRUPPE = new Set(['source-over','lighter','screen','exclusion','multiply']);
 function verrOptionen(cur){ const gr={}, reihe=[]; VERR.forEach(([v,l,,g])=>{ const k=g||''; if(!gr[k]){ gr[k]=[]; reihe.push(k); } gr[k].push([v,l]); });
   return reihe.map(k=>(k?'<optgroup label="'+k+'">':'')+gr[k].map(([v,l])=>'<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>').join('')+(k?'</optgroup>':'')).join(''); }
 
@@ -27526,14 +27539,14 @@ const WEICH_PARAM = { k:'tiefeWeich', lbl:'Weichheit', min:-.02, max:1, step:.02
    (Spezifikation Abschnitt 5).
    Die Zeile steht nur dort, wo ein Teilchen ueberhaupt eine eigene Entfernung hat: ohne
    einzelne Koerper gibt es keinen freien Bereich, aus dem sie kaeme.
-   UND SIE STEHT GRAU, SOLANGE DIE RAUMTIEFE AUF 0 STEHT (Gegenlesen 17.09.2026). In Schritt 1
-   zeigt sich die Entfernung nur ueber die Raumtiefe; bei Raumtiefe 0 bestimmt der Vorraum nichts
-   - und das ist die Vorgabe und der Stand aller 18 gespeicherten Rezepte. Eine bedienbare Zeile,
-   die eine Wirkung beschreibt und keine hat, ist genau die Luege aus Regel 11. AB SCHRITT 2
-   (Verdeckung je Entfernung, in Tiefenschichten) wirkt die Entfernung immer - dann wird die
-   Zeile wieder lebendig und dieser Grund faellt weg. */
+   SIE IST WIEDER LEBENDIG (Schritt 2, 17.09.2026). In Schritt 1 stand hier ein Grund, der die
+   Zeile grau legte: die Entfernung zeigte sich allein ueber die Raumtiefe, bei Raumtiefe 0
+   bestimmte der Vorraum nichts. Seit die Verdeckung IMMER gilt (Spezifikation Abschnitt 5, die
+   Trennlinie: was eine Ja/Nein-Frage ist, gilt immer), spannt der Vorraum den Bereich auf, aus
+   dem JEDES Teilchen seine Entfernung wuerfelt - und die entscheidet, wovon es verdeckt wird.
+   Der Grund ist damit weg, samt der Funktion leerGrund(), die ihn gab. */
 const LEER_PARAM = { k:'leerraum', lbl:'Leerraum vor Tiefenkarte', min:0, max:1, step:.05, def:.25,
-  brauchtKarte:true, grau:e=>leerGrund(e), notiz:e=>leerraumNotiz(e) };
+  brauchtKarte:true, notiz:e=>leerraumNotiz(e) };
 /* RAUMTIEFE: die Karte gibt jedem Teilchen Groesse, Tempo und ein wenig Dunst. Seit dem
    17.09.2026 traegt das Teilchen dafuer eine EIGENE ENTFERNUNG, gewuerfelt aus dem freien
    Bereich an seinem Geburtsort (entfernungIn) - vorher stand hier die abgelesene Naehe der
@@ -27554,9 +27567,28 @@ const RAUM_OHNE = new Set(['schwarm','sternschnuppen','konfettiKanone']);
 /* Der Aufenthalt gilt bei Koerpern hart - aber nicht, solange ein altes Rezept seine weiche Zone
    traegt. EINE Stelle, die das entscheidet; Maler und Kette fragen beide hier. */
 const ZONE_HART = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung!=='zone' && !!e.tiefeWirkt && e.tiefeWirkt!=='alles';
-/* Verdeckt wird nur, wo auch etwas davorstehen kann: nicht ohne Koerper (dort ist der Aufenthalt
-   schon der Schnitt), nicht im alten Rezept, und nicht, wenn der Effekt selbst vorn wohnt. */
-const VERDECKT = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung==='vorn' && e.tiefeWirkt!=='vorn';
+/* MALT DER EFFEKT SEINE VERDECKUNG SELBST, BAND FUER BAND? (18.09.2026, Bauweg Schritt 2)
+   Seit Schritt 2 legt der Partikel-Maler seine Teilchen in Tiefenbaender und beschneidet jedes
+   Band mit der Maske SEINER Tiefe (schichtBaender, tiefeMaske mit Bandkanten). Damit ist die
+   Frage beantwortet, und zwar feiner: das Band fragt "ist die Flaeche naeher als DIESES
+   Teilchen", die eine Maske ueber dem ganzen Effekt fragte "ist sie naeher als die GRENZE". */
+const BAENDER_SELBST = e => e.typ==='partikel';
+/* DIE EINE MASKE UEBER DEM GANZEN EFFEKT IST WEG (18.09.2026, Gegenlesen). Sie lief bis heute
+   unveraendert weiter und legte sich UEBER die neuen Baender. Das ist keine zweite Frage, sondern
+   dieselbe mit grober Antwort - und die grobe gewann, weil sie zuletzt kam. Was sie anrichtet,
+   gerechnet an den Einstellungen des einzigen Altrezepts, das sie traegt (f76a6706, Schwarm,
+   Grenze 0,4, Weichheit von selbst) und gemittelt ueber die Kartenskala:
+     dem vordersten Band MIT Maske nahm sie 24,3 % seiner Deckung, im schlimmsten Bildpunkt
+       0,766 Alpha (195 von 255) bei Kartenwert 0,476;
+     dem VORRAUM - dem Band, vor dem nach dem Raummodell nichts mehr steht (Spezifikation
+       Abschnitt 2) - nahm sie 60,0 %.
+   Das Zweite ist der Beweis, dass sie falsch ist und nicht nur doppelt: ein Teilchen im Vorraum
+   wird von nichts verdeckt, und sie nahm es zu drei Fuenfteln weg.
+   ALSO GILT DAS BAND, und die Kette maskiert einen Effekt mit Koerpern nicht mehr. Die Bedingung
+   nennt den Grund, statt einfach false zu sein: gibt es spaeter einen zweiten Effekt mit
+   einzelnen Koerpern, der KEINE Baender malt, greift sie wieder. Heute ist das fuer jeden Effekt
+   mit Koerpern der Fall, die Zeile in der Kette laeuft also nicht mehr an; sie faellt ganz, wenn
+   mit Schritt 5 die Zeile "Verdeckung" selbst gestrichen wird (Spezifikation Abschnitt 6). */
 /* EINE KARTE, KEINE, ODER NOCH UNTERWEGS — UND DAS WIRD GESAGT (Regel 11; Caspar_D, 16.09.2026:
    „das Problem ist, es wirkt nicht"). Ohne Tiefenkarte stehen alle Tiefenzeilen grau mit Grund.
    Solange sie laedt, bleiben sie BEDIENBAR und sagen das — sie stillzulegen waere dieselbe
@@ -27590,14 +27622,18 @@ const LAEDT = () => tiefeStand()==='unterwegs' ? 'Die Tiefenkarte dieser Quelle 
 function verdeckGrund(e){
   if(e.tiefeVerdeckung==='zone') return null;   /* der Altwert muss sichtbar und aenderbar bleiben */
   if(!TIEFE_KOERPER(e)) return 'Dieser Effekt hat keine einzelnen Körper — er legt sich über das ganze Bild. Seine Zone kann nur ausgeschnitten werden: der Aufenthalt ist hier schon der Schnitt.';
-  if(e.tiefeWirkt==='vorn') return 'Der Effekt hält sich selbst im Vordergrund auf — vor ihm steht nichts, was ihn verdecken könnte.';
-  return null; }
-function raumGrund(e){ return RAUM_OHNE.has(e.art) ? 'Diese Art rechnet ihren Ort ganz selbst und hat keinen Geburtsort im Bild, an dem ein freier Bereich aufzuspannen wäre.' : null; }
-/* Der Vorraum bestimmt, wie weit die Entfernung nach vorn reichen kann - und die Entfernung zeigt
-   sich in Schritt 1 allein ueber die Raumtiefe. Erst der Grund der ART, dann dieser: wer seinen
-   Ort selbst rechnet, hat gar keine Entfernung, und das ist die genauere Auskunft. */
-function leerGrund(e){ return raumGrund(e)
-  || (!(e.raumtiefe>0.001) ? 'Der Vorraum bestimmt, wie weit die Entfernung eines Teilchens nach vorn reichen kann — und die Entfernung zeigt sich bisher nur über die Raumtiefe. Solange die auf 0 steht, ändert dieser Regler nichts.' : null); }
+  /* GRAU MIT GRUND, WEIL SIE NICHTS MEHR ENTSCHEIDET (18.09.2026, Schritt 2). Verdeckt wird jedes
+     Teilchen nach seiner eigenen Entfernung, in vier Tiefenschichten - die Zeile hat dazu nichts
+     zu wählen. Bedienbar zu bleiben wäre die Falschaussage: beide Werte täten dasselbe, nämlich
+     nichts. Die Zeile verschwindet mit Schritt 5 (Spezifikation Abschnitt 6). */
+  return 'Verdeckt wird ab Schritt 2 immer, und zwar jedes Teilchen nach seiner eigenen Entfernung — in vier Tiefenschichten, bildpunktgenau. Hier ist nichts mehr zu wählen; die Zeile verschwindet mit dem nächsten Schritt.'; }
+/* WAS DIESE ZEILE BEI SCHWARM, SCHNUPPE UND KANONE NICHT KANN - UND WAS TROTZDEM GILT (Schritt 2,
+   17.09.2026). Der Satz hier hiess "hat keinen Geburtsort im Bild, an dem ein freier Bereich
+   aufzuspannen waere". Das stimmt seit Schritt 2 nicht mehr: verdeckt wird jedes Teilchen nach
+   seiner eigenen Entfernung, auch diese drei - sie holen sie an ihrer eigenen Stelle (gebOrt,
+   Fall 'bahn'). Was hier wirklich stillsteht, sind Groesse, Tempo und Dunst: die haengen an der
+   Bahn, die die Art selbst rechnet, und das aufzuloesen ist Schritt 6. */
+function raumGrund(e){ return RAUM_OHNE.has(e.art) ? 'Diese Art rechnet ihre Bahn ganz selbst — Größe, Tempo und Dunst hängen hier nicht an der Entfernung. Verdeckt wird sie trotzdem nach ihrer eigenen Entfernung.' : null; }
 /* WIE der Aufenthalt bei DIESER Art durchgesetzt wird. Drei Mechanismen, drei Saetze - der eine
    Satz von gestern versprach allen achtzehn Arten beides zugleich („kommen nicht zur Welt" UND
    „die Schar weicht aus"), und fuer Sternschnuppe und Kanone stimmte keine der beiden Haelften. */
@@ -27643,13 +27679,17 @@ function aufenthaltNotiz(e){
   return aufenthaltWie(e.art)
     + (ZONE_UNGENAU.has(e.art) ? ' Diese Art malt einen weichen Saum über ihren Körper hinaus; ein Rest davon kann in die verbotene Zone reichen.' : '')
     + RASTER_SATZ + leerWarnung(e); }
+/* DIE ZEILE ENTSCHEIDET NICHTS MEHR, UND DAS WIRD GESAGT (18.09.2026, Schritt 2). Bis heute
+   standen hier zwei Saetze: „liegt vor dem Effekt und nimmt ihn dort weg" (Wert vorn) und
+   „Nichts liegt vor dem Effekt" (Wert aus). Der zweite ist seit Schritt 2 eine Falschaussage -
+   verdeckt wird IMMER, wenn es eine Karte gibt, und zwar jedes Teilchen nach seiner eigenen
+   Entfernung (Spezifikation Abschnitt 5: was eine Ja/Nein-Frage ist, gilt immer). Der erste
+   beschrieb die eine Maske ueber dem ganzen Effekt, und die ist weg (Begruendung in der Kette). Die Zeile
+   selbst bleibt bis Schritt 5 stehen, weil sie im alten Rezept den Altwert „zone" traegt; was
+   sie heute noch bewirkt, ist nichts, und genau das sagt die Notiz. */
 function verdeckNotiz(e){
   if(!tiefeKarteDa()||!TIEFE_KOERPER(e)||e.tiefeVerdeckung==='zone') return null;
-  if(e.tiefeVerdeckung==='vorn'&&e.tiefeWirkt!=='vorn')
-    return 'Was die Tiefenkarte als nah führt, liegt vor dem Effekt und nimmt ihn dort weg — auch bei Aufenthalt „überall". Das ist der Vogel, der hinter dem Haus verschwindet und wieder herauskommt.';
-  if(e.tiefeVerdeckung!=='vorn'&&(!e.tiefeWirkt||e.tiefeWirkt==='alles'))
-    return 'Nichts liegt vor dem Effekt: er wird über das ganze Bild gemalt, auch über die Figur davor.';
-  return null; }
+  return 'Diese Zeile wirkt nicht mehr: verdeckt wird jedes Teilchen nach seiner eigenen Entfernung, sobald es eine Tiefenkarte gibt — in vier Tiefenschichten, bildpunktgenau. Das ist der Vogel, der halb hinter dem Pfosten steckt und auch halb weg ist. Die Zeile verschwindet mit dem nächsten Schritt.'; }
 /* Wo dieselbe Karte im selben Clip zwei verschiedene Trennlinien bekommt, wird das gesagt. Die
    Grenze beschreibt das BILD, haengt aber am Effekt - solange das so ist, darf es nicht still
    passieren (Gegenlesen 16.09.2026; ob sie ans Rezept gehoert, ist Caspar_Ds Entscheidung). */
@@ -27681,11 +27721,9 @@ function weichNotiz(e){ if(!tiefeKarteDa()) return null;
    (eine aus eigenem Grund stillgelegte Zeile traegt den Wartesatz nicht). */
 /* WAS DER VORRAUM BEDEUTET - und der Satz, den nichts sonst sagt: hinter der Flaeche entsteht
    nichts. Das ist der Kern des Raummodells und gehoert an die Zeile, die den Raum aufspannt. */
-function leerraumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
-  if(!tiefeKarteDa()) return null;
-  /* Bei Raumtiefe 0 legt leerGrund() die Zeile mit Grund still. Ein Satz darunter, der eine
-     Wirkung beschreibt, waere dann eine Dopplung UND ein Widerspruch. */
-  if(!(e.raumtiefe>0.001)) return null;
+function leerraumNotiz(e){ if(!tiefeKarteDa()) return null;
+  /* Hier stand bis Schritt 2 ein Rueckzug bei Raumtiefe 0 (die Zeile war dann grau). Seit die
+     Verdeckung immer gilt, wirkt der Vorraum immer - also spricht die Notiz auch immer. */
   const L=leerVor(e);
   return (L>0.001
     ? 'Vor der Karte liegt ein leerer Vorraum von ' + vH(L) + ' des Weges von ganz hinten nach ganz vorn — von dem Band, das „Grenze“ und „Weichheit“ aufspannen. Die Entfernung eines Teilchens wird aus dem freien Bereich an seinem Geburtsort gewürfelt: von der Fläche dort bis an das vordere Ende dieses Vorraums.'
@@ -27709,7 +27747,10 @@ function leerraumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
      (bodenZellen.grund). Eine leere Tabelle bleibt nicht still. */
 function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
   if(!tiefeKarteDa()) return null;
-  if(!(e.raumtiefe>0.001)) return 'flach wie bisher: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen.';
+  /* NICHT MEHR „FLACH WIE BISHER" (Schritt 2). Bei Raumtiefe 0 sind alle Teilchen gleich gross
+     und gleich schnell - verdeckt wird aber jedes nach seiner eigenen Entfernung, und das ist
+     keine Reglerstellung mehr. Der alte Satz allein waere jetzt die Falschaussage. */
+  if(!(e.raumtiefe>0.001)) return 'Größe und Tempo bleiben flach: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen. Verdeckt wird jedes trotzdem nach seiner eigenen Entfernung — das gilt immer.';
   const tp=tiefeProben(); if(!tp) return null;
   const L=leerVor(e), sp=tiefeSpanne(e,tp), HK=herkunftVon(e);
   const modus=ZONE_HART(e)?e.tiefeWirkt:null;
@@ -29208,6 +29249,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       zx=e._rc.getContext('2d'); zx.setTransform(1,0,0,1,0,0); zx.globalCompositeOperation='source-over'; zx.globalAlpha=1; zx.clearRect(0,0,Wn,Hn); }
     /* Wird geschnitten oder verdeckt, malen die Teilchen erst auf eine eigene Leinwand - die
        Maske schneidet dort einmal, statt je Teilchen zu rechnen. */
+    /* "TIEFE AUS DER BILDZEILE" NEBEN DER NEUEN VERDECKUNG - WAS GILT (Schritt 2, 17.09.2026).
+       Dieser Regler bleibt in Schritt 2 UNANGETASTET; seine Streichung ist Schritt 5
+       (Spezifikation, Punkt 4). Er gibt jedem Teilchen eine ERFUNDENE Entfernung aus seiner
+       Bildzeile und vergleicht die mit der Karte. Auf 0 - der Vorgabe - gilt allein die neue
+       Verdeckung. Steht er hoeher, gelten BEIDE, und das ist keine Dopplung, sondern eine
+       Vereinigung: die neue Verdeckung fragt "ist die Flaeche naeher als DIESES Teilchen", die
+       alte "ist sie naeher als die Zeile, in der es steht". Zwei verschiedene Fragen, zwei
+       Antworten. Kein Bildpunkt wird zweimal abgezogen, wo eine der beiden schon 0 sagt; nur in
+       den weichen Saeumen nehmen beide etwas, und dort ist es der Saum eines Reglers, der in
+       Schritt 5 verschwindet. Die Reihenfolge: die Baender komponieren auf e._vc, DANACH schneidet
+       partikelMaske (Horizont und Bildzeile) darueber - der Horizont soll ja auch das schneiden,
+       was die Baender stehen lassen. */
     const hor=(e.horizont==null?0:e.horizont), vd=(e.verdecken==null?0:e.verdecken);
     const tpP=(hor>0.001||vd>0.001)?tiefeProben():null;
     const schnitt=!schw&&(hor>0.001||(vd>0.001&&tpP));
@@ -29237,9 +29290,17 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Alles reine Funktionen von i und t, also bleibt der Loop exakt. */
     const RAUM=Math.max(0,Math.min(1,(e.raumtiefe==null?0:e.raumtiefe)));
     const zoneWunsch=ZONE_HART(e)?e.tiefeWirkt:null;
-    const TPR=(zoneWunsch||RAUM>0.001)?tiefeProben():null;
+    /* DAS RASTER WIRD IMMER GEHOLT, WENN ES EINE KARTE GIBT (Schritt 2). Bis Schritt 1 wurde es
+       nur bei Aufenthalt oder Raumtiefe gefragt; seit die Verdeckung eine Ja/Nein-Frage ist, die
+       IMMER gilt (Spezifikation Abschnitt 5), braucht jedes Teilchen seine Entfernung. Der Ruf
+       ist billig: tiefeProben rechnet einmal je Quelle und liegt danach im Vorrat. */
+    const TPR=tiefeProben();
     const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(e,TPR):null;
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
+    /* VERDECKT WIRD IMMER, WENN ES EINE KARTE GIBT - auch bei Raumtiefe 0, auch bei Schwarm,
+       Schnuppe und Kanone (RAUM_OHNE gilt nur fuer Groesse, Tempo und Dunst). Ohne Karte gibt es
+       keine Flaeche, die etwas verdecken koennte: dann bleibt alles, wie es war. */
+    const verdAn=!!TPR;
     /* ---- DIE ENTFERNUNG JE TEILCHEN (17.09.2026, Bauweg Schritt 1) ----
        Jedes Teilchen bekommt eine EIGENE Entfernung, gewuerfelt aus dem freien Bereich an seinem
        GEBURTSORT (freiBereich/entfernungIn). Woher es kommt, bestimmt die Art (HERKUNFT); eine
@@ -29258,7 +29319,17 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        'bahn' kommt hier nicht an: fuer Schnuppe, Schwarm und Kanone steht die Raumtiefe still
        (RAUM_OHNE), und raumGrund() sagt das an der Zeile. */
     const HK=herkunftVon(e), HERK=HK.herk, RUNTER=HK.runter;
-    const BODEN=(raumAn&&HERK==='boden')?bodenZellen(TPR,ZG.g,ZG.w,LEER,ZONE):null;
+    /* DIE BODENTABELLE GILT JETZT IMMER (Schritt 2). In Schritt 1 stand hier raumAn, und der
+       Kommentar unten in der Schleife sagte, warum: die Entfernung zeigte sich nur ueber die
+       Raumtiefe, also durfte auch der Malort nicht wandern. Jetzt wirkt die Entfernung immer -
+       und ein Bodenteilchen, das seine Entfernung aus einer Bodenzelle holt und woanders gemalt
+       wird, waere genau die Unwahrheit, gegen die Schritt 1 die Tabelle gesetzt hat. */
+    const BODEN=(verdAn&&HERK==='boden')?bodenZellen(TPR,ZG.g,ZG.w,LEER,ZONE):null;
+    /* Die Baender, in denen gemalt wird - einmal je Bild, reine Funktion von Grenze und Schaerfe
+       (schichtBaender). Ohne Karte bleibt es bei einem Durchgang ohne Maske. Der Leerraum geht
+       NICHT ein: der Vorraum ist ein Band nach oben offen, seine Breite verschiebt keine
+       Bandkante (Begruendung bei schichtBaender). */
+    const BAENDER=verdAn?schichtBaender(ZG.g,ZG.w):null;
     /* Der Geburtsort in Bildanteilen - eine reine Funktion der Teilchennummer und des
        gewuerfelten Platzes, OHNE t:
          quelle  der gesetzte Punkt, Strich, Kreis, die Ellipse (den hat Caspar_D gesetzt)
@@ -29269,7 +29340,17 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
                  (unten in der Schleife setzt bodenPlatz x0/y0 darauf), also IST sein Platz sein
                  Geburtsort. Fehlt die Bodenflaeche, bleibt es an seinem gewuerfelten Platz; das
                  ist der ehrliche Rueckfall, und er steht in raumNotiz.
-         da      die eigene Stelle, wie bisher */
+         da      die eigene Stelle, wie bisher
+         bahn    Schwarm, Schnuppe, Kanone: bis Schritt 1 kam dieser Fall im Maler nicht an, weil
+                 die Entfernung nur ueber die Raumtiefe wirkte und die fuer sie stillsteht
+                 (RAUM_OHNE). Seit Schritt 2 gilt die Verdeckung immer, also kommt er an - und
+                 faellt hier auf die eigene Stelle, den letzten Zweig. Das ist eine SETZUNG: ein
+                 Vogel holt seine Entfernung an seinem gewuerfelten Platz, nicht dort, wo die
+                 Schar ihn hintraegt. Sie zeitabhaengig zu machen waere der Fehler, den Schritt 1
+                 ausgebaut hat (der Geburtsort muss eine reine Funktion der Nummer sein); den Ort
+                 und die Entfernung zusammenzubringen gehoert zu Schritt 6 (Spezifikation,
+                 Beobachtung 2: "Wandern verschiebt den Koerper, nachdem die Entfernung
+                 feststeht"). */
     const gebOrt=(i,px,py)=>{
       if(HERK==='quelle'){ const P=quellPunkt(e,i,hs,Wn,Hn); return [P[0]/Wn,P[1]/Hn]; }
       if(HERK==='rand') return [px/Wn, RUNTER?0:1];
@@ -29313,15 +29394,101 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* Das Fallmass der Art - loop-invariant; dieselbe Zahl, mit der jeder Zweig sein v rechnet
        und mit der flugbahn und die Kanone gerufen werden. */
     const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
+    /* ---- DIE HILFSLEINWAND DER TIEFENSCHICHTEN (Schritt 2) ----
+       EINE, nicht eine je Band: je Band werden die Teilchen dieses Bandes darauf gemalt und die
+       Maske des Bandes angewandt, und weil die Masken geschachtelt sind (schichtBaender), wird
+       am Ende EINMAL komponiert. Vier Leinwaende kosteten vierfachen Speicher und drei Vollgaenge
+       je Band statt einem (gemessen: 1,050 gegen 0,477 ms je Gang bei 898).
+       WOHIN DIE FERTIGE SCHICHT KOMMT: dorthin, wo die Teilchen bisher hingingen - bei Schwaden
+       auf die Rauchleinwand (zx, e._rc), sonst auf die laufende Leinwand (cx; bei Horizont oder
+       "Tiefe aus der Bildzeile" ist das e._vc).
+
+       DIE VERRECHNUNG DES EFFEKTS GILT AUCH INNERHALB DER SCHICHT (18.09.2026, Gegenlesen).
+       Hier stand: "Innerhalb der Schicht liegen die Teilchen mit Ueber uebereinander." Das war
+       ein Fehler, den niemand verlangt hat: bis Schritt 1 gingen die Teilchen mit der Verrechnung
+       des Effekts DIREKT aufs Bild, zwei ueberlappende Funken addierten sich also. Auf einer
+       Hilfsleinwand mit "Ueber" decken sie sich statt dessen - bei Funken, Glitzer und
+       Gluehwuermchen gut zu sehen. Gemessen an zwei ueberlappenden Funken (60 Faelle je
+       Verrechnung, fuenf Gruende, 2/3/5/12 Teilchen): bei screen wich die Schicht mit "Ueber" um
+       bis zu 164 von 255 vom einzelnen Auflegen ab, bei Additiv um 188.
+       WARUM ES MIT DERSELBEN RECHENART GEHT: eine Gruppe darf man vorkomponieren, wenn die
+       Rechenart das Zusammenlegen erlaubt - screen ist assoziativ (1-(1-a)(1-b)), Additiv ist
+       die Summe, Ausschluss ist unter 1-2x ein Produkt, Multiplizieren ein Produkt, und "Ueber"
+       ist der Klassiker (Porter-Duff over ist assoziativ). Fuer diese fuenf ist
+       (Grund op a) op b == Grund op (a op b), also traegt die Schicht dasselbe Bild.
+       NACHGEMESSEN, nicht hergeleitet (18.09.2026, 14,4 Mio Bildpunkte je Verrechnung, fuenf
+       Gruende, drei Saaten, auf der Radeon gegengelesen). DIE ZAHLEN HAENGEN AN DER TEILCHENZAHL,
+       und der erste Bau hat das verschwiegen - hier steht sie darum dabei (2 / 12 / 50 / 200 / 400
+       ueberlappende Teilchen), groesste Abweichung von 255:
+         EXAKT bis auf die 8-Bit-Rundung der Hilfsleinwand
+           Ueber 3/5/8/9/10 · Additiv 2/7/12/15/17 · Screen 2/4/6/7/11
+           Multiplizieren 3/6/10/11/14 · Ausschluss 2/3/5/6/7
+         NICHT exakt - hier bleibt es bei „Ueber“ innerhalb der Schicht, die Verrechnung wirkt beim
+         AUFLEGEN, der Effekt rechnet also richtig gegen das Bild und nur die Teilchen untereinander
+         nicht. Die Zahlen haengen zusaetzlich am Bildinhalt, sind also Groessenordnungen:
+           Weich 9/46/158/217/238 · Hartes Licht 17/104/165/204/223 · Dunkel gewinnt 16/74/87/124/130
+           Hell gewinnt 35/60/98/123/124 · Farbig abwedeln 56/194/207/210/215 · Ueberlagern bis ueber 200
+           Farbig nachbelichten, Differenz, Farbton, Saettigung, Farbe, Luminanz: dieselbe
+           Groessenordnung, je nach Inhalt verschieden.
+       Die ehrliche Alternative waere eine Leinwand je Teilchen - bis 400 Vollgaenge je Bild.
+       Bei den nicht assoziativen Arten bleibt es bei "Ueber" INNERHALB der Schicht, und die
+       Verrechnung des Effekts wirkt beim Auflegen der Schicht - der Effekt rechnet also richtig
+       gegen das Bild, nur die Teilchen untereinander nicht. Die ehrliche Alternative waere eine
+       Leinwand JE TEILCHEN (bis 400 Vollgaenge je Bild), und das ist keine. Im Bestand trifft es
+       2 von 13 Partikel-Effekten (Regen mit Ueberlagern, Schnee mit Hell gewinnt); zehn stehen
+       auf Screen, einer auf Ueber.
+       DIE RAUCHLEINWAND BLEIBT, WIE SIE IST. Schwaden malen keine Koerper uebereinander, sondern
+       eine DICHTE, die der Licht-Puffer als Maske liest (e._rc, destination-in); dort ist "Ueber"
+       seit dem 14.09.2026 die Rechnung, und Schritt 2 hat daran nichts geaendert. */
+    const VOP = LICHTMAL?'lighter':(VMODE[e.verr]||'source-over');
+    /* Die Rechenarten, fuer die eine vorkomponierte Gruppe dasselbe ergibt wie einzeln aufgelegt. */
+    const SCHICHT_EXAKT = VERR_GRUPPE.has(VOP) && !schw;
+    const SCHICHT_OP = SCHICHT_EXAKT ? VOP : 'source-over';
+    /* Womit die fertige Schicht aufgelegt wird. Exakt ist es nur, wenn beides dieselbe Rechenart
+       ist; ist es das nicht, traegt das Auflegen die Verrechnung des Effekts (ausser im
+       Schnitt-Weg und bei Schwaden, wo sie eine Stufe spaeter steht und dort schon stand). */
+    const LAGE_OP = SCHICHT_EXAKT ? VOP : ((schw||schnitt) ? 'source-over' : VOP);
+    const zielCx = BAENDER ? (schw?zx:cx) : null;
+    let bx=null;
+    if(BAENDER){
+      if(!e._tc) e._tc=document.createElement('canvas');
+      if(e._tc.width!==Wn||e._tc.height!==Hn){ e._tc.width=Wn; e._tc.height=Hn; }
+      bx=e._tc.getContext('2d');
+      bx.setTransform(1,0,0,1,0,0); bx.globalCompositeOperation='source-over'; bx.globalAlpha=1;
+      bx.filter='none'; bx.lineCap='round'; bx.clearRect(0,0,Wn,Hn);
+      bx.globalCompositeOperation=SCHICHT_OP;
+      if(schw) zx=bx; else cx=bx;
+    }
+    /* VON HINTEN NACH VORN. Das erste Band ist das fernste; das letzte ist der Vorraum und
+       braucht keine Maske. Ohne Karte laeuft die Schleife genau einmal und ohne Band - Bildpunkt
+       fuer Bildpunkt wie gestern. */
+    for(let sb=0; sb<(BAENDER?BAENDER.length:1); sb++){
+      const BD=BAENDER?BAENDER[sb]:null;
+      /* Ein Band ganz hinter der Flaeche wird nicht gemalt: dort ist die Karte ueberall naeher.
+         Seine Maske darf uebersprungen werden - sie ist leer, und die frueheren sind es auch. */
+      if(BD&&BD.weg) continue;
+      /* EIN LEERES BAND KOSTET NICHTS (17.09.2026). Faellt kein Teilchen in dieses Band, wird
+         seine Maske nicht angewandt - aus demselben Grund, aus dem ein ganz verdecktes Band
+         uebersprungen werden darf: die Masken sind geschachtelt, also nimmt eine spaetere nichts
+         weg, was eine fruehere stehen liess. Das trifft den Bestand: bei Aufenthalt Vordergrund
+         kommt keine Entfernung unter 0,5 vor, die beiden hinteren Baender sind leer, und es
+         bleiben zwei Vollgaenge statt vier. Die Marke wird gesetzt, sobald ein Teilchen zum Band
+         GEHOERT - nicht erst, wenn es gemalt ist; wer spaeter noch am Betretungsverbot
+         haengenbleibt, laesst die Maske lieber einmal zu viel laufen als einmal zu wenig. */
+      let bandDrin=false;
     for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn;
       /* EIN BODENTEILCHEN WIRD DORT GEMALT, WO ES GEBOREN WIRD (Caspar_D, 17.09.2026). Bis eben
          holte es seine Entfernung aus einer Bodenzelle und wurde doch an seinem gewuerfelten
          Modulo-Platz gemalt; die Zusage der Spezifikation (Abschnitt 3) galt damit fuer die Zahl
          und nicht fuer das Bild. Also SETZT die Bodenzelle den Platz.
-         Sie tut es nur, wo es eine Bodentabelle gibt - und die gibt es nur bei Raumtiefe ueber 0
-         (raumAn). Ein Rezept ohne Tiefeneinstellung bleibt darum Bildpunkt fuer Bildpunkt wie
-         gestern, und das ist der Nachweis, den Schritt 1 schuldet. Ab Schritt 2 wirkt die
-         Entfernung immer, dann gilt es immer. */
+         SEIT SCHRITT 2 GILT ES IMMER, WO EINE KARTE IST (17.09.2026). Hier stand: "Sie tut es nur,
+         wo es eine Bodentabelle gibt - und die gibt es nur bei Raumtiefe ueber 0 (raumAn). Ein
+         Rezept ohne Tiefeneinstellung bleibt darum Bildpunkt fuer Bildpunkt wie gestern ... Ab
+         Schritt 2 wirkt die Entfernung immer, dann gilt es immer." Genau das ist jetzt der Fall:
+         die Tabelle haengt an verdAn. Ein Funke steigt damit aus der Bodenflaeche auf, auch bei
+         Raumtiefe 0 - und das ist die groesste sichtbare Aenderung dieses Schrittes, weil sie den
+         ORT verschiebt und nicht nur die Verdeckung. Bitgleich bleiben darum nur Rezepte ohne
+         Partikel-Effekt und Partikel auf Quellen ohne Tiefenkarte. */
       if(BODEN&&BODEN.n){ const P=bodenPlatz(hs(i+12000)); x0=P[0]; y0=P[1]; }
       /* DERSELBE RADIUS WIE BEIM ZEICHNEN (Gegenlesen 16.09.2026). Bis eben rechnete der
          Geburtsort ohne Raumtiefe, gezeichnet wurde mit ihr: ein nahes Teilchen kam mit dem
@@ -29347,7 +29514,14 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
          ist der Dunst dort bei 0 geklemmt - eine Deckkraft ueber 1 wuerde die Leinwand ohnehin
          verwerfen und still die vorige stehen lassen. Groesse und Tempo duerfen sehr wohl ueber
          das bisherige Hoechstmass hinaus: so weit nach vorn, so gross der Faktor. */
-      const pz=raumAn?pzVon(i,x0,y0):0.5;
+      const pz=verdAn?pzVon(i,x0,y0):0.5;
+      /* ---- DAS BAND DIESES TEILCHENS (Schritt 2) ----
+         Es wird in genau EINEM Band gemalt: das erste ist nach unten offen, das letzte nach oben,
+         also faellt keines heraus. Die Pruefung steht HIER, hinter der Entfernung und vor allem,
+         was gezeichnet wird - Groesse, Tempo und Flugbahn darunter rechnen unveraendert weiter,
+         damit das Teilchen in seinem Band genau dort steht, wo es ohne Baender stuende. */
+      if(BD&&(pz<BD.lo||pz>=BD.hi)) continue;
+      bandDrin=true;
       const rG=raumAn?1+RAUM*(2*pz-1)*0.6:1, rT=raumAn?1+RAUM*(2*pz-1)*0.5:1, rD=raumAn?1-RAUM*0.35*(1-Math.min(1,pz)):1;
       const sp=(0.5+hs(i+2000))*rT, sz=gr*(0.5+hs(i+3000))*rG, gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=LOOP>0?((t*lpR(0.11*e.tempo)+hs(i+9600))%1+1)%1:((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a);   /* das Aufgehen der Schwade: im Export ganze Zyklen je Clip */ cx.fillStyle=fc; cx.strokeStyle=fc;
       /* UNBERECHENBAR UND TROTZDEM RUND. Drei Schwingungen mit verschiedenen Raten, je Teilchen
@@ -29668,6 +29842,22 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           zx.fillStyle=g; zx.beginPath(); zx.arc(lx,ly,lr,0,7); zx.fill(); }
         cx.fillStyle=fc; }
       else { if(!eigen&&!leben){ const v=lpV(aB*sp*e.tempo*Hn*0.25,Hn); y=((y0+aS*t*v)%Hn+Hn)%Hn; x=((x0+gx+Math.sin(lpW(3)*t+i*2.1)*6*U+lpV(w*Hn*0.1,Wn)*t)%Wn+Wn)%Wn; } if(ZONE&&zSperre(x,y,sz*ZKOERPER)) continue; const fl=0.5+0.5*Math.sin(lpW(23)*t+i*5); cx.globalAlpha=al*(0.3+0.7*fl); cx.beginPath(); cx.arc(x,y,sz*0.7,0,7); cx.fill(); cx.globalAlpha=1; } } }
+      /* DIE MASKE DES BANDES: dieselbe Frage wie bisher (tiefeMaske, Modus "hinten" - behalte,
+         wo die Szene FERNER ist), nur mit der Tiefe des Bandes als Grenze. Keine zweite Funktion,
+         kein zweites Raster. Bleibt die Maske aus (die Karte ist noch unterwegs), wird dieses
+         Band nicht verdeckt - derselbe ehrliche Rueckfall wie im Schnitt-Weg. */
+      if(BD&&!BD.ohne&&bandDrin){ const mk=tiefeMaske('hinten',Wn,Hn,-1,-1,BD);
+        if(mk){ bx.globalCompositeOperation='destination-in'; bx.globalAlpha=1; bx.drawImage(mk,0,0); }
+        bx.globalCompositeOperation=SCHICHT_OP; }
+    }
+    /* Die fertigen Schichten in EINEM Zug dorthin, wo die Teilchen ohne Baender hingegangen
+       waeren - mit der Verrechnung, die dort schon steht. */
+    if(BAENDER){ if(schw) zx=zielCx; else cx=zielCx;
+      zielCx.globalCompositeOperation=LAGE_OP; zielCx.globalAlpha=1; zielCx.drawImage(e._tc,0,0);
+      /* Und zurueck auf die Rechenart, die an dieser Leinwand steht: auf der laufenden die
+         Verrechnung des Effekts (malen() hat sie gesetzt), auf der Schnitt- und der
+         Rauchleinwand "Ueber". Was danach noch malt, findet sie vor. */
+      zielCx.globalCompositeOperation=(schw||schnitt)?'source-over':VOP; }
     if(schw){ const lx2=e._rl.getContext('2d'); lx2.setTransform(1,0,0,1,0,0); lx2.globalAlpha=1;
       lx2.globalCompositeOperation='source-over'; lx2.clearRect(0,0,Wn,Hn);
       if(!LICHTMAL&&olicht&&olicht.width>1){ lx2.drawImage(olicht,0,0);
@@ -30343,7 +30533,9 @@ function renderStapel(){
       else if(w==='dup'){ /* Kopie mit allen Werten (Rampen/Kurven tief), eigene Nummer, gleich darunter */
         const k=JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(e).filter(([n])=>n[0]!=='_')))); k.id=++nr; k.zu=false;
         /* DIE KOPIE WEISS AUCH, WOHER SIE KOMMT (gegengelesen 16.09.2026). Der Filter streicht die
-           Schluessel mit "_", weil dort fluechtige Leinwaende liegen (_rc, _rl, _vc) - die ueberlebten
+           Schluessel mit "_", weil dort fluechtige Leinwaende liegen (_rc, _rl, _vc, und seit
+           Schritt 2 _tc - die Hilfsleinwand der Tiefenbaender, je Effekt-Objekt und damit je
+           Galeriekachel eine) - die ueberlebten
            JSON.stringify ohnehin nicht. Seit dem 16.09.2026 liegt dort aber auch `_artVor`, die vorige
            Art, an der `artFarben` erkennt, ob Farben, Massen und Verrechnung noch die mitgebrachten
            sind. Ohne sie hielt sich jede Kopie fuer Schnee: beim naechsten Artwechsel schlug jede
@@ -30892,17 +31084,24 @@ function zeichneFrame(t,roh){
   let curCv=oa, curCx=ca;
   const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } };
   for(const e of kette){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
-    /* AUFENTHALT UND VERDECKUNG in der Kette. Ohne Karte oder bei „ueberall" ist die Maske null
-       und es aendert sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten.
-       DREI WEGE, IN DIESER REIHENFOLGE (16.09.2026):
-         1. Verdeckt (nur Koerper): die Maske im Modus „hinten" - behalte, was fern ist, nimm weg,
-            was nah ist. Das ist die Verdeckung, und sie haengt NICHT am Aufenthalt.
-         2. Harter Aufenthalt (Koerper ohne Altwert): hier wird nichts geschnitten, der Maler hat
+    /* AUFENTHALT IN DER KETTE. Ohne Karte oder bei „ueberall" ist die Maske null und es aendert
+       sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten.
+       ZWEI WEGE (16.09.2026, auf zwei gekuerzt am 18.09.2026):
+         1. Harter Aufenthalt (Koerper ohne Altwert): hier wird nichts geschnitten, der Maler hat
             die Teilchen schon gar nicht erst in die verbotene Zone gelassen.
-         3. Alles andere - kein Koerper, oder ein altes Rezept mit seinem weichen Schnitt: die Zone
-            wird ausgeschnitten wie seit dem 14.09.2026. */
-    const maske = VERDECKT(e) ? tiefeMaske('hinten', Wn, Hn, e.tiefeGrenze, e.tiefeWeich)
-      : ZONE_HART(e) ? null
+         2. Alles andere - kein Koerper, oder ein altes Rezept mit seinem weichen Schnitt: die Zone
+            wird ausgeschnitten wie seit dem 14.09.2026.
+       DER DRITTE WEG IST GEFALLEN. Bis zum 18.09.2026 stand hier zuerst die VERDECKUNG: eine Maske
+       im Modus „hinten" ueber den ganzen Effekt. Seit die Teilchen ihre Verdeckung selbst in
+       Tiefenschichten malen (jedes nach SEINER Entfernung), war diese Maske dieselbe Frage mit
+       grober Antwort - und die grobe gewann, weil sie zuletzt kam. Gerechnet an den Einstellungen
+       des einzigen Altrezepts, das sie trug: dem vordersten Band nahm sie 24,3 % seiner Deckung,
+       dem VORRAUM 60,0 % - dem Band, vor dem nach dem Raummodell nichts mehr steht. Das Zweite ist
+       der Beweis, dass sie nicht nur doppelte, sondern falsch war. Der Zweig ist geloescht, die
+       Begruendung bleibt (Hausregel: abgeklemmter Code wird geloescht, sein Grund nicht). Braucht
+       ein spaeterer Effekt mit einzelnen Koerpern wieder eine Maske ueber dem Ganzen, steht hier,
+       warum sie fuer Partikel nicht taugt. */
+    const maske = ZONE_HART(e) ? null
       : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);
     if(T.art==='mal'){
       /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
@@ -32378,6 +32577,130 @@ function zeichneFrame(t,roh){
      Teilchen auf der Flaeche (lo) - nie dahinter. Hinter der Flaeche wird nichts geboren, und
      das ist der ganze Zweck dieses Schrittes. */
   function entfernungIn(fb,r){ return fb.leer?fb.lo:(fb.lo+r*(fb.hi-fb.lo)); }
+  /* ---- DIE TIEFENSCHICHTEN (17.09.2026, Bauweg Schritt 2) ----
+     "VERDECKT, WO DIE FLAECHE NAEHER IST ALS DAS TEILCHEN. Es fliegt weiter" (Spezifikation,
+     Satz 3). Bis Schritt 1 lag EINE Maske ueber allen Teilchen - das ging, weil alle dieselbe
+     Tiefe hatten. Jetzt hat jedes seine eigene, und eine Maske kann das nicht mehr leisten: der
+     Fluegel, der halb hinter dem Pfosten steckt, war ganz da oder ganz weg.
+     DER WEG: BAENDER UEBER DEN ENTFERNUNGSBEREICH. Jedes Band hat seine eigene Maske - dieselbe
+     Frage wie bisher (tiefeMaske im Modus "hinten": behalte, wo die Szene FERNER ist), nur mit
+     der Tiefe des BANDES als Grenze statt der Vordergrund-Hintergrund-Grenze. Gemalt wird von
+     hinten nach vorn, und damit deckt ein naeheres Teilchen ein ferneres - was heute die
+     Teilchennummer entschied.
+     EINE HILFSLEINWAND, NICHT VIER (e._tc). Je Band werden die Teilchen dieses Bandes darauf
+     gemalt und die Maske des Bandes angewandt; komponiert wird EINMAL am Ende. Das geht, weil die
+     Baendermasken GESCHACHTELT sind - und das ist seit dem 18.09.2026 keine Behauptung mehr,
+     sondern von der Bauweise erzwungen: die Maske eines Bandes bekommt seine beiden KANTEN
+     (cl, ch) direkt und ist bei Kartenwert ch exakt 0, waehrend das naechste Band dort noch
+     exakt 1 ist - seine untere Kante IST dieselbe Zahl ch. Was ein spaeteres Band wegnimmt, war
+     im frueheren ohnehin nicht mehr da. Worauf der Beweis vorher unbedingt ruhte, obwohl er es
+     nicht war, steht bei tiefeMaske unter "DIE BANDKANTEN OHNE RUNDUNG UND OHNE KLEMME".
+
+     WAS VIER BAENDER KOSTEN - GEMESSEN AUF DEM MALWEG (18.09.2026). Chrome mit eigenem Fenster,
+     vsync frei, Grafik ANGLE Metal auf AMD Radeon Pro 5500 XT; 150 Teilchen, Verrechnung screen,
+     die Bilder VERBRAUCHT statt zurueckgelesen; je Bild 32 ganze Gaenge, damit ein Gang ueber der
+     Aufloesung des Bildabstands liegt; drei Laeufe, Median. In Klammern der Anteil eines
+     30-Hz-Bildes (33,33 ms):
+       lange Kante   ohne Baender        4 Baender, eine Leinwand   je Band     4 Baender, je Band komponiert
+       480 x 412     0,144 ms (0,43 %)   0,526 ms (1,58 %)          0,095 ms    1,179 ms (3,54 %)
+       898 x 770     0,130 ms (0,39 %)   0,477 ms (1,43 %)          0,087 ms    1,050 ms (3,15 %)
+       1080 x 926    0,136 ms (0,41 %)   0,602 ms (1,81 %)          0,117 ms    1,283 ms (3,85 %)
+     Acht Baender kosten bei 898 gemessene 0,944 ms je Gang (2,8 %). Die eine Hilfsleinwand ist
+     bei 898 also 0,57 ms je Bild wert (1,7 % eines 30-Hz-Bildes) gegenueber "je Band komponiert".
+
+     WARUM HIER VORHER 9,90 ms UND 30 PROZENT STANDEN, UND WARUM DAS ZU HOCH WAR. Der Bau hat nach
+     JEDEM Gang einen Bildpunkt zurueckgelesen - nach der Hausregel "Rechenzeit ohne Ruecklesen"
+     aus EFFEKTCLIP-REGELN.md, die aber fuer EINEN Gang gilt. Bei einer KETTE von Leinwandgaengen
+     nimmt genau das die Leinwand von der Grafikkarte auf den Rechner (Chrome antwortet mit
+     "Canvas2D: Multiple readback operations"), und danach misst man einen anderen Maler als den,
+     der im Betrieb laeuft. Nachgemessen am 18.09.2026 an demselben Prueffall: mit Ruecklesen je
+     Gang kostet ein Gang bei 898 24,82 ms gegen 6,27 ms ohne Baender - vier Baender also
+     18,55 ms (4,64 ms je Band) statt der 0,35 ms (0,087 ms je Band) auf dem Malweg, Faktor 53.
+     UND EIN ZWEITER FEHLER steckt darin: eine Leinwand, die EINMAL zurueckgelesen wurde, bleibt
+     fuer den REST der Seite auf dem Rechner. Wer viele Faelle in einer Seite messen will,
+     vergiftet mit dem ersten Ruecklese-Fall alle folgenden (nachgesehen: dieselbe Messreihe gab
+     in einer Seite 11,7 ms fuer vier Baender, ein Fall je Seitenladung 0,48 ms). Gemessen wird
+     darum ein Fall je Seitenladung, und beide Zahlen werden nebeneinander genannt.
+     DIE ENTSCHEIDUNG "VIER BAENDER, FEST" BLEIBT - sie ist jetzt reichlich statt knapp: 1,4 %
+     eines 30-Hz-Bildes bei Studiobreite. Der Rueckweg aus der Spezifikation (zwei Baender, vorn
+     und hinten) ist nicht noetig.
+     DIE ZAHL IST FEST UND HAENGT NICHT AN DER LEINWANDGROESSE. Bei 480 waeren acht Baender billig
+     - aber dann zeigte die Kachel ein anderes Bild als die Buehne und die Ausgabe ein drittes,
+     und Regel 19 sagt: das Studio in Vorgabegroesse ist der Masstab.
+
+     DER BANDFEHLER, RICHTIG BEZIFFERT (18.09.2026). Hier stand "hoechstens eine halbe
+     Bandbreite, bei vier Baendern 1/8 = 0,125 Einheiten = 12 Graustufen", und das war der
+     MITTELWERT. Die vier Baender sind in der NAEHE-Skala gleich breit (je 0,25), in KARTENWERTEN
+     nicht: die Umkehrung des Smoothstep (nahKurveZurueck) streckt die aeusseren und staucht die
+     inneren. In Anteilen des Bandes um die Grenze liegen sie bei
+       0,00000..0,32635 | 0,32635..0,50000 | 0,50000..0,67365 | 0,67365..1,00000
+     Die groesste halbe Bandbreite ist damit 0,16318 des Bandes - bei der Vorgabe (+-48 von 255,
+     das Band also 96 Graustufen breit) sind das 15,66 GRAUSTUFEN, nicht 12. Und in der
+     Naehe-Skala: die Maske des ersten Bandes sitzt bei Naehe 0,07119, das Band reicht bis 0,25 -
+     dort ist der Fehler 0,17881 EINHEITEN, nicht 0,125 (die beiden inneren Baender: 0,12893).
+     WAS DER KOMMENTAR VERSCHWIEG, und was ihm gehoert: INNERHALB eines Bandes entscheidet die
+     Entfernung NICHTS. Alle Teilchen eines Bandes tragen dieselbe Maske, und die Verdeckung
+     SPRINGT an den drei Bandkanten. Das ist die Naeherung, die wir bewusst nehmen - vier Stufen
+     statt eines stetigen Verlaufs -, und sie ist der Preis dafuer, dass eine Hilfsleinwand und
+     vier Masken genuegen. Was sie im Bild anrichtet, haengt am Gefaelle der Karte und ist
+     GEMESSEN, nicht geschaetzt (18.09.2026). An einer Bandkante verschiebt sich die
+     Verdeckungskante um den Fehler der Naehe; wie weit das in BILDPUNKTEN reicht, haengt am
+     Gefaelle der Karte an dieser Stelle. Auf der Karte f76a6706 bei 898 x 770, an den drei
+     Bandkanten, mit Grenze und Weichheit, die diese Karte von selbst nimmt (Median 0,078,
+     +-48 von 255) - "Fehler" ist der des Bandes UNTER der Kante:
+       Bandkante   Fehler    Punkte auf der Kante   im Mittel   groesster   unter 1 px   ueber 4 px
+       0,25        0,17881   3588                   18,25 px    26,9 px      1,8 %       91,7 %
+       0,50        0,12893    969                   11,03 px    16,5 px     12,4 %       73,9 %
+       0,75        0,12107   1171                    5,75 px    21,0 px     25,6 %       39,9 %
+     Und mit der Grenze von Hand auf der Mitte der Kartenspanne (0,45, dieselbe Weichheit) - dort,
+     wo diese Karte wirklich Kanten hat: 1,02 / 2,29 / 6,16 px im Mittel, und 78 / 59 / 32 % der
+     Kantenpunkte unter einem Bildpunkt. Der Satz dahinter: AN HARTEN KANTEN bleibt der Bandfehler
+     unter einem Bildpunkt, AUF RAMPEN wird er zweistellig - aber dort hat die Karte gar keine
+     Kante, und verschoben wird nur ein weicher Verlauf. */
+  const SCHICHTEN=4;
+  /* Die Umkehrung von nahKurve. nahKurve ist der Smoothstep a*a*(3-2a) auf dem Band um die
+     Grenze; gebraucht wird der Kartenwert, an dem eine gegebene Naehe steht - denn die Baender
+     liegen in der NAEHE-Skala (dort wird die Entfernung gleichverteilt gewuerfelt), die Maske
+     aber rechnet in Kartenwerten. Geschlossene Form, kein Suchen. */
+  const nahKurveZurueck = s => (s<=0?0:s>=1?1:(0.5-Math.sin(Math.asin(1-2*s)/3)));
+  /* Die Baender eines Effekts, von hinten nach vorn. Je Band:
+       lo,hi    die Entfernungen, die hineinfallen (halboffen; das erste nach unten und das letzte
+                nach oben offen, damit kein Teilchen aus allen Baendern herausfaellt)
+       cl,ch    die beiden KANTEN des Bandes in Kartenwerten - genau so, wie tiefeMaske sie nimmt.
+                Hier standen bis zum 18.09.2026 Mitte und halbe Breite; daran ist der
+                Schachtelungs-Beweis gescheitert (Begruendung bei tiefeMaske).
+       ohne     das Band braucht keine Maske: es liegt vor allem, was die Karte hat (der Vorraum,
+                und was sonst ueber 1 liegt). "Das vorderste Band ist gratis."
+       weg      das Band steckt ganz hinter der Flaeche: die Karte ist ueberall naeher, also ist
+                dort nichts zu sehen. Es wird gar nicht gemalt - und seine Maske darf uebersprungen
+                werden, weil sie ganz leer ist und die frueheren (geschachtelt) auch.
+     DER LEERRAUM IST KEIN ARGUMENT MEHR (18.09.2026). Die Zeile hiess schichtBaender(g,w,L), und
+     L wurde im Rumpf nie benutzt - ein Name, der etwas verspricht (Regel 11). Er kann hier auch
+     nichts versprechen: die Baender teilen den Weg von "ganz hinten" nach "ganz vorn" (Naehe 0
+     bis 1), und der Vorraum darueber ist EIN Band, nach oben offen, ohne Maske. Wie weit er
+     reicht, aendert an keiner Bandkante etwas. Wo der Vorraum wirkt, ist der freie Bereich
+     (freiBereich/entfernungIn) - dort steht L und wird gebraucht. */
+  function schichtBaender(g,w){
+    const B=[], zVon=s=>(g-w)+nahKurveZurueck(s)*2*w;
+    for(let b=0;b<SCHICHTEN;b++){
+      const lo=b/SCHICHTEN, hi=(b+1)/SCHICHTEN;
+      const zl=zVon(lo), zh=zVon(hi);
+      if(zh<=0){ B.push({lo:b?lo:-Infinity, hi, weg:true}); continue; }   /* alles naeher als das Band */
+      if(zl>=1){ B.push({lo:b?lo:-Infinity, hi, ohne:true}); continue; }  /* nichts naeher als das Band */
+      /* AUF DIE KARTE GEKLEMMT. Liegt das Band halb jenseits von 0 oder 1, hat die Karte dort
+         keine Werte; geklemmt deckt der Uebergang genau den Teil, den es gibt. Die obere Kante
+         eines Bandes und die untere des naechsten sind DIESELBE Rechnung an derselben Stelle
+         (zVon(hi) und zVon(lo) des naechsten, und lo ist hi) - also bitgleich dieselbe Zahl, und
+         darauf ruht die Schachtelung. */
+      const cl=Math.max(0,Math.min(1,zl)), ch=Math.max(0,Math.min(1,zh));
+      B.push({lo:b?lo:-Infinity, hi, cl, ch});
+    }
+    /* Der Vorraum und alles ueber "ganz vorn": davor steht nichts (Spezifikation Abschnitt 2,
+       "vor dem Ganzen liegt eine leere Ebene"). Nach oben offen - auch bei Leerraum 0 faellt das
+       Teilchen mit Entfernung genau 1 hier herein. */
+    B.push({lo:1, hi:Infinity, ohne:true});
+    return B;
+  }
   /* ---- WARUM ES KEINE EINTRITTSSPALTE GIBT (Caspar_D, 17.09.2026: gestrichen) ----
      Hier stand eine geschlossene Formel, die den Eintrittspunkt einer von oben kommenden Art am
      Bildrand zurueckrechnete: das Teilchen steht bei y_jetzt und faellt mit v, also trat es vor
@@ -32677,9 +33000,37 @@ function zeichneFrame(t,roh){
      Also derselbe Ring wie bei PMASKEN, nur laenger: ein Rezept kann mehrere Zonen-Effekte haben
      (r17 hat sechs) und jede Ansicht - Kachel, Buehne, Ausgabe - ihre eigene Groesse, und ein zu
      kurzer Ring baute die Maske dann in jedem Bild neu. Vierundzwanzig Plaetze mit einer Obergrenze
-     von rund 96 MB; beim Quellenwechsel wird geleert, weil eine fremde Karte ohnehin nichts taugt. */
-  const TIEFEMASKEN=[]; let TIEFEMASKEN_ID=null;
-  const TM_PLAETZE=24, TM_BYTE=96*1024*1024;
+     von rund 96 MB; beim Quellenwechsel wird geleert, weil eine fremde Karte ohnehin nichts taugt.
+     MEHR PLAETZE SEIT SCHRITT 2 (17.09.2026). Ein Partikel-Effekt fragt jetzt nicht mehr eine
+     Maske, sondern bis zu SCHICHTEN viele - und jede Ansicht (Kachel, Buehne, Ausgabe) in ihrer
+     eigenen Groesse. Vier Baender in drei Groessen sind allein zwoelf; ein Rezept mit drei
+     Partikel-Effekten (r17 hat sechs Zonen-Effekte) sprengte vierundzwanzig, und dann baute der
+     Ring die Maske je Bild neu - gemessen 12,2 ms je Stueck bei Studiobreite (898), 5,5 ms bei
+     480 und 16,2 ms bei 1080 (18.09.2026, dieselbe Messreihe wie die Bandkosten).
+     DER VORRAT HAELT JETZT MEHRERE QUELLEN (18.09.2026). Bis heute stand die Quelle NEBEN dem
+     Vorrat (TIEFEMASKEN_ID) und jeder Wechsel leerte ihn ganz. Das war richtig, solange nur das
+     Pult malte - dort gibt es eine Quelle. Es ist falsch, seit die Galerie je Kachel mit
+     setzen(m) eine andere Quelle stellt: ueberfahrene Kachel, laufender Titel, Buehne und das
+     Kachel-Studio malen im selben Bild aus verschiedenen Karten, und bei jedem Wechsel fiel der
+     ganze Vorrat - also baute der Ring JEDE Maske JE KACHEL neu, 12 ms je Stueck. Die Quelle
+     gehoert darum IN den Schluessel, nicht daneben. Geleert wird gar nicht mehr; was nicht mehr
+     gebraucht wird, faellt hinten aus dem Ring.
+     DIE OBERGRENZE, und sie ist zweifach: TM_PLAETZE Masken UND TM_BYTE Byte, was zuerst greift.
+     Bei 64 Plaetzen und 96 MB ist das in jeder Groesse, die wirklich vorkommt, die BYTE-Grenze:
+     bei Studiobreite 898x770 sind es 2,64 MB je Maske, also 36 Masken; bei 1080x926 3,82 MB,
+     also 25; an einer 300er Kachel auf einem 2x-Schirm (rund 600x800) 1,83 MB, also 52. Die 64
+     Plaetze binden erst, wenn eine Maske unter 1,5 MB bleibt (lange Kante unter rund 670 bei 4:3).
+     Vier Baender mal sechs Quellen passen in jedem Fall hinein, und mehr als vier Karten malen
+     nie gleichzeitig: die Kachel unter der Maus, der laufende Titel, die Buehne, das
+     Kachel-Studio.
+     UND EIN TREFFER WANDERT NACH VORN (18.09.2026). Der Ring warf bisher nach EINFUEGE-Reihenfolge
+     hinaus, nicht nach Gebrauch. Wer am Grenze-Regler zieht, legt in einem Zug einundfuenfzig
+     neue Masken an - die haetten die vier Masken der Kachel hinausgeschoben, obwohl die in jedem
+     Bild gebraucht werden. Ein Treffer setzt seinen Eintrag darum an den Anfang; hinausfaellt,
+     was am laengsten nicht gefragt wurde. Am Ergebnis aendert der Vorrat nichts - er entscheidet
+     nur, ob eine Maske gebaut oder abgelesen wird. */
+  const TIEFEMASKEN=[];
+  const TM_PLAETZE=64, TM_BYTE=96*1024*1024;
   function tiefeMaskeAblegen(k,cv){
     TIEFEMASKEN.unshift({k,cv,byte:cv.width*cv.height*4});
     let summe=0;
@@ -32691,7 +33042,32 @@ function zeichneFrame(t,roh){
      Rezept bitgleich bleibt. Erst eine Zahl >= 0 legt die Grenze (0..1 der Kartenhelligkeit) oder
      das halbe Band (0..1, also 0..255 Stufen) von Hand fest. Der Schluessel des Vorrats traegt
      beides mit, sonst haenge man an der Maske von vorhin. */
-  function tiefeMaske(modus, W, H, grenze, weich2){
+  /* DIE BANDKANTEN OHNE RUNDUNG UND OHNE KLEMME (18.09.2026, Bauweg Schritt 2, Gegenlesen).
+     Ein Band uebergibt statt Mitte und halber Breite seine beiden KANTEN (band = {cl, ch}). Der
+     Grund ist der Schachtelungs-Beweis, auf dem BEIDE Abkuerzungen der Tiefenschichten ruhen -
+     eine Hilfsleinwand statt vier, und ein leeres Band laesst seine Maske weg. Er verlangt, dass
+     die Maske eines Bandes GENAU an der Bandkante 0 wird. Mit Mitte und halber Breite war das
+     nicht gesichert, und zwar an zwei Stellen:
+       1. DIE RUNDUNG. med=Math.round(gv*255) rastet die Mitte auf eine ganze Graustufe, die halbe
+          Breite nicht. Rundet die Mitte nach oben, reicht die Maske um bis zu eine halbe
+          Graustufe ueber die Bandkante hinaus - genau dorthin, wo das naechste Band schon weich
+          wird, und dann nimmt es dem frueheren doch noch etwas weg.
+       2. DIE KLEMME Math.max(1/255, halbe Breite). Sie greift, wenn ein Band schmaler als zwei
+          Graustufen ist, und weitet den Uebergang dann UEBER das Band hinaus. Das ist kein
+          Randfall: bei vier Baendern ist das innere 0,17365 des Bandes um die Grenze breit, also
+          greift die Klemme fuer jede Schaerfe unter rund +-5,8 Graustufen - und der Regler
+          "Weichheit" reicht bis 1 von 255.
+     Nachgerechnet ueber das ganze Reglerraster (Grenze 0..1 und Weichheit auto plus 0..1, je in
+     Schritten von 0,02, 2652 Einstellungen): mit Mitte und halber Breite lag der groesste Fehler
+     der gestapelten Baender bei 0,385 Alpha (98 von 255), und 66 der 2652 Einstellungen lagen
+     ueber 1 von 255 - alle bei Weichheit 0,00 und 0,02. Mit den Kanten ist er 0, und zwar nicht
+     gemessen-klein, sondern durch die Bauweise: die Maske ist 1 bis cl, 0 ab ch, und die untere
+     Kante des naechsten Bandes IST ch. Die Bedingung, die den Beweis traegt, ist damit erfuellt,
+     ohne dass sie irgendwo geprueft werden muesste.
+     Der alte Weg bleibt fuer die ZONE (Aufenthalt, altes Rezept): dort kommt die Grenze als ganze
+     Graustufe aus dem Histogramm, und die Rundung von Hand haelt das nach - daran haengt die
+     Bitgleichheit gespeicherter Rezepte. Zwei Aufrufarten, eine Funktion, EINE Kurve. */
+  function tiefeMaske(modus, W, H, grenze, weich2, band){
     /* Erst die billige Frage: ohne Zone gibt es nichts zu maskieren, und dann wird auch nicht
        nach der Quelle gefragt - die Kette ruft hier je Effekt und Bild an. */
     if(!modus||modus==='alles') return null;
@@ -32700,23 +33076,37 @@ function zeichneFrame(t,roh){
     if(!im||!im.complete||im.naturalWidth<2) return null;
     const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
     const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
-    const k=modus+'|'+W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
-    if(TIEFEMASKEN_ID!==q.k){ TIEFEMASKEN.length=0; TIEFEMASKEN_ID=q.k; }   /* eine fremde Quelle taugt so wenig wie ein fremder Titel */
-    { const da=TIEFEMASKEN.find(m=>m.k===k); if(da) return da.cv; }
+    /* DIE QUELLE STEHT IM SCHLUESSEL, nicht neben dem Vorrat (18.09.2026, Begruendung oben). */
+    const k=q.k+'|'+modus+'|'+W+'x'+H+'|'+(band
+      ? ('kanten '+band.cl.toFixed(6)+'..'+band.ch.toFixed(6))
+      : (gv.toFixed(3)+'|'+wv.toFixed(3)));
+    { const i=TIEFEMASKEN.findIndex(m=>m.k===k);
+      if(i>=0){ const da=TIEFEMASKEN[i];
+        if(i){ TIEFEMASKEN.splice(i,1); TIEFEMASKEN.unshift(da); }   /* gebraucht heisst: nach vorn */
+        return da.cv; } }
     try{
       const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
       const cx=cv.getContext('2d',{willReadFrequently:true});
       cx.drawImage(im,0,0,W,H);
       const bild=cx.getImageData(0,0,W,H), p=bild.data;
-      let med=128;
-      if(gv<0){ const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
-        let summe=0, mitte=(p.length>>2)/2;
-        for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } } }
-      /* GANZZAHLIG WIE DER MEDIAN (Gegenlesen 16.09.2026): bei „von selbst" kommt die Grenze als
-         ganze Graustufe aus dem Histogramm, von Hand kam sie als gv*255 - 19/255 ergab 18,9975 und
-         damit einen Anschlag, der seinen eigenen Automatikwert um drei Tausendstel verfehlte. */
-      else med=Math.round(gv*255);
-      const weich=(wv<0)?48:wv*255, unten=med-weich, spanne=2*weich;
+      let unten, spanne;
+      if(band){
+        /* BANDKANTEN: 1 bis cl, 0 ab ch, dazwischen dieselbe Kurve. Keine Rundung, keine Klemme -
+           daran haengt die Schachtelung (Begruendung oben). Die Klemme auf 1e-9 verhindert nur
+           eine Division durch null; cl < ch gilt fuer jedes Band, das ueberhaupt eine Maske
+           bekommt (schichtBaender gibt 'weg' oder 'ohne' zurueck, wenn es ganz draussen liegt). */
+        unten=band.cl*255; spanne=Math.max(1e-9,(band.ch-band.cl)*255);
+      } else {
+        let med=128;
+        if(gv<0){ const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
+          let summe=0, mitte=(p.length>>2)/2;
+          for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } } }
+        /* GANZZAHLIG WIE DER MEDIAN (Gegenlesen 16.09.2026): bei „von selbst" kommt die Grenze als
+           ganze Graustufe aus dem Histogramm, von Hand kam sie als gv*255 - 19/255 ergab 18,9975 und
+           damit einen Anschlag, der seinen eigenen Automatikwert um drei Tausendstel verfehlte. */
+        else med=Math.round(gv*255);
+        const weich=(wv<0)?48:wv*255; unten=med-weich; spanne=2*weich;
+      }
       for(let i=0;i<p.length;i+=4){
         let a=(p[i]-unten)/spanne; a=a<0?0:a>1?1:a; a=a*a*(3-2*a);   /* hell = nah */
         if(modus==='hinten') a=1-a;
