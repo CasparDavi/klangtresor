@@ -260,6 +260,19 @@ Vier Fallen, in die der Autor dieser Zeilen an einem Abend alle vier getappt ist
   Befehle abschickt, nicht wie lange sie brauchen. Die Blende sah so nach 5,8 ms aus und brauchte in
   Wahrheit 465. Nach jedem Durchgang einen Bildpunkt zurücklesen, dann stimmt die Zahl.
   `labor/effektclip-studio/blendentest.html` macht das vor, ohne Studio und ohne laufenden Maler.
+
+  **Aber Vorsicht — diese Regel gilt für EINEN Durchgang, nicht für eine Kette von Leinwandgängen**
+  (Nachtrag 18.09.2026, teuer gelernt). Wer nach *jedem* Gang zurückliest, löst genau das aus, was
+  Chrome mit „Canvas2D: Multiple readback operations … willReadFrequently" beantwortet: die Leinwand
+  wandert **von der Grafikkarte auf den Rechner**. Danach misst man einen anderen Maler als den, der
+  im Betrieb läuft. Bei den Tiefenschichten der Partikel wurden so **9,90 ms** für vier Bänder
+  gemessen, wo es auf Jörgs Radeon (ANGLE Metal, Radeon Pro 5500 XT) in Wahrheit **1,27 ms** sind —
+  Faktor 7,8, und je Band Faktor 19. Eine Änderung wäre an einer erfundenen Grenze gescheitert.
+
+  **Der Weg für eine Kette:** Bilder *verbrauchen* statt zurückzulesen — die Leinwand bleibt auf der
+  GPU, kein Bild darf verworfen werden, und gemessen wird über viele Bilder. Und immer **beides**
+  nebeneinander nennen, mit der Grafikkennung dazu; gehen die Zahlen um eine Größenordnung
+  auseinander, ist das der Hinweis, dass man den Malweg verlassen hat.
 - **`seeked` ist nicht „Bild ist da".** Beim Messen, wie teuer ein Sprung im Video ist, sah ein
   normal kodierter Clip mit 5,4 ms genauso schnell aus wie eine Fassung aus lauter Schlüsselbildern.
   Das war falsch: das Ereignis `seeked` feuert, bevor das Bild wirklich steht, und das anschließende

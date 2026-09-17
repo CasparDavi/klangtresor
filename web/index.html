@@ -27232,6 +27232,7 @@ const IKON={
  einschlag:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/>',
  tropfen:'<path d="M8 4v8a3 3 0 0 0 6 0V4" opacity=".5"/><path d="M11 20a3 3 0 1 1 0-.01M17 3v9"/>',
  fahrt:'<rect x="4" y="4" width="12" height="12" rx="1"/><path d="M14 14l6 6M20 15v5h-5"/>',
+ kenburns:'<rect x="2" y="4" width="20" height="16" rx="1"/><rect x="8" y="9" width="8" height="6" rx="1"/><path d="M4.5 6.5l2 2M19.5 6.5l-2 2M4.5 17.5l2-2M19.5 17.5l-2-2"/>',   /* der Rahmen, der nach innen faehrt, und das nahe Bild, auf dem er haelt */
  puls:'<path d="M2 12h5l2-6 3 12 2-6h8"/>',
  schaerfe:'<circle cx="8" cy="12" r="5" stroke-dasharray="2 2"/><circle cx="17" cy="12" r="3"/>',
  farbe:'<path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/>',
@@ -27266,11 +27267,44 @@ const IKON={
  strobe:'<path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="currentColor" stroke="none"/>'
 };
 const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',fahrt:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',filmnebel:'#c8d6e6',streiflicht:'#ffd9a0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+/* Geometrie, darum dieselbe Farbfamilie wie die alte Fahrt: es ist derselbe Amtsbereich.
+   Als eigene Zeile, damit der neue Effekt keine bestehende Zeile anfasst. */
+TON.kenburns=TON.fahrt;
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
+/* DIE LAEUFE DER KEN BURNS FAHRT (docs/effektclip/KONZEPT-KEN-BURNS-FAHRT.md, Abschnitt 4).
+   Eine Stelle fuer die Auswahl auf der Karte UND fuer den Maler, damit nicht zwei Listen
+   auseinanderlaufen. `eng` sagt, wie der Fortschritt w des Laufs auf die Enge des Bildes zeigt:
+   beim Hineinfahren unmittelbar (0 = ganze Flaeche, 1 = nahes Bild). Schritt 3 des Bauwegs legt
+   Aufdecken (eng: w => 1-w), Zwei Stationen und Streifen daneben - jeder mit einer Zeile hier
+   und ohne Eingriff in die Klammer halten-fahren-halten. */
+const KB_LAEUFE={ hinein:{ lbl:'Hineinfahren', eng:w=>w } };
 const EFFEKTE = {
   fahrt:{ label:'Fahrt', art:'geo', ohneStaerke:true, besch:'Ein Ausschnitt wandert und zoomt langsam über das Bild — die Grundbewegung, damit nichts steht.',
     params:[{k:'zoom',lbl:'Ausschnitt',min:.5,max:1,step:.02,def:.8},{k:'weite',lbl:'Weite',min:0,max:.5,step:.02,def:.24},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:18}]},
+  /* KEN BURNS FAHRT (Schritt 1, docs/effektclip/KONZEPT-KEN-BURNS-FAHRT.md). Steht NEBEN der
+     Fahrt darueber und laesst sie unberuehrt; die Regler heissen kb*, damit kein Schluessel der
+     alten Fahrt mitgelesen oder mitgeschrieben wird. Keine "Weite": hat die Fahrt ein Ziel, ist
+     die Amplitude keine Einstellung, sondern eine Folge (Abschnitt 6). Kein Staerke-Regler, weil
+     Geometrie nichts ins Bild mischt (Regel 3). */
+  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b>, die Kamera <b>fährt</b> auf es zu, <b>hält</b> auf dem nahen Bild, fährt zurück und steht wieder. Weich angefahren, weich ausgelaufen, in der Mitte gleichmäßig — und getaktet: „Tempo“ sagt, über wie viele <b>Takte</b> ein Weg läuft, die Halte ergeben sich aus dem Rest. Die Fahrt fängt auf einer Eins an. Im Clip ist der Lauf geschlossen, damit das letzte Bild wieder das erste ist.<br><b>Unterschied zur „Fahrt“:</b> die zoomt gar nicht — ihr Ausschnitt bleibt die ganze Zeit gleich groß —, sie zieht ohne Ziel herum, sie steht nie still, und ihr Tempo sind Sekunden. Nimm die alte für ein ruhiges Treiben, diese für eine Kamera, die irgendwo ankommt.',
+    params:[{k:'kbLauf',lbl:'Lauf',sel:Object.keys(KB_LAEUFE).map(k=>[k,KB_LAEUFE[k].lbl]),def:'hinein',
+        /* Ein Rezept mit einem Lauf, den dieser Stand nicht hat, zeigt ihn als eigenen Eintrag,
+           statt stillschweigend als etwas anderes gelesen zu werden (Regel 12). */
+        selMehr:e=>(e.kbLauf&&!KB_LAEUFE[e.kbLauf])?[[e.kbLauf,e.kbLauf+' — unbekannt, fährt hinein']]:[],
+        notiz:e=>'Hineinfahren verdichtet: von der ganzen Fläche auf das nahe Bild und zurück.'
+          +(e.kbLauf&&!KB_LAEUFE[e.kbLauf]?' Der gespeicherte Lauf „'+e.kbLauf+'“ ist hier nicht gebaut — gefahren wird hinein.':'')
+          +' Aufdecken, Zwei Stationen und Streifen kommen im nächsten Schritt dazu.'},
+      {k:'kbAusschnitt',lbl:'Ausschnitt',min:.5,max:.95,step:.01,def:.8,
+        notiz:e=>{ const z=Math.max(.5,Math.min(.95,Number(e.kbAusschnitt)||.8));
+          return 'Das nahe Bild zeigt '+Math.round(z*100)+' % der Bildkante und '+Math.round(z*z*100)+' % der Fläche. 0,95 ist ein Atemzug, 0,50 eine deutliche Fahrt.'; }},
+      /* EIN TAKT JE WEG IST DIE VORGABE, UND ZWAR GEMESSEN. Ein geschlossener Lauf braucht 2 x Tempo
+         Takte plus eine Halte. Gerechnet ueber die 324 Katalogtitel in labor/nahtpruefung/ergebnis-taktlage.json
+         (N, M, P je Titel, Kartenlage "schlag") ist ein Clip im Median 4,0 Takte lang (1,75 bis 11,1;
+         3 Takte bei 107 Titeln, 4 bei 90, 5 bei 51). Damit laeuft Tempo 1 auf allen 324 Titeln
+         ungeklemmt, Tempo 2 auf 78 (24 %), Tempo 3 auf 11 (3 %), Tempo 4 auf 4 (1 %). Der Regler geht
+         bis 4, weil es diese langen Clips gibt; darueber waere es ein Ende ohne Wirkung (Regel 9). */
+      {k:'kbTakte',lbl:'Tempo (Takte)',min:1,max:4,step:1,def:1,notiz:e=>kbSatz(e)}]},
   puls:{ label:'Zoom schlägt', art:'geo', ohneStaerke:true, besch:'Das Bild zoomt auf den Schlag — die Größe pulst im Takt. Ruhig kräftig, nicht zu subtil. Jeder Schlag oder nur die Eins.',
     params:[{k:'wucht',lbl:'Wucht',min:0,max:.45,step:.01,def:.24}]},
   schaerfe:{ label:'Schärfe schlägt', art:'grund', besch:'Das Bild liegt weichgezeichnet da, und das scharfe Original schlägt im Takt durch. Nutzt den Puls direkt.',
@@ -27764,7 +27798,7 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
-  ['Läufe', ['fahrt','streifen','licht','schatten','laser','streiflicht','farbe','filmnebel','feuer']],
+  ['Läufe', ['fahrt','kenburns','streifen','licht','schatten','laser','streiflicht','farbe','filmnebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
   ['Partikel', ['partikel']],
@@ -30654,6 +30688,159 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
      jeder Ausgabe still, also erreicht sie kein Video und keine Kachel. */
   if(tiefesichtZeigt()) tiefesichtMalen(); else tiefesichtRaeumen();
   lmVorschauen(); }
+/* ===================== KEN BURNS FAHRT: DER LAUF =====================
+   Caspar_D, 17.09.2026: "wir nennen das ding Ken Burns Fahrt / und wir bauen es so, dass es
+   endlich gut ist." Spezifikation: docs/effektclip/KONZEPT-KEN-BURNS-FAHRT.md; gebaut ist
+   SCHRITT 1 des Bauwegs (Abschnitt 7). Der Effekt steht NEBEN der alten "Fahrt" (Hausregel:
+   Neubau neben dem Alten, eigener Name) - die alte bleibt mit allen Reglern unangetastet und
+   faellt erst, wenn diese gewonnen hat. Kein gespeichertes Rezept aendert sich, per Bau: der
+   neue Maler liest nur eigene Schluessel, und keine bestehende Zeile ist angefasst.
+
+   WARUM DIE ALTE LAHM WIRKT (Abschnitt 1, nachgelesen an ihrer einen Zeile in zeichneFrame):
+   sie zoomt nicht (crop ist ueber die Zeit konstant), sie bewegt sich als Dreieckschwingung
+   mit Knick am Umkehrpunkt und ohne jeden Stillstand, und sie hat kein Ziel (x mit Tempo, y
+   mit Tempo x 1,3 - eine Lissajous-Figur). Das Tempo ist nicht die Ursache.
+
+   DAS GESETZ (Abschnitt 3): HALTEN - FAHREN - HALTEN, weich an, weich aus, in der Mitte
+   gleichmaessig, und die Fahrt landet auf der Eins. Im Clip ist der Lauf GESCHLOSSEN
+   (halten - hinein - halten - heraus - halten), weil dort das Loop-Gesetz gilt: das letzte
+   Bild ist das erste (Regel 17).
+
+   1. GETAKTET, NICHT IN SEKUNDEN. "Tempo" sagt, ueber wie viele TAKTE ein Weg laeuft. Das
+      Schlagraster kommt aus dem Haus und wird nur GELESEN, nicht neu gebaut: im Export das
+      gleichmaessige Raster von raster() (DATA.schlaege, Zaehlzeit im zweiten Feld, umlaufende
+      Schlagnummer im dritten, jeClip = Schlaege je Clip), im Pult die echten Schlaege mit
+      ihrer Zaehlzeit und schlagHz() fuer das Tempo. Fehlt etwas davon, gilt ein Ersatzmass,
+      und die Zeile unter dem Regler SAGT das (kbSatz).
+
+   2. WARUM DIE NAHT DICHT IST, OHNE DASS SIE ZUFAELLIG DICHT WAERE. Im Export haengt der ganze
+      Lauf an EINER ganzen Zahl: d = (Bildnummer - Ankerbild) mod N, gerechnet mit lpBildNr() -
+      derselben umlaufenden Bildnummer, mit der das Haus an anderer Stelle wuerfelt. Auch die
+      Abschnittslaengen sind ganze Bilder. Bild(t+L) hat dieselbe Bildnummer, also dasselbe d,
+      also bitgleich denselben Ausschnitt - bei jedem Tempo, jedem Ausschnitt und mit wie ohne
+      Schlagraster. Kein Gleitkommaweg ueber (t mod L), an dem eine Rundung im letzten Bit den
+      Quellausschnitt um Bruchteile eines Bildpunkts verschieben koennte. Zusaetzlich, nicht als
+      Ersatz: der Clipanfang liegt im Halt (w = 0), das erste Bild ist also dasselbe stehende
+      Bild wie das letzte.
+
+   3. DIE KURVE IST DIE DES HAUSES. Genommen wird schleifePendelWeg(x), die Weichkurve der
+      Pendel-Enden: 15 % Anlauf und 15 % Auslauf quadratisch, dazwischen exakt gleichmaessig,
+      an beiden Nahtstellen C1-stetig (Wert 0,0882, Steigung 1,176), Spitzentempo 1,176-fach
+      des Mittels, kein Ueberschwingen. Das ist genau das Gesetz aus Abschnitt 3 und genau der
+      Unterschied zwischen einer Hand am Kurbelrad (Dreieck, Knick) und einem Motor. Eine
+      zweite Weichkurve wird darum nicht gebaut; eine Sanftkurve wie smoothstep haette in der
+      Mitte gar kein gleichmaessiges Stueck, sondern nur eine Tempospitze.
+
+   4. DAS ZIEL IST IN DIESEM SCHRITT DIE BILDMITTE. Die Zielsuche aus dem Bild (nahe Zone plus
+      Detaildichte) ist Schritt 2 und steht hier NICHT. Die Stelle dafuer ist schon da: kbZiel()
+      liefert den Versatz, der Lauf liefert nur w, und in zeichneFrame wird beides
+      multipliziert. Schritt 2 fasst die Klammer nicht an.
+
+   5. KEINE BILDPUNKTE, ALSO KEINE EINHEIT. Der Effekt rechnet ausschliesslich in Anteilen des
+      Bildes: crop ist ein Anteil der Quellkante, der Versatz ein Anteil des freien Wegs. Er hat
+      keine absolute Groesse, mit EINHEIT ist darum nichts umzurechnen (Regel 19) - er sieht auf
+      jeder Leinwandgroesse gleich aus, weil er die Bildflaeche selbst als Mass nimmt. */
+
+/* Ohne erkanntes Raster: dieselbe halbe Sekunde je Schlag und dieselben vier Schlaege je Takt,
+   mit denen das Haus an anderer Stelle schon rechnet, wo kein Takt erkannt ist (raster() nimmt
+   P = 4 ohne Einsen, die Statuszeile 0,5 s je Schlag). Kein neues Mass, ein gelesenes. */
+const KB_ERSATZ_SCHLAG=0.5, KB_ERSATZ_PROTAKT=4;
+/* Schlaege je Takt aus dem vorhandenen Feld: die Zaehlzeit steht im zweiten Feld jedes
+   Rastereintrags (1 .. P). 64 aufeinanderfolgende Eintraege enthalten jeden Rest modulo P, weil
+   P hoechstens 16 ist (taktLaenge) - mehr muss dafuer nicht gelesen werden. */
+function kbProTakt(S){ let P=0; const n=Math.min(S.length,64); for(let i=0;i<n;i++){ const z=S[i][1]|0; if(z>P) P=z; } return P; }
+/* WOHIN DIE FAHRT GEHT. Schritt 1: die Bildmitte, also kein Versatz. Schritt 2 der
+   Spezifikation setzt hier die nahe Zone plus Detaildichte ein und gibt einen Versatz in
+   Anteilen des freien Wegs zurueck (-1 .. 1, wie panx/pany in zeichneFrame). Die Klammer
+   darueber bleibt dabei unberuehrt - sie kennt nur w. */
+function kbZiel(e){ return [0,0]; }
+/* Lage in ECHTEN Schlaegen, gezaehlt ab der ersten Eins des Titels - das braucht nur das Pult.
+   Driftfrei, weil die echten Schlagzeiten gezaehlt und nicht aus einem Median hochgerechnet
+   werden; jeder Zyklus faengt deshalb auf einem gezaehlten Schlag an, und weil die Zykluslaenge
+   ein ganzes Vielfaches der Schlaege je Takt ist, auf einer Eins. Rueckwaerts gesucht wie an
+   den anderen Stellen im Haus, die den letzten Schlag vor t brauchen. */
+function kbSchlagLage(S,t){ let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0) return null;
+  const dt=(i+1<S.length)?(S[i+1][0]-S[i][0]):0, f=(dt>0.02)?Math.max(0,Math.min(1,(t-S[i][0])/dt)):0;
+  let i0=0; for(let k=0;k<S.length;k++) if((S[k][1]|0)===1){ i0=k; break; }
+  return (i-i0)+f; }
+/* DER LAUF. Gibt w: 0 = das weite, stehende Bild (Halt), 1 = das nahe Bild (angekommen),
+   dazwischen die Fahrt. KB_LAEUFE sagt, wie w auf die Enge zeigt - heute gibt es den einen Lauf
+   aus Schritt 1; ein Rezept mit einem unbekannten Lauf faehrt hinein, und die Karte zeigt den
+   unbekannten Wert als eigenen Eintrag, statt ihn stillschweigend umzudeuten (Regel 12).
+   Dazu die Zahlen, die die Zeile unter dem Regler braucht. Zwei Betriebsarten, eine Form:
+   IM CLIP (LOOP > 0) geschlossen und auf ganzen Bildern - halten, hinein, halten, heraus,
+   halten. Die Wege sind ganze Takte; die Halte ergeben sich aus dem Rest der Cliplaenge, und
+   zwar so: die mittlere Halte (das Ankommen) wird so lang wie die aeussere, beide in ganzen
+   Takten, was dann noch bleibt, liegt aussen. Passt der Lauf nicht in den Clip, laeuft er ueber
+   so viele Takte, wie hineinpassen, und `geklemmt` sagt es. Die aeussere Halte liegt zum Teil
+   vor dem Ankerbild und zum Teil am Clipende - im Loop ist das eine Halte, durch die Naht
+   geteilt.
+   IM PULT (LOOP = 0) gibt es keine Cliplaenge und damit keinen Rest, aus dem sich eine Halte
+   ergeben koennte. Dort laeuft der kuerzeste ehrliche Zyklus: hinein, einen Takt halten,
+   heraus, einen Takt halten. Was der Clip daraus macht, sagt kbSatz.
+   IM VOLL-TITEL-VIDEO (docs/effektclip/KONZEPT-LANGE-VIDEOS.md) darf derselbe Lauf einwegs
+   sein, denn dort loopt nichts. Gebaut ist er nicht - es braucht genau eine Zeile mehr, naemlich
+   w = schleifePendelWeg(min(1, x/F)) statt des Zyklus, und keine Aenderung an der Klammer.
+   Solange es diese Betriebsart nicht gibt, wird sie hier auch nicht behauptet. */
+function kbWeg(e,t){
+  const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const ohneZaehlzeit=!(P>=2); if(ohneZaehlzeit) P=KB_ERSATZ_PROTAKT;
+  const lauf=KB_LAEUFE[e.kbLauf]||KB_LAEUFE.hinein, T=Math.max(1,Math.round(Number(e.kbTakte)||1));
+  if(LOOP>0){
+    /* BILDRATE_SCHLEIFE ist die Exportbildrate (30) - dieselbe 30, mit der lpBildNr die
+       Bildnummer im Clip zaehlt. Ein zweiter Wert wuerde N und die Bildnummer auseinanderlaufen
+       lassen, und dann waere die Naht eine Glueckssache. */
+    const N=Math.max(2,Math.round(LOOP*BILDRATE_SCHLEIFE)), M=S.jeClip|0; let takt, schlag, A=0;
+    if(M>0){ takt=Math.max(2,Math.round(N*P/M)); schlag=Math.max(1,Math.round(N/M));
+      /* Ankerbild: der Clipschlag 0. Er traegt im Raster die umlaufende Nummer 0 und damit die
+         Zaehlzeit 1 - es ist die Song-Eins, auf die ausschnitt() den Clip gelegt hat. Alle
+         Eintraege mit derselben Nummer liegen genau N Bilder auseinander, das Ankerbild ist
+         also in jeder Runde dasselbe. */
+      for(let i=0;i<S.length;i++) if(S[i].length>2&&S[i][2]===0){ A=lpBildNr(S[i][0]); break; } }
+    /* OHNE RASTER GIBT ES KEINE EINS, AUF DIE ETWAS LANDEN KOENNTE. Dann gilt der Ersatztakt, und
+       das Ankerbild bleibt 0 - also das Bild, dessen absolute Nummer durch N teilbar ist. Wo im Clip
+       die Halte dann liegt, ist Zufall, und das ist richtig so: ohne Takt gibt es keine Stelle, die
+       sie verdient haette, und im Loop hat "wo im Clip" ohnehin keine Bedeutung. Dieselbe Haltung
+       hat lpFenster, dessen Fenster ebenfalls an der absoluten Bildnummer haengen. Geschlossen ist
+       der Lauf trotzdem, weil d genauso periodisch bleibt (gemessen: gleich 0,00). */
+    else { schlag=Math.max(1,Math.round(KB_ERSATZ_SCHLAG*BILDRATE_SCHLEIFE)); takt=Math.max(2,P*schlag); }
+    const passt=Math.floor((N-takt)/(2*takt)), Tk=Math.max(1,Math.min(T,passt));
+    let F=Tk*takt; if(2*F>N) F=Math.floor(N/2); F=Math.max(1,F);
+    /* DIE WEGE IN GANZEN TAKTEN, DIE HALTE IN GANZEN SCHLAEGEN. Zweimal nachgerechnet an den 324
+       Katalogtiteln (labor/nahtpruefung/ergebnis-taktlage.json, N/M/P je Titel):
+       - "halbiere den Rest, in ganzen TAKTEN abgerundet" liess bei 156 von 324 Titeln die MITTLERE
+         Halte auf null fallen - ein Clip ist im Median 4,0 Takte lang, bei Tempo 1 bleibt gut ein
+         Takt Rest, und dessen Haelfte ist kein ganzer Takt. Genau diese Halte ist der Punkt des
+         Effekts: "Das Ankommen ist der Punkt" (Abschnitt 2 der Spezifikation).
+       - "das Ankommen bekommt den ganzen Rest-Takt" drehte den Fehler nur um: auf Okkultation
+         (3,01 Takte je Clip) blieb fuer das ruhende Bild AUSSEN genau ein Bild uebrig, und die
+         Kamera kehrte ohne Ruhe um (gemessen: Naht 6,44 = erwartet 6,44).
+       Ein Takt laesst sich nicht halbieren, ein Rest von vier Schlaegen schon. Die Halte liegen
+       darum in ganzen SCHLAEGEN und werden gleich geteilt - auch ein Schlag ist Taktraster, und die
+       LANDUNG bleibt davon unberuehrt, weil sie nur am Ankerbild und an den ganzen Takten des Wegs
+       haengt. Der Ueberhang bleibt aussen: es ist im Loop die Halte, die man am laengsten sieht,
+       weil sie durch die Naht geteilt ist. Unter zwei Schlaegen Rest gibt es keine mittlere Halte -
+       auf so einem Clip sind fuenf Abschnitte nicht unterzubringen, und dann wird auch keine
+       behauptet. */
+    const rest=Math.max(0,N-2*F), H=Math.floor(rest/(2*schlag))*schlag, d=((lpBildNr(t)-A)%N+N)%N;
+    let w; if(d<F) w=schleifePendelWeg(d/F); else if(d<F+H) w=1; else if(d<2*F+H) w=schleifePendelWeg(1-(d-F-H)/F); else w=0;
+    return lauf.eng(w);
+  }
+  const b=kbSchlagLage(S,t);
+  const x=(((b!=null?b:t/KB_ERSATZ_SCHLAG)/((2*T+2)*P))%1+1)%1, F=T/(2*T+2), H=1/(2*T+2);
+  let w; if(x<F) w=schleifePendelWeg(x/F); else if(x<F+H) w=1; else if(x<2*F+H) w=schleifePendelWeg(1-(x-F-H)/F); else w=0;
+  return lauf.eng(w);
+}
+/* DIE ZEILE UNTER DEM TEMPO-REGLER. Sie sagt, was dieser Titel hergibt und was daraus folgt -
+   in Zahlen statt als Behauptung, und wo ein Ersatzmass gilt, steht das Ersatzmass da. */
+function kbSatz(e){ const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const ohneZaehlzeit=!(P>=2); if(ohneZaehlzeit) P=KB_ERSATZ_PROTAKT;
+  const hz=schlagHz(), sch=hz>0?1/hz:KB_ERSATZ_SCHLAG, takt=P*sch, T=Math.max(1,Math.round(Number(e.kbTakte)||1)), teile=[];
+  teile.push(!S.length ? 'Dieser Titel hat kein Schlagraster — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag'
+    : hz>0 ? Math.round(60/sch)+' Schläge je Minute'
+    : 'zu wenige Schläge für ein Tempo — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag');
+  teile.push(ohneZaehlzeit ? 'keine Taktzählung — Ersatzmaß vier Schläge je Takt' : P+' Schläge je Takt');
+  return teile.join(', ')+'; ein Takt '+kf(takt.toFixed(2))+' s. Ein Weg '+T+' '+(T===1?'Takt':'Takte')+' ('+kf((T*takt).toFixed(1))
+    +' s), hin und zurück also '+kf((2*T*takt).toFixed(1))+' s. Im Pult hält sie dazwischen einen Takt; im Clip füllen die'
+    +' Halte den Rest der Cliplaenge, und passt der Lauf nicht hinein, läuft er über so viele Takte, wie hineinpassen.'; }
 /* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
 function zeichneFrame(t,roh){
   if(!bereit) return;
@@ -30664,6 +30851,11 @@ function zeichneFrame(t,roh){
     if(e.typ==='fahrt'){ crop*=(1-(1-e.zoom)*s); panx+=tri(t/lpP(e.tempo))*e.weite*s; pany+=tri(t/lpP(e.tempo*1.3))*e.weite*s; }
     else if(e.typ==='puls'){ const hb=pulsHub(e,t), amt=e.wucht*s, z=e.invert?amt*(1-hb):amt*hb; scaleMul*=(1+z); }
     else if(e.typ==='kippen'){ const hb=pulsHub(e,t); rotG+=(e.invert?-1:1)*e.neigung*s*hb; }
+    /* KEN BURNS FAHRT: EIN Zweig neben dem der alten Fahrt, die unberuehrt darueber steht. Der
+       Lauf gibt den Fortschritt w (0 = weites, stehendes Bild, 1 = nahes Bild), das Ziel gibt den
+       Versatz - in Schritt 1 die Bildmitte, also 0/0. Kein `s`: Geometrie hat keine Staerke. */
+    else if(e.typ==='kenburns'){ const w=kbWeg(e,t), z=Math.max(.5,Math.min(.95,Number(e.kbAusschnitt)||.8)), zi=kbZiel(e);
+      crop*=(1-(1-z)*w); panx+=zi[0]*w; pany+=zi[1]*w; }
   }
   const eff=Math.max(.1,Math.min(1,crop/scaleMul)), cw=bw*eff, ch=bh*eff;
   const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
