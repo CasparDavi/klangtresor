@@ -62,12 +62,18 @@ Tiefenmap, auf der z.B. Regentropfen auftreffen würden."* Unten am Bildrand nah
 | | wer |
 |---|---|
 | von oberhalb des Bildes | Regen, Schnee, Blätter, Konfetti, Daunen, Pusteblume |
-| auf der unteren Fläche | Funken, Asche, Schwaden |
+| auf der unteren Fläche | Funken, Asche, Schwaden, Blasen |
 | immer da, im freien Raum verteilt | Staub, Glitzer, Bokeh, Glühwürmchen, Schmetterlinge |
 | eigene Bahn | Sternschnuppe, Konfetti-Kanone, Schwarm |
 
-Dazu jederzeit die **gesetzte Quelle** (Punkt, Strich, Kreis, Ellipse — gibt es schon). Caspar_D:
-*„lass es alles ruhig aus der unteren fläche entstehen, wenn ich quellen will, definiere ich."*
+**Die gesetzte Quelle tritt an die Stelle der natürlichen Herkunft, wenn der Nutzer eine setzt** —
+Punkt, Strich, Kreis, Ellipse, gibt es schon (`qForm`, Vorgabe „das ganze Bild"). Caspar_D: *„lass es
+alles ruhig aus der unteren fläche entstehen, wenn ich quellen will, definiere ich."*
+
+**Das eine schließt das andere nicht aus.** Jede Art hat ihre natürliche Herkunft aus der Tabelle
+oben; eine Quelle ist das, was der Nutzer *zusätzlich* setzen kann. Caspar_D, nachdem ich das falsch
+aufgeschrieben hatte: *„warum fällt die bodenfläche weg … nur weil es auch quellen geben kann, das
+schließt einander doch nicht aus."*
 
 **2 · Entfernung.** Die Entfernung eines Teilchens wird aus dem **freien Bereich an seinem
 Geburtsort** gewürfelt — von der Fläche dort bis an das vordere Ende. Reine Funktion seiner Nummer,
@@ -220,7 +226,7 @@ Strecke je 10-Sekunden-Clip bei Tempo 1, aus `BASIS_ART` und `ART_AUFTRIEB`.
 | Regen | fällt | 6,0 Bildhöhen | von oben |
 | Funken | steigt | 2,5 | untere Fläche |
 | Blätter | fällt | 0,9 | von oben |
-| Blasen | steigt | 0,8 | **Quelle** (Aquariumausströmer) |
+| Blasen | steigt | 0,8 | untere Fläche (Wasseroberfläche); Quelle für einen Ausströmer |
 | Konfetti (fallend) | fällt | 0,7 | von oben |
 | Schnee | fällt | 0,6 | von oben |
 | Schwaden (Rauch) | steigt | 0,5 | untere Fläche |
@@ -308,7 +314,7 @@ eine bessere Verdeckung als heute; wer bei 3 aufhört, hat etwas Funktionierende
 
 | # | Schritt | was nachgewiesen wird |
 |---|---|---|
-| **1** | **Die Entfernung.** `pz` je Teilchen aus dem freien Bereich am Geburtsort. Dazu die Geburtsort-Maschinerie: Eintrittsspalte am oberen Rand (geschlossene Formel — das Teilchen trat vor `y0/v` Sekunden ein), Tabelle der Bodenflächen je Quelle und Einstellung, eigene Stelle für die Schwebenden. | kein gespeichertes Rezept ändert sich (Perspektive ist in 0 von 18 Rezepten > 0) |
+| **1** | **Die Entfernung.** `pz` je Teilchen aus dem freien Bereich am Geburtsort. Dazu die Geburtsort-Maschinerie: der obere Rand in der Spalte des Teilchens, Tabelle der Bodenflächen je Quelle und Einstellung, eigene Stelle für die Schwebenden. **GEBAUT am 17.09.2026.** | kein gespeichertes Rezept ändert sich (Perspektive ist in 0 von 18 Rezepten > 0) |
 | **2** | **Verdeckung je Entfernung, in Tiefenschichten.** Heute liegt *eine* Maske über allen Teilchen, weil alle dieselbe Tiefe hatten. Jetzt vier bis acht Bänder, jedes mit eigener Maske, von hinten nach vorn gemalt. Dann ist der Flügel, der halb hinter dem Pfosten steckt, auch halb weg — bildpunktgenau. | Kosten je Bild gemessen; die 3 Rezepte mit „Tiefe aus der Bildzeile" vorher/nachher als Bild gezeigt |
 | **3** | **Das Auftreffen.** Letzte gesperrte Strecke, stumpfer Weg (Bahn durchlaufen). | Schleife exakt; der Ast an einem Bild mit Ast und Boden gezeigt |
 | **4** | **Billig machen.** Merkzettel je Fallrunde, Rückfall auf den stumpfen Weg, wo er nicht greift. | bitgleich gegen Schritt 3 |
@@ -318,6 +324,51 @@ eine bessere Verdeckung als heute; wer bei 3 aufhört, hat etwas Funktionierende
 
 **Gemessen wird genau zweimal:** was eine Tiefenschicht je Bild kostet, und was der Marsch kostet.
 Alles andere steht hier oder ist Augenschein.
+
+### Schritt 1, gebaut am 17.09.2026 — was dabei anders entschieden wurde
+
+**Die Eintrittsspalte ist gestrichen.** Der erste Bau rechnete für ein fallendes Teilchen den
+*wirklichen* Eintrittspunkt am oberen Rand aus (das Teilchen trat vor `y0/v` Sekunden ein, also x zur
+Zeit `t − y0/v`). Die Formel war exakt (3,6·10⁻¹² px gegen den Träger der Bahn), hat aber drei schwere
+Fehler verursacht:
+
+- **Der Geburtsort hing damit an der ZEIT.** Die Eintrittszeit springt bei jedem Umbruch, damit
+  springt der Prüfradius, damit kippt die Sperre, damit fällt die Würfelrunde für den Platz anders
+  aus. Der Geburtsort muss eine reine Funktion der Teilchennummer sein.
+- **Im Export war sie für ganze Arten wirkungslos.** `lpV` rundet langsame Fallgeschwindigkeiten auf
+  null Umläufe je Clip; dann gibt es keine Eintrittszeit und das Teilchen nahm doch seine eigene Stelle.
+- **Sie rechnete das Alter ohne Perspektive**, während der Maler mit Perspektive fliegt.
+
+Und sie brachte fast nichts: die Wirkung auf die Entfernung ist gemessen **0,0002 bis 0,0045** im
+Mittel, weil die oberste Rasterzeile fast immer gleichmäßig ist (Median ihrer Spanne 0,237, bei 120
+von 325 Karten unter 0,05). **Statt ihrer gilt: der obere Rand in der Spalte des Teilchens.**
+Zeitunabhängig, ohne `lpV`, ohne Perspektive, ohne Rückfall.
+
+**Die gemessenen Eigenschaften nach dem Bau:**
+
+| | |
+|---|---|
+| Teilchen hinter der Fläche geboren | **0 von 1 080 000** |
+| Geburtsort und Entfernung zeitunabhängig | **0 von 1 296 000** verschieden, über 10 Zeitpunkte bis 1024 s |
+| Schleife `pz(t) == pz(t+L)` | **1 296 000 von 1 296 000** bitgleich |
+| Rezepte ohne Tiefeneinstellung | **97 200 Zahlen, 0 verschieden** |
+| Bodenteilchen, deren Malort eine Bodenzelle ist | **71 040 von 71 040** |
+| Kosten je Bild bei 150 Teilchen | 0,005 ms („immer da") bis 0,026 ms (gesetzte Quelle) |
+
+**Zählung berichtigt:** Es sind **4** betroffene Rezepte, nicht acht — die acht waren *Treffer*, und
+zwei Effekte tragen beide Ämter zugleich. Bitgleich bleiben müssen daher **14** Rezepte.
+
+**Drei Beobachtungen für die späteren Schritte:**
+
+1. Am *gemalten* Ort liegen 15,8 % der Teilchen hinter der Fläche. Das ist kein Bruch — ein fallendes
+   Teilchen holt seine Entfernung am oberen Rand und wird tiefer gemalt; was dort geschieht, entscheiden
+   Schritt 2 und 3.
+2. **„Wandern" verschiebt den Körper, nachdem die Entfernung feststeht** — gemessen bis 148,9 px auf
+   900 px Leinwand. Dann sitzt ein Bodenteilchen nicht mehr auf seiner Bodenzelle, und Größe, Tempo und
+   Dunst kommen von einer Stelle, an der es nicht mehr ist. Gehört in Schritt 6.
+3. Vier der fünf Altrezepte mit Aufenthalt tragen `tiefeVerdeckung='zone'` (Fassung 3); dort ist
+   `ZONE_HART` falsch, der Aufenthalt geht also nicht in den freien Bereich ein. Solange die
+   Perspektive 0 ist, ändert das nichts. Mit Schritt 5 fällt das Verbot und die Sache klärt sich.
 
 ### Die Risiken, vorher benannt
 
@@ -353,10 +404,13 @@ Betretungsverbot (3× „hinten", 2× „vorn") und die drei mit „Tiefe aus de
 **Bitgleich bleiben müssen weiterhin alle Rezepte OHNE Tiefeneinstellung** — dort wäre eine Änderung
 ein Unfall, und der Nachweis ist der Wächter dagegen.
 
-**3 · Blasen kommen aus einer Quelle, nicht aus der Bodenfläche.**
-Caspar_D: *„ja, ein Aquariumausströmer bspw."* Wasser erkennt die Karte nicht; ein Ausströmer ist ein
-Punkt oder ein Strich, und den setzt der Nutzer. Damit bleiben als Arten der unteren Fläche: Funken,
-Asche, Schwaden.
+**3 · Blasen: untere Fläche UND Quelle — kein Entweder-oder.**
+Caspar_D auf die Frage, ob Blasen eine Quelle brauchen: *„ja, ein Aquariumausströmer bspw."* Ich hatte
+das als „statt der Bodenfläche" aufgeschrieben, und das war falsch. Er dazu: *„warum fällt die
+bodenfläche weg … nur weil es auch quellen geben kann, das schließt einander doch nicht aus."*
+Blasen steigen aus einem Teichboden, einem Topf, einem Bachbett — aus einer Fläche. Ihre natürliche
+Herkunft bleibt also die untere Fläche; ein Ausströmer ist eine Quelle, die der Nutzer setzt. Das gilt
+für jede Art (siehe Abschnitt 3): natürliche Herkunft aus der Tabelle, Quelle auf Wunsch darüber.
 
 **4 · „Tiefe aus der Bildzeile" (`verdecken`) wird gestrichen.**
 Der Regler stammt aus der Zeit vor den Tiefenkarten. Er gibt jedem Teilchen eine **erfundene**

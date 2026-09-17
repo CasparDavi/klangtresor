@@ -27478,8 +27478,33 @@ const GRENZE_PARAM = { k:'tiefeGrenze', lbl:'Grenze', min:-.02, max:1, step:.02,
   wert:TIEFE_WERT, brauchtKarte:true, notiz:e=>grenzeNotiz(e) };
 const WEICH_PARAM = { k:'tiefeWeich', lbl:'Weichheit', min:-.02, max:1, step:.02, def:-.02,
   wert:v=>(v==null||v<0)?'–':('±'+Math.round(v*255)), brauchtKarte:true, notiz:e=>weichNotiz(e) };
-/* RAUMTIEFE: die Karte gibt jedem Teilchen Groesse, Tempo und ein wenig Dunst. Abgelesen wird
-   EINMAL an seinem Geburtsort, nicht je Bild — die Probe steht still, also bleibt der Loop exakt.
+/* LEERRAUM VOR TIEFENKARTE (neu am 17.09.2026, Spezifikation Abschnitt 2 und 5; Caspar_D:
+   "tiefenmap verhaelt sich genau so wie 2D, es gibt einen layer vor dem ganzen, in dem noch
+   Partikel generiert werden koennen"). Vor der Karte liegt eine leere Ebene; ein Teilchen dort
+   wird von nichts verdeckt und von nichts aufgehalten.
+   WORAUF SICH DER ANTEIL BEZIEHT, RICHTIG BENANNT (17.09.2026). Hier stand "ein ANTEIL DER
+   KARTENSPANNE", und das war falsch. Gerechnet wird in der Naehe-Skala von tiefeNahAn, und deren
+   1 ist der Weg von "ganz hinten" nach "ganz vorn", den die Zeilen Grenze und Weichheit
+   aufspannen (von selbst: die Mitte der Karte, Band +-48 von 255). Die Spanne der Karte selbst
+   (zlo bis zhi) geht hier gar nicht ein - sie normiert allein tiefeBei. 0,25 heisst also: der
+   Vorraum ist ein Viertel so tief wie der Weg von ganz hinten nach ganz vorn. Er ist damit
+   zugleich die Obergrenze des Perspektiv-Faktors - so weit nach vorn, so gross der Faktor
+   (Spezifikation Abschnitt 5).
+   Die Zeile steht nur dort, wo ein Teilchen ueberhaupt eine eigene Entfernung hat: ohne
+   einzelne Koerper gibt es keinen freien Bereich, aus dem sie kaeme.
+   UND SIE STEHT GRAU, SOLANGE DIE RAUMTIEFE AUF 0 STEHT (Gegenlesen 17.09.2026). In Schritt 1
+   zeigt sich die Entfernung nur ueber die Raumtiefe; bei Raumtiefe 0 bestimmt der Vorraum nichts
+   - und das ist die Vorgabe und der Stand aller 18 gespeicherten Rezepte. Eine bedienbare Zeile,
+   die eine Wirkung beschreibt und keine hat, ist genau die Luege aus Regel 11. AB SCHRITT 2
+   (Verdeckung je Entfernung, in Tiefenschichten) wirkt die Entfernung immer - dann wird die
+   Zeile wieder lebendig und dieser Grund faellt weg. */
+const LEER_PARAM = { k:'leerraum', lbl:'Leerraum vor Tiefenkarte', min:0, max:1, step:.05, def:.25,
+  brauchtKarte:true, grau:e=>leerGrund(e), notiz:e=>leerraumNotiz(e) };
+/* RAUMTIEFE: die Karte gibt jedem Teilchen Groesse, Tempo und ein wenig Dunst. Seit dem
+   17.09.2026 traegt das Teilchen dafuer eine EIGENE ENTFERNUNG, gewuerfelt aus dem freien
+   Bereich an seinem Geburtsort (entfernungIn) - vorher stand hier die abgelesene Naehe der
+   SZENE an diesem Ort, und das ist keine Eigenschaft des Teilchens. Der Wurf haengt nur an der
+   Teilchennummer, also steht er still und der Loop bleibt exakt.
    0 ist flach wie bisher (Vorgabe), 1 ist stark. */
 const RAUM_PARAM = { k:'raumtiefe', lbl:'Raumtiefe', min:0, max:1, step:.05, def:0,
   brauchtKarte:true, grau:e=>raumGrund(e), notiz:e=>raumNotiz(e) };
@@ -27487,7 +27512,10 @@ const RAUM_PARAM = { k:'raumtiefe', lbl:'Raumtiefe', min:0, max:1, step:.05, def
    Teilchen, gehoert sie in diese eine Zeile und nirgendwo sonst hin. */
 const TIEFE_KOERPER = e => e.typ==='partikel';
 /* Arten, die ihren Ort ganz selbst rechnen und keinen Geburtsort im Bild haben (EIGENUHR) oder ihn
-   erst aus der Muendung bekommen (Kanone): fuer sie gibt es nichts abzulesen, was stillstuende. */
+   erst aus der Muendung bekommen (Kanone): fuer sie ist kein freier Bereich aufzuspannen, aus dem
+   eine Entfernung zu wuerfeln waere. (Hier stand "fuer sie gibt es nichts abzulesen, was
+   stillstuende" - seit dem 17.09.2026 wird nichts mehr abgelesen, die Entfernung wird gewuerfelt;
+   der Satz stammte noch aus der Zeit, als die Naehe der SZENE als Entfernung einsprang.) */
 const RAUM_OHNE = new Set(['schwarm','sternschnuppen','konfettiKanone']);
 /* Der Aufenthalt gilt bei Koerpern hart - aber nicht, solange ein altes Rezept seine weiche Zone
    traegt. EINE Stelle, die das entscheidet; Maler und Kette fragen beide hier. */
@@ -27530,7 +27558,12 @@ function verdeckGrund(e){
   if(!TIEFE_KOERPER(e)) return 'Dieser Effekt hat keine einzelnen Körper — er legt sich über das ganze Bild. Seine Zone kann nur ausgeschnitten werden: der Aufenthalt ist hier schon der Schnitt.';
   if(e.tiefeWirkt==='vorn') return 'Der Effekt hält sich selbst im Vordergrund auf — vor ihm steht nichts, was ihn verdecken könnte.';
   return null; }
-function raumGrund(e){ return RAUM_OHNE.has(e.art) ? 'Diese Art rechnet ihren Ort ganz selbst und hat keinen Geburtsort im Bild, an dem eine stehende Tiefenprobe abzulesen wäre.' : null; }
+function raumGrund(e){ return RAUM_OHNE.has(e.art) ? 'Diese Art rechnet ihren Ort ganz selbst und hat keinen Geburtsort im Bild, an dem ein freier Bereich aufzuspannen wäre.' : null; }
+/* Der Vorraum bestimmt, wie weit die Entfernung nach vorn reichen kann - und die Entfernung zeigt
+   sich in Schritt 1 allein ueber die Raumtiefe. Erst der Grund der ART, dann dieser: wer seinen
+   Ort selbst rechnet, hat gar keine Entfernung, und das ist die genauere Auskunft. */
+function leerGrund(e){ return raumGrund(e)
+  || (!(e.raumtiefe>0.001) ? 'Der Vorraum bestimmt, wie weit die Entfernung eines Teilchens nach vorn reichen kann — und die Entfernung zeigt sich bisher nur über die Raumtiefe. Solange die auf 0 steht, ändert dieser Regler nichts.' : null); }
 /* WIE der Aufenthalt bei DIESER Art durchgesetzt wird. Drei Mechanismen, drei Saetze - der eine
    Satz von gestern versprach allen achtzehn Arten beides zugleich („kommen nicht zur Welt" UND
    „die Schar weicht aus"), und fuer Sternschnuppe und Kanone stimmte keine der beiden Haelften. */
@@ -27612,11 +27645,68 @@ function weichNotiz(e){ if(!tiefeKarteDa()) return null;
    „die Zahlen unten stehen, sobald sie da ist", und das wird sie nie. Der Grund der Art gilt
    vor dem Warten auf die Karte; seit dem 18.09.2026 haelt die Traegerwahl in paramHTML das ein
    (eine aus eigenem Grund stillgelegte Zeile traegt den Wartesatz nicht). */
+/* WAS DER VORRAUM BEDEUTET - und der Satz, den nichts sonst sagt: hinter der Flaeche entsteht
+   nichts. Das ist der Kern des Raummodells und gehoert an die Zeile, die den Raum aufspannt. */
+function leerraumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
+  if(!tiefeKarteDa()) return null;
+  /* Bei Raumtiefe 0 legt leerGrund() die Zeile mit Grund still. Ein Satz darunter, der eine
+     Wirkung beschreibt, waere dann eine Dopplung UND ein Widerspruch. */
+  if(!(e.raumtiefe>0.001)) return null;
+  const L=leerVor(e);
+  return (L>0.001
+    ? 'Vor der Karte liegt ein leerer Vorraum von ' + vH(L) + ' des Weges von ganz hinten nach ganz vorn — von dem Band, das „Grenze“ und „Weichheit“ aufspannen. Die Entfernung eines Teilchens wird aus dem freien Bereich an seinem Geburtsort gewürfelt: von der Fläche dort bis an das vordere Ende dieses Vorraums.'
+    : 'Ohne Vorraum: die Entfernung eines Teilchens reicht höchstens bis „ganz vorn“ — bis an die vordere Kante des Bandes, das „Grenze“ und „Weichheit“ aufspannen. Davor entsteht nichts mehr.')
+    + ' Hinter der Fläche entsteht nichts, denn eine Tiefenkarte ist eine Fläche und kein Volumen.'; }
+/* WOHER DAS TEILCHEN SEINE ENTFERNUNG HAT, WIE WEIT SIE AUF DIESER KARTE REICHT, UND WAS DIE
+   EINSTELLUNG WEGNIMMT. Drei Auskuenfte, alle GERECHNET (raumSpanne, bodenZellen), keine gesetzt:
+   - Die Herkunft kommt aus derselben Stelle wie im Maler (herkunftVon), also auch mit dem
+     Vorzeichen des Auftriebs: ein auf "faellt" gedrehter Funke kommt vom oberen Rand, nicht mehr
+     aus dem Boden.
+   - DIE SPANNE DER ENTFERNUNG wird an den wirklichen Geburtsorten abgelesen. Der Satz, der hier
+     stand, nannte feste Zahlen ("Bei 1 ist das vorderste Teilchen ...-fach gross, das fernste
+     0,4-fach") und hatte die Beschneidung durch den AUFENTHALT uebergangen: bei Aufenthalt
+     Vordergrund beginnt der freie Bereich erst an der Grenze, dort kommt 0,4-fach nicht vor.
+     Gerechnet wird ausserdem beim EINGESTELLTEN Wert, nicht bei 1 - was der Regler bei 1 taete,
+     sieht man, indem man ihn dorthin zieht.
+   - WO DER GEWAEHLTE BEREICH AM GEBURTSORT GAR NICHT VORKOMMT (eine Karte, die an dieser Stelle
+     keinen Hintergrund hat), wird es gesagt statt stillschweigend anders gemacht: das Teilchen
+     bleibt dann auf der Flaeche und damit im Vordergrund.
+   - Und bei der unteren Flaeche sagt die Zeile, ob es auf DIESER Karte ueberhaupt eine gibt
+     (bodenZellen.grund). Eine leere Tabelle bleibt nicht still. */
 function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
   if(!tiefeKarteDa()) return null;
-  return (e.raumtiefe>0.001)
-    ? 'Bei 1 ist das nächste Teilchen 1,6-fach groß und 1,5-fach schnell, das fernste 0,4-fach groß, 0,5-fach schnell und bis zu 35 % blasser. Abgelesen wird einmal am Geburtsort — die Probe steht, der Loop bleibt exakt.'
-    : 'flach wie bisher: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen.'; }
+  if(!(e.raumtiefe>0.001)) return 'flach wie bisher: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen.';
+  const tp=tiefeProben(); if(!tp) return null;
+  const L=leerVor(e), sp=tiefeSpanne(e,tp), HK=herkunftVon(e);
+  const modus=ZONE_HART(e)?e.tiefeWirkt:null;
+  const bz=(HK.herk==='boden')?bodenZellen(tp,sp.g,sp.w,L,modus):null;
+  /* Fehlt die Bodenflaeche, faellt der Maler auf die eigene Stelle zurueck - dann gilt auch fuer
+     die Spanne, was fuer "immer da" gilt. Die Notiz rechnet also denselben Fall wie das Bild. */
+  const herk=(HK.herk==='boden'&&(!bz||!bz.n))?'da':HK.herk;
+  const rs=raumSpanne(e,tp,sp.g,sp.w,L,modus,herk,HK.runter,bz);
+  const wo=HK.herk==='quelle'?'Die Entfernung kommt aus dem freien Bereich an der gesetzten Quelle.'
+    :HK.herk==='boden'?'Die Entfernung kommt aus dem freien Bereich über der Bodenfläche: unten am Rand nah, weiter oben fern — und dort wird das Teilchen auch gemalt.'
+    :HK.herk==='rand'?('Die Entfernung kommt aus dem freien Bereich am '+(HK.runter?'oberen':'unteren')+' Bildrand, in der eigenen Spalte — dort kommt diese Art herein, nicht von ihrem jetzigen Ort.')
+    :'Die Entfernung kommt aus dem freien Bereich an der eigenen Stelle — diese Art ist immer schon da.';
+  let bo='';
+  if(HK.herk==='boden'&&bz) bo = bz.grund
+    ? ' ACHTUNG: ' + bz.grund + ' Die Teilchen entstehen dann an ihrer eigenen Stelle.'
+    : ' Die Bodenfläche dieser Karte nimmt ' + vH(bz.n/bz.punkte) + ' des Bildes ein — von dort steigen die Teilchen auf.';
+  let sa='';
+  if(rs){ const R=Math.max(0,Math.min(1,e.raumtiefe));
+    const gF=z=>kf(+(1+R*(2*z-1)*0.6).toFixed(2)), tF=z=>kf(+(1+R*(2*z-1)*0.5).toFixed(2));
+    const dF=z=>Math.round(R*0.35*(1-Math.min(1,z))*100);
+    /* GRENZEN, KEINE PUNKTWERTE. Die Geburtsorte, ueber die raumSpanne laeuft, sind ein OBERSATZ
+       der wirklichen (siehe gebOrte) - "nicht kleiner als" und "bis zu" stimmen darueber, ein
+       "ist 0,4-fach gross" stimmte nicht. Und das harte Betretungsverbot kann die Spanne noch
+       weiter einengen; auch das macht eine Grenze wahr und einen Punktwert falsch. */
+    sa=' Der freie Bereich an den Geburtsorten dieser Herkunft reicht auf dieser Karte von '
+      + kf(+rs.min.toFixed(2)) + ' bis ' + kf(+rs.max.toFixed(2))
+      + ': damit wird kein Teilchen kleiner als ' + gF(rs.min) + '-fach oder langsamer als ' + tF(rs.min)
+      + '-fach, keines größer als ' + gF(rs.max) + '-fach oder schneller als ' + tF(rs.max) + '-fach'
+      + (dF(rs.min)?(', und blasser als ' + dF(rs.min) + ' % wird keines'):'') + '.';
+    if(rs.leer) sa += ' ACHTUNG: an ' + vH(rs.leerAnteil) + ' dieser Geburtsorte gibt es den gewählten Aufenthaltsbereich gar nicht — die Fläche liegt dort schon vor der Grenze. Solche Teilchen bleiben auf der Fläche und damit im Vordergrund, obwohl die Zeile „Aufenthalt“ etwas anderes sagt.'; }
+  return wo + bo + sa; }
 
 /* DER ANTRIEB AM PARTIKEL-EFFEKT (Caspar_D, 16.09.2026: "mach beides, fallen und kanone"). Die
    Konfetti-Kanone ist die erste Partikel-Art mit einem ZEITPUNKT statt nur einer Bahn - ihre
@@ -27669,7 +27759,7 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
   /* Die Raumtiefe steht nur dort, wo es einzelne Koerper gibt, denen sie Groesse und Tempo geben
      kann. `when`/Auslassen ist richtig, wo eine Zeile fuer diese Bauart gar nicht existiert; grau
      mit Grund ist fuer Zeilen, die es gibt und die gerade nichts bestimmen (Hausgesetz 16.09.2026). */
-  if(TIEFE_KOERPER({typ:k})) T.params.push(Object.assign({}, RAUM_PARAM)); }
+  if(TIEFE_KOERPER({typ:k})) T.params.push(Object.assign({}, LEER_PARAM), Object.assign({}, RAUM_PARAM)); }
 
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
@@ -28485,6 +28575,45 @@ function lebensGeister(P,h,t,lang){ const F=lang?P*0.45:Math.min(1.2,P*0.2), s=t
 const BAHN_ART={ schnee:[0.05,12,0.7,1,0,0,0], regen:[0.3,0,0,0,0,0,0], asche:[0.04,20,0.4,1.3,0,0,0], blasen:[0.04,10,1.6,1.1,0,0,0], staub:[0.02,14,0.25,0.7,8,0.3,1], gluehwuermchen:[0.02,0,0,0,0,0,0], schmetterling:[0.03,0,0,0,9,1.1,2.1], blaetter:[0.08,28,1.2,1,0,0,0], schwaden:[0.05,26,0.3,1.3,0,0,0], funken:[0.1,6,3,2.1,0,0,0], konfetti:[0.07,30,0.6,1,6,0.9,2], konfettiKanone:[0.07,30,0.6,1,6,0.9,2], daunen:[0.09,40,0.3,1,7,0.45,2.3], bokeh:[0.05,16,0.18,1,9,0.13,1.7], glitzer:[0.02,0,0,0,0,0,0], pusteblume:[0.11,46,0.22,1,5,0.35,2.1], sternschnuppen:[0,0,0,0,0,0,0], schwarm:[0,0,0,0,0,0,0] };
 /* Das Gewicht, das jede Art bis heute fest verdrahtet hatte: -1 faellt, +1 steigt. */
 const ART_AUFTRIEB={ schnee:-1, regen:-1, asche:1, blasen:1, staub:1, blaetter:-1, funken:1, schwaden:1, gluehwuermchen:.35, schmetterling:.15, konfetti:-1, konfettiKanone:-1, daunen:-1, bokeh:.6, glitzer:.35, pusteblume:-1, sternschnuppen:-1, schwarm:.2 };
+/* ---- WOHER EIN TEILCHEN KOMMT (Spezifikation docs/effektclip/KONZEPT-AUFTREFFEN.md, 3 und 8) ----
+   Ein Geburtsort ist eine Stelle, an der in Flugrichtung Freiraum ist - und WELCHE Stelle das
+   ist, bestimmt die Art, nicht eine Einstellung. Vier Faelle:
+     oben   von oberhalb des Bildes: der Geburtsort ist der RAND, aus dem die Art hereinkommt -
+            die eigene Spalte, also (x0, 0) beim Fallen und (x0, 1) beim Steigen. Zeitunabhaengig;
+            die frueher hier gerechnete Eintrittsspalte ist gestrichen (Begruendung bei
+            entfernungIn). WELCHER Rand es ist, sagt der Auftrieb - siehe herkunftVon.
+     boden  auf der unteren Flaeche: eine bodenartige Zelle der Tiefenkarte - unten am Rand nah,
+            nach oben hin ferner. Die Zellen stehen als Tabelle im Vorrat (bodenZellen).
+     da     immer da, im freien Raum verteilt: der Geburtsort ist die eigene Stelle, wie bisher.
+     bahn   eigene Bahn (Sternschnuppe, Schwarm) oder Muendung (Kanone): der Ort kommt aus der
+            Bahn selbst. Fuer diese drei steht die Raumtiefe ohnehin still (RAUM_OHNE), der Fall
+            kommt im Maler also nicht an; er steht hier, damit die Tabelle vollstaendig ist.
+   EINE GESETZTE QUELLE TRITT AN DIE STELLE DIESER HERKUNFT, sie streicht sie nicht (Caspar_D:
+   "warum faellt die bodenflaeche weg ... nur weil es auch quellen geben kann, das schliesst
+   einander doch nicht aus"). Jede Art behaelt ihre natuerliche Herkunft; qForm sagt, ob der
+   Nutzer zusaetzlich eine Quelle gesetzt hat - dann gilt die. */
+const HERKUNFT={ regen:'oben', schnee:'oben', blaetter:'oben', konfetti:'oben', daunen:'oben', pusteblume:'oben',
+  funken:'boden', asche:'boden', schwaden:'boden', blasen:'boden',
+  staub:'da', glitzer:'da', bokeh:'da', gluehwuermchen:'da', schmetterling:'da',
+  sternschnuppen:'bahn', schwarm:'bahn', konfettiKanone:'bahn' };
+/* WER ES ENTSCHEIDET - EINE STELLE FUER MALER UND NOTIZ (Gegenlesen 17.09.2026). Die Tabelle oben
+   nennt die natuerliche Herkunft der ART. Ueber den Rand, an dem ein Teilchen hereinkommt,
+   entscheidet aber das VORZEICHEN des Auftriebs, und dieser Regler steht an jedem Partikel-Effekt,
+   auch ohne gesetzte Quelle. Bis heute las HERKUNFT ihn nicht und die Bodentabelle beachtete ihn
+   nicht: ein auf "faellt" gedrehter Funke wurde weiter aus der unteren Flaeche geboren und fiel
+   sofort in sie hinein. Ein Geburtsort ist aber eine Stelle, an der IN FLUGRICHTUNG Freiraum ist
+   (Spezifikation Abschnitt 3). Also:
+     faellt es    -> 'rand', es kommt am OBEREN Rand herein
+     steigt es    -> 'boden' bei den vier Bodenarten, sonst 'rand' am UNTEREN Rand
+     Auftrieb 0   -> es bewegt sich senkrecht nicht, also ist es da, wo es ist: 'da'
+   Die fuenf Schwebenden bleiben 'da', gleich wohin ihr leiser Auftrieb zeigt - "sie sind immer
+   da" (Caspar_D). Eine gesetzte Quelle tritt vor alles, die eigene Bahn bleibt eigene Bahn.
+   EINE Stelle, weil die Zeile "Raumtiefe" sonst etwas anderes erklaert, als gemalt wird. */
+const auftriebVon = e => (typeof e.auftrieb==='number'?e.auftrieb:(ART_AUFTRIEB[e.art]!=null?ART_AUFTRIEB[e.art]:-1));
+function herkunftVon(e){ const aS=-Math.sign(auftriebVon(e)), hn=HERKUNFT[e.art]||'da';
+  const eigen=((e.qForm||'bild')!=='bild');
+  return { aS, runter:aS>0,
+    herk: eigen?'quelle':(hn==='bahn'?'bahn':(aS===0?'da':(hn==='da'?'da':((hn==='boden'&&aS<0)?'boden':'rand')))) }; }
 const Q_REGLER=new Set(['qForm','qUrsprung','qWinkel','qX','qY','qAus','qAusY','qDreh','auftrieb','druck','winkel','streuung','laenge','ausblenden','wind','tempo','art']);
 const Q_FORM=[['bild','das ganze Bild'],['punkt','Punkt'],['linie','Linie'],['kreis','Kreis'],['ellipse','Ellipse']];
 function quellPunkt(e,i,hs,Wn,Hn){
@@ -29001,7 +29130,20 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        wuerfelt denselben Stoss wie der am Clipanfang, und weil das Raster ganze Clips Vorlauf hat, klingen am
        Anfang dieselben Stoesse aus wie am Ende ("wind kann ein muster so treiben, das es zur taktzeit wieder
        genauso anfaengt"). Die Vorschau hat kein drittes Feld und wuerfelt am Index wie bisher. */
-    const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege; for(let j=S.length-1;j>=0;j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const q=S[j][2]!=null?S[j][2]:j, h=hs(q+7000); if(h<0.35) continue; g+=(hs(q+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
+    /* DER STOSS FRAGT WIEDER NUR NACH DIESEM BILD (17.09.2026, nach dem Streichen der
+       Eintrittsspalte). Er trug einen halben Tag lang seine Zeit als Argument, weil der Geburtsort
+       einer von oben kommenden Art in der VERGANGENHEIT lag; mit der Eintrittsspalte ist dieser
+       Aufrufer weg, und ein Argument, das immer t ist, behauptet eine Allgemeinheit, die es nicht
+       gibt. Damit ist auch der Befund erledigt, die Kosten seien ohne Windstoss gemessen: es laeuft
+       keine Binaersuche je Teilchen mehr, sondern EINE je Effekt und Bild.
+       GEBLIEBEN IST DER VORLAUF: der letzte Schlag vor t wird binaer gesucht statt von hinten
+       abgeschritten. Die uebersprungenen Schlaege trugen ohnehin nichts bei (dt > 2 s bricht die
+       Summe ab), und die Summe ist Summand fuer Summand dieselbe - gemessen am 17.09.2026 gegen
+       die Vorlage ueber 216 000 Zeitpunkte (drei Schlagraster x mit und ohne umlaufende Nummer x
+       drei Staerken x drei Effekt-Nummern): bitgleich, 0 von 216 000 verschieden. */
+    const boe=(()=>{ if(!e.boeen) return 0; let g=0; const S=DATA.schlaege;
+      let lo=0, hi=S.length-1, j=-1; while(lo<=hi){ const m=(lo+hi)>>1; if(S[m][0]<=t){ j=m; lo=m+1; } else hi=m-1; }
+      for(; j>=0; j--){ const bt=S[j][0]; if(bt>t) continue; const dt=t-bt; if(dt>2) break; const q=S[j][2]!=null?S[j][2]:j, h=hs(q+7000); if(h<0.35) continue; g+=(hs(q+8000)<0.5?-1:1)*(0.4+0.6*h)*Math.exp(-dt*2.2); } return g*(e.boeenStaerke==null?.5:e.boeenStaerke)*Wn*0.25; })();
     /* AUFTRIEB (Caspar_D, 14.09.2026: "leichter, genauso schwer, schwerer als Luft"). Bis heute stand
        das Vorzeichen fest verdrahtet in jeder Art: Schnee faellt, Asche steigt. Der Regler macht daraus
        eine Einstellung, ohne die Zahlen zu ruehren - der BETRAG geht in lpV, das VORZEICHEN bleibt
@@ -29044,6 +29186,11 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* ---- AUFENTHALT (Betretungsverbot) UND RAUMTIEFE (16.09.2026) ----
        Gefragt wird EINMAL je Bild nach dem Raster (tiefeProben, 160 Punkte breit, einmal je Quelle)
        und dann je Teilchen an einem Punkt - nie ein Bildlesen je Teilchen, nie eines je Bild.
+       DIESER BLOCK BESCHREIBT DAS BETRETUNGSVERBOT, wie es bis heute gilt. Die Spezifikation
+       (docs/effektclip/KONZEPT-AUFTREFFEN.md) streicht es und gibt der Zeile "Aufenthalt" die
+       neue Bedeutung "aus welchem Teil des freien Raums kommt die Entfernung" - das ist Schritt
+       5 des Bauwegs und steht noch nicht hier. Schritt 1 (die Entfernung je Teilchen) liegt
+       darunter und laesst das Verbot unangetastet; nur die Entfernung selbst ist neu.
        Das Verbot gilt HART und je Art verschieden:
          - alle fallenden und treibenden Arten: wer in der verbotenen Zone zur Welt kaeme, wuerfelt
            seinen Platz neu (bis zu acht Mal, reine Funktion von i); wer im Flug hinuebergeraet,
@@ -29059,6 +29206,48 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const TPR=(zoneWunsch||RAUM>0.001)?tiefeProben():null;
     const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(e,TPR):null;
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
+    /* ---- DIE ENTFERNUNG JE TEILCHEN (17.09.2026, Bauweg Schritt 1) ----
+       Jedes Teilchen bekommt eine EIGENE Entfernung, gewuerfelt aus dem freien Bereich an seinem
+       GEBURTSORT (freiBereich/entfernungIn). Woher es kommt, bestimmt die Art (HERKUNFT); eine
+       gesetzte Quelle tritt an die Stelle dieser Herkunft. Gefragt wird nur das Raster, das
+       ohnehin steht - kein Bildlesen je Teilchen -, und alles haengt an Nummer und Zeit, also
+       bleibt die Schleife exakt.
+       Die Bodenzellen stehen als Tabelle im Vorrat: einmal je Quelle und Einstellung, danach
+       abgelesen. Ist sie leer, sagt die Zeile "Raumtiefe" den Grund (raumNotiz) - eine Karte
+       ohne Bodenflaeche zeichnet nicht still nichts. */
+    const LEER=leerVor(e);
+    /* WOHER DAS TEILCHEN KOMMT: die Art sagt es, das VORZEICHEN DES AUFTRIEBS entscheidet mit.
+       Entschieden wird das an einer Stelle (herkunftVon, bei der Tabelle HERKUNFT), damit die
+       Zeile "Raumtiefe" nicht etwas anderes erklaert, als hier gemalt wird. herkunftVon liest
+       denselben Auftrieb wie `au` eine Handbreit weiter oben - dieselbe Vorgabekette, dieselbe
+       Zahl.
+       'bahn' kommt hier nicht an: fuer Schnuppe, Schwarm und Kanone steht die Raumtiefe still
+       (RAUM_OHNE), und raumGrund() sagt das an der Zeile. */
+    const HK=herkunftVon(e), HERK=HK.herk, RUNTER=HK.runter;
+    const BODEN=(raumAn&&HERK==='boden')?bodenZellen(TPR,ZG.g,ZG.w,LEER,ZONE):null;
+    /* Der Geburtsort in Bildanteilen - eine reine Funktion der Teilchennummer und des
+       gewuerfelten Platzes, OHNE t:
+         quelle  der gesetzte Punkt, Strich, Kreis, die Ellipse (den hat Caspar_D gesetzt)
+         rand    die eigene Spalte an dem Rand, aus dem die Art hereinkommt: oben beim Fallen,
+                 unten beim Steigen. Zeitunabhaengig - die Eintrittsspalte ist gestrichen
+                 (Begruendung bei entfernungIn).
+         boden   die eigene Stelle - denn ein Bodenteilchen WIRD an seiner Bodenzelle gemalt
+                 (unten in der Schleife setzt bodenPlatz x0/y0 darauf), also IST sein Platz sein
+                 Geburtsort. Fehlt die Bodenflaeche, bleibt es an seinem gewuerfelten Platz; das
+                 ist der ehrliche Rueckfall, und er steht in raumNotiz.
+         da      die eigene Stelle, wie bisher */
+    const gebOrt=(i,px,py)=>{
+      if(HERK==='quelle'){ const P=quellPunkt(e,i,hs,Wn,Hn); return [P[0]/Wn,P[1]/Hn]; }
+      if(HERK==='rand') return [px/Wn, RUNTER?0:1];
+      return [px/Wn,py/Hn]; };
+    const pzVon=(i,px,py)=>{ const G=gebOrt(i,px,py);
+      return entfernungIn(freiBereich(TPR,G[0],G[1],ZG.g,ZG.w,LEER,ZONE),hs(i+11000)); };
+    /* Der Platz einer Bodenzelle auf der Leinwand. DIESELBE Tabelle traegt Geburtsort und Malort
+       (Caspar_D, 17.09.2026): sonst gilt die Zusage der Spezifikation - "unten am Rand nah, weiter
+       oben fern, ein Feuer in der Naehe und ein Feuer in der Ferne" - nur fuer die Zahl und nicht
+       fuer das Bild. */
+    const bodenPlatz=r=>{ const k=Math.min(BODEN.n-1,Math.floor(r*BODEN.n));
+      return [BODEN.x[k]/TPR.w*Wn, BODEN.y[k]/TPR.h*Hn]; };
     /* Wie weit ein Koerper um seinen Ort herum reicht, in Vielfachen von sz - abgelesen an den
        Malern: der Vogel spannt die Fluegel (sz*2,3), der Regen zieht einen Strich nach unten
        (sz*4), Blase und Bokeh haben einen Hof, die runden Arten enden bei ihrem Radius. */
@@ -29087,20 +29276,45 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         const nn=Math.hypot(dgx,dgy); if(nn<1e-6) break;
         px+=ri*dgx/nn*S; py+=ri*dgy/nn*S; }
       return [px,py]; };
+    /* Das Fallmass der Art - loop-invariant; dieselbe Zahl, mit der jeder Zweig sein v rechnet
+       und mit der flugbahn und die Kanone gerufen werden. */
+    const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
     for(let i=0;i<n;i++){ let x0=hs(i)*Wn, y0=hs(i+1000)*Hn;
+      /* EIN BODENTEILCHEN WIRD DORT GEMALT, WO ES GEBOREN WIRD (Caspar_D, 17.09.2026). Bis eben
+         holte es seine Entfernung aus einer Bodenzelle und wurde doch an seinem gewuerfelten
+         Modulo-Platz gemalt; die Zusage der Spezifikation (Abschnitt 3) galt damit fuer die Zahl
+         und nicht fuer das Bild. Also SETZT die Bodenzelle den Platz.
+         Sie tut es nur, wo es eine Bodentabelle gibt - und die gibt es nur bei Raumtiefe ueber 0
+         (raumAn). Ein Rezept ohne Tiefeneinstellung bleibt darum Bildpunkt fuer Bildpunkt wie
+         gestern, und das ist der Nachweis, den Schritt 1 schuldet. Ab Schritt 2 wirkt die
+         Entfernung immer, dann gilt es immer. */
+      if(BODEN&&BODEN.n){ const P=bodenPlatz(hs(i+12000)); x0=P[0]; y0=P[1]; }
       /* DERSELBE RADIUS WIE BEIM ZEICHNEN (Gegenlesen 16.09.2026). Bis eben rechnete der
          Geburtsort ohne Raumtiefe, gezeichnet wurde mit ihr: ein nahes Teilchen kam mit dem
          flachen Radius zur Welt und wurde beim Zeichnen mit dem bis zu 1,6-fachen doch verworfen.
-         Die Naehe am Geburtsort ist bekannt, sobald der Ort feststeht - also wird sie dort gefragt. */
+         KEINE ZWEITE ABLESUNG MEHR (17.09.2026): hier stand bis heute ein zweites
+         tiefeNahAn - die Naehe der SZENE am Ort, als Entfernung eingesetzt. Das Teilchen hat
+         jetzt eine eigene Entfernung, und die traegt auch den Radius. Der gewuerfelte Platz
+         steht dabei erst am Ende der Wuerfelrunde fest, also wird sie je Platz gefragt; bei
+         Bodenzelle und gesetzter Quelle haengt sie am Platz gar nicht, an der Randspalte nur an
+         dessen x. */
       const zRoh=ZONE?gr*(0.5+hs(i+3000))*ZKOERPER:0;
-      const zRBei=(px,py)=>raumAn?zRoh*(1+RAUM*(2*tiefeNahAn(TPR,px/Wn,py/Hn,ZG.g,ZG.w)-1)*0.6):zRoh;
-      if(ZONE&&!eigen&&!eigUhr&&!kanone) for(let v=1; v<=8 && zSperre(x0,y0,zRBei(x0,y0)); v++){ x0=hs(i+v*13000)*Wn; y0=hs(i+v*13000+700)*Hn; }
-      /* Der Geburtsort ist der Quellfleck, wenn einer gewaehlt ist, sonst der gewuerfelte Platz.
-         Groesse und Tempo haengen daran, nicht am jeweiligen Ort - sonst atmete das Teilchen im
-         Flug und die Naht ginge auf. Dunst nimmt dem Fernen bis zu 35 % Deckkraft. */
-      const geb=raumAn?(eigen?quellPunkt(e,i,hs,Wn,Hn):[x0,y0]):null;
-      const nz=geb?tiefeNahAn(TPR,geb[0]/Wn,geb[1]/Hn,ZG?ZG.g:0.5,ZG?ZG.w:48/255):0.5;
-      const rG=geb?1+RAUM*(2*nz-1)*0.6:1, rT=geb?1+RAUM*(2*nz-1)*0.5:1, rD=geb?1-RAUM*0.35*(1-nz):1;
+      const zRBei=(px,py)=>raumAn?zRoh*(1+RAUM*(2*pzVon(i,px,py)-1)*0.6):zRoh;
+      /* Wer in der verbotenen Zone zur Welt kaeme, wuerfelt seinen Platz neu - ein Bodenteilchen
+         aber eine ANDERE BODENZELLE und nicht irgendeinen Punkt im Bild: sein Platz IST seine
+         Herkunft, und die ist die untere Flaeche. */
+      if(ZONE&&!eigen&&!eigUhr&&!kanone) for(let v=1; v<=8 && zSperre(x0,y0,zRBei(x0,y0)); v++){
+        if(BODEN&&BODEN.n){ const P=bodenPlatz(hs(i+v*13000+12000)); x0=P[0]; y0=P[1]; }
+        else { x0=hs(i+v*13000)*Wn; y0=hs(i+v*13000+700)*Hn; } }
+      /* DIE ENTFERNUNG DES TEILCHENS, gewuerfelt aus dem freien Bereich an seinem Geburtsort
+         (Herkunft: HERK). Groesse und Tempo haengen an ihr, nicht am jeweiligen Ort - sonst
+         atmete das Teilchen im Flug und die Naht ginge auf. Dunst nimmt dem Fernen bis zu 35 %
+         Deckkraft; vor der Karte (pz ueber 1, der Leerraum) wird nichts heller als voll, darum
+         ist der Dunst dort bei 0 geklemmt - eine Deckkraft ueber 1 wuerde die Leinwand ohnehin
+         verwerfen und still die vorige stehen lassen. Groesse und Tempo duerfen sehr wohl ueber
+         das bisherige Hoechstmass hinaus: so weit nach vorn, so gross der Faktor. */
+      const pz=raumAn?pzVon(i,x0,y0):0.5;
+      const rG=raumAn?1+RAUM*(2*pz-1)*0.6:1, rT=raumAn?1+RAUM*(2*pz-1)*0.5:1, rD=raumAn?1-RAUM*0.35*(1-Math.min(1,pz)):1;
       const sp=(0.5+hs(i+2000))*rT, sz=gr*(0.5+hs(i+3000))*rG, gx=boe*(0.6+0.4*hs(i+5000)); let x,y,al=1,qs=LOOP>0?((t*lpR(0.11*e.tempo)+hs(i+9600))%1+1)%1:((t*0.11*e.tempo+hs(i+9600))%1+1)%1; const fc=farbeVon(i,a);   /* das Aufgehen der Schwade: im Export ganze Zyklen je Clip */ cx.fillStyle=fc; cx.strokeStyle=fc;
       /* UNBERECHENBAR UND TROTZDEM RUND. Drei Schwingungen mit verschiedenen Raten, je Teilchen
          anders verschoben - das Auge findet darin kein Muster. Und weil jede Rate durch lpW auf
@@ -29111,7 +29325,6 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         wx=A*(Math.sin(lpW(0.31)*t+i*2.3)+0.62*Math.sin(lpW(0.73)*t+i*5.1)+0.33*Math.sin(lpW(1.7)*t+i*1.7));
         wy=A*(Math.cos(lpW(0.27)*t+i*3.1)+0.62*Math.cos(lpW(0.83)*t+i*4.3)+0.33*Math.cos(lpW(1.9)*t+i*2.9));
         x0+=wx; y0+=wy; }
-      const B=BASIS_ART[e.art]!=null?BASIS_ART[e.art]:0.25;
       if(kanone){ const F=kanoneBahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
       else if(eigen&&!eigUhr){ const F=flugbahn(e,i,t,Wn,Hn,sp,hs,aB,aS,gx,w,B); x=F[0]+wx; y=F[1]+wy; al=F[2]; qs=F[3]; }
       /* Frei fallend im Export: verfaelscht der Umbruch das Tempo (lpVerfaelscht), lebt das Teilchen genau L mit
@@ -29882,7 +30095,7 @@ function renderStapel(){
     if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','tiefeGrenze','tiefeWeich','raumtiefe']);
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','tiefeGrenze','tiefeWeich','leerraum','raumtiefe']);
     const paramBauen=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
       if(p.q){ const sel=(lbl,k,liste)=>'<div class="tbs-regler"><span>'+lbl+'</span><select data-k="'+k+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
@@ -31860,14 +32073,25 @@ function zeichneFrame(t,roh){
          Drittel und nur 11 % im nahen, beim naechsten ist es umgekehrt. Also wird je Quelle auf
          die eigene Spanne gedehnt - das 5. und das 95. Hundertstel, damit einzelne Ausreisser
          die Spanne nicht auffressen. Danach heisst 0 "am fernsten, was dieses Bild hat" und 1
-         "am naechsten", und ein Regler bedeutet ueberall dasselbe. */
+         "am naechsten", und ein Regler bedeutet ueberall dasselbe.
+         NUR: DAS IST DIE SKALA VON tiefeBei, NICHT DIE VON tiefeNahAn (17.09.2026). zlo/zhi
+         normieren den Laser und den Regler "Tiefe aus der Bildzeile". Die ENTFERNUNG eines
+         Teilchens rechnet in der Naehe-Skala von tiefeNahAn, und deren 0 und 1 sind die Kanten
+         des Bandes um die Grenze - eine andere Null. Zwei Skalen, zwei Namen; wer sie
+         verwechselt, beschriftet einen Regler falsch (siehe freiBereich). */
       const sort = Array.prototype.slice.call(z).sort((a, b) => a - b);
       const zlo = sort[Math.floor(sort.length * 0.05)], zhi = sort[Math.floor(sort.length * 0.95)];
       /* Die MITTE der Karte (Median) liegt hier mit, weil der Aufenthalt sie braucht: die Maske
          nimmt sie in voller Aufloesung, der Maler auf diesem Raster - dieselbe Frage, dieselbe
          Antwort auf ein Hundertstel. Ein zweites Raster waere ein zweiter Begriff (16.09.2026). */
       const med = sort[sort.length >> 1];
-      return TIEFEPROBEN[q.k] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi), med };
+      /* DIE ROHE SPANNE LIEGT MIT (Gegenlesen 17.09.2026). zhi wird auf mindestens zlo+0,02
+         geklemmt, sonst teilte die Normierung in tiefeBei durch null. Wer die Spanne einer Karte
+         NENNT, darf die Klemme nicht mitnennen: fuer die flachste Karte des Bestands meldete der
+         Grund-Satz "Spanne 5 von 255", und die 5 sind 0,02*255 - die Klemme selbst. Die Karte hat
+         Spanne 0. Also liegt die ungeklemmte Spanne daneben; geklemmt bleibt nur, was gerechnet
+         wird (tiefeBei, der Laser, "Tiefe aus der Bildzeile"). */
+      return TIEFEPROBEN[q.k] = { w, h, z, zlo, zhi: Math.max(zlo + 0.02, zhi), med, spanne: zhi - zlo };
     }catch(x){ return null; }
   }
   /* ---- EINE STELLE, DIE SAGT, WIE NAH EIN PUNKT IST (16.09.2026) ----
@@ -31895,6 +32119,231 @@ function zeichneFrame(t,roh){
     if(!tp) return 0.5;
     const x=Math.max(0,Math.min(tp.w-1,Math.round(u*tp.w))), y=Math.max(0,Math.min(tp.h-1,Math.round(v*tp.h)));
     return nahKurve(tp.z[y*tp.w+x], g, w); }
+  /* ---- DER FREIE BEREICH UND DIE ENTFERNUNG EINES TEILCHENS (17.09.2026, Bauweg Schritt 1) ----
+     EINE TIEFENKARTE IST EINE FLAECHE, KEIN VOLUMEN (Spezifikation Abschnitt 2). Hinter ihr ist
+     kein Raum - frei ist, was NAEHER ist als die Flaeche. Davor liegt die leere Ebene, deren
+     Breite der Regler "Leerraum vor Tiefenkarte" angibt; ein Teilchen dort wird von nichts
+     verdeckt und von nichts aufgehalten, also genau das flache Verhalten von gestern - kein
+     Sonderfall, sondern das vordere Ende des freien Bereichs.
+     IN WELCHER SKALA HIER GERECHNET WIRD, RICHTIG BENANNT (Caspar_D, 17.09.2026: "die skala
+     richtig benennen"). Gerechnet wird in der Naehe-Skala von tiefeNahAn, und die ist NICHT die
+     Spanne der Karte: nahKurve dehnt das BAND um die Grenze auf 0..1 (von g-w bis g+w, von selbst
+     die Mitte der Karte +-48 von 255) und legt einen Smoothstep darueber.
+       0 heisst "ganz hinten" - an der hinteren Kante dieses Bandes. NICHT "am fernsten, was diese
+         Karte hat": alles, was dunkler ist als g-w, ist ebenfalls 0, die Skala unterscheidet es
+         nicht. Genau das behauptete der Satz, der hier stand.
+       1 heisst "ganz vorn" - an der vorderen Kante des Bandes; alles Hellere ist auch 1.
+     zlo und zhi (das 5. und das 95. Hundertstel der Karte) gehen hier NICHT ein. Sie normieren
+     allein tiefeBei - den Laser und den Regler "Tiefe aus der Bildzeile". Zwei Normierungen,
+     zwei Namen, und dieser heisst Naehe.
+     Die Spanne dieser Skala ist damit 1, und das vordere Ende des Vorraums liegt bei 1+Leerraum:
+     der Leerraum ist ein Anteil GENAU DIESES Weges von ganz hinten nach ganz vorn, nicht der
+     Kartenspanne. Dasselbe Raster und dieselbe Kurve, die Maske und Maler schon benutzen
+     (tiefeProben, nahKurve, tiefeSpanne) - kein zweiter Begriff, kein zweites Raster.
+     DER ALTE FEHLER, DEN DAS BEHEBT: bis heute wurde als Entfernung die Naehe der SZENE am
+     Geburtsort eingesetzt. Das ist keine Eigenschaft des Teilchens - so klebt jedes Teilchen
+     bei seiner Geburt genau auf der Oberflaeche. Und der Vorlauf wuerfelte aus dem GANZEN
+     Wertebereich, also auch HINTER die Flaeche; dort steckt das Teilchen im Boden und ist nie
+     zu sehen (Spezifikation Abschnitt 9: die Zahlen dazu gelten nicht mehr). */
+  const leerVor = e => Math.max(0, Math.min(1, e.leerraum==null?0.25:e.leerraum));
+  /* Die Vordergrund-Hintergrund-Grenze in der Naehe-Skala. nahKurve gibt an der Grenze (z==g)
+     genau 0,5 - dieselbe Zahl, mit der zPunkt schon vorn von hinten trennt. */
+  const VH_GRENZE=0.5;
+  /* Der freie Bereich an einem Bildpunkt, beschnitten vom AUFENTHALT. Das ist die neue Bedeutung
+     dieser Zeile (Spezifikation Abschnitt 5): sie waehlt nicht mehr eine Bildhaelfte, sondern
+     einen Tiefenbereich.
+       alles    von der Flaeche bis an das vordere Ende
+       vorn     nur das Stueck vor der Grenze
+       hinten   nur das Stueck zwischen Flaeche und Grenze
+     EINE STELLE OHNE HINTERGRUND WIRD GENANNT, NICHT STILL ANDERS GEMACHT (Gegenlesen
+     17.09.2026). Liegt die Flaeche an dieser Stelle selbst schon VOR der Grenze, gibt es dort
+     kein "hinten": hi faellt unter lo, der Bereich ist LEER, und entfernungIn laesst das Teilchen
+     auf der Flaeche - also im VORDERGRUND, waehrend die Zeile "nur hinten" sagt.
+     GEMESSEN am 17.09.2026, und es ist kein Randfall. Ueber 1 080 000 Teilchen (25 Titel x 15
+     Arten x Auftrieb hin und her x Quelle x Aufenthalt x Leerraum x Raumtiefe) trifft es 13,62 %
+     aller Faelle, und AUSSCHLIESSLICH bei Aufenthalt hinten - bei "ueberall" und "nur vorn" kann
+     der Bereich gar nicht leer werden (bei "vorn" ist lo hoechstens 1 und hi mindestens 1). Je
+     Herkunft, ueber alle 325 Karten:
+       obere Randzeile   184 von 325 Karten haben leere Stellen, im Mittel 19,0 % der Zeile,
+                         bei 30 Karten die ganze Zeile
+       untere Randzeile  322 von 325 Karten, im Mittel 93,5 %, bei 257 Karten die ganze Zeile
+                         - kein Wunder: unten ist die Karte nah, also ist dort nichts "hinten"
+       ganzes Raster     alle 325 Karten, im Mittel 49,3 % der Bildpunkte
+       Bodentabelle      0 Karten mit leeren Stellen (die Tabelle sortiert sie schon aus), dafuer
+                         bleibt sie bei 11 von 325 Karten GANZ leer
+     Hinter die Flaeche darf nichts, also bleibt die Klemme - aber die Zeile "Raumtiefe" zaehlt
+     den Anteil je Karte und Einstellung und sagt ihn an (raumSpanne, raumNotiz). */
+  function freiBereich(tp,u,v,g,w,L,modus){
+    const nz=tiefeNahAn(tp,u,v,g,w);
+    let lo=nz, hi=1+L;
+    if(modus==='vorn') lo=Math.max(lo,VH_GRENZE);
+    else if(modus==='hinten') hi=Math.min(hi,VH_GRENZE);
+    return { nz, lo, hi, leer:!(hi>=lo) }; }
+  /* DIE ENTFERNUNG. Gleichverteilt im freien Bereich - das ist eine SETZUNG und keine Wahrheit:
+     die Karte hat keinen Maszstab (Spezifikation, Risiko 3). Der Wurf ist eine reine Funktion
+     der Teilchennummer (Hashplatz i+11000), damit die Schleife exakt bleibt; der Bereich selbst
+     haengt am Geburtsort. Gibt es den gewaehlten Bereich an dieser Stelle nicht, bleibt das
+     Teilchen auf der Flaeche (lo) - nie dahinter. Hinter der Flaeche wird nichts geboren, und
+     das ist der ganze Zweck dieses Schrittes. */
+  function entfernungIn(fb,r){ return fb.leer?fb.lo:(fb.lo+r*(fb.hi-fb.lo)); }
+  /* ---- WARUM ES KEINE EINTRITTSSPALTE GIBT (Caspar_D, 17.09.2026: gestrichen) ----
+     Hier stand eine geschlossene Formel, die den Eintrittspunkt einer von oben kommenden Art am
+     Bildrand zurueckrechnete: das Teilchen steht bei y_jetzt und faellt mit v, also trat es vor
+     y_jetzt/v Sekunden am Rand ein, und die Spalte war x zu dieser Zeit (eintrittSpalte, samt
+     Windstoss in der Vergangenheit). SIE IST GESTRICHEN. Der Geburtsort eines fallenden Teilchens
+     ist stattdessen der freie Bereich am OBEREN RAND in SEINER Spalte - an (x0, 0) mit dem
+     gewuerfelten x0; steigt es, am unteren Rand. Damit ist der Geburtsort wieder eine reine
+     Funktion der Teilchennummer. Drei Fehler und eine Messung, damit der naechste nicht auf
+     dieselbe Idee kommt:
+       1. SIE HING DEN GEBURTSORT AN DIE ZEIT. Die Eintrittszeit springt bei jedem Umbruch; damit
+          springt der Pruefradius in zRBei, damit kippt zSperre, damit faellt die Wuerfelrunde
+          fuer x0/y0 anders aus. Ein Geburtsort, der mit der Uhr wandert, ist keiner.
+       2. IM EXPORT WAR SIE FUER GANZE ARTEN WIRKUNGSLOS. lpV rastet die Fallgeschwindigkeit auf
+          ganze Umlaeufe je Clip; langsame Arten runden auf 0 Umlaeufe, dann gab sie null und das
+          Teilchen nahm doch seine eigene Stelle.
+       3. SIE RECHNETE DAS ALTER MIT DEM TEMPO OHNE PERSPEKTIVE, waehrend der Maler mit
+          Perspektive fliegt - aufgeschnitten, weil das Tempo sonst aus der Entfernung kommt, die
+          es selbst bestimmen soll.
+     UND SIE BRACHTE FAST NICHTS. Gemessen am 17.09.2026 gegen ein Rueckwaerts-Abschreiten der
+     GEBAUTEN Bahn (30 300 Faelle: sechs Arten x Wind 0/1 x Tempo 1/3 x mit und ohne Loop): gegen
+     den Traeger der Bahn war sie exakt (groesste Abweichung 3,6e-12 Bildpunkte), gegen die ganze
+     gemalte Bahn wichen 8,39 % der Faelle um mehr als eine Rasterzelle ab und 0,79 % um mehr als
+     fuenf, im schlimmsten Fall um 66,6 Zellen - das Taumeln in y sitzt bei Konfetti, Daunen und
+     Pusteblume INNERHALB des Modulo und verschiebt den Umbruch selbst. Was davon bei der
+     ENTFERNUNG ankam, war Rauschen: im Mittel 0,0002 bis 0,0045, weil die oberste Rasterzeile
+     fast immer gleichmaessig ist (Spanne in der Zeile ueber 325 Karten: Median 0,237; bei 120
+     Karten unter 0,05). Fuer diesen Ertrag stand die Zeit im Geburtsort.
+     WAS MIT IHR WEGFAELLT: der Griff in die Vergangenheit des Windstosses (der Stoss braucht
+     seine Zeit nicht mehr als Argument), lpV und BAHN_ART im Geburtsort, und der Rueckfall
+     "tritt nie ein". Uebrig bleibt eine Zeile in gebOrt. */
+  /* ---- DIE TABELLE DER BODENFLAECHE (Spezifikation Abschnitt 2 und 3, Fall 2) ----
+     "der ganze boden ist eine Flaeche in der Tiefenmap, auf der z.B. Regentropfen auftreffen
+     wuerden" (Caspar_D) - dieselbe Flaeche fuer zweierlei: sie faengt Fallendes auf, und sie
+     laesst Steigendes entstehen. BODENARTIG heisst: die Tiefe wird nach oben hin FERNER, eine
+     Differenz je Rasterzelle auf dem Raster von tiefeProben. Kein Schwellwert - das VORZEICHEN
+     der Differenz genuegt, und es ist dasselbe, was das Auge sieht (im Bestand ist bei 97,8 %
+     der Titel das unterste Zehntel naeher als das oberste).
+     Weil der Boden eine schraege Ebene ist, haengt die Entfernung eines steigenden Teilchens
+     davon ab, WO auf ihr es entsteht: unten am Rand nah, weiter oben fern. Ein Feuer in der
+     Naehe und ein Feuer in der Ferne - von selbst richtig, ohne Regel.
+     WENN ES KEINEN BODEN GIBT, WIRD ES GESAGT (Spezifikation, Risiko 2): nicht still nichts
+     zeichnen. Und das VORZEICHEN ALLEIN sagt es nicht - nachgemessen am 17.09.2026 an den vier
+     Karten, die die Spezifikation als trennungslos fuehrt: auch dort werden 1,4 bis 28,9 % der
+     Zellen nach oben hin ferner, mit Einzeldifferenzen bis 206 Graustufen. Eine solche Karte ist
+     Rauschen mit Ausreissern, keine Bodenebene. Massgeblich ist darum die SPANNE der Karte, nicht
+     ihr Median (Berichtigung in Abschnitt 9) und nicht das Gefaelle.
+     DIE SCHWELLE, und was sie wirklich trifft: die vier Karten der Spezifikation messen hier
+     0, 18, 44 und 54 von 255 - gerechnet mit der ROHEN Spanne (tp.spanne). Ein Zwischenstand
+     meldete fuer die erste 5, und das war die Klemme auf zhi (zlo+0,02 = 5,1 von 255), nicht die
+     Karte; sie hat Spanne 0, wie die Spezifikation sagt.
+     Die naechste Karte darueber hat 76. Zwischen 54 und 76 liegt keine, also entscheidet jede
+     Zahl in diesem Fenster dieselben vier Titel; 64 ist die Zahl, die die Spezifikation selbst
+     nennt ("Karten mit Spanne unter 64: 4"). Die fuenf Karten mit 76 bis 125 BLEIBEN also
+     drin - Caspar_D hat die zwoelf schmalsten angesehen und ihre unterste Zeile fuer trennend
+     befunden; Karten von 126 an hat er ausdruecklich genannt. */
+  const BODEN_SPANNE=64/255;
+  /* VORRAT MIT ENDE (Gegenlesen 17.09.2026). Je Eintrag zwei Int32Arrays ueber bis zu
+     tp.w*(tp.h-1) Zellen - auf dem groessten Raster des Bestands (160x375) sind das bis zu
+     468 KB, zwoelf Plaetze also hoechstens 5,5 MB (gemessen 17.09.2026). Im Schluessel stehen
+     Grenze, Schaerfe und Leerraum, und das sind STUFENLOSE Regler:
+     ein Zug am Leerraum legt einundzwanzig Tabellen an, einer an der Grenze einundfuenfzig, und
+     ohne Ende blieben sie alle liegen. Also derselbe Ring wie bei den Tiefenmasken - zwoelf
+     Plaetze, beim Quellenwechsel geleert, weil die Tabelle einer fremden Karte ohnehin nichts
+     taugt. Zwoelf, weil ein Rezept mehrere Bodenarten haben kann und jede Ansicht (Kachel,
+     Buehne, Ausgabe) dieselbe Karte fragt; ein zu kurzer Ring baute die Tabelle je Bild neu. */
+  const BODENZELLEN=[]; let BODENZELLEN_ID=null;
+  const BZ_PLAETZE=12;
+  function bodenZellen(tp,g,w,L,modus){
+    const q=tiefeQuelle(); if(!q||!tp) return null;
+    const k=g.toFixed(4)+'|'+w.toFixed(4)+'|'+L.toFixed(3)+'|'+(modus||'alles');
+    if(BODENZELLEN_ID!==q.k){ BODENZELLEN.length=0; BODENZELLEN_ID=q.k; }
+    { const da=BODENZELLEN.find(b=>b.k===k); if(da) return da.v; }
+    /* DIE SPANNE UNGEKLEMMT (Gegenlesen 17.09.2026). tp.zhi ist fuer tiefeBei auf mindestens
+       zlo+0,02 geklemmt; wer damit rechnet, meldet fuer die flachste Karte "Spanne 5 von 255" und
+       nennt damit die Klemme statt der Karte - sie hat Spanne 0. An der ENTSCHEIDUNG aendert die
+       rohe Zahl nichts (0 liegt so wenig ueber 64/255 wie 5), am Satz alles. */
+    const spanne=tp.spanne, xs=[], ys=[]; let boden=0, ohneRaum=0;
+    if(spanne>=BODEN_SPANNE) for(let y=1;y<tp.h;y++) for(let x=0;x<tp.w;x++){
+      if(!(tp.z[y*tp.w+x]>tp.z[(y-1)*tp.w+x])) continue;   /* nach oben hin ferner - sonst kein Boden */
+      boden++;
+      const fb=freiBereich(tp,x/tp.w,y/tp.h,g,w,L,modus);
+      if(fb.leer){ ohneRaum++; continue; }                 /* Boden ja, aber kein freier Raum darueber */
+      xs.push(x); ys.push(y); }
+    const grund = xs.length ? null
+      : (spanne<BODEN_SPANNE
+        ? 'Diese Tiefenkarte trennt nichts (Spanne '+Math.round(spanne*255)+' von 255) — auf ihr gibt es keine Bodenfläche, aus der etwas aufsteigen könnte.'
+        : (ohneRaum
+          ? 'Diese Karte hat eine Bodenfläche ('+ohneRaum+' Rasterzellen), aber über keiner ihrer Zellen liegt der gewählte Aufenthaltsbereich — dort ist kein Platz für ein Teilchen.'
+          : 'Auf dieser Karte wird kein Punkt nach oben hin ferner — sie hat keine bodenartige Fläche.'));
+    const v={ n:xs.length, x:new Int32Array(xs), y:new Int32Array(ys),
+      spanne, boden, ohneRaum, grund, punkte:tp.w*(tp.h-1) };
+    BODENZELLEN.unshift({k,v}); if(BODENZELLEN.length>BZ_PLAETZE) BODENZELLEN.length=BZ_PLAETZE;
+    return v; }
+  /* ---- WAS DIE ZEILE "RAUMTIEFE" UEBER DIESE KARTE SAGEN DARF (Gegenlesen 17.09.2026) ----
+     Der Satz unter dem Regler nannte feste Zahlen ("das fernste 0,4-fach gross"), und die waren
+     allein aus dem Leerraum gerechnet: die Beschneidung durch den AUFENTHALT ging er uebergangen.
+     Bei Aufenthalt Vordergrund beginnt der freie Bereich erst an der Grenze, dort ist nichts
+     kleiner als 1,0-fach - die Zahl kam nicht vor. Also wird die Spanne GERECHNET, und zwar an
+     den Stellen, an denen diese Herkunft wirklich Teilchen zur Welt bringt:
+       rand    die eine Randzeile, aus der die Art hereinkommt (oben beim Fallen, unten beim Steigen)
+       boden   die Zellen der Bodentabelle
+       da      alle Rasterpunkte - diese Arten sind ueberall
+       quelle  der FUSSABDRUCK der gesetzten Quelle auf dem Raster - Punkt, Strich, Kreis oder
+               Ellipse, aus denselben Feldern wie quellPunkt, um eine Rasterzelle geweitet.
+     WARUM EIN ABDRUCK UND KEINE STICHPROBE (Gegenlesen des eigenen Nachweises, 17.09.2026): hier
+     standen erst 256 Wuerfe auf die Quelle. Der Maler wuerfelt bis zu einigen Tausend, also nennt
+     eine Stichprobe eine ENGERE Spanne als die, die vorkommt - gemessen ueber 864 Faelle (zwoelf
+     Titel x sechs Arten x vier Quellformen x drei Aufenthalte) mit je 4 000 Teilchen: in 36 von
+     864 Faellen war sie zu eng, 186 von 3 456 000 Entfernungen lagen ausserhalb, im schlimmsten
+     Fall um 0,025. Klein, aber es waere eine Zahl, die nicht haelt. Der Abdruck ist dagegen ein
+     OBERSATZ der Geburtsorte - nachgemessen mit derselben Anordnung: 0 von 1 728 000 Entfernungen
+     ausserhalb. Weil er ein Obersatz ist und nicht die Menge selbst, nennt die Zeile GRENZEN
+     ("nicht kleiner als", "bis zu") und keine Punktwerte. Das Raster entscheidet auf 160 Punkte
+     Breite; die eine Zelle Rand deckt ab, dass der Maler in Leinwandgroesse rundet.
+     Die Zellen selbst sind Indizes j = x + y*tp.w. */
+  function gebOrte(tp,herk,runter,bz,e){
+    const o=[];
+    if(herk==='rand'){ const y=runter?0:tp.h-1; for(let x=0;x<tp.w;x++) o.push(x+y*tp.w); }
+    else if(herk==='boden'){ if(bz) for(let k=0;k<bz.n;k++) o.push(bz.x[k]+bz.y[k]*tp.w); }
+    else if(herk==='quelle'){
+      /* Dieselben Felder und dieselbe Drehung wie quellPunkt, nur rueckwaerts gelesen: ein Punkt
+         gehoert dazu, wenn er im Strich, im Kreis oder in der Ellipse liegt. Gerechnet auf dem
+         Tiefenraster - sein Seitenverhaeltnis folgt der Karte und weicht von dem der Leinwand um
+         hoechstens eine Zelle ab, und die ist im Rand schon drin. */
+      const O=(e.qUrsprung==='aussen')
+        ? (()=>{ const a=(e.qWinkel==null?0.62:e.qWinkel)*2*Math.PI; return [tp.w*(0.5+0.8*Math.cos(a)), tp.h*(0.5+0.8*Math.sin(a))]; })()
+        : [tp.w*(e.qX==null?0.5:e.qX), tp.h*(e.qY==null?0.5:e.qY)];
+      const f=e.qForm||'bild', ax=(e.qAus==null?0.3:e.qAus), ay=(e.qAusY==null?0.2:e.qAusY);
+      const d=(e.qDreh||0)*Math.PI/180, co=Math.cos(d), si=Math.sin(d);
+      const AU=((f==='linie'||f==='kreis'||f==='ellipse')?ax*tp.w*0.5:0)+1;
+      const AV=((f==='kreis')?ax*tp.w*0.5:(f==='ellipse')?ay*tp.h*0.5:0)+1;
+      for(let y=0;y<tp.h;y++) for(let x=0;x<tp.w;x++){
+        const dx=x-O[0], dy=y-O[1], u=dx*co+dy*si, v=-dx*si+dy*co;
+        const drin=(f==='linie') ? (Math.abs(u)<=AU&&Math.abs(v)<=AV)
+          : (f==='kreis'||f==='ellipse') ? ((u*u)/(AU*AU)+(v*v)/(AV*AV)<=1)
+          : (Math.abs(u)<=AU&&Math.abs(v)<=AV);
+        if(drin) o.push(x+y*tp.w); }
+      /* Eine Quelle ausserhalb des Bildes (Ursprung "von aussen") trifft keine Zelle. Der Maler
+         klemmt dann in tiefeNahAn auf den Rand - also tut es dieser Abdruck auch. */
+      if(!o.length) o.push(Math.max(0,Math.min(tp.w-1,Math.round(O[0])))+Math.max(0,Math.min(tp.h-1,Math.round(O[1])))*tp.w); }
+    else for(let j=0;j<tp.w*tp.h;j++) o.push(j);
+    return o; }
+  const RAUMSPANNEN=[]; let RAUMSPANNEN_ID=null;
+  function raumSpanne(e,tp,g,w,L,modus,herk,runter,bz){
+    const q=tiefeQuelle(); if(!q||!tp) return null;
+    const k=[herk,runter?'ab':'auf',modus||'alles',g.toFixed(4),w.toFixed(4),L.toFixed(3),
+      herk==='quelle'?[e.qForm,e.qUrsprung,e.qWinkel,e.qX,e.qY,e.qAus,e.qAusY,e.qDreh,e.id].join(','):''].join('|');
+    if(RAUMSPANNEN_ID!==q.k){ RAUMSPANNEN.length=0; RAUMSPANNEN_ID=q.k; }
+    { const da=RAUMSPANNEN.find(r=>r.k===k); if(da) return da.v; }
+    const orte=gebOrte(tp,herk,runter,bz,e);
+    let mn=Infinity, mx=-Infinity, leer=0;
+    for(const j of orte){ const fb=freiBereich(tp,(j%tp.w)/tp.w,Math.floor(j/tp.w)/tp.h,g,w,L,modus);
+      const lo=fb.lo, hi=fb.leer?fb.lo:fb.hi;              /* leer heisst: das Teilchen bleibt auf der Flaeche */
+      if(fb.leer) leer++;
+      if(lo<mn) mn=lo; if(hi>mx) mx=hi; }
+    const v=orte.length?{ n:orte.length, min:mn, max:mx, leer, leerAnteil:leer/orte.length }:null;
+    RAUMSPANNEN.unshift({k,v}); if(RAUMSPANNEN.length>12) RAUMSPANNEN.length=12;
+    return v; }
   /* WIE GROSS IST DIE ERLAUBTE ZONE - UND WIE VIEL NIMMT DIE MASKE WIRKLICH WEG?
      Beides wird GERECHNET, nicht behauptet (Gegenlesen 16.09.2026). Die Karte sagte bisher, die
      Maske schneide die verbotene Zone „ohnehin aus"; auf „Okkultation" (Median 19, Band +-48)

@@ -59,10 +59,33 @@ window.__naht = (() => {
   /* Karten ueber den echten Rezept-Import, damit Vorgaben und Uebersetzungen stimmen. Die Nummern beginnen
      je Fall bei 1: viele Maler saeen ihren Zufall mit e.id, sonst misst jeder Lauf andere Wuerfel.
      Eine Partikel-Art bringt Farben, Masse und Eigenbewegung mit (artFarben) - wie beim Umstellen im Pult. */
-  function effekteBauen(defs){ nr = 0;
+  /* DIE FASSUNG IST EINE EIGENSCHAFT DES FALLES, KEINE 99 (Gegenlesen 17.09.2026). Hier stand
+     effektAusRezept(r, false, 99) - eine Fassung, die es nicht gibt, und sie schaltete damit jede
+     Uebersetzung ab, die auf eine Fassungsgrenze prueft. Konkret: zoneUebersetzen() gibt einem
+     Partikel-Effekt mit Aufenthalt vorn/hinten aus einem Rezept der Fassung 3 den Wert
+     tiefeVerdeckung='zone' (die Zone wird WEICH ausgeschnitten, ohne Betretungsverbot). Mit 99
+     bekam derselbe Effekt im Pruefstand das HARTE Betretungsverbot - der Pruefstand malte etwas
+     anderes als die App, und gerade bei den Faellen, um die es geht. Ein Werkzeug, das nicht das
+     prueft, was laeuft, ist schlimmer als keines.
+     Ab heute traegt der FALL seine Fassung (f.fassung), wie die Rezeptdatei sie traegt; fehlt sie,
+     gilt die Fassung, in der das Haus gerade SCHREIBT - von Hand geschriebene Faelle meinen die
+     heutige Bedeutung ihrer Felder. Die Zahl wird aus presetJSON() gelesen und nicht abgeschrieben,
+     sonst driftet sie beim naechsten Heben der Fassung wieder auseinander. `alt` leitet sich daraus
+     ab wie im Haus (presetLesen: alt = !(fassung >= 2)), statt fest false zu sein.
+     Ein Fall, der das ALTE Verhalten pruefen will, schreibt `"fassung": 3` dazu. */
+  let FASSUNG_HAUS = null;
+  function fassungHaus(){
+    if(FASSUNG_HAUS == null){
+      const f = JSON.parse(presetJSON()).fassung | 0;
+      if(!(f > 0)) throw new Error('Fassung des Hauses nicht lesbar - der Pruefstand darf sie nicht raten');
+      FASSUNG_HAUS = f; }
+    return FASSUNG_HAUS; }
+  function effekteBauen(defs, fall){ nr = 0;
+    const fassung = (fall && fall.fassung != null) ? (fall.fassung | 0) : fassungHaus();
+    const alt = (fall && fall.alt != null) ? !!fall.alt : !(fassung >= 2);
     return defs.map(r => { let e;
-      if(r.typ==='partikel' && r.art && r.art!=='schnee'){ e = effektAusRezept(Object.assign({}, r, { art:'schnee' }), false, 99); e.art = r.art; artFarben(e); for(const k of Object.keys(r)) if(k!=='typ') e[k] = Array.isArray(r[k]) ? r[k].slice() : r[k]; }
-      else e = effektAusRezept(Object.assign({}, r), false, 99);
+      if(r.typ==='partikel' && r.art && r.art!=='schnee'){ e = effektAusRezept(Object.assign({}, r, { art:'schnee' }), alt, fassung); e.art = r.art; artFarben(e); for(const k of Object.keys(r)) if(k!=='typ') e[k] = Array.isArray(r[k]) ? r[k].slice() : r[k]; }
+      else e = effektAusRezept(Object.assign({}, r), alt, fassung);
       if(!e) throw new Error('Rezept baut keinen Effekt: '+JSON.stringify(r));
       return e; }); }
   function vergleicher(W, H, lang, guete){
@@ -84,7 +107,7 @@ window.__naht = (() => {
   /* Ein Vorschaubild (LOOP=0, echte Schlaege) in Exportgroesse. Frisch gebaute Karten, gesaeter Zufall;
      der Nachzieheffekt bekommt anderthalb Sekunden Anlauf, sonst fehlte ihm die Spur, die er im Pult haette. */
   function vorschauBild(f, lage, W, H, tv){
-    STAPEL = effekteBauen(f.effekte); soloId = null;
+    STAPEL = effekteBauen(f.effekte, f); soloId = null;
     const gm = bundel(), mv = exportBuendel(gm, lage, W, H); mv.DATA = Object.assign({}, DATA);
     LOOP = 0; FEIN = false; saat = 777;
     const anlauf = STAPEL.some(e => e.typ==='nachzieh') ? 45 : 0;
@@ -147,7 +170,7 @@ window.__naht = (() => {
     datenSetzen(f.daten || 'normal');
     Math.random = zufall;
     try{
-        STAPEL = effekteBauen(f.effekte); soloId = null;
+        STAPEL = effekteBauen(f.effekte, f); soloId = null;
       const lage = ausschnitt(), { t0, L, N } = lage; const [W, H] = ausgabeMass(lange);
       const gemerkt = bundel(), m = exportBuendel(gemerkt, lage, W, H);
       const S = m.DATA.schlaege, proTakt = lage.proTakt;
@@ -209,7 +232,7 @@ window.__naht = (() => {
       /* RECHENZEIT je Bild: im Export (Exportgroesse, LOOP=L) und in der Vorschau (Pultgroesse, LOOP=0) - Regel 14, die
          Vorschau muss live fluessig bleiben. ein Bildpunkt wird zurueckgelesen, damit die Zeit des Shaders mitzaehlt - gl.finish() wartet in Chrome nicht. */
       erg.msExport = r2(malMs / (N+K)); if(glZahl) erg.msGLExport = r2(glMs / glZahl);
-      if(shader){ const Wv = lein.width, Hv = lein.height; STAPEL = effekteBauen(f.effekte); const gm = bundel(), mv = exportBuendel(gm, lage, Wv, Hv); LOOP = 0; FEIN = false;
+      if(shader){ const Wv = lein.width, Hv = lein.height; STAPEL = effekteBauen(f.effekte, f); const gm = bundel(), mv = exportBuendel(gm, lage, Wv, Hv); LOOP = 0; FEIN = false;
         for(let k=0; k<3; k++) exportBild(mv, gm, t0 + k/BILDRATE, Wv, Hv);
         glMs = 0; glZahl = 0; const tv = performance.now(); for(let k=0; k<30; k++){ exportBild(mv, gm, t0 + k/BILDRATE, Wv, Hv); warteGL(); }
         erg.msVorschau = r2((performance.now() - tv) / 30); if(glZahl) erg.msGLVorschau = r2(glMs / glZahl); erg.vorschauMass = [Wv, Hv]; }
@@ -237,7 +260,7 @@ window.__naht = (() => {
   /* Ein Augenblick wie im Pult: LOOP=0, echte Schlaege, frische Karten, gesaeter Zufall, eigene Leinwaende in W x H.
      Anders als vorschauBild ohne Hauszeichen - das Pult malt keins, und es skaliert ohnehin mit der Bildgroesse. */
   function augenblick(f, lage, W, H, tv, s){
-    STAPEL = effekteBauen(f.effekte); soloId = null;
+    STAPEL = effekteBauen(f.effekte, f); soloId = null;
     const gm = bundel(), mv = exportBuendel(gm, lage, W, H); mv.DATA = Object.assign({}, DATA);
     LOOP = 0; FEIN = false; saat = s;
     const anlauf = STAPEL.some(e => e.typ==='nachzieh') ? 45 : 0;
@@ -256,7 +279,7 @@ window.__naht = (() => {
   const abwKlein = (a, b) => { if(!a || !b || a.w!==b.w || a.h!==b.h) return null; const x = atob(a.b64), y = atob(b.b64); let t = 0, mx = 0;
     for(let i=0; i<x.length; i+=3){ const v = (Math.abs(x.charCodeAt(i)-y.charCodeAt(i)) + Math.abs(x.charCodeAt(i+1)-y.charCodeAt(i+1)) + Math.abs(x.charCodeAt(i+2)-y.charCodeAt(i+2)))/3; t += v; if(v>mx) mx = v; } return { mittel:t/(x.length/3), max:mx }; };
   const r3 = x => x==null ? null : Math.round(x*1000)/1000;
-  function vorbereiten(f){ if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt }; datenSetzen(f.daten || 'normal'); Math.random = zufall; STAPEL = effekteBauen(f.effekte); soloId = null; return ausschnitt(); }
+  function vorbereiten(f){ if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt }; datenSetzen(f.daten || 'normal'); Math.random = zufall; STAPEL = effekteBauen(f.effekte, f); soloId = null; return ausschnitt(); }
   function aufraeumenMass(){ Math.random = zufallEcht; datenSetzen('normal'); STAPEL = []; LOOP = 0; FEIN = false; }
 
   /* STUDIO IN VORGABEGROESSE: o.feld = [FW, FH] aus studiofeld.json; das Bild eingepasst wie groesse() es tut. Zweimal
@@ -312,7 +335,7 @@ window.__naht = (() => {
     o = o || {}; const beginn = performance.now(), jetzt = window.audio.currentTime;
     try{
       const lageExport = vorbereiten(f), L = lageExport.N/BILDRATE, N = lageExport.N, t0 = lageExport.t0;
-      const jetztFall = window.audio.currentTime, malAus = async () => { STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777; zeichneFrame(zeit()); warteGL(); return sha(pixel(lein).slice()); };
+      const jetztFall = window.audio.currentTime, malAus = async () => { STAPEL = effekteBauen(f.effekte, f); soloId = null; saat = 777; zeichneFrame(zeit()); warteGL(); return sha(pixel(lein).slice()); };
       /* Vorher, ohne Ansicht: zweimal das Pultbild zu jetzt + 2,3 s. Das erste Bild nach einem Kartenwechsel erbt Zeichenzustand der
          Pultleinwaende vom vorigen Fall (frisch() setzt nur Transform, Alpha und Verrechnung) - Vergleichsmass ist darum das zweite. */
       window.audio = { paused:false, currentTime:jetztFall + 2.3 }; const va = await malAus(), vb = await malAus(); window.audio = { paused:false, currentTime:jetztFall };
@@ -325,17 +348,17 @@ window.__naht = (() => {
       const W = lein.width, H = lein.height; let dicht = true;
       for(const s of zeiten){
         const iErw = Math.round((((s % L) + L) % L)*BILDRATE) % N;
-        STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777; loopSicht.m = null; loopSicht.i = -1; window.audio = { paused:false, currentTime:s };
+        STAPEL = effekteBauen(f.effekte, f); soloId = null; saat = 777; loopSicht.m = null; loopSicht.i = -1; window.audio = { paused:false, currentTime:s };
         let i = -1, runden = 0; do { i = loopBildMalen(zeit()); runden++; dicht = dicht && LOOP===0 && FEIN===false; } while(loopSicht.i!==i && runden<300);
         warteGL(); const a = pixel(lein).slice(), ha = await sha(a);
-        STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777;
+        STAPEL = effekteBauen(f.effekte, f); soloId = null; saat = 777;
         const gm = bundel(), m = exportBuendel(gm, lageExport, W, H); LOOP = L; FEIN = true;
         try{ exportBild(m, gm, t0 + iErw/BILDRATE, W, H); } finally { LOOP = 0; FEIN = false; }
         warteGL(); const b = pixel(m.lein), hb = await sha(b);
         const z = { s:r3(s), i, iErw, runden, bitgleich:ha===hb && i===iErw }; if(ha!==hb){ const e = abw(a, b, W, H); z.abw = { mittel:r3(e.mittel), max:r3(e.max), block:r3(e.block) }; }
         z.bild = a; erg.messung.push(z); await warte(0); }
       if(o.folge !== false){
-        STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777;
+        STAPEL = effekteBauen(f.effekte, f); soloId = null; saat = 777;
         const gm = bundel(), m = exportBuendel(gm, lageExport, W, H), bis = Math.max(...erg.messung.map(z => z.iErw));
         LOOP = L; FEIN = true;
         try{ await vorlaufen(m, gm);
@@ -348,7 +371,7 @@ window.__naht = (() => {
       loopSchalten(false);
       /* Umschalter aus: rahmen() gegen zeichneFrame() */
       window.audio = { paused:false, currentTime:jetztFall + 2.3 };
-      STAPEL = effekteBauen(f.effekte); soloId = null; saat = 777; rahmen(); cancelAnimationFrame(rafId); rafId = 0; warteGL(); const ra = await sha(pixel(lein).slice());
+      STAPEL = effekteBauen(f.effekte, f); soloId = null; saat = 777; rahmen(); cancelAnimationFrame(rafId); rafId = 0; warteGL(); const ra = await sha(pixel(lein).slice());
       const rb = await malAus();
       Object.assign(erg, { bitgleich:erg.messung.every(z => z.bitgleich), bitgleichZahl:erg.messung.filter(z => z.bitgleich).length, zahl:erg.messung.length,
         folgeBlockMax:erg.messung.some(z => z.folge) ? r3(Math.max(...erg.messung.filter(z => z.folge).map(z => z.folge.block))) : null,
