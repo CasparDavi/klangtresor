@@ -225,6 +225,15 @@ const buchLesen = () => {
    rechnen als ein Archiv leeren. Nebendatei mit der Prozessnummer, damit zwei Laeufe sich nicht
    dieselbe wegziehen; rename ist auf einer Datei atomar. */
 const MEINE = {};
+/* Beim Modellwechsel gilt das ganze alte Kartenwerk nicht mehr - dann wird beim Schreiben NICHT
+   aufgelegt, sondern ersetzt. Ohne diese Marke war der Modellwechsel seit dem Auflegen TOT: er
+   leerte nur den Speicherstand, und buchSchreiben las gleich darauf die alten Eintraege wieder ein.
+   Gemessen an einem Buch mit fremdem Ausweis: gemeldet wurde "alle Karten werden neu gerechnet",
+   stehen blieben 326 alte Karten - unter dem NEUEN Ausweis, also Karten eines anderen Netzes mit
+   der Identitaet dieses Netzes. Das ist die Falschaussage, gegen die das Buch ueberhaupt da ist.
+   Was NICHT geleert wird: alles ausser `karten`. Ein Modellwechsel der Standbilder sagt nichts
+   ueber die Spuren der Bewegtbilder. */
+let KARTEN_ERSETZEN = false;
 const buchSchreiben = () => {
   let jetzt;
   if (!fs.existsSync(BUCH)) jetzt = { ausweis: AUSWEIS, karten: {} };
@@ -242,6 +251,7 @@ const buchSchreiben = () => {
     process.exit(2);
   }
   if (!jetzt.karten || typeof jetzt.karten !== 'object' || Array.isArray(jetzt.karten)) jetzt.karten = {};
+  if (KARTEN_ERSETZEN) jetzt.karten = {};
   jetzt.ausweis = AUSWEIS;
   for (const k of Object.keys(MEINE)) jetzt.karten[k] = MEINE[k];
   const neben = `${BUCH}.neu-${process.pid}`;
@@ -303,6 +313,7 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
     console.log(`    vorher: ${buch.ausweis && buch.ausweis.modell} ${buch.ausweis && buch.ausweis.fassung}`);
     console.log(`    jetzt:  ${AUSWEIS.modell} ${AUSWEIS.fassung}\n`);
     buch.karten = {};
+    KARTEN_ERSETZEN = true;   /* sonst legt buchSchreiben die alten Eintraege gleich wieder auf */
   }
   buch.ausweis = AUSWEIS;
 
