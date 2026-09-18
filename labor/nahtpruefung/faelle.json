@@ -2751,6 +2751,156 @@
    ],
    "gruppe": "taktlage",
    "bemerkung": "Eins-Leser, phiF ueber drei Schlaege, schwacher Sitzanteil"
+  },
+  {
+   "name": "kenburns",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Lauf Hineinfahren, Ausschnitt 0,80, Parallaxe 1,5 % (Vorgaben)"
+  },
+  {
+   "name": "kb-aufdecken",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbLauf": "aufdecken"
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Lauf aufdecken, sonst Vorgaben"
+  },
+  {
+   "name": "kb-zwei",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbLauf": "zwei"
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Lauf zwei, sonst Vorgaben"
+  },
+  {
+   "name": "kb-streifen",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbLauf": "streifen"
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Lauf streifen, sonst Vorgaben"
+  },
+  {
+   "name": "kb-wanderung",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbLauf": "wanderung"
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Lauf wanderung, sonst Vorgaben"
+  },
+  {
+   "name": "kb-abrastern",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbLauf": "abrastern"
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Lauf abrastern, sonst Vorgaben"
+  },
+  {
+   "name": "kb-parallaxe-aus",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbParallaxe": 0
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Regler auf null: der Ausschnitt kommt wie vor dem 18.09. aus drawImage"
+  },
+  {
+   "name": "kb-parallaxe-voll",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbParallaxe": 2.6
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Parallaxe am Anschlag"
+  },
+  {
+   "name": "kb-vorb",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbParallaxe": 0
+    }
+   ],
+   "gruppe": "kenburns",
+   "vorb": {
+    "belichtung": 0.3,
+    "kontrast": 0.25
+   },
+   "bemerkung": "Vorbereitung ohne Parallaxe - die Gegenprobe zum naechsten Fall"
+  },
+  {
+   "name": "kb-parallaxe-vorb",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbParallaxe": 2.6
+    }
+   ],
+   "gruppe": "kenburns",
+   "vorb": {
+    "belichtung": 0.3,
+    "kontrast": 0.25
+   },
+   "bemerkung": "Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 trug"
+  },
+  {
+   "name": "kb-wanderung-b",
+   "typ": "kenburns",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbLauf": "wanderung"
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "offener Lauf auf dem Titel mit anderer Taktzahl"
   }
  ],
  "nichtHerstellbar": []

@@ -4586,3 +4586,71 @@ plötzlich merken, hoppla, so geht es ja gar nicht."* Daraus die neue Regel, die
 - Ob ein Lauf im Clip **nicht** geschlossen sein soll (dann springt die Naht).
 - **Video Depth Anything** (CVPR 2025, Small ist Apache-2.0, 28 statt 335 Mio Gewichte) würde das
   Zittern *und* die Rechenzeit lösen — braucht einen Download und einen ONNX-Export.
+
+---
+
+## Ken Burns, Schritt 4: die Parallaxe (18.09.2026)
+
+Gebaut, gemessen, eingesetzt. Der einzige Teil der Fahrt, den Ken Burns auf seinem Rostrum-Tisch
+mit einem Abzug nicht haben konnte. Die ganze Sache steht in
+`docs/effektclip/KONZEPT-KEN-BURNS-FAHRT.md` Abschnitt 8; hier nur, was der Nächste wissen muss.
+
+### Die drei Entscheidungen, die den Bau bestimmt haben
+
+1. **Keine Schichten, ein Marsch.** Über 325 Tiefenkarten gemessen: bei vier Schichten und 3 %
+   Stärke sind **98 % der aufreißenden Grenzen erfunden** — die Karte hat dort keine Stufe, die
+   Schichtung schneidet Höhenlinien in glatte Flächen. Und die Lochfläche fällt nicht mit mehr
+   Schichten, sie **steigt** (1,84 % → 2,92 %). Vier Schichten sind für die Teilchen richtig und
+   für ein Bild falsch: Teilchen *sind* Punkte in Entfernungen, ein Bild ist eine Fläche.
+2. **Die Verschiebung ist strahlig.** Der Kameraweg an einer Stelle ist genau das, was der
+   Ausschnitt dort schon verschiebt. Daraus folgt: eindimensionale Rückwärtssuche, und bei w = 0 ist
+   der Weg null — **die Naht ist bitgleich, ohne dass etwas dafür getan werden musste.**
+3. **Die Grenze ist gerechnet.** `KB_PX_GRENZE` aus `LÜCKE = s_px·d − 1` und dem größten Nähesprung
+   je Bildpunkt (Median 0,3788 über 325 Karten; unabhängig nachgemessen 0,3804 und 0,396). Regler
+   endet bei **2,6 %**, Vorgabe **1,5 %**, Kosten 0,087 ms je Bild — ein Tiefenband.
+
+### Der Fehler, und wer ihn gefangen hat
+
+Die Parallaxe ersetzt das `drawImage`, mit dem der Ausschnitt sonst auf die Leinwand kommt. Die
+**Vorbereitung** schnitt danach weiter mit den Quellkoordinaten aus und zoomte ein zweites Mal in
+ein fertiges Bild — mittlere Abweichung **56,4 von 255**, größte 255.
+
+Gefunden hat ihn nicht der Augenschein, sondern das Nachtragen der Prüffälle. Zwei Lücken im
+Prüfstand, beide seit dem 18.09.2026 geschlossen:
+
+- **Die Ken Burns Fahrt stand in keinem einzigen Fall.** `kenburns` fehlte in `TYPEN`, es gab keine
+  Gruppe. Jetzt: `kenburns` in der Pflichtliste plus Gruppe `kenburns` mit den fünf übrigen Läufen,
+  drei Reglerstellungen und dem Titel b. Ergebnis `labor/nahtpruefung/ergebnis-kenburns.json`,
+  **`gleich = 0,00` bei allen elf**.
+- **Es stand nie eine Vorbereitung in einem Fall.** Der Prüfstand kennt jetzt `vorb` je Fall
+  (`haken.js`, geht durch `vorbAus()` wie ein gespeichertes Rezept). `kb-parallaxe-vorb` ist der
+  Fall, der den Fehler trug.
+
+Gegenprobe gegen die alte Zeile in einem Sandkastenbaum: von fünf Fällen ist **genau der eine**
+verändert, die anderen vier bitgleich.
+
+### ACHTUNG: `faelle-bauen.js` ist faelle.json NICHT mehr gleich
+
+`labor/nahtpruefung/faelle.json` ist von Hand gewachsen und dem Erzeuger **voraus**: es trägt die
+Titel d und e, die Gruppe `taktlage` (15.09.) und die Gruppe `kenburns` (18.09.). Ein Lauf von
+`faelle-bauen.js` würfe sie weg — 181 Fälle dort gegen 188 hier. Der Erzeuger bleibt als Herkunft
+der Titelwahl und der Pflichtliste `TYPEN` stehen; neue Fälle kommen **von Hand** in `faelle.json`,
+und derselbe Eintrag daneben in `faelle-bauen.js`, damit beide dasselbe sagen. Steht auch im Kopf
+der Datei.
+
+### Was Caspar_D noch ansehen muss
+
+- **Die Schrift.** Suno schreibt den Titel auf viele Cover, und die Tiefenkarte hält aufgedruckte
+  Schrift für ein **nahes Objekt**. Auf Blatt „Bewegung" ist das beim **mittelsten Titel des
+  Bestands** zu sehen, nicht bei einem Ausreißer. Bei 1,5 % fällt es nicht auf, bei 2,6 % wandern
+  die Zeilen. Auswege: Regler tiefer, oder Parallaxe an geraden langen kontrastreichen Kanten
+  dämpfen. Bewusst ist der einfache Weg gebaut.
+- **Ob es sich als Kamera liest.** Im stehenden Vergleich sieht man bei der Vorgabe nichts; in der
+  Bewegung schon. Das gehört dem Auge.
+
+### Was die Parallaxe nicht mitnimmt
+
+Sie verschiebt das Bild; die Tiefenkarte für Masken, Teilchenbänder und Geburtsort fährt weiter nur
+mit der Geometrie. Restversatz höchstens 13,5 (Vorgabe) bzw. 23,3 Bildpunkte (voll) — zum
+Vergleich: der am 18.09. ausgeräumte Fehler „die Karte fuhr nicht mit" war bis 364 groß. Steht als
+Kommentar im Code, nicht als Versehen.

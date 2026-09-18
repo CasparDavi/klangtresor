@@ -279,8 +279,13 @@ window.__naht = (() => {
   const abwKlein = (a, b) => { if(!a || !b || a.w!==b.w || a.h!==b.h) return null; const x = atob(a.b64), y = atob(b.b64); let t = 0, mx = 0;
     for(let i=0; i<x.length; i+=3){ const v = (Math.abs(x.charCodeAt(i)-y.charCodeAt(i)) + Math.abs(x.charCodeAt(i+1)-y.charCodeAt(i+1)) + Math.abs(x.charCodeAt(i+2)-y.charCodeAt(i+2)))/3; t += v; if(v>mx) mx = v; } return { mittel:t/(x.length/3), max:mx }; };
   const r3 = x => x==null ? null : Math.round(x*1000)/1000;
-  function vorbereiten(f){ if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt }; datenSetzen(f.daten || 'normal'); Math.random = zufall; STAPEL = effekteBauen(f.effekte, f); soloId = null; return ausschnitt(); }
-  function aufraeumenMass(){ Math.random = zufallEcht; datenSetzen('normal'); STAPEL = []; LOOP = 0; FEIN = false; }
+  /* DIE VORBEREITUNG GEHOERT ZUM FALL (18.09.2026). Sie stand bis heute nie in einem Fall - und genau
+     darum blieb die Zeile unbemerkt, die den Ausschnitt ein zweites Mal ausschnitt, sobald Vorbereitung
+     UND Parallaxe zusammenkamen. `vorb` im Fall geht durch vorbAus() wie ein gespeichertes Rezept; das
+     _id bleibt stehen, sonst waechst der kurvenraum um ein <filter> je Fall. */
+  function vorbSetzen(r){ const vi = VORB._id; VORB = vorbAus(r || null); VORB._id = vi; }
+  function vorbereiten(f){ if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt }; datenSetzen(f.daten || 'normal'); Math.random = zufall; vorbSetzen(f.vorb); STAPEL = effekteBauen(f.effekte, f); soloId = null; return ausschnitt(); }
+  function aufraeumenMass(){ Math.random = zufallEcht; datenSetzen('normal'); vorbSetzen(null); STAPEL = []; LOOP = 0; FEIN = false; }
 
   /* STUDIO IN VORGABEGROESSE: o.feld = [FW, FH] aus studiofeld.json; das Bild eingepasst wie groesse() es tut. Zweimal
      hintereinander gemalt: gleiche Hashes heissen deterministisch. Sonst steht statt des Hashes das Eigenrauschen. */

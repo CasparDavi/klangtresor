@@ -4,6 +4,11 @@
  * Die Rechnung von Takt, Takten und Schlaegen je Takt ist die von ausschnitt()/raster() im Studio.
  *   node labor/nahtpruefung/faelle-bauen.js
  * Wer faelle.json von Hand ergaenzt, ruft das hier nicht mehr auf.
+ * UND GENAU DAS IST PASSIERT: faelle.json ist diesem Skript VORAUS. Es traegt die Titel d und e und
+ * die Gruppe `taktlage` (15.09.2026) sowie die Gruppe `kenburns` (18.09.2026); ein Lauf dieses Skripts
+ * wuerfe sie weg. Nachgerechnet am 18.09.2026: 181 Faelle hier gegen 188 dort. Das Skript bleibt als
+ * Herkunft der Titelwahl und der Pflichtliste TYPEN stehen - neue Faelle kommen von Hand in faelle.json,
+ * und derselbe Eintrag hier daneben, damit beide dasselbe sagen.
  */
 const fs = require('fs');
 const path = require('path');
@@ -41,9 +46,23 @@ const F = [];
 const fall = (name, effekte, mehr) => F.push(Object.assign({ name, typ: effekte[0].typ, titel: 'a', effekte }, mehr || {}));
 /* PFLICHT: jeder Typ der Registry mit Vorgaben. Die Liste ist hier fest; naht.mjs prueft gegen EFFEKTE im
    Browser, ob ein Typ fehlt. */
-const TYPEN = ['fahrt', 'puls', 'schaerfe', 'kontrast', 'helligkeit', 'saettigung', 'farbe', 'licht', 'schatten', 'laser', 'streifen', 'rauschen', 'vlauf', 'wackeln', 'rgb', 'strobe', 'sicherung', 'streiflicht', 'filmnebel', 'partikel', 'scanlines', 'bloom', 'nachzieh', 'feuer', 'wellen', 'kaustik', 'linse', 'flammen', 'strahlen', 'spiegel', 'risse', 'beschlag', 'einschlag', 'tropfen', 'korn', 'bloecke', 'farbton', 'kippen'];
-const VORGABE_HINWEIS = { licht: 'rmBewegung wandernd (Vorgabe)', schatten: 'rmBewegung wandernd (Vorgabe)', laser: 'Ursprung wandern, Bauart gitter (Vorgabe)', partikel: 'Art schnee, ohne Quelle (Vorgabe)', streiflicht: 'allein ohne Leuchte: schaltet sich ab', filmnebel: 'allein ohne Leuchte, Schwaden .45', risse: 'wachsen zeit (Vorgabe)', einschlag: 'bleiben 8 (Vorgabe)', bloecke: 'im Takt (Vorgabe)', wackeln: 'Kick im Takt (Vorgabe), 4/4', strobe: 'hz 8, rechteck (Vorgabe)', streifen: 'ton hell (Vorgabe)' };
+const TYPEN = ['fahrt', 'puls', 'schaerfe', 'kontrast', 'helligkeit', 'saettigung', 'farbe', 'licht', 'schatten', 'laser', 'streifen', 'rauschen', 'vlauf', 'wackeln', 'rgb', 'strobe', 'sicherung', 'streiflicht', 'filmnebel', 'partikel', 'scanlines', 'bloom', 'nachzieh', 'feuer', 'wellen', 'kaustik', 'linse', 'flammen', 'strahlen', 'spiegel', 'risse', 'beschlag', 'einschlag', 'tropfen', 'korn', 'bloecke', 'farbton', 'kippen', 'kenburns'];
+const VORGABE_HINWEIS = { licht: 'rmBewegung wandernd (Vorgabe)', schatten: 'rmBewegung wandernd (Vorgabe)', laser: 'Ursprung wandern, Bauart gitter (Vorgabe)', partikel: 'Art schnee, ohne Quelle (Vorgabe)', streiflicht: 'allein ohne Leuchte: schaltet sich ab', filmnebel: 'allein ohne Leuchte, Schwaden .45', risse: 'wachsen zeit (Vorgabe)', einschlag: 'bleiben 8 (Vorgabe)', bloecke: 'im Takt (Vorgabe)', wackeln: 'Kick im Takt (Vorgabe), 4/4', strobe: 'hz 8, rechteck (Vorgabe)', streifen: 'ton hell (Vorgabe)', kenburns: 'Lauf Hineinfahren, Ausschnitt 0,80, Parallaxe 1,5 % (Vorgaben)' };
 for (const t of TYPEN) fall(t, [{ typ: t }], { gruppe: 'vorgabe', bemerkung: VORGABE_HINWEIS[t] || 'Vorgabe' });
+
+/* KEN BURNS FAHRT UND IHRE PARALLAXE (17./18.09.2026). Sie stand bis heute in KEINEM Fall des
+   Pruefstands - weder der Lauf noch die Parallaxe (Regel 17e, nachgetragen 18.09.2026). Und genau
+   weil nie eine Vorbereitung in einem Fall stand, blieb die Zeile unbemerkt, die den fertigen
+   Ausschnitt ein zweites Mal ausschnitt, sobald Vorbereitung und Parallaxe zusammenkamen.
+   `kenburns` steht in TYPEN, also deckt die Gruppe `vorgabe` den Lauf Hineinfahren ab; hier stehen
+   die fuenf anderen Laeufe, die drei Reglerstellungen und die Kombination. */
+for (const l of ['aufdecken', 'zwei', 'streifen', 'wanderung', 'abrastern'])
+  fall('kb-' + l, [{ typ: 'kenburns', kbLauf: l }], { gruppe: 'kenburns', bemerkung: 'Lauf ' + l + ', sonst Vorgaben' });
+fall('kb-parallaxe-aus', [{ typ: 'kenburns', kbParallaxe: 0 }], { gruppe: 'kenburns', bemerkung: 'Regler auf null: der Ausschnitt kommt wie vor dem 18.09. aus drawImage' });
+fall('kb-parallaxe-voll', [{ typ: 'kenburns', kbParallaxe: 2.6 }], { gruppe: 'kenburns', bemerkung: 'Parallaxe am Anschlag' });
+fall('kb-vorb', [{ typ: 'kenburns', kbParallaxe: 0 }], { gruppe: 'kenburns', vorb: { belichtung: 0.3, kontrast: 0.25 }, bemerkung: 'Vorbereitung ohne Parallaxe - die Gegenprobe zum naechsten Fall' });
+fall('kb-parallaxe-vorb', [{ typ: 'kenburns', kbParallaxe: 2.6 }], { gruppe: 'kenburns', vorb: { belichtung: 0.3, kontrast: 0.25 }, bemerkung: 'Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 traegt' });
+fall('kb-wanderung-b', [{ typ: 'kenburns', kbLauf: 'wanderung' }], { gruppe: 'kenburns', titel: 'b', bemerkung: 'offener Lauf auf dem Titel mit anderer Taktzahl' });
 
 /* Antrieb */
 fall('puls-flackern-takt', [{ typ: 'puls', lmQuelle: 'takt', lmForm: 'flackern' }], { gruppe: 'antrieb' });

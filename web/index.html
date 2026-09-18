@@ -27358,7 +27358,7 @@ const EFFEKTE = {
      alten Fahrt mitgelesen oder mitgeschrieben wird. Keine "Weite": hat die Fahrt ein Ziel, ist
      die Amplitude keine Einstellung, sondern eine Folge (Abschnitt 6). Kein Staerke-Regler, weil
      Geometrie nichts ins Bild mischt (Regel 3). */
-  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b>, die Kamera <b>fährt</b>, sie <b>hält</b> auf dem Ziel und steht wieder. Weich angefahren, weich ausgelaufen, in der Mitte gleichmäßig — und getaktet: „Tempo“ sagt, über wie viele <b>Takte</b> ein Zug läuft, die Halte ergeben sich aus dem Rest. Die Fahrt fängt auf einer Eins an. Im Clip ist jeder Lauf geschlossen, damit das letzte Bild wieder das erste ist.<br><b>Sechs Läufe:</b> <i>Hineinfahren</i> verdichtet, <i>Aufdecken</i> gibt frei, <i>Zwei Stationen</i> zieht von Detail zu Detail, <i>Streifen</i> liest seitlich ab, die <i>Wanderung</i> fährt einen Rundweg über mehrere Stationen (hinfahren, eng, ein Stück heraus, weiter), <i>Abrastern</i> sucht die Fläche ohne Ziel ab. Wanderung und Abrastern fahren im Vollzeitvideo <b>ohne Rückweg</b> weiter — denselben Rundweg, immer wieder herum, so lange das Lied dauert.<br><b>Unterschied zur „Fahrt“:</b> die zoomt gar nicht — ihr Ausschnitt bleibt die ganze Zeit gleich groß —, sie zieht ohne Ziel herum, sie steht nie still, und ihr Tempo sind Sekunden. Nimm die alte für ein ruhiges Treiben, diese für eine Kamera, die irgendwo ankommt.<br><b>Wohin sie fährt, sagt das Bild:</b> die Stationen werden dort gesucht, wo sich etwas abhebt und die Helligkeit sich am meisten ändert — als ganze Ausschnitte, die von selbst im Bild liegen. Die Zeile unter „Ausschnitt“ nennt die gefundene Stelle und ihre Güte; gibt das Bild nichts her, fährt der Lauf auf die Mitte und sagt es.',
+  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b>, die Kamera <b>fährt</b>, sie <b>hält</b> auf dem Ziel und steht wieder. Weich angefahren, weich ausgelaufen, in der Mitte gleichmäßig — und getaktet: „Tempo“ sagt, über wie viele <b>Takte</b> ein Zug läuft, die Halte ergeben sich aus dem Rest. Die Fahrt fängt auf einer Eins an. Im Clip ist jeder Lauf geschlossen, damit das letzte Bild wieder das erste ist.<br><b>Sechs Läufe:</b> <i>Hineinfahren</i> verdichtet, <i>Aufdecken</i> gibt frei, <i>Zwei Stationen</i> zieht von Detail zu Detail, <i>Streifen</i> liest seitlich ab, die <i>Wanderung</i> fährt einen Rundweg über mehrere Stationen (hinfahren, eng, ein Stück heraus, weiter), <i>Abrastern</i> sucht die Fläche ohne Ziel ab. Wanderung und Abrastern fahren im Vollzeitvideo <b>ohne Rückweg</b> weiter — denselben Rundweg, immer wieder herum, so lange das Lied dauert.<br><b>Unterschied zur „Fahrt“:</b> die zoomt gar nicht — ihr Ausschnitt bleibt die ganze Zeit gleich groß —, sie zieht ohne Ziel herum, sie steht nie still, und ihr Tempo sind Sekunden. Nimm die alte für ein ruhiges Treiben, diese für eine Kamera, die irgendwo ankommt.<br><b>Wohin sie fährt, sagt das Bild:</b> die Stationen werden dort gesucht, wo sich etwas abhebt und die Helligkeit sich am meisten ändert — als ganze Ausschnitte, die von selbst im Bild liegen. Die Zeile unter „Ausschnitt“ nennt die gefundene Stelle und ihre Güte; gibt das Bild nichts her, fährt der Lauf auf die Mitte und sagt es.<br><b>Parallaxe:</b> mit einer Tiefenkarte wandert das Nahe schneller als das Ferne — aus dem Zoom wird eine <b>echte Fahrt</b>. Genau das konnte Ken Burns auf seinem Rostrum-Tisch mit einem Abzug nicht. Ohne Tiefenkarte bleibt die Zeile still und sagt warum; der Lauf fährt dann flach weiter.',
     params:[{k:'kbLauf',lbl:'Lauf',sel:Object.keys(KB_LAEUFE).map(k=>[k,KB_LAEUFE[k].lbl]),def:'hinein',
         /* Ein Rezept mit einem Lauf, den dieser Stand nicht hat, zeigt ihn als eigenen Eintrag,
            statt stillschweigend als etwas anderes gelesen zu werden (Regel 12). */
@@ -27946,6 +27946,67 @@ let STAPEL = [], nr = 0, soloId = null, LICHTMAL = false, FEIN = false;   /* LIC
 const STUDIO_FELD = [898, 889];
 let EINHEIT = 1;
 function einheitVon(Wn, bw, bh){ const sc=Math.min(STUDIO_FELD[0]/bw, STUDIO_FELD[1]/bh), W=Math.max(1, Math.round(bw*sc)); return Wn/W; }
+/* ---- PARALLAXE: WO DER REGLER ENDET, UND WARUM DORT (18.09.2026, Schritt 4) ----------------
+   Die Staerke ist der Vorsprung des Nahesten vor dem Fernsten, als Anteil der LANGEN Bildkante.
+   Sie ist begrenzt, und die Grenze ist GERECHNET, nicht gesetzt:
+     Ein Bildpunkt wandert um s_px*n. Zwei Nachbarn im Abstand 1 mit Naeheunterschied d landen im
+     Abstand 1 + s_px*d - was ueber 1 hinausgeht, deckt kein Quellpunkt mehr ab:
+     LUECKE = s_px*d - 1 Bildpunkte.
+   Gemessen ueber ALLE 325 Tiefenkarten des Bestands, jede auf Studiomass gebracht (lange Kante
+   STUDIO_FELD[0], Regel 19): der groesste Naehesprung ueber EINEN Bildpunkt betraegt je Karte im
+   Median 0,3788 (p10 0,194, p90 0,518, groesster 0,702). Ueber EINEN Bildpunkt gemessen trennt
+   Stufe von Rampe - der Boden zum Horizont hat grosses Gesamtgefaelle, aber je Bildpunkt fast
+   keins; er wird nur gedehnt, nicht aufgerissen.
+   Die Klaerung hat am Augenschein gemessen, wo die Randfortsetzung nicht mehr traegt: bei rund
+   ACHT Bildpunkten Luecke. Darunter war an 20 Zufallstiteln nichts zu sehen, darueber zerreissen
+   Buchstaben und Haarkanten. Daraus die Grenze - und der Regler endet auf dem letzten ganzen
+   Schritt darunter.
+   ES GIBT KEINE STAERKE, BEI DER NICHTS AUFREISST. Auch bei 0,5 % ist die groesste Luecke im
+   Median 0,70 Bildpunkte. Der Regler kauft keine Fehlerfreiheit, er haelt den Fehler unter dem,
+   was zu sehen ist - und das gilt fuer die HAELFTE der Titel: bei voller Stellung reisst die
+   schaerfste Kante im Median 7,8 Bildpunkte auf, bei jedem zehnten Titel 11,1.
+   WAS GEGEN DIE SCHRIFT NICHT HILFT. Suno schreibt den Titel auf viele Cover; die Tiefenkarte
+   haelt Schrift fuer ein NAHES Objekt, obwohl sie auf das Bild gedruckt ist. Harte Kante, hoher
+   Kontrast, und das Auge kennt die Sollform - darum bricht Schrift frueher als jedes Motiv. Das
+   ist der Grund, warum die Vorgabe nicht am Anschlag steht, und es ist Caspar_Ds Entscheidung,
+   ob der Regler noch tiefer gelegt oder die Parallaxe an geraden langen Kanten gedaempft wird. */
+const KB_PX_SPRUNG = 0.3788;                 /* Median des groessten Naehesprungs je Bildpunkt, 325 Karten */
+const KB_PX_SICHTBAR = 8;                    /* Bildpunkte Luecke, ab denen die Randfortsetzung nicht mehr traegt */
+const KB_PX_SCHRITT = 0.1;                   /* Prozentschritt des Reglers */
+/* aus der Zeile LUECKE = s_px*d - 1, umgestellt nach s und in Prozent der langen Studiokante */
+const KB_PX_GRENZE = 100*(KB_PX_SICHTBAR+1)/KB_PX_SPRUNG/STUDIO_FELD[0];
+const KB_PX_MAX = Math.round(Math.floor(KB_PX_GRENZE/KB_PX_SCHRITT)*KB_PX_SCHRITT/KB_PX_SCHRITT)*KB_PX_SCHRITT;
+/* VORGABE 1,5 % UND NICHT NULL. Der Regler steht auf dem Wert, den die Klaerung an 20
+   Zufallstiteln als fehlerfrei befunden hat, und er ist der Punkt des ganzen Effekts: ohne ihn
+   ist ein Zoom auf einem Foto kein Kamerazug, sondern ein vergroessertes Bild (Spezifikation
+   Abschnitt 5). Er aendert kein gespeichertes Rezept: die Ken Burns Fahrt ist einen Tag alt, im
+   ganzen Baum traegt kein Rezept, keine Vorlage und kein Prueffall den Typ `kenburns` - nachgesehen
+   am 18.09.2026 in library/, in den Vorlagen (PRESETS) und in labor/nahtpruefung/faelle.json. */
+const KB_PX_DEF = 1.5;
+/* WIE GROSS DIE LUECKEN WIRKLICH WERDEN - mit der eingebauten Rechnung gemessen, nicht mit einem
+   Modell daneben. Die Verschiebung ist STRAHLIG: sie ist null in dem Punkt, auf den der Ausschnitt
+   zulaeuft, und erst in der fernsten Ecke so gross, wie der Regler sagt. Am Ort der schaerfsten
+   Tiefenkante ist sie also meist kleiner - darum ist die Luecke im Bild etwa halb so gross wie die
+   Grenze oben, die mit dem Anschlag rechnet. Beides steht da: die Grenze ist die Garantie, diese
+   Zahl ist die Erfahrung.
+   Gemessen ueber ALLE 325 Tiefenkarten, auf Studiomass, Ausschnitt 0,70 und Versatz am Anschlag -
+   die engste Lage, die ein Lauf erreicht. Die Luecke waechst genau linear mit der Staerke
+   (nachgerechnet bei 0,5 / 1,5 / 2,0 / 2,6 %: 0,00 / 1,65 / 2,53 / 3,59 Bildpunkte im Median),
+   darum genuegt EIN Faktor je Prozent statt einer Tabelle.
+   UND DER RISS BLEIBT NICHT LEER. Gemessen an 40 Titeln auf dem Malweg (der Shader gibt aus, wo er
+   keine Flaeche gefunden hat): auf EINEM einzigen Bildpunkt von 40 Bildern. Die Karte wird linear
+   gelesen, und damit hat sie fast nirgends eine echte Stufe, sondern eine sehr steile Rampe - die
+   wird gedehnt, nicht aufgerissen. Die Pruefung des Nulldurchgangs bleibt trotzdem stehen: sie
+   kostet EINEN Griff von 27, und wo sie faellig wird, ist sie der Unterschied zwischen dem fernen
+   und dem nahen Rand - also zwischen einer gefuellten Luecke und einer fett gewordenen Figur. */
+const KB_PX_RISS = 1.7654;        /* Median: Bildpunkte Aufriss je Prozent Staerke, samt dem einen, den die Nachbarn ohnehin belegen */
+const KB_PX_RISS_P90 = 2.8192;    /* dasselbe fuer den Titel, ueber dem nur noch jeder zehnte liegt */
+const kbRiss = (s,f) => Math.max(0, f*s - 1);
+/* Die Zeile steht HIER und nicht in der Tabelle oben, weil ihre Grenze aus STUDIO_FELD gerechnet
+   wird - und das steht erst ein paar Zeilen weiter oben. Angehaengt heisst: sie ist die letzte
+   Zeile der Karte, nach Lauf, Ausschnitt und Tempo - dieselbe Reihenfolge wie in Abschnitt 6. */
+EFFEKTE.kenburns.params.push({k:'kbParallaxe',lbl:'Parallaxe',min:0,max:KB_PX_MAX,step:KB_PX_SCHRITT,def:KB_PX_DEF,
+  brauchtKarte:true, wert:v=>kf(Number(v).toFixed(1))+' %', notiz:e=>kbParallaxeSatz(e)});
 /* WOHER DAS LICHT KOMMT (Caspar_D, 14.09.2026: "Lichtrichtung von der Lichtquelle aus gesehen
    wuerde ich denken"). Der Lichtpuffer sagt, WIEVIEL Licht an einer Stelle ankommt - aber nicht,
    aus welcher Richtung. Das weiss nur die Leuchte selbst, und zwar genau in dem Augenblick, in dem
@@ -30099,7 +30160,104 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
     const zus=EFFEKTE[e.typ].glZusatz; if(zus){ const o=zus(e); for(const k of Object.keys(o)) u(k,l=>gl.uniform1f(l,o[k])); }
     /* ZULETZT, damit es auch einen glZusatz ueberstimmt: ohne Karte keine Tiefenrechnung. */
     if(!(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1)) u('u_tiefeAn',l=>gl.uniform1f(l,0));
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; },
+  /* ---- DIE PARALLAXE DER KEN BURNS FAHRT (Spezifikation Abschnitt 5, Bauweg Schritt 4) ----
+     EIN Gang, und er steht VOR der Kette: er ersetzt das drawImage, mit dem der Ausschnitt sonst
+     auf die Leinwand kommt. Deshalb bekommt er die GANZE Quelle als Textur und den Ausschnitt als
+     Zahlen - nur so hat er ausserhalb des Bildes noch Stoff, mit dem er die Risse fuellen kann.
+     Die Quelle steht still: sie wird einmal je Bildquelle hochgeladen, nicht je Bild.
+     WARUM KEINE SCHICHTEN. Gemessen ueber die 325 Tiefenkarten des Bestands (Klaerung 18.09.2026):
+     bei vier Schichten und 3 % Staerke sind 98 % der aufreissenden Grenzen ERFUNDEN - die Karte hat
+     dort gar keine Stufe, die Schichtung schneidet Hoehenlinien in glatte Flaechen. Und die
+     Lochflaeche faellt mit mehr Schichten nicht, sie steigt (1,84 % bei 2 Schichten auf 2,92 % bei
+     32) und laeuft gegen die Gesamtoeffnung. Vier Schichten sind fuer die Teilchen richtig - die
+     SIND Punkte in Entfernungen - und fuer ein Bild falsch, denn ein Bild ist eine Flaeche. */
+  fahrtProg:undefined, texQ:null, _quelleBild:null,
+  fahrtProgramm(){ if(this.fahrtProg!==undefined) return this.fahrtProg; const gl=this.gl;
+    const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,'attribute vec2 a_pos; varying vec2 v_uv; void main(){ v_uv=a_pos*0.5+0.5; gl_Position=vec4(a_pos,0.0,1.0); }'); gl.compileShader(vs);
+    const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs,GL_FAHRT); gl.compileShader(fs);
+    if(!gl.getShaderParameter(fs,gl.COMPILE_STATUS)){ console.warn('Effektclip-Studio Parallaxe: '+gl.getShaderInfoLog(fs)); return this.fahrtProg=null; }
+    const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ console.warn('Effektclip-Studio Parallaxe: '+gl.getProgramInfoLog(pr)); return this.fahrtProg=null; }
+    pr._loc={}; return this.fahrtProg=pr; },
+  /* aus/eff: die Ecke und die Kantenlaenge des Ausschnitts, in Anteilen der Quelle, von oben
+     gezaehlt. p: um wie viele Kamerawege das Naheste dem Punkt der Kartenmitte vorauseilt.
+     mitte: die Naehe, die stehen bleibt. schritte: Laenge des Marsches. */
+  fahrt(quellBild, tiefeBild, ax, ay, eff, p, mitte, schritte, W, H){
+    if(!this.init()) return null; const gl=this.gl, pr=this.fahrtProgramm(); if(!pr) return null;
+    if(!quellBild||!tiefeBild||!tiefeBild.complete||!(tiefeBild.naturalWidth>1)) return null;
+    if(this.cv.width!==W||this.cv.height!==H){ this.cv.width=W; this.cv.height=H; } gl.viewport(0,0,W,H);
+    gl.useProgram(pr); gl.bindBuffer(gl.ARRAY_BUFFER,this.vb);
+    const ap=gl.getAttribLocation(pr,'a_pos'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+    if(!this.texQ){ this.texQ=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texQ);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); }
+    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,this.texQ);
+    const kq=quellBild.currentSrc||quellBild.src||'';
+    if(this._quelleBild!==kq){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,quellBild); this._quelleBild=kq; }catch(err){ this._quelleBild=null; return null; } }
+    /* Dieselbe Textur und derselbe Merkzettel wie in run() - es ist dieselbe Karte. */
+    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,this.texT);
+    if(this._tiefeQuelle!==tiefeBild.src){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,tiefeBild); this._tiefeQuelle=tiefeBild.src; }catch(err){ this._tiefeQuelle=null; return null; } }
+    gl.activeTexture(gl.TEXTURE0);
+    const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
+    u('u_tex',l=>gl.uniform1i(l,4)); u('u_tiefe',l=>gl.uniform1i(l,2)); u('u_res',l=>gl.uniform2f(l,W,H));
+    u('u_aus',l=>gl.uniform2f(l,ax,ay)); u('u_eff',l=>gl.uniform1f(l,eff)); u('u_p',l=>gl.uniform1f(l,p));
+    u('u_mitte',l=>gl.uniform1f(l,mitte)); u('u_n',l=>gl.uniform1f(l,schritte));
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; } };
+/* DER MARSCH ENTLANG DER SICHTLINIE (Parallax Occlusion Mapping).
+   Die Verschiebung je Tiefenebene ist die des Kamerawegs, mit der Naehe vervielfacht - und der
+   Kameraweg an einer Stelle ist genau das, was der Ausschnitt dort schon verschiebt: ein Punkt der
+   Quelle bei x landet auf der Leinwand bei f*(x-aus). Daraus folgt, dass die Verschiebung STRAHLIG
+   ist, aus dem Punkt heraus, auf den der Ausschnitt zulaeuft. Jede Tiefenebene wird also um diesen
+   Punkt herum verschieden stark gedehnt - das ist eine Kamera, die vorfaehrt, und kein Zoom.
+   RUECKWAERTS GERECHNET: gesucht ist der Quellpunkt, der auf diesem Leinwandpunkt landet. Er liegt
+   auf dem Strahl, also ist es eine eindimensionale Suche - vom nahesten Kandidaten nach hinten, und
+   der erste Treffer ist die vorderste Flaeche. Der naive Rueckwaertsgriff (uv - s*n(uv)) ist FALSCH:
+   er nimmt die Tiefe am falschen Ort, duenne nahe Dinge verschwinden dabei ganz.
+   DIE PRUEFUNG DES NULLDURCHGANGS IST KEINE FEINHEIT. Wer den ersten Vorzeichenwechsel nimmt, ohne
+   nachzusehen, ob dort wirklich eine Flaeche steht, fuellt die Luecke an einer Tiefenkante mit dem
+   NAHEN Rand statt mit dem fernen - die Figur wird fett, und das sieht schlechter aus als gar keine
+   Parallaxe. Sitzt der Fund weiter als EINEN Bildpunkt neben seinem Ziel, ist dort keine Flaeche;
+   dann wird der fernere der beiden Nachbarn genommen, und das ist die Randfortsetzung der fernen
+   Schicht. Sie kostet keinen zusaetzlichen Griff - der Marsch hat sie ohnehin in der Hand. */
+const GL_FAHRT=`precision highp float;
+varying vec2 v_uv;
+uniform sampler2D u_tex, u_tiefe;
+uniform vec2 u_res, u_aus;
+uniform float u_eff, u_p, u_mitte, u_n;
+vec2 quelle(vec2 x){ return u_aus + x*u_eff; }                 /* Leinwandpunkt -> Quellpunkt, von oben */
+float naehe(vec2 x){ vec2 s=quelle(x); return texture2D(u_tiefe, vec2(s.x, 1.0-s.y)).r; }
+void main(){
+  vec2 q = vec2(v_uv.x, 1.0-v_uv.y);
+  vec2 D = q*(1.0-u_eff) - u_aus;                              /* der Kameraweg an dieser Stelle, in Leinwandkanten */
+  float kap = u_p*(1.0-u_eff);
+  float hi = u_p*(1.0-u_mitte)/(1.0+kap*(1.0-u_mitte));        /* der naheste Kandidat */
+  float lo = u_p*(0.0-u_mitte)/(1.0+kap*(0.0-u_mitte));        /* der fernste */
+  float wg = length(vec2(D.x*u_res.x, D.y*u_res.y));           /* Laenge des Kamerawegs in Bildpunkten */
+  float st = (hi-lo)/u_n;
+  float ma = hi, na = naehe(q-hi*D);
+  float ga = u_p*(na-u_mitte)/(1.0+kap*(na-u_mitte)) - hi;
+  float mt = hi;
+  if(ga < 0.0){
+    mt = lo;                                                   /* kein Wechsel: die fernste Ebene */
+    for(int i=1;i<49;i++){
+      if(float(i) > u_n) break;
+      float mb = hi - float(i)*st;
+      float nb = naehe(q-mb*D);
+      float gb = u_p*(nb-u_mitte)/(1.0+kap*(nb-u_mitte)) - mb;
+      if(gb >= 0.0){
+        float ms = ma + (mb-ma)*((-ga)/max(1e-6, gb-ga));
+        float ns = naehe(q-ms*D);
+        float rs = abs(u_p*(ns-u_mitte)/(1.0+kap*(ns-u_mitte)) - ms)*wg;
+        mt = (rs <= 1.0) ? ms : ((na < nb) ? ma : mb);          /* steht dort eine Flaeche? sonst der fernere Rand */
+        break;
+      }
+      ma=mb; na=nb; ga=gb;
+    }
+  }
+  gl_FragColor = texture2D(u_tex, vec2(quelle(q-mt*D).x, 1.0-quelle(q-mt*D).y));
+}
+`;
 const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform sampler2D u_tiefe; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
 const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
 /* DIE EXPORTFORM DER RAUSCHSHADER (Caspar_D, 14.09.2026: "wind kann ein muster so treiben, das es zur taktzeit
@@ -31008,6 +31166,69 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
 /* Ohne erkanntes Raster: dieselbe halbe Sekunde je Schlag und dieselben vier Schlaege je Takt,
    mit denen das Haus an anderer Stelle schon rechnet, wo kein Takt erkannt ist (raster() nimmt
    P = 4 ohne Einsen, die Statuszeile 0,5 s je Schlag). Kein neues Mass, ein gelesenes. */
+/* ---- DIE PARALLAXE: DIE RECHNUNG UND IHRE GRENZE ------------------------------------------
+   DER LAUF BLEIBT UNBERUEHRT. kbWeg, die Stationen und die Klammer sind nicht angefasst; die
+   Parallaxe liest nur, WO der Ausschnitt gerade steht, und vervielfacht diesen Weg je Tiefenebene.
+   Bei w = 0 - dem weiten, stehenden Bild - ist der Weg null und die Parallaxe damit auch. Darum
+   ist die Naht bitgleich, ohne dass etwas dafuer getan werden muesste: alles, was gerechnet wird,
+   ist eine Funktion des Ausschnitts, und der ist an der Naht derselbe.
+   WAS DER REGLER VERSPRICHT: so viel eilt das Naheste dem Fernsten voraus, wenn die Kamera am
+   weitesten gefahren ist - engster Ausschnitt, Versatz am Anschlag. Steht der Lauf woanders, ist
+   es weniger, und die Zeile sagt das. Beim Hineinfahren mit der Vorgabe 0,80 liegen die Ziele
+   ueberwiegend am Anschlag (gemessen 16 von 18 Titeln), dort wird der Wert also erreicht.
+   DIE KLEMME IM NENNER ist kein Schoenheitsfehler, sondern die Garantie: haengt ausser der Ken
+   Burns Fahrt noch etwas in der Kette, das enger zoomt (die alte Fahrt, "Zoom schlaegt"), waere
+   der Weg groesser als der, mit dem normiert wurde, und die Luecken groesser als gemessen. Der
+   groesste Weg DIESES Bildes steht daneben; genommen wird der groessere der beiden. */
+function kbParallaxeWert(e){ const v=Number(e.kbParallaxe); return (v>0)?Math.min(KB_PX_MAX,v):0; }
+/* Die Karte hat KEINEN Massstab - sie sagt, was naeher ist, nicht wie weit weg. Also muss gesetzt
+   werden, welche Ebene stehen bleibt, waehrend die naehere vor- und die fernere zurueckbleibt.
+   Genommen wird die MITTE dieser Karte (derselbe Median wie beim Aufenthalt, dasselbe Raster, ein
+   Begriff): dann bleibt der Bildaufbau, wo er war, und nur die Tiefe geht auseinander. Ohne Probe
+   die halbe Skala - dann ist es dieselbe Rechnung mit einer Mitte, die nicht gemessen ist. */
+/* WAS DIE PARALLAXE NICHT MITNIMMT, UND WIE GROSS DAS IST. Sie verschiebt das BILD; die
+   Tiefenkarte, die danach die Masken der Kette, die Baender der Teilchen und den Geburtsort legt,
+   faehrt weiter mit der GEOMETRIE (GEO, geoKarteLegen) und nicht mit der Parallaxe. Eine
+   Maskenkante kann also um so viel danebenliegen, wie das Naheste dem Fernsten vorauseilt: bei der
+   Vorgabe hoechstens 13,5, bei voller Stellung hoechstens 23,3 Bildpunkte im Studiomass, und nur
+   dort, wo der Ausschnitt am weitesten gewandert ist. Das steht hier, weil es ein Rest ist und kein
+   Versehen - der Fehler, den der 18.09.2026 ausgeraeumt hat ("die Tiefenkarte fuhr nicht mit"), war
+   bis zu 364 Bildpunkte gross, also gut fuenfzehnmal so viel. Wer die Karte auch durch die
+   Parallaxe schickt, braucht dafuer einen zweiten Gang; heute ist er den Preis nicht wert. */
+function kbParallaxeBild(kette, bild, bw, bh, sx, sy, cw, ch, Wn, Hn){
+  if(!bild || bild.tagName==='VIDEO' || !(Wn>1&&Hn>1)) return null;
+  let s=0, zEng=1;
+  for(const e of kette){ if(!aktiv(e)||e.typ!=='kenburns') continue;
+    const v=kbParallaxeWert(e); if(v>s) s=v;
+    zEng *= Math.max(.5,Math.min(.95,Number(e.kbAusschnitt)||.8)); }
+  if(!(s>0)) return null;
+  let tiefe=null; try{ tiefe=tiefeBildVon(); }catch(x){ return null; }
+  if(!tiefe||!tiefe.complete||!(tiefe.naturalWidth>1)) return null;
+  const lang=Math.max(Wn,Hn), sPx=s/100*lang;
+  const eff=cw/bw, ax=sx/bw, ay=sy/bh;
+  /* der laengste Kameraweg im Bild: er sitzt in einer Ecke, je Achse am weiter entfernten Rand */
+  const wegX=Math.max(ax, Math.max(0,1-eff-ax))*Wn, wegY=Math.max(ay, Math.max(0,1-eff-ay))*Hn;
+  const wegJetzt=Math.sqrt(wegX*wegX+wegY*wegY);
+  const wegVoll=(1-zEng)*Math.sqrt(Wn*Wn+Hn*Hn);
+  const nenner=Math.max(wegVoll, wegJetzt); if(!(nenner>0)) return null;
+  const p=sPx/nenner;
+  let mitte=0.5; try{ const m=tiefeMitte(); if(m!=null) mitte=m; }catch(x){}
+  /* SCHRITTWEITE UNTER EINEM BILDPUNKT, sonst ueberspringt der Marsch duenne nahe Dinge. Der Weg,
+     den er absucht, ist so lang wie der Vorsprung selbst - also so viele Schritte, wie der
+     Vorsprung Bildpunkte hat. Bei der Vorgabe sind das auf Studiomass rund 14 Schritte, bei
+     voller Stellung rund 24. */
+  const schritte=Math.max(4, Math.min(48, Math.ceil(sPx)));
+  try{ return GL.fahrt(bild, tiefe, ax, ay, eff, p, mitte, schritte, Wn, Hn); }catch(x){ return null; }
+}
+/* DIE ZEILE UNTER DEM REGLER. Sie nennt die Grenze und wo sie herkommt, und sie nennt die Luecke
+   ZU DIESER Reglerstellung - eine Zahl, die nur fuer eine Stellung gilt, nennt sie. */
+function kbParallaxeSatz(e){
+  const s=kbParallaxeWert(e);
+  const gr='Der Weg endet bei '+kf(KB_PX_MAX.toFixed(1))+' %, und das ist gerechnet: aus dem größten Nähesprung je Bildpunkt (Median '+kf(KB_PX_SPRUNG.toFixed(4))+' über die 325 Tiefenkarten des Bestands) wären '+KB_PX_SICHTBAR+' Bildpunkte Lücke — die Breite, ab der die Randfortsetzung nachweislich nicht mehr trägt — bei '+kf(KB_PX_GRENZE.toFixed(2))+' % erreicht.';
+  if(!(s>0)) return 'Aus: das Bild wird gleichmäßig größer — ein vergrößertes Foto, keine Kamera, die sich bewegt. '+gr;
+  const px=s/100*STUDIO_FELD[0];
+  return 'Das Naheste eilt dem Fernsten um '+kf(s.toFixed(1))+' % der langen Bildkante voraus — im Studiomaß '+kf(px.toFixed(1))+' Bildpunkte —, und zwar dort, wo der Ausschnitt am weitesten gewandert ist; zur Mitte der Fahrt hin wird es weniger, denn die Verschiebung geht strahlig aus dem Punkt heraus, auf den sie zuläuft. Bei dieser Stellung reißt die schärfste Tiefenkante im Bild um '+kf(kbRiss(s,KB_PX_RISS).toFixed(1))+' Bildpunkte auf, bei jedem zehnten Titel um '+kf(kbRiss(s,KB_PX_RISS_P90).toFixed(1))+' — gemessen über alle 325 Tiefenkarten im Studiomaß, beim engsten Ausschnitt. Gefüllt wird der Riss aus der fernen Schicht. '+gr;
+}
 const KB_ERSATZ_SCHLAG=0.5, KB_ERSATZ_PROTAKT=4;
 /* Schlaege je Takt aus dem vorhandenen Feld: die Zaehlzeit steht im zweiten Feld jedes
    Rastereintrags (1 .. P). 64 aufeinanderfolgende Eintraege enthalten jeden Rest modulo P, weil
@@ -32017,9 +32238,20 @@ function zeichneFrame(t,roh){
      Bodenzellen und der Laser. Gesetzt VOR dem ersten Zeichenschritt, gelesen bis zum letzten. */
   GEO=geoBild(bw,bh,sx,sy,cw,ch,rotG,Wn,Hn);
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
-  /* Vorbereitung: das Grundbild einmal mit dem ruhigen Filter nach ovb, die Effekte arbeiten darauf. */
+  /* Vorbereitung: das Grundbild einmal mit dem ruhigen Filter nach ovb, die Effekte arbeiten darauf.
+     Sie schneidet mit qsx..qch und NICHT mit sx..ch: kommt der Ausschnitt schon aus der Parallaxe,
+     ist er fertig - wer dort noch einmal die Quellkoordinaten anlegte, zoomte ein zweites Mal in ein
+     bereits ausgeschnittenes Bild. Vor der Parallaxe waren beide Vierergruppen dasselbe. */
+  /* DIE PARALLAXE STEHT VOR ALLEM ANDEREN, WEIL SIE DAS AUSSCHNEIDEN IST. Gelingt sie, kommt der
+     Ausschnitt nicht mehr durch drawImage auf die Leinwand, sondern schon verschoben aus dem
+     Shader - in Leinwandmassen, also ohne zweites Ausschneiden. Die Vorbereitung arbeitet danach
+     auf diesem Ergebnis; ihr Filter wirkt ohnehin in Leinwandmassen, nicht in Quellmassen.
+     GELINGT SIE NICHT (kein WebGL, keine Tiefenkarte, Regler auf null), geht die Zeile Zeichen
+     fuer Zeichen den alten Weg - kein zusaetzlicher Zeichenschritt, keine Kosten. */
+  const pxBild = kbParallaxeBild(kette, bild, bw, bh, sx, sy, cw, ch, Wn, Hn);
   let quell=bild, qsx=sx, qsy=sy, qcw=cw, qch=ch;
-  if(vorbAenderungen(VORB)){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB); cv.drawImage(quell,sx,sy,cw,ch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
+  if(pxBild){ quell=pxBild; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
+  if(vorbAenderungen(VORB)){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB); cv.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
   { ca.save(); if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const rad=Math.abs(rotG)*Math.PI/180, z=Math.cos(rad)+Math.max(Wn,Hn)/Math.min(Wn,Hn)*Math.sin(rad); ca.scale(z,z);   /* Deckung cos+r*sin: auch bei 16:9 keine freien Ecken (Tiefen-Check) */ ca.translate(-Wn/2,-Hn/2); }
     ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn);
     /* Grund-Pulse in Kettenreihenfolge, jeder auf dem bisherigen Ergebnis (Momentaufnahme nach okc), nicht auf dem Grundbild -

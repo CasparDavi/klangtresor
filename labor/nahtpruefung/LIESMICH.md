@@ -22,6 +22,13 @@ Weitere Schalter: `--vorschau-speichern datei` (je Fall drei LOOP=0-Bilder, 64×
 (lange Seite des Exports), `--bilder verzeichnis` (Bild 0, N−1 und N als PNG zum Hinsehen),
 `--faelle-datei`. `--wachhund <s>` setzt den Abbruch ohne Fortschritt (Vorgabe seit 15.09.2026 **1800 s**; die Kombinationen `rand-kombi*` brauchen rund 900 s). **Wiederaufnahme:** Jeder fertige Fall landet sofort in `.zwischenstand/`. Ein abgebrochener Lauf wird mit demselben Aufruf fortgesetzt und übernimmt die fertigen Fälle, solange Studio-Stand, Messart, Schalter und Falldefinition gleich sind; Fälle mit Abbruch werden nie übernommen, `--neu` verwirft den Zwischenstand. Caspar_D: *„sei bei den Wächtern einfach immer etwas großzügiger und mach es idempotent"*.
 
+**Vorbereitung je Fall** (`vorb` im Fall, 18.09.2026): ein Objekt wie im gespeicherten Rezept (`belichtung`,
+`kontrast`, `lichter`, `schatten`, `saettigung`, `temperatur`, `farbton`, `sepia`, `schaerfe`, `grad`). Es geht
+durch `vorbAus()` wie beim Öffnen eines Titels. Bis zum 18.09.2026 stand in **keinem** Fall eine Vorbereitung —
+und genau darum blieb unbemerkt, dass die Vorbereitung den fertigen Ausschnitt der Ken-Burns-Parallaxe ein
+zweites Mal ausschnitt (mittlere Abweichung 56,4 von 255). Wer eine neue Stufe **vor** die Kette baut, nimmt
+einen Fall mit `vorb` dazu.
+
 Datenvarianten (`daten` im Fall, mit Komma kombinierbar, der Reihe nach): `ohneEins`, `ohneSchlaege`, `dreiviertel`, `sechs` (6/8), `nurEinsen`, `gestreckt:f` (Schlagzeiten um jetzt f-mal gedehnt, `gestreckt:3.22` gibt auf Titel a einen Takt von 5,1 s), `wenige:n` (nur die n Schläge um jetzt), `tempowechsel:f` (ab jetzt f-mal so langsam). Gruppe `raender` (Gegenprüfung 15.09.2026): Ergebnisse in `ergebnis-raender*.json`. Gruppe `nachbesserung` (Nachbesserung nach der Gegenprüfung, 15.09.2026): Tempo-Gegenproben (`nachbess-bewegung-licht-fest` zeigt, wie viel `tempoVerh` der Puls einer Leuchte allein ausmacht, rund 1,4) und der Farbtausch der Laufstreifen; Stand vorher `ergebnis-nachbesserung-vorher.json`, nachher `ergebnis-nachher.json`. Jeder Lauf nimmt freie Ports und ein eigenes Profil `.profil-<pid>-<job>` und räumt
 beides weg; Läufe dürfen parallel stehen. Die Ports 8788 und 18811 fasst er nicht an.
 
@@ -55,6 +62,8 @@ Grundlinie `ergebnis-vorher.json`. Tabelle, Abweichungen vom Pult und offene Pun
 | `studiofeld.json`, `studio-vorher.json`, `massstab-vorher.json` | Studiomass (15.09.2026): Vorgabefeld des Studios, Hashes in Studiogröße, Größenabhängigkeit 360/1080 - Grundlinie vor der Einheit u |
 | `massstab-nachher.json`, `ergebnis-massstab-loop.json` | nach dem Einbau der Einheit: Größenabhängigkeit und Loop-Vollmessung |
 | `ergebnis-loop-ansicht.json`, `ergebnis-loopstufe-loop.json` | Stufe „Schleife schließen" (bis 15.09. abends „Loop verbinden") (15.09.2026): Loop-Ansicht gegen Export, Loop-Vollmessung danach |
+| `studio-parallaxe.json` | **Hashes aller 193 Fälle in Studiogröße nach der Parallaxe (18.09.2026).** Gegen den Stand davor (`63ea4450…`) gemessen: 184 bitgleich, **verändert nur die 9 Ken-Burns-Fälle mit Parallaxe > 0**; `kb-parallaxe-aus` und `kb-vorb` bitgleich. Damit ist belegt, dass der neue Gang niemanden sonst anfasst. Aufruf: `--studio-vergleich labor/nahtpruefung/studio-parallaxe.json` |
+| `ergebnis-kenburns.json` | Gruppe `kenburns` (18.09.2026): die sechs Läufe der Ken Burns Fahrt, drei Stellungen der Parallaxe, Vorbereitung mit und ohne Parallaxe |
 | `ergebnis-taktlage-loop.json` | Vollmessung nach dem Einbau der Taktlage, mit Gruppe `taktlage` (Phase, Schlagraster mit Gruppe und Kick, 3/4, ohne Einsen, Tempowechsel) |
 
 **Vor dem Einbau eines neuen Effekts oder Reglers** (Regel 17e): Fall in `faelle-bauen.js` eintragen (und

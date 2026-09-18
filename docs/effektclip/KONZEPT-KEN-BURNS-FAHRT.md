@@ -174,7 +174,7 @@ Was **keinen** Regler bekommt, und wer stattdessen entscheidet:
 | **1** | **Der Kern:** neuer Effekt neben der alten Fahrt, die Klammer halten·fahren·halten, weiche Kurve, auf den Takt gerastert, geschlossener Lauf. Lauf „Hineinfahren", Ziel noch die Bildmitte. | Naht bitgleich; alte Rezepte unberührt (der Effekt ist neu, also per Bau); Augenschein bei Caspar_D |
 | **2** | **Das Ziel aus dem Bild:** nahe Zone plus Detaildichte, je Quelle und Einstellung gerechnet und behalten. Ehrlicher Rückfall auf die Mitte, mit Grund. | die gefundenen Ziele auf echten Covern als Blatt gezeigt; Kosten je Einstellungswechsel |
 | **3** | **Die übrigen drei Läufe** der ersten Fassung. | Augenschein |
-| **4** | **Parallaxe.** | Augenschein; Kosten je Bild; ohne Tiefenkarte grau mit Grund |
+| **4** | **Parallaxe.** ✔ 18.09.2026 — ein gl-Gang mit Marsch, keine Schichten; Regler bis 2,6 %, Vorgabe 1,5 %. Abschnitt 8. | Naht bitgleich in allen sechs Läufen; 0,087 ms je Bild; ohne Tiefenkarte grau mit Grund |
 | **5** | **Die alte Fahrt fällt**, wenn die neue gewonnen hat — Entscheidung von Caspar_D. Begründung bleibt als Kommentar. | die Rezepte, die sie benutzen, vorher/nachher |
 
 **Gemessen wird nur, was man sich nicht überlegen kann:** die Kosten der Parallaxe je Bild und die
@@ -188,3 +188,103 @@ Gegenlesen".
    Schleife wäre aufgegeben. Für das Voll-Titel-Video stellt sich die Frage nicht.
 3. Wie viel Parallaxe „richtig" aussieht. Die Tiefenkarte hat keinen Maßstab, also ist es eine
    Setzung wie „Leerraum vor Tiefenkarte".
+
+---
+
+## 8. Die Parallaxe — gebaut und gemessen (18.09.2026)
+
+Schritt 4 ist gebaut. Abschnitt 5 hatte sie versprochen, dieser Abschnitt sagt, **was daraus
+geworden ist** — und an welcher Stelle der Entwurf danebenlag.
+
+### Keine Schichten. Ein Marsch.
+
+Der nächstliegende Weg wäre, das Bild in ein paar Tiefenschichten zu zerlegen und jede verschieden
+weit zu schieben. Er ist falsch, und zwar messbar. Über alle 325 Tiefenkarten des Bestands, bei 3 %
+Stärke:
+
+| Schichten | Lochbreite je Grenze | Lochfläche | davon **erfunden** |
+|---|---|---|---|
+| 2 | 13,5 px | 1,84 % | 100 % |
+| 4 | 6,7 px | 2,55 % | 98 % |
+| 8 | 3,4 px | 2,76 % | 76 % |
+| 32 | 0,8 px | 2,92 % | 40 % |
+
+„Erfunden" heißt: an dieser Grenze hat die Karte **gar keine Stufe** — die Schichtung schneidet
+Höhenlinien in eine glatte Fläche. Und die Lochfläche **fällt nicht** mit mehr Schichten, sie
+steigt und läuft gegen die Gesamtöffnung des Bildes. Es gibt keine richtige Schichtzahl.
+
+**Vier Schichten sind für die Teilchen richtig und für das Bild falsch.** Der Unterschied ist keine
+Einstellung, sondern die Natur der Sache: Teilchen *sind* Punkte in Entfernungen, ein Bild ist eine
+Fläche. Die Hälfte der Gesamtöffnung (49 %) ist **Rampe, nicht Riss** — sie will gedehnt werden,
+nicht aufgeschnitten.
+
+Gebaut ist darum **ein** gl-Gang mit einem Marsch entlang der Sichtlinie: Verschiebung je
+Bildpunkt, rückwärts gesucht, erster Treffer ist die vorderste Fläche. Rissfläche bei 3 %:
+**1,47 % gegen 2,55 %** bei vier Schichten.
+
+### Die Verschiebung ist strahlig, nicht seitlich
+
+Der Entwurf sagte „das Nahe wandert schneller als das Ferne" und dachte dabei an eine seitliche
+Bewegung. Beim Bau kam heraus: der Kameraweg an einer Stelle **ist genau das, was der Ausschnitt
+dort schon verschiebt**. Damit geht die Verschiebung strahlig aus dem Punkt heraus, auf den die
+Fahrt zuläuft — jede Tiefenebene wird um diesen Punkt herum verschieden stark gedehnt.
+
+Drei Folgen, alle angenehm:
+- Rückwärts ist es eine **eindimensionale** Suche auf dem Strahl.
+- Bei w = 0 (weites, stehendes Bild) ist der Weg null, also die Parallaxe auch — **die Naht ist
+  bitgleich, ohne dass etwas dafür getan werden musste.**
+- Der volle Wert wird nur in der fernsten Ecke erreicht. Gemessen liegt der Versatz im Bild bei
+  **etwa der Hälfte** dessen, was der Regler verspricht. Der Regler ist eine Obergrenze, kein
+  Erfahrungswert, und die Zeile unter ihm sagt das.
+
+### Wo der Regler endet, und warum dort
+
+**2,6 %,** und die Zahl ist gerechnet, nicht gesetzt. Zwei Nachbarn mit Nähesprung *d* landen im
+Abstand 1 + s_px·d — was über 1 hinausgeht, deckt kein Quellpunkt mehr ab. Der größte Nähesprung
+über **einen** Bildpunkt beträgt je Karte im Median 0,3788 (325 Karten, Studiomaß; unabhängig
+nachgemessen: 0,3804 und 0,396). Acht Bildpunkte Lücke — die Breite, ab der die Randfortsetzung am
+Augenschein nicht mehr trägt — wären bei 2,6458 % erreicht.
+
+**Es gibt keine Stärke, bei der nichts aufreißt.** Auch bei 0,5 % ist die größte Lücke im Median
+0,7 Bildpunkte. Der Regler kauft keine Fehlerfreiheit, er hält den Fehler unter dem, was zu sehen
+ist.
+
+**Vorgabe 1,5 %.** An 20 Zufallstiteln war dort nichts zu sehen. Gemessen am fertigen Bild:
+Versatz Median 1,0–1,4 Bildpunkte, p90 2,0–3,2.
+
+### Was es kostet
+
+0,087 ms je Bild bei der Vorgabe (14 Schritte), 0,123 ms am Anschlag (23 Schritte), auf der Radeon
+Pro 5500 XT bei 623×880. Das sind **0,26 % eines 30-Hz-Bildes** — so viel wie **ein** Tiefenband
+der Teilchen. Die Kosten sind linear in den Schritten: 3,45 Mikrosekunden je Schritt.
+
+### Der Fehler, den erst der Prüfstand fand
+
+Die Parallaxe ersetzt das `drawImage`, mit dem der Ausschnitt sonst auf die Leinwand kommt — nur so
+hat sie außerhalb des Bildes noch Stoff für die Risse. Die **Vorbereitung** (Belichtung, Kontrast,
+Gradation) schnitt danach aber weiter mit den **Quellkoordinaten** aus und zoomte damit ein zweites
+Mal in ein bereits ausgeschnittenes Bild. Mittlere Abweichung 56,4 von 255, größte 255.
+
+Gefunden wurde er nicht am Augenschein, sondern weil **nie eine Vorbereitung in einem Prüffall
+stand** — und das fiel beim Nachtragen der Ken-Burns-Fälle auf. Der Prüfstand kennt seit dem
+18.09.2026 `vorb` je Fall, und `kb-parallaxe-vorb` ist der Fall, der den Fehler trug.
+
+### Was die Parallaxe nicht mitnimmt
+
+Sie verschiebt das **Bild**. Die Tiefenkarte, die danach die Masken der Kette, die Bänder der
+Teilchen und den Geburtsort legt, fährt weiter nur mit der Geometrie. Eine Maskenkante kann also um
+höchstens 13,5 (Vorgabe) bzw. 23,3 Bildpunkte (voll) danebenliegen — zum Vergleich: der am
+18.09.2026 ausgeräumte Fehler „die Tiefenkarte fuhr nicht mit" war bis zu 364 Bildpunkte groß. Das
+steht als Rest im Code, nicht als Versehen; wer die Karte auch durch die Parallaxe schickt, braucht
+einen zweiten Gang.
+
+### Offen, weil Geschmack
+
+4. **Die Schrift.** Suno schreibt den Titel auf viele Cover, und die Tiefenkarte hält aufgedruckte
+   Schrift für ein **nahes Objekt**. Eine Kamera, die sich bewegt, hebt keine Bildunterschrift vom
+   Bild ab. Bei 1,5 % fällt es nicht auf, bei 2,6 % fangen die Zeilen an zu wandern. Zwei Auswege:
+   den Regler tiefer legen, oder die Parallaxe an geraden, langen, kontrastreichen Kanten dämpfen.
+   Bewusst ist der einfache Weg gebaut, damit erst hingesehen wird.
+5. **Ob es sich als Kamera liest.** Im stehenden Vergleich sieht man bei der Vorgabe nichts — ein
+   bis drei Bildpunkte auf 890. In der Bewegung schon: über zwei Sekunden Zug gelesen ist es ein
+   echter Tiefenhinweis. Das gehört dem Auge, nicht der Messung.
