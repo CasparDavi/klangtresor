@@ -50,6 +50,16 @@ Schätzungen heißen Schätzungen. Abgeklemmter Code wird gelöscht, seine Begr�
 Bei Entwurfsfragen zuerst eine Skizze, dann Text, dann Code. Lautes Denken ist kein Auftrag. Was die Software
 ausrechnen kann, wird kein Regler.
 
+**Keine große Messreihe vor der fertigen Spezifikation.** Caspar_D, 17.09.2026: *„bitte nie wieder eine große
+Menge Tests machen, bevor wir nicht durchspezifiziert haben"* — nachdem eine Messung über 325 Tiefenkarten
+etwas belegt hatte, was eine Minute Nachdenken beantwortet: ein Funke kommt aus einem Feuer, nicht aus der
+ganzen Bildfläche. **Erst fragen, was das Ding IST und woher es kommt**, dann die Betriebsart prüfen, dann
+messen — und nur das, was das Modell offenlässt: Zeitverhalten, Rechenkosten, Anteile im echten Bestand.
+Passt die Betriebsart nicht zu dem Satz, wird die Betriebsart geändert, nicht gemessen.
+
+Und: **die vorhandene Maschinerie kennen, bevor etwas dazugebaut wird.** Dieselbe Runde hat drei geplante
+Bauarbeiten aufgelöst, weil die Lösung schon im Haus stand.
+
 ## 6. Eingriffe, die Jörg ansagen will
 
 `server/server.js` startet sich bei Änderung selbst neu — erst Sandkasten, dann ansagen, dann einsetzen und prüfen,
