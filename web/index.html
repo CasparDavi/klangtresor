@@ -27287,11 +27287,69 @@ function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc
 
 /* DIE LAEUFE DER KEN BURNS FAHRT (docs/effektclip/KONZEPT-KEN-BURNS-FAHRT.md, Abschnitt 4).
    Eine Stelle fuer die Auswahl auf der Karte UND fuer den Maler, damit nicht zwei Listen
-   auseinanderlaufen. `eng` sagt, wie der Fortschritt w des Laufs auf die Enge des Bildes zeigt:
-   beim Hineinfahren unmittelbar (0 = ganze Flaeche, 1 = nahes Bild). Schritt 3 des Bauwegs legt
-   Aufdecken (eng: w => 1-w), Zwei Stationen und Streifen daneben - jeder mit einer Zeile hier
-   und ohne Eingriff in die Klammer halten-fahren-halten. */
-const KB_LAEUFE={ hinein:{ lbl:'Hineinfahren', eng:w=>w } };
+   auseinanderlaufen.
+
+   SCHRITT 3 (18.09.2026). Caspar_D: "ken burns braucht noch verschiedene Pfade, auf denen sich
+   der Ausschnitt bewegt ... Diese einzige Fahrt zu einem Ziel ist wenig."
+
+   WARUM `eng` GELOESCHT IST. Bis heute trug ein Lauf nur `eng`, eine Umrechnung des
+   Fortschritts w auf die TIEFE. Damit konnte ein Lauf tiefer oder flacher werden, aber niemals
+   woanders hin: der Versatz kam als EIN fester Punkt aus kbZiel und wurde nur mit w skaliert.
+   Genau das ist "die einzige Fahrt zu einem Ziel". `eng` hatte einen Rufer und kann das Neue
+   nicht ausdruecken, also ist es weg; die Begruendung bleibt hier stehen.
+
+   EIN LAUF IST EINE FOLGE VON STATIONEN. Eine Station ist ein Zustand des Ausschnitts:
+   [w, vx, vv] - w die Enge (0 = ganze Flaeche, 1 = das nahe Bild), vx/vv der Versatz in Anteilen
+   des freien Wegs. Das sind genau die drei Groessen, die zeichneFrame ohnehin verrechnet. Die
+   Klammer (kbWeg) legt die Zuege zwischen den Stationen auf ganze Takte und faehrt sie ab; sie
+   kennt keinen Lauf mit Namen. Ein neuer Lauf kostet damit eine Zeile HIER und keine im Maler.
+
+   DIE FELDER:
+     art   'spiegel' = die Folge wird hin und zurueck gefahren (bei zwei Stationen A-B-A).
+           'rund' = ein Rundweg, die letzte Station fuehrt zur ersten zurueck. Beides ist im
+           Clip geschlossen, ohne dass es geprueft werden muesste.
+     halt  ob an den Zwischenstationen eine Standzeit sitzt (Begruendung bei kbWeg, HALTE).
+     tiefe ob die Tiefe zwischen zwei Stationen ausatmet - "ein stueck raus" (bei kbZug).
+     mind  wie viele Ziele die Zielsuche mindestens hergeben muss. Gibt sie weniger, faehrt der
+           Lauf HINEIN und die Zeile sagt es: lieber ein anderer Lauf mit Grund als ein
+           stehendes Bild ohne.
+     offen ob der Lauf im Vollzeitvideo OHNE RUECKWEG weiterfaehrt (Caspar_D: "es muss ja nicht
+           nur auf die 10 sek reichen"). Ohne Rueckweg heisst NICHT ohne Wiederholung: gefahren
+           wird derselbe Ring, immer wieder herum - gemessen 5 bis 84 Runden je Lied bei Tempo 1.
+           Die Rechnung dazu steht bei kbWeg.
+     st    baut die Stationen. K.v(i) ist das i-te Ziel der Zielsuche (ohne Fund die Mitte),
+           K.nZiele wie viele es gibt, K.nMax wie viele Stationen die Betriebsart hergibt. */
+const KB_LAEUFE={
+  /* HINEINFAHREN - die Vorgabe, unveraendert aus Schritt 1: das weite stehende Bild, hinein auf
+     das nahe, zurueck. Beide Stationen tragen DENSELBEN Versatz; damit ist vx ueber den ganzen
+     Lauf konstant und die Rechnung bitgleich mit dem Stand von gestern (Nachweis bei kbWeg). */
+  hinein:{ lbl:'Hineinfahren', art:'spiegel', halt:true, mind:0,
+    st:K=>{ const a=K.v(0); return [[0,a[0],a[1]],[1,a[0],a[1]]]; } },
+  /* AUFDECKEN - dieselben zwei Stationen in der anderen Reihenfolge: vom Detail auf das Ganze.
+     Es ist NICHT "eng = 1-w", sondern eine getauschte Folge, und das ist ein Unterschied: der
+     Clip haelt damit in der Mitte auf dem WEITEN Bild und an der Naht auf dem nahen. */
+  aufdecken:{ lbl:'Aufdecken', art:'spiegel', halt:true, mind:0,
+    st:K=>{ const a=K.v(0); return [[1,a[0],a[1]],[0,a[0],a[1]]]; } },
+  /* ZWEI STATIONEN - Detail A, ein Zug, Detail B, Halt an beiden Enden. Kein Zoomwechsel
+     (w = 1 durchweg), es ist ein reiner Zug im nahen Bild. Braucht zwei gefundene Ziele. */
+  zwei:{ lbl:'Zwei Stationen', art:'spiegel', halt:true, mind:2,
+    st:K=>{ const a=K.v(0), b=K.v(1); return [[1,a[0],a[1]],[1,b[0],b[1]]]; } },
+  /* STREIFEN - nur seitlich, kein Zoom, von Anschlag zu Anschlag. Die HOEHE kommt aus dem Bild
+     (die Hoehe des besten Endbildes), damit der Streifen durch das Motiv laeuft und nicht
+     darueber hinweg. Ohne Fund die Bildmitte. */
+  streifen:{ lbl:'Streifen', art:'spiegel', halt:true, mind:0,
+    st:K=>{ const a=K.v(0); return [[1,-1,a[1]],[1,1,a[1]]]; } },
+  /* WANDERUNG - Caspar_Ds eigentlicher Einwand: "immer hinfahren - etwas reinzoomen, wie ein
+     stueck raus, weiter". Ein Rundweg ueber die besten Endbilder, an jeder Station eng, zwischen
+     zwei Stationen ausgeatmet. Reihenfolge: kbRing. */
+  wanderung:{ lbl:'Wanderung', art:'rund', halt:false, tiefe:true, mind:2, offen:true,
+    st:K=>kbRing(K) },
+  /* ABRASTERN - Caspar_D: "ggf einfach nur zufaellig abrastern". Die Flaeche absuchen, ohne
+     Ziel: ein Rundweg am Rand des erreichbaren Bereichs, gleich lange Zuege, kein Zoomwechsel.
+     Die Zielsuche wird nicht gefragt (mind: 0) - dieser Lauf ist die Gegenprobe zum Ziel. */
+  abrastern:{ lbl:'Abrastern', art:'rund', halt:false, mind:0, offen:true,
+    st:K=>kbRand(K) }
+};
 const EFFEKTE = {
   fahrt:{ label:'Fahrt', art:'geo', ohneStaerke:true, besch:'Ein Ausschnitt wandert und zoomt langsam über das Bild — die Grundbewegung, damit nichts steht.',
     params:[{k:'zoom',lbl:'Ausschnitt',min:.5,max:1,step:.02,def:.8},{k:'weite',lbl:'Weite',min:0,max:.5,step:.02,def:.24},{k:'tempo',lbl:'Tempo (s)',min:6,max:40,step:1,def:18}]},
@@ -27300,14 +27358,12 @@ const EFFEKTE = {
      alten Fahrt mitgelesen oder mitgeschrieben wird. Keine "Weite": hat die Fahrt ein Ziel, ist
      die Amplitude keine Einstellung, sondern eine Folge (Abschnitt 6). Kein Staerke-Regler, weil
      Geometrie nichts ins Bild mischt (Regel 3). */
-  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b>, die Kamera <b>fährt</b> auf es zu, <b>hält</b> auf dem nahen Bild, fährt zurück und steht wieder. Weich angefahren, weich ausgelaufen, in der Mitte gleichmäßig — und getaktet: „Tempo“ sagt, über wie viele <b>Takte</b> ein Weg läuft, die Halte ergeben sich aus dem Rest. Die Fahrt fängt auf einer Eins an. Im Clip ist der Lauf geschlossen, damit das letzte Bild wieder das erste ist.<br><b>Unterschied zur „Fahrt“:</b> die zoomt gar nicht — ihr Ausschnitt bleibt die ganze Zeit gleich groß —, sie zieht ohne Ziel herum, sie steht nie still, und ihr Tempo sind Sekunden. Nimm die alte für ein ruhiges Treiben, diese für eine Kamera, die irgendwo ankommt.<br><b>Wohin sie fährt, sagt das Bild:</b> das nahe Bild wird dort gesucht, wo die Tiefenkarte nah ist und die Helligkeit sich am meisten ändert — als ganzer Ausschnitt, der von selbst im Bild liegt. Die Zeile unter „Ausschnitt“ nennt die gefundene Stelle und ihre Güte; gibt das Bild nichts her, fährt der Lauf auf die Mitte und sagt es.',
+  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b>, die Kamera <b>fährt</b>, sie <b>hält</b> auf dem Ziel und steht wieder. Weich angefahren, weich ausgelaufen, in der Mitte gleichmäßig — und getaktet: „Tempo“ sagt, über wie viele <b>Takte</b> ein Zug läuft, die Halte ergeben sich aus dem Rest. Die Fahrt fängt auf einer Eins an. Im Clip ist jeder Lauf geschlossen, damit das letzte Bild wieder das erste ist.<br><b>Sechs Läufe:</b> <i>Hineinfahren</i> verdichtet, <i>Aufdecken</i> gibt frei, <i>Zwei Stationen</i> zieht von Detail zu Detail, <i>Streifen</i> liest seitlich ab, die <i>Wanderung</i> fährt einen Rundweg über mehrere Stationen (hinfahren, eng, ein Stück heraus, weiter), <i>Abrastern</i> sucht die Fläche ohne Ziel ab. Wanderung und Abrastern fahren im Vollzeitvideo <b>ohne Rückweg</b> weiter — denselben Rundweg, immer wieder herum, so lange das Lied dauert.<br><b>Unterschied zur „Fahrt“:</b> die zoomt gar nicht — ihr Ausschnitt bleibt die ganze Zeit gleich groß —, sie zieht ohne Ziel herum, sie steht nie still, und ihr Tempo sind Sekunden. Nimm die alte für ein ruhiges Treiben, diese für eine Kamera, die irgendwo ankommt.<br><b>Wohin sie fährt, sagt das Bild:</b> die Stationen werden dort gesucht, wo sich etwas abhebt und die Helligkeit sich am meisten ändert — als ganze Ausschnitte, die von selbst im Bild liegen. Die Zeile unter „Ausschnitt“ nennt die gefundene Stelle und ihre Güte; gibt das Bild nichts her, fährt der Lauf auf die Mitte und sagt es.',
     params:[{k:'kbLauf',lbl:'Lauf',sel:Object.keys(KB_LAEUFE).map(k=>[k,KB_LAEUFE[k].lbl]),def:'hinein',
         /* Ein Rezept mit einem Lauf, den dieser Stand nicht hat, zeigt ihn als eigenen Eintrag,
            statt stillschweigend als etwas anderes gelesen zu werden (Regel 12). */
         selMehr:e=>(e.kbLauf&&!KB_LAEUFE[e.kbLauf])?[[e.kbLauf,e.kbLauf+' — unbekannt, fährt hinein']]:[],
-        notiz:e=>'Hineinfahren verdichtet: von der ganzen Fläche auf das nahe Bild und zurück.'
-          +(e.kbLauf&&!KB_LAEUFE[e.kbLauf]?' Der gespeicherte Lauf „'+e.kbLauf+'“ ist hier nicht gebaut — gefahren wird hinein.':'')
-          +' Aufdecken, Zwei Stationen und Streifen kommen im nächsten Schritt dazu.'},
+        notiz:e=>kbLaufSatz(e)},
       {k:'kbAusschnitt',lbl:'Ausschnitt',min:.5,max:.95,step:.01,def:.8,
         /* DIE ZIELZEILE STEHT HIER, weil das Ziel am Ausschnitt haengt: er bestimmt, welche
            Endbilder ueberhaupt erreichbar sind (Mitte z/2 .. 1-z/2) und wie breit die Kuppel
@@ -30938,10 +30994,11 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
       zweite Weichkurve wird darum nicht gebaut; eine Sanftkurve wie smoothstep haette in der
       Mitte gar kein gleichmaessiges Stueck, sondern nur eine Tempospitze.
 
-   4. DAS ZIEL KOMMT AUS DEM BILD (seit Schritt 2, 18.09.2026). kbZiel() liefert den Versatz,
-      der Lauf liefert nur w, und in zeichneFrame wird beides multipliziert. Die Klammer hier
-      kennt das Ziel nicht und hat sich dafuer nicht geaendert - sie rechnet w wie am ersten Tag.
-      Wie das Ziel gefunden wird, steht bei kbZiele().
+   4. DAS ZIEL KOMMT AUS DEM BILD (seit Schritt 2, 18.09.2026). Der Lauf holt sich die Ziele bei
+      kbZiele() und setzt daraus seine STATIONEN zusammen (kbPfad, seit Schritt 3); zeichneFrame
+      bekommt den fertigen Zustand [w, vx, vv]. Bis Schritt 2 lag der Versatz daneben in kbZiel()
+      und wurde nur mit w multipliziert - das konnte genau ein Ziel nennen und ist darum weg.
+      Wie die Ziele gefunden werden, steht bei kbZiele().
 
    5. KEINE BILDPUNKTE, ALSO KEINE EINHEIT. Der Effekt rechnet ausschliesslich in Anteilen des
       Bildes: crop ist ein Anteil der Quellkante, der Versatz ein Anteil des freien Wegs. Er hat
@@ -31059,10 +31116,12 @@ function kbProTakt(S){ let P=0; const n=Math.min(S.length,64); for(let i=0;i<n;i
       Die Ueberdeckung steht darum bei jeder Station mit dabei, damit Schritt 3 mit Zahlen
       entscheiden kann und nicht mit Hoffnung: "Zwei Stationen" braucht einen engen Ausschnitt.
 
-   7. REINE FUNKTION, DARUM BLEIBT DER LOOP EXAKT. kbZiel(e) liest Quelle und Einstellung und
-      sonst nichts - kein t, kein LOOP, keine Bildnummer, keinen Zufall. Zwischen zwei Bildern
-      desselben Laufs aendert sich keines der beiden, also gibt kbZiel bitgleich denselben
-      Versatz, und die Klammer (kbWeg) haengt allein an der umlaufenden Bildnummer. Der Vorrat
+   7. REINE FUNKTION, DARUM BLEIBT DER LOOP EXAKT. kbZiele(e) liest Quelle und Einstellung und
+      sonst nichts - kein t, kein LOOP, keine Bildnummer, keinen Zufall. Dasselbe gilt fuer
+      kbPfad/kbRing/kbRand, die daraus die Stationen bauen: auch dort steht kein t und kein
+      Wuerfel. Zwischen zwei Bildern desselben Laufs aendert sich keines davon, also stehen
+      bitgleich dieselben Stationen, und die Klammer (kbWeg) haengt allein an der umlaufenden
+      Bildnummer. Der Vorrat
       macht das sichtbar: gerechnet wird EINMAL je Quelle und Einstellung, jedes weitere Bild
       liest nur nach.
 
@@ -31089,6 +31148,43 @@ const KB_LUPE=3;
    von heute, faellt er auf die Mitte zurueck - und sagt es. Das ist der richtige Ausgang, aber es
    ist ein Grund, die Zahl nicht zu senken, ohne neu zu eichen. */
 const KB_FUND_MINDEST=0.05;
+/* WIE VIELE STATIONEN DIE ZIELSUCHE HERGIBT (Schritt 3, 18.09.2026). Schritt 1 und 2 brauchten
+   eine und legten drei bereit; die Wanderung und das Vollzeitvideo brauchen mehr. Die Zahl ist
+   eine OBERGRENZE, kein Soll: die Suche bricht von selbst ab, sobald ausserhalb des halben
+   freien Wegs von allen genommenen Stationen kein Platz mehr ist.
+   UND SIE IST NIE DAS ENDE - DAS IST DIE GEOMETRIE, und sie ist enger, als es aussieht
+   (nachgerechnet 18.09.2026 mit genau den Zahlen aus kbZiele): die Mitten erreichen nur
+   z/2 .. 1-z/2, das Suchfeld ist also (1-z) der Bildkante breit, und unterdrueckt wird im
+   Umkreis des HALBEN freien Wegs, (1-z)/2 - also genau die halbe Feldbreite. In das Feld passen
+   damit zwei Stationen je Achse, vier im Ganzen; nur wo die Rundung auf das 160er-Raster guenstig
+   faellt, sind es drei je Achse:
+     Ausschnitt 0,50: Feld 80 Zellen, Radius 40 -> 2x2 = 4
+     Ausschnitt 0,67: Feld 54 Zellen, Radius 26 -> 3x3 = 9
+     Ausschnitt 0,80: Feld 32 Zellen, Radius 16 -> 2x2 = 4
+     Ausschnitt 0,95: Feld  8 Zellen, Radius  4 -> 2x2 = 4
+   UND DAS SIND OBERGRENZEN FUER EINE PERFEKTE PACKUNG. Die Suche packt nicht, sie nimmt den
+   jeweils besten freien Ausschnitt; nachgemessen auf einem QUADRATISCHEN Pruefbild (160x160,
+   gestellter Inhalt, dieselbe Schleife) findet sie bei allen vier Reglerstellungen genau VIER
+   Stationen - auch bei 0,67, wo neun hineinpassen wuerden.
+   AUF ECHTEN TITELBILDERN SIND ES MEHR, und darum stand hier bis heute eine zu kleine Zahl: ein
+   Titelbild ist nicht quadratisch, das Suchfeld waechst mit der Bildhoehe. Nachgemessen ueber alle
+   324 Katalogtitel (echte Bilder, area-Skalierung, dieselbe Suche): 4 bis 10 Stationen, Median 6,
+   und zwar bei Ausschnitt 0,50 wie bei 0,80. Verteilung bei 0,80: vier bei 102 Titeln, fuenf bei
+   2, sechs bei 167, sieben bei 3, acht bei 47, zehn bei 3.
+   VIER BIS ZEHN STATIONEN SIND WENIG, und es ist keine Wanze:
+   der halbe freie Weg ist die Laenge, mit der Schritt 2 "weit genug" begruendet hat ("die einzige
+   Laenge, die hier ohne Erfindung zur Hand ist"), und sie ist so gross wie das halbe Feld. Wer
+   mehr Stationen will, muss den Radius kleiner machen, und dann ueberdecken sich die Stationen
+   staerker - das ist eine Wahl mit Preis und gehoert Caspar_D, nicht dem Code. Zwoelf steht hier,
+   damit die Grenze immer die Geometrie ist und nie dieser Zaehler; wie viele es bei DIESEM Bild
+   wirklich sind, nennt die Zeile unter dem Lauf-Regler. Im CLIP sind es weniger - dort begrenzt
+   die Cliplaenge, und die Verteilung dazu steht bei kbWeg.
+   WAS DIE ERHOEHUNG VON DREI AUF ZWOELF KOSTET (nachgemessen, dieselbe Schleife, 200 Laeufe je
+   Fall): 0,304 -> 0,384 ms bei Ausschnitt 0,50, 0,210 -> 0,249 bei 0,67, 0,165 -> 0,199 bei 0,80,
+   0,148 -> 0,159 bei 0,95. Sie faellt einmal je Quelle UND Einstellung an, nicht je Bild, und sie
+   liegt unter einem Zehntel des Guetefelds, das im selben Aufruf gerechnet wird (3,6 bis 14,3 ms
+   je Reglerschritt, gemessen bei KB_REIZ). Die Kosten je BILD aendert sie nicht. */
+const KB_STATIONEN=12;
 
 /* ===================== DAS KANTENMASS, EINMAL AUFGESCHRIEBEN =====================
    Bis heute stand dieses Mass IN kbDetail, weil es dort nur einmal gebraucht wurde. Die dritte
@@ -31263,6 +31359,14 @@ function kbReizfeld(det, tp, sp, sl, qk){
    der Ausschnitt geht in den Schluessel ein, weil er sowohl das Suchfeld (z/2 .. 1-z/2) als auch
    die Kuppel bestimmt. Tiefengrenze und Weichheit auch - ein geo-Effekt traegt sie heute nicht,
    aber wer sie ihm einmal gibt, bekommt dann kein Ziel von vorhin. */
+/* WIE STARK ZWEI AUSSCHNITTE DESSELBEN MASSES EINANDER UEBERDECKEN, als Anteil der Flaeche.
+   ux/vy sind die Mitten in Anteilen der Bildkante, z die Kantenlaenge des Ausschnitts. Diese
+   Rechnung stand bis heute nur in kbZiele. Sie steht jetzt HIER, weil die Zeile unter dem
+   Lauf-Regler dieselbe Frage fuer das Abrastern stellt - und zwei Rechnungen fuer dieselbe Zahl
+   sind eine zu viel. Die Rechnung selbst ist unveraendert; nachgemessen ueber alle 324
+   Titelbilder ist jedes Ziel bitgleich das von vorher. */
+function kbUeberdeckung(ux1,vy1,ux2,vy2,z){
+  return Math.max(0,1-Math.abs(ux1-ux2)/z)*Math.max(0,1-Math.abs(vy1-vy2)/z); }
 const KB_ZIELE={}; let KB_ZIELE_N=0;
 function kbZiele(e){
   const q=tiefeQuelle(), det=kbDetail();
@@ -31312,7 +31416,7 @@ function kbZiele(e){
        Bedingung, die "zwei Bilder" ueberhaupt erst zu zweien macht. */
     const rs=Math.max(1,Math.round(frei/2*W));
     const genommen=[];
-    for(let n=0;n<3;n++){
+    for(let n=0;n<KB_STATIONEN;n++){
       let g2=-Infinity, gx=-1, gy=-1;
       for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
         let fern=true;
@@ -31324,7 +31428,7 @@ function kbZiele(e){
       const o=ort(gx,gy);
       let ueber=1;
       if(ziele.length){ const a=ziele[0];
-        ueber=Math.max(0,1-Math.abs(o.ux-a.ux)/z)*Math.max(0,1-Math.abs(o.vy-a.vy)/z); }
+        ueber=kbUeberdeckung(o.ux,o.vy,a.ux,a.vy,z); }
       ziele.push({ vx:o.vx, vv:o.vv, ux:o.ux, vy:o.vy, guete:g2,
         /* AM ANSCHLAG heisst: das beste erreichbare Endbild liegt am Rand dessen, was der
            Ausschnitt ueberhaupt hergibt - das Bild wuerde weiter wollen, der Weg ist zu Ende.
@@ -31343,10 +31447,12 @@ function kbZiele(e){
     for(const k2 in KB_TKANTE) delete KB_TKANTE[k2]; KB_ZIELE_N=0; }   /* Vorrat mit Ende */
   KB_ZIELE_N++; return KB_ZIELE[sl]=erg;
 }
-/* WOHIN DIE FAHRT GEHT. Der Versatz des nahen Bildes in Anteilen des freien Wegs (-1 .. 1, wie
-   panx/pany in zeichneFrame). Reine Funktion von Quelle und Einstellung - kein t (Punkt 7). Die
-   Klammer darueber bleibt unberuehrt: sie kennt nur w und multipliziert. */
-function kbZiel(e){ const Z=kbZiele(e); return Z.ziele.length?[Z.ziele[0].vx,Z.ziele[0].vv]:[0,0]; }
+/* GELOESCHT: kbZiel(e), der EINE Versatz des nahen Bildes (Schritt 3, 18.09.2026). Sie gab das
+   beste Ziel als festen Punkt zurueck, und zeichneFrame multiplizierte ihn mit dem Fortschritt w.
+   Genau das war "die einzige Fahrt zu einem Ziel": ein Lauf konnte tiefer werden, nie woanders
+   hin. Ihre Aufgabe erledigt jetzt kbPfad/KB_LAEUFE, die aus derselben Liste eine FOLGE von
+   Stationen baut; ihr einziger Rufer war die Kenburns-Zeile in zeichneFrame. Die Begruendung
+   bleibt, die Zeile nicht (Regel 4 der Hausregeln). */
 /* DIE ZEILE, DIE SAGT, WOHER DAS ZIEL KOMMT - oder dass es keines gibt (Regel 11, Regel 4 der
    Hausregeln: was nicht gilt, wird grau mit Grund, nicht versteckt). Zahlen statt Behauptungen. */
 function kbZielSatz(e){
@@ -31384,28 +31490,262 @@ function kbSchlagLage(S,t){ let i=S.length-1; while(i>=0&&S[i][0]>t) i--; if(i<0
   const dt=(i+1<S.length)?(S[i+1][0]-S[i][0]):0, f=(dt>0.02)?Math.max(0,Math.min(1,(t-S[i][0])/dt)):0;
   let i0=0; for(let k=0;k<S.length;k++) if((S[k][1]|0)===1){ i0=k; break; }
   return (i-i0)+f; }
-/* DER LAUF. Gibt w: 0 = das weite, stehende Bild (Halt), 1 = das nahe Bild (angekommen),
-   dazwischen die Fahrt. KB_LAEUFE sagt, wie w auf die Enge zeigt - heute gibt es den einen Lauf
-   aus Schritt 1; ein Rezept mit einem unbekannten Lauf faehrt hinein, und die Karte zeigt den
-   unbekannten Wert als eigenen Eintrag, statt ihn stillschweigend umzudeuten (Regel 12).
-   Dazu die Zahlen, die die Zeile unter dem Regler braucht. Zwei Betriebsarten, eine Form:
-   IM CLIP (LOOP > 0) geschlossen und auf ganzen Bildern - halten, hinein, halten, heraus,
-   halten. Die Wege sind ganze Takte; die Halte ergeben sich aus dem Rest der Cliplaenge, und
-   zwar so: die mittlere Halte (das Ankommen) wird so lang wie die aeussere, beide in ganzen
-   Takten, was dann noch bleibt, liegt aussen. Passt der Lauf nicht in den Clip, laeuft er ueber
-   so viele Takte, wie hineinpassen, und `geklemmt` sagt es. Die aeussere Halte liegt zum Teil
-   vor dem Ankerbild und zum Teil am Clipende - im Loop ist das eine Halte, durch die Naht
-   geteilt.
-   IM PULT (LOOP = 0) gibt es keine Cliplaenge und damit keinen Rest, aus dem sich eine Halte
-   ergeben koennte. Dort laeuft der kuerzeste ehrliche Zyklus: hinein, einen Takt halten,
-   heraus, einen Takt halten. Was der Clip daraus macht, sagt kbSatz.
-   IM VOLL-TITEL-VIDEO (docs/effektclip/KONZEPT-LANGE-VIDEOS.md) darf derselbe Lauf einwegs
-   sein, denn dort loopt nichts. Gebaut ist er nicht - es braucht genau eine Zeile mehr, naemlich
-   w = schleifePendelWeg(min(1, x/F)) statt des Zyklus, und keine Aenderung an der Klammer.
-   Solange es diese Betriebsart nicht gibt, wird sie hier auch nicht behauptet. */
+/* ===================== DER ZUG ZWISCHEN ZWEI STATIONEN =====================
+   Ein Zug faehrt von Station A nach Station B; p laeuft 0 .. 1 ueber den Zug.
+
+   DIE KURVE IST DIE DES HAUSES, UNVERAENDERT: schleifePendelWeg - 15 % Anlauf und 15 % Auslauf
+   quadratisch, dazwischen exakt gleichmaessig. Ihr Tempo ist an BEIDEN Enden null (Ableitung
+   2x/f, bei x = 0 also 0). Das ist der Grund, warum eine Wanderung OHNE Standzeit an den
+   Zwischenstationen kein Treiben ist: die Kamera kommt an jeder Station wirklich zum Stehen, sie
+   bleibt nur nicht stehen. Gerechnet und nachgemessen: der Anlauf ist x*x/f mit f = 2e(1-e) =
+   0,255, sein Tempo 2x/f, das mittlere Tempo des Zugs 1. Unter einem Fuenftel davon laeuft er
+   also bis x = 0,0255 - 2,55 % des Zugs vor der Station und 2,55 % danach, 5,10 % zusammen
+   (nachgerechnet auf 200000 Stellen: 5,10 %). Bei einem Zug von einem Takt zu 2,00 s sind das
+   0,051 s je Seite.
+
+   RUECKWAERTS WIRD pendel(1-p) GERECHNET, NICHT 1-pendel(p). In exakter Arithmetik ist das
+   dasselbe - die Kurve ist punktsymmetrisch zu (0,5 | 0,5): im Anlauf steht x*x/f gegen
+   1-(1-x)*(1-x)/f am anderen Ende, in der Mitte (1-x-e/2)/(1-e) gegen 1-(x-e/2)/(1-e), und
+   beides ist Zeile fuer Zeile dieselbe Zahl. In Gleitkomma ist es das NICHT, und nur die erste
+   Form ist bitgleich mit dem Rueckweg aus Schritt 1.
+
+   DIE TIEFE ATMET ZWISCHEN DEN STATIONEN (nur wo der Lauf `tiefe` traegt, heute die Wanderung).
+   Caspar_D: "etwas reinzoomen, wie ein stueck raus, weiter". An der Station ist das Bild eng, in
+   der Mitte des Zugs ist es weiter. WIE WEIT, und das ist gerechnet, kein Regler: so weit, dass
+   BEIDE Stationen zugleich ins Bild passen. Zwei Ausschnitte der Kantenlaenge z, deren Mitten d
+   der Bildkante auseinanderliegen, passen zusammen in einen Ausschnitt der Kantenlaenge z + d
+   (je Achse, darum das Maximum der beiden Achsen). Mit crop = 1-(1-z)*w heisst das
+   w = 1 - d/(1-z), und mit d = max(|dvx|,|dvv|)*(1-z)/2 bleibt davon
+   tiefe = max(|dvx|,|dvv|)/2 - der Ausschnitt faellt heraus, die Zahl haengt nur am Weg.
+   Ein kurzer Zug atmet also kaum, ein Zug ueber den ganzen freien Weg (dv = 2) atmet bis auf das
+   ganze Bild heraus und ist dann genau ein Hineinfahren rueckwaerts und vorwaerts. Der Lauf wird
+   an seinen Raendern das, was schon gut ist, statt etwas Neues zu erfinden.
+   DIE FORM DES ATMENS IST 4q(1-q): die einfachste Beule, die an beiden Enden genau null und in
+   der Mitte genau eins ist. Sie ist keine zweite Weichkurve - sie sagt nicht, WIE SCHNELL
+   gefahren wird (das sagt pendel), sondern WIE TIEF. Gebildet wird sie ueber q, nicht ueber p,
+   damit auch ihr Tempo an den Stationen zusammen mit dem des Zugs auf null geht.
+   WAS DAS FUER DEN WEG BEDEUTET, UNGESCHMINKT: der Versatz wird in zeichneFrame mit w
+   multipliziert (unveraendert seit Schritt 1), der Versatz in Bildpunkten geht also mit w*w. Ein
+   Atemzug zieht den Ausschnitt darum nicht nur heraus, sondern auch zur Bildmitte - der Weg
+   bogt durch die Mitte, statt am Rand geradeaus zu laufen. Auf einem Reprotisch ist das genau,
+   was passiert, wenn man die Kamera hebt; es ist hier aber eine FOLGE und keine Absicht, und
+   darum steht sie hier und nicht in der Oberflaeche. */
+function kbZug(A,B,p,vor,tiefe){
+  const q=vor?schleifePendelWeg(p):schleifePendelWeg(1-p);
+  const w=A[0]+(B[0]-A[0])*q;
+  return [ tiefe>0 ? w-tiefe*4*q*(1-q) : w, A[1]+(B[1]-A[1])*q, A[2]+(B[2]-A[2])*q ];
+}
+/* Wie viele Zuege eine Runde hat, und welcher Zug der k-te ist. Spiegel: hin durch die Folge und
+   zurueck (bei zwei Stationen A-B-A, zwei Zuege). Rund: von Station zu Station und von der
+   letzten zur ersten. Beide Formen kommen dort an, wo sie angefangen haben - darum ist im Clip
+   jeder Lauf geschlossen, ohne dass es geprueft werden muesste. */
+function kbZugZahl(st,art){ return art==='rund'?st.length:2*(st.length-1); }
+function kbZugK(st,art,k){ if(art==='rund') return [st[k],st[(k+1)%st.length],true];
+  const n=st.length-1; return k<n?[st[k],st[k+1],true]:[st[2*n-1-k],st[2*n-k],false]; }
+/* Die Atemtiefe dieses Zugs (siehe kbZug). Ohne `tiefe` am Lauf: null, und dann rechnet kbZug
+   die Beule gar nicht - Hineinfahren bleibt damit Zeile fuer Zeile das von gestern. */
+function kbZugTiefe(lauf,A,B){ return lauf.tiefe?Math.max(Math.abs(B[1]-A[1]),Math.abs(B[2]-A[2]))/2:0; }
+
+/* ===================== DIE REIHENFOLGE DER STATIONEN =====================
+   Die Zielsuche liefert eine nach GUETE geordnete Liste. Eine Guete-Ordnung ist ein Rang, keine
+   Route: sie sagt, welches Endbild das beste ist, nicht in welcher Reihenfolge man sie abfaehrt.
+   Faehrt man sie in Guete-Ordnung ab, kreuzt der Weg sich selbst - und weil jeder Zug GLEICH
+   LANG DAUERT (ganze Takte, siehe kbWeg), faehrt die Kamera auf langen Zuegen schnell und auf
+   kurzen langsam. Dann sieht man die Liste.
+   GEFAHREN WIRD DARUM IM WINKEL UM DEN SCHWERPUNKT: die n besten Stationen, der Reihe nach im
+   Winkel um ihren gemeinsamen Schwerpunkt, beginnend bei der besten. Das ist die billigste
+   geschlossene Rundreise, die sich nicht selbst kreuzt, und ihre Zuege sind von aehnlicher
+   Laenge. Die GUETE waehlt, WELCHE Stationen gefahren werden; der WINKEL waehlt die Reihenfolge.
+   REINE FUNKTION - kein t, kein Zufall, keine Bildnummer: der Loop bleibt exakt (Punkt 7 bei
+   kbZiele gilt damit weiter). */
+function kbRing(K){
+  const n=Math.max(2,Math.min(K.nMax,K.nZiele));
+  const p=[]; let sx=0, sy=0;
+  for(let i=0;i<n;i++){ const a=K.v(i); p.push({x:a[0],y:a[1],i:i}); sx+=a[0]; sy+=a[1]; }
+  sx/=n; sy/=n;
+  for(const q of p) q.w=Math.atan2(q.y-sy,q.x-sx);
+  /* Gleicher Winkel kommt vor (zwei Stationen genau gegenueber dem Schwerpunkt, oder eine
+     Station IM Schwerpunkt, wo atan2 0 gibt). Dann entscheidet die Guete, damit die Reihenfolge
+     nicht daran haengt, wie der Browser gleiche Schluessel sortiert. */
+  p.sort((a,b)=>(a.w-b.w)||(a.i-b.i));
+  let s=0; for(let i=0;i<n;i++) if(p[i].i===0){ s=i; break; }
+  const r=p.slice(s).concat(p.slice(0,s));
+  return r.map(q=>[1,q.x,q.y]);
+}
+/* ABRASTERN: n Stationen gleichmaessig auf dem RAND des erreichbaren Bereichs (-1 .. 1 in beiden
+   Achsen). Zwei Fragen, die dabei zu beantworten waren:
+   WARUM DER RAND UND NICHT EIN GITTER. Ein Gitter mit ungerader Zellenzahl hat keinen
+   geschlossenen Weg, der jede Zelle genau einmal besucht (Schachbrett-Argument: ein 3x3-Gitter
+   hat fuenf Felder der einen und vier der anderen Farbe). Und die Mitte braucht keinen Besuch:
+   ein Ausschnitt am Anschlag reicht von 0 bis z der Bildkante, z ist mindestens 0,50, die
+   Bildmitte liegt also in JEDEM dieser Ausschnitte mit drin. Der Umlauf ist 8 lang (vier Kanten
+   zu 2), n Stationen liegen 8/n auseinander - bei n = 8 genau auf den acht Randfeldern, bei
+   n = 4 auf den vier Ecken.
+   WARUM NICHT ZUFAELLIG. Das ist eine Abweichung von Caspar_Ds Wort ("ggf einfach nur zufaellig
+   abrastern"), und sie hat zwei Gruende: jeder Zug dauert gleich lang, eine zufaellige
+   Reihenfolge haette darum Zuege sehr verschiedener Laenge und damit sichtbar verschiedenes
+   Tempo - und ein Wuerfel braeuchte einen Startwert, den ein Rezept mitschreiben muesste, sonst
+   sieht der Clip nach dem Neuladen anders aus als beim Speichern. Gleichmaessig abrastern ist,
+   was der Name sagt; der Zufall waere ein zweites Ding und gehoert entschieden, nicht gebaut. */
+function kbRand(K){
+  const n=Math.max(3,Math.min(8,K.nMax)), st=[];
+  for(let j=0;j<n;j++){ const s=8*j/n;
+    if(s<2) st.push([1,-1+s,-1]); else if(s<4) st.push([1,1,-1+(s-2)]);
+    else if(s<6) st.push([1,1-(s-4),1]); else st.push([1,-1,1-(s-6)]); }
+  return st;
+}
+/* DER PFAD: welcher Lauf, welche Stationen. nMax sagt, wie viele Stationen die Betriebsart
+   hergibt - im Clip, wie viele Zuege in die Cliplaenge passen; im Vollzeitvideo alle.
+   FEHLT DEM LAUF SEIN MINDESTMASS AN ZIELEN, faehrt er HINEIN, und `ersatz` traegt den Lauf, der
+   gemeint war, damit die Zeile ihn nennen kann. Ein stehendes Bild ohne Grund waere schlechter
+   als ein anderer Lauf mit Grund (Regel 11). Das betrifft heute nur "Zwei Stationen" und die
+   "Wanderung"; beide brauchen zwei Ziele, und die gibt es nicht auf jedem Bild. */
+function kbPfad(e,nMax){
+  let lauf=KB_LAEUFE[e.kbLauf]||KB_LAEUFE.hinein, ersatz=null;
+  const Z=kbZiele(e);
+  if(Z.ziele.length<lauf.mind){ ersatz=lauf; lauf=KB_LAEUFE.hinein; }
+  const K={ z:Z.z, nMax:Math.max(1,nMax|0), nZiele:Z.ziele.length,
+    v:i=>Z.ziele[i]?[Z.ziele[i].vx,Z.ziele[i].vv]:[0,0] };
+  return { lauf:lauf, ersatz:ersatz, st:lauf.st(K) };
+}
+/* ===================== DER LAUF =====================
+   Gibt den Zustand des Ausschnitts als [w, vx, vv]: w die Enge (0 = das weite, stehende Bild,
+   1 = das nahe Bild), vx/vv den Versatz in Anteilen des freien Wegs. In zeichneFrame wird daraus
+   crop *= 1-(1-z)*w, panx += vx*w, pany += vv*w.
+
+   BIS SCHRITT 2 GAB DIESE FUNKTION NUR w, und der Versatz kam daneben als ein fester Punkt aus
+   kbZiel. Seit Schritt 3 faehrt sie eine STATIONENFOLGE ab (KB_LAEUFE, kbPfad) und gibt den
+   ganzen Zustand; kbZiel ist damit weggefallen.
+   HINEINFAHREN RECHNET IM CLIP BITGLEICH WIE VORHER, IM PULT AUF 1,9e-31 GENAU - nachgerechnet,
+   nicht behauptet, und darum steht hier die zweite Zahl und nicht nur die erste.
+   WARUM ES GLEICH SEIN MUSS: beide Stationen tragen denselben Versatz, also ist
+   vx = a + (a-a)*q = a exakt und w = 0 + (1-0)*q = q exakt; die Abschnittsgrenzen sind dieselben
+   ganzen Bilder; der Rueckweg rechnet pendel(1-p) wie vorher (kbZug); und ein Halt wird als sein
+   Zug an der Stelle p = 1 gerechnet, was pendel(1) = 1 bzw. pendel(0) = 0 gibt - genau die
+   Zahlen, die vorher als 1 und 0 dastanden.
+   WAS DIE MESSUNG FINDET: im Clip 0 von 148512 Zahlen ungleich (sechs echte Titel mit ihren
+   echten N/M/P, vier Ausschnitte, vier Tempi, mit und ohne Raster, jedes Bild). Im Pult 24 von
+   345600 - alle an EINER Stelle, dem Uebergang von der Rueckfahrt in den aeusseren Halt ohne
+   Schlagraster, und alle mit dem Wert 1,9e-31 statt 0. Der Grund ist die Klassengrenze: fruehers
+   "x < 2F+H" und die Kette der Abzuege runden dort verschieden, und einmal faellt das Bild in
+   den Halt und einmal auf das letzte Haar des Zugs. DAS IST FOLGENLOS, und das ist nachpruefbar,
+   nicht gehofft: alle Abschnittsgrenzen sind STETIG - der Halt hat denselben Wert wie das
+   Zugende, das in ihn hineinfuehrt -, eine Rundung waehlt also nur zwischen zwei Rechenwegen zum
+   selben Bild. 1,9e-31 am Ausschnitt ist der 1e-47-te Teil eines Bildpunkts.
+
+   DREI BETRIEBSARTEN, EINE FORM:
+
+   IM CLIP (LOOP > 0) geschlossen und auf ganzen Bildern. Der ganze Lauf haengt an EINER ganzen
+   Zahl: d = (Bildnummer - Ankerbild) mod N, gerechnet mit lpBildNr. Bild(t+L) hat dieselbe
+   Bildnummer, also dasselbe d, also bitgleich denselben Ausschnitt - bei jedem Lauf, jedem
+   Tempo, jedem Ausschnitt und mit wie ohne Schlagraster. Die Stationen selbst haengen nicht an
+   t. Ein Spiegelweg endet, wo er anfing; ein Rundweg kommt von der letzten Station zur ersten
+   zurueck. Beide sind damit geschlossen, ohne dass es geprueft werden muesste.
+
+   DIE HALTE. Die Zuege sind ganze Takte, der Rest der Cliplaenge sind die Halte.
+   TRAEGT DER LAUF `halt`, bekommt jede Zwischenstation denselben Halt in ganzen SCHLAEGEN und
+   der Halt an Station 0 - aussen, durch die Naht geteilt - den Ueberhang. Das ist Zeile fuer
+   Zeile die Rechnung aus Schritt 1, nur ueber L Zuege statt ueber zwei; warum ganze Schlaege und
+   nicht ganze Takte, steht dort (ein Takt laesst sich nicht halbieren, und bei 156 von 324
+   Titeln fiel die mittlere Halte dann auf null).
+   TRAEGT ER `halt` NICHT (Wanderung, Abrastern), liegt der GANZE Rest aussen, und an den
+   ZWISCHENstationen laeuft es durch. ZWEI GRUENDE:
+     - Caspar_D selbst: "mit einem Halt an jeder Station wird es aber zaeh". Bei Tempo 1 ist ein
+       Takt Halt je Station genauso lang wie der Zug dorthin - die Wanderung waere zur Haelfte
+       Stillstand, und aus dem Fluss, um den es ihm ging, wuerde eine Reihe von Standbildern.
+     - EIN HALT IN GANZEN SCHLAEGEN IST KEIN GANZER TAKT und verschiebt alles Folgende gegen die
+       Taktlage. Ohne Halt sind alle Abschnittsgrenzen Vielfache von Tempo x Takt.
+   HIER STAND ZU VIEL. Bis heute stand an dieser Stelle "damit liegt JEDE Station auf einer Eins"
+   und daneben "0 ms an JEDER Station". Gemessen war das an SECHS Titeln; ueber den Bestand
+   stimmt es nicht, und es kann gar nicht stimmen: der Takt im Clip ist round(N*P/M) GANZE Bilder,
+   die Eins des Lieds liegt zwischen zwei Bildern - naeher als ein HALBES BILD (16,7 ms) kann eine
+   Ankunft einer Eins nicht kommen -, und der gerundete Takt laesst darueber hinaus einen Rest.
+   NACHGEMESSEN UEBER ALLE 324 KATALOGTITEL (echte N/M/P aus
+   labor/nahtpruefung/ergebnis-taktlage.json, Ausschnitt 0,80, Abstand JEDER Ankunft zur naechsten
+   Eins; bei Ausschnitt 0,50 kommen dieselben drei Zahlen heraus):
+     Tempo 1  Wanderung   Median 12,0 ms | 95. Hundertstel 41,2 ms | groesster Abstand 442,9 ms
+                          (601 von 916 Ankuenften liegen auf dem Bild der Eins)
+              Abrastern   Median 14,8 ms | 363,6 ms | 1740,7 ms (595 von 1095). Die grossen
+                          Abstaende sind die 49 Titel, bei denen der Zug kein ganzer Takt mehr ist
+                          - siehe kbRand.
+              Hineinfahren, Aufdecken, Zwei Stationen, Streifen: erste Ankunft Median 8,3 ms /
+                          bis 442,9 ms, zweite Ankunft Median 581,8 ms / bis 1666,7 ms. Das ist
+                          der Halt in ganzen Schlaegen; die frueher hier genannten "bis 1000 ms"
+                          waren an sechs Titeln gemessen und zu klein.
+     Tempo 2  Wanderung Median 12,1 | 40,6 | 442,9 ms, Abrastern Median 14,3 | 430,3 | 1740,7 ms.
+   Die Wanderung trifft die Eins also NICHT auf den Punkt. Sie bleibt ihr aber viel naeher als ein
+   Lauf mit Halt - 41,2 ms gegen 1361,9 ms im 95. Hundertstel aller Ankuenfte -, und genau dafuer
+   war der fehlende Halt da. Der Grund gilt weiter; nur der Satz war zu gross.
+   Und Stillstand gibt es trotzdem: die Weichkurve hat an beiden Enden Tempo null, gemessen
+   2,55 % des Zugs je Seite unter einem Fuenftel des mittleren Tempos (kbZug). Zwei Bilder, die
+   sich gar nicht mehr unterscheiden, entstehen daraus nicht: der laengste Block gleicher Bilder
+   AUSSERHALB von Station 0 ist EIN Bild (324 Titel, Wanderung, Ausschnitt 0,80, Tempo 1).
+
+   DER HALT AN STATION 0 IST LANG, UND DAS GEHOERT HIERHER. An den Zwischenstationen laeuft es
+   durch, an Station 0 aber steht es, weil der Rundweg dort schliesst und der ganze Ueberhang der
+   Cliplaenge dort sitzt. Gemessen am laufenden Maler ueber alle 324 Titel (Ausschnitt 0,80,
+   Tempo 1). Halt und sichtbarer Stillstand sind bis auf EIN BILD dasselbe: das erste Bild des
+   naechsten Zuges (p = 0) steht noch auf der Station, der Stillstand ist also 33,3 ms laenger als
+   der Halt - in 324 von 324 Titeln und in allen 24 Einstellungen genau ein Bild, nie mehr:
+     Wanderung        0 .. 6400 ms, Median 2700 ms = 32,5 % des Clips im Median, bis 64,0 %
+     Abrastern        0 .. 3967 ms, Median 1867 ms = 20,0 % im Median, bis 39,8 %
+     Laeufe mit Halt  0 .. 4467 ms, Median 2333 ms = 26,7 % im Median, bis 44,7 %; dazu 1900 ms
+                      Median an der Zwischenstation (bis 3733 ms)
+   KANN MAN DAS BESSER VERTEILEN? Nur in GANZEN TAKTEN - alles andere verschiebt die Taktlage -,
+   und dafuer ist kein Platz. Nachgerechnet, nicht gefuehlt: bei 316 der 324 Titel begrenzt die
+   CLIPLAENGE die Stationszahl (n = nMax), und dann liegt der Ueberhang zwischen 0,00 und 1,98
+   Takten, waehrend ein Takt Halt an jeder der L Stationen L Takte braeuchte. Nur bei den 8 Titeln,
+   bei denen das BILD weniger Ziele hergibt als Platz da ist, wird der Ueberhang groesser
+   (2,00 .. 7,11 Takte); dort wuerde ein Halt in ganzen Takten bei 3 Titeln greifen, und denselben
+   Ring ein zweites Mal zu fahren ebenfalls bei 3. Drei von 324 sind kein Verfahren.
+   ES IST ALSO EINE EIGENSCHAFT UND KEINE WANZE. Die Zahlen dazu, ueber die 324 Titel gemessen
+   statt geschaetzt: die Cliplaenge liegt zwischen 5,07 und 10,00 s (Median 9,00), das sind 1,75 bis
+   11,11 ganze Takte je Clip (Median 4,00), und was nach ganzen Zuegen uebrig bleibt, sind 0,00 bis
+   7,11 Takte (Median 1,26; bei 49 Titeln unter einem Takt, bei 267 zwischen einem und zwei). Dieser
+   Rest steht am Anfangsbild. Kuerzer wird es nur ueber die Regler (kleineres Tempo = mehr Zuege je Clip,
+   oder ein laengerer Clip), nicht ueber die Rechnung. Die Zeile unter dem Lauf-Regler nennt die
+   Zahl, damit niemand sie fuer einen Fehler haelt.
+
+   IM PULT (LOOP = 0) gibt es keine Cliplaenge und damit keinen Rest, aus dem sich ein Halt
+   ergeben koennte. Ein geschlossener Lauf laeuft dort den kuerzesten ehrlichen Zyklus: je Zug
+   T Takte, je Station ein Takt Halt. Bei zwei Zuegen sind das 2T+2 Takte - die Form aus
+   Schritt 1. Was der Clip daraus macht, sagt kbSatz.
+
+   IM VOLLZEITVIDEO faehrt der Weg OHNE RUECKWEG ueber das ganze Lied (Caspar_D: "es muss ja
+   nicht nur auf die 10 sek reichen"). Das ist DIESELBE Betriebsart wie das Pult - vollvideo() malt
+   mit LOOP = 0 und den echten Schlaegen genau das Bild, das die Kachel malt -, und darum sieht man
+   im Pult schon, was das Vollzeitvideo tun wird. Es gibt hier keinen zweiten Weg und keine
+   zweite Zeitrechnung.
+   "OFFEN" HEISST OHNE RUECKWEG, NICHT OHNE WIEDERHOLUNG. Das Wort stand hier zu gross: gefahren
+   wird DERSELBE RING, immer wieder herum, in derselben Richtung und mit derselben Schrittweite.
+   Ueber die 324 Katalogtitel bei Tempo 1 laeuft er im Lied 7,2 bis 83,9 mal um (Median 23,7) bei
+   der Wanderung und 5,4 bis 43,0 mal (Median 16,6) beim Abrastern. Eine andere Reihenfolge je
+   Runde waere moeglich (jede zweite Station und so fort), kostet aber genau das, was hier zaehlt:
+   gleiche Zeit je Zug und weitere Spruenge heisst schneller fahren, und dann wechselt das Tempo
+   mitten im Lied ohne Anlass. Der Preis der Wiederholung ist, dass der Ring wiedererkennbar ist;
+   der Preis der Abwechslung waere, dass das Tempo springt. Die Wiederholung ist die kleinere
+   Luege - aber sie heisst Wiederholung und nicht "offen", und so steht sie jetzt auch in der
+   Zeile unter dem Lauf-Regler.
+   OHNE RUECKWEG LAUFEN NUR DIE LAEUFE, DIE `offen` TRAGEN: Wanderung und Abrastern. Die uebrigen
+   vier sind Hin-und-Rueck-Wege zwischen zwei Zustaenden - ein Verlauf ohne Rueckweg gaebe dort
+   nichts her, er endete nach einem Zug und muesste dann doch zurueck. Fuer sie bleibt der Zyklus,
+   und damit bleibt ihr Bild im Pult genau das von gestern.
+   WIE WEIT DIE STATIONEN REICHEN - UND DASS ES IM CLIP WENIG IST. Der Ring hat so viele
+   Stationen, wie die Zielsuche hergibt (auf den 324 echten Titelbildern sind das 4 bis 10,
+   Median 6; bei KB_STATIONEN steht, warum die frueher hier genannten "vier" nur fuer ein
+   quadratisches Pruefbild galten) UND wie in die Cliplaenge passen. Gerechnet ueber die 324
+   Katalogtitel mit ihren echten N/M/P UND ihren echten Zielzahlen, Ausschnitt 0,80, Tempo 1:
+   die Wanderung bekommt bei 160 Titeln (49,4 %) zwei Stationen, bei 86 (26,5 %) drei, bei 59
+   (18,2 %) vier, bei 12 (3,7 %) fuenf und bei 7 (2,2 %) sechs - bei der Haelfte des Bestands ist
+   sie im Clip also nicht mehr als "Zwei Stationen" mit Atemzug. Das Abrastern erzwingt drei
+   (kbRand): bei 160 Titeln (49,4 %) nimmt es damit mehr Stationen, als die Cliplaenge traegt, und
+   bei 49 (15,1 %) ist ein Zug dadurch kein ganzer Takt mehr; bei Tempo 2 wird es bei 313 von 324
+   (96,6 %) auf Tempo 1 geklemmt. DER CLIP IST ZU KURZ FUER DIESE ZWEI LAEUFE, und das ist genau
+   der Satz von Caspar_D, der sie ausgeloest hat: "es muss ja nicht nur auf die 10 sek reichen."
+   Ihr Zuhause ist das Vollzeitvideo, wo derselbe Ring nach den Zahlen oben dutzendfach umlaeuft. */
 function kbWeg(e,t){
   const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const ohneZaehlzeit=!(P>=2); if(ohneZaehlzeit) P=KB_ERSATZ_PROTAKT;
-  const lauf=KB_LAEUFE[e.kbLauf]||KB_LAEUFE.hinein, T=Math.max(1,Math.round(Number(e.kbTakte)||1));
+  const T=Math.max(1,Math.round(Number(e.kbTakte)||1));
   if(LOOP>0){
     /* BILDRATE_SCHLEIFE ist die Exportbildrate (30) - dieselbe 30, mit der lpBildNr die
        Bildnummer im Clip zaehlt. Ein zweiter Wert wuerde N und die Bildnummer auseinanderlaufen
@@ -31420,36 +31760,94 @@ function kbWeg(e,t){
     /* OHNE RASTER GIBT ES KEINE EINS, AUF DIE ETWAS LANDEN KOENNTE. Dann gilt der Ersatztakt, und
        das Ankerbild bleibt 0 - also das Bild, dessen absolute Nummer durch N teilbar ist. Wo im Clip
        die Halte dann liegt, ist Zufall, und das ist richtig so: ohne Takt gibt es keine Stelle, die
-       sie verdient haette, und im Loop hat "wo im Clip" ohnehin keine Bedeutung. Dieselbe Haltung
-       hat lpFenster, dessen Fenster ebenfalls an der absoluten Bildnummer haengen. Geschlossen ist
+       sie verdient haette, und im Loop hat "wo im Clip" ohnehin keine Bedeutung. Geschlossen ist
        der Lauf trotzdem, weil d genauso periodisch bleibt (gemessen: gleich 0,00). */
     else { schlag=Math.max(1,Math.round(KB_ERSATZ_SCHLAG*BILDRATE_SCHLEIFE)); takt=Math.max(2,P*schlag); }
-    const passt=Math.floor((N-takt)/(2*takt)), Tk=Math.max(1,Math.min(T,passt));
-    let F=Tk*takt; if(2*F>N) F=Math.floor(N/2); F=Math.max(1,F);
-    /* DIE WEGE IN GANZEN TAKTEN, DIE HALTE IN GANZEN SCHLAEGEN. Zweimal nachgerechnet an den 324
-       Katalogtiteln (labor/nahtpruefung/ergebnis-taktlage.json, N/M/P je Titel):
-       - "halbiere den Rest, in ganzen TAKTEN abgerundet" liess bei 156 von 324 Titeln die MITTLERE
-         Halte auf null fallen - ein Clip ist im Median 4,0 Takte lang, bei Tempo 1 bleibt gut ein
-         Takt Rest, und dessen Haelfte ist kein ganzer Takt. Genau diese Halte ist der Punkt des
-         Effekts: "Das Ankommen ist der Punkt" (Abschnitt 2 der Spezifikation).
-       - "das Ankommen bekommt den ganzen Rest-Takt" drehte den Fehler nur um: auf Okkultation
-         (3,01 Takte je Clip) blieb fuer das ruhende Bild AUSSEN genau ein Bild uebrig, und die
-         Kamera kehrte ohne Ruhe um (gemessen: Naht 6,44 = erwartet 6,44).
-       Ein Takt laesst sich nicht halbieren, ein Rest von vier Schlaegen schon. Die Halte liegen
-       darum in ganzen SCHLAEGEN und werden gleich geteilt - auch ein Schlag ist Taktraster, und die
-       LANDUNG bleibt davon unberuehrt, weil sie nur am Ankerbild und an den ganzen Takten des Wegs
-       haengt. Der Ueberhang bleibt aussen: es ist im Loop die Halte, die man am laengsten sieht,
-       weil sie durch die Naht geteilt ist. Unter zwei Schlaegen Rest gibt es keine mittlere Halte -
-       auf so einem Clip sind fuenf Abschnitte nicht unterzubringen, und dann wird auch keine
-       behauptet. */
-    const rest=Math.max(0,N-2*F), H=Math.floor(rest/(2*schlag))*schlag, d=((lpBildNr(t)-A)%N+N)%N;
-    let w; if(d<F) w=schleifePendelWeg(d/F); else if(d<F+H) w=1; else if(d<2*F+H) w=schleifePendelWeg(1-(d-F-H)/F); else w=0;
-    return lauf.eng(w);
+    /* ERST DER PLATZ, DANN DIE STATIONEN: ein Rundweg nimmt nur so viele Stationen, wie er in der
+       Cliplaenge auch abfahren kann - ein Takt bleibt fuer den Halt aussen. Ein Spiegelweg hat
+       seine Stationen ohnehin fest und liest die Zahl nicht. */
+    const pf=kbPfad(e,Math.floor((N-takt)/(T*takt))), L=kbZugZahl(pf.st,pf.lauf.art);
+    const passt=Math.floor((N-takt)/(L*takt)), Tk=Math.max(1,Math.min(T,passt));
+    let F=Tk*takt; if(L*F>N) F=Math.floor(N/L); F=Math.max(1,F);
+    const rest=Math.max(0,N-L*F), H=pf.lauf.halt?Math.floor(rest/(L*schlag))*schlag:0;
+    /* Die Abschnitte der Runde, in ganzen Bildern: Zug, Halt, Zug, Halt ... Der letzte Halt ist
+       der aeussere und bekommt den Ueberhang. Ein Halt wird als sein Zug an der Stelle p = 1
+       gerechnet - dann steht die Ankunft nur an einer Stelle im Code. */
+    let u=((lpBildNr(t)-A)%N+N)%N, k=0, p=1;
+    for(;k<L;k++){ if(u<F){ p=u/F; break; } u-=F;
+      const h=(k<L-1)?H:(rest-(L-1)*H); if(u<h) break; u-=h; }
+    if(k>=L) k=L-1;   /* Rundung: was uebrig bleibt, faellt in den aeusseren Halt */
+    const zg=kbZugK(pf.st,pf.lauf.art,k);
+    return kbZug(zg[0],zg[1],p,zg[2],kbZugTiefe(pf.lauf,zg[0],zg[1]));
   }
-  const b=kbSchlagLage(S,t);
-  const x=(((b!=null?b:t/KB_ERSATZ_SCHLAG)/((2*T+2)*P))%1+1)%1, F=T/(2*T+2), H=1/(2*T+2);
-  let w; if(x<F) w=schleifePendelWeg(x/F); else if(x<F+H) w=1; else if(x<2*F+H) w=schleifePendelWeg(1-(x-F-H)/F); else w=0;
-  return lauf.eng(w);
+  const b=kbSchlagLage(S,t), bs=(b!=null?b:t/KB_ERSATZ_SCHLAG);
+  const pf=kbPfad(e,KB_STATIONEN), L=kbZugZahl(pf.st,pf.lauf.art);
+  if(pf.lauf.offen){
+    /* OFFEN: die Lage in ZUEGEN statt in Takten, ganzzahlig weitergezaehlt und nie zurueck. Vor
+       der ersten Eins zaehlt kbSchlagLage negativ; der Rest wird darum zweimal genommen, wie an
+       den anderen Stellen im Haus, die eine umlaufende Nummer brauchen. */
+    const bz=bs/(T*P), kk=Math.floor(bz), k=((kk%L)+L)%L, zg=kbZugK(pf.st,pf.lauf.art,k);
+    return kbZug(zg[0],zg[1],bz-kk,zg[2],kbZugTiefe(pf.lauf,zg[0],zg[1]));
+  }
+  /* GESCHLOSSEN im Pult: je Zug T Takte, je Station ein Takt Halt; bei zwei Zuegen also 2T+2. */
+  const zyk=pf.lauf.halt?(L*T+L):(L*T);
+  const x=((bs/(zyk*P))%1+1)%1, F=T/zyk, H=pf.lauf.halt?1/zyk:0;
+  let u=x, k=0, p=1;
+  for(;k<L;k++){ if(u<F){ p=u/F; break; } u-=F; if(u<H) break; u-=H; }
+  if(k>=L) k=L-1;
+  const zg=kbZugK(pf.st,pf.lauf.art,k);
+  return kbZug(zg[0],zg[1],p,zg[2],kbZugTiefe(pf.lauf,zg[0],zg[1]));
+}
+/* DIE ZEILE UNTER DEM LAUF-REGLER. Sie sagt, was dieser Lauf tut, wie viele Stationen dieses
+   Bild dafuer hergibt - und wo er sein Mass nicht erreicht, welcher Lauf statt seiner faehrt. */
+const KB_LAUFWORT={
+  hinein:'Hineinfahren verdichtet: von der ganzen Fläche auf das nahe Bild und zurück.',
+  aufdecken:'Aufdecken gibt frei: erst das Detail, dann das Ganze — derselbe Weg, andere Richtung, und der Halt sitzt auf dem weiten Bild.',
+  zwei:'Zwei Stationen: Detail A, ein Zug, Detail B, Halt an beiden Enden. Kein Zoom, nur der Zug.',
+  streifen:'Streifen liest seitlich ab, von Anschlag zu Anschlag, in der Höhe des gefundenen Motivs. Kein Zoom.',
+  wanderung:'Wanderung: hinfahren, an der Station eng, zwischen zwei Stationen ein Stück heraus, weiter — ein Rundweg über die besten Endbilder. Unterwegs hält sie nicht — nur die Weichkurve geht an jeder Station kurz auf Tempo null. Was von der Cliplänge nach den ganzen Zügen übrig bleibt, steht am Anfangsbild: gemessen ein Drittel des Clips (32,5 % im Mittel, bis 64 %).',
+  abrastern:'Abrastern sucht die Fläche ab, ohne Ziel: gleichmäßig am Rand des erreichbaren Bereichs herum, gleich lange Züge, kein Zoom. Auch hier kein Halt unterwegs; der Rest der Cliplänge steht am Anfangsbild (bei Tempo 1 gemessen 20 % des Clips im Median, bis 40 %; bei Tempo 2 sind es 24 % und bis 54 %).'
+};
+function kbLaufSatz(e){
+  const k=e.kbLauf, lauf=KB_LAEUFE[k], pf=kbPfad(e,KB_STATIONEN), Z=kbZiele(e);
+  let s=lauf ? (KB_LAUFWORT[k]||'') : 'Der gespeicherte Lauf „'+k+'“ ist hier nicht gebaut — gefahren wird hinein.';
+  /* WIE VIELE STATIONEN - UND WOHER SIE KOMMEN. Nur zwei Läufe hängen darin am Bild: die
+     Wanderung (Ziele der Zielsuche) und das Abrastern (nicht das Bild, sondern die Geometrie des
+     erreichbaren Bereichs). Die vier übrigen haben ihre zwei Stationen von sich aus; bei ihnen
+     wäre „dieses Bild gibt zwei Stationen her“ eine Lüge über das Bild. */
+  if(pf.ersatz) s+=' Dieser Lauf braucht '+pf.ersatz.mind+' Ziele im Bild, gefunden sind '+Z.ziele.length
+    +' — gefahren wird hineinfahren, damit kein stehendes Bild herauskommt.';
+  else if(lauf===KB_LAEUFE.wanderung) s+=' Dieses Bild gibt '+pf.st.length+' '+(pf.st.length===1?'Station':'Stationen')+' her'
+    +(pf.st.length<3?' — bei zwei Stationen ist die Wanderung ein Hin und Zurück mit Atemzug':'')
+    +'. Im Clip fährt sie nur so viele, wie die Cliplänge hergibt; die Zeile unter „Tempo“ nennt die Züge je Runde.';
+  /* ABRASTERN IM CLIP: WAS ER DORT TUT UND AB WANN ER ETWAS TAUGT. Ohne Zoomwechsel sind zwei
+     benachbarte Stationen zwei Ausschnitte derselben Größe; wie verschieden sie sind, sagt ihre
+     Überdeckung (kbUeberdeckung — dieselbe Zahl wie bei „Zwei Stationen“). kbRand erzwingt drei
+     Stationen, ohne zu fragen, ob drei Züge in den Clip passen: gemessen über die 324
+     Katalogtitel bei Ausschnitt 0,80 und Tempo 1 nimmt der Lauf bei 160 (49,4 %) mehr Stationen,
+     als die Cliplänge trägt, und bei 49 (15,1 %) ist ein Zug dadurch kein ganzer Takt mehr.
+     GESPERRT ODER GRAU WIRD ER TROTZDEM NICHT — aus demselben Grund wie bei „Zwei Stationen“: ein
+     gespeichertes Rezept sähe sonst stumm anders aus, und ein Lauf, der im Vollzeitvideo sein
+     Zuhause hat, wird nicht im Clip abgeschaltet. Also fährt er, und die Zeile SAGT die Zahl. */
+  else if(lauf===KB_LAEUFE.abrastern){
+    const zz=Math.max(.5,Math.min(.95,Number(e.kbAusschnitt)||.8)), hf=(1-zz)/2;
+    const ue=st=>{ let sm=0; for(let i=0;i<st.length;i++){ const a=st[i], b=st[(i+1)%st.length];
+      sm+=kbUeberdeckung(.5+a[1]*hf,.5+a[2]*hf,.5+b[1]*hf,.5+b[2]*hf,zz); } return sm/st.length; };
+    const u3=ue(kbRand({nMax:3}));
+    s+=' '+pf.st.length+' Stationen auf dem Rand des erreichbaren Bereichs — die kommen'
+      +' aus der Geometrie, nicht aus dem Bild. Im Clip sind es meist drei.'
+      +' Benachbarte Ausschnitte überdecken sich hier zu '+Math.round(ue(pf.st)*100)+' %, bei drei Stationen zu '+Math.round(u3*100)+' %'
+      +(u3>0.5 ? ' — im Clip ist das eher ein Kriechen als ein Abrastern; deutlich verschiedene Ausschnitte gibt es erst ab Ausschnitt 0,70 oder enger.' : '.'); }
+  /* DER BEKANNTE BEFUND, UNGESCHMINKT: bei weitem Ausschnitt sind die beiden Endbilder fast
+     dasselbe Bild (gemessen ueber alle 325 Titel bei Ausschnitt 0,80: Ueberdeckung 75,3 bis
+     94,7 %, Median 87,5 %). Der Lauf faehrt es trotzdem - gesperrt wuerde ein gespeichertes
+     Rezept stumm anders aussehen, und den Ausschnitt zu erzwingen hiesse, einen Regler von
+     Caspar_D gegen seinen Willen zu verstellen. Also faehrt er, und die Zeile SAGT die Zahl. */
+  if(lauf===KB_LAEUFE.zwei&&Z.ziele[1]){ const ue=Math.round(Z.ziele[1].ueberdeckung*100);
+    s+=' Die beiden Endbilder überdecken sich zu '+ue+' %'+(Z.ziele[1].ueberdeckung>0.5
+      ? ' — das ist fast zweimal dasselbe Bild. Zwei wirklich verschiedene gibt es erst ab Ausschnitt 0,67 oder enger.' : '.'); }
+  if(lauf&&lauf.offen) s+=' Im Vollzeitvideo fährt dieser Weg ohne Rückweg weiter: derselbe Rundweg, immer wieder herum, so lange das Lied dauert — über den Katalog gemessen 5 bis 84 Runden je Lied bei Tempo 1.';
+  return s;
 }
 /* DIE ZEILE UNTER DEM TEMPO-REGLER. Sie sagt, was dieser Titel hergibt und was daraus folgt -
    in Zahlen statt als Behauptung, und wo ein Ersatzmass gilt, steht das Ersatzmass da. */
@@ -31459,9 +31857,13 @@ function kbSatz(e){ const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const
     : hz>0 ? Math.round(60/sch)+' Schläge je Minute'
     : 'zu wenige Schläge für ein Tempo — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag');
   teile.push(ohneZaehlzeit ? 'keine Taktzählung — Ersatzmaß vier Schläge je Takt' : P+' Schläge je Takt');
-  return teile.join(', ')+'; ein Takt '+kf(takt.toFixed(2))+' s. Ein Weg '+T+' '+(T===1?'Takt':'Takte')+' ('+kf((T*takt).toFixed(1))
-    +' s), hin und zurück also '+kf((2*T*takt).toFixed(1))+' s. Im Pult hält sie dazwischen einen Takt; im Clip füllen die'
-    +' Halte den Rest der Cliplaenge, und passt der Lauf nicht hinein, läuft er über so viele Takte, wie hineinpassen.'; }
+  const pf=kbPfad(e,KB_STATIONEN), L=kbZugZahl(pf.st,pf.lauf.art);
+  const runde=L*T*takt+(pf.lauf.halt?L*takt:0);
+  return teile.join(', ')+'; ein Takt '+kf(takt.toFixed(2))+' s. Ein Zug '+T+' '+(T===1?'Takt':'Takte')+' ('+kf((T*takt).toFixed(1))
+    +' s), dieser Lauf hat '+L+' '+(L===1?'Zug':'Züge')+' je Runde — im Pult '+kf(runde.toFixed(1))+' s'
+    +(pf.lauf.halt?' (je Station ein Takt Halt)':' (kein Halt unterwegs — im Clip steht der ganze Rest am Anfangsbild)')
+    +'. Im Clip füllen die Halte den Rest der Cliplänge, und passt der Lauf nicht hinein, läuft er über so viele Takte,'
+    +' wie hineinpassen'+(pf.lauf.art==='rund'?' — ein Rundweg nimmt dann weniger Stationen':'')+'.'; }
 /* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
 /* ===================== DIE GEOMETRIE DIESES BILDES (18.09.2026) =====================
    Caspar_D, 18.09.2026 (Rauchtest): ein Teilchen wurde von einer Flaeche verdeckt, DIE WOANDERS
@@ -31598,8 +32000,14 @@ function zeichneFrame(t,roh){
        Versatz aus dem Bild (kbZiel, seit Schritt 2) - ohne Fund die Mitte, also 0/0. Kein `s`:
        Geometrie hat keine Staerke. DIESE ZEILE IST SEIT SCHRITT 1 UNVERAENDERT: der Versatz war
        schon immer `zi[0]*w`, nur gab zi frueher 0/0 zurueck. Die Klammer ist nicht angefasst. */
-    else if(e.typ==='kenburns'){ const w=kbWeg(e,t), z=Math.max(.5,Math.min(.95,Number(e.kbAusschnitt)||.8)), zi=kbZiel(e);
-      crop*=(1-(1-z)*w); panx+=zi[0]*w; pany+=zi[1]*w; }
+    /* KEN BURNS FAHRT: EIN Zweig neben dem der alten Fahrt, die unberuehrt darueber steht. Der
+       Lauf gibt seit Schritt 3 den GANZEN Zustand [w, vx, vv] - w die Enge (0 = weites, stehendes
+       Bild, 1 = nahes Bild), vx/vv den Versatz in Anteilen des freien Wegs. Vorher kam der
+       Versatz daneben aus kbZiel; das konnte nur EINEN Punkt nennen, ein Lauf mit mehreren
+       Stationen braucht ihn je Bild. Gerechnet wird wie vorher, und beim Hineinfahren stehen
+       dieselben Zahlen. Kein `s`: Geometrie hat keine Staerke. */
+    else if(e.typ==='kenburns'){ const g=kbWeg(e,t), z=Math.max(.5,Math.min(.95,Number(e.kbAusschnitt)||.8));
+      crop*=(1-(1-z)*g[0]); panx+=g[1]*g[0]; pany+=g[2]*g[0]; }
   }
   const eff=Math.max(.1,Math.min(1,crop/scaleMul)), cw=bw*eff, ch=bh*eff;
   const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
