@@ -27385,7 +27385,7 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, lmNurSchub:true, besch:'Teilchen ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schießt sie hinaus und läuft aus wie Luftwiderstand. Anzahl, Größe, Tempo, Wind und Farbe frei. Die Farbquelle sagt, WOHER die Farben kommen: das Akzentpaar des Titelbildes, seine gemessenen Haupttöne, ein fester bunter Satz, eine einzige Farbe (schwarzer Schnee) oder ein eigenes Paar. Was die gewählte Art ausmacht, steht unter dem Auswahlfeld.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'verdecken',lbl:'Tiefe aus der Bildzeile',min:0,max:1,step:.05,def:0,brauchtKarte:true},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27930,24 +27930,25 @@ const ART_MASS={ schwaden:[40,6], gluehwuermchen:[45,2.5], schmetterling:[16,7],
 /* Der Glitzer kommt am 16.09.2026 dazu: seine Blitze sind Salven aus Licht statt aus Papier,
    und sie lesen dieselbe Periode aus demselben Pult (antriebPeriode). */
 const ART_ANTRIEB={ konfettiKanone:1, glitzer:1 };
-/* ZWEI DINGE MIT AEHNLICHEM NAMEN (Nomenklatur-Praezision, gefunden 16.09.2026 beim Einbau der
-   Verdeckung). Der Partikel-Regler „Von Objekten verdeckt" ist aelter als die Zeile „Verdeckung"
-   in der rechten Spalte und fragt etwas ANDERES: er schaetzt die Tiefe des TEILCHENS aus seiner
-   Bildzeile (am Horizont fern, unten nah) und laesst es dort verschwinden, wo die Szene naeher
-   steht. Die Zeile rechts fragt nicht nach dem Teilchen, sondern nach seiner ZONE. Solange beide
-   nebeneinanderstehen, sagt die Karte, welche was tut; zusammenlegen kann man sie erst, wenn
-   entschieden ist, welche der beiden Tiefen die Wahrheit sein soll - das ist ein eigener Gang und
-   steht nicht in diesem Auftrag. */
-{ const pv=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.k==='verdecken');
-  /* DIE NOTIZ STAND NUR, WENN DER REGLER SCHON GEZOGEN WAR (Gegenlesen 16.09.2026) - also genau
-     dann nicht, wenn sie gebraucht wird: wer die Karte frisch aufschlaegt, sah zwei fast gleich
-     heissende Bedienteile und keinen Hinweis. Sie steht jetzt immer, und der Regler heisst nach
-     dem, wonach er wirklich fragt. */
-  /* UND SIE SCHWEIGT NICHT MEHR, WAEHREND DIE KARTE LAEDT (Gegenlesen 17.09.2026). Die Zeile ist
-     die einzige Tiefenzeile, die in dieser Zeit nichts sagte und danach ohne Uebergang auf grau
-     sprang. Den Wartesatz traegt sie seit dem 18.09.2026 nicht mehr selbst - er steht EINMAL je
-     Karte (`brauchtKarte` und die Traegerwahl in paramHTML); hier bleibt, was der Regler TUT. */
-  if(pv) pv.notiz=e=>'Schätzt die Tiefe jedes Teilchens aus seiner Bildzeile — oben fern, unten nah — und lässt es hinter näheren Stellen der Szene verschwinden, Teilchen für Teilchen. Die Zeile „Verdeckung“ rechts fragt nicht das einzelne Teilchen, sondern die Tiefenkarte der gemalten Quelle. Zwei verschiedene Tiefen, zwei Regler.'; }
+/* „TIEFE AUS DER BILDZEILE" IST GESTRICHEN (Caspar_D, 18.09.2026: „ja, wirf es raus";
+   Spezifikation docs/effektclip/KONZEPT-AUFTREFFEN.md, Abschnitt 6 und Punkt 4 der vier
+   Entscheidungen). Der Regler stammte aus der Zeit vor den Tiefenkarten. Er gab jedem Teilchen
+   eine ERFUNDENE Entfernung aus seiner Bildzeile - oben fern, unten nah, linear - und verglich
+   die mit der echten Karte. Seit jedes Teilchen eine eigene, gewuerfelte Entfernung hat (Bauweg
+   Schritt 1), waere das eine ZWEITE Entfernung fuer dasselbe Teilchen gewesen.
+   Und er war seit dem 18.09.2026 zusaetzlich eine Falle: das Feld, das er brauchte, mischte die
+   Leinwandzeile des Teilchens mit der Karte, also trug sein Schluessel den Ausschnitt - und der
+   aendert sich in jedem Bild einer Fahrt, also wurde das Feld JE BILD neu gebaut.
+   Gemessen auf dem Malweg (Leinwand 704x889 = 625 856 Bildpunkte, Radeon Pro 5500 XT / ANGLE
+   Metal, je Fall drei Reihen, Median, Bilder verbraucht statt zurueckgelesen - ein Ruecklesen erst
+   am Ende der Reihe), derselbe Partikel-Effekt mit Regler 0 gegen 1:
+     ohne Geometrie      0,82 -> 0,86 ms je Bild   (das Feld steht, der Vorrat greift)
+     Ken Burns 0,70      1,33 -> 14,51 ms          (Faktor 10,9)
+     Kippen 6 Grad       0,91 -> 30,97 ms          (Faktor 34,0)
+   Bei 30 Bildern je Sekunde ist ein Bild 33,3 ms lang - der Regler allein ass es fast auf.
+   NICHT BETROFFEN IST „Horizont" daneben: „oberhalb dieser Linie kein Material" ist ein
+   Bildgestaltungsmittel, keine erfundene Tiefe. Der bleibt, und partikelMaske bleibt fuer ihn -
+   als reine Leinwandmaske, die keine Karte mehr fragt. */
 /* UND SIE BRINGEN IHN AUCH MIT (gemessen 16.09.2026). Beide Arten LESEN den Antrieb, aber keine
    brachte ihn mit: ab Werk stand er auf "stetig", also schoss die Kanone alle 1,6 s und der
    Glitzer blitzte alle 1,6 s - beides neben dem Takt, auf dem sie laut ihrer eigenen Beschreibung
@@ -29257,23 +29258,14 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     if(schw){ if(!e._rc){ e._rc=document.createElement('canvas'); e._rl=document.createElement('canvas'); }
       if(e._rc.width!==Wn||e._rc.height!==Hn){ e._rc.width=Wn; e._rc.height=Hn; e._rl.width=Wn; e._rl.height=Hn; }
       zx=e._rc.getContext('2d'); zx.setTransform(1,0,0,1,0,0); zx.globalCompositeOperation='source-over'; zx.globalAlpha=1; zx.clearRect(0,0,Wn,Hn); }
-    /* Wird geschnitten oder verdeckt, malen die Teilchen erst auf eine eigene Leinwand - die
-       Maske schneidet dort einmal, statt je Teilchen zu rechnen. */
-    /* "TIEFE AUS DER BILDZEILE" NEBEN DER NEUEN VERDECKUNG - WAS GILT (Schritt 2, 17.09.2026).
-       Dieser Regler bleibt in Schritt 2 UNANGETASTET; seine Streichung ist Schritt 5
-       (Spezifikation, Punkt 4). Er gibt jedem Teilchen eine ERFUNDENE Entfernung aus seiner
-       Bildzeile und vergleicht die mit der Karte. Auf 0 - der Vorgabe - gilt allein die neue
-       Verdeckung. Steht er hoeher, gelten BEIDE, und das ist keine Dopplung, sondern eine
-       Vereinigung: die neue Verdeckung fragt "ist die Flaeche naeher als DIESES Teilchen", die
-       alte "ist sie naeher als die Zeile, in der es steht". Zwei verschiedene Fragen, zwei
-       Antworten. Kein Bildpunkt wird zweimal abgezogen, wo eine der beiden schon 0 sagt; nur in
-       den weichen Saeumen nehmen beide etwas, und dort ist es der Saum eines Reglers, der in
-       Schritt 5 verschwindet. Die Reihenfolge: die Baender komponieren auf e._vc, DANACH schneidet
-       partikelMaske (Horizont und Bildzeile) darueber - der Horizont soll ja auch das schneiden,
-       was die Baender stehen lassen. */
-    const hor=(e.horizont==null?0:e.horizont), vd=(e.verdecken==null?0:e.verdecken);
-    const tpP=(hor>0.001||vd>0.001)?tiefeProben():null;
-    const schnitt=!schw&&(hor>0.001||(vd>0.001&&tpP));
+    /* Wird geschnitten, malen die Teilchen erst auf eine eigene Leinwand - die Maske schneidet
+       dort einmal, statt je Teilchen zu rechnen. */
+    /* NUR NOCH DER HORIZONT SCHNEIDET HIER (18.09.2026). Bis heute stand neben ihm die "Tiefe aus
+       der Bildzeile"; sie ist gestrichen (Begruendung oben bei EFFEKTE.partikel). Die Reihenfolge
+       bleibt: die Baender komponieren auf e._vc, DANACH schneidet partikelMaske darueber - der
+       Horizont soll ja auch das schneiden, was die Baender stehen lassen. */
+    const hor=(e.horizont==null?0:e.horizont);
+    const schnitt=!schw&&hor>0.001;
     const echtCx=cx, echtModus=cx.globalCompositeOperation;
     if(schnitt){ if(!e._vc) e._vc=document.createElement('canvas');
       if(e._vc.width!==Wn||e._vc.height!==Hn){ e._vc.width=Wn; e._vc.height=Hn; }
@@ -29881,13 +29873,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         lx2.globalCompositeOperation='destination-in'; lx2.drawImage(e._rc,0,0);   /* Licht mal Rauchdichte */
         zx.globalCompositeOperation='lighter'; zx.globalAlpha=0.9; zx.drawImage(e._rl,0,0); zx.globalAlpha=1; }
       cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._rc,0,0); }
-    /* DIESE MASKE LIEGT BEI 0,0 - UND DAS IST KEIN VERGESSENES MITFAHREN (18.09.2026). Sie ist
-       die einzige, die in LEINWANDKOORDINATEN gebaut wird: der Horizont und die Tiefe aus der
-       Bildzeile sind Eigenschaften der Zeile, in der das Teilchen auf der Leinwand steht, nicht
-       der Quelle. Der Ausschnitt steckt schon INNEN drin - partikelMaske rechnet ihn beim Bau in
-       die eine Frage hinein, die die Karte stellt (geoMarke im Schluessel). Sie hier ein zweites
-       Mal durch die Geometrie zu schicken, waere derselbe Weg doppelt gegangen. */
-    if(schnitt){ const mk=partikelMaske(hor, vd, Wn, Hn, tpP);
+    /* DIESE MASKE LIEGT BEI 0,0 - UND DAS IST KEIN VERGESSENES MITFAHREN. Sie ist die einzige,
+       die in LEINWANDKOORDINATEN gebaut wird: der Horizont ist eine Eigenschaft der Zeile, in der
+       das Teilchen auf der Leinwand steht, nicht der Quelle. Er ist ein Bildgestaltungsmittel -
+       "oberhalb dieser Linie kein Material" heisst oberhalb dieser Linie IM BILD, und eine Fahrt
+       verschiebt das Bild, nicht den Bildrand. Sie durch die Geometrie zu schicken, machte aus
+       einer Bildlinie eine Linie im Motiv, und das ist sie nicht. */
+    if(schnitt){ const mk=partikelMaske(hor, Wn, Hn);
       if(mk){ cx.globalCompositeOperation='destination-in'; cx.globalAlpha=1; cx.drawImage(mk,0,0); cx.globalCompositeOperation='source-over'; }
       echtCx.globalCompositeOperation=echtModus; echtCx.globalAlpha=1; echtCx.drawImage(e._vc,0,0);
       cx=echtCx; } }
@@ -31480,6 +31472,26 @@ function kbSatz(e){ const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const
    "Kippen" (rotG) und die Ken Burns Fahrt, die den Ausschnitt weit wandern laesst.
    Gemessen an Okkultation (1024x878): bis 153,6 Ausgabebildpunkte Versatz bei Ausschnitt 0,70.
 
+   UND WAS DANACH UEBRIG BLEIBT - NICHT NULL (nachgemessen 18.09.2026). Diese Ueberschrift hat
+   nirgends "0,0" behauptet, aber sie liess es glauben, und der Satz weiter unten ("Karte und Bild
+   koennen nicht auseinanderlaufen") gilt nur fuer die MASKE. Fuer die Rasterfrage des MALERS
+   bleibt ein Rest, und er ist kein Zufall, sondern das Raster: tiefeProben ist 160 Zellen breit,
+   und tiefeBei/tiefeNahAn greifen mit Math.round(u*w) zu. Index k steht damit fuer das Fenster um
+   u = k/w, waehrend die Zelle, die drawImage dort ablegt, das Stueck [k/w,(k+1)/w) bedeckt - ihre
+   Mitte liegt bei (k+0.5)/w. Die Antwort, die der Maler bekommt, gehoert also zu einem Punkt eine
+   HALBE ZELLE weiter rechts als dem, nach dem er gefragt hat.
+   Gemessen auf dem Malweg (Leinwand 704x889, Quelle 1403x1772, Raster 160x202, alle 704 Spalten
+   der Mittelzeile, Radeon Pro 5500 XT / ANGLE Metal):
+     Ausschnitt 1,00 - Zelle 4,40 Ausgabebildpunkte, Versatz im Mittel +2,19 (-1,70 .. +4,30)
+     Ausschnitt 0,80 - Zelle 5,50,                   im Mittel +2,75 (+0,25 .. +5,25)
+     Ausschnitt 0,70 - Zelle 6,29,                   im Mittel +3,14 (+0,07 .. +6,21)
+     Ausschnitt 0,50 - Zelle 8,80,                   im Mittel +4,40 (+0,10 .. +8,70)
+   Der Rest waechst also mit dem Zoom, weil eine Rasterzelle beim Hineinfahren mehr
+   Ausgabebildpunkte bedeckt - nicht weil die Geometrie schlechter wuerde.
+   GEAENDERT WIRD ES NICHT, und das ist eine Entscheidung, kein Versehen: Math.round durch etwas
+   anderes zu ersetzen heisst, jedem gespeicherten Rezept ein anderes Bild zu geben. Die Zahl steht
+   hier, damit niemand den Rest fuer null haelt und ihn spaeter als Fehler jagt.
+
    DIE KARTE WIRD NICHT JE BILD NEU GEBAUT. Sie bleibt, was sie schon immer war: ein Bild in den
    Massen der QUELLE (tiefeMaske zeichnet die Tiefenkarte GANZ in ein W x H grosses Feld), je
    Quelle und Einstellung gebaut und behalten. Nur das AUFLEGEN bekommt dieselbe Geometrie wie das
@@ -31517,27 +31529,35 @@ function geoBild(bw,bh,sx,sy,cw,ch,rotG,Wn,Hn){
   return { bw,bh,sx,sy,cw,ch,rotG,th,z,Wn,Hn,
     eins:(sx===0&&sy===0&&cw===bw&&ch===bh&&!rotG) };
 }
-/* Leinwand-Bildpunkt -> Anteil der QUELLE (0..1 im sichtbaren Teil). Geklemmt wird NICHT: das tut
-   der Rasterindex in tiefeNahAn/tiefeBei, und das ist der fortgesetzte Rand von oben.
-   ZWEI AUFRUFARTEN, EINE RECHNUNG. Der Maler fragt ein paar tausend Mal je Bild, da ist ein neues
-   Paar je Frage nicht zu merken. partikelMaske fragt je BILDPUNKT - bei 1024x878 rund 900 000 Mal,
-   und dort kosteten die Paare gemessen 23 ms je Feld. Darum gibt es die Form mit Ablage; die
-   bequeme Form ruft sie auf, damit die Rechnung nur einmal dasteht. */
-function geoZuQuelleIn(px,py,aus){
-  const G=GEO; if(!G){ aus[0]=px; aus[1]=py; return aus; }
-  if(G.eins){ aus[0]=px/G.Wn; aus[1]=py/G.Hn; return aus; }
+/* EIN RUECKFALL, DER DIE FALSCHE EINHEIT LIEFERT, IST KEIN RUECKFALL (18.09.2026). Hier stand
+   `if(!G){ aus[0]=px; aus[1]=py; }` - rohe Leinwandbildpunkte, wo ein Quellanteil 0..1 erwartet
+   wird, und in der Gegenrichtung Quellanteile, wo Leinwandbildpunkte erwartet werden. Erreichbar
+   war das nie: GEO wird in zeichneFrame VOR dem ersten Zeichenschritt gesetzt, und alle Rufer
+   stehen darunter. Genau darum darf es auch nicht leise weiterrechnen - ein stiller Faktor Wn
+   waere schlimmer als ein Abbruch. Also scheitert es laut; kommt je ein Rufer von ausserhalb des
+   Malwegs dazu, sagt er es beim ersten Bild statt zwei Tage spaeter durch ein schiefes Bild.
+   Geklemmt wird NICHT: das tut der Rasterindex in tiefeNahAn/tiefeBei, und das ist der
+   fortgesetzte Rand von oben.
+   EINE AUFRUFART, SEIT partikelMaske KEINE KARTE MEHR FRAGT. Bis heute gab es die Form mit Ablage
+   (geoZuQuelleIn), weil partikelMaske je BILDPUNKT fragte - bei 1024x878 rund 900 000 Mal, und
+   dort kosteten die frischen Paare gemessen 23 ms je Feld. Mit der Streichung von "Tiefe aus der
+   Bildzeile" fragt sie gar nicht mehr; geblieben sind die paar tausend Fragen des Malers je Bild,
+   und da ist ein neues Paar je Frage nicht zu merken. Die zweite Form ist geloescht, ihr Grund
+   steht hier. */
+function geoZuQuelle(px,py){
+  const G=GEO; if(!G) throw new Error('geoZuQuelle ohne Geometrie: GEO wird in zeichneFrame gesetzt, dieser Ruf steht ausserhalb des Malwegs');
+  if(G.eins) return [px/G.Wn, py/G.Hn];
   let a=px, b=py;
   if(G.rotG){ const dx=px-G.Wn/2, dy=py-G.Hn/2, c=Math.cos(G.th), si=Math.sin(G.th);
     a=G.Wn/2+( dx*c+dy*si)/G.z; b=G.Hn/2+(-dx*si+dy*c)/G.z; }
-  aus[0]=(G.sx+a*G.cw/G.Wn)/G.bw; aus[1]=(G.sy+b*G.ch/G.Hn)/G.bh; return aus;
+  return [(G.sx+a*G.cw/G.Wn)/G.bw, (G.sy+b*G.ch/G.Hn)/G.bh];
 }
-function geoZuQuelle(px,py){ return geoZuQuelleIn(px,py,[0,0]); }
 /* Anteil der QUELLE -> Leinwand-Bildpunkt. Die Gegenrichtung, fuer einen Ort, der aus der Karte
    kommt und im Bild gemalt werden soll (die Bodenzellen). Liegt die Zelle ausserhalb des
    Ausschnitts, landet der Punkt ausserhalb der Leinwand - das ist die Wahrheit: was aus dem Bild
    gefahren ist, ist nicht mehr zu sehen. */
 function geoZuLeinwand(u,v){
-  const G=GEO; if(!G) return [u,v];
+  const G=GEO; if(!G) throw new Error('geoZuLeinwand ohne Geometrie: GEO wird in zeichneFrame gesetzt, dieser Ruf steht ausserhalb des Malwegs');   /* Begruendung oben bei geoZuQuelle */
   if(G.eins) return [u*G.Wn, v*G.Hn];
   let a=(u*G.bw-G.sx)/G.cw*G.Wn, b=(v*G.bh-G.sy)/G.ch*G.Hn;
   if(G.rotG){ const dx=a-G.Wn/2, dy=b-G.Hn/2, c=Math.cos(G.th), si=Math.sin(G.th);
@@ -31559,10 +31579,11 @@ function geoKarteLegen(cx,karte){
 /* Die Drehung des Bildes in Bogenmass - fuer eine RICHTUNG, die in Quellkoordinaten gerechnet
    wurde und auf der Leinwand gezeichnet wird. Ohne Drehung genau 0. */
 function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
-/* Die Geometrie als Schluesselteil - fuer den einen Vorrat, der den Ausschnitt kennen MUSS
-   (partikelMaske mischt Leinwandzeile und Karte in einem Feld, das laesst sich nicht trennen). */
-function geoMarke(){ const G=GEO; return (!G||G.eins)?'1'
-  :(G.sx.toFixed(2)+','+G.sy.toFixed(2)+','+G.cw.toFixed(2)+','+G.ch.toFixed(2)+','+(G.rotG||0).toFixed(3)); }
+/* GELOESCHT: geoMarke, die Geometrie als Schluesselteil (18.09.2026). Sie hatte genau einen
+   Rufer - partikelMaske, solange die "Tiefe aus der Bildzeile" Leinwandzeile und Karte in EINEM
+   Feld mischte und der Vorrat darum den Ausschnitt kennen musste. Der Regler ist gestrichen, das
+   Feld fragt keine Karte mehr, und kein anderer Vorrat mischt zwei Bezugsrahmen. Bliebe sie
+   stehen, waere sie eine Einladung, genau diese Falle noch einmal zu bauen. */
 function zeichneFrame(t,roh){
   if(!bereit) return;
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t); EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
@@ -31806,10 +31827,15 @@ function zeichneFrame(t,roh){
      und legt nur fuer sich Herkunft und Zeitpunkt daneben - in der Datei steht davon nichts.
      FASSUNG 4 seit dem 16.09.2026: der Aufenthalt hat die Verdeckung neben sich bekommen, und der
      weiche Zonenschnitt aelterer Rezepte heisst jetzt ausdruecklich tiefeVerdeckung:'zone'.
+     FASSUNG 5 seit dem 18.09.2026: "Tiefe aus der Bildzeile" (verdecken) ist gestrichen. Der
+     Schluessel wird beim Laden aus dem Effekt ENTFERNT, also schreibt ihn das naechste Sichern
+     nicht mehr mit - und wer ein solches Rezept oeffnet, bekommt es gesagt (verdeckenAltZahl).
+     Ein gestrichener Wert darf weder stillschweigend weiterwirken noch stillschweigend
+     verschwinden; die Datei selbst bleibt unangetastet, bis jemand sichert.
      SPAETER (docs/effektclip/KONZEPT-LANGE-VIDEOS.md): mehrere Zustaende je Titel, je Abschnitt ein Rezept, innerhalb
      eines Abschnitts duerfen Parameter fahren. Das wird diese Form ERWEITERN (eine Liste von Abschnitten, jeder mit
      genau diesen Feldern), nicht ersetzen - wer hier etwas dazulegt, denke daran und hebe dann die fassung. */
-  function presetJSON(){ return JSON.stringify({ fassung:4, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
+  function presetJSON(){ return JSON.stringify({ fassung:5, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
     if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art,schlaege:(r.schleife.schlaege|0)||0,fenster:Math.max(0,Math.round((+r.schleife.fenster||0)*2)/2)}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
@@ -31912,7 +31938,15 @@ function zeichneFrame(t,roh){
       if(r.typ==='sicherung'&&r.verr==='abwedeln') e.verr='nachbelichten';   /* Ablagen aus der Abwedeln-Zeit: Schwarz abgewedelt ist nichts */
       if(alt&&r.typ==='farbton'&&r.invert){ e.winkel=-e.winkel; e.invert=0; } }   /* invert hiess bis Fassung 1 nur: andere Richtung */
     zoneUebersetzen(e,r,fassung);
+    /* DER GESTRICHENE SCHLUESSEL VERLAESST DEN EFFEKT (18.09.2026, Fassung 5). Die Schleife oben
+       kopiert JEDEN Schluessel der Datei auf den Effekt, und effekteJSON schreibt jeden Schluessel
+       des Effekts zurueck - ohne diese Zeile reiste "verdecken" durch jedes Sichern weiter,
+       unsichtbar und wirkungslos. Genau das ist "stillschweigend weiterwirken". */
+    if(e.typ==='partikel') delete e.verdecken;
     return e; }
+  /* WIE VIELE PARTIKEL-EFFEKTE DIESES REZEPTS DEN GESTRICHENEN REGLER WIRKLICH GEZOGEN HATTEN.
+     Nur ueber 0 - ein Schluessel mit Wert 0 hat nie etwas getan und ist keine Meldung wert. */
+  function verdeckenAltZahl(arr){ return (arr||[]).filter(r=>r&&r.typ==='partikel'&&+r.verdecken>0).length; }
   /* DAS ALTE REZEPT BEHAELT SEIN BILD (16.09.2026). Bis Fassung 3 hiess ein Aufenthalt vorn/hinten
      am Partikel-Effekt: schneide die Zone weich aus, ohne Betretungsverbot. Das ist keines der
      beiden heutigen Aemter, sondern ein drittes Verhalten - also wird es beim Laden benannt statt
@@ -32902,6 +32936,7 @@ function zeichneFrame(t,roh){
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
+    { const nv=verdeckenAltZahl(R.effekte); if(nv) hinweis+=' \u2014 '+(nv===1?'ein Effekt trug':nv+' Effekte trugen')+' \u201eTiefe aus der Bildzeile\u201c; der Regler ist gestrichen, der Wert wirkt nicht mehr'; }
     if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat('Effektclip des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Effektclip beim Titel'); }
     quellenUI(); vorbStand(); stufeSetzen(stufeGemerkt());   /* Akkordeon: die zuletzt geoeffnete Stufe, beim ersten Mal die Quelle */
     t0=performance.now();
@@ -33423,69 +33458,33 @@ function zeichneFrame(t,roh){
     const y = Math.max(0, Math.min(tp.h - 1, Math.round(v * tp.h)));
     return Math.max(0, Math.min(1, (tp.z[y * tp.w + x] - tp.zlo) / (tp.zhi - tp.zlo)));
   }
-  /* WIE WEIT HINTEN DIE TEILCHEN AUFHOEREN - UND WAS VOR IHNEN STEHT (Caspar_D, 14.09.2026:
-     "koennen wir bei partikeln wirklich haerter sagen, ab welcher vertikalen ebene im Bild sie
-     nicht mehr zu sehen sein sollen, gerade hinten leuchtet z.T. noch nach vorne durch Objekte
-     hindurch"). Beides ist dieselbe Frage: ein Teilchen leuchtet durch eine Figur, weil es keine
-     TIEFE hat. Es bekommt hier eine, und zwar aus der Bildzeile, in der es steht - am Horizont
-     fern, unten nah. Steht die Szene an dieser Stelle NAEHER als das Teilchen, ist etwas davor
-     und das Teilchen verschwindet.
-     Gerechnet wird das nicht je Teilchen, sondern EINMAL als Maske ueber das Bild: die Tiefe
-     haengt nur an der Zeile, also ist die Sichtbarkeit eine Funktion von Ort - und die kann man
-     hinlegen und wiederverwenden. Drei Masken werden behalten; jede kostet vier Byte je
-     Bildpunkt, und wer am Regler zieht, erzeugt sonst ein Dutzend davon. */
+  /* DER HORIZONT: OBERHALB DIESER LINIE KEIN MATERIAL.
+     Bis zum 18.09.2026 rechnete dieses Feld zwei Dinge in einem: den Horizont UND die gestrichene
+     "Tiefe aus der Bildzeile". Das war der Grund, warum es den Ausschnitt kennen musste - zp kam
+     aus der Leinwandzeile, zs aus der Karte, und Mischen liess sich das nicht trennen. Mit der
+     Streichung bleibt nur noch die Zeile: die Sichtbarkeit haengt allein an y, also ist das Feld
+     eine reine LEINWANDMASKE. Sie fragt keine Tiefenkarte mehr, sie kennt keinen Ausschnitt mehr,
+     und ihr Schluessel traegt darum wieder nur Horizont und Groesse - eine Fahrt baut sie nicht
+     neu. Drei Masken werden behalten; jede kostet vier Byte je Bildpunkt, und wer am Regler zieht,
+     erzeugt sonst ein Dutzend davon. */
   const PMASKEN = [];
-  function partikelMaske(hor, vd, W, H, tp){
-    const q = tiefeQuelle();
-    /* OB EINE TIEFENPROBE VORLAG, GEHOERT IN DEN SCHLUESSEL (Gegenlesen 17.09.2026). Wird die
-       Maske gebaut, waehrend die Karte noch unterwegs ist, kommt tp als null an und es entsteht
-       eine REINE Horizontmaske - bei gleichem Schluessel blieb die danach im Vorrat stehen, und
-       die Verdeckung fehlte fuer den Rest der Sitzung. */
-    /* DIE GEOMETRIE GEHOERT IN DEN SCHLUESSEL - UND ZWAR NUR HIER (18.09.2026). Dieses Feld ist das
-       einzige, das zwei Bezugsrahmen MISCHT: zp kommt aus der Leinwandzeile (die Zeile, in der das
-       Teilchen steht), zs aus der Karte. Trennen laesst sich das nicht, also haengt das ganze Feld
-       am Ausschnitt - und ein Geometrie-Effekt baut es JE BILD neu. Das kostet, und der Preis steht
-       im Nachweis. Er faellt nur an, wenn der Altregler "Verdecken" ueber 0 steht UND ein
-       Geometrie-Effekt laeuft; auf 0 (der Vorgabe) wird die Karte hier gar nicht gefragt und der
-       Schluessel traegt '1' wie bisher. */
-    const k = (q ? q.k : '-') + '|' + hor.toFixed(2) + '|' + vd.toFixed(2) + '|' + W + 'x' + H + '|' + (tp ? 't' : '-')
-            + '|' + ((vd > 0.001 && tp) ? geoMarke() : '1');
+  function partikelMaske(hor, W, H){
+    const k = hor.toFixed(2) + '|' + W + 'x' + H;
     const da = PMASKEN.find(m => m.k === k);
     if(da) return da.cv;
     try{
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const g = cv.getContext('2d'), im = g.createImageData(W, H), d = im.data;
-      /* DIE UMRECHNUNG SO SELTEN WIE MOEGLICH (18.09.2026, gemessen). Ohne Geometrie-Effekt steht
-         hier Zeichen fuer Zeichen der alte Ausdruck. OHNE DREHUNG haengt der Quellanteil u nur an
-         x und v nur an y - dann wird EINMAL je Spalte und einmal je Zeile umgerechnet statt
-         900 000 Mal je Feld; gefragt wird dieselbe Funktion, die Zerlegung ist keine zweite
-         Rechnung. Erst eine Drehung mischt x und y, und dann kostet es (Nachweis: 1024x878). */
-      const gEins = !GEO || GEO.eins, gDreh = !!(GEO && GEO.rotG);
-      let gU = null, gV = null; const gP = [0, 0];
-      if(!gEins && !gDreh){
-        gU = new Float64Array(W); for(let x = 0; x < W; x++) gU[x] = geoZuQuelleIn(x + 0.5, 0.5, gP)[0];
-        gV = new Float64Array(H); for(let y = 0; y < H; y++) gV[y] = geoZuQuelleIn(0.5, y + 0.5, gP)[1];
-      }
       for(let y = 0; y < H; y++){
         const vy = (y + 0.5) / H;
         /* Der Schnitt ist schmal, aber nicht hart: was innerhalb des Bildes aufhoert, hoert
            weich auf (Regel 16). Drei Hundertstel der Bildhoehe - man sieht keine Kante und
            trotzdem eine Grenze. */
         const hcut = hor > 0.001 ? Math.max(0, Math.min(1, (vy - hor) / 0.03)) : 1;
-        const zp = Math.max(0, Math.min(1, (vy - hor) / Math.max(0.05, 1 - hor)));
+        const a8 = Math.round(Math.max(0, Math.min(1, hcut)) * 255);
         for(let x = 0; x < W; x++){
-          let al = hcut;
-          if(al > 0.002 && vd > 0.001 && tp){
-            /* Leinwandpunkt -> Quellanteil. Ohne Geometrie-Effekt genau (x+0.5)/W und vy wie bisher. */
-            let qu, qv;
-            if(gEins){ qu = (x + 0.5) / W; qv = vy; }
-            else if(gU){ qu = gU[x]; qv = gV[y]; }
-            else { geoZuQuelleIn(x + 0.5, y + 0.5, gP); qu = gP[0]; qv = gP[1]; }
-            const zs = tiefeBei(tp, qu, qv);
-            al *= 1 - vd * Math.max(0, Math.min(1, (zs - zp - 0.04) * 6));
-          }
           const o = (y * W + x) * 4;
-          d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = Math.round(Math.max(0, Math.min(1, al)) * 255);
+          d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = a8;
         }
       }
       g.putImageData(im, 0, 0);
@@ -33696,11 +33695,16 @@ function zeichneFrame(t,roh){
      Und 17.09.2026: "sind die ganzen partikelpanel denn jetzt so, dass ich die ebene, die vorn und
      hinten trennt sehen kann" - bis heute: nein.
 
-     EINE QUELLE DER WAHRHEIT. Die Farbschicht liest die ALPHA DER MASKE (tiefeMaske im Modus
-     "vorn") - also genau das Feld, mit dem die Kette den Effekt beschneidet. Rot IST die Deckung
-     der Maske, Blau ihr Gegenteil, und der Verlauf dazwischen IST das weiche Band, kein Bild
-     davon. Eine zweite Rechnung koennte vom Ergebnis abdriften; dann zeigte die Ansicht etwas,
-     das der Clip nicht tut - die Falschaussage, gegen die die ganze Tiefenarbeit angetreten ist.
+     EINE QUELLE DER WAHRHEIT - UND GENAU SO GENAU, WIE DER SATZ ES SAGT (berichtigt 18.09.2026).
+     Hier stand: "Rot IST die Deckung der Maske." Das ist zu viel. Gemessen ist es eine DEFINIERTE
+     MISCHUNG, weil die Ansicht das Quellbild grau darunter zeigt:
+         Rot = 0,4 * Grau + 0,6 * Alpha(tiefeMaske im Modus "vorn")
+     und DIESE Beziehung stimmt exakt - Abweichung 0 an 2565 Proben, in allen vier Ausschnitten.
+     Der Punkt der Sache bleibt damit unberuehrt: es gibt keine ZWEITE Rechnung. Die Ansicht liest
+     dasselbe Feld, mit dem die Kette den Effekt beschneidet, und kann darum nicht vom Ergebnis
+     abdriften. Nur wer aus dem roten Byte die Deckung ZURUECKRECHNEN will, muss die Mischung
+     kennen - und dafuer steht sie jetzt hier. Eine zweite Rechnung zeigte etwas, das der Clip
+     nicht tut: die Falschaussage, gegen die die ganze Tiefenarbeit angetreten ist.
 
      SIE KOMMT NUR, WENN JEMAND ZIEHT (Understatement). Kein Knopf, keine Dauerschicht: waehrend
      Grenze oder Weichheit bewegt werden und einen Nachklang lang danach, damit man das Ergebnis
@@ -33784,8 +33788,9 @@ function zeichneFrame(t,roh){
     }catch(x){ return null; }
   }
   /* Das Graubild ist das ORIGINAL, ungeschnitten - genau wie die Maske, die ueber das ganze Bild
-     geht. Beide zeigen dieselbe Flaeche; waere hier der Ausschnitt der Fahrt drin, laege die Farbe
-     neben der Sache.
+     geht. Beide zeigen dieselbe Flaeche, und BEIDE bekommen den Ausschnitt erst beim Auflegen
+     (geoKarteLegen in tiefesichtMalen), mit derselben Matrix wie das Grundbild. Waere der
+     Ausschnitt schon hier drin, laege die Farbe neben der Sache.
      EINMAL ENTFAERBT, NICHT JE BILD (gemessen 17.09.2026): der Filter kostete auf der Leinwand des
      Studios 40 ms je Bild - beim Ziehen also zwei Bilder von dreien. Ein Standbild aendert sich
      nicht, also wird es behalten; eine Videoquelle laeuft weiter und wird jedes Bild neu entfaerbt
@@ -33838,7 +33843,17 @@ function zeichneFrame(t,roh){
       cx.drawImage(sch.linie,0,0);
       TSICHT_FERTIG={ cv, marke };
     }
-    frisch(g); g.drawImage(TSICHT_FERTIG.cv,0,0); frisch(g);
+    /* DIE ANSICHT FAEHRT MIT (18.09.2026, gemessen). Bis heute lag sie bei 0,0, waehrend der Clip
+       darunter den Ausschnitt zeigte: der Fingerabdruck der Ansicht war bei Ausschnitt 1,00 /
+       0,80 / 0,70 / 0,50 VIERMAL DERSELBE (dc8c37f0), mittleres Rot 122,23 unveraendert. Genau die
+       Ansicht, die eine einzige Quelle der Wahrheit sein soll, zeigte etwas anderes als der Clip.
+       Aufgelegt wird jetzt mit DENSELBEN Funktionen wie die Maske - geoKarteLegen, kein zweiter
+       Weg -, und weil Grau, Farbe und Haarlinie alle drei in den Massen der QUELLE liegen, faehrt
+       das fertige Bild in EINEM Stueck mit. Der Vorrat bleibt dadurch unberuehrt: die Marke kennt
+       den Ausschnitt nicht, weil er nicht mehr im Bild steckt, sondern im Auflegen - eine Fahrt
+       baut die Ansicht also NICHT je Bild neu (anders als es die alte partikelMaske tat).
+       Ohne Geometrie-Effekt ist das Zeichen fuer Zeichen das alte drawImage(cv,0,0). */
+    frisch(g); geoKarteLegen(g,TSICHT_FERTIG.cv); frisch(g);
   }
   /* WIE VIEL DES BILDES IST NAH, WIE VIEL BAND, WIE VIEL FERN. Gezaehlt auf demselben Raster, auf
      dem der Maler entscheidet (tiefeProben, 160 Punkte breit) - nicht geschaetzt. "Nah" heisst:
