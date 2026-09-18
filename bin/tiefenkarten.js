@@ -193,7 +193,32 @@ function verwaiste(titel, alle, buch) {
   return { karten, eintraege };
 }
 
-const buchLesen = () => { try { return JSON.parse(fs.readFileSync(BUCH, 'utf8')); } catch (e) { return { ausweis: AUSWEIS, karten: {} }; } };
+/* DAS BUCH WIRD NIE STILL ERSETZT (18.09.2026, Gegenlesen an einem Schwesterwerkzeug gefunden).
+   Hier stand: try { lesen } catch { leeres Buch }. Ein einziger misslungener Lesevorgang liess den
+   Lauf also mit einem LEEREN Buch anfangen - und weiter unten wird es vollstaendig zurueckgeschrieben.
+   326 Eintraege und die Modellidentitaet waeren weg gewesen, ohne ein Wort.
+   Der Fall ist nicht theoretisch, er war SELBSTVERSTAERKEND: geschrieben wurde die ganze Datei alle
+   zwanzig Bilder (und am Ende noch einmal). Ein Abbruch mitten im Schreiben hinterlaesst ein
+   abgeschnittenes Buch - und genau das haette der naechste Lauf fuer unlesbar gehalten und ersetzt.
+   Jetzt: fehlt die Datei, ist ein frisches Buch richtig. Ist sie DA und nicht lesbar, bricht der Lauf
+   ab und sagt, was zu tun ist. Geschrieben wird ueber eine Nebendatei und rename - das ist auf einer
+   Datei atomar, also kann kein Abbruch mehr ein halbes Buch hinterlassen. */
+const buchLesen = () => {
+  if (!fs.existsSync(BUCH)) return { ausweis: AUSWEIS, karten: {} };
+  try { return JSON.parse(fs.readFileSync(BUCH, 'utf8')); }
+  catch (e) {
+    console.error(`\n  ${BUCH} ist da, aber nicht lesbar: ${e.message}`);
+    console.error('  Der Lauf bricht ab, statt das Buch zu ersetzen — darin steht die Herkunft jeder');
+    console.error('  gerechneten Karte. Lege die Datei beiseite und starte neu, dann wird sie neu');
+    console.error('  aufgebaut; oder stelle sie aus einer Sicherung her.');
+    process.exit(2);
+  }
+};
+const buchSchreiben = (buch) => {
+  const neben = BUCH + '.neu';
+  fs.writeFileSync(neben, JSON.stringify(buch, null, 1));
+  fs.renameSync(neben, BUCH);
+};
 const stempel = (p) => { try { const s = fs.statSync(p); return s.size + ':' + Math.round(s.mtimeMs); } catch (e) { return null; } };
 
 /* Bild holen und Karte schreiben - beides ueber ffmpeg, das ohnehin im
@@ -319,10 +344,10 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
     console.log(`  [${n}/${offen.length}] ${marke}  ${bm[0]}x${bm[1]}  (gerechnet ${W}x${H})  aus ${path.basename(b.datei)} → ${path.basename(b.ziel)}`);
     melden.lauf({ was: 'Tiefenkarten werden gerechnet', n, von: offen.length, nEinheit: 'Standbild',
       jetzt: b.id.slice(0, 8), rest: rest > 3 ? `noch etwa ${rest > 90 ? Math.round(rest / 60) + ' Minuten' : rest + ' Sekunden'}` : '' });
-    if (n % 20 === 0) fs.writeFileSync(BUCH, JSON.stringify(buch, null, 1));
+    if (n % 20 === 0) buchSchreiben(buch);
   }
 
-  fs.writeFileSync(BUCH, JSON.stringify(buch, null, 1));
+  buchSchreiben(buch);
   melden.ausLauf();
   zeiten.sort((a, b) => a - b);
   console.log(`\n  ${n - fehler} Karten gerechnet${fehler ? `, ${fehler} Fehler` : ''} — Median ${zeiten[zeiten.length >> 1]} ms je Bild.`);
