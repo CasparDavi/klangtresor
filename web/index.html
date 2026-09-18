@@ -29000,7 +29000,9 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
              Grund, warum sich das Raster ueber eine Schulter legt statt darueber hinwegzugehen. */
         let streck=1, winkel=0;
         if(tp&&auf>0.001){
-          const u2=x2/Wn, v2=y2/Hn, zz=tiefeBei(tp,u2,v2);   /* 1 nah, 0 fern, je Quelle gedehnt */
+          /* AUCH HIER IN QUELLKOORDINATEN (18.09.2026): x2,y2 sind Leinwandpunkte, tiefeBei fragt
+             die Karte. Ohne Geometrie-Effekt genau x2/Wn und y2/Hn wie bisher. */
+          const Q2=geoZuQuelle(x2,y2), u2=Q2[0], v2=Q2[1], zz=tiefeBei(tp,u2,v2);   /* 1 nah, 0 fern, je Quelle gedehnt */
           /* REICHWEITE (Caspar_D, 14.09.2026: "hinten muss die laenge der strahlen so sein, dass
              sie es nicht mehr erreichen, so vermeidet man punkte im Himmel"). Ein Dotprojektor
              kommt nicht unendlich weit - was dahinter liegt, bleibt dunkel. Und das Fernste im
@@ -29027,10 +29029,15 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           let nx=-(tiefeBei(tp,u2+ep,v2)-tiefeBei(tp,u2-ep,v2))*gk,
               ny=-(tiefeBei(tp,u2,v2+ep)-tiefeBei(tp,u2,v2-ep))*gk, nz=1;
           const nl=Math.hypot(nx,ny,nz); nx/=nl; ny/=nl; nz/=nl;
-          let lx=(ox/Wn-u2), ly=(oy/Hn-v2); const ll=Math.hypot(lx,ly,1.1)||1; lx/=ll; ly/=ll;
+          const OQ=geoZuQuelle(ox,oy);   /* der Ort der Leuchte in derselben Skala wie u2,v2 - sonst zeigte der Lichtvektor woandershin als die Normale */
+          let lx=(OQ[0]-u2), ly=(OQ[1]-v2); const ll=Math.hypot(lx,ly,1.1)||1; lx/=ll; ly/=ll;
           if(nx*lx+ny*ly+nz*(1.1/ll) < 0.06) continue;     /* weggedreht: kein Auftreffpunkt */
           streck=Math.min(3.5,1/Math.max(0.28,nz));
-          if(streck>1.02){ winkel=Math.atan2(ny,nx); al=Math.min(1,al/streck); }
+          /* Die Normale ist in Quellkoordinaten gerechnet, gezeichnet wird auf der Leinwand: mit
+             dem Bild gedreht. Ohne Drehung ist geoDrehung() genau 0. Was NICHT mitgerechnet wird:
+             die ungleiche Dehnung, wenn Quelle und Leinwand verschiedene Seitenverhaeltnisse haben -
+             die stand hier schon vorher nicht drin, und sie dreht den Winkel nur um Bruchteile. */
+          if(streck>1.02){ winkel=Math.atan2(ny,nx)+geoDrehung(); al=Math.min(1,al/streck); }
         }
         { const rp=Math.max(0.6,rr); al*=(rr/rp)*(rr/rp); rr=rp; }   /* erst jetzt die Untergrenze dieser Leinwand; ein groesserer Punkt als im Studio traegt dieselbe Lichtmenge (Flaeche, also im Quadrat) */
         if(x2<-rr*4||y2<-rr*4||x2>Wn+rr*4||y2>Hn+rr*4) continue;
@@ -29355,9 +29362,11 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
                  Beobachtung 2: "Wandern verschiebt den Koerper, nachdem die Entfernung
                  feststeht"). */
     const gebOrt=(i,px,py)=>{
-      if(HERK==='quelle'){ const P=quellPunkt(e,i,hs,Wn,Hn); return [P[0]/Wn,P[1]/Hn]; }
-      if(HERK==='rand') return [px/Wn, RUNTER?0:1];
-      return [px/Wn,py/Hn]; };
+      /* Alle drei Zweige geben den Ort als Anteil der QUELLE - das Raster kennt nichts anderes.
+         Der Rand ist der Rand der LEINWAND (dort kommt das Teilchen herein), umgerechnet. */
+      if(HERK==='quelle'){ const P=quellPunkt(e,i,hs,Wn,Hn); return geoZuQuelle(P[0],P[1]); }
+      if(HERK==='rand') return geoZuQuelle(px, RUNTER?0:Hn);
+      return geoZuQuelle(px,py); };
     const pzVon=(i,px,py)=>{ const G=gebOrt(i,px,py);
       return entfernungIn(freiBereich(TPR,G[0],G[1],ZG.g,ZG.w,LEER,ZONE),hs(i+11000)); };
     /* Der Platz einer Bodenzelle auf der Leinwand. DIESELBE Tabelle traegt Geburtsort und Malort
@@ -29365,13 +29374,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        oben fern, ein Feuer in der Naehe und ein Feuer in der Ferne" - nur fuer die Zahl und nicht
        fuer das Bild. */
     const bodenPlatz=r=>{ const k=Math.min(BODEN.n-1,Math.floor(r*BODEN.n));
-      return [BODEN.x[k]/TPR.w*Wn, BODEN.y[k]/TPR.h*Hn]; };
+      /* Die Zelle steht in der KARTE, gemalt wird auf der Leinwand: die Gegenrichtung derselben
+         Geometrie. Faehrt der Ausschnitt ueber die Zelle hinweg, landet ihr Teilchen ausserhalb -
+         das Feuer, das aus dem Bild gefahren ist, brennt nicht am Bildrand weiter. */
+      return geoZuLeinwand(BODEN.x[k]/TPR.w, BODEN.y[k]/TPR.h); };
     /* Wie weit ein Koerper um seinen Ort herum reicht, in Vielfachen von sz - abgelesen an den
        Malern: der Vogel spannt die Fluegel (sz*2,3), der Regen zieht einen Strich nach unten
        (sz*4), Blase und Bokeh haben einen Hof, die runden Arten enden bei ihrem Radius. */
     const ZKOERPER=({schwarm:2.6, regen:4.2, blasen:1.4, bokeh:2.2, blaetter:1.7, glitzer:2.2,
       gluehwuermchen:4.5, schwaden:3.2, schmetterling:2.2, sternschnuppen:1.2, daunen:1.5, pusteblume:1.8}[e.art])||1.2;
-    const zNah=(px,py)=>tiefeNahAn(TPR,px/Wn,py/Hn,ZG.g,ZG.w);
+    /* DIE RASTERFRAGE IN QUELLKOORDINATEN (18.09.2026). px,py sind Leinwandpunkte; das Raster
+       steht in der Quelle. Ohne Geometrie-Effekt liefert geoZuQuelle genau px/Wn und py/Hn. */
+    const zNah=(px,py)=>{ const Q=geoZuQuelle(px,py); return tiefeNahAn(TPR,Q[0],Q[1],ZG.g,ZG.w); };
     /* Verboten ist, was jenseits der GRENZE liegt: bei „nur hinten" alles, was naeher als die
        Grenze ist, bei „nur vorn" alles, was ferner ist. Dieselbe Kurve wie die Maske, an der
        Mitte abgeschnitten - so heisst „nur hinten" genau das, was die Zeile sagt. */
@@ -29850,7 +29864,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
          kein zweites Raster. Bleibt die Maske aus (die Karte ist noch unterwegs), wird dieses
          Band nicht verdeckt - derselbe ehrliche Rueckfall wie im Schnitt-Weg. */
       if(BD&&!BD.ohne&&bandDrin){ const mk=tiefeMaske('hinten',Wn,Hn,-1,-1,BD);
-        if(mk){ bx.globalCompositeOperation='destination-in'; bx.globalAlpha=1; bx.drawImage(mk,0,0); }
+        if(mk){ bx.globalCompositeOperation='destination-in'; bx.globalAlpha=1; geoKarteLegen(bx,mk); }   /* die Bandmaske faehrt mit dem Ausschnitt mit - wie jede Karte (geoKarteLegen) */
         bx.globalCompositeOperation=SCHICHT_OP; }
     }
     /* Die fertigen Schichten in EINEM Zug dorthin, wo die Teilchen ohne Baender hingegangen
@@ -29867,6 +29881,12 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         lx2.globalCompositeOperation='destination-in'; lx2.drawImage(e._rc,0,0);   /* Licht mal Rauchdichte */
         zx.globalCompositeOperation='lighter'; zx.globalAlpha=0.9; zx.drawImage(e._rl,0,0); zx.globalAlpha=1; }
       cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._rc,0,0); }
+    /* DIESE MASKE LIEGT BEI 0,0 - UND DAS IST KEIN VERGESSENES MITFAHREN (18.09.2026). Sie ist
+       die einzige, die in LEINWANDKOORDINATEN gebaut wird: der Horizont und die Tiefe aus der
+       Bildzeile sind Eigenschaften der Zeile, in der das Teilchen auf der Leinwand steht, nicht
+       der Quelle. Der Ausschnitt steckt schon INNEN drin - partikelMaske rechnet ihn beim Bau in
+       die eine Frage hinein, die die Karte stellt (geoMarke im Schluessel). Sie hier ein zweites
+       Mal durch die Geometrie zu schicken, waere derselbe Weg doppelt gegangen. */
     if(schnitt){ const mk=partikelMaske(hor, vd, Wn, Hn, tpP);
       if(mk){ cx.globalCompositeOperation='destination-in'; cx.globalAlpha=1; cx.drawImage(mk,0,0); cx.globalCompositeOperation='source-over'; }
       echtCx.globalCompositeOperation=echtModus; echtCx.globalAlpha=1; echtCx.drawImage(e._vc,0,0);
@@ -31451,6 +31471,98 @@ function kbSatz(e){ const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const
     +' s), hin und zurück also '+kf((2*T*takt).toFixed(1))+' s. Im Pult hält sie dazwischen einen Takt; im Clip füllen die'
     +' Halte den Rest der Cliplaenge, und passt der Lauf nicht hinein, läuft er über so viele Takte, wie hineinpassen.'; }
 /* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
+/* ===================== DIE GEOMETRIE DIESES BILDES (18.09.2026) =====================
+   Caspar_D, 18.09.2026 (Rauchtest): ein Teilchen wurde von einer Flaeche verdeckt, DIE WOANDERS
+   STAND. Der Grund stand an zwei Stellen und war derselbe: die Tiefenkarte wurde immer GANZ
+   aufgelegt (drawImage(karte,0,0)) und immer GANZ gefragt (px/Wn, py/Hn) - also so, als sei das
+   ganze Quellbild zu sehen. zeichneFrame zeigt aber seit es Geometrie-Effekte gibt nur den
+   AUSSCHNITT (sx,sy,cw,ch), gedreht um rotG: die alte "Fahrt", "Zoom schlaegt" (scaleMul),
+   "Kippen" (rotG) und die Ken Burns Fahrt, die den Ausschnitt weit wandern laesst.
+   Gemessen an Okkultation (1024x878): bis 153,6 Ausgabebildpunkte Versatz bei Ausschnitt 0,70.
+
+   DIE KARTE WIRD NICHT JE BILD NEU GEBAUT. Sie bleibt, was sie schon immer war: ein Bild in den
+   Massen der QUELLE (tiefeMaske zeichnet die Tiefenkarte GANZ in ein W x H grosses Feld), je
+   Quelle und Einstellung gebaut und behalten. Nur das AUFLEGEN bekommt dieselbe Geometrie wie das
+   Grundbild. Damit aendert sich am Vorrat, am Schluessel und an den Baukosten nichts - eine Maske
+   kostet 12,2 ms bei Studiobreite, und bei einer Fahrt aendert sich der Ausschnitt in JEDEM Bild.
+   Fuer die Rasterfrage gilt dasselbe in der Umkehrung: ein Punkt der Leinwand wird in
+   QUELLKOORDINATEN umgerechnet, bevor das Raster gefragt wird.
+
+   DIE ABBILDUNG, Zeile fuer Zeile aus zeichneFrame abgelesen (dort steht sie zweimal - einmal als
+   drawImage(quell,sx,sy,cw,ch,0,0,Wn,Hn), einmal als die Drehung davor):
+     Quelle (X,Y)  ->  a=(X-sx)/cw*Wn, b=(Y-sy)/ch*Hn   ->  T(a,b)
+     T(p) = Mitte + R(th) * ( z * (p - Mitte) ),  th=rotG in Bogenmass, z=cos|th|+r*sin|th|
+   Die Vorbereitung (ovb) aendert daran nichts: sie backt denselben Ausschnitt in einem ersten
+   Schritt in eine Leinwand voller Groesse, die Gesamtabbildung bleibt dieselbe.
+
+   DER RAND. Der Ausschnitt ist auf [0,bw-cw] geklemmt, liegt also immer ganz in der Quelle - beim
+   Auflegen gibt es keinen Rand. Bei Drehung deckt z die Leinwand ab; sollte die Deckung je um ein
+   Haar zu knapp sein, fehlt an derselben Stelle auch das GRUNDBILD - Karte und Bild koennen nicht
+   auseinanderlaufen, weil sie durch dieselbe Matrix gehen. Fuer die Rasterfrage gilt der
+   FORTGESETZTE RAND: geoZuQuelle klemmt nicht, tiefeNahAn und tiefeBei klemmen ihren Rasterindex,
+   also gilt draussen der Randwert. Begruendung: eine Tiefenkarte ist eine Flaeche; ausserhalb des
+   Ausschnitts ist der naechste bekannte Wert der Randwert. "Als fern werten" liesse Teilchen genau
+   an der Ausschnittkante aufspringen (eine Kante, die vom Ausschnitt abhaengt), "gar nicht
+   verdeckt" liesse sie dort durchschlagen. Der fortgesetzte Rand ist ausserdem stetig, und darauf
+   ruht das Gefaelle, dem zAusweichen folgt.
+
+   BITGLEICH OHNE GEOMETRIE-EFFEKT. Steht kein Geometrie-Effekt an (oder steht sein Lauf gerade auf
+   null), ist sx=sy=0, cw=bw, ch=bh, rotG=0 - dann nehmen alle drei Funktionen unten den alten
+   Ausdruck Zeichen fuer Zeichen. Kein neuer Rundungsweg, also auch keine neue Naht. */
+let GEO=null;
+function geoBild(bw,bh,sx,sy,cw,ch,rotG,Wn,Hn){
+  const th=rotG?rotG*Math.PI/180:0, rad=Math.abs(th);
+  /* z Zeichen fuer Zeichen wie in zeichneFrame - eine zweite Rechnung waere eine zweite Wahrheit. */
+  const z=rotG?(Math.cos(rad)+Math.max(Wn,Hn)/Math.min(Wn,Hn)*Math.sin(rad)):1;
+  return { bw,bh,sx,sy,cw,ch,rotG,th,z,Wn,Hn,
+    eins:(sx===0&&sy===0&&cw===bw&&ch===bh&&!rotG) };
+}
+/* Leinwand-Bildpunkt -> Anteil der QUELLE (0..1 im sichtbaren Teil). Geklemmt wird NICHT: das tut
+   der Rasterindex in tiefeNahAn/tiefeBei, und das ist der fortgesetzte Rand von oben.
+   ZWEI AUFRUFARTEN, EINE RECHNUNG. Der Maler fragt ein paar tausend Mal je Bild, da ist ein neues
+   Paar je Frage nicht zu merken. partikelMaske fragt je BILDPUNKT - bei 1024x878 rund 900 000 Mal,
+   und dort kosteten die Paare gemessen 23 ms je Feld. Darum gibt es die Form mit Ablage; die
+   bequeme Form ruft sie auf, damit die Rechnung nur einmal dasteht. */
+function geoZuQuelleIn(px,py,aus){
+  const G=GEO; if(!G){ aus[0]=px; aus[1]=py; return aus; }
+  if(G.eins){ aus[0]=px/G.Wn; aus[1]=py/G.Hn; return aus; }
+  let a=px, b=py;
+  if(G.rotG){ const dx=px-G.Wn/2, dy=py-G.Hn/2, c=Math.cos(G.th), si=Math.sin(G.th);
+    a=G.Wn/2+( dx*c+dy*si)/G.z; b=G.Hn/2+(-dx*si+dy*c)/G.z; }
+  aus[0]=(G.sx+a*G.cw/G.Wn)/G.bw; aus[1]=(G.sy+b*G.ch/G.Hn)/G.bh; return aus;
+}
+function geoZuQuelle(px,py){ return geoZuQuelleIn(px,py,[0,0]); }
+/* Anteil der QUELLE -> Leinwand-Bildpunkt. Die Gegenrichtung, fuer einen Ort, der aus der Karte
+   kommt und im Bild gemalt werden soll (die Bodenzellen). Liegt die Zelle ausserhalb des
+   Ausschnitts, landet der Punkt ausserhalb der Leinwand - das ist die Wahrheit: was aus dem Bild
+   gefahren ist, ist nicht mehr zu sehen. */
+function geoZuLeinwand(u,v){
+  const G=GEO; if(!G) return [u,v];
+  if(G.eins) return [u*G.Wn, v*G.Hn];
+  let a=(u*G.bw-G.sx)/G.cw*G.Wn, b=(v*G.bh-G.sy)/G.ch*G.Hn;
+  if(G.rotG){ const dx=a-G.Wn/2, dy=b-G.Hn/2, c=Math.cos(G.th), si=Math.sin(G.th);
+    a=G.Wn/2+G.z*(dx*c-dy*si); b=G.Hn/2+G.z*(dx*si+dy*c); }
+  return [a,b];
+}
+/* Eine Karte in den Massen der QUELLE auflegen - mit derselben Geometrie wie das Grundbild.
+   EIN drawImage, also derselbe Preis wie das alte drawImage(karte,0,0): die Grafikkarte skaliert
+   ohnehin, ob 1:1 oder nicht. Ohne Geometrie-Effekt geht es Zeichen fuer Zeichen den alten Weg. */
+function geoKarteLegen(cx,karte){
+  const G=GEO;
+  if(!G||G.eins){ cx.drawImage(karte,0,0); return; }
+  const W=karte.width, H=karte.height;
+  cx.save();
+  if(G.rotG){ cx.translate(G.Wn/2,G.Hn/2); cx.rotate(G.th); cx.scale(G.z,G.z); cx.translate(-G.Wn/2,-G.Hn/2); }
+  cx.drawImage(karte, G.sx/G.bw*W, G.sy/G.bh*H, G.cw/G.bw*W, G.ch/G.bh*H, 0,0,G.Wn,G.Hn);
+  cx.restore();
+}
+/* Die Drehung des Bildes in Bogenmass - fuer eine RICHTUNG, die in Quellkoordinaten gerechnet
+   wurde und auf der Leinwand gezeichnet wird. Ohne Drehung genau 0. */
+function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
+/* Die Geometrie als Schluesselteil - fuer den einen Vorrat, der den Ausschnitt kennen MUSS
+   (partikelMaske mischt Leinwandzeile und Karte in einem Feld, das laesst sich nicht trennen). */
+function geoMarke(){ const G=GEO; return (!G||G.eins)?'1'
+  :(G.sx.toFixed(2)+','+G.sy.toFixed(2)+','+G.cw.toFixed(2)+','+G.ch.toFixed(2)+','+(G.rotG||0).toFixed(3)); }
 function zeichneFrame(t,roh){
   if(!bereit) return;
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t); EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
@@ -31471,6 +31583,10 @@ function zeichneFrame(t,roh){
   const eff=Math.max(.1,Math.min(1,crop/scaleMul)), cw=bw*eff, ch=bh*eff;
   const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
   const sx=Math.max(0,Math.min(bw-cw,cx0-cw/2)), sy=Math.max(0,Math.min(bh-ch,cy0-ch/2));
+  /* AB HIER STEHT DIE GEOMETRIE DIESES BILDES. Alles, was danach die Tiefenkarte auflegt oder
+     fragt, geht durch sie - die Masken der Kette, die Baender der Teilchen, der Geburtsort, die
+     Bodenzellen und der Laser. Gesetzt VOR dem ersten Zeichenschritt, gelesen bis zum letzten. */
+  GEO=geoBild(bw,bh,sx,sy,cw,ch,rotG,Wn,Hn);
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
   /* Vorbereitung: das Grundbild einmal mit dem ruhigen Filter nach ovb, die Effekte arbeiten darauf. */
   let quell=bild, qsx=sx, qsy=sy, qcw=cw, qch=ch;
@@ -33325,12 +33441,31 @@ function zeichneFrame(t,roh){
        Maske gebaut, waehrend die Karte noch unterwegs ist, kommt tp als null an und es entsteht
        eine REINE Horizontmaske - bei gleichem Schluessel blieb die danach im Vorrat stehen, und
        die Verdeckung fehlte fuer den Rest der Sitzung. */
-    const k = (q ? q.k : '-') + '|' + hor.toFixed(2) + '|' + vd.toFixed(2) + '|' + W + 'x' + H + '|' + (tp ? 't' : '-');
+    /* DIE GEOMETRIE GEHOERT IN DEN SCHLUESSEL - UND ZWAR NUR HIER (18.09.2026). Dieses Feld ist das
+       einzige, das zwei Bezugsrahmen MISCHT: zp kommt aus der Leinwandzeile (die Zeile, in der das
+       Teilchen steht), zs aus der Karte. Trennen laesst sich das nicht, also haengt das ganze Feld
+       am Ausschnitt - und ein Geometrie-Effekt baut es JE BILD neu. Das kostet, und der Preis steht
+       im Nachweis. Er faellt nur an, wenn der Altregler "Verdecken" ueber 0 steht UND ein
+       Geometrie-Effekt laeuft; auf 0 (der Vorgabe) wird die Karte hier gar nicht gefragt und der
+       Schluessel traegt '1' wie bisher. */
+    const k = (q ? q.k : '-') + '|' + hor.toFixed(2) + '|' + vd.toFixed(2) + '|' + W + 'x' + H + '|' + (tp ? 't' : '-')
+            + '|' + ((vd > 0.001 && tp) ? geoMarke() : '1');
     const da = PMASKEN.find(m => m.k === k);
     if(da) return da.cv;
     try{
       const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       const g = cv.getContext('2d'), im = g.createImageData(W, H), d = im.data;
+      /* DIE UMRECHNUNG SO SELTEN WIE MOEGLICH (18.09.2026, gemessen). Ohne Geometrie-Effekt steht
+         hier Zeichen fuer Zeichen der alte Ausdruck. OHNE DREHUNG haengt der Quellanteil u nur an
+         x und v nur an y - dann wird EINMAL je Spalte und einmal je Zeile umgerechnet statt
+         900 000 Mal je Feld; gefragt wird dieselbe Funktion, die Zerlegung ist keine zweite
+         Rechnung. Erst eine Drehung mischt x und y, und dann kostet es (Nachweis: 1024x878). */
+      const gEins = !GEO || GEO.eins, gDreh = !!(GEO && GEO.rotG);
+      let gU = null, gV = null; const gP = [0, 0];
+      if(!gEins && !gDreh){
+        gU = new Float64Array(W); for(let x = 0; x < W; x++) gU[x] = geoZuQuelleIn(x + 0.5, 0.5, gP)[0];
+        gV = new Float64Array(H); for(let y = 0; y < H; y++) gV[y] = geoZuQuelleIn(0.5, y + 0.5, gP)[1];
+      }
       for(let y = 0; y < H; y++){
         const vy = (y + 0.5) / H;
         /* Der Schnitt ist schmal, aber nicht hart: was innerhalb des Bildes aufhoert, hoert
@@ -33341,7 +33476,12 @@ function zeichneFrame(t,roh){
         for(let x = 0; x < W; x++){
           let al = hcut;
           if(al > 0.002 && vd > 0.001 && tp){
-            const zs = tiefeBei(tp, (x + 0.5) / W, vy);
+            /* Leinwandpunkt -> Quellanteil. Ohne Geometrie-Effekt genau (x+0.5)/W und vy wie bisher. */
+            let qu, qv;
+            if(gEins){ qu = (x + 0.5) / W; qv = vy; }
+            else if(gU){ qu = gU[x]; qv = gV[y]; }
+            else { geoZuQuelleIn(x + 0.5, y + 0.5, gP); qu = gP[0]; qv = gP[1]; }
+            const zs = tiefeBei(tp, qu, qv);
             al *= 1 - vd * Math.max(0, Math.min(1, (zs - zp - 0.04) * 6));
           }
           const o = (y * W + x) * 4;
@@ -33538,7 +33678,10 @@ function zeichneFrame(t,roh){
   /* Der Maler hat gezeichnet, die Maske sagt wo: erst alles wegnehmen, was ausserhalb liegt,
      dann das Bild von vorher darunterlegen. */
   function maskeAnwenden(cx, maske, vorherCv){
-    cx.globalCompositeOperation='destination-in'; cx.drawImage(maske,0,0);
+    /* DIE MASKE FAEHRT MIT (18.09.2026). Sie liegt in den Massen der QUELLE; aufgelegt wird sie mit
+       derselben Matrix wie das Grundbild, sonst schnitte sie an einer Stelle, die das Bild gar
+       nicht zeigt. Ohne Geometrie-Effekt ist das Zeichen fuer Zeichen das alte drawImage(maske,0,0). */
+    cx.globalCompositeOperation='destination-in'; geoKarteLegen(cx,maske);
     cx.globalCompositeOperation='destination-over'; cx.drawImage(vorherCv,0,0);
     frisch(cx);
   }
