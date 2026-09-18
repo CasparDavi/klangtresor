@@ -67,9 +67,31 @@ darum ein **geschlossener Weg**: halten · hin · halten · zurück · halten. I
 nicht loopt, darf derselbe Lauf einfach sein.
 
 **Das Ziel kommt aus dem Bild, nicht aus einem Regler** (Hausregel: was die Software ausrechnen kann,
-wird kein Regler). Das Motiv ist fast immer das Nahe und das Detailreiche: **nahe Zone der Tiefenkarte
-plus lokale Detaildichte**. Gibt das Bild nichts her — eine der vier flachen Karten, ein
-gleichmäßiges Muster —, fährt der Lauf auf die Mitte, und die Zeile **sagt es**.
+wird kein Regler).
+
+> **BERICHTIGT am 18.09.2026.** Hier stand: „Das Motiv ist fast immer das Nahe und das Detailreiche."
+> Das war mein Satz, und er ist **widerlegt** — die nahe Zone einer Tiefenkarte ist der **Boden**.
+> Gemessen über alle 325 Titel, Ausschnitt 0,50, derselbe Code mit und ohne Karte: mit Nähe landen
+> **259 von 325 Zielen in der unteren Bildhälfte** (79,7 %), ohne Karte 139 (42,8 %); die Karte
+> schiebt das Ziel bei 236 Titeln nach unten, Median +0,118 der Bildkante, rein senkrecht. Von 18
+> angesehenen Titeln lagen fünf daneben, alle fünf nach unten: Köpfe angeschnitten, Rahmen auf
+> Asphalt und Kleid. Bei einem Porträt fällt es nicht auf, weil das Gesicht selbst nah ist — sobald
+> eine Figur *in* einem Raum steht, ist der Vordergrund der Asphalt vor ihr.
+>
+> **Richtig ist: ein Motiv ist nicht, was nah ist, sondern was sich abhebt.** Eine Figur erzeugt eine
+> **Kante** in der Tiefe; der Boden ist nah, aber in der Tiefe glatt — er steigt gleichmäßig zum
+> Horizont, ohne Sprung. Gültig ist daher: **lokale Detaildichte plus Tiefenkante.** Damit ist der
+> senkrechte Zug weg (Median +0,007 statt +0,118), und es ist nicht bloß „Karte ignorieren": bei
+> 35 % der Titel verschiebt die Kante das Ziel um mehr als ein Viertel des freien Wegs.
+>
+> Vier Lesarten stehen im Code und sind umstellbar (`KB_LESART`), bis Caspar_D entschieden hat.
+> **Was sich nicht messen lässt:** ob das Ziel *sitzt*. Jedes Maß dafür müsste sich selbst ausdenken,
+> was ein Motiv ist, und prüfte dann eine Lesart gegen eine zweite. Das Urteil gehört dem Auge.
+
+Gibt das Bild nichts her, fährt der Lauf auf die Mitte, und die Zeile **sagt es**. Auch das war zu
+optimistisch aufgeschrieben: gemessen greift der Rückfall bei den beiden geprüften Reglerstellungen
+nie, über den ganzen Reglerbereich aber bei sechs von 18 Titeln, ab Ausschnitt 0,85. Und die
+Fundschwelle ist **je Lesart verschieden** geeicht — mit der Kanten-Lesart bleiben nur 3 % Luft.
 
 ---
 

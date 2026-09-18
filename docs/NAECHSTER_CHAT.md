@@ -4493,3 +4493,96 @@ bestehenden Zellen. Gerade Bahnen (Sternschnuppe) über die freie Strecke in Flu
 Ist die Karte leer, sagt die Karte es. Die Abschneide-Idee ist gestrichen (Caspar_D hat sie zu Recht verworfen).
 Ebenfalls offen: Sternschnuppen-Kopf, Grenze/Weichheit ans Rezept statt an den Effekt, erstes Exportbild nach
 Titelwechsel.
+
+
+---
+
+## Die Nacht vom 17. auf den 18.09.2026 — Partikel, Tiefe und die Ken Burns Fahrt
+
+Caspar_D: *„du kannst das alles abarbeiten, es ist nacht und ich geh jetzt schlafen."* Acht Commits,
+und der Abend davor war eine **Spezifizierungsrunde**, die er ausdrücklich gelobt hat: *„genau so
+stelle ich mir spezifizierungsrunden vor, kein lospreschen, ewig viele tests machen und dann
+plötzlich merken, hoppla, so geht es ja gar nicht."* Daraus die neue Regel, die ab jetzt gilt:
+**keine große Messreihe vor der fertigen Spezifikation.**
+
+### Was eingesetzt ist
+
+| Commit | Sache |
+|---|---|
+| `0557cc7` `e888f21` | Spezifikation „Partikel und Tiefe" — sie ist KLEINER als der Entwurf: drei Zeilen fallen weg, die Geburtenkarte und das Ausweichen lösen sich auf |
+| `876d67e` | Jedes Teilchen bekommt eine **eigene Entfernung**, gewürfelt aus dem freien Bereich am Geburtsort |
+| `4c6b938` | **Ken Burns Fahrt** — die Klammer halten · fahren · halten, getaktet, geschlossener Lauf |
+| `10e566a` | **Verdeckung in vier Tiefenschichten**, jedes Teilchen nach seiner eigenen Entfernung |
+| `0a97ef3` | Ken-Burns-**Zielsuche**, Vorgabe ist die Kanten-Lesart |
+| `f7f68b5` | **Die Tiefenkarte fährt mit der Geometrie mit** |
+| `b6cc4fe` | „Tiefe aus der Bildzeile" gestrichen, Trennebenen-Ansicht fährt mit |
+| `3cac62c` `7ed5777` | Das **Herkunftsbuch** ist nicht mehr ersetzbar und nicht mehr überschreibbar |
+| `4f51bfd` | Mein `.orig`-Überrest aus dem Repo entfernt, `*.orig` in `.gitignore` |
+
+### Die drei Denkfehler, die dabei aufgefallen sind — alle drei meine
+
+1. **„Steigende Teilchen brauchen eine Sonderregel."** Nein: ein Funke kommt aus einem Feuer. Die
+   Betriebsart „das ganze Bild" ist für steigende Teilchen einfach falsch, und die schon gebauten
+   Quellen (Punkt, Strich, Kreis, Ellipse) lösen es vollständig. Caspar_D: *„Vorher mal nachdenken,
+   ob die Natur der Partikel, die wir simulieren gut getroffen wird."*
+2. **„Vor dem nächsten Punkt der Szene ist nichts."** Falsch — Caspar_D: *„tiefenmap verhält sich
+   genau so wie 2D, es gibt einen layer vor dem ganzen, in dem noch Partikel generiert werden
+   können."* Daraus wurde der Regler „Leerraum vor Tiefenkarte".
+3. **„Das Motiv ist das Nahe und das Detailreiche."** Widerlegt: die nahe Zone ist der Boden. Ein
+   Motiv ist, was sich **abhebt** — eine Kante in der Tiefe.
+
+### Die Fehler im eingesetzten Code, die Gegenleser gefunden haben
+
+- **Das Herkunftsbuch konnte still gelöscht werden.** `try { lesen } catch { leeres Buch }`, und
+  danach wurde es ganz zurückgeschrieben: 326 Einträge und die Modellidentität. Selbstverstärkend,
+  weil ein Abbruch mitten im Schreiben genau das abgeschnittene Buch hinterließ, das den Ersatz
+  auslöste. Gefunden hat es ein Prüfer am **Schwesterwerkzeug** — er sah von sich aus nach, ob das
+  Muster anderswo steht.
+- **Und es konnte überschrieben werden.** Der Lauf liest einmal und schreibt minutenlang später
+  seinen Speicherstand zurück. Gemessener Wettlauf: die Tiefenspur trägt bei 32,7 s ein, der
+  Kartenlauf löscht den Eintrag bei 65,9 s.
+- **Die Tiefenkarte fuhr nicht mit.** Bis 364 Bildpunkte Versatz, bis 26 % der Fläche auf der
+  falschen Seite der Verdeckungskante. Älter als diese Nacht (die alte Fahrt, „Zoom schlägt",
+  „Kippen"), aber erst sichtbar, seit Partikel die Karte immer benutzen. Derselbe Fehler stand an
+  einer dritten Stelle, beim Laser.
+- **Die Kosten waren zweimal falsch gemessen, beide Male zu hoch.** Wer nach *jedem* Leinwandgang
+  einen Bildpunkt zurückliest, holt die Leinwand von der Grafikkarte: 9,90 ms statt 1,27 für vier
+  Bänder. Die Regel in `EFFEKTCLIP-REGELN.md` ist entsprechend präzisiert — sie gilt für EINEN
+  Durchgang, nicht für eine Kette.
+- **Zwei Scheiben in einem Chrome** täuschten bei identischem Code Faktor 2,2 vor (die im
+  Hintergrund wird gedrosselt). Steht ebenfalls in den Regeln.
+
+### Was NICHT eingesetzt ist, und warum
+
+- **Die Tiefenspur für Bewegtbilder** (Rechenweg + Server-Weg) ist gebaut und **durchgefallen**. Sie
+  liegt im Scratchpad unter `tiefenspur/`. Der Prüfer hat 13 Zurichtungen des Buchs durchprobiert,
+  alle abgefangen — und dann doch einen Weg gefunden, auf dem ein Eintrag verschwindet. Offen:
+  liegengebliebene Nebendatei bei EPIPE, eine Abbruchmeldung ohne Hinweis auf den Zwischenstand, ein
+  Stempel aus Größe und Zeit, den eine fremde Hand aushebeln kann. **Sie geht nicht an das Archiv,
+  bevor das ausgeräumt ist.** Der Server-Patch liegt daneben und nützt ohnehin nichts ohne den
+  Browser-Teil.
+- Die Messzahlen zur Spur, die gelten: Schnitterkennung über das **Verhältnis** zum örtlichen Median
+  (eine absolute Schwelle trennt nachweislich nicht — ein echter Schnitt kommt auf 0,2168 und liegt
+  damit unter dem Maximum eines durchlaufenden Videos, 0,2831), gewählt 30 zwischen p99 = 13,5 und
+  dem einzigen echten Ausschlag 118. Die fertige Spur ist **dreimal ruhiger** als die volle Rechnung
+  (0,41 gegen 1,26 mittlere Änderung je Bild).
+
+### Was als Nächstes ansteht
+
+1. **Partikel, Schritt 3: das Auftreffen.** Die Regel steht durchspezifiziert in
+   `KONZEPT-AUFTREFFEN.md`: verdeckt, wo die Fläche näher ist — aufgehalten am Anfang der *letzten*
+   gesperrten Strecke. Ein Ast ist etwas, aus dem die Bahn wieder herauskommt.
+2. **Ken Burns, Schritt 3 und 4:** die übrigen drei Läufe der ersten Fassung (Aufdecken, Zwei
+   Stationen, Streifen) und die **Parallaxe** — das Nahe eilt dem Fernen voraus, der einzige Teil,
+   den Ken Burns selbst nicht haben konnte.
+3. **Die Tiefenspur fertigmachen** und dann den Browser-Teil, der sie an der Videozeit abgreift.
+4. **Ein Release.** Seit 1.0.9 liegen acht substanzielle Änderungen drin.
+
+### Was Caspar_D entscheiden muss
+
+- **Welche Lesart** die Zielsuche nimmt (vier Blätter liegen im Chat, `KB_LESART` im Code).
+- Ob die **Vorgabe des Ausschnitts** von 0,80 herunter soll — bei 0,80 liegen 16 von 18 Zielen am
+  Anschlag, die Zielsuche wird erst ab etwa 0,67 zu einer Wahl.
+- Ob ein Lauf im Clip **nicht** geschlossen sein soll (dann springt die Naht).
+- **Video Depth Anything** (CVPR 2025, Small ist Apache-2.0, 28 statt 335 Mio Gewichte) würde das
+  Zittern *und* die Rechenzeit lösen — braucht einen Download und einen ONNX-Export.
