@@ -144,7 +144,7 @@ Was **keinen** Regler bekommt, und wer stattdessen entscheidet:
 
 | Sache | wer |
 |---|---|
-| Wohin die Fahrt geht | das Bild (nahe Zone + Detaildichte) |
+| Wohin die Fahrt geht | das Bild (Detaildichte + Tiefenkante — siehe die Berichtigung in Abschnitt 3) |
 | Wie lang die Halte sind | der Takt, aus Tempo und Cliplänge |
 | Die Form der Beschleunigung | das Gesetz (weich an, weich aus) |
 | Ob der Lauf geschlossen ist | die Betriebsart: Clip ja, Voll-Titel-Video nein |
