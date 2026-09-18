@@ -31069,46 +31069,8 @@ function kbProTakt(S){ let P=0; const n=Math.min(S.length,64); for(let i=0;i<n;i
 const KB_RASTER=160;   /* dasselbe Raster wie tiefeProben - ein Raster, ein Begriff */
 /* Dreifach feiner gelesen, damit die Aenderung VOR der Mittelung gebildet wird (Punkt 3). */
 const KB_LUPE=3;
-/* Die Fundschwelle auf der eigenen Guetespanne. Setzung, geeicht am Bestand - und die Eichung gilt
-   je LESART, das war zuerst uebersehen (18.09.2026). Ueber alle 325 Titel bei Ausschnitt 0,80 liegt
-   die kleinste Guete bei: B 0,0621 (24 % Luft) - C 0,0516 (3 % Luft) - A 0,0353 und D 0,0462, die
-   FALLEN also bei 4 bzw. 3 Titeln durch und wuerden dort auf die Mitte zurueckfallen.
-   Mit der Vorgabe C ist die Luft duenn: kommt ein Titel herein, der noch aermer ist als der aermste
-   von heute, faellt er auf die Mitte zurueck - und sagt es. Das ist der richtige Ausgang, aber es
-   ist ein Grund, die Zahl nicht zu senken, ohne neu zu eichen. */
+/* Die Fundschwelle auf der eigenen Guetespanne. Setzung, geeicht am Bestand (Punkt 5). */
 const KB_FUND_MINDEST=0.05;
-
-/* ===================== DAS KANTENMASS, EINMAL AUFGESCHRIEBEN =====================
-   Bis heute stand dieses Mass IN kbDetail, weil es dort nur einmal gebraucht wurde. Die dritte
-   Lesart (siehe kbReizfeld) braucht genau dasselbe Mass auf einer anderen Eingabe - der
-   Tiefenkarte statt der Helligkeit. Ein zweites Mal abschreiben hiesse, dass die beiden Felder
-   auseinanderlaufen koennen, ohne dass es jemand merkt; also steht das Mass jetzt an EINER
-   Stelle und bekommt sein Feld gereicht.
-   WAS ES MISST: die mittlere BETRAGSAENDERUNG je Rasterzelle (zentrale Differenz in x und y,
-   addiert), gebildet auf dem feineren Lesen (L Punkte je Zelle und Achse) und erst DANACH je
-   Zelle gemittelt - die Reihenfolge ist der ganze Punkt (Detaildichte, Punkt 3).
-   RELATIV, NICHT GEMESSEN: der Betrag einer Aenderung hat keinen Maßstab, also wird je Feld auf
-   die eigene Spanne gedehnt (5. bis 95. Hundertstel, dieselben Hundertstel wie zlo/zhi in
-   tiefeProben). Die ROHE Spanne liegt mit, damit eine Zeile sie nennen kann, ohne die Dehnung
-   mitzunennen.
-   DERSELBE CODE WIE VORHER, NUR VERSCHOBEN: Rechenschritte und Reihenfolge sind unveraendert,
-   also gibt kbDetail bitgleich dasselbe Feld wie gestern. */
-function kbKanteFeld(Y, fw, fh, L){
-  const W=Math.floor(fw/L), H=Math.floor(fh/L);
-  const F=new Float32Array(W*H);
-  for(let cy=0;cy<H;cy++) for(let cxx=0;cxx<W;cxx++){
-    let s=0;
-    for(let k=0;k<L;k++){ const y=cy*L+k, y0=y>0?y-1:y, y1=y<fh-1?y+1:y;
-      for(let m=0;m<L;m++){ const x=cxx*L+m, x0=x>0?x-1:x, x1=x<fw-1?x+1:x;
-        s+=Math.abs(Y[y*fw+x1]-Y[y*fw+x0])+Math.abs(Y[y1*fw+x]-Y[y0*fw+x]); } }
-    F[cy*W+cxx]=s/(L*L);
-  }
-  const sort=Array.prototype.slice.call(F).sort((a,b)=>a-b);
-  const dlo=sort[Math.floor(sort.length*0.05)], dhi=sort[Math.floor(sort.length*0.95)];
-  const sp=dhi-dlo, f=new Float32Array(W*H);
-  for(let i=0;i<W*H;i++){ const v=sp>1e-6?(F[i]-dlo)/sp:0; f[i]=v<0?0:v>1?1:v; }
-  return { W, H, f, roh:sp };
-}
 
 /* DIE DETAILDICHTE JE QUELLE. Einmal gelesen, dann aus dem Vorrat. Sie wird NICHT gemerkt,
    solange die Quelle noch nicht malbar ist - das Bild kommt vielleicht noch (wie tiefeProben). */
@@ -31130,9 +31092,21 @@ function kbDetail(){
     /* Helligkeit nach Rec. 601 - dieselbe Gewichtung, mit der auch die Tiefenkarten gebaut
        wurden (bin/tiefenkarten.js liest Graustufen). */
     for(let i=0,j=0;j<fw*fh;i+=4,j++) Y[j]=(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2])/255;
-    /* Das Mass selbst steht bei kbKanteFeld - hier wird nur die Eingabe gereicht. */
-    const K=kbKanteFeld(Y,fw,fh,KB_LUPE);
-    return KB_DETAIL[q.k]={ W:K.W, H:K.H, f:K.f, roh:K.roh, video:istVideo, stich:istVideo?(+im.currentTime||0):null };
+    const F=new Float32Array(W*H);
+    for(let cy=0;cy<H;cy++) for(let cxx=0;cxx<W;cxx++){
+      let s=0;
+      for(let k=0;k<KB_LUPE;k++){ const y=cy*KB_LUPE+k, y0=y>0?y-1:y, y1=y<fh-1?y+1:y;
+        for(let m=0;m<KB_LUPE;m++){ const x=cxx*KB_LUPE+m, x0=x>0?x-1:x, x1=x<fw-1?x+1:x;
+          s+=Math.abs(Y[y*fw+x1]-Y[y*fw+x0])+Math.abs(Y[y1*fw+x]-Y[y0*fw+x]); } }
+      F[cy*W+cxx]=s/(KB_LUPE*KB_LUPE);
+    }
+    /* Auf die eigene Spanne gedehnt, 5. bis 95. Hundertstel - wie zlo/zhi in tiefeProben. Die
+       ROHE Spanne liegt mit, damit die Zeile sie nennen kann, ohne die Dehnung mitzunennen. */
+    const sort=Array.prototype.slice.call(F).sort((a,b)=>a-b);
+    const dlo=sort[Math.floor(sort.length*0.05)], dhi=sort[Math.floor(sort.length*0.95)];
+    const sp=dhi-dlo, f=new Float32Array(W*H);
+    for(let i=0;i<W*H;i++){ const v=sp>1e-6?(F[i]-dlo)/sp:0; f[i]=v<0?0:v>1?1:v; }
+    return KB_DETAIL[q.k]={ W, H, f, roh:sp, video:istVideo, stich:istVideo?(+im.currentTime||0):null };
   /* ZWEI GRUENDE, NICHT EINER (Regel 11). "Noch nichts da" und "liess sich nicht lesen" sind
      verschiedene Saetze; wer beides mit "das Bild ist noch nicht da" beantwortet, sagt etwas
      Falsches ueber eine Quelle, die nie kommen wird. Der Fehlschlag wird gemerkt, damit nicht
@@ -31147,103 +31121,11 @@ function kbDetail(){
    je Schritt, ohne ihn 4,6 bis 35,6 ms. Der Gewinn ist klein und schwankt mit der Last der
    Maschine - die Trennung ist trotzdem richtig, weil das Reizfeld vom Ausschnitt nichts weiss. */
 const KB_REIZ={};
-/* ===================== DIE TIEFENKANTE: WAS SICH ABHEBT, NICHT WAS NAH IST =====================
-   DER BEFUND, DER DAS AUSLOEST (Gegenlesen 18.09.2026). Die Spezifikation begruendet "nahe Zone
-   plus Detaildichte" mit: "Das Motiv ist fast immer das Nahe und das Detailreiche." Gemessen an
-   allen 325 Titelbildern ist der zweite Teil richtig und der erste falsch, und zwar systematisch:
-   die Karte zieht das Ziel nach UNTEN. Die Zahlen stehen unten bei KB_LESARTEN.
-   DER GRUND IST KEINE WANZE, SONDERN DIE NATUR DER SACHE: die nahe Zone einer Tiefenkarte ist
-   der BODEN. Bei einem Portraet faellt das nicht auf, weil das Gesicht selbst nah ist. Sobald
-   eine Figur IN einem Raum steht, ist der Vordergrund der Asphalt vor ihr, nicht ihr Kopf.
-   WAS DIE KARTE STATTDESSEN WEISS: eine Figur in einem Raum erzeugt eine KANTE - einen Sprung
-   entlang ihrer Silhouette. Der Fussboden ist nah, aber in der Tiefe GLATT: er steigt
-   gleichmaessig zum Horizont, ohne Sprung. Die Karte weiss also sehr wohl, wo das Motiv ist -
-   abgelesen wurde bisher das Falsche an ihr. Also: statt der Naehe die Kante.
-   DASSELBE MASS, ANDERE EINGABE - keine neue Maschinerie. Gerechnet wird mit kbKanteFeld, genau
-   der Funktion, die schon die Detaildichte bildet.
-   AUF DEM RASTER VON tiefeProben, OHNE ZWEITES LESEN (160 Punkte breit, L = 1). Zwei Gruende,
-   und beide sind nachpruefbar:
-     - Die Karte hat unterhalb dieses Rasters nichts zu geben. tiefeProben sagt es seit dem
-       14.09.2026 selbst: "eine geschaetzte Karte hat ohnehin keine schaerferen Kanten." Bei der
-       Helligkeit ist das anders, dort ist die Lupe noetig, und Punkt 3 misst, wie noetig.
-     - Die Probe liegt schon da. Maske, Maler und die nahe Zone lesen sie ohnehin; die Kante
-       kostet damit KEIN zusaetzliches Bildlesen, sondern einen Durchgang ueber 160x160 Zahlen.
-       Das ist der Grund, warum die dritte Lesart nicht teurer sein kann als die zweite.
-   JE QUELLE GERECHNET UND BEHALTEN. Sie haengt nur an der Karte - nicht am Ausschnitt, nicht an
-   Grenze und Weichheit (die Kante wird auf der ROHEN Karte gebildet, nicht auf der Naehe-Skala:
-   nahKurve klemmt alles ausserhalb ihres Bandes auf 0 oder 1 und wuerfe damit genau die Spruenge
-   weg, die hier gesucht sind). */
-const KB_TKANTE={};
-function kbTiefeKante(tp, qk){
-  if(KB_TKANTE[qk]) return KB_TKANTE[qk];
-  return KB_TKANTE[qk]=kbKanteFeld(tp.z, tp.w, tp.h, 1);
-}
-/* Die Kante an einem Ort, in Bildanteilen - dieselbe Form und dieselbe Rundung wie tiefeNahAn,
-   damit beide Lesarten denselben Punkt der Karte meinen. */
-function kbKanteAn(tk, u, v){
-  const x=Math.max(0,Math.min(tk.W-1,Math.round(u*tk.W))), y=Math.max(0,Math.min(tk.H-1,Math.round(v*tk.H)));
-  return tk.f[y*tk.W+x]; }
-/* ===================== DIE LESARTEN DES REIZFELDS =====================
-   VIER, NICHT EINE - weil hier nicht bewiesen, sondern gewaehlt wird, und die Wahl gehoert
-   Caspar_D am Blatt (18.09.2026). Die Gewichte sind [Detail, Tiefenkante, Naehe] und summieren
-   sich immer zu 1, damit die Guetezahlen der Lesarten ueberhaupt vergleichbar sind.
-     A  Detail allein         - die Karte gar nicht gelesen. Der ehrliche Boden: alles, was eine
-                                Lesart mit Karte besser macht, muss sie gegen DIESE Zahl zeigen.
-     B  Detail + Naehe        - wie bis heute gebaut. Sie steht hier weiter, weil ein Vergleich
-                                ohne den Stand von gestern keiner ist.
-     C  Detail + Tiefenkante  - die neue.
-     D  Detail + halb Kante, halb Naehe - fuer den Fall, dass die Naehe doch etwas beitraegt (beim
-                                Portraet IST das Gesicht das Nahe) und nur ihr Gewicht zu gross
-                                war. Sie ist keine fuenfte Idee, sondern die Strecke zwischen B
-                                und C, und sie beantwortet die Frage "war es die Naehe oder war
-                                es ihr Gewicht?" mit einer Zahl.
-   WAS NICHT GEBAUT IST, UND WARUM: die Kante als MULTIPLIKATOR des Details (Reiz = Detail *
-   Kante). Das ist ein Produkt, und gegen Produkte steht hier schon ein gemessener Grund
-   (Punkt 2): sie loeschen das eine Merkmal ganz, wenn das andere null ist - auf einem Cover ohne
-   Karte oder mit glatter Karte bliebe dann gar nichts uebrig. Die Summe laesst beide gelten.
-   OHNE KARTE SIND ALLE VIER DASSELBE: dann traegt die Detaildichte allein, mit Gewicht 1. Das
-   ist kein Sonderfall, sondern Lesart A - und die Zeile sagt es.
-   DIE VORGABE BLEIBT B. Hier wird nichts eingesetzt und nichts entschieden; die Lesart ist
-   umstellbar, damit sie vergleichbar ist, und sie steht auf dem Stand von gestern, bis jemand
-   am Blatt etwas anderes waehlt. */
-const KB_LESARTEN={
-  A:{ g:[1,0,0],       wort:'nur die Detaildichte' },
-  B:{ g:[0.5,0,0.5],   wort:'Detaildichte und nahe Zone der Tiefenkarte' },
-  C:{ g:[0.5,0.5,0],   wort:'Detaildichte und Tiefenkante' },
-  D:{ g:[0.5,0.25,0.25], wort:'Detaildichte, Tiefenkante und nahe Zone' }
-};
-/* DIE VORGABE IST C, UND WARUM (18.09.2026, gemessen ueber alle 325 Titel bei Ausschnitt 0,50).
-   B stand hier zuerst, weil die Spezifikation sagte: "Das Motiv ist fast immer das Nahe und das
-   Detailreiche." Gemessen ist das FALSCH - die nahe Zone einer Tiefenkarte ist der BODEN:
-     Ziel in der unteren Bildhaelfte:  A 42,8 %  -  B 79,7 %  -  C 51,4 %  -  D 70,2 %
-     Verschiebung gegen A (Karte gar nicht gelesen), Median senkrecht:
-                                       B +0,118  -  C +0,007  -  D +0,055     (waagerecht alle 0,000)
-   Bei einem Portraet faellt es nicht auf, weil das Gesicht selbst nah ist. Sobald eine Figur IN
-   einem Raum steht, ist der Vordergrund der Asphalt vor ihr, nicht ihr Kopf. Von 18 angesehenen
-   Titeln lagen unter B fuenf daneben, alle fuenf nach unten.
-   C liest die Karte anders: nicht "was ist nah", sondern "was hebt sich ab". Eine Figur erzeugt
-   eine KANTE in der Tiefe; der Boden ist nah, aber in der Tiefe glatt - er steigt gleichmaessig
-   zum Horizont, ohne Sprung. Damit ist der senkrechte Zug weg, und C ist nicht bloss A mit
-   Rauschen: bei 35 % der Titel verschiebt die Kante das Ziel um mehr als ein Viertel des freien
-   Wegs. Kosten: einmal 6,2 ms je Quelle, kein zusaetzliches Bildlesen, am Regler nicht teurer als B.
-   WAS SICH NICHT MESSEN LAESST: ob das Ziel SITZT. Jedes Mass dafuer muesste sich selbst ausdenken,
-   was ein Motiv ist, und pruefte dann eine Lesart gegen eine zweite. Die Zahlen oben sagen genau
-   eines - der Zug nach unten ist weg -, das Urteil gehoert dem Auge.
-   Die vier Lesarten bleiben stehen, damit Caspar_D sie vergleichen kann: hier umstellen, sonst
-   nichts. Faellt die Entscheidung endgueltig, fallen die uebrigen drei. */
-let KB_LESART='C';
-function kbReizfeld(det, tp, sp, sl, qk){
+function kbReizfeld(det, tp, sp, sl){
   if(KB_REIZ[sl]) return KB_REIZ[sl];
   const W=det.W, H=det.H, R=new Float32Array(W*H);
-  const g=(KB_LESARTEN[KB_LESART]||KB_LESARTEN.B).g;
-  if(sp&&(g[1]>0||g[2]>0)){
-    const tk=g[1]>0?kbTiefeKante(tp,qk):null;
-    for(let y=0;y<H;y++){ const v=(y+0.5)/H, ro=y*W;
-      for(let x=0;x<W;x++){ const u=(x+0.5)/W;
-        let s=g[0]*det.f[ro+x];
-        if(g[1]>0) s+=g[1]*kbKanteAn(tk,u,v);
-        if(g[2]>0) s+=g[2]*tiefeNahAn(tp,u,v,sp.g,sp.w);
-        R[ro+x]=s; } } }
+  if(sp){ for(let y=0;y<H;y++){ const v=(y+0.5)/H, ro=y*W;
+      for(let x=0;x<W;x++) R[ro+x]=0.5*det.f[ro+x]+0.5*tiefeNahAn(tp,(x+0.5)/W,v,sp.g,sp.w); } }
   else R.set(det.f);
   return KB_REIZ[sl]=R;
 }
@@ -31259,11 +31141,11 @@ function kbZiele(e){
     grund:(q&&KB_DETAIL[q.k]&&KB_DETAIL[q.k].fehler)?'unlesbar':'nochnicht',
     fehler:(q&&KB_DETAIL[q.k]&&KB_DETAIL[q.k].fehler)||null };
   const tp=tiefeProben(), sp=tp?tiefeSpanne(e,tp):null;
-  const rsl=q.k+'|'+KB_LESART+'|'+(sp?sp.g.toFixed(4)+'|'+sp.w.toFixed(4):'ohne')+(det.stich==null?'':'|'+det.stich.toFixed(2));
+  const rsl=q.k+'|'+(sp?sp.g.toFixed(4)+'|'+sp.w.toFixed(4):'ohne')+(det.stich==null?'':'|'+det.stich.toFixed(2));
   const sl=rsl+'|'+z.toFixed(2);
   if(KB_ZIELE[sl]) return KB_ZIELE[sl];
   const W=det.W, H=det.H;
-  const R=kbReizfeld(det,tp,sp,rsl,q.k);
+  const R=kbReizfeld(det,tp,sp,rsl);
   /* Die Kuppel, in Zellen. mx/my ist ihre halbe Breite - der Ausschnitt ist z der Kante breit
      UND hoch (cw=bw*eff, ch=bh*eff in zeichneFrame), also je Achse z mal die Rasterweite. */
   const mx=Math.max(1,Math.floor(z*W/2)), my=Math.max(1,Math.floor(z*H/2));
@@ -31323,12 +31205,11 @@ function kbZiele(e){
         ueberdeckung:ziele.length?ueber:1 });
     }
   }
-  const erg={ z, ziele, k, best, mini, mitte, karte:!!tp, lesart:KB_LESART,
+  const erg={ z, ziele, k, best, mini, mitte, karte:!!tp,
     tspanne:tp?tp.spanne:null, droh:det.roh, video:det.video, stich:det.stich,
     grund: ziele.length?null:'flach' };
   if(KB_ZIELE_N>256){ for(const k2 in KB_ZIELE) delete KB_ZIELE[k2];
-    for(const k2 in KB_REIZ) delete KB_REIZ[k2];
-    for(const k2 in KB_TKANTE) delete KB_TKANTE[k2]; KB_ZIELE_N=0; }   /* Vorrat mit Ende */
+    for(const k2 in KB_REIZ) delete KB_REIZ[k2]; KB_ZIELE_N=0; }   /* Vorrat mit Ende */
   KB_ZIELE_N++; return KB_ZIELE[sl]=erg;
 }
 /* WOHIN DIE FAHRT GEHT. Der Versatz des nahen Bildes in Anteilen des freien Wegs (-1 .. 1, wie
@@ -31342,7 +31223,7 @@ function kbZielSatz(e){
   if(Z.grund==='nochnicht') return 'Das Ziel kommt aus dem Bild — die Quelle ist noch nicht da, bis dahin fährt der Lauf auf die Mitte.';
   if(Z.grund==='unlesbar') return 'Das Ziel kommt aus dem Bild — diese Quelle ließ sich nicht auslesen ('+Z.fehler+'), der Lauf fährt auf die Mitte.';
   const woher=Z.karte
-    ? (KB_LESARTEN[Z.lesart]||KB_LESARTEN.B).wort
+    ? 'nahe Zone der Tiefenkarte und Detaildichte'
     : 'nur die Detaildichte — diese Quelle hat keine Tiefenkarte, das ist kein Fehler, nur weniger';
   const stich=Z.video ? ' Bewegtbild: die Dichte ist an dem Einzelbild bei '+kf((Z.stich||0).toFixed(1))
     +' s genommen, also eine Stichprobe; nach einem Neuladen kann ein anderes Bild ein anderes Ziel ergeben.' : '';
