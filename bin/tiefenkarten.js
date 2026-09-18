@@ -214,9 +214,38 @@ const buchLesen = () => {
     process.exit(2);
   }
 };
-const buchSchreiben = (buch) => {
-  const neben = BUCH + '.neu';
-  fs.writeFileSync(neben, JSON.stringify(buch, null, 1));
+/* GESCHRIEBEN WIRD AUF DEN JETZIGEN STAND, NICHT AUF DEN GEMERKTEN (18.09.2026, gemessener Wettlauf).
+   Der Lauf liest das Buch EINMAL und rechnet danach minutenlang. Schrieb er dann seinen Speicherstand
+   zurueck, war alles weg, was inzwischen ein anderes Werkzeug eingetragen hat. Gemessen an der
+   Tiefenspur fuer Bewegtbilder: sie trug bei 32,7 s ein (karten 326, spuren 1), dieser Lauf loeschte
+   den Eintrag bei 65,9 s (spuren 0) - und danach war nichts mehr zu retten, weil die Spur ihre
+   Werkstatt nach dem scheinbar geglueckten Eintragen aufraeumt.
+   Darum: vor jedem Schreiben neu lesen, die EIGENEN Eintraege dieses Laufs darauflegen, alles andere
+   stehen lassen. Laesst sich das Buch dabei nicht lesen, wird NICHT geschrieben - lieber zweimal
+   rechnen als ein Archiv leeren. Nebendatei mit der Prozessnummer, damit zwei Laeufe sich nicht
+   dieselbe wegziehen; rename ist auf einer Datei atomar. */
+const MEINE = {};
+const buchSchreiben = () => {
+  let jetzt;
+  if (!fs.existsSync(BUCH)) jetzt = { ausweis: AUSWEIS, karten: {} };
+  else {
+    try { jetzt = JSON.parse(fs.readFileSync(BUCH, 'utf8')); }
+    catch (e) {
+      console.error(`\n  ${BUCH} liess sich vor dem Schreiben nicht lesen: ${e.message}`);
+      console.error('  Es wurde NICHTS geschrieben. Die gerechneten Karten liegen auf der Platte,');
+      console.error('  ihre Herkunft fehlt im Buch — ein spaeterer Lauf traegt sie nach.');
+      process.exit(2);
+    }
+  }
+  if (!jetzt || typeof jetzt !== 'object' || Array.isArray(jetzt)) {
+    console.error(`\n  ${BUCH} hat nicht die Gestalt eines Buchs. Es wurde nichts geschrieben.`);
+    process.exit(2);
+  }
+  if (!jetzt.karten || typeof jetzt.karten !== 'object' || Array.isArray(jetzt.karten)) jetzt.karten = {};
+  jetzt.ausweis = AUSWEIS;
+  for (const k of Object.keys(MEINE)) jetzt.karten[k] = MEINE[k];
+  const neben = `${BUCH}.neu-${process.pid}`;
+  fs.writeFileSync(neben, JSON.stringify(jetzt, null, 1));
   fs.renameSync(neben, BUCH);
 };
 const stempel = (p) => { try { const s = fs.statSync(p); return s.size + ':' + Math.round(s.mtimeMs); } catch (e) { return null; } };
@@ -338,16 +367,16 @@ function grauSchreiben(grau, breite, hoehe, zielBreite, zielHoehe, ziel) {
     for (let i = 0; i < H * W; i++) grau[i] = Math.round((d[i] - min) / spanne * 255);
 
     if (!grauSchreiben(grau, W, H, bm[0], bm[1], b.ziel)) { console.log(`  [${n}/${offen.length}] ${marke}  Schreiben ging nicht`); fehler++; continue; }
-    buch.karten[b.schluessel] = { quelle: stempel(b.datei), art: b.art, gerechnet: new Date().toISOString() };
+    buch.karten[b.schluessel] = MEINE[b.schluessel] = { quelle: stempel(b.datei), art: b.art, gerechnet: new Date().toISOString() };
 
     const rest = zeiten.length ? Math.round((offen.length - n) * zeiten[zeiten.length - 1] / 1000) : 0;
     console.log(`  [${n}/${offen.length}] ${marke}  ${bm[0]}x${bm[1]}  (gerechnet ${W}x${H})  aus ${path.basename(b.datei)} → ${path.basename(b.ziel)}`);
     melden.lauf({ was: 'Tiefenkarten werden gerechnet', n, von: offen.length, nEinheit: 'Standbild',
       jetzt: b.id.slice(0, 8), rest: rest > 3 ? `noch etwa ${rest > 90 ? Math.round(rest / 60) + ' Minuten' : rest + ' Sekunden'}` : '' });
-    if (n % 20 === 0) buchSchreiben(buch);
+    if (n % 20 === 0) buchSchreiben();
   }
 
-  buchSchreiben(buch);
+  buchSchreiben();
   melden.ausLauf();
   zeiten.sort((a, b) => a - b);
   console.log(`\n  ${n - fehler} Karten gerechnet${fehler ? `, ${fehler} Fehler` : ''} — Median ${zeiten[zeiten.length >> 1]} ms je Bild.`);
