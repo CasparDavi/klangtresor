@@ -98,3 +98,7 @@ docs/eichkasten/*.vor-schritt*
 # ins Archiv). Der Server raeumt hier selbst auf: was fertig ist, liegt
 # einen Tag bereit, dann ist es weg.
 .ausgabe/
+
+# Ueberreste von patch(1) - keine dritte Fassung der App im Repo (18.09.2026)
+*.orig
+*.rej
