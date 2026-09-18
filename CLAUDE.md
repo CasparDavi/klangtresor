@@ -60,6 +60,22 @@ Passt die Betriebsart nicht zu dem Satz, wird die Betriebsart geändert, nicht g
 Und: **die vorhandene Maschinerie kennen, bevor etwas dazugebaut wird.** Dieselbe Runde hat drei geplante
 Bauarbeiten aufgelöst, weil die Lösung schon im Haus stand.
 
+**Eine Baustelle.** Caspar_D, 18.09.2026: *„ich würde am liebsten die Effekte einen nach dem anderen aus dem
+Entwurf in den Profimodus bringen … das habe ich diese ganze Woche gelernt, wir haben ständig an allen
+Effekten zugleich optimiert und nichts ist wirklich fertig geworden und das Zeit-Regime ist völlig aus dem
+Ruder gelaufen."* Genau ein Effekt ist offen; innerhalb davon kleine Schritte, jeder einzeln gezeigt.
+Was bei einem anderen Effekt auffällt, wird **aufgeschrieben, nicht gebaut** — auch nicht „nebenbei".
+
+**Die Größe einer Änderung ist die Größe ihres Beweises.** Caspar_D zur Ausrede „es ist nur eine Zeile":
+*„wenns so wäre, wäre es kein Problem, du hast aber jedesmal die 5 h Testmaschinerie angeworfen, damit war es
+eben nicht nur eine Zeile."* Grundlinienvergleich (Minuten) für alles, was den gemeinsamen Malweg anfasst;
+eine Messreihe über den Bestand nur, wenn eine Zahl im Code oder in der Oberfläche daraus hervorgeht. Keine
+zwei Apparate für dieselbe Frage.
+
+**Die Rollen:** Caspar_D ist Bauherr, Architekt und Abnahme; Claude ist Chefentwickler. Der Architekt
+zeichnet zuerst — es wird nicht gebaut, bevor die Zeichnung steht. Agenten heißen `-agent`
+(Bauagent, Testagent, Schwachstellenagent, Nörgelagent), keine substantivierten Partizipien.
+
 ## 6. Eingriffe, die Jörg ansagen will
 
 `server/server.js` startet sich bei Änderung selbst neu — erst Sandkasten, dann ansagen, dann einsetzen und prüfen,

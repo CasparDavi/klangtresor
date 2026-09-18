@@ -45,18 +45,6 @@
  },
  "faelle": [
   {
-   "name": "fahrt",
-   "typ": "fahrt",
-   "titel": "a",
-   "effekte": [
-    {
-     "typ": "fahrt"
-    }
-   ],
-   "gruppe": "vorgabe",
-   "bemerkung": "Vorgabe"
-  },
-  {
    "name": "puls",
    "typ": "puls",
    "titel": "a",
@@ -2762,72 +2750,102 @@
     }
    ],
    "gruppe": "vorgabe",
-   "bemerkung": "Lauf Hineinfahren, Ausschnitt 0,80, Parallaxe 1,5 % (Vorgaben)"
+   "bemerkung": "Zielpunkte aus dem Vorschlag beim Einfuegen (zwei), Tempo 1 Takt, Parallaxe aus (Vorgaben)"
   },
   {
-   "name": "kb-aufdecken",
+   "name": "kb-einPunkt",
    "typ": "kenburns",
    "titel": "a",
    "effekte": [
     {
      "typ": "kenburns",
-     "kbLauf": "aufdecken"
+     "kbZiele": [
+      {
+       "u": 0.35,
+       "v": 0.4,
+       "z": 0.62
+      }
+     ]
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "Lauf aufdecken, sonst Vorgaben"
+   "bemerkung": "EIN Zielpunkt: Ganzbild - hinein - halten - heraus. Zwei Zuege, ein Halt am Punkt und einer am Ganzbild."
   },
   {
-   "name": "kb-zwei",
+   "name": "kb-zweiPunkte",
    "typ": "kenburns",
    "titel": "a",
    "effekte": [
     {
      "typ": "kenburns",
-     "kbLauf": "zwei"
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72
+      }
+     ]
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "Lauf zwei, sonst Vorgaben"
+   "bemerkung": "Zwei Zielpunkte verschiedener Enge: drei Zuege, zwei gleich lange Halte an den Punkten und einer am Ganzbild."
   },
   {
-   "name": "kb-streifen",
+   "name": "kb-fuenfPunkte",
    "typ": "kenburns",
    "titel": "a",
    "effekte": [
     {
      "typ": "kenburns",
-     "kbLauf": "streifen"
+     "kbZiele": [
+      {
+       "u": 0.3,
+       "v": 0.3,
+       "z": 0.55
+      },
+      {
+       "u": 0.64,
+       "v": 0.36,
+       "z": 0.7
+      },
+      {
+       "u": 0.5,
+       "v": 0.5,
+       "z": 0.85
+      },
+      {
+       "u": 0.36,
+       "v": 0.64,
+       "z": 0.7
+      },
+      {
+       "u": 0.72,
+       "v": 0.72,
+       "z": 0.55
+      }
+     ]
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "Lauf streifen, sonst Vorgaben"
+   "bemerkung": "Fuenf Zielpunkte - die Grenze. Sechs Zuege passen in keinen Clip, also greift die Tempoklemme."
   },
   {
-   "name": "kb-wanderung",
+   "name": "kb-ohnePunkt",
    "typ": "kenburns",
    "titel": "a",
    "effekte": [
     {
      "typ": "kenburns",
-     "kbLauf": "wanderung"
+     "kbZiele": []
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "Lauf wanderung, sonst Vorgaben"
-  },
-  {
-   "name": "kb-abrastern",
-   "typ": "kenburns",
-   "titel": "a",
-   "effekte": [
-    {
-     "typ": "kenburns",
-     "kbLauf": "abrastern"
-    }
-   ],
-   "gruppe": "kenburns",
-   "bemerkung": "Lauf abrastern, sonst Vorgaben"
+   "bemerkung": "Leere Liste: die Kamera steht auf dem Ganzbild. Ein stehendes Bild loopt von selbst."
   },
   {
    "name": "kb-parallaxe-aus",
@@ -2840,7 +2858,7 @@
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "Regler auf null: der Ausschnitt kommt wie vor dem 18.09. aus drawImage"
+   "bemerkung": "Regler ausdruecklich auf null (seit dem 18.09.2026 auch die Vorgabe): der Ausschnitt kommt aus drawImage"
   },
   {
    "name": "kb-parallaxe-voll",
@@ -2853,7 +2871,7 @@
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "Parallaxe am Anschlag"
+   "bemerkung": "Parallaxe am Anschlag, Zielpunkte aus dem Vorschlag"
   },
   {
    "name": "kb-vorb",
@@ -2890,17 +2908,17 @@
    "bemerkung": "Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 trug"
   },
   {
-   "name": "kb-wanderung-b",
+   "name": "kb-tempo2-b",
    "typ": "kenburns",
    "titel": "b",
    "effekte": [
     {
      "typ": "kenburns",
-     "kbLauf": "wanderung"
+     "kbTakte": 2
     }
    ],
    "gruppe": "kenburns",
-   "bemerkung": "offener Lauf auf dem Titel mit anderer Taktzahl"
+   "bemerkung": "Zwei Takte je Zug auf dem Titel mit anderer Taktzahl - hier greift die Tempoklemme"
   }
  ],
  "nichtHerstellbar": []

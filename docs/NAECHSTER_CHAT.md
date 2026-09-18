@@ -4654,3 +4654,130 @@ Sie verschiebt das Bild; die Tiefenkarte für Masken, Teilchenbänder und Geburt
 mit der Geometrie. Restversatz höchstens 13,5 (Vorgabe) bzw. 23,3 Bildpunkte (voll) — zum
 Vergleich: der am 18.09. ausgeräumte Fehler „die Karte fuhr nicht mit" war bis 364 groß. Steht als
 Kommentar im Code, nicht als Versehen.
+
+---
+
+## Die eine Ken Burns Fahrt — Zielpunkte von Hand (18.09.2026, abends)
+
+Eine **Spezifizierungsrunde**, wie Caspar_D sie will: Satz für Satz durchgegangen, und am Ende war
+der Entwurf **kleiner** als vorher. Die Spezifikation steht in
+`docs/effektclip/KONZEPT-ZIELPUNKTE.md`.
+
+### Was Caspar_D dabei über die Arbeitsweise gesagt hat — das Wichtigste des Tages
+
+> *„ich würde am liebsten die Effekte einen nach dem anderen aus dem Entwurf in den Profimodus
+> bringen. Diese vielen zugleich-Änderungen kosten so viel Zeit und wenn es dann nicht sitzt,
+> fangen wir immer und immer wieder an."*
+>
+> *„das habe ich diese ganze Woche gelernt, wir haben ständig an allen Effekten zugleich optimiert
+> und nichts ist wirklich fertig geworden und das Zeit-Regime ist völlig aus dem Ruder gelaufen."*
+
+Und die Berichtigung, die dazugehört — ich hatte geschrieben, es sei ja „nur eine Zeile Code":
+
+> *„wenns so wäre, wäre es kein Problem, du hast aber jedesmal die 5 h Testmaschinerie angeworfen,
+> damit war es eben nicht nur eine Zeile."*
+
+**Die Größe einer Änderung ist die Größe ihres Beweises.** Eine Zeile plus eine Messreihe über 325
+Karten ist ein halber Tag. Der Nachweis wird ab jetzt auf das Risiko zugeschnitten:
+Grundlinienvergleich (Minuten) für alles, was den gemeinsamen Malweg anfasst — eine Messreihe über
+den Bestand nur dann, wenn eine Zahl im Code oder in der Oberfläche daraus hervorgeht.
+
+Dazu die Rollen, von ihm gesetzt: *„du bist der Chefentwickler und ich der Architekt."* Der
+Architekt zeichnet zuerst. Ich hatte an diesem Abend zweimal zu bauen angefangen, bevor die
+Zeichnung stand, und beide Läufe wieder gestoppt.
+
+### Was eingesetzt ist
+
+**Eine** Fahrt statt sechs Läufen. Caspar_Ds Satz, aus dem alles folgt:
+
+> *„wir fangen immer im Ganzbild an, dann zoomen wir während der Wanderung zum ersten Punkt —
+> Suchen die Schärfe (ggf), verharren, laufen weiter, am Ende zoomen wir wieder aufs gesamtbild."*
+
+| | |
+|---|---|
+| `KB_LAEUFE`, Regler „Lauf" | **gefallen** — was die Läufe unterschied, ist jetzt Zahl und Lage der Punkte |
+| Regler „Ausschnitt" | **gefallen** — jeder Punkt trägt seine eigene Enge (siehe „Zu entscheiden") |
+| Zielpunkte | Liste am Effekt, höchstens fünf, Ort in Anteilen der **Quelle**, eigene Enge |
+| beim Einfügen | **zwei Punkte kommen mit**, von der Zielsuche vorgeschlagen — der einzige Ort, an dem sie noch läuft |
+| Halte | alle gleich lang, aus dem Rest gerechnet; die Zeile sagt in Sekunden, was wirklich passiert |
+| Parallaxe | Vorgabe **0** |
+| Bedienung | Glockenstuhl: klicken setzt, ziehen bewegt, Mausrad gibt die Enge, **Doppelklick löst** |
+| Bühne | zeigt das ganze Bild und die Fahrt steht, solange die Karte offen ist |
+| die alte „Fahrt" | **gelöscht**, mit ihr `tri()`; die Vorlage „Traum (weich)" fährt jetzt Ken Burns |
+
+Die Effektkarte hat damit nur noch **zwei** Regler: Tempo und Parallaxe. Die Punkte sind die Regler.
+
+### Das Erste, was morgen angesehen werden muss
+
+**Mit der Vorgabe bleibt auf 44 % der Titel kein einziger Halt übrig.** Gerechnet über die 324
+Katalogtitel aus `ergebnis-taktlage.json`, Tempo 1:
+
+| Punkte | kein innerer Halt |
+|---|---|
+| 1 | 13 von 324 (4 %) |
+| **2 (Vorgabe)** | **142 von 324 (44 %)** |
+| 3 | 256 von 324 (79 %) |
+| 5 | 318 von 324 (98 %) |
+
+Die Ursache ist die Körnung: ein Zug dauert mindestens **einen ganzen Takt**, und in einen
+Zehnsekünder passen nur drei bis vier Takte. Zwei Punkte brauchen drei Züge — dann ist der Clip
+voll und es bleibt nichts zum Stillstehen. Die Zeile unter der Liste sagt das ehrlich
+(„Für die Punkte bleibt kein ganzer Schlag übrig — sie werden nur berührt"), aber damit fällt
+genau das Gesetz weg, das den Effekt ausmacht.
+
+**Das ist eine Architektenfrage, keine Reparatur.** Mögliche Antworten: Tempo in **halben** Takten
+statt ganzen; oder ein Zug ist von sich aus ein halber Takt; oder die Züge werden in Schlägen
+gerechnet und nur die Halte in Takten. Nicht selbst entschieden.
+
+### Zwei Dinge, die ich entschieden habe und die Caspar_D gehören
+
+1. **Der Regler „Ausschnitt" ist mitgefallen.** Die Spezifikation sagt, jeder Punkt hat seine eigene
+   Enge — dann wären zwei Wahrheiten über dieselbe Zahl eine zu viel. Sein Bereich und seine
+   Vorgabe leben als `KB_ENGE_MIN/MAX/DEF` weiter und sind die Enge, die ein neuer Punkt erbt, wenn
+   es keinen gibt, von dem er sie nehmen könnte. Kein Rezept im Archiv trägt `kenburns`, es verliert
+   also keines eine Einstellung.
+2. **Das Hauszeichen wurde gehärtet, und das war nicht in Auftrag.** Der Schwachstellenagent fand,
+   dass `.complete` bei einer `data:`-URI nichts verspricht und ein SVG in Chrome je Zielgröße neu
+   gerastert wird — das Zeichen konnte in den ersten Exportbildern fehlen und mitten im Clip
+   hineinspringen. Die vermutete Ursache wurde am Ende **widerlegt** (die 318 Bildpunkte kamen von
+   der Messung selbst), die Stelle aber trotzdem gehärtet: `zeichenBereit(W,H)` wartet vor dem
+   ersten Bild auf `decode()` **und** auf den Beweis, dass der Raster in genau dieser Zielgröße
+   steht. Es ändert keinen Bildpunkt (Bild 0 trägt denselben Hash wie vorher), aber es fasst den
+   gemeinsamen Exportweg an — also gegen die Regel „eine Baustelle". Steht hier, damit es nicht
+   unbemerkt bleibt.
+
+### Die Nachweise
+
+- **Syntax:** 1 Inline-Skript, baut.
+- **Naht:** alle zehn Fälle mit Typ `kenburns`, `gleich = 0,00` und `gleichFolge = 0,00`. Neu:
+  `kb-einPunkt`, `kb-zweiPunkte`, `kb-fuenfPunkte`, `kb-ohnePunkt`, `kb-tempo2-b`. `kb-ohnePunkt`
+  hat `p95 = 0,00` — ohne Punkt steht das Bild wirklich.
+- **Grundlinie:** 191 Fälle in Studiogröße gegen `studio-parallaxe.json` — **181 bitgleich, 5
+  verändert, und alle fünf sind Ken-Burns-Fälle**; dazu 5 ohne Vergleichsfall, weil neu. Sonst hat
+  sich nichts bewegt.
+  **Eine Unstimmigkeit, die offen bleibt:** Der Nachbesserungsagent sah in seinem Lauf
+  `rand-wenige7-risse` abweichen und wies nach, daß derselbe Fall auch mit der völlig
+  unveränderten Vorlage abweicht (Grundlinie hält `t0 = 0,2`, gerechnet wird `t0 = 60,3`). **In
+  meinem eigenen Lauf kam der Fall `GLEICH` heraus.** Einer von beiden Läufen hat also einen
+  Zwischenstand erwischt. Der Fall trägt `daten: 'ohneEins,wenige:7'` — die Datenvariante bestimmt
+  `t0`. Wer das nächste Mal misst: darauf achten, und im Zweifel `--neu`.
+- **Marken nicht im Export:** gemessen, nicht behauptet. Bühne mit Karte 220 Bildpunkte
+  Markenfarbe, ohne Karte 0; Export und Kachel bitgleich mit offener und geschlossener Karte,
+  Markenfarbe dort 0. Die erste Fassung der Probe konnte nicht auslösen und meldete leeres Grün —
+  der Schwachstellenagent hat es gefunden.
+- **Zehn Befunde** von Schwachstellen- und Testagent, acht behoben, einer widerlegt (und die Stelle
+  trotzdem gehärtet), einer war ein Berichtsfehler. Der schwerste: der äußere Halt bekam nur den
+  Rundungsrest — bei einem Punkt stand das Ganzbild auf **320 von 324** Titeln kürzer als ein
+  innerer Halt, auf 80 exakt null Bilder. Behoben (`kbPlan`, Teiler `L` statt `n`), nachgerechnet:
+  0 von 324.
+
+### Was als Nächstes ansteht — in dieser Reihenfolge, eins nach dem anderen
+
+1. **Die Körnung des Tempos** (siehe oben) — Architektenfrage.
+2. **Fokussieren bei Ankunft** (aus | gerichtet | suchend). Davor die Kosten der Weichzeichnung je
+   Tiefenband messen, mit Zaunmarke.
+3. Das eine Archivrezept mit der alten `fahrt` über den Weg der App bereinigen
+   (`library/songs/a459b95e-…`, der Eintrag steht dort auf `an: false`).
+4. **Die Sliderwüsten** — eigener Arbeitsgang, noch nicht beauftragt. Caspar_D: *„wir müssen
+   sowieso die sliderwüsten etwas ausdünnen und schönere Entwürfe machen."* Die vier x/y-Schieber
+   bei Laser und Strahlen sind die nächsten Kandidaten für die Marke auf der Bühne.

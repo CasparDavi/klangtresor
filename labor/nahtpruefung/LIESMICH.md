@@ -62,8 +62,9 @@ Grundlinie `ergebnis-vorher.json`. Tabelle, Abweichungen vom Pult und offene Pun
 | `studiofeld.json`, `studio-vorher.json`, `massstab-vorher.json` | Studiomass (15.09.2026): Vorgabefeld des Studios, Hashes in Studiogröße, Größenabhängigkeit 360/1080 - Grundlinie vor der Einheit u |
 | `massstab-nachher.json`, `ergebnis-massstab-loop.json` | nach dem Einbau der Einheit: Größenabhängigkeit und Loop-Vollmessung |
 | `ergebnis-loop-ansicht.json`, `ergebnis-loopstufe-loop.json` | Stufe „Schleife schließen" (bis 15.09. abends „Loop verbinden") (15.09.2026): Loop-Ansicht gegen Export, Loop-Vollmessung danach |
+| `studio-zielpunkte.json` | **Hashes aller 191 Fälle in Studiogröße nach dem Umbau auf die eine Fahrt (18.09.2026, abends).** Die aktuelle Grundlinie — gegen `studio-parallaxe.json` waren 181 bitgleich und nur die fünf Ken-Burns-Fälle verändert. Aufruf: `--studio-vergleich labor/nahtpruefung/studio-zielpunkte.json` |
 | `studio-parallaxe.json` | **Hashes aller 193 Fälle in Studiogröße nach der Parallaxe (18.09.2026).** Gegen den Stand davor (`63ea4450…`) gemessen: 184 bitgleich, **verändert nur die 9 Ken-Burns-Fälle mit Parallaxe > 0**; `kb-parallaxe-aus` und `kb-vorb` bitgleich. Damit ist belegt, dass der neue Gang niemanden sonst anfasst. Aufruf: `--studio-vergleich labor/nahtpruefung/studio-parallaxe.json` |
-| `ergebnis-kenburns.json` | Gruppe `kenburns` (18.09.2026): die sechs Läufe der Ken Burns Fahrt, drei Stellungen der Parallaxe, Vorbereitung mit und ohne Parallaxe |
+| `ergebnis-kenburns.json` | Gruppe `kenburns`, seit dem Abend des 18.09.2026 die **eine Fahrt**: zehn Fälle (ein Punkt, zwei, fünf, ohne Punkt, Tempo 2 auf Titel b, dazu die Parallaxe- und Vorbereitungsfälle), alle `gleich = 0,00`. Ältere Beschreibung: die sechs Läufe der Ken Burns Fahrt, drei Stellungen der Parallaxe, Vorbereitung mit und ohne Parallaxe |
 | `ergebnis-taktlage-loop.json` | Vollmessung nach dem Einbau der Taktlage, mit Gruppe `taktlage` (Phase, Schlagraster mit Gruppe und Kick, 3/4, ohne Einsen, Tempowechsel) |
 
 **Vor dem Einbau eines neuen Effekts oder Reglers** (Regel 17e): Fall in `faelle-bauen.js` eintragen (und

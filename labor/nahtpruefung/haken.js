@@ -32,8 +32,13 @@ window.__naht = (() => {
        Faelle: nur „unterwegs" ist Warten wert, „da" und „keine" sind fertig. tiefeBildVon()
        stoesst das Laden an und nimmt seit dem Umbau keine Titelkennung mehr entgegen. */
     tiefeBildVon(); for(let i=0; i<80 && tiefeStand()==='unterwegs'; i++) await warte(50);
-    /* Das Hauszeichen laedt beim ersten Exportbild erst an - dann fehlte es in Bild 0 und nirgends sonst. */
-    const zeichen = zeichenHolen(); for(let i=0; i<80 && zeichen && !zeichen.complete; i++) await warte(50);
+    /* DAS HAUSZEICHEN, UND ZWAR DEKODIERT (Gegenlesen 18.09.2026). Hier stand eine Schleife auf
+       `.complete` - und genau die belegte nichts: bei einer data:-URI ist .complete schon wahr,
+       bevor das Bild dekodiert ist. Der Pruefstand ging also weiter, zeichenMalen() malte in den
+       ersten Bildern nichts, und mitten im Clip sprang das Zeichen hinein; Bild(N) war nicht
+       bitgleich Bild(0), und das Blockmittel des Vergleichers sah die 318 Bildpunkte in der Ecke
+       nicht. zeichenBereit() wartet auf decode(), wie es jeder Exportweg jetzt auch tut. */
+    { const [Wz, Hz] = ausgabeMass(360); await zeichenBereit(Wz, Hz); }
     ORIG = DATA.schlaege.map(s => s.slice());
     window.aktuellId = id; window.audio = { paused:false, currentTime:jetzt };
     return { gl:!!GL.gl, noise:!!GL.noise, tiefe:tiefeKarteDa(), schlaege:ORIG.length, titel:DATA.titel, einsen:ORIG.filter(s=>s[1]===1).length };
@@ -385,6 +390,193 @@ window.__naht = (() => {
       return erg;
     } finally { try{ loopSchalten(false); }catch(x){} window.audio = { paused:false, currentTime:jetzt }; aufraeumenMass(); }
   }
-  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, loopAnsicht };
+  /* ===================== MARKEN SIND BEDIENUNG, KEIN BILD (18.09.2026) =====================
+     Die Ken Burns Fahrt zeigt ihre Zielpunkte als Marken auf der Buehne. Sie duerfen NIEMALS in
+     den Export und niemals in die Kachel (docs/effektclip/KONZEPT-ZIELPUNKTE.md, Abschnitt 9) -
+     und solange die Karte offen ist, steht ausserdem die Fahrt, was ebenfalls nur die Buehne
+     angehen darf. Gebaut ist es so, dass beides nur in rahmen() geschieht; das hier MISST es,
+     statt es zu behaupten (Hausregel 3).
+     GEMESSEN WIRD ZWEIMAL DASSELBE BILD, EINMAL MIT OFFENER KARTE UND EINMAL MIT GESCHLOSSENER:
+       buehne     rahmen() gegen zeichneFrame() allein - hier MUSS ein Unterschied stehen, sonst
+                  waere die Marke gar nicht da und die Probe belegte nichts.
+       export     exportBild() auf einem eigenen Buendel, mit und ohne offene Karte - hier muss
+                  Bildpunkt fuer Bildpunkt dasselbe stehen.
+       kachel     zeichneFrame() auf einem eigenen Buendel (der Weg von clipTick) - ebenso. */
+  async function markenProbe(id, jetzt){
+    const her = await bereitMachen(id, jetzt);
+    const stufeVor = stufeOffen;
+    try{
+      Math.random = zufall;
+      const e = neuerEffekt('kenburns');
+      /* DIE KARTE MUSS WIRKLICH OFFEN SEIN (Gegenlesen 18.09.2026). Hier stand nur offenId; die
+         Probe konnte damit gar nicht ausloesen: kbKarteEffekt() verlangt offen UND offenId UND
+         stufeOffen === 'Kette', und stufeOffen kam im ganzen haken.js kein einziges Mal vor. Es
+         wurde also nie eine Marke gezeichnet, die Buehne stand nie - und alle Messwerte fielen
+         gruen aus, ohne dass etwas geprueft war. Dieselben Nullen kaemen heraus, wenn kbMarkenMalen
+         versehentlich in zeichneFrame stuende und Marken in jeden Export malte.
+         DARUM WIRD DIE VORAUSSETZUNG GEPRUEFT UND NICHT ANGENOMMEN: gibt kbKarteEffekt() bei
+         offener Karte null, bricht die Probe ab, statt ein leeres Gruen zu melden. */
+      stufeOffen = 'Kette';
+      STAPEL = [e]; soloId = null; offenId = e.id;
+      if(!kbKarteEffekt()) throw new Error('markenProbe: die Ken-Burns-Karte gilt nicht als offen (offen=' + !!offen + ', offenId=' + offenId + ', stufeOffen=' + stufeOffen + ', exportLaeuft=' + !!exportLaeuft + ') - die Probe wuerde nichts belegen');
+      const punkte = kbPunkte(e).map(p => ({ u:r3(p.u), v:r3(p.v), z:r3(p.z) })), geraten = e._kbGeraten || false;
+      const W = lein.width, H = lein.height, t = zeit();
+      /* 1. DIE BUEHNE: rahmen() gegen zeichneFrame(). */
+      saat = 777; zeichneFrame(t); warteGL(); const ohne = pixel(lein).slice();
+      saat = 777; rahmen(); cancelAnimationFrame(rafId); rafId = 0; warteGL(); const mit = pixel(lein).slice();
+      let anders = 0; for(let i=0; i<ohne.length; i+=4) if(ohne[i]!==mit[i]||ohne[i+1]!==mit[i+1]||ohne[i+2]!==mit[i+2]) anders++;
+      /* ANDERS IST ES OHNEHIN, UND ZWAR FAST UEBERALL - das ist kein Befund ueber die Marken,
+         sondern ueber die STEHENDE Buehne: zeichneFrame() allein faehrt (KB_STEHT ist nur in
+         rahmen() gesetzt), rahmen() zeigt das Ganzbild. `buehneAnders` belegt genau das.
+         UEBER DIE MARKEN sagt etwas anderes aus: WO die Markenfarbe steht. Sie muss innerhalb der
+         Kaesten liegen, die Rahmen, Griffkreis und Weg zur Bildmitte aufspannen - kein einziger
+         Bildpunkt darf ausserhalb tragen. */
+      const r = kbMarkeR();
+      /* Die Kaesten EINMAL rechnen, nicht je Bildpunkt: der Rahmen jedes Zielpunkts plus der
+         Griffkreis, dazu der Weg zur Bildmitte (die gestrichelte Linie laeuft dorthin). */
+      const kaesten = punkte.map(p => { const a = geoZuLeinwand(p.u-p.z/2, p.v-p.z/2), b = geoZuLeinwand(p.u+p.z/2, p.v+p.z/2), m = geoZuLeinwand(p.u, p.v), mi = geoZuLeinwand(0.5, 0.5);
+        return [ Math.min(a[0],b[0],m[0],mi[0])-r, Math.min(a[1],b[1],m[1],mi[1])-r,
+                 Math.max(a[0],b[0],m[0],mi[0])+r, Math.max(a[1],b[1],m[1],mi[1])+r ]; });
+      let fern = 0, innen = 0;
+      for(let y=0; y<H; y++) for(let x=0; x<W; x++){ const i=(y*W+x)*4;
+        if(!(mit[i]===91&&mit[i+1]===214&&mit[i+2]===200)) continue;
+        let nah = false;
+        for(const k of kaesten) if(x>=k[0]&&x<=k[2]&&y>=k[1]&&y<=k[3]){ nah=true; break; }
+        if(nah) innen++; else fern++; }
+      /* 2. DER EXPORT: derselbe Augenblick, einmal mit offener Karte, einmal mit geschlossener. */
+      const gm = bundel(), lage = ausschnitt(), tE = lage.t0 + 3/BILDRATE;
+      const expBild = () => { const m = exportBuendel(gm, lage, W, H); LOOP = m.L; FEIN = true;
+        try{ saat = 777; exportBild(m, gm, tE, W, H); warteGL(); return pixel(m.lein).slice(); }
+        finally { LOOP = 0; FEIN = false; } };
+      stufeOffen = 'Kette'; offenId = e.id; const expAuf = expBild();
+      stufeOffen = null;   offenId = null;  const expZu  = expBild();
+      /* 3. DIE KACHEL: der Weg von clipTick - eigenes Buendel, zeichneFrame, LOOP = 0. */
+      const kaBild = () => { const m = exportBuendel(gm, lage, W, H); m.DATA = Object.assign({}, DATA);
+        setzen(m); try{ saat = 777; zeichneFrame(t); warteGL(); } finally { setzen(gm); }
+        return pixel(m.lein).slice(); };
+      stufeOffen = 'Kette'; offenId = e.id; const kaAuf = kaBild();
+      stufeOffen = null;   offenId = null;  const kaZu  = kaBild();
+      const gleich = (a,b) => { if(a.length!==b.length) return false; for(let i=0;i<a.length;i++) if(a[i]!==b[i]) return false; return true; };
+      /* Und zum Schluss die grobe Gegenfrage: steht die Markenfarbe ueberhaupt irgendwo im
+         Exportbild? (#5bd6c8 = 91,214,200 - der Ring und die Zahl tragen sie.) */
+      const farbZahl = d => { let n=0; for(let i=0;i<d.length;i+=4) if(d[i]===91&&d[i+1]===214&&d[i+2]===200) n++; return n; };
+      return { titel:her.titel, punkte, geraten, W, H,
+        /* Die Voraussetzung, schwarz auf weiss - ohne sie ist jede Null darunter bedeutungslos. */
+        karteGalt:true, markeR:r, kaesten:kaesten.map(k => k.map(v => Math.round(v))),
+        buehneAnders:anders, buehneMarkenfarbe:farbZahl(mit), buehneOhneMarkenfarbe:farbZahl(ohne),
+        markenfarbeInKasten:innen, markenfarbeAusserhalb:fern,
+        exportGleich:gleich(expAuf, expZu), exportAbw:abw(expAuf, expZu, W, H),
+        exportMarkenfarbe:farbZahl(expAuf),
+        kachelGleich:gleich(kaAuf, kaZu), kachelAbw:abw(kaAuf, kaZu, W, H),
+        kachelMarkenfarbe:farbZahl(kaAuf) };
+    } finally { Math.random = zufallEcht; STAPEL = []; offenId = null; soloId = null; LOOP = 0; FEIN = false; stufeOffen = stufeVor; }
+  }
+  /* DIE ALTE "FAHRT" IN EINEM GESPEICHERTEN REZEPT (18.09.2026). Der Typ ist gestrichen. Ein
+     Rezept, das ihn traegt, darf nicht abstuerzen und nicht still falsch gelesen werden: der
+     Effekt wird ENTFERNT, die uebrigen bleiben, und das Studio SAGT es. Gereicht wird genau das,
+     was in der Datei steht; angefasst wird die Datei nicht. */
+  function fahrtRezeptProbe(rezept){
+    const R = rezeptLesen(rezept);
+    const vorher = R.effekte.map(r => r && r.typ);
+    let hinweis = '', fehler = null;
+    const nf = fahrtAltZahl(R.effekte);
+    if(nf) hinweis += (nf===1?'ein Effekt war':nf+' Effekte waren')+' die alte „Fahrt“; sie ist gestrichen und wurde entfernt';
+    try{ presetSetzen(R.effekte, R.alt, R.fassung); }catch(x){ fehler = String(x && x.message || x); }
+    const nachher = STAPEL.map(e => e.typ);
+    let bild = null;
+    try{ saat = 777; zeichneFrame(zeit()); warteGL(); bild = 'gemalt'; }catch(x){ bild = 'wirft: '+String(x && x.message || x); }
+    const erg = { vorher, nachher, fahrtGezaehlt:nf, hinweis, fehler, bild, gesichertWuerde:effekteJSON() };
+    STAPEL = []; offenId = null;
+    return erg;
+  }
+  /* ===================== DIE REGELN, GEMESSEN STATT BEHAUPTET (18.09.2026, Gegenlesen) =====
+     Vier Zusagen der Oberflaeche, die man nur am laufenden Studio nachsehen kann:
+       ueberzaehlig  ein von Hand geschriebenes Rezept mit SECHS Zielpunkten verliert den sechsten -
+                     und das Studio sagt es, auf BEIDEN Wegen (Titel oeffnen und Einfuegen aus der
+                     Ablage), weil beide denselben Satz aus rezeptHinweise() holen.
+       geraten       der Merker, dass die Punkte geraten sind, darf NICHT in die gesicherte Datei.
+       gruende       die Zeile nennt den Grund, den sie kennt - vier Zustaende, vier Saetze.
+       zeilen        die Zeile unter der Liste sagt in Sekunden, was kbPlan wirklich rechnet. */
+  function regelProbe(){
+    const erg = {};
+    const sechs = [{u:.20,v:.20,z:.60},{u:.40,v:.30,z:.60},{u:.60,v:.40,z:.60},{u:.30,v:.60,z:.60},{u:.70,v:.70,z:.60},{u:.50,v:.50,z:.60}];
+    const rez = [{ typ:'kenburns', kbZiele:sechs }];
+    erg.ueberzaehlig = kbUeberzaehlig(rez);
+    erg.hinweisSechs = rezeptHinweise(rez);
+    erg.hinweisFahrt = rezeptHinweise([{ typ:'fahrt', an:false }]);
+    erg.gelesenePunkte = effektAusRezept({ typ:'kenburns', kbZiele:sechs }, false, 6).kbZiele.length;
+    const eG = neuerEffekt('kenburns'); eG.kbZiele = [{u:.40,v:.50,z:.80},{u:.60,v:.50,z:.80}];
+    eG._kbGeraten = 'flach'; eG._kbGeratenFehler = null;
+    STAPEL = [eG]; const raus = effekteJSON(); STAPEL = [];
+    erg.gesichertSchluessel = Object.keys(raus[0]);
+    erg.geratenImRezept = Object.keys(raus[0]).some(k => k === 'kbGeraten' || k === '_kbGeraten');
+    const zurueck = effektAusRezept(Object.assign({ _kbGeraten:'flach' }, raus[0]), false, 6);
+    erg.geratenNachLaden = zurueck._kbGeraten || null;
+    erg.satzNachLaden = kbVorschlagSatz(zurueck);
+    erg.gruende = {};
+    for(const g of ['nochnicht','unlesbar','flach','einzeln']){
+      const e2 = neuerEffekt('kenburns'); e2.kbZiele = [{u:.35,v:.50,z:.80},{u:.65,v:.50,z:.80}];
+      e2._kbGeraten = g; e2._kbGeratenFehler = (g==='unlesbar' ? 'Quelle fremden Ursprungs' : null);
+      erg.gruende[g] = kbVorschlagSatz(e2); }
+    erg.zeilen = [];
+    for(const n of [0,1,2,3,5]){
+      const e3 = neuerEffekt('kenburns'); e3.kbZiele = [];
+      for(let i=0; i<n; i++) e3.kbZiele.push(kbOrt({ u:0.30+0.10*i, v:0.40, z:0.70 }));
+      const pl = kbPlanHier(e3);
+      erg.zeilen.push({ n, passt:kbPasst(e3), plan:pl ? { N:pl.N, takt:pl.takt, schlag:pl.schlag, F:pl.F, H:pl.H, HA:pl.HA } : null, satz:kbPunkteSatz(e3) }); }
+    return erg;
+  }
+  /* ===================== IST BILD(N) BITGLEICH BILD(0)? (18.09.2026, Gegenlesen) ==========
+     Nicht das Blockmittel des Vergleichers, sondern Bildpunkt fuer Bildpunkt - und ohne Effekt:
+     mit LEEREM Effektstapel malt der Export das unveraenderte Standbild - es KANN sich nichts
+     aendern. Bleibt trotzdem ein Unterschied, kommt er nicht aus einem Effekt. Genau so wurde das
+     fehlende Hauszeichen gefunden.
+     GEMESSEN WIRD IM ERSTEN LAUF EINES FRISCHEN CHROME.
+     UND SPARSAM (18.09.2026, und das ist der Befund): wer JEDES der 227 Bilder zurueckholt, misst
+     seinen eigenen Messvorgang mit. Nach rund hundert Rueckholungen legt Chrome die Leinwand vom
+     Bildbeschleuniger auf die Rechenmaschine, und die Deckkraft 0,66 rundet dort um eine Stufe
+     anders. Sichtbar wird das an der EINZIGEN Stelle, an der ueberhaupt etwas ueberblendet wird:
+     der Wassermarke. 318 Bildpunkte, genau in ihrem Kasten, Bilder 0..100 gegen 101..226 - so sah
+     es aus wie ein Zeichen, das mitten im Clip hineinspringt. Es war keins: Bild 0 traegt das
+     Zeichen, und mit `sparsam` ist Bild(226) bitgleich Bild(0), in der Vorlage des Projekts genau
+     so wie in diesem Bau (derselbe Hash 43286409). */
+  async function zeichenProbe(id, jetzt, sparsam){
+    const her = await bereitMachen(id, jetzt);
+    try{
+      Math.random = zufall;
+      STAPEL = []; soloId = null;   /* KEIN Effekt: dann malt der Export das unveraenderte Standbild, und die Geometrie ist von selbst konstant */
+      const lage = ausschnitt(), { t0, L, N } = lage, [W, H] = ausgabeMass(360);
+      const gemerkt = bundel(), m = exportBuendel(gemerkt, lage, W, H);
+      saat = 12345; LOOP = L; FEIN = true;
+      const hashes = []; let d0 = null, dN = null;
+      try{
+        if(typeof vorlaufen==='function') await vorlaufen(m, gemerkt);
+        for(let i=0; i<=N; i++){
+          exportBild(m, gemerkt, t0 + i/BILDRATE, W, H); warteGL();
+          /* SPARSAM: nur Bild 0 und Bild N zurueckholen. Haeufiges Zurueckholen verschiebt in Chrome
+             die Leinwand vom Bildbeschleuniger auf die Rechenmaschine - wer jedes Bild liest, misst
+             womoeglich seinen eigenen Messvorgang mit. */
+          if(sparsam && i!==0 && i!==N){ if(i%8===7) await warte(0); continue; }
+          const d = pixel(m.lein);
+          hashes.push(await sha(d));
+          if(i===0) d0 = d.slice(); if(i===N) dN = d.slice();
+          if(i%8===7) await warte(0); }
+      } finally { LOOP = 0; FEIN = false; }
+      let anders = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+      for(let y=0; y<H; y++) for(let x=0; x<W; x++){ const i=(y*W+x)*4;
+        if(d0[i]===dN[i]&&d0[i+1]===dN[i+1]&&d0[i+2]===dN[i+2]&&d0[i+3]===dN[i+3]) continue;
+        anders++; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+      const gruppen = []; for(let i=0; i<hashes.length; i++){ if(!i||hashes[i]!==hashes[i-1]) gruppen.push({ ab:i, hash:hashes[i].slice(0,8) }); }
+      /* Der Kasten, den zeichenMalen rechnet - damit ein Unterschied dort auch benannt werden kann. */
+      const k = Math.round(Math.min(W,H)*0.07), rand = Math.round(Math.min(W,H)*0.03);
+      const mitte = d => { const cx = W-rand-Math.round(k/2), cy = H-rand-Math.round(k/2), i = (cy*W+cx)*4; return [d[i],d[i+1],d[i+2],d[i+3]]; };
+      return { titel:her.titel, W, H, N, effekte:0, bilder:hashes.length,
+        mitteBild0:mitte(d0), mitteBildN:mitte(dN),
+        sparsam:!!sparsam, bitgleich:hashes[0]===hashes[hashes.length-1], andersPunkte:anders,
+        kasten:anders?[x0,y0,x1,y1]:null, zeichenKasten:[W-rand-k, H-rand-k, W-rand-1, H-rand-1],
+        hashGruppen:gruppen.length, gruppen:gruppen.slice(0,8) };
+    } finally { Math.random = zufallEcht; STAPEL = []; LOOP = 0; FEIN = false; }
+  }
+  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, loopAnsicht, markenProbe, fahrtRezeptProbe, regelProbe, zeichenProbe };
 })();
 /* <<< Pruefhaken der Nahtpruefung */

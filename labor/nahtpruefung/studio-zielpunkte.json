@@ -1,0 +1,7551 @@
+{
+ "stand": "8e4cf08",
+ "indexGeaendert": true,
+ "datum": "2026-09-18T16:23:34.920Z",
+ "lange": 360,
+ "dauerS": 457,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  },
+  "d": {
+   "id": "f76a6706-d9a0-480a-a73f-265de9c1c0fe",
+   "titel": "Okkultation",
+   "warum": "Taktlage 15.09.2026: im Taktraster liegt die Phase ueber einem Schlag (phiF 7 bei N/M 18,6), mit Daten tempowechsel ein Tempowechsel"
+  },
+  "e": {
+   "id": "535121bb-581f-407c-92c8-6f22f141dd25",
+   "titel": "Universe 25 english",
+   "warum": "Taktlage 15.09.2026: mit Eins-Leser liegt die Phase fast drei Schlaege spaet (phiF 57 bei N/M 14,3), Sitzanteil unter 50 %"
+  }
+ },
+ "jetzt": 60.3,
+ "feld": [
+  898,
+  889
+ ],
+ "vergleichMit": null,
+ "jeTyp": [
+  {
+   "typ": "puls",
+   "faelle": 26,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "schaerfe",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "kontrast",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "helligkeit",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "saettigung",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "farbe",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "licht",
+   "faelle": 15,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "schatten",
+   "faelle": 2,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "laser",
+   "faelle": 13,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "streifen",
+   "faelle": 4,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "rauschen",
+   "faelle": 2,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "vlauf",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "wackeln",
+   "faelle": 4,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "rgb",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "strobe",
+   "faelle": 6,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "sicherung",
+   "faelle": 5,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "streiflicht",
+   "faelle": 4,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "filmnebel",
+   "faelle": 20,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "partikel",
+   "faelle": 23,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "scanlines",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "bloom",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "nachzieh",
+   "faelle": 6,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "feuer",
+   "faelle": 3,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "wellen",
+   "faelle": 2,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "kaustik",
+   "faelle": 3,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "linse",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "flammen",
+   "faelle": 4,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "strahlen",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "spiegel",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "risse",
+   "faelle": 5,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "beschlag",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "einschlag",
+   "faelle": 5,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "tropfen",
+   "faelle": 4,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "korn",
+   "faelle": 2,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "bloecke",
+   "faelle": 3,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "farbton",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "kippen",
+   "faelle": 1,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "kenburns",
+   "faelle": 10,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "(kein Effekt)",
+   "faelle": 5,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  }
+ ],
+ "faelle": [
+  {
+   "name": "puls",
+   "typ": "puls",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "84e0a9b5f48b649ef64b3ff8af19d2652b20f466d80f6653e9cf58e3a07f007b",
+     "deterministisch": true
+    },
+    {
+     "hash": "66fa26dfd5e57e9df97b88e21fa4f1f623fb2e6108e51bac6105715168f3754f",
+     "deterministisch": true
+    },
+    {
+     "hash": "903f4dd08094d250d4242d369de52d14f9c736fd99cd30ca0a9f03b8a6dc69f1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 822,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "schaerfe",
+   "typ": "schaerfe",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "e0710e3fb8ed7affd4bf1d31ed690955a92163b37976ea685d26bab373979fcf",
+     "deterministisch": true
+    },
+    {
+     "hash": "8d6fd3e369b94dcf7a4ec370ff59e3c7323e518e633a8ed867d23b8b2a5df372",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1088,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kontrast",
+   "typ": "kontrast",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "14e8f357c53449f8b5c786406fe6030f6a15dd5b3547047eb06870b6e40a2764",
+     "deterministisch": true
+    },
+    {
+     "hash": "8009d8501325fccd2b1d47424ec4d8c86142eda67d94a2cc501ef97d514c778f",
+     "deterministisch": true
+    },
+    {
+     "hash": "6e71533b80b33219f20991e7c849144776dcec5b7299e77baf302df0e0ed4970",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1009,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "helligkeit",
+   "typ": "helligkeit",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "e21ee7e8572498393e1036c24b53e82a7d72e640a8fd31a3744f27ea7e524fa0",
+     "deterministisch": true
+    },
+    {
+     "hash": "966389b174dc3c2aaacdca69d4720011cf613913896696695543137eed92a1de",
+     "deterministisch": true
+    },
+    {
+     "hash": "c3455a4b6ad441560d3c7049a1f1de02db96f3f12ac062d0d9738caebb1cf5fb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 770,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "saettigung",
+   "typ": "saettigung",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2dad157762bab340d205b68d8e9920d920b061da1f958d4af332ecae7fb0de68",
+     "deterministisch": true
+    },
+    {
+     "hash": "e785a3a70bb1b648e095b7c934ee10fde6eb0f856d5ac102b244005a47097191",
+     "deterministisch": true
+    },
+    {
+     "hash": "1ecfbfd6a72cb49c692d16abe1e7d928dcc3270281bcbb0672ae0e6dd6ba9232",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 629,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "farbe",
+   "typ": "farbe",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "68565ecae08c0391278ef7625209fe1e229a447b1f4967de3aee42d9fe08b973",
+     "deterministisch": true
+    },
+    {
+     "hash": "20ab928f4718b9b8c073f54b41f30be61b0e050ed21388ccaaf7c1ee442eba69",
+     "deterministisch": true
+    },
+    {
+     "hash": "d156a43f230f4122b8d5b4fd627b367f54934789c6c685dc257d97eb474d77cb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 405,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht",
+   "typ": "licht",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "d07c89ad6cd445a6caac3c1d36e5cd81c755ada9faea267a2c4e0baec5e77063",
+     "deterministisch": true
+    },
+    {
+     "hash": "575320f78b99458cbc0ada7376731b2e725611c5a47ede44882e4a7d64a8464a",
+     "deterministisch": true
+    },
+    {
+     "hash": "fdbdbf101ae14aaf7cf2342489119bd4258dcf74f0048f60930663ba19cd4c87",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 641,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "schatten",
+   "typ": "schatten",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "rmBewegung wandernd (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "16075a84784ce469c2a4eca94dda50f2e7f3373128e26b2af1aa50a636c9cbba",
+     "deterministisch": true
+    },
+    {
+     "hash": "1a3529eed84544a9a6029de90648700c06b6dd865e5e0b820250b9ebf5f34898",
+     "deterministisch": true
+    },
+    {
+     "hash": "95e24523723954bc8034114bf0cdf3c098ea2166d00aa297743f00bc6600476f",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 629,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser",
+   "typ": "laser",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Ursprung wandern, Bauart gitter (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ba19084ba5a77e26485eb8a9eed29c59d29f4a10881ada0e98ddb1fd1ae4392b",
+     "deterministisch": true
+    },
+    {
+     "hash": "5cd5f82d727f01eb73474cd2a20b351adcb6fb6f1527c1435b0dcd3385f8f796",
+     "deterministisch": true
+    },
+    {
+     "hash": "99f6b2eddd21481be30619c6048f33fc3ced6ecd1879afeaef99d1164adb0491",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 757,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streifen",
+   "typ": "streifen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ton hell (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "9097190be97da2587bb9d2eb8abb2eb450c098d1203f195c2093e845fdee5fad",
+     "deterministisch": true
+    },
+    {
+     "hash": "f3e43d09b82dc0f3c92b04cc4d0f6efbf4c50a64a199f3ef3daca1829822fae3",
+     "deterministisch": true
+    },
+    {
+     "hash": "3acc32a5b167fae95621aa5335b57685dd9d963fbcee6d500823f29673ced43c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 496,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rauschen",
+   "typ": "rauschen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "6cea67e313485b6231db175e78c8416fe93c56e9ff9a311a8ee3f35e7f3603c7",
+     "deterministisch": true
+    },
+    {
+     "hash": "6cea67e313485b6231db175e78c8416fe93c56e9ff9a311a8ee3f35e7f3603c7",
+     "deterministisch": true
+    },
+    {
+     "hash": "6cea67e313485b6231db175e78c8416fe93c56e9ff9a311a8ee3f35e7f3603c7",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 520,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "vlauf",
+   "typ": "vlauf",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "a24e027583d11c3d372b3a80c559376dee13827a2056b62a8b87cbc98429eb2b",
+     "deterministisch": true
+    },
+    {
+     "hash": "00bf8ce4d85861f21b3e3b1a9ce4f53b4a48d61851f7a3318bd7f48657dad576",
+     "deterministisch": true
+    },
+    {
+     "hash": "8ca223c5ce86f5d7c8e023d15c744b7817b4e4bb932b017374aad3dd04620f5d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 707,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wackeln",
+   "typ": "wackeln",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kick im Takt (Vorgabe), 4/4",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "d9a11e634936636bcc660b0be5bfbaa7e17bb4ec7135850e21294879bd041b67",
+     "deterministisch": true
+    },
+    {
+     "hash": "63e6b576462ec1693a1209e166acbc4d7f1e9677430d9d717f9de82ace1c3684",
+     "deterministisch": true
+    },
+    {
+     "hash": "187241189200988c93f9c1bf2403640b09afdec6be5ae38c16431ba4d934c178",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 689,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rgb",
+   "typ": "rgb",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "da9fc1eb09ef5c42f9267775a6f4803df59cfebf946a1aa2374d602714348d01",
+     "deterministisch": true
+    },
+    {
+     "hash": "d5b6aec160c54fe2a8d2d2687c208ae31714c1e6c4153ce691f21e6b367a4f42",
+     "deterministisch": true
+    },
+    {
+     "hash": "003ed8cf312390806ffb7f9367d8ca8a5f114de369f0b813a21ff0ad9908517a",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1167,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "strobe",
+   "typ": "strobe",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "hz 8, rechteck (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb9225cc7ec925ffce6a1bec912d62cd684a931524cb8f0ed6da97aa4929a611",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb9225cc7ec925ffce6a1bec912d62cd684a931524cb8f0ed6da97aa4929a611",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 385,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "sicherung",
+   "typ": "sicherung",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 386,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht",
+   "typ": "streiflicht",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte: schaltet sich ab",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1255,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel",
+   "typ": "filmnebel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "allein ohne Leuchte, Schwaden .45",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "9be31ebd6c2c8dfbea65df9a5b9261e84f3b69edcafc1cc5a5e84108eb66504c",
+     "deterministisch": true
+    },
+    {
+     "hash": "c4167a1a3d8d79ed70ec661ef96fc282c9d366dcf054af4c92c3d6bebba96f9e",
+     "deterministisch": true
+    },
+    {
+     "hash": "43953bb31bd2cf9e7460908137d8c33e6d76b289790d45ff24b9efe110db0030",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1704,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel",
+   "typ": "partikel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Art schnee, ohne Quelle (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "9c4f5cd30f97e07383fafff4847667f30fa12c08e39db938d1a0d750e130a3fa",
+     "deterministisch": true
+    },
+    {
+     "hash": "7171781377b97ec1036e3f735c881fbbf96beb880e4e8c18db592603213dea0f",
+     "deterministisch": true
+    },
+    {
+     "hash": "3d76007667874ec2626cfca96f92b84fc1a0afde5a0431ff19d6a1dd17d9e884",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 881,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "scanlines",
+   "typ": "scanlines",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "edea5b9a738166253b8baddeecfca4806be8c92c82e83e9facfcbb567a4f1144",
+     "deterministisch": true
+    },
+    {
+     "hash": "7808a273f6ca5a304699c33f8c845164dc04e5fdc4e765774c761d25c7ce18e2",
+     "deterministisch": true
+    },
+    {
+     "hash": "b22b15a63eb897f337be722d39f2fa88f2f4a2a753d80b555d0f07ee5f2db46d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 764,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "bloom",
+   "typ": "bloom",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2950e814df78db62224cc9c327d34fb4af464873d88fbc234f6e422f2568f06b",
+     "deterministisch": true
+    },
+    {
+     "hash": "2950e814df78db62224cc9c327d34fb4af464873d88fbc234f6e422f2568f06b",
+     "deterministisch": true
+    },
+    {
+     "hash": "2950e814df78db62224cc9c327d34fb4af464873d88fbc234f6e422f2568f06b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 926,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "a4f3e4442e733fe29e432e2ee64f96210dde16af3bb391855e709bdc1a44a535",
+     "deterministisch": true
+    },
+    {
+     "hash": "a4f3e4442e733fe29e432e2ee64f96210dde16af3bb391855e709bdc1a44a535",
+     "deterministisch": true
+    },
+    {
+     "hash": "a4f3e4442e733fe29e432e2ee64f96210dde16af3bb391855e709bdc1a44a535",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 21781,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "feuer",
+   "typ": "feuer",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "fdf4cd70c4d75ebdd0112eb53095dfcbd16d73db0f365cf857a5fb901f406376",
+     "deterministisch": true
+    },
+    {
+     "hash": "5b1d96da7a444bd88de5c1a12e4930ca80bfc7ea6507d1a85111a094f80a78e5",
+     "deterministisch": true
+    },
+    {
+     "hash": "e27e2966270bdac26f791af89bad3d6fce970f698b5ab0b00c104c42392eb702",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1261,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wellen",
+   "typ": "wellen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f846cf8d96e94b208b61afdb23df07b801c34d7c38f18918cf499b605644040a",
+     "deterministisch": true
+    },
+    {
+     "hash": "696ce28118af8754c8debee4a5f43f39328da4ad3d093d334d40c0092ec6586d",
+     "deterministisch": true
+    },
+    {
+     "hash": "05577035ab0ab415a5bd94196eb6c50013e290018b7eb7e26973879afc00e5ac",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 959,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kaustik",
+   "typ": "kaustik",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "d3399d292dc0ace0e0899474ef09ee4e02c1e137afa53ef5318ccc65408f6845",
+     "deterministisch": true
+    },
+    {
+     "hash": "6f82ce8f7bc33a95cea6d8219959013a56816f848fba578ccf08d5fafcf58b16",
+     "deterministisch": true
+    },
+    {
+     "hash": "535d5f10f58809bbc0797d74071f9b676780701b01e96860320ead8d11f2d3f9",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 971,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse",
+   "typ": "linse",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "1a0d834d10a834e10273b29a3d00986d84761f6bc1f709cba3e7fcd806ce4ebe",
+     "deterministisch": true
+    },
+    {
+     "hash": "1a0d834d10a834e10273b29a3d00986d84761f6bc1f709cba3e7fcd806ce4ebe",
+     "deterministisch": true
+    },
+    {
+     "hash": "1a0d834d10a834e10273b29a3d00986d84761f6bc1f709cba3e7fcd806ce4ebe",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 835,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen",
+   "typ": "flammen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "a1d2fb5d940b713d41f3c709c06d39317702c4fceae57cc5bf95dd5e0834f93a",
+     "deterministisch": true
+    },
+    {
+     "hash": "0ed34ad9fccf6c3e0ee3925ec6819441be0a0d660f4fa119d316448d4ea75222",
+     "deterministisch": true
+    },
+    {
+     "hash": "d7a2f9e44b5577df56ea59baaf668a8f50e1e45948e444a416f3743610728968",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1015,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "strahlen",
+   "typ": "strahlen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f38b4730b7d79fcc91f290622ac904971eb486e66bdcdd354d8b1a333c5c41cb",
+     "deterministisch": true
+    },
+    {
+     "hash": "00ef0d7c4cbfd6e6bfd74cf03d406b1740c13179b01b11a8843f8a4046951fea",
+     "deterministisch": true
+    },
+    {
+     "hash": "1d1bd3b33821da10a2a50aa3de11f30857f045c3b59c1f294cdbd90497ec2fac",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1210,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "spiegel",
+   "typ": "spiegel",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "8d07ee21a629405632094ea14a854fd5a7b3166abb324fdaba90e0bce0b002fd",
+     "deterministisch": true
+    },
+    {
+     "hash": "5de54b1894ef845e2ff0c655794dbc78e72eaf9ba7387e6aa58b45226a819711",
+     "deterministisch": true
+    },
+    {
+     "hash": "d2a724517213c91d70c8a142bad98372aa928425ca8944e7f5364090a77d4a39",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 810,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "risse",
+   "typ": "risse",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "wachsen zeit (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    },
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    },
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 455,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "beschlag",
+   "typ": "beschlag",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "7ab5fd18257c96e172ec21d818a9889685b6263d73ae08ac53fdda13d1aff6f9",
+     "deterministisch": true
+    },
+    {
+     "hash": "7ab5fd18257c96e172ec21d818a9889685b6263d73ae08ac53fdda13d1aff6f9",
+     "deterministisch": true
+    },
+    {
+     "hash": "7ab5fd18257c96e172ec21d818a9889685b6263d73ae08ac53fdda13d1aff6f9",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1046,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "einschlag",
+   "typ": "einschlag",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "bleiben 8 (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "754b1f4fdc5f7d83344ec8ef99085cab0539e86bb0eb1280a3cb2cebc5bfaa07",
+     "deterministisch": true
+    },
+    {
+     "hash": "e8c5e3fd1b7953dbaaa46499777e1c7827e784413f37086504b905d13330597b",
+     "deterministisch": true
+    },
+    {
+     "hash": "e0e627af9e472875d56f35b225d7ab3a6a6b575296f22cb8c6b726d5c718d7f0",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 865,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "tropfen",
+   "typ": "tropfen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "31dc289844119e6fff9e655d6ac3ab5a3cd37fd47d6e6f0e012aeb8454efe23d",
+     "deterministisch": true
+    },
+    {
+     "hash": "726871348f2d77026fef54302035f146e00f86f45ce908a486cfeaa60fe4ee97",
+     "deterministisch": true
+    },
+    {
+     "hash": "51e7a59353f33b8ba23fb8f177760e39fedb642c5fa60adf8a6a07fca09bb6fc",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 920,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "korn",
+   "typ": "korn",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "0f81d3792f986485dcc656c81197ff2c9b0997697b2d12626245bc0c94aa6746",
+     "deterministisch": true
+    },
+    {
+     "hash": "0f81d3792f986485dcc656c81197ff2c9b0997697b2d12626245bc0c94aa6746",
+     "deterministisch": true
+    },
+    {
+     "hash": "0f81d3792f986485dcc656c81197ff2c9b0997697b2d12626245bc0c94aa6746",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 446,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "bloecke",
+   "typ": "bloecke",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "im Takt (Vorgabe)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "a2bedd634d62b19431e4d4b9f92124831850cb4df9c8ff447bcd7b0c0189ff4c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1268,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "farbton",
+   "typ": "farbton",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "957d7c4c8d774389323d2767ade571a669bf680a4321ffb6a99602dad5fc401e",
+     "deterministisch": true
+    },
+    {
+     "hash": "a82117aa7ae529857f3b03624cf141f6c1b112863869b62535d349f3246f850e",
+     "deterministisch": true
+    },
+    {
+     "hash": "9307768754fe7c82efe8566289fefd2c0373b1ac3e9d38f93dd44cb145db9ec6",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 681,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kippen",
+   "typ": "kippen",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorgabe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "8bf33d9683dc631cb29d9164492f9fd5b65b64b23c393db4f5471cb56ae64b62",
+     "deterministisch": true
+    },
+    {
+     "hash": "cba1492720570d664459738805f9f33950394c71f54a01aa2d8990d2617ebd64",
+     "deterministisch": true
+    },
+    {
+     "hash": "6db647254571d4f64364a2a1dc3ca3db8133ebbb35c1c19bfe6836a1a2f53a69",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 505,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-flackern-takt",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "a0346ec3645949eda0e072728c07e2f60497003e38fc2aeaa3be4a2f7714d6e9",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "516a9c49e96c81d136bc8183d9bf3d9936af53a2d5a21542868874bcc5c69c88",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 399,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-flackern-hz05",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "84e0a9b5f48b649ef64b3ff8af19d2652b20f466d80f6653e9cf58e3a07f007b",
+     "deterministisch": true
+    },
+    {
+     "hash": "4a9b94a5ffeb758e8518977a8c5f09bd560f7f4900c70481c5ef21d6a0db4d43",
+     "deterministisch": true
+    },
+    {
+     "hash": "84e0a9b5f48b649ef64b3ff8af19d2652b20f466d80f6653e9cf58e3a07f007b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 407,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-teiler8-a",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe: M durch 8 teilbar",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "98686f0d1a8101e100764d91767f4e71cf594956da3b2942233b644284fc11df",
+     "deterministisch": true
+    },
+    {
+     "hash": "f00a0599128c8bc118eac9d87686dffcd04ad2d387a28156d24cbf2746f666fa",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd1ac1187d01b8185e5b9d8f06439e655513ca219f6d4405041df4542f78479d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 424,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-teiler8-b",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "M nicht durch 8 teilbar",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "ca1e47a3109e9fc4a937bf396ccd3da6819284f72092d750209163f7b38debcb",
+     "deterministisch": true
+    },
+    {
+     "hash": "3dc2884ed79d7fc43b8e81ac9705d6884af00a918f19aa23932d8457642cade1",
+     "deterministisch": true
+    },
+    {
+     "hash": "798c97647d1dedc5909e222e68ab020e2469e5b64da3b8657045de65d3f5b0e2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 390,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-zufall",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "903f4dd08094d250d4242d369de52d14f9c736fd99cd30ca0a9f03b8a6dc69f1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 418,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-ohneEins",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Schlaege, aber keine Eins-Marken",
+   "t0": 60.079,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.07933,
+    62.379329999999996,
+    65.77933
+   ],
+   "messung": [
+    {
+     "hash": "84e0a9b5f48b649ef64b3ff8af19d2652b20f466d80f6653e9cf58e3a07f007b",
+     "deterministisch": true
+    },
+    {
+     "hash": "74431473844547c32cee384c5396c2086d448b21e13ec1fa136e5589122284ce",
+     "deterministisch": true
+    },
+    {
+     "hash": "cce6691e167d9a9eeb64b620b50cefab85584c6e92e84341973ca88133a08be4",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 438,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "strobe-ohneEins",
+   "typ": "strobe",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Schlaege, aber keine Eins-Marken",
+   "t0": 60.079,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.07933,
+    62.379329999999996,
+    65.77933
+   ],
+   "messung": [
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb9225cc7ec925ffce6a1bec912d62cd684a931524cb8f0ed6da97aa4929a611",
+     "deterministisch": true
+    },
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 412,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-ohneSchlaege",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Rueckfall auf Frequenz",
+   "t0": 60.3,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.3,
+    62.599999999999994,
+    66
+   ],
+   "messung": [
+    {
+     "hash": "321fcd24493e3559f493f73d3f518267e694869dcb75b3f91e12a1485ccc6201",
+     "deterministisch": true
+    },
+    {
+     "hash": "85cdbf6289690efc355b17670a8cbe4cbec0dbb6097f655c584bdb758f282a1a",
+     "deterministisch": true
+    },
+    {
+     "hash": "84e0a9b5f48b649ef64b3ff8af19d2652b20f466d80f6653e9cf58e3a07f007b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 377,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-zufall-ohneSchlaege",
+   "typ": "puls",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "",
+   "t0": 60.3,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.3,
+    62.599999999999994,
+    66
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "85cdbf6289690efc355b17670a8cbe4cbec0dbb6097f655c584bdb758f282a1a",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 367,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "strobe-ohneSchlaege",
+   "typ": "strobe",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "",
+   "t0": 60.3,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.3,
+    62.599999999999994,
+    66
+   ],
+   "messung": [
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb9225cc7ec925ffce6a1bec912d62cd684a931524cb8f0ed6da97aa4929a611",
+     "deterministisch": true
+    },
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 373,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "feuer-flackern",
+   "typ": "feuer",
+   "gruppe": "antrieb",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "5cf916fc846df04167f8f582f4c8bc268de0bde3412840f2ce27a39c6e9067ca",
+     "deterministisch": true
+    },
+    {
+     "hash": "a9e7a525c038834c112ab4ae3f4362ab72e56608868b606a15768d137860dc4a",
+     "deterministisch": true
+    },
+    {
+     "hash": "0cd64f03d515ae850699d8b4fce7c8ef68a0efaee26c5f264645be595a3a45d7",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 895,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-fahrt",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "822c29756e7a5a7e01f3d00cd243149670df3f576278bee2d7ec4371bc881f9c",
+     "deterministisch": true
+    },
+    {
+     "hash": "2bb76729c1f430a1c0f7f831cc741662ccbf6b801fa69acd1bf33f22a78dd359",
+     "deterministisch": true
+    },
+    {
+     "hash": "9d41cf15b0dc0ffc7bed465e22584add36ee2f6eee2c8e78540d796a498e2b0d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 602,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-schritt",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2988442e44e059a0fb3d8cdbde960fe40ef1b4d3398168ca961046e253619c3e",
+     "deterministisch": true
+    },
+    {
+     "hash": "993d7f90e909aa8b8d0fd21388557a869d99839fe2d7f29f174a13961c7ce1d1",
+     "deterministisch": true
+    },
+    {
+     "hash": "e971b1b1ee40e8b34540987f6bbe770233c4b6377e8a339fa8ee2076211de333",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 460,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-bogen",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "bba0d96da96ecea40d9040b6b330823e2896623f6873bd92f6bfd5aa31aa1498",
+     "deterministisch": true
+    },
+    {
+     "hash": "90dfc063dcaf7cfef9671ab1f77f7d59c89bee375de115bd9c34f1fc92c0fd91",
+     "deterministisch": true
+    },
+    {
+     "hash": "4521070ecee27c75ebd86522e4baac0df0d43e3f79ddb29a04fcccc1013b190a",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 454,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-wandern-scanner",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "9774d55e06a6c71a0a0eb22c429c4236a3ed89243284fb2a4727e8cc37e6bfec",
+     "deterministisch": true
+    },
+    {
+     "hash": "6d8c9d3e4949e6102ca951676a67c3f4c4c72dccb5326b28de713e9e142e48ab",
+     "deterministisch": true
+    },
+    {
+     "hash": "5b81094d9356c4be2094417eb22822810515f3e3b816c49cb13b751d83a97a3e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 915,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-wandern-punkte",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "8dd1602cdcdbdcd4abb862c2a76f3d83ed028eaa1a5c1758057ad606fe9114b4",
+     "deterministisch": true
+    },
+    {
+     "hash": "f99a13b9cf53e0bcd028b2b648ed50363b065a46f5668a336bb5ade38764f483",
+     "deterministisch": true
+    },
+    {
+     "hash": "e054e6b5cd1112f2b2b1e3ec5ba0d010bb35208df6322ca9b49bdb5710e8e5cb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 675,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-wandern-punkte-drehen0",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "553dbe5f4a6f95315dcd3b3b071ad6e7f98c40becaaa9ebeff3354beeff21afd",
+     "deterministisch": true
+    },
+    {
+     "hash": "db7f51b982be0d664870b78b1486fbdf89d7933b9d775cb9b339a596b82a4d4a",
+     "deterministisch": true
+    },
+    {
+     "hash": "85f790f6ddfbce19252eef89fcf6de662403464b0a52861687ccc97049549fd5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 468,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-fest-punkte",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "drehen allein, ohne wandernden Ursprung",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "c8f864356065c80258a4657801283c0255cc2f637b4b29d65d25da4b5e2a5375",
+     "deterministisch": true
+    },
+    {
+     "hash": "117707d8bfdd82c813b6ef787412d80f3758961993ee082dcdb1b050f7180bb1",
+     "deterministisch": true
+    },
+    {
+     "hash": "c66bef87df314c4b93cc405cabe2b58228d574c73290bac9fa09a302053cf9cd",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 413,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-fest-punkte-drehen0",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd739937b7447ae50f76f611e01352a5da01b564e698bb57d4374c41e5aadf96",
+     "deterministisch": true
+    },
+    {
+     "hash": "3ebf9f1d73e85cfd9d3e0628ba09633a3215d3c67b27723cd85cc3eedee3e1b3",
+     "deterministisch": true
+    },
+    {
+     "hash": "a2f5cada6f496000137a144bc136413ada6a23015e260985d8596ef508da1c3e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 404,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-fest-gitter",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "12c9d101e72843e65841a8904f7cffcbc98e9976714f8bbfa93971d41b854fa3",
+     "deterministisch": true
+    },
+    {
+     "hash": "dcd81f8ef215a1fc96e714a8fa52941fcfd018645157cade87e2c821baab1ece",
+     "deterministisch": true
+    },
+    {
+     "hash": "9aaa954975d3844aa27cd5d0fa03db38aa82c3d42ca2d905652c35450edd354d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 677,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-scanner-sprung-hz",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "5aedfd69c483ff527740409b8d5538abe09ae0be4226d57a30ca528bee4395d4",
+     "deterministisch": true
+    },
+    {
+     "hash": "793fa5d6cb96677317a242efd7c9c9304cb027423dd88345ae50df171033bc12",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 631,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-scanner-sprung-takt",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "84dee270fbdc2ad3a2beba06086bfcac7a6abf224d854d5da36d07e9b98023f1",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "ceccda578d4c4923e2692588e6d64431720abde0224c5ddf543a6ccd6060cdca",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 635,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht-licht",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Scheinwerfer wandernd davor",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "55118630feb0c218ec10b2351e83daad867660bc93d65747088f306f96a97c61",
+     "deterministisch": true
+    },
+    {
+     "hash": "da46d329c7c232166f5abf34d871594dcb1e29e3ad5c04f2b7bdb40465923a6b",
+     "deterministisch": true
+    },
+    {
+     "hash": "9a8df74912795966c275de67e6639e94d751a9d7b89d425b770bec99c83262fe",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1475,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht-laserfest",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Laser Ursprung fest davor",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "29c32cc165c9f2ee39348c39b5502961994b390b86d779ee90274adccc012f07",
+     "deterministisch": true
+    },
+    {
+     "hash": "d75e7b846048cbd01a080625c79ff93024ab4617d2fe32b8aa17970531825c14",
+     "deterministisch": true
+    },
+    {
+     "hash": "ae63bdf8e013f17f147d332911144bb9b4ddc5dcfbb7d89930f30fe59e783250",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1482,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-regen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "d78e98f28f226c296e393604afd248f940366e7b0a83777dff6b25cb415939b0",
+     "deterministisch": true
+    },
+    {
+     "hash": "4121f26455a90910532a0a8c26b862bd11544841396397f936bbb2bc40635f24",
+     "deterministisch": true
+    },
+    {
+     "hash": "efceea71c62250b1f814a9b6a1157696b636450392b6e9dcd3167e30092571b4",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 778,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-asche",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "7de71941fc9120a418a4c772349eb3fadbf2c1b0f8de2ec853850c5ed58bcb93",
+     "deterministisch": true
+    },
+    {
+     "hash": "8b1b65a4d84aae44430c094c04516bcbdc7f2ff1455dbbe5a8bc4e70674a7e95",
+     "deterministisch": true
+    },
+    {
+     "hash": "fa0c79e8f3ee3944100471438511ed28b8732da022d2ea272c0680c72f1693c1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 795,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-funken",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "bc6fde62b0bf9664a9b13075d3c5a304229fa10c7fde0dab3c055ffc8819f42b",
+     "deterministisch": true
+    },
+    {
+     "hash": "b1d3480ad7fe8afce924534eececf735ae70e89aabd74009fa0d90cea0975f3b",
+     "deterministisch": true
+    },
+    {
+     "hash": "69aa9ef282a2a8ac5f98e33e110ab9b630eba23e861486a8bfcb4d9a076ad287",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 732,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-blasen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ce5e95a86f44346c6ce71c5bc1941307e85f994c29c5037a34c2c490bf5a2a2e",
+     "deterministisch": true
+    },
+    {
+     "hash": "5b848d84fd260fac3b2c132a6aa0c9e5fbdb309c1e1c98d1e08f81f73eef9f94",
+     "deterministisch": true
+    },
+    {
+     "hash": "47fc2124c35bddb229a5ae90066ceb9aca0d2d1787af0603bf44d46651334b8c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 919,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-blaetter",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "6e74a487f5a29e0030af6a4114aa59a2aaf0c1c5d6a81e45c414d32b960f3046",
+     "deterministisch": true
+    },
+    {
+     "hash": "b62ddc20a56e8a88459fb6537e66502a51cea8aca306d9bcd18d4d7a4094818a",
+     "deterministisch": true
+    },
+    {
+     "hash": "ca268a49797e7d7aef1579119a1425446dd8c6069f976d286eb403daae60fb64",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 845,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-staub",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "82dca54cba6fd94243b11d972a5ea17e04eebc90826bcf46a271b4767ed1d988",
+     "deterministisch": true
+    },
+    {
+     "hash": "453fc52fd56b0b0a1aed4f777cc29afe4b6f7ce5e1e681d5595227728bf3009e",
+     "deterministisch": true
+    },
+    {
+     "hash": "ee815d9a78dfdd70be39c15a624e3700f4280aea4244bfe042d433530cb07472",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 830,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-schwaden",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "db6bf0069eef0b6ead297d52ff7958a32e0c4e0b1479fc318f4671f934a67a07",
+     "deterministisch": true
+    },
+    {
+     "hash": "537b93149d33ad2732a366939fc7a04630c8f67c35fb915d8318de7e7e2d2f4b",
+     "deterministisch": true
+    },
+    {
+     "hash": "d11ab9d81d9c6874e6d9be196a693c418506e025f866ab527423202ece62f1a8",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2333,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-gluehwuermchen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "da0df72d06b0033ca9e0d748c759962a9ca1f1bb743ffba75ef51f029a75478b",
+     "deterministisch": true
+    },
+    {
+     "hash": "27407408820b4e50b79f5a267d37d4eefffa8792f83f2366e89c6e0e053ae2bc",
+     "deterministisch": true
+    },
+    {
+     "hash": "b0ee1f964a0be71a4a3d4ca5398dea8fcb55cb0354629712b66b1b1cdc9ca273",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1017,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-schmetterling",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "ohne Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "bfb400a445d40d58952021ec985124f93cfaf0787f1a20e018712cef0e8956dd",
+     "deterministisch": true
+    },
+    {
+     "hash": "bb64f39d6c159fac30ae77522a56fad5412daee55c3e9d23c4d8ad95333091c6",
+     "deterministisch": true
+    },
+    {
+     "hash": "116aa20b4b32a1a259aa7744f6706378fa56e01ca593e99cace77d56c56a0342",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 839,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-schwaden-quelle",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Quelle Punkt",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "cd430e15d34c7b5a328d1ad0ea2ef908c6febe49971ca62ea721ff9a5f1599a1",
+     "deterministisch": true
+    },
+    {
+     "hash": "7f04b078fa5539e7f000e39b7db7ee48cb9ef6c897f90860e2e0e63fb6db7546",
+     "deterministisch": true
+    },
+    {
+     "hash": "68ad10a22fced26a6b3baeef973d60c5617b519aaa499449902c99234f5df7e1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2831,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-boeen",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Windstoesse im Takt",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "206c2f02609aa3343af64ce4c50935dec31a5dddb2d41c58069725f18aeacc8e",
+     "deterministisch": true
+    },
+    {
+     "hash": "cc91d9bb66d49b69d9d18465018e55e1374c931ac08586936a0c0762597a2624",
+     "deterministisch": true
+    },
+    {
+     "hash": "07b9fdf2bd9330ad11dd1839b04b66ee8fb713da0934354ba174222e2612b1f9",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 740,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-wind-06neg",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "vorschauAbw zaehlt",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "153546f80c4a1c843ec53a3793c9a70fe0e409e6c20cf0e07e0cac3f2ba77a30",
+     "deterministisch": true
+    },
+    {
+     "hash": "4f55c8c305d1e00ca585937df779506630e5e6d7e713f835af11efa3aa2dab1b",
+     "deterministisch": true
+    },
+    {
+     "hash": "603e7423d4fd53d73e73ebe29d5ddabdcee1f7d1fcc0eee1c16cd029e551d2f3",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 805,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-wind0",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "vorschauAbw zaehlt",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "757f82ce8379e89a25f0e13090a53f65d2df412c753fe316b3b6eb609cdeeff5",
+     "deterministisch": true
+    },
+    {
+     "hash": "750236f2b8d14cebee0761daec195a9510cbd451279b38a45048ae6986d9c55c",
+     "deterministisch": true
+    },
+    {
+     "hash": "cc7222a30d5fae034363938f4213b90a1f788cf3654918231e68bc31d3acd67e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 725,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streifen-beide",
+   "typ": "streifen",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "round(L/9) ungerade",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b2615bee38df962c2416534923182b6d07b89a63f2f0ba60a72908ede894d88a",
+     "deterministisch": true
+    },
+    {
+     "hash": "c9e72c5c1f1d7f83f0cc3347c346fb9b194087bd3f94596efc847dd36a89f85f",
+     "deterministisch": true
+    },
+    {
+     "hash": "74e2c48f4a1d5e369ec6b2277c8381b0f7d686b429c02bdbd0d7ccc633b00585",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 633,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "sicherung-frei-lang",
+   "typ": "sicherung",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "92ce14ff0224389e633badfd187ab205dc41f311323cbf9ff723a4f5848852d9",
+     "deterministisch": true
+    },
+    {
+     "hash": "e63f757c14a58dc38af96641a52107c80aea6f63a12f58ed8a650de48fb48224",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 400,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "sicherung-takt-800",
+   "typ": "sicherung",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "13f875af610201c79dc964a7744c7e28be6d5971ecf1e9451ec3067774cad1d6",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 423,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "bloecke-frei",
+   "typ": "bloecke",
+   "gruppe": "stoerungen",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 612,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wackeln-kick-ungerade",
+   "typ": "wackeln",
+   "gruppe": "stoerungen",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4, M ungerade",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "4c1a615d317b16990babef9b17927881fdf97481bb4125c6a27417986bf56ee7",
+     "deterministisch": true
+    },
+    {
+     "hash": "018c78b4bc83376fd78ca2621c1fc58a7071840952ade1cd11b37527e759f55d",
+     "deterministisch": true
+    },
+    {
+     "hash": "a8467babcf0d68b008d08c56366fb4319e5909d3795e06a0d652c4de0456a5b6",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 553,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-schwaden0",
+   "typ": "filmnebel",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2b2203fd011aaa8e64dc230658d78b112fba74dcb1450e6852f93fa6e3c91214",
+     "deterministisch": true
+    },
+    {
+     "hash": "2b2203fd011aaa8e64dc230658d78b112fba74dcb1450e6852f93fa6e3c91214",
+     "deterministisch": true
+    },
+    {
+     "hash": "2b2203fd011aaa8e64dc230658d78b112fba74dcb1450e6852f93fa6e3c91214",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1448,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "risse-takt",
+   "typ": "risse",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    },
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    },
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 476,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "einschlag-bleiben30",
+   "typ": "einschlag",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "5b73b9b357736acff499862e32cdc86b04cb2adea0b1a1ea048107fbcc969bab",
+     "deterministisch": true
+    },
+    {
+     "hash": "5299316274712744e8af7a0d979f6704e5383918f915f877dafc023929c1b169",
+     "deterministisch": true
+    },
+    {
+     "hash": "9eb4f5d0996995172019963fce69b3ce556e2150ec1731bd51e75b37d9dce5ab",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 659,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh-09",
+   "typ": "nachzieh",
+   "gruppe": "glas",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "664c105b3bbe7bad03ae62c8a41ec4aa97b55844c4527f8ab7c34dfceb3ebabc",
+     "deterministisch": true
+    },
+    {
+     "hash": "664c105b3bbe7bad03ae62c8a41ec4aa97b55844c4527f8ab7c34dfceb3ebabc",
+     "deterministisch": true
+    },
+    {
+     "hash": "664c105b3bbe7bad03ae62c8a41ec4aa97b55844c4527f8ab7c34dfceb3ebabc",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 21622,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-licht",
+   "typ": "filmnebel",
+   "gruppe": "kombination",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Nebel braucht Licht",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "d46c1ee20ee1962865324690ae3686d8243e56c136acdc68251b80fae10f2915",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb48905ef031981107deb10a3303bb346bbd8d995096137d2cd188cebf845939",
+     "deterministisch": true
+    },
+    {
+     "hash": "593ce9c80575618804821ca855a1c3aae626aa245cbc9d9e086c2ea6587c3a14",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1746,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-flackern-eins",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "a0346ec3645949eda0e072728c07e2f60497003e38fc2aeaa3be4a2f7714d6e9",
+     "deterministisch": true
+    },
+    {
+     "hash": "f6a875b295f37c103b5fa658b4d109c7d4d6ba0bc544501f0e755c62723093ef",
+     "deterministisch": true
+    },
+    {
+     "hash": "23d51f2eebcfb194d628bafa6d8f097f5dc518683da3c9da3f94d2a67e8e7dc1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 525,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-flackern-teil025",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "924b9dbde43cbeb007672505baceb27e04c1da3126c271ee0449dde9c7b0c4e2",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb48e7880c580a22f9da725ac8bd13b2d42f4e6966f0aa954b08fbfdd97e1952",
+     "deterministisch": true
+    },
+    {
+     "hash": "9c654cc342e56fd8a53c3633651fdcdb30fa345441abd7415e17449e2911e71d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 391,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-zufall-teiler8-b",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "3dc2884ed79d7fc43b8e81ac9705d6884af00a918f19aa23932d8457642cade1",
+     "deterministisch": true
+    },
+    {
+     "hash": "798c97647d1dedc5909e222e68ab020e2469e5b64da3b8657045de65d3f5b0e2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 768,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-teiler8-dreiviertel",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4: 8 passt in 10 s nicht, Forderung wird gelockert",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "ca1e47a3109e9fc4a937bf396ccd3da6819284f72092d750209163f7b38debcb",
+     "deterministisch": true
+    },
+    {
+     "hash": "3dc2884ed79d7fc43b8e81ac9705d6884af00a918f19aa23932d8457642cade1",
+     "deterministisch": true
+    },
+    {
+     "hash": "798c97647d1dedc5909e222e68ab020e2469e5b64da3b8657045de65d3f5b0e2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 376,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "puls-flackern-ohneEins",
+   "typ": "puls",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "",
+   "t0": 60.079,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.07933,
+    62.379329999999996,
+    65.77933
+   ],
+   "messung": [
+    {
+     "hash": "2d43a208b5f5353de4ea09e646e3f9c0e7d2de0e6cbb6fd02582de949a2a9917",
+     "deterministisch": true
+    },
+    {
+     "hash": "d8feb07b339bab81f382d412abc018fe2b8c07725d67d5c9a1329b2562a8a10d",
+     "deterministisch": true
+    },
+    {
+     "hash": "66be5c157a953f678c2519f164607655152bf533fc15f0035885300a5435ec4d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 468,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "strobe-zufall",
+   "typ": "strobe",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "eb9225cc7ec925ffce6a1bec912d62cd684a931524cb8f0ed6da97aa4929a611",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb9225cc7ec925ffce6a1bec912d62cd684a931524cb8f0ed6da97aa4929a611",
+     "deterministisch": true
+    },
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 409,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "strobe-flackern-hz05",
+   "typ": "strobe",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    },
+    {
+     "hash": "2b7e1f04d77a305e6376982d105d2d03d6067080cbfc58a561d76ac38a5f0f81",
+     "deterministisch": true
+    },
+    {
+     "hash": "ca83929b9eb071bdbbaf9c0254ab5301ac28f80fd30dedcf89a8a4156e3221d5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 418,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "feuer-flackern-hz07",
+   "typ": "feuer",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "4a7b164df6d4a67df3b024e8caef7e24d5211599cf0cd4b4432a1b28b6d0f8aa",
+     "deterministisch": true
+    },
+    {
+     "hash": "24abe214b4b680742c251719f528005591e10632fe72780be9bfd7df87a9510d",
+     "deterministisch": true
+    },
+    {
+     "hash": "c5c8fa1c565f318b769815abf3ab3119e4f91bf6d538eebd2433c200b3769407",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1196,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh-098",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "8a49de3ea81263efedf5b5b55baf5a62242db824629a810e3b18d0f4d4cdd977",
+     "deterministisch": true
+    },
+    {
+     "hash": "8a49de3ea81263efedf5b5b55baf5a62242db824629a810e3b18d0f4d4cdd977",
+     "deterministisch": true
+    },
+    {
+     "hash": "8a49de3ea81263efedf5b5b55baf5a62242db824629a810e3b18d0f4d4cdd977",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 21907,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachzieh-puls",
+   "typ": "nachzieh",
+   "gruppe": "zeit",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Spur ueber einem Puls",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "11193ee6e195e1b3258a5e3120756de1b2426e3d84545923442952f0d4d9dda9",
+     "deterministisch": true
+    },
+    {
+     "hash": "b0c45a253161d01aa9e3284dd2452742b810c1f1b0f91cc8f3ecc258e750d923",
+     "deterministisch": true
+    },
+    {
+     "hash": "f2d57f2f1385f090b7bfb1274efe883259d4891026186c76817677474a4245af",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 21868,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-wandernd-tempo3",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Senkrechte eigene Umlaufzahl, Waagerechte 3",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "482dea7302101d0751951323df4fb6efb1cf8ef4a2f272a41ebc02e0de80cf3c",
+     "deterministisch": true
+    },
+    {
+     "hash": "d27551b0d72d5cdb357f96bdeab6c55808f84097924bdf922e6154cbd7cf77a7",
+     "deterministisch": true
+    },
+    {
+     "hash": "8fe0ff143a207c93526101261e046544c16e3cf9f04c5ea4718295c8742015be",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 501,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "schatten-fahrt",
+   "typ": "schatten",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b2383a667b326c6f48db6ff1556a37ee140933903a333694659e54a79b1a011b",
+     "deterministisch": true
+    },
+    {
+     "hash": "af44ac557af14fc73e49f9e811a946f1195ed814f3730379fc222de831957733",
+     "deterministisch": true
+    },
+    {
+     "hash": "c494dfbc8fdb281d57a97f69e6d2a66c215d7e06bc0409538fbdf21b33a2115b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 466,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-fahrt-tempo2",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "mehrere Ziele je Clip",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "3f57835796c39116c3724d9971bfef5dfe6545d67c28aad56976646d0f547218",
+     "deterministisch": true
+    },
+    {
+     "hash": "4a7139a80c2647fee5e048de136bc5cd8eb05ccf8edd5c8f653a75b26633284e",
+     "deterministisch": true
+    },
+    {
+     "hash": "2f27a3b484f41399cf1f8279a078980f808dc87ab36e619f08888ae686b3601e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 460,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-schritt-eins",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2988442e44e059a0fb3d8cdbde960fe40ef1b4d3398168ca961046e253619c3e",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c07098144c395218eec163625a0e0b031d7c0349cd8b545857b75ba095bd7be",
+     "deterministisch": true
+    },
+    {
+     "hash": "b79698e839508e730801f7de5a5670c3c99d0443fb574eb5a74104b749de8ddc",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 533,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "licht-schritt-ohneSchlaege",
+   "typ": "licht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Ziel je eingerasteter Sekunde",
+   "t0": 60.3,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.3,
+    62.599999999999994,
+    66
+   ],
+   "messung": [
+    {
+     "hash": "171a32b5746529869c636791976a36485d5eb8d02d0b4309f6a9b383076966c8",
+     "deterministisch": true
+    },
+    {
+     "hash": "ffeb6135347b7d84c571280a4f50915286e7d90694fc989a8dcc6eeb6b9e66d2",
+     "deterministisch": true
+    },
+    {
+     "hash": "0cd0bbc4a8f94512822feeae958ae0a6164093aec7c6698b181f3cea74bcfcb2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 424,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-fest-punkte-dreh-neg",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegendrehung, schneller",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "1980f5525ab43620e4e574734c92f21d5f2ef71282258e457e06d9ec1eeb0794",
+     "deterministisch": true
+    },
+    {
+     "hash": "2e474ea525fb00e70fb22b64b8980838e863b45a542db15623ee7fa309a18c2f",
+     "deterministisch": true
+    },
+    {
+     "hash": "7457c5c5bad49908dc8a79563d3118b5abfd7580786c8c6971788c26c1df1751",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 415,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-wandern-gitter-tempo3",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "c00fcdbfc23fa7f3d55ec6236a30733f04693c734f68171258609317c62af8d3",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb821fc0287d20b362abc4c3fcb4564b4a1fc597b2b4cf3206fa5c32cf616e6f",
+     "deterministisch": true
+    },
+    {
+     "hash": "14bd3ddfcb6bda40af77b492714cb9e71355aeb6182909087b8f73c4b8532bc1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 468,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "laser-scanner-sprung-zufall",
+   "typ": "laser",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "84dee270fbdc2ad3a2beba06086bfcac7a6abf224d854d5da36d07e9b98023f1",
+     "deterministisch": true
+    },
+    {
+     "hash": "8c1abe47bedd54b04ac5df054995075aea38b9cd107bbe88f84dedc8dc6ff428",
+     "deterministisch": true
+    },
+    {
+     "hash": "a03831abadbd8bcf23fa60d54587619db5c780dcb800dcaebc12d81f392dc1fa",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 417,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streiflicht-laser-wandern-punkte",
+   "typ": "streiflicht",
+   "gruppe": "leuchten",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "erbt den ganzen Lichtpuffer",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dc8de97909b3495ebc0573a061c73ea71502bf2196a360f490d2161044bcd165",
+     "deterministisch": true
+    },
+    {
+     "hash": "d3c0e9622f352307eb82188bc5875d77110b17dea37234e2b1a12e6e90948d94",
+     "deterministisch": true
+    },
+    {
+     "hash": "d7277272e59d822cab4f0207527e150dda353df2c494c98e3d93cd86130f1c9d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1334,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-regen-wind0",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schnell: bleibt beim Umbruch",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "4e62a5b609e631d539e54b2a03329b60251232fd579cc588b29b6be92ab8caaf",
+     "deterministisch": true
+    },
+    {
+     "hash": "2d68ad0f9c3df800ad2e35e94ff049319c31d11315198922544747150700c21a",
+     "deterministisch": true
+    },
+    {
+     "hash": "3a11c849582aae85bdc6cced4d6673a07c9b0d6f450de151b6f411d6b3d45739",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 707,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-schnee-tempo3",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "gemischt: Umbruch und Lebensdauer",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dc95b00027c8d3f314b20720a6ac7609e0b8fb5e73504b5f95c2811436183890",
+     "deterministisch": true
+    },
+    {
+     "hash": "02bb7a172a222c038193ab44dd1855c90c6a2e3cd0cc8dc1ed9cd78baec16735",
+     "deterministisch": true
+    },
+    {
+     "hash": "8e2d75385b350e1f89d3beb5156707fcead67ae0978399e3070ea27649dd76ad",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 728,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-staub-wind-neg",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsam, Wind nach links",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "1977c9e3d06c7cbdcca0d0b68a2fd791eb889f8ab079471e5ac297b220589c60",
+     "deterministisch": true
+    },
+    {
+     "hash": "e6097c520eea344dbd68ba346be0782a1185f5014603a90a6ea049b6af398f77",
+     "deterministisch": true
+    },
+    {
+     "hash": "ae01a191c2324245c2cb2a503062a8c6161613a9c0b9f60a81c02920e52dd213",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 814,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-staub-quelle",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Funkeln mit Quelle",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "e11850050a536515080481dc2a54024cb54e83bfd8331955de4e9e68c53d2617",
+     "deterministisch": true
+    },
+    {
+     "hash": "6dcd6a74558249190558a80518bf0f7e6fed5fcec38af05cdcace6027fdc262f",
+     "deterministisch": true
+    },
+    {
+     "hash": "394e88daa05d433942b104159b6276e037eeeb66e6345948af6e596ee36119f5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 750,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-schwaden-tempo02",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Aufgehen langsam",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "5f522d1d2b7cdd3814a9eebe1c5161c58cb9cb3bd4f5f010709919ac29ce11f7",
+     "deterministisch": true
+    },
+    {
+     "hash": "c0270b393f4923e80a600ff03289ad44638949f7bd00baecd8e35d37b81339fb",
+     "deterministisch": true
+    },
+    {
+     "hash": "35d852ace7a459ec5a4857db4ddc509728b9525410245a78c4a103fd02926827",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2293,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "partikel-boeen-funken-wandern",
+   "typ": "partikel",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Stoesse, Eigenbewegung",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "a17d399e94c95b8ed5dd7c8baa2cc0718aa4d5976cea8e61361cacbd5eaf287d",
+     "deterministisch": true
+    },
+    {
+     "hash": "2a09c688c5143e3b997359efc6901010289c1cbd860fb11c12a91fc8ba33bf82",
+     "deterministisch": true
+    },
+    {
+     "hash": "8e2ede02e771dda352f2604e687d463edd3170b3c44f731a17b1740e37a77adc",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 761,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "tropfen-tempo3",
+   "typ": "tropfen",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schnell: Umbruch",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "1bd9bc0c98259701856a3adc731e53801eebcd79f8cff982596e3e5c2a2dd831",
+     "deterministisch": true
+    },
+    {
+     "hash": "21df3da31061f1fc854b1e0b5f6427d19e6c417206ced1690637e19eb01b2f55",
+     "deterministisch": true
+    },
+    {
+     "hash": "f99ac86851383ef65f114aef508f889423f5c446fcc8a0c956ff1ae0e205e44a",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 569,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "tropfen-boeen",
+   "typ": "tropfen",
+   "gruppe": "partikel",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsam, Stoesse, Zittern",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2d594c421fe82a008651df1a1d505dc2d9ecfeea6c356428683f1c730ace7a85",
+     "deterministisch": true
+    },
+    {
+     "hash": "4aa8f05061c58d8f0837abe1bb3404497773ae0b3d1600163e770600ddaccfd7",
+     "deterministisch": true
+    },
+    {
+     "hash": "024ea899c5ea9a0e992c7d8d46e3d4ffea65e3290f9305a595f6a9ad87b14eaf",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 665,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rauschen-takt",
+   "typ": "rauschen",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Ausbrueche im Takt, Zufall gesaet",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "6cea67e313485b6231db175e78c8416fe93c56e9ff9a311a8ee3f35e7f3603c7",
+     "deterministisch": true
+    },
+    {
+     "hash": "f25838ba7d107539e5dbe0096f61710c92bf968defb207e69b47b8fcd8753c74",
+     "deterministisch": true
+    },
+    {
+     "hash": "690cb4828af5188484b03fe34fbf2491dcaea45d4020e59c5329d8ed53fb10c5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 441,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "korn-langsam",
+   "typ": "korn",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kornwechsel alle 13/60 s",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "0f81d3792f986485dcc656c81197ff2c9b0997697b2d12626245bc0c94aa6746",
+     "deterministisch": true
+    },
+    {
+     "hash": "0f81d3792f986485dcc656c81197ff2c9b0997697b2d12626245bc0c94aa6746",
+     "deterministisch": true
+    },
+    {
+     "hash": "0f81d3792f986485dcc656c81197ff2c9b0997697b2d12626245bc0c94aa6746",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 507,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wackeln-ohneKick",
+   "typ": "wackeln",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "nur Warble und Zittern",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "d4662d9e464570682f2e8f77f06aa092904399072739d97dea97c3958692ad56",
+     "deterministisch": true
+    },
+    {
+     "hash": "96b926880f3285cc3f1afc1edec41631d058d20394ff3238ee38c1f8a307d8b2",
+     "deterministisch": true
+    },
+    {
+     "hash": "29943c094db1f2fd28690306772c86787be1562d3ddd05ba75bea5daef692f9e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 616,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "bloecke-takt-lang",
+   "typ": "bloecke",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Glitch reicht ueber den naechsten Schlag",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ea3f926b565dd900593b777f2f370d636ff7bde1bcc6766d626823dd64cb2c78",
+     "deterministisch": true
+    },
+    {
+     "hash": "b547a523f61b706089cafcb09b89f03657de0581fa41945b8e102e337a073555",
+     "deterministisch": true
+    },
+    {
+     "hash": "a2bedd634d62b19431e4d4b9f92124831850cb4df9c8ff447bcd7b0c0189ff4c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2226,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "sicherung-frei-zittern",
+   "typ": "sicherung",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zittern 37 Hz eingerastet",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b5f6e1e5655970e88fe390cba29204ab0c03e4145dac80774710d460dc55f3c2",
+     "deterministisch": true
+    },
+    {
+     "hash": "ede59f7f893f82264ff6e069f71f7101fe6d1990a58ad7d773e371fc29997300",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 392,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "einschlag-ohneEins",
+   "typ": "einschlag",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Raster aus Median-Abstand",
+   "t0": 60.079,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.07933,
+    62.379329999999996,
+    65.77933
+   ],
+   "messung": [
+    {
+     "hash": "4f3e8cec46bcb4abd8d7850e4353f75ad3d74ab161238743782e509ae3bc901e",
+     "deterministisch": true
+    },
+    {
+     "hash": "0d5383d0f4e13105c274a035aa9815ab6f8f5adc94d1ba389bf37a0843652b13",
+     "deterministisch": true
+    },
+    {
+     "hash": "0554ef522e09afdd6070e1f24c60a681113853c89e16f9cdb38c30b3031c1235",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 587,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "risse-takt-ohneEins",
+   "typ": "risse",
+   "gruppe": "stoerungen2",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "ausgewachsen",
+   "t0": 60.079,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.07933,
+    62.379329999999996,
+    65.77933
+   ],
+   "messung": [
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    },
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    },
+    {
+     "hash": "7c24316bf55cb38270a8eb39a4afaa0ac9792102626e29d58164699310b8f798",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 477,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "streifen-beide-tempo4",
+   "typ": "streifen",
+   "gruppe": "stoerungen2",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "zweiter Titel",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "8f13b55dcfb157d7838033a50081d36844d45228210376ec9eee672806a95f97",
+     "deterministisch": true
+    },
+    {
+     "hash": "a5f1ac7b7a29dbe3966925f057faf15dd0787b699aee300c5af26c777bddd3b2",
+     "deterministisch": true
+    },
+    {
+     "hash": "84cd4857f848d4dab0ef9133481fca12d5659addc0854a570443dc5ff7623a23",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 388,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-luftzug1",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach rechts, schnell, mit Licht",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "716c2c8477e79758004b251415148885bd308e61fed6c04e1ede8d61ab29ebf5",
+     "deterministisch": true
+    },
+    {
+     "hash": "077ad3a4769443703bb41dd16159f4d6881567659a81a4887bfb7a6db60de6de",
+     "deterministisch": true
+    },
+    {
+     "hash": "b9e07336932c0ad2f60e218978be9ff7bf76fac5d18e4d118faed82218b0ac85",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1609,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-luftzug-neg",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zug nach links, mit Licht",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ed6a5d1c50fa1e4c65c68d718770895266833b5946bb91742d5a17f79ec93fab",
+     "deterministisch": true
+    },
+    {
+     "hash": "1b5a89095cf2f9d907efaf7e9ca148d888b26e8ec0979a8354feb9cd71fab114",
+     "deterministisch": true
+    },
+    {
+     "hash": "7a2d8a37122e019f12bb66c45dc880c6761dc9d71d7b1283ddc748cc86aa43bc",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1640,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-schwer-still",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kriecht langsam, dicke Ballen",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd4e634b7f98a79a9c66bd13544a6f2e5f9d38ce6d56db9b6d9319b205e01d97",
+     "deterministisch": true
+    },
+    {
+     "hash": "f54e83e5b4719dbb94beb293d789a4a06f6d8766fe7983565f2dd739a34de0fd",
+     "deterministisch": true
+    },
+    {
+     "hash": "4750183b226a91ebe534fef5103a9f7ed4da35a76fba35230ddb0e62d6f62248",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1599,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "wellen-aufwind",
+   "typ": "wellen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Hitze steigt",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "5e6a83776c4b387a62d68c56fc40805ca4d08c80e57a4cf1f49b01cd3b81122e",
+     "deterministisch": true
+    },
+    {
+     "hash": "b868eb00d4a825811177bbc87d6edf45b65ffe355bf8178099d208a0b1a4be0e",
+     "deterministisch": true
+    },
+    {
+     "hash": "3fa8f4cde60c55bdb3c14c5cd8cfa577bf911bb7da30d3d0606a57a30bade52e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 949,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kaustik-langsam",
+   "typ": "kaustik",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "kleiner Zeitkreis",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2f3d62442bf228aab09e4ad2965155efcad4a1a993c1866fa3f2bc1e59f5d47f",
+     "deterministisch": true
+    },
+    {
+     "hash": "7dd652496858bb00f33522a972b3c1d26444b7fe1b2fcaeb159c6b33fea45cd2",
+     "deterministisch": true
+    },
+    {
+     "hash": "449527a6a38665df9ed314eea674384c8f6755af9fb1ab85a385b9e055c5b605",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 906,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-langsam-wind",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "langsamer Aufstieg",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "8d3a1989379c10b3ef341b88d56207c2e328b9173e27862c3ee563f92f8e91d2",
+     "deterministisch": true
+    },
+    {
+     "hash": "8afd954df3ab1b8ff17694fd37d5f3a1436b06de3347ddbe55ab772743be8e96",
+     "deterministisch": true
+    },
+    {
+     "hash": "2d24eafbdb3c85d862e593585a6bb9ea7ca8e9be649f43855109676324b329f9",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 963,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "flammen-schnell",
+   "typ": "flammen",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "schneller Aufstieg",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f8a8992336820fdbfb4011d3829980f2e2de7b88380bb609303a71117947c773",
+     "deterministisch": true
+    },
+    {
+     "hash": "a666f7acf3bf58c437d14d4fafa5c8249f3d15b2648bcec75855387ea709059f",
+     "deterministisch": true
+    },
+    {
+     "hash": "d9e124fbdda2645261b5ea2163b090477fe4736ac3d580ab00355c8ee87008b0",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1002,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch: Ballen ohne Leuchte sichtbar",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "3761971d0f1f2dd97d4643a143268dab68b663f0d66161fe550c5f588bbfaa00",
+     "deterministisch": true
+    },
+    {
+     "hash": "7dcdf514a85742734af8e9cc3905a5fc1046ab4810ed300c8630abf9158fa2a2",
+     "deterministisch": true
+    },
+    {
+     "hash": "71559b5453d5d359bb90e9a72863e1d943bd527f3653c38937114969572cfba3",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1405,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "filmnebel-rauch-zug",
+   "typ": "filmnebel",
+   "gruppe": "shader",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "dunkler Rauch, Zug nach links",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "5320c959f87388f3feb1deb87502c2764de29fe85a4c4c96c10f8c60a096ecdb",
+     "deterministisch": true
+    },
+    {
+     "hash": "0ca58ec48fce81956c089fd34cc2ba4a359fee50b01ab250434ee968e1b800dc",
+     "deterministisch": true
+    },
+    {
+     "hash": "0482619cdbd015d88f202b159fc5006a95e58ffa1558eb7ce1b8d4e04e774e28",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1475,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse-bewegung-licht",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Scheinwerfers allein (Nebel 0 schaltet nur die Bewegungsmessung ein)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "637b0bdb1d982ef9f2dac12ff60ba437d967af577775d570813a51ad801dcb4b",
+     "deterministisch": true
+    },
+    {
+     "hash": "552a3f285b878c5e01df46e01de8f7ce0efbe785ea46181c166af39f9ff056ca",
+     "deterministisch": true
+    },
+    {
+     "hash": "0cd0639a4549f33196af067f584381da56eee0fa9a1d4da63c9ab787c9d990af",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1666,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse-bewegung-licht-fahrt",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo der Fahrt allein",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "1ddbb1713509858b5c00d4b433148736dfde1e0c7b65cc3f3608a3ebf40e1d6f",
+     "deterministisch": true
+    },
+    {
+     "hash": "47553f7ce88207fb4d1dfdba6eab475d94e55632c3d1abbc0945e02cc2d2adcf",
+     "deterministisch": true
+    },
+    {
+     "hash": "86b7b3fa7fabc45cb77bc1009196b62aa8304451d067271f49ccb36bae794a19",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1670,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse-bewegung-laser-wandern",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs allein",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "4e10348234e2a583d921bfd6123244dec99ad3d376600eee44c744008fc4b51e",
+     "deterministisch": true
+    },
+    {
+     "hash": "ce50ca593aacd3cfaa09fa98fb15119af66b85bc3546816987e90dcfa6fed52a",
+     "deterministisch": true
+    },
+    {
+     "hash": "6e0d67a6d0df9b5d37ed3a516a3e3011456733e0776aa44ba6d22ac7320a12da",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2318,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse-bewegung-laser-punkte",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Drehtempo der Punkte allein",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "0eaeca660c4cd5e19f0f47826966a42d6d3e3fdd5906d4b956ce038f58767a22",
+     "deterministisch": true
+    },
+    {
+     "hash": "f5456a81897fe053f151511b23ee45cf4cf0128277cc505d5d297d67433df581",
+     "deterministisch": true
+    },
+    {
+     "hash": "e392bfe4ec8e98d346249bed81470503f2c8025e88455ae37c6d8744fb7f4342",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1556,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse-bewegung-streifen-beide",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo der Laufstreifen beide allein",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "363d8ed1795c80bf0974f9d1ca06471a251d891a3fa9390048f3ed3b3f255604",
+     "deterministisch": true
+    },
+    {
+     "hash": "0117c22fe319b5826da6d7ff7df518bc99573582664a687e974f7e454b824c51",
+     "deterministisch": true
+    },
+    {
+     "hash": "157d85b5131fea8dfdf561d16bafb3da2c1c37bf1b26ca7c194c48936e1428c9",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1511,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kurz-teiler8-flackern",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "ein Takt 5,1 s, M 4: Teiler 8 geht nicht",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "b4fe5ac2223da9fd36f84b13ea7e173f63625f0845a0bdc084f1f63b66e04aa3",
+     "deterministisch": true
+    },
+    {
+     "hash": "b008e68ef0d78c8f36c057e6bd6d8e6cd9a67ddf870102c354cbff37b693b5c7",
+     "deterministisch": true
+    },
+    {
+     "hash": "002f6ff0d5ea226fb1cecb8a9d04a2309b9f9912a00c2701ca5671e8c56ddac7",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 423,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kurz34-wackeln",
+   "typ": "wackeln",
+   "gruppe": "raender",
+   "titel": "c",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4, ein Takt 5,1 s: M 3 ungerade",
+   "t0": 55.556,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    55.555911,
+    57.855911,
+    61.255911000000005
+   ],
+   "messung": [
+    {
+     "hash": "ea51b43b4d6522580198605b480cbdb842a5040ec258d3ffd612fa8c4f08cc6c",
+     "deterministisch": true
+    },
+    {
+     "hash": "537d2e480502a1e460301aab74f69d68a76e6f34477d908d6f8eaff364220094",
+     "deterministisch": true
+    },
+    {
+     "hash": "3fcd69088ab044a087455a1b458482a916590c16d684d8095fff783af846df93",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 576,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kurz34-zufall-teiler8",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "c",
+   "daten": "dreiviertel,gestreckt:4.05",
+   "bemerkung": "3/4 kurz, Teiler 8 und 2",
+   "t0": 55.556,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    55.555911,
+    57.855911,
+    61.255911000000005
+   ],
+   "messung": [
+    {
+     "hash": "4256c4b40751cc5d8d5b4d10c17d965ad572a9abbd648544936a15297695afe5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "7bd393117e8acf15baad6443c090d697d725177764ab55fd55a12fec4955f6db",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 404,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-sechs-teiler8-wackeln",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "b",
+   "daten": "sechs",
+   "bemerkung": "6/8: M 18/12/6, 8 nicht erreichbar",
+   "t0": 57.869,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    57.86854,
+    60.16854,
+    63.568540000000006
+   ],
+   "messung": [
+    {
+     "hash": "6e84feb7e07872f462eb2dea33bceccd47ec6f1a3cae4080be4e77ccb65140b3",
+     "deterministisch": true
+    },
+    {
+     "hash": "b61b5678b69a440ca280a5f04f09e6f20011486013d2ffe743c37b062ad72b96",
+     "deterministisch": true
+    },
+    {
+     "hash": "a059654935d1ad64017048fcb6c3379aba8c6bd7a3f052d7f9d5181faf9b72a6",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 714,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-sechs-kurz-teil0125",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "b",
+   "daten": "sechs,gestreckt:2",
+   "bemerkung": "6/8 kurz, Achtel eines Schlags",
+   "t0": 55.437,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    55.43708000000001,
+    57.737080000000006,
+    61.13708000000001
+   ],
+   "messung": [
+    {
+     "hash": "e62cb862f091886a628ef40af9a5ce35f201e611ba81c17a6af6dbc0cb38e5ec",
+     "deterministisch": true
+    },
+    {
+     "hash": "a109ddc259dff070d698d8b6dd446769c0926737643fd529cda3d126acfee8cb",
+     "deterministisch": true
+    },
+    {
+     "hash": "9fd5ee3201edb8d31ce593edf1d78c0f324aba7c40d55bd2f464c0074971b216",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 446,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-wenige7",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: kein Raster",
+   "t0": 60.3,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.3,
+    62.599999999999994,
+    66
+   ],
+   "messung": [
+    {
+     "hash": "ebfa3b50b161013eaee9cc104c291435d901e75608cdc568fcaada36da215b14",
+     "deterministisch": true
+    },
+    {
+     "hash": "60a9dd5a55f5b7e04dd6a23205a4070cc147dc6d5312e2788af97dd761a1e9a6",
+     "deterministisch": true
+    },
+    {
+     "hash": "dcf7e99012c66630989db5e66a33c8d8bada01792552ba80c32d6ebe6824f321",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1107,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-nurEinsen",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen: proTakt 1",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "ae0e1326012528d84cbe787372c6774e508a78ab8f94c170b41b7aa9fb2ad098",
+     "deterministisch": true
+    },
+    {
+     "hash": "eb5b0477fe418bb06df02ed119cd23c7e39b8e2cbdb059cbbc7ac67e5da3088c",
+     "deterministisch": true
+    },
+    {
+     "hash": "49ba7a886a044d665563cfe79f3990af959e5fd0fa312b7499ba0ecd0451341b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 439,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-takt-ueber10",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:7",
+   "bemerkung": "Takt 11 s, Median ueber 2 s",
+   "t0": 53.202,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    53.20172000000004,
+    55.501720000000034,
+    58.90172000000004
+   ],
+   "messung": [
+    {
+     "hash": "939d03ab3e4140209f4e750e6b9e7581d24a447b06260e1b96d4313994705be0",
+     "deterministisch": true
+    },
+    {
+     "hash": "1d9322745688381f549d281cf0d3dcd6c27b4e42a3f01f44be735baa511c32ea",
+     "deterministisch": true
+    },
+    {
+     "hash": "7dbaa2db38aef1f946dff5e8afcd0ab2fa46d08b863187bedd0fc9509f275f25",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 651,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kombi",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Leuchte, Streiflicht, Nebel, Schwaden mit Stoessen, Einschlag, Nachzieh",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "e7248323cfa68cf1a7b1e89ee6935b8defb2425b29e87896ae8e33e51413d7a7",
+     "deterministisch": true
+    },
+    {
+     "hash": "7d79bf166784ff24da9e88c243634bb8db314ca83b76dc5e213effef50807c89",
+     "deterministisch": true
+    },
+    {
+     "hash": "062b786504e9096b4c8d9d973f6dea24d02000d0435527b3d52d0eb141f8cf0d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 243405,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kombi-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "dasselbe bei L 5,1",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "bd57204e1a40cc865c27639a67dcc0d73aacef24a600fb253e13bf090a08d405",
+     "deterministisch": true
+    },
+    {
+     "hash": "612a088264b1eaaad4774764ec5e67d40e68e4eafcd64b0894c52969a626bc32",
+     "deterministisch": true
+    },
+    {
+     "hash": "4e773214647738d91601c0ec338237f3a50ffaaabeb0b2e86513481b8d169b25",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 239341,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-staub-extrem-kurz",
+   "typ": "partikel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo min, Wind -1, Eigenbewegung 1",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "230776b807dbbb9f76a0a72b98b37a4468f66bf7b81df4e9f80bc2fc9bd66da1",
+     "deterministisch": true
+    },
+    {
+     "hash": "797422651aeae6f875de74313989d844f0758f7a4c544a75846b1a09339c54c3",
+     "deterministisch": true
+    },
+    {
+     "hash": "a94ccd5fb0a8710a32db82ff545b364e853d22df3119b0ebe3608c77155ca521",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 888,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-funken-extrem-kurz",
+   "typ": "partikel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo max, Wind 1",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "fac8c28f82f7928e47dd97475e4cf37a1b0346cabf0e1e665b7b1702e46b28c5",
+     "deterministisch": true
+    },
+    {
+     "hash": "1838473f502ebbc84d0ad4157ca38a85b661287ceb9d4385f24d09fe27761c7c",
+     "deterministisch": true
+    },
+    {
+     "hash": "42db51847c84455f529c88aeeefbc224f333354cbc109f0483c0c8d0ca4e09ca",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 963,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-tropfen-langsam-kurz",
+   "typ": "tropfen",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Tempo min",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "29e0d213d2acf49488f3b3975eb8b54b3f0ce448cc03702bf7674ce6eaadb174",
+     "deterministisch": true
+    },
+    {
+     "hash": "83bb77575e67964a348b48d0c0699936b63c15146c25aff31fe35b204e638134",
+     "deterministisch": true
+    },
+    {
+     "hash": "5fc236422a64c7b812d22d056733c835184eb05f4d4d0c50807a7267227dae07",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 724,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-ohneSchlaege-takt",
+   "typ": "partikel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "alles Schlaggebundene ohne Schlaege",
+   "t0": 60.3,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.3,
+    62.599999999999994,
+    66
+   ],
+   "messung": [
+    {
+     "hash": "ca6f6ec3e24b4e4fdc9478df8fc06793d5ddef44965e8f3481b9c5e9b13bd433",
+     "deterministisch": true
+    },
+    {
+     "hash": "6400be652a36f4bbbaae22f47e4f52225253d38081c07b94ad285352ee5586ca",
+     "deterministisch": true
+    },
+    {
+     "hash": "2004779f672a882ca6015bb8e54e9a3939e75200fff9140395d8b14c6b84ac3d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1389,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-hz-raender-kurz",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Frequenz min und hoch",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "3140b520182d9c3897f5339b7862356c8106867bd00ed83020b7eb23677e1962",
+     "deterministisch": true
+    },
+    {
+     "hash": "7fbcfaeefc86816b0e5aabffc44257781880b1ca8c544b7a9800236b3a8ccaed",
+     "deterministisch": true
+    },
+    {
+     "hash": "277f2773d2accd9551d904b0696b1a723f8083cf071409c8b2de395c6f26a1b7",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 436,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-shader-kurz",
+   "typ": "kaustik",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Shader bei L 5,1",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "2460a5e8525e2c742310f91ffa1039492129c6a5b198e274caf9d7e6cc5860b4",
+     "deterministisch": true
+    },
+    {
+     "hash": "50f5a20e25c0e82aa89c0e6ff019997eb5d3c6b866b95a4cff9c985200092431",
+     "deterministisch": true
+    },
+    {
+     "hash": "aa11a9eee11b0565af4c8ac846d4041fa92b901c78dccfe48d8d38cafd2e8852",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1421,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-flammen-kurz",
+   "typ": "flammen",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Flammen langsam, Wind -1, L 5,1",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "eee436cfa7380c96e676e574780210b5319568d023dc59844c2846cddf2bde9b",
+     "deterministisch": true
+    },
+    {
+     "hash": "846d84ee2e674ddcaff8619cfcda41cb438ddbc6058469b34da621f243a7ef1d",
+     "deterministisch": true
+    },
+    {
+     "hash": "7b54b874029ad9be23b0975185bf7b3d9c8ed5cc02a578cf596b567b6cd2b65e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1000,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-stoerungen-kurz",
+   "typ": "sicherung",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "seltene Fenster laenger als L",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "e75cf9a728f9a4cfb9d25d355681ec107cac68a4a2e2c07cfa6f20197e390b4b",
+     "deterministisch": true
+    },
+    {
+     "hash": "3a9454bbe9817e47b1b1c2d82f5a4e58ae5834c49e35acf77fd063c9b42e3367",
+     "deterministisch": true
+    },
+    {
+     "hash": "bb6b155a463bb9d149b762f5452ddf37fb17c43e461b2a332c3d92b267d83921",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1009,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-laser-extrem-kurz",
+   "typ": "laser",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Drehen max, Tempo min",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 469,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-leuchten-langsam-kurz",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Fahrt langsamer als L",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "5fcb94ef4a06245d964e05c470bd8aaafd0a9b66b854066b2e74dae0739ccdbd",
+     "deterministisch": true
+    },
+    {
+     "hash": "c9d8039cf43aa467276ff57994acf80483a0fc879e015c0da9e3561c16d1ce5a",
+     "deterministisch": true
+    },
+    {
+     "hash": "ba634453004802fdefa5b9f3389421265ff4f1e49648b9addb8e669b19b551e1",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 583,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-nachzieh-zufall-kurz",
+   "typ": "nachzieh",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Gedaechtnis ueber mehrere Runden",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "828e1aa03b010dc3b0208a4b8cf517ec066ac8cc82ddc430cd8676bdfe389543",
+     "deterministisch": true
+    },
+    {
+     "hash": "828e1aa03b010dc3b0208a4b8cf517ec066ac8cc82ddc430cd8676bdfe389543",
+     "deterministisch": true
+    },
+    {
+     "hash": "828e1aa03b010dc3b0208a4b8cf517ec066ac8cc82ddc430cd8676bdfe389543",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 28496,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-jetzt-anfang",
+   "typ": "einschlag",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Clip am Songanfang, Vorlauf vor 0",
+   "t0": 0.878,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    0.87792,
+    3.17792,
+    6.577920000000001
+   ],
+   "messung": [
+    {
+     "hash": "4942d266b9ca1e2dff8d222a573dfa946557e5b257cae228ff28a3182484a7c9",
+     "deterministisch": true
+    },
+    {
+     "hash": "0f5bfec17253cc9c2d438b52014127a5784ae612f71be7ea9c690323651a7cfd",
+     "deterministisch": true
+    },
+    {
+     "hash": "9bd141e347a9d220d518cd71ff4a7995da0e3667b020f29000cee147430694a2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1031,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-risse-beschlag-kurz",
+   "typ": "risse",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Wachsen und Ruck bei L 5,1",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "bd0d6f436b547189b68bfdd43b78c31941b9ccdab83da59493017ddc4abe03c5",
+     "deterministisch": true
+    },
+    {
+     "hash": "c3fd88c399f0271789c478ce043491ce841a5945029d6516145c940ad2682e4f",
+     "deterministisch": true
+    },
+    {
+     "hash": "f9f7e7c729a24e9397d40853d675252ff137b6ea400d8a6f61c850a22a2425dc",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 972,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "linse-bewegung-laser-wandern-gitter",
+   "typ": "filmnebel",
+   "gruppe": "linse",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Tempo des wandernden Laser-Ursprungs, Gitter ohne Scanner-Nachleuchten",
+   "t0": 0.878,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    0.87792,
+    3.17792,
+    6.577920000000001
+   ],
+   "messung": [
+    {
+     "hash": "4003a9e4dbe153a0073c9099893d3633632bf2fbc5cec7c46866327a21e93c62",
+     "deterministisch": true
+    },
+    {
+     "hash": "4be630e983656e96d9d25c46c0d58ae9307ed1295da9e59c8c1e193bbdb8ef61",
+     "deterministisch": true
+    },
+    {
+     "hash": "12fdb8515db71cccf7680f39a185f919d94fcbb45a97a460e738394b341cb31c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1803,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-nurEinsen-puls",
+   "typ": "puls",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Teiler 8 allein",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "c4e162b7a2fa4707bb87b4c51280eb67c2cf1c6c5557d5fc34194e95c42c28bf",
+     "deterministisch": true
+    },
+    {
+     "hash": "b703baeb1f76c40aa3eee937d3b9ea92a89336e8047d3022e91c9262b05baebe",
+     "deterministisch": true
+    },
+    {
+     "hash": "dbf79baf1fd22b01507fce239042b24583db23a3b3c6b71436c46711efad24f0",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 309,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-nurEinsen-schritt",
+   "typ": "licht",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "nurEinsen",
+   "bemerkung": "nur Einsen, Schritt auf der Eins allein",
+   "t0": 0.076,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    0.07629,
+    2.37629,
+    5.77629
+   ],
+   "messung": [
+    {
+     "hash": "669679038050a0c1403c63be6da96333b807d10611b7845bec96ca07b848ac15",
+     "deterministisch": true
+    },
+    {
+     "hash": "717f551564bd65df22519b64f4f7f8309a6f042e8afc3dcea5f139e887f8ae26",
+     "deterministisch": true
+    },
+    {
+     "hash": "48a608ce8aeb62da1c3776c433864219e87063c3908cf249869197411c279a20",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 459,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-kombi-nachzieh",
+   "typ": "nachzieh",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "gestreckt:3.22",
+   "bemerkung": "Kombination ohne Nebel und Teilchen, kurz",
+   "t0": 57.035,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    57.034791200000015,
+    59.33479120000001,
+    62.73479120000002
+   ],
+   "messung": [
+    {
+     "hash": "3e8568e6490425c8803bfeddd69ddcd09fb01d54bd7556a1cfc12552a2e375f0",
+     "deterministisch": true
+    },
+    {
+     "hash": "7dec5c48a85a226a50590bea4af210c72ca8d17fb39f18da96c74be05c6626a9",
+     "deterministisch": true
+    },
+    {
+     "hash": "9bde9e2458c805c9b88d6bce911a76bdd0b36af954c859a5c65879acc4d6b601",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 53048,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-wenige7-risse",
+   "typ": "risse",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins: Vorschau gewachsen, Export ohne Raster",
+   "t0": 0.2,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    0.2,
+    2.5,
+    5.9
+   ],
+   "messung": [
+    {
+     "hash": "f062bad53c674184c2363fc8a862e53486a143fca5b822ab48155462610ba427",
+     "deterministisch": true
+    },
+    {
+     "hash": "2d4bc57ed7e05321141f861b5c65ff6e212f66cfdb3a312b5662ecad81d6fb4e",
+     "deterministisch": true
+    },
+    {
+     "hash": "2d4bc57ed7e05321141f861b5c65ff6e212f66cfdb3a312b5662ecad81d6fb4e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 438,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-wenige7-einschlag",
+   "typ": "einschlag",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "7 Schlaege ohne Eins, alle treffen, Clip kurz nach den Schlaegen",
+   "t0": 61.5,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    61.5,
+    63.8,
+    67.2
+   ],
+   "messung": [
+    {
+     "hash": "372d50784f9d830fe162b00df0f013a146de55b943e51584b8d8a717aae436c2",
+     "deterministisch": true
+    },
+    {
+     "hash": "68bac44d0175f66f49738e2dab87e354b46595f2f4b17697fb6cd9cbb01d7af6",
+     "deterministisch": true
+    },
+    {
+     "hash": "3db3f38d3af80cd82ff9ca4e9bb33de4bac64a190a7ae5f2547b4c45d3977770",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 440,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-wenige7-schritt-bewegung",
+   "typ": "filmnebel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "Schritt auf 7 Schlaegen: Vorschau steht nach dem letzten, Export springt je Sekunde (Nebel 0 schaltet nur die Bewegungsmessung ein)",
+   "t0": 61.5,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    61.5,
+    63.8,
+    67.2
+   ],
+   "messung": [
+    {
+     "hash": "e0ef8b9c783dba4b6b33a03638c88de1779d8273664441088c64efe13ebba712",
+     "deterministisch": true
+    },
+    {
+     "hash": "e7e3c7a5dc72da7fa615e2e372ad23e60db4d32caef39909beb87ac0221c8e2d",
+     "deterministisch": true
+    },
+    {
+     "hash": "e7e3c7a5dc72da7fa615e2e372ad23e60db4d32caef39909beb87ac0221c8e2d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1698,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "rand-ohneSchlaege-schritt-bewegung",
+   "typ": "filmnebel",
+   "gruppe": "raender",
+   "titel": "a",
+   "daten": "ohneSchlaege",
+   "bemerkung": "Gegenprobe: ohne Schlaege springt auch die Vorschau je Sekunde",
+   "t0": 61.5,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    61.5,
+    63.8,
+    67.2
+   ],
+   "messung": [
+    {
+     "hash": "b53a7d5257dbf87ccc171e4206cf50b8ff667a95d09de39d40b07bdf744615aa",
+     "deterministisch": true
+    },
+    {
+     "hash": "f8449501b2605bc857b6160b301faa4623f8df1f85c316cbd31e061f8be1affa",
+     "deterministisch": true
+    },
+    {
+     "hash": "49ef600d173d6a65a20427908157fff875ed9a9a6a390ee153c2be394c1035eb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1203,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachbess-bewegung-licht-fest",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Gegenprobe zu linse-bewegung-licht: dieselbe Leuchte ohne Bewegung - wieviel tempoVerh kommt vom Puls allein",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "7734861b0d8278aa25430c8f068dcadb3a24542e108754060438b2d560d29ba5",
+     "deterministisch": true
+    },
+    {
+     "hash": "54c69f02a6a0595b85b7d2e7b2aabc76665d3817720383b9103ac48af36abb97",
+     "deterministisch": true
+    },
+    {
+     "hash": "e3240cc677c0cab5461fccede45a7ca0cd343d6432214ff359a58d089bc8f6b4",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1661,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachbess-bewegung-licht-tempo8",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "wandernd Tempo 8: 1,19 Umlaeufe waagerecht, 1,54 senkrecht - rastet, pendelt nicht",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "cdb35102814681d80fb141a8dac296faf936194464b7c0133893ff90327d618e",
+     "deterministisch": true
+    },
+    {
+     "hash": "e12784a3bf333ede7810f3744c7e4b43f4ee3372ae5af3844393f51718afb2b5",
+     "deterministisch": true
+    },
+    {
+     "hash": "b97bbeccdb636ef9d1663f6ab417c2c87416a61e946ad792eff3a4c1671bdb3b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1256,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachbess-bewegung-streifen-beide-tempo30",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Laufstreifen beide am Reglerende: vorher 6,3-mal so schnell",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "54e7f369316f36c06a84b12aec817330e413bc73c4bdec122ef24adc90471a95",
+     "deterministisch": true
+    },
+    {
+     "hash": "892e31a2f578003cd6f52898351b6144cb5de73d377fd77837dae0ae72de72d5",
+     "deterministisch": true
+    },
+    {
+     "hash": "c131fa04df2b94508c8aebced80673c03a6c48e3d0be88ce9de52c0faa4b990e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1599,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachbess-streifen-beide-tempo8",
+   "typ": "streifen",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "beide, Tempo 8: ein Durchlauf je Clip (ungerade) - Farbtausch einmal je Clip, sonst hell-Tempo",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "71de15c7a6fc1b3a87bbaed1783daeab97b9d25ecab7427aea147f1910308aaa",
+     "deterministisch": true
+    },
+    {
+     "hash": "0b358121ef6fa7b692394de786ca74f8e1f7c848f969ae53c08f7d39a4541e86",
+     "deterministisch": true
+    },
+    {
+     "hash": "d3ba1fe3500871140172d0038449f564df6927dc2e0fc6199f3d98d680459ccf",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 535,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "nachbess-wenige7-schritt-stetig",
+   "typ": "filmnebel",
+   "gruppe": "nachbesserung",
+   "titel": "a",
+   "daten": "ohneEins,wenige:7",
+   "bemerkung": "wie rand-wenige7-schritt-bewegung, aber ohne Puls: tempoVerh zeigt nur den Schritt (Export steht auf dem laengsten Stand im Clip)",
+   "t0": 61.5,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    61.5,
+    63.8,
+    67.2
+   ],
+   "messung": [
+    {
+     "hash": "cb2768e7a9094905c38373f620d93fbeb3ff67c9cf6143413469b530db63423d",
+     "deterministisch": true
+    },
+    {
+     "hash": "e7e3c7a5dc72da7fa615e2e372ad23e60db4d32caef39909beb87ac0221c8e2d",
+     "deterministisch": true
+    },
+    {
+     "hash": "e7e3c7a5dc72da7fa615e2e372ad23e60db4d32caef39909beb87ac0221c8e2d",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1625,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-eins-phase",
+   "typ": "licht",
+   "gruppe": "taktlage",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Eins-Leser: ganze Takte, phiF ueber N/M",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "b56ee543fc5e4e61c1e403aa27ad1c5e320822e5cd29bf12bea33a04146b8faa",
+     "deterministisch": true
+    },
+    {
+     "hash": "c616387d4897d0e4cc961b8de86f7e2c04b2f6fa16191db9288193af9e6e7833",
+     "deterministisch": true
+    },
+    {
+     "hash": "bc15cdc5aa0445e7e635d12205174a785c102bb06d1bccf4aad4e3f378fa4212",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 447,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-schlag-gruppe2-kick",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Schlagraster, Gruppe 2 und Kick: M gerade, M%4 moeglich ungleich 0, Phase ueber zwei Schlaege",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "f0fe40464ef8adab069dfb63e78a955e85d7564e6f2563ff989439a7b06f9851",
+     "deterministisch": true
+    },
+    {
+     "hash": "8b892ce8887973706645ebe102647c21135659a0e47ed35f296c49f5eca0d7f2",
+     "deterministisch": true
+    },
+    {
+     "hash": "949b0b2ef1525ea310120382bfc67b2efe0a5a85f9eda580f8824fb39f490d72",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 756,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-teiler8-phase",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "d",
+   "daten": "normal",
+   "bemerkung": "Teiler 8 im Schlagraster, Gruppenanfang auf der Eins, Phase",
+   "t0": 59.849,
+   "W": 898,
+   "H": 770,
+   "zeiten": [
+    59.84875,
+    62.14875,
+    65.54875
+   ],
+   "messung": [
+    {
+     "hash": "8c0d010e28455f7ffe42118f4b54042b27df6527e9dc8a25065674de2c1f7458",
+     "deterministisch": true
+    },
+    {
+     "hash": "1c24043a334827ee7b5e1e1338c938c1fbfad054b8e8c3219edc4d88a0437029",
+     "deterministisch": true
+    },
+    {
+     "hash": "261467b8835862dd2c07264ccee66a948f7cb4c54b5e904544c350e679f9519b",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1041,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-dreiviertel-teiler3",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "c",
+   "daten": "dreiviertel",
+   "bemerkung": "3/4 mit Eins-Leser und Gruppe 3",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "40e182b23178378463eb487bb3f2ba8e855627fd454130423202328f7880b6f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "887bae14c822fbab1b6c92c0cd3ab04b7c404a6732fd433edc3c879cc73a4540",
+     "deterministisch": true
+    },
+    {
+     "hash": "e61470b3c377e5f769b158ab475609b61e369733ebe9fa36d812e18fd559dd6e",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 545,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-ohneEins-eins",
+   "typ": "licht",
+   "gruppe": "taktlage",
+   "titel": "a",
+   "daten": "ohneEins",
+   "bemerkung": "Eins-Leser ohne Eins-Marken: M%8, keine Eins-Bedingung",
+   "t0": 61.269,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    61.26915,
+    63.56915,
+    66.96915
+   ],
+   "messung": [
+    {
+     "hash": "cb3bcc7447f507206897e978f47f23fb25be95b0ea5d1befab9d350434abaaad",
+     "deterministisch": true
+    },
+    {
+     "hash": "736be1509855c7f8e626ad6e646a997869945f7994011e2885e3dc3829375eda",
+     "deterministisch": true
+    },
+    {
+     "hash": "6b45c8d3a9170a9fb68a8fa2600613eb5781380377cbdf5df09f11eb47e69990",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 446,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-tempowechsel",
+   "typ": "puls",
+   "gruppe": "taktlage",
+   "titel": "d",
+   "daten": "tempowechsel:1.3",
+   "bemerkung": "Tempowechsel ab jetzt (1,3-mal langsamer)",
+   "t0": 59.849,
+   "W": 898,
+   "H": 770,
+   "zeiten": [
+    59.84875,
+    62.14875,
+    65.54875
+   ],
+   "messung": [
+    {
+     "hash": "bb56334998b25b6869faabb6e6994e0812152e101c9731a3894868cbefa6b127",
+     "deterministisch": true
+    },
+    {
+     "hash": "338622e59d007c82b7c52f8af42c17b7becc49f1e9779c2cd5fdd5791cfd2be6",
+     "deterministisch": true
+    },
+    {
+     "hash": "e3b69e94fb8050af218c2416052bdde98c32a64b5d73ddd78ff63c7b0f089590",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1350,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "taktlage-eins-phase-weit",
+   "typ": "strobe",
+   "gruppe": "taktlage",
+   "titel": "e",
+   "daten": "normal",
+   "bemerkung": "Eins-Leser, phiF ueber drei Schlaege, schwacher Sitzanteil",
+   "t0": 59.134,
+   "W": 603,
+   "H": 889,
+   "zeiten": [
+    59.13406,
+    61.434059999999995,
+    64.83406
+   ],
+   "messung": [
+    {
+     "hash": "afa4ca19758ea54d7bc9a09742a9ece1e5ad2f9374e32dcff31624aa8149da2f",
+     "deterministisch": true
+    },
+    {
+     "hash": "afa4ca19758ea54d7bc9a09742a9ece1e5ad2f9374e32dcff31624aa8149da2f",
+     "deterministisch": true
+    },
+    {
+     "hash": "38f4f3e9a978255904da8cc778d23ae7909d77a56edc3d2e1d6cb01584243ac5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 626,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kenburns",
+   "typ": "kenburns",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zielpunkte aus dem Vorschlag beim Einfuegen (zwei), Tempo 1 Takt, Parallaxe aus (Vorgaben)",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "4b6711c0401d837d362d744acca2d8defebac3db04e7534923306e29d47ef476",
+     "deterministisch": true
+    },
+    {
+     "hash": "b7b8fbdec4abd11c3b530eca912707a91bda9ec8e863885898f85a889f2e2c79",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 376,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-einPunkt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "EIN Zielpunkt: Ganzbild - hinein - halten - heraus. Zwei Zuege, ein Halt am Punkt und einer am Ganzbild.",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "614bae502026e3a8c80fd803beb87db1b5fff6725d9ad28d03574ccc8bc51ac9",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "746d984c3e1fff66e6e65e24171f31801d0eb5352276d7eb4812fd5dce2b8cc2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 413,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-zweiPunkte",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zwei Zielpunkte verschiedener Enge: drei Zuege, zwei gleich lange Halte an den Punkten und einer am Ganzbild.",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "a5ad65fbd41298cbfaf7cad4ecebe1e651f81424c45a23b689887b04e67260f9",
+     "deterministisch": true
+    },
+    {
+     "hash": "f4f711ea753ed54a4431a38a2cc16e373864c53f01729f883542419ca3e020db",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 331,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fuenfPunkte",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Fuenf Zielpunkte - die Grenze. Sechs Zuege passen in keinen Clip, also greift die Tempoklemme.",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "eb009755476ac1e5c1d5bbbfee95ba31eae834ce57119de93851406a41e93c14",
+     "deterministisch": true
+    },
+    {
+     "hash": "3eae203e080fa7256470fc5348d9b97b88c93d763c3aed14aaa36af2a5e9cbcb",
+     "deterministisch": true
+    },
+    {
+     "hash": "1196a4deade898640a193be2919f7aca6a69616c78ed7bb9b02b1215cc243506",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 413,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-ohnePunkt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Leere Liste: die Kamera steht auf dem Ganzbild. Ein stehendes Bild loopt von selbst.",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 323,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-parallaxe-aus",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Regler ausdruecklich auf null (seit dem 18.09.2026 auch die Vorgabe): der Ausschnitt kommt aus drawImage",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "4b6711c0401d837d362d744acca2d8defebac3db04e7534923306e29d47ef476",
+     "deterministisch": true
+    },
+    {
+     "hash": "b7b8fbdec4abd11c3b530eca912707a91bda9ec8e863885898f85a889f2e2c79",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 464,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-parallaxe-voll",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Parallaxe am Anschlag, Zielpunkte aus dem Vorschlag",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "9036e37fe793b865149e2fa24e5b2388dbbc2c856d898a3b158a059ca59a61f3",
+     "deterministisch": true
+    },
+    {
+     "hash": "f00324d45c280e67b2bf33af53710e3c9518b026df0f923e20ca5a633b2355d8",
+     "deterministisch": true
+    },
+    {
+     "hash": "700a254baffdcb99f80343389a9e8156e76c836de004d33ddeec65bafdb58b3a",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 606,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-vorb",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorbereitung ohne Parallaxe - die Gegenprobe zum naechsten Fall",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "0ea879c5375b51272e5d7eee13d4dd70f1f9e3dc2f37774450a2088b4c30c4bf",
+     "deterministisch": true
+    },
+    {
+     "hash": "a92e71fe1fcd43667299d7fac826abf06715e0d982e08ae12c100501173225f3",
+     "deterministisch": true
+    },
+    {
+     "hash": "aa892219c941b0ac49472b35324546bcce694fbee8b821d4e3ccd8228256d4d5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 611,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-parallaxe-vorb",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 trug",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "bea7c606b531a0ce0f2a08f15462a8678d8c94b02a8a2d2f1d7ab7a31be66773",
+     "deterministisch": true
+    },
+    {
+     "hash": "b00e7b4ded10110f044c9d73139572b6f691e02dc2a3e54780ef4f7ce6cab4e7",
+     "deterministisch": true
+    },
+    {
+     "hash": "f8c6ec7b39341d3ea36f2c7781f9c1bbf42a9c54e5173c76f8b08f2a56bd1c91",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 721,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-tempo2-b",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Zwei Takte je Zug auf dem Titel mit anderer Taktzahl - hier greift die Tempoklemme",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "6f8b107a2a4d2000dc8400c2ace1d8e1a737805be4a9b828ca559f974fc5b344",
+     "deterministisch": true
+    },
+    {
+     "hash": "72b01f5a8295718e5ebfc550782605ba6f83aaf8073c0df9399bcc02bc757a67",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 395,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-a",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 60.873,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    60.87258,
+    63.172579999999996,
+    66.57258
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 409,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-b",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 401,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-c",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "c",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 392,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-d",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "d",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.849,
+   "W": 898,
+   "H": 770,
+   "zeiten": [
+    59.84875,
+    62.14875,
+    65.54875
+   ],
+   "messung": [
+    {
+     "hash": "036b8889ddead4b73236f80c3c51881bc91eca13523c5a5c7b1149b90707288a",
+     "deterministisch": true
+    },
+    {
+     "hash": "036b8889ddead4b73236f80c3c51881bc91eca13523c5a5c7b1149b90707288a",
+     "deterministisch": true
+    },
+    {
+     "hash": "036b8889ddead4b73236f80c3c51881bc91eca13523c5a5c7b1149b90707288a",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 409,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-e",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "e",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.134,
+   "W": 603,
+   "H": 889,
+   "zeiten": [
+    59.13406,
+    61.434059999999995,
+    64.83406
+   ],
+   "messung": [
+    {
+     "hash": "be5690d1e36ffbbde0de9b434145de644dc5ddb7cc38081865ebe410424baff4",
+     "deterministisch": true
+    },
+    {
+     "hash": "be5690d1e36ffbbde0de9b434145de644dc5ddb7cc38081865ebe410424baff4",
+     "deterministisch": true
+    },
+    {
+     "hash": "be5690d1e36ffbbde0de9b434145de644dc5ddb7cc38081865ebe410424baff4",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 376,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}
