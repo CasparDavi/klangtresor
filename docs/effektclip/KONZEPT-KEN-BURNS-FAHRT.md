@@ -108,9 +108,25 @@ Fundschwelle ist **je Lesart verschieden** geeicht — mit der Kanten-Lesart ble
 | **Atemzug** | Fast stehendes Bild, minimaler Zug, damit es nicht gefroren wirkt. Langsame Stücke. | von selbst |
 | **Auf den Schlag** | Eine Folge kurzer Halte, jeder landet auf einer Eins. Das Verfahren gibt es schon („Schritt auf den Schlag" bei den Moving Heads). | von selbst |
 
-**Erste Fassung:** Hineinfahren, Aufdecken, Zwei Stationen, Streifen. Das sind die vier, die ohne
-Vorbehalt tragen. Spirale, Slalom, Atemzug und Auf den Schlag kommen danach, weil sie
-Geschmacksfragen offenlassen.
+### Zwei Läufe von Caspar_D, 18.09.2026 — und sie sind besser als die Liste darüber
+
+*„ken burns braucht noch verschiedene Pfade, auf denen sich der Ausschnitt bewegt … Diese einzige
+Fahrt zu einem Ziel ist wenig."*
+
+| Lauf | wofür | geschlossen im Clip |
+|---|---|---|
+| **Wanderung** | *„immer hinfahren - etwas reinzoomen, wie ein stück raus, weiter"* — kein Ankommen und Stehenbleiben, sondern ein Fluss über mehrere Stationen. Das ist die Antwort auf „zu wenig". | Rundweg: die letzte Station führt zur ersten zurück |
+| **Abrastern** | *„ggf einfach nur zufällig abrastern"* — die Fläche absuchen, ohne Ziel. | nur als Rundweg; im Vollvideo offen |
+
+**Und der Satz, der die Betriebsart trennt:** *„es muß ja nicht nur auf die 10 sek reichen."* Im
+**Voll-Titel-Video** stimmt das uneingeschränkt — dort läuft der Weg über das ganze Lied, und die
+Wanderung kann so viele Stationen haben, wie das Lied Takte hat. Im **Clip** gilt das Loop-Gesetz:
+ein Weg, der nicht zurückkommt, lässt die Naht springen. Beides wird gebaut, und der Unterschied
+wird **gezeigt**, statt die Naht heimlich aufzugeben.
+
+**Reihenfolge:** Hineinfahren (gebaut) · **Wanderung** · Aufdecken · Zwei Stationen · Streifen ·
+**Abrastern**. Die Wanderung zuerst, weil sie Caspar_Ds eigentlicher Einwand ist. Spirale, Slalom,
+Atemzug und Auf den Schlag kommen danach, weil sie Geschmacksfragen offenlassen.
 
 ---
 
