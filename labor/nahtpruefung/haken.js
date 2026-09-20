@@ -323,6 +323,13 @@ window.__naht = (() => {
         if(o.vergleich){ const v = o.vergleich.messung[i] || {}; z.gleich = !!v.hash && v.hash===ha;
           if(!z.gleich){ const k = abwKlein(kl, o.vergleichBilder && o.vergleichBilder[i]); z.abw = k ? { mittel:r3(k.mittel), max:r3(k.max) } : 'kein Vergleichsbild'; } }
         erg.messung.push(z); await warte(0); }
+      /* KOSTEN JE BILD (20.09.2026, Umbau auf das Diorama). Der Hash frisst in dauerMs mehr Zeit als
+         das Malen; gemessen wird darum getrennt und nur das Malen: zwoelf Bilder ueber den Clip,
+         ohne Hash, ohne Vergleichsbild. Der Median ist unempfindlich gegen das erste Bild, das
+         noch Karten und Shader baut. */
+      { const P=[], t1=zeiten[0];
+        for(let k=0; k<12; k++){ const a0=performance.now(); augenblick(f, lage, W, H, t1 + k*0.37, 777); warteGL(); P.push(performance.now()-a0); }
+        P.sort((x,y)=>x-y); erg.msBild = r3(P[6]); erg.msBildMin = r3(P[0]); }
       erg.deterministisch = erg.messung.every(z => z.deterministisch);
       if(o.vergleich){ erg.gleich = erg.messung.every(z => z.gleich); erg.massGleich = o.vergleich.W===W && o.vergleich.H===H;
         const ab = erg.messung.filter(z => z.abw && typeof z.abw==='object'); if(ab.length){ erg.abwMittel = r3(Math.max(...ab.map(z => z.abw.mittel))); erg.abwMax = r3(Math.max(...ab.map(z => z.abw.max))); } }
@@ -344,6 +351,70 @@ window.__naht = (() => {
       if(o.bilder){ const cv = document.createElement('canvas'); cv.width = V.cw*2; cv.height = V.ch; const cx = cv.getContext('2d');
         cx.putImageData(new ImageData(new Uint8ClampedArray(k), V.cw, V.ch), 0, 0); cx.putImageData(new ImageData(new Uint8ClampedArray(g), V.cw, V.ch), V.cw, 0); erg.bilder = { paar:cv.toDataURL('image/png') }; }
       erg.dauerMs = Math.round(performance.now() - beginn);
+      return erg;
+    } finally { aufraeumenMass(); }
+  }
+  /* ==== DER BEWEIS, DASS DAS DIORAMA WIRKT (20.09.2026) ====
+     Ein Scheinwerfer und eine Ken Burns Fahrt im selben Rezept. Gemessen wird der SCHWERPUNKT des
+     Lichts, und zwar ohne eine zweite Rechnung: dasselbe Rezept wird einmal MIT und einmal OHNE die
+     Leuchte gemalt, die Differenz je Bildpunkt ist genau das, was die Leuchte beitraegt, und ihr
+     helligkeitsgewichteter Schwerpunkt ist ihr Ort auf der Leinwand. Vor dem Umbau steht er still,
+     waehrend das Motiv unter ihm wegfaehrt; nach dem Umbau wandert er mit.
+     `versatz` ist der Abstand zum Ort im Ganzbild - die Zahl, um die die Leuchte mitfaehrt. */
+  async function dioBeweis(f, o){
+    try{
+      const lage = vorbereiten(f), t0 = lage.t0, [bw, bh] = qMass(bild),
+            sc = Math.min(o.feld[0]/bw, o.feld[1]/bh), W = Math.max(1, Math.round(bw*sc)), H = Math.max(1, Math.round(bh*sc));
+      const weg = o.leuchte || 'licht';
+      /* AUSSCHALTEN, NICHT HERAUSNEHMEN. Ein herausgenommener Effekt verschiebt die Nummern aller
+         folgenden (effekteBauen zaehlt sie von 1), und an der Nummer haengt der Wuerfel jedes
+         Malers - der Scheinwerfer staende dann woanders, und die Messung bekaeme eine zweite
+         Ursache. Ausgeschaltet bleibt die Kette Stueck fuer Stueck dieselbe. */
+      const aus = (q, typ) => Object.assign({}, q, { effekte:q.effekte.map(e => e.typ===typ ? Object.assign({}, e, { an:false }) : e) });
+      /* AUSSCHALTEN IST NICHT GENUG - DAS DIORAMA MUSS IN BEIDEN BILDERN STEHEN (20.09.2026,
+         Gegenlesen). Die Faelle dieses Beweises haben GENAU EINEN Szenen-Effekt, die Leuchte.
+         Schaltet man sie aus, faellt dioDa in zeichneFrame auf false und es gibt gar kein Diorama
+         mehr: das Vergleichsbild wird dann unmittelbar aus der Quelle geschnitten statt aus dem
+         Diorama, und die Differenz der beiden Bilder enthaelt nicht nur die Leuchte, sondern die
+         Umtastung des GANZEN Bildes. Der helligkeitsgewichtete Schwerpunkt wird dadurch zur
+         Bildmitte gezogen - gemessen im WEITEN Bild, wo er stillstehen MUSS, wanderte er um 56 bis
+         68 Bildpunkte aus (Lichtort [288,394] statt [220,356]).
+         Die Abhilfe ist ein STUMMER Szenen-Effekt, der in beiden Bildern haengenbleibt: eine
+         Helligkeit mit Staerke 0. Sie ist ein Grund-Puls, ihr a wird 0 und die Schleife
+         ueberspringt sie (`if(a<=0) continue`) - sie malt also nachweislich keinen Bildpunkt,
+         haelt aber dioDa wahr. Damit steht der Schwerpunkt im weiten Bild auf 0,4 bis 0,6
+         Bildpunkte genau ([219,6] gegen Soll 220), und was uebrig bleibt, ist die Leuchte. */
+      const STUMM = { typ:'helligkeit', an:true, staerke:0, wucht:0, invert:0, lmQuelle:'stetig' };
+      const stumm = q => Object.assign({}, q, { effekte:q.effekte.concat([STUMM]) });
+      const ohneL  = q => aus(stumm(q), weg);
+      const ohneKB = q => aus(stumm(q), 'kenburns');
+      const mitS   = q => stumm(q);   /* auch das Bild MIT Leuchte bekommt ihn, sonst ist die Kette nicht Stueck fuer Stueck dieselbe */
+      const zeiten = (o.zeiten || [0, 2.3, 5.7]).map(z => t0 + z);
+      const schwer = (a, b) => { let sx=0, sy=0, sg=0, mx=0;
+        for(let y=0; y<H; y++) for(let x=0; x<W; x++){ const k=(y*W+x)*4;
+          const d = Math.max(0, (a[k]-b[k]) + (a[k+1]-b[k+1]) + (a[k+2]-b[k+2]));
+          if(d>mx) mx=d; sx += x*d; sy += y*d; sg += d; }
+        return sg>0 ? { ort:[r3(sx/sg), r3(sy/sg)], summe:Math.round(sg), max:mx } : { ort:null, summe:0, max:0 }; };
+      const erg = { t0:r3(t0), W, H, zeiten:zeiten.map(r3), leuchte:weg, messung:[], bilder:{} };
+      for(let i=0; i<zeiten.length; i++){
+        const tv = zeiten[i];
+        /* MIT Kamera: das Rezept, wie es dasteht, gegen dasselbe ohne die Leuchte. */
+        const cvA = augenblick(mitS(f), lage, W, H, tv, 777), mitA = pixel(cvA).slice();
+        const mitB = pixel(augenblick(ohneL(f), lage, W, H, tv, 777)).slice();
+        /* OHNE Kamera, ZUR SELBEN ZEIT: derselbe Vergleich, nur die Ken Burns Fahrt herausgenommen.
+           Damit faellt die Eigenbewegung der Leuchte heraus - sie steht in beiden Bildern gleich. */
+        const cvS = augenblick(ohneKB(f), lage, W, H, tv, 777), stA = pixel(cvS).slice();
+        const stB = pixel(augenblick(aus(ohneKB(f), weg), lage, W, H, tv, 777));
+        const mit = schwer(mitA, mitB), steht = schwer(stA, stB);
+        const z = { zeit:r3(tv), mitKamera:mit.ort, ohneKamera:steht.ort, summe:mit.summe, max:mit.max };
+        z.versatz = (mit.ort && steht.ort) ? r3(Math.hypot(mit.ort[0]-steht.ort[0], mit.ort[1]-steht.ort[1])) : null;
+        erg.messung.push(z);
+        erg.bilder['t'+i] = cvA.toDataURL('image/png');
+        erg.bilder['t'+i+'-ohneFahrt'] = cvS.toDataURL('image/png');
+        await warte(0); }
+      erg.versatz = erg.messung.map(z => z.versatz);
+      erg.deterministisch = true;   /* zweimal gemalt wird hier nicht: gemessen wird ein Ort, kein Hash */
+      erg.dauerMs = 0;
       return erg;
     } finally { aufraeumenMass(); }
   }
@@ -780,6 +851,6 @@ window.__naht = (() => {
       return erg;
     } finally { aufraeumenMass(); }
   }
-  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, loopAnsicht, markenProbe, fahrtRezeptProbe, regelProbe, zeichenProbe, kbSchau, kbKarte };
+  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, dioBeweis, loopAnsicht, markenProbe, fahrtRezeptProbe, regelProbe, zeichenProbe, kbSchau, kbKarte };
 })();
 /* <<< Pruefhaken der Nahtpruefung */

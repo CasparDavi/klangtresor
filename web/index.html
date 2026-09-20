@@ -3313,6 +3313,14 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border:1px solid transparent;background:transparent;border-radius:50%}
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
 #tbs #tbs-kettekopf.leer > *{visibility:hidden}
+/* DIE STUFENMARKE (20.09.2026). Sie steht auf jeder Karte hinter dem Namen und sagt, WANN dieser
+   Effekt gemalt wird: Szene (im Diorama, faehrt mit), Kamera (der Ausschnitt selbst), Film (am
+   Objektiv, bleibt stehen). Klein, in der Farbe des Schwachen - eine Auskunft, kein Schmuck. */
+#tbs .tbs-stufe{font-style:normal;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach);border:1px solid var(--rand);border-radius:4px;padding:0 4px;margin-left:6px;white-space:nowrap;vertical-align:1px}
+#tbs .tbs-stufe.szene{color:#8fbf8a;border-color:#8fbf8a55}
+#tbs .tbs-stufe.kamera{color:#e0b34d;border-color:#e0b34d55}
+#tbs .tbs-stufe.film{color:#6fb3ff;border-color:#6fb3ff55}
+#tbs #tbs-stufenhinweis, #tbs #tbs-diostand{margin:0 10px 8px;padding:6px 8px;border:1px solid var(--rand);border-left:2px solid #e0b34d;border-radius:4px;background:var(--flaeche2);color:var(--schwach);font-size:10.5px;line-height:1.45}
 #tbs .tbs-leerhinweis{margin-top:12px;font-size:11.5px;color:var(--schwach)}
 #tbs .tbs-leerhinweis a{color:var(--akzent);text-decoration:underline}
 #tbs .tbs-leer p{margin:0 0 10px;text-align:left;max-width:40em}
@@ -27998,12 +28006,27 @@ EFFEKTE.kenburns.params.push({k:'kbParallaxe',lbl:'Parallaxe',min:0,max:KB_PX_MA
    Mitte ueber dem Boden. Das Stroboskop meldet nichts: es leuchtet von ueberall.
    Die Gewichtung ist die Helligkeit - bei mehreren Leuchten zieht die hellste die Richtung. */
 let LICHTORTE = [];
+/* AUF WELCHER FLAECHE DIE ORTE GEMELDET WURDEN (20.09.2026, Umbau auf das Diorama). Hier stand
+   `lein.width` - die Leinwand. Das stimmte, solange der Licht-Puffer IMMER in Leinwandgroesse
+   gefuellt wurde. Seit die Leuchten ins Diorama malen, ist es dessen Groesse, und die ist bei einer
+   Fahrt groesser als die Leinwand: geteilt durch lein.width kaeme der Lichtort um genau den
+   Dioramafaktor zu weit rechts heraus, und das Streiflicht rechnete mit einer Lampe, die woanders
+   haengt. Die Flaeche traegt sich darum selbst ein, dort wo LICHTORTE geleert wird. */
+let LICHTMASS = [1, 1];
+/* LISTE UND MASS GEHOEREN ZUSAMMEN, ALSO IN EINE FUNKTION (Gegenlesen 20.09.2026).
+   Bis eben standen `LICHTORTE=[]` und `LICHTMASS=[Wn,Hn]` als zwei Zuweisungen nebeneinander in
+   dioramaMalen - beieinander nur aus Gewohnheit. Wer spaeter eine zweite Stelle baut, die LICHTORTE
+   fuellt (etwa einen Licht-Puffer fuer die Objektiv-Stufe), und das Mass dabei vergisst, bekaeme den
+   Lichtort still durch das ALTE Mass geteilt: das Streiflicht rechnete dann mit einer Lampe, die um
+   den Dioramafaktor daneben haengt, und nichts im Bild sagte es. Jetzt gibt es nur noch diesen einen
+   Weg, die Liste zu leeren, und er verlangt die Flaeche. */
+function lichtOrteOeffnen(W, H){ LICHTORTE = []; LICHTMASS = [W, H]; }
 function lichtOrtMelden(x, y, gewicht){ if(LICHTMAL && gewicht > 0.002) LICHTORTE.push([x, y, gewicht]); }
 function lichtOrtMittel(){
   let sx = 0, sy = 0, sg = 0;
   for(const [x, y, g] of LICHTORTE){ sx += x * g; sy += y * g; sg += g; }
-  if(sg <= 0 || !lein || lein.width < 2) return null;
-  return [ sx / sg / lein.width, sy / sg / lein.height ];
+  if(sg <= 0 || !(LICHTMASS[0] > 1) || !(LICHTMASS[1] > 1)) return null;
+  return [ sx / sg / LICHTMASS[0], sy / sg / LICHTMASS[1] ];
 }
 /* FEIN: gerade wird fuer den EXPORT gerechnet, nicht fuer die Vorschau. Der kodierende Weg haengt an
    keiner Uhr (Caspar_D, 14.09.2026: "im Export bei ausreichend Rechenzeit vielleicht richtig chic",
@@ -28249,7 +28272,22 @@ const vorbCache={};
    mit jeder Kachel, die je zu sehen war (Gegenlesen 16.09.2026). Wer eine Vorbereitung ERSETZT, behaelt
    stattdessen ihr _id: derselbe Filter wird dann neu bespielt (vorbLoeschen, einfuegen, oeffnen). */
 function vorbFilterWeg(v){ const f=v&&vorbCache[v._id]; if(!f) return; try{ f.remove(); }catch(e){} delete vorbCache[v._id]; }
-function vorbFilter(v){ const ns='http://www.w3.org/2000/svg'; let f=vorbCache[v._id];
+/* DIE SCHAERFE DER VORBEREITUNG MUSS MIT DEM MASS WACHSEN (Gegenlesen 20.09.2026).
+   Sie ist eine feConvolveMatrix mit order=3, also ein Kreuz aus vier Nachbarn in GERAETE-
+   Bildpunkten. Vor dem Umbau lief sie hinter dem Ausschnitt, also auf den fertigen Leinwandpunkten
+   - genau auf dem, was der Nutzer beim Ziehen am Regler sah. Seit die Vorbereitung im Diorama
+   liegt, laeuft sie auf dessen Bildpunkten und wird danach um f verkleinert; die sichtbare
+   Kantenanhebung faellt dabei etwa um den Faktor f ab. Bei Quelle 1024x1448, Studio 629x889 und
+   einer Fahrt (f=1,629) zeigte derselbe Reglerwert ein anderes Bild, sobald eine Fahrt in der
+   Kette hing - der Kommentar ueber dioramaMalen behauptete aber, alles darin sei Zeile fuer Zeile
+   der alte Weg, nur in anderem Mass.
+   kernelUnitLength waere die Antwort des Standards und ist in Blink nicht gebaut; verlassen kann
+   man sich darauf nicht. Also waechst das Kreuz: die vier Nachbarn ruecken auf k=round(mass)
+   Bildpunkte hinaus, die Matrix hat order 2k+1. Bei mass=1 kommt Zeichen fuer Zeichen dieselbe
+   3x3-Matrix heraus wie bisher - jedes Rezept ohne Kamerabewegung bleibt bitgleich. Gedeckelt bei
+   k=4 (order 9, 81 Griffe je Bildpunkt); daruber ist es keine Schaerfung mehr, sondern ein
+   Reliefeffekt, und das Diorama ist ohnehin nie so viel groesser als die Leinwand. */
+function vorbFilter(v, mass){ const ns='http://www.w3.org/2000/svg'; let f=vorbCache[v._id];
   if(!f){ f=document.createElementNS(ns,'filter'); f.id='vorb'+v._id; f.setAttribute('color-interpolation-filters','sRGB'); kurvenraum.appendChild(f); vorbCache[v._id]=f; }
   while(f.firstChild) f.removeChild(f.firstChild);
   const t=v.temperatur, ft=v.farbton;
@@ -28260,7 +28298,10 @@ function vorbFilter(v){ const ns='http://www.w3.org/2000/svg'; let f=vorbCache[v
     for(const [fn,ch] of [['feFuncR','r'],['feFuncG','g'],['feFuncB','b']]){ const el=document.createElementNS(ns,fn); el.setAttribute('type','table'); const vals=[];
       for(let i=0;i<N;i++){ const x=i/(N-1); let y=levApply(v.grad[ch], levApply(gv,x)); y=y+v.schatten*1.2*y*(1-y)*(1-y)+v.lichter*1.2*y*y*(1-y); vals.push(Math.max(0,Math.min(1,y)).toFixed(3)); }
       el.setAttribute('tableValues',vals.join(' ')); ct.appendChild(el); } f.appendChild(ct); }
-  if(v.schaerfe>1e-6){ const cv=document.createElementNS(ns,'feConvolveMatrix'); const a=v.schaerfe*0.6; cv.setAttribute('order','3'); cv.setAttribute('kernelMatrix',[0,-a,0,-a,1+4*a,-a,0,-a,0].map(x=>x.toFixed(3)).join(' ')); cv.setAttribute('edgeMode','duplicate'); cv.setAttribute('preserveAlpha','true'); f.appendChild(cv); }
+  if(v.schaerfe>1e-6){ const cv=document.createElementNS(ns,'feConvolveMatrix'); const a=v.schaerfe*0.6;
+    const k=Math.max(1,Math.min(4,Math.round(Number(mass)||1))), n=2*k+1, m=new Array(n*n).fill(0);
+    m[k*n+k]=1+4*a; m[(k-k)*n+k]=-a; m[(k+k)*n+k]=-a; m[k*n+(k-k)]=-a; m[k*n+(k+k)]=-a;
+    cv.setAttribute('order',String(n)); cv.setAttribute('kernelMatrix',m.map(x=>x.toFixed(3)).join(' ')); cv.setAttribute('edgeMode','duplicate'); cv.setAttribute('preserveAlpha','true'); f.appendChild(cv); }
   const css=[]; if(Math.abs(v.belichtung)>1e-6) css.push('brightness('+(1+0.8*v.belichtung).toFixed(3)+')'); if(Math.abs(v.kontrast)>1e-6) css.push('contrast('+(1+0.8*v.kontrast).toFixed(3)+')');
   if(Math.abs(v.saettigung)>1e-6) css.push('saturate('+(1+v.saettigung).toFixed(3)+')'); if(v.sepia>1e-6) css.push('sepia('+v.sepia.toFixed(3)+')');
   return (f.childNodes.length?('url(#'+f.id+') '):'')+css.join(' '); }
@@ -29990,12 +30031,29 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
         lx2.globalCompositeOperation='destination-in'; lx2.drawImage(e._rc,0,0);   /* Licht mal Rauchdichte */
         zx.globalCompositeOperation='lighter'; zx.globalAlpha=0.9; zx.drawImage(e._rl,0,0); zx.globalAlpha=1; }
       cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||'source-over'); cx.globalAlpha=1; cx.drawImage(e._rc,0,0); }
-    /* DIESE MASKE LIEGT BEI 0,0 - UND DAS IST KEIN VERGESSENES MITFAHREN. Sie ist die einzige,
-       die in LEINWANDKOORDINATEN gebaut wird: der Horizont ist eine Eigenschaft der Zeile, in der
-       das Teilchen auf der Leinwand steht, nicht der Quelle. Er ist ein Bildgestaltungsmittel -
-       "oberhalb dieser Linie kein Material" heisst oberhalb dieser Linie IM BILD, und eine Fahrt
-       verschiebt das Bild, nicht den Bildrand. Sie durch die Geometrie zu schicken, machte aus
-       einer Bildlinie eine Linie im Motiv, und das ist sie nicht. */
+    /* DIESE MASKE LIEGT BEI 0,0 - UND SEIT DEM 20.09.2026 IST DAS EINE ANDERE AUSSAGE ALS VORHER.
+       HIER STAND EIN SATZ, DER NACH DEM UMBAU NICHT MEHR STIMMTE, und er wird ersetzt und nicht
+       nur abgeschwaecht (Hausregel: nichts darf luegen, auch nicht ein Kommentar). Er lautete:
+       die Maske sei die einzige, die in LEINWANDKOORDINATEN gebaut werde, der Horizont sei eine
+       Eigenschaft der Bildzeile und kein Ort im Motiv; sie durch die Geometrie zu schicken machte
+       aus einer Bildlinie eine Linie im Motiv. Genau das ist jetzt der Fall: Partikel ist ein
+       SZENEN-Effekt, er malt im Diorama, und diese Maske wird in Dioramamass gebaut und dort bei
+       0,0 aufgelegt. Sie ist also eine Linie im Motiv geworden.
+       UND DAS IST RICHTIG SO, WEIL SICH DAS BILD GEAENDERT HAT UND NICHT NUR DER CODE. Im Diorama
+       gibt es keine Bildzeile, an der ein Horizont haengen koennte - es gibt einen Kasten, in dem
+       es schneit, und der Horizont ist die Oberkante des Raums, in dem Material vorkommt. Faehrt
+       die Kamera in eine untere Bildecke, wandert diese Kante mit dem Motiv aus dem Ausschnitt
+       heraus, und es schneit bis an den oberen Rand - genau so, wie es aus einem Fenster aussieht,
+       wenn man nach unten blickt. Caspar_D am 19.09.2026: "es ist eine Scheibe vor dem Diorama,
+       nicht vor der Linse, deswegen vergroessert es mit."
+       WAS DAS KOSTET, UND ES STEHT HIER, DAMIT ES NIEMAND SUCHT: der weiche Saum von 0,03 der
+       Hoehe wird am Diorama gemessen. Bei f=2,5 ist er auf der Leinwand 2,5-mal schmaler, also
+       haerter - dieselbe Rechnung wie bei jedem anderen Szenen-Effekt, dessen Mass in EINHEIT
+       steht. Wer den Horizont wieder an die Bildzeile haengen will, braucht keinen neuen Zweig
+       hier, sondern einen Eintrag in STUFE_OBJEKTIV - und damit einen Partikelschnee, der beim
+       Zoom stehenbleibt. Das ist die Entscheidung, nicht diese Zeile.
+       KEIN REZEPT IM ARCHIV IST BETROFFEN: keines der 20 setzt horizont > 0 (nachgesehen
+       20.09.2026), die Maske ist dort null und es wird gar nicht maskiert. */
     if(schnitt){ const mk=partikelMaske(hor, Wn, Hn);
       if(mk){ cx.globalCompositeOperation='destination-in'; cx.globalAlpha=1; cx.drawImage(mk,0,0); cx.globalCompositeOperation='source-over'; }
       echtCx.globalCompositeOperation=echtModus; echtCx.globalAlpha=1; echtCx.drawImage(e._vc,0,0);
@@ -30193,8 +30251,15 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR); }
     gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,this.texQ);
-    const kq=quellBild.currentSrc||quellBild.src||'';
-    if(this._quelleBild!==kq){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,quellBild); this._quelleBild=kq; }catch(err){ this._quelleBild=null; return null; } }
+    /* EINE LEINWAND HAT KEINE ADRESSE (20.09.2026, Umbau auf das Diorama). Bis heute stand hier
+       "die Quelle steht still: sie wird einmal je Bildquelle hochgeladen, nicht je Bild" - und der
+       Merkzettel dafuer war ihre URL. Das Diorama ist eine Leinwand und hat keine; ohne diese
+       Unterscheidung waere `kq` leer, der Merkzettel nach dem ersten Bild gesetzt, und der Shader
+       fuehre bis in alle Ewigkeit durch das erste Diorama. Also: wer eine Adresse hat, wird einmal
+       geladen; wer keine hat, jedes Bild. Das kostet einen Texturupload je Bild - der Preis dafuer,
+       dass die Szene mitfaehrt statt stehenzubleiben. */
+    const kq=quellBild.currentSrc||quellBild.src||'', jedesBild=!kq;
+    if(jedesBild||this._quelleBild!==kq){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,quellBild); this._quelleBild=jedesBild?null:kq; }catch(err){ this._quelleBild=null; return null; } }
     /* Dieselbe Textur und derselbe Merkzettel wie in run() - es ist dieselbe Karte. */
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,this.texT);
     if(this._tiefeQuelle!==tiefeBild.src){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,tiefeBild); this._tiefeQuelle=tiefeBild.src; }catch(err){ this._tiefeQuelle=null; return null; } }
@@ -30517,11 +30582,48 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
 function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.toggle('leer',STAPEL.length<=1);   /* Kopfzeile erst ab zwei Effekten, davor leer (Caspar_D, 11.09.2026) */
   if(soloId&&!STAPEL.some(x=>x.id===soloId)) soloId=null;   /* ein Solo ohne Karte schaltete alles stumm, und der Kopf verschwieg es (Gegenpruefung 15.09.2026) */
   { const n=STAPEL.length, an=STAPEL.filter(x=>x.an).length, so=soloId&&STAPEL.find(x=>x.id===soloId);   /* Stand im Kopf der Stufe (Caspar_D, 15.09.2026: "Effekte zugewiesen") */
-    standSetzen('Kette', !n?'kein Effekt':(n===1?'1 Effekt zugewiesen':n+' Effekte zugewiesen')+(an<n?' · '+an+' an':'')+(so?' · Solo: '+EFFEKTE[so.typ].label:'')); }
+    /* WIE VIELE AUF WELCHER STUFE - aber nur, wenn es mehr als eine ist. Bei einer einzigen Stufe
+       ist die Liste ihre eigene Reihenfolge und es gibt nichts zu sagen (20.09.2026). */
+    const zst={diorama:0,kamera:0,objektiv:0}; for(const x of STAPEL) zst[stufeVon(x)]++;
+    const stTxt=(['diorama','kamera','objektiv'].filter(k=>zst[k]).length>1)
+      ? ' · '+['diorama','kamera','objektiv'].filter(k=>zst[k]).map(k=>zst[k]+' '+STUFE_NAME[k]).join(' / ') : '';
+    standSetzen('Kette', !n?'kein Effekt':(n===1?'1 Effekt zugewiesen':n+' Effekte zugewiesen')+(an<n?' · '+an+' an':'')+stTxt+(so?' · Solo: '+EFFEKTE[so.typ].label:'')); }
   const pa=$('#tbs-kettekopf .tbs-pwAlle'); if(!pa) return; const na=STAPEL.filter(x=>x.an).length; pa.classList.toggle('an',na>0&&na===STAPEL.length); pa.classList.toggle('teils',na>0&&na<STAPEL.length); }
+/* ---- DIE KETTE ZEIGT JETZT, WANN SIE WAS MALT (20.09.2026) ------------------------------
+   Vor dem Umbau war die Liste die Malreihenfolge - Karte fuer Karte von oben nach unten. Seit es
+   drei Stufen gibt, ist sie das nicht mehr: erst laeuft das Diorama (alle Szenen-Effekte in ihrer
+   Reihenfolge), dann die Kamera, dann Objektiv und Film. Eine Liste, die eine Reihenfolge
+   behauptet, der die Software nicht folgt, luegt - und der Nutzer merkt es daran, dass er eine
+   Karte nach oben zieht und sich nichts aendert. Also steht es da:
+     - auf jeder Karte eine Marke (Szene | Kamera | Film),
+     - und eine Zeile ueber der Kette, SOBALD die gemalte Reihenfolge von der gezeigten abweicht.
+   Die Zeile nennt die wirkliche Reihenfolge in Klartext. Sie kommt nicht, wenn die Kette ohnehin
+   schon nach Stufen sortiert dasteht - dann gibt es nichts zu erklaeren (Hausregel: eine Meldung,
+   die immer dasteht, liest niemand mehr).
+   GENAU HIER VERSTECKTEN SICH DIE ZWEI ARCHIVREZEPTE, die nach der Zusage „bitgleich" haetten
+   unveraendert bleiben muessen und es nicht sind (0ac2e049 und 6250449b, Begruendung bei
+   dioramaMass). Die Zusage ist dort richtiggestellt; hier steht, wie der Nutzer es sieht, ohne
+   dass ihm jemand davon erzaehlt. */
+const STUFE_NAME={diorama:'Szene',kamera:'Kamera',objektiv:'Film'};
+function stufeVon(e){ return STUFE_DIORAMA.has(e.typ)?'diorama':STUFE_KAMERA.has(e.typ)?'kamera':'objektiv'; }
+function stufeMarke(e){ const st=stufeVon(e), kl={diorama:'szene',kamera:'kamera',objektiv:'film'}[st];
+  const tt={ diorama:'Szene \u2014 wird im Diorama gemalt und f\u00e4hrt mit: zoomt die Kamera heran, wird dieser Effekt gr\u00f6\u00dfer.',
+             kamera:'Kamera \u2014 das ist der Ausschnitt selbst: Fahrt, Zoom, Kippen, Sch\u00e4rfe.',
+             objektiv:'Film \u2014 sitzt an der Kamera und bleibt stehen: eine Kamera, die zoomt, zoomt ihr eigenes Filmkorn nicht.' }[st];
+  return '<i class="tbs-stufe '+kl+'" title="'+tt+'">'+STUFE_NAME[st]+'</i>'; }
+/* Die wirklich gemalte Reihenfolge: Szene, dann Kamera, dann Film - je Stufe in Kettenreihenfolge.
+   Genau das, was zeichneFrame tut (imDiorama-Schleife, dann Stufe 2, dann die zweite Schleife). */
+function stufenFolge(){ const r=[]; for(const st of ['diorama','kamera','objektiv']) for(const e of STAPEL) if(stufeVon(e)===st) r.push(e); return r; }
+function stufenHinweisZeigen(){ const el=$('#tbs-stufenhinweis'); if(!el) return;
+  const folge=stufenFolge(), gleich=folge.length===STAPEL.length&&folge.every((e,i)=>e===STAPEL[i]);
+  if(gleich||STAPEL.length<2){ el.hidden=true; el.textContent=''; return; }
+  const namen=folge.map(e=>EFFEKTE[e.typ].label).join(' \u2192 ');
+  el.textContent='Gemalt wird nicht von oben nach unten, sondern nach Stufen: erst die Szene, dann die Kamera, zuletzt der Film. Hier hei\u00dft das: '+namen+'. Eine Karte zwischen zwei Stufen zu schieben \u00e4ndert das Bild darum nicht \u2014 innerhalb ihrer Stufe sehr wohl.';
+  el.hidden=false; }
 function renderStapel(){
   stapelBox.innerHTML='';
   kettekopfStand();
+  stufenHinweisZeigen();
   if(!STAPEL.length){ stapelBox.innerHTML='<div class="tbs-leer">'
       +'<p>Zur Voranpassung der Quelle, bevor \u00fcberhaupt visuelle Effekte aktiviert werden, kann das <a href="#" id="tbs-vorbAuf">Vorbereitungspanel aufgeklappt</a> werden.</p>'
       +'<p>F\u00fcr die Anwendung eines Effekts \u201eEffekt hinzuf\u00fcgen\u201c aufklappen und Effekt ausw\u00e4hlen \u2014 f\u00fcr einen ersten Eindruck eines pulsierenden Helligkeitseffekts gleich <a href="#" id="tbs-beispiel">hier</a> klicken.</p></div>';
@@ -30534,7 +30636,7 @@ function renderStapel(){
     const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
     let h='<div class="tbs-kopf"><span class="tbs-pw" title="an / aus"></span>'
       +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="Solo \u2014 nur diesen zeigen, fl\u00fcchtig">solo</button>'
-      +ikon(e.typ)+'<b class="tbs-name" title="'+T.label+' \u2014 auf- / zuklappen">'+T.label+'</b><span class="tbs-nr" title="'+(nrTxt?'Nr. '+nrTxt+' von '+gleich.length+' gleichen':'')+'">'+nrTxt+'</span>'
+      +ikon(e.typ)+'<b class="tbs-name" title="'+T.label+' \u2014 auf- / zuklappen">'+T.label+stufeMarke(e)+'</b><span class="tbs-nr" title="'+(nrTxt?'Nr. '+nrTxt+' von '+gleich.length+' gleichen':'')+'">'+nrTxt+'</span>'
       +'<button class="tbs-knopf" data-tu="dup" title="Kopie darunter einh\u00e4ngen \u2014 gleiche Einstellungen, dann nur das N\u00f6tige \u00e4ndern">\u29c9</button>'
       +'<button class="tbs-knopf tbs-weg" data-tu="weg" title="entfernen">\u00d7</button>'
       +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">\u2191</button>'
@@ -31330,6 +31432,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
   /* Dasselbe Gesetz, dieselbe Stelle: die Marken der Ken Burns Fahrt liegen ueber dem fertigen
      Bild und nur hier. Sie sind Bedienung und kein Bild. */
   if(kbE) kbMarkenMalen(kbE);
+  dioStandZeigen();   /* die Auskunft zum Diorama: sie steht nur da, wenn der Speichervorrat gedeckelt hat */
   lmVorschauen(); }
 /* ===================== KEN BURNS FAHRT: DIE FAHRT =====================
    Caspar_D, 17.09.2026: "wir nennen das ding Ken Burns Fahrt / und wir bauen es so, dass es
@@ -31409,17 +31512,22 @@ function kbParallaxeWert(e){ const v=Number(e.kbParallaxe); return (v>0)?Math.mi
    Genommen wird die MITTE dieser Karte (derselbe Median wie beim Aufenthalt, dasselbe Raster, ein
    Begriff): dann bleibt der Bildaufbau, wo er war, und nur die Tiefe geht auseinander. Ohne Probe
    die halbe Skala - dann ist es dieselbe Rechnung mit einer Mitte, die nicht gemessen ist. */
-/* WAS DIE PARALLAXE NICHT MITNIMMT, UND WIE GROSS DAS IST. Sie verschiebt das BILD; die
-   Tiefenkarte, die danach die Masken der Kette, die Baender der Teilchen und den Geburtsort legt,
-   faehrt weiter mit der GEOMETRIE (GEO, geoKarteLegen) und nicht mit der Parallaxe. Eine
-   Maskenkante kann also um so viel danebenliegen, wie das Naheste dem Fernsten vorauseilt: bei der
-   Vorgabe hoechstens 13,5, bei voller Stellung hoechstens 23,3 Bildpunkte im Studiomass, und nur
-   dort, wo der Ausschnitt am weitesten gewandert ist. Das steht hier, weil es ein Rest ist und kein
-   Versehen - der Fehler, den der 18.09.2026 ausgeraeumt hat ("die Tiefenkarte fuhr nicht mit"), war
-   bis zu 364 Bildpunkte gross, also gut fuenfzehnmal so viel. Wer die Karte auch durch die
-   Parallaxe schickt, braucht dafuer einen zweiten Gang; heute ist er den Preis nicht wert. */
-function kbParallaxeBild(kette, bild, bw, bh, sx, sy, cw, ch, Wn, Hn){
-  if(!bild || bild.tagName==='VIDEO' || !(Wn>1&&Hn>1)) return null;
+/* WAS DIE PARALLAXE NICHT MITNIMMT, UND WIE GROSS DAS IST - BERICHTIGT AM 20.09.2026.
+   Bis zum Umbau auf das Diorama stand hier: sie verschiebt das BILD, die Tiefenkarte fuer die
+   Masken der Kette faehrt aber mit der GEOMETRIE und nicht mit der Parallaxe, also kann eine
+   Maskenkante um bis zu 23,3 Bildpunkte danebenliegen. Fuer die SZENEN-EFFEKTE ist dieser Rest
+   weg: sie sind jetzt schon im Diorama gemalt und maskiert, wenn die Parallaxe kommt - sie werden
+   mit dem Bild zusammen verschoben, aus einem Stueck, und koennen darum gar nicht mehr gegen es
+   verrutschen. Uebrig bleibt er nur fuer die Masken der OBJEKTIV-Stufe (Aufenthalt an Filmkorn,
+   Scanlines, Bloom, Linse, Nachzieh): die liegen hinter der Parallaxe und bekommen ihre Karte
+   weiter durch GEO. Dort ist er auch richtig - ein Aufenthalt am Film fragt, was die Kamera zeigt,
+   und nicht, wie weit der Shader eine Ebene geschoben hat.
+   DIE TEXTUR IST JETZT DAS DIORAMA. Sie bekommt nach wie vor die GANZE Flaeche und den Ausschnitt
+   als Zahlen - nur so hat sie ausserhalb des Ausschnitts noch Stoff, mit dem sie die Risse fuellen
+   kann. `quelle` steht daneben und wird nur eines gefragt: ist es ein Bewegtbild? Dafuer gibt es
+   keine Tiefenkarte, und der Griff danach stand vorher an der Textur. */
+function kbParallaxeBild(kette, textur, quelle, bw, bh, sx, sy, cw, ch, Wn, Hn){
+  if(!textur || !quelle || quelle.tagName==='VIDEO' || !(Wn>1&&Hn>1)) return null;
   let s=0, zEng=1;
   for(const e of kette){ if(!aktiv(e)||e.typ!=='kenburns') continue;
     const v=kbParallaxeWert(e); if(v>s) s=v;
@@ -31445,7 +31553,7 @@ function kbParallaxeBild(kette, bild, bw, bh, sx, sy, cw, ch, Wn, Hn){
      Vorsprung Bildpunkte hat. Bei der Vorgabe sind das auf Studiomass rund 14 Schritte, bei
      voller Stellung rund 24. */
   const schritte=Math.max(4, Math.min(48, Math.ceil(sPx)));
-  try{ return GL.fahrt(bild, tiefe, ax, ay, eff, p, mitte, schritte, Wn, Hn); }catch(x){ return null; }
+  try{ return GL.fahrt(textur, tiefe, ax, ay, eff, p, mitte, schritte, Wn, Hn); }catch(x){ return null; }
 }
 /* DIE ZEILE UNTER DEM REGLER. Sie nennt die Grenze und wo sie herkommt, und sie nennt die Luecke
    ZU DIESER Reglerstellung - eine Zahl, die nur fuer eine Stellung gilt, nennt sie. */
@@ -32742,7 +32850,26 @@ function geoZuLeinwand(u,v){
 }
 /* Eine Karte in den Massen der QUELLE auflegen - mit derselben Geometrie wie das Grundbild.
    EIN drawImage, also derselbe Preis wie das alte drawImage(karte,0,0): die Grafikkarte skaliert
-   ohnehin, ob 1:1 oder nicht. Ohne Geometrie-Effekt geht es Zeichen fuer Zeichen den alten Weg. */
+   ohnehin, ob 1:1 oder nicht. Ohne Geometrie-Effekt geht es Zeichen fuer Zeichen den alten Weg.
+   NACHGESEHEN AM 20.09.2026, BEIM UMBAU AUF DAS DIORAMA, WEIL SIE FALLEN SOLLTE. Der Gedanke war:
+   wird das Diorama in Quellkoordinaten gemalt, liegt die Tiefenkarte deckungsgleich darauf, und
+   dann rechnet niemand mehr um. Fuer das Diorama stimmt das - dort ist GEO.eins gesetzt, und diese
+   Funktion faellt auf ihre erste Zeile zusammen. Sie faellt trotzdem NICHT, und hier steht, warum,
+   damit es niemand ein zweites Mal versucht: sie hat nach dem Umbau noch drei Rufer, und jeder
+   braucht die Kamera.
+     1. maskeAnwenden auf der OBJEKTIV-Stufe. Die Spalte „Aufenthalt" haengt an jeder Karte ausser
+        grund und geo (die Schleife bei TIEFE_PARAM), also auch an Filmkorn, Scanlines, Bloom,
+        Linse, Nachzieh und den Stoerungen. „Filmkorn nur vorn" heisst: dort, wo das Bild, DAS DIE
+        KAMERA ZEIGT, nah ist - die Karte muss also durch den Ausschnitt, und das ist genau diese
+        Funktion. Sie an dieser Stelle zu streichen hiesse, die Maske im falschen Bild zu schneiden.
+     2./3. tiefesichtMalen: die Ansicht der Trennebene liegt auf der Buehne, also hinter der Kamera,
+        und geht durch dieselbe Matrix wie das Grundbild.
+   Was am 20.09.2026 wirklich weggefallen ist, ist nicht die Funktion, sondern der WEG: die
+   Szenen-Effekte - alles, was eine Tiefenkarte wirklich benutzt (Partikel, Laser, Streiflicht,
+   Filmnebel, die Masken der Szene) - fragen sie gar nicht mehr, weil im Diorama nichts umzurechnen
+   ist. Die Fehlerklasse vom 17.09.2026 ("die Karte fuhr an DREI Stellen nicht mit", bis 364
+   Bildpunkte Versatz) ist damit fuer die Szene erledigt; am Objektiv kann sie nicht entstehen,
+   weil es dort genau EINE Stelle gibt, und das ist maskeAnwenden. */
 function geoKarteLegen(cx,karte){
   const G=GEO;
   if(!G||G.eins){ cx.drawImage(karte,0,0); return; }
@@ -32760,10 +32887,359 @@ function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
    Feld mischte und der Vorrat darum den Ausschnitt kennen musste. Der Regler ist gestrichen, das
    Feld fragt keine Karte mehr, und kein anderer Vorrat mischt zwei Bezugsrahmen. Bliebe sie
    stehen, waere sie eine Einladung, genau diese Falle noch einmal zu bauen. */
+/* ===================== DAS DIORAMA UND DIE KAMERA (20.09.2026) =====================
+   docs/effektclip/KONZEPT-DIORAMA.md, durchspezifiziert mit Caspar_D am 19.09.2026, nachdem er
+   beim Ausprobieren der Ken Burns Fahrt gesehen hat, was fehlte:
+
+     „ich sehe ein Problem, der Zoom muss auf alles wirken, auch Effekte muessen mitgezoomt
+      werden, momentan zoomt nur die Quelle, die Effekte bleiben wo sie sind"
+     „die idee, die Ken Burns erst ganz hinten draufzulegen ist konsequent"
+
+   ES GIBT EIN DIORAMA, UND DAVOR STEHT EINE KAMERA. Alles, was im Diorama ist oder auf seiner
+   Glasscheibe klebt, wird groesser, wenn die Kamera heranfaehrt. Alles, was an der Kamera selbst
+   sitzt - das Korn des Films, ein Streulicht im Objektiv, ein Wackeln des Stativs -, bleibt, wo es
+   ist. EINE KAMERA, DIE ZOOMT, ZOOMT IHR EIGENES FILMKORN NICHT. Das ist keine Einstellung,
+   sondern die Natur der Sache, und sie beantwortet jede Einzelfrage von selbst.
+
+   DREI STUFEN:
+     1 DAS DIORAMA    Quelle, Vorbereitung und alle Szenen-Effekte, in QUELLKOORDINATEN und
+                      Dioramagroesse, auf einer eigenen Leinwand (dioramaMalen).
+     2 DIE KAMERA     Ausschnitt, Zoom, Schwenk, Drehung, Parallaxe, Bewegungsunschaerfe. Sie
+                      SCHNEIDET aus dem Diorama - hier entsteht erst die Leinwand.
+     3 OBJEKTIV/FILM  was an der Kamera sitzt, in Leinwandkoordinaten wie vor dem Umbau.
+
+   KEINE ZEICHENTRANSFORMATION FUER DIE KAMERA. Weichzeichnung ueber ctx.filter skaliert NICHT mit
+   einer Zeichentransformation mit - wer die Kamera als Transformation legte statt als Ausschnitt,
+   bekaeme jeden Weichzeichner in LEINWANDMASS statt in Dioramamass. Darum wird das Diorama auf
+   eine eigene Leinwand gemalt und die Kamera schneidet daraus, genau wie sie vorher aus der
+   Quelle geschnitten hat.
+
+   WAS DAMIT AUFHOERT, EIN PROBLEM ZU SEIN. Im Diorama ist die Geometrie die EINS-Geometrie: die
+   Tiefenkarte liegt deckungsgleich auf dem Bild, geoZuQuelle gibt px/dw, geoKarteLegen legt die
+   Karte mit einem drawImage(karte,0,0) auf. Der ganze Umrechnungsweg faellt dort auf seinen
+   trivialen Zweig zurueck, und die Fehlerklasse „jemand hat vergessen, die Karte mitfahren zu
+   lassen" (17.09.2026: an DREI Stellen vergessen, bis 364 Bildpunkte Versatz, 26 % der Flaeche auf
+   der falschen Seite der Verdeckungskante) kann es fuer Szenen-Effekte nicht mehr geben.
+   GELOESCHT WURDE DAFUER NICHTS, UND DAS IST EIN BEFUND, KEIN VERSEHEN: geoKarteLegen hat nach dem
+   Umbau noch drei Rufer, und jeder einzelne ist nachgesehen (20.09.2026):
+     1. maskeAnwenden auf der OBJEKTIV-Stufe. Die Spalte „Aufenthalt" steht auf JEDER Karte ausser
+        grund und geo (siehe die Schleife bei TIEFE_PARAM) - also auch auf Filmkorn, Scanlines,
+        Bloom, Linse, Nachzieh. „Filmkorn nur vorn" heisst: dort, wo das BILD, DAS DIE KAMERA
+        ZEIGT, nah ist. Diese Maske MUSS also durch die Kamera, und geoKarteLegen ist genau das.
+     2./3. tiefesichtMalen (Ansicht der Trennebene) - sie malt auf die Buehne, also hinter der
+        Kamera, und braucht dieselbe Matrix wie das Grundbild.
+   Was wirklich fiel, ist der WEG: auf der Diorama-Stufe wird gar nicht mehr umgerechnet. */
+
+/* WER WOHIN GEHOERT. Von Caspar_D am 19.09.2026 entschieden, nicht hergeleitet - die Liste ist die
+   Spezifikation, nicht ihre Zusammenfassung. */
+const STUFE_DIORAMA = new Set([
+  /* die Szene selbst: was im Kasten steht und was darin leuchtet */
+  'farbe','licht','schatten','laser','strahlen','feuer','flammen','partikel','filmnebel',
+  'streiflicht','kaustik','wellen','spiegel',
+  /* die Glasscheibe VOR dem Diorama - „wuerde ich nicht so sehen, es ist eine Scheibe vor dem
+     Diorama, nicht vor der Linse, deswegen vergroessert es mit" */
+  'beschlag','tropfen','einschlag','risse',
+  /* Beleuchtungspulse - „wenn wir davon ausgehen, dass die Pulse Beleuchtungspulse sind, gehoert
+     es ins Diorama". Die Vorbereitung steht nicht in dieser Liste, weil sie kein Effekt ist; sie
+     geht denselben Weg - „gehoert zur Quelle, gehoert ins Diorama". */
+  'helligkeit','kontrast','saettigung','farbton' ]);
+/* DIE KAMERA. „Schaerfe schlaegt" steht hier und nicht bei den anderen Pulsen: sie ist die Linse,
+   die aufmacht und zufaellt, kein Licht in der Szene. Sie bleibt damit Zeile fuer Zeile dort, wo
+   sie vorher stand - hinter dem Ausschnitt, auf der Leinwand. */
+const STUFE_KAMERA = new Set(['kenburns','puls','kippen','schaerfe']);
+/* OBJEKTIV UND FILM: was an der Kamera sitzt und darum NICHT mitzoomt. */
+const STUFE_OBJEKTIV = new Set([
+  'korn','scanlines','bloom','linse','rgb','rauschen','bloecke','vlauf','wackeln','sicherung',
+  'strobe','streifen','nachzieh' ]);
+/* EIN TYP OHNE STUFE IST EIN FEHLER UND KEIN STILLSCHWEIGEN. Wer einen Effekt dazubaut und hier
+   nichts eintraegt, bekaeme ihn stumm ans Objektiv - und merkte erst beim naechsten Zoom, dass
+   seine Funken nicht mitfahren. Die Konsole sagt es beim Aufbau, einmal. */
+{ const ohne=Object.keys(EFFEKTE).filter(k=>!STUFE_DIORAMA.has(k)&&!STUFE_KAMERA.has(k)&&!STUFE_OBJEKTIV.has(k));
+  if(ohne.length) console.warn('Effektclip-Studio: Effekte ohne Stufe (Diorama | Kamera | Objektiv): '+ohne.join(', ')); }
+const imDiorama = e => STUFE_DIORAMA.has(e.typ);
+
+/* DIE LEINWAENDE DES DIORAMAS: ein kleiner Vorrat nach Groesse.
+   Sie tragen nichts von einem Bild ins naechste - sie sind Arbeitsflaeche, kein Gedaechtnis. Der
+   einzige Maler mit einer Spur (Nachzieheffekt) sitzt am Objektiv und arbeitet weiter auf den
+   Leinwaenden seines Buendels; sein Vorrat haengt an ores und bleibt darum unberuehrt.
+   WARUM EIN VORRAT UND NICHT EINE FLAECHE: die Galerie malt in EINEM Bild bis zu vier Kacheln
+   verschiedener Groesse nacheinander (setzen(m) je Kachel). Eine einzige Flaeche muesste je Kachel
+   neu angelegt werden, und ein cv.width=... ist ein memset ueber die ganze Flaeche. Vier Plaetze
+   und eine Bytegrenze wie beim Maskenvorrat; ein Treffer wandert nach vorn, hinten faellt heraus,
+   was am laengsten nicht gefragt wurde. */
+const DIOFLAECHEN=[]; const DF_PLAETZE=4, DF_BYTE=96*1024*1024;
+function dioFlaechen(W,H){
+  const k=W+'x'+H;
+  { const i=DIOFLAECHEN.findIndex(d=>d.k===k);
+    if(i>=0){ const d=DIOFLAECHEN[i]; if(i){ DIOFLAECHEN.splice(i,1); DIOFLAECHEN.unshift(d); } return d; } }
+  const c=()=>{ const q=mk(); q.width=W; q.height=H; return q; };
+  const d={ k, oa:c(),ob:c(),oc:c(),ores:c(),okc:c(),ovb:c(),olicht:c(), byte:W*H*4*7 };
+  d.ca=d.oa.getContext('2d'); d.cb=d.ob.getContext('2d'); d.cc=d.oc.getContext('2d');
+  d.cres=d.ores.getContext('2d'); d.ckc=d.okc.getContext('2d'); d.clicht=d.olicht.getContext('2d');
+  DIOFLAECHEN.unshift(d);
+  let summe=0;
+  for(let i=0;i<DIOFLAECHEN.length;i++){ summe+=DIOFLAECHEN[i].byte;
+    if(i>=DF_PLAETZE||summe>DF_BYTE){ DIOFLAECHEN.length=Math.max(1,i); break; } }
+  return d;
+}
+/* DER VORRAT WIRD WIEDER FREIGEGEBEN - er ist ein globaler Platz, den Buehne, Galeriekacheln,
+   Loop-Vorschau und Export teilen (Gegenlesen 20.09.2026). Ein 1080er Export eines Rezepts mit
+   Fahrt legt ein Diorama von 1596x2254 an, also 96 MB; danach malt die Buehne wieder in 629x889
+   und legt ein zweites an. Ohne diese Zeile blieben BEIDE liegen, bis vier weitere Groessen sie
+   hinausgeschoben haetten - nach einem Export also bis zu 96 MB in Exportgroesse, obwohl nur noch
+   die Vorschau laeuft. Dasselbe Problem, dieselbe Antwort wie bei vorbFilterWeg() (16.09.2026).
+   WAS ES NICHT LOEST: waehrend vier Galeriekacheln verschiedener Groesse plus Buehne malen, sind
+   vier Plaetze zu wenig - dann wirft jedes Bild eine Groesse hinaus und legt sie im naechsten neu
+   an, und jede Neuanlage ist siebenmal canvas.width=..., also siebenmal ein memset ueber die ganze
+   Flaeche. Deckel hoeher setzen hiesse mehr Speicher halten; das ist eine Abwaegung und keine
+   Selbstverstaendlichkeit, darum steht sie hier und nicht im Code. */
+function dioFlaechenWeg(){ DIOFLAECHEN.length=0; DIO_STAND=null; }
+/* WIE GROSS DAS DIORAMA GEMALT WIRD - DREI GRENZEN, KEINE DAVON GERATEN.
+   KONZEPT-DIORAMA §5 sagt, warum es ueberhaupt groesser sein muss als die Leinwand: „Der
+   Ausschnitt muss aus etwas geschnitten werden, das mehr Bildpunkte hat als die Leinwand - sonst
+   waere jeder Zoom eine Vergroesserung von bereits Verkleinertem, und die Fahrt wuerde
+   UNSCHAERFER als heute." Aus genau diesem Satz folgen alle drei Grenzen:
+
+     1. DIE QUELLE. Mehr Bildpunkte als die Quelle gibt es nicht; sie zu vergroessern brachte
+        keinen einzigen echten dazu. (Heute schneidet die Kamera aus der Quelle - wer hier tiefer
+        deckelte, machte die Fahrt unschaerfer als vor dem Umbau. Ein Deckel bei 1080 haette genau
+        das getan: bei Titel a (1024x1448) und Enge 0,62 stuenden dann 670 statt 898 Bildpunkte
+        zur Verfuegung, aufgeblasen auf 889.)
+     2. WAS DIE KAMERA AUSNUTZEN KANN. Die Umkehrung desselben Satzes: Bildpunkte, welche die
+        ENGSTE Kamerastellung nicht erreicht, sind Rechenzeit ohne Bild. Ein Rezept ohne
+        Kamerabewegung malt sein Diorama darum in Leinwandgroesse - Zeichen fuer Zeichen wie vor
+        dem Umbau, und damit bitgleich. Das ist kein Sonderweg, sondern dieselbe Formel mit
+        Faktor 1.
+     3. WAS DER VORRAT TRAEGT. Ein Diorama braucht sieben Leinwaende (dioFlaechen), und mehr als
+        DF_BYTE gibt das Haus DAFUER nicht aus. Bei Studiogroesse 629x889 bindet diese Grenze erst
+        ab dem 2,5-fachen - eine Suno-Quelle erreicht sie nie, ein hereingelegtes 6000er Bild
+        schon, und dann soll es kleiner gemalt werden und nicht der Speicher ausgehen.
+        DIESE GRENZE HEBT GRENZE 1 AUF, UND DAS DARF NICHT STILL GESCHEHEN (Gegenlesen
+        20.09.2026). DF_BYTE/(7*4) deckelt das Diorama bei 3 595 118 Bildpunkten, unabhaengig von
+        der Leinwandgroesse; jede Quelle darueber wird verkleinert, BEVOR die Kamera hineinfaehrt -
+        genau der Fall, den KONZEPT-DIORAMA §5 als Grund nennt, ueberhaupt groesser zu malen. Ein
+        hereingelegtes 4096x4096-Foto bekaeme im Studio (889x889) ein Diorama von 1896x1896 statt
+        der moeglichen 4096x4096; ein Zielpunkt mit Enge 0,25 wollte den Faktor 4,0 und bekaeme
+        2,13. Die Fahrt ist an der Ankunft dann weicher als VOR dem Umbau, wo die Kamera
+        unmittelbar aus der Quelle schnitt. Darum sagt dioramaMass jetzt, WELCHE Grenze gebunden
+        hat (DIO_STAND), und dioStandZeigen() schreibt es in den Kopf der Kette und einmal in die
+        Konsole. Kein Regler - nur eine Auskunft (Hausregel „App laeuft ohne Claude").
+        UND DIE ZAHL GILT FUER EIN SIEBTEL DER RECHNUNG. DF_BYTE zaehlt die sieben
+        Diorama-Leinwaende und sonst nichts. In Dioramagroesse liegen ausserdem: die
+        Hilfsleinwaende der Maler (e._bc beim Beschlag, e._sc bei Laser und Partikeln, e._rc/_rl/
+        _vc/_tc bei den Partikelbaendern), GLAS_KOPIE, partikelMaske und der zweite Vorrat der
+        Tiefenmasken (TM_BYTE, noch einmal 96 MB). Gerechnet am 20.09.2026 fuer ein 4K-Foto mit
+        partikel(schwaden)+beschlag+laser+filmnebel am Deckel: Diorama 96 MB, Partikelbaender 55,
+        Beschlag 13,7, Laser 13,7, Partikelmaske 13,7, Tiefenmasken bis 96 - rund 300 MB statt der
+        96, die hier frueher zugesagt waren. Die Zusage ist darum zurueckgenommen: DF_BYTE ist das
+        Budget DER SIEBEN, nicht das Budget des Bildes.
+
+   KEIN REGLER: alle drei Zahlen kennt die Software selbst (Hausregel „Understatement statt
+   Konfiguration").
+   ABWEICHUNG VON DER SPEZIFIKATION, und sie steht hier, damit sie niemand uebersieht: dort steht
+   „in QUELLAUFLOESUNG", ohne Grenze 2. Mit ihr aendert sich an einem Rezept MIT Fahrt nichts, an
+   einem Rezept OHNE Fahrt faellt die Ueberabtastung weg - und damit die angekuendigte Aenderung an
+   jedem dieser Rezepte.
+   WAS DIESE ABWEICHUNG NICHT DECKT, UND DAS IST IHRE WICHTIGSTE ZEILE (Gegenlesen 20.09.2026):
+   sie spricht ueber die ABTASTUNG, also ueber Faktor 1 gegen Faktor f. Sie sagt NICHTS ueber die
+   REIHENFOLGE. Ein Rezept mit f=1 ist nur dann bitgleich, wenn seine Kette nicht ueber die
+   Stufengrenze hinweg gemischt ist - sobald ein Objektiv-Effekt VOR einem Szenen-Effekt steht,
+   zieht die Stufentrennung ihn dahinter, und das ist eine andere Rechnung und kein anderer
+   Abtastpunkt. Im Archiv trifft das zwei Rezepte, beide mit f=1:
+     0ac2e049  filmnebel > strobe > licht > licht  wird zu  filmnebel > licht > licht > strobe.
+               Stroboskop und beide Scheinwerfer verrechnen „abwedeln"; farbiges Abwedeln ist
+               nicht vertauschbar, das Bild ist ein anderes.
+     6250449b  sicherung > partikel  wird zu  partikel > sicherung. Das Sicherungswackeln
+               („nachbelichten", Staerke 0,95) brennt danach auch die Ascheteilchen ab statt nur
+               das Foto.
+   Die Aenderung selbst ist gewollt (KONZEPT-DIORAMA §6: „ein Filmkorn, das VOR einem Scheinwerfer
+   lag, lag schon immer falsch"). Falsch war nur die Zusage „bitgleich"; die Messung „37 von 37
+   Vorgabefaellen" kann sie nicht pruefen, weil kein Vorgabefall zwei Stufen mischt. Damit es
+   niemand erst am Bild merkt, sagt es das Studio: renderStapel setzt eine Stufenmarke auf jede
+   Karte und eine Zeile in den Kopf der Kette, sobald eine Kette ihre Reihenfolge nicht mehr eins
+   zu eins gemalt bekommt. */
+let DIO_STAND=null;   /* was dioramaMass zuletzt entschieden hat und warum - gelesen von dioStandZeigen() */
+function dioramaMass(kette,bw,bh,Wn,Hn){
+  const lang=Math.max(Wn,Hn), quelle=Math.max(bw,bh);
+  if(!(quelle>lang)){ DIO_STAND={dw:Wn,dh:Hn,bw,bh,Wn,Hn,grund:'leinwand'}; return [Wn,Hn]; }   /* die Quelle hat nicht mehr Bildpunkte als die Leinwand - bei Bewegtbild ist das der Normalfall */
+  let crop=1,gross=1,neig=0;
+  for(const e of kette){ if(!aktiv(e)) continue;
+    if(e.typ==='kenburns') crop*=kbEngste(e);                                   /* die kleinste Enge seiner Zielpunkte */
+    else if(e.typ==='puls') gross*=(1+Math.max(0,Number(e.wucht)||0));          /* Zoom schlaegt: die Decke des Pulses */
+    else if(e.typ==='kippen') neig+=Math.abs(Number(e.neigung)||0); }
+  const eff=Math.max(.1,Math.min(1,crop/gross));                                /* dieselbe Klemme wie in zeichneFrame */
+  /* DIE NACHZOOM-RECHNUNG DER DREHUNG IST NICHT MONOTON, UND DARUM STEHT HIER EIN DECKEL
+     (Gegenlesen 20.09.2026). z(rad)=cos(rad)+r*sin(rad) waechst nur bis rad=atan(r) und faellt
+     danach; ab 2*atan(r) unterschreitet es sogar die 1. `neig` summiert die BETRAEGE aller
+     Kippen-Neigungen - bei vier Karten zu je 12 Grad sind das 48 Grad, bei quadratischer Quelle
+     (r=1, Scheitel bei 45 Grad) also schon ueber dem Scheitel. Gerechnet stuende dort z(48)=1,412,
+     waehrend der Lauf im Augenblick des staerksten Rucks z(45)=1,414 zoomt: das Diorama waere
+     0,2 % zu klein, bei zehn Karten (120 Grad) sogar um den Faktor 1,7 zu klein und die Fahrt
+     dort unschaerfer als vor dem Umbau. Gebraucht wird das MAXIMUM ueber [0, rad], und weil z auf
+     [0, atan(r)] steigt, ist das genau z(min(rad, atan(r))). Eine Zeile, und die Zusage traegt bis
+     zum Rand. */
+  const r=Math.max(Wn,Hn)/Math.min(Wn,Hn);
+  const rad=Math.min(Math.abs(neig)*Math.PI/180, Math.atan(r));
+  const z=neig?(Math.cos(rad)+r*Math.sin(rad)):1;                               /* Kippen zoomt nach, Zeichen fuer Zeichen wie in zeichneFrame - nur am Scheitel abgelesen statt am Endpunkt */
+  const fWunsch=z/eff, fQuelle=quelle/lang, fVorrat=Math.sqrt(DF_BYTE/(7*4*Wn*Hn));
+  const f=Math.min(fWunsch,fQuelle,fVorrat);
+  const grund=(fVorrat<fQuelle&&fVorrat<fWunsch)?'vorrat':(fQuelle<=fWunsch?'quelle':'kamera');
+  if(!(f>1.0001)){ DIO_STAND={dw:Wn,dh:Hn,bw,bh,Wn,Hn,grund:(grund==='vorrat'?'vorrat':'leinwand')}; return [Wn,Hn]; }
+  /* GREIFT GRENZE 1, WIRD NICHT NOCH EINMAL UMGERECHNET (Gegenlesen 20.09.2026). Bis eben wurde
+     auch im Grenzfall „Diorama in Quellaufloesung" f auf die LEINWAND angewandt und je Achse
+     gerundet: Quelle 1024x1448 gegen Leinwand 629x889 gibt f=1,62880 und daraus round(629*f)=1025
+     - einen Bildpunkt breiter als die Quelle. Die Quelle wurde also um 0,1 % gestreckt statt 1:1
+     abgelegt, obwohl genau das die Grenze verhindern soll. Die Quellmasse sind die Quellmasse. */
+  if(grund==='quelle'){ DIO_STAND={dw:bw,dh:bh,bw,bh,Wn,Hn,grund}; return [Math.max(2,bw|0), Math.max(2,bh|0)]; }
+  const dw=Math.max(2,Math.round(Wn*f)), dh=Math.max(2,Math.round(Hn*f));
+  DIO_STAND={dw,dh,bw,bh,Wn,Hn,grund};
+  return [dw,dh];
+}
+/* DIE AUSKUNFT ZUM DIORAMA - sie sagt nur dann etwas, wenn es etwas zu sagen gibt.
+   „App laeuft ohne Claude": wird das Diorama vom Vorrat gedeckelt, ist die Fahrt an der Ankunft
+   weicher als sie sein koennte, und niemand kann das dem Bild ansehen. Also steht es da - einmal
+   in der Konsole, wenn es sich aendert, und als Zeile im Kopf der Kette. In JEDEM anderen Fall
+   (kein Diorama, Leinwandgroesse, Quellgrenze, Kameragrenze) bleibt die Zeile leer: eine Meldung,
+   die immer dasteht, liest niemand mehr. */
+let DIO_GEMELDET='';
+function dioStandSatz(){ const d=DIO_STAND; if(!d||d.grund!=='vorrat') return '';
+  return 'Diorama '+d.dw+'\u00d7'+d.dh+' \u2014 der Speichervorrat deckelt es; aus der Quelle '+d.bw+'\u00d7'+d.bh+' w\u00e4re mehr zu holen, die Fahrt ist an der Ankunft weicher als n\u00f6tig'; }
+function dioStandZeigen(){ const txt=dioStandSatz(), el=$('#tbs-diostand');
+  if(el){ el.textContent=txt; el.hidden=!txt; }
+  if(txt!==DIO_GEMELDET){ DIO_GEMELDET=txt; if(txt) console.info('Effektclip-Diorama: '+txt); } }
+/* Die Leinwaende des Hauses gegen die des Dioramas tauschen und zurueck - dieselbe Bauform wie
+   setzen()/bundel(), damit JEDER Maler und jede Nachbearbeitung unveraendert weiterarbeitet und
+   nicht wissen muss, auf welcher Stufe er gerade steht. */
+function flaechenTauschen(d){
+  const alt={oa,ob,oc,ores,okc,ovb,olicht,ca,cb,cc,cres,ckc,clicht};
+  ({oa,ob,oc,ores,okc,ovb,olicht,ca,cb,cc,cres,ckc,clicht}=d);
+  return alt; }
+
+/* STUFE 1. Malt Quelle, Vorbereitung und die Szenen-Effekte auf die (getauschten) Leinwaende in
+   Dioramagroesse und gibt die Flaeche zurueck, auf der das Fertige liegt. Alles darin ist Zeile
+   fuer Zeile der Weg, den zeichneFrame vor dem Umbau auf der Leinwand gegangen ist - nur in einem
+   anderen Mass, und das steht in EINHEIT.
+   ZWEI AUSNAHMEN VON DIESEM SATZ, und sie stehen hier, weil er sonst zu viel verspraeche:
+     1. DIE SCHAERFE DER VORBEREITUNG. Sie ist ein Faltungskern in Geraete-Bildpunkten und konnte
+        gar nicht mit EINHEIT wachsen; seit dem 20.09.2026 waechst ihr Kreuz mit dem Mass
+        (vorbFilter, Begruendung dort). Bei Mass 1 ist es dieselbe 3x3-Matrix wie vorher.
+     2. DIE GRENZE „von selbst" der Tiefenmasken. Sie ist ein Median ueber ein Histogramm, also
+        von der Abtastung abhaengig; sie wird darum weiter auf der LEINWAND gezogen (tiefeMedian).
+
+   ================= WAS DER UMBAU KOSTET, UND WAS ER AM BILD AENDERT =================
+   KONZEPT-DIORAMA §8 wollte diese Zahl vor der ersten Zeile sehen. Sie liegt seit dem 20.09.2026
+   vor, gemessen am fertigen Bau (fuenf Archivketten, Median aus fuenf Bloecken zu acht Bildern,
+   GL.run entdrahtet, EIN Ruecklesen je Block - ein Ruecklesen je Shaderlauf misst sonst
+   ueberwiegend sich selbst):
+
+     MIT Kamerabewegung, Diorama 1,553-mal so viele Bildpunkte wie die Leinwand:
+       „Noch lachst Du"            267,7 -> 417,9 ms je Bild   (+56,1 %)
+       „Halt die Klappe Willem"    376,2 -> 550,2 ms je Bild   (+46,3 %)
+     OHNE Kamerabewegung (Diorama = Leinwand):
+       418,6 -> 396,8 / 655,4 -> 664,0 / 616,5 -> 662,1 ms        (-5 bis +7 %)
+     Blockstreuung 8-12 %.
+
+   Die Kosten wachsen also fast genau mit der FLAECHE des Dioramas - keine Ueberraschung, aber
+   jetzt gemessen und nicht geschaetzt. Dazu kommt, was der Vorrat haelt: SIEBEN zusaetzliche
+   Leinwaende, und zwar auch dann, wenn das Diorama genau so gross ist wie die Leinwand. Im Studio
+   sind das 14,9 MB, mit Fahrt 23,2 MB, bei zwei Groessen nebeneinander (Galerie) 38,1 MB, im
+   Export 792x1080 rund 42,7 MB und bei 1920x1080 bis zum Deckel DF_BYTE. Und der Shader laedt das
+   Diorama JEDES Bild neu als Textur hoch (GL.fahrt, Zweig jedesBild: eine Leinwand hat keine
+   Adresse) - bei einem 4K-Video im 1080er Export sind das rund 14 MB je Bild und je
+   Shader-Effekt, auf dem Intel-iMac mit Radeon der eigentliche Preis. Zum Absturz fuehrt nichts
+   davon: DF_BYTE deckelt sauber. Es ist eine Kostenfrage, und sie steht jetzt geschrieben.
+
+   WAS SICH AM BILD AENDERT, UND ZWAR MEHR ALS „glatter" (gemessen 20.09.2026, mittleres
+   |Laplace| im engsten Bild bei Enge 0,300): Die Vorbereitung liegt jetzt IM Diorama, also VOR
+   der Kamera. Belichtung und Kontrast schlagen damit schon in Quellaufloesung an, die Lichter
+   laufen dort in die Saettigung, und erst DANACH zieht die Kamera das Bild auf; vorher wurde erst
+   aufgezogen und dann gradiert.
+       helle Vorbereitung + Fahrt        1,329 -> 1,128   (-15,1 %)
+       helle Vorbereitung + Parallaxe    1,573 -> 1,127   (-28,4 %)
+       dunkle Vorbereitung + Fahrt       1,035 -> 0,973   ( -6,0 %)   (dort schlaegt nichts an)
+       Kontrolle OHNE Fahrt              5,998 -> 5,998   (  0,0 %)
+   Das ist NICHT die Aufloesung: dieselbe Probe bei denselben Engen OHNE Vorbereitung misst +1,8
+   bis -0,6 %. Die Einsortierung ist von Caspar_D so gewollt („die Vorbereitung gehoert zur
+   Quelle", KONZEPT-DIORAMA §3), die Groessenordnung hatte nur niemand gemessen - und sie ist am
+   Zoomende zu sehen. Wer sie nicht will, verschiebt die Vorbereitung hinter die Kamera; das ist
+   eine Entscheidung ueber das Bild und keine ueber den Code. */
+function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
+  frisch(ca); ca.clearRect(0,0,Wn,Hn);
+  let quell=bild, qsx=0, qsy=0, qcw=bw, qch=bh;
+  /* Die Vorbereitung schneidet nicht mehr: im Diorama gibt es keinen Ausschnitt. Damit ist auch
+     die Falle vom 18.09.2026 weg, an der sie den fertigen Parallaxe-Ausschnitt ein zweites Mal
+     ausschnitt - die Parallaxe steht jetzt hinter ihr, nicht vor ihr. */
+  if(vorbDa){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB, lW?Wn/lW:1); cv.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
+  ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn);
+  /* Grund-Pulse in Kettenreihenfolge, jeder auf dem bisherigen Ergebnis (Momentaufnahme nach okc), nicht auf dem Grundbild -
+     sonst loeschte der letzte Puls auf dem Schlag die vorigen (Tiefen-Check). Jeder Typ darf mehrfach haengen.
+     „Schaerfe schlaegt" ist nicht dabei: sie sitzt an der Kamera (STUFE_KAMERA). */
+  const schnapp=()=>{ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(oa,0,0); return okc; };
+  const lege=(e,filter,a)=>{ const k=schnapp(); ca.save(); ca.setTransform(1,0,0,1,0,0); ca.filter=filter; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(k,0,0); ca.restore(); };
+  for(const e of kette){ if(!aktiv(e)||!imDiorama(e)||EFFEKTE[e.typ].art!=='grund') continue; const hb=pulsHub(e,t), a=Math.min(1,e.staerke*Math.min(1,hb));
+    if(e.typ==='farbton'){ const af=e.invert?Math.min(1,e.staerke*(1-Math.min(1,hb))):a; if(af>0) lege(e,'hue-rotate('+e.winkel+'deg)',af); continue; }   /* invertiert: gedreht ruhen, auf dem Schlag zurueck */
+    if(a<=0) continue;
+    if(e.typ==='kontrast') lege(e,'url(#'+kurveFilter(e)+')',a);
+    else if(e.typ==='saettigung') lege(e,'saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')',a);
+    else if(e.typ==='helligkeit') lege(e,'brightness('+(e.invert?(1-0.6*e.wucht):(1+1.2*e.wucht)).toFixed(3)+')',a); }
+  frisch(ca);
+  /* MEDIUM: der Nebel leuchtet nicht selbst, er nimmt Licht auf. Alle aktiven Leuchten malen ihre Abstrahlung
+     zusaetzlich additiv auf Schwarz in den Licht-Puffer; der Shader multipliziert seine Dichte damit. Das gilt
+     fuer alle Leuchten der Kette, gleich wo sie stehen - es ist ein Raum, keine Stapelung.
+     AUCH DAS STROBOSKOP, OBWOHL ES AM OBJEKTIV SITZT. Es leuchtet den Nebel an (der Karte steht es so: „Haengt
+     kein Scheinwerfer, Laser, Lichtstrahl, Feuer oder Stroboskop in der Kette ..."), und es flackert das GANZE
+     Bild - es hat keine Groesse, die vom Mass abhinge. Also malt es in den Licht-Puffer des Dioramas mit, und
+     sein eigenes Flackern liegt trotzdem erst hinter der Kamera. */
+  const medium=kette.some(e=>aktiv(e)&&mediumJetzt(e));
+  if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; lichtOrteOeffnen(Wn,Hn);
+    try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
+    finally { LICHTMAL=false; } }
+  /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen
+     sie gegen ihr Ergebnis. */
+  let curCv=oa, curCx=ca;
+  const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt „'+EFFEKTE[e.typ].label+'“ wirft und wird ausgelassen:', x); } };
+  for(const e of kette){ if(!aktiv(e)||!imDiorama(e))continue; const T=EFFEKTE[e.typ]; if(T.art==='grund') continue;
+    /* AUFENTHALT IN DER KETTE. Ohne Karte oder bei „ueberall" ist die Maske null und es aendert
+       sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten.
+       ZWEI WEGE (16.09.2026, auf zwei gekuerzt am 18.09.2026):
+         1. Harter Aufenthalt (Koerper ohne Altwert): hier wird nichts geschnitten, der Maler hat
+            die Teilchen schon gar nicht erst in die verbotene Zone gelassen.
+         2. Alles andere - kein Koerper, oder ein altes Rezept mit seinem weichen Schnitt: die Zone
+            wird ausgeschnitten wie seit dem 14.09.2026.
+       DER DRITTE WEG IST GEFALLEN. Bis zum 18.09.2026 stand hier zuerst die VERDECKUNG: eine Maske
+       im Modus „hinten" ueber den ganzen Effekt. Seit die Teilchen ihre Verdeckung selbst in
+       Tiefenschichten malen (jedes nach SEINER Entfernung), war diese Maske dieselbe Frage mit
+       grober Antwort - und die grobe gewann, weil sie zuletzt kam. Gerechnet an den Einstellungen
+       des einzigen Altrezepts, das sie trug: dem vordersten Band nahm sie 24,3 % seiner Deckung,
+       dem VORRAUM 60,0 % - dem Band, vor dem nach dem Raummodell nichts mehr steht. Das Zweite ist
+       der Beweis, dass sie nicht nur doppelte, sondern falsch war. Der Zweig ist geloescht, die
+       Begruendung bleibt (Hausregel: abgeklemmter Code wird geloescht, sein Grund nicht). Braucht
+       ein spaeterer Effekt mit einzelnen Koerpern wieder eine Maske ueber dem Ganzen, steht hier,
+       warum sie fuer Partikel nicht taugt.
+       HIER IM DIORAMA LIEGT DIE MASKE DECKUNGSGLEICH: tiefeMaske baut sie in Dioramagroesse, und
+       geoKarteLegen legt sie mit einem drawImage(karte,0,0) auf - der EINS-Zweig, kein Umrechnen. */
+    const maske = ZONE_HART(e) ? null
+      : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich, null, lW, lH);   /* die Automatik zieht ihren Median auf der LEINWAND, nicht auf dem Diorama (Begruendung bei tiefeMedian) */
+    if(T.art==='mal'){
+      if(maske){ frisch(cres); cres.clearRect(0,0,Wn,Hn); cres.drawImage(curCv,0,0); }
+      try{ malen(e,curCx,t,Wn,Hn); }catch(x){ schief(e,x); } frisch(curCx);
+      if(maske) maskeAnwenden(curCx, maske, ores);
+    }
+    else if(T.art==='post'||T.art==='gl'){ try{ ergebnis(e,curCv,t,Wn,Hn); }catch(x){ schief(e,x); continue; }
+      const dCv=(curCv===ob)?oc:ob, dCx=(dCv===ob)?cb:cc;
+      frisch(dCx); dCx.clearRect(0,0,Wn,Hn); dCx.drawImage(curCv,0,0);
+      dCx.globalCompositeOperation=VMODE[e.verr]||VMODE[T.verr]||'source-over';
+      dCx.globalAlpha=Math.min(1,e.staerke*((T.params.some(p=>p.lm)&&!T.lmNurSchub)?antriebWert(e,t):1));
+      dCx.drawImage(ores,0,0); frisch(dCx);
+      if(maske) maskeAnwenden(dCx, maske, curCv);
+      curCv=dCv; curCx=dCx; } }
+  return curCv;
+}
+
 function zeichneFrame(t,roh){
   if(!bereit) return;
   ZEICHEN_RUNDE++;   /* eine neue Zeichenrunde: was kbAbschnitt von der vorigen gemerkt hat, gilt nicht mehr */
-  const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t); EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
+  const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t);
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   const kette=roh?[]:STAPEL;
   for(const e of kette){ if(!aktiv(e))continue; const s=EFFEKTE[e.typ].ohneStaerke?1:e.staerke;
@@ -32789,39 +33265,74 @@ function zeichneFrame(t,roh){
   const eff=Math.max(.1,Math.min(1,crop/scaleMul)), cw=bw*eff, ch=bh*eff;
   const cx0=bw/2+Math.max(-1,Math.min(1,panx))*(bw-cw)/2, cy0=bh/2+Math.max(-1,Math.min(1,pany))*(bh-ch)/2;
   const sx=Math.max(0,Math.min(bw-cw,cx0-cw/2)), sy=Math.max(0,Math.min(bh-ch,cy0-ch/2));
-  /* AB HIER STEHT DIE GEOMETRIE DIESES BILDES. Alles, was danach die Tiefenkarte auflegt oder
-     fragt, geht durch sie - die Masken der Kette, die Baender der Teilchen, der Geburtsort, die
-     Bodenzellen und der Laser. Gesetzt VOR dem ersten Zeichenschritt, gelesen bis zum letzten. */
+
+  /* ================= STUFE 1: DAS DIORAMA =================
+     Steht kein Szenen-Effekt in der Kette und ist nichts vorbereitet, gibt es kein Diorama - dann
+     schneidet die Kamera unmittelbar aus der Quelle, Zeichen fuer Zeichen wie vor dem Umbau. Das
+     ist kein zweiter Weg, sondern derselbe ohne Zwischenschritt: der Ausschnitt einer leeren
+     Szene IST der Ausschnitt der Quelle. */
+  const vorbDa=vorbAenderungen(VORB), dioDa=vorbDa||kette.some(e=>aktiv(e)&&imDiorama(e));
+  let quell=bild, qsx=sx, qsy=sy, qcw=cw, qch=ch;
+  if(dioDa){
+    const [dw,dh]=dioramaMass(kette,bw,bh,Wn,Hn), dio=dioFlaechen(dw,dh), zurueck=flaechenTauschen(dio);
+    EINHEIT=einheitVon(dw,bw,bh);
+    /* DIE GEOMETRIE DES DIORAMAS IST DIE EINS-GEOMETRIE: kein Ausschnitt, keine Drehung, die
+       Quelle in voller Breite auf dw x dh. Alles, was die Tiefenkarte legt oder fragt, liest sie
+       hier deckungsgleich. */
+    GEO=geoBild(bw,bh,0,0,bw,bh,0,dw,dh);
+    let fertig=null;
+    try{ fertig=dioramaMalen(kette,t,dw,dh,bw,bh,vorbDa,Wn,Hn); }
+    catch(x){ console.warn('Effektclip-Diorama:',x); }
+    finally{ flaechenTauschen(zurueck); }
+    /* Der Ausschnitt in Bildpunkten des Dioramas. Je Achse mit ihrem eigenen Faktor: dw und dh
+       sind gerundet, ein gemeinsamer Faktor waere um bis zu einen halben Bildpunkt daneben.
+       GEPRUEFT WIRD DIE GROESSE UND NICHT DIE WAHRHEIT (Gegenlesen 20.09.2026). Hier stand
+       `if(fertig)`. Eine Leinwand ist immer truthy - auch eine mit 0x0. Genau die bekommt man,
+       wenn dioFlaechen sieben Flaechen anlegt und der Browser eine davon bei Speichernot auf 0x0
+       klemmt, statt zu werfen (Chrome und Safari tun das). dioramaMalen malte dann still ins Leere,
+       gab die leere Flaeche zurueck, und das drawImage darunter warf in JEDEM Bild ein
+       IndexSizeError - ausserhalb jedes try und hinter einem ca.save(), also blieb die Buehne
+       schwarz und der Zustandsstapel wuchs je Bild um eins. Mit der Groessenpruefung faellt der
+       Fall sauber auf den Weg VOR dem Umbau zurueck: die Kamera schneidet unmittelbar aus der
+       Quelle. Das Bild ist dann ohne Szenen-Effekte, aber es ist da, und die Konsole hat es im
+       catch darueber schon gesagt. */
+    if(fertig&&fertig.width>1&&fertig.height>1){ quell=fertig; qsx=sx*dw/bw; qsy=sy*dh/bh; qcw=cw*dw/bw; qch=ch*dh/bh; }
+    else if(fertig) console.warn('Effektclip-Diorama: leere Leinwand ('+fertig.width+'x'+fertig.height+') - die Kamera schneidet aus der Quelle');
+  }
+
+  /* ================= STUFE 2: DIE KAMERA =================
+     AB HIER STEHT DIE GEOMETRIE DIESES BILDES. Alles, was danach die Tiefenkarte auflegt oder
+     fragt, geht durch sie - die Masken der Objektiv-Stufe und die Ansicht der Trennebene.
+     Gesetzt VOR dem ersten Zeichenschritt der Stufe, gelesen bis zum letzten. */
+  EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
   GEO=geoBild(bw,bh,sx,sy,cw,ch,rotG,Wn,Hn);
   frisch(ca); ca.clearRect(0,0,Wn,Hn);
-  /* Vorbereitung: das Grundbild einmal mit dem ruhigen Filter nach ovb, die Effekte arbeiten darauf.
-     Sie schneidet mit qsx..qch und NICHT mit sx..ch: kommt der Ausschnitt schon aus der Parallaxe,
-     ist er fertig - wer dort noch einmal die Quellkoordinaten anlegte, zoomte ein zweites Mal in ein
-     bereits ausgeschnittenes Bild. Vor der Parallaxe waren beide Vierergruppen dasselbe. */
-  /* DIE PARALLAXE STEHT VOR ALLEM ANDEREN, WEIL SIE DAS AUSSCHNEIDEN IST. Gelingt sie, kommt der
-     Ausschnitt nicht mehr durch drawImage auf die Leinwand, sondern schon verschoben aus dem
-     Shader - in Leinwandmassen, also ohne zweites Ausschneiden. Die Vorbereitung arbeitet danach
-     auf diesem Ergebnis; ihr Filter wirkt ohnehin in Leinwandmassen, nicht in Quellmassen.
-     GELINGT SIE NICHT (kein WebGL, keine Tiefenkarte, Regler auf null), geht die Zeile Zeichen
-     fuer Zeichen den alten Weg - kein zusaetzlicher Zeichenschritt, keine Kosten. */
-  const pxBild = kbParallaxeBild(kette, bild, bw, bh, sx, sy, cw, ch, Wn, Hn);
-  let quell=bild, qsx=sx, qsy=sy, qcw=cw, qch=ch;
+  /* DIE PARALLAXE STEHT VOR ALLEM ANDEREN DER KAMERA, WEIL SIE DAS AUSSCHNEIDEN IST. Gelingt sie,
+     kommt der Ausschnitt nicht mehr durch drawImage auf die Leinwand, sondern schon verschoben aus
+     dem Shader - in Leinwandmassen, also ohne zweites Ausschneiden. Ihre Rechnung ist nicht
+     angefasst; sie bekommt nur eine andere Textur, naemlich das fertige Diorama statt der nackten
+     Quelle. Das ist der ganze Punkt: was sie tiefenabhaengig verschiebt, sind jetzt Bild UND
+     Szenen-Effekte zusammen, und die Risse fuellt sie aus demselben Stoff.
+     GELINGT SIE NICHT (kein WebGL, keine Tiefenkarte, Regler auf null, Bewegtbild), geht die Zeile
+     Zeichen fuer Zeichen den alten Weg - kein zusaetzlicher Zeichenschritt, keine Kosten. */
+  const pxBild = kbParallaxeBild(kette, quell, bild, bw, bh, sx, sy, cw, ch, Wn, Hn);
   if(pxBild){ quell=pxBild; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
-  if(vorbAenderungen(VORB)){ const cv=ovb.getContext('2d'); frisch(cv); cv.clearRect(0,0,Wn,Hn); cv.filter=vorbFilter(VORB); cv.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn); cv.filter='none'; quell=ovb; qsx=0; qsy=0; qcw=Wn; qch=Hn; }
-  { ca.save(); if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const rad=Math.abs(rotG)*Math.PI/180, z=Math.cos(rad)+Math.max(Wn,Hn)/Math.min(Wn,Hn)*Math.sin(rad); ca.scale(z,z);   /* Deckung cos+r*sin: auch bei 16:9 keine freien Ecken (Tiefen-Check) */ ca.translate(-Wn/2,-Hn/2); }
+  /* EIN save() OHNE GESICHERTES restore() IST EIN LECK (Gegenlesen 20.09.2026). Alles zwischen
+     save() und restore() steht jetzt in try/finally: wirft eine Zeile darin - das drawImage der
+     Quelle, ein Weichzeichner, die Momentaufnahme -, wird der Zustandsstapel trotzdem abgeraeumt.
+     Ohne das finally wuchs er bei einem Fehler je Bild um einen Eintrag, dreissigmal in der
+     Sekunde, und die Buehne blieb schwarz, ohne dass irgendwo stand warum. */
+  { ca.save(); try{ if(rotG){ ca.translate(Wn/2,Hn/2); ca.rotate(rotG*Math.PI/180); const rad=Math.abs(rotG)*Math.PI/180, z=Math.cos(rad)+Math.max(Wn,Hn)/Math.min(Wn,Hn)*Math.sin(rad); ca.scale(z,z);   /* Deckung cos+r*sin: auch bei 16:9 keine freien Ecken (Tiefen-Check) */ ca.translate(-Wn/2,-Hn/2); }
     ca.drawImage(quell,qsx,qsy,qcw,qch,0,0,Wn,Hn);
-    /* Grund-Pulse in Kettenreihenfolge, jeder auf dem bisherigen Ergebnis (Momentaufnahme nach okc), nicht auf dem Grundbild -
-       sonst loeschte der letzte Puls auf dem Schlag die vorigen (Tiefen-Check). Jeder Typ darf mehrfach haengen. */
     const schnapp=()=>{ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(oa,0,0); return okc; };
     const lege=(e,filter,a)=>{ const k=schnapp(); ca.save(); ca.setTransform(1,0,0,1,0,0); ca.filter=filter; ca.globalCompositeOperation=VMODE[e.verr]||'source-over'; ca.globalAlpha=a; ca.drawImage(k,0,0); ca.restore(); };
-    for(const e of kette){ if(!aktiv(e)||EFFEKTE[e.typ].art!=='grund') continue; const hb=pulsHub(e,t), a=Math.min(1,e.staerke*Math.min(1,hb));
-      if(e.typ==='schaerfe'){ if(!(e.unschaerfe>0)) continue;   /* die weiche Ebene ist das Ergebnis: mit Staerke gemischt, auf dem Schlag weicht sie (invertiert: kommt sie) */
-        const aw=e.invert?a:Math.min(1,e.staerke*(1-Math.min(1,hb))); if(aw>0) lege(e,'blur('+(e.unschaerfe*EINHEIT)+'px)',aw); continue; }
-      if(e.typ==='farbton'){ const af=e.invert?Math.min(1,e.staerke*(1-Math.min(1,hb))):a; if(af>0) lege(e,'hue-rotate('+e.winkel+'deg)',af); continue; }   /* invertiert: gedreht ruhen, auf dem Schlag zurueck */
-      if(a<=0) continue;
-      if(e.typ==='kontrast') lege(e,'url(#'+kurveFilter(e)+')',a);
-      else if(e.typ==='saettigung') lege(e,'saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')',a);
-      else if(e.typ==='helligkeit') lege(e,'brightness('+(e.invert?(1-0.6*e.wucht):(1+1.2*e.wucht)).toFixed(3)+')',a); }
+    /* SCHAERFE SCHLAEGT - die Linse der Kamera, nicht das Licht der Szene. Sie liegt darum hier
+       und nicht im Diorama: die weiche Ebene ist das Ergebnis, mit Staerke gemischt; auf dem
+       Schlag weicht sie (invertiert: kommt sie). Ihr Radius rechnet in EINHEIT der LEINWAND und
+       bleibt damit Zeichen fuer Zeichen derselbe wie vor dem Umbau. */
+    for(const e of kette){ if(!aktiv(e)||e.typ!=='schaerfe') continue; if(!(e.unschaerfe>0)) continue;
+      const hb=pulsHub(e,t), a=Math.min(1,e.staerke*Math.min(1,hb));
+      const aw=e.invert?a:Math.min(1,e.staerke*(1-Math.min(1,hb))); if(aw>0) lege(e,'blur('+(e.unschaerfe*EINHEIT)+'px)',aw); }
     /* ---- FOKUS BEI ANKUNFT: EIN EINZIGER WEICHZEICHNER (19.09.2026) ----------------------
        Die Ken Burns Fahrt schmiert auf dem Weg zu einem Punkt, der auf "Unscharf" oder "Suche"
        steht; wie stark, rechnet kbUnschaerfe aus der Geschwindigkeit der Kamera. Hier steht nur,
@@ -32829,8 +33340,9 @@ function zeichneFrame(t,roh){
        genau an der Stelle, an der schon "Schaerfe schlaegt" seine weiche Ebene auflegt - dieselbe
        Momentaufnahme (schnapp), dasselbe Zurueckzeichnen mit ctx.filter.
        WARUM HIER UND NICHT GANZ AM ENDE: es ist die Unschaerfe der KAMERA auf dem Bild, ueber das
-       sie faehrt. Was die Kette danach hineinmalt - Scheinwerfer, Laser, Teilchen - steht nicht
-       hinter dieser Linse; es kommt obendrauf und bleibt scharf.
+       sie faehrt. Das Diorama steht hinter dieser Linse und schmiert darum mit - genau richtig,
+       denn es ist die Szene, an der sie vorbeifaehrt. Was die Objektiv-Stufe danach hineinmalt -
+       Korn, Scanlines, Glitch -, steht NICHT hinter dieser Linse und bleibt scharf.
        KEIN HALO AM RAND: der Weichzeichner sampelt ueber den Rand hinaus ins Leere, die
        zurueckgezeichnete Flaeche ist dort halbdurchsichtig - darunter liegt aber das scharfe Bild
        und nicht Schwarz. Genau darum wird die Kopie UEBER das Bild gelegt und nicht an seine
@@ -32854,39 +33366,21 @@ function zeichneFrame(t,roh){
       if(r>=0.5){ const k=schnapp(); ca.save(); ca.setTransform(1,0,0,1,0,0);
         ca.globalCompositeOperation='source-over'; ca.globalAlpha=1; ca.filter='blur('+r+'px)';
         ca.drawImage(k,0,0); ca.filter='none'; ca.restore(); } }
-    ca.restore(); }
+    } catch(x){ console.warn('Effektclip-Kamera:',x); } finally { ca.restore(); } }
   frisch(ca);
-  /* MEDIUM: der Nebel leuchtet nicht selbst, er nimmt Licht auf. Alle aktiven Leuchten malen ihre Abstrahlung
-     zusaetzlich additiv auf Schwarz in den Licht-Puffer; der Shader multipliziert seine Dichte damit. Das gilt
-     fuer alle Leuchten der Kette, gleich wo sie stehen - es ist ein Raum, keine Stapelung. */
-  const medium=kette.some(e=>aktiv(e)&&mediumJetzt(e));
-  if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; LICHTORTE=[];
-    try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
-    finally { LICHTMAL=false; } }
-  /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen
-     sie gegen ihr Ergebnis. Frueher sanken post und gl immer ans Ende - die Oberflaeche versprach etwas anderes. */
+
+  /* ================= STUFE 3: OBJEKTIV UND FILM =================
+     Was an der Kamera sitzt: Korn, Scanlines, Bloom, Linse, die Stoerungen, das Wackeln, der
+     Nachzieheffekt. In Leinwandkoordinaten, unveraendert. Die Kette laeuft in IHRER Reihenfolge;
+     was ins Diorama gehoert, ist dort schon gemalt und wird hier uebersprungen. Ein Rezept, das
+     Szene und Film mischt, sieht darum nachher anders aus als vorher - und das ist der Umbau:
+     ein Filmkorn, das VOR einem Scheinwerfer lag, lag schon immer falsch, es ist auf dem Film. */
   let curCv=oa, curCx=ca;
-  const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt \u201e'+EFFEKTE[e.typ].label+'\u201c wirft und wird ausgelassen:', x); } };
-  for(const e of kette){ if(!aktiv(e))continue; const T=EFFEKTE[e.typ];
-    /* AUFENTHALT IN DER KETTE. Ohne Karte oder bei „ueberall" ist die Maske null und es aendert
-       sich gar nichts - kein zusaetzliches Zeichnen, keine Kosten.
-       ZWEI WEGE (16.09.2026, auf zwei gekuerzt am 18.09.2026):
-         1. Harter Aufenthalt (Koerper ohne Altwert): hier wird nichts geschnitten, der Maler hat
-            die Teilchen schon gar nicht erst in die verbotene Zone gelassen.
-         2. Alles andere - kein Koerper, oder ein altes Rezept mit seinem weichen Schnitt: die Zone
-            wird ausgeschnitten wie seit dem 14.09.2026.
-       DER DRITTE WEG IST GEFALLEN. Bis zum 18.09.2026 stand hier zuerst die VERDECKUNG: eine Maske
-       im Modus „hinten" ueber den ganzen Effekt. Seit die Teilchen ihre Verdeckung selbst in
-       Tiefenschichten malen (jedes nach SEINER Entfernung), war diese Maske dieselbe Frage mit
-       grober Antwort - und die grobe gewann, weil sie zuletzt kam. Gerechnet an den Einstellungen
-       des einzigen Altrezepts, das sie trug: dem vordersten Band nahm sie 24,3 % seiner Deckung,
-       dem VORRAUM 60,0 % - dem Band, vor dem nach dem Raummodell nichts mehr steht. Das Zweite ist
-       der Beweis, dass sie nicht nur doppelte, sondern falsch war. Der Zweig ist geloescht, die
-       Begruendung bleibt (Hausregel: abgeklemmter Code wird geloescht, sein Grund nicht). Braucht
-       ein spaeterer Effekt mit einzelnen Koerpern wieder eine Maske ueber dem Ganzen, steht hier,
-       warum sie fuer Partikel nicht taugt. */
+  const schief=(e,x)=>{ if(!e._kaputt){ e._kaputt=true; console.warn('Effektclip: Effekt „'+EFFEKTE[e.typ].label+'“ wirft und wird ausgelassen:', x); } };
+  for(const e of kette){ if(!aktiv(e)||imDiorama(e))continue; const T=EFFEKTE[e.typ];
+    if(T.art==='geo'||T.art==='grund') continue;   /* die Kamera ist durch: Ausschnitt, Drehung, Schaerfe */
     const maske = ZONE_HART(e) ? null
-      : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);
+      : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);   /* die Maske faehrt mit der Kamera: maskeAnwenden legt sie mit geoKarteLegen auf */
     if(T.art==='mal'){
       /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
          darunter wirken. Also vorher eine Kopie beiseitelegen, malen, dann maskieren. */
@@ -32904,6 +33398,7 @@ function zeichneFrame(t,roh){
       curCv=dCv; curCx=dCx; } }
   frisch(g); g.clearRect(0,0,Wn,Hn); g.drawImage(curCv,0,0);
 }
+
 
 
   let bild=new Image(); let bereit=false;
@@ -33523,6 +34018,28 @@ function zeichneFrame(t,roh){
      Beide Exportwege laufen darum VOR dem ersten gezaehlten Bild (und vor mr.start()) hier vor, zehn Bilder je
      Happen, dazwischen gibt die Seite ab und meldet sich. Gemalt werden dieselben Bilder in derselben Reihenfolge
      wie im Nachholen von exportBild(), das nur noch greift, wenn keiner vorgelaufen ist (Pruefhaken alter Art). */
+  /* HIER STAND EIN WARMLAUFBILD, UND ES IST WIEDER WEG - DER GRUND BLEIBT (20.09.2026).
+     OFFENER BEFUND: das ERSTE Exportbild einer Kette OHNE Gedaechtnis-Vorlauf (z ist dann leer,
+     siehe vorlaufZeiten - nur der Nachzieheffekt fuellt sie) wird in rund jedem vierten Lauf
+     anders gemalt als in allen anderen Laeufen. Gemessen an kb-einPunkt, lange Seite 360: in 3 von
+     14 Laeufen gleich = 4,042 statt 0,00, dazu p95 46,288 statt 46,867 - also genau EIN abweichendes
+     Bild, das erste. Die Abweichung liegt ueber mehr als 70 % der Flaeche, Mittel 1,08 und groesster
+     Bildpunkt 39,7 von 255: die Signatur einer anders abgetasteten Verkleinerung des ganzen Bildes,
+     nicht eines einzelnen Effekts. Bild N-1 und Bild N sind in gutem wie schlechtem Lauf bitgleich.
+     DER FEHLER STECKT IN BEIDEN FASSUNGEN - vor und nach dem Umbau auf das Diorama, gemessen am
+     20.09.2026 -, er ist also KEIN Rueckschritt dieses Umbaus. Er widerlegt aber die Zusage „Naht
+     ueber alle kenburns-Faelle gleich = 0,00": das war eine gluecklich gezogene Stichprobe und keine
+     Eigenschaft. Der Quotient bleibt mit 0,09 weit unter der Sichtbarkeitsschwelle.
+     ZWEI ERKLAERUNGEN SIND GEMESSEN UND WIDERLEGT, damit niemand sie noch einmal probiert:
+       1. „Das Bild ist beim ersten Zeichnen noch nicht fertig entschluesselt." Ein Warmlaufbild auf
+          die Ausgabeleinwand vor dem ersten gezaehlten Bild: 4 von 12 Laeufen schlecht - schlechter
+          als ohne.
+       2. „Dann eben auf DERSELBEN Leinwand und mit DEMSELBEN Aufruf wie das echte erste Bild."
+          Warmlauf ueber setzen(m) auf ca, erst mit drawImage(bild,0,0,W,H), dann mit der
+          Neunerform drawImage(bild,0,0,bw,bh,0,0,W,H): 4 von 14 bzw. 2 von 14 schlecht. Kein Effekt.
+     Was noch offen ist: warum es ueberhaupt zwei Zustaende gibt und keinen Verlauf (der schlechte
+     Wert ist fast immer exakt 4,042). Das gehoert in eine eigene Baustelle - diese hier ist die
+     Kamera (KONZEPT-DIORAMA §8: „wir machen dinge fertig und nicht alles zugleich"). */
   async function vorlaufen(m,gemerkt,melden){ if(!(LOOP>0)||m.vorgelaufen) return; m.vorgelaufen=true; const z=vorlaufZeiten(m,0);
     for(let i=0;i<z.length;i+=10){ setzen(m); try{ for(let j=i;j<Math.min(z.length,i+10);j++) zeichneFrame(z[j]); }catch(x){ console.warn('Effektclip-Export:',x); } setzen(gemerkt);
       if(melden) melden(Math.min(z.length,i+10),z.length); await new Promise(r=>setTimeout(r,0)); } }
@@ -33590,7 +34107,7 @@ function zeichneFrame(t,roh){
      Jetzt sperrt video() selbst, bevor irgendetwas wartet; oeffnen() und schliessen() warten auf exportLauf. */
   let exportLauf=null;
   async function video(){ if(exportLaeuft) return; exportLaeuft=true; const knopf=$('#tbs-pVideo'); if(knopf) knopf.disabled=true; vollStand();
-    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; if(knopf) knopf.disabled=false; fussStand(); QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
+    exportLauf=videoLauf(); try{ return await exportLauf; } finally{ exportLaeuft=false; exportLauf=null; dioFlaechenWeg(); if(knopf) knopf.disabled=false; fussStand(); QUELLE_WIRKUNG=null; if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); } if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
   async function videoLauf(){
     if(!bereit){ pStat('Quelle ist noch nicht da'); return; }
     if(typeof MediaRecorder==='undefined'||!HTMLCanvasElement.prototype.captureStream){ pStat('Dieser Browser kann keine Videos aufnehmen'); return; }
@@ -33805,7 +34322,7 @@ function zeichneFrame(t,roh){
   /* Ein Lauf zur Zeit, und derselbe Griff wie beim 10-s-Clip: oeffnen() wartet auf exportLauf, bevor es den Titel wechselt. */
   async function vollvideo(){ if(exportLaeuft) return; exportLaeuft=true; VOLL.laeuft=true; VOLL.abbruch=false; vollStand();
     exportLauf=vollLauf(); try{ return await exportLauf; }
-    finally{ exportLaeuft=false; exportLauf=null; VOLL.laeuft=false; VOLL.abbruch=false; VOLL.kennung=null; QUELLE_WIRKUNG=null; LOOP=0;
+    finally{ exportLaeuft=false; exportLauf=null; dioFlaechenWeg(); VOLL.laeuft=false; VOLL.abbruch=false; VOLL.kennung=null; QUELLE_WIRKUNG=null; LOOP=0;
       if(!loopAn){ VIDEO_GENAU=false; if(bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); }
       vollFortschritt(''); fussStand(); if(stufeNachExport){ stufeNachExport=false; stufeAbgleichen(); } } }
   async function vollLauf(){
@@ -34139,6 +34656,7 @@ function zeichneFrame(t,roh){
       +'<div class="tbs-abschnitt" id="tbs-abKette">'+stufeKopf('Kette')+stufeAuf('Kette')
       +'<div class="tbs-zeile tbs-werkzeuge"><div id="tbs-vorrat"></div><select class="tbs-wahl" id="tbs-preset" title="Presets \u2014 leise Kombinationen als Ausgangspunkt"><option value="">Presets \u2026</option></select></div>'
       +'<div id="tbs-kettekopf"><span class="tbs-pw tbs-pwAlle" title="alle an / alle aus"></span><span></span><span></span><span class="tbs-kk">Effekt</span><span class="tbs-kk" title="Nummer, wenn ein Effekt mehrfach h\u00e4ngt">Nr.</span><span></span><button type="button" class="tbs-knopf tbs-weg" data-alle="weg" title="alle entfernen \u2014 fragt nach">\u00d7</button><span></span><span></span><button type="button" class="tbs-knopf tbs-klapp" data-alle="zu" title="alle zuklappen">\u21c5</button></div>'
+      +'<div id="tbs-stufenhinweis" hidden></div><div id="tbs-diostand" hidden></div>'
       +'<div id="tbs-stapel"></div></div></div>'
       +'<div class="tbs-abschnitt" id="tbs-abLoop">'+stufeKopf('Loop')+stufeAuf('Loop')
       /* EINE SPALTE IN DER REIHENFOLGE VON CASPAR_D (15.09.2026): Erklaerung, Lage, Ansicht, Schlaege, Uebergang mit Prinzip, seine Laenge,
@@ -34956,7 +35474,39 @@ function zeichneFrame(t,roh){
      Der alte Weg bleibt fuer die ZONE (Aufenthalt, altes Rezept): dort kommt die Grenze als ganze
      Graustufe aus dem Histogramm, und die Rundung von Hand haelt das nach - daran haengt die
      Bitgleichheit gespeicherter Rezepte. Zwei Aufrufarten, eine Funktion, EINE Kurve. */
-  function tiefeMaske(modus, W, H, grenze, weich2, band){
+  /* DER MEDIAN DER AUTOMATIK HAENGT NICHT AN DER MASKENGROESSE (Gegenlesen 20.09.2026).
+     „Von selbst" heisst: Grenze = Median der Karte, +-48 Graustufen. Der Median wurde bis eben
+     aus der auf W x H umgerechneten Karte gezogen - und W x H ist fuer Szenen-Effekte seit dem
+     Umbau nicht mehr die Leinwand, sondern das Diorama. Eine andere Abtastung gibt ein anderes
+     Histogramm und damit eine andere GANZE Graustufe als Grenze; springt sie um eine Stufe,
+     verschiebt sich die Maskenkante um rund 1 % der Bandbreite - eine sichtbare Kante an einer
+     Verdeckungsgrenze, die niemand angefasst hat. Das ist keine Ueberabtastung und stuende darum
+     nicht unter der angekuendigten Erklaerung. Gerechnet wird der Median darum auf einer eigenen,
+     angesagten Flaeche: der LEINWAND. Damit ist die Grenze dieselbe wie vor dem Umbau, ob mit
+     Fahrt oder ohne, und sie haengt nicht daran, ob jemand eine Ken Burns Fahrt an die Kette
+     haengt. Gemerkt wird sie je Quelle und Flaeche - die Histogrammrechnung laeuft also einmal
+     und nicht je Maske. */
+  const TIEFEMEDIAN=[];
+  function tiefeMedian(q, im, mW, mH){
+    const k=q.k+'|'+mW+'x'+mH;
+    { const i=TIEFEMEDIAN.findIndex(m=>m.k===k);
+      if(i>=0){ const d=TIEFEMEDIAN[i]; if(i){ TIEFEMEDIAN.splice(i,1); TIEFEMEDIAN.unshift(d); } return d.med; } }
+    let med=128;
+    try{
+      const cv=document.createElement('canvas'); cv.width=mW; cv.height=mH;
+      const cx=cv.getContext('2d',{willReadFrequently:true}); cx.drawImage(im,0,0,mW,mH);
+      const p=cx.getImageData(0,0,mW,mH).data, hist=new Uint32Array(256);
+      for(let i=0;i<p.length;i+=4) hist[p[i]]++;
+      let summe=0, mitte=(p.length>>2)/2;
+      for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } }
+    }catch(x){ return 128; }
+    TIEFEMEDIAN.unshift({k,med}); if(TIEFEMEDIAN.length>16) TIEFEMEDIAN.length=16;
+    return med;
+  }
+  /* mW/mH: die Flaeche, auf der die Automatik ihren Median zieht. Ohne Angabe ist es die
+     Maskenflaeche selbst - so ruft jeder, der in Leinwandmass arbeitet, und fuer ihn aendert sich
+     nichts. Das Diorama gibt die Leinwandgroesse mit. */
+  function tiefeMaske(modus, W, H, grenze, weich2, band, mW, mH){
     /* Erst die billige Frage: ohne Zone gibt es nichts zu maskieren, und dann wird auch nicht
        nach der Quelle gefragt - die Kette ruft hier je Effekt und Bild an. */
     if(!modus||modus==='alles') return null;
@@ -34966,9 +35516,10 @@ function zeichneFrame(t,roh){
     const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
     const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
     /* DIE QUELLE STEHT IM SCHLUESSEL, nicht neben dem Vorrat (18.09.2026, Begruendung oben). */
+    const mw=Math.max(2,Math.round(mW||W)), mh=Math.max(2,Math.round(mH||H));
     const k=q.k+'|'+modus+'|'+W+'x'+H+'|'+(band
       ? ('kanten '+band.cl.toFixed(6)+'..'+band.ch.toFixed(6))
-      : (gv.toFixed(3)+'|'+wv.toFixed(3)));
+      : (gv.toFixed(3)+'|'+wv.toFixed(3)+(gv<0?'|med '+mw+'x'+mh:'')));
     { const i=TIEFEMASKEN.findIndex(m=>m.k===k);
       if(i>=0){ const da=TIEFEMASKEN[i];
         if(i){ TIEFEMASKEN.splice(i,1); TIEFEMASKEN.unshift(da); }   /* gebraucht heisst: nach vorn */
@@ -34987,9 +35538,10 @@ function zeichneFrame(t,roh){
         unten=band.cl*255; spanne=Math.max(1e-9,(band.ch-band.cl)*255);
       } else {
         let med=128;
-        if(gv<0){ const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
-          let summe=0, mitte=(p.length>>2)/2;
-          for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ med=v; break; } } }
+        if(gv<0) med=(mw===W&&mh===H)?(()=>{ const hist=new Uint32Array(256); for(let i=0;i<p.length;i+=4) hist[p[i]]++;
+            let summe=0, mitte=(p.length>>2)/2, m=128;
+            for(let v=0;v<256;v++){ summe+=hist[v]; if(summe>=mitte){ m=v; break; } } return m; })()
+          : tiefeMedian(q, im, mw, mh);   /* gleiche Flaeche: Zeile fuer Zeile die Rechnung von gestern, an den Daten, die ohnehin dastehen */
         /* GANZZAHLIG WIE DER MEDIAN (Gegenlesen 16.09.2026): bei „von selbst" kommt die Grenze als
            ganze Graustufe aus dem Histogramm, von Hand kam sie als gv*255 - 19/255 ergab 18,9975 und
            damit einen Anschlag, der seinen eigenen Automatikwert um drei Tausendstel verfehlte. */
