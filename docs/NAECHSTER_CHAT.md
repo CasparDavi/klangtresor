@@ -4907,3 +4907,110 @@ am Objektiv sitzt. Läge er im Diorama, wäre er bei Enge 0,25 viermal so breit.
 4. **Module herauslösen.** Der Song-Analyzer ist längst extern (`web/fremd/analyzer.js`, 397 KB);
    `index.html` trägt 35.339 Zeilen in **einem** `<script>` (4569–35336). Reihenfolge: Effektclip-
    Studio (Grenze erprobt, Haus-Ersatz nur 12 KB), dann Tonstudio, dann Bühne.
+
+---
+
+## 20./21.09.2026 — Die Tiefenebene, und die Fahrt bekommt ihre eigene Bahn
+
+### Eingesetzt
+
+| Commit | Sache |
+|---|---|
+| `8afdeaa` | Hausregel: kein selbst gestarteter Prüflauf über zwei Minuten |
+| `75cbea5` | Hausregel: der volle Lauf braucht einen Verdacht, keine Erlaubnis |
+| `f8e4753` | **Die Tiefenebene** (vierte Stellung „Fokus bei Ankunft") **und die eigene S-Kurve der Fahrt** |
+
+### Zwei neue Hausregeln, und sie sind die wichtigsten des Tages
+
+Caspar_D: *„du stösst bitte selbständig keine umfangreichen tests an, die länger als 2 min dauern.
+Da wird vorher gefragt und begründet bitte. Ich gebe den Startschuß."* Und, als Begründung
+nachgereicht: *„wir haben letzte Woche leider sehr viele ineffiziente Läufe über alle Effekte
+gemacht, jedes mal 6 h und länger … Ich habe per se kein Problem mit pedantischen Tests, aber nicht,
+wenn auch Stichproben reichen und nur bei begründetem Verdacht, nicht einfach alles durchtesten."*
+
+Damit ist die Reihenfolge umgedreht: **zuerst die Stichprobe, die volle Runde erst, wenn sie etwas
+zeigt** — und dann gezielt auf den Verdacht. Ein voller Lauf ist das Werkzeug zum Nachgehen, nicht
+der Normalbeweis. Und wo pedantisch geprüft wird, geht es **in die Tiefe, nicht in die Breite**:
+der eine auffällige Effekt mit allen Reglerstellungen, nicht alle 38 mit je einer.
+
+Das Argument dahinter, das die Regel trägt: 38 Effekte geben 1406 geordnete Paare (machbar), aber
+schon **50.616 Dreierketten** — und die echten Rezepte im Archiv sind zwei bis fünf Glieder lang.
+**Die Kombinatorik versagt genau dort, wo die echten Rezepte leben.** Was ein Kombinationstest
+sucht, entsteht ohnehin fast nie im Effekt, sondern in dem, was sie sich teilen: Koordinatensystem,
+Maß (`EINHEIT`), Stufe und Reihenfolge, Zustandsstapel, Leinwand-Vorrat. Das sind fünf Stellen, und
+ein Fehler dort zeigt sich an *jeder* Kette — also auch an fünf echten.
+
+### Die Tiefenebene — und was die Messung am Entwurf geändert hat
+
+Gemessen **vor** der ersten Zeile, auf der Radeon Pro 5500 XT (ANGLE Metal), 792×1080, Canvas2D,
+drei Runden à 60 Bilder mit einem Zaun je Messung:
+
+| | ms/Bild | je Band |
+|---|---|---|
+| Leerlauf | 0,143 | |
+| 1 Band, Radius 2 | 1,067 | 0,923 |
+| 1 Band, Radius 6 | 1,082 | 0,938 |
+| 1 Band, Radius 14 | 1,007 | 0,863 |
+| 3 Bänder | 2,570 | **0,809** |
+
+**Der Radius kostet nichts.** Zwischen Radius 2 und 14 liegt nur Rauschen — die Kosten stecken
+vollständig in den vier Vollbildzügen je Band. Die teure Achse ist die **Zahl der Bänder**, nicht
+die Stärke der Unschärfe. Vorhergesagt war 0,4–1,5 ms je Band (getroffen: 0,86); *nicht*
+vorhergesagt war die Gleichgültigkeit gegen den Radius, und sie hat den Entwurf geändert: bei der
+Weichheit großzügig, beim Gradienten zählen. Drei geschachtelte Bänder = 2,43 ms = 7,3 % eines
+30-Hz-Bildes.
+
+**Geschachtelt, nicht nebeneinander:** je Band wird der *laufende* Stand geschnappt, nicht das
+Original. Die Radien addieren sich quadratisch, außen stehen rund 9,4 Studiopunkte. Läge je Band
+das Original darunter, löschte Band 2 die Arbeit von Band 1.
+
+**Die Maske hängt nicht am Hub.** Der Prozess „kommt und geht" läuft über den Radius; die Maske
+bleibt über den ganzen Halt fest und kommt aus `TIEFEMASKEN`. Sonst wechselte der Schlüssel je Bild
+und es käme ein `getImageData` über 855.360 Bildpunkte je Band dazu — die gemessene Zahl wäre eine
+andere.
+
+Eine Risikovorhersage war **zu pessimistisch**: `geoKarteLegen` legt eine Karte über den globalen
+Kamerazustand auf, Stufe 3 benutzt denselben Weg schon — es gibt keinen doppelten Ausschnitt.
+
+### Die Fahrt bekommt ihre eigene Bahn — auf Caspar_Ds Einwand
+
+Er fragte: *„bist du sicher, dass die kamerafahrten noch vorsichtig abbremsen und anfahren, also
+nicht einfach so losgehen und stehen."* Nachgesehen statt behauptet: die Klammer war intakt, aber
+die Kurve war ein **Trapez**, und die Beschleunigung springt viermal je Zug. Dazu der Befund, dass
+`schleifePendelWeg` **geteilt** war — Fahrt und Videoschleife an einer Zahl.
+
+> *„hab ich nie gesagt, dass sich pendel und ken burns die gleiche Kurve teilen sollen. separier das
+> und mach ne S-Kurve für Ken Burns."*
+
+Und, als die neue Kurve immer noch über die alte erklärt wurde:
+
+> *„Pendel fällt auf sich zurück, hier bei dieser Fahrt ist es kein Pendel. wir haben Stationen, die
+> angefahren werden."*
+
+Das ist keine Nomenklaturfrage: ein Pendel kehrt um, seine Enden sind Umkehrpunkte. Diese Fahrt
+kehrt nirgends um — sie fährt eine Station **an** und steht dort. Daraus folgt, warum das Tempo an
+beiden Enden null sein *muss*: nicht aus Symmetrie, sondern weil davor und dahinter ein Stillstand
+liegt. Der Kommentar im Code hieß „DIE KURVE IST DIE DES HAUSES" und begründete ausdrücklich,
+warum keine zweite gebaut wird; er heißt jetzt „DIE BAHN EINES ZUGS: VON STATION ZU STATION".
+
+Die Spezifikation steht in `KONZEPT-ZIELPUNKTE.md` Abschnitt 13. `schleifePendelTempo` ist
+gelöscht (ein Rufer), die Videoschleife unverändert. **Jedes Ken-Burns-Rezept sieht anders aus als
+vorher** — der Zweck, keine Nebenwirkung. Naht über fünf Fälle `gleich = 0,00`, `kb-ohnePunkt` mit
+`p95 = 0,00`.
+
+Caspar_D nach dem Ansehen: *„auf jeden fall siehts gut aus."*
+
+### Offen, in dieser Reihenfolge
+
+1. **Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; bei heutigem
+   Tempo 1 (= 4 Schläge) haben sechs von neun Titeln des Prüfsatzes keinen Halt.
+2. **Anfahren und Auslaufen gleich lang** — bei einer Fahrt zu einer Station keine Notwendigkeit,
+   sondern eine Entscheidung über das Bild. Wer das Ankommen betonen will, lässt länger aus als er
+   anfährt (etwa 20 % zu 35 %). Die Bahn ist vorbereitet, es bräuchte zwei Konstanten statt einer.
+3. **Module herauslösen.** Reihenfolge: Effektclip-Studio, dann Tonstudio, dann Bühne.
+4. **Sliderwüsten ausdünnen** — eigener Arbeitsgang, noch nicht beauftragt.
+
+**Der offene Rest von gestern bleibt offen:** zwei Nahtfälle (`kb-fuenfPunkte`, `kb-fokus-unscharf`)
+flackerten gelegentlich, 3 von 14 Läufen. In den Läufen vom 20./21.09. liefen beide stabil — das
+sagt bei einer Quote von 3/14 nichts, ist aber notiert.
+

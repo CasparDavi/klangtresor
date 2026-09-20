@@ -163,7 +163,7 @@ Zahl im Code oder in der Oberfläche daraus hervorgeht.
 
 ---
 
-## 12. Die Tiefenschärfe — durchspezifiziert am 19.09.2026
+## 12. Die Tiefenschärfe — durchspezifiziert am 19.09.2026, **gebaut am 20.09.2026** (`f8e4753`)
 
 **Berichtigung zuerst.** In Abschnitt 6 stand „Fokussieren bei Ankunft" als Sache der Tiefenbänder,
 und ich hatte sie später für erledigt erklärt, weil Caspar_D die Bewegungsunschärfe bestellt hatte.
@@ -233,3 +233,66 @@ fährt, das andere die Kamera, die angekommen ist und nachfasst. Sie konkurriere
 | **Tiefenebene** | nichts | die Tiefenebene des Punktes bleibt scharf, der Rest wird weicher — kommt und geht |
 
 Ohne Tiefenkarte wird aus **Tiefenebene** die Bewegungsunschärfe, und die Zeile sagt es.
+
+---
+
+## 13. Die Bahn eines Zugs — von Station zu Station (20.09.2026)
+
+Caspar_D, nachdem er gefragt hatte, ob die Fahrten noch vorsichtig anfahren und abbremsen:
+
+> „hab ich nie gesagt, dass sich pendel und ken burns die gleiche Kurve teilen sollen. separier das
+> und mach ne S-Kurve für Ken Burns."
+
+Und, als die neue Kurve immer noch über die alte erklärt wurde:
+
+> „Pendel fällt auf sich zurück, hier bei dieser Fahrt ist es kein Pendel. wir haben Stationen, die
+> angefahren werden."
+
+### Warum das keine Nomenklaturfrage ist
+
+Ein Pendel **kehrt um**: es läuft dieselbe Bahn zurück, seine Enden sind Umkehrpunkte, und dort
+wird es langsam, *weil* es umkehrt. Diese Fahrt kehrt nirgends um. Sie fährt eine Station **an**,
+steht dort still, und fährt von dort zur nächsten. Jeder Zug ist ein eigener Zug.
+
+Daraus folgt, warum das Tempo an beiden Enden null sein **muss** — nicht aus Symmetrie, sondern
+weil vor dem Zug ein Stillstand liegt und hinter ihm einer. Das Ankommen ist der Punkt.
+
+### Was vorher dastand, und was daran fehlte
+
+Die Fahrt fuhr auf `schleifePendelWeg`, der Weichkurve der **Videoschleife** — ein Trapez: 15 %
+Anlauf quadratisch, 70 % gleichmäßig, 15 % Auslauf. Das Tempo ist dort an beiden Enden exakt null,
+die Klammer „weich an, weich aus" war also nie verletzt. **Aber die Beschleunigung springt**, und
+zwar viermal je Zug: bei 0 %, 15 %, 85 % und 100 %, jeweils zwischen 0 und 7,84. Das ist ein Ruck,
+und das Auge sieht nicht die Geschwindigkeit, sondern ihre Kanten.
+
+### Die neue Bahn: `kbBahn` / `kbBahnTempo`
+
+| | |
+|---|---|
+| **Form** | 25 % anfahren · 50 % gleichmäßig · 25 % auslaufen |
+| **In den Rampen** | das **Tempo** steigt als Smoothstep → Beschleunigung an beiden Rampenenden null |
+| **Nicht** Smoothstep über den ganzen Zug | dann gäbe es in der Mitte kein gleichmäßiges Stück, nur eine Tempospitze |
+
+**Warum die Rampe von 15 auf 25 % wächst — gerechnet, nicht gesetzt.** Die Spitzenbeschleunigung
+dieser Rampenform ist `1,5/(e(1−e))`, die des Trapezes `1/(e(1−e))`. Bei gleicher Rampenlänge wäre
+die S-Kurve um die Hälfte härter beschleunigt: der Ruck weg, dafür die Spitze höher — ein
+schlechter Tausch. Bei `e = 0,25` stehen **8,00 gegen 7,84**: dieselbe Spitze, kein Ruck, längere
+Rampen.
+
+**Nachgerechnet:** `kbBahn(0) = 0`, `kbBahn(1) = 1`, Tempo an beiden Enden 0, Nahtstellen stetig
+(0,16667 und 0,83333 von beiden Seiten), ∫Tempo = 1,00000000, monoton über 20.000 Stützstellen.
+Naht über fünf kenburns-Fälle `gleich = 0,00`.
+
+`schleifePendelTempo` hatte nur diesen einen Rufer und ist **gelöscht**; die Begründung bleibt als
+Kommentar. Die Videoschleife behält ihre Kurve unverändert.
+
+**Jedes Ken-Burns-Rezept sieht damit anders aus als vorher.** Das ist der Zweck, keine
+Nebenwirkung.
+
+### Offen, weil es eine Entscheidung über das Bild ist
+
+**Anfahren und Auslaufen sind gleich lang.** Bei einem Pendel wäre die Symmetrie zwingend; bei
+einer Fahrt zu einer Station ist sie es nicht. Wer das Ankommen betonen will, lässt länger aus als
+er anfährt — etwa 20 % zu 35 %. Die Bahn ist dafür vorbereitet (es bräuchte zwei Konstanten statt
+einer), gebaut ist es nicht.
+
