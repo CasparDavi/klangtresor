@@ -4818,7 +4818,7 @@ schon richtig (`kbZug` begrenzt den Schwenk auf −1…1). Es braucht genau **ei
 gehört an das Rechteck. Jetzt: die Marke steht, wo gezielt wurde; der Rahmen steht, wo die Kamera
 ankommt. `kbWand` ist ersatzlos gefallen.
 
-### Das Diorama — gebaut, geprüft, NOCH NICHT EINGESETZT
+### Das Diorama — eingesetzt als `f6678da`
 
 Caspar_D beim Ausprobieren: *„der Zoom muss auf alles wirken, auch Effekte müssen mitgezoomt
 werden."* Und zur Lösung: *„die idee, die Ken Burns erst ganz hinten draufzulegen ist konsequent."*
@@ -4828,8 +4828,34 @@ Quellkoordinaten auf eigener Leinwand) → Kamera (Ausschnitt, Zoom, Kippen, Par
 Bewegungsunschärfe, Schärfe) → Objektiv/Film (13 Effekte wie bisher). Die Einsortierung steht als
 `STUFE_DIORAMA / STUFE_KAMERA / STUFE_OBJEKTIV`; ein Typ ohne Stufe meldet sich auf der Konsole.
 
-**Fassung:** `scratchpad/diorama/web/index.html`, gezeigt auf Port 41998. Caspar_D hat sie angesehen:
-*„ken burns vergrössert auch den vogelschwarm, toll."*
+Caspar_D hat die Fassung vor der Prüfung angesehen: *„ken burns vergrössert auch den vogelschwarm,
+toll."* Danach 18 Befunde von Schwachstellen- und Testagent, vier davon schwer, alle abgearbeitet.
+
+**Die zwei schweren, die man kennen muss:**
+
+1. **Zwei Archivrezepte ändern ihr Bild, obwohl sie KEINE Kamerabewegung haben.** Die Stufentrennung
+   zieht einen Objektiv-Effekt hinter einen Szenen-Effekt, und farbiges Abwedeln ist nicht
+   vertauschbar. `0ac2e049` (`filmnebel › strobe › licht › licht` → das Stroboskop rutscht ans Ende)
+   und `6250449b` (`sicherung › partikel` → das Sicherungswackeln brennt jetzt auch die Asche ab).
+   Die Umsortierung ist richtig (KONZEPT-DIORAMA §6), die **Zusage „bitgleich" war falsch** — sie
+   steht jetzt richtig bei `dioramaMass`, und das Studio sagt es, statt es dem Auge zu überlassen.
+2. **Der Leinwand-Vorrat deckelte das Diorama still bei 3,6 Mpx** (`DF_BYTE/(7*4)`). Bei einer Quelle
+   darüber — 4K-Foto, 4K-Video — wurde verkleinert, *bevor* die Kamera hineinfuhr: die Fahrt war an
+   der Ankunft **weicher als vor dem Umbau**, also genau der Fall, gegen den der Umbau antritt. Jetzt
+   meldet `dioStandZeigen()` es in einer Zeile — aber nur, wenn wirklich gedeckelt wird.
+
+Dazu behoben: kein sauberer Rückfall bei Speichermangel, und der Zustandsstapel wuchs je Bild um
+eins (`ca.save()` ohne `restore()` im Fehlerfall).
+
+**Nachweise auf dem eingesetzten Stand:** Naht über alle 17 kenburns-Fälle `gleich = 0,00`, einzeln
+gelaufen. 198 Fälle in Studiogröße: 183 bitgleich, 15 verändert — und **keine der 15 stammt aus den
+Reparaturen**: dieselben Fälle tragen mit der Fassung vor den Eingriffen bitgleich dieselben Hashes.
+
+**Ein offener Rest, benannt und nicht verstanden:** zwei Nahtfälle (`kb-fuenfPunkte`,
+`kb-fokus-unscharf`) flackern gelegentlich — 3 von 14 Läufen. Der Testagent hat zwei
+Warmlauf-Erklärungen geprüft und beide widerlegt; die Messreihe steht als Kommentar bei `vorlaufen`.
+Der Fehler steckt in beiden Fassungen, ist also kein Rückschritt, und die Quotienten liegen weit
+unter der Sichtbarkeitsschwelle. **Bleibt zu klären.**
 
 **Zwei bewusste Abweichungen des Bauagenten von der Spezifikation** — beide zugunsten der Sache:
 
@@ -4872,8 +4898,7 @@ am Objektiv sitzt. Läge er im Diorama, wäre er bei Enge 0,25 viermal so breit.
 
 ### Offen, in dieser Reihenfolge
 
-1. **Diorama einsetzen**, sobald die Prüfung durch ist (Stand beim Schreiben: läuft).
-2. **Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; am Prüfsatz
+1. **Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; am Prüfsatz
    gerechnet: bei zwei Punkten hat dann jeder der neun Titel einen Halt (0,5–2,0 s), bei heutigem
    Tempo 1 (= 4 Schläge) haben **sechs von neun keinen**.
 3. **Tiefenebene** — durchspezifiziert (KONZEPT-ZIELPUNKTE Abschnitt 12): ±10 % um die Tiefe des
