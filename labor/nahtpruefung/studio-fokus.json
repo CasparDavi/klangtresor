@@ -1,0 +1,793 @@
+{
+ "stand": "",
+ "indexGeaendert": false,
+ "datum": "2026-09-19T11:37:23.378Z",
+ "lange": 360,
+ "dauerS": 21,
+ "titel": {
+  "a": {
+   "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
+   "titel": "Stumm",
+   "warum": "klarer 4/4-Titel mit den meisten Schlaegen, Schlaege je Clip durch 8 teilbar",
+   "takt": 1.585,
+   "takte": 6,
+   "L": 9.5,
+   "proTakt": 4,
+   "M": 24
+  },
+  "b": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "natuerliche Taktzahl*proTakt nicht durch 8 teilbar",
+   "takt": 1.678,
+   "takte": 5,
+   "L": 8.4,
+   "proTakt": 4,
+   "M": 20
+  },
+  "c": {
+   "id": "6869705f-0721-4d86-8917-903d711b8321",
+   "titel": "The Corinthian Bride",
+   "warum": "als 3/4 gezaehlt (daten \"dreiviertel\") ergibt sich eine ungerade Schlagzahl je Clip",
+   "takt": 1.259,
+   "takte": 7,
+   "L": 8.8,
+   "proTakt": 3,
+   "M": 21
+  },
+  "d": {
+   "id": "f76a6706-d9a0-480a-a73f-265de9c1c0fe",
+   "titel": "Okkultation",
+   "warum": "Taktlage 15.09.2026: im Taktraster liegt die Phase ueber einem Schlag (phiF 7 bei N/M 18,6), mit Daten tempowechsel ein Tempowechsel"
+  },
+  "e": {
+   "id": "535121bb-581f-407c-92c8-6f22f141dd25",
+   "titel": "Universe 25 english",
+   "warum": "Taktlage 15.09.2026: mit Eins-Leser liegt die Phase fast drei Schlaege spaet (phiF 57 bei N/M 14,3), Sitzanteil unter 50 %"
+  }
+ },
+ "jetzt": 60.3,
+ "feld": [
+  898,
+  889
+ ],
+ "vergleichMit": null,
+ "jeTyp": [
+  {
+   "typ": "kenburns",
+   "faelle": 17,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  },
+  {
+   "typ": "(kein Effekt)",
+   "faelle": 2,
+   "nichtDeterministisch": [],
+   "veraendert": []
+  }
+ ],
+ "faelle": [
+  {
+   "name": "kenburns",
+   "typ": "kenburns",
+   "gruppe": "vorgabe",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zielpunkte aus dem Vorschlag beim Einfuegen (zwei), Tempo 1 Takt, Parallaxe aus (Vorgaben)",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f4b4cb8b89c0841ac46ccdbdedd06f40b4cbd745013e3f0876bb711186ca2519",
+     "deterministisch": true
+    },
+    {
+     "hash": "521e660222962f5cdb8c7ef2f6d51498bd85dc460fc30c9f035e89bbbe19d52a",
+     "deterministisch": true
+    },
+    {
+     "hash": "ea718576c93b054dc3b537a6219d4f07834717c23a1a0809c1e203fff86d5920",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1395,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-einPunkt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "EIN Zielpunkt: Ganzbild - hinein - halten - heraus. Zwei Zuege, ein Halt am Punkt und einer am Ganzbild.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "746d984c3e1fff66e6e65e24171f31801d0eb5352276d7eb4812fd5dce2b8cc2",
+     "deterministisch": true
+    },
+    {
+     "hash": "e712a650c5a634f21cb260fad5e009a820d916aff794091d44123b1e8df58731",
+     "deterministisch": true
+    },
+    {
+     "hash": "19a4bf7366588950ec1d1fdbbfc8f61c67fb633db5d8912199abb5f9cf6a59af",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1209,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-zweiPunkte",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Zwei Zielpunkte verschiedener Enge: drei Zuege, zwei gleich lange Halte an den Punkten und einer am Ganzbild.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b28bd37d4c6824eea9557a66bc153bfca561f5f4aa750b0db1792b24b6726aa9",
+     "deterministisch": true
+    },
+    {
+     "hash": "590a8b606742ce41eded4c8190026f9eb3165517117b0fd55c007a4ef81581c6",
+     "deterministisch": true
+    },
+    {
+     "hash": "9ba341df60af200802297798cdcf9de70ad3dc9726988460a09a23ff0b5c8fdb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1340,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fuenfPunkte",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Fuenf Zielpunkte - die Grenze. Sechs Zuege passen in keinen Clip, also greift die Tempoklemme.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "1d8a114c41d2757cc905868d600de445334de8bcf481ccce1f82bceb4300f5d8",
+     "deterministisch": true
+    },
+    {
+     "hash": "3b2963bcc36bd5c8288d363082aa0c9fcea6334338e32f6783a7e4c6fea902b3",
+     "deterministisch": true
+    },
+    {
+     "hash": "5a6e6760a90416f441a5d62ed38838e837790a276dc4aba319958e98843f5c53",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1492,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-ohnePunkt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Leere Liste: die Kamera steht auf dem Ganzbild. Ein stehendes Bild loopt von selbst.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1506,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-parallaxe-aus",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Regler ausdruecklich auf null (seit dem 18.09.2026 auch die Vorgabe): der Ausschnitt kommt aus drawImage",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f4b4cb8b89c0841ac46ccdbdedd06f40b4cbd745013e3f0876bb711186ca2519",
+     "deterministisch": true
+    },
+    {
+     "hash": "521e660222962f5cdb8c7ef2f6d51498bd85dc460fc30c9f035e89bbbe19d52a",
+     "deterministisch": true
+    },
+    {
+     "hash": "ea718576c93b054dc3b537a6219d4f07834717c23a1a0809c1e203fff86d5920",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1541,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-parallaxe-voll",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Parallaxe am Anschlag, Zielpunkte aus dem Vorschlag",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f9913f925b69e31adfcaf58ffbf9612ad4f5e11a8fda5d1ca18310a062467b2f",
+     "deterministisch": true
+    },
+    {
+     "hash": "8cf5b537e32743cd22a6485a856730b754b1206e37142d8a33263d125e90c8ec",
+     "deterministisch": true
+    },
+    {
+     "hash": "f07cc354aebb8bf4bf3c2ce1223e7ede8837b799b401690557eb4feb20b5a8f4",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2181,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-vorb",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorbereitung ohne Parallaxe - die Gegenprobe zum naechsten Fall",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b66658305f0c9c123ca82497c8bb031cab5bf746dc3ca53aaa9781c5f794c343",
+     "deterministisch": true
+    },
+    {
+     "hash": "03e0643864db50a7f8aa70a504958e714ba18b9dde894effb824b06651ac8579",
+     "deterministisch": true
+    },
+    {
+     "hash": "dc1f3e67df8e759a8d30eaf1aaf9657bf7567099f9df6689f9d33140415c09ad",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1577,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-parallaxe-vorb",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 trug",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b51ab207fbb8c0f1dcf004e8311dab00146ea5fa67eafb7897b6bf69d3498440",
+     "deterministisch": true
+    },
+    {
+     "hash": "b3614affe69b75b735c0d343277a0630dc1365f0dc77a48578c329100eac6ca6",
+     "deterministisch": true
+    },
+    {
+     "hash": "41ca9970110af98f962fc3cead394c3c9e3b2c9923e2d17af5df6328b5d1615f",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 2146,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-tempo2-b",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Zwei Takte je Zug auf dem Titel mit anderer Taktzahl - hier greift die Tempoklemme",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "6f8b107a2a4d2000dc8400c2ace1d8e1a737805be4a9b828ca559f974fc5b344",
+     "deterministisch": true
+    },
+    {
+     "hash": "72b01f5a8295718e5ebfc550782605ba6f83aaf8073c0df9399bcc02bc757a67",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 703,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-unscharf",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Fokus bei Ankunft 'unscharf' an beiden Punkten: die Zuege dorthin schmieren, bei der Ankunft ist es sofort wieder scharf. Dieselben zwei Punkte wie kb-zweiPunkte - der Unterschied ist allein die Spalte.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b28bd37d4c6824eea9557a66bc153bfca561f5f4aa750b0db1792b24b6726aa9",
+     "deterministisch": true
+    },
+    {
+     "hash": "c13710c391cbb0832e0d70636a25a4b59951e41e02b347dae3c64878295a8599",
+     "deterministisch": true
+    },
+    {
+     "hash": "9ba341df60af200802297798cdcf9de70ad3dc9726988460a09a23ff0b5c8fdb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 968,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-suche",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Fokus bei Ankunft 'suche': die Zuege schmieren, und im Halt sucht die Schaerfe den Punkt - eine gedaempfte Schwingung, die IM Halt anfaengt und IM Halt aufhoert.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "39b79eed588da526dcb85e1a839ba8809782fc512fb88f7fedb509c58a2c4d30",
+     "deterministisch": true
+    },
+    {
+     "hash": "c13710c391cbb0832e0d70636a25a4b59951e41e02b347dae3c64878295a8599",
+     "deterministisch": true
+    },
+    {
+     "hash": "9ba341df60af200802297798cdcf9de70ad3dc9726988460a09a23ff0b5c8fdb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1660,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-unscharf-eins",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "EIN Punkt auf 'unscharf' - ein langer Zug und mit 60 Bildern (2,0 s) der laengste Halt, den ein Fall hier hat. Der Zwilling zu kb-fokus-suche-eins: unterwegs schmieren beide gleich, NUR im Halt trennen sie sich. Die drei Augenblicke der Studio-Grundlinie fielen bei zwei Punkten (Halt 0,8 s) nicht in den Halt - beide Faelle trugen dieselben Hashes, und ein Rueckschritt am Schaerfezieher waere durchgegangen.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "746d984c3e1fff66e6e65e24171f31801d0eb5352276d7eb4812fd5dce2b8cc2",
+     "deterministisch": true
+    },
+    {
+     "hash": "e712a650c5a634f21cb260fad5e009a820d916aff794091d44123b1e8df58731",
+     "deterministisch": true
+    },
+    {
+     "hash": "f722affe908a68c00c0f993bd8141aa2f1beccdedc47604086aefe11b4135880",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1055,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-suche-eins",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Derselbe Punkt auf 'suche'. Halt 60 Bilder (2,0 s), also drei Ausschlaege - die volle gedaempfte Schwingung. Weicht dieser Fall von kb-fokus-unscharf-eins nicht ab, ist der Schaerfezieher kaputt.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2f551b0b70a1bd6b653241f06251180f17a70f1a8ab38dbc506bb9d821b05770",
+     "deterministisch": true
+    },
+    {
+     "hash": "e712a650c5a634f21cb260fad5e009a820d916aff794091d44123b1e8df58731",
+     "deterministisch": true
+    },
+    {
+     "hash": "f722affe908a68c00c0f993bd8141aa2f1beccdedc47604086aefe11b4135880",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1266,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-ohneHalt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "DREI Punkte, der mittlere auf 'suche': in diesem Clip bleibt kein Halt uebrig (kbPlan H=0), also wird nicht gesucht - 'Suche' geht hier aus wie 'Unscharf'. Der Fall haelt genau das fest, damit niemand spaeter unbemerkt einen Ersatzhalt erfindet; die Zeile unter der Liste sagt es seit dem 19.09.2026 in Worten.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f4f711ea753ed54a4431a38a2cc16e373864c53f01729f883542419ca3e020db",
+     "deterministisch": true
+    },
+    {
+     "hash": "cd71e61ccac353c47447d53bfbc2363a6953d313ad0cb0c610dd278bb5b3118b",
+     "deterministisch": true
+    },
+    {
+     "hash": "a4a7f90eba79e67a598aaf8a1ad2429f830baf9e4df98802e50c33ae4b65a6c5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 666,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-suche-kurz",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Zwei Punkte auf 'suche' auf Titel b: dort ist der Halt nur 13 Bilder (0,43 s) lang. Die Zahl der Ausschlaege haengt seit dem 19.09.2026 an der Haltlaenge (kbSuchAusschlaege, 0,18 s je Ausschlag) - hier sind es ZWEI statt drei. Ohne diesen Fall waere die Regel nur behauptet: alle anderen Faelle haben Halte von 0,8 s und laenger und kommen auf die volle Zahl.",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "2eb1ea3cd481d72cb65782e1145d441f2e5387fe633d3c87b14a3efb236036b1",
+     "deterministisch": true
+    },
+    {
+     "hash": "eba68220696b58497f0a118285e812c79d1d3cec93e4e790772083234dad839c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 1536,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-engerPunkt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "EIN sehr enger Punkt (0,25) - die neue Untergrenze KB_ENGE_MIN. Vorher haette kbEnge auf 0,50 geklemmt.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "c67ecbc86e8602ff56c88d02877535a98135035d170d8c08765b64faa505d41c",
+     "deterministisch": true
+    },
+    {
+     "hash": "c1a7d17f061d5c35bb1048a9e9479996b63fe6b10f2d66c1d254a037da21d5ef",
+     "deterministisch": true
+    },
+    {
+     "hash": "0036051334b5725bc9d8f8a5ce3ca77c2f8595a7f87392575b581009646b04fb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 589,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-a",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    },
+    {
+     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 446,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "boden-b",
+   "typ": "(kein Effekt)",
+   "gruppe": "boden",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Kontrollfall: reines Bild",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 974,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  }
+ ]
+}

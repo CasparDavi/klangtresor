@@ -160,3 +160,76 @@ sehen."* Jeder Schritt wird gezeigt, bevor der nächste anfängt.
 5 h Testmaschinerie angeworfen, damit war es eben nicht nur eine Zeile."* Grundlinienvergleich für
 alles, was den gemeinsamen Malweg anfasst — eine Messreihe über den Bestand nur dann, wenn eine
 Zahl im Code oder in der Oberfläche daraus hervorgeht.
+
+---
+
+## 12. Die Tiefenschärfe — durchspezifiziert am 19.09.2026
+
+**Berichtigung zuerst.** In Abschnitt 6 stand „Fokussieren bei Ankunft" als Sache der Tiefenbänder,
+und ich hatte sie später für erledigt erklärt, weil Caspar_D die Bewegungsunschärfe bestellt hatte.
+Das war falsch. Sein Satz war:
+
+> „Ich weiss, dass die Schärfe Tiefenabhängig ist, könnte man **bei den Videos nicht wenigstens** so
+> tun, als ob man am Ziel nochmal scharf stellt?"
+
+Also: ein **Ersatz für Videos**, nicht ein Ersatz für die Tiefenschärfe. Ich habe aus „zusätzlich"
+ein „stattdessen" gemacht und damit etwas entschieden, was nie spezifiziert war. Caspar_D:
+*„tiefenschärfe, hab ich gar nix zu gesagt, du hast das einfach entschieden obwohl nie spezifiziert
+wurde, wie das bild reagieren soll."*
+
+### Die Regel
+
+> „die lokalisation des zielpunkts ist scharf · der rest wird weicher · nur im halt, aber nicht
+> plötzlich sondern als prozess · theoretisch dürfte es nur eine übergangszeit geben, bis die
+> tiefenkarte da ist, fallback meinetwegen bewegungsunschärfe"
+>
+> „20% der gesamttiefe werden scharf, der rest unscharf · und ich meine die **tiefennachbarschaft
+> des zielpunktes**" · „ja, geschnitten, nicht verschoben"
+
+Daraus:
+
+| | |
+|---|---|
+| **Scharf** | alles, dessen Nähe um höchstens **±10 %** von der Nähe des **Zielpunkts** abweicht — zusammen 20 % der Gesamttiefe |
+| **Weich** | alles andere, und zwar **immer weicher, je weiter von der Ebene entfernt** — wie bei einem Objektiv |
+| **Am Rand** | liegt der Zielpunkt ganz vorn oder ganz hinten, wird das Band **abgeschnitten, nicht verschoben** — vor dem Vordersten ist nichts, was unscharf werden könnte |
+| **Wann** | **nur im Halt**, und als **Prozess**: nicht schlagartig, sondern über die Haltzeit |
+| **Ohne Karte** | Rückfall auf die **Bewegungsunschärfe**. Das ist ein Übergang, kein Zustand — sobald die Tiefenspur für Bewegtbilder steht, fällt der Unterschied weg |
+
+**Das scharfe Band wandert mit jedem Punkt.** Ein Punkt auf dem Gesicht stellt das Gesicht scharf,
+der nächste auf dem Hintergrund stellt den Hintergrund scharf und lässt das Gesicht weich werden.
+Das ist der Zug, den man sehen will.
+
+### Warum das billig ist
+
+**Zwei Zonen, nicht viele Bänder.** Eine scharfe Ebene und ein weicher Rest heißt *eine*
+Weichzeichnung und *eine* Maske — die weiche Grenze können die Tiefenmasken im Haus schon
+(`tiefeMaske` mit Grenze und Weichheit). Das ist der Unterschied zwischen einem Vollbildgang und
+einem Bänderstapel, und er kommt aus Caspar_Ds eigener Formulierung.
+
+### Wie die beiden Unschärfen zusammenpassen
+
+**Die Bewegungsunschärfe gehört zum Zug, die Tiefenschärfe zum Halt.** Das eine ist die Kamera, die
+fährt, das andere die Kamera, die angekommen ist und nachfasst. Sie konkurrieren nicht.
+
+### Die drei letzten Antworten (19.09.2026)
+
+1. **„der rest wird immer weicher — wieviel, weiss ich doch nicht, mach was generisch gut
+   aussehendes."** Also zunehmend, nicht eine Weichheit. Wie stark, ist damit **meine** Sache und
+   keine Einstellung; es wird gemessen und begründet, nicht geraten.
+2. **Die Spalte bekommt eine vierte Stellung, und sie heißt „Tiefenebene"** — nicht „Tiefe". Ohne
+   Karte fällt sie auf die Bewegungsunschärfe zurück.
+3. **„er kommt und geht."** Der Prozess baut sich im Halt auf und löst sich im Halt wieder. Damit
+   ist er am Ende des Halts bei null, der nächste Zug startet ohne Rest, und die Naht bleibt von
+   selbst geschlossen — dieselbe Bauform wie beim Nachfassen der Stellung „Suche".
+
+### Die Spalte „Fokus bei Ankunft", vollständig
+
+| Stellung | im Zug | im Halt |
+|---|---|---|
+| **Scharf** | nichts | nichts |
+| **Unscharf** | schmiert | scharf, sofort |
+| **Suche** | schmiert | scharf, mit Nachfassen |
+| **Tiefenebene** | nichts | die Tiefenebene des Punktes bleibt scharf, der Rest wird weicher — kommt und geht |
+
+Ohne Tiefenkarte wird aus **Tiefenebene** die Bewegungsunschärfe, und die Zeile sagt es.

@@ -3149,7 +3149,15 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-togp:active, #tbs .tbs-kopf .tbs-knopf:active{transform:scale(.95)}
 #tbs .tbs-regler input[type=range]{width:100%;accent-color:var(--akzent)}
 #tbs .tbs-regler input[type=color]{width:100%;height:23px;padding:0;border:1px solid var(--rand);border-radius:6px;background:var(--flaeche2);cursor:pointer}
-#tbs .tbs-regler select{width:100%;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px}
+/* DIE PUNKTELISTE DER KEN BURNS FAHRT (19.09.2026) steht NICHT in einer Reglerzeile - ihr
+   Auswahlfeld und ihr Knopf sollen trotzdem aussehen wie alles andere im Pult. Die Form steht
+   darum EINMAL da und gilt fuer beide Orte; zwei Abschriften derselben drei Regeln waeren eine zu
+   viel. Ohne sie malt der Browser sein weisses Vorgabefeld mitten in die dunkle Karte - gemessen
+   am 19.09.2026: Hausauswahl rgb(34,35,40), das freie Feld daneben weiss. */
+#tbs .tbs-regler select, #tbs select.tbs-kbfokus{width:100%;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px}
+#tbs button.tbs-kbneu{width:100%;background:var(--flaeche2);color:var(--schwach);border:1px solid var(--rand);border-radius:7px;padding:5px 6px;font-size:11px;line-height:1.2;cursor:pointer}
+#tbs button.tbs-kbneu:hover:not(:disabled){color:var(--text);border-color:var(--akzent)}
+#tbs button.tbs-kbneu:disabled{opacity:.55;cursor:not-allowed}
 #tbs .tbs-regler .tbs-wert{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
 /* GRAU MIT GRUND (Hausgesetz der Effektclips, 16.09.2026): was eine Art nicht benutzt, wird
    ausgegraut und stillgelegt - nicht versteckt. Die Zeile darunter sagt, warum. */
@@ -27334,7 +27342,7 @@ const EFFEKTE = {
      Nachgesehen am 18.09.2026: im ganzen Archiv traegt kein Rezept den Typ `kenburns`, es
      verliert also keines eine Einstellung; effektAusRezept raeumt den Schluessel trotzdem weg,
      damit er nicht durch jedes Sichern weiterreist. */
-  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b> im Ganzen, die Kamera <b>f\u00e4hrt</b> zum ersten Zielpunkt und <b>zoomt dabei heran</b>, sie <b>h\u00e4lt</b> dort, f\u00e4hrt weiter \u2014 und am Ende wieder auf das Ganzbild. Weich angefahren, weich ausgelaufen, in der Mitte gleichm\u00e4\u00dfig. Die Folge beginnt und endet auf demselben Ganzbild, und weil sie sich in der Cliplänge wiederholt, schließt sich die Naht von selbst \u2014 wo im Zyklus der Clip anf\u00e4ngt, h\u00e4ngt an der Eins des Titels.<br><b>Die Zielpunkte sind die Regler</b> \u2014 gesetzt werden sie auf der B\u00fchne: Klick in die freie Fl\u00e4che setzt einen neuen (h\u00f6chstens f\u00fcnf), Ziehen verschiebt ihn, das Mausrad \u00fcber einer Marke stellt seine <i>Enge</i>, ein Doppelklick l\u00f6st ihn. Die Nummer auf der Marke ist die Reihenfolge, und die Reihenfolge ist die ganze Choreografie. Solange diese Karte offen ist, zeigt die B\u00fchne das ganze Bild und die Fahrt steht \u2014 sonst lie\u00dfe sich auf ein wanderndes Bild kein Punkt ins Motiv setzen. Beim Zuklappen l\u00e4uft sie wieder.<br><b>Die Zeit rechnet die Software:</b> \u201eTempo\u201c sagt, \u00fcber wie viele <b>Takte</b> ein Zug l\u00e4uft. Bei n Punkten sind das n+1 Z\u00fcge, n gleich lange Halte an den Punkten und ein Halt am Ganzbild, der den Rest bekommt. Wie lange das in DIESEM Clip wirklich ist, steht in Sekunden unter der Punkteliste. Die Fahrt f\u00e4ngt auf einer Eins an.<br><b>Beim Einf\u00fcgen kommen zwei Punkte mit</b>, die das Bild vorschl\u00e4gt \u2014 dort, wo sich etwas abhebt und die Helligkeit sich am meisten \u00e4ndert. Danach geh\u00f6ren sie dir; gesucht wird nicht mehr.<br><b>Parallaxe:</b> mit einer Tiefenkarte wandert das Nahe schneller als das Ferne \u2014 aus dem Zoom wird eine <b>echte Fahrt</b>. Genau das konnte Ken Burns auf seinem Rostrum-Tisch mit einem Abzug nicht. Sie steht voreingestellt auf null; ohne Tiefenkarte bleibt die Zeile still und sagt warum.',
+  kenburns:{ label:'Ken Burns Fahrt', art:'geo', ohneStaerke:true, besch:'Eine Kamerafahrt mit Klammer: Das Bild <b>steht</b> im Ganzen, die Kamera <b>f\u00e4hrt</b> zum ersten Zielpunkt und <b>zoomt dabei heran</b>, sie <b>h\u00e4lt</b> dort, f\u00e4hrt weiter \u2014 und am Ende wieder auf das Ganzbild. Weich angefahren, weich ausgelaufen, in der Mitte gleichm\u00e4\u00dfig. Die Folge beginnt und endet auf demselben Ganzbild, und weil sie sich in der Cliplänge wiederholt, schließt sich die Naht von selbst \u2014 wo im Zyklus der Clip anf\u00e4ngt, h\u00e4ngt an der Eins des Titels.<br><b>Die Zielpunkte sind die Regler</b> \u2014 gesetzt werden sie auf der B\u00fchne: Klick in die freie Fl\u00e4che setzt einen neuen (h\u00f6chstens f\u00fcnf), Ziehen verschiebt ihn, das Mausrad \u00fcber einer Marke stellt seine <i>Enge</i> \u2014 bis 0,25 hinunter, und was das an Vergr\u00f6\u00dferung kostet, steht in der Zeile unter der Liste \u2014, ein Doppelklick l\u00f6st ihn; <b>Punkt hinzuf\u00fcgen</b> unter der Liste setzt einen, ohne dass man zielen muss. Beim Ziehen zeigt ein feiner Rahmen, wie weit diese Marke kann \u2014 ihre Mitte muss so liegen, dass ihr Ausschnitt ganz im Bild bleibt. Die Nummer auf der Marke ist die Reihenfolge, und die Reihenfolge ist die ganze Choreografie.<br><b>Fokus bei Ankunft</b> steht je Punkt in der Liste: <i>Scharf</i> \u2014 nie eine Sch\u00e4rfe\u00e4nderung; <i>Unscharf</i> \u2014 der Zug zu diesem Punkt schmiert und ist bei der Ankunft sofort wieder scharf; <i>Suche</i> \u2014 er schmiert, und am Ziel sucht die Sch\u00e4rfe den Punkt, geht dar\u00fcber hinaus und f\u00e4ngt sich. Das ist <b>Bewegungs</b>unsch\u00e4rfe und keine Tiefensch\u00e4rfe: sie braucht keine Tiefenkarte und l\u00e4uft auf Videos wie auf Bildern. Wie stark es schmiert, rechnet die Software aus der Geschwindigkeit der Kamera. Wer umstellt, bekommt es gleich <b>vorgef\u00fchrt</b>: das Bild bleibt stehen, nur die Sch\u00e4rfe spielt den Zug und die Ankunft ein paarmal durch. Solange diese Karte offen ist, zeigt die B\u00fchne das ganze Bild und die Fahrt steht \u2014 sonst lie\u00dfe sich auf ein wanderndes Bild kein Punkt ins Motiv setzen. Beim Zuklappen l\u00e4uft sie wieder.<br><b>Die Zeit rechnet die Software:</b> \u201eTempo\u201c sagt, \u00fcber wie viele <b>Takte</b> ein Zug l\u00e4uft. Bei n Punkten sind das n+1 Z\u00fcge, n gleich lange Halte an den Punkten und ein Halt am Ganzbild, der den Rest bekommt. Wie lange das in DIESEM Clip wirklich ist, steht in Sekunden unter der Punkteliste. Die Fahrt f\u00e4ngt auf einer Eins an.<br><b>Beim Einf\u00fcgen kommen zwei Punkte mit</b>, die das Bild vorschl\u00e4gt \u2014 dort, wo sich etwas abhebt und die Helligkeit sich am meisten \u00e4ndert. Danach geh\u00f6ren sie dir; gesucht wird nicht mehr.<br><b>Parallaxe:</b> mit einer Tiefenkarte wandert das Nahe schneller als das Ferne \u2014 aus dem Zoom wird eine <b>echte Fahrt</b>. Genau das konnte Ken Burns auf seinem Rostrum-Tisch mit einem Abzug nicht. Sie steht voreingestellt auf null; ohne Tiefenkarte bleibt die Zeile still und sagt warum.',
     /* DIE LISTE IST KEIN REGLER, SIE IST DAS BILD SELBST (Geste des Glockenstuhls, Kommentar im
        Equalizer vom 20.08.2026: "Die Punkte SIND die Regler"). Die Karte ZEIGT die Punkte und
        sagt, was in die Cliplaenge passt; gesetzt werden sie auf der Buehne. Zwei Bedienwege fuer
@@ -28367,10 +28375,22 @@ function lmSchritteZahl(e,n){ const alt=lmSchritteHolen(e); e.lmSchritte=Array.f
    Quelle dort gar nicht erst zur Wahl. Was bleibt, laeuft auf eigener Uhr: die freie Frequenz,
    und mit dem Muster "Zufall je Periode" ist genau das das Flackern einer Kerze. */
 function taktDa(){ return !!(DATA&&Array.isArray(DATA.schlaege)&&DATA.schlaege.length); }
-/* Das Tempo des Titels aus dem Median der Schlagabstaende - robust gegen einzelne Ausreisser. */
+/* Das Tempo des Titels aus dem Median der Schlagabstaende - robust gegen einzelne Ausreisser.
+   GEMERKT AN DER LISTE, AN DER ES HAENGT (Gegenlesen 19.09.2026). Die Rechnung baut ein Feld aller
+   Abstaende und SORTIERT es; das ist bei 800 Schlaegen eine halbe Millisekunde, und seit die Ken
+   Burns Fahrt die Bildlaengen braucht, stand sie in einem Weg, der je Bild laeuft (kbAbschnitt) -
+   bei 60 Bildern je Sekunde 30 ms je Sekunde fuer eine Zahl, die sich waehrend eines Titels nicht
+   aendert. Der Merker haengt an der LISTE SELBST, nicht an DATA: der Export tauscht DATA samt
+   seinem gleichmaessigen Raster gegen das echte (exportBuendel/setzen), und beide Listen sind
+   eigene Felder - die eine kann die andere also nicht mit ihrem Wert bedienen. Ein Feld, das an
+   Ort und Stelle veraendert wuerde, entginge dem Merker; keines wird es (die Schlaege werden beim
+   Laden und in raster() NEU gebaut und nie umgeschrieben). */
+let SCHLAG_HZ_LISTE=null, SCHLAG_HZ_WERT=0;
 function schlagHz(){ const S=DATA&&DATA.schlaege; if(!S||S.length<8) return 0;
+  if(S===SCHLAG_HZ_LISTE) return SCHLAG_HZ_WERT;
   const d=[]; for(let i=1;i<S.length;i++){ const x=S[i][0]-S[i-1][0]; if(x>0.05&&x<3) d.push(x); }
-  if(!d.length) return 0; d.sort((a,b)=>a-b); const m=d[d.length>>1]; return m>0?1/m:0; }
+  let hz=0; if(d.length){ d.sort((a,b)=>a-b); const m=d[d.length>>1]; if(m>0) hz=1/m; }
+  SCHLAG_HZ_LISTE=S; SCHLAG_HZ_WERT=hz; return hz; }
 /* Der Export laeuft mit 30 Bildern je Sekunde. Oberhalb der halben Bildrate ist eine Schwingung
    nicht mehr darstellbar, sie erscheint als falsche, langsamere - und bei genau 30 Hz steht sie
    still. Als Flackern lesbar bleibt sie, solange etwa vier Bilder auf eine Schwingung kommen. */
@@ -30808,6 +30828,31 @@ function renderStapel(){
         addEventListener('pointerup',los); addEventListener('pointercancel',los); });
       inp.addEventListener('blur',()=>{ TSICHT.haelt=false; tiefesichtWecken(e); }); });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
+    /* DIE PUNKTELISTE DER KEN BURNS FAHRT (19.09.2026). Sie traegt seit heute zwei Bedienteile, und
+       beide gehen durch kbOrt und kbSetzen wie jede Geste auf der Buehne - EIN Weg, dieselben
+       Nebenwirkungen. Eigene Kennungen statt data-k: die Zeilen gehoeren keinem Regler, und die
+       Schleife darueber wuerde ihren Wert in einen Schluessel des Effekts schreiben. */
+    c.querySelectorAll('[data-kbfokus]').forEach(sel=>sel.onchange=()=>{
+      const i=+sel.dataset.kbfokus, P=kbPunkte(e).slice(); if(!P[i]) return;
+      P[i]=kbOrt({u:P[i].u,v:P[i].v,z:P[i].z,f:sel.value}); kbSetzen(e,P);
+      /* UND SIE ZEIGT SICH SOFORT (19.09.2026). Die Buehne steht, solange diese Karte offen ist -
+         eine Stellung, die man nicht sehen kann, waehrend man sie stellt, waehlt man nach Text
+         statt nach Augenschein, und das ist bei einer Schaerfefrage das falsche Sinnesorgan
+         (kbVorfuehrung erklaert, warum es geht, ohne die stehende Buehne aufzugeben). */
+      if(sel.value==='scharf'){ KB_ZEIGT=null; pStat('Punkt '+(i+1)+': Scharf — der Zug dorthin schmiert nicht, und am Ziel ändert sich nichts.'); }
+      else { KB_ZEIGT={ id:e.id, i, t0:performance.now() };
+        const pl=kbPlanHier(e);
+        pStat('Punkt '+(i+1)+': '+(sel.value==='suche'?'Suche':'Unscharf')+' — die Bühne führt es '+KB_ZEIGT_RUNDEN+'-mal vor, das Bild bleibt dabei stehen.'
+          +((sel.value==='suche'&&pl&&!(pl.H>0))?' In diesem Clip bleibt kein Halt übrig, in dem gesucht werden könnte — die Vorführung zeigt genau das.':''));
+      }
+      renderStapel(); });
+    const kbNeu=c.querySelector('[data-kbneu]'); if(kbNeu) kbNeu.onclick=()=>{
+      const P=kbPunkte(e).slice();
+      if(P.length>=KB_PUNKTE_MAX){ pStat('Fünf Zielpunkte sind die Grenze — ein Doppelklick auf eine Marke löst sie und macht Platz.'); return; }
+      /* DIESELBE ENGE WIE BEIM KLICK AUF DIE BUEHNE: vom letzten Punkt geerbt, sonst die Vorgabe. */
+      P.push(kbFreierOrt(P,P.length?P[P.length-1].z:KB_ENGE_DEF)); kbSetzen(e,P);
+      pStat('Zielpunkt '+P.length+' gesetzt — auf der Bühne lässt er sich ziehen, das Mausrad stellt seine Enge, ein Doppelklick löst ihn.');
+      renderStapel(); };
     c.querySelectorAll('[data-lmform]').forEach(btn=>btn.onclick=()=>{ e.lmForm=btn.dataset.lmform; renderStapel(); });
     const qv=c.querySelector('canvas.tbs-qvor'); if(qv){ qv._e=e; quellVorschau(qv,e); }
     const rmv=c.querySelector('canvas.tbs-rmvor'); if(rmv){ rmv._e=e; raumVorschau(rmv,e); }
@@ -30966,6 +31011,15 @@ let SCHLEIFE_KURVE={schluessel:'',u:null,laeuft:false};
    im Pult ("Ausschnitt", halbe Schlaege), wo er liegt, sagt die Aenderungskurve. */
 function schleifePendelWeg(x){ const e=0.15, f=2*e*(1-e);
   if(x<e) return x*x/f; if(x>1-e){ const y=1-x; return 1-y*y/f; } return (x-e/2)/(1-e); }
+/* DAS TEMPO DERSELBEN KURVE - ihre Ableitung, aufgeschrieben statt genaehert (19.09.2026, fuer die
+   Bewegungsunschaerfe der Ken Burns Fahrt). Abgeleitet Zeile fuer Zeile aus der Zeile darueber:
+   x*x/f -> 2x/f, 1-y*y/f mit y = 1-x -> 2(1-x)/f, (x-e/2)/(1-e) -> 1/(1-e).
+   Sie ist an beiden Enden NULL (x = 0 und x = 1) und in der Mitte 1/(1-e) = 1,176 - daran haengt,
+   dass die Unschaerfe von selbst weich auf- und abblendet und an der Station verschwindet. Ein
+   numerischer Differenzenquotient waere hier eine zweite Wahrheit ueber dieselbe Kurve; die beiden
+   Konstanten stehen darum genauso da wie oben und duerfen nur zusammen geaendert werden. */
+function schleifePendelTempo(x){ const e=0.15, f=2*e*(1-e);
+  if(x<e) return 2*x/f; if(x>1-e) return 2*(1-x)/f; return 1/(1-e); }
 /* Das bewegteste Fenster seiner Laenge: die Kurve U steigt dort schneller, wo sich mehr aendert (schleifeKurveMessen).
    Ohne Messung die Mitte des Videos - nie der Anfang, dort stehen bei Suno-Videos oft ruhige Bilder. */
 function schleifePendelVon(dauer,dv){ const U=SCHLEIFE_KURVE.u; if(!(dv>dauer)) return 0;
@@ -31111,6 +31165,15 @@ function blaettern(d){ if(exportLaeuft) return; const n=SEITEN.length; if(n<2) r
    etwas den Ausschnitt verschiebt ("Zoom schlaegt", "Kippen"). Zwei Rechnungen fuer dieselbe
    Zuordnung waeren eine zu viel. */
 let KB_STEHT=0, KB_STEHT_VOR=0;
+/* WELCHE MARKE GERADE IN DER HAND LIEGT, oder -1. Caspar_D, 19.09.2026: "ist der Weg zwischen
+   Punkten irgendwie in der Laenge begrenzt, ich habe das Gefuehl, ich kann nicht beliebig ziehen."
+   Er hat recht, und es ist Geometrie: kbOrt klemmt die Mitte auf z/2 .. 1-z/2, damit der Ausschnitt
+   ganz im Bild bleibt - bei Enge 0,80 sind das nur +-10 % der Bildkante. Waehrend gezogen wird und
+   NUR dann zeigt die Buehne, wo diese Wand steht (kbMarkenMalen). Kein Text, keine Meldung: wer
+   zieht, sieht den Rahmen und weiss es; wer nicht zieht, soll ein Bild sehen und kein Gitter.
+   Die Nummer steht hier und nicht im Verschluss von kbBuehneEinrichten, weil kbMarkenMalen sie
+   braucht - und die beiden sehen einander sonst nicht. */
+let KB_ZIEHT=-1;
 const KB_MARKE_FARBE='#5bd6c8';   /* die Farbe des Effekts (TON.kenburns) - die Marke gehoert sichtbar zu ihm */
 /* "OFFEN" HEISST: MAN SIEHT DIE KARTE (nachgesehen am 18.09.2026 in der Oberflaechenprobe). Die
    Effektkette ist eine Stufe im Akkordeon; ist sie zugeklappt, steht die Karte zwar weiter als
@@ -31128,9 +31191,10 @@ function kbMarkenMalen(e){
   const P=kbPunkte(e), r=kbMarkeR();
   let orte, mitte;
   try{ mitte=geoZuLeinwand(0.5,0.5);
-    orte=P.map(p=>({ m:geoZuLeinwand(p.u,p.v),
-      ecke:[[p.u-p.z/2,p.v-p.z/2],[p.u+p.z/2,p.v-p.z/2],[p.u+p.z/2,p.v+p.z/2],[p.u-p.z/2,p.v+p.z/2]]
-        .map(c=>geoZuLeinwand(c[0],c[1])) }));
+    orte=P.map(p=>{ const [ru,rv]=kbRahmenMitte(p.u,p.v,p.z);
+      return { m:geoZuLeinwand(p.u,p.v), z:p.z,
+        ecke:[[ru-p.z/2,rv-p.z/2],[ru+p.z/2,rv-p.z/2],[ru+p.z/2,rv+p.z/2],[ru-p.z/2,rv+p.z/2]]
+          .map(c=>geoZuLeinwand(c[0],c[1])) }; });
   }catch(x){ return; }   /* ohne Geometrie keine Marke - lieber nichts als etwas Falsches */
   g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=1; g.filter='none';
   g.globalCompositeOperation='source-over'; g.lineJoin='round'; g.lineCap='round';
@@ -31160,7 +31224,17 @@ function kbMarkenMalen(e){
     /* DIE NUMMER: die Reihenfolge IST die Choreografie, also steht sie auf der Marke. */
     g.fillStyle='#e8e8ec'; g.textAlign='center'; g.textBaseline='middle';
     g.font='600 '+Math.round(r*1.1)+'px ui-sans-serif, system-ui, sans-serif';
-    g.fillText(String(i+1),x,y+0.5); }
+    g.fillText(String(i+1),x,y+0.5);
+    /* DIE ENGE STEHT AN DER MARKE (Caspar_D, 19.09.2026: "man weiss nicht, wierum man das Mausrad
+       drehen muss damit es groesser oder kleiner wird"). Eine Raste, und man sieht es - eine Zahl
+       sagt das schneller als jede Beschreibung. Die Vergroesserung kommt dazu, sobald es eine gibt:
+       dieselbe Rechnung wie in der Zeile unter der Liste (kbLupe), nicht eine zweite daneben. */
+    { let t=kf(o.z.toFixed(2)); const L=kbLupe(o.z); if(L&&L.f>1.05) t+='  '+kf(L.f.toFixed(1))+'\u00d7';
+      g.font='600 '+Math.round(r*0.78)+'px ui-sans-serif, system-ui, sans-serif';
+      g.textBaseline='top'; const w=g.measureText(t).width, yy=y+r+Math.round(r*0.35);
+      g.fillStyle='rgba(10,10,12,.78)'; g.beginPath();
+      g.rect(x-w/2-4, yy-2, w+8, Math.round(r*0.78)+6); g.fill();
+      g.fillStyle=KB_MARKE_FARBE; g.fillText(t,x,yy+1); g.textBaseline='middle'; } }
   g.restore(); frisch(g);
 }
 /* Die Punkte dieses Effekts setzen. EIN Weg, damit jede Geste dieselben Nebenwirkungen hat: die
@@ -31179,7 +31253,9 @@ function kbBuehneEinrichten(){
     for(let i=0;i<P.length;i++){ let a; try{ a=geoZuLeinwand(P[i].u,P[i].v); }catch(x){ return -1; }
       const d=Math.hypot(o.px-a[0],o.py-a[1]); if(d<=ab){ ab=d; best=i; } }
     return best; };
-  let zieht=-1;
+  /* WELCHE MARKE IN DER HAND LIEGT, STEHT AUSSERHALB DIESES VERSCHLUSSES (KB_ZIEHT, 19.09.2026):
+     kbMarkenMalen braucht die Nummer, um die Wand dieses Punktes zu zeigen, und zwei Merker fuer
+     denselben Griff waeren einer zu viel. */
   lein.onpointerdown=ev=>{ const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     let i=markeBei(e,o);
     if(i<0){
@@ -31194,19 +31270,22 @@ function kbBuehneEinrichten(){
       /* Gleich weiterziehen: gedrueckt halten und schieben setzt den Punkt genau dorthin, wo er
          hinsoll, statt ihn erst zu setzen und dann ein zweites Mal anzufassen. */
     }
-    zieht=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
+    KB_ZIEHT=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
     lein.style.cursor='move'; ev.preventDefault(); };
-  lein.onpointermove=ev=>{ const e=kbKarteEffekt(); if(!e){ zieht=-1; return; } const o=ortVon(ev); if(!o) return;
-    if(zieht<0){ lein.style.cursor=markeBei(e,o)>=0?'move':'crosshair'; return; }
-    const P=kbPunkte(e).slice(); if(!P[zieht]){ zieht=-1; return; }
-    P[zieht]=kbOrt({u:o.u,v:o.v,z:P[zieht].z}); kbSetzen(e,P); };
+  lein.onpointermove=ev=>{ const e=kbKarteEffekt(); if(!e){ KB_ZIEHT=-1; return; } const o=ortVon(ev); if(!o) return;
+    if(KB_ZIEHT<0){ lein.style.cursor=markeBei(e,o)>=0?'move':'crosshair'; return; }
+    const P=kbPunkte(e).slice(); if(!P[KB_ZIEHT]){ KB_ZIEHT=-1; return; }
+    /* DER FOKUS REIST MIT (19.09.2026). kbOrt baut den Punkt NEU, und was nicht mitgegeben wird,
+       faellt auf die Vorgabe zurueck: ohne f stand ein Punkt nach dem ersten Ziehen wieder auf
+       "Scharf", ohne dass jemand die Spalte angefasst haette. Verschieben ist keine Stellung. */
+    P[KB_ZIEHT]=kbOrt({u:o.u,v:o.v,z:P[KB_ZIEHT].z,f:P[KB_ZIEHT].f}); kbSetzen(e,P); };
   /* Beim Loslassen wird die Karte neu gebaut - erst dann, nicht waehrend des Zugs: ein Neubau
      mitten im Ziehen naehme dem Zeiger den Griff (dieselbe Regel wie bei den Schiebern). */
-  lein.onpointerup=lein.onpointercancel=()=>{ if(zieht<0) return; zieht=-1;
+  lein.onpointerup=lein.onpointercancel=()=>{ if(KB_ZIEHT<0) return; KB_ZIEHT=-1;
     lein.style.cursor=KB_STEHT_VOR?'crosshair':''; renderStapel(); };
   lein.ondblclick=ev=>{ const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     const i=markeBei(e,o); if(i<0) return;
-    const P=kbPunkte(e).slice(); P.splice(i,1); kbSetzen(e,P); zieht=-1;
+    const P=kbPunkte(e).slice(); P.splice(i,1); kbSetzen(e,P); KB_ZIEHT=-1;
     pStat(P.length?('Zielpunkt gelöst — '+P.length+' '+(P.length===1?'bleibt':'bleiben')+'.')
       :'Der letzte Zielpunkt ist gelöst — die Kamera steht jetzt auf dem Ganzbild.');
     renderStapel(); ev.preventDefault(); };
@@ -31214,13 +31293,15 @@ function kbBuehneEinrichten(){
     const i=markeBei(e,o); if(i<0) return; ev.preventDefault();
     /* DER SCHRITT IST 0,01 - derselbe, den der gefallene Regler "Ausschnitt" hatte -, ABER ER
        WAECHST MIT DER RASTE. Gemessen in der Oberflaechenprobe (18.09.2026): ein Mausrad schickt je
-       Raste EIN Ereignis, und mit festen 0,01 braeuchte der Weg von 0,95 auf 0,50 fuenfundvierzig
-       Rasten. Ein Trackpad schickt dagegen viele feine Ereignisse, und dort waeren 0,03 zu grob.
+       Raste EIN Ereignis, und mit festen 0,01 braeuchte der volle Weg von 0,95 auf KB_ENGE_MIN
+       siebzig Rasten (Gegenlesen 19.09.2026: hier stand "auf 0,50 fuenfundvierzig Rasten" - die
+       Zahl war die Begruendung fuer die Regel darunter und rechnete noch mit der alten
+       Untergrenze; seit sie 0,25 ist, ist der Weg siebzig Rasten lang). Ein Trackpad schickt dagegen viele feine Ereignisse, und dort waeren 0,03 zu grob.
        Also entscheidet die Staerke des Ereignisses: bis 0,04 je feiner Regung, bis 0,03 je Raste.
        Kein Regler dafuer - die Software weiss, welches Geraet gerade dreht. */
     const st=Math.max(1,Math.min(4,Math.round(Math.abs(ev.deltaY)/40)))*0.01;
     const P=kbPunkte(e).slice(), z=kbEnge(P[i].z+(ev.deltaY<0?-st:st));
-    P[i]=kbOrt({u:P[i].u,v:P[i].v,z}); kbSetzen(e,P); renderStapel(); };
+    P[i]=kbOrt({u:P[i].u,v:P[i].v,z,f:P[i].f}); kbSetzen(e,P); renderStapel(); };   /* der Fokus reist mit, wie beim Ziehen */
 }
 
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); loopWache();
@@ -31231,6 +31312,13 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
      Clipbildnummer aendert; ohne diese Zeile zeigte sie nach dem Aufklappen noch den wandernden
      Ausschnitt von vorhin - und auf dem liesse sich kein Punkt setzen. */
   const kbE=kbKarteEffekt(); KB_STEHT=kbE?kbE.id:0;
+  if(!KB_STEHT) KB_ZIEHT=-1;   /* keine Karte, keine Hand an der Marke - sonst stuende die Wand noch da, wenn jemand waehrend des Zugs zuklappt */
+  /* DIE VORFUEHRUNG DER FOKUSSPALTE BRAUCHT JEDES BILD (19.09.2026). Die Loop-Ansicht malt nur neu,
+     wenn sich die Clipbildnummer aendert - bei stehendem Ton aendert sie sich nie, und die
+     Vorfuehrung staende still. Sie laeuft nur, solange sie laeuft, und klappt die Karte zu oder
+     ist sie abgelaufen, faellt diese Zeile von selbst wieder weg. */
+  if(!KB_STEHT) KB_ZEIGT=null;
+  else if(kbZeigtLaeuft()&&loopSicht) loopSicht.i=-1;
   if(KB_STEHT!==KB_STEHT_VOR){ KB_STEHT_VOR=KB_STEHT; if(loopSicht) loopSicht.i=-1;
     if(lein){ lein.style.touchAction=KB_STEHT?'none':''; lein.style.cursor=KB_STEHT?'crosshair':''; } }
   try{ if(loopAn&&bereit&&!ohneEffekte){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit(),ohneEffekte); }
@@ -31834,9 +31922,24 @@ function kbZiele(e){
    Wahrheit ueber dieselbe Karte.
    HOECHSTENS FUENF. */
 const KB_PUNKTE_MAX=5;
-const KB_ENGE_MIN=0.5, KB_ENGE_MAX=0.95, KB_ENGE_DEF=0.8;
+/* DIE UNTERGRENZE WAR GEERBT, NICHT GEMESSEN (Caspar_D, 19.09.2026: "warum darf ich nicht staerker
+   ranfahren?"). Bis dahin stand hier 0,50, und das war die Untergrenze des gefallenen Reglers
+   "Ausschnitt" - eine Zahl aus der Zeit, als EINE Enge fuer den ganzen Lauf galt. Der Maler selbst
+   kann laengst weiter: zeichneFrame klemmt eff bei 0,10.
+   WAS WIRKLICH DAGEGEN SPRICHT, IST DIE AUFLOESUNG - und die ist je Bild eine andere Zahl, also
+   steht hier keine feste Grenze dafuer, sondern die Zeile SAGT je Punkt, was er kostet (kbLupe,
+   kbLupenSatz). ausgabeMass deckelt die lange Kante bei 1080 und vergroessert die Quelle nie: bei
+   einem Titelbild 1057x1442 sitzt 1:1 darum bei Enge 0,75, bei einem quadratischen Video 1080x1080
+   erst bei 1,00. Eine feste Untergrenze koennte das nicht ausdruecken; ein Satz kann es. */
+const KB_ENGE_MIN=0.25, KB_ENGE_MAX=0.95, KB_ENGE_DEF=0.8;
 /* Das Ganzbild - Anfang und Ende jeder Fahrt. [Enge, u, v]: die ganze Flaeche, Mitte. */
 const KB_GANZ=[1,0.5,0.5];
+/* FOKUS BEI ANKUNFT (Caspar_D, 19.09.2026). Drei Stellungen je Punkt; sie sagen, was bei der
+   ANKUNFT an diesem Punkt geschieht, und gelten damit auch fuer den Zug, der zu ihm hinfuehrt.
+   Es ist BEWEGUNGSUNSCHAERFE und keine Tiefenschaerfe - darum braucht es keine Tiefenkarte und es
+   laeuft auf Videos wie auf Bildern (kbUnschaerfe). */
+const KB_FOKUS=[['scharf','Scharf'],['unscharf','Unscharf'],['suche','Suche']];
+function kbFokus(p){ const f=p&&p.f; return (f==='unscharf'||f==='suche')?f:'scharf'; }
 function kbEnge(v){ const z=Number(v); return (z>0)?Math.max(KB_ENGE_MIN,Math.min(KB_ENGE_MAX,z)):KB_ENGE_DEF; }
 /* EIN PUNKT LIEGT IMMER GANZ IM BILD, UND ZWAR VON SELBST. Die Mitte eines Ausschnitts der
    Kantenlaenge z kann genau von z/2 bis 1-z/2 laufen; dort liegt er ohne Klemmung ganz im Bild.
@@ -31844,9 +31947,34 @@ function kbEnge(v){ const z=Number(v); return (z>0)?Math.max(KB_ENGE_MIN,Math.mi
    der Zielsuche, aus einer Geste oder aus einer von Hand geschriebenen Datei kommt (Regel 13:
    nichts still falsch lesen). Damit gilt fuer jeden gespeicherten Punkt |u-0,5| <= (1-z)/2, und
    genau daran haengt, dass kbZug unterwegs nie klemmen muss (Nachweis dort). */
-function kbOrt(p){ const z=kbEnge(p&&p.z), lo=z/2, hi=1-z/2;
-  const kl=x=>{ const v=Number(x); return isFinite(v)?Math.max(lo,Math.min(hi,v)):0.5; };
-  return { u:kl(p&&p.u), v:kl(p&&p.v), z }; }
+/* EIN ZIELPUNKT IST EINE STELLE IM MOTIV, KEIN RECHTECKMITTELPUNKT (Caspar_D, 19.09.2026).
+   HIER STAND EINE ZWEITE KLEMME, UND SIE WAR DER FEHLER: u und v wurden auf z/2 .. 1-z/2 geklemmt,
+   also auf den Bereich, in dem ein Ausschnitt dieser Enge ganz im Bild liegt. Folge: wer am Mausrad
+   die Enge VERGROESSERTE, schob den Punkt nach innen - die Stelle, auf die er gezielt hatte, wanderte
+   unter dem Zeiger weg. Caspar_D: "noch nerviger ist es, dass der Punkt aus dem Fokus geraet wenn ich
+   den Ausschnitt aendere, weil der Punkt anfaengt zu wandern. ein Unding."
+   DER MALER KLEMMT OHNEHIN, UND ZWAR RICHTIG: kbZug begrenzt den Schwenk auf -1 .. 1, das Rechteck
+   rutscht am Bildrand also von selbst ins Bild zurueck. Die Stelle sitzt dann nicht mittig im Bild,
+   sondern so nah an der Mitte, wie es geht - genau das tut eine Kamera auch. Es braucht also GENAU
+   EINE Klemme, und die gehoert an das Rechteck, nicht an den Punkt.
+   Geklemmt wird hier nur noch auf das Bild selbst (0 .. 1): ein Ziel ausserhalb des Bildes waere
+   keine Stelle im Motiv. */
+function kbOrt(p){ const z=kbEnge(p&&p.z);
+  const kl=x=>{ const v=Number(x); return isFinite(v)?Math.max(0,Math.min(1,v)):0.5; };
+  return { u:kl(p&&p.u), v:kl(p&&p.v), z, f:kbFokus(p) }; }
+/* WO DAS RECHTECK DIESES PUNKTES WIRKLICH LIEGT - dieselbe Klemme, die kbZug im Maler rechnet.
+   Die Marke steht, wo der Mensch gezielt hat; der Rahmen steht, wo die Kamera ankommt. Am Bildrand
+   gehen die beiden auseinander, und DAS SOLL MAN SEHEN. */
+function kbRahmenMitte(u,v,z){ const lo=z/2, hi=1-z/2;
+  const kl=x=>(lo<=hi)?Math.max(lo,Math.min(hi,x)):0.5;
+  return [kl(u),kl(v)]; }
+/* DIE WAND DIESES PUNKTES - die Grenzen, zwischen denen seine Mitte liegen darf, als [lo,hi].
+   Dieselbe Rechnung wie oben, an EINER Stelle: die Buehne zeigt beim Ziehen genau diesen Rahmen
+   (kbMarkenMalen), und die Zeile nennt dieselbe Zahl. */
+/* GELOESCHT AM 19.09.2026: kbWand, die Grenzen der Marke. Es gibt keine Wand mehr - ein Zielpunkt
+   darf ueberall im Bild stehen, und das Rechteck rutscht am Rand hinein (kbRahmenMitte). Die
+   Buehne zeigte diese Wand beim Ziehen als gestrichelten Rahmen; sie zeigte damit eine Regel, die
+   es nicht mehr gibt. */
 /* Eine Liste aus einer Datei. Was kein Punkt ist, faellt weg; was ueber fuenf hinausgeht, faellt
    weg UND wird gezaehlt (kbUeberzaehlig), damit das Studio es sagen kann statt es zu verschweigen. */
 function kbListeAus(a){ if(!Array.isArray(a)) return null;
@@ -31908,6 +32036,43 @@ function kbPunkte(e){
 /* Die engste Enge dieses Effekts - der groesste Weg, den er ueberhaupt nimmt. Ohne Punkt ist das
    1 (das Ganzbild, kein Weg). Nur die Parallaxe fragt danach. */
 function kbEngste(e){ let z=1; for(const p of kbPunkte(e)) if(p.z<z) z=p.z; return z; }
+/* ===================== WAS EIN ENGER PUNKT KOSTET: DIE AUFLOESUNG =====================
+   Seit dem 19.09.2026 darf ein Punkt bis 0,25 (KB_ENGE_MIN). Was dagegen spricht, ist nicht die
+   Geometrie - der Ausschnitt liegt bei jeder Enge ganz im Bild -, sondern die AUFLOESUNG, und die
+   ist je Quelle eine andere Zahl. Also steht hier keine Grenze, sondern eine Rechnung:
+     ausgabeMass deckelt die lange Kante bei 1080 und vergroessert die Quelle NIE. Die Ausgabe ist
+     also W x H mit W/bw = H/bh = sk <= 1. Ein Punkt der Enge z zeigt z*bw Quellbildpunkte auf W
+     Ausgabebildpunkten, wird also sk/z-fach vergroessert. Bei z = sk steht es 1:1.
+   GEMESSEN WIRD AN DER ECHTEN QUELLE UND DER ECHTEN AUSGABE, nicht an einem angenommenen Format:
+   ein Titelbild 1057x1442 gibt 792x1080 und damit 1:1 bei Enge 0,75; ein Video 1080x1080 gibt
+   1080x1080, sk = 1, und dort ist ALLES unter Enge 1,00 schon Vergroesserung.
+   Ohne Quelle gibt es nichts zu rechnen - dann null, und die Zeile schweigt davon. */
+function kbLupe(z){
+  if(typeof ausgabeMass!=='function'||!bild) return null;
+  const [bw,bh]=qMass(bild); if(!(bw>1&&bh>1)||!(z>0)) return null;
+  let W,H; try{ [W,H]=ausgabeMass(); }catch(x){ return null; }
+  if(!(W>1&&H>1)) return null;
+  const sk=Math.max(W/bw,H/bh);   /* die groessere der beiden Kanten entscheidet - die Rundung auf gerade Kantenlaengen laesst sie um Bruchteile auseinandergehen */
+  return { f:sk/z, eins:sk, W, H, bw, bh };
+}
+/* Ein Wort statt einer Zahl, solange es eines gibt - "dreifach vergroessert" liest sich, "3,0-fach"
+   rechnet man nach. Dazwischen bleibt die Zahl stehen; erfunden wird kein Wort. */
+const KB_LUPE_WORT=[null,null,'zweifach','dreifach','vierfach','fünffach','sechsfach','siebenfach','achtfach'];
+function kbLupeWort(f){
+  if(Math.abs(f-1.5)<0.06) return 'anderthalbfach';
+  const r=Math.round(f); if(r>=2&&r<KB_LUPE_WORT.length&&Math.abs(f-r)<0.06) return KB_LUPE_WORT[r];
+  return kf(f.toFixed(1))+'-fach'; }
+/* DIE ZEILE SAGT ES ERST, WENN ES ETWAS ZU SAGEN GIBT (Regel 4: was nicht gilt, steht nicht da).
+   Unter 1:1 wird nichts vergroessert - dort ist die Auflösung kein Thema und die Zeile schweigt. */
+function kbLupenSatz(e){
+  const P=kbPunkte(e); if(!P.length) return '';
+  const L0=kbLupe(1); if(!L0) return '';
+  const ueber=[]; for(let i=0;i<P.length;i++){ const L=kbLupe(P[i].z); if(L&&L.f>1.005) ueber.push([i+1,L.f,P[i].z]); }
+  if(!ueber.length) return '';
+  const teil=ueber.map(x=>'Punkt '+x[0]+' (Enge '+kf(x[2].toFixed(2))+') '+kbLupeWort(x[1]));
+  return 'Die Ausgabe ist '+L0.W+' × '+L0.H+' Bildpunkte, die Quelle '+L0.bw+' × '+L0.bh+' — bis Enge '
+    +kf(L0.eins.toFixed(2))+' wird nichts vergrößert. '
+    +(teil.length===1?teil[0]:(teil.slice(0,-1).join(', ')+' und '+teil[teil.length-1]))+' vergrößert.'; }
 /* Lage in ECHTEN Schlaegen, gezaehlt ab der ersten Eins des Titels - das braucht nur das Pult.
    Driftfrei, weil die echten Schlagzeiten gezaehlt und nicht aus einem Median hochgerechnet
    werden; jeder Zyklus faengt deshalb auf einem gezaehlten Schlag an, und weil die Zykluslaenge
@@ -32069,16 +32234,45 @@ function kbPlanHier(e){ const lg=kbLage(); if(!lg||!(lg.N>1)) return null;
       der nirgendwohin faehrt, und einen Halt. Das ist kein Sonderfall im Code, sondern dieselbe
       Rechnung mit n = 0 - und es ist eine ehrliche Stellung: wer alle Punkte loest, sieht das
       stehende Ganzbild, und die Zeile sagt es. */
-function kbWeg(e,t){
+/* EINMAL GERECHNET, ZWEIMAL GELESEN (19.09.2026). Bis dahin stand der ganze Rumpf in kbWeg. Die
+   Bewegungsunschaerfe braucht GENAU dieselben Zahlen - welcher Abschnitt laeuft, wie weit er
+   fortgeschritten ist und wie lange er dauert -, und eine zweite Rechnung daneben waere eine
+   zweite Wahrheit: schon eine Rundung Unterschied, und die Unschaerfe saesse an der Naht auf einem
+   anderen Wert als das Bild. Also gibt kbAbschnitt den Abschnitt her, kbWeg macht daraus den Ausschnitt
+   und kbUnschaerfe den Radius. Die Zahlen selbst sind Zeile fuer Zeile unveraendert.
+   ZURUECK KOMMT: st/L/n die Stationen, k der Abschnitt, p die Stelle IM ZUG (0 .. 1), halt die
+   Stelle IM HALT (0 .. 1) oder -1, wenn gerade gefahren wird, und Fb/Hb ihre Laengen in
+   EXPORTBILDERN - das eine Mass, in dem sich ein Tempo ausdruecken laesst. Fb bemisst, wie weit
+   der Zug je Bild kommt (die Unschaerfe unterwegs), Hb, wie oft der Schaerfezieher in diesem Halt
+   ausschlaegt (kbSuchAusschlaege). Hb lag am 19.09.2026 einen halben Tag lang tot da - gerechnet,
+   umgeschaltet, zurueckgegeben und von niemandem gelesen; seit der Schaerfezieher an der
+   Haltlaenge haengt, hat es einen Leser. */
+/* EINMAL JE BILD, NICHT EINMAL JE FRAGENDEM (Gegenlesen 19.09.2026). Der Kommentar oben begruendet
+   die Aufteilung damit, dass die Zahlen nur EINMAL gerechnet werden sollen - und genau das war
+   nicht der Fall: kbWeg fragte in zeichneFrame, kbUnschaerfe fragte in derselben Runde noch
+   einmal, mit demselben e und demselben t. Bitgleich dasselbe Ergebnis, also kein falsches Bild -
+   reine Doppelarbeit an der heissesten Stelle.
+   GEMERKT WIRD JE ZEICHENRUNDE, NICHT JE ZEIT. Ein Merker auf (e, t) waere still falsch, sobald
+   dieselbe Zeit ein zweites Mal gemalt wird, nachdem sich ein Punkt bewegt hat - und genau das tut
+   die Buehne bei jedem Zug an einer Marke. ZEICHEN_RUNDE zaehlt in zeichneFrame hoch; was
+   innerhalb EINER Runde gefragt wird, ist dieselbe Frage, und was danach kommt, rechnet neu.
+   Der Merker liegt am Effekt und nicht in einer Karte: ein geloester Effekt nimmt ihn mit. */
+let ZEICHEN_RUNDE=0;
+function kbAbschnitt(e,t){
+  if(e._kbAbRunde===ZEICHEN_RUNDE&&e._kbAbZeit===t) return e._kbAb;
+  const w=kbAbschnittRechnen(e,t);
+  e._kbAbRunde=ZEICHEN_RUNDE; e._kbAbZeit=t; e._kbAb=w; return w;
+}
+function kbAbschnittRechnen(e,t){
   /* DIE BUEHNE STEHT, SOLANGE DIE KARTE OFFEN IST (KONZEPT-ZIELPUNKTE.md, Abschnitt 9): auf ein
      wanderndes Bild laesst sich kein Punkt ins Motiv setzen. KB_STEHT wird AUSSCHLIESSLICH in
      rahmen() gesetzt und dort im finally wieder geloescht - der Export, die Kachel und der
      Pruefstand rufen zeichneFrame auf anderen Wegen und sehen davon nie etwas. */
-  if(KB_STEHT&&KB_STEHT===e.id) return [1,0,0];
+  if(KB_STEHT&&KB_STEHT===e.id) return null;
   const st=kbStationen(e), L=st.length-1, n=L-1;
   const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); if(!(P>=2)) P=KB_ERSATZ_PROTAKT;
   const T=Math.max(1,Math.round(Number(e.kbTakte)||1));
-  let F, H, HA, u, k=0, p=1;
+  let F, H, HA, u, k=0, p=1, Fb=0, Hb=0, HAb=0;
   if(LOOP>0){
     /* BILDRATE_SCHLEIFE ist die Exportbildrate (30) - dieselbe 30, mit der lpBildNr die Bildnummer
        im Clip zaehlt. Ein zweiter Wert liesse N und die Bildnummer auseinanderlaufen. */
@@ -32090,16 +32284,204 @@ function kbWeg(e,t){
     let A=0; if(M>0) for(let i=0;i<S.length;i++) if(S[i].length>2&&S[i][2]===0){ A=lpBildNr(S[i][0]); break; }
     const pl=kbPlan(N,M,P,L,T); F=pl.F; H=pl.H; HA=pl.HA;
     u=((lpBildNr(t)-A)%N+N)%N;
+    Fb=F; Hb=H; HAb=HA;   /* im Clip zaehlt kbPlan schon in ganzen Bildern - nichts umzurechnen */
   } else {
     const b=kbSchlagLage(S,t), bs=(b!=null?b:t/KB_ERSATZ_SCHLAG), zyk=L*T+n+1;
     u=((bs/(zyk*P))%1+1)%1; F=T/zyk; H=1/zyk; HA=1/zyk;
+    /* IM PULT GIBT ES KEINE CLIPLAENGE UND DAMIT KEINE BILDZAEHLUNG - F und H sind dort Anteile
+       einer Runde. Fuer die Unschaerfe braucht es trotzdem eine Laenge in Bildern, sonst laesst
+       sich kein Tempo ausdruecken. Genommen wird dieselbe Rechnung, mit der die Zeile unter dem
+       Regler die Runde in Sekunden nennt (kbSatz): ein Takt sind P Schlaege, ein Schlag 1/schlagHz
+       oder das Ersatzmass, und ein Zug T Takte, ein Halt einer. Mal BILDRATE_SCHLEIFE gibt das
+       Bilder. Sie geht NUR in die Unschaerfe ein, nie in den Ausschnitt - der Lauf selbst bleibt
+       Zeile fuer Zeile, wie er war. */
+    const hz=schlagHz(), takt=P*(hz>0?1/hz:KB_ERSATZ_SCHLAG);
+    Fb=Math.max(1,T*takt*BILDRATE_SCHLEIFE); Hb=HAb=Math.max(1,takt*BILDRATE_SCHLEIFE);
   }
   /* Die Abschnitte der Runde: Zug 0, Halt am Punkt 1, Zug 1, Halt am Punkt 2, ... , Zug n,
      aeusserer Halt am Ganzbild. Ein Halt wird als sein Zug an der Stelle p = 1 gerechnet - dann
      steht die Ankunft nur an EINER Stelle im Code. */
-  for(;k<L;k++){ if(u<F){ p=u/F; break; } u-=F; const h=(k<L-1)?H:HA; if(u<h) break; u-=h; }
-  if(k>=L) k=L-1;   /* Rundung: was uebrig bleibt, faellt in den aeusseren Halt */
-  return kbZug(st[k],st[k+1],p);
+  let halt=-1;
+  for(;k<L;k++){ if(u<F){ p=u/F; break; } u-=F; const h=(k<L-1)?H:HA; if(u<h){ halt=(h>0?u/h:0); break; } u-=h; }
+  if(k>=L){ k=L-1; halt=1; }   /* Rundung: was uebrig bleibt, faellt in den aeusseren Halt */
+  return { st, L, n, k, p, halt, Fb, Hb:(k<L-1?Hb:HAb) };
+}
+function kbWeg(e,t){ const w=kbAbschnitt(e,t); return w?kbZug(w.st[w.k],w.st[w.k+1],w.p):[1,0,0]; }
+/* ===================== FOKUS BEI ANKUNFT: DIE BEWEGUNGSUNSCHAERFE =====================
+   Caspar_D, 19.09.2026: "ich weiss, dass die Schaerfe Tiefenabhaengig ist, koennte man bei den
+   Videos nicht wenigstens so tun, als ob man am Ziel nochmal scharf stellt?" - Scharf | Unscharf |
+   Suche, je Punkt, in einer Spalte der Liste.
+   DAS IST KEINE TIEFENSCHAERFE, SONDERN BEWEGUNGSUNSCHAERFE, und genau darum braucht es hier KEINE
+   Tiefenkarte, kein Tiefenband und keine Maske - ein einziger Weichzeichner ueber die fertige
+   Flaeche, und er laeuft auf Bewegtbild genauso wie auf einem Foto. Das Konzeptblatt
+   (KONZEPT-ZIELPUNKTE.md, Abschnitt 6) hatte Tiefenbaender vorgesehen; sie fallen, weil die Frage
+   im Gespraech eine andere geworden ist ("so tun, als ob"). Was dort ueber das Ueberblenden von
+   Weichzeichnungen steht, bleibt richtig - es wird hier nur nicht gebraucht.
+
+   1. WIE STARK ES SCHMIERT, RECHNET DIE SOFTWARE (Hausregel: was die Software ausrechnen kann,
+      wird kein Regler). Die Unschaerfe folgt der GESCHWINDIGKEIT der Kamera, und die steckt schon
+      in der Bewegung - eine zweite wird nicht erfunden: aus derselben Weichkurve
+      (schleifePendelWeg) kommt ihre Ableitung (schleifePendelTempo), daraus die Aenderung von Ort
+      und Enge JE BILD, daraus der Weg, den der Bildinhalt in einem Bild auf der Leinwand
+      zuruecklegt. Steht die Kamera, ist der Weg null und das Bild scharf.
+   2. ZWEI WEGE, EIN MASS. Der Schwenk verschiebt den Inhalt um du*W/c Studio-Bildpunkte (der
+      Ausschnitt ist c der Quellkante breit und fuellt W), der Zoom laesst ihn strahlig auseinander
+      laufen: bei r Bildpunkten Abstand von der Mitte um r*|dc|/c. Genommen wird r als der halbe
+      Weg von der Mitte in die Ecke - ein Ort, an dem wirklich Bild steht, nicht die Ecke selbst.
+      Addiert, nicht quadratisch gemischt: beides schmiert zugleich, und ein Weichzeichner ist
+      ohnehin rund.
+   3. DER RADIUS IST DIE HALBE STRECKE, DIE DAS BILD IN EINEM BILD WANDERT. Das ist eine SETZUNG
+      und steht hier als solche: der Verschluss steht ganz offen, der Schmierstreifen ist so lang
+      wie die Strecke, und der Radius die halbe Streuung um seine Mitte. Ein engerer Verschluss
+      (180 Grad) waere halb so viel; dann sieht man es bei den ruhigen Zuegen, die diese Fahrt
+      meist faehrt, gar nicht mehr.
+   4. DER RADIUS SKALIERT MIT DER LEINWAND, UND ZWAR VON SELBST - ES BRAUCHT KEINE UMRECHNUNG
+      (Gegenlesen 19.09.2026). Hier stand bis heute ein Weg ueber EINHEIT: der Maler uebergab
+      Wn/EINHEIT und Hn/EINHEIT und multiplizierte das Ergebnis wieder mit EINHEIT. Das war eine
+      RUNDREISE OHNE WIRKUNG. kbSchmierBei ist homogen ersten Grades in (W0, H0) - jeder Summand
+      traegt die Leinwandkante genau einmal: vx ~ W0, vy ~ H0, vz ~ sqrt(W0*W0+H0*H0), und hypot
+      von zwei homogenen Groessen ist wieder homogen. Also ist f(lW, lH) = l*f(W, H) fuer jedes l,
+      und Division und Multiplikation heben sich exakt auf. Der Kommentar nannte obendrein eine
+      Gefahr, die er nicht abwendete: ein 1080er Export schmiert sehr wohl in Bildpunkten dreimal
+      so stark wie das Pult - und genau das ist richtig, denn der ANTEIL DER BILDKANTE ist in
+      beiden derselbe, und das ist es, was gleich aussieht. Der Umweg ist geloescht (Hausregel:
+      totlegen nur mit loeschen); die Begruendung, warum keiner noetig ist, steht hier.
+      WER HIER EINEN SUMMANDEN DAZULEGT, DER NICHT MIT DER LEINWAND WAECHST (eine feste Zahl in
+      Bildpunkten, ein Sockel), zerstoert genau diese Eigenschaft - dann sieht dasselbe Bild in
+      zwei Groessen verschieden aus, und dann gehoert der Sockel in Studiomass gerechnet und mit
+      EINHEIT multipliziert. Die Homogenitaet ist die Zusage, und sie steht hier als solche.
+   5. DIE NAHT BLEIBT DICHT, OHNE DASS ETWAS DAFUER GETAN WIRD. Der Radius ist eine Funktion von
+      kbAbschnitt und sonst nichts - also eine Funktion derselben ganzen Zahl d, an der auch der
+      Ausschnitt haengt. Bild(t+L) hat dieselbe Bildnummer, also denselben Abschnitt, also
+      denselben Radius. An den Stationen ist das Tempo ohnehin null (Punkt 1), der Uebergang von
+      Zug zu Halt ist damit stetig und kein Sprung.
+   6. WAS NICHT SCHMIERT. Der Rueckweg auf das Ganzbild ist IMMER scharf - das ist das ruhende
+      Bild, und das Ganzbild ist kein Punkt in der Liste, es hat also keine Stellung. Und ein Punkt
+      auf "Scharf" - die Vorgabe - schmiert nie, auch nicht auf dem Weg zu ihm. */
+const KB_SCHMIER=0.5;
+/* DER SCHAERFEZIEHER (Stellung "Suche"). Caspar_D: "am Ziel fokussiert es iterativ: es wird scharf,
+   geht ein Stueck darueber hinaus und faengt sich". Das ist eine gedaempfte Schwingung, und sie
+   muss IM HALT anfangen und IM HALT aufhoeren - also liegt sie ueber dem Halt und nicht ueber einer
+   erfundenen Dauer: |sin(pi*m*s)| hat bei s = 0 und s = 1 eine Nullstelle und dazwischen m
+   Ausschlaege, e^(-D*s) macht jeden kleiner als den vorigen.
+   WIE VIELE AUSSCHLAEGE, SAGT DIE LAENGE DES HALTS - SIE WAR BIS HEUTE FEST DREI (Gegenlesen
+   19.09.2026). Ein Halt ist so lang, wie der Clip ihn uebrig laesst; drei Halbwellen auf vier
+   Bildern sind keine Schwingung, sondern ein einzelner Unschaerfestoss binnen einem Sechstel
+   einer Sekunde, und ein Schaerfezieher braucht Zehntelsekunden. Also bekommt jeder Ausschlag eine
+   MINDESTDAUER (KB_SUCH_HALBWELLE) und ihre Zahl ergibt sich: m = Halt / Mindestdauer, geklemmt
+   auf 1 bis KB_SUCH_AUSSCHLAEGE. Kein Regler dafuer - die Haltlaenge steht schon da (w.Hb, die
+   Laenge dieses Halts in Exportbildern, die kbAbschnitt ohnehin mitgibt).
+   0,18 s JE AUSSCHLAG ist eine SETZUNG und steht hier als solche: es ist die Groessenordnung, in
+   der eine Hand am Schaerfering ueberschwingt und zurueckkommt. Gemessen ist sie nicht, und sie
+   soll auch nicht gemessen werden - gemessen wird, was das Bild tut, nicht was ein Kameramann
+   tut. Bei einem Halt unter 0,18 s bleibt EIN Ausschlag uebrig: das ist alles, was dieser Halt
+   hergibt, und er tut es sichtbar statt drei Mal unsichtbar.
+   DIE DAEMPFUNG HAENGT AN DER ZAHL DER AUSSCHLAEGE, nicht am Halt: jeder soll um denselben Faktor
+   kleiner sein als der vorige, gleich wie viele es sind. D = KB_SUCH_DAEMPFUNG_JE * m, und bei
+   m = 3 sind das genau die 2,5, die bis heute dastanden.
+   WO SIE AUFHOERT. Auf s = 1 ist |sin| exakt null, aber s = u/h laeuft ueber ganze Bilder und
+   erreicht 1 nie - das letzte Haltbild traegt einen Rest von |sin(pi*m/h)|*e^(-D*(h-1)/h) des
+   Ausschlags (bei m = 2 und h = 15: 3,5 % davon). Der Bericht vom 19.09.2026 behauptete "hoert
+   auf exakt null auf"; das ist falsch, und hier steht, was stattdessen gilt. Es SPRINGT trotzdem
+   nichts: das naechste Bild ist das erste Bild des naechsten Zugs, dort ist p = 0 und
+   schleifePendelTempo(0) = 0, also exakt scharf. Der Rest faellt auf null, und ein Fallen auf
+   scharf ist genau das, was Ankunft heisst.
+   WIE WEIT ES AUSSCHLAEGT, KOMMT AUS DEMSELBEN ZUG: der Ausschlag ist so gross wie die
+   Unschaerfe in der MITTE des Zugs, der hierher gefuehrt hat. Dieselbe Optik, dieselbe Zahl - kein
+   zweiter Begriff und kein Regler. Ein Punkt, der langsam angefahren wird, sucht darum auch leise.
+   DAS IST EINE FOLGE, KEIN VERSEHEN: die Software hat keine zweite Quelle fuer "wie unscharf". */
+const KB_SUCH_AUSSCHLAEGE=3, KB_SUCH_DAEMPFUNG_JE=2.5/3, KB_SUCH_HALBWELLE=0.18;
+/* Wie oft dieser Halt sucht - aus seiner Laenge in Bildern. An EINER Stelle, weil die Zeile unter
+   der Liste dieselbe Zahl nennen muss wie der Maler. */
+function kbSuchAusschlaege(Hb){ const sek=(Hb>0?Hb:0)/BILDRATE_SCHLEIFE;
+  return Math.max(1,Math.min(KB_SUCH_AUSSCHLAEGE,Math.floor(sek/KB_SUCH_HALBWELLE))); }
+/* Der Schmierweg an der Stelle p eines Zugs, in Studio-Bildpunkten je Bild, mal KB_SCHMIER. */
+function kbSchmierBei(A,B,p,Fb,W0,H0){
+  if(!(Fb>0)||!(W0>1)||!(H0>1)) return 0;
+  const q=schleifePendelWeg(p), dq=schleifePendelTempo(p)/Fb;
+  const c=A[0]+(B[0]-A[0])*q; if(!(c>1e-6)) return 0;
+  const vx=(B[1]-A[1])*dq*W0/c, vy=(B[2]-A[2])*dq*H0/c;
+  const vz=Math.sqrt(W0*W0+H0*H0)/4*Math.abs((B[0]-A[0])*dq)/c;
+  return KB_SCHMIER*(Math.hypot(vx,vy)+vz);
+}
+/* DIE FORMEL SELBST - EINMAL AUFGESCHRIEBEN, VON ZWEIEN GELESEN (19.09.2026). Der Maler fragt sie
+   ueber kbUnschaerfe mit der laufenden Fahrt, die Vorfuehrung auf der offenen Karte (kbVorfuehrung)
+   mit ihrer eigenen Uhr. Zwei Rumpfe waeren zwei Wahrheiten ueber dieselbe Optik: wer die
+   Vorfuehrung ansieht, muss dasselbe sehen, was spaeter im Clip steht.
+   A/B die beiden Stationen des Zugs, f die Stellung des ZIELS, p die Stelle im Zug, halt die
+   Stelle im Halt (oder -1, wenn gefahren wird), Fb/Hb ihre Laengen in Bildern. */
+function kbRadius(A,B,f,p,halt,Fb,Hb,W0,H0){
+  if(f==='scharf') return 0;
+  if(halt>=0){
+    if(f!=='suche') return 0;   /* "Unscharf": bei der Ankunft ist es sofort wieder scharf */
+    const gross=kbSchmierBei(A,B,0.5,Fb,W0,H0); if(!(gross>0)) return 0;
+    const m=kbSuchAusschlaege(Hb);
+    return gross*Math.exp(-KB_SUCH_DAEMPFUNG_JE*m*halt)*Math.abs(Math.sin(Math.PI*m*halt));
+  }
+  return kbSchmierBei(A,B,p,Fb,W0,H0);
+}
+/* Der Radius dieses Augenblicks in Bildpunkten der uebergebenen Leinwand. Null heisst: dieser
+   Effekt schmiert gerade nicht, und dann wird auch nichts gezeichnet. */
+function kbUnschaerfe(e,t,W0,H0){
+  /* ZUERST DIE VORFUEHRUNG: solange die Karte offen ist, STEHT die Fahrt (kbAbschnitt gibt null),
+     und genau dann laesst sich die Fokusspalte nicht beurteilen. Siehe kbVorfuehrung. */
+  const v=kbVorfuehrung(e,W0,H0); if(v!=null) return v;
+  const w=kbAbschnitt(e,t); if(!w) return 0;
+  const P=kbPunkte(e);
+  /* Der Zug k fuehrt auf die Station k+1. Fuer k < L-1 ist das der Zielpunkt k, fuer den letzten
+     Zug das Ganzbild - und das ist kein Punkt in der Liste, also immer scharf. */
+  const f=(w.k<w.L-1&&P[w.k])?kbFokus(P[w.k]):'scharf';
+  return kbRadius(w.st[w.k],w.st[w.k+1],f,w.p,w.halt,w.Fb,w.Hb,W0,H0);
+}
+/* ===================== DIE VORFUEHRUNG AUF DER OFFENEN KARTE =====================
+   Gegenlesen 19.09.2026: "Die neue Spalte laesst sich nie sehen, waehrend man sie stellt." Das
+   stimmt und es ist ein Widerspruch in der Sache. Die Buehne STEHT, solange die Karte offen ist -
+   das muss sie, sonst liesse sich auf ein wanderndes Bild kein Punkt ins Motiv setzen
+   (KONZEPT-ZIELPUNKTE.md, Abschnitt 9). Auf der Karte sitzt aber das Auswahlfeld, und wer
+   "Unscharf" gegen "Suche" abwaegen will, musste bisher zuklappen - dann ist das Auswahlfeld weg.
+   Die Stellung wurde also nach Text gewaehlt und nicht nach Augenschein, und das ist bei einer
+   SCHAERFEFRAGE das falsche Sinnesorgan.
+   WARUM ES SICH TROTZDEM ZEIGEN LAESST, OHNE DIE REGEL ZU BRECHEN: die Unschaerfe ist ein
+   Weichzeichner ueber die FERTIGE FLAECHE und verschiebt keinen Bildpunkt. Das Bild steht also
+   weiter genau da, wo es steht - es wird nur weich und wieder scharf. Die Marken lassen sich
+   waehrenddessen setzen und ziehen wie vorher.
+   IHRE ZAHLEN SIND NICHT ERFUNDEN: Zuglaenge und Haltlaenge kommen aus kbPlanHier, also aus
+   derselben Rechnung, nach der der Clip spaeter faehrt. Hat dieser Clip keinen Halt (kbPlan H=0),
+   zeigt die Vorfuehrung auch keinen - dann sieht man mit eigenen Augen, dass "Suche" hier wie
+   "Unscharf" ausgeht, und die Zeile darunter sagt dasselbe in Worten.
+   SIE LAEUFT NUR HIER. KB_ZEIGT wird ausschliesslich vom Auswahlfeld der offenen Karte gesetzt
+   und nur gelesen, wenn KB_STEHT auf demselben Effekt steht - Export, Kachel und Pruefstand
+   erreichen beides nie. Und sie laeuft nur eine Weile: nach KB_ZEIGT_RUNDEN Durchgaengen ist
+   Schluss, sonst schmierte die Buehne die ganze Zeit, in der jemand in Ruhe Punkte setzen will. */
+const KB_ZEIGT_RUNDEN=3, KB_ZEIGT_MAX_S=8;
+let KB_ZEIGT=null;
+function kbZeigtLaeuft(){ if(!KB_ZEIGT) return false;
+  if((performance.now()-KB_ZEIGT.t0)/1000>KB_ZEIGT_MAX_S){ KB_ZEIGT=null; return false; }
+  return true; }
+function kbVorfuehrung(e,W0,H0){
+  if(!KB_ZEIGT||KB_ZEIGT.id!==e.id||KB_STEHT!==e.id) return null;
+  const P=kbPunkte(e), i=KB_ZEIGT.i, q=P[i]; if(!q) { KB_ZEIGT=null; return null; }
+  const f=kbFokus(q); if(f==='scharf'){ KB_ZEIGT=null; return null; }   /* nichts vorzufuehren */
+  const st=kbStationen(e), A=st[i], B=st[i+1];
+  /* Die Laengen dieses Clips, sonst das, was das Pult faehrt - dieselben Quellen wie im Maler.
+     EINMAL BEIM ANSTOSS GERECHNET UND NICHT JE BILD: kbPlanHier geht ueber kbLage(), und das faellt
+     ohne Loop-Ansicht auf ausschnitt() zurueck - eine Rechnung ueber die ganze Schlagtabelle. Genau
+     die Sorte Arbeit, die in keiner Bildschleife zu suchen hat (siehe schlagHz, 19.09.2026).
+     Waehrend der wenigen Sekunden einer Vorfuehrung aendert sich daran ohnehin nichts; wer die
+     Punkte umstellt, stoesst sie neu an und bekommt neu gerechnete Laengen. */
+  if(KB_ZEIGT.Fb==null){ const pl=kbPlanHier(e);
+    if(pl){ KB_ZEIGT.Fb=Math.max(1,pl.F); KB_ZEIGT.Hb=Math.max(0,pl.H); }
+    else { const S=(DATA&&DATA.schlaege)||[]; let Pt=kbProTakt(S); if(!(Pt>=2)) Pt=KB_ERSATZ_PROTAKT;
+      const hz=schlagHz(), takt=Pt*(hz>0?1/hz:KB_ERSATZ_SCHLAG), T=Math.max(1,Math.round(Number(e.kbTakte)||1));
+      KB_ZEIGT.Fb=Math.max(1,T*takt*BILDRATE_SCHLEIFE); KB_ZEIGT.Hb=Math.max(1,takt*BILDRATE_SCHLEIFE); } }
+  const Fb=KB_ZEIGT.Fb, Hb=KB_ZEIGT.Hb;
+  /* Ein Durchgang ist EIN Zug samt seinem Halt - mehr zeigt die Spalte nicht, und weniger waere
+     nicht zu beurteilen. Danach faengt er von vorne an, KB_ZEIGT_RUNDEN mal. */
+  const runde=Fb+Hb, u=(performance.now()-KB_ZEIGT.t0)/1000*BILDRATE_SCHLEIFE;
+  if(u>=runde*KB_ZEIGT_RUNDEN){ KB_ZEIGT=null; return null; }
+  const x=u%runde;
+  return (x<Fb) ? kbRadius(A,B,f,x/Fb,-1,Fb,Hb,W0,H0)
+                : kbRadius(A,B,f,1,(Hb>0?(x-Fb)/Hb:0),Fb,Hb,W0,H0);
 }
 /* DIE PUNKTELISTE AUF DER KARTE. Sie ZEIGT, was dasteht: Nummer, Ort in Anteilen der Quelle und
    Enge. Bedient wird sie nicht - das geschieht auf der Buehne, wo man sieht, worauf man zeigt
@@ -32108,18 +32490,60 @@ function kbWeg(e,t){
    der Karte und die Marke auf der Buehne als dasselbe gelesen werden.
    Inline gestaltet und nicht ueber tbs.css: es sind drei Regeln fuer EINE Liste, und sie stehen
    dann dort, wo man sie sucht. */
+/* EINE STELLE, DIE NOCH FREI IST - fuer den Knopf unter der Liste (19.09.2026). Ein Klick auf die
+   Buehne setzt den Punkt dorthin, wo der Zeiger war; der Knopf hat keinen Zeiger, also muss er
+   selbst eine Stelle waehlen. Genommen wird die, die am WEITESTEN von allen vorhandenen Punkten
+   weg ist - abgesucht auf einem Raster von 7x7 ueber genau den Bereich, in dem die Mitte dieser
+   Enge OHNE Verrutschen des Rahmens liegen kann: z/2 .. 1-z/2. Das ist seit dem 19.09.2026 keine
+   Regel mehr, sondern nur die WAHL fuer einen neuen Punkt - gesetzt werden darf er ueberall. Wer
+   von Hand an den Rand zielt, meint es; wer auf einen Knopf drueckt, meint gar nichts Bestimmtes,
+   und dann ist die Stelle die bessere, an der der Rahmen noch mittig sitzt.
+   Liegen mehrere gleich weit, gewinnt die mittigere: ein neuer Punkt soll nicht ohne Not in einer
+   Ecke landen.
+   OHNE VORHANDENEN PUNKT gibt es nichts, wovon man weg muesste - dann der linke Drittelpunkt,
+   dieselbe Stelle, die auch der Vorschlag beim Einfuegen nimmt (kbRaten). Zwei verschiedene
+   Antworten auf dieselbe Frage waeren eine zu viel. */
+function kbFreierOrt(P,z){
+  if(!P.length) return kbOrt({u:1/3,v:0.5,z});
+  const lo=z/2, hi=1-z/2, N=7; let bu=0.5, bv=0.5, best=-Infinity;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const u=(hi>lo)?lo+(hi-lo)*i/(N-1):lo, v=(hi>lo)?lo+(hi-lo)*j/(N-1):lo;
+    let d=Infinity; for(const q of P){ const dd=Math.hypot(u-q.u,v-q.v); if(dd<d) d=dd; }
+    const g=d-1e-4*Math.hypot(u-0.5,v-0.5);
+    if(g>best){ best=g; bu=u; bv=v; } }
+  return kbOrt({u:bu,v:bv,z});
+}
+/* DER KNOPF UNTER DER LISTE (Caspar_D, 19.09.2026: "ich waere dafuer, unter die Punktliste ein
+   Punkt hinzufuegen Button anzufuegen"). Er musste fragen, WIE man Punkte hinzufuegt: die Geste
+   steht im Beschreibungstext, aber die Buehne selbst sagt nichts, und ein Klick ins Bild sieht
+   nicht nach Bedienung aus. Der Knopf ist der sichtbare Weg zu derselben Sache - die Geste bleibt,
+   sie wird nicht ersetzt. Bei fuenf Punkten ist er gesperrt, und der Grund steht darunter (Regel 4:
+   grau mit Grund, nicht weg). */
+function kbNeuKnopf(n){
+  const voll=n>=KB_PUNKTE_MAX;
+  return '<div style="margin:0 0 6px"><button class="tbs-kbneu" data-kbneu="1"'+(voll?' disabled':'')
+    +' title="'+(voll?'F\u00fcnf Zielpunkte sind die Grenze':'Setzt einen Punkt an eine noch freie Stelle \u2014 dasselbe wie ein Klick in die freie Fl\u00e4che der B\u00fchne')
+    +'">+ Punkt hinzuf\u00fcgen</button>'
+    +(voll?'<div style="color:var(--schwach);font-size:10.5px;margin:3px 0 0">F\u00fcnf Zielpunkte sind die Grenze \u2014 ein Doppelklick auf eine Marke l\u00f6st sie und macht Platz.</div>':'')
+    +'</div>';
+}
 function kbListeHTML(e){
   const P=kbPunkte(e);
   let h='<div class="tbs-abunter" style="margin-bottom:4px">Zielpunkte</div>';
-  if(!P.length) return h+'<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Kein Zielpunkt \u2014 ein Klick in die freie Fl\u00e4che der B\u00fchne setzt einen.</div>';
-  h+='<div style="margin:0 0 6px">';
-  for(let i=0;i<P.length;i++){ const p=P[i];
-    h+='<div style="display:flex;align-items:center;gap:8px;padding:2px 0;font-size:11px">'
+  if(!P.length) return h+'<div style="color:var(--schwach);font-size:10.5px;margin:0 0 6px">Kein Zielpunkt \u2014 ein Klick in die freie Fl\u00e4che der B\u00fchne setzt einen, der Knopf darunter auch.</div>'+kbNeuKnopf(0);
+  h+='<div style="margin:0 0 6px">'
+    +'<div style="display:flex;align-items:center;gap:6px;padding:0 0 2px;font-size:10px;color:var(--schwach)">'
+    +'<span style="flex:0 0 18px"></span><span style="flex:1 1 auto">Ort und Enge</span>'
+    +'<span style="flex:0 0 84px">Fokus bei Ankunft</span></div>';
+  for(let i=0;i<P.length;i++){ const p=P[i], fo=kbFokus(p);
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:2px 0;font-size:11px">'
       +'<span style="flex:0 0 18px;height:18px;line-height:18px;text-align:center;border-radius:9px;'
       +'border:1px solid '+KB_MARKE_FARBE+';color:'+KB_MARKE_FARBE+';font-weight:600">'+(i+1)+'</span>'
-      +'<span style="flex:1 1 auto;color:var(--schwach)">'+Math.round(p.u*100)+'\u2009% / '+Math.round(p.v*100)+'\u2009% der Bildkante</span>'
-      +'<span class="tbs-wert">Enge '+kf(p.z.toFixed(2))+'</span></div>'; }
-  return h+'</div>';
+      +'<span style="flex:1 1 auto;color:var(--schwach)">'+Math.round(p.u*100)+'\u2009% / '+Math.round(p.v*100)+'\u2009% \u00b7 Enge '+kf(p.z.toFixed(2))+'</span>'
+      +'<select class="tbs-kbfokus" data-kbfokus="'+i+'" style="flex:0 0 84px;font-size:10.5px">'
+      +KB_FOKUS.map(([v,l])=>'<option value="'+v+'"'+(fo===v?' selected':'')+'>'+l+'</option>').join('')
+      +'</select></div>'; }
+  return h+'</div>'+kbNeuKnopf(P.length);
 }
 /* DIE ZEILE UNTER DER PUNKTELISTE. Sie sagt, was dasteht, was daraus folgt und was in den Clip
    passt - in Zahlen statt als Behauptung (Regel 11). */
@@ -32156,8 +32580,32 @@ function kbPunkteSatz(e){
   const anschlag=P.filter(p=>Math.abs(p.u-0.5)>=(1-p.z)/2-1e-9||Math.abs(p.v-0.5)>=(1-p.z)/2-1e-9);
   if(anschlag.length){ const w=anschlag.reduce((a,b)=>a.z>b.z?a:b);
     s+=' '+(anschlag.length===1?'Ein Punkt liegt':anschlag.length+' Punkte liegen')+' am Anschlag: eine Marke kann nur so weit von der Mitte weg, wie ihr Ausschnitt im Bild bleibt \u2014 bei Enge '+kf(w.z.toFixed(2))+' sind das '+kf(((1-w.z)/2*100).toFixed(0))+'\u2009% der Bildkante. Wer weiter hinaus will, dreht sie am Mausrad enger.'; }
+  /* WAS DIE FOKUSSPALTE GERADE BEWIRKT - und zwar nur, wenn sie etwas bewirkt (19.09.2026). Bei der
+     Vorgabe "Scharf" steht hier nichts: es gibt nichts zu sagen, wenn sich nichts aendert.
+     UND "SUCHE" VERSPRICHT NUR, WAS DIESER CLIP HERGIBT (Gegenlesen 19.09.2026). Der Satz fragte
+     pl.H nicht ab, obwohl der Satz direkt darueber es tut - und widersprach sich damit im selben
+     Absatz: "Fuer die Punkte bleibt kein ganzer Schlag uebrig" UND wenige Woerter spaeter "das
+     Ganze innerhalb des Halts". Der Schaerfezieher lebt IM HALT (kbUnschaerfe, Haltzweig); ist
+     H = 0, wird der Zweig nie betreten und "Suche" ist bitgleich "Unscharf". Das kommt haeufig
+     vor: ueber N = 60..300, M = 4..48, L = 2..6 ist H = 0 in 1692 von 4715 Faellen (35,9 %).
+     GEMACHT WIRD DARAUS KEIN ERSATZHALT. Eine erfundene Dauer waere eine zweite Zeitrechnung
+     neben kbPlan, und die Koernung des Tempos ist eine Architektenfrage (docs/NAECHSTER_CHAT.md,
+     "Das Erste, was morgen angesehen werden muss"). Gesagt wird es, und es wird gesagt, was hilft.
+     UND DASS DIE VORSCHAU ETWAS ANDERES ZEIGT. Im Pult (LOOP = 0) gibt es IMMER einen Halt - je
+     Station einen Takt -, dort sucht die Schaerfe sichtbar. Wer das sieht und den Clip meint,
+     haelt es fuer den Clip. Also steht es da. */
+  { const un=[], su=[];
+    for(let i=0;i<n;i++){ const f=kbFokus(P[i]); if(f==='unscharf') un.push(i+1); else if(f==='suche') su.push(i+1); }
+    const liste=a=>(a.length===1?'Punkt ':'den Punkten ')+(a.length>1?a.slice(0,-1).join(', ')+' und '+a[a.length-1]:a[0]);
+    const mal=m=>m===1?'einmal':m===2?'zweimal':m+'-mal';
+    if(un.length) s+=' Der Zug zu '+liste(un)+' schmiert und ist bei der Ankunft sofort wieder scharf.';
+    if(su.length){
+      if(pl&&!(pl.H>0)) s+=' Der Zug zu '+liste(su)+' schmiert — gesucht wird in diesem Clip aber NICHT: an den Punkten bleibt kein Halt übrig, und der Schärfezieher lebt im Halt. „Suche“ wirkt hier genau wie „Unscharf“. Ein Punkt weniger'+(T>1?' oder ein kleineres Tempo':'')+' schafft den Halt. In der Vorschau ohne Clip steht an jeder Station ein Takt still — dort sucht sie sichtbar, im Clip nicht.';
+      else s+=' Der Zug zu '+liste(su)+' schmiert, und am Ziel sucht die Schärfe den Punkt: sie geht darüber hinaus und fängt sich, '+(pl?mal(kbSuchAusschlaege(pl.H))+' in den '+sek(pl.H)+' s des Halts':'dreimal innerhalb des Halts')+' und jedes Mal kleiner.'; }
+    if(un.length||su.length) s+=' Wie stark es schmiert, rechnet die Software aus der Geschwindigkeit der Kamera — steht sie, ist es scharf, kein Regler dafür. Der Rückweg auf das Ganzbild ist immer scharf. Ein Blick auf das Auswahlfeld führt es auf der stehenden Bühne vor.'; }
+  { const ls=kbLupenSatz(e); if(ls) s+=' '+ls; }
   { const vs=kbVorschlagSatz(e); if(vs) s+=' '+vs; }
-  s+=' Gesetzt werden sie auf der Bühne: Klick in die freie Fläche setzt einen, Ziehen verschiebt, Mausrad über einer Marke stellt ihre Enge, Doppelklick löst sie.';
+  s+=' Gesetzt werden sie auf der Bühne: Klick in die freie Fläche setzt einen, Ziehen verschiebt, Mausrad über einer Marke stellt ihre Enge, Doppelklick löst sie; beim Ziehen zeigt ein feiner Rahmen, wie weit diese Marke kann. Der Knopf unter der Liste setzt einen an eine noch freie Stelle.';
   return s;
 }
 /* WOHER DIE BEIDEN PUNKTE KAMEN, DIE BEIM EINFUEGEN MITKAMEN - oder dass sie geraten sind
@@ -32314,6 +32762,7 @@ function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
    stehen, waere sie eine Einladung, genau diese Falle noch einmal zu bauen. */
 function zeichneFrame(t,roh){
   if(!bereit) return;
+  ZEICHEN_RUNDE++;   /* eine neue Zeichenrunde: was kbAbschnitt von der vorigen gemerkt hat, gilt nicht mehr */
   const Wn=lein.width, Hn=lein.height, [bw,bh]=qMass(bild); quelleSync(bild,t); EINHEIT=einheitVon(Wn,bw,bh);   /* Studio in Vorgabegroesse: 1 */
   let crop=1,panx=0,pany=0,scaleMul=1,rotG=0;
   const kette=roh?[]:STAPEL;
@@ -32373,6 +32822,38 @@ function zeichneFrame(t,roh){
       if(e.typ==='kontrast') lege(e,'url(#'+kurveFilter(e)+')',a);
       else if(e.typ==='saettigung') lege(e,'saturate('+(e.invert?(1/Math.max(0.05,e.saettigung)):e.saettigung)+')',a);
       else if(e.typ==='helligkeit') lege(e,'brightness('+(e.invert?(1-0.6*e.wucht):(1+1.2*e.wucht)).toFixed(3)+')',a); }
+    /* ---- FOKUS BEI ANKUNFT: EIN EINZIGER WEICHZEICHNER (19.09.2026) ----------------------
+       Die Ken Burns Fahrt schmiert auf dem Weg zu einem Punkt, der auf "Unscharf" oder "Suche"
+       steht; wie stark, rechnet kbUnschaerfe aus der Geschwindigkeit der Kamera. Hier steht nur,
+       WO es geschieht: EINMAL ueber die fertige Flaeche, nicht in einer Schleife (Regel 14), und
+       genau an der Stelle, an der schon "Schaerfe schlaegt" seine weiche Ebene auflegt - dieselbe
+       Momentaufnahme (schnapp), dasselbe Zurueckzeichnen mit ctx.filter.
+       WARUM HIER UND NICHT GANZ AM ENDE: es ist die Unschaerfe der KAMERA auf dem Bild, ueber das
+       sie faehrt. Was die Kette danach hineinmalt - Scheinwerfer, Laser, Teilchen - steht nicht
+       hinter dieser Linse; es kommt obendrauf und bleibt scharf.
+       KEIN HALO AM RAND: der Weichzeichner sampelt ueber den Rand hinaus ins Leere, die
+       zurueckgezeichnete Flaeche ist dort halbdurchsichtig - darunter liegt aber das scharfe Bild
+       und nicht Schwarz. Genau darum wird die Kopie UEBER das Bild gelegt und nicht an seine
+       Stelle gesetzt; dieselbe Begruendung wie bei "Schaerfe schlaegt".
+       KOSTET NICHTS, WENN NICHTS GESCHMIERT WIRD: liegt der Radius unter einem halben Bildpunkt
+       dieser Leinwand, gibt es weder Momentaufnahme noch Zeichenschritt. Bei der Vorgabe
+       ("Scharf") ist er null, und der Weg ist Zeile fuer Zeile derselbe wie vorher. */
+    { let rS=0;
+      for(const e of kette){ if(!aktiv(e)||e.typ!=='kenburns') continue;
+        /* STEHT NIRGENDS ETWAS ANDERES ALS "SCHARF", WIRD NICHT EINMAL GEFRAGT. Ein Blick in die
+           Liste ist billiger als kbAbschnitt, und bei der Vorgabe faellt damit auch die Rechnung
+           weg und nicht nur der Zeichenschritt. */
+        if(!kbPunkte(e).some(p=>kbFokus(p)!=='scharf')) continue;
+        /* IN BILDPUNKTEN DIESER LEINWAND, OHNE UMWEG. Hier stand bis zum Gegenlesen am 19.09.2026
+           kbUnschaerfe(e,t,Wn/EINHEIT,Hn/EINHEIT) und darunter rS*EINHEIT - eine Rundreise, die
+           sich exakt aufhebt, weil kbSchmierBei homogen ersten Grades in der Leinwandkante ist
+           (der Nachweis steht dort). Was sie versprach, gilt weiter und gilt von selbst: derselbe
+           Anteil der Bildkante bei jeder Ausgabegroesse. */
+        const r=kbUnschaerfe(e,t,Wn,Hn); if(r>rS) rS=r; }
+      const r=rS;
+      if(r>=0.5){ const k=schnapp(); ca.save(); ca.setTransform(1,0,0,1,0,0);
+        ca.globalCompositeOperation='source-over'; ca.globalAlpha=1; ca.filter='blur('+r+'px)';
+        ca.drawImage(k,0,0); ca.filter='none'; ca.restore(); } }
     ca.restore(); }
   frisch(ca);
   /* MEDIUM: der Nebel leuchtet nicht selbst, er nimmt Licht auf. Alle aktiven Leuchten malen ihre Abstrahlung
@@ -32526,7 +33007,7 @@ function zeichneFrame(t,roh){
     const fehlt=R.effekte.length-STAPEL.length, her=ablageHer(), a=angewendet();
     pStat('eingef\u00fcgt'+(her?' aus \u201e'+her+'\u201c':'')+': '+studioInhalt()+qtext+utext
       +(fehlt>0?' \u00b7 '+(fehlt===1?'1 Effekt kennt dieser Stand nicht mehr und blieb weg':fehlt+' Effekte kennt dieser Stand nicht mehr und blieben weg'):'')
-      +rezeptHinweise(R.effekte)   /* was BEIM LESEN verloren ging, zaehlt `fehlt` nicht mit: ein Effekt, dem nur der sechste Zielpunkt fehlt, steht ja noch da */
+      +rezeptHinweise(R.effekte,R.fassung)   /* was BEIM LESEN verloren ging, zaehlt `fehlt` nicht mit: ein Effekt, dem nur der sechste Zielpunkt fehlt, steht ja noch da */
       +' \u00b7 '+(a?'noch nicht gesichert. \u201eF\u00fcr diesen Titel sichern\u201c legt es ab; Schlie\u00dfen und wieder \u00d6ffnen holt das gesicherte Rezept zur\u00fcck.'
         :rezeptDa?'hier steht jetzt nichts mehr \u2014 beim Titel liegt weiter das alte Rezept. \u201eL\u00f6schen\u201c nimmt es weg, Schlie\u00dfen und wieder \u00d6ffnen holt es zur\u00fcck.'
         :'hier steht jetzt nichts mehr \u2014 und beim Titel liegt auch nichts.')); }
@@ -32582,15 +33063,31 @@ function zeichneFrame(t,roh){
      verschwinden; die Datei selbst bleibt unangetastet, bis jemand sichert.
      FASSUNG 6 seit dem 18.09.2026: die Ken Burns Fahrt hat ihre Laeufe verloren. `kbLauf` und
      `kbAusschnitt` sind gestrichen und werden beim Laden aus dem Effekt entfernt; an ihrer Stelle
-     steht `kbZiele`, eine Liste von hoechstens fuenf Zielpunkten {u, v, z}. Dass im ganzen Archiv
+     steht `kbZiele`, eine Liste von hoechstens fuenf Zielpunkten {u, v, z, f} - f ist seit dem
+     19.09.2026 der Fokus bei Ankunft ("scharf" | "unscharf" | "suche", Vorgabe "scharf") und
+     steht ausgeschrieben da, auch wenn er die Vorgabe traegt: eine Stellung, die man nicht in der
+     Datei sieht, ist eine Stellung, die niemand nachlesen kann. Dass im ganzen Archiv
      kein Rezept den Typ traegt (nachgesehen am 18.09.2026), ist KEIN Grund, die Fassung stehen zu
      lassen: sie sagt, was die Datei bedeutet, nicht wie viele es davon gibt. Mit demselben Schritt
      faellt der Typ `fahrt` ganz - ein Rezept, das ihn traegt, verliert diesen einen Effekt, und das
      Studio sagt es beim Oeffnen.
+     FASSUNG 7 seit dem 19.09.2026: KB_ENGE_MIN ist von 0,50 auf 0,25 gefallen, und damit wird
+     DIESELBE DATEI ANDERS GELESEN ALS VORHER. Das ist keine neue Einstellung, sondern ein neuer
+     Wertebereich fuer eine alte - und trotzdem hebt es die Fassung, denn die Fassung sagt, was die
+     Zahlen in der Datei bedeuten. Ein Eintrag {u: 0,10, v: 0,50, z: 0,30} las sich unter Fassung 6
+     als {u: 0,25, v: 0,50, z: 0,50} und liest sich jetzt als {u: 0,15, v: 0,50, z: 0,30}: doppelt
+     so nah heran UND an einer anderen Stelle, weil kbOrt die Mitte auf z/2 .. 1-z/2 klemmt und
+     diese Klemme an z haengt. Zwei Zahlen aendern sich also, nicht eine.
+     DASS HEUTE KEIN REZEPT IM ARCHIV DEN TYP TRAEGT, IST KEIN GRUND ZU SCHWEIGEN (Gegenlesen
+     19.09.2026): "ohne manuelle Eingriffe mit fremden Bestaenden" ist genau der Fall, fuer den die
+     Fassungsnummer da ist. Ein handgeschriebenes oder fremdes Rezept mit fassung <= 6 und einem z
+     unter 0,50 faehrt seit heute enger; rueckgerechnet wird NICHTS - die alte Lesung war eine
+     Klemmung und keine Absicht, und eine Umrechnung wuerde eine Absicht erfinden, die nie
+     dastand. Gesagt wird es (kbAltEngZahl), verschwiegen nicht.
      SPAETER (docs/effektclip/KONZEPT-LANGE-VIDEOS.md): mehrere Zustaende je Titel, je Abschnitt ein Rezept, innerhalb
      eines Abschnitts duerfen Parameter fahren. Das wird diese Form ERWEITERN (eine Liste von Abschnitten, jeder mit
      genau diesen Feldern), nicht ersetzen - wer hier etwas dazulegt, denke daran und hebe dann die fassung. */
-  function presetJSON(){ return JSON.stringify({ fassung:6, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
+  function presetJSON(){ return JSON.stringify({ fassung:7, quelle:grundRezept(), vorbereitung:vorbExport(VORB), effekte:effekteJSON(), schleife:SCHLEIFE }); }
   /* Altes Rezept = reines Array (gilt als Titelbild); neues = {quelle, effekte}. Im Code heisst die Quelle weiter grund (Malgrund). */
   function rezeptLesen(r){ if(Array.isArray(r)) return {grund:null, effekte:r, alt:true};
     if(r&&typeof r==='object'&&Array.isArray(r.effekte)) { const q=r.quelle||r.grund; return {grund:(q&&typeof q==='object')?q:null, effekte:r.effekte, vorbereitung:r.vorbereitung||null, schleife:(r.schleife&&SCHLEIFE_ARTEN.some(a=>a[0]===r.schleife.art))?{art:r.schleife.art,schlaege:(r.schleife.schlaege|0)||0,fenster:Math.max(0,Math.round((+r.schleife.fenster||0)*2)/2)}:null, alt:!(r.fassung>=2), fassung:(r.fassung|0)}; } return {grund:null, effekte:[], leer:true}; }
@@ -32733,6 +33230,17 @@ function zeichneFrame(t,roh){
      bleibt unangetastet, bis jemand sichert. Gezaehlt werden ALLE, auch die ausgeschalteten - wer
      ein Rezept oeffnet, will wissen, was darin stand. */
   function fahrtAltZahl(arr){ return (arr||[]).filter(r=>r&&r.typ==='fahrt').length; }
+  /* WIE VIELE ZIELPUNKTE DIESES REZEPTS SICH DURCH DIE NEUE UNTERGRENZE ANDERS LESEN (Fassung 7,
+     19.09.2026). Ein z unter 0,50 wurde bis Fassung 6 auf 0,50 geklemmt; seit KB_ENGE_MIN 0,25 ist,
+     steht es so da, wie es geschrieben wurde - und weil kbOrt die Mitte auf z/2 .. 1-z/2 klemmt,
+     wandert mit der Enge auch der Ort. Zwei Zahlen, nicht eine, und darum wird es gesagt.
+     NUR BEI FASSUNG <= 6: wer unter Fassung 7 gesichert hat, hat 0,30 auch so gemeint. Fehlt die
+     Fassung ganz (ein altes Array oder ein handgeschriebenes Rezept), gilt sie als alt - das ist
+     die vorsichtige Lesart, und sie meldet hoechstens einmal zu viel statt einmal zu wenig. */
+  function kbAltEngZahl(arr,fassung){ if((fassung|0)>=7) return 0; let n=0;
+    for(const r of (arr||[])) if(r&&r.typ==='kenburns'&&Array.isArray(r.kbZiele))
+      for(const q of r.kbZiele.slice(0,KB_PUNKTE_MAX)){ const z=Number(q&&q.z); if(z>0&&z<0.5) n++; }
+    return n; }
   /* WAS EIN REZEPT BEIM LESEN VERLOREN HAT - AN EINER STELLE, FUER BEIDE WEGE (Gegenlesen
      18.09.2026). Diese drei Saetze standen nur beim Oeffnen eines Titelrezepts. Das EINFUEGEN aus
      der Ablage geht durch dieselben Uebersetzungen und meldete nur `fehlt`, die Zahl der ganz
@@ -32740,10 +33248,11 @@ function zeichneFrame(t,roh){
      sechsten, der Effekt blieb stehen, fehlt war 0, und die Statuszeile sagte kein Wort. Genau das
      ist "still falsch gelesen" (Regel 12/13). Zwei Wege, dieselben Woerter: der Satz wird hier
      gebaut und nicht zweimal geschrieben. */
-  function rezeptHinweise(arr){ let h='';
+  function rezeptHinweise(arr,fassung){ let h='';
     { const nv=verdeckenAltZahl(arr); if(nv) h+=' — '+(nv===1?'ein Effekt trug':nv+' Effekte trugen')+' „Tiefe aus der Bildzeile“; der Regler ist gestrichen, der Wert wirkt nicht mehr'; }
     { const nf=fahrtAltZahl(arr); if(nf) h+=' — '+(nf===1?'ein Effekt war':nf+' Effekte waren')+' die alte „Fahrt“; sie ist gestrichen und wurde entfernt — die Ken Burns Fahrt kann, was sie konnte'; }
     { const nz=kbUeberzaehlig(arr); if(nz) h+=' — '+(nz===1?'ein Zielpunkt lag':nz+' Zielpunkte lagen')+' über der Grenze von fünf und '+(nz===1?'wurde':'wurden')+' nicht gelesen'; }
+    { const ne=kbAltEngZahl(arr,fassung); if(ne) h+=' — '+(ne===1?'ein Zielpunkt fährt':ne+' Zielpunkte fahren')+' enger als unter der alten Fassung: die Enge durfte damals nicht unter 0,50, jetzt bis 0,25 — mit ihr liegt auch '+(ne===1?'seine Mitte':'ihre Mitte')+' anders'; }
     return h; }
   /* DAS ALTE REZEPT BEHAELT SEIN BILD (16.09.2026). Bis Fassung 3 hiess ein Aufenthalt vorn/hinten
      am Partikel-Effekt: schneide die Zone weich aus, ohne Betretungsverbot. Das ist keines der
@@ -33758,7 +34267,7 @@ function zeichneFrame(t,roh){
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
     rezeptDa=!!(R.effekte.length||R.grund);
-    hinweis+=rezeptHinweise(R.effekte);   /* dieselben Woerter wie beim Einfuegen aus der Ablage */
+    hinweis+=rezeptHinweise(R.effekte,R.fassung);   /* dieselben Woerter wie beim Einfuegen aus der Ablage */
     if(rezeptDa){ presetSetzen(R.effekte,R.alt,R.fassung); pStat('Effektclip des Titels geladen'+hinweis); } else { STAPEL=[]; renderStapel(); pStat('noch kein Effektclip beim Titel'); }
     quellenUI(); vorbStand(); stufeSetzen(stufeGemerkt());   /* Akkordeon: die zuletzt geoeffnete Stufe, beim ersten Mal die Quelle */
     t0=performance.now();

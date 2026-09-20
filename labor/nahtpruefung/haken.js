@@ -577,6 +577,192 @@ window.__naht = (() => {
         hashGruppen:gruppen.length, gruppen:gruppen.slice(0,8) };
     } finally { Math.random = zufallEcht; STAPEL = []; LOOP = 0; FEIN = false; }
   }
-  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, loopAnsicht, markenProbe, fahrtRezeptProbe, regelProbe, zeichenProbe };
+  /* ===================== KB-SCHAU: BILDER UND KOSTEN DER BEWEGUNGSUNSCHAERFE =====================
+     Nachweis 4 und 5 zum Fokus bei Ankunft (19.09.2026). Zwei Dinge auf EINEM Weg, weil beide
+     denselben Lauf brauchen:
+       - der Radius je Bild, abgelesen aus derselben Funktion, die der Maler fragt (kbUnschaerfe),
+       - die Rechenzeit je Bild ueber den echten Exportweg, MIT ZAUNMARKE: gemessen wird um
+         exportBild + warteGL, also um ein ganzes Bild samt Zurueckholen eines Bildpunkts - nicht
+         um einzelne Zeichenbefehle, und nicht nach jedem Leinwandgang.
+     Der Unterschied zwischen zwei Faellen, die sich NUR in der Fokusspalte unterscheiden, ist die
+     Zeit, die der eine Weichzeichnergang kostet. */
+  async function kbSchau(f, o){
+    o = o || {}; const lange = o.lange || 1080, runden = Math.max(2, o.runden || 4);
+    try{
+      const lage = vorbereiten(f), { t0, L, N } = lage, [W, H] = ausgabeMass(lange);
+      const gemerkt = bundel(), m = exportBuendel(gemerkt, lage, W, H);
+      const [bw, bh] = qMass(bild), U = einheitVon(W, bw, bh);
+      const kb = STAPEL.find(e => e.typ === 'kenburns');
+      const erg = { W, H, N, L:r3(L), t0:r3(t0), einheit:r3(U), radius:[], bilder:{}, runden:[], anlaufRunde:null };
+      saat = 12345; LOOP = L; FEIN = true;
+      try{
+        /* 1. DER RADIUS JE BILD - IM EXPORTBUENDEL, ALSO MIT DER SCHLAGTABELLE DES MALERS.
+              Hier stand die Schleife bis zum Gegenlesen am 19.09.2026 OHNE setzen(m), und damit
+              las kbAbschnitt die ECHTE Schlagtabelle des Liedes statt des gleichmaessigen
+              Exportrasters: S.jeClip war 0, das Ankerbild 0, und kbPlan fiel aufs Ersatzmass
+              zurueck. Die Reihe gehoerte zu einem anderen Clip als das Bild, das gemalt wurde -
+              und die Bildnummern des Augenschein-Blatts kamen aus ihr.
+              GEMESSEN WIRD IN BILDPUNKTEN DIESER LEINWAND, ohne Umweg ueber EINHEIT: kbUnschaerfe
+              bekommt seit dem 19.09.2026 dieselben (Wn, Hn), die auch der Maler uebergibt.
+              MITGESCHRIEBEN WIRD AUCH DER ABSCHNITT (Zug/Halt, k, p) - sonst laesst sich nicht
+              sagen, ob ein Bild im Zug zu einem Punkt liegt oder im Rueckweg aufs Ganzbild, der
+              nach Bauart immer scharf ist. Genau daran ist das Augenschein-Blatt gescheitert. */
+        if(kb){ setzen(m);
+          try{ for(let i=0; i<N; i++){ const t = t0 + i/BILDRATE, w = kbAbschnitt(kb, t), r = kbUnschaerfe(kb, t, W, H);
+            erg.radius.push({ i, r:r3(r), malt:r>=0.5, k:w?w.k:null, letzterZug:w?(w.k===w.L-1):null,
+              halt:w?r3(w.halt):null, p:w?r3(w.p):null, Fb:w?r3(w.Fb):null, Hb:w?r3(w.Hb):null }); } }
+          finally { setzen(gemerkt); } }
+        /* Was daraus folgt, an EINER Stelle gerechnet - der Bericht liest es ab, statt es nachzurechnen. */
+        erg.malende = erg.radius.filter(z => z.malt).length;
+        erg.rMax = erg.radius.length ? r3(Math.max(...erg.radius.map(z => z.r))) : 0;
+        erg.haltBilder = erg.radius.filter(z => z.halt != null && z.halt >= 0).length;
+        erg.haltAmPunkt = erg.radius.filter(z => z.halt != null && z.halt >= 0 && !z.letzterZug).length;
+        /* 2. DIE ZEIT JE BILD. Die erste Runde ist Anlauf und wird VERWORFEN - sie steht als
+              anlaufRunde daneben, damit niemand sie fuer eine Messung haelt. Der Bericht vom
+              19.09.2026 nannte fuer kb-fokus-suche 107,07 ms je Bild; das war genau diese eine
+              Anlaufrunde, weil kb-schau.mjs die Funktion ein zweites Mal mit runden:1 rief, nur um
+              die drei Bilder zu holen, und das Dreirundenergebnis damit ueberschrieb. Seit die
+              Bilder in DIESEM Lauf mitfallen (Punkt 3), gibt es keinen zweiten Ruf mehr. */
+        if(typeof vorlaufen === 'function') await vorlaufen(m, gemerkt);
+        for(let r=0; o.zeit !== false && r<runden; r++){
+          const tm = performance.now();
+          for(let i=0; i<N; i++){ exportBild(m, gemerkt, t0 + i/BILDRATE, W, H); warteGL(); if(i%8===7) await warte(0); }
+          const ms = r3((performance.now() - tm)/N);
+          if(r === 0) erg.anlaufRunde = ms; else erg.runden.push(ms); }
+        /* 3. DREI BILDER AUS EINEM ZUG ZU EINEM PUNKT - die Nummern kommen aus der Reihe oben und
+              werden NICHT von aussen geraten. Gesucht wird der Zug mit dem groessten Radius, der
+              NICHT der Rueckweg aufs Ganzbild ist (der ist nach Bauart immer scharf); dann das
+              erste Bild seines Halts und das hellste Bild darin.
+              DAS AUGENSCHEIN-BLATT ZEIGTE AM 19.09.2026 ZWEI BILDER AUS DEM RUECKWEG und nannte
+              sie "Ankunft" und "Nachfassen": beide hatten Radius 0, der behauptete Unterschied
+              existierte nicht. Darum steht die Auswahl jetzt hier und nicht im Bericht. */
+        const imZug = erg.radius.filter(z => z.halt != null && z.halt < 0 && !z.letzterZug);
+        let wahl = null;
+        if(imZug.length){ const best = imZug.reduce((a,b) => b.r > a.r ? b : a);
+          const halt = erg.radius.filter(z => z.k === best.k && z.halt != null && z.halt >= 0);
+          wahl = { unterwegs:best.i,
+            ankunft: halt.length ? halt[0].i : null,
+            nachfassen: halt.length ? halt.reduce((a,b) => b.r > a.r ? b : a).i : null,
+            zug: best.k, haltBilder: halt.length,
+            rUnterwegs: best.r, rAnkunft: halt.length ? halt[0].r : null,
+            rNachfassen: halt.length ? halt.reduce((a,b) => b.r > a.r ? b : a).r : null }; }
+        erg.wahl = wahl;
+        const holen = o.bilder === 'auto' ? (wahl ? { unterwegs:wahl.unterwegs, ankunft:wahl.ankunft, nachfassen:wahl.nachfassen } : {}) : (o.bilder || {});
+        for(const [name, i] of Object.entries(holen)){ if(i == null) continue;
+          saat = 777; exportBild(m, gemerkt, t0 + i/BILDRATE, W, H); warteGL();
+          erg.bilder[name] = { i, r:(erg.radius[i] ? erg.radius[i].r : null), png:m.lein.toDataURL('image/png') }; }
+        /* DIESELBEN BILDER OHNE DIE SPALTE - der einzige ehrliche Vergleich (19.09.2026).
+           Das erste Augenschein-Blatt stellte Bild 165 neben Bild 167 und nannte den Unterschied
+           "mit blossem Auge da"; nachgerechnet war die Kantenschaerfe 3,081 gegen 3,128, also
+           umgekehrt. Kein Wunder: DREI VERSCHIEDENE BILDER ZEIGEN DREI VERSCHIEDENE AUSSCHNITTE -
+           die Kamera faehrt ja. Ueber verschiedene Motive laesst sich Schaerfe nicht vergleichen.
+           Verglichen wird darum DASSELBE Bild mit und ohne Fokusspalte: gleicher Ausschnitt,
+           gleiche Zeit, gleicher Zufall, ein einziger Unterschied. */
+        if(kb && Object.keys(holen).length){
+          const gemerktZiele = JSON.parse(JSON.stringify(kb.kbZiele || []));
+          kb.kbZiele = gemerktZiele.map(q => Object.assign({}, q, { f:'scharf' }));
+          try{ for(const [name, i] of Object.entries(holen)){ if(i == null) continue;
+            saat = 777; exportBild(m, gemerkt, t0 + i/BILDRATE, W, H); warteGL();
+            erg.bilder[name + 'Scharf'] = { i, r:0, png:m.lein.toDataURL('image/png') }; } }
+          finally { kb.kbZiele = gemerktZiele; } }
+        /* 4. STIMMT DIE REIHE MIT DEM MALER UEBEREIN? Gegenprobe ohne zweite Rechnung: derselbe
+              Fall noch einmal, alle Punkte auf "scharf". Bild fuer Bild muss gelten - malt = true
+              heisst ANDERS, malt = false heisst BITGLEICH. Weicht das ab, gehoert die Reihe zu
+              einem anderen Lauf als das Bild, und genau das war der Fehler vom 19.09.2026. */
+        if(o.gegenprobe && kb){
+          /* JE BILD NEU GESAET - SONST IST ES KEIN VERGLEICH (19.09.2026). saat steht am Anfang
+             EINMAL; der erste Durchgang verbraucht Zufall und der zweite faengt dort an, wo der
+             erste aufgehoert hat. Gemessen: 14 Bilder wichen ab, an denen gar nichts geschmiert
+             wurde (Radius 0 bis 0,41) - das war der Zufall und nicht der Weichzeichner. Dieselbe
+             Saat je Bild wie im Studio-Augenblick (saat = 777). */
+          const hash = async () => sha(pixel(m.lein).slice());
+          const malen = z => { saat = 777; exportBild(m, gemerkt, t0 + z.i/BILDRATE, W, H); warteGL(); };
+          const mit = [], ohne = [];
+          for(const z of erg.radius){ malen(z); mit.push(await hash()); if(z.i%8===7) await warte(0); }
+          const gemerktZiele = JSON.parse(JSON.stringify(kb.kbZiele || []));
+          kb.kbZiele = gemerktZiele.map(q => Object.assign({}, q, { f:'scharf' }));
+          try{ for(const z of erg.radius){ malen(z); ohne.push(await hash()); if(z.i%8===7) await warte(0); } }
+          finally { kb.kbZiele = gemerktZiele; }
+          let stimmt = 0, falschAnders = [], falschGleich = [];
+          for(const z of erg.radius){ const anders = mit[z.i] !== ohne[z.i];
+            if(anders === z.malt) stimmt++; else if(anders) falschAnders.push(z.i); else falschGleich.push(z.i); }
+          erg.gegenprobe = { bilder:erg.radius.length, stimmt,
+            andersOhneRadius:falschAnders.slice(0, 12), gleichTrotzRadius:falschGleich.slice(0, 12),
+            andersOhneRadiusZahl:falschAnders.length, gleichTrotzRadiusZahl:falschGleich.length }; }
+      } finally { LOOP = 0; FEIN = false; }
+      return erg;
+    } finally { aufraeumenMass(); }
+  }
+  /* ===================== KB-KARTE: DIE OBERFLAECHE ABLESEN (19.09.2026) =====================
+     Nachweis zur Punktliste: was auf der Karte STEHT (Liste, Auswahlfelder, Knopf, die Zeile
+     darunter), was der Knopf TUT, und wie die Buehne aussieht - einmal ruhig und einmal mit der
+     Hand an einer Marke, damit die Wand auf dem zweiten Bild steht und auf dem ersten nicht.
+     Gemalt wird genau wie in rahmen(): erst zeichneFrame mit stehender Fahrt (KB_STEHT), dann
+     kbMarkenMalen obendrauf. */
+  async function kbKarte(f, o){
+    o = o || {};
+    try{
+      const lage = vorbereiten(f);
+      stufeSetzen('Kette'); offenId = STAPEL[0] ? STAPEL[0].id : null; renderStapel(); await warte(200);
+      const e = STAPEL[0], karte = document.querySelector('.tbs-karte');
+      const lies = () => kbPunkte(e).map(p => ({ u:r3(p.u), v:r3(p.v), z:r3(p.z), f:p.f }));
+      const liste = () => { const abu = [...document.querySelectorAll('.tbs-abunter')].find(x => x.textContent === 'Zielpunkte'),
+          kn = document.querySelector('[data-kbneu]');
+        if(!abu || !kn) return null; abu.scrollIntoView({ block:'center' });
+        const r1 = abu.getBoundingClientRect(), r2 = (kn.parentElement || kn).getBoundingClientRect();
+        return { x:Math.max(0, Math.floor(r1.x)-8), y:Math.max(0, Math.floor(r1.y)-8), w:Math.ceil(r1.width)+16, h:Math.ceil(r2.bottom-r1.top)+16 }; };
+      const knopf = () => { const b = document.querySelector('[data-kbneu]'); return b ? { text:b.textContent, gesperrt:!!b.disabled } : null; };
+      const erg = { punkte:lies(), karteText:karte ? karte.innerText : null,
+        notizen:[...document.querySelectorAll('.tbs-graugrund')].map(x => x.textContent),
+        fokusFelder:[...document.querySelectorAll('[data-kbfokus]')].map(s => s.value),
+        knopf:knopf(), buehne:{}, lein:[lein.width, lein.height],
+        /* der Kasten der Karte im Sichtfenster - damit ein Bildschirmfoto genau sie zeigt */
+        kasten:(()=>{ const r = karte && karte.getBoundingClientRect();
+          return r ? { x:Math.floor(r.x), y:Math.floor(r.y), w:Math.ceil(r.width), h:Math.ceil(r.height) } : null; })() };
+      /* Der Kasten um die Punkteliste SAMT Knopf - die Karte selbst ist laenger als das Fenster,
+         und was gezeigt werden soll, ist die Liste und nicht der Beschreibungstext darueber. */
+      erg.listeKasten = liste();
+      /* Zum Vergleich: wie sieht eine HAUSAUSWAHL im selben Fenster aus? Ohne diese Zahl liesse
+         sich nicht sagen, ob das Auswahlfeld der Liste aus der Reihe faellt oder ob in dieser
+         kopflosen Umgebung jedes Auswahlfeld so aussieht. */
+      { const eig = document.querySelector('[data-kbfokus]'), haus = document.querySelector('.tbs-regler select');
+        const g = el => { if(!el) return null; const c = getComputedStyle(el);
+          return { hintergrund:c.backgroundColor, schrift:c.color, rand:c.borderTopColor, form:c.appearance || c.webkitAppearance }; };
+        erg.auswahlVergleich = { eigen:g(eig), haus:g(haus) }; }
+      for(const [name, zieht] of [['ruhig', -1], ['zieht', (o.zieht == null ? 0 : o.zieht)]]){
+        KB_STEHT = e.id; KB_ZIEHT = zieht;
+        try{ zeichneFrame(lage.t0); kbMarkenMalen(e); } finally { KB_STEHT = 0; KB_ZIEHT = -1; }
+        erg.buehne[name] = lein.toDataURL('image/png'); }
+      /* DER KNOPF, WIRKLICH GEDRUECKT - nicht die Funktion dahinter aufgerufen: nur so ist auch die
+         Verdrahtung in renderStapel mitgeprueft. */
+      if(o.druecken){ const b = document.querySelector('[data-kbneu]');
+        if(b && !b.disabled){ b.click(); await warte(200); }
+        const k2 = document.querySelector('.tbs-karte'), r2 = k2 && k2.getBoundingClientRect();
+        erg.nachKnopfKasten = r2 ? { x:Math.floor(r2.x), y:Math.floor(r2.y), w:Math.ceil(r2.width), h:Math.ceil(r2.height) } : null;
+        erg.nachKnopfListe = liste();
+        erg.nachKnopf = { punkte:lies(), knopf:knopf(),
+          notizen:[...document.querySelectorAll('.tbs-graugrund')].map(x => x.textContent),
+          status:(document.querySelector('#tbs-pStatus') || {}).textContent || null }; }
+      /* EIN AUSWAHLFELD WIRKLICH UMGESTELLT - dasselbe Gesetz. */
+      if(o.fokusSetzen){ const s = document.querySelector('[data-kbfokus="' + o.fokusSetzen[0] + '"]');
+        if(s){ s.value = o.fokusSetzen[1]; s.dispatchEvent(new Event('change')); await warte(200); }
+        erg.nachFokus = { punkte:lies(), felder:[...document.querySelectorAll('[data-kbfokus]')].map(x => x.value),
+          status:(document.querySelector('#tbs-pStatus') || {}).textContent || null };
+        /* DIE VORFUEHRUNG, GEMESSEN STATT BEHAUPTET (19.09.2026). Die Buehne steht, solange die
+           Karte offen ist - trotzdem muss sich sehen lassen, was die Fokusspalte tut, sonst waehlt
+           man eine Schaerfestellung nach Text. Also: sechs Proben desselben stehenden Augenblicks
+           waehrend der Vorfuehrung; sie muessen sich unterscheiden UND vom scharfen Bild abweichen.
+           Sind alle sechs gleich dem scharfen, zeigt die Karte nichts. */
+        const proben = [];
+        for(let k=0; k<6; k++){ KB_STEHT = e.id; try{ zeichneFrame(lage.t0); } finally { KB_STEHT = 0; }
+          warteGL(); proben.push(await sha(pixel(lein).slice())); await warte(130); }
+        KB_ZEIGT = null; KB_STEHT = e.id; try{ zeichneFrame(lage.t0); } finally { KB_STEHT = 0; }
+        warteGL(); const scharf = await sha(pixel(lein).slice());
+        erg.vorfuehrung = { proben:proben.map(h => h.slice(0,8)), verschiedene:new Set(proben).size,
+          scharf:scharf.slice(0,8), wieScharf:proben.filter(h => h===scharf).length }; }
+      return erg;
+    } finally { aufraeumenMass(); }
+  }
+  return { typen, bereitMachen, fall, katalog, feld, studio, massstab, loopAnsicht, markenProbe, fahrtRezeptProbe, regelProbe, zeichenProbe, kbSchau, kbKarte };
 })();
 /* <<< Pruefhaken der Nahtpruefung */

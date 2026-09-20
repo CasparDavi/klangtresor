@@ -85,6 +85,36 @@ fall('kb-vorb', [{ typ: 'kenburns', kbParallaxe: 0 }], { gruppe: 'kenburns', vor
 fall('kb-parallaxe-vorb', [{ typ: 'kenburns', kbParallaxe: 2.6 }], { gruppe: 'kenburns', vorb: { belichtung: 0.3, kontrast: 0.25 }, bemerkung: 'Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 trug' });
 fall('kb-tempo2-b', [{ typ: 'kenburns', kbTakte: 2 }], { gruppe: 'kenburns', titel: 'b', bemerkung: 'Zwei Takte je Zug auf dem Titel mit anderer Taktzahl - hier greift die Tempoklemme' });
 
+/* FOKUS BEI ANKUNFT UND DIE NEUE ENGE (19.09.2026, von Hand nachgetragen wie faelle.json).
+   Die Spalte "Fokus bei Ankunft" ist eine Stellung je Punkt, kein Regler am Effekt - die Faelle
+   tragen sie darum IM Zielpunkt. kb-fokus-unscharf und kb-fokus-suche nehmen genau die Punkte von
+   kb-zweiPunkte, damit der Unterschied im Grundlinienvergleich allein die Spalte ist.
+   kb-engerPunkt prueft die gesenkte Untergrenze KB_ENGE_MIN: mit 0,50 haette kbEnge die 0,25
+   stillschweigend hochgeklemmt, und der Fall saehe aus wie jeder andere. */
+const KBP2U = KBP2.map(p => Object.assign({}, p, { f: 'unscharf' }));
+const KBP2S = KBP2.map(p => Object.assign({}, p, { f: 'suche' }));
+const KBPE = [{ u: 0.35, v: 0.40, z: 0.25 }];
+fall('kb-fokus-unscharf', [{ typ: 'kenburns', kbZiele: KBP2U }], { gruppe: 'kenburns', bemerkung: "Fokus bei Ankunft 'unscharf' an beiden Punkten: die Zuege dorthin schmieren, bei der Ankunft ist es sofort wieder scharf. Dieselben zwei Punkte wie kb-zweiPunkte - der Unterschied ist allein die Spalte." });
+fall('kb-fokus-suche', [{ typ: 'kenburns', kbZiele: KBP2S }], { gruppe: 'kenburns', bemerkung: "Fokus bei Ankunft 'suche': die Zuege schmieren, und im Halt sucht die Schaerfe den Punkt - eine gedaempfte Schwingung, die IM Halt anfaengt und IM Halt aufhoert." });
+/* DER ZWILLING, DEN DIE GRUNDLINIE BRAUCHT (19.09.2026 nachgetragen, von Hand wie faelle.json).
+   kb-fokus-unscharf und kb-fokus-suche unterscheiden sich NUR im Halt. Bei zwei Punkten ist der
+   Halt auf Titel a 24 Bilder (0,8 s) lang, und die drei Augenblicke der Studio-Grundlinie fielen
+   nicht hinein: beide Faelle trugen in allen drei dieselben Hashes, zwei davon sogar dieselben wie
+   der scharfe kb-zweiPunkte. Ein Rueckschritt am Schaerfezieher waere durch den Vergleich
+   hindurchgegangen (Gegenlesen 19.09.2026). Mit EINEM Punkt ist der Zug doppelt so lang und der
+   Halt 60 Bilder (2,0 s) - dort trennen sich die beiden.
+   kb-fokus-ohneHalt haelt den Gegenfall fest: drei Punkte, und der Clip laesst keinen Halt uebrig
+   (kbPlan H = 0). Dann wird nicht gesucht, und das soll auch so bleiben, bis die Koernung des
+   Tempos entschieden ist (docs/NAECHSTER_CHAT.md). */
+const KBP1U = [Object.assign({}, KBP1[0], { f: 'unscharf' })];
+const KBP1S = [Object.assign({}, KBP1[0], { f: 'suche' })];
+const KBP3OH = [KBP2[0], { u: 0.50, v: 0.50, z: 0.70, f: 'suche' }, KBP2[1]];
+fall('kb-fokus-unscharf-eins', [{ typ: 'kenburns', kbZiele: KBP1U }], { gruppe: 'kenburns', bemerkung: "EIN Punkt auf 'unscharf' - ein langer Zug und mit 60 Bildern (2,0 s) der laengste Halt, den ein Fall hier hat. Der Zwilling zu kb-fokus-suche-eins: unterwegs schmieren beide gleich, NUR im Halt trennen sie sich. Die drei Augenblicke der Studio-Grundlinie fielen bei zwei Punkten (Halt 0,8 s) nicht in den Halt - beide Faelle trugen dieselben Hashes, und ein Rueckschritt am Schaerfezieher waere durchgegangen." });
+fall('kb-fokus-suche-eins', [{ typ: 'kenburns', kbZiele: KBP1S }], { gruppe: 'kenburns', bemerkung: "Derselbe Punkt auf 'suche'. Halt 60 Bilder (2,0 s), also drei Ausschlaege - die volle gedaempfte Schwingung. Weicht dieser Fall von kb-fokus-unscharf-eins nicht ab, ist der Schaerfezieher kaputt." });
+fall('kb-fokus-ohneHalt', [{ typ: 'kenburns', kbZiele: KBP3OH }], { gruppe: 'kenburns', bemerkung: "DREI Punkte, der mittlere auf 'suche': in diesem Clip bleibt kein Halt uebrig (kbPlan H=0), also wird nicht gesucht - 'Suche' geht hier aus wie 'Unscharf'. Der Fall haelt genau das fest, damit niemand spaeter unbemerkt einen Ersatzhalt erfindet; die Zeile unter der Liste sagt es seit dem 19.09.2026 in Worten." });
+fall('kb-fokus-suche-kurz', [{ typ: 'kenburns', kbZiele: KBP2S }], { gruppe: 'kenburns', titel: 'b', bemerkung: "Zwei Punkte auf 'suche' auf Titel b: dort ist der Halt nur 13 Bilder (0,43 s) lang. Die Zahl der Ausschlaege haengt seit dem 19.09.2026 an der Haltlaenge (kbSuchAusschlaege, 0,18 s je Ausschlag) - hier sind es ZWEI statt drei. Ohne diesen Fall waere die Regel nur behauptet: alle anderen Faelle haben Halte von 0,8 s und laenger und kommen auf die volle Zahl." });
+fall('kb-engerPunkt', [{ typ: 'kenburns', kbZiele: KBPE }], { gruppe: 'kenburns', bemerkung: 'EIN sehr enger Punkt (0,25) - die neue Untergrenze KB_ENGE_MIN. Vorher haette kbEnge auf 0,50 geklemmt.' });
+
 /* Antrieb */
 fall('puls-flackern-takt', [{ typ: 'puls', lmQuelle: 'takt', lmForm: 'flackern' }], { gruppe: 'antrieb' });
 fall('puls-flackern-hz05', [{ typ: 'puls', lmQuelle: 'hz', lmHz: 0.5, lmForm: 'flackern' }], { gruppe: 'antrieb' });

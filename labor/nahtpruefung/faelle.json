@@ -2919,6 +2919,173 @@
    ],
    "gruppe": "kenburns",
    "bemerkung": "Zwei Takte je Zug auf dem Titel mit anderer Taktzahl - hier greift die Tempoklemme"
+  },
+  {
+   "name": "kb-fokus-unscharf",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "unscharf"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "unscharf"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Fokus bei Ankunft 'unscharf' an beiden Punkten: die Zuege dorthin schmieren, bei der Ankunft ist es sofort wieder scharf. Dieselben zwei Punkte wie kb-zweiPunkte - der Unterschied ist allein die Spalte."
+  },
+  {
+   "name": "kb-fokus-suche",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "suche"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "suche"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Fokus bei Ankunft 'suche': die Zuege schmieren, und im Halt sucht die Schaerfe den Punkt - eine gedaempfte Schwingung, die IM Halt anfaengt und IM Halt aufhoert."
+  },
+  {
+   "name": "kb-fokus-unscharf-eins",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.35,
+       "v": 0.4,
+       "z": 0.62,
+       "f": "unscharf"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "EIN Punkt auf 'unscharf' - ein langer Zug und mit 60 Bildern (2,0 s) der laengste Halt, den ein Fall hier hat. Der Zwilling zu kb-fokus-suche-eins: unterwegs schmieren beide gleich, NUR im Halt trennen sie sich. Die drei Augenblicke der Studio-Grundlinie fielen bei zwei Punkten (Halt 0,8 s) nicht in den Halt - beide Faelle trugen dieselben Hashes, und ein Rueckschritt am Schaerfezieher waere durchgegangen."
+  },
+  {
+   "name": "kb-fokus-suche-eins",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.35,
+       "v": 0.4,
+       "z": 0.62,
+       "f": "suche"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Derselbe Punkt auf 'suche'. Halt 60 Bilder (2,0 s), also drei Ausschlaege - die volle gedaempfte Schwingung. Weicht dieser Fall von kb-fokus-unscharf-eins nicht ab, ist der Schaerfezieher kaputt."
+  },
+  {
+   "name": "kb-fokus-ohneHalt",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6
+      },
+      {
+       "u": 0.5,
+       "v": 0.5,
+       "z": 0.7,
+       "f": "suche"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "DREI Punkte, der mittlere auf 'suche': in diesem Clip bleibt kein Halt uebrig (kbPlan H=0), also wird nicht gesucht - 'Suche' geht hier aus wie 'Unscharf'. Der Fall haelt genau das fest, damit niemand spaeter unbemerkt einen Ersatzhalt erfindet; die Zeile unter der Liste sagt es seit dem 19.09.2026 in Worten."
+  },
+  {
+   "name": "kb-fokus-suche-kurz",
+   "typ": "kenburns",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "suche"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "suche"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Zwei Punkte auf 'suche' auf Titel b: dort ist der Halt nur 13 Bilder (0,43 s) lang. Die Zahl der Ausschlaege haengt seit dem 19.09.2026 an der Haltlaenge (kbSuchAusschlaege, 0,18 s je Ausschlag) - hier sind es ZWEI statt drei. Ohne diesen Fall waere die Regel nur behauptet: alle anderen Faelle haben Halte von 0,8 s und laenger und kommen auf die volle Zahl."
+  },
+  {
+   "name": "kb-engerPunkt",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.35,
+       "v": 0.4,
+       "z": 0.25
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "EIN sehr enger Punkt (0,25) - die neue Untergrenze KB_ENGE_MIN. Vorher haette kbEnge auf 0,50 geklemmt."
   }
  ],
  "nichtHerstellbar": []
