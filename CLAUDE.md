@@ -73,6 +73,16 @@ womit die nächste Stunde verbracht wird, und diese Entscheidung gehört dem Arc
 kleine Läufe zerlegen, um unter die Schranke zu kommen — es zählt, was die Sitzung kostet, nicht der
 einzelne Aufruf.
 
+**Und der volle Lauf braucht einen Verdacht, keine Erlaubnis.** Caspar_D, 20.09.2026: *„Ich habe per
+se kein Problem mit pedantischen Tests, aber nicht, wenn auch Stichproben reichen und nur bei
+begründetem Verdacht, nicht einfach alles durchtesten."* Vorausgegangen war eine Woche mit Läufen
+über alle Effekte, jedes Mal sechs Stunden und länger — *„darum haben wir auch kaum etwas
+geschafft."* Damit ist die Reihenfolge umgedreht: **zuerst die Stichprobe, die volle Runde erst,
+wenn sie etwas zeigt** — und dann gezielt auf den Verdacht, nicht über den ganzen Vorrat. Ein voller
+Lauf ist das Werkzeug zum Nachgehen, nicht der Normalbeweis. Wo pedantisch geprüft wird, geht es
+also **in die Tiefe, nicht in die Breite**: der eine Effekt, der auffiel, mit allen seinen
+Reglerstellungen — nicht alle achtunddreißig mit je einer.
+
 ### Zeitmanagement
 
 Caspar_D, 19.09.2026: *„es kann nicht sein, dass ich mich darauf verlasse, wir haben etwas
