@@ -62,6 +62,17 @@ Maßschneidern.
 Zahl wirklich den ganzen Bestand, wird das einzeln begründet und erlaubt — nicht stillschweigend
 gemacht, weil die Daten ja dalagen.
 
+**Und eine harte Schranke: zwei Minuten.** Caspar_D, 20.09.2026: *„du stösst bitte selbständig keine
+umfangreichen tests an, die länger als 2 min dauern. Da wird vorher gefragt und begründet bitte. Ich
+gebe den Startschuß."* Darunter läuft ohne Rückfrage, was die Arbeit trägt: Syntaxprüfung, ein
+einzelner Nahtfall, ein Grundlinienvergleich über eine Handvoll Fälle, Lesen und Suchen im Baum.
+Darüber — `naht.mjs` über den ganzen Fallsatz, der Studio-Grundlinienvergleich, `messreihe.js`, jede
+Messung über den Katalog, jeder Agenten-Fächer — wird **angesagt und gewartet**: welche Frage,
+welche Stichprobe, wie lange, und was ohne den Lauf offen bliebe. Ein langer Lauf entscheidet still,
+womit die nächste Stunde verbracht wird, und diese Entscheidung gehört dem Architekten. Nicht in
+kleine Läufe zerlegen, um unter die Schranke zu kommen — es zählt, was die Sitzung kostet, nicht der
+einzelne Aufruf.
+
 ### Zeitmanagement
 
 Caspar_D, 19.09.2026: *„es kann nicht sein, dass ich mich darauf verlasse, wir haben etwas
