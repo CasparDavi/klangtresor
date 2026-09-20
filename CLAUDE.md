@@ -40,6 +40,37 @@ Repo, und erst dann heißt es: neu laden.
 Jede Trefferquote braucht ihren Zufallsboden daneben. Erst das Verfahren klären, dann messen. Bei einer Fehlermeldung
 zuerst die **eigene** Rechnung mit echten Daten durchspielen, bevor Daten, Browser oder Cache verdächtigt werden.
 
+### Stichprobe statt Rundumschlag
+
+Caspar_D, 19.09.2026: *„Du testest in Zukunft so, als hättest du kein data repository zur freien
+Verfügung, du machst einen Testplan an Stichproben, die repräsentativ sind, nie an allen, und du
+fragst, woran du testen sollst."*
+
+**Der Prüfsatz sind die 10 NEUESTEN Titel plus die Testbilder.** Begründung von ihm: *„die sind eine
+gute Stichprobe, weil der Style grade der ist, den ich verfolge; in erster Linie soll das alles für
+mich arbeiten und erst in zweiter Linie für mein Umfeld."* Der Satz wird **gerechnet, nicht
+abgeschrieben** — er wandert mit. Nachgesehen am 19.09.2026: kein Instrumental darunter.
+
+**Instrumentalstücke so gut wie nie.** Erkannt wird das mit `istInstrumental` (Hand schlägt
+Automatik, sonst: kein Liedtext heißt instrumental) — 64 von 325. Die Falle steht dort im Kommentar:
+wer im Index auf `s.lyrics` statt auf `hatLyrics` prüft, hält JEDEN Song für instrumental.
+
+**Trotzdem so generisch wie möglich bauen.** Die Stichprobe ist zum Prüfen da, nicht zum
+Maßschneidern.
+
+**Vor jeder Messung ein kurzer Testplan:** welche Frage, welche Stichprobe, wie lange. Braucht eine
+Zahl wirklich den ganzen Bestand, wird das einzeln begründet und erlaubt — nicht stillschweigend
+gemacht, weil die Daten ja dalagen.
+
+### Zeitmanagement
+
+Caspar_D, 19.09.2026: *„es kann nicht sein, dass ich mich darauf verlasse, wir haben etwas
+substanzielles, wenn ich wieder da bin."*
+
+**Vor der Arbeit die Ansage:** was fertig sein wird und ungefähr wann. **An jedem Punkt, an dem er
+weggeht, steht ein eingesetzter, benutzbarer Stand** — kein halber Apparat und keine Fassung, die
+nur im Sandkasten läuft.
+
 ## 4. Nichts darf lügen
 
 Was nicht gilt, wird grau mit Grund — nicht versteckt. Zahlen, die nichts aussagen, werden nicht angezeigt.
