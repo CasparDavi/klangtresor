@@ -4781,3 +4781,104 @@ gerechnet und nur die Halte in Takten. Nicht selbst entschieden.
 4. **Die Sliderwüsten** — eigener Arbeitsgang, noch nicht beauftragt. Caspar_D: *„wir müssen
    sowieso die sliderwüsten etwas ausdünnen und schönere Entwürfe machen."* Die vier x/y-Schieber
    bei Laser und Strahlen sind die nächsten Kandidaten für die Marke auf der Bühne.
+
+---
+
+## 19./20.09.2026 — Fokus, Prüfstand, Diorama. Und drei neue Hausregeln.
+
+### Eingesetzt
+
+| Commit | Sache |
+|---|---|
+| `696da8d` | **Fokus bei Ankunft** (Scharf \| Unscharf \| Suche) als Bewegungsunschärfe, Zoom bis **0,25** mit Vergrößerungsangabe an der Marke, Knopf „Punkt hinzufügen", und: **der Zielpunkt wandert nicht mehr** |
+| `0896c7a` | **Prüfstand repariert** — die Songzeit wurde nie zurückgesetzt |
+| `dcaa5e4` | Hausregeln: Stichprobe statt Rundumschlag, Zeitansage; Spezifikationen Tiefenebene und Diorama |
+
+### Der Prüfstandsfehler — der wichtigste Befund des Tages
+
+```js
+if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt };
+```
+
+Gesetzt wurde nur, **zurückgesetzt nie**. Fünf von 193 Fällen tragen ein eigenes `jetzt`; einer davon
+`rand-jetzt-anfang` mit **0,2**. Jeder Fall danach im selben Fenster erbte diese 0,2 statt der
+Katalogvorgabe **60,3**. Dreimal an einem Tag hat der Prüfstand deshalb Alarm geschlagen, wo nichts
+war — und die andere Richtung ist die schlimmere: **ein echter Rückschritt kann auf demselben Weg
+durchrutschen.** Alle Grundlinien vor dem 20.09. sind für Fälle nach einem `jetzt`-Fall
+unzuverlässig; `studio-zielpunkte.json` ist neu aufgenommen.
+
+### Der wandernde Zielpunkt — ein Modellfehler, kein Tippfehler
+
+`kbOrt` klemmte u/v auf `z/2 … 1−z/2`, also auf den Bereich, in dem ein Ausschnitt dieser Enge ganz
+im Bild liegt. Wer am Mausrad die Enge **vergrößerte**, schob damit den Punkt nach innen — die
+Stelle wanderte unter dem Zeiger weg. Caspar_D: *„ein Unding."*
+
+**Ein Zielpunkt ist eine Stelle im Motiv, kein Rechteckmittelpunkt.** Der Maler klemmte ohnehin
+schon richtig (`kbZug` begrenzt den Schwenk auf −1…1). Es braucht genau **eine** Klemme, und die
+gehört an das Rechteck. Jetzt: die Marke steht, wo gezielt wurde; der Rahmen steht, wo die Kamera
+ankommt. `kbWand` ist ersatzlos gefallen.
+
+### Das Diorama — gebaut, geprüft, NOCH NICHT EINGESETZT
+
+Caspar_D beim Ausprobieren: *„der Zoom muss auf alles wirken, auch Effekte müssen mitgezoomt
+werden."* Und zur Lösung: *„die idee, die Ken Burns erst ganz hinten draufzulegen ist konsequent."*
+
+Der Malweg hat jetzt **drei Stufen**: Diorama (Quelle, Vorbereitung, 21 Szenen-Effekte, in
+Quellkoordinaten auf eigener Leinwand) → Kamera (Ausschnitt, Zoom, Kippen, Parallaxe,
+Bewegungsunschärfe, Schärfe) → Objektiv/Film (13 Effekte wie bisher). Die Einsortierung steht als
+`STUFE_DIORAMA / STUFE_KAMERA / STUFE_OBJEKTIV`; ein Typ ohne Stufe meldet sich auf der Konsole.
+
+**Fassung:** `scratchpad/diorama/web/index.html`, gezeigt auf Port 41998. Caspar_D hat sie angesehen:
+*„ken burns vergrössert auch den vogelschwarm, toll."*
+
+**Zwei bewusste Abweichungen des Bauagenten von der Spezifikation** — beide zugunsten der Sache:
+
+1. **Das Diorama wird höchstens so groß gemalt, wie die engste Kamerastellung es ausnutzt.** Folge:
+   ein Rezept ohne Kamerabewegung bleibt **bitgleich**. Die angekündigte Überabtastung „an jedem
+   Rezept" tritt damit nicht ein. Statt „fast alles erklärt verändert" steht **183 von 198
+   bitgleich, 15 verändert**.
+2. **Kein Deckel bei 1080** — er hätte die Fahrt *unschärfer* gemacht als vorher.
+
+**`geoKarteLegen` ist NICHT gefallen**, und das ist ein Befund: die Funktion hat noch drei Rufer,
+und jeder braucht die Kamera (die Spalte „Aufenthalt" hängt auch an Filmkorn, Scanlines, Bloom,
+Linse; dazu die Trennebenen-Ansicht). Weggefallen ist nicht die Funktion, sondern der **Weg**: alles,
+was die Tiefenkarte wirklich benutzt, fragt sie nicht mehr um, weil im Diorama nichts umzurechnen
+ist.
+
+**Kosten, gemessen an fünf echten Ketten auf der Radeon:** Quellauflösung kostet das 1,31- bis
+1,38-fache; bei zwei von fünf gar nichts (Quelle ≤ 1080). Im ungünstigsten Fall (1,78-fache Fläche)
+1,76 bis 1,88, teuerste Kette 14,4 ms = 43 % eines 30-Hz-Bildes. **Der Filmnebel trägt den
+Unterschied fast allein** (einziger Effekt über 2,0); **Teilchen skalieren gar nicht.**
+
+### Was die Stufe entscheidet — und wo sie folgenlos ist
+
+Die Stufe macht nur dann einen Unterschied, wenn der Effekt **eine Länge im Bild** hat: Radius,
+Versatz, Korngröße, Zellbreite. Folgenlos bei: den vier Farbpulsen (Helligkeit, Kontrast, Sättigung,
+Farbton), Stroboskop und Farbschleier. Bei allen anderen entscheidet sie.
+
+Caspar_D hat den **Farbkanal-Puls** am Bild geprüft: sein Versatz bleibt beim Zoom konstant, weil er
+am Objektiv sitzt. Läge er im Diorama, wäre er bei Enge 0,25 viermal so breit.
+
+### Drei neue Hausregeln (stehen in CLAUDE.md)
+
+1. **Eine Baustelle.** *„wir haben ständig an allen Effekten zugleich optimiert und nichts ist
+   wirklich fertig geworden."*
+2. **Die Größe einer Änderung ist die Größe ihres Beweises.** *„du hast aber jedesmal die 5 h
+   Testmaschinerie angeworfen."*
+3. **Stichprobe statt Rundumschlag.** Prüfsatz sind die **10 neuesten Titel plus die Testbilder**,
+   gerechnet, nicht abgeschrieben. Nie an allen. Instrumentalstücke so gut wie nie (`istInstrumental`,
+   64 von 325). Dazu: **bauen, zeigen, dann prüfen** — *„damit wir nicht erst nach 4 h Fehler sehen,
+   wo man schon hätte nach Augenmaß sehen können."*
+
+### Offen, in dieser Reihenfolge
+
+1. **Diorama einsetzen**, sobald die Prüfung durch ist (Stand beim Schreiben: läuft).
+2. **Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; am Prüfsatz
+   gerechnet: bei zwei Punkten hat dann jeder der neun Titel einen Halt (0,5–2,0 s), bei heutigem
+   Tempo 1 (= 4 Schläge) haben **sechs von neun keinen**.
+3. **Tiefenebene** — durchspezifiziert (KONZEPT-ZIELPUNKTE Abschnitt 12): ±10 % um die Tiefe des
+   Zielpunkts scharf, außen zunehmend weicher, nur im Halt, kommt und geht, am Rand geschnitten
+   statt verschoben, ohne Karte Rückfall auf Bewegungsunschärfe.
+4. **Module herauslösen.** Der Song-Analyzer ist längst extern (`web/fremd/analyzer.js`, 397 KB);
+   `index.html` trägt 35.339 Zeilen in **einem** `<script>` (4569–35336). Reihenfolge: Effektclip-
+   Studio (Grenze erprobt, Haus-Ersatz nur 12 KB), dann Tonstudio, dann Bühne.

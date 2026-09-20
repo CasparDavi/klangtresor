@@ -71,6 +71,13 @@ substanzielles, wenn ich wieder da bin."*
 weggeht, steht ein eingesetzter, benutzbarer Stand** — kein halber Apparat und keine Fassung, die
 nur im Sandkasten läuft.
 
+### Persönliches bleibt draußen
+
+Material, das Caspar_D als Person betrifft — Liedtexte im Volltext, seine eigenen Einordnungen dazu,
+Bildarbeit an seiner Gestalt — gehört **nicht ins Repo und nicht in die Übergabe**. Es ist nicht Teil
+der Software. Solche Arbeit bleibt im Scratchpad und wird ihm als Datei gegeben; was davon dauerhaft
+gebraucht wird, steht im Gedächtnis, nicht in git.
+
 ## 4. Nichts darf lügen
 
 Was nicht gilt, wird grau mit Grund — nicht versteckt. Zahlen, die nichts aussagen, werden nicht angezeigt.
