@@ -1,9 +1,9 @@
 {
- "stand": "8e4cf08",
- "indexGeaendert": true,
- "datum": "2026-09-18T16:23:34.920Z",
+ "stand": "dcaa5e4",
+ "indexGeaendert": false,
+ "datum": "2026-09-20T09:57:39.367Z",
  "lange": 360,
- "dauerS": 457,
+ "dauerS": 689,
  "titel": {
   "a": {
    "id": "f49c1907-b260-43c4-b4d0-67d74aa00ccb",
@@ -277,7 +277,7 @@
   },
   {
    "typ": "kenburns",
-   "faelle": 10,
+   "faelle": 17,
    "nichtDeterministisch": [],
    "veraendert": []
   },
@@ -319,7 +319,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 822,
+   "dauerMs": 563,
    "lage": {
     "gl": true,
     "noise": true,
@@ -357,7 +357,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1088,
+   "dauerMs": 633,
    "lage": {
     "gl": true,
     "noise": true,
@@ -395,7 +395,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1009,
+   "dauerMs": 665,
    "lage": {
     "gl": true,
     "noise": true,
@@ -433,7 +433,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 770,
+   "dauerMs": 563,
    "lage": {
     "gl": true,
     "noise": true,
@@ -471,7 +471,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 629,
+   "dauerMs": 564,
    "lage": {
     "gl": true,
     "noise": true,
@@ -509,7 +509,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 405,
+   "dauerMs": 373,
    "lage": {
     "gl": true,
     "noise": true,
@@ -547,7 +547,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 641,
+   "dauerMs": 633,
    "lage": {
     "gl": true,
     "noise": true,
@@ -585,7 +585,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 629,
+   "dauerMs": 496,
    "lage": {
     "gl": true,
     "noise": true,
@@ -623,7 +623,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 757,
+   "dauerMs": 649,
    "lage": {
     "gl": true,
     "noise": true,
@@ -661,7 +661,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 496,
+   "dauerMs": 445,
    "lage": {
     "gl": true,
     "noise": true,
@@ -699,7 +699,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 520,
+   "dauerMs": 495,
    "lage": {
     "gl": true,
     "noise": true,
@@ -737,7 +737,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 707,
+   "dauerMs": 606,
    "lage": {
     "gl": true,
     "noise": true,
@@ -775,7 +775,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 689,
+   "dauerMs": 596,
    "lage": {
     "gl": true,
     "noise": true,
@@ -813,7 +813,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1167,
+   "dauerMs": 1130,
    "lage": {
     "gl": true,
     "noise": true,
@@ -851,7 +851,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 385,
+   "dauerMs": 357,
    "lage": {
     "gl": true,
     "noise": true,
@@ -889,7 +889,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 386,
+   "dauerMs": 353,
    "lage": {
     "gl": true,
     "noise": true,
@@ -927,7 +927,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1255,
+   "dauerMs": 1012,
    "lage": {
     "gl": true,
     "noise": true,
@@ -965,7 +965,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1704,
+   "dauerMs": 1320,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1003,7 +1003,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 881,
+   "dauerMs": 742,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1041,7 +1041,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 764,
+   "dauerMs": 753,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1079,7 +1079,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 926,
+   "dauerMs": 785,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1117,7 +1117,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 21781,
+   "dauerMs": 18603,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1155,7 +1155,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1261,
+   "dauerMs": 1061,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1193,7 +1193,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 959,
+   "dauerMs": 841,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1231,7 +1231,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 971,
+   "dauerMs": 846,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1269,7 +1269,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 835,
+   "dauerMs": 857,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1307,7 +1307,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1015,
+   "dauerMs": 915,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1345,7 +1345,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1210,
+   "dauerMs": 1153,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1383,7 +1383,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 810,
+   "dauerMs": 795,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1421,7 +1421,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 455,
+   "dauerMs": 425,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1459,7 +1459,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1046,
+   "dauerMs": 972,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1497,7 +1497,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 865,
+   "dauerMs": 867,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1535,7 +1535,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 920,
+   "dauerMs": 544,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1573,7 +1573,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 446,
+   "dauerMs": 400,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1611,7 +1611,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1268,
+   "dauerMs": 1096,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1649,7 +1649,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 681,
+   "dauerMs": 590,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1687,7 +1687,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 505,
+   "dauerMs": 424,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1725,7 +1725,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 399,
+   "dauerMs": 364,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1763,7 +1763,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 407,
+   "dauerMs": 372,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1801,7 +1801,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 424,
+   "dauerMs": 395,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1839,7 +1839,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 390,
+   "dauerMs": 449,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1877,7 +1877,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 418,
+   "dauerMs": 354,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1915,7 +1915,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 438,
+   "dauerMs": 343,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1953,7 +1953,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 412,
+   "dauerMs": 354,
    "lage": {
     "gl": true,
     "noise": true,
@@ -1991,7 +1991,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 377,
+   "dauerMs": 311,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2029,7 +2029,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 367,
+   "dauerMs": 318,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2067,7 +2067,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 373,
+   "dauerMs": 326,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2105,7 +2105,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 895,
+   "dauerMs": 753,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2143,7 +2143,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 602,
+   "dauerMs": 387,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2181,7 +2181,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 460,
+   "dauerMs": 391,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2219,7 +2219,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 454,
+   "dauerMs": 394,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2257,7 +2257,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 915,
+   "dauerMs": 783,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2295,7 +2295,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 675,
+   "dauerMs": 412,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2333,7 +2333,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 468,
+   "dauerMs": 354,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2371,7 +2371,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 413,
+   "dauerMs": 353,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2409,7 +2409,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 404,
+   "dauerMs": 356,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2447,7 +2447,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 677,
+   "dauerMs": 414,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2485,7 +2485,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 631,
+   "dauerMs": 554,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2523,7 +2523,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 635,
+   "dauerMs": 355,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2561,7 +2561,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1475,
+   "dauerMs": 1273,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2599,7 +2599,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1482,
+   "dauerMs": 1175,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2637,7 +2637,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 778,
+   "dauerMs": 657,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2675,7 +2675,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 795,
+   "dauerMs": 615,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2713,7 +2713,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 732,
+   "dauerMs": 611,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2751,7 +2751,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 919,
+   "dauerMs": 736,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2789,7 +2789,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 845,
+   "dauerMs": 693,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2827,7 +2827,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 830,
+   "dauerMs": 699,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2865,7 +2865,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 2333,
+   "dauerMs": 2255,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2903,7 +2903,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1017,
+   "dauerMs": 789,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2941,7 +2941,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 839,
+   "dauerMs": 733,
    "lage": {
     "gl": true,
     "noise": true,
@@ -2979,7 +2979,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 2831,
+   "dauerMs": 2422,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3017,7 +3017,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 740,
+   "dauerMs": 624,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3055,7 +3055,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 805,
+   "dauerMs": 627,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3093,7 +3093,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 725,
+   "dauerMs": 615,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3131,7 +3131,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 633,
+   "dauerMs": 521,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3169,7 +3169,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 400,
+   "dauerMs": 388,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3207,7 +3207,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 423,
+   "dauerMs": 381,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3245,7 +3245,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 612,
+   "dauerMs": 607,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3283,7 +3283,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 553,
+   "dauerMs": 596,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3321,7 +3321,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1448,
+   "dauerMs": 1335,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3359,7 +3359,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 476,
+   "dauerMs": 397,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3397,7 +3397,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 659,
+   "dauerMs": 555,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3435,7 +3435,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 21622,
+   "dauerMs": 18831,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3473,7 +3473,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1746,
+   "dauerMs": 1371,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3511,7 +3511,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 525,
+   "dauerMs": 424,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3549,7 +3549,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 391,
+   "dauerMs": 356,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3587,7 +3587,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 768,
+   "dauerMs": 363,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3625,7 +3625,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 376,
+   "dauerMs": 322,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3663,7 +3663,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 468,
+   "dauerMs": 344,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3701,7 +3701,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 409,
+   "dauerMs": 379,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3739,7 +3739,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 418,
+   "dauerMs": 355,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3777,7 +3777,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1196,
+   "dauerMs": 726,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3815,7 +3815,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 21907,
+   "dauerMs": 18173,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3853,7 +3853,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 21868,
+   "dauerMs": 19367,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3891,7 +3891,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 501,
+   "dauerMs": 387,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3929,7 +3929,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 466,
+   "dauerMs": 385,
    "lage": {
     "gl": true,
     "noise": true,
@@ -3967,7 +3967,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 460,
+   "dauerMs": 407,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4005,7 +4005,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 533,
+   "dauerMs": 480,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4043,7 +4043,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 424,
+   "dauerMs": 345,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4081,7 +4081,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 415,
+   "dauerMs": 349,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4119,7 +4119,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 468,
+   "dauerMs": 417,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4157,7 +4157,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 417,
+   "dauerMs": 354,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4195,7 +4195,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1334,
+   "dauerMs": 1056,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4233,7 +4233,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 707,
+   "dauerMs": 655,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4271,7 +4271,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 728,
+   "dauerMs": 624,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4309,7 +4309,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 814,
+   "dauerMs": 761,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4347,7 +4347,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 750,
+   "dauerMs": 684,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4385,7 +4385,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 2293,
+   "dauerMs": 2117,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4423,7 +4423,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 761,
+   "dauerMs": 661,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4461,7 +4461,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 569,
+   "dauerMs": 579,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4499,7 +4499,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 665,
+   "dauerMs": 613,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4537,7 +4537,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 441,
+   "dauerMs": 481,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4575,7 +4575,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 507,
+   "dauerMs": 422,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4613,7 +4613,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 616,
+   "dauerMs": 635,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4651,7 +4651,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 2226,
+   "dauerMs": 1883,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4689,7 +4689,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 392,
+   "dauerMs": 361,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4727,7 +4727,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 587,
+   "dauerMs": 569,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4765,7 +4765,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 477,
+   "dauerMs": 429,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4803,7 +4803,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 388,
+   "dauerMs": 408,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4841,7 +4841,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1609,
+   "dauerMs": 1622,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4879,7 +4879,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1640,
+   "dauerMs": 1585,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4917,7 +4917,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1599,
+   "dauerMs": 1331,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4955,7 +4955,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 949,
+   "dauerMs": 756,
    "lage": {
     "gl": true,
     "noise": true,
@@ -4993,7 +4993,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 906,
+   "dauerMs": 760,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5031,7 +5031,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 963,
+   "dauerMs": 801,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5069,7 +5069,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1002,
+   "dauerMs": 855,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5107,7 +5107,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1405,
+   "dauerMs": 1264,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5145,7 +5145,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1475,
+   "dauerMs": 1246,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5183,7 +5183,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1666,
+   "dauerMs": 1379,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5221,7 +5221,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1670,
+   "dauerMs": 1342,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5259,7 +5259,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 2318,
+   "dauerMs": 1854,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5297,7 +5297,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1556,
+   "dauerMs": 1224,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5335,7 +5335,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1511,
+   "dauerMs": 1264,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5373,7 +5373,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 423,
+   "dauerMs": 364,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5411,7 +5411,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 576,
+   "dauerMs": 621,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5449,7 +5449,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 404,
+   "dauerMs": 346,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5487,7 +5487,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 714,
+   "dauerMs": 586,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5525,7 +5525,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 446,
+   "dauerMs": 459,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5563,7 +5563,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1107,
+   "dauerMs": 852,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5601,7 +5601,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 439,
+   "dauerMs": 363,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5639,7 +5639,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 651,
+   "dauerMs": 491,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5677,7 +5677,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 243405,
+   "dauerMs": 192449,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5715,7 +5715,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 239341,
+   "dauerMs": 182334,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5753,7 +5753,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 888,
+   "dauerMs": 775,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5791,7 +5791,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 963,
+   "dauerMs": 687,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5829,7 +5829,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 724,
+   "dauerMs": 620,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5867,7 +5867,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1389,
+   "dauerMs": 1032,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5905,7 +5905,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 436,
+   "dauerMs": 410,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5943,7 +5943,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1421,
+   "dauerMs": 1280,
    "lage": {
     "gl": true,
     "noise": true,
@@ -5981,7 +5981,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1000,
+   "dauerMs": 880,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6019,7 +6019,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1009,
+   "dauerMs": 1086,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6057,7 +6057,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 469,
+   "dauerMs": 437,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6095,7 +6095,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 583,
+   "dauerMs": 584,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6133,7 +6133,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 28496,
+   "dauerMs": 25845,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6171,7 +6171,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1031,
+   "dauerMs": 1008,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6209,7 +6209,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 972,
+   "dauerMs": 1122,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6224,30 +6224,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Tempo des wandernden Laser-Ursprungs, Gitter ohne Scanner-Nachleuchten",
-   "t0": 0.878,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    0.87792,
-    3.17792,
-    6.577920000000001
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "4003a9e4dbe153a0073c9099893d3633632bf2fbc5cec7c46866327a21e93c62",
+     "hash": "0838d6396a7883674663cb76585943b8ff999962b056625a1cf8ec5524888eb5",
      "deterministisch": true
     },
     {
-     "hash": "4be630e983656e96d9d25c46c0d58ae9307ed1295da9e59c8c1e193bbdb8ef61",
+     "hash": "3b2fb12d336857f84344c08092c444f2500b67121b2f12af894d22e20820ff44",
      "deterministisch": true
     },
     {
-     "hash": "12fdb8515db71cccf7680f39a185f919d94fcbb45a97a460e738394b341cb31c",
+     "hash": "ca873bef18af96661c1199a9a571f4c25711b05a41d705e037dcee6385e804be",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1803,
+   "dauerMs": 1542,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6285,7 +6285,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 309,
+   "dauerMs": 380,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6300,30 +6300,30 @@
    "titel": "a",
    "daten": "nurEinsen",
    "bemerkung": "nur Einsen, Schritt auf der Eins allein",
-   "t0": 0.076,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    0.07629,
-    2.37629,
-    5.77629
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "669679038050a0c1403c63be6da96333b807d10611b7845bec96ca07b848ac15",
+     "hash": "a719b53ff6de12e62ebbe3b108bd6cf555b2c2bd91554170f5a2d6287d8996b5",
      "deterministisch": true
     },
     {
-     "hash": "717f551564bd65df22519b64f4f7f8309a6f042e8afc3dcea5f139e887f8ae26",
+     "hash": "00f5c23a3e7cc1893cd2c36e56102f11e0d3a656bf827bb093040a7d713954d7",
      "deterministisch": true
     },
     {
-     "hash": "48a608ce8aeb62da1c3776c433864219e87063c3908cf249869197411c279a20",
+     "hash": "4d24b411782303332a5f6e0c86bad2d118d11f7c7a48adab262b877de2bbf5e9",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 459,
+   "dauerMs": 372,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6361,7 +6361,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 53048,
+   "dauerMs": 59119,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6376,17 +6376,17 @@
    "titel": "a",
    "daten": "ohneEins,wenige:7",
    "bemerkung": "7 Schlaege ohne Eins: Vorschau gewachsen, Export ohne Raster",
-   "t0": 0.2,
+   "t0": 60.3,
    "W": 629,
    "H": 889,
    "zeiten": [
-    0.2,
-    2.5,
-    5.9
+    60.3,
+    62.599999999999994,
+    66
    ],
    "messung": [
     {
-     "hash": "f062bad53c674184c2363fc8a862e53486a143fca5b822ab48155462610ba427",
+     "hash": "cf86fa78aff8a916b01424cb12f57749253958ea6459554986266429d0e24cd0",
      "deterministisch": true
     },
     {
@@ -6399,7 +6399,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 438,
+   "dauerMs": 340,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6437,7 +6437,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 440,
+   "dauerMs": 449,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6475,7 +6475,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1698,
+   "dauerMs": 1281,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6513,7 +6513,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1203,
+   "dauerMs": 1287,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6528,13 +6528,13 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Gegenprobe zu linse-bewegung-licht: dieselbe Leuchte ohne Bewegung - wieviel tempoVerh kommt vom Puls allein",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
@@ -6546,12 +6546,12 @@
      "deterministisch": true
     },
     {
-     "hash": "e3240cc677c0cab5461fccede45a7ca0cd343d6432214ff359a58d089bc8f6b4",
+     "hash": "0839d8d55a2552ddfd01dd163cd1c20b47fe77fcc0c4dc8c5aac832f67cabbd7",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1661,
+   "dauerMs": 1335,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6566,30 +6566,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "wandernd Tempo 8: 1,19 Umlaeufe waagerecht, 1,54 senkrecht - rastet, pendelt nicht",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "cdb35102814681d80fb141a8dac296faf936194464b7c0133893ff90327d618e",
+     "hash": "ceb45473a7b8d45b34cae7fe262afc5506a178c39bc5eeb912c5980b2efadaf0",
      "deterministisch": true
     },
     {
-     "hash": "e12784a3bf333ede7810f3744c7e4b43f4ee3372ae5af3844393f51718afb2b5",
+     "hash": "54be2caffd5fd40ebf7564de1d7e5b05d5aacda3526b846645c16df7615772fa",
      "deterministisch": true
     },
     {
-     "hash": "b97bbeccdb636ef9d1663f6ab417c2c87416a61e946ad792eff3a4c1671bdb3b",
+     "hash": "4fbba5d630877cc934f88cb193586b09a3ccebf43e7da359cc16b1ecb8821913",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1256,
+   "dauerMs": 1323,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6604,30 +6604,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Laufstreifen beide am Reglerende: vorher 6,3-mal so schnell",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "54e7f369316f36c06a84b12aec817330e413bc73c4bdec122ef24adc90471a95",
+     "hash": "4a1ff88c63cf612f2fc38de31f314d4d41300bf1b77e6d01512bc32ca81ed61f",
      "deterministisch": true
     },
     {
-     "hash": "892e31a2f578003cd6f52898351b6144cb5de73d377fd77837dae0ae72de72d5",
+     "hash": "2e5ec374a99c80e67c002b01a3653b0312347f5f76a882b14245201466256530",
      "deterministisch": true
     },
     {
-     "hash": "c131fa04df2b94508c8aebced80673c03a6c48e3d0be88ce9de52c0faa4b990e",
+     "hash": "ac4561d73f3495b01f158880d6c734b5b6b5eb39c8bd9c76b7f81f77ad4e0d77",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1599,
+   "dauerMs": 1285,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6642,30 +6642,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "beide, Tempo 8: ein Durchlauf je Clip (ungerade) - Farbtausch einmal je Clip, sonst hell-Tempo",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "71de15c7a6fc1b3a87bbaed1783daeab97b9d25ecab7427aea147f1910308aaa",
+     "hash": "e46e843a3e0953c702be7f528663312f31cc4e035c8961eadb1bc281b9cc2eeb",
      "deterministisch": true
     },
     {
-     "hash": "0b358121ef6fa7b692394de786ca74f8e1f7c848f969ae53c08f7d39a4541e86",
+     "hash": "bc294625c83d1bafe62604a308ffbc15bf39cb8573bf0475ee9fa0d2d3bacfd6",
      "deterministisch": true
     },
     {
-     "hash": "d3ba1fe3500871140172d0038449f564df6927dc2e0fc6199f3d98d680459ccf",
+     "hash": "41372effc4b67c8040fb8665d3b701eb03ccaf5a392bebc3e4a91293df2559cd",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 535,
+   "dauerMs": 405,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6703,7 +6703,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1625,
+   "dauerMs": 1285,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6718,30 +6718,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Eins-Leser: ganze Takte, phiF ueber N/M",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "b56ee543fc5e4e61c1e403aa27ad1c5e320822e5cd29bf12bea33a04146b8faa",
+     "hash": "f2c84b6f7eb8eee380ccaeccf4b277baf322953d2de6630aed33942c83bb8e43",
      "deterministisch": true
     },
     {
-     "hash": "c616387d4897d0e4cc961b8de86f7e2c04b2f6fa16191db9288193af9e6e7833",
+     "hash": "e5539ad010ad9628e93617fdb79abca0bd30085dce63ff5839a79c2e50f32fad",
      "deterministisch": true
     },
     {
-     "hash": "bc15cdc5aa0445e7e635d12205174a785c102bb06d1bccf4aad4e3f378fa4212",
+     "hash": "b90127e25a1071d53b24f3fddecd9763fda382b1ab06c67cc55a12d0b6ced35f",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 447,
+   "dauerMs": 449,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6779,7 +6779,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 756,
+   "dauerMs": 613,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6817,7 +6817,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1041,
+   "dauerMs": 1103,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6855,7 +6855,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 545,
+   "dauerMs": 587,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6870,30 +6870,30 @@
    "titel": "a",
    "daten": "ohneEins",
    "bemerkung": "Eins-Leser ohne Eins-Marken: M%8, keine Eins-Bedingung",
-   "t0": 61.269,
+   "t0": 60.079,
    "W": 629,
    "H": 889,
    "zeiten": [
-    61.26915,
-    63.56915,
-    66.96915
+    60.07933,
+    62.379329999999996,
+    65.77933
    ],
    "messung": [
     {
-     "hash": "cb3bcc7447f507206897e978f47f23fb25be95b0ea5d1befab9d350434abaaad",
+     "hash": "42fdfe4753527dafeffdde87654ffce2eec7602500d70014aca5e6ca6d4c7c79",
      "deterministisch": true
     },
     {
-     "hash": "736be1509855c7f8e626ad6e646a997869945f7994011e2885e3dc3829375eda",
+     "hash": "711531d21d0316f2f2457c0938240be00e937c2a2f89b39a96178852457a0f90",
      "deterministisch": true
     },
     {
-     "hash": "6b45c8d3a9170a9fb68a8fa2600613eb5781380377cbdf5df09f11eb47e69990",
+     "hash": "4b520c6fab84b332236346114d4522b8476626ac6b0a291b4a342bd319822f07",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 446,
+   "dauerMs": 362,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6931,7 +6931,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 1350,
+   "dauerMs": 945,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6969,7 +6969,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 626,
+   "dauerMs": 449,
    "lage": {
     "gl": true,
     "noise": true,
@@ -6984,30 +6984,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Zielpunkte aus dem Vorschlag beim Einfuegen (zwei), Tempo 1 Takt, Parallaxe aus (Vorgaben)",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "4b6711c0401d837d362d744acca2d8defebac3db04e7534923306e29d47ef476",
+     "hash": "f4b4cb8b89c0841ac46ccdbdedd06f40b4cbd745013e3f0876bb711186ca2519",
      "deterministisch": true
     },
     {
-     "hash": "b7b8fbdec4abd11c3b530eca912707a91bda9ec8e863885898f85a889f2e2c79",
+     "hash": "521e660222962f5cdb8c7ef2f6d51498bd85dc460fc30c9f035e89bbbe19d52a",
      "deterministisch": true
     },
     {
-     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "hash": "ea718576c93b054dc3b537a6219d4f07834717c23a1a0809c1e203fff86d5920",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 376,
+   "dauerMs": 385,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7022,30 +7022,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "EIN Zielpunkt: Ganzbild - hinein - halten - heraus. Zwei Zuege, ein Halt am Punkt und einer am Ganzbild.",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "614bae502026e3a8c80fd803beb87db1b5fff6725d9ad28d03574ccc8bc51ac9",
-     "deterministisch": true
-    },
-    {
-     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
-     "deterministisch": true
-    },
-    {
      "hash": "746d984c3e1fff66e6e65e24171f31801d0eb5352276d7eb4812fd5dce2b8cc2",
+     "deterministisch": true
+    },
+    {
+     "hash": "e712a650c5a634f21cb260fad5e009a820d916aff794091d44123b1e8df58731",
+     "deterministisch": true
+    },
+    {
+     "hash": "19a4bf7366588950ec1d1fdbbfc8f61c67fb633db5d8912199abb5f9cf6a59af",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 413,
+   "dauerMs": 332,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7060,30 +7060,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Zwei Zielpunkte verschiedener Enge: drei Zuege, zwei gleich lange Halte an den Punkten und einer am Ganzbild.",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "a5ad65fbd41298cbfaf7cad4ecebe1e651f81424c45a23b689887b04e67260f9",
+     "hash": "b28bd37d4c6824eea9557a66bc153bfca561f5f4aa750b0db1792b24b6726aa9",
      "deterministisch": true
     },
     {
-     "hash": "f4f711ea753ed54a4431a38a2cc16e373864c53f01729f883542419ca3e020db",
+     "hash": "590a8b606742ce41eded4c8190026f9eb3165517117b0fd55c007a4ef81581c6",
      "deterministisch": true
     },
     {
-     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "hash": "9ba341df60af200802297798cdcf9de70ad3dc9726988460a09a23ff0b5c8fdb",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 331,
+   "dauerMs": 391,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7098,30 +7098,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Fuenf Zielpunkte - die Grenze. Sechs Zuege passen in keinen Clip, also greift die Tempoklemme.",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "eb009755476ac1e5c1d5bbbfee95ba31eae834ce57119de93851406a41e93c14",
+     "hash": "1d8a114c41d2757cc905868d600de445334de8bcf481ccce1f82bceb4300f5d8",
      "deterministisch": true
     },
     {
-     "hash": "3eae203e080fa7256470fc5348d9b97b88c93d763c3aed14aaa36af2a5e9cbcb",
+     "hash": "3b2963bcc36bd5c8288d363082aa0c9fcea6334338e32f6783a7e4c6fea902b3",
      "deterministisch": true
     },
     {
-     "hash": "1196a4deade898640a193be2919f7aca6a69616c78ed7bb9b02b1215cc243506",
+     "hash": "5a6e6760a90416f441a5d62ed38838e837790a276dc4aba319958e98843f5c53",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 413,
+   "dauerMs": 374,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7136,13 +7136,13 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Leere Liste: die Kamera steht auf dem Ganzbild. Ein stehendes Bild loopt von selbst.",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
@@ -7159,7 +7159,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 323,
+   "dauerMs": 339,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7174,30 +7174,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Regler ausdruecklich auf null (seit dem 18.09.2026 auch die Vorgabe): der Ausschnitt kommt aus drawImage",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "4b6711c0401d837d362d744acca2d8defebac3db04e7534923306e29d47ef476",
+     "hash": "f4b4cb8b89c0841ac46ccdbdedd06f40b4cbd745013e3f0876bb711186ca2519",
      "deterministisch": true
     },
     {
-     "hash": "b7b8fbdec4abd11c3b530eca912707a91bda9ec8e863885898f85a889f2e2c79",
+     "hash": "521e660222962f5cdb8c7ef2f6d51498bd85dc460fc30c9f035e89bbbe19d52a",
      "deterministisch": true
     },
     {
-     "hash": "dd90168316b8bdff124f6e181253ad98211dc60431192c859dd45efceb228ba2",
+     "hash": "ea718576c93b054dc3b537a6219d4f07834717c23a1a0809c1e203fff86d5920",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 464,
+   "dauerMs": 340,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7212,30 +7212,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Parallaxe am Anschlag, Zielpunkte aus dem Vorschlag",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "9036e37fe793b865149e2fa24e5b2388dbbc2c856d898a3b158a059ca59a61f3",
+     "hash": "f9913f925b69e31adfcaf58ffbf9612ad4f5e11a8fda5d1ca18310a062467b2f",
      "deterministisch": true
     },
     {
-     "hash": "f00324d45c280e67b2bf33af53710e3c9518b026df0f923e20ca5a633b2355d8",
+     "hash": "8cf5b537e32743cd22a6485a856730b754b1206e37142d8a33263d125e90c8ec",
      "deterministisch": true
     },
     {
-     "hash": "700a254baffdcb99f80343389a9e8156e76c836de004d33ddeec65bafdb58b3a",
+     "hash": "f07cc354aebb8bf4bf3c2ce1223e7ede8837b799b401690557eb4feb20b5a8f4",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 606,
+   "dauerMs": 626,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7250,30 +7250,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Vorbereitung ohne Parallaxe - die Gegenprobe zum naechsten Fall",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "0ea879c5375b51272e5d7eee13d4dd70f1f9e3dc2f37774450a2088b4c30c4bf",
+     "hash": "b66658305f0c9c123ca82497c8bb031cab5bf746dc3ca53aaa9781c5f794c343",
      "deterministisch": true
     },
     {
-     "hash": "a92e71fe1fcd43667299d7fac826abf06715e0d982e08ae12c100501173225f3",
+     "hash": "03e0643864db50a7f8aa70a504958e714ba18b9dde894effb824b06651ac8579",
      "deterministisch": true
     },
     {
-     "hash": "aa892219c941b0ac49472b35324546bcce694fbee8b821d4e3ccd8228256d4d5",
+     "hash": "dc1f3e67df8e759a8d30eaf1aaf9657bf7567099f9df6689f9d33140415c09ad",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 611,
+   "dauerMs": 486,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7288,30 +7288,30 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Vorbereitung UND Parallaxe im selben Bild: der Fall, der den Fehler vom 18.09.2026 trug",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
-     "hash": "bea7c606b531a0ce0f2a08f15462a8678d8c94b02a8a2d2f1d7ab7a31be66773",
+     "hash": "b51ab207fbb8c0f1dcf004e8311dab00146ea5fa67eafb7897b6bf69d3498440",
      "deterministisch": true
     },
     {
-     "hash": "b00e7b4ded10110f044c9d73139572b6f691e02dc2a3e54780ef4f7ce6cab4e7",
+     "hash": "b3614affe69b75b735c0d343277a0630dc1365f0dc77a48578c329100eac6ca6",
      "deterministisch": true
     },
     {
-     "hash": "f8c6ec7b39341d3ea36f2c7781f9c1bbf42a9c54e5173c76f8b08f2a56bd1c91",
+     "hash": "41ca9970110af98f962fc3cead394c3c9e3b2c9923e2d17af5df6328b5d1615f",
      "deterministisch": true
     }
    ],
    "deterministisch": true,
-   "dauerMs": 721,
+   "dauerMs": 804,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7349,7 +7349,273 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 395,
+   "dauerMs": 406,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-unscharf",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Fokus bei Ankunft 'unscharf' an beiden Punkten: die Zuege dorthin schmieren, bei der Ankunft ist es sofort wieder scharf. Dieselben zwei Punkte wie kb-zweiPunkte - der Unterschied ist allein die Spalte.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "b28bd37d4c6824eea9557a66bc153bfca561f5f4aa750b0db1792b24b6726aa9",
+     "deterministisch": true
+    },
+    {
+     "hash": "c13710c391cbb0832e0d70636a25a4b59951e41e02b347dae3c64878295a8599",
+     "deterministisch": true
+    },
+    {
+     "hash": "9ba341df60af200802297798cdcf9de70ad3dc9726988460a09a23ff0b5c8fdb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 554,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-suche",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Fokus bei Ankunft 'suche': die Zuege schmieren, und im Halt sucht die Schaerfe den Punkt - eine gedaempfte Schwingung, die IM Halt anfaengt und IM Halt aufhoert.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "39b79eed588da526dcb85e1a839ba8809782fc512fb88f7fedb509c58a2c4d30",
+     "deterministisch": true
+    },
+    {
+     "hash": "c13710c391cbb0832e0d70636a25a4b59951e41e02b347dae3c64878295a8599",
+     "deterministisch": true
+    },
+    {
+     "hash": "9ba341df60af200802297798cdcf9de70ad3dc9726988460a09a23ff0b5c8fdb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 758,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-unscharf-eins",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "EIN Punkt auf 'unscharf' - ein langer Zug und mit 60 Bildern (2,0 s) der laengste Halt, den ein Fall hier hat. Der Zwilling zu kb-fokus-suche-eins: unterwegs schmieren beide gleich, NUR im Halt trennen sie sich. Die drei Augenblicke der Studio-Grundlinie fielen bei zwei Punkten (Halt 0,8 s) nicht in den Halt - beide Faelle trugen dieselben Hashes, und ein Rueckschritt am Schaerfezieher waere durchgegangen.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "746d984c3e1fff66e6e65e24171f31801d0eb5352276d7eb4812fd5dce2b8cc2",
+     "deterministisch": true
+    },
+    {
+     "hash": "e712a650c5a634f21cb260fad5e009a820d916aff794091d44123b1e8df58731",
+     "deterministisch": true
+    },
+    {
+     "hash": "f722affe908a68c00c0f993bd8141aa2f1beccdedc47604086aefe11b4135880",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 646,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-suche-eins",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "Derselbe Punkt auf 'suche'. Halt 60 Bilder (2,0 s), also drei Ausschlaege - die volle gedaempfte Schwingung. Weicht dieser Fall von kb-fokus-unscharf-eins nicht ab, ist der Schaerfezieher kaputt.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "2f551b0b70a1bd6b653241f06251180f17a70f1a8ab38dbc506bb9d821b05770",
+     "deterministisch": true
+    },
+    {
+     "hash": "e712a650c5a634f21cb260fad5e009a820d916aff794091d44123b1e8df58731",
+     "deterministisch": true
+    },
+    {
+     "hash": "f722affe908a68c00c0f993bd8141aa2f1beccdedc47604086aefe11b4135880",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 799,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-ohneHalt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "DREI Punkte, der mittlere auf 'suche': in diesem Clip bleibt kein Halt uebrig (kbPlan H=0), also wird nicht gesucht - 'Suche' geht hier aus wie 'Unscharf'. Der Fall haelt genau das fest, damit niemand spaeter unbemerkt einen Ersatzhalt erfindet; die Zeile unter der Liste sagt es seit dem 19.09.2026 in Worten.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "f4f711ea753ed54a4431a38a2cc16e373864c53f01729f883542419ca3e020db",
+     "deterministisch": true
+    },
+    {
+     "hash": "cd71e61ccac353c47447d53bfbc2363a6953d313ad0cb0c610dd278bb5b3118b",
+     "deterministisch": true
+    },
+    {
+     "hash": "a4a7f90eba79e67a598aaf8a1ad2429f830baf9e4df98802e50c33ae4b65a6c5",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 357,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-fokus-suche-kurz",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "b",
+   "daten": "normal",
+   "bemerkung": "Zwei Punkte auf 'suche' auf Titel b: dort ist der Halt nur 13 Bilder (0,43 s) lang. Die Zahl der Ausschlaege haengt seit dem 19.09.2026 an der Haltlaenge (kbSuchAusschlaege, 0,18 s je Ausschlag) - hier sind es ZWEI statt drei. Ohne diesen Fall waere die Regel nur behauptet: alle anderen Faelle haben Halte von 0,8 s und laenger und kommen auf die volle Zahl.",
+   "t0": 59.129,
+   "W": 667,
+   "H": 889,
+   "zeiten": [
+    59.12862,
+    61.428619999999995,
+    64.82862
+   ],
+   "messung": [
+    {
+     "hash": "5c51c8ee473575302a2053ab5b85177e9dfc3c74cc44931a7680decc4e8b85f5",
+     "deterministisch": true
+    },
+    {
+     "hash": "2eb1ea3cd481d72cb65782e1145d441f2e5387fe633d3c87b14a3efb236036b1",
+     "deterministisch": true
+    },
+    {
+     "hash": "eba68220696b58497f0a118285e812c79d1d3cec93e4e790772083234dad839c",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 746,
+   "lage": {
+    "gl": true,
+    "noise": true,
+    "tiefe": true
+   },
+   "fehler": []
+  },
+  {
+   "name": "kb-engerPunkt",
+   "typ": "kenburns",
+   "gruppe": "kenburns",
+   "titel": "a",
+   "daten": "normal",
+   "bemerkung": "EIN sehr enger Punkt (0,25) - die neue Untergrenze KB_ENGE_MIN. Vorher haette kbEnge auf 0,50 geklemmt.",
+   "t0": 59.286,
+   "W": 629,
+   "H": 889,
+   "zeiten": [
+    59.28596,
+    61.58596,
+    64.98596
+   ],
+   "messung": [
+    {
+     "hash": "c67ecbc86e8602ff56c88d02877535a98135035d170d8c08765b64faa505d41c",
+     "deterministisch": true
+    },
+    {
+     "hash": "c1a7d17f061d5c35bb1048a9e9479996b63fe6b10f2d66c1d254a037da21d5ef",
+     "deterministisch": true
+    },
+    {
+     "hash": "0036051334b5725bc9d8f8a5ce3ca77c2f8595a7f87392575b581009646b04fb",
+     "deterministisch": true
+    }
+   ],
+   "deterministisch": true,
+   "dauerMs": 351,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7364,13 +7630,13 @@
    "titel": "a",
    "daten": "normal",
    "bemerkung": "Kontrollfall: reines Bild",
-   "t0": 60.873,
+   "t0": 59.286,
    "W": 629,
    "H": 889,
    "zeiten": [
-    60.87258,
-    63.172579999999996,
-    66.57258
+    59.28596,
+    61.58596,
+    64.98596
    ],
    "messung": [
     {
@@ -7387,7 +7653,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 409,
+   "dauerMs": 356,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7425,7 +7691,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 401,
+   "dauerMs": 349,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7463,7 +7729,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 392,
+   "dauerMs": 329,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7501,7 +7767,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 409,
+   "dauerMs": 436,
    "lage": {
     "gl": true,
     "noise": true,
@@ -7539,7 +7805,7 @@
     }
    ],
    "deterministisch": true,
-   "dauerMs": 376,
+   "dauerMs": 299,
    "lage": {
     "gl": true,
     "noise": true,

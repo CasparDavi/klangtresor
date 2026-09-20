@@ -16,7 +16,24 @@ window.__naht = (() => {
   let glMs = 0, glZahl = 0; const runEcht = GL.run;
   GL.run = function(){ const tm = performance.now(), r = runEcht.apply(this, arguments); warteGL(); glMs += performance.now() - tm; glZahl++; return r; };
   function typen(){ return Object.keys(EFFEKTE).map(k => ({ typ:k, label:EFFEKTE[k].label, art:EFFEKTE[k].art, params:EFFEKTE[k].params.filter(p=>p.k).map(p => ({ k:p.k, def:p.def, sel:p.sel?p.sel.map(s=>s[0]):undefined, min:p.min, max:p.max })) })); }
+  /* DIE SONGZEIT WIRD IMMER GESETZT, NIE NUR MANCHMAL (19.09.2026, teuer gefunden).
+     Hier stand `if(typeof f.jetzt==='number') window.audio = ...` - gesetzt wurde also nur, wenn der
+     Fall eine eigene Zeit trug, und zurueckgesetzt wurde NIE. Fuenf von 193 Faellen tragen eine
+     eigene Zeit; einer davon ist `rand-jetzt-anfang` mit 0,2. Jeder Fall, der danach im selben
+     Fenster lief und keine eigene Zeit hatte, erbte diese 0,2 statt der Katalogvorgabe 60,3 - andere
+     Songzeit, anderer Ausschnitt, anderes Bild.
+     GEMESSEN AM 19.09.2026: derselbe Fall `rand-risse-beschlag-kurz` weicht im Rudel um 36 von 255
+     ab und ist allein gefahren bitgleich. Dreimal an einem Tag hat der Pruefstand deshalb Alarm
+     geschlagen, wo nichts war - und die andere Richtung waere schlimmer: ein echter Rueckschritt
+     kann auf demselben Weg durchrutschen. Die Grundlinien vor diesem Tag sind fuer die Faelle NACH
+     einem `jetzt`-Fall entsprechend unzuverlaessig.
+     JETZT_VORGABE haelt, was naht.mjs beim Oeffnen mitgibt (KATALOG.jetzt); zeitSetzen faehrt die
+     Zeit vor JEDEM Fall auf diesen Stand zurueck, wenn der Fall keine eigene nennt. */
+  let JETZT_VORGABE = null;
+  function zeitSetzen(f){ const j = (f && typeof f.jetzt==='number') ? f.jetzt : JETZT_VORGABE;
+    if(typeof j === 'number') window.audio = { paused:false, currentTime:j }; }
   async function bereitMachen(id, jetzt){
+    if(typeof jetzt === 'number') JETZT_VORGABE = jetzt;
     for(let i=0; i<300 && !(bereit && DATA && DATA.id===id); i++) await warte(50);
     if(!(bereit && DATA && DATA.id===id)) throw new Error('Quelle von '+id+' nicht bereit');
     for(let i=0; i<100 && lein && lein.width<=2; i++) await warte(50);
@@ -171,7 +188,7 @@ window.__naht = (() => {
   async function fall(f, o){
     o = o || {}; const lange = o.lange || 360, vlang = o.vergleich || 256, r2 = x => Math.round(x*1000)/1000;
     const beginn = performance.now();
-    if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt };
+    zeitSetzen(f);
     datenSetzen(f.daten || 'normal');
     Math.random = zufall;
     try{
@@ -289,7 +306,7 @@ window.__naht = (() => {
      UND Parallaxe zusammenkamen. `vorb` im Fall geht durch vorbAus() wie ein gespeichertes Rezept; das
      _id bleibt stehen, sonst waechst der kurvenraum um ein <filter> je Fall. */
   function vorbSetzen(r){ const vi = VORB._id; VORB = vorbAus(r || null); VORB._id = vi; }
-  function vorbereiten(f){ if(typeof f.jetzt==='number') window.audio = { paused:false, currentTime:f.jetzt }; datenSetzen(f.daten || 'normal'); Math.random = zufall; vorbSetzen(f.vorb); STAPEL = effekteBauen(f.effekte, f); soloId = null; return ausschnitt(); }
+  function vorbereiten(f){ zeitSetzen(f); datenSetzen(f.daten || 'normal'); Math.random = zufall; vorbSetzen(f.vorb); STAPEL = effekteBauen(f.effekte, f); soloId = null; return ausschnitt(); }
   function aufraeumenMass(){ Math.random = zufallEcht; datenSetzen('normal'); vorbSetzen(null); STAPEL = []; LOOP = 0; FEIN = false; }
 
   /* STUDIO IN VORGABEGROESSE: o.feld = [FW, FH] aus studiofeld.json; das Bild eingepasst wie groesse() es tut. Zweimal
