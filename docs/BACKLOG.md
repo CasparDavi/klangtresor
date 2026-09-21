@@ -2906,6 +2906,121 @@ gesetzt. Mechanisch prüfbar wäre es so: jeden Regler und jede Auswahl einzeln 
 übrigen Werte auslesen und mit dem Stand davor vergleichen — was sich ungefragt mitbewegt hat, ist
 ein Befund. Das ist ein Datenvergleich ohne Bild, also billig und ohne Rauschboden.
 
+### Wie der Apparat entstanden ist — und was er heute enthält (21.09.2026)
+
+Caspar_D: *„Wir haben ein Testregime, von dem ich gar nicht weiß, was es tut und bewirkt, weil wir
+es nie gemeinsam spezifiziert haben."* Und, zur Einordnung: *„In der Regel ist es sehr plausibel,
+was du testest. Während der Entwicklung von Ken Burns Fahrten war es nötig, dies zu testen. Nun ist
+es fertig, und wir müssen überlegen, ob wir die Tests behalten oder archivieren — GitHub archiviert
+es ja sowieso, auch wenn der Code rausfliegt."*
+
+**Das ist der Punkt, der bisher fehlte: Tests haben einen Lebenszyklus.** Während der Entwicklung
+ist eine Prüfung an jedem Zwischenschritt richtig. Was fehlt, ist der Moment danach, in dem
+entschieden wird: bleibt das als Regressionsschutz, oder war es Bauwerkzeug? Dieser Moment ist nie
+vorgekommen — deshalb ist der Apparat nur gewachsen.
+
+#### Der Bestand
+
+| Teil | Umfang |
+|---|---|
+| `labor/nahtpruefung/haken.js` | **856 Zeilen, 74 KB** — wird beim Prüfen in die App gespleißt |
+| `labor/nahtpruefung/naht.mjs` | 344 Zeilen, der Läufer (headless Chrome, SwiftShader) |
+| `labor/effektclip-studio/messreihe.js` | eigenes Werkzeug, von Hand in die Browserkonsole |
+| `labor/effektclip-studio/blendentest.html` | eigenes Blatt für Kosten ohne Studio |
+| `bin/effektclip-labor.js` | holt den Studioblock aus `index.html` und zurück |
+
+**Der Prüfhaken reicht 15 Funktionen nach außen. Sieben davon haben keinen Rufer** — sie wurden für
+eine einzelne Frage gebaut, einmal über einen eigenen Läufer aufgerufen, und der Läufer wurde
+gelöscht. Das steht auch gegen die Hausregel *totlegen nur mit löschen*.
+
+| lebendig | Frage |
+|---|---|
+| `fall` | Schließt der Loop? (`gleich`, `gleichFolge`) |
+| `studio` | Ist das Bild gleich geblieben? **und** Kosten je Bild (`msBild`) |
+| `massstab` | Sieht dasselbe Rezept in 360 und 1080 px gleich aus? (Regel 19) |
+| `loopAnsicht` | Ist das Ansichtsbild bitgleich zum Exportbild? |
+| `katalog` | Sitzen die Pulse im Takt, über den Bestand? (Regel 18) |
+| `feld` | Wie groß malt das Studio in verschiedenen Fenstern? |
+
+| ohne Rufer | wofür gebaut |
+|---|---|
+| `dioBeweis` | „Der Beweis, dass das Diorama wirkt" (20.09.2026) |
+| `zeichenProbe` | „Ist Bild(N) bitgleich Bild(0)?" (18.09.2026) |
+| `markenProbe` | „Marken sind Bedienung, kein Bild" (18.09.2026) |
+| `regelProbe` | vier Zusagen der Oberfläche am laufenden Studio (siehe unten) |
+| `kbSchau` | Ken-Burns-Fahrt Bild für Bild protokollieren, mit Zeit und Bildern |
+| `kbKarte` | Ken-Burns-Karte |
+| `fahrtRezeptProbe` | die gestrichene alte „Fahrt" in gespeicherten Rezepten |
+
+#### Die beiden Werkzeuge, die bisher beide „Grundlinie" hießen
+
+| | `messreihe.js` | `naht.mjs --studio-vergleich` |
+|---|---|---|
+| **Frage** | **Wirkt ein Regler?** | **Ist das Bild gleich geblieben?** |
+| **Eine Null heißt** | **Alarm** — toter Regler | **gut** — nichts verändert |
+| Verfahren | jeden der 38 Effekte einzeln einhängen, an/aus, jeden Regler von min auf max, jede Auswahl durchschalten | je Fall drei Augenblicke (t₀, +2,3 s, +5,7 s), jeden zweimal, SHA-256, gegen gespeicherten Hash |
+| Maß | mittlere Abweichung je Bildpunkt (0–255) | Hash gleich ja/nein, sonst mittlere und größte Abweichung |
+| Auflösung | 64 × 86 | Studio-Vorgabegröße (629 × 889) |
+| Grafik | Caspar_Ds Radeon, echtes Studio | SwiftShader auf der CPU, headless |
+| Start | von Hand in die Browserkonsole | ein Befehl |
+| Dauer | ~4 Minuten | ~35 Minuten für 207 Fälle |
+| Ablage | `messreihe-2026-09-10.json` | `studio-*.json` |
+
+**Sie messen entgegengesetzte Dinge**, und beide hießen „Grundlinie". Darum stimmte der Satz „ein
+Grundlinienvergleich kostet Minuten" für das eine und war um den Faktor zehn daneben für das andere.
+
+**Und in Dateien gezählt:** eine Wirkungsmessung (10.09.), vier Gleichheitsstände (15.09., 18.09.,
+zweimal 20.09.). Das ist der Beleg für „wir haben den Status quo gehalten", ohne Interpretation.
+
+#### Was die Nahtprüfung wirklich misst
+
+Caspar_D: *„Ich dachte, die Naht bedeutet, dass sich ein Effekt zu einem Loop schließen lässt."* Das
+stimmt — aber es ist nicht die Spalte, die „naht" heißt:
+
+| Spalte | rechnet | Frage |
+|---|---|---|
+| **`gleich`** | Bild 0 gegen Bild N (t₀ gegen t₀+L) | **Schließt der Loop?** — das ist die Definition |
+| **`gleichFolge`** | das schlechteste der Paare N+1↔1, N+2↔2, … | dieselbe Frage, gegen Zufallstreffer abgesichert |
+| `naht` | Bild 0 gegen Bild **N−1** | Wie groß ist der Sprung beim Umlauf? |
+| `erwartet` | der gewöhnliche Bildwechsel dort | der Maßstab dazu |
+| `quotient` | `naht / p95` aller Bildwechsel | Fällt der Sprung gegen die normale Bewegung auf? |
+
+Ist `gleich = 0`, folgt `naht = erwartet` von selbst — Bild N ist dann Bild 0, und der Sprung von
+N−1 auf 0 ist ein ganz normaler Bildwechsel. Die Spalte `naht` wird erst interessant, **wenn
+`gleich > 0` ist**: dann sagt sie, wie schlimm der Bruch im Verhältnis zu dem ist, was im Bild
+ohnehin passiert.
+
+#### Vorschlag zur Sortierung — NICHTS IST WEGGERÄUMT
+
+Caspar_D, 21.09.2026: *„ja, dokumentier das mal, aber nichts wegräumen."* Die folgende Spalte ist
+ein **Vorschlag**, kein Beschluss. Gemessen an den vier Anforderungen oben:
+
+| Werkzeug | Vorschlag | Begründung |
+|---|---|---|
+| `fall` (Naht) | behalten | Anforderung 1, Sekunden je Fall, kein Rauschboden |
+| `messreihe.js` | behalten und wiederbeleben | Anforderung 2, lief zuletzt am 10.09.2026 |
+| Kostenmessung `msBild` | behalten, **herauslösen** | Anforderung 3, steckt heute im Hashvergleich fest |
+| Hashvergleich `--studio-vergleich` | archivieren | kommt in keiner der vier Anforderungen vor |
+| `massstab` | **offen** | prüft Regel 19, grenzt an Anforderung 2 |
+| `loopAnsicht` | **offen** | prüft, ob die Vorschau lügt; nicht in den vier |
+| `katalog` (Taktlage) | behalten, eigene Sache | gehört zum Zehnsekünder (Regel 18), nicht zum Effektclip |
+| `feld` | archivieren | einmalige Messung, Frage ist beantwortet |
+| `dioBeweis`, `zeichenProbe`, `markenProbe` | archivieren | Bauwerkzeug, Frage beantwortet |
+| `kbSchau`, `kbKarte`, `fahrtRezeptProbe` | archivieren | Ken-Burns-Bauwerkzeug, die Fahrt ist fertig |
+| `regelProbe` | archivieren, **aber als Vorlage behalten** | siehe unten |
+
+**Die Prüffälle bleiben.** Die 26 kenburns-Fälle in `faelle.json` kosten Sekunden und sind genau der
+Regressionsschutz für Anforderung 1, wenn als Nächstes das Tempo in Schlägen oder die
+Modulauslösung angefasst wird.
+
+**`regelProbe` ist die Vorlage für Anforderung 4.** Sie prüft vier Zusagen der Oberfläche am
+laufenden Studio: dass ein von Hand geschriebenes Rezept mit sechs Zielpunkten den sechsten verliert
+*und das Studio es sagt*; dass der Merker „die Punkte sind geraten" nicht in die gesicherte Datei
+wandert; dass die Begründungszeile vier Zustände kennt; und dass die Sekundenangabe unter der Liste
+dem entspricht, was `kbPlan` rechnet. Das ist inhaltlich Ken Burns und damit erledigt — die
+**Bauform** aber ist genau das, was der fehlende Reglerquerschlag-Test braucht: eine Zusage der
+Oberfläche messen statt behaupten, ohne Bild und ohne Rauschboden.
+
 ### Noch zu planen
 
 - Anforderung **3** zusammenfassen: eine Stelle, die die Kosten je Bild misst (Bilder verbrauchen,
