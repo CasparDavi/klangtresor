@@ -31412,7 +31412,11 @@ function renderStapel(){
        aber keine Leuchte sagte, dass ihr das Medium fehlt. Ohne ein Medium sieht man nur, was
        der Strahl TRIFFT; der Strahl selbst ist Streulicht in der Luft, und ohne Luft gibt es
        nichts zu streuen. Genau darueber bin ich am selben Abend selbst gestolpert. */
-    if(T.leuchtet && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].medium))
+    /* mediumJetzt FRAGT DEN EFFEKT, NICHT DEN TYP. Bei den Partikeln ist `medium` eine Funktion
+       (nur Schwaden sind Rauch, Schnee nicht) - und eine Funktion ist immer truthy. Wer den Typ
+       fragt, haelt jeden Schneefall fuer Rauch und verschweigt den Hinweis genau dort, wo er
+       noetig waere (berichtigt 21.09.2026, noch am selben Abend). */
+    if(T.leuchtet && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&mediumJetzt(x)))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt <b>kein Medium</b> in der Kette \u2014 ohne eines sieht man nur, was der Strahl <i>trifft</i>, nicht den Strahl selbst. Ein <b>Filmnebel</b> macht ihn sichtbar; er nimmt das Licht auf, gleich an welcher Stelle der Kette er steht.</div>';
     if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
