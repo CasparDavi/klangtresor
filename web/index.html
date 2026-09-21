@@ -27616,7 +27616,13 @@ const EFFEKTE = {
    dem 10.09.2026 ist das ein echtes Medium (Licht-Puffer), die Reihenfolge spielt dafuer keine Rolle mehr.
    Schatten wird das Spiegelbild: Farbig nachbelichten. Selbstleuchter (Feuer, Flammen, Partikel) bleiben Screen.
    Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
-['licht','lichtRaum','strahlRaum','laser','strahlen','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+/* strahlRaum steht hier NICHT (21.09.2026, am Bild gefunden). Farbig abwedeln rechnet
+   basis/(1-blend) - auf schwarzem Grund bleibt das Ergebnis schwarz, egal wie hell die Farbe
+   ist. Fuer einen Scheinwerfer ist das richtig: er BELEUCHTET etwas, und wo nichts ist, gibt
+   es nichts aufzuhellen. Ein Laser oder ein Lichtschacht ist aber selbst das Licht - Streulicht
+   in der Luft, das zum Bild DAZUKOMMT. Auf einem Nachthimmel war er darum unsichtbar.
+   Er behaelt „Screen" aus seiner Registry-Zeile; waehlbar bleibt alles, er traegt verrFrei. */
+['licht','lichtRaum','laser','strahlen','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
 /* Wer leuchtet, schreibt seine Abstrahlung zusaetzlich in den Licht-Puffer, aus dem sich das Medium bedient. */
 /* MEDIUM IST NICHT IMMER EINE EIGENSCHAFT DES TYPS (Caspar_D, 14.09.2026: "rauch muss vom feuer
    angeleuchtet werden koennen"). Der Filmnebel ist immer eines, die Partikel nur, solange sie
@@ -27628,7 +27634,7 @@ EFFEKTE.partikel.medium = e=>e.art==='schwaden';
 /* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie behalten ihre eigene
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten'; if(EFFEKTE.sicherung) EFFEKTE.sicherung.verr='nachbelichten';   /* Schwarz abgewedelt waere nichts - die Sicherung war unsichtbar (Tiefen-Check 10.09.2026) */
-['licht','lichtRaum','strahlRaum','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
+['licht','lichtRaum','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
 /* ---- RAUM (Caspar_D, 11.09.2026: "definiere zum zeitlichen Lichtverhalten jetzt mit einem Zusatzpanel das
    spatiale Verhalten der Lichtquelle"): Ursprung (wo das Geraet haengt), Ziel (wohin es leuchtet), Bewegung des
    Ziels (auch wie ein Moving Head: Fahrt mit Anlauf und Bremsen, Schritt auf den Schlag), Form des Flecks
@@ -31401,6 +31407,13 @@ function renderStapel(){
        Beschreibungstext irgendwo (Caspar_D, 14.09.2026: "wichtig ist, das dort steht, das
        filmnebel nur in Verbindung mit Lichtquellen wirkt"). Der Hinweis steht nur, solange keine
        Leuchte aktiv in der Kette haengt, und verschwindet von selbst, sobald eine da ist. */
+    /* DIE GEGENRICHTUNG (Caspar_D, 21.09.2026: „das muesste aber in der Scheinwerfer-, Laser-,
+       Lichtstrahlen-Bedienbox stehen"). Der Nebel sagt seit je, dass ihm die Leuchte fehlt -
+       aber keine Leuchte sagte, dass ihr das Medium fehlt. Ohne ein Medium sieht man nur, was
+       der Strahl TRIFFT; der Strahl selbst ist Streulicht in der Luft, und ohne Luft gibt es
+       nichts zu streuen. Genau darueber bin ich am selben Abend selbst gestolpert. */
+    if(T.leuchtet && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].medium))
+      h+='<div class="tbs-fehltlicht">Es h\u00e4ngt <b>kein Medium</b> in der Kette \u2014 ohne eines sieht man nur, was der Strahl <i>trifft</i>, nicht den Strahl selbst. Ein <b>Filmnebel</b> macht ihn sichtbar; er nimmt das Licht auf, gleich an welcher Stelle der Kette er steht.</div>';
     if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
