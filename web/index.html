@@ -27621,7 +27621,7 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
    vor ihm, bis es jemand sagt. */
 const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'Aufenthalt',
   sel:[['alles','überall'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles',
-  brauchtKarte:true, grau:e=>flaechenGrund(e), notiz:e=>aufenthaltNotiz(e) };
+  brauchtKarte:true, notiz:e=>aufenthaltNotiz(e) };
 const VERDECK_WERTE = [['aus','aus'],['vorn','vom Vordergrund verdeckt']];
 const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'];
 /* `sel` BLEIBT EINE LISTE (Gegenlesen 16.09.2026, zweite Runde). Der Altwert soll nur dort in der
@@ -27799,6 +27799,10 @@ const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) �
    keine letzte Ebene; die Schnuppe faellt dann GANZ aus, und das muss auf der Karte stehen,
    bevor jemand zehn Minuten sucht, warum nichts fliegt. Gezaehlt wird auf demselben groben
    Raster wie der Verteilungsstreifen, also stimmt die Zahl mit dem ueberein, was er zeigt. */
+/* OHNE RUFER, SEIT DIE SPERRE ZURUECKGENOMMEN IST - bleibt stehen, weil der Entwurf ihn wieder
+   braucht: er zaehlt, wie viel Flaeche dieses Bild hat, und genau das ist die Zahl, an der man
+   sieht, ob eine Schnuppe eine Chance hat. Gerufen wird er wieder, sobald die Entfernung gebaut
+   ist (siehe die Begruendung im Teilchen-Malweg). */
 function flaechenGrund(e){ try{
   if(!(TIEFE_KOERPER(e)&&FLAECHEN_ARTEN.has(e.art))) return null;
   const satz='Diese Art liegt immer auf der letzten Tiefenebene — draußen der Himmel, drinnen die Rückwand. Eine Seite wählt sie nicht; wo die Fläche anfängt, sagt „Hintergrundfläche ab“ in der Vorbereitung, Station Tiefe.';
@@ -29694,23 +29698,26 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
          - mit gewaehlter Quelle wird der Geburtsort nicht verlegt: den hat Caspar_D gesetzt.
        Alles reine Funktionen von i und t, also bleibt der Loop exakt. */
     const RAUM=Math.max(0,Math.min(1,(e.raumtiefe==null?0:e.raumtiefe)));
-    /* EIN FLAECHENEFFEKT FRAGT NICHT NACH DER SEITE (21.09.2026). Er bekommt seine Zone nicht
-       aus tiefeWirkt, sondern aus der Flaeche selbst - und zwar auch dann, wenn die Zeile „Wirkt
-       auf" der Karte auf „alles" steht, denn fuer ihn gibt es dieses „alles" nicht. */
-    const FLAECHE_ART=FLAECHEN_ARTEN.has(e.art);
-    const zoneWunsch=FLAECHE_ART?'hinten':(ZONE_HART(e)?e.tiefeWirkt:null);
+    /* HIER STAND EINE SPERRE FUER FLAECHENEFFEKTE, UND SIE WAR FALSCH GEDACHT (21.09.2026,
+       am selben Tag gebaut und zurueckgenommen). Sie verbot der Sternschnuppe jeden Bildpunkt
+       ausserhalb der letzten Tiefenebene. Das traf den Fall, fuer den ich sie gebaut hatte - den
+       freien, zusammenhaengenden Himmel -, und verfehlte jeden anderen. Caspar_D: „ganz ehrlich,
+       es gibt nur einen Himmel ohne Wolken … bei mir sind Titelbilder mit klarem Himmel klar
+       unterrepraesentiert." Gemessen an „Vierzehn Tage": 22 % der Punkte liegen unter der
+       Vorgabe, aber das ist Nachtwald, nicht Himmel - der Himmel sind ein paar Flecken zwischen
+       Staemmen. Die Schnuppe fiel dort ganz aus (p95 von 3,5 auf 0,0 bei Titel b).
+       WAS STATTDESSEN RICHTIG IST: keine Sperre, sondern eine ENTFERNUNG. Eine Sternschnuppe ist
+       unendlich weit weg; die bildpunktgenaue Verdeckung, die ohnehin fuer jedes Teilchen laeuft
+       (verdAn), laesst sie dann durch die Luecken zwischen den Staemmen ziehen und dahinter
+       verschwinden - halb hinter einem Ast, nicht ganz da oder ganz weg. Das ist der Entwurf,
+       der Caspar_D vorliegt; gebaut wird er, wenn er ihn abgenommen hat. */
+    const zoneWunsch=ZONE_HART(e)?e.tiefeWirkt:null;
     /* DAS RASTER WIRD IMMER GEHOLT, WENN ES EINE KARTE GIBT (Schritt 2). Bis Schritt 1 wurde es
        nur bei Aufenthalt oder Raumtiefe gefragt; seit die Verdeckung eine Ja/Nein-Frage ist, die
        IMMER gilt (Spezifikation Abschnitt 5), braucht jedes Teilchen seine Entfernung. Der Ruf
        ist billig: tiefeProben rechnet einmal je Quelle und liegt danach im Vorrat. */
     const TPR=tiefeProben();
-    /* UND SEINE GRENZE IST NICHT DIE TRENNUNG, SONDERN DIE FLAECHE. Dieselbe Sperre, dieselbe
-       Kurve, nur eine andere Zahl hinein - der Kopf der Schnuppe wird an ihr geprueft wie jedes
-       andere Teilchen an der Trennung (zPunkt/zSperre). Ohne Tiefenkarte gibt es keine Flaeche:
-       dann fliegt sie wie bisher ueber das ganze Bild, denn ein Bild ohne Tiefe hat keine letzte
-       Ebene, die man verfehlen koennte. */
-    const ZONE=TPR?zoneWunsch:null;
-    const ZG=TPR?(FLAECHE_ART?{g:zoneFlaecheAb(),w:FLAECHE_KANTE}:tiefeSpanne(TPR)):null;
+    const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(TPR):null;
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
     /* VERDECKT WIRD IMMER, WENN ES EINE KARTE GIBT - auch bei Raumtiefe 0, auch bei Schwarm,
        Schnuppe und Kanone (RAUM_OHNE gilt nur fuer Groesse, Tempo und Dunst). Ohne Karte gibt es
@@ -36150,10 +36157,18 @@ function zeichneFrame(t,roh){
      auf der Albumseite laufen Clips ohne Pult. */
   function tiefeZeilenNeu(){
     try{ if(stapelBox&&stapelBox.isConnected&&STAPEL&&STAPEL.length) renderStapel(); }catch(x){}
+    /* UND DIE VORBEREITUNG (21.09.2026, im Browser gefunden). Seit der Verteilungsstreifen dort
+       steht und nicht mehr auf den Effektkarten, reicht renderStapel nicht mehr: auf „Stumm" mit
+       leerer Kette lief diese Zeile ins Leere, und der Streifen erschien NIE - die Station Tiefe
+       wird einmal gebaut, und zu diesem Zeitpunkt ist die Tiefenkarte noch unterwegs.
+       Mein eigener Kommentar an der Klinke behauptete schon, vorbRender baue beim Eintreffen der
+       Karte neu. Das stimmte nicht; jetzt stimmt es. */
+    try{ if(stufeOffen==='Vorb') vorbRender(); }catch(x){}
   }
-  /* Die Karte ist da (oder endgueltig nicht da): die Effektkarte hat bis eben das Gegenteil
-     behauptet, also wird sie neu gezeichnet - aber nur, wenn die Meldung zu der Quelle gehoert,
-     die JETZT gemalt wird. Ein Maler auf der Albumseite laedt die Karte einer ganz anderen. */
+  /* Die Karte ist da (oder endgueltig nicht da): die Effektkarte und die Station Tiefe haben bis
+     eben das Gegenteil behauptet, also werden sie neu gezeichnet - aber nur, wenn die Meldung zu
+     der Quelle gehoert, die JETZT gemalt wird. Ein Maler auf der Albumseite laedt die Karte einer
+     ganz anderen. */
   function tiefeKarteGemeldet(k){
     let q=null; try{ q=tiefeQuelle(); }catch(x){ return; }
     if(!q||q.k!==k) return;
