@@ -3169,6 +3169,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
    ZEILE, nicht zur Ansicht: der Griff soll auf der Verteilung sitzen, sonst sagt die Zahl nichts
    darueber, wo die Trennung im wirklichen Bild landet. Er traegt darum auch die Klasse des
    Reglers - dieselben Spalten, also liegt er exakt unter dem Schieber, in beiden Breiten. */
+#tbs .tbs-zonenliste{display:flex;flex-direction:column;gap:3px;margin:2px 0 6px}
+#tbs .tbs-zonenzeile{display:flex;align-items:center;gap:7px;font-size:11.5px;line-height:1.35}
+#tbs .tbs-zonenpunkt{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+#tbs .tbs-zonenmass{font-variant-numeric:tabular-nums;min-width:34px;text-align:right;color:var(--text)}
 #tbs .tbs-regler.tbs-tsicht{margin:-3px 0 7px;align-items:start}
 #tbs .tbs-tsicht canvas.tbs-thist{display:block;width:100%;height:30px;border-radius:4px;background:var(--flaeche2)}
 /* Regel 14: Lesegrenze 12 px - die drei Anteile standen in 10 px und waren damit die kleinste
@@ -28382,7 +28386,7 @@ let HISTO=null;
    arbeiten dann darauf. */
 const VORB_REGLER=[['belichtung','Belichtung',-1,1],['kontrast','Kontrast',-1,1],['lichter','Lichter',-1,1],['schatten','Schatten',-1,1],['saettigung','S\u00e4ttigung',-1,1],['temperatur','Temperatur',-1,1],['farbton','Farbton',-1,1],['sepia','Sepia',0,1],['schaerfe','Sch\u00e4rfe',0,1]];
 let vorbNr=0;
-function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1, trennung:-0.02, trennWeich:-0.02, leerraum:0.25, flaecheAb:0.05 }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
+function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1, trennung:-0.02, trennWeich:-0.02, leerraum:0.25, flaecheAb:0.05, zonenGrenzen:null }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
 function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v;
   { const rt=Number(r.raumtiefe); if(isFinite(rt)&&rt>0) v.raumtiefe=Math.max(0.1,Math.min(5,rt)); }
   /* DIE ZONEN DER SZENE (21.09.2026). Sie beschreiben, wie dieses eine Bild im Raum steht, und
@@ -28391,6 +28395,8 @@ function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v;
      Vordergrundraum und den Vordergrundleerraum, der vor dem Vordergrund steht." */
   { const x=Number(r.trennung);   if(isFinite(x)) v.trennung=Math.max(-0.02,Math.min(1,x)); }
   { const x=Number(r.trennWeich); if(isFinite(x)) v.trennWeich=Math.max(-0.02,Math.min(1,x)); }
+  if(Array.isArray(r.zonenGrenzen)) v.zonenGrenzen = r.zonenGrenzen
+    .map(Number).filter(x=>isFinite(x)&&x>0&&x<255).sort((a,b)=>a-b).slice(0,ZONEN_MAX_GRENZEN);
   { const x=Number(r.leerraum);   if(isFinite(x)) v.leerraum=Math.max(0,Math.min(1,x)); }
   { const x=Number(r.flaecheAb);  if(isFinite(x)) v.flaecheAb=Math.max(0,Math.min(0.4,x)); }
   VORB_REGLER.forEach(([k])=>{ if(typeof r[k]==='number') v[k]=Math.max(-1,Math.min(1,r[k])); });
@@ -28405,6 +28411,9 @@ function vorbExport(v){ const zon={};
   if(Number(v.raumtiefe)>0&&Math.abs(v.raumtiefe-1)>1e-6) zon.raumtiefe=v.raumtiefe;
   if(Math.abs((v.trennung==null?-0.02:v.trennung)+0.02)>1e-6) zon.trennung=v.trennung;
   if(Math.abs((v.trennWeich==null?-0.02:v.trennWeich)+0.02)>1e-6) zon.trennWeich=v.trennWeich;
+  /* Die Zonengrenzen gehoeren zum Bild und damit ins Rezept - eine leere Liste ebenso wie eine
+     gefuellte, denn sie sagt „hier wurde hingesehen und es gibt keine". */
+  if(Array.isArray(v.zonenGrenzen)) zon.zonenGrenzen = v.zonenGrenzen.slice();
   if(Math.abs((v.leerraum==null?0.25:v.leerraum)-0.25)>1e-6) zon.leerraum=v.leerraum;
   if(Math.abs((v.flaecheAb==null?0.05:v.flaecheAb)-0.05)>1e-6) zon.flaecheAb=v.flaecheAb;
   const rt=Object.keys(zon).length?zon:null;
@@ -28877,6 +28886,122 @@ function zoneTrennung(){ const v=Number(VORB&&VORB.trennung);   return isFinite(
 function zoneWeich(){    const v=Number(VORB&&VORB.trennWeich); return isFinite(v)?v:-0.02; }
 function zoneLeerraum(){ const v=Number(VORB&&VORB.leerraum);   return isFinite(v)?Math.max(0,Math.min(1,v)):0.25; }
 function zoneFlaecheAb(){const v=Number(VORB&&VORB.flaecheAb);  return isFinite(v)?Math.max(0,Math.min(0.4,v)):0.05; }
+/* ===================== DIE ZONEN DES BILDES (21.09.2026) =======================================
+   Caspar_D: „wir haben ja das Studio, gehen in das Tiefenregister und dann erscheint statt dem Bild
+   das Hoehendiagramm … in dieser per KI extrahierten Tiefenkarte des Titelbildes koennen mit Hilfe
+   des Tiefen-Histogramms am rechten Bildrand Zonen fuer Effekte wie auf einem Buehnenbild definiert
+   werden."
+
+   SECHS BEREICHE, FESTE GRENZEN - das ist die Namensgebung, nicht die Einteilung. Wo die Grenzen
+   wirklich sitzen, entscheidet die Talsuche und danach die Hand; jede entstandene Zone bekommt den
+   Namen des Bereichs, den ihr Intervall am staerksten ueberlappt. Damit heisst eine Zone immer so,
+   wie sie liegt, und nicht so, wie sie gezaehlt wurde.
+   Die Skala laeuft von 0 % (ganz vorn, nah) bis 100 % (ganz hinten, fern). */
+const ZONEN_BEREICHE = [
+  ['ganz vorn',      0,  10],
+  ['vorn',          11,  25],
+  ['vordere Mitte', 26,  50],
+  ['Mitte',         51,  75],
+  ['hinten',        76,  90],
+  ['ganz hinten',   91, 100],
+];
+/* HOECHSTENS FUENF GRENZEN, also sechs Teile (Caspar_D: „mehr als 5 Grenzen lasse bitte nicht zu").
+   Das ist keine technische Schranke, sondern die Erfahrung der Buehne: ein Buehnenbild arbeitet mit
+   vier bis sechs Ebenen, mehr kann ein Betrachter nicht mehr auseinanderhalten. */
+const ZONEN_MAX_GRENZEN = 5;
+
+/* Die Grenzen stehen als Graustufen 0..255 in der Vorbereitung, aufsteigend sortiert.
+   0 heisst fern, 255 heisst nah - so liest die Tiefenkarte. Prozent zaehlen umgekehrt,
+   von vorn: prozentVon(255) = 0 %, prozentVon(0) = 100 %. */
+function zonenGrenzen(){
+  const v = VORB && VORB.zonenGrenzen;
+  if(!Array.isArray(v)) return null;
+  return v.map(Number).filter(x=>isFinite(x)&&x>0&&x<255).sort((a,b)=>a-b).slice(0, ZONEN_MAX_GRENZEN);
+}
+const zonenProzent = g => Math.max(0, Math.min(100, (255-g)/255*100));
+
+/* Der Name einer Zone: der Bereich mit der groessten Ueberlappung. Bei Gleichstand
+   gewinnt der vordere - eine Zone, die genau zwischen zwei Bereichen liegt, wird
+   lieber zu frueh als zu spaet benannt, weil vorn im Bild das Auffaelligere ist. */
+function zonenName(vonP, bisP){
+  let best=null, meiste=-1;
+  for(const [name, a, b] of ZONEN_BEREICHE){
+    const u = Math.max(0, Math.min(bisP, b) - Math.max(vonP, a));
+    if(u > meiste + 1e-9){ meiste = u; best = name; }
+  }
+  return best || 'Mitte';
+}
+/* Die fertige Liste: je Zone Name, Anteil an der Tiefe und ihre Grenzen in Graustufen.
+   Von VORN nach hinten, so wie man den Raum abschreitet und wie der Stapel sie zeigt. */
+function zonenListe(){
+  const gr = zonenGrenzen();
+  if(!gr) return null;
+  const marken = [255].concat(gr.slice().reverse(), [0]);   /* nah -> fern */
+  const aus = [];
+  for(let i=0;i<marken.length-1;i++){
+    const vonP = zonenProzent(marken[i]), bisP = zonenProzent(marken[i+1]);
+    aus.push({ name: zonenName(vonP, bisP), anteil: bisP-vonP, vonP, bisP,
+               oben: marken[i], unten: marken[i+1] });
+  }
+  return aus;
+}
+
+/* ---- DIE TALSUCHE (Scale-Space-Modenzaehlung) ------------------------------------------------
+   Eine Zonengrenze gehoert dorthin, wo das Histogramm der Tiefenwerte ein Tal hat - zwischen zwei
+   Haeufungen liegt die Luecke zwischen zwei Ebenen des Bildes. Gezaehlt wird ueber mehrere
+   Glaettungsstufen, und es gilt die Zahl, die am haeufigsten ueberlebt; eine einzelne Glaettung
+   findet je nach Wahl mal zwei, mal vier Gipfel.
+   GEMESSEN AN 100 KARTEN DES BESTANDS (21.09.2026): 19 % der Bilder haben nur eine Haeufung und
+   damit keine Grenze - das ist eine gueltige Antwort und wird nicht erzwungen. 37 % haben zwei,
+   34 % drei, 10 % vier oder mehr.
+   PROM ist die Schwelle, ab der ein Tal zaehlt. Sie kann die Software nicht ausrechnen, und sie
+   entscheidet ueber die Zonenzahl: bei 0,2 findet sie mehr, bei 0,5 weniger. 0,35 ist an den
+   oben genannten 100 Karten gewaehlt.
+   DIE ABTASTBREITE wurde nachgemessen (21.09.2026): an „Mensch Maedel" findet dieselbe Rechnung
+   bei 140, 150, 160, 170 und 180 Punkten jedes Mal dieselben zwei Taeler. Sie ist also robuster
+   als befuerchtet. Dass tiefeProben mit 160 rechnet, bleibt trotzdem die eine Zahl fuer alle -
+   das Labor tastet mit derselben ab, sonst zeigte die Werkstatt etwas anderes als das Studio. */
+const ZONEN_FAECHER = 64, ZONEN_PROM = 0.35;
+function zonenTaeler(tp){
+  if(!tp || !tp.z || !tp.z.length) return [];
+  const N = ZONEN_FAECHER, h = new Float64Array(N);
+  for(let i=0;i<tp.z.length;i++){ let k = Math.floor(tp.z[i]*N); if(k>=N) k=N-1; if(k<0) k=0; h[k]++; }
+  for(let i=0;i<N;i++) h[i] /= tp.z.length;
+  const glatt = (a,s)=>{ const r=Math.ceil(3*s), k=[]; let sum=0;
+    for(let q=-r;q<=r;q++){ const w=Math.exp(-q*q/(2*s*s)); k.push(w); sum+=w; }
+    return Array.from(a,(_,i)=>{ let t=0;
+      for(let q=-r;q<=r;q++){ let j=i+q; if(j<0)j=0; if(j>=a.length)j=a.length-1; t+=a[j]*k[q+r]; }
+      return t/sum; }); };
+  const moden = a=>{ const gp=[];
+    for(let i=1;i<a.length-1;i++) if(a[i]>=a[i-1]&&a[i]>a[i+1]) gp.push(i);
+    if(a[0]>a[1]) gp.unshift(0);
+    if(a[a.length-1]>a[a.length-2]) gp.push(a.length-1);
+    if(gp.length<2) return { gipfel:gp, taeler:[] };
+    const echt=[gp[0]], tal=[];
+    for(let k=1;k<gp.length;k++){ const li=echt[echt.length-1], re=gp[k];
+      let tief=Infinity, wo=li;
+      for(let i=li;i<=re;i++) if(a[i]<tief){ tief=a[i]; wo=i; }
+      const ho=Math.min(a[li],a[re]);
+      if(ho>0 && (ho-tief)/ho>=ZONEN_PROM){ echt.push(re); tal.push(wo); }
+      else if(a[re]>a[li]) echt[echt.length-1]=re; }
+    return { gipfel:echt, taeler:tal }; };
+  const skalen=[1,1.5,2,3,4,6], zahlen=[], alle=[];
+  for(const s of skalen){ const m=moden(glatt(h,s)); zahlen.push(m.gipfel.length); alle.push(m); }
+  const z={}; zahlen.forEach(x=>z[x]=(z[x]||0)+1);
+  const stabil=Number(Object.entries(z).sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0][0]);
+  return (alle[zahlen.indexOf(stabil)].taeler||[])
+    .map(i=>Math.round((i+0.5)/N*255))
+    .slice(0, ZONEN_MAX_GRENZEN);
+}
+/* Das Histogramm fuer die Ansicht - dieselben Faecher wie die Talsuche, damit der Streifen zeigt,
+   worauf die Grenze wirklich sitzt. */
+function zonenHistogramm(tp){
+  if(!tp || !tp.z || !tp.z.length) return null;
+  const N = ZONEN_FAECHER, h = new Float64Array(N);
+  for(let i=0;i<tp.z.length;i++){ let k=Math.floor(tp.z[i]*N); if(k>=N) k=N-1; if(k<0) k=0; h[k]++; }
+  let max=1e-9; for(let i=0;i<N;i++){ h[i]/=tp.z.length; if(h[i]>max) max=h[i]; }
+  return { h, N, max };
+}
 function lrRaumtiefe(){ const v=Number(VORB&&VORB.raumtiefe); return isFinite(v)&&v>0 ? Math.max(0.1,Math.min(5,v)) : LR_TIEFE_JE_BREITE; }
 function lrSchwenkAnteil(e, t){
   const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
@@ -31667,6 +31792,9 @@ function lrKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufe
   for(const e of STAPEL) if(e.id===offenId&&e.typ==='lichtRaum') return e;
   return null; }
 let LR_ZIEHT=-1;
+/* -2 dreht das Relief, >=0 haelt diese Zonengrenze, -1 nichts. Dazu der Ort des
+   Niederdrueckens: ein Klick, der sich nicht bewegt hat, SETZT eine Grenze. */
+let ZS_ZIEHT=-1, ZS_VON=null, ZS_GEWANDERT=false;
 function lrMarkenOrte(e){
   const f=(x,d)=>{ const y=Number(x); return isFinite(y)?y:d; };
   return [{ u:f(e.lrOx,.22), v:f(e.lrOy,.12), z:f(e.lrOz,.85), lampe:true },
@@ -31711,6 +31839,15 @@ function lrMarkeTiefe(e,i,d){ const k=(i===0)?'lrOz':'lrZz';
   e[k]=Math.max(0,Math.min(1,w+d)); malen(); }
 function kbBuehneEinrichten(){
   if(!lein||lein.dataset.kb) return; lein.dataset.kb='1';
+  lein.addEventListener('dblclick',ev=>{
+    if(!zonenSichtZeigt()) return;
+    const r=lein.getBoundingClientRect();
+    const px=(ev.clientX-r.left)*lein.width/r.width, py=(ev.clientY-r.top)*lein.height/r.height;
+    if(zonenStreifenTrifft(px,py)){ const i=zonenGrenzeBei(py);
+      if(i>=0){ zonenGrenzeWeg(i); vorbStand(); vorbRender(); } }
+    else zonenSichtGerade();
+    ev.preventDefault();
+  });
   const ortVon=ev=>{ const r=lein.getBoundingClientRect(); if(!(r.width>0&&r.height>0)) return null;
     const px=(ev.clientX-r.left)*lein.width/r.width, py=(ev.clientY-r.top)*lein.height/r.height;
     try{ const q=geoZuQuelle(px,py); return { px, py, u:q[0], v:q[1] }; }catch(x){ return null; } };
@@ -31725,6 +31862,20 @@ function kbBuehneEinrichten(){
      kbMarkenMalen braucht die Nummer, um die Wand dieses Punktes zu zeigen, und zwei Merker fuer
      denselben Griff waeren einer zu viel. */
   lein.onpointerdown=ev=>{
+    /* DIE ZONENANSICHT LIEGT UEBER ALLEM, also fragt sie zuerst. Auf dem Streifen greift oder
+       setzt man Grenzen, daneben dreht man das Relief - beides mit derselben Hand, ohne Werkzeug
+       zum Umschalten (Caspar_D: „Einfachklick setzt, Doppelklick entfernt, das ist unsere
+       Sprache"). */
+    if(zonenSichtZeigt()){
+      const r=lein.getBoundingClientRect();
+      const px=(ev.clientX-r.left)*lein.width/r.width, py=(ev.clientY-r.top)*lein.height/r.height;
+      ZS_VON={ px, py, x:ev.clientX, y:ev.clientY }; ZS_GEWANDERT=false;
+      if(zonenStreifenTrifft(px,py)){ ZS_ZIEHT=zonenGrenzeBei(py); }
+      else { ZS_ZIEHT=-2; zonenSichtGrob(true); }
+      try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
+      lein.style.cursor = ZS_ZIEHT===-2 ? 'grabbing' : 'ns-resize';
+      ev.preventDefault(); return;
+    }
     { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
         const i=lrMarkeBei(le,o); if(i<0) return;
         LR_ZIEHT=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
@@ -31746,6 +31897,15 @@ function kbBuehneEinrichten(){
     KB_ZIEHT=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
     lein.style.cursor='move'; ev.preventDefault(); };
   lein.onpointermove=ev=>{
+    if(zonenSichtZeigt() && ZS_VON){
+      const r=lein.getBoundingClientRect();
+      const px=(ev.clientX-r.left)*lein.width/r.width, py=(ev.clientY-r.top)*lein.height/r.height;
+      if(Math.abs(ev.clientX-ZS_VON.x)>3||Math.abs(ev.clientY-ZS_VON.y)>3) ZS_GEWANDERT=true;
+      if(ZS_ZIEHT===-2){ zonenSichtDrehen(ev.clientX-ZS_VON.x, ev.clientY-ZS_VON.y);
+        ZS_VON.x=ev.clientX; ZS_VON.y=ev.clientY; }
+      else if(ZS_ZIEHT>=0){ zonenGrenzeSchieben(ZS_ZIEHT,py); vorbStand(); vorbRender(); }
+      ev.preventDefault(); return;
+    }
     { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
         if(LR_ZIEHT<0){ lein.style.cursor=lrMarkeBei(le,o)>=0?'move':''; return; }
         lrMarkeSetzen(le,LR_ZIEHT,o.u,o.v); return; } }
@@ -31759,6 +31919,18 @@ function kbBuehneEinrichten(){
   /* Beim Loslassen wird die Karte neu gebaut - erst dann, nicht waehrend des Zugs: ein Neubau
      mitten im Ziehen naehme dem Zeiger den Griff (dieselbe Regel wie bei den Schiebern). */
   lein.onpointerup=lein.onpointercancel=()=>{
+    if(zonenSichtZeigt() && ZS_VON){
+      const war=ZS_ZIEHT, vonPy=ZS_VON.py, wanderte=ZS_GEWANDERT;
+      ZS_ZIEHT=-1; ZS_VON=null; ZS_GEWANDERT=false;
+      lein.style.cursor=''; zonenSichtGrob(false);
+      /* Ein Klick, der stillstand und auf dem Streifen keine Grenze getroffen hat, setzt eine
+         neue. war===-2 heisst: er lag daneben und hat gedreht - dort wird nichts gesetzt. */
+      if(!wanderte && war===-1){ const w=zonenGrenzeSetzen(vonPy);
+        if(w==='voll') pStat('Höchstens '+ZONEN_MAX_GRENZEN+' Grenzen — mehr Zonen kann man nicht auseinanderhalten');
+        vorbStand(); vorbRender(); }
+      else if(war>=0){ vorbStand(); vorbRender(); }
+      return;
+    }
     if(LR_ZIEHT>=0){ LR_ZIEHT=-1; lein.style.cursor=''; renderStapel(); return; }
     if(KB_ZIEHT<0) return; KB_ZIEHT=-1;
     lein.style.cursor=KB_STEHT_VOR?'crosshair':''; renderStapel(); };
@@ -31811,6 +31983,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
   /* GANZ ZULETZT UND NUR HIER: die Trennebene liegt ueber dem fertigen Bild, solange jemand an
      Grenze oder Weichheit zieht. rahmen() ist der einzige Weg, der sie kennt - und er steht bei
      jeder Ausgabe still, also erreicht sie kein Video und keine Kachel. */
+  if(zonenSichtZeigt()) zonenSichtMalen();
   if(tiefesichtZeigt()) tiefesichtMalen(); else tiefesichtRaeumen();
   /* Dasselbe Gesetz, dieselbe Stelle: die Marken der Ken Burns Fahrt liegen ueber dem fertigen
      Bild und nur hier. Sie sind Bedienung und kein Bild. */
@@ -34176,6 +34349,8 @@ function zeichneFrame(t,roh){
     h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
     h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Marken unten = Schwarz-/Wei\u00dfpunkt ziehen</div>';
     }
+    if(vorbReg==='tiefe') zonenVorschlagen();
+    zonenSichtAn(vorbReg==='tiefe' && stufeOffen==='Vorb');
     if(vorbReg==='tiefe'){
     /* DIE RAUMTIEFE STEHT HIER UND NICHT AN EINER LAMPE (Caspar_D, 21.09.2026: „wir sollten sie in
        die Vorbereitung haengen und pro Quelle nur ein einziges Mal festlegen"). Sie beschreibt die
@@ -34188,7 +34363,33 @@ function zeichneFrame(t,roh){
     /* DIE ZONEN, IN DER REIHENFOLGE VON DER KAMERA NACH HINTEN - so, wie man den Raum abschreitet.
        Das ist keine Schoenheit: wer Zahlen einstellt, die einen Raum beschreiben, muss sie in der
        Ordnung des Raumes vorfinden, sonst denkt er bei jedem Regler neu nach. */
+    /* DER SPRUCH STEHT NEBEN DEM BILD, NICHT IM BILD (Caspar_D, 21.09.2026, Wortlaut von ihm).
+       Er erklaert in einem Zug, was da zu sehen ist und wie man es bedient - und er steht nur
+       hier, wo man es braucht, nicht als Dauerhinweis irgendwo. */
     h+='<div class="tbs-vorbAbschnitt">Die Zonen</div>';
+    h+='<div style="color:var(--schwach);font-size:11px;line-height:1.55;margin:-2px 0 10px">'
+      + 'In dieser per KI aus dem Titelbild gewonnenen Tiefenkarte kannst du mit dem '
+      + 'Tiefen-Histogramm am rechten Bildrand Zonen f\u00fcr Effekte festlegen \u2014 wie auf einem '
+      + 'B\u00fchnenbild. Verschiebe die vorausgew\u00e4hlten Grenzen, setze mit einem '
+      + '<b>Einfachklick</b> neue oder nimm sie mit einem <b>Doppelklick</b> wieder weg. '
+      + 'Neben dem Streifen dreht das Relief mit der Maus; ein Doppelklick stellt es gerade.'
+      + '</div>';
+    { const zl=zonenListe();
+      if(!zl) h+='<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie gibt es keine Zonen.</div>';
+      else if(zl.length<2) h+='<div class="tbs-graugrund">Zur Zeit ist <b>eine einzige Zone</b> festgelegt: Die Tiefenwerte dieses Bildes bilden nur eine H\u00e4ufung, es gibt also kein Tal, an dem sich zwei Ebenen trennen lie\u00dfen. Du kannst trotzdem eine Grenze von Hand setzen.</div>';
+      else {
+        h+='<div style="font-size:11.5px;margin-bottom:5px">Zur Zeit sind <b>'+zl.length+' Zonen</b> festgelegt</div>';
+        h+='<div class="tbs-zonenliste">';
+        zl.forEach((z,i)=>{
+          const f=zsichtFarbeFuerListe(i,zl.length);
+          h+='<div class="tbs-zonenzeile"><span class="tbs-zonenpunkt" style="background:rgb('+f+')"></span>'
+            + '<span class="tbs-zonenmass">'+Math.round(z.anteil)+'\u2009%</span>'
+            + '<span>der Tiefe des Bildes \u2014 <b>'+z.name+'</b></span></div>';
+        });
+        h+='</div>';
+        if(zl.length-1>=ZONEN_MAX_GRENZEN)
+          h+='<div style="color:var(--schwach);font-size:10.5px;margin-top:4px">'+ZONEN_MAX_GRENZEN+' Grenzen sind das H\u00f6chste \u2014 mehr Ebenen kann ein Betrachter nicht mehr auseinanderhalten.</div>';
+      } }
     { const zr=(k,lbl,mn,mx,st,wert,hinweis)=>{
         const w=(v[k]==null?mn:v[k]);
         h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" data-vz="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+w+'"><span class="tbs-wert">'+wert(w)+'</span></div>';
@@ -35566,7 +35767,7 @@ function zeichneFrame(t,roh){
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
-  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false; tiefesichtAus();   /* die Trennebene haengt an einem Effekt dieses Studios - sie geht mit ihm */
+  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false; tiefesichtAus(); zonenSichtAn(false);   /* die Trennebene haengt an einem Effekt dieses Studios - sie geht mit ihm */
     /* Die Loop-Ansicht geht mit dem Studio aus (Gegenpruefung 15.09.2026): seit die Schleifen-Stufe sie selbst einschaltet und gemerkt
        wird, schloss man das Studio meist mit ihr - VIDEO_GENAU blieb stehen, und quelleSync liess die Videos von Kachel und Buehne
        liegen. Die gemerkte Stufe bleibt; beim naechsten Oeffnen schaltet stufeSetzen die Ansicht wieder ein. */
@@ -36438,6 +36639,262 @@ function zeichneFrame(t,roh){
      Ansicht nichts. */
   const TSICHT={ an:false, haelt:false, bis:0 };
   const TSICHT_NACHKLANG=1400, TSICHT_HALTEN=30000;   /* Nachklang nach dem Loslassen; die zweite Zahl ist nur die Reissleine, falls ein pointerup ausfaellt */
+  /* ===================== DIE ZONENANSICHT (21.09.2026) =========================================
+     Caspar_D: „wir gehen in das Tiefenregister und dann erscheint statt dem Bild das
+     Hoehendiagramm" - und: „ich wuerde es gerne schon drehen koennen, damit der Nutzer sieht, er
+     hat ein Hoehenbild vor sich und lernt, dahinter gibt es keine Hohlraeume."
+
+     Das ist der Grund fuer die Drehung, und er ist kein Schmuck: Eine Tiefenkarte ist ein RELIEF,
+     keine Szene. Wer sie nur von vorn sieht, haelt sie fuer einen Raum und wundert sich, warum ein
+     Effekt „dahinter" nichts findet. Wer sie einmal gekippt hat, weiss es fuer immer.
+
+     GEMALT WIRD WIE IM LABOR (labor/zonen/vorlage.html): ein geschlossenes Gitternetz, jedes
+     Viereck zwischen vier Nachbarpunkten gefuellt, das Relief steht auf der Rueckwand und ragt
+     nach vorn. Unten das Bild als Graustufe, darueber die Zonenfarben mit farbig abwedeln - zwei
+     Ebenen, eine Verrechnung, wie in der Effektkette.
+     DIE BEIDEN FASSUNGEN MUESSEN DASSELBE RECHNEN. Das Labor ist eine eigene Datei und kann nicht
+     aus der App lesen; wer hier etwas an der Talsuche aendert, aendert es dort mit, sonst zeigt
+     die Werkstatt etwas anderes als das Studio.
+
+     SIE ERREICHT DIE AUSGABE NIE: gemalt wird nur in rahmen(), und rahmen() steigt bei exportLaeuft
+     aus. zeichneFrame - der Weg von Kachel, Export und Loop-Bild - weiss von ihr nichts. */
+  const ZSICHT = { an:false, az:0, el:0, zieht:false, grob:false };
+  let ZSICHT_FERTIG = null, ZSICHT_GRAU = null;
+  const ZSICHT_FARBEN = [[214,106,66],[190,104,74],[150,112,110],[112,120,142],[60,108,150],[38,88,136]];
+  /* von VORN nach hinten - dieselbe Rampe wie der Stapel und wie das Labor */
+  /* Die Liste im Pult braucht dieselben Farben wie das Bild. Die Rampe steht hier drinnen,
+     die Liste wird draussen gebaut - also eine Bruecke, keine zweite Rampe. */
+  function zsichtFarbeFuerListe(i,n){ return zsichtFarbe(i,n).join(','); }
+  function zsichtFarbe(i, n){
+    if(n<=1) return [112,120,142];
+    const k = i/(n-1)*(ZSICHT_FARBEN.length-1);
+    return ZSICHT_FARBEN[Math.round(k)];
+  }
+  /* Das Quellbild als Graustufe in den Massen der Tiefenproben - einmal je Quelle. */
+  function zsichtGrau(tp){
+    const q = tiefeQuelle(); if(!q || !bild || !bereit) return null;
+    const marke = q.k + '|' + tp.w + 'x' + tp.h + (bild.tagName==='VIDEO' ? '|v'+(bild.currentTime||0).toFixed(2) : '');
+    if(ZSICHT_GRAU && ZSICHT_GRAU.marke===marke) return ZSICHT_GRAU.d;
+    try{
+      const cv=document.createElement('canvas'); cv.width=tp.w; cv.height=tp.h;
+      const cx=cv.getContext('2d',{willReadFrequently:true});
+      cx.drawImage(bild,0,0,tp.w,tp.h);
+      const dd=cx.getImageData(0,0,tp.w,tp.h).data, a=new Uint8Array(tp.w*tp.h);
+      for(let i=0,j=0;i<dd.length;i+=4,j++) a[j]=(dd[i]*0.299+dd[i+1]*0.587+dd[i+2]*0.114)|0;
+      ZSICHT_GRAU={ marke, d:a }; return a;
+    }catch(x){ return null; }
+  }
+  /* DIE BRUECKEN NACH AUSSEN. rahmen(), kbBuehneEinrichten und vorbRender stehen auf der
+     obersten Ebene, ZSICHT steht hier drinnen - erreichbar ist es nur ueber Funktionen, weil
+     die gehoben werden und Konstanten nicht (dieselbe Falle wie bei LR_SCHWENK am 21.09.2026,
+     die beim Laden zuschlug, ohne dass die Syntaxpruefung etwas sagte). */
+  /* VORSCHLAGEN, NICHT ENTSCHEIDEN. Beim ersten Oeffnen der Station Tiefe bekommt ein Bild die
+     Grenzen der Talsuche; ab dann steht, was dasteht. Auch eine leere Liste bleibt leer - auf
+     19 % der Karten des Bestands gibt es kein Tal, und das ist keine Panne, sondern die Auskunft,
+     dass dieses Bild nur eine Ebene hat.
+     SIE STEHT HIER DRINNEN, weil tiefeProben hier drinnen steht. Aussen gerufen lief sie ins
+     Leere, und weil ein try/catch den Fehler schluckte, meldete jedes Bild „eine einzige Zone" -
+     ein stilles Scheitern, das wie ein Ergebnis aussah (gefunden im Browser, 21.09.2026).
+     KEIN STILLES CATCH MEHR: ohne Tiefenkarte gibt es ehrlich keine Grenzen, und das sagt die
+     Station auch. Ein anderer Fehler soll auffallen, nicht verschwinden. */
+  function zonenVorschlagen(){
+    if(!VORB || Array.isArray(VORB.zonenGrenzen)) return;
+    const tp = tiefeProben();
+    /* OHNE KARTE WIRD NICHTS FESTGESCHRIEBEN (im Browser gefunden, 21.09.2026). Die Tiefenkarte
+       laedt nebenher; beim ersten Aufbau der Station ist sie oft noch unterwegs. Wer dann eine
+       leere Liste setzt, hat „schon gefragt" vermerkt und fragt nie wieder - jedes Bild meldete
+       „eine einzige Zone", und die Talsuche lief kein einziges Mal. tiefeProben warnt in seinem
+       eigenen Kommentar davor: „nicht merken - das Bild kommt vielleicht noch."
+       Trifft die Karte ein, ruft tiefeKarteGemeldet die Station neu auf, und dann greift es. */
+    if(!tp) return;
+    VORB.zonenGrenzen = zonenTaeler(tp);
+    ZSICHT_FERTIG=null;
+  }
+  function zonenSichtZeigt(){ return ZSICHT.an && !!bereit; }
+  function zonenSichtAn(b){ if(ZSICHT.an===!!b) return; ZSICHT.an=!!b; ZSICHT_FERTIG=null; ZSICHT_GRAU=null; }
+  function zonenSichtGerade(){ ZSICHT.az=0; ZSICHT.el=0; ZSICHT_FERTIG=null; }
+  function zonenSichtDrehen(dx,dy){
+    ZSICHT.az=Math.max(-1.2,Math.min(1.2, ZSICHT.az+dx*0.006));
+    ZSICHT.el=Math.max(-0.5,Math.min(1.15, ZSICHT.el+dy*0.005));
+    ZSICHT_FERTIG=null; }
+  function zonenSichtGrob(b){ if(ZSICHT.grob!==!!b){ ZSICHT.grob=!!b; ZSICHT_FERTIG=null; } }
+  function zonenSichtNeu(){ ZSICHT_FERTIG=null; }
+  /* Der Streifen liegt im fertigen Bild, also rechnet diese Stelle seine Masse genauso wie
+     zonenStreifenMalen - eine Zahl, zwei Rechnungen waeren eine zu viel, darum steht die
+     Geometrie hier einmal und wird dort geholt. */
+  function zonenStreifenMasse(){
+    if(!lein||lein.width<2) return null;
+    const LW=lein.width, LH=lein.height;
+    const BR=Math.max(54, Math.min(96, Math.round(LW*0.10)));
+    return { X0:LW-BR-10, BR, Y0:14, HH:LH-28 };
+  }
+  function zonenStreifenTrifft(px,py){
+    const m=zonenStreifenMasse(); if(!m) return false;
+    return px>=m.X0-8 && px<=m.X0+m.BR+8 && py>=m.Y0-8 && py<=m.Y0+m.HH+8;
+  }
+  const zonenWertBei = py => { const m=zonenStreifenMasse(); if(!m) return null;
+    return Math.max(2, Math.min(253, Math.round((py-m.Y0)/m.HH*255))); };
+  const zonenYVon = g255 => { const m=zonenStreifenMasse(); if(!m) return 0;
+    return m.Y0 + (g255/255)*m.HH; };
+  /* Welche Grenze liegt unter dem Zeiger? Der Griff ist grosszuegig, wie bei den Marken. */
+  function zonenGrenzeBei(py){
+    const gr=zonenGrenzen(); if(!gr||!gr.length) return -1;
+    let best=-1, ab=22;
+    gr.forEach((t,i)=>{ const d=Math.abs(zonenYVon(t)-py); if(d<=ab){ ab=d; best=i; } });
+    return best;
+  }
+  function zonenGrenzeSchieben(i,py){
+    const gr=zonenGrenzen(); if(!gr||i<0||i>=gr.length) return;
+    const v=zonenWertBei(py); if(v==null) return;
+    const min=i>0?gr[i-1]+4:2, max=i<gr.length-1?gr[i+1]-4:253;
+    gr[i]=Math.max(min,Math.min(max,v));
+    VORB.zonenGrenzen=gr; ZSICHT_FERTIG=null;
+  }
+  function zonenGrenzeSetzen(py){
+    const gr=zonenGrenzen()||[];
+    if(gr.length>=ZONEN_MAX_GRENZEN) return 'voll';
+    const v=zonenWertBei(py); if(v==null) return null;
+    if(gr.some(x=>Math.abs(x-v)<5)) return null;
+    gr.push(v); gr.sort((a,b)=>a-b);
+    VORB.zonenGrenzen=gr; ZSICHT_FERTIG=null; return 'gesetzt';
+  }
+  function zonenGrenzeWeg(i){
+    const gr=zonenGrenzen(); if(!gr||i<0||i>=gr.length) return;
+    gr.splice(i,1); VORB.zonenGrenzen=gr; ZSICHT_FERTIG=null;
+  }
+  function zonenSichtMalen(){
+    if(!ZSICHT.an || !bereit || !lein || !g || lein.width<2) return;
+    const tp = tiefeProben(); if(!tp) return;
+    const W=tp.w, H=tp.h, LW=lein.width, LH=lein.height;
+    const liste = zonenListe() || [];
+    const marke = LW+'x'+LH+'|'+ZSICHT.az.toFixed(3)+'|'+ZSICHT.el.toFixed(3)+'|'+(ZSICHT.grob?'g':'f')
+                + '|' + liste.map(z=>Math.round(z.oben)).join(',') + '|' + (tiefeQuelle()||{}).k;
+    if(ZSICHT_FERTIG && ZSICHT_FERTIG.marke===marke){ frisch(g); g.drawImage(ZSICHT_FERTIG.cv,0,0); frisch(g); return; }
+
+    const cv=(ZSICHT_FERTIG&&ZSICHT_FERTIG.cv)?ZSICHT_FERTIG.cv:document.createElement('canvas');
+    cv.width=LW; cv.height=LH;
+    const cx=cv.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
+    const eb=cx.createImageData(LW,LH), ef=cx.createImageData(LW,LH);
+    const pB=eb.data, pF=ef.data;
+    for(let i=0;i<LW*LH;i++){ pB[i*4]=10; pB[i*4+1]=13; pB[i*4+2]=19; pB[i*4+3]=255;
+                              pF[i*4]=0; pF[i*4+1]=0; pF[i*4+2]=0; pF[i*4+3]=255; }
+    const grau = zsichtGrau(tp);
+    const schritt = ZSICHT.grob ? 2 : 1;
+    const ca=Math.cos(ZSICHT.az), sa=Math.sin(ZSICHT.az), ce=Math.cos(ZSICHT.el), se=Math.sin(ZSICHT.el);
+    const PX=Math.min(LW/(W*1.28), LH/(H*1.16));
+    const HOCH=Math.min(LW,LH)*0.34, mx=LW/2, my=LH/2, ST=0.46;
+    const proj=(u,v,z)=>{ const X=(u-W/2)*PX, Y=(v-H/2)*PX, Z=z*HOCH;
+      const xr=X*ca+Z*sa, zr=-X*sa+Z*ca;
+      return [mx+xr, my+Y*ce+zr*se, -Y*se+zr*ce]; };
+    /* Welche Zone gehoert zu einem Tiefenwert? liste ist von VORN nach hinten. */
+    const zoneVon=z=>{ const g255=z*255; for(let i=0;i<liste.length;i++) if(g255>liste[i].unten) return i;
+      return Math.max(0,liste.length-1); };
+    const TAB=new Uint8Array(256*3);
+    for(let v=0;v<256;v++){ const f=zsichtFarbe(zoneVon(v/255), Math.max(1,liste.length));
+      TAB[v*3]=f[0]; TAB[v*3+1]=f[1]; TAB[v*3+2]=f[2]; }
+    const Lv=[-0.5,-0.62,0.60], Ln=Math.hypot(Lv[0],Lv[1],Lv[2]); const L=Lv.map(x=>x/Ln);
+    const setz=(x,y,r,gg,b,arr)=>{ x|=0; y|=0; if(x<0||y<0||x>=LW||y>=LH) return;
+      const o=(y*LW+x)*4; arr[o]=r; arr[o+1]=gg; arr[o+2]=b; };
+    const dreieck=(ax,ay,bx,by,cxx,cy, rb,gb,bb, rf,gf,bf)=>{
+      const x0=Math.max(0,Math.floor(Math.min(ax,bx,cxx))), x1=Math.min(LW-1,Math.ceil(Math.max(ax,bx,cxx)));
+      const y0=Math.max(0,Math.floor(Math.min(ay,by,cy))), y1=Math.min(LH-1,Math.ceil(Math.max(ay,by,cy)));
+      if(x1<x0||y1<y0) return;
+      const d=(by-cy)*(ax-cxx)+(cxx-bx)*(ay-cy); if(Math.abs(d)<1e-9) return;
+      for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+        const l1=((by-cy)*(x-cxx)+(cxx-bx)*(y-cy))/d, l2=((cy-ay)*(x-cxx)+(ax-cxx)*(y-cy))/d;
+        if(l1>=-0.02&&l2>=-0.02&&(1-l1-l2)>=-0.02){ const o=(y*LW+x)*4;
+          pB[o]=rb; pB[o+1]=gb; pB[o+2]=bb; pF[o]=rf; pF[o+1]=gf; pF[o+2]=bf; } } };
+
+    const qs=[];
+    for(let v=0;v+schritt<H;v+=schritt) for(let u=0;u+schritt<W;u+=schritt){
+      const z00=tp.z[v*W+u], z10=tp.z[v*W+u+schritt], z01=tp.z[(v+schritt)*W+u], z11=tp.z[(v+schritt)*W+u+schritt];
+      const p00=proj(u,v,z00), p10=proj(u+schritt,v,z10), p01=proj(u,v+schritt,z01), p11=proj(u+schritt,v+schritt,z11);
+      qs.push([(p00[2]+p10[2]+p11[2]+p01[2])/4, p00,p10,p11,p01, z00,z10,z11,z01, u,v]);
+    }
+    qs.sort((a,b)=>a[0]-b[0]);
+    for(const q of qs){
+      const p00=q[1],p10=q[2],p11=q[3],p01=q[4];
+      const z00=q[5],z10=q[6],z11=q[7],z01=q[8], u=q[9], v=q[10];
+      const hx=(z10-z00)*HOCH/(PX*schritt), hy=(z01-z00)*HOCH/(PX*schritt);
+      const nl=Math.hypot(-hx,-hy,1);
+      const lam=Math.max(0,(-hx*L[0]-hy*L[1]+L[2])/nl);
+      const iv=Math.max(0,Math.min(255,Math.round((z00+z10+z11+z01)/4*255)));
+      let rb,gb,bb;
+      if(grau){ const gw=(grau[v*W+u]+grau[v*W+u+schritt]+grau[(v+schritt)*W+u]+grau[(v+schritt)*W+u+schritt])/4;
+        const basis=Math.min(255,(14+0.95*gw)*(0.80+0.30*lam)); rb=basis; gb=basis; bb=basis; }
+      else { const f=0.30+1.05*lam; rb=Math.min(255,TAB[iv*3]*f); gb=Math.min(255,TAB[iv*3+1]*f); bb=Math.min(255,TAB[iv*3+2]*f); }
+      const fr = grau ? ST : (0.30+1.05*lam);
+      const rf=Math.min(255,TAB[iv*3]*fr), gf=Math.min(255,TAB[iv*3+1]*fr), bf=Math.min(255,TAB[iv*3+2]*fr);
+      const cxm=(p00[0]+p10[0]+p11[0]+p01[0])/4, cym=(p00[1]+p10[1]+p11[1]+p01[1])/4;
+      const auf=q0=>{ const dx=q0[0]-cxm, dy=q0[1]-cym, l=Math.hypot(dx,dy)||1;
+        return [q0[0]+dx/l*0.75, q0[1]+dy/l*0.75]; };
+      const a00=auf(p00), a10=auf(p10), a11=auf(p11), a01=auf(p01);
+      dreieck(a00[0],a00[1],a10[0],a10[1],a11[0],a11[1], rb,gb,bb, rf,gf,bf);
+      dreieck(a00[0],a00[1],a11[0],a11[1],a01[0],a01[1], rb,gb,bb, rf,gf,bf);
+      /* Abbruchkanten tragen die Schichten - dort sieht man, dass es KEINE Hohlraeume gibt */
+      for(const [A,B,za,zb] of [[p10,p11,z10,z11],[p01,p11,z01,z11]]){
+        const dz=Math.abs(za-zb); if(dz<0.055) continue;
+        const hochZ=Math.max(za,zb), tiefZ=Math.min(za,zb);
+        const oben = za>zb ? A : B, unten = za>zb ? B : A;
+        const n=Math.max(2,Math.min(24,Math.round(dz*HOCH/3)));
+        const br=PX*schritt*1.15;
+        for(let s=0;s<n;s++){
+          const t0=s/n, t1=(s+1)/n;
+          const zm=Math.max(0,Math.min(255,Math.round((hochZ+(tiefZ-hochZ)*(t0+t1)/2)*255)));
+          const ff = grau ? ST*0.8 : 0.40;
+          const wr=Math.min(255,TAB[zm*3]*ff), wg=Math.min(255,TAB[zm*3+1]*ff), wb=Math.min(255,TAB[zm*3+2]*ff);
+          const db = grau ? Math.round(rb*0.55) : wr;
+          const ax=oben[0]+(unten[0]-oben[0])*t0, ay=oben[1]+(unten[1]-oben[1])*t0;
+          const bx=oben[0]+(unten[0]-oben[0])*t1, by=oben[1]+(unten[1]-oben[1])*t1;
+          dreieck(ax,ay,bx,by,ax+br,ay, db,db,db, wr,wg,wb);
+          dreieck(bx,by,bx+br,by,ax+br,ay, db,db,db, wr,wg,wb);
+        }
+      }
+    }
+    cx.putImageData(eb,0,0);
+    if(grau){
+      if(!zonenSichtMalen._t) zonenSichtMalen._t=document.createElement('canvas');
+      const tc=zonenSichtMalen._t;
+      if(tc.width!==LW||tc.height!==LH){ tc.width=LW; tc.height=LH; }
+      tc.getContext('2d').putImageData(ef,0,0);
+      cx.globalCompositeOperation='color-dodge'; cx.drawImage(tc,0,0);
+      cx.globalCompositeOperation='source-over';
+    } else cx.putImageData(ef,0,0);
+    zonenStreifenMalen(cx, LW, LH, tp, liste);
+    ZSICHT_FERTIG={ cv, marke };
+    frisch(g); g.drawImage(cv,0,0); frisch(g);
+  }
+  /* Das Histogramm am rechten Bildrand - unten vorn, oben hinten, die Grenzen als Greifer. */
+  function zonenStreifenMalen(cx, LW, LH, tp, liste){
+    const hi = zonenHistogramm(tp); if(!hi) return;
+    const BR=Math.max(54, Math.min(96, Math.round(LW*0.10))), X0=LW-BR-10, Y0=14, HH=LH-28;
+    const sy = g255 => Y0 + (1 - g255/255) * HH;    /* 255 = nah = unten? nein: nah gehoert nach UNTEN */
+    const syv = g255 => Y0 + (g255/255) * HH;
+    cx.save();
+    cx.globalAlpha=0.9;
+    cx.fillStyle='rgba(8,11,16,.72)';
+    cx.fillRect(X0-6,Y0-6,BR+12,HH+12);
+    const n=Math.max(1,liste.length);
+    for(let i=0;i<n;i++){
+      const z=liste[i]||{oben:255,unten:0};
+      const y1=syv(z.oben), y2=syv(z.unten);
+      const f=zsichtFarbe(i,n);
+      cx.fillStyle='rgb('+f[0]+','+f[1]+','+f[2]+')';
+      cx.fillRect(X0, Math.min(y1,y2), BR, Math.max(1,Math.abs(y2-y1)));
+    }
+    cx.fillStyle='rgba(255,255,255,.26)';
+    for(let i=0;i<hi.N;i++){
+      if(!hi.h[i]) continue;
+      const y1=syv(i/hi.N*255), y2=syv((i+1)/hi.N*255);
+      const o=Math.min(y1,y2), ho=Math.max(1.5,Math.abs(y2-y1)-1);
+      cx.fillRect(X0, o, Math.sqrt(hi.h[i]/hi.max)*(BR-8), ho);
+    }
+    const gr = zonenGrenzen()||[];
+    gr.forEach(t=>{ const y=syv(t);
+      cx.fillStyle='rgba(0,0,0,.5)'; cx.fillRect(X0,y-1,BR,3);
+      cx.fillStyle='#fff'; cx.fillRect(X0,y,BR,1); cx.fillRect(X0+BR/2-11,y-2,22,4); });
+    cx.restore();
+  }
   function tiefesichtWecken(){ TSICHT.an=true; TSICHT.bis=performance.now()+(TSICHT.haelt?TSICHT_HALTEN:TSICHT_NACHKLANG); }
   function tiefesichtZeigt(){ return TSICHT.an && performance.now()<TSICHT.bis; }
   function tiefesichtAus(){ TSICHT.an=false; TSICHT.haelt=false; TSICHT.bis=0; TSICHT_GRAU=null; TSICHT_FERTIG=null; TSICHT_SCHICHTEN.length=0; }

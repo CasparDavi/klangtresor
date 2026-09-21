@@ -25,10 +25,15 @@
  * das Original in denselben Maßen. Zwei getrennte Quellen waren am 21.09.2026
  * schon einmal der Fehler — kam die zweite nicht an, blieb der Umschalter still.
  *
- * DIE ABTASTBREITE IST EINE FESTGESCHRIEBENE ZAHL, kein Zufall. Gemessen am
- * selben Bild: bei 170 Punkten findet die Talsuche zwei Grenzen, bei 150 drei —
- * die dritte trennt das Blatt vom Hintergrund. Wer sie ändert, ändert die
- * Zoneneinteilung.
+ * DIE ABTASTBREITE STEHT FEST, damit Labor und Studio dieselbe Antwort geben.
+ * NACHGEMESSEN (21.09.2026, nachdem ich das Gegenteil behauptet hatte): an
+ * „Mensch Mädel" findet die Talsuche bei 140, 150, 160, 170 und 180 Punkten
+ * jedes Mal dieselben zwei Täler. Die Abtastung ist also robuster als gedacht —
+ * meine frühere Beobachtung „bei 150 drei Grenzen" war eine Verwechslung: dort
+ * hatte ich selbst eine Grenze von Hand gesetzt. Die Zahl bleibt trotzdem fest,
+ * weil zwei Werkzeuge, die dasselbe zeigen sollen, nicht verschieden abtasten
+ * dürfen — nur die Begründung war falsch, nicht die Regel.
+ * (Das Studio tastet mit 160 ab, weil tiefeProben dort mit 160 rechnet.)
  *
  * AUFRUF
  *   node bin/zonen-labor.js                 die zehn neuesten Titel
