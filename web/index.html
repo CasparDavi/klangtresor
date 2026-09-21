@@ -3110,6 +3110,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-seg button.on{border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent);color:var(--text);background:var(--flaeche2)}
 #tbs select.tbs-wahl{flex:1;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:7px;padding:5px}
 #tbs .tbs-vorrat{border:1px dashed var(--rand);border-radius:10px;padding:10px;margin:4px 0 14px}
+#tbs .tbs-kart{font-weight:400;color:var(--schwach);font-size:11px}
 #tbs .tbs-vorrat .tbs-titel{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--schwach);margin-bottom:8px}
 #tbs .vgruppe{margin-bottom:9px}
 #tbs .vgruppe:last-child{margin-bottom:0}
@@ -27704,7 +27705,12 @@ const TIEFE_KOERPER = e => e.typ==='partikel';
 const RAUM_OHNE = new Set(['schwarm','sternschnuppen','konfettiKanone']);
 /* Der Aufenthalt gilt bei Koerpern hart - aber nicht, solange ein altes Rezept seine weiche Zone
    traegt. EINE Stelle, die das entscheidet; Maler und Kette fragen beide hier. */
-const ZONE_HART = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung!=='zone' && !!e.tiefeWirkt && e.tiefeWirkt!=='alles';
+/* „HART" HEISST: DIESER EFFEKT BESCHNEIDET SICH SELBST. Ein Effekt mit einzelnen Koerpern -
+   Teilchen - bekommt keine Maske ueber das fertige Bild gelegt; stattdessen entscheidet jedes
+   Teilchen selbst, ob es an seinem Ort sein darf (zPunkt). Eine Maske daneben wuerde denselben
+   Schnitt ein zweites Mal machen, nur weicher, und an den Raendern kaeme Grau heraus.
+   Seit dem 21.09.2026 fragt die Zeile die angekreuzten ZONEN statt tiefeWirkt. */
+const ZONE_HART = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung!=='zone' && !zonenAllesWirkt(e) && !zonenNichtsWirkt(e);
 /* MALT DER EFFEKT SEINE VERDECKUNG SELBST, BAND FUER BAND? (18.09.2026, Bauweg Schritt 2)
    Seit Schritt 2 legt der Partikel-Maler seine Teilchen in Tiefenbaender und beschneidet jedes
    Band mit der Maske SEINER Tiefe (schichtBaender, tiefeMaske mit Bandkanten). Damit ist die
@@ -27885,12 +27891,12 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
   if(!(e.raumtiefe>0.001)) return 'Größe und Tempo bleiben flach: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen. Verdeckt wird jedes trotzdem nach seiner eigenen Entfernung — das gilt immer.';
   const tp=tiefeProben(); if(!tp) return null;
   const L=leerVor(), sp=tiefeSpanne(tp), HK=herkunftVon(e);
-  const modus=ZONE_HART(e)?e.tiefeWirkt:null;
-  const bz=(HK.herk==='boden')?bodenZellen(tp,sp.g,sp.w,L,modus):null;
+  const ZONW={ iv:zonenIntervalle(e), raumAn:zonenRaumAn(e) };
+  const bz=(HK.herk==='boden')?bodenZellen(tp,ZONW,L):null;
   /* Fehlt die Bodenflaeche, faellt der Maler auf die eigene Stelle zurueck - dann gilt auch fuer
      die Spanne, was fuer "immer da" gilt. Die Notiz rechnet also denselben Fall wie das Bild. */
   const herk=(HK.herk==='boden'&&(!bz||!bz.n))?'da':HK.herk;
-  const rs=raumSpanne(e,tp,sp.g,sp.w,L,modus,herk,HK.runter,bz);
+  const rs=raumSpanne(e,tp,ZONW,L,herk,HK.runter,bz);
   const wo=HK.herk==='quelle'?'Die Entfernung kommt aus dem freien Bereich an der gesetzten Quelle.'
     :HK.herk==='boden'?'Die Entfernung kommt aus dem freien Bereich über der Bodenfläche: unten am Rand nah, weiter oben fern — und dort wird das Teilchen auch gemalt.'
     :HK.herk==='rand'?('Die Entfernung kommt aus dem freien Bereich am '+(HK.runter?'oberen':'unteren')+' Bildrand, in der eigenen Spalte — dort kommt diese Art herein, nicht von ihrem jetzigen Ort.')
@@ -29002,6 +29008,29 @@ function zonenNichtsWirkt(e){ return zonenVonEffekt(e).length === 0; }
 /* Welche Zonen DIESES Bildes sind damit gemeint? Die Liste des Bildes traegt Namen; hier treffen
    sich Rezept und Bild. Kommt ein angekreuzter Bereich auf diesem Bild nicht vor, ist das keine
    Panne - der Effekt wirkt dort eben nicht, und die Karte sagt es. */
+/* DIE ANGEKREUZTEN ZONEN ALS INTERVALLE (21.09.2026, fuer den Teilchenweg).
+   Eine Maske fragt je Bildpunkt „gehoerst du dazu"; ein Teilchen fragt umgekehrt „wo darf ich
+   liegen". Dafuer braucht es die erlaubten Tiefen als BEREICHE, nicht als Tabelle - und weil
+   Zonen zwischen zwei Grenzen liegen, sind sie ohnehin Intervalle. Zurueck kommen sie in der
+   Tiefenskala 0..1 (0 fern, 1 nah), aufsteigend sortiert, damit der Bereichsschnitt einfach ist.
+   ZUSAETZLICH DER EFFEKTRAUM: er liegt VOR der Szene, also bei Werten ueber 1, und gehoert dazu,
+   wenn er angekreuzt ist. Die Effektscheibe ist sein vorderer Anschlag und braucht kein eigenes
+   Intervall - wer auf dem Glas sitzt, wird ohnehin nicht nach Entfernung gestaffelt. */
+function zonenIntervalle(e){
+  const zl = zonenListe(); if(!zl) return null;
+  const treffer = zonenTrefferImBild(e); if(!treffer) return null;
+  const iv = [];
+  zl.forEach((z,i)=>{ if(treffer[i]) iv.push([z.unten/255, z.oben/255]); });
+  iv.sort((a,b)=>a[0]-b[0]);
+  /* benachbarte verschmelzen - zwei angekreuzte Nachbarzonen sind ein Bereich */
+  const aus = [];
+  for(const [a,b] of iv){
+    const l = aus[aus.length-1];
+    if(l && a - l[1] < 1e-6) l[1] = Math.max(l[1], b); else aus.push([a,b]);
+  }
+  return aus;
+}
+function zonenRaumAn(e){ return zonenVonEffekt(e).indexOf('Effektraum') >= 0; }
 function zonenTrefferImBild(e){
   const zl = zonenListe(); if(!zl) return null;
   const will = zonenVonEffekt(e);
@@ -29934,13 +29963,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        (verdAn), laesst sie dann durch die Luecken zwischen den Staemmen ziehen und dahinter
        verschwinden - halb hinter einem Ast, nicht ganz da oder ganz weg. Das ist der Entwurf,
        der Caspar_D vorliegt; gebaut wird er, wenn er ihn abgenommen hat. */
-    const zoneWunsch=ZONE_HART(e)?e.tiefeWirkt:null;
+    /* DIE ZONEN STATT DER EINEN TRENNUNG (21.09.2026). Frueher stand hier „vorn" oder „hinten",
+       und alles haengte an einer Linie. Jetzt traegt ZON die angekreuzten Bereiche als
+       Intervalle; wer ueberall wirkt, bekommt null und wird von nichts beschnitten - der
+       haeufigste Fall bleibt der billigste. */
+    const ZONIV = zonenAllesWirkt(e) ? null : zonenIntervalle(e);
     /* DAS RASTER WIRD IMMER GEHOLT, WENN ES EINE KARTE GIBT (Schritt 2). Bis Schritt 1 wurde es
        nur bei Aufenthalt oder Raumtiefe gefragt; seit die Verdeckung eine Ja/Nein-Frage ist, die
        IMMER gilt (Spezifikation Abschnitt 5), braucht jedes Teilchen seine Entfernung. Der Ruf
        ist billig: tiefeProben rechnet einmal je Quelle und liegt danach im Vorrat. */
     const TPR=tiefeProben();
-    const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(TPR):null;
+    const ZON = TPR ? { iv:ZONIV, raumAn:zonenRaumAn(e) } : null;
+    const ZONE = (TPR && ZONIV) ? 'zonen' : null;   /* „gibt es ueberhaupt eine Schranke" */
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
     /* VERDECKT WIRD IMMER, WENN ES EINE KARTE GIBT - auch bei Raumtiefe 0, auch bei Schwarm,
        Schnuppe und Kanone (RAUM_OHNE gilt nur fuer Groesse, Tempo und Dunst). Ohne Karte gibt es
@@ -29969,12 +30003,12 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Raumtiefe, also durfte auch der Malort nicht wandern. Jetzt wirkt die Entfernung immer -
        und ein Bodenteilchen, das seine Entfernung aus einer Bodenzelle holt und woanders gemalt
        wird, waere genau die Unwahrheit, gegen die Schritt 1 die Tabelle gesetzt hat. */
-    const BODEN=(verdAn&&HERK==='boden')?bodenZellen(TPR,ZG.g,ZG.w,LEER,ZONE):null;
+    const BODEN=(verdAn&&HERK==='boden')?bodenZellen(TPR,ZON,LEER):null;
     /* Die Baender, in denen gemalt wird - einmal je Bild, reine Funktion von Grenze und Schaerfe
        (schichtBaender). Ohne Karte bleibt es bei einem Durchgang ohne Maske. Der Leerraum geht
        NICHT ein: der Vorraum ist ein Band nach oben offen, seine Breite verschiebt keine
        Bandkante (Begruendung bei schichtBaender). */
-    const BAENDER=verdAn?schichtBaender(ZG.g,ZG.w):null;
+    const BAENDER=verdAn?schichtBaender():null;
     /* Der Geburtsort in Bildanteilen - eine reine Funktion der Teilchennummer und des
        gewuerfelten Platzes, OHNE t:
          quelle  der gesetzte Punkt, Strich, Kreis, die Ellipse (den hat Caspar_D gesetzt)
@@ -30003,7 +30037,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       if(HERK==='rand') return geoZuQuelle(px, RUNTER?0:Hn);
       return geoZuQuelle(px,py); };
     const pzVon=(i,px,py)=>{ const G=gebOrt(i,px,py);
-      return entfernungIn(freiBereich(TPR,G[0],G[1],ZG.g,ZG.w,LEER,ZONE),hs(i+11000)); };
+      return entfernungIn(freiBereich(TPR,G[0],G[1],ZON,LEER),hs(i+11000)); };
     /* Der Platz einer Bodenzelle auf der Leinwand. DIESELBE Tabelle traegt Geburtsort und Malort
        (Caspar_D, 17.09.2026): sonst gilt die Zusage der Spezifikation - "unten am Rand nah, weiter
        oben fern, ein Feuer in der Naehe und ein Feuer in der Ferne" - nur fuer die Zahl und nicht
@@ -30020,15 +30054,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       gluehwuermchen:4.5, schwaden:3.2, schmetterling:2.2, sternschnuppen:1.2, daunen:1.5, pusteblume:1.8}[e.art])||1.2;
     /* DIE RASTERFRAGE IN QUELLKOORDINATEN (18.09.2026). px,py sind Leinwandpunkte; das Raster
        steht in der Quelle. Ohne Geometrie-Effekt liefert geoZuQuelle genau px/Wn und py/Hn. */
-    const zNah=(px,py)=>{ const Q=geoZuQuelle(px,py); return tiefeNahAn(TPR,Q[0],Q[1],ZG.g,ZG.w); };
-    /* Verboten ist, was jenseits der GRENZE liegt: bei „nur hinten" alles, was naeher als die
-       Grenze ist, bei „nur vorn" alles, was ferner ist. Dieselbe Kurve wie die Maske, an der
-       Mitte abgeschnitten - so heisst „nur hinten" genau das, was die Zeile sagt. */
+    const zTiefe=(px,py)=>{ const Q=geoZuQuelle(px,py); return tiefeRohAn(TPR,Q[0],Q[1]); };
+    /* VERBOTEN IST, WAS IN KEINER ANGEKREUZTEN ZONE LIEGT (21.09.2026). Frueher war es „jenseits
+       der Grenze", weil es nur eine gab; jetzt sind es bis zu drei Bereiche, und die Frage ist
+       dieselbe geblieben: gehoert diese Tiefe dazu oder nicht. */
+    const zErlaubt=z=>{ if(!ZONIV) return true;
+      for(let i=0;i<ZONIV.length;i++) if(z>=ZONIV[i][0]-1e-9 && z<=ZONIV[i][1]+1e-9) return true;
+      return false; };
     /* EIN TEILCHEN IST KEIN PUNKT (gemessen 16.09.2026: mit der Probe nur im Mittelpunkt lagen bei
        120 Voegeln noch 62 Bildpunkte Farbe ueber dem nahen Bereich - die Schwinge ragte hinueber).
        Gefragt wird darum der ganze Koerper: Mitte und vier Punkte im Abstand seines Radius. Wer mit
        einem Fluegel in die verbotene Zone reicht, ist dort auch. */
-    const zPunkt=(px,py)=>ZONE==='hinten'?zNah(px,py)>=0.5:zNah(px,py)<0.5;
+    const zPunkt=(px,py)=>!zErlaubt(zTiefe(px,py));
     /* EIN RING, KEIN KREUZ (Gegenlesen 16.09.2026). Vier Punkte auf den Achsen lassen die
        Diagonalen frei; bei den breiten Arten stand danach noch Farbe in der verbotenen Zone.
        Acht Punkte plus Mitte kosten vier weitere Rasterzugriffe je Teilchen und schliessen sie. */
@@ -30037,9 +30074,19 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
           || zPunkt(px-d,py-d)||zPunkt(px+d,py-d)||zPunkt(px-d,py+d)||zPunkt(px+d,py+d); };
     /* Ausweichen: bis zu zwoelf Schritte von je einem Vierundzwanzigstel der kurzen Bildseite dem
        Gefaelle der Karte nach - aus der Zone heraus, nicht hindurch. */
-    const zAusweichen=(px,py,r)=>{ if(!ZONE) return [px,py]; const S=Math.min(Wn,Hn)/24, ri=(ZONE==='hinten')?-1:1, d=S*0.5;
+    /* IN WELCHE RICHTUNG WEICHT DIE SCHAR AUS? Frueher gab es nur zwei Antworten - bei „nur
+       hinten" nach fern, sonst nach nah. Jetzt wird gefragt, wo die naechste erlaubte Zone
+       liegt: vor dem Vogel oder hinter ihm. Liegt er schon richtig, weicht er nicht aus. */
+    const zRichtung=(px,py)=>{ if(!ZONIV||!ZONIV.length) return 0;
+      const z=zTiefe(px,py); let ab=Infinity, wo=0;
+      for(let i=0;i<ZONIV.length;i++){ const iv=ZONIV[i];
+        if(z>=iv[0]&&z<=iv[1]) return 0;
+        const d1 = z<iv[0] ? iv[0]-z : z-iv[1];
+        if(d1<ab){ ab=d1; wo = z<iv[0] ? 1 : -1; } }
+      return wo; };
+    const zAusweichen=(px,py,r)=>{ if(!ZONE) return [px,py]; const S=Math.min(Wn,Hn)/24, ri=zRichtung(px,py)||1, d=S*0.5;
       for(let k=0;k<12&&zSperre(px,py,r);k++){
-        const dgx=zNah(px+d,py)-zNah(px-d,py), dgy=zNah(px,py+d)-zNah(px,py-d);
+        const dgx=zTiefe(px+d,py)-zTiefe(px-d,py), dgy=zTiefe(px,py+d)-zTiefe(px,py-d);
         const nn=Math.hypot(dgx,dgy); if(nn<1e-6) break;
         px+=ri*dgx/nn*S; py+=ri*dgy/nn*S; }
       return [px,py]; };
@@ -31178,6 +31225,22 @@ function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.tog
    dass ihm jemand davon erzaehlt. */
 const STUFE_NAME={diorama:'Szene',kamera:'Kamera',objektiv:'Film'};
 function stufeVon(e){ return STUFE_DIORAMA.has(e.typ)?'diorama':STUFE_KAMERA.has(e.typ)?'kamera':'objektiv'; }
+/* WELCHE ART DIESER EFFEKT IST, STEHT AM NAMEN (Caspar_D, 21.09.2026: „ich haette gern, dass
+   neben Partikel im Effektkarussell immer steht, welcher Typ - wenn ich 3 Partikeleffekte in
+   einer Effektkette habe, moechte ich schon die richtige greifen").
+   Betroffen ist jeder Effekt, dessen Karte einen Regler „Art" traegt - Teilchen, Blenden,
+   Fuehrungen. Steht die Art in der Auswahlliste des Reglers, wird ihre BESCHRIFTUNG genommen,
+   nicht der Schluessel: auf der Karte steht „Sternschnuppen", nicht „sternschnuppen". */
+function kartenArt(e, alsText){
+  try{
+    const T=EFFEKTE[e.typ]; if(!T||!T.params) return '';
+    const p=T.params.find(x=>x.k==='art'); if(!p||!p.sel) return '';
+    const wert=e.art; if(!wert) return '';
+    const paar=p.sel.find(s=>s[0]===wert);
+    const lbl=paar?paar[1]:wert;
+    return alsText ? ' \u00b7 '+lbl : ' \u00b7 '+lbl;
+  }catch(x){ return ''; }
+}
 function stufeMarke(e){ const st=stufeVon(e), kl={diorama:'szene',kamera:'kamera',objektiv:'film'}[st];
   const tt={ diorama:'Szene \u2014 wird im Diorama gemalt und f\u00e4hrt mit: zoomt die Kamera heran, wird dieser Effekt gr\u00f6\u00dfer.',
              kamera:'Kamera \u2014 das ist der Ausschnitt selbst: Fahrt, Zoom, Kippen, Sch\u00e4rfe.',
@@ -31208,7 +31271,8 @@ function renderStapel(){
     const gleich=STAPEL.filter(x=>x.typ===e.typ), nrTxt=gleich.length>1?String(gleich.indexOf(e)+1):'';
     let h='<div class="tbs-kopf"><span class="tbs-pw" title="an / aus"></span>'
       +'<button class="tbs-knopf tbs-solo'+(soloId===e.id?' an':'')+'" data-tu="solo" title="Solo \u2014 nur diesen zeigen, fl\u00fcchtig">solo</button>'
-      +ikon(e.typ)+'<b class="tbs-name" title="'+T.label+' \u2014 auf- / zuklappen">'+T.label+stufeMarke(e)+'</b><span class="tbs-nr" title="'+(nrTxt?'Nr. '+nrTxt+' von '+gleich.length+' gleichen':'')+'">'+nrTxt+'</span>'
+      +ikon(e.typ)+'<b class="tbs-name" title="'+T.label+kartenArt(e,true)+' \u2014 auf- / zuklappen">'+T.label
+      +'<span class="tbs-kart">'+kartenArt(e,false)+'</span>'+stufeMarke(e)+'</b><span class="tbs-nr" title="'+(nrTxt?'Nr. '+nrTxt+' von '+gleich.length+' gleichen':'')+'">'+nrTxt+'</span>'
       +'<button class="tbs-knopf" data-tu="dup" title="Kopie darunter einh\u00e4ngen \u2014 gleiche Einstellungen, dann nur das N\u00f6tige \u00e4ndern">\u29c9</button>'
       +'<button class="tbs-knopf tbs-weg" data-tu="weg" title="entfernen">\u00d7</button>'
       +'<button class="tbs-knopf" data-tu="hoch" title="nach oben">\u2191</button>'
@@ -36032,6 +36096,15 @@ function zeichneFrame(t,roh){
      Reihenfolge wie bisher - der Loop bleibt bitgleich. */
   function nahKurve(z, g, w){ let a=(z-(g-w))/(2*w); a=a<0?0:a>1?1:a; return a*a*(3-2*a); }
   /* u,v in Bildanteilen; 1 heisst sicher nah, 0 sicher fern. */
+  /* DIE ROHE TIEFE AN EINEM ORT (21.09.2026). tiefeNahAn gibt die NAEHE ZU EINER GRENZE und
+     schlaegt an ihr zwischen 0 und 1 um - fuer eine Maske richtig, fuer eine ENTFERNUNG falsch:
+     ein Teilchen erfuehre so nur, auf welcher Seite es geboren wurde, nicht wie tief. Hier steht
+     der Wert selbst, in derselben Skala wie die Karte: 0 fern, 1 nah. */
+  function tiefeRohAn(tp, u, v){
+    if(!tp) return 0;
+    let x=Math.round(u*tp.w), y=Math.round(v*tp.h);
+    if(x<0)x=0; if(x>=tp.w)x=tp.w-1; if(y<0)y=0; if(y>=tp.h)y=tp.h-1;
+    return tp.z[y*tp.w+x]; }
   function tiefeNahAn(tp, u, v, g, w){
     if(!tp) return 0.5;
     const x=Math.max(0,Math.min(tp.w-1,Math.round(u*tp.w))), y=Math.max(0,Math.min(tp.h-1,Math.round(v*tp.h)));
@@ -36065,9 +36138,9 @@ function zeichneFrame(t,roh){
   /* GELOESCHT als Effektwert (21.09.2026): der Leerraum beschreibt die SZENE, nicht ein Geraet.
      Er steht jetzt in der Vorbereitung, Station Tiefe, und gilt fuer alle Teilchen im Bild. */
   const leerVor = () => zoneLeerraum();
-  /* Die Vordergrund-Hintergrund-Grenze in der Naehe-Skala. nahKurve gibt an der Grenze (z==g)
-     genau 0,5 - dieselbe Zahl, mit der zPunkt schon vorn von hinten trennt. */
-  const VH_GRENZE=0.5;
+  /* HIER STAND VH_GRENZE - die Vordergrund-Hintergrund-Grenze in der Naehe-Skala. Sie war der
+     Punkt, an dem „vorn" in „hinten" umschlug, und wird nicht mehr gebraucht: es gibt keine
+     Skala mehr, die an einer Linie umschlaegt, sondern die Tiefe selbst (21.09.2026). */
   /* Der freie Bereich an einem Bildpunkt, beschnitten vom AUFENTHALT. Das ist die neue Bedeutung
      dieser Zeile (Spezifikation Abschnitt 5): sie waehlt nicht mehr eine Bildhaelfte, sondern
      einen Tiefenbereich.
@@ -36092,19 +36165,44 @@ function zeichneFrame(t,roh){
                          bleibt sie bei 11 von 325 Karten GANZ leer
      Hinter die Flaeche darf nichts, also bleibt die Klemme - aber die Zeile "Raumtiefe" zaehlt
      den Anteil je Karte und Einstellung und sagt ihn an (raumSpanne, raumNotiz). */
-  function freiBereich(tp,u,v,g,w,L,modus){
-    const nz=tiefeNahAn(tp,u,v,g,w);
-    let lo=nz, hi=1+L;
-    if(modus==='vorn') lo=Math.max(lo,VH_GRENZE);
-    else if(modus==='hinten') hi=Math.min(hi,VH_GRENZE);
-    return { nz, lo, hi, leer:!(hi>=lo) }; }
+  /* DER FREIE BEREICH AN EINEM BILDPUNKT, beschnitten von den ZONEN (21.09.2026; bis dahin von
+     der einen Trennlinie). Die Skala faellt jetzt mit dem Raummodell zusammen:
+         0 … 1     die Szene - hier gelten die angekreuzten Zonen
+         1 … 1+L   der Effektraum, der leere Vorraum vor allem
+     Die Fläche selbst bleibt die hintere Schranke: hinter ihr wird nichts geboren, und das war
+     schon der Zweck dieses Schrittes, als es noch eine Trennung gab.
+     ZURUECK KOMMEN DIE ERLAUBTEN STUECKE, nicht nur lo und hi. Zwei angekreuzte Zonen mit einer
+     ausgelassenen dazwischen sind zwei Stuecke, und ein Teilchen muss in eines davon - nicht in
+     die Luecke. entfernungIn zieht daraus gleichverteilt ueber die GESAMTE erlaubte Laenge; ein
+     schmales Stueck bekommt also weniger Teilchen als ein breites, was richtig ist.
+     LEER heisst wie bisher: an dieser Stelle gibt es keinen erlaubten Platz. Dann bleibt das
+     Teilchen auf der Flaeche - genannt, nicht still anders gemacht. */
+  function freiBereich(tp,u,v,zon,L){
+    const nz=tiefeRohAn(tp,u,v);
+    const raumAn = !!(zon && zon.raumAn);
+    const lo=nz, hi=raumAn?1+L:1;
+    if(!zon || !zon.iv) return { nz, lo, hi, st:null, leer:!(hi>=lo) };
+    const st=[];
+    for(const iv of zon.iv){ const a=Math.max(iv[0],lo), b=Math.min(iv[1],hi);
+      if(b>a) st.push([a,b]); }
+    if(raumAn && hi>1){ const a=Math.max(1,lo); if(hi>a) st.push([a,hi]); }
+    st.sort((x,y)=>x[0]-y[0]);
+    let ges=0; for(const s of st) ges+=s[1]-s[0];
+    return { nz, lo, hi, st, leer:!(ges>1e-9) }; }
   /* DIE ENTFERNUNG. Gleichverteilt im freien Bereich - das ist eine SETZUNG und keine Wahrheit:
      die Karte hat keinen Maszstab (Spezifikation, Risiko 3). Der Wurf ist eine reine Funktion
      der Teilchennummer (Hashplatz i+11000), damit die Schleife exakt bleibt; der Bereich selbst
      haengt am Geburtsort. Gibt es den gewaehlten Bereich an dieser Stelle nicht, bleibt das
      Teilchen auf der Flaeche (lo) - nie dahinter. Hinter der Flaeche wird nichts geboren, und
      das ist der ganze Zweck dieses Schrittes. */
-  function entfernungIn(fb,r){ return fb.leer?fb.lo:(fb.lo+r*(fb.hi-fb.lo)); }
+  function entfernungIn(fb,r){
+    if(fb.leer) return fb.lo;
+    if(!fb.st) return fb.lo+r*(fb.hi-fb.lo);
+    let ges=0; for(const s of fb.st) ges+=s[1]-s[0];
+    if(!(ges>1e-9)) return fb.lo;
+    let x=r*ges;
+    for(const s of fb.st){ const l=s[1]-s[0]; if(x<=l) return s[0]+x; x-=l; }
+    return fb.st[fb.st.length-1][1]; }
   /* ---- DIE TIEFENSCHICHTEN (17.09.2026, Bauweg Schritt 2) ----
      "VERDECKT, WO DIE FLAECHE NAEHER IST ALS DAS TEILCHEN. Es fliegt weiter" (Spezifikation,
      Satz 3). Bis Schritt 1 lag EINE Maske ueber allen Teilchen - das ging, weil alle dieselbe
@@ -36190,7 +36288,9 @@ function zeichneFrame(t,roh){
      Grenze; gebraucht wird der Kartenwert, an dem eine gegebene Naehe steht - denn die Baender
      liegen in der NAEHE-Skala (dort wird die Entfernung gleichverteilt gewuerfelt), die Maske
      aber rechnet in Kartenwerten. Geschlossene Form, kein Suchen. */
-  const nahKurveZurueck = s => (s<=0?0:s>=1?1:(0.5-Math.sin(Math.asin(1-2*s)/3)));
+  /* HIER STAND nahKurveZurueck, die Umkehrung des Smoothstep. Sie rechnete eine Bandgrenze der
+     Entfernungsskala in einen Tiefenwert zurueck, solange beide verschiedene Skalen waren. Seit
+     die Entfernung die Tiefe IST, ist die Abbildung die Identitaet - siehe schichtBaender. */
   /* Die Baender eines Effekts, von hinten nach vorn. Je Band:
        lo,hi    die Entfernungen, die hineinfallen (halboffen; das erste nach unten und das letzte
                 nach oben offen, damit kein Teilchen aus allen Baendern herausfaellt)
@@ -36208,20 +36308,20 @@ function zeichneFrame(t,roh){
      bis 1), und der Vorraum darueber ist EIN Band, nach oben offen, ohne Maske. Wie weit er
      reicht, aendert an keiner Bandkante etwas. Wo der Vorraum wirkt, ist der freie Bereich
      (freiBereich/entfernungIn) - dort steht L und wird gebraucht. */
-  function schichtBaender(g,w){
-    const B=[], zVon=s=>(g-w)+nahKurveZurueck(s)*2*w;
+  function schichtBaender(){
+    /* DIE ABBILDUNG IST DIE IDENTITAET GEWORDEN (21.09.2026). Solange die Entfernung eines
+       Teilchens die NAEHE ZU EINER TRENNLINIE war, musste dieses Band sie in einen Tiefenwert
+       zurueckrechnen - ueber die Umkehrung der Smoothstep-Kurve, mit Sonderfaellen an beiden
+       Enden, wo die Kurve aus der Karte lief. Seit die Entfernung die TIEFE SELBST ist, sind
+       Bandgrenze und Tiefengrenze dieselbe Zahl: Band 3 von 8 reicht von 0,375 bis 0,5, und
+       genau dort liegt auch die Tiefe, gegen die es geprueft wird.
+       Damit fallen die Sonderfaelle „weg" und „ohne" innerhalb der Karte fort - ein Band kann
+       nicht mehr jenseits von 0 oder 1 landen. Die Schachtelung bleibt, worauf sie ruhte: die
+       obere Kante eines Bandes und die untere des naechsten sind dieselbe Zahl. */
+    const B=[];
     for(let b=0;b<SCHICHTEN;b++){
       const lo=b/SCHICHTEN, hi=(b+1)/SCHICHTEN;
-      const zl=zVon(lo), zh=zVon(hi);
-      if(zh<=0){ B.push({lo:b?lo:-Infinity, hi, weg:true}); continue; }   /* alles naeher als das Band */
-      if(zl>=1){ B.push({lo:b?lo:-Infinity, hi, ohne:true}); continue; }  /* nichts naeher als das Band */
-      /* AUF DIE KARTE GEKLEMMT. Liegt das Band halb jenseits von 0 oder 1, hat die Karte dort
-         keine Werte; geklemmt deckt der Uebergang genau den Teil, den es gibt. Die obere Kante
-         eines Bandes und die untere des naechsten sind DIESELBE Rechnung an derselben Stelle
-         (zVon(hi) und zVon(lo) des naechsten, und lo ist hi) - also bitgleich dieselbe Zahl, und
-         darauf ruht die Schachtelung. */
-      const cl=Math.max(0,Math.min(1,zl)), ch=Math.max(0,Math.min(1,zh));
-      B.push({lo:b?lo:-Infinity, hi, cl, ch});
+      B.push({lo:b?lo:-Infinity, hi, cl:lo, ch:hi});
     }
     /* Der Vorraum und alles ueber "ganz vorn": davor steht nichts (Spezifikation Abschnitt 2,
        "vor dem Ganzen liegt eine leere Ebene"). Nach oben offen - auch bei Leerraum 0 faellt das
@@ -36296,7 +36396,14 @@ function zeichneFrame(t,roh){
      Buehne, Ausgabe) dieselbe Karte fragt; ein zu kurzer Ring baute die Tabelle je Bild neu. */
   const BODENZELLEN=[]; let BODENZELLEN_ID=null;
   const BZ_PLAETZE=12;
-  function bodenZellen(tp,g,w,L,modus){
+  /* DER SCHLUESSEL TRAEGT JETZT DIE ZONEN (21.09.2026). Vorher standen Grenze, Weichheit und
+     Aufenthalt darin; wer sie ersetzt, ohne den Schluessel zu aendern, bekommt die Zellen der
+     vorigen Einstellung zurueck - ein Vorrat, der sich nicht merkt, wonach er gefragt wurde,
+     antwortet irgendwann falsch. */
+  const zonSchluessel = zon => !zon ? 'ohne'
+    : (zon.raumAn?'R':'-') + (zon.iv||[]).map(v=>v[0].toFixed(3)+'..'+v[1].toFixed(3)).join(',');
+  function bodenZellen(tp,zon,L){
+    void zonSchluessel;   /* der Schluessel unten traegt ihn */
     const q=tiefeQuelle(); if(!q||!tp) return null;
     const k=g.toFixed(4)+'|'+w.toFixed(4)+'|'+L.toFixed(3)+'|'+(modus||'alles');
     if(BODENZELLEN_ID!==q.k){ BODENZELLEN.length=0; BODENZELLEN_ID=q.k; }
@@ -36309,7 +36416,7 @@ function zeichneFrame(t,roh){
     if(spanne>=BODEN_SPANNE) for(let y=1;y<tp.h;y++) for(let x=0;x<tp.w;x++){
       if(!(tp.z[y*tp.w+x]>tp.z[(y-1)*tp.w+x])) continue;   /* nach oben hin ferner - sonst kein Boden */
       boden++;
-      const fb=freiBereich(tp,x/tp.w,y/tp.h,g,w,L,modus);
+      const fb=freiBereich(tp,x/tp.w,y/tp.h,zon,L);
       if(fb.leer){ ohneRaum++; continue; }                 /* Boden ja, aber kein freier Raum darueber */
       xs.push(x); ys.push(y); }
     const grund = xs.length ? null
@@ -36372,7 +36479,7 @@ function zeichneFrame(t,roh){
     else for(let j=0;j<tp.w*tp.h;j++) o.push(j);
     return o; }
   const RAUMSPANNEN=[]; let RAUMSPANNEN_ID=null;
-  function raumSpanne(e,tp,g,w,L,modus,herk,runter,bz){
+  function raumSpanne(e,tp,zon,L,herk,runter,bz){
     const q=tiefeQuelle(); if(!q||!tp) return null;
     const k=[herk,runter?'ab':'auf',modus||'alles',g.toFixed(4),w.toFixed(4),L.toFixed(3),
       herk==='quelle'?[e.qForm,e.qUrsprung,e.qWinkel,e.qX,e.qY,e.qAus,e.qAusY,e.qDreh,e.id].join(','):''].join('|');
@@ -36380,7 +36487,7 @@ function zeichneFrame(t,roh){
     { const da=RAUMSPANNEN.find(r=>r.k===k); if(da) return da.v; }
     const orte=gebOrte(tp,herk,runter,bz,e);
     let mn=Infinity, mx=-Infinity, leer=0;
-    for(const j of orte){ const fb=freiBereich(tp,(j%tp.w)/tp.w,Math.floor(j/tp.w)/tp.h,g,w,L,modus);
+    for(const j of orte){ const fb=freiBereich(tp,(j%tp.w)/tp.w,Math.floor(j/tp.w)/tp.h,zon,L);
       const lo=fb.lo, hi=fb.leer?fb.lo:fb.hi;              /* leer heisst: das Teilchen bleibt auf der Flaeche */
       if(fb.leer) leer++;
       if(lo<mn) mn=lo; if(hi>mx) mx=hi; }
