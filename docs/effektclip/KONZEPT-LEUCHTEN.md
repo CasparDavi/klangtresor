@@ -496,6 +496,52 @@ Wolken?".
 **Ein Nebenbefund, der nicht hierher gehört, aber notiert sein will:** Die **Linse kostet 10,9 ms**,
 ein Drittel eines 30-Hz-Bildes für einen einzigen Effekt. Das hat nie jemand gemessen.
 
+### Laser und Lichtstrahlen — wie sie ins Modell passen (21.09.2026)
+
+Caspar_D: *„während der Laser ja fast punktförmig das Ziel erreicht, der scanning laser einen
+Strich — sind die Lichtstrahlen ja eigentlich in irgendeiner Geometrie angeordnete
+Scheinwerferbündel (korrigier mich, wenn ich falsch liege)."*
+
+Fast. Die Lichtstrahlen sind **nicht mehrere Scheinwerfer, sondern einer mit einer Maske im
+Strahlengang**. Sonnenlicht durchs Fenster ist eine Quelle; die Schächte entstehen an den Sprossen.
+Die Bühnentechnik nennt die Schablone **Gobo**, und das Haus hat sie längst — der alte Scheinwerfer
+nennt sie *Blende* (Gitter, Streifen, Punkte, Wolken).
+
+Damit fallen alle drei auf dieselbe Lampe zusammen:
+
+| | Öffnung | Maske | sichtbarer Strahl |
+|---|---|---|---|
+| **Scheinwerfer** | weit | optional | durchs Medium |
+| **Lichtstrahlen** | weit | **Gobo** | durchs Medium — daher die Schächte |
+| **Laser** | sehr eng, fast eine Gerade | optional Beugungsgitter | durchs Medium |
+| **Scanning-Laser** | sehr eng | — | schneller Pan, der Strich kommt vom Nachleuchten |
+
+**Das macht die Ablösung kleiner, als sie aussieht:** keine drei Effekte, sondern eine Lampe mit
+drei Einstellungen — Bündelung, Gobo, Schwenktempo.
+
+**Eine Ausnahme, die kein Gobo ist:** Beim Laser mit **Beugungsgitter** entstehen echte
+Mehrfachstrahlen aus einem Punkt, nicht ein zerschnittener Kegel. Beugung ist etwas anderes als
+Abschattung.
+
+### Der dritte Winkel: Roll
+
+Caspar_D, am Bild des heutigen Lasers: *„die Fächerfläche steht momentan parallel zur
+Diorama-Front-Scheibe."*
+
+Richtig, und es ist dasselbe Muster wie überall hier. Ein Laserfächer ist eine **Ebene**; sie liegt
+heute fest in der Bildebene. Ein echter Fächer kann beliebig im Raum stehen — kippt man ihn zur
+Kamera, laufen die Strahlen in die Tiefe und erscheinen perspektivisch zusammenlaufend statt
+nebeneinander.
+
+Dafür fehlt dem Modell ein **dritter Winkel: Roll**, die Drehung um die eigene Strahlachse. Pan,
+Tilt und Roll zusammen sind das Kugelgelenk. **Beim Scheinwerfer fällt Roll nicht auf**, weil ein
+Kegel rotationssymmetrisch ist; beim Fächer und bei jedem Gobo ist es der entscheidende Winkel.
+
+**Nicht am alten Laser reparieren.** Ihm fehlt dieselbe Geometrie wie dem alten Scheinwerfer —
+`Neigung (0 Wand, 1 Boden)`, `Drehen` und `Aufsetzen` sind drei Krücken für eine Richtung, die es
+als Größe nicht gibt. Ein Roll-Winkel dort wäre die vierte. Im neuen Modell ist es ein Winkel mehr
+an einer Lampe, die ihre Achse ohnehin kennt.
+
 ### Noch offen
 
 - ~~Der Schwenk~~ — gebaut: Pan und Tilt als Kippung der Lampe, fünf Stellungen (Steht, Pan, Tilt,
