@@ -27702,21 +27702,6 @@ const TIEFE_KOERPER = e => e.typ==='partikel';
    stillstuende" - seit dem 17.09.2026 wird nichts mehr abgelesen, die Entfernung wird gewuerfelt;
    der Satz stammte noch aus der Zeit, als die Naehe der SZENE als Entfernung einsprang.) */
 const RAUM_OHNE = new Set(['schwarm','sternschnuppen','konfettiKanone']);
-/* HINTERGRUNDFLAECHENEFFEKTE (Caspar_D, 21.09.2026: „Sternschnuppen duerfen nur ganz hinten
-   gemalt werden … eigentlich auf der letzten Tiefenebene, dem Himmel. Ja, so machen wir das: es
-   gibt Fronteffekte und Hintergrundflaecheneffekte.")
-   Diese Arten fragen NICHT, auf welcher Seite der Trennung sie wirken - sie liegen auf der
-   letzten Tiefenebene, und das ist keine Einstellung, sondern ihre Natur. Draussen ist das der
-   Himmel, drinnen die Rueckwand; wo die Flaeche anfaengt, sagt „Hintergrundflaeche ab" in der
-   Vorbereitung (zoneFlaecheAb), einmal je Bild fuer alle.
-   WARUM NICHT EINFACH „nur hinten": „hinten" ist alles jenseits der Trennung - auch der Baum im
-   Mittelgrund. Eine Schnuppe, die vor dem Baum durchzieht, ist genauso falsch wie eine vor dem
-   Gesicht. Die Flaeche ist die LETZTE Ebene, nicht die hintere Haelfte.
-   Das Polarlicht kommt hier dazu, sobald es gebaut ist (Backlog). */
-const FLAECHEN_ARTEN = new Set(['sternschnuppen']);
-/* Die Kante der Flaeche ist hart: „ab 12 von 255" heisst ab 12, nicht ungefaehr. Zwei Stufen
-   Weichheit nehmen der Kurve nur die Treppe, sie verschieben die Grenze nicht. */
-const FLAECHE_KANTE = 2/255;
 /* Der Aufenthalt gilt bei Koerpern hart - aber nicht, solange ein altes Rezept seine weiche Zone
    traegt. EINE Stelle, die das entscheidet; Maler und Kette fragen beide hier. */
 const ZONE_HART = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung!=='zone' && !!e.tiefeWirkt && e.tiefeWirkt!=='alles';
@@ -27817,20 +27802,10 @@ const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) �
    keine letzte Ebene; die Schnuppe faellt dann GANZ aus, und das muss auf der Karte stehen,
    bevor jemand zehn Minuten sucht, warum nichts fliegt. Gezaehlt wird auf demselben groben
    Raster wie der Verteilungsstreifen, also stimmt die Zahl mit dem ueberein, was er zeigt. */
-/* OHNE RUFER, SEIT DIE SPERRE ZURUECKGENOMMEN IST - bleibt stehen, weil der Entwurf ihn wieder
-   braucht: er zaehlt, wie viel Flaeche dieses Bild hat, und genau das ist die Zahl, an der man
-   sieht, ob eine Schnuppe eine Chance hat. Gerufen wird er wieder, sobald die Entfernung gebaut
-   ist (siehe die Begruendung im Teilchen-Malweg). */
-function flaechenGrund(e){ try{
-  if(!(TIEFE_KOERPER(e)&&FLAECHEN_ARTEN.has(e.art))) return null;
-  const satz='Diese Art liegt immer auf der letzten Tiefenebene — draußen der Himmel, drinnen die Rückwand. Eine Seite wählt sie nicht; wo die Fläche anfängt, sagt „Hintergrundfläche ab“ in der Vorbereitung, Station Tiefe.';
-  if(!tiefeProben()) return satz+' Ohne Tiefenkarte gibt es keine letzte Ebene — dann zieht sie wie früher über das ganze Bild.';
-  const an=tiefeAnteile(zoneFlaecheAb(), FLAECHE_KANTE);
-  if(!an) return satz;
-  return satz + (an.fern>0.002
-    ? ' Auf diesem Bild sind das '+(an.fern<0.01?'unter 1':Math.round(an.fern*100))+' % der Fläche.'
-    : ' Auf diesem Bild gibt es keine solche Fläche — sie fällt ganz aus. Stell „Hintergrundfläche ab“ höher oder nimm eine andere Art.');
-}catch(x){ return null; } }
+/* HIER STAND flaechenGrund - der Grund, den ein Flaecheneffekt statt einer Wahl bekam.
+   Mit der Ankreuzliste waehlt jeder Effekt seine Zonen selbst, und „ganz hinten" ist eine
+   davon; eine Sonderbehandlung fuer einzelne Arten braucht es nicht mehr. Mit ihm fielen
+   FLAECHEN_ARTEN, FLAECHE_KANTE und zoneFlaecheAb (21.09.2026). */
 function zonenLageVon(e){ const tp=tiefeProben(); if(!tp) return null;
   const sp=tiefeSpanne(tp); return zonenLage(e.tiefeWirkt, sp.g, sp.w); }
 function leerWarnung(e){ const zl=zonenLageVon(e); if(!zl) return '';
@@ -28400,7 +28375,7 @@ let HISTO=null;
    arbeiten dann darauf. */
 const VORB_REGLER=[['belichtung','Belichtung',-1,1],['kontrast','Kontrast',-1,1],['lichter','Lichter',-1,1],['schatten','Schatten',-1,1],['saettigung','S\u00e4ttigung',-1,1],['temperatur','Temperatur',-1,1],['farbton','Farbton',-1,1],['sepia','Sepia',0,1],['schaerfe','Sch\u00e4rfe',0,1]];
 let vorbNr=0;
-function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1, trennung:-0.02, trennWeich:-0.02, leerraum:0.25, flaecheAb:0.05, zonenGrenzen:null }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
+function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1, trennung:-0.02, trennWeich:-0.02, leerraum:0.25, zonenGrenzen:null };   /* flaecheAb ist am 21.09.2026 entfallen: die hinterste Zone leistet es */ VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
 function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v;
   { const rt=Number(r.raumtiefe); if(isFinite(rt)&&rt>0) v.raumtiefe=Math.max(0.1,Math.min(5,rt)); }
   /* DIE ZONEN DER SZENE (21.09.2026). Sie beschreiben, wie dieses eine Bild im Raum steht, und
@@ -28899,7 +28874,6 @@ const LR_TIEFE_JE_BREITE = 1.0;   /* Vorgabe, wenn nichts gesetzt ist */
 function zoneTrennung(){ const v=Number(VORB&&VORB.trennung);   return isFinite(v)?v:-0.02; }
 function zoneWeich(){    const v=Number(VORB&&VORB.trennWeich); return isFinite(v)?v:-0.02; }
 function zoneLeerraum(){ const v=Number(VORB&&VORB.leerraum);   return isFinite(v)?Math.max(0,Math.min(1,v)):0.25; }
-function zoneFlaecheAb(){const v=Number(VORB&&VORB.flaecheAb);  return isFinite(v)?Math.max(0,Math.min(0.4,v)):0.05; }
 /* ===================== DIE ZONEN DES BILDES (21.09.2026) =======================================
    Caspar_D: „wir haben ja das Studio, gehen in das Tiefenregister und dann erscheint statt dem Bild
    das Hoehendiagramm … in dieser per KI extrahierten Tiefenkarte des Titelbildes koennen mit Hilfe
@@ -28931,13 +28905,30 @@ const ZONEN_MAX_GRENZEN = 5;
    er eine Nummer ankreuzen, zeigte dieselbe Nummer auf dem naechsten Bild woandershin.
    Das ist der Zweck der festen Bereiche: Sie sind die Sprache zwischen Rezept und Bild. */
 const ZONEN_NAMEN = ZONEN_BEREICHE.map(b => b[0]);
+/* ZWEI ORTE LIEGEN VOR DER SZENE und stehen darum nicht in der Tiefenkarte (Caspar_D, 21.09.2026:
+   „vor das ganze wird die Effektscheibe und der Effektraum gestellt").
+   Die Effektscheibe ist das Glas vor dem Objektiv - Beschlag, Tropfen, Kratzer sitzen darauf. Der
+   Effektraum ist der leere Vorraum zwischen Kamera und Motiv, in dem Nebel und Teilchen VOR allem
+   schweben, was das Bild zeigt. Beide sind Raumschichten: sie gelten ueberall gleich und haben in
+   der Tiefenkarte keinen Ort, weil die Karte nur die Szene kennt.
+   WER DORT WOHNT, WIRD VON NICHTS VERDECKT. Er liegt vor der ganzen Szene, also beschneidet ihn
+   keine Zonenmaske - darum gibt zonenMaske null zurueck, sobald einer der beiden angekreuzt ist.
+   BEIDE LIEGEN VOR DER LINSE und fahren bei einer Kamerafahrt mit. Was HINTER der Linse entsteht -
+   Korn auf dem Film, Vignette und Verzeichnung des Objektivs - hat hier keinen Platz und bekommt
+   auch keinen: es klebt am Bild und wird nicht gezoomt. */
+const RAUM_VOR_SZENE = ['Effektscheibe','Effektraum'];
+const RAUM_ORTE = RAUM_VOR_SZENE.concat(ZONEN_NAMEN);
+const RAUM_BESCHREIBUNG = {
+  'Effektscheibe':'das Glas vor dem Objektiv \u2014 Beschlag, Tropfen, Kratzer',
+  'Effektraum':'der leere Vorraum \u2014 Nebel und Teilchen vor allem, was das Bild zeigt',
+};
 /* Die alte Zeile „Aufenthalt" kannte drei Antworten. Die Trennung lag dabei beim Median, also
    bei der Haelfte der Tiefe - daraus folgt die Uebersetzung Zeile fuer Zeile. Sie steht hier und
    nicht in der Ablage, weil auch ein Effekt im Speicher sie braucht, der nie durch ein Rezept
    gegangen ist. */
 const ZONEN_AUS_AUFENTHALT = {
-  alles:  ZONEN_NAMEN.slice(),
-  vorn:  ['ganz vorn','vorn','vordere Mitte'],
+  alles:  RAUM_ORTE.slice(),
+  vorn:  RAUM_VOR_SZENE.concat(['ganz vorn','vorn','vordere Mitte']),
   hinten:['Mitte','hinten','ganz hinten'],
 };
 /* DIE SECHS KAESTCHEN. Angezeigt werden IMMER alle sechs Bereiche - auch die, die es auf diesem
@@ -28951,6 +28942,12 @@ function zonenWahlHTML(e){
   const imBild = {};
   if(zl) zl.forEach(z => imBild[z.name] = (imBild[z.name]||0) + z.anteil);
   let h = '<div class="tbs-regler tbs-zonenwahlzeile"><span>Wirkt in</span><div class="tbs-zonenwahl">';
+  RAUM_VOR_SZENE.forEach(name=>{
+    const an = will.indexOf(name) >= 0;
+    h += '<button type="button" class="tbs-zk tbs-zkvor'+(an?' an':'')+'" data-zone="'+name+'" title="'+RAUM_BESCHREIBUNG[name]+'">'
+       + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+name+'</span>'
+       + '<span class="tbs-zkmass">vor der Szene</span></button>';
+  });
   ZONEN_BEREICHE.forEach(([name,a,b])=>{
     const an = will.indexOf(name) >= 0;
     const da = imBild[name] != null;
@@ -28966,17 +28963,18 @@ function zonenWahlHTML(e){
   return h;
 }
 function zonenVonEffekt(e){
-  if(!e) return ZONEN_NAMEN.slice();
+  if(!e) return RAUM_ORTE.slice();
   if(Array.isArray(e.zonen)){
-    const rein = e.zonen.filter(n => ZONEN_NAMEN.indexOf(n) >= 0);
-    return rein;                      /* auch die leere Liste gilt: dann wirkt er nirgends */
+    return e.zonen.filter(n => RAUM_ORTE.indexOf(n) >= 0);   /* auch leer gilt: dann wirkt er nirgends */
   }
   const alt = e.tiefeWirkt || 'alles';
   return (ZONEN_AUS_AUFENTHALT[alt] || ZONEN_NAMEN).slice();
 }
 /* Wirkt er ueberall? Dann braucht keine Maske gerechnet zu werden - das ist der haeufigste Fall
    und muss billig bleiben. */
-function zonenAllesWirkt(e){ return zonenVonEffekt(e).length >= ZONEN_NAMEN.length; }
+function zonenAllesWirkt(e){ return zonenVonEffekt(e).length >= RAUM_ORTE.length; }
+/* Wohnt er vor der Szene? Dann verdeckt ihn nichts, und keine Maske schneidet ihn zu. */
+function zonenVorSzene(e){ const z=zonenVonEffekt(e); return RAUM_VOR_SZENE.some(n=>z.indexOf(n)>=0); }
 function zonenNichtsWirkt(e){ return zonenVonEffekt(e).length === 0; }
 /* Welche Zonen DIESES Bildes sind damit gemeint? Die Liste des Bildes traegt Namen; hier treffen
    sich Rezept und Bild. Kommt ein angekreuzter Bereich auf diesem Bild nicht vor, ist das keine
@@ -31772,7 +31770,7 @@ function blaettern(d){ if(exportLaeuft) return; const n=SEITEN.length; if(n<2) r
    KEIN RECHTSKLICK (Caspar_D, 18.09.2026: "wenn glockenstuhl doppelklick ist, dann hier auch").
 
    MARKEN SIND BEDIENUNG, KEIN BILD. Sie werden AUSSCHLIESSLICH in rahmen() gezeichnet, ganz zuletzt,
-   auf die fertige Buehnenleinwand - genau wie die Trennebene der Tiefenkarte (tiefesichtMalen) und
+   auf die fertige Buehnenleinwand - genau wie die Zonenansicht der Tiefenkarte (zonenSichtMalen) und
    aus demselben Grund: rahmen() steht bei jeder Ausgabe still (exportLaeuft), und die Kachel malt
    ueber clipTick() mit eigenen Leinwaenden. Der Export, das Vollzeitvideo, die Loop-Ansicht als
    Bild und der Pruefstand rufen zeichneFrame/exportBild - keiner von ihnen kommt hier vorbei.
@@ -32070,7 +32068,6 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
      Grenze oder Weichheit zieht. rahmen() ist der einzige Weg, der sie kennt - und er steht bei
      jeder Ausgabe still, also erreicht sie kein Video und keine Kachel. */
   if(zonenSichtZeigt()) zonenSichtMalen();
-  if(tiefesichtZeigt()) tiefesichtMalen(); else tiefesichtRaeumen();
   /* Dasselbe Gesetz, dieselbe Stelle: die Marken der Ken Burns Fahrt liegen ueber dem fertigen
      Bild und nur hier. Sie sind Bedienung und kein Bild. */
   if(kbE) kbMarkenMalen(kbE);
@@ -33718,7 +33715,7 @@ function geoZuLeinwand(u,v){
         Linse, Nachzieh und den Stoerungen. „Filmkorn nur vorn" heisst: dort, wo das Bild, DAS DIE
         KAMERA ZEIGT, nah ist - die Karte muss also durch den Ausschnitt, und das ist genau diese
         Funktion. Sie an dieser Stelle zu streichen hiesse, die Maske im falschen Bild zu schneiden.
-     2./3. tiefesichtMalen: die Ansicht der Trennebene liegt auf der Buehne, also hinter der Kamera,
+     2./3. zonenSichtMalen: die Zonenansicht liegt auf der Buehne, also hinter der Kamera,
         und geht durch dieselbe Matrix wie das Grundbild.
    Was am 20.09.2026 wirklich weggefallen ist, ist nicht die Funktion, sondern der WEG: die
    Szenen-Effekte - alles, was eine Tiefenkarte wirklich benutzt (Partikel, Laser, Streiflicht,
@@ -33782,7 +33779,7 @@ function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
         grund und geo (siehe die Schleife bei TIEFE_PARAM) - also auch auf Filmkorn, Scanlines,
         Bloom, Linse, Nachzieh. „Filmkorn nur vorn" heisst: dort, wo das BILD, DAS DIE KAMERA
         ZEIGT, nah ist. Diese Maske MUSS also durch die Kamera, und geoKarteLegen ist genau das.
-     2./3. tiefesichtMalen (Ansicht der Trennebene) - sie malt auf die Buehne, also hinter der
+     2./3. zonenSichtMalen (die Zonenansicht) - sie malt auf die Buehne, also hinter der
         Kamera, und braucht dieselbe Matrix wie das Grundbild.
    Was wirklich fiel, ist der WEG: auf der Diorama-Stufe wird gar nicht mehr umgerechnet. */
 
@@ -34445,7 +34442,7 @@ function zeichneFrame(t,roh){
        Sie ist abgesetzt, weil sie kein Farbregler ist - sie faerbt nichts, sie masst. */
     h+='<div class="tbs-vorbAbschnitt">Der Raum</div>';
     h+='<div class="tbs-regler"><span>Raumtiefe</span><input type="range" data-vrt="1" min="0.1" max="5" step="0.1" value="'+(v.raumtiefe||1)+'"><span class="tbs-wert">'+kf(Number(v.raumtiefe||1).toFixed(1))+'\u00d7</span></div>';
-    h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Wie tief ist dieser Raum, in Bildbreiten \u2014 ein Portr\u00e4t etwa 0,2, eine Landschaft 3 und mehr. Die Tiefenkarte sagt, <i>was</i> vorn ist, nicht um <i>wie viel</i>; diese Zahl ist die fehlende Ma\u00dfeinheit.</div>';
+    h+='<div style="color:var(--schwach);font-size:10.5px;line-height:1.55;margin-bottom:8px">Die per KI ermittelte Tiefe des Raums vermittelt nur Information \u00fcber die <i>Reihenfolge</i> der Objekte von vorn nach hinten. Das Messen von Abst\u00e4nden ist nicht m\u00f6glich. Darum mu\u00df die Tiefe in Bildbreiten definiert werden \u2014 ein Portr\u00e4t ist etwa 0,2 Bildbreiten tief, eine Landschaft 3 und mehr. Es h\u00e4ngt meist vom Bild ab.</div>';
     /* DIE ZONEN, IN DER REIHENFOLGE VON DER KAMERA NACH HINTEN - so, wie man den Raum abschreitet.
        Das ist keine Schoenheit: wer Zahlen einstellt, die einen Raum beschreiben, muss sie in der
        Ordnung des Raumes vorfinden, sonst denkt er bei jedem Regler neu nach. */
@@ -34453,13 +34450,31 @@ function zeichneFrame(t,roh){
        Er erklaert in einem Zug, was da zu sehen ist und wie man es bedient - und er steht nur
        hier, wo man es braucht, nicht als Dauerhinweis irgendwo. */
     h+='<div class="tbs-vorbAbschnitt">Die Zonen</div>';
-    h+='<div style="color:var(--schwach);font-size:11px;line-height:1.55;margin:-2px 0 10px">'
-      + 'In dieser per KI aus dem Titelbild gewonnenen Tiefenkarte kannst du mit dem '
-      + 'Tiefen-Histogramm am rechten Bildrand Zonen f\u00fcr Effekte festlegen \u2014 wie auf einem '
-      + 'B\u00fchnenbild. Verschiebe die vorausgew\u00e4hlten Grenzen, setze mit einem '
-      + '<b>Einfachklick</b> neue oder nimm sie mit einem <b>Doppelklick</b> wieder weg. '
-      + 'Neben dem Streifen dreht das Relief mit der Maus; ein Doppelklick stellt es gerade.'
+    h+='<div style="color:var(--schwach);font-size:11px;line-height:1.55;margin:-2px 0 8px">'
+      + 'In der per KI aus dem Titelbild gewonnenen Tiefenkarte k\u00f6nnen mit dem Tiefen-Histogramm '
+      + 'am rechten Bildrand Zonen f\u00fcr Effekte festgelegt werden \u2014 wie auf einem B\u00fchnenbild. '
+      + 'Man verschiebt einfach die vorausgew\u00e4hlten Grenzen, setzt mit einem <b>Einfachklick</b> '
+      + 'neue oder nimmt sie mit einem <b>Doppelklick</b> wieder weg. F\u00fcr eine bessere '
+      + 'Orientierung dreht man das Relief mit der Maus; ein Doppelklick stellt es wieder gerade.'
       + '</div>';
+    /* WIE DER RAUM VON VORN NACH HINTEN AUFGEBAUT IST (Caspar_D, 21.09.2026: „wir sollten aber
+       noch erklaeren, wie der 3D-Raum von vorn nach hinten strukturiert wird - Effektscheibe,
+       Effektraum, Zonen, alle aufzaehlen"). Die Aufzaehlung steht hier und nicht in einem
+       Handbuch: Sie ist die Liste, aus der jeder Effekt seine Kaestchen ankreuzt, und wer sie
+       einmal gelesen hat, versteht die Kaestchen ohne weitere Erklaerung. */
+    h+='<div class="tbs-raumfolge"><div class="tbs-raumkopf">Der Raum von vorn nach hinten</div>';
+    RAUM_VOR_SZENE.forEach(n=>{
+      h+='<div class="tbs-raumzeile"><span class="tbs-raumname">'+n+'</span>'
+       + '<span class="tbs-raumwas">'+RAUM_BESCHREIBUNG[n]+'</span></div>'; });
+    { const zl=zonenListe()||[];
+      const da={}; zl.forEach(z=>da[z.name]=(da[z.name]||0)+z.anteil);
+      ZONEN_BEREICHE.forEach(([n,a,b])=>{
+        const hier=da[n]!=null;
+        h+='<div class="tbs-raumzeile'+(hier?' hier':'')+'"><span class="tbs-raumname">'+n+'</span>'
+         + '<span class="tbs-raumwas">'+(hier
+             ? 'in diesem Bild \u2014 '+Math.round(da[n])+'\u2009% der Tiefe'
+             : 'die hinteren '+a+'\u2013'+b+'\u2009% der Tiefe \u2014 hier nicht belegt')+'</span></div>'; }); }
+    h+='<div class="tbs-raumfuss">Alles davon liegt <b>vor der Linse</b> und f\u00e4hrt bei einer Kamerafahrt mit. Korn und Vignette entstehen erst dahinter, im Film und im Objektiv \u2014 sie kleben am Bild und werden nicht gezoomt.</div></div>';
     { const zl=zonenListe();
       if(!zl) h+='<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie gibt es keine Zonen.</div>';
       else if(zl.length<2) h+='<div class="tbs-graugrund">Zur Zeit ist <b>eine einzige Zone</b> festgelegt: Die Tiefenwerte dieses Bildes bilden nur eine H\u00e4ufung, es gibt also kein Tal, an dem sich zwei Ebenen trennen lie\u00dfen. Du kannst trotzdem eine Grenze von Hand setzen.</div>';
@@ -34483,23 +34498,30 @@ function zeichneFrame(t,roh){
       const vA=x=>(x==null||x<0)?'von selbst':Math.round(x*255)+' von 255';
       zr('leerraum','Leerraum vorn',0,1,0.05,x=>kf(Math.round(x*100))+'\u2009%',
          'Der leere Vorraum zwischen Kamera und Motiv \u2014 dort schweben Teilchen und Nebel <i>vor</i> allem.');
-      zr('trennung','Trennung',-0.02,1,0.02,vA,
-         'Wo der Vordergrund aufh\u00f6rt und der Hintergrund anf\u00e4ngt. Jeder Effekt w\u00e4hlt selbst, auf welcher Seite er wirkt \u2014 <i>wo</i> die Linie liegt, sagt diese Zahl, und zwar f\u00fcr alle.');
-      zr('trennWeich','Weichheit der Trennung',-0.02,1,0.02,x=>(x==null||x<0)?'von selbst':'\u00b1'+Math.round(x*255),
-         'Wie breit das Band um die Trennung ist, in dem beide Seiten ineinander \u00fcbergehen.');
-      /* UNTER DER TRENNUNG LIEGT DIE VERTEILUNG, AUF DER SIE ENTSCHEIDET (17.09.2026, hierher
-         gezogen am 21.09.2026). Ein Regler von 0 bis 255 sagt nicht, wo seine Zahl im BILD
-         landet - auf "Okkultation" liegen zwei Haufen und der Median bei 19 von 255. Der
-         Streifen stand darum unter dem Schieber; als der Schieber in die Vorbereitung zog, blieb
-         er auf den Effektkarten zurueck, wo es nichts mehr zu zeigen gab. Jetzt steht er wieder
-         unter seiner Trennung - und diesmal gibt es nur noch EINEN, so wie es nur noch eine
-         Linie gibt. Ohne Tiefenkarte kein Streifen: ein leerer Kasten waere die Behauptung, es
-         gaebe etwas zu sehen (Regel 11). */
-      if(tiefeProben()){
-        const tt='Verteilung der Tiefenwerte dieses Bildes. Waagerecht der Tiefenwert \u2013 links dunkel/hinten, rechts hell/vorn; senkrecht die H\u00e4ufigkeit im Wurzelma\u00dfstab, damit auch kleine H\u00e4ufungen zu sehen sind. Rot: hier gilt der Punkt als nah, blau: als fern, dazwischen das weiche Band. Der wei\u00dfe Strich ist die Trennung, der blasse die Mitte der Tiefenkarte \u2013 auf \u201evon selbst\u201c sind beide dasselbe, dann steht nur der wei\u00dfe und eine Spur f\u00fchrt vom Griff zu ihm. Solange du ziehst, zeigt das Bild daneben dieselbe Maske: entf\u00e4rbt, rot vorn, blau hinten. Die drei Anteile sind auf demselben groben Raster gez\u00e4hlt wie der Streifen; das Bild rechnet sie je Ausgabegr\u00f6\u00dfe neu und weicht um ein bis zwei Prozent ab.';
-        h+='<div class="tbs-regler tbs-tsicht"><span></span><div><canvas class="tbs-thist" title="'+tt+'"></canvas><div class="tbs-tzahlen" title="'+tt+'"></div></div><span></span></div>'; }
-      zr('flaecheAb','Hintergrundfl\u00e4che ab',0,0.4,0.01,x=>Math.round(x*255)+' von 255',
-         'Die letzte Tiefenebene \u2014 drau\u00dfen der Himmel, drinnen die R\u00fcckwand. Was dorthin geh\u00f6rt, liegt hinter allem: eine Sternschnuppe, sp\u00e4ter ein Polarlicht.'); }
+      /* HIER STANDEN „TRENNUNG" UND „WEICHHEIT DER TRENNUNG" (bis 21.09.2026).
+         Sie waren EINE Zonengrenze, als es nur zwei Zonen gab - die Zeile versprach sogar noch
+         „jeder Effekt waehlt selbst, auf welcher Seite er wirkt", was seit der Ankreuzliste nicht
+         mehr stimmt. Caspar_D: „dies wird meiner Meinung nach nicht mehr gebraucht und von den
+         Zonen uebernommen." Die Zonen koennen mehr: bis zu sechs Grenzen statt einer, und sie
+         sitzen dort, wo das Histogramm ein Tal hat, statt auf einer Zahl.
+         DIE WEICHHEIT KOMMT NICHT WIEDER: die Zonenmaske hat eine feste Kante von sieben
+         Graustufen, gerade genug gegen die Treppe. Ein breiter Uebergang ist in Wahrheit eine
+         DRITTE ZONE, und die setzt man jetzt einfach - ein Regler daneben waere ein zweiter Weg
+         fuer dieselbe Sache (Understatement).
+         zoneTrennung() und zoneWeich() bleiben vorerst stehen: an ihnen haengt noch die
+         ENTFERNUNG der Teilchen (freiBereich/tiefeSpanne), und das ist ein eigener Schritt mit
+         eigener Nahtpruefung. Ohne Regler stehen sie auf „von selbst", also auf dem Median -
+         genau dem Zustand, den jedes Rezept bisher hatte. */
+      /* HIER STAND DER VERTEILUNGSSTREIFEN (17.09.2026 gebaut, 21.09.2026 abgeloest). Er zeigte
+         das Histogramm unter der Trennung; seit das Tiefen-Histogramm am rechten Bildrand steht
+         und dort auch bedient wird, gaebe es zwei Streifen fuer dieselbe Verteilung.
+         Die alte Begruendung gilt weiter und steht jetzt dort: Ein Regler von 0 bis 255 sagt
+         nicht, wo seine Zahl im BILD landet - auf „Okkultation" liegen zwei Haufen und der Median
+         bei 19 von 255. Darum gehoert die Verteilung neben die Grenze, die auf ihr entscheidet. */
+      /* UND HIER STAND „HINTERGRUNDFLAECHE AB". Sie war die letzte Tiefenebene auf einer festen
+         Graustufe; seit die Sternschnuppen-Sperre zurueckgenommen ist, hatte sie ohnehin keinen
+         Rufer mehr. Die hinterste Zone heisst jetzt „ganz hinten" und leistet dasselbe besser:
+         sie wandert mit der Talsuche dorthin, wo im Bild wirklich die letzte Ebene liegt. */ }
     }
     if(vorbReg==='farbe'){
     VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
@@ -34535,25 +34557,7 @@ function zeichneFrame(t,roh){
          keine Hand am Regler, wird nach dem Nachklang nichts mehr gerechnet und nichts gezeichnet.
          Die beiden anderen Zonenregler wecken sie NICHT - Leerraum und Hintergrundflaeche sind
          keine Trennung, und eine Ansicht, die dabei erschiene, zeigte die falsche Groesse. */
-      if(kk==='trennung'||kk==='trennWeich'){ tiefesichtWecken(); const box=k.querySelector('.tbs-tsicht'); if(box) tiefeStreifenMalen(box); }
       vorbStand(); malen(); });
-    /* DAS LOSLASSEN WIRD AM FENSTER ABGEFANGEN, NICHT AM SCHIEBER (Gegenlesen 17.09.2026).
-       `pointerup` am Eingabefeld erreicht niemanden mehr, wenn die Lasche waehrend des Zugs neu
-       gebaut wird - und das ist kein Sonderfall: trifft die Tiefenkarte ein, baut vorbRender neu,
-       und genau dann erscheint der Streifen zum ersten Mal. Die Klinke bliebe dann bis zur
-       30-Sekunden-Reissleine liegen und die Ansicht ueber dem Bild, ohne dass eine Hand am
-       Regler waere. */
-    k.querySelectorAll('[data-vz="trennung"],[data-vz="trennWeich"]').forEach(inp=>{
-      inp.addEventListener('pointerdown',()=>{ TSICHT.haelt=true; tiefesichtWecken();
-        const los=()=>{ TSICHT.haelt=false; tiefesichtWecken();
-          removeEventListener('pointerup',los); removeEventListener('pointercancel',los); };
-        addEventListener('pointerup',los); addEventListener('pointercancel',los); });
-      inp.addEventListener('blur',()=>{ TSICHT.haelt=false; tiefesichtWecken(); }); });
-    /* JETZT hat der Streifen eine Breite - beim Bauen von `h` hatte er keine: dort steht er in
-       einer Zeichenkette, `cv.clientWidth` ist 0, und tiefeStreifenMalen malt dann gar nicht.
-       Der Beobachter holt jeden spaeteren Breitenwechsel nach (Fenster schmaler, Pult ein- oder
-       zweispaltig). */
-    { const box=k.querySelector('.tbs-tsicht'); if(box){ tiefeStreifenMalen(box); tiefeBreitenWache(box); } }
     k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
       inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); malen(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
@@ -35555,7 +35559,7 @@ function zeichneFrame(t,roh){
   /* Die Erklaertexte oben in jeder offenen Stufe, Wortlaut von Caspar_D (15.09.2026), ein Eintrag je Absatz */
   const STUFE_ERKLAER={
     Quelle:['Hier können Bilder oder Videos für den Effektclip ausgewählt werden.'],
-    Vorb:['Gegebenenfalls optimiert man die Quelle hier, z. B. Belichtung, Kontrast, Lichter, Schatten, Farbe, Schärfe und die Tonwertkurve je Kanal. Die Datei wird dabei nicht verändert, sondern nur durch eine Optimierungsschicht ergänzt.'],
+    Vorb:['Wenn nötig kann das Aussehen der Quelle und deren Tiefeninformation hier optimiert werden. <b>Kurve</b> ermöglicht die Optimierung der Gesamt-Tonwertkurve oder der Kurve je Kanal. Mit <b>Feinheiten</b> können Belichtung, Kontrast, Lichter, Schatten, Farbe, Schärfe und anderes verbessert werden. Die Daten selbst werden direkt verarbeitet, aber nur in der Ansicht verändert. <b>Tiefe</b> legt fest, wie Bilder als Raum wahrgenommen werden sollen; einige Effekte brauchen Zonenzuweisungen, wo sie im Raum wirken sollen.'],
     Kette:['Jeder Effekt legt eine Schicht auf die ausgesuchte Quelle. Sie wirken von oben nach unten. Jede Schicht legt einen Effekt auf alle vorher definierten Effekte.','Pulse schlagen im Takt des Lieds.','Das Soloabzeichen zeigt einen Effekt allein.','Die Kombination aus Effekt und Quelle bildet den Effektclip.'],
     Loop:['Suno spielt das Video zum Lied in einer Endlosschleife und erlaubt höchstens 10 Sekunden. Damit die Pulse über das ganze Lied im Takt bleiben, wird der Clip synchron zu ganzen Takt-Schlägen gebaut. Die Software wählt die Länge so, dass der Clip längstmöglich mit der Musik synchron läuft.','Am Clipende muss das Bild genau wieder am Anfang ankommen: Effekte schaffen das automatisch ohne Ruckler oder Nähte. Videos werden entsprechend getrimmt (Geschwindigkeit) und, falls sich Anfang und Ende unterscheiden, mit einem Übergang versehen.'] };
   let loopAn=false, loopSicht=null, loopSchluessel='', loopFaellig=0;   /* loopSicht: { lage, m (das Buendel), i (zuletzt gemaltes Clipbild) } */
@@ -35853,7 +35857,7 @@ function zeichneFrame(t,roh){
     groesse();
     cancelAnimationFrame(rafId); rafId=requestAnimationFrame(rahmen);
   }
-  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false; tiefesichtAus(); zonenSichtAn(false);   /* die Trennebene haengt an einem Effekt dieses Studios - sie geht mit ihm */
+  function schliessen(){ ohneSetzen(false); loopWunsch=false; stufeNachExport=false; zonenSichtAn(false);   /* die Trennebene haengt an einem Effekt dieses Studios - sie geht mit ihm */
     /* Die Loop-Ansicht geht mit dem Studio aus (Gegenpruefung 15.09.2026): seit die Schleifen-Stufe sie selbst einschaltet und gemerkt
        wird, schloss man das Studio meist mit ihr - VIDEO_GENAU blieb stehen, und quelleSync liess die Videos von Kachel und Buehne
        liegen. Die gemerkte Stufe bleibt; beim naechsten Oeffnen schaltet stufeSetzen die Ansicht wieder ein. */
@@ -36607,6 +36611,7 @@ function zeichneFrame(t,roh){
   const ZONEN_KANTE = 7;                    /* Graustufen beiderseits jeder Grenze */
   function zonenMaske(e, W, H, mW, mH){
     if(zonenAllesWirkt(e)) return null;     /* wirkt ueberall: keine Maske noetig, der haeufige Fall */
+    if(zonenVorSzene(e)) return null;       /* wohnt vor der Szene: von nichts verdeckt, nichts zu schneiden */
     const zl = zonenListe(); if(!zl || zl.length < 2) return null;
     const treffer = zonenTrefferImBild(e); if(!treffer) return null;
     const q = tiefeQuelle(); if(!q) return null;
@@ -36753,37 +36758,18 @@ function zeichneFrame(t,roh){
     frisch(cx);
   }
 
-  /* ================= DIE TRENNEBENE SEHEN (17.09.2026) =================
-
-     Caspar_D, 16.09.2026: "ich wuerde eher denken, der Regler der vorn und hinten trennt sollte
-     das originalbild greyleveln. Die Tiefenkarte wird in zwei Farben dargestellt weiss=vorne=rot,
-     schwarz=hinten=blau. diese Farben werden auf das Greylevelbild gelegt, solange ich am slider
-     fuer die vorne/hinten-Trennung schiebe, wenn ich den Weichslider betaetige, wird der Teil der
-     Tiefenkarten zwischen rot und blau immer gradientenhafter eingefaerbt."
-     Und 17.09.2026: "sind die ganzen partikelpanel denn jetzt so, dass ich die ebene, die vorn und
-     hinten trennt sehen kann" - bis heute: nein.
-
-     EINE QUELLE DER WAHRHEIT - UND GENAU SO GENAU, WIE DER SATZ ES SAGT (berichtigt 18.09.2026).
-     Hier stand: "Rot IST die Deckung der Maske." Das ist zu viel. Gemessen ist es eine DEFINIERTE
-     MISCHUNG, weil die Ansicht das Quellbild grau darunter zeigt:
-         Rot = 0,4 * Grau + 0,6 * Alpha(tiefeMaske im Modus "vorn")
-     und DIESE Beziehung stimmt exakt - Abweichung 0 an 2565 Proben, in allen vier Ausschnitten.
-     Der Punkt der Sache bleibt damit unberuehrt: es gibt keine ZWEITE Rechnung. Die Ansicht liest
-     dasselbe Feld, mit dem die Kette den Effekt beschneidet, und kann darum nicht vom Ergebnis
-     abdriften. Nur wer aus dem roten Byte die Deckung ZURUECKRECHNEN will, muss die Mischung
-     kennen - und dafuer steht sie jetzt hier. Eine zweite Rechnung zeigte etwas, das der Clip
-     nicht tut: die Falschaussage, gegen die die ganze Tiefenarbeit angetreten ist.
-
-     SIE KOMMT NUR, WENN JEMAND ZIEHT (Understatement). Kein Knopf, keine Dauerschicht: waehrend
-     Grenze oder Weichheit bewegt werden und einen Nachklang lang danach, damit man das Ergebnis
-     ohne Schleier sieht. Liegt keine Hand am Regler, kostet sie null - es wird nichts gerechnet
-     und nichts gezeichnet.
-
-     UND SIE ERREICHT DIE AUSGABE NIE. Gemalt wird ausschliesslich in rahmen(), und rahmen() steigt
-     bei exportLaeuft aus. zeichneFrame - der Weg von Kachel, Export und Loop-Bild - weiss von der
-     Ansicht nichts. */
-  const TSICHT={ an:false, haelt:false, bis:0 };
-  const TSICHT_NACHKLANG=1400, TSICHT_HALTEN=30000;   /* Nachklang nach dem Loslassen; die zweite Zahl ist nur die Reissleine, falls ein pointerup ausfaellt */
+  /* ================= HIER STAND „DIE TRENNEBENE SEHEN" (17.09.2026 – 21.09.2026) ==============
+     Waehrend man an „Trennung" oder „Weichheit" zog, entfaerbte sich das Bild und zeigte rot,
+     was als vorn galt, blau, was als hinten galt - dazu ein Verteilungsstreifen unter dem
+     Regler. Beides hat die Zonenansicht uebernommen und erweitert: sie zeigt bis zu sechs Zonen
+     statt zwei, sie steht dauerhaft statt nur beim Ziehen, und das Histogramm liegt am rechten
+     Bildrand, wo man die Grenzen auch anfasst.
+     Was daran richtig war und weiter gilt, steht jetzt bei zonenSichtMalen: Es darf keine ZWEITE
+     Rechnung geben. Die Ansicht liest dieselben Zahlen, mit denen die Kette die Effekte
+     beschneidet - sonst zeigte sie etwas, das der Clip nicht tut, und das ist die Falschaussage,
+     gegen die die ganze Tiefenarbeit angetreten ist.
+     Mit ihr fielen: TSICHT, tiefesichtWecken/Zeigt/Aus/Raeumen/Schicht/Grau/Malen, tiefeAnteile,
+     tiefeHistogramm, TS_WEG, TS_WACHE, tiefeBreitenWache und tiefeStreifenMalen. */
   /* ===================== DIE ZONENANSICHT (21.09.2026) =========================================
      Caspar_D: „wir gehen in das Tiefenregister und dann erscheint statt dem Bild das
      Hoehendiagramm" - und: „ich wuerde es gerne schon drehen koennen, damit der Nutzer sieht, er
@@ -36966,18 +36952,29 @@ function zeichneFrame(t,roh){
       dreieck(e00[0],e00[1], e11[0],e11[1], e01[0],e01[1], d0[0],d0[1],d0[2], s0[0],s0[1],s0[2]);
       /* Die vier Waende am Bildrand - von der Hoehe des Reliefs hinab auf die Wand. Sie tragen
          die Schichtfarben, weil sie durch alle Zonen laufen. */
-      const rand=(a1,a2)=>{ const n=a1.length;
+      /* DIE WAND WIRD GESCHICHTET, NICHT IN EINER FARBE (Caspar_D, 21.09.2026: „du faerbst schon
+         wieder die ganze Saeule danach, in welcher Zone sie aufhoert"). Sie laeuft von der Hoehe
+         des Reliefs bis auf die Rueckwand und durchquert dabei JEDE Zone darunter - also bekommt
+         jede Scheibe die Farbe der Tiefe, in der sie gerade liegt. Genau daran sieht man, wie die
+         Zonen im Raum uebereinanderliegen; eine einfarbige Wand verschwiege es. */
+      const rand=(a1)=>{ const n=a1.length;
         for(let i=0;i+1<n;i++){
           const [u1,v1]=a1[i], [u2,v2]=a1[i+1];
           const zA=tp.z[v1*W+u1], zB=tp.z[v2*W+u2];
-          const pA=proj(u1,v1,zA), pB=proj(u2,v2,zB);
-          const qA=proj(u1,v1,0), qB=proj(u2,v2,0);
-          const zm=Math.max(0,Math.min(255,Math.round((zA+zB)/2*255)));
-          const ff=grau?0.34:0.32;
-          const rr=Math.min(255,TAB[zm*3]*ff), gg2=Math.min(255,TAB[zm*3+1]*ff), bb2=Math.min(255,TAB[zm*3+2]*ff);
-          const db=grau?Math.round(26+40*(zA+zB)/2):rr;
-          dreieck(pA[0],pA[1], pB[0],pB[1], qB[0],qB[1], db,db,db, rr,gg2,bb2);
-          dreieck(pA[0],pA[1], qB[0],qB[1], qA[0],qA[1], db,db,db, rr,gg2,bb2);
+          const hoch=Math.max(zA,zB);
+          const stufen=Math.max(2,Math.min(30,Math.round(hoch*HOCH/3)));
+          for(let s=0;s<stufen;s++){
+            const t0=s/stufen, t1=(s+1)/stufen;
+            const a0=proj(u1,v1,zA*(1-t0)), b0=proj(u2,v2,zB*(1-t0));
+            const a1p=proj(u1,v1,zA*(1-t1)), b1=proj(u2,v2,zB*(1-t1));
+            const zmit=(zA+zB)/2*(1-(t0+t1)/2);
+            const zm=Math.max(0,Math.min(255,Math.round(zmit*255)));
+            const ff=grau?0.34:0.32;
+            const rr=Math.min(255,TAB[zm*3]*ff), gg2=Math.min(255,TAB[zm*3+1]*ff), bb2=Math.min(255,TAB[zm*3+2]*ff);
+            const db=grau?Math.round(22+46*zmit):rr;
+            dreieck(a0[0],a0[1], b0[0],b0[1], b1[0],b1[1], db,db,db, rr,gg2,bb2);
+            dreieck(a0[0],a0[1], b1[0],b1[1], a1p[0],a1p[1], db,db,db, rr,gg2,bb2);
+          }
         } };
       const oben=[], unten=[], links=[], rechts=[];
       for(let u=0;u<W;u+=schritt){ oben.push([u,0]); unten.push([u,H-1]); }
@@ -37073,247 +37070,6 @@ function zeichneFrame(t,roh){
       cx.fillStyle='rgba(0,0,0,.5)'; cx.fillRect(X0,y-1,BR,3);
       cx.fillStyle='#fff'; cx.fillRect(X0,y,BR,1); cx.fillRect(X0+BR/2-11,y-2,22,4); });
     cx.restore();
-  }
-  function tiefesichtWecken(){ TSICHT.an=true; TSICHT.bis=performance.now()+(TSICHT.haelt?TSICHT_HALTEN:TSICHT_NACHKLANG); }
-  function tiefesichtZeigt(){ return TSICHT.an && performance.now()<TSICHT.bis; }
-  function tiefesichtAus(){ TSICHT.an=false; TSICHT.haelt=false; TSICHT.bis=0; TSICHT_GRAU=null; TSICHT_FERTIG=null; TSICHT_SCHICHTEN.length=0; }
-  /* „AUS" HIESS BIS HEUTE NUR: ES WIRD NICHT MEHR GEMALT (Gegenlesen 17.09.2026). Geraeumt wurde
-     nichts - nach dem Nachklang lagen drei Schichtenpaare, das Graubild und das fertige Bild
-     weiter herum, acht Leinwaende in voller Groesse: gemessen 17,4 MB bei 796x683 und 22,1 MB bei
-     898x770, und zwar bis zum Schliessen des Studios. Der Satz „aus kostet null" stimmte nur,
-     solange die Ansicht nie an war. Auf dem Intel-iMac mit geteiltem Speicher ist das kein Nichts.
-     Geraeumt wird beim ERSTEN Bild nach dem Nachklang, also genau einmal; danach ist die Bedingung
-     billig (`TSICHT.an` ist false) und kostet je Bild einen Vergleich.
-
-     UND DIE MARKE HEISST NICHT MEHR „Effekt" (21.09.2026). Sie hielt bis heute den Effekt fest,
-     an dessen Regler jemand zog - weil die Grenze am Effekt hing. Seit sie in der Vorbereitung
-     steht, gehoert die Ansicht keinem Effekt mehr, und ein Feld namens `e` haette genau das
-     behauptet. Es ist jetzt ein Schalter, und er heisst wie einer. */
-  function tiefesichtRaeumen(){ if(TSICHT.an||TSICHT_GRAU||TSICHT_FERTIG||TSICHT_SCHICHTEN.length) tiefesichtAus(); }
-  /* Zwei Schichten je Einstellung: die Farben und die Haarlinie. Getrennt, weil die Farben
-     halbdurchsichtig ueber dem Graubild liegen (sonst waere das Bild weg) und die Linie NICHT -
-     eine halbdurchsichtige Haarlinie im Verlauf sieht man gerade dort nicht, wo sie hingehoert.
-     Drei Plaetze: Buehne und Kachel haben verschiedene Groessen, und beim Ziehen kommt man
-     regelmaessig auf einen Wert zurueck. */
-  const TSICHT_SCHICHTEN=[]; let TSICHT_SCHICHTEN_ID=null;
-  function tiefesichtSchicht(W,H,grenze,weich2){
-    const q=tiefeQuelle(); if(!q) return null;
-    const gv=(grenze==null||grenze<0)?-1:Math.max(0,Math.min(1,grenze));
-    const wv=(weich2==null||weich2<0)?-1:Math.max(1/255,Math.min(1,weich2));
-    /* DIE QUELLE GEHOERT IN DEN SCHLUESSEL, NICHT NUR IN DIE LEERUNG (Gegenlesen 17.09.2026).
-       TSICHT_SCHICHTEN wird beim Quellenwechsel geleert, TSICHT_FERTIG aber NICHT - und dessen
-       Marke besteht aus genau diesem k. Zwei Quellen mit gleicher Leinwandgroesse und gleicher
-       Grenze ergaben dieselbe Marke, also blieb die Trennebenen-Ansicht der vorigen Quelle auf
-       der Scheibe stehen. Das war der einzige Tiefenvorrat ohne Quelle im Schluessel. */
-    const k=q.k+'|'+W+'x'+H+'|'+gv.toFixed(3)+'|'+wv.toFixed(3);
-    if(TSICHT_SCHICHTEN_ID!==q.k){ TSICHT_SCHICHTEN.length=0; TSICHT_SCHICHTEN_ID=q.k; }
-    { const da=TSICHT_SCHICHTEN.find(x=>x.k===k); if(da) return da; }
-    const maske=tiefeMaske('vorn',W,H,grenze,weich2); if(!maske) return null;
-    try{
-      const mp=maske.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;
-      const farbe=document.createElement('canvas'); farbe.width=W; farbe.height=H;
-      const linie=document.createElement('canvas'); linie.width=W; linie.height=H;
-      const fx=farbe.getContext('2d'), lx=linie.getContext('2d');
-      const fb=fx.createImageData(W,H), lb=lx.createImageData(W,H), fd=fb.data, ld=lb.data;
-      for(let y=0,i=0;y<H;y++) for(let x=0;x<W;x++,i++){
-        const o=i*4, a=mp[o+3];
-        /* REINE KANAELE, DAMIT DIE ANSICHT NACHRECHENBAR BLEIBT: r ist die Alpha der Maske, b ihr
-           Gegenteil. Wer die Ansicht prueft, liest die Zahl direkt ab, statt sie aus einer
-           Mischfarbe zu schaetzen. */
-        fd[o]=a; fd[o+1]=0; fd[o+2]=255-a; fd[o+3]=255;
-        /* DIE HAARLINIE BEI GENAU 50 % (Alpha 128 - die Mitte der Kurve, also die wahre Grenze).
-           Im Verlauf ist die Mitte unsichtbar; erst die Linie macht sie lesbar. Gezogen wird sie
-           dort, wo die Deckung zwischen zwei Nachbarn die Haelfte kreuzt - das ist die Kante
-           selbst, nicht eine nachgezeichnete Naeherung. */
-        const nah=a>=128;
-        if((x+1<W&&(mp[o+7]>=128)!==nah)||(y+1<H&&(mp[o+W*4+3]>=128)!==nah)){
-          ld[o]=255; ld[o+1]=255; ld[o+2]=255; ld[o+3]=255; }
-      }
-      /* DIE LINIE BRAUCHT EINEN SAUM (Gegenlesen 17.09.2026). Rot und Blau unterscheiden sich fast
-         nur im Farbton, nicht in der Helligkeit - gemessen 1,5 : 1 auf jedem Motiv. Wer die beiden
-         nicht trennen kann, hat als einzige Auskunft die Haarlinie; und die wurde ausgerechnet auf
-         HELLEN Motiven schwach, weil ueber dem hellen Graubild 60 % Rot liegen (Weiss gegen Rot
-         dort nur 3,2 : 1). Nicht die Farbe des Covers ist das Problem, seine Helligkeit ist es.
-         Der Saum ist ein dunkler Rand um die weisse Linie, kein Verbreitern: die Linie selbst
-         bleibt einen Punkt breit und exakt auf der 50-%-Kante - sie ist die wahre Grenze, und die
-         verschiebt man nicht, um sie besser zu sehen. Ein Durchgang ueber den fertigen Puffer,
-         einmal je Einstellung, nicht je Bild. */
-      const saum=new Uint8Array(W*H);
-      for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const o=(y*W+x)*4; if(ld[o+3]!==255) continue;
-        if(x>0) saum[y*W+x-1]=1; if(x+1<W) saum[y*W+x+1]=1;
-        if(y>0) saum[(y-1)*W+x]=1; if(y+1<H) saum[(y+1)*W+x]=1; }
-      for(let i=0;i<W*H;i++){ const o=i*4; if(saum[i]&&ld[o+3]!==255){ ld[o]=10; ld[o+1]=10; ld[o+2]=12; ld[o+3]=210; } }
-      fx.putImageData(fb,0,0); lx.putImageData(lb,0,0);
-      const sch={k,farbe,linie,W,H};
-      TSICHT_SCHICHTEN.unshift(sch); TSICHT_SCHICHTEN.length=Math.min(TSICHT_SCHICHTEN.length,3);
-      return sch;
-    }catch(x){ return null; }
-  }
-  /* Das Graubild ist das ORIGINAL, ungeschnitten - genau wie die Maske, die ueber das ganze Bild
-     geht. Beide zeigen dieselbe Flaeche, und BEIDE bekommen den Ausschnitt erst beim Auflegen
-     (geoKarteLegen in tiefesichtMalen), mit derselben Matrix wie das Grundbild. Waere der
-     Ausschnitt schon hier drin, laege die Farbe neben der Sache.
-     EINMAL ENTFAERBT, NICHT JE BILD (gemessen 17.09.2026): der Filter kostete auf der Leinwand des
-     Studios 40 ms je Bild - beim Ziehen also zwei Bilder von dreien. Ein Standbild aendert sich
-     nicht, also wird es behalten; eine Videoquelle laeuft weiter und wird jedes Bild neu entfaerbt
-     (dann kostet die Ansicht wieder, was sie eben kostet - aber nur, solange jemand zieht). */
-  let TSICHT_GRAU=null;
-  function tiefesichtGrau(W,H){
-    const video=!!(bild&&bild.tagName==='VIDEO');
-    if(!video&&TSICHT_GRAU&&TSICHT_GRAU.W===W&&TSICHT_GRAU.H===H&&TSICHT_GRAU.quelle===bild) return TSICHT_GRAU.cv;
-    const cv=(TSICHT_GRAU&&TSICHT_GRAU.cv)?TSICHT_GRAU.cv:document.createElement('canvas');
-    cv.width=W; cv.height=H;
-    const cx=cv.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.clearRect(0,0,W,H);
-    cx.filter='grayscale(1) contrast(.85) brightness(1.05)';
-    try{ cx.drawImage(bild,0,0,W,H); }catch(x){}
-    cx.filter='none';
-    TSICHT_GRAU={ cv, W, H, quelle:video?null:bild };
-    return cv;
-  }
-  /* EIN FERTIGES BILD, EIN AUFTRAG JE RAHMEN - SOLANGE DER WERT STEHT (gemessen 17.09.2026,
-     nachgemessen beim Gegenlesen). Grau, Farbe und Haarlinie aendern sich bei GLEICHEM Wert nicht,
-     also werden sie einmal uebereinandergelegt und danach in einem Stueck auf die Scheibe gelegt:
-     ein Auftrag, gemessen 27,7 ms auf 796x683 unter SwiftShader.
-     EHRLICH DAZU GEHOERT: beim Ziehen aendert ein Mensch den Wert in fast jedem Bild, und dann
-     wird der Vorrat je Bild verworfen und neu aufgebaut - drei Auftraege plus der Blit, gemessen
-     87,1 ms, also gut das Dreifache. Das ist die Zahl, die zur Forderung „beim Ziehen muss es
-     fluessig bleiben" gehoert; die erste misst den Fall, in dem die Ansicht nichts zu tun hat.
-     SwiftShader ist dabei die Obergrenze - auf Joergs Radeon faellt es deutlich kleiner aus, und
-     mit einem Rezept aus mehreren Zoneneffekten kostet die Kette selbst schon ~400 ms je Bild,
-     dort traegt die Ansicht nichts Messbares bei. Solange das so bleibt, wird nicht umgebaut:
-     ein Zusammenlegen von Grau, Farbe und Linie in EIN ImageData koeste die reinen Kanaele, an
-     denen sich die Ansicht heute nachrechnen laesst.
-     Eine Videoquelle laeuft weiter; dort haengt die Marke an der VIDEOZEIT, nicht an der Uhr -
-     sonst griff der Vorrat nicht einmal dann, wenn das Video steht (Gegenlesen 17.09.2026). */
-  let TSICHT_FERTIG=null;
-  function tiefesichtMalen(){
-    if(!TSICHT.an||!bereit||!lein||!g||lein.width<2||!bild) return;
-    const W=lein.width, H=lein.height;
-    /* Ohne Karte zu DIESER Quelle gibt es keine Schicht - und damit auch keine Ansicht. Die Zeile
-       daneben steht dann grau mit Grund; eine Trennebene ueber einem Bild ohne Tiefe waere genau
-       die Falschaussage, gegen die die Ansicht angetreten ist. */
-    const sch=tiefesichtSchicht(W,H,zoneTrennung(),zoneWeich()); if(!sch) return;
-    const grau=tiefesichtGrau(W,H), video=!(TSICHT_GRAU&&TSICHT_GRAU.quelle);
-    const marke=sch.k+'|'+W+'x'+H+(video?'|v'+(bild.currentTime||0).toFixed(3):'|bild');
-    if(!TSICHT_FERTIG||TSICHT_FERTIG.marke!==marke||TSICHT_FERTIG.cv.width!==W||TSICHT_FERTIG.cv.height!==H){
-      const cv=(TSICHT_FERTIG&&TSICHT_FERTIG.cv)?TSICHT_FERTIG.cv:document.createElement('canvas');
-      cv.width=W; cv.height=H;
-      const cx=cv.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
-      cx.globalAlpha=1; cx.drawImage(grau,0,0);
-      cx.globalAlpha=.6; cx.drawImage(sch.farbe,0,0); cx.globalAlpha=1;
-      cx.drawImage(sch.linie,0,0);
-      TSICHT_FERTIG={ cv, marke };
-    }
-    /* DIE ANSICHT FAEHRT MIT (18.09.2026, gemessen). Bis heute lag sie bei 0,0, waehrend der Clip
-       darunter den Ausschnitt zeigte: der Fingerabdruck der Ansicht war bei Ausschnitt 1,00 /
-       0,80 / 0,70 / 0,50 VIERMAL DERSELBE (dc8c37f0), mittleres Rot 122,23 unveraendert. Genau die
-       Ansicht, die eine einzige Quelle der Wahrheit sein soll, zeigte etwas anderes als der Clip.
-       Aufgelegt wird jetzt mit DENSELBEN Funktionen wie die Maske - geoKarteLegen, kein zweiter
-       Weg -, und weil Grau, Farbe und Haarlinie alle drei in den Massen der QUELLE liegen, faehrt
-       das fertige Bild in EINEM Stueck mit. Der Vorrat bleibt dadurch unberuehrt: die Marke kennt
-       den Ausschnitt nicht, weil er nicht mehr im Bild steckt, sondern im Auflegen - eine Fahrt
-       baut die Ansicht also NICHT je Bild neu (anders als es die alte partikelMaske tat).
-       Ohne Geometrie-Effekt ist das Zeichen fuer Zeichen das alte drawImage(cv,0,0). */
-    frisch(g); geoKarteLegen(g,TSICHT_FERTIG.cv); frisch(g);
-  }
-  /* WIE VIEL DES BILDES IST NAH, WIE VIEL BAND, WIE VIEL FERN. Gezaehlt auf demselben Raster, auf
-     dem der Maler entscheidet (tiefeProben, 160 Punkte breit) - nicht geschaetzt. "Nah" heisst:
-     die Maske deckt ganz (Alpha 1), "fern": sie deckt gar nicht; dazwischen liegt das Band. Auf
-     "Okkultation" mit der Trennung von selbst sind das 43 % / 57 % / 0 % - und genau diese Null
-     ist der Grund, warum "nur hinten" dort nichts tat. */
-  const TSICHT_ANTEILE={};
-  function tiefeAnteile(gz,wz){
-    const q=tiefeQuelle(); if(!q) return null;
-    const tp=tiefeProben(); if(!tp) return null;
-    const k=q.k+'|'+gz.toFixed(4)+'|'+wz.toFixed(4);
-    if(TSICHT_ANTEILE[k]) return TSICHT_ANTEILE[k];
-    const unten=gz-wz, oben=gz+wz; let nah=0, fern=0;
-    for(let i=0;i<tp.z.length;i++){ const v=tp.z[i]; if(v>=oben) nah++; else if(v<=unten) fern++; }
-    const n=tp.z.length;
-    return TSICHT_ANTEILE[k]={ nah:nah/n, band:(n-nah-fern)/n, fern:fern/n, punkte:n };
-  }
-  /* Die Verteilung der Tiefenwerte der Quelle - einmal je Quelle, 64 Faecher. */
-  const TSICHT_HIST={};
-  function tiefeHistogramm(){
-    const q=tiefeQuelle(); if(!q) return null;
-    const tp=tiefeProben(); if(!tp) return null;
-    if(TSICHT_HIST[q.k]) return TSICHT_HIST[q.k];
-    const n=64, h=new Uint32Array(n);
-    for(let i=0;i<tp.z.length;i++){ let b=Math.floor(tp.z[i]*n); if(b<0)b=0; if(b>=n)b=n-1; h[b]++; }
-    let max=1; for(let i=0;i<n;i++) if(h[i]>max) max=h[i];
-    return TSICHT_HIST[q.k]={ h, n, max, punkte:tp.z.length };
-  }
-  /* DER STREIFEN UNTER DEM SCHIEBER. Sein Weg ist der Weg des Reglers (-0,02 bis 1; der Anschlag
-     links ist "von selbst"), und er ist um den halben Griff eingerueckt - sonst sitzt der Griff
-     neben seiner eigenen Zahl. Die Faecher tragen die Farbe der Kurve: rot, wo die Maske dort
-     deckt, blau, wo sie es nicht tut - dieselbe nahKurve wie Maske und Maler. */
-  const TS_WEG = v => (v+0.02)/1.02;
-  /* EINE WACHE FUER ALLE STREIFEN, NICHT EINE JE KARTE (Gegenlesen 17.09.2026). Der Streifen
-     muss neu gemalt werden, wenn seine Spalte die Breite wechselt - das Fenster wird schmaler,
-     das Pult schaltet ein-/zweispaltig um, eine Karte klappt auf. Ein eigener Beobachter je
-     Karte bliebe bei jedem `renderStapel` als Leiche zurueck; EIN Beobachter, der die Karten
-     beim Neubau vergisst, kann das nicht. Seit die Trennung in der Vorbereitung steht, gibt es
-     nur EINEN Streifen und er haengt an keinem Effekt mehr - die Wache braucht darum auch nichts
-     mehr ueber ihn zu wissen als: steht er noch im Dokument? */
-  let TS_WACHE=null;
-  function tiefeBreitenWache(box){
-    const cv=box&&box.querySelector('canvas.tbs-thist'); if(!cv||typeof ResizeObserver==='undefined') return;
-    if(!TS_WACHE) TS_WACHE=new ResizeObserver(eintraege=>{ for(const ei of eintraege){
-      const b=ei.target.closest('.tbs-tsicht');
-      if(b&&b.isConnected) tiefeStreifenMalen(b); else TS_WACHE.unobserve(ei.target); } });
-    TS_WACHE.observe(cv);
-  }
-  function tiefeStreifenMalen(box){
-    try{
-      if(!box) return;
-      const cv=box.querySelector('canvas.tbs-thist'), zahl=box.querySelector('.tbs-tzahlen');
-      const tp=tiefeProben(), hi=tiefeHistogramm();
-      if(!cv||!tp||!hi) return;
-      const sp=tiefeSpanne(tp), an=tiefeAnteile(sp.g,sp.w);
-      const dpr=Math.min(2,window.devicePixelRatio||1);
-      /* KEIN NOTNAGEL FUER DIE BREITE (Gegenlesen 17.09.2026). Stand hier `cv.clientWidth||160`,
-         entstand der Streifen bei einer Breite von 0 still in 160 Punkten und wurde von CSS
-         gedehnt - ein falsches Bild, das nach nichts aussah. Hat die Leinwand noch kein Layout,
-         wird gar nicht gemalt; der Beobachter an der Karte holt es nach, sobald sie eine hat. */
-      const bw=Math.round(cv.clientWidth), bh=30;
-      if(!(bw>=60)) return;
-      if(cv.width!==Math.round(bw*dpr)||cv.height!==Math.round(bh*dpr)){ cv.width=Math.round(bw*dpr); cv.height=Math.round(bh*dpr); }
-      const cx=cv.getContext('2d'); cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,bw,bh);
-      const rand=6.5, nutz=Math.max(1,bw-2*rand), X=v=>rand+TS_WEG(v)*nutz;
-      /* das weiche Band als Flaeche - so breit, wie die Weichheit es macht */
-      cx.fillStyle='rgba(150,120,255,.18)';
-      const x1=X(Math.max(0,sp.g-sp.w)), x2=X(Math.min(1,sp.g+sp.w));
-      cx.fillRect(x1,0,Math.max(1,x2-x1),bh);
-      /* die Faecher */
-      for(let i=0;i<hi.n;i++){
-        const v=(i+0.5)/hi.n, a=nahKurve(v,sp.g,sp.w);
-        /* WURZELMASSSTAB, UND ES STEHT DABEI. Auf "Okkultation" liegen 7518 von 21920 Punkten im
-           dunkelsten Fach - linear aufgetragen ist der zweite Haufen (die Figur, das Gelaender) ein
-           Strich von einem Bildpunkt und die Verteilung sagt nichts mehr. Die Wurzel laesst beide
-           Haufen sehen; dass der Massstab keiner von gleichen Schritten ist, sagt der Titel. */
-        const hh=Math.max(hi.h[i]?1:0, Math.round(Math.sqrt(hi.h[i]/hi.max)*(bh-3)));
-        if(!hh) continue;
-        const xa=X(i/hi.n), xb=X((i+1)/hi.n);
-        cx.fillStyle='rgb('+Math.round(a*255)+',0,'+Math.round(255-a*255)+')';
-        cx.globalAlpha=.85; cx.fillRect(xa,bh-hh,Math.max(1,xb-xa),hh); cx.globalAlpha=1;
-      }
-      /* Die Mitte der Karte ("von selbst") als feiner Strich, damit man sieht, wovon man abweicht -
-         ABER NUR, WENN SIE NICHT DIE GRENZE SELBST IST (Gegenlesen 17.09.2026). Auf "von selbst"
-         ist die Grenze die Kartenmitte; dann fielen beide Striche aufeinander, und der Titel
-         versprach zwei, von denen nur einer da war. */
-      const vonSelbst = Math.abs(sp.g-tp.med)<1e-9 && zoneTrennung()<0;
-      if(!vonSelbst){ cx.fillStyle='rgba(255,255,255,.28)'; cx.fillRect(X(tp.med)-0.5,0,1,bh); }
-      /* UND DER GRIFF GEHOERT AN SEINE MARKE (Gegenlesen 17.09.2026). Auf "von selbst" steht der
-         Griff am linken Anschlag ueber einem leeren Stueck Streifen, waehrend die Grenze in der
-         Kartenmitte liegt - nichts sagte, dass die beiden zusammengehoeren. Eine duenne Spur am
-         oberen Rand fuehrt vom Griff zu seiner Linie; sie erscheint nur, wenn beide auseinander
-         stehen, also gerade in dem Zustand, in dem Joerg die Karte zuerst sieht. */
-      const xg=X(Math.max(-0.02,Math.min(1,zoneTrennung()))), xl=X(sp.g);
-      if(Math.abs(xl-xg)>2){ cx.fillStyle='rgba(255,255,255,.35)'; cx.fillRect(Math.min(xg,xl),0,Math.abs(xl-xg),1); cx.fillRect(xg-0.5,0,1,3); }
-      /* und die Grenze selbst - dieselbe Haarlinie wie im Bild */
-      cx.fillStyle='#fff'; cx.fillRect(X(sp.g)-0.5,0,1,bh);
-      if(zahl&&an) zahl.innerHTML='<i class="tz-nah">'+vH(an.nah)+' vorn</i><i class="tz-band">'+vH(an.band)+' Übergang</i><i class="tz-fern">'+vH(an.fern)+' hinten</i>';
-    }catch(x){}
   }
 
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
