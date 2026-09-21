@@ -31643,6 +31643,63 @@ function kbMarkenMalen(e){
    Liste gehoert jetzt dem Nutzer (also ist "geraten" Geschichte), und die Loop-Ansicht muss ihr
    gemerktes Bild verwerfen, sonst zeigt sie den Stand von vorhin. */
 function kbSetzen(e,P){ e.kbZiele=P; delete e._kbGeraten; delete e._kbGeratenFehler; if(loopSicht) loopSicht.i=-1; }
+/* ===================== DIE MARKEN DER LAMPE (21.09.2026) =====================
+   Caspar_D: „beim Scheinwerfer sehe ich die beiden Marker nicht, die die Lichtquelle und die Tiefe
+   definieren." Sie waren nie gebaut - Etappe 1 hatte Schieber, und die Marken blieben eine Zusage.
+   ZWEI MARKEN, WIE BEIM GLOCKENSTUHL: Ziehen bewegt, Mausrad stellt die TIEFE. Kein Klick auf die
+   freie Flaeche (es gibt genau zwei, nicht beliebig viele) und kein Doppelklick (nichts zu loesen).
+   Die Lampe traegt einen Strahlenkranz, das Ziel ein Fadenkreuz, dazwischen eine feine Linie - so
+   sieht man auf einen Blick, wohin sie scheint.
+   DIE TIEFE STEHT IN DER MARKE: ein Ring um sie herum, je naeher desto groesser. Ohne das waere
+   die dritte Achse unsichtbar, und genau sie ist der Sinn dieses Effekts.
+   MARKEN SIND BEDIENUNG, KEIN BILD - sie werden auf die LEINWAND gemalt, nachdem der Malweg fertig
+   ist, und nie in den Export oder die Kachel (dieselbe Regel und derselbe Weg wie bei Ken Burns). */
+function lrKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufeOffen!=='Kette') return null;
+  for(const e of STAPEL) if(e.id===offenId&&e.typ==='lichtRaum') return e;
+  return null; }
+let LR_ZIEHT=-1;
+function lrMarkenOrte(e){
+  const f=(x,d)=>{ const y=Number(x); return isFinite(y)?y:d; };
+  return [{ u:f(e.lrOx,.22), v:f(e.lrOy,.12), z:f(e.lrOz,.85), lampe:true },
+          { u:f(e.lrZx,.50), v:f(e.lrZy,.55), z:f(e.lrZz,.35), lampe:false }];
+}
+function lrMarkenMalen(e){
+  if(!bereit||!lein||!g||lein.width<2||!bild) return;
+  const r=kbMarkeR(), O=lrMarkenOrte(e);
+  let a,b;
+  try{ a=geoZuLeinwand(O[0].u,O[0].v); b=geoZuLeinwand(O[1].u,O[1].v); }catch(x){ return; }
+  g.save(); g.setTransform(1,0,0,1,0,0); g.globalCompositeOperation='source-over'; g.globalAlpha=1; g.filter='none';
+  /* Die Achse zuerst, damit die Marken darauf liegen. */
+  g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=Math.max(1,r*0.09); g.setLineDash([r*0.5,r*0.4]);
+  g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke(); g.setLineDash([]);
+  const ring=(p,z)=>{ const rr=r*(0.75+1.15*Math.max(0,Math.min(1,z)));
+    g.strokeStyle='rgba(255,255,255,.34)'; g.lineWidth=Math.max(1,r*0.08);
+    g.beginPath(); g.arc(p[0],p[1],rr,0,7); g.stroke(); };
+  ring(a,O[0].z); ring(b,O[1].z);
+  /* Die Lampe: Scheibe mit Strahlenkranz. */
+  g.fillStyle='rgba(20,20,24,.72)'; g.beginPath(); g.arc(a[0],a[1],r*0.62,0,7); g.fill();
+  g.strokeStyle='#f0cf6a'; g.lineWidth=Math.max(1.4,r*0.13);
+  g.beginPath(); g.arc(a[0],a[1],r*0.62,0,7); g.stroke();
+  for(let i=0;i<8;i++){ const w=i*Math.PI/4;
+    g.beginPath(); g.moveTo(a[0]+Math.cos(w)*r*0.86, a[1]+Math.sin(w)*r*0.86);
+    g.lineTo(a[0]+Math.cos(w)*r*1.12, a[1]+Math.sin(w)*r*1.12); g.stroke(); }
+  /* Das Ziel: Fadenkreuz im Ring. */
+  g.strokeStyle='#f0cf6a'; g.lineWidth=Math.max(1.4,r*0.13);
+  g.beginPath(); g.arc(b[0],b[1],r*0.5,0,7); g.stroke();
+  g.beginPath(); g.moveTo(b[0]-r*0.86,b[1]); g.lineTo(b[0]-r*0.2,b[1]);
+  g.moveTo(b[0]+r*0.2,b[1]); g.lineTo(b[0]+r*0.86,b[1]);
+  g.moveTo(b[0],b[1]-r*0.86); g.lineTo(b[0],b[1]-r*0.2);
+  g.moveTo(b[0],b[1]+r*0.2); g.lineTo(b[0],b[1]+r*0.86); g.stroke();
+  g.restore();
+}
+function lrMarkeBei(e,o){ const O=lrMarkenOrte(e); let best=-1, ab=kbMarkeR()*1.4;
+  for(let i=0;i<O.length;i++){ let a; try{ a=geoZuLeinwand(O[i].u,O[i].v); }catch(x){ return -1; }
+    const d=Math.hypot(o.px-a[0],o.py-a[1]); if(d<=ab){ ab=d; best=i; } }
+  return best; }
+function lrMarkeSetzen(e,i,u,v){ if(i===0){ e.lrOx=u; e.lrOy=v; } else { e.lrZx=u; e.lrZy=v; } malen(); }
+function lrMarkeTiefe(e,i,d){ const k=(i===0)?'lrOz':'lrZz';
+  const alt=Number(e[k]); const w=isFinite(alt)?alt:(i===0?.85:.35);
+  e[k]=Math.max(0,Math.min(1,w+d)); malen(); }
 function kbBuehneEinrichten(){
   if(!lein||lein.dataset.kb) return; lein.dataset.kb='1';
   const ortVon=ev=>{ const r=lein.getBoundingClientRect(); if(!(r.width>0&&r.height>0)) return null;
@@ -31658,7 +31715,12 @@ function kbBuehneEinrichten(){
   /* WELCHE MARKE IN DER HAND LIEGT, STEHT AUSSERHALB DIESES VERSCHLUSSES (KB_ZIEHT, 19.09.2026):
      kbMarkenMalen braucht die Nummer, um die Wand dieses Punktes zu zeigen, und zwei Merker fuer
      denselben Griff waeren einer zu viel. */
-  lein.onpointerdown=ev=>{ const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
+  lein.onpointerdown=ev=>{
+    { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
+        const i=lrMarkeBei(le,o); if(i<0) return;
+        LR_ZIEHT=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
+        lein.style.cursor='move'; ev.preventDefault(); return; } }
+    const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     let i=markeBei(e,o);
     if(i<0){
       /* KLICK AUF FREIE FLAECHE: ein neuer Punkt, hinten angehaengt - die Reihenfolge ist die
@@ -31674,7 +31736,11 @@ function kbBuehneEinrichten(){
     }
     KB_ZIEHT=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
     lein.style.cursor='move'; ev.preventDefault(); };
-  lein.onpointermove=ev=>{ const e=kbKarteEffekt(); if(!e){ KB_ZIEHT=-1; return; } const o=ortVon(ev); if(!o) return;
+  lein.onpointermove=ev=>{
+    { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
+        if(LR_ZIEHT<0){ lein.style.cursor=lrMarkeBei(le,o)>=0?'move':''; return; }
+        lrMarkeSetzen(le,LR_ZIEHT,o.u,o.v); return; } }
+    const e=kbKarteEffekt(); if(!e){ KB_ZIEHT=-1; return; } const o=ortVon(ev); if(!o) return;
     if(KB_ZIEHT<0){ lein.style.cursor=markeBei(e,o)>=0?'move':'crosshair'; return; }
     const P=kbPunkte(e).slice(); if(!P[KB_ZIEHT]){ KB_ZIEHT=-1; return; }
     /* DER FOKUS REIST MIT (19.09.2026). kbOrt baut den Punkt NEU, und was nicht mitgegeben wird,
@@ -31683,7 +31749,9 @@ function kbBuehneEinrichten(){
     P[KB_ZIEHT]=kbOrt({u:o.u,v:o.v,z:P[KB_ZIEHT].z,f:P[KB_ZIEHT].f}); kbSetzen(e,P); };
   /* Beim Loslassen wird die Karte neu gebaut - erst dann, nicht waehrend des Zugs: ein Neubau
      mitten im Ziehen naehme dem Zeiger den Griff (dieselbe Regel wie bei den Schiebern). */
-  lein.onpointerup=lein.onpointercancel=()=>{ if(KB_ZIEHT<0) return; KB_ZIEHT=-1;
+  lein.onpointerup=lein.onpointercancel=()=>{
+    if(LR_ZIEHT>=0){ LR_ZIEHT=-1; lein.style.cursor=''; renderStapel(); return; }
+    if(KB_ZIEHT<0) return; KB_ZIEHT=-1;
     lein.style.cursor=KB_STEHT_VOR?'crosshair':''; renderStapel(); };
   lein.ondblclick=ev=>{ const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     const i=markeBei(e,o); if(i<0) return;
@@ -31691,7 +31759,13 @@ function kbBuehneEinrichten(){
     pStat(P.length?('Zielpunkt gelöst — '+P.length+' '+(P.length===1?'bleibt':'bleiben')+'.')
       :'Der letzte Zielpunkt ist gelöst — die Kamera steht jetzt auf dem Ganzbild.');
     renderStapel(); ev.preventDefault(); };
-  lein.onwheel=ev=>{ const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
+  lein.onwheel=ev=>{
+    { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
+        const i=lrMarkeBei(le,o); if(i<0) return; ev.preventDefault();
+        /* Der Schritt ist 0,02 der Tiefe je Raste - fuenfzig Rasten von ganz vorn nach ganz
+           hinten. Feiner waere zaeh, groeber springt an der Trennung vorbei. */
+        lrMarkeTiefe(le,i,(ev.deltaY<0?1:-1)*0.02); renderStapel(); return; } }
+    const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     const i=markeBei(e,o); if(i<0) return; ev.preventDefault();
     /* DER SCHRITT IST 0,01 - derselbe, den der gefallene Regler "Ausschnitt" hatte -, ABER ER
        WAECHST MIT DER RASTE. Gemessen in der Oberflaechenprobe (18.09.2026): ein Mausrad schickt je
@@ -31732,6 +31806,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
   /* Dasselbe Gesetz, dieselbe Stelle: die Marken der Ken Burns Fahrt liegen ueber dem fertigen
      Bild und nur hier. Sie sind Bedienung und kein Bild. */
   if(kbE) kbMarkenMalen(kbE);
+  { const lrE=lrKarteEffekt(); if(lrE) lrMarkenMalen(lrE); }
   dioStandZeigen();   /* die Auskunft zum Diorama: sie steht nur da, wenn der Speichervorrat gedeckelt hat */
   lmVorschauen(); }
 /* ===================== KEN BURNS FAHRT: DIE FAHRT =====================
