@@ -27828,7 +27828,7 @@ function weichNotiz(e){ if(!tiefeKarteDa()) return null;
 function leerraumNotiz(e){ if(!tiefeKarteDa()) return null;
   /* Hier stand bis Schritt 2 ein Rueckzug bei Raumtiefe 0 (die Zeile war dann grau). Seit die
      Verdeckung immer gilt, wirkt der Vorraum immer - also spricht die Notiz auch immer. */
-  const L=leerVor(e);
+  const L=leerVor();
   return (L>0.001
     ? 'Vor der Karte liegt ein leerer Vorraum von ' + vH(L) + ' des Weges von ganz hinten nach ganz vorn — von dem Band, das „Grenze“ und „Weichheit“ aufspannen. Die Entfernung eines Teilchens wird aus dem freien Bereich an seinem Geburtsort gewürfelt: von der Fläche dort bis an das vordere Ende dieses Vorraums.'
     : 'Ohne Vorraum: die Entfernung eines Teilchens reicht höchstens bis „ganz vorn“ — bis an die vordere Kante des Bandes, das „Grenze“ und „Weichheit“ aufspannen. Davor entsteht nichts mehr.')
@@ -27856,7 +27856,7 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
      keine Reglerstellung mehr. Der alte Satz allein waere jetzt die Falschaussage. */
   if(!(e.raumtiefe>0.001)) return 'Größe und Tempo bleiben flach: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen. Verdeckt wird jedes trotzdem nach seiner eigenen Entfernung — das gilt immer.';
   const tp=tiefeProben(); if(!tp) return null;
-  const L=leerVor(e), sp=tiefeSpanne(e,tp), HK=herkunftVon(e);
+  const L=leerVor(), sp=tiefeSpanne(e,tp), HK=herkunftVon(e);
   const modus=ZONE_HART(e)?e.tiefeWirkt:null;
   const bz=(HK.herk==='boden')?bodenZellen(tp,sp.g,sp.w,L,modus):null;
   /* Fehlt die Bodenflaeche, faellt der Maler auf die eigene Stelle zurueck - dann gilt auch fuer
@@ -27934,11 +27934,11 @@ function qParams(vor){ const d=Object.assign({ qForm:'bild', qUrsprung:'bild', q
 for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue;
   if(T.art==='grund'||T.art==='geo') continue;
   T.params.push(Object.assign({}, TIEFE_PARAM), Object.assign({}, VERDECK_PARAM),
-                Object.assign({}, GRENZE_PARAM), Object.assign({}, WEICH_PARAM));
+                );   /* Grenze und Weichheit sind in die Vorbereitung gewandert (Station Tiefe) */
   /* Die Raumtiefe steht nur dort, wo es einzelne Koerper gibt, denen sie Groesse und Tempo geben
      kann. `when`/Auslassen ist richtig, wo eine Zeile fuer diese Bauart gar nicht existiert; grau
      mit Grund ist fuer Zeilen, die es gibt und die gerade nichts bestimmen (Hausgesetz 16.09.2026). */
-  if(TIEFE_KOERPER({typ:k})) T.params.push(Object.assign({}, LEER_PARAM), Object.assign({}, RAUM_PARAM)); }
+  if(TIEFE_KOERPER({typ:k})) T.params.push(Object.assign({}, RAUM_PARAM)); }   /* der Leerraum ebenso */
 
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
@@ -28347,9 +28347,17 @@ let HISTO=null;
    arbeiten dann darauf. */
 const VORB_REGLER=[['belichtung','Belichtung',-1,1],['kontrast','Kontrast',-1,1],['lichter','Lichter',-1,1],['schatten','Schatten',-1,1],['saettigung','S\u00e4ttigung',-1,1],['temperatur','Temperatur',-1,1],['farbton','Farbton',-1,1],['sepia','Sepia',0,1],['schaerfe','Sch\u00e4rfe',0,1]];
 let vorbNr=0;
-function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1 }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
+function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1, trennung:-0.02, trennWeich:-0.02, leerraum:0.25, flaecheAb:0.05 }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
 function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v;
   { const rt=Number(r.raumtiefe); if(isFinite(rt)&&rt>0) v.raumtiefe=Math.max(0.1,Math.min(5,rt)); }
+  /* DIE ZONEN DER SZENE (21.09.2026). Sie beschreiben, wie dieses eine Bild im Raum steht, und
+     gelten darum fuer ALLE Effekte - nicht je Effekt, wie bis heute. Caspar_D: „es gibt
+     Fronteffekte und Hintergrundflaecheneffekte, dann gibt es den Hintergrundraum, den
+     Vordergrundraum und den Vordergrundleerraum, der vor dem Vordergrund steht." */
+  { const x=Number(r.trennung);   if(isFinite(x)) v.trennung=Math.max(-0.02,Math.min(1,x)); }
+  { const x=Number(r.trennWeich); if(isFinite(x)) v.trennWeich=Math.max(-0.02,Math.min(1,x)); }
+  { const x=Number(r.leerraum);   if(isFinite(x)) v.leerraum=Math.max(0,Math.min(1,x)); }
+  { const x=Number(r.flaecheAb);  if(isFinite(x)) v.flaecheAb=Math.max(0,Math.min(0.4,x)); }
   VORB_REGLER.forEach(([k])=>{ if(typeof r[k]==='number') v[k]=Math.max(-1,Math.min(1,r[k])); });
   if(r.grad&&typeof r.grad==='object') for(const ch of ['v','r','g','b']) if(r.grad[ch]) v.grad[ch]={...v.grad[ch],...r.grad[ch]}; return v; }
 function gradNeutral(g){ return Math.abs(g.bp)<1e-6&&Math.abs(g.wp-1)<1e-6&&Math.abs(g.tonwert)<1e-6; }
@@ -28358,7 +28366,13 @@ function vorbAenderungen(v){ let n=0; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v
    Sie filtert nichts - vorbAenderungen entscheidet, ob der Vorbereitungsgang ueberhaupt laeuft,
    und ein Gang fuer eine Zahl, die kein Bildpunkt anfasst, waere verschwendet. Gespeichert
    werden muss sie trotzdem, sonst ginge sie bei einem Rezept ohne Gradation verloren. */
-function vorbExport(v){ const rt=(Number(v.raumtiefe)>0&&Math.abs(v.raumtiefe-1)>1e-6)?{raumtiefe:v.raumtiefe}:null;
+function vorbExport(v){ const zon={};
+  if(Number(v.raumtiefe)>0&&Math.abs(v.raumtiefe-1)>1e-6) zon.raumtiefe=v.raumtiefe;
+  if(Math.abs((v.trennung==null?-0.02:v.trennung)+0.02)>1e-6) zon.trennung=v.trennung;
+  if(Math.abs((v.trennWeich==null?-0.02:v.trennWeich)+0.02)>1e-6) zon.trennWeich=v.trennWeich;
+  if(Math.abs((v.leerraum==null?0.25:v.leerraum)-0.25)>1e-6) zon.leerraum=v.leerraum;
+  if(Math.abs((v.flaecheAb==null?0.05:v.flaecheAb)-0.05)>1e-6) zon.flaecheAb=v.flaecheAb;
+  const rt=Object.keys(zon).length?zon:null;
   if(!vorbAenderungen(v)) return rt||undefined; const o=rt?{...rt}:{}; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v[k])>1e-6) o[k]=v[k]; });
   const g={}; for(const ch of ['v','r','g','b']) if(!gradNeutral(v.grad[ch])) g[ch]=v.grad[ch]; if(Object.keys(g).length) o.grad=g; return o; }
 const vorbCache={};
@@ -28814,6 +28828,20 @@ function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rm
    Weg daempft. Solange nur die Lampe rechnet, steht er bei ihr; wandert die Zahl spaeter zur
    Quelle, tritt sie an genau dieser Stelle ein. */
 const LR_TIEFE_JE_BREITE = 1.0;   /* Vorgabe, wenn nichts gesetzt ist */
+/* ===================== DIE ZONEN DER SZENE - EINE STELLE, DIE SIE LIEST (21.09.2026) ==========
+   Bis heute trug JEDER Effekt seine eigene Grenze und Weichheit, und jeder Partikeleffekt seinen
+   eigenen Leerraum. Das war dieselbe Art Kruecke wie „Neigung: 0 Wand, 1 Boden" beim Laser: eine
+   Eigenschaft der SZENE, die an einem Geraet eingestellt wird. Caspar_D, 21.09.2026: „ich kann
+   fuer jeden Effekt immer noch vorne, hinten, global einstellen - nennen wir es einfach
+   Vorder-/Hintergrund-Trennung."
+   WAS BLEIBT UND WAS GEHT: WO die Linie liegt, gehoert zur Szene; AUF WELCHER SEITE ein Effekt
+   wirkt, bleibt beim Effekt (tiefeWirkt). Das ist die Trennung, die traegt.
+   UND EFFEKTE MIT NATUERLICHER LAGE FRAGEN GAR NICHT. Eine Sternschnuppe ist auf der letzten
+   Tiefenebene, ein Beschlag auf der Scheibe - das ist keine Einstellung, das ist ihre Natur. */
+function zoneTrennung(){ const v=Number(VORB&&VORB.trennung);   return isFinite(v)?v:-0.02; }
+function zoneWeich(){    const v=Number(VORB&&VORB.trennWeich); return isFinite(v)?v:-0.02; }
+function zoneLeerraum(){ const v=Number(VORB&&VORB.leerraum);   return isFinite(v)?Math.max(0,Math.min(1,v)):0.25; }
+function zoneFlaecheAb(){const v=Number(VORB&&VORB.flaecheAb);  return isFinite(v)?Math.max(0,Math.min(0.4,v)):0.05; }
 function lrRaumtiefe(){ const v=Number(VORB&&VORB.raumtiefe); return isFinite(v)&&v>0 ? Math.max(0.1,Math.min(5,v)) : LR_TIEFE_JE_BREITE; }
 function lrSchwenkAnteil(e, t){
   const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
@@ -29656,7 +29684,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Die Bodenzellen stehen als Tabelle im Vorrat: einmal je Quelle und Einstellung, danach
        abgelesen. Ist sie leer, sagt die Zeile "Raumtiefe" den Grund (raumNotiz) - eine Karte
        ohne Bodenflaeche zeichnet nicht still nichts. */
-    const LEER=leerVor(e);
+    const LEER=leerVor();
     /* WOHER DAS TEILCHEN KOMMT: die Art sagt es, das VORZEICHEN DES AUFTRIEBS entscheidet mit.
        Entschieden wird das an einer Stelle (herkunftVon, bei der Tabelle HERKUNFT), damit die
        Zeile "Raumtiefe" nicht etwas anderes erklaert, als hier gemalt wird. herkunftVon liest
@@ -33719,7 +33747,7 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
        HIER IM DIORAMA LIEGT DIE MASKE DECKUNGSGLEICH: tiefeMaske baut sie in Dioramagroesse, und
        geoKarteLegen legt sie mit einem drawImage(karte,0,0) auf - der EINS-Zweig, kein Umrechnen. */
     const maske = ZONE_HART(e) ? null
-      : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich, null, lW, lH);   /* die Automatik zieht ihren Median auf der LEINWAND, nicht auf dem Diorama (Begruendung bei tiefeMedian) */
+      : tiefeMaske(e.tiefeWirkt, Wn, Hn, zoneTrennung(), zoneWeich(), null, lW, lH);   /* die Automatik zieht ihren Median auf der LEINWAND, nicht auf dem Diorama (Begruendung bei tiefeMedian) */
     if(T.art==='mal'){
       if(maske){ frisch(cres); cres.clearRect(0,0,Wn,Hn); cres.drawImage(curCv,0,0); }
       try{ malen(e,curCx,t,Wn,Hn); }catch(x){ schief(e,x); } frisch(curCx);
@@ -33911,7 +33939,7 @@ function zeichneFrame(t,roh){
   for(const e of kette){ if(!aktiv(e)||imDiorama(e))continue; const T=EFFEKTE[e.typ];
     if(T.art==='geo'||T.art==='grund') continue;   /* die Kamera ist durch: Ausschnitt, Drehung, Schaerfe */
     const maske = ZONE_HART(e) ? null
-      : tiefeMaske(e.tiefeWirkt, Wn, Hn, e.tiefeGrenze, e.tiefeWeich);   /* die Maske faehrt mit der Kamera: maskeAnwenden legt sie mit geoKarteLegen auf */
+      : tiefeMaske(e.tiefeWirkt, Wn, Hn, zoneTrennung(), zoneWeich());   /* die Maske faehrt mit der Kamera: maskeAnwenden legt sie mit geoKarteLegen auf */
     if(T.art==='mal'){
       /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
          darunter wirken. Also vorher eine Kopie beiseitelegen, malen, dann maskieren. */
@@ -34021,7 +34049,10 @@ function zeichneFrame(t,roh){
       const nm=(SCHLEIFE_ARTEN.find(x=>x[0]===(SCHLEIFE.art||'keiner'))||[0,''])[1];
       SCHLEIFE={art:'keiner',schlaege:SCHLEIFE.schlaege||0};
       utext=' \u00b7 \u00dcbergang'+(nm?' \u201e'+nm+'\u201c':'')+' gibt es nur f\u00fcr Bewegtbilder \u2014 hier bleibt der harte Schnitt'; }
-    { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi; }   /* das _id behalten wie in vorbLoeschen: sonst bliebe je Einfuegen ein <filter> im kurvenraum stehen */
+    { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi;
+      /* Die Zonen aus den Effekten nachziehen, falls das Rezept aelter ist als die Vorbereitung
+         sie kennt. Ein Rezept, das sie schon oben traegt, wird nicht ueberschrieben. */
+      if(!R.vorbereitung || R.vorbereitung.trennung===undefined) zonenUebernehmen(R.effekte); }   /* das _id behalten wie in vorbLoeschen: sonst bliebe je Einfuegen ein <filter> im kurvenraum stehen */
     SCHLEIFE_STILL.schluessel=''; if(loopSicht) loopSicht.i=-1;   /* wie beim Wechsel des \u00dcbergangs: die gerechnete Lage holt sich loopWache */
     soloId=null; offenId=null; presetSetzen(R.effekte,R.alt,R.fassung);
     if(grund.art!==alt.art||(grund.nr||1)!==(alt.nr||1)) grundLaden();   /* nur bei echtem Wechsel - sonst finge ein laufendes Video von vorn an */
@@ -34067,9 +34098,26 @@ function zeichneFrame(t,roh){
        SZENE: wie tief der Raum ist, den dieses Bild zeigt. Zwei Leuchten darin muessen dieselbe
        Zahl sehen, und der Nebel braucht sie ebenso, sobald er das Licht auf seinem Weg daempft.
        Sie ist abgesetzt, weil sie kein Farbregler ist - sie faerbt nichts, sie masst. */
-    h+='<div style="margin:10px 0 4px;color:var(--schwach);font-size:10.5px">Der Raum</div>';
+    h+='<div class="tbs-vorbAbschnitt">Der Raum</div>';
     h+='<div class="tbs-regler"><span>Raumtiefe</span><input type="range" data-vrt="1" min="0.1" max="5" step="0.1" value="'+(v.raumtiefe||1)+'"><span class="tbs-wert">'+kf(Number(v.raumtiefe||1).toFixed(1))+'\u00d7</span></div>';
     h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Wie tief ist dieser Raum, in Bildbreiten \u2014 ein Portr\u00e4t etwa 0,2, eine Landschaft 3 und mehr. Die Tiefenkarte sagt, <i>was</i> vorn ist, nicht um <i>wie viel</i>; diese Zahl ist die fehlende Ma\u00dfeinheit.</div>';
+    /* DIE ZONEN, IN DER REIHENFOLGE VON DER KAMERA NACH HINTEN - so, wie man den Raum abschreitet.
+       Das ist keine Schoenheit: wer Zahlen einstellt, die einen Raum beschreiben, muss sie in der
+       Ordnung des Raumes vorfinden, sonst denkt er bei jedem Regler neu nach. */
+    h+='<div class="tbs-vorbAbschnitt">Die Zonen</div>';
+    { const zr=(k,lbl,mn,mx,st,wert,hinweis)=>{
+        const w=(v[k]==null?mn:v[k]);
+        h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" data-vz="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+w+'"><span class="tbs-wert">'+wert(w)+'</span></div>';
+        if(hinweis) h+='<div style="color:var(--schwach);font-size:10.5px;margin:-2px 0 8px">'+hinweis+'</div>'; };
+      const vA=x=>(x==null||x<0)?'von selbst':Math.round(x*255)+' von 255';
+      zr('leerraum','Leerraum vorn',0,1,0.05,x=>kf(Math.round(x*100))+'\u2009%',
+         'Der leere Vorraum zwischen Kamera und Motiv \u2014 dort schweben Teilchen und Nebel <i>vor</i> allem.');
+      zr('trennung','Trennung',-0.02,1,0.02,vA,
+         'Wo der Vordergrund aufh\u00f6rt und der Hintergrund anf\u00e4ngt. Jeder Effekt w\u00e4hlt selbst, auf welcher Seite er wirkt \u2014 <i>wo</i> die Linie liegt, sagt diese Zahl, und zwar f\u00fcr alle.');
+      zr('trennWeich','Weichheit der Trennung',-0.02,1,0.02,x=>(x==null||x<0)?'von selbst':'\u00b1'+Math.round(x*255),
+         'Wie breit das Band um die Trennung ist, in dem beide Seiten ineinander \u00fcbergehen.');
+      zr('flaecheAb','Hintergrundfl\u00e4che ab',0,0.4,0.01,x=>Math.round(x*255)+' von 255',
+         'Die letzte Tiefenebene \u2014 drau\u00dfen der Himmel, drinnen die R\u00fcckwand. Was dorthin geh\u00f6rt, liegt hinter allem: eine Sternschnuppe, sp\u00e4ter ein Polarlicht.'); }
     }
     if(vorbReg==='farbe'){
     VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
@@ -34093,6 +34141,13 @@ function zeichneFrame(t,roh){
     const tw=k.querySelector('[data-vtonwert]'); if(tw) tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
     { const lb=k.querySelector('[data-vloeschen]'); if(lb) lb.onclick=vorbLoeschen; }
     { const ab=k.querySelector('[data-vauto]'); if(ab) ab.onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); }; }
+    k.querySelectorAll('[data-vz]').forEach(inp=>inp.oninput=()=>{ const kk=inp.dataset.vz; v[kk]=+inp.value;
+      const w=inp.parentElement.querySelector('.tbs-wert');
+      if(w) w.textContent = kk==='leerraum' ? kf(Math.round(+inp.value*100))+'\u2009%'
+        : kk==='trennWeich' ? ((+inp.value<0)?'von selbst':'\u00b1'+Math.round(+inp.value*255))
+        : kk==='flaecheAb' ? Math.round(+inp.value*255)+' von 255'
+        : ((+inp.value<0)?'von selbst':Math.round(+inp.value*255)+' von 255');
+      vorbStand(); malen(); });
     k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
       inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); malen(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
@@ -34313,7 +34368,33 @@ function zeichneFrame(t,roh){
      sechsten, der Effekt blieb stehen, fehlt war 0, und die Statuszeile sagte kein Wort. Genau das
      ist "still falsch gelesen" (Regel 12/13). Zwei Wege, dieselben Woerter: der Satz wird hier
      gebaut und nicht zweimal geschrieben. */
-  function rezeptHinweise(arr,fassung){ let h='';
+  /* ZONEN AUS EINEM ALTEN REZEPT IN DIE SZENE HEBEN (21.09.2026, Hausregel 12: alte Ablagen
+     werden uebersetzt, nie stillschweigend anders gelesen). Bis heute trug jeder Effekt seine
+     eigene Grenze, Weichheit und seinen Leerraum; jetzt stehen sie in der Vorbereitung. Ein
+     Rezept, das sie setzt, verlaere sie sonst beim Laden - und niemand saehe es.
+     GENOMMEN WIRD DER HAEUFIGSTE WERT, und wenn mehrere verschieden sind, sagt es die Zeile.
+     Nicht der erste und nicht der Mittelwert: der erste waere Zufall der Reihenfolge, und ein
+     Mittel zwischen zwei Trennebenen ist eine dritte, die niemand wollte. */
+  function zonenAusRezept(arr){
+    const haeufigste=(k,pred)=>{ const z={}; let n=0;
+      for(const r of arr||[]){ if(!r||typeof r!=='object') continue; const x=Number(r[k]);
+        if(!isFinite(x)||!pred(x)) continue; z[x]=(z[x]||0)+1; n++; }
+      const w=Object.keys(z); if(!w.length) return null;
+      w.sort((a,b)=>z[b]-z[a]); return { wert:+w[0], sorten:w.length, n }; };
+    return { grenze:haeufigste('tiefeGrenze',x=>x>=0), weich:haeufigste('tiefeWeich',x=>x>=0),
+             leer:haeufigste('leerraum',x=>x>=0&&Math.abs(x-0.25)>1e-6) }; }
+  function zonenUebernehmen(arr){ const z=zonenAusRezept(arr); let n=0;
+    if(z.grenze){ VORB.trennung=z.grenze.wert; n++; }
+    if(z.weich){ VORB.trennWeich=z.weich.wert; n++; }
+    if(z.leer){ VORB.leerraum=z.leer.wert; n++; }
+    return z; }
+  function zonenHinweis(arr){ const z=zonenAusRezept(arr); let h='';
+    const sag=(o,was)=>{ if(!o) return;
+      h+=' \u2014 '+was+' stand an '+(o.n===1?'einem Effekt':o.n+' Effekten')+' und gilt jetzt f\u00fcr die ganze Szene (Vorbereitung \u203a Tiefe)';
+      if(o.sorten>1) h+=', wobei '+o.sorten+' verschiedene Werte dastanden \u2014 \u00fcbernommen ist der h\u00e4ufigste'; };
+    sag(z.grenze,'die Trennung'); sag(z.weich,'ihre Weichheit'); sag(z.leer,'der Leerraum');
+    return h; }
+  function rezeptHinweise(arr,fassung){ let h=zonenHinweis(arr);
     { const nv=verdeckenAltZahl(arr); if(nv) h+=' — '+(nv===1?'ein Effekt trug':nv+' Effekte trugen')+' „Tiefe aus der Bildzeile“; der Regler ist gestrichen, der Wert wirkt nicht mehr'; }
     { const nf=fahrtAltZahl(arr); if(nf) h+=' — '+(nf===1?'ein Effekt war':nf+' Effekte waren')+' die alte „Fahrt“; sie ist gestrichen und wurde entfernt — die Ken Burns Fahrt kann, was sie konnte'; }
     { const nz=kbUeberzaehlig(arr); if(nz) h+=' — '+(nz===1?'ein Zielpunkt lag':nz+' Zielpunkte lagen')+' über der Grenze von fünf und '+(nz===1?'wurde':'wurden')+' nicht gelesen'; }
@@ -35350,7 +35431,10 @@ function zeichneFrame(t,roh){
     SEITEN=seitenVon(id,s).concat([{art:'test',nr:1,lbl:'Testbild',test:true},{art:'testportraet',nr:1,lbl:'Testportr\u00e4t',test:true,url:'/testbild/portraet.jpg'},{art:'testfarbe',nr:1,lbl:'Testportr\u00e4t (Farbe)',test:true,url:'/testbild/portraet-farbe.jpg'}]); quelleWeg(bild); bereit=false; { const vg=grundVorgabe(SEITEN); grund={art:vg.art,nr:vg.nr}; }
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;
-    const R=rezeptLesen(rezept); let hinweis=''; { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi; }   /* das _id behalten: sonst bliebe je geoeffnetem Titel ein <filter> im kurvenraum stehen */
+    const R=rezeptLesen(rezept); let hinweis=''; { const vi=VORB._id; VORB=vorbAus(R.vorbereitung); VORB._id=vi;
+      /* Die Zonen aus den Effekten nachziehen, falls das Rezept aelter ist als die Vorbereitung
+         sie kennt. Ein Rezept, das sie schon oben traegt, wird nicht ueberschrieben. */
+      if(!R.vorbereitung || R.vorbereitung.trennung===undefined) zonenUebernehmen(R.effekte); }   /* das _id behalten: sonst bliebe je geoeffnetem Titel ein <filter> im kurvenraum stehen */
     SCHLEIFE=R.schleife||{art:'keiner'}; SCHLEIFE_STILL.schluessel='';
     if(R.grund){ const p=seiteFinden(SEITEN,R.grund); if(p) grund={art:p.art,nr:p.nr}; else hinweis=' \u2014 seine Quelle fehlt, Titelbild gezeigt'; }   /* quelle.farbe aelterer Rezepte (S/G/W) wird nicht mehr gelesen */
     offenId=null;
@@ -35525,7 +35609,9 @@ function zeichneFrame(t,roh){
      bei seiner Geburt genau auf der Oberflaeche. Und der Vorlauf wuerfelte aus dem GANZEN
      Wertebereich, also auch HINTER die Flaeche; dort steckt das Teilchen im Boden und ist nie
      zu sehen (Spezifikation Abschnitt 9: die Zahlen dazu gelten nicht mehr). */
-  const leerVor = e => Math.max(0, Math.min(1, e.leerraum==null?0.25:e.leerraum));
+  /* GELOESCHT als Effektwert (21.09.2026): der Leerraum beschreibt die SZENE, nicht ein Geraet.
+     Er steht jetzt in der Vorbereitung, Station Tiefe, und gilt fuer alle Teilchen im Bild. */
+  const leerVor = () => zoneLeerraum();
   /* Die Vordergrund-Hintergrund-Grenze in der Naehe-Skala. nahKurve gibt an der Grenze (z==g)
      genau 0,5 - dieselbe Zahl, mit der zPunkt schon vorn von hinten trennt. */
   const VH_GRENZE=0.5;
@@ -36327,7 +36413,7 @@ function zeichneFrame(t,roh){
     /* Ohne Karte zu DIESER Quelle gibt es keine Schicht - und damit auch keine Ansicht. Die Zeile
        daneben steht dann grau mit Grund; eine Trennebene ueber einem Bild ohne Tiefe waere genau
        die Falschaussage, gegen die die Ansicht angetreten ist. */
-    const sch=tiefesichtSchicht(W,H,e.tiefeGrenze,e.tiefeWeich); if(!sch) return;
+    const sch=tiefesichtSchicht(W,H,zoneTrennung(),zoneWeich()); if(!sch) return;
     const grau=tiefesichtGrau(W,H), video=!(TSICHT_GRAU&&TSICHT_GRAU.quelle);
     const marke=sch.k+'|'+W+'x'+H+(video?'|v'+(bild.currentTime||0).toFixed(3):'|bild');
     if(!TSICHT_FERTIG||TSICHT_FERTIG.marke!==marke||TSICHT_FERTIG.cv.width!==W||TSICHT_FERTIG.cv.height!==H){
