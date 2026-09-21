@@ -102,3 +102,6 @@ docs/eichkasten/*.vor-schritt*
 # Ueberreste von patch(1) - keine dritte Fassung der App im Repo (18.09.2026)
 *.orig
 *.rej
+
+# Erzeugnis des Zonen-Labors: enthaelt Titelbilder aus dem Bestand
+labor/zonen/index.html

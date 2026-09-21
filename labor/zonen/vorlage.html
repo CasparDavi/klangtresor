@@ -1,0 +1,408 @@
+<!-- Werkstattseite des Zonen-Labors. Erzeugt wird sie von bin/zonen-labor.js,
+     das die Bildpaare einsetzt; die ganze Rechnung - Talsuche, Zonen, Relief -
+     steht HIER und nur hier, damit es keine zweite Fassung gibt, die abdriften
+     kann. Die fertige index.html laeuft ohne Server: alles steckt in der Datei.
+     WERKSTATT, NICHT BETRIEB: nichts davon gehoert in einen Weg, den ein Nutzer
+     der App geht (Hausregel 1). -->
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Tiefenzonen im Relief</title>
+<style>
+  :root{ --grund:#0a0d13; --flaeche:#141922; --rand:#232c3a; --text:#dfe7f2; --schwach:#8698b2; --marke:#e0b34d; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--grund);color:var(--text);
+       font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px}
+  h1{font-size:17px;font-weight:500;margin:0 0 2px}
+  .hinweis{color:var(--schwach);font-size:12.5px;margin:0 0 14px}
+  .leiste{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+  button{background:var(--flaeche);color:var(--text);border:1px solid var(--rand);
+         border-radius:6px;padding:5px 11px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  button:hover{border-color:#3a475c}
+  button.an{background:#1d2a3d;border-color:var(--marke);color:#fff}
+  .schieber{display:flex;align-items:center;gap:7px;margin-left:auto;font-size:12.5px;color:var(--schwach)}
+  input[type=range]{width:110px;accent-color:var(--marke)}
+  .reihe{display:flex;gap:12px;align-items:stretch;max-width:700px}
+  .buehne{flex:1 1 auto;min-width:0;background:var(--grund);border:1px solid var(--rand);
+          border-radius:8px;overflow:hidden}
+  .buehne canvas{display:block;width:100%;height:auto;cursor:grab;touch-action:none}
+  .buehne canvas.zieht{cursor:grabbing}
+  .stapel{flex:0 0 96px;display:flex;flex-direction:column}
+  .stapel .kopf,.stapel .fuss{font-size:11.5px;color:var(--schwach);text-align:center;padding:2px 0}
+  .stapel canvas{flex:1 1 auto;width:96px;border:1px solid var(--rand);border-radius:8px;
+                 background:var(--flaeche);cursor:ns-resize;touch-action:none;display:block}
+  .fussleiste{display:flex;justify-content:space-between;gap:12px;margin-top:10px;
+              color:var(--schwach);font-size:12px;flex-wrap:wrap}
+  .zonen{display:flex;gap:10px;flex-wrap:wrap}
+  .z{display:flex;align-items:center;gap:5px}
+  .punkt{width:11px;height:11px;border-radius:3px;display:inline-block}
+</style></head><body>
+
+<h1>Tiefenzonen im Relief</h1>
+<p class="hinweis">Die Tiefenkarte als Höhenmap, senkrecht hingestellt und in Scheiben geschnitten.
+<strong>Links ziehen dreht, Doppelklick stellt gerade</strong> — <strong>rechts die Zonengrenzen ziehen</strong> — Klick setzt eine neue, Doppelklick nimmt sie weg.</p>
+
+<div class="leiste" id="wahl"></div>
+
+<div class="reihe">
+  <div class="buehne"><canvas id="c" width="560" height="470"></canvas></div>
+  <div class="stapel">
+    <div class="kopf">ganz hinten</div>
+    <canvas id="s" width="96" height="430"></canvas>
+    <div class="fuss">ganz vorn</div>
+  </div>
+</div>
+
+<div class="fussleiste">
+  <div class="zonen" id="legende"></div>
+  <div id="stand"></div>
+</div>
+
+<script>
+const DATEN = /*DATEN*/;
+const c = document.getElementById('c'), g = c.getContext('2d');
+const sc = document.getElementById('s'), sg = sc.getContext('2d');
+let karte = null, grau = null, W = 0, H = 0, lo = 0, hi = 255;
+let zeigeBild = false;   /* Umschalter: Tiefendiagramm oder Originalbild */
+let grenzen = [], vorschlag = [], hist = null, vonHand = false;
+let az = 0.30, el = 0.34, hoch = 190, farbig = true, zieht = false, grob = false;
+
+const RAMPE = [[38,88,136],[48,116,162],[112,120,142],[168,102,78],[214,106,66]];
+
+/* ---- Täler finden: Scale-Space-Modenzählung auf dem Histogramm ---------- */
+function histogramm(d){ const N=64, h=new Float64Array(N);
+  for (const x of d){ let i=Math.floor(x/256*N); if(i>=N) i=N-1; h[i]++; }
+  for (let i=0;i<N;i++) h[i]/=d.length; return h; }
+function taelerFinden(h){
+  const PROM=0.35;
+  const glatt=(a,s)=>{ const r=Math.ceil(3*s), k=[]; let sum=0;
+    for(let q=-r;q<=r;q++){ const w=Math.exp(-q*q/(2*s*s)); k.push(w); sum+=w; }
+    return Array.from(a,(_,i)=>{ let t=0;
+      for(let q=-r;q<=r;q++){ let j=i+q; if(j<0)j=0; if(j>=a.length)j=a.length-1; t+=a[j]*k[q+r]; }
+      return t/sum; }); };
+  const moden=a=>{ const gp=[];
+    for(let i=1;i<a.length-1;i++) if(a[i]>=a[i-1]&&a[i]>a[i+1]) gp.push(i);
+    if(a[0]>a[1]) gp.unshift(0);
+    if(a[a.length-1]>a[a.length-2]) gp.push(a.length-1);
+    if(gp.length<2) return {gipfel:gp, taeler:[]};
+    const echt=[gp[0]], tal=[];
+    for(let k=1;k<gp.length;k++){ const li=echt[echt.length-1], re=gp[k];
+      let tief=Infinity, wo=li;
+      for(let i=li;i<=re;i++) if(a[i]<tief){ tief=a[i]; wo=i; }
+      const ho=Math.min(a[li],a[re]);
+      if(ho>0 && (ho-tief)/ho>=PROM){ echt.push(re); tal.push(wo); }
+      else if(a[re]>a[li]) echt[echt.length-1]=re; }
+    return {gipfel:echt, taeler:tal}; };
+  const skalen=[1,1.5,2,3,4,6], zahlen=[], alle=[];
+  for(const s of skalen){ const m=moden(glatt(h,s)); zahlen.push(m.gipfel.length); alle.push(m); }
+  const z={}; zahlen.forEach(x=>z[x]=(z[x]||0)+1);
+  const stabil=Number(Object.entries(z).sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0][0]);
+  return (alle[zahlen.indexOf(stabil)].taeler||[]).map(i=>(i+0.5)/h.length*255);
+}
+
+/* Zone eines GRAUWERTS - nicht eines Punktes. Das ist der Unterschied:
+   eine Saeule laeuft von ganz hinten bis zu ihrer Oberflaeche und durchquert
+   dabei mehrere Zonen; jeder Abschnitt gehoert zu der, durch die er laeuft. */
+function zoneVon(v){ let z=0; for(const t of grenzen) if(v>t) z++; return z; }
+function farbeVon(z){ const n=grenzen.length+1;
+  if(!farbig) return [128,140,158];
+  if(n===1) return [104,120,146];
+  return RAMPE[Math.min(RAMPE.length-1, Math.round(z/(n-1)*(RAMPE.length-1)))]; }
+function tabelle(){ const t=new Uint8Array(256*3);
+  for(let v=0;v<256;v++){ const f=farbeVon(zoneVon(v)); t[v*3]=f[0]; t[v*3+1]=f[1]; t[v*3+2]=f[2]; }
+  return t; }
+
+/* ---- Das Relief: ein geschlossenes Gitternetz -------------------------- */
+/* ZWEI EBENEN, EINE VERRECHNUNG - genau wie in der Effektkette (Caspar_D,
+   21.09.2026: „in der Effektkette kannst du doch auch Sachen uebereinanderlegen
+   und verrechnen, das muss hier doch voellig normal gehen").
+   Unten das Relief mit dem Originalbild als Graustufe, darueber dieselbe Form in
+   Zonenfarben, verrechnet mit FARBIG ABWEDELN. Vorher habe ich die Mischung
+   Bildpunkt fuer Bildpunkt selbst gerechnet - das tut dasselbe, nur umstaendlich
+   und ohne dass man den Verrechnungsmodus wechseln koennte.
+   Die Farbebene liegt auf SCHWARZ: Abwedeln mit Schwarz laesst alles, wie es ist,
+   also bleibt ausserhalb des Reliefs der Grund unberuehrt. */
+let tmpC = null;
+function malen(){
+  if(!karte) return;
+  const CW=c.width, CH=c.height;
+  const eb=g.createImageData(CW,CH), ef=g.createImageData(CW,CH);
+  const pB=eb.data, pF=ef.data;
+  for(let i=0;i<CW*CH;i++){
+    pB[i*4]=0x0a; pB[i*4+1]=0x0d; pB[i*4+2]=0x13; pB[i*4+3]=255;
+    pF[i*4]=0; pF[i*4+1]=0; pF[i*4+2]=0; pF[i*4+3]=255;
+  }
+  const schritt = grob ? 2 : 1;
+  const spann=Math.max(1,hi-lo), norm=v=>Math.max(0,Math.min(1,(v-lo)/spann));
+  const ca=Math.cos(az), sa=Math.sin(az), ce=Math.cos(el), se=Math.sin(el);
+  const PXs=Math.min(CW/(W*1.45), CH/(H*1.3));
+  const mx=CW/2, my=CH/2;
+  const TAB=tabelle();
+  const Lv=[-0.5,-0.62,0.60], Ln=Math.hypot(...Lv); const L=Lv.map(x=>x/Ln);
+  const STAERKE=0.46;   /* ungebremst brennt Abwedeln jede helle Stelle aus */
+
+  const proj=(u,v,gw)=>{ const X=(u-W/2)*PXs, Y=(v-H/2)*PXs, Z=norm(gw)*hoch;
+    const xr=X*ca+Z*sa, zr=-X*sa+Z*ca;
+    return [mx+xr, my+Y*ce+zr*se, -Y*se+zr*ce]; };
+
+  const dreieck=(ax,ay,bx,by,cx,cy, rb,gb,bb, rf,gf,bf)=>{
+    const x0=Math.max(0,Math.floor(Math.min(ax,bx,cx))), x1=Math.min(CW-1,Math.ceil(Math.max(ax,bx,cx)));
+    const y0=Math.max(0,Math.floor(Math.min(ay,by,cy))), y1=Math.min(CH-1,Math.ceil(Math.max(ay,by,cy)));
+    if(x1<x0||y1<y0) return;
+    const d=(by-cy)*(ax-cx)+(cx-bx)*(ay-cy);
+    if(Math.abs(d)<1e-9) return;
+    for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+      const l1=((by-cy)*(x-cx)+(cx-bx)*(y-cy))/d;
+      const l2=((cy-ay)*(x-cx)+(ax-cx)*(y-cy))/d;
+      if(l1>=-0.02&&l2>=-0.02&&(1-l1-l2)>=-0.02){
+        const o=(y*CW+x)*4;
+        pB[o]=rb; pB[o+1]=gb; pB[o+2]=bb;
+        pF[o]=rf; pF[o+1]=gf; pF[o+2]=bf;
+      } } };
+
+  const qs=[];
+  for(let v=0;v+schritt<H;v+=schritt) for(let u=0;u+schritt<W;u+=schritt){
+    const g00=karte[v*W+u], g10=karte[v*W+u+schritt],
+          g01=karte[(v+schritt)*W+u], g11=karte[(v+schritt)*W+u+schritt];
+    const p00=proj(u,v,g00), p10=proj(u+schritt,v,g10),
+          p01=proj(u,v+schritt,g01), p11=proj(u+schritt,v+schritt,g11);
+    qs.push([ (p00[2]+p10[2]+p11[2]+p01[2])/4, p00,p10,p11,p01, g00,g10,g11,g01, u,v ]);
+  }
+  qs.sort((x,y)=>x[0]-y[0]);
+
+  for(const q of qs){
+    const p00=q[1], p10=q[2], p11=q[3], p01=q[4];
+    const g00=q[5], g10=q[6], g11=q[7], g01=q[8], u=q[9], v=q[10];
+    const hx=(norm(g10)-norm(g00))*hoch/(PXs*schritt);
+    const hy=(norm(g01)-norm(g00))*hoch/(PXs*schritt);
+    const nl=Math.hypot(-hx,-hy,1);
+    const lam=Math.max(0,(-hx*L[0]-hy*L[1]+L[2])/nl);
+    const f=0.30+1.05*lam;
+    const iv=Math.max(0,Math.min(255,Math.round((g00+g10+g11+g01)/4)));
+    /* UNTERE EBENE: das Originalbild, wenn es da ist - sonst dieselbe Zonenfarbe,
+       damit der Umschalter auch ohne Bild etwas Sinnvolles zeigt. */
+    let rb,gb,bb;
+    if(grau){
+      const gw=(grau[v*W+u]+grau[v*W+u+schritt]+grau[(v+schritt)*W+u]+grau[(v+schritt)*W+u+schritt])/4;
+      const basis=Math.min(255,(14+0.95*gw)*(0.80+0.30*lam));
+      rb=basis; gb=basis; bb=basis;
+    } else { rb=Math.min(255,TAB[iv*3]*f); gb=Math.min(255,TAB[iv*3+1]*f); bb=Math.min(255,TAB[iv*3+2]*f); }
+    /* OBERE EBENE: die Zonenfarbe. Im Farbmodus traegt sie das Licht selbst. */
+    const fr = zeigeBild ? STAERKE : f;
+    const rf=Math.min(255,TAB[iv*3]*fr), gf=Math.min(255,TAB[iv*3+1]*fr), bf=Math.min(255,TAB[iv*3+2]*fr);
+
+    const cxm=(p00[0]+p10[0]+p11[0]+p01[0])/4, cym=(p00[1]+p10[1]+p11[1]+p01[1])/4;
+    const auf=q0=>{ const ddx=q0[0]-cxm, ddy=q0[1]-cym, l=Math.hypot(ddx,ddy)||1;
+      return [q0[0]+ddx/l*0.75, q0[1]+ddy/l*0.75]; };
+    const a00=auf(p00), a10=auf(p10), a11=auf(p11), a01=auf(p01);
+    dreieck(a00[0],a00[1], a10[0],a10[1], a11[0],a11[1], rb,gb,bb, rf,gf,bf);
+    dreieck(a00[0],a00[1], a11[0],a11[1], a01[0],a01[1], rb,gb,bb, rf,gf,bf);
+
+    /* ABBRUCHKANTE: eine Wand, die durch mehrere Zonen laeuft - geteilt gefaerbt. */
+    for(const [A,B,ga,gb2] of [[p10,p11,g10,g11],[p01,p11,g01,g11]]){
+      const dg=Math.abs(ga-gb2);
+      if(dg<14) continue;
+      const hochG=Math.max(ga,gb2), tiefG=Math.min(ga,gb2);
+      const oben = ga>gb2 ? A : B, unten = ga>gb2 ? B : A;
+      const n=Math.max(2,Math.min(26,Math.round(dg/255*hoch/3)));
+      const br=PXs*schritt*1.15;
+      for(let s=0;s<n;s++){
+        const t0=s/n, t1=(s+1)/n;
+        const gm=Math.max(0,Math.min(255,Math.round(hochG+(tiefG-hochG)*(t0+t1)/2)));
+        const wr=Math.min(255,TAB[gm*3]*(zeigeBild?STAERKE*0.8:0.40));
+        const wg=Math.min(255,TAB[gm*3+1]*(zeigeBild?STAERKE*0.8:0.40));
+        const wb=Math.min(255,TAB[gm*3+2]*(zeigeBild?STAERKE*0.8:0.40));
+        const db=zeigeBild?Math.round(rb*0.55):wr;
+        const ax=oben[0]+(unten[0]-oben[0])*t0, ay=oben[1]+(unten[1]-oben[1])*t0;
+        const bx=oben[0]+(unten[0]-oben[0])*t1, by=oben[1]+(unten[1]-oben[1])*t1;
+        dreieck(ax,ay, bx,by, ax+br,ay, db,db,db, wr,wg,wb);
+        dreieck(bx,by, bx+br,by, ax+br,ay, db,db,db, wr,wg,wb);
+      }
+    }
+  }
+
+  /* Die beiden Ebenen uebereinanderlegen und verrechnen */
+  g.globalCompositeOperation='source-over';
+  g.putImageData(eb,0,0);
+  if(zeigeBild){
+    if(!tmpC){ tmpC=document.createElement('canvas'); }
+    if(tmpC.width!==CW||tmpC.height!==CH){ tmpC.width=CW; tmpC.height=CH; }
+    tmpC.getContext('2d').putImageData(ef,0,0);
+    g.globalCompositeOperation='color-dodge';
+    g.drawImage(tmpC,0,0);
+    g.globalCompositeOperation='source-over';
+  } else {
+    g.putImageData(ef,0,0);
+  }
+  document.getElementById('stand').textContent =
+    Math.round(az*180/Math.PI)+'° seitlich, '+Math.round(el*180/Math.PI)+'° von oben'
+    + (vonHand?' · Grenzen von Hand':' · Grenzen aus der Talsuche')
+    + (zeigeBild ? (grau?' · Originalbild, farbig abgewedelt':' · KEIN Originalbild geladen') : '');
+}
+
+/* ---- Der Stapel: unten ganz vorn, oben ganz hinten ---------------------- */
+/* UNTEN IST VORN, OBEN IST HINTEN (Caspar_D). Hohe Grauwerte heissen nah,
+   also gehoeren sie nach UNTEN - vorher lief die Achse andersherum und
+   widersprach der eigenen Beschriftung. */
+const sy = v => Math.round(v/255 * sc.height);
+const sv = y => Math.max(0, Math.min(255, Math.round(y/sc.height * 255)));
+function stapelMalen(){
+  const CW=sc.width, CH=sc.height;
+  sg.clearRect(0,0,CW,CH);
+  /* Zonenflaechen */
+  for(let y=0;y<CH;y++){ const f=farbeVon(zoneVon(sv(y)));
+    sg.fillStyle='rgb('+f[0]+','+f[1]+','+f[2]+')'; sg.fillRect(0,y,CW,1); }
+  /* DAS HISTOGRAMM ALS BALKEN - da sieht man, warum ein Tal ein Tal ist.
+     Vorher war es ein geschlossener Streckenzug, der unten links begann; nachdem
+     die Achse umgedreht wurde (unten vorn), lief er kreuz und quer und ergab
+     Figuren statt eines Histogramms. Ein Balken je Fach kann das nicht.
+     WURZELMASSSTAB, damit auch kleine Haeufungen zu sehen sind - der dunkelste
+     Haufen ist auf manchen Karten zehnmal so gross wie alle anderen zusammen. */
+  if(hist){ let max=1e-9; for(const h of hist) if(h>max) max=h;
+    const n=hist.length;
+    sg.fillStyle='rgba(255,255,255,.26)';
+    for(let i=0;i<n;i++){
+      if(!hist[i]) continue;
+      const y0=sy(i/n*255), y1=sy((i+1)/n*255);
+      const oben=Math.min(y0,y1), hoehe=Math.max(1.5,Math.abs(y1-y0)-1);
+      sg.fillRect(0, oben, Math.sqrt(hist[i]/max)*(CW-12), hoehe);
+    } }
+  /* die Grenzen als Greifer */
+  grenzen.forEach(t=>{ const y=sy(t);
+    sg.fillStyle='rgba(0,0,0,.45)'; sg.fillRect(0,y-1,CW,3);
+    sg.fillStyle='#fff'; sg.fillRect(0,y,CW,1);
+    sg.fillRect(CW/2-11,y-2,22,4); });
+}
+
+function legende(){
+  const n=grenzen.length+1, box=document.getElementById('legende');
+  const nam = n===1 ? ['eine einzige Zone']
+    : Array.from({length:n},(_,i)=> i===0?'ganz hinten' : i===n-1?'ganz vorn' : 'Zone '+(i+1));
+  box.innerHTML = nam.map((t,i)=>{ const f=farbeVon(i);
+    return '<span class="z"><span class="punkt" style="background:rgb('+f+')"></span>'+t+'</span>'; }).join('')
+    + '<span class="z" style="color:#6e7f99">'
+    + (grenzen.length ? (grenzen.length===1?'eine Grenze':grenzen.length+' Grenzen')
+                        +' bei '+grenzen.map(t=>Math.round(t)).join(' / ')+' von 255'
+                      : 'kein Tal gefunden')+'</span>';
+}
+function alles(){ legende(); stapelMalen(); malen(); }
+
+/* EIN BILD FUER BEIDES (21.09.2026). Karte und Graustufenbild stehen
+   uebereinander in EINEM PNG: oben die Tiefenkarte, unten das Original in
+   denselben Massen. Vorher waren es zwei Quellen und zwei Ladevorgaenge - kam
+   die zweite nicht an, blieb der Umschalter still, ohne dass irgendetwas es
+   sagte. Mit einer Quelle kann das nicht mehr passieren, und wenn doch etwas
+   fehlt, steht es in der Fusszeile. */
+function laden(d){
+  const im=new Image();
+  im.onerror=()=>{ karte=null; grau=null;
+    document.getElementById('stand').textContent='Bild konnte nicht geladen werden'; };
+  im.onload=()=>{
+    W=im.width; H=d.h;
+    const off=document.createElement('canvas'); off.width=W; off.height=im.height;
+    const og=off.getContext('2d',{willReadFrequently:true});
+    og.drawImage(im,0,0);
+    const dat=og.getImageData(0,0,W,im.height).data;
+    karte=new Uint8Array(W*H);
+    for(let i=0;i<W*H;i++) karte[i]=dat[i*4];
+    grau=null;
+    if(im.height>=2*H){
+      grau=new Uint8Array(W*H);
+      for(let i=0;i<W*H;i++) grau[i]=dat[(W*H+i)*4];
+    }
+    const s=Array.from(karte).sort((x,y)=>x-y);
+    lo=s[Math.floor(0.01*s.length)]; hi=s[Math.floor(0.99*s.length)];
+    hist=histogramm(karte);
+    vorschlag=taelerFinden(hist); grenzen=vorschlag.slice(); vonHand=false;
+    alles();
+  };
+  im.src=d.bild;
+}
+
+/* ---- Bedienung ---------------------------------------------------------- */
+const wahl=document.getElementById('wahl');
+DATEN.forEach((d,i)=>{
+  const b=document.createElement('button');
+  b.textContent=d.titel; if(i===2) b.classList.add('an');
+  b.onclick=()=>{ [...wahl.querySelectorAll('[data-bild]')].forEach(x=>x.classList.remove('an'));
+    b.classList.add('an'); laden(d); };
+  b.dataset.bild='1'; wahl.appendChild(b);
+});
+{
+  const b=document.createElement('button'); b.textContent='Zonenfarben'; b.classList.add('an');
+  b.onclick=()=>{ farbig=!farbig; b.classList.toggle('an',farbig); alles(); };
+  wahl.appendChild(b);
+  const o=document.createElement('button'); o.textContent='Originalbild';
+  o.onclick=()=>{ zeigeBild=!zeigeBild; o.classList.toggle('an',zeigeBild); malen(); };
+  wahl.appendChild(o);
+  const z=document.createElement('button'); z.textContent='zurück zur Talsuche';
+  z.onclick=()=>{ grenzen=vorschlag.slice(); vonHand=false; alles(); };
+  wahl.appendChild(z);
+  const d=document.createElement('div'); d.className='schieber';
+  d.innerHTML='Relief <input type="range" id="hoch" min="40" max="420" value="190">';
+  wahl.appendChild(d);
+  d.querySelector('input').oninput=e=>{ hoch=+e.target.value; grob=true; malen(); };
+  d.querySelector('input').onchange=()=>{ grob=false; malen(); };
+}
+
+/* Drehen */
+let vx=0, vy=0;
+const runter=e=>{ zieht=true; grob=true; c.classList.add('zieht');
+  vx=(e.touches?e.touches[0].clientX:e.clientX); vy=(e.touches?e.touches[0].clientY:e.clientY);
+  e.preventDefault(); };
+const bewegt=e=>{ if(!zieht) return;
+  const x=(e.touches?e.touches[0].clientX:e.clientX), y=(e.touches?e.touches[0].clientY:e.clientY);
+  az=Math.max(-1.2,Math.min(1.2, az+(x-vx)*0.006));
+  el=Math.max(-0.5,Math.min(1.15, el+(y-vy)*0.005));
+  vx=x; vy=y; malen(); e.preventDefault(); };
+const los=()=>{ if(!zieht) return; zieht=false; grob=false; c.classList.remove('zieht'); malen(); };
+c.addEventListener('mousedown',runter); addEventListener('mousemove',bewegt); addEventListener('mouseup',los);
+c.addEventListener('touchstart',runter,{passive:false}); c.addEventListener('touchmove',bewegt,{passive:false});
+c.addEventListener('touchend',los);
+/* Doppelklick aufs Bild stellt es gerade */
+c.addEventListener('dblclick',e=>{ az=0; el=0; zieht=false; grob=false; malen(); e.preventDefault(); });
+
+/* Grenzen schieben */
+/* DIE BEDIENSPRACHE DES HAUSES (Caspar_D, 21.09.2026: „einfachklick setzt,
+   doppelklick entfernt, das ist unsere sprache"). Ein Klick NAHE einer Grenze ist
+   ein Griff, kein Setzen - sonst kollidierten Setzen und Ziehen, und der
+   Doppelklick zum Entfernen legte vorher eine neue Grenze an. */
+let greift=-1, setzt=false, startY=0;
+const NAH=30;
+const sPos=e=>{ const r=sc.getBoundingClientRect();
+  const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  return y * sc.height / r.height; };
+const naechste=y=>{ let best=-1, dist=1e9;
+  grenzen.forEach((t,i)=>{ const d=Math.abs(sy(t)-y); if(d<dist){ dist=d; best=i; } });
+  return {i:best, d:dist}; };
+const sRunter=e=>{
+  const y=sPos(e), n=naechste(y);
+  if(n.i>=0 && n.d<=NAH){ greift=n.i; grob=true; }
+  else { setzt=true; startY=y; }
+  e.preventDefault(); };
+const sBewegt=e=>{ if(greift<0) return;
+  const v=sv(sPos(e));
+  const min=greift>0?grenzen[greift-1]+4:2, max=greift<grenzen.length-1?grenzen[greift+1]-4:253;
+  grenzen[greift]=Math.max(min,Math.min(max,v));
+  vonHand=true; legende(); stapelMalen(); malen(); e.preventDefault(); };
+const sLos=e=>{
+  if(greift>=0){ greift=-1; grob=false; malen(); return; }
+  if(!setzt) return;
+  setzt=false;
+  /* nur wenn die Hand stillstand - ein Zug ueber die Flaeche ist kein Klick */
+  const y = e ? sPos(e) : startY;
+  if(Math.abs(y-startY)>5) return;
+  const v=sv(startY);
+  if(grenzen.some(t=>Math.abs(t-v)<4)) return;
+  grenzen.push(v); grenzen.sort((a,b)=>a-b);
+  vonHand=true; alles(); };
+/* Doppelklick auf eine Grenze nimmt sie weg */
+sc.addEventListener('dblclick',e=>{
+  const y=sPos(e), n=naechste(y);
+  if(n.i>=0 && n.d<=NAH){ grenzen.splice(n.i,1); vonHand=true; alles(); }
+  e.preventDefault(); });
+sc.addEventListener('mousedown',sRunter); addEventListener('mousemove',sBewegt); addEventListener('mouseup',sLos);
+sc.addEventListener('touchstart',sRunter,{passive:false}); sc.addEventListener('touchmove',sBewegt,{passive:false});
+sc.addEventListener('touchend',sLos);
+
+laden(DATEN[2]);
+</script></body></html>
