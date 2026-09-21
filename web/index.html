@@ -27481,7 +27481,24 @@ const EFFEKTE = {
      Rueckwaertskompatibilitaet beschraenkt in der Radikalitaet des Ansatzes, dann will ich sie
      nicht." Muesste dieser Effekt „Ellipse mit Gefaelle" nachbilden koennen, lebte die alte
      Formauswahl hier weiter - nur versteckt, als Umrechnung. */
-  lichtRaum:{ label:'Scheinwerfer mit Tiefe', art:'gl', verr:'screen', staerkeDef:.7, leuchtet:true,
+  /* verrFrei: EINE LEUCHTE WAEHLT IHRE VERRECHNUNG (Caspar_D, 21.09.2026: „beim neuen
+     Scheinwerfer mit Tiefe steht kein Verrechnungsmodus mehr da, ist das gewollt?" - nein).
+     Ein GL-Effekt bekommt sonst in 34376 zwangsweise „ueber" aufgedrueckt, und die Zeile in
+     31173 wird gar nicht erst gebaut: beides ist fuer VOLLBILD-Ergebnisse richtig, die das Bild
+     ERSETZEN. Ein Scheinwerfer ersetzt nichts, er legt Licht dazu - genau wie die Kaustik, die
+     dasselbe Flag traegt.
+     WAS DAMIT NICHT WEGFAELLT (nachgerechnet, nicht vermutet): die Liste weiter unten, die alle
+     Leuchten nach der Registry auf „abwedeln" setzt, bleibt - sie ist die Hausentscheidung vom
+     21.09.2026 („dann hellt der Scheinwerfer tatsaechlich auf") und gilt weiter fuer die VORGABE.
+     Das `verr:'screen'` in dieser Zeile ist darum nur der Wert, den die Liste gleich ueberschreibt;
+     es steht hier wie bei allen Leuchten und wird nicht angefasst. Und LICHTMAL bleibt auch: es
+     zwingt „lighter" nur, solange in den LICHT-PUFFER gemalt wird, nie aufs Bild.
+     WAS SICH ALSO AENDERT: nicht die Vorgabe, sondern dass sie ueberhaupt waehlbar ist. Wer den
+     alten, deckenden Fleck will, stellt „ueber" ein - bis heute war das der einzige Modus, und
+     zwar ungefragt. Gemessen an der Naht: lichtraum-saeume faellt von p95 78,0 auf 5,3, weil
+     abwedeln nur aufhellt, was schon Licht hat. Ob das im Bild richtig aussieht, entscheidet
+     Caspar_D. */
+  lichtRaum:{ label:'Scheinwerfer mit Tiefe', art:'gl', verr:'screen', verrFrei:true, staerkeDef:.7, leuchtet:true,
     besch:'Eine <b>Lampe mit einem Ort im Raum</b>, nicht eine gemalte Form. Sie steht irgendwo im Diorama und scheint irgendwohin — beide Punkte haben eine <b>Tiefe</b>. Was man sieht, ist ausgerechnet: steht sie frontal, ist der Fleck rund; steht sie schräg, wird er von selbst zur Ellipse, und zwar genau so schräg, wie sie steht. Eine Bauart zum Auswählen gibt es darum nicht mehr.<br><b>Mit Tiefenkarte</b> beleuchtet sie nur, was <b>hinter</b> ihr liegt — steht sie hinter einer Figur, bleibt die Figur dunkel und es entsteht eine Silhouette. Ohne Karte leuchtet sie flach, und die Zeile sagt es.<br><b>Öffnungswinkel</b> ist der Kegel, <b>Hotspot</b> der helle Kern darin, <b>Kante</b> wie hart der Rand abfällt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},
       {k:'lrOx',lbl:'Lampe X',min:-0.5,max:1.5,step:.01,def:.22},
@@ -27604,7 +27621,7 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
    vor ihm, bis es jemand sagt. */
 const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'Aufenthalt',
   sel:[['alles','überall'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles',
-  brauchtKarte:true, notiz:e=>aufenthaltNotiz(e) };
+  brauchtKarte:true, grau:e=>flaechenGrund(e), notiz:e=>aufenthaltNotiz(e) };
 const VERDECK_WERTE = [['aus','aus'],['vorn','vom Vordergrund verdeckt']];
 const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'];
 /* `sel` BLEIBT EINE LISTE (Gegenlesen 16.09.2026, zweite Runde). Der Altwert soll nur dort in der
@@ -27667,6 +27684,21 @@ const TIEFE_KOERPER = e => e.typ==='partikel';
    stillstuende" - seit dem 17.09.2026 wird nichts mehr abgelesen, die Entfernung wird gewuerfelt;
    der Satz stammte noch aus der Zeit, als die Naehe der SZENE als Entfernung einsprang.) */
 const RAUM_OHNE = new Set(['schwarm','sternschnuppen','konfettiKanone']);
+/* HINTERGRUNDFLAECHENEFFEKTE (Caspar_D, 21.09.2026: „Sternschnuppen duerfen nur ganz hinten
+   gemalt werden … eigentlich auf der letzten Tiefenebene, dem Himmel. Ja, so machen wir das: es
+   gibt Fronteffekte und Hintergrundflaecheneffekte.")
+   Diese Arten fragen NICHT, auf welcher Seite der Trennung sie wirken - sie liegen auf der
+   letzten Tiefenebene, und das ist keine Einstellung, sondern ihre Natur. Draussen ist das der
+   Himmel, drinnen die Rueckwand; wo die Flaeche anfaengt, sagt „Hintergrundflaeche ab" in der
+   Vorbereitung (zoneFlaecheAb), einmal je Bild fuer alle.
+   WARUM NICHT EINFACH „nur hinten": „hinten" ist alles jenseits der Trennung - auch der Baum im
+   Mittelgrund. Eine Schnuppe, die vor dem Baum durchzieht, ist genauso falsch wie eine vor dem
+   Gesicht. Die Flaeche ist die LETZTE Ebene, nicht die hintere Haelfte.
+   Das Polarlicht kommt hier dazu, sobald es gebaut ist (Backlog). */
+const FLAECHEN_ARTEN = new Set(['sternschnuppen']);
+/* Die Kante der Flaeche ist hart: „ab 12 von 255" heisst ab 12, nicht ungefaehr. Zwei Stufen
+   Weichheit nehmen der Kurve nur die Treppe, sie verschieben die Grenze nicht. */
+const FLAECHE_KANTE = 2/255;
 /* Der Aufenthalt gilt bei Koerpern hart - aber nicht, solange ein altes Rezept seine weiche Zone
    traegt. EINE Stelle, die das entscheidet; Maler und Kette fragen beide hier. */
 const ZONE_HART = e => TIEFE_KOERPER(e) && e.tiefeVerdeckung!=='zone' && !!e.tiefeWirkt && e.tiefeWirkt!=='alles';
@@ -27762,6 +27794,21 @@ const ZONE_UNGENAU = new Set(['bokeh','schwaden']);
 const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) — wo die Zonengrenze durch feine Struktur läuft, bleibt ein Rest Farbe auf der anderen Seite (gemessen bis 2 % der gemalten Fläche).';
 /* Wie viel des Bildes die erlaubte Zone einnimmt - und ob dort ueberhaupt etwas zu sehen sein wird.
    Gerechnet aus dem Raster, nicht geraten. */
+/* WAS EIN FLAECHENEFFEKT ANSTELLE DER WAHL BEKOMMT: den Grund, warum er keine hat - und dazu
+   die Zahl, die er braucht (Regel 4, nichts darf luegen). Auf einem Portraet ohne Himmel gibt es
+   keine letzte Ebene; die Schnuppe faellt dann GANZ aus, und das muss auf der Karte stehen,
+   bevor jemand zehn Minuten sucht, warum nichts fliegt. Gezaehlt wird auf demselben groben
+   Raster wie der Verteilungsstreifen, also stimmt die Zahl mit dem ueberein, was er zeigt. */
+function flaechenGrund(e){ try{
+  if(!(TIEFE_KOERPER(e)&&FLAECHEN_ARTEN.has(e.art))) return null;
+  const satz='Diese Art liegt immer auf der letzten Tiefenebene — draußen der Himmel, drinnen die Rückwand. Eine Seite wählt sie nicht; wo die Fläche anfängt, sagt „Hintergrundfläche ab“ in der Vorbereitung, Station Tiefe.';
+  if(!tiefeProben()) return satz+' Ohne Tiefenkarte gibt es keine letzte Ebene — dann zieht sie wie früher über das ganze Bild.';
+  const an=tiefeAnteile(zoneFlaecheAb(), FLAECHE_KANTE);
+  if(!an) return satz;
+  return satz + (an.fern>0.002
+    ? ' Auf diesem Bild sind das '+(an.fern<0.01?'unter 1':Math.round(an.fern*100))+' % der Fläche.'
+    : ' Auf diesem Bild gibt es keine solche Fläche — sie fällt ganz aus. Stell „Hintergrundfläche ab“ höher oder nimm eine andere Art.');
+}catch(x){ return null; } }
 function zonenLageVon(e){ const tp=tiefeProben(); if(!tp) return null;
   const sp=tiefeSpanne(tp); return zonenLage(e.tiefeWirkt, sp.g, sp.w); }
 function leerWarnung(e){ const zl=zonenLageVon(e); if(!zl) return '';
@@ -29647,13 +29694,23 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
          - mit gewaehlter Quelle wird der Geburtsort nicht verlegt: den hat Caspar_D gesetzt.
        Alles reine Funktionen von i und t, also bleibt der Loop exakt. */
     const RAUM=Math.max(0,Math.min(1,(e.raumtiefe==null?0:e.raumtiefe)));
-    const zoneWunsch=ZONE_HART(e)?e.tiefeWirkt:null;
+    /* EIN FLAECHENEFFEKT FRAGT NICHT NACH DER SEITE (21.09.2026). Er bekommt seine Zone nicht
+       aus tiefeWirkt, sondern aus der Flaeche selbst - und zwar auch dann, wenn die Zeile „Wirkt
+       auf" der Karte auf „alles" steht, denn fuer ihn gibt es dieses „alles" nicht. */
+    const FLAECHE_ART=FLAECHEN_ARTEN.has(e.art);
+    const zoneWunsch=FLAECHE_ART?'hinten':(ZONE_HART(e)?e.tiefeWirkt:null);
     /* DAS RASTER WIRD IMMER GEHOLT, WENN ES EINE KARTE GIBT (Schritt 2). Bis Schritt 1 wurde es
        nur bei Aufenthalt oder Raumtiefe gefragt; seit die Verdeckung eine Ja/Nein-Frage ist, die
        IMMER gilt (Spezifikation Abschnitt 5), braucht jedes Teilchen seine Entfernung. Der Ruf
        ist billig: tiefeProben rechnet einmal je Quelle und liegt danach im Vorrat. */
     const TPR=tiefeProben();
-    const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(TPR):null;
+    /* UND SEINE GRENZE IST NICHT DIE TRENNUNG, SONDERN DIE FLAECHE. Dieselbe Sperre, dieselbe
+       Kurve, nur eine andere Zahl hinein - der Kopf der Schnuppe wird an ihr geprueft wie jedes
+       andere Teilchen an der Trennung (zPunkt/zSperre). Ohne Tiefenkarte gibt es keine Flaeche:
+       dann fliegt sie wie bisher ueber das ganze Bild, denn ein Bild ohne Tiefe hat keine letzte
+       Ebene, die man verfehlen koennte. */
+    const ZONE=TPR?zoneWunsch:null;
+    const ZG=TPR?(FLAECHE_ART?{g:zoneFlaecheAb(),w:FLAECHE_KANTE}:tiefeSpanne(TPR)):null;
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
     /* VERDECKT WIRD IMMER, WENN ES EINE KARTE GIBT - auch bei Raumtiefe 0, auch bei Schwarm,
        Schnuppe und Kanone (RAUM_OHNE gilt nur fuer Groesse, Tempo und Dunst). Ohne Karte gibt es
