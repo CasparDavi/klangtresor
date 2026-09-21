@@ -29,6 +29,21 @@ Ergebnis = Bild × Durchlass  +  Farbe × (Umgebung + Streulicht × 4) × (1 −
 Darum wird ein Strahl im Nebel sichtbar, gleich an welcher Stelle der Kette der Nebel hängt — es
 ist ein Raum, keine Stapelung (Regel 6).
 
+**Was er nicht ist — eine Projektion.** Caspar_D fragte, ob der Puffer „eine Projektion der
+Dreidimensionalität auf eine Glasplatte vor dem Diorama" sei. Als Beschreibung der **Wirkung**
+trifft es; als Beschreibung der **Entstehung** nicht, und der Unterschied ist der Kern: Eine
+Projektion setzte eine räumliche Lichtverteilung voraus, die auf eine Ebene abgebildet wird — dabei
+ginge die Tiefe verloren, aber sie wäre vorher da gewesen. Hier malt jede Leuchte **direkt flach**.
+Die Tiefe war nie vorhanden, sie wird nicht weggeworfen.
+
+Auch die Glasplatte trifft nicht ganz: Eine Platte wäre ein Ding an einem Ort. Der Puffer liegt
+nirgends — er ist ein **Nachschlagewerk**: eine Tabelle, in der zu jeder Bildstelle eine Zahl steht,
+und jeder darf fragen. Genau deshalb wirkt er unabhängig von der Reihenfolge in der Kette.
+
+Damit ist der Mangel in einem Satz sagbar: **In der Tabelle steht nur eine Zahl je Stelle.** Stünde
+dort „wie hell, aus welcher Richtung, aus welcher Tiefe", wären alle drei Befunde unten erledigt —
+ohne Projektion und ohne Volumen.
+
 ### Und daneben: die Lichtorte
 
 Der Puffer sagt **wie viel**, nicht **woher**. Für die Richtung gibt es eine zweite, getrennte
@@ -140,6 +155,31 @@ erst, wenn das Neue gewonnen hat. Bei Ken Burns hat sie getragen — die neue Fa
 alten, bis Caspar_D sagte: *„schmeiss die alte Fahrt schon raus, die kann ja nix."*
 
 **Damit bleibt jedes gespeicherte Rezept unberührt, ohne Beweisführung.**
+
+### Die harte Anforderung: die alten Rezepte müssen weiterlaufen
+
+Caspar_D, 21.09.2026:
+
+> „damit die Rezepte mit Scheinwerfer und Laser immer noch auf einen Effekt zugreifen können, der
+> unter anderem auch das alte noch kann."
+
+Das ist strenger, als es klingt. Übernimmt der neue Effekt am Ende den alten Namen, muss er **aus
+den alten gespeicherten Werten dasselbe Bild erzeugen** — Hausregel 12: *alte Ablagen werden
+übersetzt, nie stillschweigend anders gelesen.* Bei Ken Burns lief es genauso: das eine Rezept mit
+der alten „Fahrt" wurde übersetzt, nicht fallengelassen.
+
+Praktisch: Aus `Bauart: Ellipse mit Gefälle` plus Ort und Größe muss eine **gleichwertige
+Lampenstellung im Raum** ableitbar sein. Das begrenzt, wie radikal das Modell sein darf — es muss
+die alten Formen als Sonderfälle erzeugen können, sonst verlieren gespeicherte Rezepte ihr
+Aussehen.
+
+**Der Prüfstein steht im Archiv:** 6 Rezepte mit `licht`, 3 mit `laser`, 4 mit `strahlen`. An denen
+wird vorher/nachher verglichen, bevor der alte Effekt fällt.
+
+**Und daraus folgt eine Reihenfolge:** Die Übersetzung wird gebraucht, *bevor* der alte Effekt
+fällt — nicht, solange der neue daneben steht. Während der Erprobung trägt der neue Effekt seinen
+eigenen Namen, und kein gespeichertes Rezept verweist auf ihn. Die Übersetzung ist also Teil des
+letzten Schritts, nicht des ersten.
 
 ### Was vor der ersten Zeile entschieden sein muss
 
