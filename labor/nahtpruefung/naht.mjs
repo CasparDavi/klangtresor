@@ -13,6 +13,7 @@
  *        [--studiofeld [datei]]   (Studio in 2560x1440, 1920x1080, 1440x900 oeffnen, #tbs-feld und Leinwand ablesen)
  *        [--studio-speichern datei | --studio-vergleich datei]   (je Fall drei Augenblicke in Studio-Vorgabegroesse, Hash)
  *        [--massstab datei]       (je Fall ein Augenblick mit langer Seite 360 und 1080, auf 256 verglichen)
+ *        [--gpu]                  (echte Grafikkarte statt SwiftShader - NUR fuer Kosten (msBild), Hashes sind dann nicht vergleichbar)
  *        [--neu]                  (Zwischenstand verwerfen und alle Faelle neu rechnen, siehe WIEDERAUFNAHME)
  *        [--wachhund <s>]         (Abbruch nach so vielen Sekunden ohne Fortschritt, Vorgabe 1800)
  *        [--loop-ansicht datei]   (Stufe "Loop verbinden": Ansichtsbild zur Songzeit s bitgleich zum Exportbild round((s mod L)*30)?)
@@ -81,8 +82,14 @@ const kinder = new Set();
 async function browserStarten(job, fenster = [1400, 1000]) {
   const profil = path.join(HIER, '.profil-' + process.pid + '-' + job);
   fs.rmSync(profil, { recursive: true, force: true }); fs.mkdirSync(profil, { recursive: true });
+  /* SWIFTSHADER IST DIE VORGABE UND MUSS ES BLEIBEN: nur die Softwarerasterung malt auf jeder
+     Maschine bitgleich, und darauf ruht jeder Hashvergleich. Fuer KOSTEN ist sie dagegen die
+     falsche Maschine - sie rechnet Canvas und Shader in ganz anderen Verhaeltnissen als eine
+     echte Grafikkarte (gemessen 21.09.2026: ein Vollbild-Weichzeichner kostet dort ein Vielfaches).
+     --gpu laesst sie weg. Damit sind Hashes NICHT mehr vergleichbar; der Schalter ist ausdruecklich
+     nur fuer msBild da, und der Lauf sagt es in seiner Kopfzeile. */
   const kind = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + profil, '--no-first-run', '--no-default-browser-check',
-    '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
+    ...(arg.gpu ? [] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader']), '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
     '--mute-audio', '--window-size=' + fenster.join(','), '--disable-extensions', '--disable-sync', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let stderr = ''; kind.stderr.on('data', d => { stderr = (stderr + d).slice(-4000); });
   const b = { kind, profil, job }; kinder.add(b);

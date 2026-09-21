@@ -3448,6 +3448,141 @@
    ],
    "gruppe": "lichtRaum",
    "bemerkung": "KREIS: Pan und Tilt um 90 Grad versetzt. Die strengste Nahtprobe des Schwenks, weil beide Achsen zugleich laufen - schliesst eine nicht, sieht man es sofort."
+  },
+  {
+   "name": "kosten-leer",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Der Boden: nur das Grundbild, keine Effekte. Alles andere wird gegen diese Zahl gelesen."
+  },
+  {
+   "name": "kosten-licht-alt",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "licht", "rmBlende": "keine", "lmQuelle": "stetig"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Der ALTE Scheinwerfer, ohne Blende, ohne Antrieb. Die Vergleichszahl fuer alles Weitere."
+  },
+  {
+   "name": "kosten-licht-alt-antrieb",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "licht", "rmBlende": "keine", "lmQuelle": "takt", "lmTiefe": 0.6}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Derselbe mit Antrieb auf dem Takt. Die Differenz ist der Preis des LFO - nie gemessen."
+  },
+  {
+   "name": "kosten-licht-blende-gitter",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "licht", "rmBlende": "gitter"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Blende 'Gitter'. HIER LAG DIE ALTLAST: am 10.09.2026 zeichnete die Blende bis zu 6889 einzeln weichgezeichnete Kreise je Bild und brauchte 465 ms, weil ctx.filter je Zeichenzug wirkt (Regel 14). Behoben, aber nie nachgemessen."
+  },
+  {
+   "name": "kosten-licht-blende-punkte",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "licht", "rmBlende": "punkte"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Blende 'Punkte' - die feinste Zellteilung und damit die meisten Zeichenzuege. Wenn irgendwo noch ein Filter in einer Schleife steckt, zeigt er sich hier."
+  },
+  {
+   "name": "kosten-licht-blende-wolken",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "licht", "rmBlende": "wolken"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Blende 'Wolken' - Rauschmuster statt Raster, andere Art Arbeit."
+  },
+  {
+   "name": "kosten-lichtraum-1",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "lichtRaum"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Der NEUE Scheinwerfer, eine Lampe. Er rechnet je Bildpunkt gegen die Tiefenkarte - ein Shader-Gang. Gegen kosten-licht-alt gelesen sagt die Differenz, was das Modell kostet."
+  },
+  {
+   "name": "kosten-lichtraum-2",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "lichtRaum"},
+    {"typ": "lichtRaum"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Zwei Lampen. Skaliert der Shader linear, oder kostet die zweite weniger?"
+  },
+  {
+   "name": "kosten-lichtraum-3",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "lichtRaum"},
+    {"typ": "lichtRaum"},
+    {"typ": "lichtRaum"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Drei Lampen - die Frage, ob jemand drei davon in eine Kette haengen darf."
+  },
+  {
+   "name": "kosten-lichtraum-nebel",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "lichtRaum"},
+    {"typ": "filmnebel"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Eine Lampe PLUS Medium: erst dann laeuft der Fuelllauf des Licht-Puffers, und der neue Scheinwerfer malt zweimal (Licht und Herkunft). Die teuerste Stellung, die das Modell hat."
+  },
+  {
+   "name": "kosten-gl-linse",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "linse"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Ein einfacher Shader-Effekt ohne Tiefenkarte und ohne Licht. Die Vergleichszahl fuer den reinen Gang-Preis: Textur hoch, Vollbild rasten, als Canvas zurueck."
+  },
+  {
+   "name": "kosten-gl-flammen",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "flammen"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Ein Shader mit fraktalem Rauschen - deutlich mehr Rechenarbeit je Bildpunkt als die Linse, aber derselbe Gang."
+  },
+  {
+   "name": "kosten-licht-streiflicht",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {"typ": "licht", "rmBlende": "keine", "lmQuelle": "stetig"},
+    {"typ": "streiflicht"}
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Alter Scheinwerfer PLUS Streiflicht. Gegen kosten-licht-alt gelesen ergibt die Differenz, was das Streiflicht kostet - ein Shader, der wie der neue Scheinwerfer die Tiefenkarte je Bildpunkt liest und sogar einen Marsch fuer den Schlagschatten faehrt."
   }
  ],
  "nichtHerstellbar": []

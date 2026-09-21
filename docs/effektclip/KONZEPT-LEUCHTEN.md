@@ -457,6 +457,47 @@ ausdrücklich, dass ein Strahl im Leeren unsichtbar ist. Ein Streuanteil an der 
 zweite Quelle für dieselbe Sache. Wenn der Nebel künftig Lichtabfall und Phasenfunktion kann,
 entsteht der sichtbare Strahl dort physikalisch richtig.
 
+### Was es kostet — gemessen am 21.09.2026
+
+Auf der **echten Grafikkarte** (Radeon Pro 5500 XT, 629×889), Median aus fünf Läufen. Dafür hat
+`naht.mjs` einen Schalter `--gpu` bekommen, der SwiftShader weglässt: Die Softwarerasterung ist für
+Bitgleichheit richtig und für Kosten die falsche Maschine.
+
+**Wie falsch, ist selbst eine Zahl:** leeres Bild 2,4 ms gegen 43,8 ms, Blende „Punkte" 5,3 gegen
+156,3, neuer Scheinwerfer 7,7 gegen 102,5 — **Faktor 13 bis 29**, und für Canvas und Shader
+verschieden. Wer auf SwiftShader Kosten misst, misst ein anderes Verhältnis, nicht nur eine andere
+Geschwindigkeit.
+
+| Effekt | netto | Art |
+|---|---|---|
+| Linse | **10,9 ms** | Shader, ohne Tiefenkarte |
+| Scheinwerfer mit Tiefe | 5,6 ms | Shader, mit Tiefenkarte |
+| Streiflicht (abzüglich Lampe) | ~4,1 ms | Shader, Tiefenkarte **und** Marsch |
+| Flammen | 4,3 ms | Shader, fraktales Rauschen |
+| Blenden (Gitter/Punkte/Wolken) | 3,2–3,7 ms | Canvas |
+| alter Scheinwerfer | 0,4 ms | Canvas |
+| Antrieb | **nicht messbar** | |
+
+**Die 5,6 ms sind der Preis eines Shader-Gangs, keine Eigenheit der Lampe** — sie liegt am unteren
+Ende des Feldes. Der Grund ist plausibel: Sie liest die Quelltextur gar nicht, sie gibt nur ihren
+Kegel aus; die Linse liest sie verzerrt, also mit schlechter Cache-Lokalität.
+
+**Sie skaliert unterlinear:** eine Lampe 5,6 · zwei 8,1 · drei 11,6. Mit Medium in der Kette 13,3,
+denn dann läuft der Fülllauf und die Lampe malt zweimal (Licht und Herkunft).
+
+**Die Blenden-Altlast ist erledigt, und zwar nachweisbar.** 3,2–3,7 ms statt der 465 ms vom
+10.09.2026 — und entscheidender: **alle drei Blendenarten kosten gleich viel**, obwohl „Punkte" die
+feinste Zellteilung hat. Damit ist belegt, dass kein Filter mehr in einer Schleife steckt (Regel
+14). Hätte sich noch einer versteckt, müsste „Punkte" herausstechen.
+
+**Die Genauigkeit, ehrlich:** Zwischen zwei Messreihen sind die Werte um 10–20 % gewandert, der
+Boden von 2,40 auf 2,70 ms. Das ist Drift durch Systemlast und Wärme. Die Zahlen tragen auf ±20 %
+— genug für „ist der neue Scheinwerfer ein Ausreißer?", nicht genug für „kostet Gitter mehr als
+Wolken?".
+
+**Ein Nebenbefund, der nicht hierher gehört, aber notiert sein will:** Die **Linse kostet 10,9 ms**,
+ein Drittel eines 30-Hz-Bildes für einen einzigen Effekt. Das hat nie jemand gemessen.
+
 ### Noch offen
 
 - ~~Der Schwenk~~ — gebaut: Pan und Tilt als Kippung der Lampe, fünf Stellungen (Steht, Pan, Tilt,
