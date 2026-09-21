@@ -27466,7 +27466,13 @@ const EFFEKTE = {
        stellt GL.run sie hart auf null - die Zeile dort laeuft nach diesem Zusatz. */
     glZusatz:e=>({ u_tiefeAn:1 }) },
   partikel:{ label:'Partikel', art:'mal', verr:'screen', staerkeDef:.8, lmNurSchub:true, besch:'Teilchen ziehen durchs Bild. Die Quelle rechts sagt, wo sie entstehen, der Flug, wohin sie gehen: Auftrieb ist leichter oder schwerer als Luft, Druck schießt sie hinaus und läuft aus wie Luftwiderstand. Anzahl, Größe, Tempo, Wind und Farbe frei. Die Farbquelle sagt, WOHER die Farben kommen: das Akzentpaar des Titelbildes, seine gemessenen Haupttöne, ein fester bunter Satz, eine einzige Farbe (schwarzer Schnee) oder ein eigenes Paar. Was die gewählte Art ausmacht, steht unter dem Auswahlfeld.',
-    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},{k:'horizont',lbl:'Horizont (0 oben)',min:0,max:1,step:.02,def:0},{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
+    params:[{k:'art',lbl:'Art',sel:[['schnee','Schnee'],['regen','Regen'],['asche','Asche'],['funken','Funken'],['blasen','Blasen'],['staub','Staub'],['blaetter','Blätter'],['schwaden','Schwaden (Rauch)'],['gluehwuermchen','Glühwürmchen'],['schmetterling','Schmetterlinge'],['konfetti','Konfetti (fallend)'],['konfettiKanone','Konfetti (Kanone)'],['daunen','Daunenfedern'],['bokeh','Bokeh (Lichtkreise)'],['glitzer','Glitzer'],['pusteblume','Pusteblumensamen'],['sternschnuppen','Sternschnuppen'],['schwarm','Schwarm']],def:'schnee',notiz:e=>ART_BESCH[e.art]||null},{k:'farbSatz',lbl:'Farbquelle',sel:[['paar','Titelbild-Paar'],['bunt','Titelbild bunt'],['fest','Fester bunter Satz'],['ein','Einfarbig'],['eigen','Eigenes Paar']],def:'paar',notiz:e=>farbSatzNotiz(e)},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff',grau:e=>FARB_GRUND[e.farbSatz||'paar']?true:null,notiz:e=>dunkelNotiz(e)},{k:'farbe2',lbl:'Farbe bis',farbe:true,def:'#dfeaff',grau:e=>(e.farbSatz||'paar')==='eigen'?null:((e.farbSatz==='ein')?'Einfarbig malt nur mit der ersten Farbe; die Farbheterogenität streut sie in der Helligkeit.':FARB_GRUND[e.farbSatz||'paar'])},{k:'farbstreu',lbl:'Farbheterogenität',min:0,max:1,step:.05,def:0},{k:'anzahl',lbl:'Anzahl',min:20,max:400,step:10,def:120,notiz:e=>mengeNotiz(e)},{k:'groesse',lbl:'Größe',min:1,max:8,step:.5,def:3},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flattern',lbl:'Flattern',min:.1,max:6,step:.05,def:.55,grau:e=>e.art==='schmetterling'?null:'Nur Schmetterlinge schlagen mit den Fl\u00fcgeln \u2014 die anderen Arten fliegen, wie der Wind sie tr\u00e4gt.',notiz:e=>e.art==='schmetterling'?'Fl\u00fcgelschl\u00e4ge je Sekunde. Jeder Falter weicht ein wenig ab, sonst schl\u00e4gt der Schwarm im Gleichtakt.':null},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:.1},{k:'wandern',lbl:'Eigenbewegung',min:0,max:1,step:.05,def:0},/* HIER STAND „HORIZONT (0 OBEN)" (bis 21.09.2026). Er schnitt alle Teilchen oberhalb einer
+         Bildzeile weg - der Behelf aus der Zeit, als es keine Tiefenkarte gab und „hinten" nur
+         „weiter oben im Bild" heissen konnte. Die Zonen tun dasselbe raeumlich und richtig: Wer
+         Schnee nur vorn will, kreuzt „ganz vorn" an, und die Grenze liegt dort, wo das Bild
+         wirklich seine Ebene hat, nicht auf einer waagerechten Linie.
+         NACHGESEHEN AM 21.09.2026: keines der 22 Rezepte im Bestand setzt ihn ueber null. Mit ihm
+         faellt partikelMaske und der ganze Zweig, der dafuer eine zweite Leinwand baute. */{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -27578,7 +27584,11 @@ const EFFEKTE = {
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
-    params:[{k:'horizont',lbl:'Horizont',min:.3,max:.95,step:.01,def:.62},{k:'wellen',lbl:'Wellen',min:0,max:1,step:.05,def:.3},{k:'skala',lbl:'Wellenzahl',min:2,max:30,step:1,def:12},{k:'tempo',lbl:'Tempo',min:.5,max:5,step:.1,def:2},{k:'verblassen',lbl:'Verblassen',min:0,max:1,step:.05,def:.5}]},
+    /* EIN WORT FUER ZWEI DINGE WAR EINES ZU VIEL (Caspar_D, 21.09.2026: „wozu ist der Horizont
+       (0 oben) Regler beim Feuer, wo gibt es ihn noch"). Beim Spiegel ist es die ACHSE, an der
+       gespiegelt wird - die Wasserlinie -, bei den Teilchen war es eine Schnittkante. Zwei
+       verschiedene Dinge, ein Name; der eine ist gefallen, der andere heisst jetzt, was er ist. */
+    params:[{k:'horizont',lbl:'Spiegelachse',min:.3,max:.95,step:.01,def:.62},{k:'wellen',lbl:'Wellen',min:0,max:1,step:.05,def:.3},{k:'skala',lbl:'Wellenzahl',min:2,max:30,step:1,def:12},{k:'tempo',lbl:'Tempo',min:.5,max:5,step:.1,def:2},{k:'verblassen',lbl:'Verblassen',min:0,max:1,step:.05,def:.5}]},
   /* ---- Glas (Caspar_D, 11.09.2026: "gibt es Glasscheiben-Effekte? Risse, Risse, die sich ausbreiten,
      Dampf, der sich niederschlaegt, Tropfen, die eine Scheibe treffen, Tropfen, die herunterlaufen").
      Formen, keine Motive: Risse sind verzweigte Linien, Beschlag ist Weichzeichnung unter einem Schleier,
@@ -27731,7 +27741,18 @@ const LEER_PARAM = { k:'leerraum', lbl:'Leerraum vor Tiefenkarte', min:0, max:1,
    SZENE an diesem Ort, und das ist keine Eigenschaft des Teilchens. Der Wurf haengt nur an der
    Teilchennummer, also steht er still und der Loop bleibt exakt.
    0 ist flach wie bisher (Vorgabe), 1 ist stark. */
-const RAUM_PARAM = { k:'raumtiefe', lbl:'Raumtiefe', min:0, max:1, step:.05, def:0,
+/* „RAUMTIEFE" HIESS HIER ETWAS ANDERES ALS IN DER VORBEREITUNG (Caspar_D, 21.09.2026: „Funken
+   enthaelt noch den Regler Raumtiefe, muesste die Vorbereitung geregelt haben").
+   Er hat recht, dass es zwei Dinge waren, und beide hiessen gleich:
+     VORB.raumtiefe   WIE TIEF der Raum ist, in Bildbreiten - die fehlende Masseinheit der Karte.
+                      Sie gilt fuer alle und steht darum in der Vorbereitung.
+     e.raumtiefe      WIE STARK dieser eine Effekt sie nutzt - ob seine Teilchen in der Ferne
+                      kleiner und langsamer werden oder alle gleich gross bleiben.
+   Das Zweite ist kein Mass, sondern ein Anteil, und es gehoert zum Effekt: ein Schneetreiben darf
+   flach sein, waehrend die Funken daneben staffeln. Es heisst darum jetzt STAFFELUNG.
+   NICHT GESTRICHEN, obwohl es verlockend waere: drei Rezepte im Bestand stellen es auf 1, und
+   ein Regler, der verschwindet, nimmt ihre Einstellung mit. Umbenennen aendert kein Bild. */
+const RAUM_PARAM = { k:'raumtiefe', lbl:'Staffelung', min:0, max:1, step:.05, def:0,
   brauchtKarte:true, grau:e=>raumGrund(e), notiz:e=>raumNotiz(e) };
 /* Einzelne Koerper hat heute nur der Partikel-Effekt. Steht hier spaeter eine zweite Art Effekt mit
    Teilchen, gehoert sie in diese eine Zeile und nirgendwo sonst hin. */
@@ -29958,17 +29979,9 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       zx=e._rc.getContext('2d'); zx.setTransform(1,0,0,1,0,0); zx.globalCompositeOperation='source-over'; zx.globalAlpha=1; zx.clearRect(0,0,Wn,Hn); }
     /* Wird geschnitten, malen die Teilchen erst auf eine eigene Leinwand - die Maske schneidet
        dort einmal, statt je Teilchen zu rechnen. */
-    /* NUR NOCH DER HORIZONT SCHNEIDET HIER (18.09.2026). Bis heute stand neben ihm die "Tiefe aus
-       der Bildzeile"; sie ist gestrichen (Begruendung oben bei EFFEKTE.partikel). Die Reihenfolge
-       bleibt: die Baender komponieren auf e._vc, DANACH schneidet partikelMaske darueber - der
-       Horizont soll ja auch das schneiden, was die Baender stehen lassen. */
-    const hor=(e.horizont==null?0:e.horizont);
-    const schnitt=!schw&&hor>0.001;
-    const echtCx=cx, echtModus=cx.globalCompositeOperation;
-    if(schnitt){ if(!e._vc) e._vc=document.createElement('canvas');
-      if(e._vc.width!==Wn||e._vc.height!==Hn){ e._vc.width=Wn; e._vc.height=Hn; }
-      cx=e._vc.getContext('2d'); cx.setTransform(1,0,0,1,0,0); cx.globalCompositeOperation='source-over';
-      cx.globalAlpha=1; cx.filter='none'; cx.clearRect(0,0,Wn,Hn); cx.lineCap='round'; }
+    /* HIER SCHNITT DER HORIZONT (bis 21.09.2026). Er malte die Teilchen erst auf eine eigene
+       Leinwand, damit die Maske dort EINMAL schneiden konnte statt je Teilchen. Mit dem Regler
+       faellt der ganze Zweig: was oberhalb einer Bildzeile weg soll, sagt jetzt die Zone. */
     const wa=(e.wandern==null?0:e.wandern);
     /* ---- AUFENTHALT (Betretungsverbot) UND RAUMTIEFE (16.09.2026) ----
        Gefragt wird EINMAL je Bild nach dem Raster (tiefeProben, 160 Punkte breit, einmal je Quelle)
@@ -30185,7 +30198,9 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* Womit die fertige Schicht aufgelegt wird. Exakt ist es nur, wenn beides dieselbe Rechenart
        ist; ist es das nicht, traegt das Auflegen die Verrechnung des Effekts (ausser im
        Schnitt-Weg und bei Schwaden, wo sie eine Stufe spaeter steht und dort schon stand). */
-    const LAGE_OP = SCHICHT_EXAKT ? VOP : ((schw||schnitt) ? 'source-over' : VOP);
+    /* `schnitt` ist am 21.09.2026 mit dem Horizont gefallen - uebrig bleibt der Schwarm, der
+       ebenfalls auf eine eigene Leinwand malt. */
+    const LAGE_OP = SCHICHT_EXAKT ? VOP : (schw ? 'source-over' : VOP);
     const zielCx = BAENDER ? (schw?zx:cx) : null;
     let bx=null;
     if(BAENDER){
@@ -30595,7 +30610,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       /* Und zurueck auf die Rechenart, die an dieser Leinwand steht: auf der laufenden die
          Verrechnung des Effekts (malen() hat sie gesetzt), auf der Schnitt- und der
          Rauchleinwand "Ueber". Was danach noch malt, findet sie vor. */
-      zielCx.globalCompositeOperation=(schw||schnitt)?'source-over':VOP; }
+      zielCx.globalCompositeOperation=schw?'source-over':VOP; }
     if(schw){ const lx2=e._rl.getContext('2d'); lx2.setTransform(1,0,0,1,0,0); lx2.globalAlpha=1;
       lx2.globalCompositeOperation='source-over'; lx2.clearRect(0,0,Wn,Hn);
       if(!LICHTMAL&&olicht&&olicht.width>1){ lx2.drawImage(olicht,0,0);
@@ -30625,10 +30640,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Zoom stehenbleibt. Das ist die Entscheidung, nicht diese Zeile.
        KEIN REZEPT IM ARCHIV IST BETROFFEN: keines der 20 setzt horizont > 0 (nachgesehen
        20.09.2026), die Maske ist dort null und es wird gar nicht maskiert. */
-    if(schnitt){ const mk=partikelMaske(hor, Wn, Hn);
-      if(mk){ cx.globalCompositeOperation='destination-in'; cx.globalAlpha=1; cx.drawImage(mk,0,0); cx.globalCompositeOperation='source-over'; }
-      echtCx.globalCompositeOperation=echtModus; echtCx.globalAlpha=1; echtCx.drawImage(e._vc,0,0);
-      cx=echtCx; } }
+  }
   else if(e.typ==='scanlines'){ const per=Math.max(2,Math.round(e.raster)), a=Math.min(1,e.staerke); if(!e._mc||e._mcPer!==per){ e._mc=document.createElement('canvas'); e._mc.width=4; e._mc.height=per; const mx=e._mc.getContext('2d'); mx.fillStyle='#000'; mx.fillRect(0,0,4,1); e._mcPer=per; }
     cx.globalCompositeOperation=VMODE[e.verr]||'multiply';
     /* Das Zeilenraster ist in Studio-Bildpunkten gemeint und wird mit EINHEIT gezoomt, auch auf Bruchteile eines Bildpunkts. Der
@@ -36647,30 +36659,9 @@ function zeichneFrame(t,roh){
      neu. Drei Masken werden behalten; jede kostet vier Byte je Bildpunkt, und wer am Regler zieht,
      erzeugt sonst ein Dutzend davon. */
   const PMASKEN = [];
-  function partikelMaske(hor, W, H){
-    const k = hor.toFixed(2) + '|' + W + 'x' + H;
-    const da = PMASKEN.find(m => m.k === k);
-    if(da) return da.cv;
-    try{
-      const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-      const g = cv.getContext('2d'), im = g.createImageData(W, H), d = im.data;
-      for(let y = 0; y < H; y++){
-        const vy = (y + 0.5) / H;
-        /* Der Schnitt ist schmal, aber nicht hart: was innerhalb des Bildes aufhoert, hoert
-           weich auf (Regel 16). Drei Hundertstel der Bildhoehe - man sieht keine Kante und
-           trotzdem eine Grenze. */
-        const hcut = hor > 0.001 ? Math.max(0, Math.min(1, (vy - hor) / 0.03)) : 1;
-        const a8 = Math.round(Math.max(0, Math.min(1, hcut)) * 255);
-        for(let x = 0; x < W; x++){
-          const o = (y * W + x) * 4;
-          d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = a8;
-        }
-      }
-      g.putImageData(im, 0, 0);
-      PMASKEN.unshift({ k, cv }); PMASKEN.length = Math.min(PMASKEN.length, 3);
-      return cv;
-    }catch(x){ return null; }
-  }
+  /* HIER STAND partikelMaske - die waagerechte Schnittkante der Teilchen. Sie gehoerte zum
+     Regler „Horizont", und der ist am 21.09.2026 gefallen: die Zonen schneiden raeumlich und
+     richtig, statt auf einer Bildzeile. */
   /* DREI ZUSTAENDE, NICHT ZWEI (Gegenlesen 16.09.2026). Bis heute hiess `TIEFEN[<Quelle>]===null` zweierlei:
      „die Karte ist noch unterwegs" und „es gibt keine". Die Effektkarte las das zweite und legte
      alle Tiefenzeilen still - fuer einen Titel, dessen tiefe.png im selben Augenblick geladen wurde.
