@@ -3303,6 +3303,109 @@
    ],
    "gruppe": "kenburns",
    "bemerkung": "Dieselbe Stellung auf dem zweiten Titel, dessen Taktzahl nicht durch 8 teilbar ist - andere Halt- und Zuglaengen, andere Tiefenkarte. Die Probe, dass die Tiefenebene nicht an den Zahlen EINES Titels haengt."
+  },
+  {
+   "name": "lichtraum-vorn",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOz": 0.95,
+     "lrZz": 0.3
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "Die Lampe steht VORN (Tiefe 0,95) und scheint nach hinten: sie beleuchtet fast alles, die Verdeckung nimmt wenig weg. Der Grundfall des neuen Modells."
+  },
+  {
+   "name": "lichtraum-hinten",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOz": 0.15,
+     "lrOx": 0.5,
+     "lrOy": 0.3,
+     "lrZz": 0.1,
+     "lrZx": 0.5,
+     "lrZy": 0.6
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "GEGENLICHT: die Lampe steht HINTEN (Tiefe 0,15), alles Naehere bekommt ihr Licht nicht. Bei dieser Karte ist der Boden nah und das Motiv oben fern - es muss also unten dunkel bleiben und oben hell werden. Der Fall, an dem sich die Verdeckung zeigt."
+  },
+  {
+   "name": "lichtraum-schraeg",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": -0.2,
+     "lrOy": 0.1,
+     "lrOz": 0.9,
+     "lrZx": 0.7,
+     "lrZy": 0.7,
+     "lrZz": 0.2,
+     "winkel": 55
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "SCHRAEGER EINFALL von links oben vorn nach rechts unten hinten. Der Fleck muss von selbst zur Ellipse werden und in die Richtung kippen, in die die Achse zeigt - ohne dass jemand eine Bauart gewaehlt haette."
+  },
+  {
+   "name": "lichtraum-saeume",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": 0.5,
+     "lrOy": 0.22,
+     "lrOz": 0.12,
+     "lrZx": 0.5,
+     "lrZy": 0.35,
+     "lrZz": 0.05,
+     "winkel": 75,
+     "staerke": 0.9
+    },
+    {
+     "typ": "streiflicht",
+     "kante": 0.75,
+     "relief": 0.6,
+     "staerke": 0.9
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "DER BEWEIS FUER DAS MODELL: Lampe HINTER dem Motiv (Tiefe 0,12) plus Streiflicht. Das Streiflicht liest den Ort je Bildpunkt aus dem Herkunfts-Puffer statt aus dem global gemittelten lichtOrtMittel, und die dritte Achse ist gemessen statt am Regler gestellt. Erwartet: Gegenlicht - was der Kamera zugewandt ist, faellt aus, stehen bleiben die Saeume an den Tiefenkanten."
+  },
+  {
+   "name": "lichtraum-saeume-vorn",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": 0.5,
+     "lrOy": 0.22,
+     "lrOz": 0.98,
+     "lrZx": 0.5,
+     "lrZy": 0.45,
+     "lrZz": 0.2,
+     "winkel": 75,
+     "staerke": 0.9
+    },
+    {
+     "typ": "streiflicht",
+     "kante": 0.75,
+     "relief": 0.6,
+     "staerke": 0.9
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "Die Gegenprobe zu lichtraum-saeume: dieselbe Kette, aber die Lampe steht VORN (0,98). Jetzt muss das Streiflicht modellieren statt Silhouetten zu zeichnen - dasselbe Rezept, anderes Vorzeichen, und niemand hat einen Einfall-Regler angefasst."
   }
  ],
  "nichtHerstellbar": []

@@ -27444,6 +27444,35 @@ const EFFEKTE = {
     params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
   flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; Wind legt die Zungen zur Seite; lodert im Takt höher.',
     params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
+  /* ===================== SCHEINWERFER MIT TIEFE (21.09.2026) =====================
+     docs/effektclip/KONZEPT-LEUCHTEN.md. Neubau NEBEN dem alten Scheinwerfer (Hausregel: eigener
+     Name, das Alte faellt erst, wenn das Neue gewonnen hat) - Caspar_D: „ich wuerde Scheinwerfer
+     und Laser erstmal gar nicht anfassen und erstmal einen gerichteten Scheinwerfer als Effekt
+     implementieren, dem genau dieses Beleuchtungsmodell zugrundeliegt."
+
+     DER UNTERSCHIED ZUM ALTEN IN EINEM SATZ: der alte MALT eine Form, die man aus einer Liste
+     waehlt (Kreis, Ellipse mit Gefaelle, Kegel von aussen); dieser hier ist eine LAMPE MIT EINEM
+     ORT IM RAUM, und was man sieht, ist ausgerechnet. Die Ellipse entsteht, wenn er schraeg steht -
+     sie ist keine Einstellung mehr, sondern eine Folge.
+
+     KEINE RUECKWAERTSKOMPATIBILITAET, UND ZWAR ABSICHTLICH. Caspar_D, 21.09.2026: „wenn uns die
+     Rueckwaertskompatibilitaet beschraenkt in der Radikalitaet des Ansatzes, dann will ich sie
+     nicht." Muesste dieser Effekt „Ellipse mit Gefaelle" nachbilden koennen, lebte die alte
+     Formauswahl hier weiter - nur versteckt, als Umrechnung. */
+  lichtRaum:{ label:'Scheinwerfer mit Tiefe', art:'mal', verr:'screen', staerkeDef:.7, leuchtet:true,
+    besch:'Eine <b>Lampe mit einem Ort im Raum</b>, nicht eine gemalte Form. Sie steht irgendwo im Diorama und scheint irgendwohin — beide Punkte haben eine <b>Tiefe</b>. Was man sieht, ist ausgerechnet: steht sie frontal, ist der Fleck rund; steht sie schräg, wird er von selbst zur Ellipse, und zwar genau so schräg, wie sie steht. Eine Bauart zum Auswählen gibt es darum nicht mehr.<br><b>Mit Tiefenkarte</b> beleuchtet sie nur, was <b>hinter</b> ihr liegt — steht sie hinter einer Figur, bleibt die Figur dunkel und es entsteht eine Silhouette. Ohne Karte leuchtet sie flach, und die Zeile sagt es.<br><b>Öffnungswinkel</b> ist der Kegel, <b>Hotspot</b> der helle Kern darin, <b>Kante</b> wie hart der Rand abfällt.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},
+      {k:'lrOx',lbl:'Lampe X',min:-0.5,max:1.5,step:.01,def:.22},
+      {k:'lrOy',lbl:'Lampe Y',min:-0.5,max:1.5,step:.01,def:.12},
+      {k:'lrOz',lbl:'Lampe Tiefe',min:0,max:1,step:.01,def:.85,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'lrZx',lbl:'Ziel X',min:0,max:1,step:.01,def:.5},
+      {k:'lrZy',lbl:'Ziel Y',min:0,max:1,step:.01,def:.55},
+      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.35,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'winkel',lbl:'Öffnungswinkel',min:5,max:120,step:1,def:38,wert:v=>kf(v)+'°'},
+      {k:'hotspot',lbl:'Hotspot',min:0,max:1,step:.05,def:.35},
+      {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
+      {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
+        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte leuchtet die Lampe flach — sie weiß nicht, was vor ihr steht.'}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
@@ -27475,7 +27504,7 @@ const EFFEKTE = {
    dem 10.09.2026 ist das ein echtes Medium (Licht-Puffer), die Reihenfolge spielt dafuer keine Rolle mehr.
    Schatten wird das Spiegelbild: Farbig nachbelichten. Selbstleuchter (Feuer, Flammen, Partikel) bleiben Screen.
    Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
-['licht','laser','strahlen','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+['licht','lichtRaum','laser','strahlen','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
 /* Wer leuchtet, schreibt seine Abstrahlung zusaetzlich in den Licht-Puffer, aus dem sich das Medium bedient. */
 /* MEDIUM IST NICHT IMMER EINE EIGENSCHAFT DES TYPS (Caspar_D, 14.09.2026: "rauch muss vom feuer
    angeleuchtet werden koennen"). Der Filmnebel ist immer eines, die Partikel nur, solange sie
@@ -27487,7 +27516,7 @@ EFFEKTE.partikel.medium = e=>e.art==='schwaden';
 /* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie behalten ihre eigene
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten'; if(EFFEKTE.sicherung) EFFEKTE.sicherung.verr='nachbelichten';   /* Schwarz abgewedelt waere nichts - die Sicherung war unsichtbar (Tiefen-Check 10.09.2026) */
-['licht','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
+['licht','lichtRaum','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
 /* ---- RAUM (Caspar_D, 11.09.2026: "definiere zum zeitlichen Lichtverhalten jetzt mit einem Zusatzpanel das
    spatiale Verhalten der Lichtquelle"): Ursprung (wo das Geraet haengt), Ziel (wohin es leuchtet), Bewegung des
    Ziels (auch wie ein Moving Head: Fahrt mit Anlauf und Bremsen, Schritt auf den Schlag), Form des Flecks
@@ -27835,7 +27864,7 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
    `lmNurSchub` am Effekt, weil die Kanone den Antrieb SELBST liest (antriebPeriode) - bei art
    'mal' legt die Kette ihn zwar ohnehin nicht auf die Deckkraft, aber die Marke sagt es an.
    Arten ohne Salve grauen das Pult mit Grund aus, statt es zu verstecken. */
-[['licht',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['partikel',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
+[['licht',{lmQuelle:'takt',lmTiefe:.6}],['lichtRaum',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['partikel',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
   .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
 { const pl=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.lm);
   if(pl) pl.grau=e=>ART_ANTRIEB[e.art]?null:('Diese Art fliegt gleichmäßig weiter — nur die Konfetti-Kanone (ihre Salven) und der Glitzer (seine Blitze) hängen am Antrieb.'
@@ -28013,6 +28042,35 @@ let LICHTORTE = [];
    Dioramafaktor zu weit rechts heraus, und das Streiflicht rechnete mit einer Lampe, die woanders
    haengt. Die Flaeche traegt sich darum selbst ein, dort wo LICHTORTE geleert wird. */
 let LICHTMASS = [1, 1];
+/* ===================== DER HERKUNFTS-PUFFER (21.09.2026) =====================
+   KONZEPT-LEUCHTEN.md, Abschnitt 3a. Der Licht-Puffer sagt WIE VIEL Licht an einer Stelle ankommt;
+   dieser hier sagt, WOHER es kommt und AUS WELCHER TIEFE. Zusammen sind sie das, was die
+   Echtzeitgrafik einen G-Buffer nennt - und der Licht-Puffer war immer schon einer, nur ein
+   unvollstaendiger.
+
+   NICHT DIE RICHTUNG WIRD GESPEICHERT, SONDERN DER ORT. Eine Richtung kann negativ sein, und in
+   einem additiv beschriebenen 8-Bit-Puffer gibt es keine negativen Zahlen. Jede Leuchte addiert
+   darum ihren ORT mal ihrer Helligkeit; beim Lesen wird durch die Summe der Helligkeiten geteilt.
+   Das ist Zeile fuer Zeile dieselbe Rechnung wie lichtOrtMittel() - nur JE BILDPUNKT statt einmal
+   fuers ganze Bild. Damit ergeben zwei Scheinwerfer links und rechts an jeder Stelle die Lampe,
+   die dort wirklich wirkt, statt einer erfundenen in der Mitte.
+
+   DIE KANAELE: R = x mal Helligkeit, G = y mal Helligkeit, B = Tiefe mal Helligkeit,
+   A = Helligkeit. Beim Lesen Ort = RGB/A.
+
+   X UND Y SIND VERSCHOBEN GESPEICHERT. Eine Lampe darf ausserhalb des Bildes stehen (der Laser
+   tut es ausdruecklich), also laeuft ihr Ort von -0,5 bis 1,5. Gespeichert wird (v+0,5)/2, gelesen
+   wird v*2-0,5. Wer das eine aendert, muss das andere mitaendern - darum stehen beide Formeln hier
+   nebeneinander und nicht an zwei Enden des Hauses.
+
+   DIE GRENZE, UND SIE IST EHRLICH ZU NENNEN: bei mehreren hellen Leuchten kann die Summe der
+   Helligkeiten ueber 1 laufen, und Canvas klemmt auf 255. Dann stimmt RGB/A nicht mehr exakt, und
+   der gerechnete Ort wandert zur helleren Lampe. Bei ein bis zwei Leuchten ist das unsichtbar;
+   bei fuenf gleich hellen waere es ein Fehler. Wer das braucht, braucht einen Float-Puffer und
+   damit WebGL 2. */
+let LICHTHERKUNFT = false;
+let HERKUNFT_DA = false;
+function herkKod(v){ const x=(Number(v)+0.5)/2; return Math.max(0,Math.min(1,x)); }
 /* LISTE UND MASS GEHOEREN ZUSAMMEN, ALSO IN EINE FUNKTION (Gegenlesen 20.09.2026).
    Bis eben standen `LICHTORTE=[]` und `LICHTMASS=[Wn,Hn]` als zwei Zuweisungen nebeneinander in
    dioramaMalen - beieinander nur aus Gewohnheit. Wer spaeter eine zweite Stelle baut, die LICHTORTE
@@ -28313,11 +28371,11 @@ function histoRechnen(){ try{ const w=140,hh=140,tc=document.createElement('canv
   for(let i=0;i<d.length;i+=4){ const r=d[i],g=d[i+1],bb=d[i+2],lv=r*0.299+g*0.587+bb*0.114; H.r[Math.min(B-1,r*B/256|0)]++; H.g[Math.min(B-1,g*B/256|0)]++; H.b[Math.min(B-1,bb*B/256|0)]++; H.v[Math.min(B-1,lv*B/256|0)]++; } HISTO=H; }catch(e){ HISTO=null; } }
 
 const mk=()=>document.createElement('canvas');
-let oa=mk(),ob=mk(),oc=mk(),ores=mk(),okc=mk(),ovb=mk(),olicht=mk(); let VORB=vorbNeu();
-let ca=oa.getContext('2d'),cb=ob.getContext('2d'),cc=oc.getContext('2d'),cres=ores.getContext('2d'),ckc=okc.getContext('2d'),clicht=olicht.getContext('2d');
+let oa=mk(),ob=mk(),oc=mk(),ores=mk(),okc=mk(),ovb=mk(),olicht=mk(),oherk=mk(); let VORB=vorbNeu();
+let ca=oa.getContext('2d'),cb=ob.getContext('2d'),cc=oc.getContext('2d'),cres=ores.getContext('2d'),ckc=okc.getContext('2d'),clicht=olicht.getContext('2d'),cherk=oherk.getContext('2d');
 function groesse(){ const f=$('#tbs-feld').getBoundingClientRect(), [bw,bh]=(bereit?qMass(bild):[1200,1200]), sc=Math.min(f.width/bw,f.height/bh);
   const W=Math.max(1,Math.round(bw*sc)), H=Math.max(1,Math.round(bh*sc));
-  [lein,oa,ob,oc,ores,okc,ovb,olicht].forEach(c=>{ c.width=W; c.height=H; }); }
+  [lein,oa,ob,oc,ores,okc,ovb,olicht,oherk].forEach(c=>{ c.width=W; c.height=H; }); }
 
 /* ---- LOOP-MODUS (Caspar_D, 10.09.2026: "als seemless loop waere schon schoen, gerade bei Schneefall,
    Feuer, Funkenflug"): fuer den Videoexport wird jede Geschwindigkeit auf ein ganzes Vielfaches von
@@ -28685,6 +28743,113 @@ function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rm
   else if(art==='tor'){ const q=ell?st:2; mkr.fillRect(-r*0.9*Math.sqrt(q)/1.2,-r*0.9/Math.sqrt(q)*1.2,r*1.8*Math.sqrt(q)/1.2,r*1.8/Math.sqrt(q)*1.2); }
   mkr.restore();
   if(weich>0){ mk.filter='blur('+(weich*zelle*0.35).toFixed(1)+'px)'; mk.drawImage(mkr.canvas,0,0); mk.filter='none'; } }
+/* ===================== DIE LAMPE MIT EINEM ORT IM RAUM (21.09.2026) =====================
+   KONZEPT-LEUCHTEN.md, Abschnitt 3. Der alte Scheinwerfer malt eine Form; diese Lampe steht im
+   Raum, und was man sieht, faellt aus der Geometrie heraus.
+
+   DIE EINE SETZUNG, UND SIE STEHT HIER ALS SOLCHE: DAS DIORAMA IST SO TIEF WIE BREIT.
+   Die Tiefenkarte ist relativ und hat keine Eichung (Caspar_D, 14.09.2026: „da musst du aber jetzt
+   die richtige z-Skalierung hinkriegen, das ist nicht einfach"). Ohne Eichung gibt es keinen
+   Massstab, in dem sich ein Oeffnungswinkel ausdruecken liesse - also wird einer gesetzt, und der
+   einfachste ehrliche ist der Wuerfel: die Tiefe 0..1 entspricht einer Bildbreite. Jede andere
+   Setzung waere genauso willkuerlich; diese ist wenigstens anschaulich und deckt sich mit
+   Caspar_Ds eigenem Bild vom Diorama mit 3x3-Seitenflaechen.
+   WIRD DIE KARTE JE GEEICHT (Backlog: Tiefeneichung), tritt der gemessene Wert an diese Stelle und
+   sonst nirgends - darum steht die Umrechnung in EINER Funktion.
+
+   DIE Z-ACHSE LAEUFT WIE tiefeBei: 1 ist nah (an der Glasscheibe), 0 ist fern. In Weltkoordinaten
+   gedreht, damit die Kamera in +z schaut: welt = (1 - z) * Breite. Wer das verwechselt, bekommt
+   Gegenlicht und Vorderlicht vertauscht - und zwar lautlos, weil beides plausibel aussieht. */
+const LR_TIEFE_JE_BREITE = 1.0;
+function lrRaum(e, W, H){
+  const z=(v,d)=>{ const x=Number(v); return isFinite(x)?Math.max(0,Math.min(1,x)):d; };
+  const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
+  const B=W*LR_TIEFE_JE_BREITE;
+  return { O:[f(e.lrOx,.22)*W, f(e.lrOy,.12)*H, (1-z(e.lrOz,.85))*B],
+           Z:[f(e.lrZx,.50)*W, f(e.lrZy,.55)*H, (1-z(e.lrZz,.35))*B],
+           oz:z(e.lrOz,.85) };
+}
+/* Der Querschnitt des Kegels am Ziel, auf die Bildebene projiziert.
+   Ein Kreis vom Radius r, der SENKRECHT auf der Kegelachse steht, erscheint von vorn als Ellipse:
+   quer zur Achse behaelt er r, laengs der Achse wird er mit |a_z| gestaucht, und er kippt in die
+   Richtung, in die die Achse zeigt. Steht die Lampe frontal (a_z = 1), kommt ein Kreis heraus;
+   streift sie (a_z gegen 0), wird die Ellipse zur Linie.
+   DAS IST DER GANZE UNTERSCHIED ZUM ALTEN EFFEKT: dort waehlt man „Kreis" oder „Ellipse mit
+   Gefaelle" aus einer Liste, hier faellt beides aus der Stellung der Lampe heraus.
+   DIE UNTERGRENZE IST EINE NOTWEHR, KEINE PHYSIK: bei exakt streifendem Einfall waere die kleine
+   Halbachse null und der Effekt unsichtbar. Das ist geometrisch richtig und praktisch unbrauchbar -
+   eine Lampe, die verschwindet, weil man einen Regler um ein Hundertstel weiterschiebt, ist ein
+   Bedienfehler. Gesetzt sind 8 %, und sie stehen hier, statt sich im Code zu verstecken. */
+const LR_FLACH_MIN = 0.08;
+function lrKegel(O, Z, winkelGrad){
+  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=Z[2]-O[2];
+  const len=Math.hypot(dx,dy,dz);
+  if(!(len>1e-6)) return null;
+  const ax=dx/len, ay=dy/len, az=dz/len;
+  const r=len*Math.tan(Math.max(1,Math.min(150,winkelGrad))*Math.PI/360);   /* halber Oeffnungswinkel */
+  const gross=r, klein=r*Math.max(LR_FLACH_MIN, Math.abs(az));
+  return { r, gross, klein, rot:Math.atan2(ay,ax), az, len };
+}
+/* Der Maler. Er zeichnet IMMER auf eine eigene Flaeche und legt sie dann auf - weil die Verdeckung
+   mit destination-in arbeitet, und die wuerde auf dem Licht-Puffer alles wegschneiden, was andere
+   Leuchten vorher hineingemalt haben. Dasselbe Muster wie beim alten Scheinwerfer mit Blende. */
+function lichtRaumMalen(e, cx, t, W, H){
+  const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return;
+  const R=lrRaum(e,W,H), K=lrKegel(R.O,R.Z,Number(e.winkel)||38); if(!K) return;
+  lichtOrtMelden(R.O[0], R.O[1], a);   /* bis der Herkunfts-Puffer steht, sieht das Streiflicht sie so */
+  if(!e._lrc){ e._lrc=document.createElement('canvas'); }
+  if(e._lrc.width!==W||e._lrc.height!==H){ e._lrc.width=W; e._lrc.height=H; }
+  const x=e._lrc.getContext('2d');
+  x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none';
+  x.clearRect(0,0,W,H);
+  /* Hotspot und Kante: der Kern traegt den vollen Wert, danach faellt es ab. Ein hoher Kantenwert
+     macht den Abfall steil (harter Rand), ein niedriger weich - dieselbe Bedeutung wie am alten
+     Effekt, damit niemand zwei Woerter fuer eine Sache lernen muss. */
+  const hot=Math.max(0,Math.min(1,e.hotspot==null?.35:Number(e.hotspot)));
+  const kan=Math.max(0,Math.min(1,e.kante==null?.5:Number(e.kante)));
+  const kern=hot*0.85, exp=0.6+kan*3.4;
+  /* IM HERKUNFTSLAUF TRAEGT DERSELBE KEGEL DIE ORTSFARBE STATT DER LICHTFARBE. Derselbe Verlauf,
+     dieselbe Geometrie, dieselbe Verdeckung - nur was hineingemalt wird, ist ein anderer Wert.
+     Deshalb steht hier kein zweiter Maler: zwei Maler fuer eine Form waeren zwei Wahrheiten. */
+  const farbeHier = LICHTHERKUNFT
+    ? 'rgb('+Math.round(herkKod(Number(e.lrOx==null?.22:e.lrOx))*255)+','
+            +Math.round(herkKod(Number(e.lrOy==null?.12:e.lrOy))*255)+','
+            +Math.round(Math.max(0,Math.min(1,Number(e.lrOz==null?.85:e.lrOz)))*255)+')'
+    : e.farbe;
+  x.save(); x.translate(R.Z[0],R.Z[1]); x.rotate(K.rot); x.scale(K.gross,K.klein);
+  const g=x.createRadialGradient(0,0,0,0,0,1);
+  for(let i=0;i<=14;i++){ const q=i/14;
+    const v=(q<=kern)?1:Math.pow(Math.max(0,1-(q-kern)/Math.max(1e-6,1-kern)),exp);
+    g.addColorStop(q, rgba(farbeHier, a*v)); }
+  x.fillStyle=g; x.beginPath(); x.arc(0,0,1,0,7); x.fill(); x.restore();
+  /* DIE VERDECKUNG: was NAEHER steht als die Lampe, bekommt ihr Licht nicht. Das ist der ganze
+     Unterschied zwischen einer Lampe im Raum und einer auf der Scheibe - und es ist ein
+     Zahlenvergleich, kein Marsch: die Maske „hinten" mit der Grenze bei der Lampentiefe laesst
+     genau das stehen, was hinter ihr liegt. Steht die Lampe hinter einer Figur, bleibt die Figur
+     dunkel und ihre Silhouette entsteht von selbst.
+     OHNE KARTE GIBT ES KEINE VERDECKUNG, und dann leuchtet die Lampe flach - die Zeile auf der
+     Karte sagt es, statt es dem Auge zu ueberlassen. */
+  const vd=Math.max(0,Math.min(1,e.verdeckung==null?1:Number(e.verdeckung)));
+  if(vd>0.001){
+    const maske=tiefeMaske('hinten', W, H, R.oz, 0.10);
+    if(maske){
+      if(vd>=0.999){ x.globalCompositeOperation='destination-in'; geoKarteLegen(x,maske); }
+      else { /* Teilweise: die Maske nur anteilig wirken lassen, damit der Regler ueber seinen ganzen Weg etwas tut (Regel 9) */
+        x.globalCompositeOperation='destination-in'; x.globalAlpha=1;
+        const h=document.createElement('canvas'); h.width=W; h.height=H; const hx=h.getContext('2d');
+        hx.globalAlpha=1-vd; hx.fillStyle='#fff'; hx.fillRect(0,0,W,H);
+        hx.globalAlpha=vd; geoKarteLegen(hx,maske);
+        x.drawImage(h,0,0); }
+      x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; }
+  }
+  /* REGEL 5: LICHT IST BELEUCHTUNG, NICHT FARBE. Die Vorgabe wird ein paar Zeilen nach der
+     Registry auf abwedeln gesetzt, zusammen mit allen anderen Leuchten - hier steht darum nur der
+     Rueckfall, falls jemand diese Liste vergisst. Caspar_D hat es am 21.09.2026 am Bild erkannt:
+     der Fleck lag als Farbe ueber dem Bild, statt aufzuhellen, was schon da ist. Genau das ist der
+     Unterschied zwischen screen und Farbig abwedeln - und der Grund fuer Regel 5. */
+  cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||VMODE.abwedeln||'screen');
+  cx.globalAlpha=1; cx.drawImage(e._lrc,0,0);
+}
 function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return; const O=raumUrsprung(e,W,H), Z=raumZiel(e,t,W,H,O), form=e.rmForm||'kreis', r=Math.max(2,(e.rmGroesse==null?0.3:e.rmGroesse)*Math.min(W,H)), rot=Math.atan2(Z[1]-O[1],Z[0]-O[0]);
   lichtOrtMelden(O[0], O[1], a);     /* der Ursprung ist das Geraet, nicht der Fleck */
   const blende=(e.rmBlende||'keine')!=='keine'; let x=cx;
@@ -29067,6 +29232,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     return; }
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/lpP(e.tempo))%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
+  else if(e.typ==='lichtRaum'){ lichtRaumMalen(e,cx,t,Wn,Hn); }
   else if(e.typ==='licht'||e.typ==='schatten'){ lichtMalen(e,cx,t,Wn,Hn); }
   else if(e.typ==='laser'){ /* EIN LASER FLIMMERT NICHT SINUSFOERMIG, ER TASTET AUS (VIDEO-PLAN 9b.3): an oder aus, hart.
      Derselbe Regler, andere Kurve - bei 1 ist er knapp die Haelfte der Zeit dunkel. */
@@ -30161,6 +30327,10 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
        wird - das Verkleinern IST der Weichzeichner, und LINEAR zieht ihn beim Lesen glatt. */
     this.texH=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texH); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+    /* TEXTUR 4: DER HERKUNFTS-PUFFER (21.09.2026). Leer heisst Alpha 0 - der Shader prueft das
+       und faellt dann auf den alten, global gemittelten Lichtort zurueck. */
+    this.texK=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texK); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,0]));
     this.hofCv=document.createElement('canvas');
     this.tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.tex); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true); return true; },
@@ -30183,7 +30353,7 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
     const pr=gl.createProgram(); gl.attachShader(pr,vs); gl.attachShader(pr,fs); gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)){ this.prog[schl]=null; return null; }
     pr._loc={}; this.prog[schl]=pr; return pr; },
   loc(pr,n){ if(pr._loc[n]===undefined) pr._loc[n]=this.gl.getUniformLocation(pr,n); return pr._loc[n]; },
-  run(e,srcCv,W,H,t,lichtCv,tiefeBild){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; }
+  run(e,srcCv,W,H,t,lichtCv,tiefeBild,herkCv){ if(!this.init()) return null; if(!this.noise){ this.noiseLaden(); return null; }
     /* Im Export die loopfaehige Form, wo der Shader eine hat; gelingt sie nicht, die Vorschauform - lieber ein Bild mit Naht als keins. */
     const schleife=LOOP>0&&!!this.noise4&&GL_SHADER[e.typ].indexOf('#ifdef LOOPFORM')>=0;
     const pr=(schleife&&this.programm(e.typ,true))||this.programm(e.typ,false); if(!pr) return null; const gl=this.gl;
@@ -30199,12 +30369,15 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
       const hx=this.hofCv.getContext('2d'); hx.setTransform(1,0,0,1,0,0); hx.globalCompositeOperation='source-over'; hx.globalAlpha=1;
       hx.clearRect(0,0,hw,hh); hx.drawImage(lichtCv,0,0,hw,hh);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,this.hofCv); }
+    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D,this.texK);
+    if(herkCv&&herkCv.width>1) gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,herkCv);
+    else gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,0]));
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D,this.texT);
     if(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1&&this._tiefeQuelle!==tiefeBild.src){ try{ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,tiefeBild); this._tiefeQuelle=tiefeBild.src; }catch(err){} }
     else if(!tiefeBild&&this._tiefeQuelle){ gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([128,128,128,255])); this._tiefeQuelle=null; }
     gl.activeTexture(gl.TEXTURE0);
     const u=(n,f)=>{ const l=this.loc(pr,n); if(l) f(l); };
-    u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2)); u('u_hof',l=>gl.uniform1i(l,3));
+    u('u_licht',l=>gl.uniform1i(l,1)); u('u_tiefe',l=>gl.uniform1i(l,2)); u('u_hof',l=>gl.uniform1i(l,3)); u('u_herk',l=>gl.uniform1i(l,4));
     u('u_tex',l=>gl.uniform1i(l,0)); u('u_t',l=>gl.uniform1f(l,t)); u('u_res',l=>gl.uniform2f(l,W,H)); u('u_einheit',l=>gl.uniform1f(l,EINHEIT)); u('u_staerke',l=>gl.uniform1f(l,Math.min(1,e.staerke)));
     /* Die Clipphase in doppelter Genauigkeit: t/L modulo 1 haengt nicht an t0, und t0+L ergibt dieselbe Zahl wie t0. */
     if(schleife){ u('u_loop',l=>gl.uniform1f(l,LOOP)); u('u_phase',l=>gl.uniform1f(l,((t/LOOP)%1+1)%1)); }
@@ -30395,6 +30568,7 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
      (LICHTORTE). Der Laser meldet seinen Faecherpunkt, und der liegt ausserhalb des Bildes -
      genau die streifende Lage, die Kanten aufblitzen laesst. */
   streiflicht:`uniform float u_einfall,u_kante,u_relief,u_schatten,u_ortX,u_ortY,u_ortDa,u_tiefeAn,u_einheit;
+uniform sampler2D u_herk;
 uniform sampler2D u_licht;
 void main(){
   vec4 c=texture2D(u_tex,v_uv);
@@ -30407,7 +30581,26 @@ void main(){
   float k=mix(6.0,90.0,u_relief);
   vec3 N=normalize(vec3(-(zr-zl)*k,-(zu-zo)*k,1.0));
   /* Der gemeldete Ort steht in Leinwandkoordinaten (0 oben), die Textur laeuft andersherum. */
-  vec2 d=(vec2(u_ortX,1.0-u_ortY)-v_uv)*vec2(u_res.x/max(1.0,u_res.y),1.0);
+  /* WOHER DAS LICHT KOMMT - SEIT DEM 21.09.2026 JE BILDPUNKT, WENN EINE LAMPE MIT ORT DA IST.
+     Der Herkunfts-Puffer traegt den helligkeitsgewichteten Lampenort: RGB/A. x und y sind
+     verschoben gespeichert (siehe herkKod im Haus), die dritte Achse ist die Tiefe der Lampe.
+     IST ER LEER (A = 0), gilt der alte Weg: ein global gemittelter Ort plus der von Hand
+     gestellte Einfall. Der Uebergang ist absichtlich sichtbar und nicht stillschweigend. */
+  vec4 hk=texture2D(u_herk,v_uv);
+  vec2 ort; float hoehe;
+  if(hk.a>0.004){
+    ort=vec2(hk.r/hk.a*2.0-0.5, hk.g/hk.a*2.0-0.5);
+    /* DIE DRITTE ACHSE IST JETZT GEMESSEN STATT GESTELLT. Steht die Lampe naeher als der Punkt,
+       faellt Licht von vorn ein; steht sie ferner, von hinten - und dann ist dot(N,L) auf allem,
+       was der Kamera zugewandt ist, negativ, es bleibt die Silhouette. Genau das, was der Regler
+       „Einfall" bisher von Hand nachreichen musste. Der Faktor 1,8 ist der alte Anschlag: die
+       volle Tiefendifferenz entspricht dem, was frueher der ganze Reglerweg war. */
+    hoehe=(hk.b/hk.a - texture2D(u_tiefe,v_uv).r)*1.8;
+  } else {
+    ort=vec2(u_ortX,u_ortY);
+    hoehe=(u_einfall>=0.0)?mix(0.04,1.8,u_einfall):mix(0.04,-0.9,-u_einfall);
+  }
+  vec2 d=(vec2(ort.x,1.0-ort.y)-v_uv)*vec2(u_res.x/max(1.0,u_res.y),1.0);
   float w=length(d);
   /* "Einfall" ist die DRITTE ACHSE der Lichtrichtung: wie weit die Leuchte vor dem Bild steht.
      0 heisst in der Bildebene - streifend, lange Schatten, harte Kanten. Nach rechts tritt sie
@@ -30416,7 +30609,6 @@ void main(){
      dann ist dot(N,L) auf allem, was der Kamera zugewandt ist, negativ und faellt aus - stehen
      bleibt nur, was sich wegdreht, also die Silhouette. Das ist Gegenlicht, und es ist ein
      Vorzeichen, kein zweiter Effekt. */
-  float hoehe=(u_einfall>=0.0)?mix(0.04,1.8,u_einfall):mix(0.04,-0.9,-u_einfall);
   vec3 L=normalize(vec3(d,hoehe));
   float blitz=pow(max(0.0,dot(N,L)),mix(1.2,14.0,u_kante));
   /* Schlagschatten: ein Marsch im Bildraum Richtung Licht, vierzehn Schritte. Steigt die Karte
@@ -30573,7 +30765,7 @@ function ergebnis(e,srcCv,t,Wn,Hn){ frisch(cres); cres.clearRect(0,0,Wn,Hn);
           const sh=Math.max(1,Math.abs(dx)*0.5)*(dx<0?-1:1); cres.fillStyle='#000'; cres.fillRect(bx+dx-Math.abs(sh),by,bw+Math.abs(sh)*2,bh);
           for(const [mask,sv] of [['#ff0000',sh],['#00ffff',-sh]]){ frisch(ckc); ckc.clearRect(0,0,Wn,Hn); ckc.drawImage(srcCv,bx,by,bw,bh,bx+dx+sv,by,bw,bh); ckc.globalCompositeOperation='multiply'; ckc.fillStyle=mask; ckc.fillRect(bx+dx+sv,by,bw,bh); frisch(ckc); cres.globalCompositeOperation='lighter'; cres.drawImage(okc,0,0); cres.globalCompositeOperation='source-over'; } }
         else cres.drawImage(srcCv,bx,by,bw,bh,bx+dx,by,bw,bh); } } }
-  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,mediumJetzt(e)?olicht:null, tiefeBildVon()); if(g) cres.drawImage(g,0,0);
+  else if(EFFEKTE[e.typ].art==='gl'){ const g=GL.run(e,srcCv,Wn,Hn,t,mediumJetzt(e)?olicht:null, tiefeBildVon(), HERKUNFT_DA?oherk:null); if(g) cres.drawImage(g,0,0);
     else if(mediumJetzt(e)){ cres.drawImage(srcCv,0,0); filmnebelLeinwand(e,cres,t,Wn,Hn); } }   /* ohne WebGL: der Nebel als Leinwandbild, dann ohne Licht */
   else if(e.typ==='bloom'){ cres.filter='blur('+(e.radius*EINHEIT)+'px) contrast('+e.schwelle+') brightness('+e.glut+')'; cres.drawImage(srcCv,0,0); cres.filter='none'; }
 }
@@ -33146,7 +33338,7 @@ function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
    Spezifikation, nicht ihre Zusammenfassung. */
 const STUFE_DIORAMA = new Set([
   /* die Szene selbst: was im Kasten steht und was darin leuchtet */
-  'farbe','licht','schatten','laser','strahlen','feuer','flammen','partikel','filmnebel',
+  'farbe','licht','lichtRaum','schatten','laser','strahlen','feuer','flammen','partikel','filmnebel',
   'streiflicht','kaustik','wellen','spiegel',
   /* die Glasscheibe VOR dem Diorama - „wuerde ich nicht so sehen, es ist eine Scheibe vor dem
      Diorama, nicht vor der Linse, deswegen vergroessert es mit" */
@@ -33185,9 +33377,9 @@ function dioFlaechen(W,H){
   { const i=DIOFLAECHEN.findIndex(d=>d.k===k);
     if(i>=0){ const d=DIOFLAECHEN[i]; if(i){ DIOFLAECHEN.splice(i,1); DIOFLAECHEN.unshift(d); } return d; } }
   const c=()=>{ const q=mk(); q.width=W; q.height=H; return q; };
-  const d={ k, oa:c(),ob:c(),oc:c(),ores:c(),okc:c(),ovb:c(),olicht:c(), byte:W*H*4*7 };
+  const d={ k, oa:c(),ob:c(),oc:c(),ores:c(),okc:c(),ovb:c(),olicht:c(),oherk:c(), byte:W*H*4*8 };
   d.ca=d.oa.getContext('2d'); d.cb=d.ob.getContext('2d'); d.cc=d.oc.getContext('2d');
-  d.cres=d.ores.getContext('2d'); d.ckc=d.okc.getContext('2d'); d.clicht=d.olicht.getContext('2d');
+  d.cres=d.ores.getContext('2d'); d.ckc=d.okc.getContext('2d'); d.clicht=d.olicht.getContext('2d'); d.cherk=d.oherk.getContext('2d');
   DIOFLAECHEN.unshift(d);
   let summe=0;
   for(let i=0;i<DIOFLAECHEN.length;i++){ summe+=DIOFLAECHEN[i].byte;
@@ -33323,8 +33515,8 @@ function dioStandZeigen(){ const txt=dioStandSatz(), el=$('#tbs-diostand');
    setzen()/bundel(), damit JEDER Maler und jede Nachbearbeitung unveraendert weiterarbeitet und
    nicht wissen muss, auf welcher Stufe er gerade steht. */
 function flaechenTauschen(d){
-  const alt={oa,ob,oc,ores,okc,ovb,olicht,ca,cb,cc,cres,ckc,clicht};
-  ({oa,ob,oc,ores,okc,ovb,olicht,ca,cb,cc,cres,ckc,clicht}=d);
+  const alt={oa,ob,oc,ores,okc,ovb,olicht,oherk,ca,cb,cc,cres,ckc,clicht,cherk};
+  ({oa,ob,oc,ores,okc,ovb,olicht,oherk,ca,cb,cc,cres,ckc,clicht,cherk}=d);
   return alt; }
 
 /* STUFE 1. Malt Quelle, Vorbereitung und die Szenen-Effekte auf die (getauschten) Leinwaende in
@@ -33405,7 +33597,22 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
   const medium=kette.some(e=>aktiv(e)&&mediumJetzt(e));
   if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; lichtOrteOeffnen(Wn,Hn);
     try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
-    finally { LICHTMAL=false; } }
+    finally { LICHTMAL=false; }
+    /* DER ZWEITE LAUF: DIE HERKUNFT (21.09.2026). Derselbe Weg, dieselben Leuchten - aber nur die,
+       die einen Ort im RAUM haben. Der alte Scheinwerfer, der Laser und die Lichtstrahlen kennen
+       nur x und y; sie koennen keine Tiefe melden und bleiben darum draussen. Wer sie benutzt,
+       bekommt weiter den alten Weg ueber lichtOrtMittel - das ist der Uebergang, und er ist
+       absichtlich sichtbar: HERKUNFT_DA sagt den Lesern, welche Wahrheit gerade gilt.
+       DER PUFFER WIRD GELEERT, NICHT GESCHWAERZT. Schwarz hiesse Ort (0,0) mit Helligkeit 0 - beim
+       Teilen durch A faellt das ohnehin weg, aber eine leere Flaeche sagt deutlicher, dass dort
+       nichts steht. */
+    const raumLeuchten = kette.filter(e=>aktiv(e)&&e.typ==='lichtRaum');
+    HERKUNFT_DA = raumLeuchten.length>0;
+    if(HERKUNFT_DA){ frisch(cherk); cherk.clearRect(0,0,Wn,Hn);
+      LICHTMAL=true; LICHTHERKUNFT=true; 
+      try{ for(const e of raumLeuchten){ try{ malen(e,cherk,t,Wn,Hn); }catch(x){} frisch(cherk); } }
+      finally { LICHTMAL=false; LICHTHERKUNFT=false; } }
+  } else HERKUNFT_DA=false;
   /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen
      sie gegen ihr Ergebnis. */
   let curCv=oa, curCx=ca;
@@ -34234,10 +34441,10 @@ function zeichneFrame(t,roh){
      im Clip, zeigte der Export den Stand davor, das Pult acht Sekunden lang den danach). */
   function exportBuendel(gemerkt,lage,W,H){ const cv=mk(); cv.width=W; cv.height=H; const {t0,N}=lage, L=N/BILDRATE, R=raster(t0,N,lage.M,lage.proTakt,lage.phiF), echt=(DATA&&DATA.schlaege)||[];
     let stand=null; if(!R.length&&echt.length){ const z=[t0].concat(echt.map(s=>s[0]).filter(x=>x>t0&&x<t0+L),[t0+L]); let b=1; for(let i=2;i<z.length;i++) if(z[i]-z[i-1]>z[b]-z[b-1]) b=i; stand=z[b]-1e-3; }
-    const m=Object.assign({},gemerkt,{ lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),
+    const m=Object.assign({},gemerkt,{ lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),oherk:mk(),
       DATA:Object.assign({},DATA,{ schlaege:R, stand, echt }), t0, L, N, vorgelaufen:false });
-    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
-    [m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; });
+    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d'); m.cherk=m.oherk.getContext('2d');
+    [m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht,m.oherk].forEach(c=>{ c.width=W; c.height=H; });
     return m; }
   /* GEDAECHTNIS BEKOMMT EINE RUNDE VORLAUF (VIDEO-PLAN 6.8, Klasse 3). Der Nachzieheffekt fuettert sich
      selbst: Bild 0 zeigt die Spur dessen, was davor gemalt wurde. Beim Exportstart war das die Vorschau
@@ -36124,8 +36331,8 @@ function zeichneFrame(t,roh){
   }
 
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
-  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ovb,olicht,VORB,ca,cb,cc,cres,ckc,clicht,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
-  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ovb,olicht,VORB,ca,cb,cc,cres,ckc,clicht,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
+  const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ovb,olicht,oherk,VORB,ca,cb,cc,cres,ckc,clicht,cherk,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
+  const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ovb,olicht,oherk,VORB,ca,cb,cc,cres,ckc,clicht,cherk,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
   async function songDaten(id){ if(songCache[id]) return songCache[id];
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
@@ -36135,8 +36342,8 @@ function zeichneFrame(t,roh){
   const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
   function clipAn(ziel,id){ const kasten=kastenVon(ziel); if(!kasten||kasten.querySelector('canvas.tbs-clip')) return;
     const cv=document.createElement('canvas'); cv.className='tbs-clip'; kasten.appendChild(cv);
-    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
-    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d');
+    const m={ kasten, canvas:cv, songId:id, lein:cv, g:cv.getContext('2d'), oa:mk(),ob:mk(),oc:mk(),ores:mk(),okc:mk(),ovb:mk(),olicht:mk(),oherk:mk(), VORB:vorbNeu(), bild:null, bereit:false, STAPEL:[], DATA:null, grund:{art:'titelbild',nr:1}, soloId:null, pal:null, t0:performance.now() };
+    m.ca=m.oa.getContext('2d'); m.cb=m.ob.getContext('2d'); m.cc=m.oc.getContext('2d'); m.cres=m.ores.getContext('2d'); m.ckc=m.okc.getContext('2d'); m.clicht=m.olicht.getContext('2d'); m.cherk=m.oherk.getContext('2d');
     clips.push(m);
     songDaten(id).then(d=>{ if(!m.canvas.isConnected) return; m.DATA=d.DATA; m.pal=d.pal; { const vi=m.VORB._id; m.VORB=vorbAus(d.vorbereitung); m.VORB._id=vi; } m.STAPEL=d.rezept.map(r=>effektAusRezept(r,d.alt,d.fassung)).filter(Boolean);
       const seiten=seitenVon(id,d.song); let seite=seiteFinden(seiten,d.grund)||grundVorgabe(seiten);
@@ -36144,7 +36351,7 @@ function zeichneFrame(t,roh){
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
         /* Die Leinwand liegt ganz im Kasten (object-fit: contain): so gross, dass das eingepasste Bild volle Schaerfe hat; lange Seite hoechstens 960 px. */
         const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk); const deckel=960/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
-        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true;
+        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht,m.oherk].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true;
         /* Auf der Buehne liegt unter der Leinwand das Standbild (img.motiv, cover.jpg); es wird verdeckt, solange der
            Maler malt - sonst schaut es neben einer schmaleren Quelle heraus. Den Rahmen der Buehne ruehrt der Maler nicht an. */
         try{ if(kasten.classList.contains('bart')){ const mo=kasten.querySelector('img.motiv'); if(mo){ m.motiv=mo; mo.style.visibility='hidden'; } } }catch(e){} };

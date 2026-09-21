@@ -9,7 +9,8 @@ Und, zum zweiten Teil:
 
 > „die Teilung Lichtpuffer und Lichtorte ist auch nicht sehr vertrauenserweckend"
 
-**Nichts davon ist gebaut.** Dieses Blatt hält den Entwurf fest, solange er klar ist.
+**Stand 21.09.2026: die ersten beiden Etappen sind gebaut** (`lichtRaum`, Herkunfts-Puffer) — siehe
+Abschnitt 6. Alles Übrige ist Entwurf.
 
 ---
 
@@ -338,3 +339,87 @@ Damit die Arbeit nicht gegen eine Wand läuft, die erst spät sichtbar wird:
 
 Der erste ist der einzige, der in der Richtung liegt, in die gefragt wurde: Gegenlicht liefert die
 Säume, aber keinen Schatten, den das Motiv nach vorn wirft.
+
+---
+
+## 6. Was gebaut ist (21.09.2026)
+
+### Etappe 1 — der Effekt „Scheinwerfer mit Tiefe" (`lichtRaum`)
+
+Eine Lampe mit Ort, Ziel und Öffnungswinkel, alle drei mit Tiefe. Der Fleck wird **ausgerechnet**:
+Der Kegelquerschnitt am Ziel erscheint als Ellipse, quer zur Achse mit vollem Radius, längs mit
+`|a_z|` gestaucht, gekippt in Achsenrichtung. Steht die Lampe frontal, wird ein Kreis daraus; steht
+sie schräg, eine Ellipse mit Gefälle — **ohne dass jemand eine Bauart wählt.**
+
+**Die eine Setzung, und sie steht als solche im Code:** das Diorama ist so tief wie breit. Die
+Tiefenkarte hat keine Eichung, also gibt es keinen Maßstab, in dem sich ein Öffnungswinkel
+ausdrücken ließe. Wird die Karte je geeicht, tritt der gemessene Wert an genau diese eine Stelle
+(`LR_TIEFE_JE_BREITE`).
+
+**Die Verdeckung** ist ein Zahlenvergleich, kein Marsch: Was näher steht als die Lampe, bekommt ihr
+Licht nicht. Steht sie hinter einer Figur, bleibt die Figur dunkel und die Silhouette entsteht von
+selbst.
+
+**Zwei Dinge, die Caspar_D am Bild gefunden hat und die nachgezogen wurden:** Der Effekt lag bei
+`screen` statt `abwedeln`, weil die Liste in Zeile 27507 alle Leuchten überschreibt und er nicht
+darin stand — der Fleck lag als Farbe über dem Bild, statt aufzuhellen, was da ist (Regel 5). Und
+er hatte kein Antriebspult, weil auch das je Effekt zugewiesen wird; jetzt pulst er im Takt wie die
+anderen Leuchten.
+
+### Etappe 2 — der Herkunfts-Puffer
+
+Ein zweiter Puffer neben dem Licht-Puffer. Er trägt je Bildpunkt den **helligkeitsgewichteten
+Lampenort**: R, G, B = Ort × Helligkeit, A = Helligkeit; beim Lesen `RGB/A`. x und y sind verschoben
+gespeichert (`(v+0,5)/2`), damit eine Lampe außerhalb des Bildes stehen darf.
+
+Gefüllt wird er in einem **zweiten Fülllauf**, der nur Leuchten mit Raumort malt — derselbe Maler,
+dieselbe Geometrie, dieselbe Verdeckung, nur die Ortsfarbe statt der Lichtfarbe. Der alte
+Scheinwerfer, der Laser und die Lichtstrahlen kennen keine Tiefe und bleiben draußen; wer sie
+benutzt, bekommt weiter den alten Weg. `HERKUNFT_DA` sagt den Lesern, welche Wahrheit gilt.
+
+**Das Streiflicht liest daraus**, über Textur 4. Und damit ist der Regler `Einfall` an dieser Stelle
+überflüssig geworden: Die dritte Achse ist **gemessen statt gestellt** — steht die Lampe näher als
+der Bildpunkt, fällt Licht von vorn ein, steht sie ferner, von hinten. Ist der Puffer leer, gilt der
+alte Weg mit dem global gemittelten Ort; der Übergang ist absichtlich sichtbar.
+
+**Der Beweis, am Bild:** Dasselbe Rezept (Lampe + Streiflicht), nur die Lampentiefe von 0,12 auf
+0,98 geändert — einmal Gegenlicht mit Saum auf der Figur, einmal das modellierte Relief, bei dem
+die Rippen des Mantels hervortreten. Kein `Einfall`-Regler angefasst. Die Prüffälle heißen
+`lichtraum-saeume` und `lichtraum-saeume-vorn`.
+
+### Die Grenze, die im Code steht
+
+Bei mehreren sehr hellen Leuchten läuft die Summe der Helligkeiten über 1, Canvas klemmt auf 255,
+und der gerechnete Ort wandert zur helleren Lampe. Bei ein bis zwei Leuchten unsichtbar, bei fünf
+gleich hellen ein Fehler. Wer das braucht, braucht einen Float-Puffer und damit WebGL 2.
+
+### Auf Videos
+
+`tiefeUrl` liefert für Bewegtbild ausdrücklich `null`. Kegelgeometrie, Hotspot, Kante, Farbe und
+Antrieb funktionieren; **Verdeckung, Säume und Gegenlicht fallen aus**, weil sie das Relief
+brauchen. Der Regler „Verdeckung" trägt `brauchtKarte` und sagt es.
+
+Caspar_D, 21.09.2026: *„fürs Video wird gar nichts gemacht, bis die Tiefenkarte da ist, und dann
+schauen wir, ob wir etwas kompensieren müssen, was vielleicht nicht so geht, wie wir uns das
+dachten."* Also **kein Ersatzweg** — die Tiefenspur für Bewegtbilder löst es, oder es bleibt, wie
+es ist.
+
+### Noch offen
+
+- **Der Schwenk** — im neuen Modell ein wanderndes Ziel im Raum statt sechs Führungen am gemalten
+  Fleck. Der Fleck würde beim Schwenken von selbst flacher und länger, weil der Einfall streifender
+  wird.
+- **Überstrahlung anzeigen.** Caspar_D: *„sollte man Regler begrenzen, sodass man keine
+  Überstrahlung produziert, oder wenigstens einen Indikator einbauen, dass man jetzt den
+  dynamischen Lichtbereich verlässt."* Begrenzen wäre falsch — Ausbrennen ist ein Mittel. Aber ab
+  dem Punkt, wo alles geclippt ist, *scheint* ein Regler nur noch zu wirken, und das ist Regel 9.
+  Vorschlag: eine Zahl in der Zeile, die erst auftaucht, wenn es passiert.
+- **Der Nebel.** Aus dem Gespräch am 21.09.2026 über die vier Verfahren der Spielegrafik: Der
+  Filmnebel ist **halb räumlich** — die Weglänge hängt an der Tiefe (Koschmieder, `T = exp(−3·weg)`,
+  also Lambert-Beer), die **Dichte** aber nicht: die dritte Achse des Rauschens ist die Zeit. Drei
+  Dinge hängen am selben Puffer und wären billig: **Lichtabfall mit der Entfernung** (heute erhellt
+  eine Lampe den Nebel überall gleich), **räumliche Schwaden** (Tiefe als dritte Achse, Zeit als
+  vierte — `wolke4(vec4)` existiert bereits für die Loop-Form), und eine echte **Phasenfunktion**
+  statt des Mischreglers „Bündelung". Teurer wären God Rays und volumetrische Schächte mit
+  Schattentest.
+
