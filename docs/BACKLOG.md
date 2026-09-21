@@ -57,6 +57,7 @@
 | Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
 | Effektclip | zu planen | [Was gehört getestet — das Prüfverfahren selbst (21.09.2026)](#was-gehört-getestet-das-prüfverfahren-selbst-21092026) |
 | Effektclip | offen | [Die Linse kostet 10,9 ms je Bild (21.09.2026)](#die-linse-kostet-109-ms-je-bild-21092026) |
+| Effektclip | offen | [Polarlicht auf den Himmel (21.09.2026)](#polarlicht-auf-den-himmel-21092026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
 
@@ -3068,4 +3069,53 @@ steht.
 
 **Genauigkeit:** ±20 % (Drift durch Systemlast und Wärme). Die Reihenfolge ist belastbar, die
 dritte Stelle nicht.
+
+---
+
+## Polarlicht auf den Himmel (21.09.2026)
+
+**Zustand: offen**, sobald die **Hintergrundfläche** steht (siehe KONZEPT-LEUCHTEN, Zonenmodell).
+
+Caspar_D, 21.09.2026: *„schreib ins Backlog, dass wir dann sogar Polarlicht auf den Himmel legen
+können."*
+
+### Warum das erst jetzt geht
+
+Bis heute kennt der Effektclip nur „vorn" und „hinten", getrennt durch eine Grenze. Mit dem
+Zonenmodell bekommt die Szene eine **Hintergrundfläche** — die letzte Tiefenebene, dort wo bei
+einem Außenbild der Himmel steht und bei einem Innenraum die Rückwand. Erst damit gibt es einen
+Ort, auf den sich etwas legen lässt, das **hinter allem** liegt und von allem verdeckt wird.
+
+Die Sternschnuppe ist der erste Bewohner dieser Zone. Ein Polarlicht wäre der zweite, und ein
+schönerer: Es füllt die Fläche, statt sie zu überqueren.
+
+### Was es wäre
+
+Wabernde Vorhänge aus Licht — grün, violett, rötlich am oberen Rand —, die sich langsam verschieben
+und in der Senkrechten ausfransen. Technisch ein Shader mit fraktalem Rauschen, in einer Richtung
+gestreckt, **maskiert auf die Hintergrundfläche**.
+
+Die Bausteine gibt es alle:
+
+| gebraucht | vorhanden als |
+|---|---|
+| fraktales Rauschen, loopfest | `wolke4(vec4)` im Filmnebel, `flammen` |
+| Maske auf eine Tiefenzone | `tiefeMaske` mit Bandkanten |
+| Farbverlauf über die Höhe | wie beim Feuer (unten breit, oben schmal) |
+| Verdeckung durch alles Nähere | fällt aus der Zone von selbst |
+
+### Was zu entscheiden wäre
+
+- **Bewegt es sich mit der Kamera?** Ein Polarlicht steht am Himmel, also im Diorama — es zoomt
+  mit. Anders als das Filmkorn, gleich wie die Sterne.
+- **Hängt es am Takt?** Polarlichter wabern langsam und unregelmäßig; ein Antrieb auf den Schlag
+  wäre falsch, ein sehr langsamer Atem richtig.
+- **Braucht es eine Tiefenkarte?** Ja — ohne Karte gibt es keine Hintergrundfläche. Der Rückfall
+  wäre, den Effekt grau zu legen und den Grund zu sagen, wie beim Streiflicht.
+
+### Verwandt
+
+Dieselbe Zone trägt später auch Sterne, ziehende Wolken oder ein Wetterleuchten. Es lohnt, den
+ersten Bewohner so zu bauen, dass die Maskierung auf die Fläche **nicht** in ihm steckt, sondern
+dort, wo die Zonen verwaltet werden — sonst baut der zweite sie noch einmal.
 
