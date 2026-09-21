@@ -3487,7 +3487,7 @@
     {"typ": "licht", "rmBlende": "gitter"}
    ],
    "gruppe": "kosten",
-   "bemerkung": "Blende 'Gitter'. HIER LAG DIE ALTLAST: am 10.09.2026 zeichnete die Blende bis zu 6889 einzeln weichgezeichnete Kreise je Bild und brauchte 465 ms, weil ctx.filter je Zeichenzug wirkt (Regel 14). Behoben, aber nie nachgemessen."
+   "bemerkung": "Blende 'Gitter' - Kostenreferenz. Gegen 'punkte' gelesen zeigt sich, ob die Kosten mit der Zellzahl wachsen; nach Regel 14 duerfen sie das nicht."
   },
   {
    "name": "kosten-licht-blende-punkte",
@@ -3497,7 +3497,7 @@
     {"typ": "licht", "rmBlende": "punkte"}
    ],
    "gruppe": "kosten",
-   "bemerkung": "Blende 'Punkte' - die feinste Zellteilung und damit die meisten Zeichenzuege. Wenn irgendwo noch ein Filter in einer Schleife steckt, zeigt er sich hier."
+   "bemerkung": "Blende 'Punkte' - die feinste Zellteilung und damit die meisten Zeichenzuege. Steckt irgendwo ein Filter in einer Schleife, kostet dieser Fall mehr als 'gitter' (Regel 14)."
   },
   {
    "name": "kosten-licht-blende-wolken",

@@ -485,10 +485,8 @@ Kegel aus; die Linse liest sie verzerrt, also mit schlechter Cache-Lokalität.
 **Sie skaliert unterlinear:** eine Lampe 5,6 · zwei 8,1 · drei 11,6. Mit Medium in der Kette 13,3,
 denn dann läuft der Fülllauf und die Lampe malt zweimal (Licht und Herkunft).
 
-**Die Blenden-Altlast ist erledigt, und zwar nachweisbar.** 3,2–3,7 ms statt der 465 ms vom
-10.09.2026 — und entscheidender: **alle drei Blendenarten kosten gleich viel**, obwohl „Punkte" die
-feinste Zellteilung hat. Damit ist belegt, dass kein Filter mehr in einer Schleife steckt (Regel
-14). Hätte sich noch einer versteckt, müsste „Punkte" herausstechen.
+**Die Blenden kosten 3,2–3,7 ms, und alle drei Arten gleich viel** — obwohl „Punkte" die feinste
+Zellteilung hat. Ein Filter in einer Schleife würde dort herausstechen (Regel 14); er tut es nicht.
 
 **Die Genauigkeit, ehrlich:** Zwischen zwei Messreihen sind die Werte um 10–20 % gewandert, der
 Boden von 2,40 auf 2,70 ms. Das ist Drift durch Systemlast und Wärme. Die Zahlen tragen auf ±20 %

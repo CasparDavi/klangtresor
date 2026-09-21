@@ -56,6 +56,7 @@
 | Effektclip | in Arbeit | [Tiefenkarten — gemessen, gebaut, und wohin sie gehören (14.09.2026)](#tiefenkarten--gemessen-gebaut-und-wohin-sie-gehören-14092026) |
 | Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
 | Effektclip | zu planen | [Was gehört getestet — das Prüfverfahren selbst (21.09.2026)](#was-gehört-getestet-das-prüfverfahren-selbst-21092026) |
+| Effektclip | offen | [Die Linse kostet 10,9 ms je Bild (21.09.2026)](#die-linse-kostet-109-ms-je-bild-21092026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
 
@@ -3030,4 +3031,41 @@ Oberfläche messen statt behaupten, ohne Bild und ohne Rauschboden.
 - Was mit `faelle.json` und den Grundlinien geschieht, wenn der Hashvergleich nicht mehr das Maß
   ist — die Nahtfälle bleiben gebraucht, die Studio-Grundlinien womöglich nicht.
 
+---
+
+## Die Linse kostet 10,9 ms je Bild (21.09.2026)
+
+**Zustand: offen.** Nebenbefund aus der Kostenmessung der Leuchten — gemessen, nicht vermutet.
+
+Radeon Pro 5500 XT, 629×889, Median aus fünf Läufen, netto über dem leeren Bild:
+
+| Effekt | netto |
+|---|---|
+| **Linse** | **10,9 ms** |
+| Scheinwerfer mit Tiefe | 5,6 ms |
+| Streiflicht | ~4,1 ms |
+| Flammen | 4,3 ms |
+| Blenden | 3,2–3,7 ms |
+| Scheinwerfer (alt, Canvas) | 0,4 ms |
+
+**Ein Drittel eines 30-Hz-Bildes für einen einzigen Effekt** — und die Linse tut weniger als die
+anderen: keine Tiefenkarte, kein Marsch, kein Rauschen. Sie ist trotzdem der teuerste gemessene
+Effekt, fast doppelt so teuer wie der Scheinwerfer mit Tiefe.
+
+**Die naheliegende Vermutung, ausdrücklich als Vermutung:** Sie liest die Quelltextur
+**verzerrt**, also mit schlechter Cache-Lokalität — jeder Bildpunkt greift woanders hin, und die
+Grafikkarte kann nichts vorhersagen. Der Scheinwerfer liest die Quelltextur gar nicht, er gibt nur
+seinen Kegel aus, und ist deshalb billig.
+
+**Vor jeder Arbeit gehört gemessen, WORAN es liegt.** Die Zahl sagt nur, dass es teuer ist. Wenn
+sich die Vermutung bestätigt, gibt es bekannte Wege: gröbere Mipmap-Stufe, kleinere
+Arbeitsauflösung für den Verzerrungsanteil, oder die Verzerrung in zwei Durchgängen statt einem.
+
+**Warum es zählt:** Die Linse ist kein Randeffekt. Wer sie mit zwei, drei anderen kombiniert, ist
+bei 30 Hz am Anschlag — und niemand sieht es, weil die Kosten nirgends angezeigt werden. Das hängt
+mit der Frage nach einer Kostenanzeige zusammen, die im Prüfverfahren-Eintrag als Anforderung 3
+steht.
+
+**Genauigkeit:** ±20 % (Drift durch Systemlast und Wärme). Die Reihenfolge ist belastbar, die
+dritte Stelle nicht.
 
