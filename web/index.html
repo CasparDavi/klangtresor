@@ -27471,7 +27471,6 @@ const EFFEKTE = {
       {k:'winkel',lbl:'Öffnungswinkel',min:5,max:120,step:1,def:38,wert:v=>kf(v)+'°'},
       {k:'hotspot',lbl:'Hotspot',min:0,max:1,step:.05,def:.35},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
-      {k:'raumtiefe',lbl:'Raumtiefe',min:.1,max:5,step:.1,def:1,wert:v=>kf(Number(v).toFixed(1))+'\u00d7 Bildbreite'},
       {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell']],def:'aus'},
       {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:18,wert:v=>kf(v)+'\u00b0',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:6,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
@@ -27481,7 +27480,7 @@ const EFFEKTE = {
        einer Stelle gerechnet, der Shader bekommt nur das Ergebnis. u_modus sagt ihm, ob er die
        Lichtfarbe oder den Lampenort ausgibt - derselbe Kegel, zwei Werte. */
     glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
-      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(e), u_tiefeAn:1 }; } },
+      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1 }; } },
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
@@ -28326,12 +28325,19 @@ let HISTO=null;
    arbeiten dann darauf. */
 const VORB_REGLER=[['belichtung','Belichtung',-1,1],['kontrast','Kontrast',-1,1],['lichter','Lichter',-1,1],['schatten','Schatten',-1,1],['saettigung','S\u00e4ttigung',-1,1],['temperatur','Temperatur',-1,1],['farbton','Farbton',-1,1],['sepia','Sepia',0,1],['schaerfe','Sch\u00e4rfe',0,1]];
 let vorbNr=0;
-function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v' }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
-function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v; VORB_REGLER.forEach(([k])=>{ if(typeof r[k]==='number') v[k]=Math.max(-1,Math.min(1,r[k])); });
+function vorbNeu(){ const v={ _id:++vorbNr, kanal:'v', raumtiefe:1 }; VORB_REGLER.forEach(([k])=>v[k]=0); gradInit(v); v.grad.v.modus='gamma'; v.grad.v.tonwert=0; return v; }
+function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v;
+  { const rt=Number(r.raumtiefe); if(isFinite(rt)&&rt>0) v.raumtiefe=Math.max(0.1,Math.min(5,rt)); }
+  VORB_REGLER.forEach(([k])=>{ if(typeof r[k]==='number') v[k]=Math.max(-1,Math.min(1,r[k])); });
   if(r.grad&&typeof r.grad==='object') for(const ch of ['v','r','g','b']) if(r.grad[ch]) v.grad[ch]={...v.grad[ch],...r.grad[ch]}; return v; }
 function gradNeutral(g){ return Math.abs(g.bp)<1e-6&&Math.abs(g.wp-1)<1e-6&&Math.abs(g.tonwert)<1e-6; }
 function vorbAenderungen(v){ let n=0; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v[k])>1e-6) n++; }); for(const ch of ['v','r','g','b']) if(!gradNeutral(v.grad[ch])) n++; return n; }
-function vorbExport(v){ if(!vorbAenderungen(v)) return undefined; const o={}; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v[k])>1e-6) o[k]=v[k]; });
+/* DIE RAUMTIEFE ZAEHLT NICHT ALS AENDERUNG, WIRD ABER IMMER MITGESCHRIEBEN (21.09.2026).
+   Sie filtert nichts - vorbAenderungen entscheidet, ob der Vorbereitungsgang ueberhaupt laeuft,
+   und ein Gang fuer eine Zahl, die kein Bildpunkt anfasst, waere verschwendet. Gespeichert
+   werden muss sie trotzdem, sonst ginge sie bei einem Rezept ohne Gradation verloren. */
+function vorbExport(v){ const rt=(Number(v.raumtiefe)>0&&Math.abs(v.raumtiefe-1)>1e-6)?{raumtiefe:v.raumtiefe}:null;
+  if(!vorbAenderungen(v)) return rt||undefined; const o=rt?{...rt}:{}; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v[k])>1e-6) o[k]=v[k]; });
   const g={}; for(const ch of ['v','r','g','b']) if(!gradNeutral(v.grad[ch])) g[ch]=v.grad[ch]; if(Object.keys(g).length) o.grad=g; return o; }
 const vorbCache={};
 /* Jedes _id legt in vorbFilter() ein <filter> in den kurvenraum. Wer eine Vorbereitung wegwirft (ein Maler auf
@@ -28786,7 +28792,7 @@ function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rm
    Weg daempft. Solange nur die Lampe rechnet, steht er bei ihr; wandert die Zahl spaeter zur
    Quelle, tritt sie an genau dieser Stelle ein. */
 const LR_TIEFE_JE_BREITE = 1.0;   /* Vorgabe, wenn nichts gesetzt ist */
-function lrRaumtiefe(e){ const v=Number(e&&e.raumtiefe); return isFinite(v)&&v>0 ? Math.max(0.1,Math.min(5,v)) : LR_TIEFE_JE_BREITE; }
+function lrRaumtiefe(){ const v=Number(VORB&&VORB.raumtiefe); return isFinite(v)&&v>0 ? Math.max(0.1,Math.min(5,v)) : LR_TIEFE_JE_BREITE; }
 function lrSchwenkAnteil(e, t){
   const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
   const O=[f(e.lrOx,.22), f(e.lrOy,.12), f(e.lrOz,.85)];
@@ -28815,7 +28821,7 @@ function lrSchwenkAnteil(e, t){
   /* DIE TIEFENACHSE TRAEGT DIE RAUMTIEFE MIT. Ohne sie kippte der Strahl in einem Raum, der immer
      so tief wie breit ist - und die Kippung saehe bei einem flachen Portraet genauso aus wie in
      einer Landschaft. Gerechnet wird darum in Bildbreiten, und am Ende zurueck in Kartenwerte. */
-  const RT=lrRaumtiefe(e);
+  const RT=lrRaumtiefe();
   const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=((1-Z[2])-(1-O[2]))*RT;
   const ct=Math.cos(tilt), st=Math.sin(tilt);
   const y1=dy*ct-dz*st, z1=dy*st+dz*ct;
@@ -34016,6 +34022,14 @@ function zeichneFrame(t,roh){
     h+='<div class="tbs-seg" style="margin-top:6px"><button type="button" data-vmodus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button type="button" data-vmodus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
     h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
     h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Marken unten = Schwarz-/Wei\u00dfpunkt ziehen</div>';
+    /* DIE RAUMTIEFE STEHT HIER UND NICHT AN EINER LAMPE (Caspar_D, 21.09.2026: „wir sollten sie in
+       die Vorbereitung haengen und pro Quelle nur ein einziges Mal festlegen"). Sie beschreibt die
+       SZENE: wie tief der Raum ist, den dieses Bild zeigt. Zwei Leuchten darin muessen dieselbe
+       Zahl sehen, und der Nebel braucht sie ebenso, sobald er das Licht auf seinem Weg daempft.
+       Sie ist abgesetzt, weil sie kein Farbregler ist - sie faerbt nichts, sie masst. */
+    h+='<div style="margin:10px 0 4px;color:var(--schwach);font-size:10.5px">Der Raum</div>';
+    h+='<div class="tbs-regler"><span>Raumtiefe</span><input type="range" data-vrt="1" min="0.1" max="5" step="0.1" value="'+(v.raumtiefe||1)+'"><span class="tbs-wert">'+kf(Number(v.raumtiefe||1).toFixed(1))+'\u00d7</span></div>';
+    h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Wie tief ist dieser Raum, in Bildbreiten \u2014 ein Portr\u00e4t etwa 0,2, eine Landschaft 3 und mehr. Die Tiefenkarte sagt, <i>was</i> vorn ist, nicht um <i>wie viel</i>; diese Zahl ist die fehlende Ma\u00dfeinheit.</div>';
     VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
     k.innerHTML=h;
     const ged=$('#tbs-vorbGrad'), kg=ged.getContext('2d'); const zg=()=>gradZeichnen(kg,ged.width,ged.height,v.grad[v.kanal],cc,v.kanal); zg();
@@ -34028,6 +34042,8 @@ function zeichneFrame(t,roh){
     const tw=k.querySelector('[data-vtonwert]'); tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
     k.querySelector('[data-vloeschen]').onclick=vorbLoeschen;
     k.querySelector('[data-vauto]').onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); };
+    k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
+      inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); malen(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
     vorbStand(); }
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;
