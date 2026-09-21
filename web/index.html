@@ -3313,7 +3313,17 @@ h3 .infoknopf .ico{width:14px;height:14px}
    6 px und sonst nichts - Kurve und Regler standen an der Kante. Jetzt ein Innenrand rundherum,
    und das Blatt bekommt oberhalb Luft zur Registerleiste. */
 #tbs #tbs-vorbKoerper{padding:10px 12px 12px}
-#tbs .tbs-vorbReg{margin-bottom:12px}
+/* EINE STATION, DREI SICHTEN (Hausregel 26: „was dieselbe Station feiner zeigt, ist ein MODUS in
+   derselben Lasche"). Die Vorbereitung ist EINE Station - Kurve, Farbe und Tiefe sind Modi, keine
+   eigenen Register. Die Bauform bleibt also der Segmentschalter.
+   ABGESETZT WERDEN MUSS SIE TROTZDEM: in der Vorbereitung standen sonst drei gleich aussehende
+   Pillenleisten uebereinander - diese hier, die Kanalwahl V|R|G|B und Gamma|Sigmoid -, obwohl die
+   oberste eine Ebene hoeher steht. Gleiche Gestalt fuer verschiedene Ebenen ist eine Falschaussage
+   wie jede andere. Dieselbe Sache, anderes Gewicht: volle Breite, Unterstreichung statt Pille. */
+#tbs .tbs-vorbReg{gap:0;border-bottom:1px solid var(--rand);margin-bottom:14px}
+#tbs .tbs-vorbReg button{flex:1;border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:7px 4px;font-size:12px;color:var(--schwach)}
+#tbs .tbs-vorbReg button:hover{color:var(--text)}
+#tbs .tbs-vorbReg button.on{color:var(--text);border-bottom-color:var(--akzent);box-shadow:none;background:none}
 #tbs .tbs-vorbBlatt{padding:2px 2px 4px}
 #tbs .tbs-vorbBlatt .tbs-regler{margin:9px 0}
 #tbs .tbs-vorbBlatt canvas.tbs-grad-ed{margin:2px 0 4px}
@@ -27276,6 +27286,9 @@ const IKON={
  schaerfe:'<circle cx="8" cy="12" r="5" stroke-dasharray="2 2"/><circle cx="17" cy="12" r="3"/>',
  farbe:'<path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11z"/>',
  licht:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/>',
+  /* Der Scheinwerfer MIT TIEFE: ein Kegel von der Seite, nicht eine Sonne von vorn - das Symbol
+     sagt den Unterschied, denn dieser hier hat eine Richtung. */
+  lichtRaum:'<circle cx="12" cy="4" r="2"/><path d="M12 6 L5 20 L19 20 Z"/>',
  schatten:'<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none" opacity=".85"/><circle cx="15" cy="10" r="5" fill="#0c0c0d" stroke="none"/>',
  sicherung:'<path d="M12 3v8"/><path d="M7 6.5a7 7 0 1 0 10 0"/>',
  filmnebel:'<path d="M6 15h12a3.5 3.5 0 0 0 0-7 5.5 5.5 0 0 0-10.4 1.2A3 3 0 0 0 6 15z"/><path d="M5 19h9" opacity=".55"/>',
@@ -27308,7 +27321,7 @@ const IKON={
 /* Die Ken Burns Fahrt steht hier, wo bis zum 18.09.2026 die alte "Fahrt" stand, und traegt ihre
    Farbe: es ist derselbe Amtsbereich (Geometrie). Bis heute lief das ueber TON.kenburns=TON.fahrt -
    mit dem Fall der alten Fahrt haette die Zeile ins Leere gezeigt. */
-const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',kenburns:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',filmnebel:'#c8d6e6',streiflicht:'#ffd9a0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',kenburns:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',lichtRaum:'#f0cf6a',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',filmnebel:'#c8d6e6',streiflicht:'#ffd9a0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 /* GELOESCHT: KB_LAEUFE, die sechs Kamerawege der Ken Burns Fahrt, und mit ihnen der Regler
@@ -27930,7 +27943,7 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
-  ['Läufe', ['kenburns','streifen','licht','schatten','laser','streiflicht','farbe','filmnebel','feuer']],
+  ['Läufe', ['kenburns','streifen','licht','lichtRaum','schatten','laser','streiflicht','farbe','filmnebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
   ['Partikel', ['partikel']],
