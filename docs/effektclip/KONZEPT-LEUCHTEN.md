@@ -141,6 +141,103 @@ Heute ist jede eine eigene Malroutine mit eigenen Krücken für dieselbe fehlend
 
 ---
 
+## 3a. Das Verfahren — und es ist nicht neu
+
+Caspar_D, 21.09.2026: *„wie machen es denn die Raytracer, nichts anderes machen wir hier doch"* —
+und dazu die berechtigte Rüge: *„da hättest du aber schon eher mal in die Spieleecke schauen
+können."* Stand der Technik klären gehört vor die Arbeit (Hausregel 3).
+
+### Warum kein klassisches Raytracing
+
+Ein Raytracer schießt von jedem getroffenen Punkt einen **Schattenstrahl** zur Lampe. Der muss
+durch die Szene reisen können — auch dorthin, wo die Kamera nicht hinsieht. Wir haben ein Relief,
+keine Szene: hinter einem Objekt ist nichts. Dasselbe gilt für **Shadow Maps**, die aus Lampensicht
+gerendert werden; dafür bräuchte es eine Geometrie, die es nicht gibt.
+
+### Was die Echtzeitgrafik für genau diesen Fall entwickelt hat
+
+**Deferred Shading.** Die Szene wird erst in mehrere Puffer gemalt — Farbe, Tiefe, Normale — und
+**danach im Bildraum beleuchtet**. Der Sammelpuffer heißt dort **G-Buffer**.
+
+**Screen-Space-Verfahren.** Verdeckung, Spiegelung und Schatten werden allein aus der Tiefenkarte
+gerechnet, per Marsch entlang eines Strahls im Bildraum.
+
+**Und beides läuft hier bereits:**
+
+| im Haus | in der Fachsprache |
+|---|---|
+| Schlagschatten des Streiflichts — „ein Marsch im Bildraum Richtung Licht, vierzehn Schritte" | Screen Space Shadows |
+| Die Parallaxe — „Verschiebung je Bildpunkt, rückwärts gesucht, erster Treffer ist die vorderste Fläche" | Parallax Occlusion Mapping |
+| Die Normale aus dem Tiefengradienten im Streiflicht | Normal from depth |
+
+Das Verfahren ist im Haus, läuft an zwei Stellen — und beim Licht wird es nicht benutzt.
+
+### Die Wahl: Deferred, weil wir es schon sind
+
+**Der Licht-Puffer IST bereits ein G-Buffer, nur ein unvollständiger.** Nebel und Streiflicht fragen
+*nachträglich* „wie hell ist es hier", ohne zu wissen, welche Leuchten in der Kette hängen — das ist
+die Definition von Deferred Lighting. Es geht also nicht um einen Architekturwechsel, sondern um die
+**Vervollständigung** einer Architektur, die schon so gebaut ist.
+
+Forward Lighting — jede Leuchte rechnet direkt beim Beleuchten — hieße, dass der Nebel die
+Leuchtenliste kennt und durchläuft. Das wäre der Umbau, nicht dies.
+
+### Zwei Puffer, zwei Namen
+
+| | trägt | Kanäle |
+|---|---|---|
+| **Lichtmenge** (heute `olicht`) | wie viel Licht kommt hier an, in welcher Farbe | RGB, wie bisher |
+| **Lichtherkunft** (neu) | woher und aus welcher Tiefe | siehe unten |
+
+### Der Kniff: nicht die Richtung speichern, sondern den Ort
+
+Eine Richtung kann negativ sein, und in einem additiv beschriebenen Puffer gibt es keine negativen
+Zahlen. Gespeichert wird deshalb **der helligkeitsgewichtete Lampenort** — der liegt immer zwischen
+0 und 1:
+
+| Kanal | was jede Leuchte hineinaddiert |
+|---|---|
+| **R** | x-Ort der Lampe × Helligkeit |
+| **G** | y-Ort der Lampe × Helligkeit |
+| **B** | z-Ort der Lampe × Helligkeit |
+| **A** | Helligkeit |
+
+Beim Lesen: `Lampenort = RGB / A`, und die Einfallsrichtung ist `normalize(Lampenort − Bildpunkt)`.
+Alles additiv, alles positiv, alles in einem gewöhnlichen Canvas — kein Float-Target, keine
+Erweiterung, die WebGL 1 nicht hat.
+
+**Die Pointe: Das ist exakt, was `lichtOrtMittel()` heute schon rechnet** — ein
+helligkeitsgewichteter Lampenort, nur **einmal für das ganze Bild** statt je Bildpunkt. Die Formel
+muss nicht erfunden, sondern dorthin verschoben werden, wo sie hingehört. Damit ist auch Befund (b)
+erledigt: zwei Scheinwerfer links und rechts ergeben an jeder Stelle die Lampe, die dort wirklich
+wirkt, statt einer erfundenen in der Mitte.
+
+**Die Genauigkeit reicht:** 8 Bit auf 0…1 sind rund drei Bildpunkte Ortsgenauigkeit bei 792 Breite.
+Für eine Lichtrichtung weit mehr als nötig.
+
+### Die Verdeckung
+
+Nichts Neues nötig: der **Screen-Space-Marsch entlang des Lichtstrahls in der Tiefenkarte**, wie ihn
+der Schlagschatten des Streiflichts seit dem 14.09.2026 fährt — vierzehn Schritte, mit den zwei
+Vorkehrungen gegen die geschätzte Karte (erst ab dem dritten Schritt, weil eine monokulare Karte
+daneben rauscht; weich abgestuft, weil sie keine harten Kanten hergibt).
+
+### Was das Verfahren nicht kann — die Grenze des Bildraums
+
+Screen Space heißt: **was nicht im Bild ist, existiert nicht.** Der Marsch findet keine Verdeckung
+durch etwas, das außerhalb des Ausschnitts liegt oder selbst verdeckt ist. In der Spielegrafik ist
+das die bekannte Schwäche dieser Verfahren, und die übliche Antwort ist dieselbe wie hier: **weich
+zurückfallen, nicht schwarz.** Das steht als Vorkehrung schon im Streiflicht.
+
+### Kosten
+
+Ein zusätzlicher Vollbildgang je Bild, und nur dann, wenn eine Leuchte in der Kette hängt — dieselbe
+Bedingung, unter der heute der Licht-Puffer gefüllt wird. Die Leuchten schreiben zwei Puffer statt
+einen; der Marsch läuft nur dort, wo Licht ankommt. Gemessen wird vor dem Einbau, mit Zaunmarke und
+Grafikkennung.
+
+---
+
 ## 4. Der Weg — Neubau neben dem Alten
 
 Caspar_D, 21.09.2026:
