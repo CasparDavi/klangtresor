@@ -27471,6 +27471,7 @@ const EFFEKTE = {
       {k:'winkel',lbl:'Öffnungswinkel',min:5,max:120,step:1,def:38,wert:v=>kf(v)+'°'},
       {k:'hotspot',lbl:'Hotspot',min:0,max:1,step:.05,def:.35},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
+      {k:'raumtiefe',lbl:'Raumtiefe',min:.1,max:5,step:.1,def:1,wert:v=>kf(Number(v).toFixed(1))+'\u00d7 Bildbreite'},
       {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell']],def:'aus'},
       {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:18,wert:v=>kf(v)+'\u00b0',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:6,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
@@ -27480,7 +27481,7 @@ const EFFEKTE = {
        einer Stelle gerechnet, der Shader bekommt nur das Ergebnis. u_modus sagt ihm, ob er die
        Lichtfarbe oder den Lampenort ausgibt - derselbe Kegel, zwei Werte. */
     glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
-      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:LR_TIEFE_JE_BREITE, u_tiefeAn:1 }; } },
+      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(e), u_tiefeAn:1 }; } },
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
@@ -28768,7 +28769,24 @@ function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rm
    DIE Z-ACHSE LAEUFT WIE tiefeBei: 1 ist nah (an der Glasscheibe), 0 ist fern. In Weltkoordinaten
    gedreht, damit die Kamera in +z schaut: welt = (1 - z) * Breite. Wer das verwechselt, bekommt
    Gegenlicht und Vorderlicht vertauscht - und zwar lautlos, weil beides plausibel aussieht. */
-const LR_TIEFE_JE_BREITE = 1.0;
+/* WIE TIEF IST DIESER RAUM? Caspar_D, 21.09.2026: „wir kennen die Tiefe nicht als Masseinheit,
+   folglich, welches r gilt in der Tiefe?" - und das ist der wundeste Punkt des Modells.
+   ZUR SEITE KENNEN WIR DIE STRECKE (das Bild ist so breit, wie es ist), IN DIE TIEFE NICHT. Die
+   Tiefenkarte ist je Quelle auf ihr 5. bis 95. Hundertstel gedehnt und sagt zuverlaessig, WAS
+   vorne ist - nicht, um WIE VIEL. Sie ist ordinal, nicht metrisch. Jede Rechnung, die Tiefe und
+   Bildmass mischt - das Entfernungsgesetz, der Oeffnungswinkel, die Kippung -, braucht darum einen
+   Umrechnungsfaktor, und den kann die Software nicht ausrechnen.
+   HIER GREIFT DIE HAUSREGEL NICHT. „Was die Software ausrechnen kann, wird kein Regler" - sie kann
+   es nachweislich nicht. Ein Regler fuer etwas Unbekanntes ist ehrlich; eine erfundene Konstante
+   ist es nicht. Bis zum 21.09.2026 stand hier 1,0 als Konstante, also die stille Behauptung, jedes
+   Diorama sei so tief wie breit. Ein Portraet ist flacher (Nasenspitze bis Hintergrund vielleicht
+   ein Fuenftel), eine Landschaft um ein Vielfaches tiefer.
+   WO ER EIGENTLICH HINGEHOERT: an die SZENE, nicht an die Lampe - zwei Leuchten im selben Raum
+   muessen dieselbe Raumtiefe sehen, und der Nebel braucht sie auch, sobald er das Licht auf seinem
+   Weg daempft. Solange nur die Lampe rechnet, steht er bei ihr; wandert die Zahl spaeter zur
+   Quelle, tritt sie an genau dieser Stelle ein. */
+const LR_TIEFE_JE_BREITE = 1.0;   /* Vorgabe, wenn nichts gesetzt ist */
+function lrRaumtiefe(e){ const v=Number(e&&e.raumtiefe); return isFinite(v)&&v>0 ? Math.max(0.1,Math.min(5,v)) : LR_TIEFE_JE_BREITE; }
 function lrSchwenkAnteil(e, t){
   const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
   const O=[f(e.lrOx,.22), f(e.lrOy,.12), f(e.lrOz,.85)];
@@ -28794,12 +28812,16 @@ function lrSchwenkAnteil(e, t){
      Tilt-Buegel auf dem Pan-Teller sitzt, kippt zuerst im EIGENEN System, und der Teller dreht das
      Ganze mit. In Matrizen: R_y(pan) * R_x(tilt) * d, also im Code der Tilt zuerst. Der Kommentar
      hier behauptete das Richtige, waehrend die Zeilen darunter das Gegenteil taten. */
-  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=(1-Z[2])-(1-O[2]);
+  /* DIE TIEFENACHSE TRAEGT DIE RAUMTIEFE MIT. Ohne sie kippte der Strahl in einem Raum, der immer
+     so tief wie breit ist - und die Kippung saehe bei einem flachen Portraet genauso aus wie in
+     einer Landschaft. Gerechnet wird darum in Bildbreiten, und am Ende zurueck in Kartenwerte. */
+  const RT=lrRaumtiefe(e);
+  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=((1-Z[2])-(1-O[2]))*RT;
   const ct=Math.cos(tilt), st=Math.sin(tilt);
   const y1=dy*ct-dz*st, z1=dy*st+dz*ct;
   const cp=Math.cos(pan), sp=Math.sin(pan);
   const x2=dx*cp+z1*sp, z2=-dx*sp+z1*cp;
-  return [O[0]+x2, O[1]+y1, 1-((1-O[2])+z2)];
+  return [O[0]+x2, O[1]+y1, 1-((1-O[2])+z2/RT)];
 }
 function leuchteInPuffer(e, cx, t, Wn, Hn){
   const a=Math.min(1, e.staerke*antriebWert(e,t));
@@ -30576,6 +30598,18 @@ void main(){
   float kern=u_hotspot*0.85;
   float f=(q<=kern)?1.0:pow(max(0.0,1.0-(q-kern)/max(1e-6,1.0-kern)), 0.6+u_kante*3.4);
   v*=f;
+  /* DAS PHOTOMETRISCHE ENTFERNUNGSGESETZ (21.09.2026). Caspar_D: „licht breitet sich im Raum um
+     die Quelle aus, die bestrahlte Flaeche waechst quadratisch zur Entfernung." Genau so, und
+     damit faellt die Beleuchtungsstaerke mit 1/r^2.
+     DIE BEZUGSENTFERNUNG IST DER ABSTAND LAMPE-ZIEL, und darum braucht es keinen Regler: dort
+     leuchtet die Lampe mit ihrer eingestellten Staerke, davor heller, dahinter dunkler. Wer sie
+     naeher heranzieht, bekommt den Zuwachs geschenkt - ohne an einer zweiten Zahl zu drehen
+     (Hausregel: was die Software ausrechnen kann, wird kein Regler).
+     DIE KLEMME BEI 4 IST EINE SETZUNG UND STEHT HIER ALS SOLCHE. Dicht an der Lampe laeuft 1/r^2
+     gegen unendlich; vier ist der Faktor zweier Blenden, und darueber hinaus gaebe es ohnehin nur
+     noch weisse Flaeche. Sie greift praktisch selten, weil der Kegel dort schmal ist. */
+  float dref=length(Zp-Lp);
+  v*=clamp((dref*dref)/max(1e-6,dist*dist), 0.0, 4.0);
   /* DIE VERDECKUNG: was naeher steht als die Lampe, bekommt ihr Licht nicht. Weich, weil eine
      geschaetzte Karte keine harten Kanten hergibt (dieselbe Vorsicht wie beim Schlagschatten). */
   if(u_tiefeAn>0.5&&u_verdeckung>0.001){
