@@ -3666,6 +3666,64 @@
    ],
    "gruppe": "flaeche",
    "bemerkung": "zweiter Titel, zwei Schnuppen (ab Menge 200)"
+  },
+  {
+   "name": "strahlraum-laser",
+   "typ": "strahlRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlRaum"
+    }
+   ],
+   "gruppe": "strahlRaum",
+   "bemerkung": "Faecher 0, also ein einzelner Strahl - der Laser"
+  },
+  {
+   "name": "strahlraum-faecher",
+   "typ": "strahlRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlRaum",
+     "faecher": 60,
+     "zahl": 7,
+     "dicke": 1.2
+    }
+   ],
+   "gruppe": "strahlRaum",
+   "bemerkung": "sieben Strahlen im Faecher - Lichtstrahlen"
+  },
+  {
+   "name": "strahlraum-roll",
+   "typ": "strahlRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlRaum",
+     "faecher": 50,
+     "zahl": 5,
+     "roll": 55
+    }
+   ],
+   "gruppe": "strahlRaum",
+   "bemerkung": "derselbe Faecher um 55 Grad gerollt - der dritte Winkel"
+  },
+  {
+   "name": "strahlraum-schacht",
+   "typ": "strahlRaum",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "strahlRaum",
+     "faecher": 35,
+     "zahl": 1,
+     "dicke": 3,
+     "kante": 0.8
+    }
+   ],
+   "gruppe": "strahlRaum",
+   "bemerkung": "ein einzelner breiter Schacht, zweiter Titel"
   }
  ],
  "nichtHerstellbar": []
