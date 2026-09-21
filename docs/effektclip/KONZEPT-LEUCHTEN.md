@@ -156,30 +156,36 @@ alten, bis Caspar_D sagte: *„schmeiss die alte Fahrt schon raus, die kann ja n
 
 **Damit bleibt jedes gespeicherte Rezept unberührt, ohne Beweisführung.**
 
-### Die harte Anforderung: die alten Rezepte müssen weiterlaufen
+### Die Rückwärtskompatibilität ist aufgehoben — und das ist der Punkt
 
-Caspar_D, 21.09.2026:
+Caspar_D, 21.09.2026, zuerst:
 
 > „damit die Rezepte mit Scheinwerfer und Laser immer noch auf einen Effekt zugreifen können, der
 > unter anderem auch das alte noch kann."
 
-Das ist strenger, als es klingt. Übernimmt der neue Effekt am Ende den alten Namen, muss er **aus
-den alten gespeicherten Werten dasselbe Bild erzeugen** — Hausregel 12: *alte Ablagen werden
-übersetzt, nie stillschweigend anders gelesen.* Bei Ken Burns lief es genauso: das eine Rezept mit
-der alten „Fahrt" wurde übersetzt, nicht fallengelassen.
+Und dann, nachdem die Folge benannt war:
 
-Praktisch: Aus `Bauart: Ellipse mit Gefälle` plus Ort und Größe muss eine **gleichwertige
-Lampenstellung im Raum** ableitbar sein. Das begrenzt, wie radikal das Modell sein darf — es muss
-die alten Formen als Sonderfälle erzeugen können, sonst verlieren gespeicherte Rezepte ihr
-Aussehen.
+> „wenn uns die Rückwärtskompatibilität beschränkt in der Radikalität des Ansatzes, dann will ich
+> sie nicht."
 
-**Der Prüfstein steht im Archiv:** 6 Rezepte mit `licht`, 3 mit `laser`, 4 mit `strahlen`. An denen
-wird vorher/nachher verglichen, bevor der alte Effekt fällt.
+**Das ist eine Entscheidung über das Modell, nicht über die Daten.** Müsste der neue Effekt
+`Bauart: Ellipse mit Gefälle` als Sonderfall nachbilden, würde die alte Formauswahl im neuen Effekt
+**weiterleben — nur versteckt, als Umrechnung**. Die Krücken wären dann nicht weg, sondern
+eingebaut. Ohne die Auflage kommt der Fleck rein aus der Geometrie, und `Bauart`, `Neigung`,
+`Aufsetzen` und `Einfall` verschwinden wirklich.
 
-**Und daraus folgt eine Reihenfolge:** Die Übersetzung wird gebraucht, *bevor* der alte Effekt
-fällt — nicht, solange der neue daneben steht. Während der Erprobung trägt der neue Effekt seinen
-eigenen Namen, und kein gespeichertes Rezept verweist auf ihn. Die Übersetzung ist also Teil des
-letzten Schritts, nicht des ersten.
+**Was es kostet:** 13 Rezepte im Archiv verlieren ihre Leuchte, wenn der alte Effekt fällt —
+6 mit `licht`, 3 mit `laser`, 4 mit `strahlen`. Es sind Caspar_Ds eigene, und er macht sie neu.
+
+**Hausregel 12 bleibt gewahrt**, denn ihr Kern ist das Wort *stillschweigend*: „Alte Ablagen werden
+übersetzt, **nie stillschweigend** anders gelesen." Bei der alten „Fahrt" hat Caspar_D den Weg
+selbst vorgegeben — *„das Studio sagt maximal Bescheid, dass der tote Effekt nicht mehr da ist und
+aus dem Rezept gelöscht wird."* Derselbe Weg trägt hier. Verboten ist, dass ein Rezept anders
+aussieht und niemand es merkt; erlaubt ist, dass etwas wegfällt und das Studio es sagt.
+
+**Warum jetzt und nicht später:** Solange nur Caspar_Ds eigene Rezepte betroffen sind, ist die
+Entscheidung folgenlos. Sobald KlangTresor mit fremden Beständen läuft — ein Release, ein zweiter
+Nutzer —, wäre dieselbe Entscheidung teuer. Der Zeitpunkt ist Teil der Begründung.
 
 ### Was vor der ersten Zeile entschieden sein muss
 
