@@ -3086,6 +3086,223 @@
    ],
    "gruppe": "kenburns",
    "bemerkung": "EIN sehr enger Punkt (0,25) - die neue Untergrenze KB_ENGE_MIN. Vorher haette kbEnge auf 0,50 geklemmt."
+  },
+  {
+   "name": "kb-tiefe",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "tiefe"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "GRUNDFALL der vierten Stellung: beide Punkte auf 'Tiefenebene'. Im Zug aendert sich nichts, im Halt bleibt die Tiefenebene des Punktes scharf und der Rest wird weicher. Der Hub ist am Anfang UND am Ende des Halts exakt null - genau daran haengt, dass die Naht von selbst dicht bleibt."
+  },
+  {
+   "name": "kb-tiefe-eins",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.5,
+       "v": 0.6,
+       "z": 0.6,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "EIN Punkt, also der laengste Halt, den dieser Clip hergibt - der Prozess 'kommt und geht' ist hier voll ausgefahren. Der Ort (0,50/0,60) liegt in der Tiefe bei rund 0,41, also mit Luft nach vorn und nach hinten: das scharfe Band wird an keiner Seite abgeschnitten."
+  },
+  {
+   "name": "kb-tiefe-fern",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.35,
+       "v": 0.2,
+       "z": 0.6,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "ZIELPUNKT GANZ HINTEN. An diesem Ort misst die Karte von 'Stumm' die Tiefe 0,00 - der fernste Bereich des Bildes. Das scharfe Band (+-10 %) wird damit nach hinten ABGESCHNITTEN und nicht nach vorn verschoben, um seine 20 % vollzumachen (Caspar_D, 19.09.2026: 'ja, geschnitten, nicht verschoben'). Der Fall haelt genau das fest."
+  },
+  {
+   "name": "kb-tiefe-nah",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.5,
+       "v": 0.9,
+       "z": 0.6,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "ZIELPUNKT GANZ VORN, der andere Randfall: an diesem Ort misst die Karte 0,90, den naechsten Bereich (bei diesem Titel der Boden). Vor dem Vordersten ist nichts, was unscharf werden koennte - auch hier wird geschnitten, nicht verschoben."
+  },
+  {
+   "name": "kb-tiefe-eng",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.5,
+       "v": 0.6,
+       "z": 0.25,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "TIEFENEBENE BEI ENGE 0,25, der engsten Kamerastellung. Der Pruefstein fuer die Einsortierung: die Tiefenebene sitzt in der KAMERA und nicht im Diorama, ihr Radius darf also NICHT mitgezoomt werden. Laege sie im Diorama, waere er hier viermal so breit."
+  },
+  {
+   "name": "kb-tiefe-gemischt",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "unscharf"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "BEWEGUNGSUNSCHAERFE UND TIEFENEBENE IN EINER FAHRT: Punkt 1 auf 'Unscharf' (schmiert im Zug, scharf bei der Ankunft), Punkt 2 auf 'Tiefenebene' (im Zug nichts, im Halt die Ebene). Sie leben in verschiedenen Abschnitten und duerfen sich nicht in die Quere kommen - der Fall haelt fest, dass beide Weichzeichner nebeneinander bestehen."
+  },
+  {
+   "name": "kb-tiefe-ohneHalt",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "tiefe"
+      },
+      {
+       "u": 0.5,
+       "v": 0.5,
+       "z": 0.7,
+       "f": "tiefe"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "DREI Punkte: in diesem Clip bleibt kein Halt uebrig (kbPlan H=0), und die Tiefenebene lebt IM HALT. Sie tut hier also NICHTS, und das ist richtig - die Schwesterprobe zu kb-fokus-ohneHalt. Damit niemand spaeter unbemerkt einen Ersatzhalt erfindet."
+  },
+  {
+   "name": "kb-tiefe-tempo2",
+   "typ": "kenburns",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbTakte": 2,
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "tiefe"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Zwei Takte je Zug: laengere Zuege, kuerzere Halte. Der Hub 'kommt und geht' zieht ueber 35 % des Halts auf - bei einem kurzen Halt erreicht er das Plateau kaum noch, und genau das soll sichtbar bleiben statt zu springen."
+  },
+  {
+   "name": "kb-tiefe-b",
+   "typ": "kenburns",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "kenburns",
+     "kbZiele": [
+      {
+       "u": 0.32,
+       "v": 0.36,
+       "z": 0.6,
+       "f": "tiefe"
+      },
+      {
+       "u": 0.63,
+       "v": 0.58,
+       "z": 0.72,
+       "f": "tiefe"
+      }
+     ]
+    }
+   ],
+   "gruppe": "kenburns",
+   "bemerkung": "Dieselbe Stellung auf dem zweiten Titel, dessen Taktzahl nicht durch 8 teilbar ist - andere Halt- und Zuglaengen, andere Tiefenkarte. Die Probe, dass die Tiefenebene nicht an den Zahlen EINES Titels haengt."
   }
  ],
  "nichtHerstellbar": []
