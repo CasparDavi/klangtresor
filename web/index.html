@@ -28931,11 +28931,19 @@ const ZONEN_AUS_AUFENTHALT = {
   vorn:  RAUM_VOR_SZENE.concat(['ganz vorn','vorn','vordere Mitte']),
   hinten:['Mitte','hinten','ganz hinten'],
 };
-/* DIE SECHS KAESTCHEN. Angezeigt werden IMMER alle sechs Bereiche - auch die, die es auf diesem
-   Bild nicht gibt. Sie stehen dann grau mit Grund, denn das Rezept traegt sie trotzdem, und auf
-   dem naechsten Bild koennen sie wieder da sein (Regel 4: grau mit Grund statt weg).
-   Neben jedem Bereich, den es hier gibt, steht sein Anteil an der Tiefe - so sieht man sofort,
-   wie viel man da gerade ankreuzt. */
+/* NUR DIE ZONEN, DIE ES AUF DIESEM BILD GIBT (Caspar_D, 21.09.2026: „ich bin dafuer, die grauen
+   Zonen nicht zu zeigen, sie wurden nicht detektiert, also sind sie fuer dieses Bild auch nicht
+   da").
+   Vorher standen alle sechs Bereiche da, die fehlenden grau - nach Regel 4, die Ausgrauen statt
+   Verstecken verlangt. Die Regel meint aber etwas anderes: Sie schuetzt davor, eine VORHANDENE
+   Moeglichkeit zu verbergen. Ein Bereich, den die Talsuche in diesem Bild nicht gefunden hat, ist
+   keine verborgene Moeglichkeit - er existiert hier nicht. Ihn hinzuschreiben waere die
+   Behauptung, man koenne dort etwas hinlegen.
+   WAS IM REZEPT STEHT, BLEIBT STEHEN: Kreuzt jemand auf einem Bild mit Himmel „ganz hinten" an
+   und legt das Rezept auf ein Portraet, bleibt die Zeile im Rezept erhalten - sie wird nur nicht
+   angezeigt, weil sie hier nichts trifft. Auf dem naechsten Bild mit Himmel wirkt sie wieder.
+   Effektscheibe und Effektraum stehen immer: sie liegen vor der Szene und haengen an keiner
+   Tiefenkarte. */
 function zonenWahlHTML(e){
   const will = zonenVonEffekt(e);
   const zl = zonenListe();
@@ -28949,17 +28957,32 @@ function zonenWahlHTML(e){
        + '<span class="tbs-zkmass">vor der Szene</span></button>';
   });
   ZONEN_BEREICHE.forEach(([name,a,b])=>{
+    if(imBild[name] == null) return;        /* hier nicht detektiert, also hier nicht da */
     const an = will.indexOf(name) >= 0;
-    const da = imBild[name] != null;
-    const tt = da ? name+' \u2014 '+Math.round(imBild[name])+'\u2009% der Tiefe dieses Bildes'
-                  : name+' \u2014 auf diesem Bild gibt es keine solche Zone. Angekreuzt bleibt es trotzdem: auf einem anderen Bild kann sie da sein.';
-    h += '<button type="button" class="tbs-zk'+(an?' an':'')+(da?'':' leer')+'" data-zone="'+name+'" title="'+tt+'">'
+    const tt = name+' \u2014 '+Math.round(imBild[name])+'\u2009% der Tiefe dieses Bildes';
+    h += '<button type="button" class="tbs-zk'+(an?' an':'')+'" data-zone="'+name+'" title="'+tt+'">'
        + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+name+'</span>'
-       + '<span class="tbs-zkmass">'+(da?Math.round(imBild[name])+'\u2009%':'\u2013')+'</span></button>';
+       + '<span class="tbs-zkmass">'+Math.round(imBild[name])+'\u2009%</span></button>';
   });
   h += '</div><span></span></div>';
+  /* WAS ANGEKREUZT IST, ABER HIER NICHT VORKOMMT, WIRD GEMELDET (Caspar_D, 21.09.2026: „fange
+     bitte ab, wenn sie irgendwo versehentlich angehakt worden sind").
+     Seit die fehlenden Bereiche nicht mehr dastehen, kann man sie auch nicht mehr abwaehlen - und
+     ein Rezept, das von einem Bild mit Himmel kommt, traegt „ganz hinten" mit. Trifft KEINE der
+     angekreuzten Zonen dieses Bild, wirkt der Effekt nirgends, und das saehe aus wie ein Fehler
+     im Effekt. Also sagt es die Karte, nennt die Namen und bietet den einen Griff an, der hilft.
+     Nicht stillschweigend korrigiert: ein Effekt, der von selbst woanders zu wirken begaenne,
+     waere schlimmer als einer, der nichts tut und es sagt. */
+  const fehlen = will.filter(n => RAUM_VOR_SZENE.indexOf(n) < 0 && imBild[n] == null);
+  const treffer = will.filter(n => RAUM_VOR_SZENE.indexOf(n) >= 0 || imBild[n] != null);
   if(!zl) h += '<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie wirkt der Effekt \u00fcberall, gleich was angekreuzt ist.</div>';
   else if(!will.length) h += '<div class="tbs-graugrund">Keine Zone angekreuzt: der Effekt wirkt nirgends. Kreuze mindestens eine an.</div>';
+  else if(!treffer.length) h += '<div class="tbs-fehltlicht">Dieser Effekt wirkt auf diesem Bild <b>nirgends</b>: Er ist f\u00fcr '
+      + fehlen.map(n=>'\u201e'+n+'\u201c').join(' und ') + ' angekreuzt, und diese Zone'+(fehlen.length>1?'n gibt es hier nicht':' gibt es hier nicht')
+      + '. Kreuze eine der vorhandenen an \u2014 oder setze im Tiefenregister eine Grenze, die sie entstehen l\u00e4sst.'
+      + '<button type="button" class="tbs-mini" data-zonenheilen="1" style="width:auto;padding:0 9px;margin-top:5px">Auf die vorhandenen Zonen setzen</button></div>';
+  else if(fehlen.length) h += '<div class="tbs-graugrund">Zus\u00e4tzlich angekreuzt, aber hier nicht vorhanden: '
+      + fehlen.map(n=>'\u201e'+n+'\u201c').join(', ') + '. Das bleibt im Rezept stehen und wirkt auf einem Bild, das diese Zone hat.</div>';
   return h;
 }
 function zonenVonEffekt(e){
@@ -31442,6 +31465,13 @@ function renderStapel(){
       if(p.sel&&k==='art') artFarben(e);
       if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm'||Q_REGLER.has(k))) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
+    c.querySelectorAll('[data-zonenheilen]').forEach(btn=>btn.onclick=()=>{
+      /* Alle Zonen ankreuzen, die es auf diesem Bild gibt - der Effekt wird wieder sichtbar,
+         und zwar ueberall, was der ehrlichste Ersatz fuer „nirgends" ist. */
+      const zl=zonenListe()||[]; const da=[];
+      zl.forEach(z=>{ if(da.indexOf(z.name)<0) da.push(z.name); });
+      e.zonen = RAUM_ORTE.filter(x=>da.indexOf(x)>=0 || RAUM_VOR_SZENE.indexOf(x)>=0);
+      renderStapel(); });
     c.querySelectorAll('[data-zone]').forEach(btn=>btn.onclick=()=>{
       const n=btn.dataset.zone, jetzt=zonenVonEffekt(e);
       const i=jetzt.indexOf(n);
@@ -34466,14 +34496,14 @@ function zeichneFrame(t,roh){
     RAUM_VOR_SZENE.forEach(n=>{
       h+='<div class="tbs-raumzeile"><span class="tbs-raumname">'+n+'</span>'
        + '<span class="tbs-raumwas">'+RAUM_BESCHREIBUNG[n]+'</span></div>'; });
+    /* Auch hier nur, was dieses Bild wirklich hat - die Liste beschreibt SEINEN Raum, nicht den
+       Vorrat an moeglichen Namen. */
     { const zl=zonenListe()||[];
       const da={}; zl.forEach(z=>da[z.name]=(da[z.name]||0)+z.anteil);
       ZONEN_BEREICHE.forEach(([n,a,b])=>{
-        const hier=da[n]!=null;
-        h+='<div class="tbs-raumzeile'+(hier?' hier':'')+'"><span class="tbs-raumname">'+n+'</span>'
-         + '<span class="tbs-raumwas">'+(hier
-             ? 'in diesem Bild \u2014 '+Math.round(da[n])+'\u2009% der Tiefe'
-             : 'die hinteren '+a+'\u2013'+b+'\u2009% der Tiefe \u2014 hier nicht belegt')+'</span></div>'; }); }
+        if(da[n]==null) return;
+        h+='<div class="tbs-raumzeile hier"><span class="tbs-raumname">'+n+'</span>'
+         + '<span class="tbs-raumwas">'+Math.round(da[n])+'\u2009% der Tiefe</span></div>'; }); }
     h+='<div class="tbs-raumfuss">Alles davon liegt <b>vor der Linse</b> und f\u00e4hrt bei einer Kamerafahrt mit. Korn und Vignette entstehen erst dahinter, im Film und im Objektiv \u2014 sie kleben am Bild und werden nicht gezoomt.</div></div>';
     { const zl=zonenListe();
       if(!zl) h+='<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie gibt es keine Zonen.</div>';
