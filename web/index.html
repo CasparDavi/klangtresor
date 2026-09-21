@@ -3308,7 +3308,16 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #tbs .tbs-leer .tbs-mini{display:inline-block;width:auto;padding:0 12px;margin-top:10px}
 #tbs .tbs-qluecke{width:1px;height:56px;align-self:center;margin:0 6px;background:var(--rand);flex:0 0 auto}
 /* Die Vorbereitung hatte hier einen eigenen Klappschalter mit Stand im Kopf - seit dem Akkordeon (15.09.2026) klappt die Stufe. */
-#tbs #tbs-vorbKoerper{padding-bottom:6px}
+/* PLATZ ZUM ATMEN (Caspar_D, 21.09.2026: „gib der Gradationskurve und den Reglern rundherum ein
+   bisschen mehr Platz zum Atmen, nicht so an den Rand klatschen"). Der Koerper hatte nur unten
+   6 px und sonst nichts - Kurve und Regler standen an der Kante. Jetzt ein Innenrand rundherum,
+   und das Blatt bekommt oberhalb Luft zur Registerleiste. */
+#tbs #tbs-vorbKoerper{padding:10px 12px 12px}
+#tbs .tbs-vorbReg{margin-bottom:12px}
+#tbs .tbs-vorbBlatt{padding:2px 2px 4px}
+#tbs .tbs-vorbBlatt .tbs-regler{margin:9px 0}
+#tbs .tbs-vorbBlatt canvas.tbs-grad-ed{margin:2px 0 4px}
+#tbs .tbs-vorbAbschnitt{margin:14px 0 6px;color:var(--schwach);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
 
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border:1px solid transparent;background:transparent;border-radius:50%}
 #tbs #tbs-kettekopf .tbs-knopf.tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
@@ -34016,12 +34025,24 @@ function zeichneFrame(t,roh){
         :rezeptDa?'hier steht jetzt nichts mehr \u2014 beim Titel liegt weiter das alte Rezept. \u201eL\u00f6schen\u201c nimmt es weg, Schlie\u00dfen und wieder \u00d6ffnen holt es zur\u00fcck.'
         :'hier steht jetzt nichts mehr \u2014 und beim Titel liegt auch nichts.')); }
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if(stufeOffen==='Vorb') vorbRender(); vorbStand(); }
+  let vorbReg='kurve';
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
-    let h='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral zur\u00fccksetzen - das L\u00f6schen im Fu\u00df betrifft dagegen den gesicherten Effektclip" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>Zur\u00fccksetzen</button></div>';
+    /* DREI REGISTER (Caspar_D, 21.09.2026: „wir machen drei Abteilungen draus - die
+       Gradationskurve, die Regler darunter und die Tiefeneinstellung"). Die Vorbereitung trug
+       alles untereinander, und die Kurve klebte am Rand. Drei Blaetter: was die HELLIGKEIT formt,
+       was die FARBE stellt, und was den RAUM beschreibt. Das Letzte ist kein Bildregler - es sagt
+       der Software, wie das Motiv im Raum steht, und zwar EINMAL je Quelle. */
+    let h='<div class="tbs-seg tbs-vorbReg">'+[['kurve','Kurve'],['farbe','Farbe'],['tiefe','Tiefe']]
+      .map(([rk,rl])=>'<button type="button" data-vreg="'+rk+'" class="'+(vorbReg===rk?'on':'')+'" style="flex:1">'+rl+'</button>').join('')+'</div>';
+    h+='<div class="tbs-vorbBlatt">';
+    if(vorbReg==='kurve'){
+        h+='<div class="tbs-seg" style="margin-bottom:6px">'+Object.keys(K).map(kk=>'<button type="button" data-vkanal="'+kk+'" class="'+(v.kanal===kk?'on':'')+'" style="flex:1'+(v.kanal===kk?';color:'+K[kk][1]:'')+'">'+K[kk][0]+'</button>').join('')+'<button type="button" data-vauto="1" title="Schwarz- und Wei\u00dfpunkt aus dem Histogramm (0,5 % / 99,5 %)" style="flex:2">Auto-Niveaus</button><button type="button" data-vloeschen="1" title="Alle Anpassungen der Vorbereitung auf neutral zur\u00fccksetzen - das L\u00f6schen im Fu\u00df betrifft dagegen den gesicherten Effektclip" style="flex:1"'+(vorbAenderungen(v)?'':' disabled')+'>Zur\u00fccksetzen</button></div>';
     h+='<canvas class="tbs-grad-ed" id="tbs-vorbGrad" width="447" height="276" style="width:100%;aspect-ratio:447/276;height:auto;display:block;background:#0a0a0c;border:1px solid var(--rand);border-radius:6px;touch-action:none;cursor:ew-resize"></canvas>';
     h+='<div class="tbs-seg" style="margin-top:6px"><button type="button" data-vmodus="gamma" class="'+(cur.modus==='gamma'?'on':'')+'" style="flex:1">Gamma</button><button type="button" data-vmodus="sig" class="'+(cur.modus==='sig'?'on':'')+'" style="flex:1">Sigmoidal</button></div>';
     h+='<div class="tbs-regler" style="margin-top:6px"><span>Tonwert</span><input type="range" class="tbs-zust" data-vtonwert="1" min="-1" max="1" step="0.02" value="'+cur.tonwert+'"><span class="tbs-wert">'+kf(cur.tonwert.toFixed(2))+'</span></div>';
     h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Marken unten = Schwarz-/Wei\u00dfpunkt ziehen</div>';
+    }
+    if(vorbReg==='tiefe'){
     /* DIE RAUMTIEFE STEHT HIER UND NICHT AN EINER LAMPE (Caspar_D, 21.09.2026: „wir sollten sie in
        die Vorbereitung haengen und pro Quelle nur ein einziges Mal festlegen"). Sie beschreibt die
        SZENE: wie tief der Raum ist, den dieses Bild zeigt. Zwei Leuchten darin muessen dieselbe
@@ -34030,18 +34051,29 @@ function zeichneFrame(t,roh){
     h+='<div style="margin:10px 0 4px;color:var(--schwach);font-size:10.5px">Der Raum</div>';
     h+='<div class="tbs-regler"><span>Raumtiefe</span><input type="range" data-vrt="1" min="0.1" max="5" step="0.1" value="'+(v.raumtiefe||1)+'"><span class="tbs-wert">'+kf(Number(v.raumtiefe||1).toFixed(1))+'\u00d7</span></div>';
     h+='<div style="color:var(--schwach);font-size:10.5px;margin-bottom:8px">Wie tief ist dieser Raum, in Bildbreiten \u2014 ein Portr\u00e4t etwa 0,2, eine Landschaft 3 und mehr. Die Tiefenkarte sagt, <i>was</i> vorn ist, nicht um <i>wie viel</i>; diese Zahl ist die fehlende Ma\u00dfeinheit.</div>';
+    }
+    if(vorbReg==='farbe'){
     VORB_REGLER.forEach(([kk,lbl,mn,mx])=>{ h+='<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(mn<0?'tbs-zust':'')+'" data-vk="'+kk+'" min="'+mn+'" max="'+mx+'" step="0.02" value="'+v[kk]+'"><span class="tbs-wert">'+kf(v[kk].toFixed(2))+'</span></div>'; });
+    }
+    h+='</div>';
     k.innerHTML=h;
-    const ged=$('#tbs-vorbGrad'), kg=ged.getContext('2d'); const zg=()=>gradZeichnen(kg,ged.width,ged.height,v.grad[v.kanal],cc,v.kanal); zg();
-    let dh=null; const xf=ev=>{ const r=ged.getBoundingClientRect(); return Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width)); };
-    const setbpwp=x=>{ const g=v.grad[v.kanal]; if(dh==='bp') g.bp=Math.min(x,g.wp-0.02); else g.wp=Math.max(x,g.bp+0.02); zg(); vorbStand(); };
-    ged.onpointerdown=ev=>{ ged.setPointerCapture(ev.pointerId); const x=xf(ev),g=v.grad[v.kanal]; dh=Math.abs(x-g.bp)<=Math.abs(x-g.wp)?'bp':'wp'; setbpwp(x); };
-    ged.onpointermove=ev=>{ if(dh) setbpwp(xf(ev)); }; ged.onpointerup=()=>{ dh=null; };
+    k.querySelectorAll('[data-vreg]').forEach(b=>b.onclick=()=>{ vorbReg=b.dataset.vreg; vorbRender(); });
+    /* Kurve, Tonwert und Kanalwahl gibt es nur im ersten Blatt - die Bindungen laufen daher
+       nur, wenn das Feld wirklich dasteht. zg bleibt als Leerlauf definiert, weil der Tonwert
+       es ruft. */
+    let zg=()=>{};
+    const ged=$('#tbs-vorbGrad');
+    if(ged){ const kg=ged.getContext('2d'); zg=()=>gradZeichnen(kg,ged.width,ged.height,v.grad[v.kanal],cc,v.kanal); zg();
+      let dh=null; const xf=ev=>{ const r=ged.getBoundingClientRect(); return Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width)); };
+      const setbpwp=x=>{ const g=v.grad[v.kanal]; if(dh==='bp') g.bp=Math.min(x,g.wp-0.02); else g.wp=Math.max(x,g.bp+0.02); zg(); vorbStand(); };
+      ged.onpointerdown=ev=>{ ged.setPointerCapture(ev.pointerId); const x=xf(ev),g=v.grad[v.kanal]; dh=Math.abs(x-g.bp)<=Math.abs(x-g.wp)?'bp':'wp'; setbpwp(x); };
+      ged.onpointermove=ev=>{ if(dh) setbpwp(xf(ev)); }; ged.onpointerup=()=>{ dh=null; };
+    }
     k.querySelectorAll('[data-vkanal]').forEach(b=>b.onclick=()=>{ v.kanal=b.dataset.vkanal; vorbRender(); });
     k.querySelectorAll('[data-vmodus]').forEach(b=>b.onclick=()=>{ v.grad[v.kanal].modus=b.dataset.vmodus; vorbRender(); });
-    const tw=k.querySelector('[data-vtonwert]'); tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
-    k.querySelector('[data-vloeschen]').onclick=vorbLoeschen;
-    k.querySelector('[data-vauto]').onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); };
+    const tw=k.querySelector('[data-vtonwert]'); if(tw) tw.oninput=()=>{ v.grad[v.kanal].tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); vorbStand(); };
+    { const lb=k.querySelector('[data-vloeschen]'); if(lb) lb.onclick=vorbLoeschen; }
+    { const ab=k.querySelector('[data-vauto]'); if(ab) ab.onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); }; }
     k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
       inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); malen(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
