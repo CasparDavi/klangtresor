@@ -5014,3 +5014,203 @@ Caspar_D nach dem Ansehen: *„auf jeden fall siehts gut aus."*
 flackerten gelegentlich, 3 von 14 Läufen. In den Läufen vom 20./21.09. liefen beide stabil — das
 sagt bei einer Quote von 3/14 nichts, ist aber notiert.
 
+---
+
+## 21.09.2026 — Das Lichtmodell. Und zwei Hausregeln, die den Tag davor erklären.
+
+### Zwei neue Hausregeln (stehen in CLAUDE.md)
+
+**1. Kein selbst gestarteter Prüflauf über zwei Minuten.** *„Da wird vorher gefragt und begründet
+bitte. Ich gebe den Startschuß."* Darunter läuft ohne Rückfrage: Syntaxprüfung, ein einzelner
+Nahtfall, Lesen und Suchen. Darüber wird angesagt und gewartet. **Nicht in kleine Läufe zerlegen**,
+um unter die Schranke zu kommen.
+
+**2. Der volle Lauf braucht einen Verdacht, keine Erlaubnis.** *„Ich habe per se kein Problem mit
+pedantischen Tests, aber nicht, wenn auch Stichproben reichen und nur bei begründetem Verdacht."*
+Zuerst die Stichprobe, die volle Runde erst, wenn sie etwas zeigt — und dann **in die Tiefe, nicht
+in die Breite**: der eine auffällige Effekt mit allen Reglerstellungen, nicht alle 38 mit je einer.
+
+Das Argument dahinter: 38 Effekte geben 1406 geordnete Paare, aber **50.616 Dreierketten** — und
+die echten Rezepte sind zwei bis fünf Glieder lang. Die Kombinatorik versagt genau dort, wo die
+echten Rezepte leben. Was ein Kombinationstest sucht, entsteht ohnehin fast nie im Effekt, sondern
+in dem, was sie teilen: Koordinatensystem, Maß, Stufe, Zustandsstapel, Leinwand-Vorrat.
+
+### Das Prüfverfahren steht im Backlog — und Caspar_D hat es entschieden
+
+*„Wir haben ein Testregime, von dem ich gar nicht weiß, was es tut und bewirkt, weil wir es nie
+gemeinsam spezifiziert haben."* Die Inventur steht in `docs/BACKLOG.md`: **haken.js hat 856 Zeilen
+und reicht 15 Funktionen nach außen, sieben davon ohne jeden Rufer.**
+
+**Der schwerste Einwand, belegt:** Das Maß war Konservierung, nicht Qualität. Das Diorama-Konzept
+hatte die Überabtastung als *Verbesserung* angekündigt; gebaut wurde die Fassung, die **bitgleich
+bleibt** — und das stand als „bewusste Abweichung zugunsten der Sache" in der Übergabe. Es war eine
+Abweichung zugunsten des Prüfstands. **Ein Maß, das Gleichheit belohnt, erzeugt Gleichheit.**
+
+**Die vier Anforderungen, von Caspar_D gesetzt:**
+
+| | | Werkzeug |
+|---|---|---|
+| 1 | Die Naht muss erreicht werden | `naht.mjs` ✔ |
+| 2 | Eine Änderung am Effekt muss das Bild ändern | `messreihe.js`, lief zuletzt am 10.09. |
+| 3 | Die Zeit darf nicht schlechter werden, außer es geht nicht anders | verstreut |
+| 4 | Kein Regler darf einen anderen verstellen | **fehlt ganz** |
+
+**Der Grundlinienvergleich kommt in dieser Liste nicht vor.** Anforderung 2 dreht die Beweislast um:
+Nicht die Bildänderung muss sich rechtfertigen, sondern ein Regler, der nichts tut.
+
+### Zwei Begriffe geradegezogen
+
+**„Grundlinie" stand für zwei entgegengesetzte Dinge.** Die **Messreihe** misst Wirkung (eine Null
+ist ein Alarm), der **Studiostand** misst Gleichheit (eine Null ist der Erfolg). Beide hießen
+gleich, und darum stimmte der Satz „ein Grundlinienvergleich kostet Minuten" für das eine und war
+um den Faktor zehn daneben für das andere. In Dateien gezählt: **eine Wirkungsmessung (10.09.),
+vier Gleichheitsstände (15., 18., zweimal 20.09.).**
+
+**Die „Naht" ist nicht die Spalte, die so heißt.** `gleich` und `gleichFolge` beantworten
+*„schließt der Loop?"*; `naht` ist der Sprung von Bild N−1 auf 0 und wird erst interessant, wenn
+`gleich > 0` ist.
+
+---
+
+## Das Lichtmodell — der große Bau des Tages
+
+Alles in `docs/effektclip/KONZEPT-LEUCHTEN.md`. Ausgelöst durch einen Satz: *„mir gefällt ehrlich
+gesagt der Lichtpuffer nicht … es ist die 2dimensionalität für etwas dreidimensionales."*
+
+### Die drei Befunde, alle am Code nachgelesen
+
+1. **Seit dem Diorama nutzen alle die Tiefenkarte — nur das Licht nicht.** Parallaxe, Masken,
+   Partikelbänder, Schlagschatten: alle. Eine Lampe hinter einer Figur leuchtete ihr durch den
+   Rücken.
+2. **`lichtOrtMittel()` lieferte den Schwerpunkt aller Lampen, einen Wert fürs ganze Bild.** Zwei
+   Scheinwerfer links und rechts ergaben einen Lichtort in der Mitte, wo keine Lampe steht.
+3. **Die Ausrichtung einer gerichteten Leuchte existierte nicht als Größe**, nur als Malergebnis.
+   Ablesbar an den Krücken: `Bauart` beim Scheinwerfer, `Neigung (0 Wand, 1 Boden)`, `Drehen` und
+   `Aufsetzen` beim Laser, `Einfall` am Streiflicht — womit der Ort einer Lampe auf **zwei
+   Effektkarten** verteilt war.
+
+### Was gebaut ist — „Scheinwerfer mit Tiefe" (`lichtRaum`)
+
+Neubau neben dem Alten, die alten Effekte unberührt. **Rückwärtskompatibilität ausdrücklich
+aufgehoben:** *„wenn uns die Rückwärtskompatibilität beschränkt in der Radikalität des Ansatzes,
+dann will ich sie nicht."* Müsste der Neue „Ellipse mit Gefälle" nachbilden, lebte die alte
+Formauswahl versteckt weiter.
+
+| | |
+|---|---|
+| **Kegel auf dem Relief** | je Bildpunkt wird gefragt, ob er im Kegel liegt; Fleck, Verzerrung und Abfall fallen gemeinsam heraus. Ohne Karte liegt alles in Zieltiefe — dann kommt die Ellipse von selbst heraus, ein Weg für zwei Fälle |
+| **Herkunfts-Puffer** | zweiter Puffer, RGB = Lampenort × Helligkeit, A = Helligkeit, beim Lesen RGB/A. Dieselbe Rechnung wie `lichtOrtMittel`, nur **je Bildpunkt** |
+| **Streiflicht liest daraus** | der Regler `Einfall` ist damit überflüssig: die dritte Achse ist **gemessen statt gestellt** |
+| **Pan und Tilt** | die Lampe **kippt**, erst Tilt, dann Pan (der Bügel sitzt auf dem Teller). Fünf Stellungen, loopfest über `lpBahn` |
+| **Entfernungsgesetz** | 1/r², Bezug ist der Abstand Lampe–Ziel, geklemmt bei 4 |
+| **Zwei Marken auf der Bühne** | Ziehen bewegt, Mausrad stellt die Tiefe; die Tiefe steht als Ring um die Marke |
+
+**Der Beweis am Bild:** dasselbe Rezept, nur die Lampentiefe von 0,12 auf 0,98 — einmal Gegenlicht
+mit Saum auf der Figur, einmal das modellierte Relief mit den Rippen des Mantels. Kein
+`Einfall`-Regler angefasst.
+
+### Vier Fehler, die Caspar_D am Bild gefunden hat
+
+1. **`screen` statt `abwedeln`** — die Liste in Zeile 27507 überschreibt alle Leuchten, und der
+   Neue stand nicht darin. Der Fleck lag als Farbe über dem Bild (Regel 5).
+2. **Kein Antriebspult** — auch das wird je Effekt zugewiesen.
+3. **Erst Pan, dann Tilt** — dadurch lief die Tilt-Drehung um die Welt-Waagerechte, die fest in der
+   Bildebene liegt. *Der Kommentar behauptete bereits das Richtige und deckte den falschen Code zu.*
+4. **Nicht im Vorrat** — die Auswahlliste wird aus der kuratierten `EGRUPPEN` gebaut, nicht aus
+   `EFFEKTE`. Ein Effekt, den niemand einhängen konnte.
+
+### Die Tiefe ist ordinal, nicht metrisch
+
+Caspar_Ds schärfster Einwand: *„wir kennen die Tiefe nicht als Maßeinheit, folglich, welches r gilt
+in der Tiefe?"* Die Karte sagt zuverlässig, **was** vorn ist — nicht, um **wie viel**. Jede
+Rechnung, die Tiefe und Bildmaß mischt, braucht einen Umrechnungsfaktor, und den kann die Software
+nicht ausrechnen.
+
+**Daraus wurde ein Regler „Raumtiefe"**, und die Hausregel *„was die Software ausrechnen kann, wird
+kein Regler"* greift hier ausdrücklich **nicht**: Ein Regler für etwas Unbekanntes ist ehrlich, eine
+erfundene Konstante ist es nicht.
+
+---
+
+## Das Zonenmodell und die Vorbereitung
+
+*„es gibt Fronteffekte und Hintergrundflächeneffekte, dann gibt es den Hintergrundraum, den
+Vordergrundraum und den Vordergrundleerraum."*
+
+**Die Vorbereitung hat jetzt drei Stationen** — Caspar_D: *„man könnte es durchaus als
+Vorbereitungsstationen sehen: zuerst die Kurve, dann die Detailslider, dann die Tiefe."* Damit
+greift Hausregel 26 in ihrem **ersten** Teil („was drauf setzt, bekommt eine Lasche"), nicht im
+zweiten. Laschen mit Unterstreichung, die Pillen darin sind die Modi.
+
+| Station | Inhalt |
+|---|---|
+| **Kurve** | Kanalwahl, Gradation, Gamma/Sigmoid, Tonwert |
+| **Feinheiten** | Belichtung bis Temperatur (nicht „Farbe": es ist Tonwert) |
+| **Tiefe** | Raumtiefe · Leerraum vorn · Trennung · Weichheit · Hintergrundfläche ab |
+
+**Die Zonen gehören zur Szene, nicht zum Effekt.** Aus den Effektkarten sind `Grenze`, `Weichheit`
+und `Leerraum vor Tiefenkarte` verschwunden; was bleibt, ist `tiefeWirkt` — *auf welcher Seite*
+wirke ich.
+
+**Hausregel 12 eingehalten:** Beim Laden werden die Werte aus den Effekten in die Szene gehoben, und
+die Zeile sagt es. Genommen wird der **häufigste** Wert — nicht der erste (Zufall der Reihenfolge),
+nicht der Mittelwert (ein Mittel zwischen zwei Trennebenen ist eine dritte). Betroffen: vier
+Archivrezepte, eines mit drei verschiedenen Werten.
+
+---
+
+## Kosten, gemessen auf der echten Grafikkarte
+
+`naht.mjs` hat einen Schalter **`--gpu`** bekommen. SwiftShader ist für Bitgleichheit richtig und
+für Kosten die falsche Maschine — **und zwar für Canvas und Shader unterschiedlich falsch**
+(Faktor 13 bis 29). Wer dort Kosten misst, bekommt ein falsches *Verhältnis*.
+
+| Effekt | netto | Art |
+|---|---|---|
+| **Linse** | **10,9 ms** | Shader ohne Tiefenkarte |
+| Scheinwerfer mit Tiefe | 5,6 ms | Shader mit Tiefenkarte |
+| Streiflicht | ~4,1 ms | Shader, Karte **und** Marsch |
+| Flammen | 4,3 ms | Shader, fraktales Rauschen |
+| Blenden | 3,2–3,7 ms | Canvas |
+| Scheinwerfer (alt) | 0,4 ms | Canvas |
+| Antrieb | **nicht messbar** | |
+
+Genauigkeit ±20 % (Drift durch Systemlast und Wärme). Die 5,6 ms sind der Preis eines
+**Shader-Gangs**, keine Eigenheit der Lampe — sie liegt am unteren Ende des Feldes.
+
+---
+
+## Was der Nebel wirklich tut (nachgelesen, nicht vermutet)
+
+`T = exp(−3·weg)` und `Bild·T + Einstreuung·(1−T)` — das ist **Lambert-Beer** und die vereinfachte
+Volumenrendering-Gleichung, sauber gebaut, mit Koschmieder im Kommentar. **Die Weglänge ist
+tiefenabhängig, die Dichte nicht:** Die dritte Achse des Rauschens ist die **Zeit**, nicht die
+Tiefe. Die Schwaden hängen an der Bildfläche.
+
+Drei billige Verbesserungen hängen alle am Herkunfts-Puffer:
+1. **Extinktion auf dem Lichtweg** — heute wird nur Objekt→Kamera gedämpft, nicht Lampe→Objekt
+2. **Räumliche Schwaden** — Tiefe als dritte Achse, Zeit als vierte; `wolke4(vec4)` existiert schon
+3. **Phasenfunktion** (Henyey-Greenstein) statt des Mischreglers „Bündelung"
+
+**Entschieden:** Die Einstreuung bleibt beim Medium. *„Wir lassen es am Nebel."* Ein Streuanteil an
+der Lampe wäre eine zweite Quelle für dieselbe Sache (Regel 5).
+
+---
+
+## Offen, in dieser Reihenfolge
+
+1. **Falschfarben-Ansicht** in der Station Tiefe — rot vorn, blau hinten, auf dem grau gelegten
+   Bild. Die Rechnung existiert, sie hängt heute an den Effektkarten.
+2. **Sternschnuppe auf die letzte Tiefenebene.** *„Eigentlich auf der letzten Tiefenebene, dem
+   Himmel."* Heute richtet sie sich nach der Zonengrenze — eine Schnuppe ist aber am Himmel, und
+   das ist keine Einstellung, sondern ihre Natur.
+3. **Der Nebel** — die drei Punkte oben.
+4. **Laser und Lichtstrahlen ablösen.** Sie sind dieselbe Lampe: Bündelung, Gobo, Schwenktempo.
+   **Dafür fehlt ein dritter Winkel: Roll** — Caspar_D: *„die Fächerfläche steht momentan parallel
+   zur Diorama-Front-Scheibe."* Beim Scheinwerfer fällt Roll nicht auf (ein Kegel ist
+   rotationssymmetrisch), beim Fächer ist es der entscheidende Winkel.
+5. **Überstrahlungsanzeige** — kein Deckel (Ausbrennen ist ein Mittel), aber eine Zahl, die sagt,
+   wann ein Regler nur noch scheinbar wirkt.
+6. **Aus dem Backlog:** die Linse mit 10,9 ms · Polarlicht auf den Himmel · das Prüfverfahren.
+7. **Alt und unverändert:** Tempo in Schlägen · Module herauslösen · zwei flackernde Nahtfälle.
+
