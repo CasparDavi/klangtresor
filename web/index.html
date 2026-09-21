@@ -27459,7 +27459,7 @@ const EFFEKTE = {
      Rueckwaertskompatibilitaet beschraenkt in der Radikalitaet des Ansatzes, dann will ich sie
      nicht." Muesste dieser Effekt „Ellipse mit Gefaelle" nachbilden koennen, lebte die alte
      Formauswahl hier weiter - nur versteckt, als Umrechnung. */
-  lichtRaum:{ label:'Scheinwerfer mit Tiefe', art:'mal', verr:'screen', staerkeDef:.7, leuchtet:true,
+  lichtRaum:{ label:'Scheinwerfer mit Tiefe', art:'gl', verr:'screen', staerkeDef:.7, leuchtet:true,
     besch:'Eine <b>Lampe mit einem Ort im Raum</b>, nicht eine gemalte Form. Sie steht irgendwo im Diorama und scheint irgendwohin — beide Punkte haben eine <b>Tiefe</b>. Was man sieht, ist ausgerechnet: steht sie frontal, ist der Fleck rund; steht sie schräg, wird er von selbst zur Ellipse, und zwar genau so schräg, wie sie steht. Eine Bauart zum Auswählen gibt es darum nicht mehr.<br><b>Mit Tiefenkarte</b> beleuchtet sie nur, was <b>hinter</b> ihr liegt — steht sie hinter einer Figur, bleibt die Figur dunkel und es entsteht eine Silhouette. Ohne Karte leuchtet sie flach, und die Zeile sagt es.<br><b>Öffnungswinkel</b> ist der Kegel, <b>Hotspot</b> der helle Kern darin, <b>Kante</b> wie hart der Rand abfällt.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffd060'},
       {k:'lrOx',lbl:'Lampe X',min:-0.5,max:1.5,step:.01,def:.22},
@@ -27475,7 +27475,12 @@ const EFFEKTE = {
       {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:18,wert:v=>kf(v)+'\u00b0',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:6,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
-        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte leuchtet die Lampe flach — sie weiß nicht, was vor ihr steht.'}]},
+        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte leuchtet die Lampe flach — der Kegel trifft dann eine gedachte Ebene statt des Motivs.'}],
+    /* Das GESCHWENKTE Ziel und der Modus gehen als Uniform in den Shader: die Bewegung wird an
+       einer Stelle gerechnet, der Shader bekommt nur das Ergebnis. u_modus sagt ihm, ob er die
+       Lichtfarbe oder den Lampenort ausgibt - derselbe Kegel, zwei Werte. */
+    glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
+      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:LR_TIEFE_JE_BREITE, u_tiefeAn:1 }; } },
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
@@ -28073,7 +28078,7 @@ let LICHTMASS = [1, 1];
    damit WebGL 2. */
 let LICHTHERKUNFT = false;
 let HERKUNFT_DA = false;
-function herkKod(v){ const x=(Number(v)+0.5)/2; return Math.max(0,Math.min(1,x)); }
+/* GELOESCHT: herkKod - die Kodierung des Lampenorts steht jetzt im Shader (u_modus). */
 /* LISTE UND MASS GEHOEREN ZUSAMMEN, ALSO IN EINE FUNKTION (Gegenlesen 20.09.2026).
    Bis eben standen `LICHTORTE=[]` und `LICHTMASS=[Wn,Hn]` als zwei Zuweisungen nebeneinander in
    dioramaMalen - beieinander nur aus Gewohnheit. Wer spaeter eine zweite Stelle baut, die LICHTORTE
@@ -28764,140 +28769,51 @@ function blendeMaske(e,mk,W,H,Z,r,rot){ const art=e.rmBlende||'keine', form=e.rm
    gedreht, damit die Kamera in +z schaut: welt = (1 - z) * Breite. Wer das verwechselt, bekommt
    Gegenlicht und Vorderlicht vertauscht - und zwar lautlos, weil beides plausibel aussieht. */
 const LR_TIEFE_JE_BREITE = 1.0;
-function lrRaum(e, W, H){
-  const z=(v,d)=>{ const x=Number(v); return isFinite(x)?Math.max(0,Math.min(1,x)):d; };
+function lrSchwenkAnteil(e, t){
   const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
-  const B=W*LR_TIEFE_JE_BREITE;
-  return { O:[f(e.lrOx,.22)*W, f(e.lrOy,.12)*H, (1-z(e.lrOz,.85))*B],
-           Z:[f(e.lrZx,.50)*W, f(e.lrZy,.55)*H, (1-z(e.lrZz,.35))*B],
-           oz:z(e.lrOz,.85) };
-}
-/* Der Querschnitt des Kegels am Ziel, auf die Bildebene projiziert.
-   Ein Kreis vom Radius r, der SENKRECHT auf der Kegelachse steht, erscheint von vorn als Ellipse:
-   quer zur Achse behaelt er r, laengs der Achse wird er mit |a_z| gestaucht, und er kippt in die
-   Richtung, in die die Achse zeigt. Steht die Lampe frontal (a_z = 1), kommt ein Kreis heraus;
-   streift sie (a_z gegen 0), wird die Ellipse zur Linie.
-   DAS IST DER GANZE UNTERSCHIED ZUM ALTEN EFFEKT: dort waehlt man „Kreis" oder „Ellipse mit
-   Gefaelle" aus einer Liste, hier faellt beides aus der Stellung der Lampe heraus.
-   DIE UNTERGRENZE IST EINE NOTWEHR, KEINE PHYSIK: bei exakt streifendem Einfall waere die kleine
-   Halbachse null und der Effekt unsichtbar. Das ist geometrisch richtig und praktisch unbrauchbar -
-   eine Lampe, die verschwindet, weil man einen Regler um ein Hundertstel weiterschiebt, ist ein
-   Bedienfehler. Gesetzt sind 8 %, und sie stehen hier, statt sich im Code zu verstecken. */
-const LR_FLACH_MIN = 0.08;
-function lrKegel(O, Z, winkelGrad){
-  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=Z[2]-O[2];
-  const len=Math.hypot(dx,dy,dz);
-  if(!(len>1e-6)) return null;
-  const ax=dx/len, ay=dy/len, az=dz/len;
-  const r=len*Math.tan(Math.max(1,Math.min(150,winkelGrad))*Math.PI/360);   /* halber Oeffnungswinkel */
-  const gross=r, klein=r*Math.max(LR_FLACH_MIN, Math.abs(az));
-  return { r, gross, klein, rot:Math.atan2(ay,ax), az, len };
-}
-/* ===================== PAN UND TILT: DIE LAMPE STEHT, DER STRAHL SCHWENKT (21.09.2026) =========
-   Caspar_D: „auch hatten wir den Scheinwerfern Moving Heads und sowas zugewiesen, also
-   Schwenkmechanismen und Helligkeitsmechanismen im Takt, funktioniert das?" - der Antrieb ja, der
-   Schwenk bis hierher nicht.
-
-   IM NEUEN MODELL IST EIN MOVING HEAD DAS, WAS ER IN WIRKLICHKEIT IST: ein Geraet, das fest haengt,
-   und ein Strahl, der sich um es dreht. Der alte Effekt rechnet statt dessen sechs Fuehrungen fuer
-   den gemalten FLECK (wandernd, bogen, schwenk, fahrt, schritt), jede mit eigener Loop-Behandlung.
-   Hier gibt es nur eine Drehung um den Lampenort - und der Fleck folgt daraus samt seiner
-   Verzerrung: er wird beim Schwenken von selbst flacher und laenger, weil der Einfall streifender
-   wird. Genau das sieht man an einem echten Moving Head, und der alte Effekt kann es nicht.
-
-   PAN UND TILT SIND DIE FACHNAMEN und stehen auch auf jedem Geraet: Pan dreht um die Senkrechte,
-   Tilt um die Waagerechte. Kein eigenes Wort erfinden, wo die Buehnentechnik eines hat.
-
-   DIE BAHN IST LOOPFEST, OHNE DASS ETWAS DAFUER GETAN WIRD. lpBahn rastet auf ganze Umlaeufe, wenn
-   mindestens einer in den Clip passt, und PENDELT sonst - bei einem Schwenk ist das Pendeln der
-   Normalfall und das Richtige: ein Moving Head, der in zehn Sekunden einmal hin und her geht,
-   soll nicht auf einen ganzen Umlauf rasen (Regel 17d). */
-/* GELOESCHT: const LR_SCHWENK an dieser Stelle (21.09.2026). Sie stand hier, wurde aber in der
-   Registry gebraucht - und die steht WEITER OBEN. Der Zugriff lief damit in die temporale Todeszone,
-   die Seite warf beim Laden, und window.__naht existierte nicht mehr: der Pruefstand meldete nur
-   noch "Cannot read properties of undefined". Die Syntaxpruefung sieht so etwas nicht, ein einziger
-   Prueffall schon. Die Namen sind jetzt dort, wo sie hingehoeren - an der Oberflaeche. */
-function lrSchwenkZiel(e, O, Z, t){
-  const art=e.schwenkArt||'aus'; if(art==='aus') return Z;
+  const O=[f(e.lrOx,.22), f(e.lrOy,.12), f(e.lrOz,.85)];
+  const Z=[f(e.lrZx,.50), f(e.lrZy,.55), f(e.lrZz,.35)];
+  const art=e.schwenkArt||'aus';
+  if(art==='aus') return Z;
   const weite=Math.max(0,Math.min(80,Number(e.schwenkWeite==null?18:e.schwenkWeite)))*Math.PI/180;
   if(!(weite>1e-4)) return Z;
-  const f=1/Math.max(0.3,Number(e.schwenkTempo)||6);
-  const a=Math.sin(lpBahn(f,t,0)), b=Math.sin(lpBahn(f,t,Math.PI/2));
+  const fr=1/Math.max(0.3,Number(e.schwenkTempo)||6);
+  const a=Math.sin(lpBahn(fr,t,0)), b=Math.sin(lpBahn(fr,t,Math.PI/2));
   let pan=0, tilt=0;
   if(art==='pan') pan=weite*a;
   else if(art==='tilt') tilt=weite*a;
   else if(art==='kreis'){ pan=weite*a; tilt=weite*b; }
-  else if(art==='acht'){ pan=weite*a; tilt=weite*Math.sin(lpBahn(2*f,t,0)); }
-  /* Der Strahl ist der Vektor von der Lampe zum Ziel; geschwenkt wird ER, nicht das Ziel im Bild.
-     Erst um die Senkrechte (Pan), dann um die Waagerechte (Tilt) - die Reihenfolge ist die eines
-     echten Geraets, bei dem der Tilt-Buegel auf dem Pan-Teller sitzt. */
-  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=Z[2]-O[2];
+  else if(art==='acht'){ pan=weite*a; tilt=weite*Math.sin(lpBahn(2*fr,t,0)); }
+  /* In der Tiefenkarte zeigt z nach VORN (1 = nah), in der Welt nach hinten. Die Kippung rechnet
+     in Weltrichtung, darum wird die dritte Achse hier gespiegelt und am Ende zurueck - sonst
+     kippte der Strahl verkehrt herum, und zwar lautlos. */
+  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=(1-Z[2])-(1-O[2]);
   const cp=Math.cos(pan), sp=Math.sin(pan);
   const x1=dx*cp+dz*sp, z1=-dx*sp+dz*cp;
   const ct=Math.cos(tilt), st=Math.sin(tilt);
   const y2=dy*ct-z1*st, z2=dy*st+z1*ct;
-  return [O[0]+x1, O[1]+y2, O[2]+z2];
+  return [O[0]+x1, O[1]+y2, 1-((1-O[2])+z2)];
 }
-/* Der Maler. Er zeichnet IMMER auf eine eigene Flaeche und legt sie dann auf - weil die Verdeckung
-   mit destination-in arbeitet, und die wuerde auf dem Licht-Puffer alles wegschneiden, was andere
-   Leuchten vorher hineingemalt haben. Dasselbe Muster wie beim alten Scheinwerfer mit Blende. */
-function lichtRaumMalen(e, cx, t, W, H){
-  const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return;
-  const R=lrRaum(e,W,H), ZS=lrSchwenkZiel(e,R.O,R.Z,t), K=lrKegel(R.O,ZS,Number(e.winkel)||38); if(!K) return;
-  lichtOrtMelden(R.O[0], R.O[1], a);   /* bis der Herkunfts-Puffer steht, sieht das Streiflicht sie so */
-  if(!e._lrc){ e._lrc=document.createElement('canvas'); }
-  if(e._lrc.width!==W||e._lrc.height!==H){ e._lrc.width=W; e._lrc.height=H; }
-  const x=e._lrc.getContext('2d');
-  x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; x.filter='none';
-  x.clearRect(0,0,W,H);
-  /* Hotspot und Kante: der Kern traegt den vollen Wert, danach faellt es ab. Ein hoher Kantenwert
-     macht den Abfall steil (harter Rand), ein niedriger weich - dieselbe Bedeutung wie am alten
-     Effekt, damit niemand zwei Woerter fuer eine Sache lernen muss. */
-  const hot=Math.max(0,Math.min(1,e.hotspot==null?.35:Number(e.hotspot)));
-  const kan=Math.max(0,Math.min(1,e.kante==null?.5:Number(e.kante)));
-  const kern=hot*0.85, exp=0.6+kan*3.4;
-  /* IM HERKUNFTSLAUF TRAEGT DERSELBE KEGEL DIE ORTSFARBE STATT DER LICHTFARBE. Derselbe Verlauf,
-     dieselbe Geometrie, dieselbe Verdeckung - nur was hineingemalt wird, ist ein anderer Wert.
-     Deshalb steht hier kein zweiter Maler: zwei Maler fuer eine Form waeren zwei Wahrheiten. */
-  const farbeHier = LICHTHERKUNFT
-    ? 'rgb('+Math.round(herkKod(Number(e.lrOx==null?.22:e.lrOx))*255)+','
-            +Math.round(herkKod(Number(e.lrOy==null?.12:e.lrOy))*255)+','
-            +Math.round(Math.max(0,Math.min(1,Number(e.lrOz==null?.85:e.lrOz)))*255)+')'
-    : e.farbe;
-  x.save(); x.translate(ZS[0],ZS[1]); x.rotate(K.rot); x.scale(K.gross,K.klein);
-  const g=x.createRadialGradient(0,0,0,0,0,1);
-  for(let i=0;i<=14;i++){ const q=i/14;
-    const v=(q<=kern)?1:Math.pow(Math.max(0,1-(q-kern)/Math.max(1e-6,1-kern)),exp);
-    g.addColorStop(q, rgba(farbeHier, a*v)); }
-  x.fillStyle=g; x.beginPath(); x.arc(0,0,1,0,7); x.fill(); x.restore();
-  /* DIE VERDECKUNG: was NAEHER steht als die Lampe, bekommt ihr Licht nicht. Das ist der ganze
-     Unterschied zwischen einer Lampe im Raum und einer auf der Scheibe - und es ist ein
-     Zahlenvergleich, kein Marsch: die Maske „hinten" mit der Grenze bei der Lampentiefe laesst
-     genau das stehen, was hinter ihr liegt. Steht die Lampe hinter einer Figur, bleibt die Figur
-     dunkel und ihre Silhouette entsteht von selbst.
-     OHNE KARTE GIBT ES KEINE VERDECKUNG, und dann leuchtet die Lampe flach - die Zeile auf der
-     Karte sagt es, statt es dem Auge zu ueberlassen. */
-  const vd=Math.max(0,Math.min(1,e.verdeckung==null?1:Number(e.verdeckung)));
-  if(vd>0.001){
-    const maske=tiefeMaske('hinten', W, H, R.oz, 0.10);
-    if(maske){
-      if(vd>=0.999){ x.globalCompositeOperation='destination-in'; geoKarteLegen(x,maske); }
-      else { /* Teilweise: die Maske nur anteilig wirken lassen, damit der Regler ueber seinen ganzen Weg etwas tut (Regel 9) */
-        x.globalCompositeOperation='destination-in'; x.globalAlpha=1;
-        const h=document.createElement('canvas'); h.width=W; h.height=H; const hx=h.getContext('2d');
-        hx.globalAlpha=1-vd; hx.fillStyle='#fff'; hx.fillRect(0,0,W,H);
-        hx.globalAlpha=vd; geoKarteLegen(hx,maske);
-        x.drawImage(h,0,0); }
-      x.setTransform(1,0,0,1,0,0); x.globalCompositeOperation='source-over'; x.globalAlpha=1; }
-  }
-  /* REGEL 5: LICHT IST BELEUCHTUNG, NICHT FARBE. Die Vorgabe wird ein paar Zeilen nach der
-     Registry auf abwedeln gesetzt, zusammen mit allen anderen Leuchten - hier steht darum nur der
-     Rueckfall, falls jemand diese Liste vergisst. Caspar_D hat es am 21.09.2026 am Bild erkannt:
-     der Fleck lag als Farbe ueber dem Bild, statt aufzuhellen, was schon da ist. Genau das ist der
-     Unterschied zwischen screen und Farbig abwedeln - und der Grund fuer Regel 5. */
-  cx.globalCompositeOperation=LICHTMAL?'lighter':(VMODE[e.verr]||VMODE.abwedeln||'screen');
-  cx.globalAlpha=1; cx.drawImage(e._lrc,0,0);
+function leuchteInPuffer(e, cx, t, Wn, Hn){
+  const a=Math.min(1, e.staerke*antriebWert(e,t));
+  if(!(a>0.001)) return;
+  if(EFFEKTE[e.typ].art==='gl'){
+    const g=GL.run(e, oa, Wn, Hn, t, null, tiefeBildVon(), null);
+    if(!g) return;
+    cx.globalCompositeOperation='lighter'; cx.globalAlpha=a; cx.drawImage(g,0,0);
+    cx.globalAlpha=1;
+  } else malen(e, cx, t, Wn, Hn);
 }
+/* GELOESCHT: lichtRaumMalen, der Canvas-Maler des Scheinwerfers mit Tiefe (21.09.2026).
+   Er rechnete den Kegelquerschnitt in der ZIELTIEFE und projizierte diesen Kreis auf die
+   Bildebene - die Ellipse entstand aus dem Winkel zwischen Achse und BILDEBENE, und das Relief
+   wirkte nur als Verdeckung. Caspar_D: „die Lampe kippt und projiziert den Strahl auf die
+   Raumbegrenzungen". Genau das tut jetzt der Shader GL_SHADER.lichtRaum: er fragt je Bildpunkt,
+   ob dieser im Kegel liegt, und Fleck, Verzerrung und Abfall fallen gemeinsam heraus.
+   MIT IHM FALLEN lrRaum, lrKegel (samt LR_FLACH_MIN), lrSchwenkZiel und herkKod - alle hatten
+   nur diesen einen Rufer. Die Ellipsenrechnung war eine Naeherung, die niemand mehr braucht:
+   ohne Tiefenkarte liegt im Shader alles in Zieltiefe, und dann kommt sie von selbst heraus.
+   Die Kodierung des Lampenorts steht jetzt im Shader und im Kommentar bei LICHTHERKUNFT. */
 function lichtMalen(e,cx,t,W,H){ const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return; const O=raumUrsprung(e,W,H), Z=raumZiel(e,t,W,H,O), form=e.rmForm||'kreis', r=Math.max(2,(e.rmGroesse==null?0.3:e.rmGroesse)*Math.min(W,H)), rot=Math.atan2(Z[1]-O[1],Z[0]-O[0]);
   lichtOrtMelden(O[0], O[1], a);     /* der Ursprung ist das Geraet, nicht der Fleck */
   const blende=(e.rmBlende||'keine')!=='keine'; let x=cx;
@@ -29280,7 +29196,6 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     return; }
   if(e.typ==='farbe'){ const pal=(e.palette==='Eigen'?e.rampe:PALETTEN[e.palette])||PALETTEN['Abendrot'], ph=(t/lpP(e.tempo))%1, seg=ph*pal.length, i=Math.floor(seg)%pal.length, j=(i+1)%pal.length;
     cx.globalAlpha=Math.min(1,e.staerke); cx.fillStyle=mische(pal[i],pal[j],seg-Math.floor(seg)); cx.fillRect(0,0,Wn,Hn); }
-  else if(e.typ==='lichtRaum'){ lichtRaumMalen(e,cx,t,Wn,Hn); }
   else if(e.typ==='licht'||e.typ==='schatten'){ lichtMalen(e,cx,t,Wn,Hn); }
   else if(e.typ==='laser'){ /* EIN LASER FLIMMERT NICHT SINUSFOERMIG, ER TASTET AUS (VIDEO-PLAN 9b.3): an oder aus, hart.
      Derselbe Regler, andere Kurve - bei 1 ist er knapp die Haelfte der Zeit dunkel. */
@@ -30436,7 +30351,11 @@ const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder
        dasselbe wie ohne Tiefe, sondern eine gleichmaessig staerkere
        Trueubung. Wo keine Karte liegt, wird der Regler deshalb hart auf
        null gesetzt: der Effekt sieht dann genau aus wie bisher. */
-    const zus=EFFEKTE[e.typ].glZusatz; if(zus){ const o=zus(e); for(const k of Object.keys(o)) u(k,l=>gl.uniform1f(l,o[k])); }
+    /* glZusatz bekommt seit dem 21.09.2026 auch die ZEIT - der Scheinwerfer mit Tiefe rechnet sein
+       geschwenktes Ziel damit an EINER Stelle und reicht es als Uniform weiter. Die Schwenkrechnung
+       im Shader zu wiederholen waere eine zweite Wahrheit ueber dieselbe Bewegung. Die uebrigen
+       drei Zusaetze lesen das zweite Argument nicht. */
+    const zus=EFFEKTE[e.typ].glZusatz; if(zus){ const o=zus(e,t); for(const k of Object.keys(o)) u(k,l=>gl.uniform1f(l,o[k])); }
     /* ZULETZT, damit es auch einen glZusatz ueberstimmt: ohne Karte keine Tiefenrechnung. */
     if(!(tiefeBild&&tiefeBild.complete&&tiefeBild.naturalWidth>1)) u('u_tiefeAn',l=>gl.uniform1f(l,0));
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4); return this.cv; },
@@ -30615,6 +30534,50 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
      ankommt -, sondern von der Leuchte selbst: sie meldet ihren Ort, waehrend sie malt
      (LICHTORTE). Der Laser meldet seinen Faecherpunkt, und der liegt ausserhalb des Bildes -
      genau die streifende Lage, die Kanten aufblitzen laesst. */
+  lichtRaum:`uniform float u_lrOx,u_lrOy,u_lrOz,u_lrZx,u_lrZy,u_lrZz,u_winkel,u_hotspot,u_kante,u_verdeckung,u_tiefeAn,u_modus,u_tjb,u_sx,u_sy,u_sz;
+uniform vec3 u_farbe;
+/* DIE LAMPE KIPPT UND WIRFT IHREN KEGEL AUF DAS, WAS DA IST (21.09.2026).
+   Caspar_D: „der Strahl dreht sich um die Lampe - das ist natuerlich Unsinn, die Lampe kippt und
+   projiziert den Strahl auf die Raumbegrenzungen. Sie kippt in alle Richtungen wie ein Kugelgelenk
+   oder zwei Kippgelenke."
+   BIS HIERHER RECHNETE DER EFFEKT DEN KEGELQUERSCHNITT IN DER ZIELTIEFE und projizierte diesen
+   Kreis auf die Bildebene - die Ellipse entstand aus dem Winkel zwischen Achse und BILDEBENE. Das
+   Relief wirkte nur als Verdeckung, nicht als Projektionsflaeche. Jetzt wird je Bildpunkt gefragt,
+   ob er im Kegel liegt: Fleck, Verzerrung und Abfall fallen gemeinsam heraus, und auf einem Boden,
+   der nach hinten wegkippt, laeuft der Fleck nach hinten aus.
+   OHNE TIEFENKARTE LIEGT ALLES IN ZIELTIEFE. Dann ist die Szene flach, und es kommt genau die
+   Ellipse von frueher heraus - ein Weg, zwei Faelle, kein zweiter Maler.
+   ISOTROPE KOORDINATEN: x in Bildbreiten, y ebenso (also mal dem Seitenverhaeltnis), z eine
+   Bildbreite tief. Winkel brauchen gleiche Masse auf allen Achsen; in uv-Koordinaten waere ein
+   Kegel auf einem hochkanten Bild eine Ellipse, ohne dass irgendwer gekippt haette. */
+void main(){
+  vec4 c=texture2D(u_tex,v_uv);
+  float seite=u_res.y/max(1.0,u_res.x);
+  float pz=(u_tiefeAn>0.5)?texture2D(u_tiefe,v_uv).r:u_sz;
+  vec3 P=vec3(v_uv.x, (1.0-v_uv.y)*seite, (1.0-pz)*u_tjb);
+  vec3 Lp=vec3(u_lrOx, u_lrOy*seite, (1.0-u_lrOz)*u_tjb);
+  vec3 Zp=vec3(u_sx, u_sy*seite, (1.0-u_sz)*u_tjb);
+  vec3 A=normalize(Zp-Lp);
+  vec3 d=P-Lp; float dist=length(d);
+  if(dist<1e-5){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
+  vec3 dir=d/dist;
+  float cosw=dot(dir,A);
+  float halb=radians(clamp(u_winkel,1.0,150.0)*0.5);
+  float q=acos(clamp(cosw,-1.0,1.0))/max(1e-4,halb);
+  /* Hinter der Lampe ist kein Licht, und ausserhalb des Kegels auch nicht. */
+  float v=(cosw<=0.0||q>1.0)?0.0:1.0;
+  float kern=u_hotspot*0.85;
+  float f=(q<=kern)?1.0:pow(max(0.0,1.0-(q-kern)/max(1e-6,1.0-kern)), 0.6+u_kante*3.4);
+  v*=f;
+  /* DIE VERDECKUNG: was naeher steht als die Lampe, bekommt ihr Licht nicht. Weich, weil eine
+     geschaetzte Karte keine harten Kanten hergibt (dieselbe Vorsicht wie beim Schlagschatten). */
+  if(u_tiefeAn>0.5&&u_verdeckung>0.001){
+    float frei=smoothstep(u_lrOz+0.06, u_lrOz-0.06, pz);
+    v*=mix(1.0, frei, clamp(u_verdeckung,0.0,1.0)); }
+  /* IM HERKUNFTSLAUF TRAEGT DERSELBE KEGEL DEN LAMPENORT STATT DER LICHTFARBE. x und y verschoben
+     gespeichert (v+0,5)/2, damit eine Lampe ausserhalb des Bildes stehen darf. */
+  vec3 aus=(u_modus>0.5) ? vec3((u_lrOx+0.5)*0.5, (u_lrOy+0.5)*0.5, u_lrOz) : u_farbe;
+  gl_FragColor=vec4(aus*v, 1.0); }`,
   streiflicht:`uniform float u_einfall,u_kante,u_relief,u_schatten,u_ortX,u_ortY,u_ortDa,u_tiefeAn,u_einheit;
 uniform sampler2D u_herk;
 uniform sampler2D u_licht;
@@ -30631,7 +30594,8 @@ void main(){
   /* Der gemeldete Ort steht in Leinwandkoordinaten (0 oben), die Textur laeuft andersherum. */
   /* WOHER DAS LICHT KOMMT - SEIT DEM 21.09.2026 JE BILDPUNKT, WENN EINE LAMPE MIT ORT DA IST.
      Der Herkunfts-Puffer traegt den helligkeitsgewichteten Lampenort: RGB/A. x und y sind
-     verschoben gespeichert (siehe herkKod im Haus), die dritte Achse ist die Tiefe der Lampe.
+     verschoben gespeichert ((v+0,5)/2, die Formel steht im Shader bei u_modus), die dritte Achse
+     ist die Tiefe der Lampe.
      IST ER LEER (A = 0), gilt der alte Weg: ein global gemittelter Ort plus der von Hand
      gestellte Einfall. Der Uebergang ist absichtlich sichtbar und nicht stillschweigend. */
   vec4 hk=texture2D(u_herk,v_uv);
@@ -33644,7 +33608,7 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
      sein eigenes Flackern liegt trotzdem erst hinter der Kamera. */
   const medium=kette.some(e=>aktiv(e)&&mediumJetzt(e));
   if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; lichtOrteOeffnen(Wn,Hn);
-    try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ malen(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
+    try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ leuchteInPuffer(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
     finally { LICHTMAL=false; }
     /* DER ZWEITE LAUF: DIE HERKUNFT (21.09.2026). Derselbe Weg, dieselben Leuchten - aber nur die,
        die einen Ort im RAUM haben. Der alte Scheinwerfer, der Laser und die Lichtstrahlen kennen
@@ -33658,7 +33622,7 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
     HERKUNFT_DA = raumLeuchten.length>0;
     if(HERKUNFT_DA){ frisch(cherk); cherk.clearRect(0,0,Wn,Hn);
       LICHTMAL=true; LICHTHERKUNFT=true; 
-      try{ for(const e of raumLeuchten){ try{ malen(e,cherk,t,Wn,Hn); }catch(x){} frisch(cherk); } }
+      try{ for(const e of raumLeuchten){ try{ leuchteInPuffer(e,cherk,t,Wn,Hn); }catch(x){} frisch(cherk); } }
       finally { LICHTMAL=false; LICHTHERKUNFT=false; } }
   } else HERKUNFT_DA=false;
   /* Die Kette in IHRER Reihenfolge: Maler zeichnen auf die laufende Leinwand, Nachbearbeitung und Shader tauschen

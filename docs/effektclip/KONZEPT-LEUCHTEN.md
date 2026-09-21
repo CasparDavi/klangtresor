@@ -404,11 +404,64 @@ schauen wir, ob wir etwas kompensieren müssen, was vielleicht nicht so geht, wi
 dachten."* Also **kein Ersatzweg** — die Tiefenspur für Bewegtbilder löst es, oder es bleibt, wie
 es ist.
 
+### Etappe 3 — der Kegel trifft das Relief
+
+Caspar_D, 21.09.2026: *„der Strahl dreht sich um die Lampe — das ist natürlich Unsinn, die Lampe
+kippt und projiziert den Strahl auf die Raumbegrenzungen. Sie kippt in alle Richtungen wie ein
+Kugelgelenk oder zwei Kippgelenke."*
+
+Die Korrektur war mehr als Wortwahl. **Bis dahin rechnete der Effekt den Kegelquerschnitt in der
+Zieltiefe** und projizierte diesen Kreis auf die Bildebene — die Ellipse entstand aus dem Winkel
+zwischen Achse und *Bildebene*, und das Relief wirkte nur als Verdeckung, nicht als
+Projektionsfläche. Auf einem Boden, der nach hinten wegkippt, blieb der Fleck eine saubere Ellipse.
+
+Jetzt wird **je Bildpunkt gefragt, ob er im Kegel liegt**: Sein Ort im Raum steht in der
+Tiefenkarte, der Winkel zur Kegelachse entscheidet, und Fleck, Verzerrung und Abfall fallen
+gemeinsam heraus. Der Lichtkegel läuft über den Boden nach hinten aus, wie er es soll.
+
+**Damit wurde der Effekt vom Canvas-Maler zum Shader** — die Frage „liegt dieser Punkt im Kegel"
+lässt sich nicht auf einer fremden Leinwand beantworten. Zwei Folgen:
+
+- **Der Fülllauf des Licht-Puffers lernt Shader.** Er rief bisher nur `malen()`. Jetzt geht beides
+  über `leuchteInPuffer`, damit Licht- und Herkunftslauf nicht auseinanderlaufen. Die Stärke muss
+  dort selbst angewandt werden: in der Kette legt sie die Verrechnung auf, im Fülllauf gibt es
+  keine Kette.
+- **`glZusatz` bekommt die Zeit.** Der Schwenk wird an einer Stelle gerechnet und als Uniform
+  weitergereicht; die Kippung im Shader zu wiederholen wäre eine zweite Wahrheit über dieselbe
+  Bewegung.
+
+**Ohne Tiefenkarte liegt im Shader alles in Zieltiefe** — die Szene ist dann flach, und es kommt
+genau die Ellipse von früher heraus. Ein Weg, zwei Fälle, kein zweiter Maler. Deshalb konnten
+`lrRaum`, `lrKegel`, `lrSchwenkZiel` und `herkKod` ersatzlos fallen; die Ellipsenrechnung war eine
+Näherung, die niemand mehr braucht.
+
+**Isotrope Koordinaten**, weil Winkel gleiche Maße auf allen Achsen brauchen: x in Bildbreiten, y
+mal dem Seitenverhältnis, z eine Bildbreite tief. In uv-Koordinaten wäre ein Kegel auf einem
+hochkanten Bild eine Ellipse, ohne dass jemand gekippt hätte.
+
+Sieben Prüffälle, Naht überall `gleich = 0,00`.
+
+### Eine Frage, die entschieden wurde, ohne etwas zu bauen
+
+Caspar_D: *„ich glaube, ein Scheinwerfer ist ein Zwischending zwischen abwedeln und screen, sollte
+man einen Regler einfügen, der die Balance zwischen beiden einstellt?"*
+
+Physikalisch sind das zwei getrennte Vorgänge: **Reflexion** an einer Oberfläche ist multiplikativ
+(Schwarz bleibt schwarz → abwedeln), **Einstreuung** an Partikeln in der Luft ist additiv (kommt
+direkt zur Kamera → screen). Ein Regler dafür hieße also nicht „Balance", sondern *wie viel Dunst
+in der Luft ist*.
+
+**Entschieden: die Einstreuung bleibt beim Medium.** Der Nebel liest den Licht-Puffer und streut —
+deshalb wird ein Strahl im Nebel sichtbar, egal wo der Nebel in der Kette hängt, und Regel 5 sagt
+ausdrücklich, dass ein Strahl im Leeren unsichtbar ist. Ein Streuanteil an der Lampe wäre eine
+zweite Quelle für dieselbe Sache. Wenn der Nebel künftig Lichtabfall und Phasenfunktion kann,
+entsteht der sichtbare Strahl dort physikalisch richtig.
+
 ### Noch offen
 
-- **Der Schwenk** — im neuen Modell ein wanderndes Ziel im Raum statt sechs Führungen am gemalten
-  Fleck. Der Fleck würde beim Schwenken von selbst flacher und länger, weil der Einfall streifender
-  wird.
+- ~~Der Schwenk~~ — gebaut: Pan und Tilt als Kippung der Lampe, fünf Stellungen (Steht, Pan, Tilt,
+  Kreis, Acht). Die Bahn pendelt über `lpBahn`, wenn kein ganzer Umlauf in den Clip passt, und
+  schließt damit von selbst.
 - **Überstrahlung anzeigen.** Caspar_D: *„sollte man Regler begrenzen, sodass man keine
   Überstrahlung produziert, oder wenigstens einen Indikator einbauen, dass man jetzt den
   dynamischen Lichtbereich verlässt."* Begrenzen wäre falsch — Ausbrennen ist ein Mittel. Aber ab
