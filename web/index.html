@@ -28786,13 +28786,20 @@ function lrSchwenkAnteil(e, t){
   else if(art==='acht'){ pan=weite*a; tilt=weite*Math.sin(lpBahn(2*fr,t,0)); }
   /* In der Tiefenkarte zeigt z nach VORN (1 = nah), in der Welt nach hinten. Die Kippung rechnet
      in Weltrichtung, darum wird die dritte Achse hier gespiegelt und am Ende zurueck - sonst
-     kippte der Strahl verkehrt herum, und zwar lautlos. */
+     kippte der Strahl verkehrt herum, und zwar lautlos.
+     ERST TILT, DANN PAN - UND DAS IST NICHT BELIEBIG (berichtigt 21.09.2026). Caspar_D am Bild:
+     „was mir nicht gefaellt ist, dass die Tiltrichtung parallel zur Dioramascheibe ist, sie soll
+     mit rotieren koennen." Genau so war es: Pan zuerst gerechnet heisst, dass die Tilt-Drehung um
+     die WELT-Waagerechte laeuft, und die liegt fest in der Bildebene. Ein Geraet, dessen
+     Tilt-Buegel auf dem Pan-Teller sitzt, kippt zuerst im EIGENEN System, und der Teller dreht das
+     Ganze mit. In Matrizen: R_y(pan) * R_x(tilt) * d, also im Code der Tilt zuerst. Der Kommentar
+     hier behauptete das Richtige, waehrend die Zeilen darunter das Gegenteil taten. */
   const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=(1-Z[2])-(1-O[2]);
-  const cp=Math.cos(pan), sp=Math.sin(pan);
-  const x1=dx*cp+dz*sp, z1=-dx*sp+dz*cp;
   const ct=Math.cos(tilt), st=Math.sin(tilt);
-  const y2=dy*ct-z1*st, z2=dy*st+z1*ct;
-  return [O[0]+x1, O[1]+y2, 1-((1-O[2])+z2)];
+  const y1=dy*ct-dz*st, z1=dy*st+dz*ct;
+  const cp=Math.cos(pan), sp=Math.sin(pan);
+  const x2=dx*cp+z1*sp, z2=-dx*sp+z1*cp;
+  return [O[0]+x2, O[1]+y1, 1-((1-O[2])+z2)];
 }
 function leuchteInPuffer(e, cx, t, Wn, Hn){
   const a=Math.min(1, e.staerke*antriebWert(e,t));
