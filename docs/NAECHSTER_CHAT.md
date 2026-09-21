@@ -5214,3 +5214,149 @@ der Lampe wäre eine zweite Quelle für dieselbe Sache (Regel 5).
 6. **Aus dem Backlog:** die Linse mit 10,9 ms · Polarlicht auf den Himmel · das Prüfverfahren.
 7. **Alt und unverändert:** Tempo in Schlägen · Module herauslösen · zwei flackernde Nahtfälle.
 
+---
+
+# 21.09.2026, abends — Das Zonenmodell. Und was am Laser noch offen ist.
+
+Der Tag hat das Lichtmodell vom Vormittag fortgesetzt und dann das **Zonenmodell** gebaut, das
+Caspar_D selbst entworfen hat. Am Ende steht ein halbfertiger Umbau, der **nicht eingesetzt** ist —
+Abschnitt 6 sagt, wo er liegt und wie es weitergeht.
+
+## 1. Was jetzt in der App steht
+
+**Die Zonenkarte.** Aus dem Tiefen-Histogramm sucht eine Talsuche (Scale-Space-Modenzählung,
+`zonenTaeler`) bis zu fünf Grenzen, also sechs Zonen. Sie entsteht, sobald die Tiefenkarte da ist —
+nicht erst, wenn man die Station Tiefe öffnet.
+
+**Die Station Tiefe** zeigt statt des Bildes das **Relief**, drehbar, mit dem Histogramm am rechten
+Bildrand. Klick setzt eine Grenze, Doppelklick nimmt sie weg, Ziehen verschiebt. Doppelklick aufs
+Bild stellt es gerade. Das Relief steht auf einer ebenen Rückwand mit Seitenwänden — ein Körper,
+kein Blatt, damit man beim Drehen sieht, dass dahinter nichts ist.
+
+**Sechs feste Bereiche** als Namen: ganz vorn (0–10 %), vorn (11–25), vordere Mitte (26–50),
+Mitte (51–75), hinten (76–90), ganz hinten (91–100). Jede gefundene Zone bekommt den Namen des
+Bereichs, den sie am stärksten überlappt. **Das ist die Sprache zwischen Rezept und Bild:** Ein
+Effekt kreuzt „vorn" an, und wo das auf *diesem* Bild liegt, sagt die Zonenkarte.
+
+**Jeder Effekt kreuzt seine Zonen an** (`zonenVonEffekt`, `zonenMaske`). Dazu **Effektscheibe** und
+**Effektraum** — die beiden Orte vor der Szene, wo Beschlag und Nebel wohnen. Wer dort wohnt, wird
+von nichts verdeckt. Nicht detektierte Bereiche werden **nicht** angezeigt; kreuzt ein Rezept ins
+Leere, sagt die Karte es und bietet einen Griff an.
+
+**Die Teilchen rechnen mit der Tiefe.** `freiBereich` holte sich bis heute die *Nähe zur
+Trennlinie* — ein praktisch binärer Wert. Jetzt ist es die Tiefe selbst, und die Skala fällt mit
+dem Raummodell zusammen: 0…1 die Szene mit ihren Zonen, 1…1+L der Effektraum. `schichtBaender`
+schrumpfte dabei von 20 Zeilen auf vier, weil Entfernung und Tiefe nun dieselbe Größe sind.
+
+**Entfallen:** Trennung, Weichheit der Trennung, Hintergrundfläche ab, der Verteilungsstreifen, die
+rot/blau-Falschfarbenansicht samt `TSICHT`/`tiefesicht*`, `partikelMaske` und der Horizont der
+Teilchen. Zusammen rund 400 Zeilen.
+
+**Zwei Namen geklärt:** Der „Horizont" des Spiegels heißt **Spiegelachse** (dort ist es die
+Wasserlinie), die „Raumtiefe" am Effekt heißt **Staffelung** (die Raumtiefe in Bildbreiten steht in
+der Vorbereitung und gilt für alle).
+
+**Strahlen mit Tiefe** — ein Fächer im Raum, mit **Roll** als drittem Winkel. Nicht abgelöst: der
+alte `laser` und `strahlen` stehen unverändert daneben.
+
+## 2. Das Werkzeug
+
+`bin/zonen-labor.js` baut eine einzelne HTML-Datei (`labor/zonen/index.html`, nicht in git), die
+ohne Server läuft: links das drehbare Relief, rechts der Zonenstapel. Gerechnet wird nur in
+`labor/zonen/vorlage.html` — wer dort die Talsuche ändert, muss sie in der App mitändern.
+
+    node bin/zonen-labor.js                die zehn neuesten Titel
+    node bin/zonen-labor.js <id> [<id>]    bestimmte
+
+## 3. Befunde, die bleiben
+
+- **Die feste Grauwertschwelle ist unbrauchbar.** Gemessen an 20 Karten: `13 von 255` trifft
+  zwischen **0,5 % und 50,3 %** der Bildfläche.
+- **19 % der Bilder haben nur eine Häufung** — keine Grenze, und das ist eine gültige Antwort.
+- **Die Prominenzschwelle (0,35) entscheidet über die Zonenzahl** und kann nicht ausgerechnet
+  werden. Darum ist der Stapel von Hand korrigierbar.
+- **Die Abtastbreite tut es nicht** — das hatte ich behauptet und nachgemessen widerlegt: bei 140
+  bis 180 Punkten findet dieselbe Rechnung dieselben Täler.
+- **Farbig abwedeln wirkt nicht auf schwarzem Grund** (`basis/(1−blend)`). Für einen Scheinwerfer
+  richtig, für einen Laser falsch.
+- **Leuchte + Medium:** Der Strahl in der Luft entsteht erst, wenn ein Medium ihn streut. Jede
+  Leuchte sagt es jetzt auf ihrer Karte.
+
+## 4. Wer Licht macht — die Aufstellung
+
+| | schreibt in den Lichtpuffer | meldet seinen Ort (Herkunft) |
+|---|---|---|
+| Scheinwerfer, Laser, Lichtstrahlen | ja | **nein** |
+| Scheinwerfer mit Tiefe, Strahlen mit Tiefe | ja | ja |
+| Feuer, Stroboskop | ja | **nein** |
+| **Flammen (Rauschen)** | **nein** — das ist ein Fehler | nein |
+| **Kaustik (Lichtnetz)** | **nein** | nein |
+| **Partikel: Glühwürmchen, Glitzer, Funken, Bokeh, Sternschnuppen** | **nein** | nein |
+| Bloom, Streiflicht, Filmnebel, Schwaden | keine Quellen | — |
+
+**Caspar_Ds Auftrag dazu:** *„das sollten alle Lichtstrahlen und -quellen tun"* — alle sollen ihren
+Ort in den Herkunfts-Puffer melden, nicht nur die zwei neuen. Für die Canvas-Maler heißt das: im
+Herkunfts-Durchgang ihre Form in der kodierten Ortsfarbe malen statt in ihrer eigenen. Bei Feuer
+und Flammen (zwei eigene Farben) ist das nicht trivial.
+
+Für die Partikel liegt die Lösung schon im Haus: `leuchtet` müsste wie `medium` eine **Frage an den
+Effekt** sein (`e=>e.art==='schwaden'`), nicht eine Marke am Typ.
+
+## 5. Offene Wünsche von Caspar_D
+
+- **Tiefenkarte leihen:** Ein Suno-Bewegtbild erbt die Karte *seines* Titelbilds, weil sich die
+  Geometrie kaum ändert. Bedingung: Es muss in der Quellenzeile stehen („vom Titelbild geliehen"),
+  und nur bei gleicher Herkunft — bei echtem Video mit Schnitten bleibt es bei „keine".
+- **Alte ablösen:** Scheinwerfer und Laser fliegen raus, wenn die neuen gewonnen haben. Der
+  Scheinwerfer mit Tiefe ist seit heute früh im Einsatz und könnte abgenommen werden.
+- Offen aus früheren Runden: Nebel (Extinktion auf dem Lichtweg, Schwaden, Phasenfunktion),
+  Überstrahlungsanzeige, Polarlicht, Tempo in Schlägen.
+
+## 6. WAS HALB GEBAUT IST — hier weitermachen
+
+Caspar_D: *„nein, ich will exakt zwei Effekte — Laser mit Tiefe … und Lichtstrahlen mit Tiefe."*
+Begründung: **Laserlicht ist parallel**, ein Lichtschacht fächert auf. Der bisherige `strahlRaum`
+warf beides zusammen (der Laser war ein sehr dünner Fächer) — das war bequem und falsch.
+
+**Der Umbau liegt in `docs/effektclip/ENTWURF-laser-strahlen.html.txt`** — eine vollständige Kopie
+von `web/index.html` mit dem angefangenen Stand. **Sie ist NICHT eingesetzt**, die App läuft auf
+`0481431`. Der Entwurf hat **einen Syntaxfehler im Shader** (`Unexpected identifier 'weite'` beim
+Prüfen mit `labor/`-Syntaxcheck), weil die beiden Registry-Einträge auf ein noch nicht definiertes
+`GL_SHADER_STRAHL` zeigen — der Shader-Text muss in eine Konstante vor `GL_SHADER` gezogen und von
+beiden Einträgen referenziert werden.
+
+Darin schon fertig:
+- `laserRaum` **Laser mit Tiefe**: `u_parallel = 1`, Strahlbreite in Bildbreiten (konstant über die
+  Strecke), Bauarten **Fächer · Scanner · Matrixpunkte**, Spreizung statt Öffnungswinkel.
+- `strahlenRaum` **Lichtstrahlen mit Tiefe**: `u_parallel = 0`, Öffnungswinkel, Bauarten
+  **Schacht · Fächer · Kugelquelle**.
+- **Die Kugelquelle** (Caspar_Ds Idee): *„alle Strahlen kommen von einer Quelle, sind aber mit den
+  Farben verschieden darstellbar"* — Ringe von Strahlen um die Achse, jeder mit eigener Farbe, über
+  `Farbstreuung` regelbar.
+- Ein gemeinsamer Shader für beide, mit `u_bauart` als Weiche.
+
+Noch zu tun:
+1. Den Syntaxfehler beheben (Shader in eine Konstante).
+2. `strahlRaum` überall umbenennen — Vorrat (`EGRUPPEN`), `lrKarteEffekt` (Marken auf der Bühne),
+   `raumLeuchten` (Herkunfts-Puffer), `STUFE_DIORAMA`, Symbol und Farbton, Antriebsvorgaben.
+   **Ohne den Eintrag im Vorrat findet ihn niemand** — das ist am 21.09. schon einmal passiert.
+3. Die vier Prüffälle `strahlraum-*` in `labor/nahtpruefung/faelle.json` auf die neuen Namen
+   ziehen und um Kugelquelle und Scanner ergänzen.
+4. Im Browser ansehen, **mit einem Medium in der Kette** — sonst sieht man nichts, und das ist
+   keine Panne, sondern die Hausmechanik.
+
+**Noch nicht entschieden** (mein Vorschlag, Caspar_D hat nicht zugestimmt): weitere Laser-Figuren —
+**Kegel/Tunnel** (Strahlen auf einem Kegelmantel, rotierend), **Lissajous** (Scanner mit zwei
+Frequenzen), **Austastung** (Strahlen blinken im Takt), **Farbverlauf über den Fächer**. Der
+**Strahlentisch** braucht keinen eigenen Eintrag — das ist ein Fächer mit Roll 90°.
+
+## 7. Arbeitsweise, neu gelernt
+
+- **Die Browser-Konsole lesen, bevor etwas ausgeliefert wird.** Eine Syntaxprüfung findet
+  Laufzeitfehler grundsätzlich nicht; ein `ReferenceError` sieht für den Benutzer genauso aus wie
+  eine nicht gebaute Funktion. Hat heute eine Dreiviertelstunde gekostet.
+- **Achsenrichtungen vor dem Bauen festlegen**, nicht aus dem Code erraten — der Zonenstapel lief
+  gegen seine eigene Beschriftung.
+- **Ein Kommentar, der das Richtige behauptet, deckt falschen Code zu.** Heute zweimal.
+- **Klick setzt, Doppelklick entfernt, Ziehen verschiebt** — die Bediensprache des Hauses, sie gilt
+  für alle Flächen mit gesetzten Punkten.
