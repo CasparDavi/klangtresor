@@ -3169,6 +3169,17 @@ h3 .infoknopf .ico{width:14px;height:14px}
    ZEILE, nicht zur Ansicht: der Griff soll auf der Verteilung sitzen, sonst sagt die Zahl nichts
    darueber, wo die Trennung im wirklichen Bild landet. Er traegt darum auch die Klasse des
    Reglers - dieselben Spalten, also liegt er exakt unter dem Schieber, in beiden Breiten. */
+#tbs .tbs-zonenwahlzeile{align-items:start}
+#tbs .tbs-zonenwahl{display:flex;flex-direction:column;gap:2px}
+#tbs .tbs-zk{display:flex;align-items:center;gap:6px;width:100%;text-align:left;
+  background:var(--flaeche2);border:1px solid transparent;border-radius:5px;
+  padding:2px 6px;font:inherit;font-size:11px;color:var(--text);cursor:pointer}
+#tbs .tbs-zk:hover{border-color:var(--rand2)}
+#tbs .tbs-zk.an{background:#1d2a3d;border-color:var(--marke,#e0b34d);color:#fff}
+#tbs .tbs-zk.leer{opacity:.45}
+#tbs .tbs-zkhaken{width:11px;flex:0 0 auto;color:var(--marke,#e0b34d)}
+#tbs .tbs-zkname{flex:1 1 auto}
+#tbs .tbs-zkmass{font-variant-numeric:tabular-nums;color:var(--schwach);flex:0 0 auto}
 #tbs .tbs-zonenliste{display:flex;flex-direction:column;gap:3px;margin:2px 0 6px}
 #tbs .tbs-zonenzeile{display:flex;align-items:center;gap:7px;font-size:11.5px;line-height:1.35}
 #tbs .tbs-zonenpunkt{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
@@ -27623,9 +27634,12 @@ function rmParams(vor){ const d=Object.assign({rmUrsprung:'aussen',rmWinkel:.62,
    wenn der Effekt ihn wirklich traegt, damit die Karte nicht luegt; wer etwas anderes waehlt,
    wandert endgueltig in die neue Rechnung. Ein frischer Effekt beginnt bei „aus": nichts liegt
    vor ihm, bis es jemand sagt. */
-const TIEFE_PARAM = { k:'tiefeWirkt', lbl:'Aufenthalt',
-  sel:[['alles','überall'],['vorn','nur vorn'],['hinten','nur hinten']], def:'alles',
-  brauchtKarte:true, notiz:e=>aufenthaltNotiz(e) };
+/* AUS DREI ANTWORTEN WERDEN SECHS KAESTCHEN (Caspar_D, 21.09.2026: „wenn ein Effekt wirken soll,
+   wird angekreuzt, in welcher Zone / in welchen Zonen").
+   Die Zeile hiess „Aufenthalt" und kannte ueberall / nur vorn / nur hinten. Das war die Sprache
+   einer einzigen Trennlinie; seit ein Bild bis zu sechs Zonen hat, waere sie eine Luege.
+   `tiefeWirkt` bleibt in alten Rezepten stehen und wird beim Lesen uebersetzt (ZONEN_AUS_AUFENTHALT). */
+const TIEFE_PARAM = { k:'zonen', lbl:'Wirkt in', zonen:true, brauchtKarte:true };
 const VERDECK_WERTE = [['aus','aus'],['vorn','vom Vordergrund verdeckt']];
 const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'];
 /* `sel` BLEIBT EINE LISTE (Gegenlesen 16.09.2026, zweite Runde). Der Altwert soll nur dort in der
@@ -28909,6 +28923,69 @@ const ZONEN_BEREICHE = [
    Das ist keine technische Schranke, sondern die Erfahrung der Buehne: ein Buehnenbild arbeitet mit
    vier bis sechs Ebenen, mehr kann ein Betrachter nicht mehr auseinanderhalten. */
 const ZONEN_MAX_GRENZEN = 5;
+/* WELCHE ZONEN EIN EFFEKT BEWOHNT (Caspar_D, 21.09.2026: „wenn ein Effekt wirken soll, wird
+   angekreuzt, in welcher Zone / in welchen Zonen").
+   Angekreuzt werden die sechs BEREICHE, nicht die Zonen dieses Bildes - und genau darum
+   funktioniert dasselbe Rezept auf einem Portraet und auf einer Landschaft. Ein Effekt sagt
+   „ich wohne vorn und in der Mitte"; wo das auf DIESEM Bild liegt, sagt die Zonenkarte. Wuerde
+   er eine Nummer ankreuzen, zeigte dieselbe Nummer auf dem naechsten Bild woandershin.
+   Das ist der Zweck der festen Bereiche: Sie sind die Sprache zwischen Rezept und Bild. */
+const ZONEN_NAMEN = ZONEN_BEREICHE.map(b => b[0]);
+/* Die alte Zeile „Aufenthalt" kannte drei Antworten. Die Trennung lag dabei beim Median, also
+   bei der Haelfte der Tiefe - daraus folgt die Uebersetzung Zeile fuer Zeile. Sie steht hier und
+   nicht in der Ablage, weil auch ein Effekt im Speicher sie braucht, der nie durch ein Rezept
+   gegangen ist. */
+const ZONEN_AUS_AUFENTHALT = {
+  alles:  ZONEN_NAMEN.slice(),
+  vorn:  ['ganz vorn','vorn','vordere Mitte'],
+  hinten:['Mitte','hinten','ganz hinten'],
+};
+/* DIE SECHS KAESTCHEN. Angezeigt werden IMMER alle sechs Bereiche - auch die, die es auf diesem
+   Bild nicht gibt. Sie stehen dann grau mit Grund, denn das Rezept traegt sie trotzdem, und auf
+   dem naechsten Bild koennen sie wieder da sein (Regel 4: grau mit Grund statt weg).
+   Neben jedem Bereich, den es hier gibt, steht sein Anteil an der Tiefe - so sieht man sofort,
+   wie viel man da gerade ankreuzt. */
+function zonenWahlHTML(e){
+  const will = zonenVonEffekt(e);
+  const zl = zonenListe();
+  const imBild = {};
+  if(zl) zl.forEach(z => imBild[z.name] = (imBild[z.name]||0) + z.anteil);
+  let h = '<div class="tbs-regler tbs-zonenwahlzeile"><span>Wirkt in</span><div class="tbs-zonenwahl">';
+  ZONEN_BEREICHE.forEach(([name,a,b])=>{
+    const an = will.indexOf(name) >= 0;
+    const da = imBild[name] != null;
+    const tt = da ? name+' \u2014 '+Math.round(imBild[name])+'\u2009% der Tiefe dieses Bildes'
+                  : name+' \u2014 auf diesem Bild gibt es keine solche Zone. Angekreuzt bleibt es trotzdem: auf einem anderen Bild kann sie da sein.';
+    h += '<button type="button" class="tbs-zk'+(an?' an':'')+(da?'':' leer')+'" data-zone="'+name+'" title="'+tt+'">'
+       + '<span class="tbs-zkhaken">'+(an?'\u2713':'')+'</span><span class="tbs-zkname">'+name+'</span>'
+       + '<span class="tbs-zkmass">'+(da?Math.round(imBild[name])+'\u2009%':'\u2013')+'</span></button>';
+  });
+  h += '</div><span></span></div>';
+  if(!zl) h += '<div class="tbs-graugrund">Dieses Bild hat keine Tiefenkarte \u2014 ohne sie wirkt der Effekt \u00fcberall, gleich was angekreuzt ist.</div>';
+  else if(!will.length) h += '<div class="tbs-graugrund">Keine Zone angekreuzt: der Effekt wirkt nirgends. Kreuze mindestens eine an.</div>';
+  return h;
+}
+function zonenVonEffekt(e){
+  if(!e) return ZONEN_NAMEN.slice();
+  if(Array.isArray(e.zonen)){
+    const rein = e.zonen.filter(n => ZONEN_NAMEN.indexOf(n) >= 0);
+    return rein;                      /* auch die leere Liste gilt: dann wirkt er nirgends */
+  }
+  const alt = e.tiefeWirkt || 'alles';
+  return (ZONEN_AUS_AUFENTHALT[alt] || ZONEN_NAMEN).slice();
+}
+/* Wirkt er ueberall? Dann braucht keine Maske gerechnet zu werden - das ist der haeufigste Fall
+   und muss billig bleiben. */
+function zonenAllesWirkt(e){ return zonenVonEffekt(e).length >= ZONEN_NAMEN.length; }
+function zonenNichtsWirkt(e){ return zonenVonEffekt(e).length === 0; }
+/* Welche Zonen DIESES Bildes sind damit gemeint? Die Liste des Bildes traegt Namen; hier treffen
+   sich Rezept und Bild. Kommt ein angekreuzter Bereich auf diesem Bild nicht vor, ist das keine
+   Panne - der Effekt wirkt dort eben nicht, und die Karte sagt es. */
+function zonenTrefferImBild(e){
+  const zl = zonenListe(); if(!zl) return null;
+  const will = zonenVonEffekt(e);
+  return zl.map(z => will.indexOf(z.name) >= 0);
+}
 
 /* Die Grenzen stehen als Graustufen 0..255 in der Vorbereitung, aufsteigend sortiert.
    0 heisst fern, 255 heisst nah - so liest die Tiefenkarte. Prozent zaehlen umgekehrt,
@@ -31127,12 +31204,13 @@ function renderStapel(){
     /* 'tiefeGrenze'/'tiefeWeich' sind hier am 21.09.2026 herausgefallen - die Karte baut diese
        beiden Regler nicht mehr, also gibt es auch nichts mehr einzusortieren. 'leerraum' und
        'raumtiefe' stehen noch: sie sind ebenfalls umgezogen, aber alte Rezepte tragen sie weiter. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','leerraum','raumtiefe']);
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','leerraum','raumtiefe','zonen']);
     const paramBauen=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
       /* DIE PUNKTELISTE IST KEINE REGLERZEILE. Sie ZEIGT, was dasteht - Nummer, Ort und Enge -,
          und die Zeile darunter (notiz) sagt, was daraus folgt. Gesetzt wird auf der Buehne; ein
          zweiter Bedienweg fuer dieselbe Zahl waere einer zu viel. */
       if(p.kbz){ h+=kbListeHTML(e); return; }
+      if(p.zonen){ h+=zonenWahlHTML(e); return; }
       if(p.q){ const sel=(lbl,k,liste)=>'<div class="tbs-regler"><span>'+lbl+'</span><select data-k="'+k+'">'+liste.map(([v,l])=>'<option value="'+v+'"'+(e[k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>';
         const rg=(lbl,k,mn,mx,st,zust)=>'<div class="tbs-regler"><span>'+lbl+'</span><input type="range" class="'+(zust?'tbs-zust':'')+'" data-k="'+k+'" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+e[k]+'"><span class="tbs-wert">'+kf(e[k])+'</span></div>';
         /* DIE KANONE HAT IMMER EINE MUENDUNG (Caspar_D, 16.09.2026: "mach beides, fallen und
@@ -31366,6 +31444,14 @@ function renderStapel(){
       if(p.sel&&k==='art') artFarben(e);
       if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm'||Q_REGLER.has(k))) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
+    c.querySelectorAll('[data-zone]').forEach(btn=>btn.onclick=()=>{
+      const n=btn.dataset.zone, jetzt=zonenVonEffekt(e);
+      const i=jetzt.indexOf(n);
+      if(i>=0) jetzt.splice(i,1); else jetzt.push(n);
+      /* in der Reihenfolge der Bereiche halten - eine Liste, die von vorn nach hinten liest,
+         ist im Rezept lesbar und im Vergleich stabil */
+      e.zonen = ZONEN_NAMEN.filter(x=>jetzt.indexOf(x)>=0);
+      renderStapel(); });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
     /* DIE PUNKTELISTE DER KEN BURNS FAHRT (19.09.2026). Sie traegt seit heute zwei Bedienteile, und
        beide gehen durch kbOrt und kbSetzen wie jede Geste auf der Buehne - EIN Weg, dieselben
@@ -34004,7 +34090,7 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
        HIER IM DIORAMA LIEGT DIE MASKE DECKUNGSGLEICH: tiefeMaske baut sie in Dioramagroesse, und
        geoKarteLegen legt sie mit einem drawImage(karte,0,0) auf - der EINS-Zweig, kein Umrechnen. */
     const maske = ZONE_HART(e) ? null
-      : tiefeMaske(e.tiefeWirkt, Wn, Hn, zoneTrennung(), zoneWeich(), null, lW, lH);   /* die Automatik zieht ihren Median auf der LEINWAND, nicht auf dem Diorama (Begruendung bei tiefeMedian) */
+      : zonenMaske(e, Wn, Hn, lW, lH);   /* die Zonen des Bildes statt der einen Trennung (21.09.2026) */
     if(T.art==='mal'){
       if(maske){ frisch(cres); cres.clearRect(0,0,Wn,Hn); cres.drawImage(curCv,0,0); }
       try{ malen(e,curCx,t,Wn,Hn); }catch(x){ schief(e,x); } frisch(curCx);
@@ -34196,7 +34282,7 @@ function zeichneFrame(t,roh){
   for(const e of kette){ if(!aktiv(e)||imDiorama(e))continue; const T=EFFEKTE[e.typ];
     if(T.art==='geo'||T.art==='grund') continue;   /* die Kamera ist durch: Ausschnitt, Drehung, Schaerfe */
     const maske = ZONE_HART(e) ? null
-      : tiefeMaske(e.tiefeWirkt, Wn, Hn, zoneTrennung(), zoneWeich());   /* die Maske faehrt mit der Kamera: maskeAnwenden legt sie mit geoKarteLegen auf */
+      : zonenMaske(e, Wn, Hn);   /* die Maske faehrt mit der Kamera: maskeAnwenden legt sie mit geoKarteLegen auf */
     if(T.art==='mal'){
       /* Der Maler zeichnet AUF die laufende Leinwand - Verrechnungen sollen ja gegen das Bild
          darunter wirken. Also vorher eine Kopie beiseitelegen, malen, dann maskieren. */
@@ -36357,6 +36443,11 @@ function zeichneFrame(t,roh){
      stehen noch auf dem Stand der vorigen. Nur wenn das Pult wirklich offen im Dokument steht -
      auf der Albumseite laufen Clips ohne Pult. */
   function tiefeZeilenNeu(){
+    /* DIE ZONEN ENTSTEHEN MIT DER KARTE, nicht mit der Lasche (21.09.2026). Die Ankreuzliste auf
+       jeder Effektkarte braucht sie, und die sieht man auch, ohne je in der Station Tiefe gewesen
+       zu sein - vorher stand dort sechsmal „auf diesem Bild gibt es keine solche Zone", obwohl es
+       sie gab. Der Vorschlag laeuft genau einmal je Bild; was danach dasteht, bleibt stehen. */
+    try{ zonenVorschlagen(); }catch(x){}
     try{ if(stapelBox&&stapelBox.isConnected&&STAPEL&&STAPEL.length) renderStapel(); }catch(x){}
     /* UND DIE VORBEREITUNG (21.09.2026, im Browser gefunden). Seit der Verteilungsstreifen dort
        steht und nicht mehr auf den Effektkarten, reicht renderStapel nicht mehr: auf „Stumm" mit
@@ -36503,6 +36594,60 @@ function zeichneFrame(t,roh){
   /* mW/mH: die Flaeche, auf der die Automatik ihren Median zieht. Ohne Angabe ist es die
      Maskenflaeche selbst - so ruft jeder, der in Leinwandmass arbeitet, und fuer ihn aendert sich
      nichts. Das Diorama gibt die Leinwandgroesse mit. */
+  /* ---- DIE ZONENMASKE (21.09.2026) --------------------------------------------------------
+     Was tiefeMaske fuer zwei Seiten tat, tut sie hier fuer bis zu sechs Zonen: ein Bild in
+     Maskengroesse, dessen Deckung sagt, ob dieser Bildpunkt in einer angekreuzten Zone liegt.
+     GEBAUT ALS NACHSCHLAGETABELLE ueber die 256 Graustufen, nicht als Rechnung je Bildpunkt.
+     Welche Zone ein Grauwert hat, haengt nur vom Grauwert ab - also wird es einmal fuer alle 256
+     entschieden und dann abgelesen. Das ist auch der Ort, an dem die Kanten weich werden: die
+     Tabelle wird mit einem kleinen Kern geglaettet, und daraus fallen die Uebergaenge an JEDER
+     Zonengrenze von selbst, ohne dass eine einzelne Grenze eine Sonderbehandlung braucht.
+     DIE WEICHHEIT IST EINE FESTE ZAHL und kein Regler: sie soll die Treppe nehmen, nicht die
+     Zone verschieben. Wer eine breite Ueberblendung will, setzt die Grenze woanders hin. */
+  const ZONEN_KANTE = 7;                    /* Graustufen beiderseits jeder Grenze */
+  function zonenMaske(e, W, H, mW, mH){
+    if(zonenAllesWirkt(e)) return null;     /* wirkt ueberall: keine Maske noetig, der haeufige Fall */
+    const zl = zonenListe(); if(!zl || zl.length < 2) return null;
+    const treffer = zonenTrefferImBild(e); if(!treffer) return null;
+    const q = tiefeQuelle(); if(!q) return null;
+    const im = tiefeBildVon();
+    if(!im || !im.complete || im.naturalWidth < 2) return null;
+    const k = q.k + '|zonen ' + treffer.map(x=>x?1:0).join('')
+            + '|' + zl.map(z=>Math.round(z.unten)).join(',') + '|' + W + 'x' + H;
+    { const i=TIEFEMASKEN.findIndex(m=>m.k===k);
+      if(i>=0){ const da=TIEFEMASKEN[i];
+        if(i){ TIEFEMASKEN.splice(i,1); TIEFEMASKEN.unshift(da); }
+        return da.cv; } }
+    try{
+      /* die Tabelle: welcher Grauwert gehoert zu einer gewaehlten Zone */
+      const roh=new Float32Array(256);
+      for(let v=0; v<256; v++){
+        let zi = zl.length-1;
+        for(let i=0;i<zl.length;i++) if(v > zl[i].unten){ zi=i; break; }
+        roh[v] = treffer[zi] ? 1 : 0;
+      }
+      const an=new Float32Array(256);
+      for(let v=0; v<256; v++){
+        let s=0, n=0;
+        for(let d=-ZONEN_KANTE; d<=ZONEN_KANTE; d++){
+          const j=Math.max(0,Math.min(255,v+d));
+          const w=1-Math.abs(d)/(ZONEN_KANTE+1); s+=roh[j]*w; n+=w;
+        }
+        let a=s/n; an[v]=a*a*(3-2*a);       /* dieselbe Kurve wie die Maske der Trennung */
+      }
+      const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+      const cx=cv.getContext('2d',{willReadFrequently:true});
+      cx.drawImage(im,0,0,W,H);
+      const bild=cx.getImageData(0,0,W,H), pp=bild.data;
+      for(let i=0;i<pp.length;i+=4){
+        const a=an[pp[i]];
+        pp[i]=255; pp[i+1]=255; pp[i+2]=255; pp[i+3]=Math.round(a*255);
+      }
+      cx.putImageData(bild,0,0);
+      tiefeMaskeAblegen(k,cv);
+      return cv;
+    }catch(x){ return null; }
+  }
   function tiefeMaske(modus, W, H, grenze, weich2, band, mW, mH){
     /* Erst die billige Frage: ohne Zone gibt es nichts zu maskieren, und dann wird auch nicht
        nach der Quelle gefragt - die Kette ruft hier je Effekt und Bild an. */
@@ -36805,6 +36950,40 @@ function zeichneFrame(t,roh){
         if(l1>=-0.02&&l2>=-0.02&&(1-l1-l2)>=-0.02){ const o=(y*LW+x)*4;
           pB[o]=rb; pB[o+1]=gb; pB[o+2]=bb; pF[o]=rf; pF[o+1]=gf; pF[o+2]=bf; } } };
 
+    /* DIE RUECKWAND IST EBEN UND SIE IST DA (Caspar_D, 21.09.2026: „die Rueckwand des 3D
+       Tiefenbildes ist gekruemmt, muss grade sein").
+       Sie war ueberhaupt nicht da: gemalt wurde nur die Oberflaeche des Reliefs, und was wie eine
+       gekruemmte Wand aussah, war ihr Umriss - die Silhouette der Tiefenwerte am Bildrand. Jetzt
+       steht hinten eine ebene Flaeche bei Tiefe 0, und an den vier Bildraendern faellt je eine
+       Wand von der Reliefhoehe auf sie herab. Damit ist es ein KOERPER, kein Blatt: genau das,
+       was der Nutzer lernen soll, wenn er dreht - dahinter ist nichts, weil dahinter die Wand ist. */
+    {
+      const e00=proj(0,0,0), e10=proj(W-1,0,0), e11=proj(W-1,H-1,0), e01=proj(0,H-1,0);
+      const f=zsichtFarbe(Math.max(0,liste.length-1), Math.max(1,liste.length));
+      const d0=[Math.round(f[0]*0.22), Math.round(f[1]*0.22), Math.round(f[2]*0.22)];
+      const s0=[Math.round(f[0]*0.30), Math.round(f[1]*0.30), Math.round(f[2]*0.30)];
+      dreieck(e00[0],e00[1], e10[0],e10[1], e11[0],e11[1], d0[0],d0[1],d0[2], s0[0],s0[1],s0[2]);
+      dreieck(e00[0],e00[1], e11[0],e11[1], e01[0],e01[1], d0[0],d0[1],d0[2], s0[0],s0[1],s0[2]);
+      /* Die vier Waende am Bildrand - von der Hoehe des Reliefs hinab auf die Wand. Sie tragen
+         die Schichtfarben, weil sie durch alle Zonen laufen. */
+      const rand=(a1,a2)=>{ const n=a1.length;
+        for(let i=0;i+1<n;i++){
+          const [u1,v1]=a1[i], [u2,v2]=a1[i+1];
+          const zA=tp.z[v1*W+u1], zB=tp.z[v2*W+u2];
+          const pA=proj(u1,v1,zA), pB=proj(u2,v2,zB);
+          const qA=proj(u1,v1,0), qB=proj(u2,v2,0);
+          const zm=Math.max(0,Math.min(255,Math.round((zA+zB)/2*255)));
+          const ff=grau?0.34:0.32;
+          const rr=Math.min(255,TAB[zm*3]*ff), gg2=Math.min(255,TAB[zm*3+1]*ff), bb2=Math.min(255,TAB[zm*3+2]*ff);
+          const db=grau?Math.round(26+40*(zA+zB)/2):rr;
+          dreieck(pA[0],pA[1], pB[0],pB[1], qB[0],qB[1], db,db,db, rr,gg2,bb2);
+          dreieck(pA[0],pA[1], qB[0],qB[1], qA[0],qA[1], db,db,db, rr,gg2,bb2);
+        } };
+      const oben=[], unten=[], links=[], rechts=[];
+      for(let u=0;u<W;u+=schritt){ oben.push([u,0]); unten.push([u,H-1]); }
+      for(let v=0;v<H;v+=schritt){ links.push([0,v]); rechts.push([W-1,v]); }
+      rand(oben); rand(unten); rand(links); rand(rechts);
+    }
     const qs=[];
     for(let v=0;v+schritt<H;v+=schritt) for(let u=0;u+schritt<W;u+=schritt){
       const z00=tp.z[v*W+u], z10=tp.z[v*W+u+schritt], z01=tp.z[(v+schritt)*W+u], z11=tp.z[(v+schritt)*W+u+schritt];
