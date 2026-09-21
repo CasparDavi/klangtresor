@@ -55,7 +55,7 @@
 | Effektclip | zu planen | [Effektclip: der Weg zum Video](effektclip/VIDEO-PLAN.md) — Konzeptsitzung 12.09.2026, eigenes Moduldokument |
 | Effektclip | in Arbeit | [Tiefenkarten — gemessen, gebaut, und wohin sie gehören (14.09.2026)](#tiefenkarten--gemessen-gebaut-und-wohin-sie-gehören-14092026) |
 | Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
-| Effektclip | Entscheidung | [Was gehört getestet — das Prüfverfahren selbst (21.09.2026)](#was-gehört-getestet-das-prüfverfahren-selbst-21092026) |
+| Effektclip | zu planen | [Was gehört getestet — das Prüfverfahren selbst (21.09.2026)](#was-gehört-getestet-das-prüfverfahren-selbst-21092026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
 
@@ -2787,7 +2787,7 @@ ggf die schlecht sitzenden 10-Sekündler rot dargestellt sind."*
 
 ## Was gehört getestet — das Prüfverfahren selbst (21.09.2026)
 
-**Zustand: Entscheidung.** Caspar_D, 21.09.2026:
+**Zustand: zu planen** (entschieden am 21.09.2026, siehe unten). Caspar_D, 21.09.2026:
 
 > „Dieses Testprozedere hast du dir letzte Woche ausgesucht und ich war nie überzeugt davon, was du
 > da machst. Das gehört ins Backlog, was getestet gehört."
@@ -2866,4 +2866,53 @@ niemand gebaut hat, während die Ketten, die es wirklich gibt, nicht im Prüfsat
 
 Erst wenn das entschieden ist, lohnt Arbeit am Apparat. Vorher wäre jede Verbesserung eine
 Verbesserung an etwas, dessen Zweck nicht feststeht.
+
+---
+
+### Entschieden am 21.09.2026 — die vier Anforderungen
+
+Caspar_D, auf die Fragen oben:
+
+> „Die Naht ist das, was erreicht werden muß.
+> Wenn ich am Effekt was ändere, dann erwarte ich, dass sich das Bild auch ändert.
+> Die Zeit sollte sich nicht zum Schlechten verändern, es sei denn, es geht nicht anders.
+> Die Bedienung — wenn ich die Optionen und Parameter ändere, dann muß sich natürlich auch die
+> Bedienung ändern; was bei der Bedienung wichtig ist: keine Regler, die sich gegenseitig
+> verstellen."
+
+| # | Anforderung | Art | Werkzeug |
+|---|---|---|---|
+| **1** | **Die Naht muss erreicht werden.** Bild(t₀+L) = Bild(t₀). | harte Bedingung, binär | `naht.mjs` — trägt, kein Rauschboden, Sekunden je Fall |
+| **2** | **Eine Änderung am Effekt muss das Bild ändern.** | Wirkungsnachweis | `messreihe.js` — jeder Regler von min auf max, mittlere Abweichung |
+| **3** | **Die Zeit darf sich nicht zum Schlechten verändern**, es sei denn, es geht nicht anders. | Kostenschranke mit Ausnahmeklausel | verstreut (Zaunmarke, `kbSchau`, `blendentest.html`) — **gehört zusammengefasst** |
+| **4** | **Kein Regler darf einen anderen verstellen.** | Bedienungsinvariante | **fehlt vollständig** |
+
+**Was daraus folgt, und es ist der eigentliche Beschluss: der Grundlinienvergleich kommt in dieser
+Liste nicht vor.** Bitgleichheit ist kein Gütesiegel — nach Anforderung 2 ist sie beim Ändern eines
+Effekts sogar das Gegenteil. Was zählt, ist: wirkt es, schließt die Naht, kostet es nicht mehr,
+und verstellt es nichts anderes.
+
+**Anforderung 2 dreht die Beweislast um.** Bisher musste eine Bildänderung sich rechtfertigen; jetzt
+muss sich rechtfertigen, wenn ein bewegter Regler **nichts** tut. Das ist Regel 9 der
+Effektclip-Regeln („jeder Regler muss messbar wirken, über seinen ganzen Weg") — sie stand immer da
+und war nie das Prüfmaß.
+
+**Anforderung 4 hat kein Werkzeug und schon einmal zugeschlagen.** Der Sortenwechsel des
+Theaternebels setzte acht weitere Regler neu, aber nur solange keiner davon angefasst war
+(`Object.keys(alt).every(...)`). Dieselbe Handlung hatte zwei Ausgänge — Caspar_D am 14.09.2026:
+*„ich habe irgendwie einen Glücksspieleindruck und kein deterministisches Agieren."* Der
+Schwesterfall bei den Partikeln (`artFarben`) macht es richtig: je Schlüssel geprüft, je Schlüssel
+gesetzt. Mechanisch prüfbar wäre es so: jeden Regler und jede Auswahl einzeln bewegen, danach alle
+übrigen Werte auslesen und mit dem Stand davor vergleichen — was sich ungefragt mitbewegt hat, ist
+ein Befund. Das ist ein Datenvergleich ohne Bild, also billig und ohne Rauschboden.
+
+### Noch zu planen
+
+- Anforderung **3** zusammenfassen: eine Stelle, die die Kosten je Bild misst (Bilder verbrauchen,
+  ein Zaun am Schluss, Grafikkennung dabei), statt drei verstreuter Wege.
+- Anforderung **4** bauen: der Reglerquerschlag-Test. Er existiert nicht.
+- Den Prüfsatz überdenken: **21 echte Rezepte** im Archiv gegen 202 synthetische Fälle.
+- Was mit `faelle.json` und den Grundlinien geschieht, wenn der Hashvergleich nicht mehr das Maß
+  ist — die Nahtfälle bleiben gebraucht, die Studio-Grundlinien womöglich nicht.
+
 
