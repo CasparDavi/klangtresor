@@ -55,6 +55,7 @@
 | Effektclip | zu planen | [Effektclip: der Weg zum Video](effektclip/VIDEO-PLAN.md) — Konzeptsitzung 12.09.2026, eigenes Moduldokument |
 | Effektclip | in Arbeit | [Tiefenkarten — gemessen, gebaut, und wohin sie gehören (14.09.2026)](#tiefenkarten--gemessen-gebaut-und-wohin-sie-gehören-14092026) |
 | Haus | erledigt | [Eingefrorener Server: abgezogener Stick und belegter Port (10.09.2026)](#eingefrorener-server-abgezogener-stick-und-belegter-port-10092026) |
+| Effektclip | Entscheidung | [Was gehört getestet — das Prüfverfahren selbst (21.09.2026)](#was-gehört-getestet-das-prüfverfahren-selbst-21092026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
 
@@ -2781,3 +2782,88 @@ ggf die schlecht sitzenden 10-Sekündler rot dargestellt sind."*
       rot markieren — je Durchlauf und je Abschnitt; Tempowechsel werden so sichtbar.
 - [ ] Übersicht über den Bestand: welche Titel schlecht sitzen (Anzeige „sitzt auf X % des Lieds" unter dem
       Zufallsboden 44 %) rot. Datengrundlage: `taktLage()` / `labor/nahtpruefung/ergebnis-taktlage.json`.
+
+---
+
+## Was gehört getestet — das Prüfverfahren selbst (21.09.2026)
+
+**Zustand: Entscheidung.** Caspar_D, 21.09.2026:
+
+> „Dieses Testprozedere hast du dir letzte Woche ausgesucht und ich war nie überzeugt davon, was du
+> da machst. Das gehört ins Backlog, was getestet gehört."
+
+Nicht das Verfahren ist hier die Frage, sondern die davor: **was soll abgesichert werden, und
+womit.** Der Apparat ist gewachsen, ohne dass diese Frage je gestellt wurde.
+
+### Was der Prüfstand heute tut, und was davon trägt
+
+| | Frage | trägt sie? |
+|---|---|---|
+| **Naht** | Ist Bild(t₀+L) gleich Bild(t₀)? | **Ja.** Binär, eindeutig, billig. Das ist die Stärke. |
+| **Grundlinienvergleich** | Ist das Bild bitgleich zu einem früheren Stand? | **Fraglich** — siehe unten |
+| **Maßstab** | Sieht dasselbe Rezept in 360 und 1080 px gleich aus? | ja, eng umrissen |
+| **Taktlage** | Sitzen die Pulse im Takt? | ja, mit Zufallsboden |
+
+### Der schwerste Einwand: das Maß war Konservierung, nicht Qualität
+
+Caspar_D, 21.09.2026: *„Ich habe fast den Verdacht, wir haben uns Fortschritt blockiert, weil du
+immer versucht hast, den Status quo zu halten."*
+
+Der Verdacht lässt sich belegen, und der Beleg steht in der Übergabe vom 20.09.2026. Das
+Diorama-Konzept (§6) hatte angekündigt, dass **jedes** Rezept mit einem Szenen-Effekt sich minimal
+ändert, weil in Quellauflösung gemalt und danach verkleinert wird — **Überabtastung**, ausdrücklich
+als *Verbesserung* beschrieben: „es sieht glatter aus, aber es ist nicht bitgleich … kein
+Rückschritt, sondern eine Verbesserung". Gebaut wurde dann:
+
+> „Das Diorama wird höchstens so groß gemalt, wie die engste Kamerastellung es ausnutzt. Folge: ein
+> Rezept ohne Kamerabewegung bleibt **bitgleich**. Die angekündigte Überabtastung ‚an jedem Rezept'
+> tritt damit nicht ein."
+
+Das stand dort als „bewusste Abweichung von der Spezifikation zugunsten der Sache". Es war keine
+Abweichung zugunsten der Sache, sondern **zugunsten des Prüfstands**: eine Bildverbesserung wurde
+weggebaut, damit die Hashes gleich bleiben.
+
+**Das ist strukturell und kein Einzelfall.** Wenn „bitgleich" das Gütesiegel ist, ist jede Änderung
+am Bild zuerst ein Verdachtsfall mit Rechtfertigungspflicht — und der billigste Weg durch einen
+solchen Apparat ist, nichts zu verändern. Ein Maß, das Gleichheit belohnt, erzeugt Gleichheit.
+Deshalb steht dieser Punkt vor allen anderen: Die vier Einwände unten betreffen die Genauigkeit des
+Verfahrens, dieser betrifft seine **Richtung**.
+
+### Vier weitere Einwände gegen den Grundlinienvergleich
+
+1. **Er ist nur *innerhalb* eines Laufs deterministisch.** „Deterministisch" in der Ausgabe heißt:
+   derselbe Fall zweimal hintereinander gemalt, gleiche Hashes. Der Vergleich läuft aber **zwischen**
+   Läufen, und dort gibt es einen gemessenen Rauschboden (17.09.2026, gleicher Code gegen gleichen
+   Code): 0,18 bis 0,33 im Mittel, 1,7 bis 7,7 von 255 im Größten.
+2. **Daraus folgt die Regel „dreimal messen"** — und damit ist jeder Vergleich dreifach teuer.
+   In der Praxis wurde sie nie eingehalten; am 21.09.2026 lief ein Vergleich einmal, was nach
+   unserer eigenen Regel keine Aussage erlaubt.
+3. **Eine Grundlinie veraltet mit jedem Umbau.** Am 21.09.2026 war `studio-zielpunkte.json`
+   viereinhalb Stunden älter als der Diorama-Umbau und maß damit drei Änderungen auf einmal.
+4. **„Verändert" sagt nichts über die Richtung.** Überabtastung macht das Bild glatter, eine
+   Umsortierung kann es richtiger machen — beides meldet der Prüfstand wie einen Rückschritt.
+   Caspar_D: *„in welche Richtung kann wohl nur ich beurteilen."*
+5. **Die Kosten sind hoch und schlecht vorhersagbar.** 26 Fälle brauchten 47 Minuten unter
+   Volllast; die Maschine drosselte danach auf 64 % Takt, und alle späteren Messungen derselben
+   Nacht waren dadurch verfälscht.
+
+### Und ein Befund, der die Auswahl selbst betrifft
+
+Die 202 Prüffälle sind **synthetisch** — ihre Ketten stehen in `faelle.json` und werden im
+Prüfstand zusammengesetzt. **Keiner der fünf Prüftitel trägt ein Effektclip-Rezept.** Im Archiv
+liegen dagegen **21 echte Rezepte**, vier davon mit `kenburns`. Geprüft wird also an Ketten, die so
+niemand gebaut hat, während die Ketten, die es wirklich gibt, nicht im Prüfsatz stehen.
+
+### Was zu entscheiden ist
+
+1. **Was muss abgesichert sein?** Die Naht? Das Bild? Die Kosten je Bild? Die Bedienung?
+2. **Woran?** Die 21 echten Rezepte statt 202 synthetischer Fälle — oder beides mit verschiedener
+   Frage?
+3. **Ist „bitgleich" das richtige Maß**, oder ist der Augenschein an wenigen echten Rezepten die
+   ehrlichere Prüfung? (Hausregel: *zeigen statt gegenlesen*.)
+4. **Wann reicht eine Stichprobe?** Seit dem 20.09.2026 gilt: die volle Runde nur bei begründetem
+   Verdacht. Der Grundlinienvergleich war bisher das Gegenteil davon.
+
+Erst wenn das entschieden ist, lohnt Arbeit am Apparat. Vorher wäre jede Verbesserung eine
+Verbesserung an etwas, dessen Zweck nicht feststeht.
+
