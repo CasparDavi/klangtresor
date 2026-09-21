@@ -27615,20 +27615,19 @@ const VERDECK_ALTWERT = ['zone','wie im alten Rezept: Zone weich ausgeschnitten'
 const VERDECK_PARAM = { k:'tiefeVerdeckung', lbl:'Verdeckung',
   sel:VERDECK_WERTE, selMehr:e=>(e.tiefeVerdeckung==='zone')?[VERDECK_ALTWERT]:null, def:'aus',
   brauchtKarte:true, grau:e=>verdeckGrund(e), notiz:e=>verdeckNotiz(e) };
-/* GRENZE UND WEICHHEIT (gemessen 16.09.2026 an „Okkultation"): die Karte ist richtig — Figur und
-   Balustrade hell, Himmel schwarz —, aber ihr Median liegt bei 19 von 255. Mit dem festen Band von
-   ±48 Stufen laege die untere Kante bei −29: kein Bildpunkt gilt als sicher fern, 43 % als sicher
-   nah, 57 % liegt im weichen Band. Genau darum tat „nur hinten" dort nichts. Beide Regler auf
-   „von selbst" (der Anschlag links) rechnen weiter Median und ±48 — ohne Zutun aendert sich nichts,
-   und die Zeile darunter sagt jederzeit, welche Zahl gerade gilt.
-   IN DER WERTSPALTE STEHT NUR EIN STRICH (Gegenlesen 16.09.2026): „von selbst" misst 57,9 px und
-   die Spalte ist 34 px breit - die Vorgabe lief an zwei Zeilen jeder Karte ueber den Schieber
-   daneben. Der ganze Satz steht ohnehin in der Notiz darunter. */
-const TIEFE_WERT = v => (v==null||v<0) ? '–' : Math.round(v*255)+'';
-const GRENZE_PARAM = { k:'tiefeGrenze', lbl:'Grenze', min:-.02, max:1, step:.02, def:-.02,
-  wert:TIEFE_WERT, brauchtKarte:true, notiz:e=>grenzeNotiz(e) };
-const WEICH_PARAM = { k:'tiefeWeich', lbl:'Weichheit', min:-.02, max:1, step:.02, def:-.02,
-  wert:v=>(v==null||v<0)?'–':('±'+Math.round(v*255)), brauchtKarte:true, notiz:e=>weichNotiz(e) };
+/* HIER STANDEN GRENZE UND WEICHHEIT ALS REGLER DER EFFEKTKARTE (bis 21.09.2026).
+   Sie sind nicht verschwunden, sie sind umgezogen: in die Vorbereitung, Station „Tiefe", als
+   „Trennung" und „Weichheit der Trennung" (zoneTrennung/zoneWeich). Der Grund steht bei
+   tiefeSpanne und kam von Caspar_D am 21.09.2026: eine Linie beschreibt das BILD, nicht einen
+   Effekt - „nennen wir es einfach Vorder-/Hintergrund-Trennung", und jeder Effekt waehlt dann
+   nur noch die SEITE, auf der er wirkt.
+
+   Die Messung, die zu ihnen gefuehrt hat, gilt weiter und gehoert nicht verloren: auf
+   „Okkultation" ist die Tiefenkarte richtig - Figur und Balustrade hell, Himmel schwarz -, aber
+   ihr Median liegt bei 19 von 255. Mit dem festen Band von ±48 Stufen laege die untere Kante
+   bei −29: kein Bildpunkt gilt als sicher fern, 43 % als sicher nah, 57 % liegt im weichen
+   Band. Genau darum tat „nur hinten" dort nichts. Beide Regler auf „von selbst" rechnen
+   weiterhin Median und ±48. */
 /* LEERRAUM VOR TIEFENKARTE (neu am 17.09.2026, Spezifikation Abschnitt 2 und 5; Caspar_D:
    "tiefenmap verhaelt sich genau so wie 2D, es gibt einen layer vor dem ganzen, in dem noch
    Partikel generiert werden koennen"). Vor der Karte liegt eine leere Ebene; ein Teilchen dort
@@ -27764,7 +27763,7 @@ const RASTER_SATZ = ' Entschieden wird auf dem Tiefenraster (160 Punkte breit) �
 /* Wie viel des Bildes die erlaubte Zone einnimmt - und ob dort ueberhaupt etwas zu sehen sein wird.
    Gerechnet aus dem Raster, nicht geraten. */
 function zonenLageVon(e){ const tp=tiefeProben(); if(!tp) return null;
-  const sp=tiefeSpanne(e,tp); return zonenLage(e.tiefeWirkt, sp.g, sp.w); }
+  const sp=tiefeSpanne(tp); return zonenLage(e.tiefeWirkt, sp.g, sp.w); }
 function leerWarnung(e){ const zl=zonenLageVon(e); if(!zl) return '';
   if(zl.erlaubt<0.01) return ' ACHTUNG: die erlaubte Zone ist nur '+vH(zl.erlaubt)+' des Bildes groß — hier wird so gut wie nichts zu sehen sein. Grenze oder Weichheit verschieben.';
   return ' Die erlaubte Zone ist '+vH(zl.erlaubt)+' des Bildes groß.'; }
@@ -27794,30 +27793,15 @@ function aufenthaltNotiz(e){
 function verdeckNotiz(e){
   if(!tiefeKarteDa()||!TIEFE_KOERPER(e)||e.tiefeVerdeckung==='zone') return null;
   return 'Diese Zeile wirkt nicht mehr: verdeckt wird jedes Teilchen nach seiner eigenen Entfernung, sobald es eine Tiefenkarte gibt — in vier Tiefenschichten, bildpunktgenau. Das ist der Vogel, der halb hinter dem Pfosten steckt und auch halb weg ist. Die Zeile verschwindet mit dem nächsten Schritt.'; }
-/* Wo dieselbe Karte im selben Clip zwei verschiedene Trennlinien bekommt, wird das gesagt. Die
-   Grenze beschreibt das BILD, haengt aber am Effekt - solange das so ist, darf es nicht still
-   passieren (Gegenlesen 16.09.2026; ob sie ans Rezept gehoert, ist Caspar_Ds Entscheidung). */
-function grenzeUneins(e){ try{
-  const and=(STAPEL||[]).filter(x=>x!==e&&x.tiefeWirkt&&x.tiefeWirkt!=='alles'
-    &&((x.tiefeGrenze==null?-1:x.tiefeGrenze)!==(e.tiefeGrenze==null?-1:e.tiefeGrenze)
-      ||(x.tiefeWeich==null?-1:x.tiefeWeich)!==(e.tiefeWeich==null?-1:e.tiefeWeich)));
-  return and.length ? (and.length===1
-    ? ' In diesem Clip steht ein weiterer Effekt mit Zone auf einer ANDEREN Grenze — dieselbe Karte wird dann verschieden geteilt.'
-    : ' In diesem Clip stehen '+and.length+' weitere Effekte mit Zone auf einer ANDEREN Grenze — dieselbe Karte wird dann verschieden geteilt.') : '';
-}catch(x){ return ''; } }
-function grenzeNotiz(e){
-  if(!tiefeKarteDa()) return null; const m=tiefeMitte();
-  /* EHRLICH UEBER DIE ZWEITE ZAHL (Gegenlesen 16.09.2026): die Maske rechnet ihren Median in der
-     jeweiligen AUSGABEGROESSE neu, dieses Raster ist 160 Punkte breit. Auf zwei von vier geprueften
-     Karten weichen die beiden um ein bis zwei Graustufen ab. Solange beide Zahlen nebeneinander
-     leben, wird die angezeigte nicht als DIE Zahl ausgegeben. */
-  return ((e.tiefeGrenze==null||e.tiefeGrenze<0)
-    ? 'von selbst: die Mitte dieser Karte'+(m==null?'':' — rund '+Math.round(m*255)+' von 255 (die Maske misst sie je Ausgabegröße neu und kann ein bis zwei Stufen abweichen)')+'.'
-    : 'von Hand: '+Math.round(e.tiefeGrenze*255)+' von 255'+(m==null?'':'; von selbst wären es rund '+Math.round(m*255))+'.') + grenzeUneins(e); }
-function weichNotiz(e){ if(!tiefeKarteDa()) return null;
-  return (e.tiefeWeich==null||e.tiefeWeich<0)
-    ? 'von selbst: ±48 von 255 um die Grenze.'
-    : 'von Hand: ±'+Math.round(e.tiefeWeich*255)+' von 255 um die Grenze (von selbst wären es ±48).'; }
+/* HIER STAND DIE WARNUNG VOR UNEINIGEN GRENZEN (grenzeUneins, bis 21.09.2026) - und mit ihr die
+   beiden Notizen unter den Reglern. Der Kommentar, der sie begruendete, hat den Tag
+   vorweggenommen: „Die Grenze beschreibt das BILD, haengt aber am Effekt - solange das so ist,
+   darf es nicht still passieren (ob sie ans Rezept gehoert, ist Caspar_Ds Entscheidung)."
+   Er hat entschieden. Seit die Trennung in der Vorbereitung steht, gibt es je Bild genau EINE
+   Linie; zwei Effekte KOENNEN sich nicht mehr uneins sein, und eine Warnung vor einem
+   unmoeglichen Zustand waere selbst die Falschaussage. Was die Notizen sagten - welche Zahl
+   gerade gilt und was „von selbst" bedeutet -, steht jetzt unter den Zonenreglern und im
+   Verteilungsstreifen, der dort mit ihnen zusammen sitzt. */
 /* ERST DIE ART, DANN DAS WARTEN (Gegenlesen 17.09.2026). Bei Schwarm, Sternschnuppe und Kanone
    steht die Zeile wegen raumGrund() ohnehin grau - der Wartesatz darunter versprach trotzdem
    „die Zahlen unten stehen, sobald sie da ist", und das wird sie nie. Der Grund der Art gilt
@@ -27856,7 +27840,7 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
      keine Reglerstellung mehr. Der alte Satz allein waere jetzt die Falschaussage. */
   if(!(e.raumtiefe>0.001)) return 'Größe und Tempo bleiben flach: alle Teilchen gleich groß und gleich schnell, gleich wo sie stehen. Verdeckt wird jedes trotzdem nach seiner eigenen Entfernung — das gilt immer.';
   const tp=tiefeProben(); if(!tp) return null;
-  const L=leerVor(), sp=tiefeSpanne(e,tp), HK=herkunftVon(e);
+  const L=leerVor(), sp=tiefeSpanne(tp), HK=herkunftVon(e);
   const modus=ZONE_HART(e)?e.tiefeWirkt:null;
   const bz=(HK.herk==='boden')?bodenZellen(tp,sp.g,sp.w,L,modus):null;
   /* Fehlt die Bodenflaeche, faellt der Maler auf die eigene Stelle zurueck - dann gilt auch fuer
@@ -29669,7 +29653,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        IMMER gilt (Spezifikation Abschnitt 5), braucht jedes Teilchen seine Entfernung. Der Ruf
        ist billig: tiefeProben rechnet einmal je Quelle und liegt danach im Vorrat. */
     const TPR=tiefeProben();
-    const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(e,TPR):null;
+    const ZONE=TPR?zoneWunsch:null, ZG=TPR?tiefeSpanne(TPR):null;
     const raumAn=(RAUM>0.001&&!!TPR&&!RAUM_OHNE.has(e.art));
     /* VERDECKT WIRD IMMER, WENN ES EINE KARTE GIBT - auch bei Raumtiefe 0, auch bei Schwarm,
        Schnuppe und Kanone (RAUM_OHNE gilt nur fuer Groesse, Tempo und Dunst). Ohne Karte gibt es
@@ -30951,7 +30935,10 @@ function renderStapel(){
     if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
-    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','tiefeGrenze','tiefeWeich','leerraum','raumtiefe']);
+    /* 'tiefeGrenze'/'tiefeWeich' sind hier am 21.09.2026 herausgefallen - die Karte baut diese
+       beiden Regler nicht mehr, also gibt es auch nichts mehr einzusortieren. 'leerraum' und
+       'raumtiefe' stehen noch: sie sind ebenfalls umgezogen, aber alte Rezepte tragen sie weiter. */
+    const GEMEIN=new Set(['antrieb','atempo','invert','rm','lm','q','tiefeWirkt','tiefeVerdeckung','leerraum','raumtiefe']);
     const paramBauen=p=>{ if(p.when && !p.when(e)) return; if(p.versteckt) return;
       /* DIE PUNKTELISTE IST KEINE REGLERZEILE. Sie ZEIGT, was dasteht - Nummer, Ort und Enge -,
          und die Zeile darunter (notiz) sagt, was daraus folgt. Gesetzt wird auf der Buehne; ein
@@ -31071,20 +31058,7 @@ function renderStapel(){
       /* `wert` beschriftet den Regler selbst, wo die blosse Zahl nichts sagt: der Anschlag links
          der Tiefengrenze ist kein Wert, sondern „von selbst" (16.09.2026). */
       else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k]):kf(e[p.k]))+'</span></div>';
-        /* UNTER DER GRENZE LIEGT DIE VERTEILUNG, AUF DER SIE ENTSCHEIDET (17.09.2026). Ein Regler
-           von 0 bis 255 sagt nicht, wo seine Zahl im BILD landet - auf "Okkultation" liegen zwei
-           Haufen und der Median bei 19 von 255. Also steht die Verteilung unter dem Schieber, der
-           Griff sitzt auf ihr, und daneben die drei Anteile. Ohne Tiefenkarte gibt es keinen
-           Streifen: die Zeile steht dann ohnehin grau mit ihrem vorhandenen Grund, und ein leerer
-           Kasten waere die Behauptung, es gaebe etwas zu sehen (Regel 11). */
-        /* EIN TITEL ERKLAERT DAS VERFAHREN, NICHT NUR SEIN BILD (Gegenlesen 17.09.2026). Erklaert
-           war bisher der Streifen; dass sich beim Ziehen DAS BILD entfaerbt und rot/blau eingefaerbt
-           wird, stand nirgends - der Nutzer erlebte es, ohne dass ihm jemand sagte, dass er die
-           Maske selbst sieht. Auch die waagerechte Achse fehlte, und die Zahlenzeile trug gar
-           keinen Titel. Beide tragen jetzt denselben: sie gehoeren zu einem Kasten. */
-        if(p.k==='tiefeGrenze'&&tiefeProben()){
-          const tt='Verteilung der Tiefenwerte dieses Bildes. Waagerecht der Tiefenwert \u2013 links dunkel/hinten, rechts hell/vorn; senkrecht die H\u00e4ufigkeit im Wurzelma\u00dfstab, damit auch kleine H\u00e4ufungen zu sehen sind. Rot: hier gilt der Punkt als nah, blau: als fern, dazwischen das weiche Band. Der wei\u00dfe Strich ist die Grenze, der blasse die Mitte der Karte \u2013 auf \u201evon selbst\u201c sind beide dasselbe, dann steht nur der wei\u00dfe und eine Spur f\u00fchrt vom Griff zu ihm. Solange du ziehst, zeigt das Bild daneben dieselbe Maske: entf\u00e4rbt, rot vorn, blau hinten. Die drei Anteile sind auf demselben groben Raster gez\u00e4hlt wie der Streifen; das Bild rechnet sie je Ausgabegr\u00f6\u00dfe neu und weicht um ein bis zwei Prozent ab.';
-          h+='<div class="tbs-regler tbs-tsicht"><span></span><div><canvas class="tbs-thist" title="'+tt+'"></canvas><div class="tbs-tzahlen" title="'+tt+'"></div></div><span></span></div>'; } }
+      }
     };
     /* GRAU MIT GRUND STATT WEG (Hausgesetz der Effektclips, 16.09.2026: "Nichts darf in der
        Oberflaeche luegen: was eine Art nicht benutzt, wird ausgegraut mit Grund, nicht
@@ -31193,43 +31167,16 @@ function renderStapel(){
          sonst mitten im Ziehen den Griff; also wird die Zeile an Ort und Stelle nachgezogen,
          genau wie die Zahl rechts daneben. */
       if(p&&p.notiz){ const zeile=inp.closest('.tbs-regler'), nz=p.notiz(e);
-        /* ZWISCHEN REGLER UND NOTIZ STEHT SEIT DEM 17.09.2026 DER VERTEILUNGSSTREIFEN. Er wird
-           uebersprungen, sonst faende die Zeile ihre Notiz nicht und legte bei jedem Zug eine
-           zweite daneben. */
         let vor=zeile, d=zeile&&zeile.nextElementSibling;
-        if(d&&d.classList.contains('tbs-tsicht')){ vor=d; d=d.nextElementSibling; }
         /* Der Wartesatz der Tiefenkarte gehoert der KARTE, nicht diesem Regler (18.09.2026) -
            beim Schieben darf er nicht als „Notiz weg" weggeraeumt werden. */
         if(d&&(!d.classList.contains('tbs-graugrund')||d.classList.contains('tbs-warte'))) d=null;
         if(nz&&d) d.textContent=nz;
         else if(nz&&vor){ const nd=document.createElement('div'); nd.className='tbs-graugrund'; nd.textContent=nz; vor.parentNode.insertBefore(nd, vor.nextSibling); }
         else if(d) d.remove(); }
-      /* Wer an Grenze oder Weichheit zieht, bekommt die Trennebene zu sehen (tiefesichtMalen) und
-         den Streifen nachgezogen - beides haengt am Wert, also zieht es mit dem Wert mit. */
-      if(k==='tiefeGrenze'||k==='tiefeWeich'){ tiefesichtWecken(e); const box=c.querySelector('.tbs-tsicht'); if(box) tiefeStreifenMalen(box,e); }
       if(p.sel&&k==='art') artFarben(e);
       if(p.sel||inp.tagName==='SELECT') renderStapel(); else if(k&&(k.slice(0,2)==='lm'||k.slice(0,2)==='rm'||Q_REGLER.has(k))) lmVorschauen();   /* auch die Auswahlen von Raum und Antrieb zeichnen neu: an ihnen haengen Regler (Tiefen-Check: Blenden-Regler erschienen erst nach Zu-/Aufklappen) */
     });
-    /* Der Verteilungsstreifen wird gezeichnet, sobald die Karte IM DOKUMENT STEHT - nicht hier
-       (Gegenlesen 17.09.2026). Die Karte wird in einem losgeloesten `div` gebaut und erst unten
-       mit `stapelBox.appendChild(c)` eingehaengt; an dieser Stelle hat die Leinwand noch kein
-       Layout, `cv.clientWidth` ist 0, und der Streifen entstand in der Notbreite von 160 Punkten.
-       Von CSS auf die wirkliche Spaltenbreite gedehnt (327 px im breiten Pult, Faktor 2,04) sass
-       der Griff dann neben seiner eigenen Marke - und zwar genau beim ERSTEN Hinsehen, wo man
-       ihn braucht. Er berichtigte sich erst beim ersten Zug. Der Aufruf steht darum jetzt hinter
-       dem Einhaengen; die Breite wird ausserdem beobachtet (Fensterwechsel, ein-/zweispaltig). */
-    c.querySelectorAll('[data-k="tiefeGrenze"],[data-k="tiefeWeich"]').forEach(inp=>{
-      /* DAS LOSLASSEN WIRD AM FENSTER ABGEFANGEN, NICHT AM SCHIEBER (Gegenlesen 17.09.2026).
-         `pointerup` am Eingabefeld erreicht niemanden mehr, wenn die Karte waehrend des Zugs neu
-         gebaut wird - und das ist kein Sonderfall: kommt die Tiefenkarte an, ruft
-         tiefeKarteGemeldet() renderStapel(), und genau dann erscheint der Streifen zum ersten Mal.
-         Die Klinke blieb dann bis zur 30-Sekunden-Reissleine liegen und die Ansicht ueber dem Bild,
-         ohne dass eine Hand am Regler war. */
-      inp.addEventListener('pointerdown',()=>{ TSICHT.haelt=true; tiefesichtWecken(e);
-        const los=()=>{ TSICHT.haelt=false; tiefesichtWecken(e);
-          removeEventListener('pointerup',los); removeEventListener('pointercancel',los); };
-        addEventListener('pointerup',los); addEventListener('pointercancel',los); });
-      inp.addEventListener('blur',()=>{ TSICHT.haelt=false; tiefesichtWecken(e); }); });
     c.querySelectorAll('[data-tog]').forEach(btn=>btn.onclick=()=>{ const k=btn.dataset.tog; e[k]=e[k]?0:1; renderStapel(); });
     /* DIE PUNKTELISTE DER KEN BURNS FAHRT (19.09.2026). Sie traegt seit heute zwei Bedienteile, und
        beide gehen durch kbOrt und kbSetzen wie jede Geste auf der Buehne - EIN Weg, dieselben
@@ -31293,11 +31240,9 @@ function renderStapel(){
       const tw=c.querySelector('[data-tonwert]'); if(tw) tw.oninput=()=>{ cur().tonwert=+tw.value; tw.parentElement.querySelector('.tbs-wert').textContent=kf((+tw.value).toFixed(2)); zg(); };
     }
     stapelBox.appendChild(c); if(!e.zu&&offenId!==gerolltZu&&c.scrollIntoView){ c.scrollIntoView({block:'nearest'}); gerolltZu=offenId; }
-    /* JETZT hat der Streifen eine Breite - vorher nicht. Und er bekommt einen Beobachter: das
-       Pult wechselt zwischen ein- und zweispaltig und das Fenster wird schmaler, beides ohne
-       dass ein Regler angefasst wird. Der Beobachter geht mit der Karte, weil er an ihr haengt. */
-    { const box=c.querySelector('.tbs-tsicht');
-      if(box){ box._e=e; tiefeStreifenMalen(box,e); tiefeBreitenWache(box); } }
+    /* DIE KARTE MALT KEINEN STREIFEN MEHR (21.09.2026). Er zog mit seiner Trennung in die
+       Vorbereitung; was hier stand - Beobachter, Breitenwache, der angehaengte Effekt -,
+       haette einen Kasten bedient, den diese Karte nicht mehr baut. */
   });
 }
 
@@ -32313,7 +32258,7 @@ function kbZiele(e){
   if(!q||!det) return { z, ziele:[], karte:false, k:0,
     grund:(q&&KB_DETAIL[q.k]&&KB_DETAIL[q.k].fehler)?'unlesbar':'nochnicht',
     fehler:(q&&KB_DETAIL[q.k]&&KB_DETAIL[q.k].fehler)||null };
-  const tp=tiefeProben(), sp=tp?tiefeSpanne(e,tp):null;
+  const tp=tiefeProben(), sp=tp?tiefeSpanne(tp):null;
   const rsl=q.k+'|'+KB_LESART+'|'+(sp?sp.g.toFixed(4)+'|'+sp.w.toFixed(4):'ohne')+(det.stich==null?'':'|'+det.stich.toFixed(2));
   const sl=rsl+'|'+z.toFixed(2);
   if(KB_ZIELE[sl]) return KB_ZIELE[sl];
@@ -34191,6 +34136,17 @@ function zeichneFrame(t,roh){
          'Wo der Vordergrund aufh\u00f6rt und der Hintergrund anf\u00e4ngt. Jeder Effekt w\u00e4hlt selbst, auf welcher Seite er wirkt \u2014 <i>wo</i> die Linie liegt, sagt diese Zahl, und zwar f\u00fcr alle.');
       zr('trennWeich','Weichheit der Trennung',-0.02,1,0.02,x=>(x==null||x<0)?'von selbst':'\u00b1'+Math.round(x*255),
          'Wie breit das Band um die Trennung ist, in dem beide Seiten ineinander \u00fcbergehen.');
+      /* UNTER DER TRENNUNG LIEGT DIE VERTEILUNG, AUF DER SIE ENTSCHEIDET (17.09.2026, hierher
+         gezogen am 21.09.2026). Ein Regler von 0 bis 255 sagt nicht, wo seine Zahl im BILD
+         landet - auf "Okkultation" liegen zwei Haufen und der Median bei 19 von 255. Der
+         Streifen stand darum unter dem Schieber; als der Schieber in die Vorbereitung zog, blieb
+         er auf den Effektkarten zurueck, wo es nichts mehr zu zeigen gab. Jetzt steht er wieder
+         unter seiner Trennung - und diesmal gibt es nur noch EINEN, so wie es nur noch eine
+         Linie gibt. Ohne Tiefenkarte kein Streifen: ein leerer Kasten waere die Behauptung, es
+         gaebe etwas zu sehen (Regel 11). */
+      if(tiefeProben()){
+        const tt='Verteilung der Tiefenwerte dieses Bildes. Waagerecht der Tiefenwert \u2013 links dunkel/hinten, rechts hell/vorn; senkrecht die H\u00e4ufigkeit im Wurzelma\u00dfstab, damit auch kleine H\u00e4ufungen zu sehen sind. Rot: hier gilt der Punkt als nah, blau: als fern, dazwischen das weiche Band. Der wei\u00dfe Strich ist die Trennung, der blasse die Mitte der Tiefenkarte \u2013 auf \u201evon selbst\u201c sind beide dasselbe, dann steht nur der wei\u00dfe und eine Spur f\u00fchrt vom Griff zu ihm. Solange du ziehst, zeigt das Bild daneben dieselbe Maske: entf\u00e4rbt, rot vorn, blau hinten. Die drei Anteile sind auf demselben groben Raster gez\u00e4hlt wie der Streifen; das Bild rechnet sie je Ausgabegr\u00f6\u00dfe neu und weicht um ein bis zwei Prozent ab.';
+        h+='<div class="tbs-regler tbs-tsicht"><span></span><div><canvas class="tbs-thist" title="'+tt+'"></canvas><div class="tbs-tzahlen" title="'+tt+'"></div></div><span></span></div>'; }
       zr('flaecheAb','Hintergrundfl\u00e4che ab',0,0.4,0.01,x=>Math.round(x*255)+' von 255',
          'Die letzte Tiefenebene \u2014 drau\u00dfen der Himmel, drinnen die R\u00fcckwand. Was dorthin geh\u00f6rt, liegt hinter allem: eine Sternschnuppe, sp\u00e4ter ein Polarlicht.'); }
     }
@@ -34222,7 +34178,31 @@ function zeichneFrame(t,roh){
         : kk==='trennWeich' ? ((+inp.value<0)?'von selbst':'\u00b1'+Math.round(+inp.value*255))
         : kk==='flaecheAb' ? Math.round(+inp.value*255)+' von 255'
         : ((+inp.value<0)?'von selbst':Math.round(+inp.value*255)+' von 255');
+      /* WER AN DER TRENNUNG ZIEHT, BEKOMMT SIE ZU SEHEN - und nur dann (Understatement,
+         17.09.2026). Das Bild entfaerbt sich und zeigt rot, was als vorn gilt, blau, was als
+         hinten gilt; der Streifen darunter zieht mit. Kein Knopf und keine Dauerschicht: liegt
+         keine Hand am Regler, wird nach dem Nachklang nichts mehr gerechnet und nichts gezeichnet.
+         Die beiden anderen Zonenregler wecken sie NICHT - Leerraum und Hintergrundflaeche sind
+         keine Trennung, und eine Ansicht, die dabei erschiene, zeigte die falsche Groesse. */
+      if(kk==='trennung'||kk==='trennWeich'){ tiefesichtWecken(); const box=k.querySelector('.tbs-tsicht'); if(box) tiefeStreifenMalen(box); }
       vorbStand(); malen(); });
+    /* DAS LOSLASSEN WIRD AM FENSTER ABGEFANGEN, NICHT AM SCHIEBER (Gegenlesen 17.09.2026).
+       `pointerup` am Eingabefeld erreicht niemanden mehr, wenn die Lasche waehrend des Zugs neu
+       gebaut wird - und das ist kein Sonderfall: trifft die Tiefenkarte ein, baut vorbRender neu,
+       und genau dann erscheint der Streifen zum ersten Mal. Die Klinke bliebe dann bis zur
+       30-Sekunden-Reissleine liegen und die Ansicht ueber dem Bild, ohne dass eine Hand am
+       Regler waere. */
+    k.querySelectorAll('[data-vz="trennung"],[data-vz="trennWeich"]').forEach(inp=>{
+      inp.addEventListener('pointerdown',()=>{ TSICHT.haelt=true; tiefesichtWecken();
+        const los=()=>{ TSICHT.haelt=false; tiefesichtWecken();
+          removeEventListener('pointerup',los); removeEventListener('pointercancel',los); };
+        addEventListener('pointerup',los); addEventListener('pointercancel',los); });
+      inp.addEventListener('blur',()=>{ TSICHT.haelt=false; tiefesichtWecken(); }); });
+    /* JETZT hat der Streifen eine Breite - beim Bauen von `h` hatte er keine: dort steht er in
+       einer Zeichenkette, `cv.clientWidth` ist 0, und tiefeStreifenMalen malt dann gar nicht.
+       Der Beobachter holt jeden spaeteren Breitenwechsel nach (Fenster schmaler, Pult ein- oder
+       zweispaltig). */
+    { const box=k.querySelector('.tbs-tsicht'); if(box){ tiefeStreifenMalen(box); tiefeBreitenWache(box); } }
     k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
       inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); malen(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
@@ -35643,9 +35623,22 @@ function zeichneFrame(t,roh){
   function tiefeMitte(){ const tp=tiefeProben(); return tp?tp.med:null; }
   /* Grenze und Weichheit eines Effekts in Kartenwerten 0..1. Unter null heisst „von selbst": die
      Mitte dieser Karte und das feste Band von 48 Graustufen - genau die Zahlen von gestern. */
-  function tiefeSpanne(e, tp){
-    const g=(e.tiefeGrenze==null||e.tiefeGrenze<0)?(tp?tp.med:0.5):Math.max(0,Math.min(1,e.tiefeGrenze));
-    const w=(e.tiefeWeich==null||e.tiefeWeich<0)?(48/255):Math.max(1/255,Math.min(1,e.tiefeWeich));
+  /* DIE GRENZE HING AM EFFEKT UND HAENGT JETZT AM BILD (Caspar_D, 21.09.2026: „nennen wir es
+     einfach Vorder-/Hintergrund-Trennung" - eine Linie fuer alle). Der Kommentar bei grenzeUneins
+     hatte den Tag vorhergesehen: „Grenze beschreibt das BILD, haengt aber am Effekt - solange das
+     so ist, darf es nicht still passieren." Jetzt haengt sie nicht mehr am Effekt, und die ganze
+     Warnung um uneinige Grenzen faellt ersatzlos weg: der Zustand kann nicht mehr eintreten.
+
+     ZWISCHENDURCH LOG DIESE FUNKTION (gefunden 21.09.2026). Die Regler „Grenze" und „Weichheit"
+     waren schon von den Karten genommen, die Maske las bereits zoneTrennung() - diese Funktion
+     aber las weiter `e.tiefeGrenze`, ein Feld, das neue Effekte gar nicht mehr tragen. Sie fiel
+     also still auf den Median zurueck. Zwei Malwege hingen daran: die Teilchen (tiefeNahAn) und
+     das Ken-Burns-Detail. Wer in der Station Tiefe an der Trennung zog, verschob dort NICHTS,
+     ohne dass irgendetwas es gesagt haette - genau die stille Falschaussage aus Regel 9. */
+  function tiefeSpanne(tp){
+    const gz=zoneTrennung(), wz=zoneWeich();
+    const g=(gz==null||gz<0)?(tp?tp.med:0.5):Math.max(0,Math.min(1,gz));
+    const w=(wz==null||wz<0)?(48/255):Math.max(1/255,Math.min(1,wz));
     return { g, w }; }
   /* DIE KURVE SELBST, EINMAL AUFGESCHRIEBEN (17.09.2026). Sie stand bis heute in tiefeNahAn und
      - in Ganzzahlen - in tiefeMaske; die Sichtbarkeitsansicht braucht sie ein drittes Mal, fuer
@@ -36371,20 +36364,24 @@ function zeichneFrame(t,roh){
      UND SIE ERREICHT DIE AUSGABE NIE. Gemalt wird ausschliesslich in rahmen(), und rahmen() steigt
      bei exportLaeuft aus. zeichneFrame - der Weg von Kachel, Export und Loop-Bild - weiss von der
      Ansicht nichts. */
-  const TSICHT={ e:null, haelt:false, bis:0 };
+  const TSICHT={ an:false, haelt:false, bis:0 };
   const TSICHT_NACHKLANG=1400, TSICHT_HALTEN=30000;   /* Nachklang nach dem Loslassen; die zweite Zahl ist nur die Reissleine, falls ein pointerup ausfaellt */
-  function tiefesichtWecken(e){ TSICHT.e=e; TSICHT.bis=performance.now()+(TSICHT.haelt?TSICHT_HALTEN:TSICHT_NACHKLANG); }
-  function tiefesichtZeigt(){ return !!TSICHT.e && performance.now()<TSICHT.bis; }
-  function tiefesichtAus(){ TSICHT.e=null; TSICHT.haelt=false; TSICHT.bis=0; TSICHT_GRAU=null; TSICHT_FERTIG=null; TSICHT_SCHICHTEN.length=0; }
+  function tiefesichtWecken(){ TSICHT.an=true; TSICHT.bis=performance.now()+(TSICHT.haelt?TSICHT_HALTEN:TSICHT_NACHKLANG); }
+  function tiefesichtZeigt(){ return TSICHT.an && performance.now()<TSICHT.bis; }
+  function tiefesichtAus(){ TSICHT.an=false; TSICHT.haelt=false; TSICHT.bis=0; TSICHT_GRAU=null; TSICHT_FERTIG=null; TSICHT_SCHICHTEN.length=0; }
   /* „AUS" HIESS BIS HEUTE NUR: ES WIRD NICHT MEHR GEMALT (Gegenlesen 17.09.2026). Geraeumt wurde
      nichts - nach dem Nachklang lagen drei Schichtenpaare, das Graubild und das fertige Bild
      weiter herum, acht Leinwaende in voller Groesse: gemessen 17,4 MB bei 796x683 und 22,1 MB bei
      898x770, und zwar bis zum Schliessen des Studios. Der Satz „aus kostet null" stimmte nur,
      solange die Ansicht nie an war. Auf dem Intel-iMac mit geteiltem Speicher ist das kein Nichts.
      Geraeumt wird beim ERSTEN Bild nach dem Nachklang, also genau einmal; danach ist die Bedingung
-     billig (`TSICHT.e` ist null) und kostet je Bild einen Vergleich. `TSICHT.e` geht mit - sonst
-     haelt die Ansicht einen Effekt fest, den der Nutzer laengst geloescht haben kann. */
-  function tiefesichtRaeumen(){ if(TSICHT.e||TSICHT_GRAU||TSICHT_FERTIG||TSICHT_SCHICHTEN.length) tiefesichtAus(); }
+     billig (`TSICHT.an` ist false) und kostet je Bild einen Vergleich.
+
+     UND DIE MARKE HEISST NICHT MEHR „Effekt" (21.09.2026). Sie hielt bis heute den Effekt fest,
+     an dessen Regler jemand zog - weil die Grenze am Effekt hing. Seit sie in der Vorbereitung
+     steht, gehoert die Ansicht keinem Effekt mehr, und ein Feld namens `e` haette genau das
+     behauptet. Es ist jetzt ein Schalter, und er heisst wie einer. */
+  function tiefesichtRaeumen(){ if(TSICHT.an||TSICHT_GRAU||TSICHT_FERTIG||TSICHT_SCHICHTEN.length) tiefesichtAus(); }
   /* Zwei Schichten je Einstellung: die Farben und die Haarlinie. Getrennt, weil die Farben
      halbdurchsichtig ueber dem Graubild liegen (sonst waere das Bild weg) und die Linie NICHT -
      eine halbdurchsichtige Haarlinie im Verlauf sieht man gerade dort nicht, wo sie hingehoert.
@@ -36482,8 +36479,7 @@ function zeichneFrame(t,roh){
      sonst griff der Vorrat nicht einmal dann, wenn das Video steht (Gegenlesen 17.09.2026). */
   let TSICHT_FERTIG=null;
   function tiefesichtMalen(){
-    const e=TSICHT.e;
-    if(!e||!bereit||!lein||!g||lein.width<2||!bild) return;
+    if(!TSICHT.an||!bereit||!lein||!g||lein.width<2||!bild) return;
     const W=lein.width, H=lein.height;
     /* Ohne Karte zu DIESER Quelle gibt es keine Schicht - und damit auch keine Ansicht. Die Zeile
        daneben steht dann grau mit Grund; eine Trennebene ueber einem Bild ohne Tiefe waere genau
@@ -36548,23 +36544,24 @@ function zeichneFrame(t,roh){
      muss neu gemalt werden, wenn seine Spalte die Breite wechselt - das Fenster wird schmaler,
      das Pult schaltet ein-/zweispaltig um, eine Karte klappt auf. Ein eigener Beobachter je
      Karte bliebe bei jedem `renderStapel` als Leiche zurueck; EIN Beobachter, der die Karten
-     beim Neubau vergisst, kann das nicht. Der Effekt haengt am Kasten selbst (`box._e`), damit
-     die Wache nicht wissen muss, welche Karte sie gerade vor sich hat. */
+     beim Neubau vergisst, kann das nicht. Seit die Trennung in der Vorbereitung steht, gibt es
+     nur EINEN Streifen und er haengt an keinem Effekt mehr - die Wache braucht darum auch nichts
+     mehr ueber ihn zu wissen als: steht er noch im Dokument? */
   let TS_WACHE=null;
   function tiefeBreitenWache(box){
     const cv=box&&box.querySelector('canvas.tbs-thist'); if(!cv||typeof ResizeObserver==='undefined') return;
     if(!TS_WACHE) TS_WACHE=new ResizeObserver(eintraege=>{ for(const ei of eintraege){
       const b=ei.target.closest('.tbs-tsicht');
-      if(b&&b._e&&b.isConnected) tiefeStreifenMalen(b,b._e); else TS_WACHE.unobserve(ei.target); } });
+      if(b&&b.isConnected) tiefeStreifenMalen(b); else TS_WACHE.unobserve(ei.target); } });
     TS_WACHE.observe(cv);
   }
-  function tiefeStreifenMalen(box, e){
+  function tiefeStreifenMalen(box){
     try{
       if(!box) return;
       const cv=box.querySelector('canvas.tbs-thist'), zahl=box.querySelector('.tbs-tzahlen');
       const tp=tiefeProben(), hi=tiefeHistogramm();
       if(!cv||!tp||!hi) return;
-      const sp=tiefeSpanne(e,tp), an=tiefeAnteile(sp.g,sp.w);
+      const sp=tiefeSpanne(tp), an=tiefeAnteile(sp.g,sp.w);
       const dpr=Math.min(2,window.devicePixelRatio||1);
       /* KEIN NOTNAGEL FUER DIE BREITE (Gegenlesen 17.09.2026). Stand hier `cv.clientWidth||160`,
          entstand der Streifen bei einer Breite von 0 still in 160 Punkten und wurde von CSS
@@ -36596,14 +36593,14 @@ function zeichneFrame(t,roh){
          ABER NUR, WENN SIE NICHT DIE GRENZE SELBST IST (Gegenlesen 17.09.2026). Auf "von selbst"
          ist die Grenze die Kartenmitte; dann fielen beide Striche aufeinander, und der Titel
          versprach zwei, von denen nur einer da war. */
-      const vonSelbst = Math.abs(sp.g-tp.med)<1e-9 && (e.tiefeGrenze==null||e.tiefeGrenze<0);
+      const vonSelbst = Math.abs(sp.g-tp.med)<1e-9 && zoneTrennung()<0;
       if(!vonSelbst){ cx.fillStyle='rgba(255,255,255,.28)'; cx.fillRect(X(tp.med)-0.5,0,1,bh); }
       /* UND DER GRIFF GEHOERT AN SEINE MARKE (Gegenlesen 17.09.2026). Auf "von selbst" steht der
          Griff am linken Anschlag ueber einem leeren Stueck Streifen, waehrend die Grenze in der
          Kartenmitte liegt - nichts sagte, dass die beiden zusammengehoeren. Eine duenne Spur am
          oberen Rand fuehrt vom Griff zu seiner Linie; sie erscheint nur, wenn beide auseinander
          stehen, also gerade in dem Zustand, in dem Joerg die Karte zuerst sieht. */
-      const xg=X(e.tiefeGrenze==null?-0.02:Math.max(-0.02,Math.min(1,e.tiefeGrenze))), xl=X(sp.g);
+      const xg=X(Math.max(-0.02,Math.min(1,zoneTrennung()))), xl=X(sp.g);
       if(Math.abs(xl-xg)>2){ cx.fillStyle='rgba(255,255,255,.35)'; cx.fillRect(Math.min(xg,xl),0,Math.abs(xl-xg),1); cx.fillRect(xg-0.5,0,1,3); }
       /* und die Grenze selbst - dieselbe Haarlinie wie im Bild */
       cx.fillStyle='#fff'; cx.fillRect(X(sp.g)-0.5,0,1,bh);
