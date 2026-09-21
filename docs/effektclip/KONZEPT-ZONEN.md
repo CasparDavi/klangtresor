@@ -9,9 +9,23 @@ Und die Ratlosigkeit, die dazu gehört, ebenfalls:
 
 > „das dumme ist halt, die Tiefenkarte ist ordinal und wir brauchen die Zonen"
 
-**Stand 21.09.2026: nichts davon ist gebaut.** Dieses Papier hält den Entwurf fest, bevor eine
-Zeile Code entsteht. Drei der vier Grenzen stehen als Regler schon in der Vorbereitung, Station
-Tiefe — sie heißen nur noch nicht so und werden noch falsch bestimmt.
+**Stand 21.09.2026, abends: das Meiste ist gebaut.** Was hier als Entwurf steht, ist in die App
+eingezogen; der letzte Abschnitt sagt, was noch offen ist.
+
+Gebaut:
+- Die **Zonenkarte** entsteht aus der Talsuche, sobald die Tiefenkarte da ist (`zonenTaeler`,
+  Scale-Space-Modenzählung). Höchstens fünf Grenzen, also sechs Teile.
+- Die **Station Tiefe** zeigt statt des Bildes das Relief, drehbar, mit dem Tiefen-Histogramm am
+  rechten Bildrand. Klick setzt eine Grenze, Doppelklick nimmt sie weg, Ziehen verschiebt.
+- Jeder Effekt **kreuzt seine Zonen an** (`zonenVonEffekt`, `zonenMaske`). Angekreuzt werden die
+  festen Bereichsnamen, nicht die Zonen dieses Bildes — darum trägt dasselbe Rezept auf einem
+  Porträt und auf einer Landschaft.
+- **Effektscheibe und Effektraum** stehen in derselben Liste, ganz oben. Wer dort wohnt, wird von
+  nichts verdeckt.
+- Entfallen: Trennung, Weichheit der Trennung, Hintergrundfläche ab und die ganze
+  Falschfarben-Maschinerie, die ihnen vorausging (244 Zeilen weniger).
+
+**Zwei Dinge sind anders gekommen als hier zunächst beschrieben.** Sie stehen unten in Abschnitt 11.
 
 ---
 
@@ -270,3 +284,69 @@ Sieben Fachgebiete, am 21.09.2026 parallel befragt. Was in diesem Papier steht, 
 | Compositing / VFX | Z-Normalize · Z-Slicing · histogrammbasierte Layer-Segmentierung · Resolves Antippen statt Einstellen |
 | Bildkomposition / Bühnenbild-Theorie | Repoussoir · Luftperspektive · **sky holes** · Interposition als rein ordinale Tiefenangabe |
 | 2.5D-Ken-Burns / Layered Depth Images | adaptive Schichtzahl statt fester · Kantenerkennung auf Tiefensprüngen · k-Means statt fixem Grauwert |
+
+
+---
+
+## 11. Was die Umsetzung geändert hat
+
+### Die Abtastbreite hängt nicht an der Zonenzahl
+
+Ich hatte behauptet, dieselbe Karte ergebe bei 170 Punkten zwei und bei 150 drei Grenzen, und
+daraus eine Regel gemacht. **Nachgemessen stimmt das nicht:** an „Mensch Mädel" findet dieselbe
+Rechnung bei 140, 150, 160, 170 und 180 Punkten jedes Mal dieselben zwei Täler. Die dritte Grenze,
+die ich als Beleg anführte, hatte ich selbst von Hand gesetzt.
+
+Die Abtastbreite bleibt trotzdem fest — aber weil zwei Werkzeuge, die dasselbe zeigen sollen, nicht
+verschieden abtasten dürfen, nicht weil die Zonenzahl daran hinge. Das Studio rechnet mit 160
+(`tiefeProben`), das Labor tastet ebenso ab.
+
+### Nicht detektierte Bereiche werden nicht gezeigt
+
+Zunächst standen alle sechs Bereiche in der Ankreuzliste, die fehlenden grau — nach Hausregel 4,
+die Ausgrauen statt Verstecken verlangt. Caspar_D am 21.09.2026:
+
+> „ich bin dafür, die grauen Zonen nicht zu zeigen, sie wurden nicht detektiert, also sind sie für
+> dieses Bild auch nicht da"
+
+Das ist richtig, und es widerspricht Regel 4 nicht: Sie schützt davor, eine **vorhandene**
+Möglichkeit zu verbergen. Ein Bereich, den die Talsuche hier nicht gefunden hat, ist keine
+verborgene Möglichkeit — er existiert auf diesem Bild nicht.
+
+**Der Fall, der dadurch entsteht, wird abgefangen:** Ein Rezept von einem Bild mit Himmel trägt
+„ganz hinten" mit; auf einem Porträt trifft das nichts, und der Effekt wirkt nirgends. Die Karte
+sagt es, nennt die Namen und bietet einen Griff an („Auf die vorhandenen Zonen setzen"). Still
+korrigiert wird nichts: ein Effekt, der von selbst woanders zu wirken begänne, wäre schlimmer als
+einer, der nichts tut und es sagt.
+
+---
+
+## 12. Der nächste Schritt: die Entfernung der Teilchen
+
+**Das Einzige, was die Zonen noch nicht leisten.** `freiBereich` bestimmt, wie weit ein Teilchen
+von der Kamera weg ist, und holt sich dafür bis heute die **Nähe zur alten Trennlinie**
+(`tiefeNahAn` mit `zoneTrennung`/`zoneWeich`). Weil `nahKurve` an der Grenze zwischen 0 und 1
+umschlägt, ist dieser Wert praktisch binär — das Teilchen weiß nur, auf welcher Seite es geboren
+wurde, nicht wie tief.
+
+**Richtig wäre die rohe Tiefe am Geburtsort.** Ein Funke soll wissen, wie weit er weg ist, nicht
+wie weit er von einer Linie weg ist. Und die Skala passt bereits zum Raummodell:
+
+| Entfernung | Was dort liegt |
+|---|---|
+| 0 … 1 | die Szene — hier gelten die Zonen |
+| 1 … 1+L | der **Effektraum**, der leere Vorraum |
+| 1+L | die **Effektscheibe** |
+
+Zu tun:
+1. Die Erlaubnistabelle aus `zonenMaske` herauslösen (`zonenErlaubt(e)` → 256 Werte).
+2. `zPunkt`/`zSperre` fragen sie statt `ZONE==='hinten'`.
+3. `freiBereich` bekommt statt `g, w, modus` die Tabelle und rechnet mit der rohen Tiefe; drei
+   Rufer ziehen mit.
+4. `zAusweichen` (Schwarm) wählt seine Richtung aus der Tabelle statt aus `ri`.
+5. Danach können `zoneTrennung`, `zoneWeich`, `tiefeSpanne`, `tiefeNahAn`, `VH_GRENZE` und
+   `nahKurve` fallen — der letzte Rest der alten Trennung.
+
+**Das ändert das Bild bei jedem Teilchen-Effekt.** Also: Grundlinie vorher (`partikel` 6,22 / 8,94,
+`feuer` 24,20 / 36,58, gemessen am 21.09.2026), Umbau, Grundlinie nachher, und dann der Augenschein
+von Caspar_D — die Richtung der Veränderung beurteilt er, nicht der Prüfstand.
