@@ -3313,10 +3313,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
    6 px und sonst nichts - Kurve und Regler standen an der Kante. Jetzt ein Innenrand rundherum,
    und das Blatt bekommt oberhalb Luft zur Registerleiste. */
 #tbs #tbs-vorbKoerper{padding:10px 12px 12px}
-/* EINE STATION, DREI SICHTEN (Hausregel 26: „was dieselbe Station feiner zeigt, ist ein MODUS in
-   derselben Lasche"). Die Vorbereitung ist EINE Station - Kurve, Farbe und Tiefe sind Modi, keine
-   eigenen Register. Die Bauform bleibt also der Segmentschalter.
-   ABGESETZT WERDEN MUSS SIE TROTZDEM: in der Vorbereitung standen sonst drei gleich aussehende
+/* DREI STATIONEN, ALSO LASCHEN (Hausregel 26, erster Teil: „was drauf setzt, bekommt eine
+   Lasche"). Die Vorbereitung wird der Reihe nach abgearbeitet - Kurve, Feinheiten, Tiefe -, und
+   jede setzt auf der vorigen auf. Modi waeren sie nur, wenn sie dieselbe Sache feiner zeigten.
+   ABGESETZT WERDEN MUESSEN SIE OHNEHIN: in der Vorbereitung standen drei gleich aussehende
    Pillenleisten uebereinander - diese hier, die Kanalwahl V|R|G|B und Gamma|Sigmoid -, obwohl die
    oberste eine Ebene hoeher steht. Gleiche Gestalt fuer verschiedene Ebenen ist eine Falschaussage
    wie jede andere. Dieselbe Sache, anderes Gewicht: volle Breite, Unterstreichung statt Pille. */
@@ -34040,12 +34040,18 @@ function zeichneFrame(t,roh){
   function vorbLoeschen(){ const id=VORB._id; VORB=vorbNeu(); VORB._id=id; if(stufeOffen==='Vorb') vorbRender(); vorbStand(); }
   let vorbReg='kurve';
   function vorbRender(){ const k=$('#tbs-vorbKoerper'); if(!k) return; const v=VORB; const K={v:['V','#e0b34d'],r:['R','#ff6b6b'],g:['G','#5fd08a'],b:['B','#6fb3ff']}, cur=v.grad[v.kanal], cc=K[v.kanal][1];
-    /* DREI REGISTER (Caspar_D, 21.09.2026: „wir machen drei Abteilungen draus - die
-       Gradationskurve, die Regler darunter und die Tiefeneinstellung"). Die Vorbereitung trug
-       alles untereinander, und die Kurve klebte am Rand. Drei Blaetter: was die HELLIGKEIT formt,
-       was die FARBE stellt, und was den RAUM beschreibt. Das Letzte ist kein Bildregler - es sagt
-       der Software, wie das Motiv im Raum steht, und zwar EINMAL je Quelle. */
-    let h='<div class="tbs-seg tbs-vorbReg">'+[['kurve','Kurve'],['farbe','Farbe'],['tiefe','Tiefe']]
+    /* DREI STATIONEN DER VORBEREITUNG (Caspar_D, 21.09.2026: „wir machen drei Abteilungen draus -
+       die Gradationskurve, die Regler darunter und die Tiefeneinstellung", und zur Einordnung:
+       „man koennte es durchaus als Vorbereitungsstationen sehen - zuerst die Kurve, dann die
+       Detailslider, dann die Tiefe").
+       DAS IST DER ERSTE TEIL VON HAUSREGEL 26, nicht der zweite: „was drauf setzt, bekommt eine
+       Lasche." Man arbeitet sie der Reihe nach ab - erst legt die Kurve den Tonwertumfang fest,
+       dann justiert man im Detail nach, und die Tiefe ist die Station danach. Darum Laschen mit
+       Unterstreichung und nicht Pillen wie die Modi darin (Kanalwahl, Gamma/Sigmoid).
+       FEINHEITEN, NICHT FARBE: dort stehen Belichtung, Kontrast, Lichter und Schatten - das ist
+       Tonwert, nicht Farbe. Und TIEFE ist kein Bildregler: sie sagt der Software, wie das Motiv im
+       Raum steht, einmal je Quelle. */
+    let h='<div class="tbs-seg tbs-vorbReg">'+[['kurve','Kurve'],['farbe','Feinheiten'],['tiefe','Tiefe']]
       .map(([rk,rl])=>'<button type="button" data-vreg="'+rk+'" class="'+(vorbReg===rk?'on':'')+'" style="flex:1">'+rl+'</button>').join('')+'</div>';
     h+='<div class="tbs-vorbBlatt">';
     if(vorbReg==='kurve'){
