@@ -3406,6 +3406,48 @@
    ],
    "gruppe": "lichtRaum",
    "bemerkung": "Die Gegenprobe zu lichtraum-saeume: dieselbe Kette, aber die Lampe steht VORN (0,98). Jetzt muss das Streiflicht modellieren statt Silhouetten zu zeichnen - dasselbe Rezept, anderes Vorzeichen, und niemand hat einen Einfall-Regler angefasst."
+  },
+  {
+   "name": "lichtraum-schwenk-pan",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": 0.5,
+     "lrOy": 0.1,
+     "lrOz": 0.95,
+     "lrZx": 0.5,
+     "lrZy": 0.6,
+     "lrZz": 0.25,
+     "schwenkArt": "pan",
+     "schwenkWeite": 30,
+     "schwenkTempo": 4
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "PAN: der Strahl dreht um die Senkrechte, die Lampe steht fest. Der Fleck muss dabei ungleichmaessig wandern und beim Schraegstehen laenger und schmaler werden - das ist der Unterschied zu einem Fleck, der im Bild verschoben wird. Die Naht haengt an lpBahn: bei 4 s Dauer und 7,5 s Clip passt kein ganzer Umlauf, also pendelt es, und das schliesst von selbst."
+  },
+  {
+   "name": "lichtraum-schwenk-kreis",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": 0.5,
+     "lrOy": 0.1,
+     "lrOz": 0.95,
+     "lrZx": 0.5,
+     "lrZy": 0.6,
+     "lrZz": 0.25,
+     "schwenkArt": "kreis",
+     "schwenkWeite": 25,
+     "schwenkTempo": 5
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "KREIS: Pan und Tilt um 90 Grad versetzt. Die strengste Nahtprobe des Schwenks, weil beide Achsen zugleich laufen - schliesst eine nicht, sieht man es sofort."
   }
  ],
  "nichtHerstellbar": []

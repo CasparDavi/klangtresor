@@ -27471,6 +27471,9 @@ const EFFEKTE = {
       {k:'winkel',lbl:'Öffnungswinkel',min:5,max:120,step:1,def:38,wert:v=>kf(v)+'°'},
       {k:'hotspot',lbl:'Hotspot',min:0,max:1,step:.05,def:.35},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
+      {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell']],def:'aus'},
+      {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:18,wert:v=>kf(v)+'\u00b0',when:e=>(e.schwenkArt||'aus')!=='aus'},
+      {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:6,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
         notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte leuchtet die Lampe flach — sie weiß nicht, was vor ihr steht.'}]},
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
@@ -28790,12 +28793,57 @@ function lrKegel(O, Z, winkelGrad){
   const gross=r, klein=r*Math.max(LR_FLACH_MIN, Math.abs(az));
   return { r, gross, klein, rot:Math.atan2(ay,ax), az, len };
 }
+/* ===================== PAN UND TILT: DIE LAMPE STEHT, DER STRAHL SCHWENKT (21.09.2026) =========
+   Caspar_D: „auch hatten wir den Scheinwerfern Moving Heads und sowas zugewiesen, also
+   Schwenkmechanismen und Helligkeitsmechanismen im Takt, funktioniert das?" - der Antrieb ja, der
+   Schwenk bis hierher nicht.
+
+   IM NEUEN MODELL IST EIN MOVING HEAD DAS, WAS ER IN WIRKLICHKEIT IST: ein Geraet, das fest haengt,
+   und ein Strahl, der sich um es dreht. Der alte Effekt rechnet statt dessen sechs Fuehrungen fuer
+   den gemalten FLECK (wandernd, bogen, schwenk, fahrt, schritt), jede mit eigener Loop-Behandlung.
+   Hier gibt es nur eine Drehung um den Lampenort - und der Fleck folgt daraus samt seiner
+   Verzerrung: er wird beim Schwenken von selbst flacher und laenger, weil der Einfall streifender
+   wird. Genau das sieht man an einem echten Moving Head, und der alte Effekt kann es nicht.
+
+   PAN UND TILT SIND DIE FACHNAMEN und stehen auch auf jedem Geraet: Pan dreht um die Senkrechte,
+   Tilt um die Waagerechte. Kein eigenes Wort erfinden, wo die Buehnentechnik eines hat.
+
+   DIE BAHN IST LOOPFEST, OHNE DASS ETWAS DAFUER GETAN WIRD. lpBahn rastet auf ganze Umlaeufe, wenn
+   mindestens einer in den Clip passt, und PENDELT sonst - bei einem Schwenk ist das Pendeln der
+   Normalfall und das Richtige: ein Moving Head, der in zehn Sekunden einmal hin und her geht,
+   soll nicht auf einen ganzen Umlauf rasen (Regel 17d). */
+/* GELOESCHT: const LR_SCHWENK an dieser Stelle (21.09.2026). Sie stand hier, wurde aber in der
+   Registry gebraucht - und die steht WEITER OBEN. Der Zugriff lief damit in die temporale Todeszone,
+   die Seite warf beim Laden, und window.__naht existierte nicht mehr: der Pruefstand meldete nur
+   noch "Cannot read properties of undefined". Die Syntaxpruefung sieht so etwas nicht, ein einziger
+   Prueffall schon. Die Namen sind jetzt dort, wo sie hingehoeren - an der Oberflaeche. */
+function lrSchwenkZiel(e, O, Z, t){
+  const art=e.schwenkArt||'aus'; if(art==='aus') return Z;
+  const weite=Math.max(0,Math.min(80,Number(e.schwenkWeite==null?18:e.schwenkWeite)))*Math.PI/180;
+  if(!(weite>1e-4)) return Z;
+  const f=1/Math.max(0.3,Number(e.schwenkTempo)||6);
+  const a=Math.sin(lpBahn(f,t,0)), b=Math.sin(lpBahn(f,t,Math.PI/2));
+  let pan=0, tilt=0;
+  if(art==='pan') pan=weite*a;
+  else if(art==='tilt') tilt=weite*a;
+  else if(art==='kreis'){ pan=weite*a; tilt=weite*b; }
+  else if(art==='acht'){ pan=weite*a; tilt=weite*Math.sin(lpBahn(2*f,t,0)); }
+  /* Der Strahl ist der Vektor von der Lampe zum Ziel; geschwenkt wird ER, nicht das Ziel im Bild.
+     Erst um die Senkrechte (Pan), dann um die Waagerechte (Tilt) - die Reihenfolge ist die eines
+     echten Geraets, bei dem der Tilt-Buegel auf dem Pan-Teller sitzt. */
+  const dx=Z[0]-O[0], dy=Z[1]-O[1], dz=Z[2]-O[2];
+  const cp=Math.cos(pan), sp=Math.sin(pan);
+  const x1=dx*cp+dz*sp, z1=-dx*sp+dz*cp;
+  const ct=Math.cos(tilt), st=Math.sin(tilt);
+  const y2=dy*ct-z1*st, z2=dy*st+z1*ct;
+  return [O[0]+x1, O[1]+y2, O[2]+z2];
+}
 /* Der Maler. Er zeichnet IMMER auf eine eigene Flaeche und legt sie dann auf - weil die Verdeckung
    mit destination-in arbeitet, und die wuerde auf dem Licht-Puffer alles wegschneiden, was andere
    Leuchten vorher hineingemalt haben. Dasselbe Muster wie beim alten Scheinwerfer mit Blende. */
 function lichtRaumMalen(e, cx, t, W, H){
   const a=Math.min(1,e.staerke)*antriebWert(e,t); if(a<=0.001) return;
-  const R=lrRaum(e,W,H), K=lrKegel(R.O,R.Z,Number(e.winkel)||38); if(!K) return;
+  const R=lrRaum(e,W,H), ZS=lrSchwenkZiel(e,R.O,R.Z,t), K=lrKegel(R.O,ZS,Number(e.winkel)||38); if(!K) return;
   lichtOrtMelden(R.O[0], R.O[1], a);   /* bis der Herkunfts-Puffer steht, sieht das Streiflicht sie so */
   if(!e._lrc){ e._lrc=document.createElement('canvas'); }
   if(e._lrc.width!==W||e._lrc.height!==H){ e._lrc.width=W; e._lrc.height=H; }
@@ -28816,7 +28864,7 @@ function lichtRaumMalen(e, cx, t, W, H){
             +Math.round(herkKod(Number(e.lrOy==null?.12:e.lrOy))*255)+','
             +Math.round(Math.max(0,Math.min(1,Number(e.lrOz==null?.85:e.lrOz)))*255)+')'
     : e.farbe;
-  x.save(); x.translate(R.Z[0],R.Z[1]); x.rotate(K.rot); x.scale(K.gross,K.klein);
+  x.save(); x.translate(ZS[0],ZS[1]); x.rotate(K.rot); x.scale(K.gross,K.klein);
   const g=x.createRadialGradient(0,0,0,0,0,1);
   for(let i=0;i<=14;i++){ const q=i/14;
     const v=(q<=kern)?1:Math.pow(Math.max(0,1-(q-kern)/Math.max(1e-6,1-kern)),exp);
