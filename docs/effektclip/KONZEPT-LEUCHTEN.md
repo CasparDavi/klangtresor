@@ -795,3 +795,26 @@ Alle drei Regler sind rein additiv (neue, auf 0 vorgabewertete Parameter) und ä
 bestehenden Effektclips. Naht geprüft (`laserraum-scanner`, `laserraum-lissa`, `laserraum-faecher`,
 Vorgabewerte also alle drei neuen Regler aus): alle `gl:true`, keine Verschlechterung.
 
+## 9. `lichtRaum`: die Hotspot-Vorgabe angehoben (22.09.2026)
+
+Letzter offener Punkt aus demselben Auftrag („welche der neuen können verstärkt werden"). `hotspot`
+bestimmt, wie weit der Kegel voll hell bleibt (`kern=u_hotspot*0,85`), bevor die Kante einsetzt — je
+höher, desto härter der Rand, desto näher an der Wirkung des alten Scheinwerfers. Gemessen (mittlere
+Bildänderung, Testbild „Stumm"):
+
+| Hotspot | mittlere Bildänderung | Anteil am alten Scheinwerfer (25,09) |
+|---|---|---|
+| 0,35 (alte Vorgabe) | 17,4 | 69 % |
+| **0,7 (neue Vorgabe)** | **23,7** | **94 %** |
+| 1,0 | 30,7 | 122 % |
+
+0,7 gewählt statt 1,0: bei 0,7 bleiben 30 % des Kegelradius für die weiche Kante übrig (`1-0,7·0,85 =
+0,405`) — genau die Eigenschaft, die diesen Kegel vom alten, hart begrenzten Scheinwerfer
+unterscheidet und die der Auftrag ausdrücklich erhalten wissen wollte. Bei 1,0 wäre der Rand nur noch
+15 % breit und der Kegel liefe Gefahr, den alten nachzubilden statt ihn nur einzuholen.
+
+Naht geprüft (`lichtraum-vorn`, `lichtraum-schwenk-pan`, `kosten-lichtraum-nebel`): alle `gl:true`.
+Anders als bei den drei laserRaum-Reglern eben ist das hier **keine additive Erweiterung**, sondern
+eine geänderte Vorgabe — bestehende `lichtRaum`-Clips ohne eigens gesetzten Hotspot-Wert werden davon
+sichtbar heller.
+
