@@ -5871,6 +5871,44 @@ durchgehend sauberen Stichprobe (153 von 244, 63 %) und der Art der heutigen Än
 (räumlich auf Laser/Lichtstrahlen/Raumleuchten begrenzt) ist ein Fund in den ungeprüften
 Restfällen unwahrscheinlich, aber nicht ausgeschlossen.
 
+## 6f. Laser-Kern gebaut, Rest-Naht geprüft (22.09.2026, ~04:30)
+
+Caspar_D am Bild: *„der Auftreffpunkt vom Laser ist viel zu schwach"*, *„flau"*, *„Laser dots sind
+scharf, klein und krass intensiv"*. Behoben: `imStrahl` bekam einen **Kern-Anteil** (55 % des
+Radius bleibt voll hell, erst danach fällt die Kante ab) — nur für `u_parallel>0.5` (Laser). Der
+Schacht (`strahlenRaum`) bleibt beim alten, graduellen Verlauf: „nicht der Laser: weich, nicht
+scharf" stand schon in der Beschreibung des alten Effekts, das ist Hausstandard, keine neue
+Entscheidung.
+
+Dazu die `strahlenRaum`-Dicke-Vorgabe von 1,2° auf 5° angehoben (Escher-Messung: 0,76 bei 1,2°,
+8,89 bei 5°, Sättigung ab ~6°) — commit `b005513`.
+
+### Naht über die restlichen laserraum-/strahlenraum-Fälle
+
+Zwölf Fälle, die der erste Nahtcheck (nur 3 Fälle) nicht abdeckte:
+
+| Fall | gleich | folge |
+|---|---|---|
+| laserraum-lissa, -austastung, -auffaechernd, -rollen, -roll | 0,00–0,01 | 0,00–0,01 |
+| strahlenraum-schacht, -faecher, -kugel, -roll | 0,00 | 0,00 |
+| laserraum-strahl, strahlenraum-strahl | 0,00 | 0,00 |
+| **laserraum-strahl-kegel** | **0,16** | **0,23** |
+
+Elf von zwölf unauffällig. `laserraum-strahl-kegel` (Kegel + Nebel) stieg von 0,11/0,18 (Stand
+vor dem Kern-Fix, letzte Nacht) auf 0,16/0,23 — eine leichte Verschlechterung, vermutlich dieselbe
+Rechengenauigkeits-Empfindlichkeit, die gestern schon vermutet wurde (float bei `u_zeit`-Werten
+um 840 rad), durch die zusätzliche Kern-Fallunterscheidung am Rand etwas verstärkt. Bleibt unter
+einem Viertel Graustufe, Naht schließt weiter (`gl ja`). Nicht behoben — dieselbe ungeprüfte
+Hypothese wie gestern: `u_zeit` vor dem Shader auf die Clip-Länge falten, statt die absolute
+Songzeit durchzureichen.
+
+Escher danach am Bild angesehen: alle sechs Effekte laden fehlerfrei, keine Konsolenmeldung.
+
+### Voller Regressionslauf, Rest (154–244)
+
+Nach Freigabe für einen langen, idempotenten Lauf gestartet — Ergebnis folgt als eigener Eintrag,
+sobald er durch ist oder wieder an Systemlast scheitert.
+
 ## 7. Arbeitsweise, neu gelernt
 
 - **Die Browser-Konsole lesen, bevor etwas ausgeliefert wird.** Eine Syntaxprüfung findet
