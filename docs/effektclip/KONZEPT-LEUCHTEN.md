@@ -746,3 +746,52 @@ Caspar_D dazu: *„das Flimmern macht natürlich auch was aus, das ist diese typ
 Laserapearance."* Das ist kein Aliasing-Fehler, sondern eine fehlende Eigenschaft — ein sinnvoller
 nächster Schritt, aber ein neuer, eigener Regler und damit ein eigener kleiner Bauabschnitt.
 
+## 8. Drei Regler vom alten Laser übernommen (22.09.2026)
+
+Caspar_D: *„möglichst viele Regler vom alten Laser übernehmen, algorithmisch siehst du ja, was mit
+dem Laser passieren soll."* Abgeglichen wurde die volle alte Parameterliste (`bauart`, `anzahl`,
+`sweepTempo`, `austastung`, `stufen`, `nachgluehen`, `sprung`, `raster`, `neigung`, `drehen`,
+`aufsetzen`, `streuung`, `laenge`, `breite`, `tempo`, `schwenk`, `flimmer`, `flimmerTempo`, `quelle`,
+`ux`, `uy`) gegen `laserRaum`. Die meisten hat das neue Modell längst, oft in einer reicheren Form
+(`schwenkArt` deckt das alte `tempo`/`schwenk`-Fächerpendeln ab, `austasten` gilt für alle Bauarten
+statt nur den Scanner). Drei fehlten wirklich; `neigung`/`drehen`/`aufsetzen` bleiben bewusst
+draußen, weil sie Krücken für eine Richtung waren, die es im 3D-Modell als echte Größe gibt (siehe
+Abschnitt „Der dritte Winkel: Roll" oben) — sie zu reparieren hieße, denselben Fehler zweimal zu
+bauen. `laenge` ist durch die echte Quelle-Ziel-Tiefe ersetzt, kein Regler mehr nötig.
+
+**Flimmern.** Der alte Laser tastet hart aus statt sinusförmig zu flackern: *„ein Laser flimmert
+nicht wellenförmig, er tastet aus"* — 55 % der Zeit voll hell, 45 % um den Reglerwert gedimmt, mit
+`e.id·0,37` phasenversetzt zwischen mehreren Instanzen. Direkt übernommen als Multiplikator auf das
+fertige `v` in `imStrahl` (wie `dickeNorm`), Vorgabe 0 — ein neues, stummes Merkmal ändert nichts an
+schon abgestimmten Clips. Gemessen (Gesamthelligkeit der oberen Bildhälfte, Flimmern 0,9, Stärke 1):
+**13 % Schwankung** im Sekundentakt des Reglers — passt genau, wenn der Laser rund ein Siebtel der
+sichtbaren Szenenhelligkeit stellt und sein eigener Anteil zu 90 % einbricht.
+
+**Sprung (Scanner).** *„je Schlag auf eine Stelle springen"* — statt gleitend zu schwenken, hält der
+Spiegel je Schlag eine von `Stellen` zufälligen Positionen, die vorige verglimmt darüber. Die
+Schlagnummer und ihre Phase (`e._lmIdx`/`e._lmPhase`) kommen aus dem ohnehin vorhandenen
+Antriebs-Pult (`antriebWert`, von `GL.run` schon für `u_takt` aufgerufen — keine zweite Uhr). Die
+vorige Stelle verglimmt über denselben Kniff wie das gleitende Nachglühen: nicht die Helligkeit
+gesondert dimmen, sondern den effektiven Abstand aufblasen, bis die Stelle aus dem Kern+Saum-Bereich
+fällt. Nachglühen bedeutet hier einen **Anteil des Schlags** (0,5 = nach dem halben Schlag weg),
+keine Sekundenzahl wie im alten Vorbild — dieselbe Bedeutung „wie lange bleibt die Vergangenheit
+sichtbar", nur am Takt statt an der Uhr gemessen.
+
+Beim Bauen zweimal auf die eigene Nase gefallen: ein `.click()` auf den Umschalter genügte nicht
+(die Oberfläche braucht die volle `pointerdown`/`mousedown`/`pointerup`/`mouseup`/`click`-Folge,
+ein echter Mausklick liefert die automatisch), und ohne Filmnebel ist der Scanner in der Luft fast
+unsichtbar — beide Male sah das nach eingefrorenem Code aus, war aber der Messaufbau. Erst mit Nebel
+und dem richtigen Klick zeigte sich das erwartete Bild: wiederkehrende Cluster derselben Stelle über
+mehrere Bilder, dann ein Sprung — nicht die gleitende, kontinuierliche Streuung des Schwenk-Modus.
+
+**Quelle wandert.** Der alte Laser hält seinen Ursprung nie im Bild, sondern lässt ihn wahlweise
+auf einer Lissajous-Bahn außerhalb wandern (Radien 0,8 um die Mitte 0,5, senkrecht 0,8-mal so
+schnell wie waagerecht, `lpBahn` hält die Bahn loop-sicher). Direkt übernommen: ein Umschalter, der
+`u_lrOx`/`u_lrOy` in `glZusatz` überschreibt (reines JavaScript, keine Shader-Änderung nötig) — nur
+X/Y wandern, eine Tiefe kannte das alte Vorbild nicht und bleibt hier auf dem gesetzten Wert stehen.
+Am Bild bestätigt: Quelle und Strahlwinkel verschieben sich stetig über mehrere Sekunden.
+
+Alle drei Regler sind rein additiv (neue, auf 0 vorgabewertete Parameter) und ändern nichts an
+bestehenden Effektclips. Naht geprüft (`laserraum-scanner`, `laserraum-lissa`, `laserraum-faecher`,
+Vorgabewerte also alle drei neuen Regler aus): alle `gl:true`, keine Verschlechterung.
+
