@@ -27680,7 +27680,22 @@ const EFFEKTE = {
       {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,wert:v=>kf(v),when:e=>(e.bauart||'faecher')!=='schacht'},
       {k:'reihen',lbl:'Ringe',min:1,max:8,step:1,def:3,wert:v=>kf(v),when:e=>(e.bauart||'faecher')==='kugel',
         notiz:e=>'Wie viele Kr\u00e4nze von Strahlen die Kugel hat \u2014 einer ist ein Ring, mehrere f\u00fcllen den Raum.'},
-      {k:'dicke',lbl:'Dicke',min:.05,max:12,step:.05,def:1.2,wert:v=>kf(v)+'\u00b0'},   /* beim Einhaengen soll man ihn sehen: 0,6\u00b0 war ein Haar */
+      {k:'dicke',lbl:'Dicke',min:.05,max:12,step:.05,def:5,wert:v=>kf(v)+'\u00b0'},
+      /* DIE VORGABE WAR 1,2\u00b0, DAVOR 0,6\u00b0 - UND BEIDE WAREN ZU DUENN (22.09.2026, am
+         selben Muster wie beim Laser: "beim Einhaengen soll man ihn sehen"). Gemessen an Escher
+         mit Filmnebel, mittlere Bildaenderung bei Staerke an/aus: 0,76 bei 1,2\u00b0, 4,85 bei
+         3\u00b0, 8,89 bei 5\u00b0, 11,24 bei 6\u00b0, 11,77 bei 8\u00b0 - die Kurve saettigt ab
+         etwa 6\u00b0. 5\u00b0 ist der Kompromiss: deutlich sichtbar, ohne schon am Plateau zu
+         kleben, und noch klar als SCHACHT lesbar, nicht als Flaechenlicht.
+         DIE RESTSCHWAECHE BLEIBT: selbst bei 12\u00b0 (Reglermaximum) liegt die Wirkung bei
+         16,09 - der alte Lichtstrahlen-Effekt (ohne Tiefe, ohne Medium) kommt auf 37,09 bei
+         SEINER Vorgabe. Das ist vermutlich die Marsch-Normierung selbst (imStrahl, „gebuendelt
+         heisst dicht"): ein FAECHERNDER Strahl trifft mit wachsender Breite auch mehr Schritte,
+         und der Deckel bei acht greift dann nicht mehr - anders als beim LASER, der schmal
+         bleibt und darum immer vom Deckel profitiert. Nicht angefasst, weil derselbe Shader-Code
+         den Laser traegt, der gestern gemessen und fuer gut befunden wurde - eine Aenderung an
+         der Formel braucht eine eigene Pruefung gegen die Laser-Faelle, nicht spaetnachts im
+         selben Zug. Steht in der Uebergabe. */
       {k:'roll',lbl:'Rollen',min:-90,max:90,step:1,def:0,wert:v=>kf(v)+'\u00b0',
         notiz:e=>'Dreht die F\u00e4cherebene um die Strahlachse. Bei 0\u00b0 steht sie senkrecht.'},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
@@ -31261,8 +31276,19 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
     if(u_austastZahl>0.5) fn=mod(fn,u_austastZahl);
     if(hsh(vec2(strahlNr,fn))<clamp(u_austasten,0.0,1.0)) return 0.0;
   }
+  /* LASER-PUNKTE SIND SCHARF, KLEIN, KRASS INTENSIV (Caspar_D, 22.09.2026) - anders als der
+     weiche Lichtschacht: „nicht der Laser: weich, nicht scharf" stand schon in der Beschreibung
+     des alten Effekts, die Unterscheidung ist also Hausstandard. Bisher fiel die Intensitaet
+     GRADUELL von der Achse ab (pow(1-qD,...)) - das ergibt einen weichen Farbverlauf, keinen
+     Punkt. Ein KERN-ANTEIL bleibt jetzt VOLL HELL (v=1), erst danach faellt er mit der Kante ab -
+     das macht einen Laserpunkt aus Kern plus scharfem Rand, statt eines Verlaufs von der Mitte
+     aus. Nur fuer u_parallel>0.5 (Laser): der Schacht (strahlenRaum) bleibt beim alten,
+     graduellen Verlauf, weil er weich sein soll. */
+  float kern=(u_parallel>0.5)?0.55:0.0;
+  float rD=(qD<=kern)?1.0:max(0.0,1.0-(qD-kern)/max(1e-6,1.0-kern));
+  float rE=(qE<=kern)?1.0:max(0.0,1.0-(qE-kern)/max(1e-6,1.0-kern));
   float sch=0.6+u_kante*3.4;
-  float v=pow(max(0.0,1.0-qD),sch*0.5)*pow(max(0.0,1.0-qE),sch*0.5);
+  float v=pow(rD,sch*0.5)*pow(rE,sch*0.5);
   return v*clamp((dref*dref)/max(1e-6,dist*dist),0.0,4.0);
 }
 void main(){
