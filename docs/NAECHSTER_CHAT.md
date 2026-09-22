@@ -5851,6 +5851,26 @@ vollständig gilt.
 **Bild dazu:** `/private/tmp/claude-501/-Volumes-Extreme-SSD-Entwicklung/7b40ece6-5b5f-4105-b900-03e843824aa1/scratchpad/escher-funken-diff.png`
 (liegt im Scratchpad, nicht im Repo — Differenzbild Stärke an minus aus, hell = wo Funken malen).
 
+### Nachtrag ~03:38 — Fix über alle betroffenen Fälle bestätigt
+
+Der volle Lauf über alle 244 Fälle wurde bei 153/244 abgebrochen (eigene PID, sauber beendet) —
+die Systemlast war auf 17–20 gestiegen (viele alte, verwaiste Chrome-Prozesse aus früheren Tagen,
+nicht von dieser Sitzung), ein Fall brauchte zuletzt acht Minuten statt fünfzehn Sekunden. Bis
+dahin: **keine einzige Abweichung** (`gleich`/`gleichFolge` durchweg 0,00–0,05), außer den fünf
+bereits erklärten `bodenZellen`-Fehlern im alten, vor der Reparatur gebauten Snapshot.
+
+Stattdessen ein gezielter Lauf über alle zehn Fälle mit „boden"-Herkunft (Funken, Asche, Schwaden,
+Blasen — die vier betroffenen Arten — plus `rand-kombi`, `rand-kombi-kurz`, `rand-funken-extrem-kurz`,
+die im vollen Lauf ebenfalls FEHLER 22–33 gemeldet hatten): **alle zehn ohne eine einzige
+Konsolenmeldung, `gleich` überall 0,00.** Der Fix ist damit über den vollständigen Umfang des
+Fehlers bestätigt, nicht nur an den zwei zuerst gefundenen Fällen.
+
+Die verbliebenen 91 Fälle des vollen Laufs (154–244) sind nicht geprüft — bei entspannter
+Systemlast nachholen, falls Zweifel an einer bestimmten Stelle bestehen. Aufgrund der
+durchgehend sauberen Stichprobe (153 von 244, 63 %) und der Art der heutigen Änderungen
+(räumlich auf Laser/Lichtstrahlen/Raumleuchten begrenzt) ist ein Fund in den ungeprüften
+Restfällen unwahrscheinlich, aber nicht ausgeschlossen.
+
 ## 7. Arbeitsweise, neu gelernt
 
 - **Die Browser-Konsole lesen, bevor etwas ausgeliefert wird.** Eine Syntaxprüfung findet
