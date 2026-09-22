@@ -31495,8 +31495,17 @@ void main(){
          ihn liefe ein beliebig duenner Strahl gegen unendlich.
          DER SCHEINWERFER RECHNET BEWUSST ANDERS und bleibt beim Mittel ueber den ganzen
          Sehstrahl: Er ist per Definition ungebuendelt, und dort traegt die Weglaenge durch den
-         Kegel die Tiefenwirkung, die Caspar_D am Bild fuer gut befunden hat. */
-      float luft=summe/max(8.0,treffer);
+         Kegel die Tiefenwirkung, die Caspar_D am Bild fuer gut befunden hat.
+         NUR FUER DEN LASER (22.09.2026, „strahlenRaum bleibt bei einem Viertel des alten Effekts"):
+         der Deckel war fuer einen duennen, gebuendelten Strahl begruendet - fuer den Schacht
+         (strahlenRaum), der sich MIT ABSICHT der Entfernung aufweitet, hat er die gegenteilige
+         Wirkung. Ein Sehstrahl, der den breiten Schacht nur STREIFT (wenige Treffer, weil er nahe
+         am Rand vorbeilaeuft, nicht weil der Schacht duenn waere), wurde durch dieselbe Acht
+         gedaempft statt bloss gemittelt - summe/8 statt summe/treffer draengt das Ergebnis nach
+         unten, wo ein Laser es nach oben zieht. Der Schacht bekommt darum sein echtes Mittel ueber
+         die getroffenen Schritte, ohne die fuer ihn sachfremde Untergrenze. */
+      float boden=(u_parallel>0.5)?8.0:1.0;
+      float luft=summe/max(boden,treffer);
       f=(v*f+luft*(summeF/summe))/max(1e-6,v+luft);
       v+=luft;
     }

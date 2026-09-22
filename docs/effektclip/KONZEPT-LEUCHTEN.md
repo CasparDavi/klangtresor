@@ -671,6 +671,21 @@ Zwischenstand die Vor-Saum-Werte nicht überspringt): **12/12 `gl:true`**, auch 
 nicht am Saum-Muster (der Schacht bekommt bewusst keinen Saum, weil er sich mit der Entfernung
 ohnehin aufweitet).
 
+**Nachgegangen (22.09.2026):** Der Marsch entlang des Sehstrahls (Abschnitt „Der Strahl in der
+Luft") teilt die gesammelte Helligkeit durch `max(8, treffer)` — ein Deckel, der ausdrücklich für
+den DÜNNEN Laser begründet ist: „ein Strahl, der weniger als ein Achtel des Sehstrahls belegt, wird
+nicht weiter aufgewertet." Für den Schacht kehrt sich das um: er weitet sich MIT ABSICHT, und ein
+Sehstrahl, der ihn nur am Rand streift (wenige Treffer, weil er knapp vorbeiläuft, nicht weil der
+Schacht dünn wäre), wurde durch dieselbe Acht dorthin gedrückt statt bloß gemittelt — `summe/8`
+drängt nach unten, wo ein Laser damit nach oben gezogen wird. Der Deckel gilt jetzt nur noch für den
+Laser (`u_parallel>0,5`); der Schacht bekommt sein echtes Mittel über die getroffenen Schritte.
+
+Gemessen (Gesamthelligkeit im Bild, Testbild „Stumm", Filmnebel, Differenz Stärke 1 gegen Stärke 0):
+**+14 %**. Real, aber bei weitem nicht die Vierfach-Lücke — der /8-Deckel war ein kleiner, sachlich
+berechtigter Fehler, nicht die Hauptursache. Woher der Rest der Lücke kommt, ist weiter offen; ein
+Vergleich der genauen Rechenwege von altem `strahlen` und neuem `strahlenRaum` steht noch aus. Naht
+geprüft, alle fünf `strahlenraum-*`-Fälle: `gl:true`.
+
 ### Das Nachglühen war schon da — und stimmt mit der Physiologie überein
 
 Frage von Caspar_D: ob ein Nachglühen wie am alten Laser (besonders bei Scanner und Figuren) den
