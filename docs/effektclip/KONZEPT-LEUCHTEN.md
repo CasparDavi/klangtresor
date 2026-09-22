@@ -681,10 +681,58 @@ drängt nach unten, wo ein Laser damit nach oben gezogen wird. Der Deckel gilt j
 Laser (`u_parallel>0,5`); der Schacht bekommt sein echtes Mittel über die getroffenen Schritte.
 
 Gemessen (Gesamthelligkeit im Bild, Testbild „Stumm", Filmnebel, Differenz Stärke 1 gegen Stärke 0):
-**+14 %**. Real, aber bei weitem nicht die Vierfach-Lücke — der /8-Deckel war ein kleiner, sachlich
-berechtigter Fehler, nicht die Hauptursache. Woher der Rest der Lücke kommt, ist weiter offen; ein
-Vergleich der genauen Rechenwege von altem `strahlen` und neuem `strahlenRaum` steht noch aus. Naht
-geprüft, alle fünf `strahlenraum-*`-Fälle: `gl:true`.
+**+14 %**. Real, aber bei weitem nicht die Vierfach-Lücke. Caspar_D dazu, als ich das als erledigt
+verkaufen wollte: *„meinst du denn, Punkt 2 wäre hiermit tatsächlich erledigt?"* — zu Recht: 14 %
+schließt keine Vierfach-Lücke.
+
+### Der eigentliche Fund: der Lichtpuffer ist eine gewöhnliche 8-Bit-Leinwand
+
+Caspar_D, auf die Nachfrage: *„wurden die Klemmungen, Wertebereiche irgendwie limitiert, dass sie
+gar nicht die Stärke erreichen können, vielleicht reicht es nicht, die Regler in einem Preset
+Wertebereich zu bewegen."* Direkt geprüft und bestätigt: ein Testrender mit `gl_FragColor=vec4(2.0,
+4.0, 0.5, 1.0)` kommt über `readPixels` als `[255, 255, 128, 255]` zurück — Werte über 1,0 werden
+beim Schreiben in den Lichtpuffer hart gekappt, nicht anders dargestellt.
+
+Das ändert die ganze Fragestellung. Ein Bildpunkt, an dem `aus*v` schon 1,0 erreicht — und das ist
+per Definition der GANZE Kern eines Schachts, dort steht `v=1` — ist bereits weiß. Keine noch so
+große Verstärkung der Formel (Kante, Kern, dickeNorm, Saum) macht einen weißen Bildpunkt heller;
+die Rechnung wirkt dort ins Leere. Der einzige Hebel, der unterhalb dieses Deckels noch Raum lässt,
+ist die **Fläche**: wie viele Bildpunkte überhaupt in die Nähe von 1,0 kommen. Genau das leistete
+der alte `strahlen`-Effekt mit seinem ausdrücklichen Weichzeichner (bis 8 % der Bildbreite, absolut
+— siehe „WEICHE FLANKEN" im alten Code): er strich den gesättigten Kern über weit mehr Fläche aus,
+als die geometrische Kante je einnahm. Der Shader kannte bisher gar kein Glimmen jenseits der Kante
+für den Schacht (`grenzeD/E=1,0`, hart auf 0 dahinter) — anders als der Laser, der seinen Saum schon
+hatte.
+
+**Gebaut:** Derselbe Saum-Mechanismus wie beim Laser, aber für `strahlenRaum`, mit einem
+bauartabhängigen Radius (Caspar_D: *„ich denke, wir müssen effektabhängig arbeiten, das ist zwar
+nicht so schön, aber die Effekte sind halt individuell"*):
+
+| Bauart | Glimmen-Radius | Gemessen (Differenz Stärke 1/0, „Stumm") | Anteil am Ausgangswert |
+|---|---|---|---|
+| ohne Glimmen (Ausgangswert) | — | 2.898.955 | 100 % |
+| Schacht/Fächer, Radius 6,0 | 6,0 | 6.344.442 | **219 %** |
+| Schacht/Fächer, Radius 4,0 (verworfen) | 4,0 | 4.804.576 | 166 % |
+| Kugelquelle, Radius 6,0 (verworfen) | 6,0 | — | sieht am Bild wie ein Regenbogen-Klumpen aus |
+| Kugelquelle, Radius 2,0 | 2,0 | — | deutlich unterscheidbare Strahlen, aber blass |
+
+Bei Radius 6,0 verschmelzen die vielen, engen Einzelstrahlen der Kugelquelle sichtbar zu einem
+undeutlichen Klumpen und verlieren genau die Eigenschaft, die diese Bauart ausmacht — jeder Strahl
+in seiner eigenen Farbe. Ein einziger Radius passt darum nicht allen drei Bauarten: Schacht und
+Fächer bekommen das großzügige Glimmen (6,0 — am Bild geprüft, kein Ausbrennen selbst bei voller
+Stärke), die Kugelquelle einen engeren (2,0), der die Strahlen unterscheidbar lässt. Das kostet die
+Kugelquelle einen Teil des Gewinns — sie bleibt bei ihrem engen Radius sichtbar blasser als Schacht
+und Fächer, weil viele dünne Einzelstrahlen ohne breites Glimmen wenig Fläche haben, egal wie hell
+ihr Kern gerechnet wird. Das ist keine Regression, sondern derselbe Deckel: mehr Fläche ist für die
+Kugelquelle nur um den Preis der Unterscheidbarkeit zu haben, und der Preis wurde bewusst nicht
+gezahlt.
+
+Naht geprüft (alle fünf `strahlenraum-*`-Fälle, bauartabhängige Fassung): `gl:true`.
+
+**Offen:** Woher der Rest der Lücke zum alten Effekt kommt (selbst 219 % bei Schacht/Fächer ist eine
+Messung an EINEM Testbild, kein Beweis, dass die Vierfach-Lücke insgesamt geschlossen ist), und ob
+die Kugelquelle einen eigenen, dritten Weg braucht (z. B. weniger, aber jeweils dickere Strahlen),
+bleibt unbeantwortet — dafür fehlt noch der direkte Vergleich am Bild mit dem alten `strahlen`.
 
 ### Das Nachglühen war schon da — und stimmt mit der Physiologie überein
 

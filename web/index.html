@@ -31350,7 +31350,7 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
      Genau das fehlte hier: die fruehe Grenze (qD/qE>1) liess nichts jenseits des Kerns zu. Fuer
      den Laser (u_parallel>0.5) reicht die Pruefung jetzt bis zum 3,2-fachen - derselbe Faktor wie
      beim alten Vorbild -, fuer den Schacht (strahlenRaum) bleibt sie bei 1, unveraendert. */
-  float grenzeD=(u_parallel>0.5)?3.2:1.0, grenzeE=grenzeD;
+  float grenzeD=(u_parallel>0.5)?3.2:6.0, grenzeE=grenzeD;
   if(qD>grenzeD||qE>grenzeE) return 0.0;
   /* AUSTASTUNG (Blanking): einzelne Strahlen gehen im Takt aus. Gewuerfelt wird an der
      Strahlnummer und der FENSTERNUMMER, und die laeuft nach u_austastZahl Fenstern um -
@@ -31399,6 +31399,30 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
   if(u_parallel>0.5){
     float sD=max(0.0,1.0-qD/3.2), sE=max(0.0,1.0-qE/3.2);
     float saum=pow(sD,2.0)*pow(sE,2.0)*0.85;
+    v=max(v,saum);
+  } else {
+    /* DER SCHACHT BEKOMMT SEIN EIGENES GLIMMEN (22.09.2026, Caspar_D: "meinst du, Punkt 2 waere
+       hiermit tatsaechlich erledigt?" - nein: die 14% aus dem Acht-Schritte-Deckel blieben weit
+       unter der beobachteten Luecke. DER GRUND STECKT NICHT IN DER FORMEL, SONDERN IM PUFFER
+       (Caspar_D: "wurden die Klemmungen ... limitiert, dass sie gar nicht die Staerke erreichen
+       koennen"): geprueft und bestaetigt (WebGL-Testrender, gl_FragColor 2.0 kommt als 255
+       zurueck) - dieser Lichtpuffer ist eine gewoehnliche 8-Bit-Leinwand. Jeder Bildpunkt, an dem
+       aus*v schon 1.0 erreicht (das ist der GANZE Kern eines Schachts, per Definition), ist
+       bereits WEISS und kann durch keine noch so grosse Verstaerkung von v heller werden. Der
+       EINZIGE Hebel, der unterhalb des Deckels noch Raum hat, ist die FLAECHE: wie viele
+       Bildpunkte ueberhaupt in die Naehe von 1.0 kommen. Genau das leistete der alte Weichzeichner
+       (bis 8% der Bildbreite, absolut, nicht an der Schachtbreite gemessen).
+       EIN RADIUS PASST NICHT ALLEN DREI BAUARTEN (Caspar_D: "wir muessen effektabhaengig
+       arbeiten"). Schacht und Faecher vertragen ein grosszuegiges Glimmen (6,0) - am Bild
+       geprueft, +119% Helligkeit, kein Ausbrennen. Die Kugelquelle sitzt mit ihren Straheln viel
+       dichter beieinander (mehrere Straheln je Kranz, mehrere Kraenze) und braeuchte denselben
+       Radius UM JEDEN EINZELNEN Strahl - bei 6,0 verschmelzen die Straheln zu einem
+       Regenbogen-Klumpen und verlieren genau die Eigenschaft, die diese Bauart ausmacht: jeder
+       Strahl in seiner eigenen Farbe. Sie bekommt darum einen engeren Radius (2,0), der die
+       Straheln unterscheidbar laesst und trotzdem mehr Flaeche gibt als vorher. */
+    float glimmR=(u_bauart>2.5)?2.0:6.0;
+    float sD=max(0.0,1.0-qD/glimmR), sE=max(0.0,1.0-qE/glimmR);
+    float saum=pow(sD,2.0)*pow(sE,2.0)*0.5;
     v=max(v,saum);
   }
   /* NORMIERUNG NACH QUERSCHNITT (Caspar_D, 22.09.2026: „bei der gezeigten Dicke ist es korrekt,
