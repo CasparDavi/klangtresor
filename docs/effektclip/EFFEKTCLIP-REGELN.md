@@ -106,6 +106,21 @@ ein Fehler, kein Spielraum. Beispiele aus dem Tiefen-Check: die Nebeldichte war 
 tot, die Stärke oberhalb von 100 Prozent bei sieben Typen, die Antriebstiefe beim Stroboskop auf
 ihrer ganzen Länge.
 
+**9a. Und die Wirkung muss über den ganzen Weg gleichmäßig wahrgenommen werden.** Caspar_D,
+22.09.2026: „Slider müssen im gesamten abgedeckten Wertebereich sichtbare Effekte erzielen. Ggf.
+muss die Sliderstellung transformiert werden, falls der Wertebereich logarithmisch oder anders
+nicht linear ist." Ein Regler, der über die erste Hälfte seines Wegs kaum etwas tut und in der
+zweiten Hälfte alles auf einmal, hat zwar an jeder Stelle eine Wirkung (Regel 9 wäre erfüllt) —
+aber die Bedienung fühlt sich falsch an, weil die Hand mit der Stellung eine gleichmäßige
+Veränderung erwartet. Gefunden am 22.09.2026 bei `strahlenRaum.dicke`: 0,05° → 0,43 · 1,2° → 0,85
+· 2° → 1,86 · 3° → 3,87 · 5° → 8,89 · 8° → 12,06 · 12° → 15,23 (gemessene mittlere Bildänderung) —
+das ist eine S-Kurve, kein linearer Verlauf. Die Ursache liegt meist darin, dass die WIRKUNG
+quadratisch oder anders nichtlinear mit dem WERT skaliert (hier vermutlich: Fläche wächst mit dem
+Quadrat der Winkelbreite, bis eine Sättigung durch die Bildgröße einsetzt). Die Abhilfe ist dann,
+nicht den Wertebereich zu kürzen, sondern die Skala des Reglers selbst zu transformieren, sodass
+gleiche Schieberegler-Schritte gleiche wahrgenommene Wirkungs-Schritte ergeben — noch nicht
+behoben, offener Punkt in der Übergabe.
+
 **10. Ein ausgeblendeter Regler ist nicht abgeschaltet.** `when` versteckt nur die Zeile, der Wert
 bleibt stehen und wird weitergereicht. Wer eine Auswahl „keine" anbietet, muss den Wert selbst auf
 null zwingen. Der Nebel zog sonst bei „Absaugung: keine" trotzdem zur Bildmitte.
