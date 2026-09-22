@@ -5807,6 +5807,50 @@ Morgenknopf ist er das falsche Werkzeug — der läuft im Browser —, aber für
 `wiederherstellen.js` und die Nachbarschaft ist er genau richtig. Ein erster Anlauf, ihn in die
 sechs Suno-Skripte fest einzuhängen, ist zurückgenommen; die Dateien sind unverändert.
 
+## 6e. Zweiter Fund derselben Art im vollen Nahtlauf (22.09.2026, ~03:15)
+
+Der volle Lauf über alle 244 Fälle (angesagt, Jörg hat den Startschuss gegeben) fand, was eine
+Stichprobe nicht finden konnte: `partikel-schwaden-tempo02` und `partikel-boeen-funken-wandern`
+liefen mit **22 Konsolenmeldungen** je Fall — `TypeError: g.toFixed is not a function` — und der
+Effekt „Partikel" wurde beim Malen ausgelassen (Regel 15 fängt den Wurf ab, stumm).
+
+**Derselbe Fehler wie in `raumSpanne` letzte Nacht, an einer zweiten Stelle: `bodenZellen`.** Der
+Cache-Schlüssel dort baute sich noch aus `g`, `w`, `modus` — den Parametern von vor dem
+Teilchen-Umbau. Diesmal kein `ReferenceError`: **`g` ist die modulweite Leinwand-Variable**
+(Zeile 27241, der Zeichenkontext), also gesetzt, aber kein Zahlenwert — `g.toFixed` schlägt mit
+`TypeError` fehl, nicht mit „not defined". Genau deshalb übersah ihn meine statische Suche nach
+freien Bezeichnern letzte Nacht: Ich hatte jeden Treffer auf das globale `g` als legitim
+eingestuft, weil es das an anderen Stellen auch ist.
+
+**Besonders ärgerlich:** Der Kommentar direkt darüber behauptete bereits „DER SCHLÜSSEL TRÄGT
+JETZT DIE ZONEN", die Ersatzfunktion `zonSchluessel` stand fertig da — nur eingesetzt war sie nie.
+Ein `void zonSchluessel;` mit dem Vermerk „der Schlüssel unten trägt ihn" stand sogar daneben.
+Ein Kommentar, der das Richtige behauptet, deckt falschen Code zu — dieselbe Lehre wie am
+21.09.2026, hier gegen mich selbst gewendet.
+
+**Betroffen:** die vier Partikelarten mit natürlicher Herkunft „boden" — **Funken, Asche,
+Schwaden, Blasen** (`HERKUNFT`-Tabelle) —, sobald sie mit Raumtiefe laufen. Im Bestand betrifft
+das mindestens `f73b0255…` (Funken + Schwaden) und **`a459b95e…`, also Escher** — dort steht
+`funken` mit `raumtiefe:1`. Seit dem Zonen-Umbau gestern Abend waren diese Effekte in solchen
+Rezepten **unsichtbar**, ohne dass die Karte es zeigte.
+
+**Repariert:** der Schlüssel nutzt jetzt `zonSchluessel(zon)+'|'+L`. Isoliert geprüft: beide
+Fälle laufen ohne Konsolenmeldung, Naht schließt.
+
+### Was ich NICHT behoben habe, weil es Caspar_Ds Auge braucht
+
+Am Bild (Escher, Funken auf Raumtiefe 1, Differenzbild bei Stärke an/aus) zeigt sich **kein**
+gewöhnliches Funkenbild — sondern lange, parallele, säulenartige Streifen über einen Großteil der
+Bildhöhe. Eine plausible, nicht-fehlerhafte Erklärung: Escher ist ein Treppenhaus-Motiv mit
+vielen Tiefenkanten; jede Stufe zählt als „Boden", aus dem Funken aufsteigen — viele eng
+beieinanderliegende Ursprünge verschmieren beim Aufsteigen zu parallelen Bahnen, statt aus einem
+einzelnen Feuer zu kommen. Das kann richtig sein oder nicht — **das ist eine Frage ans Auge, nicht
+an den Prüfstand** (Regel: „anders ist kein Urteil"). Bitte am Bild ansehen, bevor der Fix als
+vollständig gilt.
+
+**Bild dazu:** `/private/tmp/claude-501/-Volumes-Extreme-SSD-Entwicklung/7b40ece6-5b5f-4105-b900-03e843824aa1/scratchpad/escher-funken-diff.png`
+(liegt im Scratchpad, nicht im Repo — Differenzbild Stärke an minus aus, hell = wo Funken malen).
+
 ## 7. Arbeitsweise, neu gelernt
 
 - **Die Browser-Konsole lesen, bevor etwas ausgeliefert wird.** Eine Syntaxprüfung findet
