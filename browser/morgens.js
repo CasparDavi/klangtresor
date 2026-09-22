@@ -282,28 +282,102 @@
      /api/user/me sagt, wer. Danach laeuft alles wie sonst, nur dass
      "neu" diesmal alle Songs sind. (Caspar_D, 19.08.2026: "wenn er auf ein
      leeres System stoesst, wonach fragt er dann noch?") */
-  /* DEN TOKEN HOLEN - MIT GEDULD. Vorher fragte jede Stelle einzeln
-     `window.Clerk && window.Clerk.session` ab und gab sofort auf. Auf einer
-     frisch geladenen Suno-Seite ist die Anmeldebibliothek aber erst nach ein
-     paar Sekunden da: Wer das Lesezeichen zu frueh klickt, bekommt "nicht
-     angemeldet", obwohl er angemeldet IST (Tarja, 23.08.2026: "diese kein
-     Token Meldung - ich bin angemeldet"). Darum bis zu acht Sekunden warten
-     und erst dann aufgeben. */
+  /* DEN TOKEN HOLEN - ZWEI WEGE (umgebaut 22.09.2026).
+
+     BIS HEUTE gab es einen: window.Clerk.session.getToken(). Am 22.09.2026 war window.Clerk
+     in der Suno-Seite weg - kein globaler Name enthielt mehr "clerk" -, und jeder angemeldete
+     Schritt des Morgenknopfs fiel mit "kein Token" aus. Caspar_D hat den Rest im Netzwerk-
+     Reiter seines Browsers gefunden, weil das Werkzeug hier nicht hineindurfte:
+       - die Seite schickt weiter einen Bearer an studio-api-prod.suno.com, und dessen Kopf
+         traegt kid "suno-api-rs256-key-1" - Suno signiert die API-Tokens mit eigenem
+         Schluessel (Clerk erlaubt das ueber JWT-Vorlagen);
+       - das Cookie suno_auth ist Clerks oeffentlicher Publishable Key, pk_live_ + base64 der
+         Frontend-API-Adresse mit "$" am Ende: auth.suno.com. Darum fand der Filter "clerk"
+         nie etwas - Clerk laeuft unter Sunos eigenem Namen.
+     Der Weg zu einem Token ist bei Clerk dokumentiert: GET /v1/client nennt die aktive
+     Sitzung, POST /v1/client/sessions/<sid>/tokens liefert das JWT. Beides mit den Cookies
+     dieses Tabs (credentials: include); Clerks __client-Cookie liegt auf der API-Adresse.
+
+     ZWISCHENSPEICHER: Ein Token lebt rund 60 s. Die Sammelschritte fragen vor jeder Anfrage
+     nach - bei 25 Alben gut 30-mal je Lauf. Frueher fing das Clerk selbst ab; jetzt muss es
+     hier geschehen, sonst wird jede Anfrage von zwei Clerk-Aufrufen begleitet. Gemerkt wird
+     bis 5 s vor dem exp des JWT, hoechstens 50 s.
+
+     DIE VORLAGE ist leer: Clerks Standard-Token, und der reicht - belegt am 22.09.2026 um
+     02:40 durch Caspar_Ds Klick (Alben 25 mit 618 Eintraegen, private Songs laufen). Sollte
+     Suno je eine Vorlage verlangen, antwortet die API mit 401; der Name steht dann in Sunos
+     eigenem Aufruf (Netzwerk-Reiter, Filter auth.suno.com, Pfad .../tokens/<name>). */
+  const TOKEN_VORLAGE = '';
+  const TOKEN = { wert:null, bis:0, weg:null, gemeldet:false };
+  function fapiHost(){
+    try {
+      const m = document.cookie.match(/(?:^|;\s*)suno_auth=pk_(?:live|test)_([^;]+)/);
+      if (m){ const h = atob(decodeURIComponent(m[1])).replace(/\$$/, '');
+        if (/^[a-z0-9.-]+$/i.test(h)) return 'https://' + h; }
+    } catch (e) {}
+    return 'https://auth.suno.com';
+  }
+  function tokenMerken(t, weg){
+    let bis = Date.now() + 50000;
+    try { const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if (p.exp) bis = Math.min(bis, p.exp*1000 - 5000); } catch (e) {}
+    TOKEN.wert = t; TOKEN.bis = bis; TOKEN.weg = weg;
+    if (!TOKEN.gemeldet){ TOKEN.gemeldet = true;
+      /* DIE ZEILE GEHOERT VOR DEN SCHRITT, DER DEN TOKEN BRAUCHT. sagen() haengt hinten an -
+         die wartende Zeile ("Hole deine Alben ...") ist da aber schon angelegt, und der Token
+         kam vor ihr. Eine Meldung UNTER dem Ergebnis, das sie erst moeglich machte, luegt in
+         der Reihenfolge (Caspar_D am ersten Lauf, 22.09.2026). Wartende Zeilen enden mit dem
+         Auslassungszeichen: steht so eine direkt davor, rutscht die Token-Zeile ueber sie. */
+      try {
+        const z = sagen('Token über ' + weg + ' erhalten.', '#8fd3a7');
+        const v = z.previousElementSibling;
+        if (v && /\u2026\s*$/.test(v.textContent || '')) z.parentElement.insertBefore(z, v);
+      } catch (e) {} }
+    return t;
+  }
+  async function tokenUeberClerkApi(){
+    const FAPI = fapiHost(), v = '?_clerk_js_version=5.0.0', kurz = FAPI.replace('https://', '');
+    let r;
+    try { r = await fetch(FAPI + '/v1/client' + v, { credentials:'include' }); }
+    catch (e) { throw new Error(kurz + ' ist nicht erreichbar (' + (e && e.message || e) + ') — meist eine CORS-Sperre, dann gehört diese Adresse in die Übergabe'); }
+    if (!r.ok) throw new Error(kurz + '/v1/client antwortet ' + r.status
+      + (r.status === 401 ? ' — dieser Tab ist bei Clerk nicht angemeldet' : ''));
+    const d = await r.json(); const c = d.response || d.client || d;
+    const sid = c.last_active_session_id || (Array.isArray(c.sessions) && c.sessions[0] && c.sessions[0].id);
+    if (!sid) throw new Error(kurz + ' kennt in diesem Tab keine aktive Sitzung');
+    r = await fetch(FAPI + '/v1/client/sessions/' + sid + '/tokens' + (TOKEN_VORLAGE ? '/' + TOKEN_VORLAGE : '') + v,
+                    { method:'POST', credentials:'include' });
+    if (!r.ok) throw new Error(kurz + '/v1/client/sessions/…/tokens antwortet ' + r.status);
+    const t = await r.json(); const jwt = t.jwt || t.token;
+    if (!jwt) throw new Error(kurz + ' liefert kein jwt-Feld (Felder: ' + Object.keys(t).join(', ') + ')');
+    return jwt;
+  }
   async function tokenHolen(maxMs){
-    const bis = Date.now() + (maxMs || 8000);
+    if (TOKEN.wert && Date.now() < TOKEN.bis) return TOKEN.wert;
+    const start = Date.now(), bis = start + (maxMs || 8000);
     let gesehen = false;
     while (Date.now() < bis){
       if (window.Clerk){
         gesehen = true;
         if (window.Clerk.session){
-          try { const t = await window.Clerk.session.getToken(); if (t) return t; } catch (e) {}
+          try { const t = await window.Clerk.session.getToken(); if (t) return tokenMerken(t, 'window.Clerk'); } catch (e) {}
         }
-      }
+      } else if (Date.now() - start > 1500) break;   /* Clerk kommt nicht mehr global - nicht 8 s warten, sondern den zweiten Weg gehen */
       await new Promise(r => setTimeout(r, 300));
     }
-    tokenHolen.grund = !gesehen
-      ? 'Diese Seite kennt keine Suno-Anmeldung. Das Lesezeichen gehört auf einen Tab von suno.com — nicht auf den KlangTresor und nicht auf eine leere Seite.'
-      : 'Suno ist geladen, aber es ist keine Sitzung angemeldet. Melde dich in DIESEM Tab bei suno.com an, warte bis die Seite fertig ist, und klicke das Lesezeichen erneut.';
+    const aufSuno = /(^|\.)suno\.com$/.test(location.hostname);
+    if (!aufSuno){
+      tokenHolen.grund = 'Diese Seite ist nicht suno.com. Das Lesezeichen gehört auf einen Tab von suno.com — nicht auf den KlangTresor und nicht auf eine leere Seite.';
+      return null;
+    }
+    if (!gesehen){
+      try { return tokenMerken(await tokenUeberClerkApi(), 'Clerk-API unter ' + fapiHost().replace('https://', '')); }
+      catch (e) {
+        tokenHolen.grund = 'window.Clerk gibt es in dieser Seite nicht mehr (seit 22.09.2026), und der Ersatzweg über Clerks API scheiterte: ' + (e && e.message || e) + '. Stand und Befund: docs/NAECHSTER_CHAT.md.';
+        return null;
+      }
+    }
+    tokenHolen.grund = 'Suno ist geladen, aber es ist keine Sitzung angemeldet. Melde dich in DIESEM Tab bei suno.com an, warte bis die Seite fertig ist, und klicke das Lesezeichen erneut.';
     return null;
   }
 
