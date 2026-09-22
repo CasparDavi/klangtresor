@@ -105,3 +105,6 @@ docs/eichkasten/*.vor-schritt*
 
 # Erzeugnis des Zonen-Labors: enthaelt Titelbilder aus dem Bestand
 labor/zonen/index.html
+
+# Mitschnitte von Suno-Abrufen: enthalten fremde Daten, gehoeren nicht ins Repo
+labor/mitschnitt/
