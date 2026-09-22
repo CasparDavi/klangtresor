@@ -698,3 +698,51 @@ bei 20–30 Bildwiederholungen/s. Bei 30 Bildern/Sekunde (33 ms je Bild) macht e
 bestätigt den gewählten Weg: nicht die eine wahre Position malen, sondern die aufsummierte Wirkung
 des Nachleuchtens — genau das, was das Auge ohnehin sieht.
 
+### Querschnitt-Normierung und das Perlenketten-Aliasing (22.09.2026, Vergleich am Titel „Die Gedanken …")
+
+Zwei weitere Befunde aus demselben Auftrag („welche der neuen können verstärkt werden").
+
+**Helligkeit nach Querschnitt.** Caspar_D: *„der Kern des Lasers ist mir immer noch zu flau und die
+Laserstrahlen zu dick, bei der gezeigten Dicke ist es korrekt — wir brauchen einen
+Normierungsfaktor, der den Laser heller macht, wenn er dünner wird."* Ein Laser fester
+Ausgangsleistung wird bei kleinerem Querschnitt heller (Leistung = Fläche × Intensität); die
+Kernfläche in `imStrahl` wächst mit dem Quadrat von `u_dicke` (qD und qE werden beide durch
+`halb ~ u_dicke` geteilt), der Spitzenwert blieb davon bisher unberührt. Neuer Faktor `dickeNorm =
+(0,016/u_dicke)²`, geklemmt bei 4 (dieselbe Zwei-Blendenstufen-Grenze wie beim Entfernungsgesetz),
+Bezug ist die Reglervorgabe 0,016 — dort bleibt die Helligkeit, wie gemessen und geprüft,
+unverändert. Nur für den Laser.
+
+**Das Perlenketten-Aliasing.** Am direkten Vergleich alt/neu im selben Bild (blauer Fächer = alter
+`laser`, cyaner Strahl = `laserRaum`) fiel auf: der neue Strahl zeigt eine gitterartige, gewebte
+Textur statt einer glatten Fläche, und Caspar_D: *„wenn ich cyan schwächer mache, dann zerfallen
+die Strahlen zu Perlen/Flecken, die blauen alten zeigen immer eine durchgehende Zeichnung."*
+
+Ursache: der Kern-Mechanismus (Abschnitt oben, „Laser-Punkte sind scharf, klein, krass intensiv")
+lässt `rD`/`rE` von 1 auf 0 fallen — bei hoher `Kante`-Einstellung (steiler Regler) innerhalb eines
+sehr schmalen Streifens. Ein Fragment-Shader tastet je Bildpunkt genau **einen** Punkt ab, keine
+Fläche. Fällt der ganze Übergang zwischen zwei benachbarte Bildpunkte, trifft der eine zufällig die
+schmale helle Zone, der Nachbar knapp daneben (schon 0) — Perlenkette statt Linie. Der alte Laser
+malt über Canvas2D, das der Browser selbst glättet; dieser Shader tat es nirgends. Geprüft: im
+ganzen Haus wird `fwidth`/`dFdx`/`dFdy` (`GL_OES_standard_derivatives`) bisher **nirgends**
+verwendet — die Lücke betraf im Prinzip jede scharfe Kante in jedem GL-Effekt, sichtbar wurde sie
+zuerst am dünnsten (dem Laser-Kern).
+
+Behoben mit der Standardtechnik der Schader-Kantenglättung: `fwidth(qD)` ist die Änderung von `qD`
+zwischen zwei benachbarten Bildpunkten. Die Übergangsbreite wird auf **mindestens** diesen Wert
+angehoben — bei einem gut aufgelösten Strahl ändert das nichts (die Breite war ohnehin schon größer),
+erst wenn ein Bildpunkt mehr Weg abdeckt als die Kante breit ist, wird die Kante genau
+bildpunktbreit statt gewürfelt. Erweiterung `GL_OES_standard_derivatives` im `GL_VORSPANN`
+freigeschaltet (ein `#extension`-Pragma, vor jedem anderen Token) und im WebGL-Kontext angefordert
+(`GL.init`) — seit ~2012 in praktisch jedem WebGL1 vorhanden, auch in SwiftShader (das
+Prüfstand-Chrome ohne echte Grafikkarte). Alle neun GL-Effekte probeweise mit dem geänderten
+Vorspann kompiliert: fehlerfrei. Zwei Nahtfälle geprüft (`laserraum-faecher`, der Grenzfall
+`laserraum-strahl-kegel`): beide `gl:true`, keine Verschlechterung.
+
+**Offen, nicht gebaut:** der alte Laser hat einen Flimmer-Mechanismus (`e.flimmer`,
+`e.flimmerTempo`) — ein periodisches Abdunkeln (55 % der Zeit voll hell, 45 % gedimmt, je Strahl
+phasenversetzt über `e.id*0.37`), das mehrere gleichzeitige Strahlen unterschiedlich hell zeigt und
+so nach „elektrisch/lebendig" aussieht. `laserRaum` hat **keinen** entsprechenden Regler.
+Caspar_D dazu: *„das Flimmern macht natürlich auch was aus, das ist diese typische
+Laserapearance."* Das ist kein Aliasing-Fehler, sondern eine fehlende Eigenschaft — ein sinnvoller
+nächster Schritt, aber ein neuer, eigener Regler und damit ein eigener kleiner Bauabschnitt.
+
