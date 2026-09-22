@@ -31308,7 +31308,23 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
     float saum=pow(sD,2.0)*pow(sE,2.0)*0.85;
     v=max(v,saum);
   }
-  return v*clamp((dref*dref)/max(1e-6,dist*dist),0.0,4.0);
+  /* NORMIERUNG NACH QUERSCHNITT (Caspar_D, 22.09.2026: „bei der gezeigten Dicke ist es korrekt,
+     wir brauchen einen Normierungsfaktor, der den Laser heller macht, wenn er duenner wird").
+     Ein Laser fester Ausgangsleistung wird bei kleinerem Querschnitt heller: Leistung = Flaeche
+     mal Intensitaet, und die Kernflaeche (qD<1 UND qE<1, in jeder Bauart) waechst mit dem
+     QUADRAT von u_dicke, weil sowohl qD als auch qE durch halb ~ u_dicke geteilt werden. Bisher
+     blieb der Spitzenwert v unabhaengig von der Dicke bei 1 - eine duennere Einstellung sah
+     darum nur kleiner aus, nicht heller. Bezugsdicke ist die Reglervorgabe (0,016): dort bleibt
+     die Helligkeit, wie sie gemessen und geprueft wurde, unveraendert. Nur fuer den Laser -
+     strahlenRaum (der Schacht) weitet sich schon mit der Entfernung und hat seine eigene,
+     bereits stimmige Flaechenbilanz ueber den Winkel. Klemme bei 4 wie beim Entfernungsgesetz
+     zwei Zeilen weiter unten - zwei Blendenstufen, keine neue Zahl erfunden. */
+  float dickeNorm=1.0;
+  if(u_parallel>0.5){
+    float dickeRef=0.016;
+    dickeNorm=clamp((dickeRef*dickeRef)/max(1e-6,u_dicke*u_dicke),0.0,4.0);
+  }
+  return v*dickeNorm*clamp((dref*dref)/max(1e-6,dist*dist),0.0,4.0);
 }
 void main(){
   float seite=u_res.y/max(1.0,u_res.x);
