@@ -342,6 +342,70 @@ Säume, aber keinen Schatten, den das Motiv nach vorn wirft.
 
 ---
 
+## 5a. Migrationsplan: alle Leuchten auf den Lichtpuffer (22.09.2026, gegen Morgen)
+
+Caspar_D: *„wir wollten alle Lichteffekte so nach und nach auf den Lichtpuffer migrieren."*
+Bestandsaufnahme, wie WEIT jede Leuchte schon ist — nicht nur ob sie schreibt, sondern wie stark
+und wie sauber der Mechanismus ist.
+
+### Der Mechanismus ist strukturell einheitlich
+
+`leuchteInPuffer(e,cx,t,W,H)` unterscheidet zwei Wege:
+- **GL-Effekte** (`lichtRaum`, `laserRaum`, `strahlenRaum`): über `GL.run(...)`, die Stärke wird
+  von AUSSEN als `globalAlpha` beim Compositen aufgeprägt.
+- **Canvas-Effekte** (`licht`, `laser`, `strahlen`, `feuer`, `strobe`): laufen durch dieselbe
+  zentrale `malen()`-Funktion wie in der normalen Kette. Diese Funktion setzt
+  `LICHTMAL?'lighter':(VMODE[e.verr]||'source-over')` bereits an ihrem Kopf — **jeder Effekt, der
+  durch sie geroutet wird, ist damit automatisch additiv im Puffer**, ohne dass er selbst etwas
+  dafür tun muss. Nur `licht` hat eine eigene Spezialfunktion (`lichtMalen`, wegen der Blende) und
+  prüft `LICHTMAL` darin selbst — korrekt.
+
+**Das heißt: Die Hürde für einen neuen Leuchter ist nicht der Mechanismus** (der ist da und
+funktioniert für jeden, der durch `malen()` läuft) — **sie ist die Markierung `leuchtet:true`
+UND ein Malvorgang, der bei Stärke > 0 tatsächlich etwas Sichtbares hinterlässt, das auch als
+Schein taugt** (nicht nur ein harter, kleiner Farbfleck).
+
+### Gemessen: Wirkung auf den Nebel, Vorgabewerte, Testbild „Stumm"
+
+Stärke an/aus, mit Filmnebel (Vorgabe), Antrieb wo vorhanden auf „stetig" für einen fairen
+Vergleich (Puls würde sonst die Messung verfälschen, wie gestern Nacht beim Laser gelernt):
+
+| Effekt | mittlere Bildänderung | Fläche (Punkte >8) | größter Wert |
+|---|---|---|---|
+| licht (Scheinwerfer, alt) | 25,09 | 56.502 | 224 |
+| laser (Laserstrahl, alt) | 6,27 | 26.707 | 200 |
+| strahlen (Lichtstrahlen, alt) | 41,32 | 215.174 | 130 |
+| feuer | 54,65 | 265.874 | 255 |
+
+(lichtRaum/laserRaum/strahlenRaum/strobe folgen — Messung unterbrochen für sofortige
+Dokumentation, Kontext wird knapp.)
+
+Feuer schreibt am kräftigsten — durch den eigens gebauten „Schein"-Mechanismus (Caspar_D,
+14.09.2026: „Feuer sollte einen weichen Schein in den Puffer malen"), der einmal gemalt wird und
+dadurch von selbst in Bild UND Puffer landet. Vorgabe `schein:0,35`, nicht 0 — trägt also bei
+Standardwerten bei.
+
+### Kandidaten für die nächste Migration, nach Aufwand geordnet (Vermutung, nicht geprüft)
+
+1. **Flammen (Rauschen)** — `art:'gl'`, kein `leuchtet`. Müsste wie `lichtRaum` behandelt werden:
+   `leuchtet:true` setzen und in `leuchteInPuffer` den GL-Zweig durchlaufen — der ruft `GL.run`
+   generisch auf, das sollte für JEDEN `art:'gl'`-Effekt automatisch funktionieren, sobald die
+   Markierung da ist. **Vermutlich der einfachste Fall**, weil kein neuer Malweg nötig ist, nur
+   die Markierung fehlt. Zu prüfen: ob der Flammen-Shader bei `u_modus`/`u_inPuffer` überhaupt
+   auf irgendetwas reagieren müsste, oder ob er einfach unverändert in den Puffer rendert.
+2. **Kaustik (Lichtnetz)** — ebenfalls `art:'gl'`, `verrFrei:true`, kein `leuchtet`. Gleiches
+   Muster wie Flammen vermutlich.
+3. **Partikel als Leuchten** (Glühwürmchen, Glitzer, Funken, Bokeh, Sternschnuppen) — schwieriger,
+   weil `leuchtet` hier wie `medium` eine **Frage an die Art** sein müsste
+   (`e=>['gluehwuermchen','glitzer','funken','bokeh','sternschnuppen'].includes(e.art)`), nicht
+   eine Marke am Typ `partikel` — sonst leuchtet auch Schnee und Staub. Das Muster dafür steht
+   schon im Haus (`EFFEKTE.partikel.medium = e=>e.art==='schwaden'`), nur für `leuchtet` noch
+   nicht gebaut.
+
+**Reihenfolge-Empfehlung:** Flammen zuerst (kleinster Schritt, reine Markierung), dann Kaustik
+(gleiches Muster), dann die Partikel-Frage (eigener Bau, weil pro Art zu entscheiden). Das folgt
+der Hausregel „ein Effekt nach dem anderen" — noch nicht gebaut, nur vorbereitet.
+
 ## 6. Was gebaut ist (21.09.2026)
 
 ### Etappe 1 — der Effekt „Scheinwerfer mit Tiefe" (`lichtRaum`)
