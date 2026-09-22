@@ -376,9 +376,21 @@ Vergleich (Puls würde sonst die Messung verfälschen, wie gestern Nacht beim La
 | laser (Laserstrahl, alt) | 6,27 | 26.707 | 200 |
 | strahlen (Lichtstrahlen, alt) | 41,32 | 215.174 | 130 |
 | feuer | 54,65 | 265.874 | 255 |
+| lichtRaum (Scheinwerfer mit Tiefe) | 17,35 | 55.674 | 242 |
+| laserRaum (Laser mit Tiefe) | 3,50 | 20.663 | 234 |
+| strahlenRaum (Lichtstrahlen mit Tiefe) | 10,46 | 47.727 | 237 |
+| strobe (Stroboskop, im Blitzmoment gemessen) | 48,59 | 274.752 | 228 |
 
-(lichtRaum/laserRaum/strahlenRaum/strobe folgen — Messung unterbrochen für sofortige
-Dokumentation, Kontext wird knapp.)
+**Strobe brauchte eine zweite Messung**: mit Antrieb „stetig" (meine erste, „faire"
+Vergleichsmethode) malt Stroboskop **gar nichts** — das steht explizit im Code
+(`if(q==='stetig') return;`), ein Blitzeffekt ohne Antrieb ist sinnlos. Erst mit seinem eigenen
+Antrieb (Hz), im stärksten Moment des Pulses gemessen, zeigt sich seine wahre Stärke — dann ist
+es der zweitstärkste Leuchter im Feld, weil es das ganze Bild trifft.
+
+**Die drei „mit Tiefe"-Geräte liegen alle unter ihren alten Pendants** — `lichtRaum` bei 69 % von
+`licht`, `laserRaum` bei 56 % von `laser`, `strahlenRaum` bei nur 25 % von `strahlen`. Letzteres
+ist der schon bekannte, noch nicht vollständig gelöste Befund von heute Nacht (Vorgabe angehoben,
+Restschwäche in der Marsch-Normierung offen — siehe Übergabe, Abschnitt 6f).
 
 Feuer schreibt am kräftigsten — durch den eigens gebauten „Schein"-Mechanismus (Caspar_D,
 14.09.2026: „Feuer sollte einen weichen Schein in den Puffer malen"), der einmal gemalt wird und
