@@ -36925,9 +36925,20 @@ function zeichneFrame(t,roh){
   const zonSchluessel = zon => !zon ? 'ohne'
     : (zon.raumAn?'R':'-') + (zon.iv||[]).map(v=>v[0].toFixed(3)+'..'+v[1].toFixed(3)).join(',');
   function bodenZellen(tp,zon,L){
-    void zonSchluessel;   /* der Schluessel unten traegt ihn */
+    /* DER ZWEITE FUND DESSELBEN FEHLERS (22.09.2026 nachts). Hier stand wie in raumSpanne der
+       Schluessel der Fassung VOR dem Teilchen-Umbau (g, w, modus) - nur dass g hier nicht
+       einmal einen ReferenceError warf: g ist die MODUL-WEITE Leinwand-Variable (Zeile 27241,
+       der Zeichenkontext), also gesetzt, aber kein Zahlenwert. g.toFixed schlug darum mit
+       einem TypeError fehl, nicht mit "not defined" - und blieb bei der Suche nach freien
+       Bezeichnern gestern Nacht unentdeckt, weil dieselbe Suche jeden Treffer auf das globale
+       g als legitim einstufte. Gefunden im vollen Nahtlauf: „Partikel wirft und wird
+       ausgelassen" bei jedem Bodenteilchen mit Raumtiefe (Regen, Schnee, Staub, Boeen).
+       Der Kommentar darueber sagte bereits "der Schluessel traegt jetzt die Zonen" und die
+       Funktion zonSchluessel stand fertig da - nur eingesetzt war sie nie: ein Kommentar, der
+       das Richtige behauptet, deckt falschen Code zu (Regel aus dem 21.09.2026, hier gegen
+       mich selbst gewendet). */
     const q=tiefeQuelle(); if(!q||!tp) return null;
-    const k=g.toFixed(4)+'|'+w.toFixed(4)+'|'+L.toFixed(3)+'|'+(modus||'alles');
+    const k=zonSchluessel(zon)+'|'+L.toFixed(3);
     if(BODENZELLEN_ID!==q.k){ BODENZELLEN.length=0; BODENZELLEN_ID=q.k; }
     { const da=BODENZELLEN.find(b=>b.k===k); if(da) return da.v; }
     /* DIE SPANNE UNGEKLEMMT (Gegenlesen 17.09.2026). tp.zhi ist fuer tiefeBei auf mindestens
