@@ -3450,6 +3450,57 @@
    "bemerkung": "KREIS: Pan und Tilt um 90 Grad versetzt. Die strengste Nahtprobe des Schwenks, weil beide Achsen zugleich laufen - schliesst eine nicht, sieht man es sofort."
   },
   {
+   "name": "lichtraum-strahl",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": 0.2,
+     "lrOy": 0.08,
+     "lrOz": 0.92,
+     "lrZx": 0.55,
+     "lrZy": 0.62,
+     "lrZz": 0.25,
+     "winkel": 26,
+     "staerke": 1
+    },
+    {
+     "typ": "filmnebel",
+     "staerke": 0.8
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "DER STRAHL IN DER LUFT (21.09.2026). Lampe PLUS Medium - und nur dann laeuft der Fuelllauf, in dem der Shader den Sehstrahl abgeht. OHNE diesen Fall pruefte kein einziger lichtraum-Fall die Einstreuung, weil keiner ein Medium traegt: sieben Faelle liefen gruen und beruehrten das Geaenderte nicht."
+  },
+  {
+   "name": "lichtraum-strahl-schwenk",
+   "typ": "lichtRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "lichtRaum",
+     "lrOx": 0.5,
+     "lrOy": 0.08,
+     "lrOz": 0.95,
+     "lrZx": 0.5,
+     "lrZy": 0.6,
+     "lrZz": 0.25,
+     "winkel": 22,
+     "schwenkArt": "pan",
+     "schwenkWeite": 30,
+     "schwenkTempo": 4,
+     "staerke": 1
+    },
+    {
+     "typ": "filmnebel",
+     "staerke": 0.8
+    }
+   ],
+   "gruppe": "lichtRaum",
+   "bemerkung": "Derselbe Strahl, aber die Lampe schwenkt. Die strengste Probe: der Strahl wandert durch die Luft, und der Marsch muss an jedem Bild woanders treffen - schliesst die Bahn nicht, steht am Nahtbild ein anderer Strahl."
+  },
+  {
    "name": "kosten-leer",
    "typ": "kosten",
    "titel": "a",
@@ -3586,6 +3637,21 @@
    "bemerkung": "Eine Lampe PLUS Medium: erst dann laeuft der Fuelllauf des Licht-Puffers, und der neue Scheinwerfer malt zweimal (Licht und Herkunft). Die teuerste Stellung, die das Modell hat."
   },
   {
+   "name": "kosten-laserraum-nebel",
+   "typ": "kosten",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum"
+    },
+    {
+     "typ": "filmnebel"
+    }
+   ],
+   "gruppe": "kosten",
+   "bemerkung": "Der Laser PLUS Medium: erst dann laeuft der Fuelllauf mit dem Marsch entlang des Sehstrahls, und der hat beim Strahl-Shader 64 Schritte statt der 24 des Scheinwerfers - ein duenner Strahl rutscht sonst zwischen zwei Schritten durch. Die teuerste Stellung, die die beiden Geraete haben."
+  },
+  {
    "name": "kosten-gl-linse",
    "typ": "kosten",
    "titel": "a",
@@ -3668,62 +3734,287 @@
    "bemerkung": "zweiter Titel, zwei Schnuppen (ab Menge 200)"
   },
   {
-   "name": "strahlraum-laser",
-   "typ": "strahlRaum",
+   "name": "laserraum-faecher",
+   "typ": "laserRaum",
    "titel": "a",
    "effekte": [
     {
-     "typ": "strahlRaum"
+     "typ": "laserRaum",
+     "bauart": "faecher",
+     "zahl": 5,
+     "spreizung": 0.12,
+     "breite": 0.016
     }
    ],
-   "gruppe": "strahlRaum",
-   "bemerkung": "Faecher 0, also ein einzelner Strahl - der Laser"
+   "gruppe": "laserRaum",
+   "bemerkung": "Der Grundfall: fuenf PARALLELE Strahlen, von einem Strahlteiler gespreizt. Die Breite misst in Bildbreiten und bleibt ueber die ganze Strecke gleich - das ist der Unterschied zum Lichtschacht, und er muss am Bild sichtbar sein."
   },
   {
-   "name": "strahlraum-faecher",
-   "typ": "strahlRaum",
+   "name": "laserraum-scanner",
+   "typ": "laserRaum",
    "titel": "a",
    "effekte": [
     {
-     "typ": "strahlRaum",
+     "typ": "laserRaum",
+     "bauart": "scanner",
+     "spreizung": 0.42,
+     "schwenke": 6,
+     "nachgluehen": 0.5,
+     "breite": 0.03
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "SCANNER: ein Strahl, vom Galvospiegel abgelenkt. Nahtprobe fuer die Schwenke - sie ist ueber lpR auf ganze Umlaeufe je Clip eingerastet, sonst steht der Spiegel am Nahtbild woanders als am Anfang. Im Entwurf fehlte dieses Einrasten. Die Strahlen sind hier bewusst breit: mit Haarlinien liegt das 95. Perzentil ausserhalb des Strahls, und die Naht wuerde an einem Effekt gemessen, der die Flaeche gar nicht beruehrt."
+  },
+  {
+   "name": "laserraum-matrix",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "matrix",
+     "reihen": 12,
+     "spreizung": 0.25
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "MATRIXPUNKTE: ein Beugungsgitter streut ein Raster. Steht still, prueft also die Geometrie und nicht die Zeit - und zugleich, dass die Spreizung ueberhaupt ankommt (im Entwurf ging sie als 0 hinaus, womit das Raster in sich zusammenfiel)."
+  },
+  {
+   "name": "laserraum-kegel",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "kegel",
+     "zahl": 14,
+     "spreizung": 0.3,
+     "schwenke": 2,
+     "breite": 0.03
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "KEGEL (Lasertunnel): neun Strahlen auf einem HOHLEN Mantel, der sich dreht. Die Mitte muss leer bleiben - ein gefuellter Kegel waere der Scheinwerfer. Nahtprobe fuer die Drehung. Die Strahlen sind hier bewusst breit: mit Haarlinien liegt das 95. Perzentil ausserhalb des Strahls, und die Naht wuerde an einem Effekt gemessen, der die Flaeche gar nicht beruehrt."
+  },
+  {
+   "name": "laserraum-lissa",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "lissa",
+     "spreizung": 0.35,
+     "schwenke": 4,
+     "lissa": 2,
+     "nachgluehen": 0.6,
+     "breite": 0.035
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "LISSAJOUS bei 2:1 - die Acht. Zwei Schwingungen zugleich, und beide muessen in den Clip passen; das Verhaeltnis ist darum auf halbe Schritte begrenzt, sonst schloesse sich die Kurve nie. Die Strahlen sind hier bewusst breit: mit Haarlinien liegt das 95. Perzentil ausserhalb des Strahls, und die Naht wuerde an einem Effekt gemessen, der die Flaeche gar nicht beruehrt."
+  },
+  {
+   "name": "laserraum-austastung",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "faecher",
+     "zahl": 14,
+     "spreizung": 0.4,
+     "austasten": 0.4,
+     "austastTempo": 4,
+     "breite": 0.028
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "AUSTASTUNG (Blanking): vier von zehn Strahlen gehen im Takt aus. Die haerteste Nahtprobe des Effekts, weil hier GEWUERFELT wird - der Wuerfel haengt an der Fensternummer, und die laeuft nach u_austastZahl Fenstern um (Regel 17b). Haengt sie an der absoluten Zeit, wuerfelt das Nahtbild neu. Die Strahlen sind hier bewusst breit: mit Haarlinien liegt das 95. Perzentil ausserhalb des Strahls, und die Naht wuerde an einem Effekt gemessen, der die Flaeche gar nicht beruehrt."
+  },
+  {
+   "name": "laserraum-roll",
+   "typ": "laserRaum",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "faecher",
+     "zahl": 6,
+     "spreizung": 0.18,
+     "roll": 55
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "Derselbe Faecher um 55 Grad gerollt - der dritte Winkel, ohne den die Faecherebene fuer immer parallel zur Diorama-Front stuende. Zweiter Titel."
+  },
+  {
+   "name": "laserraum-auffaechernd",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "faecher",
+     "zahl": 7,
+     "spreizung": 0.3,
+     "breite": 0.02,
+     "auffaechernd": 1
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "AUFFAECHERNDER LASER (Caspar_D, 22.09.2026: „zusaetzlich zu den Parallelstrahlen haette ich auch gern wieder gefaecherte Strahlen beim Laser“). Die Strahlen laufen auseinander wie hinter einem Prisma, jeder einzelne behaelt aber seine Dicke - das ist der Unterschied zum Lichtschacht, dessen Strahlen MIT der Entfernung dicker werden. Prueft, dass u_parallel und u_divergent wirklich zwei getrennte Groessen sind."
+  },
+  {
+   "name": "laserraum-rollen",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "faecher",
+     "zahl": 7,
+     "spreizung": 0.3,
+     "breite": 0.02,
+     "schwenkArt": "kreisroll",
+     "rollWeite": 120,
+     "schwenkWeite": 24,
+     "schwenkTempo": 4
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "KREIS + ROLLEN: die Lampe kreist und die Faecherebene dreht zugleich. Nahtprobe fuer die Roll-Bahn - sie laeuft ueber lpBahn wie der Schwenk und muss sich mit ihm zusammen schliessen."
+  },
+  {
+   "name": "strahlenraum-schacht",
+   "typ": "strahlenRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlenRaum",
+     "bauart": "schacht",
+     "faecher": 35,
+     "dicke": 3,
+     "kante": 0.8
+    }
+   ],
+   "gruppe": "strahlenRaum",
+   "bemerkung": "SCHACHT: ein breites Lichtband, Sonne durchs Fenster. Die Breite ist hier ein WINKEL und waechst mit der Entfernung - die Gegenprobe zum Laser, bei dem sie konstant bleibt."
+  },
+  {
+   "name": "strahlenraum-faecher",
+   "typ": "strahlenRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlenRaum",
+     "bauart": "faecher",
      "faecher": 60,
      "zahl": 7,
      "dicke": 1.2
     }
    ],
-   "gruppe": "strahlRaum",
-   "bemerkung": "sieben Strahlen im Faecher - Lichtstrahlen"
+   "gruppe": "strahlenRaum",
+   "bemerkung": "Sieben Schneisen nebeneinander - Sonne durch Blaetter oder Jalousien. Derselbe Shader-Zweig wie beim Laser-Faecher, aber mit Winkeln statt Strecken."
   },
   {
-   "name": "strahlraum-roll",
-   "typ": "strahlRaum",
+   "name": "strahlenraum-kugel",
+   "typ": "strahlenRaum",
    "titel": "a",
    "effekte": [
     {
-     "typ": "strahlRaum",
+     "typ": "strahlenRaum",
+     "bauart": "kugel",
+     "faecher": 90,
+     "zahl": 10,
+     "reihen": 3,
+     "buntheit": 0.7,
+     "dicke": 1
+    }
+   ],
+   "gruppe": "strahlenRaum",
+   "bemerkung": "KUGELQUELLE (Caspar_Ds Entwurf): alle Strahlen kommen aus EINEM Punkt und gehen in alle Richtungen, jeder in eigener Farbe - Spiegelkugel oder ein Buendel bunter Scheinwerfer. Drei Kraenze zu zehn Strahlen."
+  },
+  {
+   "name": "strahlenraum-roll",
+   "typ": "strahlenRaum",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "strahlenRaum",
+     "bauart": "faecher",
      "faecher": 50,
      "zahl": 5,
      "roll": 55
     }
    ],
-   "gruppe": "strahlRaum",
-   "bemerkung": "derselbe Faecher um 55 Grad gerollt - der dritte Winkel"
+   "gruppe": "strahlenRaum",
+   "bemerkung": "Derselbe Faecher um 55 Grad gerollt, zweiter Titel."
   },
   {
-   "name": "strahlraum-schacht",
-   "typ": "strahlRaum",
-   "titel": "b",
+   "name": "laserraum-strahl",
+   "typ": "laserRaum",
+   "titel": "a",
    "effekte": [
     {
-     "typ": "strahlRaum",
-     "faecher": 35,
-     "zahl": 1,
-     "dicke": 3,
-     "kante": 0.8
+     "typ": "laserRaum",
+     "bauart": "faecher",
+     "zahl": 3,
+     "spreizung": 0.06,
+     "breite": 0.02,
+     "staerke": 1
+    },
+    {
+     "typ": "filmnebel",
+     "staerke": 0.8
     }
    ],
-   "gruppe": "strahlRaum",
-   "bemerkung": "ein einzelner breiter Schacht, zweiter Titel"
+   "gruppe": "laserRaum",
+   "bemerkung": "DER STRAHL IN DER LUFT beim Laser. Nur mit Medium laeuft der Fuelllauf, in dem der Shader den Sehstrahl abgeht - ohne diesen Fall pruefte kein laserraum-Fall die Einstreuung, weil keiner ein Medium traegt."
+  },
+  {
+   "name": "laserraum-strahl-kegel",
+   "typ": "laserRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "laserRaum",
+     "bauart": "kegel",
+     "zahl": 12,
+     "spreizung": 0.26,
+     "breite": 0.022,
+     "schwenke": 2,
+     "staerke": 1
+    },
+    {
+     "typ": "filmnebel",
+     "staerke": 0.8
+    }
+   ],
+   "gruppe": "laserRaum",
+   "bemerkung": "Der Lasertunnel IM NEBEL - die strengste Probe des Marsches: der Kranz dreht sich, der Strahl wandert also durch die Luft, und der Marsch muss an jedem Bild woanders treffen."
+  },
+  {
+   "name": "strahlenraum-strahl",
+   "typ": "strahlenRaum",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "strahlenRaum",
+     "bauart": "schacht",
+     "faecher": 26,
+     "dicke": 8,
+     "staerke": 1
+    },
+    {
+     "typ": "filmnebel",
+     "staerke": 0.8
+    }
+   ],
+   "gruppe": "strahlenRaum",
+   "bemerkung": "Der Lichtschacht in der Luft - das Gegenstueck zum Laser: hier ist die Breite ein WINKEL und waechst mit der Entfernung, der Strahl wird nach hinten breiter."
   }
  ],
  "nichtHerstellbar": []

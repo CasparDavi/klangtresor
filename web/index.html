@@ -27241,7 +27241,19 @@ var EffektclipStudio = (() => {
   let exportLaeuft=false, root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
   const $ = s => root ? root.querySelector(s) : null;
 const kf = v => String(v).replace('.',',');
-const ZUST = new Set(['tempo','atempo','frequenz','flimmerTempo','winkel','abkling']);
+/* ZUSTAENDE SIND KEINE MENGEN (Hausregel 20): ein Slider fuer einen Zustand traegt keinen
+   Fuellbalken, denn seine Mitte ist die Heimat - ein Balken behauptet dort "halb voll", und
+   das ist keine Aussage ueber einen Ort oder ein Tempo.
+   Die Regel wirkt von selbst, wo der Bereich ins Negative geht (min<0). Sie greift NICHT bei
+   Reglern, die bei 0 anfangen und trotzdem einen Zustand tragen - genau dort stand der Fehler,
+   den Caspar_D am 22.09.2026 gefunden hat: "du hast fuer Quelle und Ziel verschiedene
+   Slidertypen benutzt". Die Lampe steht auf -0,5 bis 1,5 (sie darf aus dem Bild heraus) und
+   war damit zufaellig richtig; das Ziel steht auf 0 bis 1 und bekam einen Fuellbalken. Zwei
+   Regler fuer dieselbe Sache, zwei Gestalten.
+   DARUM STEHEN ORTE JETZT AUSDRUECKLICH HIER: die drei Achsen von Quelle und Ziel bei allen
+   Raumleuchten, und die x-Lage des Feuers. Wer einen Ortsregler dazubaut, traegt ihn ein. */
+const ZUST = new Set(['tempo','atempo','frequenz','flimmerTempo','winkel','abkling',
+  'lrOx','lrOy','lrOz','lrZx','lrZy','lrZz','mitte']);
 const PALETTEN = {
   'Cover-Akzente':['#9a9aa0','#c9c9cd'],
   'Abendrot':['#ff6a3d','#f9c74f','#e63946','#9d4edd'],
@@ -27305,7 +27317,8 @@ const IKON={
   /* Der Scheinwerfer MIT TIEFE: ein Kegel von der Seite, nicht eine Sonne von vorn - das Symbol
      sagt den Unterschied, denn dieser hier hat eine Richtung. */
   lichtRaum:'<circle cx="12" cy="4" r="2"/><path d="M12 6 L5 20 L19 20 Z"/>',
-  strahlRaum:'<circle cx="12" cy="4" r="2"/><path d="M12 6 L6 20M12 6 L12 20M12 6 L18 20"/>',
+  laserRaum:'<circle cx="12" cy="4" r="2"/><path d="M8 7 L8 20M12 7 L12 20M16 7 L16 20"/>',
+  strahlenRaum:'<circle cx="12" cy="4" r="2"/><path d="M12 6 L6 20M12 6 L12 20M12 6 L18 20"/>',
  schatten:'<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none" opacity=".85"/><circle cx="15" cy="10" r="5" fill="#0c0c0d" stroke="none"/>',
  sicherung:'<path d="M12 3v8"/><path d="M7 6.5a7 7 0 1 0 10 0"/>',
  filmnebel:'<path d="M6 15h12a3.5 3.5 0 0 0 0-7 5.5 5.5 0 0 0-10.4 1.2A3 3 0 0 0 6 15z"/><path d="M5 19h9" opacity=".55"/>',
@@ -27338,7 +27351,7 @@ const IKON={
 /* Die Ken Burns Fahrt steht hier, wo bis zum 18.09.2026 die alte "Fahrt" stand, und traegt ihre
    Farbe: es ist derselbe Amtsbereich (Geometrie). Bis heute lief das ueber TON.kenburns=TON.fahrt -
    mit dem Fall der alten Fahrt haette die Zeile ins Leere gezeigt. */
-const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',kenburns:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',lichtRaum:'#f0cf6a',strahlRaum:'#ff7a6a',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',filmnebel:'#c8d6e6',streiflicht:'#ffd9a0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
+const TON={helligkeit:'#e0b34d',risse:'#bfe3ff',beschlag:'#cfe6f2',einschlag:'#8fd0ff',tropfen:'#7fc4ff',kenburns:'#5bd6c8',puls:'#5bd6c8',schaerfe:'#e0b34d',farbe:'#d67ad0',licht:'#e8c24d',lichtRaum:'#f0cf6a',laserRaum:'#ff7a6a',strahlenRaum:'#ffd9a0',schatten:'#8a8fa0',laser:'#ff5a4d',streifen:'#9a8cff',rauschen:'#9aa3ad',vlauf:'#7aa0ff',wackeln:'#6fb3ff',rgb:'#ff6b9a',strobe:'#ffe14d',strahlen:'#ffe9b0',spiegel:'#8fc9e0',korn:'#b8b8bc',bloecke:'#ff6b9a',farbton:'#d67ad0',kippen:'#5bd6c8',wellen:'#6fc7e0',kaustik:'#bfe6ff',linse:'#c9c9cd',flammen:'#ff8a3d',feuer:'#ff7a2d',filmnebel:'#c8d6e6',streiflicht:'#ffd9a0',partikel:'#dfe7f0',scanlines:'#8fb8c8',bloom:'#ffd9a0',nachzieh:'#9ad0ff',sicherung:'#c9a24d',kontrast:'#d98a5b',saettigung:'#e0578a'};
 function ikon(typ){ return '<span class="tbs-ik" style="color:'+(TON[typ]||'#ccc')+'"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(IKON[typ]||'')+'</svg></span>'; }
 
 /* GELOESCHT: KB_LAEUFE, die sechs Kamerawege der Ken Burns Fahrt, und mit ihnen der Regler
@@ -27542,7 +27555,11 @@ const EFFEKTE = {
        einer Stelle gerechnet, der Shader bekommt nur das Ergebnis. u_modus sagt ihm, ob er die
        Lichtfarbe oder den Lampenort ausgibt - derselbe Kegel, zwei Werte. */
     glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
-      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1 }; } },
+      /* u_inPuffer sagt dem Shader, dass gerade der Fuelllauf laeuft - nur dann malt er den
+         Strahl in der Luft dazu. LICHTMAL ist waehrend beider Fuelllaeufe gesetzt; welcher
+         davon, steht in u_modus. */
+      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1,
+               u_inPuffer:LICHTMAL?1:0 }; } },
   /* ===================== STRAHLEN MIT TIEFE (21.09.2026) ======================================
      Derselbe Bau wie der Scheinwerfer mit Tiefe, nur mit einer anderen Form: Statt eines Kegels
      um die Achse ein FAECHER - eine Ebene durch die Achse, in der Breite geoeffnet und in der
@@ -27558,29 +27575,132 @@ const EFFEKTE = {
      ist rotationssymmetrisch -, beim Faecher entscheidet er, ob der Laser senkrecht steht,
      waagerecht liegt oder schraeg schneidet. Darum sitzt er hier und nicht bei lrSchwenkAnteil:
      Roll laesst den Zielpunkt unberuehrt und wirkt nur auf die FORM, also im Shader. */
-  strahlRaum:{ label:'Strahlen mit Tiefe', art:'gl', verr:'screen', verrFrei:true, staerkeDef:.6, leuchtet:true,
-    besch:'Ein <b>F\u00e4cher aus Licht mit einem Ort im Raum</b>. Wie der Scheinwerfer mit Tiefe steht die Quelle irgendwo im Diorama und strahlt irgendwohin \u2014 beide Punkte haben eine <b>Tiefe</b>. Statt eines runden Kegels entsteht eine <b>Ebene</b>: in der Breite ge\u00f6ffnet, in der Dicke schmal.<br>Damit sind zwei alte Effekte einer: <b>Ein Strahl</b> mit ganz geschlossenem F\u00e4cher ist ein <b>Laser</b>; <b>viele Strahlen</b> in einem weiten F\u00e4cher sind <b>Lichtstrahlen</b> \u2014 Sonne durch Bl\u00e4tter, durchs Fenster, durchs Wasser.<br><b>Rollen</b> dreht die F\u00e4cherebene um die Strahlachse: senkrecht, waagerecht oder schr\u00e4g. <b>Mit Tiefenkarte</b> wird verdeckt, was n\u00e4her steht als die Quelle.',
+  /* ZWEI GERAETE, EINE RECHNUNG (Caspar_D, 21.09.2026: „nein, ich will exakt zwei Effekte -
+     Laser mit Tiefe … und Lichtstrahlen mit Tiefe").
+     Der Grund ist physikalisch, nicht kosmetisch: „Laserstrahlen sind paralleles Licht, zumindest
+     innerhalb eines Strahls, Lichtstrahlen aber staerker faechern." Genau so ist es - ein Laser
+     behaelt seinen Durchmesser ueber die ganze Strecke, ein Lichtschacht faellt aus einer
+     Oeffnung und weitet sich auf. Vorher war der Laser ein sehr duenner Faecher; das war
+     bequem und falsch.
+     DER UNTERSCHIED STEHT IM SHADER als u_parallel: ist er gesetzt, misst sich die Dicke in
+     Bildbreiten und bleibt ueber die Strecke gleich; sonst ist sie ein Winkel und waechst mit
+     der Entfernung. Beide Geraete teilen denselben Shader - eine Rechnung, zwei Zeilen in der
+     Registry. */
+  laserRaum:{ label:'Laser mit Tiefe', art:'gl', verr:'screen', verrFrei:true, staerkeDef:.7, leuchtet:true,
+    besch:'<b>Paralleles Licht mit einem Ort im Raum.</b> Wie beim Scheinwerfer mit Tiefe stehen Quelle und Ziel irgendwo im Diorama, beide mit einer <b>Tiefe</b>. Anders als ein Lichtschacht weitet sich ein Laser <b>nicht</b> auf: Sein Durchmesser bleibt \u00fcber die ganze Strecke gleich.<br>F\u00fcnf Bauarten: <b>F\u00e4cher</b> \u2014 ein Strahlteiler macht aus einem Strahl mehrere gleichzeitige, alle parallel. <b>Scanner</b> \u2014 ein Strahl, von einem Spiegel schnell abgelenkt; was man sieht, ist sein Nachleuchten. <b>Matrixpunkte</b> \u2014 ein Beugungsgitter streut ein Raster von Punkten auf das, was da ist. <b>Kegel</b> \u2014 die Strahlen sitzen auf einem <i>hohlen</i> Mantel, der sich dreht: der Lasertunnel \u00fcber der Tanzfl\u00e4che, bei dem man mitten drin steht. <b>Lissajous</b> \u2014 derselbe Spiegel wie beim Scanner, aber in beiden Achsen und mit verschiedenem Tempo; daraus entsteht eine geschlossene Schleife.<br><b>Rollen</b> dreht die F\u00e4cherebene um die Strahlachse, <b>Austastung</b> schaltet einzelne Strahlen im Takt ab \u2014 das Blanking einer Lasershow.<br><b>Der Strahlentisch</b> \u2014 die waagerechte Strahlenebene \u00fcber den K\u00f6pfen \u2014 braucht keine eigene Bauart: das ist ein F\u00e4cher mit Rollen auf 90\u00b0.',
+    params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2a2a'},
+      {k:'bauart',lbl:'Bauart',sel:[['faecher','F\u00e4cher \u2014 mehrere parallele Strahlen'],['scanner','Scanner \u2014 ein abgelenkter Strahl'],['matrix','Matrixpunkte \u2014 ein Raster'],['kegel','Kegel \u2014 ein drehender Tunnel aus Strahlen'],['lissa','Lissajous \u2014 eine geschlossene Schleife']],def:'faecher'},
+      {k:'lrOx',lbl:'Quelle X',min:-0.5,max:1.5,step:.01,def:.12},
+      {k:'lrOy',lbl:'Quelle Y',min:-0.5,max:1.5,step:.01,def:.18},
+      {k:'lrOz',lbl:'Quelle Tiefe',min:0,max:1,step:.01,def:.86,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'lrZx',lbl:'Ziel X',min:0,max:1,step:.01,def:.7},
+      {k:'lrZy',lbl:'Ziel Y',min:0,max:1,step:.01,def:.6},
+      {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.35,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
+      {k:'breite',lbl:'Strahlbreite',min:.001,max:.05,step:.001,def:.016,wert:v=>kf((Number(v)*1000).toFixed(1))+'\u2030 der Bildbreite'},
+      {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:5,wert:v=>kf(v),
+        when:e=>['faecher','kegel'].indexOf(e.bauart||'faecher')>=0},
+      {k:'auffaechernd',tog:'Auff\u00e4chernd',def:0,
+        notiz:e=>e.auffaechernd?'Die Strahlen laufen auseinander wie hinter einem Prisma \u2014 jeder einzelne beh\u00e4lt dabei seine Dicke, denn das ist es, was Laserlicht ausmacht.':'Die Strahlen laufen parallel nebeneinander, wie hinter einem Strahlteiler. Angeschaltet f\u00e4chern sie auf und die Weite wird ein Winkel.'},
+      {k:'spreizung',lbl:'Weite',min:.005,max:.6,step:.005,def:.12,
+        wert:(v,e)=>(e&&e.auffaechernd)?kf((Number(v)*100).toFixed(1))+'\u00b0':kf((Number(v)*100).toFixed(1))+'\u2009% der Bildbreite',
+        notiz:e=>{ const a=e.bauart||'faecher';
+          return a==='scanner' ? 'Wie weit der Spiegel den Strahl ausschl\u00e4gt \u2014 die Breite des Strichs, den er zieht.'
+               : a==='matrix'  ? 'Wie weit das Punktraster auff\u00e4chert.'
+               : a==='kegel'   ? 'Der Halbmesser des Kegelmantels \u2014 wie weit der Tunnel sich \u00f6ffnet.'
+               : a==='lissa'   ? 'Wie gro\u00df die Figur wird, die der Spiegel zeichnet.'
+               : 'Der Abstand der parallelen Strahlen voneinander \u2014 ein Strahlteiler spreizt, er f\u00e4chert nicht.'; }},
+      {k:'schwenke',lbl:'Uml\u00e4ufe je Sekunde',min:.2,max:24,step:.2,def:6,wert:v=>kf(v),
+        notiz:e=>{ const a=e.bauart||'faecher';
+          return a==='kegel' ? 'Wie schnell sich der Strahlenkranz um die Achse dreht.'
+               : a==='lissa' ? 'Wie oft die Figur in der Sekunde durchlaufen wird.'
+               : 'Wie oft der Spiegel in der Sekunde hin und her geht. Nicht zu verwechseln mit dem Schwenk weiter unten \u2014 der kippt die ganze Lampe, dies lenkt nur den Strahl ab.'; },
+        when:e=>['scanner','lissa','kegel'].indexOf(e.bauart||'faecher')>=0},
+      {k:'lissa',lbl:'Verh\u00e4ltnis',min:1,max:5,step:.5,def:2,wert:v=>kf(v)+' : 1',
+        notiz:e=>'Wie oft der Spiegel quer schwingt, w\u00e4hrend er einmal l\u00e4ngs schwingt. 1:1 ist ein Kreis, 2:1 eine Acht, 3:2 die bekannte Schleife. Nur ganze und halbe Schritte \u2014 bei einem krummen Verh\u00e4ltnis schl\u00f6sse sich die Kurve nie.',
+        when:e=>(e.bauart||'faecher')==='lissa'},
+      {k:'nachgluehen',lbl:'Nachgl\u00fchen',min:0,max:1,step:.05,def:.5,
+        notiz:e=>'Ein Galvospiegel zieht den Strahl schneller, als das Auge folgt \u2014 was man sieht, ist seine Spur.',
+        when:e=>['scanner','lissa'].indexOf(e.bauart||'faecher')>=0},
+      {k:'reihen',lbl:'Punkte je Reihe',min:2,max:40,step:1,def:12,wert:v=>kf(v),when:e=>(e.bauart||'faecher')==='matrix'},
+      {k:'austasten',lbl:'Austastung',min:0,max:1,step:.05,def:0,
+        notiz:e=>'Wie viele Strahlen im Takt kurz ausgehen \u2014 das Blanking einer Lasershow. Bei 0 bleiben alle an.'},
+      /* KEIN when AN EINEM SCHIEBEREGLER (am Bild gefunden, 21.09.2026). Hier stand
+         when:e=>e.austasten>0 - und die Zeile erschien nie. Beim Schieben zieht die Karte nur
+         die WERTE nach, gebaut wird sie neu erst bei einer Auswahl oder einem Schalter. Im
+         ganzen Haus haengt darum kein when an einem Schieberegler; mir ist es nur deshalb nicht
+         aufgefallen, weil ich die Zeile geschrieben und nicht bedient habe.
+         Die Zeile steht jetzt immer da und sagt selbst, wann sie wirkt - Regel 4 verlangt
+         ohnehin ausgrauen statt verstecken, und ein statischer Satz ist in jedem Zustand wahr. */
+      {k:'austastTempo',lbl:'Austast-Tempo',min:.5,max:16,step:.5,def:4,wert:v=>kf(v)+'\u2009/\u2009s',
+        notiz:e=>'Wie oft in der Sekunde neu ausgew\u00fcrfelt wird, welche Strahlen ausgehen. Wirkt erst, wenn die Austastung dar\u00fcber \u00fcber 0 steht.'},
+      {k:'roll',lbl:'Rollen',min:-90,max:90,step:1,def:0,wert:v=>kf(v)+'\u00b0'},
+      {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.35},
+      {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell'],['roll','Rollen \u2014 dreht um die Strahlachse'],['kreisroll','Kreis + Rollen \u2014 beides zugleich']],def:'aus'},
+      {k:'rollWeite',lbl:'Rollweite',min:0,max:180,step:5,def:60,wert:v=>kf(v)+'\u00b0',
+        notiz:e=>'Wie weit die F\u00e4cherebene hin und her dreht. Der Regler \u201eRollen\u201c weiter oben setzt die Mitte, um die sie pendelt.',
+        when:e=>['roll','kreisroll'].indexOf(e.schwenkArt||'aus')>=0},
+      {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:14,wert:v=>kf(v)+'\u00b0',
+        when:e=>['aus','roll'].indexOf(e.schwenkArt||'aus')<0},
+      {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:7,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
+      {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
+        notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte trifft der Strahl eine gedachte Ebene statt des Motivs.'}],
+    glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
+      const art=e.bauart||'faecher';
+      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1,
+               u_parallel:1, u_divergent:e.auffaechernd?1:0, u_inPuffer:LICHTMAL?1:0,
+               u_roll:Number(e.roll||0)+lrRollAnteil(e, t==null?0:t),
+               u_bauart:({faecher:1,matrix:2,scanner:4,kegel:5,lissa:6})[art]||1,
+               /* Aufgefaechert ist die Weite ein WINKEL: derselbe Reglerweg, andere Einheit - 0,005 bis
+                  0,6 werden 0,5 bis 60 Grad. Die Anzeige sagt es (wert:), die Zahl bleibt dieselbe. */
+               u_faecher:(e.auffaechernd?100:1)*Number(e.spreizung==null?.12:e.spreizung),
+               u_dicke:Number(e.breite||.004),
+               /* EINGERASTET, SONST SPRINGT DIE NAHT: Schwenke und Austastung sind die beiden
+                  Takte dieses Effekts, und beide muessen in ganzen Schritten in den Clip
+                  passen. lpR macht aus der Rate die naechste, die aufgeht; u_austastZahl sagt
+                  dem Shader, nach wie vielen Fenstern er wieder von vorn wuerfelt. */
+               u_schwenke:lpR(Number(e.schwenke==null?6:e.schwenke)),
+               u_austastTempo:lpR(Number(e.austastTempo==null?4:e.austastTempo)),
+               u_austastZahl:(LOOP>0?Math.max(1,Math.round(lpR(Number(e.austastTempo==null?4:e.austastTempo))*LOOP)):0),
+               u_zeit:(t==null?0:t) }; } },
+  strahlenRaum:{ label:'Lichtstrahlen mit Tiefe', art:'gl', verr:'screen', verrFrei:true, staerkeDef:.6, leuchtet:true,
+    besch:'<b>Licht aus einer Quelle im Raum, das sich auff\u00e4chert.</b> Quelle und Ziel stehen irgendwo im Diorama, beide mit einer <b>Tiefe</b> \u2014 und anders als ein Laser weitet sich ein Lichtschacht auf dem Weg auf, weil er aus einer \u00d6ffnung f\u00e4llt.<br>Drei Bauarten: <b>Schacht</b> \u2014 ein breites Lichtband, Sonne durchs Fenster. <b>F\u00e4cher</b> \u2014 mehrere Schneisen nebeneinander, Sonne durch Bl\u00e4tter oder Jalousien. <b>Kugelquelle</b> \u2014 alle Strahlen kommen aus <i>einem</i> Punkt und gehen in alle Richtungen, jeder in eigener Farbe: eine Spiegelkugel oder ein B\u00fcndel bunter Scheinwerfer.<br><b>Rollen</b> dreht die F\u00e4cherebene um die Strahlachse. <b>Mit Tiefenkarte</b> wird verdeckt, was n\u00e4her steht als die Quelle.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff5a4d'},
+      {k:'bauart',lbl:'Bauart',sel:[['schacht','Schacht \u2014 ein breites Lichtband'],['faecher','F\u00e4cher \u2014 mehrere Schneisen'],['kugel','Kugelquelle \u2014 in alle Richtungen, bunt']],def:'faecher'},
+      {k:'buntheit',lbl:'Farbstreuung',min:0,max:1,step:.05,def:.7,
+        notiz:e=>(e.bauart||'faecher')==='kugel'?'Wie weit die Farben der einzelnen Strahlen auseinanderlaufen. Bei 0 haben alle die gew\u00e4hlte Farbe, bei 1 verteilen sie sich \u00fcber den ganzen Farbkreis.':'Nur bei der Kugelquelle: dort tr\u00e4gt jeder Strahl seine eigene Farbe.',
+        grau:e=>(e.bauart||'faecher')==='kugel'?null:'Nur die Kugelquelle gibt jedem Strahl eine eigene Farbe \u2014 Schacht und F\u00e4cher leuchten in der gew\u00e4hlten.'},
       {k:'lrOx',lbl:'Quelle X',min:-0.5,max:1.5,step:.01,def:.15},
       {k:'lrOy',lbl:'Quelle Y',min:-0.5,max:1.5,step:.01,def:.10},
       {k:'lrOz',lbl:'Quelle Tiefe',min:0,max:1,step:.01,def:.80,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
       {k:'lrZx',lbl:'Ziel X',min:0,max:1,step:.01,def:.6},
       {k:'lrZy',lbl:'Ziel Y',min:0,max:1,step:.01,def:.6},
       {k:'lrZz',lbl:'Ziel Tiefe',min:0,max:1,step:.01,def:.30,wert:v=>Number(v)>=0.5?'vorn '+kf((Number(v)*100).toFixed(0))+' %':'hinten '+kf(((1-Number(v))*100).toFixed(0))+' %'},
-      {k:'faecher',lbl:'F\u00e4cher',min:0,max:120,step:1,def:0,baut:true,wert:v=>Number(v)<0.5?'ein Strahl':kf(v)+'\u00b0',
-        notiz:e=>Number(e.faecher||0)<0.5?'Ganz geschlossen: ein einzelner Strahl \u2014 das ist der Laser.':null},
-      {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:1,wert:v=>kf(v),when:e=>Number(e.faecher||0)>=0.5},
+      {k:'faecher',lbl:'\u00d6ffnung',min:2,max:120,step:1,def:40,wert:v=>kf(v)+'\u00b0',
+        notiz:e=>(e.bauart||'faecher')==='kugel'?'Wie weit die Strahlen der Kugel auseinandergehen \u2014 bei 180\u00b0 strahlt sie nach allen Seiten.':'Wie weit sich das Licht auf dem Weg auff\u00e4chert.'},
+      {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,wert:v=>kf(v),when:e=>(e.bauart||'faecher')!=='schacht'},
+      {k:'reihen',lbl:'Ringe',min:1,max:8,step:1,def:3,wert:v=>kf(v),when:e=>(e.bauart||'faecher')==='kugel',
+        notiz:e=>'Wie viele Kr\u00e4nze von Strahlen die Kugel hat \u2014 einer ist ein Ring, mehrere f\u00fcllen den Raum.'},
       {k:'dicke',lbl:'Dicke',min:.05,max:12,step:.05,def:1.2,wert:v=>kf(v)+'\u00b0'},   /* beim Einhaengen soll man ihn sehen: 0,6\u00b0 war ein Haar */
       {k:'roll',lbl:'Rollen',min:-90,max:90,step:1,def:0,wert:v=>kf(v)+'\u00b0',
         notiz:e=>'Dreht die F\u00e4cherebene um die Strahlachse. Bei 0\u00b0 steht sie senkrecht.'},
       {k:'kante',lbl:'Kante',min:0,max:1,step:.05,def:.5},
-      {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell']],def:'aus'},
-      {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:12,wert:v=>kf(v)+'\u00b0',when:e=>(e.schwenkArt||'aus')!=='aus'},
+      {k:'schwenkArt',lbl:'Schwenk',sel:[['aus','Steht'],['pan','Pan \u2014 dreht um die Senkrechte'],['tilt','Tilt \u2014 dreht um die Waagerechte'],['kreis','Kreis \u2014 beide zugleich'],['acht','Acht \u2014 Tilt doppelt so schnell'],['roll','Rollen \u2014 dreht um die Strahlachse'],['kreisroll','Kreis + Rollen \u2014 beides zugleich']],def:'aus'},
+      {k:'rollWeite',lbl:'Rollweite',min:0,max:180,step:5,def:60,wert:v=>kf(v)+'\u00b0',
+        notiz:e=>'Wie weit die F\u00e4cherebene hin und her dreht. Der Regler \u201eRollen\u201c weiter oben setzt die Mitte, um die sie pendelt.',
+        when:e=>['roll','kreisroll'].indexOf(e.schwenkArt||'aus')>=0},
+      {k:'schwenkWeite',lbl:'Schwenkweite',min:0,max:80,step:1,def:12,wert:v=>kf(v)+'\u00b0',
+        when:e=>['aus','roll'].indexOf(e.schwenkArt||'aus')<0},
       {k:'schwenkTempo',lbl:'Schwenk-Dauer',min:.5,max:30,step:.5,def:8,wert:v=>kf(v)+'\u2009s',when:e=>(e.schwenkArt||'aus')!=='aus'},
       {k:'verdeckung',lbl:'Verdeckung',min:0,max:1,step:.05,def:1,brauchtKarte:true,
         notiz:e=>tiefeKarteDa()?null:'Ohne Tiefenkarte strahlt die Quelle flach \u2014 der F\u00e4cher trifft dann eine gedachte Ebene statt des Motivs.'}],
     glZusatz:(e,t)=>{ const Z=lrSchwenkAnteil(e, t==null?0:t);
-      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1 }; } },
+      const art=e.bauart||'faecher';
+      return { u_sx:Z[0], u_sy:Z[1], u_sz:Z[2], u_modus:LICHTHERKUNFT?1:0, u_tjb:lrRaumtiefe(), u_tiefeAn:1,
+               u_parallel:0, u_divergent:1, u_inPuffer:LICHTMAL?1:0,
+               u_roll:Number(e.roll||0)+lrRollAnteil(e, t==null?0:t),
+               u_bauart:(art==='schacht'?0:(art==='kugel'?3:1)),
+               u_buntheit:Number(e.buntheit==null?.7:e.buntheit),
+               u_reihen:Number(e.reihen||3), u_zeit:(t==null?0:t) }; } },
   strahlen:{ label:'Lichtstrahlen', art:'mal', verr:'screen', staerkeDef:.6, besch:'Breite, weiche Lichtschächte aus einem Punkt (auch außerhalb des Bildes), die langsam schwenken — Sonne durchs Wasser, durch Blätter, durchs Fenster. Nicht der Laser: weich, nicht scharf.',
     params:[{k:'px',lbl:'Punkt X',min:-.5,max:1.5,step:.05,def:.5},{k:'py',lbl:'Punkt Y',min:-.5,max:1.5,step:.05,def:-.2},{k:'anzahl',lbl:'Strahlen',min:2,max:24,step:1,def:8},{k:'breite',lbl:'Breite (°)',min:1,max:20,step:.5,def:6},{k:'streuung',lbl:'Auffächern',min:0,max:1,step:.01,def:.33},{k:'laenge',lbl:'Länge',min:.3,max:2,step:.05,def:1.4},{k:'schwenk',lbl:'Schwenk',min:0,max:1,step:.05,def:.3},{k:'tempo',lbl:'Tempo (s)',min:5,max:60,step:1,def:20},{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffe9b0'}]},
   spiegel:{ label:'Spiegelung (Wasserfläche)', art:'post', staerkeDef:1, besch:'Unter einer Horizontlinie spiegelt sich das Bild, leicht gewellt, nach unten verblassend — See, Pfütze, nasser Asphalt.',
@@ -27616,13 +27736,17 @@ const EFFEKTE = {
    dem 10.09.2026 ist das ein echtes Medium (Licht-Puffer), die Reihenfolge spielt dafuer keine Rolle mehr.
    Schatten wird das Spiegelbild: Farbig nachbelichten. Selbstleuchter (Feuer, Flammen, Partikel) bleiben Screen.
    Gespeicherte Ketten behalten ihre Verrechnung je Instanz. */
-/* strahlRaum steht hier NICHT (21.09.2026, am Bild gefunden). Farbig abwedeln rechnet
-   basis/(1-blend) - auf schwarzem Grund bleibt das Ergebnis schwarz, egal wie hell die Farbe
-   ist. Fuer einen Scheinwerfer ist das richtig: er BELEUCHTET etwas, und wo nichts ist, gibt
-   es nichts aufzuhellen. Ein Laser oder ein Lichtschacht ist aber selbst das Licht - Streulicht
-   in der Luft, das zum Bild DAZUKOMMT. Auf einem Nachthimmel war er darum unsichtbar.
-   Er behaelt „Screen" aus seiner Registry-Zeile; waehlbar bleibt alles, er traegt verrFrei. */
-['licht','lichtRaum','laser','strahlen','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
+/* LASERRAUM UND STRAHLENRAUM STEHEN HIER MIT DRIN - und zwar seit einer Richtigstellung am
+   21.09.2026 abends. Am Abend zuvor hatte ich sie herausgenommen, weil ein Laser auf einem
+   schwarzen Nachthimmel unsichtbar blieb: Farbig abwedeln rechnet basis/(1-blend), und auf
+   Schwarz bleibt Schwarz. Das stimmt als Rechnung und war als Schluss falsch.
+   Caspar_D: „wir brauchen ein Medium, damit Lichtstrahlen und Laser in der Luft zu sehen sind.
+   Das ist aber laengst klar. Laser und Lichtstrahlen sollen sich verrechnungstechnisch wie die
+   alten verhalten." Genau das ist Regel 5: ein Strahl im Leeren IST unsichtbar. Sichtbar wird
+   er im Medium, das den Licht-Puffer liest - nicht dadurch, dass die Leuchte sich additiv auf
+   den Himmel malt. Wer den Strahl ohne Medium sehen will, stellt die Verrechnung selbst um;
+   beide tragen verrFrei. */
+['licht','lichtRaum','laser','laserRaum','strahlen','strahlenRaum','kaustik','farbe','strobe','bloom'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].verr='abwedeln'; });
 /* Wer leuchtet, schreibt seine Abstrahlung zusaetzlich in den Licht-Puffer, aus dem sich das Medium bedient. */
 /* MEDIUM IST NICHT IMMER EINE EIGENSCHAFT DES TYPS (Caspar_D, 14.09.2026: "rauch muss vom feuer
    angeleuchtet werden koennen"). Der Filmnebel ist immer eines, die Partikel nur, solange sie
@@ -27634,7 +27758,7 @@ EFFEKTE.partikel.medium = e=>e.art==='schwaden';
 /* Feuer, Flammen und Partikel leuchten selbst und sind Teilchen, keine Beleuchtung - sie behalten ihre eigene
    Vorgabe (Feuer additiv, Partikel Screen; Caspar_D, 11.09.2026). */
 if(EFFEKTE.schatten) EFFEKTE.schatten.verr='nachbelichten'; if(EFFEKTE.sicherung) EFFEKTE.sicherung.verr='nachbelichten';   /* Schwarz abgewedelt waere nichts - die Sicherung war unsichtbar (Tiefen-Check 10.09.2026) */
-['licht','lichtRaum','laser','strahlen'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
+['licht','lichtRaum','laser','laserRaum','strahlen','strahlenRaum'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].besch+=' Als Farbig abwedeln hellt das Licht nur auf, was schon da ist. F\u00fcr sichtbare Strahlen im Raum einen Filmnebel in die Kette h\u00e4ngen \u2014 der nimmt das Licht auf, gleich an welcher Stelle er steht.'; });
 /* ---- RAUM (Caspar_D, 11.09.2026: "definiere zum zeitlichen Lichtverhalten jetzt mit einem Zusatzpanel das
    spatiale Verhalten der Lichtquelle"): Ursprung (wo das Geraet haengt), Ziel (wohin es leuchtet), Bewegung des
    Ziels (auch wie ein Moving Head: Fahrt mit Anlauf und Bremsen, Schritt auf den Schlag), Form des Flecks
@@ -27994,7 +28118,7 @@ function raumNotiz(e){ if(RAUM_OHNE.has(e.art)) return null;
    `lmNurSchub` am Effekt, weil die Kanone den Antrieb SELBST liest (antriebPeriode) - bei art
    'mal' legt die Kette ihn zwar ohnehin nicht auf die Deckkraft, aber die Marke sagt es an.
    Arten ohne Salve grauen das Pult mit Grund aus, statt es zu verstecken. */
-[['licht',{lmQuelle:'takt',lmTiefe:.6}],['lichtRaum',{lmQuelle:'takt',lmTiefe:.6}],['strahlRaum',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['partikel',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
+[['licht',{lmQuelle:'takt',lmTiefe:.6}],['lichtRaum',{lmQuelle:'takt',lmTiefe:.6}],['laserRaum',{lmQuelle:'takt',lmTiefe:.6}],['strahlenRaum',{lmQuelle:'takt',lmTiefe:.6}],['schatten',{lmQuelle:'takt',lmTiefe:.6}],['laser',{lmQuelle:'takt',lmTiefe:.6}],['strahlen',{}],['feuer',{lmQuelle:'takt',lmTiefe:.5}],['flammen',{lmQuelle:'takt',lmTiefe:.5}],['kaustik',{}],['bloom',{}],['partikel',{}],['strobe',{lmQuelle:'hz',lmForm:'rechteck',lmHz:8,lmBreite:.5,lmTiefe:1}]]
   .forEach(([k,v])=>{ if(EFFEKTE[k]) EFFEKTE[k].params.push(...lmParams(v)); });
 { const pl=EFFEKTE.partikel&&EFFEKTE.partikel.params.find(p=>p.lm);
   if(pl) pl.grau=e=>ART_ANTRIEB[e.art]?null:('Diese Art fliegt gleichmäßig weiter — nur die Konfetti-Kanone (ihre Salven) und der Glitzer (seine Blitze) hängen am Antrieb.'
@@ -28043,7 +28167,7 @@ for(const k of Object.keys(EFFEKTE)){ const T=EFFEKTE[k]; if(!T.params) continue
 const EGRUPPEN = [
   ['Pulse', ['helligkeit','puls','schaerfe','kontrast','saettigung','rgb','farbton','kippen']],
   ['Blitze', ['strobe','sicherung']],
-  ['Läufe', ['kenburns','streifen','licht','lichtRaum','schatten','laser','strahlRaum','streiflicht','farbe','filmnebel','feuer']],
+  ['Läufe', ['kenburns','streifen','licht','lichtRaum','schatten','laser','laserRaum','strahlenRaum','streiflicht','farbe','filmnebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
   ['Partikel', ['partikel']],
@@ -29196,11 +29320,28 @@ function zonenHistogramm(tp){
   return { h, N, max };
 }
 function lrRaumtiefe(){ const v=Number(VORB&&VORB.raumtiefe); return isFinite(v)&&v>0 ? Math.max(0.1,Math.min(5,v)) : LR_TIEFE_JE_BREITE; }
+/* DER ROLLWINKEL ZUR ZEIT t, in Grad, als ZUSCHLAG auf den eingestellten „Rollen"-Regler.
+   Die Bahn ist dieselbe wie beim Schwenk (lpBahn) und schliesst damit von selbst: passt kein
+   ganzer Umlauf in den Clip, pendelt sie statt zu rasen (Regel 17a).
+   „Rollen" dreht nur, „Kreis + Rollen" dreht waehrend die Lampe kreist - das ist die Figur,
+   die eine Anlage macht, wenn Kopf und Prisma zugleich laufen. */
+function lrRollAnteil(e, t){
+  const art=e.schwenkArt||'aus';
+  if(art!=='roll'&&art!=='kreisroll') return 0;
+  const weite=Math.max(0,Math.min(180,Number(e.rollWeite==null?60:e.rollWeite)));
+  if(!(weite>0.01)) return 0;
+  const fr=1/Math.max(0.3,Number(e.schwenkTempo)||6);
+  return weite*Math.sin(lpBahn(fr,t,0));
+}
 function lrSchwenkAnteil(e, t){
   const f=(v,d)=>{ const x=Number(v); return isFinite(x)?x:d; };
   const O=[f(e.lrOx,.22), f(e.lrOy,.12), f(e.lrOz,.85)];
   const Z=[f(e.lrZx,.50), f(e.lrZy,.55), f(e.lrZz,.35)];
-  const art=e.schwenkArt||'aus';
+  let art=e.schwenkArt||'aus';
+  /* Die beiden Roll-Arten: „Rollen" bewegt die Lampe gar nicht, „Kreis + Rollen" bewegt sie
+     wie „Kreis". Der Rollwinkel selbst kommt aus lrRollAnteil. */
+  if(art==='roll') return Z;
+  if(art==='kreisroll') art='kreis';
   if(art==='aus') return Z;
   const weite=Math.max(0,Math.min(80,Number(e.schwenkWeite==null?18:e.schwenkWeite)))*Math.PI/180;
   if(!(weite>1e-4)) return Z;
@@ -30957,6 +31098,250 @@ vec2 lage(int k, bool zieht){ if(!zieht) return vec2(k==0?1.0:0.0, 0.0); float f
    Bewegung 1,08 der Vorschau, in zwei Lagen 1,20). Wer zieht, wabert darum um diesen Anteil langsamer. */
 float wabern(float v, bool zieht){ if(!zieht) return v; float c=3.14159265/(u_loop*4.48); return sqrt(max(0.0,v*v-c*c)); }
 `;
+/* EIN SHADER FUER BEIDE GERAETE (21.09.2026). Laser mit Tiefe und Lichtstrahlen mit Tiefe
+   rechnen dasselbe und unterscheiden sich in einer Zahl: u_parallel.
+     parallel  = 1  Laserlicht. Die Strahlbreite misst sich in BILDBREITEN und bleibt ueber die
+                    ganze Strecke gleich (Caspar_D: „Laserstrahlen sind paralleles Licht").
+     parallel  = 0  Lichtschacht. Die Breite ist ein WINKEL und waechst mit der Entfernung,
+                    weil das Licht aus einer Oeffnung faellt und sich auffaechert.
+   u_bauart waehlt die Figur:
+     0  Schacht / einzelner Strahl      1  Faecher aus n Strahlen
+     2  Matrixpunkte (Raster)           3  Kugelquelle: Ringe von Strahlen, jeder eigene Farbe
+     4  Scanner: ein Strahl, abgelenkt, mit Nachleuchten
+     5  Kegel: Strahlen auf einem HOHLEN Mantel, der sich dreht - der Lasertunnel
+     6  Lissajous: derselbe Scanner, aber in beiden Achsen mit verschiedenem Tempo
+   DIE AUSTASTUNG gilt quer zu allen: einzelne Strahlen gehen im Takt aus (Blanking).
+   GEMEINSAM BLEIBT: Achse aus Quelle und Ziel, zwei Querachsen, die Roll um die Achse dreht,
+   das photometrische Entfernungsgesetz und die Verdeckung durch die Tiefenkarte.
+
+   DIE ZUGEHOERIGKEIT STEHT SEIT DEM 21.09.2026 NACHTS IN EINER FUNKTION und nicht mehr in
+   main(). Der Grund ist der Strahl in der Luft: Dieselbe Frage - „wie stark liegt dieser Punkt
+   im Strahl?" - wird jetzt zweimal gestellt, einmal fuer den Punkt auf dem Relief und 24-mal
+   entlang des Sehstrahls. Zwei Fassungen derselben Rechnung waeren zwei Wahrheiten. */
+const GL_SHADER_STRAHL=`uniform float u_lrOx,u_lrOy,u_lrOz,u_lrZx,u_lrZy,u_lrZz,u_faecher,u_zahl,u_dicke,u_roll,u_kante,u_verdeckung,u_tiefeAn,u_modus,u_tjb,u_sx,u_sy,u_sz,u_parallel,u_bauart,u_buntheit,u_reihen,u_zeit,u_schwenke,u_nachgluehen,u_lissa,u_austasten,u_austastTempo,u_austastZahl,u_inPuffer,u_divergent;
+uniform vec3 u_farbe;
+float hsh(vec2 p){                        /* Wuerfel fuer die Austastung */
+  return fract(sin(dot(p,vec2(41.3,289.7)))*43758.5453);
+}
+vec3 bunt(float h){                       /* Farbkreis, fuer die Kugelquelle */
+  h=fract(h);
+  vec3 k=abs(fract(vec3(h)+vec3(0.0,2.0/3.0,1.0/3.0))*6.0-3.0);
+  return clamp(k-1.0,0.0,1.0);
+}
+/* WIE STARK LIEGT DER PUNKT Q IM STRAHL? Null heisst: gar nicht. farbNr gibt die Nummer des
+   getroffenen Strahls auf dem Farbkreis zurueck - nur die Kugelquelle benutzt sie. */
+float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float farbNr){
+  farbNr=0.0;
+  vec3 d=Q-Lp; float dist=length(d);
+  if(dist<1e-5) return 0.0;
+  float cosw=dot(d/dist,A);
+  if(cosw<=0.0) return 0.0;                          /* hinter der Lampe ist kein Licht */
+  /* QUER ZUR ACHSE: beim Laser als Strecke, beim Schacht als Winkel. Der Unterschied steckt
+     allein darin, ob durch die Entfernung geteilt wird oder nicht. */
+  vec3 quer=d-A*dot(d,A);
+  float qu=dot(quer,Ur), qv=dot(quer,Vr);
+  float halb=(u_parallel>0.5) ? max(0.0005,u_dicke)*0.5
+                              : radians(max(0.02,u_dicke)*0.5)*dist;
+  /* DIE DICKE des einzelnen Strahls haengt an u_parallel, die WEITE der Anordnung an
+     u_divergent - ein Strahlteiler schickt parallele Strahlen parallel nebeneinander, ein
+     Prisma oder ein Spiegel faechert dieselben parallelen Strahlen auf. */
+  float weite=(u_divergent>0.5) ? radians(max(0.0,u_faecher)*0.5)*dist
+                                : max(0.0,u_faecher);
+  float n=max(1.0,floor(u_zahl+0.5));
+  float qD=abs(qv)/max(1e-6,halb);
+  float qE=0.0;
+  float strahlNr=0.0;
+  if(u_bauart<0.5){
+    /* Schacht: ein breites Band, so weit wie die Oeffnung */
+    qE=abs(qu)/max(1e-6,(u_parallel>0.5)?halb:weite);
+  } else if(u_bauart<1.5){
+    /* Faecher: n Strahlen nebeneinander. Beim Laser SPREIZT ein Strahlteiler sie parallel,
+       beim Schacht faechern sie auf - dieselbe Zeile, andere Einheit von „weite". */
+    if(abs(qu)>weite) return 0.0;
+    float schritt=(n>1.5)?(2.0*weite/(n-1.0)):(2.0*weite);
+    float rel=(qu+weite)/max(1e-6,schritt);
+    float nr=floor(rel+0.5);
+    strahlNr=nr;
+    farbNr=nr/max(1.0,n-1.0);
+    qE=abs(rel-nr)*schritt/max(1e-6,halb);
+  } else if(u_bauart<2.5){
+    /* Matrixpunkte: dasselbe Raster in BEIDEN Querachsen - ein Beugungsgitter streut Punkte. */
+    float m=max(2.0,floor(u_reihen+0.5));
+    float schritt=2.0*weite/(m-1.0);
+    if(abs(qu)>weite||abs(qv)>weite) return 0.0;
+    float ru=(qu+weite)/max(1e-6,schritt), rv=(qv+weite)/max(1e-6,schritt);
+    float du=abs(ru-floor(ru+0.5))*schritt, dv=abs(rv-floor(rv+0.5))*schritt;
+    qE=length(vec2(du,dv))/max(1e-6,halb);
+    qD=0.0;
+    strahlNr=floor(ru+0.5)+floor(rv+0.5)*41.0;
+    farbNr=fract((floor(ru+0.5)+floor(rv+0.5)*7.0)/max(2.0,m*m));
+  } else if(u_bauart<3.5){
+    /* KUGELQUELLE (Caspar_D: „alle Strahlen kommen von einer Quelle, sind aber mit den Farben
+       verschieden darstellbar"). Die Strahlen sitzen auf Ringen um die Achse: u_reihen Kraenze,
+       je n Strahlen. Gefragt wird in Winkeln, nicht in Strecken - eine Kugel strahlt radial. */
+    float theta=acos(clamp(cosw,-1.0,1.0));
+    float phi=atan(qv,qu);
+    float halbOef=radians(max(2.0,u_faecher)*0.5);
+    if(theta>halbOef) return 0.0;
+    float ringe=max(1.0,floor(u_reihen+0.5));
+    float dT=halbOef/ringe;
+    float rT=theta/max(1e-6,dT);
+    float ring=floor(rT+0.5);
+    float abT=abs(rT-ring)*dT;
+    float dP=6.2831853/n;
+    float rP=phi/dP;
+    float abP=abs(rP-floor(rP+0.5))*dP*max(0.15,sin(max(0.05,ring*dT)));
+    float breit=radians(max(0.02,u_dicke)*0.5);
+    qE=length(vec2(abT,abP))/max(1e-6,breit);
+    qD=0.0;
+    strahlNr=ring*41.0+floor(rP+0.5);
+    farbNr=fract((ring*3.0+floor(rP+0.5))/max(2.0,n));
+  } else if(u_bauart<4.5){
+    /* Scanner: ein Strahl, vom Spiegel abgelenkt. Das Nachleuchten sind mehrere Lagen hinter
+       der jetzigen Stellung, jede blasser - ein Shader hat kein Gedaechtnis, also wird die
+       Vergangenheit gerechnet statt gespeichert. */
+    float best=1e9;
+    for(int i=0;i<8;i++){
+      float alt=float(i)*0.012;
+      float s=sin(6.2831853*max(0.2,u_schwenke)*(u_zeit-alt));
+      float ziel=s*weite;
+      float ab=abs(qu-ziel)/max(1e-6,halb);
+      ab*=1.0+float(i)*(1.0-clamp(u_nachgluehen,0.0,1.0))*6.0;
+      if(i==0||ab<best) best=ab;
+    }
+    qE=best;
+  } else if(u_bauart<5.5){
+    /* KEGEL (Lasertunnel). Nicht der gefuellte Kegel des Scheinwerfers, sondern sein MANTEL:
+       die Strahlen sitzen auf EINEM Kranz und die Mitte bleibt leer. Genau das sieht man ueber
+       einer Tanzflaeche - man steht im Tunnel, nicht im Lichtkegel.
+       DER WINKEL MUSS FEST SEIN, SONST IST ES KEIN KEGEL. Er bezieht sich auf die
+       ZIELentfernung dref: dort hat der Mantel den Halbmesser weite. Haengt er an dist, dem
+       Abstand des jeweiligen Punkts, oeffnet sich der Kegel fuer jeden anders und der Mantel
+       wird zur Flaeche. */
+    float theta=acos(clamp(cosw,-1.0,1.0));
+    float phi=atan(qv,qu);
+    float oef=(u_parallel>0.5) ? atan(max(0.002,weite)/max(1e-6,dref))
+                               : radians(max(0.02,u_faecher)*0.5);
+    float abT=abs(theta-oef)*dist;
+    /* Der Kranz dreht sich. Die Rate ist in der Registry auf ganze Umlaeufe je Clip
+       eingerastet (lpR), sonst springt der Tunnel am Nahtbild (Regel 17a). */
+    float dreh=6.2831853*u_schwenke*u_zeit;
+    float dP=6.2831853/n;
+    float rP=(phi+dreh)/dP;
+    float abP=abs(rP-floor(rP+0.5))*dP*dist*max(0.08,sin(max(0.02,oef)));
+    qE=length(vec2(abT,abP))/max(1e-6,halb);
+    qD=0.0;
+    strahlNr=floor(rP+0.5);
+    farbNr=fract(floor(rP+0.5)/max(2.0,n));
+  } else {
+    /* LISSAJOUS. Derselbe Galvospiegel wie beim Scanner, nur schwingt er in BEIDEN Achsen -
+       mit verschiedenem Tempo, und daraus entsteht die geschlossene Figur. Bei 1:1 ist es ein
+       Kreis, bei 2:1 eine Acht, bei 3:2 die bekannte Schleife.
+       Das Verhaeltnis muss rational sein, sonst schliesst sich die Kurve nie; der Regler gibt
+       darum nur halbe Schritte her. */
+    float best=1e9;
+    for(int i=0;i<8;i++){
+      float alt=float(i)*0.012;
+      float tt=u_zeit-alt;
+      float zu=sin(6.2831853*max(0.2,u_schwenke)*tt)*weite;
+      float zv=sin(6.2831853*max(0.2,u_schwenke)*max(0.5,u_lissa)*tt+1.5707963)*weite;
+      float ab=length(vec2(qu-zu,qv-zv))/max(1e-6,halb);
+      ab*=1.0+float(i)*(1.0-clamp(u_nachgluehen,0.0,1.0))*6.0;
+      if(i==0||ab<best) best=ab;
+    }
+    qE=best;
+    qD=0.0;
+  }
+  if(qD>1.0||qE>1.0) return 0.0;
+  /* AUSTASTUNG (Blanking): einzelne Strahlen gehen im Takt aus. Gewuerfelt wird an der
+     Strahlnummer und der FENSTERNUMMER, und die laeuft nach u_austastZahl Fenstern um -
+     sonst wuerfelte das Nahtbild neu und die Schleife klaffte (Regel 17b). */
+  if(u_austasten>0.001){
+    float fn=floor(u_zeit*max(0.2,u_austastTempo));
+    if(u_austastZahl>0.5) fn=mod(fn,u_austastZahl);
+    if(hsh(vec2(strahlNr,fn))<clamp(u_austasten,0.0,1.0)) return 0.0;
+  }
+  float sch=0.6+u_kante*3.4;
+  float v=pow(max(0.0,1.0-qD),sch*0.5)*pow(max(0.0,1.0-qE),sch*0.5);
+  return v*clamp((dref*dref)/max(1e-6,dist*dist),0.0,4.0);
+}
+void main(){
+  float seite=u_res.y/max(1.0,u_res.x);
+  float pz=(u_tiefeAn>0.5)?texture2D(u_tiefe,v_uv).r:u_sz;
+  vec3 P=vec3(v_uv.x,(1.0-v_uv.y)*seite,(1.0-pz)*u_tjb);
+  vec3 Lp=vec3(u_lrOx,u_lrOy*seite,(1.0-u_lrOz)*u_tjb);
+  vec3 Zp=vec3(u_sx,u_sy*seite,(1.0-u_sz)*u_tjb);
+  vec3 A=normalize(Zp-Lp);
+  vec3 hilf=(abs(A.y)>0.95)?vec3(1.0,0.0,0.0):vec3(0.0,1.0,0.0);
+  vec3 U=normalize(cross(A,hilf));
+  vec3 V=cross(A,U);
+  float rr=radians(u_roll);
+  vec3 Ur=U*cos(rr)+V*sin(rr);
+  vec3 Vr=-U*sin(rr)+V*cos(rr);
+  float dref=length(Zp-Lp);
+  /* ERSTENS: WAS DER STRAHL TRIFFT. P liegt auf dem Relief. */
+  float fn=0.0;
+  float v=imStrahl(P,Lp,A,Ur,Vr,dref,fn);
+  vec3 f=u_farbe;
+  if(u_buntheit>0.001&&(u_bauart>2.5&&u_bauart<3.5)) f=mix(u_farbe,bunt(fn),clamp(u_buntheit,0.0,1.0));
+  if(u_tiefeAn>0.5&&u_verdeckung>0.001){
+    float frei=smoothstep(u_lrOz+0.06,u_lrOz-0.06,pz);
+    v*=mix(1.0,frei,clamp(u_verdeckung,0.0,1.0)); }
+  /* ZWEITENS: DER STRAHL IN DER LUFT (21.09.2026 nachts, nach dem Scheinwerfer).
+     Bis hierher steht in v nur, was der Strahl TRIFFT - denn P liegt auf dem Relief, und einen
+     Punkt in der Luft kennt die Rechnung nicht. Der Nebel zeigte darum einen Fleck und keinen
+     Strahl (Caspar_D am Scheinwerfer: „den Strahl sehe ich nicht").
+     Die Projektion ist orthographisch, der Sehstrahl zu dieser Bildstelle ist also dieselbe
+     x/y-Stelle bei wachsendem z. Er endet an der Relieftiefe - damit verschwindet der Strahl
+     von selbst hinter einer Figur, ohne Maske und ohne Kante.
+     NUR IM FUELLLAUF, und der laeuft nur mit einem Medium in der Kette: in der Kette bleibt
+     die Lampe Licht auf Flaechen (Regel 5). Im HERKUNFTSLAUF bleibt er draussen - jener Puffer
+     sagt dem Streiflicht, woher das Licht auf einer OBERFLAECHE kommt, und Luft ist keine.
+     DIE FARBE WIRD GEWICHTET GEMITTELT: bei der Kugelquelle kreuzt ein Sehstrahl mehrere
+     Strahlen verschiedener Farbe, und der hellere soll mehr zaehlen. */
+  if(u_inPuffer>0.5&&u_modus<0.5){
+    float zEnd=(1.0-pz)*u_tjb;
+    float summe=0.0, treffer=0.0;
+    vec3 summeF=vec3(0.0);
+    for(int i=0;i<64;i++){
+      float sr=(float(i)+0.5)/64.0;
+      vec3 Q=vec3(v_uv.x,(1.0-v_uv.y)*seite,sr*zEnd);
+      float qn=0.0;
+      float w=imStrahl(Q,Lp,A,Ur,Vr,dref,qn);
+      if(w>0.0){
+        summe+=w; treffer+=1.0;
+        vec3 fq=u_farbe;
+        if(u_buntheit>0.001&&(u_bauart>2.5&&u_bauart<3.5)) fq=mix(u_farbe,bunt(qn),clamp(u_buntheit,0.0,1.0));
+        summeF+=w*fq;
+      }
+    }
+    if(summe>0.0){
+      /* GEBUENDELT HEISST DICHT (Caspar_D, 21.09.2026: „bei voller Staerke sollte man doch was
+         sehen, wenn man Nebel parallel an hat"). Geteilt wird durch die GETROFFENEN Schritte,
+         nicht durch alle: damit steht hier die Leuchtdichte IM Strahl und nicht die Menge, die
+         der Sehstrahl auf seiner ganzen Laenge einsammelt.
+         Der Unterschied ist genau der, um den es geht. Ein Laser von 1,6 % Bildbreite belegt
+         vom Sehstrahl fast nichts; ueber die ganze Laenge gemittelt kam er auf 4 bis 9 von 255,
+         waehrend sein Auftreffpunkt bei 149 stand. In Wirklichkeit ist es umgekehrt - man sieht
+         im Nebel den Laserstrahl und vom Scheinwerfer oft nur den Fleck -, weil ein Showlaser
+         pro Flaeche um Groessenordnungen heller ist: ein paar Watt auf einem Millimeter gegen
+         ein paar hundert Watt auf einem Meter. Genau diese Groesse fehlte dem Modell.
+         DER DECKEL BEI ACHT SCHRITTEN IST EINE SETZUNG und steht hier als solche: ein Strahl,
+         der weniger als ein Achtel des Sehstrahls belegt, wird nicht weiter aufgewertet. Ohne
+         ihn liefe ein beliebig duenner Strahl gegen unendlich.
+         DER SCHEINWERFER RECHNET BEWUSST ANDERS und bleibt beim Mittel ueber den ganzen
+         Sehstrahl: Er ist per Definition ungebuendelt, und dort traegt die Weglaenge durch den
+         Kegel die Tiefenwirkung, die Caspar_D am Bild fuer gut befunden hat. */
+      float luft=summe/max(8.0,treffer);
+      f=(v*f+luft*(summeF/summe))/max(1e-6,v+luft);
+      v+=luft;
+    }
+  }
+  if(v<=0.0){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
+  vec3 aus=(u_modus>0.5)?vec3((u_lrOx+0.5)*0.5,(u_lrOy+0.5)*0.5,u_lrOz):f;
+  gl_FragColor=vec4(aus*v,1.0); }`;
+
+
 const GL_SHADER={
   wellen:`uniform float u_amplitude,u_skala,u_tempo,u_zone,u_aufwind;
 void main(){ vec2 uv=v_uv; float w=mix(1.0, pow(1.0-uv.y,2.0), u_zone);
@@ -30994,7 +31379,7 @@ void main(){ float k=-u_woelbung*0.5;   /* negativ = Tonne, positiv = Kissen, wi
      ankommt -, sondern von der Leuchte selbst: sie meldet ihren Ort, waehrend sie malt
      (LICHTORTE). Der Laser meldet seinen Faecherpunkt, und der liegt ausserhalb des Bildes -
      genau die streifende Lage, die Kanten aufblitzen laesst. */
-  lichtRaum:`uniform float u_lrOx,u_lrOy,u_lrOz,u_lrZx,u_lrZy,u_lrZz,u_winkel,u_hotspot,u_kante,u_verdeckung,u_tiefeAn,u_modus,u_tjb,u_sx,u_sy,u_sz;
+  lichtRaum:`uniform float u_lrOx,u_lrOy,u_lrOz,u_lrZx,u_lrZy,u_lrZz,u_winkel,u_hotspot,u_kante,u_verdeckung,u_tiefeAn,u_modus,u_tjb,u_sx,u_sy,u_sz,u_inPuffer;
 uniform vec3 u_farbe;
 /* DIE LAMPE KIPPT UND WIRFT IHREN KEGEL AUF DAS, WAS DA IST (21.09.2026).
    Caspar_D: „der Strahl dreht sich um die Lampe - das ist natuerlich Unsinn, die Lampe kippt und
@@ -31046,77 +31431,51 @@ void main(){
   if(u_tiefeAn>0.5&&u_verdeckung>0.001){
     float frei=smoothstep(u_lrOz+0.06, u_lrOz-0.06, pz);
     v*=mix(1.0, frei, clamp(u_verdeckung,0.0,1.0)); }
+  /* DER STRAHL IN DER LUFT (21.09.2026). Bis hierher steht in v nur, was der Kegel TRIFFT -
+     denn P liegt auf dem Relief, und einen Punkt in der Luft kennt die Rechnung nicht. Der
+     Nebel zeigte darum einen hellen Fleck und keinen Strahl.
+     JETZT WIRD DER SEHSTRAHL ABGEGANGEN. Die Projektion ist orthographisch: der Sehstrahl zu
+     dieser Bildstelle ist dieselbe x/y-Stelle bei wachsendem z. Er endet an der Relieftiefe -
+     damit verschwindet der Strahl von selbst hinter einer Figur, ohne Maske und ohne Kante.
+     NUR IM FUELLLAUF, und der laeuft nur, wenn ein Medium in der Kette haengt. In der Kette
+     bleibt die Lampe, was sie ist: Licht auf Flaechen. Damit gilt Regel 5 ohne Sonderweg -
+     ein Strahl im Leeren ist unsichtbar, und sichtbar wird er im Medium. Im HERKUNFTSLAUF
+     bleibt er draussen: dieser Puffer sagt dem Streiflicht, woher das Licht auf einer
+     OBERFLAECHE kommt, und ein Strahl in der Luft ist keine.
+     WIE STARK ER ZU SEHEN IST, ENTSCHEIDET DER NEBEL und nicht die Lampe: seine Formel
+     skaliert den Puffer mit (1-T), und T faellt mit der Dichte. Ein Regler an der Lampe waere
+     ein zweiter Weg fuer dieselbe Sache.
+     DASS AUFTREFFEN UND EINSTREUUNG 1:1 ADDIERT WERDEN, IST EINE SETZUNG und steht hier als
+     solche - einen zwingenden Massstab gibt es nicht, weil die Dichte erst im Nebel dazukommt.
+     24 SCHRITTE sind ebenfalls gesetzt: weniger wird bei schmalen Kegeln streifig, mehr kostet
+     ohne sichtbaren Gewinn. Was fehlt, ist der Schatten, den eine Figur IN den Nebel wirft -
+     dafuer braeuchte jeder Schritt einen zweiten Marsch zur Lampe. */
+  if(u_inPuffer>0.5 && u_modus<0.5){
+    float zEnd=(1.0-pz)*u_tjb;
+    float summe=0.0;
+    for(int i=0;i<24;i++){
+      float sr=(float(i)+0.5)/24.0;
+      vec3 Q=vec3(v_uv.x, (1.0-v_uv.y)*seite, sr*zEnd);
+      vec3 dq=Q-Lp; float dl=length(dq);
+      if(dl>1e-5){
+        float cw=dot(dq/dl,A);
+        if(cw>0.0){
+          float qq=acos(clamp(cw,-1.0,1.0))/max(1e-4,halb);
+          if(qq<=1.0){
+            float ff=(qq<=kern)?1.0:pow(max(0.0,1.0-(qq-kern)/max(1e-6,1.0-kern)), 0.6+u_kante*3.4);
+            summe+=ff*clamp((dref*dref)/max(1e-6,dl*dl), 0.0, 4.0);
+          }
+        }
+      }
+    }
+    v+=summe/24.0;
+  }
   /* IM HERKUNFTSLAUF TRAEGT DERSELBE KEGEL DEN LAMPENORT STATT DER LICHTFARBE. x und y verschoben
      gespeichert (v+0,5)/2, damit eine Lampe ausserhalb des Bildes stehen darf. */
   vec3 aus=(u_modus>0.5) ? vec3((u_lrOx+0.5)*0.5, (u_lrOy+0.5)*0.5, u_lrOz) : u_farbe;
   gl_FragColor=vec4(aus*v, 1.0); }`,
-  strahlRaum:`uniform float u_lrOx,u_lrOy,u_lrOz,u_lrZx,u_lrZy,u_lrZz,u_faecher,u_zahl,u_dicke,u_roll,u_kante,u_verdeckung,u_tiefeAn,u_modus,u_tjb,u_sx,u_sy,u_sz;
-uniform vec3 u_farbe;
-/* DER FAECHER (21.09.2026). Derselbe Bau wie beim Scheinwerfer mit Tiefe, nur eine andere Form:
-   Dort wird gefragt, ob ein Bildpunkt im Kegel um die Achse liegt; hier, ob er in der EBENE durch
-   die Achse liegt - in der Breite geoeffnet, in der Dicke schmal.
-   ZWEI WINKEL STATT EINEM. Nach der Achse A werden zwei Querachsen gebaut, und ROLL dreht sie um
-   A. Danach ist wE der Winkel IN der Faecherebene und wD der Winkel AUS ihr heraus. Die Dicke
-   begrenzt immer wD; was wE begrenzt, haengt von der Einstellung ab:
-     Faecher 0        nur wE nahe null - ein einzelner Strahl, also der Laser
-     Faecher > 0, 1   die ganze Ebene bis zum halben Faecherwinkel - ein Lichtschacht
-     Faecher > 0, n   n Strahlen, gleichmaessig ueber den Faecher verteilt - Gottesstrahlen
-   WARUM ROLL HIER UND NICHT BEIM SCHWENK: Er dreht um die Strahlachse und laesst den Zielpunkt
-   unberuehrt. Beim runden Kegel aendert er nichts, weil der rotationssymmetrisch ist; beim
-   Faecher entscheidet er alles. Form gehoert in den Shader, Ausrichtung in die Schwenkrechnung.
-   ISOTROPE KOORDINATEN wie beim Scheinwerfer - Winkel brauchen gleiche Masse auf allen Achsen. */
-void main(){
-  float seite=u_res.y/max(1.0,u_res.x);
-  float pz=(u_tiefeAn>0.5)?texture2D(u_tiefe,v_uv).r:u_sz;
-  vec3 P=vec3(v_uv.x, (1.0-v_uv.y)*seite, (1.0-pz)*u_tjb);
-  vec3 Lp=vec3(u_lrOx, u_lrOy*seite, (1.0-u_lrOz)*u_tjb);
-  vec3 Zp=vec3(u_sx, u_sy*seite, (1.0-u_sz)*u_tjb);
-  vec3 A=normalize(Zp-Lp);
-  vec3 d=P-Lp; float dist=length(d);
-  if(dist<1e-5){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
-  vec3 dir=d/dist;
-  float cosw=dot(dir,A);
-  if(cosw<=0.0){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }   /* hinter der Quelle kein Licht */
-  /* Die Querachsen. Zeigt A fast senkrecht, taugt die Senkrechte nicht als Hilfsachse - dann
-     wird die Waagerechte genommen, sonst zerfiele das Kreuzprodukt. */
-  vec3 hilf=(abs(A.y)>0.95)?vec3(1.0,0.0,0.0):vec3(0.0,1.0,0.0);
-  vec3 U=normalize(cross(A,hilf));
-  vec3 V=cross(A,U);
-  float rr=radians(u_roll);
-  vec3 Ur=U*cos(rr)+V*sin(rr);
-  vec3 Vr=-U*sin(rr)+V*cos(rr);
-  float wE=atan(dot(dir,Ur),cosw);      /* in der Faecherebene */
-  float wD=atan(dot(dir,Vr),cosw);      /* aus ihr heraus */
-  float halbD=radians(max(0.02,u_dicke)*0.5);
-  float qD=abs(wD)/halbD;
-  if(qD>1.0){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
-  float qE;
-  float halbF=radians(max(0.0,u_faecher)*0.5);
-  if(u_faecher<0.5){
-    qE=abs(wE)/halbD;                   /* ein Strahl: so schmal wie die Dicke */
-  } else if(u_zahl<1.5){
-    qE=abs(wE)/max(1e-4,halbF);         /* ein Schacht: die ganze Ebene */
-  } else {
-    if(abs(wE)>halbF){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
-    float n=floor(u_zahl+0.5);
-    float schritt=2.0*halbF/(n-1.0);
-    float rel=(wE+halbF)/schritt;
-    float ab=abs(rel-floor(rel+0.5))*schritt;   /* Abstand zum naechsten Strahl */
-    qE=ab/halbD;
-  }
-  if(qE>1.0){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
-  /* Die Kante: innen voll, nach aussen mit derselben Potenz wie beim Scheinwerfer. */
-  float sch=0.6+u_kante*3.4;
-  float v=pow(max(0.0,1.0-qD),sch*0.5)*pow(max(0.0,1.0-qE),sch*0.5);
-  /* Das photometrische Entfernungsgesetz, Bezug ist der Abstand Quelle-Ziel - wie beim
-     Scheinwerfer, mit derselben Klemme bei vier. */
-  float dref=length(Zp-Lp);
-  v*=clamp((dref*dref)/max(1e-6,dist*dist),0.0,4.0);
-  if(u_tiefeAn>0.5&&u_verdeckung>0.001){
-    float frei=smoothstep(u_lrOz+0.06,u_lrOz-0.06,pz);
-    v*=mix(1.0,frei,clamp(u_verdeckung,0.0,1.0)); }
-  vec3 aus=(u_modus>0.5)?vec3((u_lrOx+0.5)*0.5,(u_lrOy+0.5)*0.5,u_lrOz):u_farbe;
-  gl_FragColor=vec4(aus*v,1.0); }`,
+  laserRaum:GL_SHADER_STRAHL,
+  strahlenRaum:GL_SHADER_STRAHL,
   streiflicht:`uniform float u_einfall,u_kante,u_relief,u_schatten,u_ortX,u_ortY,u_ortDa,u_tiefeAn,u_einheit;
 uniform sampler2D u_herk;
 uniform sampler2D u_licht;
@@ -31544,7 +31903,7 @@ function renderStapel(){
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
       /* `wert` beschriftet den Regler selbst, wo die blosse Zahl nichts sagt: der Anschlag links
          der Tiefengrenze ist kein Wert, sondern „von selbst" (16.09.2026). */
-      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k]):kf(e[p.k]))+'</span></div>';
+      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k],e):kf(e[p.k]))+'</span></div>';
       }
     };
     /* GRAU MIT GRUND STATT WEG (Hausgesetz der Effektclips, 16.09.2026: "Nichts darf in der
@@ -31581,7 +31940,11 @@ function renderStapel(){
     if(tFehlt||tLaedt){ const kz=s=>T.params.filter(p=>p.brauchtKarte&&GEMEIN.has(p.k)===s&&sichtbar(p));
       const reihe=kz(false).concat(kz(true));
       tTraeger=reihe.filter(p=>!(p.grau&&p.grau(e))).pop()||reihe[reihe.length-1]||null; }
-    const paramHTML=p=>{ const an=sichtbar(p), eigen=(p.grau&&an)?p.grau(e):null, vor=h.length,
+    const paramHTML=p=>{ const an=sichtbar(p), vor0=h.length;
+      let eigen=null;
+      if(p.grau&&an){ try{ eigen=p.grau(e); }
+        catch(x){ console.warn('Effektclip-Studio: grau von '+p.k+' bei '+e.typ+' warf: '+(x&&x.message||x)); eigen=null; } }
+      const vor=h.length,
       /* DER EIGENE GRUND GEHT VOR (18.09.2026, aus der Zaehlung am DOM). Zuerst stand es umgekehrt:
          ohne Tiefenkarte schlug der Sachverhalt der Karte jeden eigenen Grund - dann stand bei
          Schwarm, Sternschnuppe und Kanone die LETZTE Zeile der Karte („Raumtiefe") grau und
@@ -31594,7 +31957,18 @@ function renderStapel(){
       paramBauen(p);
       /* `notiz` ist die kleine Schwester von `grau`: der Regler TUT etwas, aber was dabei
          herauskommt, haengt am Titel - dann steht die Auskunft darunter, ohne ihn stillzulegen. */
-      if(an&&p.notiz){ const nz=p.notiz(e); if(nz) h+='<div class="tbs-graugrund">'+nz+'</div>'; }
+      /* JEDE AUSKUNFT IN IHREM EIGENEN try (22.09.2026). Regel 15 („der Maler wirft nicht")
+         galt bisher nur beim MALEN; der Kartenbau hatte keinen Schutz. Eine `notiz`, die
+         wirft, riss damit die ganze Effektkette ab - und zwar stumm: bei „Escher" wurden
+         vier von sechs Effekten gebaut, die letzten zwei fehlten einfach, ohne ein Wort.
+         Gefunden hat es Caspar_D, nicht die Syntaxpruefung und nicht ich.
+         Der Fehler wird jetzt GEZEIGT statt geschluckt - eine Karte, die ihre Auskunft nicht
+         rechnen kann, ist ein Fehler, aber kein Grund, die Kette zu verlieren. */
+      if(an&&p.notiz){ let nz=null;
+        try{ nz=p.notiz(e); }
+        catch(x){ console.warn('Effektclip-Studio: notiz von '+p.k+' bei '+e.typ+' warf: '+(x&&x.message||x));
+          nz='<b>Diese Auskunft l\u00e4sst sich gerade nicht rechnen</b> \u2014 der Regler wirkt trotzdem. (' + String(x&&x.message||x) + ')'; }
+        if(nz) h+='<div class="tbs-graugrund">'+nz+'</div>'; }
       /* Waehrend die Karte unterwegs ist, bleiben die Zeilen BEDIENBAR und sagen das - einmal je
          Karte, unter demselben Traeger. `tbs-warte` sagt dem Nachziehen beim Schieben, dass diese
          Zeile nicht die Notiz des Reglers ist und stehen bleibt. */
@@ -31646,7 +32020,7 @@ function renderStapel(){
       renderStapel(); });
     c.querySelectorAll('[data-k]').forEach(inp=>inp.oninput=()=>{ const k=inp.dataset.k, p=T.params.find(x=>x.k===k);
       e[k]= (inp.type==='range') ? +inp.value : inp.value;
-      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? (p&&p.wert?p.wert(+inp.value):kf(inp.value)) : inp.value;
+      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? (p&&p.wert?p.wert(+inp.value,e):kf(inp.value)) : inp.value;
       /* EINE NOTIZ, DIE AM REGLERWERT HAENGT, MUSS AM REGLER MITZIEHEN (Regel 11, nachgesehen
          16.09.2026 in der Oberflaechenprobe). Unter „Anzahl“ steht bei der Sternschnuppe, wie
          viele je Cliplänge fliegen - beim Schieben blieb der alte Satz stehen, weil nur
@@ -32110,7 +32484,7 @@ function lrKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufe
   /* BEIDE LEUCHTEN MIT ORT TRAGEN MARKEN (21.09.2026). Der Scheinwerfer und die Strahlen stehen
      im selben Raum und werden mit denselben zwei Punkten gesetzt - eine zweite Geste fuer
      dieselbe Sache waere eine zu viel. */
-  for(const e of STAPEL) if(e.id===offenId&&(e.typ==='lichtRaum'||e.typ==='strahlRaum')) return e;
+  for(const e of STAPEL) if(e.id===offenId&&(e.typ==='lichtRaum'||e.typ==='laserRaum'||e.typ==='strahlenRaum')) return e;
   return null; }
 let LR_ZIEHT=-1;
 /* -2 dreht das Relief, >=0 haelt diese Zonengrenze, -1 nichts. Dazu der Ort des
@@ -34024,7 +34398,7 @@ function geoDrehung(){ const G=GEO; return (G&&G.rotG)?G.th:0; }
    Spezifikation, nicht ihre Zusammenfassung. */
 const STUFE_DIORAMA = new Set([
   /* die Szene selbst: was im Kasten steht und was darin leuchtet */
-  'farbe','licht','lichtRaum','strahlRaum','schatten','laser','strahlen','feuer','flammen','partikel','filmnebel',
+  'farbe','licht','lichtRaum','laserRaum','strahlenRaum','schatten','laser','strahlen','feuer','flammen','partikel','filmnebel',
   'streiflicht','kaustik','wellen','spiegel',
   /* die Glasscheibe VOR dem Diorama - „wuerde ich nicht so sehen, es ist eine Scheibe vor dem
      Diorama, nicht vor der Linse, deswegen vergroessert es mit" */
@@ -34292,7 +34666,7 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
        DER PUFFER WIRD GELEERT, NICHT GESCHWAERZT. Schwarz hiesse Ort (0,0) mit Helligkeit 0 - beim
        Teilen durch A faellt das ohnehin weg, aber eine leere Flaeche sagt deutlicher, dass dort
        nichts steht. */
-    const raumLeuchten = kette.filter(e=>aktiv(e)&&(e.typ==='lichtRaum'||e.typ==='strahlRaum'));
+    const raumLeuchten = kette.filter(e=>aktiv(e)&&(e.typ==='lichtRaum'||e.typ==='laserRaum'||e.typ==='strahlenRaum'));
     HERKUNFT_DA = raumLeuchten.length>0;
     if(HERKUNFT_DA){ frisch(cherk); cherk.clearRect(0,0,Wn,Hn);
       LICHTMAL=true; LICHTHERKUNFT=true; 
@@ -34745,10 +35119,14 @@ function zeichneFrame(t,roh){
          Graustufen, gerade genug gegen die Treppe. Ein breiter Uebergang ist in Wahrheit eine
          DRITTE ZONE, und die setzt man jetzt einfach - ein Regler daneben waere ein zweiter Weg
          fuer dieselbe Sache (Understatement).
-         zoneTrennung() und zoneWeich() bleiben vorerst stehen: an ihnen haengt noch die
-         ENTFERNUNG der Teilchen (freiBereich/tiefeSpanne), und das ist ein eigener Schritt mit
-         eigener Nahtpruefung. Ohne Regler stehen sie auf „von selbst", also auf dem Median -
-         genau dem Zustand, den jedes Rezept bisher hatte. */
+         zoneTrennung() und zoneWeich() STEHEN NOCH, aber nicht mehr aus dem Grund, der hier
+         bis zum 21.09.2026 abends stand („daran haengt die Entfernung der Teilchen"). Die
+         haengt seit dem Umbau an tiefeRohAn; der Satz war nach dem Umbau falsch und deckte
+         ihn zu. Was wirklich noch daran haengt, sind drei Leser ueber tiefeSpanne:
+         zonenLageVon (die Notiz „wie gross ist die erlaubte Zone"), die Teilchen-Notiz und
+         die Ken-Burns-Zielpunkte. Ohne Regler stehen beide auf „von selbst", also auf dem
+         Median - genau dem Zustand, den jedes Rezept bisher hatte. Wer sie loeschen will,
+         muss diese drei zuerst auf die Zonen umstellen. */
       /* HIER STAND DER VERTEILUNGSSTREIFEN (17.09.2026 gebaut, 21.09.2026 abgeloest). Er zeigte
          das Histogramm unter der Trennung; seit das Tiefen-Histogramm am rechten Bildrand steht
          und dort auch bedient wird, gaebe es zwei Streifen fuer dieselbe Verteilung.
@@ -34784,9 +35162,10 @@ function zeichneFrame(t,roh){
     { const ab=k.querySelector('[data-vauto]'); if(ab) ab.onclick=()=>{ if(vorbAuto(v)){ v.kanal='v'; vorbRender(); vorbStand(); } else pStat('Auto-Niveaus: kein Histogramm'); }; }
     k.querySelectorAll('[data-vz]').forEach(inp=>inp.oninput=()=>{ const kk=inp.dataset.vz; v[kk]=+inp.value;
       const w=inp.parentElement.querySelector('.tbs-wert');
+      /* HIER STANDEN ZWEIGE FUER trennWeich UND flaecheAb (21.09.2026 abends entfernt).
+         Beide Regler sind mit den Zonen weggefallen; ihre Beschriftungszweige blieben stehen
+         und konnten von keinem Regler mehr erreicht werden. Uebrig ist der Leerraum. */
       if(w) w.textContent = kk==='leerraum' ? kf(Math.round(+inp.value*100))+'\u2009%'
-        : kk==='trennWeich' ? ((+inp.value<0)?'von selbst':'\u00b1'+Math.round(+inp.value*255))
-        : kk==='flaecheAb' ? Math.round(+inp.value*255)+' von 255'
         : ((+inp.value<0)?'von selbst':Math.round(+inp.value*255)+' von 255');
       /* WER AN DER TRENNUNG ZIEHT, BEKOMMT SIE ZU SEHEN - und nur dann (Understatement,
          17.09.2026). Das Bild entfaerbt sich und zeigt rot, was als vorn gilt, blau, was als
@@ -36624,7 +37003,18 @@ function zeichneFrame(t,roh){
   const RAUMSPANNEN=[]; let RAUMSPANNEN_ID=null;
   function raumSpanne(e,tp,zon,L,herk,runter,bz){
     const q=tiefeQuelle(); if(!q||!tp) return null;
-    const k=[herk,runter?'ab':'auf',modus||'alles',g.toFixed(4),w.toFixed(4),L.toFixed(3),
+    /* DER SCHLUESSEL MUSS DIE HEUTIGEN PARAMETER NENNEN (berichtigt 22.09.2026).
+       Hier standen `modus`, `g` und `w` - die Parameter der Fassung VOR dem Teilchen-Umbau,
+       als die Spanne noch aus Grenze und Weichheit kam. Die Signatur wurde auf `zon`
+       umgestellt, dieser Schluessel nicht: `modus` gibt es in der Funktion nicht mehr, und
+       damit warf sie bei JEDEM Aufbau einer Teilchenkarte mit Raumtiefe einen
+       ReferenceError. Der blieb stumm, weil paramHTML darueber keinen Schutz hat - die
+       Effektkette brach mitten im Bau ab und der Rest der Karten fehlte einfach.
+       Caspar_D hat es am 22.09.2026 an „Escher" gesehen: vier von sechs Effekten geladen.
+       Jetzt steht im Schluessel, was die Spanne wirklich bestimmt: die Zonenintervalle und
+       ob der Effektraum mitzaehlt. */
+    const zk = zon ? ((zon.iv||[]).map(a=>a[0].toFixed(3)+'\u2013'+a[1].toFixed(3)).join(';')+(zon.raumAn?'|raum':'')) : 'alles';
+    const k=[herk,runter?'ab':'auf',zk,L.toFixed(3),
       herk==='quelle'?[e.qForm,e.qUrsprung,e.qWinkel,e.qX,e.qY,e.qAus,e.qAusY,e.qDreh,e.id].join(','):''].join('|');
     if(RAUMSPANNEN_ID!==q.k){ RAUMSPANNEN.length=0; RAUMSPANNEN_ID=q.k; }
     { const da=RAUMSPANNEN.find(r=>r.k===k); if(da) return da.v; }

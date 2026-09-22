@@ -120,9 +120,12 @@ halbnah, nah) sind über den Anteil der Figur im Bild definiert, nie in Metern.
 | Scheibe ↔ Leerraum | das Glas selbst — keine Zahl | zu bauen |
 | Leerraum ↔ Vordergrund | **gesetzt**: Regler „Leerraum vorn" | steht (`zoneLeerraum`) |
 | Vordergrund ↔ Hintergrund | **Rang**: der Median dieses Bildes | steht (`zoneTrennung`, „von selbst" = Median) |
-| Hintergrund ↔ Leinwand | **Rang**: die hintersten Prozent | falsch (`zoneFlaecheAb` ist heute ein fester Grauwert) |
+| Hintergrund ↔ Leinwand | **Rang**: die hintersten Prozent | **erledigt** — die Talsuche setzt sie, `zoneFlaecheAb` ist gestrichen |
 
-Die Trennung macht es schon richtig. Die Leinwand nicht — und das ist der ganze Fehler.
+Die Trennung machte es schon richtig, die Leinwand nicht — das war der ganze Fehler, und er ist
+behoben. Was von der alten Trennung noch steht (`zoneTrennung`, `zoneWeich`), trägt nur noch drei
+Leser über `tiefeSpanne`: die Notiz „wie groß ist die erlaubte Zone", die Teilchen-Notiz und die
+Ken-Burns-Zielpunkte. Für das Bild selbst rechnet keiner von ihnen mehr.
 
 ---
 
@@ -321,32 +324,20 @@ einer, der nichts tut und es sagt.
 
 ---
 
-## 12. Der nächste Schritt: die Entfernung der Teilchen
+## 12. Erledigt: die Entfernung der Teilchen
 
-**Das Einzige, was die Zonen noch nicht leisten.** `freiBereich` bestimmt, wie weit ein Teilchen
-von der Kamera weg ist, und holt sich dafür bis heute die **Nähe zur alten Trennlinie**
-(`tiefeNahAn` mit `zoneTrennung`/`zoneWeich`). Weil `nahKurve` an der Grenze zwischen 0 und 1
-umschlägt, ist dieser Wert praktisch binär — das Teilchen weiß nur, auf welcher Seite es geboren
-wurde, nicht wie tief.
+**Gebaut am 21.09.2026 abends.** `freiBereich` holte sich bis dahin die *Nähe zur alten
+Trennlinie* — ein praktisch binärer Wert, weil `nahKurve` an der Grenze zwischen 0 und 1
+umschlägt. Das Teilchen wusste also nur, auf welcher Seite es geboren wurde, nicht wie tief.
 
-**Richtig wäre die rohe Tiefe am Geburtsort.** Ein Funke soll wissen, wie weit er weg ist, nicht
-wie weit er von einer Linie weg ist. Und die Skala passt bereits zum Raummodell:
+Jetzt liest es die rohe Tiefe am Geburtsort (`tiefeRohAn`), und die Skala fällt mit dem Raummodell
+zusammen: 0…1 die Szene mit ihren Zonen, 1…1+L der Effektraum, 1+L die Effektscheibe.
+`schichtBaender` schrumpfte dabei von zwanzig Zeilen auf vier, weil Entfernung und Tiefe nun
+dieselbe Größe sind.
 
-| Entfernung | Was dort liegt |
-|---|---|
-| 0 … 1 | die Szene — hier gelten die Zonen |
-| 1 … 1+L | der **Effektraum**, der leere Vorraum |
-| 1+L | die **Effektscheibe** |
+Gemessen: `partikel` p95 von 8,94 auf 9,08, `feuer` unverändert. Der Prüfstand sagt damit
+„anders", nicht „besser" — die Richtung beurteilt Caspar_D am Bild.
 
-Zu tun:
-1. Die Erlaubnistabelle aus `zonenMaske` herauslösen (`zonenErlaubt(e)` → 256 Werte).
-2. `zPunkt`/`zSperre` fragen sie statt `ZONE==='hinten'`.
-3. `freiBereich` bekommt statt `g, w, modus` die Tabelle und rechnet mit der rohen Tiefe; drei
-   Rufer ziehen mit.
-4. `zAusweichen` (Schwarm) wählt seine Richtung aus der Tabelle statt aus `ri`.
-5. Danach können `zoneTrennung`, `zoneWeich`, `tiefeSpanne`, `tiefeNahAn`, `VH_GRENZE` und
-   `nahKurve` fallen — der letzte Rest der alten Trennung.
-
-**Das ändert das Bild bei jedem Teilchen-Effekt.** Also: Grundlinie vorher (`partikel` 6,22 / 8,94,
-`feuer` 24,20 / 36,58, gemessen am 21.09.2026), Umbau, Grundlinie nachher, und dann der Augenschein
-von Caspar_D — die Richtung der Veränderung beurteilt er, nicht der Prüfstand.
+Was aus dieser Liste noch **nicht** gefallen ist: `zoneTrennung`, `zoneWeich` und `tiefeSpanne`.
+Sie tragen keinen Malweg mehr, aber noch drei Notizen und die Ken-Burns-Zielpunkte. `VH_GRENZE`,
+`nahKurveZurueck` und `partikelMaske` sind weg.
