@@ -5906,8 +5906,14 @@ Escher danach am Bild angesehen: alle sechs Effekte laden fehlerfrei, keine Kons
 
 ### Voller Regressionslauf, Rest (154–244)
 
-Nach Freigabe für einen langen, idempotenten Lauf gestartet — Ergebnis folgt als eigener Eintrag,
-sobald er durch ist oder wieder an Systemlast scheitert.
+Nach Freigabe für einen langen, idempotenten Lauf gestartet. **Fertig: alle 244 Fälle geprüft,
+null Abweichungen (gleich/folge > 0,3), keine einzige Konsolenmeldung.** Lief 2438 s (~41 Min),
+Systemlast schwankte zwischen 15 und 21 während des Laufs, ohne dass es zum Wachhund-Abbruch kam.
+
+Damit ist der vollständige Regressionslauf über den ganzen Fallsatz (244 Fälle) nach allen
+heutigen Änderungen bestätigt: die zwei neuen Geräte, der Strahl-in-der-Luft-Marsch, der
+Laser-Kern, die beiden `bodenZellen`/`raumSpanne`-Reparaturen, die Dicke-Vorgabe. Nichts davon
+hat irgendeinen bestehenden Fall verändert, der nicht bewusst verändert werden sollte.
 
 ## 7. Arbeitsweise, neu gelernt
 
