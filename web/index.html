@@ -31267,7 +31267,15 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
     qE=best;
     qD=0.0;
   }
-  if(qD>1.0||qE>1.0) return 0.0;
+  /* DER LASER BEKOMMT EINEN SAUM UM DEN KERN (Caspar_D, 22.09.2026: „welche der neuen koennen
+     verstaerkt werden, ohne den alten nachzubilden"). Der alte Laser malte „Kern in
+     Studio-Bildpunkten, der Saum (w0*3,2) folgt" - ein zweiter, breiterer, schwaecherer Ring um
+     den scharfen Kern, der die WAHRGENOMMENE STAERKE erhoeht, ohne den Kern selbst zu verbreitern.
+     Genau das fehlte hier: die fruehe Grenze (qD/qE>1) liess nichts jenseits des Kerns zu. Fuer
+     den Laser (u_parallel>0.5) reicht die Pruefung jetzt bis zum 3,2-fachen - derselbe Faktor wie
+     beim alten Vorbild -, fuer den Schacht (strahlenRaum) bleibt sie bei 1, unveraendert. */
+  float grenzeD=(u_parallel>0.5)?3.2:1.0, grenzeE=grenzeD;
+  if(qD>grenzeD||qE>grenzeE) return 0.0;
   /* AUSTASTUNG (Blanking): einzelne Strahlen gehen im Takt aus. Gewuerfelt wird an der
      Strahlnummer und der FENSTERNUMMER, und die laeuft nach u_austastZahl Fenstern um -
      sonst wuerfelte das Nahtbild neu und die Schleife klaffte (Regel 17b). */
@@ -31289,6 +31297,17 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
   float rE=(qE<=kern)?1.0:max(0.0,1.0-(qE-kern)/max(1e-6,1.0-kern));
   float sch=0.6+u_kante*3.4;
   float v=pow(rD,sch*0.5)*pow(rE,sch*0.5);
+  /* DER SAUM SELBST: jenseits des Kerns (rD/rE=0, weil qD/qE>1) faellt v bisher hart auf 0 -
+     dabei war die Rechnung fuer den KERN gedacht (1 Bildbreite Halb-Breite als Bezug), nicht fuer
+     die weitere Umgebung. Der Saum rechnet EIGENSTAENDIG auf derselben Querdistanz, aber mit dem
+     3,2-fachen Radius als Bezug und deutlich schwaecherem Abfall (Exponent 2 statt sch) - ein
+     Glimmen, kein zweiter Kern. Additiv zum Kern (max, nicht Summe: der Kern bleibt der hellste
+     Punkt, der Saum darf ihn nicht uebersteuern), und nur fuer den Laser. */
+  if(u_parallel>0.5){
+    float sD=max(0.0,1.0-qD/3.2), sE=max(0.0,1.0-qE/3.2);
+    float saum=pow(sD,2.0)*pow(sE,2.0)*0.85;
+    v=max(v,saum);
+  }
   return v*clamp((dref*dref)/max(1e-6,dist*dist),0.0,4.0);
 }
 void main(){

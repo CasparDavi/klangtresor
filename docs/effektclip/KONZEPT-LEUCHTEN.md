@@ -637,3 +637,64 @@ an einer Lampe, die ihre Achse ohnehin kennt.
   statt des Mischreglers „Bündelung". Teurer wären God Rays und volumetrische Schächte mit
   Schattentest.
 
+## 7. Verstärkung ohne Nachbildung (22.09.2026)
+
+Caspar_D: *„welche der neuen noch verstärkt werden können, damit sie von der Effektstärke näher an
+den alten kommen, du sollst aber nicht den alten nachbilden, die neuen sehen viel realistischer
+aus, sind aber eben zu schwach."* Auftrag war also: die physikalisch begründete Geometrie
+(Kegel-Öffnung, Entfernungsgesetz) unverändert lassen, aber den wahrgenommenen Eindruck heben.
+
+### Der Laser bekam einen Saum
+
+Der alte Laser malte „Kern in Studio-Bildpunkten, der Saum (w0·3,2) folgt" — ein zweiter,
+schwächerer Ring um den scharfen Kern, der die Fläche unter der Kurve vergrößert, ohne den Kern
+selbst zu verbreitern. Genau das fehlte `laserRaum`: die frühe Abbruchgrenze (`qD/qE>1`) ließ
+nichts jenseits des Kerns zu. Für den Laser (`u_parallel>0.5`) reicht die Prüfung jetzt bis zum
+3,2-fachen — derselbe Faktor wie am alten Vorbild —, für den Schacht (`strahlenRaum`) bleibt sie bei
+1, unverändert.
+
+Gemessen an der mittleren Bildänderung (Testbild „Stumm", Testsatz wie in Abschnitt 5a):
+
+| Fassung | mittlere Bildänderung | Anteil am alten Laser (6,27) |
+|---|---|---|
+| laserRaum, nur Kern | 3,50 | 56 % |
+| laserRaum, Kern + Saum ×0,55 | 4,81 | 77 % |
+| **laserRaum, Kern + Saum ×0,85** | **5,38** | **86 %** |
+
+Faktor 0,85 gewählt: am Bild geprüft (Laser mit Filmnebel, Fächer-Bauart) — der Saum liegt weich um
+den Kern, ohne auszufransen. Über alle zwölf `laserraum-*`-Nahtfälle geprüft (`--neu`, damit der
+Zwischenstand die Vor-Saum-Werte nicht überspringt): **12/12 `gl:true`**, auch der strengste Fall
+(`laserraum-strahl-kegel`, Lasertunnel im Nebel) — keine Nahtabweichung durch den Saum.
+
+`strahlenRaum` bleibt trotz angehobener `dicke`-Vorgabe (1,2° → 5°) bei rund einem Viertel des alten
+`strahlen`-Effekts — hier fehlt noch ein eigener Hebel, vermutlich an der Marsch-Normierung selbst,
+nicht am Saum-Muster (der Schacht bekommt bewusst keinen Saum, weil er sich mit der Entfernung
+ohnehin aufweitet).
+
+### Das Nachglühen war schon da — und stimmt mit der Physiologie überein
+
+Frage von Caspar_D: ob ein Nachglühen wie am alten Laser (besonders bei Scanner und Figuren) den
+neuen Laser sichtbarer machen könnte. **Es ist bereits gebaut** — Regler „Nachglühen" (0–1, Vorgabe
+0,5), freigeschaltet exakt für die Bauarten Scanner und Lissajous, also genau dort, wo ein Punkt
+wandert statt zu stehen. Mechanismus in `imStrahl`: acht vergangene Spiegelstellungen werden **im
+selben Bild neu gerechnet** (kein Bildspeicher nötig), im Abstand von je 0,012 s, mit wachsender
+Toleranz `1+i·(1−nachgluehen)·6` — bei 0 werden alle Geisterlagen bis auf die aktuelle
+weggeschnitten, bei 1 zählen alle acht gleich.
+
+Am Bild gemessen (Studio-Leinwand, Bauart Scanner, Schwellenwert 120 auf dem Rotkanal, acht Proben
+über ~0,7 s verteilt, Median): **ohne Nachglühen 40 px helle Breite, mit Nachglühen (1,0) 91 px** —
+mehr als das Doppelte, robust über die ganze gemessene Zeitspanne.
+
+Und der Zufall trifft die Physiologie: acht Lagen × 0,012 s ergeben ein Fenster von **0,084 s**. Die
+Netzhautnachhallzeit (Persistence of Vision) liegt in der Literatur bei 40–100 ms je nach
+Helligkeit/Adaption, der gängige Ingenieurswert ist 1/10 s. Das Fenster im Code trifft diesen Wert,
+ohne dass er je explizit dafür gewählt wurde. Kein Änderungsbedarf — nur festgehalten, damit die
+Zahl beim nächsten Anfassen nicht für willkürlich gehalten wird.
+
+Zum Vergleich, reale Scanner: resonante Galvos (Barcode-Leser, einfacher Fächer-Sweep) schwingen mit
+500 Hz–2 kHz Eigenfrequenz; Servo-Galvos für Vektorgrafik (ILDA-Laser) fahren 20.000–40.000 Punkte/s
+bei 20–30 Bildwiederholungen/s. Bei 30 Bildern/Sekunde (33 ms je Bild) macht ein 1-kHz-Scanner über
+30 volle Schwingungen je Bild — der Spiegel steht nie „still genug" für eine Momentaufnahme. Das
+bestätigt den gewählten Weg: nicht die eine wahre Position malen, sondern die aufsummierte Wirkung
+des Nachleuchtens — genau das, was das Auge ohnehin sieht.
+
