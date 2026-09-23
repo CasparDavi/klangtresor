@@ -6250,3 +6250,13 @@ fünf gesicherte Effektclips im Archiv tragen `kbTakte`, sie fahren danach wie v
 Naht: `kenburns`, `kb-tempo2-b`, `kb-tiefe-tempo2`, `kb-fuenfPunkte`, `kb-vorb` alle gleich 0,00.
 Im Tab: Karte „Ken Burns Fahrt", Regler und beide Sätze wie beschrieben, kein `kbTakte` mehr auf der
 Karte. Konzept nachgezogen (KONZEPT-ZIELPUNKTE §5).
+
+## 6. Migration auf den Lichtpuffer: Flammen und Kaustik
+
+Flammen und Kaustik tragen jetzt `leuchtet` und schreiben in den Licht-Puffer. Die Kaustik brauchte
+nur die Marke (ihr Shader gibt nur Licht aus); die Flammen bekamen einen Puffer-Zweig im Shader
+(`u_inPuffer` über `glZusatz`), weil sie sonst das ganze Bild als Licht gemalt hätten. Dazu die
+Regel aus dem Bildweg in `leuchteInPuffer` nachgezogen: bei `lmNurSchub` dimmt der Antrieb die
+Deckkraft nicht. Gemessen (KONZEPT-LEUCHTEN §5a, „Gebaut am 23.09."): Flammen +67 %/+62 %, Kaustik
++146 %/+143 % hinzugefügtes Licht mit Filmnebel. **Die Kaustik im Nebel ist damit sehr kräftig —
+ansehen (Wiedervorlage).** Der Filmnebel zählt beide auf seiner Karte zu den Leuchten.

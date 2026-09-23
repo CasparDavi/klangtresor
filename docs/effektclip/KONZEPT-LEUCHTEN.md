@@ -419,7 +419,29 @@ Standardwerten bei.
 
 **Reihenfolge-Empfehlung:** Flammen zuerst (kleinster Schritt, reine Markierung), dann Kaustik
 (gleiches Muster), dann die Partikel-Frage (eigener Bau, weil pro Art zu entscheiden). Das folgt
-der Hausregel „ein Effekt nach dem anderen" — noch nicht gebaut, nur vorbereitet.
+der Hausregel „ein Effekt nach dem anderen".
+
+### Gebaut am 23.09.2026: Flammen und Kaustik
+
+Die Vermutung „nur die Markierung fehlt" stimmte für die Kaustik (ihr Shader gibt ohnehin nur das
+Licht aus, vormultipliziert), nicht für die Flammen: ihr Shader malt Bild **plus** Flammen — im
+Puffer wäre das ganze Bild als Licht gelandet. Darum bekam er einen Puffer-Zweig (`u_inPuffer`, über
+einen `glZusatz` wie bei den Raumleuchten): im Puffer nur das Flammenlicht, außerhalb der Zungen
+Schwarz. Dazu eine Regel, die im Puffer fehlte: bei `lmNurSchub` (Flammen lesen den Antrieb selbst)
+bleibt die Deckkraft die Stärke — `leuchteInPuffer` rechnete den Antrieb bisher immer ein.
+
+Gemessen wie oben (hinzugefügtes Licht des Effekts, Titel „Stumm", Filmnebel, Prüfstand 360, zwei
+Augenblicke):
+
+| Effekt | vorher | nachher | Zuwachs |
+|---|---|---|---|
+| Flammen | 3.549.998 / 3.045.066 | 5.926.262 / 4.940.190 | **+67 % / +62 %** |
+| Kaustik | 4.568.112 / 5.084.632 | 11.242.102 / 12.352.442 | **+146 % / +143 %** |
+
+Der Nebel sieht die Flammen jetzt; die Kaustik leuchtet ihn — als Netz über dem ganzen Bild — sehr
+kräftig an. Ob das die richtige Stärke ist, sagt der Prüfstand nicht („anders ist kein Urteil"):
+Wiedervorlage. Die Karte des Filmnebels zählt beide jetzt zu den Leuchten („Hängt kein …
+Flammen, Kaustik … in der Kette").
 
 ## 6. Was gebaut ist (21.09.2026)
 
