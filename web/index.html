@@ -28017,8 +28017,10 @@ function tiefeGrund(){
      schickte den Nutzer eine Wahl treffen, die es nicht gibt (Gegenlesen 17.09.2026). */
   if(!q) return 'Es ist kein Titel geladen — ohne Bild gibt es auch keine Tiefenkarte. Die Zeile bleibt still, statt etwas zu versprechen.';
   const nm='„'+quellName(q)+'“';
-  const was=(q.art==='bewegtbild'||q.art==='video')
-    ? 'Die Quelle '+nm+' ist ein Bewegtbild, und für Bewegtbilder gibt es hier keine Tiefenkarte.'
+  const was=(q.art==='video')
+    ? 'Die Quelle '+nm+' ist ein eigenes Bewegtbild, und für eigene Bewegtbilder gibt es hier keine Tiefenkarte.'
+    : (q.art==='bewegtbild')
+    ? 'Die Quelle '+nm+' leiht sich die Tiefenkarte ihres Titelbilds \u2014 aber tiefe.png kam nicht an: entweder hat das Titelbild keine, oder sie kommt gerade nicht durch.'
     : (!q.url
       ? 'Zur Quelle '+nm+' gibt es keine Tiefenkarte — sie ist ein Prüfbild und liegt nicht beim Titel.'
       /* GEMESSEN IST NUR DER FEHLSCHLAG (Gegenlesen 17.09.2026). Was hier ankommt, ist ein
@@ -32147,9 +32149,9 @@ function renderStapel(){
        Zahlen stehen, sobald sie da ist" wird bei ihr nie wahr. Sie wird uebersprungen; bleibt
        keine andere, traegt die letzte sichtbare, damit der Grund nicht ganz ausfaellt. */
     const sichtbar=p=>(!p.versteckt&&(!p.when||p.when(e)));
-    const tFehlt=tiefeGrund(), tLaedt=tFehlt?null:LAEDT();
+    const tFehlt=tiefeGrund(), tLaedt=tFehlt?null:LAEDT(), tLeih=(tFehlt||tLaedt)?null:tiefeLeihe();
     let tTraeger=null;
-    if(tFehlt||tLaedt){ const kz=s=>T.params.filter(p=>p.brauchtKarte&&GEMEIN.has(p.k)===s&&sichtbar(p));
+    if(tFehlt||tLaedt||tLeih){ const kz=s=>T.params.filter(p=>p.brauchtKarte&&GEMEIN.has(p.k)===s&&sichtbar(p));
       const reihe=kz(false).concat(kz(true));
       tTraeger=reihe.filter(p=>!(p.grau&&p.grau(e))).pop()||reihe[reihe.length-1]||null; }
     const paramHTML=p=>{ const an=sichtbar(p), vor0=h.length;
@@ -32185,6 +32187,8 @@ function renderStapel(){
          Karte, unter demselben Traeger. `tbs-warte` sagt dem Nachziehen beim Schieben, dass diese
          Zeile nicht die Notiz des Reglers ist und stehen bleibt. */
       if(an&&tLaedt&&p===tTraeger) h+='<div class="tbs-graugrund tbs-warte">'+tLaedt+'</div>';
+      /* Geliehene Karte: derselbe Platz, derselbe Traeger, eine Zeile je Karte (tiefeLeihe). */
+      if(an&&tLeih&&p===tTraeger) h+='<div class="tbs-graugrund tbs-leih">'+tLeih+'</div>';
       /* EIN GRUND FUER EINEN SACHVERHALT (gegengelesen 16.09.2026). Bei drei der fuenf Farbquellen
          stand unter „Farbe“ UND unter „Farbe bis“ derselbe Satz Wort fuer Wort - die Karte las sich
          wie ein Stottern, und der Blick suchte einen Unterschied, den es nicht gibt. `grau` darf
@@ -32243,7 +32247,7 @@ function renderStapel(){
         let vor=zeile, d=zeile&&zeile.nextElementSibling;
         /* Der Wartesatz der Tiefenkarte gehoert der KARTE, nicht diesem Regler (18.09.2026) -
            beim Schieben darf er nicht als „Notiz weg" weggeraeumt werden. */
-        if(d&&(!d.classList.contains('tbs-graugrund')||d.classList.contains('tbs-warte'))) d=null;
+        if(d&&(!d.classList.contains('tbs-graugrund')||d.classList.contains('tbs-warte')||d.classList.contains('tbs-leih'))) d=null;
         if(nz&&d) d.textContent=nz;
         else if(nz&&vor){ const nd=document.createElement('div'); nd.className='tbs-graugrund'; nd.textContent=nz; vor.parentNode.insertBefore(nd, vor.nextSibling); }
         else if(d) d.remove(); }
@@ -36721,18 +36725,24 @@ function zeichneFrame(t,roh){
      WELCHE QUELLE EINE KARTE HAT:
        titelbild   /media/<id>/tiefe.png            - die 325 vorhandenen, hier aendert sich nichts
        bild n      /media/<id>/eigen<n>.tiefe.png   - bin/tiefenkarten.js rechnet sie mit
-       bewegtbild  keine
+       bewegtbild  /media/<id>/tiefe.png            - GELIEHEN vom Titelbild (23.09.2026, s. u.)
        video n     keine
        Pruefbild   keine
      Keine Karte heisst KEINE - nicht ersatzweise die des Titelbilds. Lieber eine stille Zeile mit
      Grund als eine Zeile, die etwas Falsches tut (Regel 11).
+     DIE EINE AUSNAHME, VON CASPAR_D BESTELLT (21.09.2026): „Ein Suno-Bewegtbild erbt die Karte
+     SEINES Titelbilds, weil sich die Geometrie kaum aendert. Es muss dranstehen - die Quellenzeile
+     sagt dann eben 'vom Titelbild geliehen'." Sunos artwork.mp4 entsteht aus dem Titelbild, die
+     Karte passt darum in etwa - und dass sie geliehen ist, steht auf jeder Effektkarte
+     (tiefeLeihe). Eigene Videos (video n) sind eine andere Herkunft und bleiben bei KEINE.
 
      Die laufende Nummer <n> kommt aus eigenNr() - derselben Stelle, aus der auch medienUrl() sie
      holt; hier steht sie nicht ein zweites Mal. */
   function tiefeUrl(id, art, nr){
     if(art==='titelbild') return '/media/'+id+'/tiefe.png';
     if(art==='bild') return '/media/'+id+'/eigen'+eigenNr(nr)+'.tiefe.png';
-    return null;   /* Bewegtbild, Video, Pruefbild: es gibt keine */
+    if(art==='bewegtbild') return '/media/'+id+'/tiefe.png';   /* geliehen vom Titelbild, siehe oben */
+    return null;   /* eigenes Video, Pruefbild: es gibt keine */
   }
   /* Ein Schluessel je Quelle - er traegt alles, was die Karte bestimmt, und nichts sonst. Die
      Vorraete (TIEFEN, TIEFENLAUF, TIEFEPROBEN, ZONENLAGE, die Masken) haengen daran statt an der
@@ -37349,6 +37359,13 @@ function zeichneFrame(t,roh){
       if(im&&im.complete&&im.naturalWidth>1) return 'da';
       return TIEFENLAUF[q.k] ? 'unterwegs' : 'keine';
     }catch(x){ return 'keine'; }
+  }
+  /* Die Karte ist da, aber nicht die eigene: Sunos Bewegtbild traegt die seines Titelbilds. Das
+     steht einmal je Effektkarte, unter demselben Traeger wie der Wartesatz. */
+  function tiefeLeihe(){
+    try{ const q=tiefeQuelle(); if(!q||q.art!=='bewegtbild'||tiefeStand()!=='da') return null;
+      return 'Die Tiefenkarte dieser Quelle ist <b>vom Titelbild geliehen</b> \u2014 Sunos Bewegtbild ist aus ihm entstanden, die Geometrie bleibt in etwa dieselbe. Wo das Video davon abweicht, weicht auch die Tiefe ab.'; }
+    catch(x){ return null; }
   }
 
   /* DIE TIEFE ALS GENERISCHER PARAMETER (VIDEO-PLAN §9.7b).

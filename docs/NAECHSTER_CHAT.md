@@ -5311,9 +5311,10 @@ Effekt** sein (`e=>e.art==='schwaden'`), nicht eine Marke am Typ.
 
 ## 5. Offene Wünsche von Caspar_D
 
-- **Tiefenkarte leihen:** Ein Suno-Bewegtbild erbt die Karte *seines* Titelbilds, weil sich die
+- ~~**Tiefenkarte leihen:** Ein Suno-Bewegtbild erbt die Karte *seines* Titelbilds, weil sich die
   Geometrie kaum ändert. Bedingung: Es muss in der Quellenzeile stehen („vom Titelbild geliehen"),
-  und nur bei gleicher Herkunft — bei echtem Video mit Schnitten bleibt es bei „keine".
+  und nur bei gleicher Herkunft — bei echtem Video mit Schnitten bleibt es bei „keine".~~ — **gebaut
+  am 23.09.2026** (Abschnitt „23.09., tagsüber", Punkt 4).
 - **Alte ablösen:** Scheinwerfer und Laser fliegen raus, wenn die neuen gewonnen haben. Der
   Scheinwerfer mit Tiefe ist seit heute früh im Einsatz und könnte abgenommen werden.
 - Offen aus früheren Runden: Nebel (Extinktion auf dem Lichtweg, Schwaden, Phasenfunktion),
@@ -6213,3 +6214,25 @@ tragen (Stützstellen Wert/Wirkung); der Schieber läuft über die Wirkung, `ska
 den Wert. Am Prüfstand-Studio im eigenen Tab gefahren: Stellung 0 → 0,05°, ¼ → 0,44°, ½ → 4,67°,
 1 → 12°; die Vorgabe 5° steht bei 0,52; keine Konsolenmeldung. Wer die Karte nach dem Schieben
 neu baut, sieht 4,98° statt 5° — die Rundung auf zwei Stellen, kein Fehler.
+
+## 4. Tiefenkarte leihen — Sunos Bewegtbild trägt die Karte seines Titelbilds
+
+Caspar_D, 21.09.: *„Es muss dranstehen. Die Quellenzeile sagt heute ‚Tiefenkarte: da / unterwegs /
+keine' — dann eben ‚vom Titelbild geliehen'."* Gebaut in `tiefeUrl` (die Quelle `bewegtbild` bekommt
+`/media/<id>/tiefe.png`, die Karte des Titelbilds) und als eigener Satz `tiefeLeihe()` neben
+`tiefeStand()`: auf jeder Effektkarte **einmal**, unter demselben Träger wie der Wartesatz (Klasse
+`tbs-leih`, das Nachziehen beim Schieben lässt sie stehen wie `tbs-warte`). Eigene Videos (`video n`)
+bleiben bei „keine" — andere Herkunft; der Grundsatz über `tiefeUrl` sagt jetzt beides. Der
+Grau-Grund unterscheidet: eigenes Bewegtbild → keine Karte; Sunos Bewegtbild → „leiht sich die Karte
+ihres Titelbilds, aber tiefe.png kam nicht an".
+
+Am Prüfstand-Studio im eigenen Tab: Titel „Stumm", Quelle „Bewegtbild (Suno)", Karte „Scheinwerfer mit
+Tiefe" — der Satz steht genau einmal, kein Wartesatz, nichts grau außer der eigenen Zeile des Effekts,
+die Zonen-Ankreuzliste kommt aus der geliehenen Karte. Zurück auf „Titelbild": kein Satz. Die
+Zonenlage und die Tiefenproben hängen am Quellschlüssel (`id|bewegtbild|1`), werden also für das
+Bewegtbild eigens gerechnet — aus derselben Datei, deshalb gleich.
+
+Nebenbefund am Prüfstand: beim Wechsel auf das Bewegtbild ruft das Studio `POST /api/sprungkopie` —
+eine Server-API der echten App; der statische Prüfstand antwortet 404, ohne Folgen. Und das
+Labor-Studio öffnet einen Titel erst vollständig mit `__naht.bereitMachen`; der „Studio"-Knopf der
+Kachel allein lässt den Kopf leer — für die Prüfung im Tab ist der Haken der Weg, wie für naht.mjs.
