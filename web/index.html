@@ -27828,7 +27828,13 @@ const EFFEKTE = {
    Schwaden sind - als Schnee waere der Licht-Puffer reine Rechenzeit. Darum darf `medium` auch
    eine Frage an den Effekt sein statt einer festen Marke. */
 function mediumJetzt(e){ const T=EFFEKTE[e.typ]; if(!T) return false; return typeof T.medium==='function'?!!T.medium(e):!!T.medium; }
+function leuchtetJetzt(e){ const T=EFFEKTE[e.typ]; if(!T) return false; return typeof T.leuchtet==='function'?!!T.leuchtet(e):!!T.leuchtet; }
 EFFEKTE.partikel.medium = e=>e.art==='schwaden';
+/* LEUCHTEN ALS FRAGE AN DIE ART (23.09.2026, Migration auf den Lichtpuffer, dritter Schritt): Funken,
+   Gluehwuermchen, Bokeh (Lichtkreise sind Lichter) und Sternschnuppen leuchten selbst und schreiben
+   in den Licht-Puffer. Glitzer reflektiert nur; Schnee, Staub, Asche leuchten nicht - eine Marke am
+   Typ haette sie alle zu Leuchten gemacht. Dasselbe Muster wie `medium` eine Zeile darueber. */
+EFFEKTE.partikel.leuchtet = e=>['funken','gluehwuermchen','bokeh','sternschnuppen'].includes(e.art);
 /* Flammen und Kaustik seit dem 23.09.2026 (Migration auf den Lichtpuffer, KONZEPT-LEUCHTEN §5a): die Kaustik gibt ohnehin nur
    ihr Licht aus, die Flammen bekamen dafuer einen Puffer-Zweig im Shader (u_inPuffer). */
 ['licht','laser','strahlen','feuer','strobe','flammen','kaustik'].forEach(k=>{ if(EFFEKTE[k]) EFFEKTE[k].leuchtet=true; });
@@ -31993,10 +31999,10 @@ function renderStapel(){
        (nur Schwaden sind Rauch, Schnee nicht) - und eine Funktion ist immer truthy. Wer den Typ
        fragt, haelt jeden Schneefall fuer Rauch und verschweigt den Hinweis genau dort, wo er
        noetig waere (berichtigt 21.09.2026, noch am selben Abend). */
-    if(T.leuchtet && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&mediumJetzt(x)))
+    if(leuchtetJetzt(e) && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&mediumJetzt(x)))
       h+='<div class="tbs-fehltlicht">Es h\u00e4ngt <b>kein Medium</b> in der Kette \u2014 ohne eines sieht man nur, was der Strahl <i>trifft</i>, nicht den Strahl selbst. Ein <b>Filmnebel</b> macht ihn sichtbar; er nimmt das Licht auf, gleich an welcher Stelle der Kette er steht.</div>';
-    if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&EFFEKTE[x.typ].leuchtet))
-      h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer oder Stroboskop machen ihn sichtbar.</div>';
+    if(T.nurMitLicht && !STAPEL.some(x=>aktiv(x)&&EFFEKTE[x.typ]&&leuchtetJetzt(x)))
+      h+='<div class="tbs-fehltlicht">Es h\u00e4ngt keine Leuchte in der Kette \u2014 ohne sie zeigt der Nebel nur, da\u00df die Ferne an Kontrast verliert. Scheinwerfer, Laser, Lichtstrahlen, Feuer, Flammen, Kaustik, leuchtende Teilchen oder Stroboskop machen ihn sichtbar.</div>';
     /* Regler: erst die eigenen, dann hinter einer feinen Linie das Bekannte in fester Reihenfolge - Antrieb, Atem, Invertieren, Verrechnung, Staerke. */
     /* 'tiefeGrenze'/'tiefeWeich' sind hier am 21.09.2026 herausgefallen - die Karte baut diese
        beiden Regler nicht mehr, also gibt es auch nichts mehr einzusortieren. 'leerraum' und
@@ -34888,7 +34894,7 @@ function dioramaMalen(kette,t,Wn,Hn,bw,bh,vorbDa,lW,lH){
      sein eigenes Flackern liegt trotzdem erst hinter der Kamera. */
   const medium=kette.some(e=>aktiv(e)&&mediumJetzt(e));
   if(medium){ frisch(clicht); clicht.fillStyle='#000'; clicht.fillRect(0,0,Wn,Hn); LICHTMAL=true; lichtOrteOeffnen(Wn,Hn);
-    try{ for(const e of kette){ if(!aktiv(e)||!EFFEKTE[e.typ].leuchtet) continue; try{ leuchteInPuffer(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
+    try{ for(const e of kette){ if(!aktiv(e)||!leuchtetJetzt(e)) continue; try{ leuchteInPuffer(e,clicht,t,Wn,Hn); }catch(x){} frisch(clicht); } }
     finally { LICHTMAL=false; }
     /* DER ZWEITE LAUF: DIE HERKUNFT (21.09.2026). Derselbe Weg, dieselben Leuchten - aber nur die,
        die einen Ort im RAUM haben. Der alte Scheinwerfer, der Laser und die Lichtstrahlen kennen

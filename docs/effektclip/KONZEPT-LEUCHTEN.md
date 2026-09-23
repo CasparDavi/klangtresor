@@ -437,6 +437,12 @@ Augenblicke):
 |---|---|---|---|
 | Flammen | 3.549.998 / 3.045.066 | 5.926.262 / 4.940.190 | **+67 % / +62 %** |
 | Kaustik | 4.568.112 / 5.084.632 | 11.242.102 / 12.352.442 | **+146 % / +143 %** |
+| Partikel Funken | 49.063 / 39.434 | 114.511 / 90.202 | **+133 % / +129 %** |
+| Partikel Glühwürmchen | 32.273 / 22.835 | 89.083 / 47.468 | **+176 % / +108 %** |
+
+**Die Teilchen** (dritter Schritt, gleicher Tag): `leuchtet` ist beim Typ `partikel` eine Frage an die
+Art (`leuchtetJetzt`, wie `medium`) — Funken, Glühwürmchen, Bokeh und Sternschnuppen leuchten selbst;
+Glitzer reflektiert nur, Schnee, Staub, Asche leuchten nicht. Der Maler kannte `LICHTMAL` schon.
 
 Der Nebel sieht die Flammen jetzt; die Kaustik leuchtet ihn — als Netz über dem ganzen Bild — sehr
 kräftig an. Ob das die richtige Stärke ist, sagt der Prüfstand nicht („anders ist kein Urteil"):

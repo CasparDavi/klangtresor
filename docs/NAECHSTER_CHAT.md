@@ -5296,9 +5296,9 @@ ohne Server läuft: links das drehbare Relief, rechts der Zonenstapel. Gerechnet
 | Scheinwerfer, Laser, Lichtstrahlen | ja | **nein** |
 | Scheinwerfer mit Tiefe, Strahlen mit Tiefe | ja | ja |
 | Feuer, Stroboskop | ja | **nein** |
-| **Flammen (Rauschen)** | **nein** — das ist ein Fehler | nein |
-| **Kaustik (Lichtnetz)** | **nein** | nein |
-| **Partikel: Glühwürmchen, Glitzer, Funken, Bokeh, Sternschnuppen** | **nein** | nein |
+| **Flammen (Rauschen)** | ~~**nein** — das ist ein Fehler~~ **ja seit 23.09.** (Puffer-Zweig im Shader) | nein |
+| **Kaustik (Lichtnetz)** | ~~**nein**~~ **ja seit 23.09.** | nein |
+| **Partikel: Funken, Glühwürmchen, Bokeh, Sternschnuppen** | ~~**nein**~~ **ja seit 23.09.** (`leuchtet` als Frage an die Art; Glitzer reflektiert nur und bleibt draußen) | nein |
 | Bloom, Streiflicht, Filmnebel, Schwaden | keine Quellen | — |
 
 **Caspar_Ds Auftrag dazu:** *„das sollten alle Lichtstrahlen und -quellen tun"* — alle sollen ihren
@@ -5306,8 +5306,9 @@ Ort in den Herkunfts-Puffer melden, nicht nur die zwei neuen. Für die Canvas-Ma
 Herkunfts-Durchgang ihre Form in der kodierten Ortsfarbe malen statt in ihrer eigenen. Bei Feuer
 und Flammen (zwei eigene Farben) ist das nicht trivial.
 
-Für die Partikel liegt die Lösung schon im Haus: `leuchtet` müsste wie `medium` eine **Frage an den
-Effekt** sein (`e=>e.art==='schwaden'`), nicht eine Marke am Typ.
+~~Für die Partikel liegt die Lösung schon im Haus: `leuchtet` müsste wie `medium` eine **Frage an den
+Effekt** sein (`e=>e.art==='schwaden'`), nicht eine Marke am Typ.~~ — so gebaut am 23.09.2026
+(`leuchtetJetzt`). **Offen bleibt der Herkunfts-Puffer:** nur die drei Leuchten mit Tiefe melden ihren Ort.
 
 ## 5. Offene Wünsche von Caspar_D
 
@@ -6260,3 +6261,13 @@ Regel aus dem Bildweg in `leuchteInPuffer` nachgezogen: bei `lmNurSchub` dimmt d
 Deckkraft nicht. Gemessen (KONZEPT-LEUCHTEN §5a, „Gebaut am 23.09."): Flammen +67 %/+62 %, Kaustik
 +146 %/+143 % hinzugefügtes Licht mit Filmnebel. **Die Kaustik im Nebel ist damit sehr kräftig —
 ansehen (Wiedervorlage).** Der Filmnebel zählt beide auf seiner Karte zu den Leuchten.
+
+**Dritter Schritt, die leuchtenden Teilchen:** `leuchtet` ist bei den Partikeln jetzt eine Frage an die
+Art (`leuchtetJetzt`, dasselbe Muster wie `medium`): Funken, Glühwürmchen, Bokeh (Lichtkreise sind
+Lichter) und Sternschnuppen schreiben in den Puffer; Glitzer reflektiert nur, Schnee, Staub, Asche
+leuchten nicht. Der Partikel-Maler kannte `LICHTMAL` schon (Schwaden lesen den Puffer). Gemessen:
+Funken 49.063 → 114.511 (+133 %), Glühwürmchen 32.273 → 89.083 (+176 %) — kleine Zahlen, weil die
+Teilchen klein sind; der Hof-Puffer (1/14) macht daraus einen weichen Schein im Nebel. Die Karte des
+Filmnebels nennt jetzt „Flammen, Kaustik, leuchtende Teilchen" unter den Leuchten. Damit ist die
+Migrationsliste aus KONZEPT-LEUCHTEN §5a abgearbeitet; was am Lichtpuffer noch fehlt, ist der
+**Herkunfts-Puffer für die Canvas-Maler** (Caspar_D: „das sollten alle Lichtstrahlen und -quellen tun").
