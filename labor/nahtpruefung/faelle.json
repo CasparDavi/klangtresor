@@ -2914,7 +2914,7 @@
    "effekte": [
     {
      "typ": "kenburns",
-     "kbTakte": 2
+     "kbSchlaege": 8
     }
    ],
    "gruppe": "kenburns",
@@ -3258,7 +3258,7 @@
    "effekte": [
     {
      "typ": "kenburns",
-     "kbTakte": 2,
+     "kbSchlaege": 8,
      "kbZiele": [
       {
        "u": 0.32,

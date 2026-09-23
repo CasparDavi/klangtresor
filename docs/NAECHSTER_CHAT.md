@@ -4901,9 +4901,9 @@ am Objektiv sitzt. Läge er im Diorama, wäre er bei Enge 0,25 viermal so breit.
 
 ### Offen, in dieser Reihenfolge
 
-1. **Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; am Prüfsatz
+1. ~~**Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; am Prüfsatz
    gerechnet: bei zwei Punkten hat dann jeder der neun Titel einen Halt (0,5–2,0 s), bei heutigem
-   Tempo 1 (= 4 Schläge) haben **sechs von neun keinen**.
+   Tempo 1 (= 4 Schläge) haben **sechs von neun keinen**.~~ — gebaut am 23.09.2026.
 3. **Tiefenebene** — durchspezifiziert (KONZEPT-ZIELPUNKTE Abschnitt 12): ±10 % um die Tiefe des
    Zielpunkts scharf, außen zunehmend weicher, nur im Halt, kommt und geht, am Rand geschnitten
    statt verschoben, ohne Karte Rückfall auf Bewegungsunschärfe.
@@ -5005,8 +5005,8 @@ Caspar_D nach dem Ansehen: *„auf jeden fall siehts gut aus."*
 
 ### Offen, in dieser Reihenfolge
 
-1. **Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; bei heutigem
-   Tempo 1 (= 4 Schläge) haben sechs von neun Titeln des Prüfsatzes keinen Halt.
+1. ~~**Tempo in Schlägen** statt in Takten — durchspezifiziert. Vorgabe **2 Schläge**; bei heutigem
+   Tempo 1 (= 4 Schläge) haben sechs von neun Titeln des Prüfsatzes keinen Halt.~~ — gebaut am 23.09.2026.
 2. **Anfahren und Auslaufen gleich lang** — bei einer Fahrt zu einer Station keine Notwendigkeit,
    sondern eine Entscheidung über das Bild. Wer das Ankommen betonen will, lässt länger aus als er
    anfährt (etwa 20 % zu 35 %). Die Bahn ist vorbereitet, es bräuchte zwei Konstanten statt einer.
@@ -6236,3 +6236,17 @@ Nebenbefund am Prüfstand: beim Wechsel auf das Bewegtbild ruft das Studio `POST
 eine Server-API der echten App; der statische Prüfstand antwortet 404, ohne Folgen. Und das
 Labor-Studio öffnet einen Titel erst vollständig mit `__naht.bereitMachen`; der „Studio"-Knopf der
 Kachel allein lässt den Kopf leer — für die Prüfung im Tab ist der Haken der Weg, wie für naht.mjs.
+
+## 5. Tempo der Ken Burns Fahrt in Schlägen
+
+Der Regler heißt jetzt **„Tempo (Schläge)"**, 1–16, Vorgabe 2 (`kbSchlaege`; vorher `kbTakte` 1–4,
+Vorgabe 1 = ein ganzer Takt). Ein Zug ist Z Schläge lang; die Halte kommen weiter in ganzen Schlägen
+aus dem Rest, der Takt bleibt als Reserve für sie (`kbPasst`, `kbPlan`). Im Pult ohne Cliplänge:
+eine Runde = L·Z Schläge plus (n+1) Halte zu je einem Takt. Die Sätze unter Regler und Punkteliste
+rechnen mit („Ein Zug 2 Schläge (1,0 s) … Züge kürzer als ein Schlag"). Alte Rezepte: `effektAusRezept`
+übersetzt `kbTakte` mit vier Schlägen je Takt, wie die Spezifikation rechnet („Tempo 1 = 4 Schläge") —
+fünf gesicherte Effektclips im Archiv tragen `kbTakte`, sie fahren danach wie vorher. Die Vorlage
+„Traum (weich)" und zwei Prüffälle (`kb-tempo2-b`, `kb-tiefe-tempo2`) stehen jetzt auf 8 Schlägen.
+Naht: `kenburns`, `kb-tempo2-b`, `kb-tiefe-tempo2`, `kb-fuenfPunkte`, `kb-vorb` alle gleich 0,00.
+Im Tab: Karte „Ken Burns Fahrt", Regler und beide Sätze wie beschrieben, kein `kbTakte` mehr auf der
+Karte. Konzept nachgezogen (KONZEPT-ZIELPUNKTE §5).

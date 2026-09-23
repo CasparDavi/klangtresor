@@ -79,7 +79,11 @@ Liste sagt, wie viele Punkte hineinpassen.**
 
 **Die Halte sind alle gleich lang** und ergeben sich aus dem Rest. Kein Regler.
 
-„Tempo" bleibt, wie es ist: über wie viele Takte ein Zug läuft.
+~~„Tempo" bleibt, wie es ist: über wie viele Takte ein Zug läuft.~~ **Seit dem 23.09.2026 in
+Schlägen** (Vorgabe 2): Ein Zug dauerte mindestens einen ganzen Takt, und in einen Zehnsekünder
+passen nur drei bis vier — bei zwei Punkten blieb sechs von neun Prüfsatz-Titeln kein Halt. Die
+Halte rechnen weiter in ganzen Schlägen aus dem Rest; im Pult (ohne Cliplänge) dauert ein Halt
+einen Takt. Alte Rezepte mit `kbTakte` werden beim Laden mit vier Schlägen je Takt übersetzt.
 
 ---
 

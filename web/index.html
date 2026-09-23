@@ -27424,7 +27424,7 @@ const EFFEKTE = {
          Zielpunkten braucht ein Clip drei Zuege plus einen Takt fuer die Halte. Der Regler geht bis 4,
          weil es diese langen Clips gibt; darueber waere es ein Ende ohne Wirkung (Regel 9). Wie viele
          Punkte bei DIESER Stellung hineinpassen, sagt die Zeile unter der Liste. */
-      {k:'kbTakte',lbl:'Tempo (Takte)',min:1,max:4,step:1,def:1,notiz:e=>kbSatz(e)}]},
+      {k:'kbSchlaege',lbl:'Tempo (Schl\u00e4ge)',min:1,max:16,step:1,def:2,notiz:e=>kbSatz(e)}]},
   puls:{ label:'Zoom schlägt', art:'geo', ohneStaerke:true, besch:'Das Bild zoomt auf den Schlag — die Größe pulst im Takt. Ruhig kräftig, nicht zu subtil. Jeder Schlag oder nur die Eins.',
     params:[{k:'wucht',lbl:'Wucht',min:0,max:.45,step:.01,def:.24}]},
   schaerfe:{ label:'Schärfe schlägt', art:'grund', besch:'Das Bild liegt weichgezeichnet da, und das scharfe Original schlägt im Takt durch. Nutzt den Puls direkt.',
@@ -28634,7 +28634,7 @@ const PRESETS={
     zielloses Treiben in festem Ausschnitt. Mit ihrem Fall faehrt sie die Ken Burns Fahrt - EIN
     Zielpunkt mit weiter Enge ist genau dasselbe ruhige Heranfahren, nur mit Klammer und weicher
     Kurve statt Knick. Welcher Punkt, sagt das Bild (Vorschlag beim Einfuegen). */
- 'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('kenburns',{kbTakte:2}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('filmnebel',{staerke:.5,schwere:.15,schwaden:.4})],
+ 'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('kenburns',{kbSchlaege:8}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('filmnebel',{staerke:.5,schwere:.15,schwaden:.4})],
 };
 
 let HISTO=null;
@@ -33814,19 +33814,29 @@ function kbSchlagBilder(N,M){ return M>0 ? Math.max(1,Math.round(N/M))
    AUSSCHLIESSLICH in die Zeile unter der Punkteliste ein, nie in den Maler: der haengt im Clip an
    LOOP und der Bildnummer und sonst an nichts, und genau daran haengt die Naht. */
 function kbLage(){ try{ return (loopSicht&&loopSicht.lage)||ausschnitt(); }catch(x){ return null; } }
-/* WIE VIELE ZIELPUNKTE IN DIE CLIPLAENGE PASSEN. n Punkte brauchen n+1 Zuege zu je T Takten, und
-   ein Takt bleibt fuer die Halte - also n <= (N-Takt)/(T*Takt) - 1. Null heisst: dieser Clip
-   traegt bei diesem Tempo nicht einmal einen Punkt. */
+/* TEMPO IN SCHLAEGEN, NICHT IN TAKTEN (23.09.2026; spezifiziert am 20.09.: Vorgabe 2 Schlaege).
+   Ein Zug dauerte bis dahin mindestens einen ganzen Takt, und in einen Zehnsekuender passen nur
+   drei bis vier - bei zwei Punkten blieb sechs von neun Pruefsatz-Titeln kein Halt. In Schlaegen
+   bleibt bei allen neun einer. Die Halte rechnen weiter in ganzen Schlaegen (kbPlan), im Pult
+   dauert ein Halt weiter einen Takt. Alte Rezepte tragen kbTakte; effektAusRezept uebersetzt sie
+   mit vier Schlaegen je Takt (so rechnet die Spezifikation: "Tempo 1 = 4 Schlaege"). Der
+   Rueckfall hier gilt nur einem Effekt, der an der Uebersetzung vorbei gebaut wurde. */
+function kbZugSchlaege(e){ const z=Number(e&&e.kbSchlaege); if(z>=1) return Math.round(z);
+  const t=Number(e&&e.kbTakte); if(t>=1) return Math.round(t)*KB_ERSATZ_PROTAKT; return 2; }
+/* WIE VIELE ZIELPUNKTE IN DIE CLIPLAENGE PASSEN. n Punkte brauchen n+1 Zuege zu je Z Schlaegen,
+   und ein Takt bleibt fuer die Halte - also n <= (N-Takt)/(Z*Schlag) - 1. Null heisst: dieser
+   Clip traegt bei diesem Tempo nicht einmal einen Punkt. */
 function kbPasst(e){ const lg=kbLage(); if(!lg||!(lg.N>1)) return null;
-  const P=(lg.proTakt>=2)?lg.proTakt:KB_ERSATZ_PROTAKT, takt=kbTaktBilder(lg.N,lg.M|0,P);
-  const T=Math.max(1,Math.round(Number(e.kbTakte)||1));
-  return Math.max(0, Math.floor((lg.N-takt)/(T*takt))-1); }
+  const P=(lg.proTakt>=2)?lg.proTakt:KB_ERSATZ_PROTAKT, takt=kbTaktBilder(lg.N,lg.M|0,P), schlag=kbSchlagBilder(lg.N,lg.M|0);
+  const Z=kbZugSchlaege(e);
+  return Math.max(0, Math.floor((lg.N-takt)/(Z*schlag))-1); }
 /* ===================== DIE ZEITEINTEILUNG EINES CLIPS =====================
    EINMAL GERECHNET, ZWEIMAL GELESEN: der Maler (kbWeg) faehrt danach, und die Zeile unter der
    Punkteliste SAGT, was dabei herauskommt. Zwei getrennte Rechnungen waeren eine zu viel - die
    Zeile hat am 18.09.2026 "alle gleich lang" behauptet und stand dabei in einem Clip, in dem kein
    einziger Halt uebrig blieb (Gegenlesen 18.09.2026).
-   L Zuege zu je F Bildern, dazu L Halte: n = L-1 innere an den Zielpunkten und EINER am Ganzbild.
+   L Zuege zu je F Bildern (Z Schlaege, seit 23.09.2026 nicht mehr T Takte), dazu L Halte: n = L-1
+   innere an den Zielpunkten und EINER am Ganzbild.
    DER REST VERTEILT SICH AUF ALLE L HALTE, NICHT NUR AUF DIE INNEREN. Bis zum Gegenlesen stand
    hier der Teiler n - der Halt am Ganzbild bekam dadurch nur den Rundungsrest und stand bei 80 von
    324 Katalogtiteln null Bilder lang: die Kamera fuhr heraus und im selben Augenblick wieder
@@ -33836,10 +33846,10 @@ function kbPasst(e){ const lg=kbLage(); if(!lg||!(lg.N>1)) return null;
    weil rest >= L*H ist.
    IN GANZEN SCHLAEGEN, nicht in ganzen Takten: ein Takt laesst sich nicht halbieren, und bei 156
    von 324 Katalogtiteln fiele der Halt dann auf null. */
-function kbPlan(N,M,P,L,T){
+function kbPlan(N,M,P,L,Z){
   const n=L-1, takt=kbTaktBilder(N,M,P), schlag=kbSchlagBilder(N,M);
-  const passt=Math.floor((N-takt)/(L*takt)), Tk=Math.max(1,Math.min(T,passt));
-  let F=Tk*takt; if(L*F>N) F=Math.floor(N/L); F=Math.max(1,F);
+  const passt=Math.floor((N-takt)/(L*schlag)), Zk=Math.max(1,Math.min(Z,passt));
+  let F=Zk*schlag; if(L*F>N) F=Math.floor(N/L); F=Math.max(1,F);
   const rest=Math.max(0,N-L*F);
   const H=Math.floor(rest/(L*schlag))*schlag, HA=rest-n*H;
   return { N, takt, schlag, L, n, F, H, HA, rest };
@@ -33849,8 +33859,7 @@ function kbPlan(N,M,P,L,T){
    die Zeile Messwerte statt Absichten. Ohne Cliplaenge gibt es nichts zu sagen: dann null. */
 function kbPlanHier(e){ const lg=kbLage(); if(!lg||!(lg.N>1)) return null;
   const P=(lg.proTakt>=2)?lg.proTakt:KB_ERSATZ_PROTAKT;
-  const T=Math.max(1,Math.round(Number(e.kbTakte)||1));
-  return kbPlan(lg.N,lg.M|0,P,kbPunkte(e).length+1,T); }
+  return kbPlan(lg.N,lg.M|0,P,kbPunkte(e).length+1,kbZugSchlaege(e)); }
 /* ===================== DIE FAHRT =====================
    Gibt den Zustand des Ausschnitts als [c, px, py]: c die Enge dieses Augenblicks als Anteil der
    Quellkante (1 = das ganze Bild), px/py den Versatz in Anteilen des freien Wegs. In zeichneFrame
@@ -33941,7 +33950,7 @@ function kbAbschnittRechnen(e,t){
   if(KB_STEHT&&KB_STEHT===e.id) return null;
   const st=kbStationen(e), L=st.length-1, n=L-1;
   const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); if(!(P>=2)) P=KB_ERSATZ_PROTAKT;
-  const T=Math.max(1,Math.round(Number(e.kbTakte)||1));
+  const Z=kbZugSchlaege(e);
   let F, H, HA, u, k=0, p=1, Fb=0, Hb=0, HAb=0;
   if(LOOP>0){
     /* BILDRATE_SCHLEIFE ist die Exportbildrate (30) - dieselbe 30, mit der lpBildNr die Bildnummer
@@ -33952,21 +33961,21 @@ function kbAbschnittRechnen(e,t){
        gibt es keine Eins, auf die etwas landen koennte; dann bleibt das Ankerbild 0. Geschlossen
        ist der Lauf trotzdem, weil d genauso periodisch bleibt. */
     let A=0; if(M>0) for(let i=0;i<S.length;i++) if(S[i].length>2&&S[i][2]===0){ A=lpBildNr(S[i][0]); break; }
-    const pl=kbPlan(N,M,P,L,T); F=pl.F; H=pl.H; HA=pl.HA;
+    const pl=kbPlan(N,M,P,L,Z); F=pl.F; H=pl.H; HA=pl.HA;
     u=((lpBildNr(t)-A)%N+N)%N;
     Fb=F; Hb=H; HAb=HA;   /* im Clip zaehlt kbPlan schon in ganzen Bildern - nichts umzurechnen */
   } else {
-    const b=kbSchlagLage(S,t), bs=(b!=null?b:t/KB_ERSATZ_SCHLAG), zyk=L*T+n+1;
-    u=((bs/(zyk*P))%1+1)%1; F=T/zyk; H=1/zyk; HA=1/zyk;
+    const b=kbSchlagLage(S,t), bs=(b!=null?b:t/KB_ERSATZ_SCHLAG), zyk=L*Z+(n+1)*P;   /* eine Runde in Schlaegen: L Zuege zu Z, n+1 Halte zu je einem Takt */
+    u=((bs/zyk)%1+1)%1; F=Z/zyk; H=P/zyk; HA=P/zyk;
     /* IM PULT GIBT ES KEINE CLIPLAENGE UND DAMIT KEINE BILDZAEHLUNG - F und H sind dort Anteile
        einer Runde. Fuer die Unschaerfe braucht es trotzdem eine Laenge in Bildern, sonst laesst
        sich kein Tempo ausdruecken. Genommen wird dieselbe Rechnung, mit der die Zeile unter dem
        Regler die Runde in Sekunden nennt (kbSatz): ein Takt sind P Schlaege, ein Schlag 1/schlagHz
-       oder das Ersatzmass, und ein Zug T Takte, ein Halt einer. Mal BILDRATE_SCHLEIFE gibt das
+       oder das Ersatzmass, und ein Zug Z Schlaege, ein Halt ein Takt. Mal BILDRATE_SCHLEIFE gibt das
        Bilder. Sie geht NUR in die Unschaerfe ein, nie in den Ausschnitt - der Lauf selbst bleibt
        Zeile fuer Zeile, wie er war. */
-    const hz=schlagHz(), takt=P*(hz>0?1/hz:KB_ERSATZ_SCHLAG);
-    Fb=Math.max(1,T*takt*BILDRATE_SCHLEIFE); Hb=HAb=Math.max(1,takt*BILDRATE_SCHLEIFE);
+    const hz=schlagHz(), sch=(hz>0?1/hz:KB_ERSATZ_SCHLAG), takt=P*sch;
+    Fb=Math.max(1,Z*sch*BILDRATE_SCHLEIFE); Hb=HAb=Math.max(1,takt*BILDRATE_SCHLEIFE);
   }
   /* Die Abschnitte der Runde: Zug 0, Halt am Punkt 1, Zug 1, Halt am Punkt 2, ... , Zug n,
      aeusserer Halt am Ganzbild. Ein Halt wird als sein Zug an der Stelle p = 1 gerechnet - dann
@@ -34246,8 +34255,8 @@ function kbVorfuehrung(e,W0,H0){
   if(KB_ZEIGT.Fb==null){ const pl=kbPlanHier(e);
     if(pl){ KB_ZEIGT.Fb=Math.max(1,pl.F); KB_ZEIGT.Hb=Math.max(0,pl.H); }
     else { const S=(DATA&&DATA.schlaege)||[]; let Pt=kbProTakt(S); if(!(Pt>=2)) Pt=KB_ERSATZ_PROTAKT;
-      const hz=schlagHz(), takt=Pt*(hz>0?1/hz:KB_ERSATZ_SCHLAG), T=Math.max(1,Math.round(Number(e.kbTakte)||1));
-      KB_ZEIGT.Fb=Math.max(1,T*takt*BILDRATE_SCHLEIFE); KB_ZEIGT.Hb=Math.max(1,takt*BILDRATE_SCHLEIFE); } }
+      const hz=schlagHz(), sch=(hz>0?1/hz:KB_ERSATZ_SCHLAG), takt=Pt*sch, Z=kbZugSchlaege(e);
+      KB_ZEIGT.Fb=Math.max(1,Z*sch*BILDRATE_SCHLEIFE); KB_ZEIGT.Hb=Math.max(1,takt*BILDRATE_SCHLEIFE); } }
   const Fb=KB_ZEIGT.Fb, Hb=KB_ZEIGT.Hb;
   /* Ein Durchgang ist EIN Zug samt seinem Halt - mehr zeigt die Spalte nicht, und weniger waere
      nicht zu beurteilen. Danach faengt er von vorne an, KB_ZEIGT_RUNDEN mal. */
@@ -34326,7 +34335,7 @@ function kbPunkteSatz(e){
   /* "EIN KLEINERES TEMPO SCHAFFT PLATZ" DARF NUR DASTEHEN, WENN ES EINS GIBT (Oberflaechenprobe
      18.09.2026): bei Tempo 1 steht der Regler am Anschlag, und der Satz waere eine Ausrede statt
      eines Auswegs. Dann ist die Wahrheit: der Clip ist zu kurz, und die Fahrt laeuft trotzdem. */
-  const T=Math.max(1,Math.round(Number(e.kbTakte)||1));
+  const Z=kbZugSchlaege(e);
   /* DER ERSTE HALBSATZ SAGT, WAS GEMALT WIRD - NACHGERECHNET, NICHT BEHAUPTET (Gegenlesen
      18.09.2026). Bis dahin stand hier unbedingt "n Halte, alle gleich lang", und der zweite
      Halbsatz nahm es in engen Clips wieder zurueck ("die Halte fallen weg"). Wer bis zum Punkt
@@ -34342,9 +34351,9 @@ function kbPunkteSatz(e){
        : pl.HA>0 ? ('Für die Punkte bleibt kein ganzer Schlag übrig — sie werden nur berührt; still steht allein das Ganzbild, '+sek(pl.HA)+' s. ')
        : 'Die Züge füllen den ganzen Clip — es bleibt kein Halt, auch nicht am Ganzbild. '; }
   s += (passt==null) ? 'Wie viele Punkte in die Cliplänge passen, steht fest, sobald der Titel seine Länge hat.'
-    : passt===0 ? ('In diese Cliplänge passt bei diesem Tempo kein einziger Punkt'+(T>1?' — ein kleineres Tempo schafft Platz.':' — dieser Clip ist dafür zu kurz; die Fahrt läuft trotzdem, nur mit Zügen unter einem Takt.'))
+    : passt===0 ? ('In diese Cliplänge passt bei diesem Tempo kein einziger Punkt'+(Z>1?' — ein kleineres Tempo schafft Platz.':' — dieser Clip ist dafür zu kurz; die Fahrt läuft trotzdem, nur mit Zügen unter einem Schlag.'))
     : ('In diese Cliplänge passen bei diesem Tempo '+passt+' '+(passt===1?'Punkt':'Punkte')
-       +(n>passt?(' — die übrigen fahren trotzdem mit, dafür werden die Züge kürzer als ein Takt'+(T>1?'; ein kleineres Tempo schafft Platz.':'.')):'.'));
+       +(n>passt?(' — die übrigen fahren trotzdem mit, dafür werden die Züge kürzer als ein Schlag'+(Z>1?'; ein kleineres Tempo schafft Platz.':'.')):'.'));
   if(n>=KB_PUNKTE_MAX) s+=' Fünf ist die Grenze: ein weiterer Klick auf die Bühne setzt keinen Punkt mehr, erst ein Doppelklick auf eine Marke macht Platz.';
   /* AM ANSCHLAG - UND DAS MUSS DASTEHEN (Oberflaechenprobe 18.09.2026). Ein Klick weit aussen setzt
      die Marke nicht dorthin, wo der Zeiger war, sondern an den Rand des erreichbaren Bereichs: ein
@@ -34417,15 +34426,15 @@ function kbVorschlagSatz(e){
 /* DIE ZEILE UNTER DEM TEMPO-REGLER. Sie sagt, was dieser Titel hergibt und was daraus folgt -
    in Zahlen statt als Behauptung, und wo ein Ersatzmass gilt, steht das Ersatzmass da. */
 function kbSatz(e){ const S=(DATA&&DATA.schlaege)||[]; let P=kbProTakt(S); const ohneZaehlzeit=!(P>=2); if(ohneZaehlzeit) P=KB_ERSATZ_PROTAKT;
-  const hz=schlagHz(), sch=hz>0?1/hz:KB_ERSATZ_SCHLAG, takt=P*sch, T=Math.max(1,Math.round(Number(e.kbTakte)||1)), teile=[];
+  const hz=schlagHz(), sch=hz>0?1/hz:KB_ERSATZ_SCHLAG, takt=P*sch, Z=kbZugSchlaege(e), teile=[];
   teile.push(!S.length ? 'Dieser Titel hat kein Schlagraster — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag'
     : hz>0 ? Math.round(60/sch)+' Schläge je Minute'
     : 'zu wenige Schläge für ein Tempo — Ersatzmaß '+kf(KB_ERSATZ_SCHLAG.toFixed(2))+' s je Schlag');
   teile.push(ohneZaehlzeit ? 'keine Taktzählung — Ersatzmaß vier Schläge je Takt' : P+' Schläge je Takt');
-  const n=kbPunkte(e).length, L=n+1, runde=L*T*takt+(n+1)*takt;
-  return teile.join(', ')+'; ein Takt '+kf(takt.toFixed(2))+' s. Ein Zug '+T+' '+(T===1?'Takt':'Takte')+' ('+kf((T*takt).toFixed(1))
+  const n=kbPunkte(e).length, L=n+1, runde=L*Z*sch+(n+1)*takt;
+  return teile.join(', ')+'; ein Schlag '+kf(sch.toFixed(2))+' s, ein Takt '+kf(takt.toFixed(2))+' s. Ein Zug '+Z+' '+(Z===1?'Schlag':'Schläge')+' ('+kf((Z*sch).toFixed(1))
     +' s), diese Fahrt hat '+L+' '+(L===1?'Zug':'Züge')+' — im Pult '+kf(runde.toFixed(1))+' s je Runde (je Station ein Takt Halt).'
-    +' Im Clip füllen die Halte den Rest der Cliplänge, und passt die Fahrt nicht hinein, läuft sie über so viele Takte, wie hineinpassen.'; }
+    +' Im Clip füllen die Halte den Rest der Cliplänge, und passt die Fahrt nicht hinein, läuft sie über so viele Schläge, wie hineinpassen.'; }
 /* roh (nur aus rahmen(), V gehalten in der Vorbereitung): die Quelle mit Vorbereitung, aber ohne Kette. Ohne roh ist der Weg bitgleich. */
 /* ===================== DIE GEOMETRIE DIESES BILDES (18.09.2026) =====================
    Caspar_D, 18.09.2026 (Rauchtest): ein Teilchen wurde von einer Flaeche verdeckt, DIE WOANDERS
@@ -35489,6 +35498,8 @@ function zeichneFrame(t,roh){
        sie steht hier, damit der Grund an der Stelle steht und nicht in einem Zufall. */
     if(r.typ==='fahrt') return null;
     if(!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false;
+    /* Tempo der Ken Burns Fahrt in Schlaegen statt Takten (23.09.2026): ein altes kbTakte wird mit vier Schlaegen je Takt uebersetzt, wie die Spezifikation rechnet. */
+    if(r.typ==='kenburns'&&r.kbSchlaege==null&&r.kbTakte!=null){ e.kbSchlaege=Math.max(1,Math.round(Number(r.kbTakte)||1))*KB_ERSATZ_PROTAKT; delete e.kbTakte; }
     /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
     if(EFFEKTE[r.typ].params.some(p=>p.lm)&&r.lmQuelle==null){ if(r.typ==='strobe'){ e.lmQuelle=r.takt?'takt':'hz'; e.lmForm=r.takt?'peak_an':'rechteck'; if(r.frequenz>0) e.lmHz=r.frequenz; e.lmTiefe=1; }
       else if(r.takt!=null){ e.lmQuelle=r.takt?'takt':'stetig'; e.lmForm='rampe_ab'; } delete e.takt; delete e.frequenz; }
