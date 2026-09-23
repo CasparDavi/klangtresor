@@ -6308,3 +6308,13 @@ im Nebel — genau den Leuchten, die Caspar_D tags zuvor als zu schwach beanstan
 sind beide richtig (Nebel dämpft auch den Hinweg, und er streut nach vorn); ob sie gewollt sind und
 mit welchem Ausgleich, ist seine Entscheidung am Bild (Wiedervorlage 15). Formeln und Zahlen stehen
 im Leuchten-Konzept §6, der Code ist gelöscht, nicht auskommentiert.
+
+## 9. Linse: gemessen, woran es liegt — nicht an der Linse
+
+GPU-Kostenmessung (Prüfstand `--gpu`, Exportweg): Linse netto 2,3 ms bei 360, 3,9 ms bei 1080 —
+neunmal so viele Bildpunkte, kaum mehr Zeit. Experiment: dieselbe Linse ohne Verzerrung (alle Kanäle
+an `v_uv`) kostet gleich viel (GL 2,73 gegen 2,29 ms). **Die Cache-Vermutung aus dem Backlog ist
+widerlegt.** Teuer ist der GL-Gang je Effekt — Textur hoch, rastern, zurück —, rund 2–3 ms
+unabhängig von Größe und Shader; die 10,9 ms vom 21.09. ließen sich auf diesem Weg nicht
+reproduzieren. Hebel wäre ein Umbau von `GL.run`: aufeinanderfolgende GL-Effekte auf der
+Grafikkarte lassen, einmal zurücklesen. Im Backlog fortgeschrieben, nicht gebaut.

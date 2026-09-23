@@ -3036,9 +3036,19 @@ Oberfläche messen statt behaupten, ohne Bild und ohne Rauschboden.
 
 ## Die Linse kostet 10,9 ms je Bild (21.09.2026)
 
-**Zustand: offen** (Stand 23.09.2026: seit dem 21.09. nichts geschehen; der erste Schritt ist die
-Messung unten, WORAN es liegt — keine Bauarbeit). Nebenbefund aus der Kostenmessung der Leuchten —
-gemessen, nicht vermutet.
+**Zustand: gemessen, Vermutung widerlegt (23.09.2026).** Auf der Radeon, Exportweg des Prüfstands,
+netto über dem leeren Bild: Linse **2,3 ms** bei 254×360 und **3,9 ms** bei 764×1080 — neunmal so
+viele Bildpunkte, kaum mehr Zeit; Scheinwerfer mit Tiefe 4,4 / 4,3 ms, Flammen 3,5 / 5,0 ms. Dann
+dieselbe Linse **ohne Verzerrung** gelesen (alle drei Kanäle an `v_uv`): 4,77 ms gesamt / 2,73 ms GL
+gegen 4,77 / 2,29 mit Verzerrung — **gleich**. Die Cache-Lokalität ist es also nicht. Teuer ist der
+**GL-Gang je Effekt**: Quelltextur hochladen, Vollbild rastern, als Canvas zurücklesen — rund
+2–3 ms, unabhängig von Größe und Shader. Die 10,9 ms vom 21.09. ließen sich auf dem Exportweg nicht
+reproduzieren; sie stammen aus einer anderen Messanordnung (Studio-Vorschau, 629×889) und sind hier
+nicht mit einem Effekt erklärbar. **Der Hebel liegt nicht in der Linse:** wer zwei, drei GL-Effekte
+hintereinander hat, zahlt den Gang zwei-, dreimal. Billiger würde es, wenn aufeinanderfolgende
+GL-Effekte auf der Grafikkarte blieben (ein Kontext, Textur an Textur) und erst der letzte
+zurückliest — ein Umbau von `GL.run`/`ergebnis`, keine Bauarbeit an einem Effekt. Nicht begonnen.
+Ursprünglicher Nebenbefund aus der Kostenmessung der Leuchten — gemessen, nicht vermutet:
 
 Radeon Pro 5500 XT, 629×889, Median aus fünf Läufen, netto über dem leeren Bild:
 
