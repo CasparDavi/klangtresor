@@ -887,6 +887,21 @@ Prüfstand-Chrome ohne echte Grafikkarte). Alle neun GL-Effekte probeweise mit d
 Vorspann kompiliert: fehlerfrei. Zwei Nahtfälle geprüft (`laserraum-faecher`, der Grenzfall
 `laserraum-strahl-kegel`): beide `gl:true`, keine Verschlechterung.
 
+**Berichtigt am 23.09.2026 — `fwidth` war ein Fehler, die Absicht bleibt.** Der volle
+Regressionslauf (244 Fälle) fand, was die zwei Stichproben nicht finden konnten: der *stehende* Fall
+`laserraum-matrix` wich zwischen Bild 0 und Bild N ab (0,12/0,30 direkt nach `fwidth`, 0,42 nach den
+Reglern, bis 1,68 am Tagesende), `strahlenraum-roll` bis 4,67 — beide vor `fwidth` 0,00, mit
+schwankenden Werten von Lauf zu Lauf. Ursache: `fwidth(qD)` stand in `imStrahl` **hinter** den
+Ausstiegen (`dist`, `cosw`, `weite`, Kegel). Ableitungen sind nur in einheitlichem Kontrollfluss
+definiert; im 2×2-Quad daneben lief der Nachbar schon nicht mehr mit, und SwiftShader lieferte
+Zufall. Ersetzt durch eine **analytische Schranke**: ein Bildpunkt ist `1/u_res.x` Bildbreiten, qD
+und qE ändern sich je Bildpunkt höchstens um diesen Weg geteilt durch die halbe Dicke (Ur, Vr sind
+Einheitsvektoren) — eine obere Schranke der echten Änderung, die Kante also mindestens so breit
+wie mit `fwidth`, ohne Ableitung, ohne Erweiterung, ohne Zufall. Die Erweiterung
+`GL_OES_standard_derivatives` ist wieder aus dem Vorspann und aus `GL.init` heraus. Danach: Matrix,
+Roll, Rollen, Fächer 0,00/0,00; `laserraum-strahl-kegel` unverändert 0,07/0,17. Lehre: eine
+Ableitung im Shader gehört an den Anfang von `main`, vor jeden `return`.
+
 **~~Offen, nicht gebaut~~ — gebaut, siehe §8 (`11f2d91`):** der alte Laser hat einen Flimmer-Mechanismus (`e.flimmer`,
 `e.flimmerTempo`) — ein periodisches Abdunkeln (55 % der Zeit voll hell, 45 % gedimmt, je Strahl
 phasenversetzt über `e.id*0.37`), das mehrere gleichzeitige Strahlen unterschiedlich hell zeigt und

@@ -6336,3 +6336,22 @@ an?).
 - **Polarlicht**: wartet auf Wiedervorlage 6 (Ort oder Ausdehnung).
 - **`gesundheit.js` Token-Prüfung**: Idee aus 6d, nie bestellt.
 - **Extinktion und Phasenfunktion im Nebel**: gebaut und wieder ausgebaut, siehe 8.
+
+## 12. Der volle Regressionslauf — und ein Fund von gestern
+
+244 Fälle, 1628 s mit zwei Chrome nebeneinander, keine Abbrüche, kein `gl NEIN`, keine
+Konsolenmeldung. Drei Fälle über 0,3: `laserraum-matrix` 0,43/0,82, `laserraum-rollen` 0/0,43,
+`strahlenraum-roll` 0,13/4,29. Wiederholung allein: Matrix 0,31/1,68, Roll 0,81/4,67, Rollen 0/0 —
+reproduzierbar, aber schwankend, und die Matrix ist ein **stehender** Fall. Eingegrenzt über die
+Stände von gestern (`web/index.html` je Commit ausgecheckt, gemessen, zurück): sauber bei `824b4ce`
+(Querschnitt-Normierung), auffällig ab `f00aa61` — **`fwidth`**. Die Ableitung stand in `imStrahl`
+hinter den Ausstiegen, also in uneinheitlichem Kontrollfluss, wo sie undefiniert ist; SwiftShader
+lieferte Zufall. Behoben mit einer analytischen Bildpunkt-Schranke (`1/u_res.x / halb`, obere
+Schranke der echten Änderung), Erweiterung wieder raus; Matrix/Roll/Rollen/Fächer 0,00/0,00,
+Kegel unverändert (KONZEPT-LEUCHTEN §7, „Berichtigt am 23.09."). Die zwei Stichproben von gestern
+(`faecher`, `strahl-kegel`) konnten das nicht finden — ein Fall, der Zufall zeigt, muss stehen
+und ohne Nebel sein. Zwei Lehren: Ableitungen im Shader vor jeden `return`; und der volle Lauf am
+Ende eines Bautages ist keine Formsache.
+
+**Läufe über zwei Minuten heute** (Caspar_D: „tob dich aus"): Kegel-Nachmessung 151 s, Nebel-Naht
+190 s, voller Lauf 1628 s, Laser/Strahlen-Naht nach dem Fix. Alles Prüfstand, nichts in seinem Fenster.

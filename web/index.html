@@ -30963,7 +30963,6 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
 const GL={ cv:null, gl:null, prog:{}, noise:null, laden:false, tot:false, wieder:0, noise4:null, _vier:null,
   init(){ if(this.gl||this.tot) return !!this.gl; try{ this.cv=document.createElement('canvas'); this.gl=this.cv.getContext('webgl',{preserveDrawingBuffer:true,premultipliedAlpha:true,alpha:true}); }catch(e){}
     if(!this.gl){ this.tot=true; return false; } const gl=this.gl;
-    try{ gl.getExtension('OES_standard_derivatives'); }catch(e){}   /* fwidth() fuer die Kantenglaettung, siehe GL_VORSPANN */
     const vb=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vb); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW); this.vb=vb;
     this.texL=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,this.texL); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));   /* solange kein Licht-Puffer da ist: schwarz */
@@ -31152,12 +31151,12 @@ void main(){
   gl_FragColor = texture2D(u_tex, vec2(quelle(q-mt*D).x, 1.0-quelle(q-mt*D).y));
 }
 `;
-/* GL_OES_standard_derivatives (fwidth/dFdx/dFdy): fuer die Kantenglaettung duenner Formen
-   (Laser-Kern, siehe imStrahl). Die Erweiterung muss VOR jedem anderen Token stehen, auch vor
-   "precision" - und sie muss im JS-Kontext angefordert sein (GL.init), sonst bleibt fwidth
-   trotz dieser Zeile ein Fehler beim Kompilieren. Seit rund 2012 in praktisch jedem WebGL1
-   ueberall vorhanden, auch in SwiftShader (Pruefstand-Chrome ohne echte Grafikkarte). */
-const GL_VORSPANN='#extension GL_OES_standard_derivatives : enable\nprecision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform sampler2D u_tiefe; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
+/* HIER STAND EINEN TAG LANG '#extension GL_OES_standard_derivatives' (22.-23.09.2026), fuer fwidth()
+   in der Kantenglaettung des Laser-Kerns. Ableitungen sind nur in einheitlichem Kontrollfluss
+   definiert, und imStrahl steigt vorher an vielen Stellen aus - das Ergebnis war Zufall an der
+   Naht (siehe imStrahl, "NICHT MIT fwidth"). Die Kante rechnet jetzt ihre Schranke analytisch;
+   wer die Erweiterung wieder braucht, setzt sie VOR "precision" und fordert sie in GL.init an. */
+const GL_VORSPANN='precision highp float; varying vec2 v_uv; uniform sampler2D u_tex; uniform sampler2D u_tiefe; uniform float u_t; uniform vec2 u_res; uniform float u_staerke; uniform float u_takt;\n';
 const GL_FBM='float fbm(vec3 p){ float a=0.5, s=0.0; for(int i=0;i<4;i++){ s+=a*snoise(p); p=p*2.02+vec3(1.7,9.2,0.3); a*=0.5; } return s; }\n';
 /* DIE EXPORTFORM DER RAUSCHSHADER (Caspar_D, 14.09.2026: "wind kann ein muster so treiben, das es zur taktzeit
    wieder genauso anfaengt"). Rauschen entlang einer geraden Zeitachse kommt nie zurueck. Zwei Bewegungen:
@@ -31409,8 +31408,21 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
      wenn sie von Natur aus schmaler waere. Bei einem gut aufgeloesten, dicken Strahl aendert das
      nichts (die alte Rechnung bleibt exakt erhalten); erst wenn ein Bildpunkt mehr Weg abdeckt als
      die Kante breit ist, wird die Kante genau so breit wie ein Bildpunkt - durchgehend statt
-     gewuerfelt. */
-  float aaD=fwidth(qD), aaE=fwidth(qE);
+     gewuerfelt.
+     NICHT MIT fwidth() (23.09.2026, im vollen Regressionslauf gefunden). fwidth stand hier einen
+     Tag lang - und liegt in dieser Funktion HINTER lauter Ausstiegen (dist, cosw, weite, Kegel):
+     Ableitungen sind nur in einheitlichem Kontrollfluss definiert, im 2x2-Quad daneben lief der
+     Nachbar schon nicht mehr mit, und SwiftShader lieferte dann Zufall. Gemessen: der STEHENDE
+     Fall laserraum-matrix wich zwischen Bild 0 und Bild N um 0,12 bis 0,43 Graustufen ab, mit
+     jedem weiteren Umbau mehr (bis 1,68), strahlenraum-roll bis 4,67 - vor fwidth beide 0,00.
+     Stattdessen die Schranke analytisch: ein Bildpunkt ist 1/u_res.x Bildbreiten, und qD, qE
+     aendern sich je Bildpunkt hoechstens um diesen Weg geteilt durch die halbe Dicke (Vr, Ur sind
+     Einheitsvektoren, ihre Projektion auf die Leinwand ist hoechstens 1). Das ist eine obere
+     Schranke der echten Aenderung - die Kante wird also mindestens so breit wie mit fwidth, ohne
+     Ableitung, ohne Erweiterung, ohne Zufall. Fuer die Kugelquelle (Nenner breit statt halb)
+     ist sie etwas zu gross, das ist eine etwas weichere Kante, kein Fehler. */
+  float aaPx=(1.0/max(1.0,u_res.x))/max(1e-6,halb);
+  float aaD=aaPx, aaE=aaPx;
   float breiteD=max(1.0-kern,aaD), breiteE=max(1.0-kern,aaE);
   float rD=(qD<=kern)?1.0:max(0.0,1.0-(qD-kern)/breiteD);
   float rE=(qE<=kern)?1.0:max(0.0,1.0-(qE-kern)/breiteE);
