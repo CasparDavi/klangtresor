@@ -28644,7 +28644,6 @@ function vorbAus(r){ const v=vorbNeu(); if(!r||typeof r!=='object') return v;
   if(Array.isArray(r.zonenGrenzen)) v.zonenGrenzen = r.zonenGrenzen
     .map(Number).filter(x=>isFinite(x)&&x>0&&x<255).sort((a,b)=>a-b).slice(0,ZONEN_MAX_GRENZEN);
   { const x=Number(r.leerraum);   if(isFinite(x)) v.leerraum=Math.max(0,Math.min(1,x)); }
-  { const x=Number(r.flaecheAb);  if(isFinite(x)) v.flaecheAb=Math.max(0,Math.min(0.4,x)); }
   VORB_REGLER.forEach(([k])=>{ if(typeof r[k]==='number') v[k]=Math.max(-1,Math.min(1,r[k])); });
   if(r.grad&&typeof r.grad==='object') for(const ch of ['v','r','g','b']) if(r.grad[ch]) v.grad[ch]={...v.grad[ch],...r.grad[ch]}; return v; }
 function gradNeutral(g){ return Math.abs(g.bp)<1e-6&&Math.abs(g.wp-1)<1e-6&&Math.abs(g.tonwert)<1e-6; }
@@ -28661,7 +28660,6 @@ function vorbExport(v){ const zon={};
      gefuellte, denn sie sagt „hier wurde hingesehen und es gibt keine". */
   if(Array.isArray(v.zonenGrenzen)) zon.zonenGrenzen = v.zonenGrenzen.slice();
   if(Math.abs((v.leerraum==null?0.25:v.leerraum)-0.25)>1e-6) zon.leerraum=v.leerraum;
-  if(Math.abs((v.flaecheAb==null?0.05:v.flaecheAb)-0.05)>1e-6) zon.flaecheAb=v.flaecheAb;
   const rt=Object.keys(zon).length?zon:null;
   if(!vorbAenderungen(v)) return rt||undefined; const o=rt?{...rt}:{}; VORB_REGLER.forEach(([k])=>{ if(Math.abs(v[k])>1e-6) o[k]=v[k]; });
   const g={}; for(const ch of ['v','r','g','b']) if(!gradNeutral(v.grad[ch])) g[ch]=v.grad[ch]; if(Object.keys(g).length) o.grad=g; return o; }
