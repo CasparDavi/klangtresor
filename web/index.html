@@ -27241,6 +27241,16 @@ var EffektclipStudio = (() => {
   let exportLaeuft=false, root=null, offen=false, rafId=0, DATA=null, stapelBox=null, lein=null, g=null, t0=0, songId=null, nachSichern=null;
   const $ = s => root ? root.querySelector(s) : null;
 const kf = v => String(v).replace('.',',');
+/* REGEL 9a: EIN REGLER WIRKT GLEICHMAESSIG UEBER SEINEN GANZEN WEG (23.09.2026). Manche Groessen
+   wirken nicht linear - die Dicke eines Lichtschachts macht mit ihren ersten 3 % Reglerweg ein
+   Viertel der ganzen Lichtwirkung. Ein Parameter kann darum eine `skala` tragen: Stuetzstellen
+   [Wert, gemessene Wirkung], monoton steigend. Der Schieber laeuft dann ueber die WIRKUNG (0..1),
+   und diese beiden Funktionen rechnen zwischen Schieberstellung und Wert um. Das Rezept traegt
+   weiter den Wert, nie die Stellung; alte Rezepte bleiben unveraendert lesbar. */
+function skalaZuRegler(p,w){ const K=p.skala, n=K.length-1, y0=K[0][1], y1=K[n][1]; if(!(w>K[0][0])) return 0; if(!(w<K[n][0])) return 1;
+  for(let i=0;i<n;i++){ const [a,ya]=K[i],[b,yb]=K[i+1]; if(w<=b){ const y=ya+(yb-ya)*(w-a)/(b-a); return (y-y0)/(y1-y0); } } return 1; }
+function skalaVonRegler(p,st){ const K=p.skala, n=K.length-1, y=K[0][1]+(K[n][1]-K[0][1])*Math.max(0,Math.min(1,st));
+  for(let i=0;i<n;i++){ const [a,ya]=K[i],[b,yb]=K[i+1]; if(y<=yb){ const w=a+(b-a)*(y-ya)/(yb-ya); return Math.round(w*100)/100; } } return K[n][0]; }
 /* ZUSTAENDE SIND KEINE MENGEN (Hausregel 20): ein Slider fuer einen Zustand traegt keinen
    Fuellbalken, denn seine Mitte ist die Heimat - ein Balken behauptet dort "halb voll", und
    das ist keine Aussage ueber einen Ort oder ein Tempo.
@@ -27726,7 +27736,11 @@ const EFFEKTE = {
       {k:'zahl',lbl:'Strahlen',min:1,max:24,step:1,def:7,wert:v=>kf(v),when:e=>(e.bauart||'faecher')!=='schacht'},
       {k:'reihen',lbl:'Ringe',min:1,max:8,step:1,def:3,wert:v=>kf(v),when:e=>(e.bauart||'faecher')==='kugel',
         notiz:e=>'Wie viele Kr\u00e4nze von Strahlen die Kugel hat \u2014 einer ist ein Ring, mehrere f\u00fcllen den Raum.'},
-      {k:'dicke',lbl:'Dicke',min:.05,max:12,step:.05,def:5,wert:v=>kf(v)+'\u00b0'},
+      /* skala (Regel 9a, gemessen 23.09.2026 am Pruefstand, Titel a, Schacht 35 Strahlen mit Filmnebel,
+         Licht je Bildpunkt bei 360 und 720 px gleich): unter 0,4 Grad steil, darueber linear. Die
+         Kugelquelle hat dieselbe Form (2,4 / 12,5 / 105 bei 0,05 / 0,4 / 12 Grad), nur steiler oben. */
+      {k:'dicke',lbl:'Dicke',min:.05,max:12,step:.05,def:5,wert:v=>kf(v)+'\u00b0',
+       skala:[[.05,12.5],[.1,20],[.2,24.9],[.4,26],[1,28.2],[2,31.5],[4,38.5],[8,53.1],[12,69.4]]},
       /* DIE VORGABE WAR 1,2\u00b0, DAVOR 0,6\u00b0 - UND BEIDE WAREN ZU DUENN (22.09.2026, am
          selben Muster wie beim Laser: "beim Einhaengen soll man ihn sehen"). Gemessen an Escher
          mit Filmnebel, mittlere Bildaenderung bei Staerke an/aus: 0,76 bei 1,2\u00b0, 4,85 bei
@@ -32098,7 +32112,10 @@ function renderStapel(){
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
       /* `wert` beschriftet den Regler selbst, wo die blosse Zahl nichts sagt: der Anschlag links
          der Tiefengrenze ist kein Wert, sondern „von selbst" (16.09.2026). */
-      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':''; h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"><span class="tbs-wert">'+(p.wert?p.wert(e[p.k],e):kf(e[p.k]))+'</span></div>';
+      else{ const zu=(p.min<0||ZUST.has(p.k))?' tbs-zust':'';
+        /* Mit `skala` laeuft der Schieber ueber die Wirkung 0..1 (Regel 9a, siehe skalaZuRegler); die Zahl daneben zeigt weiter den Wert. */
+        const bereich = p.skala ? 'min="0" max="1" step="0.001" value="'+skalaZuRegler(p,e[p.k])+'"' : 'min="'+p.min+'" max="'+p.max+'" step="'+p.step+'" value="'+e[p.k]+'"';
+        h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="range" class="'+zu.trim()+'" data-k="'+p.k+'" '+bereich+'><span class="tbs-wert">'+(p.wert?p.wert(e[p.k],e):kf(e[p.k]))+'</span></div>';
       }
     };
     /* GRAU MIT GRUND STATT WEG (Hausgesetz der Effektclips, 16.09.2026: "Nichts darf in der
@@ -32214,8 +32231,8 @@ function renderStapel(){
       else if(w==='runter'&&idx<STAPEL.length-1){ const a=STAPEL[idx+1]; STAPEL[idx+1]=STAPEL[idx]; STAPEL[idx]=a; }
       renderStapel(); });
     c.querySelectorAll('[data-k]').forEach(inp=>inp.oninput=()=>{ const k=inp.dataset.k, p=T.params.find(x=>x.k===k);
-      e[k]= (inp.type==='range') ? +inp.value : inp.value;
-      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? (p&&p.wert?p.wert(+inp.value,e):kf(inp.value)) : inp.value;
+      e[k]= (inp.type==='range') ? (p&&p.skala ? skalaVonRegler(p,+inp.value) : +inp.value) : inp.value;
+      const w=inp.parentElement.querySelector('.tbs-wert'); if(w) w.textContent = (inp.type==='range') ? (p&&p.wert?p.wert(e[k],e):kf(e[k])) : inp.value;
       /* EINE NOTIZ, DIE AM REGLERWERT HAENGT, MUSS AM REGLER MITZIEHEN (Regel 11, nachgesehen
          16.09.2026 in der Oberflaechenprobe). Unter „Anzahl“ steht bei der Sternschnuppe, wie
          viele je Cliplänge fliegen - beim Schieben blieb der alte Satz stehen, weil nur

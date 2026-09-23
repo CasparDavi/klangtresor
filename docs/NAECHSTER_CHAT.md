@@ -6177,3 +6177,39 @@ Nach den Wiedervorlagen 1–2; an ihnen hängt, ob die alten Effekte fallen.
 Fürs nächste Nachschlagen: Caspar_Ds Wortmeldungen nur aus dem Transkript zitieren, nie aus
 zusammengefassten Übergaben — zwei Prüfagenten haben Kontexte verwechselt (*„fang einfach von
 vorne an"* galt der Punkteliste, nicht Ken Burns).
+
+---
+
+# 23.09.2026, tagsüber — Die Bauliste, ohne Caspar_D
+
+Caspar_D, morgens: *„ich bin heute nicht hier, du hast 18h Zeit, tob dich aus, fang einfach an und
+arbeite dich durch."* Gemeint ist Abschnitt 3 der Durchsicht von heute Nacht. Jeder Schritt einzeln
+committed, mit Nahtprobe; die Wiedervorlage-Punkte (Abschnitt 2) bleiben unberührt. Testläufe am
+Prüfstand, nicht in seinem Fenster; die Oberfläche in einem eigenen Tab auf dem Prüfstand-Stand.
+
+## 1. `laserraum-strahl-kegel` nachgemessen
+
+Gleich **0,06 / Folge 0,17** — identisch mit dem Stand nach `fwidth` (22.09. 14:04). Die fünf
+späteren Änderungen an Laser und Lichtstrahlen haben die Naht dieses Falls nicht verändert. Die
+`u_zeit`-Hypothese bleibt ungeprüft; sie steht nicht mehr oben auf der Liste, weil der Wert unter
+einer Fünftel-Graustufe liegt und die Naht schließt.
+
+## 2. `flaecheAb`-Reste gelöscht (`fae4e69`)
+
+`vorbAus` las den Wert aus alten Rezepten, `vorbExport` schrieb ihn zurück, niemand las ihn. Die
+Begründung bleibt im Kommentar über `vorbNeu`. `trennung`/`trennWeich` bleiben — `zoneTrennung()`
+wird bei der Zonenmaske noch gelesen (Zeile ~36807).
+
+## 3. Regel 9a: die Dicke-Skala von `strahlenRaum`
+
+Gemessen mit dem Prüfhaken `dioBeweis` (hinzugefügtes Licht des Effekts gegen dasselbe Bild ohne
+ihn; Titel „Stumm", Filmnebel, Prüfstand): siehe EFFEKTCLIP-REGELN 9a für die Zahlen. Der Befund
+von gestern (S-Kurve) gilt seit dem Glimmen nicht mehr; heute ist die Kurve **bis 0,4° steil und
+danach linear**, bei 360 und 720 px gleich, bei der Kugelquelle dieselbe Form.
+
+**Gebaut:** ein allgemeiner Mechanismus statt einer Sonderlösung. Ein Parameter kann `skala`
+tragen (Stützstellen Wert/Wirkung); der Schieber läuft über die Wirkung, `skalaZuRegler` und
+`skalaVonRegler` (neben `kf`) rechnen um, die Zahl daneben zeigt den Wert. Rezepte tragen weiter
+den Wert. Am Prüfstand-Studio im eigenen Tab gefahren: Stellung 0 → 0,05°, ¼ → 0,44°, ½ → 4,67°,
+1 → 12°; die Vorgabe 5° steht bei 0,52; keine Konsolenmeldung. Wer die Karte nach dem Schieben
+neu baut, sieht 4,98° statt 5° — die Rundung auf zwei Stellen, kein Fehler.

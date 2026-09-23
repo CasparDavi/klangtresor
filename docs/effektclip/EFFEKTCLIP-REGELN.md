@@ -118,8 +118,20 @@ das ist eine S-Kurve, kein linearer Verlauf. Die Ursache liegt meist darin, dass
 quadratisch oder anders nichtlinear mit dem WERT skaliert (hier vermutlich: Fläche wächst mit dem
 Quadrat der Winkelbreite, bis eine Sättigung durch die Bildgröße einsetzt). Die Abhilfe ist dann,
 nicht den Wertebereich zu kürzen, sondern die Skala des Reglers selbst zu transformieren, sodass
-gleiche Schieberegler-Schritte gleiche wahrgenommene Wirkungs-Schritte ergeben — noch nicht
-behoben, offener Punkt in der Übergabe.
+gleiche Schieberegler-Schritte gleiche wahrgenommene Wirkungs-Schritte ergeben.
+
+**Gebaut am 23.09.2026, als allgemeiner Mechanismus:** Ein Parameter kann eine `skala` tragen —
+Stützstellen `[Wert, gemessene Wirkung]`, monoton steigend. Der Schieber läuft dann über die
+**Wirkung** (0 … 1), `skalaZuRegler`/`skalaVonRegler` rechnen um, die Zahl rechts daneben zeigt
+weiter den Wert, und das Rezept trägt weiter den Wert, nie die Stellung — alte Rezepte bleiben
+unverändert lesbar. Erster Träger ist `strahlenRaum.dicke`. Neu gemessen am Prüfstand (Titel
+„Stumm", Schacht mit 35 Strahlen und Filmnebel, hinzugefügtes Licht je Bildpunkt, bei 360 und
+720 px lange Seite gleich): 0,05° → 12,5 · 0,1° → 20,0 · 0,2° → 24,9 · 0,4° → 26,0 · 1° → 28,2 ·
+2° → 31,5 · 4° → 38,5 · 8° → 53,1 · 12° → 69,4. Seit dem Glimmen (§7 im Leuchten-Konzept) ist es
+keine S-Kurve mehr, sondern **steil bis 0,4°, danach linear** — die ersten 3 % des linearen
+Reglerwegs machten ein Viertel der ganzen Wirkung. Mit der Skala liegt 0,44° jetzt bei einem
+Viertel des Wegs, 4,7° in der Mitte, 12° am Anschlag. Die Kugelquelle hat dieselbe Form (2,4 /
+12,5 / 105 bei 0,05 / 0,4 / 12°), nur oben steiler; sie teilt die Skala des Schachts.
 
 **10. Ein ausgeblendeter Regler ist nicht abgeschaltet.** `when` versteckt nur die Zeile, der Wert
 bleibt stehen und wird weitergereicht. Wer eine Auswahl „keine" anbietet, muss den Wert selbst auf
