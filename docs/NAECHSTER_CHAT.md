@@ -6355,3 +6355,23 @@ Ende eines Bautages ist keine Formsache.
 
 **Läufe über zwei Minuten heute** (Caspar_D: „tob dich aus"): Kegel-Nachmessung 151 s, Nebel-Naht
 190 s, voller Lauf 1628 s, Laser/Strahlen-Naht nach dem Fix. Alles Prüfstand, nichts in seinem Fenster.
+
+## 13. Stand am Ende des Tages
+
+Zwölf Commits, alle gepusht (`fae4e69` … `edf469d`), Arbeitsbaum sauber, origin ohne Fremdes.
+Gebaut und geprüft: `flaecheAb`-Reste weg · Regel-9a-Skala am Dicke-Regler (allgemeiner
+Mechanismus) · Tiefenkarte vom Titelbild geliehen (Sunos Bewegtbild) · Ken-Burns-Tempo in Schlägen
+mit Übersetzung alter Rezepte · Flammen, Kaustik und leuchtende Teilchen im Lichtpuffer ·
+Überstrahlungsanzeige auf der Bühne · räumliche Schwaden im Nebel · Linse gemessen (Vermutung
+widerlegt) · `fwidth`-Fund aus dem vollen Lauf behoben. Nicht gebaut, weil es Caspar_D gehört:
+Extinktion/Phasenfunktion (ausgebaut, Zahlen im Konzept), Kaustik-Stärke, Wort und Ort der
+Überstrahlung — Wiedervorlage 14–17 oben in der Durchsicht.
+
+Nach dem `fwidth`-Fix lief kein zweiter voller Lauf: der Fix ändert nur `imStrahl`, und alle 17
+Fälle mit Laser oder Lichtstrahlen mit Tiefe wurden danach geprüft (0,00, keine Meldung). Wer
+sichergehen will, startet `node labor/nahtpruefung/naht.mjs --neu --jobs 2` (~27 min).
+
+Beim nächsten Öffnen des Studios sieht Caspar_D zuerst: den Dicke-Regler mit neuer Skala, das
+Tempo in Schlägen, den Satz „vom Titelbild geliehen" auf einem Suno-Bewegtbild, die Zahl
+„Ausgebrannt" unten links, wenn etwas ausbrennt — und den Nebel mit Tiefe. Alles davon steht auf
+der Wiedervorlage, nichts davon braucht Bauarbeit, um beurteilt zu werden.
