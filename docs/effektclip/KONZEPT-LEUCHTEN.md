@@ -658,11 +658,16 @@ an einer Lampe, die ihre Achse ohnehin kennt.
 - ~~Der Schwenk~~ — gebaut: Pan und Tilt als Kippung der Lampe, fünf Stellungen (Steht, Pan, Tilt,
   Kreis, Acht). Die Bahn pendelt über `lpBahn`, wenn kein ganzer Umlauf in den Clip passt, und
   schließt damit von selbst.
-- **Überstrahlung anzeigen.** Caspar_D: *„sollte man Regler begrenzen, sodass man keine
+- ~~**Überstrahlung anzeigen.**~~ — gebaut am 23.09.2026. Caspar_D: *„sollte man Regler begrenzen, sodass man keine
   Überstrahlung produziert, oder wenigstens einen Indikator einbauen, dass man jetzt den
   dynamischen Lichtbereich verlässt."* Begrenzen wäre falsch — Ausbrennen ist ein Mittel. Aber ab
   dem Punkt, wo alles geclippt ist, *scheint* ein Regler nur noch zu wirken, und das ist Regel 9.
-  Vorschlag: eine Zahl in der Zeile, die erst auftaucht, wenn es passiert.
+  **Gebaut:** eine Zahl auf der Bühne unten links (`#tbs-brand`, `brandZeigen` in der
+  Bühnenschleife), nicht in der Zeile eines Reglers — gemessen wird am fertigen Bühnenbild, das
+  keinem einzelnen Regler zuzurechnen ist, und dort brennen auch die alten Canvas-Leuchten aus.
+  Ausgebrannt heißt: ein Kanal ≥ 250. Zweimal je Sekunde auf 96 Bildpunkten, der Eigenanteil der
+  Quelle (weißer Schriftzug) wird abgezogen, die Zahl erscheint ab einem Prozent mehr als die
+  Quelle und hält die Spitze der letzten zwei Sekunden, weil ein Puls nur auf dem Schlag ausbrennt.
 - **Der Nebel.** Aus dem Gespräch am 21.09.2026 über die vier Verfahren der Spielegrafik: Der
   Filmnebel ist **halb räumlich** — die Weglänge hängt an der Tiefe (Koschmieder, `T = exp(−3·weg)`,
   also Lambert-Beer), die **Dichte** aber nicht: die dritte Achse des Rauschens ist die Zeit. Drei

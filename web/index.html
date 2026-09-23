@@ -3271,6 +3271,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
 /* V halten in der Vorbereitung: die Quelle ohne Effekte - als Marke UEBER der Leinwand, nie hineingemalt */
 #tbs #tbs-ohneMarke{position:absolute;left:12px;top:12px;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.65);border:1px solid var(--rand);color:#fff;font-size:12px;pointer-events:none;z-index:2}
 #tbs #tbs-ohneMarke[hidden]{display:none}
+#tbs #tbs-brand{position:absolute;left:12px;bottom:12px;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.65);border:1px solid var(--rand);color:#fff;font-size:12px;pointer-events:none;z-index:2}
+#tbs #tbs-brand[hidden]{display:none}
 #tbs .tbs-abunter{font-size:11px;opacity:.8;white-space:nowrap}
 #tbs .tbs-abschnitt .tbs-vorrat{border:none;border-radius:0;padding:0;margin:0 0 10px}
 #tbs .tbs-abschnitt .tbs-zeile:last-child{margin-bottom:6px}
@@ -32885,6 +32887,38 @@ function kbBuehneEinrichten(){
     P[i]=kbOrt({u:P[i].u,v:P[i].v,z,f:P[i].f}); kbSetzen(e,P); renderStapel(); };   /* der Fokus reist mit, wie beim Ziehen */
 }
 
+/* UEBERSTRAHLUNG ANZEIGEN, NICHT DECKELN (23.09.2026; Caspar_D, 21.09.: „sollte man Regler begrenzen,
+   sodass man keine Ueberstrahlung produziert, oder wenigstens einen Indikator einbauen, dass man jetzt
+   den dynamischen Lichtbereich verlaesst"). Ausbrennen ist ein Mittel, also kein Deckel - aber ab dem
+   Punkt, wo eine Flaeche am Anschlag steht, macht mehr Staerke sie nur noch groesser, nicht heller,
+   und ein Regler scheint zu wirken (Regel 9). Gemessen wird am fertigen Buehnenbild, nicht am
+   Licht-Puffer: dort steht, was der Nutzer sieht, und dort brennen auch die alten Canvas-Leuchten
+   aus, die keinen Puffer kennen. Ein Bildpunkt gilt als ausgebrannt, wenn ein Kanal >= 250 steht.
+   Zweimal je Sekunde auf 96 Bildpunkten lange Seite - billig genug fuer jeden Rechner. Die QUELLE
+   SELBST zaehlt nicht mit: ein weisser Schriftzug auf dem Titelbild ist kein Ausbrennen der Effekte.
+   Ihr Anteil wird einmal je Bild gemessen und abgezogen; die Zahl erscheint erst, wenn die Effekte
+   ein Prozent mehr ausbrennen als die Quelle, und verschwindet von selbst. Sie HAELT die Spitze der
+   letzten zwei Sekunden: ein Puls brennt nur auf dem Schlag aus, und eine Zahl, die zweimal je
+   Sekunde auftaucht und verschwindet, kann niemand lesen (im Tab gesehen, 23.09.2026). */
+const BRAND={ t:0, cv:null, qv:null, anteil:0, grund:0, src:null, spitze:0, spitzeT:0 };
+function brandAnteil(q,cv){ const sc=96/Math.max(q.width||q.naturalWidth,q.height||q.naturalHeight), w=Math.max(1,Math.round((q.width||q.naturalWidth)*sc)), h=Math.max(1,Math.round((q.height||q.naturalHeight)*sc));
+  if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; }
+  const x=cv.getContext('2d',{willReadFrequently:true}); x.drawImage(q,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data; let n=0; for(let i=0;i<d.length;i+=4){ if(d[i]>=250||d[i+1]>=250||d[i+2]>=250) n++; }
+  return n/(w*h); }
+function brandZeigen(){ const el=$('#tbs-brand'); if(!el||!lein||lein.width<2||!bereit){ if(el) el.hidden=true; return; }
+  const jetzt=performance.now(); if(jetzt-BRAND.t<500) return; BRAND.t=jetzt;
+  try{ if(!BRAND.cv){ BRAND.cv=document.createElement('canvas'); BRAND.qv=document.createElement('canvas'); }
+    const q=(typeof bild!=='undefined')?bild:null, qs=q?(q.src||q.currentSrc||'?'):null;
+    if(q&&qs!==BRAND.src){ BRAND.src=qs; BRAND.grund=0; try{ if((q.naturalWidth||q.width)>1) BRAND.grund=brandAnteil(q,BRAND.qv); }catch(x){} }
+    BRAND.anteil=brandAnteil(lein,BRAND.cv);
+    const mehr=BRAND.anteil-BRAND.grund;
+    if(mehr>=0.01){ if(jetzt-BRAND.spitzeT>2000||BRAND.anteil>=BRAND.spitze) BRAND.spitze=BRAND.anteil; BRAND.spitzeT=jetzt; }
+    if(jetzt-BRAND.spitzeT<2000&&BRAND.spitze>0){
+      el.textContent='Ausgebrannt: '+Math.round(BRAND.spitze*100)+' % des Bildes'+(BRAND.grund>=0.005?' (die Quelle selbst: '+Math.round(BRAND.grund*100)+' %)':'');
+      el.title='So viele Bildpunkte standen zuletzt in mindestens einem Farbkanal am Anschlag (Spitze der letzten zwei Sekunden). Ab hier macht mehr Stärke das Bild nicht heller, nur die ausgebrannte Fläche größer.'; el.hidden=false; }
+    else { el.hidden=true; BRAND.spitze=0; }
+  }catch(x){ el.hidden=true; } }
 function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(exportLaeuft) return; if(bereit&&lein&&lein.width<=2) groesse(); loopWache();
   /* DIE BUEHNE STEHT, SOLANGE DIE KEN-BURNS-KARTE OFFEN IST (kbMarkenMalen erklaert, warum). Die
      Nummer wird hier gesetzt und im finally wieder geloescht: so sieht nur DIESER Weg sie, und
@@ -32913,6 +32947,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
   if(kbE) kbMarkenMalen(kbE);
   { const lrE=lrKarteEffekt(); if(lrE) lrMarkenMalen(lrE); }
   dioStandZeigen();   /* die Auskunft zum Diorama: sie steht nur da, wenn der Speichervorrat gedeckelt hat */
+  brandZeigen();      /* die Ueberstrahlung: eine Zahl, die erst auftaucht, wenn es passiert */
   lmVorschauen(); }
 /* ===================== KEN BURNS FAHRT: DIE FAHRT =====================
    Caspar_D, 17.09.2026: "wir nennen das ding Ken Burns Fahrt / und wir bauen es so, dass es
@@ -32930,7 +32965,8 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
    und weil Anfang und Ende dasselbe Ganzbild sind, ist sie im Clip geschlossen, ohne dass es
    geprueft werden muesste (Loop-Gesetz, Regel 17: das letzte Bild ist das erste).
 
-   1. GETAKTET, NICHT IN SEKUNDEN. "Tempo" sagt, ueber wie viele TAKTE ein Zug laeuft. Das
+   1. GETAKTET, NICHT IN SEKUNDEN. "Tempo" sagt, ueber wie viele SCHLAEGE ein Zug laeuft (bis zum
+      23.09.2026: Takte; kbZugSchlaege erklaert den Wechsel). Das
       Schlagraster kommt aus dem Haus und wird nur GELESEN, nicht neu gebaut: im Export das
       gleichmaessige Raster von raster() (DATA.schlaege, Zaehlzeit im zweiten Feld, umlaufende
       Schlagnummer im dritten, jeClip = Schlaege je Clip), im Pult die echten Schlaege mit
@@ -36564,7 +36600,7 @@ function zeichneFrame(t,roh){
     root.innerHTML=
       '<div id="tbs-kasten">'
       +'<div id="tbs-kopf"><h3>Effektclip-Studio <span id="tbs-titel"></span></h3><span id="tbs-unter"></span><button type="button" id="tbs-spiel" title="Den Titel im Player starten — dann bedient der echte Song den Puls">▶ Titel abspielen</button><button type="button" id="tbs-zu" title="Schlie\u00dfen (Esc)">\u2715</button></div>'
-      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas><div id="tbs-ohneMarke" hidden>ohne Effekte</div></div><div id="tbs-pult">'
+      +'<div id="tbs-buehne"><div id="tbs-feld"><canvas id="tbs-lein"></canvas><div id="tbs-ohneMarke" hidden>ohne Effekte</div><div id="tbs-brand" hidden></div></div><div id="tbs-pult">'
       +'<div class="tbs-unter tbs-sperrgrund" id="tbs-pultSperre" hidden></div>'
       +'<div class="tbs-abschnitt" id="tbs-abQuelle">'+stufeKopf('Quelle')+stufeAuf('Quelle')
       +'<div id="tbs-quellen" class="tbs-quellen"></div><div id="tbs-quellenNamen"></div></div></div>'

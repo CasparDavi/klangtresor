@@ -6271,3 +6271,15 @@ Teilchen klein sind; der Hof-Puffer (1/14) macht daraus einen weichen Schein im 
 Filmnebels nennt jetzt „Flammen, Kaustik, leuchtende Teilchen" unter den Leuchten. Damit ist die
 Migrationsliste aus KONZEPT-LEUCHTEN §5a abgearbeitet; was am Lichtpuffer noch fehlt, ist der
 **Herkunfts-Puffer für die Canvas-Maler** (Caspar_D: „das sollten alle Lichtstrahlen und -quellen tun").
+
+## 7. Überstrahlungsanzeige
+
+„Ausgebrannt: 6 % des Bildes" — eine Zahl unten links auf der Bühne, die erst auftaucht, wenn die
+Effekte mehr Bildpunkte an den Anschlag bringen als die Quelle selbst (ein Kanal ≥ 250, gemessen
+zweimal je Sekunde auf 96 Bildpunkten, `brandZeigen` in `rahmen()`). Kein Deckel: Ausbrennen bleibt
+ein Mittel. Bewusst nicht in der Zeile eines Reglers, sondern am Bild: das fertige Bühnenbild ist
+keinem Regler zuzurechnen, und dort brennen auch die alten Canvas-Leuchten aus, die keinen Puffer
+kennen. Im Tab gesehen: ohne Effekt versteckt; „Helligkeit schlägt" mit voller Wucht plus
+Scheinwerfer → „2 %" bzw. „6 %" auf dem Schlag, danach zwei Sekunden gehalten (ohne Halten flackerte
+die Zahl im Takt des Pulses, unlesbar), dann weg. Keine Konsolenmeldung. Das Wort „Ausgebrannt"
+und der Ort sind Entwurf — Caspar_D sieht es beim nächsten Öffnen des Studios.
