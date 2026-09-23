@@ -27481,7 +27481,7 @@ const EFFEKTE = {
       return { u_tiefeAn:1, u_ortDa:o?1:0, u_ortX:o?o[0]:0.5, u_ortY:o?o[1]:0 }; } },
   /* nurMitLicht: der Hinweis "keine Leuchte in der Kette" auf der Karte. Schwaden-Partikel bekommen
      ihn nicht - sie malen sich selbst und sind auch ohne Licht zu sehen. */
-  filmnebel:{ label:'Filmnebel', art:'gl', medium:true, nurMitLicht:true, staerkeDef:.4, besch:'<b>Er wirkt nur zusammen mit einer Leuchte.</b> Hängt kein Scheinwerfer, Laser, Lichtstrahl, Feuer, Flammen, Kaustik oder Stroboskop in der Kette, bleibt weißer Filmnebel unsichtbar — dann sieht man von ihm nur, daß die Ferne an Kontrast verliert (Luftperspektive). Das ist kein Fehler, sondern der Grund, warum auf jeder Bühne eine Nebelmaschine läuft: Nebel ist ein Medium, keine Farbe. Er dämpft, was hinter ihm liegt, und leuchtet von dem Licht, das ihn trifft — an welcher Stelle der Kette er hängt, ist dafür gleich. Die Farbe ist das Fluid: Weiß ist Wassernebel und kann nicht abdunkeln, dunkel ist Rauch und schluckt ehrlich Licht. Schwere sagt, wo er liegt — von Dunst im ganzen Raum bis zum flachen Teppich mit klarer Oberkante. Schwaden, wie ungleichmäßig er ist. Bündelung, wie scharf die Strahlen in ihm stehen: 0 ein weicher Hof um jede Leuchte, 1 gezeichnete Strahlen und Laserkegel. Luftzug, wohin er zieht — Wabern und Steigen folgen daraus. Stärke ist die Dichte. Liegt eine Tiefenkarte vor, dämpft er nach Entfernung, und die Figur steht von selbst vor dem Nebel. Auch als: Dunst, Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
+  filmnebel:{ label:'Filmnebel', art:'gl', medium:true, nurMitLicht:true, staerkeDef:.4, glZusatz:(e,t)=>({ u_tjb:lrRaumtiefe() }), besch:'<b>Er wirkt nur zusammen mit einer Leuchte.</b> Hängt kein Scheinwerfer, Laser, Lichtstrahl, Feuer, Flammen, Kaustik oder Stroboskop in der Kette, bleibt weißer Filmnebel unsichtbar — dann sieht man von ihm nur, daß die Ferne an Kontrast verliert (Luftperspektive). Das ist kein Fehler, sondern der Grund, warum auf jeder Bühne eine Nebelmaschine läuft: Nebel ist ein Medium, keine Farbe. Er dämpft, was hinter ihm liegt, und leuchtet von dem Licht, das ihn trifft — an welcher Stelle der Kette er hängt, ist dafür gleich. Die Farbe ist das Fluid: Weiß ist Wassernebel und kann nicht abdunkeln, dunkel ist Rauch und schluckt ehrlich Licht. Schwere sagt, wo er liegt — von Dunst im ganzen Raum bis zum flachen Teppich mit klarer Oberkante. Schwaden, wie ungleichmäßig er ist. Bündelung, wie scharf die Strahlen in ihm stehen: 0 ein weicher Hof um jede Leuchte, 1 gezeichnete Strahlen und Laserkegel. Luftzug, wohin er zieht — Wabern und Steigen folgen daraus. Stärke ist die Dichte. Liegt eine Tiefenkarte vor, dämpft er nach Entfernung, und die Figur steht von selbst vor dem Nebel. Auch als: Dunst, Rauch, Wolken, Bühnendunst, Tiefsee-Trübung.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},
       {k:'schwere',lbl:'Schwere',min:0,max:1,step:.05,def:.25},
       {k:'schwaden',lbl:'Schwaden',min:0,max:1,step:.05,def:.45},
@@ -31793,8 +31793,8 @@ void main(){
      "Albedo auf Schwarz", Houdini "Absorption Color"). Wassernebel hat eine Streu-Albedo von
      0,9999999 - er kann physikalisch nicht abdunkeln, er verteilt nur um. Darum ist hier die
      FARBE das Fluid und es gibt keinen Helligkeitsregler mehr. */
-  filmnebel:`uniform float u_schwere,u_buendelung,u_schwaden,u_luftzug,u_tiefeAn; uniform vec3 u_farbe;
-uniform sampler2D u_licht; uniform sampler2D u_hof;
+  filmnebel:`uniform float u_schwere,u_buendelung,u_schwaden,u_luftzug,u_tiefeAn,u_tjb; uniform vec3 u_farbe;
+uniform sampler2D u_licht; uniform sampler2D u_hof; uniform sampler2D u_herk;
 float wolke(vec3 p){ float a=0.5, s=0.0, g=mix(0.36,0.62,u_schwaden); for(int i=0;i<5;i++){ s+=a*snoise(p); p=p*2.03+vec3(1.7,9.2,0.3); a*=g; } return s; }
 #ifdef LOOPFORM
 float wolke4(vec4 p){ float a=0.5, s=0.0, g=mix(0.36,0.62,u_schwaden); for(int i=0;i<5;i++){ s+=a*rausch(p); p=p*2.03+vec4(1.7,9.2,0.3,0.0); a*=g; } return s; }
@@ -31856,13 +31856,35 @@ void main(){
      Strahl im Nebel NIE schwaecher wird als ohne ihn. Was die Daempfung nimmt, gibt die
      Einstreuung mindestens zurueck (Unreals Light Shafts sind genauso gebaut). */
   vec3 L=texture2D(u_licht,uv).rgb, hof=texture2D(u_hof,uv).rgb;
-  /* EXTINKTION AUF DEM LICHTWEG UND PHASENFUNKTION: gebaut, gemessen und wieder ausgebaut
-     (23.09.2026). Mit dem Herkunfts-Puffer liessen sich beide rechnen (Weg zur Lampe in Bildhoehen,
-     Henyey-Greenstein mit g = 0,6 * Buendelung); gemessen nahmen sie dem Scheinwerfer mit Tiefe im
-     Nebel 25-43 % und dem Laser mit Tiefe 54-60 % des Lichts - genau den Leuchten, die Caspar_D
-     tags zuvor als zu schwach beanstandet hatte. Ob das die richtige Staerke ist, entscheidet er
-     am Bild, nicht der Pruefstand; Formeln und Zahlen stehen in KONZEPT-LEUCHTEN Abschnitt 6. */
-  vec3 streu=L*(0.25+0.75*u_buendelung)+hof*0.75*(1.0-u_buendelung);
+  /* EXTINKTION AUF DEM LICHTWEG UND PHASENFUNKTION (23.09.2026, zweiter Anlauf nach Caspar_Ds
+     Einwand „vielleicht ist die Tiefe nicht korrekt interpretiert"). Der erste Anlauf rechnete die
+     Lampe mit der Konvention des Streiflichts (Tiefendifferenz mal 1,8, ein Reglerabschlag fuers
+     Relief) und einer gesetzten Konstante je Bildhoehe - und nahm den Raumleuchten 25-60 % Licht.
+     Jetzt in den isotropen Raumkoordinaten der Raumleuchten (x Bildbreiten, y mal Seitenverhaeltnis,
+     z = Tiefe mal Raumtiefe u_tjb - dieselben Zeilen wie in lichtRaum: P und Lp), nur wo eine
+     Leuchte mit Ort im Raum schreibt (Herkunfts-Puffer, A > 0; alte Canvas-Leuchten unveraendert).
+     1. Extinktion: derselbe Nebel wie auf dem Kameraweg - dort sind 1,7 Wegeinheiten eine ganze
+        Raumtiefe, hier dl/u_tjb Raumtiefen. DIE STAERKE WIRKT WIE BEIM KAMERAWEG BEIM MISCHEN,
+        nicht im Exponenten (23.09.2026, nachgemessen: im Exponenten machte sie aus 63 % Durchlass
+        36 %): T_Lampe = 1 - Staerke * (1 - exp(-3 * wegL)). Die EINE gesetzte Zahl ist die 0,5: der Lampenweg zaehlt halb, weil der
+        Lichtpuffer das Entfernungsgesetz der Lampe schon traegt und der Nebel nahe der Kamera vom
+        Lampenlicht noch ungedaempft erreicht wird. Nur das direkte Licht L, nicht der Hof.
+     2. Phasenfunktion Henyey-Greenstein, auf ISOTROP normiert - Energie bleibt: steht die Lampe
+        hinter dem Nebel und scheint zur Kamera, wird das Streulicht heller, steht sie neben der
+        Kamera, matter. g = 0,35 mal Buendelung; bei Buendelung 0 exakt der alte Mischregler. */
+  vec4 hk=texture2D(u_herk,uv); float lichtweg=1.0;
+  if(hk.a>0.004){
+    float seite=u_res.y/max(1.0,u_res.x);
+    vec3 Lp=vec3(hk.r/hk.a*2.0-0.5, (hk.g/hk.a*2.0-0.5)*seite, (1.0-hk.b/hk.a)*u_tjb);
+    vec3 P=vec3(uv.x, (1.0-uv.y)*seite, fern*u_tjb);
+    vec3 dLP=P-Lp; float dl=length(dLP);
+    float wegL=lager*ballen*1.7*dl/max(0.1,u_tjb)*0.5;
+    float ext=1.0-clamp(u_staerke,0.0,1.0)*(1.0-exp(-3.0*wegL));
+    float gph=0.35*u_buendelung, cosT=(dl>1e-5)?((Lp.z-P.z)/dl):0.0;
+    float hg=(1.0-gph*gph)*pow(max(1e-4,1.0+gph*gph-2.0*gph*cosT),-1.5);
+    lichtweg=ext*hg;
+  }
+  vec3 streu=L*(0.25+0.75*u_buendelung)*lichtweg+hof*0.75*(1.0-u_buendelung);
   vec3 leuchten=u_farbe*(umgebung(uv)+streu*4.0);
   gl_FragColor=vec4(c.rgb*T+leuchten*(1.0-T), c.a); }`,
   flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_wind,u_glut,u_inPuffer; uniform vec3 u_farbe,u_farbe2;

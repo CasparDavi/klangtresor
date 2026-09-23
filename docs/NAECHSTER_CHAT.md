@@ -6141,9 +6141,11 @@ Nichts davon ist Bauarbeit. Je Punkt: was ansehen, wo.
 
 14. **Kaustik im Nebel** — seit der Migration auf den Lichtpuffer +146 % Licht; das Netz leuchtet den
     ganzen Nebel an. Zu kräftig oder richtig so? Ein Rezept Kaustik + Filmnebel.
-15. **Nebel: Extinktion auf dem Lichtweg und Phasenfunktion** — gebaut, gemessen (−25 bis −60 % Licht
-    an Scheinwerfer und Laser mit Tiefe), wieder ausgebaut. Entscheidung: gewollt, und mit welchem
-    Ausgleich? Formeln und Zahlen in KONZEPT-LEUCHTEN §6.
+15. **Nebel: Extinktion auf dem Lichtweg und Phasenfunktion** — nach deinem „go" im zweiten Anlauf
+    drin (Raumkoordinaten von `lichtRaum`, Stärke beim Mischen): Scheinwerfer mit Tiefe −10 %/−15 %,
+    Laser −33 %/−40 %. Ansehen: Scheinwerfer bzw. Laser mit Tiefe + Filmnebel, Lampe einmal vor
+    und einmal hinter das Motiv (Tiefe der Quelle) — hinterleuchtet wird der Nebel heller. Zu stark:
+    die 0,5 im Lampenweg ist der Regler (KONZEPT-LEUCHTEN §6, Tabelle).
 16. **Überstrahlungsanzeige** — Wort („Ausgebrannt: 6 % des Bildes") und Ort (Bühne unten links)
     sind Entwurf; im Studio ansehen, z. B. „Helligkeit schlägt" mit voller Wucht.
 17. **Regel-9a-Skala am Dicke-Regler** — die ersten 25 % des Reglerwegs sind jetzt 0,05–0,44°. Fühlt
@@ -6375,3 +6377,16 @@ Beim nächsten Öffnen des Studios sieht Caspar_D zuerst: den Dicke-Regler mit n
 Tempo in Schlägen, den Satz „vom Titelbild geliehen" auf einem Suno-Bewegtbild, die Zahl
 „Ausgebrannt" unten links, wenn etwas ausbrennt — und den Nebel mit Tiefe. Alles davon steht auf
 der Wiedervorlage, nichts davon braucht Bauarbeit, um beurteilt zu werden.
+
+## 14. Nachmittag: Extinktion und Phasenfunktion, zweiter Anlauf (Caspar_D: „go")
+
+Caspar_D: *„könnte man Phasenfunktion und Extinktion nicht einfach schwächen, vielleicht ist die
+Tiefe nicht korrekt interpretiert und deswegen wirken beide zu stark."* Beides war richtig. (1) Die
+Tiefe: der Vormittag rechnete mit der Streiflicht-Konvention (Tiefendifferenz · 1,8), jetzt mit den
+Raumkoordinaten von `lichtRaum` (z = Tiefe · Raumtiefe, per `glZusatz` in den Nebel). (2) Ein
+echter Fehler: die Stärke stand im Exponenten der Lampen-Extinktion, beim Kameraweg wirkt sie beim
+Mischen — bei Stärke 0,4 der Unterschied zwischen 36 % und 63 % Durchlass. Zerlegt gemessen: die
+Phase ist mild (−2 %/−16 %), die Extinktion war der Fresser (−29 %/−66 %); mit der Mischform sind es
+zusammen **−10 %/−15 % (Scheinwerfer)** und **−33 %/−40 % (Laser)**. Die eine gesetzte Zahl ist
+das halbe Gewicht des Lampenwegs. Alter Scheinwerfer unverändert (Weiche am Herkunfts-Puffer).
+Wiedervorlage 15 ist damit ein Augenschein, keine Entscheidung mehr.

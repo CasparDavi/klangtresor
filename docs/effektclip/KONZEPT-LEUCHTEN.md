@@ -683,18 +683,29 @@ an einer Lampe, die ihre Achse ohnehin kennt.
     verschoben: `raum = (1,3; −0,8) · fern · u_tiefeAn`, in Vorschau und Loop-Form gleich. Eine Figur
     steht damit in anderem Nebel als die Wand hinter ihr; ohne Karte ändert sich nichts. Am Licht
     neutral: alter Scheinwerfer +0,3 %, Scheinwerfer mit Tiefe −0,7 %, Laser mit Tiefe −4 %.
-  - *Extinktion auf dem Lichtweg* und *Phasenfunktion* — **gebaut, gemessen, ausgebaut; Wiedervorlage.**
-    Mit dem Herkunfts-Puffer (Ort und Höhe der Lampe wie im Streiflicht gelesen) lässt sich beides
-    je Bildpunkt rechnen: `ext = exp(−1,5 · lager · ballen · dl)` mit dl dem Weg zur Lampe in
-    Bildhöhen, und Henyey-Greenstein `p(cos θ)/p(1)` mit `g = 0,6 · Bündelung`, cos θ zwischen
-    Lichtweg und Blickrichtung (Lampe hinter dem Nebel, zur Kamera scheinend: hell; neben der Kamera:
-    matt). Beides nur auf das direkte Licht L, der Hof bleibt; ohne Herkunft (alte Canvas-Leuchten)
-    unverändert. **Gemessen** (Titel „Stumm", Filmnebel, Vorgaben): Scheinwerfer mit Tiefe
-    4.019.616 → 3.018.853 (**−25 %**) bzw. 2.964.652 → 1.698.069 (**−43 %**); Laser mit Tiefe
-    594.405 → 270.524 (**−54 %**), 346.689 → 138.754 (**−60 %**). Das sind genau die Leuchten, die
-    Caspar_D am 22.09. als zu schwach beanstandet hat — ob die physikalische Dämpfung gewollt ist und
-    mit welchem Gewinn sie ausgeglichen wird, entscheidet er am Bild. Der Code stand eine Stunde im
-    Shader und ist gelöscht (Totlegen nur mit Löschen); die Formeln oben reichen für den Wiederaufbau.
+  - *Extinktion auf dem Lichtweg* und *Phasenfunktion* — **drin, zweiter Anlauf.** Der erste (vormittags)
+    rechnete die Lampe mit der Konvention des Streiflichts (Tiefendifferenz · 1,8) und einer gesetzten
+    Konstante je Bildhöhe und nahm den Raumleuchten 25–60 %; Caspar_D: *„könnte man Phasenfunktion und
+    Extinktion nicht einfach schwächen, vielleicht ist die Tiefe nicht korrekt interpretiert."* Beides
+    stimmte. Jetzt: die isotropen Raumkoordinaten von `lichtRaum` (P und Lp Zeile für Zeile gleich,
+    z = Tiefe · Raumtiefe `u_tjb`, der Nebel bekommt sie über einen `glZusatz`), nur wo der
+    Herkunfts-Puffer schreibt. **Extinktion** mit dem Nebel des Kameraweges (1,7 Wegeinheiten je
+    Raumtiefe), der Lampenweg zählt halb — die eine gesetzte Zahl —, und die Stärke wirkt wie beim
+    Kameraweg **beim Mischen**, nicht im Exponenten (`T = 1 − Stärke · (1 − exp(−3·wegL))`; im
+    Exponenten machte sie aus 63 % Durchlass 36 %). **Phasenfunktion** Henyey-Greenstein, auf
+    isotrop normiert (Energie bleibt: hinterleuchtet heller, vorbeleuchtet matter), g = 0,35 ·
+    Bündelung, bei Bündelung 0 der alte Mischregler. Zerlegt gemessen (Titel „Stumm", Filmnebel,
+    Vorgaben; vorher 4.019.616 / 2.964.652 und 594.405 / 346.689):
+
+    | Fassung | Scheinwerfer mit Tiefe | Laser mit Tiefe |
+    |---|---|---|
+    | nur Phase | −2 % / −3 % | −16 % / −18 % |
+    | nur Extinktion, Stärke im Exponenten | −29 % / −44 % | −66 % / −71 % |
+    | **beides, Stärke beim Mischen (drin)** | **−10 % / −15 %** | **−33 % / −40 %** |
+
+    Der Laser verliert mehr, weil sein dünner Strahl den Nebel weit weg von der Lampe kreuzt und die
+    Lampe vor der Szene steht (Rückstreuung). Ob das die richtige Stärke ist, sagt der Prüfstand
+    nicht — Wiedervorlage; der Regler dafür wäre die 0,5 im Lampenweg.
 
 ## 7. Verstärkung ohne Nachbildung (22.09.2026)
 
