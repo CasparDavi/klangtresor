@@ -734,6 +734,33 @@ Messung an EINEM Testbild, kein Beweis, dass die Vierfach-Lücke insgesamt gesch
 die Kugelquelle einen eigenen, dritten Weg braucht (z. B. weniger, aber jeweils dickere Strahlen),
 bleibt unbeantwortet — dafür fehlt noch der direkte Vergleich am Bild mit dem alten `strahlen`.
 
+### Zwei Puffer, und ob Float helfen würde (22.09.2026, abends)
+
+Caspar_D, auf den 8-Bit-Befund: *„du hattest gesagt, der Lichtpuffer weiß auch etwas über die
+Richtung des Lichts, das kriege ich mit 8 Bit nicht hin — wir haben 2 Lichtsysteme."* Richtig, und
+die Formulierung oben war unsauber. Es gibt zwei Leinwände, beide `getContext('2d')`, beide 8 Bit:
+
+| Puffer | Inhalt | wer schreibt | wer liest |
+|---|---|---|---|
+| `clicht` | **Intensität**, additiv (`lighter`) | alle Leuchten über `leuchteInPuffer`/`malen()` | der Filmnebel |
+| `cherk` | **Herkunft** — Ursprungsort und Höhe, RGB/A-gewichteter Mittelwert | die Leuchten mit Tiefe | Streiflicht, Raumleuchten (`ort=vec2(hk.r/hk.a·2−0,5, hk.g/hk.a·2−0,5)`) |
+
+Der Beweis mit `readPixels` galt dem ersten; dort steht die Helligkeit, und dort klemmt es. Die
+Richtung steht im zweiten und ist vom 8-Bit-Befund nicht betroffen — sie ist ein Mittelwert von
+Koordinaten, keine Summe von Helligkeiten.
+
+**Float statt 8 Bit** — Caspar_D: *„würde uns float statt 8 bit helfen oder würden wir das nicht
+mehr bewältigt bekommen."* Technisch ja: Ein eigener Framebuffer mit `RGBA`/`FLOAT`-Textur ist im
+Studio-Chrome `FRAMEBUFFER_COMPLETE`, `readPixels` mit `gl.FLOAT` gibt 2,0 und 4,0 unverändert
+zurück; `OES_texture_float`, `WEBGL_color_buffer_float`, `OES_texture_half_float` und
+`EXT_color_buffer_half_float` sind vorhanden. Der Aufwand liegt woanders: Der Intensitäts-Puffer ist
+eine Canvas2D-Leinwand, GL-Effekte kommen per `drawImage` hinein, Canvas-Effekte über `malen()`, und
+der Nebel liest sie als Textur. Ein Float-Puffer ist ein GL-Framebuffer, in den nur GL malen kann —
+die Canvas-Leuchten (`licht`, `laser`, `strahlen`, `feuer`, `strobe`) müssten vorher GL sein oder
+fielen aus dem Puffer. Voraussetzung ist also der Migrationsplan aus §5a, und der Lesepfad des
+Nebels müsste mit. Bis dahin bleibt der Hebel die Fläche (Saum, Glimmen), nicht der Wertebereich.
+**Nicht entschieden, nicht gebaut.**
+
 ### Das Nachglühen war schon da — und stimmt mit der Physiologie überein
 
 Frage von Caspar_D: ob ein Nachglühen wie am alten Laser (besonders bei Scanner und Figuren) den

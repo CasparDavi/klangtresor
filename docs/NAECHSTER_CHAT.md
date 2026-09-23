@@ -1,4 +1,4 @@
-# Für den nächsten Chat — Stand 27.08.2026
+# Für den nächsten Chat — Stand 23.09.2026
 
 ## In drei Sätzen
 
@@ -14,9 +14,12 @@ Die alte git-Historie ist **nicht** mitgegangen: Sie liegt hier als
 wer eilig ist, liest diesen Kopf, den letzten Abschnitt und
 docs/OFFEN.md.
 
-ZUERST LESEN: docs/OFFEN.md (was falsch ist und was entschieden werden
-muss), dann docs/HAUSREGELN.md, dann docs/TONSTUDIO.md — und fürs
-Einmessen docs/EINMESSEN.md.
+ZUERST LESEN: den **letzten Abschnitt** dieses Dokuments (dort steht die
+**Wiedervorlage** — was Caspar_Ds Auge oder Entscheidung braucht — und die
+offenen Punkte in Reihenfolge), dann docs/haus/HAUSREGELN.md, dann
+docs/effektclip/EFFEKTCLIP-REGELN.md. Fürs Tonstudio docs/ton/TONSTUDIO.md,
+fürs Einmessen docs/ton/EINMESSEN.md. Das alte docs/OFFEN.md liegt unter
+docs/archiv/.
 
 ## Was gerade läuft
 
@@ -5925,3 +5928,118 @@ hat irgendeinen bestehenden Fall verändert, der nicht bewusst verändert werden
 - **Ein Kommentar, der das Richtige behauptet, deckt falschen Code zu.** Heute zweimal.
 - **Klick setzt, Doppelklick entfernt, Ziehen verschiebt** — die Bediensprache des Hauses, sie gilt
   für alle Flächen mit gesetzten Punkten.
+
+---
+
+# 22.09.2026, nachmittags und abends — Die neuen Leuchten werden stärker, ohne die alten nachzubilden
+
+Der Tag begann mit zwei Aufträgen von Caspar_D: *„alle Lichteffekte anschauen und wie sie in den
+Lichtpuffer schreiben"* (09:08) und *„welche der neuen noch verstärkt werden können, damit sie von
+der Effektstärke näher an den alten kommen, du sollst aber nicht den alten nachbilden, die neuen
+sehen viel realistischer aus, sind aber eben zu schwach"* (09:37). Die Zahlen und Begründungen
+stehen in `docs/effektclip/KONZEPT-LEUCHTEN.md` §5a und §7–9; hier steht, was in der App ist,
+welche Befunde bleiben und was Caspar_D entschieden hat.
+
+## 1. Was jetzt in der App steht (Commits `6cfa56e` … `228ad0d`)
+
+**Bestandsaufnahme aller acht Leuchten** (§5a): Der Mechanismus ist einheitlich — wer durch
+`malen()` läuft, ist im Puffer automatisch additiv; die Hürde für einen neuen Leuchter ist nur die
+Marke `leuchtet` und ein Malvorgang, der als Schein taugt. Gemessen: die drei „mit Tiefe"-Geräte
+lagen alle unter ihren alten Pendants — `lichtRaum` 69 %, `laserRaum` 56 %, `strahlenRaum` 25 %.
+Dazu der Migrationsplan für Flammen → Kaustik → Partikel-Leuchten (nur geplant, nicht gebaut).
+
+**Laser mit Tiefe** (`laserRaum`), vier Schritte:
+- **Saum** um den Kern (`d06daff`), Faktor 0,85 — wie beim alten Vorbild (w0·3,2), nur für
+  `u_parallel>0,5`. Von 56 % auf 86 % des alten Lasers.
+- **Querschnitt-Normierung** (`824b4ce`): `dickeNorm=(0,016/u_dicke)²`, geklemmt bei 4 — ein dünnerer
+  Laser wird heller, Bezug ist die Reglervorgabe 0,016. Caspar_D: *„der Kern des Lasers ist mir
+  immer noch zu flau und die Laserstrahlen zu dick."*
+- **Kantenglättung** (`f00aa61`): Caspar_D am Vergleich alt/blau gegen neu/cyan: *„wenn ich cyan
+  schwächer mache, dann zerfallen die Strahlen zu Perlen/Flecken."* Ursache: ein Fragment-Shader
+  tastet einen Punkt ab, keine Fläche; die schmale Kernkante fiel zwischen zwei Bildpunkte. Behoben
+  mit `fwidth()` — `GL_OES_standard_derivatives` im `GL_VORSPANN` (Zeile 31134) und in `GL.init`
+  (30940). Im ganzen Haus wurde `fwidth` vorher nirgends benutzt; die Lücke betraf im Prinzip jede
+  scharfe Kante in jedem GL-Effekt.
+- **Drei Regler vom alten Laser** (`11f2d91`), Caspar_D: *„möglichst viele Regler vom alten Laser
+  übernehmen, algorithmisch siehst du ja, was mit dem Laser passieren soll."* Flimmern (hartes
+  Austasten, 55/45, phasenversetzt), Sprung (Scanner springt je Schlag auf eine von N Stellen, die
+  vorige verglimmt; Schlagnummer aus dem vorhandenen Antriebs-Pult), Quelle wandert (Lissajous-Bahn
+  über `lpBahn`, überschreibt `u_lrOx/Oy` in `glZusatz`). Alle drei additiv, Vorgabe 0.
+  `neigung`/`drehen`/`aufsetzen` bewusst nicht übernommen — Roll ist im 3D-Modell eine echte Größe.
+
+**Scheinwerfer mit Tiefe** (`lichtRaum`, `504fdad`): Hotspot-Vorgabe 0,35 → 0,7, von 69 % auf 94 %
+des alten Scheinwerfers. **Keine additive Änderung** — bestehende Clips ohne eigens gesetzten
+Hotspot werden sichtbar heller.
+
+**Lichtstrahlen mit Tiefe** (`strahlenRaum`), zwei Schritte:
+- Der **Marsch-Deckel** `/max(8,treffer)` gilt nur noch für den Laser (`5e13e56`, Zeile 31531) — für
+  den sich weitenden Schacht drückte er Randstreifer nach unten statt zu mitteln. +14 %. Caspar_D,
+  als ich das als erledigt verkaufen wollte: *„meinst du denn, Punkt 2 wäre hiermit tatsächlich
+  erledigt?"*
+- **Glimmen über die Kante hinaus, bauartabhängig** (`228ad0d`, Zeile 31423): Schacht/Fächer Radius
+  6,0 (219 % des Ausgangswerts), Kugelquelle 2,0 (bei 6,0 verschmelzen ihre vielen Einzelstrahlen zu
+  einem Klumpen). Caspar_D: *„ich denke, wir müssen effektabhängig arbeiten, das ist zwar nicht so
+  schön, aber die Effekte sind halt individuell."*
+
+**Regel 9a** (`373e7c5`, EFFEKTCLIP-REGELN): Die Wirkung eines Reglers muss über den ganzen Weg
+gleichmäßig wahrgenommen werden. Gefunden an `strahlenRaum.dicke` (S-Kurve 0,43 … 15,23 über den
+Weg). Die Regel steht, die Skala des Reglers ist **nicht** transformiert (Zeile 27729, linear).
+
+**Nahtproben nach jedem Schritt:** 12/12 `laserraum-*` nach dem Saum, `laserraum-faecher` und
+`-strahl-kegel` nach `fwidth`, drei Fälle nach den Reglern, drei `lichtraum-*` nach dem Hotspot,
+alle fünf `strahlenraum-*` nach dem Glimmen (20:27) — durchweg `gl:true`.
+
+## 2. Befunde, die bleiben
+
+**Der Lichtpuffer ist eine 8-Bit-Leinwand.** Caspar_D: *„wurden die Klemmungen, Wertebereiche
+irgendwie limitiert, dass sie gar nicht die Stärke erreichen können?"* Bewiesen: `gl_FragColor=
+vec4(2.0,4.0,0.5,1.0)` kommt über `readPixels` als `[255,255,128,255]` zurück. Ein Bildpunkt, der 1,0
+erreicht — und das ist der ganze Kern eines Schachts —, ist weiß; keine Formel macht ihn heller.
+Der einzige Hebel darunter ist die **Fläche**. Genau das tat der alte `strahlen` mit seinem
+Weichzeichner (8 % der Bildbreite). Das erklärt, warum Verstärkungen an der Formel (Kante, Kern,
+dickeNorm) am Schacht kaum wirkten, und begründet das Glimmen.
+
+**Zwei Lichtsysteme, auseinandergehalten** — nach Caspar_Ds Einwand (18:31): *„du hattest gesagt, der
+Lichtpuffer weiß auch etwas über die Richtung des Lichts, das kriege ich mit 8 Bit nicht hin — wir
+haben 2 Lichtsysteme."* Richtig, und meine Formulierung war unsauber:
+- `clicht` — der **Intensitäts-Puffer**: additiv (`lighter`), liest der Filmnebel. Hier fand die
+  Messung statt, hier gilt der 8-Bit-Befund.
+- `cherk` — der **Herkunfts-Puffer**: RGB/A-gewichteter Mittelwert des Ursprungsorts, gelesen nur
+  von Streiflicht und Raumleuchten (`ort=vec2(hk.r/hk.a·2−0,5, …)`, Zeile 31699).
+Beide sind `getContext('2d')` (Zeile 28716), beide 8 Bit. Die Richtung steht im zweiten, nicht im
+ersten — der 8-Bit-Befund betrifft die Helligkeit, nicht die Richtung.
+
+**Float statt 8 Bit — machbar, aber ein Architekturumbau.** Caspar_D: *„würde uns float statt 8 bit
+helfen oder würden wir das nicht mehr bewältigt bekommen."* Technisch geprüft: eigener Framebuffer
+mit `RGBA/FLOAT`-Textur ist `FRAMEBUFFER_COMPLETE`, `readPixels` mit `gl.FLOAT` liefert 2,0 und 4,0
+unverändert; `OES_texture_float`, `WEBGL_color_buffer_float`, `OES_texture_half_float` und
+`EXT_color_buffer_half_float` sind vorhanden. Der Aufwand liegt nicht im Shader: Der Puffer ist heute
+eine Canvas2D-Leinwand, in die GL-Effekte per `drawImage`/`lighter` (`leuchteInPuffer`, Zeile 29437)
+und Canvas-Effekte über `malen()` hineinmalen, und der Filmnebel liest sie als Textur. Ein
+Float-Puffer ist ein GL-Framebuffer, in den nur GL malen kann — Voraussetzung ist also der
+Migrationsplan aus §5a, und der Lesepfad des Nebels müsste mit. **Nicht entschieden, nicht gebaut.**
+
+**Das Nachglühen war schon da** (Scanner/Lissajous, acht Lagen à 0,012 s = 0,084 s — trifft die
+Netzhautnachhallzeit von 40–100 ms, ohne dass die Zahl je dafür gewählt wurde). Gemessen: helle
+Breite 40 px → 91 px. Kein Änderungsbedarf.
+
+## 3. Ken Burns, 14:12 — „das Setzen der Punkte funktioniert nicht mehr"
+
+Caspar_D: *„die Tiefenkarte war sehr schnell da, kein Problem, aber die Punkte auswählen setzt immer
+neue"*; Bild dazu: *„ein statisches Bild, auf dem ein leichtes Flackern als Effekt lief."*
+`kbBuehneEinrichten` (`markeBei`, `onpointerdown/move/up`, `ondblclick`) gelesen, live geprüft, zwei
+Agenten drüber: Klick setzt, Doppelklick entfernt, Ziehen verschiebt — im Test korrekt, **Ursache
+nicht gefunden**. Caspar_D: *„okay."* Bleibt auf Wiedervorlage: beim nächsten Auftreten gemeinsam
+live ansehen, mit dem konkreten Bild und Rezept.
+
+## 4. Arbeitsweise, neu gelernt
+
+- **Umschalter brauchen die volle Klickfolge.** `button.tbs-togp` reagiert nicht auf `.click()`;
+  `pointerdown/mousedown/pointerup/mouseup/click` nötig. Zweimal für eingefrorenen Code gehalten.
+- **Ohne Medium ist der Strahl in der Luft unsichtbar.** Eine Peak-Messung mit 24 identischen
+  Proben war kein Fehler im Sprung-Code, sondern fehlender Filmnebel im Messaufbau.
+- **Ein Fund ist nicht die Lösung.** 14 % schließen keine Vierfach-Lücke; erst die Nachfrage führte
+  zum 8-Bit-Befund.
+- **Die Zwei-Minuten-Schranke zweimal gerissen** (Nahtproben 194 s und 173 s), beide selbst
+  gestartet ohne Ansage. Steht hier, damit es nicht wieder vorkommt: vorher fragen, Jörg gibt den
+  Startschuss.
