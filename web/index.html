@@ -31806,16 +31806,24 @@ void main(){
      drei Gesichter einer Entscheidung: 0 gleichmaessiger Dunst, 1 dicke Ballen mit Rand. */
   float skala=mix(1.6,6.0,u_schwaden);
   float steigen=mix(0.22,-0.14,u_schwere);   /* leichter Nebel steigt, schwerer kriecht */
+  /* RAEUMLICHE SCHWADEN (23.09.2026): die Dichte haengt an der Tiefe, nicht nur an x, y und Zeit.
+     Statt einer vierten Rauschachse (die Vorschau hat nur das 3D-Rauschen, der Export das 4D, und
+     beide sollen dasselbe Bild geben) wird das Rauschfeld je Tiefe verschoben: was hinten liegt,
+     sieht einen anderen Ausschnitt des Feldes als das, was vorn liegt - eine Figur steht dann in
+     anderem Nebel als die Wand hinter ihr. Ohne Karte ist u_tiefeAn 0, also keine Verschiebung:
+     genau das Bild von vorher. */
+  float fern=1.0-texture2D(u_tiefe,uv).r;
+  vec2 raum=vec2(1.3,-0.8)*fern*clamp(u_tiefeAn,0.0,1.0);
 #ifdef LOOPFORM
   vec2 vzug=vec2(u_luftzug,steigen)*0.09; float vz=(0.18+0.82*abs(u_luftzug))*0.55;
   bool zieht=length(vzug)>1e-6; vec2 l0=lage(0,zieht), l1=lage(1,zieht); float wl=0.0;   /* der Zug in zwei Lagen, das Wabern im Kreis */
-  if(l0.x>0.0) wl+=l0.x*wolke4(vec4((uv-vzug*l0.y)*skala, zeitKreis(wabern(vz,zieht))));
-  if(l1.x>0.0) wl+=l1.x*wolke4(vec4((uv-vzug*l1.y)*skala+vec2(37.1,-19.3), zeitKreis(wabern(vz,zieht))+vec2(-23.7,11.9)));
+  if(l0.x>0.0) wl+=l0.x*wolke4(vec4((uv-vzug*l0.y)*skala+raum, zeitKreis(wabern(vz,zieht))));
+  if(l1.x>0.0) wl+=l1.x*wolke4(vec4((uv-vzug*l1.y)*skala+raum+vec2(37.1,-19.3), zeitKreis(wabern(vz,zieht))+vec2(-23.7,11.9)));
   float g=clamp(wl/length(vec2(l0.x,l1.x))*0.5+0.5,0.0,1.0);
 #else
   vec2 zug=vec2(u_luftzug,steigen)*u_t*0.09;
   vec3 zt=vec3(0.0,0.0,u_t*(0.18+0.82*abs(u_luftzug))*0.55);   /* was zieht, wabert; stehende Luft steht */
-  float g=clamp(wolke(vec3((uv-zug)*skala,0.0)+zt)*0.5+0.5,0.0,1.0);
+  float g=clamp(wolke(vec3((uv-zug)*skala+raum,0.0)+zt)*0.5+0.5,0.0,1.0);
 #endif
   float ballen=mix(1.0, smoothstep(0.34,0.66,g), u_schwaden);
   /* WO ER LIEGT. Lage, Dicke und Schichtkante waren drei Regler und sind eine Entscheidung:
@@ -31826,8 +31834,7 @@ void main(){
      (VIDEO-PLAN 9.7a, Koschmieder): jeder Bildpunkt wird nach SEINER EIGENEN Entfernung
      gedaempft, und die Figur steht dadurch von selbst vor dem Nebel - ohne Maske, ohne Kante.
      Ohne Tiefenkarte faellt der Weg auf die Schicht zurueck. */
-  float fern=1.0-texture2D(u_tiefe,uv).r;
-  float weg=lager*ballen*mix(1.0, 0.15+1.7*fern, clamp(u_tiefeAn,0.0,1.0));
+  float weg=lager*ballen*mix(1.0, 0.15+1.7*fern, clamp(u_tiefeAn,0.0,1.0));   /* fern steht oben, bei den Schwaden */
   float T=exp(-3.0*weg);
   /* WAS IHN BELEUCHTET. Das Umgebungslicht der Szene und die Leuchten der Kette - beides geht
      durch die Farbe, und die Farbe IST das Fluid. Bei Weiss ist die Rechnung auf flaechigem
@@ -31837,6 +31844,12 @@ void main(){
      Strahl im Nebel NIE schwaecher wird als ohne ihn. Was die Daempfung nimmt, gibt die
      Einstreuung mindestens zurueck (Unreals Light Shafts sind genauso gebaut). */
   vec3 L=texture2D(u_licht,uv).rgb, hof=texture2D(u_hof,uv).rgb;
+  /* EXTINKTION AUF DEM LICHTWEG UND PHASENFUNKTION: gebaut, gemessen und wieder ausgebaut
+     (23.09.2026). Mit dem Herkunfts-Puffer liessen sich beide rechnen (Weg zur Lampe in Bildhoehen,
+     Henyey-Greenstein mit g = 0,6 * Buendelung); gemessen nahmen sie dem Scheinwerfer mit Tiefe im
+     Nebel 25-43 % und dem Laser mit Tiefe 54-60 % des Lichts - genau den Leuchten, die Caspar_D
+     tags zuvor als zu schwach beanstandet hatte. Ob das die richtige Staerke ist, entscheidet er
+     am Bild, nicht der Pruefstand; Formeln und Zahlen stehen in KONZEPT-LEUCHTEN Abschnitt 6. */
   vec3 streu=L*(0.25+0.75*u_buendelung)+hof*0.75*(1.0-u_buendelung);
   vec3 leuchten=u_farbe*(umgebung(uv)+streu*4.0);
   gl_FragColor=vec4(c.rgb*T+leuchten*(1.0-T), c.a); }`,

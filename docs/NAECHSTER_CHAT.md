@@ -6137,6 +6137,18 @@ Nichts davon ist Bauarbeit. Je Punkt: was ansehen, wo.
 13. **Morgenknopf:** beim nächsten Morgenklick hinsehen, ob die Token-Zeile jetzt über der
     Alben-Zeile steht.
 
+*Nachgetragen am 23.09. tagsüber (Abschnitt „Die Bauliste, ohne Caspar_D"):*
+
+14. **Kaustik im Nebel** — seit der Migration auf den Lichtpuffer +146 % Licht; das Netz leuchtet den
+    ganzen Nebel an. Zu kräftig oder richtig so? Ein Rezept Kaustik + Filmnebel.
+15. **Nebel: Extinktion auf dem Lichtweg und Phasenfunktion** — gebaut, gemessen (−25 bis −60 % Licht
+    an Scheinwerfer und Laser mit Tiefe), wieder ausgebaut. Entscheidung: gewollt, und mit welchem
+    Ausgleich? Formeln und Zahlen in KONZEPT-LEUCHTEN §6.
+16. **Überstrahlungsanzeige** — Wort („Ausgebrannt: 6 % des Bildes") und Ort (Bühne unten links)
+    sind Entwurf; im Studio ansehen, z. B. „Helligkeit schlägt" mit voller Wucht.
+17. **Regel-9a-Skala am Dicke-Regler** — die ersten 25 % des Reglerwegs sind jetzt 0,05–0,44°. Fühlt
+    sich das richtig an?
+
 ## 3. Offen — Bau, in dieser Reihenfolge
 
 Nach den Wiedervorlagen 1–2; an ihnen hängt, ob die alten Effekte fallen.
@@ -6283,3 +6295,16 @@ kennen. Im Tab gesehen: ohne Effekt versteckt; „Helligkeit schlägt" mit volle
 Scheinwerfer → „2 %" bzw. „6 %" auf dem Schlag, danach zwei Sekunden gehalten (ohne Halten flackerte
 die Zahl im Takt des Pulses, unlesbar), dann weg. Keine Konsolenmeldung. Das Wort „Ausgebrannt"
 und der Ort sind Entwurf — Caspar_D sieht es beim nächsten Öffnen des Studios.
+
+## 8. Nebel: drei Schritte gebaut, einer bleibt
+
+**Räumliche Schwaden** sind drin: das Rauschfeld wird je Tiefe verschoben (`raum`, Vorschau und
+Loop-Form gleich), eine Figur steht in anderem Nebel als die Wand hinter ihr; ohne Tiefenkarte bleibt
+alles wie vorher. Am Licht neutral (−0,7 % / −4 % bei den Raumleuchten, +0,3 % beim alten Scheinwerfer).
+
+**Extinktion auf dem Lichtweg** und **Phasenfunktion** habe ich gebaut, gemessen und wieder
+ausgebaut: sie nehmen dem Scheinwerfer mit Tiefe 25–43 % und dem Laser mit Tiefe 54–60 % des Lichts
+im Nebel — genau den Leuchten, die Caspar_D tags zuvor als zu schwach beanstandet hat. Physikalisch
+sind beide richtig (Nebel dämpft auch den Hinweg, und er streut nach vorn); ob sie gewollt sind und
+mit welchem Ausgleich, ist seine Entscheidung am Bild (Wiedervorlage 15). Formeln und Zahlen stehen
+im Leuchten-Konzept §6, der Code ist gelöscht, nicht auskommentiert.

@@ -673,10 +673,28 @@ an einer Lampe, die ihre Achse ohnehin kennt.
   also Lambert-Beer), die **Dichte** aber nicht: die dritte Achse des Rauschens ist die Zeit. Drei
   Dinge hängen am selben Puffer und wären billig: ~~**Lichtabfall mit der Entfernung**~~ (gebaut am 21.09. in der Lampe, `ba7c724` — der Nebel
   erbt es über den Puffer; offen bleibt stattdessen die **Extinktion auf dem Lichtweg**
-  Lampe→Objekt, heute dämpft der Nebel nur Objekt→Kamera), **räumliche Schwaden** (Tiefe als dritte Achse, Zeit als
-  vierte — `wolke4(vec4)` existiert bereits für die Loop-Form), und eine echte **Phasenfunktion**
-  statt des Mischreglers „Bündelung". Teurer wären God Rays und volumetrische Schächte mit
-  Schattentest.
+  Lampe→Objekt, heute dämpft der Nebel nur Objekt→Kamera), ~~**räumliche Schwaden**~~ (gebaut am
+  23.09.2026, s. u.), und eine echte **Phasenfunktion** statt des Mischreglers „Bündelung". Teurer
+  wären God Rays und volumetrische Schächte mit Schattentest.
+
+  **Stand 23.09.2026, alle drei gebaut und gemessen — zwei davon wieder ausgebaut:**
+  - *Räumliche Schwaden* — **drin.** Statt einer vierten Rauschachse (die Vorschau hat nur das
+    3D-Rauschen, der Export das 4D, beide sollen dasselbe Bild geben) wird das Rauschfeld je Tiefe
+    verschoben: `raum = (1,3; −0,8) · fern · u_tiefeAn`, in Vorschau und Loop-Form gleich. Eine Figur
+    steht damit in anderem Nebel als die Wand hinter ihr; ohne Karte ändert sich nichts. Am Licht
+    neutral: alter Scheinwerfer +0,3 %, Scheinwerfer mit Tiefe −0,7 %, Laser mit Tiefe −4 %.
+  - *Extinktion auf dem Lichtweg* und *Phasenfunktion* — **gebaut, gemessen, ausgebaut; Wiedervorlage.**
+    Mit dem Herkunfts-Puffer (Ort und Höhe der Lampe wie im Streiflicht gelesen) lässt sich beides
+    je Bildpunkt rechnen: `ext = exp(−1,5 · lager · ballen · dl)` mit dl dem Weg zur Lampe in
+    Bildhöhen, und Henyey-Greenstein `p(cos θ)/p(1)` mit `g = 0,6 · Bündelung`, cos θ zwischen
+    Lichtweg und Blickrichtung (Lampe hinter dem Nebel, zur Kamera scheinend: hell; neben der Kamera:
+    matt). Beides nur auf das direkte Licht L, der Hof bleibt; ohne Herkunft (alte Canvas-Leuchten)
+    unverändert. **Gemessen** (Titel „Stumm", Filmnebel, Vorgaben): Scheinwerfer mit Tiefe
+    4.019.616 → 3.018.853 (**−25 %**) bzw. 2.964.652 → 1.698.069 (**−43 %**); Laser mit Tiefe
+    594.405 → 270.524 (**−54 %**), 346.689 → 138.754 (**−60 %**). Das sind genau die Leuchten, die
+    Caspar_D am 22.09. als zu schwach beanstandet hat — ob die physikalische Dämpfung gewollt ist und
+    mit welchem Gewinn sie ausgeglichen wird, entscheidet er am Bild. Der Code stand eine Stunde im
+    Shader und ist gelöscht (Totlegen nur mit Löschen); die Formeln oben reichen für den Wiederaufbau.
 
 ## 7. Verstärkung ohne Nachbildung (22.09.2026)
 
