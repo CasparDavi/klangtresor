@@ -6153,30 +6153,30 @@ Nichts davon ist Bauarbeit. Je Punkt: was ansehen, wo.
 
 Nach den Wiedervorlagen 1–2; an ihnen hängt, ob die alten Effekte fallen.
 
-1. **Regel 9a an `strahlenRaum.dicke`:** die Skala des Reglers transformieren (heute linear
-   0,05–12°, Zeile 27729; die Wirkung ist eine S-Kurve 0,43 … 15,23).
-2. **Nebel**, drei Punkte: Extinktion auf dem Lichtweg (Lampe→Objekt; heute dämpft nur
-   Objekt→Kamera, Zeile ~31791), räumliche Schwaden (Tiefe als dritte Rauschachse — `wolke4` gibt
-   es nur für die Loop-Form), Phasenfunktion statt Mischregler „Bündelung".
-3. **Überstrahlungsanzeige** — eine Zahl in der Zeile, die auftaucht, wenn alles geclippt ist
-   (Ansatz in KONZEPT-LEUCHTEN §6).
-4. **Migration auf den Lichtpuffer:** Flammen → Kaustik → Partikel-Leuchten (KONZEPT-LEUCHTEN §5a).
-   Zugleich Vorbedingung für Float.
-5. **Tiefenkarte leihen** — beauftragt (Caspar_D, 21.09. 18:46: *„Es muss dranstehen … dann eben
-   ‚vom Titelbild geliehen'."*).
-6. **Tempo in Schlägen** (Ken Burns): der Regler heißt noch „Tempo (Takte)" 1–4 (Zeile 27417);
-   spezifiziert ist Vorgabe 2 Schläge.
+1. ~~**Regel 9a an `strahlenRaum.dicke`:** die Skala des Reglers transformieren (heute linear
+   0,05–12°, Zeile 27729; die Wirkung ist eine S-Kurve 0,43 … 15,23).~~ — gebaut 23.09. tagsüber, 3.
+2. **Nebel**, drei Punkte: ~~räumliche Schwaden~~ (gebaut, tagsüber 8); Extinktion auf dem Lichtweg
+   und Phasenfunktion gebaut, gemessen, ausgebaut → **Wiedervorlage 15**.
+3. ~~**Überstrahlungsanzeige** — eine Zahl in der Zeile, die auftaucht, wenn alles geclippt ist
+   (Ansatz in KONZEPT-LEUCHTEN §6).~~ — gebaut, tagsüber 7 (Wiedervorlage 16 fürs Wort und den Ort).
+4. ~~**Migration auf den Lichtpuffer:** Flammen → Kaustik → Partikel-Leuchten (KONZEPT-LEUCHTEN §5a).
+   Zugleich Vorbedingung für Float.~~ — alle drei gebaut, tagsüber 6 (Kaustik-Stärke: Wiedervorlage 14).
+5. ~~**Tiefenkarte leihen** — beauftragt (Caspar_D, 21.09. 18:46: *„Es muss dranstehen … dann eben
+   ‚vom Titelbild geliehen'."*).~~ — gebaut, tagsüber 4.
+6. ~~**Tempo in Schlägen** (Ken Burns): der Regler heißt noch „Tempo (Takte)" 1–4 (Zeile 27417);
+   spezifiziert ist Vorgabe 2 Schläge.~~ — gebaut, tagsüber 5.
 7. **`laserraum-strahl-kegel`:** letzter gemessener Stand **0,064/0,168** (nach `fwidth`, 22.09.
    14:04) — besser als die 0,16/0,23 aus 6f, aber seit fünf weiteren Änderungen an diesem Effekt
    nicht mehr gemessen. Die `u_zeit`-Hypothese ist ungeprüft; der Code bestätigt nur, dass `u_zeit`
    die absolute Songzeit ist (Zeilen 27710, 27764), nicht auf die Clip-Länge gefaltet.
-8. **Linse 10,9 ms** — erster Schritt ist die Messung, woran es liegt (Backlog), nicht der Umbau.
+8. ~~**Linse 10,9 ms** — erster Schritt ist die Messung, woran es liegt (Backlog), nicht der Umbau.~~
+   — gemessen, tagsüber 9: nicht die Linse, der GL-Gang je Effekt; Umbau von `GL.run` wäre der Hebel.
 9. **Kostenanzeige im Studio** (Prüfverfahren, Anforderung 3) — zu planen.
 10. **Polarlicht** — Vorbedingung erfüllt („ganz hinten" steht), wartet auf Wiedervorlage 6.
 11. **Module herauslösen:** `index.html` ist weiter ein `<script>`; Effektclip-Studio zuerst.
-12. **Kleinkram:** `flaecheAb` wird in Vorbereitung und Rezept noch gelesen und geschrieben
-    (Zeilen ~28647/28664), der Regler ist weg — löschen, nicht stehen lassen. `gesundheit.js` prüft
-    nicht, ob der Morgenknopf einen Token bekommt (Idee aus 6d).
+12. **Kleinkram:** ~~`flaecheAb` wird in Vorbereitung und Rezept noch gelesen und geschrieben
+    (Zeilen ~28647/28664), der Regler ist weg — löschen, nicht stehen lassen.~~ (gelöscht, tagsüber 2).
+    `gesundheit.js` prüft nicht, ob der Morgenknopf einen Token bekommt (Idee aus 6d).
 13. **Backlog, unverändert:** KI-Modelle auf der Radeon (M1–M5); Farbverlauf über den Fächer
     (nicht bestellt).
 
@@ -6318,3 +6318,21 @@ widerlegt.** Teuer ist der GL-Gang je Effekt — Textur hoch, rastern, zurück �
 unabhängig von Größe und Shader; die 10,9 ms vom 21.09. ließen sich auf diesem Weg nicht
 reproduzieren. Hebel wäre ein Umbau von `GL.run`: aufeinanderfolgende GL-Effekte auf der
 Grafikkarte lassen, einmal zurücklesen. Im Backlog fortgeschrieben, nicht gebaut.
+
+## 10. Ken Burns „setzt immer neue Punkte" — Reproduktionsversuch
+
+Im Prüfstand-Tab mit Tiefenkarte, offener Karte „Ken Burns Fahrt", Helligkeitsschlag und
+Scheinwerfer in der Kette, Bild stehend: die Karte beginnt mit zwei vorgeschlagenen Punkten; ein
+Klick auf die Bühnenmitte setzt den dritten, ein zweiter und dritter Klick **an derselben Stelle**
+setzen keinen — sie treffen die Marke (3 → 3 → 3), erst ein Klick daneben setzt den vierten. Nicht
+reproduzierbar. Bleibt Wiedervorlage 9, mit den Fragen dort (welche Karte war offen, Zonenansicht
+an?).
+
+## 11. Was heute bewusst nicht gebaut wurde
+
+- **Kostenanzeige im Studio**: Anforderung 3 des Prüfverfahrens (Backlog, 21.09.) ist eine
+  Kostenschranke im Prüfstand, und das Verfahren steht auf „zu planen" — planen heißt nicht bauen.
+- **Module herauslösen**: Architektur, nicht ohne Abstimmung; die Reihenfolge steht (Effektclip-Studio zuerst).
+- **Polarlicht**: wartet auf Wiedervorlage 6 (Ort oder Ausdehnung).
+- **`gesundheit.js` Token-Prüfung**: Idee aus 6d, nie bestellt.
+- **Extinktion und Phasenfunktion im Nebel**: gebaut und wieder ausgebaut, siehe 8.

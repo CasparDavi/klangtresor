@@ -58,7 +58,7 @@ Punkt 5 ist nicht zu kopieren — wir haben keinen Erzähler. Wir haben zwei Din
 > **Halten · fahren · halten.** Weich an, weich aus. Die Fahrt landet auf der Eins.
 
 **Getaktet, nicht in Sekunden.** Der Regler „Tempo" sagt nicht mehr „Periode einer Schwingung",
-sondern **über wie viele Takte die Fahrt läuft**. Die Halte ergeben sich aus dem Rest. Hat der Titel
+sondern **über wie viele ~~Takte~~ Schläge die Fahrt läuft** (seit dem 23.09.2026 in Schlägen, Vorgabe 2; KONZEPT-ZIELPUNKTE §5). Die Halte ergeben sich aus dem Rest. Hat der Titel
 kein Schlagraster, gilt ein Ersatzmaß, und die Zeile sagt das.
 
 **Die Schleife schließt, also ist der Lauf geschlossen.** Im Effektclip gilt das Loop-Gesetz: das
@@ -150,7 +150,7 @@ Tiefenkarte. **Nicht in der ersten Fassung**, aber der Aufbau darf sie nicht ver
 |---|---|
 | **Lauf** | welcher Kameraweg |
 | **Ausschnitt** | wie eng das engste Bild ist |
-| **Tempo** | über wie viele Takte die Fahrt läuft |
+| **Tempo** | über wie viele Schläge ein Zug läuft (bis 23.09.2026: Takte) |
 | **Parallaxe** | wie stark das Nahe dem Fernen vorauseilt (grau ohne Tiefenkarte) |
 
 **„Weite" gibt es nicht mehr.** Wenn die Fahrt ein Ziel hat, ist die Amplitude keine Einstellung,
