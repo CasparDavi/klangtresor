@@ -5202,16 +5202,20 @@ der Lampe wäre eine zweite Quelle für dieselbe Sache (Regel 5).
 
 ## Offen, in dieser Reihenfolge
 
-1. **Falschfarben-Ansicht** in der Station Tiefe — rot vorn, blau hinten, auf dem grau gelegten
-   Bild. Die Rechnung existiert, sie hängt heute an den Effektkarten.
+1. ~~**Falschfarben-Ansicht** in der Station Tiefe — rot vorn, blau hinten, auf dem grau gelegten
+   Bild. Die Rechnung existiert, sie hängt heute an den Effektkarten.~~ — **entfallen** am 21.09.
+   abends mit `TSICHT`/`tiefesicht*`; die Zonenkarte (Relief, Histogramm, sechs benannte Bereiche)
+   ist ihr Nachfolger. (Durchsicht 23.09.)
 2. **Sternschnuppe auf die letzte Tiefenebene.** *„Eigentlich auf der letzten Tiefenebene, dem
    Himmel."* Heute richtet sie sich nach der Zonengrenze — eine Schnuppe ist aber am Himmel, und
    das ist keine Einstellung, sondern ihre Natur.
 3. **Der Nebel** — die drei Punkte oben.
 4. **Laser und Lichtstrahlen ablösen.** Sie sind dieselbe Lampe: Bündelung, Gobo, Schwenktempo.
-   **Dafür fehlt ein dritter Winkel: Roll** — Caspar_D: *„die Fächerfläche steht momentan parallel
+   ~~**Dafür fehlt ein dritter Winkel: Roll**~~ — Caspar_D: *„die Fächerfläche steht momentan parallel
    zur Diorama-Front-Scheibe."* Beim Scheinwerfer fällt Roll nicht auf (ein Kegel ist
-   rotationssymmetrisch), beim Fächer ist es der entscheidende Winkel.
+   rotationssymmetrisch), beim Fächer ist es der entscheidende Winkel. **Roll ist gebaut**
+   (`051d89a`, Abschnitt 6c „Roll in der Schwenkbahn"); die Ablösung hängt nur noch an der Abnahme
+   (Durchsicht 23.09., Wiedervorlage 1–3).
 5. **Überstrahlungsanzeige** — kein Deckel (Ausbrennen ist ein Mittel), aber eine Zahl, die sagt,
    wann ein Regler nur noch scheinbar wirkt.
 6. **Aus dem Backlog:** die Linse mit 10,9 ms · Polarlicht auf den Himmel · das Prüfverfahren.
@@ -5787,6 +5791,9 @@ mit `kid: suno-api-rs256-key-1` war also Clerks Standard-Token dieser Instanz, k
 Ein Schönheitsfehler bleibt: Die Token-Zeile erscheint im Fenster *unter* der Alben-Zeile, obwohl
 der Token vor den Alben kam — die Alben-Zeile wird früher angelegt und später gefüllt. Harmlos,
 aber die Reihenfolge lügt; wer daran geht, meldet den Token dort, wo er zuerst gebraucht wird.
+**Behoben in derselben Nacht** (`63038e5`): `tokenMerken()` in `browser/morgens.js` schiebt die
+Token-Zeile per `insertBefore` vor die wartende Alben-Zeile (Ausnahme: beim allerersten Lauf steht
+„erster Lauf" davor). Nur statisch geprüft, am Fenster noch nicht gesehen. (Durchsicht 23.09.)
 
 Der Morgenknopf ist damit wieder vollständig. `gesundheit.js` hat diesen Bruch **nicht** bemerkt —
 es prüft, ob Adressen antworten, nicht, ob der Token-Weg im Browser noch existiert. Das wäre eine
@@ -6043,3 +6050,130 @@ live ansehen, mit dem konkreten Bild und Rezept.
 - **Die Zwei-Minuten-Schranke zweimal gerissen** (Nahtproben 194 s und 173 s), beide selbst
   gestartet ohne Ansage. Steht hier, damit es nicht wieder vorkommt: vorher fragen, Jörg gibt den
   Startschuss.
+
+---
+
+# 23.09.2026, nachts — Durchsicht aller offenen Punkte, mit Wiedervorlage
+
+Caspar_D, 01:32: *„gehe alle Punkte durch, meiner Meinung nach ist einiges längst erledigt und
+ziehe Doku und Übergabe nach"* — und: *„alles, wo ich tätig werden muss, setze auf Wiedervorlage."*
+
+Geprüft: 26 Einzelpunkte aus den „Offen"-Listen dieses Dokuments (Zeilen ~4900, ~5005, ~5200,
+~5305, ~5409) und dem Backlog. Sechs Prüfagenten gegen Code, Doku, git und Caspar_Ds eigene
+Wortmeldungen im Transkript; jede Erledigt-Behauptung von einem zweiten Agenten mit dem Auftrag
+„widerlege das" gegengelesen; Zeilen und Zitate danach selbst nachgeschlagen. Nur gelesen, nichts
+gebaut, kein Testlauf. **Diese Listen ersetzen die älteren „Offen"-Listen oben** — was dort steht
+und hier fehlt, ist erledigt oder gegenstandslos und dort so markiert.
+
+## 1. Erledigt — in der Doku nachgezogen
+
+- **Falschfarben-Ansicht** (Offen-Liste 21.09., Punkt 1): entfallen mit dem Zonenmodell, die
+  Zonenkarte ist ihr Nachfolger; `grep falschfarb` im Code: leer. KONZEPT-ZONEN §9 hatte sie noch
+  als „zu erweitern".
+- **Roll als dritter Winkel** (Punkt 4): gebaut `051d89a` — Regler „Rollen" ±90°, Schwenkarten
+  Roll/Kreis+Roll an Laser und Lichtstrahlen, `u_roll` dreht die Querachsen (Zeile 31466);
+  `laserraum-roll`, `strahlenraum-roll` in der Naht gleich 0,00. KONZEPT-LEUCHTEN „Der dritte
+  Winkel" sagte noch, er fehle.
+- **Lichtabfall mit der Entfernung** (Nebel-Punkt 1 im Leuchten-Konzept): gebaut am 21.09. **in der
+  Lampe** (`ba7c724`, Entfernungsgesetz `(dref/dist)²`, geklemmt bei 4; Zeilen 31454/31625/31663),
+  der Nebel erbt es über den Puffer. Caspar_D, 21.09. 11:07: *„Licht breitet sich im Raum um die
+  Quelle aus, die bestrahlte Fläche wächst quadratisch."* Übrig bleibt die **Extinktion auf dem
+  Lichtweg** Lampe→Objekt — die Übergabe vom 21.09. hatte es richtig, das Konzept nicht.
+- **Morgenknopf, Token-Zeile unter der Alben-Zeile** (6d): behoben in derselben Nacht, `63038e5`.
+  Nur statisch geprüft — am Fenster noch nicht gesehen.
+- **Hintergrundfläche ab** als Regler (KONZEPT-ZONEN §9): entfallen `bb492b0`, „ganz hinten"
+  leistet es.
+- **Marsch-Normierung** (KONZEPT-LEUCHTEN §5a „Restschwäche offen"): überholt durch §7.
+- **Flimmern** (KONZEPT-LEUCHTEN §7 „Offen, nicht gebaut"): gebaut, §8.
+
+## 2. Wiedervorlage — braucht Caspar_Ds Auge oder Entscheidung
+
+Nichts davon ist Bauarbeit. Je Punkt: was ansehen, wo.
+
+1. **Abnahme der drei Leuchten mit Tiefe.** Scheinwerfer (`lichtRaum`, Hotspot 0,7 → 94 % des
+   alten), Laser (`laserRaum`, 86 %, mit Saum, Querschnitt-Normierung, Flimmern/Sprung/Quelle
+   wandert), Lichtstrahlen (`strahlenRaum`, Glimmen 6,0/2,0). Dein letztes Wort dazu, 22.09.
+   06:27: *„der alte Lichtstrahleneffekt fliegt irgendwann raus, wenn der neue sichtbar ist. Ist
+   er aber eben nicht."* Erst nach der Abnahme fliegen `licht`, `laser`, `strahlen` raus.
+2. **Lichtstrahlen: Schacht/Fächer gegen den alten `strahlen` am Bild**, und die **Kugelquelle** —
+   bei Radius 2,0 unterscheidbar, aber blass. Reicht das, oder braucht sie weniger, dafür dickere
+   Strahlen? (KONZEPT-LEUCHTEN §7, Tabelle.)
+3. **Roll am Fächer ansehen** — gebaut, aber nie von dir gesehen: Laser oder Lichtstrahlen, Regler
+   „Rollen" oder Schwenkart „Kreis+Rollen". Dein Wunsch vom 21.09.: *„die Fächerfläche steht
+   momentan parallel zur Diorama-Front-Scheibe."*
+4. **Escher, Funken auf Raumtiefe 1** — säulenartige Streifen statt Funken. Differenzbild liegt
+   unter `~/Downloads/escher-funken-diff.png` (hell = wo Funken malen). Richtig, weil jede Stufe
+   Boden ist — oder falsch?
+5. **Sternschnuppe am Himmel.** Der Entwurf liegt als Kommentar im Code (Zeile ~30212): keine
+   Flächensperre (die war am 21.09. gebaut und am selben Tag zurückgenommen — *„bei mir sind
+   Titelbilder mit klarem Himmel klar unterrepräsentiert"*), sondern eine **Entfernung**. Gebaut
+   wird er, wenn du ihn abnimmst.
+6. **Zonen: Ort oder Ausdehnung?** (KONZEPT-ZONEN §9) — Vorschlag: Körper haben einen Ort, Medien
+   eine Ausdehnung. Davon hängt die Zeile „Aufenthalt" ab, und ob ein Polarlicht als Fläche ohne
+   eigenen Regler auskommt. Dazu: **Luftperspektive** als zweite Quelle bauen oder Notiz lassen?
+7. **Teilchen-Entfernung am Bild** (KONZEPT-ZONEN §12): seit dem 21.09. rechnen die Teilchen mit
+   der Tiefe statt der Trennlinie (p95 8,94 → 9,08). Der Prüfstand sagt „anders" — die Richtung
+   beurteilst du. Ein Rezept mit Funken oder Schnee auf einem Bild mit Tiefenkarte reicht.
+8. **Loop-Abweichungen** — unverändert seit dem 15.09.: (a) die sieben bewussten Abweichungen
+   (Zeile ~4261: Streifen „beide", Scheinwerfer-Fahrt, langsame Schwaden, Nebel-Tempo,
+   Teiler-Titel, wenige Schläge, Schritt auf der Eins) über den Loop-Modus; (b) Effekte im
+   Video-Übergang (*„noch nicht getestet"*); (c) das Pendel (*„ist immer noch viel zu schnell"*,
+   15.09. 22:43). Seither kein Commit dazu.
+9. **Ken Burns „setzt immer neue Punkte"** (22.09. 14:12) — Ursache nicht gefunden, Code gelesen
+   und live geprüft. Beim nächsten Auftreten bitte festhalten: welches Bild, ob die Zonenansicht an
+   war, welche Karte offen war (eine offene Raumleuchte greift den Klick vor der Ken-Burns-Karte ab,
+   `kbBuehneEinrichten` Zeile ~32771), ob eine Tiefenkarte da war. Dann gemeinsam live.
+10. **Nahtfall mit zwei Zuständen** (Kommentar über `vorlaufen`, Zeile ~35895): das erste
+    Exportbild einer Kette ohne Vorlauf wird in etwa jedem vierten Lauf anders gemalt — gemessen an
+    `kb-einPunkt`, 3 von 14. Die Übergabe vom 20./21.09. nannte dafür `kb-fuenfPunkte` und
+    `kb-fokus-unscharf`; die zeigten es am 20.09. einmal und seither in drei Nahtläufen nicht.
+    Quotient 0,09, unter der Sichtbarkeit. Entscheidung: eigene Baustelle oder liegen lassen? Dazu
+    deine Frage vom 21.09., ob das Nahtregime so bleibt.
+11. **Sliderwüsten ausdünnen** — deine Sorge vom 18.09., nie beauftragt. Ob und wann.
+12. **Anfahren/Auslaufen der Ken-Burns-Fahrt** — heute eine Konstante (`KB_RAMPE` 0,25).
+    Bildentscheidung: gleich lang, oder z. B. 20 % zu 35 %? Danach zwei Zeilen Code.
+13. **Morgenknopf:** beim nächsten Morgenklick hinsehen, ob die Token-Zeile jetzt über der
+    Alben-Zeile steht.
+
+## 3. Offen — Bau, in dieser Reihenfolge
+
+Nach den Wiedervorlagen 1–2; an ihnen hängt, ob die alten Effekte fallen.
+
+1. **Regel 9a an `strahlenRaum.dicke`:** die Skala des Reglers transformieren (heute linear
+   0,05–12°, Zeile 27729; die Wirkung ist eine S-Kurve 0,43 … 15,23).
+2. **Nebel**, drei Punkte: Extinktion auf dem Lichtweg (Lampe→Objekt; heute dämpft nur
+   Objekt→Kamera, Zeile ~31791), räumliche Schwaden (Tiefe als dritte Rauschachse — `wolke4` gibt
+   es nur für die Loop-Form), Phasenfunktion statt Mischregler „Bündelung".
+3. **Überstrahlungsanzeige** — eine Zahl in der Zeile, die auftaucht, wenn alles geclippt ist
+   (Ansatz in KONZEPT-LEUCHTEN §6).
+4. **Migration auf den Lichtpuffer:** Flammen → Kaustik → Partikel-Leuchten (KONZEPT-LEUCHTEN §5a).
+   Zugleich Vorbedingung für Float.
+5. **Tiefenkarte leihen** — beauftragt (Caspar_D, 21.09. 18:46: *„Es muss dranstehen … dann eben
+   ‚vom Titelbild geliehen'."*).
+6. **Tempo in Schlägen** (Ken Burns): der Regler heißt noch „Tempo (Takte)" 1–4 (Zeile 27417);
+   spezifiziert ist Vorgabe 2 Schläge.
+7. **`laserraum-strahl-kegel`:** letzter gemessener Stand **0,064/0,168** (nach `fwidth`, 22.09.
+   14:04) — besser als die 0,16/0,23 aus 6f, aber seit fünf weiteren Änderungen an diesem Effekt
+   nicht mehr gemessen. Die `u_zeit`-Hypothese ist ungeprüft; der Code bestätigt nur, dass `u_zeit`
+   die absolute Songzeit ist (Zeilen 27710, 27764), nicht auf die Clip-Länge gefaltet.
+8. **Linse 10,9 ms** — erster Schritt ist die Messung, woran es liegt (Backlog), nicht der Umbau.
+9. **Kostenanzeige im Studio** (Prüfverfahren, Anforderung 3) — zu planen.
+10. **Polarlicht** — Vorbedingung erfüllt („ganz hinten" steht), wartet auf Wiedervorlage 6.
+11. **Module herauslösen:** `index.html` ist weiter ein `<script>`; Effektclip-Studio zuerst.
+12. **Kleinkram:** `flaecheAb` wird in Vorbereitung und Rezept noch gelesen und geschrieben
+    (Zeilen ~28647/28664), der Regler ist weg — löschen, nicht stehen lassen. `gesundheit.js` prüft
+    nicht, ob der Morgenknopf einen Token bekommt (Idee aus 6d).
+13. **Backlog, unverändert:** KI-Modelle auf der Radeon (M1–M5); Farbverlauf über den Fächer
+    (nicht bestellt).
+
+## 4. Drei Korrekturen an meiner eigenen Liste von 01:25
+
+- „Nebel: Lichtabfall mit Entfernung" als offener Punkt — falsch, in der Lampe gebaut; offen ist
+  die Extinktion auf dem Lichtweg.
+- „Morgenknopf: Token-Zeile unter der Alben-Zeile" als Restfehler — aus der veralteten Übergabe
+  abgeschrieben, in derselben Nacht behoben.
+- „`laserraum-strahl-kegel` Naht 0,16/0,23" — der letzte Messwert war 0,064/0,168.
+
+Fürs nächste Nachschlagen: Caspar_Ds Wortmeldungen nur aus dem Transkript zitieren, nie aus
+zusammengefassten Übergaben — zwei Prüfagenten haben Kontexte verwechselt (*„fang einfach von
+vorne an"* galt der Punkteliste, nicht Ken Burns).

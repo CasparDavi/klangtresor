@@ -3036,7 +3036,9 @@ Oberfläche messen statt behaupten, ohne Bild und ohne Rauschboden.
 
 ## Die Linse kostet 10,9 ms je Bild (21.09.2026)
 
-**Zustand: offen.** Nebenbefund aus der Kostenmessung der Leuchten — gemessen, nicht vermutet.
+**Zustand: offen** (Stand 23.09.2026: seit dem 21.09. nichts geschehen; der erste Schritt ist die
+Messung unten, WORAN es liegt — keine Bauarbeit). Nebenbefund aus der Kostenmessung der Leuchten —
+gemessen, nicht vermutet.
 
 Radeon Pro 5500 XT, 629×889, Median aus fünf Läufen, netto über dem leeren Bild:
 
@@ -3074,7 +3076,9 @@ dritte Stelle nicht.
 
 ## Polarlicht auf den Himmel (21.09.2026)
 
-**Zustand: offen**, sobald die **Hintergrundfläche** steht (siehe KONZEPT-LEUCHTEN, Zonenmodell).
+**Zustand: offen — Vorbedingung erfüllt** (Stand 23.09.2026): die hinterste Zone „ganz hinten" steht
+seit dem 21.09. abends. Vorher zu entscheiden (Caspar_D, KONZEPT-ZONEN §9): ob ein flächiges
+Polarlicht eine **Ausdehnung** statt eines Orts bekommt. Kein Code — `polarlicht` kommt nirgends vor.
 
 Caspar_D, 21.09.2026: *„schreib ins Backlog, dass wir dann sogar Polarlicht auf den Himmel legen
 können."*

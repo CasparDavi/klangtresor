@@ -266,10 +266,14 @@ Vorschlag zur Abstimmung: beides, je nach Art — **Körper haben einen Ort, Med
 Davon hängt ab, wie die Zeile „Aufenthalt" künftig aussieht.
 
 Weiter offen:
-- Ob „Hintergrundfläche ab" als Regler bleibt. Für die Sternschnuppe braucht es ihn nach diesem
-  Entwurf nicht mehr. Für ein Polarlicht, das als Fläche gemalt wird und nicht als Teilchen,
-  vermutlich schon.
-- Die Falschfarben-Ansicht auf drei Zonenfarben erweitern (heute zwei: rot/blau).
+- ~~Ob „Hintergrundfläche ab" als Regler bleibt.~~ — entfallen am 21.09. abends (`bb492b0`): die
+  hinterste Zone „ganz hinten" leistet es. Ein flächiges Polarlicht braucht dann keine Fläche, sondern
+  eine **Ausdehnung** — das ist die Entscheidung oben, kein eigener Regler. Rest im Code: `flaecheAb`
+  wird in Vorbereitung und Rezept noch gelesen und geschrieben (Zeilen ~28647/28664), Regler und
+  Beschriftung sind weg — löschen, nicht stehen lassen. (Durchsicht 23.09.)
+- ~~Die Falschfarben-Ansicht auf drei Zonenfarben erweitern (heute zwei: rot/blau).~~ — gegenstandslos:
+  die rot/blau-Ansicht ist am 21.09. abends mit `TSICHT`/`tiefesicht*` entfallen, die Zonenkarte ist
+  ihr Nachfolger. (Durchsicht 23.09.)
 - Ob die Luftperspektive als zweite Quelle wirklich gebaut wird oder Notiz bleibt.
 
 ---
@@ -336,7 +340,8 @@ zusammen: 0…1 die Szene mit ihren Zonen, 1…1+L der Effektraum, 1+L die Effek
 dieselbe Größe sind.
 
 Gemessen: `partikel` p95 von 8,94 auf 9,08, `feuer` unverändert. Der Prüfstand sagt damit
-„anders", nicht „besser" — die Richtung beurteilt Caspar_D am Bild.
+„anders", nicht „besser" — die Richtung beurteilt Caspar_D am Bild. *(Stand 23.09.: noch nicht
+beurteilt — Übergabe, Wiedervorlage 7.)*
 
 Was aus dieser Liste noch **nicht** gefallen ist: `zoneTrennung`, `zoneWeich` und `tiefeSpanne`.
 Sie tragen keinen Malweg mehr, aber noch drei Notizen und die Ken-Burns-Zielpunkte. `VH_GRENZE`,

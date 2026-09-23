@@ -390,7 +390,10 @@ es der zweitstärkste Leuchter im Feld, weil es das ganze Bild trifft.
 **Die drei „mit Tiefe"-Geräte liegen alle unter ihren alten Pendants** — `lichtRaum` bei 69 % von
 `licht`, `laserRaum` bei 56 % von `laser`, `strahlenRaum` bei nur 25 % von `strahlen`. Letzteres
 ist der schon bekannte, noch nicht vollständig gelöste Befund von heute Nacht (Vorgabe angehoben,
-Restschwäche in der Marsch-Normierung offen — siehe Übergabe, Abschnitt 6f).
+Restschwäche in der Marsch-Normierung offen — siehe Übergabe, Abschnitt 6f). *Nachtrag 23.09.:
+überholt durch §7 — der Deckel ist korrigiert (`5e13e56`), das Glimmen bauartabhängig ergänzt
+(`228ad0d`), und die eigentliche Ursache ist der 8-Bit-Puffer, nicht die Normierung. Die
+Kugelquelle bleibt blasser.*
 
 Feuer schreibt am kräftigsten — durch den eigens gebauten „Schein"-Mechanismus (Caspar_D,
 14.09.2026: „Feuer sollte einen weichen Schein in den Puffer malen"), der einmal gemalt wird und
@@ -613,6 +616,10 @@ Dafür fehlt dem Modell ein **dritter Winkel: Roll**, die Drehung um die eigene 
 Tilt und Roll zusammen sind das Kugelgelenk. **Beim Scheinwerfer fällt Roll nicht auf**, weil ein
 Kegel rotationssymmetrisch ist; beim Fächer und bei jedem Gobo ist es der entscheidende Winkel.
 
+*Nachtrag 23.09.: gebaut am 22.09. früh (`051d89a`) — Regler „Rollen" ±90° und die Schwenkarten
+Roll/Kreis+Roll an Laser und Lichtstrahlen; `u_roll` dreht die Querachsen im Shader. Am Bild von
+Caspar_D noch nicht abgenommen (Übergabe 23.09., Wiedervorlage 3).*
+
 **Nicht am alten Laser reparieren.** Ihm fehlt dieselbe Geometrie wie dem alten Scheinwerfer —
 `Neigung (0 Wand, 1 Boden)`, `Drehen` und `Aufsetzen` sind drei Krücken für eine Richtung, die es
 als Größe nicht gibt. Ein Roll-Winkel dort wäre die vierte. Im neuen Modell ist es ein Winkel mehr
@@ -631,8 +638,9 @@ an einer Lampe, die ihre Achse ohnehin kennt.
 - **Der Nebel.** Aus dem Gespräch am 21.09.2026 über die vier Verfahren der Spielegrafik: Der
   Filmnebel ist **halb räumlich** — die Weglänge hängt an der Tiefe (Koschmieder, `T = exp(−3·weg)`,
   also Lambert-Beer), die **Dichte** aber nicht: die dritte Achse des Rauschens ist die Zeit. Drei
-  Dinge hängen am selben Puffer und wären billig: **Lichtabfall mit der Entfernung** (heute erhellt
-  eine Lampe den Nebel überall gleich), **räumliche Schwaden** (Tiefe als dritte Achse, Zeit als
+  Dinge hängen am selben Puffer und wären billig: ~~**Lichtabfall mit der Entfernung**~~ (gebaut am 21.09. in der Lampe, `ba7c724` — der Nebel
+  erbt es über den Puffer; offen bleibt stattdessen die **Extinktion auf dem Lichtweg**
+  Lampe→Objekt, heute dämpft der Nebel nur Objekt→Kamera), **räumliche Schwaden** (Tiefe als dritte Achse, Zeit als
   vierte — `wolke4(vec4)` existiert bereits für die Loop-Form), und eine echte **Phasenfunktion**
   statt des Mischreglers „Bündelung". Teurer wären God Rays und volumetrische Schächte mit
   Schattentest.
@@ -828,7 +836,7 @@ Prüfstand-Chrome ohne echte Grafikkarte). Alle neun GL-Effekte probeweise mit d
 Vorspann kompiliert: fehlerfrei. Zwei Nahtfälle geprüft (`laserraum-faecher`, der Grenzfall
 `laserraum-strahl-kegel`): beide `gl:true`, keine Verschlechterung.
 
-**Offen, nicht gebaut:** der alte Laser hat einen Flimmer-Mechanismus (`e.flimmer`,
+**~~Offen, nicht gebaut~~ — gebaut, siehe §8 (`11f2d91`):** der alte Laser hat einen Flimmer-Mechanismus (`e.flimmer`,
 `e.flimmerTempo`) — ein periodisches Abdunkeln (55 % der Zeit voll hell, 45 % gedimmt, je Strahl
 phasenversetzt über `e.id*0.37`), das mehrere gleichzeitige Strahlen unterschiedlich hell zeigt und
 so nach „elektrisch/lebendig" aussieht. `laserRaum` hat **keinen** entsprechenden Regler.
