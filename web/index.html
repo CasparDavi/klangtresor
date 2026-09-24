@@ -27505,7 +27505,7 @@ const EFFEKTE = {
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
     params:[{k:'nachhall',lbl:'Nachhall',min:.5,max:.98,step:.01,def:.85},{k:'versatz',lbl:'Versatz',min:0,max:.05,step:.002,def:.008},{k:'winkel',lbl:'Richtung (°)',min:0,max:360,step:5,def:90}]},
   feuer:{ label:'Feuer', art:'mal', verr:'add', staerkeDef:.7, besch:'Flammen über einer Grundlinie — unten breit und gelb, oben schmal und rot, jede Zunge flackert und steigt für sich. Boden, Mitte und Breite frei; Wind zieht die Zungen zur Seite, Glut sitzt an der Basis; lodert im Takt höher. „Schein“ ist das weiche Leuchten über die Flammen hinaus — es hellt das Bild auf und beleuchtet zugleich Nebel und Rauchschwaden, die darüber stehen.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'schein',lbl:'Schein',min:0,max:1,step:.05,def:.35}]},
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.45},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'woelbung',lbl:'W\u00f6lbung',min:0,max:1,step:.05,def:0,notiz:()=>'Die Grundlinie als unterer Bogen einer Schale: 0 gerade, 1 so tief wie breit. Boden bleibt der tiefste Punkt.'},{k:'unschaerfe',lbl:'Unsch\u00e4rfe',min:0,max:.5,step:.01,def:0},{k:'dichte',lbl:'Dichte',min:5,max:60,step:1,def:24},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5},{k:'schein',lbl:'Schein',min:0,max:1,step:.05,def:.35}]},
   wellen:{ label:'Wellen (Brechung)', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Das Bild bricht sich wie unter Wasser oder in heißer Luft — echte Verschiebung jedes Pixels durch Rauschen (WebGL). Zone 1 = nur unten, Aufwind lässt es wie Hitze steigen.',
     params:[{k:'amplitude',lbl:'Amplitude',min:0,max:.08,step:.002,def:.02},{k:'skala',lbl:'Skala',min:1,max:12,step:.5,def:4},{k:'tempo',lbl:'Tempo',min:.1,max:3,step:.1,def:.6},{k:'zone',lbl:'Zone (1 unten)',min:0,max:1,step:.05,def:0},{k:'aufwind',lbl:'Aufwind',min:0,max:1,step:.05,def:0}]},
   kaustik:{ label:'Kaustik (Lichtnetz)', art:'gl', verrFrei:true, staerkeDef:.6, besch:'Das wandernde Netz gebrochenen Lichts — Poolboden, Wasser an der Wand, Glas. Aus Rauschen gerechnet (WebGL), nur das Licht — die Verrechnung mischt es aufs Bild.',
@@ -27513,7 +27513,7 @@ const EFFEKTE = {
   linse:{ label:'Linse', art:'gl', ohneStaerke:true, staerkeDef:1, besch:'Röhrenwölbung oder Fischauge (Wölbung negativ = Tonne, positiv = Kissen) mit Farbrändern am Rand (WebGL).',
     params:[{k:'woelbung',lbl:'Wölbung',min:-1,max:1,step:.05,def:-.3},{k:'farbrand',lbl:'Farbränder',min:0,max:1,step:.05,def:.3}]},
   flammen:{ label:'Flammen (Rauschen)', art:'gl', lmNurSchub:true, staerkeDef:.8, glZusatz:(e,t)=>({ u_inPuffer:LICHTMAL?1:0 }), besch:'Feuer aus fraktalem Rauschen (WebGL): echte leckende Zungen, unten gelb, oben rot. Boden, Mitte, Breite frei; Wind legt die Zungen zur Seite; lodert im Takt höher.',
-    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
+    params:[{k:'hoehe',lbl:'Höhe',min:.1,max:1,step:.05,def:.5},{k:'breite',lbl:'Breite',min:.01,max:1,step:.01,def:1},{k:'mitte',lbl:'Mitte',min:0,max:1,step:.05,def:.5},{k:'boden',lbl:'Boden (1 unten)',min:0,max:1,step:.05,def:1},{k:'woelbung',lbl:'W\u00f6lbung',min:0,max:1,step:.05,def:0,notiz:()=>'Die Grundlinie als unterer Bogen einer Schale: 0 gerade, 1 so tief wie breit. Boden bleibt der tiefste Punkt.'},{k:'unschaerfe',lbl:'Unsch\u00e4rfe',min:0,max:.5,step:.01,def:0},{k:'tempo',lbl:'Tempo',min:.2,max:3,step:.1,def:1},{k:'flackern',lbl:'Flackern',min:0,max:1,step:.05,def:.6},{k:'wind',lbl:'Wind',min:-1,max:1,step:.05,def:0},{k:'farbe',lbl:'Farbe unten',farbe:true,def:'#ffd23a'},{k:'farbe2',lbl:'Farbe oben',farbe:true,def:'#ff2d1a'},{k:'glut',lbl:'Glut',min:0,max:1,step:.05,def:.5}]},
   /* ===================== SCHEINWERFER MIT TIEFE (21.09.2026) =====================
      docs/effektclip/KONZEPT-LEUCHTEN.md. Neubau NEBEN dem alten Scheinwerfer (Hausregel: eigener
      Name, das Alte faellt erst, wenn das Neue gewonnen hat) - Caspar_D: „ich wuerde Scheinwerfer
@@ -30902,13 +30902,24 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       gs.addColorStop(0.55,'rgba('+pa.join(',')+','+(0.10*e.schein*a).toFixed(3)+')');
       gs.addColorStop(1,'rgba('+pa.join(',')+',0)');
       cx.fillStyle=gs; cx.beginPath(); cx.arc(cxm,cym,R,0,7); cx.fill(); }
-    if(e.glut>0){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2*EINHEIT); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2*EINHEIT); }
-    for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(lpW(9+7*hs(i+400))*t+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
+    /* DIE GRUNDLINIE IST EIN BOGEN, KEINE WAAGERECHTE (24.09.2026; Caspar_D: "das Problem beim Feuer ist
+       die waagerechte Grundlinie - ich haette gerne die untere Linie der Ellipse als Begrenzung, und am
+       besten unscharf"). Je Zunge liegt der Fuss auf dem unteren Bogen einer Ellipse, so breit wie das
+       Feuer, Hoehe = Woelbung mal halbe Breite; Boden bleibt der TIEFSTE Punkt, die Enden liegen hoeher.
+       Unschaerfe: der Fuss jeder Zunge sitzt um bis zu eine halbe Unschaerfe (in Flammenhoehen) hoeher
+       oder tiefer, und die untersten Kugeln blenden ein - eine ausgefranste, weiche Kante statt einer
+       Schnittlinie. Bei Woelbung 0 und Unschaerfe 0 Zeile fuer Zeile das alte Bild. Die Glut folgt
+       dem Bogen: bei Woelbung 0 das alte Band, sonst je Zunge ein Schein am Fuss. */
+    const ry=(e.woelbung||0)*bw/2, unsch=e.unschaerfe||0;
+    const fuss=i=>{ const xi=x0+(i+0.5)*bw/n, sq=(xi-(x0+bw/2))/Math.max(1e-6,bw/2); return baseY-ry*(1-Math.sqrt(Math.max(0,1-sq*sq)))+(hs(i+900)-0.5)*unsch*hoehe; };
+    if(e.glut>0){ if(ry<=0.001){ const g=cx.createLinearGradient(0,baseY-hoehe*0.35,0,baseY+2*EINHEIT); g.addColorStop(0,'rgba('+pb.join(',')+',0)'); g.addColorStop(1,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); cx.fillStyle=g; cx.fillRect(x0,baseY-hoehe*0.35,bw,hoehe*0.35+2*EINHEIT); }
+      else { for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, gy=fuss(i), gr=Math.max(2,tw*1.4); const g=cx.createRadialGradient(xi,gy,0,xi,gy,gr); g.addColorStop(0,'rgba('+pa.join(',')+','+(0.35*e.glut*a).toFixed(3)+')'); g.addColorStop(1,'rgba('+pb.join(',')+',0)'); cx.fillStyle=g; cx.beginPath(); cx.arc(xi,gy,gr,0,7); cx.fill(); } } }
+    for(let i=0;i<n;i++){ const xi=x0+(i+0.5)*bw/n, bY=fuss(i), sp=0.7+0.6*hs(i+300), fl=1-e.flackern*0.5*(0.5+0.5*Math.sin(lpW(9+7*hs(i+400))*t+hs(i+500)*100)), th=hoehe*(0.6+0.5*hs(i+600))*fl;
       /* WIND (VIDEO-PLAN 9a.1): `sway` ist ein symmetrisches Wackeln um die eigene Achse - damit laesst
          sich keine Fackel bauen, deren Flamme zur Seite gezogen wird. Der Versatz waechst mit der Hoehe
          (am Boden null) und misst sich an der Hoehe genau dieser Zunge: Wind 1 legt die Spitze um eine
          Flammenhoehe zur Seite, ein hohes Feuer also weiter als ein niedriges. */
-      for(let k=0;k<M;k++){ const h=(k/M+t*lpR(e.tempo*sp*0.9)+hs(i+700))%1, sway=Math.sin(lpW(3*sp)*t+hs(i+800)*10+k)*tw*0.5*(0.3+h), wnd=(e.wind||0)*th*Math.pow(h,1.4), x=xi+sway+wnd, y=baseY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55;
+      for(let k=0;k<M;k++){ const h=(k/M+t*lpR(e.tempo*sp*0.9)+hs(i+700))%1, sway=Math.sin(lpW(3*sp)*t+hs(i+800)*10+k)*tw*0.5*(0.3+h), wnd=(e.wind||0)*th*Math.pow(h,1.4), x=xi+sway+wnd, y=bY-h*th, r=Math.max(1,tw*(0.9-0.6*h)), al=a*Math.pow(1-h,1.4)*0.55*(unsch>0.001?Math.min(1,h/unsch):1);
         const c=[0,1,2].map(q=>Math.round(pa[q]+(pb[q]-pa[q])*Math.min(1,h*1.3)));
         const gr=cx.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba('+c.join(',')+','+al.toFixed(3)+')'); gr.addColorStop(1,'rgba('+c.join(',')+',0)');
         cx.fillStyle=gr; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); } } }
@@ -31901,7 +31912,7 @@ void main(){
   vec3 streu=L*(0.25+0.75*u_buendelung)*lichtweg+hof*0.75*(1.0-u_buendelung);
   vec3 leuchten=u_farbe*(umgebung(uv)+streu*4.0);
   gl_FragColor=vec4(c.rgb*T+leuchten*(1.0-T), c.a); }`,
-  flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_tempo,u_flackern,u_wind,u_glut,u_inPuffer; uniform vec3 u_farbe,u_farbe2;
+  flammen:`uniform float u_hoehe,u_breite,u_mitte,u_boden,u_woelbung,u_unschaerfe,u_tempo,u_flackern,u_wind,u_glut,u_inPuffer; uniform vec3 u_farbe,u_farbe2;
 void main(){ vec4 c=texture2D(u_tex,v_uv);
   float base=1.0-u_boden; float hh=max(0.05,u_hoehe*(1.0+0.5*u_takt)); float h=(v_uv.y-base)/hh;
   /* Wind wie beim gemalten Feuer: Versatz zur Seite, der mit der Hoehe waechst. Das Seitenverhaeltnis
@@ -31910,7 +31921,19 @@ void main(){ vec4 c=texture2D(u_tex,v_uv);
      (Breite unter 5 %) unten breiter als eingestellt. */
   float versatz=u_wind*hh*(u_res.y/max(1.0,u_res.x))*pow(max(0.0,h),1.4);
   float x=((v_uv.x-versatz)-(u_mitte-u_breite*0.5))/max(0.005,u_breite); float rand=smoothstep(0.0,0.15,x)*smoothstep(1.0,0.85,x);
-  if(h<-0.05||h>1.2||rand<=0.0){ gl_FragColor=(u_inPuffer>0.5)?vec4(0.0,0.0,0.0,1.0):c; return; }
+  /* DIE GRUNDLINIE IST EIN BOGEN, KEINE WAAGERECHTE (24.09.2026; Caspar_D: "das Problem beim Feuer ist
+     die waagerechte Grundlinie - ich haette gerne die untere Linie der Ellipse als Begrenzung, und am
+     besten unscharf"). Die Ellipse ist so breit wie das Feuer; ihre Hoehe ist Woelbung mal halbe
+     Breite, umgerechnet ins Seitenverhaeltnis, damit ein Kreis ein Kreis bleibt. Boden bleibt der
+     TIEFSTE Punkt (s = 0), die Enden des Bogens liegen hoeher: bei Woelbung 0 exakt die alte
+     Waagerechte, alte Rezepte sehen gleich aus. Die Unschaerfe weicht die Kante nach unten auf,
+     in Anteilen der Flammenhoehe; bei 0 der alte harte Schnitt. */
+  float s=clamp(x*2.0-1.0,-1.0,1.0);
+  float ry=u_woelbung*u_breite*0.5*(u_res.x/max(1.0,u_res.y));
+  float grund=base+ry*(1.0-sqrt(max(0.0,1.0-s*s)));
+  h=(v_uv.y-grund)/hh;
+  float fuss=(u_unschaerfe>0.001)?smoothstep(-u_unschaerfe,0.0,h):step(-0.05,h);
+  if(h<-u_unschaerfe-0.05||h>1.2||rand<=0.0){ gl_FragColor=(u_inPuffer>0.5)?vec4(0.0,0.0,0.0,1.0):c; return; }
 #ifdef LOOPFORM
   vec2 l0=lage(0,true), l1=lage(1,true); float n=0.0;   /* der Aufstieg in zwei Lagen, das Wabern im Kreis */
   if(l0.x>0.0) n+=l0.x*fbm4(vec4(x*6.0, h*4.0-l0.y*u_tempo*2.0, zeitKreis(wabern(0.4,true))));
@@ -31919,7 +31942,7 @@ void main(){ vec4 c=texture2D(u_tex,v_uv);
 #else
   vec3 p=vec3(x*6.0, h*4.0 - u_t*u_tempo*2.0, u_t*0.4); float n=fbm(p)*mix(0.4,1.1,u_flackern);
 #endif
-  float flame=clamp((1.0-h)*1.6 + n*0.9 - 0.75, 0.0, 1.0)*rand; float glut=u_glut*clamp(1.0-h*3.0,0.0,1.0)*rand*0.35;
+  float flame=clamp((1.0-h)*1.6 + n*0.9 - 0.75, 0.0, 1.0)*rand*fuss; float glut=u_glut*clamp(1.0-h*3.0,0.0,1.0)*rand*fuss*0.35;
   vec3 col=mix(u_farbe2,u_farbe,pow(flame,1.5));
   vec3 licht=col*(flame*0.9+glut);
   /* IM LICHT-PUFFER NUR DAS LICHT (23.09.2026, Migration auf den Lichtpuffer): der Nebel soll die

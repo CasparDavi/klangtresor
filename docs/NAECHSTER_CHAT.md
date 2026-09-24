@@ -6409,3 +6409,44 @@ beides zugleich geht nur über den Kern. Wiedervorlage. Naht über alle zwölf `
 **Neuer Wunsch:** *„bei Feuer und Flammen (Rauschen) fällt mir auf, dass sie keinen Ursprung (Kreis,
 Ellipse, Linie …) haben. Das brauche ich aber, sonst kann man sie nur an der Bildunterkante
 einsetzen."* — Entwurf folgt als Skizze, vor dem Bau.
+
+## 16. Feuer und Flammen: die Grundlinie ist ein Bogen (24.09.2026)
+
+Caspar_D: *„Das Problem beim Feuer ist die waagerechte Grundlinie. Ich hätte gerne die untere Linie
+der Ellipse als Begrenzung, und am besten unscharf."* Und zum Entwurf (Formen, senkrecht steigend):
+*„ansonsten alles korrekt entworfen beim Feuer — und bei der Flamme."* Gebaut an beiden Effekten,
+mit denselben Wörtern: **Wölbung** (0 = gerade Linie wie bisher, 1 = Schale so tief wie breit; Boden
+bleibt der tiefste Punkt, die Enden des Bogens liegen höher) und **Unschärfe** (0 = der alte harte
+Schnitt; sonst weicht die Kante nach unten auf, in Anteilen der Flammenhöhe). Flammen (Shader): Fuß
+je Bildpunkt auf dem unteren Ellipsenbogen, `fuss = smoothstep(−Unschärfe, 0, h)`. Feuer (Maler):
+Fuß je Zunge auf dem Bogen, um bis zu eine halbe Unschärfe verstreut, die untersten Kugeln blenden
+ein; die Glut folgt dem Bogen (bei Wölbung 0 das alte Band, sonst je Zunge ein Schein am Fuß).
+**Wölbung 0 ist bitgleich mit vorher** — gemessen gegen den Stand `8a1de56`: Feuer 7.498.041 /
+7.156.192, Flammen 5.938.346 / 4.949.858, beide Male exakt gleich. Naht: `feuer`, `feuer-flackern`,
+`flammen`, `flammen-langsam-wind`, `flammen-schnell` alle 0,00. Alte Rezepte tragen die neuen Regler
+nicht und sehen gleich aus.
+
+## 17. Der rote Knopf meldet „Lyrics geändert" — Befund (24.09.2026)
+
+Caspar_D: *„der rote Knopf meldet mir regelmäßig, dass Songs geänderte Inhalte in den Lyrics hätten
+… ich habe in allen gemeldeten Fällen nichts verändert."* Heute zwei Titel: „Das Geschenk — Es ist
+raus" und „Lenore english" (`library/letzter-vergleich.json`). `bin/sammeln.js` vergleicht
+`metadata.prompt` der Ernte (Liste `songs` in `roh/profil-…json`) mit `lyrics` im Katalog, Zeichen
+für Zeichen. Über alle 326 Titel weicht genau **ein** Zeichen je Titel ab, und es ist jedes Mal
+**U+FFFD, das Ersatzzeichen** — zweimal hintereinander für ein zerrissenes Mehrbyte-Zeichen:
+- „Das Geschenk": die **Ernte** hat `geh��rt`, der Katalog `gehört`. Im **selben** Ernte-File steht
+  derselben Titel ein zweites Mal, unter den Playlists (`/api/playlist/…`) — dort **richtig**.
+- „Lenore": der **Katalog** hat `go��”`, die Ernte heute `go…”` (richtig) — das kaputte Zeichen
+  kam aus einer früheren Ernte und wurde beim Einbau übernommen.
+Die Bytes in der Datei sind `EF BF BD EF BF BD`, also schon im Browser als Ersatzzeichen im String
+gewesen; das Lesezeichen liest mit `r.json()`, der Server schreibt die Ernte als Bytes
+(`Buffer.concat`), unser Weg zerreißt nichts. **Sunos Profil-Endpunkt (`/api/profiles/<handle>`)
+liefert `prompt` sporadisch mit zerrissenen Mehrbyte-Zeichen; der Playlist-Endpunkt liefert denselben
+Text sauber.** Es wechselt von Ernte zu Ernte (heute das ö in „Geschenk", früher das … in „Lenore").
+
+**Vorschlag, noch nicht gebaut (Datenfluss, erst ansagen):** (1) `sammeln.js` wertet einen Unterschied
+nicht als Änderung, wenn die Texte nur an Ersatzzeichen-Stellen abweichen; (2) `aufbereiten.js`
+übernimmt beim Einbau keinen Text mit Ersatzzeichen, wenn der Katalog denselben Text sauber hat, und
+ersetzt umgekehrt einen kaputten Katalogtext durch den sauberen der Ernte (heilt „Lenore" beim
+nächsten Einbau); (3) besser noch: für `lyrics` die Playlist-Fassung vorziehen, wo sie den Titel
+enthält. **Bis dahin den Einbau dieser Ernte nicht laufen lassen** — er schriebe `geh��rt` in den Katalog.
