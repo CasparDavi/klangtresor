@@ -27562,7 +27562,7 @@ const EFFEKTE = {
      (72 px Schrift, 1040 px Zeile) fuer grosse Schirme - hier gilt der Anteil ohne Deckel, weil der Export
      keine Schirmgroesse kennt; die Notiz der Groesse sagt es. Das Band ein schwarzer
      Verlauf von 0 ueber 0,72 bei 38 % auf 0,86 an der Unterkante, darueber 12 % Bildhoehe Luft,
-     darunter 2,4 %; Farben --btext und --bleise aus der Titelbild-Palette (farben.text und
+     darunter 2,4 % (so am Bildrand; frei im Bild laeuft es beidseitig aus, siehe Maler); Farben --btext und --bleise aus der Titelbild-Palette (farben.text und
      farben.textLeise); Zeile n ist die letzte mit von <= t (buehneTakt), harter Schnitt beim Wechsel,
      kein Vorlauf. Vor der ersten Zeile steht die erste als naechste in der Mitte, wie auf der Buehne.
      Sitzt am Objektiv wie der Titel: zoomt nicht mit, liegt ueber allem.
@@ -27580,7 +27580,7 @@ const EFFEKTE = {
       {k:'farbSatz',lbl:'Farbquelle',sel:[['palette','Titelbild-Palette'],['eigen','Eigene Farben']],def:'palette'},
       {k:'farbe',lbl:'Farbe dran',farbe:true,def:'#f2f5fa',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus der Titelbild-Palette (Text und Text leise) — für eigene auf „Eigene Farben“ stellen.'},
       {k:'farbe2',lbl:'Farbe Nachbarn',farbe:true,def:'#96a0b4',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus der Titelbild-Palette.'},
-      {k:'ortY',lbl:'Ort Y',min:.25,max:1,step:.01,def:1,notiz:e=>(e.ortY==null||e.ortY>=.995)?'Unterkante am Bildrand, wie auf der Bühne.':'Unterkante des Bands.'},
+      {k:'ortY',lbl:'Ort Y',min:.25,max:1,step:.01,def:1,notiz:e=>(e.ortY==null||e.ortY>=.995)?'Unterkante am Bildrand, wie auf der Bühne.':'Unterkante des Textes; frei im Bild läuft das Band oben ein und unten aus.'},
       {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte'},
       {k:'vorlauf',lbl:'Vorlauf',min:0,max:1,step:.05,def:0,wert:v=>v.toFixed(2).replace('.',',')+' s',notiz:e=>(e.vorlauf>0)?null:'Die Zeile erscheint, wenn sie gesungen wird — wie auf der Bühne. Vorlauf zeigt sie früher.'}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -30995,12 +30995,13 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
        Masse und Vorgaben sind das Band der Buehne, siehe den Kommentar bei EFFEKTE.karaoke. */
     if(LOOP>0) return;
     const Z=(DATA&&DATA.lyrik!==undefined)?DATA.lyrik:lyrikVon(DATA&&DATA.id); if(!Z||!Z.length) return;
-    /* DER TEXTVERSATZ DER BUEHNE (Gegenlesen 24.09.2026): die Buehne zieht fuer ihr Band bVersatz ab - die Laufzeit
-       eines Funklautsprechers, vom Nutzer eingestellt. Laeuft hier die echte Uhr des Players (uhrEcht), gilt
-       derselbe Abzug, sonst stuende die Zeile im Pult frueher, als das Ohr sie hoert. Im Export gibt es keine
-       Laufzeit: dort ist die Lyrik eingefroren (DATA.lyrik) und der Abzug 0. Der Pruefstand kennt kein bVersatz. */
-    const versatz=(DATA&&DATA.lyrik!==undefined)?0:((typeof uhrEcht!=='undefined'&&uhrEcht&&typeof bVersatz==='number')?bVersatz/1000:0);
-    const tv=t-versatz+(e.vorlauf>0?e.vorlauf:0);
+    /* KEIN TEXTVERSATZ (Caspar_D, 24.09.2026: "ich wuerde keinen Zeitversatz einbauen, jedes System ist anders, ich
+       habe nichts von einem Film, wo die Untertitel nur auf einem System synchron laufen"). Die Buehne zieht fuer
+       ihr Band bVersatz ab - die Laufzeit eines Funklautsprechers auf DIESEM Rechner. Ein Effektclip ist ein Film:
+       derselbe auf jedem System, also ohne Abzug, auch im Pult und in der Kachel. Am Nachmittag des 24.09.2026
+       stand hier nach einem Gegenlesen dieser Abzug; er ist auf Caspar_Ds Entscheidung hin gefallen. Der Vorlauf
+       bleibt - er ist Gestaltung und liegt im Film, auf jedem System gleich. */
+    const tv=t+(e.vorlauf>0?e.vorlauf:0);
     let n=-1; for(let i=0;i<Z.length;i++){ if(Z[i].von<=tv) n=i; else break; }
     const drei=String(e.zeilen==null?'3':e.zeilen)!=='1', ersteNochNicht=n<0, iDran=n<0?0:n;
     if(ersteNochNicht&&!drei) return;   /* nur die gesungene: vor der ersten Zeile gibt es keine */
@@ -31021,8 +31022,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const luecke=gr*0.06; let hoehe=0; bl.forEach((b,i)=>{ hoehe+=b.rows.length*b.size*zh+(i?luecke:0); });
     const oy=Hn*(e.ortY==null?1:e.ortY), yU=oy-Hn*0.024, yO=yU-hoehe;
     const band=Math.max(0,Math.min(1,e.band==null?1:e.band));
-    if(band>0){ const b0=yO-Hn*0.12, b1=(oy>=Hn-0.5)?Hn:oy;
-      const g=cx.createLinearGradient(0,b0,0,b1); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(0.38,'rgba(0,0,0,'+(0.72*band*a).toFixed(3)+')'); g.addColorStop(1,'rgba(0,0,0,'+(0.86*band*a).toFixed(3)+')');
+    if(band>0){
+      /* DAS BAND HAT ZWEI SEITEN, WENN ES FREI STEHT (Caspar_D, 24.09.2026: "das Band hat einen einseitigen
+         Gradienten, das macht keinen Sinn, wenn ich es nach oben schiebe"). Am unteren Bildrand ist es das Band
+         der Buehne: von oben her einlaufend (0 -> 0,72 bei 38 % -> 0,86 an der Kante), die Kante ist der
+         Bildrand. Steht es frei im Bild, laeuft es oben ein und unten wieder aus, je 12 % Bildhoehe Luft,
+         dazwischen voll; stoesst es oben an, ist es das Buehnenband gespiegelt. Die Lage entscheidet, kein Regler. */
+      const luft=Hn*0.12, d=v=>'rgba(0,0,0,'+(v*band*a).toFixed(3)+')', unten=oy>=Hn-0.5, oben=(yO-luft)<=0.5;
+      let b0, b1, g;
+      if(unten){ b0=yO-luft; b1=Hn; g=cx.createLinearGradient(0,b0,0,b1); g.addColorStop(0,d(0)); g.addColorStop(0.38,d(0.72)); g.addColorStop(1,d(0.86)); }
+      else if(oben){ b0=0; b1=yU+luft; g=cx.createLinearGradient(0,b0,0,b1); g.addColorStop(0,d(0.86)); g.addColorStop(0.62,d(0.72)); g.addColorStop(1,d(0)); }
+      else { b0=yO-luft; b1=yU+luft; const H=Math.max(1,b1-b0); g=cx.createLinearGradient(0,b0,0,b1);
+        g.addColorStop(0,d(0)); g.addColorStop(Math.min(0.5,luft/H),d(0.86)); g.addColorStop(Math.max(0.5,1-luft/H),d(0.86)); g.addColorStop(1,d(0)); }
       cx.globalAlpha=1; cx.fillStyle=g; cx.fillRect(0,b0,Wn,b1-b0); }
     cx.textAlign=e.ausrichtung==='links'?'left':e.ausrichtung==='rechts'?'right':'center'; cx.textBaseline='middle';
     let y=yO;

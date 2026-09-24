@@ -6599,4 +6599,21 @@ gelöscht): Bewegtbild → Effektclip + Textebene Karaoke → Band `display:none
 wieder Bewegtbild → weicht erneut. `stand.js` kennt die neue Rückgabezeile des Moduls (`clipMalt`).
 
 **Wiedervorlage 20 (Caspar_D):** auf der eigenen Bühne mit laufendem Ton ansehen — sitzt die Zeile
-aus dem Effektclip so zum Gesang wie das Band (der Textversatz gilt seit heute auch dort)?
+aus dem Effektclip zum Gesang? (Ohne Textversatz, siehe §22.)
+
+## 22. Zwei Rücknahmen am Karaoke (24.09.2026, abends)
+
+Caspar_D: *„ich würde keinen Zeitversatz einbauen, jedes System ist anders, ich habe nichts von einem
+Film, wo die Untertitel nur auf einem System synchron laufen"* und *„das Band, auf dem die Zeilen
+laufen, hat einen einseitigen Gradienten, das macht keinen Sinn, wenn ich es nach oben schiebe."*
+
+1. **Kein Textversatz im Effekt.** Der Abzug von `bVersatz` (aus dem Gegenlesen, §20) ist wieder
+   raus, die Begründung steht im Maler: ein Effektclip ist ein Film, derselbe auf jedem System; der
+   Versatz der Bühne ist die Laufzeit eines Funklautsprechers auf diesem Rechner und gehört nicht
+   hinein. Der Vorlauf-Regler bleibt — er ist Gestaltung und liegt im Film.
+2. **Das Band hat zwei Seiten, wenn es frei steht.** Am unteren Bildrand ist es das Band der Bühne
+   (von oben einlaufend, Kante = Bildrand). Frei im Bild läuft es oben ein und unten aus, je 12 %
+   Bildhöhe, dazwischen voll; stößt es oben an, ist es das Bühnenband gespiegelt. Die Lage
+   entscheidet, kein Regler. Notiz unter Ort Y sagt es.
+
+Geprüft im eigenen Tab (Ort Y 1, 0,5 und 0,25), Nahtfälle unverändert 0,00.
