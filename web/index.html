@@ -37829,8 +37829,10 @@ function zeichneFrame(t,roh){
   function textUmbrechen(cx,txt,maxW){
     const rows=[]; let cur='';
     const passt=s=>cx.measureText(s).width<=maxW;
+    /* Kein Lookbehind-Regex: den kennt Safari erst seit 16.4, und ein Regex-Literal, das der Parser nicht versteht, wirft das GANZE Skript - die App liefe auf einem aelteren iPhone gar nicht mehr. */
+    const nachStrich=w=>{ const t=[]; let s=""; for(const ch of Array.from(w)){ s+=ch; if("-\u2010\u2011\u2013\u2014/".includes(ch)){ t.push(s); s=""; } } if(s) t.push(s); return t; };
     const stuecke=w=>{ if(passt(w)) return [w]; const teile=[];
-      for(const b of w.split(/(?<=[-‐‑–—\/])/)){ if(passt(b)) teile.push(b);
+      for(const b of nachStrich(w)){ if(passt(b)) teile.push(b);
         else { let z=''; for(const ch of Array.from(b)){ if(z&&!passt(z+ch)){ teile.push(z); z=ch; } else z+=ch; } if(z) teile.push(z); } }
       return teile.length?teile:[w]; };
     for(const w of String(txt).split(/\s+/).filter(Boolean)){

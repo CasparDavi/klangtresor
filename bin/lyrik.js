@@ -34,8 +34,13 @@
  * den Ton gehört; seine Marken liegen in library/whisper.ndjson.
  *
  * DAS VERFAHREN
- *   1. Regieanweisungen ([...] / (...) allein auf einer Zeile) fliegen
- *      ohne Alignment. Sie sind Anweisung, nicht Text.
+ *   1. Regieanweisungen fliegen ohne Alignment. Sie sind Anweisung, nicht
+ *      Text. Zwei Formen:
+ *      - Ganze Zeile: eckige oder runde Klammern über die ganze Zeile
+ *        (auch mit Klammern darin), eine Regiezeile mit #, oder eine
+ *        Trennlinie aus Strichen/Gleichzeichen.
+ *      - Einschub in einer sonst gesungenen Zeile — „[soft] schau sie nur
+ *        an." — der Klammerteil fällt aus dem Zeilentext, der Rest bleibt.
  *   2. Globales Alignment (Needleman-Wunsch) zwischen dem Wortstrom des
  *      Liedtexts und dem, was Whisper gehört hat.
  *   3. Zwei Zusätze, ohne die echte Zeilen verlorengehen — beide gemessen
@@ -54,6 +59,39 @@
  * gemeldet. Bei „Ik will …" (Plattdeutsch) versteht Whisper so wenig, daß
  * echte Zeilen durchfielen — dort darf die Software nicht entscheiden.
  * Dasselbe gilt, wenn Whisper gar nichts hat.
+ *
+ * FASSUNG 2 (Caspar_D, 25.09.2026). Zwei Befunde im Bestand:
+ *
+ * ERSTENS: Regieanweisungen kamen durch. Gezählt: 13 ganze Zeilen wie
+ * „[Post-Chorus Hook (instrumental)]" und 190 Zeilen mit Einschüben wie
+ * „[soft] schau sie nur an." Caspar_D: „das sollte in der bereinigten
+ * Lyrics nicht passieren, ist ja bereinigt um sowas." Grund: die alte
+ * `istRegie`-Regel (eine öffnende Klammer, dann kein `]`/`)` bis zum
+ * Ende) scheitert an eigenen Klammern IN der Anweisung — „(instrumental)"
+ * schließt vor dem äußeren „]", der Rest der Zeile passt dann nicht mehr
+ * ins Muster. Einschübe MITTEN in einer Zeile prüfte sie gar nicht — nur
+ * ganze Zeilen fielen unter „Regie". Jetzt: ganze Zeile via
+ * `istRegieZeile` (== `istNichtGesungen` in web/index.html), Einschübe
+ * separat via `EINSCHUB_ENTFERNEN`.
+ *
+ * ZWEITENS: zwei Fehler im Zeitverfahren, beide daraus, dass Whisper
+ * (Verfahren „dtw") vielen Wörtern dieselbe Start- und Endzeit gibt
+ * (Dauer 0) — echte Messung, aber ohne Standzeit.
+ *   (a) Hat eine gesungene Zeile nur eine solche Marke, ist ihr `von`
+ *       gleich ihrem `bis`. Die nächste Zeile ist oft `geschaetzt` und
+ *       begann bisher GENAU an diesem `bis` — im selben Augenblick wie
+ *       die vorige Zeile. 19 Zeilenpaare im Bestand teilten sich so ihr
+ *       `von`. Jetzt: eine Zeile mit einer solchen entarteten Marke
+ *       (Standzeit < 0,3 s) bekommt ihre Standzeit aus der Spanne bis zur
+ *       nächsten ECHTEN (nicht entarteten) Marke, geteilt nach Zeichen-
+ *       zahl mit den geschätzten Zeilen dazwischen — nicht mehr bei sich
+ *       selbst abgeschnitten.
+ *   (b) Landen zwei Textzeilen auf genau denselben Whisper-Marken (6 Fälle
+ *       im Bestand), bekommen beide dieselbe Spanne verdoppelt. Jetzt:
+ *       die eine gemeinsame Spanne wird nach Zeichenzahl zwischen den
+ *       Zeilen geteilt.
+ *   Beides ändert NUR geschätzte oder entartete Zeiten — eine echte,
+ *   nicht-entartete Zeitmarke bleibt, wie Whisper sie gemessen hat.
  */
 
 'use strict';
@@ -65,7 +103,11 @@ const K    = require('./katalog.js');
 const WURZEL   = path.join(__dirname, '..');
 const WHISPER  = path.join(WURZEL, 'library', 'whisper.ndjson');
 const ZIEL     = path.join(WURZEL, 'library', 'lyrik.json');
-const FASSUNG  = 1;
+
+/* Hochzaehlen bei jeder Aenderung am Verfahren (Regeln oben im Kopf-
+   kommentar) - steht als `fassung` in library/lyrik.json, damit man
+   hinterher weiss, nach welchen Regeln eine Zeile bereinigt wurde. */
+const FASSUNG  = 2;
 
 /* Unter dieser Deckung wird nicht gereinigt, sondern gemeldet. 0,60 ist
    nicht geraten: Bei dieser Grenze fallen 14 von 254 Liedern durch, und
@@ -78,6 +120,14 @@ const DECKUNG_MINDEST = 0.60;
 /* Wieviele ungedeckte Zeilen am Stück die Nachbarschaft noch überbrücken
    darf. Drei und mehr sind im Bestand fast immer ein eigener Block. */
 const LUECKE_MAX = 2;
+
+/* Unter dieser Standzeit (bis-von) gilt die eigene Whisper-Marke einer
+   Zeile als entartet, nicht als gemessen (Caspar_D, 25.09.2026, FASSUNG
+   2 - siehe Kopfkommentar, Fehler (a)). Whisper (Verfahren „dtw") gibt
+   sehr vielen Wörtern dieselbe Start- und Endzeit; hat eine Zeile nur
+   eine solche Marke, ist ihr `von` echt, ihre Standzeit aber nicht. 0,3 s
+   ist die Zahl aus Caspar_Ds Befund. */
+const STANDZEIT_ENTARTET = 0.3;
 
 /* ---- Wortvergleich ---------------------------------------------------
    CJK-Zeichen zählen einzeln als Wort: Japanisch kennt keine Leerzeichen,
@@ -155,11 +205,74 @@ function alignieren(a, b) {
   return paar;
 }
 
-const istRegie = (z) => /^\s*[[(][^\]\)]*[\])]?\s*$/.test(z.trim()) && /^[\s[(]/.test(z.trim());
+/* Ganze Zeile ist Regie, kein Text - dieselbe Regel wie `istNichtGesungen`
+   in web/index.html (dort ~Zeile 16881, per grep gefunden). Die alte Regel
+   hier (`/^\s*[[(][^\]\)]*[\])]?\s*$/`) scheiterte an einer Klammer IN der
+   Anweisung: „[Post-Chorus Hook (instrumental)]" schließt das `)` schon
+   vor dem äußeren `]`, danach passt der Rest nicht mehr ins Muster - 13
+   solcher Zeilen im Bestand kamen so durch (Caspar_D, 25.09.2026, FASSUNG
+   2). Das Muster fuer eckige Klammern ist gierig und schließt über jede innere Klammer hinweg.
+   Runde Klammern über die GANZE Zeile bleiben Regie wie in Fassung 1: im
+   Bestand sind das Produktionsnotizen („(Dry, close mic, no reverb...)",
+   Pfeifenwald), keine Begleitstimmen - ohne diese Regel fiel Pfeifenwald
+   von 66 % auf 38 % Deckung (Nacht 25.09.2026). Begleitstimmen in runden
+   Klammern MITTEN in einer Zeile bleiben Text; nur eckige Einschübe fallen.
+   Die Bühne (istNichtGesungen) lässt runde Klammerzeilen stehen - sie zeigt
+   den Rohtext, die bereinigte Lyrik ist strenger. */
+const istRegieZeile = (z) => {
+  const t = z.trim();
+  /* Dazu die Regel aus Fassung 1: eine Zeile, die mit einer Klammer beginnt und nirgends schliesst, ist der
+     Anfang einer mehrzeiligen Notiz (Pfeifenwald: (Dry, close mic, no reverb... ueber mehrere Zeilen). */
+  return /^\[.*\]$/.test(t) || /^\(.*\)$/.test(t) || /^[\[(][^\])]*$/.test(t) || /^#/.test(t) || /^[-=]{3,}/.test(t);
+};
+
+/* Regieanweisung MITTEN in einer sonst gesungenen Zeile - „[soft] schau
+   sie nur an.", „Sonst hell das Licht. [pause] Heute nur wir." Die alte
+   Regel prüfte nur ganze Zeilen; ein Einschub blieb komplett im Text
+   stehen und lief mit ins Alignment (190 Zeilen im Bestand, Caspar_D,
+   25.09.2026: „das sollte in der bereinigten Lyrics nicht passieren, ist
+   ja bereinigt um sowas"). ERKENNEN ohne `g`-Flag (fuer .test, kein
+   lastIndex-Zustand), ENTFERNEN mit `g` (fuer .replace, alle Einschübe
+   einer Zeile). */
+const EINSCHUB_ERKENNEN  = /\[[^\]]*\]/;
+const EINSCHUB_ENTFERNEN = /\[[^\]]*\]/g;
+
+/* Eine Zeitspanne [von, bis) der Reihe nach auf eine Gruppe von Zeilen
+   verteilen, nach Zeichenzahl der Zeile — eine lange Zeile bekommt mehr
+   Standzeit als „Ja." nebenan. Mutiert die Objekte der Liste direkt.
+   Genutzt für beide Zeitfehler aus FASSUNG 2 (siehe Kopfkommentar):
+   die entartete Zeile mit ihren geschätzten Nachbarn, und zwei Zeilen
+   auf derselben Spanne. Mindestens ein Zeichen je Zeile, damit eine
+   leere Zeile nicht mit Gewicht 0 dasteht. */
+function verteilenNachZeichen(gruppe, von, bis) {
+  const laengen = gruppe.map(g => Math.max(1, g.text.length));
+  const gesamt = laengen.reduce((a, b) => a + b, 0);
+  const spanne = bis - von;
+  let cursor = von;
+  gruppe.forEach((g, idx) => {
+    const ende = idx === gruppe.length - 1 ? bis : +(cursor + spanne * laengen[idx] / gesamt).toFixed(2);
+    g.von = +cursor.toFixed(2);
+    g.bis = ende;
+    cursor = ende;
+  });
+}
 
 /* ---- Ein Lied reinigen ----------------------------------------------- */
 function reinigen(lyrics, marken) {
-  const zeilen = String(lyrics || '').split('\n');
+  /* Einschübe wie „[soft]" fallen aus dem Zeilentext, VOR dem Alignment -
+     der Rest der Zeile bleibt unverändert (Caspar_D, 25.09.2026, FASSUNG
+     2, siehe Kopfkommentar). Zeilen ohne Einschub bleiben BYTE-GLEICH
+     (kein trim, keine Leerzeichen-Normierung) — sonst wäre ein Lied ohne
+     jeden Regie-Tag nicht mehr bitgleich zur vorigen Fassung. Ganze
+     Regiezeilen (`istRegieZeile`) bleiben unangetastet, sie fliegen weiter
+     unten komplett raus. */
+  let einschuebeEntfernt = 0;
+  const zeilen = String(lyrics || '').split('\n').map(z => {
+    if (istRegieZeile(z)) return z;
+    if (!EINSCHUB_ERKENNEN.test(z)) return z;
+    einschuebeEntfernt++;
+    return z.replace(EINSCHUB_ENTFERNEN, ' ').replace(/\s+/g, ' ').trim();
+  });
   const bTexte = marken.map(w => String(w[2]));
   const bW = [], bZuMarke = [];
   bTexte.forEach((t, mi) => { for (const w of woerter(t)) { bW.push(w); bZuMarke.push(mi); } });
@@ -167,7 +280,7 @@ function reinigen(lyrics, marken) {
 
   const aW = [], aZuZeile = [];
   zeilen.forEach((z, zi) => {
-    if (istRegie(z)) return;
+    if (istRegieZeile(z)) return;
     for (const w of woerter(z)) { aW.push(w); aZuZeile.push(zi); }
   });
   if (aW.length < 10) return { grund: 'zu wenig Text', deckung: 0 };
@@ -204,7 +317,7 @@ function reinigen(lyrics, marken) {
   });
 
   const zustand = zeilen.map((z, i) => {
-    if (istRegie(z)) return 'regie';
+    if (istRegieZeile(z)) return 'regie';
     const e = proZeile.get(i);
     if (!e) return 'leer';
     return e.gut / e.n >= 0.5 ? 'gesungen' : 'offen';
@@ -227,7 +340,10 @@ function reinigen(lyrics, marken) {
 
   /* Zeilen bauen. Zeitmarken aus den Whisper-Marken der Zeile; gerettete
      Zeilen bekommen die Lücke zwischen ihren Nachbarn und tragen das
-     ausdrücklich als `geschaetzt`. */
+     ausdrücklich als `geschaetzt`. Eine Zeile, deren eigene Marken auf
+     eine Standzeit unter STANDZEIT_ENTARTET zusammenfallen (`von`/`bis`
+     fast oder ganz gleich), bekommt vorerst KEIN `bis` — ihr `von` ist
+     echt, ihre Standzeit nicht (Fehler (a), FASSUNG 2, Kopfkommentar). */
   const behalten = [];
   zeilen.forEach((z, i) => {
     if (zustand[i] !== 'gesungen' && zustand[i] !== 'gerettet') return;
@@ -238,26 +354,99 @@ function reinigen(lyrics, marken) {
       const mi = e.marken;
       const von = Math.min(...mi.map(x => marken[x][0]));
       const bis = Math.max(...mi.map(x => marken[x][1]));
-      behalten.push({ von: +von.toFixed(2), bis: +bis.toFixed(2), text });
+      const roh = { von: +von.toFixed(2), bis: +bis.toFixed(2), text };
+      if (roh.bis - roh.von < STANDZEIT_ENTARTET) { roh.bis = null; roh.entartet = true; }
+      behalten.push(roh);
     } else {
       behalten.push({ von: null, bis: null, text, geschaetzt: true });
     }
   });
 
-  /* Die geschätzten Zeilen in die Lücke ihrer Nachbarn legen. Ohne
-     Nachbarn bleiben sie ohne Marke — eine erfundene Zeit wäre schlimmer
-     als keine. */
+  /* FEHLER (b), FASSUNG 2: zwei echte (nicht entartete) Zeilen hinter-
+     einander auf exakt derselben Spanne — dieselben Whisper-Marken wurden
+     beiden zugeschlagen. Die eine gemessene Spanne wird nach Zeichenzahl
+     zwischen ihnen geteilt, statt beiden verdoppelt zu gehören. */
+  let zeitAngepasstAnzahl = 0;
   for (let i = 0; i < behalten.length; i++) {
-    if (behalten[i].von !== null) continue;
-    let a = i - 1; while (a >= 0 && behalten[a].bis === null) a--;
-    let b = i + 1; while (b < behalten.length && behalten[b].von === null) b++;
-    if (a < 0 || b >= behalten.length) continue;
-    const spanne = behalten[b].von - behalten[a].bis;
-    const anzahl = b - a - 1;
-    if (!(spanne > 0) || anzahl < 1) continue;
-    const teil = spanne / anzahl, k = i - a - 1;
-    behalten[i].von = +(behalten[a].bis + k * teil).toFixed(2);
-    behalten[i].bis = +(behalten[a].bis + (k + 1) * teil).toFixed(2);
+    if (behalten[i].von === null || behalten[i].entartet) continue;
+    let j = i + 1;
+    while (j < behalten.length && !behalten[j].entartet
+           && behalten[j].von === behalten[i].von && behalten[j].bis === behalten[i].bis) j++;
+    if (j - i < 2) { i = j - 1; continue; }
+    const gruppe = behalten.slice(i, j);
+    verteilenNachZeichen(gruppe, behalten[i].von, behalten[i].bis);
+    for (let k = i; k < j; k++) behalten[k].zeitAngepasst = true;
+    zeitAngepasstAnzahl += j - i;
+    i = j - 1;
+  }
+
+  /* FEHLER (a), FASSUNG 2: die entartete Zeile und ihre `geschaetzt`en
+     Nachbarn zusammen in die Lücke bis zur nächsten ECHTEN (nicht
+     entarteten) Marke legen. Ein Lauf OHNE jede entartete Zeile bekommt
+     exakt die alte Gleichverteilung (spanne/anzahl) — bitgleich zur
+     vorigen Fassung. Ein Lauf MIT mindestens einer entarteten Zeile wird
+     an deren `von` als Fixpunkt in Teilstücke zerlegt, jedes Teilstück
+     nach Zeichenzahl geteilt: die entartete Zeile bekommt so ihre
+     Standzeit aus der Spanne bis zur nächsten echten Marke, statt bei
+     sich selbst (Dauer 0) zu enden. Ohne eine echte Marke am Ende bleibt
+     die entartete Zeile bei ihrer alten, unveränderten Standzeit (Dauer
+     0) — eine erfundene Zeit wäre schlimmer als keine. */
+  let standzeitGeschaetztAnzahl = 0;
+  for (let i = 0; i < behalten.length; i++) {
+    if (behalten[i].bis !== null) continue;
+    let j = i; while (j < behalten.length && behalten[j].bis === null) j++;
+    const a = i - 1, b = j;
+    if (b >= behalten.length) { i = j; continue; } // kein Ende in Sicht - unveraendert lassen (wie bisher)
+    const hatFixpunkt = behalten.slice(i, j).some(z => z.von !== null);
+    if (!hatFixpunkt) {
+      /* Alter Weg, unveraendert: Gleichverteilung ueber den ganzen Lauf.
+         Braucht eine Zeile davor (`a`), sonst wie bisher unveraendert. */
+      if (a < 0) { i = j; continue; }
+      const spanne = behalten[b].von - behalten[a].bis;
+      const anzahl = j - i;
+      if (spanne > 0 && anzahl >= 1) {
+        const teil = spanne / anzahl;
+        for (let k = i; k < j; k++) {
+          behalten[k].von = +(behalten[a].bis + (k - i) * teil).toFixed(2);
+          behalten[k].bis = +(behalten[a].bis + (k - i + 1) * teil).toFixed(2);
+        }
+      }
+    } else {
+      /* Neuer Weg: an jedem bekannten `von` (entartete Zeile) in Gruppen
+         zerlegen, jede Gruppe fuer sich nach Zeichenzahl verteilen. Steht
+         der erste Fixpunkt schon an Position `i` selbst (die entartete
+         Zeile beginnt den Lauf), braucht die erste Gruppe kein `a` -
+         ihr Start ist der Fixpunkt selbst. Nur eine FÜHRENDE Gruppe rein
+         geschätzter Zeilen VOR dem ersten Fixpunkt braucht `a.bis`. */
+      const segVonAnfang = behalten[i].von !== null ? behalten[i].von : (a >= 0 ? behalten[a].bis : null);
+      if (segVonAnfang === null) { i = j; continue; } // kein Anker vorn - unveraendert lassen
+      let segStart = i, segVon = segVonAnfang;
+      for (let p = i + 1; p <= j; p++) {
+        const istGrenze = p === j || behalten[p].von !== null;
+        if (!istGrenze) continue;
+        const segBis = p === j ? behalten[b].von : behalten[p].von;
+        if (segBis > segVon) {
+          verteilenNachZeichen(behalten.slice(segStart, p), segVon, segBis);
+          for (let k = segStart; k < p; k++) {
+            if (!behalten[k].entartet) continue;
+            behalten[k].standzeitGeschaetzt = true;
+            standzeitGeschaetztAnzahl++;
+          }
+        }
+        segStart = p; segVon = segBis;
+      }
+    }
+    i = j - 1;
+  }
+
+  /* Übrig gebliebene entartete Zeilen ohne echte Marke danach (Rand des
+     Lieds, kein `b` gefunden): auf die alte, unveränderte Standzeit
+     (Dauer 0) zurückfallen — s.o. Das interne `entartet`-Merkzeichen
+     gehört nicht in die Ausgabe. */
+  for (const z of behalten) {
+    if (!z.entartet) continue;
+    if (z.bis === null) z.bis = z.von;
+    delete z.entartet;
   }
 
   const worteGesamt = aW.length;
@@ -275,6 +464,9 @@ function reinigen(lyrics, marken) {
     worteRoh: worteGesamt,
     gestrichen,
     regieZeilen,
+    einschuebeEntfernt,
+    zeitAngepasst: zeitAngepasstAnzahl,
+    standzeitGeschaetzt: standzeitGeschaetztAnzahl,
     gerettet: zustand.filter(x => x === 'gerettet').length,
     geschaetzt: behalten.filter(z => z.geschaetzt).length,
   };
@@ -328,16 +520,28 @@ function main() {
       zeilen: e.zeilen,
       gestrichen: e.gestrichen.length,
       geschaetzt: e.geschaetzt,
+      /* NEU in FASSUNG 2 (Caspar_D, 25.09.2026) - getrennt von `gestrichen`
+         gehalten, das weiterhin nur die UNGEWISSEN (unter Deckungsgrenze
+         gefallenen) Zeilen zaehlt. Diese hier sind SICHER keine Lyrics
+         (Regie) bzw. reine Zeit-Korrekturen, nichts Ungewisses. */
+      regie: e.regieZeilen,
+      einschuebe: e.einschuebeEntfernt,
+      zeitAngepasst: e.zeitAngepasst,
+      standzeitGeschaetzt: e.standzeitGeschaetzt,
     };
 
     if (einer) {
       console.log(`\n  ${s.titel}`);
       console.log(`  Deckung ${(100 * e.deckung).toFixed(0)} % · ${e.worte} von ${e.worteRoh} Wörtern · `
-        + `${e.regieZeilen} Regiezeilen · ${e.gerettet} Zeilen durch Nachbarschaft gerettet · `
-        + `${e.geschaetzt} Zeitmarken geschätzt`);
+        + `${e.regieZeilen} Regiezeilen · ${e.einschuebeEntfernt} Zeilen mit Einschub bereinigt · `
+        + `${e.gerettet} Zeilen durch Nachbarschaft gerettet · ${e.geschaetzt} Zeitmarken geschätzt · `
+        + `${e.standzeitGeschaetzt} Standzeiten nachgeschätzt · ${e.zeitAngepasst} Zeiten wegen `
+        + `doppelter Marken angepasst`);
       console.log('\n  --- bereinigt ---');
       for (const z of e.zeilen)
-        console.log(`  ${z.von === null ? '   ?  ' : String(z.von).padStart(6)}  ${z.text}${z.geschaetzt ? '   (Zeit geschätzt)' : ''}`);
+        console.log(`  ${z.von === null ? '   ?  ' : String(z.von).padStart(6)}  ${z.text}`
+          + `${z.geschaetzt ? '   (Zeit geschätzt)' : ''}${z.standzeitGeschaetzt ? '   (Standzeit nachgeschätzt)' : ''}`
+          + `${z.zeitAngepasst ? '   (Zeit angepasst, doppelte Marken)' : ''}`);
       if (e.gestrichen.length) {
         console.log('\n  --- gestrichen ---');
         for (const g of e.gestrichen) console.log(`  ${g.slice(0, 90)}`);
@@ -365,11 +569,17 @@ function main() {
   const aus = {
     stand: new Date().toISOString(),
     fassung: FASSUNG,
-    verfahren: 'Liedtext gegen die Whisper-Marken aligniert (Needleman-Wunsch, ein Buchstabe '
-      + 'Abstand erlaubt); Regieanweisungen ohne Alignment gestrichen; ungedeckte Zeilen zwischen '
-      + `gedeckten bleiben (höchstens ${LUECKE_MAX} am Stück). Zeitanker aus denselben Whisper-Marken; `
-      + 'Zeilen ohne eigene Marke tragen geschaetzt und liegen interpoliert zwischen ihren Nachbarn. '
-      + `Unter ${(100 * DECKUNG_MINDEST).toFixed(0)} % Deckung wird nicht gereinigt.`,
+    verfahren: 'Regieanweisungen fliegen vor dem Alignment: ganze Zeilen in eckigen oder runden Klammern, '
+      + 'mit „#" oder als Trennlinie, dazu Einschübe wie „[soft]" mitten in einer Zeile. '
+      + 'Liedtext gegen die Whisper-Marken aligniert (Needleman-Wunsch, ein Buchstabe Abstand '
+      + `erlaubt); ungedeckte Zeilen zwischen gedeckten bleiben (höchstens ${LUECKE_MAX} am Stück). `
+      + 'Zeitanker aus denselben Whisper-Marken; Zeilen ohne eigene Marke tragen geschaetzt und '
+      + `liegen interpoliert zwischen ihren Nachbarn, anteilig nach Zeichenzahl. Eine Zeile mit `
+      + `einer entarteten Marke (Standzeit unter ${STANDZEIT_ENTARTET} s - Whisper gibt vielen `
+      + 'Wörtern dieselbe Start- und Endzeit) trägt standzeitGeschaetzt und bekommt ihre Standzeit '
+      + 'ebenso aus der Spanne bis zur nächsten echten Marke; zwei Zeilen auf identischen Marken '
+      + `tragen zeitAngepasst und teilen sich die eine gemessene Spanne. Unter `
+      + `${(100 * DECKUNG_MINDEST).toFixed(0)} % Deckung wird nicht gereinigt.`,
     quelle: 'library/whisper.ndjson',
     mindestDeckung: DECKUNG_MINDEST,
     unsicher,

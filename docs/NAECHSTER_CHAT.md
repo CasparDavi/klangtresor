@@ -6693,3 +6693,32 @@ in Pausen) oder den Mitsänger weiter mit der stehenden Zeile vorbereiten?
 fester Anker, Hochformat-Zonen.
 **Aufräumen:** `/Volumes/Extreme_SSD/Entwicklung/sandkasten-karaoke/` (~900 MB, Sandkasten der
 Bühnenprobe) darf weg — die Sicherung ließ mich den Ordner nicht löschen.
+
+**Verfahren `bin/lyrik.js`, Fassung 2 (Punkte 4 und 13, gebaut von einem Bauagenten im Sandkasten,
+gegengelesen und berichtigt):** Regieanweisungen fliegen jetzt vollständig — ganze Zeilen in eckigen
+oder runden Klammern (auch mit Klammern darin; die alte Regel scheiterte an „[Post-Chorus Hook
+(instrumental)]"), Zeilen mit `#`, Trennlinien, eine Klammer, die nirgends schließt (mehrzeilige
+Notiz), und Einschübe wie „[soft]" mitten in der Zeile. Zeitfehler: eine Zeile mit nur einer
+entarteten Whisper-Marke (Standzeit unter 0,3 s) bekommt ihre Standzeit aus der Spanne bis zur
+nächsten echten Marke, nach Zeichenzahl geteilt mit den geschätzten Nachbarn; zwei Zeilen auf
+denselben Marken teilen sich die Spanne. Echte Marken bleiben, wie Whisper sie gemessen hat.
+Neue Zähler je Lied: `regie`, `einschuebe`, `zeitAngepasst`, `standzeitGeschaetzt`. Der Agent
+hatte runde Klammerzeilen als Begleitstimmen stehen lassen (meine Vorgabe) — dadurch fiel
+„Pfeifenwald" von 66 % auf 38 % Deckung; zurückgenommen auf die Regel der Fassung 1.
+
+Ernstlauf am 25.09.2026 um 00:58 (der Weg des Morgenlaufs, `node bin/lyrik.js --tun`, 1,8 s),
+Sicherung der alten Fassung im Scratchpad und im Sandkasten `sandkasten-lyrik/library/lyrik.vorher.json`:
+
+| | vorher | nachher |
+|---|---|---|
+| Lieder gereinigt / zurückgestellt | 243 / 20 | 244 / 19 |
+| Zeilen | 17 339 | 17 338 |
+| Klammerzeilen im Ergebnis | 13 | 0 |
+| Zeilen mit Einschub | 203 | 0 |
+| doppelte Startzeiten | 19 | 0 |
+| Standzeit unter 0,5 s / unter 0,3 s | 1063 / 491 | 636 / 32 |
+| Lieder mit unveränderten Zeilen | | 94 von 243 |
+
+Der Lader im Studio behält ein Sicherheitsnetz für Klammerzeilen und Einschübe (alte `lyrik.json`
+bei Casto). `_lyrik.json` des Prüfstands neu, Nahtfälle unverändert. Der Sandkasten
+`/Volumes/Extreme_SSD/Entwicklung/sandkasten-lyrik/` darf weg.
