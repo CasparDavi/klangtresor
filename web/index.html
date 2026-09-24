@@ -31036,8 +31036,8 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     cx.save();
     const setFont=s=>{ cx.font=gew+' '+s.toFixed(2)+'px '+fam; };
     const platz=Wn*0.90, maxRows=Math.max(3,zeilen.length); let rows=zeilen;
-    for(let k=0;k<16;k++){ setFont(gr); rows=zeilen.flatMap(z=>textUmbrechen(cx,z,platz)); const bw=Math.max(...rows.map(r=>cx.measureText(r).width));
-      if((rows.length<=maxRows&&bw<=platz)||gr<=4) break; gr=Math.max(4,gr*0.92); }
+    for(let k=0;k<64;k++){ setFont(gr); rows=zeilen.flatMap(z=>textUmbrechen(cx,z,platz)); const bw=Math.max(...rows.map(r=>cx.measureText(r).width));
+      if((rows.length<=maxRows&&bw<=platz)||gr<=4) break; gr=Math.max(4,gr*0.92); }   /* 64 Schritte reichen von 30 % der Kurzseite bis 4 px (Gegenlesen 25.09.2026) */
     setFont(gr); const br=rows.map(r=>cx.measureText(r).width), boxW=Math.max(...br), boxH=rows.length*gr*zh, m=gr*0.12;
     const oX=Math.max(0,Math.min(1,e.ortX==null?0.5:e.ortX)), oY=Math.max(0,Math.min(1,e.ortY==null?0.85:e.ortY));
     const left=m+oX*Math.max(0,Wn-boxW-2*m), top=m+oY*Math.max(0,Hn-boxH-2*m);
@@ -31086,7 +31086,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const setFont=s=>{ cx.font='700 '+s.toFixed(2)+'px '+fam; if('letterSpacing' in cx) cx.letterSpacing=(-0.01*s).toFixed(2)+'px'; };
     /* Bloecke bauen; passt der Block nicht zwischen die Luft oben und Ort Y, weicht die Schrift. */
     let bl=[], hoehe=0, grK=gr*0.5, luecke=gr*0.06;
-    for(let k=0;k<10;k++){ grK=gr*0.5; luecke=gr*0.06; bl=[];
+    for(let k=0;k<40;k++){ grK=gr*0.5; luecke=gr*0.06; bl=[];   /* 40 Schritte reichen von 12 % der Breite bis 4 px (Gegenlesen 25.09.2026) */
       const block=(z,size,farbe,alpha,rolle)=>{ if(!z) return; setFont(size); const rows=textUmbrechen(cx,z.text,breit); if(rows.length) bl.push({rows,size,farbe,alpha,rolle,br:rows.map(r=>cx.measureText(r).width)}); };
       block(davor,grK,cLeise,0.5,'davor'); block(mitte,gr,hell?cDran:cLeise,hell?1:0.5,'mitte'); block(danach,grK,cLeise,0.5,'danach');
       hoehe=0; bl.forEach((b,i)=>{ hoehe+=b.rows.length*b.size*zh+(i?luecke:0); });
@@ -31100,7 +31100,10 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const vH=vor.reduce((s,b)=>s+b.rows.length*b.size*zh+luecke,0), nH=nach.reduce((s,b)=>s+luecke+b.rows.length*b.size*zh,0);
     let yO=mTop-vH, yEnde=mTop+mH+nH;
     if(yEnde>yU){ const d=yEnde-yU; yO-=d; mTop-=d; yEnde=yU; }
-    if(yO<luft){ const d=luft-yO; yO+=d; mTop+=d; yEnde+=d; }
+    /* Nur so weit wieder herunter, wie unten Platz bleibt - sonst hoben sich die beiden Klammern gegenseitig auf
+       (Gegenlesen 25.09.2026): ist der Block selbst bei kleinster Schrift hoeher als der Raum, bleibt die
+       Unterkante an Ort Y und der Ueberschuss ragt oben hinaus, wo das Band den Fall 'oben' kennt. */
+    if(yO<luft){ const d=Math.min(luft-yO,Math.max(0,yU-yEnde)); yO+=d; mTop+=d; yEnde+=d; }
     e._kaBox={ yU:yU/Hn };
     if(band>0){
       /* DAS BAND HAT ZWEI SEITEN, WENN ES FREI STEHT (Caspar_D, 24.09.2026: "das Band hat einen einseitigen
@@ -33100,7 +33103,7 @@ function lrMarkeTiefe(e,i,d){ const k=(i===0)?'lrOz':'lrZz';
    (der Titel hat immer einen Ort, "entfernt" gibt es nicht). Beim Karaoke gilt nur die Hoehe: der Klick
    setzt die Unterkante. Die Marke ist ein Fadenkreuz an der Kastenmitte bzw. ein Strich an der Kante -
    Bedienung, kein Bild, gemalt nur in rahmen(). Der Kasten kommt vom Maler (e._tiBox, Anteile). */
-let TI_ZIEHT=false, UHR_WAR=null;
+let TI_ZIEHT=false, UHR_WAR=null, UHR_PULT=false;
 function tiKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufeOffen!=='Kette') return null;
   for(const e of STAPEL) if(e.id===offenId&&(e.typ==='titel'||e.typ==='karaoke')) return e;
   return null; }
@@ -33125,7 +33128,7 @@ function tiMarkenMalen(e){
     g.beginPath(); g.arc(p[0],p[1],r*0.5,0,7); g.stroke(); }
   g.restore(); }
 /* Die Karaoke-Karte sagt "der Player steht" - und muss es zuruecknehmen, sobald er laeuft. */
-function uhrWechselMelden(){ try{ if(uhrEcht===UHR_WAR) return; UHR_WAR=uhrEcht;
+function uhrWechselMelden(){ try{ if(UHR_PULT===UHR_WAR) return; UHR_WAR=UHR_PULT;
   if(STAPEL&&STAPEL.some(e=>e&&e.typ==='karaoke')&&stapelBox&&stapelBox.isConnected&&!exportLaeuft) renderStapel(); }catch(x){} }
 function kbBuehneEinrichten(){
   if(!lein||lein.dataset.kb) return; lein.dataset.kb='1';
@@ -33310,6 +33313,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
     if(lein){ lein.style.touchAction=KB_STEHT?'none':''; lein.style.cursor=KB_STEHT?'crosshair':''; } }
   try{ if(loopAn&&bereit&&!ohneEffekte){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit(),ohneEffekte); }
   finally{ KB_STEHT=0; }
+  UHR_PULT=uhrEcht;     /* die Uhr des Pults, gemerkt gleich nach seinem Bild - uhrEcht selbst setzen auch die Kacheln (Gegenlesen 25.09.2026) */
   uhrWechselMelden();   /* Karaoke-Karte: "der Player steht" kommt und geht mit der echten Uhr (Nacht 25.09.2026) */
   /* GANZ ZULETZT UND NUR HIER: die Trennebene liegt ueber dem fertigen Bild, solange jemand an
      Grenze oder Weichheit zieht. rahmen() ist der einzige Weg, der sie kennt - und er steht bei
@@ -37940,7 +37944,7 @@ function zeichneFrame(t,roh){
     /* Was die Loop-Ansicht und der stehende Player mit der Zeile machen, sagt die Karte selbst (Nacht 25.09.2026). */
     const dazu=[];
     try{ if(loopAn) dazu.push('In der Loop-Ansicht und im Zehnsekünder wird die Zeile weggelassen — sie gehört in den ganzen Titel.');
-      else if(s==='da'&&!uhrEcht&&!exportLaeuft) dazu.push('Der Player steht — die Zeilen laufen auf einer freien Uhr. Titel abspielen, dann sitzt die Zeile zum Gesang.'); }catch(x){}
+      else if(s==='da'&&!UHR_PULT&&!exportLaeuft) dazu.push('Der Player steht — die Zeilen laufen auf einer freien Uhr. Titel abspielen, dann sitzt die Zeile zum Gesang.'); }catch(x){}
     const alle=[satz].concat(dazu).filter(Boolean), out=alle.length?alle.join('<br>'):null;
     LYRIKGEZEIGT[id]=out; return out;
   }

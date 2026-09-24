@@ -6722,3 +6722,16 @@ Sicherung der alten Fassung im Scratchpad und im Sandkasten `sandkasten-lyrik/li
 Der Lader im Studio behält ein Sicherheitsnetz für Klammerzeilen und Einschübe (alte `lyrik.json`
 bei Casto). `_lyrik.json` des Prüfstands neu, Nahtfälle unverändert. Der Sandkasten
 `/Volumes/Extreme_SSD/Entwicklung/sandkasten-lyrik/` darf weg.
+
+**Gegenlesen des Nachtbaus (drei günstige Linsen, acht Agenten) und Folgen:** (1) Die zwei Klammern
+des Karaoke-Blocks (oben Luft, unten Ort Y) hoben sich bei einem Block, der selbst bei kleinster
+Schrift nicht passt, gegenseitig auf — jetzt geht er nur so weit wieder herunter, wie unten Platz
+ist, der Rest ragt oben hinaus, wo das Band den Fall kennt. (2) Die Schrumpfschleifen reichten bei
+großer Schrift nicht bis zum Boden (16 × 0,92 bzw. 10 × 0,9) — jetzt 64 bzw. 40 Schritte.
+(3) `uhrEcht` setzen auch die Kacheln je Bild; die Karte des Pults las darum manchmal den Stand einer
+fremden Kachel — das Pult merkt sich seine Uhr jetzt als `UHR_PULT`. Widerlegt: zwei Funde zu
+`bin/lyrik.js` beschrieben den alten Stand. Offen, **mit Ansage** (server.js startet sich bei
+Änderung selbst neu): die Typentabelle in `server/server.js` kennt kein `.woff2` — die Schriften
+kommen als `application/octet-stream`, Chrome nimmt sie trotzdem (im Tab geprüft: Inter und Gelasio
+geladen); sauber wäre `'.woff2': 'font/woff2'` in `TYPEN` (Wiedervorlage 23, eine Zeile).
+Nahtfälle danach: `titel`, `titel-serife-zwei` 0,00/0,00, `karaoke` 5,28, `karaoke-eine-zeile` 3,43.
