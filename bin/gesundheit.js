@@ -141,6 +141,20 @@ async function code(url, mitRange) {
     console.log(zeile);
   }
 
+  /* ERSATZZEICHEN IM BESTAND (24.09.2026; Caspar_D: "dass das auch woanders passiert, nur eben
+     unbemerkt, weil nicht geprueft wird"). U+FFFD kommt in echtem Text nie vor - jede Stelle ist
+     ein zerrissenes Zeichen aus einer Suno-Antwort. Gezaehlt in den Textfeldern des Katalogs, in
+     lyrik.json und in reaktionen.ndjson; Aenderungen gegenueber gestern werden laut gemeldet. */
+  { const E = require('./ersatzzeichen.js'); const stellen = [];
+    for (const s of eigene) for (const f of ['titel', 'lyrics', 'stilPrompt', 'stilAusschluss', 'beschriftung']) if (E.hat(s[f])) stellen.push(`${String(s.titel || s.id).slice(0, 30)}: ${f}`);
+    try { const n = E.zaehlen(JSON.parse(fs.readFileSync(path.join(LIB, 'lyrik.json'), 'utf8')), '', []).length; if (n) stellen.push(`lyrik.json: ${n} Feld(er)`); } catch (e) {}
+    try { const n = fs.readFileSync(path.join(LIB, 'reaktionen.ndjson'), 'utf8').split('\n').filter(z => z.includes(E.FF)).length; if (n) stellen.push(`reaktionen.ndjson: ${n} Zeile(n)`); } catch (e) {}
+    befunde['Ersatzzeichen im Bestand'] = stellen.length ? stellen.join('; ') : 'keine';
+    const vorher = alt['Ersatzzeichen im Bestand'];
+    let zeile = `  ${stellen.length ? '✗' : '✓'} Ersatzzeichen im Bestand      → ${stellen.length ? stellen.length + ' Stelle(n): ' + stellen.join('; ') : 'keine'}`;
+    if (vorher !== undefined && vorher !== befunde['Ersatzzeichen im Bestand']) { zeile += '   ÄNDERUNG: bisher ' + vorher; veraendert++; }
+    console.log(zeile); }
+
   fs.writeFileSync(MERKER, JSON.stringify({
     stand: new Date().toISOString(),
     wozu: 'Letzter Verbindungs-Befund der Morgenroutine. Änderungen meldet bin/gesundheit.js laut.',

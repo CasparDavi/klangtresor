@@ -19,6 +19,7 @@ const K    = require('./katalog.js');
 
 const WURZEL = path.join(__dirname, '..');
 const ROH    = path.join(WURZEL, 'library', 'roh');
+const E = require('./ersatzzeichen.js'); const ersatzMeldungen = [];   /* Ersatzzeichen: was die Wahrheit ist (24.09.2026) */
 const SONGS  = path.join(WURZEL, 'library', 'songs');
 const ALT_INDEX = path.join(WURZEL, 'library', 'index.json');
 
@@ -92,7 +93,10 @@ const unlesbar = new Set();
 const liesRoh = (d) => {
   if (!d) return null;
   gelesen.add(d);
-  try { return lies(d); }
+  try { const dok = lies(d);
+    /* Zerrissene Zeichen in der Rohdatei aus den anderen Kopien desselben Clips heilen (24.09.2026). */
+    if (dok && typeof dok === 'object') { const b = E.heilen(dok); for (const z of b.geheilt) ersatzMeldungen.push(path.basename(d) + ' · geheilt: ' + z); for (const z of b.offen) ersatzMeldungen.push(path.basename(d) + ' · offen: ' + z); }
+    return dok; }
   catch (e) {
     /* Nur beim ERSTEN Mal melden: manche Rohdatei wird zweimal gelesen
        (der Zaehlerverlauf liest alle profil- und privat-Dateien, der
@@ -342,6 +346,14 @@ for (const roh of eingang.values()) {
   s.veroeffentlicht = profilIds.has(s.id) || s.oeffentlich;
 
   const vorher  = altSongs[s.id];
+  /* DIE WAHRHEIT BEI ERSATZZEICHEN (24.09.2026, bin/ersatzzeichen.js): ein Text mit U+FFFD
+     ueberschreibt nie einen sauberen, der bis auf die Ersatzstellen gleich ist; ein sauberer heilt
+     einen kaputten; sind beide an verschiedenen Stellen kaputt, wird gemischt. Eine echte Aenderung
+     bleibt eine Aenderung. Jeder Eingriff wird unten gemeldet. */
+  if (vorher) for (const f of ['lyrics', 'titel', 'stilPrompt', 'stilAusschluss', 'beschriftung']) {
+    const w = E.wahrheit(s[f], vorher[f]);
+    if (w.grund) { s[f] = w.wert; ersatzMeldungen.push(`${String(s.titel || s.id).slice(0, 36)} · ${f}: ${w.grund}`); }
+  }
   /* Verlauf neu weben: bisherige Eintraege + alle Ernte-Staende +
      der heutige, nach Datum geordnet, je Tag der letzte Stand, und
      ein Eintrag nur, wo sich wirklich etwas aendert. Idempotent -
@@ -422,6 +434,7 @@ for (const roh of eingang.values()) {
     if (s.freigeschaltet !== w) { s.freigeschaltet = w; gesetzt++; }
   }
   if (gesetzt) console.log(`Freischaltstand übernommen: ${gesetzt} Titel.`);
+  if (ersatzMeldungen.length) { console.log(`Ersatzzeichen (Suno zerreisst Zeichen): ${ersatzMeldungen.length} Eingriff(e)`); for (const z of ersatzMeldungen) console.log('  ' + z); }
 }
 
 const liste = Object.values(songs)

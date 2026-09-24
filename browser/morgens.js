@@ -1886,7 +1886,15 @@
      Felder, auf die es ankommt. */
   const alt = new Map((daheim.songs||[]).map(s => [s.id, s]));
 
-  const neu = [], geaendert = [], zaehler = [], weg = [];
+  const neu = [], geaendert = [], zaehler = [], weg = [], kaputt = [];
+  /* ERSATZZEICHEN SIND KEINE AENDERUNG (24.09.2026; die volle Regel steht in bin/ersatzzeichen.js,
+     hier nur die Frage "unterscheiden sich beide NUR an U+FFFD-Stellen?"): Suno zerreisst sporadisch
+     ein Mehrbyte-Zeichen, dann steht statt eines Umlauts zweimal U+FFFD. Das ist ein kaputtes
+     Zeichen, nicht Caspar_Ds Aenderung, und es wird als solches gezeigt. */
+  const ERS = '\uFFFD';
+  const nurErsatz = (x, y) => { x = x || ''; y = y || ''; if (x === y || (!x.includes(ERS) && !y.includes(ERS))) return false;
+    const muster = t => new RegExp('^' + t.split(/\uFFFD+/).map(s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[^\\x00-\\x7F]{1,4}') + '$', 'su');
+    return (x.includes(ERS) && !y.includes(ERS) && muster(x).test(y)) || (y.includes(ERS) && !x.includes(ERS) && muster(y).test(x)); };
   for (const c of [...songs.values(), ...privatSongs.values()]){
     const a = alt.get(c.id);
     if (!a){ neu.push(c); continue; }
@@ -1894,13 +1902,14 @@
        Medien nachgeladen werden müssen; drei Plays mehr bedeuten nur
        eine neue Zahl. Wer beides in einen Topf wirft, sieht jeden
        Morgen "321 Songs geändert". */
-    const inhalt = [];
-    if ((c.title||'') !== (a.titel||'')) inhalt.push('Titel');
+    const inhalt = [], kaputtHier = [];
+    if ((c.title||'') !== (a.titel||'')) (nurErsatz(c.title, a.titel) ? kaputtHier : inhalt).push('Titel');
     if ((c.image_large_url||c.image_url||'') !== (a.bildUrl||'')) inhalt.push('Cover');
     /* Dieselbe Regel wie im Katalog: tags ODER display_tags. Sonst
        melden Studio-Exporte jeden Morgen einen Stilverlust, den es
        nicht gibt. */
-    if ((c.metadata?.tags || c.display_tags || '') !== (a.stilPrompt||'')) inhalt.push('Stil');
+    if ((c.metadata?.tags || c.display_tags || '') !== (a.stilPrompt||'')) (nurErsatz(c.metadata?.tags || c.display_tags, a.stilPrompt) ? kaputtHier : inhalt).push('Stil');
+    if (kaputtHier.length) kaputt.push({ c, a, was: kaputtHier });
     if ((c.video_cover_url||null) !== (a.videoCoverUrl||null)) inhalt.push('Video-Artwork');
     if (!!c.is_public !== !!a.oeffentlich) inhalt.push(c.is_public ? 'jetzt öffentlich' : 'jetzt privat');
     if (inhalt.length){ geaendert.push({ c, a, was: inhalt }); continue; }
@@ -1960,6 +1969,11 @@
     kopfzeile('Inhaltlich geändert — wird nachgeladen');
     for (const g of geaendert.slice(0, HOECHSTENS)) eintrag(g.a.id, g.a.titel, g.was.join(' · '), null);
     rest(geaendert.length - HOECHSTENS);
+  }
+  if (kaputt.length){
+    kopfzeile('Suno lieferte ein Zeichen kaputt — keine Änderung, wird beim Einbau geheilt');
+    for (const g of kaputt.slice(0, HOECHSTENS)) eintrag(g.a.id, g.a.titel, g.was.join(' · '), null);
+    rest(kaputt.length - HOECHSTENS);
   }
   if (zaehler.length){
     kopfzeile('Neue Zahlen');

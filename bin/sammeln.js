@@ -33,6 +33,7 @@ const fs    = require('node:fs');
 const path  = require('node:path');
 const https = require('node:https');
 const K     = require('./katalog.js');
+const E     = require('./ersatzzeichen.js');   /* Ersatzzeichen: was die Wahrheit ist */
 /* Zahlen fuer die Einrichtungsseite; ohne KT_MELDEN=1 still (bin/melden.js). */
 const melden = require('./melden.js');
 
@@ -133,6 +134,11 @@ function juengsteErnte(){
        „Grundlage: deine Lesezeichen-Ernte von … Uhr" im Morgenfenster
        stand deshalb seit dem ersten Lesezeichen-Tag ohne Uhrzeit da. */
     ernteVom = j.erzeugtAm || j.geholtAm || j.abgerufenAm || null;
+    /* Zerrissene Zeichen in der Ernte an Ort und Stelle heilen - aus den anderen Kopien desselben
+       Clips in derselben Ernte (Playlists, private Liste). bin/ersatzzeichen.js, 24.09.2026. */
+    { const b = E.heilen(j);
+      for (const z of b.geheilt) console.log('  Suno lieferte ein Zeichen kaputt, aus der Playlist-Kopie geheilt: ' + z);
+      for (const z of b.offen)   console.log('  Suno lieferte ein Zeichen kaputt, keine saubere Kopie: ' + z); }
     for (const c of (j.alle || j.clips || j.songs || [])) if (c && c.id) songs.set(c.id, c);
     console.log('Verwerte deine Lesezeichen-Ernte statt Suno neu zu fragen.');
     console.log(`  ${path.basename(f)}${ernteVom ? '  (geholt ' + ernteVom.slice(0,16).replace('T',' ') + ')' : ''}`);
@@ -238,13 +244,19 @@ function juengsteErnte(){
   const altSongs = (katalog && katalog.songs) || {};
   const neuIds = [], geaendert = [], nurZaehler = [];
 
+  const kaputt = [];   /* Titel, bei denen Ernte oder Katalog ein Ersatzzeichen tragen */
   for (const c of liste){
     const a = altSongs[c.id];
     if (!a){ neuIds.push(c); continue; }
 
-    const inhalt = [];
-    if ((c.title||'') !== (a.titel||'')) inhalt.push('Titel');
-    if ((c.metadata?.prompt||'') !== (a.lyrics||'')) inhalt.push('Lyrics');
+    const inhalt = [], kaputtHier = [];
+    /* ERSATZZEICHEN SIND KEINE AENDERUNG (24.09.2026). Unterscheiden sich Ernte und Katalog nur an
+       Stellen, an denen eine Seite U+FFFD traegt, hat niemand etwas geaendert - Suno hat ein Zeichen
+       zerrissen (oder der Katalog traegt eines aus einer frueheren Ernte). Das wird gesondert gesagt,
+       nicht als "Lyrics". bin/ersatzzeichen.js. */
+    const feld = (name, neu, alt) => { if (neu === alt) return; const w = E.wahrheit(neu, alt); if (w.grund) kaputtHier.push(name + ' (' + w.grund + ')'); else inhalt.push(name); };
+    feld('Titel', c.title||'', a.titel||'');
+    feld('Lyrics', c.metadata?.prompt||'', a.lyrics||'');
     /* DIESELBE REGEL WIE IM KATALOG, sonst meldet der Vergleich etwas,
        das nie uebernommen wird.
 
@@ -260,7 +272,8 @@ function juengsteErnte(){
        steht weiterhin im Stil von elf anderen Songs, "Rammstein" in
        vierundzwanzig. */
     const stilJetzt = (c.metadata?.tags || c.display_tags || '');
-    if (stilJetzt !== (a.stilPrompt||'')) inhalt.push('Stil');
+    feld('Stil', stilJetzt, a.stilPrompt||'');
+    if (kaputtHier.length) kaputt.push({ c, was: kaputtHier });
     if (!!c.is_public !== !!a.oeffentlich) inhalt.push('Sichtbarkeit');
     if ((c.image_large_url||c.image_url||'') !== (a.bildUrl||'')) inhalt.push('Cover');
     /* Ein Video-Artwork, das aus unserem eigenen Studio stammt und von Hand zu Suno hochgeladen
@@ -303,6 +316,9 @@ function juengsteErnte(){
   if (neuIds.length > 15) console.log(`    … und ${neuIds.length-15} weitere`);
   for (const g of geaendert.slice(0,15))
     console.log(`    ~ ${(g.c.title||'').slice(0,36)}  (${g.was.join(', ')})`);
+  if (kaputt.length) console.log(`  Ersatzzeichen (Suno zerreisst Zeichen, keine Aenderung): ${kaputt.length}`);
+  for (const g of kaputt.slice(0,15))
+    console.log(`    � ${(g.c.title||'').slice(0,36)}  ${g.was.join(', ')}`);
 
   /* DIE ZÄHLERSTÄNDE AUFFÜHREN, NICHT NUR ZÄHLEN.
 
@@ -345,6 +361,7 @@ function juengsteErnte(){
     gesamt:   liste.length,
     neu:      neuIds.length,
     geaendert: geaendert.map(g => ({ id: g.c.id, titel: g.c.title || '', was: g.was })),
+    kaputt:    kaputt.map(g => ({ id: g.c.id, titel: g.c.title || '', was: g.was })),
     zaehler:   sortiert.map(z => ({ id: z.c.id, titel: z.c.title || '',
                                     dp: z.dp, dl: z.dl, dk: z.dk })),
   };

@@ -6450,3 +6450,42 @@ nicht als Änderung, wenn die Texte nur an Ersatzzeichen-Stellen abweichen; (2) 
 ersetzt umgekehrt einen kaputten Katalogtext durch den sauberen der Ernte (heilt „Lenore" beim
 nächsten Einbau); (3) besser noch: für `lyrics` die Playlist-Fassung vorziehen, wo sie den Titel
 enthält. **Bis dahin den Einbau dieser Ernte nicht laufen lassen** — er schriebe `geh��rt` in den Katalog.
+
+## 18. Ersatzzeichen: die Regel, was die Wahrheit ist — gebaut (24.09.2026)
+
+Caspar_D: *„Ich habe jetzt etwas Angst, dass das auch woanders passiert, nur eben unbemerkt, weil
+nicht geprüft wird. Wie entscheiden wir, was die Wahrheit ist?"* — dann *„kannst du die Ernte
+reparieren"* und *„ansonsten go"*.
+
+**Der Bestand, vollständig durchsucht (alles außer Medien):** vier Stellen. Katalog: „Lenore
+english" (`lyrics`), „桜の少女" (`beschriftung`/`caption`); `lyrik.json`: dieselbe Lenore-Zeile;
+`reaktionen.ndjson`: eine Benachrichtigung („Ein Song ��ber die …"). Alle aus Suno-Antworten.
+
+**Die Regel** (`bin/ersatzzeichen.js`, gemeinsam für alle Werkzeuge): U+FFFD kommt in echtem Text
+nie vor, es ist die Narbe des Fehlers. Ein Text mit Ersatzzeichen ist genau dort kaputt; von zwei
+Fassungen, die sich nur an Ersatzstellen unterscheiden, ist die ohne die Wahrheit; sind beide an
+verschiedenen Stellen kaputt, wird gemischt; alles andere ist eine echte Änderung, und dann gilt
+das Neue. Ein Ersatzlauf steht für ein Zeichen (ein bis vier Bytes), nie für ASCII. `angleichen`
+legt zwei Fassungen aneinander und kehrt an Ersatzstellen zurück, wenn es später nicht passt
+(die Ellipse vor einem Anführungszeichen). Neun Prüffälle, darunter die zwei echten.
+
+**Fünf Stellen:**
+1. `bin/ernte-heilen.js` — heilt eine Ernte aus den Zweitkopien im selben File (Playlists, private
+   Liste), Sicherung `…json.kaputt`, `--probe` zeigt nur. Die heutige Ernte ist damit geheilt:
+   genau ein Feld geändert (`songs[91].metadata.prompt`, „gehört"), Serialisierung bytegleich.
+2. `bin/sammeln.js` — heilt die Ernte im Speicher und meldet Unterschiede nur an Ersatzstellen
+   gesondert („Ersatzzeichen (Suno zerreißt Zeichen, keine Änderung)") statt als „Lyrics";
+   `letzter-vergleich.json` trägt sie als `kaputt`. Gelaufen: inhaltlich anders 0, Ersatzzeichen 1
+   (Lenore, „neu heilt alt").
+3. `bin/aufbereiten.js` — heilt jede Rohdatei beim Lesen und wendet beim Einbau die Wahrheitsregel
+   auf `lyrics`, `titel`, `stilPrompt`, `stilAusschluss`, `beschriftung` an; jeder Eingriff steht im
+   Protokoll. **Nur die Syntax geprüft** — der Einbau selbst schreibt den Katalog und löscht die
+   Rohdaten, den fährt Caspar_D.
+4. `bin/gesundheit.js` — neue Zeile „Ersatzzeichen im Bestand", mit Änderungsmeldung gegen den
+   Vortag. Heute: 4 Stellen.
+5. `browser/morgens.js` — dieselbe Frage („nur an Ersatzstellen verschieden?") für Titel und Stil,
+   eigene Rubrik „Suno lieferte ein Zeichen kaputt — keine Änderung, wird beim Einbau geheilt".
+
+**Was nach dem Einbau passiert:** Lenore heilt (Katalog und damit `lyrik.json` beim nächsten
+Lyrik-Lauf), „Das Geschenk" bleibt sauber. Es bleiben die Caption von 桜の少女 (heilt, sobald eine
+Ernte sie sauber liefert) und die Benachrichtigung (Sunos Wortlaut). `gesundheit.js` zeigt es.
