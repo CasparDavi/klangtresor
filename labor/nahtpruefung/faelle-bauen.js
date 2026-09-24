@@ -55,7 +55,7 @@ const VORGABE_HINWEIS = { licht: 'rmBewegung wandernd (Vorgabe)', schatten: 'rmB
 for (const t of TYPEN) fall(t, [{ typ: t }], { gruppe: 'vorgabe', bemerkung: VORGABE_HINWEIS[t] || 'Vorgabe' });
 /* Die zwei Texteffekte (24.09.2026) - von Hand in faelle.json eingetragen, hier nachgezogen, damit ein Neubau sie behaelt. */
 fall('titel-serife-zwei', [{ typ: 'titel', text: 'Zwei Zeilen|und Serife', schrift: 'serife', gewicht: 'normal', ausrichtung: 'links', ortX: 0.08, ortY: 0.2, groesse: 0.12, farbe: '#ffd27a', verr: 'screen' }], { gruppe: 'titel', titel: 'b', bemerkung: 'Freier Text mit Umbruch, Serife, links oben, Screen-Verrechnung, zweiter Titel.' });
-fall('karaoke-eine-zeile', [{ typ: 'karaoke', zeilen: '1', schrift: 'serife', farbSatz: 'eigen', farbe: '#ffd27a', farbe2: '#c0c0c0', band: 0, ortY: 0.5, ausrichtung: 'links', vorlauf: 0.3, groesse: 0.07, verr: 'screen' }], { gruppe: 'karaoke', titel: 'b', bemerkung: 'Nur die gesungene Zeile, Serife, eigene Farbe, ohne Band, mittig hoch, links, 0,3 s Vorlauf, Screen; zweiter Titel. Unter LOOP>0 nichts gemalt - siehe karaoke.' });
+fall('karaoke-eine-zeile', [{ typ: 'karaoke', zeilen: '1', schrift: 'serife', farbSatz: 'eigen', farbe: '#ffd27a', farbe2: '#c0c0c0', band: 0, ortY: 0.5, ausrichtung: 'links', vorlauf: 0.3, groesse: 0.07, verr: 'screen' }], { gruppe: 'karaoke', titel: 'b', jetzt: 51.8, bemerkung: 'Nur die gesungene Zeile, Serife, eigene Farbe, ohne Band, mittig hoch, links, 0,3 s Vorlauf, Screen; zweiter Titel. Unter LOOP>0 nichts gemalt - siehe karaoke.' });
 
 /* KEN BURNS FAHRT: DIE ZIELPUNKTE UND DIE PARALLAXE (17./18.09.2026, neu gefasst am 18.09.2026).
    Bis zum Vormittag standen hier die sechs LAEUFE (kbLauf: hinein, aufdecken, zwei, streifen,

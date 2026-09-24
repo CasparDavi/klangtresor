@@ -6617,3 +6617,79 @@ laufen, hat einen einseitigen Gradienten, das macht keinen Sinn, wenn ich es nac
    entscheidet, kein Regler. Notiz unter Ort Y sagt es.
 
 Geprüft im eigenen Tab (Ort Y 1, 0,5 und 0,25), Nahtfälle unverändert 0,00.
+
+## 23. Nacht 25.09.2026: Titel und Karaoke näher an der Perfektion (Caspar_D: „bau alles ein")
+
+Grundlage: die Liste nach Kundennutzen vom Abend (16 Punkte, vier Leselinsen), Caspar_Ds Auftrag
+*„bau alles ein, du hast die Nacht Zeit, nutze Subagenten, die günstig im Betrieb sind"* und zu
+Punkt 4: *„das sollte in der bereinigten Lyrics nicht passieren, ist ja bereinigt um sowas"* — also
+an der Quelle, nicht im Maler.
+
+**Gebaut in `web/index.html` (beide Effekte teilen sich neues Handwerk: `textSchrift`,
+`textUmbrechen`, `textLaeufe`, `textDreipass`, `schriftenBereit`, `hochformatNotiz`, `titelHinweis`):**
+
+1. **Ruhezustand des Karaoke.** Eine Zeile gilt bis `bis` plus 1,5 s Nachhall oder bis zur nächsten,
+   wenn die Lücke unter 3 s liegt. Danach rückt sie leise nach oben, die nächste steht leise als
+   Kommende in der Mitte; vor der ersten Zeile ebenso; nach der letzten geht das Band aus. Bei
+   „nur die gesungene" steht in Pausen nichts. Die Bühne behält ihr Verhalten (Wiedervorlage 21).
+2. **Der Titel passt sich ein.** Umbruch an Wortgrenzen auf 90 % der Breite, höchstens drei Reihen,
+   sonst schrumpft die Schrift. Die Größe hängt an der kurzen Bildseite (quer wie bisher, hochkant
+   an der Breite). Der Umbruch kennt Bindestriche und, zuletzt, einzelne Zeichen — gilt auch für
+   Karaoke-Zeilen; passt der Karaoke-Block nicht zwischen Luft und Ort Y, weicht die Schrift.
+3. **Freie Uhr im Haus.** Kachel und Bühne malen die Karaoke-Zeile nur mit echter Uhr (der Titel
+   liegt im Player, laufend oder pausiert — ein angehaltener Film steht: `clipZeit` friert bei Pause
+   die Songzeit ein statt frei zu laufen). Liegt ein anderer Titel im Player, malt der Effekt keine
+   Zeile und das Bühnenband bleibt (`clipMalt` fragt die echte Uhr). Im Pult bleibt die freie Uhr
+   als Vorschau; die Karte sagt „Der Player steht …" und zieht beim Uhrwechsel nach.
+4. **Regieanweisungen** — an der Quelle in `bin/lyrik.js` (siehe unten) und als Sicherheitsnetz im
+   Lader für eine alte `lyrik.json` oder fremde Bestände.
+5. **Titel über dem Karaoke.** Wird ein Titel eingehängt, während Karaoke in der Kette steht, kommt
+   er nach oben (Ort Y 0,12). Die Titelkarte sagt, wenn er im Band steht. Preset **„Lyric-Video"**:
+   ruhige Fahrt, Titel oben aus dem Titelbild gefärbt, gesungene Zeile unten.
+6. **Lange Zeilen und Wörter** sprengen das Bild nicht mehr (Punkt 2).
+7. **Zehnsekünder und Loop-Ansicht** sagen es: die Karaoke-Karte in der Loop-Ansicht, die Statuszeile
+   nach „10 s ausgeben" („ohne Karaoke"), die Kostenzeile vor dem ganzen Titel, wenn die Lyrik
+   fehlt („die Ausgabe würde abbrechen").
+8. **Sichere Zonen im Hochformat:** Notiz unter Ort Y beider Karten, sobald die Ausgabe hochkant
+   ist und der Ort unter 0,78 liegt.
+9. **Die gesungene Zeile steht fest:** Anker auf ihrer Mitte, die Nachbarn wachsen nach oben und
+   unten, das Band folgt; am Rand wird geklammert.
+10. **Ohne Band** bekommt das Karaoke Kontur und Schatten, aus dem Band gerechnet (Band 1 nichts,
+    Band 0 die Titelwerte).
+11. **Ortsregler ehrlich:** Ort X/Y des Titels setzen den Textkasten (0 = Kante, Unterlängen und
+    Kontur eingeschlossen); Ausrichtung meint die Zeilen zueinander. Kontur-Skala endet bei 0,08 em.
+12. **Güte der Zeiten auf der Karte** („Whisper hat 96 % der Wörter wiedergefunden · 3 Zeilen nicht
+    gesungen, weggelassen"), Rückstellgrund in Nutzerwörtern, eigener Satz für Titel ohne Gesang
+    (`DATA.instrumental`, im Haus über `istInstrumental`), Exportabbruch nennt ihn.
+13. **Verfahren** — siehe `bin/lyrik.js` unten.
+14. **Schrift im Paket:** Inter (Grotesk) und Gelasio (Serife, metrisch wie Georgia), beide OFL, in
+    `web/fonts/` mit Herkunft und Lizenz (`LIESMICH.md`); `@font-face` im Studio-CSS, das Bühnenband
+    in Inter, Laufweite −0,01 em auch auf der Leinwand; Exporte warten auf die Schriften
+    (`schriftenBereit`), das Haus holt sie beim Start. Emoji im Titel bekommen nur die Füllung
+    (`textLaeufe`). Der Prüfstand verweist auf `web/fonts` (stand.js).
+15. **Komfort:** Ort per Klick auf die Bühne (Titel: Kasten, Karaoke: Höhe; Ziehen verschiebt,
+    Doppelklick stellt die Vorgabe her — `tiMarke…`, gemalt nur in `rahmen()`), Titelfarbe aus dem
+    Titelbild (neue Karten; alte Rezepte bleiben weiß), mehrzeiliges Textfeld (Enter bricht um, `|`
+    gilt weiter), Wortwahl („die gesungene mit der davor und danach", „Farbe gesungene Zeile",
+    „aus dem Titelbild", „Grotesk (wie Helvetica)").
+16. **Schärfere Schrift auf der Bühne:** die Clip-Leinwand der Bühne geht auf 1440 statt 960, wenn
+    Titel oder Karaoke in der Kette stehen.
+
+**Geprüft:** Syntax; Nahtfälle `titel`, `titel-serife-zwei`, `karaoke`, `karaoke-eine-zeile` (naht
+und gleich 0,00; Vorschau des Karaoke 5,28 bzw. 3,43 — der Einzelzeilen-Fall bekam `jetzt: 51.8`
+mitten in einer gesungenen Zeile, im Ruhezustand malte er nichts und träfe nichts). Oberflächenprobe
+im eigenen Tab (der Tab war die Nacht über unsichtbar, Bilder mit erzwungenem Malen): langer Titel
+mit Emoji bricht dreizeilig um und sitzt oben, Karaoke vor der ersten Zeile leise, gesungen hell,
+in der Pause leise mit der Kommenden, ohne Band mit Kontur, Karte nennt Güte, Loop-Hinweis, Titel-
+im-Band-Hinweis; Klick auf die Bühne setzt den Ort. Bühne im Sandkasten: ohne echte Zeit bleibt das
+Band, mit der Zeit des pausierten eigenen Titels weicht es, Band in Inter, Leinwand 1440.
+
+**Nicht geprüft:** Uhrwechsel-Hinweis im Pult und die Marke auf der Bühne als Bild (beides braucht
+den sichtbaren Rahmenlauf), der volle Export mit Paketschrift (kein Vollexport in der Nacht).
+
+**Wiedervorlage 21 (Caspar_D):** soll die Bühne den Ruhezustand des Karaoke übernehmen (Band leer
+in Pausen) oder den Mitsänger weiter mit der stehenden Zeile vorbereiten?
+**Wiedervorlage 22:** einen ganzen Titel mit „Lyric-Video" ausgeben und ansehen — Schrift, Ruhezustand,
+fester Anker, Hochformat-Zonen.
+**Aufräumen:** `/Volumes/Extreme_SSD/Entwicklung/sandkasten-karaoke/` (~900 MB, Sandkasten der
+Bühnenprobe) darf weg — die Sicherung ließ mich den Ordner nicht löschen.

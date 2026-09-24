@@ -59,7 +59,7 @@ function bauen() {
   if (fs.existsSync(path.join(LABOR, '_lyrik.json'))) fs.copyFileSync(path.join(LABOR, '_lyrik.json'), path.join(SITE, '_lyrik.json'));
   else console.warn('Hinweis: labor/effektclip-studio/_lyrik.json fehlt - Karaoke-Faelle laufen ohne Lyrik (node bin/effektclip-labor.js lyrik)');
   /* Verweise mit absolutem Ziel: die relativen aus labor/effektclip-studio zeigten von site/ aus ins Leere. */
-  const ziele = { media: 'library/songs', testbild: 'web/testbild', fremd: 'web/fremd' };
+  const ziele = { media: 'library/songs', testbild: 'web/testbild', fremd: 'web/fremd', fonts: 'web/fonts' };   /* fonts: die Paketschriften der Texteffekte (Nacht 25.09.2026) */
   for (const name of Object.keys(ziele)) {
     let ziel;
     try { ziel = fs.realpathSync(path.join(LABOR, name)); } catch (e) { ziel = path.join(WURZEL, ziele[name]); }

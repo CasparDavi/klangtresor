@@ -3152,3 +3152,8 @@ gleich gesagt, was danach kommt:
   müssten ins Paket, damit der Export bei Casto dasselbe malt.
 - **Balken oder Fläche hinter dem Text**, falls Kontur und Schatten über hellem Bewegtbild nicht
   reichen (Wiedervorlage 18).
+
+Nacht 25.09.2026 (Übergabe §23): eingepasster Titel, Ruhezustand, fester Anker, Paketschriften,
+Ort per Klick, Preset „Lyric-Video", Güte der Zeiten, Hochformat-Zonen sind gebaut. Offen bleiben
+Wort-Wischen, Überblenden, Auftritt/Abgang und die Frage, ob die Bühne den Ruhezustand übernimmt
+(Wiedervorlage 21).

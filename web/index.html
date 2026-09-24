@@ -1653,7 +1653,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    die Zeile doppelt (Caspar_D, 24.09.2026). Die Textebene bleibt „karaoke", nur das Band geht;
    karaokeBandStand() setzt die Klasse. */
 #buehne.karaoke-vom-clip #bkaraoke{display:none}
-#bkaraoke .kz{font-weight:700;line-height:1.25;letter-spacing:-.01em;
+#bkaraoke .kz{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-weight:700;line-height:1.25;letter-spacing:-.01em;   /* dieselbe Schrift wie der Karaoke-Effekt (Nacht 25.09.2026) */
   transition:opacity .35s ease,color .35s ease}
 /* Die mittlere Zeile ist die, die gerade dran ist - deutlich größer,
    damit sie aus Entfernung zuerst gefunden wird. */
@@ -3081,6 +3081,15 @@ h3 .infoknopf .ico{width:14px;height:14px}
 #morgenja{border-color:#16be5c;background:#16be5c22;color:#16be5c}
 #morgennein{border-color:#5a5a60;background:transparent;color:#9a9aa0}
 /* >>> Effektclip-Studio (tbs.css) */
+/* DIE PAKETSCHRIFTEN (Nacht 25.09.2026): Inter fuer die Grotesk, Gelasio fuer die Serife (metrisch wie
+   Georgia), beide SIL OFL, Dateien und Herkunft in web/fonts/. Damit malen Mac, Windows und die Buehne
+   dieselbe Schrift - vorher lief derselbe Effektclip auf Castos Rechner in Arial und war ein anderer Film.
+   font-display block: die Leinwand darf nicht mit dem Rueckfall anfangen; die Exporte warten ohnehin
+   (schriftenBereit). */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:block;src:url('fonts/inter-400.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:block;src:url('fonts/inter-700.woff2') format('woff2')}
+@font-face{font-family:'Gelasio';font-style:normal;font-weight:400;font-display:block;src:url('fonts/gelasio-400.woff2') format('woff2')}
+@font-face{font-family:'Gelasio';font-style:normal;font-weight:700;font-display:block;src:url('fonts/gelasio-700.woff2') format('woff2')}
 /* ---- Effektclip-Studio: Overlay wie #wer, Panel wie im Scratch (hausrein) ---- */
 #tbs{position:fixed;inset:0;z-index:84;background:rgba(0,0,0,.6);display:grid;place-items:center}
 #tbs[hidden]{display:none}
@@ -27536,21 +27545,44 @@ const EFFEKTE = {
   /* TITEL (24.09.2026; Caspar_D: "ein Text, der als Titel ueber ein bewegtes Video oder ein Effektclip
      gelegt werden kann - meine Standardanwendung ist: Titel ist die ganze Zeit zu sehen"). Ein Maler
      am Objektiv: er zoomt nicht mit und liegt ueber allem. Weil er die ganze Zeit steht, ist er von
-     selbst loopfest (Bild N = Bild 0, Regel 17) - kein Auftritt, keine Klammer, keine Uhr. Groesse
-     und Strichstaerken sind Anteile der Bildhoehe, damit Studio und Export dasselbe zeigen. Leerer
-     Text heisst: der Titel des Songs - was die Software weiss, wird kein Regler. Ein senkrechter
-     Strich | bricht die Zeile um. Karaoke steht als zweiter Texteffekt daneben (karaoke, 24.09.2026). */
-  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text \u00fcber dem Bild</b> \u2014 der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Sitzt am Objektiv: zoomt nicht mit, liegt \u00fcber allem, auch \u00fcber einem Bewegtbild. Kontur und Schatten machen ihn \u00fcber bewegtem Bild lesbar; die Verrechnung ist frei.',
-    params:[{k:'text',lbl:'Text',text:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?(String(e.text).includes('|')?null:'Ein senkrechter Strich | bricht die Zeile um.'):'Leer hei\u00dft: der Titel des Songs. Ein senkrechter Strich | bricht die Zeile um.'},
-      {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk'],['serife','Serife']],def:'grotesk'},
+     selbst loopfest (Bild N = Bild 0, Regel 17) - kein Auftritt, keine Klammer, keine Uhr. Leerer
+     Text heisst: der Titel des Songs - was die Software weiss, wird kein Regler. Ein Zeilenumbruch im
+     Feld (oder ein senkrechter Strich |) bricht die Zeile um. Karaoke steht als zweiter Texteffekt
+     daneben (karaoke, 24.09.2026).
+     NACHT 25.09.2026 (Caspar_D: "gehe nochmal Titel und Karaoke-Untertitel durch ... bau alles ein"):
+     - Der Titel PASST SICH EIN: Umbruch an Wortgrenzen auf 90 % der Breite, hoechstens drei Reihen,
+       sonst schrumpft die Schrift, bis es passt. 223 von 327 Songtiteln liefen im Hochformat ueber den
+       Rand, 16 im Querformat (Zaehlung 24.09.2026).
+     - Die Groesse haengt an der KURZEN Bildseite: im Querformat ist das die Hoehe wie bisher (alte
+       Rezepte bleiben gleich), im Hochformat die Breite - sonst war derselbe Titel hochkant 2,7-mal so
+       breit wie quer.
+     - Ort X und Ort Y setzen den TEXTKASTEN (0 = Kante oben bzw. links, 1 = Kante unten bzw. rechts,
+       Unterlaengen und Kontur eingeschlossen), nicht mehr die Grundlinie - bei 0 stand der Titel
+       ueber dem Bild, bei 1 fehlten die Unterlaengen (Regel 9: jeder Reglerwert zeigt etwas).
+       Ausrichtung meint die Zeilen zueinander, der Ort ist der Kasten.
+     - Die Farbe kommt wahlweise aus der Titelbild-Palette wie beim Karaoke; neue Karten nehmen sie,
+       alte Rezepte behalten ihr Weiss (farbSatz fehlt dort, die Vorgabe ist darum "eigen").
+     - Die Kontur-Skala endet bei 0,08 em statt 0,14: bei 0,14 liefen die Punzen von e und a zu.
+     - Emoji und Farbzeichen bekommen nur die Fuellung (der Schatten- und Konturpass malte sie
+       dreifach bunt; 7 Titel im Katalog tragen welche).
+     - Wird der Titel eingehaengt, waehrend Karaoke in der Kette steht, kommt er oben hin (Ort Y 0,12)
+       statt in das Band (neuerEffekt). Ein Klick auf die Buehne setzt den Ort, Ziehen verschiebt,
+       Doppelklick stellt die Vorgabe wieder her (tiMarke..., dieselbe Sprache wie beim Zielpunkt).
+     - Die Schrift ist die Paketschrift (Inter, Gelasio - web/fonts), damit Mac, Windows und Buehne
+       dasselbe malen; dahinter der alte Stapel als Rueckfall. */
+  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Sitzt am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Ein Klick auf die Bühne setzt den Ort.',
+    hinweis:e=>titelHinweis(e),
+    params:[{k:'text',lbl:'Text',text:true,mehrzeilig:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?null:'Leer heißt: der Titel des Songs.'},
+      {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
       {k:'gewicht',lbl:'Gewicht',sel:[['fett','fett'],['normal','normal']],def:'fett'},
-      {k:'groesse',lbl:'Gr\u00f6\u00dfe',min:.02,max:.3,step:.005,def:.08,wert:v=>Math.round(v*100)+' %',notiz:()=>'Anteil der Bildh\u00f6he.'},
-      {k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},
+      {k:'groesse',lbl:'Größe',min:.02,max:.3,step:.005,def:.08,wert:v=>Math.round(v*100)+' %',notiz:()=>'Anteil der kurzen Bildseite. Ein zu breiter Titel bricht um oder weicht in der Größe.'},
+      {k:'farbSatz',lbl:'Farbe',sel:[['palette','aus dem Titelbild'],['eigen','eigene Farbe']],def:'palette'},
+      {k:'farbe',lbl:'Farbwert',farbe:true,def:'#ffffff',grau:e=>e.farbSatz==='palette'?'Die Farbe kommt aus dem Titelbild — für eine eigene auf „eigene Farbe“ stellen.':null},
       {k:'kontur',lbl:'Kontur',min:0,max:1,step:.05,def:.4},
       {k:'schatten',lbl:'Schatten',min:0,max:1,step:.05,def:.5},
-      {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5},
-      {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85},
-      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['links','links'],['mitte','Mitte'],['rechts','rechts']],def:'mitte'}]},
+      {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5,notiz:()=>'Lage des Textkastens: 0 links, 1 rechts. Ein Klick auf die Bühne setzt beides.'},
+      {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85,notiz:e=>[ 'Lage des Textkastens: 0 oben, 1 unten.', hochformatNotiz(e.ortY==null?0.85:e.ortY) ].filter(Boolean).join(' ')},
+      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte',notiz:()=>'Wie mehrere Zeilen zueinander stehen; den Ort setzen Ort X und Ort Y.'}]},
   /* KARAOKE (24.09.2026; Caspar_D: "a second karaoke overlay configurator, take the presets from the
      stage" - "die bereinigte Lyrics waere die beste Variante" - "Karaoke macht nur Sinn bei vollem
      Export, also 10 Sek mit Karaoke geht nicht, es wird der Effekt einfach weggelassen").
@@ -27558,29 +27590,47 @@ const EFFEKTE = {
      Wortzeiten. Darum zeilenweise wie das Band der Buehne (#bkaraoke) und ohne Wort-Wischen.
      DIE VORGABEN SIND DAS BAND DER BUEHNE, nachgelesen 24.09.2026 im CSS von #bkaraoke: drei Zeilen,
      die mittlere dran; dran 5,2 % der Bildbreite fett (clamp 5.2vw), die Nachbarn halb so gross
-     (2.6vw) und halb so hell (opacity .5); Zeilenbreite 74 % (max-width 74vw). Die Buehne deckelt beides
-     (72 px Schrift, 1040 px Zeile) fuer grosse Schirme - hier gilt der Anteil ohne Deckel, weil der Export
-     keine Schirmgroesse kennt; die Notiz der Groesse sagt es. Das Band ein schwarzer
-     Verlauf von 0 ueber 0,72 bei 38 % auf 0,86 an der Unterkante, darueber 12 % Bildhoehe Luft,
-     darunter 2,4 % (so am Bildrand; frei im Bild laeuft es beidseitig aus, siehe Maler); Farben --btext und --bleise aus der Titelbild-Palette (farben.text und
-     farben.textLeise); Zeile n ist die letzte mit von <= t (buehneTakt), harter Schnitt beim Wechsel,
-     kein Vorlauf. Vor der ersten Zeile steht die erste als naechste in der Mitte, wie auf der Buehne.
-     Sitzt am Objektiv wie der Titel: zoomt nicht mit, liegt ueber allem.
+     (2.6vw) und halb so hell (opacity .5); Zeilenbreite 74 % (max-width 74vw). Die Buehne deckelt
+     beides (72 px Schrift, 1040 px Zeile) fuer grosse Schirme - hier gilt der Anteil ohne Deckel,
+     weil der Export keine Schirmgroesse kennt. Das Band ein schwarzer Verlauf von 0 ueber 0,72 bei
+     38 % auf 0,86 an der Unterkante, darueber 12 % Bildhoehe Luft, darunter 2,4 % (so am Bildrand;
+     frei im Bild laeuft es beidseitig aus, siehe Maler); Farben --btext und --bleise aus der
+     Titelbild-Palette (farben.text und farben.textLeise); Zeile n ist die letzte mit von <= t
+     (buehneTakt), harter Schnitt beim Wechsel, kein Vorlauf. Sitzt am Objektiv wie der Titel.
      NICHT LOOPFEST UND NICHT LOOPBAR: unter LOOP>0 (Zehnsekuender, Loop-Ansicht) malt er nichts. Im
      vollen Export laeuft t als Songzeit von 0 durch, dort gehoert er hin; in Pult und Kachel malt er
      mit dem Player. Ohne bereinigte Lyrik (Instrumental, fremder Titel, unter 60 % Deckung, kein
-     Whisper-Lauf) bleibt die Karte grau mit Grund (hinweis) und der Maler malt nichts (Regel 15). */
+     Whisper-Lauf) bleibt die Karte grau mit Grund (hinweis) und der Maler malt nichts (Regel 15).
+     NACHT 25.09.2026 (Caspar_D: "bau alles ein"):
+     - RUHEZUSTAND: wer nicht singt, ist nicht dran. Bis dahin las der Maler nur von, und die
+       zuletzt gesungene Zeile stand hell im Bild - ueber ein Solo (bis 49 s), den Ausklang (bis
+       105 s) und vor dem ersten Ton (im Median 16 s). Jetzt gilt eine Zeile bis bis plus 1,5 s
+       Nachhall, oder bis zur naechsten, wenn die Luecke unter 3 s liegt. Danach rueckt sie leise
+       nach oben, die naechste steht leise als Kommende in der Mitte; vor der ersten Zeile ebenso;
+       nach der letzten geht das Band aus. Die Buehne behaelt ihr Verhalten - sie bereitet den
+       Mitsaenger vor, der Film zeigt, was ist (Wiedervorlage).
+     - Die GESUNGENE ZEILE STEHT FEST: der Block hing an seiner Unterkante und rutschte mit jedem
+       Umbruch der Nachbarn (39 % der Zeilen brechen um). Jetzt liegt die Mitte der gesungenen Zeile
+       auf einem festen Ort, die Nachbarn wachsen nach oben und unten, das Band folgt.
+     - UMBRUCH auch an Bindestrichen und zeichenweise (japanisch), und passt der Block nicht zwischen
+       Ort Y und die Luft oben, weicht die Schrift (Verhaeltnis 2:1 bleibt) - kein Regler.
+     - OHNE BAND Kontur und Schatten: aus dem Band gerechnet (Band 1: nichts, Band 0: die
+       Titelwerte), damit die Zeile ueber hellem Bild lesbar bleibt.
+     - In der KACHEL und auf der BUEHNE malt er nur mit echter Uhr (der Titel liegt im Player, laeuft
+       oder steht) - eine Zeile aus einer erfundenen Zeit ist eine Falschaussage (Hausregel 3). Im
+       Pult bleibt die freie Uhr als Vorschau, die Karte sagt es.
+     - Paketschrift (Inter, Gelasio) und Laufweite -0,01 em wie das Band der Buehne. */
   karaoke:{ label:'Karaoke', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1,
-    besch:'<b>Die gesungene Zeile über dem Bild</b> — aus der bereinigten Lyrik des Titels, mit der Zeile davor und danach, wie das Band der Bühne. Gehört in den <b>ganzen Titel</b>: dort läuft die Songzeit durch und der Ton liegt dabei. Im Zehnsekünder und in der Loop-Ansicht wird er weggelassen. Sitzt am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild.',
+    besch:'<b>Die gesungene Zeile über dem Bild</b> — aus der bereinigten Lyrik des Titels, mit der Zeile davor und danach, wie das Band der Bühne. Wer nicht singt, ist nicht dran: in Pausen rückt die Zeile leise nach oben und die nächste steht als Kommende bereit. Gehört in den <b>ganzen Titel</b>: dort läuft die Songzeit durch und der Ton liegt dabei. Im Zehnsekünder und in der Loop-Ansicht wird er weggelassen. Sitzt am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild.',
     hinweis:e=>lyrikHinweis(),
-    params:[{k:'zeilen',lbl:'Zeilen',sel:[['3','drei — davor, dran, danach'],['1','nur die gesungene']],def:'3'},
-      {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk'],['serife','Serife']],def:'grotesk'},
-      {k:'groesse',lbl:'Größe',min:.025,max:.12,step:.001,def:.052,wert:v=>(v*100).toFixed(1).replace('.',',')+' %',notiz:()=>'Anteil der Bildbreite; die Bühne nimmt 5,2 % (auf großen Schirmen gedeckelt bei 72 px). Die Nachbarzeilen sind halb so groß.'},
-      {k:'band',lbl:'Band',min:0,max:1,step:.05,def:1,notiz:e=>(e.band>0)?null:'Ohne Band steht der Text frei auf dem Bild.'},
-      {k:'farbSatz',lbl:'Farbquelle',sel:[['palette','Titelbild-Palette'],['eigen','Eigene Farben']],def:'palette'},
-      {k:'farbe',lbl:'Farbe dran',farbe:true,def:'#f2f5fa',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus der Titelbild-Palette (Text und Text leise) — für eigene auf „Eigene Farben“ stellen.'},
-      {k:'farbe2',lbl:'Farbe Nachbarn',farbe:true,def:'#96a0b4',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus der Titelbild-Palette.'},
-      {k:'ortY',lbl:'Ort Y',min:.25,max:1,step:.01,def:1,notiz:e=>(e.ortY==null||e.ortY>=.995)?'Unterkante am Bildrand, wie auf der Bühne.':'Unterkante des Textes; frei im Bild läuft das Band oben ein und unten aus.'},
+    params:[{k:'zeilen',lbl:'Zeilen',sel:[['3','drei — die gesungene mit der davor und danach'],['1','nur die gesungene']],def:'3'},
+      {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
+      {k:'groesse',lbl:'Größe',min:.025,max:.12,step:.001,def:.052,wert:v=>(v*100).toFixed(1).replace('.',',')+' %',notiz:()=>'Anteil der Bildbreite, wie auf der Bühne (5,2 %); die Nachbarzeilen halb so groß. Passt der Block nicht ins Bild, weicht die Schrift.'},
+      {k:'band',lbl:'Band',min:0,max:1,step:.05,def:1,notiz:e=>(e.band>=.95)?null:'Je weniger Band, desto mehr Kontur und Schatten bekommt der Text, damit er über dem Bild lesbar bleibt.'},
+      {k:'farbSatz',lbl:'Farben',sel:[['palette','aus dem Titelbild'],['eigen','eigene']],def:'palette'},
+      {k:'farbe',lbl:'Farbe gesungene Zeile',farbe:true,def:'#f2f5fa',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus dem Titelbild — für eigene auf „eigene“ stellen.'},
+      {k:'farbe2',lbl:'Farbe Nachbarzeilen',farbe:true,def:'#96a0b4',grau:e=>e.farbSatz==='eigen'?null:'Die Farben kommen aus dem Titelbild.'},
+      {k:'ortY',lbl:'Ort Y',min:.25,max:1,step:.01,def:1,notiz:e=>[ (e.ortY==null||e.ortY>=.995)?'Unterkante am Bildrand, wie auf der Bühne.':'Unterkante des Textes; frei im Bild läuft das Band oben ein und unten aus.', 'Ein Klick auf die Bühne setzt die Höhe.', hochformatNotiz(e.ortY==null?1:e.ortY) ].filter(Boolean).join(' ')},
       {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte'},
       {k:'vorlauf',lbl:'Vorlauf',min:0,max:1,step:.05,def:0,wert:v=>v.toFixed(2).replace('.',',')+' s',notiz:e=>(e.vorlauf>0)?null:'Die Zeile erscheint, wenn sie gesungen wird — wie auf der Bühne. Vorlauf zeigt sie früher.'}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
@@ -28729,6 +28779,9 @@ const PRESETS={
     Zielpunkt mit weiter Enge ist genau dasselbe ruhige Heranfahren, nur mit Klammer und weicher
     Kurve statt Knick. Welcher Punkt, sagt das Bild (Vorschlag beim Einfuegen). */
  'Traum (weich)':()=>[E('schaerfe',{unschaerfe:10,schlag:.8}),E('kenburns',{kbSchlaege:8}),E('farbe',{palette:'Nordlicht',verr:'weich',staerke:.35}),E('filmnebel',{staerke:.5,schwere:.15,schwaden:.4})],
+ /* "Lyric-Video" (Nacht 25.09.2026): der Standardfall der Texteffekte mit einem Klick - Titel oben aus dem Titelbild
+    gefaerbt, die gesungene Zeile unten, eine ruhige Fahrt darunter. Karaoke ist nur im ganzen Titel dabei. */
+ 'Lyric-Video':()=>[E('kenburns',{kbSchlaege:8}),E('titel',{ortY:.12,groesse:.07,farbSatz:'palette'}),E('karaoke',{})],
 };
 
 let HISTO=null;
@@ -30970,75 +31023,103 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*lpR(8)*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
     cx.globalAlpha=1; }
   else if(e.typ==='titel'){ const a=Math.min(1,e.staerke); if(a<=0.001) return;
-    /* Vier Striche je Zeile, in dieser Reihenfolge: Schatten (eine Fuellung mit Schlagschatten), Kontur
-       (Strich um die Buchstaben), dann die Fuellung obenauf - so bleibt die Kontur eine Aussenlinie und
-       das Innere traegt die reine Farbe. Alles relativ zur Bildhoehe (Studio-Augenschein ist Massstab). */
+    /* Dreipass je Zeile (textDreipass): Schatten, Kontur, Fuellung - die Kontur bleibt Aussenlinie.
+       Groesse an der kurzen Seite, Einpassen auf 90 % der Breite, Ort = Textkasten. Der Kasten wird
+       fuer die Marke auf der Buehne gemerkt (e._tiBox, Anteile - kein Rezeptfeld, der Unterstrich
+       haelt es aus dem Rezept). Warum jedes davon: siehe EFFEKTE.titel (Nacht 25.09.2026). */
     const roh=(e.text&&String(e.text).trim())?String(e.text):((DATA&&DATA.titel)||'');
-    const zeilen=roh.split('|').map(z=>z.trim()).filter(Boolean); if(!zeilen.length) return;
-    const gr=Math.max(4,(e.groesse==null?0.08:e.groesse)*Hn);
-    const fam=(e.schrift==='serife')?'Georgia, "Times New Roman", Times, serif':'"Helvetica Neue", Helvetica, Arial, sans-serif';
-    cx.save(); cx.globalAlpha=a; cx.font=(e.gewicht==='normal'?'400':'700')+' '+gr.toFixed(2)+'px '+fam;
-    cx.textAlign=e.ausrichtung==='links'?'left':e.ausrichtung==='rechts'?'right':'center'; cx.textBaseline='alphabetic';
-    const x=Wn*(e.ortX==null?0.5:e.ortX), zh=gr*1.15, y0=Hn*(e.ortY==null?0.85:e.ortY)-(zeilen.length-1)*zh;
+    const zeilen=roh.split(/\r?\n|\|/).map(z=>z.trim()).filter(Boolean); if(!zeilen.length) return;
+    const kurz=Math.min(Wn,Hn); let gr=Math.max(4,(e.groesse==null?0.08:e.groesse)*kurz);
+    const fam=textSchrift(e.schrift), gew=(e.gewicht==='normal'?'400':'700'), zh=1.15;
+    const pal=(DATA&&DATA.farben)||{}, farbe=(e.farbSatz==='palette')?(pal.text||'#f2f5fa'):(e.farbe||'#ffffff');
     const sch=Math.max(0,Math.min(1,e.schatten==null?0.5:e.schatten)), kon=Math.max(0,Math.min(1,e.kontur==null?0.4:e.kontur));
-    for(let i=0;i<zeilen.length;i++){ const y=y0+i*zh, z=zeilen[i];
-      if(sch>0){ cx.shadowColor='rgba(0,0,0,'+(0.9*sch).toFixed(3)+')'; cx.shadowBlur=gr*(0.05+0.3*sch); cx.shadowOffsetX=0; cx.shadowOffsetY=gr*0.05; cx.fillStyle='rgba(0,0,0,'+(0.6*sch).toFixed(3)+')'; cx.fillText(z,x,y); }
-      cx.shadowColor='transparent'; cx.shadowBlur=0; cx.shadowOffsetY=0;
-      if(kon>0){ cx.lineJoin='round'; cx.miterLimit=2; cx.lineWidth=Math.max(0.5,gr*0.14*kon); cx.strokeStyle='rgba(0,0,0,0.92)'; cx.strokeText(z,x,y); }
-      cx.fillStyle=e.farbe||'#ffffff'; cx.fillText(z,x,y); }
+    cx.save();
+    const setFont=s=>{ cx.font=gew+' '+s.toFixed(2)+'px '+fam; };
+    const platz=Wn*0.90, maxRows=Math.max(3,zeilen.length); let rows=zeilen;
+    for(let k=0;k<16;k++){ setFont(gr); rows=zeilen.flatMap(z=>textUmbrechen(cx,z,platz)); const bw=Math.max(...rows.map(r=>cx.measureText(r).width));
+      if((rows.length<=maxRows&&bw<=platz)||gr<=4) break; gr=Math.max(4,gr*0.92); }
+    setFont(gr); const br=rows.map(r=>cx.measureText(r).width), boxW=Math.max(...br), boxH=rows.length*gr*zh, m=gr*0.12;
+    const oX=Math.max(0,Math.min(1,e.ortX==null?0.5:e.ortX)), oY=Math.max(0,Math.min(1,e.ortY==null?0.85:e.ortY));
+    const left=m+oX*Math.max(0,Wn-boxW-2*m), top=m+oY*Math.max(0,Hn-boxH-2*m);
+    e._tiBox={ x:left/Wn, y:top/Hn, w:boxW/Wn, h:boxH/Hn, mx:m/Wn, my:m/Hn };
+    cx.textBaseline='middle';
+    for(let i=0;i<rows.length;i++){ const y=top+(i+0.5)*gr*zh, w=br[i];
+      const x=e.ausrichtung==='links'?left:e.ausrichtung==='rechts'?left+boxW-w:left+(boxW-w)/2;
+      textDreipass(cx,rows[i],x,y,gr,farbe,sch,kon,a); }
     cx.restore(); }
   else if(e.typ==='karaoke'){ const a=Math.min(1,e.staerke); if(a<=0.001) return;
     /* NUR IM DURCHLAUF (Caspar_D, 24.09.2026: "10 Sek mit Karaoke geht nicht, es wird der Effekt einfach
        weggelassen"): unter LOOP>0 - Zehnsekuender und Loop-Ansicht - malt er nichts. Im Pult, in der
        Kachel und im vollen Export ist t die Songzeit, und dort steht die Zeile, die gerade gesungen wird.
        Ohne Lyrik (noch unterwegs oder keine) malt er ebenfalls nichts; die Karte sagt warum (hinweis).
-       Masse und Vorgaben sind das Band der Buehne, siehe den Kommentar bei EFFEKTE.karaoke. */
+       Masse, Vorgaben und der Ruhezustand: siehe den Kommentar bei EFFEKTE.karaoke. */
     if(LOOP>0) return;
+    /* KACHEL UND BUEHNE NUR MIT ECHTER UHR (Nacht 25.09.2026): liegt der Titel nicht im Player, gibt es
+       keine Songzeit, also keine Zeile - die freie Uhr ist dort eine erfundene Zeit. Im Pult bleibt sie
+       als Vorschau der Gestaltung, mit Satz auf der Karte. Im Export ist die Lyrik eingefroren. */
+    if(MALT_KACHEL&&!uhrEcht&&!(DATA&&DATA.lyrik!==undefined)) return;
     const Z=(DATA&&DATA.lyrik!==undefined)?DATA.lyrik:lyrikVon(DATA&&DATA.id); if(!Z||!Z.length) return;
     /* KEIN TEXTVERSATZ (Caspar_D, 24.09.2026: "ich wuerde keinen Zeitversatz einbauen, jedes System ist anders, ich
        habe nichts von einem Film, wo die Untertitel nur auf einem System synchron laufen"). Die Buehne zieht fuer
        ihr Band bVersatz ab - die Laufzeit eines Funklautsprechers auf DIESEM Rechner. Ein Effektclip ist ein Film:
-       derselbe auf jedem System, also ohne Abzug, auch im Pult und in der Kachel. Am Nachmittag des 24.09.2026
-       stand hier nach einem Gegenlesen dieser Abzug; er ist auf Caspar_Ds Entscheidung hin gefallen. Der Vorlauf
-       bleibt - er ist Gestaltung und liegt im Film, auf jedem System gleich. */
+       derselbe auf jedem System, also ohne Abzug, auch im Pult und in der Kachel. Der Vorlauf bleibt - er ist
+       Gestaltung und liegt im Film, auf jedem System gleich. */
     const tv=t+(e.vorlauf>0?e.vorlauf:0);
     let n=-1; for(let i=0;i<Z.length;i++){ if(Z[i].von<=tv) n=i; else break; }
-    const drei=String(e.zeilen==null?'3':e.zeilen)!=='1', ersteNochNicht=n<0, iDran=n<0?0:n;
-    if(ersteNochNicht&&!drei) return;   /* nur die gesungene: vor der ersten Zeile gibt es keine */
-    const gr=Math.max(4,(e.groesse==null?0.052:e.groesse)*Wn), grK=gr*0.5, zh=1.25;
-    const fam=(e.schrift==='serife')?'Georgia, "Times New Roman", Times, serif':'"Helvetica Neue", Helvetica, Arial, sans-serif';
+    const drei=String(e.zeilen==null?'3':e.zeilen)!=='1', NACHHALL=1.5, LUECKE=3, DAUER_ERSATZ=1.9;
+    /* RUHEZUSTAND: davor / mitte / danach, und ob die Mitte hell (gesungen) oder leise (kommend) ist. */
+    let davor=null, mitte=null, danach=null, hell=true;
+    if(n<0){ if(!drei) return; mitte=Z[0]; hell=false; danach=Z[1]||null; }
+    else { const zl=Z[n], ende=(zl.bis>zl.von)?zl.bis:(zl.von+DAUER_ERSATZ), naechste=Z[n+1]||null;
+      const singt=(tv<=ende+NACHHALL)||(!!naechste&&(naechste.von-ende)<LUECKE);
+      if(singt){ davor=drei?(Z[n-1]||null):null; mitte=zl; danach=drei?naechste:null; }
+      else if(naechste){ if(!drei) return; davor=zl; mitte=naechste; hell=false; danach=null; }
+      else return; }   /* nach der letzten Zeile und ihrem Nachhall: nichts mehr, das Band geht aus */
+    let gr=Math.max(4,(e.groesse==null?0.052:e.groesse)*Wn); const zh=1.25;
+    const fam=textSchrift(e.schrift);
     const pal=(DATA&&DATA.farben)||{}, eigen=e.farbSatz==='eigen';
     const cDran=eigen?(e.farbe||'#f2f5fa'):(pal.text||'#f2f5fa'), cLeise=eigen?(e.farbe2||'#96a0b4'):(pal.textLeise||'#96a0b4');
-    const breit=Wn*0.74, rand=Wn*0.13, x=e.ausrichtung==='links'?rand:e.ausrichtung==='rechts'?Wn-rand:Wn/2;
+    const breit=Wn*0.74, rand=Wn*0.13;
+    const band=Math.max(0,Math.min(1,e.band==null?1:e.band)), kon=0.4*(1-band), sch=0.5*(1-band);
+    const oy=Hn*(e.ortY==null?1:e.ortY), yU=oy-Hn*0.024, luft=Hn*0.12;
     cx.save();
-    /* Umbruch an Wortgrenzen auf 74 % der Breite - die Buehne laesst den Browser umbrechen, hier misst die Leinwand. */
-    const umbrechen=(txt,maxW)=>{ const w=String(txt).split(/\s+/).filter(Boolean), rows=[]; let cur=''; for(const s of w){ const p=cur?cur+' '+s:s; if(cur&&cx.measureText(p).width>maxW){ rows.push(cur); cur=s; } else cur=p; } if(cur) rows.push(cur); return rows; };
-    const bl=[];   /* Bloecke von oben nach unten: davor, dran, danach */
-    const block=(z,size,farbe,alpha)=>{ if(!z) return; cx.font='700 '+size.toFixed(2)+'px '+fam; const rows=umbrechen(z.text,breit); if(rows.length) bl.push({rows,size,farbe,alpha}); };
-    if(drei) block(iDran>0?Z[iDran-1]:null,grK,cLeise,0.5);
-    block(Z[iDran],gr,cDran,1);   /* auch vor der ersten Zeile hell - so steht sie auf der Buehne (karaokeTakt, felder[1]) */
-    if(drei) block(Z[iDran+1]||null,grK,cLeise,0.5);
+    const setFont=s=>{ cx.font='700 '+s.toFixed(2)+'px '+fam; if('letterSpacing' in cx) cx.letterSpacing=(-0.01*s).toFixed(2)+'px'; };
+    /* Bloecke bauen; passt der Block nicht zwischen die Luft oben und Ort Y, weicht die Schrift. */
+    let bl=[], hoehe=0, grK=gr*0.5, luecke=gr*0.06;
+    for(let k=0;k<10;k++){ grK=gr*0.5; luecke=gr*0.06; bl=[];
+      const block=(z,size,farbe,alpha,rolle)=>{ if(!z) return; setFont(size); const rows=textUmbrechen(cx,z.text,breit); if(rows.length) bl.push({rows,size,farbe,alpha,rolle,br:rows.map(r=>cx.measureText(r).width)}); };
+      block(davor,grK,cLeise,0.5,'davor'); block(mitte,gr,hell?cDran:cLeise,hell?1:0.5,'mitte'); block(danach,grK,cLeise,0.5,'danach');
+      hoehe=0; bl.forEach((b,i)=>{ hoehe+=b.rows.length*b.size*zh+(i?luecke:0); });
+      if(hoehe<=Math.max(1,yU-luft)||gr<=4) break; gr=Math.max(4,gr*0.9); }
     if(!bl.length){ cx.restore(); return; }
-    const luecke=gr*0.06; let hoehe=0; bl.forEach((b,i)=>{ hoehe+=b.rows.length*b.size*zh+(i?luecke:0); });
-    const oy=Hn*(e.ortY==null?1:e.ortY), yU=oy-Hn*0.024, yO=yU-hoehe;
-    const band=Math.max(0,Math.min(1,e.band==null?1:e.band));
+    /* FESTER ANKER: die Mitte der gesungenen Zeile liegt dort, wo sie bei je einer Reihe laege (Buehnenbild
+       in der Vorgabe unveraendert); davor waechst nach oben, danach nach unten; am Rand wird geklammert. */
+    const mi=bl.find(b=>b.rolle==='mitte')||bl[0], mH=mi.rows.length*mi.size*zh;
+    const anker=yU-(grK*zh)-luecke-(gr*zh)/2;
+    let mTop=anker-mH/2; const vor=bl.filter(b=>b.rolle==='davor'), nach=bl.filter(b=>b.rolle==='danach');
+    const vH=vor.reduce((s,b)=>s+b.rows.length*b.size*zh+luecke,0), nH=nach.reduce((s,b)=>s+luecke+b.rows.length*b.size*zh,0);
+    let yO=mTop-vH, yEnde=mTop+mH+nH;
+    if(yEnde>yU){ const d=yEnde-yU; yO-=d; mTop-=d; yEnde=yU; }
+    if(yO<luft){ const d=luft-yO; yO+=d; mTop+=d; yEnde+=d; }
+    e._kaBox={ yU:yU/Hn };
     if(band>0){
       /* DAS BAND HAT ZWEI SEITEN, WENN ES FREI STEHT (Caspar_D, 24.09.2026: "das Band hat einen einseitigen
          Gradienten, das macht keinen Sinn, wenn ich es nach oben schiebe"). Am unteren Bildrand ist es das Band
          der Buehne: von oben her einlaufend (0 -> 0,72 bei 38 % -> 0,86 an der Kante), die Kante ist der
          Bildrand. Steht es frei im Bild, laeuft es oben ein und unten wieder aus, je 12 % Bildhoehe Luft,
          dazwischen voll; stoesst es oben an, ist es das Buehnenband gespiegelt. Die Lage entscheidet, kein Regler. */
-      const luft=Hn*0.12, d=v=>'rgba(0,0,0,'+(v*band*a).toFixed(3)+')', unten=oy>=Hn-0.5, oben=(yO-luft)<=0.5;
+      const d=v=>'rgba(0,0,0,'+(v*band*a).toFixed(3)+')', unten=oy>=Hn-0.5, oben=(yO-luft)<=0.5;
       let b0, b1, g;
       if(unten){ b0=yO-luft; b1=Hn; g=cx.createLinearGradient(0,b0,0,b1); g.addColorStop(0,d(0)); g.addColorStop(0.38,d(0.72)); g.addColorStop(1,d(0.86)); }
-      else if(oben){ b0=0; b1=yU+luft; g=cx.createLinearGradient(0,b0,0,b1); g.addColorStop(0,d(0.86)); g.addColorStop(0.62,d(0.72)); g.addColorStop(1,d(0)); }
-      else { b0=yO-luft; b1=yU+luft; const H=Math.max(1,b1-b0); g=cx.createLinearGradient(0,b0,0,b1);
+      else if(oben){ b0=0; b1=yEnde+luft; g=cx.createLinearGradient(0,b0,0,b1); g.addColorStop(0,d(0.86)); g.addColorStop(0.62,d(0.72)); g.addColorStop(1,d(0)); }
+      else { b0=yO-luft; b1=yEnde+luft; const H=Math.max(1,b1-b0); g=cx.createLinearGradient(0,b0,0,b1);
         g.addColorStop(0,d(0)); g.addColorStop(Math.min(0.5,luft/H),d(0.86)); g.addColorStop(Math.max(0.5,1-luft/H),d(0.86)); g.addColorStop(1,d(0)); }
       cx.globalAlpha=1; cx.fillStyle=g; cx.fillRect(0,b0,Wn,b1-b0); }
-    cx.textAlign=e.ausrichtung==='links'?'left':e.ausrichtung==='rechts'?'right':'center'; cx.textBaseline='middle';
+    cx.textBaseline='middle';
     let y=yO;
-    for(const b of bl){ cx.font='700 '+b.size.toFixed(2)+'px '+fam; cx.fillStyle=b.farbe; cx.globalAlpha=a*b.alpha;
-      for(const r of b.rows){ cx.fillText(r,x,y+b.size*zh/2); y+=b.size*zh; }
+    for(const b of bl){ setFont(b.size);
+      for(let i=0;i<b.rows.length;i++){ const w=b.br[i], x=e.ausrichtung==='links'?rand:e.ausrichtung==='rechts'?(Wn-rand-w):(Wn-w)/2;
+        textDreipass(cx,b.rows[i],x,y+b.size*zh/2,b.size,b.farbe,sch,kon,a*b.alpha); y+=b.size*zh; }
       y+=luecke; }
     cx.restore(); }
   else if(e.typ==='feuer'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
@@ -32368,7 +32449,10 @@ function renderStapel(){
           h+='<button data-rampplus="1" class="tbs-knopf" style="width:30px;height:22px;font-size:14px">+</button></div>'; }
         h+='</div>'; return; }
       if(p.text){ const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-        h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="text" data-k="'+p.k+'" value="'+esc(e[p.k])+'" spellcheck="false" style="flex:1;min-width:0"></div>'; }
+        /* MEHRZEILIG, WO ZEILEN GEMALT WERDEN (Nacht 25.09.2026): der Nutzer erwartet Enter fuer die zweite Zeile;
+           das einzeilige Feld nahm es nicht, und die Notiz erklaerte ein Sonderzeichen. Der Maler nimmt \n und |. */
+        if(p.mehrzeilig) h+='<div class="tbs-regler"><span>'+p.lbl+'</span><textarea data-k="'+p.k+'" rows="2" spellcheck="false" style="flex:1;min-width:0;resize:vertical;font:inherit;line-height:1.3;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px 6px">'+esc(e[p.k])+'</textarea></div>';
+        else h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="text" data-k="'+p.k+'" value="'+esc(e[p.k])+'" spellcheck="false" style="flex:1;min-width:0"></div>'; }
       else if(p.farbe){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="color" data-k="'+p.k+'" value="'+e[p.k]+'"><span></span></div>'; }
       else if(p.sel){ const pliste=p.selMehr ? p.sel.concat(p.selMehr(e)||[]) : p.sel;   /* `selMehr` haengt Werte an, die nur dieser Effekt traegt (der Altwert der Verdeckung) */
         h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+pliste.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
@@ -33009,6 +33093,40 @@ function lrMarkeSetzen(e,i,u,v){ if(i===0){ e.lrOx=u; e.lrOy=v; } else { e.lrZx=
 function lrMarkeTiefe(e,i,d){ const k=(i===0)?'lrOz':'lrZz';
   const alt=Number(e[k]); const w=isFinite(alt)?alt:(i===0?.85:.35);
   e[k]=Math.max(0,Math.min(1,w+d)); malen(); }
+/* ===================== DER ORT DES TEXTES AUF DER BUEHNE (Nacht 25.09.2026) =====================
+   Zwei Zahlen 0..1 sagen dem Nutzer nichts ueber das Bild; das Haus hat die Sprache schon (Caspar_D:
+   „Einfachklick setzt, Doppelklick entfernt, das ist unsere Sprache"). Beim offenen Titel setzt ein Klick
+   auf die Buehne die Mitte des Textkastens, Ziehen verschiebt, ein Doppelklick stellt die Vorgabe her
+   (der Titel hat immer einen Ort, "entfernt" gibt es nicht). Beim Karaoke gilt nur die Hoehe: der Klick
+   setzt die Unterkante. Die Marke ist ein Fadenkreuz an der Kastenmitte bzw. ein Strich an der Kante -
+   Bedienung, kein Bild, gemalt nur in rahmen(). Der Kasten kommt vom Maler (e._tiBox, Anteile). */
+let TI_ZIEHT=false, UHR_WAR=null;
+function tiKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufeOffen!=='Kette') return null;
+  for(const e of STAPEL) if(e.id===offenId&&(e.typ==='titel'||e.typ==='karaoke')) return e;
+  return null; }
+function tiMarkeOrt(e){ if(!lein) return null;
+  if(e.typ==='titel'){ const b=e._tiBox; if(!b) return null; return [(b.x+b.w/2)*lein.width,(b.y+b.h/2)*lein.height]; }
+  const k=e._kaBox; if(!k) return null; return [lein.width/2,k.yU*lein.height]; }
+function tiMarkeSetzen(e,o){ if(!lein) return; const W=lein.width, H=lein.height;
+  if(e.typ==='titel'){ const b=e._tiBox; if(!b) return;
+    const spW=Math.max(0,1-b.w-2*b.mx), spH=Math.max(0,1-b.h-2*b.my);
+    if(spW>0) e.ortX=Math.max(0,Math.min(1,(o.px/W-b.w/2-b.mx)/spW));
+    if(spH>0) e.ortY=Math.max(0,Math.min(1,(o.py/H-b.h/2-b.my)/spH)); }
+  else { e.ortY=Math.max(0.25,Math.min(1,o.py/H+0.024)); }
+  malen(); }
+function tiMarkeVorgabe(e){ if(e.typ==='titel'){ e.ortX=0.5; e.ortY=0.85; } else e.ortY=1; malen(); }
+function tiMarkenMalen(e){
+  if(!bereit||!lein||!g||lein.width<2) return; const p=tiMarkeOrt(e); if(!p) return; const r=kbMarkeR();
+  g.save(); g.setTransform(1,0,0,1,0,0); g.globalCompositeOperation='source-over'; g.globalAlpha=1; g.filter='none';
+  g.strokeStyle='rgba(255,255,255,.55)'; g.lineWidth=Math.max(1,r*0.09); g.lineCap='round';
+  if(e.typ==='titel'){ g.beginPath(); g.arc(p[0],p[1],r*0.8,0,7); g.stroke();
+    g.beginPath(); g.moveTo(p[0]-r*1.3,p[1]); g.lineTo(p[0]+r*1.3,p[1]); g.moveTo(p[0],p[1]-r*1.3); g.lineTo(p[0],p[1]+r*1.3); g.stroke(); }
+  else { g.setLineDash([r*0.5,r*0.4]); g.beginPath(); g.moveTo(r,p[1]); g.lineTo(lein.width-r,p[1]); g.stroke(); g.setLineDash([]);
+    g.beginPath(); g.arc(p[0],p[1],r*0.5,0,7); g.stroke(); }
+  g.restore(); }
+/* Die Karaoke-Karte sagt "der Player steht" - und muss es zuruecknehmen, sobald er laeuft. */
+function uhrWechselMelden(){ try{ if(uhrEcht===UHR_WAR) return; UHR_WAR=uhrEcht;
+  if(STAPEL&&STAPEL.some(e=>e&&e.typ==='karaoke')&&stapelBox&&stapelBox.isConnected&&!exportLaeuft) renderStapel(); }catch(x){} }
 function kbBuehneEinrichten(){
   if(!lein||lein.dataset.kb) return; lein.dataset.kb='1';
   lein.addEventListener('dblclick',ev=>{
@@ -33052,6 +33170,10 @@ function kbBuehneEinrichten(){
         const i=lrMarkeBei(le,o); if(i<0) return;
         LR_ZIEHT=i; try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
         lein.style.cursor='move'; ev.preventDefault(); return; } }
+    { const te=tiKarteEffekt(); if(te){ const o=ortVon(ev); if(!o) return;
+        /* Klick setzt, Ziehen verschiebt - der ganze Bildausschnitt ist die Flaeche, es gibt nur den einen Ort. */
+        TI_ZIEHT=true; tiMarkeSetzen(te,o); try{ lein.setPointerCapture(ev.pointerId); }catch(x){}
+        lein.style.cursor='move'; ev.preventDefault(); return; } }
     const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     let i=markeBei(e,o);
     if(i<0){
@@ -33081,6 +33203,7 @@ function kbBuehneEinrichten(){
     { const le=lrKarteEffekt(); if(le){ const o=ortVon(ev); if(!o) return;
         if(LR_ZIEHT<0){ lein.style.cursor=lrMarkeBei(le,o)>=0?'move':''; return; }
         lrMarkeSetzen(le,LR_ZIEHT,o.u,o.v); return; } }
+    { const te=tiKarteEffekt(); if(te){ if(!TI_ZIEHT){ lein.style.cursor='crosshair'; return; } const o=ortVon(ev); if(o) tiMarkeSetzen(te,o); return; } }
     const e=kbKarteEffekt(); if(!e){ KB_ZIEHT=-1; return; } const o=ortVon(ev); if(!o) return;
     if(KB_ZIEHT<0){ lein.style.cursor=markeBei(e,o)>=0?'move':'crosshair'; return; }
     const P=kbPunkte(e).slice(); if(!P[KB_ZIEHT]){ KB_ZIEHT=-1; return; }
@@ -33103,10 +33226,13 @@ function kbBuehneEinrichten(){
       else if(war>=0){ vorbStand(); vorbRender(); }
       return;
     }
+    if(TI_ZIEHT){ TI_ZIEHT=false; lein.style.cursor=''; renderStapel(); return; }   /* erst beim Loslassen die Karte neu bauen - wie bei den Schiebern */
     if(LR_ZIEHT>=0){ LR_ZIEHT=-1; lein.style.cursor=''; renderStapel(); return; }
     if(KB_ZIEHT<0) return; KB_ZIEHT=-1;
     lein.style.cursor=KB_STEHT_VOR?'crosshair':''; renderStapel(); };
-  lein.ondblclick=ev=>{ const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
+  lein.ondblclick=ev=>{
+    { const te=tiKarteEffekt(); if(te){ tiMarkeVorgabe(te); TI_ZIEHT=false; renderStapel(); pStat('Ort des Textes auf die Vorgabe zurückgesetzt.'); return; } }
+    const e=kbKarteEffekt(); if(!e) return; const o=ortVon(ev); if(!o) return;
     const i=markeBei(e,o); if(i<0) return;
     const P=kbPunkte(e).slice(); P.splice(i,1); kbSetzen(e,P); KB_ZIEHT=-1;
     pStat(P.length?('Zielpunkt gelöst — '+P.length+' '+(P.length===1?'bleibt':'bleiben')+'.')
@@ -33184,6 +33310,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
     if(lein){ lein.style.touchAction=KB_STEHT?'none':''; lein.style.cursor=KB_STEHT?'crosshair':''; } }
   try{ if(loopAn&&bereit&&!ohneEffekte){ const s=zeit(); loopZeile(s,loopBildMalen(s)); } else zeichneFrame(zeit(),ohneEffekte); }
   finally{ KB_STEHT=0; }
+  uhrWechselMelden();   /* Karaoke-Karte: "der Player steht" kommt und geht mit der echten Uhr (Nacht 25.09.2026) */
   /* GANZ ZULETZT UND NUR HIER: die Trennebene liegt ueber dem fertigen Bild, solange jemand an
      Grenze oder Weichheit zieht. rahmen() ist der einzige Weg, der sie kennt - und er steht bei
      jeder Ausgabe still, also erreicht sie kein Video und keine Kachel. */
@@ -33192,6 +33319,7 @@ function rahmen(){ if(!offen) return; rafId=requestAnimationFrame(rahmen); if(ex
      Bild und nur hier. Sie sind Bedienung und kein Bild. */
   if(kbE) kbMarkenMalen(kbE);
   { const lrE=lrKarteEffekt(); if(lrE) lrMarkenMalen(lrE); }
+  { const tiE=tiKarteEffekt(); if(tiE) tiMarkenMalen(tiE); }   /* die Marke des Textes: Bedienung, kein Bild */
   dioStandZeigen();   /* die Auskunft zum Diorama: sie steht nur da, wenn der Speichervorrat gedeckelt hat */
   brandZeigen();      /* die Ueberstrahlung: eine Zahl, die erst auftaucht, wenn es passiert */
   lmVorschauen(); }
@@ -35793,6 +35921,8 @@ function zeichneFrame(t,roh){
        sie steht hier, damit der Grund an der Stelle steht und nicht in einem Zufall. */
     if(r.typ==='fahrt') return null;
     if(!EFFEKTE[r.typ]) return null; const e=neuerEffekt(r.typ); for(const k of Object.keys(r)) if(k!=='id'&&k!=='zu'&&k[0]!=='_') e[k]=r[k]; if(r.verr==null) e.verr=EFFEKTE[r.typ].verr||'ueber'; e.zu=false;
+    /* Ein Titel-Rezept von vor dem 25.09.2026 kennt keine Farbquelle: es war weiss und bleibt weiss (Regel 12). */
+    if(r.typ==='titel'&&r.farbSatz==null) e.farbSatz='eigen';
     /* Tempo der Ken Burns Fahrt in Schlaegen statt Takten (23.09.2026): ein altes kbTakte wird mit vier Schlaegen je Takt uebersetzt, wie die Spezifikation rechnet. */
     if(r.typ==='kenburns'&&r.kbSchlaege==null&&r.kbTakte!=null){ e.kbSchlaege=Math.max(1,Math.round(Number(r.kbTakte)||1))*KB_ERSATZ_PROTAKT; delete e.kbTakte; }
     /* Aeltere Ablagen kennen nur den Schalter takt (und beim Stroboskop frequenz) - auf den Antrieb uebersetzen. */
@@ -36278,6 +36408,7 @@ function zeichneFrame(t,roh){
     FEIN=true;   /* hier haengt nichts an einer Uhr - die Maler duerfen teuer rechnen */
     try{
     await zeichenBereit(W,H);   /* VOR dem ersten Bild: sonst fehlte das Hauszeichen in den ersten Bildern und sprang mitten im Clip hinein */
+    await schriftenBereit();    /* und die Paketschrift des Titels (Nacht 25.09.2026) */
     await vorlaufen(m,gemerkt,melden?(k,z)=>melden(-k,z):null);   /* mit FEIN wie die gezaehlten Bilder, sonst traegt die Spur ein anderes Bild */
     for(let i=0;i<N;i++){
       if(m.schleife){ const q=schleifeZeit(i/rate,N/rate,m.bild.duration,m.lage); await quelleSetzen(m.bild,q.s); QUELLE_WIRKUNG=q; }
@@ -36564,13 +36695,14 @@ function zeichneFrame(t,roh){
     if(!cfg){ await vollAbbrechenMelden(lauf); pStat('Der Bildkodierer nimmt dieses Format nicht ('+W+'×'+H+')'); return; }
     VOLL.kennung=lauf;   /* ab hier weiss der Abschied beim Schliessen des Tabs, was abzumelden ist */
     await zeichenBereit(W,H);   /* VOR dem ersten Bild - siehe zeichenHolen */
+    await schriftenBereit();    /* VOR dem ersten Bild - die Paketschrift, sonst malte der Anfang mit dem Rueckfall (Nacht 25.09.2026) */
     /* KARAOKE BRAUCHT DIE LYRIK VOR DEM ERSTEN BILD (24.09.2026, Gegenlesen): ohne sie kaeme ein Video ohne die
        bestellte Zeile - oder eines, in dem sie mitten drin einsetzt, sobald die Antwort eintrifft. Darum: warten,
        und ist sie dann nicht da, NICHT ausgeben, sondern sagen warum. Was da ist, wird ins Buendel eingefroren
        (DATA.lyrik), damit ein Nachzuegler den laufenden Export nicht mehr aendert. */
     const lyrikStandExport=await lyrikBereit();
     if(lyrikStandExport!=='ohne'&&lyrikStandExport!=='da'){ await vollAbbrechenMelden(lauf); VOLL.kennung=null;
-      pStat('Karaoke: '+(lyrikStandExport==='unterwegs'?'die bereinigte Lyrik kam nicht rechtzeitig':(LYRIKGRUND[DATA&&DATA.id]||'keine bereinigte Lyrik'))+' — nichts ausgegeben. Karaoke-Karte ausschalten oder die Lyrik rechnen lassen.'); return; }
+      pStat('Karaoke: '+((DATA&&DATA.instrumental)?'dieser Titel hat keinen Gesang':(lyrikStandExport==='unterwegs'?'die bereinigte Lyrik kam nicht rechtzeitig':(LYRIKGRUND[DATA&&DATA.id]||'keine bereinigte Lyrik')))+' — nichts ausgegeben. Karaoke-Karte ausschalten'+((DATA&&DATA.instrumental)?'.':' oder die Lyrik rechnen lassen.')); return; }
     const gemerkt=bundel(), m=vollBuendel(gemerkt,W,H,N); m.lage=lageP; m.schleife=vid;
     m.DATA.lyrik=(DATA&&LYRIK[DATA.id])||null;   /* eingefroren fuer diesen Lauf; der Maler liest DATA.lyrik, wenn es gesetzt ist */
     let teile=[], bytes=0, nr=1, nullBasiert=false, fehler=null, geschickt=0;
@@ -36683,7 +36815,8 @@ function zeichneFrame(t,roh){
     const rechnen=VOLL.msBild>0?VOLL.msBild*Math.round(dauer*BILDRATE)/1000:0;
     return 'ganzer Titel: '+mmss(dauer)+' · '+W+'×'+H+' · etwa '+Math.round(mb)+' MB · '
       +(rechnen>0?'etwa '+vollRest(rechnen)+' Rechenzeit (nach der letzten Messung)':'wie lange gerechnet wird, steht nach den ersten 60 Bildern')
-      +' · das Studio steht so lange still'; }
+      +' · das Studio steht so lange still'
+      +((STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')&&((DATA&&DATA.instrumental)||(lyrikStand(DATA&&DATA.id)!=='da'&&lyrikStand(DATA&&DATA.id)!=='unterwegs')))?' · Karaoke-Karte ohne Lyrik — die Ausgabe würde abbrechen':''); }
   /* ---- DIE VIERTE STUFE: LOOP VERBINDEN (Caspar_D, 15.09.2026: "momentan gibt es ja in unserem Effektclip Quellenwahl-, den
      Vorbereitungs-, den Effektgeneration part, dann muss es noch den Videoloop-Verbinden Part geben am Ende" - und "ein
      Modusknopf im Studio - 10 Sek. Loop waere gut"). Der Name der Stufe steht nur in LOOP_STUFE.
@@ -36781,6 +36914,8 @@ function zeichneFrame(t,roh){
       x.beginPath(); pt.forEach((p,k)=>k?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1])); x.strokeStyle=farbe(txt,0.25); x.lineWidth=Math.max(1,1.5*dpr); x.stroke(); }
     if(loopAn&&loopSicht&&loopSicht.i>=0){ const xp=Math.round(X(loopSicht.i/BILDRATE)); x.fillStyle='#fff'; x.fillRect(xp,0,Math.max(1,dpr),H); } }
   function loopSchalten(an){ loopAn=!!an; const b=$('#tbs-loopAn'), wo=$('#tbs-loopWo');
+    /* Die Karaoke-Karte sagt in der Loop-Ansicht, dass sie dort nichts malt (hinweis) - dafuer muss sie neu gebaut werden (Nacht 25.09.2026). */
+    if(STAPEL&&STAPEL.some(e=>e&&e.typ==='karaoke')) setTimeout(()=>{ try{ if(stapelBox&&stapelBox.isConnected) renderStapel(); }catch(x){} },0);
     if(b){ b.classList.toggle('an',loopAn); b.setAttribute('aria-pressed',loopAn?'true':'false'); } if(wo){ wo.hidden=!loopAn; wo.textContent=''; }   /* die Pille heisst "als 10-s-Clip zeigen", ihr Zustand ist der Rahmen (Regel 18) */
     if(loopAn){ loopLageNeu(); if(STAPEL.some(e=>aktiv(e)&&EFFEKTE[e.typ].art==='gl')&&GL.init()) Promise.resolve(GL.vierLaden()).catch(()=>{}); if(bild&&bild.tagName==='VIDEO'){ VIDEO_GENAU=true; schleifeStills(bild,loopSicht.lage).catch(()=>{}); } }
     else if(!exportLaeuft){ const frei=()=>{ if(loopAn||exportLaeuft) return; VIDEO_GENAU=false; if(offen&&bild&&bild.tagName==='VIDEO') bild.play().catch(()=>{}); };   /* die Exportform der Rauschshader, wie video() */
@@ -36823,6 +36958,7 @@ function zeichneFrame(t,roh){
     const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),20000);
     pStat('ausgegeben: '+name+' · '+(blob.size/1048576).toFixed(1)+' MB · '+N+' Bilder'
+      +(STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')?' — ohne Karaoke (nur im ganzen Titel)':'')
       +(nicht.length?' — ohne Loop: '+nicht.join(', ')
         :!geschnitten?' — Loop ungenau, das Haus hat nicht geschnitten'
         :bewegt?(urteil.schleife&&urteil.schleife!=='keiner'?' — das Video schließt die Schleife: '+((SCHLEIFE_ARTEN.find(a=>a[0]===urteil.schleife)||[0,''])[1]):' — die Effekte schliessen, das Video springt am Übergang (harter Schnitt)')
@@ -36919,7 +37055,11 @@ function zeichneFrame(t,roh){
       const draussen=ev=>{ if(!vorrat.contains(ev.target)) zu(); };
       const auf=()=>{ liste.hidden=false; knopf.setAttribute('aria-expanded','true'); document.addEventListener('pointerdown',draussen,true); const e1=liste.querySelector('.tbs-veintrag'); if(e1) e1.focus(); };
       knopf.onclick=ev=>{ ev.stopPropagation(); if(liste.hidden) auf(); else zu(); };
-      liste.querySelectorAll('.tbs-veintrag').forEach(b=>b.onclick=ev=>{ ev.stopPropagation(); const x=b.dataset.typ; zu(); if(EFFEKTE[x]){ const ne=neuerEffekt(x); STAPEL.push(ne); offenId=ne.id; soloFolgt(); renderStapel(); } knopf.blur(); });
+      liste.querySelectorAll('.tbs-veintrag').forEach(b=>b.onclick=ev=>{ ev.stopPropagation(); const x=b.dataset.typ; zu(); if(EFFEKTE[x]){ const ne=neuerEffekt(x);
+          /* Steht Karaoke schon in der Kette, kommt ein neuer Titel nach oben statt in das Band (Nacht 25.09.2026) -
+             nur beim Einhaengen, nie beim Malen, damit der Regler nicht luegt. */
+          if(x==='titel'&&STAPEL.some(y=>y&&y.typ==='karaoke'&&y.an)) ne.ortY=0.12;
+          STAPEL.push(ne); offenId=ne.id; soloFolgt(); renderStapel(); } knopf.blur(); });
       liste.addEventListener('keydown',ev=>{ if(ev.key==='Escape'){ ev.stopPropagation(); zu(); knopf.focus(); } }); };
     bauVorrat();
     $('#tbs-pSave').onclick=sichern;
@@ -36979,7 +37119,7 @@ function zeichneFrame(t,roh){
     for(let w=0; w<40 && !(typeof katalogInfo==='object'&&katalogInfo); w++){ await new Promise(r=>setTimeout(r,50)); if(lauf!==oeffnenLauf||!offen) return; }
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     if(lauf!==oeffnenLauf||!offen) return;   /* zwischendurch geschlossen oder ein anderer Titel geoeffnet */
-    DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], abschnitte:(s&&s.abschnitte)||null };   /* abschnitte: die Taktlage gewichtet Refrains */
+    DATA={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], abschnitte:(s&&s.abschnitte)||null, instrumental:songInstrumental(s) };   /* abschnitte: die Taktlage gewichtet Refrains; instrumental: fuer das Karaoke (kein Gesang, keine Zeile) */
     PALETTEN['Cover-Akzente']=[DATA.farben.akzent||'#9a9aa0', DATA.farben.akzent2||DATA.farben.akzent||'#c9c9cd'];
     VOLL.abbruch=false; VOLL.msBild=0; tonPruefen(id);   /* die Ton-Pille braucht die Antwort nicht sofort */
     $('#tbs-titel').textContent=DATA.titel; $('#tbs-unter').textContent=(DATA.schlaege.length?DATA.schlaege.length+' Schl\u00e4ge \u00b7 ':'keine Schlagerkennung \u00b7 ')+Math.round(DATA.dauer)+' s';
@@ -37666,6 +37806,76 @@ function zeichneFrame(t,roh){
     if(!q||q.k!==k) return;
     tiefeZeilenNeu();
   }
+  /* ===== TEXTEFFEKTE: GEMEINSAMES HANDWERK (Nacht 25.09.2026) =====
+     Titel und Karaoke malen mit denselben Hilfen: Schriftstapel (Paketschrift zuerst - Inter fuer die
+     Grotesk, Gelasio fuer die Serife, beide OFL in web/fonts; dahinter der alte Stapel als Rueckfall),
+     Umbruch (Wort, dann Bindestrich, dann Zeichen), Laeufe (Emoji nur fuellen), Dreipass (Schatten,
+     Kontur, Fuellung). Was hier steht, gilt fuer beide - sonst baute der zweite es noch einmal. */
+  const SCHRIFT_GROTESK='Inter, "Helvetica Neue", Helvetica, Arial, sans-serif';
+  const SCHRIFT_SERIFE='Gelasio, Georgia, "Times New Roman", Times, serif';
+  function textSchrift(art){ return art==='serife'?SCHRIFT_SERIFE:SCHRIFT_GROTESK; }
+  /* Die Paketschriften laden, bevor das erste Bild eines Exports entsteht (wie Hauszeichen und Lyrik);
+     im Haus wird beim Start angestossen, damit die erste Kachel nicht mit dem Rueckfall malt. */
+  let schriftenLauf=null;
+  function schriftenBereit(){
+    if(schriftenLauf) return schriftenLauf;
+    schriftenLauf=(async()=>{ try{ if(typeof document!=='undefined'&&document.fonts&&document.fonts.load){
+      await Promise.all(['400 20px Inter','700 20px Inter','400 20px Gelasio','700 20px Gelasio'].map(f=>document.fonts.load(f).catch(()=>null))); } }catch(x){} })();
+    return schriftenLauf;
+  }
+  /* Umbruch auf maxW: an Leerzeichen; ein Wort, das allein zu breit ist, an Bindestrichen (der Strich
+     bleibt am Zeilenende), dann zeichenweise (japanisch ohne Leerzeichen). Die Leinwand misst; wer die
+     Schrift setzt, setzt sie vor dem Aufruf. */
+  function textUmbrechen(cx,txt,maxW){
+    const rows=[]; let cur='';
+    const passt=s=>cx.measureText(s).width<=maxW;
+    const stuecke=w=>{ if(passt(w)) return [w]; const teile=[];
+      for(const b of w.split(/(?<=[-‐‑–—\/])/)){ if(passt(b)) teile.push(b);
+        else { let z=''; for(const ch of Array.from(b)){ if(z&&!passt(z+ch)){ teile.push(z); z=ch; } else z+=ch; } if(z) teile.push(z); } }
+      return teile.length?teile:[w]; };
+    for(const w of String(txt).split(/\s+/).filter(Boolean)){
+      const p=cur?cur+' '+w:w;
+      if(passt(p)){ cur=p; continue; }
+      if(cur){ rows.push(cur); cur=''; }
+      if(passt(w)){ cur=w; continue; }
+      const st=stuecke(w); for(let i=0;i<st.length-1;i++) rows.push(st[i]); cur=st[st.length-1];
+    }
+    if(cur) rows.push(cur);
+    return rows;
+  }
+  /* Laeufe einer Zeile: Text und Farbzeichen (Emoji) getrennt. fillStyle und strokeStyle greifen bei
+     Farbglyphen nicht - Schatten- und Konturpass malten sie dreifach bunt. */
+  const EMOJI_RE=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/gu;
+  function textLaeufe(s){ const out=[]; let last=0;
+    for(const m of String(s).matchAll(EMOJI_RE)){ if(m.index>last) out.push({t:s.slice(last,m.index),emoji:false}); out.push({t:m[0],emoji:true}); last=m.index+m[0].length; }
+    if(last<s.length) out.push({t:s.slice(last),emoji:false});
+    return out.length?out:[{t:String(s),emoji:false}]; }
+  /* Der Dreipass je Zeile: Schatten (Fuellung mit Schlagschatten), Kontur, Fuellung - so bleibt die
+     Kontur eine Aussenlinie und das Innere traegt die reine Farbe. Emoji bekommen nur die Fuellung.
+     x ist die LINKE Kante der Zeile (die Laeufe brauchen eine); wer mittig will, rechnet vorher.
+     Masse als Anteil der Schriftgroesse: Kontur bis 0,08 em (bei 0,14 liefen die Punzen zu), Schatten-
+     Unschaerfe 0,05 bis 0,35 em, Versatz 0,05 em. Die Schrift (cx.font) ist beim Aufruf gesetzt. */
+  function textDreipass(cx,zeile,x,y,gr,farbe,sch,kon,alpha){
+    const L=textLaeufe(zeile), alt=cx.textAlign; cx.textAlign='left';
+    const br=L.map(l=>cx.measureText(l.t).width);
+    const lauf=f=>{ let xx=x; for(let i=0;i<L.length;i++){ f(L[i],xx); xx+=br[i]; } };
+    if(sch>0){ cx.globalAlpha=alpha; cx.shadowColor='rgba(0,0,0,'+(0.9*sch).toFixed(3)+')'; cx.shadowBlur=gr*(0.05+0.3*sch); cx.shadowOffsetX=0; cx.shadowOffsetY=gr*0.05; cx.fillStyle='rgba(0,0,0,'+(0.6*sch).toFixed(3)+')';
+      lauf((l,xx)=>{ if(!l.emoji) cx.fillText(l.t,xx,y); }); }
+    cx.shadowColor='transparent'; cx.shadowBlur=0; cx.shadowOffsetY=0;
+    if(kon>0){ cx.globalAlpha=alpha; cx.lineJoin='round'; cx.miterLimit=2; cx.lineWidth=Math.max(0.5,gr*0.08*kon); cx.strokeStyle='rgba(0,0,0,0.92)';
+      lauf((l,xx)=>{ if(!l.emoji) cx.strokeText(l.t,xx,y); }); }
+    cx.globalAlpha=alpha; cx.fillStyle=farbe; lauf((l,xx)=>cx.fillText(l.t,xx,y));
+    cx.textAlign=alt;
+  }
+  /* Die verdeckten Zonen der Hochformat-Plattformen (Reels, TikTok, Shorts: unten rund ein Fuenftel) -
+     eine ehrliche Notiz, kein Regler; nur wenn die Ausgabe hochkant ist und der Ort dort liegt. */
+  function hochformatNotiz(oY){ try{ if(!bereit||!bild) return null; const [W,H]=ausgabeMass(); if(!(W<H)) return null; if(!(oY>0.78)) return null;
+      return 'Hochformat: Reels, TikTok und Shorts legen unten rund ein Fünftel Bedienung über das Bild — bis Ort Y 0,78 bleibt der Text frei.'; }catch(x){ return null; } }
+  /* Der Titel im Band des Karaoke: die Karte sagt es, statt dass der Nutzer es erst im Film sieht. */
+  function titelHinweis(e){ try{ if(!STAPEL) return null; const k=STAPEL.find(x=>x!==e&&x.typ==='karaoke'&&x.an); if(!k) return null;
+      const drei=String(k.zeilen==null?'3':k.zeilen)!=='1', kOy=(k.ortY==null?1:k.ortY), bandOben=kOy-(drei?0.36:0.22), tOy=(e.ortY==null?0.85:e.ortY);
+      if(tOy<bandOben-0.05) return null;
+      return 'Der Titel steht im Karaoke-Band — Ort Y nach oben (etwa 0,12) legt ihn darüber.'; }catch(x){ return null; } }
   /* BEREINIGTE LYRIK FUER DAS KARAOKE (24.09.2026) - dasselbe Muster wie die Tiefenkarte: einmal je
      Titel geholt, waehrenddessen null, und die Karte berichtigt sich, wenn die Antwort da ist.
      /api/lyrik antwortet dreierlei: die Zeilen; {zurueckgestellt, grund} (unter 60 % Deckung); null
@@ -37674,7 +37884,12 @@ function zeichneFrame(t,roh){
      keiner - nach 30 s wird es noch einmal versucht, bis dahin steht „liess sich nicht laden".
      Der volle Export wartet mit lyrikBereit() auf die Antwort, sonst fehlte die Zeile in den ersten
      Bildern - wie das Hauszeichen (zeichenBereit) und das 4D-Rauschen (GL.vierLaden). */
-  const LYRIK={}, LYRIKLAUF={}, LYRIKGRUND={}, LYRIKFEHLER={}, LYRIKGEZEIGT={};
+  const LYRIK={}, LYRIKLAUF={}, LYRIKGRUND={}, LYRIKFEHLER={}, LYRIKGEZEIGT={}, LYRIKINFO={};
+  /* Der Rueckstellgrund in Nutzerwoertern (Nacht 25.09.2026): "nur 45 % gedeckt" ist ein Wort aus bin/lyrik.js. */
+  function lyrikGrundSatz(g){ const s=String(g||''); const m=s.match(/nur\s+(\d+)\s*%\s*gedeckt/i);
+    if(m) return 'Whisper hat nur '+m[1]+' % der Wörter wiedergefunden — zu wenig für sichere Zeiten';
+    if(/japan/i.test(s)) return 'Text in japanischer Schrift — Whisper schreibt Umschrift, kein Abgleich möglich';
+    return 'die bereinigte Lyrik ist zurückgestellt'+(s?' ('+s+')':''); }
   function lyrikVon(id){
     if(!id) return null;
     if(LYRIK[id]!==undefined) return LYRIK[id];
@@ -37685,9 +37900,15 @@ function zeichneFrame(t,roh){
     /* 20 s Schranke: ein Abruf, der nie endet, liesse LYRIKLAUF fuer immer stehen - dann gaebe es keinen Neuversuch mehr. */
     let p=null, ab=null; try{ ab=(typeof AbortController!=='undefined')?new AbortController():null; p=fetch('/api/lyrik/'+encodeURIComponent(id),ab?{signal:ab.signal}:undefined); if(ab) setTimeout(()=>{ try{ ab.abort(); }catch(x){} },20000); }catch(x){ p=Promise.reject(x); }
     p.then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }).then(d=>{
-      const zeilen=(d&&Array.isArray(d.zeilen))?d.zeilen.filter(z=>z&&typeof z.von==='number'&&z.text&&String(z.text).trim()).map(z=>({von:z.von,bis:(typeof z.bis==='number')?z.bis:z.von,text:String(z.text).trim()})).sort((a,b)=>a.von-b.von):[];   /* der Maler sucht mit break - die Reihenfolge ist Voraussetzung, nicht Annahme */
+      /* SICHERHEITSNETZ fuer Regieanweisungen (Nacht 25.09.2026): bin/lyrik.js streicht sie seit heute an der
+         Quelle (Caspar_D: "das sollte in der bereinigten Lyrics nicht passieren, ist ja bereinigt um sowas");
+         eine lyrik.json vom Vortag oder ein fremder Bestand traegt sie noch - hier fallen sie ein zweites Mal. */
+      const putz=s=>String(s).replace(/\[[^\]]*\]/g,' ').replace(/\s+/g,' ').trim();
+      const zeilen=(d&&Array.isArray(d.zeilen))?d.zeilen.filter(z=>z&&typeof z.von==='number'&&z.text&&String(z.text).trim()&&!/^\[.*\]$/.test(String(z.text).trim())).map(z=>({von:z.von,bis:(typeof z.bis==='number')?z.bis:z.von,text:putz(z.text)})).filter(z=>z.text).sort((a,b)=>a.von-b.von):[];   /* der Maler sucht mit break - die Reihenfolge ist Voraussetzung, nicht Annahme */
+      const zahl=v=>Array.isArray(v)?v.length:((typeof v==='number')?v:0);
+      LYRIKINFO[id]=d?{ deckung:(typeof d.deckung==='number')?d.deckung:null, geschaetzt:zahl(d.geschaetzt), gestrichen:zahl(d.gestrichen) }:null;
       if(zeilen.length){ LYRIK[id]=zeilen; LYRIKGRUND[id]=null; }
-      else { LYRIK[id]=null; LYRIKGRUND[id]=(d&&d.zurueckgestellt)?('die bereinigte Lyrik ist zurückgestellt'+(d.grund?' ('+d.grund+')':'')):'für diesen Titel ist keine bereinigte Lyrik gerechnet — sie entsteht im Morgenlauf unter „Karaoke-Zeitanker mit Whisper“ (Whisper muss eingerichtet sein, siehe START-HIER.md); Instrumentale und fremde Titel haben keine'; }
+      else { LYRIK[id]=null; LYRIKGRUND[id]=(d&&d.zurueckgestellt)?lyrikGrundSatz(d.grund):'für diesen Titel ist keine bereinigte Lyrik gerechnet — sie entsteht im Morgenlauf unter „Karaoke-Zeitanker mit Whisper“ (Whisper muss eingerichtet sein, siehe START-HIER.md); fremde Titel haben keine'; }
       delete LYRIKFEHLER[id]; fertig();
     }).catch(()=>{ LYRIKFEHLER[id]=performance.now(); LYRIKGRUND[id]='die bereinigte Lyrik ließ sich nicht laden — in 30 s wird es noch einmal versucht'; fertig(); });
     return null;
@@ -37697,10 +37918,29 @@ function zeichneFrame(t,roh){
   /* Der Satz auf der Karaoke-Karte (hinweis) - und der Anstoss zum Laden, falls noch niemand gefragt hat. */
   function lyrikHinweis(){
     const id=DATA&&DATA.id; if(!id) return null;
-    lyrikVon(id);   /* drosselt selbst: da, unterwegs oder ein Fehlschlag juenger als 30 s - dann tut es nichts. So loest auch die Karte den Neuversuch aus, den ihr Satz verspricht. */
-    const s=lyrikStand(id);
-    const satz=(s==='da')?null:(s==='unterwegs')?'Die bereinigte Lyrik dieses Titels wird gerade geladen.':('<b>Keine Zeile zu malen</b> — '+(LYRIKGRUND[id]||'für diesen Titel gibt es keine bereinigte Lyrik')+'.');
-    LYRIKGEZEIGT[id]=satz; return satz;
+    let satz=null, s='keine';
+    if(DATA.instrumental){ satz='<b>Keine Zeile zu malen</b> — dieser Titel hat keinen Gesang.'; }
+    else {
+      lyrikVon(id);   /* drosselt selbst: da, unterwegs oder ein Fehlschlag juenger als 30 s - dann tut es nichts. So loest auch die Karte den Neuversuch aus, den ihr Satz verspricht. */
+      s=lyrikStand(id);
+      if(s==='da'){
+        /* DIE GUETE DER ZEITEN (Nacht 25.09.2026): Deckung, geschaetzte und gestrichene Zeilen kommen vom
+           Server mit - vor einem Vier-Minuten-Export soll der Nutzer wissen, was ihn erwartet. Bei 100 %
+           und nichts geschaetzt oder gestrichen steht kein Satz. */
+        const i=LYRIKINFO[id], teile=[];
+        if(i&&typeof i.deckung==='number'&&i.deckung<0.995) teile.push('Whisper hat '+Math.round(i.deckung*100)+' % der Wörter wiedergefunden');
+        if(i&&i.geschaetzt>0) teile.push(i.geschaetzt+(i.geschaetzt===1?' Zeile mit geschätzter Zeit':' Zeilen mit geschätzter Zeit'));
+        if(i&&i.gestrichen>0) teile.push(i.gestrichen+(i.gestrichen===1?' Zeile nicht gesungen, weggelassen':' Zeilen nicht gesungen, weggelassen'));
+        satz=teile.length?('Zeitanker aus dem Morgenlauf: '+teile.join(' · ')+'.'):null; }
+      else if(s==='unterwegs') satz='Die bereinigte Lyrik dieses Titels wird gerade geladen.';
+      else satz='<b>Keine Zeile zu malen</b> — '+(LYRIKGRUND[id]||'für diesen Titel gibt es keine bereinigte Lyrik')+'.';
+    }
+    /* Was die Loop-Ansicht und der stehende Player mit der Zeile machen, sagt die Karte selbst (Nacht 25.09.2026). */
+    const dazu=[];
+    try{ if(loopAn) dazu.push('In der Loop-Ansicht und im Zehnsekünder wird die Zeile weggelassen — sie gehört in den ganzen Titel.');
+      else if(s==='da'&&!uhrEcht&&!exportLaeuft) dazu.push('Der Player steht — die Zeilen laufen auf einer freien Uhr. Titel abspielen, dann sitzt die Zeile zum Gesang.'); }catch(x){}
+    const alle=[satz].concat(dazu).filter(Boolean), out=alle.length?alle.join('<br>'):null;
+    LYRIKGEZEIGT[id]=out; return out;
   }
   /* Die Antwort ist da: die Karte hat bis eben „wird geladen" gesagt und zeichnet sich neu - nur fuer
      den Titel, der gerade im Pult steht; eine Kachel auf der Albumseite laedt die Lyrik eines anderen. */
@@ -37716,6 +37956,7 @@ function zeichneFrame(t,roh){
   async function lyrikBereit(){
     const id=DATA&&DATA.id; if(!id) return 'keine';
     if(!STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')) return 'ohne';
+    if(DATA&&DATA.instrumental) return 'keine';   /* kein Gesang, keine Zeile - der Export bricht mit diesem Satz ab */
     delete LYRIKFEHLER[id];   /* ein Export ist eine ausdrueckliche Bestellung - die 30-s-Sperre nach einem Fehlschlag gilt hier nicht (Gegenlesen 24.09.2026) */
     lyrikVon(id);
     const bis=performance.now()+15000;
@@ -38331,13 +38572,19 @@ function zeichneFrame(t,roh){
     cx.restore();
   }
 
+  /* Ob ein Titel Gesang hat, weiss das Haus (istInstrumental: Handmarke schlaegt Automatik); im Pruefstand
+     gibt es das Haus nicht, dort zaehlt der Katalogeintrag. Kein Gesang heisst fuer das Karaoke: keine Zeile. */
+  function songInstrumental(s){ try{ if(!s) return false; if(typeof istInstrumental==='function') return !!istInstrumental(s); if(s.instrumental) return true; if(typeof s.hatLyrics==='boolean') return !s.hatLyrics; if(typeof s.lyrics==='string') return !s.lyrics.trim(); return false; }catch(x){ return false; } }
+  /* MALT_KACHEL: waehrend clipTick eine Kachel oder die Buehne malt (Nacht 25.09.2026). Das Karaoke fragt es:
+     ohne echte Uhr gibt es dort keine Zeile, im Pult bleibt die freie Uhr als Vorschau. */
+  let MALT_KACHEL=false;
   const clips=[]; let clipRaf=0, gemerkt=null; const songCache={};
   const bundel=()=>({lein,g,oa,ob,oc,ores,okc,ovb,olicht,oherk,VORB,ca,cb,cc,cres,ckc,clicht,cherk,bild,bereit,STAPEL,DATA,grund,soloId,pal:PALETTEN['Cover-Akzente']});
   const setzen=m=>{ ({lein,g,oa,ob,oc,ores,okc,ovb,olicht,oherk,VORB,ca,cb,cc,cres,ckc,clicht,cherk,bild,bereit,STAPEL,DATA,grund,soloId}=m); if(m.pal) PALETTEN['Cover-Akzente']=m.pal; };
   async function songDaten(id){ if(songCache[id]) return songCache[id];
     let s=null; try{ s=await (await fetch('/api/song/'+id)).json(); }catch(e){}
     let rezept=null; try{ const a=await fetch('/media/'+id+'/eigen-effekt.json',{cache:'no-store'}); if(a.ok) rezept=await a.json(); }catch(e){}
-    const DATA2={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[] };
+    const DATA2={ id, titel:(s&&s.titel)||'', dauer:(s&&s.dauer)||0, farben:(s&&s.farben)||{}, schlaege:(s&&Array.isArray(s.schlaege))?s.schlaege:[], instrumental:songInstrumental(s) };
     const R=rezeptLesen(rezept);
     return songCache[id]={ DATA:DATA2, song:s, grund:R.grund, vorbereitung:R.vorbereitung, rezept:R.effekte, alt:R.alt, fassung:R.fassung, pal:[DATA2.farben.akzent||'#9a9aa0', DATA2.farben.akzent2||DATA2.farben.akzent||'#c9c9cd'] }; }
   const kastenVon=z=>(z&&z.querySelector&&z.querySelector('.bild'))||z;
@@ -38351,7 +38598,12 @@ function zeichneFrame(t,roh){
       m.grund={art:seite.art,nr:seite.nr};
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
         /* Die Leinwand liegt ganz im Kasten (object-fit: contain): so gross, dass das eingepasste Bild volle Schaerfe hat; lange Seite hoechstens 960 px. */
-        const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk); const deckel=960/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
+        const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk);
+        /* AUF DER BUEHNE MIT TEXT 1440 STATT 960 (Nacht 25.09.2026): Bildeffekte verzeihen das Hochziehen auf den
+           Retina-Schirm, Buchstabenkanten nicht. Nur dort, nur mit Titel oder Karaoke in der Kette - die Kacheln
+           der Liste bleiben bei 960. */
+        const textDa=Array.isArray(m.STAPEL)&&m.STAPEL.some(x=>x&&(x.typ==='titel'||x.typ==='karaoke')&&x.an);
+        const deckel=((kasten.classList.contains('bart')&&textDa)?1440:960)/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
         [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht,m.oherk].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true; clipMelden(kasten,'da');
         /* Auf der Buehne liegt unter der Leinwand das Standbild (img.motiv, cover.jpg); es wird verdeckt, solange der
            Maler malt - sonst schaut es neben einer schmaleren Quelle heraus. Den Rahmen der Buehne ruehrt der Maler nicht an. */
@@ -38375,9 +38627,16 @@ function zeichneFrame(t,roh){
       const m=clips.find(x=>x.canvas===cv); if(!m||!m.bereit||!Array.isArray(m.STAPEL)) return false;
       const an=e=>m.soloId?(e.id===m.soloId):!!e.an;
       const k=m.STAPEL.find(e=>e&&e.typ===typ&&an(e)&&!(e.staerke<=0.001)); if(!k) return false;
-      if(typ==='karaoke'){ const Z=lyrikVon(m.DATA&&m.DATA.id); return !!(Z&&Z.length); }
+      if(typ==='karaoke'){ if(m.DATA&&m.DATA.instrumental) return false;
+        /* nur mit echter Uhr - liegt der Titel nicht im Player, malt der Effekt keine Zeile, und das Band der Buehne bleibt (Nacht 25.09.2026) */
+        let echt=false; try{ echt=(typeof aktuellId!=='undefined'&&aktuellId===m.songId&&typeof audio!=='undefined'&&audio.currentTime>0.05); }catch(x){ echt=false; }
+        if(!echt) return false;
+        const Z=lyrikVon(m.DATA&&m.DATA.id); return !!(Z&&Z.length); }
       return true; }catch(x){ return false; } }
-  function clipZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
+  /* EIN ANGEHALTENER FILM STEHT (Nacht 25.09.2026): liegt DIESER Titel im Player, gilt seine Songzeit - auch
+     wenn er pausiert ist; vorher sprang die Kachel bei Pause auf eine freie Uhr und malte Zeilen, die zu
+     nichts gehoerten. Nur ein Titel, der gar nicht im Player liegt, laeuft frei (Vorschau der Gestaltung). */
+  function clipZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
   function clipTick(){
     for(let i=clips.length-1;i>=0;i--) if(!clips[i].canvas.isConnected){ const mw=clips[i]; quelleWeg(mw.bild); vorbFilterWeg(mw.VORB); if(mw.motiv) mw.motiv.style.visibility=''; clips.splice(i,1); clipMelden(mw.kasten,'weg'); }
     if(!clips.length){ clipRaf=0; return; }
@@ -38388,11 +38647,13 @@ function zeichneFrame(t,roh){
        dem Lauf um denselben Faden und dieselbe GPU. rahmen() steht aus demselben Grund still (29346). */
     if(exportLaeuft) return;
     gemerkt=bundel();
-    for(const m of clips){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(clipZeit(m)); }
+    MALT_KACHEL=true;
+    try{ for(const m of clips){ if(!m.bereit||!m.DATA) continue; setzen(m); zeichneFrame(clipZeit(m)); } } finally{ MALT_KACHEL=false; }
     setzen(gemerkt); gemerkt=null; }
   /* Nach Sichern/Loesen: Vorrat vergessen und laufende Maler dieses Titels
      abwerfen - die App haengt sie ueber markieren() frisch wieder ein. */
   function clipNeu(id){ delete songCache[id]; clips.filter(m=>m.songId===id).forEach(m=>clipAus(m.kasten)); }
+  try{ schriftenBereit(); }catch(x){}   /* die Paketschriften gleich beim Start holen - die erste Kachel soll nicht mit dem Rueckfall malen */
   return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt };
 })();
 /* <<< Effektclip-Studio (tbs-modul.js) */

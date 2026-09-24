@@ -4082,7 +4082,8 @@
     }
    ],
    "gruppe": "karaoke",
-   "bemerkung": "Nur die gesungene Zeile, Serife, eigene Farbe, ohne Band, mittig hoch, links, 0,3 s Vorlauf, Screen; zweiter Titel. Unter LOOP>0 nichts gemalt - siehe karaoke."
+   "bemerkung": "Nur die gesungene Zeile, Serife, eigene Farbe, ohne Band, mittig hoch, links, 0,3 s Vorlauf, Screen; zweiter Titel. jetzt liegt mitten in einer gesungenen Zeile - im Ruhezustand malte die Einzelzeile nichts, und der Fall traefe nichts (Nacht 25.09.2026). Unter LOOP>0 nichts gemalt - siehe karaoke.",
+   "jetzt": 51.8
   }
  ],
  "nichtHerstellbar": []
