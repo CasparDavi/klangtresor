@@ -6598,8 +6598,8 @@ gelöscht): Bewegtbild → Effektclip + Textebene Karaoke → Band `display:none
 „vom Effektclip", die Zeilen kommen aus dem Clip; Bildebene Standbild → Band zurück, Knopf „Karaoke";
 wieder Bewegtbild → weicht erneut. `stand.js` kennt die neue Rückgabezeile des Moduls (`clipMalt`).
 
-**Wiedervorlage 20 (Caspar_D):** auf der eigenen Bühne mit laufendem Ton ansehen — sitzt die Zeile
-aus dem Effektclip zum Gesang? (Ohne Textversatz, siehe §22.)
+**Wiedervorlage 20 — erledigt (Caspar_D, 25.09.2026: „gut, passt, Text ist bildsynchron").** Die
+Zeile aus dem Effektclip sitzt auf der Bühne zum Gesang, ohne Textversatz (§22).
 
 ## 22. Zwei Rücknahmen am Karaoke (24.09.2026, abends)
 
