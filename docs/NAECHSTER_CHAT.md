@@ -6092,17 +6092,15 @@ und hier fehlt, ist erledigt oder gegenstandslos und dort so markiert.
 
 Nichts davon ist Bauarbeit. Je Punkt: was ansehen, wo.
 
-1. **Abnahme der drei Leuchten mit Tiefe.** Scheinwerfer (`lichtRaum`, Hotspot 0,7 → 94 % des
-   alten), Laser (`laserRaum`, 86 %, mit Saum, Querschnitt-Normierung, Flimmern/Sprung/Quelle
-   wandert), Lichtstrahlen (`strahlenRaum`, Glimmen 6,0/2,0). Dein letztes Wort dazu, 22.09.
-   06:27: *„der alte Lichtstrahleneffekt fliegt irgendwann raus, wenn der neue sichtbar ist. Ist
-   er aber eben nicht."* Erst nach der Abnahme fliegen `licht`, `laser`, `strahlen` raus.
+1. ~~**Abnahme der drei Leuchten mit Tiefe.**~~ **Entschieden am 24.09.:** Scheinwerfer mit Tiefe
+   „sieht gut aus" — **die alten ohne Tiefe bleiben trotzdem**; Lichtstrahlen mit Tiefe „nicht so gut,
+   dass es das alte ersetzen könnte, sie wirken anders und haben beide ihre Berechtigung" — **beide
+   bleiben**; Laser mit Tiefe: „zu verwaschen, zu ungesättigt, alles zu blass, der alte bringt mehr
+   Farbe" → nachgebaut (Abschnitt 15), erneut auf Wiedervorlage. Nichts fliegt raus.
 2. **Lichtstrahlen: Schacht/Fächer gegen den alten `strahlen` am Bild**, und die **Kugelquelle** —
    bei Radius 2,0 unterscheidbar, aber blass. Reicht das, oder braucht sie weniger, dafür dickere
    Strahlen? (KONZEPT-LEUCHTEN §7, Tabelle.)
-3. **Roll am Fächer ansehen** — gebaut, aber nie von dir gesehen: Laser oder Lichtstrahlen, Regler
-   „Rollen" oder Schwenkart „Kreis+Rollen". Dein Wunsch vom 21.09.: *„die Fächerfläche steht
-   momentan parallel zur Diorama-Front-Scheibe."*
+3. ~~**Roll am Fächer ansehen**~~ — 24.09.: „gut".
 4. **Escher, Funken auf Raumtiefe 1** — säulenartige Streifen statt Funken. Differenzbild liegt
    unter `~/Downloads/escher-funken-diff.png` (hell = wo Funken malen). Richtig, weil jede Stufe
    Boden ist — oder falsch?
@@ -6148,8 +6146,7 @@ Nichts davon ist Bauarbeit. Je Punkt: was ansehen, wo.
     die 0,5 im Lampenweg ist der Regler (KONZEPT-LEUCHTEN §6, Tabelle).
 16. **Überstrahlungsanzeige** — Wort („Ausgebrannt: 6 % des Bildes") und Ort (Bühne unten links)
     sind Entwurf; im Studio ansehen, z. B. „Helligkeit schlägt" mit voller Wucht.
-17. **Regel-9a-Skala am Dicke-Regler** — die ersten 25 % des Reglerwegs sind jetzt 0,05–0,44°. Fühlt
-    sich das richtig an?
+17. ~~**Regel-9a-Skala am Dicke-Regler**~~ — 24.09.: „gut".
 
 ## 3. Offen — Bau, in dieser Reihenfolge
 
@@ -6390,3 +6387,25 @@ Phase ist mild (−2 %/−16 %), die Extinktion war der Fresser (−29 %/−66 %
 zusammen **−10 %/−15 % (Scheinwerfer)** und **−33 %/−40 % (Laser)**. Die eine gesetzte Zahl ist
 das halbe Gewicht des Lampenwegs. Alter Scheinwerfer unverändert (Weiche am Herkunfts-Puffer).
 Wiedervorlage 15 ist damit ein Augenschein, keine Entscheidung mehr.
+
+## 15. Caspar_D geht die Liste durch — der Laser wird nachgebaut (24.09.2026)
+
+**Entschieden:** Scheinwerfer mit Tiefe gut, die alten bleiben trotzdem (1). Lichtstrahlen mit Tiefe
+ersetzen das alte nicht, beide haben ihre Berechtigung (3). Roll gut (4). Dicke-Skala gut (5).
+
+**Laser mit Tiefe** — *„Fächer ist natürlich nicht parallel — falsche Bezeichnung … die Strahlen sind
+immer noch zu verwaschen und zu ungesättigt, die Natur des Lasers ist nicht wirklich gut getroffen,
+alles zu blass. Der alte Laser bringt mehr Farbe. Ich hätte gern diese Klarheit und Sättigung."*
+Nachgelesen am alten Maler: Kern mit voller Deckkraft, Saum 3,2-fach breit mit **0,22** der
+Kern-Deckkraft, Verrechnung **Addieren**. Der neue hatte den Saum auf **0,85** (gestern nach der
+Lichtmenge gewählt, 86 % des alten) — viermal so hell, das „verwaschen" —, klemmte die Farbkanäle
+einzeln, wenn v über 1 geht (aus (0,2; 0,9; 1)·3 wird (0,6; 1; 1): das „blass"), und verrechnete mit
+Screen. Geändert: Saum 0,22; im Bildweg wird auf den größten Kanal normiert (Farbton bleibt, nur
+voll; im Licht-Puffer und Herkunftslauf nicht); Verrechnung Addieren; Bauart heißt „Fächer — mehrere
+Strahlen aus einer Quelle". Lichtmenge danach: ohne Nebel 9.440 → 7.003 (−26 %), mit Nebel 396.019 →
+266.962 (−33 %) — der Saum fehlt, der Kern ist satt und hart. Gestern „zu schwach", heute „zu blass":
+beides zugleich geht nur über den Kern. Wiedervorlage. Naht über alle zwölf `laserraum-*`-Fälle: elf 0,00, `laserraum-strahl-kegel` 0,06/0,31 — in seiner bekannten Schwankung (0,17–0,36 seit dem Saum), kein neuer Befund.
+
+**Neuer Wunsch:** *„bei Feuer und Flammen (Rauschen) fällt mir auf, dass sie keinen Ursprung (Kreis,
+Ellipse, Linie …) haben. Das brauche ich aber, sonst kann man sie nur an der Bildunterkante
+einsetzen."* — Entwurf folgt als Skizze, vor dem Bau.

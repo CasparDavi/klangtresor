@@ -27599,10 +27599,10 @@ const EFFEKTE = {
      Bildbreiten und bleibt ueber die Strecke gleich; sonst ist sie ein Winkel und waechst mit
      der Entfernung. Beide Geraete teilen denselben Shader - eine Rechnung, zwei Zeilen in der
      Registry. */
-  laserRaum:{ label:'Laser mit Tiefe', art:'gl', verr:'screen', verrFrei:true, staerkeDef:.7, leuchtet:true,
+  laserRaum:{ label:'Laser mit Tiefe', art:'gl', verr:'add', /* wie der alte Laser: Addieren gibt den satten Strich, Screen drueckt ihn ins Weisse (24.09.2026) */ verrFrei:true, staerkeDef:.7, leuchtet:true,
     besch:'<b>Paralleles Licht mit einem Ort im Raum.</b> Wie beim Scheinwerfer mit Tiefe stehen Quelle und Ziel irgendwo im Diorama, beide mit einer <b>Tiefe</b>. Anders als ein Lichtschacht weitet sich ein Laser <b>nicht</b> auf: Sein Durchmesser bleibt \u00fcber die ganze Strecke gleich.<br>F\u00fcnf Bauarten: <b>F\u00e4cher</b> \u2014 ein Strahlteiler macht aus einem Strahl mehrere gleichzeitige, alle parallel. <b>Scanner</b> \u2014 ein Strahl, von einem Spiegel schnell abgelenkt; was man sieht, ist sein Nachleuchten. <b>Matrixpunkte</b> \u2014 ein Beugungsgitter streut ein Raster von Punkten auf das, was da ist. <b>Kegel</b> \u2014 die Strahlen sitzen auf einem <i>hohlen</i> Mantel, der sich dreht: der Lasertunnel \u00fcber der Tanzfl\u00e4che, bei dem man mitten drin steht. <b>Lissajous</b> \u2014 derselbe Spiegel wie beim Scanner, aber in beiden Achsen und mit verschiedenem Tempo; daraus entsteht eine geschlossene Schleife.<br><b>Rollen</b> dreht die F\u00e4cherebene um die Strahlachse, <b>Austastung</b> schaltet einzelne Strahlen im Takt ab \u2014 das Blanking einer Lasershow.<br><b>Der Strahlentisch</b> \u2014 die waagerechte Strahlenebene \u00fcber den K\u00f6pfen \u2014 braucht keine eigene Bauart: das ist ein F\u00e4cher mit Rollen auf 90\u00b0.',
     params:[{k:'farbe',lbl:'Farbe',farbe:true,def:'#ff2a2a'},
-      {k:'bauart',lbl:'Bauart',sel:[['faecher','F\u00e4cher \u2014 mehrere parallele Strahlen'],['scanner','Scanner \u2014 ein abgelenkter Strahl'],['matrix','Matrixpunkte \u2014 ein Raster'],['kegel','Kegel \u2014 ein drehender Tunnel aus Strahlen'],['lissa','Lissajous \u2014 eine geschlossene Schleife']],def:'faecher'},
+      {k:'bauart',lbl:'Bauart',sel:[['faecher','F\u00e4cher \u2014 mehrere Strahlen aus einer Quelle'],['scanner','Scanner \u2014 ein abgelenkter Strahl'],['matrix','Matrixpunkte \u2014 ein Raster'],['kegel','Kegel \u2014 ein drehender Tunnel aus Strahlen'],['lissa','Lissajous \u2014 eine geschlossene Schleife']],def:'faecher'},
       {k:'lrOx',lbl:'Quelle X',min:-0.5,max:1.5,step:.01,def:.12,
         notiz:e=>e.quelleWandert?'Wird ignoriert, solange die Quelle unten auf „wandert“ steht.':null},
       {k:'lrOy',lbl:'Quelle Y',min:-0.5,max:1.5,step:.01,def:.18,
@@ -31433,10 +31433,17 @@ float imStrahl(vec3 Q, vec3 Lp, vec3 A, vec3 Ur, vec3 Vr, float dref, out float 
      die weitere Umgebung. Der Saum rechnet EIGENSTAENDIG auf derselben Querdistanz, aber mit dem
      3,2-fachen Radius als Bezug und deutlich schwaecherem Abfall (Exponent 2 statt sch) - ein
      Glimmen, kein zweiter Kern. Additiv zum Kern (max, nicht Summe: der Kern bleibt der hellste
-     Punkt, der Saum darf ihn nicht uebersteuern), und nur fuer den Laser. */
+     Punkt, der Saum darf ihn nicht uebersteuern), und nur fuer den Laser.
+     22 % STATT 85 % (24.09.2026). Die 0,85 waren nach der LICHTMENGE gewaehlt (86 % des alten
+     Lasers) - und machten den Strahl breit und verwaschen. Der alte Laser malt seinen Saum
+     (3,2-fach breit) mit 0,22 der Kern-Deckkraft, seinen Kern voll: ein scharfer Strich mit einem
+     leisen Glimmen. Caspar_D: "die Strahlen sind immer noch zu verwaschen und zu ungesaettigt ...
+     ich haette gern diese Klarheit und Saettigung". Also dasselbe Verhaeltnis wie beim Vorbild;
+     was an Lichtmenge fehlt, holt der Kern ueber die Verrechnung (add) und die Querschnitt-
+     Normierung, nicht der Saum. */
   if(u_parallel>0.5){
     float sD=max(0.0,1.0-qD/3.2), sE=max(0.0,1.0-qE/3.2);
-    float saum=pow(sD,2.0)*pow(sE,2.0)*0.85;
+    float saum=pow(sD,2.0)*pow(sE,2.0)*0.22;
     v=max(v,saum);
   } else {
     /* DER SCHACHT BEKOMMT SEIN EIGENES GLIMMEN (22.09.2026, Caspar_D: "meinst du, Punkt 2 waere
@@ -31574,7 +31581,14 @@ void main(){
   }
   if(v<=0.0){ gl_FragColor=vec4(0.0,0.0,0.0,1.0); return; }
   vec3 aus=(u_modus>0.5)?vec3((u_lrOx+0.5)*0.5,(u_lrOy+0.5)*0.5,u_lrOz):f;
-  gl_FragColor=vec4(aus*v,1.0); }`;
+  vec3 c=aus*v;
+  /* FARBTON ERHALTEN, NICHT JE KANAL KLEMMEN (24.09.2026). Ueber 1 hinaus (Kern mal Querschnitt-
+     Normierung, bis 4) klemmt die 8-Bit-Leinwand jeden Kanal fuer sich: aus (0,2; 0,9; 1) mal 3 wird
+     (0,6; 1; 1), ein blasses Cyan statt eines satten - genau Caspar_Ds "zu ungesaettigt, alles zu
+     blass". Im Bildweg wird darum auf den groessten Kanal normiert: die Farbe bleibt, was sie ist,
+     nur voll. Im Licht-Puffer und im Herkunftslauf nicht: dort zaehlt die Menge bzw. der Ort. */
+  if(u_inPuffer<0.5 && u_modus<0.5){ float m=max(c.r,max(c.g,c.b)); if(m>1.0) c/=m; }
+  gl_FragColor=vec4(c,1.0); }`;
 
 
 const GL_SHADER={
