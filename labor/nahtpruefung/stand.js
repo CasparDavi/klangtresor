@@ -21,7 +21,7 @@ const BLOECKE = [
   { datei: 'tbs.css', auf: '/* >>> Effektclip-Studio (tbs.css) */', zu: '/* <<< Effektclip-Studio (tbs.css) */' },
   { datei: 'tbs-modul.js', auf: '/* >>> Effektclip-Studio (tbs-modul.js) */', zu: '/* <<< Effektclip-Studio (tbs-modul.js) */' }
 ];
-const RUECKGABE = '  return { oeffnen, schliessen, clipAn, clipAus, clipNeu };';
+const RUECKGABE = '  return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt };';
 
 function grenzen(text, b) {
   const i = text.indexOf(b.auf), j = text.indexOf(b.zu);

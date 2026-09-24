@@ -1649,6 +1649,10 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    Zeile nicht mehr. */
 #bkaraoke .kz{max-width:min(1040px,74vw);margin-inline:auto}
 #buehne.text-karaoke #bkaraoke{display:flex}
+/* Malt auf der Buehne ein Effektclip mit aktiver Karaoke-Karte, weicht das Band - sonst stuende
+   die Zeile doppelt (Caspar_D, 24.09.2026). Die Textebene bleibt „karaoke", nur das Band geht;
+   karaokeBandStand() setzt die Klasse. */
+#buehne.karaoke-vom-clip #bkaraoke{display:none}
 #bkaraoke .kz{font-weight:700;line-height:1.25;letter-spacing:-.01em;
   transition:opacity .35s ease,color .35s ease}
 /* Die mittlere Zeile ist die, die gerade dran ist - deutlich größer,
@@ -16972,6 +16976,7 @@ function pmodiAufbauen(){
     const m = k.dataset.modus;
     k.disabled = !geht[m];
     k.title    = geht[m] ? PMODI[m].name : PMODI[m].fehlt;
+    if (m === 'karaoke' && geht[m] && bText === 'karaoke' && $('buehne').classList.contains('karaoke-vom-clip')) k.title = 'Karaoke – vom Effektclip';
   }
   // Der Ausklapper des Telefons: grau, wenn KEINER der drei geht -
   // also bei fremden Songs ohne Text. Und dann auch zugeklappt.
@@ -17020,6 +17025,30 @@ function textSetzen(art){
   textEbeneAnwenden();
 }
 
+/* KARAOKE AUF KARAOKE (Caspar_D, 24.09.2026: "ihh, da hab ich grade nicht dran gedacht, das
+   Karaoke auf Karaoke laufen kann ... vielleicht sollte die Buehne erkennen, wenn der Effekt an ist").
+   Malt auf der Buehne gerade ein Effektclip mit aktiver Karaoke-Karte (Bildebene Bewegtbild, Eintrag
+   Effektclip, Karte an, Lyrik da), weicht das Band der Buehne: der gestaltete Clip gewinnt, die
+   Allgemeinform tritt zurueck. Die Textebene bleibt "karaoke" - das ist weiter die Wahl des Nutzers -,
+   der Knopf sagt "vom Effektclip". Gefragt wird an dem, was die Buehne WIRKLICH malt, nicht daran, ob
+   ein Rezept existiert: beim Standbild oder einem Video von Suno malt der Effekt nicht, und dann
+   bleibt das Band. Drei Anlaesse: die Textebene wechselt, der Kasten meldet seinen Clip (Ereignis
+   'effektclip' aus dem Studio-Modul), und jeder Takt des Players - der faengt die Lyrik, die nach dem
+   Clip eintrifft. Kein Schalter: die Software rechnet es aus. */
+function karaokeVomClip(){
+  try{ const k = $('buehne').querySelector('.bart');
+    return !!(k && typeof EffektclipStudio === 'object' && EffektclipStudio && EffektclipStudio.clipMalt && EffektclipStudio.clipMalt(k, 'karaoke')); }
+  catch(e){ return false; }
+}
+function karaokeBandStand(knoepfe){
+  const b = $('buehne'); if (!b) return;
+  const vom = bText === 'karaoke' && karaokeVomClip();
+  if (b.classList.contains('karaoke-vom-clip') === vom) return;
+  b.classList.toggle('karaoke-vom-clip', vom);
+  if (knoepfe !== false) pmodiAufbauen();   // der Karaoke-Knopf sagt „vom Effektclip"
+}
+document.addEventListener('effektclip', (ev) => { if (ev.target && ev.target.closest && ev.target.closest('#buehne')) karaokeBandStand(); });
+
 /** Layout-Klasse setzen und das Karaokeband neu aufbauen. */
 function textEbeneAnwenden(){
   /* Bei instrumentalen Stücken fallen beide Textmodi weg - es gibt
@@ -17045,6 +17074,7 @@ function textEbeneAnwenden(){
 
   bAktiv = -1;                      // erzwingt Neuzeichnen im nächsten Takt
   karaokeAufbauen();
+  karaokeBandStand(false);          // weicht das Band dem Effektclip? (die Knöpfe baut bedienungAufbauen gleich neu)
   // Die Knöpfe zeigen den Zustand an - und der kann hier gerade
   // korrigiert worden sein (Karaoke ohne Zeitmarken fällt auf aus).
   bedienungAufbauen();
@@ -26422,6 +26452,7 @@ function buehneTakt(){
   const t = Math.max(0, echt - bVersatz/1000);
   const d = audio.duration || 0;
   $('bfort').style.width = d ? (echt/d*100)+'%' : '0';
+  karaokeBandStand();   // billig: ein querySelector und ein Blick in den Stapel; faengt die Lyrik, die nach dem Clip kam
   $('bjetzt').textContent = zeit(echt);
   $('bganz').textContent = zeit(d);
   const bab = $('babspielen');
@@ -38310,7 +38341,7 @@ function zeichneFrame(t,roh){
       const fertig=q=>{ if(q!==m.bild||!m.canvas.isConnected){ if(q!==m.bild) quelleWeg(q); return; } const [bw,bh]=qMass(q), dpr=Math.min(2,window.devicePixelRatio||1), kW=Math.max(64,kasten.clientWidth||300), kH=Math.max(64,kasten.clientHeight||Math.round(kW*4/3));
         /* Die Leinwand liegt ganz im Kasten (object-fit: contain): so gross, dass das eingepasste Bild volle Schaerfe hat; lange Seite hoechstens 960 px. */
         const sk=Math.min(kW*dpr/bw, kH*dpr/bh); let W=Math.round(bw*sk), H=Math.round(bh*sk); const deckel=960/Math.max(W,H); if(deckel<1){ W=Math.round(W*deckel); H=Math.round(H*deckel); } W=Math.max(1,W); H=Math.max(1,H);
-        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht,m.oherk].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true;
+        [m.lein,m.oa,m.ob,m.oc,m.ores,m.okc,m.ovb,m.olicht,m.oherk].forEach(c=>{ c.width=W; c.height=H; }); m.bereit=true; clipMelden(kasten,'da');
         /* Auf der Buehne liegt unter der Leinwand das Standbild (img.motiv, cover.jpg); es wird verdeckt, solange der
            Maler malt - sonst schaut es neben einer schmaleren Quelle heraus. Den Rahmen der Buehne ruehrt der Maler nicht an. */
         try{ if(kasten.classList.contains('bart')){ const mo=kasten.querySelector('img.motiv'); if(mo){ m.motiv=mo; mo.style.visibility='hidden'; } } }catch(e){} };
@@ -38318,10 +38349,26 @@ function zeichneFrame(t,roh){
       m.bild=quelleBauen(seite,fertig,fehler); });
     if(!clipRaf) clipRaf=requestAnimationFrame(clipTick); }
   function clipAus(ziel){ const kasten=kastenVon(ziel); if(!kasten) return; const cv=kasten.querySelector('canvas.tbs-clip'); if(!cv) return; cv.remove(); const i=clips.findIndex(m=>m.canvas===cv);
-    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); vorbFilterWeg(m.VORB); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; } }
+    if(i>=0){ const m=clips[i]; quelleWeg(m.bild); vorbFilterWeg(m.VORB); clips.splice(i,1); if(m.motiv) m.motiv.style.visibility=''; clipMelden(kasten,'weg'); } }
+  /* DER KASTEN ERFAEHRT, WENN SEIN CLIP KOMMT ODER GEHT (24.09.2026). Die Buehne hoert darauf und fragt clipMalt -
+     ohne diese Meldung wuesste sie bei stehendem Player nicht, dass die Karaoke-Zeile inzwischen aus dem Effektclip
+     kommt (oder nicht mehr). Ein DOM-Ereignis, das nach oben steigt; wer es nicht braucht, hoert es nicht. */
+  function clipMelden(kasten,stand){ try{ if(kasten&&kasten.isConnected) kasten.dispatchEvent(new CustomEvent('effektclip',{bubbles:true,detail:{stand}})); }catch(x){} }
+  /* FUER DIE BUEHNE (Caspar_D, 24.09.2026: "vielleicht sollte die Buehne erkennen, wenn der Effekt an ist"): malt der
+     Effektclip in diesem Kasten GERADE eine aktive Karte dieses Typs? Nur eine Auskunft, keine Wirkung - die Buehne
+     entscheidet damit, ob ihr eigenes Band weicht. Fuer das Karaoke heisst "malt": Karte an (oder solo), Staerke
+     ueber 0 und die bereinigte Lyrik liegt vor - sonst stuende die Buehne ohne ihr Band UND ohne Zeile da. Solange
+     die Lyrik unterwegs ist, heisst die Antwort nein; kommt sie, meldet lyrikGemeldet es nicht dem Kasten - die
+     Buehne fragt darum auch in ihrem Takt nach. */
+  function clipMalt(ziel,typ){ try{ const kasten=kastenVon(ziel); if(!kasten) return false; const cv=kasten.querySelector('canvas.tbs-clip'); if(!cv) return false;
+      const m=clips.find(x=>x.canvas===cv); if(!m||!m.bereit||!Array.isArray(m.STAPEL)) return false;
+      const an=e=>m.soloId?(e.id===m.soloId):!!e.an;
+      const k=m.STAPEL.find(e=>e&&e.typ===typ&&an(e)&&!(e.staerke<=0.001)); if(!k) return false;
+      if(typ==='karaoke'){ const Z=lyrikVon(m.DATA&&m.DATA.id); return !!(Z&&Z.length); }
+      return true; }catch(x){ return false; } }
   function clipZeit(m){ try{ if(typeof aktuellId!=='undefined' && aktuellId===m.songId && typeof audio!=='undefined' && !audio.paused && audio.currentTime>0.05){ uhrEcht=true; return audio.currentTime; } }catch(e){} uhrEcht=false; const frei=(performance.now()-m.t0)/1000; return (m.DATA&&m.DATA.dauer>0)?(frei%m.DATA.dauer):frei; }
   function clipTick(){
-    for(let i=clips.length-1;i>=0;i--) if(!clips[i].canvas.isConnected){ quelleWeg(clips[i].bild); vorbFilterWeg(clips[i].VORB); if(clips[i].motiv) clips[i].motiv.style.visibility=''; clips.splice(i,1); }
+    for(let i=clips.length-1;i>=0;i--) if(!clips[i].canvas.isConnected){ const mw=clips[i]; quelleWeg(mw.bild); vorbFilterWeg(mw.VORB); if(mw.motiv) mw.motiv.style.visibility=''; clips.splice(i,1); clipMelden(mw.kasten,'weg'); }
     if(!clips.length){ clipRaf=0; return; }
     clipRaf=requestAnimationFrame(clipTick);
     /* WAEHREND EINER AUSGABE STEHEN AUCH DIE KACHELN (Gegenlesen 16.09.2026). Waehrend des Laufs steht FEIN auf true -
@@ -38335,7 +38382,7 @@ function zeichneFrame(t,roh){
   /* Nach Sichern/Loesen: Vorrat vergessen und laufende Maler dieses Titels
      abwerfen - die App haengt sie ueber markieren() frisch wieder ein. */
   function clipNeu(id){ delete songCache[id]; clips.filter(m=>m.songId===id).forEach(m=>clipAus(m.kasten)); }
-  return { oeffnen, schliessen, clipAn, clipAus, clipNeu };
+  return { oeffnen, schliessen, clipAn, clipAus, clipNeu, clipMalt };
 })();
 /* <<< Effektclip-Studio (tbs-modul.js) */
 </script>

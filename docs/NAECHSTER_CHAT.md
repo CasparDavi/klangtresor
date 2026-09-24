@@ -6561,8 +6561,7 @@ Loop-Ansicht verschwindet die Zeile; „Murmelnder Bach" (ohne Lyrik) zeigt den 
 
 **Wiedervorlage 19 (Caspar_D):** einen ganzen Titel mit Karaoke ausgeben und ansehen — sitzt die
 Zeile zum Gesang (Vorlauf 0 wie auf der Bühne, oder braucht der Export etwas Vorlauf), reicht das
-Band über hellem Bewegtbild? Und: trägt ein Titel den Karaoke-Effekt und steht die Textebene der
-Bühne auf Karaoke, steht der Text dort doppelt — so gelassen, du schaltest die Textebene aus.
+Band über hellem Bewegtbild? (Die Doppelung mit dem Bühnenband ist seit §21 vom Tisch.)
 
 **Gegenlesen (vier Linsen, neun Agenten) und was daraus wurde:** (1) Der volle Export lief ohne
 Lyrik stumm weiter, und ein Nachzügler-Abruf hätte die Zeile mitten im Video einsetzen lassen —
@@ -6577,3 +6576,27 @@ nennt den Bühnendeckel von 72 px, Karte löst den 30-s-Neuversuch selbst aus, k
 alle 30 s bei Serverausfall, Abrufschranke 20 s, Zeilen werden sortiert, der Hinweis ohne Lyrik
 sagt, wo sie entsteht (Morgenlauf „Karaoke-Zeitanker mit Whisper"). Zweitfälle stehen jetzt auch
 in `faelle-bauen.js`. Nahtprobe danach unverändert (0,00 / Vorschau 5,24 und 3,24).
+
+## 21. Karaoke auf Karaoke: die Bühne erkennt den Effektclip (24.09.2026)
+
+Caspar_D: *„ihh, da hab ich grade nicht dran gedacht, das Karaoke auf Karaoke laufen kann — mist —
+vielleicht sollte die Bühne erkennen, wenn der Effekt an ist"* — *„ich glaub, das ist gut, ja mach das."*
+
+**Gebaut:** Das Studio-Modul gibt eine Auskunft `clipMalt(kasten, typ)`: malt der Effektclip in diesem
+Kasten gerade eine aktive Karte dieses Typs (Karte an oder solo, Stärke über 0, bei Karaoke außerdem
+die bereinigte Lyrik da). Der Kasten bekommt ein DOM-Ereignis `effektclip` (`da`/`weg`), wenn sein
+Clip kommt oder geht. Die Bühne fragt in `karaokeBandStand()` an drei Anlässen (Textebene wechselt,
+Ereignis, jeder Takt des Players) und setzt `karaoke-vom-clip` auf `#buehne`: das Band `#bkaraoke`
+weicht, die Textebene bleibt „karaoke", der Karaoke-Knopf sagt „Karaoke – vom Effektclip". Gefragt
+wird an dem, was die Bühne wirklich malt: beim Standbild oder einem Suno-Video malt der Effekt nicht,
+dann bleibt das Band. Kein Schalter.
+
+**Geprüft:** Modulseite im Prüfstand-Tab (Auskunft falsch ohne Clip, wahr mit Karaoke-Karte und
+Lyrik, falsch für andere Typen und nach dem Abhängen; Ereignisse kommen an). Bühne im Sandkasten
+(Kopie von server/bin/web samt Katalogdateien und einem Song ohne WAV, eigener Port, Ton stumm, danach
+gelöscht): Bewegtbild → Effektclip + Textebene Karaoke → Band `display:none`, Klasse gesetzt, Knopf
+„vom Effektclip", die Zeilen kommen aus dem Clip; Bildebene Standbild → Band zurück, Knopf „Karaoke";
+wieder Bewegtbild → weicht erneut. `stand.js` kennt die neue Rückgabezeile des Moduls (`clipMalt`).
+
+**Wiedervorlage 20 (Caspar_D):** auf der eigenen Bühne mit laufendem Ton ansehen — sitzt die Zeile
+aus dem Effektclip so zum Gesang wie das Band (der Textversatz gilt seit heute auch dort)?
