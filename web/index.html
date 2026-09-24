@@ -33092,10 +33092,10 @@ function lrMarkeBei(e,o){ const O=lrMarkenOrte(e); let best=-1, ab=kbMarkeR()*1.
   for(let i=0;i<O.length;i++){ let a; try{ a=geoZuLeinwand(O[i].u,O[i].v); }catch(x){ return -1; }
     const d=Math.hypot(o.px-a[0],o.py-a[1]); if(d<=ab){ ab=d; best=i; } }
   return best; }
-function lrMarkeSetzen(e,i,u,v){ if(i===0){ e.lrOx=u; e.lrOy=v; } else { e.lrZx=u; e.lrZy=v; } malen(); }
+function lrMarkeSetzen(e,i,u,v){ if(i===0){ e.lrOx=u; e.lrOy=v; } else { e.lrZx=u; e.lrZy=v; } bildNeu(); }
 function lrMarkeTiefe(e,i,d){ const k=(i===0)?'lrOz':'lrZz';
   const alt=Number(e[k]); const w=isFinite(alt)?alt:(i===0?.85:.35);
-  e[k]=Math.max(0,Math.min(1,w+d)); malen(); }
+  e[k]=Math.max(0,Math.min(1,w+d)); bildNeu(); }
 /* ===================== DER ORT DES TEXTES AUF DER BUEHNE (Nacht 25.09.2026) =====================
    Zwei Zahlen 0..1 sagen dem Nutzer nichts ueber das Bild; das Haus hat die Sprache schon (Caspar_D:
    „Einfachklick setzt, Doppelklick entfernt, das ist unsere Sprache"). Beim offenen Titel setzt ein Klick
@@ -33104,6 +33104,10 @@ function lrMarkeTiefe(e,i,d){ const k=(i===0)?'lrOz':'lrZz';
    setzt die Unterkante. Die Marke ist ein Fadenkreuz an der Kastenmitte bzw. ein Strich an der Kante -
    Bedienung, kein Bild, gemalt nur in rahmen(). Der Kasten kommt vom Maler (e._tiBox, Anteile). */
 let TI_ZIEHT=false, UHR_WAR=null, UHR_PULT=false;
+/* DAS BILD EINMAL NEU (Gegenlesen in der Nacht 25.09.2026): die Marken der Lampe und des Textes riefen malen() ohne
+   Argumente - das ist der Effektmaler malen(e,cx,t,Wn,Hn), nicht das Neuzeichnen der Buehne, und warf bei jedem Zug
+   einen TypeError in die Konsole (der Rahmenlauf malte trotzdem, darum fiel es seit dem 21.09. nicht auf). */
+function bildNeu(){ try{ if(bereit&&!exportLaeuft) zeichneFrame(zeit(),false); }catch(x){} }
 function tiKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufeOffen!=='Kette') return null;
   for(const e of STAPEL) if(e.id===offenId&&(e.typ==='titel'||e.typ==='karaoke')) return e;
   return null; }
@@ -33116,8 +33120,8 @@ function tiMarkeSetzen(e,o){ if(!lein) return; const W=lein.width, H=lein.height
     if(spW>0) e.ortX=Math.max(0,Math.min(1,(o.px/W-b.w/2-b.mx)/spW));
     if(spH>0) e.ortY=Math.max(0,Math.min(1,(o.py/H-b.h/2-b.my)/spH)); }
   else { e.ortY=Math.max(0.25,Math.min(1,o.py/H+0.024)); }
-  malen(); }
-function tiMarkeVorgabe(e){ if(e.typ==='titel'){ e.ortX=0.5; e.ortY=0.85; } else e.ortY=1; malen(); }
+  bildNeu(); }
+function tiMarkeVorgabe(e){ if(e.typ==='titel'){ e.ortX=0.5; e.ortY=0.85; } else e.ortY=1; bildNeu(); }
 function tiMarkenMalen(e){
   if(!bereit||!lein||!g||lein.width<2) return; const p=tiMarkeOrt(e); if(!p) return; const r=kbMarkeR();
   g.save(); g.setTransform(1,0,0,1,0,0); g.globalCompositeOperation='source-over'; g.globalAlpha=1; g.filter='none';
@@ -35825,9 +35829,9 @@ function zeichneFrame(t,roh){
          keine Hand am Regler, wird nach dem Nachklang nichts mehr gerechnet und nichts gezeichnet.
          Die beiden anderen Zonenregler wecken sie NICHT - Leerraum und Hintergrundflaeche sind
          keine Trennung, und eine Ansicht, die dabei erschiene, zeigte die falsche Groesse. */
-      vorbStand(); malen(); });
+      vorbStand(); bildNeu(); });   /* bildNeu statt malen() - malen ist der Effektmaler (Gegenlesen 25.09.2026) */
     k.querySelectorAll('[data-vrt]').forEach(inp=>inp.oninput=()=>{ v.raumtiefe=Math.max(0.1,Math.min(5,+inp.value));
-      inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); malen(); });
+      inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(1))+'\u00d7'; vorbStand(); bildNeu(); });
     k.querySelectorAll('[data-vk]').forEach(inp=>inp.oninput=()=>{ v[inp.dataset.vk]=+inp.value; inp.parentElement.querySelector('.tbs-wert').textContent=kf((+inp.value).toFixed(2)); vorbStand(); });
     vorbStand(); }
   function grundLaden(){ quelleWeg(bild); bereit=false; HISTO=null;

@@ -6735,3 +6735,11 @@ fremden Kachel — das Pult merkt sich seine Uhr jetzt als `UHR_PULT`. Widerlegt
 kommen als `application/octet-stream`, Chrome nimmt sie trotzdem (im Tab geprüft: Inter und Gelasio
 geladen); sauber wäre `'.woff2': 'font/woff2'` in `TYPEN` (Wiedervorlage 23, eine Zeile).
 Nahtfälle danach: `titel`, `titel-serife-zwei` 0,00/0,00, `karaoke` 5,28, `karaoke-eine-zeile` 3,43.
+
+**Befund beim Gegenlesen im Tab (Konsole):** vier Stellen im Studio riefen `malen()` ohne Argumente —
+das ist der Effektmaler `malen(e,cx,t,Wn,Hn)`, nicht das Neuzeichnen der Bühne — und warfen bei
+jedem Zug einen TypeError: die Marken der Lampe (`lrMarkeSetzen`, `lrMarkeTiefe`, seit 21.09.),
+der Zonen- und der Raumtiefe-Regler der Vorbereitung, und meine neuen Textmarken (nach demselben
+Muster gebaut). Der Rahmenlauf malte trotzdem, darum fiel es nie auf. Jetzt gibt es `bildNeu()`
+(ein Bild, wenn das Studio bereit ist und kein Export läuft), alle vier rufen es. Der Klick auf die
+Bühne setzt den Ort ohne Fehler, Doppelklick stellt die Vorgabe her (im Tab per Ereignis geprüft).
