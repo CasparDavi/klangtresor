@@ -3133,3 +3133,19 @@ Dieselbe Zone trägt später auch Sterne, ziehende Wolken oder ein Wetterleuchte
 ersten Bewohner so zu bauen, dass die Maskierung auf die Fläche **nicht** in ihm steckt, sondern
 dort, wo die Zonen verwaltet werden — sonst baut der zweite sie noch einmal.
 
+
+## Titel über dem Bild — was nach der Minimalversion kommt (24.09.2026)
+
+Gebaut ist der stehende Titel (Effekt `titel`, Übergabe 24.09. §19). Caspar_D hat beim Auftrag
+gleich gesagt, was danach kommt:
+
+- **Karaoke** — die Wortmarken des Songs als eigene Quelle; der Text läuft mit dem Gesang mit
+  (Wort für Wort aufleuchten oder Zeile für Zeile wechseln). Braucht Wortzeiten aus Whisper, die
+  liegen schon in `library/`; der Maler bekäme statt eines festen Textes einen Zeitplan.
+- **Auftritt und Abgang** in Schlägen (Einblenden, Hochfahren, Ausblenden), damit ein Titel nicht
+  nur stehen, sondern auch kommen und gehen kann. Dann ist er nicht mehr von selbst loopfest und
+  braucht eine Klammer wie die anderen Läufe.
+- **Mehr Schriften** als Grotesk und Serife — erst, wenn die zwei nicht reichen. Eigene Schriften
+  müssten ins Paket, damit der Export bei Casto dasselbe malt.
+- **Balken oder Fläche hinter dem Text**, falls Kontur und Schatten über hellem Bewegtbild nicht
+  reichen (Wiedervorlage 18).

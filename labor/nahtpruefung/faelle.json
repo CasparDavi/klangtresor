@@ -4015,6 +4015,39 @@
    ],
    "gruppe": "strahlenRaum",
    "bemerkung": "Der Lichtschacht in der Luft - das Gegenstueck zum Laser: hier ist die Breite ein WINKEL und waechst mit der Entfernung, der Strahl wird nach hinten breiter."
+  },
+  {
+   "name": "titel",
+   "typ": "titel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "titel"
+    }
+   ],
+   "gruppe": "vorgabe",
+   "bemerkung": "Vorgabe: der Songtitel, Grotesk fett, unten mittig, Kontur und Schatten. Steht die ganze Zeit - loopfest von selbst."
+  },
+  {
+   "name": "titel-serife-zwei",
+   "typ": "titel",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "titel",
+     "text": "Zwei Zeilen|und Serife",
+     "schrift": "serife",
+     "gewicht": "normal",
+     "ausrichtung": "links",
+     "ortX": 0.08,
+     "ortY": 0.2,
+     "groesse": 0.12,
+     "farbe": "#ffd27a",
+     "verr": "screen"
+    }
+   ],
+   "gruppe": "titel",
+   "bemerkung": "Freier Text mit Umbruch, Serife, links oben, Screen-Verrechnung, zweiter Titel."
   }
  ],
  "nichtHerstellbar": []

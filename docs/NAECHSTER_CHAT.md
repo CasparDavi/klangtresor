@@ -6489,3 +6489,32 @@ legt zwei Fassungen aneinander und kehrt an Ersatzstellen zurück, wenn es spät
 **Was nach dem Einbau passiert:** Lenore heilt (Katalog und damit `lyrik.json` beim nächsten
 Lyrik-Lauf), „Das Geschenk" bleibt sauber. Es bleiben die Caption von 桜の少女 (heilt, sobald eine
 Ernte sie sauber liefert) und die Benachrichtigung (Sunos Wortlaut). `gesundheit.js` zeigt es.
+
+## 19. Titel über dem Bild — gebaut (24.09.2026)
+
+Caspar_D: *„ich hätte noch einen Textgenerator für den Effektclip … ein Text, der als Titel über
+ein bewegtes Video oder ein Effektclip gelegt werden kann … meine Standardanwendung ist: Titel ist
+die ganze Zeit zu sehen, Farbwahl möglich, Groteske oder Serifen reicht erstmal, Verrechnungsmodi,
+freier Text erstmal … Karaoke später … erstmal die Minimalversion, die als 10-Sekünder mit
+ausgegeben wird."*
+
+**Gebaut:** Effekt `titel`, Menügruppe „Text", Maler (`art:'mal'`) am **Objektiv** — zoomt nicht mit,
+liegt über allem, auch über einem Bewegtbild. Weil er die ganze Zeit steht, ist er von selbst
+loopfest (Bild N = Bild 0); kein Auftritt, keine Klammer, keine Uhr. Regler: Text (leer = der
+Songtitel; `|` bricht die Zeile um), Schrift Grotesk/Serife, Gewicht fett/normal, Größe als Anteil
+der Bildhöhe (2–30 %, Vorgabe 8 %), Farbe, Kontur, Schatten, Ort X/Y, Ausrichtung; Verrechnung
+frei (Vorgabe „über"). Kontur und Schatten sind Anteile der Schriftgröße, damit Kachel, Bühne und
+Export dasselbe zeigen (Studio-Augenschein ist Maßstab). Es ist der erste Effekt mit einem
+**Textfeld**; die Kartenrender-Funktion kennt jetzt `text:true`, der Eingabe-Handler nimmt Strings.
+
+**Geprüft:** zwei Nahtfälle (`titel` Vorgabe, `titel-serife-zwei` mit zwei Zeilen, Serife, links,
+Screen) beide 0,00; Oberflächenprobe im eigenen Tab: Vorgabe malt den Songtitel fett mittig unten,
+Umschalten auf Serife/links/oben/gelb greift live, Tastatur im Textfeld geht nicht an Haus oder
+Studio (beide Handler lassen Eingabefelder durch, nachgesehen). Konsole leer.
+
+**Nicht gebaut, bewusst:** Karaoke (Wortmarken als eigene Quelle), Auftritt/Abgang in Schlägen,
+mehr Schriften. Steht im Backlog.
+
+**Wiedervorlage 18 (Caspar_D):** den Titel über einem Bewegtbild ansehen (Ken Burns oder Video als
+Quelle) und über dunklem wie hellem Grund — reichen Kontur und Schatten in der Vorgabe, oder
+braucht er einen Balken?

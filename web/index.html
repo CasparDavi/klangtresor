@@ -27500,6 +27500,24 @@ const EFFEKTE = {
          faellt partikelMaske und der ganze Zweig, der dafuer eine zweite Leinwand baute. */{k:'boeen',tog:'Windstöße im Takt',def:0},{k:'boeenStaerke',lbl:'Böenstärke',min:0,max:1,step:.05,def:.5,when:e=>!!e.boeen}]},
   scanlines:{ label:'Scanlines / Röhre', art:'mal', verr:'multi', staerkeDef:.7, besch:'Zeilenraster wie auf einer Bildröhre, mit Vignette und leichtem Flimmern. Leise anwenden.',
     params:[{k:'raster',lbl:'Raster',min:2,max:8,step:1,def:3},{k:'linien',lbl:'Linien',min:0,max:1,step:.05,def:.35},{k:'vignette',lbl:'Vignette',min:0,max:1,step:.05,def:.35},{k:'flimmern',lbl:'Flimmern',min:0,max:1,step:.05,def:.15}]},
+  /* TITEL (24.09.2026; Caspar_D: "ein Text, der als Titel ueber ein bewegtes Video oder ein Effektclip
+     gelegt werden kann - meine Standardanwendung ist: Titel ist die ganze Zeit zu sehen"). Ein Maler
+     am Objektiv: er zoomt nicht mit und liegt ueber allem. Weil er die ganze Zeit steht, ist er von
+     selbst loopfest (Bild N = Bild 0, Regel 17) - kein Auftritt, keine Klammer, keine Uhr. Groesse
+     und Strichstaerken sind Anteile der Bildhoehe, damit Studio und Export dasselbe zeigen. Leerer
+     Text heisst: der Titel des Songs - was die Software weiss, wird kein Regler. Ein senkrechter
+     Strich | bricht die Zeile um. Karaoke (Wortmarken) kommt spaeter als eigene Quelle. */
+  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text \u00fcber dem Bild</b> \u2014 der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Sitzt am Objektiv: zoomt nicht mit, liegt \u00fcber allem, auch \u00fcber einem Bewegtbild. Kontur und Schatten machen ihn \u00fcber bewegtem Bild lesbar; die Verrechnung ist frei.',
+    params:[{k:'text',lbl:'Text',text:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?(String(e.text).includes('|')?null:'Ein senkrechter Strich | bricht die Zeile um.'):'Leer hei\u00dft: der Titel des Songs. Ein senkrechter Strich | bricht die Zeile um.'},
+      {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk'],['serife','Serife']],def:'grotesk'},
+      {k:'gewicht',lbl:'Gewicht',sel:[['fett','fett'],['normal','normal']],def:'fett'},
+      {k:'groesse',lbl:'Gr\u00f6\u00dfe',min:.02,max:.3,step:.005,def:.08,wert:v=>Math.round(v*100)+' %',notiz:()=>'Anteil der Bildh\u00f6he.'},
+      {k:'farbe',lbl:'Farbe',farbe:true,def:'#ffffff'},
+      {k:'kontur',lbl:'Kontur',min:0,max:1,step:.05,def:.4},
+      {k:'schatten',lbl:'Schatten',min:0,max:1,step:.05,def:.5},
+      {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5},
+      {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85},
+      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['links','links'],['mitte','Mitte'],['rechts','rechts']],def:'mitte'}]},
   bloom:{ label:'Bloom / Halation', art:'post', verr:'screen', verrFrei:true, staerkeDef:.5, besch:'Helle Stellen glühen aus — Phosphor-Nachleuchten. Radius, Schwelle (ab wann etwas als hell gilt) und Glut.',
     params:[{k:'radius',lbl:'Radius',min:2,max:40,step:1,def:12},{k:'schwelle',lbl:'Schwelle',min:1,max:3,step:.1,def:1.8},{k:'glut',lbl:'Glut',min:.6,max:1.6,step:.05,def:1}]},
   nachzieh:{ label:'Nachzieheffekt', art:'post', staerkeDef:.5, besch:'Das Bild zieht sich nach — Rückkopplung wie eine Kamera auf ihren eigenen Monitor. Nachhall = wie lange der Geist bleibt; Versatz schmiert ihn in eine Richtung.',
@@ -28257,6 +28275,7 @@ const EGRUPPEN = [
   ['Läufe', ['kenburns','streifen','licht','lichtRaum','schatten','laser','laserRaum','strahlenRaum','streiflicht','farbe','filmnebel','feuer']],
   ['Störungen', ['vlauf','wackeln','rauschen']],
   ['Anmutung', ['scanlines','bloom','nachzieh']],
+  ['Text', ['titel']],
   ['Partikel', ['partikel']],
   ['Glas', ['risse','beschlag','einschlag','tropfen']],
   ['Entwürfe (WebGL)', ['wellen','kaustik','linse','flammen']],
@@ -30885,6 +30904,24 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     if(e.vignette>0){ cx.globalAlpha=1; const R=Math.hypot(Wn,Hn)/2, vg=cx.createRadialGradient(Wn/2,Hn/2,R*0.45,Wn/2,Hn/2,R); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,'+(e.vignette*a).toFixed(3)+')'); cx.fillStyle=vg; cx.fillRect(0,0,Wn,Hn); }
     if(e.flimmern>0){ cx.globalAlpha=1; cx.fillStyle='rgba(0,0,0,'+(e.flimmern*a*0.35*(0.5+0.5*Math.sin(2*Math.PI*lpR(8)*t))).toFixed(3)+')'; cx.fillRect(0,0,Wn,Hn); }
     cx.globalAlpha=1; }
+  else if(e.typ==='titel'){ const a=Math.min(1,e.staerke); if(a<=0.001) return;
+    /* Vier Striche je Zeile, in dieser Reihenfolge: Schatten (eine Fuellung mit Schlagschatten), Kontur
+       (Strich um die Buchstaben), dann die Fuellung obenauf - so bleibt die Kontur eine Aussenlinie und
+       das Innere traegt die reine Farbe. Alles relativ zur Bildhoehe (Studio-Augenschein ist Massstab). */
+    const roh=(e.text&&String(e.text).trim())?String(e.text):((DATA&&DATA.titel)||'');
+    const zeilen=roh.split('|').map(z=>z.trim()).filter(Boolean); if(!zeilen.length) return;
+    const gr=Math.max(4,(e.groesse==null?0.08:e.groesse)*Hn);
+    const fam=(e.schrift==='serife')?'Georgia, "Times New Roman", Times, serif':'"Helvetica Neue", Helvetica, Arial, sans-serif';
+    cx.save(); cx.globalAlpha=a; cx.font=(e.gewicht==='normal'?'400':'700')+' '+gr.toFixed(2)+'px '+fam;
+    cx.textAlign=e.ausrichtung==='links'?'left':e.ausrichtung==='rechts'?'right':'center'; cx.textBaseline='alphabetic';
+    const x=Wn*(e.ortX==null?0.5:e.ortX), zh=gr*1.15, y0=Hn*(e.ortY==null?0.85:e.ortY)-(zeilen.length-1)*zh;
+    const sch=Math.max(0,Math.min(1,e.schatten==null?0.5:e.schatten)), kon=Math.max(0,Math.min(1,e.kontur==null?0.4:e.kontur));
+    for(let i=0;i<zeilen.length;i++){ const y=y0+i*zh, z=zeilen[i];
+      if(sch>0){ cx.shadowColor='rgba(0,0,0,'+(0.9*sch).toFixed(3)+')'; cx.shadowBlur=gr*(0.05+0.3*sch); cx.shadowOffsetX=0; cx.shadowOffsetY=gr*0.05; cx.fillStyle='rgba(0,0,0,'+(0.6*sch).toFixed(3)+')'; cx.fillText(z,x,y); }
+      cx.shadowColor='transparent'; cx.shadowBlur=0; cx.shadowOffsetY=0;
+      if(kon>0){ cx.lineJoin='round'; cx.miterLimit=2; cx.lineWidth=Math.max(0.5,gr*0.14*kon); cx.strokeStyle='rgba(0,0,0,0.92)'; cx.strokeText(z,x,y); }
+      cx.fillStyle=e.farbe||'#ffffff'; cx.fillText(z,x,y); }
+    cx.restore(); }
   else if(e.typ==='feuer'){ const hs=x=>{ const v=Math.sin(x*12.9898+e.id*78.233)*43758.5453; return v-Math.floor(v); }, a=Math.min(1,e.staerke);
     const hx=h=>[1,3,5].map(q=>parseInt(String(h).slice(q,q+2),16)), pa=hx(e.farbe); let pb=hx(e.farbe2||e.farbe); if(pb.some(isNaN)) pb=pa;
     const bp=1+0.5*lmSchub(e,t), baseY=Hn*e.boden, hoehe=e.hoehe*Hn*bp,   /* Schub: auf dem Schlag bis anderthalbfach so hoch (Tiefen-Check) */ x0=Wn*(e.mitte-e.breite/2), bw=Wn*e.breite, n=e.dichte, tw=bw/n*1.6, M=6;
@@ -32207,7 +32244,9 @@ function renderStapel(){
           e.rampe.forEach((cc,i)=>{ h+='<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px"><input type="color" data-ramp="'+i+'" value="'+cc+'" style="width:30px;height:22px;padding:0;border:1px solid var(--rand);border-radius:5px;background:var(--flaeche2);cursor:pointer">'+(e.rampe.length>2?'<button data-rampweg="'+i+'" class="tbs-knopf" style="width:30px;height:16px;font-size:10px">×</button>':'<span style="height:16px"></span>')+'</span>'; });
           h+='<button data-rampplus="1" class="tbs-knopf" style="width:30px;height:22px;font-size:14px">+</button></div>'; }
         h+='</div>'; return; }
-      if(p.farbe){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="color" data-k="'+p.k+'" value="'+e[p.k]+'"><span></span></div>'; }
+      if(p.text){ const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+        h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="text" data-k="'+p.k+'" value="'+esc(e[p.k])+'" spellcheck="false" style="flex:1;min-width:0"></div>'; }
+      else if(p.farbe){ h+='<div class="tbs-regler"><span>'+p.lbl+'</span><input type="color" data-k="'+p.k+'" value="'+e[p.k]+'"><span></span></div>'; }
       else if(p.sel){ const pliste=p.selMehr ? p.sel.concat(p.selMehr(e)||[]) : p.sel;   /* `selMehr` haengt Werte an, die nur dieser Effekt traegt (der Altwert der Verdeckung) */
         h+='<div class="tbs-regler"><span>'+p.lbl+'</span><select data-k="'+p.k+'">'+pliste.map(([v,l])=>'<option value="'+v+'"'+(e[p.k]===v?' selected':'')+'>'+l+'</option>').join('')+'</select><span></span></div>'; }
       else if(p.tog){ h+='<div class="tbs-regler"><span>'+p.tog+'</span><button class="tbs-togp'+(e[p.k]?' an':'')+'" data-tog="'+p.k+'">'+(e[p.k]?'an':'aus')+'</button><span></span></div>'; }
@@ -34772,7 +34811,7 @@ const STUFE_KAMERA = new Set(['kenburns','puls','kippen','schaerfe']);
 /* OBJEKTIV UND FILM: was an der Kamera sitzt und darum NICHT mitzoomt. */
 const STUFE_OBJEKTIV = new Set([
   'korn','scanlines','bloom','linse','rgb','rauschen','bloecke','vlauf','wackeln','sicherung',
-  'strobe','streifen','nachzieh' ]);
+  'strobe','streifen','nachzieh','titel' ]);
 /* EIN TYP OHNE STUFE IST EIN FEHLER UND KEIN STILLSCHWEIGEN. Wer einen Effekt dazubaut und hier
    nichts eintraegt, bekaeme ihn stumm ans Objektiv - und merkte erst beim naechsten Zoom, dass
    seine Funken nicht mitfahren. Die Konsole sagt es beim Aufbau, einmal. */
