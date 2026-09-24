@@ -135,6 +135,21 @@ function songsLaden(){
   return _songsLadenPromise;
 }
 
+/* Bereinigte Lyrik der Prüftitel (24.09.2026, Karaoke-Effekt) - dieselbe Bauart wie songsLaden.
+   Fehlt _lyrik.json (node bin/effektclip-labor.js lyrik), antwortet /api/lyrik mit 404, und das
+   Studio sagt auf der Karte „ließ sich nicht laden" - genau wie bei einem Server, der weg ist. */
+var LYRIK_DATEN = null;
+var _lyrikLadenPromise = null;
+function lyrikLaden(){
+  if(!_lyrikLadenPromise){
+    _lyrikLadenPromise = _echterFetch('_lyrik.json').then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }).then(function(d){
+      LYRIK_DATEN = d || { lieder:{}, unsicher:[] };
+      return LYRIK_DATEN;
+    }).catch(function(){ LYRIK_DATEN = null; return null; });
+  }
+  return _lyrikLadenPromise;
+}
+
 function zuPfadUndQuery(url){
   var u;
   try{ u = new URL(url, location.href); }catch(e){ u = null; }
@@ -165,6 +180,18 @@ window.fetch = function(url, optionen){
       var status = s ? 200 : 404;
       log('GET '+pfad+' → '+status);
       return antwort(s || {fehler:'unbekannt'}, status);
+    });
+  }
+
+  var mLyrik = pfad.match(/^\/api\/lyrik\/([^\/]+)$/);
+  if(mLyrik && methode==='GET'){
+    var idL = decodeURIComponent(mLyrik[1]);
+    return lyrikLaden().then(function(d){
+      if(!d){ log('GET '+pfad+' → 404 (keine _lyrik.json)'); return antwort({fehler:'keine _lyrik.json'}, 404); }
+      var eL = d.lieder && d.lieder[idL];
+      var uL = (d.unsicher||[]).filter(function(x){ return x && x.id===idL; })[0];
+      log('GET '+pfad+' → 200'+(eL?'':(uL?' (zurückgestellt)':' (null)')));
+      return antwort(eL ? eL : (uL ? {zurueckgestellt:true, grund:uL.grund} : null), 200);
     });
   }
 

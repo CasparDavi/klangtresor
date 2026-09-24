@@ -3139,9 +3139,12 @@ dort, wo die Zonen verwaltet werden — sonst baut der zweite sie noch einmal.
 Gebaut ist der stehende Titel (Effekt `titel`, Übergabe 24.09. §19). Caspar_D hat beim Auftrag
 gleich gesagt, was danach kommt:
 
-- **Karaoke** — die Wortmarken des Songs als eigene Quelle; der Text läuft mit dem Gesang mit
-  (Wort für Wort aufleuchten oder Zeile für Zeile wechseln). Braucht Wortzeiten aus Whisper, die
-  liegen schon in `library/`; der Maler bekäme statt eines festen Textes einen Zeitplan.
+- **Karaoke** — gebaut am 24.09.2026 (Effekt `karaoke`, Übergabe §20): zeilenweise aus der
+  bereinigten Lyrik, Vorgaben vom Band der Bühne, nur im vollen Export und live. Was davon noch
+  offen ist: **Wort-Wischen** (die bereinigte Lyrik hat Zeilen-, keine Wortzeiten — dafür müssten
+  die Whisper-Wortmarken gegen die bereinigten Zeilen gelegt werden), **Überblenden** beim
+  Zeilenwechsel (die Bühne schneidet hart), und ob der Export einen **Vorlauf** braucht, den die
+  Bühne nicht hat (Wiedervorlage 19).
 - **Auftritt und Abgang** in Schlägen (Einblenden, Hochfahren, Ausblenden), damit ein Titel nicht
   nur stehen, sondern auch kommen und gehen kann. Dann ist er nicht mehr von selbst loopfest und
   braucht eine Klammer wie die anderen Läufe.

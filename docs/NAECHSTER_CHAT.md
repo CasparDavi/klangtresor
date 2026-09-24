@@ -6518,3 +6518,62 @@ mehr Schriften. Steht im Backlog.
 **Wiedervorlage 18 (Caspar_D):** den Titel über einem Bewegtbild ansehen (Ken Burns oder Video als
 Quelle) und über dunklem wie hellem Grund — reichen Kontur und Schatten in der Vorgabe, oder
 braucht er einen Balken?
+
+## 20. Karaoke über dem Bild — gebaut (24.09.2026)
+
+Caspar_D: *„a second karaoke overlay configurator, take the presets from the stage"* — *„ich denke,
+die bereinigte Lyrics wäre die beste Variante"* — *„Karaoke macht nur Sinn bei vollem Export, also
+10 Sek mit Karaoke geht nicht, es wird der Effekt einfach weggelassen."*
+
+**Gebaut:** Effekt `karaoke`, zweiter Eintrag der Gruppe „Text", Maler am Objektiv wie der Titel.
+Quelle ist die **bereinigte Lyrik** (`library/lyrik.json` über `/api/lyrik`): Zeilen mit von/bis,
+keine Wortzeiten — darum zeilenweise wie das Band der Bühne und ohne Wort-Wischen. **Die Vorgaben
+sind das Band der Bühne** (aus dem CSS von `#bkaraoke` abgelesen): drei Zeilen, die mittlere dran,
+5,2 % der Bildbreite fett, die Nachbarn halb so groß und halb so hell, 74 % Zeilenbreite mit
+Umbruch, schwarzer Verlauf unten (0 → 0,72 bei 38 % → 0,86), Farben aus der Titelbild-Palette
+(Text, Text leise), Zeile n = die letzte mit von ≤ t, harter Schnitt, kein Vorlauf. Regler: Zeilen
+(drei oder nur die gesungene), Schrift, Größe, Band, Farbquelle (Palette oder eigene Farben), Ort Y,
+Ausrichtung, Vorlauf; Verrechnung frei.
+
+**Wo er malt und wo nicht:** im vollen Export läuft die Songzeit von 0 durch und der Ton liegt
+dabei — dort gehört er hin, und der Export wartet vor dem ersten Bild auf die Lyrik
+(`lyrikBereit`, wie Hauszeichen und 4D-Rauschen). In Pult und Kachel malt er mit dem Player oder der
+freien Uhr. **Unter LOOP>0 (Zehnsekünder, Loop-Ansicht) malt er nichts** — Entscheidung von
+Caspar_D. Ohne bereinigte Lyrik (Instrumental, fremder Titel, unter 60 % Deckung, kein Whisper-Lauf)
+bleibt die Karte grau mit Grund und malt nichts. Neu dafür: ein Registry-Eintrag darf `hinweis(e)`
+tragen, die Karte zeigt den Satz wie den Leuchten-Hinweis. Der Lader folgt dem Muster der
+Tiefenkarte (einmal je Titel, Karte berichtigt sich, Netzfehler nach 30 s neu).
+
+**Nachträge zur Gruppe „Text":** Gruppensymbol in `IKON_GRUPPE`; `ortX`/`ortY` stehen jetzt in
+`ZUST` (kein Füllbalken auf den Ortsreglern des Titels).
+
+**Prüfstand:** `node bin/effektclip-labor.js lyrik` legt `_lyrik.json` neben `_songs.json` (aus git,
+wie diese); die Laborseite beantwortet `/api/lyrik/<id>` daraus, `stand.js` kopiert sie mit,
+`haken.js` wartet im Fall auf die Lyrik. Zwei Fälle von Hand in `faelle.json` (`karaoke`,
+`karaoke-eine-zeile`), `titel` und `karaoke` in der Typenliste von `faelle-bauen.js` (nicht
+gelaufen). Ergebnis: naht/gleich 0,00 (unter LOOP nichts gemalt), Vorschau weicht ab (5,24 / 3,24)
+— genau das Gewollte. Oberflächenprobe im eigenen Tab: Vorgabe malt die drei Zeilen von „Stumm" auf
+dem Band; eine Zeile/Serife/eigene Farbe/ohne Band/mittig/links/Vorlauf greifen; in der
+Loop-Ansicht verschwindet die Zeile; „Murmelnder Bach" (ohne Lyrik) zeigt den Grund. Konsole leer.
+
+**Nicht gebaut, bewusst:** Wort-Wischen (bräuchte Wortzeiten, die die bereinigte Lyrik nicht hat),
+Überblenden beim Zeilenwechsel, Auftritt und Abgang. Backlog nachgezogen.
+
+**Wiedervorlage 19 (Caspar_D):** einen ganzen Titel mit Karaoke ausgeben und ansehen — sitzt die
+Zeile zum Gesang (Vorlauf 0 wie auf der Bühne, oder braucht der Export etwas Vorlauf), reicht das
+Band über hellem Bewegtbild? Und: trägt ein Titel den Karaoke-Effekt und steht die Textebene der
+Bühne auf Karaoke, steht der Text dort doppelt — so gelassen, du schaltest die Textebene aus.
+
+**Gegenlesen (vier Linsen, neun Agenten) und was daraus wurde:** (1) Der volle Export lief ohne
+Lyrik stumm weiter, und ein Nachzügler-Abruf hätte die Zeile mitten im Video einsetzen lassen —
+jetzt wartet `lyrikBereit` (hebt die 30-s-Sperre auf, gibt den Stand zurück), der Export bricht
+mit Grund ab, wenn die Lyrik nicht da ist, und friert die Zeilen ins Bündel ein (`DATA.lyrik`).
+(2) Die Bühne zieht für ihr Band den Textversatz `bVersatz` ab (Funklautsprecher); der Maler tut
+es jetzt auch, wenn die echte Uhr des Players läuft — im Export nicht. (3) `bereitMachen` im
+Prüfhaken wartet je Titel auf die Lyrik, sonst hingen `studio`/`massstab`/`loopAnsicht` am
+Zeitpunkt der Antwort. (4) `daten()` warnt ohne `lyrik.json` statt abzubrechen. (5) Kleineres:
+erste Zeile vor dem Gesang hell wie auf der Bühne, Größe-Raster 0,001 (5,2 % liegt darauf), Notiz
+nennt den Bühnendeckel von 72 px, Karte löst den 30-s-Neuversuch selbst aus, kein Kartenneubau
+alle 30 s bei Serverausfall, Abrufschranke 20 s, Zeilen werden sortiert, der Hinweis ohne Lyrik
+sagt, wo sie entsteht (Morgenlauf „Karaoke-Zeitanker mit Whisper"). Zweitfälle stehen jetzt auch
+in `faelle-bauen.js`. Nahtprobe danach unverändert (0,00 / Vorschau 5,24 und 3,24).

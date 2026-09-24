@@ -112,7 +112,30 @@ function daten() {
     fs.symlinkSync(ziel, p);
     console.log('Verweis ' + name + ' → ' + ziel);
   }
+  /* Zusatz, kein Muss (Gegenlesen 24.09.2026): ohne library/lyrik.json (frischer Klon, fremder Bestand) laeuft der
+   * Pruefstand ohne Karaoke-Lyrik weiter - die Karaoke-Faelle sagen es dann auf der Karte. Nur der eigene Befehl wirft. */
+  try { lyrik(); } catch (e) { console.warn('Hinweis: ' + e.message + ' - der Prüfstand läuft ohne Lyrik'); }
   console.log('\nPrüfstand starten:\n  cd ' + path.relative(process.cwd(), LABOR) + ' && python3 -m http.server 18811\n  dann http://127.0.0.1:18811/labor-haus.html');
+}
+
+/* Die bereinigte Lyrik der Prüftitel (24.09.2026, Karaoke-Effekt): _lyrik.json neben _songs.json, für
+ * dieselben Titel. Die Laborseite beantwortet /api/lyrik/<id> daraus, so wie /api/song aus _songs.json.
+ * Eigener Befehl (lyrik), damit _songs.json nicht neu gewürfelt werden muss - die Fälle in faelle.json
+ * hängen an festen Prüftiteln, und daten() wählt nach der Länge des Katalogs. Archivdaten, aus git. */
+function lyrik() {
+  const sj = path.join(LABOR, '_songs.json');
+  if (!fs.existsSync(sj)) throw new Error('labor/effektclip-studio/_songs.json fehlt - erst "node bin/effektclip-labor.js daten"');
+  const songs = JSON.parse(fs.readFileSync(sj, 'utf8'));
+  const f = path.join(WURZEL, 'library/lyrik.json');
+  if (!fs.existsSync(f)) throw new Error('library/lyrik.json fehlt - ohne sie kein Karaoke im Prüfstand');
+  const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+  const lieder = {}, unsicher = [];
+  for (const s of songs) {
+    if (d.lieder && d.lieder[s.id]) lieder[s.id] = Object.assign({ verfahren: d.verfahren || '' }, d.lieder[s.id]);
+    const u = (d.unsicher || []).find(x => x && x.id === s.id); if (u) unsicher.push(u);
+  }
+  fs.writeFileSync(path.join(LABOR, '_lyrik.json'), JSON.stringify({ lieder, unsicher }));
+  console.log('Lyrik: ' + Object.keys(lieder).length + ' von ' + songs.length + ' Titeln, ' + unsicher.length + ' zurückgestellt');
 }
 
 const was = process.argv[2];
@@ -120,5 +143,6 @@ try {
   if (was === 'aus') aus();
   else if (was === 'ein') ein();
   else if (was === 'daten') daten();
-  else { console.log('Aufruf: node bin/effektclip-labor.js aus | ein | daten'); process.exit(1); }
+  else if (was === 'lyrik') lyrik();
+  else { console.log('Aufruf: node bin/effektclip-labor.js aus | ein | daten | lyrik'); process.exit(1); }
 } catch (e) { console.error('Abbruch: ' + e.message); process.exit(1); }

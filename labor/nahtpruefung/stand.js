@@ -54,6 +54,10 @@ function bauen() {
     fs.writeFileSync(path.join(SITE, b.datei), inhalt);
   }
   for (const d of ['labor-haus.html', 'labor-eigen.json', '_songs.json']) fs.copyFileSync(path.join(LABOR, d), path.join(SITE, d));
+  /* Die bereinigte Lyrik der Prueftitel (Karaoke, 24.09.2026) ist Zusatz: fehlt sie, laeuft der Stand ohne sie,
+     und der Karaoke-Fall meldet auf der Karte, dass die Lyrik sich nicht laden liess. node bin/effektclip-labor.js lyrik legt sie an. */
+  if (fs.existsSync(path.join(LABOR, '_lyrik.json'))) fs.copyFileSync(path.join(LABOR, '_lyrik.json'), path.join(SITE, '_lyrik.json'));
+  else console.warn('Hinweis: labor/effektclip-studio/_lyrik.json fehlt - Karaoke-Faelle laufen ohne Lyrik (node bin/effektclip-labor.js lyrik)');
   /* Verweise mit absolutem Ziel: die relativen aus labor/effektclip-studio zeigten von site/ aus ins Leere. */
   const ziele = { media: 'library/songs', testbild: 'web/testbild', fremd: 'web/fremd' };
   for (const name of Object.keys(ziele)) {

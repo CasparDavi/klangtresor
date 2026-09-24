@@ -56,6 +56,10 @@ window.__naht = (() => {
        bitgleich Bild(0), und das Blockmittel des Vergleichers sah die 318 Bildpunkte in der Ecke
        nicht. zeichenBereit() wartet auf decode(), wie es jeder Exportweg jetzt auch tut. */
     { const [Wz, Hz] = ausgabeMass(360); await zeichenBereit(Wz, Hz); }
+    /* DIE BEREINIGTE LYRIK DES TITELS (24.09.2026): wie die Tiefenkarte - anstossen und nur warten, solange sie
+       unterwegs ist („keine" ist ein Ende). Sonst hing der erste Karaoke-Fall je Titel am Zeitpunkt der Antwort:
+       studio(), massstab() und loopAnsicht() malen ohne eigenes Warten (Gegenlesen 24.09.2026). */
+    if(typeof lyrikVon === 'function'){ lyrikVon(id); for(let i=0; i<300 && lyrikStand(id)==='unterwegs'; i++) await warte(50); }
     ORIG = DATA.schlaege.map(s => s.slice());
     window.aktuellId = id; window.audio = { paused:false, currentTime:jetzt };
     return { gl:!!GL.gl, noise:!!GL.noise, tiefe:tiefeKarteDa(), schlaege:ORIG.length, titel:DATA.titel, einsen:ORIG.filter(s=>s[1]===1).length };
@@ -193,6 +197,9 @@ window.__naht = (() => {
     Math.random = zufall;
     try{
         STAPEL = effekteBauen(f.effekte, f); soloId = null;
+      /* Wie der volle Export (24.09.2026): haengt Karaoke in der Kette, kommt die bereinigte Lyrik erst - sonst
+         malte das Vorschaubild (LOOP=0) noch ohne Zeile, waehrend die Exportbilder (LOOP=L) sie ohnehin weglassen. */
+      if (typeof lyrikBereit === 'function') await lyrikBereit();
       const lage = ausschnitt(), { t0, L, N } = lage; const [W, H] = ausgabeMass(lange);
       const gemerkt = bundel(), m = exportBuendel(gemerkt, lage, W, H);
       const S = m.DATA.schlaege, proTakt = lage.proTakt;
