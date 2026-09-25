@@ -6828,3 +6828,27 @@ vor dem Haus-Skript), die Werkzeuge (`stand.js` liest die Datei, `syntax.js` pr�
 `aus`/`ein` fallen, Haken bleibt eingespleißt), Server (`.css` heute mit Jahres-Cache — eine Zeile,
 mit Ansage), Paket und Windows (nichts zu tun), Hausregel „eine Datei" → „in einem Commit". Fünf
 Entscheidungen stehen am Ende des Konzepts. Nichts gebaut.
+
+## 26. Stand am Ende der Sitzung (25.09.2026 vormittags)
+
+Alles ist auf origin/main. Nichts liegt ungesichert, kein Sandkasten steht mehr, kein Prüfserver läuft.
+
+**Dokumente an ihrem Ort** (Caspar_D: „prüfe, ob sie nicht besser Bestandteil schon existenter
+Objekte sein sollten"): die Lyrik-Regeln sind ein Abschnitt in `docs/suno/WHISPER.md`, die
+Herkunft der Schriften steht in `web/fremd/LIZENZEN.md` (Lizenztexte in `web/fonts/`), das
+Modul-Konzept ist im Backlog eingetragen (Zustand Entscheidung). Die zwei Konzepte
+`effektclip/KONZEPT-TEXT.md` und `effektclip/KONZEPT-STUDIO-MODUL.md` bleiben im Effektclip-Ordner.
+
+**Was Caspar_D entscheidet oder ansieht:**
+- Wiedervorlage 22: ein ganzer Titel mit dem Preset „Lyric-Video", ansehen (§23).
+- Die fünf Fragen am Ende von `KONZEPT-STUDIO-MODUL.md` (Go, Anschluss, Server, `aus`/`ein`,
+  Reihenfolge).
+- Die Loop-Abweichungen von früher (Gedächtnis).
+- Runde Klammern, die Whisper anders hört als der Katalog meint: bewusst nicht weiterverfolgt
+  („das ist akademisch").
+
+**Noch unterwegs beim Schreiben dieses Abschnitts:** ein Leseagent gleicht die übrigen Unterlagen
+(Regeln, LIESMICHs, Backlog, Codekommentare) gegen die Commits seit dem 24.09. ab. Sein Befund wird
+in dieser Sitzung noch nachgezogen; steht darunter nichts mehr, ist er ohne Fund geblieben oder die
+Sitzung endete vorher — dann beim nächsten Mal `git log --since=2026-09-24` gegen
+`docs/effektclip/EFFEKTCLIP-REGELN.md` und `labor/nahtpruefung/LIESMICH.md` lesen.
