@@ -6730,10 +6730,10 @@ ist, der Rest ragt oben hinaus, wo das Band den Fall kennt. (2) Die Schrumpfschl
 großer Schrift nicht bis zum Boden (16 × 0,92 bzw. 10 × 0,9) — jetzt 64 bzw. 40 Schritte.
 (3) `uhrEcht` setzen auch die Kacheln je Bild; die Karte des Pults las darum manchmal den Stand einer
 fremden Kachel — das Pult merkt sich seine Uhr jetzt als `UHR_PULT`. Widerlegt: zwei Funde zu
-`bin/lyrik.js` beschrieben den alten Stand. Offen, **mit Ansage** (server.js startet sich bei
-Änderung selbst neu): die Typentabelle in `server/server.js` kennt kein `.woff2` — die Schriften
-kommen als `application/octet-stream`, Chrome nimmt sie trotzdem (im Tab geprüft: Inter und Gelasio
-geladen); sauber wäre `'.woff2': 'font/woff2'` in `TYPEN` (Wiedervorlage 23, eine Zeile).
+`bin/lyrik.js` beschrieben den alten Stand. Die Typentabelle in `server/server.js` kannte kein `.woff2` — die Schriften kamen als
+`application/octet-stream`, Chrome nahm sie trotzdem. Am Morgen des 25.09. auf Caspar_Ds Wort
+(„den Serverstart hättest du machen können") nachgetragen: `.woff2` und `.woff`; der Server startete
+sich in einer Sekunde neu (PID 82924), Schrift kommt als `font/woff2`, Startseite antwortet.
 Nahtfälle danach: `titel`, `titel-serife-zwei` 0,00/0,00, `karaoke` 5,28, `karaoke-eine-zeile` 3,43.
 
 **Befund beim Gegenlesen im Tab (Konsole):** vier Stellen im Studio riefen `malen()` ohne Argumente —

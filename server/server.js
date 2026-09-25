@@ -158,6 +158,9 @@ const TYPEN = {
   // webp fehlte: Sunos Profilbilder kommen in diesem Format, und ohne
   // Eintrag gingen sie als application/octet-stream hinaus.
   '.webp':'image/webp', '.gif':'image/gif',
+  // woff2 fehlte (Nacht 25.09.2026): die Paketschriften der Texteffekte (web/fonts) gingen als
+  // application/octet-stream hinaus - Chrome nahm sie trotzdem, sauber ist der Schrifttyp.
+  '.woff2':'font/woff2', '.woff':'font/woff',
 };
 
 /**
