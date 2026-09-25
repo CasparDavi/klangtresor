@@ -6852,3 +6852,22 @@ Modul-Konzept ist im Backlog eingetragen (Zustand Entscheidung). Die zwei Konzep
 in dieser Sitzung noch nachgezogen; steht darunter nichts mehr, ist er ohne Fund geblieben oder die
 Sitzung endete vorher — dann beim nächsten Mal `git log --since=2026-09-24` gegen
 `docs/effektclip/EFFEKTCLIP-REGELN.md` und `labor/nahtpruefung/LIESMICH.md` lesen.
+
+**Protokoll der laufenden Aufgabe (falls die Kompaktierung zuschlägt):** Ein Leseagent (Sonnet, nur
+lesend, gestartet 25.09. gegen 11:45) prüft die Unterlagen gegen `git log --since=2026-09-24
+--stat`: `docs/effektclip/EFFEKTCLIP-REGELN.md` (Regel 17e, Befehle `aus/ein/daten` ohne `lyrik`,
+Effekt-/Gruppenlisten ohne Titel/Karaoke, Regel für `hinweis(e)`, Regel 19 Größenbezug),
+`docs/effektclip/KONZEPT-*.md` (Stufen, Gruppe Text), `labor/nahtpruefung/LIESMICH.md` (`_lyrik.json`,
+`fonts`, Haken wartet auf Lyrik, Karaoke-Fälle mit gewollter Vorschau-Abweichung, `jetzt` je Fall),
+`labor/effektclip-studio/LIESMICH.md` (`lyrik`-Befehl, `.gitignore`), `docs/LIESMICH.md`,
+`START-HIER.md`, README (Nutzerbeschreibung des Studios ohne Titel/Karaoke/Lyric-Video, Morgenlauf
+ohne Ersatzzeichen-Heilung und Lyrik-Fassung, Whisper-Prompt ohne runde Klammern),
+`docs/haus/HAUSREGELN.md`/`CLAUDE.md` (Widersprüche zu den Bauten), `docs/BACKLOG.md` (erledigte
+Punkte, die offen stehen), `web/fremd/LIZENZEN.md`, `bin/gesundheit.js`, sowie Codekommentare, die
+jetzt falsch sind („Karaoke (Wortmarken) kommt spaeter", „nur eckige", „istRegie", „Fassung 1/2"
+als aktueller Stand, `aus/ein` als Pflichtweg). Erwartet: eine Liste je Datei mit Zeile, Status
+(veraltet/fehlt/ok) und dem Satz, der stehen müsste. **Nach der Meldung:** die veralteten und
+fehlenden Sätze nachziehen, in einem Commit „Doku nach den Bauten seit 24.09. nachgezogen", pushen.
+**Ist die Sitzung vorher weg:** Der Befund liegt in der Sitzungsablage unter `tasks/`, Kennung
+beginnt mit `a4e30e7`, letzte Zeile der Datei ist der Bericht — oder die Prüfung von Hand nach
+derselben Liste wiederholen; die Übergabe §19–§25 nennt jede Neuerung, die dort erwähnt sein muss.
