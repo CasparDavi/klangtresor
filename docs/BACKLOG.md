@@ -261,7 +261,10 @@ eigener Gruppe. Bewertung der Kandidaten, Stand 17.08.2026:
 | Astrofox · WaveSurfer.js · Peaks.js | Für Editor, Timeline und Annotation gebaut, nicht für Bühnenvisuals. |
 
 Zu bedenken bei allem: Das Projekt ist bisher **eine Datei ohne
-Abhängigkeiten**. Jede Erweiterung ist die erste Fremddatei.
+Abhängigkeiten**. Jede Erweiterung ist die erste Fremddatei. *(Nachtrag
+25.09.2026: seit den Paketschriften der Texteffekte gehören vier woff2-Dateien
+unter `web/fonts/` zur Auslieferung — keine Programmbibliothek, aber die erste
+Abhängigkeit neben dem Analyzer; Herkunft in `web/fremd/LIZENZEN.md`.)*
 
 ### Partytauglich machen
 Caspar_Ds Wunsch (17.08.2026), noch nicht ausgearbeitet. Offene Fragen:
@@ -2085,7 +2088,12 @@ nicht ad hoc und nebenbei."*
 
 Erst wenn diese Zahlen vorliegen, wird die Vorgabe gedreht. Bis dahin
 bleibt Suno die Vorgabe, Whisper die Alternative, die bereinigte Lyrik
-das Register.
+das Register. *(Nachtrag 25.09.2026: für den Karaoke-Effekt des
+Effektclip-Studios ist die bereinigte Lyrik seit dem 24.09. die Quelle einer
+sichtbaren, zeilenweisen Textspur im Export — mehr als ein Register. Die Frage
+„wortgenau oder je Zeile" ist dort entschieden: je Zeile, Wort-Wischen bewusst
+zurückgestellt (Backlog „Titel über dem Bild"); die Bühne behält ihre
+Spurwahl, das Band streicht Zierzeichen. Regeln: `docs/suno/WHISPER.md`.)*
 
 ## Kondensate — vertagt, ein lokales Modell ist zu planen (08.09.2026)
 

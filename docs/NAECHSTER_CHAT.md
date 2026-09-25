@@ -6871,3 +6871,13 @@ fehlenden Sätze nachziehen, in einem Commit „Doku nach den Bauten seit 24.09.
 **Ist die Sitzung vorher weg:** Der Befund liegt in der Sitzungsablage unter `tasks/`, Kennung
 beginnt mit `a4e30e7`, letzte Zeile der Datei ist der Bericht — oder die Prüfung von Hand nach
 derselben Liste wiederholen; die Übergabe §19–§25 nennt jede Neuerung, die dort erwähnt sein muss.
+
+**Der Leseagent hat gemeldet (25.09., 11:57), alles nachgezogen:** zwei veraltete Sätze im Backlog
+(„eine Datei ohne Abhängigkeiten" — seit den Schriften nicht mehr; die bereinigte Lyrik als
+„Register" — seit dem Karaoke-Effekt eine sichtbare Spur), und sieben fehlende Erwähnungen:
+Befehl `lyrik` in EFFEKTCLIP-REGELN, beiden Labor-LIESMICHs und im Kopf von `effektclip-labor.js`;
+eine Regel für `hinweis(e)` bei Regel 11; der Größenbezug der Texteffekte bei Regel 19; Titel und
+Karaoke in der Objektiv-Liste von KONZEPT-DIORAMA; `stand.js`/`haken.js`/`faelle.json` in der
+Nahtprüfungs-LIESMICH (`_lyrik.json`, `fonts`, `lyrikBereit`, `jetzt`, gewollte
+Vorschau-Abweichung). Alles andere war schon auf Stand. Zur Kenntnis: „Karaoke" heißt im Haus zwei
+Dinge — die Textebene der Bühne und der Effekt im Studio.

@@ -9,6 +9,7 @@ Studio messen, ohne den echten Server anzufassen und ohne an Produktivdaten zu a
 ```bash
 node bin/effektclip-labor.js aus     # das Studio aus web/index.html in diesen Ordner holen
 node bin/effektclip-labor.js daten   # Prüfdaten und Verweise anlegen
+node bin/effektclip-labor.js lyrik   # bereinigte Lyrik der Prüftitel anlegen (Karaoke-Effekt)
 cd labor/effektclip-studio && python3 -m http.server 18811
 ```
 
@@ -33,6 +34,7 @@ sonst ist die Änderung beim nächsten `aus` weg. Zwei Wahrheiten gibt es nicht.
 | `blendentest.html` | Einzeltest zur Blenden-Rechenzeit, ohne Studio und ohne Maler |
 | `tbs-modul.js`, `tbs.css` | Arbeitsstand, abgeleitet, nicht versioniert |
 | `_songs.json` | schmaler Auszug aus dem Katalog, Archivdaten, nicht versioniert |
+| `_lyrik.json` | bereinigte Lyrik der Prüftitel (`lyrik`), Archivdaten, nicht versioniert; die Laborseite beantwortet `/api/lyrik` daraus |
 | `media`, `testbild`, `fremd` | Verweise ins Archiv und in die Seite, nicht versioniert |
 
 Die vier letzten Zeilen legt `daten` jederzeit neu an. `fremd` ist Pflicht: ohne den Verweis findet

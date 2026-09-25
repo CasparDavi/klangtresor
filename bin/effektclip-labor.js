@@ -9,6 +9,7 @@
  *   node bin/effektclip-labor.js aus     Block aus web/index.html in die Laborkopie holen
  *   node bin/effektclip-labor.js ein     Laborkopie zurück in web/index.html spleißen
  *   node bin/effektclip-labor.js daten   Prüfdaten und Verweise für den Prüfstand anlegen
+ *   node bin/effektclip-labor.js lyrik   bereinigte Lyrik der Prüftitel anlegen (_lyrik.json)
  *
  * "ein" prüft vorher jedes Inline-Skript der Seite auf Syntax und bricht ab, wenn
  * eines nicht baut - eine kaputte index.html merkt man sonst erst im Browser.

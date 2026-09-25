@@ -145,6 +145,10 @@ im Studio soll niemand etwas nachschlagen müssen.
 **11. Die Beschriftung ist ein Versprechen.** Sagt der Regler „Breite in Grad", ist es der ganze
 Winkel und nicht der halbe. Sagt die Beschreibung „nur auf der Eins", darf der Code nicht jeden
 Schlag nehmen. Sagt sie „lodert höher", muss es höher werden und nicht zwischendurch niedriger.
+Seit dem 24.09.2026 darf ein Registry-Eintrag dafür `hinweis(e)` tragen: einen Satz, den die Karte
+wie den Leuchten-Hinweis zeigt, wenn der Effekt gerade nichts malt oder anders malt, als der Regler
+verspricht — fehlende Lyrik, stehender Player, Loop-Ansicht, Titel im Karaoke-Band, Text in der Szene
+statt am Objektiv. Grau mit Grund, nie stumm.
 
 **12. Alte Ablagen werden übersetzt, nie stillschweigend anders gelesen.** Jede Bedeutungsänderung
 bekommt eine Übersetzung in `effektAusRezept`. Ablagen tragen `fassung`; ältere gelten als alt und
@@ -242,6 +246,9 @@ Jede absolute Größe (Radius, Strichbreite, Blur, Taumelweite, Korn, Raster) wi
 Untergrenzen erst **nach** dem Umrechnen, und wo eine Untergrenze greift, trägt die Deckkraft den Rest
 (`ws/lw`), sonst werden feine Striche auf kleinen Leinwänden zu hell. Geprüft wird mit
 `naht.mjs --studio-vergleich studio-vorher.json` (bitgleich) und `--massstab` (360 gegen 1080 px).
+Die Texteffekte gehen denselben Grundsatz auf eigenem Weg: Titel und Karaoke messen nicht über
+`EINHEIT`, sondern direkt als Anteil der Bildfläche — der Titel an der kurzen Seite, das Karaoke an
+der Breite wie das Band der Bühne; Kontur, Schatten und Zeilenhöhe als Anteil der Schriftgröße.
 
 ---
 
@@ -265,6 +272,7 @@ Der Weg ins Haus und zurück läuft über `bin/effektclip-labor.js`:
 node bin/effektclip-labor.js aus     # Block aus web/index.html holen
 node bin/effektclip-labor.js ein     # zurück spleißen, mit Syntaxprüfung
 node bin/effektclip-labor.js daten   # Prüfdaten und Verweise anlegen
+node bin/effektclip-labor.js lyrik   # bereinigte Lyrik der Prüftitel als _lyrik.json anlegen (Karaoke)
 ```
 
 ---

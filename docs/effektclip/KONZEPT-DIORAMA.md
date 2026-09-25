@@ -61,7 +61,9 @@ Ken Burns Fahrt · Zoom schlägt · Kippen schlägt · Parallaxe · Bewegungsuns
 
 Filmkorn · Scanlines / Röhre · Bloom / Halation · Linse · Farbkanal-Puls · Rauschausfall ·
 Glitch-Blöcke · Bildlauf · Verwackeln · Sicherungswackeln · Stroboskop · Laufstreifen ·
-Nachzieheffekt
+Nachzieheffekt · **Titel · Karaoke** (seit 24./25.09.2026 — am Objektiv, solange kein Szenen-Effekt
+nach ihnen in der Kette steht; sonst rücken sie in die Szene vor diesen Effekt, siehe
+KONZEPT-TEXT.md)
 
 ---
 
