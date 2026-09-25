@@ -7008,3 +7008,9 @@ kommt, 3,3 s steht; 37,3 s löst sich, 38,6 s fast fort (Song 6, Takt 1,68 s, er
 Der Partikel-Maler selbst blieb unangetastet (kein Umbau, keine neue Grundlinie nötig).
 **Offen (Wiedervorlage):** Caspar_D's Auge auf Ballen und Auflösen im echten Export; voller Lauf
 aller 254 Fälle (Startschuss). Sein 18811-Server hängt seit heute (PID 99885) — nicht angefasst.
+**Stand 25.09., später Nachmittag:** alles gepusht — 703987f/b51a426 (Struktur × Farbe), 4798312
+(Auftritt und Abgang), 819a7c3 (aus den Partikeln). Vier Struktur-Ausschnitte in Exportgröße hat
+Caspar_D bekommen; Auftritt und Partikel hat er noch nicht gesehen (Wiedervorlage: ganzen Titel
+mit Auftritt ausgeben). Der volle Lauf aller 254 Fälle steht aus (rund 13 min, Startschuss nötig).
+Eigener Labor-Server 127.0.0.1:18812 läuft noch (PID in Scratchpad struktur/server-18812.pid);
+Jörgs 18811 (PID 99885) hängt — nicht angefasst.
