@@ -6987,3 +6987,24 @@ currentTime:t}` wie der Haken, Malen per Reglerereignis erzwungen: 0,12 s blass 
 Laufweite und Vorhang sichtbar. Der Tab bleibt versteckt (rAF steht), darum diese Methode.
 **Offen:** Caspar_D's Auge auf den Auftritt (kein Bild geschickt, nur Beschreibung — ein
 Probevideo bräuchte den vollen Export), voller Lauf aller Fälle; danach Schritt 3.
+
+## 29. Nachmittag 25.09.2026: der Titel aus den Partikeln (Schritt 3)
+
+**Gebaut:** sechste Wahl des Auftritts „aus den Partikeln". `titelPartikelQuelle` (erster aktiver
+Partikel-Effekt mit Asche, Staub, Funken, Glitzer, Schnee, Pusteblume, Glühwürmchen), `titelZiele`
+(Schrift einmal abgetastet, Raster 0,09 em, bei mehr als 4000 Punkten gröber; gemerkt in
+`e._tz`/`e._tzKey`), `titelGlyph` (eigene Glyphen je Art nach dem Muster des Partikel-Malers:
+Kreis, Aschekorn, Staubkorn mit Helligkeitsstreuung, Pusteblumenfächer, Glitzer-Vierstrahl,
+Glut mit Hof für Funken und Glühwürmchen), `titelTeilchen` (Ballen: Start von der Stromseite der
+Art, ¼ bis 1 Bildhöhe entfernt, Ankunft gestreut 55–100 %, Bogen quer, weich aus; Auflösen: Start
+gestreut 0–25 %, Drift mit Wind und Auftrieb, verblassen; alles aus t und Hash je Teilchen; Screen).
+Zeiten: `titelAuftrittZeiten(e)` mit zwei Takten hin und zurück für diese Wahl. Füllung
+übernimmt im letzten Drittel des Ballens, geht im ersten Drittel des Auflösens. Ohne
+Partikel-Effekt: Titel steht, Karte sagt es (`auftrittHinweis`).
+**Prüfstand:** Fall `titel-auftritt-partikel` (Asche + Titel, Titel a, jetzt 24,5: Vorschau im
+Auflösen) → Naht 0,63 = erwartet (die Asche), Vorschau 1,59 gewollt; 254 Fälle.
+**Labor (18812, Fake-Uhr):** 0,8 s erste Teilchen, 1,8 s Silhouette aus Punkten, 2,8 s Füllung
+kommt, 3,3 s steht; 37,3 s löst sich, 38,6 s fast fort (Song 6, Takt 1,68 s, erste Zeile 40,4 s).
+Der Partikel-Maler selbst blieb unangetastet (kein Umbau, keine neue Grundlinie nötig).
+**Offen (Wiedervorlage):** Caspar_D's Auge auf Ballen und Auflösen im echten Export; voller Lauf
+aller 254 Fälle (Startschuss). Sein 18811-Server hängt seit heute (PID 99885) — nicht angefasst.

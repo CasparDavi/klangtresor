@@ -27614,7 +27614,7 @@ const EFFEKTE = {
       {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5,notiz:()=>'Lage des Textkastens: 0 links, 1 rechts. Ein Klick auf die Bühne setzt beides.'},
       {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85,notiz:e=>[ 'Lage des Textkastens: 0 oben, 1 unten.', hochformatNotiz(e.ortY==null?0.85:e.ortY) ].filter(Boolean).join(' ')},
       {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte',notiz:()=>'Wie mehrere Zeilen zueinander stehen; den Ort setzen Ort X und Ort Y.'},
-      {k:'auftritt',lbl:'Auftritt',sel:[['keiner','keiner'],['erscheinen','erscheinen'],['aufsteigen','aufsteigen'],['scharf','scharfstellen'],['laufweite','Laufweite'],['vorhang','Vorhang']],def:'keiner',notiz:e=>auftrittNotiz(e)}]},
+      {k:'auftritt',lbl:'Auftritt',sel:[['keiner','keiner'],['erscheinen','erscheinen'],['aufsteigen','aufsteigen'],['scharf','scharfstellen'],['laufweite','Laufweite'],['vorhang','Vorhang'],['partikel','aus den Partikeln']],def:'keiner',notiz:e=>auftrittNotiz(e)}]},
   /* KARAOKE (24.09.2026; Caspar_D: "a second karaoke overlay configurator, take the presets from the
      stage" - "die bereinigte Lyrics waere die beste Variante" - "Karaoke macht nur Sinn bei vollem
      Export, also 10 Sek mit Karaoke geht nicht, es wird der Effekt einfach weggelassen").
@@ -31083,15 +31083,18 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const ph=titelAuftrittLage(e,t); if(ph&&ph.weg){ cx.restore(); return; }
     let al=a, dy=0, sp=0;
     if(ph){ const p=ph.ein?(1-Math.pow(1-ph.k,3)):(1-ph.k*ph.k*ph.k), art=ph.art; al=a*p;
-      if(art==='aufsteigen') dy=ph.ein?(1-p)*gr*0.5:-(1-p)*gr*0.35;
+      /* Aus den Partikeln: die Fuellung uebernimmt im letzten Drittel des Ballens und geht im ersten Drittel des Aufloesens. */
+      if(art==='partikel'){ const g=q=>{ q=Math.max(0,Math.min(1,q)); return q*q*(3-2*q); }; al=a*(ph.ein?g((ph.k-0.7)/0.3):1-g(ph.k/0.3)); }
+      else if(art==='aufsteigen') dy=ph.ein?(1-p)*gr*0.5:-(1-p)*gr*0.35;
       else if(art==='scharf') cx.filter='blur('+((1-p)*gr*0.25).toFixed(2)+'px)';
       else if(art==='laufweite'&&('letterSpacing' in cx)){ sp=(1-p)*gr*0.25; cx.letterSpacing=sp.toFixed(2)+'px'; }
       else if(art==='vorhang'){ al=a; cx.beginPath(); cx.rect(left-m+(boxW+2*m)*(1-p)/2,top-m,Math.max(0,(boxW+2*m)*p),boxH+2*m); cx.clip(); } }
     cx.textBaseline='middle';
-    for(let i=0;i<rows.length;i++){ const y=top+(i+0.5)*gr*zh+dy, w=sp>0?cx.measureText(rows[i]).width:br[i];
+    if(al>0.003) for(let i=0;i<rows.length;i++){ const y=top+(i+0.5)*gr*zh+dy, w=sp>0?cx.measureText(rows[i]).width:br[i];
       const x=e.ausrichtung==='links'?left:e.ausrichtung==='rechts'?left+boxW-w:left+(boxW-w)/2;
       textDreipass(cx,rows[i],x,y,gr,farbe,sch,kon,al,e.struktur||'glatt'); }
     cx.filter='none';
+    if(ph&&ph.art==='partikel'){ const pe=titelPartikelQuelle(); if(pe){ const z=titelZiele(e,cx,rows,left,top,boxW,gr,zh,Wn,Hn); titelTeilchen(cx,e,ph,z,pe,Wn,Hn,a); } }
     cx.restore(); }
   else if(e.typ==='karaoke'){ const a=Math.min(1,e.staerke); if(a<=0.001) return;
     /* NUR IM DURCHLAUF (Caspar_D, 24.09.2026: "10 Sek mit Karaoke geht nicht, es wird der Effekt einfach
@@ -37956,23 +37959,93 @@ function zeichneFrame(t,roh){
   function taktSchlaege(){ try{ const S=DATA&&DATA.schlaege; if(!S||S.length<8) return 4; const d=[]; let letzte=-1;
       for(let i=0;i<S.length;i++){ if(S[i][1]===1){ if(letzte>=0) d.push(i-letzte); letzte=i; } }
       if(d.length<3) return 4; d.sort((a,b)=>a-b); const m=d[d.length>>1]; return (m>=2&&m<=16)?m:4; }catch(x){ return 4; } }
-  function titelAuftrittZeiten(){ const hz=schlagHz(), beat=hz>0?1/hz:0.6, takt=beat*taktSchlaege();
+  function titelAuftrittZeiten(e){ const hz=schlagHz(), beat=hz>0?1/hz:0.6, takt=beat*taktSchlaege();
+    /* Aus den Partikeln braucht Zeit, ein Zusammenballen muss man sehen: zwei Takte hin, zwei zurueck (25.09.2026). */
+    const lang=(titelAuftritt(e)==='partikel'), ein1=lang?2*takt:beat, ausD=lang?2*takt:0.75*beat;
     const Z=(DATA&&DATA.lyrik!==undefined)?DATA.lyrik:lyrikVon(DATA&&DATA.id);
     const erste=(Z&&Z.length&&Z[0]&&Z[0].von>0)?Z[0].von:null;
-    let ab1=(erste!=null)?erste-beat:beat+4*takt; const mind=beat+2*takt;
-    if(ab1<mind) ab1=(erste!=null)?beat+4*takt:mind;
-    return { ein1:beat, ab0:ab1-0.75*beat, ab1, beat, erste }; }
+    let ab1=(erste!=null)?erste-beat:ein1+4*takt; const mind=ein1+2*takt;
+    if(ab1<mind) ab1=(erste!=null)?ein1+4*takt:mind;
+    return { ein1, ab0:ab1-ausD, ab1, beat, erste }; }
   function titelAuftrittLage(e,t){ const art=titelAuftritt(e); if(!art) return null;
     if(LOOP>0) return null; if(MALT_KACHEL&&!uhrEcht) return null;
-    const z=titelAuftrittZeiten(); let tt=t; if(!uhrEcht&&!(DATA&&DATA.lyrik!==undefined)) tt=t%(z.ab1+z.beat);
+    if(art==='partikel'&&!titelPartikelQuelle()) return null;   /* ohne Partikel-Effekt in der Kette steht er; die Karte sagt es */
+    const z=titelAuftrittZeiten(e); let tt=t; if(!uhrEcht&&!(DATA&&DATA.lyrik!==undefined)) tt=t%(z.ab1+z.beat);
     if(tt<z.ein1) return { art, ein:true, k:Math.max(0,tt/z.ein1) };
     if(tt<z.ab0) return null;
     if(tt<z.ab1) return { art, ein:false, k:(tt-z.ab0)/(z.ab1-z.ab0) };
     return { art, weg:true }; }
   function auftrittNotiz(e){ try{ if(!titelAuftritt(e)) return null;
-      const z=titelAuftrittZeiten(), hier=(DATA&&DATA.instrumental)?'Dieser Titel ist instrumental: der Titel geht nach vier Takten.':(z.erste!=null?'Hier endet der Abgang bei '+z.ab1.toFixed(1).replace('.',',')+' s, vor der ersten Zeile.':'Ohne bereinigte Lyrik geht er nach vier Takten.');
+      const z=titelAuftrittZeiten(e), hier=(DATA&&DATA.instrumental)?'Dieser Titel ist instrumental: der Titel geht nach vier Takten.':(z.erste!=null?'Hier endet der Abgang bei '+z.ab1.toFixed(1).replace('.',',')+' s, vor der ersten Zeile.':'Ohne bereinigte Lyrik geht er nach vier Takten.');
+      if(titelAuftritt(e)==='partikel') return 'Nur im ganzen Titel: der Titel ballt sich über zwei Takte aus Teilchen der Art in der Kette zusammen, steht, und löst sich über zwei Takte in Windrichtung auf — Art, Farbe, Größe, Wind und Schwere kommen vom Partikel-Effekt. '+hier;
       return 'Nur im ganzen Titel: ein Schlag herein, stehen, einen Schlag vor der ersten Gesangszeile fort (frühestens nach zwei Takten). Einsatz weich aus, Abgang weich ein — kein Regler dafür. '+hier; }catch(x){ return null; } }
-  function auftrittHinweis(e){ try{ if(!titelAuftritt(e)) return null; if(LOOP>0) return 'Im Zehnsekünder steht der Titel — Auftritt und Abgang laufen nur im ganzen Titel.'; return null; }catch(x){ return null; } }
+  function auftrittHinweis(e){ try{ if(!titelAuftritt(e)) return null; if(LOOP>0) return 'Im Zehnsekünder steht der Titel — Auftritt und Abgang laufen nur im ganzen Titel.';
+      if(titelAuftritt(e)==='partikel'&&!titelPartikelQuelle()) return 'Aus den Partikeln braucht einen Partikel-Effekt in der Kette — Asche, Staub, Funken, Glitzer, Schnee, Pusteblume oder Glühwürmchen. Bis dahin steht der Titel.';
+      return null; }catch(x){ return null; } }
+  /* AUS DEN PARTIKELN (25.09.2026; Caspar_D: "wenn man Partikel angewendet hat, dann koennte sich der Titel
+     auch daraus zusammenballen und sich wieder aufloesen"). Der Titel malt EIGENE Teilchen - Art, Farbe (partikelSatz),
+     Groesse, Wind und Schwere (ART_AUFTRIEB) vom ersten aktiven Partikel-Effekt der Kette, aber ohne Griff in dessen
+     Zustand und unabhaengig davon, ob er vor oder hinter dem Text liegt. Nur mit Arten, die sich zu Schrift ballen:
+     Asche, Staub, Funken, Glitzer, Schnee, Pusteblume, Gluehwuermchen (Konfetti, Blaetter, Regen nicht).
+     ZIELE: die Schrift wird einmal je Text und Groesse abgetastet (Raster 0,09 em, hoechstens 4000 Punkte).
+     BALLEN (zwei Takte): jedes Teilchen startet zu seiner Zeit von einem Ort, von dem der Strom der Art kaeme
+     (steigende Arten von unten, sinkende von oben, ein Viertel bis eine Bildhoehe entfernt), fliegt weich aus
+     mit einem Bogen quer, kommt gestreut an (zwischen 55 und 100 % der Zeit); die Fuellung uebernimmt im letzten
+     Drittel, die Teilchen weichen ihr. AUFLOESEN (zwei Takte): die Fuellung geht im ersten Drittel, die Teilchen
+     erscheinen an ihren Punkten und treiben mit Wind und Auftrieb der Art davon, verblassen. Alles aus t und
+     einem Ganzzahl-Hash je Teilchen - kein Zustand, kein Zufall aus der Uhr. Gemalt in Screen wie der
+     Partikel-Effekt. Was billig aussieht und darum fest ist: gleichfoermige Teilchen, gleichzeitige Ankunft,
+     ein Text, der hart aufspringt. */
+  const TITEL_TEILCHEN_ARTEN=new Set(['asche','staub','funken','glitzer','schnee','pusteblume','gluehwuermchen']);
+  function titelPartikelQuelle(){ try{ return (STAPEL||[]).find(x=>x&&x.an&&x.typ==='partikel'&&TITEL_TEILCHEN_ARTEN.has(x.art))||null; }catch(x){ return null; } }
+  function titelZiele(e,cx,rows,left,top,boxW,gr,zh,Wn,Hn){
+    const key=rows.join('\n')+'|'+Math.round(gr)+'|'+Wn+'x'+Hn+'|'+Math.round(left)+','+Math.round(top)+'|'+(e.ausrichtung||'mitte')+'|'+cx.font;
+    if(e._tzKey===key&&e._tz) return e._tz;
+    const c=document.createElement('canvas'); c.width=Wn; c.height=Hn; const g=c.getContext('2d',{willReadFrequently:true});
+    g.font=cx.font; g.textBaseline='middle'; g.textAlign='left'; g.fillStyle='#fff';
+    for(let i=0;i<rows.length;i++){ const w=g.measureText(rows[i]).width, y=top+(i+0.5)*gr*zh; const x=e.ausrichtung==='links'?left:e.ausrichtung==='rechts'?left+boxW-w:left+(boxW-w)/2; g.fillText(rows[i],x,y); }
+    const x0=Math.max(0,Math.floor(left-gr)), x1=Math.min(Wn,Math.ceil(left+boxW+gr)), y0=Math.max(0,Math.floor(top-gr*0.3)), y1=Math.min(Hn,Math.ceil(top+rows.length*gr*zh+gr*0.3));
+    let s=Math.max(2,gr*0.09), out=[];
+    for(let r=0;r<4;r++){ out=[]; const d=g.getImageData(0,0,Wn,Hn).data;
+      for(let y=y0+s/2;y<y1;y+=s) for(let x=x0+s/2;x<x1;x+=s){ const xi=Math.round(x), yi=Math.round(y); if(d[(yi*Wn+xi)*4+3]>128) out.push(xi,yi); }
+      if(out.length<=8000) break; s*=1.4; }   /* hoechstens 4000 Punkte, sonst groberes Raster */
+    e._tzKey=key; e._tz=out; return out; }
+  function titelGlyph(cx,art,x,y,sz,fc,al,r){
+    const span=(ang,len,b)=>{ const s=Math.sin(ang), c=Math.cos(ang); cx.beginPath(); cx.moveTo(x-s*b*0.5,y+c*b*0.5); cx.lineTo(x+c*len,y+s*len); cx.lineTo(x+s*b*0.5,y-c*b*0.5); cx.fill(); };
+    cx.globalAlpha=al; cx.fillStyle=fc;
+    if(art==='schnee'){ cx.beginPath(); cx.arc(x,y,sz,0,7); cx.fill(); }
+    else if(art==='asche'){ cx.globalAlpha=al*(0.4+0.6*r); cx.beginPath(); cx.arc(x,y,sz*0.8,0,7); cx.fill(); }
+    else if(art==='staub'){ cx.globalAlpha=al*(0.15+0.85*r); cx.beginPath(); cx.arc(x,y,sz*(0.25+0.45*r),0,7); cx.fill(); }
+    else if(art==='pusteblume'){ const b=Math.max(0.4,sz*0.16); cx.globalAlpha=al*0.6; for(let k=0;k<7;k++) span(-Math.PI/2+(k-3)*0.32,sz*1.4,b); cx.globalAlpha=al; cx.beginPath(); cx.arc(x,y,sz*0.3,0,7); cx.fill(); }
+    else if(art==='glitzer'){ const b=Math.max(0.4,sz*0.3); for(let k=0;k<4;k++) span(k*Math.PI/2,sz*1.6,b); cx.beginPath(); cx.arc(x,y,sz*0.45,0,7); cx.fill(); }
+    else { const g=cx.createRadialGradient(x,y,0,x,y,sz*3); g.addColorStop(0,fc); g.addColorStop(0.3,fc.replace(/,[^,]*\)$/,',0.5)')); g.addColorStop(1,fc.replace(/,[^,]*\)$/,',0)'));
+      cx.fillStyle=g; cx.beginPath(); cx.arc(x,y,sz*3,0,7); cx.fill(); cx.fillStyle=(art==='funken')?'rgba(255,240,200,1)':fc; cx.beginPath(); cx.arc(x,y,sz*0.6,0,7); cx.fill(); }
+    cx.globalAlpha=1; }
+  function titelTeilchen(cx,e,ph,ziele,pe,Wn,Hn,a){
+    const n=ziele.length>>1; if(!n) return;
+    const hs=x=>{ const v=Math.sin(x*12.9898+(e.id*31+7)*78.233)*43758.5453; return v-Math.floor(v); };
+    const satz=partikelSatz(pe), spanne=(satz.length===2), streu=(pe.farbstreu==null?0:pe.farbstreu);
+    const cl=v=>Math.round(Math.max(0,Math.min(255,v)));
+    const ton=i=>{ let c; if(spanne){ const x=streu*hs(i+6000); c=[satz[0][0]+(satz[1][0]-satz[0][0])*x, satz[0][1]+(satz[1][1]-satz[0][1])*x, satz[0][2]+(satz[1][2]-satz[0][2])*x]; }
+      else c=tonZiehen(satz[Math.min(satz.length-1,Math.floor(hs(i+6000)*satz.length))],(hs(i+6100)-0.5)*streu);
+      return 'rgba('+cl(c[0])+','+cl(c[1])+','+cl(c[2])+',1)'; };
+    const au=(typeof pe.auftrieb==='number'?pe.auftrieb:(ART_AUFTRIEB[pe.art]!=null?ART_AUFTRIEB[pe.art]:-1)), aS=(au>0)?1:-1;   /* +1 steigt (Asche), -1 sinkt (Schnee) */
+    const w=(pe.wind==null?0.1:pe.wind), gr0=(pe.groesse==null?3:pe.groesse)*EINHEIT, ein=ph.ein, k=ph.k;
+    cx.save(); cx.globalCompositeOperation='screen';
+    for(let i=0;i<n;i++){ const tx=ziele[2*i], ty=ziele[2*i+1];
+      const r1=hs(i), r2=hs(i+1000), r3=hs(i+2000), r4=hs(i+3000), r5=hs(i+4000), sz=gr0*(0.5+r3);
+      let x,y,al;
+      if(ein){ const u=0.55+0.45*r1, v=Math.max(0,u-(0.35+0.25*r2)), q=Math.max(0,Math.min(1,(k-v)/(u-v))); if(q<=0) continue;
+        const pq=1-Math.pow(1-q,3), ang=r4*6.283, dist=(0.25+0.75*r5)*Hn, sx=tx+Math.cos(ang)*dist, sy=ty+aS*Math.abs(Math.sin(ang))*dist;
+        const bogen=Math.sin(Math.PI*pq)*(r2-0.5)*0.25*Hn, dx=(tx-sx)/dist, dyy=(ty-sy)/dist;
+        x=sx+(tx-sx)*pq+bogen*dyy; y=sy+(ty-sy)*pq-bogen*dx;
+        const settle=Math.max(0,Math.min(1,(k-0.7)/0.3)); al=a*(0.35+0.65*pq)*(1-settle); }
+      else { const v=0.25*r1, u=Math.min(1,v+0.45+0.45*r2), q=Math.max(0,Math.min(1,(k-v)/(u-v))), pq=q*q*(3-2*q), drift=pq*(0.25+0.6*r5)*Hn;
+        x=tx+w*drift*1.2+(r4-0.5)*0.3*drift+Math.sin(pq*6+i)*gr0*0.6; y=ty-aS*drift*0.9+(r3-0.5)*0.2*drift;
+        const frei=Math.max(0,Math.min(1,k/0.3)); al=a*frei*(1-pq); }
+      if(al<=0.005||x<-gr0*5||x>Wn+gr0*5||y<-gr0*5||y>Hn+gr0*5) continue;
+      titelGlyph(cx,pe.art,x,y,sz,ton(i),al,r5); }
+    cx.restore(); }
   const STRUKTUR_KACHELN=new Map();
   function farbeRGB(s){ const c=document.createElement('canvas'); c.width=c.height=1; const g=c.getContext('2d'); g.fillStyle='#000'; g.fillStyle=s; g.fillRect(0,0,1,1); const d=g.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]]; }
   /* Wert-Rauschen auf einem Gitter, in x periodisch mit px Zellen (ganze Zahl); der Hash rechnet nur mit Ganzzahlen. */

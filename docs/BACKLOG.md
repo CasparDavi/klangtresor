@@ -3157,10 +3157,11 @@ gleich gesagt, was danach kommt:
 - **Auftritt und Abgang** — gebaut am 25.09.2026 (Regler „Auftritt": erscheinen, aufsteigen,
   scharfstellen, Laufweite, Vorhang; Zeiten aus Schlag und erster Gesangszeile), nur im ganzen
   Titel; im Zehnsekünder steht er wie zuvor, darum keine Klammer nötig (Caspar_D: „beim
-  10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren"). Offen: das
-  **Zusammenballen aus Partikeln** (der Titel formt sich aus den Teilchen des Partikel-Effekts und
-  löst sich in Windrichtung auf), nur mit Asche, Staub, Funken, Glitzer, Schnee, Pusteblume,
-  Glühwürmchen.
+  10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren"). Dazu am selben Tag das
+  **Zusammenballen aus Partikeln** (Wahl „aus den Partikeln": der Titel formt sich über zwei Takte
+  aus eigenen Teilchen in Art und Farbe des Partikel-Effekts und löst sich in Windrichtung auf),
+  nur mit Asche, Staub, Funken, Glitzer, Schnee, Pusteblume, Glühwürmchen. Wiedervorlage: ein
+  ganzer Titel mit Auftritt ausgeben und ansehen — Ballen, Stehen, Auflösen, und die Zeiten.
 - **Mehr Schriften** als Grotesk und Serife — erst, wenn die zwei nicht reichen. Eigene Schriften
   müssten ins Paket, damit der Export bei Casto dasselbe malt.
 - **Balken oder Fläche hinter dem Text**, falls Kontur und Schatten über hellem Bewegtbild nicht

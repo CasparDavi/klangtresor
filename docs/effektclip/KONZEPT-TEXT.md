@@ -36,6 +36,7 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
 | Regieanweisungen fliegen an der Quelle, in der Bereinigung, nicht im Maler | „das sollte in der bereinigten Lyrics nicht passieren, ist ja bereinigt um sowas" | 25.09. |
 | Titel-Material als **Struktur × Farbe**: wenige feste Strukturen, eine Farbe darüber, keine freien Parameter | „der Schrifttextur-Kram ist eher ernüchternd, wenn, dann einige vorgefertigte Struktureffekte, denen man noch eine oder x Farben draufpackt. Kombinatorisch entsteht dann Vielfalt, ohne dass der Nutzer unästhetische Parametersets bauen kann" — „ich denke, das passt so, mach" | 25.09. |
 | **Auftritt und Abgang** des Titels nur im ganzen Titel; im Zehnsekünder steht er | „das würde aber wie bei Karaoke nur für den Ganztitel-Export taugen, beim 10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren" | 25.09. |
+| Der Titel darf sich **aus den Partikeln** zusammenballen und wieder auflösen, wenn ein Partikel-Effekt in der Kette liegt | „wenn man Partikel angewendet hat, dann könnte sich der Titel auch daraus zusammenballen und sich wieder auflösen" — „ich denke, das passt so, mach" | 25.09. |
 
 ## 3. Die Regeln, die daraus folgen
 
@@ -88,6 +89,16 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
     nichts überschwingt — Regler nur für die Wahl. Im Pult mit freier Uhr wiederholt sich Kommen,
     Stehen, Gehen mit einem Schlag Abwesenheit, damit der Gestalter es sieht. Der volle Export
     wartet für ihn mit auf die Lyrik, bricht ohne sie aber nicht ab.
+13. **Aus den Partikeln.** Die sechste Wahl des Auftritts: der Titel ballt sich über zwei Takte
+    aus Teilchen zusammen und löst sich über zwei Takte in Windrichtung auf. Der Titel malt eigene
+    Teilchen — Art, Farbe (`partikelSatz`), Größe, Wind und Schwere vom ersten aktiven
+    Partikel-Effekt der Kette, ohne Griff in dessen Zustand und unabhängig von dessen Lage in der
+    Kette. Nur Arten, die sich zu Schrift ballen: Asche, Staub, Funken, Glitzer, Schnee, Pusteblume,
+    Glühwürmchen; fehlt der Effekt, steht der Titel und die Karte sagt es. Die Schrift wird einmal
+    abgetastet (Raster 0,09 em, höchstens 4000 Punkte); jedes Teilchen kommt zu seiner Zeit von der
+    Seite, aus der der Strom der Art käme, mit Bogen quer; die Füllung übernimmt im letzten Drittel
+    und geht beim Auflösen im ersten. Fest, weil sonst billig: gleichförmige Teilchen, gleichzeitige
+    Ankunft, ein Text, der hart aufspringt.
 
 ## 4. Gemeinsames Handwerk im Code
 
@@ -96,7 +107,7 @@ Füllung; die Füllung wahlweise aus `textStrukturKachel` mit `stHash`/`stWert`/
 `farbeRGB`), `schriftenBereit`, `hochformatNotiz`, `titelHinweis`, `textStufeHinweis`; der Lader
 `lyrikVon`/`lyrikStand`/`lyrikHinweis`/`lyrikGemeldet`/`lyrikBereit` nach dem Muster der Tiefenkarte;
 der Auftritt `titelAuftritt`/`taktSchlaege`/`titelAuftrittZeiten`/`titelAuftrittLage`/`auftrittNotiz`/
-`auftrittHinweis`; die Marke `tiKarteEffekt`/`tiMarkeSetzen`/`tiMarkenMalen`; die Auskunft `clipMalt` und das Ereignis
+`auftrittHinweis`, die Teilchen `titelPartikelQuelle`/`titelZiele`/`titelGlyph`/`titelTeilchen`; die Marke `tiKarteEffekt`/`tiMarkeSetzen`/`tiMarkenMalen`; die Auskunft `clipMalt` und das Ereignis
 `effektclip` für die Bühne. Registry-Einträge dürfen `hinweis(e)` tragen (grau mit Grund auf der
 Karte). Der Prüfstand bekommt die Lyrik der Prüftitel als `_lyrik.json` (`node
 bin/effektclip-labor.js lyrik`) und die Schriften per Verweis.
@@ -104,8 +115,8 @@ bin/effektclip-labor.js lyrik`) und die Schriften per Verweis.
 ## 5. Bewusst nicht gebaut
 
 Wort-Wischen (bräuchte Wortzeiten in der bereinigten Lyrik), Überblenden beim Zeilenwechsel,
-weitere Schriften, ein Balken hinter dem Titel; Auftritt und Abgang sind seit dem 25.09. gebaut
-(Regel 12), das Zusammenballen aus Partikeln steht noch aus. Siehe Backlog „Titel über dem
+weitere Schriften, ein Balken hinter dem Titel; Auftritt und Abgang (Regel 12) und das
+Zusammenballen aus Partikeln (Regel 13) sind seit dem 25.09. gebaut. Siehe Backlog „Titel über dem
 Bild".
 
 ## 6. Wiedervorlage
