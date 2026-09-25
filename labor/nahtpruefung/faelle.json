@@ -4050,6 +4050,72 @@
    "bemerkung": "Freier Text mit Umbruch, Serife, links oben, Screen-Verrechnung, zweiter Titel."
   },
   {
+   "name": "titel-struktur-metall",
+   "typ": "titel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "titel",
+     "struktur": "metall",
+     "farbSatz": "eigen",
+     "farbe": "#d9a441",
+     "schrift": "serife",
+     "groesse": 0.12,
+     "ortY": 0.5
+    }
+   ],
+   "gruppe": "titel",
+   "bemerkung": "Struktur Metall mit warmem Ton (Gold), Serife, mittig: Rampe und Buerstenstriche muessen in Vorschau und Export gleich liegen, Kachel in x nahtlos."
+  },
+  {
+   "name": "titel-struktur-stein",
+   "typ": "titel",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "titel",
+     "struktur": "stein",
+     "groesse": 0.12,
+     "ortY": 0.5
+    }
+   ],
+   "gruppe": "titel",
+   "bemerkung": "Struktur Stein mit der Farbe aus dem Titelbild, zweiter Titel: Adern aus verzerrtem Rauschen, Ganzzahl-Hash, bitgleich."
+  },
+  {
+   "name": "titel-struktur-papier",
+   "typ": "titel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "titel",
+     "struktur": "papier",
+     "farbSatz": "eigen",
+     "farbe": "#e8e2d2",
+     "groesse": 0.1
+    }
+   ],
+   "gruppe": "titel",
+   "bemerkung": "Struktur Papier, helle eigene Farbe unten mittig: das Korn muss bei 360 und 1080 gleich fein wirken (in em gerechnet)."
+  },
+  {
+   "name": "titel-struktur-schraffur",
+   "typ": "titel",
+   "titel": "b",
+   "effekte": [
+    {
+     "typ": "titel",
+     "struktur": "schraffur",
+     "farbSatz": "eigen",
+     "farbe": "#7fc7d9",
+     "groesse": 0.12,
+     "ortY": 0.5
+    }
+   ],
+   "gruppe": "titel",
+   "bemerkung": "Struktur Schraffur, kuehle eigene Farbe, zweiter Titel: 26 Perioden je Kachel, Naht am Kachelrand unsichtbar."
+  },
+  {
    "name": "karaoke",
    "typ": "karaoke",
    "titel": "a",

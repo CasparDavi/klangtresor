@@ -3167,6 +3167,12 @@ Ort per Klick, Preset „Lyric-Video", Güte der Zeiten, Hochformat-Zonen sind g
 Wort-Wischen, Überblenden, Auftritt/Abgang und die Frage, ob die Bühne den Ruhezustand übernimmt
 (Wiedervorlage 21).
 
+Nachmittag 25.09.2026 (Übergabe §27): **Struktur × Farbe** gebaut — Metall, Stein, Papier,
+Schraffur, gerechnet und über die Farbe gelegt (Caspar_D: „einige vorgefertigte Struktureffekte,
+denen man noch eine oder x Farben draufpackt"). Die Recherche zu Texturquellen und Auftritten
+(Lizenzbefund, Kanon) steht in Übergabe §26. Als Nächstes in dieser Reihenfolge: ein stiller Auftritt
+nur im Ganztitel-Export, dann das Zusammenballen aus Partikeln.
+
 ## Das Studio als eigene Datei (25.09.2026)
 
 **Zustand: Entscheidung.** Die Planung ist abgeschlossen und liegt in

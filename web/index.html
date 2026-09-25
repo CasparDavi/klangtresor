@@ -27599,7 +27599,7 @@ const EFFEKTE = {
        Doppelklick stellt die Vorgabe wieder her (tiMarke..., dieselbe Sprache wie beim Zielpunkt).
      - Die Schrift ist die Paketschrift (Inter, Gelasio - web/fonts), damit Mac, Windows und Buehne
        dasselbe malen; dahinter der alte Stapel als Rueckfall. */
-  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Ein Klick auf die Bühne setzt den Ort.',
+  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Die <b>Struktur</b> legt ein festes Licht über die Farbe — Metall, Stein, Papier oder Schraffur; Rampe, Korn und Lichtrichtung liegen im Haus, die Farbe bleibt deine. Ein Klick auf die Bühne setzt den Ort.',
     hinweis:e=>[textStufeHinweis(e),titelHinweis(e)].filter(Boolean).join('<br>')||null,
     params:[{k:'text',lbl:'Text',text:true,mehrzeilig:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?null:'Leer heißt: der Titel des Songs.'},
       {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
@@ -27607,6 +27607,8 @@ const EFFEKTE = {
       {k:'groesse',lbl:'Größe',min:.02,max:.3,step:.005,def:.08,wert:v=>Math.round(v*100)+' %',notiz:()=>'Anteil der kurzen Bildseite. Ein zu breiter Titel bricht um oder weicht in der Größe.'},
       {k:'farbSatz',lbl:'Farbe',sel:[['palette','aus dem Titelbild'],['eigen','eigene Farbe']],def:'palette'},
       {k:'farbe',lbl:'Farbwert',farbe:true,def:'#ffffff',grau:e=>e.farbSatz==='palette'?'Die Farbe kommt aus dem Titelbild — für eine eigene auf „eigene Farbe“ stellen.':null},
+      {k:'struktur',lbl:'Struktur',sel:[['glatt','glatt'],['metall','Metall'],['stein','Stein'],['papier','Papier'],['schraffur','Schraffur']],def:'glatt',
+        notiz:e=>({ metall:'Gebürstetes Metall, Licht von oben: mit warmer Farbe Gold, mit kühler Silber, mit rötlicher Kupfer.', stein:'Marmor — die Farbe als Grund, Adern darin: hell auf dunkler Farbe, grau auf heller.', papier:'Feines Korn wie Bütten, kaum sichtbar; nimmt der Fläche das Glatte.', schraffur:'Feine Schraffur in der Farbe: helle Striche auf dunkler Farbe, dunkle auf heller.' })[e.struktur||'glatt']||null},
       {k:'kontur',lbl:'Kontur',min:0,max:1,step:.05,def:.4},
       {k:'schatten',lbl:'Schatten',min:0,max:1,step:.05,def:.5},
       {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5,notiz:()=>'Lage des Textkastens: 0 links, 1 rechts. Ein Klick auf die Bühne setzt beides.'},
@@ -31074,7 +31076,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     cx.textBaseline='middle';
     for(let i=0;i<rows.length;i++){ const y=top+(i+0.5)*gr*zh, w=br[i];
       const x=e.ausrichtung==='links'?left:e.ausrichtung==='rechts'?left+boxW-w:left+(boxW-w)/2;
-      textDreipass(cx,rows[i],x,y,gr,farbe,sch,kon,a); }
+      textDreipass(cx,rows[i],x,y,gr,farbe,sch,kon,a,e.struktur||'glatt'); }
     cx.restore(); }
   else if(e.typ==='karaoke'){ const a=Math.min(1,e.staerke); if(a<=0.001) return;
     /* NUR IM DURCHLAUF (Caspar_D, 24.09.2026: "10 Sek mit Karaoke geht nicht, es wird der Effekt einfach
@@ -37905,12 +37907,69 @@ function zeichneFrame(t,roh){
     for(const m of String(s).matchAll(EMOJI_RE)){ if(m.index>last) out.push({t:s.slice(last,m.index),emoji:false}); out.push({t:m[0],emoji:true}); last=m.index+m[0].length; }
     if(last<s.length) out.push({t:s.slice(last),emoji:false});
     return out.length?out:[{t:String(s),emoji:false}]; }
+  /* STRUKTUR x FARBE (25.09.2026; Caspar_D: "der Schrifttextur-Kram ist eher ernuechternd, wenn, dann
+     einige vorgefertigte Struktureffekte, denen man noch eine oder x Farben draufpackt. Kombinatorisch
+     entsteht dann Vielfalt, ohne dass der Nutzer unaesthetische Parametersets bauen kann").
+     Die Struktur traegt das Licht - Helligkeitsrampe, Korn, Kontrast, Licht von oben wie der Schlag-
+     schatten -, die Farbe den Ton: Metall mit warmem Ton ist Gold, mit kuehlem Silber, mit roetlichem
+     Kupfer. Alles wird gerechnet, nichts liegt als Bild im Paket (die Recherche vom 25.09. fand fuer
+     Gold und Chrom ohnehin: Verlauf plus leises Korn schlaegt jedes Foto, der Flaeche fehlt die
+     Spiegelung; Fotos taugen nur fuer Marmor, Papier, Leder - und Marmor rechnet sich hier auch).
+     DIE KACHEL ist 4 em breit und 1,24 em hoch, in Bildpunkten der Ausgabe, und in x periodisch: das
+     Rauschgitter hat je Kachel eine ganze Zellenzahl, die Schraffur eine ganze Periodenzahl - keine
+     Naht beim Wiederholen. Alles in em gerechnet, damit 360 und 1080 dasselbe zeigen (Regel 19), und
+     ohne Uhr und ohne Math.random: ein Ganzzahl-Hash je Gitterpunkt, Studio und Export bitgleich
+     (Regel 17). Je Zeile ein Muster, am linken Zeilenrand und 0,62 em ueber der Mittellinie verankert
+     (der Titel malt mit textBaseline middle) - die Struktur wandert nicht mit dem Ort und nicht mit
+     dem Lauf. Gemerkt je (Struktur, Farbe, Groesse), hoechstens 24 Kacheln, dann von vorn.
+     Was billig aussieht und darum hier nicht einstellbar ist: Regenbogen, harte Bevels, breiter Glanz,
+     zu viel Kontrast. Die Dosis liegt im Haus, nicht beim Nutzer. */
+  const STRUKTUR_KACHELN=new Map();
+  function farbeRGB(s){ const c=document.createElement('canvas'); c.width=c.height=1; const g=c.getContext('2d'); g.fillStyle='#000'; g.fillStyle=s; g.fillRect(0,0,1,1); const d=g.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]]; }
+  /* Wert-Rauschen auf einem Gitter, in x periodisch mit px Zellen (ganze Zahl); der Hash rechnet nur mit Ganzzahlen. */
+  function stHash(x,y,s){ let n=(Math.imul(x,374761393)+Math.imul(y,668265263)+Math.imul(s,1013904223))|0; n=Math.imul(n^(n>>>13),1274126177); n^=n>>>16; return (n>>>0)/4294967296; }
+  function stWert(x,y,px,s){ const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf); const x0=((xi%px)+px)%px, x1=(x0+1)%px; const a=stHash(x0,yi,s), b=stHash(x1,yi,s), c=stHash(x0,yi+1,s), d=stHash(x1,yi+1,s); return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v; }
+  function stFbm(x,y,px,s,o){ let v=0,a=0.5,f=1; for(let i=0;i<o;i++){ v+=a*stWert(x*f,y*f,px*f,s+i*7); f*=2; a*=0.5; } return v; }
+  function textStrukturKachel(art,farbe,gr){
+    const G=Math.max(4,Math.round(gr)), key=art+'|'+farbe+'|'+G, alt=STRUKTUR_KACHELN.get(key); if(alt) return alt;
+    if(art!=='metall'&&art!=='stein'&&art!=='papier'&&art!=='schraffur') return null;
+    const EM=4, W=Math.max(8,Math.round(G*EM)), H=Math.max(4,Math.round(G*1.24));
+    /* Das Licht rechnet in RGB, nicht in HSL: Abdunkeln ist Multiplizieren, Aufhellen ist Mischen nach Weiss.
+       In HSL wurde eine blasse Palettenfarbe (254,238,231) beim Abdunkeln lachsrot - eine Farbe, die der
+       Nutzer nie gesehen hat. Blass bleibt so blass, Gold bleibt Gold, Weiss wird Chrom. */
+    const C=farbeRGB(farbe), lum=(0.2126*C[0]+0.7152*C[1]+0.0722*C[2])/255;
+    const hell=t=>[C[0]+(255-C[0])*t,C[1]+(255-C[1])*t,C[2]+(255-C[2])*t], dunkel=t=>[C[0]*t,C[1]*t,C[2]*t];
+    const misch=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t], mal=(p,f)=>[p[0]*f,p[1]*f,p[2]*f];
+    let px;
+    if(art==='metall'){
+      /* Rampe von oben: dunkel, Glanzband, Farbe, Kante, zweites Licht, dunkel - darueber Buerstenstriche, in x lang und in y fein, plus/minus 5 %. */
+      const R=[[0,dunkel(0.55)],[0.28,hell(0.42)],[0.45,C],[0.52,dunkel(0.62)],[0.75,hell(0.22)],[1,dunkel(0.5)]];
+      px=(x,y)=>{ const t=y/H; let i=1; while(i<R.length-1&&R[i][0]<t) i++; const p=misch(R[i-1][1],R[i][1],(t-R[i-1][0])/(R[i][0]-R[i-1][0]));
+        return mal(p,1+(stFbm(x/G*0.5,y/G*16,EM*0.5,11,3)-0.5)*0.10); }; }
+    else if(art==='stein'){
+      /* Marmor: fraktales Rauschen, dessen Ergebnis das Gitter des naechsten verzerrt (Domain Warping nach dem Rezept von Inigo Quilez, iquilezles.org/articles/warp, MIT); die Adern sind die schmalen Kaemme einer Sinuswelle darueber. 5 Zellen je Kachel. Auf heller Farbe sind die Adern grau (weisser Marmor), auf dunkler hell. */
+      const ader=lum>0.7?dunkel(0.62):hell(0.5), tiefe=lum>0.7?0.55:0.5;
+      px=(x,y)=>{ const X=x/G*1.25, Y=y/G*1.25, P=EM*1.25; const qx=stFbm(X,Y,P,21,4), qy=stFbm(X+5.2,Y+1.3,P,22,4), r=stFbm(X+4*qx,Y+4*qy,P,23,4);
+        const a=Math.pow(Math.abs(Math.sin(r*6.5)),3); return misch(mal(C,0.9+0.2*r),ader,tiefe*a); }; }
+    else if(art==='papier'){
+      /* Buetten: feines Korn (4 bis 32 Zellen je em) und ein leiser Wolkenzug (1 bis 2 Zellen je em), zusammen hoechstens plus/minus 10 %. */
+      px=(x,y)=>mal(C,1+(stFbm(x/G*4,y/G*4,EM*4,31,4)-0.5)*0.14+(stFbm(x/G,y/G,EM,32,2)-0.5)*0.06); }
+    else {
+      /* Schraffur: 40 Perioden je Kachel (0,1 em), Strich zwei Fuenftel davon, Kante 0,6 Bildpunkte weich; die Linien laufen von links unten nach rechts oben. Auf heller Farbe leicht dunklere Striche auf der Farbe, auf dunkler leicht hellere - wenig Kontrast, sonst wird aus der Schraffur eine Zuckerstange (Probe 25.09.2026, 26 Perioden mit hartem Kontrast). */
+      const per=W/40, br=per*0.42, grund=lum>0.7?C:dunkel(0.8), strich=lum>0.7?dunkel(0.84):hell(0.16);
+      px=(x,y)=>{ const dd=(((x+y)%per)+per)%per, e=Math.min(dd,per-dd), s=Math.max(0,Math.min(1,(br/2-e)/0.6+0.5)); return misch(grund,strich,s); }; }
+    const c=document.createElement('canvas'); c.width=W; c.height=H; const g=c.getContext('2d'), im=g.createImageData(W,H), d=im.data;
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const p=px(x,y), i=(y*W+x)*4; d[i]=p[0]; d[i+1]=p[1]; d[i+2]=p[2]; d[i+3]=255; }
+    g.putImageData(im,0,0);
+    if(STRUKTUR_KACHELN.size>=24) STRUKTUR_KACHELN.clear();
+    STRUKTUR_KACHELN.set(key,c); return c;
+  }
   /* Der Dreipass je Zeile: Schatten (Fuellung mit Schlagschatten), Kontur, Fuellung - so bleibt die
      Kontur eine Aussenlinie und das Innere traegt die reine Farbe. Emoji bekommen nur die Fuellung.
      x ist die LINKE Kante der Zeile (die Laeufe brauchen eine); wer mittig will, rechnet vorher.
      Masse als Anteil der Schriftgroesse: Kontur bis 0,08 em (bei 0,14 liefen die Punzen zu), Schatten-
      Unschaerfe 0,05 bis 0,35 em, Versatz 0,05 em. Die Schrift (cx.font) ist beim Aufruf gesetzt. */
-  function textDreipass(cx,zeile,x,y,gr,farbe,sch,kon,alpha){
+  function textDreipass(cx,zeile,x,y,gr,farbe,sch,kon,alpha,st){
     const L=textLaeufe(zeile), alt=cx.textAlign; cx.textAlign='left';
     const br=L.map(l=>cx.measureText(l.t).width);
     const lauf=f=>{ let xx=x; for(let i=0;i<L.length;i++){ f(L[i],xx); xx+=br[i]; } };
@@ -37919,7 +37978,10 @@ function zeichneFrame(t,roh){
     cx.shadowColor='transparent'; cx.shadowBlur=0; cx.shadowOffsetY=0;
     if(kon>0){ cx.globalAlpha=alpha; cx.lineJoin='round'; cx.miterLimit=2; cx.lineWidth=Math.max(0.5,gr*0.08*kon); cx.strokeStyle='rgba(0,0,0,0.92)';
       lauf((l,xx)=>{ if(!l.emoji) cx.strokeText(l.t,xx,y); }); }
-    cx.globalAlpha=alpha; cx.fillStyle=farbe; lauf((l,xx)=>cx.fillText(l.t,xx,y));
+    cx.globalAlpha=alpha;
+    if(st&&st!=='glatt'){ const k=textStrukturKachel(st,farbe,gr); if(k){ const mu=cx.createPattern(k,'repeat'); mu.setTransform(new DOMMatrix([1,0,0,1,x,y-gr*0.62])); cx.fillStyle=mu; } else cx.fillStyle=farbe; }
+    else cx.fillStyle=farbe;
+    lauf((l,xx)=>cx.fillText(l.t,xx,y));
     cx.textAlign=alt;
   }
   /* Die verdeckten Zonen der Hochformat-Plattformen (Reels, TikTok, Shorts: unten rund ein Fuenftel) -

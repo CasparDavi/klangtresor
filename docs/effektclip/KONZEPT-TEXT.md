@@ -34,6 +34,7 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
 | Die Kette entscheidet über und unter dem Text; neue Textkarten kommen ans Ende | „Konfetti darf auch mal vor dem Text fallen, aber beim Einfügen liegt der Text immer erstmal an letzter Position" | 25.09. |
 | Zierzeichen und Emoji gehören nicht auf die Karaokebühne (Band und bereinigte Lyrik); der Titel behält Emoji | „bin noch nicht überzeugt, ob Zierzeichen in die Karaokebühne gehören" — „ja, will ich so" | 25.09. |
 | Regieanweisungen fliegen an der Quelle, in der Bereinigung, nicht im Maler | „das sollte in der bereinigten Lyrics nicht passieren, ist ja bereinigt um sowas" | 25.09. |
+| Titel-Material als **Struktur × Farbe**: wenige feste Strukturen, eine Farbe darüber, keine freien Parameter | „der Schrifttextur-Kram ist eher ernüchternd, wenn, dann einige vorgefertigte Struktureffekte, denen man noch eine oder x Farben draufpackt. Kombinatorisch entsteht dann Vielfalt, ohne dass der Nutzer unästhetische Parametersets bauen kann" — „ich denke, das passt so, mach" | 25.09. |
 
 ## 3. Die Regeln, die daraus folgen
 
@@ -68,11 +69,20 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
    — derselbe Film auf Mac, Windows und Bühne; Laufweite −0,01 em wie das Band.
 10. **Hochformat.** Reels, TikTok und Shorts verdecken unten rund ein Fünftel; die Karte sagt es,
     sobald die Ausgabe hochkant ist und der Ort dort liegt. Kein Regler.
+11. **Struktur × Farbe.** Der Titel kann Metall, Stein, Papier oder Schraffur tragen. Die Struktur
+    trägt das Licht (Rampe, Korn, Kontrast, Licht von oben wie der Schlagschatten), die Farbe den
+    Ton: Metall mit warmem Ton ist Gold, mit kühlem Silber, mit blasser Palettenfarbe Chrom. Alles
+    gerechnet, nichts als Bild im Paket: Ganzzahl-Hash statt Zufall, in em der Schrift, Kachel
+    4 em × 1,24 em und in x nahtlos, je Zeile am Zeilenrand verankert — Studio und Export bitgleich,
+    360 und 1080 gleich. Das Licht rechnet in RGB (Abdunkeln = Multiplizieren, Aufhellen = Mischen
+    nach Weiß), damit Blass blass bleibt; auf heller Farbe sind Adern und Striche dunkler, auf
+    dunkler heller. Kein Regler außer der Wahl; die Dosis liegt im Haus.
 
 ## 4. Gemeinsames Handwerk im Code
 
 `textSchrift`, `textUmbrechen`, `textLaeufe` (Emoji-Läufe), `textDreipass` (Schatten, Kontur,
-Füllung), `schriftenBereit`, `hochformatNotiz`, `titelHinweis`, `textStufeHinweis`; der Lader
+Füllung; die Füllung wahlweise aus `textStrukturKachel` mit `stHash`/`stWert`/`stFbm` und
+`farbeRGB`), `schriftenBereit`, `hochformatNotiz`, `titelHinweis`, `textStufeHinweis`; der Lader
 `lyrikVon`/`lyrikStand`/`lyrikHinweis`/`lyrikGemeldet`/`lyrikBereit` nach dem Muster der Tiefenkarte;
 die Marke `tiKarteEffekt`/`tiMarkeSetzen`/`tiMarkenMalen`; die Auskunft `clipMalt` und das Ereignis
 `effektclip` für die Bühne. Registry-Einträge dürfen `hinweis(e)` tragen (grau mit Grund auf der

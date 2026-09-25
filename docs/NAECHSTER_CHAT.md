@@ -6940,3 +6940,27 @@ und wieder auflösen. Einschätzung: Titel malt eigene Teilchen mit derselben Ma
 der abgetasteten Schriftmaske, Füllung blendet mit der Ankunftsdichte ein, Abgang in Windrichtung;
 nur bei Asche/Staub/Funken/Glitzer/Schnee/Pusteblume/Glühwürmchen; Dauer in Takten; nur
 Ganztitel-Export. Beides Brainstorm, kein Auftrag.
+
+## 27. Nachmittag 25.09.2026: Struktur × Farbe für den Titel (Caspar_D: „ich denke, das passt so, mach")
+
+**Gebaut (web/index.html):** Regler „Struktur" am Titel (glatt, Metall, Stein, Papier, Schraffur)
+mit Notiz je Wahl; die Beschriftung sagt es (Regel 11). `textDreipass` nimmt einen zehnten Parameter
+`st`; die Füllung kommt dann aus `textStrukturKachel(art, farbe, gr)`: Kachel 4 em × 1,24 em in
+Bildpunkten der Ausgabe, in x periodisch (Rauschgitter mit ganzer Zellenzahl, Schraffur mit 40
+Perioden), Ganzzahl-Hash (`stHash`/`stWert`/`stFbm`), gemerkt je (Struktur, Farbe, Größe), höchstens
+24; als `createPattern` mit `setTransform` am Zeilenrand und 0,62 em über der Mittellinie verankert
+(textBaseline middle). Kontur und Schatten unberührt. Karaoke ohne Struktur.
+**Lehre aus der Probe:** das Licht rechnete zuerst in HSL — eine blasse Palettenfarbe (254,238,231)
+wurde beim Abdunkeln lachsrot. Jetzt RGB: Abdunkeln multipliziert, Aufhellen mischt nach Weiß; auf
+heller Farbe (Luminanz > 0,7) sind Adern und Striche dunkler, auf dunkler heller. Die Schraffur war
+mit 26 Perioden und hartem Kontrast eine Zuckerstange — jetzt 40 Perioden, wenig Kontrast.
+**Prüfstand:** vier neue Fälle `titel-struktur-metall|stein|papier|schraffur` in faelle-bauen.js und
+faelle.json (von Hand, 252 Fälle). Naht 0,00 überall, Vorschau 0,00 (deterministisch, loopfest);
+`--massstab`: Block 9,3 / 15,5 / 11,0 / 16,6 gegen 13,7 beim glatten Titel und 9,3 Boden.
+**Probe:** der Labor-Server auf 18811 (PID 99885, seit 14 Tagen) antwortet nicht mehr — curl hängt;
+nicht angefasst, gehört Jörg. Eigener Server auf 127.0.0.1:18812 (python http.server, PID in
+Scratchpad `struktur/server-18812.pid`), Tab im eigenen Browser; Bilder in Exportgröße über
+`naht.mjs --lange 1080 --bilder`, Ausschnitte an Caspar_D geschickt.
+**Offen:** voller Lauf aller 252 Fälle (rund 13 min, braucht seinen Startschuss); sein Urteil zu
+den vier Bildern. **Danach:** Schritt 2 stiller Auftritt (nur Ganztitel-Export, Skizze zuerst),
+Schritt 3 Zusammenballen aus Partikeln.
