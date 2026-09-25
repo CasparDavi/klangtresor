@@ -6687,10 +6687,10 @@ Band, mit der Zeit des pausierten eigenen Titels weicht es, Band in Inter, Leinw
 **Nicht geprüft:** Uhrwechsel-Hinweis im Pult und die Marke auf der Bühne als Bild (beides braucht
 den sichtbaren Rahmenlauf), der volle Export mit Paketschrift (kein Vollexport in der Nacht).
 
-**Wiedervorlage 21 (Caspar_D):** soll die Bühne den Ruhezustand des Karaoke übernehmen (Band leer
-in Pausen) oder den Mitsänger weiter mit der stehenden Zeile vorbereiten?
-**Wiedervorlage 22:** einen ganzen Titel mit „Lyric-Video" ausgeben und ansehen — Schrift, Ruhezustand,
-fester Anker, Hochformat-Zonen.
+**Wiedervorlage 21 — erledigt (Caspar_D, 25.09.: „die Bühne kriegt die gleiche neue Regel", §24).**
+**Wiedervorlage 22 (bleibt, Caspar_D, 25.09.: „hab ich jetzt keine Muße für, lass es aber auf
+Wiedervorlage"):** einen ganzen Titel mit „Lyric-Video" ausgeben und ansehen — Schrift, Ruhezustand,
+fester Anker, Hochformat-Zonen. Dazu weiter offen: die Loop-Abweichungen von früher (Gedächtnis).
 **Aufräumen:** `/Volumes/Extreme_SSD/Entwicklung/sandkasten-karaoke/` (~900 MB, Sandkasten der
 Bühnenprobe) darf weg — die Sicherung ließ mich den Ordner nicht löschen.
 
