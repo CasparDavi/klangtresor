@@ -202,7 +202,21 @@ function rechnen(s, tmp) {
   if (ff.status !== 0) return { fehler: 'ffmpeg: ' + (ff.stderr || '').toString().trim().slice(0, 120) };
 
   const hatText = !!(s.lyrics && s.lyrics.trim());
-  const prompt  = hatText ? s.lyrics.replace(/\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 800) : '';
+  /* Runde Klammern raus aus dem PROMPT (FASSUNG 3 von bin/lyrik.js,
+     Caspar_D, 25.09.2026). Bisher blieben sie stehen, waehrend eckige
+     Klammern schon lange fliegen - Whisper bekam Produktionsnotizen wie
+     "(Dry, close mic, no reverb...)" WOERTLICH als Prompt vorgesetzt und
+     neigt dazu, Promptwoerter zu "hoeren", auch wenn sie nicht gesungen
+     wurden. bin/lyrik.js laesst runde Klammern inzwischen zwar durch den
+     Abgleich laufen statt sie zu streichen, aber der PROMPT soll den
+     Gesang ankuendigen, nicht die Regie - deshalb hier weiterhin raus,
+     nicht nur aus dem Katalog-Feld selbst (das bleibt unveraendert,
+     Caspar_D 07.09.2026: "nichts, was von suno kommt sollte veraendert
+     werden"). Eine Zeile, die nur aus einer Klammer bestand, verschwindet
+     dabei von selbst - sie wird zu reinem Leerraum und faellt mit dem
+     folgenden Leerzeichen-Kollaps weg, genau wie eine eckige Regiezeile
+     das schon immer tat. */
+  const prompt  = hatText ? s.lyrics.replace(/\[[^\]]*\]/g, ' ').replace(/\([^)]*\)/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 800) : '';
   /* Sprache: NICHT raten lassen. Bei "Ich dreh mich nicht um!" tippte
      -l auto auf Englisch und Whisper UEBERSETZTE den deutschen Text
      (20.08.2026). Der Grund liegt im Modell selbst: Whisper ist auf

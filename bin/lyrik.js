@@ -34,13 +34,13 @@
  * den Ton gehört; seine Marken liegen in library/whisper.ndjson.
  *
  * DAS VERFAHREN
- *   1. Regieanweisungen fliegen ohne Alignment. Sie sind Anweisung, nicht
- *      Text. Zwei Formen:
- *      - Ganze Zeile: eckige oder runde Klammern über die ganze Zeile
- *        (auch mit Klammern darin), eine Regiezeile mit #, oder eine
- *        Trennlinie aus Strichen/Gleichzeichen.
+ *   1. Regieanweisungen fliegen ohne Alignment. Zwei Formen:
+ *      - Ganze Zeile: eckige Klammern über die ganze Zeile (auch mit
+ *        Klammern darin), eine Regiezeile mit #, oder eine Trennlinie aus
+ *        Strichen/Gleichzeichen.
  *      - Einschub in einer sonst gesungenen Zeile — „[soft] schau sie nur
  *        an." — der Klammerteil fällt aus dem Zeilentext, der Rest bleibt.
+ *      Runde Klammern fliegen NICHT vorab — siehe FASSUNG 3 unten.
  *   2. Globales Alignment (Needleman-Wunsch) zwischen dem Wortstrom des
  *      Liedtexts und dem, was Whisper gehört hat.
  *   3. Zwei Zusätze, ohne die echte Zeilen verlorengehen — beide gemessen
@@ -92,6 +92,78 @@
  *       Zeilen geteilt.
  *   Beides ändert NUR geschätzte oder entartete Zeiten — eine echte,
  *   nicht-entartete Zeitmarke bleibt, wie Whisper sie gemessen hat.
+ *
+ * FASSUNG 3 (Caspar_D, 25.09.2026). Zwei weitere Entscheidungen, beide
+ * von ihm im Gespräch getroffen:
+ *
+ * ERSTENS, RUNDE KLAMMERN. Bisher (Fassung 1/2) galt eine runde Klammer
+ * über die GANZE Zeile als Regie wie eine eckige — gestrichen, ohne dass
+ * Whisper je gefragt wurde. Caspar_D dazu: „Deckung würde ich immer ohne
+ * eckige und runde Klammern berechnen, das ist dann sicher. Eckige
+ * Klammern fliegen dann aber grundsätzlich raus" (wie bisher: ganze
+ * eckige Zeilen und eckige Einschübe, VOR dem Alignment) — „runde
+ * Klammern durchlaufen den Whisper-Einsatz." Jetzt also: `istRegieZeile`
+ * kennt keine runden Klammern mehr. Jede runde Klammergruppe — auch eine,
+ * die die ganze Zeile ausmacht — geht mit ins Alignment, GENAU wie der
+ * Text davor und danach. Danach, je Gruppe: hat Whisper mindestens die
+ * Hälfte ihrer Wörter gehört (aligniert), bleibt ihr Text in der Zeile
+ * (Zähler `klammerGehoert`); sonst fällt die Gruppe aus der Zeile (Zähler
+ * `klammerGestrichen`). Eine Zeile, die nur aus einer nicht gehörten
+ * Gruppe bestand, ist danach leer und fällt ganz. Eine Klammer, die sich
+ * über mehrere Zeilen erstreckt (öffnet, schließt erst Zeilen später —
+ * Produktionsnotizen wie bei „Pfeifenwald") ist EINE Gruppe über alle
+ * ihre Zeilen: nicht gehört, fallen alle diese Zeilen. Und: „die Zeichen
+ * runde Klammer fliegen aber dann auch grundsätzlich raus" — im Text
+ * einer Zeile steht kein `(` und `)` mehr, gehört oder nicht.
+ *
+ * Wichtig: die DECKUNG selbst (und das gesungen/offen-Kriterium je Zeile)
+ * zählt nie ein Klammerwort mit, eckig oder rund, gehört oder nicht — sie
+ * rechnet ausschließlich mit Wörtern AUSSERHALB jeder Klammer. Eine Zeile
+ * ohne ein einziges Wort außerhalb von Klammern gilt als gesungen, wenn
+ * am Ende noch Text übrig ist (ihre Gruppe wurde gehört), sonst wie eine
+ * leere Zeile. Die Wörter einer gehörten Gruppe liefern der Zeile ihre
+ * Zeitmarken wie jedes andere Wort auch.
+ *
+ * Grund für den Kurswechsel bei runden Klammern: die alte Sonderregel
+ * ließ jede runde Klammerzeile durch — ob Produktionsnotiz oder tatsächlich
+ * mitgesungene Zeile (Begleitstimme, Zwischenruf). Der Whisper-Abgleich
+ * kann das unterscheiden, die Software musste es nicht mehr raten.
+ *
+ * ZWEITENS, ZIERZEICHEN UND EMOJI (Zusatz, Caspar_D, 25.09.2026: „ja,
+ * will ich so"). Sie fliegen aus dem Zeilentext, bevor er in den Abgleich
+ * geht — genauso wie die Klammerzeichen, denn sie sind so wenig Gesang
+ * wie eine eckige Regieanweisung. Entfernt werden: Zeichen der Klasse
+ * `Extended_Pictographic` (Emoji, samt Variantenselektor U+FE0F und
+ * Zusammenführer U+200D), eine Reihe ausdrücklich genannter Symbole
+ * (✧ ★ ☆ ♪ ♫ ~ ・ ° 。 ✦ ✿ ❀ ❤ ♡ → ← ↑ ↓ ═ ─ │ ┃ ▪ ▫ ● ○ ■ □ ◆ ◇ und
+ * einige gebräuchliche Verwandte), allgemein die Unicode-Kategorien „So"
+ * (Symbol, sonstige) und „Sk" (Symbol, Modifikator), Box-/Rahmenzeichen
+ * (U+2500–U+257F), sowie Ketten aus drei oder mehr gleichen Sonderzeichen
+ * hintereinander, die nicht zu den gewöhnlichen Satzzeichen zählen. Ein
+ * entferntes Zeichen wird durch EIN Leerzeichen ersetzt statt ersatzlos
+ * gestrichen — sonst verschmölzen zwei Wörter, die nur durch ein
+ * Zierzeichen getrennt waren, zu einem, das es nie gab (geprüft an
+ * „minor→major"). Mehrfach-Leerzeichen werden danach zusammengezogen.
+ * Normale Satzzeichen (, . ! ? ; : – — „ " ' … ¿ ¡ und ähnliche) und
+ * Buchstaben und Ziffern jeder Schrift bleiben unangetastet. Eine Zeile,
+ * die danach leer ist (reine Zierzeile), fällt wie eine Trennlinie
+ * (Zähler `zierZeilen`) — zählt nirgends zur Deckung, bekommt keine Zeit.
+ * Zierzeichen zählten schon vorher nicht als eigene Wörter in `woerter()`
+ * — bis auf eine Lücke: einzelne japanische Interpunktions- und
+ * Dehnungszeichen (・ und die Halbton-Zeichen ゚/゜) liegen im CJK-Bereich,
+ * den `woerter()` zeichenweise als Wort zählt („・゚✧" wurde bisher zu
+ * zwei „Wörtern"). Weil sie jetzt schon vor der Wortzählung herausfallen,
+ * bleibt das ohne weitere Änderung an `woerter()` folgenlos. Zähler je
+ * Lied: `zier` (entfernte Zeichen) und `zierZeilen` (gefallene Zeilen).
+ *
+ * DAS DOPPELVERHÖR (bin/whisper.js). Whisper bekommt den Liedtext als
+ * Prompt (senkt seine Fehlerrate), und bislang blieben runde Klammern
+ * darin stehen — Whisper konnte also Wörter aus einer Produktionsnotiz
+ * „hören", die es nur gelesen hatte. Mit FASSUNG 3 räumt bin/whisper.js
+ * seinen Prompt genauso auf wie eckige Klammern schon lange: runde
+ * Klammergruppen fliegen aus dem PROMPT (nicht aus dem Katalog), damit
+ * künftige Whisper-Läufe unbeeinflusst bleiben. Das ändert nichts an
+ * alten Whisper-Läufen — nur an denen, die danach neu laufen.
  */
 
 'use strict';
@@ -107,7 +179,7 @@ const ZIEL     = path.join(WURZEL, 'library', 'lyrik.json');
 /* Hochzaehlen bei jeder Aenderung am Verfahren (Regeln oben im Kopf-
    kommentar) - steht als `fassung` in library/lyrik.json, damit man
    hinterher weiss, nach welchen Regeln eine Zeile bereinigt wurde. */
-const FASSUNG  = 2;
+const FASSUNG  = 3;
 
 /* Unter dieser Deckung wird nicht gereinigt, sondern gemeldet. 0,60 ist
    nicht geraten: Bei dieser Grenze fallen 14 von 254 Liedern durch, und
@@ -206,24 +278,22 @@ function alignieren(a, b) {
 }
 
 /* Ganze Zeile ist Regie, kein Text - dieselbe Regel wie `istNichtGesungen`
-   in web/index.html (dort ~Zeile 16881, per grep gefunden). Die alte Regel
-   hier (`/^\s*[[(][^\]\)]*[\])]?\s*$/`) scheiterte an einer Klammer IN der
-   Anweisung: „[Post-Chorus Hook (instrumental)]" schließt das `)` schon
-   vor dem äußeren `]`, danach passt der Rest nicht mehr ins Muster - 13
-   solcher Zeilen im Bestand kamen so durch (Caspar_D, 25.09.2026, FASSUNG
-   2). Das Muster fuer eckige Klammern ist gierig und schließt über jede innere Klammer hinweg.
-   Runde Klammern über die GANZE Zeile bleiben Regie wie in Fassung 1: im
-   Bestand sind das Produktionsnotizen („(Dry, close mic, no reverb...)",
-   Pfeifenwald), keine Begleitstimmen - ohne diese Regel fiel Pfeifenwald
-   von 66 % auf 38 % Deckung (Nacht 25.09.2026). Begleitstimmen in runden
-   Klammern MITTEN in einer Zeile bleiben Text; nur eckige Einschübe fallen.
-   Die Bühne (istNichtGesungen) lässt runde Klammerzeilen stehen - sie zeigt
-   den Rohtext, die bereinigte Lyrik ist strenger. */
+   in web/index.html (dort ~Zeile 16881, per grep gefunden), MINUS die
+   runden Klammern (FASSUNG 3, siehe Kopfkommentar: die durchlaufen jetzt
+   den Abgleich statt vorab zu fliegen). Die alte Regel fuer eckige
+   Klammern (`/^\s*[[(][^\]\)]*[\])]?\s*$/`) scheiterte an einer Klammer IN
+   der Anweisung: „[Post-Chorus Hook (instrumental)]" schließt das `)`
+   schon vor dem äußeren `]`, danach passt der Rest nicht mehr ins Muster -
+   13 solcher Zeilen im Bestand kamen so durch (Caspar_D, 25.09.2026,
+   FASSUNG 2). Das Muster fuer eckige Klammern ist gierig und schließt
+   über jede innere Klammer hinweg. Die Bühne (istNichtGesungen) lässt
+   runde Klammerzeilen ohnehin stehen - sie zeigt den Rohtext. */
 const istRegieZeile = (z) => {
   const t = z.trim();
-  /* Dazu die Regel aus Fassung 1: eine Zeile, die mit einer Klammer beginnt und nirgends schliesst, ist der
-     Anfang einer mehrzeiligen Notiz (Pfeifenwald: (Dry, close mic, no reverb... ueber mehrere Zeilen). */
-  return /^\[.*\]$/.test(t) || /^\(.*\)$/.test(t) || /^[\[(][^\])]*$/.test(t) || /^#/.test(t) || /^[-=]{3,}/.test(t);
+  /* Eine Zeile, die mit einer eckigen Klammer beginnt und nirgends
+     schliesst, ist der Anfang einer mehrzeiligen Notiz (Pfeifenwald:
+     „[Voix Céleste ... ueber mehrere Zeilen). */
+  return /^\[.*\]$/.test(t) || /^\[[^\]]*$/.test(t) || /^#/.test(t) || /^[-=]{3,}/.test(t);
 };
 
 /* Regieanweisung MITTEN in einer sonst gesungenen Zeile - „[soft] schau
@@ -236,6 +306,107 @@ const istRegieZeile = (z) => {
    einer Zeile). */
 const EINSCHUB_ERKENNEN  = /\[[^\]]*\]/;
 const EINSCHUB_ENTFERNEN = /\[[^\]]*\]/g;
+
+/* ---- Zierzeichen und Emoji (FASSUNG 3, Zusatz) -----------------------
+   Ausdruecklich genannte Symbole, dazu was `woerter()` als CJK-Zeichen
+   falsch fuer ein Wort haelt (・ und die Halbton-Zeichen ゚/゜ liegen im
+   Hiragana/Katakana-Block). Kategorien So/Sk und Box-/Rahmenzeichen deckt
+   `istZierZeichen` unten allgemein ab; diese Liste faengt nur, was DORT
+   NICHT hineinfaellt (Interpunktion nach Unicode, z.B. ・ und 。, oder
+   Symbolkategorie „Math", z.B. ~ → ← ↑ ↓), plus die genannten Beispiele
+   zur Sicherheit auch dann, wenn eine andere Unicode-Version sie anders
+   einordnet. */
+const ZIER_EXPLIZIT = new Set([
+  /* Das Gradzeichen fehlt hier mit Absicht: "5 °C" ist Text, kein Schmuck (dieselbe Regel wie im Band der Buehne). */
+  '✧', '★', '☆', '♪', '♫', '~', '・', '。', '✦', '✩', '✪', '✫', '✬', '✭', '✮', '✯',
+  '✿', '❀', '❤', '♡', '→', '←', '↑', '↓', '═', '─', '│', '┃', '▪', '▫', '●', '○', '■', '□', '◆', '◇',
+  '〜', '～', '゜', '゚', '゛', '∘', '·',
+]);
+/* Diese Satzzeichen bleiben immer stehen - auch als Kette von drei oder
+   mehr (z.B. „…" oder „..." zum Verklingen, „---" bräuchte sonst die
+   eigene Trennlinien-Regel oben, die auf ganze Zeilen zielt). */
+const SATZZEICHEN_GESCHUETZT = new Set([
+  ',', '.', '!', '?', ';', ':', '–', '—', '„', '"', "'", '…', '¿', '¡', '‘', '’', '“', '”', '-', '(', ')', '[', ']',
+]);
+
+function istZierZeichen(ch) {
+  if (ZIER_EXPLIZIT.has(ch)) return true;
+  const cp = ch.codePointAt(0);
+  if (cp === 0xfe0f || cp === 0x200d) return true; // Variationsselektor, Zusammenfuehrer (ZWJ)
+  if (cp >= 0x2500 && cp <= 0x257f) return true;   // Box-/Rahmenzeichen
+  if (/\p{Extended_Pictographic}/u.test(ch)) return true;
+  if (/\p{gc=So}/u.test(ch) || /\p{gc=Sk}/u.test(ch)) return true;
+  return false;
+}
+
+/* Ein entferntes Zeichen wird durch EIN Leerzeichen ersetzt, nicht
+   ersatzlos gestrichen - sonst verschmelzen zwei Wörter, die nur durch
+   das Zierzeichen getrennt waren ("minor→major" würde sonst zu
+   "minormajor", ein Wort, das es nie gab). Mehrfach-Leerzeichen werden
+   danach zusammengezogen, aber NUR wenn ueberhaupt etwas entfernt wurde -
+   eine Zeile ohne jedes Zierzeichen bleibt BYTE-GLEICH, aus demselben
+   Grund wie beim Einschub-Entfernen oben. */
+function zierBereinigen(zeile) {
+  const zeichen = Array.from(zeile);
+  const aus = [];
+  let entfernt = 0;
+  let i = 0;
+  while (i < zeichen.length) {
+    const ch = zeichen[i];
+    if (!/[\p{L}\p{N}\s]/u.test(ch) && !SATZZEICHEN_GESCHUETZT.has(ch)) {
+      let j = i;
+      while (j < zeichen.length && zeichen[j] === ch) j++;
+      if (j - i >= 3) { entfernt += (j - i); aus.push(' '); i = j; continue; }
+    }
+    if (istZierZeichen(ch)) { entfernt++; aus.push(' '); i++; continue; }
+    aus.push(ch); i++;
+  }
+  if (!entfernt) return { text: zeile, entfernt: 0 };
+  return { text: aus.join('').replace(/\s+/g, ' ').trim(), entfernt };
+}
+
+/* ---- Runde-Klammer-Gruppen, ueber Zeilen hinweg (FASSUNG 3) -----------
+   Zerlegt jede NICHT-Regiezeile in Stuecke: Klartext (gruppe: null) und
+   Klammerinhalt (gruppe: fortlaufende Nummer). Eine Gruppe ist EINE
+   runde Klammer von ihrem `(` bis zu ihrem `)` - auch wenn dazwischen
+   mehrere Zeilen liegen (Zustand `tiefe`/`aktuelleGruppe` läuft über die
+   `forEach`-Schleife hinweg mit). Verschachtelte Klammern bilden keine
+   eigene Gruppe, sie bleiben Teil der aeusseren. Die Klammerzeichen
+   selbst gehen in keinem Stueck mit - sie fliegen so oder so raus. */
+function gruppenExtrahieren(zeilen) {
+  let tiefe = 0, naechsteId = 0, aktuelleGruppe = null;
+  const segmenteJeZeile = [];
+  const gruppen = new Map();
+  zeilen.forEach((z, zi) => {
+    if (istRegieZeile(z)) { segmenteJeZeile.push([{ text: '', gruppe: null }]); return; }
+    const segs = [];
+    let puffer = '';
+    for (const ch of z) {
+      if (ch === '(') {
+        if (tiefe === 0) {
+          segs.push({ text: puffer, gruppe: null }); puffer = '';
+          naechsteId++; aktuelleGruppe = naechsteId;
+          gruppen.set(naechsteId, { start: zi, ende: zi });
+        }
+        tiefe++;
+        continue;
+      }
+      if (ch === ')') {
+        if (tiefe > 0) tiefe--;
+        if (tiefe === 0 && aktuelleGruppe !== null) {
+          segs.push({ text: puffer, gruppe: aktuelleGruppe }); puffer = '';
+          gruppen.get(aktuelleGruppe).ende = zi;
+          aktuelleGruppe = null;
+        }
+        continue;
+      }
+      puffer += ch;
+    }
+    segs.push({ text: puffer, gruppe: tiefe > 0 ? aktuelleGruppe : null });
+    segmenteJeZeile.push(segs);
+  });
+  return { gruppen, segmenteJeZeile };
+}
 
 /* Eine Zeitspanne [von, bis) der Reihe nach auf eine Gruppe von Zeilen
    verteilen, nach Zeichenzahl der Zeile — eine lange Zeile bekommt mehr
@@ -259,29 +430,74 @@ function verteilenNachZeichen(gruppe, von, bis) {
 
 /* ---- Ein Lied reinigen ----------------------------------------------- */
 function reinigen(lyrics, marken) {
-  /* Einschübe wie „[soft]" fallen aus dem Zeilentext, VOR dem Alignment -
-     der Rest der Zeile bleibt unverändert (Caspar_D, 25.09.2026, FASSUNG
-     2, siehe Kopfkommentar). Zeilen ohne Einschub bleiben BYTE-GLEICH
-     (kein trim, keine Leerzeichen-Normierung) — sonst wäre ein Lied ohne
-     jeden Regie-Tag nicht mehr bitgleich zur vorigen Fassung. Ganze
-     Regiezeilen (`istRegieZeile`) bleiben unangetastet, sie fliegen weiter
-     unten komplett raus. */
-  let einschuebeEntfernt = 0;
-  const zeilen = String(lyrics || '').split('\n').map(z => {
+  /* Schritt 1: eckige Regie/Einschuebe - UNVERAENDERT wie in FASSUNG 2.
+     Zeilen ohne Einschub bleiben BYTE-GLEICH (kein trim, keine
+     Leerzeichen-Normierung) — sonst wäre ein Lied ohne jeden Regie-Tag
+     nicht mehr bitgleich zur vorigen Fassung. Ganze Regiezeilen
+     (`istRegieZeile`) bleiben unangetastet, sie fliegen weiter unten
+     komplett raus. */
+  let einschuebeEntfernt = 0, inEckig = false;
+  const zeilenEckig = String(lyrics || '').split('\n').map(z => {
+    /* MEHRZEILIGE ECKIGE NOTIZ (25.09.2026, Gegenlesen der Fassung 3): oeffnet eine Zeile eine eckige Klammer und
+       schliesst sie nicht, sind auch die folgenden Zeilen Regie, bis eine ein ] traegt. Vorher rutschten Mittel-
+       und Schlusszeilen als Text durch und wurden teils sogar ueber die Luecken-Rettung "gerettet" (Pfeifenwald,
+       10 Zeilen mit ] im Ergebnis). Die Folgezeilen werden in eckige Klammern gesetzt, damit istRegieZeile sie
+       ueberall weiter unten als Regie erkennt - der Text selbst faellt ohnehin. */
+    if (inEckig) {
+      if (!z.includes(']')) return '[' + z.trim() + ']';
+      inEckig = false; const rest = z.slice(z.indexOf(']') + 1).trim();
+      return rest ? rest : '[]';   /* was nach dem ] steht, ist wieder Text; sonst bleibt die Zeile Regie */
+    }
+    { const o = z.lastIndexOf('['); if (o >= 0 && z.indexOf(']', o) < 0) {   /* oeffnet, schliesst nicht - auch mitten in der Zeile */
+        inEckig = true; const vor = z.slice(0, o).trim(); return vor ? vor : z; } }
     if (istRegieZeile(z)) return z;
     if (!EINSCHUB_ERKENNEN.test(z)) return z;
     einschuebeEntfernt++;
     return z.replace(EINSCHUB_ENTFERNEN, ' ').replace(/\s+/g, ' ').trim();
   });
+
+  /* Schritt 2: Zierzeichen/Emoji raus - vor dem Alignment, wie die
+     eckigen Klammern (FASSUNG 3, Zusatz, siehe Kopfkommentar). Eine
+     Zeile, die dadurch leer wird, ist eine reine Zierzeile und faellt
+     wie eine Trennlinie - eigener Zustand `zier`, siehe unten. */
+  let zierEntfernt = 0, zierZeilenAnzahl = 0;
+  const zierLeer = new Array(zeilenEckig.length).fill(false);
+  const zeilen = zeilenEckig.map((z, i) => {
+    if (istRegieZeile(z)) return z;
+    const r = zierBereinigen(z);
+    if (!r.entfernt) return z;
+    zierEntfernt += r.entfernt;
+    /* "Leer" heisst hier: kein Buchstabe, keine Ziffer mehr uebrig - nicht
+       nur "der String ist leer". Sonst wuerde liegen gebliebene Interpunktion
+       ("* :*", uebrig von "✧・゚: *✧・゚:*") die Zeile als "gesungen" durchgehen
+       lassen (gefunden im Probelauf: `woerter()` liefert dafuer null Woerter,
+       und ohne diese Praezisierung faellt die Zeile in denselben Zweig wie
+       eine gehoerte Klammergruppe). */
+    if (!/[\p{L}\p{N}]/u.test(r.text)) { zierLeer[i] = true; zierZeilenAnzahl++; return ''; }
+    return r.text;
+  });
+
+  /* Schritt 3: runde Klammern in Gruppen zerlegen - sie fliegen NICHT
+     vorab, sie durchlaufen den Abgleich (FASSUNG 3, siehe Kopfkommentar).
+     Eine zier-geleerte Zeile hat nichts mehr, in dem noch eine Klammer
+     stehen könnte - `gruppenExtrahieren` sieht dort einfach eine leere
+     Zeile. */
+  const { gruppen, segmenteJeZeile } = gruppenExtrahieren(zeilen);
+
   const bTexte = marken.map(w => String(w[2]));
   const bW = [], bZuMarke = [];
   bTexte.forEach((t, mi) => { for (const w of woerter(t)) { bW.push(w); bZuMarke.push(mi); } });
   if (bW.length < 20) return { grund: 'Whisper hat zu wenig gehört', deckung: 0 };
 
-  const aW = [], aZuZeile = [];
+  /* aW enthaelt jetzt AUCH die Woerter aus runden Klammern, mit ihrer
+     Gruppen-Nummer markiert (aZuGruppe) - sie durchlaufen dasselbe
+     Alignment wie der Rest, zaehlen aber unten NICHT zur Deckung. */
+  const aW = [], aZuZeile = [], aZuGruppe = [];
   zeilen.forEach((z, zi) => {
     if (istRegieZeile(z)) return;
-    for (const w of woerter(z)) { aW.push(w); aZuZeile.push(zi); }
+    for (const seg of segmenteJeZeile[zi]) {
+      for (const w of woerter(seg.text)) { aW.push(w); aZuZeile.push(zi); aZuGruppe.push(seg.gruppe); }
+    }
   });
   if (aW.length < 10) return { grund: 'zu wenig Text', deckung: 0 };
 
@@ -305,30 +521,101 @@ function reinigen(lyrics, marken) {
 
   const paar = alignieren(aW, bW);
 
+  /* Je runder Klammergruppe: gehört, wenn mindestens die Hälfte ihrer
+     eigenen Wörter aligniert ist (FASSUNG 3). Eine Gruppe ohne ein
+     einziges Wort (leere Klammer „()") zählt als nicht gehört - da ist
+     nichts, das Whisper hätte hören können. */
+  const gruppenN = new Map(), gruppenGut = new Map();
+  paar.forEach((p, k) => {
+    const g = aZuGruppe[k];
+    if (g === null) return;
+    gruppenN.set(g, (gruppenN.get(g) || 0) + 1);
+    if (p >= 0) gruppenGut.set(g, (gruppenGut.get(g) || 0) + 1);
+  });
+  const gruppeGehoert = new Map();
+  let klammerGehoertAnzahl = 0, klammerGestrichenAnzahl = 0;
+  for (const gid of gruppen.keys()) {
+    const n = gruppenN.get(gid) || 0;
+    const gut = gruppenGut.get(gid) || 0;
+    const gehoert = n > 0 && gut / n >= 0.5;
+    gruppeGehoert.set(gid, gehoert);
+    if (gehoert) klammerGehoertAnzahl++; else klammerGestrichenAnzahl++;
+  }
+
   /* Je Zeile: wieviele Wörter, wieviele gedeckt, und die Whisper-Marken,
-     auf die sie fallen. */
+     auf die sie fallen - NUR aus Wörtern AUSSERHALB jeder Klammer
+     (Caspar_D, 25.09.2026: „Deckung würde ich immer ohne eckige und
+     runde Klammern berechnen, das ist dann sicher"). Klammerwörter
+     zählen hier nie mit, gehört oder nicht. */
   const proZeile = new Map();
   paar.forEach((p, k) => {
+    if (aZuGruppe[k] !== null) return;
     const zi = aZuZeile[k];
     if (!proZeile.has(zi)) proZeile.set(zi, { n: 0, gut: 0, marken: [] });
     const e = proZeile.get(zi);
     e.n++;
     if (p >= 0) { e.gut++; e.marken.push(bZuMarke[p]); }
   });
+  /* Die Wörter einer GEHÖRTEN Gruppe liefern der Zeile trotzdem ihre
+     Zeitmarken, wie jedes andere Wort - nur die Deckung zählen sie nicht
+     (Kopfkommentar: „Die Wörter einer gehörten Gruppe liefern der Zeile
+     ihre Zeitmarken wie jedes andere Wort auch"). */
+  paar.forEach((p, k) => {
+    const g = aZuGruppe[k];
+    if (g === null || !gruppeGehoert.get(g) || p < 0) return;
+    const zi = aZuZeile[k];
+    if (!proZeile.has(zi)) proZeile.set(zi, { n: 0, gut: 0, marken: [] });
+    proZeile.get(zi).marken.push(bZuMarke[p]);
+  });
+
+  /* Zeilentext nach dem Klammer-Entscheid: nicht gehörte Gruppen raus,
+     gehörte bleiben - beide ohne ihre Klammerzeichen (die fliegen immer,
+     Kopfkommentar). Eine Zeile ohne jede Klammer bleibt BYTE-GLEICH. */
+  const zeilenText = zeilen.map((z, i) => {
+    if (istRegieZeile(z)) return z;
+    if (zierLeer[i]) return '';
+    const segs = segmenteJeZeile[i];
+    if (segs.length === 1 && segs[0].gruppe === null) return z;
+    let veraendert = false;
+    const stuecke = segs.map(seg => {
+      if (seg.gruppe === null) return seg.text;
+      veraendert = true;
+      return gruppeGehoert.get(seg.gruppe) ? seg.text : '';
+    });
+    return veraendert ? stuecke.join('').replace(/\s+/g, ' ').trim() : z;
+  });
 
   const zustand = zeilen.map((z, i) => {
     if (istRegieZeile(z)) return 'regie';
+    if (zierLeer[i]) return 'zier';
     const e = proZeile.get(i);
-    if (!e) return 'leer';
+    /* Keine Wörter ausserhalb einer Klammer: die Zeile bestand nur aus
+       einer oder mehreren runden Klammern. Ob sie „gesungen" zählt,
+       entscheidet dann, ob am Ende noch Text übrig ist (mindestens eine
+       ihrer Gruppen wurde gehört) - Kopfkommentar: „Eine Zeile, die nur
+       aus einer nicht gehörten Gruppe bestand, ist danach leer und fällt
+       ganz." */
+    if (!e || e.n === 0) {
+      /* Nur wenn auf dieser Zeile ueberhaupt eine runde Klammer sass,
+         haengt "gesungen oder leer" vom Gehoert-Status ab. Jede andere
+         Zeile ohne zaehlbares Wort bleibt wie in FASSUNG 1/2 schlicht
+         "leer" - unveraendertes Verhalten fuer alles ausserhalb der neuen
+         Klammerregel (z.B. eine Zeile in einer Schrift, die `woerter()`
+         gar nicht tokenisiert). */
+      const hatKlammer = segmenteJeZeile[i].some(seg => seg.gruppe !== null);
+      if (!hatKlammer) return 'leer';
+      return zeilenText[i] ? 'gesungen' : 'leer';
+    }
     return e.gut / e.n >= 0.5 ? 'gesungen' : 'offen';
   });
 
   /* Offene Zeilen zwischen gesungenen retten — höchstens LUECKE_MAX am
-     Stück, und nur, wenn auf beiden Seiten wirklich gesungen wird. */
+     Stück, und nur, wenn auf beiden Seiten wirklich gesungen wird.
+     `zier` läuft als Füllzustand mit, wie `leer` und `regie`. */
   for (let i = 0; i < zustand.length; i++) {
     if (zustand[i] !== 'offen') continue;
     let j = i;
-    while (j < zustand.length && (zustand[j] === 'offen' || zustand[j] === 'leer' || zustand[j] === 'regie')) j++;
+    while (j < zustand.length && (zustand[j] === 'offen' || zustand[j] === 'leer' || zustand[j] === 'regie' || zustand[j] === 'zier')) j++;
     const offen = [];
     for (let k = i; k < j; k++) if (zustand[k] === 'offen') offen.push(k);
     const davor = zustand.slice(0, i).filter(x => x === 'gesungen' || x === 'offen').pop();
@@ -348,7 +635,8 @@ function reinigen(lyrics, marken) {
   zeilen.forEach((z, i) => {
     if (zustand[i] !== 'gesungen' && zustand[i] !== 'gerettet') return;
     const e = proZeile.get(i);
-    const text = z.trim();
+    /* Verirrte Klammerzeichen (ein ] ohne [, ein [ ohne ]) stehen im Ergebnis nie - sie sind nie Gesang. */
+    const text = (/[\[\]]/.test(zeilenText[i]) ? zeilenText[i].replace(/[\[\]]/g, ' ').replace(/\s+/g, ' ') : zeilenText[i]).trim();   /* nur Zeilen mit Klammer anfassen - alle anderen bleiben bytegleich */
     if (!text) return;
     if (e && e.marken.length) {
       const mi = e.marken;
@@ -449,11 +737,14 @@ function reinigen(lyrics, marken) {
     delete z.entartet;
   }
 
-  const worteGesamt = aW.length;
+  /* worteGesamt/worteBehalten zaehlen NUR Woerter ausserhalb jeder
+     Klammer (proZeile.n ist bereits so gebaut) - die Deckung eines
+     Lieds rechnet nie mit Klammerinhalt, gehört oder nicht. */
+  const worteGesamt = aZuGruppe.filter(g => g === null).length;
   const worteBehalten = zeilen.reduce((a, z, i) =>
     a + ((zustand[i] === 'gesungen' || zustand[i] === 'gerettet') && proZeile.has(i) ? proZeile.get(i).n : 0), 0);
   const gestrichen = zeilen
-    .map((z, i) => (zustand[i] === 'offen' ? z.trim() : null))
+    .map((z, i) => (zustand[i] === 'offen' ? (zeilenText[i] || z).trim() : null))
     .filter(Boolean);
   const regieZeilen = zustand.filter(x => x === 'regie').length;
 
@@ -469,6 +760,10 @@ function reinigen(lyrics, marken) {
     standzeitGeschaetzt: standzeitGeschaetztAnzahl,
     gerettet: zustand.filter(x => x === 'gerettet').length,
     geschaetzt: behalten.filter(z => z.geschaetzt).length,
+    klammerGehoert: klammerGehoertAnzahl,
+    klammerGestrichen: klammerGestrichenAnzahl,
+    zier: zierEntfernt,
+    zierZeilen: zierZeilenAnzahl,
   };
 }
 
@@ -528,6 +823,12 @@ function main() {
       einschuebe: e.einschuebeEntfernt,
       zeitAngepasst: e.zeitAngepasst,
       standzeitGeschaetzt: e.standzeitGeschaetzt,
+      /* NEU in FASSUNG 3 (Caspar_D, 25.09.2026) - runde Klammern (gehört
+         vs. gestrichen) und Zierzeichen/Emoji, siehe Kopfkommentar. */
+      klammerGehoert: e.klammerGehoert,
+      klammerGestrichen: e.klammerGestrichen,
+      zier: e.zier,
+      zierZeilen: e.zierZeilen,
     };
 
     if (einer) {
@@ -536,7 +837,9 @@ function main() {
         + `${e.regieZeilen} Regiezeilen · ${e.einschuebeEntfernt} Zeilen mit Einschub bereinigt · `
         + `${e.gerettet} Zeilen durch Nachbarschaft gerettet · ${e.geschaetzt} Zeitmarken geschätzt · `
         + `${e.standzeitGeschaetzt} Standzeiten nachgeschätzt · ${e.zeitAngepasst} Zeiten wegen `
-        + `doppelter Marken angepasst`);
+        + `doppelter Marken angepasst · ${e.klammerGehoert} Klammergruppen gehört · `
+        + `${e.klammerGestrichen} Klammergruppen gestrichen · ${e.zier} Zierzeichen entfernt · `
+        + `${e.zierZeilen} Zierzeilen gefallen`);
       console.log('\n  --- bereinigt ---');
       for (const z of e.zeilen)
         console.log(`  ${z.von === null ? '   ?  ' : String(z.von).padStart(6)}  ${z.text}`
@@ -569,16 +872,22 @@ function main() {
   const aus = {
     stand: new Date().toISOString(),
     fassung: FASSUNG,
-    verfahren: 'Regieanweisungen fliegen vor dem Alignment: ganze Zeilen in eckigen oder runden Klammern, '
-      + 'mit „#" oder als Trennlinie, dazu Einschübe wie „[soft]" mitten in einer Zeile. '
-      + 'Liedtext gegen die Whisper-Marken aligniert (Needleman-Wunsch, ein Buchstabe Abstand '
+    verfahren: 'Regieanweisungen fliegen vor dem Alignment: ganze Zeilen in eckigen Klammern, '
+      + 'mit „#" oder als Trennlinie, dazu Einschübe wie „[soft]" mitten in einer Zeile. Runde '
+      + 'Klammern fliegen NICHT vorab - sie durchlaufen den Abgleich wie der Text drumherum; hat '
+      + 'Whisper mindestens die Hälfte der Wörter einer Klammergruppe gehört, bleibt ihr Text in der '
+      + 'Zeile, sonst fällt die Gruppe (eine Zeile, die nur aus einer nicht gehörten Gruppe bestand, '
+      + 'fällt ganz); Klammerzeichen selbst stehen im Ergebnis nie. Zierzeichen und Emoji fliegen '
+      + 'ebenso vor dem Abgleich raus, eine danach leere Zeile fällt wie eine Trennlinie. Die Deckung '
+      + '(und das gesungen/offen-Kriterium je Zeile) zählt nie ein Wort aus einer Klammer, gehört oder '
+      + 'nicht. Liedtext gegen die Whisper-Marken aligniert (Needleman-Wunsch, ein Buchstabe Abstand '
       + `erlaubt); ungedeckte Zeilen zwischen gedeckten bleiben (höchstens ${LUECKE_MAX} am Stück). `
-      + 'Zeitanker aus denselben Whisper-Marken; Zeilen ohne eigene Marke tragen geschaetzt und '
-      + `liegen interpoliert zwischen ihren Nachbarn, anteilig nach Zeichenzahl. Eine Zeile mit `
-      + `einer entarteten Marke (Standzeit unter ${STANDZEIT_ENTARTET} s - Whisper gibt vielen `
-      + 'Wörtern dieselbe Start- und Endzeit) trägt standzeitGeschaetzt und bekommt ihre Standzeit '
-      + 'ebenso aus der Spanne bis zur nächsten echten Marke; zwei Zeilen auf identischen Marken '
-      + `tragen zeitAngepasst und teilen sich die eine gemessene Spanne. Unter `
+      + 'Zeitanker aus denselben Whisper-Marken (auch aus gehörten Klammergruppen); Zeilen ohne eigene '
+      + 'Marke tragen geschaetzt und liegen interpoliert zwischen ihren Nachbarn, anteilig nach '
+      + `Zeichenzahl. Eine Zeile mit einer entarteten Marke (Standzeit unter ${STANDZEIT_ENTARTET} s - `
+      + 'Whisper gibt vielen Wörtern dieselbe Start- und Endzeit) trägt standzeitGeschaetzt und bekommt '
+      + 'ihre Standzeit ebenso aus der Spanne bis zur nächsten echten Marke; zwei Zeilen auf identischen '
+      + `Marken tragen zeitAngepasst und teilen sich die eine gemessene Spanne. Unter `
       + `${(100 * DECKUNG_MINDEST).toFixed(0)} % Deckung wird nicht gereinigt.`,
     quelle: 'library/whisper.ndjson',
     mindestDeckung: DECKUNG_MINDEST,
@@ -591,4 +900,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { reinigen, woerter, fastGleich, alignieren };
+module.exports = { reinigen, woerter, fastGleich, alignieren, gruppenExtrahieren, zierBereinigen, istZierZeichen };

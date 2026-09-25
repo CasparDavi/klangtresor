@@ -6779,3 +6779,39 @@ Titel, 55 Wörter; 44 von 263 Liedtexten tragen welche). Das Band der Bühne str
 Anzeigen (`ZIER_RE` in `karaokeTakt`; das Gradzeichen bleibt vor C und F), die Lyrics-Ansicht behält
 den Rohtext samt Verzierung. In der bereinigten Lyrik fallen sie in Fassung 3 an der Quelle, mit den
 Klammern. Der Titel-Effekt behält Emoji — ein Titel ist die Visitenkarte, keine gesungene Zeile.
+
+**Bereinigte Lyrik, Fassung 3 (Caspar_D, 25.09.2026 vormittags):** *„Deckung würde ich immer ohne
+eckige und runde Klammern berechnen, das ist dann sicher. Eckige Klammern fliegen dann aber
+grundsätzlich raus. Runde Klammern durchlaufen den Whisper-Einsatz. Die Zeichen runde Klammer
+fliegen aber dann auch grundsätzlich raus."* Und zu Zierzeichen: *„ja, will ich so."*
+
+Zählung vorab (Bauagent, Sandkasten): 37 Titel mit runden Klammern, 160 Gruppen (101 ganze Zeilen,
+59 Einschübe, keine über mehrere Zeilen); 68 davon im Bereich des Whisper-Prompts, 92 danach.
+Gehört-Quote mit dem heutigen Abgleich: im Prompt 46 %, danach 57 % — **keine Verzerrung durch den
+Prompt** nachweisbar; was zählt, ist die Länge (Zweiwort-Einwürfe werden gehört, Produktionsprosa
+nicht). Zierzeichen: 54 Titel, 72 Zeilen mit Zierzeichen und Text, 14 reine Zierzeilen (alle schon
+Trennlinien); häufigste Zeichen 🎧 。 🔥 → ★.
+
+Gebaut in `bin/lyrik.js` (Agent, dann gegengelesen): runde Klammern gehen mit in den Abgleich, je
+Gruppe gehört (mindestens die Hälfte der Wörter aligniert) → Text bleibt ohne Klammerzeichen,
+sonst fällt die Gruppe; Deckung und das Kriterium gesungen/offen rechnen nur mit Wörtern außerhalb
+jeder Klammer; Zierzeichen und Emoji fallen vor dem Abgleich (durch ein Leerzeichen ersetzt, sonst
+verschmolzen „minor→major"), reine Zierzeilen fallen wie Trennlinien; Zähler `klammerGehoert`,
+`klammerGestrichen`, `zier`, `zierZeilen`. Meine Berichtigungen: das Gradzeichen bleibt Text;
+eine mehrzeilige eckige Notiz fliegt ganz (vorher rutschten Folgezeilen als Text durch, auch
+Suno-Stilangaben über zwei Zeilen); verirrte Klammerzeichen stehen im Ergebnis nie; Zeilen ohne
+Klammer bleiben bytegleich. `bin/whisper.js` baut den Prompt ohne runde Klammern (gilt für künftige
+Läufe; alte Whisper-Läufe bleiben, die Zählung zeigte keine Verzerrung).
+
+Ernstlauf (der Weg des Morgenlaufs, Sicherung der Fassung 2 im Scratchpad):
+
+| | Fassung 2 | Fassung 3 |
+|---|---|---|
+| Lieder gereinigt / zurückgestellt | 244 / 19 | 244 / 19 |
+| Zeilen | 17 338 | 17 376 |
+| Klammergruppen gehört / gestrichen | — | 77 / 44 |
+| Zierzeichen entfernt | — | 48 (40 Titel) |
+| Pfeifenwald: Deckung, Zeilen | 66 %, 65 | 100 %, 58 |
+| Lieder mit unveränderten Zeilen | | 222 von 244 |
+
+Kein `(`, `)`, `[`, `]`, kein Zierzeichen mehr im Ergebnis. `_lyrik.json` des Prüfstands neu.
