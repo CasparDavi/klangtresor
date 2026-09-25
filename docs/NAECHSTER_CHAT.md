@@ -6881,3 +6881,51 @@ Karaoke in der Objektiv-Liste von KONZEPT-DIORAMA; `stand.js`/`haken.js`/`faelle
 Nahtprüfungs-LIESMICH (`_lyrik.json`, `fonts`, `lyrikBereit`, `jetzt`, gewollte
 Vorschau-Abweichung). Alles andere war schon auf Stand. Zur Kenntnis: „Karaoke" heißt im Haus zwei
 Dinge — die Textebene der Bühne und der Effekt im Studio.
+
+**Laufende Aufgabe (25.09., Mittag) — Recherche, kein Bau:** Caspar_D fragt (a) nach Texturen für
+den Titeltext, „die nicht billig aussehen", möglichst als Sammlung unter MIT oder kompatibler Lizenz,
+und (b) nach Auftritten: der Titel soll einfahren/erscheinen und die Bühne wieder verlassen (Backlog
+„Auftritt und Abgang", bisher bewusst nicht gebaut). Zwei Workflow-Läufe sichten das (Kennungen
+`wf_db9f7a4f` Texturen: Foto-Sammlungen CC0, Vektormuster, prozedural aus dem Hausrauschen,
+Farbschriften/Bibliotheken, Haus-Anschluss in textDreipass; `wf_098fbfec` Auftritte:
+Gestaltungskanon, Bibliotheken/Easing mit Lizenzprüfung, Haus-Anschluss mit Klammer/Schlagraster/
+Loop-Urteil). Jeder Lizenzanspruch wird von einem eigenen Prüfer an der Lizenzseite gegengelesen.
+Ergebnis geht als Befund an Caspar_D; gebaut wird nichts ohne sein Wort. **Ist die Sitzung vorher
+weg:** Journale unter `subagents/workflows/wf_db9f7a4f-*/` und `wf_098fbfec-*/` in der Sitzungsablage
+(journal.jsonl trägt die Rückgaben), sonst die Frage neu stellen.
+Caspar_D dazu (25.09., Mittag): „Das würde aber wie bei Karaoke nur für den Ganztitel-Export
+taugen, beim 10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren." Folge für die
+Planung: Auftritt/Abgang wie Karaoke nur im vollen Export (einmal: kommen, stehen, gehen vor der
+ersten Gesangszeile); im Zehnsekünder steht der Titel wie heute, loopfest; die Karte sagt es per
+hinweis(e). Die Klammer aus dem Backlog-Punkt entfällt damit.
+**Befund der beiden Läufe (25.09., 13:45; 28 Agenten, jede Lizenz an der Lizenzseite gegengelesen):**
+*Texturen.* MIT-lizenzierte Bildsammlungen gibt es praktisch nicht; das passende Maß ist CC0.
+Geprüft kompatibel (Weitergabe im ZIP, kommerziell, ohne Nennung): ambientCG, Poly Haven (API),
+cgbookcase (Brushed Gold 01/02, Brushed Metal Tiles), texturecan (Marmor), 3dtextures.me (nur die
+freie 1024er Stufe). Nicht kompatibel trotz „free": sharetextures, textures.com, Pixabay/Unsplash/
+Pexels (kein Weitervertrieb der Datei), freepbr (nichtkommerziell), Lost and Taken, texturelabs,
+fffuel (Weitergabe verboten), Subtle Patterns (CC BY-SA), Transparent Textures (ungeklärt), Book of
+Shaders (restriktive Eigenlizenz), LYGIA (Prosperity), Shadertoy (BY-NC-SA). Vektor: textures.js
+(MIT, Schraffuren), Pattern Monster (nur Muster aus dem MIT-Repo), Hero Patterns (CC BY, Nennung).
+Farbschriften (Nabla u. a., OFL): COLRv1 in fillText unsicher, Safari ohne COLRv1, Palette nicht
+koppelbar — kein Weg. Matcap-Sammlungen: Bilder ohne Lizenz — tabu. Kernbefund aller Blickwinkel:
+Gold/Chrom/Metall wirken aus Fotos meist billiger als aus 4–6 kalibrierten Verlaufsstopps plus
+leisem Korn; Marmor/Schiefer/Papier/Leder taugen als Foto. Das Haus hat die Bausteine (rauschen(),
+Korn-Kachel mit EINHEIT, Simplex 3D/4D Ashima MIT, Verläufe). Anknüpfung: dritter Pass in
+textDreipass (fillStyle=farbe) — Pattern/Verlauf an der Textbox verankert (setTransform wie Korn),
+Kontur/Schatten bleiben. Risiken: Pattern auf fillText in Safari ungeprüft; Maßstab mit EINHEIT
+(Regel 19); „Gold" muss Gold sein (Regel 11); ein Glanzlauf müsste loopfest (lpR/lpP). Bytes: eine
+1K-Kachel 100–500 KB (Inter je ~113 KB); prozedural 0.
+*Auftritte.* Kanon: edel = Unschärfe-zu-scharf, Laufweite (Tracking-in), Vorhang/Wischen, Schnitt
+auf den Schlag, weicher Einzug von unten (unter 5 % Bildhöhe); neutral = Einblenden, Skalierung
+3–8 %, Zeichenkaskade; billig = Glimmen, Schreibmaschine, Fallen/Springen, Glitch, 3D-Klappen.
+Regeln: eine Bewegung je Auftritt; Einsatz ease-out, Abgang ease-in und kürzer; nichts
+überschwingt; Leserichtung; der Titel geht vor der ersten Gesangszeile (LYRIK[id][0].von).
+Timing in Schlägen: Einsatz 1 Schlag, Abgang 1 Schlag, Stand in ganzen Takten — kein Dauer-,
+kein Kurvenregler; das Haus hat eine Weichkurve (Smootherstep bei schleifePendelWeg).
+Bibliotheken: keine nötig; Easing selbst oder Penner (MIT/BSD) bzw. bezier-easing (MIT) mit
+Vermerk. Nicht MIT: GSAP (Webflow-Lizenz), Animate.css (Hippocratic), easings.net (GPLv3, nur
+nachschlagen), Theatre.js Studio (AGPL). Haus: der Titel-Zweig liest heute kein t; clipZeit/
+uhrEcht liefern die Songzeit; nur Vollexport (Caspar_D) → kein Loop-Urteil nötig; die
+Beschriftung „steht die ganze Zeit … loopfest" braucht den Zusatz; Kachel und Bühne zeigen den
+stehenden Zustand. Unschärfe (ctx.filter) kostet je Bild, im Export zu messen.
