@@ -7043,3 +7043,5 @@ Sandkasten ist gelöscht, der 8790-Server beendet, das echte `library/` seit 15:
 Downloads, nach dem Ansehen wegräumen. **Wiedervorlage:** Caspar_D's Urteil zu beiden Videos
 (Metall-Rampe, Aufsteigen, Stein, Ballen und Auflösen, die Zeiten vor der ersten Zeile); voller
 Prüflauf aller 254 Fälle (Startschuss).
+Caspar_D (15:30): „kann ich erstmal schauen, ich denke, wir verschieben den Testlauf." — Der volle
+Prüflauf (254 Fälle) ist verschoben, bis er die Videos gesehen hat; nicht von selbst starten.
