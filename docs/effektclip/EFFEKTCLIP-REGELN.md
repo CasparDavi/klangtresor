@@ -249,6 +249,9 @@ Untergrenzen erst **nach** dem Umrechnen, und wo eine Untergrenze greift, trägt
 Die Texteffekte gehen denselben Grundsatz auf eigenem Weg: Titel und Karaoke messen nicht über
 `EINHEIT`, sondern direkt als Anteil der Bildfläche — der Titel an der kurzen Seite, das Karaoke an
 der Breite wie das Band der Bühne; Kontur, Schatten und Zeilenhöhe als Anteil der Schriftgröße.
+Die Strukturkachel des Titels (Metall, Stein, Papier, Schraffur, seit 25.09.2026) ist in em der
+Schrift gerechnet und je Zeile am Zeilenrand verankert; `--massstab` zeigt sie bei 360 und 1080
+gleich (Block 9 bis 17 gegen 14 beim glatten Titel, der Unterschied ist die feine Zeichnung).
 
 ---
 
