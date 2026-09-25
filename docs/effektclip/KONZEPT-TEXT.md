@@ -86,9 +86,12 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
     frühestens zwei Takte nach dem Auftritt; setzt der Gesang früher ein, bleibt er vier Takte über
     dem Gesang; ohne Lyrik geht er nach vier Takten. Eine Bewegung je Auftritt (erscheinen,
     aufsteigen, scharfstellen, Laufweite, Vorhang), Einsatz weich aus, Abgang weich ein und kürzer,
-    nichts überschwingt — Regler nur für die Wahl. Im Pult mit freier Uhr wiederholt sich Kommen,
-    Stehen, Gehen mit einem Schlag Abwesenheit, damit der Gestalter es sieht. Der volle Export
-    wartet für ihn mit auf die Lyrik, bricht ohne sie aber nicht ab.
+    nichts überschwingt — Regler nur für die Wahl. **Vorschau im Pult** (Caspar_D: „wenn ich einen
+    Effekt einschalte, muss sofort eine Vorschau loslaufen"): ohne laufenden Player läuft ein
+    Zyklus, der beim Einschalten, beim Umstellen der Wahl und nach jeder Lücke von vorn beginnt —
+    Auftritt, zwei Takte stehen, Abgang, ein Schlag Abwesenheit; die echten Zeiten gelten im
+    Player und im Export. Der volle Export wartet für ihn mit auf die Lyrik, bricht ohne sie aber
+    nicht ab.
 13. **Aus den Partikeln.** Die sechste Wahl des Auftritts: der Titel ballt sich über zwei Takte
     aus Teilchen zusammen und löst sich über zwei Takte in Windrichtung auf. Der Titel malt eigene
     Teilchen — Art, Farbe (`partikelSatz`), Größe, Wind und Schwere vom ersten aktiven

@@ -4129,7 +4129,7 @@
    ],
    "gruppe": "titel",
    "jetzt": 26.13,
-   "bemerkung": "Auftritt aufsteigen auf Titel a (erste Zeile der bereinigten Lyrik bei 30,18 s, Schlag 0,40 s: der Abgang laeuft 29,48 bis 29,78 s). jetzt 26,13 s: die Vorschau liegt in der Clipmitte bei rund 29,9 s, mitten im Abgang oder kurz danach - der Loop-Export (LOOP>0) laesst den Titel stehen. Die Vorschau-Abweichung ist gewollt wie beim Karaoke; Naht 0 bleibt Pflicht. Das Fenster ist eng (0,6 s): rutscht t0 auf eine andere Eins, den Fall nachziehen."
+   "bemerkung": "Auftritt aufsteigen auf Titel a (erste Zeile der bereinigten Lyrik bei 30,18 s, Schlag 0,40 s: der Abgang laeuft 29,48 bis 29,78 s). jetzt 26,13 s: die Vorschau liegt in der Clipmitte bei rund 29,9 s, mitten im Abgang oder kurz danach - der Loop-Export (LOOP>0) laesst den Titel stehen. Die Vorschau-Abweichung ist gewollt wie beim Karaoke; Naht 0 bleibt Pflicht. Das Fenster ist eng (0,6 s): rutscht t0 auf eine andere Eins, den Fall nachziehen. Seit dem Vorschauzyklus (25.09.) beginnt die Vorschau mit freier Uhr beim ersten Bild im Auftritt (k 0, Titel unsichtbar) - trifft ebenso."
   },
   {
    "name": "titel-auftritt-partikel",
@@ -4149,7 +4149,7 @@
    ],
    "gruppe": "titel",
    "jetzt": 24.5,
-   "bemerkung": "Titel aus den Partikeln (Asche in der Kette) auf Titel a: Ballen zwei Takte, Aufloesen zwei Takte (26,6 bis 29,8 s, erste Zeile 30,18 s). jetzt 24,5: die Vorschau in der Clipmitte liegt mitten im Aufloesen, der Loop-Export laesst den Titel stehen - Vorschau-Abweichung gewollt; Naht 0 Pflicht (der Partikel-Effekt loopt wie immer)."
+   "bemerkung": "Titel aus den Partikeln (Asche in der Kette) auf Titel a: Ballen zwei Takte, Aufloesen zwei Takte (26,6 bis 29,8 s, erste Zeile 30,18 s). jetzt 24,5: die Vorschau in der Clipmitte liegt mitten im Aufloesen, der Loop-Export laesst den Titel stehen - Vorschau-Abweichung gewollt; Naht 0 Pflicht (der Partikel-Effekt loopt wie immer). Seit dem Vorschauzyklus (25.09.) beginnt die Vorschau beim ersten Bild im Ballen - trifft ebenso."
   },
   {
    "name": "karaoke",

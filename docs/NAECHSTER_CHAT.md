@@ -7014,3 +7014,23 @@ Caspar_D bekommen; Auftritt und Partikel hat er noch nicht gesehen (Wiedervorlag
 mit Auftritt ausgeben). Der volle Lauf aller 254 Fälle steht aus (rund 13 min, Startschuss nötig).
 Eigener Labor-Server 127.0.0.1:18812 läuft noch (PID in Scratchpad struktur/server-18812.pid);
 Jörgs 18811 (PID 99885) hängt — nicht angefasst.
+
+## 30. Nachmittag 25.09.2026: Vorschau sofort, Beispielvideos, Sandkasten
+
+Caspar_D: „wenn ich einen Effekt einschalte, muss sofort eine Vorschau loslaufen, dass ich erst
+ein Video exportieren muss, geht so nicht." Vorher zeigte der Auftritt im Pult mit freier Uhr die
+echten Zeiten (Abgang bei 30 s → minutenlang stehender Titel). Jetzt: Vorschauzyklus in
+`titelAuftrittLage` (nur ohne laufenden Player und außerhalb des Exports): beginnt beim Einschalten
+der Karte, beim Umstellen der Wahl und nach jeder Lücke > 0,5 s von vorn — Auftritt, zwei Takte
+stehen, Abgang, ein Schlag weg; Uhr in `e._auT0`/`e._auArt`/`e._auLetzt` (Unterstrich, kein
+Rezeptfeld). Konzept Regel 12 ergänzt; die zwei Prüffälle treffen weiter (1,02 / 1,59).
+**Labor-Server:** Caspar_D: „du kannst den Laborserver neu starten bzw. abschalten, je nachdem,
+was du brauchst." Der hängende 18811 (PID 99885) wurde beendet und neu gestartet (python
+http.server, PID in Scratchpad struktur/server-18811.pid); 18812 wieder aus.
+**Beispielvideos (Caspar_D: „kannst du Beispielvideos exportieren nach Downloads"):** Sandkasten
+`/Volumes/Extreme_SSD/Entwicklung/sandkasten-titel/` nach dem Muster vom 24.09. (rsync server/ bin/
+web/ node_modules, library/*.json|gz|ndjson kopiert, Songs 535121bb Universe 25 english und
+fff934d4 Hoch auf dem Lebenswagen nur mp3/cover/kachel/titelbild/tiefe, keine Symlinks), Server
+`node …/server/server.js --port 8790` (PID in struktur/sandkasten-8790.pid), eigener Tab, Ton
+stumm. Der volle Export schreibt nach `.ausgabe/<lauf>/` und wird von dort nach ~/Downloads
+kopiert. Danach Sandkasten löschen (rm -rf, nie aus dem Verzeichnis heraus).

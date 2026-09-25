@@ -37951,10 +37951,15 @@ function zeichneFrame(t,roh){
      Takte nach dem Auftritt; setzt der Gesang frueher ein, bleibt der Titel vier Takte ueber dem Gesang. Ohne
      Lyrik (keine, zurueckgestellt, Instrumental, noch unterwegs) geht er nach vier Takten. Der Kanon dahinter
      (Recherche 25.09.): eine Bewegung je Auftritt, Einsatz weich aus, Abgang weich ein und kuerzer, nichts
-     ueberschwingt, der Titel geht, bevor gesungen wird. Im Pult ohne laufenden Player ist t die freie Uhr -
-     dort wiederholen sich Kommen, Stehen, Gehen mit einem Schlag Abwesenheit dazwischen, damit der Gestalter
-     den Auftritt sieht statt eines leeren Bildes; im Export ist DATA.lyrik gesetzt (auch als null), dort gilt
-     die Songzeit. Der Takt: Schlaege zwischen zwei Einsen der Schlagliste (Median), sonst vier. */
+     ueberschwingt, der Titel geht, bevor gesungen wird.
+     VORSCHAU IM PULT (Caspar_D, 25.09.2026: "wenn ich einen Effekt einschalte, muss sofort eine Vorschau
+     loslaufen, dass ich erst ein Video exportieren muss, geht so nicht"): ohne laufenden Player ist t die
+     freie Uhr, und die echten Zeiten (Abgang bei 30 s) zeigten minutenlang einen stehenden Titel. Darum
+     laeuft dort ein Vorschauzyklus, der beim Einschalten der Karte, beim Umstellen der Wahl und nach jeder
+     Luecke von vorn beginnt: Auftritt, zwei Takte stehen, Abgang, ein Schlag Abwesenheit, von vorn. Die
+     Uhr des Zyklus ist e._auT0 (Unterstrich: kein Rezeptfeld). Laeuft der Titel im Player (uhrEcht), gelten
+     die echten Zeiten - der Gestalter kann an den Anfang springen; im Export ist DATA.lyrik gesetzt (auch
+     als null), dort gilt die Songzeit. Der Takt: Schlaege zwischen zwei Einsen (Median), sonst vier. */
   function titelAuftritt(e){ const a=e&&e.auftritt; return (a&&a!=='keiner')?a:null; }
   function taktSchlaege(){ try{ const S=DATA&&DATA.schlaege; if(!S||S.length<8) return 4; const d=[]; let letzte=-1;
       for(let i=0;i<S.length;i++){ if(S[i][1]===1){ if(letzte>=0) d.push(i-letzte); letzte=i; } }
@@ -37970,10 +37975,19 @@ function zeichneFrame(t,roh){
   function titelAuftrittLage(e,t){ const art=titelAuftritt(e); if(!art) return null;
     if(LOOP>0) return null; if(MALT_KACHEL&&!uhrEcht) return null;
     if(art==='partikel'&&!titelPartikelQuelle()) return null;   /* ohne Partikel-Effekt in der Kette steht er; die Karte sagt es */
-    const z=titelAuftrittZeiten(e); let tt=t; if(!uhrEcht&&!(DATA&&DATA.lyrik!==undefined)) tt=t%(z.ab1+z.beat);
+    const z=titelAuftrittZeiten(e), ausD=z.ab1-z.ab0; let tt=t;
+    if(!uhrEcht&&!(DATA&&DATA.lyrik!==undefined)){   /* Vorschauzyklus im Pult, siehe oben */
+      const hz=schlagHz(), beat=hz>0?1/hz:0.6, stand=2*beat*taktSchlaege(), zyklus=z.ein1+stand+ausD+beat;
+      if(e._auT0==null||e._auArt!==art||t<e._auLetzt||t-e._auLetzt>0.5){ e._auT0=t; e._auArt=art; }
+      e._auLetzt=t;
+      const q=(((t-e._auT0)%zyklus)+zyklus)%zyklus;
+      if(q<z.ein1) return { art, ein:true, k:q/z.ein1 };
+      if(q<z.ein1+stand) return null;
+      if(q<z.ein1+stand+ausD) return { art, ein:false, k:(q-z.ein1-stand)/ausD };
+      return { art, weg:true }; }
     if(tt<z.ein1) return { art, ein:true, k:Math.max(0,tt/z.ein1) };
     if(tt<z.ab0) return null;
-    if(tt<z.ab1) return { art, ein:false, k:(tt-z.ab0)/(z.ab1-z.ab0) };
+    if(tt<z.ab1) return { art, ein:false, k:(tt-z.ab0)/ausD };
     return { art, weg:true }; }
   function auftrittNotiz(e){ try{ if(!titelAuftritt(e)) return null;
       const z=titelAuftrittZeiten(e), hier=(DATA&&DATA.instrumental)?'Dieser Titel ist instrumental: der Titel geht nach vier Takten.':(z.erste!=null?'Hier endet der Abgang bei '+z.ab1.toFixed(1).replace('.',',')+' s, vor der ersten Zeile.':'Ohne bereinigte Lyrik geht er nach vier Takten.');
