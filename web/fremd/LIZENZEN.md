@@ -57,6 +57,22 @@ Urheberrechtslage hat nie jemand einzeln geklärt, auch das
 Butterchurn-Projekt nicht. Wer sie weitergibt, erbt diese Unklarheit.
 Die Presetnamen nennen ihre Autoren; mehr Zuordnung gibt es nicht.
 
+### Inter und Gelasio — SIL Open Font License 1.1
+
+Die zwei Paketschriften der Texteffekte (Titel, Karaoke) liegen unter `web/fonts/`, damit der
+Effektclip-Export auf Mac, Windows und Bühne dieselbe Schrift malt (ohne sie fiel Windows von
+„Helvetica Neue" auf Arial zurück, Georgia fehlte ganz). Inter ersetzt die Grotesk, Gelasio die
+Serife — Gelasio ist metrisch Georgia-kompatibel, der Umbruch bleibt gleich. Die Lizenztexte liegen
+daneben (`web/fonts/LIZENZ-inter.txt`, `web/fonts/LIZENZ-gelasio.txt`). Geholt am 25.09.2026;
+statische Schnitte, keine Variable Fonts; Umlaute, ß und die deutschen Anführungszeichen geprüft.
+
+| Datei | Schnitt | Quelle | Version | Byte | SHA-256 |
+|---|---|---|---|---|---|
+| `inter-400.woff2` | Inter Regular | github.com/rsms/inter, Release v4.1, `web/Inter-Regular.woff2` | 4.1 | 111268 | `e06f6b1bc553aaea4e4668023ed0ab0a147129c3107f511bc7d03d361b0ae085` |
+| `inter-700.woff2` | Inter Bold | github.com/rsms/inter, Release v4.1, `web/Inter-Bold.woff2` | 4.1 | 114840 | `fa888127b6da015b65569f0351f3b5c391ad928904951f1c20e9f8462a8d95ea` |
+| `gelasio-400.woff2` | Gelasio Regular | Google Fonts css2-API, Latin-Subset von fonts.gstatic.com | v14 | 19536 | `68e2b704c5624ba84e70d826e33c5fc08d75eb452f834d869abdecc39f3b26ac` |
+| `gelasio-700.woff2` | Gelasio Bold | Google Fonts css2-API, Latin-Subset von fonts.gstatic.com | v14 | 19844 | `dff91a5084db8f15e401e902acdac8768f5ae1746205c5319ad2cf3655517170` |
+
 ### Eigene Dateien in diesem Ordner
 
 `analyzer.js`, `analyzer-worker.js`, `analyse-ablage.js` und

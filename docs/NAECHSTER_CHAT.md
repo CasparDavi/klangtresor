@@ -6663,7 +6663,7 @@ an der Quelle, nicht im Maler.
     (`DATA.instrumental`, im Haus über `istInstrumental`), Exportabbruch nennt ihn.
 13. **Verfahren** — siehe `bin/lyrik.js` unten.
 14. **Schrift im Paket:** Inter (Grotesk) und Gelasio (Serife, metrisch wie Georgia), beide OFL, in
-    `web/fonts/` mit Herkunft und Lizenz (`LIESMICH.md`); `@font-face` im Studio-CSS, das Bühnenband
+    `web/fonts/` (Herkunft und Prüfsummen in `web/fremd/LIZENZEN.md`, die Lizenztexte daneben); `@font-face` im Studio-CSS, das Bühnenband
     in Inter, Laufweite −0,01 em auch auf der Leinwand; Exporte warten auf die Schriften
     (`schriftenBereit`), das Haus holt sie beim Start. Emoji im Titel bekommen nur die Füllung
     (`textLaeufe`). Der Prüfstand verweist auf `web/fonts` (stand.js).

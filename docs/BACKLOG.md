@@ -69,6 +69,7 @@ Stand 17.08.2026, Nachtrag 24.08.2026. Sortiert nach Nutzen im
 Verhältnis zum Aufwand.
 
 ---
+| Effektclip | Entscheidung | [Das Studio als eigene Datei (25.09.2026)](#das-studio-als-eigene-datei-25092026) |
 
 ## Die tote Tonart — ERLEDIGT 24.08.2026
 
@@ -3157,3 +3158,10 @@ Nacht 25.09.2026 (Übergabe §23): eingepasster Titel, Ruhezustand, fester Anker
 Ort per Klick, Preset „Lyric-Video", Güte der Zeiten, Hochformat-Zonen sind gebaut. Offen bleiben
 Wort-Wischen, Überblenden, Auftritt/Abgang und die Frage, ob die Bühne den Ruhezustand übernimmt
 (Wiedervorlage 21).
+
+## Das Studio als eigene Datei (25.09.2026)
+
+**Zustand: Entscheidung.** Die Planung ist abgeschlossen und liegt in
+[effektclip/KONZEPT-STUDIO-MODUL.md](effektclip/KONZEPT-STUDIO-MODUL.md): Anschluss aus dem Code,
+Ladeweg, Werkzeuge, Server, Schrittplan mit Proben, fünf Fragen an Caspar_D (Go, Anschluss als
+Objekt oder Vertrag, Server-Eingriff, `aus`/`ein`, Reihenfolge Tonstudio und Bühne). Nichts gebaut.
