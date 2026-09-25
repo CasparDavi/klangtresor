@@ -6815,3 +6815,16 @@ Ernstlauf (der Weg des Morgenlaufs, Sicherung der Fassung 2 im Scratchpad):
 | Lieder mit unveränderten Zeilen | | 222 von 244 |
 
 Kein `(`, `)`, `[`, `]`, kein Zierzeichen mehr im Ergebnis. `_lyrik.json` des Prüfstands neu.
+
+## 25. Planung: das Studio als eigene Datei (25.09.2026)
+
+Caspar_D: *„bereite alles vor, was nötig ist, um die Planung für die Studio-Herauslösung
+abzuschließen."* Ergebnis: `docs/effektclip/KONZEPT-STUDIO-MODUL.md` — Anschlussliste aus dem Code
+(acht `typeof`-gesicherte Griffe ins Haus, drei DOM-Verabredungen, sieben CSS-Variablen, sechs
+Rückgaben, ein Ereignis), das Verhalten des Moduls beim Laden (nur Browser-Standard; das Stylesheet
+muss vor dem Skript stehen wegen `schriftenBereit`), der Ladeweg (`start()` wartet vor der
+Moduldefinition; Vorschlag: `<link>` an der Stelle des `<style>`-Endes, `<script src>` ohne `defer`
+vor dem Haus-Skript), die Werkzeuge (`stand.js` liest die Datei, `syntax.js` prüft auch `src`,
+`aus`/`ein` fallen, Haken bleibt eingespleißt), Server (`.css` heute mit Jahres-Cache — eine Zeile,
+mit Ansage), Paket und Windows (nichts zu tun), Hausregel „eine Datei" → „in einem Commit". Fünf
+Entscheidungen stehen am Ende des Konzepts. Nichts gebaut.
