@@ -7045,3 +7045,20 @@ Downloads, nach dem Ansehen wegräumen. **Wiedervorlage:** Caspar_D's Urteil zu 
 Prüflauf aller 254 Fälle (Startschuss).
 Caspar_D (15:30): „kann ich erstmal schauen, ich denke, wir verschieben den Testlauf." — Der volle
 Prüflauf (254 Fälle) ist verschoben, bis er die Videos gesehen hat; nicht von selbst starten.
+
+## 31. Nachmittag 25.09.2026: Durchschuss (Caspar_D nach den Videos)
+
+„Der Zeilenabstand ist zu groß, je größer der Text, desto mehr fällt das auf" — „der Durchschuss
+ist riesig" — „der Durchschuss ist zu definieren, und der sollte immer gleich sein, 5 px sollten
+reichen." Vorher: Titel 1,15 em, Karaoke 1,25 em Mitte zu Mitte (bei Zeilen ohne Unterlängen
+klaffte fast eine halbe em). Jetzt: `DURCHSCHUSS = 5*EINHEIT` (5 Studio-Bildpunkte, Regel 19)
+zwischen der Tinte zweier Zeilen, gemessen mit `actualBoundingBoxAscent/Descent` zur Mittellinie
+(Ersatz: halbe em-Kästen). Titel: `mess`/`ys`/`boxH` hüllen die Tinte, `titelZiele` bekommt `ys`.
+Karaoke: je Block `mess`/`ys`/`h`, Anker `yU − grK − luecke − gr/2` (em-Kästen je eine Reihe),
+Blocklücke 0,06 em bleibt. Ein Zwischenstand (0,14 em, Karaoke 1,08 em) ist überholt und nie
+gepusht worden. Konzept: Entscheidung und Regel 10a. Prüfstand: Titel-Fälle Naht 0, Karaoke
+Vorschau-Werte ändern sich (gewollt, andere Lage der Reihen).
+Nachtrag: „ich hoffe, wir reden bei Zeilenabstand von der gleichen Lücke — Unterlänge zu Oberlänge
+der folgenden Zeile meinte ich." Die Tinte der jeweiligen Zeile war falsch (Zeilen ohne Unterlängen
+rückten zu dicht). Jetzt `textLaengen(cx,gr)`: Ober- und Unterlänge der Schrift an „hdkl"/„gpqy"
+gemessen, gleich für alle Zeilen einer Größe; Lücke 5·EINHEIT dazwischen.
