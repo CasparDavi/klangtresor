@@ -6743,3 +6743,32 @@ der Zonen- und der Raumtiefe-Regler der Vorbereitung, und meine neuen Textmarken
 Muster gebaut). Der Rahmenlauf malte trotzdem, darum fiel es nie auf. Jetzt gibt es `bildNeu()`
 (ein Bild, wenn das Studio bereit ist und kein Export läuft), alle vier rufen es. Der Klick auf die
 Bühne setzt den Ort ohne Fehler, Doppelklick stellt die Vorgabe her (im Tab per Ereignis geprüft).
+
+## 24. Morgen 25.09.2026: die Bühne bekommt den Ruhezustand, die Kette entscheidet über und unter dem Text
+
+Caspar_D: *„die Bühne kriegt die gleiche neue Regel"* und *„je nachdem, wo der Karaoke-Effekt in der
+Kette liegt, sind Effekte drüber oder drunter, das darf der Nutzer entscheiden, ich könnte mir
+vorstellen, dass Konfetti auch mal vor dem Text fallen darf, aber beim Einfügen liegt der Text immer
+erstmal an letzter Position der Effektkette."*
+
+**Bühne:** `karaokeTakt(n, t)` läuft in jedem Takt (nicht nur beim Zeilenwechsel) und kennt den
+Ruhezustand: eine Zeile gilt bis ihr Ende plus 1,5 s oder bis zur nächsten bei einer Lücke unter
+3 s; danach rückt sie leise nach oben, die kommende steht leise in der Mitte (Klasse `kommt`); vor
+der ersten Zeile ebenso; nach der letzten leert sich das Band. Zeilen ohne Standzeit bekommen 1,9 s.
+Geschrieben wird nur, was sich ändert. Geprüft im Sandkasten auf Sunos Spur v2: vor der ersten
+Zeile kommend, mitten im Lied gesungen, nach der letzten leer.
+
+**Studio:** `stufeVon(e)` fragt beim Titel und beim Karaoke die Kette: folgt ein aktiver Szenen-
+Effekt (Konfetti, Feuer, Nebel …), rückt der Text in die Szene vor diesen Effekt — er liegt darunter
+und fährt mit der Kamera; sonst sitzt er am Objektiv über allem. Neue Karten kommen ohnehin ans
+Ende der Kette. Die Karte trägt den Chip „Szene"/„Film" nach der Lage und sagt, unter wem sie liegt
+(`textStufeHinweis`). Die Marke auf der Bühne gibt es nur am Objektiv (in der Szene zeigte der Zeiger
+auf den gezoomten Ort). Geprüft im Prüfstand-Tab: Karaoke vor Partikel → „Szene" mit Hinweis,
+Karaoke am Ende → „Film".
+
+**Nicht gebaut (Caspar_D: „erst Brainstorm, dann Aktion"):** runde Klammern in der bereinigten
+Lyrik — Suno entscheidet neuerdings selbst, ob sie Regie oder Echo sind; die Idee ist, Whisper
+entscheiden zu lassen: gehört → bleibt, nicht gehört → fliegt. Brainstorm steht im Chat vom
+25.09. morgens; Befund dazu: `bin/whisper.js` gibt Whisper den Liedtext (nur ohne eckige
+Klammern, erste 800 Zeichen) als Prompt mit — runde Klammern stehen also im Prompt, und Whisper
+neigt dazu, Promptwörter zu „hören".

@@ -1658,6 +1658,8 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 /* Die mittlere Zeile ist die, die gerade dran ist - deutlich größer,
    damit sie aus Entfernung zuerst gefunden wird. */
 #bkaraoke .dran{font-size:clamp(28px,5.2vw,72px);color:var(--btext,#fff);opacity:1}
+/* Die kommende Zeile in der Mitte, solange niemand singt: leise wie die Nachbarn (Ruhezustand, 25.09.2026). */
+#bkaraoke .dran.kommt{color:var(--bleise,rgba(255,255,255,.6));opacity:.5}
 #bkaraoke .vor,#bkaraoke .nach{font-size:clamp(17px,2.6vw,34px);
   color:var(--bleise,rgba(255,255,255,.6));opacity:.5}
 
@@ -16909,7 +16911,17 @@ function karaokeAufbauen(){
 }
 
 /** Die drei Zeilen füllen. n ist der Index der aktiven Zeile in bZeilen. */
-function karaokeTakt(n){
+/* WER NICHT SINGT, IST NICHT DRAN (Caspar_D, 25.09.2026: „die Bühne kriegt die gleiche neue
+   Regel" - dieselbe wie der Karaoke-Effekt im Studio, Übergabe §23). Bis dahin stand die zuletzt
+   gesungene Zeile hell in der Mitte, bis die nächste begann: über ein Solo, den Ausklang, und vor
+   dem ersten Ton stand die erste Zeile hell. Jetzt gilt eine Zeile bis zu ihrem Ende plus 1,5 s
+   Nachhall, oder bis zur nächsten, wenn die Lücke unter 3 s liegt. Danach rückt sie leise nach
+   oben und die nächste steht leise in der Mitte bereit (Klasse kommt) - der Mitsänger sieht
+   weiter, was kommt. Vor der ersten Zeile ebenso; nach der letzten leert sich das Band. Zeilen
+   ohne Standzeit (Whisper gibt vielen Wörtern Dauer 0) bekommen 1,9 s, wie im Studio.
+   Gerufen in JEDEM Takt, nicht nur beim Zeilenwechsel - der Zustand wechselt auch mitten in
+   einer Zeile; geschrieben wird nur, was sich ändert, damit der Übergang nicht flackert. */
+function karaokeTakt(n, t){
   const k = $('bkaraoke');
   if (!k || bText !== 'karaoke') return;
 
@@ -16918,15 +16930,26 @@ function karaokeTakt(n){
   let p = -1;
   for (let i = 0; i < bSingbar.length; i++){ if (bSingbar[i] <= n) p = i; else break; }
 
-  const text = (i) => {
-    const idx = bSingbar[i];
-    return (idx === undefined || idx < 0) ? '' : bZeilen[idx].worte.map(w => w.text).join('');
-  };
+  const zeile = (i) => { const idx = bSingbar[i]; return (idx === undefined || idx < 0) ? null : bZeilen[idx]; };
+  const text = (i) => { const z = zeile(i); return z ? z.worte.map(w => w.text).join('') : ''; };
+  const NACHHALL = 1.5, LUECKE = 3, DAUER_ERSATZ = 1.9;
+  let davor = '', mitte = '', danach = '', kommt = false;
+  if (p < 0){ mitte = text(0); danach = text(1); kommt = !!mitte; }
+  else {
+    const zl = zeile(p), naechste = zeile(p+1);
+    const ende = (zl.ende > zl.start) ? zl.ende : zl.start + DAUER_ERSATZ;
+    const tt = (typeof t === 'number') ? t : ende;   // ohne Zeit (alter Aufruf) gilt: gesungen
+    const singt = (tt <= ende + NACHHALL) || (!!naechste && (naechste.start - ende) < LUECKE);
+    if (singt){ davor = text(p-1); mitte = text(p); danach = text(p+1); }
+    else if (naechste){ davor = text(p); mitte = text(p+1); kommt = true; }
+    // sonst: nach der letzten Zeile und ihrem Nachhall bleibt das Band leer
+  }
   const felder = k.children;
   if (felder.length < 3) return;
-  felder[0].textContent = p > 0 ? text(p-1) : '';
-  felder[1].textContent = p >= 0 ? text(p) : (bSingbar.length ? text(0) : '');
-  felder[2].textContent = text(p+1);
+  if (felder[0].textContent !== davor) felder[0].textContent = davor;
+  if (felder[1].textContent !== mitte) felder[1].textContent = mitte;
+  if (felder[2].textContent !== danach) felder[2].textContent = danach;
+  felder[1].classList.toggle('kommt', kommt);
 }
 
 /**
@@ -26501,8 +26524,8 @@ function buehneTakt(){
         z.style.setProperty('--tb', Math.max(0, Math.round(r - l)) + 'px');
       }
     }
-    karaokeTakt(n);
   }
+  karaokeTakt(n, t);   // in jedem Takt - der Ruhezustand wechselt auch mitten in einer Zeile
 
   // Innerhalb der Zeile das gerade gesungene Wort hervorheben
   if (n >= 0){
@@ -27570,8 +27593,8 @@ const EFFEKTE = {
        Doppelklick stellt die Vorgabe wieder her (tiMarke..., dieselbe Sprache wie beim Zielpunkt).
      - Die Schrift ist die Paketschrift (Inter, Gelasio - web/fonts), damit Mac, Windows und Buehne
        dasselbe malen; dahinter der alte Stapel als Rueckfall. */
-  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Sitzt am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Ein Klick auf die Bühne setzt den Ort.',
-    hinweis:e=>titelHinweis(e),
+  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Ein Klick auf die Bühne setzt den Ort.',
+    hinweis:e=>[textStufeHinweis(e),titelHinweis(e)].filter(Boolean).join('<br>')||null,
     params:[{k:'text',lbl:'Text',text:true,mehrzeilig:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?null:'Leer heißt: der Titel des Songs.'},
       {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
       {k:'gewicht',lbl:'Gewicht',sel:[['fett','fett'],['normal','normal']],def:'fett'},
@@ -27621,8 +27644,8 @@ const EFFEKTE = {
        Pult bleibt die freie Uhr als Vorschau, die Karte sagt es.
      - Paketschrift (Inter, Gelasio) und Laufweite -0,01 em wie das Band der Buehne. */
   karaoke:{ label:'Karaoke', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1,
-    besch:'<b>Die gesungene Zeile über dem Bild</b> — aus der bereinigten Lyrik des Titels, mit der Zeile davor und danach, wie das Band der Bühne. Wer nicht singt, ist nicht dran: in Pausen rückt die Zeile leise nach oben und die nächste steht als Kommende bereit. Gehört in den <b>ganzen Titel</b>: dort läuft die Songzeit durch und der Ton liegt dabei. Im Zehnsekünder und in der Loop-Ansicht wird er weggelassen. Sitzt am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild.',
-    hinweis:e=>lyrikHinweis(),
+    besch:'<b>Die gesungene Zeile über dem Bild</b> — aus der bereinigten Lyrik des Titels, mit der Zeile davor und danach, wie das Band der Bühne. Wer nicht singt, ist nicht dran: in Pausen rückt die Zeile leise nach oben und die nächste steht als Kommende bereit. Gehört in den <b>ganzen Titel</b>: dort läuft die Songzeit durch und der Ton liegt dabei. Im Zehnsekünder und in der Loop-Ansicht wird er weggelassen. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter.',
+    hinweis:e=>[textStufeHinweis(e),lyrikHinweis()].filter(Boolean).join('<br>')||null,
     params:[{k:'zeilen',lbl:'Zeilen',sel:[['3','drei — die gesungene mit der davor und danach'],['1','nur die gesungene']],def:'3'},
       {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
       {k:'groesse',lbl:'Größe',min:.025,max:.12,step:.001,def:.052,wert:v=>(v*100).toFixed(1).replace('.',',')+' %',notiz:()=>'Anteil der Bildbreite, wie auf der Bühne (5,2 %); die Nachbarzeilen halb so groß. Passt der Block nicht ins Bild, weicht die Schrift.'},
@@ -32257,7 +32280,23 @@ function kettekopfStand(){ const kk=$('#tbs-kettekopf'); if(kk) kk.classList.tog
    dioramaMass). Die Zusage ist dort richtiggestellt; hier steht, wie der Nutzer es sieht, ohne
    dass ihm jemand davon erzaehlt. */
 const STUFE_NAME={diorama:'Szene',kamera:'Kamera',objektiv:'Film'};
-function stufeVon(e){ return STUFE_DIORAMA.has(e.typ)?'diorama':STUFE_KAMERA.has(e.typ)?'kamera':'objektiv'; }
+/* DIE KETTE ENTSCHEIDET BEIM TEXT (Caspar_D, 25.09.2026: „je nachdem, wo der Karaoke-Effekt in der
+   Kette liegt, sind Effekte drüber oder drunter, das darf der Nutzer entscheiden, ich könnte mir
+   vorstellen, dass Konfetti auch mal vor dem Text fallen darf, aber beim Einfügen liegt der Text
+   immer erstmal an letzter Position der Effektkette"). Titel und Karaoke sitzen am Objektiv, solange
+   nichts aus der Szene NACH ihnen in der Kette steht - dann liegen sie ueber allem und zoomen nicht
+   mit. Folgt ein Szenen-Effekt (Konfetti, Feuer, Nebel ...), rueckt der Text in die Szene, VOR
+   diesen Effekt: er liegt darunter und faehrt mit der Kamera. Die Karte sagt es (textStufeHinweis).
+   Effekte am Objektiv (Korn, Scanlines, Bloom) liegen ohnehin in Kettenfolge ueber oder unter ihm. */
+function stufeVon(e){
+  if(e&&(e.typ==='titel'||e.typ==='karaoke')){ const i=STAPEL?STAPEL.indexOf(e):-1;
+    if(i>=0) for(let j=i+1;j<STAPEL.length;j++){ const x=STAPEL[j]; if(x&&x.an&&STUFE_DIORAMA.has(x.typ)) return 'diorama'; }
+    return 'objektiv'; }
+  return STUFE_DIORAMA.has(e.typ)?'diorama':STUFE_KAMERA.has(e.typ)?'kamera':'objektiv'; }
+/* Der Satz auf der Textkarte, wenn die Kette sie in die Szene gezogen hat. */
+function textStufeHinweis(e){ try{ if(stufeVon(e)!=='diorama') return null; const i=STAPEL.indexOf(e);
+    const danach=STAPEL.slice(i+1).filter(x=>x&&x.an&&STUFE_DIORAMA.has(x.typ)).map(x=>EFFEKTE[x.typ]?EFFEKTE[x.typ].label:x.typ);
+    return 'Liegt in der Szene <b>unter</b> '+danach.join(', ')+' und fährt mit der Kamera — ans Ende der Kette gezogen, sitzt der Text wieder am Objektiv über allem.'; }catch(x){ return null; } }
 /* WELCHE ART DIESER EFFEKT IST, STEHT AM NAMEN (Caspar_D, 21.09.2026: „ich haette gern, dass
    neben Partikel im Effektkarussell immer steht, welcher Typ - wenn ich 3 Partikeleffekte in
    einer Effektkette habe, moechte ich schon die richtige greifen").
@@ -33109,7 +33148,7 @@ let TI_ZIEHT=false, UHR_WAR=null, UHR_PULT=false;
    einen TypeError in die Konsole (der Rahmenlauf malte trotzdem, darum fiel es seit dem 21.09. nicht auf). */
 function bildNeu(){ try{ if(bereit&&!exportLaeuft) zeichneFrame(zeit(),false); }catch(x){} }
 function tiKarteEffekt(){ if(!offen||exportLaeuft||offenId==null||!STAPEL||stufeOffen!=='Kette') return null;
-  for(const e of STAPEL) if(e.id===offenId&&(e.typ==='titel'||e.typ==='karaoke')) return e;
+  for(const e of STAPEL) if(e.id===offenId&&(e.typ==='titel'||e.typ==='karaoke')) return stufeVon(e)==='objektiv'?e:null;   /* in der Szene zeigte die Marke auf den gezoomten Ort - dort nur die Regler */
   return null; }
 function tiMarkeOrt(e){ if(!lein) return null;
   if(e.typ==='titel'){ const b=e._tiBox; if(!b) return null; return [(b.x+b.w/2)*lein.width,(b.y+b.h/2)*lein.height]; }
