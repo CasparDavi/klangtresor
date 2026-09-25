@@ -6929,3 +6929,14 @@ nachschlagen), Theatre.js Studio (AGPL). Haus: der Titel-Zweig liest heute kein 
 uhrEcht liefern die Songzeit; nur Vollexport (Caspar_D) → kein Loop-Urteil nötig; die
 Beschriftung „steht die ganze Zeit … loopfest" braucht den Zusatz; Kachel und Bühne zeigen den
 stehenden Zustand. Unschärfe (ctx.filter) kostet je Bild, im Export zu messen.
+Caspar_D zum Texturbefund (25.09., 14:05): „der Schrifttextur-Kram ist eher ernüchternd, wenn,
+dann einige vorgefertigte Struktureffekte, denen man noch eine oder x Farben draufpackt.
+Kombinatorisch entsteht dann Vielfalt, ohne dass der Nutzer unästhetische Parametersets bauen
+kann." Gezeigt: Skizze Struktur × Farbe (Glatt, Metall, Stein, Papier, Schraffur × Gold-,
+Silber-, Titelbild-Ton). Lesart: die Struktur trägt das Licht (Rampe, Korn, Kontrast,
+Lichtrichtung fest im Haus), die Farbe den Ton; Gold = Metall + warmer Ton. Dazu seine Idee:
+liegt ein Partikel-Effekt in der Kette, könnte sich der Titel aus den Partikeln zusammenballen
+und wieder auflösen. Einschätzung: Titel malt eigene Teilchen mit derselben Malroutine, Ziele aus
+der abgetasteten Schriftmaske, Füllung blendet mit der Ankunftsdichte ein, Abgang in Windrichtung;
+nur bei Asche/Staub/Funken/Glitzer/Schnee/Pusteblume/Glühwürmchen; Dauer in Takten; nur
+Ganztitel-Export. Beides Brainstorm, kein Auftrag.
