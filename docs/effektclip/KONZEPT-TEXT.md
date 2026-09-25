@@ -35,6 +35,7 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
 | Zierzeichen und Emoji gehören nicht auf die Karaokebühne (Band und bereinigte Lyrik); der Titel behält Emoji | „bin noch nicht überzeugt, ob Zierzeichen in die Karaokebühne gehören" — „ja, will ich so" | 25.09. |
 | Regieanweisungen fliegen an der Quelle, in der Bereinigung, nicht im Maler | „das sollte in der bereinigten Lyrics nicht passieren, ist ja bereinigt um sowas" | 25.09. |
 | Titel-Material als **Struktur × Farbe**: wenige feste Strukturen, eine Farbe darüber, keine freien Parameter | „der Schrifttextur-Kram ist eher ernüchternd, wenn, dann einige vorgefertigte Struktureffekte, denen man noch eine oder x Farben draufpackt. Kombinatorisch entsteht dann Vielfalt, ohne dass der Nutzer unästhetische Parametersets bauen kann" — „ich denke, das passt so, mach" | 25.09. |
+| **Auftritt und Abgang** des Titels nur im ganzen Titel; im Zehnsekünder steht er | „das würde aber wie bei Karaoke nur für den Ganztitel-Export taugen, beim 10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren" | 25.09. |
 
 ## 3. Die Regeln, die daraus folgen
 
@@ -77,6 +78,16 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
     360 und 1080 gleich. Das Licht rechnet in RGB (Abdunkeln = Multiplizieren, Aufhellen = Mischen
     nach Weiß), damit Blass blass bleibt; auf heller Farbe sind Adern und Striche dunkler, auf
     dunkler heller. Kein Regler außer der Wahl; die Dosis liegt im Haus.
+12. **Auftritt und Abgang.** Der Titel kann kommen und gehen — nur im ganzen Titel (LOOP 0), in
+    Kachel und Bühne nur mit echter Uhr; sonst steht er wie immer, loopfest von selbst. Die Zeiten
+    kommen aus der Musik: herein über einen Schlag ab Songanfang, stehen, fort über drei Viertel
+    Schlag, so dass der Abgang einen Schlag vor der ersten Zeile der bereinigten Lyrik endet,
+    frühestens zwei Takte nach dem Auftritt; setzt der Gesang früher ein, bleibt er vier Takte über
+    dem Gesang; ohne Lyrik geht er nach vier Takten. Eine Bewegung je Auftritt (erscheinen,
+    aufsteigen, scharfstellen, Laufweite, Vorhang), Einsatz weich aus, Abgang weich ein und kürzer,
+    nichts überschwingt — Regler nur für die Wahl. Im Pult mit freier Uhr wiederholt sich Kommen,
+    Stehen, Gehen mit einem Schlag Abwesenheit, damit der Gestalter es sieht. Der volle Export
+    wartet für ihn mit auf die Lyrik, bricht ohne sie aber nicht ab.
 
 ## 4. Gemeinsames Handwerk im Code
 
@@ -84,7 +95,8 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
 Füllung; die Füllung wahlweise aus `textStrukturKachel` mit `stHash`/`stWert`/`stFbm` und
 `farbeRGB`), `schriftenBereit`, `hochformatNotiz`, `titelHinweis`, `textStufeHinweis`; der Lader
 `lyrikVon`/`lyrikStand`/`lyrikHinweis`/`lyrikGemeldet`/`lyrikBereit` nach dem Muster der Tiefenkarte;
-die Marke `tiKarteEffekt`/`tiMarkeSetzen`/`tiMarkenMalen`; die Auskunft `clipMalt` und das Ereignis
+der Auftritt `titelAuftritt`/`taktSchlaege`/`titelAuftrittZeiten`/`titelAuftrittLage`/`auftrittNotiz`/
+`auftrittHinweis`; die Marke `tiKarteEffekt`/`tiMarkeSetzen`/`tiMarkenMalen`; die Auskunft `clipMalt` und das Ereignis
 `effektclip` für die Bühne. Registry-Einträge dürfen `hinweis(e)` tragen (grau mit Grund auf der
 Karte). Der Prüfstand bekommt die Lyrik der Prüftitel als `_lyrik.json` (`node
 bin/effektclip-labor.js lyrik`) und die Schriften per Verweis.
@@ -92,7 +104,8 @@ bin/effektclip-labor.js lyrik`) und die Schriften per Verweis.
 ## 5. Bewusst nicht gebaut
 
 Wort-Wischen (bräuchte Wortzeiten in der bereinigten Lyrik), Überblenden beim Zeilenwechsel,
-Auftritt und Abgang, weitere Schriften, ein Balken hinter dem Titel. Siehe Backlog „Titel über dem
+weitere Schriften, ein Balken hinter dem Titel; Auftritt und Abgang sind seit dem 25.09. gebaut
+(Regel 12), das Zusammenballen aus Partikeln steht noch aus. Siehe Backlog „Titel über dem
 Bild".
 
 ## 6. Wiedervorlage

@@ -27599,8 +27599,8 @@ const EFFEKTE = {
        Doppelklick stellt die Vorgabe wieder her (tiMarke..., dieselbe Sprache wie beim Zielpunkt).
      - Die Schrift ist die Paketschrift (Inter, Gelasio - web/fonts), damit Mac, Windows und Buehne
        dasselbe malen; dahinter der alte Stapel als Rueckfall. */
-  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Die <b>Struktur</b> legt ein festes Licht über die Farbe — Metall, Stein, Papier oder Schraffur; Rampe, Korn und Lichtrichtung liegen im Haus, die Farbe bleibt deine. Ein Klick auf die Bühne setzt den Ort.',
-    hinweis:e=>[textStufeHinweis(e),titelHinweis(e)].filter(Boolean).join('<br>')||null,
+  titel:{ label:'Titel', art:'mal', verr:'ueber', verrFrei:true, staerkeDef:1, besch:'<b>Ein Text über dem Bild</b> — der Songtitel, ein Name, eine Zeile. Steht die ganze Zeit und ist darum von selbst loopfest — oder er bekommt einen <b>Auftritt</b>: nur im ganzen Titel kommt er über einen Schlag, steht und geht einen Schlag vor der ersten Gesangszeile wieder; im Zehnsekünder steht er. Am Ende der Kette sitzt er am Objektiv: zoomt nicht mit, liegt über allem, auch über einem Bewegtbild; steht ein Szenen-Effekt nach ihm, liegt er darunter. Ein zu langer Titel bricht um oder weicht in der Größe, damit er ins Bild passt. Kontur und Schatten machen ihn über bewegtem Bild lesbar; die Verrechnung ist frei. Die <b>Struktur</b> legt ein festes Licht über die Farbe — Metall, Stein, Papier oder Schraffur; Rampe, Korn und Lichtrichtung liegen im Haus, die Farbe bleibt deine. Ein Klick auf die Bühne setzt den Ort.',
+    hinweis:e=>[textStufeHinweis(e),titelHinweis(e),auftrittHinweis(e)].filter(Boolean).join('<br>')||null,
     params:[{k:'text',lbl:'Text',text:true,mehrzeilig:true,def:'',notiz:e=>(e.text&&String(e.text).trim())?null:'Leer heißt: der Titel des Songs.'},
       {k:'schrift',lbl:'Schrift',sel:[['grotesk','Grotesk (wie Helvetica)'],['serife','Serife (wie Georgia)']],def:'grotesk'},
       {k:'gewicht',lbl:'Gewicht',sel:[['fett','fett'],['normal','normal']],def:'fett'},
@@ -27613,7 +27613,8 @@ const EFFEKTE = {
       {k:'schatten',lbl:'Schatten',min:0,max:1,step:.05,def:.5},
       {k:'ortX',lbl:'Ort X',min:0,max:1,step:.01,def:.5,notiz:()=>'Lage des Textkastens: 0 links, 1 rechts. Ein Klick auf die Bühne setzt beides.'},
       {k:'ortY',lbl:'Ort Y',min:0,max:1,step:.01,def:.85,notiz:e=>[ 'Lage des Textkastens: 0 oben, 1 unten.', hochformatNotiz(e.ortY==null?0.85:e.ortY) ].filter(Boolean).join(' ')},
-      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte',notiz:()=>'Wie mehrere Zeilen zueinander stehen; den Ort setzen Ort X und Ort Y.'}]},
+      {k:'ausrichtung',lbl:'Ausrichtung',sel:[['mitte','Mitte'],['links','links'],['rechts','rechts']],def:'mitte',notiz:()=>'Wie mehrere Zeilen zueinander stehen; den Ort setzen Ort X und Ort Y.'},
+      {k:'auftritt',lbl:'Auftritt',sel:[['keiner','keiner'],['erscheinen','erscheinen'],['aufsteigen','aufsteigen'],['scharf','scharfstellen'],['laufweite','Laufweite'],['vorhang','Vorhang']],def:'keiner',notiz:e=>auftrittNotiz(e)}]},
   /* KARAOKE (24.09.2026; Caspar_D: "a second karaoke overlay configurator, take the presets from the
      stage" - "die bereinigte Lyrics waere die beste Variante" - "Karaoke macht nur Sinn bei vollem
      Export, also 10 Sek mit Karaoke geht nicht, es wird der Effekt einfach weggelassen").
@@ -31073,10 +31074,24 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     const oX=Math.max(0,Math.min(1,e.ortX==null?0.5:e.ortX)), oY=Math.max(0,Math.min(1,e.ortY==null?0.85:e.ortY));
     const left=m+oX*Math.max(0,Wn-boxW-2*m), top=m+oY*Math.max(0,Hn-boxH-2*m);
     e._tiBox={ x:left/Wn, y:top/Hn, w:boxW/Wn, h:boxH/Hn, mx:m/Wn, my:m/Hn };
+    /* AUFTRITT UND ABGANG (25.09.2026): titelAuftrittLage sagt, wo im Kommen oder Gehen der Titel steht - null heisst
+       er steht, weg heisst er ist fort. Eine Bewegung je Auftritt: Deckkraft (erscheinen), Deckkraft und ein halbes
+       em von unten (aufsteigen), Deckkraft und Unschaerfe bis ein Viertel em (scharfstellen), Deckkraft und
+       Laufweite bis ein Viertel em (Laufweite; ohne cx.letterSpacing nur die Deckkraft), ein Vorhang aus der Mitte
+       (vorhang, ohne Deckkraft). Einsatz weich aus (1-(1-k)^3), Abgang weich ein (k^3). Der Kasten der Marke
+       bleibt der stehende. */
+    const ph=titelAuftrittLage(e,t); if(ph&&ph.weg){ cx.restore(); return; }
+    let al=a, dy=0, sp=0;
+    if(ph){ const p=ph.ein?(1-Math.pow(1-ph.k,3)):(1-ph.k*ph.k*ph.k), art=ph.art; al=a*p;
+      if(art==='aufsteigen') dy=ph.ein?(1-p)*gr*0.5:-(1-p)*gr*0.35;
+      else if(art==='scharf') cx.filter='blur('+((1-p)*gr*0.25).toFixed(2)+'px)';
+      else if(art==='laufweite'&&('letterSpacing' in cx)){ sp=(1-p)*gr*0.25; cx.letterSpacing=sp.toFixed(2)+'px'; }
+      else if(art==='vorhang'){ al=a; cx.beginPath(); cx.rect(left-m+(boxW+2*m)*(1-p)/2,top-m,Math.max(0,(boxW+2*m)*p),boxH+2*m); cx.clip(); } }
     cx.textBaseline='middle';
-    for(let i=0;i<rows.length;i++){ const y=top+(i+0.5)*gr*zh, w=br[i];
+    for(let i=0;i<rows.length;i++){ const y=top+(i+0.5)*gr*zh+dy, w=sp>0?cx.measureText(rows[i]).width:br[i];
       const x=e.ausrichtung==='links'?left:e.ausrichtung==='rechts'?left+boxW-w:left+(boxW-w)/2;
-      textDreipass(cx,rows[i],x,y,gr,farbe,sch,kon,a,e.struktur||'glatt'); }
+      textDreipass(cx,rows[i],x,y,gr,farbe,sch,kon,al,e.struktur||'glatt'); }
+    cx.filter='none';
     cx.restore(); }
   else if(e.typ==='karaoke'){ const a=Math.min(1,e.staerke); if(a<=0.001) return;
     /* NUR IM DURCHLAUF (Caspar_D, 24.09.2026: "10 Sek mit Karaoke geht nicht, es wird der Effekt einfach
@@ -37924,6 +37939,40 @@ function zeichneFrame(t,roh){
      dem Lauf. Gemerkt je (Struktur, Farbe, Groesse), hoechstens 24 Kacheln, dann von vorn.
      Was billig aussieht und darum hier nicht einstellbar ist: Regenbogen, harte Bevels, breiter Glanz,
      zu viel Kontrast. Die Dosis liegt im Haus, nicht beim Nutzer. */
+  /* AUFTRITT UND ABGANG (25.09.2026; Caspar_D: "die Dinger also einfahren/erscheinen und wieder die Buehne
+     verlassen" - "das wuerde aber wie bei Karaoke nur fuer den Ganztitel-Export taugen, beim 10-Sekunden-
+     Snippet wuerde das ja alle 10 Sekunden wieder passieren"). Nur im ganzen Titel (LOOP 0); Kachel und Buehne
+     nur mit echter Uhr - sonst steht der Titel wie immer, loopfest von selbst. Die Zeiten kommen aus der
+     Musik, nicht von Reglern: herein ueber einen Schlag ab Songanfang, stehen, fort ueber drei Viertel Schlag,
+     so dass der Abgang einen Schlag vor der ersten Zeile der bereinigten Lyrik endet - fruehestens aber zwei
+     Takte nach dem Auftritt; setzt der Gesang frueher ein, bleibt der Titel vier Takte ueber dem Gesang. Ohne
+     Lyrik (keine, zurueckgestellt, Instrumental, noch unterwegs) geht er nach vier Takten. Der Kanon dahinter
+     (Recherche 25.09.): eine Bewegung je Auftritt, Einsatz weich aus, Abgang weich ein und kuerzer, nichts
+     ueberschwingt, der Titel geht, bevor gesungen wird. Im Pult ohne laufenden Player ist t die freie Uhr -
+     dort wiederholen sich Kommen, Stehen, Gehen mit einem Schlag Abwesenheit dazwischen, damit der Gestalter
+     den Auftritt sieht statt eines leeren Bildes; im Export ist DATA.lyrik gesetzt (auch als null), dort gilt
+     die Songzeit. Der Takt: Schlaege zwischen zwei Einsen der Schlagliste (Median), sonst vier. */
+  function titelAuftritt(e){ const a=e&&e.auftritt; return (a&&a!=='keiner')?a:null; }
+  function taktSchlaege(){ try{ const S=DATA&&DATA.schlaege; if(!S||S.length<8) return 4; const d=[]; let letzte=-1;
+      for(let i=0;i<S.length;i++){ if(S[i][1]===1){ if(letzte>=0) d.push(i-letzte); letzte=i; } }
+      if(d.length<3) return 4; d.sort((a,b)=>a-b); const m=d[d.length>>1]; return (m>=2&&m<=16)?m:4; }catch(x){ return 4; } }
+  function titelAuftrittZeiten(){ const hz=schlagHz(), beat=hz>0?1/hz:0.6, takt=beat*taktSchlaege();
+    const Z=(DATA&&DATA.lyrik!==undefined)?DATA.lyrik:lyrikVon(DATA&&DATA.id);
+    const erste=(Z&&Z.length&&Z[0]&&Z[0].von>0)?Z[0].von:null;
+    let ab1=(erste!=null)?erste-beat:beat+4*takt; const mind=beat+2*takt;
+    if(ab1<mind) ab1=(erste!=null)?beat+4*takt:mind;
+    return { ein1:beat, ab0:ab1-0.75*beat, ab1, beat, erste }; }
+  function titelAuftrittLage(e,t){ const art=titelAuftritt(e); if(!art) return null;
+    if(LOOP>0) return null; if(MALT_KACHEL&&!uhrEcht) return null;
+    const z=titelAuftrittZeiten(); let tt=t; if(!uhrEcht&&!(DATA&&DATA.lyrik!==undefined)) tt=t%(z.ab1+z.beat);
+    if(tt<z.ein1) return { art, ein:true, k:Math.max(0,tt/z.ein1) };
+    if(tt<z.ab0) return null;
+    if(tt<z.ab1) return { art, ein:false, k:(tt-z.ab0)/(z.ab1-z.ab0) };
+    return { art, weg:true }; }
+  function auftrittNotiz(e){ try{ if(!titelAuftritt(e)) return null;
+      const z=titelAuftrittZeiten(), hier=(DATA&&DATA.instrumental)?'Dieser Titel ist instrumental: der Titel geht nach vier Takten.':(z.erste!=null?'Hier endet der Abgang bei '+z.ab1.toFixed(1).replace('.',',')+' s, vor der ersten Zeile.':'Ohne bereinigte Lyrik geht er nach vier Takten.');
+      return 'Nur im ganzen Titel: ein Schlag herein, stehen, einen Schlag vor der ersten Gesangszeile fort (frühestens nach zwei Takten). Einsatz weich aus, Abgang weich ein — kein Regler dafür. '+hier; }catch(x){ return null; } }
+  function auftrittHinweis(e){ try{ if(!titelAuftritt(e)) return null; if(LOOP>0) return 'Im Zehnsekünder steht der Titel — Auftritt und Abgang laufen nur im ganzen Titel.'; return null; }catch(x){ return null; } }
   const STRUKTUR_KACHELN=new Map();
   function farbeRGB(s){ const c=document.createElement('canvas'); c.width=c.height=1; const g=c.getContext('2d'); g.fillStyle='#000'; g.fillStyle=s; g.fillRect(0,0,1,1); const d=g.getImageData(0,0,1,1).data; return [d[0],d[1],d[2]]; }
   /* Wert-Rauschen auf einem Gitter, in x periodisch mit px Zellen (ganze Zahl); der Hash rechnet nur mit Ganzzahlen. */
@@ -38001,7 +38050,7 @@ function zeichneFrame(t,roh){
      keiner - nach 30 s wird es noch einmal versucht, bis dahin steht „liess sich nicht laden".
      Der volle Export wartet mit lyrikBereit() auf die Antwort, sonst fehlte die Zeile in den ersten
      Bildern - wie das Hauszeichen (zeichenBereit) und das 4D-Rauschen (GL.vierLaden). */
-  const LYRIK={}, LYRIKLAUF={}, LYRIKGRUND={}, LYRIKFEHLER={}, LYRIKGEZEIGT={}, LYRIKINFO={};
+  const LYRIK={}, LYRIKLAUF={}, LYRIKGRUND={}, LYRIKFEHLER={}, LYRIKGEZEIGT={}, LYRIKINFO={}, LYRIK_TITEL_GEZEIGT={};
   /* Der Rueckstellgrund in Nutzerwoertern (Nacht 25.09.2026): "nur 45 % gedeckt" ist ein Wort aus bin/lyrik.js. */
   function lyrikGrundSatz(g){ const s=String(g||''); const m=s.match(/nur\s+(\d+)\s*%\s*gedeckt/i);
     if(m) return 'Whisper hat nur '+m[1]+' % der Wörter wiedergefunden — zu wenig für sichere Zeiten';
@@ -38062,23 +38111,28 @@ function zeichneFrame(t,roh){
   /* Die Antwort ist da: die Karte hat bis eben „wird geladen" gesagt und zeichnet sich neu - nur fuer
      den Titel, der gerade im Pult steht; eine Kachel auf der Albumseite laedt die Lyrik eines anderen. */
   function lyrikGemeldet(id){
-    try{ if(!(DATA&&DATA.id===id&&stapelBox&&stapelBox.isConnected&&STAPEL&&STAPEL.some(e=>e.typ==='karaoke'))) return;
+    try{ if(!(DATA&&DATA.id===id&&stapelBox&&stapelBox.isConnected&&STAPEL)) return;
+      const karaoke=STAPEL.some(e=>e.typ==='karaoke'), titel=STAPEL.some(e=>e.typ==='titel'&&titelAuftritt(e));
+      if(!karaoke&&!titel) return;
       /* Nur neu bauen, wenn die Karte danach etwas anderes sagt - sonst baute ein Server, der weg ist, alle 30 s
          alle Karten neu (Gegenlesen 24.09.2026). lyrikHinweis merkt sich, was zuletzt gezeigt wurde. */
-      const vorher=LYRIKGEZEIGT[id]; if(lyrikHinweis()===vorher) return;
-      renderStapel(); }catch(x){}
+      if(karaoke){ const vorher=LYRIKGEZEIGT[id]; if(lyrikHinweis()!==vorher){ renderStapel(); return; } }
+      /* Der Titel mit Auftritt nennt in seiner Notiz die Abgangszeit - einmal neu bauen, wenn die Lyrik da ist (25.09.2026). */
+      if(titel&&lyrikStand(id)==='da'&&!LYRIK_TITEL_GEZEIGT[id]){ LYRIK_TITEL_GEZEIGT[id]=true; renderStapel(); } }catch(x){}
   }
   /* Vor dem ersten Bild des vollen Exports: haengt eine Karaoke-Karte in der Kette, wird auf die Lyrik
      gewartet (hoechstens 15 s) - sonst fehlte die Zeile in den ersten Bildern. */
   async function lyrikBereit(){
-    const id=DATA&&DATA.id; if(!id) return 'keine';
-    if(!STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke')) return 'ohne';
-    if(DATA&&DATA.instrumental) return 'keine';   /* kein Gesang, keine Zeile - der Export bricht mit diesem Satz ab */
+    /* Der Titel mit Auftritt (25.09.2026) will die erste Zeile auch kennen - wartet mit, bricht aber ohne sie nicht ab: er geht dann nach vier Takten. */
+    const karaoke=STAPEL.some(e=>aktiv(e)&&e.typ==='karaoke'), titel=STAPEL.some(e=>aktiv(e)&&e.typ==='titel'&&titelAuftritt(e));
+    if(!karaoke&&!titel) return 'ohne';
+    const id=DATA&&DATA.id; if(!id) return karaoke?'keine':'ohne';
+    if(DATA&&DATA.instrumental) return karaoke?'keine':'ohne';   /* kein Gesang, keine Zeile - Karaoke bricht mit diesem Satz ab */
     delete LYRIKFEHLER[id];   /* ein Export ist eine ausdrueckliche Bestellung - die 30-s-Sperre nach einem Fehlschlag gilt hier nicht (Gegenlesen 24.09.2026) */
     lyrikVon(id);
     const bis=performance.now()+15000;
     while(LYRIKLAUF[id]&&performance.now()<bis) await new Promise(r=>setTimeout(r,50));
-    return lyrikStand(id);   /* 'da' | 'unterwegs' (Schranke gerissen) | 'keine' (Grund in LYRIKGRUND) */
+    return karaoke?lyrikStand(id):'ohne';   /* 'da' | 'unterwegs' (Schranke gerissen) | 'keine' (Grund in LYRIKGRUND); der Titel allein: immer 'ohne' */
   }
   /* „da" | „unterwegs" | „keine" - eine Frage, drei ehrliche Antworten. */
   function tiefeStand(){

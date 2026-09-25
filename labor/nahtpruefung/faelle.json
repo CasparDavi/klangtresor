@@ -4116,6 +4116,22 @@
    "bemerkung": "Struktur Schraffur, kuehle eigene Farbe, zweiter Titel: 26 Perioden je Kachel, Naht am Kachelrand unsichtbar."
   },
   {
+   "name": "titel-auftritt-aufsteigen",
+   "typ": "titel",
+   "titel": "a",
+   "effekte": [
+    {
+     "typ": "titel",
+     "auftritt": "aufsteigen",
+     "groesse": 0.1,
+     "ortY": 0.5
+    }
+   ],
+   "gruppe": "titel",
+   "jetzt": 26.13,
+   "bemerkung": "Auftritt aufsteigen auf Titel a (erste Zeile der bereinigten Lyrik bei 30,18 s, Schlag 0,40 s: der Abgang laeuft 29,48 bis 29,78 s). jetzt 26,13 s: die Vorschau liegt in der Clipmitte bei rund 29,9 s, mitten im Abgang oder kurz danach - der Loop-Export (LOOP>0) laesst den Titel stehen. Die Vorschau-Abweichung ist gewollt wie beim Karaoke; Naht 0 bleibt Pflicht. Das Fenster ist eng (0,6 s): rutscht t0 auf eine andere Eins, den Fall nachziehen."
+  },
+  {
    "name": "karaoke",
    "typ": "karaoke",
    "titel": "a",

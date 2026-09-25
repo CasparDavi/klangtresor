@@ -3154,9 +3154,13 @@ gleich gesagt, was danach kommt:
   die Whisper-Wortmarken gegen die bereinigten Zeilen gelegt werden), **Überblenden** beim
   Zeilenwechsel (die Bühne schneidet hart), und ob der Export einen **Vorlauf** braucht, den die
   Bühne nicht hat (Wiedervorlage 19).
-- **Auftritt und Abgang** in Schlägen (Einblenden, Hochfahren, Ausblenden), damit ein Titel nicht
-  nur stehen, sondern auch kommen und gehen kann. Dann ist er nicht mehr von selbst loopfest und
-  braucht eine Klammer wie die anderen Läufe.
+- **Auftritt und Abgang** — gebaut am 25.09.2026 (Regler „Auftritt": erscheinen, aufsteigen,
+  scharfstellen, Laufweite, Vorhang; Zeiten aus Schlag und erster Gesangszeile), nur im ganzen
+  Titel; im Zehnsekünder steht er wie zuvor, darum keine Klammer nötig (Caspar_D: „beim
+  10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren"). Offen: das
+  **Zusammenballen aus Partikeln** (der Titel formt sich aus den Teilchen des Partikel-Effekts und
+  löst sich in Windrichtung auf), nur mit Asche, Staub, Funken, Glitzer, Schnee, Pusteblume,
+  Glühwürmchen.
 - **Mehr Schriften** als Grotesk und Serife — erst, wenn die zwei nicht reichen. Eigene Schriften
   müssten ins Paket, damit der Export bei Casto dasselbe malt.
 - **Balken oder Fläche hinter dem Text**, falls Kontur und Schatten über hellem Bewegtbild nicht

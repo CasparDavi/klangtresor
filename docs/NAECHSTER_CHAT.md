@@ -6964,3 +6964,26 @@ Scratchpad `struktur/server-18812.pid`), Tab im eigenen Browser; Bilder in Expor
 **Offen:** voller Lauf aller 252 Fälle (rund 13 min, braucht seinen Startschuss); sein Urteil zu
 den vier Bildern. **Danach:** Schritt 2 stiller Auftritt (nur Ganztitel-Export, Skizze zuerst),
 Schritt 3 Zusammenballen aus Partikeln.
+
+## 28. Nachmittag 25.09.2026: Auftritt und Abgang des Titels (Schritt 2)
+
+**Gebaut:** Regler „Auftritt" (keiner, erscheinen, aufsteigen, scharfstellen, Laufweite, Vorhang)
+mit Notiz (nennt die Abgangszeit dieses Titels, wenn die Lyrik da ist); Beschriftung ergänzt;
+Hinweis unter LOOP>0 („Im Zehnsekünder steht der Titel"). Handwerk vor der Strukturkachel:
+`titelAuftritt`, `taktSchlaege` (Schläge zwischen Einsen, Median, sonst 4), `titelAuftrittZeiten`
+(ein1 = ein Schlag; ab1 = erste Zeile − Schlag, frühestens Schlag + 2 Takte, sonst Schlag + 4 Takte;
+ab0 = ab1 − ¾ Schlag), `titelAuftrittLage` (null = steht, weg = fort; unter LOOP>0 und in der
+Kachel ohne echte Uhr immer null; freie Uhr im Pult: t modulo ab1 + Schlag). Im Maler: Deckkraft,
+dy (½ em herein, ⅓ em hinaus), `cx.filter` blur bis ¼ em, `cx.letterSpacing` bis ¼ em (mit
+Neumessung der Zeilenbreite), Vorhang als Clip aus der Mitte. `lyrikBereit` wartet auch für den
+Titel mit Auftritt, gibt für ihn aber immer 'ohne' zurück (kein Abbruch ohne Lyrik).
+**Prüfstand:** Fall `titel-auftritt-aufsteigen` (Titel a, jetzt 26,13: Vorschau in der Clipmitte
+bei 29,7 s liegt im Abgang, Loop-Export steht) → Naht 0,00, Vorschau 1,02 gewollt; 253 Fälle.
+Gelernt: die Vorschau des Prüfstands liegt bei t0 + Clipmitte, nicht bei jetzt; t0 rastet auf
+eine Eins (26,13 → 25,94).
+**Labor (18812, eigener Tab):** mit `window.aktuellId` und `window.audio={paused:false,
+currentTime:t}` wie der Haken, Malen per Reglerereignis erzwungen: 0,12 s blass und tiefer
+(aufsteigen), 0,25 s fast da, 39,7 s steht, 40,2 s fort (erste Zeile 40,4 s); scharfstellen,
+Laufweite und Vorhang sichtbar. Der Tab bleibt versteckt (rAF steht), darum diese Methode.
+**Offen:** Caspar_D's Auge auf den Auftritt (kein Bild geschickt, nur Beschreibung — ein
+Probevideo bräuchte den vollen Export), voller Lauf aller Fälle; danach Schritt 3.
