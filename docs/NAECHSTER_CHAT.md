@@ -6772,3 +6772,10 @@ entscheiden zu lassen: gehört → bleibt, nicht gehört → fliegt. Brainstorm 
 25.09. morgens; Befund dazu: `bin/whisper.js` gibt Whisper den Liedtext (nur ohne eckige
 Klammern, erste 800 Zeichen) als Prompt mit — runde Klammern stehen also im Prompt, und Whisper
 neigt dazu, Promptwörter zu „hören".
+
+**Zierzeichen (Caspar_D, 25.09.2026: „bin noch nicht überzeugt, ob Zierzeichen in die Karaokebühne
+gehören" — „ja, will ich so"):** Sunos Wortspur reicht Emoji und Ziersymbole als Wörter durch (31
+Titel, 55 Wörter; 44 von 263 Liedtexten tragen welche). Das Band der Bühne streicht sie jetzt beim
+Anzeigen (`ZIER_RE` in `karaokeTakt`; das Gradzeichen bleibt vor C und F), die Lyrics-Ansicht behält
+den Rohtext samt Verzierung. In der bereinigten Lyrik fallen sie in Fassung 3 an der Quelle, mit den
+Klammern. Der Titel-Effekt behält Emoji — ein Titel ist die Visitenkarte, keine gesungene Zeile.

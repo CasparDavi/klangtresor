@@ -16921,6 +16921,8 @@ function karaokeAufbauen(){
    ohne Standzeit (Whisper gibt vielen Wörtern Dauer 0) bekommen 1,9 s, wie im Studio.
    Gerufen in JEDEM Takt, nicht nur beim Zeilenwechsel - der Zustand wechselt auch mitten in
    einer Zeile; geschrieben wird nur, was sich ändert, damit der Übergang nicht flackert. */
+/* Emoji (samt Varianten-Selektor und Verbinder), Ziersymbole, Pfeile, Rahmen- und Blockzeichen - was niemand singt. */
+const ZIER_RE = /[\p{Extended_Pictographic}\uFE0F\u200D\u2500-\u257F\u2600-\u27BF\u2B00-\u2BFF\u3000\u3002\u30FB\u309A-\u309C\uFF9E\uFF9F\u2190-\u21FF\u25A0-\u25FF]/gu;   /* das Gradzeichen bleibt: 5 \u00B0C ist Text, kein Schmuck */
 function karaokeTakt(n, t){
   const k = $('bkaraoke');
   if (!k || bText !== 'karaoke') return;
@@ -16931,7 +16933,11 @@ function karaokeTakt(n, t){
   for (let i = 0; i < bSingbar.length; i++){ if (bSingbar[i] <= n) p = i; else break; }
 
   const zeile = (i) => { const idx = bSingbar[i]; return (idx === undefined || idx < 0) ? null : bZeilen[idx]; };
-  const text = (i) => { const z = zeile(i); return z ? z.worte.map(w => w.text).join('') : ''; };
+  /* ZIERZEICHEN GEHOEREN NICHT AUF DIE KARAOKEBUEHNE (Caspar_D, 25.09.2026: „bin noch nicht ueberzeugt, ob
+     Zierzeichen in die Karaokebuehne gehoeren" - „ja, will ich so"): Sunos Wortspur reicht Emoji und Ziersymbole
+     als Woerter durch (31 Titel, 55 Woerter am 25.09.2026). Das Band zeigt, was gesungen wird; die Lyrics-
+     Ansicht behaelt den Rohtext samt Verzierung. Dieselbe Regel gilt in der bereinigten Lyrik (lyrik.js, Fassung 3). */
+  const text = (i) => { const z = zeile(i); return z ? z.worte.map(w => w.text).join('').replace(ZIER_RE, '').replace(/\s+/g, ' ').trim() : ''; };
   const NACHHALL = 1.5, LUECKE = 3, DAUER_ERSATZ = 1.9;
   let davor = '', mitte = '', danach = '', kommt = false;
   if (p < 0){ mitte = text(0); danach = text(1); kommt = !!mitte; }
