@@ -7034,3 +7034,12 @@ fff934d4 Hoch auf dem Lebenswagen nur mp3/cover/kachel/titelbild/tiefe, keine Sy
 `node …/server/server.js --port 8790` (PID in struktur/sandkasten-8790.pid), eigener Tab, Ton
 stumm. Der volle Export schreibt nach `.ausgabe/<lauf>/` und wird von dort nach ~/Downloads
 kopiert. Danach Sandkasten löschen (rm -rf, nie aus dem Verzeichnis heraus).
+**Ergebnis (15:25):** zwei Beispielvideos in ~/Downloads — „Universe 25 english — Beispiel 1, Titel
+Metall, Auftritt aufsteigen.mp4" (Preset Lyric-Video, 4:14, 734×1080, 120 MB, mit Ton, gerechnet
+in 2 min) und „Hoch auf dem Lebenswagen — Beispiel 2, Titel Stein, aus den Partikeln (Asche).mp4"
+(Ken Burns, Partikel Asche, Titel, Karaoke; 5:04, 838×1080, 162 MB, mit Ton, gut 2 min). Der
+Sandkasten ist gelöscht, der 8790-Server beendet, das echte `library/` seit 15:12:47 unverändert
+(find -newermt: 0). Hinweis: die Systemplatte steht bei 97 % — die Videos liegen auf Wunsch in
+Downloads, nach dem Ansehen wegräumen. **Wiedervorlage:** Caspar_D's Urteil zu beiden Videos
+(Metall-Rampe, Aufsteigen, Stein, Ballen und Auflösen, die Zeiten vor der ersten Zeile); voller
+Prüflauf aller 254 Fälle (Startschuss).
