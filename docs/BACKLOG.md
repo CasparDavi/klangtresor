@@ -3178,6 +3178,16 @@ denen man noch eine oder x Farben draufpackt"). Die Recherche zu Texturquellen u
 (Lizenzbefund, Kanon) steht in Übergabe §26. Als Nächstes in dieser Reihenfolge: ein stiller Auftritt
 nur im Ganztitel-Export, dann das Zusammenballen aus Partikeln.
 
+## Die Effektclip-Tafel (26.09.2026)
+
+Aus dem Brainstorm mit Caspar_D: der Song wird abschnittsweise gestaltet, je Abschnitt ein
+Effektclip im heutigen Sinne, Grenzen aus einer Abschnittswahrheit (Suno-Analyse, Regiezeilen,
+Whisper), ein Editor mit Hüllkurve und Ton, die Quellen als Vorrat, vier Ausgaben als Fenster
+(Haus, Snippet, Hook, ganzer Titel), die Tiefe als eigener Karusselleintrag. Entscheidungen mit
+Wortlaut, Leitplanken, Bauschritte und Offenes:
+[effektclip/KONZEPT-TAFEL.md](effektclip/KONZEPT-TAFEL.md). Nach der Datei-Herauslösung des
+Studios; nichts gebaut.
+
 ## Das Studio als eigene Datei (25.09.2026)
 
 **Zustand: Entscheidung.** Die Planung ist abgeschlossen und liegt in
