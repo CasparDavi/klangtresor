@@ -7184,3 +7184,6 @@ Katalog), Schläge, Abschnitte, der Player; die Zonen-Grenzen der Tiefenkarte al
 — Entscheidungen mit Wortlaut, Wörter, sechs Leitplanken, Tafel, Karussell mit Registern,
 Abschnittswahrheit (Befund: Sunos Analyse `abschnitte` mit peak_times/segment_labels, Regiezeilen,
 Whisper, `wellenStufen`), Rezept, sechs Bauschritte, Offenes. Backlog verweist darauf.
+**Zurückgenommen auf Caspar_D's Wort:** das Konzeptblatt `docs/effektclip/KONZEPT-TAFEL.md` ist
+wieder entfernt (es gab die Datei vorher nicht), der Backlog-Verweis ebenso. Der Brainstorm bleibt
+in §34 dieser Übergabe stehen; das Konzeptblatt kommt erst, wenn er es neu verlangt.
