@@ -85,7 +85,11 @@ und einen Takt nach der Grenze, so hört man den Schnitt. An jeder Grenze steht 
 Wechsels (Schnitt, Blende, Stufen).
 
 **Teilen** kopiert den Effektclip in beide Hälften; beim **Löschen einer Grenze** fragt die Tafel,
-welches der beiden Rezepte die entstehende Spanne bekommt. **Kopieren/Einfügen** ist die bestehende Ablage des Studios
+welches der beiden Rezepte die entstehende Spanne bekommt — ohne Antwort passiert nichts, es gibt
+keine Vorgabe (Caspar_D). **Ein Abschnitt ohne Effektclip** (nur durch Entfernen möglich, weil Teilen
+erbt) zeigt das nackte Bild des Titels: das Suno-Bewegtbild in seiner Schleife, sonst das Titelbild,
+ohne Effekte; die Tafel zeigt ihn als leer, der Wechsel hinein und hinaus ist eine Blende wie jeder
+andere. **Kopieren/Einfügen** ist die bestehende Ablage des Studios
 (`mysuno-tbs-ablage`), die schon heute über Titel hinweg trägt. Ein Klick auf die Kachel eines
 Abschnitts öffnet das Studio für diesen Effektclip; das Studio bleibt, wie es ist, und weiß nur,
 zu welchem Abschnitt es gehört.
@@ -112,8 +116,8 @@ Auszug vor, wenn sie die Abschnitte kennt (etwa den ersten Refrain), der Nutzer 
 10 Sekunden, höchstens vier Minuten, Hochformat 9:16; der Nutzer wählt in der Suno-App per Scrubbing
 den Startpunkt im Song, lädt das Video vom Gerät hoch und kann die Lyrik einblenden lassen. Für den
 Export heißt das: Hochformat, Länge zwischen den Marken 10 s bis 4 min, und die Tafel zeigt die
-Startzeit des Auszugs, damit der Nutzer in Suno dieselbe Stelle trifft. Offen: ob Suno den Ton des
-Videos nimmt oder den Song darunterlegt (dann ohne Ton exportieren).
+Startzeit des Auszugs, damit der Nutzer in Suno dieselbe Stelle trifft. Ton: Suno ignoriert den Ton
+des Videos (Caspar_D) — „Ton dazu" bleibt wie beim ganzen Titel ein Schalter, Vorgabe aus.
 
 ## 7. Die Abschnittswahrheit
 
@@ -160,9 +164,11 @@ beim Löschen fragt die Tafel („sie fragt"); die Länge des Wechsels steht an 
 drauf an"); Sunos Regeln siehe Abschnitt 6 („schau in der Suno-Doku nach"); das Bildmaterial heißt
 so („Bildmaterial").
 
-* Das Wort für den Hook: „Auszug" (Alternativen Kostprobe, Anriss) — Wahl offen.
-* Nimmt Suno den Ton des hochgeladenen Videos oder legt es den Song darunter?
-* Zusammenlegen mit Nachfrage: was ist die Vorgabe, wenn man nur bestätigt — der vordere?
+* Das Wort für den Hook — Caspar_D: „der Hook ist ja das, was Suno bevorzugt zeigt im Live-Feed,
+  also wäre wohl Anriss das richtigste, aber so ganz zufrieden bin ich nicht damit"; ihm fallen nur
+  englische ein (Song Ad, Trigger, Feed-Clip). Vorschläge Claude aus der Medienwelt: **Anreißer**
+  (das Fachwort für den Anriss, der Lust aufs Ganze macht), **Aufmacher** (das Stück, das vorn
+  steht, damit man hinsieht), **Schaufenster** (die Form: was der Feed zeigt). Wahl offen.
 
 ## 11. Was nicht dazugehört
 
