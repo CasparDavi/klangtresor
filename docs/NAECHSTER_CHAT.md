@@ -7158,7 +7158,7 @@ Abschnitt einen Effektclip; ein Titel ohne Grenzen = ein Abschnitt = heute (Altr
 Übergänge blenden am Abschnittswechsel. Vorhanden: DATA.abschnitte im Katalog, Regiezeilen in
 bin/lyrik.js, Zonen-Grenzen-Bedienung der Tiefe als Muster. Braucht ein Konzeptblatt vor dem Bau.
 Namensvorschläge Caspar_D für die Reihe der Effektclips eines Titels: „Szenen-Tafel",
-„Effektclip-Tafel", „Effektclip-Dramaturgie — irgendwie in dieser Art". Empfehlung Claude:
-**Szenentafel** (die Form: eine Tafel mit Szenen in einer Reihe, wie das Storyboard des Films; eine
-Szene = ein Abschnitt mit seinem Effektclip; „Effektclip" bleibt eindeutig die Einheit). Noch nicht
-entschieden.
+„Effektclip-Tafel" („natürlich", Tippfehler berichtigt), „Effektclip-Dramaturgie — irgendwie in
+dieser Art". Empfehlung Claude: **Effektclip-Tafel** — die Form (eine Tafel mit Effektclips in einer
+Reihe, je Abschnitt einer) mit den zwei Wörtern, die es schon gibt: Abschnitt und Effektclip; ein
+drittes Wort „Szene" wäre dasselbe noch einmal. Noch nicht entschieden.
