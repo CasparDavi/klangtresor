@@ -7166,3 +7166,10 @@ drittes Wort „Szene" wäre dasselbe noch einmal. Noch nicht entschieden.
 — der Ort, an dem Abschnittsgrenzen und je Abschnitt ein Effektclip stehen; „die Reihe der
 Effektclips" bleibt die Abfolge, kein zweiter Name. Alternativen waren Szenen-Tafel,
 Effektclip-Dramaturgie, Effektclip-Reihe/Reihung.
+Caspar_D zur Tafel: „Wenn ich einen Abschnitt nochmal splitte, erben beide Abschnitte den
+Effektclip und ich kann jeden einzeln modifizieren? Würde ich so machen." — Ja: Teilen kopiert den
+Effektclip in beide Hälften, danach sind sie unabhängig (keine geteilte Referenz). Zusammenlegen:
+der vordere Effektclip bleibt, der hintere fällt (Vorschlag). „Kann man Effektclips kopieren und
+in einen anderen Abschnitt einfügen?" — Ja, mit der bestehenden Ablage (Kopieren/Einfügen,
+localStorage `mysuno-tbs-ablage`), die heute schon über Titel hinweg funktioniert; auf der Tafel
+kopiert man aus einem Abschnitt und fügt in einen anderen ein, auch in einen anderen Titel.
