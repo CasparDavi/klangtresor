@@ -46,8 +46,9 @@ Teil des Bedienungskarussells soll *„eher wieder registermäßig"* werden.
   „Bildmaterial"; im Blatt vorher „Vorrat").
 * **Ausgabe** — ein Fenster auf die Reihe: Haus (Kachel und Bühne, live), der **Zehnsekünder**
   (10 s als Schleife; das Wort gibt es im Haus schon, „Snippet" fällt), der **Anreißer** (der
-  Suno-Hook: von Marke bis Marke; in Klammern oder in der Erklärung darf „Suno-Hook" stehen —
-  Caspar_D, 26.09.), ganzer Titel.
+  Suno-Hook: das Stück, das der Feed zeigt und Lust aufs Ganze macht, von Marke bis Marke; in
+  Klammern oder in der Erklärung darf „Suno-Hook" stehen — Caspar_D, 26.09.; verworfen: Auszug,
+  Kostprobe, Anriss, Aufmacher, Schaufenster), ganzer Titel.
 
 Kein drittes Wort für Abschnitt plus Effektclip („Szene"); kein Wort für zwei Dinge.
 
@@ -133,7 +134,9 @@ Was im Haus schon liegt (geprüft an Auftakt, 26.09.):
 
 Der Morgenlauf führt die drei ersten zusammen zu einer Abschnittsliste je Titel (Name, von, bis,
 Quelle der Grenze), wie er die Tiefenkarte rechnet; die Tafel zeigt sie als Vorschlag, der Nutzer
-verschiebt. Ohne Lyrik oder ohne Analyse: ein Abschnitt.
+verschiebt. Die Wahrheit ist Vorschlag, nicht Gesetz: Grenzen dürfen auch frei innerhalb eines
+Abschnitts der Wahrheit liegen, auf jedem Schlag (Caspar_D: „ja"). Ohne Lyrik oder ohne Analyse:
+ein Abschnitt.
 
 ## 8. Das Rezept
 
@@ -157,18 +160,7 @@ Teil des Baus, nicht dieses Blatts; Regel 12 der Texteffekte (Altwerte behalten 
 
 Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzbar zurück.
 
-## 10. Offen
-
-Beantwortet am 26.09. (Caspar_D): Grenzen dürfen frei innerhalb eines Abschnitts liegen („ja");
-beim Löschen fragt die Tafel („sie fragt"); die Länge des Wechsels steht an der Grenze („kommt
-drauf an"); Sunos Regeln siehe Abschnitt 6 („schau in der Suno-Doku nach"); das Bildmaterial heißt
-so („Bildmaterial").
-
-Das Wort für den Hook ist entschieden: **Anreißer** (Caspar_D: „Anreißer ist gut, in Klammern oder
-der Erklärung darf Suno-Hook fallen"; Alternativen waren Auszug, Kostprobe, Anriss, Aufmacher,
-Schaufenster).
-
-## 11. Was nicht dazugehört
+## 10. Was nicht dazugehört
 
 Kurven je Parameter, Keyframes, eine Zeitleiste je Effekt. Verschiedene Ketten je Ausgabe. Medien
 von Hand im Archiv.
