@@ -7118,3 +7118,5 @@ danach (bitgleich = Abnahme), Paket bauen und im Sandkasten starten, alles in di
 Tokeneffizient: keine Agentenflotten, keine langen Ausgaben, Proben über Prüfstand und eigene
 Scheibe. Was Caspar_D's Auge braucht, bleibt liegen: Lyric-Video-Vollexport, Loop-Abweichungen,
 Abnahme des Umbaus im echten Fenster.
+Caspar_D: „ja, und den Grundlinien- und bitgleichen Endstand kannst du dann natürlich machen, ohne
+den geht's ja nicht." — Beide vollen Läufe (je rund 13 min) sind für den 27.09. freigegeben.
