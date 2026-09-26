@@ -7162,3 +7162,7 @@ Namensvorschläge Caspar_D für die Reihe der Effektclips eines Titels: „Szene
 dieser Art". Empfehlung Claude: **Effektclip-Tafel** — die Form (eine Tafel mit Effektclips in einer
 Reihe, je Abschnitt einer) mit den zwei Wörtern, die es schon gibt: Abschnitt und Effektclip; ein
 drittes Wort „Szene" wäre dasselbe noch einmal. Noch nicht entschieden.
+**Beschlossen (Caspar_D, „gut"):** die Reihe der Effektclips eines Titels heißt **Effektclip-Tafel**
+— der Ort, an dem Abschnittsgrenzen und je Abschnitt ein Effektclip stehen; „die Reihe der
+Effektclips" bleibt die Abfolge, kein zweiter Name. Alternativen waren Szenen-Tafel,
+Effektclip-Dramaturgie, Effektclip-Reihe/Reihung.
