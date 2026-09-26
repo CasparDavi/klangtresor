@@ -28,6 +28,10 @@ Teil des Bedienungskarussells soll *„eher wieder registermäßig"* werden.
 | **Hook und ganzer Titel** sind Fenster auf dieselbe Reihe | „Dann ist das Gesamtvideo also eine Erweiterung des Hooks — aber selbst Hooks können schon aus mehreren Szenen bestehen, nur eben weniger." | 26.09. |
 | Am Abschnittswechsel wird **geblendet** | „Szenen pro Abschnitt definieren ist sehr vernünftig und sie am Szenen-Wechsel ineinander blenden lassen." | 26.09. |
 | Die **Tiefe** bekommt einen eigenen Karusselleintrag | „ob wir bei der Vorbereitung die Tiefe herauslösen und ihr einen völlig eigenen Karusseleintrag zuweisen" | 26.09. |
+| Grenzen rasten auf **Schläge**, nicht nur auf die Eins; Wechsel dürfen auf den Schlag knallen oder je Schlag stufen | „Grenzen nur auf der Eins wäre zu fest gefügt, manchmal möchte man Bilder auf Schlägen reinknallen lassen oder die Helligkeit stufenweise pro Schlag auf Weiß blenden." | 26.09. |
+| Beim **Löschen einer Grenze** fragt die Tafel, welches der beiden Rezepte die entstehende Spanne bekommt | „wenn ich eine Grenze lösche, kann ruhig eine Nachfrage kommen, welches der beiden Rezepte für die entstehende Zeitspanne angewandt werden soll" | 26.09. |
+| Das **Takt- und Schlagmuster** ist auf der Tafel als eigene Spur zu sehen | „damit man das Einrasten besser versteht" | 26.09. |
+| Snippet und Hook bekommen **deutsche Wörter** | „Snippet und Hook sind englische Worte — bitte Vorschläge" | 26.09. |
 
 ## 3. Die Wörter
 
@@ -39,8 +43,10 @@ Teil des Bedienungskarussells soll *„eher wieder registermäßig"* werden.
   „Die Reihe der Effektclips" ist die Abfolge, kein zweiter Name.
 * **Vorrat** — die Medien eines Titels, aus denen ein Effektclip seine Quelle wählt: Titelbild,
   Cover, Bewegtbild, eigene Fotos und Videoschnipsel, jedes mit seiner Tiefe.
-* **Ausgabe** — ein Fenster auf die Reihe: Haus (Kachel und Bühne, live), Snippet (10 s als
-  Schleife), Hook (von Marke bis Marke), ganzer Titel.
+* **Ausgabe** — ein Fenster auf die Reihe: Haus (Kachel und Bühne, live), der **Zehnsekünder**
+  (10 s als Schleife; das Wort gibt es im Haus schon, „Snippet" fällt), der **Auszug** (von Marke
+  bis Marke; Vorschlag für „Hook" — Alternativen Kostprobe, Anriss; „Ausschnitt" ist im Code
+  schon der Schleifenausschnitt und darum verbraucht), ganzer Titel. Wahl von Caspar_D offen.
 
 Kein drittes Wort für Abschnitt plus Effektclip („Szene"); kein Wort für zwei Dinge.
 
@@ -49,12 +55,14 @@ Kein drittes Wort für Abschnitt plus Effektclip („Szene"); kein Wort für zwe
 1. **Ein Titel, eine Reihe.** Es gibt keine Kette je Ausgabe. Was sich je Ausgabe unterscheidet, ist
    das Zeitfenster und was in diesem Fenster wegfällt (heute schon: Karaoke und Auftritt im
    Zehnsekünder, die Karte sagt es).
-2. **Zeit kommt aus dem Song.** Grenzen liegen auf Abschnitten und rasten auf die Eins; nichts hängt
-   an Sekundenzahlen. Wo die Abschnittswahrheit fehlt, gibt es einen Abschnitt.
+2. **Zeit kommt aus dem Song.** Grenzen rasten auf Schläge, die Eins ist nur die stärkste Raste;
+   nichts hängt an Sekundenzahlen. Wo die Abschnittswahrheit fehlt, gibt es einen Abschnitt.
 3. **Abschnitte statt Kurven.** Was sich über die Länge ändert, ist ein anderer Effektclip im
-   nächsten Abschnitt. Die Software blendet am Wechsel über einen Takt: Quelle und Kette zugleich,
-   ein Effekt, der im nächsten Abschnitt fehlt, blendet aus, ein neuer ein. Kurven je Parameter gibt
-   es nicht — das wäre der Wildwuchs.
+   nächsten Abschnitt. Der Wechsel hat eine Form je Grenze, drei zur Wahl: **Schnitt** auf den
+   Schlag (das Bild knallt rein), **Blende** über einen Takt (Quelle und Kette zugleich; ein Effekt,
+   der im nächsten Abschnitt fehlt, blendet aus, ein neuer ein), **Stufen** je Schlag über n
+   Schläge (etwa die Helligkeit Schlag für Schlag auf Weiß). Kurven je Parameter gibt es nicht —
+   das wäre der Wildwuchs.
 4. **Altes bleibt gültig.** Ein Rezept ohne Tafel ist ein Abschnitt über den ganzen Song mit der
    einen Quelle von heute (Regel 12 der Texteffekte gilt hier ebenso: alte Rezepte malen dasselbe
    Bild). Der Zehnsekünder bleibt, wie er ist.
@@ -66,14 +74,16 @@ Kein drittes Wort für Abschnitt plus Effektclip („Szene"); kein Wort für zwe
 ## 5. Die Tafel, wie sie aussieht
 
 Skizze vom 26.09. (Übergabe §34): über der Hüllkurve je Abschnitt die Kachel seines Effektclips;
-die Hüllkurve mit den Schlägen als Ticks; die Grenzen als Griffe — Klick setzt, Doppelklick
-entfernt, Ziehen verschiebt, rastet auf die Eins (die Bediensprache aller Flächen mit gesetzten
-Punkten); der Spielkopf des Players, gestrichelt, Klick auf die Hüllkurve springt hin; darunter die
-Abschnittsnamen mit Zeiten. Beim Ziehen einer Grenze spielt der Player einen Takt vor und einen
-Takt nach der Grenze, so hört man den Schnitt.
+die Hüllkurve; darunter als **eigene Spur das Takt- und Schlagmuster** (die Eins stark, die
+anderen Schläge leicht), damit man das Einrasten sieht; die Grenzen als Griffe — Klick setzt,
+Doppelklick entfernt, Ziehen verschiebt, rastet auf Schläge (die Bediensprache aller Flächen mit
+gesetzten Punkten); der Spielkopf des Players, gestrichelt, Klick auf die Hüllkurve springt hin;
+darunter die Abschnittsnamen mit Zeiten. Beim Ziehen einer Grenze spielt der Player einen Takt vor
+und einen Takt nach der Grenze, so hört man den Schnitt. An jeder Grenze steht die Form des
+Wechsels (Schnitt, Blende, Stufen).
 
-**Teilen** kopiert den Effektclip in beide Hälften; **Zusammenlegen** behält den vorderen, der
-hintere fällt (Vorschlag, offen). **Kopieren/Einfügen** ist die bestehende Ablage des Studios
+**Teilen** kopiert den Effektclip in beide Hälften; beim **Löschen einer Grenze** fragt die Tafel,
+welches der beiden Rezepte die entstehende Spanne bekommt. **Kopieren/Einfügen** ist die bestehende Ablage des Studios
 (`mysuno-tbs-ablage`), die schon heute über Titel hinweg trägt. Ein Klick auf die Kachel eines
 Abschnitts öffnet das Studio für diesen Effektclip; das Studio bleibt, wie es ist, und weiß nur,
 zu welchem Abschnitt es gehört.
@@ -87,14 +97,14 @@ Sättigung, Gradation) · **Effektkette** · **Ausgabe** mit vier Registern:
 | Register | Zeit | Takt | Text | Eigenes |
 |---|---|---|---|---|
 | Haus | Songzeit, live | voll | Karaoke, Auftritt | Kachel und Bühne |
-| Snippet | 10 s als Schleife | fällt nach der ersten Runde | ohne | die Schleife (heute eigener Karusselleintrag, wandert hierher) |
-| Hook | von Marke bis Marke, echte Zeit | voll | Karaoke; Auftritt am Anfang, Abgang am Ende | zwei Zeitmarken, Ton |
+| Zehnsekünder | 10 s als Schleife | fällt nach der ersten Runde | ohne | die Schleife (heute eigener Karusselleintrag, wandert hierher) |
+| Auszug (Wort offen) | von Marke bis Marke, echte Zeit | voll | Karaoke; Auftritt am Anfang, Abgang am Ende | zwei Zeitmarken, Ton |
 | ganzer Titel | 0 bis Ende | voll | Karaoke, Auftritt | Ton, Format |
 
 Sichern, Löschen, Kopieren, Einfügen gehören zum Rezept, nicht zur Ausgabe, und bleiben bei der
-Kette. Was eine Ausgabe sich merken muss (Schleife, Hook-Marken), liegt beim Titel neben der Reihe.
+Kette. Was eine Ausgabe sich merken muss (Schleife, Marken des Auszugs), liegt beim Titel neben der Reihe.
 
-**Hook-Marken:** zwei Marken auf der Tafel, rastend auf die Eins; die Software schlägt einen Hook
+**Marken des Auszugs:** zwei Marken auf der Tafel, rastend auf Schläge; die Software schlägt einen Hook
 vor, wenn sie die Abschnitte kennt (etwa den ersten Refrain), der Nutzer verschiebt. Wie lang Suno
 einen Hook erlaubt und in welchem Format, ist zu prüfen, bevor eine Zahl im Regler steht.
 
@@ -129,21 +139,20 @@ Teil des Baus, nicht dieses Blatts; Regel 12 der Texteffekte (Altwerte behalten 
    Reines Sortieren, keine neue Fähigkeit; Probe: Labor-Studio, Prüfstand unverändert.
 3. **Tafel** mit einem Abschnitt: Hüllkurve, Schläge, Spielkopf, Kachel des einen Effektclips;
    Klick öffnet das Studio. Probe im Sandkasten.
-4. **Grenzen**: setzen, entfernen, ziehen, rasten, hören; Teilen erbt; Reihe im Rezept; Übergang
-   am Wechsel über einen Takt. Probe: Prüfstand mit Fällen über eine Grenze (Naht und Vorschau).
-5. **Hook**: zwei Marken, Fenster als Export; vorher Sunos Hook-Regeln prüfen.
+4. **Grenzen**: setzen, entfernen (mit Nachfrage), ziehen, rasten auf Schläge, hören; die
+   Schlagspur; Teilen erbt; Reihe im Rezept; Wechsel als Schnitt, Blende oder Stufen. Probe: Prüfstand mit Fällen über eine Grenze (Naht und Vorschau).
+5. **Auszug**: zwei Marken, Fenster als Export; vorher Sunos Hook-Regeln prüfen.
 6. **Vorrat**: Upload durch die App, Tiefe im Morgenlauf, Quelle je Effektclip aus dem Vorrat.
 
 Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzbar zurück.
 
 ## 10. Offen
 
-* Dürfen Grenzen auch innerhalb eines Abschnitts der Wahrheit liegen (freie Marke auf der Eins)?
-  Vermutlich ja — die Wahrheit ist Vorschlag, nicht Gesetz.
-* Zusammenlegen: bleibt der vordere Effektclip (Vorschlag) oder fragt die Tafel?
-* Wie lang darf der Übergang sein: ein Takt fest, oder je Abschnittswechsel aus der Musik?
+* Dürfen Grenzen auch innerhalb eines Abschnitts der Wahrheit liegen (freie Marke auf einem
+  Schlag)? Vermutlich ja — die Wahrheit ist Vorschlag, nicht Gesetz.
+* Die Blende: ein Takt fest, oder je Grenze aus der Musik? Die Stufen: n Schläge — wer sagt n?
 * Sunos Hook: Länge, Format, Hochformat?
-* Ein Wort für den Vorrat, wenn er auf der Oberfläche steht.
+* Die Wörter: „Auszug" für den Hook (Alternativen Kostprobe, Anriss), ein Wort für den Vorrat.
 
 ## 11. Was nicht dazugehört
 
