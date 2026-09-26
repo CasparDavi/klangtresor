@@ -7145,3 +7145,15 @@ schon aus mehreren Szenen bestehen, nur eben weniger." Folge (Claude, Brainstorm
 Tiefe — die Tiefe hängt am Vorratsstück); Hook und ganzer Titel sind Fenster auf dieselben Szenen;
 ein Rezept ohne Szenen ist eine Szene über den ganzen Song (Altrezepte bleiben gültig); Wege für
 neue Medien nur durch die App (Upload, Tiefe im Morgenlauf). Kein Auftrag.
+Caspar_D legt fest (Brainstorm, noch kein Bauauftrag): „Wir arbeiten abschnittsweise. Der Song ist
+erstmal ein Abschnitt. Wie bei den Tiefenabschnitten in der Tiefenkarte können automatisch Grenzen
+eingefügt werden; der Standard wäre durch die Whisper-Spracherkennung und die Suno-Abschnittsgrenzen
+eine Abschnittswahrheit, die Intro, Outro, Strophen, Chorusse etc. abbildet. Jeder Abschnitt bekommt
+etwas, was z. Z. in einem Effektclip abgebildet wird. Eigentlich ist jeder Song dann eine
+Aneinanderreihung von Effektclips im heutigen Sinne." Folgen: der Effektclip von heute wird die
+Einheit je Abschnitt (Quelle, Vorbereitung, Kette, Schleife bleiben sein Rezept); der Titel trägt
+eine Abschnittsliste mit Grenzen (automatisch aus Suno-Regiezeilen und Whisper-Zeiten, im
+Morgenlauf wie die Tiefenkarte; Klick setzt, Doppelklick entfernt, Ziehen verschiebt) und je
+Abschnitt einen Effektclip; ein Titel ohne Grenzen = ein Abschnitt = heute (Altrezepte gültig);
+Übergänge blenden am Abschnittswechsel. Vorhanden: DATA.abschnitte im Katalog, Regiezeilen in
+bin/lyrik.js, Zonen-Grenzen-Bedienung der Tiefe als Muster. Braucht ein Konzeptblatt vor dem Bau.
