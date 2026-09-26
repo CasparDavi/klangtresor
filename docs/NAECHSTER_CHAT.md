@@ -7136,3 +7136,12 @@ Ausgabe mit Registern Haus/Snippet/Hook/ganzer Titel; Zeitachse Song-Abschnitte 
 Übergänge → Ausgaben als Fenster). Vorschlag Claude: ein Rezept, Szenen je Abschnitt statt
 Kurven, Zeit aus dem Song (Abschnitte, Eins), Ausgaben als Fenster auf eine Zeitachse, Hook-Marken
 rasten auf die Eins. Nichts beschlossen, nichts gebaut.
+Caspar_D weiter: „Szenen pro Abschnitt definieren ist sehr vernünftig und sie am Szenen-Wechsel
+ineinander blenden lassen; dann müssen wir aber auch Videos oder Standbilder für Abschnitte
+definieren können, die Quellen müssen auf n Elemente erweitert werden, mehrere Fotos und
+Videoschnipsel. Dann ist das Gesamtvideo also eine Erweiterung des Hooks — aber selbst Hooks können
+schon aus mehreren Szenen bestehen, nur eben weniger." Folge (Claude, Brainstorm): Szene = Abschnitt
++ Quelle + Kettenstand; Quelle wird ein Vorrat je Titel (Fotos, Videoschnipsel, mit je eigener
+Tiefe — die Tiefe hängt am Vorratsstück); Hook und ganzer Titel sind Fenster auf dieselben Szenen;
+ein Rezept ohne Szenen ist eine Szene über den ganzen Song (Altrezepte bleiben gültig); Wege für
+neue Medien nur durch die App (Upload, Tiefe im Morgenlauf). Kein Auftrag.
