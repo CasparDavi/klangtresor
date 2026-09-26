@@ -7173,3 +7173,10 @@ der vordere Effektclip bleibt, der hintere fällt (Vorschlag). „Kann man Effek
 in einen anderen Abschnitt einfügen?" — Ja, mit der bestehenden Ablage (Kopieren/Einfügen,
 localStorage `mysuno-tbs-ablage`), die heute schon über Titel hinweg funktioniert; auf der Tafel
 kopiert man aus einem Abschnitt und fügt in einen anderen ein, auch in einen anderen Titel.
+Caspar_D: „Wie sieht der Editor aus, wo ich die Grenze verschiebe — sieht man die Hüllkurve und
+hört den Sound? Ich würde sagen, ja. Die Hüllkurve als Pendant der Histogramme bei der Tiefenkarte."
+Skizze gezeigt: über der Hüllkurve je Abschnitt die Kachel seines Effektclips, in der Hüllkurve die
+Schläge als Ticks, Grenzen als Griffe (Klick setzt, Doppelklick entfernt, Ziehen verschiebt, rastet
+auf die Eins), Spielkopf gestrichelt; beim Ziehen spielt der Player einen Takt vor und nach der
+Grenze; darunter die Abschnittsnamen mit Zeiten. Vorhanden im Haus: Hüllkurve (`wellenStufen` im
+Katalog), Schläge, Abschnitte, der Player; die Zonen-Grenzen der Tiefenkarte als Bedienmuster.
