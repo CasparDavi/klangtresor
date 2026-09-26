@@ -13,6 +13,23 @@ Einsatz der Effekte und dynamische Parameter — *„variabler Schneefall, Schne
 Farbe des Regens ändert sich von weiß zu blutrot, immer, wie es zum Song passt"*? Und der untere
 Teil des Bedienungskarussells soll *„eher wieder registermäßig"* werden.
 
+**Vorgeschichte (Backlog „Bewegtbild schneiden statt nur bemalen", Caspar_D, 10.09.2026).** Die
+Tafel hat einen älteren Kern; Jörgs Liste von damals, unverändert im Wortlaut:
+
+- *„Abschnittsabhängig. Was passiert, richtet sich nach dem Songabschnitt, nicht nur nach dem
+  Takt. Die Abschnitte liegen bereits vor (`abschnitte.peak_times`)."*
+- *„Später Hook-Videos für Suno exportieren. Das ist das Ziel dahinter: aus dem, was der
+  Effektclip live macht, eine Datei ziehen, die man wieder hochladen kann. (Tarja legt ihre
+  Suno-Hooks heute schon als eigene Bewegtbilder ab.)"*
+- *„Aneinanderhängen und Überblenden, auch invers aneinanderhängen. Und zwar automatisch, nach
+  Takt und Abschnitt, ‚nicht dass man ewig am Schneidprogramm sitzen muss'."*
+- *„Dasselbe Video mehrfach hintereinander, jedes Mal mit anderen Effekten."*
+
+Dazu die Machbarkeitsnotiz von damals: Aneinanderhängen und Überblenden brauchen zwei
+Videoelemente zugleich; der Export braucht einen Aufnahmeweg (inzwischen da: der volle Export) und
+eine Antwort auf die Länge (inzwischen da: Sunos Regeln, Kapitel 6). Der fünfte Punkt der Liste,
+Ablaufartefakte im Takt, ist ein Effekt auf die Videoquelle und bleibt im Backlog.
+
 ## 2. Entscheidungen (mit Datum)
 
 | Entscheidung | Wortlaut Caspar_D | Datum |
@@ -136,7 +153,9 @@ Der Morgenlauf führt die drei ersten zusammen zu einer Abschnittsliste je Titel
 Quelle der Grenze), wie er die Tiefenkarte rechnet; die Tafel zeigt sie als Vorschlag, der Nutzer
 verschiebt. Die Wahrheit ist Vorschlag, nicht Gesetz: Grenzen dürfen auch frei innerhalb eines
 Abschnitts der Wahrheit liegen, auf jedem Schlag (Caspar_D: „ja"). Ohne Lyrik oder ohne Analyse:
-ein Abschnitt.
+ein Abschnitt. Für Songs, die nicht von Suno kommen, fiele die Analyse weg — Abschnittswechsel
+wären dann „nur geraten" (Backlog, 28.08.2026); msaf als Ersatz für Abschnittsgrenzen steht dort
+als nachrangig, weil ohne Text ohnehin nur zu raten ist, was Strophe und was Refrain heißt.
 
 ## 8. Das Rezept
 
