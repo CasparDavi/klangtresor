@@ -37,7 +37,7 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
 | Titel-Material als **Struktur × Farbe**: wenige feste Strukturen, eine Farbe darüber, keine freien Parameter | „der Schrifttextur-Kram ist eher ernüchternd, wenn, dann einige vorgefertigte Struktureffekte, denen man noch eine oder x Farben draufpackt. Kombinatorisch entsteht dann Vielfalt, ohne dass der Nutzer unästhetische Parametersets bauen kann" — „ich denke, das passt so, mach" | 25.09. |
 | **Auftritt und Abgang** des Titels nur im ganzen Titel; im Zehnsekünder steht er | „das würde aber wie bei Karaoke nur für den Ganztitel-Export taugen, beim 10-Sekunden-Snippet würde das ja alle 10 Sekunden wieder passieren" | 25.09. |
 | Der Titel darf sich **aus den Partikeln** zusammenballen und wieder auflösen, wenn ein Partikel-Effekt in der Kette liegt | „wenn man Partikel angewendet hat, dann könnte sich der Titel auch daraus zusammenballen und sich wieder auflösen" — „ich denke, das passt so, mach" | 25.09. |
-| **Durchschuss**, fest und von der Schriftgröße unabhängig: 5 Studio-Bildpunkte (5·EINHEIT) von der Unterlänge zur Oberlänge der nächsten Zeile, an der Schrift gemessen; für Titel und Karaoke-Reihen; vorher 1,15 bzw. 1,25 em Mitte zu Mitte | „der Zeilenabstand ist zu groß, je größer der Text, desto mehr fällt das auf" — „der Durchschuss ist riesig" — „der Durchschuss ist zu definieren, und der sollte immer gleich sein, 5 px sollten reichen" — „Unterlänge zu Oberlänge der folgenden Zeile meinte ich" | 25.09. |
+| **Durchschuss = i-Punkt-Lücke der Schrift**: von der Unterlänge zur Oberlänge der nächsten Zeile so viel Luft wie zwischen dem Stamm des i und seinem Punkt; innerhalb einer umbrochenen Zeile einmal, zwischen den Zeilen eines Karaoke-Verses dreimal (Nähe zeigt Zugehörigkeit, Tufte); vorher 1,15 bzw. 1,25 em Mitte zu Mitte | „der Zeilenabstand ist zu groß, je größer der Text, desto mehr fällt das auf" — „der Durchschuss ist riesig" — „der Durchschuss ist zu definieren, und der sollte immer gleich sein, 5 px sollten reichen" — „Unterlänge zu Oberlänge der folgenden Zeile meinte ich" — „eigentlich reicht mir der Abstand i zum i-Punkt" — „bei Karaoke müssen die Abstände zwischen zusammengehörigen Zeilen kleiner sein (bei Umbrüchen) als bei Einzelzeilen, die im Vers vorkommen" — „Edward Tufte Lehre" | 25.09. |
 
 ## 3. Die Regeln, die daraus folgen
 
@@ -72,12 +72,14 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
    — derselbe Film auf Mac, Windows und Bühne; Laufweite −0,01 em wie das Band.
 10. **Hochformat.** Reels, TikTok und Shorts verdecken unten rund ein Fünftel; die Karte sagt es,
     sobald die Ausgabe hochkant ist und der Ort dort liegt. Kein Regler.
-10a. **Durchschuss.** Fest und von der Schriftgröße unabhängig: von der Unterlänge der einen zur
-    Oberlänge der nächsten Zeile bleiben 5 Studio-Bildpunkte (5·EINHEIT in der Ausgabe, Regel 19).
-    Ober- und Unterlänge sind die der Schrift (an h und g gemessen, `textLaengen`), nicht die der
-    Buchstaben der Zeile — sonst rückten zwei Zeilen ohne Unterlängen zu dicht zusammen. Gilt für
-    die Zeilen des Titels und die Reihen einer Karaoke-Zeile; die Lücke zwischen den
-    Karaoke-Blöcken (0,06 em) bleibt. Der Kasten der Marke hüllt Ober- und Unterlängen.
+10a. **Durchschuss.** Ein Maß der Schrift, kein Regler: von der Unterlänge der einen zur Oberlänge
+    der nächsten Zeile bleibt so viel Luft wie zwischen dem Stamm des i und seinem Punkt
+    (`textIPunkt`: einmal je Schrift am gemalten i gemessen, mit der Größe skaliert; Ersatz
+    0,06 em). Ober- und Unterlänge sind die der Schrift (an h und g gemessen, `textLaengen`),
+    nicht die der Buchstaben der Zeile — sonst rückten zwei Zeilen ohne Unterlängen zu dicht
+    zusammen. Nähe zeigt Zugehörigkeit (Tufte): innerhalb einer umbrochenen Zeile eine i-Punkt-
+    Lücke, zwischen den Zeilen eines Karaoke-Verses drei. Der Kasten der Marke hüllt Ober- und
+    Unterlängen.
 11. **Struktur × Farbe.** Der Titel kann Metall, Stein, Papier oder Schraffur tragen. Die Struktur
     trägt das Licht (Rampe, Korn, Kontrast, Licht von oben wie der Schlagschatten), die Farbe den
     Ton: Metall mit warmem Ton ist Gold, mit kühlem Silber, mit blasser Palettenfarbe Chrom. Alles

@@ -7062,3 +7062,18 @@ Nachtrag: „ich hoffe, wir reden bei Zeilenabstand von der gleichen Lücke — 
 der folgenden Zeile meinte ich." Die Tinte der jeweiligen Zeile war falsch (Zeilen ohne Unterlängen
 rückten zu dicht). Jetzt `textLaengen(cx,gr)`: Ober- und Unterlänge der Schrift an „hdkl"/„gpqy"
 gemessen, gleich für alle Zeilen einer Größe; Lücke 5·EINHEIT dazwischen.
+Weiter (Caspar_D, 16 Uhr): „immer noch zu groß, mach mal 3 statt 5, erst zeigen" — dann „eigentlich
+reicht mir der Abstand i zum i-Punkt" — „keine Exporte, Screenshot reicht" — „bei Karaoke müssen die
+Abstände zwischen zusammengehörigen Zeilen kleiner sein (bei Umbrüchen) als bei Einzelzeilen, die im
+Vers vorkommen" — „Edward Tufte Lehre". Gebaut: `textIPunkt(fam,gew)` malt einmal je Schrift ein
+großes i, tastet zeilenweise ab (Punkt, Lücke, Stamm) und merkt die Lücke in em (nur wenn die
+Schrift geladen ist, `document.fonts.check`); Titel: `DURCHSCHUSS = textIPunkt(fam,gew)*gr`;
+Karaoke: `IPUNKT*size` innerhalb eines Blocks, `luecke = IPUNKT*gr*3` zwischen den Blöcken (vorher
+0,06 em). Gezeigt: zwei Titel-Ausschnitte (1080) und der Bandausschnitt aus der Laborleinwand
+(Leinwand per toDataURL → Datei). **Ungesichert, bis Caspar_D sein Wort gibt** („erst zeigen"):
+web/index.html, KONZEPT-TEXT (Entscheidung, Regel 10a), diese Zeilen. Konzept-Regel 10a und die
+Entscheidung tragen den i-Punkt und Tufte.
+Caspar_D (26.09., nach Mitternacht): „alle Beispiele enthalten keine Unterlängen, sodass man
+schwerlich beurteilen kann, ob es wirklich die i-Punkt-Lücke ist, aber es sieht nach Augenschein
+gut aus — lassen wir so. Kannst einchecken und pushen." Gesichert. Wiedervorlage bei Gelegenheit:
+ein Titel mit Unterlängen in der oberen Zeile (g, p, y) ansehen.

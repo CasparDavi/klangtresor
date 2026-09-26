@@ -31073,14 +31073,15 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     /* DURCHSCHUSS AUF DER TINTE (Caspar_D, 25.09.2026: "der Zeilenabstand ist zu gross - je groesser der Text, desto
        mehr faellt das auf" - "der Durchschuss ist riesig"). Vorher standen die Zeilen Mitte zu Mitte in 1,15 em, und bei
        Zeilen ohne Unterlaengen klaffte darunter fast eine halbe em. Jetzt ist die Luecke zwischen der TINTE zweier Zeilen
-       fest und von der Schriftgroesse unabhaengig (Caspar_D: "der Durchschuss ist zu definieren, und der sollte immer
-       gleich sein - 5 px sollten reichen" - "Unterlaenge zu Oberlaenge der folgenden Zeile meinte ich"): 5 Studio-
-       Bildpunkte, also 5*EINHEIT in der Ausgabe (Regel 19), zwischen der UNTERLAENGE der einen und der OBERLAENGE der
-       naechsten Zeile - beides an der Schrift gemessen (h und g), nicht an den Buchstaben der Zeile, sonst ruecken zwei
-       Zeilen ohne Unterlaengen zu dicht zusammen. Gemessen mit actualBoundingBoxAscent/Descent zur Mittellinie (Safari
-       11.1, Chrome 77); fehlt die Angabe, 0,39 und 0,60 em. Der Kasten (Marke, Ort) huellt Ober- und Unterlaengen.
-       Dieselbe Definition gilt fuer die Reihen des Karaoke (DURCHSCHUSS, textLaengen). */
-    const DURCHSCHUSS=5*EINHEIT;
+       fest definiert (Caspar_D: "der Durchschuss ist zu definieren, und der sollte immer gleich sein" - "Unterlaenge zu
+       Oberlaenge der folgenden Zeile meinte ich" - "eigentlich reicht mir der Abstand i zum i-Punkt"): die Luecke
+       zwischen der UNTERLAENGE der einen und der OBERLAENGE der naechsten Zeile ist so gross wie die Luecke zwischen
+       dem Stamm des i und seinem Punkt - ein Mass der Schrift selbst, einmal je Schrift am gemalten i gemessen
+       (textIPunkt) und mit der Groesse skaliert. Ober- und Unterlaenge sind die der Schrift (h und g, textLaengen),
+       nicht die der Buchstaben der Zeile, sonst ruecken zwei Zeilen ohne Unterlaengen zu dicht zusammen. Fehlen die
+       Angaben, 0,39 und 0,60 em bzw. 0,06 em. Der Kasten (Marke, Ort) huellt Ober- und Unterlaengen. Dieselbe
+       Definition gilt fuer die Reihen des Karaoke. 5 und 3 Studio-Bildpunkte waren die Proben davor. */
+    const DURCHSCHUSS=textIPunkt(fam,gew)*gr;
     setFont(gr); cx.textBaseline='middle';
     const lg=textLaengen(cx,gr), mess=rows.map(r=>({ w:cx.measureText(r).width, o:lg.o, u:lg.u }));
     const br=mess.map(q=>q.w), boxW=Math.max(...br), durch=DURCHSCHUSS, m=gr*0.12, ys=[]; let hy=0;
@@ -31138,7 +31139,7 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
       if(singt){ davor=drei?(Z[n-1]||null):null; mitte=zl; danach=drei?naechste:null; }
       else if(naechste){ if(!drei) return; davor=zl; mitte=naechste; hell=false; danach=null; }
       else return; }   /* nach der letzten Zeile und ihrem Nachhall: nichts mehr, das Band geht aus */
-    let gr=Math.max(4,(e.groesse==null?0.052:e.groesse)*Wn); const DURCHSCHUSS=5*EINHEIT;   /* DURCHSCHUSS AUF DER TINTE wie beim Titel (Caspar_D, 25.09.2026: 1,25 em Mitte zu Mitte war riesig): 5 Studio-Bildpunkte zwischen der Tinte zweier Reihen; die Luecke zwischen den Bloecken bleibt */
+    let gr=Math.max(4,(e.groesse==null?0.052:e.groesse)*Wn); const IPUNKT=textIPunkt(textSchrift(e.schrift),'700');   /* DURCHSCHUSS wie beim Titel (Caspar_D, 25.09.2026: 1,25 em Mitte zu Mitte war riesig): die i-Punkt-Luecke der Schrift, mal Reihengroesse; die Luecke zwischen den Bloecken bleibt */
     const fam=textSchrift(e.schrift);
     const pal=(DATA&&DATA.farben)||{}, eigen=e.farbSatz==='eigen';
     const cDran=eigen?(e.farbe||'#f2f5fa'):(pal.text||'#f2f5fa'), cLeise=eigen?(e.farbe2||'#96a0b4'):(pal.textLeise||'#96a0b4');
@@ -31148,11 +31149,15 @@ function malen(e,cx,t,Wn,Hn){ cx.globalCompositeOperation=LICHTMAL?'lighter':(VM
     cx.save();
     const setFont=s=>{ cx.font='700 '+s.toFixed(2)+'px '+fam; if('letterSpacing' in cx) cx.letterSpacing=(-0.01*s).toFixed(2)+'px'; };
     /* Bloecke bauen; passt der Block nicht zwischen die Luft oben und Ort Y, weicht die Schrift. */
-    let bl=[], hoehe=0, grK=gr*0.5, luecke=gr*0.06;
-    for(let k=0;k<40;k++){ grK=gr*0.5; luecke=gr*0.06; bl=[];   /* 40 Schritte reichen von 12 % der Breite bis 4 px (Gegenlesen 25.09.2026) */
+    /* ZWISCHEN DEN ZEILEN DES VERSES mehr Luft als innerhalb einer umbrochenen Zeile (Caspar_D, 25.09.2026: "bei Karaoke
+       muessen die Abstaende zwischen zusammengehoerigen Zeilen kleiner sein als bei Einzelzeilen, die im Vers vorkommen"):
+       drei i-Punkt-Luecken der gesungenen Groesse zwischen den Bloecken, eine innerhalb - Naehe zeigt Zugehoerigkeit,
+       der kleinste wirksame Unterschied genuegt (Caspar_D: "Edward Tufte Lehre"). Vorher 0,06 em. */
+    let bl=[], hoehe=0, grK=gr*0.5, luecke=IPUNKT*gr*3;
+    for(let k=0;k<40;k++){ grK=gr*0.5; luecke=IPUNKT*gr*3; bl=[];   /* 40 Schritte reichen von 12 % der Breite bis 4 px (Gegenlesen 25.09.2026) */
       const block=(z,size,farbe,alpha,rolle)=>{ if(!z) return; setFont(size); cx.textBaseline='middle'; const rows=textUmbrechen(cx,z.text,breit); if(!rows.length) return;
         const lg=textLaengen(cx,size), mess=rows.map(r=>({ w:cx.measureText(r).width, o:lg.o, u:lg.u }));
-        const ys=[]; let h=0; mess.forEach((q,i)=>{ if(i) h+=DURCHSCHUSS; h+=q.o; ys.push(h); h+=q.u; });
+        const ys=[]; let h=0; mess.forEach((q,i)=>{ if(i) h+=IPUNKT*size; h+=q.o; ys.push(h); h+=q.u; });
         bl.push({rows,size,farbe,alpha,rolle,br:mess.map(q=>q.w),ys,h}); };
       block(davor,grK,cLeise,0.5,'davor'); block(mitte,gr,hell?cDran:cLeise,hell?1:0.5,'mitte'); block(danach,grK,cLeise,0.5,'danach');
       hoehe=0; bl.forEach((b,i)=>{ hoehe+=b.h+(i?luecke:0); });
@@ -38117,6 +38122,20 @@ function zeichneFrame(t,roh){
     if(STRUKTUR_KACHELN.size>=24) STRUKTUR_KACHELN.clear();
     STRUKTUR_KACHELN.set(key,c); return c;
   }
+  /* DIE I-PUNKT-LUECKE einer Schrift (Caspar_D, 25.09.2026: "eigentlich reicht mir der Abstand i zum i-Punkt"): ein i wird
+     einmal gross gemalt und zeilenweise abgetastet - erster Tintenlauf der Punkt, Luecke, zweiter Lauf der Stamm; die Luecke
+     in em ist der Durchschuss. Gemerkt je Schrift und Gewicht, aber erst, wenn die Schrift wirklich geladen ist (sonst
+     stuende die Luecke der Rueckfallschrift im Speicher). Unplausibel (unter 0,5 % oder ueber 30 % em): 0,06 em. */
+  const IPUNKT_MERK=new Map();
+  function textIPunkt(fam,gew){ const key=gew+' '+fam; const alt=IPUNKT_MERK.get(key); if(alt!=null) return alt;
+    let gap=0.06; try{ const S=240, c=document.createElement('canvas'); c.width=S; c.height=Math.round(S*1.4); const g=c.getContext('2d',{willReadFrequently:true});
+      g.font=gew+' '+S+'px '+fam; g.textBaseline='alphabetic'; g.fillStyle='#fff'; g.fillText('i',S*0.25,S*1.05);
+      const W=c.width, Hh=c.height, d=g.getImageData(0,0,W,Hh).data, ink=y=>{ for(let x=0;x<W;x++) if(d[(y*W+x)*4+3]>60) return true; return false; };
+      let y=0; while(y<Hh&&!ink(y)) y++; while(y<Hh&&ink(y)) y++; const punktUnten=y; while(y<Hh&&!ink(y)) y++; const stammOben=y;
+      const gm=(stammOben-punktUnten)/S; if(gm>0.005&&gm<0.3) gap=gm;
+      let geladen=true; try{ geladen=!document.fonts||document.fonts.check(g.font); }catch(x){}
+      if(geladen) IPUNKT_MERK.set(key,gap); }catch(x){}
+    return gap; }
   /* Ober- und Unterlaenge der eingestellten Schrift (cx.font gesetzt, textBaseline middle): an h und g gemessen, nicht an
      der Zeile - der Durchschuss (5 Studio-Bildpunkte) liegt zwischen Unterlaenge und Oberlaenge der Folgezeile. */
   function textLaengen(cx,gr){ const alt=cx.textBaseline; cx.textBaseline='middle'; const qa=cx.measureText('hdkl'), qb=cx.measureText('gpqy'); cx.textBaseline=alt;
