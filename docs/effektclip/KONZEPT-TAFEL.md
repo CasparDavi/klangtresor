@@ -31,7 +31,7 @@ Teil des Bedienungskarussells soll *„eher wieder registermäßig"* werden.
 | Grenzen rasten auf **Schläge**, nicht nur auf die Eins; Wechsel dürfen auf den Schlag knallen oder je Schlag stufen | „Grenzen nur auf der Eins wäre zu fest gefügt, manchmal möchte man Bilder auf Schlägen reinknallen lassen oder die Helligkeit stufenweise pro Schlag auf Weiß blenden." | 26.09. |
 | Beim **Löschen einer Grenze** fragt die Tafel, welches der beiden Rezepte die entstehende Spanne bekommt | „wenn ich eine Grenze lösche, kann ruhig eine Nachfrage kommen, welches der beiden Rezepte für die entstehende Zeitspanne angewandt werden soll" | 26.09. |
 | Das **Takt- und Schlagmuster** ist auf der Tafel als eigene Spur zu sehen | „damit man das Einrasten besser versteht" | 26.09. |
-| Snippet und Hook bekommen **deutsche Wörter** | „Snippet und Hook sind englische Worte — bitte Vorschläge" | 26.09. |
+| Snippet und Hook bekommen **deutsche Wörter**: Zehnsekünder und Anreißer | „Snippet und Hook sind englische Worte — bitte Vorschläge" — „Anreißer ist gut, in Klammern oder der Erklärung darf Suno-Hook fallen" | 26.09. |
 
 ## 3. Die Wörter
 
@@ -45,9 +45,9 @@ Teil des Bedienungskarussells soll *„eher wieder registermäßig"* werden.
   Titelbild, Cover, Bewegtbild, eigene Fotos und Videoschnipsel, jedes mit seiner Tiefe (Caspar_D:
   „Bildmaterial"; im Blatt vorher „Vorrat").
 * **Ausgabe** — ein Fenster auf die Reihe: Haus (Kachel und Bühne, live), der **Zehnsekünder**
-  (10 s als Schleife; das Wort gibt es im Haus schon, „Snippet" fällt), der **Auszug** (von Marke
-  bis Marke; Vorschlag für „Hook" — Alternativen Kostprobe, Anriss; „Ausschnitt" ist im Code
-  schon der Schleifenausschnitt und darum verbraucht), ganzer Titel. Wahl von Caspar_D offen.
+  (10 s als Schleife; das Wort gibt es im Haus schon, „Snippet" fällt), der **Anreißer** (der
+  Suno-Hook: von Marke bis Marke; in Klammern oder in der Erklärung darf „Suno-Hook" stehen —
+  Caspar_D, 26.09.), ganzer Titel.
 
 Kein drittes Wort für Abschnitt plus Effektclip („Szene"); kein Wort für zwei Dinge.
 
@@ -104,19 +104,19 @@ Sättigung, Gradation) · **Effektkette** · **Ausgabe** mit vier Registern:
 |---|---|---|---|---|
 | Haus | Songzeit, live | voll | Karaoke, Auftritt | Kachel und Bühne |
 | Zehnsekünder | 10 s als Schleife | fällt nach der ersten Runde | ohne | die Schleife (heute eigener Karusselleintrag, wandert hierher) |
-| Auszug (Wort offen) | von Marke bis Marke, echte Zeit | voll | Karaoke; Auftritt am Anfang, Abgang am Ende | zwei Zeitmarken, Ton |
+| Anreißer (Suno-Hook) | von Marke bis Marke, echte Zeit | voll | Karaoke; Auftritt am Anfang, Abgang am Ende | zwei Zeitmarken, Ton |
 | ganzer Titel | 0 bis Ende | voll | Karaoke, Auftritt | Ton, Format |
 
 Sichern, Löschen, Kopieren, Einfügen gehören zum Rezept, nicht zur Ausgabe, und bleiben bei der
-Kette. Was eine Ausgabe sich merken muss (Schleife, Marken des Auszugs), liegt beim Titel neben der Reihe.
+Kette. Was eine Ausgabe sich merken muss (Schleife, Marken des Anreißers), liegt beim Titel neben der Reihe.
 
-**Marken des Auszugs:** zwei Marken auf der Tafel, rastend auf Schläge; die Software schlägt einen
-Auszug vor, wenn sie die Abschnitte kennt (etwa den ersten Refrain), der Nutzer verschiebt.
+**Marken des Anreißers:** zwei Marken auf der Tafel, rastend auf Schläge; die Software schlägt einen
+Anreißer vor, wenn sie die Abschnitte kennt (etwa den ersten Refrain), der Nutzer verschiebt.
 **Sunos Regeln für Hooks** (nachgesehen 26.09.2026, suno.com/hub und help.suno.com): mindestens
 10 Sekunden, höchstens vier Minuten, Hochformat 9:16; der Nutzer wählt in der Suno-App per Scrubbing
 den Startpunkt im Song, lädt das Video vom Gerät hoch und kann die Lyrik einblenden lassen. Für den
 Export heißt das: Hochformat, Länge zwischen den Marken 10 s bis 4 min, und die Tafel zeigt die
-Startzeit des Auszugs, damit der Nutzer in Suno dieselbe Stelle trifft. Ton: Suno ignoriert den Ton
+Startzeit des Anreißers, damit der Nutzer in Suno dieselbe Stelle trifft. Ton: Suno ignoriert den Ton
 des Videos (Caspar_D) — „Ton dazu" bleibt wie beim ganzen Titel ein Schalter, Vorgabe aus.
 
 ## 7. Die Abschnittswahrheit
@@ -152,7 +152,7 @@ Teil des Baus, nicht dieses Blatts; Regel 12 der Texteffekte (Altwerte behalten 
    Klick öffnet das Studio. Probe im Sandkasten.
 4. **Grenzen**: setzen, entfernen (mit Nachfrage), ziehen, rasten auf Schläge, hören; die
    Schlagspur; Teilen erbt; Reihe im Rezept; Wechsel als Schnitt, Blende oder Stufen. Probe: Prüfstand mit Fällen über eine Grenze (Naht und Vorschau).
-5. **Auszug**: zwei Marken, Fenster als Export; vorher Sunos Hook-Regeln prüfen.
+5. **Anreißer**: zwei Marken, Fenster als Export; vorher Sunos Hook-Regeln prüfen.
 6. **Bildmaterial**: Upload durch die App, Tiefe im Morgenlauf, Quelle je Effektclip aus dem Bildmaterial.
 
 Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzbar zurück.
@@ -164,11 +164,9 @@ beim Löschen fragt die Tafel („sie fragt"); die Länge des Wechsels steht an 
 drauf an"); Sunos Regeln siehe Abschnitt 6 („schau in der Suno-Doku nach"); das Bildmaterial heißt
 so („Bildmaterial").
 
-* Das Wort für den Hook — Caspar_D: „der Hook ist ja das, was Suno bevorzugt zeigt im Live-Feed,
-  also wäre wohl Anriss das richtigste, aber so ganz zufrieden bin ich nicht damit"; ihm fallen nur
-  englische ein (Song Ad, Trigger, Feed-Clip). Vorschläge Claude aus der Medienwelt: **Anreißer**
-  (das Fachwort für den Anriss, der Lust aufs Ganze macht), **Aufmacher** (das Stück, das vorn
-  steht, damit man hinsieht), **Schaufenster** (die Form: was der Feed zeigt). Wahl offen.
+Das Wort für den Hook ist entschieden: **Anreißer** (Caspar_D: „Anreißer ist gut, in Klammern oder
+der Erklärung darf Suno-Hook fallen"; Alternativen waren Auszug, Kostprobe, Anriss, Aufmacher,
+Schaufenster).
 
 ## 11. Was nicht dazugehört
 
