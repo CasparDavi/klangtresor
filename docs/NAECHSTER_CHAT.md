@@ -7120,3 +7120,19 @@ Scheibe. Was Caspar_D's Auge braucht, bleibt liegen: Lyric-Video-Vollexport, Loo
 Abnahme des Umbaus im echten Fenster.
 Caspar_D: „ja, und den Grundlinien- und bitgleichen Endstand kannst du dann natürlich machen, ohne
 den geht's ja nicht." — Beide vollen Läufe (je rund 13 min) sind für den 27.09. freigegeben.
+
+## 34. Brainstorm 26.09.2026: Karussell, Ausgaben, Szenen — kein Auftrag
+
+Caspar_D will „sehr, sehr gern den unteren Teil im Bedienungskarussell des Effektclip-Studios
+überarbeiten, eher wieder registermäßig", und denkt laut: vier Ausgaben (Effektclip im Haus mit
+voller Taktsynchro in Überblick und Bühne; 10-s-Snippet für Suno, Takt fällt früher oder später;
+Hook-Export für Suno mit zwei Zeitmarken, Anfang und Ende, taktsynchron; ganzer Titel für YouTube
+u. a.); die Tiefe aus der Vorbereitung als eigener Karusselleintrag; offen, ob verschiedene Medien
+verschiedene Ketten bekommen, ob lange Stücke zeitabhängigen Effekteinsatz und dynamische Parameter
+brauchen („variabler Schneefall, Schnee wird zu Regen, die Farbe des Regens von weiß zu blutrot,
+immer wie es zum Song passt"); er schaue dem Studio „eher passiv beim Wachsen zu", es brauche
+Leitplanken gegen Wildwuchs. Gezeigt: zwei Skizzen (Karussell Quelle/Tiefe/Vorbereitung/Kette/
+Ausgabe mit Registern Haus/Snippet/Hook/ganzer Titel; Zeitachse Song-Abschnitte → Szenen →
+Übergänge → Ausgaben als Fenster). Vorschlag Claude: ein Rezept, Szenen je Abschnitt statt
+Kurven, Zeit aus dem Song (Abschnitte, Eins), Ausgaben als Fenster auf eine Zeitachse, Hook-Marken
+rasten auf die Eins. Nichts beschlossen, nichts gebaut.
