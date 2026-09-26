@@ -7100,3 +7100,21 @@ null Rücksprünge in drei Sekunden; Play → Video läuft weiter (ein Nachsetze
 du es auch gesehen hast und eine Ursache gefunden hast, dann bin ich erleichtert, ich dachte, ich
 spinne oder es ist nicht exakt reproduzierbar." Reproduktion: Clip mit Bewegtbild-Quelle sichtbar
 (Bühne, Karte) und der Player hält den Titel abseits von 0 an.
+
+## 33. Auftrag für den 27.09.2026: das Studio wird eine Datei (Caspar_D unterwegs)
+
+Caspar_D (26.09.): „Das Herauslösen des Studios würde ich dir gern morgen übertragen, da bin ich
+nämlich unterwegs und du hättest den ganzen Tag Zeit, allein voranzukommen." — „mir ist die Version
+mit dem geänderten Server lieber, der Server ist noch nie gestorben, wenn du daran was gemacht hast;
+wenn nicht, dann ist es eben nicht fertig, wenn ich wiederkomme. Arbeite auf jeden Fall
+tokeneffizient." Titel mit Unterlängen angesehen: „ist gut so" (Wiedervorlage erledigt).
+**Entschieden (KONZEPT-STUDIO-MODUL §7):** 1 Go für Schritt 1–3; 2 Anschluss bleibt bei den acht
+typeof-Griffen, als Vertrag „Hausanschluss" im Dateikopf; 3 Server: `text/css` ohne Jahres-Cache,
+Eingriff erlaubt (atomar schreiben, neue PID und curl prüfen, in die Übergabe); 4 `aus`/`ein`
+fallen, Laborseite lädt die echte Datei; 5 Reihenfolge danach offen.
+**Plan:** voller Prüflauf als Grundlinie (254 Fälle, `--aus`), Umbau nach §6 Schritt 1–4 in einem
+Commit (js, css, index.html, Werkzeuge, Docs), Server-Zeile mit Neustart-Prüfung, voller Lauf
+danach (bitgleich = Abnahme), Paket bauen und im Sandkasten starten, alles in die Übergabe.
+Tokeneffizient: keine Agentenflotten, keine langen Ausgaben, Proben über Prüfstand und eigene
+Scheibe. Was Caspar_D's Auge braucht, bleibt liegen: Lyric-Video-Vollexport, Loop-Abweichungen,
+Abnahme des Umbaus im echten Fenster.
