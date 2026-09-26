@@ -32986,6 +32986,13 @@ function sprungHolen(v,seite,id){ if(!v||!seite||!seite.video||!id) return; cons
   fetch('/api/sprungkopie?'+q,{method:'POST'}).then(r=>r.ok?r.json():null).then(j=>{ if(!j||!j.url||v.src.endsWith(j.url)) return; const t=v.currentTime||0;
     v.addEventListener('loadeddata',()=>{ try{ v.currentTime=t; }catch(e){} if(!VIDEO_GENAU) v.play().catch(()=>{}); },{once:true}); v.src=j.url; }).catch(()=>{}); }
 function quelleSync(q,t){ if(!q||q.tagName!=='VIDEO'||VIDEO_GENAU) return;
+  /* EIN ANGEHALTENER FILM STEHT - AUCH DIE VIDEOQUELLE (26.09.2026; Caspar_D: "in der Totalansicht spielt der
+     Effektclip von Auftakt nicht, sondern stottert immer auf der ersten Drittelsekunde"). Seit die Kachel bei Pause
+     die Songzeit haelt (Nacht 25.09.), lief das Video weiter und wurde bei jeder Drift ueber 0,2 s auf die stehende
+     Zeit zurueckgeholt: 26 Ruecksprunge in drei Sekunden, immer dasselbe Viertelsekuendchen. Haelt der Player diesen
+     Titel, steht das Video an der Songzeit; laeuft er weiter, laeuft es weiter. Ohne Player-Uhr wie bisher frei. */
+  let steht=false; try{ steht=uhrEcht&&typeof audio!=='undefined'&&!!audio.paused; }catch(e){}
+  if(steht){ if(!q.paused) q.pause(); if(q.duration>0){ const soll=t%q.duration; if(Math.abs(q.currentTime-soll)>0.2&&Math.abs(q.currentTime-soll)<q.duration-0.2) q.currentTime=soll; } return; }
   if(q.paused) q.play().catch(()=>{});
   if(!uhrEcht||!(q.duration>0)) return; const soll=t%q.duration;
   if(Math.abs(q.currentTime-soll)>0.2&&Math.abs(q.currentTime-soll)<q.duration-0.2) q.currentTime=soll; }

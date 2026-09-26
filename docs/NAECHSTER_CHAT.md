@@ -7077,3 +7077,26 @@ Caspar_D (26.09., nach Mitternacht): „alle Beispiele enthalten keine Unterlän
 schwerlich beurteilen kann, ob es wirklich die i-Punkt-Lücke ist, aber es sieht nach Augenschein
 gut aus — lassen wir so. Kannst einchecken und pushen." Gesichert. Wiedervorlage bei Gelegenheit:
 ein Titel mit Unterlängen in der oberen Zeile (g, p, y) ansehen.
+
+## 32. 26.09.2026: Effektclip stottert bei angehaltenem Player (Auftakt, Videoquelle)
+
+Caspar_D: „kannst du dir mal im KlangTresor den Effektclip von Auftakt anschauen, in der Totalansicht
+spielt der nicht, sondern stottert immer auf der ersten Drittelsekunde" — „du darfst das Fenster
+anfassen, wenn du musst" — später „hast du was geändert, jetzt geht es." Befund in der eigenen
+Scheibe auf 8788 (stumm): Auftakt hat die Bewegtbild-Quelle (artwork.mp4, 10 s, 24 fps), zwei
+Titel mit „scharfstellen", Karaoke, drei Lichteffekte. Auf der Bühne (Bewegtbild „Effektclip",
+Leinwand 1073×1440) bei angehaltenem Player (t > 0): das Video lief weiter und wurde von
+`quelleSync` bei Drift > 0,2 s auf die stehende Songzeit zurückgeholt — 26 Rücksprünge in 3 s,
+8,89 → 9,07 → 8,83. Beim Abspielen glatt (deshalb „jetzt geht es"). Ursache: seit „ein
+angehaltener Film steht" (Nacht 25.09., `clipZeit` hält bei Pause die Songzeit) fehlte dieselbe
+Regel für die Videoquelle. Fix in `quelleSync`: hält der Player diesen Titel (uhrEcht und
+audio.paused), wird das Video pausiert und einmal auf die Songzeit gesetzt; sonst wie bisher.
+Nachweis in der Scheibe nach Reload: siehe unten. Prüfstand ohne Videofälle: titel/partikel/
+kenburns unverändert. Die Bühne zeigt den Clip über `bBewegtWahl='clip'` + `bildSetzen('video')`;
+das Videoelement der Quelle liegt außerhalb des DOM (Griff über einen Getter-Haken auf
+HTMLMediaElement.prototype.currentTime).
+Nachweis nach Reload der eigenen Scheibe: Player angehalten bei 32,6 s → Video steht bei 2,47 s,
+null Rücksprünge in drei Sekunden; Play → Video läuft weiter (ein Nachsetzen). Caspar_D: „gut, wenn
+du es auch gesehen hast und eine Ursache gefunden hast, dann bin ich erleichtert, ich dachte, ich
+spinne oder es ist nicht exakt reproduzierbar." Reproduktion: Clip mit Bewegtbild-Quelle sichtbar
+(Bühne, Karte) und der Player hält den Titel abseits von 0 an.
