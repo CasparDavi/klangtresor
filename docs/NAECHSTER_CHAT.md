@@ -7180,3 +7180,7 @@ Schläge als Ticks, Grenzen als Griffe (Klick setzt, Doppelklick entfernt, Ziehe
 auf die Eins), Spielkopf gestrichelt; beim Ziehen spielt der Player einen Takt vor und nach der
 Grenze; darunter die Abschnittsnamen mit Zeiten. Vorhanden im Haus: Hüllkurve (`wellenStufen` im
 Katalog), Schläge, Abschnitte, der Player; die Zonen-Grenzen der Tiefenkarte als Bedienmuster.
+**Konzeptblatt angelegt** (Caspar_D: „ich glaube jetzt gleich"): `docs/effektclip/KONZEPT-TAFEL.md`
+— Entscheidungen mit Wortlaut, Wörter, sechs Leitplanken, Tafel, Karussell mit Registern,
+Abschnittswahrheit (Befund: Sunos Analyse `abschnitte` mit peak_times/segment_labels, Regiezeilen,
+Whisper, `wellenStufen`), Rezept, sechs Bauschritte, Offenes. Backlog verweist darauf.
