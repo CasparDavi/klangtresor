@@ -163,6 +163,13 @@ ab – Vorgeschichte, kein Rechenfehler. Danach `--studio-vergleich studio-vorhe
 `ergebnis-loopstufe-loop.json` 177 Fälle, gleich und gleichFolge höchstens 0,092.
 Achtung: `zeit()` nimmt den Player erst ab 0,05 s – darunter läuft die freie Uhr, darum 0,06 statt 0.
 
+**Laufdrift am Anfang eines Laufs (27.09.2026):** Beim vollen Lauf vor der Datei-Herauslösung wichen die
+ersten sechs Vorgabefälle (kontrast, farbe, laser, vlauf, strobe, filmnebel) um bis zu drei Prozent in Naht
+und p95 von jedem späteren Lauf ab — auch vom alten Code, in einem Worktree unter denselben Bedingungen
+neu gerechnet. Die Abweichung war also der Lauf (Fremdlast in den ersten Minuten), nicht der Code. Wer
+zwei volle Läufe vergleicht und Ausreißer sieht: die Fälle allein wiederholen, auf beiden Ständen, bevor
+man einen Effekt verdächtigt.
+
 ## Was hier liegt
 
 | Datei | |

@@ -7259,3 +7259,11 @@ Prüfung sauber); in einem Sandkasten entpackt und mit `--port 8791` gestartet: 
 Palette und Inter da; die Konsole meldet nur „Kein Katalog" (frischer Stand ohne library, wie
 immer). Sandkasten und Server danach entfernt. Das Zip ist NICHT als Release hochgeladen — das
 macht Caspar_D (je Änderung ein neues Release, nie --clobber).
+**Endstand (27.09., 1739 s):** 254 Fälle, 248 bitgleich zur Grundlinie in gleich/gleichFolge/naht/
+erwartet/p95/vorschauAbw. Sechs Vorgabefälle (kontrast, farbe, laser, vlauf, strobe, filmnebel) wichen
+bis zu 3 % ab — allein wiederholt zweimal identisch, und der ALTE Code (cc69f4d, Worktree, jetzt
+gerechnet) liefert exakt die neuen Werte: Laufdrift der ersten Fälle der Grundlinie (Fremdlast), nicht
+die Herauslösung. Damit ist die Abnahme „bitgleich" erfüllt: alt und neu malen dasselbe. Notiz in
+labor/nahtpruefung/LIESMICH.md. **Die Herauslösung ist fertig**: 12079e8 (Dateien, Werkzeuge, Docs),
+9fefb55 (Serverzeile), cf5f708 (Paket). Caspar_D's Abnahme im echten Fenster steht aus (F5 holt den
+Stand; sein Tab lief noch mit der Ein-Datei-Fassung).
