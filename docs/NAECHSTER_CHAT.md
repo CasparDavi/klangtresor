@@ -7253,3 +7253,9 @@ Paket.
 geschrieben (Temp + rename), die Neustart-Wache griff: alte PID 82924, neue PID 48332, `curl -I
 /tbs.css` → Cache-Control no-cache, Startseite 200. Der Endstand-Lauf (254 Fälle) läuft seit dem
 Umbau im Hintergrund (`scratchpad/modul/endstand.json`).
+**Paket (Schritt 5, 27.09.):** `node bin/paket.js` → `../KlangTresor.zip` (335 Dateien, 6,14 MB,
+Prüfung sauber); in einem Sandkasten entpackt und mit `--port 8791` gestartet: `/`, `/tbs-modul.js`,
+`/tbs.css`, `/fonts/inter-700.woff2` alle 200, im Browser `EffektclipStudio` mit der vollen Rückgabe,
+Palette und Inter da; die Konsole meldet nur „Kein Katalog" (frischer Stand ohne library, wie
+immer). Sandkasten und Server danach entfernt. Das Zip ist NICHT als Release hochgeladen — das
+macht Caspar_D (je Änderung ein neues Release, nie --clobber).
