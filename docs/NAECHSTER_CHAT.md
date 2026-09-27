@@ -7249,3 +7249,7 @@ Prüfstands bitgleich zur Grundlinie, Laborseite lädt die echte Datei, die App 
 und Stylesheet (Pult gestylt, Studio öffnet, Inter geladen; die 404 ist `eigen-effekt.json` eines
 Titels ohne Rezept). Noch offen: Serverzeile (`/tbs.css` kommt mit max-age 31536000), voller Lauf,
 Paket.
+**Serverzeile (Schritt 3, 27.09.):** `text/css` gehört zu `programm` (No-Cache mit 304). Atomar
+geschrieben (Temp + rename), die Neustart-Wache griff: alte PID 82924, neue PID 48332, `curl -I
+/tbs.css` → Cache-Control no-cache, Startseite 200. Der Endstand-Lauf (254 Fälle) läuft seit dem
+Umbau im Hintergrund (`scratchpad/modul/endstand.json`).

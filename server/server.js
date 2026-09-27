@@ -277,7 +277,10 @@ function liefere(req, res, datei) {
      werden wandelbar; cover.jpg, titelbild.jpg, artwork.mp4, audio.mp3, meintiefe.png und
      tiefe.png.bak bleiben fest. */
   const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
-  const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || analyse;
+  /* text/css gehoert seit dem 27.09.2026 zu "programm": das Effektclip-Studio ist jetzt web/tbs.css und
+     web/tbs-modul.js; mit dem Jahres-Cache hielte der Browser nach jeder Aenderung ein altes Stylesheet,
+     waehrend das Skript schon neu waere - dieselbe Regel wie fuer .js, mit 304 statt max-age. */
+  const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || typ.startsWith('text/css') || analyse;
   const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();
 
