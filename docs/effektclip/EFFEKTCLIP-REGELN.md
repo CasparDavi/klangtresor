@@ -255,6 +255,14 @@ gleich (Block 9 bis 17 gegen 14 beim glatten Titel, der Unterschied ist die fein
 
 ---
 
+**20. Ein angehaltener Film steht.** Liegt der Titel im Player, gilt seine Songzeit auch in der Pause
+— für Kachel, Bühne und die Videoquelle: `clipZeit` hält die Zeit (Nacht 25.09.2026), `quelleSync`
+pausiert das Video an der Songzeit (26.09.2026). Vorher lief das Video weiter und wurde bei jeder Drift
+über 0,2 s zurückgeholt — 26 Rücksprünge in drei Sekunden, „stottert immer auf der ersten
+Drittelsekunde" (Caspar_D, Auftakt). Nur ein Titel, der nicht im Player liegt, läuft frei: das ist die
+Vorschau der Gestaltung, und der Auftritt des Titels zeigt dort seinen Vorschauzyklus statt der echten
+Zeiten.
+
 ## Wie geprüft wird
 
 Zwei Wege, und beide sind nötig.

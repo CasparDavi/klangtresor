@@ -78,7 +78,9 @@ Schrift, Größe, Band, Farbquelle, Ort Y, Ausrichtung, Vorlauf.
     0,06 em). Ober- und Unterlänge sind die der Schrift (an h und g gemessen, `textLaengen`),
     nicht die der Buchstaben der Zeile — sonst rückten zwei Zeilen ohne Unterlängen zu dicht
     zusammen. Nähe zeigt Zugehörigkeit (Tufte): innerhalb einer umbrochenen Zeile eine i-Punkt-
-    Lücke, zwischen den Zeilen eines Karaoke-Verses drei. Der Kasten der Marke hüllt Ober- und
+    Lücke, zwischen den Zeilen eines Karaoke-Verses drei. Seit dem 27.09. gilt die Lücke auch im
+    Band der Bühne (`bandDurchschuss` misst sie an Inter und setzt `--kz-lh`, vorher 1,25 em); die
+    Lücke zwischen den drei Zeilen des Bandes ist unverändert. Der Kasten der Marke hüllt Ober- und
     Unterlängen.
 11. **Struktur × Farbe.** Der Titel kann Metall, Stein, Papier oder Schraffur tragen. Die Struktur
     trägt das Licht (Rampe, Korn, Kontrast, Licht von oben wie der Schlagschatten), die Farbe den

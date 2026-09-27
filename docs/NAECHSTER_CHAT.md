@@ -7197,3 +7197,37 @@ an Inter 700: Oberlänge (hdkl) + Unterlänge (gpqy) + i-Punkt-Lücke, alles in 
 Variable — nur, wenn Inter geladen ist (`fonts.check`), sonst bleibt 1,06; läuft bei `fonts.ready`
 und `loadingdone`. Gemessen in der eigenen Scheibe: 1,010 em bei Inter 700; die zwei Reihen einer
 Zeile sitzen wie im Effekt. Die Lücke zwischen den drei Zeilen des Verses ist unverändert.
+
+## 36. Stand vor der Herauslösung (27.09.2026, kompakt) — hier weiterlesen nach einer Kompaktierung
+
+Caspar_D: „fang mit der Herauslösung an, du darfst Server neu starten, wenn nötig, aber vorher
+solltest du wohl die Doku noch insgesamt nachziehen, kompaktieren und dann geht's los." Doku ist
+nachgezogen (KONZEPT-TEXT 10a Band, REGELN 20 „ein angehaltener Film steht"); alles bis hier gepusht.
+
+**Auftrag:** `docs/effektclip/KONZEPT-STUDIO-MODUL.md`, Schritte 1–5 (§6), Entscheidungen §7:
+1 Go; 2 Anschluss bleibt bei den acht typeof-Griffen, als Kommentar „Hausanschluss" im Kopf von
+`web/tbs-modul.js`; 3 `server/server.js`: `text/css` in `programm` (No-Cache statt Jahres-Cache),
+Eingriff erlaubt — atomar schreiben, Neustart-Wache prüfen (neue PID, `curl -sI /tbs.css` mit
+Cache-Control), in die Übergabe; 4 `bin/effektclip-labor.js aus/ein` fallen (Grund als Kommentar
+bleibt, `daten`/`lyrik` bleiben), `labor/effektclip-studio` lädt die echte Datei; 5 danach offen.
+**Ablauf:** (a) Grundlinie: voller Lauf läuft seit 27.09. vormittags im Hintergrund
+(`scratchpad/modul/grundlinie.json`, Log `grundlinie.log`, Commit in `grundlinie-commit.txt`);
+web/index.html NICHT anfassen, bis er fertig ist. (b) Block → Datei: `web/tbs-modul.js` = Inhalt
+zwischen den JS-Marken `/* >>> Effektclip-Studio (tbs-modul.js) */` … `/* <<< … */`, `web/tbs.css`
+= Inhalt zwischen den CSS-Marken; in index.html `<link rel="stylesheet" href="/tbs.css">` am Ende
+des zweiten `<style>` (gleiche Kaskadenlage) und `<script src="/tbs-modul.js"></script>` ohne defer
+unmittelbar vor dem Haus-`<script>`; die fünf ungeschützten `EffektclipStudio.`-Aufrufe in `capAuf`
+(~17599–17642) bekommen den typeof-Wächter. (c) Werkzeuge: `labor/nahtpruefung/stand.js` liest die
+zwei Dateien statt der Marken (Haken bleibt eingespleißt), `syntax.js` prüft auch `<script src>`
+unter web/, `bin/effektclip-labor.js` ohne aus/ein, `labor/effektclip-studio/labor-haus.html` lädt
+`../../web/tbs-modul.js` und `tbs.css` (oder Verweise), LIESMICHs, EFFEKTCLIP-REGELN 262–268,
+CLAUDE.md „Die Datei, mit der Jörg arbeitet" (zwei Dateien plus index.html, ein Commit), docs.
+Alles in EINEM Commit. (d) Serverzeile, Neustart-Prüfung. (e) Voller Lauf danach, Vergleich mit der
+Grundlinie: gleiche Naht-/Vorschauwerte je Fall = Abnahme (`--vorschau-vergleich`? nein: die
+Grundlinie ist die `--aus`-Datei; Werte je Fall vergleichen). (f) `node bin/paket.js`, Zip in einem
+Sandkasten entpacken und `node server/server.js --port <frei>` starten, Studio öffnen, Kachel, Bühne;
+danach Sandkasten löschen. (g) Übergabe, Memory.
+**Regeln:** tokeneffizient (keine Agentenflotten); `library/` nur lesen; Jörgs Fenster 8788 nur
+lesen/ansehen (erlaubt), kein zweites App-Fenster außer Sandkasten; Prüfläufe > 2 min sind für
+heute freigegeben (Grundlinie und Endstand); `rm -rf` nie auf cwd; vor jedem Push fetchen;
+Persönliches nicht ins Repo.
