@@ -7187,3 +7187,13 @@ Whisper, `wellenStufen`), Rezept, sechs Bauschritte, Offenes. Backlog verweist d
 Zwischenfall: das Konzeptblatt wurde auf eine Rückgängig-Bitte kurz entfernt (226af59) und auf
 „halt, ich hab einen Fehler gemacht" sofort aus 79e4ccc wiederhergestellt, samt Backlog-Verweis.
 Nichts verloren.
+
+## 35. 27.09.2026: Karaokebühne mit i-Punkt-Durchschuss
+
+Caspar_D: „die umgebrochenen Zeilen haben dort nicht den i-Punkt-Abstand als Durchschuss." Das
+Band der Bühne ist DOM/CSS (`#bkaraoke .kz`, vorher `line-height:1.25`). Jetzt `line-height:
+var(--kz-lh,1.06)`; `bandDurchschuss()` (Haus-Code vor `karaokeTakt`) misst nach `document.fonts`
+an Inter 700: Oberlänge (hdkl) + Unterlänge (gpqy) + i-Punkt-Lücke, alles in em, und setzt die
+Variable — nur, wenn Inter geladen ist (`fonts.check`), sonst bleibt 1,06; läuft bei `fonts.ready`
+und `loadingdone`. Gemessen in der eigenen Scheibe: 1,010 em bei Inter 700; die zwei Reihen einer
+Zeile sitzen wie im Effekt. Die Lücke zwischen den drei Zeilen des Verses ist unverändert.
