@@ -30,10 +30,12 @@ im Archiv überschrieben (wiederhergestellt). Verlinkt werden höchstens einzeln
 
 ### Die Datei, mit der Jörg arbeitet
 
-`web/index.html` ist die ganze App, und sein Browser lädt sie beim Neuladen in einem Stück. Wer sie in vielen kleinen
-Schritten schreibt, während Jörg arbeitet, riskiert, dass er sich eine halbfertige Fassung holt (passiert am
-16.09.2026, kaputter Export). Bauaufträge laufen darum auf einer **Kopie**; die fertige Fassung kommt in einem Zug ins
-Repo, und erst dann heißt es: neu laden.
+`web/index.html` ist das Haus, `web/tbs-modul.js` mit `web/tbs.css` das Effektclip-Studio (seit dem 27.09.2026 eigene
+Dateien; die Seite lädt sie ohne `defer` vor dem Haus-Skript). Sein Browser lädt alles beim Neuladen in einem Stück.
+Wer in vielen kleinen Schritten schreibt, während Jörg arbeitet, riskiert, dass er sich eine halbfertige Fassung holt
+(passiert am 16.09.2026, kaputter Export). Bauaufträge laufen darum auf einer **Kopie**; die fertige Fassung kommt in
+einem Zug ins Repo — Modul, Stylesheet und Haus in **einem Commit**, ein Skript ohne sein Stylesheet ist die halbe
+Fassung —, und erst dann heißt es: neu laden.
 
 ## 3. Was gemessen wird, wird nicht behauptet
 

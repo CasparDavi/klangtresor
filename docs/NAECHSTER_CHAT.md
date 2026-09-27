@@ -7231,3 +7231,21 @@ danach Sandkasten löschen. (g) Übergabe, Memory.
 lesen/ansehen (erlaubt), kein zweites App-Fenster außer Sandkasten; Prüfläufe > 2 min sind für
 heute freigegeben (Grundlinie und Endstand); `rm -rf` nie auf cwd; vor jedem Push fetchen;
 Persönliches nicht ins Repo.
+
+## 37. 27.09.2026: das Studio ist eine Datei (Schritte 1, 2 und 4 des Konzepts)
+
+Grundlinie: voller Lauf 254 Fälle, 1958 s, `scratchpad/modul/grundlinie.json` (Commit cc69f4d).
+Danach `herausloesen.py` (Scratchpad modul/): `web/tbs.css` (Block zwischen den CSS-Marken, mit
+Kopf) und `web/tbs-modul.js` (Block zwischen den JS-Marken, mit Kopf „Hausanschluss" — der Vertrag
+aus KONZEPT §2); `index.html` ohne die Blöcke, `<link rel="stylesheet" href="/tbs.css">` direkt
+nach dem `</style>` des zweiten Stylesheets, `<script src="/tbs-modul.js">` ohne defer vor dem
+Haus-`<script>`; die fünf ungeschützten Aufrufe in `capAuf` laufen über Wächter (`clipAn`,
+`clipAus`, neu `clipNeu`, `studioOeffnen`), kein `EffektclipStudio.` mehr ohne typeof. Werkzeuge:
+`stand.js` liest die Dateien, `syntax.js` baut auch die 8 `<script src>`-Dateien, `effektclip-labor.js`
+ohne `aus`/`ein` (Grund im Kopf), `daten` verlinkt `tbs-modul.js`, `tbs.css` und neu `fonts` nach
+`web/`; `.gitignore`, beide LIESMICHs, REGELN-Befehle, CLAUDE.md (drei Dateien, ein Commit),
+KONZEPT-STUDIO-MODUL „Gebaut am 27.09.". Proben: `node --check`, syntax.js, sechs Fälle des
+Prüfstands bitgleich zur Grundlinie, Laborseite lädt die echte Datei, die App auf 8788 lädt Modul
+und Stylesheet (Pult gestylt, Studio öffnet, Inter geladen; die 404 ist `eigen-effekt.json` eines
+Titels ohne Rezept). Noch offen: Serverzeile (`/tbs.css` kommt mit max-age 31536000), voller Lauf,
+Paket.

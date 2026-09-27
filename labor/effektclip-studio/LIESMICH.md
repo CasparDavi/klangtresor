@@ -7,21 +7,18 @@ Studio messen, ohne den echten Server anzufassen und ohne an Produktivdaten zu a
 ## Loslegen
 
 ```bash
-node bin/effektclip-labor.js aus     # das Studio aus web/index.html in diesen Ordner holen
-node bin/effektclip-labor.js daten   # Prüfdaten und Verweise anlegen
+node bin/effektclip-labor.js daten   # Prüfdaten und Verweise anlegen (auch tbs-modul.js und tbs.css → web/)
 node bin/effektclip-labor.js lyrik   # bereinigte Lyrik der Prüftitel anlegen (Karaoke-Effekt)
 cd labor/effektclip-studio && python3 -m http.server 18811
 ```
 
-Dann `http://127.0.0.1:18811/labor-haus.html`. Zurück ins Haus:
+Dann `http://127.0.0.1:18811/labor-haus.html`.
 
-```bash
-node bin/effektclip-labor.js ein     # spleißt zurück und prüft vorher die Syntax der ganzen Seite
-```
-
-**Die Quelle ist `web/index.html`, nicht dieser Ordner.** `tbs-modul.js` und `tbs.css` liegen hier
-nur als Arbeitsstand und werden aus dem Haus geholt. Wer hier ändert, muss `ein` laufen lassen,
-sonst ist die Änderung beim nächsten `aus` weg. Zwei Wahrheiten gibt es nicht.
+**Die Quelle ist `web/tbs-modul.js` mit `web/tbs.css`, nicht dieser Ordner.** Seit dem 27.09.2026 ist
+das Studio eine eigene Datei; `tbs-modul.js` und `tbs.css` liegen hier nur als Verweise darauf, die
+`daten` anlegt. Wer im Haus ändert, sieht es hier nach F5. Die Befehle `aus` und `ein` (Block aus
+`web/index.html` holen, zurückspleißen) gibt es nicht mehr; die Syntax prüft
+`node labor/nahtpruefung/syntax.js`. Zwei Wahrheiten gibt es nicht.
 
 ## Was hier liegt
 
@@ -32,7 +29,7 @@ sonst ist die Änderung beim nächsten `aus` weg. Zwei Wahrheiten gibt es nicht.
 | `messreihe.js` | die Messreihe zum Einwerfen in die Konsole, rund vier Minuten |
 | `messreihe-2026-09-10.json` | die Grundlinie zum Vergleichen |
 | `blendentest.html` | Einzeltest zur Blenden-Rechenzeit, ohne Studio und ohne Maler |
-| `tbs-modul.js`, `tbs.css` | Arbeitsstand, abgeleitet, nicht versioniert |
+| `tbs-modul.js`, `tbs.css` | Verweise auf `web/` (seit 27.09.2026), nicht versioniert |
 | `_songs.json` | schmaler Auszug aus dem Katalog, Archivdaten, nicht versioniert |
 | `_lyrik.json` | bereinigte Lyrik der Prüftitel (`lyrik`), Archivdaten, nicht versioniert; die Laborseite beantwortet `/api/lyrik` daraus |
 | `media`, `testbild`, `fremd` | Verweise ins Archiv und in die Seite, nicht versioniert |

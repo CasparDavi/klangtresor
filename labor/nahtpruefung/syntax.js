@@ -16,5 +16,11 @@ while ((m = re.exec(text))) {
   try { new Function(m[1]); }
   catch (e) { kaputt++; console.error('Skript ' + n + ' (ab Zeile ' + (text.slice(0, m.index).split('\n').length) + ') baut nicht: ' + e.message); }
 }
-console.log(path.relative(process.cwd(), datei) + ': ' + n + ' Inline-Skripte, ' + (kaputt ? kaputt + ' kaputt' : 'alle bauen'));
+/* Seit das Studio eine Datei ist (27.09.2026): auch jede <script src="/x.js">-Datei unter web/ bauen. */
+const web = path.dirname(datei); let d = 0;
+for (const s of text.matchAll(/<script[^>]*\bsrc="\/([^"?]+)(?:\?[^"]*)?"/g)) {
+  const f = path.join(web, s[1]); if (!fs.existsSync(f)) { kaputt++; console.error('Skriptdatei fehlt: ' + s[1]); continue; }
+  d++; try { new Function(fs.readFileSync(f, 'utf8')); } catch (e) { kaputt++; console.error(s[1] + ' baut nicht: ' + e.message); }
+}
+console.log(path.relative(process.cwd(), datei) + ': ' + n + ' Inline-Skripte, ' + d + ' Skriptdateien, ' + (kaputt ? kaputt + ' kaputt' : 'alle bauen'));
 process.exit(kaputt ? 1 : 0);

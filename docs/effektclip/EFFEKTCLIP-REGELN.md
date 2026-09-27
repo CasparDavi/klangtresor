@@ -280,8 +280,7 @@ Nachbau des Nebels hielten 3.
 Der Weg ins Haus und zurück läuft über `bin/effektclip-labor.js`:
 
 ```bash
-node bin/effektclip-labor.js aus     # Block aus web/index.html holen
-node bin/effektclip-labor.js ein     # zurück spleißen, mit Syntaxprüfung
+node labor/nahtpruefung/syntax.js    # Seite und Skriptdateien bauen (seit 27.09.2026 ist das Studio web/tbs-modul.js + web/tbs.css; aus/ein gibt es nicht mehr)
 node bin/effektclip-labor.js daten   # Prüfdaten und Verweise anlegen
 node bin/effektclip-labor.js lyrik   # bereinigte Lyrik der Prüftitel als _lyrik.json anlegen (Karaoke)
 ```

@@ -168,7 +168,7 @@ Achtung: `zeit()` nimmt den Player erst ab 0,05 s – darunter läuft die freie 
 | Datei | |
 |---|---|
 | `naht.mjs` | Lauf: baut den Stand, statischer Server, headless Chrome über CDP, Tabelle |
-| `stand.js` | holt tbs-modul.js/tbs.css aus web/index.html nach `site/`, setzt den Prüfhaken ein, kopiert `_songs.json` und (falls da) `_lyrik.json`, verlinkt `media`, `testbild`, `fremd`, `fonts` |
+| `stand.js` | kopiert web/tbs-modul.js und web/tbs.css nach `site/` (bis 27.09.2026 aus web/index.html geschnitten), setzt den Prüfhaken ein, kopiert `_songs.json` und (falls da) `_lyrik.json`, verlinkt `media`, `testbild`, `fremd`, `fonts` |
 | `haken.js` | der Prüfhaken `window.__naht` - lebt nur in `site/`, nie in web/index.html; wartet je Titel (`bereitMachen`) und je Fall auf die bereinigte Lyrik (`lyrikBereit`), sonst hinge das Karaoke am Zeitpunkt der Antwort |
 | `faelle.json` | die Fälle: jeder Typ mit Vorgabe plus die Unterfälle aus befund.md, feste Titel-IDs; `jetzt` je Fall setzt eine feste Songzeit (nötig für zeitabhängige Effekte wie Karaoke). Die zwei Karaoke-Fälle weichen in der Vorschau absichtlich vom Export ab — unter LOOP>0 malt Karaoke nichts, das steht in der Fallbemerkung |
 | `faelle-bauen.js` | schreibt faelle.json neu und sucht die Titel aus _songs.json aus |

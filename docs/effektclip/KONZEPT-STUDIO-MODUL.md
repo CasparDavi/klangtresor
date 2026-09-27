@@ -3,7 +3,7 @@
 Stand 25.09.2026. Vorbereitung der Planung auf Caspar_Ds Wort: *„bereite alles vor, was nötig
 ist, um die Planung für die Studio-Herauslösung abzuschließen."* Gelesen aus dem Code, nicht aus dem
 Labor: eine Anschlussliste per Skript über `web/index.html`, dazu Werkzeuge, Paket, Server, Ladeweg.
-Es ist noch nichts gebaut.
+**Gebaut am 27.09.2026** (Schritte 1–4 in einem Commit, Schritt 3 Serverzeile eigener Commit); der Text darunter ist der Plan, wie er vor dem Bau stand.
 
 ## 1. Was heute ist
 

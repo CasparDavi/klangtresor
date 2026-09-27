@@ -1,0 +1,334 @@
+/* Effektclip-Studio - das Stylesheet. Seit dem 27.09.2026 eine eigene Datei; vorher stand es als Block
+   zwischen den Marken "Effektclip-Studio (tbs.css)" am Ende des zweiten <style> von web/index.html, und
+   dort wird es weiter geladen (<link>, gleiche Kaskadenlage). Enthaelt auch die @font-face fuer Inter und
+   Gelasio (web/fonts). Der Server liefert .css seit demselben Tag mit no-cache wie .js - sonst hielte der
+   Browser ein Jahr lang das alte Blatt. Konzept: docs/effektclip/KONZEPT-STUDIO-MODUL.md. */
+/* DIE PAKETSCHRIFTEN (Nacht 25.09.2026): Inter fuer die Grotesk, Gelasio fuer die Serife (metrisch wie
+   Georgia), beide SIL OFL, Dateien und Herkunft in web/fonts/. Damit malen Mac, Windows und die Buehne
+   dieselbe Schrift - vorher lief derselbe Effektclip auf Castos Rechner in Arial und war ein anderer Film.
+   font-display block: die Leinwand darf nicht mit dem Rueckfall anfangen; die Exporte warten ohnehin
+   (schriftenBereit). */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:block;src:url('fonts/inter-400.woff2') format('woff2')}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:block;src:url('fonts/inter-700.woff2') format('woff2')}
+@font-face{font-family:'Gelasio';font-style:normal;font-weight:400;font-display:block;src:url('fonts/gelasio-400.woff2') format('woff2')}
+@font-face{font-family:'Gelasio';font-style:normal;font-weight:700;font-display:block;src:url('fonts/gelasio-700.woff2') format('woff2')}
+/* ---- Effektclip-Studio: Overlay wie #wer, Panel wie im Scratch (hausrein) ---- */
+#tbs{position:fixed;inset:0;z-index:84;background:rgba(0,0,0,.6);display:grid;place-items:center}
+#tbs[hidden]{display:none}
+/* BREITER, DAMIT DIE ZWEI SPALTEN HINEINPASSEN (Caspar_D, 14.09.2026: „du musst das ganze
+   Effektclip-Panel breiter erlauben, damit man das sieht"). Vorher 1320 px und ein Pult von
+   festen 460 px - die Effektkarte blieb damit unter 420 px und stapelte immer, egal wie breit
+   der Bildschirm war. Jetzt darf der Kasten die Breite nehmen, die da ist, und das Pult waechst
+   mit; auf schmalen Schirmen bleibt es bei 460 und die Karte stapelt wie vorgesehen. */
+#tbs-kasten{width:min(1720px,97vw);height:min(940px,95vh);background:var(--bg);border:1px solid var(--rand);border-radius:12px;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
+#tbs-kopf{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--rand)}
+#tbs-kopf h3{margin:0;font-size:15px;flex:0 0 auto}#tbs-kopf h3 span{color:var(--schwach);font-weight:400;margin-left:8px}
+#tbs-kopf #tbs-unter{color:var(--schwach);font-size:12px;flex:1}
+#tbs-kopf button{width:28px;height:28px;border-radius:50%;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+#tbs-kopf button:active{transform:scale(.95)}
+#tbs-buehne{display:grid;grid-template-columns:minmax(0,1fr) clamp(460px,40vw,820px);min-height:0}
+#tbs-feld{position:relative;background:#000;overflow:hidden;display:grid;place-items:center;min-height:0}
+#tbs-lein{max-width:100%;max-height:100%;display:block;background:#000}
+#tbs-pult{background:var(--flaeche);border-left:1px solid var(--rand);overflow:auto;padding:14px;font-size:13px;line-height:1.5;color:var(--text)}
+#tbs .tbs-unter{color:var(--schwach);font-size:11px;line-height:1.5}
+#tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
+#tbs #tbs-pStatus{display:block;color:var(--schwach);font-size:11px;line-height:1.4;margin:-3px 0 10px;min-height:14px}
+#tbs .tbs-reihe{display:flex;gap:8px;margin-bottom:9px}
+#tbs .tbs-reihe button{flex:1;padding:7px 0;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:12px}
+#tbs .tbs-reihe button:hover{border-color:var(--akzent)}
+#tbs .tbs-zeile{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:9px;font-size:11.5px;color:var(--schwach)}
+#tbs .tbs-zeile .tbs-lbl{flex:0 0 auto}
+#tbs .tbs-mini{width:28px;height:26px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:13px}
+#tbs .tbs-mini:hover{border-color:var(--akzent)}
+#tbs .tbs-seg{display:flex;gap:4px}
+#tbs .tbs-seg button{padding:4px 9px;border-radius:7px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:11.5px}
+#tbs .tbs-seg button.on{border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent);color:var(--text);background:var(--flaeche2)}
+#tbs select.tbs-wahl{flex:1;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:7px;padding:5px}
+#tbs .tbs-vorrat{border:1px dashed var(--rand);border-radius:10px;padding:10px;margin:4px 0 14px}
+#tbs .tbs-kart{font-weight:400;color:var(--schwach);font-size:11px}
+#tbs .tbs-vorrat .tbs-titel{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--schwach);margin-bottom:8px}
+#tbs .vgruppe{margin-bottom:9px}
+#tbs .vgruppe:last-child{margin-bottom:0}
+#tbs .vgruppe .gname{font-size:11px;color:var(--schwach);margin-bottom:5px}
+#tbs .vgruppe .knoepfe{display:flex;gap:6px;flex-wrap:wrap}
+#tbs .vgruppe button{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--text);cursor:pointer;font:inherit;font-size:11.5px}
+#tbs .vgruppe button:hover{border-color:var(--akzent)}
+#tbs .tbs-ik{display:inline-flex;width:16px;height:16px;flex:0 0 auto}
+#tbs .tbs-ik svg{width:16px;height:16px;display:block}
+#tbs .tbs-karte{border:1px solid var(--rand);border-radius:10px;margin-bottom:9px;overflow:hidden;background:var(--flaeche)}
+#tbs .tbs-karte.an{border-color:#44454a}
+#tbs .tbs-kopf{display:flex;align-items:center;gap:8px;padding:9px 10px;user-select:none}
+#tbs .tbs-kopf b{flex:1;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
+#tbs .tbs-karte:not(.an) .tbs-kopf b{color:var(--schwach)}
+#tbs .tbs-kopf .tbs-knopf{width:22px;height:22px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font-size:11px;line-height:1;flex:0 0 auto}
+#tbs .tbs-kopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
+#tbs .tbs-kopf .tbs-knopf[data-tu="weg"]{border-radius:50%}
+#tbs .tbs-kopf .tbs-knopf.an{border-color:var(--akzent);color:var(--text)}
+#tbs .tbs-kopf .tbs-knopf.tbs-solo.an{background:var(--akzent);border-color:var(--akzent);color:#000;font-weight:600}
+#tbs .tbs-karte.solo{box-shadow:inset 3px 0 0 var(--akzent)}
+#tbs .tbs-karte.soloaus{opacity:.4}
+/* Sichtbarkeit wie die Solo-Kullerzeile im Haus und Haeckels Operator-Kette: Kreis = aus, Kreis mit Kuller = an */
+#tbs .tbs-pw{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--akzent);position:relative;flex:0 0 auto;cursor:pointer;opacity:.55}
+#tbs .tbs-karte.an .tbs-pw{opacity:1}
+#tbs .tbs-karte.an .tbs-pw::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--akzent)}
+#tbs .tbs-kopf .tbs-knopf.tbs-solo{width:auto;padding:0 6px;font-size:10px;letter-spacing:.04em}
+#tbs .tbs-inhalt{padding:0 11px 11px;display:block}
+#tbs .tbs-karte.zu .tbs-inhalt{display:none}
+#tbs .tbs-besch{color:var(--schwach);font-size:11.5px;line-height:1.45;margin:2px 0 10px}
+#tbs .tbs-fehltlicht{color:var(--text);background:var(--flaeche2);border-left:2px solid var(--akzent);border-radius:0 6px 6px 0;font-size:11.5px;line-height:1.45;margin:-4px 0 10px;padding:6px 8px}
+#tbs .tbs-regler{display:grid;grid-template-columns:96px 1fr 42px;gap:8px;align-items:center;margin:6px 0;font-size:12px;color:var(--schwach)}
+#tbs .tbs-regler input[type=range].tbs-zust{-webkit-appearance:none;appearance:none;background:transparent;height:14px}
+#tbs .tbs-regler input[type=range].tbs-zust::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--rand)}
+#tbs .tbs-regler input[type=range].tbs-zust::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--text);margin-top:-4.5px;border:none}
+#tbs .tbs-togp{justify-self:start;padding:2px 12px;border-radius:999px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11.5px}
+#tbs .tbs-togp.an{border-width:2px;border-color:var(--akzent);color:var(--text);padding:1px 11px}
+#tbs .tbs-togp:active, #tbs .tbs-kopf .tbs-knopf:active{transform:scale(.95)}
+#tbs .tbs-regler input[type=range]{width:100%;accent-color:var(--akzent)}
+#tbs .tbs-regler input[type=color]{width:100%;height:23px;padding:0;border:1px solid var(--rand);border-radius:6px;background:var(--flaeche2);cursor:pointer}
+/* DIE PUNKTELISTE DER KEN BURNS FAHRT (19.09.2026) steht NICHT in einer Reglerzeile - ihr
+   Auswahlfeld und ihr Knopf sollen trotzdem aussehen wie alles andere im Pult. Die Form steht
+   darum EINMAL da und gilt fuer beide Orte; zwei Abschriften derselben drei Regeln waeren eine zu
+   viel. Ohne sie malt der Browser sein weisses Vorgabefeld mitten in die dunkle Karte - gemessen
+   am 19.09.2026: Hausauswahl rgb(34,35,40), das freie Feld daneben weiss. */
+#tbs .tbs-regler select, #tbs select.tbs-kbfokus{width:100%;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:6px;padding:3px}
+#tbs button.tbs-kbneu{width:100%;background:var(--flaeche2);color:var(--schwach);border:1px solid var(--rand);border-radius:7px;padding:5px 6px;font-size:11px;line-height:1.2;cursor:pointer}
+#tbs button.tbs-kbneu:hover:not(:disabled){color:var(--text);border-color:var(--akzent)}
+#tbs button.tbs-kbneu:disabled{opacity:.55;cursor:not-allowed}
+#tbs .tbs-regler .tbs-wert{text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
+/* GRAU MIT GRUND (Hausgesetz der Effektclips, 16.09.2026): was eine Art nicht benutzt, wird
+   ausgegraut und stillgelegt - nicht versteckt. Die Zeile darunter sagt, warum. */
+#tbs .tbs-grau{opacity:.55}
+#tbs .tbs-grau input,#tbs .tbs-grau select,#tbs .tbs-grau button{cursor:not-allowed}
+#tbs .tbs-graugrund{color:var(--schwach);font-size:12px;line-height:1.4;margin:-2px 0 7px}   /* 12 px ist die Lesegrenze (Hausregel 14); Caspar_D am 17.09.2026 zur Frage, ob der Umbruch der Karten das wert ist: "ja, ist dann so" */
+/* DIE TRENNEBENE SEHEN (Caspar_D, 17.09.2026: "sind die ganzen partikelpanel denn jetzt so, dass
+   ich die ebene, die vorn und hinten trennt sehen kann"). Der Streifen unter "Grenze" gehoert zur
+   ZEILE, nicht zur Ansicht: der Griff soll auf der Verteilung sitzen, sonst sagt die Zahl nichts
+   darueber, wo die Trennung im wirklichen Bild landet. Er traegt darum auch die Klasse des
+   Reglers - dieselben Spalten, also liegt er exakt unter dem Schieber, in beiden Breiten. */
+#tbs .tbs-zonenwahlzeile{align-items:start}
+#tbs .tbs-zonenwahl{display:flex;flex-direction:column;gap:2px}
+#tbs .tbs-zk{display:flex;align-items:center;gap:6px;width:100%;text-align:left;
+  background:var(--flaeche2);border:1px solid transparent;border-radius:5px;
+  padding:2px 6px;font:inherit;font-size:11px;color:var(--text);cursor:pointer}
+#tbs .tbs-zk:hover{border-color:var(--rand2)}
+#tbs .tbs-zk.an{background:#1d2a3d;border-color:var(--marke,#e0b34d);color:#fff}
+#tbs .tbs-zk.leer{opacity:.45}
+#tbs .tbs-zkhaken{width:11px;flex:0 0 auto;color:var(--marke,#e0b34d)}
+#tbs .tbs-zkname{flex:1 1 auto}
+#tbs .tbs-zkmass{font-variant-numeric:tabular-nums;color:var(--schwach);flex:0 0 auto}
+#tbs .tbs-zonenliste{display:flex;flex-direction:column;gap:3px;margin:2px 0 6px}
+#tbs .tbs-zonenzeile{display:flex;align-items:center;gap:7px;font-size:11.5px;line-height:1.35}
+#tbs .tbs-zonenpunkt{width:11px;height:11px;border-radius:3px;flex:0 0 auto}
+#tbs .tbs-zonenmass{font-variant-numeric:tabular-nums;min-width:34px;text-align:right;color:var(--text)}
+#tbs .tbs-regler.tbs-tsicht{margin:-3px 0 7px;align-items:start}
+#tbs .tbs-tsicht canvas.tbs-thist{display:block;width:100%;height:30px;border-radius:4px;background:var(--flaeche2)}
+/* Regel 14: Lesegrenze 12 px - die drei Anteile standen in 10 px und waren damit die kleinste
+   Schrift im ganzen Pult (Gegenlesen 17.09.2026). Sie sind keine Fussnote: sie sind die Auskunft,
+   wegen der der Streifen ueberhaupt dasteht. */
+#tbs .tbs-tzahlen{margin-top:4px;font-size:12px;line-height:1.3;color:var(--schwach);font-variant-numeric:tabular-nums;display:flex;gap:9px;flex-wrap:wrap}
+#tbs .tbs-tzahlen i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
+/* DER PUNKT ZEIGT DIE FARBE, DIE WIRKLICH AUFS BILD KOMMT (Gegenlesen 17.09.2026). Er trug bisher
+   die Schriftfarbe - ein kraeftiges Lachsrot und ein helles Kornblau, waehrend auf einem dunklen
+   Cover ein fast schwarzes Blutrot und ein Marineblau erscheint. Die Legende erklaerte also eine
+   dritte Ansicht. Der Punkt traegt darum den REINEN Kanal, den die Ansicht mischt (rot, blau, und
+   dazwischen die Mitte der Kurve); die Schrift bleibt in ihrer lesbaren Farbe. */
+#tbs .tbs-tzahlen i::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--tz-tinte,currentColor);flex:0 0 auto}
+#tbs .tbs-tzahlen .tz-nah{color:#ff5a52;--tz-tinte:#ff0000}
+#tbs .tbs-tzahlen .tz-band{color:#b78bff;--tz-tinte:#800080}
+#tbs .tbs-tzahlen .tz-fern{color:#6f9bff;--tz-tinte:#0000ff}
+/* ZWEI SPALTEN: SPEZIFISCH LINKS, GENERISCH RECHTS (VIDEO-PLAN §9a.5).
+
+   Caspar_D, 12.09.2026: „Schnittprogramme haben das Problem, dass generische Sachen irgendwo
+   zentral stehen und nur die spezifischen an den Filtern ... wir schreiben immer alles an jeden
+   Effekt, nur sortiert nach spezifisch und generisch - ich muss mir nicht merken, wo was steht."
+
+   Die Spalte traegt die Bedeutung selbst: links ist dieser Effekt, rechts ist das System. Das
+   muss niemand lernen, das sieht man.
+
+   KEIN ZUKLAPPEN (Regel 10: ein versteckter Regler wirkt trotzdem, daran zog der Nebel bei
+   „Absaugung: keine" schon einmal). Wird das Pult zu schmal, wird GESTAPELT - erst links, dann
+   rechts, Trennlinie dazwischen, gleiche Reihenfolge. Gemessen wird die Breite der Karte
+   selbst, nicht die des Fensters: das Pult kann schmal sein, waehrend der Bildschirm breit ist. */
+#tbs .tbs-karte{container-type:inline-size}
+#tbs .tbs-spalten{display:block}
+#tbs .tbs-rechts{margin-top:9px;padding-top:9px;border-top:1px solid var(--rand)}
+/* 540, nicht 560: bei einem 1512er Bildschirm (MacBook) kommt die Karte auf 555 px - fuenf
+   Punkte ueber der Schwelle entscheiden dann, ob jemand die Spalten je zu sehen bekommt.
+   Nachgerechnet am 14.09.2026 fuer 1280 bis 2560. Die Beschriftungsspalte wird in der
+   Zweispaltigkeit schmaler, damit dem Schieber genug Weg bleibt. */
+@container (min-width: 540px){
+  #tbs .tbs-spalten{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;align-items:start}
+  #tbs .tbs-rechts{margin-top:0;padding-top:0;border-top:0;border-left:1px solid var(--rand);padding-left:16px}
+  #tbs .tbs-spalten .tbs-regler{grid-template-columns:78px 1fr 34px;gap:6px}
+}
+/* Hier standen .tbs-verr-Regeln: der generische Block lag UNTER dem spezifischen, mit einer
+   feinen Linie dazwischen. Seit dem 14.09.2026 stehen sie nebeneinander (.tbs-links /
+   .tbs-rechts, siehe oben); die Klasse wird nicht mehr ausgegeben. */
+#tbs .tbs-rechts select[data-verr]{grid-column:2/4}
+/* Erklaertext linksbuendig mit atmenden Raendern (Caspar_D, 11.09.2026) */
+#tbs .tbs-leer{color:var(--schwach);font-size:12px;text-align:left;padding:14px 18px 8px;line-height:1.55}
+#tbs kbd{background:var(--flaeche2);border:1px solid var(--rand);border-radius:4px;padding:0 4px;font-size:10.5px;color:var(--text)}
+/* Effektclip auf Kachel und Buehne: fuellt den Kasten wie das Bewegtbild, verzerrt nichts (object-fit) */
+/* Der Effektclip hat immer das Format seiner Quelle (Joerg, 11.09.2026) und liegt wie ein Standbild im Haus:
+   ganz im Kasten (object-fit: contain), nichts ragt heraus, nichts wird beschnitten. Auf der Kachel bleibt rundum
+   die unscharfe Fuellung der kachel.jpg sichtbar, auf der Buehne die .fuellung - genau wie beim Standbild. */
+.bild canvas.tbs-clip, .bart canvas.tbs-clip, .capartclip canvas.tbs-clip{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:inherit;pointer-events:none;z-index:1;animation:einblenden .35s ease both}
+/* Knoepfe brechen nicht um; Abspiel-Knopf als Pille im Kopf */
+#tbs .tbs-reihe button, #tbs .tbs-mini, #tbs .tbs-seg button{white-space:nowrap}
+#tbs-kopf #tbs-spiel{width:auto;height:28px;border-radius:999px;padding:0 12px;font-size:12px;white-space:nowrap;margin-right:6px}
+/* Knoepfe in Zeilen behalten ihre Breite - nichts drueckt sie zusammen, nichts bricht um */
+#tbs .tbs-zeile > button, #tbs .tbs-zeile .tbs-mini{flex:0 0 auto;white-space:nowrap}
+#tbs .tbs-reihe button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tbs .tbs-seg button:disabled{opacity:.35;cursor:default}
+/* DAS PULT ALS AKKORDEON (Caspar_D, 15.09.2026): vier Stufen - Quelle, Vorbereitung, Effektkette, Effektclip als Schleife -,
+   immer nur eine offen; das Rezept als Fuss darunter haelt sie zusammen. Eine zugeklappte Stufe wirkt trotzdem (Regel 10),
+   darum nennt ihr Kopf rechts den Stand (Regel 3: nichts darf luegen). Der Kopf ist eine Zeile und ein Knopf (Regel 19). */
+#tbs .tbs-abschnitt{border:1px solid var(--rand);border-radius:12px;padding:0;margin-bottom:10px}
+#tbs .tbs-stufenkopf{display:flex;align-items:baseline;gap:8px;width:100%;margin:0;padding:9px 12px;border:0;border-radius:11px;background:transparent;color:var(--text);font:inherit;font-size:13px;line-height:1.4;text-align:left;cursor:pointer}
+#tbs .tbs-stufenkopf:hover{background:var(--flaeche2)}
+#tbs .tbs-stufenkopf:focus-visible{outline:2px solid var(--akzent);outline-offset:-2px}
+#tbs .tbs-stufenkopf:active{transform:scale(.95)}
+#tbs .tbs-abschnitt.offen .tbs-stufenkopf{border-bottom-left-radius:0;border-bottom-right-radius:0}
+#tbs .tbs-chev{flex:0 0 auto;width:14px;color:var(--schwach);font-size:14px;line-height:1}
+#tbs .tbs-stufentitel{flex:0 0 auto;font-weight:600}
+#tbs .tbs-stufenstand{flex:1 1 auto;min-width:0;text-align:right;color:var(--schwach);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tbs .tbs-stufenkoerper{padding:2px 12px 6px}
+#tbs .tbs-stufenkoerper[hidden]{display:none}
+/* WAEHREND EINER AUSGABE STEHT NUR DAS PULT (Caspar_D, 16.09.2026). Die stillgelegte Stufe wird blass und nimmt keine
+   Klicks mehr; pointer-events traegt auch dort, wo inert noch fehlt. Der Grund steht als Zeile darueber. */
+#tbs .tbs-stufenkoerper.gesperrt{opacity:.55;pointer-events:none}
+#tbs .tbs-sperrgrund{border-left:2px solid var(--akzent);background:var(--flaeche2);padding:7px 10px;margin:0 0 10px;border-radius:0 7px 7px 0;color:var(--text);font-size:12px}   /* Regel 14: Lesegrenze 12 px - .tbs-unter gibt 11 px her, und ausgerechnet der Text, der eine gesperrte Oberflaeche erklaert, war der kleinste im Pult (Gegenlesen 16.09.2026) */
+/* Das bleibende Zeichen fuer Ungesichertes im Fuss - neben dem Sichern-Knopf, nicht in der Statuszeile: die ist beim naechsten pStat() weg. */
+#tbs #tbs-pUngesichert{color:var(--akzent);white-space:nowrap}
+#tbs #tbs-pUngesichert[hidden]{display:none}
+#tbs .tbs-erklaer{color:var(--schwach);font-size:12px;line-height:1.5;margin:0 0 10px}
+#tbs .tbs-erklaer p{margin:0 0 6px}
+/* V halten in der Vorbereitung: die Quelle ohne Effekte - als Marke UEBER der Leinwand, nie hineingemalt */
+#tbs #tbs-ohneMarke{position:absolute;left:12px;top:12px;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.65);border:1px solid var(--rand);color:#fff;font-size:12px;pointer-events:none;z-index:2}
+#tbs #tbs-ohneMarke[hidden]{display:none}
+#tbs #tbs-brand{position:absolute;left:12px;bottom:12px;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.65);border:1px solid var(--rand);color:#fff;font-size:12px;pointer-events:none;z-index:2}
+#tbs #tbs-brand[hidden]{display:none}
+#tbs .tbs-abunter{font-size:11px;opacity:.8;white-space:nowrap}
+#tbs .tbs-abschnitt .tbs-vorrat{border:none;border-radius:0;padding:0;margin:0 0 10px}
+#tbs .tbs-abschnitt .tbs-zeile:last-child{margin-bottom:6px}
+#tbs-pult{padding-bottom:0}
+#tbs-rezept{position:sticky;bottom:0;margin:4px -14px 0;padding:10px 14px 12px;background:var(--flaeche);border-top:1px solid var(--rand)}
+#tbs-rezept .tbs-zeile{margin-bottom:6px}
+/* Werkzeugzeile der Effektkette: zwei Auswahllisten, vier Zeichen-Knoepfe, eine Zeile */
+#tbs .tbs-werkzeuge{flex-wrap:nowrap;gap:6px}
+/* + Effekt ist das wichtigere: zwei Drittel, Presets ein Drittel */
+#tbs .tbs-werkzeuge select{flex:1 1 0;min-width:0;width:auto}
+#tbs .tbs-werkzeuge #tbs-vorrat{display:block;position:relative;flex:2 1 0;min-width:0}
+#tbs .tbs-vorratKnopf{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:7px;padding:5px 8px;font:inherit;font-size:12px;cursor:pointer;text-align:left}
+#tbs .tbs-vorratKnopf:hover,#tbs .tbs-vorratKnopf[aria-expanded="true"]{border-color:var(--akzent)}
+#tbs .tbs-vorratKnopf .tbs-pfeil{color:var(--schwach);font-size:10px}
+#tbs .tbs-vorratListe{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;max-height:min(60vh,520px);overflow:auto;background:var(--flaeche);border:1px solid var(--rand);border-radius:10px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#tbs .tbs-vgruppe{display:flex;align-items:center;gap:7px;padding:8px 8px 4px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--schwach);border-top:1px solid var(--rand);margin-top:4px}
+#tbs .tbs-vgruppe:first-child{border-top:none;margin-top:0}
+#tbs .tbs-veintrag{display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;border:none;border-radius:6px;background:none;color:var(--text);font:inherit;font-size:12.5px;text-align:left;cursor:pointer}
+#tbs .tbs-veintrag:hover,#tbs .tbs-veintrag:focus{background:var(--flaeche2);outline:none}
+#tbs .tbs-veintrag .tbs-ik{display:flex}
+#tbs .tbs-werkzeuge #tbs-preset{flex:1 1 0}
+/* ---- Bedienung (Caspar_D, 11.09.2026): Quelle als Vorschaubilder, Kette als Tabelle mit Kopfzeile, Akkordeon ---- */
+#tbs .tbs-quellen{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+#tbs .tbs-quelle{position:relative;width:54px;height:72px;padding:0;border:2px solid var(--rand);border-radius:8px;background:#000;overflow:hidden;cursor:pointer;flex:0 0 auto}
+#tbs .tbs-quelle img, #tbs .tbs-quelle canvas{width:100%;height:100%;object-fit:cover;display:block}
+#tbs .tbs-quelle:hover{border-color:var(--schwach)}
+#tbs .tbs-quelle.on{border-color:var(--akzent);box-shadow:0 0 0 1px var(--akzent)}
+#tbs .tbs-quelle .tbs-qv{position:absolute;right:4px;bottom:3px;font-size:10px;color:#fff;text-shadow:0 0 3px #000}
+#tbs #tbs-quellenNamen{position:relative;margin:2px 0 4px;min-height:14px}
+/* Name der gewaehlten Quelle unter ihrem Bild */
+#tbs .tbs-qname{position:absolute;top:0;font-size:11px;line-height:1.2;color:var(--text);white-space:nowrap}
+#tbs .tbs-qname.on{color:var(--text)}
+#tbs .tbs-quellen{margin-bottom:2px}
+/* Kopf der Karte als Tabellenzeile: an | solo | Symbol | Effekt | Nr. | Kopie | entfernen | hoch | runter | auf/zu */
+#tbs .tbs-kopf, #tbs #tbs-kettekopf{display:grid;grid-template-columns:16px 34px 18px minmax(0,1fr) 18px 22px 26px 20px 20px 20px;align-items:center;gap:4px}
+#tbs .tbs-kopf{padding:8px 10px;user-select:none}
+#tbs .tbs-kopf b{display:block;font-size:12.5px;line-height:1.2;cursor:pointer;min-width:0;white-space:normal}
+#tbs .tbs-kopf .tbs-ik{cursor:pointer;display:flex}
+#tbs .tbs-kopf .tbs-nr{color:var(--schwach);font-size:11px;text-align:center}
+#tbs .tbs-kopf .tbs-knopf.tbs-solo{width:auto;justify-self:start}
+#tbs .tbs-kopf .tbs-knopf.tbs-weg, #tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border-color:transparent;background:transparent;border-radius:50%}
+#tbs .tbs-kopf .tbs-knopf.tbs-weg:hover, #tbs #tbs-kettekopf .tbs-knopf.tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
+#tbs #tbs-kettekopf{padding:2px 10px 7px;margin-bottom:8px;border-bottom:1px solid var(--rand);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach)}
+#tbs #tbs-kettekopf .tbs-kk{text-align:left}
+#tbs #tbs-kettekopf .tbs-pw{opacity:.55}
+#tbs #tbs-kettekopf .tbs-pw.an, #tbs #tbs-kettekopf .tbs-pw.teils{opacity:1}
+#tbs #tbs-kettekopf .tbs-pw.an::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--akzent)}
+#tbs #tbs-kettekopf .tbs-pw.teils::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--akzent);opacity:.45}
+#tbs #tbs-kettekopf .tbs-knopf{width:22px;height:20px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;font:inherit;font-size:11px;line-height:1;padding:0}
+#tbs #tbs-kettekopf .tbs-knopf:hover{color:var(--text);border-color:var(--akzent)}
+#tbs .tbs-leer .tbs-mini{display:inline-block;width:auto;padding:0 12px;margin-top:10px}
+#tbs .tbs-qluecke{width:1px;height:56px;align-self:center;margin:0 6px;background:var(--rand);flex:0 0 auto}
+/* Die Vorbereitung hatte hier einen eigenen Klappschalter mit Stand im Kopf - seit dem Akkordeon (15.09.2026) klappt die Stufe. */
+/* PLATZ ZUM ATMEN (Caspar_D, 21.09.2026: „gib der Gradationskurve und den Reglern rundherum ein
+   bisschen mehr Platz zum Atmen, nicht so an den Rand klatschen"). Der Koerper hatte nur unten
+   6 px und sonst nichts - Kurve und Regler standen an der Kante. Jetzt ein Innenrand rundherum,
+   und das Blatt bekommt oberhalb Luft zur Registerleiste. */
+#tbs #tbs-vorbKoerper{padding:10px 12px 12px}
+/* DREI STATIONEN, ALSO LASCHEN (Hausregel 26, erster Teil: „was drauf setzt, bekommt eine
+   Lasche"). Die Vorbereitung wird der Reihe nach abgearbeitet - Kurve, Feinheiten, Tiefe -, und
+   jede setzt auf der vorigen auf. Modi waeren sie nur, wenn sie dieselbe Sache feiner zeigten.
+   ABGESETZT WERDEN MUESSEN SIE OHNEHIN: in der Vorbereitung standen drei gleich aussehende
+   Pillenleisten uebereinander - diese hier, die Kanalwahl V|R|G|B und Gamma|Sigmoid -, obwohl die
+   oberste eine Ebene hoeher steht. Gleiche Gestalt fuer verschiedene Ebenen ist eine Falschaussage
+   wie jede andere. Dieselbe Sache, anderes Gewicht: volle Breite, Unterstreichung statt Pille. */
+#tbs .tbs-vorbReg{gap:0;border-bottom:1px solid var(--rand);margin-bottom:14px}
+#tbs .tbs-vorbReg button{flex:1;border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:7px 4px;font-size:12px;color:var(--schwach)}
+#tbs .tbs-vorbReg button:hover{color:var(--text)}
+#tbs .tbs-vorbReg button.on{color:var(--text);border-bottom-color:var(--akzent);box-shadow:none;background:none}
+#tbs .tbs-vorbBlatt{padding:2px 2px 4px}
+#tbs .tbs-vorbBlatt .tbs-regler{margin:9px 0}
+#tbs .tbs-vorbBlatt canvas.tbs-grad-ed{margin:2px 0 4px}
+#tbs .tbs-vorbAbschnitt{margin:14px 0 6px;color:var(--schwach);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}
+
+#tbs #tbs-kettekopf .tbs-knopf.tbs-weg{width:18px;height:18px;margin-left:8px;font-size:12px;color:#c9524e;border:1px solid transparent;background:transparent;border-radius:50%}
+#tbs #tbs-kettekopf .tbs-knopf.tbs-weg:hover{border-color:#c9524e;color:#ff6b66;background:transparent}
+#tbs #tbs-kettekopf.leer > *{visibility:hidden}
+/* DIE STUFENMARKE (20.09.2026). Sie steht auf jeder Karte hinter dem Namen und sagt, WANN dieser
+   Effekt gemalt wird: Szene (im Diorama, faehrt mit), Kamera (der Ausschnitt selbst), Film (am
+   Objektiv, bleibt stehen). Klein, in der Farbe des Schwachen - eine Auskunft, kein Schmuck. */
+#tbs .tbs-stufe{font-style:normal;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--schwach);border:1px solid var(--rand);border-radius:4px;padding:0 4px;margin-left:6px;white-space:nowrap;vertical-align:1px}
+#tbs .tbs-stufe.szene{color:#8fbf8a;border-color:#8fbf8a55}
+#tbs .tbs-stufe.kamera{color:#e0b34d;border-color:#e0b34d55}
+#tbs .tbs-stufe.film{color:#6fb3ff;border-color:#6fb3ff55}
+#tbs #tbs-stufenhinweis, #tbs #tbs-diostand{margin:0 10px 8px;padding:6px 8px;border:1px solid var(--rand);border-left:2px solid #e0b34d;border-radius:4px;background:var(--flaeche2);color:var(--schwach);font-size:10.5px;line-height:1.45}
+#tbs .tbs-leerhinweis{margin-top:12px;font-size:11.5px;color:var(--schwach)}
+#tbs .tbs-leerhinweis a{color:var(--akzent);text-decoration:underline}
+#tbs .tbs-leer p{margin:0 0 10px;text-align:left;max-width:40em}
+#tbs .tbs-leer a{color:var(--akzent);text-decoration:underline}
+#tbs #tbs-rezept.gedimmt{opacity:.45}
+#tbs #tbs-loopLage{color:var(--text);margin-bottom:2px}
+#tbs #tbs-loopLage.gedimmt{opacity:.5}
+#tbs #tbs-abLoop .tbs-regler{grid-template-columns:minmax(0,200px) 1fr}
+#tbs #tbs-abLoop .tbs-unter, #tbs #tbs-abLoop .tbs-togp, #tbs #tbs-loopLage{font-size:12px}
+#tbs #tbs-rezept .tbs-unter, #tbs #tbs-rezept .tbs-lbl, #tbs #tbs-rezept #tbs-pStatus, #tbs #tbs-rezept .tbs-togp, #tbs #tbs-vollText{font-size:12px}   /* Regel 14: Lesegrenze 12 px - die Pille und die Laufzeile erben sonst 11,5 px von .tbs-togp/.tbs-zeile */
+#tbs #tbs-vollLauf[hidden]{display:none}   /* display:flex wuerde hidden sonst ueberstimmen - der tote "Abbrechen" stuende sonst dauerhaft im Fuss (Gegenlesen 16.09.2026) */
+#tbs #tbs-abLoop #tbs-schleifeHinweis{margin:-2px 0 8px}
+#tbs #tbs-abLoop .tbs-regler.grau > span:first-child, #tbs #tbs-abLoop .tbs-regler.grau b{opacity:.45}
+#tbs .tbs-zaehler{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+#tbs .tbs-zaehler b{min-width:62px;text-align:center;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+#tbs #tbs-abLoop button:disabled{opacity:.4;cursor:default;transform:none}
+#tbs #tbs-abLoop .tbs-togp.an{border-width:2px;border-color:var(--akzent);color:var(--text);padding:1px 11px}
+#tbs #tbs-leiste{display:block;grid-column:2;width:100%;height:96px;border-radius:6px;background:#000}
+#tbs .tbs-leistrahmen{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 6px;margin-top:10px}
+#tbs .tbs-yachse{grid-column:1;grid-row:1;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding:0 0 6px;font-size:12px;line-height:1;color:var(--schwach);font-variant-numeric:tabular-nums}
+#tbs .tbs-yachse[hidden]{display:none}
+#tbs .tbs-yname{writing-mode:vertical-rl;transform:rotate(180deg)}
+#tbs .tbs-xachse{grid-column:2;display:flex;justify-content:space-between;padding:2px 6px 0;font-size:12px;color:var(--schwach);font-variant-numeric:tabular-nums}
+#tbs .tbs-leistunter{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:4px 0 8px;font-size:12px;line-height:1.5;color:var(--schwach)}
+#tbs #tbs-leisteRechts{color:var(--akzent);white-space:nowrap}
+#tbs #tbs-loopWo{margin:0 0 8px;font-variant-numeric:tabular-nums}
+#tbs #tbs-rezept button:disabled{opacity:.5;cursor:default}
+#tbs #tbs-vorbKoerper .tbs-seg button:disabled{opacity:.4;cursor:default}
+/* Lichtmischpult: Antrieb-Block mit Muster-Knoepfen (Kurvenbild) und Vorschau */
+#tbs .tbs-lm{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rand)}
+#tbs .tbs-lmformen{display:flex;gap:4px;flex-wrap:wrap}
+#tbs .tbs-lmformen button{padding:2px 4px;border-radius:6px;border:1px solid var(--rand);background:var(--flaeche2);color:var(--schwach);cursor:pointer;line-height:0}
+#tbs .tbs-lmformen button:hover{color:var(--text);border-color:var(--akzent)}
+#tbs .tbs-lmformen button.on{color:var(--akzent);border-color:var(--akzent);box-shadow:inset 0 0 0 1px var(--akzent)}
+#tbs canvas.tbs-lmvor{width:100%;height:44px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
+/* Raum-Block der Lichter, mit Profilgrafik */
+#tbs .tbs-rm{margin-top:6px;padding-top:6px;border-top:1px dashed var(--rand)}
+#tbs canvas.tbs-qvor{width:100%;height:80px;display:block;border:1px solid var(--rand);border-radius:6px;margin:6px 0 2px}
+#tbs canvas.tbs-rmvor{width:100%;height:70px;display:block;border:1px solid var(--rand);border-radius:6px;margin:4px 0 8px}
