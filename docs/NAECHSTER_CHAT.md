@@ -7330,3 +7330,22 @@ Video und einem Schnitt. Dafür braucht sie Bildmaterial und Anreißer, die Schr
 **Im Blatt veraltet (gemeldet, nicht geändert):** Kopf „und was offen bleibt"; §9 Schritt 2
 „Schleife ins Snippet"; §9 Schritt 5 „vorher Sunos Hook-Regeln prüfen"; §8 „Hook-Marken"; §5
 „eine Blende wie jeder andere".
+
+## 40. 29.09.2026: die Rückmeldung steht im Konzeptblatt
+
+Caspar_D: „1 ja — harte Schnitte – auf Grenze; Stufen – entweder Anfang oder Ende auf Grenze;
+Rampe – Ende auf Grenze. 2 ja — nie drei Bilder zugleich. Trag's ins Blatt ein." („Rampe" heißt im
+Blatt Blende; das Wort Blende bleibt.) Eingetragen in `docs/effektclip/KONZEPT-TAFEL.md`: sieben
+neue Zeilen in der Entscheidungstabelle; Leitplanke 3 mit Bildmischung, Lage, „nie drei Bilder
+zugleich", sanfter Änderung über die lange Blende und dem Preis; §5 Einfügen ohne fremde Quelle und
+Tiefe; §6 die Tiefe gehört zum Bild; §7 der Morgenlauf überschreibt die Reihe nie; §8 Tiefenwerte
+und Quelle verlassen das Rezept; §9 Schritte 1, 2, 4, 5; §10. Die fünf veralteten Stellen sind
+berichtigt.
+**Befund beim Eintragen:** mindestens drei Stellen des Studios (Rauschen, Rauschkachel, Zittern je
+Band) säen in der Schleife aus `e.id` und sonst aus `Math.random`. Zwei geerbte Effektclips malen
+damit nicht sicher dieselben Teilchen; die lange Blende als Farbübergang braucht das. Steht als
+Aufgabe in Schritt 4.
+**Nicht eingetragen, weil ohne Wort:** der Richtwert zur Zeit, „die Tafel öffnet gefüllt", „auf
+alle gleichen Abschnitte übertragen" (alle drei in §39).
+**Offen für Schritt 4:** was mit einem Wechsel geschieht, der nach dem Verschieben einer Grenze
+nicht mehr in seinen Abschnitt passt.

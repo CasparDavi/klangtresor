@@ -1,8 +1,9 @@
 # Konzept: die Effektclip-Tafel
 
-Stand 26.09.2026, aus dem Brainstorm mit Caspar_D am selben Tag. Es ist noch nichts gebaut. Das
-Blatt sammelt, was entschieden ist (mit Wortlaut), was daraus folgt, und was offen bleibt. Wer
-etwas anderes baut, ändert erst dieses Blatt.
+Stand 29.09.2026. Entstanden am 26.09. aus dem Brainstorm mit Caspar_D, ergänzt am 29.09. nach
+einer Rückmeldung aus dem Umfeld (Übergabe §39). Es ist noch nichts gebaut. Das Blatt sammelt, was
+entschieden ist (mit Wortlaut) und was daraus folgt. Wer etwas anderes baut, ändert erst dieses
+Blatt.
 
 ## 1. Der Anlass
 
@@ -49,6 +50,13 @@ Ablaufartefakte im Takt, ist ein Effekt auf die Videoquelle und bleibt im Backlo
 | Beim **Löschen einer Grenze** fragt die Tafel, welches der beiden Rezepte die entstehende Spanne bekommt | „wenn ich eine Grenze lösche, kann ruhig eine Nachfrage kommen, welches der beiden Rezepte für die entstehende Zeitspanne angewandt werden soll" | 26.09. |
 | Das **Takt- und Schlagmuster** ist auf der Tafel als eigene Spur zu sehen | „damit man das Einrasten besser versteht" | 26.09. |
 | Snippet und Hook bekommen **deutsche Wörter**: Zehnsekünder und Anreißer | „Snippet und Hook sind englische Worte — bitte Vorschläge" — „Anreißer ist gut, in Klammern oder der Erklärung darf Suno-Hook fallen" | 26.09. |
+| Der **Wechsel mischt fertige Bilder**, er paart keine einzelnen Effekte | „ja" — zur Rückmeldung: die Blende mischt das fertige Bild des einen Abschnitts gegen das des nächsten, beide auf derselben Liedzeit | 29.09. |
+| Die **Lage des Wechsels** hängt an seiner Form | „harte Schnitte – auf Grenze; Stufen – entweder Anfang oder Ende auf Grenze; Rampe – Ende auf Grenze" (die Rampe heißt im Blatt Blende) | 29.09. |
+| **Nie drei Bilder zugleich** | „nie drei Bilder zugleich" | 29.09. |
+| Eine **sanfte Änderung innerhalb einer Strophe** muss gehen | „sanfte Änderung innerhalb einer Strophe — ja, das ist wichtig" | 29.09. |
+| Die **Tiefe gehört zum Bild**, nicht zum Abschnitt | „ja" — zur Rückmeldung: dieselbe Quelle in zwei Abschnitten ist eine Karte, eine Änderung gilt für beide | 29.09. |
+| **Einfügen in einen anderen Titel** bringt die Kette, nicht die fremde Mediendatei | „ja" | 29.09. |
+| Der **Morgenlauf überschreibt keine Grenze**, die jemand verschoben hat | „ja" — zur Rückmeldung: der Vorschlag bleibt ein Vorschlag, bis man ihn ausdrücklich neu übernimmt | 29.09. |
 
 ## 3. Die Wörter
 
@@ -78,11 +86,34 @@ Kein drittes Wort für Abschnitt plus Effektclip („Szene"); kein Wort für zwe
    nichts hängt an Sekundenzahlen. Wo die Abschnittswahrheit fehlt, gibt es einen Abschnitt.
 3. **Abschnitte statt Kurven.** Was sich über die Länge ändert, ist ein anderer Effektclip im
    nächsten Abschnitt. Der Wechsel hat eine Form je Grenze, drei zur Wahl: **Schnitt** auf den
-   Schlag (das Bild knallt rein), **Blende** über n Takte (Quelle und Kette zugleich; ein Effekt,
-   der im nächsten Abschnitt fehlt, blendet aus, ein neuer ein), **Stufen** je Schlag über n
-   Schläge (etwa die Helligkeit Schlag für Schlag auf Weiß). Form und Länge stehen an der Grenze
+   Schlag (das Bild knallt rein), **Blende** über n Takte (der Anteil des neuen Bildes steigt
+   stetig), **Stufen** je Schlag über n Schläge (er steigt mit jedem Schlag; die Helligkeit Schlag
+   für Schlag auf Weiß ist der Wechsel in einen Abschnitt, dessen Bild weiß ist). Form und Länge stehen an der Grenze
    (Caspar_D zur Länge: „kommt drauf an" — Vorgabe ein Takt, gezählt in Takten oder Schlägen, nie
    in Sekunden). Kurven je Parameter gibt es nicht — das wäre der Wildwuchs.
+   * **Der Wechsel mischt fertige Bilder.** Beide Effektclips malen auf derselben Liedzeit ihr
+     fertiges Bild, gemischt werden die zwei Bilder. Einzelne Effekte werden über die Grenze hinweg
+     nicht gepaart, und kein Regler wird zwischen zwei Werten geführt — das wäre die Kurve durch
+     die Hintertür. Probe: beim Anteil 0 steht das Bild des alten Effektclips unverändert, beim
+     Anteil 1 das des neuen.
+   * **Lage.** Der Schnitt liegt auf der Grenze. Die Blende endet auf der Grenze: der neue
+     Abschnitt steht auf seinem ersten Schlag voll da. Die Stufen beginnen oder enden auf der
+     Grenze, zur Wahl.
+   * **Nie drei Bilder zugleich.** Zwei Wechsel überlappen nicht. Ein Wechsel reicht höchstens bis
+     zur benachbarten Grenze; liegen in einem Abschnitt zwei (Stufen, die an seiner vorderen Grenze
+     beginnen, und ein Wechsel, der an seiner hinteren endet), sind sie zusammen höchstens so lang
+     wie der Abschnitt.
+   * **Sanfte Änderung innerhalb einer Strophe.** Abschnitt teilen, im hinteren Teil ändern, die
+     Blende lang stellen. Unterscheiden sich die zwei Effektclips nur in der Farbe, ist die
+     Bildmischung der Farbübergang (Regen von weiß zu blutrot); unterscheiden sie sich in der Form
+     (Schnee zu Regen), ist sie eine Doppelbelichtung: der Schnee dünnt aus, der Regen kommt. Eine
+     Flocke, die zum Tropfen wird, gibt es nicht. Voraussetzung: beide Effektclips malen bei
+     gleicher Liedzeit dieselben Teilchen. Nachgesehen am 29.09.: mindestens drei Stellen des
+     Studios (Rauschen, Rauschkachel, Zittern je Band) säen aus der Effektnummer oder aus
+     `Math.random`; beim Teilen muss die Saat mitgehen, zu prüfen für jeden Effekt mit Zufall
+     (Schritt 4).
+   * **Der Preis.** Im Wechsel wird doppelt gemalt, und zwei Videoquellen laufen zugleich. Im
+     Export kostet das Zeit, im Haus Bildrate; gemessen wird vor dem Bau der Grenzen (Schritt 4).
 4. **Altes bleibt gültig.** Ein Rezept ohne Tafel ist ein Abschnitt über den ganzen Song mit der
    einen Quelle von heute (Regel 12 der Texteffekte gilt hier ebenso: alte Rezepte malen dasselbe
    Bild). Der Zehnsekünder bleibt, wie er ist.
@@ -99,16 +130,19 @@ anderen Schläge leicht), damit man das Einrasten sieht; die Grenzen als Griffe 
 Doppelklick entfernt, Ziehen verschiebt, rastet auf Schläge (die Bediensprache aller Flächen mit
 gesetzten Punkten); der Spielkopf des Players, gestrichelt, Klick auf die Hüllkurve springt hin;
 darunter die Abschnittsnamen mit Zeiten. Beim Ziehen einer Grenze spielt der Player einen Takt vor
-und einen Takt nach der Grenze, so hört man den Schnitt. An jeder Grenze steht die Form des
-Wechsels (Schnitt, Blende, Stufen).
+und einen Takt nach der Grenze, so hört man den Schnitt. An jeder Grenze stehen Form und Länge
+des Wechsels (Schnitt, Blende, Stufen), bei den Stufen auch, ob sie an der Grenze beginnen oder
+enden.
 
 **Teilen** kopiert den Effektclip in beide Hälften; beim **Löschen einer Grenze** fragt die Tafel,
 welches der beiden Rezepte die entstehende Spanne bekommt — ohne Antwort passiert nichts, es gibt
 keine Vorgabe (Caspar_D). **Ein Abschnitt ohne Effektclip** (nur durch Entfernen möglich, weil Teilen
 erbt) zeigt das nackte Bild des Titels: das Suno-Bewegtbild in seiner Schleife, sonst das Titelbild,
-ohne Effekte; die Tafel zeigt ihn als leer, der Wechsel hinein und hinaus ist eine Blende wie jeder
+ohne Effekte; die Tafel zeigt ihn als leer, der Wechsel hinein und hinaus ist ein Wechsel wie jeder
 andere. **Kopieren/Einfügen** ist die bestehende Ablage des Studios
-(`mysuno-tbs-ablage`), die schon heute über Titel hinweg trägt. Ein Klick auf die Kachel eines
+(`mysuno-tbs-ablage`), die schon heute über Titel hinweg trägt. Eingefügt werden Farbe, Ton und
+Effektkette; Quelle und Tiefe bleiben die des Zielabschnitts, eine fremde Mediendatei wandert nicht
+mit. Ein Klick auf die Kachel eines
 Abschnitts öffnet das Studio für diesen Effektclip; das Studio bleibt, wie es ist, und weiß nur,
 zu welchem Abschnitt es gehört.
 
@@ -127,6 +161,12 @@ Sättigung, Gradation) · **Effektkette** · **Ausgabe** mit vier Registern:
 
 Sichern, Löschen, Kopieren, Einfügen gehören zum Rezept, nicht zur Ausgabe, und bleiben bei der
 Kette. Was eine Ausgabe sich merken muss (Schleife, Marken des Anreißers), liegt beim Titel neben der Reihe.
+
+**Die Tiefe gehört zum Bild.** Dieselbe Quelle in zwei Abschnitten hat eine Tiefe; wer sie in einem
+Abschnitt ändert, ändert sie für alle Abschnitte mit diesem Bild, und die Karte sagt das. Heute
+stehen die Tiefenwerte im Rezept unter `vorbereitung`, neben Farbe und Ton: `raumtiefe`,
+`trennung`, `trennWeich`, `leerraum`, `zonenGrenzen`. Mit „Teilen erbt" bekäme jede Hälfte ihre
+eigene Kopie davon. Sie ziehen darum zum Stück des Bildmaterials um (Kapitel 8).
 
 **Marken des Anreißers:** zwei Marken auf der Tafel, rastend auf Schläge; die Software schlägt einen
 Anreißer vor, wenn sie die Abschnitte kennt (etwa den ersten Refrain), der Nutzer verschiebt.
@@ -157,24 +197,42 @@ ein Abschnitt. Für Songs, die nicht von Suno kommen, fiele die Analyse weg — 
 wären dann „nur geraten" (Backlog, 28.08.2026); msaf als Ersatz für Abschnittsgrenzen steht dort
 als nachrangig, weil ohne Text ohnehin nur zu raten ist, was Strophe und was Refrain heißt.
 
+**Der Morgenlauf überschreibt die Reihe nie.** Die Abschnittswahrheit ist gerechnet und darf bei
+jedem Lauf neu gerechnet werden. Die Reihe gehört dem Nutzer und wird nur von der Tafel geschrieben.
+Rechnet ein späterer Lauf andere Grenzen, zeigt die Tafel den neuen Vorschlag neben der Reihe;
+übernommen wird er nur ausdrücklich.
+
 ## 8. Das Rezept
 
 Heute: `eigen-effekt.json` je Titel, Fassung 7, ein Effektclip. Künftig trägt der Titel zusätzlich
-die Reihe: Grenzen und je Abschnitt ein Rezept im heutigen Format, dazu Schleife und Hook-Marken
-neben der Reihe. Ein Titel ohne Reihe liest sich wie heute (Leitplanke 4). Das genaue Format ist
-Teil des Baus, nicht dieses Blatts; Regel 12 der Texteffekte (Altwerte behalten ihre Bedeutung) gilt.
+die Reihe: Grenzen und je Abschnitt ein Rezept im heutigen Format, dazu Schleife und die Marken des
+Anreißers neben der Reihe. Ein Titel ohne Reihe liest sich wie heute (Leitplanke 4). Das genaue
+Format ist Teil des Baus, nicht dieses Blatts; Regel 12 der Texteffekte (Altwerte behalten ihre
+Bedeutung) gilt.
+
+Zwei Dinge verlassen dabei das Rezept des Effektclips. **Die Tiefenwerte** liegen künftig beim Stück
+des Bildmaterials; ein Rezept der Fassung 7 gibt seine Tiefenwerte beim Lesen an das Bild ab, das
+es als Quelle nennt. **Die Quelle** nennt ein Stück aus dem Bildmaterial des eigenen Titels (heute
+Rolle und Nummer, `quelle:{art,nr}`); über Titel hinweg gilt sie nicht, darum bleibt beim Einfügen
+die Quelle des Zielabschnitts.
 
 ## 9. Der Bau, in Schritten, jeder mit seiner Probe
 
 1. **Abschnittswahrheit** im Morgenlauf: Liste je Titel aus Suno-Analyse, Regiezeilen, Whisper;
-   Prüfung an zehn Titeln gegen das Ohr (Caspar_D). Ohne Oberfläche.
-2. **Karussell**: Tiefe als eigener Eintrag, Ausgabe mit vier Registern, Schleife ins Snippet.
+   Prüfung an zehn Titeln gegen das Ohr (Caspar_D). Ohne Oberfläche. Der Morgenlauf schreibt nur
+   die Wahrheit, nie die Reihe.
+2. **Karussell**: Tiefe als eigener Eintrag, Ausgabe mit vier Registern, Schleife in den
+   Zehnsekünder.
    Reines Sortieren, keine neue Fähigkeit; Probe: Labor-Studio, Prüfstand unverändert.
 3. **Tafel** mit einem Abschnitt: Hüllkurve, Schläge, Spielkopf, Kachel des einen Effektclips;
    Klick öffnet das Studio. Probe im Sandkasten.
 4. **Grenzen**: setzen, entfernen (mit Nachfrage), ziehen, rasten auf Schläge, hören; die
-   Schlagspur; Teilen erbt; Reihe im Rezept; Wechsel als Schnitt, Blende oder Stufen. Probe: Prüfstand mit Fällen über eine Grenze (Naht und Vorschau).
-5. **Anreißer**: zwei Marken, Fenster als Export; vorher Sunos Hook-Regeln prüfen.
+   Schlagspur; Teilen erbt, die Saat des Zufalls geht mit; Reihe im Rezept und Tiefenwerte beim
+   Bild (eine neue Fassung für beides); Wechsel als Schnitt, Blende oder Stufen, als Mischung
+   zweier fertiger Bilder. Vorher messen: doppelte Malzeit im Wechsel, Kachel und Bühne. Probe:
+   Prüfstand mit Fällen über eine Grenze (Naht und Vorschau; Anteil 0 und Anteil 1 bitgleich zum
+   einzelnen Effektclip).
+5. **Anreißer**: zwei Marken, Fenster als Export; Sunos Regeln stehen in Kapitel 6.
 6. **Bildmaterial**: Upload durch die App, Tiefe im Morgenlauf, Quelle je Effektclip aus dem Bildmaterial.
 
 Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzbar zurück.
@@ -182,4 +240,5 @@ Reihenfolge nach Nutzen und Risiko; jeder Schritt lässt den vorigen Stand nutzb
 ## 10. Was nicht dazugehört
 
 Kurven je Parameter, Keyframes, eine Zeitleiste je Effekt. Verschiedene Ketten je Ausgabe. Medien
-von Hand im Archiv.
+von Hand im Archiv. Einzelne Effekte über eine Grenze hinweg paaren. Ein Morph von einer Form in die
+andere. Drei Bilder zugleich.
