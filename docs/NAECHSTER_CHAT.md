@@ -7283,3 +7283,50 @@ Sprungkopie Median 4,5 ms (p90 7, max 36); Schleifenansicht 60 Bilder/s bei Lein
 **Wiedervorlage:** Caspar_D sieht die Schleifenansicht nach F5 und ohne Excel noch einmal an;
 ruckelt es dort weiter, wird in seinem Fenster gemessen (Leinwandgröße, Bildzeiten, was zugleich
 malt).
+
+## 39. 29.09.2026: Rückmeldung zur Effektclip-Tafel aus dem Umfeld — kein Auftrag
+
+Caspar_D gab das Konzeptblatt `docs/effektclip/KONZEPT-TAFEL.md` an Tarja; zurück kamen vier
+Einwände (von ihrem Grok) und ihre eigene Anforderung. **Ins Konzeptblatt ist nichts eingetragen,
+das wartet auf Caspar_D's Wort.** Bewertung Claude: alle vier Einwände treffen zu.
+
+1. **Die Blende mischt fertige Bilder.** Beide Effektclips malen auf derselben Liedzeit fertig,
+   gemischt wird das Bild; keine Paarung einzelner Effekte (Leitplanke 3 liest sich heute so: „ein
+   Effekt, der im nächsten Abschnitt fehlt, blendet aus, ein neuer ein"). Prüfbar: Anteil 0 = alter
+   Clip bitgleich, Anteil 1 = neuer. Preis: doppeltes Malen und zwei Videoelemente im Wechsel.
+2. **Die Tiefe hängt am Bild.** Das Blatt sagt es (§3, §6), der Code nicht: `raumtiefe`,
+   `trennung`, `trennWeich`, `leerraum`, `zonenGrenzen` stehen im Rezept unter `vorbereitung`
+   (`vorbNeu` in `web/tbs-modul.js`). Mit „Teilen erbt" bekäme jede Hälfte eine eigene Kopie.
+   Folge: die Tiefenwerte ziehen zum Stück des Bildmaterials um — neue Rezeptfassung, alte Rezepte
+   geben ihre Werte beim Lesen ans Bild ab.
+3. **Kopieren in einen anderen Titel.** Die Quelle steht heute als Rolle und Nummer im Rezept
+   (`quelle:{art,nr}`); mit n Stücken Bildmaterial trägt das nicht über Titel. Regel: Einfügen
+   bringt Farbe, Ton und Kette; Quelle und Tiefe bleiben die des Zielabschnitts.
+4. **Der Morgenlauf überschreibt nichts.** Abschnittswahrheit (gerechnet, darf neu gerechnet
+   werden) und Reihe (gehört dem Nutzer, schreibt nur die Tafel) sind zwei Dinge; ein neuer
+   Vorschlag wird nur auf Klick übernommen.
+
+**Sanfte Änderung innerhalb einer Strophe** — Caspar_D: „ja, das ist wichtig." Vorschlag Claude
+(Skizze gezeigt), ohne Kurven: Abschnitt teilen, im hinteren Teil ändern, die Blende lang stellen.
+Unterscheiden sich die zwei Clips nur in der Farbe, ist die Bildmischung der Farbübergang; bei
+anderer Form (Schnee zu Regen) eine Doppelbelichtung, kein Morph. Voraussetzung, ungeprüft: beide
+Clips malen bei gleicher Liedzeit dieselben Teilchen. Zu entscheiden: Lage des Wechsels (Vorschlag:
+er endet auf der Grenze, der neue Abschnitt steht auf seiner Eins voll da), Länge höchstens bis
+zur vorigen Grenze (nie drei Bilder zugleich). Zu messen vor Schritt 4: doppelte Malzeit in der
+Bühne.
+
+**Zeit.** Caspar_D an Tarja: nach 5 min Arbeit etwas Vorzeigbares, nach 10 min Wow. Danach an
+Claude: „die Zeitschiene bis Wow halten wir nicht so superfest, das ist nur Richtwert, kein Muss,
+ich möchte nicht Qualität für künstliche Hektik opfern, wenn's geht, wär's aber schön." Also
+**keine Leitplanke und kein Abnahmemaß**, ein Richtwert. Zwei Vorschläge sparen Zeit, ohne Qualität
+zu kosten: die Tafel öffnet gefüllt (Abschnitte aus dem Morgenlauf, jeder trägt den Effektclip des
+Titels); „auf alle gleichen Abschnitte übertragen" nach Sunos `segment_labels`, als Kopie, nicht
+als Verknüpfung.
+
+**Tarjas Anforderung:** rund 12 min je Video, mehr nicht; ihr reichen Zehnsekünder und Anreißer.
+Ihr Anreißer sind zwei Zehnsekünder hintereinander — auf der Tafel zwei Abschnitte mit je eigenem
+Video und einem Schnitt. Dafür braucht sie Bildmaterial und Anreißer, die Schritte 6 und 5.
+
+**Im Blatt veraltet (gemeldet, nicht geändert):** Kopf „und was offen bleibt"; §9 Schritt 2
+„Schleife ins Snippet"; §9 Schritt 5 „vorher Sunos Hook-Regeln prüfen"; §8 „Hook-Marken"; §5
+„eine Blende wie jeder andere".
