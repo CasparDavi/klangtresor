@@ -7267,3 +7267,19 @@ die Herauslösung. Damit ist die Abnahme „bitgleich" erfüllt: alt und neu mal
 labor/nahtpruefung/LIESMICH.md. **Die Herauslösung ist fertig**: 12079e8 (Dateien, Werkzeuge, Docs),
 9fefb55 (Serverzeile), cf5f708 (Paket). Caspar_D's Abnahme im echten Fenster steht aus (F5 holt den
 Stand; sein Tab lief noch mit der Ein-Datei-Fassung).
+
+## 38. 27.09.2026: Ruckeln in der Schleifenansicht — Befund, kein Bau
+
+Caspar_D: Eindruck, die Vorschau der 10-s-Schleife ruckle massiv; ob das Modul eine geringere
+Priorität habe oder das System am Anschlag sei. **Befund:** ein Skript aus eigener Datei läuft wie
+ein eingebettetes, eine Priorität gibt es nicht. Die Maschine war voll: Load 6,8, Excel 91 % ohne
+offene Mappe (beendet), Chrome-Renderer 77–98 %. Der Umbau ist nicht langsamer (msExport Median
+21,77 → 19,38 ms). Auftrag „mach die Schleifenansicht auf Schlüsseleinzelbild": **das ist seit dem
+11.09. so** — `/api/sprungkopie` legt `<basis>.sprung.mp4` aus lauter Schlüsselbildern an,
+`sprungHolen` stellt jede Videoquelle des Studios darauf um (bei Auftakt `eigen.sprung.mp4`).
+Gemessen in der eigenen Scheibe mit Auftakts Rezept: Sprung auf dem Original rund 40 ms, auf der
+Sprungkopie Median 4,5 ms (p90 7, max 36); Schleifenansicht 60 Bilder/s bei Leinwand 605×807 und
+667×889, 30 Sprünge/s; Pult ohne Sprünge. Nichts geändert.
+**Wiedervorlage:** Caspar_D sieht die Schleifenansicht nach F5 und ohne Excel noch einmal an;
+ruckelt es dort weiter, wird in seinem Fenster gemessen (Leinwandgröße, Bildzeiten, was zugleich
+malt).
