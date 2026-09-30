@@ -1962,6 +1962,34 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 .pinfo{flex:1;min-width:0;cursor:pointer}
 .pinfo b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pinfo span{color:var(--schwach);font-size:12px}
+/* DIE ZAHLEN ZUM TITEL IN DER LEISTE (Tarja, weitergegeben von Caspar_D, 30.09.2026). Breit:
+   hinter der Zeit in derselben Zeile, klein und in der Nebenfarbe, ohne Pillen - Pillen kosten
+   Breite und Hoehe. Eng (Klasse .eng, gesetzt von pzahlMessen): nur die Abrufe als Knopf, der
+   den Rest nach oben aufklappt. Die Liste haengt absolut an #player (kein Vorfahr dazwischen ist
+   positioniert, #player hat kein overflow) und ragt darum ueber die Leiste hinaus, wie
+   .pmodiliste auf dem Telefon. */
+#pzahl{display:inline-flex;align-items:center;gap:9px;margin-left:10px;white-space:nowrap;vertical-align:baseline}
+#pzahl[hidden]{display:none}
+#pzahl .pzv{display:inline-flex;align-items:center;gap:9px}
+#pzahl .pzv > span{display:inline-flex;align-items:center;gap:3px}
+#pzahl .ico{width:12px;height:12px}
+#pzahlAuf{display:none;align-items:center;gap:3px;font:inherit;font-size:12px;color:var(--text);
+  background:none;border:1px solid var(--akzent);border-radius:10px;padding:1px 6px;cursor:pointer}
+#pzahlAuf:hover{background:var(--flaeche2)}
+#pzahl.eng .pzv{display:none}
+#pzahl.eng #pzahlAuf{display:inline-flex}
+#pzahlListe{display:none;position:absolute;bottom:calc(100% + 10px);left:16px;z-index:2;
+  flex-direction:column;gap:5px;min-width:180px;cursor:default;
+  background:var(--flaeche2);border:1px solid var(--rand);border-radius:12px;padding:9px 12px;
+  box-shadow:0 10px 28px rgba(0,0,0,.5)}
+#pzahl.auf #pzahlListe{display:flex}
+#pzahlListe .pzz{display:flex;align-items:center;gap:7px;color:var(--text);font-size:13px}
+#pzahlListe .pzz .ico{width:14px;height:14px;color:var(--akzent)}
+#pzahlListe .pzz b{font-size:13px}   /* sonst greift .pinfo b (14 px, Titelzeile) */
+#pzahlListe .pzz.zk{cursor:pointer}
+#pzahlListe .pzz.zk:hover b{text-decoration:underline}
+#pzahlListe .pzm{color:var(--schwach);font-size:12px}
+#pzahlListe .pzs{color:var(--schwach);font-size:11px;border-top:1px solid var(--rand);padding-top:5px;margin-top:2px}
 .psteuer,.pextra{display:flex;align-items:center;gap:5px;flex-shrink:0}
 /* Zurueck, Abspielen, Weiter stehen GANZ VORN (Caspar_D, 18.08.2026:
    "was man am haeufigsten benutzt, muss vorne sein"). Im Markup
@@ -2056,9 +2084,9 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
      lassen - das zerriss die Symbole auf zwei Hoehen. */
   .preihe{
     display:grid; align-items:center; height:auto;
-    grid-template-columns:auto minmax(0,1fr) auto;
-    grid-template-areas:"bild titel  zeit"
-                        "bild knoepfe knoepfe";
+    grid-template-columns:auto minmax(0,1fr) auto auto;
+    grid-template-areas:"bild titel  zeit    zahl"
+                        "bild knoepfe knoepfe knoepfe";
     column-gap:8px; row-gap:4px; padding:8px 10px;
   }
   /* space-between statt links buendig: Die Modi stehen dann unter dem
@@ -2084,6 +2112,9 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   #pbild{grid-area:bild}
   #ptitel{grid-area:titel; cursor:pointer}
   #pzeit{grid-area:zeit; justify-self:end; white-space:nowrap}
+  /* Die Zahlen zum Titel: auf dem Telefon immer die enge Form (pzahlMessen erkennt es an
+     .pinfo als display:contents), in eigener Spalte rechts neben der Zeit. */
+  #pzahl{grid-area:zahl; margin-left:0}
   .pmodi{position:relative; background:none; padding:0; gap:0}
   #pmodiAuf{display:flex; align-items:center; justify-content:center;
     min-width:36px; height:36px; padding:7px; border-radius:50%;
@@ -2162,7 +2193,11 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
        Kommentare - ohne Antworten, die sind Gespräch, nicht Zuspruch. -->
   <symbol id="i-herz" viewBox="0 0 24 24"><path d="M2 10h4v11H2V10zm20 1a2 2 0 00-2-2h-5.3l.9-4.3v-.3A1.5 1.5 0 0015.2 3L10 8.2V21h9a2 2 0 002-1.6l1-7.2V11z"/></symbol>
   <symbol id="i-blase" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 012 2v10a2 2 0 01-2 2H8l-4 4V6a2 2 0 012-2z"/></symbol>
-  <symbol id="i-kommentar" viewBox="0 0 24 24"><path d="M3 4h18v13H8l-5 4V4z"/></symbol>
+  <!-- Hier stand i-kommentar, eine zweite Sprechblase: einzige Verwendung war eine doppelte
+       Kommentarzahl in der Detailansicht (dieselbe Zahl wie die Blase daneben, nur nicht
+       klickbar), entfernt am 30.09.2026. Der Winkel nach oben zeigt, dass etwas aufklappt. -->
+  <symbol id="i-hoch" viewBox="0 0 24 24"><path fill="none" stroke="currentColor"
+    stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 15l6-6 6 6"/></symbol>
   <symbol id="i-eigenvideo" viewBox="0 0 24 24"><path d="M3 5h13v14H3V5zm15 4l4-2.5v11L18 15V9z"/></symbol>
 </svg>
 
@@ -4190,6 +4225,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
       <b id="ptitel"></b>
       <button id="psongeq" class="songeqpille" hidden onclick="songEqUmschalten()"></button>
       <span id="pzeit">0:00 / 0:00</span>
+      <!-- Die Zahlen zum Titel (Tarja, 30.09.2026: moeglichst platzsparend; wenn zu wenig Platz
+           ist, nur die Abrufe, und ein Klick klappt den Rest nach oben auf). Gefuellt von
+           pzahlSetzen(), die Form waehlt pzahlMessen(). -->
+      <span id="pzahl" hidden><span class="pzv"></span><button type="button" id="pzahlAuf" aria-expanded="false" title="Zahlen zum Titel" onclick="pzahlKlappe()"></button><span id="pzahlListe"></span></span>
     </div>
     <!-- Die Klammer traegt ALLE Symbole. Auf breitem Schirm loest sie
          sich ueber display:contents auf, die Gruppen stehen dann
@@ -11568,6 +11607,7 @@ function spielen(i, uebernahme){
   { const bild = s.fremd ? (s.bildUrl || '') : artworkBild(s.id);
     if (bild) $('pbild').src = bild; else pbildLeer($('pbild')); }
   $('ptitel').textContent = s.titel + (s.fremd ? '  ·  ' + (s.anzeigename || s.handle || 'fremd') : '');
+  pzahlSetzen(s);
   if (typeof karteLaeuftSetzen === 'function') karteLaeuftSetzen();
   if ($('studio') && $('studio').style.display !== 'none') studioSongLaden();
   else {
@@ -11908,7 +11948,6 @@ async function detailAuf(id){
             <span class="chip">${SYM('plays')}${s.plays||0}</span>
             <span class="chip zk" data-rk="${s.id}">${SYM('herz')}${s.likes||0}</span>
             <span class="chip zk" data-rk="${s.id}">${SYM('blase')}${s.kommentare||0}</span>
-            <span class="chip">${SYM('kommentar')}${s.kommentare||0}</span>
             ${s.istRemix ? '<span class="chip">Remix</span>':''}
           </div>
           <div class="chips">${tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
@@ -16721,6 +16760,69 @@ function pmodiAufbauen(){
 /* Auf dem Telefon klappen die drei ueber dem Mikrofonknopf auf.
    stopPropagation, damit der Wegklick-Horcher unten den Klick nicht
    sofort wieder als "daneben" liest. */
+/* DIE ZAHLEN ZUM TITEL IN DER LEISTE (Tarja, weitergegeben von Caspar_D, 30.09.2026: "moeglichst
+   platzsparende Darstellung der Daten; wenn zu wenig Platz, als Flyout nach oben bei Klick und
+   nur die Plays"). Dieselben Angaben wie die Chip-Reihe der Detailansicht, ohne die Dauer - die
+   steht schon in der Zeit. Ob die Reihe neben die Zeit passt, misst pzahlMessen(): kein Regler,
+   keine feste Schwelle, gezeigt wird, was Platz hat.
+   Die Zahlen sind der Stand der letzten Ernte, nicht live - darum steht der Stand im Aufklapper
+   und im Tooltip. Eigene Titel zeigen fehlende Zaehler als 0 wie die Detailansicht; bei fremden
+   fehlt, was Suno nicht geliefert hat, statt als 0 zu erscheinen. */
+function pzahlSetzen(s){
+  const z = $('pzahl'); if (!z || !s) return;
+  z.classList.remove('auf'); $('pzahlAuf').setAttribute('aria-expanded', 'false');
+  const eigen = !s.fremd;
+  const n = (v) => (typeof v === 'number' && isFinite(v)) ? v : (eigen ? 0 : null);
+  const zaehler = [['plays', n(s.plays), 'Abrufe', false], ['herz', n(s.likes), 'Herzen', eigen],
+                   ['blase', n(s.kommentare), 'Kommentare', eigen]].filter(x => x[1] !== null);
+  const meta = [s.modell || s.modellRoh || '', (s.erstellt || '').slice(0, 10), s.istRemix ? 'Remix' : '']
+    .filter(Boolean).map(esc);
+  if (!zaehler.length && !meta.length){ z.hidden = true; return; }
+  z.hidden = false;
+  const v = s.zaehlerVerlauf || [], stand = v.length ? String(v[v.length - 1].stand || '') : '';
+  const zeile = z.querySelector('.pzv');
+  zeile.innerHTML = zaehler.map(([sym, wert]) => `<span>${SYM(sym)}${wert}</span>`).join('')
+    + meta.map(m => `<span>${m}</span>`).join('');
+  zeile.title = stand ? 'Stand der letzten Ernte: ' + stand : '';
+  const plays = zaehler.find(x => x[0] === 'plays');
+  $('pzahlAuf').innerHTML = (plays ? SYM('plays') + plays[1] : '') + SYM('hoch');
+  $('pzahlListe').innerHTML = zaehler.map(([sym, wert, wort, zk]) =>
+      `<span class="pzz${zk ? ' zk' : ''}"${zk ? ` data-rk="${esc(s.id)}" title="Wer hat reagiert"` : ''}>${SYM(sym)}<b>${wert}</b> ${wort}</span>`).join('')
+    + (meta.length ? `<span class="pzm">${meta.join(' · ')}</span>` : '')
+    + (stand ? `<span class="pzs">Stand der letzten Ernte: ${esc(stand)}</span>` : '');
+  pzahlMessen();
+}
+/* Breit, wenn die ganze Reihe hinter der Zeit in die Zeile passt - sonst eng. Gemessen wird immer
+   in der breiten Form, sonst gaebe es kein Zurueck. Auf dem Telefon loest sich .pinfo per
+   display:contents auf; dort ist die Zeile immer zu schmal. */
+function pzahlMessen(){
+  const z = $('pzahl'); if (!z || z.hidden) return;
+  const info = document.querySelector('.pinfo');
+  if (getComputedStyle(info).display === 'contents'){ z.classList.add('eng'); return; }
+  z.classList.remove('eng');
+  const umgebrochen = z.offsetTop > $('pzeit').offsetTop + 2;
+  const drueber = z.getBoundingClientRect().right > info.getBoundingClientRect().right + 0.5;
+  if (umgebrochen || drueber) z.classList.add('eng');
+}
+function pzahlKlappe(){
+  const z = $('pzahl'), auf = !z.classList.contains('auf');
+  z.classList.toggle('auf', auf); $('pzahlAuf').setAttribute('aria-expanded', String(auf));
+  if (!auf) return;
+  /* Erst aufklappen, dann messen: die Breite der Liste steht erst im Layout. Sie beginnt ueber
+     dem Knopf und bleibt 8 px vom Rand der Leiste. */
+  const l = $('pzahlListe'), k = $('pzahlAuf').getBoundingClientRect(), p = $('player').getBoundingClientRect();
+  l.style.left = Math.max(8, Math.min(k.left - p.left, p.width - l.offsetWidth - 8)) + 'px';
+}
+document.addEventListener('click', (e) => {
+  const z = $('pzahl');
+  if (z && z.classList.contains('auf') && !e.target.closest('#pzahl')){
+    z.classList.remove('auf'); $('pzahlAuf').setAttribute('aria-expanded', 'false'); }
+});
+/* Neu messen, wenn sich die Breite aendert: das Fenster (ueber #player) oder der Titelblock,
+   wenn daneben etwas erscheint oder verschwindet. */
+if (window.ResizeObserver){ const ro = new ResizeObserver(() => pzahlMessen());
+  ro.observe($('player')); ro.observe(document.querySelector('.pinfo')); }
+
 function pmodiKlappe(e){
   if (e) e.stopPropagation();
   $('pmodi').classList.toggle('auf');
@@ -26935,7 +27037,11 @@ $('leiste').onclick = (e)=>{
    Bildansicht, der Text zur Textansicht. Der Knopf in .psteuer bleibt
    daneben stehen: Er ist der auffindbare Weg, das Bild der kurze. */
 $('pbild').onclick = () => { if (aktuellId) buehneAuf(aktuellId); };
-document.querySelector('.pinfo').onclick = () => { if (aktuellId) detailAuf(aktuellId); };
+/* In der engen Form gehoert der Zahlenbereich dem Aufklapper - ein Klick darauf soll aufklappen,
+   nicht in die Detailansicht springen. In der breiten Form fuehrt er wie Titel und Zeit dorthin. */
+document.querySelector('.pinfo').onclick = (e) => {
+  if (e.target.closest && e.target.closest('#pzahl.eng')) return;
+  if (aktuellId) detailAuf(aktuellId); };
 
 // Doppelklick auf eine Karte öffnet die Details statt zu spielen
 document.addEventListener('dblclick', (e)=>{

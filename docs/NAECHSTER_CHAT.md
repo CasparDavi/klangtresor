@@ -7365,3 +7365,27 @@ fremde Titel ohne Zahl zeigen nichts statt 0; auf dem Telefon (≤ 520 px) ist `
 **Befund:** die Detailansicht zeigt die Kommentarzahl doppelt (index.html 11910 `SYM('blase')`,
 klickbar, und 11911 `SYM('kommentar')`, nicht klickbar, beide `s.kommentare`); `i-kommentar` wird
 nur dort benutzt. Streichen wartet auf Caspar_D's Wort.
+**Gebaut (30.09., Caspar_D: „bau es gleich ein, ich glaub, wir brauchen keine Prüfung auf
+Ausweichport"):** Entscheidungen nach den Empfehlungen — zwei Stufen, Fußnote „Stand der letzten
+Ernte", doppelte Kommentarzahl gestrichen (samt `i-kommentar`; neu `i-hoch`). `pzahlSetzen(s)` beim
+Laden eines Titels, `pzahlMessen()` (breit, wenn die Reihe hinter der Zeit in die Zeile passt; auf
+dem Telefon immer eng; ResizeObserver auf `#player` und `.pinfo`), `pzahlKlappe()`; Liste absolut
+an `#player`. Herzen und Kommentare im Aufklapper öffnen „Wer hat reagiert" (eigene Titel). Telefon:
+vierte Spalte `zahl` im Raster der Leiste. Geprüft: Syntax, Funktionen mit Attrappen; im Browser
+NICHT gesehen (kein zweites Fenster, Ausweichport erlassen) — Caspar_D sieht es nach F5.
+
+## 42. 30.09.2026: Profil-Titelbild fehlt bei neuen Nutzern (Tarja: Kopf schwarz) — Befund
+
+Das Titelbild des Profils (`cover_photo_url`) lädt `bin/laden.js` aus `katalog.profil`. Den
+Katalog-Kopf füllt `bin/aufbereiten.js` nur aus `profilinfo-*.json` — die schreibt allein
+`bin/sammeln.js` (alter Weg). Die Ernte des Lesezeichens (`browser/morgens.js`, landet als
+`profil-*.json`) trägt `profil: { handle, display_name, avatar_image_url, num_total_clips }`, ohne
+`cover_photo_url`, und die Aufbereitung liest daraus nur den Handle. Wer nur über das Lesezeichen
+eingerichtet hat, bekommt darum nie ein Titelbild (vermutlich auch keinen Avatar). Jörgs
+`profilbild.webp` stammt aus der Zeit des alten Wegs; sein Katalog-Kopf hat heute auch kein
+`cover_photo_url`. Zusatz: `ladeDatei` lädt nicht neu, wenn die Datei schon liegt — ein bei Suno
+geändertes Titelbild käme nie an. Vorschlag (wartet auf Wort, Datenfluss): morgens.js legt
+`cover_photo_url`, `profile_description`, `stats` in `ernte.profil`; aufbereiten nimmt
+`profilRoh.profil` als Profil, wenn es jünger ist als die letzte profilinfo; laden.js lädt das Bild
+neu, wenn sich die Adresse ändert. Das Lesezeichen holt morgens.js bei jedem Klick frisch vom
+Server — nach dem Update genügt ein Ernte-Klick, kein neues Lesezeichen.
