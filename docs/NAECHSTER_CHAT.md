@@ -7257,8 +7257,10 @@ Umbau im Hintergrund (`scratchpad/modul/endstand.json`).
 Prüfung sauber); in einem Sandkasten entpackt und mit `--port 8791` gestartet: `/`, `/tbs-modul.js`,
 `/tbs.css`, `/fonts/inter-700.woff2` alle 200, im Browser `EffektclipStudio` mit der vollen Rückgabe,
 Palette und Inter da; die Konsole meldet nur „Kein Katalog" (frischer Stand ohne library, wie
-immer). Sandkasten und Server danach entfernt. Das Zip ist NICHT als Release hochgeladen — das
-macht Caspar_D (je Änderung ein neues Release, nie --clobber).
+immer). Sandkasten und Server danach entfernt. Das Zip ist NICHT als Release hochgeladen. (Berichtigt
+30.09.: das Release legt Claude an, `gh release create`, auf Caspar_D's Wort — er hat nie selbst
+hochgeladen: „ich musste es noch nie hochladen, quatsch". Je Änderung ein neues Release, nie
+--clobber.)
 **Endstand (27.09., 1739 s):** 254 Fälle, 248 bitgleich zur Grundlinie in gleich/gleichFolge/naht/
 erwartet/p95/vorschauAbw. Sechs Vorgabefälle (kontrast, farbe, laser, vlauf, strobe, filmnebel) wichen
 bis zu 3 % ab — allein wiederholt zweimal identisch, und der ALTE Code (cc69f4d, Worktree, jetzt
