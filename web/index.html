@@ -13057,9 +13057,25 @@ async function profilLaengenFuellen(){
   });
 
   const laengen = eigene.map(s => s.dauer);
-  const vonS = Math.floor(Math.min(...laengen) / LAENGEN_KLASSE) * LAENGEN_KLASSE;
-  const bisS = Math.ceil(Math.max(...laengen) / LAENGEN_KLASSE) * LAENGEN_KLASSE;
+  /* EIN AUSREISSER SPRENGT DIE ACHSE NICHT (30.09.2026). Bei Tarja ist ein Titel 144,4 min lang;
+     die Achse reichte darum bis 145 min, 286 Klassen mit je 2 px Abstand passten in keine Spalte,
+     die Saeulen wurden null Punkte breit, das Diagramm war leer und die Beschriftung lief aus dem
+     Kasten. Oben endet die Achse jetzt am aeusseren Zaun nach Tukey (drittes Quartil plus dreimal
+     der Quartilsabstand), aufgerundet auf die Klasse. Was ab dort dauert, sammelt die letzte Saeule,
+     abgesetzt und mit „+" beschriftet; die Fussnote sagt, wie viele es sind, und nennt weiter den
+     wahren laengsten Titel. Bei Caspar_D (327 Titel, laengster 8,0 min, Zaun 9,4 min) aendert sich
+     nichts. */
+  const sortiert = [...laengen].sort((a, b) => a - b);
+  const quartil = (p) => { const i = (sortiert.length - 1) * p, a = Math.floor(i);
+    return sortiert[a] + (sortiert[Math.min(a + 1, sortiert.length - 1)] - sortiert[a]) * (i - a); };
+  const zaun = quartil(0.75) + 3 * (quartil(0.75) - quartil(0.25));
+  const laengste = sortiert[sortiert.length - 1];
+  const vonS = Math.floor(sortiert[0] / LAENGEN_KLASSE) * LAENGEN_KLASSE;
+  const kappS = laengste > zaun ? Math.ceil(zaun / LAENGEN_KLASSE) * LAENGEN_KLASSE : null;   /* ab hier: Sammelsaeule */
+  const bisS = kappS != null ? kappS + LAENGEN_KLASSE : Math.ceil(laengste / LAENGEN_KLASSE) * LAENGEN_KLASSE;
   const nK = Math.max(1, Math.round((bisS - vonS) / LAENGEN_KLASSE));
+  const nSammel = kappS != null ? sortiert.filter(x => x >= kappS).length : 0;
+  const minuten = (sek) => String(Math.round(sek / 6) / 10).replace('.', ',');
 
   ziel.innerHTML = '<h3>Titellängen</h3>';
   const rahmen = document.createElement('div'); rahmen.className = 'laengendrei';
@@ -13102,14 +13118,18 @@ async function profilLaengenFuellen(){
         b.appendChild(ii);
       }
       const vonM = (vonS + kk * LAENGEN_KLASSE) / 60, bisM = (vonS + (kk + 1) * LAENGEN_KLASSE) / 60;
+      const sammel = kappS != null && kk === nK - 1;
       const zeilen = lagen.map((l, i2) => feld[kk][i2]
         ? `${feld[kk][i2]} × ${l === ' ohne' ? 'ohne Angabe' : sp.name(l)}` : null).filter(Boolean);
-      sz.title = `${vonM.toFixed(1).replace('.', ',')}–${bisM.toFixed(1).replace('.', ',')} min · ${sum} Titel`
-        + (zeilen.length ? String.fromCharCode(10) + zeilen.join(String.fromCharCode(10)) : '');
+      sz.title = (sammel ? `ab ${minuten(kappS)} min` : `${vonM.toFixed(1).replace('.', ',')}–${bisM.toFixed(1).replace('.', ',')} min`)
+        + ` · ${sum} Titel` + (zeilen.length ? String.fromCharCode(10) + zeilen.join(String.fromCharCode(10)) : '');
       sz.appendChild(b); reihe.appendChild(sz);
       const achsp = document.createElement('span');
       const sek = vonS + kk * LAENGEN_KLASSE;
-      achsp.textContent = sek % 120 === 0 ? String(sek / 60) : '';
+      /* Die Sammelsaeule steht 6 px abgesetzt und traegt „+"; die Klasse direkt davor bleibt ohne
+         Zahl, sonst stossen die zwei Beschriftungen zusammen. */
+      if (sammel){ sz.style.marginLeft = achsp.style.marginLeft = '6px'; achsp.textContent = minuten(kappS) + '+'; }
+      else achsp.textContent = (sek % 120 === 0 && !(kappS != null && kk === nK - 2)) ? String(sek / 60) : '';
       achse.appendChild(achsp);
     }
     kasten.append(reihe, achse);
@@ -13137,6 +13157,7 @@ async function profilLaengenFuellen(){
     + `Kürzester ${(Math.min(...laengen) / 60).toFixed(1).replace('.', ',')} min, `
     + `längster ${(Math.max(...laengen) / 60).toFixed(1).replace('.', ',')} min, `
     + `Mittel ${(laengen.reduce((a, b) => a + b, 0) / laengen.length / 60).toFixed(1).replace('.', ',')} min. `
+    + (nSammel ? `Was ab ${minuten(kappS)} min dauert, steht zusammen in der letzten Säule (${nSammel} Titel) — sonst würde ein einzelner sehr langer Titel die Achse sprengen. ` : '')
     + `Liegt eine Farbe in Schichten, erklärt das Merkmal die Länge mit; ist sie überall gleich gemischt, nicht.`;
   ziel.appendChild(fuss);
 }

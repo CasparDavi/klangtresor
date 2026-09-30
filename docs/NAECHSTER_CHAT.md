@@ -7389,3 +7389,22 @@ geändertes Titelbild käme nie an. Vorschlag (wartet auf Wort, Datenfluss): mor
 `profilRoh.profil` als Profil, wenn es jünger ist als die letzte profilinfo; laden.js lädt das Bild
 neu, wenn sich die Adresse ändert. Das Lesezeichen holt morgens.js bei jedem Klick frisch vom
 Server — nach dem Update genügt ein Ernte-Klick, kein neues Lesezeichen.
+**Gebaut (30.09., Caspar_D: „ja, mach"):** `browser/morgens.js` legt `cover_photo_url`,
+`profile_description`, `stats` in `ernte.profil`. `bin/aufbereiten.js`: Profil aus der jüngsten
+Ernte mit Kopf (`profil-*.json`, auch wenn die neueste nur Timing trägt) und aus `profilinfo`, die
+jüngere Feld für Feld über der älteren und dem alten Stand; anderes Konto erbt nichts. `bin/laden.js`:
+`profilBild()` für Avatar und Titelbild, Adresse in `library/<name>.quelle`; weicht sie ab oder fehlt
+sie, Download unter `<name>-neu.<endung>`, erst bei Erfolg fallen die alten Dateien jeder Endung.
+Geprüft mit Attrappen (sechs Fälle Zusammenführung, vier Fälle Lader in einem Wegwerf-Ordner),
+nicht an library/. Folge bei Caspar_D: nach der nächsten Ernte lädt der Morgenlauf Avatar und
+Titelbild einmal neu (noch keine `.quelle`). Tarja braucht ein neues Release und danach eine Ernte.
+
+## 43. 30.09.2026: Titellängen im Profil leer (Tarja) — behoben
+
+Tarja: 401 Titel, längster 144,4 min. Die Achse lief von der kürzesten bis zur längsten Länge in
+30-s-Klassen — 286 Klassen mit je 2 px Abstand, die Säulen wurden null Punkte breit, die
+Beschriftung lief aus dem Kasten. Jetzt endet die Achse am äußeren Zaun nach Tukey (Q3 + 3·IQR),
+aufgerundet auf die Klasse; was ab dort dauert, steht in einer abgesetzten Sammelsäule „n+", die
+Fußnote nennt die Zahl und weiter den wahren längsten Titel. Caspar_D (327 Titel, längster 8,0 min,
+Zaun 9,4 min): unverändert, 13 Klassen. Nachgerechnet mit seinen Längen und einer erfundenen
+Tarja-ähnlichen Reihe (25 Klassen, eine Sammelsäule).

@@ -1719,8 +1719,15 @@
     quelle: 'morgens.js',
     timing,
     kontingent,
+    /* Der ganze Kopf der Profilseite, wie bin/sammeln.js ihn las - bis zum 30.09.2026 fehlten
+       Titelbild, Profiltext und Zahlen, und wer nur ueber das Lesezeichen eingerichtet hatte,
+       bekam nie ein Titelbild (Tarja: Profilkopf schwarz). bin/aufbereiten.js nimmt das Profil
+       seitdem auch aus der Ernte. */
     profil: kopf ? { handle, display_name: kopf.display_name,
-                     avatar_image_url: kopf.avatar_image_url, num_total_clips: gesamt }
+                     avatar_image_url: kopf.avatar_image_url,
+                     cover_photo_url: kopf.cover_photo_url,
+                     profile_description: kopf.profile_description,
+                     stats: kopf.stats, num_total_clips: gesamt }
                  : { handle },
     songs: [...songs.values()],
     privat: [...privatSongs.values()],

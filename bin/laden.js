@@ -288,38 +288,42 @@ async function ladeDatei(url, ziel) {
       nEinheit: 'Titel', jetzt: s.titel.slice(0, 55) });
   }
 
-  // --- Profilbild -------------------------------------------------
-  // Es gehört dem jeweiligen Konto, nicht dem Programm. Deshalb wird
-  // es geladen statt mitgeliefert - so zeigt jedes Archiv das Bild
-  // seines eigenen Urhebers.
-  const avatarUrl = katalog.profil && katalog.profil.avatar_image_url;
-  if (avatarUrl){
-    const endung = (avatarUrl.match(/\.(webp|jpe?g|png|gif)(\?|$)/i) || [,'webp'])[1].toLowerCase();
-    const ziel = path.join(WURZEL, 'library', 'avatar.' + endung);
-    const e = await ladeDatei(avatarUrl, ziel);
-    zaehler[e]++;
-    if (e === 'geladen' && fs.existsSync(ziel)){
-      bytes += fs.statSync(ziel).size;
-      console.log(`\nProfilbild: library/avatar.${endung}`);
-    }
-  }
-
-  // --- Profil-Titelbild -------------------------------------------
-  // Dasselbe wie beim Avatar: Es gehört dem Konto, nicht dem Programm,
-  // und wird deshalb geholt statt mitgeliefert. Es trägt den Kopf der
+  // --- Profilbild und Profil-Titelbild -----------------------------
+  // Sie gehören dem jeweiligen Konto, nicht dem Programm. Deshalb werden
+  // sie geladen statt mitgeliefert - so zeigt jedes Archiv die Bilder
+  // seines eigenen Urhebers. Das Titelbild trägt den Kopf der
   // Profilseite (Caspar_D, 26.08.2026: „schau dir meine Profilseite auf
   // Suno an, da gibt es ein Hintergrundbild").
-  const titelUrl = katalog.profil && katalog.profil.cover_photo_url;
-  if (titelUrl){
-    const endung = (titelUrl.match(/\.(webp|jpe?g|png|gif)(\?|$)/i) || [,'webp'])[1].toLowerCase();
-    const ziel = path.join(WURZEL, 'library', 'profilbild.' + endung);
-    const e = await ladeDatei(titelUrl, ziel);
+  /* NEU LADEN, WENN SICH DIE ADRESSE ÄNDERT (30.09.2026). ladeDatei lässt
+     eine vorhandene Datei liegen - richtig für Titelbilder der Songs,
+     falsch fürs Profil: ein bei Suno neu gesetztes Bild kam nie an. Die
+     Adresse steht darum in <name>.quelle daneben. Weicht sie ab (oder
+     fehlt sie, wie bei allem, was vor dem 30.09. geladen wurde), kommt das
+     neue Bild erst unter einem Zwischennamen; nur wenn es da ist, fallen
+     die alten Dateien jeder Endung - der Server sucht die Endungen in
+     fester Reihenfolge und fände sonst die alte - und es rückt an seinen
+     Platz. Scheitert der Download, bleibt das alte Bild stehen. */
+  const profilBild = async (url, name, wort) => {
+    if (!url) return;
+    const lib = path.join(WURZEL, 'library');
+    const endung = (url.match(/\.(webp|jpe?g|png|gif)(\?|$)/i) || [,'webp'])[1].toLowerCase();
+    const ziel = path.join(lib, name + '.' + endung), quelle = path.join(lib, name + '.quelle');
+    let alteQuelle = null; try { alteQuelle = fs.readFileSync(quelle, 'utf8'); } catch (e) {}
+    const da = fs.existsSync(ziel) && fs.statSync(ziel).size > 0;
+    if (alteQuelle === url && da) { zaehler.vorhanden++; return; }
+    const zwischen = path.join(lib, name + '-neu.' + endung);
+    try { fs.unlinkSync(zwischen); } catch (e) {}
+    const e = await ladeDatei(url, zwischen);
     zaehler[e]++;
-    if (e === 'geladen' && fs.existsSync(ziel)){
-      bytes += fs.statSync(ziel).size;
-      console.log(`Profil-Titelbild: library/profilbild.${endung}`);
-    }
-  }
+    if (e !== 'geladen' || !fs.existsSync(zwischen)) { try { fs.unlinkSync(zwischen); } catch (x) {} return; }
+    for (const x of ['webp', 'jpg', 'jpeg', 'png', 'gif']) { try { fs.unlinkSync(path.join(lib, name + '.' + x)); } catch (f) {} }
+    fs.renameSync(zwischen, ziel);
+    try { fs.writeFileSync(quelle, url); } catch (f) {}
+    bytes += fs.statSync(ziel).size;
+    console.log(`${wort}: library/${name}.${endung}`);
+  };
+  await profilBild(katalog.profil && katalog.profil.avatar_image_url, 'avatar', '\nProfilbild');
+  await profilBild(katalog.profil && katalog.profil.cover_photo_url, 'profilbild', 'Profil-Titelbild');
 
   // --- Playlist-Cover ---------------------------------------------
   // Caspar_Ds eigene Playlists sollen auch dann noch aussehen wie seine,

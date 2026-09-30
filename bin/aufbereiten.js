@@ -1159,9 +1159,31 @@ if (mitWav) console.log(`  WAV-Originale:  ${mitWav} Songs `
 // Angaben zur Person - Autorenname, Profiltext, Suno-Zahlen.
 // Bleibt erhalten, auch wenn bei einem Lauf keine neue Fassung
 // vorliegt.
+/* DAS PROFIL AUCH AUS DER ERNTE (30.09.2026). Bis dahin kam der Kopf nur aus profilinfo-Dateien,
+   und die schreibt allein bin/sammeln.js, der alte Weg. Die Ernte des Lesezeichens
+   (browser/morgens.js) bringt denselben Kopf mit - Name, Avatar, Titelbild -, gelesen wurde daraus
+   aber nur der Handle. Wer nur ueber das Lesezeichen eingerichtet hatte, bekam darum nie ein
+   Titelbild (Tarja: Profilkopf schwarz). Jetzt legt sich die juengere Quelle Feld fuer Feld ueber
+   die aeltere und den alten Stand; was sie nicht kennt, bleibt. Ein anderes Konto erbt nichts. */
 const profilInfoDatei = neuesteRohdatei('profilinfo');
-const profil = liesRoh(profilInfoDatei) || (alt && alt.profil) || null;
+const ausInfo = liesRoh(profilInfoDatei);
+const ausErnte = (() => {
+  for (const f of alleRohdateien('profil').slice().reverse()) {
+    let j = null; try { j = f === profilDatei ? profilRoh : lies(f); } catch (e) {}
+    if (j && j.profil && j.profil.handle) return { ...j.profil, abgerufenAm: j.erzeugtAm || null };
+  }
+  return null;
+})();
+let profil = (alt && alt.profil) || null;
+for (const q of [ausInfo, ausErnte].filter(Boolean)
+    .sort((a, b) => String(a.abgerufenAm || '').localeCompare(String(b.abgerufenAm || '')))) {
+  if (profil && kleinHandle(profil.handle) && kleinHandle(q.handle)
+      && kleinHandle(profil.handle) !== kleinHandle(q.handle)) profil = null;
+  const neu = {}; for (const [k, v] of Object.entries(q)) if (v !== undefined) neu[k] = v;
+  profil = { ...(profil || {}), ...neu };
+}
 if (profilInfoDatei) console.log('  Profilangaben: ', path.basename(profilInfoDatei));
+if (ausErnte) console.log('  Profil aus der Ernte:', ausErnte.abgerufenAm || 'ohne Zeit');
 
 /* Welche Dateien dieser Lauf GELESEN hat - genau die werden weiter
    unten geloescht, und erst nach erfolgreichem Schreiben des Katalogs.
