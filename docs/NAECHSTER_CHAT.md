@@ -7349,3 +7349,19 @@ Aufgabe in Schritt 4.
 alle gleichen Abschnitte übertragen" (alle drei in §39).
 **Offen für Schritt 4:** was mit einem Wechsel geschieht, der nach dem Verschieben einer Grenze
 nicht mehr in seinen Abschnitt passt.
+
+## 41. 30.09.2026: Zähler in der Player-Leiste (Wunsch Tarja) — Skizze, kein Bau
+
+Caspar_D gibt Tarjas Wunsch weiter: die Daten der Chip-Reihe der Detailansicht (Modell, Datum,
+Dauer, Abrufe, Herzen, Kommentare, Remix) möglichst platzsparend unten in der Player-Leiste; ist zu
+wenig Platz, nur die Abrufe, und ein Klick klappt den Rest nach oben auf. **Skizze gezeigt:** die
+zweite Zeile des Titelblocks (`.pinfo`, neben `#pzeit`), 12 px, Nebenfarbe, keine Pillen; die Dauer
+fällt weg (steht schon in der Zeit). Umschalten nach Breite ohne Regler (Container-Abfrage auf dem
+Titelblock). Aufklapper nach dem Muster von `.pmodiliste` (öffnet nach oben, `#player` hat kein
+overflow). Zu beachten: ein Klick auf `.pinfo` öffnet heute die Detailansicht (index.html ~26938),
+der Abrufe-Knopf muss seinen Klick selbst fangen; Zahlen sind Stand der letzten Ernte, nicht live;
+fremde Titel ohne Zahl zeigen nichts statt 0; auf dem Telefon (≤ 520 px) ist `.pinfo`
+`display:contents`, dort gilt immer die schmale Stufe.
+**Befund:** die Detailansicht zeigt die Kommentarzahl doppelt (index.html 11910 `SYM('blase')`,
+klickbar, und 11911 `SYM('kommentar')`, nicht klickbar, beide `s.kommentare`); `i-kommentar` wird
+nur dort benutzt. Streichen wartet auf Caspar_D's Wort.
