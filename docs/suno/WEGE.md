@@ -27,7 +27,7 @@ setzt ein Herz, schreibt einen Kommentar oder kostet Credits. Was wir
 | Weg | holt | Anmerkung |
 |---|---|---|
 | `GET /api/profiles/{handle}/?page=N` | die öffentlichen Titel eines Profils mit Abrufen, Herzen, Kommentarzahl, Stil, Liedtext | 20 je Seite; auch für fremde Profile |
-| `GET /api/profiles/{handle}/info` | Profilkopf: Name, Bild, Zähler | |
+| `GET /api/profiles/{handle}/info` | Titelbild (`cover_photo_url`), Genres, Abschnittsfolge, Links zu Spotify, SoundCloud, X, Instagram, YouTube, TikTok — kein Name, kein Avatar, keine Zähler (die stehen in der Songliste) | nachgesehen 01.10.2026 |
 | `GET /api/clip/{clip_id}` | ein Titel vollständig — Ton- und Bildadressen, Metadaten, Herzen, Abrufe, `is_liked` | auch für private eigene Titel (der Weg zu den 73 Privaten) |
 | `GET /api/playlist/me?page=N` | eigene Alben (Köpfe) | 12 je Seite, `num_total_results` |
 | `GET /api/playlist/{playlist_id}?page=N` | Einträge eines Albums mit vollen Titel-Objekten | 50 je Seite; private Titel stehen mit drin |
@@ -457,7 +457,7 @@ mit → markiert.
 | Weg | Token | | Was es tut |
 |---|---|---|---|
 | **`GET /api/profiles/{handle}/`** | – | ● | Songliste mit Plays, Likes, Kommentarzahl, Stil, Lyrics — der Kern von `sammeln.js`. Auch **fremde** Profile, ohne Anmeldung → `community-profile.js`. **Vier Parameter sind Pflicht**, siehe unten |
-| **`GET /api/profiles/{handle}/info`** | – | ● | Profilkopf: Name, Avatar, Zähler |
+| **`GET /api/profiles/{handle}/info`** | – | ● | Titelbild (`cover_photo_url`), Genres, Links; Name, Avatar und Zähler stehen in der Songliste (01.10.2026) |
 | **`GET /api/clip/{clip_id}`** | T | ● | Ein Song vollständig, auch privat — der Weg der 73 Privaten |
 | **`GET /api/gen/{clip_id}/comments?order=newest`** | – | ● | Kommentare mit Autor, Zeit, Text, Likes darauf — `reaktionen.js` |
 | **`GET /api/gen/{clip_id}/aligned_lyrics/v2`** | T | ● | Wort-Zeitmarken fürs Karaoke |

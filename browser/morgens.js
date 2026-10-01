@@ -541,16 +541,17 @@
   /* Das Titelbild steht nicht in der Songliste, sondern auf
      GET /api/profiles/<handle>/info (docs/suno/WEGE.md). Ohne diese
      Anfrage bleibt der Profilkopf leer, sobald library/profilbild.*
-     fehlt — so bei jedem Archiv, das nur über das Lesezeichen kam. */
+     fehlt — so bei jedem Archiv, das nur über das Lesezeichen kam.
+     Eine eigene Variable, nicht kopf.cover_photo_url: die Songliste trägt
+     das Feld nicht (nachgesehen 01.10.2026), und genau darauf hatte sich
+     der Fix vom 30.09. verlassen. */
+  let titelbildUrl = null;
   await pause();
   try {
     const a = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/info`, { credentials:'include' });
     if (a.ok) {
       const info = await a.json();
-      if (info && info.cover_photo_url) {
-        if (!kopf) kopf = {};
-        kopf.cover_photo_url = info.cover_photo_url;
-      }
+      if (info && info.cover_photo_url) titelbildUrl = info.cover_photo_url;
     }
   } catch (e) {}
 
@@ -1740,10 +1741,10 @@
        (oben geholt). bin/aufbereiten.js nimmt das Profil aus der Ernte. */
     profil: kopf ? { handle, display_name: kopf.display_name,
                      avatar_image_url: kopf.avatar_image_url,
-                     cover_photo_url: kopf.cover_photo_url,
+                     cover_photo_url: titelbildUrl,
                      profile_description: kopf.profile_description,
                      stats: kopf.stats, num_total_clips: gesamt }
-                 : { handle },
+                 : { handle, cover_photo_url: titelbildUrl },
     songs: [...songs.values()],
     privat: [...privatSongs.values()],
     /* DER ALBUMUMSCHLAG, genau wie bin/aufbereiten.js ihn beim Lesen der

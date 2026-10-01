@@ -1973,6 +1973,19 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
 #pzahl .pzv{display:inline-flex;align-items:center;gap:9px}
 #pzahl .pzv > span{display:inline-flex;align-items:center;gap:3px}
 #pzahl .ico{width:12px;height:12px}
+/* BUENDIG AUF DER GRUNDLINIE (Caspar_D, 01.10.2026: „die Baseline der Icons und der Zeit ist nicht
+   bottom aligned"). Mit align-items:center stand jede Zahl in der Mitte ihres Symbols, und die Reihe
+   hing an der Unterkante des ersten Symbols - die Zahlen sassen gut einen Punkt hoeher als die
+   Zeit. Jetzt richtet sich jede Ebene nach der Grundlinie der Schrift; ein Symbol hat keine eigene
+   und steht mit seiner Unterkante darauf. Die gezeichnete Form endet aber nicht am Rand des
+   24er-Rasters - das Dreieck bei 19, der Daumen bei 21, die Blase bei 22 -, und um genau diesen
+   Rest rutscht jedes Symbol nach unten, in em, damit es fuer 12 und 14 Punkte gilt. Gemessen in
+   dreifacher Vergroesserung: alle drei Formen enden auf 0,02 Punkte genau auf der Grundlinie. */
+#pzahl, #pzahl .pzv, #pzahl .pzv > span, #pzahlAuf, #pzahlListe .pzz{align-items:baseline}
+#pzahl .ico{position:relative}
+#pzahl .ico:has(use[href="#i-plays"]){top:.208em}
+#pzahl .ico:has(use[href="#i-herz"]){top:.125em}
+#pzahl .ico:has(use[href="#i-blase"]){top:.083em}
 #pzahlAuf{display:none;align-items:center;gap:3px;font:inherit;font-size:12px;color:var(--text);
   background:none;border:1px solid var(--akzent);border-radius:10px;padding:1px 6px;cursor:pointer}
 #pzahlAuf:hover{background:var(--flaeche2)}
@@ -1984,7 +1997,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   box-shadow:0 10px 28px rgba(0,0,0,.5)}
 #pzahl.auf #pzahlListe{display:flex}
 #pzahlListe .pzz{display:flex;align-items:center;gap:7px;color:var(--text);font-size:13px}
-#pzahlListe .pzz .ico{width:14px;height:14px;color:var(--akzent)}
+#pzahlListe .pzz .ico{width:14px;height:14px;font-size:14px;color:var(--akzent)}
 #pzahlListe .pzz b{font-size:13px}   /* sonst greift .pinfo b (14 px, Titelzeile) */
 #pzahlListe .pzz.zk{cursor:pointer}
 #pzahlListe .pzz.zk:hover b{text-decoration:underline}
@@ -7546,7 +7559,7 @@ function zeichnen(){
         ${capMarke(s)}
       </div>
       <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="Treffer im Liedtext">' + SYM('lyrics') + '</i>' : ''}</div>
-      <div class="unter"><span>${SYM('plays')}${s.plays||0}${plus(s,'plays')}</span><span class="zk" data-rk="${s.id}" title="Wer hat reagiert">${SYM('herz')}${s.likes||0}${plus(s,'likes')}</span><span class="zk" data-rk="${s.id}" title="Kommentare">${SYM('blase')}${s.kommentare||0}${plus(s,'kommentare')}</span>${plusSumme(s)}</div>
+      <div class="unter"><span>${SYM('plays')}${s.plays||0}${plus(s,'plays')}</span><span class="zk" data-rk="${s.id}" title="Wer hat reagiert">${SYM('herz')}${s.likes||0}${plus(s,'likes')}</span><span class="zk" data-rk="${s.id}" data-rk-ziel="blase" title="Kommentare">${SYM('blase')}${s.kommentare||0}${plus(s,'kommentare')}</span>${plusSumme(s)}</div>
     </div>`).join('');
 
   markieren();
@@ -10753,7 +10766,7 @@ function zeichnePlaylistInhalt(){
       <div class="titel">${esc(s.titel)}${imText(s) ? ' <i class="imtext" title="Treffer im Liedtext">' + SYM('lyrics') + '</i>' : ''}</div>
       <div class="unter">${s.fremd
         ? `<span>${esc(s.anzeigename || s.handle || '')}</span>`
-        : `<span>${SYM('plays')}${s.plays||0}</span><span class="zk" data-rk="${s.id}">${SYM('herz')}${s.likes||0}</span><span class="zk" data-rk="${s.id}">${SYM('blase')}${s.kommentare||0}</span>`}</div>
+        : `<span>${SYM('plays')}${s.plays||0}</span><span class="zk" data-rk="${s.id}">${SYM('herz')}${s.likes||0}</span><span class="zk" data-rk="${s.id}" data-rk-ziel="blase">${SYM('blase')}${s.kommentare||0}</span>`}</div>
     </div>`).join('');
 
   markieren();
@@ -11947,7 +11960,7 @@ async function detailAuf(id){
             <span class="chip">${dauer}</span>
             <span class="chip">${SYM('plays')}${s.plays||0}</span>
             <span class="chip zk" data-rk="${s.id}">${SYM('herz')}${s.likes||0}</span>
-            <span class="chip zk" data-rk="${s.id}">${SYM('blase')}${s.kommentare||0}</span>
+            <span class="chip zk" data-rk="${s.id}" data-rk-ziel="blase">${SYM('blase')}${s.kommentare||0}</span>
             ${s.istRemix ? '<span class="chip">Remix</span>':''}
           </div>
           <div class="chips">${tags.map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
@@ -15243,8 +15256,10 @@ function profilAuf(){
     <div class="dwrap">
       <!-- DAS TITELBILD ALS GRUND DES KOPFES (Caspar_D, 26.08.2026:
            „den Profilhintergrund noch als Header-Hintergrund nehmen").
-           Es liegt seit demselben Tag lokal unter /profilbild - Suno
-           liefert es als cover_photo_url im selben Kopf wie den Avatar.
+           Es liegt seit demselben Tag lokal unter /profilbild. Suno
+           liefert es als cover_photo_url auf /api/profiles/<handle>/info,
+           NICHT in der Songliste neben dem Avatar - der alte Satz hier
+           stimmte nicht (mehr) und trug den Fehlschlag vom 30.09.2026.
            Fehlt es, bleibt der Kopf wie vorher: Das Bild wird per
            onerror abgeräumt, nicht per Rückfallfarbe überdeckt. -->
       <div class="ichkopf mitbild">

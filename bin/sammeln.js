@@ -222,11 +222,13 @@ function juengsteErnte(){
 
   /* Das Titelbild steht auf GET /api/profiles/<handle>/info, nicht in
      der Songliste. Ein GET, ohne Anmeldung; die Pause gilt auch hier.
-     Ohne diese Adresse legt laden.js kein library/profilbild.* an. */
+     Ohne diese Adresse legt laden.js kein library/profilbild.* an.
+     Die Songliste wird dafuer NICHT mehr gefragt: sie traegt das Feld
+     nicht (nachgesehen 01.10.2026), und kopf.cover_photo_url war darum
+     immer leer - genau darauf hatte sich der Fix vom 30.09. verlassen. */
   await schlaf(700);
   const infoAntwort = await holen(`https://studio-api-prod.suno.com/api/profiles/${encodeURIComponent(handle)}/info`);
   const coverUrl = (!infoAntwort.fehler && infoAntwort.daten && infoAntwort.daten.cover_photo_url) || null;
-  if (kopf && coverUrl) kopf.cover_photo_url = coverUrl;
 
   // Die Profilangaben: Avatar und Text aus der Songliste, Titelbild aus /info.
   if (kopf){
@@ -234,7 +236,7 @@ function juengsteErnte(){
       display_name: kopf.display_name, handle: kopf.handle,
       profile_description: kopf.profile_description,
       avatar_image_url: kopf.avatar_image_url,
-      cover_photo_url: coverUrl || kopf.cover_photo_url,
+      cover_photo_url: coverUrl,
       stats: kopf.stats, num_total_clips: kopf.num_total_clips,
       abgerufenAm: new Date().toISOString(),
     };

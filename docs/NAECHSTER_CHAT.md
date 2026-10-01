@@ -7410,3 +7410,25 @@ aufgerundet auf die Klasse; was ab dort dauert, steht in einer abgesetzten Samme
 Fußnote nennt die Zahl und weiter den wahren längsten Titel. Caspar_D (327 Titel, längster 8,0 min,
 Zaun 9,4 min): unverändert, 13 Klassen. Nachgerechnet mit seinen Längen und einer erfundenen
 Tarja-ähnlichen Reihe (25 Klassen, eine Sammelsäule).
+
+## 44. 01.10.2026: Tarjas Pull Requests, der falsche Weg zum Titelbild, Grundlinie
+
+Caspar_D: das Titelbild kam auch nach 1.0.10 nicht; Tarja (myinqi) stellte zwei Pull Requests.
+**#3** holt `cover_photo_url` von `GET /api/profiles/<handle>/info` — nachgesehen: die Songliste
+(`/api/profiles/<handle>?…`) trägt Avatar, Text, Zähler, aber KEIN Titelbild; `/info` trägt
+Titelbild, Genres, Abschnittsfolge und Links, aber keinen Namen, Avatar, Zähler. Der Fix vom 30.09.
+verließ sich auf einen alten Kommentar („im selben Kopf wie den Avatar") und las ein Feld, das es
+dort nicht gibt. **#2**: in der breiten Leiste öffnen Daumen und Blase „Wer hat reagiert", die
+Blase springt zu den Kommentaren (`reaktAuf(…, ziel)`, `data-rk-ziel`). Beide per Rebase
+zusammengeführt (5ba15ca, a327b2d).
+Caspar_D: „den alten Weg, den du fehlerhafterweise benutzt hast, bitte nicht mehr benutzen und
+entfernen" — entfernt: `kopf.cover_photo_url` in `browser/morgens.js` (eigene Variable
+`titelbildUrl` aus `/info`) und in `bin/sammeln.js` (nur noch `coverUrl` aus `/info`); der falsche
+Kommentar im Profilkopf (index.html) berichtigt; `docs/suno/WEGE.md` beschreibt `/info` richtig.
+Dazu: die Blase auf Kacheln und in der Detailansicht springt ebenfalls zu den Kommentaren.
+**Grundlinie** (Caspar_D: „die Baseline der Icons und der Zeit ist nicht bottom aligned"): in der
+Leiste stand jede Zahl in der Mitte ihres Symbols, die Reihe hing an der Unterkante des ersten
+Symbols — Zahlen gut 1 px über der Zeit. Jetzt `align-items:baseline` auf allen Ebenen, und jedes
+Symbol rutscht um seinen Leerraum im 24er-Raster nach unten (Dreieck .208 em, Daumen .125 em,
+Blase .083 em). Gemessen in einer statischen Kopie (eigener kleiner Server, Port 8795, danach
+entfernt) in dreifacher Vergrößerung: alle drei Formen enden auf 0,02 px auf der Grundlinie.
