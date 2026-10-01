@@ -538,6 +538,22 @@
   zeile1.textContent = `Songliste von Suno geholt — ${songs.size} Songs mit aktuellen Zählern`;
   zeile1.style.color = '#16be5c';
 
+  /* Das Titelbild steht nicht in der Songliste, sondern auf
+     GET /api/profiles/<handle>/info (docs/suno/WEGE.md). Ohne diese
+     Anfrage bleibt der Profilkopf leer, sobald library/profilbild.*
+     fehlt — so bei jedem Archiv, das nur über das Lesezeichen kam. */
+  await pause();
+  try {
+    const a = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/info`, { credentials:'include' });
+    if (a.ok) {
+      const info = await a.json();
+      if (info && info.cover_photo_url) {
+        if (!kopf) kopf = {};
+        kopf.cover_photo_url = info.cover_photo_url;
+      }
+    }
+  } catch (e) {}
+
   /* ---------------- 2 · Was nur mit Anmeldung geht ----------------
      Wort-Zeitmarken und Alben antworten ohne Token mit 401. Genau
      dafür sitzt der Knopf hier. Schlägt es fehl, ist der Rest trotzdem
@@ -1719,10 +1735,9 @@
     quelle: 'morgens.js',
     timing,
     kontingent,
-    /* Der ganze Kopf der Profilseite, wie bin/sammeln.js ihn las - bis zum 30.09.2026 fehlten
-       Titelbild, Profiltext und Zahlen, und wer nur ueber das Lesezeichen eingerichtet hatte,
-       bekam nie ein Titelbild (Tarja: Profilkopf schwarz). bin/aufbereiten.js nimmt das Profil
-       seitdem auch aus der Ernte. */
+    /* Der ganze Kopf der Profilseite. Avatar, Text und Zahlen stehen in
+       der Songliste; das Titelbild kommt von /api/profiles/<handle>/info
+       (oben geholt). bin/aufbereiten.js nimmt das Profil aus der Ernte. */
     profil: kopf ? { handle, display_name: kopf.display_name,
                      avatar_image_url: kopf.avatar_image_url,
                      cover_photo_url: kopf.cover_photo_url,

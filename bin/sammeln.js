@@ -220,20 +220,29 @@ function juengsteErnte(){
     quelle: 'api/profiles/<handle> ohne Anmeldung',
   }));
 
-  // Die Profilangaben gleich mit - sie stecken im selben Kopf.
+  /* Das Titelbild steht auf GET /api/profiles/<handle>/info, nicht in
+     der Songliste. Ein GET, ohne Anmeldung; die Pause gilt auch hier.
+     Ohne diese Adresse legt laden.js kein library/profilbild.* an. */
+  await schlaf(700);
+  const infoAntwort = await holen(`https://studio-api-prod.suno.com/api/profiles/${encodeURIComponent(handle)}/info`);
+  const coverUrl = (!infoAntwort.fehler && infoAntwort.daten && infoAntwort.daten.cover_photo_url) || null;
+  if (kopf && coverUrl) kopf.cover_photo_url = coverUrl;
+
+  // Die Profilangaben: Avatar und Text aus der Songliste, Titelbild aus /info.
   if (kopf){
     const info = {
       display_name: kopf.display_name, handle: kopf.handle,
       profile_description: kopf.profile_description,
       avatar_image_url: kopf.avatar_image_url,
-      /* Das Titelbild des Profils (Caspar_D, 26.08.2026). Suno liefert es
-         im selben Kopf gleich neben dem Avatar, wir haben es nur nie
-         gelesen: cover_photo_url, bei Caspar_D 1968x681. */
-      cover_photo_url: kopf.cover_photo_url,
+      cover_photo_url: coverUrl || kopf.cover_photo_url,
       stats: kopf.stats, num_total_clips: kopf.num_total_clips,
       abgerufenAm: new Date().toISOString(),
     };
     fs.writeFileSync(path.join(ROH, `profilinfo-${stempel}.json`), JSON.stringify(info));
+  } else if (coverUrl) {
+    fs.writeFileSync(path.join(ROH, `profilinfo-${stempel}.json`), JSON.stringify({
+      handle, cover_photo_url: coverUrl, abgerufenAm: new Date().toISOString(),
+    }));
   }
 
   /* --- Was ist neu, was hat sich geändert? --------------------
