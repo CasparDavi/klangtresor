@@ -2046,7 +2046,11 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
    Lyrics (die textlose Wetter-Serie) und die fremden Playlist-
    Eintraege beim Analyzer. */
 .pmodi button:disabled{color:var(--schwach);opacity:.42;cursor:default}
+.pmodi button.an{color:var(--akzent)}
 .pmodi .ico{width:17px;height:17px}
+/* Das Filmchen fuer requestPictureInPicture. display:none lehnt
+   Firefox ab; unsichtbar, aber mit Flaeche, damit das Fenster oeffnet. */
+#pipfilm{position:fixed;left:0;top:0;width:16px;height:16px;opacity:0;pointer-events:none;z-index:-1}
 /* Haarlinie zwischen Modus und Transport: links WIE es aussieht,
    rechts WAS laeuft. Ohne sie stehen sieben Knoepfe ununterschieden
    nebeneinander. */
@@ -2212,6 +2216,7 @@ html.rabenmagie .bart::after{content:'';position:absolute;inset:0;z-index:0;
   <symbol id="i-hoch" viewBox="0 0 24 24"><path fill="none" stroke="currentColor"
     stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 15l6-6 6 6"/></symbol>
   <symbol id="i-eigenvideo" viewBox="0 0 24 24"><path d="M3 5h13v14H3V5zm15 4l4-2.5v11L18 15V9z"/></symbol>
+  <symbol id="i-pip" viewBox="0 0 24 24"><path d="M3 5h18v14H3V5zm2 2v10h14V7H5zm8 4h6v6h-6v-6z"/></symbol>
 </svg>
 
 <style>
@@ -4280,6 +4285,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
         <button data-modus="karaoke"  onclick="pmodiWaehlen('karaoke')"  title="Karaoke"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buehne"/></svg></button>
         <button data-modus="lyrics"   onclick="pmodiWaehlen('lyrics')"   title="Lyrics"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lyrics"/></svg></button>
         <button data-modus="analyzer" onclick="pmodiWaehlen('analyzer')" title="Titel-Analyse"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-analyse"/></svg></button>
+        <button type="button" id="pipknopf" hidden onclick="pipUmschalten()" title="Bewegtbild rauslösen"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-pip"/></svg></button>
       </div>
     </div>
     </div>
@@ -4295,6 +4301,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
      Für die eigenen Dateien ist es wirkungslos, die kommen vom
      selben Ursprung. -->
 <audio id="audio" crossorigin="anonymous"></audio>
+<video id="pipfilm" muted loop playsinline></video>
 <!-- Das zweite Deck fuer den ANSCHLUSS (Caspar_D, 23.08.2026): waehrend der
      Naht laufen beide Songs kurz gleichzeitig. Sonst still. Ein zweites
      Element ist noetig, weil createMediaElementSource pro Element nur
@@ -10915,6 +10922,46 @@ function artworkKachel(id){
     ? '/media/' + id + '/eigen.jpg' : '/media/' + id + '/kachel.jpg' + kachelZusatz();
 }
 
+/* Bildfenster (Picture-in-Picture). Der Ton bleibt in #audio.
+   Zens Hover-Knopf trifft nur die erste Kachel, weil die Kachel-
+   Videos pointer-events:none haben. Dieser Knopf ruft die API. */
+function pipKann(){
+  return !!(document.pictureInPictureEnabled && HTMLVideoElement.prototype.requestPictureInPicture);
+}
+function pipFilmMit(s){
+  const v = $('pipfilm'); if (!v) return;
+  if (!s || !hatBewegtbild(s)){ v.removeAttribute('src'); v.dataset.src = ''; return; }
+  const url = artworkVideo(s.id);
+  if (v.dataset.src === url) return;
+  v.dataset.src = url; v.src = url;
+  v.play().catch(() => {});
+}
+async function pipUmschalten(){
+  if (!pipKann()) return;
+  if (document.pictureInPictureElement){
+    try { await document.exitPictureInPicture(); } catch (e) {}
+    pmodiAufbauen();
+    return;
+  }
+  const s = aktuellId && song(aktuellId);
+  if (!s || !hatBewegtbild(s)) return;
+  pipFilmMit(s);
+  const v = $('pipfilm');
+  try {
+    if (v.readyState < 2) await new Promise((ok, err) => {
+      const gut = () => { v.removeEventListener('error', schlecht); ok(); };
+      const schlecht = () => { v.removeEventListener('loadeddata', gut); err(new Error('kein Film')); };
+      v.addEventListener('loadeddata', gut, { once:true });
+      v.addEventListener('error', schlecht, { once:true });
+    });
+    await v.play();
+    await v.requestPictureInPicture();
+  } catch (e) { console.log('Bildfenster:', e.message); }
+  pmodiAufbauen();
+}
+document.addEventListener('enterpictureinpicture', () => pmodiAufbauen());
+document.addEventListener('leavepictureinpicture', () => pmodiAufbauen());
+
 function bewegtAn(karte, id){
   const kasten = karte.querySelector('.bild');
   if (!kasten || kasten.querySelector('video.bewegt')) return;
@@ -11640,6 +11687,7 @@ function spielen(i, uebernahme){
   uiFaerben(s);
   sperrbildschirm(s);
   markieren();
+  pipFilmMit(s);
   pmodiAufbauen();          // was dieser Song kann, entscheidet über die Segmente
 
   // Steht die Bühne offen, wandert sie zum neuen Song mit
@@ -16785,10 +16833,20 @@ function pmodiAufbauen(){
     k.title    = geht[m] ? PMODI[m].name : PMODI[m].fehlt;
     if (m === 'karaoke' && geht[m] && bText === 'karaoke' && $('buehne').classList.contains('karaoke-vom-clip')) k.title = 'Karaoke – vom Effektclip';
   }
+  const pip = $('pipknopf');
+  if (pipKann()){
+    const ja = !!(s && hatBewegtbild(s));
+    pip.hidden = false;
+    pip.disabled = !ja;
+    pip.classList.toggle('an', !!document.pictureInPictureElement);
+    pip.title = document.pictureInPictureElement ? 'Bewegtbild zurückholen'
+              : ja ? 'Bewegtbild rauslösen' : 'Bewegtbild rauslösen – kein Bewegtbild';
+  } else if (pip) pip.hidden = true;
   // Der Ausklapper des Telefons: grau, wenn KEINER der drei geht -
   // also bei fremden Songs ohne Text. Und dann auch zugeklappt.
   const auf = $('pmodiAuf');
-  auf.disabled = !Object.values(geht).some(Boolean);
+  const pipGeht = pipKann() && s && hatBewegtbild(s);
+  auf.disabled = !Object.values(geht).some(Boolean) && !pipGeht;
   auf.title    = auf.disabled ? 'Bühne – für diesen Titel kein Modus' : 'Bühne';
   if (auf.disabled) $('pmodi').classList.remove('auf');
 }
