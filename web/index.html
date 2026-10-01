@@ -16802,13 +16802,20 @@ function pzahlSetzen(s){
   z.hidden = false;
   const v = s.zaehlerVerlauf || [], stand = v.length ? String(v[v.length - 1].stand || '') : '';
   const zeile = z.querySelector('.pzv');
-  zeile.innerHTML = zaehler.map(([sym, wert]) => `<span>${SYM(sym)}${wert}</span>`).join('')
+  /* Daumen und Blase oeffnen das Reaktionsfenster hier in der Leiste
+     (data-rk / .zk, wie auf der Kachel). Abrufe, Modell und Datum
+     bleiben der Weg in die Detailansicht. */
+  const zkTitel = (sym) => sym === 'herz' ? 'Wer hat reagiert' : 'Kommentare';
+  zeile.innerHTML = zaehler.map(([sym, wert, wort, zk]) =>
+      zk
+        ? `<span class="zk" data-rk="${esc(s.id)}" data-rk-ziel="${sym}" title="${zkTitel(sym)}">${SYM(sym)}${wert}</span>`
+        : `<span>${SYM(sym)}${wert}</span>`).join('')
     + meta.map(m => `<span>${m}</span>`).join('');
   zeile.title = stand ? 'Stand der letzten Ernte: ' + stand : '';
   const plays = zaehler.find(x => x[0] === 'plays');
   $('pzahlAuf').innerHTML = (plays ? SYM('plays') + plays[1] : '') + SYM('hoch');
   $('pzahlListe').innerHTML = zaehler.map(([sym, wert, wort, zk]) =>
-      `<span class="pzz${zk ? ' zk' : ''}"${zk ? ` data-rk="${esc(s.id)}" title="Wer hat reagiert"` : ''}>${SYM(sym)}<b>${wert}</b> ${wort}</span>`).join('')
+      `<span class="pzz${zk ? ' zk' : ''}"${zk ? ` data-rk="${esc(s.id)}" data-rk-ziel="${sym}" title="${zkTitel(sym)}"` : ''}>${SYM(sym)}<b>${wert}</b> ${wort}</span>`).join('')
     + (meta.length ? `<span class="pzm">${meta.join(' · ')}</span>` : '')
     + (stand ? `<span class="pzs">Stand der letzten Ernte: ${esc(stand)}</span>` : '');
   pzahlMessen();
@@ -17010,7 +17017,10 @@ document.addEventListener('click', (e) => {
   const z = e.target.closest && e.target.closest('.zk[data-rk]');
   if (!z) return;
   e.preventDefault(); e.stopPropagation();
-  reaktAuf(z.dataset.rk, e.clientX, e.clientY);
+  /* Aufklapper der engen Leiste sonst hinter dem Fenster stehen lassen. */
+  const pz = $('pzahl');
+  if (pz){ pz.classList.remove('auf'); $('pzahlAuf').setAttribute('aria-expanded', 'false'); }
+  reaktAuf(z.dataset.rk, e.clientX, e.clientY, false, z.dataset.rkZiel);
 }, true);
 
 /* Den Kasten neben den Zeiger legen. Erst oeffnen, dann messen - die
@@ -17518,7 +17528,7 @@ function reaktZurueck(){
 }
 function reaktStapelAnzeigen(){ $('reaktzurueck').style.display = reaktStapel.length ? '' : 'none'; }
 
-async function reaktAuf(id, x, y, istZurueck){
+async function reaktAuf(id, x, y, istZurueck, ziel){
   const s = song(id) || {};
   if (!istZurueck){
     /* Vom Zaehler aus: neuer Einstieg, Stapel leer. Von einer Person
@@ -17538,6 +17548,7 @@ async function reaktAuf(id, x, y, istZurueck){
   $('reaktunter').textContent = `${s.plays||0} Abrufe · ${s.likes||0} Herzen · ${s.kommentare||0} Kommentare`;
   const feld = $('reaktinhalt');
   feld.textContent = 'Lade …';
+  feld.scrollTop = 0;
   $('reakt').classList.add('auf');
   if (x !== undefined) reaktPlatzieren(x, y);
 
@@ -17548,8 +17559,18 @@ async function reaktAuf(id, x, y, istZurueck){
   const seit = reaktGesehen[id] || '';
   const istNeu = (e) => !!(e.gesehen && seit && e.gesehen > seit) || (!seit && false);
 
-  const h3 = (t) => { const h = document.createElement('h3'); h.textContent = t; feld.appendChild(h); };
+  const h3 = (t, abschnitt) => {
+    const h = document.createElement('h3'); h.textContent = t;
+    if (abschnitt) h.setAttribute('data-reakt', abschnitt);
+    feld.appendChild(h);
+  };
   const leer = (t) => { const p = document.createElement('div'); p.className = 'rleer'; p.textContent = t; feld.appendChild(p); };
+  const zuAbschnitt = (name) => {
+    const el = feld.querySelector('[data-reakt="' + name + '"]');
+    if (!el) return;
+    const kopf = el.getBoundingClientRect().top - feld.getBoundingClientRect().top + feld.scrollTop;
+    feld.scrollTop = Math.max(0, kopf - 4);
+  };
 
   /* 1 · Der Verlauf. Drei Linien ueber die Tage, seit wir mitschreiben.
      Normiert je Groesse auf ihr Maximum - es geht um die Form: wann
@@ -17623,7 +17644,7 @@ async function reaktAuf(id, x, y, istZurueck){
      "folgt dir" am Namen kommt aus der Beobachterliste (server.js,
      likerMitZeiten), nicht aus Sunos is_following_viewer - das ist auf
      dem App-Weg immer falsch (Gegenleser, 09.09.2026). */
-  h3('Herzen');
+  h3('Herzen', 'herz');
   const kd = iso => { try { return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }); } catch (e) { return '?'; } };
   if (d.liker && d.liker.likers && d.liker.likers.length){
     const l = document.createElement('div'); l.className = 'rll';
@@ -17689,7 +17710,7 @@ async function reaktAuf(id, x, y, istZurueck){
   } else leer(s.likes ? `${s.likes} — wer, steht erst hier, wenn das Lesezeichen einmal gelaufen ist (es holt Sunos Benachrichtigungen, vier Wochen zurück).` : 'Noch keine.');
 
   /* 3 · Kommentare mit Antworten, neue markiert, Namen anklickbar. */
-  h3(`Kommentare${d.anzahl ? ' — ' + d.anzahl : ''}${d.antworten ? `, ${d.antworten} Antworten` : ''}`);
+  h3(`Kommentare${d.anzahl ? ' — ' + d.anzahl : ''}${d.antworten ? `, ${d.antworten} Antworten` : ''}`, 'blase');
   const eintrag = (k, klasse) => {
     const w = document.createElement('div'); w.className = klasse + (istNeu(k) ? ' neu' : '');
     const img = document.createElement('img'); img.src = k.avatar || ''; img.alt = '';
@@ -17734,6 +17755,10 @@ async function reaktAuf(id, x, y, istZurueck){
 
   reaktGesehenMerken(id);
   if (x !== undefined) reaktPlatzieren(x, y);
+  /* Daumen bleibt oben (Verlauf mit Herzen-Kurve, dann die Namen).
+     Die Blase springt zur Kommentar-Ueberschrift - die Herzenliste
+     kann hunderte Namen lang sein. */
+  if (ziel === 'blase') zuAbschnitt('blase');
 }
 
 /* 5 · Die Person: ihre Spur durchs ganze Archiv. Klick auf einen Song
@@ -27059,9 +27084,10 @@ $('leiste').onclick = (e)=>{
    daneben stehen: Er ist der auffindbare Weg, das Bild der kurze. */
 $('pbild').onclick = () => { if (aktuellId) buehneAuf(aktuellId); };
 /* In der engen Form gehoert der Zahlenbereich dem Aufklapper - ein Klick darauf soll aufklappen,
-   nicht in die Detailansicht springen. In der breiten Form fuehrt er wie Titel und Zeit dorthin. */
+   nicht in die Detailansicht springen. In der breiten Form fuehren Daumen und Blase ins
+   Reaktionsfenster (.zk, Capture-Horcher weiter oben); der Rest wie Titel und Zeit in die Details. */
 document.querySelector('.pinfo').onclick = (e) => {
-  if (e.target.closest && e.target.closest('#pzahl.eng')) return;
+  if (e.target.closest && (e.target.closest('#pzahl.eng') || e.target.closest('.zk[data-rk]'))) return;
   if (aktuellId) detailAuf(aktuellId); };
 
 // Doppelklick auf eine Karte öffnet die Details statt zu spielen
