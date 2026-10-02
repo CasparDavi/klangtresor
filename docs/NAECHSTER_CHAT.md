@@ -7457,3 +7457,4 @@ Bewegtbild schließt das Fenster. Geprüft mit Attrappen, acht Fälle; im Browse
 Tarjas Text hat sich damit erledigt.
 Aufgeräumt: die Zweige `docker-cuda` (26.08., ganz in main), `profil-titelbild-info` und
 `playerleiste-daumen-blase` (inhaltsgleich per Rebase in main) auf GitHub gelöscht.
+**Sichtprüfung** (Leiste, Grundlinie, Bildfenster in 1.0.12): Caspar_D hat sie an Tarja weitergegeben (02.10.) — Rückmeldung kommt von ihr, nicht bei ihm nachfragen.
