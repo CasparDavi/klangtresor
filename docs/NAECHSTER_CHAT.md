@@ -7432,3 +7432,20 @@ Symbols — Zahlen gut 1 px über der Zeit. Jetzt `align-items:baseline` auf all
 Symbol rutscht um seinen Leerraum im 24er-Raster nach unten (Dreieck .208 em, Daumen .125 em,
 Blase .083 em). Gemessen in einer statischen Kopie (eigener kleiner Server, Port 8795, danach
 entfernt) in dreifacher Vergrößerung: alle drei Formen enden auf 0,02 px auf der Grundlinie.
+
+## 45. 02.10.2026: Pull Request #4 (Bewegtbild ins Bild-im-Bild-Fenster) — wartet auf Tarja
+
+Tarja (myinqi), #4 `bewegtbild-pip`: Knopf in `.pmodiliste`, `requestPictureInPicture()` auf einem
+unsichtbaren stummen `<video id="pipfilm">` mit dem Bewegtbild des Titels; grau ohne Bewegtbild,
+unsichtbar ohne API (Chrome/Edge, Safari 13.1, Firefox ab 153). Baut, konfliktfrei mit main.
+Bewertung Claude (Caspar_D: „stichhaltig"): (1) `pipFilmMit(s)` lädt und spielt den Film bei JEDEM
+Titelwechsel, auch ohne Bildfenster — zweite Dauer-Entschlüsselung jedes Bewegtbilds; erst beim
+Öffnen laden, beim Schließen anhalten und entladen. (2) Film und Musik getrennt: Pause im Player
+hält den Film nicht an, Pause im Fenster nur den Film; der Film soll dem Player folgen (wie
+Regel 20), Play/Pause im Fenster die Musik steuern. (3) Idee, kein Hindernis: der Effektclip statt
+des rohen Bewegtbilds im Fenster (canvas.captureStream) — eigener Bau.
+**Entscheidung Caspar_D: B** (zusammenführen und 1 und 2 nachbessern) — aber erst schreibt er
+Tarja und bietet ihr an, es selbst zu tun; hat sie keine Lust oder Muße, macht es Claude.
+**Wiedervorlage:** #4 offen, bis Tarja antwortet oder Caspar_D „mach" sagt.
+Aufgeräumt: die Zweige `docker-cuda` (26.08., ganz in main), `profil-titelbild-info` und
+`playerleiste-daumen-blase` (inhaltsgleich per Rebase in main) auf GitHub gelöscht.
