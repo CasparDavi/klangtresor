@@ -10928,17 +10928,44 @@ function artworkKachel(id){
 function pipKann(){
   return !!(document.pictureInPictureEnabled && HTMLVideoElement.prototype.requestPictureInPicture);
 }
+/* NACHGEBESSERT (02.10.2026, Caspar_D: „B machen wir"; Tarjas Beitrag aus #4):
+   1. Der Film laedt erst, wenn das Fenster aufgeht, und wird beim Schliessen angehalten und
+      entladen. Vorher lud und spielte jeder Titelwechsel das Bewegtbild unsichtbar mit - eine
+      zweite Dauer-Entschluesselung jedes Bewegtbilds, auch wenn nie jemand den Knopf drueckte.
+   2. Der Film folgt dem Player, und Play/Pause im Fenster steuert die Musik. Es gibt EINE
+      Audioquelle; das Fenster ist nur ihr Bild. Vorher lief das Fenster weiter, wenn die Musik
+      stand, und Pause im Fenster hielt nur den Film an.
+   Gefolgt wird ueber spielknoepfeStellen(): sie liest den Zustand des Players bei jedem Play und
+   Pause und nach dem Deckwechsel des Anschlusses - dieselbe Quelle wie die Abspielknoepfe.
+   pipEigen merkt sich, welches Play/Pause des Films von uns kam; nur die anderen kommen aus dem
+   Fenster und gehen an die Musik. */
+let pipEigen = null;
+const pipOffen = () => { const v = $('pipfilm'); return !!(v && document.pictureInPictureElement === v); };
 function pipFilmMit(s){
   const v = $('pipfilm'); if (!v) return;
-  if (!s || !hatBewegtbild(s)){ v.removeAttribute('src'); v.dataset.src = ''; return; }
+  if (!s || !hatBewegtbild(s)){
+    /* Der neue Titel hat kein Bewegtbild: Fenster zu statt schwarz. */
+    if (pipOffen()) document.exitPictureInPicture().catch(() => {});
+    pipEntladen(); return;
+  }
   const url = artworkVideo(s.id);
-  if (v.dataset.src === url) return;
-  v.dataset.src = url; v.src = url;
-  v.play().catch(() => {});
+  if (v.dataset.src !== url){ v.dataset.src = url; v.src = url; }
+  pipFolgen();
+}
+function pipEntladen(){
+  const v = $('pipfilm'); if (!v) return;
+  if (!v.paused){ pipEigen = 'pause'; v.pause(); }
+  if (v.dataset.src){ v.removeAttribute('src'); v.dataset.src = ''; v.load(); }   /* load() ohne Quelle gibt den Decoder frei */
+}
+function pipFolgen(){
+  const v = $('pipfilm'); if (!v || !pipOffen() || !v.dataset.src) return;
+  const laeuft = !!(typeof audio !== 'undefined' && audio && !audio.paused);
+  if (laeuft && v.paused){ pipEigen = 'play'; v.play().catch(() => { if (pipEigen === 'play') pipEigen = null; }); }
+  else if (!laeuft && !v.paused){ pipEigen = 'pause'; v.pause(); }
 }
 async function pipUmschalten(){
   if (!pipKann()) return;
-  if (document.pictureInPictureElement){
+  if (pipOffen()){
     try { await document.exitPictureInPicture(); } catch (e) {}
     pmodiAufbauen();
     return;
@@ -10954,13 +10981,35 @@ async function pipUmschalten(){
       v.addEventListener('loadeddata', gut, { once:true });
       v.addEventListener('error', schlecht, { once:true });
     });
-    await v.play();
+    /* Laeuft die Musik, laeuft der Film schon beim Aufgehen; steht sie, zeigt das Fenster ein
+       stehendes Bild. */
+    if (!audio.paused && v.paused){ pipEigen = 'play'; await v.play(); }
     await v.requestPictureInPicture();
-  } catch (e) { console.log('Bildfenster:', e.message); }
+    pipFolgen();
+  } catch (e) { console.log('Bildfenster:', e.message); pipEntladen(); }
   pmodiAufbauen();
 }
+/* Play und Pause aus dem Fenster gehen an die Musik. Eine Pause wird erst nach 150 ms
+   weitergegeben: Schliesst man das Fenster mit dem Kreuz, haelt der Browser den Film an, und die
+   Reihenfolge von Pause und Verlassen ist nicht festgelegt - wer dann noch offen ist, meinte die
+   Musik. readyState < 2 heisst, die Quelle wechselt gerade; das ist keine Bitte des Nutzers. */
+{ const v = $('pipfilm');
+  if (v){
+    v.addEventListener('play', () => {
+      if (pipEigen === 'play'){ pipEigen = null; return; }
+      if (pipOffen() && v.readyState >= 2 && audio.paused) audio.play().catch(() => {});
+    });
+    v.addEventListener('pause', () => {
+      if (pipEigen === 'pause'){ pipEigen = null; return; }
+      if (v.readyState < 2) return;
+      setTimeout(() => { if (pipOffen() && v.paused && !audio.paused) audio.pause(); }, 150);
+    });
+  } }
 document.addEventListener('enterpictureinpicture', () => pmodiAufbauen());
-document.addEventListener('leavepictureinpicture', () => pmodiAufbauen());
+document.addEventListener('leavepictureinpicture', (e) => {
+  if (e.target === $('pipfilm')) pipEntladen();
+  pmodiAufbauen();
+});
 
 function bewegtAn(karte, id){
   const kasten = karte.querySelector('.bild');
@@ -11687,7 +11736,7 @@ function spielen(i, uebernahme){
   uiFaerben(s);
   sperrbildschirm(s);
   markieren();
-  pipFilmMit(s);
+  if (pipOffen()) pipFilmMit(s);   /* nur wenn das Bildfenster offen ist - sonst laedt kein Film mit */
   pmodiAufbauen();          // was dieser Song kann, entscheidet über die Segmente
 
   // Steht die Bühne offen, wandert sie zum neuen Song mit
@@ -16838,8 +16887,8 @@ function pmodiAufbauen(){
     const ja = !!(s && hatBewegtbild(s));
     pip.hidden = false;
     pip.disabled = !ja;
-    pip.classList.toggle('an', !!document.pictureInPictureElement);
-    pip.title = document.pictureInPictureElement ? 'Bewegtbild zurückholen'
+    pip.classList.toggle('an', pipOffen());
+    pip.title = pipOffen() ? 'Bewegtbild zurückholen'
               : ja ? 'Bewegtbild rauslösen' : 'Bewegtbild rauslösen – kein Bewegtbild';
   } else if (pip) pip.hidden = true;
   // Der Ausklapper des Telefons: grau, wenn KEINER der drei geht -
@@ -27054,6 +27103,8 @@ function spielknoepfeStellen(){
     k.innerHTML = SYM(laeuft ? 'pause' : 'play');
     k.classList.toggle('an', laeuft);
   }
+  /* Das Bildfenster haengt an derselben Quelle: ein angehaltener Film steht. */
+  if (typeof pipFolgen === 'function') pipFolgen();
 }
 
 function deckMelder(el){

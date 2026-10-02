@@ -7447,5 +7447,13 @@ des rohen Bewegtbilds im Fenster (canvas.captureStream) — eigener Bau.
 **Entscheidung Caspar_D: B** (zusammenführen und 1 und 2 nachbessern) — aber erst schreibt er
 Tarja und bietet ihr an, es selbst zu tun; hat sie keine Lust oder Muße, macht es Claude.
 **Wiedervorlage:** #4 offen, bis Tarja antwortet oder Caspar_D „mach" sagt.
+**Erledigt (02.10., Caspar_D: „go machen wir das"):** #4 per Rebase zusammengeführt (6e0764d), Zweig
+gelöscht; nachgebessert: der Film lädt nur bei offenem Fenster (`pipOffen()`), beim Schließen
+`pipEntladen()` (Pause, Quelle weg, `load()` gibt den Decoder frei); `pipFolgen()` hängt in
+`spielknoepfeStellen()` (dieselbe Quelle wie die Abspielknöpfe, auch nach dem Deckwechsel); Play
+und Pause aus dem Fenster gehen an die Musik (`pipEigen` trennt eigene von fremden Ereignissen;
+Pause erst nach 150 ms, damit das Schließen per Kreuz die Musik nicht anhält); Titel ohne
+Bewegtbild schließt das Fenster. Geprüft mit Attrappen, acht Fälle; im Browser nicht gesehen.
+Tarjas Text hat sich damit erledigt.
 Aufgeräumt: die Zweige `docker-cuda` (26.08., ganz in main), `profil-titelbild-info` und
 `playerleiste-daumen-blase` (inhaltsgleich per Rebase in main) auf GitHub gelöscht.
