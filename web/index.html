@@ -168,6 +168,9 @@ h1{
 .farbwahl.auf .fw-liste{display:flex}
 .farbwahl .fw-wahl{border-color:transparent;background:none}
 .farbwahl .fw-wahl:hover,.farbwahl .fw-wahl.an{background:var(--flaeche2)}
+.farbwahl.oben .fw-liste{top:auto;bottom:calc(100% + 4px)}      /* im Klangraum-Panel: nach oben auf */
+.pinhalt .farbwahl{display:inline-block;min-width:240px;margin-top:0}
+.farbwahl small{color:var(--schwach);font-size:11px}
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
 /* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand", dann
    „mach sie auf 80 % Deckkraft"). Ein Gegenrand stand hier einen Nachmittag lang. Schwarz oder
@@ -7714,8 +7717,46 @@ let karteAnflug = null;
 /* Nebelfarben der Astronomie statt einer Bunt-Palette: H-alpha-Rot,
    O-III-Tuerkis, Reflexionsblau, Schwefel-Gelb, Magenta (Planetar-
    nebel). Gruppen wohnen im NEBEL, nicht im Stern. */
-const NEBEL = ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'];
+/* PALETTEN DES KLANGRAUMS (Caspar_D, 06.10.2026: „gib dem Klangraum auch ein paar kalte
+   Weltraumpaletten und vielleicht auch eine warme zu unserer aktuellen; eine grünlastige für das
+   Borgschiff - die geht immer mit dem Borgschiff an; eine violett-pink-blau-lastige für den Raben - die
+   geht immer mit dem Raben an"). Das Borgschiff ist in der Oberflaeche der Kubus (Musik-Matrix). Die
+   Nebelfarben oben bleiben die erste Palette. Je Palette acht Farben, auf dunklem Grund unterscheidbar,
+   die ersten vier am deutlichsten - so viele Stilgruppen hat die Karte meist. Die freie Wahl wird
+   gemerkt; waehlt man Kubus oder Rabe, gilt deren Palette, bis man selbst eine andere nimmt oder wieder
+   das Schiff fliegt. karteFarbe liest die geltende Palette: Klangraum, Klangschaum (Gliederung Klang),
+   Groupie-Geschmack und die Stilgruppen im Profil folgen ihr. */
+const KLANGRAUM_PALETTEN = [
+  { id: 'nebel', name: 'Nebel', f: ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'] },
+  { id: 'eis', name: 'Eisnebel', f: ['#6fd3ff', '#2ec4b6', '#6f7bff', '#c9ecff', '#2f8cff', '#7ff2dc', '#a99bff', '#3fa8c4'] },
+  { id: 'polar', name: 'Polarlicht', f: ['#45f0a0', '#3aa8ff', '#b36cff', '#8ff6ff', '#2fd1b4', '#6f7dff', '#e0a6ff', '#a6ffcf'] },
+  { id: 'tief', name: 'Tiefer Raum', f: ['#3f6dff', '#1fb8d4', '#8f5cff', '#b4cbff', '#20d6a8', '#5a8fd0', '#cf96ff', '#62e2ff'] },
+  { id: 'glut', name: 'Sonnenglut', f: ['#ff5a48', '#ffb03a', '#ff6fa8', '#ffe07a', '#d9456e', '#ff8a52', '#f0c38f', '#c7372f'] },
+  { id: 'borg', name: 'Borg', gestalt: 'kubus', f: ['#39ff6a', '#18b85c', '#a8ff3e', '#0e8f6e', '#62dca0', '#d4ff8f', '#2fe6bd', '#7aa83a'] },
+  { id: 'rabe', name: 'Rabe', gestalt: 'rabe', f: ['#b05cd6', '#ff5fb3', '#5a6cff', '#e590ff', '#7d3cff', '#ff9ad8', '#4fa3ff', '#c9a8ff'] },
+];
+let klangraumPalette = (() => { try { return localStorage.getItem('mysuno-klangraum-farben') || 'nebel'; } catch (e) { return 'nebel'; } })();
+let klangraumPaletteGestalt = null;      /* 'borg' oder 'rabe', solange Kubus oder Rabe sie angeschaltet haben */
+const klangraumPal = () => KLANGRAUM_PALETTEN.find(p => p.id === (klangraumPaletteGestalt || klangraumPalette)) || KLANGRAUM_PALETTEN[0];
+let NEBEL = klangraumPal().f;
 const karteFarbe = (nr) => NEBEL[nr % NEBEL.length];
+/* Beim Start und bei jedem Wechsel der Gestalt: Kubus und Rabe bringen ihre Palette mit. */
+function klangraumGestaltFarben(){
+  const p = KLANGRAUM_PALETTEN.find(q => q.gestalt && q.gestalt === gestalt);
+  klangraumPaletteGestalt = p ? p.id : null; NEBEL = klangraumPal().f;
+}
+function klangraumFarbenWaehlen(id){
+  klangraumPalette = id; klangraumPaletteGestalt = null; NEBEL = klangraumPal().f;
+  try { localStorage.setItem('mysuno-klangraum-farben', id); } catch (e) {}
+  karteZeichnen();
+}
+function klangraumFarbwahlHtml(){
+  const chips = (p) => p.f.slice(0, 6).map(c => `<i style="background:${c}"></i>`).join(''), p = klangraumPal();
+  const mit = (q) => q.gestalt ? ` <small>mit ${q.gestalt === 'kubus' ? 'dem Kubus' : 'dem Raben'}</small>` : '';
+  return `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}${mit(p)}</span><b>▾</b></button>`
+    + '<span class="fw-liste">' + KLANGRAUM_PALETTEN.map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="klangraumFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}${mit(q)}</span></button>`).join('') + '</span>';
+}
+document.addEventListener('click', (e) => { const el = document.getElementById('klangraumfarben'); if (el && !el.contains(e.target)) el.classList.remove('auf'); });
 /* Korona-Farbe: derselbe Farbton, aber VOLL gesaettigt - die Korona
    ist die Zone maximaler Saettigung am Stern (Caspar_D, 21.08.2026). */
 function koronaFarbe(nr){
@@ -8618,7 +8659,7 @@ async function schaumZeichnen(){
 
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = `Kein Titel hat bei ${m.name} mehr als null.`; return; }
   /* Das Seitenverhaeltnis des Feldes, auf 0,05 gerundet - sonst legte jedes Pixel neu. */
-  const j = schaumKlangAuftrag(m, gl, schaumZoom, schaumVerh()), schluessel = j.lage;
+  const j = schaumKlangAuftrag(m, gl, schaumZoom, schaumVerh()), schluessel = j.lage + '|' + klangraumPal().id;   /* Farben der Klangraum-Palette */
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
   const gezoomt = !!schaumZoom;
@@ -8651,7 +8692,7 @@ async function groupieZeichnen(){
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
-  const j = await groupieAuftrag(m, schaumVerh(), gl), lage = j.lage, schluessel = lage + '|' + groupiePalette;
+  const j = await groupieAuftrag(m, schaumVerh(), gl), lage = j.lage, schluessel = lage + '|' + groupiePalette + '|' + klangraumPal().id;
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
   schaumLegen({ schluessel, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, lage, farbeVon, gezoomt: false, art: 'person',
@@ -9415,6 +9456,7 @@ function kartePanelHtml(){
       `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Titel eines Klassifikators">Sternbilder</button>` +
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>`) +
+    zeile('Farben', `<span class="farbwahl oben" id="klangraumfarben">${klangraumFarbwahlHtml()}</span>`) +
     /* Der Name steht IN der Zeile, nicht mehr in ihrer Ueberschrift
        (Caspar_D, 26.08.2026: „vorausgefuellt mit dem ganzen Sunohandle,
        bei Klick darauf wird es zu einer editierbaren Box, in der
@@ -9467,6 +9509,7 @@ function kartePanelDran(leg){
     if (vorher === 'rabe' && gestalt !== 'rabe' && typeof rabeWolkeLeeren === 'function') rabeWolkeLeeren();
     if (vorher === 'rabe' && gestalt !== 'rabe' && karteSchiffFrame) karteSchiffFrame.rabenFunken = null;
     if (typeof rabenmagieAnwenden === 'function') rabenmagieAnwenden();
+    klangraumGestaltFarben();
     karteZeichnen();
   };
   const sel = leg.querySelector('#schiffart'); if (sel) sel.onchange = () => { schiffArt = sel.value; merk('mysuno-schiff-art', schiffArt); };
@@ -9567,7 +9610,7 @@ async function karteZeichnen(){
      (Caspar_D, 22.08.: "irgendwas klaut den Mausfokus" - Nachlauf und
      Drehung zeichnen bis zu 8x/s, und innerHTML ersetzte jedes Mal das
      Element unter der Maus). Signatur aus allem, was im Panel steht. */
-  const panelSig = JSON.stringify([karteDim, karteVerf, schiffArt, reise, probeflug, gestalt, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0], d.anzahl, n]);
+  const panelSig = JSON.stringify([klangraumPal().id, karteDim, karteVerf, schiffArt, reise, probeflug, gestalt, karteArten, karteNebel, karteBahn, karteLoecher, karteLinien, karteLaden, karteGruppeAn, aktuellId, reiseWeg.length, reiseWeg[0], d.anzahl, n]);
   if (leg.dataset.sig !== panelSig){
     leg.dataset.sig = panelSig;
     { const sb0 = $('kartesteckbrief'); if (sb0 && sb0.parentElement !== $('karterechts')) $('karterechts').appendChild(sb0); }   // Steckbrief vor dem Neubau parken
@@ -10401,6 +10444,7 @@ let kubus = gestalt === 'kubus';
    es hier noch nicht, darum direkt statt ueber rabenmagieAnwenden). */
 document.documentElement.classList.toggle('rabenmagie', gestalt === 'rabe');
 if (gestalt === 'rabe' && typeof uiFaerben === 'function') uiFaerben(null);
+klangraumGestaltFarben();                 /* Kubus und Rabe bringen ihre Palette schon beim Start mit */
 const assimiliert = new Set();          // Song-IDs, die schon verloschen sind
 let supernovae = [];                    // { id, t0 }
 let beschuss = [];                      // { id, t0, nova } - Laser, Pulsieren, dann Supernova

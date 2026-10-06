@@ -7835,3 +7835,14 @@ Caspar_D: „ein kurzer Erklärtext, was die verschiedenen Größen bedeuten …
 Sätzen": jedes Maß beider Schäume hat jetzt `was` (Nutzerwörter, wer fehlt); im Groupieschaum zeigt
 `#schaumwas` nur noch Maß + Gliederung (die lange Raumbeschreibung entfällt, der Klick-Hinweis steht in
 der Fußzeile).
+
+**1.0.26 (06.10. Nacht): Klangraum-Paletten.** Caspar_D: „gib dem Klangraum auch ein paar kalte
+Weltraumpaletten und vielleicht auch eine warme zu unserer aktuellen; eine grünlastige für das Borgschiff –
+die geht immer mit dem Borgschiff an; eine violett-pink-blau-lastige für den Raben – die geht immer mit dem
+Raben an". (Borgschiff = in der Oberfläche der **Kubus**/Musik-Matrix; ihm gesagt.) `KLANGRAUM_PALETTEN`:
+Nebel (bisher), Eisnebel, Polarlicht, Tiefer Raum, Sonnenglut, Borg (`gestalt: 'kubus'`), Rabe
+(`gestalt: 'rabe'`), je acht Farben. `NEBEL` ist jetzt `let` und folgt `klangraumPal()`; freie Wahl in
+`mysuno-klangraum-farben`; `klangraumGestaltFarben()` beim Start und beim Gestaltwechsel — Kubus/Rabe
+schalten ihre Palette an, eigene Wahl überstimmt bis zum nächsten Wechsel, das Schiff bringt die freie Wahl
+zurück. Panelzeile „Farben" (Farbliste wie im Groupieschaum, öffnet nach oben); die Palette steht in der
+Panel-Signatur und in den Bild-Schlüsseln beider Schäume (Klang-Gliederung und Geschmack folgen ihr).
