@@ -7861,3 +7861,9 @@ Skizze, dann Bau.
 Kubus und dem Raben erscheinen als Easteregg. Wenn Borg und Rabe aktiv sind, ist die Farbauswahl grau."
 Liste nur mit den freien Paletten; mit Kubus/Rabe zeigt der Knopf Borg bzw. Rabe, grau (`grayscale`) und
 gesperrt, mit Hinweis; zurück aufs Schiff gilt die freie Wahl. Gemerkte Borg/Rabe-Wahl → Standard.
+
+**1.0.29:** Caspar_D: „die drei kalten sind sehr ähnlich, ersetze einen mit einem: hellcyan, hellblau,
+hellbeige, cyan". „Tiefer Raum" (am nächsten am Eisnebel) ersetzt durch „Mondlicht" (`id: 'mond'`;
+#9ff3ff, #a9c8ff, #efe0c2, #20d4e8, dahinter #7fb2e6, #d8f6ff, #c9b48f, #5fe0d0). Gemerktes 'tief' fällt
+auf den Standard. Im Klangraum leuchtet das Beige golden — die Korona ist bewusst voll gesättigt
+(koronaFarbe, 21.08.); in Legende und Schäumen bleibt es beige.
