@@ -174,6 +174,7 @@ h1{
 .pinhalt .farbwahl .fw-liste{position:static;margin-top:4px;box-shadow:none}
 .pinhalt .farbwahl{display:inline-block;min-width:240px;margin-top:0}
 .farbwahl small{color:var(--schwach);font-size:11px}
+.farbwahl .fw-knopf:disabled{filter:grayscale(1);opacity:.55;cursor:default}   /* Kubus oder Rabe fliegt */
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
 /* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand", dann
    „mach sie auf 80 % Deckkraft"). Ein Gegenrand stand hier einen Nachmittag lang. Schwarz oder
@@ -7726,9 +7727,13 @@ let karteAnflug = null;
    geht immer mit dem Raben an"). Das Borgschiff ist in der Oberflaeche der Kubus (Musik-Matrix). Die
    Nebelfarben oben bleiben die erste Palette. Je Palette acht Farben, auf dunklem Grund unterscheidbar,
    die ersten vier am deutlichsten - so viele Stilgruppen hat die Karte meist. Die freie Wahl wird
-   gemerkt; waehlt man Kubus oder Rabe, gilt deren Palette, bis man selbst eine andere nimmt oder wieder
-   das Schiff fliegt. karteFarbe liest die geltende Palette: Klangraum, Klangschaum (Gliederung Klang),
-   Groupie-Geschmack und die Stilgruppen im Profil folgen ihr. */
+   gemerkt; fliegt der Kubus oder der Rabe, gilt deren Palette.
+   Dann (Caspar_D: „ich fänd besser, wenn Rabe- und Kubusfarben nicht aufgeführt sind und nur mit dem
+   Kubus und dem Raben erscheinen, als Easteregg; wenn Borg und Rabe aktiv sind, ist die Farbauswahl
+   grau"): die Liste fuehrt nur die freien Paletten; Borg und Rabe zeigen sich erst mit ihrer Gestalt, und
+   solange sie fliegt, ist die Wahl grau und gesperrt. Eine frueher frei gewaehlte Borg- oder Rabe-Palette
+   faellt auf den Standard zurueck. karteFarbe liest die geltende Palette: Klangraum, Klangschaum
+   (Gliederung Klang), Groupie-Geschmack und die Stilgruppen im Profil folgen ihr. */
 const KLANGRAUM_PALETTEN = [
   { id: 'nebel', name: 'Nebel (Standard)', f: ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'] },
   { id: 'eis', name: 'Eisnebel', f: ['#6fd3ff', '#2ec4b6', '#6f7bff', '#c9ecff', '#2f8cff', '#7ff2dc', '#a99bff', '#3fa8c4'] },
@@ -7738,7 +7743,8 @@ const KLANGRAUM_PALETTEN = [
   { id: 'borg', name: 'Borg', gestalt: 'kubus', f: ['#39ff6a', '#18b85c', '#a8ff3e', '#0e8f6e', '#62dca0', '#d4ff8f', '#2fe6bd', '#7aa83a'] },
   { id: 'rabe', name: 'Rabe', gestalt: 'rabe', f: ['#b05cd6', '#ff5fb3', '#5a6cff', '#e590ff', '#7d3cff', '#ff9ad8', '#4fa3ff', '#c9a8ff'] },
 ];
-let klangraumPalette = (() => { try { return localStorage.getItem('mysuno-klangraum-farben') || 'nebel'; } catch (e) { return 'nebel'; } })();
+let klangraumPalette = (() => { try { const id = localStorage.getItem('mysuno-klangraum-farben');
+  return KLANGRAUM_PALETTEN.some(p => p.id === id && !p.gestalt) ? id : 'nebel'; } catch (e) { return 'nebel'; } })();
 let klangraumPaletteGestalt = null;      /* 'borg' oder 'rabe', solange Kubus oder Rabe sie angeschaltet haben */
 const klangraumPal = () => KLANGRAUM_PALETTEN.find(p => p.id === (klangraumPaletteGestalt || klangraumPalette)) || KLANGRAUM_PALETTEN[0];
 let NEBEL = klangraumPal().f;
@@ -7749,15 +7755,16 @@ function klangraumGestaltFarben(){
   klangraumPaletteGestalt = p ? p.id : null; NEBEL = klangraumPal().f;
 }
 function klangraumFarbenWaehlen(id){
-  klangraumPalette = id; klangraumPaletteGestalt = null; NEBEL = klangraumPal().f;
+  if (klangraumPaletteGestalt) return;                       /* Kubus oder Rabe fliegt: die Wahl ist gesperrt */
+  klangraumPalette = id; NEBEL = klangraumPal().f;
   try { localStorage.setItem('mysuno-klangraum-farben', id); } catch (e) {}
   karteZeichnen();
 }
 function klangraumFarbwahlHtml(){
   const chips = (p) => p.f.slice(0, 6).map(c => `<i style="background:${c}"></i>`).join(''), p = klangraumPal();
-  const mit = (q) => q.gestalt ? ` <small>mit ${q.gestalt === 'kubus' ? 'dem Kubus' : 'dem Raben'}</small>` : '';
-  return `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}${mit(p)}</span><b>▾</b></button>`
-    + '<span class="fw-liste">' + KLANGRAUM_PALETTEN.map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="klangraumFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}${mit(q)}</span></button>`).join('') + '</span>';
+  if (p.gestalt) return `<button type="button" class="fw-knopf" disabled title="${p.gestalt === 'kubus' ? 'Der Kubus' : 'Der Rabe'} fliegt in eigenen Farben – die freie Wahl gilt wieder mit dem Schiff.">${chips(p)}<span>${p.name}</span></button>`;
+  return `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}</span><b>▾</b></button>`
+    + '<span class="fw-liste">' + KLANGRAUM_PALETTEN.filter(q => !q.gestalt).map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="klangraumFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}</span></button>`).join('') + '</span>';
 }
 document.addEventListener('click', (e) => { const el = document.getElementById('klangraumfarben'); if (el && !el.contains(e.target)) el.classList.remove('auf'); });
 /* Korona-Farbe: derselbe Farbton, aber VOLL gesaettigt - die Korona

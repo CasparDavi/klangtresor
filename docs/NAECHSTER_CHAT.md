@@ -7856,3 +7856,8 @@ der oberste Eintrag, „Nebel". Jetzt klappt die Liste in der Lade auf (`.pinhal
 nächste, dann Mural exportieren als PDF". Dazu Frage: „was ist im Prophane-render besser und muß
 hierhergezogen werden?" — Vergleich und Live-Grundlagen laufen (Agenten, nur lesen); erst Plan mit
 Skizze, dann Bau.
+
+**1.0.28:** Caspar_D: „ich fänd besser, wenn Rabe- und Kubusfarben nicht aufgeführt sind und nur mit dem
+Kubus und dem Raben erscheinen als Easteregg. Wenn Borg und Rabe aktiv sind, ist die Farbauswahl grau."
+Liste nur mit den freien Paletten; mit Kubus/Rabe zeigt der Knopf Borg bzw. Rabe, grau (`grayscale`) und
+gesperrt, mit Hinweis; zurück aufs Schiff gilt die freie Wahl. Gemerkte Borg/Rabe-Wahl → Standard.
