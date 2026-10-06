@@ -2183,15 +2183,25 @@ const server = http.createServer((req, res) => {
 
   /* Was fehlt? Das Lesezeichen fragt zuerst, damit es nur das holt, was
      wirklich gebraucht wird - und nur, was freigeschaltet ist. */
+  const TON_AUSFALL = path.join(LIB, 'ton-ausfall.json');
+  function tonAusfallLesen() {
+    try { return JSON.parse(fs.readFileSync(TON_AUSFALL, 'utf8')); } catch (e) { return {}; }
+  }
+
   if (p === '/api/ton/fehlt') {
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
+    const ausfall = tonAusfallLesen();
     const fehlt = [], unklar = [];
     for (const s of Object.values(k.songs || {})) {
       if (!s || !s.id || s.fremd || s.imPapierkorb) continue;
+      /* Remix-Contest und is_remix: Suno gibt den Ton nicht heraus.
+         Auch ein Unlock aendert das nicht - pollen waere nur Warten. */
+      if (s.freischaltSperre || s.istRemix) continue;
       const d = path.join(SONGS, s.id);
-      const ohneMp3 = !fs.existsSync(path.join(d, 'audio.mp3'));
-      const ohneWav = !fs.existsSync(path.join(d, 'audio.wav'));
+      const tot = ausfall[s.id] || {};
+      const ohneMp3 = !fs.existsSync(path.join(d, 'audio.mp3')) && !tot.mp3;
+      const ohneWav = !fs.existsSync(path.join(d, 'audio.wav')) && !tot.wav;
       if (!ohneMp3 && !ohneWav) continue;
       const eintrag = { id: s.id, titel: s.titel || '', mp3: !ohneMp3, wav: !ohneWav };
       /* Freigeschaltet: holen. Unbekannt: erst bei Suno nachsehen, das
@@ -2199,9 +2209,36 @@ const server = http.createServer((req, res) => {
          muesste jemand ein Guthaben ausgeben, und das entscheidet
          kein Skript. */
       if (s.freigeschaltet === true) fehlt.push(eintrag);
-      else if (s.freigeschaltet !== false && !s.freischaltSperre) unklar.push(eintrag);
+      else if (s.freigeschaltet !== false) unklar.push(eintrag);
     }
     return jsonAntwort(res, { fehlt, unklar });
+  }
+
+  /* Download ging nicht (Remix fremder Titel, not_available, Timeout).
+     Naechster Lauf soll dieselben 25 nicht wieder 12 Minuten pollen. */
+  if (p === '/api/ton/ausfall' && req.method === 'POST') {
+    if (!vonSuno) { res.writeHead(403); return res.end(); }
+    let roh = '';
+    req.on('data', (s) => { roh += s; if (roh.length > 65536) req.destroy(); });
+    return req.on('end', () => {
+      let neu = null;
+      try { neu = JSON.parse(roh); } catch (e) {}
+      if (!neu || typeof neu !== 'object') { res.writeHead(400); return res.end(); }
+      const id = String(neu.id || '').toLowerCase();
+      const format = String(neu.format || '').toLowerCase();
+      if (!/^[0-9a-f-]{36}$/.test(id) || (format !== 'mp3' && format !== 'wav')) {
+        res.writeHead(400); return res.end();
+      }
+      const alt = tonAusfallLesen();
+      const ein = Object.assign({}, alt[id] || {});
+      ein[format] = { grund: String(neu.grund || 'kein_link').slice(0, 80), am: new Date().toISOString() };
+      alt[id] = ein;
+      try {
+        fs.mkdirSync(LIB, { recursive: true });
+        fs.writeFileSync(TON_AUSFALL, JSON.stringify(alt, null, 1));
+      } catch (e) { res.writeHead(500); return res.end(); }
+      return jsonAntwort(res, { gemerkt: true });
+    });
   }
 
   /* Was das Lesezeichen bei Suno ueber den Freischaltstand erfahren

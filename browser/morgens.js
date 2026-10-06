@@ -1645,8 +1645,13 @@
      is_following (folge ich) und is_following_viewer (folgt mir). Der
      Strom nennt nur die neuen Beobachter der letzten vier Wochen; die
      Listen nennen alle - und aus beiden Richtungen entsteht "folgt
-     nicht zurueck". Rund 24 Seiten, jedes Mal ganz: die Rueckrichtung
-     kann sich aendern, ohne dass eine Zahl es sagt. */
+     nicht zurueck". Jedes Mal ganz: die Rueckrichtung kann sich aendern,
+     ohne dass eine Zahl es sagt.
+     20 je Seite. Die alte Notbremse `seite <= 60` war 1200 Personen und
+     hat groessere Listen still abgeschnitten (Tarja, 2991 Beobachter,
+     Zeile gruen bei 1200). Wie bei den Albumkoepfen: hohe generische
+     Grenze, Ende erst bei leerer Seite oder wenn die Liste so lang ist
+     wie Sunos num_total_profiles. */
   const beobachter = { follower: [], following: [] };
   const zeileB = sagen('Beobachter — wer dir folgt, wem du folgst …');
   if (!wahl.beob){ zeileB.textContent = 'Beobachter — übersprungen'; zeileB.style.color = '#8a8a90'; }
@@ -1655,31 +1660,44 @@
     if (!tb){ zeileB.textContent = 'Beobachter — kein Token'; zeileB.style.color = '#8a8a90'; }
     else {
       const Hb = { Authorization: 'Bearer ' + tb };
-      let gesamt = { follower: null, following: null }, seiten = 0, ausfall = null;
+      let gesamt = { follower: null, following: null }, seiten = 0, ausfall = null, luecke = null;
+      const BEOB_MAX_SEITEN = 400;   // 20 je Seite → 8000 Personen
       for (const richtung of ['followers', 'following']){
-        const ziel = richtung === 'followers' ? beobachter.follower : beobachter.following;
+        const feld = richtung === 'followers' ? 'follower' : 'following';
+        const ziel = beobachter[feld];
         const gesehen = new Set();
-        for (let seite = 1; seite <= 60; seite++){
+        let endeGesehen = false;
+        for (let seite = 1; seite <= BEOB_MAX_SEITEN; seite++){
+          if (seite > 1) await pause();
           const r = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/${richtung}?page=${seite}`, { headers: Hb });
           if (!r.ok){ ausfall = `${richtung} Seite ${seite}: HTTP ${r.status}`; break; }
           const d = await r.json(); seiten++;
           const liste = Array.isArray(d.profiles) ? d.profiles : [];
-          if (Number.isFinite(d.num_total_profiles)) gesamt[richtung === 'followers' ? 'follower' : 'following'] = d.num_total_profiles;
-          for (const p of liste){ if (p && p.handle && !gesehen.has(p.handle)){ gesehen.add(p.handle); ziel.push(p); } }
-          zeileB.textContent = `Beobachter … ${beobachter.follower.length} folgen dir, ${beobachter.following.length} folgst du (${seiten} Seiten)`;
-          if (!liste.length) break;
-          if (gesamt[richtung === 'followers' ? 'follower' : 'following'] != null && ziel.length >= gesamt[richtung === 'followers' ? 'follower' : 'following']) break;
-          await pause();
+          if (Number.isFinite(d.num_total_profiles)) gesamt[feld] = d.num_total_profiles;
+          let neuHier = 0;
+          for (const p of liste){ if (p && p.handle && !gesehen.has(p.handle)){ gesehen.add(p.handle); ziel.push(p); neuHier++; } }
+          const soll = gesamt[feld];
+          zeileB.textContent = `Beobachter … ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''} folgen dir, `
+            + `${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} folgst du (${seiten} Seiten)`;
+          if (!liste.length){ endeGesehen = true; break; }
+          if (!neuHier) break;
+          if (soll != null && ziel.length >= soll){ endeGesehen = true; break; }
+          if (seite === BEOB_MAX_SEITEN) luecke = `${richtung}: ${ziel.length}${soll != null ? '/' + soll : ''} nach ${BEOB_MAX_SEITEN} Seiten`;
         }
         if (ausfall) break;
+        if (!endeGesehen && !luecke && gesamt[feld] != null && ziel.length < gesamt[feld])
+          luecke = `${richtung}: ${ziel.length}/${gesamt[feld]}`;
         await pause();
       }
       beobachter.lautSuno = gesamt;
-      beobachter.vollstaendig = !ausfall && (gesamt.follower == null || beobachter.follower.length >= gesamt.follower)
+      beobachter.vollstaendig = !ausfall && !luecke && (gesamt.follower == null || beobachter.follower.length >= gesamt.follower)
                                          && (gesamt.following == null || beobachter.following.length >= gesamt.following);
-      zeileB.textContent = `Beobachter — ${beobachter.follower.length} folgen dir, ${beobachter.following.length} folgst du`
-        + (ausfall ? ` — abgebrochen (${ausfall}), aus dieser Ernte wird nichts als "weg" gewertet` : '');
-      zeileB.style.color = ausfall ? '#f97b14' : '#16be5c';
+      const warn = ausfall || luecke;
+      zeileB.textContent = `Beobachter — ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''} folgen dir, `
+        + `${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} folgst du`
+        + (ausfall ? ` — abgebrochen (${ausfall}), aus dieser Ernte wird nichts als "weg" gewertet`
+           : luecke ? ` — unvollständig (${luecke}), aus dieser Ernte wird nichts als "weg" gewertet` : '');
+      zeileB.style.color = warn ? '#f97b14' : '#16be5c';
     }
   } catch (x){ zeileB.textContent = 'Beobachter — ' + x.message; zeileB.style.color = '#e31c79'; }
 
@@ -1839,21 +1857,55 @@
       const dran = aufgaben.slice(0, DECKEL_TON);
       let geholt = 0, bytes = 0, daneben = 0;
 
+      const TON_ANFRAGE_DECKEL = 15000; /* ms je download/clip, wie ANFRAGE_DECKEL oben */
+      const TON_POLLEN_MAX = 6;         /* echte WAV ist in 2–5 s ready (WAV-PROTOKOLL) */
+      const TON_POLLEN_PAUSE = 1000;
+      const TON_AUS = new Set(['error', 'not_available', 'forbidden', 'failed', 'denied']);
+      const tonMerkenAusfall = (id, format, grund) => {
+        fetch(DAHEIM + '/api/ton/ausfall', { method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ id, format, grund: String(grund || 'kein_link').slice(0, 80) })
+        }).catch(() => {});
+      };
+      const tonFetch = async (url, opt) => {
+        const o = Object.assign({}, opt);
+        let wache = null, abbruch = null;
+        if (typeof AbortController === 'function'){
+          abbruch = new AbortController();
+          o.signal = abbruch.signal;
+          wache = setTimeout(() => abbruch.abort(), TON_ANFRAGE_DECKEL);
+        }
+        try { return await fetch(url, o); }
+        finally { if (wache) clearTimeout(wache); }
+      };
+
       for (let n = 0; n < dran.length; n++){
         const auf = dran[n];
         zeileTon.textContent = `Ton holen … ${n+1}/${dran.length} — ${auf.titel} (${auf.format})`;
         try {
           /* Adresse anfordern. WAV steht die ersten Sekunden auf
-             „processing" - Suno rechnet sie erst. */
-          let adresse = null;
-          for (let runde = 0; runde < 10 && !adresse; runde++){
-            const r = await fetch(`${API}/api/download/clip/${auf.id}?format=${auf.format}`, { headers: await kopf() });
-            if (!r.ok) break;
-            const d = await r.json();
-            if (d.download_url){ adresse = d.download_url; break; }
-            await new Promise(r2 => setTimeout(r2, 3000));
+             „processing" - Suno rechnet sie erst (2–5 s). Remixe fremder
+             Titel bleiben oft ewig auf processing ohne URL; früher
+             10×3 s = 30 s je Datei, 25 Stück eine Viertelstunde.
+             Fehlerstatus sofort abbrechen, pollen höchstens 6×1 s. */
+          let adresse = null, grund = null;
+          for (let runde = 0; runde < TON_POLLEN_MAX && !adresse; runde++){
+            let r;
+            try {
+              r = await tonFetch(`${API}/api/download/clip/${auf.id}?format=${auf.format}`, { headers: await kopf() });
+            } catch (x) {
+              grund = (x && x.name === 'AbortError') ? 'zeit' : (x && x.message) || 'netz';
+              break;
+            }
+            if (!r.ok){ grund = 'HTTP ' + r.status; break; }
+            const d = await r.json().catch(() => ({}));
+            if (d && d.download_url){ adresse = d.download_url; break; }
+            const st = String((d && d.status) || '').toLowerCase();
+            if (TON_AUS.has(st) || d.ok === false){ grund = st || 'abgelehnt'; break; }
+            if (runde < TON_POLLEN_MAX - 1) await new Promise(r2 => setTimeout(r2, TON_POLLEN_PAUSE));
+            else grund = st || 'kein_link';
           }
-          if (!adresse){ daneben++; continue; }
+          if (!adresse){ daneben++; tonMerkenAusfall(auf.id, auf.format, grund); continue; }
 
           /* Die signierte Adresse OHNE Authorization laden - mit Kopf
              antwortet S3 mit 400. */
