@@ -4086,7 +4086,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <div id="kartesteckbrief" hidden></div>
   </div>
   <div id="schaumrechts" hidden>
-    <h3>Klangschaum</h3>
+    <h3 id="schaumtitel">Klangschaum</h3>
     <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
     <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
     <label class="fussnote">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
@@ -7658,7 +7658,7 @@ let karteDaten = null, karteGruppeAn = null;
    ist es noch nicht so richtig." Offene Schritte: docs/BACKLOG.md,
    "Geschichten-Raum: naechste Schritte". Das Etikett haengt am Namen
    und wandert damit in Pille, Lasche und Fussnote. */
-const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)', schaum: 'Klangschaum' };
+const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)', schaum: 'Klangschaum', groupies: 'Groupieschaum' };
 /* Die Unterregister (Caspar_D, 06.10.2026: „die Unterpunkte von Räume und Schäume heißen Klangraum,
    Klangschaum"). */
 const raumReiter = (r) => r === 'klang' ? 'Klangraum' : RAUM_NAME[r].replace('-Raum', '');
@@ -7666,6 +7666,7 @@ const RAUM_WAS  = {
   klang:       'Nähe heißt: klingt ähnlich. Aus dem Ton gerechnet, der Text spielt keine Rolle.',
   geschichten: 'Nähe heißt: handelt von Ähnlichem. Aus den Liedtexten, der Klang spielt keine Rolle.',
   schaum:      'Fläche heißt: wie viel davon da ist — nach Abrufen, Herzen, Länge … gegliedert nach Klang, Modell oder Zeit.',
+  groupies:    'Jede Blase eine Person, so groß wie ihre Herzen und Kommentare zusammen.',
 };
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
 if (!RAUM_NAME[raumJetzt]) raumJetzt = 'klang';   /* gemerkter Raum, den es nicht mehr gibt (lied) */
@@ -8155,6 +8156,9 @@ async function raeumeErfragen(){
   /* Der Klangschaum ist kein gerechneter Raum: er legt sich beim Oeffnen aus dem Klang-Raum,
      ist also da, sobald der da ist. */
   raumDa.schaum = !!raumDa.klang;
+  /* Der Groupieschaum (Tarja, Caspar_D 06.10.2026) legt sich aus /api/community; er steht mit dem
+     Klangschaum - wer noch keine Reaktionen mit Namen hat, liest es dort. */
+  raumDa.groupies = !!raumDa.klang;
   if (!raumDa[raumJetzt]) raumJetzt = 'klang';
   raumLascheBenennen();
 }
@@ -8348,9 +8352,33 @@ function schaumFarbe(k, kette, farbeVon, gezoomt){
   return `hsl(${((schaumFarbton(hex) + (v1 % 5 - 2) * 7) + 360) % 360} ${44 + (v2 % 4) * 7}% ${28 + (v1 * 7 + v2 * 5) % 24}%)`;
 }
 
+/* DER GROUPIESCHAUM (Tarja, Caspar_D 06.10.2026: „Groupie-Karte, Liker und Kommentierer … je
+   nachdem, wie oft jemand liked und kommentiert, wächst die Zelle"; drei Areale „Liker,
+   Kommentierer, beides", nicht weiter unterteilt; „die Avatarbilder als Bilder in den Zellen").
+   Die Personen kommen aus /api/community, derselben Quelle wie die Gemeinschaft im Profil:
+   Herzen aus Sunos Liker-Listen, Kommentare und Antworten aus den Kommentarfaeden, die eigenen
+   herausgerechnet. Die Flaeche ist Herzen + Kommentare + Antworten. Ein Klick zeigt die Spur der
+   Person durch das Archiv (reaktPersonAlleine). Die Avatare kommen live von Suno, wie im
+   Reaktionsfenster - ohne Netz bleiben die Farben. Kein Hineinzoomen, keine Startpunkte. */
+let schaumLeute = null;
+const GROUPIE_FARBE = { 'nur Herzen': '#e0455a', 'Herzen und Kommentare': '#b05cd6', 'nur Kommentare': '#4f7bd9' };
+async function groupieZeilen(){
+  if (!schaumLeute){ try { schaumLeute = (await (await fetch('/api/community', { cache: 'no-store' })).json()).leute || []; } catch (e) { schaumLeute = []; } }
+  return schaumLeute.map(l => {
+    const h = (l.likes || []).length, k = (l.kommentare || []).length + (l.antworten || []).length;
+    return { gruppe: h && k ? 'Herzen und Kommentare' : h ? 'nur Herzen' : 'nur Kommentare', genre: '',
+             titel: l.name || l.handle || '—', id: l.handle, w: String(h + k), bild: l.avatar || '', h, k };
+  }).filter(z => z.id && +z.w > 0);
+}
+const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
+
 async function schaumZeichnen(){
   karteHoehe();
   raumLeisteBauen();
+  const groupies = raumJetzt === 'groupies';
+  $('schaumtitel').textContent = RAUM_NAME[raumJetzt] || 'Klangschaum';
+  for (const id of ['schaummass', 'schaumgliederung']){ const l = $(id).closest('label'); if (l) l.hidden = groupies; }
+  if (groupies) return groupieZeichnen();
   if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
@@ -8423,26 +8451,64 @@ async function schaumZeichnen(){
   const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
   const schluessel = [m.id, gl.id, schaumZoom || '', verh, karteVerf, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
   const fertig = schaumFertig.get(schluessel);
-  if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig, m); return; }
+  if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
+  const gezoomt = !!schaumZoom, ebenen = gezoomt ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
+  schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds: schaumSaat(zeilen, ebenen, W, H), farbeVon, gezoomt, art: 'titel',
+    tipp: z => (z.titel || '') + ' · ' + m.text(+z.w), meldung: 'Dein Klang wird aufgeschäumt' });   /* Caspar_Ds Wortlaut, 06.10.2026 */
+}
+async function groupieZeichnen(){
+  const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
+  $('schaumwas').textContent = RAUM_WAS.groupies + ' Ein Klick zeigt ihre Spur durch dein Archiv.';
+  $('schaumwerk').innerHTML = '';
+  { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
+  const zeilen = await groupieZeilen();
+  if (raumJetzt !== 'groupies') return;
+  const areale = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
+  $('schaumlegende').innerHTML = '<small>Areale</small>' + areale.map(a => {
+    const zs = zeilen.filter(z => z.gruppe === a), h = zs.reduce((s, z) => s + z.h, 0), k = zs.reduce((s, z) => s + z.k, 0);
+    return `<span class="zeile"><i style="background:${GROUPIE_FARBE[a]}"></i><span><b>${a}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
+      + `${h ? ' · ' + h + ' Herzen' : ''}${k ? ' · ' + k + ' Kommentare' : ''}</small></span></span>`;
+  }).join('');
+  fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben; die Fläche jeder Blase ist ihre Zahl an Herzen und Kommentaren (Antworten eingeschlossen), genau ihr Anteil. `
+    + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
+    + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
+  if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
+  const rect = $('schaumfeld').getBoundingClientRect();
+  const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
+  const schluessel = ['groupies', verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
+  const fertig = schaumFertig.get(schluessel);
+  if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
+  const W = 1000, H = Math.round(1000 * verh);
+  schaumLegen({ schluessel, zeilen, ebenen: ['gruppe'], W, H, seeds: null, farbeVon: n => GROUPIE_FARBE[n] || null, gezoomt: false, art: 'person',
+    tipp: z => z.titel + ' · ' + groupieText(z), meldung: 'Deine Groupies werden aufgeschäumt' });
+}
+/* Legt einen Schaum im Worker, zeichnet ihn und merkt ihn sich - fuer Titel und fuer Personen. */
+function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
+  const stand = $('schaumstand');
   if (schaumArbeit && schaumArbeit.schluessel === schluessel) return;          /* wird schon gelegt */
-  if (schaumArbeit) schaumArbeit.worker.terminate();
-  stand.textContent = 'Dein Klang wird aufgeschäumt …';   /* Caspar_Ds Wortlaut, 06.10.2026 */
+  if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
+  stand.textContent = meldung + ' …';
   let worker;
   try { worker = new Worker('/klangschaum/worker.js', { type: 'module' }); }
   catch (e){ stand.textContent = 'Dieser Browser kann den Schaum nicht im Hintergrund legen.'; return; }
-  schaumArbeit = { schluessel, worker };
-  const gezoomt = !!schaumZoom;
+  /* Die Anzeige zaehlt Sekunden, nicht Schritte: die Engine meldet je Gefaess, und ein grosses
+     Gefaess (351 Personen in „nur Herzen") braucht neun Zehntel der Zeit - „2 von 4" stand dort eine
+     halbe Minute lang. */
+  const t0 = performance.now();
+  const uhr = setInterval(() => { stand.textContent = `${meldung} … ${Math.round((performance.now() - t0) / 1000)} s`; }, 1000);
+  schaumArbeit = { schluessel, worker, uhr };
   worker.onmessage = async (ev) => {
     const d = ev.data;
-    if (d.type === 'progress'){ stand.textContent = `Dein Klang wird aufgeschäumt … ${d.done} von ${d.total} Zellen`; return; }
-    worker.terminate(); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
+    if (d.type === 'progress') return;
+    worker.terminate(); clearInterval(uhr); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
     if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
     try {
       const R = await import('/klangschaum/render.js');
       const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
-      let svg = R.renderSVG(d.res, { pad: 0, cushion: 2, labelLevel: gezoomt ? 1 : 2, labelSizes: [9, 22],
+      let svg = R.renderSVG(d.res, { pad: 0, cushion: 2, labelLevel: ebenen.length, labelSizes: [9, 22],
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
       const ids = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
+      const bilder = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || artworkKachel(zeilen[k.row].id)) : null);
       svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
                .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
                /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
@@ -8453,23 +8519,22 @@ async function schaumZeichnen(){
                  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
                  const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
                  return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
-                   + `<image href="${esc(artworkKachel(id))}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                   + `<image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
                    + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>`
                    + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"/>`
                    + alles;
                });
-      const werte = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? +zeilen[k.row].w : 0);
-      const f = { svg, ids, werte };
+      const tipps = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
+      const f = { svg, ids, tipps, art };
       schaumFertig.set(schluessel, f);
-      if (register === 'karte' && raumJetzt === 'schaum'){ stand.textContent = ''; schaumZeichnen(); }
+      if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
     } catch (e){ stand.textContent = 'Der Schaum ließ sich nicht zeichnen.'; console.log('Klangschaum:', e); }
   };
-  worker.onerror = (e) => { stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
-  const ebenen = gezoomt ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
+  worker.onerror = (e) => { clearInterval(uhr); stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
   worker.postMessage({ rows: zeilen, tree: { levels: [...ebenen, 'row'], weight: 'w', leafName: 'titel' },
-                       layout: { width: W, height: H, method: 'foam', minArea: 0, minShare: 0, seeds: schaumSaat(zeilen, ebenen, W, H) } });
+                       layout: { width: W, height: H, method: 'foam', minArea: 0, minShare: 0, ...(seeds ? { seeds } : {}) } });
 }
-function schaumEinsetzen(f, m){
+function schaumEinsetzen(f){
   const bild = $('schaumbild');
   bild.innerHTML = f.svg;
   const svg = bild.querySelector('svg');
@@ -8477,9 +8542,9 @@ function schaumEinsetzen(f, m){
   bild.querySelectorAll('path[data-i]').forEach(p => {
     const i = +p.dataset.i, id = f.ids[i]; if (!id) return;
     p.dataset.id = id;
-    if (id === aktuellId) laeuft = p;
-    const s = song(id), t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-    t.textContent = (s ? s.titel : '') + ' · ' + m.text(f.werte[i]);
+    if (f.art === 'titel' && id === aktuellId) laeuft = p;
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    t.textContent = f.tipps[i] || '';
     p.appendChild(t);
   });
   /* Der laufende Titel wabert: sein Umriss, weiss und von einem Rauschen verschoben, auf einer
@@ -8500,7 +8565,8 @@ function schaumEinsetzen(f, m){
   }
   schaumTakt();
   schaumKontrastVorbereiten(svg);
-  bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (p) spielenNachId(p.dataset.id); };
+  bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
+    if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
 }
 /* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */
 /* KONTRAST JE TITEL (Caspar_D, 06.10.2026: „die Kontrast-Engine bestimmte, ob die Zelle zu
@@ -8521,6 +8587,7 @@ const schaumBildDaten = new Map();       /* Adresse -> Promise<{ w, h, d } | nul
 function schaumBildLesen(href){
   if (!schaumBildDaten.has(href)) schaumBildDaten.set(href, new Promise(fertig => {
     const im = new Image();
+    if (/^https?:/.test(href)) im.crossOrigin = 'anonymous';     /* Avatare von Suno: nur mit CORS lesbar */
     im.onload = () => { try {
       const f = Math.min(1, 96 / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.max(1, Math.round(im.naturalWidth * f)), h = Math.max(1, Math.round(im.naturalHeight * f));
       const c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -8616,7 +8683,7 @@ function kartePanelHtml(){
      gerechnet sind, erscheinen gar nicht erst; ein Knopf, der ins Leere
      führt, ist schlimmer als keiner. */
   const raumZeile = (raumDa && Object.values(raumDa).filter(Boolean).length > 1)
-    ? zeile('Raum', ['klang', 'geschichten', 'schaum'].filter(r => raumDa[r]).map(r =>
+    ? zeile('Raum', ['klang', 'geschichten', 'schaum', 'groupies'].filter(r => raumDa[r]).map(r =>
         `<button class="pille raumpille ${raumJetzt === r ? 'an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
         + raumReiter(r) + `</button>`).join(''))
       + `<p class="fussnote raumwas">${RAUM_WAS[raumJetzt]}`
@@ -8735,8 +8802,8 @@ async function karteZeichnen(){
   const svg = $('kartesvg'), leg = $('kartelegende');
   /* Welche Räume gibt es? Einmal fragen, dann merken. */
   await raeumeErfragen();
-  schaumSichtbar(raumJetzt === 'schaum');
-  if (raumJetzt === 'schaum') return schaumZeichnen();
+  schaumSichtbar(raumJetzt === 'schaum' || raumJetzt === 'groupies');
+  if (raumJetzt === 'schaum' || raumJetzt === 'groupies') return schaumZeichnen();
   if (!raumDaten[raumJetzt]){
     /* Erst hier steht fest, welche Songs ueberhaupt einen Stern haben.
        Also die Liste einmal ueber zeichnen() bauen lassen - das setzt
@@ -9600,7 +9667,7 @@ async function schiffPruefung(o){
   karteSchiffFrame.fake = null;
   const zusammenfassung = fehler.length ? `${fehler.length} Befunde: ` + Object.entries(fehler.reduce((m, f) => (m[f.art] = (m[f.art] || 0) + 1, m), {})).map(([k, v]) => k + ' x' + v).join(', ') : 'alles stimmig';
   if (!o.still) console.log('Schiffspruefung:', zusammenfassung, fehler);
-  if (!schiffLauf && register === 'karte' && raumJetzt !== 'schaum') schiffLauf = requestAnimationFrame(karteSchiff);
+  if (!schiffLauf && register === 'karte' && raumJetzt !== 'schaum' && raumJetzt !== 'groupies') schiffLauf = requestAnimationFrame(karteSchiff);
   return { fehler, protokoll: prot, zusammenfassung };
 }
 const ZWILLING = 0.17;                  // Klangabstand, unter dem zwei Songs Zwillinge sind
@@ -9762,7 +9829,7 @@ function karteFlugkamera(L){
 function karteSchiff(){
   try { karteSchiffFrame(); if (raumK() && register === 'karte'){ const L = karteLayout(raumK()); karteNachlauf(L); } }
   catch (e) { if (!karteSchiff.gemeldet){ karteSchiff.gemeldet = true; console.warn('Sound-Schiff:', e.message); } }
-  if (register === 'karte' && raumK() && raumJetzt !== 'schaum') schiffLauf = requestAnimationFrame(karteSchiff); else schiffLauf = 0;
+  if (register === 'karte' && raumK() && raumJetzt !== 'schaum' && raumJetzt !== 'groupies') schiffLauf = requestAnimationFrame(karteSchiff); else schiffLauf = 0;
 }
 function karteSchiffFrame(){
   const cv = $('karteschiff'); if (!cv) return;

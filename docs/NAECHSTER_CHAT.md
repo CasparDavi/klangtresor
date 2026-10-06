@@ -7517,3 +7517,25 @@ soft-light-Stich und Deckung wie am Regler, dann das höhere WCAG-Kontrastverhä
 L* ≈ 50 statt der festen 58 der Engine; Labskaus-Klaus liegt im Mittel bei L* 54 und wird schwarz).
 Beim Regler nur neu gemischt. Ein Mittelwert bleibt eine Schätzung: auf sehr unruhigen Ausschnitten
 kann auch die bessere Wahl schwer lesbar sein. Sandkasten: 112 von 112 Zeilen erfasst.
+
+## 48. 06.10.2026: Groupieschaum (Wunsch Tarja)
+
+Caspar_D: „Tarja möchte gern eine Groupie-Karte, Liker und Kommentierer … je nachdem, wie oft
+jemand liked und kommentiert, wächst die Zelle"; drei Areale („Liker, Kommentierer, beides"),
+„nicht weiter unterteilen … das geht auch so"; Avatare als Bilder in den Zellen; Name
+„Groupieschaum". Gebaut als drittes Unterregister unter „Räume und Schäume" (Klangraum |
+Klangschaum | Groupieschaum), im selben Schaum-Code: `schaumLegen()` legt und zeichnet für
+Titel und Personen, `schaumEinsetzen(f)` mit `f.art` ('titel' spielt, 'person' öffnet
+`reaktPersonAlleine`), `f.tipps` je Zelle. Daten: `/api/community` (wie die Gemeinschaft im
+Profil): 471 Personen — nur Herzen 351, beides 111, nur Kommentare 9; Fläche = Herzen +
+Kommentare + Antworten. Farben je Areal (Herz rot, beides violett, Kommentar blau), Farbregler wie
+im Klangschaum; Avatare live von Suno (Kontrastwahl liest sie nur mit CORS, sonst gilt der dunkle
+Grund). Status „Deine Groupies werden aufgeschäumt … n s" — die Anzeige zählt jetzt Sekunden statt
+Gefäße (auch im Klangschaum).
+**Rechenzeit:** in Node 34 s (29,5 s allein „nur Herzen" mit 351 Zellen in einem Gefäß); im
+Browser ähnlich, im versteckten Vorschaufenster stark gedrosselt. Je Sitzung einmal. Offen, nur
+auf Wort: Ergebnis über die Sitzung hinaus merken (IndexedDB), oder die Engine beschleunigen
+(analytische Jacobi-Matrix, steht in Caspar_Ds README als nächster Schritt).
+**Geprüft im Sandkasten** (Kopien von Katalog, Karte, Reaktionen, Liker-Listen): 150 Personen
+gelegt (Avatare, Tooltip „Name · n Herzen, m Kommentare", Maßwahl ausgeblendet, Klick öffnet die
+Personenspur), Umschalten zum Klangschaum aus dem Speicher; die vollen 471 dort nicht abgewartet.
