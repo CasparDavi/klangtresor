@@ -8505,7 +8505,15 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
     try {
       const R = await import('/klangschaum/render.js');
       const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
-      let svg = R.renderSVG(d.res, { pad: 0, cushion: 2, labelLevel: ebenen.length, labelSizes: [9, 22],
+      /* KOPFZEILE JE PERSON (Caspar_D, 06.10.2026: „beim Groupieschaum jede Zelle einen Header, in
+         dem der Name steht, also einfach ein Stück abschneiden und in den schwarzen Raum den Namen
+         schreiben"). Der obere Streifen der Zelle (ein Fuenftel ihrer Hoehe, 11 bis 26 Punkte) wird
+         schwarz und traegt den Namen, so breit, wie die Zelle dort ist; der Avatar sitzt darunter.
+         Passt kein Name mit mindestens 7 Punkten (auch gekuerzt nicht), bleibt die Zelle ganz Bild.
+         Die frei schwebenden Namen der Engine entfallen hier. */
+      const personen = art === 'person', koepfe = [];
+      let svg = R.renderSVG(d.res, { pad: 0, cushion: 2,
+        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
       const ids = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
       const bilder = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || artworkKachel(zeilen[k.row].id)) : null);
@@ -8518,12 +8526,30 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
                  const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
                  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
                  const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
+                 let kopf = '', bildY = y, bildH = h;
+                 const name = personen ? ((zeilen[d.res.leaves[+i].row] || {}).titel || '') : '';
+                 if (name && h >= 34 && w >= 34){
+                   const bh = Math.min(26, Math.max(11, h * 0.2)), ym = y + bh * 0.55, sx = [];
+                   for (let q = 0; q < pk.length; q++){ const p1 = pk[q], p2 = pk[(q + 1) % pk.length];
+                     if ((p1[1] - ym) * (p2[1] - ym) < 0) sx.push(p1[0] + (ym - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1])); }
+                   sx.sort((u, v) => u - v);
+                   const breit = sx.length >= 2 ? sx[sx.length - 1] - sx[0] : 0, mitte = sx.length >= 2 ? (sx[0] + sx[sx.length - 1]) / 2 : x + w / 2;
+                   const em = (s) => leinwand.measureText(s).width / 100;          /* Breite in em */
+                   let fs = Math.min(bh * 0.66, 0.9 * breit / Math.max(em(name), 0.1)), txt = name;
+                   if (fs < 7){ fs = 7; let n = name.length; while (n > 2 && em(name.slice(0, n) + '…') * 7 > 0.9 * breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
+                   if (txt){
+                     kopf = `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" fill="#0b0c0e" clip-path="url(#skz${i})" pointer-events="none"/>`;
+                     koepfe.push(`<text class="kopf" x="${mitte.toFixed(1)}" y="${ym.toFixed(1)}" font-size="${fs.toFixed(1)}" fill="#f4f4f2" text-anchor="middle" dominant-baseline="middle" pointer-events="none">${esc(txt)}</text>`);
+                     bildY = y + bh; bildH = h - bh;
+                   }
+                 }
                  return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
-                   + `<image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                   + `<image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${bildY.toFixed(1)}" width="${w.toFixed(1)}" height="${bildH.toFixed(1)}"`
                    + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>`
                    + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"/>`
-                   + alles;
+                   + alles + kopf;
                });
+      if (koepfe.length) svg = svg.replace('</svg>', koepfe.join('') + '</svg>');
       const tipps = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
       const f = { svg, ids, tipps, art };
       schaumFertig.set(schluessel, f);
@@ -8618,7 +8644,7 @@ async function schaumKontrastVorbereiten(svg){
   schaumSchrift = [];
   const zellen = [...svg.querySelectorAll('path[data-id]')].map(p => ({ p, b: p.getBBox() }));
   const GRUND = [0x12 / 255, 0x14 / 255, 0x17 / 255];          /* der Grund des Feldes, wo ein Cover fehlt */
-  for (const t of svg.querySelectorAll('text')){
+  for (const t of svg.querySelectorAll('text:not(.kopf)')){          /* Kopfzeilen stehen weiss auf schwarz */
     const bb = t.getBBox(), cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
     const z = zellen.find(({ p, b }) => cx >= b.x && cx <= b.x + b.width && cy >= b.y && cy <= b.y + b.height && p.isPointInFill(new DOMPoint(cx, cy)));
     if (!z) continue;

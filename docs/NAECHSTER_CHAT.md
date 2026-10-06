@@ -7553,3 +7553,10 @@ Profil, in der Gemeinschaft, im Groupieschaum). Jetzt in `wer()`, wo jede Person
 Sandkasten vorher/nachher: 471 → 470 Personen, „nur Kommentare" 9 → 8, Kommentare+Antworten
 862 → 553, Herzen unverändert 2097. Eingesetzt atomar; Neustart-Wache: PID 48332 → 50016, `/` 200,
 `/api/community` ohne eigenen Handle.
+**Kopfzeilen im Groupieschaum (06.10.):** Caspar_D: „jede Zelle einen Header, in dem der Name steht,
+also einfach ein Stück abschneiden und in den schwarzen Raum den Namen schreiben". Oberer Streifen
+je Personenzelle (Höhe/5, 11–26 Punkte) schwarz, Name weiß darin, so groß, wie die Zelle in
+Streifenmitte breit ist (gemessen mit Canvas), sonst gekürzt mit „…" bis 7 Punkte; passt nichts,
+bleibt die Zelle ganz Avatar. Der Avatar sitzt darunter. Engine-Namen im Groupieschaum aus
+(`labelDepth: -1`); Kopfzeilen (`text.kopf`) nimmt die Kontrastwahl aus. Sandkasten, 150 Personen:
+105 Kopfzeilen. Grenze: an runden Zellköpfen ist der Streifen schmal, lange Namen werden dort klein.
