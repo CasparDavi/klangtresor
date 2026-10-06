@@ -141,6 +141,28 @@ h1{
 #kartesvg .stern.nachbar{stroke:#fff;stroke-width:1.5;stroke-opacity:.7}
 #kartesvg .stern.laeuft{stroke:var(--akzent);stroke-width:2}
 #karterechts{display:flex;flex-direction:column;gap:16px;min-height:0;height:100%;overflow:auto}
+/* Der Klangschaum steht in denselben zwei Spalten wie der Himmel; je Raum ist eine Seite zu. */
+#karterechts[hidden],#schaumfeld[hidden],#schaumrechts[hidden]{display:none}
+#schaumfeld{position:relative;background:#121417;border:1px solid #2a2a2e;border-radius:6px;height:100%;min-height:240px;overflow:hidden}
+#schaumbild{position:absolute;inset:0}
+#schaumbild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#schaumbild svg.schaumwaber{pointer-events:none}
+#schaumbild path[data-id]{cursor:pointer}
+#schaumbild path[data-id]:hover{fill-opacity:.8}
+#schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
+#schaumrechts{display:flex;flex-direction:column;gap:12px;min-height:0;height:100%;overflow:auto}
+#schaumrechts h3{margin:0}
+#schaumrechts label{display:flex;flex-direction:column;gap:4px;margin:0}
+#schaumrechts select{font:inherit;font-size:13px;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:8px;padding:5px 8px}
+#schaumlegende{display:flex;flex-direction:column;gap:5px;font-size:12.5px}
+#schaumlegende .zeile{display:flex;align-items:baseline;gap:7px;border-radius:6px;padding:3px 5px;margin:0 -5px}
+#schaumlegende button.zeile{font:inherit;color:inherit;background:none;border:none;text-align:left;cursor:pointer}
+#schaumlegende button.zeile:hover{background:var(--flaeche2)}
+#schaumlegende i{flex:0 0 12px;width:12px;height:12px;border-radius:3px;align-self:center}
+#schaumlegende small,#schaumwerk small{color:var(--schwach)}
+#schaumlegende .zurueck{font-size:12px;color:var(--akzent);cursor:pointer;background:none;border:none;padding:0;text-align:left;font:inherit}
+#schaumwerk{font-size:12.5px;border-top:1px solid var(--rand);padding-top:10px}
+#schaumwerk:empty{display:none}
 #kartesteckbrief{border-top:1px solid var(--rand);padding-top:14px}
 #kartesteckbrief[hidden]{display:none}
 #kartesteckbrief .kopf{display:flex;gap:12px;align-items:flex-start}
@@ -4047,10 +4069,23 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <button id="kartevoll" title="Vollbild (Esc zurück)" aria-label="Vollbild"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-vollbild"/></svg></button>
     <div id="karteläuft" hidden></div>
   </div>
+  <!-- DER KLANGSCHAUM (Caspar_D, 06.10.2026: „stelle es dem Klangraum zur Seite", eingebunden wie
+       der Geschichten-Raum, aber sichtbar). Feld und Seite stehen in denselben Spalten wie der
+       Himmel; schaumSichtbar() klappt um. Das Panel des Himmels passt nicht zum Schaum (Caspar_D:
+       „das Bedienpanel des Raumes passt aber kaum zum Schaum") - der Schaum hat sein eigenes. -->
+  <div id="schaumfeld" hidden><div id="schaumbild"></div><div id="schaumstand"></div></div>
   <div id="karterechts">
     <div id="kartelegende"></div>
     <!-- Steckbrief des Sterns unter der Maus, darunter die Nachbarn -->
     <div id="kartesteckbrief" hidden></div>
+  </div>
+  <div id="schaumrechts" hidden>
+    <h3>Klangschaum</h3>
+    <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
+    <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
+    <p class="fussnote" id="schaumwas" style="margin:0"></p>
+    <div id="schaumlegende"></div>
+    <div id="schaumwerk"></div>
   </div>
   <div id="kartefuss" class="fussnote"></div>
 </div>
@@ -7615,10 +7650,14 @@ let karteDaten = null, karteGruppeAn = null;
    ist es noch nicht so richtig." Offene Schritte: docs/BACKLOG.md,
    "Geschichten-Raum: naechste Schritte". Das Etikett haengt am Namen
    und wandert damit in Pille, Lasche und Fussnote. */
-const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)' };
+const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)', schaum: 'Klangschaum' };
+/* Die Unterregister (Caspar_D, 06.10.2026: „die Unterpunkte von Räume und Schäume heißen Klangraum,
+   Klangschaum"). */
+const raumReiter = (r) => r === 'klang' ? 'Klangraum' : RAUM_NAME[r].replace('-Raum', '');
 const RAUM_WAS  = {
   klang:       'Nähe heißt: klingt ähnlich. Aus dem Ton gerechnet, der Text spielt keine Rolle.',
   geschichten: 'Nähe heißt: handelt von Ähnlichem. Aus den Liedtexten, der Klang spielt keine Rolle.',
+  schaum:      'Fläche heißt: wie viel davon da ist — nach Abrufen, Herzen, Länge … gegliedert nach Klang, Modell oder Zeit.',
 };
 let raumJetzt = (() => { try { return localStorage.getItem('mysuno-raum') || 'klang'; } catch (e) { return 'klang'; } })();
 if (!RAUM_NAME[raumJetzt]) raumJetzt = 'klang';   /* gemerkter Raum, den es nicht mehr gibt (lied) */
@@ -8096,8 +8135,22 @@ document.addEventListener('fullscreenchange', () => {
 function raumLascheBenennen(){
   const b = $('reg-karte'); if (!b) return;
   const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
-  b.textContent = da.length === 1 ? RAUM_NAME[da[0]].replace('-Raum', 'raum') : 'Räume';
+  /* Mit dem Klangschaum heisst die Lasche „Räume und Schäume" (Caspar_D, 06.10.2026). */
+  b.textContent = da.includes('schaum') ? 'Räume und Schäume'
+    : da.length === 1 ? RAUM_NAME[da[0]].replace('-Raum', 'raum') : 'Räume';
 }
+/* Die Lasche soll ihren Namen schon tragen, bevor man sie zum ersten Mal oeffnet. */
+async function raeumeErfragen(){
+  if (raumDa) return;
+  try { raumDa = await (await fetch('/api/raeume', { cache: 'no-store' })).json(); }
+  catch (e) { raumDa = { klang: true }; }
+  /* Der Klangschaum ist kein gerechneter Raum: er legt sich beim Oeffnen aus dem Klang-Raum,
+     ist also da, sobald der da ist. */
+  raumDa.schaum = !!raumDa.klang;
+  if (!raumDa[raumJetzt]) raumJetzt = 'klang';
+  raumLascheBenennen();
+}
+raeumeErfragen();
 
 function raumLeisteBauen(){
   raumLascheBenennen();
@@ -8110,7 +8163,7 @@ function raumLeisteBauen(){
   el.dataset.stand = soll;
   el.innerHTML = da.map(r =>
     `<button class="unterreg-b${r === raumJetzt ? ' an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
-    + RAUM_NAME[r].replace('-Raum', '') + '</button>').join('');
+    + raumReiter(r) + '</button>').join('');
   el.querySelectorAll('[data-raum]').forEach(b => b.onclick = () => {
     if (b.dataset.raum === raumJetzt) return;
     raumJetzt = b.dataset.raum;
@@ -8118,6 +8171,311 @@ function raumLeisteBauen(){
     karteSternbilder = [];
     zeichnen();
   });
+}
+
+/* ---- DER KLANGSCHAUM ------------------------------------------------------
+   Caspar_D, 06.10.2026: eine Schaum-Baumkarte seines Werks, „dem Klangraum zur Seite gestellt",
+   eingebunden wie der Geschichten-Raum, aber sichtbar; die Lasche heisst damit „Räume und
+   Schäume". Die Flaeche jeder Zelle ist genau ihr Anteil an dem Mass, das man waehlt; gegliedert
+   wird nach Klang (Stilgruppe des Klang-Raums, darin Genre), Modell (darin Jahr) oder Zeit (Jahr,
+   darin Monat). Der Klang-Raum zeigt, was aehnlich klingt, der Klangschaum, wie viel davon da ist.
+   Die Engine ist Caspar_Ds foamtree (web/klangschaum/, Kopie vom 06.10.2026): erst ein
+   Leistungsdiagramm mit exakten Flaechen, dann echter Schaum nach Plateau - gebogene Waende, 120°
+   an den Knoten, 90° an der Wand. Gelegt wird beim Oeffnen in einem Worker (Caspar_D: „das Layout
+   wird on the fly gerechnet und ich kann waehlen, welche Daten ich sehen will"), je Ansicht einmal
+   je Sitzung. Kleine Titel bleiben eigene Zellen („es ist genug Platz da").
+   Masse, die sich nicht addieren lassen (Tempo, Lautheit, Quoten), gibt es nicht: die Flaeche
+   einer Gruppe ist die Summe ihrer Titel, und das muss etwas bedeuten.
+   Beschriftet werden nur die Titel, jeder so gross, wie seine Zelle es zulaesst, und nicht unter
+   9 Punkten; Gruppen und Untergruppen stehen in der Legende, alles andere sagt der Tooltip. Der
+   laufende Titel wabert (Caspar_D: „der grade spielende Song wabert") und steht, wenn die Musik
+   steht.
+   In jeder Zelle liegt ihr Cover als einfarbiges Wasserzeichen (Caspar_D: „die Zelle fittet sich
+   in den Rand des Covers und zeigt nur das, die Farbe der Zellen dominiert das nach wie vor"):
+   das Kachelbild auf den Rahmen der Zelle zugeschnitten (slice), in die Zelle geschnitten und mit
+   der Mischart Luminanz bei 35 % Deckkraft eingeblendet - das Cover gibt nur Hell und Dunkel,
+   Farbton und Saettigung bleiben die der Zelle. */
+const schaumResonanz = (o) => o ? (o.plays || 0) + 2 * (o.likes || 0) + 3 * (o.kommentare || 0) : 0;
+const schaumZahl = (n) => Math.round(n).toLocaleString('de-DE');
+const schaumMin = (sek) => { const m = Math.floor(sek / 60), s = Math.round(sek % 60); return m + ':' + String(s).padStart(2, '0') + ' min'; };
+const schaumStd = (sek) => sek >= 3600 ? (sek / 3600).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' h' : Math.round(sek / 60) + ' min';
+const SCHAUM_MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+function schaumMasse(){
+  /* Die Vier-Wochen-Bewegung heisst wie im Profil „seit TT.MM.", solange der Verlauf jünger ist. */
+  const seit = alle.filter(s => !s.fremd).map(s => s.bewegung28 && s.bewegung28.seit).filter(Boolean).sort()[0] || null;
+  const vier = seit && seit > new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10)
+    ? 'seit ' + seit.slice(8, 10) + '.' + seit.slice(5, 7) + '.' : 'letzte 4 Wochen';
+  return [
+    { id: 'abrufe', name: 'Abrufe', wert: s => s.plays || 0, text: n => schaumZahl(n) + ' Abrufe', ernte: true },
+    { id: 'herzen', name: 'Herzen', wert: s => s.likes || 0, text: n => schaumZahl(n) + ' Herzen', ernte: true },
+    { id: 'kommentare', name: 'Kommentare', wert: s => s.kommentare || 0, text: n => schaumZahl(n) + ' Kommentare', ernte: true },
+    { id: 'resonanz', name: 'Resonanz', wert: s => schaumResonanz(s), text: n => schaumZahl(n) + ' Punkte', ernte: true,
+      was: 'Abrufe + 2 × Herzen + 3 × Kommentare — dieselben Gewichte wie „Meiste Bewegung".' },
+    { id: 'woche', name: 'Bewegung, letzte Woche', wert: s => schaumResonanz(s.bewegung), text: n => '+' + schaumZahl(n) + ' Punkte', ernte: true,
+      was: 'Zuwachs an Resonanz in den letzten sieben Tagen — wie „Meiste Bewegung".' },
+    { id: 'vierwochen', name: 'Bewegung, ' + vier, wert: s => schaumResonanz(s.bewegung28), text: n => '+' + schaumZahl(n) + ' Punkte', ernte: true,
+      was: 'Zuwachs an Resonanz, ' + vier + '.' },
+    { id: 'laenge', name: 'Titellänge', wert: s => s.dauer || 0, text: schaumMin },
+    { id: 'hoerzeit', name: 'Hörzeit (Schätzung)', wert: s => (s.plays || 0) * (s.dauer || 0), text: schaumStd, ernte: true,
+      was: 'Abrufe × Titellänge. Eine Schätzung: jeder Abruf zählt, als wäre er ganz gehört worden.' },
+    { id: 'lyrics', name: 'Lyricslänge', wert: s => s.lyricsWorte || 0, text: n => schaumZahl(n) + ' Wörter' },
+    { id: 'anzahl', name: 'Anzahl', wert: () => 1, text: n => schaumZahl(n) + ' Titel', was: 'Jeder Titel gleich groß.' },
+  ];
+}
+/* Die Gliederungen: je Titel zwei Namen, oben und darunter. Die Farbe haengt am oberen. */
+function schaumGliederungen(){
+  const lage = new Map(((karteDaten && karteDaten.songs) || []).map(p => [p.id, p]));
+  const gruppeName = new Map(((karteDaten && karteDaten.gruppen) || []).map(g => [g.nr, g.name]));
+  const gruppeNr = new Map([...gruppeName].map(([nr, n]) => [n, nr]));
+  return [
+    { id: 'klang', name: 'Klang: Stilgruppe › Genre', oben: 'Stilgruppen', unten: 'Genres',
+      von: s => { const p = lage.get(s.id);
+        return [p && p.gruppe != null ? (gruppeName.get(p.gruppe) || 'Gruppe ' + p.gruppe) : 'ohne Stilgruppe', (p && p.genre) || '']; },
+      farbe: n => gruppeNr.has(n) ? karteFarbe(gruppeNr.get(n)) : null },
+    { id: 'modell', name: 'Modell › Jahr', oben: 'Modelle', unten: 'Jahre',
+      von: s => [s.modell || (s.modellRoh ? 'Modell: ' + s.modellRoh : 'ohne Modell'), (s.erstellt || '').slice(0, 4)] },
+    { id: 'zeit', name: 'Jahr › Monat', oben: 'Jahre', unten: 'Monate',
+      von: s => { const e = s.erstellt || ''; return [e.slice(0, 4) || 'ohne Datum', e.length >= 7 ? SCHAUM_MONATE[+e.slice(5, 7) - 1] || '' : '']; } },
+  ];
+}
+/* Modelle nach ihrer Zahl, wie in den Titellaengen: v4.5+ zwischen v4.5 und v5. */
+const schaumOrdnung = (a, b) => {
+  const z = (v) => { const t = String(v).match(/[\d.]+/); return t ? parseFloat(t[0]) + (/\+/.test(v) ? 0.01 : 0) : -1; };
+  return z(a) - z(b) || String(a).localeCompare(String(b));
+};
+let schaumMass = (() => { try { return localStorage.getItem('mysuno-schaum-mass') || 'abrufe'; } catch (e) { return 'abrufe'; } })();
+let schaumGliederung = (() => { try { return localStorage.getItem('mysuno-schaum-gliederung') || 'klang'; } catch (e) { return 'klang'; } })();
+let schaumZoom = null;              /* Name der oberen Gruppe, in die hineingezoomt ist */
+const schaumFertig = new Map();     /* Schluessel -> { svg, ids, werte } */
+let schaumArbeit = null;            /* { schluessel, worker } */
+const SCHAUM_WABERN = '<filter id="schaumwabern" x="-25%" y="-25%" width="150%" height="150%">'
+  + '<feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="7" result="n">'
+  + '<animate attributeName="baseFrequency" dur="7s" values="0.009;0.015;0.009" repeatCount="indefinite"/></feTurbulence>'
+  + '<feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G">'
+  + '<animate attributeName="scale" dur="3.1s" values="5;12;5" repeatCount="indefinite"/></feDisplacementMap></filter>';
+
+function schaumSichtbar(an){
+  for (const id of ['kartefeld', 'karterechts']) { const e = $(id); if (e) e.hidden = an; }
+  for (const id of ['schaumfeld', 'schaumrechts']) { const e = $(id); if (e) e.hidden = !an; }
+  if (an && schiffLauf){ cancelAnimationFrame(schiffLauf); schiffLauf = 0; }
+}
+function schaumMassWaehlen(id){
+  schaumMass = id; try { localStorage.setItem('mysuno-schaum-mass', id); } catch (e) {}
+  schaumZeichnen();
+}
+function schaumGliederungWaehlen(id){
+  schaumGliederung = id; schaumZoom = null; try { localStorage.setItem('mysuno-schaum-gliederung', id); } catch (e) {}
+  schaumZeichnen();
+}
+function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
+
+/* STARTPUNKTE AUS DER KLANGRAUM-KARTE (Caspar_D, 06.10.2026: „könntest du die Blasen-Seeds anhand
+   der Ordination im Klangraum initialisieren, dann wären ähnliche Songs in Nähe zueinander -
+   natürlich nur, so gut es eben geht"). Jeder Titel startet an seinem Stern (dieselbe Ordination,
+   die der Klangraum gerade zeigt, NMDS oder UMAP, in 2-D), jede Gruppe in der Mitte ihrer Titel.
+   foamtree schiebt die Startpunkte mit ihrer Elternzelle mit und zieht hinein, was draussen liegt;
+   die Flaechen bleiben exakt, nur die Lage folgt der Karte, so gut es geht. Titel ohne Stern
+   (nicht im Klang-Raum) starten auf einer Sonnenblumenspirale um die Mitte. Die Schluessel sind
+   die der Engine (nodeKey): Namen je Ebene mit \u0001, ein Titel als Name\u0000Zeilennummer. */
+function schaumSaat(zeilen, ebenen, W, H){
+  const lage = new Map(((karteDaten && karteDaten.songs) || []).map(p => [p.id, p]));
+  const punkt = (id) => { const p = lage.get(id); if (!p) return null;
+    const q = karteVerf === 'umap' && p.umap ? p.umap : [p.x, p.y];
+    return q && isFinite(q[0]) && isFinite(q[1]) ? q : null; };
+  const pts = zeilen.map(z => punkt(z.id)), da = pts.filter(Boolean);
+  if (da.length < 2) return null;
+  const xs = da.map(p => p[0]), ys = da.map(p => p[1]), rand = 0.06;
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const abb = (p) => [W * (rand + (1 - 2 * rand) * (p[0] - x0) / ((x1 - x0) || 1)),
+                      H * (1 - rand - (1 - 2 * rand) * (p[1] - y0) / ((y1 - y0) || 1))];   /* Mathe-Koordinaten: y nach oben */
+  const ohne = zeilen.length - da.length; let k = 0;
+  const saat = {}, summe = new Map();
+  const dazu = (key, q) => { const s = summe.get(key) || [0, 0, 0]; s[0] += q[0]; s[1] += q[1]; s[2]++; summe.set(key, s); };
+  zeilen.forEach((z, ri) => {
+    let q;
+    if (pts[ri]) q = abb(pts[ri]);
+    else { const r = Math.sqrt((k + 0.5) / ohne) * 0.4 * Math.min(W, H), a = k++ * 2.39996; q = [W / 2 + r * Math.cos(a), H / 2 + r * Math.sin(a)]; }
+    q[0] += (ri % 7) * 1e-3; q[1] += (ri % 5) * 1e-3;          /* zwei Sterne an einer Stelle: nie derselbe Startpunkt */
+    let last = '(none)'; const teile = [];
+    for (const l of ebenen){ const v = (z[l] || '').trim(), name = v || last; last = name; teile.push(name); dazu(teile.join('\u0001'), q); }
+    dazu('', q);
+    teile.push(`${(z.titel || '').trim() || 'row ' + (ri + 1)}\u0000${ri}`);
+    saat[teile.join('\u0001')] = q;
+  });
+  for (const [key, s] of summe) saat[key] = [s[0] / s[2], s[1] / s[2]];
+  return saat;
+}
+
+function schaumFarbton(hex){
+  const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return 0;
+  const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
+}
+/* Je oberer Gruppe ihr Farbton, abgetoent nach Untergruppe und Titel wie in Caspar_Ds Engine;
+   „ohne …" grau. */
+function schaumFarbe(k, kette, farbeVon, gezoomt){
+  const c = kette(k), rang = (n) => n && n.parent ? [...n.parent.kids.values()].sort((a, b) => b.count - a.count).indexOf(n) : 0;
+  const oben = gezoomt ? schaumZoom : (c[0] && c[0].name), mitte = gezoomt ? c[0] : c[1], blatt = gezoomt ? c[1] : c[2];
+  const v1 = Math.max(0, rang(mitte)), v2 = Math.max(0, rang(blatt)), hex = farbeVon(oben);
+  if (!hex) return `hsl(220 6% ${30 + (v1 * 7 + v2 * 5) % 20}%)`;
+  return `hsl(${((schaumFarbton(hex) + (v1 % 5 - 2) * 7) + 360) % 360} ${44 + (v2 % 4) * 7}% ${28 + (v1 * 7 + v2 * 5) % 24}%)`;
+}
+
+async function schaumZeichnen(){
+  karteHoehe();
+  raumLeisteBauen();
+  if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
+  const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
+  const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
+  const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
+  for (const [id, liste, jetzt] of [['schaummass', masse, m.id], ['schaumgliederung', glieder, gl.id]]){
+    const sel = $(id), sig = liste.map(x => x.name).join('|');
+    if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = liste.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
+    sel.value = jetzt;
+  }
+  $('schaumwas').textContent = m.was || '';
+
+  /* Die Zeilen: alle eigenen Titel mit Wert > 0. */
+  const alleZeilen = [], ohneWert = [];
+  for (const s of alle.filter(x => !x.fremd)){
+    const w = m.wert(s);
+    if (!(w > 0)){ ohneWert.push(s); continue; }
+    const [oben, unten] = gl.von(s);
+    alleZeilen.push({ gruppe: oben, genre: unten, titel: s.titel || '—', id: s.id, w: String(w) });
+  }
+  const obenNamen = [...new Set(alleZeilen.map(z => z.gruppe))].sort(schaumOrdnung);
+  if (schaumZoom && !obenNamen.includes(schaumZoom)) schaumZoom = null;
+  const farbeVon = (n) => !n || /^ohne /.test(n) ? null
+    : (gl.farbe && gl.farbe(n)) || NEBEL[obenNamen.filter(x => !/^ohne /.test(x)).indexOf(n) % NEBEL.length];
+  const zeilen = schaumZoom ? alleZeilen.filter(z => z.gruppe === schaumZoom) : alleZeilen;
+
+  /* Legende: oben die Gruppen, ein Klick zoomt hinein; gezoomt die Untergruppen und der Weg zurück. */
+  const summe = (zs, schl) => { const s = new Map(), n = new Map();
+    for (const z of zs){ const k = z[schl] || '(ohne)'; s.set(k, (s.get(k) || 0) + +z.w); n.set(k, (n.get(k) || 0) + 1); } return [s, n]; };
+  const zeileHtml = (name, farbe, n, wert, knopf) => `<${knopf ? 'button type="button"' : 'span'} class="zeile"${knopf ? ` data-zoom="${esc(name)}" title="Nur diese Gruppe zeigen"` : ''}>`
+    + `<i style="background:${farbe || '#5d6066'}"></i><span><b>${esc(name)}</b><br><small>${n} Titel · ${m.text(wert)}</small></span></${knopf ? 'button' : 'span'}>`;
+  if (!schaumZoom){
+    const [s, n] = summe(alleZeilen, 'gruppe');
+    $('schaumlegende').innerHTML = `<small>${gl.oben} — ein Klick zeigt nur diese</small>`
+      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g, farbeVon(g), n.get(g), w, true)).join('');
+  } else {
+    const [s, n] = summe(zeilen, 'genre');
+    const ges = zeilen.reduce((a, z) => a + +z.w, 0);
+    $('schaumlegende').innerHTML = `<button type="button" class="zurueck" data-zoom="">← alle ${gl.oben}</button>`
+      + zeileHtml(schaumZoom, farbeVon(schaumZoom), zeilen.length, ges, false)
+      + `<small>${gl.unten}</small>`
+      + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g === '(ohne)' ? 'ohne Angabe' : g, null, n.get(g), w, false)).join('');
+  }
+  $('schaumlegende').querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => schaumZoomen(b.dataset.zoom || null));
+
+  /* Werk: der laufende Titel mit seinem Wert und Rang. */
+  { const w = $('schaumwerk'), s = aktuellId && song(aktuellId);
+    if (!s || s.fremd) w.innerHTML = '';
+    else {
+      const z = alleZeilen.find(x => x.id === s.id);
+      if (!z) w.innerHTML = `<small>Läuft</small><br><b>${esc(s.titel || '')}</b><br><small>hat bei ${m.name} keine Fläche</small>`;
+      else {
+        const platz = 1 + alleZeilen.filter(x => +x.w > +z.w).length;
+        w.innerHTML = `<small>Läuft</small><br><b>${esc(s.titel || '')}</b><br><small>${esc(z.gruppe)}${z.genre ? ' › ' + esc(z.genre) : ''}</small>`
+          + `<br>${m.text(+z.w)} · Platz ${platz} von ${alleZeilen.length}`;
+      }
+    } }
+
+  const stamm = katalogInfo && katalogInfo.erstelltAm ? String(katalogInfo.erstelltAm).slice(0, 10) : '';
+  fuss.textContent = `Klangschaum: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, Fläche = ${m.name}, jede Zelle genau ihr Anteil. `
+    + `Gegliedert nach ${gl.name.replace('Klang: ', '')}${gl.id === 'klang' ? ' (Stilgruppen aus dem Klang-Raum)' : ''}; schraffiert und kursiv, wo ein Titel keine Untergruppe hat. `
+    + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
+    + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
+    + `Ähnlich Klingendes liegt nah beieinander, so gut der Schaum es zulässt: jede Blase startet an ihrem Stern im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). `
+    + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Zelle spielt den Titel.`;
+
+  if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = `Kein Titel hat bei ${m.name} mehr als null.`; return; }
+  /* Das Seitenverhaeltnis des Feldes, auf 0,05 gerundet - sonst legte jedes Pixel neu. */
+  const rect = $('schaumfeld').getBoundingClientRect();
+  const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
+  const schluessel = [m.id, gl.id, schaumZoom || '', verh, karteVerf, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
+  const fertig = schaumFertig.get(schluessel);
+  if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig, m); return; }
+  if (schaumArbeit && schaumArbeit.schluessel === schluessel) return;          /* wird schon gelegt */
+  if (schaumArbeit) schaumArbeit.worker.terminate();
+  stand.textContent = 'Der Schaum wird gelegt …';
+  let worker;
+  try { worker = new Worker('/klangschaum/worker.js', { type: 'module' }); }
+  catch (e){ stand.textContent = 'Dieser Browser kann den Schaum nicht im Hintergrund legen.'; return; }
+  schaumArbeit = { schluessel, worker };
+  const gezoomt = !!schaumZoom;
+  worker.onmessage = async (ev) => {
+    const d = ev.data;
+    if (d.type === 'progress'){ stand.textContent = `Der Schaum wird gelegt … ${d.done} von ${d.total} Zellen`; return; }
+    worker.terminate(); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
+    if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
+    try {
+      const R = await import('/klangschaum/render.js');
+      const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
+      let svg = R.renderSVG(d.res, { pad: 0, cushion: 2, labelLevel: gezoomt ? 1 : 2, labelSizes: [9, 22],
+        colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
+      const ids = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
+      svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
+               .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
+               /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
+               .replace(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g, (alles, dd, a, i, b) => {
+                 const id = ids[+i]; if (!id) return alles;
+                 const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
+                 const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
+                 const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+                 return alles + `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
+                   + `<image href="${esc(artworkKachel(id))}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                   + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" opacity="0.35" style="mix-blend-mode:luminosity" pointer-events="none"/>`;
+               });
+      const werte = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? +zeilen[k.row].w : 0);
+      const f = { svg, ids, werte };
+      schaumFertig.set(schluessel, f);
+      if (register === 'karte' && raumJetzt === 'schaum'){ stand.textContent = ''; schaumZeichnen(); }
+    } catch (e){ stand.textContent = 'Der Schaum ließ sich nicht zeichnen.'; console.log('Klangschaum:', e); }
+  };
+  worker.onerror = (e) => { stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
+  const ebenen = gezoomt ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
+  worker.postMessage({ rows: zeilen, tree: { levels: [...ebenen, 'row'], weight: 'w', leafName: 'titel' },
+                       layout: { width: W, height: H, method: 'foam', minArea: 0, minShare: 0, seeds: schaumSaat(zeilen, ebenen, W, H) } });
+}
+function schaumEinsetzen(f, m){
+  const bild = $('schaumbild');
+  bild.innerHTML = f.svg;
+  const svg = bild.querySelector('svg');
+  let laeuft = null;
+  bild.querySelectorAll('path[data-i]').forEach(p => {
+    const i = +p.dataset.i, id = f.ids[i]; if (!id) return;
+    p.dataset.id = id;
+    if (id === aktuellId) laeuft = p;
+    const s = song(id), t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    t.textContent = (s ? s.titel : '') + ' · ' + m.text(f.werte[i]);
+    p.appendChild(t);
+  });
+  /* Der laufende Titel wabert: sein Umriss, weiss und von einem Rauschen verschoben, auf einer
+     EIGENEN leichten Ebene ueber dem Schaum. Laege er im Schaum selbst, muesste der Browser mit
+     jedem Bild die Kissenbeleuchtung und alle Wasserzeichen neu rechnen. Wer Bewegung abbestellt
+     hat, bekommt nur den Umriss. */
+  if (laeuft && svg){
+    const NS = 'http://www.w3.org/2000/svg', ueber = document.createElementNS(NS, 'svg');
+    ueber.setAttribute('viewBox', svg.getAttribute('viewBox')); ueber.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    ueber.classList.add('schaumwaber');
+    ueber.innerHTML = `<defs>${SCHAUM_WABERN}</defs>`;
+    const o = document.createElementNS(NS, 'path');
+    o.setAttribute('d', laeuft.getAttribute('d'));
+    o.setAttribute('fill', '#ffffff'); o.setAttribute('fill-opacity', '0.08');
+    o.setAttribute('stroke', '#ffffff'); o.setAttribute('stroke-width', '2.4'); o.setAttribute('stroke-linejoin', 'round');
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) o.setAttribute('filter', 'url(#schaumwabern)');
+    ueber.appendChild(o); bild.appendChild(ueber);
+  }
+  schaumTakt();
+  bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (p) spielenNachId(p.dataset.id); };
+}
+/* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */
+function schaumTakt(){
+  const svg = $('schaumbild') && $('schaumbild').querySelector('svg.schaumwaber');
+  if (!svg || !svg.pauseAnimations) return;
+  if (typeof audio !== 'undefined' && audio && !audio.paused) svg.unpauseAnimations(); else svg.pauseAnimations();
 }
 
 function kartePanelHtml(){
@@ -8140,9 +8498,9 @@ function kartePanelHtml(){
      gerechnet sind, erscheinen gar nicht erst; ein Knopf, der ins Leere
      führt, ist schlimmer als keiner. */
   const raumZeile = (raumDa && Object.values(raumDa).filter(Boolean).length > 1)
-    ? zeile('Raum', ['klang', 'geschichten'].filter(r => raumDa[r]).map(r =>
+    ? zeile('Raum', ['klang', 'geschichten', 'schaum'].filter(r => raumDa[r]).map(r =>
         `<button class="pille raumpille ${raumJetzt === r ? 'an' : ''}" data-raum="${r}" title="${RAUM_WAS[r]}">`
-        + RAUM_NAME[r].replace('-Raum', '') + `</button>`).join(''))
+        + raumReiter(r) + `</button>`).join(''))
       + `<p class="fussnote raumwas">${RAUM_WAS[raumJetzt]}`
       + (raumJetzt !== 'klang' && karteDaten
           ? ` <b>${karteDaten.songs.length - d.songs.length} Lieder ohne Text fehlen hier.</b>` : '')
@@ -8258,11 +8616,9 @@ async function karteZeichnen(){
   if (!schiffLauf) schiffLauf = requestAnimationFrame(karteSchiff);
   const svg = $('kartesvg'), leg = $('kartelegende');
   /* Welche Räume gibt es? Einmal fragen, dann merken. */
-  if (!raumDa){
-    try { raumDa = await (await fetch('/api/raeume', { cache: 'no-store' })).json(); }
-    catch (e) { raumDa = { klang: true }; }
-    if (!raumDa[raumJetzt]) raumJetzt = 'klang';
-  }
+  await raeumeErfragen();
+  schaumSichtbar(raumJetzt === 'schaum');
+  if (raumJetzt === 'schaum') return schaumZeichnen();
   if (!raumDaten[raumJetzt]){
     /* Erst hier steht fest, welche Songs ueberhaupt einen Stern haben.
        Also die Liste einmal ueber zeichnen() bauen lassen - das setzt
@@ -9126,7 +9482,7 @@ async function schiffPruefung(o){
   karteSchiffFrame.fake = null;
   const zusammenfassung = fehler.length ? `${fehler.length} Befunde: ` + Object.entries(fehler.reduce((m, f) => (m[f.art] = (m[f.art] || 0) + 1, m), {})).map(([k, v]) => k + ' x' + v).join(', ') : 'alles stimmig';
   if (!o.still) console.log('Schiffspruefung:', zusammenfassung, fehler);
-  if (!schiffLauf && register === 'karte') schiffLauf = requestAnimationFrame(karteSchiff);
+  if (!schiffLauf && register === 'karte' && raumJetzt !== 'schaum') schiffLauf = requestAnimationFrame(karteSchiff);
   return { fehler, protokoll: prot, zusammenfassung };
 }
 const ZWILLING = 0.17;                  // Klangabstand, unter dem zwei Songs Zwillinge sind
@@ -9288,7 +9644,7 @@ function karteFlugkamera(L){
 function karteSchiff(){
   try { karteSchiffFrame(); if (raumK() && register === 'karte'){ const L = karteLayout(raumK()); karteNachlauf(L); } }
   catch (e) { if (!karteSchiff.gemeldet){ karteSchiff.gemeldet = true; console.warn('Sound-Schiff:', e.message); } }
-  if (register === 'karte' && raumK()) schiffLauf = requestAnimationFrame(karteSchiff); else schiffLauf = 0;
+  if (register === 'karte' && raumK() && raumJetzt !== 'schaum') schiffLauf = requestAnimationFrame(karteSchiff); else schiffLauf = 0;
 }
 function karteSchiffFrame(){
   const cv = $('karteschiff'); if (!cv) return;
@@ -27105,6 +27461,8 @@ function spielknoepfeStellen(){
   }
   /* Das Bildfenster haengt an derselben Quelle: ein angehaltener Film steht. */
   if (typeof pipFolgen === 'function') pipFolgen();
+  /* Und die wabernde Zelle im Klangschaum: sie steht, wenn die Musik steht. */
+  if (typeof schaumTakt === 'function') schaumTakt();
 }
 
 function deckMelder(el){

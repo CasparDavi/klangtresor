@@ -7474,3 +7474,31 @@ Abrufe, Gruppenfarben `NEBEL`, Klick spielt; ergänzt die Klangraum-Karte (ähnl
 Gewicht (gehört). Skizze im Chat mit echten Daten (327 Titel, 4 Gruppen, 17 Genres; flach, mit
 d3-voronoi-treemap nur für die Skizze). Server liefert `.mjs` nicht als JavaScript (Typentabelle
 kennt nur `.js`).
+
+## 47. 06.10.2026: Klangschaum gebaut — „Räume und Schäume"
+
+Caspar_D: „stelle es dem Klangraum zur Seite" — eingebunden wie der Geschichten-Raum, aber sichtbar.
+Die Lasche heißt „Räume und Schäume", die Unterregister „Klangraum" und „Klangschaum" (der
+Geschichten-Raum bleibt ausgeblendet). `raumDa.schaum = raumDa.klang` (kein gerechneter Raum);
+`raeumeErfragen()` beim Laden, damit die Lasche ihren Namen gleich trägt.
+**Engine:** `web/klangschaum/{foamtree,render,worker}.js`, unverändert aus
+`~/Prophane/tools/foam-lab/engine/` (06.10., neueste Fassung), nur `.mjs` → `.js` und Importpfade
+(Kopfzeile nennt Herkunft; Änderungen gehören in die Quelle zurück). Gelegt im Browser in einem
+Modul-Worker, je Ansicht einmal je Sitzung (Cache-Schlüssel: Maß, Gliederung, Zoom,
+Seitenverhältnis, Ordination, Werte). Kleine Titel bleiben eigene Zellen (`minArea/minShare 0`).
+**Panel** (eigenes; das des Himmels ist im Schaum ausgeblendet): Fläche nach Abrufe, Herzen,
+Kommentare, Resonanz (Abrufe + 2 × Herzen + 3 × Kommentare, wie „Meiste Bewegung"), Bewegung
+letzte Woche / letzte 4 Wochen, Titellänge, Hörzeit (Schätzung), Lyricslänge, Anzahl; Gliederung
+Klang (Stilgruppe › Genre) / Modell › Jahr / Jahr › Monat; Legende mit Klick zum Hineinzoomen;
+Werk-Lade (laufender Titel, Wert, Platz). Fußnote in `#kartefuss`.
+**Lage:** Startpunkte (`seeds`) aus der Klangraum-Karte (NMDS oder UMAP, wie gerade gewählt), Gruppen
+in der Mitte ihrer Titel — Ähnliches liegt nah, so gut es geht. **Bild:** Klangraum-Farben je
+Stilgruppe (`karteFarbe`), abgetönt nach Untergruppe und Titel; Cover (`artworkKachel`) als
+Wasserzeichen in jeder Zelle (slice auf den Zellrahmen, clip, Luminanz-Mischung, 35 %);
+Beschriftung nur der Titel (`labelLevel`, 9–22 Punkte). Der laufende Titel wabert: weiße Kontur mit
+animiertem Rauschen auf eigener SVG-Ebene, steht, wenn die Musik steht (`schaumTakt()` in
+`spielknoepfeStellen()`); das Sternenschiff läuft hinter dem Schaum nicht weiter.
+**Geprüft:** Node-Probe (327 Titel, 5,4 s mit Startpunkten, kein Rückfall); Sandkasten im
+Nur-Lesen-Modus (Port 8796, Kopien von Katalog, Karte und Kachelbildern, leere Tondateien):
+Laschen, Maß, Gliederung Modell, Zoom (104 Zellen), Kommentare (140 Titel), Werk-Lade, Wabern,
+keine Skriptfehler. Archiv unverändert. Nicht gesehen: Caspar_Ds echtes Fenster (F5).
