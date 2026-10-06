@@ -7640,3 +7640,23 @@ Reaktion — Kohorten), **Lebendig** (aktiv in den letzten 4 Wochen / davor / l�
 **Geschmack** (die Klangraum-Stilgruppe, deren Titel jemand am meisten bedacht hat — verbindet
 Groupie- und Klangschaum, Farben dann wie im Klangraum). Empfehlung Claude: Beziehung und
 Geschmack zuerst. Wartet auf Caspar_Ds Wort.
+
+## 51. 06.10.2026 spät: Aufträge Schaum (Caspar_D) — Bauliste
+
+Wortlaut: „übrige Maße im Hintergrund rechnen und über die Sitzung hinaus merken; Morphen machen
+wir, die Bilder blenden weg, es morpht, die Bilder kommen wieder; dem Rechnen beim ersten Mal live
+zuzuschauen wäre schon schick; Fugen breiter."
+1. **Fugen breiter** (nach 1.0.20 nochmals): Groupieschaum `strokes` deutlich größer.
+2. **Vorrechnen + Merken:** nach dem Legen der sichtbaren Ansicht die übrigen Maße desselben
+   Raums nacheinander in einem Hintergrund-Worker legen; alle Layouts (`schaumLagen`) zusätzlich in
+   IndexedDB (Schlüssel = Hash des Layout-Schlüssels, begrenzte Zahl, älteste fliegen).
+3. **Morph beim Maßwechsel:** Bilder ausblenden → Zellen derselben Person/desselben Titels von alter
+   zu neuer Form (Umrisse auf feste Punktzahl umgetastet), neue wachsen aus dem Mittelpunkt,
+   wegfallende schrumpfen → neues Bild mit Avataren/Covern einblenden.
+4. **Live beim ersten Rechnen:** Worker meldet je fertigem Gefäß die Umrisse, die Seite zeichnet sie
+   farbig nach (Areale, dann die Personen je Areal). Feiner (die Iterationen selbst) bräuchte einen
+   Haken in Caspar_Ds Engine (Treemapper) — nur auf sein Wort.
+
+**Brainstorm „Mural" (kein Auftrag):** Caspar_D: „angenommen, jemand möchte seine Songs als Mural
+exportieren … wie könnten wir sie unterstützen, den Klangschaum in eine perfektionierte Druckdatei
+zu exportieren — Titel, Farben passend zum Aufhängort und und und." Ideen Claude in §52.
