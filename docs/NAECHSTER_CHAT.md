@@ -7630,3 +7630,13 @@ in unter einer Sekunde neu; laufende Rechnung wird nach Layout erkannt (`schaumA
 altes Bild beim Legen auf Deckkraft 0,3 (Wahl sichtbar wirksam); Fugen im Groupieschaum
 `strokes: [5.5, 3.4]`; „Aktuell" ohne Personen unter 1/16, Fußnote zählt, wer bei einem Maß fehlt.
 Offen bleibt: Morph (wartet auf Wort), Vorrechnen/IndexedDB (angeboten), Gliederungsideen (§50).
+
+## 50. Gliederungsideen für den Groupieschaum (06.10., an Caspar_D, noch kein Auftrag)
+
+Heute gliedern die Areale nach Art der Reaktion (nur Herzen / beides / nur Kommentare). Vorschläge
+für ein zweites Auswahlfeld „Gegliedert nach" (wie im Klangschaum): **Beziehung** (folgt dir / du
+folgst ihr / beide / keiner — Beobachterliste), **Ankunft** (Jahr oder Quartal der ersten
+Reaktion — Kohorten), **Lebendig** (aktiv in den letzten 4 Wochen / davor / länger still),
+**Geschmack** (die Klangraum-Stilgruppe, deren Titel jemand am meisten bedacht hat — verbindet
+Groupie- und Klangschaum, Farben dann wie im Klangraum). Empfehlung Claude: Beziehung und
+Geschmack zuerst. Wartet auf Caspar_Ds Wort.
