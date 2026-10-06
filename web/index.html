@@ -8427,7 +8427,7 @@ async function schaumZeichnen(){
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig, m); return; }
   if (schaumArbeit && schaumArbeit.schluessel === schluessel) return;          /* wird schon gelegt */
   if (schaumArbeit) schaumArbeit.worker.terminate();
-  stand.textContent = 'Der Schaum wird gelegt …';
+  stand.textContent = 'Dein Klang wird aufgeschäumt …';   /* Caspar_Ds Wortlaut, 06.10.2026 */
   let worker;
   try { worker = new Worker('/klangschaum/worker.js', { type: 'module' }); }
   catch (e){ stand.textContent = 'Dieser Browser kann den Schaum nicht im Hintergrund legen.'; return; }
@@ -8435,7 +8435,7 @@ async function schaumZeichnen(){
   const gezoomt = !!schaumZoom;
   worker.onmessage = async (ev) => {
     const d = ev.data;
-    if (d.type === 'progress'){ stand.textContent = `Der Schaum wird gelegt … ${d.done} von ${d.total} Zellen`; return; }
+    if (d.type === 'progress'){ stand.textContent = `Dein Klang wird aufgeschäumt … ${d.done} von ${d.total} Zellen`; return; }
     worker.terminate(); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
     if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
     try {
