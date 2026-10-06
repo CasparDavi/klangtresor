@@ -7582,3 +7582,44 @@ je Kopf ein schwarzes `rect.rauch`, Deckkraft aus den hellsten 20 % des Avatars 
 Reihenfolge Bild → Glas → Farbstich → Zellfarbe → Schrift. Sandkasten: 90 Köpfe, 39 ohne Rauch,
 51 angepasst (bis 0,58); Suno erlaubt das Lesen der Avatare (CORS). Beim Wechsel zwischen Klang-
 und Groupieschaum wird das Feld geleert (`schaumBildArt`).
+
+## 49. 06.10.2026 abends: offene Punkte Groupieschaum — HIER WEITERLESEN nach Kompaktierung
+
+Stand: Release **1.0.19** (warme Arealfarben Koralle/Apricot/Gold). Stehende Regel: nach jeder
+ausgelieferten Änderung ungefragt ein neues Release (Version heben, `node bin/paket.js`,
+`gh release create vX ../KlangTresor.zip`, nie --clobber). Code: Schaum-Block in `web/index.html`
+(`schaumZeichnen`, `groupieZeichnen`, `schaumLegen`, `schaumEinsetzen`, `schaumRauch`,
+`schaumKontrast…`, `GROUPIE_MASSE`, `GROUPIE_FARBE`), Engine `web/klangschaum/*.js`.
+
+**Offen, von Caspar_D gemeldet (noch nicht gebaut):**
+1. „Die Farben sind zu ähnlich" — Vorschläge als Bild gezeigt (je Areal zwei echte Avatare mit
+   soft-light-Stich): A Glut #d6334a/#f2a227/#e0758f · B Sonnenuntergang #c2307a/#ef7b2a/#e9c13a ·
+   C Erde #c4532f/#c99a2e/#7f9a3a · D Wein und Honig #8e2240/#e2a33a/#ef8a6b · E Warm mit
+   Gegenpol #e0604a/#e3b43c/#2f8f8a (Reihenfolge: nur Herzen / beides / nur Kommentare).
+   **Wartet auf seine Wahl.**
+2. „Die Fugen sind zu schmal" — Plan: für den Groupieschaum `renderSVG(..., strokes: [5, 3.2])`
+   (heute Engine-Vorgabe 3.2/2.0 je Tiefe), Bild/Glas/Stich bleiben an der Zelle geclippt.
+3. „Die Selektion anderer Zellgrößen hat keinen Effekt" — Befund: jedes Maß legt neu, in Node
+   „Herzen + Kommentare" 25 s, „Aktuell" 58 s (extreme Größenunterschiede durch die
+   Halbwertszeit); das alte Bild bleibt stehen (gleiche Art → kein Leeren), ein zweiter Wechsel
+   bricht den Worker ab — wirkt wie „nichts passiert". Plan: (a) beim Start eines neuen Legens das
+   alte Bild sofort abblenden (Deckkraft ~0,3), Sekundenanzeige sichtbar; (b) „Aktuell": Personen
+   unter 1/16 (älter als vier Halbwertszeiten) herausnehmen, Fußnote zählt sie; (c) anbieten:
+   die übrigen Maße im Hintergrund vorrechnen und über die Sitzung hinaus merken (IndexedDB).
+   Startpunkte aus dem vorigen Maß gemessen: langsamer (70 s statt 58 s) — nicht für Tempo nutzen.
+4. Frage „kann man das morphen, bei der Änderung zusehen, oder bricht das System zusammen?" —
+   Antwort Claude: ja, als Überblendung NACH dem Legen: Zellen derselben Person werden über ~1 s
+   von alter zu neuer Form interpoliert (Umrisse auf feste Punktzahl umtasten), neue wachsen aus
+   ihrem Mittelpunkt, wegfallende schrumpfen; während des Morphs nur Farben, Avatare/Glas danach
+   einblenden — 470 geclippte Bilder je Bild würden ruckeln. Das Legen selbst (25–60 s) bleibt;
+   Live-Zusehen beim Rechnen ginge mit `maxDepth`/Treemapper-`growth.mjs`, ist aber ein eigener Bau.
+   **Wartet auf sein Wort.**
+
+**Sandkasten-Rezept (bewährt, je Probe):** Kopie von server, bin, web (rsync ohne ._), package.json
+nach scratchpad/sandkasten; `library/` mit Kopien von katalog.json.gz, karte.json, reaktionen.ndjson,
+beobachter.json, liker-verlauf.ndjson, liker/ und je eigenem Titel `songs/<id>/audio.mp3` leer
+(+ kachel.jpg kopiert); `node server/server.js --eingefroren --port 8796` (nur lesen, zeigt nur
+Titel mit audio.mp3). Im eigenen Tab per JS testen; die Vorschau ist versteckt und gedrosselt —
+für den Groupieschaum `schaumLeute` auf die 150 aktivsten kürzen. Bild herausholen: kleiner
+POST-Empfänger auf 8797 schreibt das SVG, headless Chrome rendert es. Danach Server per PID
+beenden, Sandkasten löschen, `find library -newermt` prüfen.
