@@ -150,12 +150,10 @@ h1{
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
 #schaumbild path[data-id]:hover{stroke:#ffffff;stroke-opacity:.7}
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
-/* Ein duenner Gegenrand um die Titel: ueber einem Cover reicht die Zellfarbe allein nicht mehr fuer
-   den Kontrast (weiss auf dem hellen Teller von Labskaus-Klaus). Die Engine waehlt die Schrift
-   nach der Zellfarbe schwarz oder weiss - der Rand ist jeweils das Gegenteil. */
-#schaumbild text{paint-order:stroke;stroke-width:2.4px;stroke-opacity:.5;stroke-linejoin:round}
-#schaumbild text[fill="#ffffff"]{stroke:#000}
-#schaumbild text[fill="#000000"]{stroke:#fff}
+/* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand"). Ein
+   Gegenrand stand hier einen Nachmittag lang; die Engine setzt die Schrift ausserdem auf 70 %
+   Deckkraft - hier steht sie voll. Schwarz oder weiss waehlt die Engine nach der Zellfarbe. */
+#schaumbild text{fill-opacity:1}
 #schaumrechts input[type=range]{width:100%;accent-color:var(--akzent)}
 #schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
 #schaumrechts{display:flex;flex-direction:column;gap:12px;min-height:0;height:100%;overflow:auto}
