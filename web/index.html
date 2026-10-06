@@ -150,10 +150,10 @@ h1{
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
 #schaumbild path[data-id]:hover{stroke:#ffffff;stroke-opacity:.7}
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
-/* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand"). Ein
-   Gegenrand stand hier einen Nachmittag lang; die Engine setzt die Schrift ausserdem auf 70 %
-   Deckkraft - hier steht sie voll. Schwarz oder weiss waehlt die Engine nach der Zellfarbe. */
-#schaumbild text{fill-opacity:1}
+/* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand", dann
+   „mach sie auf 80 % Deckkraft"). Ein Gegenrand stand hier einen Nachmittag lang. Schwarz oder
+   weiss waehlt schaumKontrast() nach dem sichtbaren Grund unter jedem Titel. */
+#schaumbild text{fill-opacity:.8}
 #schaumrechts input[type=range]{width:100%;accent-color:var(--akzent)}
 #schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
 #schaumrechts{display:flex;flex-direction:column;gap:12px;min-height:0;height:100%;overflow:auto}
@@ -8281,6 +8281,7 @@ function schaumFarbeSetzen(v){
   try { localStorage.setItem('mysuno-schaum-farbe', String(schaumFarbeAnteil)); } catch (e) {}
   const s = schaumFarbeAnteil / 100, b = $('schaumbild');
   if (b){ b.style.setProperty('--sk-ton', Math.min(1, 2 * s).toFixed(3)); b.style.setProperty('--sk-deck', (Math.max(0, 2 * s - 1) * 0.65).toFixed(3)); }
+  schaumKontrastMischen();
   const z = $('schaumfarbezahl');
   if (z) z.textContent = schaumFarbeAnteil + ' %' + (schaumFarbeAnteil === 0 ? ' — Cover pur' : schaumFarbeAnteil === 50 ? ' — Farbstich' : schaumFarbeAnteil === 100 ? ' — Farbe deckt' : '');
 }
@@ -8498,9 +8499,97 @@ function schaumEinsetzen(f, m){
     ueber.appendChild(o); bild.appendChild(ueber);
   }
   schaumTakt();
+  schaumKontrastVorbereiten(svg);
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (p) spielenNachId(p.dataset.id); };
 }
 /* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */
+/* KONTRAST JE TITEL (Caspar_D, 06.10.2026: „die Kontrast-Engine bestimmte, ob die Zelle zu
+   schlecht kontrastiert und passt den Text auf Schwarz oder Weiß an"). foamtree entscheidet nach
+   der Zellfarbe (L* ab 58 schwarz, sonst weiss). Seit unter der Schrift das Cover liegt, ist die
+   Zellfarbe nicht mehr, was man sieht: weisse Schrift auf dem hellen Teller von Labskaus-Klaus.
+   Hier wird je Titel der sichtbare Grund geschaetzt - der Mittelwert des Covers im Ausschnitt
+   unter der Schrift, darueber der soft-light-Stich und die Deckung der Zellfarbe, wie der Regler
+   sie gerade stellt. Gewaehlt wird die Schrift mit dem hoeheren Kontrastverhaeltnis nach WCAG
+   ((L1 + 0,05) / (L2 + 0,05), relative Leuchtdichte); der Wechsel liegt bei L* rund 50, nicht bei
+   der festen 58 der Engine - unter Labskaus-Klaus liegt im Mittel L* 54, und dort liest sich
+   Schwarz besser (5,4 : 1 gegen 3,9 : 1). Die Cover werden einmal klein gelesen
+   (hoechstens 96 Punkte); beim Ziehen am Regler wird nur neu gemischt. Ein Mittelwert ist eine
+   Schaetzung: auf einem kontrastreichen Ausschnitt kann auch die richtige Wahl schwer lesbar
+   bleiben. */
+let schaumSchrift = [], schaumKontrastLauf = 0;
+const schaumBildDaten = new Map();       /* Adresse -> Promise<{ w, h, d } | null> */
+function schaumBildLesen(href){
+  if (!schaumBildDaten.has(href)) schaumBildDaten.set(href, new Promise(fertig => {
+    const im = new Image();
+    im.onload = () => { try {
+      const f = Math.min(1, 96 / Math.max(im.naturalWidth, im.naturalHeight)), w = Math.max(1, Math.round(im.naturalWidth * f)), h = Math.max(1, Math.round(im.naturalHeight * f));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0, w, h);
+      fertig({ w, h, nw: im.naturalWidth, nh: im.naturalHeight, d: x.getImageData(0, 0, w, h).data });
+    } catch (e) { fertig(null); } };
+    im.onerror = () => fertig(null);
+    im.src = href;
+  }));
+  return schaumBildDaten.get(href);
+}
+const schaumRgbLeser = document.createElement('canvas').getContext('2d');
+function schaumRgb(css){
+  schaumRgbLeser.fillStyle = '#000'; schaumRgbLeser.fillStyle = css;
+  const v = schaumRgbLeser.fillStyle;
+  if (v[0] === '#') return [1, 3, 5].map(i => parseInt(v.slice(i, i + 2), 16) / 255);
+  const m = v.match(/[\d.]+/g) || [0, 0, 0]; return [m[0] / 255, m[1] / 255, m[2] / 255];
+}
+function schaumLeuchtdichte(c){
+  const lin = (u) => u <= 0.04045 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
+  return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]);
+}
+/* soft-light nach W3C, Quelle = Zellfarbe, Grund = Cover. */
+const schaumWeich = (cb, cs) => cs <= 0.5 ? cb - (1 - 2 * cs) * cb * (1 - cb)
+  : cb + (2 * cs - 1) * ((cb <= 0.25 ? ((16 * cb - 12) * cb + 4) * cb : Math.sqrt(cb)) - cb);
+async function schaumKontrastVorbereiten(svg){
+  const lauf = ++schaumKontrastLauf;
+  schaumSchrift = [];
+  const zellen = [...svg.querySelectorAll('path[data-id]')].map(p => ({ p, b: p.getBBox() }));
+  const GRUND = [0x12 / 255, 0x14 / 255, 0x17 / 255];          /* der Grund des Feldes, wo ein Cover fehlt */
+  for (const t of svg.querySelectorAll('text')){
+    const bb = t.getBBox(), cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+    const z = zellen.find(({ p, b }) => cx >= b.x && cx <= b.x + b.width && cy >= b.y && cy <= b.y + b.height && p.isPointInFill(new DOMPoint(cx, cy)));
+    if (!z) continue;
+    const fuell = schaumRgb(z.p.getAttribute('fill'));
+    const img = svg.querySelector(`image[clip-path="url(#skz${z.p.dataset.i})"]`);
+    let cover = null;
+    if (img){
+      const d = await schaumBildLesen(img.getAttribute('href'));
+      if (lauf !== schaumKontrastLauf) return;                     /* inzwischen ein neuer Schaum */
+      if (!d) cover = GRUND;
+      else {
+        const x = +img.getAttribute('x'), y = +img.getAttribute('y'), w = +img.getAttribute('width'), h = +img.getAttribute('height');
+        const sk = Math.max(w / d.nw, h / d.nh), ox = x + (w - d.nw * sk) / 2, oy = y + (h - d.nh * sk) / 2, f = d.w / d.nw;
+        const x0 = Math.max(0, Math.floor((bb.x - ox) / sk * f)), x1 = Math.min(d.w, Math.ceil((bb.x + bb.width - ox) / sk * f));
+        const y0 = Math.max(0, Math.floor((bb.y - oy) / sk * f)), y1 = Math.min(d.h, Math.ceil((bb.y + bb.height - oy) / sk * f));
+        let r = 0, g = 0, bl = 0, n = 0;
+        for (let yy = y0; yy < Math.max(y1, y0 + 1); yy++) for (let xx = x0; xx < Math.max(x1, x0 + 1); xx++){
+          const i = (Math.min(yy, d.h - 1) * d.w + Math.min(xx, d.w - 1)) * 4; r += d.d[i]; g += d.d[i + 1]; bl += d.d[i + 2]; n++; }
+        cover = [r / n / 255, g / n / 255, bl / n / 255];
+      }
+    }
+    schaumSchrift.push({ t, fuell, cover });
+  }
+  schaumKontrastMischen();
+}
+function schaumKontrastMischen(){
+  const s = schaumFarbeAnteil / 100, ton = Math.min(1, 2 * s), deck = Math.max(0, 2 * s - 1) * 0.65;
+  for (const e of schaumSchrift){
+    let c = e.fuell;
+    if (e.cover){
+      c = e.cover.map((cb, k) => cb + (schaumWeich(cb, e.fuell[k]) - cb) * ton);
+      c = c.map((v, k) => v + (e.fuell[k] - v) * deck);
+    }
+    const Y = schaumLeuchtdichte(c);
+    e.t.setAttribute('fill', (Y + 0.05) / 0.05 > 1.05 / (Y + 0.05) ? '#000000' : '#ffffff');
+  }
+}
+
 function schaumTakt(){
   const svg = $('schaumbild') && $('schaumbild').querySelector('svg.schaumwaber');
   if (!svg || !svg.pauseAnimations) return;

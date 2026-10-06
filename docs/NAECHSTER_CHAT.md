@@ -7510,3 +7510,10 @@ Umfärbung"; im Vergleich färbte „color" einen roten Schriftzug grün). Nur z
 (`--sk-ton`, `--sk-deck`), kein neues Legen; gemerkt in `mysuno-schaum-farbe`. Titel mit dünnem
 Gegenrand für die Lesbarkeit über Covern. Im Sandkasten bei 0/50/100 % gerendert, Bilder an
 Caspar_D.
+**Schrift im Klangschaum (06.10.):** ohne Rand, 80 % Deckkraft (Caspar_D). Schwarz oder weiß wählt
+`schaumKontrastVorbereiten()`/`schaumKontrastMischen()` nach dem sichtbaren Grund je Titelzeile:
+Mittelwert des Covers im Ausschnitt unter der Schrift (Cover einmal auf ≤ 96 px gelesen), darüber
+soft-light-Stich und Deckung wie am Regler, dann das höhere WCAG-Kontrastverhältnis (Wechsel bei
+L* ≈ 50 statt der festen 58 der Engine; Labskaus-Klaus liegt im Mittel bei L* 54 und wird schwarz).
+Beim Regler nur neu gemischt. Ein Mittelwert bleibt eine Schätzung: auf sehr unruhigen Ausschnitten
+kann auch die bessere Wahl schwer lesbar sein. Sandkasten: 112 von 112 Zeilen erfasst.
