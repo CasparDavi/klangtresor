@@ -8595,8 +8595,20 @@ function groupiePerson(l, u){
 async function groupieZeilen(m, gl){
   if (!schaumLeute){ try { schaumGemeinde = await (await fetch('/api/community', { cache: 'no-store' })).json(); schaumLeute = schaumGemeinde.leute || []; } catch (e) { schaumLeute = []; } }
   const u = groupieUmfeld();
-  return schaumLeute.map(l => { const z = groupiePerson(l, u); z.gruppe = gl.klasse(z); z.w = String(m.wert(z)); return z; }).filter(z => z.id && +z.w > 0);
+  const alle = schaumLeute.map(l => { const z = groupiePerson(l, u); z.gruppe = gl.klasse(z); z.w = String(m.wert(z)); return z; }).filter(z => z.id && +z.w > 0);
+  /* VIELE LEUTE (Tarja, 4000 Personen: nach 800 s noch kein Schaum). Die Rechenzeit waechst etwa mit dem
+     Quadrat der Zellen je Gefaess - gemessen: 360 Zellen 18 s, 681 Zellen 65 s; 3000 waeren grob 20 Minuten fuer
+     ein einziges Areal. Entscheidung Caspar_D (07.10.2026, A): die 400 Aktivsten nach dem gewaehlten Mass
+     einzeln, alle uebrigen je Areal in einer Blase „+N weitere", flaechengenau - ihre Herzen zaehlen mit. */
+  if (alle.length <= GROUPIE_EINZELN) return alle;
+  alle.sort((a, b) => +b.w - +a.w || String(a.id).localeCompare(String(b.id)));
+  const einzeln = alle.slice(0, GROUPIE_EINZELN), sammel = new Map();
+  for (const z of alle.slice(GROUPIE_EINZELN)){ const s = sammel.get(z.gruppe) || { n: 0, w: 0, h: 0, k: 0 }; s.n++; s.w += +z.w; s.h += z.h; s.k += z.k; sammel.set(z.gruppe, s); }
+  for (const [gruppe, s] of sammel) einzeln.push({ gruppe, genre: '', titel: `+${s.n.toLocaleString('de-DE')} weitere`, id: 'weitere\u0000' + gruppe, bild: '',
+    h: s.h, k: s.k, weitere: s.n, w: String(Math.round(s.w * 1000) / 1000) });
+  return einzeln;
 }
+const GROUPIE_EINZELN = 400;
 const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
 
 async function schaumZeichnen(){
@@ -8701,12 +8713,14 @@ async function groupieZeichnen(){
   if (raumJetzt !== 'groupies') return;
   const klassen = new Set(zeilen.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, klassen);
   $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small>' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
-    const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0);
-    return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
+    const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.reduce((s, z) => s + (z.weitere || 1), 0);
+    return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('');
-  fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
-    + (schaumLeute.length > zeilen.length ? `${schaumLeute.length - zeilen.length} Personen haben bei ${m.name} null und fehlen. ` : '')
+  const zusammen = zeilen.reduce((s, z) => s + (z.weitere || 0), 0), gezeigt = zeilen.reduce((s, z) => s + (z.weitere || 1), 0);
+  fuss.textContent = `Groupieschaum: ${gezeigt.toLocaleString('de-DE')} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
+    + (zusammen ? `Einzeln die ${GROUPIE_EINZELN} Aktivsten; ${zusammen.toLocaleString('de-DE')} weitere sind je Areal in einer Blase zusammengefasst – bei so vielen Leuten bräuchte der Schaum sonst viele Minuten. ` : '')
+    + (schaumLeute.length > gezeigt ? `${(schaumLeute.length - gezeigt).toLocaleString('de-DE')} Personen haben bei ${m.name} null und fehlen. ` : '')
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
@@ -8949,6 +8963,8 @@ function groupieSaat(zeilen, W, H, gl){
       pos.set(p.id, [cx + 0.42 * breite * r * Math.cos(a), H / 2 + 0.42 * H * r * Math.sin(a)]); });
     x0 += breite;
   }
+  /* die Sammelblase „weitere" je Areal startet am unteren Rand ihres Streifens (y nach oben) */
+  { let x = 0; for (const [a, leute] of streifen){ const b = W * leute.reduce((s, p) => s + p.b, 0) / gesamt; pos.set('weitere\u0000' + a, [x + b / 2, H * 0.1]); x += b; } }
   return schaumSaatSchluessel(zeilen, ['gruppe'], zeilen.map(z => (pos.get(z.id) || [W / 2, H / 2]).slice()));
 }
 /* DIE UEBRIGEN MASSE IM HINTERGRUND: steht eine Ansicht, legt ein zweiter Worker nacheinander die
@@ -9287,7 +9303,7 @@ function schaumEinsetzenJetzt(f, einblenden){
     bild.onmouseleave = () => rp.setAttribute('visibility', 'hidden');
   }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
-    if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
+    if (f.art === 'person'){ if (!String(p.dataset.id).startsWith('weitere\u0000')) reaktPersonAlleine(p.dataset.id); } else spielenNachId(p.dataset.id); };
   return bereit;
 }
 /* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */

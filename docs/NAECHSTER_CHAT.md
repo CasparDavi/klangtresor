@@ -7898,3 +7898,12 @@ ersten Zeile, nicht vertikal zentriert zwischen zwei Zeilen". Ursache: die Group
 und die Karaoke-Regel `.zeile` (Liedtextzeile, bis 27 px, fett) griff — 26,4 px. Jetzt erbt die Legende Schrift,
 Gewicht, Zeilenhöhe und Farbe; das Quadrat steht oben an der ersten Zeile. Gemessen: 12,5 px in beiden Schäumen,
 Quadrat mittig auf der ersten Zeile. (Lehre: `.zeile` ist als Klassenname schon besetzt.)
+
+**1.0.31 (07.10. nachts): Groupieschaum mit sehr vielen Leuten.** Caspar_D: „bei Tarja dauert es mehr als 800
+Sekunden und wir haben immer noch keinen Groupie-Schaum" — Tarja hat 4000 Personen. Gemessen (gezogen aus der
+echten Verteilung, Startpunkte wie die App): 470 Personen 24 s (Gefäß „nur Herzen" 360 Zellen 18 s), 900 Personen
+101 s (681 Zellen 65 s, 203 Zellen 35 s) — Rechenzeit ~ Quadrat der Zellen je Gefäß; 4000 wären grob 45 min.
+Entscheidung Caspar_D (A): die 400 Aktivsten nach dem gewählten Maß einzeln (`GROUPIE_EINZELN`), die übrigen je
+Areal in einer Blase „+N weitere" (Kennung `weitere\0<Areal>`, flächengenau, Start am unteren Streifenrand,
+Klick ohne Personenspur); Legende und Fußzeile zählen die Menschen darin mit. Sandkasten mit 4000 Personen: 29 s,
+403 Zellen, Legende 2929/999/72.
