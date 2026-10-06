@@ -7560,3 +7560,12 @@ Streifenmitte breit ist (gemessen mit Canvas), sonst gekürzt mit „…" bis 7 
 bleibt die Zelle ganz Avatar. Der Avatar sitzt darunter. Engine-Namen im Groupieschaum aus
 (`labelDepth: -1`); Kopfzeilen (`text.kopf`) nimmt die Kontrastwahl aus. Sandkasten, 150 Personen:
 105 Kopfzeilen. Grenze: an runden Zellköpfen ist der Streifen schmal, lange Namen werden dort klein.
+**Kopfzeilen, zweite Runde (06.10.):** Name 2 Punkte von der Grenze Kopf/Bild; Verzierungen
+generisch ab (Emoji überall, am Rand alles außer Buchstaben/Ziffern — „꧁༺ Tαɾʝα ༻꧂" → „Tαɾʝα";
+Tooltip voll); je Zelle oben oder unten (unten nur bei > 15 % größerer Schrift). Überlappungen
+(„oft überlappen die Namen mit den Nachbarzellen"): Breite an drei Buchstabenhöhen gemessen
+(Großbuchstaben bis Unterlänge), engste zählt, Schriftgröße per Intervallhalbierung, Name auf
+seine Zelle zugeschnitten. **Milchglas statt Schwarz** (Caspar_D: „Abschneiden ist nicht die
+Lösung, lege ein Blur auf den Abschnitt … das Blur-Glas kann etwas schwärzen, damit der Text
+immer weiß sein kann"): Avatar über die ganze Zelle, im Kopf eine Kopie mit `#skglas`
+(Gauss 3, Helligkeit × 0,42). Sandkasten, 150 Personen: 90 Kopfzeilen, Bild an Caspar_D.
