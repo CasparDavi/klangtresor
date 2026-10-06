@@ -7539,3 +7539,10 @@ auf Wort: Ergebnis über die Sitzung hinaus merken (IndexedDB), oder die Engine 
 **Geprüft im Sandkasten** (Kopien von Katalog, Karte, Reaktionen, Liker-Listen): 150 Personen
 gelegt (Avatare, Tooltip „Name · n Herzen, m Kommentare", Maßwahl ausgeblendet, Klick öffnet die
 Personenspur), Umschalten zum Klangschaum aus dem Speicher; die vollen 471 dort nicht abgewartet.
+**Release 1.0.14** (Groupieschaum) veröffentlicht. **Profil der Engine** (Node, Groupieschaum, 30 s):
+47 % `powerCells` (Leistungsdiagramm in der CCVT-Startphase), rund 28 % die dünn besetzten
+Produkte in `pcg`/`applyA` (Levenberg–Marquardt), Auswertung der Jacobi-Matrix ~3 %, Speicher-
+bereinigung 6,5 %. Die gruppierte, dünn besetzte Jacobi-Matrix ist also drin; eine analytische
+brächte hier wenig — die Hebel wären weniger oder billigere Leistungsdiagramme und ein besserer
+Vorkonditionierer. Engine-Arbeit gehört nach Treemapper (Caspar_D). `foamtree.mjs` ist seit dem
+06.10. abends in Treemapper, Prophane und KlangTresor gleich (render/worker in Treemapper eigene).
