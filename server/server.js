@@ -1395,6 +1395,43 @@ function vollAufraeumen() {
   }
 }
 
+/* Laeuft der Server in einem Container (Docker, Podman)? Dann sieht er
+   weder ~/Downloads noch ~/Musik des Rechners, und kein Fenster kann
+   aufgehen - die Seite sagt das, statt es zu behaupten. */
+const IM_CONTAINER = process.env.KLANGTRESOR_CONTAINER === '1'
+  || fs.existsSync('/.dockerenv') || fs.existsSync('/run/.containerenv');
+
+/* Wo der Ordnerbrowser in der Seite anfaengt: Laufwerke unter Windows,
+   sonst die Orte, an denen Platten eingehaengt werden. */
+function ordnerWurzeln() {
+  return process.platform === 'win32'
+    ? 'CDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(b => b + ':\\').filter(w => fs.existsSync(w))
+    : ['/Volumes', '/media/' + (process.env.USER || ''), '/media', '/mnt', '/run/media/' + (process.env.USER || '')]
+        .filter(w => fs.existsSync(w));
+}
+/* Wie viele Eintraege der Ordnerbrowser zeigen wuerde - ohne df und mount,
+   nur zum Entscheiden, ob es ihn ueberhaupt anzubieten lohnt. Im Container
+   sind /media und /mnt leer: dann 0. */
+function ordnerLaufwerkeZahl() {
+  if (process.platform === 'win32') return ordnerWurzeln().length;
+  let n = 0;
+  for (const w of ordnerWurzeln()) {
+    try { n += fs.readdirSync(w, { withFileTypes: true })
+      .filter(e => (e.isDirectory() || e.isSymbolicLink()) && !e.name.startsWith('.')).length; } catch (e) {}
+  }
+  return n;
+}
+
+/* Nur die eigene Seite. Ein Origin-Kopf, der nicht zu diesem Server passt,
+   wird abgewiesen; ohne Kopf geht es durch wie bei den uebrigen Wegen der
+   Seite. Zusammen mit Content-Type application/octet-stream muss eine
+   fremde Seite erst den Preflight bestehen, und den weist OPTIONS ab. */
+function eigeneSeite(req) {
+  const o = req.headers.origin;
+  if (!o) return true;
+  try { return new URL(o).host === req.headers.host; } catch (e) { return false; }
+}
+
 /* Ton, der bei Suno nicht zu bekommen war (Tarja, 07.10.2026: Remixe
    fremder Titel bleiben auf "processing", 25 Stueck pollten jeden Morgen
    eine Viertelstunde). Gemerkt je Titel und Format - aber nicht fuer
@@ -1428,6 +1465,43 @@ function tonAusfallBis(eintrag) {
   return am + tage * TON_AUSFALL_TAG;
 }
 function tonAusfallWartet(eintrag, jetzt) { return jetzt < tonAusfallBis(eintrag); }
+
+/* Eine gepruefte Audiodatei an ihren Platz legen. Gemeinsam fuer das
+   Lesezeichen (POST /api/ton/<id>/<fmt>) und das Ordnerfenster des
+   Browsers (POST /api/ton/datei). Die Kennung im Dateikopf ist vorher
+   geprueft; hier wird geschrieben, nachgeprueft und erst dann umbenannt. */
+function tonAblegen(id, format, bytes, titel) {
+  const ziel = path.join(SONGS, id, 'audio.' + format);
+  if (fs.existsSync(ziel)) return { angenommen: false, grund: 'liegt schon da' };
+  try {
+    fs.mkdirSync(path.dirname(ziel), { recursive: true });
+    /* Erst daneben schreiben, dann pruefen, dann umbenennen. Ein
+       Abbruch mittendrin hinterlaesst so keine halbe audio.mp3, die
+       spaeter als vollstaendig gilt. */
+    const teil = ziel + '.teil';
+    fs.writeFileSync(teil, bytes);
+    const nach = fs.statSync(teil);
+    if (nach.size !== bytes.length || signatur.ausDatei(teil) !== id) {
+      fs.unlinkSync(teil);
+      return { angenommen: false, grund: 'Kopie stimmt nicht' };
+    }
+    fs.renameSync(teil, ziel);
+    /* Bekommen - das Ausfallgedaechtnis vergisst diese Datei. */
+    try {
+      const alle = tonAusfallLesen();
+      if (alle[id] && alle[id][format]) {
+        delete alle[id][format];
+        if (!Object.keys(alle[id]).length) delete alle[id];
+        tonAusfallSchreiben(alle);
+      }
+    } catch (e) {}
+    console.log(`  Ton angenommen: ${titel || id.slice(0, 8)} (${format}, ${(bytes.length / 1048576).toFixed(1)} MB)`);
+    return { angenommen: true, bytes: bytes.length };
+  } catch (e) {
+    return { angenommen: false, grund: String(e.message).slice(0, 120) };
+  }
+}
+const TON_DECKEL = 300 * 1024 * 1024;        /* eine 8-Minuten-WAV wiegt rund 90 MB */
 
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
@@ -2331,6 +2405,44 @@ const server = http.createServer((req, res) => {
     });
   }
 
+  /* DAS ORDNERFENSTER DES BROWSERS (Docker, Handy, Heimnetz - ueberall, wo
+     der Server kein Fenster oeffnen kann). Die Seite liest die Dateien
+     selbst; der Server sieht den Ordner nie.
+     POST /api/ton/kennung?format=mp3|wav   die ersten 64 KB einer Datei:
+          wem gehoert sie, und fehlt sie hier?
+     POST /api/ton/datei?format=mp3|wav     die ganze Datei: ablegen, wenn
+          die Kennung im Kopf einen Titel des Katalogs nennt, der sie braucht.
+     Die Kennung bestimmt bin/suno-signatur.js - dieselbe Pruefung wie beim
+     Einlesen aus einem Ordner und beim Lesezeichen, keine zweite im Browser. */
+  if ((p === '/api/ton/kennung' || p === '/api/ton/datei') && req.method === 'POST') {
+    if (!eigeneSeite(req) || !/^application\/octet-stream/i.test(req.headers['content-type'] || ''))
+      return jsonAntwort(res, { fehler: 'nur von der eigenen Seite' }, 403);
+    const format = String(u.searchParams.get('format') || '').toLowerCase();
+    if (format !== 'mp3' && format !== 'wav') return jsonAntwort(res, { fehler: 'Format mp3 oder wav' }, 400);
+    const nurKopf = p === '/api/ton/kennung';
+    const deckel = nurKopf ? 2 * signatur.FENSTER : TON_DECKEL;
+    const teile = [];
+    let gesamt = 0, abgebrochen = false;
+    req.on('data', (s) => {
+      gesamt += s.length;
+      if (gesamt > deckel) { abgebrochen = true; req.destroy(); return; }
+      teile.push(s);
+    });
+    return req.on('end', () => {
+      if (abgebrochen) return jsonAntwort(res, { angenommen: false, grund: 'zu gross' }, 413);
+      const bytes = Buffer.concat(teile);
+      const id = signatur.ausPuffer(bytes.subarray(0, signatur.FENSTER));
+      const k = katalogHolen();
+      const song = id && k && k.songs ? k.songs[id] : null;
+      const da = id ? fs.existsSync(path.join(SONGS, id, 'audio.' + format)) : false;
+      if (nurKopf) return jsonAntwort(res, { id: id || null, imKatalog: !!song, titel: song ? song.titel || '' : '', da });
+      if (!id) return jsonAntwort(res, { angenommen: false, grund: 'keine Suno-Kennung' });
+      if (!song) return jsonAntwort(res, { angenommen: false, grund: 'Titel nicht im Katalog' });
+      if (bytes.length < 1024) return jsonAntwort(res, { angenommen: false, grund: 'zu klein' });
+      return jsonAntwort(res, tonAblegen(id, format, bytes, song.titel));
+    });
+  }
+
   /* Die Bytes entgegennehmen. Sechs Sperren, dieselbe Strenge wie in
      bin/uebernehmen.js - und eine davon ist die wichtigste: die Datei
      muss SELBST sagen, zu welchem Song sie gehoert. */
@@ -2342,15 +2454,13 @@ const server = http.createServer((req, res) => {
     const song = k && k.songs && k.songs[id];
     if (!song) { res.writeHead(404); return res.end('Song nicht im Katalog'); }
 
-    const ziel = path.join(SONGS, id, 'audio.' + format);
-    if (fs.existsSync(ziel)) return jsonAntwort(res, { angenommen: false, grund: 'liegt schon da' });
+    if (fs.existsSync(path.join(SONGS, id, 'audio.' + format))) return jsonAntwort(res, { angenommen: false, grund: 'liegt schon da' });
 
-    const DECKEL = 300 * 1024 * 1024;        /* eine 8-Minuten-WAV wiegt rund 90 MB */
     const teile = [];
     let gesamt = 0, abgebrochen = false;
     req.on('data', (s) => {
       gesamt += s.length;
-      if (gesamt > DECKEL) { abgebrochen = true; req.destroy(); return; }
+      if (gesamt > TON_DECKEL) { abgebrochen = true; req.destroy(); return; }
       teile.push(s);
     });
     return req.on('end', () => {
@@ -2367,33 +2477,7 @@ const server = http.createServer((req, res) => {
           grund: drin ? `Signatur nennt ${drin.slice(0, 8)}, erwartet ${id.slice(0, 8)}` : 'keine Suno-Signatur' });
       }
 
-      try {
-        fs.mkdirSync(path.dirname(ziel), { recursive: true });
-        /* Erst daneben schreiben, dann pruefen, dann umbenennen. Ein
-           Abbruch mittendrin hinterlaesst so keine halbe audio.mp3, die
-           spaeter als vollstaendig gilt. */
-        const teil = ziel + '.teil';
-        fs.writeFileSync(teil, bytes);
-        const nach = fs.statSync(teil);
-        if (nach.size !== bytes.length || signatur.ausDatei(teil) !== id) {
-          fs.unlinkSync(teil);
-          return jsonAntwort(res, { angenommen: false, grund: 'Kopie stimmt nicht' });
-        }
-        fs.renameSync(teil, ziel);
-        /* Bekommen - das Ausfallgedaechtnis vergisst diese Datei. */
-        try {
-          const alle = tonAusfallLesen();
-          if (alle[id] && alle[id][format]) {
-            delete alle[id][format];
-            if (!Object.keys(alle[id]).length) delete alle[id];
-            tonAusfallSchreiben(alle);
-          }
-        } catch (e) {}
-        console.log(`  Ton angenommen: ${song.titel || id.slice(0, 8)} (${format}, ${(bytes.length / 1048576).toFixed(1)} MB)`);
-        return jsonAntwort(res, { angenommen: true, bytes: bytes.length });
-      } catch (e) {
-        return jsonAntwort(res, { angenommen: false, grund: String(e.message).slice(0, 120) });
-      }
+      return jsonAntwort(res, tonAblegen(id, format, bytes, song.titel));
     });
   }
 
@@ -3186,6 +3270,24 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      Server-Bildschirm nuetzt dem Handy im WLAN nichts, und ein Fremder im
      Netz soll auf diesem Bildschirm keine Fenster aufmachen koennen.
      Caspar_D, 13.09.2026: "ich bestehe auf einem Filechooser". */
+  /* Welchen Weg nimmt die Ordnerwahl? Die Seite fragt einmal beim Laden:
+     kann hier ein Systemfenster aufgehen (selber Rechner, kein Container,
+     Dialogprogramm da), laeuft der Server im Container, sieht er Laufwerke
+     fuer den Ordnerbrowser in der Seite? */
+  if (p === '/api/ordner/kann') {
+    const von = String(req.socket.remoteAddress || '');
+    const lokal = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(von);
+    const werkzeug = require('../bin/ordnerdialog.js').kannFenster();
+    const fenster = lokal && !EINGEFROREN && !IM_CONTAINER && werkzeug;
+    /* Ein Grund nur, wo etwas fehlt - vom Handy aus ist kein Fenster
+       einfach der normale Fall. */
+    const grund = fenster || !lokal ? null
+      : IM_CONTAINER ? 'KlangTresor läuft in einem Docker-Container — dort kann sich kein Fenster öffnen.'
+      : EINGEFROREN ? 'Das Archiv ist eingefroren.'
+      : 'Auf diesem Rechner fehlt ein Programm für das Ordnerfenster (zenity oder kdialog).';
+    return jsonAntwort(res, { fenster, grund, container: IM_CONTAINER, laufwerke: ordnerLaufwerkeZahl() });
+  }
+
   if (p === '/api/ordner/dialog' && req.method === 'POST') {
     const von = String(req.socket.remoteAddress || '');
     const lokal = ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(von);
@@ -3216,10 +3318,7 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     } catch (e) { return ''; } };
     if (!pfad) {
       const laufwerke = [];
-      const wurzeln = process.platform === 'win32'
-        ? 'CDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(b => b + ':\\').filter(w => fs.existsSync(w))
-        : ['/Volumes', '/media/' + (process.env.USER || ''), '/media', '/mnt', '/run/media/' + (process.env.USER || '')]
-            .filter(w => fs.existsSync(w));
+      const wurzeln = ordnerWurzeln();
       for (const w of wurzeln) {
         if (process.platform === 'win32') { laufwerke.push({ name: w, pfad: w, ...frei(w), dateisystem: '' }); continue; }
         let eintraege = []; try { eintraege = fs.readdirSync(w, { withFileTypes: true }); } catch (e) {}
@@ -3464,8 +3563,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     req.on('data', (c) => { roh += c; if (roh.length > 4096) req.destroy(); });
     return req.on('end', () => {
       let ordner = null; try { ordner = JSON.parse(roh || '{}').ordner; } catch (e) {}
-      if (ordner && typeof ordner === 'string' && path.isAbsolute(ordner) && fs.existsSync(ordner))
-        argumente.push('--ordner', ordner);
+      /* Ein genannter Ordner, den der Server nicht sieht, ist ein Fehler -
+         frueher fiel er still weg, und die Seite sagte trotzdem "gemerkt". */
+      if (ordner && !(typeof ordner === 'string' && path.isAbsolute(ordner) && fs.existsSync(ordner)))
+        return jsonAntwort(res, { fehler: 'Diesen Ordner sieht der Server nicht: ' + String(ordner).slice(0, 200) });
+      if (ordner) argumente.push('--ordner', ordner);
       starten();
     });
   }

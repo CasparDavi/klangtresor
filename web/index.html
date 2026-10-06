@@ -4612,15 +4612,16 @@ function tonHinweis(){
     <p>Bilder, Texte und Zahlen hat KlangTresor geholt. Die Audiodateien gibt Suno seit dem
        03.09.2026 nicht mehr über Links heraus. Zwei Wege führen sie herein, und der erste kostet nichts.</p>
     <div class="weg"><b>1 · Was du schon hast.</b>
-      <p>Hast du deine Lieder früher bei Suno heruntergeladen? In deinen <b>Download- und
-         Musikordnern</b> sehe ich von selbst nach. Liegen sie woanders, nenn den Ordner — ich
+      <p>Hast du deine Lieder früher bei Suno heruntergeladen? <span class="ohne-container">In deinen <b>Download- und
+         Musikordnern</b> sehe ich von selbst nach. Liegen sie woanders, nenn den Ordner</span><span class="nur-container"
+         style="display:none">Wähle den Ordner, in dem sie liegen</span> — ich
          erkenne Suno-Dateien am Inhalt, auch umbenannte, auch in Unterordnern, und ordne sie
          deinen Titeln zu. Deine übrige Musik fasse ich nicht an, nichts wird verschoben oder gelöscht.</p>
       <div class="tfk"><button onclick="ordnerWaehlerAuf('tfbrowser','tfordner')">Ordner wählen …</button>
         <span id="tfordner" class="tfs" style="margin:0;align-self:center"></span></div>
       <div id="tfbrowser" class="ordnerbrowser" hidden></div>
       <div class="tfk"><button class="los" onclick="tonEinlesen()">Einlesen</button>
-        <button onclick="tonEinlesen(true)">Nur in Download- und Musikordnern nachsehen</button></div>
+        <button class="ohne-container" onclick="tonEinlesen(true)">Nur in Download- und Musikordnern nachsehen</button></div>
       <div class="tfs" id="tfstand"></div></div>
     <div class="weg"><b>2 · Was dir fehlt.</b>
       <p>Was du nicht hast, schaltest du bei Suno einmal frei (Drei Punkte → Download → „Unlock and
@@ -4629,6 +4630,7 @@ function tonHinweis(){
     <div class="tfk"><button onclick="tonHinweisWeg()">Später</button></div>
   </div>`;
   document.body.appendChild(box);
+  ordnerContainerTexte();
 }
 function tonHinweisWeg(){ try { sessionStorage.setItem('tonhinweis-weg', '1'); } catch (e) {} const b = $('tonfehlt'); if (b) b.remove(); }
 /* DER ORDNERWAEHLER - kein Pfadfeld. Caspar_D, 13.09.2026: "ein DAU
@@ -4636,32 +4638,148 @@ function tonHinweisWeg(){ try { sessionStorage.setItem('tonhinweis-weg', '1'); }
    Ordnern, ich bestehe auf einem Filechooser, der einen Ordner
    auswaehlen kann."
 
-   Zwei Wege, je nachdem, wo die Seite laeuft:
-     - auf demselben Rechner wie der Server: der Ordnerdialog des
-       Systems (POST /api/ordner/dialog) - das Fenster, das jeder kennt
-     - vom Handy oder Tablet aus: der Browser in der Seite ueber
-       /api/ordner (Laufwerke, Unterordner, "diesen nehmen") - derselbe,
-       den der Export fuer den Stick benutzt
-   Das gewaehlte Ergebnis landet als data-pfad an der Anzeige; ein
-   Mensch tippt nie einen Pfad. */
+   Drei Wege, je nachdem, wo Seite und Server laufen:
+     - Seite auf demselben Rechner wie der Server, kein Container: der
+       Ordnerdialog des Systems (POST /api/ordner/dialog) - das Fenster,
+       das jeder kennt. Der Ordner wird gemerkt, der Abgleich sieht dort
+       taeglich nach.
+     - das Ordnerfenster des Browsers (geraetWaehlen): geht ueberall, auch
+       im Docker (Caspar_D, 07.10.2026: dort "passiert einfach nichts") und
+       vom Handy. Gemerkt wird so ein Ordner nicht - der Server sieht ihn nie.
+     - der Ordnerbrowser in der Seite (/api/ordner) fuer die Platten des
+       Rechners mit KlangTresor, vom Handy aus - nur, wenn der Server
+       ueberhaupt Laufwerke sieht (im Container nicht).
+   Ein Server-Pfad landet als data-pfad an der Anzeige, eine Auswahl im
+   Browser in geraetAuswahl; ein Mensch tippt nie einen Pfad. */
 function ordnerWahl(anzeigeId, pfad){
   const a = $(anzeigeId); if (!a) return;
+  delete geraetAuswahl[anzeigeId];
   a.dataset.pfad = pfad || ''; a.textContent = pfad ? pfad : '';
 }
-const seiteIstLokal = () => ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+
+/* WAS GEHT HIER? Einmal beim Laden gefragt (GET /api/ordner/kann). Vorher
+   fragen muss die Seite, weil der Browser sein Ordnerfenster nur direkt
+   auf einen Klick oeffnet, nicht erst nach einer Serverantwort. Solange
+   die Antwort fehlt, gilt der Weg, der ueberall geht: das Fenster des
+   Browsers. */
+let ordnerKann = null;
+fetch('/api/ordner/kann', { cache: 'no-store' }).then(r => r.json())
+  .then(d => { ordnerKann = d; ordnerContainerTexte(); }).catch(() => {});
+/* Im Container sieht der Server die Download- und Musikordner des Rechners
+   nicht - dann behauptet die Seite es auch nicht. */
+function ordnerContainerTexte(){
+  const c = !!(ordnerKann && ordnerKann.container);
+  document.querySelectorAll('.ohne-container').forEach(e => { e.style.display = c ? 'none' : ''; });
+  document.querySelectorAll('.nur-container').forEach(e => { e.style.display = c ? '' : 'none'; });
+}
+
 async function ordnerWaehlerAuf(boxId, anzeigeId){
   const box = $(boxId); if (!box) return;
   if (!box.hidden){ box.hidden = true; return; }
+  const k = ordnerKann || {};
+  /* Kein Systemfenster und nichts zum Durchsuchen (Docker): gleich das
+     Fenster des Browsers - im selben Klick, sonst blockt der Browser es. */
+  if (!k.fenster && !(k.laufwerke > 0)){ geraetWaehlen(anzeigeId); return; }
   box.hidden = false; box.innerHTML = '';
-  if (seiteIstLokal()){
-    box.innerHTML = '<div class="fussnote">Ein Fenster geht auf — wähle den Ordner dort.</div>';
-    let d = null;
-    try { d = await (await fetch('/api/ordner/dialog', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titel: 'Wo liegen deine Suno-Dateien?' }) })).json(); } catch (e) {}
-    if (d && d.pfad){ ordnerWahl(anzeigeId, d.pfad); box.hidden = true; return; }
-    box.innerHTML = '<div class="fussnote">Kein Ordner gewählt. Oder hier in der Seite suchen:</div>';
+  if (!k.fenster) return ordnerWege(box, anzeigeId, k.grund || '');
+  box.innerHTML = '<div class="fussnote">Ein Fenster geht auf — wähle den Ordner dort.</div>';
+  let d = null;
+  try { d = await (await fetch('/api/ordner/dialog', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titel: 'Wo liegen deine Suno-Dateien?' }) })).json(); } catch (e) {}
+  if (d && d.pfad){ ordnerWahl(anzeigeId, d.pfad); box.hidden = true; return; }
+  ordnerWege(box, anzeigeId, d && d.ging === false
+    ? 'Das Fenster ging nicht auf' + (d.grund ? ' (' + d.grund + ')' : '') + '.'
+    : 'Kein Ordner gewählt.');
+}
+/* Die beiden anderen Wege untereinander: das Fenster des Browsers, und -
+   wenn der Server Laufwerke sieht - der Ordnerbrowser in der Seite. */
+function ordnerWege(box, anzeigeId, hinweis){
+  box.innerHTML = '';
+  if (hinweis) box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: hinweis }));
+  const knopf = Object.assign(document.createElement('button'), { className: 'pille an', textContent: 'Von diesem Gerät wählen …' });
+  knopf.onclick = () => { box.hidden = true; geraetWaehlen(anzeigeId); };
+  box.appendChild(knopf);
+  if (ordnerKann && ordnerKann.laufwerke > 0){
+    box.appendChild(Object.assign(document.createElement('div'), { className: 'fussnote', textContent: 'Oder auf dem Rechner mit KlangTresor suchen:' }));
+    ordnerBrowser(box, anzeigeId, '');
   }
-  ordnerBrowser(box, anzeigeId, '');
+}
+
+/* DAS ORDNERFENSTER DES BROWSERS. Die Dateien bleiben, wo sie sind. Von
+   jeder .mp3 und .wav liest die Seite nur den Anfang (64 KB, so viel wie
+   bin/suno-signatur.js braucht) und fragt den Server, zu welchem Titel sie
+   gehoert und ob sie hier fehlt (POST /api/ton/kennung). Erst "Einlesen"
+   schickt die ganzen Dateien, eine nach der anderen (POST /api/ton/datei);
+   der Server prueft die Kennung dort noch einmal. */
+const ORDNER_STAND = { kontordnerfeld: 'kontordnerstand', tfordner: 'tfstand' };
+const geraetAuswahl = {};
+function geraetWaehlen(anzeigeId){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.multiple = true; inp.webkitdirectory = true; inp.style.display = 'none';
+  inp.addEventListener('change', () => { const dateien = [...(inp.files || [])]; inp.remove(); if (dateien.length) geraetPruefen(anzeigeId, dateien); });
+  inp.addEventListener('cancel', () => inp.remove());
+  document.body.appendChild(inp);
+  inp.click();
+}
+async function geraetPruefen(anzeigeId, dateien){
+  const anzeige = $(anzeigeId), stand = $(ORDNER_STAND[anzeigeId]);
+  const ordner = (dateien[0].webkitRelativePath || '').split('/')[0];
+  /* ._-Dateien sind Beifang von macOS auf fremden Platten, keine Musik. */
+  const echt = dateien.filter(f => !f.name.startsWith('._'));
+  const ton = echt.filter(f => /\.(mp3|wav)$/i.test(f.name));
+  const a = { dateien: [], schonDa: 0, nichtImKatalog: 0, ohneKennung: 0, doppelt: 0,
+              m4a: echt.filter(f => /\.m4a$/i.test(f.name)).length, fertig: false };
+  geraetAuswahl[anzeigeId] = a;
+  if (anzeige){ anzeige.dataset.pfad = ''; anzeige.textContent = (ordner ? ordner + ' · ' : '') + 'von diesem Gerät'; }
+  const gesehen = new Set();
+  for (let i = 0; i < ton.length; i++){
+    if (geraetAuswahl[anzeigeId] !== a) return;          /* inzwischen anders gewählt */
+    if (stand) stand.textContent = `Lese ${i + 1}/${ton.length} …`;
+    const datei = ton[i], format = /\.wav$/i.test(datei.name) ? 'wav' : 'mp3';
+    let d = null;
+    try { d = await (await fetch('/api/ton/kennung?format=' + format, { method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' }, body: datei.slice(0, 65536) })).json(); } catch (e) {}
+    if (!d || !d.id){ a.ohneKennung++; continue; }
+    if (!d.imKatalog){ a.nichtImKatalog++; continue; }
+    if (d.da){ a.schonDa++; continue; }
+    const schluessel = d.id + '.' + format;
+    if (gesehen.has(schluessel)){ a.doppelt++; continue; }   /* „Titel (1).mp3" */
+    gesehen.add(schluessel);
+    a.dateien.push({ datei, format, titel: d.titel || datei.name });
+  }
+  a.fertig = true;
+  if (stand) stand.textContent = geraetSatz(a);
+}
+function geraetSatz(a){
+  const n = a.dateien.length, z = (k, ein, viele) => k === 1 ? ein : viele;
+  const liegen = [a.ohneKennung ? `${a.ohneKennung} ohne Suno-Kennung` : '', a.m4a ? `${a.m4a} M4A` : ''].filter(Boolean).join(', ');
+  return (n ? `${n} Datei${z(n, '', 'en')} ${z(n, 'gehört', 'gehören')} zu deinen Titeln und ${z(n, 'fehlt', 'fehlen')} hier — „Einlesen“ übernimmt sie.`
+            : 'Nichts dabei, was zu deinen Titeln gehört und hier fehlt.')
+    + (a.schonDa ? ` ${a.schonDa} ${z(a.schonDa, 'ist', 'sind')} schon da.` : '')
+    + (a.doppelt ? ` ${a.doppelt} doppelt.` : '')
+    + (a.nichtImKatalog ? ` ${a.nichtImKatalog} ${z(a.nichtImKatalog, 'gehört', 'gehören')} zu Titeln, die der Katalog noch nicht kennt.` : '')
+    + (liegen ? ` ${liegen} — nicht angefasst.` : '')
+    + ' Ein Ordner von diesem Gerät wird nicht gemerkt; der tägliche Abgleich sieht dort nicht von selbst nach.';
+}
+async function geraetEinlesen(anzeigeId){
+  const a = geraetAuswahl[anzeigeId], stand = $(ORDNER_STAND[anzeigeId]);
+  if (!a.fertig){ stand.textContent = 'Einen Moment — die Dateien werden noch gelesen.'; return; }
+  if (!a.dateien.length){ stand.textContent = geraetSatz(a); return; }
+  let n = 0, mb = 0; const daneben = [];
+  for (let i = 0; i < a.dateien.length; i++){
+    const e = a.dateien[i];
+    stand.textContent = `Übernehme ${i + 1}/${a.dateien.length} — ${e.titel} (${e.format}, ${(e.datei.size / 1048576).toFixed(0)} MB) …`;
+    let d = null;
+    try { d = await (await fetch('/api/ton/datei?format=' + e.format, { method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' }, body: e.datei })).json(); } catch (x) {}
+    if (d && d.angenommen){ n++; mb += e.datei.size / 1048576; }
+    else daneben.push((d && (d.grund || d.fehler)) || 'keine Antwort');
+  }
+  delete geraetAuswahl[anzeigeId];
+  stand.textContent = (n ? `${n} Datei${n === 1 ? '' : 'en'} übernommen (${mb.toFixed(0)} MB).` : 'Nichts übernommen.')
+    + (daneben.length ? ` ${daneben.length} nicht (${[...new Set(daneben)].slice(0, 3).join(', ')}).` : '')
+    + (n ? ' Die Seite lädt gleich neu.' : '');
+  if (n) setTimeout(() => location.reload(), 2500);
 }
 async function ordnerBrowser(box, anzeigeId, pfad){
   /* Eine Liste je Kasten, die bei jedem Schritt ersetzt wird - ein Hinweis
@@ -4680,6 +4798,7 @@ async function ordnerBrowser(box, anzeigeId, pfad){
       const z = document.createElement('button'); z.className = 'ordnerzeile'; z.innerHTML = `<b>${esc(l.name)}</b>`;
       z.onclick = () => ordnerBrowser(box, anzeigeId, l.pfad); liste.appendChild(z);
     }
+    if (!(d.laufwerke || []).length) k.textContent = 'Der Rechner mit KlangTresor zeigt hier keine Laufwerke.';
     return;
   }
   const kopf = document.createElement('div'); kopf.className = 'ordnerkopf';
@@ -4698,6 +4817,7 @@ async function ordnerBrowser(box, anzeigeId, pfad){
 
 /* Der feste Platz in der Profilkachel: derselbe Weg wie im Overlay. */
 async function ordnerEinlesen(){
+  if (geraetAuswahl.kontordnerfeld) return geraetEinlesen('kontordnerfeld');
   const feld = $('kontordnerfeld'), stand = $('kontordnerstand');
   const ordner = (feld.dataset.pfad || '').trim();
   if (!ordner){ stand.textContent = 'Erst den Ordner nennen.'; return; }
@@ -4714,6 +4834,7 @@ async function ordnerEinlesen(){
   if (n) setTimeout(() => location.reload(), 2500);
 }
 async function tonEinlesen(nurDownloads){
+  if (!nurDownloads && geraetAuswahl.tfordner) return geraetEinlesen('tfordner');
   const stand = $('tfstand'); const feld = $('tfordner');
   const ordner = nurDownloads ? '' : (feld.dataset.pfad || '').trim();
   if (!nurDownloads && !ordner){ stand.textContent = 'Erst den Ordner nennen — oder nur in Download- und Musikordnern nachsehen.'; return; }
@@ -14128,7 +14249,7 @@ async function profilKontingentFuellen(){
          genannte Ordner wird gemerkt; der Morgenlauf sieht fortan dort
          nach. -->
     <details class="kontordner"><summary>Suno-Dateien aus einem weiteren Ordner einlesen</summary>
-      <p class="fussnote">Download- und Musikordner werden ohnehin durchsucht, bei jedem Abgleich. Hier nennst du, was woanders liegt — erkannt wird am Inhalt, auch umbenannt, auch in Unterordnern. Der Ordner wird gemerkt.</p>
+      <p class="fussnote"><span class="ohne-container">Download- und Musikordner werden ohnehin durchsucht, bei jedem Abgleich. Hier nennst du, was woanders liegt</span><span class="nur-container" style="display:none">Hier wählst du den Ordner mit deinen Suno-Dateien</span> — erkannt wird am Inhalt, auch umbenannt, auch in Unterordnern.</p>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px">
         <button class="tbs-mini" onclick="ordnerWaehlerAuf('kontordnerbrowser','kontordnerfeld')">Ordner wählen …</button>
         <span id="kontordnerfeld" class="fussnote" style="margin:0"></span></div>
@@ -14148,6 +14269,7 @@ async function profilKontingentFuellen(){
      und soll die Kachel nicht aufhalten. Caspar_D, 07.09.2026:
      „KlangTresor muss wissen, wo es schauen muss, und das ist nicht sehr
      komfortabel." Also schaut es selbst nach, sobald jemand hinsieht. */
+  ordnerContainerTexte();
   downloadOrdnerZeigen();
 }
 

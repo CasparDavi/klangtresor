@@ -105,6 +105,12 @@ Dein Archiv bleibt trotzdem draußen auf der Platte (`library/`) — den Contain
 kannst du wegwerfen und neu bauen, die Musik bleibt. Und er startet ab dann mit
 dem Rechner von selbst wieder.
 
+Eins sieht der Container nicht: die Ordner deines Rechners. Liegen deine
+Suno-Dateien schon irgendwo, öffnet „Ordner wählen …“ darum das Ordnerfenster
+deines Browsers — die Seite erkennt die Dateien am Inhalt und übernimmt, was
+fehlt. Einen so gewählten Ordner merkt sich KlangTresor nicht; liegt dort später
+Neues, wählst du ihn noch einmal.
+
 Gebraucht wird nur Docker — und welches das richtige ist, hängt vom System ab.
 **Das Skript sagt es dir**, wenn es fehlt: auf dem Mac die Fassung für deinen
 Prozessor (Apple Silicon oder Intel), unter Windows erst WSL 2 und dann Docker

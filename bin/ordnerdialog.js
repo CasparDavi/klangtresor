@@ -144,4 +144,18 @@ function ordnerWaehlenNebenher(vorgabe, titel) {
   });
 }
 
-module.exports = { ordnerWaehlen, ordnerWaehlenNebenher };
+/* Kann hier ueberhaupt ein Fenster aufgehen? Fuer die Seite, die das VOR
+   dem Klick wissen muss (GET /api/ordner/kann): der Browser oeffnet sein
+   eigenes Ordnerfenster nur direkt auf einen Klick, nicht erst nach einer
+   Serverantwort. Einmal gefragt, dann gemerkt - `which` kostet einen
+   Prozess. Unter Linux braucht es ausserdem einen Bildschirm. */
+let _kannFenster = null;
+function kannFenster() {
+  if (_kannFenster === null) {
+    if (process.platform === 'darwin' || process.platform === 'win32') _kannFenster = true;
+    else _kannFenster = !!(process.env.DISPLAY || process.env.WAYLAND_DISPLAY) && !!(da('zenity') || da('kdialog'));
+  }
+  return _kannFenster;
+}
+
+module.exports = { ordnerWaehlen, ordnerWaehlenNebenher, kannFenster };
