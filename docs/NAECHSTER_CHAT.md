@@ -7965,3 +7965,37 @@ plus A (Zellen je Gefäß). Erst Skizze der Rohbau-Ebene.
 
 **Server:** nach dem Neustart auf Jörgs Wort gestartet: `nohup node server/server.js` (ohne starten.js, damit kein
 zweites Fenster aufgeht), Log `/Volumes/Extreme_SSD/Entwicklung/_werkstatt_plakat/server-8788.log`.
+
+## 56. 07.10.2026 nachts: Tarjas PR #5 übernommen (1.0.32), nächste Baustelle Ordnerwahl im Docker
+
+**PR #5 (Tarja, myinqi)** gemergt mit zwei Korrektur-Commits (6f66290, 9a40a88), Release v1.0.32:
+- Beobachter: Notbremse 400 Seiten statt 60 (= 1200 Personen, still abgeschnitten); Zeile `geholt/laut Suno`;
+  kürzer als Sunos Zahl ist eine Lücke → orange, nichts als „weg“ gewertet. `beobachterAblegen`: war die alte
+  Liste unvollständig, sind Neue *nachgetragen* (kein „dazu“, kein `seit`) — sonst hätte Tarjas erster voller
+  Lauf ~1800 langjährige Beobachter als neu gemeldet.
+- Ton holen: Fehlerstatus sofort weiter, pollen 6 × 1 s, 15 s je Anfrage. `library/ton-ausfall.json` zählt
+  Versuche je Titel/Format, nächster Versuch nach 1, 2, 4, 8, 16, dann alle 30 Tage (`tonAusfallWartet`),
+  angenommener Ton löscht den Eintrag. 401/429 beenden den Lauf ohne Eintrag, Netzfehler werden nicht gemerkt.
+  Tarjas pauschaler is_remix-Ausschluss ist raus (alle 154 Remixe im Bestand liegen mit WAV/MP3 da); gesperrt
+  bleibt nur, was Suno selbst sperrt (`download_disabled_reason`). `/api/ton/fehlt` liefert `wartet` und
+  `gesperrt`, die Zeile nennt beides statt „alle Dateien sind da“.
+- Geprüft: Sandkasten (5-Titel-Katalog, Port 18899) zehn Server-Fälle, Ladeschleife gegen nachgestelltes Suno,
+  Durchsicht mit Prüfagenten. Liegen gelassen (Absicht/selten): Suno-5xx gibt einen Tag Pause; Entfolgen
+  während des Blätterns kann eine Person überspringen, obwohl die Zahl stimmt (alt, selten).
+- **Server-Falle:** Ein ohne `bin/starten.js` gestarteter Server (`nohup node server/server.js`) stirbt bei
+  einer Änderung an server.js — er beendet sich mit Code 75, und nur starten.js startet neu. Nach dem Merge
+  von Hand neu gestartet.
+
+**Nächste Baustelle (beschlossen, Caspar_D: „B mit C"): Ordner wählen im Docker.** Im Profil („Suno-Dateien
+aus einem weiteren Ordner einlesen", index.html ~14130) und im Ton-Hinweis (`tonHinweis`, ~4619) ruft
+`ordnerWaehlerAuf` (~4652) `POST /api/ordner/dialog` (server.js ~3089). Im Docker: 403, weil die Anfrage vom
+Docker-Netz kommt und nicht von 127.0.0.1; außerdem gibt es dort kein Dialogprogramm. Die Seite verschluckt
+Status/`grund`/`ging`, der Ordnerbrowser listet die (leeren) Laufwerke des Containers → „es passiert nichts".
+- **B:** Wo der Systemdialog nicht geht, öffnet der Browser seinen Ordnerdialog (`<input webkitdirectory>` /
+  `showDirectoryPicker`); die Seite liest je Datei nur den Anfang (Suno-Signatur), schickt nur, was im Archiv
+  fehlt, an einen neuen same-origin-Weg (Signatur bestimmt die id; Vorbild `POST /api/ton/<id>/<fmt>`).
+  Auf dem Mac bleibt der Systemdialog mit gemerktem Ordner.
+- **C:** ehrliche Meldungen: Status/Grund lesen; leerer Ordnerbrowser sagt, warum; `POST /api/downloads`
+  meldet einen nicht vorhandenen Ordner statt ihn still fallen zu lassen (server.js ~3367, „Ordner ist
+  gemerkt" lügt sonst); „Download- und Musikordner werden ohnehin durchsucht" nicht im Container behaupten.
+- Nebenbefund: `/api/ordner` listet Verzeichnisnamen für jeden im Heimnetz (nur lesend) — notiert.
