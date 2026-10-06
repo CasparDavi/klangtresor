@@ -2429,8 +2429,13 @@ const server = http.createServer((req, res) => {
     const k = katalogHolen();
     const eigene = new Set(Object.keys((k && k.songs) || {}));
     const auswaerts = [];
+    /* DER EIGENE HANDLE IST KEINE PERSON DER GEMEINSCHAFT (Caspar_D, 06.10.2026: „die Selbstzählung
+       sollte auch im KlangTresor bereinigt sein"). Herzen filterten ihn schon (Gegenleser
+       09.09.2026), Kommentare und Antworten nicht: im eigenen Archiv stand man selbst mit 14
+       Kommentaren und 295 Antworten unter den Leuten - im Profil und im Groupieschaum. Jetzt
+       gilt es hier, wo jede Person angelegt wird, fuer alle Wege. */
     const wer = (h, name, avatar) => {
-      if (!h) return null;
+      if (!h || String(h).toLowerCase() === eigenerHandle) return null;
       if (!leute.has(h)) leute.set(h, { handle: h, name: name || h, avatar: avatar || '',
                                         kommentare: [], antworten: [], likes: [], zuletzt: '' });
       const l = leute.get(h);

@@ -7546,3 +7546,10 @@ bereinigung 6,5 %. Die gruppierte, dünn besetzte Jacobi-Matrix ist also drin; e
 brächte hier wenig — die Hebel wären weniger oder billigere Leistungsdiagramme und ein besserer
 Vorkonditionierer. Engine-Arbeit gehört nach Treemapper (Caspar_D). `foamtree.mjs` ist seit dem
 06.10. abends in Treemapper, Prophane und KlangTresor gleich (render/worker in Treemapper eigene).
+**Selbstzählung bereinigt (06.10., server.js):** Caspar_D: „die Selbstzählung sollte auch im
+KlangTresor bereinigt sein". `/api/community` filterte den eigenen Handle nur bei Herzen; bei
+Kommentaren und Antworten stand man selbst unter den Leuten (14 Kommentare, 295 Antworten — im
+Profil, in der Gemeinschaft, im Groupieschaum). Jetzt in `wer()`, wo jede Person angelegt wird.
+Sandkasten vorher/nachher: 471 → 470 Personen, „nur Kommentare" 9 → 8, Kommentare+Antworten
+862 → 553, Herzen unverändert 2097. Eingesetzt atomar; Neustart-Wache: PID 48332 → 50016, `/` 200,
+`/api/community` ohne eigenen Handle.
