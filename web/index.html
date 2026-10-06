@@ -152,6 +152,13 @@ h1{
 #schaumbild svg.schaumrahmen{pointer-events:none}
 #schaumbild{transition:opacity .25s}
 #schaumbild svg{transition:opacity .3s}
+/* Morph: nur die Bilder blenden aus und wieder ein, die Zellen behalten ihre Farbe; langsam (Caspar_D,
+   06.10.2026: „blende die Bilder langsamer weg und wieder ein"). Die Blende gilt nur waehrend eines Morphs
+   (.blende) - sonst folgte auch der Farbregler mit 0,9 s Verzug. */
+#schaumbild svg.blende image,#schaumbild svg.blende text,#schaumbild svg.blende rect.rauch,#schaumbild svg.blende .skt{transition:opacity .9s}
+#schaumbild svg.blende path[data-id]{transition:fill-opacity .9s}
+#schaumbild svg.ohnebilder image,#schaumbild svg.ohnebilder text,#schaumbild svg.ohnebilder rect.rauch,#schaumbild svg.ohnebilder .skt{opacity:0}
+#schaumbild svg.ohnebilder path[data-id]{fill-opacity:1}
 .farbwahl{position:relative;margin-top:4px}
 .farbwahl .fw-knopf,.farbwahl .fw-wahl{display:flex;align-items:center;gap:6px;width:100%;font:inherit;font-size:13px;color:var(--text);background:var(--flaeche2);border:1px solid var(--rand);border-radius:8px;padding:5px 8px;cursor:pointer;text-align:left}
 .farbwahl i{width:14px;height:14px;border-radius:3px;flex:0 0 14px}
@@ -8976,7 +8983,14 @@ function schaumEinsetzen(f){
   schaumEinsetzenJetzt(f);
 }
 async function schaumMorph(bild, alt, neu, lauf){
-  bild.querySelectorAll('svg').forEach(s => { s.style.opacity = '0'; });          /* die Bilder blenden weg */
+  /* Nur die Bilder blenden weg (Caspar_D, 06.10.2026: „die Abblende gegen Schwarz am Anfang des Morphs
+     ist doof, das bringt Unruhe, blende nur die Bilder aus"): die Zellen behalten ihre Farbe und decken
+     voll, Titel, Glas und Farbstich gehen mit den Bildern; das Wabern und der Auswahlrahmen ruhen. Am
+     Ende umgekehrt: das neue Bild steht in vollen Farben unter dem Morph, dann kommen die Bilder. */
+  const altBild = bild.querySelector('svg:not(.schaumrahmen):not(.schaumwaber):not(.schaummorph)');
+  if (altBild) altBild.classList.add('blende', 'ohnebilder');
+  bild.querySelectorAll('svg.schaumwaber, svg.schaumrahmen').forEach(s => { s.style.opacity = '0'; });
+  const AUSBLENDEN = 900, beginn = performance.now();                              /* wie .blende im Stylesheet */
   /* Der Plan (je Gefaess die Druecke an den Enden und an vier Stuetzbildern, am Klangschaum rund
      0,3 s) entsteht im Worker, waehrend die Bilder ausblenden; die Zwischenbilder (je ein paar ms)
      zeichnet die Seite selbst. */
@@ -8991,6 +9005,9 @@ async function schaumMorph(bild, alt, neu, lauf){
     });
   }
   catch (e){ console.log('Klangschaum: Morph', e); if (lauf === schaumMorphLauf) schaumEinsetzenJetzt(neu, true); return; }
+  /* erst wenn die Bilder ganz weg sind, beginnt das Netz zu gleiten */
+  const rest = AUSBLENDEN - (performance.now() - beginn);
+  if (rest > 0) await new Promise(r => setTimeout(r, rest));
   if (lauf !== schaumMorphLauf) return;
   const NS = 'http://www.w3.org/2000/svg', m = document.createElementNS(NS, 'svg');
   m.setAttribute('viewBox', `0 0 ${neu.W} ${neu.H}`); m.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -9035,7 +9052,8 @@ function schaumEinsetzenJetzt(f, einblenden){
   schaumBilderSetzen(bild);
   let bereit = Promise.resolve();
   if (einblenden){ const s = bild.querySelector('svg');
-    if (s){ s.style.opacity = '0'; bereit = schaumBilderBereit(bild).then(() => new Promise(r => schaumGleich(() => { s.style.opacity = ''; r(); }))); } }
+    if (s){ s.classList.add('blende', 'ohnebilder');
+      bereit = schaumBilderBereit(bild).then(() => new Promise(r => schaumGleich(() => { s.classList.remove('ohnebilder'); setTimeout(() => s.classList.remove('blende'), 1000); r(); }))); } }
   setTimeout(schaumVorrechnen, 1500);
   const svg = bild.querySelector('svg');
   let laeuft = null;

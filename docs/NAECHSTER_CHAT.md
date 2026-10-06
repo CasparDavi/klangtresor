@@ -7802,3 +7802,10 @@ vorher an einer Stichprobe ansehen.
 Geschmack **relativ zur Gruppengröße** (Reaktionen ÷ Titelzahl der Gruppe), Gleichstand grau „gemischt".
 Nebenbefund Agent: `/api/community` nimmt je Kommentar-ID die erste Zeile (gesehenKomm), der Kommentar
 dort sagt „jüngster Stand" — betrifft nur das likes-Feld von 34 Kommentaren.
+
+**Nachtrag 1.0.23 (06.10. Nacht):** Caspar_D: „die Abblende gegen Schwarz am Anfang des Morphs ist doof,
+das bringt Unruhe, blende nur die Bilder aus" und „blende die Bilder langsamer weg und wieder ein". Jetzt
+gehen nur Bilder, Titel, Glas und Farbstich (Klasse `ohnebilder`), die Zellen decken währenddessen voll;
+das Netz gleitet erst, wenn die Bilder ganz weg sind; am Ende steht das neue Bild in vollen Farben unter
+dem Morph, dann kommen die Bilder. Blende 0,9 s, nur während eines Morphs (Klasse `blende`) — sonst
+folgte auch der Farbregler mit Verzug.
