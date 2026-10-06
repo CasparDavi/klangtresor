@@ -1861,6 +1861,13 @@
       const TON_POLLEN_MAX = 6;         /* echte WAV ist in 2–5 s ready (WAV-PROTOKOLL) */
       const TON_POLLEN_PAUSE = 1000;
       const TON_AUS = new Set(['error', 'not_available', 'forbidden', 'failed', 'denied']);
+      /* Der Server merkt den Fehlschlag und stellt die Datei erst nach
+         1, 2, 4 … 30 Tagen wieder an (tonAusfallWartet). Nicht gemerkt
+         wird, was nichts ueber den Titel sagt: 401 (Token abgelaufen,
+         WAV-PROTOKOLL), 429 (Suno drosselt), ein Netzfehler. Bei 401
+         und 429 wuerde auch jeder weitere Titel scheitern - dann endet
+         der Lauf, der Rest kommt beim naechsten. */
+      let halt = null;
       const tonMerkenAusfall = (id, format, grund) => {
         fetch(DAHEIM + '/api/ton/ausfall', { method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -1888,14 +1895,19 @@
              Titel bleiben oft ewig auf processing ohne URL; früher
              10×3 s = 30 s je Datei, 25 Stück eine Viertelstunde.
              Fehlerstatus sofort abbrechen, pollen höchstens 6×1 s. */
-          let adresse = null, grund = null;
+          let adresse = null, grund = null, merken = true;
           for (let runde = 0; runde < TON_POLLEN_MAX && !adresse; runde++){
             let r;
             try {
               r = await tonFetch(`${API}/api/download/clip/${auf.id}?format=${auf.format}`, { headers: await kopf() });
             } catch (x) {
-              grund = (x && x.name === 'AbortError') ? 'zeit' : (x && x.message) || 'netz';
+              if (x && x.name === 'AbortError') grund = 'zeit';
+              else { grund = 'netz'; merken = false; }
               break;
+            }
+            if (r.status === 401 || r.status === 429){
+              halt = r.status === 401 ? 'Token abgelaufen' : 'Suno drosselt';
+              merken = false; break;
             }
             if (!r.ok){ grund = 'HTTP ' + r.status; break; }
             const d = await r.json().catch(() => ({}));
@@ -1905,7 +1917,8 @@
             if (runde < TON_POLLEN_MAX - 1) await new Promise(r2 => setTimeout(r2, TON_POLLEN_PAUSE));
             else grund = st || 'kein_link';
           }
-          if (!adresse){ daneben++; tonMerkenAusfall(auf.id, auf.format, grund); continue; }
+          if (halt) break;
+          if (!adresse){ daneben++; if (merken) tonMerkenAusfall(auf.id, auf.format, grund); continue; }
 
           /* Die signierte Adresse OHNE Authorization laden - mit Kopf
              antwortet S3 mit 400. */
@@ -1928,10 +1941,11 @@
       else
         zeileTon.textContent = `Ton holen — ${geholt} Datei${geholt===1?'':'en'} (${mb} MB)`
           + (daneben ? `, ${daneben} nicht bekommen` : '')
+          + (halt ? ` — abgebrochen (${halt}), der Rest kommt beim nächsten Lauf` : '')
           + (zuViel ? `, ${zuViel} bleiben für morgen (${DECKEL_TON} je Lauf)` : '')
           + (Object.keys(gelernt).length ? ` · Freischaltstand für ${Object.keys(gelernt).length} Titel gemerkt` : '')
           + (restFragen ? `, ${restFragen} Titel morgen` : '');
-      zeileTon.style.color = daneben ? '#d29922' : '#16be5c';
+      zeileTon.style.color = halt ? '#f97b14' : daneben ? '#d29922' : '#16be5c';
     }
   }
 

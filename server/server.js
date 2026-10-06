@@ -1390,6 +1390,37 @@ function vollAufraeumen() {
   }
 }
 
+/* Ton, der bei Suno nicht zu bekommen war (Tarja, 07.10.2026: Remixe
+   fremder Titel bleiben auf "processing", 25 Stueck pollten jeden Morgen
+   eine Viertelstunde). Gemerkt je Titel und Format - aber nicht fuer
+   immer: Suno kann eine Datei spaeter doch herausgeben, und ein
+   Zeitueberlauf ist kein Urteil ueber den Titel. Der naechste Versuch
+   kommt nach 1, 2, 4, 8, 16 Tagen, danach alle 30. Das rechnet die
+   Software; kein Regler, kein Handgriff in library/. Ein angenommener
+   Ton loescht seinen Eintrag. */
+const TON_AUSFALL = path.join(LIB, 'ton-ausfall.json');
+const TON_AUSFALL_TAG = 24 * 3600 * 1000;
+function tonAusfallLesen() {
+  try {
+    const d = JSON.parse(fs.readFileSync(TON_AUSFALL, 'utf8'));
+    return d && typeof d === 'object' && !Array.isArray(d) ? d : {};
+  } catch (e) { return {}; }
+}
+function tonAusfallSchreiben(alle) {
+  fs.mkdirSync(LIB, { recursive: true });
+  fs.writeFileSync(TON_AUSFALL, JSON.stringify(alle, null, 1));
+}
+/* Wartet dieser Eintrag noch? Ohne lesbares Datum: nein, dann wird
+   wieder versucht - lieber einmal zu oft gefragt als nie wieder. */
+function tonAusfallWartet(eintrag, jetzt) {
+  if (!eintrag || typeof eintrag !== 'object') return false;
+  const am = Date.parse(eintrag.am);
+  if (!Number.isFinite(am)) return false;
+  const versuche = Math.max(1, Math.floor(Number(eintrag.versuche)) || 1);
+  const tage = Math.min(30, 2 ** Math.min(versuche - 1, 5));
+  return jetzt < am + tage * TON_AUSFALL_TAG;
+}
+
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = decodeURIComponent(u.pathname);
@@ -2183,25 +2214,25 @@ const server = http.createServer((req, res) => {
 
   /* Was fehlt? Das Lesezeichen fragt zuerst, damit es nur das holt, was
      wirklich gebraucht wird - und nur, was freigeschaltet ist. */
-  const TON_AUSFALL = path.join(LIB, 'ton-ausfall.json');
-  function tonAusfallLesen() {
-    try { return JSON.parse(fs.readFileSync(TON_AUSFALL, 'utf8')); } catch (e) { return {}; }
-  }
-
   if (p === '/api/ton/fehlt') {
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
-    const ausfall = tonAusfallLesen();
+    const ausfall = tonAusfallLesen(), jetzt = Date.now();
     const fehlt = [], unklar = [];
     for (const s of Object.values(k.songs || {})) {
       if (!s || !s.id || s.fremd || s.imPapierkorb) continue;
-      /* Remix-Contest und is_remix: Suno gibt den Ton nicht heraus.
-         Auch ein Unlock aendert das nicht - pollen waere nur Warten. */
-      if (s.freischaltSperre || s.istRemix) continue;
+      /* Suno sagt selbst, dass der Download gesperrt ist
+         (download_disabled_reason, im Bestand nur 'remix_contest'). Ein
+         Unlock aendert daran nichts - pollen waere nur Warten.
+         is_remix allein sagt dagegen nichts ueber den Download: im
+         Bestand des Entwicklers liegen alle 154 Remixe mit WAV und MP3.
+         Was davon bei Suno trotzdem nicht zu bekommen ist, faengt das
+         Ausfallgedaechtnis (tonAusfallWartet). */
+      if (s.freischaltSperre) continue;
       const d = path.join(SONGS, s.id);
       const tot = ausfall[s.id] || {};
-      const ohneMp3 = !fs.existsSync(path.join(d, 'audio.mp3')) && !tot.mp3;
-      const ohneWav = !fs.existsSync(path.join(d, 'audio.wav')) && !tot.wav;
+      const ohneMp3 = !fs.existsSync(path.join(d, 'audio.mp3')) && !tonAusfallWartet(tot.mp3, jetzt);
+      const ohneWav = !fs.existsSync(path.join(d, 'audio.wav')) && !tonAusfallWartet(tot.wav, jetzt);
       if (!ohneMp3 && !ohneWav) continue;
       const eintrag = { id: s.id, titel: s.titel || '', mp3: !ohneMp3, wav: !ohneWav };
       /* Freigeschaltet: holen. Unbekannt: erst bei Suno nachsehen, das
@@ -2215,7 +2246,8 @@ const server = http.createServer((req, res) => {
   }
 
   /* Download ging nicht (Remix fremder Titel, not_available, Timeout).
-     Naechster Lauf soll dieselben 25 nicht wieder 12 Minuten pollen. */
+     Naechster Lauf soll dieselben 25 nicht wieder 12 Minuten pollen -
+     aber nach der Wartezeit (tonAusfallWartet) wird wieder gefragt. */
   if (p === '/api/ton/ausfall' && req.method === 'POST') {
     if (!vonSuno) { res.writeHead(403); return res.end(); }
     let roh = '';
@@ -2230,14 +2262,15 @@ const server = http.createServer((req, res) => {
         res.writeHead(400); return res.end();
       }
       const alt = tonAusfallLesen();
-      const ein = Object.assign({}, alt[id] || {});
-      ein[format] = { grund: String(neu.grund || 'kein_link').slice(0, 80), am: new Date().toISOString() };
+      const ein = Object.assign({}, alt[id] && typeof alt[id] === 'object' ? alt[id] : {});
+      const vorher = ein[format] && typeof ein[format] === 'object' ? ein[format] : {};
+      /* Eintrag ohne Zaehler (erste Fassung vom 07.10.) gilt als ein Versuch. */
+      const bisher = ein[format] ? Math.max(1, Math.floor(Number(vorher.versuche)) || 1) : 0;
+      const versuche = bisher + 1;
+      ein[format] = { grund: String(neu.grund || 'kein_link').slice(0, 80), am: new Date().toISOString(), versuche };
       alt[id] = ein;
-      try {
-        fs.mkdirSync(LIB, { recursive: true });
-        fs.writeFileSync(TON_AUSFALL, JSON.stringify(alt, null, 1));
-      } catch (e) { res.writeHead(500); return res.end(); }
-      return jsonAntwort(res, { gemerkt: true });
+      try { tonAusfallSchreiben(alt); } catch (e) { res.writeHead(500); return res.end(); }
+      return jsonAntwort(res, { gemerkt: true, versuche });
     });
   }
 
@@ -2326,6 +2359,15 @@ const server = http.createServer((req, res) => {
           return jsonAntwort(res, { angenommen: false, grund: 'Kopie stimmt nicht' });
         }
         fs.renameSync(teil, ziel);
+        /* Bekommen - das Ausfallgedaechtnis vergisst diese Datei. */
+        try {
+          const alle = tonAusfallLesen();
+          if (alle[id] && alle[id][format]) {
+            delete alle[id][format];
+            if (!Object.keys(alle[id]).length) delete alle[id];
+            tonAusfallSchreiben(alle);
+          }
+        } catch (e) {}
         console.log(`  Ton angenommen: ${song.titel || id.slice(0, 8)} (${format}, ${(bytes.length / 1048576).toFixed(1)} MB)`);
         return jsonAntwort(res, { angenommen: true, bytes: bytes.length });
       } catch (e) {
