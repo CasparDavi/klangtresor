@@ -155,9 +155,10 @@ h1{
 /* Morph: nur die Bilder blenden aus und wieder ein, die Zellen behalten ihre Farbe; langsam (Caspar_D,
    06.10.2026: „blende die Bilder langsamer weg und wieder ein"). Die Blende gilt nur waehrend eines Morphs
    (.blende) - sonst folgte auch der Farbregler mit 0,9 s Verzug. */
-#schaumbild svg.blende image,#schaumbild svg.blende text,#schaumbild svg.blende rect.rauch,#schaumbild svg.blende .skt{transition:opacity .9s}
+#schaumbild svg.blende image,#schaumbild svg.blende text,#schaumbild svg.blende rect.rauch,#schaumbild svg.blende .skt,#schaumbild svg.blende .kissen{transition:opacity .9s}
 #schaumbild svg.blende path[data-id]{transition:fill-opacity .9s}
-#schaumbild svg.ohnebilder image,#schaumbild svg.ohnebilder text,#schaumbild svg.ohnebilder rect.rauch,#schaumbild svg.ohnebilder .skt{opacity:0}
+#schaumbild svg.ohnebilder image,#schaumbild svg.ohnebilder text,#schaumbild svg.ohnebilder rect.rauch,#schaumbild svg.ohnebilder .skt,#schaumbild svg.ohnebilder .kissen{opacity:0}
+#schaumbild .kissen{mix-blend-mode:soft-light}
 #schaumbild svg.ohnebilder path[data-id]{fill-opacity:1}
 .farbwahl{position:relative;margin-top:4px}
 .farbwahl .fw-knopf,.farbwahl .fw-wahl{display:flex;align-items:center;gap:6px;width:100%;font:inherit;font-size:13px;color:var(--text);background:var(--flaeche2);border:1px solid var(--rand);border-radius:8px;padding:5px 8px;cursor:pointer;text-align:left}
@@ -8245,19 +8246,25 @@ function schaumMasse(){
   const vier = seit && seit > new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10)
     ? 'seit ' + seit.slice(8, 10) + '.' + seit.slice(5, 7) + '.' : 'letzte 4 Wochen';
   return [
-    { id: 'abrufe', name: 'Abrufe', wert: s => s.plays || 0, text: n => schaumZahl(n) + ' Abrufe', ernte: true },
-    { id: 'herzen', name: 'Herzen', wert: s => s.likes || 0, text: n => schaumZahl(n) + ' Herzen', ernte: true },
-    { id: 'kommentare', name: 'Kommentare', wert: s => s.kommentare || 0, text: n => schaumZahl(n) + ' Kommentare', ernte: true },
+    /* Je Mass ein Erklaertext von ein, zwei Saetzen; angezeigt wird der des gewaehlten (Caspar_D, 06.10.2026:
+       „ein kurzer Erklärtext, was die verschiedenen Größen bedeuten, wäre schön, einfach vom aktuellen in
+       einem oder zwei Sätzen"). */
+    { id: 'abrufe', name: 'Abrufe', wert: s => s.plays || 0, text: n => schaumZahl(n) + ' Abrufe', ernte: true,
+      was: 'Jeder Titel so groß, wie oft er bei Suno abgerufen wurde.' },
+    { id: 'herzen', name: 'Herzen', wert: s => s.likes || 0, text: n => schaumZahl(n) + ' Herzen', ernte: true,
+      was: 'Jeder Titel so groß wie die Herzen, die er bekommen hat; Titel ohne Herz fehlen.' },
+    { id: 'kommentare', name: 'Kommentare', wert: s => s.kommentare || 0, text: n => schaumZahl(n) + ' Kommentare', ernte: true,
+      was: 'Jeder Titel so groß wie die Zahl seiner Kommentare; Titel ohne Kommentar fehlen.' },
     { id: 'resonanz', name: 'Resonanz', wert: s => schaumResonanz(s), text: n => schaumZahl(n) + ' Punkte', ernte: true,
-      was: 'Abrufe + 2 × Herzen + 3 × Kommentare — dieselben Gewichte wie „Meiste Bewegung".' },
+      was: 'Abrufe, Herzen und Kommentare zusammen: Abrufe + 2 × Herzen + 3 × Kommentare – dieselben Gewichte wie „Meiste Bewegung".' },
     { id: 'woche', name: 'Bewegung, letzte Woche', wert: s => schaumResonanz(s.bewegung), text: n => '+' + schaumZahl(n) + ' Punkte', ernte: true,
-      was: 'Zuwachs an Resonanz in den letzten sieben Tagen — wie „Meiste Bewegung".' },
+      was: 'Wie viel Resonanz ein Titel in den letzten sieben Tagen dazugewonnen hat – wie „Meiste Bewegung". Titel ohne Zuwachs fehlen.' },
     { id: 'vierwochen', name: 'Bewegung, ' + vier, wert: s => schaumResonanz(s.bewegung28), text: n => '+' + schaumZahl(n) + ' Punkte', ernte: true,
-      was: 'Zuwachs an Resonanz, ' + vier + '.' },
-    { id: 'laenge', name: 'Titellänge', wert: s => s.dauer || 0, text: schaumMin },
+      was: 'Wie viel Resonanz ein Titel ' + vier + ' dazugewonnen hat. Titel ohne Zuwachs fehlen.' },
+    { id: 'laenge', name: 'Titellänge', wert: s => s.dauer || 0, text: schaumMin, was: 'Jeder Titel so groß, wie lange er spielt.' },
     { id: 'hoerzeit', name: 'Hörzeit (Schätzung)', wert: s => (s.plays || 0) * (s.dauer || 0), text: schaumStd, ernte: true,
       was: 'Abrufe × Titellänge. Eine Schätzung: jeder Abruf zählt, als wäre er ganz gehört worden.' },
-    { id: 'lyrics', name: 'Lyricslänge', wert: s => s.lyricsWorte || 0, text: n => schaumZahl(n) + ' Wörter' },
+    { id: 'lyrics', name: 'Lyricslänge', wert: s => s.lyricsWorte || 0, text: n => schaumZahl(n) + ' Wörter', was: 'Jeder Titel so groß, wie viele Wörter sein Liedtext hat; Instrumentals fehlen.' },
     { id: 'anzahl', name: 'Anzahl', wert: () => 1, text: n => schaumZahl(n) + ' Titel', was: 'Jeder Titel gleich groß.' },
   ];
 }
@@ -8425,19 +8432,24 @@ document.addEventListener('click', (e) => { const el = $('groupiefarben'); if (e
    Monat halb). Die Areale bleiben nach Herzen und Kommentaren insgesamt; wer bei einem Mass null
    hat, faellt heraus. */
 const GROUPIE_MASSE = [
-  { id: 'beides', name: 'Herzen + Kommentare', wert: z => z.h + z.k, text: n => schaumZahl(n) + ' Herzen und Kommentare' },
-  { id: 'herzen', name: 'Herzen', wert: z => z.h, text: n => schaumZahl(n) + ' Herzen' },
-  { id: 'kommentare', name: 'Kommentare', wert: z => z.k, text: n => schaumZahl(n) + ' Kommentare', was: 'Antworten zählen mit.' },
+  { id: 'beides', name: 'Herzen + Kommentare', wert: z => z.h + z.k, text: n => schaumZahl(n) + ' Herzen und Kommentare',
+    was: 'Jede Person so groß wie alle Herzen und Kommentare, die sie deinen Titeln gegeben hat.' },
+  { id: 'herzen', name: 'Herzen', wert: z => z.h, text: n => schaumZahl(n) + ' Herzen',
+    was: 'Jede Person so groß wie die Herzen, die sie deinen Titeln gegeben hat; wer nur kommentiert, fehlt.' },
+  { id: 'kommentare', name: 'Kommentare', wert: z => z.k, text: n => schaumZahl(n) + ' Kommentare',
+    was: 'Jede Person so groß wie ihre Kommentare und Antworten unter deinen Titeln; wer nur Herzen gibt, fehlt.' },
   /* Caspar_D, 06.10.2026: „Gesamtlänge der Kommentare wäre noch ein schönes Größenmaß für die Zellen".
      Zeichen als Schriftzeichen gezaehlt ([...text]), ein Emoji ist eines. Die Spannweite ist gross
      (im Bestand vom 06.10.: eine Person 1 Zeichen, eine 20203). */
   { id: 'zeichen', name: 'Kommentarlänge', wert: z => z.zeichen, text: n => schaumZahl(n) + ' Zeichen',
-    was: 'Zeichen aller Kommentare und Antworten zusammen; wer nur Herzen gibt, fehlt.' },
+    was: 'Jede Person so groß wie alles, was sie bei dir geschrieben hat, in Zeichen gezählt; wer nur Herzen gibt, fehlt.' },
   { id: 'aktuell', name: 'Aktuell', wert: z => z.aktuell >= 1 / 16 ? z.aktuell : 0, text: n => n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' (gewichtet)',
-    was: 'Herzen und Kommentare, jede Reaktion mit 30 Tagen Halbwertszeit: heute voll, vor einem Monat halb, vor zwei Monaten ein Viertel. Wer zusammen weniger als ein Sechzehntel erreicht (etwa: seit vier Monaten nichts), fehlt - sonst wuerden die Groessen so ungleich, dass der Schaum eine Minute braucht. Herzen aus Sunos Listen sind teils nur auf ein Zeitfenster genau.' },
-  { id: 'titel', name: 'Titel', wert: z => z.titelZahl, text: n => schaumZahl(n) + ' Titel', was: 'Wie viele verschiedene deiner Titel jemand mit Herz oder Kommentar bedacht hat.' },
+    /* Wer zusammen weniger als ein Sechzehntel erreicht, fehlt - sonst wuerden die Groessen so ungleich, dass
+       der Schaum eine Minute braucht. Herzen aus Sunos Listen ohne genaue Zeit zaehlen hier nicht. */
+    was: 'Herzen und Kommentare, die jüngeren zählen mehr: von heute voll, von vor einem Monat halb, von vor zwei Monaten ein Viertel. Wer seit etwa vier Monaten nichts gegeben hat, fehlt.' },
+  { id: 'titel', name: 'Titel', wert: z => z.titelZahl, text: n => schaumZahl(n) + ' Titel', was: 'Jede Person so groß wie die Zahl deiner Titel, die sie mit Herz oder Kommentar bedacht hat.' },
   { id: 'treue', name: 'Treue', wert: z => z.treue, text: n => schaumZahl(n) + ' Tage',
-    was: 'Tage zwischen erster und letzter Reaktion; wer nur einmal da war, zählt einen Tag.' },
+    was: 'Jede Person so groß wie die Zeit von ihrer ersten bis zur letzten Reaktion, in Tagen; wer nur einmal da war, zählt einen Tag.' },
 ];
 let groupieMass = (() => { try { return localStorage.getItem('mysuno-groupie-mass') || 'beides'; } catch (e) { return 'beides'; } })();
 /* DIE GLIEDERUNGEN DES GROUPIESCHAUMS (Caspar_D, 06.10.2026: „die alternativen Gliederungen sind noch
@@ -8459,7 +8471,8 @@ const GROUPIE_LEBENDIG = ['in den letzten 4 Wochen', 'davor'];
 const GROUPIE_GRAU = '#6b6f76';
 const groupieVier = () => { const p = groupiePal(); return [p.f[0], p.f[1], p.f[2], p.v]; };
 const GROUPIE_GLIEDERUNGEN = [
-  { id: 'art', name: 'Art der Reaktion', klasse: z => z.art, ordnung: () => GROUPIE_AREALE, farbe: a => groupieFarbe(a) },
+  { id: 'art', name: 'Art der Reaktion', klasse: z => z.art, ordnung: () => GROUPIE_AREALE, farbe: a => groupieFarbe(a),
+    was: 'Gegliedert danach, ob jemand nur Herzen gibt, nur kommentiert oder beides tut.' },
   { id: 'beziehung', name: 'Beziehung', klasse: z => z.beziehung,
     ordnung: (ks) => [...GROUPIE_BEZIEHUNG, ...(ks.has('unbekannt') ? ['unbekannt'] : [])],
     farbe: a => groupieVier()[GROUPIE_BEZIEHUNG.indexOf(a)] || null,
@@ -8622,8 +8635,7 @@ async function groupieZeichnen(){
     sel.value = jetzt;
   }
   if (gl.id === 'geschmack' && !karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
-  $('schaumwas').textContent = RAUM_WAS.groupies.replace('so groß wie ihre Herzen und Kommentare zusammen', 'so groß wie das gewählte Maß') + (m.was ? ' ' + m.was : '')
-    + (gl.was ? ' ' + gl.was : '') + ' Ein Klick zeigt ihre Spur durch dein Archiv.';
+  $('schaumwas').textContent = [m.was, gl.was].filter(Boolean).join(' ');            /* Mass und Gliederung, je ein, zwei Saetze */
   $('schaumwerk').innerHTML = '';
   { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
   const zeilen = await groupieZeilen(m, gl);
@@ -8645,6 +8657,39 @@ async function groupieZeichnen(){
   schaumLegen({ schluessel, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, lage, farbeVon, gezoomt: false, art: 'person',
     tipp: z => z.titel + ' · ' + groupieText(z) + (m.id === 'beides' || m.id === 'herzen' || m.id === 'kommentare' ? '' : ' · ' + m.text(+z.w)),
     meldung: 'Deine Groupies werden aufgeschäumt' });
+}
+/* DAS KISSEN OBEN DRAUF (Caspar_D, 06.10.2026: „magst du das Cushioning noch oben drauf setzen"). Die
+   Kissen-Beleuchtung der Engine (renderSVG, cushion) wirkte nicht mehr: ihre Hoehenkarte ist die Deckung
+   des Bildes, und seit unter jeder Zelle ein Cover oder Avatar liegt, ist die ueberall voll - das Licht
+   fiel flach und dunkelte nur alles um rund 6 %. Jetzt eine eigene Schicht ueber Bildern, Glas, Farbe und
+   Fugen, aber unter der Schrift: die Zellen weiss, die Fugen schwarz (Gefaesswaende so breit wie im
+   Bild), weichgezeichnet, von links oben beleuchtet und weich ueber das Bild gemischt (soft-light; Grau
+   0,5 laesst unveraendert, dahin wird die flache Flaeche gelegt: Licht unter 45 Grad gibt 0,707, mal 1,6
+   minus 0,631). Die Weite richtet sich nach der typischen Zelle (14 % der Wurzel der mittleren
+   Zellflaeche, 3 bis 24 Einheiten) - so woelbt sich ein grosser Avatar wie ein kleines Cover. Erst mit
+   8 % und Spreizung 1,25 probiert: das gab nur eine Fase am Rand, kein Kissen (Vergleich am Sandkasten).
+   Beim Morph geht das Kissen mit den Bildern. */
+function schaumKissen(svg, res, striche){
+  const H = res.height, sw = (d) => striche[Math.min(d, striche.length - 1)];
+  const d = (o) => 'M' + o.map(p => p[0].toFixed(1) + ',' + (H - p[1]).toFixed(1)).join('L') + 'Z';
+  const fl = (o) => { let s = 0; for (let i = 0; i < o.length; i++){ const a = o[i], b = o[(i + 1) % o.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
+  const blaetter = res.leaves.filter(k => k.outline && k.outline.length > 2);
+  if (!blaetter.length) return svg;
+  const flaechen = blaetter.map(k => fl(k.outline)).sort((a, b) => a - b), mitte = flaechen[flaechen.length >> 1];
+  const weite = Math.min(24, Math.max(3, 0.14 * Math.sqrt(mitte))), hoehe = weite * 1.5;
+  const waende = res.nodes.filter(k => k.outline && k.outline.length > 2 && !res.leaves.includes(k)).sort((a, b) => b.depth - a.depth);
+  const kissen = '<filter id="skkissen" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
+    + '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="h"/>'
+    + `<feGaussianBlur in="h" stdDeviation="${weite.toFixed(2)}" result="b"/>`
+    + `<feDiffuseLighting in="b" surfaceScale="${hoehe.toFixed(2)}" diffuseConstant="1" lighting-color="#ffffff" result="l"><feDistantLight azimuth="225" elevation="45"/></feDiffuseLighting>`
+    + '<feComponentTransfer in="l"><feFuncR type="linear" slope="1.6" intercept="-0.631"/><feFuncG type="linear" slope="1.6" intercept="-0.631"/><feFuncB type="linear" slope="1.6" intercept="-0.631"/></feComponentTransfer></filter>';
+  const schicht = '<g class="kissen" filter="url(#skkissen)" pointer-events="none">'
+    + `<rect x="0" y="0" width="${res.width}" height="${H}" fill="#000"/>`
+    + blaetter.map(k => `<path d="${d(k.outline)}" fill="#fff" stroke="#000" stroke-width="${sw(k.depth)}" stroke-linejoin="round"/>`).join('')
+    + waende.map(k => `<path d="${d(k.outline)}" fill="none" stroke="#000" stroke-width="${sw(k.depth)}" stroke-linejoin="round"/>`).join('') + '</g>';
+  svg = svg.replace('<defs>', '<defs>' + kissen);
+  const t = svg.indexOf('<text');
+  return t >= 0 ? svg.slice(0, t) + schicht + svg.slice(t) : svg.replace('</svg>', schicht + '</svg>');
 }
 /* Legt einen Schaum im Worker, zeichnet ihn und merkt ihn sich - fuer Titel und fuer Personen. */
 let schaumBildArt = null;          /* was gerade im Feld steht: 'titel' oder 'person' */
@@ -8954,7 +8999,8 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
           text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
             + ` fill="#f4f4f2" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
       };
-      let svg = R.renderSVG(res, { pad: 0, cushion: 2,
+      /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
+      let svg = R.renderSVG(res, { pad: 0, cushion: 0,
         /* breitere Fugen zwischen den Personen (Caspar_D: „die Fugen sind zu schmal") */
         ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false, strokes: [9, 5.5] } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
@@ -8996,6 +9042,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
                    + (quelle ? alles : alles.replace('<path ', '<path class="ohnebild" '));
                });
       if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
+      svg = schaumKissen(svg, res, personen ? [9, 5.5] : [3.2, 2.0, 1.2, 0.7, 0.35]);
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
       /* Fuer den Morph: das Netz des Baums (erst bei Bedarf gebaut, dann gemerkt), die Form (Gliederung
          und Zoom - nur innerhalb derselben wird gemorpht) und die Fugen wie im Bild. */

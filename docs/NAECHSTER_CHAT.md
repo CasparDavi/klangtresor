@@ -7822,3 +7822,16 @@ Klasse der gewählten Gliederung. Layout-Schlüssel `['groupies', Maß, Gliederu
 (470 Personen), deckungsgleich mit dem Datenagenten: Beziehung 302 / 96 / 59 / 13; Ankunft 99 / 242 /
 129; Lebendig 73 / 397; Geschmack 223 / 92 / 133 / 15, gemischt 7; Kommentarlänge 119 Personen, Median
 122, 90 % 1408, Max 20203 — Layout aller 119 in 19 s, alle Gefäße gehen auf.
+
+**1.0.25 (06.10. Nacht): Kissen oben drauf, Erklärtext je Größenmaß.** Caspar_D: „magst du das
+Cushioning noch oben drauf setzen". Befund vorher: die Kissen-Beleuchtung der Engine (`cushion: 2`) wirkte
+nicht mehr — ihre Höhenkarte ist die Deckung des Bildes, seit Cover/Avatare darunter liegen überall voll;
+das Licht fiel flach und dunkelte nur um ~6 %. Jetzt `schaumKissen(svg, res, striche)`: eigene Gruppe
+`g.kissen` im Bild, über Bildern/Glas/Farbe/Fugen, unter der Schrift; Höhenkarte Zellen weiß, Fugen und
+Gefäßwände schwarz; Gauß (14 % der Wurzel der mittleren Zellfläche, 3–24 Einheiten), Licht 225°/45°,
+grau 0,5 = flach (Spreizung 1,6, −0,631), `mix-blend-mode: soft-light`; Engine-cushion auf 0. Erst 8 % /
+1,25 probiert — nur eine Fase. Beim Morph geht das Kissen mit den Bildern (`.ohnebilder .kissen`).
+Caspar_D: „ein kurzer Erklärtext, was die verschiedenen Größen bedeuten … vom aktuellen in einem oder zwei
+Sätzen": jedes Maß beider Schäume hat jetzt `was` (Nutzerwörter, wer fehlt); im Groupieschaum zeigt
+`#schaumwas` nur noch Maß + Gliederung (die lange Raumbeschreibung entfällt, der Klick-Hinweis steht in
+der Fußzeile).
