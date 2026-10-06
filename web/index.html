@@ -8314,7 +8314,8 @@ function schaumMassWaehlen(id){
   schaumZeichnen();
 }
 function schaumGliederungWaehlen(id){
-  schaumGliederung = id; schaumZoom = null; try { localStorage.setItem('mysuno-schaum-gliederung', id); } catch (e) {}
+  if (raumJetzt === 'groupies'){ groupieGliederung = id; try { localStorage.setItem('mysuno-groupie-gliederung', id); } catch (e) {} }
+  else { schaumGliederung = id; schaumZoom = null; try { localStorage.setItem('mysuno-schaum-gliederung', id); } catch (e) {} }
   schaumZeichnen();
 }
 function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
@@ -8391,13 +8392,14 @@ let schaumLeute = null;
 /* Dann (Caspar_D: „die Farben sind zu ähnlich … warm mit Gegenpol ist der Standard, mach ein
    Dropdown mit Farbwahl, zeige die Farben dabei"): fuenf Paletten, je nur Herzen / beides / nur
    Kommentare; die Liste zeigt die drei Farben jeder Palette. Ein Wechsel malt nur neu - das
-   Layout bleibt gemerkt (schaumLagen). */
+   Layout bleibt gemerkt (schaumLagen). Die vierte Farbe (v) braucht die Gliederung „Beziehung“ mit
+   vier Klassen; die Liste zeigt weiter die drei der Areale. */
 const GROUPIE_PALETTEN = [
-  { id: 'E', name: 'Warm mit Gegenpol', f: ['#e0604a', '#e3b43c', '#2f8f8a'] },
-  { id: 'A', name: 'Glut', f: ['#d6334a', '#f2a227', '#e0758f'] },
-  { id: 'B', name: 'Sonnenuntergang', f: ['#c2307a', '#ef7b2a', '#e9c13a'] },
-  { id: 'C', name: 'Erde', f: ['#c4532f', '#c99a2e', '#7f9a3a'] },
-  { id: 'D', name: 'Wein und Honig', f: ['#8e2240', '#e2a33a', '#ef8a6b'] },
+  { id: 'E', name: 'Warm mit Gegenpol', f: ['#e0604a', '#e3b43c', '#2f8f8a'], v: '#8c6bb1' },
+  { id: 'A', name: 'Glut', f: ['#d6334a', '#f2a227', '#e0758f'], v: '#7a2e3b' },
+  { id: 'B', name: 'Sonnenuntergang', f: ['#c2307a', '#ef7b2a', '#e9c13a'], v: '#6d3b8f' },
+  { id: 'C', name: 'Erde', f: ['#c4532f', '#c99a2e', '#7f9a3a'], v: '#3f7f86' },
+  { id: 'D', name: 'Wein und Honig', f: ['#8e2240', '#e2a33a', '#ef8a6b'], v: '#b85c2c' },
 ];
 const GROUPIE_AREALE = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
 let groupiePalette = (() => { try { return localStorage.getItem('mysuno-groupie-farben') || 'E'; } catch (e) { return 'E'; } })();
@@ -8426,6 +8428,11 @@ const GROUPIE_MASSE = [
   { id: 'beides', name: 'Herzen + Kommentare', wert: z => z.h + z.k, text: n => schaumZahl(n) + ' Herzen und Kommentare' },
   { id: 'herzen', name: 'Herzen', wert: z => z.h, text: n => schaumZahl(n) + ' Herzen' },
   { id: 'kommentare', name: 'Kommentare', wert: z => z.k, text: n => schaumZahl(n) + ' Kommentare', was: 'Antworten zählen mit.' },
+  /* Caspar_D, 06.10.2026: „Gesamtlänge der Kommentare wäre noch ein schönes Größenmaß für die Zellen".
+     Zeichen als Schriftzeichen gezaehlt ([...text]), ein Emoji ist eines. Die Spannweite ist gross
+     (im Bestand vom 06.10.: eine Person 1 Zeichen, eine 20203). */
+  { id: 'zeichen', name: 'Kommentarlänge', wert: z => z.zeichen, text: n => schaumZahl(n) + ' Zeichen',
+    was: 'Zeichen aller Kommentare und Antworten zusammen; wer nur Herzen gibt, fehlt.' },
   { id: 'aktuell', name: 'Aktuell', wert: z => z.aktuell >= 1 / 16 ? z.aktuell : 0, text: n => n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' (gewichtet)',
     was: 'Herzen und Kommentare, jede Reaktion mit 30 Tagen Halbwertszeit: heute voll, vor einem Monat halb, vor zwei Monaten ein Viertel. Wer zusammen weniger als ein Sechzehntel erreicht (etwa: seit vier Monaten nichts), fehlt - sonst wuerden die Groessen so ungleich, dass der Schaum eine Minute braucht. Herzen aus Sunos Listen sind teils nur auf ein Zeitfenster genau.' },
   { id: 'titel', name: 'Titel', wert: z => z.titelZahl, text: n => schaumZahl(n) + ' Titel', was: 'Wie viele verschiedene deiner Titel jemand mit Herz oder Kommentar bedacht hat.' },
@@ -8433,23 +8440,90 @@ const GROUPIE_MASSE = [
     was: 'Tage zwischen erster und letzter Reaktion; wer nur einmal da war, zählt einen Tag.' },
 ];
 let groupieMass = (() => { try { return localStorage.getItem('mysuno-groupie-mass') || 'beides'; } catch (e) { return 'beides'; } })();
-async function groupieZeilen(m){
-  if (!schaumLeute){ try { schaumLeute = (await (await fetch('/api/community', { cache: 'no-store' })).json()).leute || []; } catch (e) { schaumLeute = []; } }
+/* DIE GLIEDERUNGEN DES GROUPIESCHAUMS (Caspar_D, 06.10.2026: „die alternativen Gliederungen sind noch
+   nicht drin" - die Vorschlaege aus der Uebergabe §50). Entscheidungen Caspar_D, je A: Ankunft nach
+   Jahr, Lebendig mit zwei Klassen (nur die Grenze „letzte vier Wochen" ist belastbar: Herzen mit Zeit
+   gibt es erst seit dem 24.07.2026), Geschmack relativ zur Groesse der Stilgruppe (Reaktionen geteilt
+   durch ihre Titelzahl - sonst gewaenne die groesste Gruppe schon, weil sie mehr Titel hat).
+   Grau heisst unsicher: „Zeit unbekannt", „unbekannt" (keine Beobachterliste), „gemischt"
+   (Gleichstand), „ohne Stilgruppe". Die Klasse einer Person haengt nie am gewaehlten Mass - sie bleibt
+   in ihrem Areal, und der Morph fliesst.
+   Woher (geprueft am Bestand vom 06.10.2026, 470 Personen): Beziehung aus folgtMir je Person und der
+   Liste, wem du folgst (beobachterStand: followerListe[].folgeIch und nichtZurueck - zusammen genau die
+   102 Gefolgten der Beobachterliste), Abgleich ueber den Handle; Ankunft und Lebendig aus den Zeiten der
+   Reaktionen - Kommentare genau, Herzen genau oder als Zeitfenster aus Sunos Liker-Listen (dann zaehlt
+   dessen Ende, sonst dessen Anfang), viele Herzen ganz ohne Zeit; Geschmack ueber Titel -> Stilgruppe
+   der Klangraum-Karte. */
+const GROUPIE_BEZIEHUNG = ['ihr folgt euch', 'folgt dir', 'du folgst ihr', 'keiner folgt'];
+const GROUPIE_LEBENDIG = ['in den letzten 4 Wochen', 'davor'];
+const GROUPIE_GRAU = '#6b6f76';
+const groupieVier = () => { const p = groupiePal(); return [p.f[0], p.f[1], p.f[2], p.v]; };
+const GROUPIE_GLIEDERUNGEN = [
+  { id: 'art', name: 'Art der Reaktion', klasse: z => z.art, ordnung: () => GROUPIE_AREALE, farbe: a => groupieFarbe(a) },
+  { id: 'beziehung', name: 'Beziehung', klasse: z => z.beziehung,
+    ordnung: (ks) => [...GROUPIE_BEZIEHUNG, ...(ks.has('unbekannt') ? ['unbekannt'] : [])],
+    farbe: a => groupieVier()[GROUPIE_BEZIEHUNG.indexOf(a)] || null,
+    was: 'Wer dir folgt und wem du folgst, nach dem letzten Stand der Beobachterliste.' },
+  { id: 'ankunft', name: 'Ankunft', klasse: z => z.ankunft,
+    ordnung: (ks) => [...ks].filter(k => /^\d{4}$/.test(k)).sort().concat(ks.has('Zeit unbekannt') ? ['Zeit unbekannt'] : []),
+    farbe: (a, ks) => { if (!/^\d{4}$/.test(a)) return null; const jahre = [...ks].filter(k => /^\d{4}$/.test(k)).sort().reverse(); return groupieVier()[jahre.indexOf(a) % 4]; },
+    was: 'Das Jahr der ersten Reaktion. Viele Herzen aus Sunos Listen tragen keine Zeit - wer nur solche gab, steht unter „Zeit unbekannt".' },
+  { id: 'lebendig', name: 'Lebendig', klasse: z => z.lebendig, ordnung: () => GROUPIE_LEBENDIG,
+    farbe: a => a === GROUPIE_LEBENDIG[0] ? groupiePal().f[0] : groupiePal().f[2],
+    was: 'Ob die letzte Reaktion in den letzten vier Wochen lag.' },
+  { id: 'geschmack', name: 'Geschmack', klasse: z => z.geschmack,
+    ordnung: (ks) => [...((karteDaten && karteDaten.gruppen) || [])].sort((a, b) => a.nr - b.nr).map(g => g.name || 'Gruppe ' + g.nr)
+      .filter(n => ks.has(n)).concat(['gemischt', 'ohne Stilgruppe'].filter(n => ks.has(n))),
+    farbe: a => { const g = ((karteDaten && karteDaten.gruppen) || []).find(g => (g.name || 'Gruppe ' + g.nr) === a); return g ? karteFarbe(g.nr) : null; },
+    was: 'Die Stilgruppe des Klangraums, deren Titel jemand am meisten bedacht hat - gemessen an der Zahl ihrer Titel. Farben wie im Klangraum.' },
+];
+let groupieGliederung = (() => { try { return localStorage.getItem('mysuno-groupie-gliederung') || 'art'; } catch (e) { return 'art'; } })();
+const groupieGl = () => GROUPIE_GLIEDERUNGEN.find(g => g.id === groupieGliederung) || GROUPIE_GLIEDERUNGEN[0];
+let schaumGemeinde = null;           /* die ganze Antwort von /api/community (fuer die Beobachterliste) */
+/* Was fuer alle Personen gleich ist: der Tagesanfang, wem du folgst, die Stilgruppen der Karte. */
+function groupieUmfeld(){
+  const TAG = 86400000, b = schaumGemeinde && schaumGemeinde.beobachterStand;
+  const folgeIch = b ? new Set([...(b.followerListe || []).filter(f => f.folgeIch), ...(b.nichtZurueck || [])].map(f => String(f.handle || '').toLowerCase())) : null;
+  let karte = null;
+  if (karteDaten && karteDaten.songs){
+    const gruppeVon = new Map(), groesse = new Map();
+    for (const s of karteDaten.songs) if (s.gruppe != null){ gruppeVon.set(s.id, s.gruppe); groesse.set(s.gruppe, (groesse.get(s.gruppe) || 0) + 1); }
+    karte = { gruppeVon, groesse, name: new Map((karteDaten.gruppen || []).map(g => [g.nr, g.name || 'Gruppe ' + g.nr])) };
+  }
   /* „Jetzt" ist der Tagesanfang: mit der Uhrzeit aenderte sich das Gewicht von „Aktuell" jede
      Sekunde, damit der Layout-Schluessel - das Gemerkte passte nie, und das Vorrechnen legte dasselbe
      Mass immer wieder. Reaktionen von heute zaehlen voll. */
-  const TAG = 86400000, jetzt = Math.floor(Date.now() / TAG) * TAG;
-  return schaumLeute.map(l => {
-    const alle3 = [...(l.likes || []), ...(l.kommentare || []), ...(l.antworten || [])];
-    const h = (l.likes || []).length, k = (l.kommentare || []).length + (l.antworten || []).length;
-    const zeiten = alle3.map(e => Date.parse(e.am)).filter(Number.isFinite);
-    const aktuell = zeiten.reduce((s, t) => s + Math.pow(2, -Math.max(0, jetzt - t) / TAG / 30), 0);
-    const titelZahl = new Set(alle3.map(e => e.song).filter(Boolean)).size;
-    const treue = zeiten.length ? Math.max(1, Math.round((Math.max(...zeiten) - Math.min(...zeiten)) / TAG)) : 0;
-    const z = { gruppe: h && k ? 'Herzen und Kommentare' : h ? 'nur Herzen' : 'nur Kommentare', genre: '',
-                titel: l.name || l.handle || '—', id: l.handle, bild: l.avatar || '', h, k, aktuell, titelZahl, treue };
-    z.w = String(m.wert(z)); return z;
-  }).filter(z => z.id && +z.w > 0);
+  return { TAG, jetzt: Math.floor(Date.now() / TAG) * TAG, folgeIch, karte };
+}
+function groupiePerson(l, u){
+  const TAG = u.TAG, likes = l.likes || [], komm = [...(l.kommentare || []), ...(l.antworten || [])], alle3 = [...likes, ...komm];
+  const h = likes.length, k = komm.length;
+  const zeiten = alle3.map(e => Date.parse(e.am)).filter(Number.isFinite);
+  const aktuell = zeiten.reduce((s, t) => s + Math.pow(2, -Math.max(0, u.jetzt - t) / TAG / 30), 0);
+  const titelZahl = new Set(alle3.map(e => e.song).filter(Boolean)).size;
+  const treue = zeiten.length ? Math.max(1, Math.round((Math.max(...zeiten) - Math.min(...zeiten)) / TAG)) : 0;
+  const zeichen = komm.reduce((s, e) => s + [...String(e.text || '')].length, 0);
+  const ersatz = alle3.map(e => Date.parse(e.am || e.zeitBis || e.zeitAb)).filter(Number.isFinite);
+  const erste = ersatz.length ? Math.min(...ersatz) : null, letzte = ersatz.length ? Math.max(...ersatz) : null;
+  const wer = String(l.handle || '').toLowerCase();
+  const beziehung = !u.folgeIch ? 'unbekannt' : l.folgtMir && u.folgeIch.has(wer) ? GROUPIE_BEZIEHUNG[0]
+    : l.folgtMir ? GROUPIE_BEZIEHUNG[1] : u.folgeIch.has(wer) ? GROUPIE_BEZIEHUNG[2] : GROUPIE_BEZIEHUNG[3];
+  let geschmack = 'ohne Stilgruppe';
+  if (u.karte){
+    const n = new Map(); for (const e of alle3){ const g = u.karte.gruppeVon.get(e.song); if (g != null) n.set(g, (n.get(g) || 0) + 1); }
+    let best = -1, beste = [];
+    for (const [g, c] of n){ const r = c / (u.karte.groesse.get(g) || 1); if (r > best + 1e-12){ best = r; beste = [g]; } else if (Math.abs(r - best) <= 1e-12) beste.push(g); }
+    if (beste.length) geschmack = beste.length > 1 ? 'gemischt' : u.karte.name.get(beste[0]);
+  }
+  return { art: h && k ? 'Herzen und Kommentare' : h ? 'nur Herzen' : 'nur Kommentare', beziehung,
+           ankunft: erste == null ? 'Zeit unbekannt' : String(new Date(erste).getFullYear()),
+           lebendig: letzte != null && letzte >= u.jetzt - 28 * TAG ? GROUPIE_LEBENDIG[0] : GROUPIE_LEBENDIG[1], geschmack,
+           genre: '', titel: l.name || l.handle || '—', id: l.handle, bild: l.avatar || '', h, k, aktuell, titelZahl, treue, zeichen };
+}
+async function groupieZeilen(m, gl){
+  if (!schaumLeute){ try { schaumGemeinde = await (await fetch('/api/community', { cache: 'no-store' })).json(); schaumLeute = schaumGemeinde.leute || []; } catch (e) { schaumLeute = []; } }
+  const u = groupieUmfeld();
+  return schaumLeute.map(l => { const z = groupiePerson(l, u); z.gruppe = gl.klasse(z); z.w = String(m.wert(z)); return z; }).filter(z => z.id && +z.w > 0);
 }
 const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
 
@@ -8459,7 +8533,7 @@ async function schaumZeichnen(){
   await schaumVorratLaden();                  /* die verkleinerten Bilder aus der letzten Sitzung, einmal */
   const groupies = raumJetzt === 'groupies';
   $('schaumtitel').textContent = RAUM_NAME[raumJetzt] || 'Klangschaum';
-  { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = groupies; }
+  { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = false; }
   { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
   $('groupiefarbenzeile').hidden = !groupies;
   if (groupies) return groupieZeichnen();
@@ -8540,31 +8614,35 @@ async function schaumZeichnen(){
 }
 async function groupieZeichnen(){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
-  const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0];
+  const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0], gl = groupieGl();
   groupieFarbwahlBauen();
-  { const sel = $('schaummass'), sig = 'groupies|' + GROUPIE_MASSE.map(x => x.name).join('|');
-    if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = GROUPIE_MASSE.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
-    sel.value = m.id; }
-  $('schaumwas').textContent = RAUM_WAS.groupies.replace('so groß wie ihre Herzen und Kommentare zusammen', 'so groß wie das gewählte Maß') + (m.was ? ' ' + m.was : '') + ' Ein Klick zeigt ihre Spur durch dein Archiv.';
+  for (const [id, liste, jetzt] of [['schaummass', GROUPIE_MASSE, m.id], ['schaumgliederung', GROUPIE_GLIEDERUNGEN, gl.id]]){
+    const sel = $(id), sig = 'groupies|' + liste.map(x => x.name).join('|');
+    if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = liste.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
+    sel.value = jetzt;
+  }
+  if (gl.id === 'geschmack' && !karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
+  $('schaumwas').textContent = RAUM_WAS.groupies.replace('so groß wie ihre Herzen und Kommentare zusammen', 'so groß wie das gewählte Maß') + (m.was ? ' ' + m.was : '')
+    + (gl.was ? ' ' + gl.was : '') + ' Ein Klick zeigt ihre Spur durch dein Archiv.';
   $('schaumwerk').innerHTML = '';
   { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
-  const zeilen = await groupieZeilen(m);
+  const zeilen = await groupieZeilen(m, gl);
   if (raumJetzt !== 'groupies') return;
-  const areale = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
-  $('schaumlegende').innerHTML = '<small>Areale</small>' + areale.map(a => {
+  const klassen = new Set(zeilen.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, klassen);
+  $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small>' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
     const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0);
-    return `<span class="zeile"><i style="background:${groupieFarbe(a)}"></i><span><b>${a}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
+    return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('');
-  fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
+  fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
     + (schaumLeute.length > zeilen.length ? `${schaumLeute.length - zeilen.length} Personen haben bei ${m.name} null und fehlen. ` : '')
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
-  const j = await groupieAuftrag(m, schaumVerh()), lage = j.lage, schluessel = lage + '|' + groupiePalette;
+  const j = await groupieAuftrag(m, schaumVerh(), gl), lage = j.lage, schluessel = lage + '|' + groupiePalette;
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
-  schaumLegen({ schluessel, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, lage, farbeVon: n => groupieFarbe(n), gezoomt: false, art: 'person',
+  schaumLegen({ schluessel, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, lage, farbeVon, gezoomt: false, art: 'person',
     tipp: z => z.titel + ' · ' + groupieText(z) + (m.id === 'beides' || m.id === 'herzen' || m.id === 'kommentare' ? '' : ' · ' + m.text(+z.w)),
     meldung: 'Deine Groupies werden aufgeschäumt' });
 }
@@ -8739,22 +8817,26 @@ function schaumKlangAuftrag(m, gl, zoom, verh){
   return { lage: [m.id, gl.id, zoom || '', verh, karteVerf, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'),
            zeilen, ebenen, W, H, seeds: zeilen.length ? schaumSaat(zeilen, ebenen, W, H) : null };
 }
-async function groupieAuftrag(m, verh){
-  const zeilen = await groupieZeilen(m), W = 1000, H = Math.round(1000 * verh);
-  return { lage: ['groupies', m.id, verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'), zeilen, ebenen: ['gruppe'], W, H,
-           seeds: zeilen.length ? groupieSaat(zeilen, W, H) : null };
+/* Der Layout-Schluessel traegt die Gliederung und je Person ihre Klasse: wechselt jemand die Klasse (wird
+   still, folgt dir neu, die Karte wird neu gebaut), ist es ein neues Layout. */
+async function groupieAuftrag(m, verh, gl){
+  gl = gl || groupieGl();
+  if (gl.id === 'geschmack' && !karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
+  const zeilen = await groupieZeilen(m, gl), W = 1000, H = Math.round(1000 * verh);
+  return { lage: ['groupies', m.id, gl.id, verh, zeilen.map(z => z.id + ':' + z.w + ':' + String(z.gruppe).replace(/[|,:]/g, ' ')).join(',')].join('|'), zeilen, ebenen: ['gruppe'], W, H,
+           seeds: zeilen.length ? groupieSaat(zeilen, W, H, gl) : null };
 }
 /* STARTPUNKTE IM GROUPIESCHAUM: ohne sie legt die Engine die groesste Zelle in die Mitte, jedes Mass
    sah anders aus, und im Morph wanderten die Zellen quer durchs Bild. Jetzt beginnt jede Person in
-   jedem Mass an derselben Stelle: ihr Areal ist ein senkrechter Streifen (nur Herzen, beides, nur
-   Kommentare; so breit wie Herzen und Kommentare dort zusammen), darin eine Sonnenblumenspirale mit
-   den Fleissigsten (Herzen + Kommentare) in der Mitte. Die Lage haengt also nie am gewaehlten Mass. */
-function groupieSaat(zeilen, W, H){
-  const streifen = new Map(GROUPIE_AREALE.map(a => [a, []])), pos = new Map();
-  for (const l of schaumLeute || []){
-    const h = (l.likes || []).length, k = (l.kommentare || []).length + (l.antworten || []).length;
-    if (l.handle && h + k) streifen.get(h && k ? GROUPIE_AREALE[1] : h ? GROUPIE_AREALE[0] : GROUPIE_AREALE[2]).push({ id: l.handle, b: h + k });
-  }
+   jedem Mass an derselben Stelle: ihr Areal ist ein senkrechter Streifen (je Klasse der gewaehlten
+   Gliederung, in deren Reihenfolge; so breit wie Herzen und Kommentare dort zusammen), darin eine
+   Sonnenblumenspirale mit den Fleissigsten (Herzen + Kommentare) in der Mitte. Die Lage haengt also nie
+   am gewaehlten Mass. */
+function groupieSaat(zeilen, W, H, gl){
+  gl = gl || groupieGl();
+  const u = groupieUmfeld(), alle = (schaumLeute || []).map(l => groupiePerson(l, u)).filter(z => z.id && z.h + z.k);
+  const streifen = new Map(gl.ordnung(new Set(alle.map(z => gl.klasse(z)))).map(a => [a, []])), pos = new Map();
+  for (const z of alle){ const a = gl.klasse(z); if (!streifen.has(a)) streifen.set(a, []); streifen.get(a).push({ id: z.id, b: z.h + z.k }); }
   const gesamt = [...streifen.values()].flat().reduce((s, p) => s + p.b, 0) || 1;
   let x0 = 0;
   for (const leute of streifen.values()){
@@ -8773,7 +8855,7 @@ let schaumHinten = null, schaumWartet = null;
 async function schaumVorrechnen(){
   if (schaumHinten || register !== 'karte' || (raumJetzt !== 'schaum' && raumJetzt !== 'groupies')) return;
   const raum = raumJetzt, verh = schaumVerh(), auftraege = [];
-  if (raum === 'groupies') for (const m of GROUPIE_MASSE) auftraege.push(() => groupieAuftrag(m, verh));
+  if (raum === 'groupies'){ const gl = groupieGl(); for (const m of GROUPIE_MASSE) auftraege.push(() => groupieAuftrag(m, verh, gl)); }
   else { const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0], zoom = schaumZoom;
     for (const m of schaumMasse()) auftraege.push(async () => schaumKlangAuftrag(m, gl, zoom, verh)); }
   schaumHinten = { lage: null, worker: null };
@@ -8972,8 +9054,8 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
    waehrend des Morphs bricht den ersten ab (schaumMorphLauf). */
 let schaumGezeigt = null, schaumMorphLauf = 0;
 /* Gliederung und Zoom aus dem Layout-Schluessel: Klangschaum [Mass, Gliederung, Zoom, Verhaeltnis,
-   Verfahren, Zeilen], Groupieschaum ['groupies', Mass, Verhaeltnis, Zeilen]. */
-function schaumForm(lage){ const p = String(lage || '').split('|'); return p[0] === 'groupies' ? 'groupies|' + p[2] : p.slice(1, 5).join('|'); }
+   Verfahren, Zeilen], Groupieschaum ['groupies', Mass, Gliederung, Verhaeltnis, Zeilen]. */
+function schaumForm(lage){ const p = String(lage || '').split('|'); return p[0] === 'groupies' ? 'groupies|' + p[2] + '|' + p[3] : p.slice(1, 5).join('|'); }
 function schaumEinsetzen(f){
   const alt = schaumGezeigt, bild = $('schaumbild'), lauf = ++schaumMorphLauf;
   schaumGezeigt = f;

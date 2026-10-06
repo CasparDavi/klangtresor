@@ -7809,3 +7809,16 @@ gehen nur Bilder, Titel, Glas und Farbstich (Klasse `ohnebilder`), die Zellen de
 das Netz gleitet erst, wenn die Bilder ganz weg sind; am Ende steht das neue Bild in vollen Farben unter
 dem Morph, dann kommen die Bilder. Blende 0,9 s, nur während eines Morphs (Klasse `blende`) — sonst
 folgte auch der Farbregler mit Verzug.
+
+**1.0.24 (06.10. Nacht): Gliederungen und Kommentarlänge im Groupieschaum gebaut.** Auswahlfeld
+„Gegliedert nach" jetzt auch im Groupieschaum (`GROUPIE_GLIEDERUNGEN`: Art der Reaktion, Beziehung,
+Ankunft, Lebendig, Geschmack; gemerkt in `mysuno-groupie-gliederung`). Je Person rechnet
+`groupiePerson(l, groupieUmfeld())` alles einmal; `groupieZeilen(m, gl)` setzt die Klasse als Areal.
+Grau (keine Farbe → `schaumFarbe` schattiert grau): „unbekannt", „Zeit unbekannt", „gemischt", „ohne
+Stilgruppe". Paletten haben eine vierte Farbe `v` (Beziehung hat vier Klassen). Startpunkte: Streifen je
+Klasse der gewählten Gliederung. Layout-Schlüssel `['groupies', Maß, Gliederung, Verhältnis, id:w:Klasse…]`,
+`schaumForm` = Gliederung + Verhältnis (Morph nur innerhalb einer Gliederung). Neues Maß `zeichen`
+„Kommentarlänge" (Schriftzeichen aller Kommentare und Antworten). Nachgerechnet am Sandkasten-Bestand
+(470 Personen), deckungsgleich mit dem Datenagenten: Beziehung 302 / 96 / 59 / 13; Ankunft 99 / 242 /
+129; Lebendig 73 / 397; Geschmack 223 / 92 / 133 / 15, gemischt 7; Kommentarlänge 119 Personen, Median
+122, 90 % 1408, Max 20203 — Layout aller 119 in 19 s, alle Gefäße gehen auf.
