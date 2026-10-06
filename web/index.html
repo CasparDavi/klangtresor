@@ -147,8 +147,16 @@ h1{
 #schaumbild{position:absolute;inset:0}
 #schaumbild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 #schaumbild svg.schaumwaber{pointer-events:none}
-#schaumbild path[data-id]{cursor:pointer}
-#schaumbild path[data-id]:hover{fill-opacity:.8}
+#schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
+#schaumbild path[data-id]:hover{stroke:#ffffff;stroke-opacity:.7}
+#schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
+/* Ein duenner Gegenrand um die Titel: ueber einem Cover reicht die Zellfarbe allein nicht mehr fuer
+   den Kontrast (weiss auf dem hellen Teller von Labskaus-Klaus). Die Engine waehlt die Schrift
+   nach der Zellfarbe schwarz oder weiss - der Rand ist jeweils das Gegenteil. */
+#schaumbild text{paint-order:stroke;stroke-width:2.4px;stroke-opacity:.5;stroke-linejoin:round}
+#schaumbild text[fill="#ffffff"]{stroke:#000}
+#schaumbild text[fill="#000000"]{stroke:#fff}
+#schaumrechts input[type=range]{width:100%;accent-color:var(--akzent)}
 #schaumstand{position:absolute;left:0;right:0;top:45%;text-align:center;color:#9aa0a8;font-size:13px;pointer-events:none}
 #schaumrechts{display:flex;flex-direction:column;gap:12px;min-height:0;height:100%;overflow:auto}
 #schaumrechts h3{margin:0}
@@ -4083,6 +4091,8 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <h3>Klangschaum</h3>
     <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
     <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
+    <label class="fussnote">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
+      <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
     <p class="fussnote" id="schaumwas" style="margin:0"></p>
     <div id="schaumlegende"></div>
     <div id="schaumwerk"></div>
@@ -8192,9 +8202,17 @@ function raumLeisteBauen(){
    steht.
    In jeder Zelle liegt ihr Cover als einfarbiges Wasserzeichen (Caspar_D: „die Zelle fittet sich
    in den Rand des Covers und zeigt nur das, die Farbe der Zellen dominiert das nach wie vor"):
-   das Kachelbild auf den Rahmen der Zelle zugeschnitten (slice), in die Zelle geschnitten und mit
-   der Mischart Luminanz bei 35 % Deckkraft eingeblendet - das Cover gibt nur Hell und Dunkel,
-   Farbton und Saettigung bleiben die der Zelle. */
+   das Kachelbild auf den Rahmen der Zelle zugeschnitten (slice) und in die Zelle geschnitten.
+   WIE STARK DIE FARBE UEBER DEM BILD LIEGT, stellt ein Regler (Caspar_D, 06.10.2026: „baue einen
+   Regler ein, wie stark die Farben sich auf die Bilder legen dürfen"). Drei Schichten je Zelle:
+   das Cover in seinen Farben, darueber die Zellfarbe in der Mischart „soft-light", obenauf die
+   Zelle selbst mit Rand. Soft-light, nicht „color": Caspar_D wollte „die Covers noch etwas
+   natürlicher aussehen lassen mit nur einem Farbstich statt monochromer Umfärbung" - im
+   Vergleich an drei Covern faerbte „color" einen roten Schriftzug gruen, soft-light liess ihn rot
+   und legte nur den Stich der Zelle darueber. Der Regler s (0..1) verteilt: Stich = min(1, 2s),
+   Deckung = max(0, 2s - 1) · 0,65. 0 % ist das Cover pur, 50 % das Cover mit Farbstich, 100 % die
+   Zellfarbe, durch die das Cover zu 35 % scheint. Er setzt nur zwei CSS-Variablen - der Schaum
+   wird nicht neu gelegt. */
 const schaumResonanz = (o) => o ? (o.plays || 0) + 2 * (o.likes || 0) + 3 * (o.kommentare || 0) : 0;
 const schaumZahl = (n) => Math.round(n).toLocaleString('de-DE');
 const schaumMin = (sek) => { const m = Math.floor(sek / 60), s = Math.round(sek % 60); return m + ':' + String(s).padStart(2, '0') + ' min'; };
@@ -8258,6 +8276,15 @@ function schaumSichtbar(an){
   for (const id of ['kartefeld', 'karterechts']) { const e = $(id); if (e) e.hidden = an; }
   for (const id of ['schaumfeld', 'schaumrechts']) { const e = $(id); if (e) e.hidden = !an; }
   if (an && schiffLauf){ cancelAnimationFrame(schiffLauf); schiffLauf = 0; }
+}
+let schaumFarbeAnteil = (() => { try { const v = parseFloat(localStorage.getItem('mysuno-schaum-farbe')); return isFinite(v) ? v : 100; } catch (e) { return 100; } })();
+function schaumFarbeSetzen(v){
+  schaumFarbeAnteil = Math.max(0, Math.min(100, +v || 0));
+  try { localStorage.setItem('mysuno-schaum-farbe', String(schaumFarbeAnteil)); } catch (e) {}
+  const s = schaumFarbeAnteil / 100, b = $('schaumbild');
+  if (b){ b.style.setProperty('--sk-ton', Math.min(1, 2 * s).toFixed(3)); b.style.setProperty('--sk-deck', (Math.max(0, 2 * s - 1) * 0.65).toFixed(3)); }
+  const z = $('schaumfarbezahl');
+  if (z) z.textContent = schaumFarbeAnteil + ' %' + (schaumFarbeAnteil === 0 ? ' — Cover pur' : schaumFarbeAnteil === 50 ? ' — Farbstich' : schaumFarbeAnteil === 100 ? ' — Farbe deckt' : '');
 }
 function schaumMassWaehlen(id){
   schaumMass = id; try { localStorage.setItem('mysuno-schaum-mass', id); } catch (e) {}
@@ -8335,6 +8362,7 @@ async function schaumZeichnen(){
     sel.value = jetzt;
   }
   $('schaumwas').textContent = m.was || '';
+  { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
 
   /* Die Zeilen: alle eigenen Titel mit Wert > 0. */
   const alleZeilen = [], ohneWert = [];
@@ -8424,9 +8452,12 @@ async function schaumZeichnen(){
                  const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
                  const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
                  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
-                 return alles + `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
+                 const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
+                 return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
                    + `<image href="${esc(artworkKachel(id))}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
-                   + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" opacity="0.35" style="mix-blend-mode:luminosity" pointer-events="none"/>`;
+                   + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>`
+                   + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"/>`
+                   + alles;
                });
       const werte = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? +zeilen[k.row].w : 0);
       const f = { svg, ids, werte };

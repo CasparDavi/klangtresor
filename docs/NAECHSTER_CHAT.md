@@ -7502,3 +7502,11 @@ animiertem Rauschen auf eigener SVG-Ebene, steht, wenn die Musik steht (`schaumT
 Nur-Lesen-Modus (Port 8796, Kopien von Katalog, Karte und Kachelbildern, leere Tondateien):
 Laschen, Maß, Gliederung Modell, Zoom (104 Zellen), Kommentare (140 Titel), Werk-Lade, Wabern,
 keine Skriptfehler. Archiv unverändert. Nicht gesehen: Caspar_Ds echtes Fenster (F5).
+**Regler „Farbe über den Bildern" (06.10.):** drei Schichten je Zelle — Cover in seinen Farben,
+Zellfarbe als soft-light-Stich (`.skt`), Zelle mit Rand obenauf. Regler s: Stich = min(1, 2s),
+Deckung = max(0, 2s−1)·0,65; 0 % Cover pur, 50 % Farbstich, 100 % Farbe deckt (Vorgabe, wie
+vorher). Soft-light statt „color" auf Caspar_D's Wort („nur ein Farbstich statt monochromer
+Umfärbung"; im Vergleich färbte „color" einen roten Schriftzug grün). Nur zwei CSS-Variablen
+(`--sk-ton`, `--sk-deck`), kein neues Legen; gemerkt in `mysuno-schaum-farbe`. Titel mit dünnem
+Gegenrand für die Lesbarkeit über Covern. Im Sandkasten bei 0/50/100 % gerendert, Bilder an
+Caspar_D.
