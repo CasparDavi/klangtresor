@@ -148,7 +148,7 @@ h1{
 #schaumbild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 #schaumbild svg.schaumwaber{pointer-events:none}
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
-#schaumbild path[data-id]:hover{stroke:#ffffff;stroke-opacity:.7}
+#schaumbild svg.schaumrahmen{pointer-events:none}
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
 /* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand", dann
    „mach sie auf 80 % Deckkraft"). Ein Gegenrand stand hier einen Nachmittag lang. Schwarz oder
@@ -8290,7 +8290,8 @@ function schaumFarbeSetzen(v){
   if (z) z.textContent = schaumFarbeAnteil + ' %' + (schaumFarbeAnteil === 0 ? ' — Cover pur' : schaumFarbeAnteil === 50 ? ' — Farbstich' : schaumFarbeAnteil === 100 ? ' — Farbe deckt' : '');
 }
 function schaumMassWaehlen(id){
-  schaumMass = id; try { localStorage.setItem('mysuno-schaum-mass', id); } catch (e) {}
+  if (raumJetzt === 'groupies'){ groupieMass = id; try { localStorage.setItem('mysuno-groupie-mass', id); } catch (e) {} }
+  else { schaumMass = id; try { localStorage.setItem('mysuno-schaum-mass', id); } catch (e) {} }
   schaumZeichnen();
 }
 function schaumGliederungWaehlen(id){
@@ -8362,12 +8363,37 @@ function schaumFarbe(k, kette, farbeVon, gezoomt){
    Reaktionsfenster - ohne Netz bleiben die Farben. Kein Hineinzoomen, keine Startpunkte. */
 let schaumLeute = null;
 const GROUPIE_FARBE = { 'nur Herzen': '#e0455a', 'Herzen und Kommentare': '#b05cd6', 'nur Kommentare': '#4f7bd9' };
-async function groupieZeilen(){
+/* WAS DIE FLAECHE IM GROUPIESCHAUM MISST (Caspar_D, 06.10.2026: „was könnte man bei Fläche nach
+   auswählbar machen … eine Zeitkomponente, die aktuelle Kommentierer und Herzer bevorzugt"; „nimm
+   alle deine Vorschläge"). Nicht 1/Tage seit dem letzten Kontakt: das kippt gegen unendlich, wenn
+   der letzte Kontakt heute war, und zaehlt 200 alte Herzen voll, nur weil gestern eines dazukam.
+   Stattdessen zaehlt bei „Aktuell" jede Reaktion mit 30 Tagen Halbwertszeit (heute voll, nach einem
+   Monat halb). Die Areale bleiben nach Herzen und Kommentaren insgesamt; wer bei einem Mass null
+   hat, faellt heraus. */
+const GROUPIE_MASSE = [
+  { id: 'beides', name: 'Herzen + Kommentare', wert: z => z.h + z.k, text: n => schaumZahl(n) + ' Herzen und Kommentare' },
+  { id: 'herzen', name: 'Herzen', wert: z => z.h, text: n => schaumZahl(n) + ' Herzen' },
+  { id: 'kommentare', name: 'Kommentare', wert: z => z.k, text: n => schaumZahl(n) + ' Kommentare', was: 'Antworten zählen mit.' },
+  { id: 'aktuell', name: 'Aktuell', wert: z => z.aktuell, text: n => n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' (gewichtet)',
+    was: 'Herzen und Kommentare, jede Reaktion mit 30 Tagen Halbwertszeit: heute voll, vor einem Monat halb, vor zwei Monaten ein Viertel. Herzen aus Sunos Listen sind teils nur auf ein Zeitfenster genau.' },
+  { id: 'titel', name: 'Titel', wert: z => z.titelZahl, text: n => schaumZahl(n) + ' Titel', was: 'Wie viele verschiedene deiner Titel jemand mit Herz oder Kommentar bedacht hat.' },
+  { id: 'treue', name: 'Treue', wert: z => z.treue, text: n => schaumZahl(n) + ' Tage',
+    was: 'Tage zwischen erster und letzter Reaktion; wer nur einmal da war, zählt einen Tag.' },
+];
+let groupieMass = (() => { try { return localStorage.getItem('mysuno-groupie-mass') || 'beides'; } catch (e) { return 'beides'; } })();
+async function groupieZeilen(m){
   if (!schaumLeute){ try { schaumLeute = (await (await fetch('/api/community', { cache: 'no-store' })).json()).leute || []; } catch (e) { schaumLeute = []; } }
+  const jetzt = Date.now(), TAG = 86400000;
   return schaumLeute.map(l => {
+    const alle3 = [...(l.likes || []), ...(l.kommentare || []), ...(l.antworten || [])];
     const h = (l.likes || []).length, k = (l.kommentare || []).length + (l.antworten || []).length;
-    return { gruppe: h && k ? 'Herzen und Kommentare' : h ? 'nur Herzen' : 'nur Kommentare', genre: '',
-             titel: l.name || l.handle || '—', id: l.handle, w: String(h + k), bild: l.avatar || '', h, k };
+    const zeiten = alle3.map(e => Date.parse(e.am)).filter(Number.isFinite);
+    const aktuell = zeiten.reduce((s, t) => s + Math.pow(2, -Math.max(0, jetzt - t) / TAG / 30), 0);
+    const titelZahl = new Set(alle3.map(e => e.song).filter(Boolean)).size;
+    const treue = zeiten.length ? Math.max(1, Math.round((Math.max(...zeiten) - Math.min(...zeiten)) / TAG)) : 0;
+    const z = { gruppe: h && k ? 'Herzen und Kommentare' : h ? 'nur Herzen' : 'nur Kommentare', genre: '',
+                titel: l.name || l.handle || '—', id: l.handle, bild: l.avatar || '', h, k, aktuell, titelZahl, treue };
+    z.w = String(m.wert(z)); return z;
   }).filter(z => z.id && +z.w > 0);
 }
 const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
@@ -8377,7 +8403,8 @@ async function schaumZeichnen(){
   raumLeisteBauen();
   const groupies = raumJetzt === 'groupies';
   $('schaumtitel').textContent = RAUM_NAME[raumJetzt] || 'Klangschaum';
-  for (const id of ['schaummass', 'schaumgliederung']){ const l = $(id).closest('label'); if (l) l.hidden = groupies; }
+  { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = groupies; }
+  { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
   if (groupies) return groupieZeichnen();
   if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
@@ -8458,33 +8485,42 @@ async function schaumZeichnen(){
 }
 async function groupieZeichnen(){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
-  $('schaumwas').textContent = RAUM_WAS.groupies + ' Ein Klick zeigt ihre Spur durch dein Archiv.';
+  const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0];
+  { const sel = $('schaummass'), sig = 'groupies|' + GROUPIE_MASSE.map(x => x.name).join('|');
+    if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = GROUPIE_MASSE.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
+    sel.value = m.id; }
+  $('schaumwas').textContent = RAUM_WAS.groupies.replace('so groß wie ihre Herzen und Kommentare zusammen', 'so groß wie das gewählte Maß') + (m.was ? ' ' + m.was : '') + ' Ein Klick zeigt ihre Spur durch dein Archiv.';
   $('schaumwerk').innerHTML = '';
   { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
-  const zeilen = await groupieZeilen();
+  const zeilen = await groupieZeilen(m);
   if (raumJetzt !== 'groupies') return;
   const areale = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
   $('schaumlegende').innerHTML = '<small>Areale</small>' + areale.map(a => {
-    const zs = zeilen.filter(z => z.gruppe === a), h = zs.reduce((s, z) => s + z.h, 0), k = zs.reduce((s, z) => s + z.k, 0);
+    const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0);
     return `<span class="zeile"><i style="background:${GROUPIE_FARBE[a]}"></i><span><b>${a}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
-      + `${h ? ' · ' + h + ' Herzen' : ''}${k ? ' · ' + k + ' Kommentare' : ''}</small></span></span>`;
+      + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('');
-  fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben; die Fläche jeder Blase ist ihre Zahl an Herzen und Kommentaren (Antworten eingeschlossen), genau ihr Anteil. `
+  fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
   const rect = $('schaumfeld').getBoundingClientRect();
   const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
-  const schluessel = ['groupies', verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
+  const schluessel = ['groupies', m.id, verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
   const W = 1000, H = Math.round(1000 * verh);
   schaumLegen({ schluessel, zeilen, ebenen: ['gruppe'], W, H, seeds: null, farbeVon: n => GROUPIE_FARBE[n] || null, gezoomt: false, art: 'person',
-    tipp: z => z.titel + ' · ' + groupieText(z), meldung: 'Deine Groupies werden aufgeschäumt' });
+    tipp: z => z.titel + ' · ' + groupieText(z) + (m.id === 'beides' || m.id === 'herzen' || m.id === 'kommentare' ? '' : ' · ' + m.text(+z.w)),
+    meldung: 'Deine Groupies werden aufgeschäumt' });
 }
 /* Legt einen Schaum im Worker, zeichnet ihn und merkt ihn sich - fuer Titel und fuer Personen. */
+let schaumBildArt = null;          /* was gerade im Feld steht: 'titel' oder 'person' */
 function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   const stand = $('schaumstand');
+  /* Beim Wechsel zwischen Klang- und Groupieschaum stand sonst bis zum Fertigrechnen das Bild des
+     anderen im Feld - Avatare unter der Ueberschrift „Klangschaum". */
+  if (schaumBildArt !== art){ $('schaumbild').innerHTML = ''; schaumBildArt = null; }
   if (schaumArbeit && schaumArbeit.schluessel === schluessel) return;          /* wird schon gelegt */
   if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
   stand.textContent = meldung + ' …';
@@ -8524,11 +8560,14 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
          GLAS STATT SCHWARZ (Caspar_D: „Abschneiden ist nicht die Lösung, lege ein Blur auf den
          Abschnitt und lasse das Bild durchscheinen. Das Blur-Glas kann etwas schwärzen, damit der
          Text immer weiß sein kann"): der Avatar fuellt wieder die ganze Zelle; im Kopfstreifen liegt
-         eine zweite Kopie, weichgezeichnet (Gauss, 3 Punkte) und auf 42 % abgedunkelt - so bleibt
-         weisse Schrift auf jedem Bild lesbar. */
+         eine zweite Kopie, weichgezeichnet (Gauss, 3 Punkte) und abgedunkelt - so bleibt weisse
+         Schrift auf jedem Bild lesbar. Erst fest auf 42 % Helligkeit, dann auf 71 % („das Rauchglas
+         weniger stark schwarz, nur die Hälfte"), dann (Caspar_D: „lass das Rauchglas nur dort
+         wirken, wo es nötig ist") je Zelle: schaumRauch() misst die hellsten 20 % des Avatars unter
+         dem Kopf und dunkelt nur so weit ab, wie die weisse Schrift es braucht - auf dunklen Bildern
+         gar nicht. Der Filter macht nur noch weich; das Dunkel ist ein schwarzes Rechteck je Kopf. */
       const SCHAUM_GLAS = '<filter id="skglas" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">'
-        + '<feGaussianBlur stdDeviation="3" edgeMode="duplicate"/><feComponentTransfer><feFuncR type="linear" slope="0.42"/>'
-        + '<feFuncG type="linear" slope="0.42"/><feFuncB type="linear" slope="0.42"/></feComponentTransfer></filter>';
+        + '<feGaussianBlur stdDeviation="3" edgeMode="duplicate"/></filter>';
       const personen = art === 'person', koepfe = [];
       const zierfrei = (s) => { const r = String(s).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '')
         .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').replace(/\s+/g, ' ').trim(); return r || String(s).trim(); };
@@ -8590,14 +8629,18 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
                  if (plan){
                    kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
                      + `<g clip-path="url(#skz${i})" pointer-events="none"><image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
-                     + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/></g>`;
+                     + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>`
+                     + `<rect class="rauch" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="#000" opacity="0.29"/></g>`;
                    koepfe.push(plan.text);
                  }
                  return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
                    + `<image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
                    + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>`
+                   /* Reihenfolge (Caspar_D: „erst das Rauchglas auf das Bild und dann die Färbung"): Bild,
+                      Rauchglas, Farbstich, Zellfarbe mit Rand - so traegt der Kopf den Ton der Zelle. */
+                   + kopf
                    + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"/>`
-                   + alles + kopf;
+                   + alles;
                });
       if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
       const tipps = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
@@ -8612,6 +8655,7 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
 }
 function schaumEinsetzen(f){
   const bild = $('schaumbild');
+  schaumBildArt = f.art;
   bild.innerHTML = f.svg;
   const svg = bild.querySelector('svg');
   let laeuft = null;
@@ -8641,6 +8685,21 @@ function schaumEinsetzen(f){
   }
   schaumTakt();
   schaumKontrastVorbereiten(svg);
+  schaumRauch(svg);
+  /* DER AUSWAHLRAHMEN LIEGT UEBER ALLEM (Caspar_D, 06.10.2026: „der Selektionsrahmen muß über allem
+     liegen"). Als Strich der Zelle selbst verschwand er halb unter den Nachbarn, dem Glas und den
+     Namen; jetzt zieht eine eigene, oberste Ebene den Umriss der Zelle unter der Maus nach. */
+  if (svg){
+    const NS = 'http://www.w3.org/2000/svg', r = document.createElementNS(NS, 'svg');
+    r.setAttribute('viewBox', svg.getAttribute('viewBox')); r.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    r.classList.add('schaumrahmen');
+    const rp = document.createElementNS(NS, 'path');
+    rp.setAttribute('fill', 'none'); rp.setAttribute('stroke', '#ffffff'); rp.setAttribute('stroke-width', '2.6'); rp.setAttribute('stroke-linejoin', 'round');
+    rp.setAttribute('visibility', 'hidden'); r.appendChild(rp); bild.appendChild(r);
+    bild.onmouseover = (e) => { const p = e.target.closest && e.target.closest('path[data-id]');
+      if (p){ rp.setAttribute('d', p.getAttribute('d')); rp.setAttribute('visibility', 'visible'); } else rp.setAttribute('visibility', 'hidden'); };
+    bild.onmouseleave = () => rp.setAttribute('visibility', 'hidden');
+  }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
     if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
 }
@@ -8730,6 +8789,37 @@ function schaumKontrastMischen(){
     }
     const Y = schaumLeuchtdichte(c);
     e.t.setAttribute('fill', (Y + 0.05) / 0.05 > 1.05 / (Y + 0.05) ? '#000000' : '#ffffff');
+  }
+}
+
+/* RAUCHGLAS NUR, WO ES NOETIG IST. Je Kopf die hellsten 20 % der Bildpunkte des Avatars im
+   Kopfstreifen (Weichzeichnen aendert den Mittelwert nicht, helle Flecken aber bleiben die
+   Gefahr); daraus die Abdunklung, bei der die relative Leuchtdichte hoechstens 0,15 ist - dort
+   hat weisse Schrift bei 80 % Deckkraft noch gut 4 : 1. Abdunkeln um den Faktor s senkt die
+   Leuchtdichte etwa um s hoch 2,2. Laesst sich ein Avatar nicht lesen (Suno ohne CORS), bleibt die
+   Vorgabe 0,29. */
+async function schaumRauch(svg){
+  if (!svg) return;
+  const lauf = schaumKontrastLauf;
+  for (const r of svg.querySelectorAll('rect.rauch')){
+    const img = r.previousElementSibling; if (!img || img.tagName.toLowerCase() !== 'image') continue;
+    const d = await schaumBildLesen(img.getAttribute('href'));
+    if (lauf !== schaumKontrastLauf) return;                       /* inzwischen ein neuer Schaum */
+    if (!d) continue;
+    const x = +img.getAttribute('x'), y = +img.getAttribute('y'), w = +img.getAttribute('width'), h = +img.getAttribute('height');
+    const sk = Math.max(w / d.nw, h / d.nh), ox = x + (w - d.nw * sk) / 2, oy = y + (h - d.nh * sk) / 2, f = d.w / d.nw;
+    const bx = +r.getAttribute('x'), by = +r.getAttribute('y'), bw = +r.getAttribute('width'), bh = +r.getAttribute('height');
+    const x0 = Math.max(0, Math.floor((bx - ox) / sk * f)), x1 = Math.min(d.w, Math.ceil((bx + bw - ox) / sk * f));
+    const y0 = Math.max(0, Math.floor((by - oy) / sk * f)), y1 = Math.min(d.h, Math.ceil((by + bh - oy) / sk * f));
+    const ys = [];
+    for (let yy = y0; yy < Math.max(y1, y0 + 1); yy++) for (let xx = x0; xx < Math.max(x1, x0 + 1); xx++){
+      const i = (Math.min(yy, d.h - 1) * d.w + Math.min(xx, d.w - 1)) * 4;
+      ys.push(schaumLeuchtdichte([d.d[i] / 255, d.d[i + 1] / 255, d.d[i + 2] / 255]));
+    }
+    ys.sort((a, b) => a - b);
+    const Y = ys[Math.floor(ys.length * 0.8)] || 0;
+    const s = Y <= 0.15 ? 1 : Math.pow(0.15 / Y, 1 / 2.2);
+    r.setAttribute('opacity', (1 - s).toFixed(3));
   }
 }
 

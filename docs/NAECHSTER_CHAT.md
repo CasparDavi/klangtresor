@@ -7569,3 +7569,16 @@ seine Zelle zugeschnitten. **Milchglas statt Schwarz** (Caspar_D: „Abschneiden
 Lösung, lege ein Blur auf den Abschnitt … das Blur-Glas kann etwas schwärzen, damit der Text
 immer weiß sein kann"): Avatar über die ganze Zelle, im Kopf eine Kopie mit `#skglas`
 (Gauss 3, Helligkeit × 0,42). Sandkasten, 150 Personen: 90 Kopfzeilen, Bild an Caspar_D.
+**Groupieschaum, Maße und Glas (06.10. abends):** „Fläche nach" im Groupieschaum: Herzen +
+Kommentare (Vorgabe), Herzen, Kommentare (mit Antworten), Aktuell (jede Reaktion mit 30 Tagen
+Halbwertszeit — nicht 1/Tage seit dem letzten Kontakt, das kippt bei heute gegen unendlich),
+Titel (verschiedene Titel), Treue (Tage zwischen erster und letzter Reaktion, mindestens 1);
+gemerkt in `mysuno-groupie-mass`. **Auswahlrahmen über allem** (Caspar_D): eigene oberste
+SVG-Ebene `svg.schaumrahmen`, zieht den Umriss der Zelle unter der Maus nach (statt Hover-Strich
+der Zelle). **Rauchglas nach Bedarf** (Caspar_D: „nur die Hälfte", dann „nur dort, wo es nötig
+ist", dann „erst das Rauchglas auf das Bild und dann die Färbung"): Filter nur noch Weichzeichnen;
+je Kopf ein schwarzes `rect.rauch`, Deckkraft aus den hellsten 20 % des Avatars im Kopf
+(`schaumRauch()`, Ziel Leuchtdichte ≤ 0,15; Vorgabe 0,29, falls ein Avatar nicht lesbar ist);
+Reihenfolge Bild → Glas → Farbstich → Zellfarbe → Schrift. Sandkasten: 90 Köpfe, 39 ohne Rauch,
+51 angepasst (bis 0,58); Suno erlaubt das Lesen der Avatare (CORS). Beim Wechsel zwischen Klang-
+und Groupieschaum wird das Feld geleert (`schaumBildArt`).
