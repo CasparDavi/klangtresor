@@ -7660,3 +7660,60 @@ zuzuschauen wäre schon schick; Fugen breiter."
 **Brainstorm „Mural" (kein Auftrag):** Caspar_D: „angenommen, jemand möchte seine Songs als Mural
 exportieren … wie könnten wir sie unterstützen, den Klangschaum in eine perfektionierte Druckdatei
 zu exportieren — Titel, Farben passend zum Aufhängort und und und." Ideen Claude in §52.
+
+## 52. 06.10.2026 spät: Schaum-Bauliste erledigt (Release 1.0.21), Live offen, Mural-Ideen
+
+**Erledigt aus §51:**
+1. Fugen Groupieschaum `strokes: [9, 5.5]` (vorher 5.5/3.4).
+2. Vorrechnen + Merken: `schaumVorrechnen()` legt nach jedem Einsetzen (1,5 s später) in einem
+   zweiten Worker nacheinander die übrigen Maße des Raums (Klangschaum: in der gewählten
+   Gliederung/Zoomstufe); übersprungen wird, was gemerkt ist oder vorn gerade gelegt wird; wer den
+   Raum verlässt, hält die Reihe nach dem laufenden Auftrag an; wählt man ein Maß, das hinten gerade
+   liegt, wartet die Seite darauf („… wird schon vorgerechnet"). Merken: `lageMerken/lageLesen`,
+   IndexedDB `klangtresor-schaum` (Stores `lagen`, `zeiten`; Schlüssel = `schaumHash(lage)`, volle
+   Lage zur Probe daneben; höchstens 40, die ältesten fliegen). Gleiche Rechnung vorn und hinten:
+   `schaumKlangAuftrag`, `groupieAuftrag`.
+3. Morph: `schaumEinsetzen` → `schaumMorph` bei gleicher Art, anderem Layout, gleicher Größe,
+   sichtbarer Seite, ohne „Bewegung reduzieren": Bilder blenden weg, Umrisse (40 Punkte, beste
+   Drehung) fließen in 1 s, neue wachsen aus dem Mittelpunkt, wegfallende schrumpfen, Farbe wechselt
+   zur Hälfte, dann blendet das neue Bild ein (`schaumEinsetzenJetzt(f, true)`); Notausgang nach
+   2,6 s, falls die Seite keine Bilder zeichnet.
+4. **Startpunkte im Groupieschaum** (`groupieSaat`): Caspar_D: „beim Schaum optimiert man nur
+   Drücke, dann müsste sich doch nur das Netz bei Größenänderungen verschieben." Stimmt fast — die
+   Engine verschiebt beim Lösen auch die Zentren (kompakte Zellen), aber mit gemeinsamem Start bleibt
+   das Netz an seinem Ort. Ohne Startpunkte legte sie die größte Zelle in die Mitte, jedes Maß sah
+   anders aus. Jetzt: je Areal ein senkrechter Streifen (Breite nach Herzen + Kommentare), darin
+   Sonnenblumenspirale, Fleißigste in der Mitte — unabhängig vom gewählten Maß. Gemessen an 80
+   Personen (Wanderweg der Zellmitten gegen „Herzen + Kommentare", Bildbreite 1000, Median/90 %):
+   „Titel" (nur Größen ändern sich) ohne Start 352/792, Spirale 36/76, altes Layout als Start
+   38/80; „Kommentare" (ein Areal fällt weg) 488/813 → 113/194 → 108/184. Rechenzeit gleich
+   (0,6–1,1 s). Spirale genommen: hängt an keinem vorher gerechneten Layout.
+   `schaumSaatSchluessel(zeilen, ebenen, punkte)` macht aus Punkten je Zeile die Engine-Schlüssel
+   (gemeinsam mit `schaumSaat`).
+5. Fehler gefunden: „Aktuell" rechnete mit der Uhrzeit → Layout-Schlüssel änderte sich jede Sekunde,
+   das Vorrechnen legte das Maß immer wieder (fünfmal im Speicher). Jetzt Tagesanfang als „jetzt".
+
+**Live beim ersten Rechnen — nicht gebaut, wartet auf Caspar_Ds Wort.** Die Engine meldet
+Fortschritt nur je Gefäß (`onProgress` nach dem Teilen, die Umrisse der Kinder kommen erst danach).
+Im echten Groupieschaum braucht ein einziges Gefäß („nur Herzen", 351 Personen) neun Zehntel der
+Zeit — Gefäß für Gefäß zu zeigen hieße: drei Areale, dann 25 s nichts. Wirkliches Zusehen braucht
+einen Rückruf in den Iterationen von `layout()` (Leistungsdiagramm/Plateau-Schritte) — eine Änderung
+an Caspar_Ds Engine, also erst in der Quelle (Prophane foam-lab/Treemapper), dann hierher kopiert.
+Treemapper hat mit `maxDepth`/`growth.mjs` schon eine Aufschäum-Animation (Ebene für Ebene). Durch
+Vorrechnen + Merken tritt die Wartezeit ohnehin nur einmal je Datenstand auf.
+
+**Mural-Ideen (Brainstorm, kein Auftrag):**
+- *Format:* Zielgröße wählen (50×70, 70×100, A1, A0, Tapete in Bahnen) — das Layout wird im
+  Zielverhältnis neu gelegt (heute auf 0,4–1,2 begrenzt). Vektor (SVG → PDF) statt Pixel: A0 mit
+  300 dpi wären 9933×14043 px, über der Leinwandgrenze der Browser. Cover in voller Auflösung statt
+  `kachel.jpg`. 3 mm Beschnitt, Schnittmarken; bei Bahnen Überlappung und Nummern.
+- *Schrift:* Größe nach Leseabstand statt nach Bildschirm (Mindestgröße in mm), Schrift eingebettet;
+  Kopf- oder Fußleiste mit Name, Zeitraum, Zahl der Titel, Maß, Legende; QR-Code zum Suno-Profil.
+- *Farbe:* Vorgaben nach Aufhängort — Wandfarbe (Fugenfarbe passend: helle Fuge auf heller Wand
+  wirkt wie Passepartout), Licht (Tages-/Warmlicht), Papier (matt/glänzend). Farbstich und Deckung
+  (soft-light) vor dem Druck flach rechnen, Druckereien behandeln Mischmodi verschieden;
+  Warnung für leuchtende sRGB-Töne außerhalb CMYK.
+- *Vorschau:* Wand mit Maßstab (Sofa/Person), 100-%-Ausschnitt zum Prüfen der kleinsten Schrift.
+- *Weg:* ganz im Browser des Nutzers (App läuft ohne Claude) — PDF über den Druckdialog mit
+  `@page size`, große Pixelbilder kachelweise. Groupieschaum: Avatare fremder Personen nicht ohne
+  deren Einwilligung drucken — Druck nur für den Klangschaum oder Groupies ohne Bilder.

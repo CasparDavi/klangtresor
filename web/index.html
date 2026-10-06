@@ -150,6 +150,7 @@ h1{
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
 #schaumbild svg.schaumrahmen{pointer-events:none}
 #schaumbild{transition:opacity .25s}
+#schaumbild svg{transition:opacity .3s}
 .farbwahl{position:relative;margin-top:4px}
 .farbwahl .fw-knopf,.farbwahl .fw-wahl{display:flex;align-items:center;gap:6px;width:100%;font:inherit;font-size:13px;color:var(--text);background:var(--flaeche2);border:1px solid var(--rand);border-radius:8px;padding:5px 8px;cursor:pointer;text-align:left}
 .farbwahl i{width:14px;height:14px;border-radius:3px;flex:0 0 14px}
@@ -8330,12 +8331,16 @@ function schaumSaat(zeilen, ebenen, W, H){
   const abb = (p) => [W * (rand + (1 - 2 * rand) * (p[0] - x0) / ((x1 - x0) || 1)),
                       H * (1 - rand - (1 - 2 * rand) * (p[1] - y0) / ((y1 - y0) || 1))];   /* Mathe-Koordinaten: y nach oben */
   const ohne = zeilen.length - da.length; let k = 0;
+  return schaumSaatSchluessel(zeilen, ebenen, zeilen.map((z, ri) => {
+    if (pts[ri]) return abb(pts[ri]);
+    const r = Math.sqrt((k + 0.5) / ohne) * 0.4 * Math.min(W, H), a = k++ * 2.39996; return [W / 2 + r * Math.cos(a), H / 2 + r * Math.sin(a)]; }));
+}
+/* Startpunkte je Zeile -> Startpunkte je Knoten der Engine (Gefaesse: Mittel ihrer Zeilen). */
+function schaumSaatSchluessel(zeilen, ebenen, punkte){
   const saat = {}, summe = new Map();
   const dazu = (key, q) => { const s = summe.get(key) || [0, 0, 0]; s[0] += q[0]; s[1] += q[1]; s[2]++; summe.set(key, s); };
   zeilen.forEach((z, ri) => {
-    let q;
-    if (pts[ri]) q = abb(pts[ri]);
-    else { const r = Math.sqrt((k + 0.5) / ohne) * 0.4 * Math.min(W, H), a = k++ * 2.39996; q = [W / 2 + r * Math.cos(a), H / 2 + r * Math.sin(a)]; }
+    const q = punkte[ri];
     q[0] += (ri % 7) * 1e-3; q[1] += (ri % 5) * 1e-3;          /* zwei Sterne an einer Stelle: nie derselbe Startpunkt */
     let last = '(none)'; const teile = [];
     for (const l of ebenen){ const v = (z[l] || '').trim(), name = v || last; last = name; teile.push(name); dazu(teile.join('\u0001'), q); }
@@ -8370,7 +8375,7 @@ function schaumFarbe(k, kette, farbeVon, gezoomt){
    Herzen aus Sunos Liker-Listen, Kommentare und Antworten aus den Kommentarfaeden, die eigenen
    herausgerechnet. Die Flaeche ist Herzen + Kommentare + Antworten. Ein Klick zeigt die Spur der
    Person durch das Archiv (reaktPersonAlleine). Die Avatare kommen live von Suno, wie im
-   Reaktionsfenster - ohne Netz bleiben die Farben. Kein Hineinzoomen, keine Startpunkte. */
+   Reaktionsfenster - ohne Netz bleiben die Farben. Kein Hineinzoomen; Startpunkte aus groupieSaat. */
 let schaumLeute = null;
 /* Warme Farben (Caspar_D, 06.10.2026: „nimm eher warme Standardfarben, meist sind es Gesichter, die
    sollten lieber etwas wärmer aussehen, wenn eine Farbe drauf kommt"): Herzen koralle, beides
@@ -8422,7 +8427,10 @@ const GROUPIE_MASSE = [
 let groupieMass = (() => { try { return localStorage.getItem('mysuno-groupie-mass') || 'beides'; } catch (e) { return 'beides'; } })();
 async function groupieZeilen(m){
   if (!schaumLeute){ try { schaumLeute = (await (await fetch('/api/community', { cache: 'no-store' })).json()).leute || []; } catch (e) { schaumLeute = []; } }
-  const jetzt = Date.now(), TAG = 86400000;
+  /* „Jetzt" ist der Tagesanfang: mit der Uhrzeit aenderte sich das Gewicht von „Aktuell" jede
+     Sekunde, damit der Layout-Schluessel - das Gemerkte passte nie, und das Vorrechnen legte dasselbe
+     Mass immer wieder. Reaktionen von heute zaehlen voll. */
+  const TAG = 86400000, jetzt = Math.floor(Date.now() / TAG) * TAG;
   return schaumLeute.map(l => {
     const alle3 = [...(l.likes || []), ...(l.kommentare || []), ...(l.antworten || [])];
     const h = (l.likes || []).length, k = (l.kommentare || []).length + (l.antworten || []).length;
@@ -8514,13 +8522,11 @@ async function schaumZeichnen(){
 
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = `Kein Titel hat bei ${m.name} mehr als null.`; return; }
   /* Das Seitenverhaeltnis des Feldes, auf 0,05 gerundet - sonst legte jedes Pixel neu. */
-  const rect = $('schaumfeld').getBoundingClientRect();
-  const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
-  const schluessel = [m.id, gl.id, schaumZoom || '', verh, karteVerf, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
+  const j = schaumKlangAuftrag(m, gl, schaumZoom, schaumVerh()), schluessel = j.lage;
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
-  const gezoomt = !!schaumZoom, ebenen = gezoomt ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
-  schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds: schaumSaat(zeilen, ebenen, W, H), farbeVon, gezoomt, art: 'titel',
+  const gezoomt = !!schaumZoom;
+  schaumLegen({ schluessel, lage: j.lage, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, farbeVon, gezoomt, art: 'titel',
     tipp: z => (z.titel || '') + ' · ' + m.text(+z.w), meldung: 'Dein Klang wird aufgeschäumt' });   /* Caspar_Ds Wortlaut, 06.10.2026 */
 }
 async function groupieZeichnen(){
@@ -8546,20 +8552,115 @@ async function groupieZeichnen(){
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
-  const rect = $('schaumfeld').getBoundingClientRect();
-  const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
-  const lage = ['groupies', m.id, verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'), schluessel = lage + '|' + groupiePalette;
+  const j = await groupieAuftrag(m, schaumVerh()), lage = j.lage, schluessel = lage + '|' + groupiePalette;
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
-  const W = 1000, H = Math.round(1000 * verh);
-  schaumLegen({ schluessel, zeilen, ebenen: ['gruppe'], W, H, seeds: null, lage, farbeVon: n => groupieFarbe(n), gezoomt: false, art: 'person',
+  schaumLegen({ schluessel, zeilen: j.zeilen, ebenen: j.ebenen, W: j.W, H: j.H, seeds: j.seeds, lage, farbeVon: n => groupieFarbe(n), gezoomt: false, art: 'person',
     tipp: z => z.titel + ' · ' + groupieText(z) + (m.id === 'beides' || m.id === 'herzen' || m.id === 'kommentare' ? '' : ' · ' + m.text(+z.w)),
     meldung: 'Deine Groupies werden aufgeschäumt' });
 }
 /* Legt einen Schaum im Worker, zeichnet ihn und merkt ihn sich - fuer Titel und fuer Personen. */
 let schaumBildArt = null;          /* was gerade im Feld steht: 'titel' oder 'person' */
 const schaumLagen = new Map();      /* Layout-Schluessel -> gelegter Baum (ohne Farben) */
-function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
+/* UEBER DIE SITZUNG HINAUS (Caspar_D, 06.10.2026: „übrige Maße im Hintergrund rechnen und über die
+   Sitzung hinaus merken"). Jedes gelegte Layout geht zusaetzlich in IndexedDB
+   ('klangtresor-schaum'; Schluessel = Hash des Layout-Schluessels, der volle Schluessel liegt zur
+   Probe daneben; hoechstens 40, die aeltesten fliegen). Aendern sich Abrufe oder Reaktionen, ist es
+   ein neuer Schluessel. Fehlt IndexedDB, bleibt es beim Merken in der Sitzung. */
+const schaumDB = (() => { let p = null; return () => p || (p = new Promise(ok => {
+  try { const r = indexedDB.open('klangtresor-schaum', 1);
+    r.onupgradeneeded = () => { r.result.createObjectStore('lagen'); r.result.createObjectStore('zeiten'); };
+    r.onsuccess = () => ok(r.result); r.onerror = () => ok(null); } catch (e) { ok(null); } })); })();
+const schaumHash = (s) => { let a = 0x811c9dc5, b = 0x9e3779b9 ^ s.length;
+  for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619); b = Math.imul(b ^ c, 2246822519); }
+  return (a >>> 0).toString(36) + '-' + (b >>> 0).toString(36) + '-' + s.length.toString(36); };
+async function lageLesen(lage){
+  if (schaumLagen.has(lage)) return schaumLagen.get(lage);
+  const db = await schaumDB(); if (!db) return null;
+  return new Promise(ok => { try { const q = db.transaction('lagen').objectStore('lagen').get(schaumHash(lage));
+    q.onsuccess = () => { const v = q.result; if (v && v.lage === lage){ schaumLagen.set(lage, v.res); ok(v.res); } else ok(null); };
+    q.onerror = () => ok(null); } catch (e) { ok(null); } });
+}
+async function lageMerken(lage, res){
+  schaumLagen.set(lage, res);
+  const db = await schaumDB(); if (!db) return;
+  try {
+    const tx = db.transaction(['lagen', 'zeiten'], 'readwrite'), k = schaumHash(lage), alle = [];
+    tx.objectStore('lagen').put({ lage, res }, k); tx.objectStore('zeiten').put(Date.now(), k);
+    const q = tx.objectStore('zeiten').openCursor();
+    q.onsuccess = () => { const c = q.result; if (c){ alle.push([c.key, c.value]); c.continue(); return; }
+      if (alle.length > 40){ alle.sort((x, y) => x[1] - y[1]);
+        for (const [kk] of alle.slice(0, alle.length - 40)){ tx.objectStore('lagen').delete(kk); tx.objectStore('zeiten').delete(kk); } } };
+  } catch (e) {}
+}
+const schaumVerh = () => { const rect = $('schaumfeld').getBoundingClientRect();
+  return Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20)); };
+/* Was ein Layout braucht - fuer die sichtbare Ansicht und fuer das Vorrechnen dieselbe Rechnung. */
+function schaumKlangAuftrag(m, gl, zoom, verh){
+  const alleZ = [];
+  for (const s of alle.filter(x => !x.fremd)){ const w = m.wert(s); if (!(w > 0)) continue;
+    const [oben, unten] = gl.von(s); alleZ.push({ gruppe: oben, genre: unten, titel: s.titel || '—', id: s.id, w: String(w) }); }
+  const zeilen = zoom ? alleZ.filter(z => z.gruppe === zoom) : alleZ;
+  const ebenen = zoom ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
+  return { lage: [m.id, gl.id, zoom || '', verh, karteVerf, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'),
+           zeilen, ebenen, W, H, seeds: zeilen.length ? schaumSaat(zeilen, ebenen, W, H) : null };
+}
+async function groupieAuftrag(m, verh){
+  const zeilen = await groupieZeilen(m), W = 1000, H = Math.round(1000 * verh);
+  return { lage: ['groupies', m.id, verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'), zeilen, ebenen: ['gruppe'], W, H,
+           seeds: zeilen.length ? groupieSaat(zeilen, W, H) : null };
+}
+/* STARTPUNKTE IM GROUPIESCHAUM: ohne sie legt die Engine die groesste Zelle in die Mitte, jedes Mass
+   sah anders aus, und im Morph wanderten die Zellen quer durchs Bild. Jetzt beginnt jede Person in
+   jedem Mass an derselben Stelle: ihr Areal ist ein senkrechter Streifen (nur Herzen, beides, nur
+   Kommentare; so breit wie Herzen und Kommentare dort zusammen), darin eine Sonnenblumenspirale mit
+   den Fleissigsten (Herzen + Kommentare) in der Mitte. Die Lage haengt also nie am gewaehlten Mass. */
+function groupieSaat(zeilen, W, H){
+  const streifen = new Map(GROUPIE_AREALE.map(a => [a, []])), pos = new Map();
+  for (const l of schaumLeute || []){
+    const h = (l.likes || []).length, k = (l.kommentare || []).length + (l.antworten || []).length;
+    if (l.handle && h + k) streifen.get(h && k ? GROUPIE_AREALE[1] : h ? GROUPIE_AREALE[0] : GROUPIE_AREALE[2]).push({ id: l.handle, b: h + k });
+  }
+  const gesamt = [...streifen.values()].flat().reduce((s, p) => s + p.b, 0) || 1;
+  let x0 = 0;
+  for (const leute of streifen.values()){
+    const breite = W * leute.reduce((s, p) => s + p.b, 0) / gesamt, cx = x0 + breite / 2, n = leute.length;
+    leute.sort((a, b) => b.b - a.b).forEach((p, k) => { const r = Math.sqrt((k + 0.5) / n), a = k * 2.39996;
+      pos.set(p.id, [cx + 0.42 * breite * r * Math.cos(a), H / 2 + 0.42 * H * r * Math.sin(a)]); });
+    x0 += breite;
+  }
+  return schaumSaatSchluessel(zeilen, ['gruppe'], zeilen.map(z => (pos.get(z.id) || [W / 2, H / 2]).slice()));
+}
+/* DIE UEBRIGEN MASSE IM HINTERGRUND: steht eine Ansicht, legt ein zweiter Worker nacheinander die
+   anderen Masse desselben Raums (Klangschaum: in der gewaehlten Gliederung). Was gemerkt ist oder
+   gerade vorn gelegt wird, wird uebersprungen; wer den Raum verlaesst, haelt die Reihe an. Waehlt
+   man ein Mass, das hinten gerade liegt, wartet die Seite darauf statt doppelt zu rechnen. */
+let schaumHinten = null, schaumWartet = null;
+async function schaumVorrechnen(){
+  if (schaumHinten || register !== 'karte' || (raumJetzt !== 'schaum' && raumJetzt !== 'groupies')) return;
+  const raum = raumJetzt, verh = schaumVerh(), auftraege = [];
+  if (raum === 'groupies') for (const m of GROUPIE_MASSE) auftraege.push(() => groupieAuftrag(m, verh));
+  else { const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0], zoom = schaumZoom;
+    for (const m of schaumMasse()) auftraege.push(async () => schaumKlangAuftrag(m, gl, zoom, verh)); }
+  schaumHinten = { lage: null, worker: null };
+  for (const auftrag of auftraege){
+    if (register !== 'karte' || raumJetzt !== raum) break;
+    const j = await auftrag();
+    if (!j.zeilen.length || (schaumArbeit && schaumArbeit.lage === j.lage) || await lageLesen(j.lage)) continue;
+    const res = await new Promise(ok => {
+      let w; try { w = new Worker('/klangschaum/worker.js', { type: 'module' }); } catch (e) { ok(null); return; }
+      schaumHinten = { lage: j.lage, worker: w };
+      w.onmessage = (ev) => { if (ev.data.type === 'progress') return; w.terminate(); ok(ev.data.type === 'done' ? ev.data.res : null); };
+      w.onerror = () => { w.terminate(); ok(null); };
+      w.postMessage({ rows: j.zeilen, tree: { levels: [...j.ebenen, 'row'], weight: 'w', leafName: 'titel' },
+                      layout: { width: j.W, height: j.H, method: 'foam', minArea: 0, minShare: 0, ...(j.seeds ? { seeds: j.seeds } : {}) } });
+    });
+    if (res) await lageMerken(j.lage, res);
+    if (res && schaumWartet === j.lage){ schaumWartet = null; schaumZeichnen(); }
+  }
+  schaumHinten = null;
+}
+async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   const stand = $('schaumstand');
   /* Beim Wechsel zwischen Klang- und Groupieschaum stand sonst bis zum Fertigrechnen das Bild des
@@ -8639,7 +8740,7 @@ function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, 
       };
       let svg = R.renderSVG(res, { pad: 0, cushion: 2,
         /* breitere Fugen zwischen den Personen (Caspar_D: „die Fugen sind zu schmal") */
-        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false, strokes: [5.5, 3.4] } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
+        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false, strokes: [9, 5.5] } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
       const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
       const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || artworkKachel(zeilen[k.row].id)) : null);
@@ -8673,13 +8774,19 @@ function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, 
                });
       if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
-      const f = { svg, ids, tipps, art };
+      /* Umrisse fuer den Morph, in Bildschirmlage (y nach unten), auf 40 Punkte umgetastet */
+      const formen = res.leaves.map((k, i) => ids[i] && k.outline && k.outline.length > 2
+        ? { id: ids[i], pts: schaumUmtasten(k.outline.map(p => [p[0], res.height - p[1]]), 40), fill: schaumFarbe(k, R.chainOf, farbeVon, gezoomt) } : null).filter(Boolean);
+      const f = { svg, ids, tipps, art, lage, formen, W: res.width, H: res.height };
       schaumFertig.set(schluessel, f);
       if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
     } catch (e){ stand.textContent = 'Der Schaum ließ sich nicht zeichnen.'; console.log('Klangschaum:', e); }
   };
   /* Schon gelegt (etwa nur die Farben gewechselt): nur neu malen. */
-  if (schaumLagen.has(lage)){ malen(schaumLagen.get(lage)); return; }
+  const gemerkt = schaumLagen.get(lage) || await lageLesen(lage);
+  if (gemerkt){ malen(gemerkt); return; }
+  if (schaumHinten && schaumHinten.lage === lage){
+    $('schaumbild').style.opacity = '0.3'; stand.textContent = meldung + ' … (wird schon vorgerechnet)'; schaumWartet = lage; return; }
   if (schaumArbeit && schaumArbeit.lage === lage) return;          /* wird schon gelegt; die Farben holt schaumZeichnen danach nach */
   if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
   stand.textContent = meldung + ' …';
@@ -8700,18 +8807,76 @@ function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, 
     if (d.type === 'progress') return;
     worker.terminate(); clearInterval(uhr); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
     if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
-    schaumLagen.set(lage, d.res);
+    lageMerken(lage, d.res);
     malen(d.res);
   };
   worker.onerror = (e) => { clearInterval(uhr); stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
   worker.postMessage({ rows: zeilen, tree: { levels: [...ebenen, 'row'], weight: 'w', leafName: 'titel' },
                        layout: { width: W, height: H, method: 'foam', minArea: 0, minShare: 0, ...(seeds ? { seeds } : {}) } });
 }
+/* MORPH (Caspar_D, 06.10.2026: „Morphen machen wir, die Bilder blenden weg, es morpht, die Bilder
+   kommen wieder"). Wechselt nur das Mass (oder die Gliederung), gehen die Bilder aus, die Zellen
+   derselben Person/desselben Titels fliessen in einer Sekunde von alter zu neuer Form (Umrisse auf
+   40 Punkte umgetastet, beste Drehung gesucht), neue wachsen aus ihrem Mittelpunkt, wegfallende
+   schrumpfen hinein; dann blendet das neue Bild ein. Nur Farben im Morph - 470 zugeschnittene
+   Bilder je Einzelbild wuerden ruckeln. Kein Morph bei abbestellter Bewegung, versteckter Seite
+   oder blossem Farbwechsel. */
+let schaumGezeigt = null;
+function schaumUmtasten(pts, N){
+  const n = pts.length, cum = [0];
+  for (let i = 0; i < n; i++){ const a = pts[i], b = pts[(i + 1) % n]; cum.push(cum[i] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
+  const L = cum[n] || 1, aus = []; let j = 0;
+  for (let k = 0; k < N; k++){ const s = k * L / N; while (j < n - 1 && cum[j + 1] < s) j++;
+    const a = pts[j], b = pts[(j + 1) % n], u = (s - cum[j]) / ((cum[j + 1] - cum[j]) || 1); aus.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]); }
+  return aus;
+}
 function schaumEinsetzen(f){
+  const alt = schaumGezeigt, bild = $('schaumbild');
+  schaumGezeigt = f;
+  if (alt && alt !== f && alt.art === f.art && alt.lage !== f.lage && alt.formen && f.formen && alt.W === f.W && alt.H === f.H
+      && bild.querySelector('svg') && !document.hidden && !matchMedia('(prefers-reduced-motion: reduce)').matches)
+    return schaumMorph(bild, alt, f);
+  schaumEinsetzenJetzt(f);
+}
+function schaumMorph(bild, alt, neu){
+  const NS = 'http://www.w3.org/2000/svg', m = document.createElementNS(NS, 'svg'), N = 40;
+  m.setAttribute('viewBox', `0 0 ${neu.W} ${neu.H}`); m.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  m.classList.add('schaummorph'); m.style.opacity = '0'; m.style.pointerEvents = 'none';
+  const mitte = (p) => { let x = 0, y = 0; for (const q of p){ x += q[0]; y += q[1]; } return [x / p.length, y / p.length]; };
+  const punkt = (c) => Array.from({ length: N }, () => c.slice());
+  const am = new Map(alt.formen.map(x => [x.id, x])), nm = new Map(neu.formen.map(x => [x.id, x])), paare = [];
+  for (const id of new Set([...am.keys(), ...nm.keys()])){
+    const a = am.get(id), b = nm.get(id), pa = a ? a.pts : punkt(mitte(b.pts)), pb0 = b ? b.pts : punkt(mitte(a.pts));
+    let best = 0, bd = Infinity;
+    for (let s = 0; s < N; s++){ let d = 0; for (let i = 0; i < N; i++){ const p = pa[i], q = pb0[(i + s) % N]; d += (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2; } if (d < bd){ bd = d; best = s; } }
+    const el = document.createElementNS(NS, 'path');
+    el.setAttribute('fill', (a || b).fill); el.setAttribute('stroke', '#121417'); el.setAttribute('stroke-width', '2'); el.setAttribute('stroke-linejoin', 'round');
+    m.appendChild(el); paare.push({ el, pa, pb: pb0.map((_, i) => pb0[(i + best) % N]), fb: (b || a).fill });
+  }
+  const pfad = (P) => 'M' + P.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z';
+  for (const p of paare) p.el.setAttribute('d', pfad(p.pa));
+  bild.querySelectorAll('svg').forEach(s => { s.style.opacity = '0'; });          /* die Bilder blenden weg */
+  bild.appendChild(m); requestAnimationFrame(() => { m.style.opacity = '1'; });
+  let fertig = false;
+  const ende = () => { if (fertig) return; fertig = true;
+    schaumEinsetzenJetzt(neu, true);                                                 /* die Bilder kommen wieder */
+    bild.appendChild(m); requestAnimationFrame(() => { m.style.opacity = '0'; setTimeout(() => m.remove(), 450); }); };
+  const t0 = performance.now() + 320, DAUER = 1000;
+  const schritt = (now) => { if (fertig) return;
+    const t = Math.min(1, Math.max(0, (now - t0) / DAUER)), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    for (const p of paare){ p.el.setAttribute('d', pfad(p.pa.map((q, i) => [q[0] + (p.pb[i][0] - q[0]) * e, q[1] + (p.pb[i][1] - q[1]) * e])));
+      if (t >= 0.5) p.el.setAttribute('fill', p.fb); }
+    if (t < 1) requestAnimationFrame(schritt); else ende(); };
+  requestAnimationFrame(schritt);
+  setTimeout(ende, 2600);                                                           /* falls die Seite keine Bilder mehr zeichnet */
+}
+function schaumEinsetzenJetzt(f, einblenden){
   const bild = $('schaumbild');
   schaumBildArt = f.art;
   bild.style.opacity = '';
   bild.innerHTML = f.svg;
+  if (einblenden){ const s = bild.querySelector('svg'); if (s){ s.style.opacity = '0'; requestAnimationFrame(() => requestAnimationFrame(() => { s.style.opacity = ''; })); } }
+  setTimeout(schaumVorrechnen, 1500);
   const svg = bild.querySelector('svg');
   let laeuft = null;
   bild.querySelectorAll('path[data-i]').forEach(p => {
