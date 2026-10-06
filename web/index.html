@@ -149,6 +149,15 @@ h1{
 #schaumbild svg.schaumwaber{pointer-events:none}
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
 #schaumbild svg.schaumrahmen{pointer-events:none}
+#schaumbild{transition:opacity .25s}
+.farbwahl{position:relative;margin-top:4px}
+.farbwahl .fw-knopf,.farbwahl .fw-wahl{display:flex;align-items:center;gap:6px;width:100%;font:inherit;font-size:13px;color:var(--text);background:var(--flaeche2);border:1px solid var(--rand);border-radius:8px;padding:5px 8px;cursor:pointer;text-align:left}
+.farbwahl i{width:14px;height:14px;border-radius:3px;flex:0 0 14px}
+.farbwahl .fw-knopf b{margin-left:auto;font-weight:400;color:var(--schwach)}
+.farbwahl .fw-liste{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:5;flex-direction:column;gap:3px;background:var(--flaeche);border:1px solid var(--rand);border-radius:10px;padding:5px;box-shadow:0 10px 28px rgba(0,0,0,.5)}
+.farbwahl.auf .fw-liste{display:flex}
+.farbwahl .fw-wahl{border-color:transparent;background:none}
+.farbwahl .fw-wahl:hover,.farbwahl .fw-wahl.an{background:var(--flaeche2)}
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
 /* Die Titel klar und ohne Rand (Caspar_D, 06.10.2026: „den Text bitte klar ohne Rand", dann
    „mach sie auf 80 % Deckkraft"). Ein Gegenrand stand hier einen Nachmittag lang. Schwarz oder
@@ -4088,6 +4097,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
   <div id="schaumrechts" hidden>
     <h3 id="schaumtitel">Klangschaum</h3>
     <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
+    <div class="fussnote" id="groupiefarbenzeile" hidden>Farben<div id="groupiefarben" class="farbwahl"></div></div>
     <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
     <label class="fussnote">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
       <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
@@ -8365,7 +8375,33 @@ let schaumLeute = null;
 /* Warme Farben (Caspar_D, 06.10.2026: „nimm eher warme Standardfarben, meist sind es Gesichter, die
    sollten lieber etwas wärmer aussehen, wenn eine Farbe drauf kommt"): Herzen koralle, beides
    apricot, Kommentare gold - vorher rot, violett, blau, und Blau und Violett machten Haut fahl. */
-const GROUPIE_FARBE = { 'nur Herzen': '#e0604a', 'Herzen und Kommentare': '#e8923a', 'nur Kommentare': '#d8b04a' };
+/* Dann (Caspar_D: „die Farben sind zu ähnlich … warm mit Gegenpol ist der Standard, mach ein
+   Dropdown mit Farbwahl, zeige die Farben dabei"): fuenf Paletten, je nur Herzen / beides / nur
+   Kommentare; die Liste zeigt die drei Farben jeder Palette. Ein Wechsel malt nur neu - das
+   Layout bleibt gemerkt (schaumLagen). */
+const GROUPIE_PALETTEN = [
+  { id: 'E', name: 'Warm mit Gegenpol', f: ['#e0604a', '#e3b43c', '#2f8f8a'] },
+  { id: 'A', name: 'Glut', f: ['#d6334a', '#f2a227', '#e0758f'] },
+  { id: 'B', name: 'Sonnenuntergang', f: ['#c2307a', '#ef7b2a', '#e9c13a'] },
+  { id: 'C', name: 'Erde', f: ['#c4532f', '#c99a2e', '#7f9a3a'] },
+  { id: 'D', name: 'Wein und Honig', f: ['#8e2240', '#e2a33a', '#ef8a6b'] },
+];
+const GROUPIE_AREALE = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
+let groupiePalette = (() => { try { return localStorage.getItem('mysuno-groupie-farben') || 'E'; } catch (e) { return 'E'; } })();
+const groupiePal = () => GROUPIE_PALETTEN.find(p => p.id === groupiePalette) || GROUPIE_PALETTEN[0];
+const groupieFarbe = (a) => groupiePal().f[GROUPIE_AREALE.indexOf(a)] || null;
+function groupieFarbenWaehlen(id){
+  groupiePalette = id; try { localStorage.setItem('mysuno-groupie-farben', id); } catch (e) {}
+  $('groupiefarben').classList.remove('auf'); schaumZeichnen();
+}
+function groupieFarbwahlBauen(){
+  const el = $('groupiefarben'); if (!el) return;
+  const chips = (p) => p.f.map(c => `<i style="background:${c}"></i>`).join('');
+  const p = groupiePal();
+  el.innerHTML = `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}</span><b>▾</b></button>`
+    + '<div class="fw-liste">' + GROUPIE_PALETTEN.map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="groupieFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}</span></button>`).join('') + '</div>';
+}
+document.addEventListener('click', (e) => { const el = $('groupiefarben'); if (el && !el.contains(e.target)) el.classList.remove('auf'); });
 /* WAS DIE FLAECHE IM GROUPIESCHAUM MISST (Caspar_D, 06.10.2026: „was könnte man bei Fläche nach
    auswählbar machen … eine Zeitkomponente, die aktuelle Kommentierer und Herzer bevorzugt"; „nimm
    alle deine Vorschläge"). Nicht 1/Tage seit dem letzten Kontakt: das kippt gegen unendlich, wenn
@@ -8377,8 +8413,8 @@ const GROUPIE_MASSE = [
   { id: 'beides', name: 'Herzen + Kommentare', wert: z => z.h + z.k, text: n => schaumZahl(n) + ' Herzen und Kommentare' },
   { id: 'herzen', name: 'Herzen', wert: z => z.h, text: n => schaumZahl(n) + ' Herzen' },
   { id: 'kommentare', name: 'Kommentare', wert: z => z.k, text: n => schaumZahl(n) + ' Kommentare', was: 'Antworten zählen mit.' },
-  { id: 'aktuell', name: 'Aktuell', wert: z => z.aktuell, text: n => n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' (gewichtet)',
-    was: 'Herzen und Kommentare, jede Reaktion mit 30 Tagen Halbwertszeit: heute voll, vor einem Monat halb, vor zwei Monaten ein Viertel. Herzen aus Sunos Listen sind teils nur auf ein Zeitfenster genau.' },
+  { id: 'aktuell', name: 'Aktuell', wert: z => z.aktuell >= 1 / 16 ? z.aktuell : 0, text: n => n.toLocaleString('de-DE', { maximumFractionDigits: 1 }) + ' (gewichtet)',
+    was: 'Herzen und Kommentare, jede Reaktion mit 30 Tagen Halbwertszeit: heute voll, vor einem Monat halb, vor zwei Monaten ein Viertel. Wer zusammen weniger als ein Sechzehntel erreicht (etwa: seit vier Monaten nichts), fehlt - sonst wuerden die Groessen so ungleich, dass der Schaum eine Minute braucht. Herzen aus Sunos Listen sind teils nur auf ein Zeitfenster genau.' },
   { id: 'titel', name: 'Titel', wert: z => z.titelZahl, text: n => schaumZahl(n) + ' Titel', was: 'Wie viele verschiedene deiner Titel jemand mit Herz oder Kommentar bedacht hat.' },
   { id: 'treue', name: 'Treue', wert: z => z.treue, text: n => schaumZahl(n) + ' Tage',
     was: 'Tage zwischen erster und letzter Reaktion; wer nur einmal da war, zählt einen Tag.' },
@@ -8408,6 +8444,7 @@ async function schaumZeichnen(){
   $('schaumtitel').textContent = RAUM_NAME[raumJetzt] || 'Klangschaum';
   { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = groupies; }
   { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
+  $('groupiefarbenzeile').hidden = !groupies;
   if (groupies) return groupieZeichnen();
   if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
@@ -8489,6 +8526,7 @@ async function schaumZeichnen(){
 async function groupieZeichnen(){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0];
+  groupieFarbwahlBauen();
   { const sel = $('schaummass'), sig = 'groupies|' + GROUPIE_MASSE.map(x => x.name).join('|');
     if (sel.dataset.stand !== sig){ sel.dataset.stand = sig; sel.innerHTML = GROUPIE_MASSE.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); }
     sel.value = m.id; }
@@ -8500,47 +8538,34 @@ async function groupieZeichnen(){
   const areale = ['nur Herzen', 'Herzen und Kommentare', 'nur Kommentare'];
   $('schaumlegende').innerHTML = '<small>Areale</small>' + areale.map(a => {
     const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0);
-    return `<span class="zeile"><i style="background:${GROUPIE_FARBE[a]}"></i><span><b>${a}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
+    return `<span class="zeile"><i style="background:${groupieFarbe(a)}"></i><span><b>${a}</b><br><small>${zs.length} ${zs.length === 1 ? 'Person' : 'Personen'}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('');
   fuss.textContent = `Groupieschaum: ${zeilen.length} Personen, die auf deine Titel reagiert haben; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
+    + (schaumLeute.length > zeilen.length ? `${schaumLeute.length - zeilen.length} Personen haben bei ${m.name} null und fehlen. ` : '')
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
   const rect = $('schaumfeld').getBoundingClientRect();
   const verh = Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20));
-  const schluessel = ['groupies', m.id, verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|');
+  const lage = ['groupies', m.id, verh, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'), schluessel = lage + '|' + groupiePalette;
   const fertig = schaumFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; schaumEinsetzen(fertig); return; }
   const W = 1000, H = Math.round(1000 * verh);
-  schaumLegen({ schluessel, zeilen, ebenen: ['gruppe'], W, H, seeds: null, farbeVon: n => GROUPIE_FARBE[n] || null, gezoomt: false, art: 'person',
+  schaumLegen({ schluessel, zeilen, ebenen: ['gruppe'], W, H, seeds: null, lage, farbeVon: n => groupieFarbe(n), gezoomt: false, art: 'person',
     tipp: z => z.titel + ' · ' + groupieText(z) + (m.id === 'beides' || m.id === 'herzen' || m.id === 'kommentare' ? '' : ' · ' + m.text(+z.w)),
     meldung: 'Deine Groupies werden aufgeschäumt' });
 }
 /* Legt einen Schaum im Worker, zeichnet ihn und merkt ihn sich - fuer Titel und fuer Personen. */
 let schaumBildArt = null;          /* was gerade im Feld steht: 'titel' oder 'person' */
-function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
+const schaumLagen = new Map();      /* Layout-Schluessel -> gelegter Baum (ohne Farben) */
+function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
+  lage = lage || schluessel;
   const stand = $('schaumstand');
   /* Beim Wechsel zwischen Klang- und Groupieschaum stand sonst bis zum Fertigrechnen das Bild des
      anderen im Feld - Avatare unter der Ueberschrift „Klangschaum". */
   if (schaumBildArt !== art){ $('schaumbild').innerHTML = ''; schaumBildArt = null; }
-  if (schaumArbeit && schaumArbeit.schluessel === schluessel) return;          /* wird schon gelegt */
-  if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
-  stand.textContent = meldung + ' …';
-  let worker;
-  try { worker = new Worker('/klangschaum/worker.js', { type: 'module' }); }
-  catch (e){ stand.textContent = 'Dieser Browser kann den Schaum nicht im Hintergrund legen.'; return; }
-  /* Die Anzeige zaehlt Sekunden, nicht Schritte: die Engine meldet je Gefaess, und ein grosses
-     Gefaess (351 Personen in „nur Herzen") braucht neun Zehntel der Zeit - „2 von 4" stand dort eine
-     halbe Minute lang. */
-  const t0 = performance.now();
-  const uhr = setInterval(() => { stand.textContent = `${meldung} … ${Math.round((performance.now() - t0) / 1000)} s`; }, 1000);
-  schaumArbeit = { schluessel, worker, uhr };
-  worker.onmessage = async (ev) => {
-    const d = ev.data;
-    if (d.type === 'progress') return;
-    worker.terminate(); clearInterval(uhr); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
-    if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
+  const malen = async (res) => {
     try {
       const R = await import('/klangschaum/render.js');
       const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
@@ -8612,11 +8637,12 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
           text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
             + ` fill="#f4f4f2" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
       };
-      let svg = R.renderSVG(d.res, { pad: 0, cushion: 2,
-        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
+      let svg = R.renderSVG(res, { pad: 0, cushion: 2,
+        /* breitere Fugen zwischen den Personen (Caspar_D: „die Fugen sind zu schmal") */
+        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false, strokes: [5.5, 3.4] } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
-      const ids = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
-      const bilder = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || artworkKachel(zeilen[k.row].id)) : null);
+      const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
+      const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || artworkKachel(zeilen[k.row].id)) : null);
       svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
                .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
                /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
@@ -8627,7 +8653,7 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
                  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
                  const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
                  let kopf = '';
-                 const name = personen ? zierfrei((zeilen[d.res.leaves[+i].row] || {}).titel || '') : '';
+                 const name = personen ? zierfrei((zeilen[res.leaves[+i].row] || {}).titel || '') : '';
                  const plan = name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i) : null;
                  if (plan){
                    kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
@@ -8646,11 +8672,36 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
                    + alles;
                });
       if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
-      const tipps = d.res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
+      const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
       const f = { svg, ids, tipps, art };
       schaumFertig.set(schluessel, f);
       if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
     } catch (e){ stand.textContent = 'Der Schaum ließ sich nicht zeichnen.'; console.log('Klangschaum:', e); }
+  };
+  /* Schon gelegt (etwa nur die Farben gewechselt): nur neu malen. */
+  if (schaumLagen.has(lage)){ malen(schaumLagen.get(lage)); return; }
+  if (schaumArbeit && schaumArbeit.lage === lage) return;          /* wird schon gelegt; die Farben holt schaumZeichnen danach nach */
+  if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
+  stand.textContent = meldung + ' …';
+  /* Das alte Bild sofort abblenden: sonst sieht ein neues Mass eine halbe Minute lang aus, als
+     haette die Wahl nichts bewirkt (Caspar_D: „die Selektion anderer Zellgrößen hat keinen Effekt"). */
+  $('schaumbild').style.opacity = '0.3';
+  let worker;
+  try { worker = new Worker('/klangschaum/worker.js', { type: 'module' }); }
+  catch (e){ stand.textContent = 'Dieser Browser kann den Schaum nicht im Hintergrund legen.'; return; }
+  /* Die Anzeige zaehlt Sekunden, nicht Schritte: die Engine meldet je Gefaess, und ein grosses
+     Gefaess (351 Personen in „nur Herzen") braucht neun Zehntel der Zeit - „2 von 4" stand dort eine
+     halbe Minute lang. */
+  const t0 = performance.now();
+  const uhr = setInterval(() => { stand.textContent = `${meldung} … ${Math.round((performance.now() - t0) / 1000)} s`; }, 1000);
+  schaumArbeit = { schluessel, lage, worker, uhr };
+  worker.onmessage = async (ev) => {
+    const d = ev.data;
+    if (d.type === 'progress') return;
+    worker.terminate(); clearInterval(uhr); if (schaumArbeit && schaumArbeit.worker === worker) schaumArbeit = null;
+    if (d.type === 'error'){ stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', d.message); return; }
+    schaumLagen.set(lage, d.res);
+    malen(d.res);
   };
   worker.onerror = (e) => { clearInterval(uhr); stand.textContent = 'Der Schaum ließ sich nicht legen.'; console.log('Klangschaum:', e.message); worker.terminate(); schaumArbeit = null; };
   worker.postMessage({ rows: zeilen, tree: { levels: [...ebenen, 'row'], weight: 'w', leafName: 'titel' },
@@ -8659,6 +8710,7 @@ function schaumLegen({ schluessel, zeilen, ebenen, W, H, seeds, farbeVon, gezoom
 function schaumEinsetzen(f){
   const bild = $('schaumbild');
   schaumBildArt = f.art;
+  bild.style.opacity = '';
   bild.innerHTML = f.svg;
   const svg = bild.querySelector('svg');
   let laeuft = null;

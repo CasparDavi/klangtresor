@@ -7623,3 +7623,10 @@ Titel mit audio.mp3). Im eigenen Tab per JS testen; die Vorschau ist versteckt u
 für den Groupieschaum `schaumLeute` auf die 150 aktivsten kürzen. Bild herausholen: kleiner
 POST-Empfänger auf 8797 schreibt das SVG, headless Chrome rendert es. Danach Server per PID
 beenden, Sandkasten löschen, `find library -newermt` prüfen.
+**Erledigt aus §49 (06.10. spät, Release 1.0.20):** Standardpalette „Warm mit Gegenpol" (Caspar_D),
+Farbwahl als eigene Liste mit Farbfeldern (`GROUPIE_PALETTEN` E/A/B/C/D, `mysuno-groupie-farben`);
+Layout getrennt vom Bild gemerkt (`schaumLagen`: Layout-Schlüssel ohne Farben) — Farbwechsel malt
+in unter einer Sekunde neu; laufende Rechnung wird nach Layout erkannt (`schaumArbeit.lage`);
+altes Bild beim Legen auf Deckkraft 0,3 (Wahl sichtbar wirksam); Fugen im Groupieschaum
+`strokes: [5.5, 3.4]`; „Aktuell" ohne Personen unter 1/16, Fußnote zählt, wer bei einem Maß fehlt.
+Offen bleibt: Morph (wartet auf Wort), Vorrechnen/IndexedDB (angeboten), Gliederungsideen (§50).
