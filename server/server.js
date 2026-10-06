@@ -947,7 +947,12 @@ function beobachterAblegen(b, gesehen) {
     const altListe = alt && Array.isArray(alt[richtung]) ? alt[richtung] : null;
     if (!altListe) { strom.write(JSON.stringify({ art: 'stand', richtung, anzahl: neu[richtung].length, abgerufenAm: gesehen }) + '\n'); continue; }
     const altMenge = new Set(altListe.map(p => p.handle)), neuMenge = new Set(neu[richtung].map(p => p.handle));
-    for (const p of neu[richtung]) if (!altMenge.has(p.handle)) { zaehl.dazu++; p.seit = [alt.abgerufenAm, gesehen];
+    /* War die alte Liste unvollstaendig (bis 1.0.31 schnitt das Lesezeichen
+       bei 1200 ab), sind Neue in der Liste nicht neu, sondern nachgetragen:
+       kein "dazu", kein seit - sonst meldet der erste volle Lauf tausend
+       langjaehrige Beobachter als gerade dazugekommen. */
+    const altVoll = alt.vollstaendig !== false;
+    for (const p of neu[richtung]) if (!altMenge.has(p.handle)) { if (!altVoll) continue; zaehl.dazu++; p.seit = [alt.abgerufenAm, gesehen];
       strom.write(JSON.stringify({ art: 'dazu', richtung, handle: p.handle, name: p.name, zwischen: [alt.abgerufenAm, gesehen] }) + '\n'); }
     else { const a = altListe.find(x => x.handle === p.handle); if (a && a.seit) p.seit = a.seit; }
     if (neu.vollstaendig) for (const a of altListe) if (!neuMenge.has(a.handle)) { zaehl.weg++;
@@ -1412,14 +1417,17 @@ function tonAusfallSchreiben(alle) {
 }
 /* Wartet dieser Eintrag noch? Ohne lesbares Datum: nein, dann wird
    wieder versucht - lieber einmal zu oft gefragt als nie wieder. */
-function tonAusfallWartet(eintrag, jetzt) {
-  if (!eintrag || typeof eintrag !== 'object') return false;
+function tonAusfallBis(eintrag) {
+  if (!eintrag || typeof eintrag !== 'object') return 0;
   const am = Date.parse(eintrag.am);
-  if (!Number.isFinite(am)) return false;
+  if (!Number.isFinite(am)) return 0;
+  /* Ein Datum in der Zukunft (verstellte Uhr) wuerde ewig warten. */
+  if (am > Date.now() + TON_AUSFALL_TAG) return 0;
   const versuche = Math.max(1, Math.floor(Number(eintrag.versuche)) || 1);
   const tage = Math.min(30, 2 ** Math.min(versuche - 1, 5));
-  return jetzt < am + tage * TON_AUSFALL_TAG;
+  return am + tage * TON_AUSFALL_TAG;
 }
+function tonAusfallWartet(eintrag, jetzt) { return jetzt < tonAusfallBis(eintrag); }
 
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
@@ -2219,6 +2227,10 @@ const server = http.createServer((req, res) => {
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
     const ausfall = tonAusfallLesen(), jetzt = Date.now();
     const fehlt = [], unklar = [];
+    /* Was zurueckgehalten wird, wird gesagt - sonst meldet das Lesezeichen
+       "alle Dateien sind da", waehrend Dateien nur auf ihren Versuch warten. */
+    const wartet = { anzahl: 0, ab: null };
+    let gesperrt = 0;
     for (const s of Object.values(k.songs || {})) {
       if (!s || !s.id || s.fremd || s.imPapierkorb) continue;
       /* Suno sagt selbst, dass der Download gesperrt ist
@@ -2228,9 +2240,18 @@ const server = http.createServer((req, res) => {
          Bestand des Entwicklers liegen alle 154 Remixe mit WAV und MP3.
          Was davon bei Suno trotzdem nicht zu bekommen ist, faengt das
          Ausfallgedaechtnis (tonAusfallWartet). */
-      if (s.freischaltSperre) continue;
       const d = path.join(SONGS, s.id);
+      if (s.freischaltSperre) {
+        if (!fs.existsSync(path.join(d, 'audio.mp3')) || !fs.existsSync(path.join(d, 'audio.wav'))) gesperrt++;
+        continue;
+      }
       const tot = ausfall[s.id] || {};
+      for (const f of ['mp3', 'wav']) {
+        if (fs.existsSync(path.join(d, 'audio.' + f)) || !tonAusfallWartet(tot[f], jetzt)) continue;
+        wartet.anzahl++;
+        const bis = tonAusfallBis(tot[f]);
+        if (!wartet.ab || bis < Date.parse(wartet.ab)) wartet.ab = new Date(bis).toISOString();
+      }
       const ohneMp3 = !fs.existsSync(path.join(d, 'audio.mp3')) && !tonAusfallWartet(tot.mp3, jetzt);
       const ohneWav = !fs.existsSync(path.join(d, 'audio.wav')) && !tonAusfallWartet(tot.wav, jetzt);
       if (!ohneMp3 && !ohneWav) continue;
@@ -2242,7 +2263,7 @@ const server = http.createServer((req, res) => {
       if (s.freigeschaltet === true) fehlt.push(eintrag);
       else if (s.freigeschaltet !== false) unklar.push(eintrag);
     }
-    return jsonAntwort(res, { fehlt, unklar });
+    return jsonAntwort(res, { fehlt, unklar, wartet, gesperrt });
   }
 
   /* Download ging nicht (Remix fremder Titel, not_available, Timeout).

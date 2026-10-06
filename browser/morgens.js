@@ -1666,7 +1666,6 @@
         const feld = richtung === 'followers' ? 'follower' : 'following';
         const ziel = beobachter[feld];
         const gesehen = new Set();
-        let endeGesehen = false;
         for (let seite = 1; seite <= BEOB_MAX_SEITEN; seite++){
           if (seite > 1) await pause();
           const r = await fetch(`${API}/api/profiles/${encodeURIComponent(handle)}/${richtung}?page=${seite}`, { headers: Hb });
@@ -1679,13 +1678,16 @@
           const soll = gesamt[feld];
           zeileB.textContent = `Beobachter … ${beobachter.follower.length}${gesamt.follower != null ? '/' + gesamt.follower : ''} folgen dir, `
             + `${beobachter.following.length}${gesamt.following != null ? '/' + gesamt.following : ''} folgst du (${seiten} Seiten)`;
-          if (!liste.length){ endeGesehen = true; break; }
+          if (!liste.length) break;
           if (!neuHier) break;
-          if (soll != null && ziel.length >= soll){ endeGesehen = true; break; }
+          if (soll != null && ziel.length >= soll) break;
           if (seite === BEOB_MAX_SEITEN) luecke = `${richtung}: ${ziel.length}${soll != null ? '/' + soll : ''} nach ${BEOB_MAX_SEITEN} Seiten`;
         }
         if (ausfall) break;
-        if (!endeGesehen && !luecke && gesamt[feld] != null && ziel.length < gesamt[feld])
+        /* Kuerzer als Sunos eigene Zahl ist eine Luecke - auch wenn die
+           Liste mit einer leeren Seite endet. Dann wird nichts als "weg"
+           gewertet (beobachterAblegen), und das muss die Zeile sagen. */
+        if (!luecke && gesamt[feld] != null && ziel.length < gesamt[feld])
           luecke = `${richtung}: ${ziel.length}/${gesamt[feld]}`;
         await pause();
       }
@@ -1936,15 +1938,27 @@
       }
 
       const mb = (bytes/1048576).toFixed(0);
+      /* Was der Server zurueckhaelt, steht in der Zeile: Dateien, die auf
+         ihren naechsten Versuch warten (Ausfallgedaechtnis), und Titel, die
+         Suno selbst sperrt. Beides ist kein Fehler dieses Laufs - die Farbe
+         bleibt, der Satz sagt es. */
+      const wartet = (liste.wartet && liste.wartet.anzahl) || 0;
+      const wartetAb = wartet && liste.wartet.ab ? new Date(liste.wartet.ab) : null;
+      const gesperrt = liste.gesperrt || 0;
+      const zurueck = (wartet ? `, ${wartet} Datei${wartet===1?'':'en'} warte${wartet===1?'t':'n'} auf einen neuen Versuch`
+          + (wartetAb ? ` (ab ${wartetAb.toLocaleDateString('de-DE')})` : '') : '')
+        + (gesperrt ? `, ${gesperrt} Titel bei Suno gesperrt` : '');
       if (!aufgaben.length && !Object.keys(gelernt).length)
-        zeileTon.textContent = 'Ton holen — nichts zu holen, alle Dateien sind da';
+        zeileTon.textContent = (wartet || gesperrt) ? 'Ton holen — nichts Neues zu holen' + zurueck
+          : 'Ton holen — nichts zu holen, alle Dateien sind da';
       else
         zeileTon.textContent = `Ton holen — ${geholt} Datei${geholt===1?'':'en'} (${mb} MB)`
           + (daneben ? `, ${daneben} nicht bekommen` : '')
           + (halt ? ` — abgebrochen (${halt}), der Rest kommt beim nächsten Lauf` : '')
           + (zuViel ? `, ${zuViel} bleiben für morgen (${DECKEL_TON} je Lauf)` : '')
           + (Object.keys(gelernt).length ? ` · Freischaltstand für ${Object.keys(gelernt).length} Titel gemerkt` : '')
-          + (restFragen ? `, ${restFragen} Titel morgen` : '');
+          + (restFragen ? `, ${restFragen} Titel morgen` : '')
+          + zurueck;
       zeileTon.style.color = halt ? '#f97b14' : daneben ? '#d29922' : '#16be5c';
     }
   }
