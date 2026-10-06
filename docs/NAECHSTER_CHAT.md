@@ -7867,3 +7867,34 @@ hellbeige, cyan". „Tiefer Raum" (am nächsten am Eisnebel) ersetzt durch „Mo
 #9ff3ff, #a9c8ff, #efe0c2, #20d4e8, dahinter #7fb2e6, #d8f6ff, #c9b48f, #5fe0d0). Gemerktes 'tief' fällt
 auf den Standard. Im Klangraum leuchtet das Beige golden — die Korona ist bewusst voll gesättigt
 (koronaFarbe, 21.08.); in Legende und Schäumen bleibt es beige.
+
+## 54. 06.10.2026 Nacht: Plakat-Studio (Mural) — Entscheidungen und Bauliste
+
+Caspar_D: „gut, dann lass uns das Mural bauen" (Live-Zusehen danach). Entscheidungen:
+- PDF: „SVG-Export in ein PDF" → Vektor über die PDF-Ausgabe des Browsers (Druckfenster „Als PDF sichern",
+  `@page size`, Ränder 0). Geprüft (headless, Werkstatt): Filter (Glas-Weichzeichner, Kissen-Licht) rastert
+  Chrome mit 300 ppi, weiche Mischung (soft-light) bleibt, Schrift bleibt Vektor mit eingebetteten
+  Teilschriften (auch Japanisch). Eigene Umwandlung scheiterte an Schriften (CJK, Emoji).
+- Formate: feste Liste plus freie Größe in cm; dazu Quadrat, Triptychon, Bild für soziale Medien.
+- Hinweis „Nur für den privaten Gebrauch …" nur im Groupieschaum, nur im Dialog, nicht im Bild.
+- Statt Dialog ein **Studio mit Vorschau und Bedienpanel** (Caspar_D: „am liebsten hätte ich gerne eine
+  Preview mit Bedienpanel"; „ich will, dass es absolut toll wird"). Gewünscht: Titel auf Rauchglas unten
+  in der Zelle (oder Milchglas mit schwarzer Schrift); Grund schwarz/weiß/farbig; feiner Federstrich um die
+  Karte auf dem Passepartout; Rand; Fugenbreite; Kacheln leicht wackeln/verschieben; leichter Schatten.
+- Brainstorm, angekreuzt: Vorlagen **Galerie, Papier, Bleiglas, Mosaik**; Beschriftung **Glasband unten,
+  Werkverzeichnis (Nummern), Areale am Rand mit Führungslinie, Titel entlang der Kante**; Beigaben
+  **Edition + Signaturlinie, QR-Code zum Profil, Zeitleiste** (Sternkarte nein); Formate **Quadrat,
+  Triptychon, Social-Media-Bild** (Tapetenbahnen nein).
+- Neu: „wenn immer das Zentrum des Geschehens der Coverart in der Kachel zu sehen wäre" (Schirm und Plakat).
+Bauliste in Stufen (je Stufe ein Release): 1 Studio-Kern (Vorschau, Panel, Vorlagen, Feinheiten, Glasband,
+Kopf, Legende, Formate inkl. Quadrat, PDF) · 2 Werkverzeichnis, Areale am Rand, Titel entlang der Kante ·
+3 Edition/Signatur, Zeitleiste, QR · 4 Triptychon, Social-Media-PNG · 5 Fokus der Coverart.
+Live-Zusehen danach: Bericht des Agenten in scratchpad/live-bericht.json; Empfehlung B (Haken
+`opts.onStep` in der Engine, bitgleich nachgewiesen) mit A (Zellen je Gefäß). Namenskorrektur: Treemappers
+Aufschäum-Animation ist `bubbles.mjs`, nicht `growth.mjs` (das ist das Baumwachstum) — §52 nannte es falsch.
+
+**1.0.30:** Caspar_D: „die Legendenschrift ist im Groupieschaum viel zu groß; bitte das Farbquadrat immer vor der
+ersten Zeile, nicht vertikal zentriert zwischen zwei Zeilen". Ursache: die Groupie-Legende baut `span.zeile`,
+und die Karaoke-Regel `.zeile` (Liedtextzeile, bis 27 px, fett) griff — 26,4 px. Jetzt erbt die Legende Schrift,
+Gewicht, Zeilenhöhe und Farbe; das Quadrat steht oben an der ersten Zeile. Gemessen: 12,5 px in beiden Schäumen,
+Quadrat mittig auf der ersten Zeile. (Lehre: `.zeile` ist als Klassenname schon besetzt.)

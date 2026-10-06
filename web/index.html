@@ -187,10 +187,15 @@ h1{
 #schaumrechts label{display:flex;flex-direction:column;gap:4px;margin:0}
 #schaumrechts select{font:inherit;font-size:13px;background:var(--flaeche2);color:var(--text);border:1px solid var(--rand);border-radius:8px;padding:5px 8px}
 #schaumlegende{display:flex;flex-direction:column;gap:5px;font-size:12.5px}
-#schaumlegende .zeile{display:flex;align-items:baseline;gap:7px;border-radius:6px;padding:3px 5px;margin:0 -5px}
+/* Die Legendenzeilen gegen die Liedtextzeile der Karaoke-Buehne (.zeile, bis 27 px, fett) absetzen - im Groupieschaum
+   sind es span-Elemente und erbten sie (Caspar_D, 06.10.2026: „die Legendenschrift ist im Groupieschaum viel zu groß"). */
+#schaumlegende .zeile{display:flex;align-items:baseline;gap:7px;border-radius:6px;padding:3px 5px;margin:0 -5px;
+  font-size:inherit;font-weight:inherit;line-height:1.4;letter-spacing:normal;color:inherit;cursor:default;transition:none}
+#schaumlegende .zeile:hover{color:inherit}
 #schaumlegende button.zeile{font:inherit;color:inherit;background:none;border:none;text-align:left;cursor:pointer}
 #schaumlegende button.zeile:hover{background:var(--flaeche2)}
-#schaumlegende i{flex:0 0 12px;width:12px;height:12px;border-radius:3px;align-self:center}
+/* das Farbquadrat vor der ersten Zeile, nicht mittig zwischen zweien (Caspar_D, 06.10.2026) */
+#schaumlegende i{flex:0 0 12px;width:12px;height:12px;border-radius:3px;align-self:flex-start;margin-top:calc((1.4em - 12px) / 2)}
 #schaumlegende small,#schaumwerk small{color:var(--schwach)}
 #schaumlegende .zurueck{font-size:12px;color:var(--akzent);cursor:pointer;background:none;border:none;padding:0;text-align:left;font:inherit}
 #schaumwerk{font-size:12.5px;border-top:1px solid var(--rand);padding-top:10px}
