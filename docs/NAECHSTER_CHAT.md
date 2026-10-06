@@ -7907,3 +7907,61 @@ Entscheidung Caspar_D (A): die 400 Aktivsten nach dem gewählten Maß einzeln (`
 Areal in einer Blase „+N weitere" (Kennung `weitere\0<Areal>`, flächengenau, Start am unteren Streifenrand,
 Klick ohne Personenspur); Legende und Fußzeile zählen die Menschen darin mit. Sandkasten mit 4000 Personen: 29 s,
 403 Zellen, Legende 2929/999/72.
+
+## 55. 07.10.2026 nachts: Absturz, Rettung, offener Stand (ZUERST LESEN)
+
+**Absturz:** iMac 00:47 hart aus, Kernel beim Neustart: „Shutdown cause was a THRMTRIP# event" — thermische
+Notabschaltung unter Dauerlast (Schaum-Messläufe, hängende headless-Chrome-Drucke, großer Schaum im Browser).
+Jörg empfohlen: Lüfter/Kühlung prüfen. macOS leert /private/tmp beim Neustart → **Scratchpad verloren**.
+Gerettet aus dem Gesprächsprotokoll (wörtlich, 615 Werkzeugaufrufe) nach
+`/Volumes/Extreme_SSD/Entwicklung/_werkstatt_plakat/rettung/` (Liste `_liste.txt`, Extraktor `ziehen.js`).
+Wiederaufgebaut in `/Volumes/Extreme_SSD/Entwicklung/_werkstatt_plakat/studio/`:
+- `index-studio.html` = Haus 1.0.31 + Plakat-Umbau (`umbau.js`: `schaumSvgBauen` aus malen() herausgelöst,
+  Druckzweig mit Kacheln/gutters, Glasband unten Rauch/Milch, Wackeln `schaumWackeln`, Schatten, Kissen nur auf
+  Kacheln `schaumKissenDruck`/`schaumKissenFilter`, `schaumLageHolen`, `schaumLetzterAuftrag`, Knopf
+  „Als Plakat (PDF)…" → `plakatOeffnen()`), dazu `kissen-schalter.sh`, `vignette.sh` (Vignette je Kachel).
+- `plakat.js` (→ `web/klangschaum/plakat.js`): Studio-Overlay mit Vorschau + Panel; Vorlagen Galerie/Papier/
+  Bleiglas/Mosaik; Formate inkl. Quadrat und frei; Grund schwarz/weiß/Farbe; Rand; Fugen; Wackeln; Schatten;
+  Vignette; Kissen; Federstrich; Schild (Titel/Untertitel); Legende zweistufig gesetzt (`legendeSetzen`, misst im
+  SVG — Leinwand-Messung war 22 % zu schmal); Wand-Vorschau; PDF über verstecktes iframe + Druckfenster.
+Noch NICHT ausgeliefert. Im Sandkasten geprüft (vor dem Absturz): 70×100, 327 Kacheln, 172 Glasbänder, Schirm
+unverändert, Legende ohne Überlappung, keine Konsolenfehler; Bild der vier Vorlagen an Jörg geschickt.
+
+**PDF-Befund (wichtig):** Werkstatt-Druck (headless Chrome) mit Filtern aber ohne Originalbilder: 19 s,
+10,6 MB. Mit den 499 Originalbildern (~420 MB Titelbild/Cover): hängt. → Vor dem Druck jedes Bild auf die
+Auflösung rechnen, die die Kachel bei 300 dpi braucht (Kachelgröße in mm, Cover ×1,34): im Sandkasten 25 s für
+327 Fassungen, Druckdokument 57 MB. Der Druck dieses Dokuments ist noch NICHT geprüft (Absturz). In `pdf()` von
+plakat.js einbauen (statt `data-voll` direkt).
+
+**Groupieschaum mit vielen Leuten (Tarja: 4000 Personen):** ausgeliefert 1.0.31 = 400 Aktivste einzeln +
+„+N weitere" je Areal. Danach Caspar_D: „du hast heute in Prophane 11000 Zellen in unter einer Minute gerechnet …
+das ist Quark"; „die Beschleunigung [parallel] hat nur 1,7-fach gebracht". Messungen (Werkstatt, Engine-Kopie):
+flach 470 P. 24 s / 900 P. 101 s (Gefäßzeit ~ Quadrat der Zellen); flach 4000 mit Prophane-Viewer-Einstellungen
+(minArea 12, minShare 0.001, gutters, compensate 2) in 115 s nicht fertig (Bündel „n small" wird selbst riesig;
+Lauf bis 20 min durch Absturz unterbrochen). Unsichtbare Pakete (~100 Personen, k-Mittel auf den Startpunkten,
+maßunabhängig; Paketebene in `schaumFarbe` ausgeblendet; Schlüssel `gl.id+'/p100'`): 4000 P. in 42 s (Browser)
+bzw. 74–84 s (Node), alle einzeln — ABER Paketgrenzen sichtbar (lange Bögen, rechte Winkel) und bei 4000 frisst
+die feste Fuge 5,5 die Ein-Herz-Zellen (schwarze Löcher). Langsamstes Paket: 76 Zellen, Spanne 309:1, 24,6 s
+über Ausweichweg „foam from the random start" (alle anderen 2–4 s). Skripte: rettung/609, 611, 612, 613.
+Offen (Caspar_D):
+- **Fugenfläche** (beschlossen): vorher Fugenfläche ausrechnen (Umfang × halbe Fuge je Zelle + Gefäßwände); über
+  10 % → alle Fugen gleichmäßig schmaler bis 10 %. Noch nicht gebaut.
+- **Seine Idee „Zusammenwerfen":** in Paketen (z. B. 10 × 400) rechnen, dann zusammenwerfen. Mein Vorschlag dazu:
+  danach EIN flacher Lauf über alle mit dem Paketergebnis als Startpunkten (Grenzen lösen sich, 120° überall) —
+  Rechenzeit unbekannt, Messung (verkleinert, 2000 P.) war geplant, als der Server fehlte.
+- Vorschlag „In die Menge zoomen" (Klick auf „+N weitere" → nächste 400) — ungefragt, nicht gebaut.
+- Vorschlag „Beides verbinden": sofort 400 + weitere, im Hintergrund der volle Schaum, dann Morph — ungefragt.
+
+**Fokus der Coverart (Stufe 5), Agentenbericht:** Bildmitte ist schon gute Grundlinie (Abstand zum Augenmaß-Ziel
+Ø 0,114, Zufall 0,40). Tiefenkarte naiv (Schwerpunkt der nächsten Punkte) zeigt fast immer auf Boden/Hände unten
+(0/10 plausibel, schlechter als Zufall) — taugt als Ablehner, nicht als Zeiger. Spectral Residual/Kanten ziehen
+auf die Titelschrift (Ø 0,18–0,22). Rohbericht im Workflow-Journal wf_3821a073-dc7; Skripte unter dem verlorenen
+Scratchpad (pruefung3/fokus) — nur Bericht erhalten. Vor dem Bau neu besprechen (Schrift-Ablehner + Tiefe als
+Ablehner, Mitte als Rückfall).
+
+**Live-Zusehen:** Agentenbericht (gerettet in rettung? nein — war scratchpad/live-bericht.json, verloren; Inhalt
+im Workflow-Journal wf_c5838431-0df): Empfehlung B — Haken `opts.onStep` in der Engine (bitgleich nachgewiesen)
+plus A (Zellen je Gefäß). Erst Skizze der Rohbau-Ebene.
+
+**Server:** nach dem Neustart auf Jörgs Wort gestartet: `nohup node server/server.js` (ohne starten.js, damit kein
+zweites Fenster aufgeht), Log `/Volumes/Extreme_SSD/Entwicklung/_werkstatt_plakat/server-8788.log`.
