@@ -168,7 +168,10 @@ h1{
 .farbwahl.auf .fw-liste{display:flex}
 .farbwahl .fw-wahl{border-color:transparent;background:none}
 .farbwahl .fw-wahl:hover,.farbwahl .fw-wahl.an{background:var(--flaeche2)}
-.farbwahl.oben .fw-liste{top:auto;bottom:calc(100% + 4px)}      /* im Klangraum-Panel: nach oben auf */
+/* Im Klangraum-Panel klappt die Liste in der Lade auf, nicht darueber: die Lade schneidet ab, was ueber
+   ihren Rand ragt (overflow hidden) - nach oben geoeffnet fehlte genau der oberste Eintrag, der Standard
+   (Caspar_D, 06.10.2026: „der Standard muß auch wieder rein"). */
+.pinhalt .farbwahl .fw-liste{position:static;margin-top:4px;box-shadow:none}
 .pinhalt .farbwahl{display:inline-block;min-width:240px;margin-top:0}
 .farbwahl small{color:var(--schwach);font-size:11px}
 #schaumbild .skt{mix-blend-mode:soft-light;opacity:var(--sk-ton,1)}
@@ -7727,7 +7730,7 @@ let karteAnflug = null;
    das Schiff fliegt. karteFarbe liest die geltende Palette: Klangraum, Klangschaum (Gliederung Klang),
    Groupie-Geschmack und die Stilgruppen im Profil folgen ihr. */
 const KLANGRAUM_PALETTEN = [
-  { id: 'nebel', name: 'Nebel', f: ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'] },
+  { id: 'nebel', name: 'Nebel (Standard)', f: ['#e0455a', '#2ec4b6', '#4f7bd9', '#e8c04a', '#b05cd6', '#ff8c42', '#7bd389', '#9bb7ff'] },
   { id: 'eis', name: 'Eisnebel', f: ['#6fd3ff', '#2ec4b6', '#6f7bff', '#c9ecff', '#2f8cff', '#7ff2dc', '#a99bff', '#3fa8c4'] },
   { id: 'polar', name: 'Polarlicht', f: ['#45f0a0', '#3aa8ff', '#b36cff', '#8ff6ff', '#2fd1b4', '#6f7dff', '#e0a6ff', '#a6ffcf'] },
   { id: 'tief', name: 'Tiefer Raum', f: ['#3f6dff', '#1fb8d4', '#8f5cff', '#b4cbff', '#20d6a8', '#5a8fd0', '#cf96ff', '#62e2ff'] },
@@ -9456,7 +9459,7 @@ function kartePanelHtml(){
       `<button class="pille ${karteLinien ? 'an' : ''}" id="kartelinien" title="Sternbild-Linien durch die stärksten Titel eines Klassifikators">Sternbilder</button>` +
       `<button class="pille ${karteNebel ? 'an' : ''}" id="kartenebel" title="Staubwolken der Stilgruppen">Nebel</button>` +
       `<button class="pille ${karteBahn ? 'an' : ''}" id="kartebahn" title="Die geflogene Bahn des Sound-Schiffs einzeichnen">Flugbahn</button>`) +
-    zeile('Farben', `<span class="farbwahl oben" id="klangraumfarben">${klangraumFarbwahlHtml()}</span>`) +
+    zeile('Farben', `<span class="farbwahl" id="klangraumfarben">${klangraumFarbwahlHtml()}</span>`) +
     /* Der Name steht IN der Zeile, nicht mehr in ihrer Ueberschrift
        (Caspar_D, 26.08.2026: „vorausgefuellt mit dem ganzen Sunohandle,
        bei Klick darauf wird es zu einer editierbaren Box, in der

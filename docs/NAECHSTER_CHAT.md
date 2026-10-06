@@ -7846,3 +7846,13 @@ Nebel (bisher), Eisnebel, Polarlicht, Tiefer Raum, Sonnenglut, Borg (`gestalt: '
 schalten ihre Palette an, eigene Wahl überstimmt bis zum nächsten Wechsel, das Schiff bringt die freie Wahl
 zurück. Panelzeile „Farben" (Farbliste wie im Groupieschaum, öffnet nach oben); die Palette steht in der
 Panel-Signatur und in den Bild-Schlüsseln beider Schäume (Klang-Gliederung und Geschmack folgen ihr).
+
+**1.0.27:** Caspar_D: „oh, der Standard muß auch wieder rein". Ursache: die Farbliste im Klangraum-Panel
+öffnete nach oben, die Lade (`.drawer`, `overflow: hidden`) schnitt ab, was über ihren Rand ragte — genau
+der oberste Eintrag, „Nebel". Jetzt klappt die Liste in der Lade auf (`.pinhalt .farbwahl .fw-liste
+{position: static}`), der Eintrag heißt „Nebel (Standard)". Geprüft mit offener Lade: alle sieben sichtbar.
+
+**Fahrplan 1.1 (Caspar_D, 06.10. Nacht):** „wir streben jetzt langsam 1.1 an — Live-Zusehen ist das
+nächste, dann Mural exportieren als PDF". Dazu Frage: „was ist im Prophane-render besser und muß
+hierhergezogen werden?" — Vergleich und Live-Grundlagen laufen (Agenten, nur lesen); erst Plan mit
+Skizze, dann Bau.
