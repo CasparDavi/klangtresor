@@ -7715,5 +7715,90 @@ Vorrechnen + Merken tritt die Wartezeit ohnehin nur einmal je Datenstand auf.
   Warnung für leuchtende sRGB-Töne außerhalb CMYK.
 - *Vorschau:* Wand mit Maßstab (Sofa/Person), 100-%-Ausschnitt zum Prüfen der kleinsten Schrift.
 - *Weg:* ganz im Browser des Nutzers (App läuft ohne Claude) — PDF über den Druckdialog mit
-  `@page size`, große Pixelbilder kachelweise. Groupieschaum: Avatare fremder Personen nicht ohne
-  deren Einwilligung drucken — Druck nur für den Klangschaum oder Groupies ohne Bilder.
+  `@page size`, große Pixelbilder kachelweise.
+- *Avatare im Druck* (Caspar_D, 06.10.: „die Dinger wurden öffentlich gemacht und wollen gesehen
+  werden … es ist ja nur für den Privatgebrauch"): bleiben drin. Beim Export ein Hinweis, dass
+  Vervielfältigung und Weitergabe an Dritte nicht erlaubt sind.
+- *Auflösung* (Caspar_D: „für das Mural brauchen wir hohe Auflösung"): der Bildvorrat (§53) ist nur
+  für den Schirm — der Export nimmt die Originale (Cover statt Kachel, Avatare in voller Größe).
+
+## 53. 06.10.2026 Nacht: Blasen-Morph, Bildvorrat, Rauchglas ×1,7, Ausweichweg (Release 1.0.22)
+
+**Blasen-Morph** (Caspar_D: „die Linienknoten dürfen sich bewegen, die Füllung bleibt gefüllt,
+keine Lücken"; „momentan ist jede Zelle wie ein Ball, nicht wie eine Blase"). Entscheidung A:
+`powerCells` und `ccvt` in Caspar_Ds Engine-Quelle exportiert (`~/Prophane/tools/foam-lab/engine/
+foamtree.mjs`, lokaler Commit 6a5ab87 in Prophane, nicht gepusht), Kopie nach
+`web/klangschaum/foamtree.js`. Neues Modul `web/klangschaum/morph.js` (KlangTresor-eigen):
+`morphNetz` (Netz aus dem gelegten Baum, Zellen nach Kennung), `morphPlan` (je Gefäß Gewichte =
+„Drücke" an beiden Enden gelöst, `ccvt` maxOuter 0 bei festen Zentren, VON OBEN NACH UNTEN im Gefäß,
+das der Morph zeichnet; Zentren/Gewichte relativ zum Gefäß; Kommende/Gehende mit Gewicht knapp unter
+dem Verschwinden, `leeren()` senkt es, bis die Zelle im Gefäß wirklich leer ist), `morphBild` (je
+Gefäß ein Leistungsdiagramm mit interpolierten Zentren/Gewichten). Gemessen (Node, 327→304 Titel, drei
+Ebenen): Lücke ≤ 4·10⁻¹⁵, Endbilder exakt (3·10⁻¹⁰). Zwei Fehler unterwegs gefunden und behoben:
+Drücke im gebogenen Schaum-Umriss gelöst (erstes Bild wich je Ebene ab, kleine Zellen fehlten); „knapp
+leer" ließ einer gehenden Zelle hinter ihrem Zentrum einen Streifen (Genre mit zwei Titeln, einer geht).
+**Stützbilder:** nur linear gleitende Drücke drücken unterwegs Zellen zu, die an beiden Enden da sind
+(Zufallsprüfer). Jetzt werden die Drücke zusätzlich an 4 Zwischenstellen flächengenau gelöst. Gemessen
+am echten Klangschaum (Abrufe → Herzen, 269 bleibende Titel, 120 Schritte; zeitweise leer / Sprung über
+ein Viertel der größten Fläche / Plan): linear 8 / 49 / 143 ms; 4 Stützen 1 / 14 / 250 ms; 10 Stützen
+0 / 26 / 470 ms; 30 Stützen 0 / 42 / 1,4 s (mehr Stützen sind nicht ruhiger — die Sprünge sitzen dazwischen,
+wo zwei Nachbarn ihre Wand umklappen; alle Lösungen gehen auf, Restfehler < 1e-6). Echter Groupieschaum
+(80 Personen, vier Wechsel): 0 / 0 / 14–29 ms. Ohne gemeinsame Startpunkte bleibt es unruhig — darum
+haben beide Schäume feste. Ein Warmstart je Bild (jedes Bild flächengenau, `ccvt` mit w0 an einer
+Scratch-Kopie) verlor Zellen und brauchte 148 ms je Bild — verworfen, Engine nicht geändert.
+Der Plan läuft im Worker `web/klangschaum/morph-worker.js` (am Klangschaum ~0,3 s, während die Bilder
+ausblenden). **Codeprüfung (Agent) — neun Befunde, alle nachgestellt und behoben:** kommende und gehende
+Zelle auf demselben Zentrum (Genre tauscht seinen einzigen Titel: Überlappung, harter Umschlag; jetzt
+rücken beide ein Viertel zur Seite, `freiruecken`); `knapp()` nahm das Minimum statt des Maximums
+(gehende Zellen nach 1–2 Bildern weg; jetzt schrumpfen sie bis e ≈ 0,8); robust gemacht, obwohl es
+heute nicht vorkommt: doppelte Kennung unter einem Gefäß (durchnummeriert), Gefäß ohne gelegte Kinder
+(Platzhalter-Zelle), Bündel „n small" (fester Name), anderer Rahmen (beide Enden im neuen Rahmen),
+beide Enden leer. Elternwechsel (andere Gliederung) bleibt ohne Morph über die Grenze — das Haus morpht
+nur innerhalb derselben Gliederung/Zoomstufe (`schaumForm`). Zufallsprüfstand danach: 300 Fälle ohne
+Startpunkte und 120 mit, keine Fehler (vorher 17 Lücken/Überlappungen in denselben 120).
+Zweiter Wechsel bricht den ersten ab (`schaumMorphLauf`). Ein-/Ausblenden nicht nur über
+requestAnimationFrame (`schaumGleich`, Zeitgeber als Ausweg) — sonst blieb das neue Bild in einem
+versteckten Tab unsichtbar. Wände während des Gleitens gerade; die gebogenen kommen mit den Bildern.
+Prüfwerkzeuge (Scratchpad, nicht im Repo): `pruefung/fuzz/fuzz.js` (`node fuzz.js 1 300 --morph …`,
+`--saat`, `--foam`, `--rahmen`), `pruefung/lesen/t1…t16`.
+
+**Bildvorrat** (Caspar_D: „die Images kommen mit dem Laden nicht hinterher, kannst du sie speichern in
+einer Art Cache"). Gemessen: Avatar 533×533 (79 KB, Suno-CDN, `max-age` 30 Tage, CORS *), Kachel
+600×800 (53 KB, eigener Server, `no-cache`). Jetzt je Zelle die nötige Stufe (64/128/256/512 Bildpunkte
+lange Seite, Feldbreite × Pixeldichte, Cover ×1,34), einmal verkleinert (WebP 0,82), in IndexedDB
+`klangtresor-schaum` Fassung 2, Speicher `bilder` (höchstens 3000). `schaumVorratLaden` beim ersten
+`schaumZeichnen`; das SVG trägt `data-quelle`/`data-stufe`, die Adresse setzt `schaumBilderSetzen`
+beim Einsetzen (beste vorhandene Stufe, sonst Original + Bestellung); fertige Stufen tauschen sich ins
+laufende Bild (`schaumVorratTauschen`). Nach dem Morph blendet das neue Bild erst ein, wenn seine
+Bilder entpackt sind (`schaumBilderBereit`, höchstens 0,9 s). Sandkasten: nach Neuladen 160/160
+Avatare sofort aus dem Vorrat.
+
+**Ausweichweg** (Caspar_D: „wenn kein Bild geladen werden kann, brauchen wir einen Fallback bzw. nach
+bestimmter Zeit nochmal einen Versuch"): Zelle `ohnebild` → Farbe deckt voll; neue Versuche nach 30 s,
+2 min, 10 min. Personen ohne Avatar bekommen kein Bild mehr (vorher Kachel-Adresse unter dem Handle —
+die vielen 404 im Sandkasten).
+
+**Rauchglas** (Caspar_D: „wieder etwas dunkler, 70 % stärker"): gemessene Abdunklung ×1,7, höchstens
+0,85; Vorgabe 0,29×1,7. Sandkasten (80 Köpfe): 37 ohne Glas, Median 0,225, höchstens 0,85.
+
+**Nebenbefund:** `~/Prophane/tools/foam-lab/engine/render.mjs` ist seit unserer Kopie weiter
+(`labelRange`, Beschriftung über mehrere Ebenen) — nicht nachgezogen, eine Baustelle nach der anderen.
+
+**Nächster Bau (Caspar_D, 06.10. Nacht):** die alternativen Gliederungen im Groupieschaum (§50:
+Beziehung, Ankunft, Lebendig, Geschmack) und ein Flächenmaß „Gesamtlänge der Kommentare".
+Datenlage (Agent, nur gelesen, Abzug 470 Personen): *Beziehung* machbar — `folgtMir` je Person,
+„du folgst ihr" aus derselben Antwort ableitbar (`beobachterStand.followerListe[].folgeIch` +
+`nichtZurueck[].handle` = 102 Gefolgte, deckungsgleich mit beobachter.json); keiner 302, folgt dir 96,
+beide 59, du folgst ihr 13; Abgleich über den Handle (Umbenannte landen in „keiner"); ohne
+Beobachterliste grau „unbekannt". *Ankunft* teilweise — Zeiten: Kommentare exakt, Herzen 329 exakt /
+683 Fenster / 1085 ohne. *Lebendig* teilweise — Strom-Herzen mit Zeit erst seit 24.07.2026.
+*Geschmack* machbar — Reaktion → `song` → Karte `songs[].gruppe` → `gruppen[].name`; Kartenstand gehört
+in den Layout-Schlüssel; im Groupie-Pfad wird `karteDaten` heute nicht geladen. *Kommentarlänge*
+machbar — `kommentare[].text`/`antworten[].text` voll (höchstens 499 Zeichen je Kommentar); Zeichen als
+Codepunkte zählen; 119 Personen > 0, Median 122, 90 % 1408, Max 20203 — Spannweite ~20000 : 1, Rechenzeit
+vorher an einer Stichprobe ansehen.
+**Entscheidungen Caspar_D (06.10. Nacht, je A):** Ankunft nach **Jahr** + grau „Zeit unbekannt" (2025: 99,
+2026: 242, unbekannt 129); Lebendig **zwei Klassen** („in den letzten 4 Wochen" ~70 / „davor" ~400);
+Geschmack **relativ zur Gruppengröße** (Reaktionen ÷ Titelzahl der Gruppe), Gleichstand grau „gemischt".
+Nebenbefund Agent: `/api/community` nimmt je Kommentar-ID die erste Zeile (gesehenKomm), der Kommentar
+dort sagt „jüngster Stand" — betrifft nur das likes-Feld von 34 Kommentaren.

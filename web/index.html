@@ -148,6 +148,7 @@ h1{
 #schaumbild svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 #schaumbild svg.schaumwaber{pointer-events:none}
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
+#schaumbild path[data-id].ohnebild{fill-opacity:1}   /* Bild laedt nicht: die Farbe deckt (Bildvorrat, Ausweichweg) */
 #schaumbild svg.schaumrahmen{pointer-events:none}
 #schaumbild{transition:opacity .25s}
 #schaumbild svg{transition:opacity .3s}
@@ -8448,6 +8449,7 @@ const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : ''
 async function schaumZeichnen(){
   karteHoehe();
   raumLeisteBauen();
+  await schaumVorratLaden();                  /* die verkleinerten Bilder aus der letzten Sitzung, einmal */
   const groupies = raumJetzt === 'groupies';
   $('schaumtitel').textContent = RAUM_NAME[raumJetzt] || 'Klangschaum';
   { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = groupies; }
@@ -8566,11 +8568,14 @@ const schaumLagen = new Map();      /* Layout-Schluessel -> gelegter Baum (ohne 
    Sitzung hinaus merken"). Jedes gelegte Layout geht zusaetzlich in IndexedDB
    ('klangtresor-schaum'; Schluessel = Hash des Layout-Schluessels, der volle Schluessel liegt zur
    Probe daneben; hoechstens 40, die aeltesten fliegen). Aendern sich Abrufe oder Reaktionen, ist es
-   ein neuer Schluessel. Fehlt IndexedDB, bleibt es beim Merken in der Sitzung. */
+   ein neuer Schluessel. Fehlt IndexedDB, bleibt es beim Merken in der Sitzung.
+   Fassung 2 (Bildvorrat, siehe unten) bringt den Speicher 'bilder' dazu. Haelt ein anderer Tab noch
+   Fassung 1 offen, wartet der Wechsel auf ihn - dann diese Sitzung ohne Speicher statt haengen. */
 const schaumDB = (() => { let p = null; return () => p || (p = new Promise(ok => {
-  try { const r = indexedDB.open('klangtresor-schaum', 1);
-    r.onupgradeneeded = () => { r.result.createObjectStore('lagen'); r.result.createObjectStore('zeiten'); };
-    r.onsuccess = () => ok(r.result); r.onerror = () => ok(null); } catch (e) { ok(null); } })); })();
+  try { const r = indexedDB.open('klangtresor-schaum', 2);
+    r.onupgradeneeded = () => { const d = r.result; for (const n of ['lagen', 'zeiten', 'bilder']) if (!d.objectStoreNames.contains(n)) d.createObjectStore(n); };
+    r.onsuccess = () => { const d = r.result; d.onversionchange = () => d.close(); ok(d); };
+    r.onerror = () => ok(null); r.onblocked = () => ok(null); } catch (e) { ok(null); } })); })();
 const schaumHash = (s) => { let a = 0x811c9dc5, b = 0x9e3779b9 ^ s.length;
   for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619); b = Math.imul(b ^ c, 2246822519); }
   return (a >>> 0).toString(36) + '-' + (b >>> 0).toString(36) + '-' + s.length.toString(36); };
@@ -8592,6 +8597,128 @@ async function lageMerken(lage, res){
       if (alle.length > 40){ alle.sort((x, y) => x[1] - y[1]);
         for (const [kk] of alle.slice(0, alle.length - 40)){ tx.objectStore('lagen').delete(kk); tx.objectStore('zeiten').delete(kk); } } };
   } catch (e) {}
+}
+/* DER BILDVORRAT (Caspar_D, 06.10.2026: „die Images kommen mit dem Laden nicht hinterher, kannst
+   du sie speichern in einer Art Cache"). Gemessen: ein Avatar von Suno hat 533 x 533 Bildpunkte
+   (79 KB), eine Kachel 600 x 800 (53 KB) - der Browser entpackte 300 bis 440 solcher Bilder fuer
+   Zellen, die meist 70 Punkte breit sind. Jetzt bekommt jede Zelle ihr Bild in der Groesse, die sie
+   auf dem Schirm braucht (Stufen 64/128/256/512 Bildpunkte an der laengeren Seite, mit der
+   Pixeldichte des Schirms gerechnet), einmal verkleinert und in IndexedDB gemerkt (Speicher
+   'bilder', hoechstens 3000, die aeltesten fliegen). Beim Betreten des Raums wird der Vorrat
+   geladen; was fehlt, kommt diesmal im Original und wird im Hintergrund verkleinert - fertig,
+   tauscht es sich ins Bild. Avatare sind Suno-Adressen mit Kennung und aendern sich nie; Kacheln
+   tragen ihren Stand in der Adresse (kachelZusatz). Fuer einen Druck (Mural) taugt der Vorrat nicht -
+   der braucht die Originale.
+   AUSWEICHWEG (Caspar_D: „wenn kein Bild geladen werden kann, brauchen wir einen Fallback bzw. nach
+   bestimmter Zeit nochmal einen Versuch"): laedt ein Bild nicht, zeigt die Zelle ihre Farbe voll
+   deckend statt eines schwarzen Lochs, und nach 30 s, 2 min und 10 min wird es neu versucht. */
+const SCHAUM_STUFEN = [64, 128, 256, 512];
+const schaumVorrat = new Map();                 /* Stufe + ' ' + Adresse -> blob:-Adresse */
+const schaumVorratWartend = new Set(), schaumVorratSchlange = [];
+let schaumVorratGeladen = null, schaumVorratLaeuft = 0;
+const schaumStufe = (px) => SCHAUM_STUFEN.find(s => s >= px) || SCHAUM_STUFEN[SCHAUM_STUFEN.length - 1];
+function schaumVorratLaden(){
+  return schaumVorratGeladen || (schaumVorratGeladen = (async () => {
+    const db = await schaumDB(); if (!db) return;
+    await new Promise(ok => { try {
+      const q = db.transaction('bilder').objectStore('bilder').openCursor();
+      q.onsuccess = () => { const c = q.result; if (!c) return ok();
+        if (c.value && c.value.blob && !schaumVorrat.has(c.key)) schaumVorrat.set(c.key, URL.createObjectURL(c.value.blob));
+        c.continue(); };
+      q.onerror = () => ok();
+    } catch (e) { ok(); } });
+  })());
+}
+/* Die beste vorhandene Fassung: die passende Stufe, sonst die naechstgroessere, sonst das Original
+   (und die passende Stufe wird bestellt). */
+function schaumBildHref(url, stufe){
+  if (!url) return '';
+  const genau = schaumVorrat.get(stufe + ' ' + url);
+  if (genau) return genau;
+  const key = stufe + ' ' + url;
+  if (!schaumVorratWartend.has(key)){ schaumVorratWartend.add(key); schaumVorratSchlange.push(key); schaumVorratTreiben(); }
+  for (const s of SCHAUM_STUFEN) if (s > stufe && schaumVorrat.has(s + ' ' + url)) return schaumVorrat.get(s + ' ' + url);
+  return url;
+}
+function schaumVorratTreiben(){
+  while (schaumVorratLaeuft < 4 && schaumVorratSchlange.length){
+    const key = schaumVorratSchlange.shift(); schaumVorratLaeuft++;
+    schaumVerkleinern(key).then(href => {
+      schaumVorratLaeuft--; schaumVorratWartend.delete(key);
+      if (href) schaumVorratTauschen(key, href);
+      schaumVorratTreiben();
+    });
+  }
+}
+async function schaumVerkleinern(key){
+  const i = key.indexOf(' '), stufe = +key.slice(0, i), url = key.slice(i + 1);
+  try {
+    const antwort = await fetch(url, { mode: 'cors', credentials: 'omit' });
+    if (!antwort.ok) return null;
+    const bild = await createImageBitmap(await antwort.blob());
+    const f = Math.min(1, stufe / Math.max(bild.width, bild.height)), w = Math.max(1, Math.round(bild.width * f)), h = Math.max(1, Math.round(bild.height * f));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(bild, 0, 0, w, h);
+    if (bild.close) bild.close();
+    let blob = await new Promise(ok => c.toBlob(ok, 'image/webp', 0.82));
+    if (!blob || blob.type !== 'image/webp') blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.85));
+    if (!blob) return null;
+    const href = URL.createObjectURL(blob);
+    schaumVorrat.set(key, href);
+    schaumVorratMerken(key, blob);
+    return href;
+  } catch (e) { return null; }
+}
+async function schaumVorratMerken(key, blob){
+  const db = await schaumDB(); if (!db) return;
+  try {
+    const tx = db.transaction('bilder', 'readwrite'), st = tx.objectStore('bilder');
+    st.put({ blob, zeit: Date.now() }, key);
+    const z = st.count();
+    z.onsuccess = () => { if (z.result <= 3000) return;
+      const alle = [], q = st.openCursor();
+      q.onsuccess = () => { const c = q.result; if (c){ alle.push([c.key, (c.value && c.value.zeit) || 0]); c.continue(); return; }
+        alle.sort((a, b) => a[1] - b[1]); for (const [k] of alle.slice(0, alle.length - 2700)) st.delete(k); }; };
+  } catch (e) {}
+}
+/* Ein fertig verkleinertes Bild ins laufende Bild tauschen. */
+function schaumVorratTauschen(key, href){
+  const i = key.indexOf(' '), stufe = key.slice(0, i), url = key.slice(i + 1), bild = $('schaumbild'); if (!bild) return;
+  for (const im of bild.querySelectorAll('image[data-quelle]'))
+    if (im.dataset.quelle === url && im.dataset.stufe === stufe && im.getAttribute('href') !== href) im.setAttribute('href', href);
+}
+/* Beim Einsetzen: jede Zelle bekommt die beste vorhandene Fassung; laedt ein Bild nicht, deckt die
+   Zellfarbe voll, und es wird spaeter neu versucht. */
+function schaumBilderSetzen(bild){
+  for (const im of bild.querySelectorAll('image[data-quelle]')){
+    im.setAttribute('href', schaumBildHref(im.dataset.quelle, +im.dataset.stufe));
+    if (im.dataset.glas) continue;                                  /* die Glas-Kopie im Kopf folgt dem Bild */
+    im.addEventListener('error', () => schaumBildFehlt(im));
+    im.addEventListener('load', () => { const z = schaumZelleVon(im); if (z) z.classList.remove('ohnebild'); });
+  }
+}
+const schaumZelleVon = (im) => im.ownerSVGElement && im.ownerSVGElement.querySelector(`path[data-i="${im.dataset.i}"]`);
+const schaumFehlVersuche = new Map();             /* Adresse -> Zahl der Versuche */
+function schaumBildFehlt(im){
+  const z = schaumZelleVon(im); if (z) z.classList.add('ohnebild');
+  const url = im.dataset.quelle, n = schaumFehlVersuche.get(url) || 0;
+  if (n >= 3 || im.dataset.wartet) return;
+  schaumFehlVersuche.set(url, n + 1); im.dataset.wartet = '1';
+  setTimeout(() => {
+    delete im.dataset.wartet;
+    if (!im.isConnected) return;
+    const href = schaumBildHref(url, +im.dataset.stufe);
+    im.setAttribute('href', href === url ? url + (url.includes('?') ? '&' : '?') + 'versuch=' + (n + 1) : href);
+  }, [30000, 120000, 600000][n]);
+}
+/* Erst wenn die Bilder entpackt sind, blendet ein neues Bild ein (hoechstens 0,9 s warten) - sonst
+   kamen sie nach dem Morph eins nach dem anderen. */
+/* Das naechste Bild - auch in einem versteckten Tab, wo requestAnimationFrame ruht (sonst blieb ein
+   neues Bild nach dem Morph unsichtbar, bis man zurueckkam). */
+function schaumGleich(fn){ let da = false; const los = () => { if (!da){ da = true; fn(); } }; requestAnimationFrame(los); setTimeout(los, 120); }
+function schaumBilderBereit(bild){
+  const warten = [...bild.querySelectorAll('image[href]')].map(im => { const i = new Image(); i.src = im.getAttribute('href'); return i.decode().catch(() => {}); });
+  return Promise.race([Promise.all(warten), new Promise(r => setTimeout(r, 900))]);
 }
 const schaumVerh = () => { const rect = $('schaumfeld').getBoundingClientRect();
   return Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20)); };
@@ -8743,7 +8870,11 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
         ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false, strokes: [9, 5.5] } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
       const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
-      const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || artworkKachel(zeilen[k.row].id)) : null);
+      /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
+      const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : artworkKachel(zeilen[k.row].id))) : null);
+      /* Bildstufe je Zelle (Bildvorrat): Breite des Feldes in Bildschirmpunkten je Schaum-Einheit mal
+         Pixeldichte; ein Cover (3 : 4, „slice") braucht an der langen Seite ein Drittel mehr. */
+      const massstab = (($('schaumfeld').getBoundingClientRect().width || 1600) / res.width) * (window.devicePixelRatio || 1), faktor = personen ? 1 : 1.34;
       svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
                .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
                /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
@@ -8753,31 +8884,37 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
                  const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
                  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
                  const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
+                 const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
+                 const bildAn = quelle ? `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"` : '';
                  let kopf = '';
                  const name = personen ? zierfrei((zeilen[res.leaves[+i].row] || {}).titel || '') : '';
                  const plan = name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i) : null;
                  if (plan){
                    kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
-                     + `<g clip-path="url(#skz${i})" pointer-events="none"><image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
-                     + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>`
-                     + `<rect class="rauch" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="#000" opacity="0.29"/></g>`;
+                     + `<g clip-path="url(#skz${i})" pointer-events="none">`
+                     + (quelle ? `<image ${bildAn} data-glas="1" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                       + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>` : '')
+                     + `<rect class="rauch" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="#000" opacity="${SCHAUM_RAUCH_VORGABE}"/></g>`;
                    koepfe.push(plan.text);
                  }
                  return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
-                   + `<image href="${esc(bilder[+i])}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
-                   + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>`
+                   + (quelle ? `<image ${bildAn} x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                     + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>` : '')
                    /* Reihenfolge (Caspar_D: „erst das Rauchglas auf das Bild und dann die Färbung"): Bild,
                       Rauchglas, Farbstich, Zellfarbe mit Rand - so traegt der Kopf den Ton der Zelle. */
                    + kopf
                    + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"/>`
-                   + alles;
+                   + (quelle ? alles : alles.replace('<path ', '<path class="ohnebild" '));
                });
       if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
-      /* Umrisse fuer den Morph, in Bildschirmlage (y nach unten), auf 40 Punkte umgetastet */
-      const formen = res.leaves.map((k, i) => ids[i] && k.outline && k.outline.length > 2
-        ? { id: ids[i], pts: schaumUmtasten(k.outline.map(p => [p[0], res.height - p[1]]), 40), fill: schaumFarbe(k, R.chainOf, farbeVon, gezoomt) } : null).filter(Boolean);
-      const f = { svg, ids, tipps, art, lage, formen, W: res.width, H: res.height };
+      /* Fuer den Morph: das Netz des Baums (erst bei Bedarf gebaut, dann gemerkt), die Form (Gliederung
+         und Zoom - nur innerhalb derselben wird gemorpht) und die Fugen wie im Bild. */
+      let netz = null;
+      const netzVon = (M) => netz || (netz = M.morphNetz(res, k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null,
+                                                          k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt)));
+      const f = { svg, ids, tipps, art, lage, netz: netzVon, form: schaumForm(lage), striche: personen ? [9, 5.5] : [3.2, 2.0, 1.2, 0.7, 0.35],
+                  W: res.width, H: res.height };
       schaumFertig.set(schluessel, f);
       if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
     } catch (e){ stand.textContent = 'Der Schaum ließ sich nicht zeichnen.'; console.log('Klangschaum:', e); }
@@ -8815,57 +8952,77 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
                        layout: { width: W, height: H, method: 'foam', minArea: 0, minShare: 0, ...(seeds ? { seeds } : {}) } });
 }
 /* MORPH (Caspar_D, 06.10.2026: „Morphen machen wir, die Bilder blenden weg, es morpht, die Bilder
-   kommen wieder"). Wechselt nur das Mass (oder die Gliederung), gehen die Bilder aus, die Zellen
-   derselben Person/desselben Titels fliessen in einer Sekunde von alter zu neuer Form (Umrisse auf
-   40 Punkte umgetastet, beste Drehung gesucht), neue wachsen aus ihrem Mittelpunkt, wegfallende
-   schrumpfen hinein; dann blendet das neue Bild ein. Nur Farben im Morph - 470 zugeschnittene
-   Bilder je Einzelbild wuerden ruckeln. Kein Morph bei abbestellter Bewegung, versteckter Seite
-   oder blossem Farbwechsel. */
-let schaumGezeigt = null;
-function schaumUmtasten(pts, N){
-  const n = pts.length, cum = [0];
-  for (let i = 0; i < n; i++){ const a = pts[i], b = pts[(i + 1) % n]; cum.push(cum[i] + Math.hypot(b[0] - a[0], b[1] - a[1])); }
-  const L = cum[n] || 1, aus = []; let j = 0;
-  for (let k = 0; k < N; k++){ const s = k * L / N; while (j < n - 1 && cum[j + 1] < s) j++;
-    const a = pts[j], b = pts[(j + 1) % n], u = (s - cum[j]) / ((cum[j + 1] - cum[j]) || 1); aus.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]); }
-  return aus;
-}
+   kommen wieder"). Wechselt nur das Mass, gehen die Bilder aus, das Netz gleitet in einer Sekunde
+   von der alten zur neuen Lage, dann blendet das neue Bild ein - erst, wenn seine Bilder entpackt
+   sind (Bildvorrat). Nur Farben im Morph - 470 zugeschnittene Bilder je Einzelbild wuerden ruckeln.
+   Kein Morph bei abbestellter Bewegung, versteckter Seite, blossem Farbwechsel oder anderer
+   Gliederung/Zoomstufe (dort waeren es andere Gefaesse, kein Fliessen).
+   Die erste Fassung schob jede Zelle fuer sich von alter zu neuer Form (Umrisse auf 40 Punkte
+   umgetastet, beste Drehung) - gemeinsame Waende liefen auseinander, es klafften Luecken (Caspar_D:
+   „momentan ist jede Zelle wie ein Ball, nicht wie eine Blase - zwischen Blasen entstehen auch
+   keine Lücken"). Jetzt rechnet /klangschaum/morph.js jedes Zwischenbild als ganzes Netz (dort
+   beschrieben); hier wird nur gezeichnet, mit den Fugen des fertigen Bildes. Ein zweiter Wechsel
+   waehrend des Morphs bricht den ersten ab (schaumMorphLauf). */
+let schaumGezeigt = null, schaumMorphLauf = 0;
+/* Gliederung und Zoom aus dem Layout-Schluessel: Klangschaum [Mass, Gliederung, Zoom, Verhaeltnis,
+   Verfahren, Zeilen], Groupieschaum ['groupies', Mass, Verhaeltnis, Zeilen]. */
+function schaumForm(lage){ const p = String(lage || '').split('|'); return p[0] === 'groupies' ? 'groupies|' + p[2] : p.slice(1, 5).join('|'); }
 function schaumEinsetzen(f){
-  const alt = schaumGezeigt, bild = $('schaumbild');
+  const alt = schaumGezeigt, bild = $('schaumbild'), lauf = ++schaumMorphLauf;
   schaumGezeigt = f;
-  if (alt && alt !== f && alt.art === f.art && alt.lage !== f.lage && alt.formen && f.formen && alt.W === f.W && alt.H === f.H
+  if (alt && alt !== f && alt.art === f.art && alt.lage !== f.lage && alt.form === f.form && alt.netz && f.netz && alt.W === f.W && alt.H === f.H
       && bild.querySelector('svg') && !document.hidden && !matchMedia('(prefers-reduced-motion: reduce)').matches)
-    return schaumMorph(bild, alt, f);
+    return schaumMorph(bild, alt, f, lauf);
   schaumEinsetzenJetzt(f);
 }
-function schaumMorph(bild, alt, neu){
-  const NS = 'http://www.w3.org/2000/svg', m = document.createElementNS(NS, 'svg'), N = 40;
+async function schaumMorph(bild, alt, neu, lauf){
+  bild.querySelectorAll('svg').forEach(s => { s.style.opacity = '0'; });          /* die Bilder blenden weg */
+  /* Der Plan (je Gefaess die Druecke an den Enden und an vier Stuetzbildern, am Klangschaum rund
+     0,3 s) entsteht im Worker, waehrend die Bilder ausblenden; die Zwischenbilder (je ein paar ms)
+     zeichnet die Seite selbst. */
+  let M, plan;
+  try {
+    M = await import('/klangschaum/morph.js');
+    plan = await new Promise((ok, nein) => {
+      const w = new Worker('/klangschaum/morph-worker.js', { type: 'module' });
+      w.onmessage = (ev) => { w.terminate(); if (ev.data.plan) ok(ev.data.plan); else nein(new Error(ev.data.fehler)); };
+      w.onerror = (ev) => { w.terminate(); nein(new Error(ev.message || 'Morph-Worker')); };
+      w.postMessage({ alt: alt.netz(M), neu: neu.netz(M) });
+    });
+  }
+  catch (e){ console.log('Klangschaum: Morph', e); if (lauf === schaumMorphLauf) schaumEinsetzenJetzt(neu, true); return; }
+  if (lauf !== schaumMorphLauf) return;
+  const NS = 'http://www.w3.org/2000/svg', m = document.createElementNS(NS, 'svg');
   m.setAttribute('viewBox', `0 0 ${neu.W} ${neu.H}`); m.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   m.classList.add('schaummorph'); m.style.opacity = '0'; m.style.pointerEvents = 'none';
-  const mitte = (p) => { let x = 0, y = 0; for (const q of p){ x += q[0]; y += q[1]; } return [x / p.length, y / p.length]; };
-  const punkt = (c) => Array.from({ length: N }, () => c.slice());
-  const am = new Map(alt.formen.map(x => [x.id, x])), nm = new Map(neu.formen.map(x => [x.id, x])), paare = [];
-  for (const id of new Set([...am.keys(), ...nm.keys()])){
-    const a = am.get(id), b = nm.get(id), pa = a ? a.pts : punkt(mitte(b.pts)), pb0 = b ? b.pts : punkt(mitte(a.pts));
-    let best = 0, bd = Infinity;
-    for (let s = 0; s < N; s++){ let d = 0; for (let i = 0; i < N; i++){ const p = pa[i], q = pb0[(i + s) % N]; d += (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2; } if (d < bd){ bd = d; best = s; } }
-    const el = document.createElementNS(NS, 'path');
-    el.setAttribute('fill', (a || b).fill); el.setAttribute('stroke', '#121417'); el.setAttribute('stroke-width', '2'); el.setAttribute('stroke-linejoin', 'round');
-    m.appendChild(el); paare.push({ el, pa, pb: pb0.map((_, i) => pb0[(i + best) % N]), fb: (b || a).fill });
+  /* wie render.js: Zellen gefuellt mit Fuge ihrer Tiefe, darueber die Gefaesswaende von innen nach aussen */
+  const sw = (d) => neu.striche[Math.min(d, neu.striche.length - 1)], zellen = [], gefaesse = [], el = new Map();
+  (function sammle(g){ if (g.tiefe >= 0) (g.blatt ? zellen : gefaesse).push(g); if (!g.blatt) g.kinder.forEach(sammle); })(plan.wurzel);
+  gefaesse.sort((a, b) => b.tiefe - a.tiefe);
+  for (const g of [...zellen, ...gefaesse]){
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('fill', g.blatt ? '#555' : 'none'); p.setAttribute('stroke', '#121417'); p.setAttribute('stroke-width', sw(g.tiefe)); p.setAttribute('stroke-linejoin', 'round');
+    m.appendChild(p); el.set(g.key, p);
   }
-  const pfad = (P) => 'M' + P.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z';
-  for (const p of paare) p.el.setAttribute('d', pfad(p.pa));
-  bild.querySelectorAll('svg').forEach(s => { s.style.opacity = '0'; });          /* die Bilder blenden weg */
-  bild.appendChild(m); requestAnimationFrame(() => { m.style.opacity = '1'; });
+  const H = plan.H;
+  const zeichnen = (e) => { for (const x of M.morphBild(plan, e)){ const p = el.get(x.key); if (!p) continue;
+    p.setAttribute('d', x.pts ? 'M' + x.pts.map(q => q[0].toFixed(1) + ',' + (H - q[1]).toFixed(1)).join('L') + 'Z' : '');
+    if (x.blatt && x.farbe) p.setAttribute('fill', x.farbe); } };
+  zeichnen(0);
+  bild.appendChild(m); schaumGleich(() => { m.style.opacity = '1'; });
   let fertig = false;
-  const ende = () => { if (fertig) return; fertig = true;
-    schaumEinsetzenJetzt(neu, true);                                                 /* die Bilder kommen wieder */
-    bild.appendChild(m); requestAnimationFrame(() => { m.style.opacity = '0'; setTimeout(() => m.remove(), 450); }); };
+  const ende = async () => { if (fertig) return; fertig = true;
+    if (lauf !== schaumMorphLauf){ m.remove(); return; }
+    zeichnen(1);
+    const bereit = schaumEinsetzenJetzt(neu, true);                                 /* die Bilder kommen wieder */
+    bild.appendChild(m);
+    await bereit;
+    schaumGleich(() => { m.style.opacity = '0'; setTimeout(() => m.remove(), 450); }); };
   const t0 = performance.now() + 320, DAUER = 1000;
   const schritt = (now) => { if (fertig) return;
+    if (lauf !== schaumMorphLauf){ fertig = true; m.remove(); return; }
     const t = Math.min(1, Math.max(0, (now - t0) / DAUER)), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-    for (const p of paare){ p.el.setAttribute('d', pfad(p.pa.map((q, i) => [q[0] + (p.pb[i][0] - q[0]) * e, q[1] + (p.pb[i][1] - q[1]) * e])));
-      if (t >= 0.5) p.el.setAttribute('fill', p.fb); }
+    zeichnen(e);
     if (t < 1) requestAnimationFrame(schritt); else ende(); };
   requestAnimationFrame(schritt);
   setTimeout(ende, 2600);                                                           /* falls die Seite keine Bilder mehr zeichnet */
@@ -8875,7 +9032,10 @@ function schaumEinsetzenJetzt(f, einblenden){
   schaumBildArt = f.art;
   bild.style.opacity = '';
   bild.innerHTML = f.svg;
-  if (einblenden){ const s = bild.querySelector('svg'); if (s){ s.style.opacity = '0'; requestAnimationFrame(() => requestAnimationFrame(() => { s.style.opacity = ''; })); } }
+  schaumBilderSetzen(bild);
+  let bereit = Promise.resolve();
+  if (einblenden){ const s = bild.querySelector('svg');
+    if (s){ s.style.opacity = '0'; bereit = schaumBilderBereit(bild).then(() => new Promise(r => schaumGleich(() => { s.style.opacity = ''; r(); }))); } }
   setTimeout(schaumVorrechnen, 1500);
   const svg = bild.querySelector('svg');
   let laeuft = null;
@@ -8922,6 +9082,7 @@ function schaumEinsetzenJetzt(f, einblenden){
   }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
     if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
+  return bereit;
 }
 /* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */
 /* KONTRAST JE TITEL (Caspar_D, 06.10.2026: „die Kontrast-Engine bestimmte, ob die Zelle zu
@@ -9017,7 +9178,11 @@ function schaumKontrastMischen(){
    Gefahr); daraus die Abdunklung, bei der die relative Leuchtdichte hoechstens 0,15 ist - dort
    hat weisse Schrift bei 80 % Deckkraft noch gut 4 : 1. Abdunkeln um den Faktor s senkt die
    Leuchtdichte etwa um s hoch 2,2. Laesst sich ein Avatar nicht lesen (Suno ohne CORS), bleibt die
-   Vorgabe 0,29. */
+   Vorgabe.
+   Dann (Caspar_D, 06.10.2026: „das Rauchglas wieder etwas dunkler, 70 % stärker"): die gemessene
+   Abdunklung mal 1,7, hoechstens 0,85; die Vorgabe 0,29 mal 1,7. Wo der Avatar schon dunkel genug
+   ist, bleibt es bei null. */
+const SCHAUM_RAUCH_STAERKE = 1.7, SCHAUM_RAUCH_VORGABE = (0.29 * SCHAUM_RAUCH_STAERKE).toFixed(3);
 async function schaumRauch(svg){
   if (!svg) return;
   const lauf = schaumKontrastLauf;
@@ -9039,7 +9204,7 @@ async function schaumRauch(svg){
     ys.sort((a, b) => a - b);
     const Y = ys[Math.floor(ys.length * 0.8)] || 0;
     const s = Y <= 0.15 ? 1 : Math.pow(0.15 / Y, 1 / 2.2);
-    r.setAttribute('opacity', (1 - s).toFixed(3));
+    r.setAttribute('opacity', Math.min(0.85, SCHAUM_RAUCH_STAERKE * (1 - s)).toFixed(3));
   }
 }
 

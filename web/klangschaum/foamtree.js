@@ -1,6 +1,6 @@
 /* KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
    Caspar_Ds Schaum-Engine „foamtree", unverändert übernommen am 06.10.2026 aus
-   ~/Prophane/tools/foam-lab/engine/ (Stand dort: 06.10.2026, die neueste der drei Fassungen;
+   ~/Prophane/tools/foam-lab/engine/ (Stand dort: 06.10.2026, Commit 6a5ab87 mit powerCells und ccvt im Export; die neueste der drei Fassungen;
    die anderen: Treemapper/engine/, eingebettet im Prophane-Viewer). Geändert ist nur die
    Endung .mjs -> .js (der Server liefert .js als JavaScript) samt den Importpfaden.
    Änderungen gehören in die Quelle zurück, nicht nur hierher. */
@@ -895,7 +895,10 @@ function chordAt(poly, p) { // width of the polygon along the horizontal line th
 }
 
 // ---------- public API ----------
-export { shoelace, centroid, perimeter, inside, makeContainer, layout, tagEdges, insetOutline, poleOf, chordAt, fanCells, stripStart };
+// powerCells and ccvt for animating between two layouts (KlangTresor morph, Jörg 06.10.2026: "zwischen Blasen entstehen keine
+// Lücken"): the power weights play the part of the pressures; solved once at both ends with the sites fixed (ccvt, maxOuter 0),
+// then sites and weights are interpolated – every frame is one power diagram, gap-free, about 5 ms for 351 cells
+export { shoelace, centroid, perimeter, inside, makeContainer, layout, tagEdges, insetOutline, poleOf, chordAt, fanCells, stripStart, powerCells, ccvt };
 
 function clean(pts) { // drop repeated points; counter-clockwise
   const out = [];
