@@ -7999,3 +7999,18 @@ Status/`grund`/`ging`, der Ordnerbrowser listet die (leeren) Laufwerke des Conta
   meldet einen nicht vorhandenen Ordner statt ihn still fallen zu lassen (server.js ~3367, „Ordner ist
   gemerkt" lügt sonst); „Download- und Musikordner werden ohnehin durchsucht" nicht im Container behaupten.
 - Nebenbefund: `/api/ordner` listet Verzeichnisnamen für jeden im Heimnetz (nur lesend) — notiert.
+
+## 57. 07.10.2026 nachts: Ordner wählen im Docker gebaut (1.0.33), danach Plakat-Studio
+
+Ausgeliefert wie in §56 beschlossen (B mit C, Frage A: vom Handy beide Wege). `GET /api/ordner/kann`
+entscheidet vor dem Klick (`fenster`, `container`, `laufwerke`); ohne Systemfenster öffnet „Ordner wählen …“
+das Ordnerfenster des Browsers (`geraetWaehlen` → `geraetPruefen` → `geraetEinlesen` in index.html), der
+Server erkennt per `POST /api/ton/kennung` (64 KB) und legt per `POST /api/ton/datei` ab (`tonAblegen`,
+gemeinsam mit dem Lesezeichen-Weg). Container-Erkennung: `/.dockerenv`, `/run/.containerenv` oder
+`KLANGTRESOR_CONTAINER=1`. Im Docker NICHT live geprüft (kein Docker-Lauf) — Server-Logik mit
+Container-Kennung und die Seitenwege im Sandkasten nachgestellt. **Wiedervorlage:** Casto/Tarja bitten, im
+Docker „Ordner wählen …“ einmal zu drücken.
+Befund am Rande: Alte MP3s aus der Direktlink-Zeit tragen KEINE Suno-Kennung (Stichprobe 2 von 3), ihre WAVs
+schon — solche MP3s erkennt weder das Einlesen noch der neue Weg; das ist richtig so (Signatur entscheidet).
+
+**Nächste Baustelle (Caspar_D): Plakat-Studio** — Stand und Dateien in §55 (`_werkstatt_plakat/studio/`).
