@@ -7458,3 +7458,19 @@ Tarjas Text hat sich damit erledigt.
 Aufgeräumt: die Zweige `docker-cuda` (26.08., ganz in main), `profil-titelbild-info` und
 `playerleiste-daumen-blase` (inhaltsgleich per Rebase in main) auf GitHub gelöscht.
 **Sichtprüfung** (Leiste, Grundlinie, Bildfenster in 1.0.12): Caspar_D hat sie an Tarja weitergegeben (02.10.) — Rückmeldung kommt von ihr, nicht bei ihm nachfragen.
+
+## 46. 06.10.2026: Klang-Schaum — Idee, noch kein Bauauftrag
+
+Caspar_D hat (Hobby, Wochenende 04./05.10.) eine Schaum-Baumkarte gebaut: `foamtree.mjs` (Layout:
+Leistungsdiagramm mit Kapazitäten, dann echter Schaum nach Plateau — Kreisbögen, 120° an Knoten, 90°
+an der Wand, exakte Flächen, Ebene in Ebene; Rückfall auf gerade Wände; zu Kleines wird zu einer
+grauen „n kleine"-Zelle), `render.mjs` (SVG, Kissen-Schattierung per feDiffuseLighting, Schraffur
+für aufgefüllte Ebenen, Beschriftung), `worker.mjs`; parallel über einen Worker-Pool. Drei Fassungen:
+`/Volumes/Extreme_SSD/Entwicklung/Treemapper/engine/` (04.10., ohne git), `~/Prophane/tools/foam-lab/engine/`
+(06.10., die neueste), eingebettet im Prophane-Viewer. Caspar_D: „er darf ins Repo" (MIT).
+**Name: Klang-Schaum** (Caspar_D: „der Name ist doch zu schön"; Schreibung mit/ohne Bindestrich
+offen). Vorschlag Claude: Werkschau auf der Profilseite — Klangraum-Gruppe → Genre → Titel, Fläche =
+Abrufe, Gruppenfarben `NEBEL`, Klick spielt; ergänzt die Klangraum-Karte (ähnlich klingend) um das
+Gewicht (gehört). Skizze im Chat mit echten Daten (327 Titel, 4 Gruppen, 17 Genres; flach, mit
+d3-voronoi-treemap nur für die Skizze). Server liefert `.mjs` nicht als JavaScript (Typentabelle
+kennt nur `.js`).
