@@ -1514,8 +1514,18 @@ const TON_DECKEL = 300 * 1024 * 1024;        /* eine 8-Minuten-WAV wiegt rund 90
    Upload riss kurz vor dem Ende ab. Gegen haengende Verbindungen wacht
    stattdessen im Upload ein Leerlaufwaechter (2 min ohne ein Byte). */
 const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
-  const u = new URL(req.url, 'http://x');
-  const p = decodeURIComponent(u.pathname);
+  /* Kaputte Adressen sind eine 400, kein Absturz (07.10.2026): '/%'
+     liess decodeURIComponent einen URIError werfen, '//[' den URL-
+     Zerleger - beides ungefangen im Handler und damit das Ende des
+     ganzen Servers, ausgeloest von einer einzigen Anfrage. */
+  let u, p;
+  try {
+    u = new URL(req.url, 'http://x');
+    p = decodeURIComponent(u.pathname);
+  } catch (e) {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('Ungültige Adresse');
+  }
 
   const vonSuno = morgenKopf(req, res);
   if (req.method === 'OPTIONS') { res.writeHead(vonSuno ? 204 : 403); return res.end(); }
@@ -4068,8 +4078,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
      (Tarja, 07.10.2026: 1,7 GB ließen sich sonst nicht ablegen). Der
      Rumpf geht auf die Platte, nicht in den Speicher. */
   if (p.startsWith('/api/eigen-artwork/')) {
-    const id = decodeURIComponent(p.slice('/api/eigen-artwork/'.length));
-    const ordner = sicherer(SONGS, id);
+    /* p ist schon entschluesselt - ein zweites decodeURIComponent wirft
+       bei einem '%' im Rest (etwa /api/eigen-artwork/%25zz). */
+    let id = '';
+    try { id = decodeURIComponent(p.slice('/api/eigen-artwork/'.length)); } catch (e) { id = ''; }
+    const ordner = id && sicherer(SONGS, id);
     if (!ordner || !/^[A-Za-z0-9._-]+$/.test(id))
       return jsonAntwort(res, { ok: false, grund: 'Ungültige Kennung.' }, 400);
 
