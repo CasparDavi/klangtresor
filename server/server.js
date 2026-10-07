@@ -4008,13 +4008,18 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
         /* Ton kommt dazu (Tarja über Caspar_D, 27.08.2026: "auch mp3's
            hochladen können, die das vorhandene nicht ersetzen aber
            überstimmen" - "wie bei den artwork und videos"). Dasselbe
-           Muster: eigen.mp3 steht neben Sunos audio.mp3 und audio.wav. */
+           Muster: eigen.mp3 / eigen.wav stehen neben Sunos audio.*.
+           WAV zuerst: wer eine Studio-WAV legt, soll sie hoeren, nicht
+           eine aeltere eigen.mp3. */
         /* Das vierte Eigene ist kein Medium, sondern ein Rezept: eigen-effekt.json
            traegt den Effektclip aus dem Effektclip-Studio (Caspar_D,
            09.09.2026: "ein preset an den Titel gebunden" - die App malt es live). */
-        for (const [feld, datei] of [['ton', 'eigen.mp3'], ['effekt', 'eigen-effekt.json']]) {
-          try { if (fs.statSync(path.join(o, datei)).size > 0) hat[feld] = true; } catch (e) {}
+        for (const datei of ['eigen.wav', 'eigen.mp3']) {
+          try {
+            if (fs.statSync(path.join(o, datei)).size > 0) { hat.ton = true; hat.tonDatei = datei; break; }
+          } catch (e) {}
         }
+        try { if (fs.statSync(path.join(o, 'eigen-effekt.json')).size > 0) hat.effekt = true; } catch (e) {}
         /* video/bild bleiben als Ja/Nein (Altbestand der Oberflaeche), dazu die Nummern. */
         const nn = eigenNummern(o);
         if (nn.mp4.length) { hat.video = true; hat.videos = nn.mp4; }
@@ -4025,10 +4030,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     /* ... und was davon im Behaelter liegt (Stick): songs/<id>/eigen.* */
     const b = behaelterHolen();
     if (b) for (const rel of b.liste('songs/')) {
-      const m = /^songs\/([^/]+)\/eigen(?:-(\d+))?(?:-effekt)?\.(mp4|jpg|mp3|json)$/.exec(rel); if (!m) continue;
+      const m = /^songs\/([^/]+)\/eigen(?:-(\d+))?(?:-effekt)?\.(mp4|jpg|mp3|wav|json)$/.exec(rel); if (!m) continue;
       const e = b.eintrag(rel); if (!e || !e.l) continue;
-      const feld = { mp4: 'video', jpg: 'bild', mp3: 'ton', json: 'effekt' }[m[3]];
+      const feld = { mp4: 'video', jpg: 'bild', mp3: 'ton', wav: 'ton', json: 'effekt' }[m[3]];
       const h = (raus[m[1]] = raus[m[1]] || {}); h[feld] = true;
+      if (feld === 'ton' && h.tonDatei !== 'eigen.wav') h.tonDatei = 'eigen.' + m[3];
       if (m[3] === 'mp4' || m[3] === 'jpg') {
         const liste = m[3] === 'mp4' ? 'videos' : 'bilder', nr = m[2] ? parseInt(m[2], 10) : 1;
         h[liste] = (h[liste] || []); if (!h[liste].includes(nr)) h[liste].push(nr); h[liste].sort((x, y) => x - y);
@@ -4048,9 +4054,9 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
 
      DER DECKEL ist eine Notbremse gegen den Fehlgriff, nicht gegen
      Angreifer: Wer versehentlich einen Film statt eines Artworks
-     zieht, soll nicht die Platte fuellen. Groesse steht im
-     Content-Length, wird aber trotzdem beim Lesen mitgezaehlt - die
-     Angabe im Kopf ist eine Behauptung, kein Beleg. */
+     zieht, soll nicht die Platte fuellen. Studio-WAV darf bis 2 GB
+     (Tarja, 07.10.2026: 1,7 GB ließen sich sonst nicht ablegen). Der
+     Rumpf geht auf die Platte, nicht in den Speicher. */
   if (p.startsWith('/api/eigen-artwork/')) {
     const id = decodeURIComponent(p.slice('/api/eigen-artwork/'.length));
     const ordner = sicherer(SONGS, id);
@@ -4066,9 +4072,9 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       const nn = eigenNummern(ordner);
       const namen = was === 'bild' ? [eigenName('jpg', nr)]
                   : was === 'video' ? [eigenName('mp4', nr)]
-                  : was === 'ton' ? ['eigen.mp3']
+                  : was === 'ton' ? ['eigen.mp3', 'eigen.wav']
                   : was === 'effekt' ? ['eigen-effekt.json']
-                  : [...nn.mp4.map(n => eigenName('mp4', n)), ...nn.jpg.map(n => eigenName('jpg', n)), 'eigen.mp3', 'eigen-effekt.json'];
+                  : [...nn.mp4.map(n => eigenName('mp4', n)), ...nn.jpg.map(n => eigenName('jpg', n)), 'eigen.mp3', 'eigen.wav', 'eigen-effekt.json'];
       let weg = 0;
       for (const n of namen) {
         const f = path.join(ordner, n);
@@ -4079,48 +4085,80 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
 
     if (req.method === 'PUT' || req.method === 'POST') {
       const typ = String(req.headers['content-type'] || '').split(';')[0].toLowerCase();
-      /* Die Art steht im Content-Type. Bei Ton ist der Behälter
+      let dateiname = '';
+      try { dateiname = decodeURIComponent(String(req.headers['x-dateiname'] || '')); } catch (e) { dateiname = ''; }
+      /* Die Art steht im Content-Type. Bei Ton ist der Behaelter
          vielfältiger als bei Bild und Video: Ein MP3 kommt je nach
-         Browser als audio/mpeg, audio/mp3 oder audio/mpeg3 an, und wer
-         ein WAV zieht, meint dasselbe - eine eigene Fassung. Alles
-         landet unter eigen.mp3; der Name sagt "eigener Ton", nicht
-         "MPEG Layer III". */
+         Browser als audio/mpeg, audio/mp3 oder audio/mpeg3 an.
+         WAV bleibt WAV (eigen.wav) - 1,7 GB Studio-Dateien puffern
+         wir nicht mehr als MP3-Namen im Speicher (Tarja, 07.10.2026).
+         Linux-Drops haben oft keinen MIME; dann gilt der Dateiname. */
       /* Video und Bild: ohne ?nr kommt die Datei als NEUE Nummer dazu (hoechste + 1),
          mit ?nr=N ersetzt sie genau diese. Ton und Rezept gibt es je einmal. */
       const ext = /^video\//.test(typ) ? 'mp4' : /^image\//.test(typ) ? 'jpg' : null;
       const wunsch = parseInt(u.searchParams.get('nr') || '', 10);
-      /* Die NUMMER wird erst vergeben, wenn der Rumpf ganz da ist - sonst rechnen zwei
-         gleichzeitige Uploads beide "hoechste + 1" und der zweite ueberschreibt den ersten. */
+      const nKlein = dateiname.toLowerCase();
+      const tonName = () => {
+        if (typ.includes('wav') || typ === 'audio/wave' || /\.wav$/.test(nKlein)) return 'eigen.wav';
+        if (/^audio\//.test(typ) || /\.(mp3|mpeg|mpga|m4a|aac|ogg|flac|aiff|aif)$/.test(nKlein)) return 'eigen.mp3';
+        return null;
+      };
+      const rezept = /^application\/json/.test(typ);
+      const ton = !ext && !rezept ? tonName() : null;
+      if (!ext && !ton && !rezept) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild, Ton oder Effekt-Rezept.' }, 415);
+      /* Video-Nummer erst nach dem Rumpf (sonst gleiche Nummer bei zwei
+         gleichzeitigen Uploads). Ton und Rezept haben feste Namen. */
       const nameFuer = () => {
-        if (!ext) return /^audio\//.test(typ) ? 'eigen.mp3' : /^application\/json/.test(typ) ? 'eigen-effekt.json' : null;
+        if (rezept) return 'eigen-effekt.json';
+        if (ton) return ton;
         const nn = eigenNummern(ordner)[ext];
         return eigenName(ext, wunsch > 0 ? wunsch : (nn.length ? nn[nn.length - 1] + 1 : 1));
       };
-      if (!nameFuer()) return jsonAntwort(res, { ok: false, grund: 'Nur Video, Bild, Ton oder Effekt-Rezept.' }, 415);
-      const DECKEL = 300 * 1024 * 1024;
-      const stuecke = []; let gross = 0, abgebrochen = false;
+      /* 2 GB: Studio-WAV (Tarja 1,7 GB). Nicht den Rumpf im Speicher
+         sammeln - direkt auf die Platte, sonst knallt der Heap. */
+      const DECKEL = 2 * 1024 * 1024 * 1024;
+      fs.mkdirSync(ordner, { recursive: true });
+      const vorlaeufig = path.join(ordner, 'eigen.' + process.pid + '-' + Date.now() + '.teil');
+      const strom = fs.createWriteStream(vorlaeufig);
+      let gross = 0, abgebrochen = false;
+      const aufraeumen = () => { try { fs.unlinkSync(vorlaeufig); } catch (e) {} };
+      const zuGross = () => {
+        if (abgebrochen) return;
+        abgebrochen = true;
+        req.pause();
+        strom.destroy();
+        aufraeumen();
+        if (!res.headersSent) jsonAntwort(res, { ok: false, grund: 'Datei zu groß (höchstens 2 GB).' }, 413);
+        req.destroy();
+      };
+      strom.on('drain', () => { if (!abgebrochen) req.resume(); });
+      strom.on('error', () => { if (!abgebrochen) { abgebrochen = true; aufraeumen(); if (!res.headersSent) jsonAntwort(res, { ok: false, grund: 'Schreiben fehlgeschlagen.' }, 500); } });
       req.on('data', (c) => {
+        if (abgebrochen) return;
         gross += c.length;
-        if (gross > DECKEL) { abgebrochen = true; req.destroy(); return; }
-        stuecke.push(c);
+        if (gross > DECKEL) return zuGross();
+        if (!strom.write(c)) req.pause();
       });
       req.on('end', () => {
         if (abgebrochen) return;
-        try {
-          fs.mkdirSync(ordner, { recursive: true });
-          /* Erst daneben schreiben, dann umbenennen: Bricht die
-             Uebertragung ab, bleibt die alte Datei stehen statt einer
-             halben neuen. */
-          const name = nameFuer();
-          const nrM = /^eigen(?:-(\d+))?\.(mp4|jpg)$/.exec(name);
-          const nr = nrM ? (nrM[1] ? parseInt(nrM[1], 10) : 1) : undefined;
-          const vorlaeufig = path.join(ordner, name + '.' + process.pid + '-' + Date.now() + '.teil');
-          fs.writeFileSync(vorlaeufig, Buffer.concat(stuecke));
-          fs.renameSync(vorlaeufig, path.join(ordner, name));
-          jsonAntwort(res, { ok: true, datei: name, bytes: gross, nr });
-        } catch (e) { jsonAntwort(res, { ok: false, grund: String(e.message || e) }, 500); }
+        strom.end(() => {
+          try {
+            const name = nameFuer();
+            fs.renameSync(vorlaeufig, path.join(ordner, name));
+            /* Eine eigene Fassung: WAV und MP3 nicht nebeneinander stehen
+               lassen - sonst raet der Player. */
+            if (name === 'eigen.wav' || name === 'eigen.mp3') {
+              const andere = name === 'eigen.wav' ? 'eigen.mp3' : 'eigen.wav';
+              try { fs.unlinkSync(path.join(ordner, andere)); } catch (e) {}
+            }
+            const nrM = /^eigen(?:-(\d+))?\.(mp4|jpg)$/.exec(name);
+            const nr = nrM ? (nrM[1] ? parseInt(nrM[1], 10) : 1) : undefined;
+            jsonAntwort(res, { ok: true, datei: name, bytes: gross, nr });
+          } catch (e) { jsonAntwort(res, { ok: false, grund: String(e.message || e) }, 500); }
+        });
       });
-      req.on('error', () => {});
+      req.on('error', () => { if (!abgebrochen) { abgebrochen = true; strom.destroy(); aufraeumen(); } });
+      req.on('aborted', () => { if (!abgebrochen) { abgebrochen = true; strom.destroy(); aufraeumen(); } });
       return;
     }
   }

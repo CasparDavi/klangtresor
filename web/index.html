@@ -17851,7 +17851,8 @@ let bTon = localStorage.getItem('mysuno-ton') || 'wav';
 function tonDatei(s){
   if (!s) return 'audio.mp3';
   if (bTon === 'eigen'){
-    if (_eigenArt && _eigenArt[s.id] && _eigenArt[s.id].ton) return 'eigen.mp3';
+    const e = _eigenArt && _eigenArt[s.id];
+    if (e && e.ton) return e.tonDatei || 'eigen.mp3';
     /* Der naechste Song hat keine eigene Fassung. Dann gilt WAV, nicht
        MP3 - wer "eigen" gewaehlt hat, wollte die BESTE Quelle, nicht
        die verlustbehaftete. */
@@ -19153,9 +19154,20 @@ function capAuf(id){
     try { await hochladenEigentlich(art, feld, datei); } finally { ladend.delete(feld); }
   };
   const hochladenEigentlich = async (art, feld, datei) => {
-    const passt = art === 'video' ? /^video\//.test(datei.type)
-                : art === 'ton'   ? /^audio\//.test(datei.type)
-                : /^image\//.test(datei.type);
+    const name = datei.name || '';
+    const typAusName = /\.wav$/i.test(name) ? 'audio/wav'
+      : /\.(mp3|mpga)$/i.test(name) ? 'audio/mpeg'
+      : /\.(m4a|aac)$/i.test(name) ? 'audio/mp4'
+      : /\.flac$/i.test(name) ? 'audio/flac'
+      : /\.ogg$/i.test(name) ? 'audio/ogg'
+      : /\.(aiff|aif)$/i.test(name) ? 'audio/aiff'
+      : /\.(png|jpe?g|gif|webp)$/i.test(name) ? 'image/jpeg'
+      : /\.(mp4|webm|mov)$/i.test(name) ? 'video/mp4'
+      : '';
+    const typ = (datei.type || typAusName || '').split(';')[0];
+    const passt = art === 'video' ? (/^video\//.test(typ) || /\.(mp4|webm|mov)$/i.test(name))
+                : art === 'ton'   ? (/^audio\//.test(typ) || /\.(wav|mp3|m4a|aac|flac|ogg|aiff|aif)$/i.test(name))
+                : (/^image\//.test(typ) || /\.(png|jpe?g|gif|webp)$/i.test(name));
     if (!passt){
       feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
       feld.textContent = art === 'video' ? 'Das ist kein Video.'
@@ -19163,16 +19175,25 @@ function capAuf(id){
                        : 'Das ist kein Bild.';
       setTimeout(artZeichnen, 2200); return;
     }
+    const DECKEL = 2 * 1024 * 1024 * 1024;
+    if (datei.size > DECKEL){
+      feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
+      feld.textContent = 'Datei zu groß (höchstens 2 GB).';
+      setTimeout(artZeichnen, 3200); return;
+    }
     feld.className = 'capkachel' + (art === 'ton' ? ' capton' : '');
     feld.textContent = `… ${(datei.size / 1048576).toFixed(1)} MB`;
     try {
       /* Video: ohne ?nr kommt es als neue Nummer dazu. Bild: ?nr=1 ersetzt das eine. */
+      const koepfe = { 'Content-Type': typ || 'application/octet-stream' };
+      if (name) koepfe['X-Dateiname'] = encodeURIComponent(name);
       const a = await fetch('/api/eigen-artwork/' + id + (art === 'bild' ? '?nr=1' : ''),
-        { method: 'PUT', headers: { 'Content-Type': datei.type }, body: datei });
-      const d = await a.json();
-      if (!d.ok){ feld.textContent = d.grund || 'ging schief'; setTimeout(artZeichnen, 2600); return; }
+        { method: 'PUT', headers: koepfe, body: datei });
+      const d = await a.json().catch(() => ({}));
+      if (!d.ok){ feld.textContent = d.grund || (a.status === 413 ? 'Datei zu groß (höchstens 2 GB).' : 'ging schief'); setTimeout(artZeichnen, 3200); return; }
       _eigenArt = _eigenArt || {};
       _eigenArt[id] = Object.assign({}, _eigenArt[id], { [art]: true });
+      if (art === 'ton' && d.datei) _eigenArt[id].tonDatei = d.datei;
       if (art === 'video'){
         const l = (_eigenArt[id].videos || []).slice();
         if (d.nr && !l.includes(d.nr)) l.push(d.nr); l.sort((x, y) => x - y);

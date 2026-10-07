@@ -18,8 +18,8 @@
  * der, dem es gehört.
  *
  * EIN EIGENER NAME, KEIN ÜBERSCHREIBEN. Die Dateien heißen `eigen.mp4`,
- * `eigen.jpg` und `eigen.mp3` und stehen NEBEN Sunos `artwork.mp4`,
- * `cover.jpg` und `audio.mp3`.
+ * `eigen.jpg` und `eigen.mp3` bzw. `eigen.wav` und stehen NEBEN Sunos
+ * `artwork.mp4`, `cover.jpg` und `audio.mp3` / `audio.wav`.
  * Damit:
  *
  *   - fällt kein Medienlauf darüber her. `bin/laden.js` kennt nur seine
