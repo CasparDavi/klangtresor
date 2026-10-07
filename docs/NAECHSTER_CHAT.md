@@ -8420,3 +8420,20 @@ für Schirm und Druck. Das Band oben (`kopfPlan`) bleibt Rückfall und Größenm
 Köpfe, gekürzt 49 → 1, 14 mehrzeilig; Glasplakat unverändert (234 Titel, 4 gekürzt).
 Offen (Caspar_D, „K"): Schrift auf ∪-Kurven an der Oberkante der m-Höhe ausrichten (Kantentitel, Streamgraph) – Vorschlag
 gemacht, wartet auf sein Wort. Treemapper/Prophane: „T a" – B5-Fehler zuerst, dann Engine zusammenführen (B1+B2).
+
+## 81. 07.10.2026: Gebogene Titel an der m-Höhe ausgerichtet (1.0.55)
+
+Caspar_D: „wenn du Text nach oben biegst, solltest du die oberkannte der m-Höhe als Bezugslinie nutzen, dann überlappen weniger
+Buchstaben" – „K a". Kantentitel im Plakat: senkt sich die Unterkante zur Mitte (∪, Krümmungsmittelpunkt über der Schrift), liegt
+der Pfad auf der Oberkante der m-Höhe (`km.xh`, aus der Schrift gemessen) und die Glyphen rücken mit `<tspan dy="xh em">` nach
+außen – in Chrome nachgemessen: dy wirkt auf dem Textpfad senkrecht zu ihm (Halbkreis r 150 → alle Zeichen auf r 160). Bei ∩
+oder gerader Kante bleibt die Grundlinie der Bezug. Dazu die Bahn dreimal statt einmal geglättet (an den Ecken des
+Streckenzugs stießen die Buchstaben zusammen oder rissen auseinander). Vorher/nachher am Plakat: „Ulrich &Ännchen", „Licht",
+„Ende", „Digit ale" kollidierten – jetzt gleichmäßig; die etwas kürzere Bahn kürzt zwei kleine Titel mehr.
+Regel für später (Streamgraph, B5): Bezug folgt dem Vorzeichen der Krümmung über die Strecke des Namens.
+Prophane: `24170b7` Streamgraph-Bandnamen – die Anführungszeichen der Schriftfamilie beendeten das style-Attribut (9/9 kaputt,
+SVG kein gültiges XML, Kursive nie sichtbar); jetzt 0 kaputt, 3/3 kursiv, gültiges XML (Test-Viewer im Scratchpad gebaut, der
+Demo-Viewer wird erst mit B1/B2 neu gebaut).
+Wiedervorlage Brainstorms (Caspar_D: „es stehen noch andere brainstorms aus"): randlose Variante mit Schildzelle in der Ecke,
+monochrome Bleistiftzeichnung, QR-Code, Triptychon-Legende, Stufe 5 (Fokus ohne Gesicht), Namen per Texterkennung weglassen,
+schlanke /api/community.

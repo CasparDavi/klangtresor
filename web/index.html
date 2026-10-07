@@ -9399,7 +9399,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      selbst - vorher feste Zahlen der Mac-Systemschrift (0,94 / 0,23 / 1,15 em), unter Windows (Segoe UI) falsch */
   const km = (() => { leinwand.font = '400 100px ' + SCHAUM_NAMEN_FAMILIE; const H = leinwand.measureText('H'), g = leinwand.measureText('gpqy');
     const fasc = H.fontBoundingBoxAscent / 100, fdesc = H.fontBoundingBoxDescent / 100, cap = H.actualBoundingBoxAscent / 100, desc = g.actualBoundingBoxDescent / 100;
-    return fasc > 0.5 && fdesc > 0.05 && cap > 0.4 ? { fasc, fdesc, cap, desc } : { fasc: 0.97, fdesc: 0.21, cap: 0.73, desc: 0.18 }; })();
+    const xh = leinwand.measureText('x').actualBoundingBoxAscent / 100;          /* m-Hoehe (Oberkante der Kleinbuchstaben ohne Oberlaenge) */
+    return fasc > 0.5 && fdesc > 0.05 && cap > 0.4 && xh > 0.3 ? { fasc, fdesc, cap, desc, xh } : { fasc: 0.97, fdesc: 0.21, cap: 0.73, desc: 0.18, xh: 0.52 }; })();
   const kopfPlan = (pk, x, y, w, h, name, i, nurUnten) => {
     const bh = Math.min(26, Math.max(11, h * 0.2)), fsMax = (bh - 3) / (km.fasc + km.desc + 0.02);
     /* Wo die Buchstaben bei Schriftgroesse fs liegen: oben haengt die Schrift mit der Unterkante
@@ -9500,7 +9501,10 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
       for (const p of pts){ if (waende.some(([a, b]) => p[0] > a - fs * 0.6 && p[0] < b + fs * 0.6)){ if (stuecke[stuecke.length - 1].length) stuecke.push([]); } else stuecke[stuecke.length - 1].push(p); }
       pts.length = 0; pts.push(...stuecke.reduce((a, b) => b.length > a.length ? b : a, [])); }
     if (pts.length < 6) return null;
-    const gl = pts.map((p, k) => { const a = pts[Math.max(0, k - 1)], b = pts[Math.min(pts.length - 1, k + 1)]; return [p[0], (a[1] + 2 * p[1] + b[1]) / 4]; });
+    /* dreimal geglaettet statt einmal (07.10.2026): an jeder Ecke des Streckenzugs sprang die Richtung, die Buchstaben stiessen
+       dort zusammen oder rissen auseinander („Erlkönig s"); auf einer ∪-Kante zieht das Glaetten die Bahn nach innen, weg vom Rand */
+    let gl = pts;
+    for (let r = 0; r < 3; r++) gl = gl.map((p, k) => { const a = gl[Math.max(0, k - 1)], b = gl[Math.min(gl.length - 1, k + 1)]; return [p[0], (a[1] + 2 * p[1] + b[1]) / 4]; });
     let lang = 0; for (let k = 1; k < gl.length; k++) lang += Math.hypot(gl[k][0] - gl[k - 1][0], gl[k][1] - gl[k - 1][1]);
     /* halbfett gemessen, in der Druckgroesse, dazu der Saum (0,24 fs Strich, die Haelfte ragt je Seite hinaus) - vorher normal
        bei 100 px mit 1,2 Zuschlag („mit 1,06 liefen lange Titel ueber den Zellrand": das war die Textform der kleinen Schrift) */
@@ -9509,9 +9513,19 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     let txt = name;
     if (breit(txt) > lang * 0.9){ let k = txt.length; while (k > 2 && breit(txt.slice(0, k) + '…') > lang * 0.9) k--; txt = k > 2 ? txt.slice(0, k) + '…' : ''; }
     if (!txt) return null;
-    return `<path id="skp${i}" d="M${gl.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
+    /* SCHRIFT AUF DER ∪-KURVE (Caspar_D, 07.10.2026: „wenn du Text nach oben biegst, solltest du die oberkannte der m-Höhe als
+       Bezugslinie nutzen, dann überlappen weniger Buchstaben"): die Unterkante einer Zelle senkt sich zur Mitte, der
+       Kruemmungsmittelpunkt liegt ueber der Schrift - alles ueber der Bezugslinie wird zusammengedrueckt (Radius 40, Schrift 8:
+       auf der Grundlinie stand die m-Hoehe bei 90 % Breite, die Buchstaben beruehrten sich). Jetzt liegt der Pfad auf der
+       Oberkante der m-Hoehe und die Glyphen ruecken um die m-Hoehe nach aussen (dy wirkt auf dem Textpfad senkrecht zu ihm,
+       in Chrome nachgemessen): der Koerper der Buchstaben steht aussen und wird hoechstens breiter, gestaucht werden nur die
+       Oberlaengen. Die Grundlinie bleibt, wo sie war; der Pfad ist nur verschoben, seine Laenge gleich. Senkt sich die Kante
+       nicht (∩ oder gerade), bleibt die Grundlinie der Bezug. */
+    const mi = gl[gl.length >> 1][1], enden = (gl[0][1] + gl[gl.length - 1][1]) / 2, schale = mi > enden + 0.05 * fs;
+    const bahn = schale ? gl.map(p => [p[0], p[1] - km.xh * fs]) : gl, versatz = schale ? ` dy="${km.xh.toFixed(3)}em"` : '';
+    return `<path id="skp${i}" d="M${bahn.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
       + `<text font-size="${fs.toFixed(1)}" font-weight="600" fill="#f4f4f2" stroke="#000" stroke-opacity="0.6" stroke-width="${(fs * 0.24).toFixed(2)}"`
-      + ` stroke-linejoin="round" paint-order="stroke" clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle">${esc(txt)}</textPath></text>`;
+      + ` stroke-linejoin="round" paint-order="stroke" clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>`;
   };
   /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
   const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (schaumAvatarAdresse(zeilen[k.row].bild) || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
@@ -9693,7 +9707,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.54').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.55').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
