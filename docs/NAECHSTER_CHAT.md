@@ -8222,3 +8222,32 @@ Pakete 39,5 s, flach nachgebildet 609 s (langsamstes Gefäß 3394 Zellen 519 s),
 „vielleicht weglassen?" · Stufe 5 „mach Vorschläge". Dazu seine Idee: **eine Ecke vorsehen** — der Schaum füllt
 ein L, Legende und QR sitzen in der ausgesparten Ecke; beim Triptychon nur im rechten Rahmen (Skizze gezeigt,
 Engine nimmt schon heute einen eigenen Umriss: `outline` in `foamtree.js`).
+
+## 70. 07.10.2026 mittags: Tarjas PR #6 übernommen + Nachbesserungen (1.0.45)
+
+**Tarjas Beitrag (Commit `00a7a0f`, unverändert die Basis):** Eigene Tonfassung bis 2 GB — der Rumpf geht als
+Strom auf die Platte statt in den Speicher, WAV bleibt `eigen.wav` (nicht mehr als MP3-Name gepuffert),
+Linux-Drops ohne MIME gelten über den Dateinamen. Anlass: ihre 1,7-GB-Studio-WAV ließ sich nicht ablegen.
+
+**Nachgebessert** (Tarjas Fall vorher im Sandkasten `_werkstatt_tarja6/sb` mit 1,7 GB nachgestellt; die
+Nachbesserungen dort geprüft mit WAV, MP3, leerem Rumpf, abgebrochenem Upload, `/%` und den 206-Kopfzeilen):
+- `PUT /api/eigen-artwork`: umbenannt wird erst nach `close` des Schreibstroms und nur, wenn jedes Byte auf der
+  Platte ist (`bytesWritten === gross`, kein Stromfehler) — eine volle Platte ergab sonst eine verkürzte Datei
+  unter dem richtigen Namen. Windows: hält der Player `eigen.wav` offen, zehn Versuche à 200 ms, dann Klartext
+  „Datei ist gerade in Benutzung". Leerer Rumpf → 400, nichts ersetzt. Nach Schreibfehler wird der Rest des Rumpfs
+  abgenommen, damit der Browser die 500 liest statt zu hängen. `.teil`-Reste über 6 h räumt der nächste Upload weg;
+  aufgeräumt wird erst nach dem Schließen (keine leere `.teil`, kein EPERM unter Windows).
+- `requestTimeout: 0` am Server: Node ≥ 18 bricht sonst jede Anfrage nach 300 s ab — 1,7 GB über WLAN dauern
+  länger. Dafür im Upload ein Leerlaufwächter (2 min ohne Byte → Abbruch).
+- Cache: `eigen*.wav` ist wandelbar wie `eigen*.mp3`; der 206-Zweig (Bereichsanfragen — so holt der Player Ton)
+  folgt jetzt derselben Regel statt pauschal ein Jahr. `audio.*` und Cover bleiben beim Jahr.
+- **Vorbestehender Absturz:** `GET /%` warf in `decodeURIComponent` einen URIError ungefangen im Handler — eine
+  Anfrage beendete den ganzen Server (ebenso `//[` im URL-Zerleger, `%25zz` hinter `/api/eigen-artwork/`). Jetzt 400.
+- **Modell-Lücke** (Tarjas Befund): neue Modelle kamen in bestehenden Installationen und im Docker nie an
+  (Entrypoint nur beim ersten Start, Einrichtung nur einmal, Morgenlauf gar nicht). `bin/modelle-holen.js --nur a,b`
+  holt einzelne Einträge; `bin/gesichter.js` holt fehlendes SCRFD/PP-OCRv3 (zusammen ~5 MB) selbst nach. Die
+  Einrichtung zeigte fest „13 von 13" bei inzwischen 15 Einträgen — jetzt die echte Zahl aus `modelle-holen.js`.
+
+**Tarjas Messbericht** (Docker, Ryzen 9 7950X): `avatare.js` 4168 Avatare, 287 MB in ~5 min, 2× HTTP 403;
+`gesichter.js` 4590 Bilder in 10 min (131 ms/Bild), 2362 mit Gesicht, Schrift auf 280 Covern. `/api/community`
+wiegt 12,6 MB und braucht 1,45 s je Öffnen — eine schlanke Fassung für den Schaum ist als nächster Schritt geplant.
