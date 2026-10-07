@@ -9112,7 +9112,8 @@ async function schaumVorrechnen(){
    das Plakat-Studio (druck: Kacheln mit Luecken statt Fugenlinien, Name/Titel auf Rauch- oder Milchglas unten in
    der Zelle, Wackeln, Schatten, Kissen nur auf den Kacheln; Bilder in der Vorschau aus dem Vorrat, die volle
    Fassung in data-voll fuers PDF). Fuer den Schirm unveraendert, was vorher in malen() stand.
-   druck: { titel: 'rauch'|'milch'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab } */
+   druck: { titel: 'rauch'|'milch'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab,
+            verzeichnis: Nummern in die Zellen und die Liste zurueckgeben, mmJeEinheit: Millimeter je Schaum-Einheit } */
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');
   const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
@@ -9184,6 +9185,21 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
       text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
         + ` fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
   };
+  /* Die Nummer des Werkverzeichnisses in einer Zelle ohne Glasband: ein kleines Schild unten in der Zelle (dort,
+     wo die Zelle breit genug ist, sonst in ihrer Mitte), Schrift 2,2 bis 5 mm je nach Zellgroesse - lesbar aus der
+     Naehe, auch in der kleinsten Zelle. Rauch- oder Milchglas wie die Titel. */
+  const nummerSchild = (pk, x, y, w, h, nr, tf) => {
+    const mm = (druck && druck.mmJeEinheit) || 1, fs = Math.min(5 / mm, Math.max(2.2 / mm, 0.2 * Math.min(w, h)));
+    const sw = (String(nr).length * 0.62 + 0.7) * fs, sh = 1.3 * fs;
+    let cx = 0, cy = 0; for (const p of pk){ cx += p[0]; cy += p[1]; } cx /= pk.length; cy /= pk.length;
+    const yy = y + h - 0.95 * sh, s = sehne(pk, yy);
+    if (s && s[1] - s[0] > sw * 1.3){ cx = (s[0] + s[1]) / 2; cy = yy; }
+    const schild = `<g pointer-events="none"${tf ? ` transform="${tf}"` : ''}><rect x="${(cx - sw / 2).toFixed(1)}" y="${(cy - sh / 2).toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" rx="${(sh * 0.3).toFixed(1)}"`
+      + ` fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? 0.72 : 0.58}"/>`
+      + `<text x="${cx.toFixed(1)}" y="${(cy + fs * 0.36).toFixed(1)}" font-size="${fs.toFixed(1)}" font-weight="600" text-anchor="middle"`
+      + ` fill="${milch ? '#141414' : '#f4f4f2'}" style="font-variant-numeric:tabular-nums">${nr}</text></g>`;
+    return schild;
+  };
   /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
   let svg = R.renderSVG(res, { pad: 0, cushion: 0,
     /* im Druck stehen die Namen auf Glasbaendern */
@@ -9193,6 +9209,33 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     ...(druck || personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
     colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
   const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
+  /* WERKVERZEICHNIS (Plakat, Stufe 2; Caspar_D hat es angekreuzt): jede Zelle traegt eine Nummer, am Rand steht
+     die nummerierte Liste - so ist jeder Titel auffindbar, auch der kleinste. Gezaehlt wird Areal fuer Areal (in
+     der Reihenfolge der Legende: das groesste zuerst), darin in Lesereihenfolge - Zeilen von oben nach unten (eine
+     Zeile ist 0,7 typische Zellweiten hoch), in der Zeile von links nach rechts. Wer eine Nummer sucht, findet sie
+     dort, wo die Liste sie vermuten laesst. Sammelblasen („+N weitere") bekommen keine Nummer; die Liste nennt
+     sie am Ende ihres Areals. */
+  let nummern = null, verzeichnis = null;
+  if (druck && druck.verzeichnis){
+    const H = res.height;
+    const mitte = (o) => { let sx = 0, sy = 0; for (const p of o){ sx += p[0]; sy += p[1]; } return [sx / o.length, H - sy / o.length]; };
+    const flaeche = (o) => { let s = 0; for (let q = 0; q < o.length; q++){ const a = o[q], b = o[(q + 1) % o.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
+    const alleZ = res.leaves.map((k, i) => ({ i, k })).filter(e => e.k.outline && e.k.outline.length > 2 && e.k.row != null && zeilen[e.k.row]);
+    const groessen = alleZ.map(e => flaeche(e.k.outline)).sort((a, b) => a - b);
+    const band = 0.7 * Math.sqrt(groessen[groessen.length >> 1] || 1);
+    const gruppen = new Map();
+    for (const e of alleZ){ const a = R.chainOf(e.k)[0] || null; [e.cx, e.cy] = mitte(e.k.outline); if (!gruppen.has(a)) gruppen.set(a, []); gruppen.get(a).push(e); }
+    nummern = new Map(); verzeichnis = []; let nr = 0;
+    for (const [a, liste] of [...gruppen.entries()].sort((p, q) => ((q[0] && q[0].count) || 0) - ((p[0] && p[0].count) || 0))){
+      liste.sort((p, q) => Math.floor(p.cy / band) - Math.floor(q.cy / band) || p.cx - q.cx);
+      const farbe = (!gezoomt && a && farbeVon(a.name)) || schaumFarbe(liste[0].k, R.chainOf, farbeVon, gezoomt);
+      const eintraege = [], weitere = [];
+      for (const e of liste){ const z = zeilen[e.k.row];
+        if (z.weitere){ weitere.push(z.weitere); continue; }
+        nummern.set(e.i, ++nr); eintraege.push({ nr, titel: personen ? zierfrei(z.titel || '') : String(z.titel || '').trim() }); }
+      verzeichnis.push({ name: a ? a.name : '', farbe, eintraege, weitere: weitere.reduce((s, n) => s + n, 0) });
+    }
+  }
   /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
   const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
   /* Die Vorschau des Plakats zeigt die Kachelbilder aus dem Vorrat - die vollen Cover (499 x ~2,5 MB) braucht
@@ -9215,7 +9258,10 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const bildAn = !quelle ? '' : druck ? `href="${esc(schaumBildHref(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
                : `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"`;
              let kopf = '';
-             const name = (druck ? druck.titel !== 'ohne' : personen) ? zierfrei((zeilen[res.leaves[+i].row] || {}).titel || '') : '';
+             /* Zierzeichen faellt nur bei Personen weg - bei Songtiteln gehoert die Klammer am Ende dazu */
+             const roh = (zeilen[res.leaves[+i].row] || {}).titel || '', nrHier = nummern ? nummern.get(+i) : 0;
+             const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : String(roh).trim()) : '';
+             const name = name0 && nrHier ? nrHier + '\u2002' + name0 : name0;
              const plan = name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i, !!druck) : null;
              const tf = druck && druck.wackeln > 0 ? schaumWackeln(id, x, y, w, h, druck.wackeln) : '';
              if (plan){
@@ -9226,6 +9272,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
                  + `<rect class="${milch ? 'milch' : 'rauch'}" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? '0.62' : SCHAUM_RAUCH_VORGABE}"/></g>`;
                if (druck) baender.push(tf ? `<g transform="${tf}">${plan.text}</g>` : plan.text); else koepfe.push(plan.text);
              }
+             if (nrHier && !plan) baender.push(nummerSchild(pk, x, y, w, h, nrHier, tf));
              kacheln.push({ dd, tf });
              const fertig = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
                + (quelle ? `<image ${bildAn} x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
@@ -9251,7 +9298,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     svg = svg.replace('</svg>', (druck.kissen === false ? '' : schaumKissenKacheln(kacheln, res)) + baender.join('') + '</svg>')
              .replace('<defs>', '<defs>' + schaumKissenFilter(res));
   } else svg = schaumKissen(svg, res, kacheln.map(k => k.dd));
-  return { svg, ids, R, personen };
+  return { svg, ids, R, personen, verzeichnis };
 }
 /* Wackeln der Kacheln im Plakat (Caspar_D: „ggf. etwas chaotisch wackeln und verschieben die Kacheln, aber nicht
    zu viel"): je Zelle fest aus ihrer Kennung, hoechstens 3 Grad und 4 % ihrer Groesse. */
@@ -9298,7 +9345,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.36').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

@@ -8052,3 +8052,23 @@ schon — solche MP3s erkennt weder das Einlesen noch der neue Weg; das ist rich
   Führungslinie, Titel entlang der Kante. Danach 3 Edition/QR/Zeitleiste, 4 Triptychon/Social, 5 Fokus
   (Empfehlung im Chat 07.10.: Gesicht → Aufmerksamkeitsmodell mit Schrift-Maske → Bildmitte; vorher
   Messung an der Stichprobe mit Handpunkten und Zufallsboden).
+
+## 60. 07.10.2026 nachts: Werkverzeichnis (1.0.36) — Nachtauftrag
+
+**Caspar_D vor dem Schlafen:** „du machst das Studio fertig … erstmal Werkverzeichnis und bindest das ein, ggf.
+noch andere Optimierungen und Einstellungen. Dann zur Gesichtsdefinition, damit keine Gesichter in den PDFs
+angeschnitten sind: du kannst ja auch selbst Gesichter erkennen, das wäre die Referenz; dann nimmst du die
+Gesichtserkenner und schaust, wo die das Gesicht sehen; Texte ausschließen halte ich auch für eine gute Idee;
+teste verschiedene kleine Erkenner, kriege raus, was vielversprechend ist, das benutzen wir." — Und, nur wenn
+Zeit bleibt: „flache Treemaps mit 4000 Entitäten — paketiere und versuche dann die Zellen nachzubilden an den
+Positionen, wo sie jetzt schon sind" (= §55 „Zusammenwerfen": flacher Lauf mit dem Paketergebnis als Start).
+
+**Werkverzeichnis ausgeliefert (1.0.36):** Schalter „Verzeichnis“ im Studio (Bleiglas: an). `schaumSvgBauen`
+vergibt Nummern Areal für Areal (Legenden-Reihenfolge), darin in Lesereihenfolge (Zeilen 0,7 typische
+Zellweiten hoch); Nummer im Glasband vor dem Titel, sonst Nummernschild unten in der Zelle (2,2–5 mm,
+Rauch/Milch). Liste (`verzeichnisSetzen` in plakat.js) unter dem Schild über die volle Breite in Spalten:
+Kopf „WERKVERZEICHNIS · n Titel“ bzw. „VERZEICHNIS DER PERSONEN“, je Areal Kopf mit Farbquadrat, Nummern
+rechtsbündig, Titel gekürzt; Sammelblasen ohne Nummer, „und N weitere“ am Arealende. Schrift 0,45 % bis
+1,5 mm, Block höchstens ein Sechstel der Höhe. Nebenbei: Songtitel im Glasband nicht mehr „zierfrei“ (die
+schließende Klammer fiel weg). Modul-Import mit Versionsanhang (`plakat.js?v=1.0.36`), damit Browser nicht
+die alte Fassung aus dem Zwischenspeicher nehmen.

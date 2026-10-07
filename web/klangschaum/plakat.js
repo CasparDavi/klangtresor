@@ -18,17 +18,17 @@ const FORMATE = [
   { id: 'frei', name: 'frei' },
 ];
 /* Die Vorlagen (Caspar_D hat alle vier angekreuzt). Jede setzt alle Feinheiten; danach ist alles einzeln
-   verstellbar. „Bleiglas": breite dunkle Fugen wie Bleiruten, starkes Licht, die Titel kommen mit dem
-   Werkverzeichnis (Stufe 2) - bis dahin ohne. */
+   verstellbar. „Bleiglas": breite dunkle Fugen wie Bleiruten, starkes Licht, keine Glasbaender - die Titel
+   stehen im Werkverzeichnis. */
 const VORLAGEN = [
   { id: 'galerie', name: 'Galerie', zeile: 'schwarzer Grund · Rauchglas · Federstrich',
-    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07 } },
+    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false } },
   { id: 'papier', name: 'Papier', zeile: 'warmes Weiß · Milchglas · leiser Schatten',
-    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08 } },
+    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false } },
   { id: 'bleiglas', name: 'Bleiglas', zeile: 'breite dunkle Fugen · starkes Licht',
-    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05 } },
+    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true } },
   { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
-    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07 } },
+    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false } },
 ];
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
@@ -49,16 +49,31 @@ const hellerGrund = () => leuchte(E.grund) > 0.35;
 const schrift = () => hellerGrund() ? '#16171a' : '#f1efe9';
 const schriftLeise = () => hellerGrund() ? '#5c5f66' : '#a3a9b1';
 
+/* Wie gross das Werkverzeichnis wird: n Eintraege (geschaetzt mit ein paar Arealkoepfen) in Spalten ueber die
+   ganze Breite. Die Schrift so gross wie moeglich (bis 0,45 % der kurzen Seite, auf 70 × 100 gut 3 mm), so klein
+   wie noetig (bis 1,5 mm, aus der Naehe lesbar), damit der Block hoechstens ein Sechstel der Hoehe nimmt. Eine
+   Spalte ist 15 Schriftgroessen breit: Nummer, Titel, Abstand. */
+function verzeichnisMass(n, breite, kurz, hoeheMax, koepfe = 6, kleinst = Math.max(1.5, 0.0026 * kurz)){
+  /* je Areal ein Kopf und ein Rest („und N weitere"), je Spalte eine Zeile Reserve (ein Kopf rueckt nie allein an den Fuss) */
+  const zeilenZahl = n + 2 * koepfe, kopf = 2.4;
+  const mass = (L) => { const spalteB = 15 * L, spalten = Math.max(1, Math.floor((breite + L) / spalteB)), proSpalte = Math.ceil(zeilenZahl / spalten) + 1;
+    return { L, spalteB: (breite + L) / spalten, spalten, proSpalte, hoehe: (proSpalte * 1.38 + kopf) * L }; };
+  const gross = 0.0045 * kurz, klein = Math.min(gross, kleinst);
+  for (let L = gross; L >= klein; L -= 0.05){ const m = mass(L); if (m.hoehe <= hoeheMax) return m; }
+  return mass(klein);
+}
 /* Seite: Format, Lage, Raender (unten breiter - die optische Mitte, dort steht das Museumsschild). */
-function geometrie(){
+function geometrie(n = 0){
   const f = FORMATE.find(x => x.id === E.format) || FORMATE[5];
   let w = f.id === 'frei' ? Math.max(100, Math.min(3000, E.freiW * 10)) : f.w, h = f.id === 'frei' ? Math.max(100, Math.min(3000, E.freiH * 10)) : f.h;
   if ((E.lage === 'quer') !== (w > h) && w !== h) [w, h] = [h, w];
   const kurz = Math.min(w, h), rand = E.rand * kurz;
   const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
-  const unten = Math.max(rand * 1.55, rand * 0.5 + T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0) + rand * 0.45);
+  const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
+  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6) : null;
+  const unten = Math.max(rand * 1.55, rand * 0.5 + schildH + (verz ? rand * 0.4 + verz.hoehe : 0) + rand * 0.45);
   const karte = { x: BESCHNITT + rand, y: BESCHNITT + rand, w: w - 2 * rand, h: h - rand - unten };
-  return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand, unten, T, U, L, karte, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
+  return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand, unten, T, U, L, karte, schildH, verz, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
 }
 
 /* Was gerade im Schaum steht - derselbe Auftrag im Seitenverhaeltnis der Karte. */
@@ -79,7 +94,11 @@ function standSetzen(t){ const s = el('ps-stand'); if (s) s.textContent = t || '
 function zeichnen(sofort){
   clearTimeout(warten);
   warten = setTimeout(async () => {
-    const g = geometrie(), verh = Math.round(g.karte.h / g.karte.w * 100) / 100, lauf = ++legeLauf;
+    const lauf = ++legeLauf;
+    /* Das Verzeichnis braucht Platz unter der Karte - dafuer muss die Zahl der Eintraege vor dem Legen bekannt sein */
+    let n = aktuell && aktuell.raum === raumJetzt ? aktuell.j.zeilen.length : 0;
+    if (!n && E.verzeichnis){ try { n = (await auftrag(1)).j.zeilen.length; } catch (e) { n = 0; } if (lauf !== legeLauf) return; }
+    const g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * 100) / 100;
     if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt){
       const a = await auftrag(verh);
       if (lauf !== legeLauf) return;
@@ -124,10 +143,11 @@ async function bauen(g){
   /* Vorschau-Massstab fuer den Bildvorrat: Bildschirmpunkte je Schaum-Einheit */
   const pxBreite = blatt.clientWidth || 800, massstab = (pxBreite * (kv.w / g.PW)) / aktuell.res.width * (window.devicePixelRatio || 1);
   const druck = { titel: E.titel, fugen: E.fugen, wackeln: E.wackeln, schatten: E.schatten, vignette: E.vignette, kissen: E.kissen,
-                  deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab };
+                  deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab,
+                  verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height) };
   const la = schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
   if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
-  let { svg } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
+  let { svg, verzeichnis } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
   if (lauf !== bauLauf) return;
   svg = svg.replace('<rect width="100%" height="100%" fill="#121417"/>', '')
            .replace('<svg ', `<svg class="ps-schaum" x="${kv.x.toFixed(2)}" y="${kv.y.toFixed(2)}" width="${kv.w.toFixed(2)}" height="${kv.h.toFixed(2)}" `);
@@ -146,7 +166,7 @@ async function bauen(g){
   let legende = null;
   if (E.legende){
     const eintraege = legendenEintraege(), L = g.L, q = L * 0.95, zeileH = L * 1.75;
-    const hoehe = Math.max(zeileH, g.h + BESCHNITT - g.rand * 0.6 - uy);
+    const hoehe = Math.max(zeileH, g.verz ? g.schildH : g.h + BESCHNITT - g.rand * 0.6 - uy);
     const proSpalte = Math.max(1, Math.floor(hoehe / zeileH));
     legende = { rechts, oben: uy, L, abstand: L * 1.6 };
     eintraege.forEach((e, i) => {
@@ -155,6 +175,7 @@ async function bauen(g){
         + `<text x="${(q + L * 0.5).toFixed(2)}" y="${(y + zeileH * 0.5 + L * 0.35).toFixed(2)}" font-size="${L.toFixed(2)}" fill="${fg}">${esc2(e.name)}</text></g>`;
     });
   }
+  if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
   const seite = `<svg class="ps-seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${g.PW.toFixed(2)} ${g.PH.toFixed(2)}" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`
     + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + feder + svg + kopf
     + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${g.w}" height="${g.h}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/></svg>`;
@@ -176,6 +197,43 @@ function eigeneIds(svg, vor){
   const weg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const muster = new RegExp('(\\sid="|url\\(#|href="#)(' + [...ids].map(weg).join('|') + ')(?=[")])', 'g');
   return svg.replace(muster, (_, a, id) => a + vor + id);
+}
+/* DAS WERKVERZEICHNIS setzen: ueber die volle Breite in Spalten, von oben nach unten und dann nach rechts; je
+   Areal ein Kopf mit Farbquadrat, dann die Nummern (rechtsbuendig, leise) mit den Titeln. Ein Kopf steht nie
+   allein am Fuss einer Spalte. Zu lange Titel werden mit … gekuerzt (Leinwandmass mal 1,15 - sie misst etwas zu
+   schmal). Reichen die Zeilen mit den echten Arealen nicht, wird die Schrift kleiner, bis der Block passt. */
+function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
+  const personen = aktuell && aktuell.art === 'person';
+  const n = gruppen.reduce((s, q) => s + q.eintraege.length, 0);
+  const zeilen = [];
+  for (const q of gruppen){
+    zeilen.push({ kopf: q.name, farbe: q.farbe });
+    for (const e of q.eintraege) zeilen.push(e);
+    if (q.weitere) zeilen.push({ rest: `und ${q.weitere.toLocaleString('de-DE')} weitere` });
+  }
+  /* mit den echten Arealen in den reservierten Platz, notfalls bis 1 mm Schrift */
+  const m = verzeichnisMass(n, g.w - 2 * g.rand, g.kurz, g.verz.hoehe * 1.02, gruppen.length, 1);
+  const L = m.L, zh = L * 1.38, nrB = String(n).length * 0.62 * L, titelB = m.spalteB - nrB - 1.6 * L;
+  const kuerzen = (t, b) => { if (messen(t) * 1.15 * L <= b) return t; let k = t.length; while (k > 1 && messen(t.slice(0, k) + '…') * 1.15 * L > b) k--; return t.slice(0, k) + '…'; };
+  let out = `<text x="${x0.toFixed(2)}" y="${(y0 + L * 1.2).toFixed(2)}" font-size="${(L * 1.1).toFixed(2)}" font-weight="600" letter-spacing="${(L * 0.06).toFixed(2)}" fill="${leise}">`
+    + `${personen ? 'VERZEICHNIS DER PERSONEN' : 'WERKVERZEICHNIS'} · ${n.toLocaleString('de-DE')} ${personen ? 'Personen' : 'Titel'}</text>`;
+  const oben = y0 + 2.4 * L;
+  let s = 0, r = 0;
+  zeilen.forEach((z, i) => {
+    if (r >= m.proSpalte || (z.kopf !== undefined && r >= m.proSpalte - 1)){ s++; r = 0; }
+    const x = x0 + s * m.spalteB, y = oben + r * zh + L;
+    if (z.kopf !== undefined){
+      out += `<rect x="${x.toFixed(2)}" y="${(y - L * 0.78).toFixed(2)}" width="${(L * 0.8).toFixed(2)}" height="${(L * 0.8).toFixed(2)}" rx="${(L * 0.15).toFixed(2)}" fill="${z.farbe}"/>`
+        + `<text x="${(x + L * 1.2).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(kuerzen(z.kopf, m.spalteB - 2.6 * L))}</text>`;
+    } else if (z.rest){
+      out += `<text x="${(x + nrB + 0.6 * L).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-style="italic" fill="${leise}">${esc2(z.rest)}</text>`;
+    } else {
+      out += `<text x="${(x + nrB).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" text-anchor="end" fill="${leise}" style="font-variant-numeric:tabular-nums">${z.nr}</text>`
+        + `<text x="${(x + nrB + 0.6 * L).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" fill="${fg}">${esc2(kuerzen(z.titel, titelB))}</text>`;
+    }
+    r++;
+  });
+  return out;
 }
 function legendeSetzen(svg, { rechts, oben, abstand }){
   const gruppen = [...svg.querySelectorAll('g.ps-leg')], spalten = [];
@@ -277,6 +335,7 @@ function felderSetzen(){
   for (const [id, v] of [['ps-freiw', E.freiW], ['ps-freih', E.freiH], ['ps-rand', Math.round(E.rand * 100)], ['ps-fugen', Math.round(E.fugen * 10)],
     ['ps-wackeln', Math.round(E.wackeln * 100)], ['ps-schatten', Math.round(E.schatten * 100)], ['ps-vignette', Math.round(E.vignette * 100)], ['ps-federmm', E.federMm],
     ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter]]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
+  el('ps-verz').checked = !!E.verzeichnis;
   el('ps-kissen').checked = !!E.kissen; el('ps-feder').checked = !!E.feder; el('ps-legende').checked = !!E.legende;
   el('ps-hinweis').hidden = raumJetzt !== 'groupies';
 }
@@ -325,6 +384,8 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <p class="ps-leise" id="ps-mass"></p>
   <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
   <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="ohne">ohne</button></div>
+  <label class="ps-zeile">Verzeichnis<input type="checkbox" id="ps-verz"><span></span></label>
+  <p class="ps-leise" style="margin-top:0">Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
   <details class="ps-fein" open><summary>Feinheiten</summary>
     ${regler('ps-rand', 'Rand', 2, 15, 1)}${regler('ps-fugen', 'Fugen', 3, 40, 1)}${regler('ps-wackeln', 'Wackeln', 0, 100, 1)}${regler('ps-schatten', 'Schatten', 0, 100, 1)}${regler('ps-vignette', 'Vignette', 0, 100, 1)}
     <label class="ps-zeile">Kissen<input type="checkbox" id="ps-kissen"><span></span></label>
@@ -355,6 +416,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-freiw').onchange = () => setze({ freiW: Math.max(10, Math.min(300, +el('ps-freiw').value || 80)) });
   el('ps-freih').onchange = () => setze({ freiH: Math.max(10, Math.min(300, +el('ps-freih').value || 120)) });
   el('ps-kissen').onchange = (ev) => setze({ kissen: ev.target.checked });
+  el('ps-verz').onchange = (ev) => setze({ verzeichnis: ev.target.checked });
   el('ps-feder').onchange = (ev) => setze({ feder: ev.target.checked });
   el('ps-legende').onchange = (ev) => setze({ legende: ev.target.checked });
   el('ps-kopftitel').oninput = (ev) => setze({ kopfTitel: ev.target.value, kopfTitelEigen: !!ev.target.value });
