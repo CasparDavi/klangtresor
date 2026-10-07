@@ -1503,7 +1503,12 @@ function tonAblegen(id, format, bytes, titel) {
 }
 const TON_DECKEL = 300 * 1024 * 1024;        /* eine 8-Minuten-WAV wiegt rund 90 MB */
 
-const server = http.createServer((req, res) => {
+/* KEIN GESAMTZEITLIMIT JE ANFRAGE (07.10.2026). Node >= 18 bricht jede
+   Anfrage nach 300 s ab (requestTimeout), egal ob noch Daten fliessen.
+   Tarja, 07.10.2026: 1,7 GB Studio-WAV ueber WLAN brauchen laenger - der
+   Upload riss kurz vor dem Ende ab. Gegen haengende Verbindungen wacht
+   stattdessen im Upload ein Leerlaufwaechter (2 min ohne ein Byte). */
+const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
   const u = new URL(req.url, 'http://x');
   const p = decodeURIComponent(u.pathname);
 
@@ -4114,6 +4119,11 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
         const nn = eigenNummern(ordner)[ext];
         return eigenName(ext, wunsch > 0 ? wunsch : (nn.length ? nn[nn.length - 1] + 1 : 1));
       };
+      /* Leerlaufwaechter statt requestTimeout (siehe http.createServer):
+         greift nur, wenn zwei Minuten gar nichts kommt - ein langsamer,
+         aber stetiger 2-GB-Upload laeuft durch. destroy() loest 'aborted'
+         bzw. 'error' aus, dort wird die .teil weggeraeumt. */
+      req.setTimeout(120000, () => req.destroy());
       /* 2 GB: Studio-WAV (Tarja 1,7 GB). Nicht den Rumpf im Speicher
          sammeln - direkt auf die Platte, sonst knallt der Heap. */
       const DECKEL = 2 * 1024 * 1024 * 1024;
