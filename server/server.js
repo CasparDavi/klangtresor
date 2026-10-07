@@ -4117,22 +4117,92 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       /* 2 GB: Studio-WAV (Tarja 1,7 GB). Nicht den Rumpf im Speicher
          sammeln - direkt auf die Platte, sonst knallt der Heap. */
       const DECKEL = 2 * 1024 * 1024 * 1024;
-      fs.mkdirSync(ordner, { recursive: true });
+      try { fs.mkdirSync(ordner, { recursive: true }); }
+      catch (e) { return jsonAntwort(res, { ok: false, grund: 'Songordner lässt sich nicht anlegen: ' + String(e.message || e) }, 500); }
+      /* RESTE ALTER LAEUFE (07.10.2026). Stirbt der Server mitten im
+         Upload (Neustart nach Codeaenderung, Stecker), bleibt eine .teil
+         liegen - bei Studio-WAV bis zu 2 GB. Beim naechsten Upload in
+         denselben Ordner fegen wir weg, was aelter als 6 Stunden ist;
+         juengere koennten zu einem Upload gehoeren, der gerade laeuft. */
+      try {
+        const grenze = Date.now() - 6 * 3600 * 1000;
+        for (const n of fs.readdirSync(ordner)) {
+          if (!/^eigen\..+\.teil$/.test(n)) continue;
+          const f = path.join(ordner, n);
+          try { if (fs.statSync(f).mtimeMs < grenze) fs.unlinkSync(f); } catch (e) {}
+        }
+      } catch (e) {}
       const vorlaeufig = path.join(ordner, 'eigen.' + process.pid + '-' + Date.now() + '.teil');
       const strom = fs.createWriteStream(vorlaeufig);
-      let gross = 0, abgebrochen = false;
-      const aufraeumen = () => { try { fs.unlinkSync(vorlaeufig); } catch (e) {} };
+      let gross = 0, abgebrochen = false, zu = false;
+      const antworte = (daten, status) => { if (!res.headersSent) jsonAntwort(res, daten, status); };
+      const wegdamit = () => { try { fs.unlinkSync(vorlaeufig); } catch (e) {} };
+      /* Aufraeumen erst, wenn der Strom zu ist: Ein unlink vor dem
+         Schliessen trifft unter Windows eine offene Datei (EPERM), und
+         ein spaet geoeffneter Strom legt die .teil leer wieder an. */
+      const aufraeumen = () => {
+        if (zu) return wegdamit();
+        strom.once('close', wegdamit);
+        strom.destroy();
+      };
       const zuGross = () => {
         if (abgebrochen) return;
         abgebrochen = true;
         req.pause();
-        strom.destroy();
         aufraeumen();
-        if (!res.headersSent) jsonAntwort(res, { ok: false, grund: 'Datei zu groß (höchstens 2 GB).' }, 413);
+        antworte({ ok: false, grund: 'Datei zu groß (höchstens 2 GB).' }, 413);
         req.destroy();
       };
+      /* Umbenennen. Unter Windows haelt ein Player, der eigen.wav gerade
+         spielt, die Datei offen - rename scheitert dann mit EPERM/EACCES/
+         EBUSY, bis er loslaesst. Zehn Versuche im Abstand von 200 ms,
+         per setTimeout, damit der Server derweil weiter antwortet. */
+      const umbenennen = (versuch) => {
+        let name;
+        try {
+          name = nameFuer();
+          fs.renameSync(vorlaeufig, path.join(ordner, name));
+        } catch (e) {
+          const belegt = process.platform === 'win32' && ['EPERM', 'EACCES', 'EBUSY'].includes(e.code);
+          if (belegt && versuch < 10) return setTimeout(() => umbenennen(versuch + 1), 200);
+          wegdamit();
+          return antworte({ ok: false, grund: belegt ? 'Datei ist gerade in Benutzung (läuft sie im Player?)' : String(e.message || e) }, belegt ? 409 : 500);
+        }
+        /* Eine eigene Fassung: WAV und MP3 nicht nebeneinander stehen
+           lassen - sonst raet der Player. Erst jetzt, nach dem gelungenen
+           Umbenennen: scheitert der Upload, bleibt die alte Fassung. */
+        if (name === 'eigen.wav' || name === 'eigen.mp3') {
+          const andere = name === 'eigen.wav' ? 'eigen.mp3' : 'eigen.wav';
+          try { fs.unlinkSync(path.join(ordner, andere)); } catch (e) {}
+        }
+        const nrM = /^eigen(?:-(\d+))?\.(mp4|jpg)$/.exec(name);
+        const nr = nrM ? (nrM[1] ? parseInt(nrM[1], 10) : 1) : undefined;
+        antworte({ ok: true, datei: name, bytes: gross, nr });
+      };
+      /* Erst nach 'close' entscheiden, nicht im Rueckruf von end(): Erst
+         dann steht fest, ob wirklich jedes Byte auf der Platte ist. Eine
+         volle Platte meldet sich sonst nicht als Fehler, sondern als
+         kuerzere Datei unter dem richtigen Namen. */
+      strom.on('close', () => {
+        zu = true;
+        if (abgebrochen) return;
+        if (strom.errored || strom.bytesWritten !== gross) {
+          abgebrochen = true;
+          wegdamit();
+          return antworte({ ok: false, grund: 'Schreiben fehlgeschlagen.' }, 500);
+        }
+        umbenennen(1);
+      });
       strom.on('drain', () => { if (!abgebrochen) req.resume(); });
-      strom.on('error', () => { if (!abgebrochen) { abgebrochen = true; aufraeumen(); if (!res.headersSent) jsonAntwort(res, { ok: false, grund: 'Schreiben fehlgeschlagen.' }, 500); } });
+      strom.on('error', () => {
+        if (abgebrochen) return;
+        abgebrochen = true;
+        aufraeumen();
+        antworte({ ok: false, grund: 'Schreiben fehlgeschlagen.' }, 500);
+        /* Den Rest des Rumpfs abnehmen und verwerfen - sonst steht der
+           Browser mit vollem Sendepuffer da und liest die 500 nie. */
+        req.resume();
+      });
       req.on('data', (c) => {
         if (abgebrochen) return;
         gross += c.length;
@@ -4141,24 +4211,18 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       });
       req.on('end', () => {
         if (abgebrochen) return;
-        strom.end(() => {
-          try {
-            const name = nameFuer();
-            fs.renameSync(vorlaeufig, path.join(ordner, name));
-            /* Eine eigene Fassung: WAV und MP3 nicht nebeneinander stehen
-               lassen - sonst raet der Player. */
-            if (name === 'eigen.wav' || name === 'eigen.mp3') {
-              const andere = name === 'eigen.wav' ? 'eigen.mp3' : 'eigen.wav';
-              try { fs.unlinkSync(path.join(ordner, andere)); } catch (e) {}
-            }
-            const nrM = /^eigen(?:-(\d+))?\.(mp4|jpg)$/.exec(name);
-            const nr = nrM ? (nrM[1] ? parseInt(nrM[1], 10) : 1) : undefined;
-            jsonAntwort(res, { ok: true, datei: name, bytes: gross, nr });
-          } catch (e) { jsonAntwort(res, { ok: false, grund: String(e.message || e) }, 500); }
-        });
+        /* Leerer Rumpf: nichts annehmen und nichts ersetzen - eine
+           0-Byte-eigen.wav wuerde die alte Fassung loeschen und stumm
+           bleiben. */
+        if (gross === 0) {
+          abgebrochen = true;
+          aufraeumen();
+          return antworte({ ok: false, grund: 'Leere Datei.' }, 400);
+        }
+        strom.end();
       });
-      req.on('error', () => { if (!abgebrochen) { abgebrochen = true; strom.destroy(); aufraeumen(); } });
-      req.on('aborted', () => { if (!abgebrochen) { abgebrochen = true; strom.destroy(); aufraeumen(); } });
+      req.on('error', () => { if (!abgebrochen) { abgebrochen = true; aufraeumen(); } });
+      req.on('aborted', () => { if (!abgebrochen) { abgebrochen = true; aufraeumen(); } });
       return;
     }
   }
