@@ -8171,3 +8171,19 @@ Bilder, die in ihren Rahmen reichen; Wand-Vorschau mit drei Rahmen. Geprüft hea
 Bekannt: Schild und Legende laufen über die Fugen (Titel links auf Rahmen 1, Legende rechts auf Rahmen 3) — ein
 breites Legendenfeld kann von einer Fuge geschnitten werden. Wiedervorlage, falls störend.
 Stand des Studios: Stufen 1–4 fertig bis auf den QR-Code; Stufe 5 (Fokus ohne Gesicht) offen.
+
+## 68. MORGENÜBERSICHT 07.10.2026 (für Caspar_D, zuerst lesen)
+
+Ausgeliefert in der Nacht (jede mit Release, Server läuft, PID 18154):
+1.0.36 Werkverzeichnis · 1.0.37 Gesichter (YuNet, Cover rücken in Schaum/Plakat, Schirm = Vorschau = PDF) ·
+1.0.38 Platz fürs Verzeichnis · 1.0.39 Areale am Rand · 1.0.40 Zeitleiste + Edition/Signatur · 1.0.41 Titel an
+der Kante · 1.0.42 Bild für soziale Medien (PNG) · 1.0.43 Triptychon. Studio: Stufen 1–4 fertig außer QR.
+In deinem Bestand neu: `library/modelle/face_detection_yunet_2023mar.onnx`, `library/gesichter.json` (sonst nichts).
+**Wiedervorlage (deine Entscheidung):**
+- SCRFD statt YuNet? (22 statt 21 von 23 Hauptgesichtern, aber Lizenz nur nichtkommerziell) — §61
+- Sichtbare Folge der Gesichter: Zellen zeigen das Cover selbst statt der Kachel mit unscharfen Streifen — ok so?
+- QR-Code: eigener Kodierer oder Fremdbibliothek (MIT) mit Lizenzeintrag? — §64
+- Groupieschaum 4000: Pakete sofort, flach nachgebildet im Hintergrund + Morph (bei 4000 ~10 min Volllast)? Oder
+  erst Löser-Arbeit an der Engine (Prophane)? — §62, Bild `_werkstatt_schaum4000/vergleich-700.png`
+- Triptychon: Schild/Legende über die Fugen — stört es? — §67
+- Stufe 5 (Fokus ohne Gesicht, Texterkenner PP-OCRv3 gemessen 32/35) — Verfahren besprechen.
