@@ -8132,3 +8132,15 @@ Strich bis zur nächsten Stelle; zu dichte Namen rücken auseinander. Schrift h�
 kurzen Seite. Geprüft: Klang (Galerie, Papier) und Groupieschaum, keine Skriptfehler.
 Offen aus Stufe 2: „Titel entlang der Kante“. Dann Stufe 3 (Edition + Signatur, QR, Zeitleiste), 4 (Triptychon,
 Social), 5 (Fokus ohne Gesicht, mit Texterkenner).
+
+## 64. 07.10.2026 nachts: Zeitleiste, Edition + Signatur (1.0.40)
+
+- **Zeitleiste** (Papier, Mosaik: an; nur Klangschaum — im Groupieschaum gesperrt mit Grund): Band zwischen Karte
+  und Schild, je Titel ein Strich in Arealfarbe am Erstellungsdatum (`song(id).erstellt`), darunter Jahre bzw. bei
+  < 2 Jahren Monate (`zeitleisteSetzen`).
+- **Edition und Signatur** (Galerie, Papier: an): rechts unten „Auflage · Datum · Profilname“, davor Haarlinie zum
+  Signieren; Auflage als Feld (Vorgabe 1/1) (`editionSetzen`).
+- Nebenbei behoben: der untere Rand rechnete den Federstrich-Abstand nicht mit — der Fuß des Schilds rutschte zum
+  Beschnitt (die Edition stand auf der Beschnittlinie).
+- **QR-Code zurückgestellt — Wiedervorlage Caspar_D:** eigener Kodierer (~300 Zeilen) oder Fremdbibliothek
+  (z. B. qrcode-generator, MIT) mit Lizenzeintrag?
