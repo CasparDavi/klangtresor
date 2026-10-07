@@ -867,7 +867,9 @@ function edgeDist(p, poly) {
 function poleOf(poly, precision = null) {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const p of poly) { x0 = Math.min(x0, p[0]); y0 = Math.min(y0, p[1]); x1 = Math.max(x1, p[0]); y1 = Math.max(y1, p[1]); }
-  const size = Math.min(x1 - x0, y1 - y0) || 1e-9, prec = precision || size / 60;
+  /* (KlangTresor 07.10.2026, gehoert in die Quelle zurueck) die Rasterweite nie unter einem Tausendstel der langen Seite: bei
+     einem flachen Vieleck (Hoehe 0) war sie 1e-9, und schon das erste Raster hatte Milliarden Zellen - minutenlanges Haengen. */
+  const size = Math.max(Math.min(x1 - x0, y1 - y0), (Math.max(x1 - x0, y1 - y0) || 1) / 1000), prec = precision || size / 60;
   const cell = (x, y, h) => { const d = edgeDist([x, y], poly); return { x, y, h, d, max: d + h * Math.SQRT2 }; };
   const c = centroid(poly);
   let best = cell(c[0], c[1], 0);

@@ -8388,3 +8388,26 @@ RTL, Leerzeichen am Ende); Laufzeit belassen. Alter Fehler, nicht angefasst: `po
 Vielecken minutenlang (Engine, Quelle foam-lab).
 Wiedervorlage (Caspar_D): Treemapper/Prophane – Füllmodus übertragen (foam-lab, nur auf dein Wort); restliche Punkte aus §77
 (Groupieschaum-Namenskopf am Schirm, Plakat-Kantentitel/Arealnamen/Verzeichnis mit Pauschalen, Nummernschild, Triptychon).
+
+## 79. 07.10.2026: Wiedervorlagen aus §77 geklärt (1.0.53)
+
+Caspar_D: „Alle wiedervorlagen auch noch klären".
+- Messung in der Setzgröße statt 100 px mit Zuschlag: index.html `textBreite` (Druck: mm je Einheit, Schirm: höchstens 0,6 px
+  je Einheit) für Namenskopf (`kopfPlan`, Schriftmaße `km` jetzt aus der Schrift statt fester SF-Zahlen 0,94/0,23/1,15),
+  Kantentitel (halbfett, Saum 0,24 fs mitgerechnet, kein 1,2) und Nummernschild; plakat.js `messen(t, gewicht, mm)` für
+  Arealnamen (+ letter-spacing), Edition, Verzeichnis (kein 1,12/1,15).
+- Nummernschild: `R.rechteckUnten` (render.js, neu) – so tief wie möglich auf der breitesten freien Strecke, geprüft; kleiner
+  bis 2,2 mm; sonst wie vorher.
+- Triptychon: plakat.js `wandFugen`/`freieStrecken`; `druck.waende` (Schaum-Einheiten) → render.js `sperren` (Glasfeld-Titel
+  und Nummernschild weichen aus), Kantentitel läuft auf dem längsten fugenfreien Stück, Zeitleiste springt über die Fugen,
+  Arealnamen oben werden von links nach rechts gesetzt und springen hinter eine Fuge, Verzeichnisspalten je Tafel
+  (`verzeichnisMass(..., strecken)`); das alte Band als Rückfall entfällt im Triptychon (es kennt die Fugen nicht – dann die Nummer).
+- `poleOf` (foamtree.js, Engine-Kopie): Rasterweite ≥ 1/1000 der langen Seite – ein flaches Vieleck hing vorher minutenlang.
+Proben (Sandkasten): Triptychon 3 × 50 × 70 mit Rauchglas, Verzeichnis, Zeitleiste – vorher Titel „40 Spiralen", „67 Schlaf
+– Der kleine Tod", „250/261/274 …", ein Arealname, Monatsnamen und Verzeichnisspalten auf den Fugen; nachher keiner. Schirm
+unverändert (258 Namen, Tinte außerhalb 0), Glasplakat 234 Titel, 4 gekürzt, keine Konsolenfehler.
+Wiedervorlage (Caspar_D entscheidet): Groupieschaum-Namenskopf am Schirm wie im Plakat unten ins Glasfeld (Sandkasten-Probe:
+96 → 112 Köpfe, gekürzt 49 → 1, 14 mehrzeilig, Gesichter frei) – noch nicht eingebaut. Treemapper/Prophane: Vorschlagstabelle
+folgt (Hausregel dort). Brainstorm (nicht gebaut): randlose Variante mit fehlender Ecke (Empfehlung: eine Schildzelle im
+Schaum statt rechteckiger Aussparung – die würde harte konkave Ecken erzeugen) und monochrome Bleistiftzeichnung aus den
+echten Umrissen (prozedural, kein Bildmodell).

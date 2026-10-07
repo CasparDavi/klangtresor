@@ -78,10 +78,10 @@ function imOderAufRand(poly, p, eps) {
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
-export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null, kursiv = false } = {}) {
+export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null, kursiv = false, sperren = null } = {}) {
   const [px, py, r] = poleOf(poly), [xa, xb] = chordAt(poly, [px, py]);
-  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv });
-  if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv });
+  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv, sperren });
+  if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv, sperren });
   const cx = (Math.max(xa, px - 3 * r) + Math.min(xb, px + 3 * r)) / 2, width = 0.92 * (Math.min(xb, px + 3 * r) - Math.max(xa, px - 3 * r));
   // width of a line in em: measured with the real font where the page offers it (measure), else estimated at 0.56 em a character
   const ems = t => measure ? measure(t) : 0.56 * t.length;
@@ -142,6 +142,38 @@ function breitesteMitte(poly, yy, sonst) {
   for (let i = 0; i + 1 < xs.length; i += 2) if (!best || xs[i + 1] - xs[i] > best[1] - best[0]) best = [xs[i], xs[i + 1]];
   return best ? (best[0] + best[1]) / 2 : sonst;
 }
+// wie breitesteMitte, aber die Sperrstreifen schneiden die Strecken: die Mitte der breitesten freien Strecke auf dieser Hoehe
+function breitesteMitteFrei(poly, yy, sonst, sperren) {
+  const xs = [];
+  for (let k = 0, j = poly.length - 1; k < poly.length; j = k++) {
+    const a = poly[k], b = poly[j];
+    if ((a[1] > yy) !== (b[1] > yy)) xs.push(a[0] + (yy - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+  }
+  xs.sort((u, v) => u - v);
+  let best = null;
+  for (let i = 0; i + 1 < xs.length; i += 2) {
+    let teile = [[xs[i], xs[i + 1]]];
+    for (const [s0, s1] of sperren) teile = teile.flatMap(([u, v]) => s1 <= u || s0 >= v ? [[u, v]] : [[u, Math.min(v, s0)], [Math.max(u, s1), v]].filter(([p, q]) => q > p));
+    for (const t of teile) if (!best || t[1] - t[0] > best[1] - best[0]) best = t;
+  }
+  return best ? (best[0] + best[1]) / 2 : sonst;
+}
+/* EIN RECHTECK SO TIEF WIE MOEGLICH (fuer das Nummernschild des Plakats): bw breit, bh hoch, in poly (Mathematik, y nach oben),
+   mittig auf der breitesten (freien) Strecke seiner Hoehe; keine Kante beruehrt es, kein Sperrstreifen. null, wenn es nirgends
+   passt. */
+export function rechteckUnten(poly, bw, bh, sperren = null) {
+  let y0 = Infinity, y1 = -Infinity;
+  for (const p of poly) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+  const schritt = Math.max((y1 - y0) / 120, bh / 10);
+  for (let y = y0 + bh / 2; y <= y1 - bh / 2; y += schritt) {
+    const x = sperren && sperren.length ? breitesteMitteFrei(poly, y, NaN, sperren) : breitesteMitte(poly, y, NaN);
+    if (!(x === x)) continue;
+    const r = [x - bw / 2, y - bh / 2, x + bw / 2, y + bh / 2];
+    if (sperren && sperren.some(([s0, s1]) => r[2] > s0 && r[0] < s1)) continue;
+    if (rechteckFrei(naheKanten(poly, r), ...r) && inside(poly, [x, y])) return [x, y];
+  }
+  return null;
+}
 // die Tintenkaesten eines Namensblocks je Zeile, relativ zu (Zeilenmitte x, Blockmitte y), Mathematik (y nach oben)
 function tintenBlock(lines, size, ink, leading, m, kursiv = false) {
   const n = lines.length, zeilen = [];
@@ -164,9 +196,12 @@ function tintenBlock(lines, size, ink, leading, m, kursiv = false) {
    ein Innen-Test je Gruppe genuegt (der Strahltest kostet alle Ecken). Die Gruppen stehen in tintenBlock (k.neu); vorher hiess
    es pauschal „ab 0,15 em Luft je Zeile einer" - der Schwachstellenagent fand: ein Leerzeichen ist in SF 0,29-0,32 em breit,
    ein doppeltes oder U+3000 reisst die Zeile auf, und ein Wort jenseits einer Zellwand galt als innen. */
-function blockPasst(b, xs, y, poly, nP, huelle, nH) {
+/* sperren: senkrechte Streifen [x0, x1], die keine Tinte beruehren darf - die Wandfugen eines Triptychons (dort schneidet das
+   PDF jede Tafel zu; Caspar_D: „Alle wiedervorlagen auch noch klären"). */
+function blockPasst(b, xs, y, poly, nP, huelle, nH, sperren = null) {
   return b.zeilen.every((z, j) => z.kaesten.every((k) => {
     const [a, c, e, d] = k, x = xs[j], innen = k.neu;
+    if (sperren && sperren.some(([s0, s1]) => x + e > s0 && x + a < s1)) return false;
     return rechteckFrei(nP, x + a, y + c, x + e, y + d) && (!innen || inside(poly, [x + (a + e) / 2, y + (c + d) / 2]))
       && (!huelle || (rechteckFrei(nH, x + a, y + c, x + e, y + d) && (!innen || inside(huelle, [x + (a + e) / 2, y + (c + d) / 2]))));
   }));
@@ -176,7 +211,7 @@ function rechteckFrei(nahe, x0, y0, x1, y1) {
   return true;
 }
 const gesetzt = (b, xs, y, size, leading, ink) => ({ x: xs[(xs.length - 1) >> 1], xs, y, size, lines: b.lines, leading, tinte: { o: ink.o, u: ink.u } });
-function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv = false }) {
+function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv = false, sperren = null }) {
   const m = TINTE_RAND, x0c = Math.max(xa, px - 3 * r), x1c = Math.min(xb, px + 3 * r), cx = (x0c + x1c) / 2, W = x1c - x0c;
   const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0, kursiv).w + 2 * m;
   // obere Grenze je Zeilenzahl: Breite der Sehne durch den Pol; ein Block, breiter als hoch, ist hoechstens 2 r hoch
@@ -199,10 +234,10 @@ function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, 
     const nP = naheKanten(poly, fenster), nH = huelle ? naheKanten(huelle, fenster) : null;
     for (const [q, k] of lagen) {
       const y = ty + k * st, gemeinsam = lines.map(() => tx + q * st);
-      if (blockPasst(b, gemeinsam, y, poly, nP, huelle, nH)) return gesetzt(b, gemeinsam, y, size, leading, ink);
+      if (blockPasst(b, gemeinsam, y, poly, nP, huelle, nH, sperren)) return gesetzt(b, gemeinsam, y, size, leading, ink);
       if (q === 0 && lines.length > 1) {
         const je = b.zeilen.map(z => breitesteMitte(poly, y + z.mid, tx));
-        if (blockPasst(b, je, y, poly, nP, huelle, nH)) return gesetzt(b, je, y, size, leading, ink);
+        if (blockPasst(b, je, y, poly, nP, huelle, nH, sperren)) return gesetzt(b, je, y, size, leading, ink);
       }
     }
   }
@@ -237,7 +272,7 @@ function alleUmbrueche(words, maxLines) {
   return out.filter(umbruchErlaubt);
 }
 function untenSetzen(poly, huelle, text, o) {
-  const { px, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv } = o;
+  const { px, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv, sperren } = o;
   // die bisherige Groesse: der Zeilenkasten-Satz - oder vorgegeben (startSize, das Glasfeld des Plakats rechnet sie selbst)
   const alt = startSize ? { size: startSize } : placeLabel(poly, text, { maxSize, minSize, maxLines, measure: ink.breite, fit: true, leading, drop, huelle });
   if (!alt) return tinteSetzen(poly, huelle, text, o);   // der Zeilenkasten fand keinen Platz - dann so gross, wie die Tinte erlaubt
@@ -257,7 +292,8 @@ function untenSetzen(poly, huelle, text, o) {
       const probe = (y) => {
         const reihe = [xl, y + b.u, xr, y + b.ob], nP = naheKanten(poly, reihe), nH = huelle ? naheKanten(huelle, reihe) : null;
         const je = b.zeilen.map(z => breitesteMitte(poly, y + z.mid, px)), mitte = breitesteMitte(poly, y + (b.u + b.ob) / 2, px);
-        return [je, b.lines.map(() => mitte), b.lines.map(() => px)].find(xs => blockPasst(b, xs, y, poly, nP, huelle, nH));
+        const frei = sperren && sperren.length ? b.zeilen.map(z => breitesteMitteFrei(poly, y + z.mid, px, sperren)) : null;
+        return [je, b.lines.map(() => mitte), b.lines.map(() => px), frei].filter(Boolean).find(xs => blockPasst(b, xs, y, poly, nP, huelle, nH, sperren));
       };
       // grob in vierfachen Schritten aufwaerts, dann fein zurueck: die tiefste Lage auf einen Schritt genau
       const start = y0 - b.u, grob = 4 * schritt;

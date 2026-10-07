@@ -61,11 +61,17 @@ const schriftLeise = () => hellerGrund() ? '#5c5f66' : '#a3a9b1';
    ganze Breite. Die Schrift so gross wie moeglich (bis 0,45 % der kurzen Seite, auf 70 × 100 gut 3 mm), so klein
    wie noetig (bis 1,5 mm, aus der Naehe lesbar), damit der Block hoechstens ein Sechstel der Hoehe nimmt. Eine
    Spalte ist 15 Schriftgroessen breit: Nummer, Titel, Abstand. */
-function verzeichnisMass(n, breite, kurz, hoeheMax, koepfe = 6, kleinst = Math.max(1.5, 0.0026 * kurz)){
+function verzeichnisMass(n, breite, kurz, hoeheMax, koepfe = 6, kleinst = Math.max(1.5, 0.0026 * kurz), strecken = null){
   /* je Areal ein Kopf und ein Rest („und N weitere"), je Spalte eine Zeile Reserve (ein Kopf rueckt nie allein an den Fuss) */
   const zeilenZahl = n + 2 * koepfe, kopf = 2.4;
-  const mass = (L) => { const spalteB = 15 * L, spalten = Math.max(1, Math.floor((breite + L) / spalteB)), proSpalte = Math.ceil(zeilenZahl / spalten) + 1;
-    return { L, spalteB: (breite + L) / spalten, spalten, proSpalte, hoehe: (proSpalte * 1.38 + kopf) * L }; };
+  /* strecken (Triptychon): die freien Stuecke der Breite als [Anfang, Laenge] - jede Spalte steht ganz auf einer Tafel, keine
+     ueber einer Wandfuge (Wiedervorlage §77). xs/bs: Lage und Breite jeder Spalte ab dem linken Rand der Liste. */
+  const mass = (L) => {
+    const stuecke = strecken || [[0, breite]], xs = [], bs = [];
+    for (const [a, len] of stuecke){ const k = Math.floor((len + L) / (15 * L)); for (let i = 0; i < k; i++){ xs.push(a + i * (len + L) / k); bs.push((len + L) / k); } }
+    if (!xs.length){ xs.push(0); bs.push(breite + L); }
+    const spalten = xs.length, proSpalte = Math.ceil(zeilenZahl / spalten) + 1;
+    return { L, spalteB: Math.min(...bs), xs, bs, spalten, proSpalte, hoehe: (proSpalte * 1.38 + kopf) * L }; };
   const gross = 0.0045 * kurz, klein = Math.min(gross, kleinst);
   for (let L = gross; L >= klein; L -= 0.05){ const m = mass(L); if (m.hoehe <= hoeheMax) return m; }
   return mass(klein);
@@ -82,7 +88,9 @@ function geometrie(n = 0){
   const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
   const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
   /* So viele Arealkoepfe, wie die Legende des Schaums Zeilen hat - vorher pauschal sechs, das liess unter der Liste Platz frei */
-  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6, legendenEintraege().length || 6) : null;
+  const listeStrecken = (x0, breite, fug) => fug.length ? freieStrecken(x0, x0 + breite, fug).map(([a, b]) => [a - x0, b - a]) : null;
+  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6, legendenEintraege().length || 6, undefined,
+    listeStrecken(BESCHNITT + rand, w - 2 * rand, tri ? [1, 2].map(j => { const fx = BESCHNITT + j * tri.pw + (j - 1) * tri.fuge; return [fx, fx + tri.fuge]; }) : [])) : null;
   /* Zeitleiste (nur Klangschaum - Personen haben kein Erscheinungsdatum): ein Band zwischen Karte und Schild */
   const zeitH = E.zeitleiste && raumJetzt !== 'groupies' ? 0.032 * kurz : 0;
   /* der Federstrich rueckt alles darunter um seinen Abstand (0,011 der kurzen Seite) - der Rand muss ihn mitrechnen,
@@ -151,7 +159,21 @@ function legendenEintraege(){
     return i && b ? { farbe: i.style.background || '#888', name: b.textContent.trim() } : null;
   }).filter(Boolean);
 }
-const messen = (() => { const c = document.createElement('canvas').getContext('2d'); return (t, gewicht = 400) => { c.font = `${gewicht} 100px system-ui, sans-serif`; return c.measureText(t).width / 100; }; })();
+/* Breite in em, gemessen in der Druckgroesse mm (die Seite rechnet in Millimetern; 96/25,4 Punkte je mm) - vorher bei 100 px mit
+   Zuschlaegen 1,12 und 1,15: die Systemschrift des Mac wird klein gesetzt breiter (bei 1-2 mm Schrift bis 22 %), die Zuschlaege
+   reichten fuer das Verzeichnis nicht einmal (Wiedervorlage §77, 07.10.2026). */
+const messen = (() => { const c = document.createElement('canvas').getContext('2d');
+  return (t, gewicht = 400, mm = null) => { const px = mm ? Math.max(1, mm * 96 / 25.4) : 100; c.font = `${gewicht} ${px.toFixed(2)}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`; return c.measureText(t).width / px; }; })();
+/* TRIPTYCHON: die beiden Wandfugen in Millimetern der Seite - dort schneidet das PDF jede Tafel zu, was darauf liegt, fehlt im
+   Druck (Wiedervorlage §77: „keine Textsetzung kennt die Wandfugen"). freieStrecken: [a, b] ohne die Fugen. */
+function wandFugen(g){
+  return g && g.tri ? [1, 2].map(j => { const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge; return [fx, fx + g.tri.fuge]; }) : [];
+}
+function freieStrecken(a, b, fugen){
+  let teile = [[a, b]];
+  for (const [f0, f1] of fugen) teile = teile.flatMap(([u, v]) => f1 <= u || f0 >= v ? [[u, v]] : [[u, Math.min(v, f0)], [Math.max(u, f1), v]].filter(([p, q]) => q > p));
+  return teile;
+}
 
 async function bauen(g){
   if (!aktuell) return;
@@ -162,6 +184,8 @@ async function bauen(g){
   const druck = { titel: E.titel, fugen: E.fugen, wackeln: E.wackeln, schatten: E.schatten, vignette: E.vignette, kissen: E.kissen,
                   deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab,
                   verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height) };
+  { const k = druck.mmJeEinheit, ox = kv.x + (kv.w - aktuell.res.width * k) / 2;             /* die Fugen in Schaum-Einheiten */
+    druck.waende = wandFugen(g).map(([a, b]) => [(a - ox) / k, (b - ox) / k]); }
   const la = schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
   if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
   /* Erst die Bilder, dann das Plakat (Caspar_D, 07.10.2026: keine mindere Qualitaet) - meist schon bereit,
@@ -198,7 +222,7 @@ async function bauen(g){
         + `<text x="${(q + L * 0.5).toFixed(2)}" y="${(y + zeileH * 0.5 + L * 0.35).toFixed(2)}" font-size="${L.toFixed(2)}" fill="${fg}">${esc2(e.name)}</text></g>`;
     });
   }
-  if (g.zeitH) kopf += zeitleisteSetzen(aktuell.j.zeilen, la.farbeVon, ux, rechts, zy, g.zeitH * 0.8, fg, leise, g.kurz);
+  if (g.zeitH) kopf += zeitleisteSetzen(aktuell.j.zeilen, la.farbeVon, ux, rechts, zy, g.zeitH * 0.8, fg, leise, g.kurz, wandFugen(g));
   /* Edition im unteren Rand: unter dem Inhalt, aber sicher innerhalb des Beschnitts */
   if (E.edition) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
   if (E.areale && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
@@ -259,14 +283,32 @@ function arealeSetzen(areale, g, kv, res, feder){
     }
     if (!seite){ let bd = Infinity;
       for (const p of P) for (const [sd, dd] of [['oben', p[1] - R.y0], ['links', p[0] - R.x0], ['rechts', R.x1 - p[0]]]) if (dd < bd){ bd = dd; seite = sd; anker = sd === 'oben' ? p[0] : p[1]; ziel = p; } }
-    marken.push({ seite, anker, ziel, text: a.name, lang: messen(a.name, 600) * fs * 1.12, farbe: a.farbe });
+    marken.push({ seite, anker, ziel, text: a.name, lang: (messen(a.name, 600, fs) + 0.02 * a.name.length) * fs, farbe: a.farbe });
   }
   for (const sd of ['oben', 'links', 'rechts']){
     const ms = marken.filter(m => m.seite === sd).sort((p, q) => p.anker - q.anker); if (!ms.length) continue;
     const lo = sd === 'oben' ? R.x0 : R.y0, hi = sd === 'oben' ? R.x1 : R.y1, luft = fs * 1.4;
     ms.forEach(m => { m.pos = Math.min(hi - m.lang / 2, Math.max(lo + m.lang / 2, m.anker)); });
-    for (let i = 1; i < ms.length; i++){ const min = ms[i - 1].pos + ms[i - 1].lang / 2 + luft + ms[i].lang / 2; if (ms[i].pos < min) ms[i].pos = min; }
-    for (let i = ms.length - 2; i >= 0; i--){ const max = ms[i + 1].pos - ms[i + 1].lang / 2 - luft - ms[i].lang / 2; if (ms[i].pos > max) ms[i].pos = max; }
+    const fugen = sd === 'oben' ? wandFugen(g) : [];
+    if (!fugen.length){
+      for (let i = 1; i < ms.length; i++){ const min = ms[i - 1].pos + ms[i - 1].lang / 2 + luft + ms[i].lang / 2; if (ms[i].pos < min) ms[i].pos = min; }
+      for (let i = ms.length - 2; i >= 0; i--){ const max = ms[i + 1].pos - ms[i + 1].lang / 2 - luft - ms[i].lang / 2; if (ms[i].pos > max) ms[i].pos = max; }
+      continue;
+    }
+    /* Triptychon (Wiedervorlage §77): von links nach rechts, jeder Name so nah an seinem Anker wie moeglich, nicht ueber dem
+       vorigen - laege er auf einer Wandfuge, springt er dahinter. Rueckwaerts dann nur, was ueber den rechten Rand ragt; auch
+       das springt vor eine Fuge statt auf sie. (Erster Versuch, „auf die naehere Seite": zwei Namen drängten sich vor dieselbe
+       Fuge, stiessen aneinander, und der zweite lag doch darauf.) */
+    const aufFuge = (p, m) => fugen.find(([f0, f1]) => p + m.lang / 2 > f0 - luft / 2 && p - m.lang / 2 < f1 + luft / 2);
+    let cursor = lo;
+    for (const m of ms){
+      let p = Math.max(m.anker, cursor + m.lang / 2, lo + m.lang / 2);
+      for (let k = 0, f; k < 3 && (f = aufFuge(p, m)); k++) p = f[1] + luft / 2 + m.lang / 2;
+      m.pos = p; cursor = p + m.lang / 2 + luft;
+    }
+    for (let i = ms.length - 1; i >= 0; i--){ const m = ms[i];
+      const max = Math.min(hi - m.lang / 2, i < ms.length - 1 ? ms[i + 1].pos - ms[i + 1].lang / 2 - luft - m.lang / 2 : Infinity);
+      if (m.pos > max){ let p = max; const f = aufFuge(p, m); if (f) p = f[0] - luft / 2 - m.lang / 2; m.pos = p; } }
   }
   const f2 = (v) => v.toFixed(2), strich = (m, a, b, c, d2) => `<line x1="${f2(a)}" y1="${f2(b)}" x2="${f2(c)}" y2="${f2(d2)}" stroke="${m.farbe}" stroke-width="${sw}" stroke-opacity="0.9"/>`;
   let out = '';
@@ -288,21 +330,27 @@ function arealeSetzen(areale, g, kv, res, feder){
 /* ZEITLEISTE (Brainstorm, von Caspar_D angekreuzt): unter der Karte je Titel ein Strich in der Farbe seines Areals,
    an der Stelle seines Erstellungsdatums - man sieht, wann welche Richtung dran war. Darunter die Jahre (bei weniger
    als zwei Jahren die Monate). Titel ohne Datum fehlen hier, nicht in der Karte. */
-function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz){
+function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz, fugen = []){
   const daten = zeilen.map(z => { const so = typeof song === 'function' ? song(z.id) : null, t = so && Date.parse(so.erstellt);
     return t ? { t, farbe: (farbeVon && farbeVon(z.gruppe)) || '#888' } : null; }).filter(Boolean).sort((a, b) => a.t - b.t);
   if (daten.length < 2) return '';
-  const t0 = daten[0].t, t1 = daten[daten.length - 1].t, sp = Math.max(1, t1 - t0), X = (t) => x0 + (t - t0) / sp * (x1 - x0);
+  /* Triptychon: die Zeitachse laeuft ueber die freien Strecken und springt ueber die Fugen - kein Strich, keine Marke faellt
+     in einen Schnitt (Wiedervorlage §77) */
+  const strecken = freieStrecken(x0, x1, fugen), frei = strecken.reduce((s, [a, b]) => s + b - a, 0);
+  const t0 = daten[0].t, t1 = daten[daten.length - 1].t, sp = Math.max(1, t1 - t0);
+  const X = (t) => { let rest = (t - t0) / sp * frei; for (const [a, b] of strecken){ if (rest <= b - a) return a + rest; rest -= b - a; } return x1; };
+  const strecke = (x) => strecken.find(([a, b]) => x >= a - 1e-6 && x <= b + 1e-6) || [x0, x1];
   const strichH = hoehe * 0.58, sw = Math.max(0.12, Math.min((x1 - x0) / daten.length * 0.7, kurz / 1000)), ls = hoehe * 0.26, f2 = (v) => v.toFixed(2);
-  let out = `<line x1="${f2(x0)}" y1="${f2(y0 + strichH)}" x2="${f2(x1)}" y2="${f2(y0 + strichH)}" stroke="${leise}" stroke-width="${f2(kurz / 3000)}"/>`;
+  let out = strecken.map(([a, b]) => `<line x1="${f2(a)}" y1="${f2(y0 + strichH)}" x2="${f2(b)}" y2="${f2(y0 + strichH)}" stroke="${leise}" stroke-width="${f2(kurz / 3000)}"/>`).join('');
   for (const d of daten) out += `<line x1="${f2(X(d.t))}" y1="${f2(y0)}" x2="${f2(X(d.t))}" y2="${f2(y0 + strichH)}" stroke="${d.farbe}" stroke-width="${f2(sw)}" stroke-opacity="0.9"/>`;
   /* Marken: Jahresanfaenge, bei kurzer Spanne Monatsanfaenge */
   const a = new Date(t0), monate = (t1 - t0) < 2 * 365.25 * 864e5, marken = [];
   for (let d = new Date(a.getFullYear(), monate ? a.getMonth() + 1 : 0, 1); d.getTime() <= t1; d = new Date(d.getFullYear() + (monate ? 0 : 1), monate ? d.getMonth() + 1 : 0, 1))
     if (d.getTime() > t0) marken.push(d);
-  for (const d of marken){ const x = X(d.getTime());
+  for (const d of marken){ const x = X(d.getTime()), wort = String(monate ? d.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) : d.getFullYear());
+    const [sa, sb] = strecke(x), halb = messen(wort, 400, ls) * ls / 2, tx = Math.min(sb - halb, Math.max(sa + halb, x));   /* die Marke bleibt in ihrer Strecke */
     out += `<line x1="${f2(x)}" y1="${f2(y0 + strichH)}" x2="${f2(x)}" y2="${f2(y0 + strichH + ls * 0.5)}" stroke="${leise}" stroke-width="${f2(kurz / 3000)}"/>`
-      + `<text x="${f2(x)}" y="${f2(y0 + strichH + ls * 1.55)}" font-size="${f2(ls)}" fill="${leise}" text-anchor="middle">${monate ? d.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) : d.getFullYear()}</text>`; }
+      + `<text x="${f2(tx)}" y="${f2(y0 + strichH + ls * 1.55)}" font-size="${f2(ls)}" fill="${leise}" text-anchor="middle">${wort}</text>`; }
   return out;
 }
 /* EDITION UND SIGNATUR (angekreuzt): rechts unten klein „Auflage · Datum · Name", davor eine Haarlinie zum
@@ -310,7 +358,7 @@ function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz){
 function editionSetzen(g, rechts, y, fg, leise){
   const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
   const text = [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), p.display_name || p.handle || ''].filter(Boolean).join(' · ');
-  const fs = Math.min(g.rand * 0.18, 0.0062 * g.kurz), tw = messen(text) * fs * 1.12, linie = 0.16 * g.w, x1 = rechts - tw - fs * 1.4, f2 = (v) => v.toFixed(2);
+  const fs = Math.min(g.rand * 0.18, 0.0062 * g.kurz), tw = messen(text, 400, fs) * fs, linie = 0.16 * g.w, x1 = rechts - tw - fs * 1.4, f2 = (v) => v.toFixed(2);
   return `<text x="${f2(rechts)}" y="${f2(y)}" font-size="${f2(fs)}" fill="${leise}" text-anchor="end">${esc2(text)}</text>`
     + `<line x1="${f2(x1 - linie)}" y1="${f2(y + fs * 0.15)}" x2="${f2(x1)}" y2="${f2(y + fs * 0.15)}" stroke="${fg}" stroke-opacity="0.7" stroke-width="${f2(g.kurz / 2800)}"/>`;
 }
@@ -324,19 +372,20 @@ function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
     if (q.weitere) zeilen.push({ rest: `und ${q.weitere.toLocaleString('de-DE')} weitere` });
   }
   /* mit den echten Arealen in den reservierten Platz, notfalls bis 1 mm Schrift */
-  const m = verzeichnisMass(n, g.w - 2 * g.rand, g.kurz, g.verz.hoehe * 1.02, gruppen.length, 1);
-  const L = m.L, zh = L * 1.38, nrB = String(n).length * 0.62 * L, titelB = m.spalteB - nrB - 1.6 * L;
-  const kuerzen = (t, b) => { if (messen(t) * 1.15 * L <= b) return t; let k = t.length; while (k > 1 && messen(t.slice(0, k) + '…') * 1.15 * L > b) k--; return t.slice(0, k) + '…'; };
+  const fug = wandFugen(g), strecken = fug.length ? freieStrecken(x0, x0 + g.w - 2 * g.rand, fug).map(([a, b]) => [a - x0, b - a]) : null;
+  const m = verzeichnisMass(n, g.w - 2 * g.rand, g.kurz, g.verz.hoehe * 1.02, gruppen.length, 1, strecken);
+  const L = m.L, zh = L * 1.38, nrB = messen('0'.repeat(String(n).length), 400, L) * L;
+  const kuerzen = (t, b) => { if (messen(t, 400, L) * L <= b) return t; let k = t.length; while (k > 1 && messen(t.slice(0, k) + '…', 400, L) * L > b) k--; return t.slice(0, k) + '…'; };
   let out = `<text x="${x0.toFixed(2)}" y="${(y0 + L * 1.2).toFixed(2)}" font-size="${(L * 1.1).toFixed(2)}" font-weight="600" letter-spacing="${(L * 0.06).toFixed(2)}" fill="${leise}">`
     + `${personen ? 'VERZEICHNIS DER PERSONEN' : 'WERKVERZEICHNIS'} · ${n.toLocaleString('de-DE')} ${personen ? 'Personen' : 'Titel'}</text>`;
   const oben = y0 + 2.4 * L;
   let s = 0, r = 0;
   zeilen.forEach((z, i) => {
     if (r >= m.proSpalte || (z.kopf !== undefined && r >= m.proSpalte - 1)){ s++; r = 0; }
-    const x = x0 + s * m.spalteB, y = oben + r * zh + L;
+    const sp = Math.min(s, m.xs.length - 1), x = x0 + m.xs[sp], y = oben + r * zh + L, spB = m.bs[sp], titelB = spB - nrB - 1.6 * L;
     if (z.kopf !== undefined){
       out += `<rect x="${x.toFixed(2)}" y="${(y - L * 0.78).toFixed(2)}" width="${(L * 0.8).toFixed(2)}" height="${(L * 0.8).toFixed(2)}" rx="${(L * 0.15).toFixed(2)}" fill="${z.farbe}"/>`
-        + `<text x="${(x + L * 1.2).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(kuerzen(z.kopf, m.spalteB - 2.6 * L))}</text>`;
+        + `<text x="${(x + L * 1.2).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(kuerzen(z.kopf, spB - 2.6 * L))}</text>`;
     } else if (z.rest){
       out += `<text x="${(x + nrB + 0.6 * L).toFixed(2)}" y="${y.toFixed(2)}" font-size="${L.toFixed(2)}" font-style="italic" fill="${leise}">${esc2(z.rest)}</text>`;
     } else {

@@ -9353,7 +9353,14 @@ function schaumPxJeEinheit(res){
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');
   await schaumGesichterLaden();
-  const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
+  /* TEXTBREITE IN DER SETZGROESSE (Wiedervorlage aus §77, 07.10.2026): Namenskopf, Kantentitel und Nummernschild massen bei
+     100 px und setzten klein - SF wird kleiner gesetzt breiter (4-6 px: 10,2 em je Name-Mittel gegen 8,35 bei 100 px), die
+     Zuschlaege 1,2 und 0,92 verdeckten den Fehler nur. Jetzt in der Groesse, in der gedruckt (mm je Einheit) oder am Schirm
+     gezeigt wird (hoechstens 0,6 px je Einheit, siehe schaumPxJeEinheit), im gesetzten Gewicht. */
+  const leinwand = document.createElement('canvas').getContext('2d');
+  const pxJeE = druck ? (druck.mmJeEinheit ? druck.mmJeEinheit * 96 / 25.4 : 1) : schaumPxJeEinheit(res);
+  const textBreite = (t, fs, gewicht = 400) => { const px = Math.max(1, fs * pxJeE); leinwand.font = gewicht + ' ' + px.toFixed(2) + 'px ' + SCHAUM_NAMEN_FAMILIE; return leinwand.measureText(t).width / px; };   /* in em */
+  const waende = (druck && druck.waende) || [];                     /* Triptychon: die Wandfugen in Schaum-Einheiten (x) */
   /* KOPFZEILE JE PERSON (Caspar_D, 06.10.2026: „beim Groupieschaum jede Zelle einen Header, in
      dem der Name steht, also einfach ein Stück abschneiden und in den schwarzen Raum den Namen
      schreiben"). Der obere Streifen der Zelle (ein Fuenftel ihrer Hoehe, 11 bis 26 Punkte) wird
@@ -9388,27 +9395,31 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     for (let q = 0; q < pk.length; q++){ const p1 = pk[q], p2 = pk[(q + 1) % pk.length];
       if ((p1[1] - yy) * (p2[1] - yy) < 0) sx.push(p1[0] + (yy - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1])); }
     sx.sort((u, v) => u - v); return sx.length >= 2 ? [sx[0], sx[sx.length - 1]] : null; };
-  const emBreit = (s) => leinwand.measureText(s).width / 100;          /* Breite in em */
+  /* die senkrechten Masse der Schrift (Oberkante des Em-Kastens fasc, Unterkante fdesc, Versalhoehe, Unterlaenge) aus der Schrift
+     selbst - vorher feste Zahlen der Mac-Systemschrift (0,94 / 0,23 / 1,15 em), unter Windows (Segoe UI) falsch */
+  const km = (() => { leinwand.font = '400 100px ' + SCHAUM_NAMEN_FAMILIE; const H = leinwand.measureText('H'), g = leinwand.measureText('gpqy');
+    const fasc = H.fontBoundingBoxAscent / 100, fdesc = H.fontBoundingBoxDescent / 100, cap = H.actualBoundingBoxAscent / 100, desc = g.actualBoundingBoxDescent / 100;
+    return fasc > 0.5 && fdesc > 0.05 && cap > 0.4 ? { fasc, fdesc, cap, desc } : { fasc: 0.97, fdesc: 0.21, cap: 0.73, desc: 0.18 }; })();
   const kopfPlan = (pk, x, y, w, h, name, i, nurUnten) => {
-    const bh = Math.min(26, Math.max(11, h * 0.2)), fsMax = (bh - 3) / 1.17;
+    const bh = Math.min(26, Math.max(11, h * 0.2)), fsMax = (bh - 3) / (km.fasc + km.desc + 0.02);
     /* Wo die Buchstaben bei Schriftgroesse fs liegen: oben haengt die Schrift mit der Unterkante
        (text-after-edge) 2 Punkte ueber der Grenze, Grossbuchstaben reichen 0,94 em hoch; unten
        steht sie mit der Oberkante (text-before-edge) 2 Punkte darunter, Grossbuchstaben ab
        0,23 em, Unterlaengen bis 1,17 em. An drei Hoehen wird gemessen, die engste zaehlt. */
     const raum = (oben, yd, fs) => {
-      const hoehen = oben ? [yd - 2 - fs * 0.94, yd - 2 - fs * 0.5, yd - 2 - fs * 0.05] : [yd + 2 + fs * 0.23, yd + 2 + fs * 0.7, yd + 2 + fs * 1.15];
+      const hoehen = oben ? [yd - 2 - fs * (km.fdesc + km.cap), yd - 2 - fs * (km.fdesc + km.cap / 2), yd - 2 - fs * Math.max(0.02, km.fdesc - km.desc)]
+                          : [yd + 2 + fs * (km.fasc - km.cap), yd + 2 + fs * (km.fasc - km.cap / 2), yd + 2 + fs * (km.fasc + km.desc)];
       const ss = hoehen.map(yy => sehne(pk, yy));
       if (ss.some(q => !q)) return null;
       const s = [Math.max(...ss.map(q => q[0])), Math.min(...ss.map(q => q[1]))];
       return s[1] > s[0] ? s : null;
     };
-    const breit = emBreit(name);
     const versuch = (oben) => {
       const yd = oben ? y + bh : y + h - bh;                         /* Grenze zwischen Kopf und Bild */
       /* Intervallhalbierung: die groesste Schrift, deren Name in die engste Stelle passt */
       let lo = 0, hi = fsMax;
       for (let k = 0; k < 14; k++){ const fs = (lo + hi) / 2, s = raum(oben, yd, fs);
-        if (s && 0.92 * (s[1] - s[0]) >= breit * fs) lo = fs; else hi = fs; }
+        if (s && s[1] - s[0] >= textBreite(name, fs) * fs + 0.3 * fs) lo = fs; else hi = fs; }
       const fs = lo, s = raum(oben, yd, Math.max(fs, 7)) || raum(oben, yd, fs);
       return s ? { oben, yd, fs, s } : null;
     };
@@ -9416,7 +9427,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     if (!v) return null;
     let txt = name, fs = v.fs;
     if (fs < 7){ fs = 7; const breit = 0.9 * (v.s[1] - v.s[0]); let n = name.length;
-      while (n > 2 && emBreit(name.slice(0, n) + '…') * 7 > breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
+      while (n > 2 && textBreite(name.slice(0, n) + '…', 7) * 7 > breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
     if (!txt) return null;
     return { bandY: v.oben ? y : v.yd, bh, fs,
       text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
@@ -9433,8 +9444,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     const alt = kopfPlan(pk, x, y, w, h, name, i, true), ziel = Math.max(7, alt ? alt.fs : 7);
     const poly = pk.map(p => [p[0], -p[1]]);                       /* render.js rechnet mit y nach oben */
     const lab = R.placeLabel(poly, name, { maxSize: ziel, minSize: 7, maxLines: 3, fit: true, leading: schaumZeilenabstand(), drop: 0,
-      huelle: poly, ink: druckTinte, unten: true, startSize: ziel });
-    if (!lab || !lab.xs) return alt;
+      huelle: poly, ink: druckTinte, unten: true, startSize: ziel, sperren: waende });
+    if (!lab || !lab.xs) return waende.length ? null : alt;      /* das alte Band kennt die Wandfugen nicht - im Triptychon dann die Nummer */
     const n = lab.lines.length, grund = j => lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size;
     const ober = Math.max(0, ...druckTinte.runs(lab.lines[0], lab.size).runs.map(q => q[2]));
     const bandY = Math.max(y, -(grund(0) + ober * lab.size) - 2);
@@ -9446,11 +9457,19 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      wo die Zelle breit genug ist, sonst in ihrer Mitte), Schrift 2,2 bis 5 mm je nach Zellgroesse - lesbar aus der
      Naehe, auch in der kleinsten Zelle. Rauch- oder Milchglas wie die Titel. */
   const nummerSchild = (pk, x, y, w, h, nr, tf) => {
-    const mm = (druck && druck.mmJeEinheit) || 1, fs = Math.min(5 / mm, Math.max(2.2 / mm, 0.2 * Math.min(w, h)));
-    const sw = (String(nr).length * 0.62 + 0.7) * fs, sh = 1.3 * fs;
-    let cx = 0, cy = 0; for (const p of pk){ cx += p[0]; cy += p[1]; } cx /= pk.length; cy /= pk.length;
-    const yy = y + h - 0.95 * sh, s = sehne(pk, yy);
-    if (s && s[1] - s[0] > sw * 1.3){ cx = (s[0] + s[1]) / 2; cy = yy; }
+    /* (Wiedervorlage §77) das Schild so tief wie moeglich, mittig auf der breitesten freien Strecke, ganz in der Zelle und nicht
+       auf einer Wandfuge (render.js rechteckUnten); passt es nicht, kleiner bis 2,2 mm; erst dann wie vorher. Die Ziffern
+       halbfett in der Druckgroesse gemessen (vorher 0,62 em je Ziffer geschaetzt). */
+    const mm = (druck && druck.mmJeEinheit) || 1, poly = pk.map(p => [p[0], -p[1]]);
+    let fs = Math.min(5 / mm, Math.max(2.2 / mm, 0.2 * Math.min(w, h))), cx = 0, cy = 0, sw = 0, sh = 0, platz = null;
+    for (let k = 0; k < 12 && !platz; k++, fs = Math.max(2.2 / mm, fs * 0.9)){
+      sw = textBreite('0'.repeat(String(nr).length), fs, 600) * fs + 0.7 * fs; sh = 1.3 * fs;
+      platz = R.rechteckUnten(poly, sw + 0.4 * fs, sh + 0.4 * fs, waende);
+      if (fs <= 2.2 / mm + 1e-9) break;
+    }
+    if (platz){ cx = platz[0]; cy = -platz[1]; }
+    else { for (const p of pk){ cx += p[0]; cy += p[1]; } cx /= pk.length; cy /= pk.length;
+      const yy = y + h - 0.95 * sh, s = sehne(pk, yy); if (s && s[1] - s[0] > sw * 1.3){ cx = (s[0] + s[1]) / 2; cy = yy; } }
     const schild = `<g pointer-events="none"${tf ? ` transform="${tf}"` : ''}><rect x="${(cx - sw / 2).toFixed(1)}" y="${(cy - sh / 2).toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" rx="${(sh * 0.3).toFixed(1)}"`
       + ` fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? 0.72 : 0.58}"/>`
       + `<text x="${cx.toFixed(1)}" y="${(cy + fs * 0.36).toFixed(1)}" font-size="${fs.toFixed(1)}" font-weight="600" text-anchor="middle"`
@@ -9473,11 +9492,17 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
         if (a[0] !== b[0] && (a[0] - xx) * (b[0] - xx) <= 0){ const yv = a[1] + (xx - a[0]) / (b[0] - a[0]) * (b[1] - a[1]); if (yv > yy) yy = yv; } }
       if (yy > mitte + innen) pts.push([xx, yy - innen]);
     }
+    /* Triptychon: die Bahn reisst an jeder Wandfuge (samt einer halben Schrift Abstand); der Titel laeuft auf dem laengsten
+       Stueck - vorher lief er quer ueber die Fuge, und das PDF schnitt Buchstaben weg */
+    if (waende.length){ const stuecke = [[]];
+      for (const p of pts){ if (waende.some(([a, b]) => p[0] > a - fs * 0.6 && p[0] < b + fs * 0.6)){ if (stuecke[stuecke.length - 1].length) stuecke.push([]); } else stuecke[stuecke.length - 1].push(p); }
+      pts.length = 0; pts.push(...stuecke.reduce((a, b) => b.length > a.length ? b : a, [])); }
     if (pts.length < 6) return null;
     const gl = pts.map((p, k) => { const a = pts[Math.max(0, k - 1)], b = pts[Math.min(pts.length - 1, k + 1)]; return [p[0], (a[1] + 2 * p[1] + b[1]) / 4]; });
     let lang = 0; for (let k = 1; k < gl.length; k++) lang += Math.hypot(gl[k][0] - gl[k - 1][0], gl[k][1] - gl[k - 1][1]);
-    /* gemessen mit normaler Schrift, gesetzt halbfett und gebogen: 1,2 Zuschlag (mit 1,06 liefen lange Titel ueber den Zellrand) */
-    const breit = (t) => leinwand.measureText(t).width / 100 * fs * 1.2;
+    /* halbfett gemessen, in der Druckgroesse, dazu der Saum (0,24 fs Strich, die Haelfte ragt je Seite hinaus) - vorher normal
+       bei 100 px mit 1,2 Zuschlag („mit 1,06 liefen lange Titel ueber den Zellrand": das war die Textform der kleinen Schrift) */
+    const breit = (t) => textBreite(t, fs, 600) * fs + 0.24 * fs;
     while (breit(name) > lang * 0.9 && fs * 0.92 >= 2.2 / mm) fs *= 0.92;
     let txt = name;
     if (breit(txt) > lang * 0.9){ let k = txt.length; while (k > 2 && breit(txt.slice(0, k) + '…') > lang * 0.9) k--; txt = k > 2 ? txt.slice(0, k) + '…' : ''; }
@@ -9666,7 +9691,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.52').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.53').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
