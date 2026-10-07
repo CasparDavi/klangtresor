@@ -1439,6 +1439,66 @@ function eigeneSeite(req) {
   try { return new URL(o).host === req.headers.host; } catch (e) { return false; }
 }
 
+/* BILDER VORBEREITEN, WENN EIN SCHAUM GEOEFFNET WIRD (Caspar_D, 07.10.2026). Gesichter und Avatare
+   entstehen sonst nur im Morgenlauf; wer vorher einen Schaum oeffnete, bekam Cover ohne Gesichtsrueckung
+   und Avatare vom CDN - still mindere Qualitaet. Jetzt: „es wird gar nichts gerechnet, wenn die Modelle
+   fehlen, sonst würden wir mindere Qualität liefern", „auch das Modelle holen muß der Nutzer nicht
+   wissen", „man könnte die map auch schon rechnen, aber eben noch keine grafiken einsetzen" - die Seite
+   legt den Schaum, der Server holt derweil hier nach, was fehlt (bin/avatare.js, dann bin/gesichter.js,
+   der die Modelle selbst nachholt). Die Seite zeigt „Bilder werden vorbereitet" und zeichnet erst danach.
+   Nie doppelt: laeuft der Morgenschritt „Medien laden" gerade, oder haelt ein anderer Lauf die Sperre
+   (library/gesichter.lauf, library/avatare.lauf), wird nur gewartet. Der Morgenlauf arbeitet weiter vor -
+   dies ist das Netz darunter. */
+const bilderLauf = { laeuft: false, art: null, danach: null, schritt: null, n: 0, von: 0, seit: null, fertigAm: null, fehler: null };
+function bilderStand() { return Object.assign({}, bilderLauf); }
+function sperreLebt(datei) {
+  try { const pid = Number(fs.readFileSync(datei, 'utf8')); if (!pid) return false; process.kill(pid, 0); return true; } catch (e) { return false; }
+}
+/* art 'titel': nur die Cover (Klangschaum, Plakat der Werke); 'person': Avatare holen und nur sie durchsuchen.
+   Laeuft schon ein Lauf der anderen Art, kommt dieser danach dran. */
+function bilderVorbereiten(art) {
+  art = art === 'person' ? 'person' : 'titel';
+  if (bilderLauf.laeuft) { if (art !== bilderLauf.art) bilderLauf.danach = art; return; }
+  Object.assign(bilderLauf, { laeuft: true, art, danach: null, schritt: null, n: 0, von: 0, seit: Date.now(), fertigAm: null, fehler: null });
+  const sperren = [path.join(WURZEL, 'library', 'avatare.lauf'), path.join(WURZEL, 'library', 'gesichter.lauf')];
+  const fremd = () => (morgen.laeuft && morgen.folge && morgen.folge[morgen.schritt] && morgen.folge[morgen.schritt].id === 'medien-laden')
+    || sperren.some(sperreLebt);
+  const ende = () => {
+    let st = null; try { st = require('../bin/gesichter.js').stand(); } catch (e) {}
+    bilderLauf.fehler = st && !st.modelle ? 'modelle' : null;    /* kein Netz beim ersten Mal: der naechste Morgenlauf holt sie */
+    const danach = bilderLauf.danach;
+    Object.assign(bilderLauf, { laeuft: false, danach: null, schritt: null, fertigAm: Date.now() });
+    if (danach) bilderVorbereiten(danach);
+  };
+  const warten = (dann) => { const uhr = setInterval(() => { if (!fremd()) { clearInterval(uhr); dann(); } }, 2000); };
+  const schritte = art === 'person' ? [['avatare', ['bin/avatare.js']], ['gesichter', ['bin/gesichter.js', '--nur-avatare']]]
+                                    : [['gesichter', ['bin/gesichter.js', '--ohne-avatare']]];
+  const weiter = (i) => {
+    if (i >= schritte.length) return ende();
+    if (fremd()) { bilderLauf.schritt = 'wartet'; return warten(() => weiter(i)); }
+    const [name, befehl] = schritte[i];
+    Object.assign(bilderLauf, { schritt: name, n: 0, von: 0 });
+    let kind;
+    try {
+      kind = require('node:child_process').spawn(process.execPath, befehl, { cwd: WURZEL,
+        env: Object.assign({}, process.env, { KLANGTRESOR_PORT: String(PORT), KT_MELDEN: '1' }) });
+    } catch (e) { return weiter(i + 1); }
+    /* Die Zahlen kommen als @@KT-Zeilen (bin/melden.js); der Rest der Ausgabe interessiert hier nicht. */
+    let rest = '';
+    kind.stdout.on('data', (d) => {
+      rest += String(d); const zeilen = rest.split('\n'); rest = zeilen.pop();
+      for (const z of zeilen) if (z.startsWith('@@KT ')) {
+        /* nur Bilder zaehlen - das Nachholen der Modelle (nEinheit 'Datei') bleibt unsichtbar (Caspar_D: „darin verstecken sich auch die Modelle") */
+        try { const m = JSON.parse(z.slice(5)); if (m.lauf && m.lauf.von && m.lauf.nEinheit !== 'Datei') { bilderLauf.n = m.lauf.n || 0; bilderLauf.von = m.lauf.von; } } catch (e) {}
+      }
+    });
+    kind.stderr.on('data', () => {});
+    kind.on('error', () => weiter(i + 1));
+    kind.on('close', () => weiter(i + 1));
+  };
+  weiter(0);
+}
+
 /* Ton, der bei Suno nicht zu bekommen war (Tarja, 07.10.2026: Remixe
    fremder Titel bleiben auf "processing", 25 Stueck pollten jeden Morgen
    eine Viertelstunde). Gemerkt je Titel und Format - aber nicht fuer
@@ -3604,7 +3664,20 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     for (const [url, e] of Object.entries((a && a.bilder) || {})) if (e && e.datei) avatare[url] = e.datei;
     /* schwelle: ab welcher Wertung ein Gesicht zaehlt - haengt am Erkenner, steht darum in seinem Ausweis */
     const schwelle = (b && b.ausweis && b.ausweis.schwelle) || 0.7;
-    return jsonAntwort(res, { bilder: (b && b.bilder) || {}, avatare, schwelle });
+    /* Was noch fehlt (siehe bilderVorbereiten): die Seite zeichnet erst, wenn die Modelle da sind und kein Bild
+       mehr offen ist. avatareFehlt: Adressen, die Suno verweigert (etwa HTTP 403) - sie halten das Zeichnen
+       nicht auf, der Avatar kommt dann wie bisher vom CDN oder bleibt leer. */
+    let st = { modelle: false, offen: 0, gesamt: 0 };
+    try { st = require('../bin/gesichter.js').stand(); } catch (e) {}
+    return jsonAntwort(res, { bilder: (b && b.bilder) || {}, avatare, schwelle, modelle: st.modelle, offen: st.offen,
+      offenCover: st.offenCover, offenAvatare: st.offenAvatare,
+      avatareFehlt: Object.keys((a && a.fehlt) || {}), vorbereitung: bilderStand() });
+  }
+  if (p === '/api/bilder/stand') return jsonAntwort(res, bilderStand());
+  if (p === '/api/bilder/vorbereiten' && req.method === 'POST') {
+    if (!eigeneSeite(req)) return jsonAntwort(res, { ok: false, grund: 'Nur von der eigenen Seite.' }, 403);
+    bilderVorbereiten(u.searchParams.get('art'));
+    return jsonAntwort(res, bilderStand());
   }
   /* Die geholten Avatare (bin/avatare.js) - Dateiname ist die SHA-1 der Adresse, nichts sonst wird ausgeliefert. */
   const avatarWeg = p.match(/^\/avatar\/([0-9a-f]{40}\.(jpg|png|webp|gif))$/);

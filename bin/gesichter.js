@@ -67,6 +67,9 @@ const MODELLIDENT = (a) => JSON.stringify([a && a.modell, a && a.fassung, a && a
 
 const NEU  = process.argv.includes('--neu');
 const TEST = (() => { const i = process.argv.indexOf('--test'); return i >= 0 ? Number(process.argv[i + 1]) || 0 : 0; })();
+/* --ohne-avatare / --nur-avatare: der Klangschaum braucht nur die Cover, der Groupieschaum nur die Avatare
+   (server.js, bilderVorbereiten) - wer zum ersten Mal Werke oeffnet, soll nicht auf 4000 Avatare warten. */
+const OHNE_AV = process.argv.includes('--ohne-avatare'), NUR_AV = process.argv.includes('--nur-avatare');
 const NUR  = (() => { const i = process.argv.indexOf('--nur'); return i >= 0 ? String(process.argv[i + 1] || '') : ''; })();
 
 /* Dieselbe Bildwahl wie bin/tiefenkarten.js (bildQuelle, eigenBilder): was die Oberflaeche zeigt. */
@@ -158,13 +161,40 @@ function buchLesen() {
   try { const b = JSON.parse(fs.readFileSync(BUCH, 'utf8')); if (b && b.bilder) return b; } catch (e) {}
   return { ausweis: AUSWEIS, bilder: {} };
 }
+/* WAS NOCH FEHLT - fuer den Server (/api/gesichter), nach denselben Regeln wie der Lauf: sind beide Modelle da,
+   und wie viele Bilder haben keinen gueltigen Eintrag (neu, ersetzt, oder der Erkenner hat gewechselt)?
+   Caspar_D, 07.10.2026: „es wird gar nichts gerechnet, wenn die Modelle fehlen, sonst würden wir mindere
+   Qualität liefern" - die Seite zeichnet einen Schaum erst, wenn hier nichts mehr offen ist. */
+function stand() {
+  const ausweis = Object.assign({}, AUSWEIS, { schrift: fs.existsSync(TEXTMODELL) ? SCHRIFTAUSWEIS : null });
+  const buch = buchLesen(), gleich = MODELLIDENT(buch.ausweis) === MODELLIDENT(ausweis);
+  let titel = [];
+  try { titel = fs.readdirSync(SONGS).filter((d) => !d.startsWith('.')); } catch (e) {}
+  const cover = titel.reduce((s, id) => s.concat(bilderVon(id)), []), avatare = avatarBilder();
+  const zaehlen = (liste) => gleich ? liste.filter((b) => { const e = buch.bilder[b.schluessel]; return !e || e.quelle !== stempel(b.datei) || e.art !== b.art; }).length : liste.length;
+  const offenCover = zaehlen(cover), offenAvatare = zaehlen(avatare);
+  return { modelle: fs.existsSync(MODELL) && fs.existsSync(TEXTMODELL), offenCover, offenAvatare, offen: offenCover + offenAvatare, gesamt: cover.length + avatare.length };
+}
+/* EIN LAUF ZUR ZEIT: Morgenlauf und „Bilder vorbereiten" beim Oeffnen eines Schaums (server.js) duerfen nicht
+   gleichzeitig ins selbe Buch schreiben. Die Sperre traegt die PID; lebt der Prozess nicht mehr, gilt sie nicht. */
+const SPERRE = path.join(WURZEL, 'library', 'gesichter.lauf');
+function sperren() {
+  try { const pid = Number(fs.readFileSync(SPERRE, 'utf8')); if (pid && pid !== process.pid) { try { process.kill(pid, 0); return false; } catch (e) {} } } catch (e) {}
+  try { fs.writeFileSync(SPERRE, String(process.pid)); } catch (e) {}
+  return true;
+}
+function entsperren() { try { if (Number(fs.readFileSync(SPERRE, 'utf8')) === process.pid) fs.unlinkSync(SPERRE); } catch (e) {} }
+module.exports = { stand, SPERRE };
+
 function buchSchreiben(buch) {
   const neben = `${BUCH}.neu-${process.pid}`;
   fs.writeFileSync(neben, JSON.stringify(buch));
   fs.renameSync(neben, BUCH);
 }
 
-(async () => {
+if (require.main === module) (async () => {
+  if (!sperren()) { console.log('Gesichter — läuft schon (anderer Lauf), nichts zu tun.\n'); return; }
+  process.on('exit', entsperren);
   /* FEHLENDE MODELLE NACHHOLEN (07.10.2026). Tarja: in bestehenden
      Installationen und im Docker kamen die beiden neuen Modelle nie an -
      der Docker-Entrypoint holt nur beim ersten Start, bin/einrichten.js nur
@@ -196,7 +226,7 @@ function buchSchreiben(buch) {
   let titel = [];
   try { titel = fs.readdirSync(SONGS).filter((d) => !d.startsWith('.')); } catch (e) {}
   if (NUR) titel = titel.filter((id) => id.startsWith(NUR));
-  const alle = titel.reduce((s, id) => s.concat(bilderVon(id)), []).concat(NUR ? [] : avatarBilder());
+  const alle = (NUR_AV ? [] : titel.reduce((s, id) => s.concat(bilderVon(id)), [])).concat(NUR || OHNE_AV ? [] : avatarBilder());
   let offen = alle.filter((b) => {
     if (NEU || NUR) return true;
     const e = buch.bilder[b.schluessel];
@@ -210,7 +240,10 @@ function buchSchreiben(buch) {
     n++;
     const m = masse(b.datei);
     const g = m ? await suchen(ort, sitzung, b.datei, m[0], m[1]) : null;
-    if (!g) { fehler++; console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${path.basename(b.datei)} nicht lesbar`); continue; }
+    /* Unlesbar kommt auch ins Buch (ohne Gesichter): sonst bliebe das Bild fuer immer „offen", und die Seite
+       zeichnete den Schaum nie. Wird die Datei ersetzt, aendert sich der Stempel, und es wird neu gesucht. */
+    if (!g) { fehler++; buch.bilder[b.schluessel] = { quelle: stempel(b.datei), art: b.art, unlesbar: true, g: [], t: null, gerechnet: new Date().toISOString() };
+      console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${path.basename(b.datei)} nicht lesbar`); continue; }
     /* Schrift nur auf Covern - bei Avataren steht der Name im Kopf der Zelle, nicht auf dem Bild */
     const t = textSitzung && b.art !== 'avatar' ? await schriftSuchen(ort, textSitzung, b.datei, m[0], m[1]) : null;
     buch.bilder[b.schluessel] = { quelle: stempel(b.datei), art: b.art, w: m[0], h: m[1], g, t, gerechnet: new Date().toISOString() };
@@ -226,4 +259,4 @@ function buchSchreiben(buch) {
   const ms = offen.length ? Math.round((Date.now() - t0) / offen.length) : 0;
   console.log(`\n  ${n - fehler} Bilder durchsucht${fehler ? `, ${fehler} nicht lesbar` : ''}, ${mitGesicht} mit Gesicht (ab ${String(SCHWELLE).replace(".", ",")}) — ${ms} ms je Bild.`);
   console.log(`  Buch: ${path.relative(WURZEL, BUCH)}\n`);
-})().catch((e) => { console.error('  FEHLER:', e.message); process.exit(1); });
+})().catch((e) => { console.error('  FEHLER:', e.message); entsperren(); process.exit(1); });

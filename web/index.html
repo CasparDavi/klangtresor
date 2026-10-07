@@ -9127,10 +9127,64 @@ async function schaumVorrechnen(){
    ihr Bildteil genau auf diesen Platz faellt - Schirm, Vorschau und PDF zeigen denselben Ausschnitt; der
    unscharfe Grund der Kachel liegt ausserhalb der Zelle. */
 let schaumGesichter = null, schaumAvatare = {}, schaumGesichtSchwelle = 0.7;
+function schaumGesichterUebernehmen(d){
+  schaumAvatare = (d && d.avatare) || {}; schaumGesichtSchwelle = (d && d.schwelle) || 0.7;
+  return (schaumGesichter = (d && d.bilder) || {});
+}
 function schaumGesichterLaden(){
   if (schaumGesichter) return Promise.resolve(schaumGesichter);
   return fetch('/api/gesichter', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
-    .then(d => { schaumAvatare = (d && d.avatare) || {}; schaumGesichtSchwelle = (d && d.schwelle) || 0.7; return (schaumGesichter = (d && d.bilder) || {}); }).catch(() => (schaumGesichter = {}));
+    .then(schaumGesichterUebernehmen).catch(() => (schaumGesichter = {}));
+}
+/* BILDER VORBEREITEN (Caspar_D, 07.10.2026; Gegenstueck bilderVorbereiten in server.js): „es wird gar nichts
+   gerechnet, wenn die Modelle fehlen, sonst würden wir mindere Qualität liefern" und „man könnte die map auch
+   schon rechnen, aber eben noch keine grafiken einsetzen, während er rechnet, werden die Bilder geholt. das
+   können wir kommunizieren: Bilder werden vorbereitet". Vor dem Einsetzen der Bilder fragt die Seite, ob
+   Modelle, Avatare und Gesichterbuch vollstaendig sind; fehlt etwas, holt der Server es nach, waehrend der
+   Schaum gelegt wird. Ergebnis 'bereit' oder 'morgenlauf' (kein Netz und die Modelle fehlen: dann wird nichts
+   gezeichnet). Einmal bereit, gilt es fuer die Sitzung - wie das Gesichterbuch selbst. */
+const bilderBereitOk = new Set(), bilderHoerer = new Map(), bilderLaeufe = new Map();
+function bilderFehlen(d, zeilen, art){
+  if (!d.modelle) return true;
+  if (art !== 'person') return d.offenCover > 0;
+  if (d.offenAvatare > 0) return true;
+  const fehlt = new Set(d.avatareFehlt || []), da = d.avatare || {};
+  return (zeilen || []).some(z => z && /^https?:\/\//.test(z.bild || '') && !da[z.bild] && !fehlt.has(z.bild));
+}
+async function bilderBereit(art, zeilen, melde){
+  if (bilderBereitOk.has(art)) return 'bereit';
+  const holen = async () => { try { const r = await fetch('/api/gesichter', { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
+  let d = await holen();
+  if (!d || d.modelle === undefined){ bilderBereitOk.add(art); return 'bereit'; }     /* aelterer Server: wie bisher */
+  if (!bilderFehlen(d, zeilen, art)){ schaumGesichterUebernehmen(d); bilderBereitOk.add(art); return 'bereit'; }
+  if (!bilderHoerer.has(art)) bilderHoerer.set(art, new Set());
+  if (melde){ bilderHoerer.get(art).add(melde); melde('Bilder werden vorbereitet …'); }
+  /* Ein Lauf je Art; laeuft auf dem Server gerade die andere Art (oder der Morgenlauf), wartet der Server und
+     kommt danach zu dieser - darum nach dem Ende neu pruefen, hoechstens drei Runden. */
+  if (!bilderLaeufe.has(art)) bilderLaeufe.set(art, (async () => {
+    for (let runde = 0; runde < 3; runde++){
+      try { await fetch('/api/bilder/vorbereiten?art=' + art, { method: 'POST' }); } catch (e) {}
+      let st = null;
+      for (;;){
+        await new Promise(r => setTimeout(r, 1000));
+        try { st = await (await fetch('/api/bilder/stand', { cache: 'no-store' })).json(); } catch (e) { st = null; }
+        if (!st) continue;
+        const t = 'Bilder werden vorbereitet …' + (st.laeuft && st.art === art && st.von ? ` ${st.n} von ${st.von}` : '');
+        for (const h of bilderHoerer.get(art)) try { h(t); } catch (e) {}
+        if (!st.laeuft) break;
+      }
+      const d2 = await holen();
+      if (!d2 || !d2.modelle || st.fehler === 'modelle') return 'morgenlauf';
+      if (!bilderFehlen(d2, zeilen, art)) return 'bereit';
+    }
+    return 'bereit';                   /* drei Runden ohne Abschluss (etwa unlesbare Dateien): zeichnen, nicht ewig warten */
+  })().finally(() => { bilderLaeufe.delete(art); }));
+  const ergebnis = await bilderLaeufe.get(art);
+  if (melde) bilderHoerer.get(art).delete(melde);
+  /* Das Buch hat sich geaendert: gemerkte Bilder neu bauen lassen */
+  schaumGesichter = null; schaumFertig.clear();
+  if (ergebnis === 'bereit'){ const d3 = await holen(); if (d3) schaumGesichterUebernehmen(d3); bilderBereitOk.add(art); }
+  return ergebnis;
 }
 /* AVATARE AUS DER EIGENEN KOPIE (Caspar_D, 07.10.2026: „Server holt und speichert", bin/avatare.js): liegt ein
    Avatar unter library/avatare, nimmt der Schaum ihn von dort; sonst wie bisher von Suno. */
@@ -9489,8 +9543,18 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
   /* Beim Wechsel zwischen Klang- und Groupieschaum stand sonst bis zum Fertigrechnen das Bild des
      anderen im Feld - Avatare unter der Ueberschrift „Klangschaum". */
   if (schaumBildArt !== art){ $('schaumbild').innerHTML = ''; schaumBildArt = null; }
+  /* Zwei Zeilen, solange beides laeuft: „Bilder werden vorbereitet …" (Server, nur wenn etwas fehlt) und
+     „Dein Klang wird aufgeschäumt … s" (Worker). Gezeichnet wird erst, wenn beides fertig ist. */
+  const teile = { bilder: null, schaum: null };
+  const zeigen = () => { stand.innerHTML = [teile.bilder, teile.schaum].filter(Boolean).map(esc).join('<br>'); };
+  let bereit = null;
+  const bereitHolen = () => bereit || (bereit = bilderBereit(art, zeilen, t => { teile.bilder = t; zeigen(); }));
   const malen = async (res) => {
     try {
+      teile.schaum = null; zeigen();
+      if (await bereitHolen() === 'morgenlauf'){
+        $('schaumbild').innerHTML = ''; schaumBildArt = null; stand.textContent = 'Schaum kommt mit dem nächsten Morgenlauf.'; return; }
+      teile.bilder = null;
       const { svg, ids, R, personen } = await schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art });
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
       /* Fuer den Morph: das Netz des Baums (erst bei Bedarf gebaut, dann gemerkt), die Form (Gliederung
@@ -9506,12 +9570,13 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
   };
   /* Schon gelegt (etwa nur die Farben gewechselt): nur neu malen. */
   const gemerkt = schaumLagen.get(lage) || await lageLesen(lage);
-  if (gemerkt){ malen(gemerkt); return; }
+  if (gemerkt){ bereitHolen(); malen(gemerkt); return; }
   if (schaumHinten && schaumHinten.lage === lage){
     $('schaumbild').style.opacity = '0.3'; stand.textContent = meldung + ' … (wird schon vorgerechnet)'; schaumWartet = lage; return; }
   if (schaumArbeit && schaumArbeit.lage === lage) return;          /* wird schon gelegt; die Farben holt schaumZeichnen danach nach */
   if (schaumArbeit){ schaumArbeit.worker.terminate(); clearInterval(schaumArbeit.uhr); }
-  stand.textContent = meldung + ' …';
+  teile.schaum = meldung + ' …'; zeigen();
+  bereitHolen();                       /* Bilder vorbereiten, waehrend der Worker legt */
   /* Das alte Bild sofort abblenden: sonst sieht ein neues Mass eine halbe Minute lang aus, als
      haette die Wahl nichts bewirkt (Caspar_D: „die Selektion anderer Zellgrößen hat keinen Effekt"). */
   $('schaumbild').style.opacity = '0.3';
@@ -9522,7 +9587,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
      Gefaess (351 Personen in „nur Herzen") braucht neun Zehntel der Zeit - „2 von 4" stand dort eine
      halbe Minute lang. */
   const t0 = performance.now();
-  const uhr = setInterval(() => { stand.textContent = `${meldung} … ${Math.round((performance.now() - t0) / 1000)} s`; }, 1000);
+  const uhr = setInterval(() => { teile.schaum = `${meldung} … ${Math.round((performance.now() - t0) / 1000)} s`; zeigen(); }, 1000);
   schaumArbeit = { schluessel, lage, worker, uhr };
   worker.onmessage = async (ev) => {
     const d = ev.data;

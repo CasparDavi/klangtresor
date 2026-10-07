@@ -45,6 +45,15 @@ function buchSchreiben(b) { const n = `${BUCH}.neu-${process.pid}`; fs.writeFile
 const wartet = (e, jetzt) => { if (!e) return false; const am = Date.parse(e.am); if (!Number.isFinite(am)) return false;
   return jetzt < am + Math.min(30, 2 ** Math.min(Math.max(1, e.versuche | 0) - 1, 5)) * TAG; };
 
+/* EIN LAUF ZUR ZEIT (wie bin/gesichter.js): Morgenlauf und „Bilder vorbereiten" beim Oeffnen eines Schaums. */
+const SPERRE = path.join(WURZEL, 'library', 'avatare.lauf');
+function sperren() {
+  try { const pid = Number(fs.readFileSync(SPERRE, 'utf8')); if (pid && pid !== process.pid) { try { process.kill(pid, 0); return false; } catch (e) {} } } catch (e) {}
+  try { fs.mkdirSync(path.dirname(SPERRE), { recursive: true }); fs.writeFileSync(SPERRE, String(process.pid)); } catch (e) {}
+  return true;
+}
+function entsperren() { try { if (Number(fs.readFileSync(SPERRE, 'utf8')) === process.pid) fs.unlinkSync(SPERRE); } catch (e) {} }
+
 async function holen(url) {
   const ab = new AbortController(), uhr = setTimeout(() => ab.abort(), 15000);
   try {
@@ -66,6 +75,8 @@ async function holen(url) {
 }
 
 (async () => {
+  if (!sperren()) { console.log('Avatare — läuft schon (anderer Lauf), nichts zu tun.\n'); return; }
+  process.on('exit', entsperren);
   let leute = null;
   try { leute = (await (await fetch(`http://127.0.0.1:${PORT}/api/community`)).json()).leute; } catch (e) {}
   if (!Array.isArray(leute)) { console.log(`Avatare — der Server antwortet nicht auf Port ${PORT}; nichts geholt.\n`); return; }
