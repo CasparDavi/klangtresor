@@ -30,14 +30,19 @@ const FORMATE = [
    stehen im Werkverzeichnis. */
 const VORLAGEN = [
   { id: 'galerie', name: 'Galerie', zeile: 'schwarzer Grund · Rauchglas · Federstrich',
-    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: true, edition: true, zeitleiste: false } },
+    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: true, edition: true, zeitleiste: false, schild: false } },
   { id: 'papier', name: 'Papier', zeile: 'warmes Weiß · Milchglas · leiser Schatten',
-    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false, areale: true, edition: true, zeitleiste: true } },
+    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false, areale: true, edition: true, zeitleiste: true, schild: false } },
   { id: 'bleiglas', name: 'Bleiglas', zeile: 'breite dunkle Fugen · starkes Licht',
-    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true, areale: false, edition: false, zeitleiste: false } },
+    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true, areale: false, edition: false, zeitleiste: false, schild: false } },
   { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
-    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false, edition: false, zeitleiste: true } },
+    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false, edition: false, zeitleiste: true, schild: false } },
 ];
+/* RANDLOS MIT SCHILD (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format
+   wie das Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout,
+   kein Museumsschild, keine Arealnamen am Rand; Titel, Zeile, Legende und Edition stehen im Schild unten rechts (schild.js). */
+VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Schild in der Ecke',
+  e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
 
@@ -86,6 +91,9 @@ function geometrie(n = 0){
     const fuge = Math.round(0.06 * pw); tri = { pw, ph, fuge }; w = 3 * pw + 2 * fuge; h = ph; kurz = Math.min(pw, ph); }   /* Schrift wie auf einem Rahmen */
   const rand = E.rand * kurz;
   const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
+  /* randlos: die Karte ist die ganze Seite samt Beschnitt */
+  if (E.schild) return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand: 0, unten: 0, T, U, L, karte: { x: 0, y: 0, w: w + 2 * BESCHNITT, h: h + 2 * BESCHNITT },
+    schildH: 0, verz: null, zeitH: 0, tri, schild: true, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
   const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
   /* So viele Arealkoepfe, wie die Legende des Schaums Zeilen hat - vorher pauschal sechs, das liess unter der Liste Platz frei */
   const listeStrecken = (x0, breite, fug) => fug.length ? freieStrecken(x0, x0 + breite, fug).map(([a, b]) => [a - x0, b - a]) : null;
@@ -111,6 +119,20 @@ async function auftrag(verh){
   const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
   return { j: schaumKlangAuftrag(m, gl, schaumZoom, verh), art: 'titel', m, gl };
 }
+/* Das Schild fuer den Auftrag: Zielformat = das Format des Plakats (Caspar_D: „Zielfunktion ist gleiches Format wie das Plakat"),
+   im Triptychon das einer Tafel; dort muss es ganz auf der rechten Tafel liegen (rechts der letzten Wandfuge) und nimmt 12 % einer
+   Tafel. Der Schaum ist 1000 Einheiten breit und fuellt die randlose Karte ganz. */
+function schildVorgabe(g){
+  const kv = g.karte, k = kv.w / 1000;
+  if (g.tri){ const fug = wandFugen(g), letzte = fug[fug.length - 1];
+    return { ziel: g.tri.pw / g.tri.ph, minX: (letzte[1] - kv.x) / k, anteil: 0.12 * (g.tri.pw * g.tri.ph) / (g.w * g.h) }; }
+  return { ziel: kv.w / kv.h, minX: 0, anteil: 0.12 };
+}
+async function auftragMitSchild(verh, g){
+  const a = await auftrag(verh);
+  if (E.schild && typeof schildAuftrag === 'function') a.j = schildAuftrag(a.j, schildVorgabe(g));
+  return a;
+}
 
 function standSetzen(t){ const s = el('ps-stand'); if (s) s.textContent = t || ''; }
 
@@ -124,15 +146,15 @@ function zeichnen(sofort){
     let n = aktuell && aktuell.raum === raumJetzt ? aktuell.j.zeilen.length : 0;
     if (!n && E.verzeichnis){ try { n = (await auftrag(1)).j.zeilen.length; } catch (e) { n = 0; } if (lauf !== legeLauf) return; }
     const g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * 100) / 100;
-    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt){
-      const a = await auftrag(verh);
+    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild){
+      const a = await auftragMitSchild(verh, g);
       if (lauf !== legeLauf) return;
       standSetzen('Der Schaum wird für das Plakat gelegt …');
       let res;
       try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }); }
       catch (e){ standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
       if (lauf !== legeLauf) return;
-      aktuell = { verh, raum: raumJetzt, res, ...a };
+      aktuell = { verh, raum: raumJetzt, schild: !!E.schild, res, ...a };
       if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag();
       if (!E.kopfUnterEigen) E.kopfUnter = kopfUnterVorschlag();
       felderSetzen();
@@ -184,6 +206,8 @@ async function bauen(g){
   const druck = { titel: E.titel, fugen: E.fugen, wackeln: E.wackeln, schatten: E.schatten, vignette: E.vignette, kissen: E.kissen,
                   deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab,
                   verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height) };
+  if (E.schild) druck.schild = { titel: E.kopfTitel || '', unter: E.kopfUnter || '', legende: legendenEintraege(), edition: E.edition ? editionText() : '',
+                                T: g.T, U: g.U, L: g.L, milch: E.titel === 'milch' };
   { const k = druck.mmJeEinheit, ox = kv.x + (kv.w - aktuell.res.width * k) / 2;             /* die Fugen in Schaum-Einheiten */
     druck.waende = wandFugen(g).map(([a, b]) => [(a - ox) / k, (b - ox) / k]); }
   const la = schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
@@ -202,16 +226,16 @@ async function bauen(g){
   const fg = schrift(), leise = schriftLeise();
   /* Federstrich: eine Haarlinie einige Millimeter um die Karte, auf dem Passepartout */
   const d = 0.011 * g.kurz;
-  const feder = E.feder ? `<rect x="${(kv.x - d).toFixed(2)}" y="${(kv.y - d).toFixed(2)}" width="${(kv.w + 2 * d).toFixed(2)}" height="${(kv.h + 2 * d).toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.75" stroke-width="${E.federMm}"/>` : '';
+  const feder = E.feder && !E.schild ? `<rect x="${(kv.x - d).toFixed(2)}" y="${(kv.y - d).toFixed(2)}" width="${(kv.w + 2 * d).toFixed(2)}" height="${(kv.h + 2 * d).toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.75" stroke-width="${E.federMm}"/>` : '';
   /* Museumsschild im unteren Rand: links Titel und Untertitel, rechts die Legende in Spalten */
   const ux = kv.x, zy = kv.y + kv.h + (E.feder ? d : 0) + g.rand * 0.4, uy = kv.y + kv.h + (E.feder ? d : 0) + g.rand * 0.5 + g.zeitH, rechts = kv.x + kv.w;
-  let kopf = `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T).toFixed(2)}" font-size="${g.T.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(E.kopfTitel || '')}</text>`
+  let kopf = E.schild ? '' : `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T).toFixed(2)}" font-size="${g.T.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(E.kopfTitel || '')}</text>`
     + `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T * 1.25 + g.U * 1.25).toFixed(2)}" font-size="${g.U.toFixed(2)}" fill="${leise}">${esc2(E.kopfUnter || '')}</text>`;
   /* Legende rechts im Schild, in Spalten von oben nach unten. Gesetzt wird in zwei Schritten: erst ins Bild,
      dann die wirkliche Textlaenge gemessen und die Spalten von rechts her ausgerichtet (legendeSetzen) - eine
      Leinwand misst mit einer anderen Schrift als das SVG (gesehen: 22 % zu schmal, die Spalten ueberlappten). */
   let legende = null;
-  if (E.legende){
+  if (E.legende && !E.schild){
     const eintraege = legendenEintraege(), L = g.L, q = L * 0.95, zeileH = L * 1.75;
     const hoehe = Math.max(zeileH, g.verz ? g.schildH : g.h + BESCHNITT - g.rand * 0.6 - uy);
     const proSpalte = Math.max(1, Math.floor(hoehe / zeileH));
@@ -224,8 +248,8 @@ async function bauen(g){
   }
   if (g.zeitH) kopf += zeitleisteSetzen(aktuell.j.zeilen, la.farbeVon, ux, rechts, zy, g.zeitH * 0.8, fg, leise, g.kurz, wandFugen(g));
   /* Edition im unteren Rand: unter dem Inhalt, aber sicher innerhalb des Beschnitts */
-  if (E.edition) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
-  if (E.areale && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
+  if (E.edition && !E.schild) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
+  if (E.areale && !E.schild && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
   /* Triptychon: die Wandfugen in der Vorschau abgedunkelt, mit Schnittlinien - im PDF fallen sie ohnehin weg */
   if (g.tri) for (let j = 1; j < 3; j++){ const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge;
@@ -356,9 +380,12 @@ function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz, 
 }
 /* EDITION UND SIGNATUR (angekreuzt): rechts unten klein „Auflage · Datum · Name", davor eine Haarlinie zum
    Signieren von Hand. Der Name kommt aus dem Profil; die Auflage ist ein Feld (Vorgabe 1/1). */
-function editionSetzen(g, rechts, y, fg, leise){
+function editionText(){
   const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
-  const text = [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), p.display_name || p.handle || ''].filter(Boolean).join(' · ');
+  return [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), p.display_name || p.handle || ''].filter(Boolean).join(' · ');
+}
+function editionSetzen(g, rechts, y, fg, leise){
+  const text = editionText();
   const fs = Math.min(g.rand * 0.18, 0.0062 * g.kurz), tw = messen(text, 400, fs) * fs, linie = 0.16 * g.w, x1 = rechts - tw - fs * 1.4, f2 = (v) => v.toFixed(2);
   return `<text x="${f2(rechts)}" y="${f2(y)}" font-size="${f2(fs)}" fill="${leise}" text-anchor="end">${esc2(text)}</text>`
     + `<line x1="${f2(x1 - linie)}" y1="${f2(y + fs * 0.15)}" x2="${f2(x1)}" y2="${f2(y + fs * 0.15)}" stroke="${fg}" stroke-opacity="0.7" stroke-width="${f2(g.kurz / 2800)}"/>`;

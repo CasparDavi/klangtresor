@@ -8460,3 +8460,30 @@ sauber eingecheckt, Stand in Treemapper/CHANGELOG.md und ~/Prophane/PROPHANE.md.
 deutsche Namen) ist NICHT auf den foam-lab-Stand gebracht – das gehört in die Treemapper-Sitzung.
 Wiedervorlage KlangTresor (Caspar_D entscheidet): Säume in der Bedienoberfläche („läuft gerade" über der Klangkarte, Zahlen im
 Karten-Steckbrief, Etikett der Quellkacheln im Studio) – Vorschlag Kontrastwahl; Brainstorms (§81).
+
+## 84. 07.10.2026 abends: Plakat „Randlos" mit Schild in der Ecke (1.0.57)
+
+Caspar_D (Brainstorm → Entscheidungen): randlose Variante, in der Ecke unten rechts eine Zelle mit Avatar, Titel, Name, Legende.
+Verlauf der Klärung: Schild = eigene Zelle der OBERSTEN Ebene (kein Reißverschluss, keine Unterzellen-Wände – „level 2 zellen
+fressen aus level 1"), 120° am Knoten mit den Arealen („120° sieht viel besser aus"), konvex, „nahezu ein Rectangle"; Format halten
+durch Suche über Startpunkte: „Zielfunktion ist gleiches Format wie das Plakat", „0,5 Sekunden" (Werkstatt-Versuche:
+80 Startlagen → 10 Endlagen, Format 0,63–1,36, Füllung 0,90–0,93, immer 2 Areal-Nachbarn).
+Gebaut (noch nicht eingecheckt in main):
+- `web/klangschaum/schild.js`: `schildSaat(rows, tree, layout, {name, ziel, ms, minX})` legt 0,5 s lang nur die oberste Ebene
+  (maxDepth 0) mit Zufallsstartpunkten (erster Kandidat: Klangraum), wertet `schildWert` (in der Ecke unten rechts, |log(Format/Ziel)|
+  + 0,5·(1−Füllung)); gibt die STARTpunkte des besten Laufs weiter (mit den Mitten der Endlage entspannte der volle Lauf im
+  Querformat woanders hin: 1,14 statt 1,47) und verschiebt die Klangraum-Punkte darunter vor; ohne `seeds['']` (Wurzelversatz).
+  Falle: buildTree macht trim() – Schildname daher `'⁣Schild'` (U+2063 bleibt), nicht U+2009.
+- `worker.js`: führt die Suche aus, wenn die Nachricht `schild` trägt; `summary.schild`.
+- `index.html`: `SCHILD_NAME/SCHILD_ID`, `schildAuftrag(j, {ziel, minX, anteil})` (Zeile + Lage-Schlüssel + j.schild),
+  `schaumLageHolen` reicht `schild` weiter; in `schaumSvgBauen` kein Cover/keine Nummer/kein Arealname fürs Schild,
+  `schildZelle` (Avatar /avatar mit data-voll fürs PDF, Glasfeld, Titel, Zeile, Legende, Edition linksbündig in der engsten
+  Breite); ALTER FEHLER behoben: Glasfilter `skglas` fehlte im Druck (Glas ohne Weichzeichnung).
+- `plakat.js`: Vorlage `randlos` (schild:true, rand 0, ohne Feder/Areale/Verzeichnis/Zeitleiste), andere Vorlagen schild:false;
+  `geometrie` randlos = ganze Seite samt Beschnitt; `schildVorgabe(g)` (Ziel = Kartenformat, Triptychon: Tafelformat, minX
+  rechts der letzten Fuge, 12 % einer Tafel); `auftragMitSchild`; `editionText()`.
+Probe (Sandkasten): 50×70 randlos – Schild in der Ecke, Format 0,73 (Ziel 0,70), 7 Textzeilen; Schraffur weg (alle Ebenen des
+Schilds benannt), Zeile gekürzt (Plakat misst in der kleineren von Druck- und Vorschaugröße); Triptychon 3×50×70 – Schild auf der
+rechten Tafel, keine Fuge, Format 0,96 statt Tafelziel 0,71 (klein, 4 % der Fläche) – offen. Keine Konsolenfehler. Ausgeliefert 1.0.57.
+Offen: PDF mit echtem Druck prüfen (Avatar über druckBilder), Triptychon-Format, Glas am Schild evtl. dunkler (die Signatur im
+Avatar scheint durch).
