@@ -1389,13 +1389,16 @@ open -a Terminal ${JSON.stringify(starter)}
     const paketeDa = fs.existsSync(path.join(WURZEL, 'node_modules', 'onnxruntime-node'));
     zeile('pakete', 'Pakete: Programmbausteine des Servers', paketeDa ? 'sind da' : 'fehlen, werden geholt (19 Pakete, rund 240 MB)', paketeDa ? 'fertig' : 'laeuft');
 
-    let mDa = 0; try { mDa = fs.readdirSync(path.join(WURZEL, 'library', 'modelle')).filter((f) => !f.startsWith('.')).length; } catch (e) {}
+    /* Die Zahl der Modelle kommt aus bin/modelle-holen.js selbst (07.10.2026): hier stand fest
+       "13 von 13", waehrend die Liste laengst 15 Eintraege hatte - die Seite meldete fertig,
+       obwohl SCRFD und PP-OCRv3 fehlten. */
+    const { da: mDa, von: mVon } = require('./modelle-holen.js').bestand();
     const mLager = !mDa && lagerHat('modelle');
-    if (mDa >= 13) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', '13 von 13 sind da');
+    if (mDa >= mVon) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', `${mDa} von ${mVon} sind da`);
     else if (mLager) zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', 'liegen auf diesem Rechner, werden kopiert (rund 1,2 GB)', 'laeuft');
-    else zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', `${mDa} von 13 — der Rest wird geholt (rund 1,2 GB)`, 'laeuft');
+    else zeile('modelle', 'KI-Modelle für Klang, Text und Tiefe', `${mDa} von ${mVon} — der Rest wird geholt (rund 1,2 GB)`, 'laeuft');
 
-    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= 13 || mLager ? 0 : 1200);
+    const zuHolen = (ffDa || ffLager || process.platform !== 'win32' ? 0 : 100) + (paketeDa ? 0 : 240) + (mDa >= mVon || mLager ? 0 : 1200);
     if (zuHolen) zeile('summe', 'Zu holen', `rund ${zuHolen} MB — ein paar Minuten bis etwa eine halbe Stunde, je nach Leitung`, 'laeuft');
     else zeile('summe', 'Zu holen', 'nichts — alles liegt schon hier');
   }
@@ -1582,7 +1585,7 @@ open -a Terminal ${JSON.stringify(starter)}
   } else { gut('Pakete sind da.'); zeile('pakete', 'Pakete', '19 Pakete geholt'); }
 
   /* ================================================================ */
-  schritt('KI-Modelle', 'KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — 13 Dateien, rund 1,2 GB',
+  schritt('KI-Modelle', `KI-Modelle: Stemtrennung, Musikstil, Textverständnis und Tiefe — ${require('./modelle-holen.js').DATEIEN.length} Dateien, rund 1,2 GB`,
     'Sie rechnen später bei dir, auf deinem Rechner: nichts davon verlässt ihn dafür. Geholt wird ' +
     'einmal; auf diesem Rechner Gefundenes wird kopiert statt geladen. Drei Gruppen: Musikstil ' +
     '(hört heraus, wonach ein Stück klingt — Genre, Stimmung, Instrumente), Stemtrennung (zerlegt ' +
@@ -1596,7 +1599,10 @@ open -a Terminal ${JSON.stringify(starter)}
     const w = await wieWeiter('Modelle holen', 'Ohne sie fehlen Stemtrennung und Musikstil — sonst nichts.');
     if (w === 'schluss') { wiederkommen(); schluss(0); }
     if (w === 'wieder') await laeuft(process.execPath, [path.join('bin', 'modelle-holen.js')]);
-  } else { gut('Modelle sind da.'); zeile('modelle', 'KI-Modelle', '13 von 13 sind da'); insLager('modelle', modelle); }
+  } else {
+    const { da, von } = require('./modelle-holen.js').bestand();
+    gut('Modelle sind da.'); zeile('modelle', 'KI-Modelle', `${da} von ${von} sind da`, da >= von ? 'fertig' : 'wink'); insLager('modelle', modelle);
+  }
 
   /* ================================================================
      AB HIER WIRD ERKLAERT, NICHT NUR GEMACHT.

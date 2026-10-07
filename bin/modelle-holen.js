@@ -32,6 +32,14 @@
  *
  * Vorhandene Dateien werden uebersprungen; eine kaputte (zu kleine) wird
  * neu geholt.
+ *
+ *   node bin/modelle-holen.js --nur scrfd_500m.onnx,text_detection_en_ppocrv3_2023may.onnx
+ *
+ * holt nur die genannten Eintraege (07.10.2026, Tarja: in bestehenden
+ * Installationen und im Docker kamen neue Modelle nie an - der Entrypoint
+ * holt nur beim ersten Start, die Einrichtung nur einmal, der Morgenlauf
+ * gar nicht). So kann ein Schritt, der ein Modell braucht, sich genau
+ * dieses nachholen, statt 1,2 GB anzustossen.
  */
 'use strict';
 const fs = require('node:fs');
@@ -104,6 +112,21 @@ const DATEIEN = [
   ['paraphrase-multilingual-mpnet-tokenizer.json',
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/tokenizer.json', 10000000],
 ];
+
+/* --nur a,b: nur diese Eintraege aus DATEIEN. Ein unbekannter Name ist
+   ein Tippfehler im Aufrufer und wird genannt, nicht still uebergangen. */
+const NUR = (() => {
+  const i = process.argv.indexOf('--nur');
+  return i >= 0 ? String(process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean) : null;
+})();
+const LISTE = NUR ? DATEIEN.filter(([n]) => NUR.includes(n)) : DATEIEN;
+
+/* Wie viele Modelle vollstaendig daliegen - dieselbe Zaehlung fuer die
+   Schlusszeile hier und fuer bin/einrichten.js. */
+function bestand() {
+  const da = DATEIEN.filter(([n, , m]) => { try { return fs.statSync(path.join(ZIEL, n)).size >= m; } catch (e) { return false; } }).length;
+  return { da, von: DATEIEN.length };
+}
 
 /* Holen mit Rueckfall (22.08.2026, Tarja unter Windows: "fetch failed"):
    1. Nodes fetch (drei Versuche, die Ursache wird genannt - DNS, TLS, Proxy),
@@ -184,7 +207,7 @@ async function perFetch(url, mindestens) {
           /* Die Seite bekommt die Zahlen immer: diese Datei und die
              Summe ueber alle. GEHOLT_VORHER ist, was vor dieser Datei
              schon lag - sonst spraenge der Gesamtbalken zurueck. */
-          melden.lauf({ was: NAME_JETZT + ' wird geladen', n: NUMMER_JETZT, von: DATEIEN.length,
+          melden.lauf({ was: NAME_JETZT + ' wird geladen', n: NUMMER_JETZT, von: LISTE.length,
             nEinheit: 'Datei', quelle: 'von huggingface.co',
             bytes: GEHOLT_VORHER + n, gesamt: SOLL_GESAMT, jetzt: mb(n) + (ganz ? ' von ' + mb(ganz) : '') });
         }
@@ -226,15 +249,20 @@ function perCurl(url, f, mindestens) {
   return { n };
 }
 
+/* Als Baustein (bin/einrichten.js) nur die Zaehlung, kein Holen. */
+if (require.main !== module) { module.exports = { bestand, DATEIEN }; return; }
+
 (async () => {
+  const unbekannt = NUR ? NUR.filter(n => !DATEIEN.some(([d]) => d === n)) : [];
+  if (unbekannt.length) { console.error(`  Unbekanntes Modell: ${unbekannt.join(', ')}`); process.exit(2); }
   fs.mkdirSync(ZIEL, { recursive: true });
   let geholt = 0; const offen = [];
-  SOLL_GESAMT = DATEIEN.reduce((s, [, , m]) => s + m, 0);
-  for (const [name, url, mindestens, zipEintrag] of DATEIEN) {
+  SOLL_GESAMT = LISTE.reduce((s, [, , m]) => s + m, 0);
+  for (const [name, url, mindestens, zipEintrag] of LISTE) {
     NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
     if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
-    melden.lauf({ was: name + ' wird geladen', n: NUMMER_JETZT, von: DATEIEN.length,
+    melden.lauf({ was: name + ' wird geladen', n: NUMMER_JETZT, von: LISTE.length,
       nEinheit: 'Datei', quelle: 'von huggingface.co', bytes: GEHOLT_VORHER, gesamt: SOLL_GESAMT });
     NAME_JETZT = name;
     process.stdout.write(`  hole       ${name} … `);
@@ -257,10 +285,12 @@ function perCurl(url, f, mindestens) {
     if (b.n) { geholt++; GEHOLT_VORHER += b.n; console.log(mb(b.n)); continue; }
     console.log(`FEHLER (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }
-  const da = DATEIEN.filter(([n, , m]) => fs.existsSync(path.join(ZIEL, n)) && fs.statSync(path.join(ZIEL, n)).size >= m).length;
+  /* Die Schlusszeile zaehlt immer alle - auch nach --nur ist das der
+     Stand, den die Einrichtungsseite zeigen soll. */
+  const { da, von } = bestand();
   melden.ausLauf();
-  melden.zeile('modelle', 'KI-Modelle', `${da} von ${DATEIEN.length} sind da`, da === DATEIEN.length ? 'fertig' : 'wink');
-  console.log(`  Modelle: ${geholt} geholt, ${da} von ${DATEIEN.length} vorhanden → library/modelle/`);
+  melden.zeile('modelle', 'KI-Modelle', `${da} von ${von} sind da`, da === von ? 'fertig' : 'wink');
+  console.log(`  Modelle: ${geholt} geholt${NUR ? ` (angefragt: ${LISTE.length})` : ''}, ${da} von ${von} vorhanden → library/modelle/`);
   if (offen.length) {
     console.log(`\n  ${offen.length} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach\n    ${ZIEL}\n  mit genau diesem Dateinamen:`);
     for (const [n, u] of offen) { const z = (DATEIEN.find(d => d[0] === n) || [])[3];

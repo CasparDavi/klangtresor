@@ -61,7 +61,8 @@ const SCHWELLE = 0.5;                /* der gemessene Punkt: 22 von 23 Hauptgesi
 const TS = 736;                      /* Eingabe des Texterkenners */
 const AUSWEIS = { modell: 'scrfd-500m', fassung: 'buffalo_sc det_500m (InsightFace v0.7)', eingabe: S + '×' + S + ' eingepasst', ab: AB,
                   schwelle: SCHWELLE, lizenz: 'nur nichtkommerziell (InsightFace)',
-                  schrift: fs.existsSync(TEXTMODELL) ? 'ppocrv3-en 2023may, ' + TS + ', Schwelle 0,3 (Apache 2.0)' : null };
+                  schrift: null };   /* wird nach dem Nachholen gesetzt, siehe unten */
+const SCHRIFTAUSWEIS = 'ppocrv3-en 2023may, ' + TS + ', Schwelle 0,3 (Apache 2.0)';
 const MODELLIDENT = (a) => JSON.stringify([a && a.modell, a && a.fassung, a && a.eingabe, a && a.ab, a && a.schrift]);
 
 const NEU  = process.argv.includes('--neu');
@@ -164,6 +165,17 @@ function buchSchreiben(buch) {
 }
 
 (async () => {
+  /* FEHLENDE MODELLE NACHHOLEN (07.10.2026). Tarja: in bestehenden
+     Installationen und im Docker kamen die beiden neuen Modelle nie an -
+     der Docker-Entrypoint holt nur beim ersten Start, bin/einrichten.js nur
+     bei der Einrichtung, der Morgenlauf gar nicht. Beide zusammen rund
+     5 MB, also Sekunden; scheitert es, gilt die Meldung darunter. */
+  const fehlen = [MODELL, TEXTMODELL].filter(f => !fs.existsSync(f)).map(f => path.basename(f));
+  if (fehlen.length) {
+    console.log(`Gesichter — hole fehlende Modelle: ${fehlen.join(', ')}`);
+    spawnSync(process.execPath, [path.join(__dirname, 'modelle-holen.js'), '--nur', fehlen.join(',')], { stdio: 'inherit' });
+  }
+  AUSWEIS.schrift = fs.existsSync(TEXTMODELL) ? SCHRIFTAUSWEIS : null;
   if (!fs.existsSync(MODELL)) {
     console.log(`Gesichter — das Modell fehlt: ${path.relative(WURZEL, MODELL)}`);
     console.log('  Einmal nachholen mit:  node bin/modelle-holen.js\n');
