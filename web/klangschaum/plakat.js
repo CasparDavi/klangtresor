@@ -44,7 +44,7 @@ const VORLAGEN = [
    Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 ist die Ecke der Grund der Seite; darin Avatar, Legende und Text, bündig
    zur gewählten Ecke (eckeSetzen; Größe und Form sucht schild.js). */
 VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
-  e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true } });
+  e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, randVorne: 15, umschlag: 0 } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
 
@@ -93,9 +93,24 @@ function geometrie(n = 0){
     const fuge = Math.round(0.06 * pw); tri = { pw, ph, fuge }; w = 3 * pw + 2 * fuge; h = ph; kurz = Math.min(pw, ph); }   /* Schrift wie auf einem Rahmen */
   const rand = E.rand * kurz;
   const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
-  /* randlos: die Karte ist die ganze Seite samt Beschnitt */
-  if (E.schild) return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand: 0, unten: 0, T, U, L, karte: { x: 0, y: 0, w: w + 2 * BESCHNITT, h: h + 2 * BESCHNITT },
-    schildH: 0, verz: null, zeitH: 0, tri, schild: true, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
+  /* randlos: die Karte ist die ganze Seite samt Beschnitt. MIT RAND (1.0.60, Caspar_D: „kann man bei randlos doch einen Rand
+     einfügen, der aber einen Farbverlauf trägt entsprechend der Areale" – „die breite will ich einstellen können" – „dann kann man
+     ihn ggf sogar umschlagen, wenn man das bild irgendwo aufzieht" – „und was mach ich, wenn ich beides will"): zwei Regler, je 0 =
+     aus. „Rand vorne" liegt innerhalb des Formats (der Schaum rückt nach innen), „Umschlag" kommt außen dazu (Tiefe des Keilrahmens
+     plus Tackerzugabe; das Druckformat wächst, vorne bleibt das gewählte Format). Nicht im Triptychon (jede Tafel bräuchte ihren
+     eigenen Rand), Umschlag nicht bei Bildformaten (keine Kante zum Umschlagen). */
+  if (E.schild){
+    /* Rand vorne höchstens so breit, dass die Karte 40 % der kurzen Seite behält (freies Format ab 10 cm, Regler bis 6 cm:
+       sonst Karte ≤ 0 und ein unbrauchbares Seitenverhältnis - Fallensuche 1.0.60) */
+    const randV = tri ? 0 : Math.min(Math.max(0, E.randVorne ?? 15), 0.3 * Math.min(w, h)), umschlag = tri || f.bild ? 0 : Math.max(0, +E.umschlag || 0);
+    const PW = w + 2 * umschlag + 2 * BESCHNITT, PH = h + 2 * umschlag + 2 * BESCHNITT, tiefe = BESCHNITT + umschlag + randV;
+    /* nur Umschlag: der Schaum reicht 2 mm über die Falz, darunter liegt die Farbe - ein schief aufgezogenes Bild zeigt keinen Streifen */
+    const karte = !(randV || umschlag) ? { x: 0, y: 0, w: PW, h: PH } : randV ? { x: tiefe, y: tiefe, w: PW - 2 * tiefe, h: PH - 2 * tiefe }
+      : { x: tiefe - 2, y: tiefe - 2, w: PW - 2 * tiefe + 4, h: PH - 2 * tiefe + 4 };
+    return { w, h, PW, PH, kurz, rand: 0, unten: 0, T, U, L, karte, vorne: { x: BESCHNITT + umschlag, y: BESCHNITT + umschlag, w, h },
+      randKante: randV || umschlag ? { tiefe, randV, umschlag, luecke: randV > 0 } : null,
+      schildH: 0, verz: null, zeitH: 0, tri, schild: true, name: (f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '')) + (umschlag ? `+${umschlag / 10}cm` : '') };
+  }
   const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
   /* So viele Arealkoepfe, wie die Legende des Schaums Zeilen hat - vorher pauschal sechs, das liess unter der Liste Platz frei */
   const listeStrecken = (x0, breite, fug) => fug.length ? freieStrecken(x0, x0 + breite, fug).map(([a, b]) => [a - x0, b - a]) : null;
@@ -159,8 +174,10 @@ function eckTeile(g, pxJeMm = null){
    Buchstabe im Titelfeld den Schaum neu; gesetzt wird ungerundet. */
 function schildVorgabe(g, W, H, runden = true, pxJeMm = null){
   const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2, oy = kv.y + (kv.h - H * k) / 2;
-  const ecke = eckeJetzt(), abstand = 0.04 * g.kurz, xu = (x) => (x - ox) / k, yu = (y) => H - (y - oy) / k;
-  const rahmen = { x0: xu(BESCHNITT + abstand), x1: xu(BESCHNITT + g.w - abstand), y0: yu(BESCHNITT + g.h - abstand), y1: yu(BESCHNITT + abstand) };
+  /* Abstand von der Vorderseite (bei Umschlag die Falz), mit Rand vorne von dessen Innenkante - Avatar und Text nie auf dem Rand */
+  const vo = g.vorne || { x: BESCHNITT, y: BESCHNITT, w: g.w, h: g.h }, randV = g.randKante ? g.randKante.randV : 0;
+  const ecke = eckeJetzt(), abstand = (randV ? 0.03 : 0.04) * g.kurz + randV, xu = (x) => (x - ox) / k, yu = (y) => H - (y - oy) / k;
+  const rahmen = { x0: xu(vo.x + abstand), x1: xu(vo.x + vo.w - abstand), y0: yu(vo.y + vo.h - abstand), y1: yu(vo.y + abstand) };
   const teile = eckTeile(g, pxJeMm), q = 0.03 * W;
   const block = teile.map(t => t.typ === 'kreis' ? { typ: 'kreis', d: t.d / k } : t.typ === 'luecke' ? { typ: 'luecke', h: t.h / k }
     : { typ: t.typ, w: runden ? Math.ceil(t.w / k / q) * q : t.w / k, h: t.h / k });
@@ -214,6 +231,84 @@ function eckeSetzen(g, fg, leise){
   });
   return out;
 }
+/* DER RAND (1.0.60): Farbe je mm des Umlaufs aus dem Areal, das dort an den Schaum stößt. An der Ecke mit Avatar und Text läuft er
+   als Hauch weiter - weiße Kreide/Farbe mit sehr geringer Deckung auf dunklem Grund, ein schwacher dunkler Hauch auf hellem (Caspar_D:
+   „sollte man bei der Ecke nicht ein wenig mit weiss einen Rahmen andeuten, sehr geringe Deckung natürlich, sonst wirkt das wie ein
+   schwarzes Loch"); die Deckung ist der vierte Wert der Farbe. Gemalt wird in einem Worker (rand-worker.js, Malweisen in rand.js), in der Vorschau
+   grob, fürs PDF fein (8 Punkte je mm, rund 200 dpi). Die vier Streifen liegen unter dem Schaum. */
+const WEISEN_HELL = [['nass', 'Nass in Nass'], ['flecken', 'Flecken und Blüten'], ['alles', 'Alles zusammen']];
+const WEISEN_DUNKEL = [['pastell', 'Pastellkreide'], ['verwischt', 'Kreide verwischt'], ['trocken', 'Gouache, trockener Pinsel']];
+const weiseHell = () => WEISEN_HELL.some(w => w[0] === E.weiseHell) ? E.weiseHell : 'nass';
+const weiseDunkel = () => WEISEN_DUNKEL.some(w => w[0] === E.weiseDunkel) ? E.weiseDunkel : 'pastell';
+const textHash = (t) => { let h = 2166136261; for (let i = 0; i < t.length; i++){ h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+const farbWert = (() => { let c = null; return (f) => { if (!f) return null; c = c || document.createElement('canvas').getContext('2d');
+  c.fillStyle = '#000'; c.fillStyle = f; const v = c.fillStyle; if (v[0] === '#') return [1, 3, 5].map(i => parseInt(v.slice(i, i + 2), 16));
+  const m = v.match(/[\d.]+/g); return m ? m.slice(0, 3).map(Number) : null; }; })();
+function imUmriss(p, o){ let c = false; for (let i = 0, j = o.length - 1; i < o.length; j = i++){ const a = o[i], b = o[j];
+  if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; }
+/* Die Farbe je Areal so, wie das Plakat es zeichnet (areale aus schaumSvgBauen, in bauen gemerkt): gezoomt die Farbe der Zellen,
+   „ohne …" wie seine Zellen - farbeVon allein kannte nur die oberen Gruppen, gezoomt blieb der Rand farblos (Fallensuche 1.0.60) */
+let randArealFarben = new Map();
+function randFarben(g, res, farbeVon){
+  const hauch = hellerGrund() ? [40, 40, 44, 0.1] : [255, 255, 255, 0.12];
+  const farbeNach = (name) => farbWert(randArealFarben.get(name) || (farbeVon && farbeVon(name)) || null);
+  const kv = g.karte, W = res.width, H = res.height, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2, oy = kv.y + (kv.h - H * k) / 2;
+  const knoten = (res.nodes || []).filter(n => n.depth === 0 && n.outline && n.outline.length > 2).map(n => { const xs = n.outline.map(p => p[0]), ys = n.outline.map(p => p[1]);
+    return { o: n.outline, farbe: n.name === SCHILD_NAME ? hauch : farbeNach(n.name), b: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)] }; });
+  const L = Math.round(2 * (g.PW + g.PH)), farben = new Array(L).fill(null);
+  const fx0 = Math.max(kv.x, ox) + 1.5, fx1 = Math.min(kv.x + kv.w, ox + W * k) - 1.5, fy0 = Math.max(kv.y, oy) + 1.5, fy1 = Math.min(kv.y + kv.h, oy + H * k) - 1.5;
+  for (let s = 0; s < L; s++){
+    let t = s + 0.5, x, y;
+    if (t < g.PW){ x = t; y = 0; } else if ((t -= g.PW) < g.PH){ x = g.PW; y = t; } else if ((t -= g.PH) < g.PW){ x = g.PW - t; y = g.PH; } else { t -= g.PW; x = 0; y = g.PH - t; }
+    const u = (Math.min(fx1, Math.max(fx0, x)) - ox) / k, v = H - (Math.min(fy1, Math.max(fy0, y)) - oy) / k;   /* die Kante auf den Schaum geklemmt */
+    const q = knoten.find(q => u >= q.b[0] && u <= q.b[2] && v >= q.b[1] && v <= q.b[3] && imUmriss([u, v], q.o));
+    farben[s] = q ? q.farbe : null;
+  }
+  return farben;
+}
+function randAuftrag(g, farbeVon, pxJeMm){
+  const rk = g.randKante;
+  return { PW: g.PW, PH: g.PH, tiefe: rk.tiefe, luecke: rk.luecke, farben: randFarben(g, aktuell.res, farbeVon), grund: farbWert(E.grund) || [12, 13, 16],
+           weise: hellerGrund() ? weiseHell() : weiseDunkel(), saat: textHash(aktuell.j.lage) % 1000003, pxJeMm };
+}
+/* Zwei Worker: einer für die Vorschau (ein neuer Auftrag beendet den laufenden - nur der neueste zählt), einer fürs PDF und das
+   Bild (läuft ungestört zu Ende). Vorher teilten sich beide einen, überholte Vorschauen stauten sich (Fallensuche 1.0.60). */
+const randLaeufer = {};
+function randRechnen(auftrag, melde, art = 'druck'){
+  const l = randLaeufer[art] || (randLaeufer[art] = { worker: null, nr: 0, warte: new Map() });
+  if (art === 'vorschau' && l.worker && l.warte.size){ l.worker.terminate(); for (const w of l.warte.values()) w.nein(new Error('überholt')); l.warte.clear(); l.worker = null; }
+  if (!l.worker){ const wk = l.worker = new Worker(new URL('./rand-worker.js', import.meta.url), { type: 'module' });
+    wk.onmessage = (ev) => { const d = ev.data, w = l.warte.get(d.id); if (!w) return;
+      if (d.fortschritt != null && !d.streifen){ if (w.melde) w.melde(d.fortschritt); return; }
+      l.warte.delete(d.id); if (d.fehler) w.nein(new Error(d.fehler)); else w.ok(d.streifen.filter(x => x.blob)); };   /* leere Streifen (blob null) fallen weg */
+    wk.onerror = (ev) => { for (const w of l.warte.values()) w.nein(new Error(ev.message || 'Rand')); l.warte.clear(); if (l.worker === wk) l.worker = null; }; }
+  const id = ++l.nr, wk = l.worker;
+  return new Promise((ok, nein) => { l.warte.set(id, { ok, nein, melde }); wk.postMessage({ id, auftrag, teile: ['oben', 'rechts', 'unten', 'links'] }); });
+}
+const randBilder = (streifen, adressen) => streifen.map((x, i) => `<image class="ps-rand" href="${adressen[i]}" x="${x.x.toFixed(2)}" y="${x.y.toFixed(2)}" width="${x.w.toFixed(2)}" height="${x.h.toFixed(2)}" preserveAspectRatio="none"/>`).join('');
+const randVorrat = new Map(), randLaeuft = new Map(); let randAngezeigt = null;
+/* Vorschau: grob (bis 3 Punkte je mm), gemerkt nach Auftrag (zuletzt benutzt bleibt, der angezeigte wird nie verdrängt); derselbe
+   Auftrag zweimal wartet auf denselben Lauf; erscheint, sobald gemalt, unter dem Schaum */
+async function randSetzen(g, la, lauf){
+  const blatt = el('ps-blatt'), px = Math.min(3, Math.max(1, (blatt.clientWidth || 800) * (window.devicePixelRatio || 1) / g.PW));
+  const a = randAuftrag(g, la && la.farbeVon, Math.round(px * 2) / 2);
+  const schl = [a.PW, a.PH, a.tiefe, a.luecke, a.weise, a.grund.join(','), a.saat, a.pxJeMm, textHash(JSON.stringify(a.farben))].join('|');
+  let fertig = randVorrat.get(schl);
+  if (fertig){ randVorrat.delete(schl); randVorrat.set(schl, fertig); }
+  else {
+    let p = randLaeuft.get(schl);
+    if (!p){ p = randRechnen(a, null, 'vorschau').then(st => ({ st, url: st.map(x => URL.createObjectURL(x.blob)) })); randLaeuft.set(schl, p);
+      p.then(() => randLaeuft.delete(schl), () => randLaeuft.delete(schl)); }
+    try { fertig = await p; } catch (e){ if (!/überholt/.test(e.message)) console.log('Plakat, Rand:', e); return; }
+    if (randVorrat.has(schl)){ fertig.url.forEach(u => URL.revokeObjectURL(u)); fertig = randVorrat.get(schl); }
+    else { randVorrat.set(schl, fertig);
+      for (const [k0, alt] of randVorrat){ if (randVorrat.size <= 6) break; if (k0 === randAngezeigt || k0 === schl) continue; randVorrat.delete(k0); alt.url.forEach(u => URL.revokeObjectURL(u)); } }
+  }
+  if (lauf !== bauLauf) return;
+  const ziel = blatt.querySelector('svg.ps-seite g.ps-randbild'); if (ziel){ ziel.innerHTML = randBilder(fertig.st, fertig.url); randAngezeigt = schl; }
+}
+let druckRandAdressen = [];
+
 /* Genitiv eines Namens ohne Deppenapostroph (Caspar_D: „uhä, ein Deppenapostroph … natürlich ohne Apostroph"): „Caspar_Ds";
    endet der Name auf s, ß, x, z oder ce, nur der Apostroph („Klaus’") - so die Rechtschreibung. */
 const genitiv = (n) => /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';
@@ -324,6 +419,7 @@ async function bauen(g){
   standSetzen('');
   let { svg, verzeichnis, areale } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
   if (lauf !== bauLauf) return;
+  if (areale) randArealFarben = new Map(areale.map(a => [a.name, a.farbe]));
   svg = svg.replace('<rect width="100%" height="100%" fill="#121417"/>', '')
            .replace('<svg ', `<svg class="ps-schaum" x="${kv.x.toFixed(2)}" y="${kv.y.toFixed(2)}" width="${kv.w.toFixed(2)}" height="${kv.h.toFixed(2)}" `);
   svg = eigeneIds(svg, 'ps-');
@@ -360,10 +456,12 @@ async function bauen(g){
   if (g.tri) for (let j = 1; j < 3; j++){ const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge;
     kopf += `<rect class="ps-trifuge" x="${fx.toFixed(2)}" y="0" width="${g.tri.fuge.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="#08090b" fill-opacity="0.9"/>`; }
   const seite = `<svg class="ps-seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${g.PW.toFixed(2)} ${g.PH.toFixed(2)}" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`
-    + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + feder + svg + kopf
-    + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${g.w}" height="${g.h}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/></svg>`;
+    + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + (g.randKante ? '<g class="ps-randbild"></g>' : '') + feder + svg + kopf
+    + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${(g.PW - 2 * BESCHNITT).toFixed(2)}" height="${(g.PH - 2 * BESCHNITT).toFixed(2)}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/>`
+    + (g.randKante && g.randKante.umschlag ? `<rect class="ps-beschnitt ps-falz" x="${g.vorne.x}" y="${g.vorne.y}" width="${g.w}" height="${g.h}" fill="none" stroke="#c9ced6" stroke-opacity="0.7" stroke-width="${(g.kurz / 1200).toFixed(2)}" stroke-dasharray="${(g.kurz / 300).toFixed(2)} ${(g.kurz / 200).toFixed(2)}"/>` : '') + '</svg>';
   blatt.innerHTML = seite;
   einpassen();
+  if (g.randKante) randSetzen(g, la, lauf);
   if (legende) legendeSetzen(blatt.querySelector('svg.ps-seite'), legende);
   /* Rauchglas je Kopf nach Bedarf, wie am Schirm */
   const schaum = blatt.querySelector('svg.ps-schaum');
@@ -371,6 +469,7 @@ async function bauen(g){
   if (E.titel === 'kante' && schaum && typeof schaumKantenKontrast === 'function') schaumKantenKontrast(schaum, schaumFarbeAnteil / 100);   /* schwarz oder weiss nach dem Grund */
   const fm = FORMATE.find(x => x.id === E.format) || {};
   el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
+    : g.randKante && g.randKante.umschlag ? `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm + ${(g.randKante.umschlag / 10).toLocaleString('de-DE')} cm Umschlag = ${((g.w + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} × ${((g.h + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
 }
 /* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
@@ -603,7 +702,15 @@ async function bildSichern(){
   const kopie = s.cloneNode(true);
   kopie.querySelectorAll('.ps-beschnitt').forEach(n => n.remove());
   kopie.setAttribute('viewBox', `${BESCHNITT} ${BESCHNITT} ${g.w} ${g.h}`); kopie.setAttribute('width', B); kopie.setAttribute('height', H); kopie.removeAttribute('style');
-  const bilder = [...kopie.querySelectorAll('image')], echt = [...s.querySelectorAll('image')], seite = s.getBoundingClientRect(), proPunkt = B / seite.width * (g.PW / g.w);
+  /* der Rand fürs Bild eigens gemalt, in der Auflösung des Bildes (vorher die grobe Vorschau, hochgezogen - Fallensuche 1.0.60) */
+  const randZiel = kopie.querySelector('g.ps-randbild');
+  if (randZiel && g.randKante && aktuell && schaumLetzterAuftrag){
+    standSetzen('Der Rand wird gemalt …');
+    try { const st = await randRechnen(randAuftrag(g, schaumLetzterAuftrag.farbeVon, Math.min(10, Math.ceil(k * 1.5 * 2) / 2)));
+      const daten = await Promise.all(st.map(x => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => ok(null); r.readAsDataURL(x.blob); })));
+      randZiel.innerHTML = randBilder(st, daten); } catch (e){ console.log('Plakat, Rand:', e); }
+  }
+  const bilder = [...kopie.querySelectorAll('image')].filter(i => !i.classList.contains('ps-rand')), echt = [...s.querySelectorAll('image')].filter(i => !i.classList.contains('ps-rand')), seite = s.getBoundingClientRect(), proPunkt = B / seite.width * (g.PW / g.w);
   let n = 0; const cache = new Map();
   const daten = async (u, px) => {
     const schl = u + '|' + px; if (cache.has(schl)) return cache.get(schl);
@@ -638,10 +745,23 @@ async function bildSichern(){
    Rahmen, dann das Druckfenster. Ohne Beschnitt-Hilfslinie. */
 async function pdf(){
   const blatt = el('ps-blatt'), s = blatt && blatt.querySelector('svg.ps-seite'); if (!s) return;
+  const knopf = el('ps-pdf'); if (knopf.disabled) return; knopf.disabled = true;
+  try {
   const g = geometrie(), kopie = s.cloneNode(true);
   kopie.querySelectorAll('.ps-beschnitt').forEach(n => n.remove());
+  /* erst messen (druckBilder liest die Lage der Bilder in der angezeigten Seite), dann warten: ändert man während des Randmalens
+     etwas im Panel, ersetzt bauen die Seite - vorher kamen dann die vollen Originale ins PDF (Fallensuche 1.0.60) */
   standSetzen('Die Bilder werden für den Druck gerechnet …');
   await druckBilder(s, kopie, g);
+  /* der Rand fürs PDF fein gemalt (8 Punkte je mm) - die Vorschau trägt nur die grobe Fassung */
+  const randZiel = kopie.querySelector('g.ps-randbild');
+  if (randZiel && g.randKante && aktuell && schaumLetzterAuftrag){
+    standSetzen('Der Rand wird für den Druck gemalt …');
+    try { const st = await randRechnen(randAuftrag(g, schaumLetzterAuftrag.farbeVon, 8), f => standSetzen(`Der Rand wird für den Druck gemalt … ${Math.round(f * 100)} %`));
+      druckRandAdressen.forEach(u => URL.revokeObjectURL(u)); druckRandAdressen = st.map(x => URL.createObjectURL(x.blob));
+      randZiel.innerHTML = randBilder(st, druckRandAdressen); }
+    catch (e){ console.log('Plakat, Rand:', e); standSetzen('Der Rand ließ sich nicht fein malen – im PDF steht die Vorschau-Fassung.'); await new Promise(ok => setTimeout(ok, 2500)); }
+  }
   kopie.removeAttribute('style');
   kopie.querySelectorAll('.ps-trifuge').forEach(n => n.remove());
   const name = (raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum') + '-' + g.name;
@@ -670,6 +790,7 @@ async function pdf(){
   ]);
   standSetzen('Im Druckfenster „Als PDF sichern“ wählen.');
   w.focus(); w.print();
+  } finally { knopf.disabled = false; }
 }
 
 function felderSetzen(){
@@ -704,6 +825,15 @@ function felderSetzen(){
   grau(el('ps-ecken'), !E.schild, 'Nur bei Randlos: dort stehen Avatar und Titel in einer Ecke.');
   grau(el('ps-schildname'), !E.schild, 'Nur bei Randlos: der Name steht in der Ecke über dem Titel.');
   el('ps-kopfunter').placeholder = E.schild ? 'Zeilen – „/“ bricht um' : 'Untertitel';
+  { const v = E.randVorne ?? 15, u = +E.umschlag || 0, a = el('ps-randvorne'), b = el('ps-umschlag');
+    if (document.activeElement !== a) a.value = v; if (document.activeElement !== b) b.value = u;
+    el('ps-randvorne-w').textContent = (v / 10).toLocaleString('de-DE'); el('ps-umschlag-w').textContent = (u / 10).toLocaleString('de-DE'); }
+  studio.querySelectorAll('[data-weise-hell]').forEach(b => b.classList.toggle('an', b.dataset.weiseHell === weiseHell()));
+  studio.querySelectorAll('[data-weise-dunkel]').forEach(b => b.classList.toggle('an', b.dataset.weiseDunkel === weiseDunkel()));
+  { const fm = FORMATE.find(x => x.id === E.format) || {}, grund = !E.schild ? 'Nur bei Randlos.' : fm.tri ? 'Im Triptychon noch nicht – jede Tafel bräuchte ihren eigenen Rand.' : '';
+    grau(el('ps-randteil'), !!grund, grund);
+    if (!grund){ grau(zeile('ps-umschlag'), !!fm.bild, 'Nur für den Druck – ein Bild hat keine Kante zum Umschlagen.');
+      grau(el('ps-weisen-hell'), !hellerGrund(), 'Aquarell braucht hellen Grund.'); grau(el('ps-weisen-dunkel'), hellerGrund(), 'Kreide und Gouache sind für dunklen Grund.'); } }
 }
 const grundArt = () => E.grund.toLowerCase() === '#0c0d10' || E.grund.toLowerCase() === '#08090b' ? 'schwarz' : E.grund.toLowerCase() === '#f3efe6' || E.grund.toLowerCase() === '#ffffff' || E.grund.toLowerCase() === '#ece7dc' ? 'weiss' : 'farbe';
 function setze(teil, neuLegen, warteMs, nurSetzen){ Object.assign(E, teil); merken(); felderSetzen(); if (neuLegen) aktuell = aktuell && { ...aktuell }; zeichnen(false, warteMs, nurSetzen); }
@@ -760,6 +890,13 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
     <div class="ps-pillen" style="margin:6px 0"><button type="button" class="ps-schalt" id="ps-kissen">Kissen</button><button type="button" class="ps-schalt" id="ps-feder">Federstrich</button></div>
     ${regler('ps-federmm', 'Strichstärke', 0.1, 1, 0.05)}
   </details>
+  <h3>Rand</h3>
+  <div id="ps-randteil">
+    ${regler('ps-randvorne', 'Rand vorne (cm)', 0, 60, 5)}${regler('ps-umschlag', 'Umschlag (cm)', 0, 100, 5)}
+    <div class="ps-pillen" id="ps-weisen-hell" style="margin:6px 0 4px">${WEISEN_HELL.map(([w, n]) => `<button type="button" data-weise-hell="${w}">${n}</button>`).join('')}</div>
+    <div class="ps-pillen" id="ps-weisen-dunkel" style="margin:0 0 4px">${WEISEN_DUNKEL.map(([w, n]) => `<button type="button" data-weise-dunkel="${w}">${n}</button>`).join('')}</div>
+    <p class="ps-leise" style="margin-top:2px">Der Rand nimmt die Farben der Areale an der Kante auf. Umschlag: Tiefe des Keilrahmens plus etwas zum Festtackern – das Druckformat wächst um ihn, vorne bleibt das gewählte Format.</p>
+  </div>
   <h3>Schild</h3>
   <div class="ps-pillen" id="ps-ecken" style="margin-bottom:5px">${[['ol', '↖ oben links'], ['or', '↗ oben rechts'], ['ul', '↙ unten links'], ['ur', '↘ unten rechts']].map(([e, n]) => `<button type="button" data-ecke="${e}">${n}</button>`).join('')}</div>
   <input class="ps-eingabe" id="ps-schildname" placeholder="Name">
@@ -801,6 +938,11 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-vorschlag').onclick = () => { setze({ kopfTitelEigen: false, kopfUnterEigen: false, schildNameEigen: false, kopfTitel: kopfTitelVorschlag(),
     kopfUnter: aktuell ? kopfUnterVorschlag(aktuell) : '', schildName: schildNameVorschlag() }); };
   studio.querySelectorAll('[data-ecke]').forEach(b => b.onclick = () => setze({ ecke: b.dataset.ecke }));
+  /* Rand: Zahl beim Ziehen, neu gelegt beim Loslassen (der Schaum rückt nach innen) */
+  const cm = (id, schl) => { const r = el(id); r.oninput = () => { el(id + '-w').textContent = (r.value / 10).toLocaleString('de-DE'); }; r.onchange = () => setze({ [schl]: +r.value }); };
+  cm('ps-randvorne', 'randVorne'); cm('ps-umschlag', 'umschlag');
+  studio.querySelectorAll('[data-weise-hell]').forEach(b => b.onclick = () => setze({ weiseHell: b.dataset.weiseHell }));
+  studio.querySelectorAll('[data-weise-dunkel]').forEach(b => b.onclick = () => setze({ weiseDunkel: b.dataset.weiseDunkel }));
   el('ps-pdf').onclick = () => pdf();
   el('ps-png').onclick = () => bildSichern();
   el('ps-zu').onclick = schliessen;

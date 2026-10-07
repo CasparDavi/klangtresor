@@ -8540,3 +8540,36 @@ Edition und Signatur); jetzt Pillen (`.ps-schalt`, an = Akzentrahmen, aus gedimm
 Geprüft im Sandkasten (`_werkstatt_bilder/probe-pillen.js`): umschalten, zurück, Randlos grau, 0 Checkboxen, keine Konsolenfehler.
 Rand (nächste Baustelle): statt Schalter zwei Regler „Rand vorne" und „Umschlag" (je 0 = aus); Umschlag = Tiefe des Keilrahmens
 plus Tackerzugabe, das Druckformat wächst um ihn, vorne bleibt das gewählte Format.
+
+## 86. 07./08.10.2026 nachts: Randlos mit gemaltem Rand (1.0.60)
+
+Caspar_D: „kann man bei randlos doch einen Rand einfügen, der aber einen Farbverlauf trägt entsprechend der Areale; der soll aber ein
+bischen chaotisch und nicht zu glatt wirken" · „immer noch nicht realistisch genug" · „die breite will ich einstellen können" ·
+„mach mal ein paar Aquarellsimulationen eines übergangs – sichtbare texturen Pinselstriche spritzer flecken" · „ränder ohne weiss am
+Rand, ein schmales weiss an der map ist okay" · Wahl hell: „Nass in Nass", „Flecken und Blüten", „Alles zusammen"; dunkel:
+„Pastellkreide, Kreide verwischt, Gouache trockner Pinsel" · „ich würde sie aber nur bei Rahmenlos benutzen, dann kann man ihn ggf
+sogar umschlagen" · „und was mach ich, wenn ich beides will" (→ zwei Regler) · „die Hausregeln erlauben keine checkboxes" (→ 1.0.59) ·
+„sollte man bei der Ecke nicht ein wenig mit weiss einen Rahmen andeuten, sehr geringe Deckung natürlich, sonst wirkt das wie ein
+schwarzes Loch".
+Gebaut:
+- `web/klangschaum/rand.js` (Malmaschine, Bauagent nach den Skizzen `_werkstatt_bilder/fotos/aquarell.html`, `dunkel.html`):
+  `randStreifen({PW, PH, tiefe, luecke, farben[mm des Umlaufs: [r,g,b] | [r,g,b,a] | null], grund, weise, saat, pxJeMm, teil})`,
+  analytisch je Pixel in (Umlauf s, Tiefe v), Gehrung an den Seitenecken, Aquarell als Durchlass (Wassersaum, Körnung, Blüten,
+  Flecken, Spritzer, Striche), Kreide auf dem Papierzahn (drei Schraffurlagen, Farbe je Strich), verwischt (Kastenunschärfe
+  stellenweise), Gouache trocken (Borsten in drei Zügen). Deterministisch, Streifen bitgleich an den Stößen (links/rechts 1 px
+  überlappend). `rand-worker.js`: OffscreenCanvas → JPEG-Blob, Fortschritt.
+- `plakat.js`: Regler „Rand vorne" (0–6 cm, innerhalb des Formats, ≤ 30 % der kurzen Seite) und „Umschlag" (0–10 cm, außen dazu,
+  Druckformat wächst; Falz in der Vorschau gestrichelt; Maßzeile „50 × 70 cm + 7 cm Umschlag = 64 × 84 cm"); `geometrie` mit
+  `vorne` und `randKante`; Ecke richtet sich an Vorderseite + Rand aus; Farben je mm aus den Arealen wie das Plakat sie zeichnet
+  (`areale` aus schaumSvgBauen), an der Avatar-Ecke ein Hauch (dunkel Weiß 12 %, hell dunkel 10 %); Malweise je Grund (Pillen,
+  die des anderen Grunds grau); Vorschau grob in eigenem Worker (neuer Auftrag beendet den alten, Vorrat zuletzt benutzt, angezeigter
+  nie verdrängt), PDF fein (8 px/mm, nach druckBilder, Knopf gesperrt solange), PNG eigens in Bildauflösung; Triptychon grau
+  (jede Tafel bräuchte ihren Rand), Umschlag bei Bildformaten grau.
+Geprüft (Sandkasten, `_werkstatt_bilder/probe-rand.js`, `probe-randzeit.js`, `probe-ecke.js`): Rand vorne 1,5 cm, +7 cm Umschlag,
+nur Umschlag, Weiß 3 cm, Triptychon grau; Ecken ur/ol/ul-weiß/3×70×100 quer ohne Text auf Zellen; keine Konsolenfehler. Druckzeit
+70×100 im Browser: Aquarell/Gouache 2,7 s, Pastell 6,0 s, verwischt 7,9 s. Fallensuche: 13 bestätigt, alle behoben (u. a. gezoomter
+Schaum farblos, PDF mit veralteter Seite, Vorschau-Stau, PNG grob, Stufe an der Ecke, Haarlinien), 2 verworfen.
+Wiedervorlage: Rand im Triptychon (je Tafel?); Gouache trocken wirkt in der groben Vorschau glatt (Borsten erst ab ~6 px/mm).
+Nächste Baustellen: Groupieschaum-Regler „untere … % ausblenden" (Gleichstand: zuletzt aktiv bleibt), dann Vorlage „Skizzenbuch"
+(Leonardo; Entwurf in `_werkstatt_bilder/feder/`; Federlinien: Modell Informative Drawings schlägt XDoG bei den Extremen –
+Lizenz der Gewichte unklar, Entscheidung offen).
