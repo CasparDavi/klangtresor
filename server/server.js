@@ -254,7 +254,9 @@ function liefere(req, res, datei) {
      Effekt, der grundlos danebensitzt. Trockentest der Regel (17.09.2026): die sieben Tiefenformen
      werden wandelbar; cover.jpg, titelbild.jpg, artwork.mp4, audio.mp3, meintiefe.png und
      tiefe.png.bak bleiben fest. */
-  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
+  /* (^|[\\/]): unter Windows trennt path.join mit Backslash - mit nur "/" traf die Regel dort nie, und eine ersetzte
+     eigene Tonfassung spielte bei Casto ein Jahr lang aus dem Browservorrat weiter (Gegenlesen 1.0.45, 07.10.2026). */
+  const abgeleitet = /(^|[\\/])(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
   /* text/css gehoert seit dem 27.09.2026 zu "programm": das Effektclip-Studio ist jetzt web/tbs.css und
      web/tbs-modul.js; mit dem Jahres-Cache hielte der Browser nach jeder Aenderung ein altes Stylesheet,
      waehrend das Skript schon neu waere - dieselbe Regel wie fuer .js, mit 304 statt max-age. */
