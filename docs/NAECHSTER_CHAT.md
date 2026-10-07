@@ -8251,3 +8251,25 @@ Nachbesserungen dort geprüft mit WAV, MP3, leerem Rumpf, abgebrochenem Upload, 
 **Tarjas Messbericht** (Docker, Ryzen 9 7950X): `avatare.js` 4168 Avatare, 287 MB in ~5 min, 2× HTTP 403;
 `gesichter.js` 4590 Bilder in 10 min (131 ms/Bild), 2362 mit Gesicht, Schrift auf 280 Covern. `/api/community`
 wiegt 12,6 MB und braucht 1,45 s je Öffnen — eine schlanke Fassung für den Schaum ist als nächster Schritt geplant.
+
+## 71. 07.10.2026 nachmittags: Bilder werden vorbereitet, während der Schaum aufschäumt (1.0.46)
+
+Caspar_D: „es wird gar nichts gerechnet, wenn die Modelle fehlen, sonst würden wir mindere Qualität liefern",
+„auch das Modelle holen muß der Nutzer nicht wissen", „man könnte die map auch schon rechnen, aber eben noch
+keine grafiken einsetzen, während er rechnet, werden die Bilder geholt … Bilder werden vorbereitet", Wortlaut
+„Dein Klang …" / „Deine Groupies …" bleibt.
+- `/api/gesichter` meldet `modelle`, `offenCover`, `offenAvatare`, `avatareFehlt` (dauerhaft verweigerte Adressen,
+  z. B. 403 — blockieren nicht). Grundlage `stand()` in `bin/gesichter.js` (gleiche Regeln wie der Lauf; Hauptteil
+  nur bei direktem Start).
+- `POST /api/bilder/vorbereiten?art=titel|person` (nur eigene Seite) startet `gesichter.js --ohne-avatare` bzw.
+  `avatare.js` + `gesichter.js --nur-avatare`; `GET /api/bilder/stand` mit n/von aus den @@KT-Zeilen (Modell-Zähler
+  ausgeblendet). Nie doppelt: Sperren `library/gesichter.lauf`, `library/avatare.lauf` (PID); während des
+  Morgenschritts „Medien laden" wird gewartet. Ohne Modelle nach dem Lauf: `fehler: 'modelle'`.
+- Seite: `bilderBereit(art, zeilen, melde)` vor dem Einsetzen der Bilder (Klangschaum, Groupieschaum, Plakat),
+  parallel zum Legen im Worker; zwei Zeilen „Bilder werden vorbereitet … n von m" + „Dein Klang wird aufgeschäumt …";
+  danach Buch neu, `schaumFertig` geleert; einmal bereit gilt je Sitzung. Offline ohne Modelle: „Schaum kommt mit
+  dem nächsten Morgenlauf." — nichts gezeichnet. Höchstens drei Runden, dann wird gezeichnet (etwa unlesbare Dateien).
+- `gesichter.js`: unlesbare Bilder kommen als `unlesbar` ins Buch (sonst ewig offen).
+- Sandkasten (327 Titel, 430 Avatare): alles da 4 s ohne Zusatzzeile; Klangschaum ohne Buch+Modelle 78 s (Lage nach
+  3 s); Groupies 45 s; offline 10 s → Morgenlauf-Satz; Plakat 508 Bilder, keine Konsolenfehler. Bilder
+  `_werkstatt_bilder/fotos/`.
