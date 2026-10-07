@@ -8525,7 +8525,7 @@ Geprüft (Sandkasten 8796, `_werkstatt_bilder/probe-ecke.js` und `probe-ecke-fel
 bleibt leer, überlanger Titel im Triptychon wird kleiner gesetzt. Fallensuche (4 Blickwinkel, je Fund ein Widerleger): 13 bestätigt,
 alle behoben, 4 verworfen (Zeitabhängigkeit der Suche, IndexedDB-Plätze – bekannt, kein falsches Ergebnis).
 Wiedervorlage (Caspar_D entscheidet):
-- „Hörzeit" heißt im Haus Plays × Länge; in der Ecke steht „Laufzeit" (Summe der Längen). Antwort a/b steht aus.
+- „Hörzeit" heißt im Haus Plays × Länge; in der Ecke steht „Laufzeit" (Summe der Längen) – Caspar_D: „a Laufzeit" (entschieden).
 - PDF mit echtem Druck prüfen (Avatar über druckBilder).
 Nächste Baustelle (entschieden, nach 1.0.58): Rand bei Randlos, Farbverlauf nach den Arealen an der Kante, realistisch gemalt,
 Breite einstellbar, Farbe bis über den Schnitt, schmaler Streifen Grund zum Schaum, läuft zur Avatar-Ecke in den Grund aus.
