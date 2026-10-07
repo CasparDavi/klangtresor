@@ -8144,3 +8144,11 @@ Social), 5 (Fokus ohne Gesicht, mit Texterkenner).
   Beschnitt (die Edition stand auf der Beschnittlinie).
 - **QR-Code zurückgestellt — Wiedervorlage Caspar_D:** eigener Kodierer (~300 Zeilen) oder Fremdbibliothek
   (z. B. qrcode-generator, MIT) mit Lizenzeintrag?
+
+## 65. 07.10.2026 nachts: Titel entlang der Kante (1.0.41) — Stufe 2 komplett
+
+Vierte Wahl bei „Titel in der Zelle“: „an der Kante“. `kantenTitel` in schaumSvgBauen: Unterkante über senkrechte
+Schnittlinien (tiefster Schnitt je Linie), knapp eine Schriftgröße nach innen, geglättet; Titel als textPath, weiß
+mit dunklem Saum, 2,2–5,5 mm, mit 1,2 Breitenzuschlag gekürzt (mit 1,06 liefen lange Titel über den Zellrand).
+Nummer des Verzeichnisses vorn; zu kurze Kante → Nummernschild oder nichts. Damit ist Stufe 2 (Werkverzeichnis,
+Areale am Rand, Titel an der Kante) fertig; aus Stufe 3 fehlt nur der QR-Code (Wiedervorlage).

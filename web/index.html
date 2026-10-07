@@ -9112,7 +9112,7 @@ async function schaumVorrechnen(){
    das Plakat-Studio (druck: Kacheln mit Luecken statt Fugenlinien, Name/Titel auf Rauch- oder Milchglas unten in
    der Zelle, Wackeln, Schatten, Kissen nur auf den Kacheln; Bilder in der Vorschau aus dem Vorrat, die volle
    Fassung in data-voll fuers PDF). Fuer den Schirm unveraendert, was vorher in malen() stand.
-   druck: { titel: 'rauch'|'milch'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab,
+   druck: { titel: 'rauch'|'milch'|'kante'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab,
             verzeichnis: Nummern in die Zellen und die Liste zurueckgeben, mmJeEinheit: Millimeter je Schaum-Einheit } */
 /* WOHIN EIN COVER IN SEINER ZELLE RUECKT (Caspar_D, 06./07.10.2026: „wenn immer das Zentrum des Geschehens
    der Coverart in der Kachel zu sehen wäre", „damit keine Gesichter in den PDFs angeschnitten sind").
@@ -9250,6 +9250,35 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
       + ` fill="${milch ? '#141414' : '#f4f4f2'}" style="font-variant-numeric:tabular-nums">${nr}</text></g>`;
     return schild;
   };
+  /* TITEL ENTLANG DER KANTE (Plakat, Stufe 2; angekreuzt: „Titel gebogen entlang der unteren Zellkante statt auf einem
+     Band"). Die Unterkante: senkrechte Linien quer durch die Zelle, je Linie der tiefste Schnitt mit dem Umriss; diese
+     Punkte knapp eine Schriftgroesse nach innen gerueckt und geglaettet - darauf laeuft der Titel (textPath), weiss mit
+     dunklem Saum, damit er auf jedem Bild lesbar ist. Schrift 2,2 bis 5,5 mm je nach Zelle; passt der Titel nicht,
+     wird er gekuerzt; ist die Kante zu kurz oder zu zerklueftet, gilt wie bisher: Nummer oder nichts. */
+  const kantenTitel = (pk, x, y, w, h, name, i) => {
+    if (w < 26 || h < 22) return null;
+    const mm = (druck && druck.mmJeEinheit) || 1;
+    let fs = Math.min(5.5 / mm, Math.max(2.2 / mm, 0.11 * Math.min(w, h)));
+    const mitte = y + h / 2, innen = fs * 0.95, n = 24, pts = [];
+    for (let k = 0; k <= n; k++){
+      const xx = x + w * (0.06 + 0.88 * k / n); let yy = -Infinity;
+      for (let q = 0; q < pk.length; q++){ const a = pk[q], b = pk[(q + 1) % pk.length];
+        if (a[0] !== b[0] && (a[0] - xx) * (b[0] - xx) <= 0){ const yv = a[1] + (xx - a[0]) / (b[0] - a[0]) * (b[1] - a[1]); if (yv > yy) yy = yv; } }
+      if (yy > mitte + innen) pts.push([xx, yy - innen]);
+    }
+    if (pts.length < 6) return null;
+    const gl = pts.map((p, k) => { const a = pts[Math.max(0, k - 1)], b = pts[Math.min(pts.length - 1, k + 1)]; return [p[0], (a[1] + 2 * p[1] + b[1]) / 4]; });
+    let lang = 0; for (let k = 1; k < gl.length; k++) lang += Math.hypot(gl[k][0] - gl[k - 1][0], gl[k][1] - gl[k - 1][1]);
+    /* gemessen mit normaler Schrift, gesetzt halbfett und gebogen: 1,2 Zuschlag (mit 1,06 liefen lange Titel ueber den Zellrand) */
+    const breit = (t) => leinwand.measureText(t).width / 100 * fs * 1.2;
+    while (breit(name) > lang * 0.9 && fs * 0.92 >= 2.2 / mm) fs *= 0.92;
+    let txt = name;
+    if (breit(txt) > lang * 0.9){ let k = txt.length; while (k > 2 && breit(txt.slice(0, k) + '…') > lang * 0.9) k--; txt = k > 2 ? txt.slice(0, k) + '…' : ''; }
+    if (!txt) return null;
+    return `<path id="skp${i}" d="M${gl.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L')}" fill="none" stroke="none"/>`
+      + `<text font-size="${fs.toFixed(1)}" font-weight="600" fill="#f4f4f2" stroke="#000" stroke-opacity="0.6" stroke-width="${(fs * 0.24).toFixed(2)}"`
+      + ` stroke-linejoin="round" paint-order="stroke" clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle">${esc(txt)}</textPath></text>`;
+  };
   /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
   let svg = R.renderSVG(res, { pad: 0, cushion: 0,
     /* im Druck stehen die Namen auf Glasbaendern */
@@ -9320,7 +9349,9 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const roh = (zeilen[res.leaves[+i].row] || {}).titel || '', nrHier = nummern ? nummern.get(+i) : 0;
              const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : String(roh).trim()) : '';
              const name = name0 && nrHier ? nrHier + '\u2002' + name0 : name0;
-             const plan = name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i, !!druck) : null;
+             const anKante = druck && druck.titel === 'kante';
+             const plan = !anKante && name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i, !!druck) : null;
+             const kante = anKante && name ? kantenTitel(pk, x, y, w, h, name, i) : null;
              const tf = druck && druck.wackeln > 0 ? schaumWackeln(id, x, y, w, h, druck.wackeln) : '';
              if (plan){
                kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
@@ -9330,7 +9361,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
                  + `<rect class="${milch ? 'milch' : 'rauch'}" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? '0.62' : SCHAUM_RAUCH_VORGABE}"/></g>`;
                if (druck) baender.push(tf ? `<g transform="${tf}">${plan.text}</g>` : plan.text); else koepfe.push(plan.text);
              }
-             if (nrHier && !plan) baender.push(nummerSchild(pk, x, y, w, h, nrHier, tf));
+             if (kante) baender.push(tf ? `<g transform="${tf}">${kante}</g>` : kante);
+             if (nrHier && !plan && !kante) baender.push(nummerSchild(pk, x, y, w, h, nrHier, tf));
              kacheln.push({ dd, tf });
              const fertig = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
                + (quelle ? `<image ${bildAn} ${lage}`
@@ -9409,7 +9441,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.40').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.41').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

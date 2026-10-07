@@ -479,7 +479,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">Hoch</button><button type="button" data-lage="quer">Quer</button></div>
   <p class="ps-leise" id="ps-mass"></p>
   <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
-  <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="ohne">ohne</button></div>
+  <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="kante">an der Kante</button><button type="button" data-titel="ohne">ohne</button></div>
   <label class="ps-zeile">Verzeichnis<input type="checkbox" id="ps-verz"><span></span></label>
   <label class="ps-zeile">Areale am Rand<input type="checkbox" id="ps-areale"><span></span></label>
   <p class="ps-leise" style="margin-top:0">Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
