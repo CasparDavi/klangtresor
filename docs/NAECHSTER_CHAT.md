@@ -8333,3 +8333,14 @@ Nächster Schritt (empfohlen, noch ohne Wort): Einzelbuchstaben-Kästen statt Ze
 „Bereiche ohne Ober oder Unterlängen sind verschenkter Platz") – Tintenkasten je Zeichen aus dem Canvas, Lage aus der
 Präfixbreite (Unterschneidung), Zeilenabstand bleibt fest. Offen: dieselbe 100-px-Messung steckt noch in `emBreit` (Arealköpfe)
 und `breit` (gebogene Titel, dort mit 1,2 Zuschlag kaschiert) in `schaumSvgBauen`.
+
+## 76. 07.10.2026: Randzellen bekommen ihre Namen zurück (1.0.51)
+
+Caspar_D zu 1.0.50: „da stimmt aber was nicht, besonders Randzellen haben oft keinen Namen obwohl sie gross genug wären".
+Ursache in meinem Schutz aus §75: das eingerückte Vieleck musste mit jeder Ecke `inside()` des Umrisses liegen. Am Bildrahmen
+wird nicht eingerückt (Rahmenfuge 0), die Ecken liegen dort GENAU auf dem Umriss, und der Strahltest zählt Randpunkte je nach
+Kantenlage hinein (links) oder hinaus (oben, rechts) – der Name fiel dann ganz weg. Jetzt `imOderAufRand` (render.js, Rand bis
+1e-6·√Fläche zählt als drin). Probe im Sandkasten, gleicher Schaum, Randzellen mit Namen je Seite (oben/rechts/unten/links):
+1.0.50 0/19, 0/31, 14/19, 12/16, neun große Randzellen ohne Namen; 1.0.51 16/19, 17/31, 19/19, 15/16, keine große ohne Namen.
+Namen gesamt 213 → 250, Tinte außerhalb weiterhin 0. Lehre: die Probe zählte Überlappungen, nicht fehlende Namen – eine
+Prüfung, die nur „nichts falsch" misst, sieht nicht, was wegfällt. Die Probe zählt jetzt Randzellen mit (probe-text5.js, Werkstatt).

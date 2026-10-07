@@ -60,6 +60,17 @@ export function lightnessOf(css) {
   return Y > 216 / 24389 ? 116 * Math.cbrt(Y) - 16 : Y * 24389 / 27;
 }
 
+// Punkt im Vieleck ODER auf seinem Rand (Abstand zu einer Kante hoechstens eps) - inside() allein entscheidet Randpunkte zufaellig.
+function imOderAufRand(poly, p, eps) {
+  if (inside(poly, p)) return true;
+  for (let k = 0; k < poly.length; k++) {
+    const a = poly[k], b = poly[(k + 1) % poly.length], dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const t = L > 0 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L)) : 0;
+    if (Math.hypot(a[0] + t * dx - p[0], a[1] + t * dy - p[1]) <= eps) return true;
+  }
+  return false;
+}
+
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
@@ -151,9 +162,13 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
       if (k.depth !== labelLevel || !k.outline || k.small) continue;
       /* (07.10.2026) Das um die Fugen eingerueckte Vieleck entartet in winzigen Zellen (Fugen breiter als der Platz) - dann
          „passt" ein Name scheinbar und ragt in Fuge und Nachbarzelle. Darum zusaetzlich gegen den echten Umriss pruefen, und ein
-         eingeruecktes Vieleck, das nicht klar im Umriss liegt, gilt nicht: lieber kein Name als einer ueber fremdem Feld. */
-      const vis = visible(k), aV = Math.abs(shoelace(vis)), aK = Math.abs(shoelace(k.outline));
-      if (vis !== k.outline && !(aV > 0 && aV < aK && vis.every(p => inside(k.outline, p)))) continue;
+         eingeruecktes Vieleck, das nicht klar im Umriss liegt, gilt nicht: lieber kein Name als einer ueber fremdem Feld.
+         „Im Umriss" schliesst seinen Rand ein (1.0.51): am Bildrahmen wird nicht eingerueckt (Rahmenfuge 0), die Ecken liegen dort
+         GENAU auf dem Umriss, und der Strahltest inside() zaehlt solche Randpunkte je nach Lage hinein oder hinaus - in 1.0.50
+         verloren so die Randzellen oben und rechts ihre Namen (Caspar_D: „Randzellen haben oft keinen Namen obwohl sie gross
+         genug wären"). */
+      const vis = visible(k), aV = Math.abs(shoelace(vis)), aK = Math.abs(shoelace(k.outline)), eps = 1e-6 * Math.sqrt(aK);
+      if (vis !== k.outline && !(aV > 0 && aV < aK && vis.every(p => imOderAufRand(k.outline, p, eps)))) continue;
       const lab = placeLabel(vis, k.name.slice(0, 60), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline });
       if (!lab) continue;
       const below = leavesBelow(k).filter(x => x.outline), under = below.find(x => inside(x.outline, [lab.x, lab.y])) || below[0] || k;
