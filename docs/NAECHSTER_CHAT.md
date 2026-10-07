@@ -8160,3 +8160,14 @@ Seite ohne Beschnitt, jedes Bild auf seine Größe im PNG ×1,5 gerechnet und al
 Bild gemaltes SVG lädt nichts nach), dann auf eine Leinwand 1080 breit, PNG-Download. Geprüft headless (Download
 abgefangen): Klangschaum 4:5 2,5 MB, Groupieschaum 4:5 2,6 MB — die Suno-Avatare lassen sich einbetten (CORS).
 Offen aus Stufe 4: Triptychon.
+
+## 67. 07.10.2026 nachts: Triptychon (1.0.43) — Stufe 4 komplett
+
+Formate „3 × 50 × 70“, „3 × 70 × 100“ (`tri`): drei Rahmen, Wandfuge 6 % der Rahmenbreite; Schaum über die ganze
+Breite, die Fugen schneiden durch ihn; Schrift wie auf einem Rahmen; Fugen in der Vorschau abgedunkelt
+(`ps-trifuge`, im PDF entfernt); PDF mit drei Seiten (je Rahmen eine viewBox samt Beschnitt), je Seite nur die
+Bilder, die in ihren Rahmen reichen; Wand-Vorschau mit drei Rahmen. Geprüft headless: 3 Seiten à 706 × 1006 mm,
+42 s, 103 MB (bei 2,1 m Breite brauchen viele Cover ihre volle Auflösung — Chrome legt gleiche Bilder nur einmal ab).
+Bekannt: Schild und Legende laufen über die Fugen (Titel links auf Rahmen 1, Legende rechts auf Rahmen 3) — ein
+breites Legendenfeld kann von einer Fuge geschnitten werden. Wiedervorlage, falls störend.
+Stand des Studios: Stufen 1–4 fertig bis auf den QR-Code; Stufe 5 (Fokus ohne Gesicht) offen.

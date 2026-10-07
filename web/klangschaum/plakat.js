@@ -16,6 +16,9 @@ const FORMATE = [
   { id: '100x140', name: '100 × 140', w: 1000, h: 1400 },
   { id: 'q50', name: '50 × 50', w: 500, h: 500 }, { id: 'q70', name: '70 × 70', w: 700, h: 700 },
   { id: 'frei', name: 'frei' },
+  /* Triptychon (angekreuzt): drei Rahmen nebeneinander, dazwischen eine Wandfuge von 6 % der Rahmenbreite. Der Schaum
+     liegt ueber die ganze Breite, die Fugen schneiden durch ihn; das PDF hat drei Seiten, je Rahmen eine. */
+  { id: 'tri50', name: '3 × 50 × 70', tri: true, pw: 500, ph: 700 }, { id: 'tri70', name: '3 × 70 × 100', tri: true, pw: 700, ph: 1000 },
   /* Bilder fuer soziale Medien (angekreuzt; „gerade der Groupieschaum als Danke an meine Groupies zum Posten"): kein
      Druck, sondern ein PNG mit 1080 Punkten Breite. Die Masse sind Seiteneinheiten wie beim Druck, nur das Verhaeltnis
      zaehlt; ohne Beschnitt. */
@@ -72,7 +75,10 @@ function geometrie(n = 0){
   const f = FORMATE.find(x => x.id === E.format) || FORMATE[5];
   let w = f.id === 'frei' ? Math.max(100, Math.min(3000, E.freiW * 10)) : f.w, h = f.id === 'frei' ? Math.max(100, Math.min(3000, E.freiH * 10)) : f.h;
   if ((E.lage === 'quer') !== (w > h) && w !== h) [w, h] = [h, w];
-  const kurz = Math.min(w, h), rand = E.rand * kurz;
+  let kurz = Math.min(w, h), tri = null;
+  if (f.tri){ let pw = f.pw, ph = f.ph; if (E.lage === 'quer') [pw, ph] = [ph, pw];
+    const fuge = Math.round(0.06 * pw); tri = { pw, ph, fuge }; w = 3 * pw + 2 * fuge; h = ph; kurz = Math.min(pw, ph); }   /* Schrift wie auf einem Rahmen */
+  const rand = E.rand * kurz;
   const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
   const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
   /* So viele Arealkoepfe, wie die Legende des Schaums Zeilen hat - vorher pauschal sechs, das liess unter der Liste Platz frei */
@@ -84,7 +90,7 @@ function geometrie(n = 0){
   const feder = E.feder ? 0.011 * kurz : 0;
   const unten = Math.max(rand * 1.55, feder + rand * 0.5 + zeitH + schildH + (verz ? rand * 0.4 + verz.hoehe : 0) + rand * 0.45);
   const karte = { x: BESCHNITT + rand, y: BESCHNITT + rand, w: w - 2 * rand, h: h - rand - unten };
-  return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand, unten, T, U, L, karte, schildH, verz, zeitH, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
+  return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand, unten, T, U, L, karte, schildH, verz, zeitH, tri, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
 }
 
 /* Was gerade im Schaum steht - derselbe Auftrag im Seitenverhaeltnis der Karte. */
@@ -191,6 +197,9 @@ async function bauen(g){
   if (E.edition) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
   if (E.areale && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
+  /* Triptychon: die Wandfugen in der Vorschau abgedunkelt, mit Schnittlinien - im PDF fallen sie ohnehin weg */
+  if (g.tri) for (let j = 1; j < 3; j++){ const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge;
+    kopf += `<rect class="ps-trifuge" x="${fx.toFixed(2)}" y="0" width="${g.tri.fuge.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="#08090b" fill-opacity="0.9"/>`; }
   const seite = `<svg class="ps-seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${g.PW.toFixed(2)} ${g.PH.toFixed(2)}" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`
     + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + feder + svg + kopf
     + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${g.w}" height="${g.h}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/></svg>`;
@@ -201,7 +210,7 @@ async function bauen(g){
   const schaum = blatt.querySelector('svg.ps-schaum');
   if (E.titel === 'rauch' && schaum && typeof schaumRauch === 'function') schaumRauch(schaum);
   const fm = FORMATE.find(x => x.id === E.format) || {};
-  el('ps-mass').textContent = fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
+  el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
 }
 /* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
@@ -353,9 +362,10 @@ function einpassen(){
   const g = geometrie(), bw = b.clientWidth - 48, bh = b.clientHeight - 64, k = Math.min(bw / g.PW, bh / g.PH);
   s.style.width = (g.PW * k).toFixed(0) + 'px'; s.style.height = (g.PH * k).toFixed(0) + 'px';
   const wand = el('ps-wand'); if (wand){
-    const M = 1750, H = 2600, sk = 120 / H, pw = g.w * sk, ph = g.h * sk;
-    wand.innerHTML = `<svg viewBox="0 0 ${(H * 1.4 * sk).toFixed(1)} 120" width="100%" height="120"><rect width="100%" height="120" fill="#2b2723"/>`
-      + `<rect x="${(H * 0.35 * sk).toFixed(1)}" y="${(120 - 1450 * sk - ph / 2).toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" fill="${E.grund}" stroke="#111" stroke-width="0.6"/>`
+    const M = 1750, H = 2600, sk = 120 / H, pw = g.w * sk, ph = g.h * sk, x0 = H * 0.35 * sk, y0 = 120 - 1450 * sk - ph / 2;
+    const rahmen = g.tri ? [0, 1, 2].map(j => `<rect x="${(x0 + j * (g.tri.pw + g.tri.fuge) * sk).toFixed(1)}" y="${y0.toFixed(1)}" width="${(g.tri.pw * sk).toFixed(1)}" height="${ph.toFixed(1)}" fill="${E.grund}" stroke="#111" stroke-width="0.6"/>`).join('')
+      : `<rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" fill="${E.grund}" stroke="#111" stroke-width="0.6"/>`;
+    wand.innerHTML = `<svg viewBox="0 0 ${(Math.max(H * 1.4, H * 0.35 + g.w + 900) * sk).toFixed(1)} 120" width="100%" height="120"><rect width="100%" height="120" fill="#2b2723"/>` + rahmen
       + `<rect x="${(H * 0.35 * sk + pw + 300 * sk).toFixed(1)}" y="${(120 - M * sk).toFixed(1)}" width="${(380 * sk).toFixed(1)}" height="${(M * sk).toFixed(1)}" rx="${(190 * sk).toFixed(1)}" fill="#59616b"/></svg>`;
   }
 }
@@ -444,10 +454,19 @@ async function pdf(){
   standSetzen('Die Bilder werden für den Druck gerechnet …');
   await druckBilder(s, kopie, g);
   kopie.removeAttribute('style');
+  kopie.querySelectorAll('.ps-trifuge').forEach(n => n.remove());
   const name = (raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum') + '-' + g.name;
-  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${esc2(name)}</title><style>@page{size:${g.PW.toFixed(2)}mm ${g.PH.toFixed(2)}mm;margin:0}`
+  /* Triptychon: dieselbe Seite dreimal, jede auf ihren Rahmen samt Beschnitt zugeschnitten (viewBox), je eine PDF-Seite */
+  const SW = g.tri ? g.tri.pw + 2 * BESCHNITT : g.PW, SH = g.PH;
+  /* je Seite nur die Bilder, die in ihren Rahmen reichen - sonst traegt jede Seite alle (103 MB statt rund 40) */
+  const sr = s.getBoundingClientRect(), proEinheit = sr.width / g.PW, lagen = [...s.querySelectorAll('image')].map(i => i.getBoundingClientRect());
+  const seiten = !g.tri ? kopie.outerHTML : [0, 1, 2].map(j => { const k = kopie.cloneNode(true);
+    const a = sr.left + j * (g.tri.pw + g.tri.fuge) * proEinheit, b = a + SW * proEinheit;
+    [...k.querySelectorAll('image')].forEach((im, i) => { const r = lagen[i]; if (r && (r.right < a || r.left > b)) im.remove(); });
+    k.setAttribute('viewBox', `${(j * (g.tri.pw + g.tri.fuge)).toFixed(2)} 0 ${SW.toFixed(2)} ${SH.toFixed(2)}`); return k.outerHTML; }).join('');
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${esc2(name)}</title><style>@page{size:${SW.toFixed(2)}mm ${SH.toFixed(2)}mm;margin:0}`
     + `html,body{margin:0;padding:0;background:${E.grund};-webkit-print-color-adjust:exact;print-color-adjust:exact}`
-    + `svg.ps-seite{display:block;width:${g.PW.toFixed(2)}mm;height:${g.PH.toFixed(2)}mm}</style></head><body>${kopie.outerHTML}</body></html>`;
+    + `svg.ps-seite{display:block;width:${SW.toFixed(2)}mm;height:${SH.toFixed(2)}mm;break-after:page;page-break-after:always}svg.ps-seite:last-child{break-after:auto;page-break-after:auto}</style></head><body>${seiten}</body></html>`;
   let rahmen = el('ps-druckrahmen');
   if (rahmen) rahmen.remove();
   rahmen = document.createElement('iframe'); rahmen.id = 'ps-druckrahmen';
