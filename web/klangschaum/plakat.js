@@ -22,13 +22,13 @@ const FORMATE = [
    stehen im Werkverzeichnis. */
 const VORLAGEN = [
   { id: 'galerie', name: 'Galerie', zeile: 'schwarzer Grund · Rauchglas · Federstrich',
-    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false } },
+    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: true } },
   { id: 'papier', name: 'Papier', zeile: 'warmes Weiß · Milchglas · leiser Schatten',
-    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false } },
+    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false, areale: true } },
   { id: 'bleiglas', name: 'Bleiglas', zeile: 'breite dunkle Fugen · starkes Licht',
-    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true } },
+    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true, areale: false } },
   { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
-    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false } },
+    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false } },
 ];
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
@@ -148,7 +148,7 @@ async function bauen(g){
                   verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height) };
   const la = schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
   if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
-  let { svg, verzeichnis } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
+  let { svg, verzeichnis, areale } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
   if (lauf !== bauLauf) return;
   svg = svg.replace('<rect width="100%" height="100%" fill="#121417"/>', '')
            .replace('<svg ', `<svg class="ps-schaum" x="${kv.x.toFixed(2)}" y="${kv.y.toFixed(2)}" width="${kv.w.toFixed(2)}" height="${kv.h.toFixed(2)}" `);
@@ -176,6 +176,7 @@ async function bauen(g){
         + `<text x="${(q + L * 0.5).toFixed(2)}" y="${(y + zeileH * 0.5 + L * 0.35).toFixed(2)}" font-size="${L.toFixed(2)}" fill="${fg}">${esc2(e.name)}</text></g>`;
     });
   }
+  if (E.areale && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
   const seite = `<svg class="ps-seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${g.PW.toFixed(2)} ${g.PH.toFixed(2)}" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`
     + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + feder + svg + kopf
@@ -203,6 +204,57 @@ function eigeneIds(svg, vor){
    Areal ein Kopf mit Farbquadrat, dann die Nummern (rechtsbuendig, leise) mit den Titeln. Ein Kopf steht nie
    allein am Fuss einer Spalte. Zu lange Titel werden mit … gekuerzt (Leinwandmass mal 1,15 - sie misst etwas zu
    schmal). Reichen die Zeilen mit den echten Arealen nicht, wird die Schrift kleiner, bis der Block passt. */
+/* AREALE AM RAND (Caspar_D, 06.10.2026: „Beschriftet wird um das Bild herum in der Farbe des Areals, dort wo der
+   Rand dem Areal am nächsten ist"). Je Areal sein Name in seiner Farbe im Passepartout - an der Seite, an der es den
+   Kartenrand am laengsten beruehrt, mittig ueber dem laengsten Stueck; oben waagerecht, links und rechts entlang der
+   Kante wie auf einer Landkarte (so passen auch lange Namen in einen schmalen Rand). Unten steht das Schild, dort
+   nicht. Ein haarfeiner Strich in der Farbe fuehrt zur Kante; beruehrt ein Areal den Rand nicht (oder nur unten),
+   fuehrt er bis zu seiner naechsten Stelle. Stehen zwei Namen auf derselben Seite zu dicht, ruecken sie auseinander. */
+function arealeSetzen(areale, g, kv, res, feder){
+  const k = Math.min(kv.w / res.width, kv.h / res.height), ox = kv.x + (kv.w - res.width * k) / 2, oy = kv.y + (kv.h - res.height * k) / 2;
+  const R = { x0: ox, y0: oy, x1: ox + res.width * k, y1: oy + res.height * k };
+  const fs = Math.min(g.rand * 0.4, 0.0092 * g.kurz), eps = 0.004 * g.kurz, abstand = feder + fs * 0.6, sw = (g.kurz / 2600).toFixed(2);
+  const marken = [];
+  for (const a of areale){
+    const P = a.pts.map(p => [ox + p[0] * k, oy + p[1] * k]);
+    const kontakt = { oben: [], links: [], rechts: [] }, auf = (v, w) => Math.abs(v - w) < eps;
+    for (let i = 0; i < P.length; i++){ const p = P[i], q = P[(i + 1) % P.length];
+      if (auf(p[1], R.y0) && auf(q[1], R.y0)) kontakt.oben.push([Math.min(p[0], q[0]), Math.max(p[0], q[0])]);
+      if (auf(p[0], R.x0) && auf(q[0], R.x0)) kontakt.links.push([Math.min(p[1], q[1]), Math.max(p[1], q[1])]);
+      if (auf(p[0], R.x1) && auf(q[0], R.x1)) kontakt.rechts.push([Math.min(p[1], q[1]), Math.max(p[1], q[1])]); }
+    let seite = null, anker = 0, ziel = null, best = 0;
+    for (const sd of ['oben', 'links', 'rechts']){
+      const zus = []; for (const v of kontakt[sd].sort((p, q) => p[0] - q[0])){ const z = zus[zus.length - 1]; if (z && v[0] <= z[1] + eps) z[1] = Math.max(z[1], v[1]); else zus.push(v.slice()); }
+      for (const v of zus) if (v[1] - v[0] > best){ best = v[1] - v[0]; seite = sd; anker = (v[0] + v[1]) / 2; }
+    }
+    if (!seite){ let bd = Infinity;
+      for (const p of P) for (const [sd, dd] of [['oben', p[1] - R.y0], ['links', p[0] - R.x0], ['rechts', R.x1 - p[0]]]) if (dd < bd){ bd = dd; seite = sd; anker = sd === 'oben' ? p[0] : p[1]; ziel = p; } }
+    marken.push({ seite, anker, ziel, text: a.name, lang: messen(a.name, 600) * fs * 1.12, farbe: a.farbe });
+  }
+  for (const sd of ['oben', 'links', 'rechts']){
+    const ms = marken.filter(m => m.seite === sd).sort((p, q) => p.anker - q.anker); if (!ms.length) continue;
+    const lo = sd === 'oben' ? R.x0 : R.y0, hi = sd === 'oben' ? R.x1 : R.y1, luft = fs * 1.4;
+    ms.forEach(m => { m.pos = Math.min(hi - m.lang / 2, Math.max(lo + m.lang / 2, m.anker)); });
+    for (let i = 1; i < ms.length; i++){ const min = ms[i - 1].pos + ms[i - 1].lang / 2 + luft + ms[i].lang / 2; if (ms[i].pos < min) ms[i].pos = min; }
+    for (let i = ms.length - 2; i >= 0; i--){ const max = ms[i + 1].pos - ms[i + 1].lang / 2 - luft - ms[i].lang / 2; if (ms[i].pos > max) ms[i].pos = max; }
+  }
+  const f2 = (v) => v.toFixed(2), strich = (m, a, b, c, d2) => `<line x1="${f2(a)}" y1="${f2(b)}" x2="${f2(c)}" y2="${f2(d2)}" stroke="${m.farbe}" stroke-width="${sw}" stroke-opacity="0.9"/>`;
+  let out = '';
+  for (const m of marken){
+    const schrift = `font-size="${f2(fs)}" font-weight="600" fill="${m.farbe}" text-anchor="middle" letter-spacing="${f2(fs * 0.02)}"`;
+    if (m.seite === 'oben'){
+      const ty = R.y0 - abstand;
+      out += `<text x="${f2(m.pos)}" y="${f2(ty)}" ${schrift}>${esc2(m.text)}</text>` + strich(m, m.pos, ty + fs * 0.3, m.anker, R.y0);
+      if (m.ziel) out += strich(m, m.anker, R.y0, m.ziel[0], m.ziel[1]);
+    } else {
+      const links = m.seite === 'links', tx = links ? R.x0 - abstand : R.x1 + abstand, kante = links ? R.x0 : R.x1;
+      out += `<text transform="translate(${f2(tx)} ${f2(m.pos)}) rotate(${links ? -90 : 90})" ${schrift}>${esc2(m.text)}</text>`
+        + strich(m, tx + (links ? 1 : -1) * fs * 0.3, m.pos, kante, m.anker);
+      if (m.ziel) out += strich(m, kante, m.anker, m.ziel[0], m.ziel[1]);
+    }
+  }
+  return out;
+}
 function verzeichnisSetzen(gruppen, g, x0, y0, fg, leise){
   const personen = aktuell && aktuell.art === 'person';
   const n = gruppen.reduce((s, q) => s + q.eintraege.length, 0);
@@ -340,6 +392,7 @@ function felderSetzen(){
     ['ps-wackeln', Math.round(E.wackeln * 100)], ['ps-schatten', Math.round(E.schatten * 100)], ['ps-vignette', Math.round(E.vignette * 100)], ['ps-federmm', E.federMm],
     ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter]]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
   el('ps-verz').checked = !!E.verzeichnis;
+  el('ps-areale').checked = !!E.areale;
   el('ps-kissen').checked = !!E.kissen; el('ps-feder').checked = !!E.feder; el('ps-legende').checked = !!E.legende;
   el('ps-hinweis').hidden = raumJetzt !== 'groupies';
 }
@@ -389,6 +442,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
   <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="ohne">ohne</button></div>
   <label class="ps-zeile">Verzeichnis<input type="checkbox" id="ps-verz"><span></span></label>
+  <label class="ps-zeile">Areale am Rand<input type="checkbox" id="ps-areale"><span></span></label>
   <p class="ps-leise" style="margin-top:0">Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
   <details class="ps-fein" open><summary>Feinheiten</summary>
     ${regler('ps-rand', 'Rand', 2, 15, 1)}${regler('ps-fugen', 'Fugen', 3, 40, 1)}${regler('ps-wackeln', 'Wackeln', 0, 100, 1)}${regler('ps-schatten', 'Schatten', 0, 100, 1)}${regler('ps-vignette', 'Vignette', 0, 100, 1)}
@@ -421,6 +475,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-freih').onchange = () => setze({ freiH: Math.max(10, Math.min(300, +el('ps-freih').value || 120)) });
   el('ps-kissen').onchange = (ev) => setze({ kissen: ev.target.checked });
   el('ps-verz').onchange = (ev) => setze({ verzeichnis: ev.target.checked });
+  el('ps-areale').onchange = (ev) => setze({ areale: ev.target.checked });
   el('ps-feder').onchange = (ev) => setze({ feder: ev.target.checked });
   el('ps-legende').onchange = (ev) => setze({ legende: ev.target.checked });
   el('ps-kopftitel').oninput = (ev) => setze({ kopfTitel: ev.target.value, kopfTitelEigen: !!ev.target.value });

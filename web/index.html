@@ -9356,7 +9356,13 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     svg = svg.replace('</svg>', (druck.kissen === false ? '' : schaumKissenKacheln(kacheln, res)) + baender.join('') + '</svg>')
              .replace('<defs>', '<defs>' + schaumKissenFilter(res));
   } else svg = schaumKissen(svg, res, kacheln.map(k => k.dd));
-  return { svg, ids, R, personen, verzeichnis };
+  /* Die Areale fuers Plakat (Namen am Rand, plakat.js): Name, Farbe wie in der Legende, Umriss in Bildkoordinaten */
+  const areale = druck ? res.nodes.filter(k => k.depth === 0 && k.outline && k.outline.length > 2).map(k => {
+    const blatt = res.leaves.find(l => R.chainOf(l)[0] === k);
+    return { name: k.name, farbe: (!gezoomt && farbeVon(k.name)) || (blatt ? schaumFarbe(blatt, R.chainOf, farbeVon, gezoomt) : '#888'),
+             pts: k.outline.map(p => [p[0], res.height - p[1]]) };
+  }) : null;
+  return { svg, ids, R, personen, verzeichnis, areale };
 }
 /* Wackeln der Kacheln im Plakat (Caspar_D: „ggf. etwas chaotisch wackeln und verschieben die Kacheln, aber nicht
    zu viel"): je Zelle fest aus ihrer Kennung, hoechstens 3 Grad und 4 % ihrer Groesse. */
@@ -9403,7 +9409,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.38').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.39').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

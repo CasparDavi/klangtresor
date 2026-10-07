@@ -8121,3 +8121,14 @@ Positionen, wo sie jetzt schon sind").** Werkstatt `/Volumes/Extreme_SSD/Entwick
 **Wiedervorlage Caspar_D:** (a) Groupieschaum: sofort Pakete zeigen, flach nachgebildet im Hintergrund rechnen
 und hinübermorphen (bei 4000 ~10 min Volllast — Hitze!)? (b) Engine-Arbeit am Löser (Vorkonditionierer für das
 PCG) in Prophane/foam-lab, dann in die Kopie — Engine gehört dir und wird geteilt, darum nichts davon eingebaut.
+
+## 63. 07.10.2026 nachts: Areale am Rand (1.0.39)
+
+Schalter „Areale am Rand“ (Galerie, Papier: an). `schaumSvgBauen` gibt im Druck die Areale zurück (Name wie die
+Legende, Farbe `farbeVon`, Umriss); `arealeSetzen` in plakat.js setzt je Areal den Namen in seiner Farbe ins
+Passepartout — an der Seite mit der längsten Berührung (oben waagerecht, links/rechts entlang der Kante gedreht,
+unten nie: dort steht das Schild), mittig über dem längsten Stück, haarfeiner Strich zur Kante; ohne Berührung
+Strich bis zur nächsten Stelle; zu dichte Namen rücken auseinander. Schrift höchstens 0,4 Rand bzw. 0,92 % der
+kurzen Seite. Geprüft: Klang (Galerie, Papier) und Groupieschaum, keine Skriptfehler.
+Offen aus Stufe 2: „Titel entlang der Kante“. Dann Stufe 3 (Edition + Signatur, QR, Zeitleiste), 4 (Triptychon,
+Social), 5 (Fokus ohne Gesicht, mit Texterkenner).
