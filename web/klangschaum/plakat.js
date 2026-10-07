@@ -239,6 +239,7 @@ async function bauen(g){
   /* Rauchglas je Kopf nach Bedarf, wie am Schirm */
   const schaum = blatt.querySelector('svg.ps-schaum');
   if (E.titel === 'rauch' && schaum && typeof schaumRauch === 'function') schaumRauch(schaum);
+  if (E.titel === 'kante' && schaum && typeof schaumKantenKontrast === 'function') schaumKantenKontrast(schaum, schaumFarbeAnteil / 100);   /* schwarz oder weiss nach dem Grund */
   const fm = FORMATE.find(x => x.id === E.format) || {};
   el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;

@@ -8437,3 +8437,16 @@ Demo-Viewer wird erst mit B1/B2 neu gebaut).
 Wiedervorlage Brainstorms (Caspar_D: „es stehen noch andere brainstorms aus"): randlose Variante mit Schildzelle in der Ecke,
 monochrome Bleistiftzeichnung, QR-Code, Triptychon-Legende, Stufe 5 (Fokus ohne Gesicht), Namen per Texterkennung weglassen,
 schlanke /api/community.
+
+## 82. 07.10.2026: Gebogene Titel ohne Saum, mit Kontrastwahl (1.0.56)
+
+Caspar_D: „mache bei gebogenem Text auch normale Kontrastanpassung, keinen Rand um die Buchstaben". Kantentitel im Plakat: kein
+Strich mehr, `class="kante"`, 70 % deckend wie die Zellnamen; `schaumKantenKontrast(svg, s)` wählt schwarz/weiß nach dem Grund
+– gemeinsam mit dem Schirm über `schaumTextGrund` (Zelle + mittleres Cover unter dem Kasten) und `schaumTextFarbe` (soft-light
+ton, deck, Leuchtdichte), aber ohne den Schirmzustand `schaumSchrift`. Falle beim Bau: im Plakat heißen die Clip-IDs `ps-skz…`
+und die Zellpfade tragen nur `data-i` – die erste Fassung fand keine Zelle (alles blieb weiß; erst die Gegenprobe mit Farbanteil 0
+zeigte es). Jetzt: 271 Titel, 34 schwarz (nur nach Covern: 14), 0 mit Saum.
+Weitere Säume (Caspar_D fragte „sind noch irgendwo schriften mit saum?"): Engine-Gruppennamen (Treemapper-Paperbilder; im
+Engine-Schritt B1), „läuft gerade" über der Klangkarte (text-shadow), Zahlen im Karten-Steckbrief, Etikett der Quellkacheln im
+Studio – Vorschlag Kontrastwahl, wartet auf sein Wort. Kein Saum: aktive Karaoke-Zeile und Zitatwörter (Strich in eigener Farbe,
+macht nur dicker – so bestellt am 24.08.).
