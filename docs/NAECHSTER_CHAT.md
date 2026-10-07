@@ -8314,3 +8314,22 @@ Caspar_D: „magst du die Farben aus dem Klangraum auch auf dem Klangschaum ausw
 wer dort wählt, färbt auch den Klangraum (Stilgruppen in Raum und Schaum gleich). Alle drei Gliederungen färben aus ihr (Klang über
 die Stilgruppen, Modell/Zeit direkt); grau nur, wenn Kubus oder Rabe fliegen. Die Liste schließt nach der Wahl (vorher blieb sie im
 Klangschaum offen, weil der Behälter stehen bleibt). Sandkasten: Nebel → Sonnenglut, Legende und Zellen umgefärbt, gemerkt.
+
+## 75. 07.10.2026: Zellnamen im Klangschaum – tiefer, enger, nie über fremden Grund (1.0.50)
+
+Caspar_D: „den Text etwas unter die optische Mitte verschieben und die Zeilen ggf etwas näher zusammenrücken lassen. Ein
+Durchschuß in der Grösse des i/i-Punkt Abstandes war immer ganz gut" – „bitte immer noch drauf achten, dass der Text nichts
+Feldfremdes überlappt. Und die Schrift darf >=4 pt haben". Durchschuss nach der Studio-Definition (tbs-modul.js, `textIPunkt`,
+25.09.): Lücke Unterlänge→Oberlänge = Lücke i-Stamm→i-Punkt, an der Schrift gemessen (hdkl, gpqy, gemaltes i) –
+`schaumZeilenabstand()` in index.html, auf dem Mac 0,965 em statt 1,1. Lage 0,12 Innenkreisradius unter dem Pol
+(`labelDrop`); passt der Block dort nicht, erst halb so tief, dann zur Mitte, erst dann kleiner. Kleinste Schrift 4 statt 9.
+render.js (Kopie der Engine, Kopfvermerk): `placeLabel` prüft jede Zeile samt Rand gegen die eingerückte Fläche UND den echten
+Umriss (`huelle`); entartete Einrückungen (Fläche größer oder Punkte außerhalb) werden übersprungen.
+Grundfehler gefunden: Namensbreiten wurden bei 100 px gemessen – SF nimmt unter ~20 px die breitere Textform, kleine Namen
+liefen in Fuge und Nachbarzelle. Jetzt bei 10 px (`schaumNamenBreite`). Probe im Sandkasten (Plakat, gleicher Schaum):
+1.0.49 113 Namen, 6 ragten aus der Zelle, 3 Kastenecken in fremden Zellen, 9 in der Fuge; neu 213 Namen (4,04…22 pt,
+Median 7,97), 0 / 0 / 0. Caspar_D: „sieht übrigens hervorragend aus".
+Nächster Schritt (empfohlen, noch ohne Wort): Einzelbuchstaben-Kästen statt Zeilenkasten (Caspar_D aus der 2D-Gel-Spotbeschriftung:
+„Bereiche ohne Ober oder Unterlängen sind verschenkter Platz") – Tintenkasten je Zeichen aus dem Canvas, Lage aus der
+Präfixbreite (Unterschneidung), Zeilenabstand bleibt fest. Offen: dieselbe 100-px-Messung steckt noch in `emBreit` (Arealköpfe)
+und `breit` (gebogene Titel, dort mit 1,2 Zuschlag kaschiert) in `schaumSvgBauen`.

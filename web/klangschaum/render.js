@@ -3,7 +3,12 @@
    ~/Prophane/tools/foam-lab/engine/ (Stand dort: 06.10.2026, die neueste der drei Fassungen;
    die anderen: Treemapper/engine/, eingebettet im Prophane-Viewer). Geändert ist nur die
    Endung .mjs -> .js (der Server liefert .js als JavaScript) samt den Importpfaden.
-   Änderungen gehören in die Quelle zurück, nicht nur hierher. */
+   Änderungen gehören in die Quelle zurück, nicht nur hierher.
+   GEAENDERT AM 07.10.2026 (KlangTresor, noch nicht in foam-lab): renderSVG und placeLabel kennen labelLeading (Zeilenabstand
+   in em, Vorgabe 1,1 wie bisher) und labelDrop (Namensblock um diesen Anteil des Innenkreisradius tiefer, Vorgabe 0) -
+   Caspar_D: „den Text etwas unter die optische Mitte verschieben und die Zeilen ggf etwas näher zusammenrücken lassen.
+   Ein Durchschuß in der Grösse des i/i-Punkt Abstandes war immer ganz gut" und „immer noch drauf achten, dass der Text
+   nichts Feldfremdes überlappt". Ohne die Optionen zeichnet render.js genau wie die Quelle. */
 // SVG for a laid-out tree (foamtree.layoutTree): leaves filled, borders thicker the higher the level, names of the upper
 // levels. Dark ground. Leaves of a level that was filled from the level above (no own name there) are lighter and hatched,
 // with names in italics; members merged into "n small" are grey. Math coordinates (y up) are flipped to the screen.
@@ -58,7 +63,7 @@ export function lightnessOf(css) {
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
-export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false } = {}) {
+export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null } = {}) {
   const [px, py, r] = poleOf(poly), [xa, xb] = chordAt(poly, [px, py]);
   const cx = (Math.max(xa, px - 3 * r) + Math.min(xb, px + 3 * r)) / 2, width = 0.92 * (Math.min(xb, px + 3 * r) - Math.max(xa, px - 3 * r));
   // width of a line in em: measured with the real font where the page offers it (measure), else estimated at 0.56 em a character
@@ -80,15 +85,20 @@ export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLin
   // the glyphs reach 0.65 em above and below a line's middle (ascenders, descenders), italics a little wider than measured;
   // a margin of 0.08 em all round, and points along every edge of each line's box (Jörg 05.10.: "no assignment überlappt
   // auch rechts die grenze")
-  if (fit) for (let i = 0; i < 40 && size >= minSize; i++) {
-    const pts = lines.flatMap((t, j) => {
-      const w = ems(t) * size * 1.04 + 0.16 * size, mid = py + ((lines.length - 1) / 2 - j) * 1.1 * size, y0 = mid + 0.73 * size, y1 = mid - 0.73 * size;
+  /* labelDrop (07.10.2026): der Block sitzt um drop * r tiefer (Mathematik: y nach oben); passt er dort nicht, erst halb so tief,
+     dann auf dem Pol - erst danach wird die Schrift kleiner. Die Pruefung umfasst jede Zeile mit ihrem Zeilenabstand. */
+  const tiefen = drop > 0 ? [drop * r, drop * r / 2, 0] : [0];
+  const passt = (y) => lines.flatMap((t, j) => {
+      const w = ems(t) * size * 1.04 + 0.16 * size, mid = y + ((lines.length - 1) / 2 - j) * leading * size, y0 = mid + 0.73 * size, y1 = mid - 0.73 * size;
       const xs = [0, 0.25, 0.5, 0.75, 1].map(f => cx - w / 2 + f * w);
-      return [...xs.map(x => [x, y0]), ...xs.map(x => [x, y1]), [cx - w / 2, mid], [cx + w / 2, mid]]; });
-    if (pts.every(p => inside(poly, p))) break;
+      return [...xs.map(x => [x, y0]), ...xs.map(x => [x, y1]), [cx - w / 2, mid], [cx + w / 2, mid]]; }).every(p => inside(poly, p) && (!huelle || inside(huelle, p)));
+  let y = py - tiefen[0];
+  if (fit) for (let i = 0; i < 40 && size >= minSize; i++) {
+    const t = tiefen.find(d => passt(py - d));
+    if (t !== undefined) { y = py - t; break; }
     size *= 0.92;
   }
-  return size >= minSize ? { x: cx, y: py, size, lines } : null;
+  return size >= minSize ? { x: cx, y, size, lines, leading } : null;
 }
 // the words in k lines, the longest line as short as possible (every way to cut, words are few)
 function bestSplit(words, k) {
@@ -101,7 +111,7 @@ function bestSplit(words, k) {
   return best || [words.join(" ")];
 }
 
-export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [], colourOf = defaultColour, labelDepth = 1, strokes = [3.2, 2.0, 1.2, 0.7, 0.35], gutters = null, leafLabels = false, smallLabel = null, cushion = 0, labelLevel = null, labelSizes = [4, 24], measureText = null } = {}) {
+export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [], colourOf = defaultColour, labelDepth = 1, strokes = [3.2, 2.0, 1.2, 0.7, 0.35], gutters = null, leafLabels = false, smallLabel = null, cushion = 0, labelLevel = null, labelSizes = [4, 24], measureText = null, labelLeading = 1.1, labelDrop = 0 } = {}) {
   const { width: W, height: H, nodes, leaves } = result;
   if (colourOf === defaultColour && result.root) { const hd = hueDepthOf(result); colourOf = k => defaultColour(k, hd); }
   const top = pad + (title ? 26 : 0);
@@ -128,8 +138,8 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
   const maxDepth = Math.max(0, ...nodes.map(k => k.depth));
   if (!gutters) for (let dd = maxDepth; dd >= 0; dd--) for (const k of nodes) if (k.depth === dd && k.outline && !leaves.includes(k)) body += `<path d="${d(k.outline)}" fill="none" stroke="#121417" stroke-width="${sw(dd)}" stroke-linejoin="round" pointer-events="none"/>`;
   const textAt = (lab, cls, extra) => {   // one or two centred lines
-    const fs = lab.size * scale, x = X([lab.x, 0]), y0 = top + (H - lab.y) * scale - (lab.lines.length - 1) * fs * 0.55;
-    return lab.lines.map((t, i) => `<text${cls ? ` class="${cls}"` : ""} x="${x}" y="${(y0 + i * fs * 1.1).toFixed(2)}" font-size="${fs.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" pointer-events="none"${extra}>${esc(t)}</text>`).join("");
+    const fs = lab.size * scale, x = X([lab.x, 0]), lead = lab.leading || 1.1, y0 = top + (H - lab.y) * scale - (lab.lines.length - 1) * fs * lead / 2;
+    return lab.lines.map((t, i) => `<text${cls ? ` class="${cls}"` : ""} x="${x}" y="${(y0 + i * fs * lead).toFixed(2)}" font-size="${fs.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" pointer-events="none"${extra}>${esc(t)}</text>`).join("");
   };
   if (labelLevel != null) { // the names of one level only, each as large as its cell allows (Jörg 05.10.2026: a slider for
     // the level; largest 24, smallest 4; white without an edge, 30 % transparent), on up to three lines; "n small" bundles stay unnamed
@@ -139,7 +149,12 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
     const visible = k => (gutters && k.tags && insetOutline(k.outline, k.tags, gutters.map(g => g / scale))) || k.outline;
     for (const k of nodes) {
       if (k.depth !== labelLevel || !k.outline || k.small) continue;
-      const lab = placeLabel(visible(k), k.name.slice(0, 60), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true });
+      /* (07.10.2026) Das um die Fugen eingerueckte Vieleck entartet in winzigen Zellen (Fugen breiter als der Platz) - dann
+         „passt" ein Name scheinbar und ragt in Fuge und Nachbarzelle. Darum zusaetzlich gegen den echten Umriss pruefen, und ein
+         eingeruecktes Vieleck, das nicht klar im Umriss liegt, gilt nicht: lieber kein Name als einer ueber fremdem Feld. */
+      const vis = visible(k), aV = Math.abs(shoelace(vis)), aK = Math.abs(shoelace(k.outline));
+      if (vis !== k.outline && !(aV > 0 && aV < aK && vis.every(p => inside(k.outline, p)))) continue;
+      const lab = placeLabel(vis, k.name.slice(0, 60), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline });
       if (!lab) continue;
       const below = leavesBelow(k).filter(x => x.outline), under = below.find(x => inside(x.outline, [lab.x, lab.y])) || below[0] || k;
       const ink = lightnessOf(colourOf(under)) >= 58 ? "#000000" : "#ffffff";

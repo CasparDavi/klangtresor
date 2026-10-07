@@ -9256,6 +9256,41 @@ function schaumKachelPlatz(p, a){
   if (a >= 0.75){ const H = p.h * a / 0.75; return { x: p.x, y: p.y - (H - p.h) / 2, w: p.w, h: H }; }
   const W = p.w * 0.75 / a; return { x: p.x - (W - p.w) / 2, y: p.y, w: W, h: p.h };
 }
+/* ZELLNAMEN IM KLANGSCHAUM (Caspar_D, 07.10.2026: „den Text etwas unter die optische Mitte verschieben und die Zeilen ggf
+   etwas näher zusammenrücken lassen. Ein Durchschuß in der Grösse des i/i-Punkt Abstandes war immer ganz gut" - „wir haben
+   das schonmal im effectclip studio beim titel-einfügen definiert" - „bitte immer noch drauf achten, dass der Text nichts
+   Feldfremdes überlappt. Und die Schrift darf >=4 pt haben"). Die Definition aus dem Studio (tbs-modul.js, textIPunkt und
+   textLaengen, 25.09.2026): die Luecke zwischen der UNTERLAENGE der einen und der OBERLAENGE der naechsten Zeile ist so gross
+   wie die zwischen Stamm und Punkt des i - an der Schrift gemessen (hdkl, gpqy, ein gemaltes i), nicht an den Buchstaben der
+   Zeile. Zeilenabstand Mitte zu Mitte also Oberlaenge + Unterlaenge + i-Luecke, in em, fuer die Schrift der Zellnamen
+   (system-ui, normal). Lage: um 0,12 des Innenkreisradius unter dem Pol der Zelle; render.js prueft jede Zeile samt Rand
+   gegen die eigene Zelle und rueckt erst zur Mitte zurueck, bevor die Schrift kleiner wird. Kleinste Schrift 4. */
+/* Breite eines Zellnamens in em - gemessen bei 10 px, nicht bei 100: die Systemschrift des Mac (SF) nimmt unter ~20 px ihre
+   breitere Textform, bei 100 px die schmale Anzeigeform. Mit 100 px gemessen rief ein klein gesetzter Name bis an die Zellwand
+   (07.10.2026, Probe mit Mindestgroesse 4: „Electric rain im Stahlhimmel"); fuer grosse Namen ist 10 px etwas vorsichtig. */
+let schaumNamenLeinwand = null;
+function schaumNamenBreite(t){
+  if (!schaumNamenLeinwand){ schaumNamenLeinwand = document.createElement('canvas').getContext('2d'); schaumNamenLeinwand.font = '400 10px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'; }
+  return schaumNamenLeinwand.measureText(t).width / 10;
+}
+let schaumZeilenabstandMerk = null;
+function schaumZeilenabstand(){
+  if (schaumZeilenabstandMerk) return schaumZeilenabstandMerk;
+  let lead = 1.1;
+  try {
+    const S = 240, fam = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif', c = document.createElement('canvas');
+    c.width = S; c.height = Math.round(S * 1.4);
+    const g = c.getContext('2d', { willReadFrequently: true }); g.font = '400 ' + S + 'px ' + fam; g.textBaseline = 'middle';
+    const o = g.measureText('hdkl').actualBoundingBoxAscent / S, u = g.measureText('gpqy').actualBoundingBoxDescent / S;
+    g.textBaseline = 'alphabetic'; g.fillStyle = '#fff'; g.fillText('i', S * 0.25, S * 1.05);
+    const W = c.width, H = c.height, d = g.getImageData(0, 0, W, H).data;
+    const ink = (y) => { for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] > 60) return true; return false; };
+    let y = 0; while (y < H && !ink(y)) y++; while (y < H && ink(y)) y++; const punkt = y; while (y < H && !ink(y)) y++;
+    const luecke = (y - punkt) / S;
+    if (o > 0.2 && u > 0.1 && luecke > 0.005 && luecke < 0.3) lead = o + u + luecke;
+  } catch (e) {}
+  return (schaumZeilenabstandMerk = lead);
+}
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');
   await schaumGesichterLaden();
@@ -9378,8 +9413,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     /* Luecken statt Linien auch am Schirm (07.10.2026, siehe 1.0.34): Grund scheint durch, Dark Reader
        kann nichts umfaerben; im Druck dieselben Breiten mal dem Fugen-Regler. */
     gutters: druck ? SCHAUM_STRICHE.map(g => g * druck.fugen) : SCHAUM_STRICHE,
-    ...(druck || personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
-    colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
+    ...(druck || personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [4, 22], labelLeading: schaumZeilenabstand(), labelDrop: 0.12 }),
+    colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: schaumNamenBreite });
   const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
   /* WERKVERZEICHNIS (Plakat, Stufe 2; Caspar_D hat es angekreuzt): jede Zelle traegt eine Nummer, am Rand steht
      die nummerierte Liste - so ist jeder Titel auffindbar, auch der kleinste. Gezaehlt wird Areal fuer Areal (in
@@ -9538,7 +9573,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.49').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.50').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
