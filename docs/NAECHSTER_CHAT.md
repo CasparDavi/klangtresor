@@ -8487,3 +8487,50 @@ Schilds benannt), Zeile gekürzt (Plakat misst in der kleineren von Druck- und V
 rechten Tafel, keine Fuge, Format 0,96 statt Tafelziel 0,71 (klein, 4 % der Fläche) – offen. Keine Konsolenfehler. Ausgeliefert 1.0.57.
 Offen: PDF mit echtem Druck prüfen (Avatar über druckBilder), Triptychon-Format, Glas am Schild evtl. dunkler (die Signatur im
 Avatar scheint durch).
+
+## 85. 07.10.2026 nachts: Randlos – die Ecke ist Grund, bemessen nach dem Inhalt, wählbar (1.0.58)
+
+Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der Avatar in rundem Beschnitt
+wie in Suno gezeigt, darunter unten- und rechtsbündig Text" · Genitiv „natürlich ohne Apostroph" („Caspar_Ds") · „Avatar im dünnem
+Kreis rundherum auf schwarzem grund", „auf weissem Grund … Anthrazit" · „ich nehm die Farblegende mit rein" · „versuch mal vorher
+festzulegen, wie gross die Ecke dafür sein muß, ggf das Gewicht etwas vermindern, das kann ja in die Optimierung am Anfang mit
+einfließen" · „vielleicht definierbar machen in welcher ecke man das gerne hätte" · „meinst du nicht, das man die reihenfolge
+invertieren sollte, wenn die Ecke oben ist, vielleicht nicht exakt invers?" · „mach alle sachen, die nicht ins rahmenlose design
+passen ausgegraut".
+Gebaut:
+- `web/klangschaum/eckblock.js` (neu): Block = Teile von oben nach unten (Kreis, Zeilen, Legende, Lücken), `blockLage` (bündig zur
+  Ecke im Rahmen = Schnitt + 4 %), `blockPasst` (Rechtecke samt Luft 2,5 %: Ecken innen + keine Wand schneidet; Kreis: Abstand),
+  `blockReserve` (größter Faktor, um den der Block noch passt), `inDerEcke`. Von Worker und Plakat gemeinsam benutzt.
+- `schild.js`: Suche variiert Startpunkte UND Anteil der Ecke: Schätzung aus dem Hüllkasten, Runde 1, Anteil auf Reserve ~1,08
+  nachgeführt, Runde 2, dann den kleinsten passenden Anteil zu den Siegerstartpunkten eingeschachtelt (Intervallhalbierung – das
+  reine Nachführen pendelte). Klemme 35 % (Triptychon: der äußeren Tafel). Nichts passt → Lage mit größter Reserve + `fehlschlag`;
+  keine Ecke in der Ecke → wenigstens ein Startpunkt für sie (sonst verwarf die Engine alle Startpunkte der obersten Ebene).
+  Zielformat „wie das Plakat" entfällt. Werkstatt: 6–9 % statt 12 %, Reserve im vollen Lauf gleich wie in der Suche.
+- `worker.js`: Zeilen mit dem gefundenen Gewicht in den vollen Lauf; `res.eckSuche`/`summary.schild` (Anteil, Reserve, fehlschlag).
+- `index.html`: `schildZelle` (Avatar + Glasfeld) gelöscht – die Zelle der Ecke wird nicht gezeichnet; `schildAuftrag(j, vorgabe)`
+  (Schlüssel = Ecke + Block gerundet + Rahmen); `schaumLageHolen` entdoppelt Läufe je Lage, ein neuer Plakat-Auftrag beendet den
+  alten Worker, Fehlschläge werden nicht gemerkt.
+- `plakat.js`: `eckTeile` (Messung für Suche/Schlüssel fest bei 6 px = breiteste Stufe der Systemschrift; Setzen in der echten
+  Vorschaugröße), `schildVorgabe` (mm → Schaum-Einheiten, Rahmen in den Schaum geklemmt), `eckeSetzen` (Avatar /avatar rund, Ring
+  auf dunklem / Anthrazit-Filter auf hellem Grund, Legende mit Punkten, Name, Titel, Zeilen mit „/" als Umbruch, Edition = Auflage +
+  Signierstrich; passt der Block nicht mehr: genau so weit verkleinert, unter 0,3 nicht gesetzt + Hinweis); unten Avatar innen →
+  Legende → Text an der Ecke, oben Gruppen umgedreht; Ecken-Knöpfe ↖↗↙↘ und Namensfeld; Vorschläge vor dem Legen; Laufzeit =
+  Summe der Titellängen; bei Randlos Seitenverhältnis auf 3 Stellen (vorher reichte der Schaum in 3 × 70 × 100 quer 28 mm nicht in
+  den Beschnitt); Tippen setzt nur, Verlassen/Enter legt neu; angefasste Felder bleiben eigen (auch leer), „Vorschlag
+  wiederherstellen"; ausgegraut bei Randlos: Rand, Federstrich, Strichstärke, Verzeichnis, Areale am Rand, Zeitleiste (Grund im
+  title + Zeile unter den Vorlagen), sonst Ecke und Name; PNG/PDF kodieren Nicht-JPEG als PNG (Avatar-Transparenz); Avatar wird
+  beim Öffnen eigens geprüft (frisches Archiv).
+Geprüft (Sandkasten 8796, `_werkstatt_bilder/probe-ecke.js` und `probe-ecke-felder.js`): ur/ul/or/ol, Weiß, Triptychon 3×50×70,
+3×70×100 quer – je 150–165 Prüfpunkte, 0 auf Zellen, keine Konsolenfehler; Tippen ohne Neulegen, Verlassen legt neu, Name leer
+bleibt leer, überlanger Titel im Triptychon wird kleiner gesetzt. Fallensuche (4 Blickwinkel, je Fund ein Widerleger): 13 bestätigt,
+alle behoben, 4 verworfen (Zeitabhängigkeit der Suche, IndexedDB-Plätze – bekannt, kein falsches Ergebnis).
+Wiedervorlage (Caspar_D entscheidet):
+- „Hörzeit" heißt im Haus Plays × Länge; in der Ecke steht „Laufzeit" (Summe der Längen). Antwort a/b steht aus.
+- PDF mit echtem Druck prüfen (Avatar über druckBilder).
+Nächste Baustelle (entschieden, nach 1.0.58): Rand bei Randlos, Farbverlauf nach den Arealen an der Kante, realistisch gemalt,
+Breite einstellbar, Farbe bis über den Schnitt, schmaler Streifen Grund zum Schaum, läuft zur Avatar-Ecke in den Grund aus.
+Malweisen: heller Grund Aquarell „Nass in Nass", „Flecken und Blüten", „Alles zusammen"; dunkler Grund „Pastellkreide", „Kreide
+verwischt", „Gouache, trockener Pinsel". Simulationen (Canvas: Papierkorn, Wassersaum, Körnung, Blüten, Spritzer, Schraffur):
+`_werkstatt_bilder/fotos/aquarell.html`, `dunkel.html`.
+Danach: monochromes Plakat mit Federzeichnung per XDoG ohne KI (Caspar_D: „für die monochrome darstellung xdog-blatt.png die zweite
+spalte"); Skript und Parameter `_werkstatt_bilder/feder/` (σ 0,9 px, k 1,6, τ 0,985, φ 260 bei 600 px Breite).

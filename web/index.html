@@ -9530,48 +9530,10 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
       + `<text class="kante" font-size="${fs.toFixed(1)}" font-weight="600" fill="#ffffff" fill-opacity="0.7"`
       + ` clip-path="url(#skz${i})" pointer-events="none"><textPath href="#skp${i}" startOffset="50%" text-anchor="middle"><tspan${versatz}>${esc(txt)}</tspan></textPath></text>`;
   };
-  /* DIE SCHILDZELLE (Plakat „Randlos", Caspar_D: „wo Titel, Legende, Avatar und Name drin stehen"): dein Avatar (/avatar, die
-     Fassung in library/ - kommt ueber data-voll auch ins PDF) als Bild der Zelle, unten im Glasfeld Titel, Zeile, Legende und
-     Edition, linksbuendig in der engsten Breite der Zelle ueber der Hoehe des Blocks; passt der Titel nicht, wird alles im selben
-     Mass kleiner. Groessen wie beim Museumsschild (T, U, L in mm). Ohne Plakat (am Schirm gibt es kein Schild) nur dunkel. */
-  const schildZelle = (alles, dd, i) => {
-    const dunkel = alles.replace(/ fill="[^"]*"/, ' fill="#1b1d22"');
-    if (!druck || !druck.schild) return dunkel;
-    const S = druck.schild, mm = druck.mmJeEinheit || 1;
-    const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
-    const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
-    const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
-    let T = S.T / mm, U = S.U / mm, L = S.L / mm;
-    const rand = Math.max(T * 0.9, 0.06 * Math.min(w, h)), nL = S.legende.length;
-    const blockH = () => T * 1.3 + U * 1.7 + (nL ? L * 0.9 + nL * L * 1.55 : 0) + (S.edition ? U * 1.9 : 0);
-    const grenzen = (oben, unten) => { let l = -Infinity, r = Infinity;
-      for (let k = 0; k <= 8; k++){ const sc = sehne(pk, oben + (unten - oben) * k / 8); if (sc){ l = Math.max(l, sc[0]); r = Math.min(r, sc[1]); } }
-      return r > l ? [l, r] : [x, x + w]; };
-    let unten = y + h - rand, oben = unten - blockH(), [l, r] = grenzen(oben, unten);
-    const breiteVon = () => Math.max(1, r - l - 2 * rand);
-    const titelB = textBreite(S.titel, T, 600) * T, unterB = textBreite(S.unter, U) * U;
-    const f = Math.min(1, breiteVon() / Math.max(titelB, unterB, 1));
-    if (f < 1){ T *= f; U *= f; L *= f; oben = unten - blockH(); [l, r] = grenzen(oben, unten); }
-    const x0 = l + rand, breite = breiteVon(), farbe = S.milch ? '#141414' : '#f4f4f2', leise = S.milch ? '#3a3a3a' : '#c9cbc7';
-    const kuerzen = (t, fs, b) => { if (textBreite(t, fs) * fs <= b) return t; let n = t.length; while (n > 1 && textBreite(t.slice(0, n) + '…', fs) * fs > b) n--; return t.slice(0, n) + '…'; };
-    const glasY = oben - rand * 0.7;
-    let tx = `<text x="${x0.toFixed(1)}" y="${(oben + T).toFixed(1)}" font-size="${T.toFixed(2)}" font-weight="600" fill="${farbe}">${esc(kuerzen(S.titel, T, breite))}</text>`
-      + `<text x="${x0.toFixed(1)}" y="${(oben + T * 1.3 + U * 1.15).toFixed(1)}" font-size="${U.toFixed(2)}" fill="${leise}">${esc(kuerzen(S.unter, U, breite))}</text>`;
-    let yy = oben + T * 1.3 + U * 1.7 + L * 0.9;
-    for (const e of S.legende){ const q = L * 0.9;
-      tx += `<rect x="${x0.toFixed(1)}" y="${(yy + L * 0.25 - q * 0.85).toFixed(1)}" width="${q.toFixed(2)}" height="${q.toFixed(2)}" rx="${(q * 0.18).toFixed(2)}" fill="${e.farbe}"/>`
-        + `<text x="${(x0 + q + L * 0.55).toFixed(1)}" y="${(yy + L * 0.25).toFixed(1)}" font-size="${L.toFixed(2)}" fill="${farbe}">${esc(kuerzen(e.name, L, breite - q - L * 0.55))}</text>`;
-      yy += L * 1.55; }
-    if (S.edition) tx += `<text x="${x0.toFixed(1)}" y="${(yy + U * 1.2).toFixed(1)}" font-size="${(U * 0.9).toFixed(2)}" fill="${leise}">${esc(kuerzen(S.edition, U * 0.9, breite))}</text>`;
-    const lage = `x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`;
-    kacheln.push({ dd, tf: '' });
-    return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath><clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${glasY.toFixed(1)}" width="${w.toFixed(1)}" height="${(y + h - glasY).toFixed(1)}"/></clipPath>`
-      + dunkel
-      + `<image href="/avatar" data-voll="/avatar" data-i="${i}" data-p="${[x, y, w, h].map(v => v.toFixed(1)).join(',')}" ${lage} preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>`
-      + `<g clip-path="url(#skz${i})" pointer-events="none"><image href="/avatar" data-voll="/avatar" ${lage} preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>`
-      + `<rect class="${S.milch ? 'milch' : 'rauch'}" x="${x.toFixed(1)}" y="${glasY.toFixed(1)}" width="${w.toFixed(1)}" height="${(y + h - glasY).toFixed(1)}" fill="${S.milch ? '#ffffff' : '#000'}" opacity="${S.milch ? '0.62' : '0.55'}"/></g>`
-      + `<g clip-path="url(#skz${i})" pointer-events="none">${tx}</g>`;
-  };
+  /* DIE ECKE (Plakat „Randlos"): bis 1.0.57 eine eigene Zelle mit dem Avatar als Bild und einem Glasfeld darin. Seit 1.0.58
+     (Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der Avatar in rundem
+     Beschnitt wie in Suno gezeigt") bleibt sie leer: keine Kachel, kein Kissen, kein Schatten - Avatar, Legende und Text setzt
+     plakat.js auf den Grund der Seite (eckblock.js). */
   /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
   const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] && zeilen[k.row].id !== SCHILD_ID ? (schaumAvatarAdresse(zeilen[k.row].bild) || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
   /* ZELLNAMEN OHNE KLAMMERN (Caspar_D, 07.10.2026: „alles was in Klammern steht vielleicht weglassen"): was in runden oder
@@ -9637,7 +9599,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
            /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
            .replace(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g, (alles, dd, a, i, b) => {
              const id = ids[+i]; if (!id) return alles;
-             if (id === SCHILD_ID) return schildZelle(alles, dd, +i);
+             if (id === SCHILD_ID) return '';
              /* die Areal-Farbe aus der Legende an den Pfad - fuer den Rahmen der hervorgehobenen Zelle (rahmenFarbe) */
              { const af = farbeVon((zeilen[res.leaves[+i].row] || {}).gruppe); if (af) alles = alles.replace('<path ', `<path data-farbe="${af}" `); }
              const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
@@ -9741,35 +9703,58 @@ function schaumKissenKacheln(kacheln, res){
     + `<rect x="0" y="0" width="${res.width}" height="${res.height}" fill="#000"/>` + kacheln.map(k => pfad(k, '#fff')).join('') + '</g></g>';
 }
 /* Nur legen, ohne zu zeichnen (Plakat-Studio): gemerkt oder im Worker; melde(Sekunden) zaehlt mit. */
-/* DAS SCHILD IN DER ECKE (Plakat „Randlos", 1.0.57; die Suche steht in web/klangschaum/schild.js): ein Areal der obersten
-   Ebene mit einem einzigen Blatt, Anteil an der Flaeche fest (12 %, im Triptychon 12 % einer Tafel). Sein Name beginnt mit einem
-   unsichtbaren Zeichen (U+2063): buildTree beschneidet Namen mit trim(), ein schmales Leerzeichen fiel dabei weg (Werkstatt) -
-   U+2063 bleibt, und kein echtes Areal heisst so. Der Lage-Schluessel traegt Anteil, Zielformat und Tafelgrenze. */
+/* DIE ECKE (Plakat „Randlos", seit 1.0.57; die Suche steht in web/klangschaum/schild.js): ein Areal der obersten Ebene mit
+   einem einzigen Blatt. Bis 1.0.57 mit festem Anteil (12 %), seit 1.0.58 so gross, wie Avatar, Legende und Text mit Luft
+   brauchen - der Worker sucht den Anteil. Sein Name beginnt mit einem unsichtbaren Zeichen (U+2063): buildTree beschneidet Namen
+   mit trim(), ein schmales Leerzeichen fiel dabei weg (Werkstatt) - U+2063 bleibt, und kein echtes Areal heisst so. Der
+   Lage-Schluessel traegt Ecke, Block (Breiten gerundet), Rahmen und Tafelgrenzen. */
 const SCHILD_NAME = '\u2063Schild', SCHILD_ID = '__schild';
-function schildAuftrag(j, { ziel, minX = 0, anteil = 0.12 }){
+/* vorgabe aus plakat.js (schildVorgabe): Ecke, Block und Rahmen in Schaum-Einheiten, Luft, Tafelgrenzen, Schluessel. Das Gewicht
+   der Zeile ist nur der Start - den Anteil sucht der Worker (schild.js: so klein, dass der Block mit Luft hineinpasst). */
+function schildAuftrag(j, { ecke = 'ur', block, rahmen, luft = 0, xMin = 0, xMax = Infinity, schluessel = '' }){
   const summe = j.zeilen.reduce((s, z) => s + (+z.w || 0), 0);
-  const zeile = { id: SCHILD_ID, titel: SCHILD_NAME, w: String(summe * anteil / (1 - anteil)) };
+  const zeile = { id: SCHILD_ID, titel: SCHILD_NAME, w: String(summe * 0.08 / 0.92) };
   j.ebenen.forEach(e => { zeile[e] = SCHILD_NAME; });          /* auf jeder Ebene benannt - leer hiesse „nicht tiefer zugeordnet", schraffiert */
-  return { ...j, zeilen: [...j.zeilen, zeile], lage: j.lage + '|schild:' + [anteil, ziel.toFixed(3), Math.round(minX)].join(':'),
-           schild: { name: SCHILD_NAME, ziel, ms: 500, minX } };
+  return { ...j, zeilen: [...j.zeilen, zeile], lage: j.lage + '|ecke:' + schluessel,
+           schild: { name: SCHILD_NAME, ecke, block, rahmen, luft, ms: 500, xMin, xMax } };
 }
-async function schaumLageHolen(j, melde){
-  const gemerkt = schaumLagen.get(j.lage) || await lageLesen(j.lage);
-  if (gemerkt) return gemerkt;
-  return new Promise((ok, nein) => {
-    const w = new Worker('/klangschaum/worker.js', { type: 'module' }), t0 = performance.now();
-    const uhr = setInterval(() => { if (melde) melde(Math.round((performance.now() - t0) / 1000)); }, 1000);
-    w.onmessage = (ev) => { if (ev.data.type === 'progress') return; clearInterval(uhr); w.terminate();
-      if (ev.data.type === 'done'){ lageMerken(j.lage, ev.data.res); ok(ev.data.res); } else nein(new Error(ev.data.message)); };
-    w.onerror = (ev) => { clearInterval(uhr); w.terminate(); nein(new Error(ev.message || 'Worker')); };
-    w.postMessage({ rows: j.zeilen, tree: { levels: [...j.ebenen, 'row'], weight: 'w', leafName: 'titel' },
-                    layout: { width: j.W, height: j.H, method: 'foam', minArea: 0, minShare: 0, ...(j.seeds ? { seeds: j.seeds } : {}) },
-                    ...(j.schild ? { schild: j.schild } : {}) });
-  });
+/* Laeufe nach Lage: zweimal dieselbe Lage legt nur einmal (vorher startete jede Reglerbewegung waehrend eines Laufs einen zweiten
+   Worker fuer dieselbe Lage). ueberholbar (Plakat): ein neuer Auftrag beendet den laufenden, statt ihn im Hintergrund weiterrechnen
+   zu lassen. Eine Lage, deren Ecke keinen Platz fand (summary.schild.fehlschlag), wird nicht gemerkt - der naechste Versuch sucht neu. */
+const schaumLaeufe = new Map();
+let schaumPlakatAbbruch = null;
+function schaumLageHolen(j, melde, ueberholbar){
+  if (schaumLaeufe.has(j.lage)) return schaumLaeufe.get(j.lage);
+  if (ueberholbar && schaumPlakatAbbruch) schaumPlakatAbbruch();
+  let abgebrochen = false, abbrechen = null;
+  const lauf = (async () => {
+    const gemerkt = schaumLagen.get(j.lage) || await lageLesen(j.lage);
+    if (gemerkt) return gemerkt;
+    if (abgebrochen) throw new Error('überholt');
+    return await new Promise((ok, nein) => {
+      const w = new Worker('/klangschaum/worker.js', { type: 'module' }), t0 = performance.now();
+      const uhr = setInterval(() => { if (melde) melde(Math.round((performance.now() - t0) / 1000)); }, 1000);
+      const ende = () => { clearInterval(uhr); w.terminate(); };
+      abbrechen = () => { ende(); nein(new Error('überholt')); };
+      w.onmessage = (ev) => { if (ev.data.type === 'progress') return; ende();
+        if (ev.data.type === 'done'){ const sch = ev.data.summary && ev.data.summary.schild; if (!(sch && sch.fehlschlag)) lageMerken(j.lage, ev.data.res); ok(ev.data.res); }
+        else nein(new Error(ev.data.message)); };
+      w.onerror = (ev) => { ende(); nein(new Error(ev.message || 'Worker')); };
+      w.postMessage({ rows: j.zeilen, tree: { levels: [...j.ebenen, 'row'], weight: 'w', leafName: 'titel' },
+                      layout: { width: j.W, height: j.H, method: 'foam', minArea: 0, minShare: 0, ...(j.seeds ? { seeds: j.seeds } : {}) },
+                      ...(j.schild ? { schild: j.schild } : {}) });
+    });
+  })();
+  const meinAbbruch = () => { abgebrochen = true; if (abbrechen) abbrechen(); };
+  const sauber = () => { schaumLaeufe.delete(j.lage); if (schaumPlakatAbbruch === meinAbbruch) schaumPlakatAbbruch = null; };
+  lauf.then(sauber, sauber);
+  schaumLaeufe.set(j.lage, lauf);
+  if (ueberholbar) schaumPlakatAbbruch = meinAbbruch;
+  return lauf;
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.57').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.58').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

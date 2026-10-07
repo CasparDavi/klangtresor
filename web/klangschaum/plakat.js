@@ -8,6 +8,7 @@
    Das Bild selbst baut das Haus (schaumSvgBauen mit druck): dieselben Zellen, Farben und Bilder wie am
    Schirm, im Plakat als Kacheln mit Luecken. Die Vorschau nimmt die Bilder aus dem Vorrat, das PDF die
    Originale (data-voll). Masse auf der Seite in Millimetern; 3 mm Beschnitt rundum. */
+import { blockLage, blockReserve, ECKEN } from './eckblock.js';
 
 const FORMATE = [
   { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
@@ -38,10 +39,11 @@ const VORLAGEN = [
   { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
     e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false, edition: false, zeitleiste: true, schild: false } },
 ];
-/* RANDLOS MIT SCHILD (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format
-   wie das Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout,
-   kein Museumsschild, keine Arealnamen am Rand; Titel, Zeile, Legende und Edition stehen im Schild unten rechts (schild.js). */
-VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Schild in der Ecke',
+/* RANDLOS (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format wie das
+   Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout, kein
+   Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 ist die Ecke der Grund der Seite; darin Avatar, Legende und Text, bündig
+   zur gewählten Ecke (eckeSetzen; Größe und Form sucht schild.js). */
+VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
   e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
@@ -119,59 +121,163 @@ async function auftrag(verh){
   const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
   return { j: schaumKlangAuftrag(m, gl, schaumZoom, verh), art: 'titel', m, gl };
 }
-/* Das Schild fuer den Auftrag: Zielformat = das Format des Plakats (Caspar_D: „Zielfunktion ist gleiches Format wie das Plakat"),
-   im Triptychon das einer Tafel; dort muss es ganz auf der rechten Tafel liegen (rechts der letzten Wandfuge) und nimmt 12 % einer
-   Tafel. Der Schaum ist 1000 Einheiten breit und fuellt die randlose Karte ganz. */
-function schildVorgabe(g){
-  const kv = g.karte, k = kv.w / 1000;
-  if (g.tri){ const fug = wandFugen(g), letzte = fug[fug.length - 1];
-    return { ziel: g.tri.pw / g.tri.ph, minX: (letzte[1] - kv.x) / k, anteil: 0.12 * (g.tri.pw * g.tri.ph) / (g.w * g.h) }; }
-  return { ziel: kv.w / kv.h, minX: 0, anteil: 0.12 };
+/* DIE ECKE (Randlos, 1.0.58). Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der
+   Avatar in rundem Beschnitt wie in Suno gezeigt; darunter unten- und rechtsbündig Text: <Avatarname>s / Klangschaum / <Datum> /
+   nnn Titel / Laufzeit" – „ich nehm die Farblegende mit rein" – „vielleicht definierbar machen in welcher ecke man das gerne hätte"
+   – „meinst du nicht, das man die reihenfolge invertieren sollte, wenn die Ecke oben ist, vielleicht nicht exakt invers?".
+   Der Block: unten der Avatar innen, dann die Legende, der Text an der Ecke; oben die Gruppen umgedreht, die Zeilen bleiben in
+   Lesereihenfolge. Bündig zur Seite der Ecke (links/rechts). Abstand zum Schnitt 4 %, Luft zur Wand 2,5 % der kurzen Seite (im
+   Triptychon einer Tafel); Avatar 12 %. */
+const eckeJetzt = () => ECKEN.includes(E.ecke) ? E.ecke : 'ur';
+/* Gibt es den Avatar? /avatar liefert 404, solange keiner geladen ist. Beim Öffnen des Studios wird eigens nachgesehen (avatarPruefen)
+   - das Kopfbild der Seite blendet sich nach einem 404 aus und lädt nie neu, ein später geholter Avatar fehlte sonst bis zum Neuladen. */
+let avatarStand = null;
+async function avatarPruefen(){ try { const r = await fetch('/avatar', { cache: 'no-store' }); avatarStand = r.ok; } catch (e) { avatarStand = false; } }
+function avatarDa(){ if (avatarStand != null) return avatarStand; const i = document.getElementById('ichbild'); return !!i && i.style.display !== 'none' && !(i.complete && !i.naturalWidth); }
+/* Die Teile von oben nach unten, in Millimetern der Seite. Die Systemschrift wird klein gesetzt breiter (1.0.57: die Vorschau lief
+   im Glasfeld ueber). Fuer die Suche und den Lage-Schluessel wird darum fest bei 6 px gemessen, der breitesten Stufe (darunter
+   gleich breit) - vorher bei der Breite der Vorschau, und die hing am Fenster: Oeffnen, Formatwechsel oder Fenstergroesse legten
+   den Schaum ungefragt neu (Fallensuche 1.0.58). Das Setzen misst in der echten Vorschaugroesse (pxJeMm). */
+function eckTeile(g, pxJeMm = null){
+  const T = g.T, U = g.U, L = g.L;
+  const breite = (t, fw, fs) => messen(t, fw, Math.min(fs, pxJeMm ? fs * pxJeMm * 25.4 / 96 : 6 * 25.4 / 96)) * fs;
+  const zeile = (t, fs, fw, rolle) => ({ typ: 'zeile', t, fs, fw, rolle, w: breite(t, fw, fs), h: fs * 1.32 });
+  const text = [];
+  if (E.schildName) text.push(zeile(E.schildName, U * 1.25, 500, 'name'));
+  if (E.kopfTitel) text.push(zeile(E.kopfTitel, T, 600, 'titel'));
+  for (const t of String(E.kopfUnter || '').split('/').map(x => x.trim()).filter(Boolean)) text.push(zeile(t, U, 400, 'unter'));
+  /* Edition: nur die Auflage und der Strich zum Signieren - Datum und Name stehen schon darueber */
+  if (E.edition){ const t = E.auflage || '1/1', fs = U * 0.85, tw = breite(t, 400, fs), linie = 0.07 * g.kurz;
+    text.push({ typ: 'signatur', t, fs, tw, linie, w: tw + fs * 0.8 + linie, h: U * 2.6 }); }
+  const leg = E.legende ? legendenEintraege().map(e => ({ typ: 'legende', t: e.name, farbe: e.farbe, fs: L, w: breite(e.name, 400, L) + L * 1.2, h: L * 1.55 })) : [];
+  const av = avatarDa() ? [{ typ: 'kreis', d: 0.12 * g.kurz }] : [];
+  const gruppen = (eckeJetzt()[0] === 'u' ? [av, leg, text] : [text, leg, av]).filter(x => x.length);
+  return gruppen.flatMap((x, i) => i ? [{ typ: 'luecke', h: U * 1.1 }, ...x] : x);
 }
-async function auftragMitSchild(verh, g){
-  const a = await auftrag(verh);
-  if (E.schild && typeof schildAuftrag === 'function') a.j = schildAuftrag(a.j, schildVorgabe(g));
-  return a;
+/* Fuer den Auftrag (Worker) und fuers Setzen: Block, Rahmen (Schnitt + Abstand) und Luft in Schaum-Einheiten (y nach oben), im
+   Triptychon die Grenze der aeusseren Tafel. runden: Breiten fuer die Suche auf 3 % der Breite aufgerundet - sonst legte jeder
+   Buchstabe im Titelfeld den Schaum neu; gesetzt wird ungerundet. */
+function schildVorgabe(g, W, H, runden = true, pxJeMm = null){
+  const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2, oy = kv.y + (kv.h - H * k) / 2;
+  const ecke = eckeJetzt(), abstand = 0.04 * g.kurz, xu = (x) => (x - ox) / k, yu = (y) => H - (y - oy) / k;
+  const rahmen = { x0: xu(BESCHNITT + abstand), x1: xu(BESCHNITT + g.w - abstand), y0: yu(BESCHNITT + g.h - abstand), y1: yu(BESCHNITT + abstand) };
+  const teile = eckTeile(g, pxJeMm), q = 0.03 * W;
+  const block = teile.map(t => t.typ === 'kreis' ? { typ: 'kreis', d: t.d / k } : t.typ === 'luecke' ? { typ: 'luecke', h: t.h / k }
+    : { typ: t.typ, w: runden ? Math.ceil(t.w / k / q) * q : t.w / k, h: t.h / k });
+  let xMin = 0, xMax = W;
+  if (g.tri){ const f = wandFugen(g); if (ecke[1] === 'r') xMin = xu(f[1][1]); else xMax = xu(f[0][0]); }
+  const luft = 0.025 * g.kurz / k;
+  /* der Rahmen samt Luft muss im Schaum liegen: reicht der Schaum nicht bis an den Schnitt (gerundetes Seitenverhältnis), lag er
+     sonst draußen, und die Suche fand nie Platz (3 × 70 × 100 quer, Fallensuche 1.0.58) */
+  rahmen.x0 = Math.max(rahmen.x0, luft + 0.5); rahmen.x1 = Math.min(rahmen.x1, W - luft - 0.5);
+  rahmen.y0 = Math.max(rahmen.y0, luft + 0.5); rahmen.y1 = Math.min(rahmen.y1, H - luft - 0.5);
+  const schluessel = [ecke, block.map(t => t.typ[0] + Math.round(t.d || t.w || 0) + 'x' + Math.round((t.h || 0) * 10)).join(','),
+    ['x0', 'x1', 'y0', 'y1'].map(z => Math.round(rahmen[z])).join(','), Math.round(xMin), Math.round(xMax), Math.round(luft * 10)].join(':');
+  return { ecke, block, rahmen, luft, xMin, xMax, schluessel, teile, k, ox, oy };
 }
+/* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
+   dem Legen verlaengert, grosser Schaum anders gelegt), wird er so weit verkleinert, dass er passt - der naechste Lauf legt neu. */
+function eckeSetzen(g, fg, leise){
+  const res = aktuell.res, H = res.height, pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW;
+  const v = schildVorgabe(g, res.width, H, false, pxJeMm), { k, ox, oy } = v;
+  const knoten = (res.nodes || []).find(n => n.depth === 0 && n.name === SCHILD_NAME && n.outline);
+  const r = knoten ? blockReserve(knoten.outline, v.block, v.ecke, v.rahmen, v.luft) : 0;
+  /* passt der Block nicht (mehr), wird er genau so weit verkleinert, dass er passt; unter 0,3 wird er nicht gesetzt, ein Hinweis
+     sagt warum - vorher stand er mit mindestens 0,5 über den Zellen (Fallensuche 1.0.58) */
+  if (r < 0.3){ standSetzen('Avatar und Text passen nicht in die Ecke – Titel oder Zeilen kürzen, Legende ausschalten oder eine andere Ecke wählen.'); return ''; }
+  const s = Math.min(1, r), rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
+  const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
+  let out = '';
+  blockLage(v.block, v.ecke, v.rahmen, s).forEach((t, i) => {
+    const q = v.teile[i], fs = (q.fs || 0) * s, x = rechts ? X(t.x1) : X(t.x0), basis = Y(t.y0) - fs * 0.3;
+    if (q.typ === 'kreis'){
+      const rr = (t.x1 - t.x0) / 2 * k, cx = X((t.x0 + t.x1) / 2), cy = Y((t.y0 + t.y1) / 2);
+      /* rund wie bei Suno; auf hellem Grund das Schwarz des Avatars zu Anthrazit aufgehellt, auf dunklem ein duenner heller Ring
+         (Caspar_D: „Avatar im dünnem Kreis rundherum auf schwarzem grund" – „auf weissem Grund vieleicht den Avatar nicht
+         tiefschwarz sonder Anthrazit") */
+      out += `<clipPath id="ps-eckav"><circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(rr)}"/></clipPath>`
+        + (hell ? '<filter id="ps-anthrazit" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="linear" slope="0.8" intercept="0.2"/><feFuncG type="linear" slope="0.8" intercept="0.2"/><feFuncB type="linear" slope="0.8" intercept="0.21"/></feComponentTransfer></filter>' : '')
+        + `<image href="/avatar" data-voll="/avatar" x="${f2(cx - rr)}" y="${f2(cy - rr)}" width="${f2(2 * rr)}" height="${f2(2 * rr)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#ps-eckav)"${hell ? ' filter="url(#ps-anthrazit)"' : ''}/>`
+        + (hell ? '' : `<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(rr)}" fill="none" stroke="${fg}" stroke-opacity="0.45" stroke-width="${f2(g.kurz / 1400)}"/>`);
+    } else if (q.typ === 'legende'){
+      const pu = fs * 0.34, dx = rechts ? x - pu : x + pu, tx = rechts ? x - 2 * pu - fs * 0.45 : x + 2 * pu + fs * 0.45;
+      out += `<circle cx="${f2(dx)}" cy="${f2(basis - fs * 0.32)}" r="${f2(pu)}" fill="${q.farbe}"/>`
+        + `<text x="${f2(tx)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8" text-anchor="${anker}">${esc2(q.t)}</text>`;
+    } else if (q.typ === 'signatur'){
+      const tw = q.tw * s, l = q.linie * s, gap = fs * 0.8, l0 = rechts ? x - tw - gap - l : x + tw + gap;
+      out += `<text x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${leise}" text-anchor="${anker}">${esc2(q.t)}</text>`
+        + `<line x1="${f2(l0)}" y1="${f2(basis + fs * 0.15)}" x2="${f2(l0 + l)}" y2="${f2(basis + fs * 0.15)}" stroke="${fg}" stroke-opacity="0.7" stroke-width="${f2(g.kurz / 2800)}"/>`;
+    } else if (q.typ === 'zeile'){
+      const farbe = q.rolle === 'unter' ? leise : fg, deck = q.rolle === 'name' ? ' fill-opacity="0.85"' : '';
+      out += `<text class="ps-ecke" x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" font-weight="${q.fw}" fill="${farbe}"${deck} text-anchor="${anker}">${esc2(q.t)}</text>`;
+    }
+  });
+  return out;
+}
+/* Genitiv eines Namens ohne Deppenapostroph (Caspar_D: „uhä, ein Deppenapostroph … natürlich ohne Apostroph"): „Caspar_Ds";
+   endet der Name auf s, ß, x, z oder ce, nur der Apostroph („Klaus’") - so die Rechtschreibung. */
+const genitiv = (n) => /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';
+const dauerText = (sek) => { const t = Math.round(sek), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, x = t % 60;
+  return `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}`; };
 
 function standSetzen(t){ const s = el('ps-stand'); if (s) s.textContent = t || ''; }
 
 /* Neu zeichnen: ist das Seitenverhaeltnis der Karte ein anderes, wird der Schaum neu gelegt (gemerkt wie
    jedes Layout), sonst nur das Bild neu gebaut. */
-function zeichnen(sofort){
+function zeichnen(sofort, warteMs, nurSetzen){
   clearTimeout(warten);
   warten = setTimeout(async () => {
     const lauf = ++legeLauf;
     /* Das Verzeichnis braucht Platz unter der Karte - dafuer muss die Zahl der Eintraege vor dem Legen bekannt sein */
     let n = aktuell && aktuell.raum === raumJetzt ? aktuell.j.zeilen.length : 0;
     if (!n && E.verzeichnis){ try { n = (await auftrag(1)).j.zeilen.length; } catch (e) { n = 0; } if (lauf !== legeLauf) return; }
-    const g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * 100) / 100;
-    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild){
-      const a = await auftragMitSchild(verh, g);
+    /* Randlos: das Verhältnis auf drei Stellen, sonst reichte der Schaum in breiten Formaten nicht bis in den Beschnitt (3 × 70 × 100
+       quer: 28 mm zu kurz an jeder Seite, 100 × 140 quer: 1,4 mm) */
+    const stellen = E.schild ? 1000 : 100, g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * stellen) / stellen;
+    /* Randlos: Ecke und Block gehoeren zum Auftrag - aendern sie sich (andere Ecke, laengerer Titel), wird neu gelegt */
+    const eckS = E.schild ? schildVorgabe(g, 1000, Math.round(1000 * verh)).schluessel : '';
+    /* nurSetzen (während des Tippens): die Ecke wird mit dem jetzigen Schaum gesetzt (eckeSetzen verkleinert, falls nötig); neu gelegt
+       wird erst beim Verlassen des Feldes oder mit Enter - vorher startete jede Tipppause einen eigenen Lauf */
+    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild || (aktuell.eckS !== eckS && !nurSetzen)){
+      const a = await auftrag(verh);
       if (lauf !== legeLauf) return;
+      /* die Vorschlaege fuer Titel, Zeile und Name vor dem Legen: nach ihnen wird die Ecke bemessen */
+      if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag();
+      if (!E.kopfUnterEigen) E.kopfUnter = kopfUnterVorschlag(a);
+      if (!E.schildNameEigen) E.schildName = schildNameVorschlag();
+      let v = null;
+      if (E.schild && typeof schildAuftrag === 'function'){ v = schildVorgabe(g, a.j.W, a.j.H); a.j = schildAuftrag(a.j, v); }
       standSetzen('Der Schaum wird für das Plakat gelegt …');
       let res;
-      try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }); }
-      catch (e){ standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
+      try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }, true); }
+      catch (e){ if (lauf !== legeLauf) return; standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
       if (lauf !== legeLauf) return;
-      aktuell = { verh, raum: raumJetzt, schild: !!E.schild, res, ...a };
-      if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag();
-      if (!E.kopfUnterEigen) E.kopfUnter = kopfUnterVorschlag();
+      aktuell = { verh, raum: raumJetzt, schild: !!E.schild, eckS: v ? v.schluessel : '', ecke: v ? v.ecke : null, res, ...a };
       felderSetzen();
     }
     standSetzen('');
     bauen(g);
-  }, sofort ? 0 : 120);
+  }, sofort ? 0 : (warteMs || 120));
 }
+const profil = () => (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
 function kopfTitelVorschlag(){
-  const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
-  return (p.display_name || p.handle || 'Mein Archiv') + ' · ' + (raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum');
+  const schaum = raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum', p = profil();
+  return E.schild ? schaum : (p.display_name || p.handle || 'Mein Archiv') + ' · ' + schaum;    /* Randlos: der Name steht in eigener Zeile darueber */
 }
-function kopfUnterVorschlag(){
-  if (!aktuell) return '';
-  const n = aktuell.j.zeilen.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-  return [`${n} ${aktuell.art === 'person' ? (n === 1 ? 'Person' : 'Personen') : (n === 1 ? 'Titel' : 'Titel')}`, 'Fläche nach ' + aktuell.m.name,
-          'gegliedert nach ' + aktuell.gl.name.replace(/:.*$/, ''), monat].join(' · ');
+function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.handle || ''; return n ? genitiv(n) : ''; }
+/* Randlos: „<Datum> / nnn Titel · Laufzeit" - die Laufzeit ist die Summe der Titellaengen (im Haus heisst „Hoerzeit" Plays mal
+   Laenge, das Flaechenmass „Hörzeit (Schätzung)"); „/" bricht in der Ecke die Zeile um. */
+function kopfUnterVorschlag(a = aktuell){
+  if (!a) return '';
+  const n = a.j.zeilen.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  if (E.schild){
+    const datum = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+    if (a.art === 'person') return `${datum} / ${n} ${n === 1 ? 'Person' : 'Personen'}`;
+    const sek = a.j.zeilen.reduce((t, z) => t + (((typeof song === 'function' && song(z.id)) || {}).dauer || 0), 0);
+    return `${datum} / ${n} Titel` + (sek > 0 ? ` · ${dauerText(sek)} Laufzeit` : '');
+  }
+  return [`${n} ${a.art === 'person' ? (n === 1 ? 'Person' : 'Personen') : 'Titel'}`, 'Fläche nach ' + a.m.name,
+          'gegliedert nach ' + a.gl.name.replace(/:.*$/, ''), monat].join(' · ');
 }
 
 /* Die Legende des Schaums, wie sie im Panel steht: Farbe und Name je Areal. */
@@ -206,8 +312,6 @@ async function bauen(g){
   const druck = { titel: E.titel, fugen: E.fugen, wackeln: E.wackeln, schatten: E.schatten, vignette: E.vignette, kissen: E.kissen,
                   deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab,
                   verzeichnis: !!g.verz, mmJeEinheit: Math.min(kv.w / aktuell.res.width, kv.h / aktuell.res.height) };
-  if (E.schild) druck.schild = { titel: E.kopfTitel || '', unter: E.kopfUnter || '', legende: legendenEintraege(), edition: E.edition ? editionText() : '',
-                                T: g.T, U: g.U, L: g.L, milch: E.titel === 'milch' };
   { const k = druck.mmJeEinheit, ox = kv.x + (kv.w - aktuell.res.width * k) / 2;             /* die Fugen in Schaum-Einheiten */
     druck.waende = wandFugen(g).map(([a, b]) => [(a - ox) / k, (b - ox) / k]); }
   const la = schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
@@ -251,6 +355,7 @@ async function bauen(g){
   if (E.edition && !E.schild) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
   if (E.areale && !E.schild && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
+  if (E.schild && aktuell.schild && aktuell.ecke === eckeJetzt()) kopf += eckeSetzen(g, fg, leise);
   /* Triptychon: die Wandfugen in der Vorschau abgedunkelt, mit Schnittlinien - im PDF fallen sie ohnehin weg */
   if (g.tri) for (let j = 1; j < 3; j++){ const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge;
     kopf += `<rect class="ps-trifuge" x="${fx.toFixed(2)}" y="0" width="${g.tri.fuge.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="#08090b" fill-opacity="0.9"/>`; }
@@ -381,7 +486,7 @@ function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz, 
 /* EDITION UND SIGNATUR (angekreuzt): rechts unten klein „Auflage · Datum · Name", davor eine Haarlinie zum
    Signieren von Hand. Der Name kommt aus dem Profil; die Auflage ist ein Feld (Vorgabe 1/1). */
 function editionText(){
-  const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
+  const p = profil();
   return [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), p.display_name || p.handle || ''].filter(Boolean).join(' · ');
 }
 function editionSetzen(g, rechts, y, fg, leise){
@@ -474,7 +579,7 @@ async function druckBilder(s, kopie, g){
         const w = Math.max(1, Math.round(b.width * f)), h = Math.max(1, Math.round(b.height * f));
         const c = document.createElement('canvas'); c.width = w; c.height = h;
         const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(b, 0, 0, w, h);
-        const blob = await new Promise(ok => roh.type === 'image/png' ? c.toBlob(ok, 'image/png') : c.toBlob(ok, 'image/jpeg', 0.9));
+        const blob = await new Promise(ok => roh.type === 'image/jpeg' ? c.toBlob(ok, 'image/jpeg', 0.9) : c.toBlob(ok, 'image/png'));   /* PNG/WebP/GIF: Transparenz behalten */
         if (blob){ const a = URL.createObjectURL(blob); neu.set(u, a); druckAdressen.push(a); }
       }
       if (b.close) b.close();
@@ -505,7 +610,8 @@ async function bildSichern(){
     let aus = null;
     try { const roh = await (await fetch(u)).blob(), b = await createImageBitmap(roh), f = Math.min(1, px / Math.max(b.width, b.height));
       const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(b.width * f)); c.height = Math.max(1, Math.round(b.height * f));
-      c.getContext('2d').drawImage(b, 0, 0, c.width, c.height); if (b.close) b.close(); aus = c.toDataURL('image/jpeg', 0.86); } catch (e) {}
+      c.getContext('2d').drawImage(b, 0, 0, c.width, c.height); if (b.close) b.close();
+      aus = roh.type === 'image/jpeg' ? c.toDataURL('image/jpeg', 0.86) : c.toDataURL('image/png'); } catch (e) {}   /* Transparenz (Avatar) behalten */
     cache.set(schl, aus); return aus;
   };
   for (let i = 0; i < bilder.length; i++){
@@ -576,7 +682,7 @@ function felderSetzen(){
   el('ps-frei').hidden = E.format !== 'frei';
   for (const [id, v] of [['ps-freiw', E.freiW], ['ps-freih', E.freiH], ['ps-rand', Math.round(E.rand * 100)], ['ps-fugen', Math.round(E.fugen * 10)],
     ['ps-wackeln', Math.round(E.wackeln * 100)], ['ps-schatten', Math.round(E.schatten * 100)], ['ps-vignette', Math.round(E.vignette * 100)], ['ps-federmm', E.federMm],
-    ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter]]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
+    ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter], ['ps-schildname', E.schildName || '']]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
   { const bild = !!(FORMATE.find(x => x.id === E.format) || {}).bild; el('ps-pdf').hidden = bild; el('ps-png').hidden = !bild; }
   el('ps-verz').checked = !!E.verzeichnis;
   el('ps-zeit').checked = !!E.zeitleiste; el('ps-zeit').disabled = raumJetzt === 'groupies'; el('ps-zeit-grund').hidden = raumJetzt !== 'groupies';
@@ -584,9 +690,23 @@ function felderSetzen(){
   el('ps-areale').checked = !!E.areale;
   el('ps-kissen').checked = !!E.kissen; el('ps-feder').checked = !!E.feder; el('ps-legende').checked = !!E.legende;
   el('ps-hinweis').hidden = raumJetzt !== 'groupies';
+  /* WAS NICHT GILT, WIRD GRAU MIT GRUND (Hausregel 4; Caspar_D, 07.10.2026: „mach alle sachen, die nicht ins rahmenlose design
+     passen ausgegraut"): bei Randlos alles, was am Rand haengt; sonst Ecke und Name, die es nur bei Randlos gibt. */
+  const grau = (knoten, aus, grund) => { if (!knoten) return; knoten.classList.toggle('ps-grau', aus); knoten.title = aus ? grund : '';
+    (knoten.matches('input,button') ? [knoten] : knoten.querySelectorAll('input,button')).forEach(f => { f.disabled = aus; }); };
+  const zeile = (id) => { const f = el(id); return f && (f.closest('label') || f); };
+  const ohneRand = 'Gilt nicht bei Randlos – ohne Rand gibt es kein Passepartout.';
+  for (const id of ['ps-rand', 'ps-feder', 'ps-federmm', 'ps-verz', 'ps-areale']) grau(zeile(id), !!E.schild, ohneRand);
+  grau(el('ps-verz-text'), !!E.schild, ohneRand);
+  grau(zeile('ps-zeit'), !!E.schild || raumJetzt === 'groupies', E.schild ? ohneRand : 'Im Groupieschaum gibt es kein Datum je Person.');
+  el('ps-randlos-grund').hidden = !E.schild;
+  studio.querySelectorAll('[data-ecke]').forEach(b => b.classList.toggle('an', b.dataset.ecke === eckeJetzt()));
+  grau(el('ps-ecken'), !E.schild, 'Nur bei Randlos: dort stehen Avatar und Titel in einer Ecke.');
+  grau(el('ps-schildname'), !E.schild, 'Nur bei Randlos: der Name steht in der Ecke über dem Titel.');
+  el('ps-kopfunter').placeholder = E.schild ? 'Zeilen – „/“ bricht um' : 'Untertitel';
 }
 const grundArt = () => E.grund.toLowerCase() === '#0c0d10' || E.grund.toLowerCase() === '#08090b' ? 'schwarz' : E.grund.toLowerCase() === '#f3efe6' || E.grund.toLowerCase() === '#ffffff' || E.grund.toLowerCase() === '#ece7dc' ? 'weiss' : 'farbe';
-function setze(teil, neuLegen){ Object.assign(E, teil); merken(); felderSetzen(); if (neuLegen) aktuell = aktuell && { ...aktuell }; zeichnen(); }
+function setze(teil, neuLegen, warteMs, nurSetzen){ Object.assign(E, teil); merken(); felderSetzen(); if (neuLegen) aktuell = aktuell && { ...aktuell }; zeichnen(false, warteMs, nurSetzen); }
 
 function aufbauen(){
   const css = document.createElement('style'); css.id = 'ps-stil';
@@ -614,6 +734,7 @@ function aufbauen(){
 .ps-knoepfe button{border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
 #ps-pdf,#ps-png{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
 .ps-leise{color:#9aa3ad;font-size:12px;margin:6px 0 0}
+.ps-grau{opacity:.4}.ps-grau input,.ps-grau button{cursor:not-allowed}
 #ps-wand{margin-top:8px;border-radius:7px;overflow:hidden}
 details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
 `;
@@ -624,6 +745,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
 <aside id="ps-panel">
   <h2>Plakat</h2>
   <h3>Vorlage</h3><div class="ps-vorlagen">${VORLAGEN.map(v => `<button type="button" data-vorlage="${v.id}"><b>${v.name}</b><small>${v.zeile}</small></button>`).join('')}</div>
+  <p class="ps-leise" id="ps-randlos-grund" hidden>Ohne Rand gibt es kein Passepartout: Rand, Federstrich, Verzeichnis, Areale am Rand und Zeitleiste sind ausgegraut.</p>
   <h3>Format</h3><div class="ps-pillen">${FORMATE.map(f => `<button type="button" data-format="${f.id}">${f.name}</button>`).join('')}</div>
   <div id="ps-frei" hidden>Breite <input class="ps-eingabe" id="ps-freiw" type="number" min="10" max="300"> cm · Höhe <input class="ps-eingabe" id="ps-freih" type="number" min="10" max="300"> cm</div>
   <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">Hoch</button><button type="button" data-lage="quer">Quer</button></div>
@@ -632,7 +754,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="kante">an der Kante</button><button type="button" data-titel="ohne">ohne</button></div>
   <label class="ps-zeile">Verzeichnis<input type="checkbox" id="ps-verz"><span></span></label>
   <label class="ps-zeile">Areale am Rand<input type="checkbox" id="ps-areale"><span></span></label>
-  <p class="ps-leise" style="margin-top:0">Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
+  <p class="ps-leise" id="ps-verz-text" style="margin-top:0">Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
   <details class="ps-fein" open><summary>Feinheiten</summary>
     ${regler('ps-rand', 'Rand', 2, 15, 1)}${regler('ps-fugen', 'Fugen', 3, 40, 1)}${regler('ps-wackeln', 'Wackeln', 0, 100, 1)}${regler('ps-schatten', 'Schatten', 0, 100, 1)}${regler('ps-vignette', 'Vignette', 0, 100, 1)}
     <label class="ps-zeile">Kissen<input type="checkbox" id="ps-kissen"><span></span></label>
@@ -640,8 +762,11 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
     ${regler('ps-federmm', 'Strichstärke', 0.1, 1, 0.05)}
   </details>
   <h3>Schild</h3>
+  <div class="ps-pillen" id="ps-ecken" style="margin-bottom:5px">${[['ol', '↖ oben links'], ['or', '↗ oben rechts'], ['ul', '↙ unten links'], ['ur', '↘ unten rechts']].map(([e, n]) => `<button type="button" data-ecke="${e}">${n}</button>`).join('')}</div>
+  <input class="ps-eingabe" id="ps-schildname" placeholder="Name">
   <input class="ps-eingabe" id="ps-kopftitel" placeholder="Titel">
   <input class="ps-eingabe" id="ps-kopfunter" placeholder="Untertitel">
+  <div class="ps-pillen" style="margin:2px 0 4px"><button type="button" id="ps-vorschlag">Vorschlag wiederherstellen</button></div>
   <label class="ps-zeile">Legende<input type="checkbox" id="ps-legende"><span></span></label>
   <label class="ps-zeile">Zeitleiste<input type="checkbox" id="ps-zeit"><span></span></label>
   <p class="ps-leise" id="ps-zeit-grund" style="margin-top:0" hidden>Im Groupieschaum gibt es kein Datum je Person – die Zeitleiste gilt für den Klangschaum.</p>
@@ -670,12 +795,19 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-verz').onchange = (ev) => setze({ verzeichnis: ev.target.checked });
   el('ps-zeit').onchange = (ev) => setze({ zeitleiste: ev.target.checked });
   el('ps-edition').onchange = (ev) => setze({ edition: ev.target.checked });
-  el('ps-auflage').oninput = (ev) => setze({ auflage: ev.target.value });
+  el('ps-auflage').oninput = (ev) => setze({ auflage: ev.target.value }, false, undefined, true); el('ps-auflage').onchange = () => zeichnen();
   el('ps-areale').onchange = (ev) => setze({ areale: ev.target.checked });
   el('ps-feder').onchange = (ev) => setze({ feder: ev.target.checked });
   el('ps-legende').onchange = (ev) => setze({ legende: ev.target.checked });
-  el('ps-kopftitel').oninput = (ev) => setze({ kopfTitel: ev.target.value, kopfTitelEigen: !!ev.target.value });
-  el('ps-kopfunter').oninput = (ev) => setze({ kopfUnter: ev.target.value, kopfUnterEigen: !!ev.target.value });
+  /* Ein Feld, das man angefasst hat, gehört einem - auch leer (vorher hieß leer „Vorschlag", und der stand nach einer Sekunde wieder
+     auf dem Plakat). Bei Randlos bemisst der Text die Ecke: beim Tippen nur setzen, neu legen beim Verlassen des Feldes oder Enter. */
+  const feld = (id, schluessel) => { const f = el(id);
+    f.oninput = () => setze({ [schluessel]: f.value, [schluessel + 'Eigen']: true }, false, undefined, true);
+    f.onchange = () => zeichnen(); };
+  feld('ps-kopftitel', 'kopfTitel'); feld('ps-kopfunter', 'kopfUnter'); feld('ps-schildname', 'schildName');
+  el('ps-vorschlag').onclick = () => { setze({ kopfTitelEigen: false, kopfUnterEigen: false, schildNameEigen: false, kopfTitel: kopfTitelVorschlag(),
+    kopfUnter: aktuell ? kopfUnterVorschlag(aktuell) : '', schildName: schildNameVorschlag() }); };
+  studio.querySelectorAll('[data-ecke]').forEach(b => b.onclick = () => setze({ ecke: b.dataset.ecke }));
   el('ps-pdf').onclick = () => pdf();
   el('ps-png').onclick = () => bildSichern();
   el('ps-zu').onclick = schliessen;
@@ -690,5 +822,5 @@ export function oeffnen(){
   if (aktuell && aktuell.raum !== raumJetzt) aktuell = null;
   felderSetzen();
   for (const id of ['ps-rand', 'ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-federmm']){ const r = el(id); el(id + '-w').textContent = r.value; }
-  zeichnen(true);
+  avatarPruefen().then(() => zeichnen(true));
 }
