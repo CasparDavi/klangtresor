@@ -8862,25 +8862,28 @@ async function groupieZeichnen(){
    minus 0,631). Die Weite richtet sich nach der typischen Zelle (14 % der Wurzel der mittleren
    Zellflaeche, 3 bis 24 Einheiten) - so woelbt sich ein grosser Avatar wie ein kleines Cover. Erst mit
    8 % und Spreizung 1,25 probiert: das gab nur eine Fase am Rand, kein Kissen (Vergleich am Sandkasten).
-   Beim Morph geht das Kissen mit den Bildern. */
-function schaumKissen(svg, res, striche){
-  const H = res.height, sw = (d) => striche[Math.min(d, striche.length - 1)];
-  const d = (o) => 'M' + o.map(p => p[0].toFixed(1) + ',' + (H - p[1]).toFixed(1)).join('L') + 'Z';
+   Beim Morph geht das Kissen mit den Bildern.
+   Seit den Luecken (07.10.2026) liegt das Kissen nur auf den Kacheln: Hoehenkarte aus den eingerueckten
+   Zellen, die Schicht auf ihre Vereinigung zugeschnitten - sonst hellte sein Licht die Luecken auf. */
+/* Fugen- bzw. Lueckenbreiten je Tiefe (Gefaesswand aussen -> Zelle innen), fuer Klang- und
+   Groupieschaum gleich - dieselben Werte wie die Vorgabe in klangschaum/render.js. */
+const SCHAUM_STRICHE = [3.2, 2.0, 1.2, 0.7, 0.35];
+function schaumKissen(svg, res, kacheln){
+  const H = res.height;
   const fl = (o) => { let s = 0; for (let i = 0; i < o.length; i++){ const a = o[i], b = o[(i + 1) % o.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
   const blaetter = res.leaves.filter(k => k.outline && k.outline.length > 2);
-  if (!blaetter.length) return svg;
+  if (!blaetter.length || !kacheln.length) return svg;
   const flaechen = blaetter.map(k => fl(k.outline)).sort((a, b) => a - b), mitte = flaechen[flaechen.length >> 1];
   const weite = Math.min(24, Math.max(3, 0.14 * Math.sqrt(mitte))), hoehe = weite * 1.5;
-  const waende = res.nodes.filter(k => k.outline && k.outline.length > 2 && !res.leaves.includes(k)).sort((a, b) => b.depth - a.depth);
   const kissen = '<filter id="skkissen" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
     + '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="h"/>'
     + `<feGaussianBlur in="h" stdDeviation="${weite.toFixed(2)}" result="b"/>`
     + `<feDiffuseLighting in="b" surfaceScale="${hoehe.toFixed(2)}" diffuseConstant="1" lighting-color="#ffffff" result="l"><feDistantLight azimuth="225" elevation="45"/></feDiffuseLighting>`
     + '<feComponentTransfer in="l"><feFuncR type="linear" slope="1.6" intercept="-0.631"/><feFuncG type="linear" slope="1.6" intercept="-0.631"/><feFuncB type="linear" slope="1.6" intercept="-0.631"/></feComponentTransfer></filter>';
-  const schicht = '<g class="kissen" filter="url(#skkissen)" pointer-events="none">'
-    + `<rect x="0" y="0" width="${res.width}" height="${H}" fill="#000"/>`
-    + blaetter.map(k => `<path d="${d(k.outline)}" fill="#fff" stroke="#000" stroke-width="${sw(k.depth)}" stroke-linejoin="round"/>`).join('')
-    + waende.map(k => `<path d="${d(k.outline)}" fill="none" stroke="#000" stroke-width="${sw(k.depth)}" stroke-linejoin="round"/>`).join('') + '</g>';
+  const kachelPfade = kacheln.map(dd => `<path d="${dd}" fill="#fff"/>`).join('');
+  const schicht = '<clipPath id="skkissenclip">' + kachelPfade + '</clipPath>'
+    + '<g class="kissen" clip-path="url(#skkissenclip)" pointer-events="none"><g filter="url(#skkissen)">'
+    + `<rect x="0" y="0" width="${res.width}" height="${H}" fill="#000"/>` + kachelPfade + '</g></g>';
   svg = svg.replace('<defs>', '<defs>' + kissen);
   const t = svg.indexOf('<text');
   return t >= 0 ? svg.slice(0, t) + schicht + svg.slice(t) : svg.replace('</svg>', schicht + '</svg>');
@@ -9154,7 +9157,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
          gar nicht. Der Filter macht nur noch weich; das Dunkel ist ein schwarzes Rechteck je Kopf. */
       const SCHAUM_GLAS = '<filter id="skglas" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">'
         + '<feGaussianBlur stdDeviation="3" edgeMode="duplicate"/></filter>';
-      const personen = art === 'person', koepfe = [];
+      const personen = art === 'person', koepfe = [], kacheln = [];
       const zierfrei = (s) => { const r = String(s).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '')
         .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').replace(/\s+/g, ' ').trim(); return r || String(s).trim(); };
       const sehne = (pk, yy) => { const sx = [];
@@ -9196,9 +9199,13 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
             + ` fill="#f4f4f2" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
       };
       /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
-      let svg = R.renderSVG(res, { pad: 0, cushion: 0,
-        /* breitere Fugen zwischen den Personen (Caspar_D: „die Fugen sind zu schmal") */
-        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false, strokes: [9, 5.5] } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
+      /* LUECKEN STATT LINIEN (Caspar_D, 07.10.2026: „ich möchte, dass du gar keine Fugen zeichnest, der
+         Hintergrund soll durchscheinen"): jede Zelle eingerueckt (gutters), der dunkle Grund scheint
+         durch. Gezeichnete Fugen faerbt Dark Reader weiss - eine Luecke kann er nicht umfaerben. Breiten
+         wie frueher im Klangschaum, auch im Groupieschaum (dort 1.0.20/1.0.21 verbreitert, am 07.10.
+         zurueck: „die Borderbreiten wieder auf den alten Standard"). */
+      let svg = R.renderSVG(res, { pad: 0, cushion: 0, gutters: SCHAUM_STRICHE,
+        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
         colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
       const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
       /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
@@ -9216,6 +9223,7 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
                  const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
                  const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
                  const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
+                 kacheln.push(dd);
                  const bildAn = quelle ? `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"` : '';
                  let kopf = '';
                  const name = personen ? zierfrei((zeilen[res.leaves[+i].row] || {}).titel || '') : '';
@@ -9238,14 +9246,14 @@ async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farb
                    + (quelle ? alles : alles.replace('<path ', '<path class="ohnebild" '));
                });
       if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
-      svg = schaumKissen(svg, res, personen ? [9, 5.5] : [3.2, 2.0, 1.2, 0.7, 0.35]);
+      svg = schaumKissen(svg, res, kacheln);
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
       /* Fuer den Morph: das Netz des Baums (erst bei Bedarf gebaut, dann gemerkt), die Form (Gliederung
          und Zoom - nur innerhalb derselben wird gemorpht) und die Fugen wie im Bild. */
       let netz = null;
       const netzVon = (M) => netz || (netz = M.morphNetz(res, k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null,
                                                           k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt)));
-      const f = { svg, ids, tipps, art, lage, netz: netzVon, form: schaumForm(lage), striche: personen ? [9, 5.5] : [3.2, 2.0, 1.2, 0.7, 0.35],
+      const f = { svg, ids, tipps, art, lage, netz: netzVon, form: schaumForm(lage), striche: SCHAUM_STRICHE,
                   W: res.width, H: res.height };
       schaumFertig.set(schluessel, f);
       if (register === 'karte' && (raumJetzt === 'schaum' || raumJetzt === 'groupies')){ stand.textContent = ''; schaumZeichnen(); }
