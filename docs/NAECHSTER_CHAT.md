@@ -8450,3 +8450,13 @@ Weitere Säume (Caspar_D fragte „sind noch irgendwo schriften mit saum?"): Eng
 Engine-Schritt B1), „läuft gerade" über der Klangkarte (text-shadow), Zahlen im Karten-Steckbrief, Etikett der Quellkacheln im
 Studio – Vorschlag Kontrastwahl, wartet auf sein Wort. Kein Saum: aktive Karaoke-Zeile und Zitatwörter (Strich in eigener Farbe,
 macht nur dicker – so bestellt am 24.08.).
+
+## 83. 07.10.2026 abends: Ausflug Treemapper/Prophane angehalten – zurück zum KlangTresor
+
+Nach „T a" habe ich die Beschriftung in die foam-lab-Engine übertragen (Prophane `bb56d17`, `6f4dd52`), den Treemapper umgestellt
+und den Streamgraph-Fehler behoben (`24170b7`). Caspar_D: „hatten wir vereinbart, dass du da jetzt eine treemapper-Optimierungssession
+machst, eigentlich haben wir am Klangtresor gearbeitet. Ich würde gern eine Treemapper session machen, aber nicht jetzt". Angehalten,
+sauber eingecheckt, Stand in Treemapper/CHANGELOG.md und ~/Prophane/PROPHANE.md. Die KlangTresor-Kopie der Engine (`render.js`,
+deutsche Namen) ist NICHT auf den foam-lab-Stand gebracht – das gehört in die Treemapper-Sitzung.
+Wiedervorlage KlangTresor (Caspar_D entscheidet): Säume in der Bedienoberfläche („läuft gerade" über der Klangkarte, Zahlen im
+Karten-Steckbrief, Etikett der Quellkacheln im Studio) – Vorschlag Kontrastwahl; Brainstorms (§81).
