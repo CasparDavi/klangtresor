@@ -8097,3 +8097,27 @@ zeigen denselben Ausschnitt, der unscharfe Grund der Kachel liegt außerhalb der
 Sichtbare Folge am Schirm: Zellen zeigen das Cover selbst statt der Kachel mit unscharfen Streifen.
 **Texte ausschließen** (Caspar_D: „halte ich auch für eine gute Idee"): noch nicht gemessen — offen.
 Sandkasten-Falle: ohne `library/kachel-stand.json` kennt die Seite keine Titelbilder und nimmt cover.jpg.
+
+## 62. 07.10.2026 nachts: Texterkenner gemessen; 4000 Zellen — Pakete + flach nachbilden (Werkstatt)
+
+**Texte ausschließen — gemessen, noch nicht eingebaut.** PP-OCRv3 (OpenCV-Modellzoo, 2,4 MB, Apache 2.0) über
+dieselben 40 Cover: 32/35 markierte Schriftbereiche gedeckt (≥ 40 %). Von 37 Boxen außerhalb meiner Markierungen
+war die Mehrzahl echte, nicht markierte Schrift (Etiketten, kleine Zeilen); echte Fehlalarme 19 Boxen in 3 Bildern
+(Schneeflocken, Holzschnitt, unscharfe Laternen). Einbau erst mit Stufe 5 (Fokus OHNE Gesicht: Schrift darf dann
+nicht der Mittelpunkt werden) — bei Gesichtern spielt Schrift keine Rolle. Skript `_werkstatt_gesicht/text.js`.
+
+**Flache Schäume mit vielen Zellen (Caspar_D: „paketiere und versuche dann die Zellen nachzubilden an den
+Positionen, wo sie jetzt schon sind").** Werkstatt `/Volumes/Extreme_SSD/Entwicklung/_werkstatt_schaum4000/`
+(Engine-Kopie, Gewichte aus der Gemeinschaft gezogen, `nachbilden.mjs`). Schritt 1 Pakete (k-Mittel ~100), Schritt
+2 flacher Lauf mit den Paket-Zellmitten als Startpunkten (Schlüssel `gruppe\u0001titel\u0000zeile`):
+  700 Personen: flach ohne Start 47,3 s · Pakete 7,3 s + flach nachgebildet 16,5 s (= 23,8 s), gleiche Flächengüte
+  (Fehler im Mittel 0,05–0,06 %); das große Gefäß (532 Zellen) 14,7 statt 36,2 s. Bild: `vergleich-700.png` —
+  links Paketnähte (lange Bögen, Rechtecke), rechts gleichmäßiger Schaum ohne Nähte.
+  1400 Personen: Pakete 27,2 s + flach nachgebildet 68,3 s (1064-Zellen-Gefäß 60 s).
+  → Halbiert bis drittelt die Zeit, bleibt aber quadratisch: 4000 grob 8–10 min (nicht gemessen — Zwei-Minuten-
+  Regel, Hitze). Profil (flach 500): 50 % powerCells, ~30 % Schaum-Löser (PCG bis 3N+50 Schritte, wächst mit N).
+  Versuch „Schwere getrennt" in powerCells (die schwersten Orte direkt, Ringsuche nur über die Leichten): exakt
+  gleiches Ergebnis, aber nur 5 % schneller — die weite Suche ist nicht der Engpass, die Zahl der Löserschritte schon.
+**Wiedervorlage Caspar_D:** (a) Groupieschaum: sofort Pakete zeigen, flach nachgebildet im Hintergrund rechnen
+und hinübermorphen (bei 4000 ~10 min Volllast — Hitze!)? (b) Engine-Arbeit am Löser (Vorkonditionierer für das
+PCG) in Prophane/foam-lab, dann in die Kopie — Engine gehört dir und wird geteilt, darum nichts davon eingebaut.
