@@ -503,7 +503,7 @@ const MORGEN_SCHRITTE = [
   /* Die Kette dahinter: laden.js, kacheln.js, tiefenkarten.js, farben.js. Die Tiefenkarte
      steht HINTER den Kacheln, weil sie zu titelbild.jpg gehoert - dem Cover ohne Rand, das
      dort erst entsteht (14.09.2026). */
-  { id: 'medien-laden', schluessel: 'medien', name: 'Medien laden (MP3, Titelbilder, Bewegtbilder) und Tiefenkarten rechnen', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
+  { id: 'medien-laden', schluessel: 'medien', name: 'Medien laden (MP3, Titelbilder, Bewegtbilder), Tiefenkarten rechnen und Gesichter suchen', befehl: ['bin/wiederherstellen.js', '--nur-medien'] },
   { id: 'analyse-rechnen', schluessel: 'analyse', name: 'Klanganalyse für neue Titel rechnen', befehl: ['bin/vorrechnen.js'],
     einheiten: () => {
       const k = katalogHolen(); if (!k) return 0;
@@ -3570,6 +3570,12 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
       if (ordner) argumente.push('--ordner', ordner);
       starten();
     });
+  }
+
+  /* Die Gesichter je Standbild (bin/gesichter.js): Schaum und Plakat ruecken die Cover danach in ihre Zellen. */
+  if (p === '/api/gesichter') {
+    let b = null; try { b = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'gesichter.json'), 'utf8')); } catch (e) {}
+    return jsonAntwort(res, { bilder: (b && b.bilder) || {} });
   }
 
   if (p === '/api/raeume') {

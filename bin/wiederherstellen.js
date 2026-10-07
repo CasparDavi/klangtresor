@@ -109,6 +109,8 @@ const SCHRITTE = [
      14.09.2026 passiert und hat einen Nachmittag gekostet.
      --test wird durchgereicht, damit ein Probelauf nicht 19 Minuten rechnet. */
   ['tiefenkarten.js', [...TEST], 'Tiefenkarten aus den Titelbildern'],
+  /* Gesichter in denselben Bildern (bin/gesichter.js) - Schaum und Plakat ruecken die Cover danach in die Zelle. */
+  ['gesichter.js',   [...TEST], 'Gesichter in den Titelbildern finden'],
   ['farben.js',      [],        'Farbpaletten aus den Covern'],
 ];
 

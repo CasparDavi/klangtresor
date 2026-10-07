@@ -11,6 +11,8 @@
  *
  *   htdemucs_6s (246 MB)   Stemtrennung. MIT, Copyright (c) Meta
  *                          Platforms; der ONNX-Export MIT, StemSplit.
+ *   YuNet (0,2 MB)         Gesichter in den Titelbildern (bin/gesichter.js).
+ *                          MIT, OpenCV / Shiqi Yu.
  *   Discogs-EffNet (18 MB) Merkmalsextraktor, und drei Koepfe fuer
  *   + drei Koepfe          Musikstil, Instrument und Stimmung. Alle vier
  *                          von der Music Technology Group der Universitat
@@ -84,6 +86,10 @@ const DATEIEN = [
   ['model_fp16.onnx_data',
    'https://huggingface.co/onnx-community/depth-anything-v2-large-ONNX/resolve/main/onnx/model_fp16.onnx_data', 600000000],
 
+  /* Gesichter (bin/gesichter.js): YuNet aus dem OpenCV-Modellzoo, MIT. Gewaehlt am 07.10.2026 gegen
+     UltraFace und SCRFD an 40 Covern - Zahlen im Kopf von bin/gesichter.js. */
+  ['face_detection_yunet_2023mar.onnx',
+   'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx', 200000],
   ['paraphrase-multilingual-mpnet.onnx',
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/onnx/model_quantized.onnx', 200000000],
   ['paraphrase-multilingual-mpnet-tokenizer.json',

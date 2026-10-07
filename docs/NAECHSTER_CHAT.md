@@ -8072,3 +8072,28 @@ rechtsbündig, Titel gekürzt; Sammelblasen ohne Nummer, „und N weitere“ am 
 1,5 mm, Block höchstens ein Sechstel der Höhe. Nebenbei: Songtitel im Glasband nicht mehr „zierfrei“ (die
 schließende Klammer fiel weg). Modul-Import mit Versionsanhang (`plakat.js?v=1.0.36`), damit Browser nicht
 die alte Fassung aus dem Zwischenspeicher nehmen.
+
+## 61. 07.10.2026 nachts: Gesichter — Erkenner gewählt und eingebaut (1.0.37)
+
+**Referenz:** 40 Cover (10 neueste, Testbild, feste Zufallsauswahl — für Gesichter reichen die 11 Prüftitel
+nicht), von Claude auf Rasterbögen markiert: 23 Hauptgesichter, 21 Nebengesichter, 8 Figuren (Schneemann,
+Wolf, Dämon). Werkstatt `/Volumes/Extreme_SSD/Entwicklung/_werkstatt_gesicht/` (Stichprobe, Bögen,
+`referenz.json`, `pruefen.js`, `erkenner.js`, Modelle) — bleibt außerhalb des Repos (Cover sind Archivbilder).
+Ehrlich: Nach der ersten Runde zeigte die Überlagerung, dass ich drei Hauptgesichter eine Rasterzelle
+daneben gelesen und kleine Gesichter in Mengen nicht markiert hatte; korrigiert nach Sichtprüfung jedes
+Falls (`korrektur.js`). Die nachgetragenen Nebengesichter hatten die Erkenner vorgeschlagen — das begünstigt
+die Nebenquote etwas, die Hauptquote nicht.
+**Ergebnis** (Treffer = Mitte im Gesicht oder IoU ≥ 0,3; Zufallsboden 0,8/23):
+YuNet 0,7: 21/23, 1 Fehlalarm, 0,2 MB, MIT · UltraFace 0,7: 20/23, 0, 1,2 MB, MIT · SCRFD-500M 0,5: 22/23,
+0, 2,5 MB, **nur nichtkommerziell** (InsightFace). Alle verpassen den Holzschnitt-König (Belsazar).
+**Gewählt YuNet** (Lizenz passt zum Paket). SCRFD wäre einen Treffer besser — **Wiedervorlage Caspar_D**:
+Lizenz nichtkommerziell, lohnt das?
+**Eingebaut:** `bin/gesichter.js` (Schritt nach den Tiefenkarten in `bin/wiederherstellen.js`, Buch
+`library/gesichter.json` mit Ausweis und Herkunft, ~110 ms je Bild, 327 Titel ~36 s), YuNet in
+`bin/modelle-holen.js` + `web/fremd/LIZENZEN.md`, `GET /api/gesichter`. Haus: `schaumFokus`,
+`schaumBildPlatz` (deckend, Gesichter ab 0,7 und ≥ ¼ des größten mittig; passt es nicht, das größte),
+`schaumKachelPlatz` (Kachel so, dass ihr Bildteil genau auf dem Platz liegt — Schirm, Vorschau und PDF
+zeigen denselben Ausschnitt, der unscharfe Grund der Kachel liegt außerhalb der Zelle). PDF: `data-p`.
+Sichtbare Folge am Schirm: Zellen zeigen das Cover selbst statt der Kachel mit unscharfen Streifen.
+**Texte ausschließen** (Caspar_D: „halte ich auch für eine gute Idee"): noch nicht gemessen — offen.
+Sandkasten-Falle: ohne `library/kachel-stand.json` kennt die Seite keine Titelbilder und nimmt cover.jpg.

@@ -9114,8 +9114,58 @@ async function schaumVorrechnen(){
    Fassung in data-voll fuers PDF). Fuer den Schirm unveraendert, was vorher in malen() stand.
    druck: { titel: 'rauch'|'milch'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab,
             verzeichnis: Nummern in die Zellen und die Liste zurueckgeben, mmJeEinheit: Millimeter je Schaum-Einheit } */
+/* WOHIN EIN COVER IN SEINER ZELLE RUECKT (Caspar_D, 06./07.10.2026: „wenn immer das Zentrum des Geschehens
+   der Coverart in der Kachel zu sehen wäre", „damit keine Gesichter in den PDFs angeschnitten sind").
+   bin/gesichter.js sucht die Gesichter je Standbild (GET /api/gesichter). Das Bild deckt seine Zelle wie bisher
+   („slice"), rueckt aber so, dass die Gesichter in der Mitte der Zelle liegen - so weit, wie es geht, ohne dass
+   ein Rand frei wird. Gezaehlt werden die Gesichter ab Wertung 0,7 (gemessen) und davon nur die, die
+   mindestens ein Viertel so gross sind wie das groesste: ein Paar rueckt gemeinsam in die Mitte, die kleinen
+   Koepfe einer Menge ziehen nicht mit. Passen sie nicht gemeinsam in die Zelle, zaehlt das groesste. Ohne
+   Gesicht oder ohne Eintrag bleibt es mittig wie vorher.
+   EIN PLATZ FUER SCHIRM, VORSCHAU UND PDF. Gerechnet wird am Original (titelbild/cover/eigen, das, was das
+   PDF druckt). Die Kachel (kachel.jpg, 3:4, das Original eingepasst auf unscharfem Grund) wird so gelegt, dass
+   ihr Bildteil genau auf diesen Platz faellt - Schirm, Vorschau und PDF zeigen denselben Ausschnitt; der
+   unscharfe Grund der Kachel liegt ausserhalb der Zelle. */
+let schaumGesichter = null;
+function schaumGesichterLaden(){
+  if (schaumGesichter) return Promise.resolve(schaumGesichter);
+  return fetch('/api/gesichter', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
+    .then(d => (schaumGesichter = (d && d.bilder) || {})).catch(() => (schaumGesichter = {}));
+}
+function schaumFokus(id){
+  if (!schaumGesichter) return null;
+  const pfad = artworkBild(id).split('?')[0], datei = pfad.slice(pfad.lastIndexOf('/') + 1), eigen = datei.startsWith('eigen');
+  const e = schaumGesichter[eigen ? id + '/' + datei : id];
+  if (!e || !(e.w > 0) || !(e.h > 0)) return null;
+  if (!eigen && e.art !== (datei === 'titelbild.jpg' ? 'titelbild' : 'cover')) return null;   /* Buch zu einem anderen Bild */
+  const fl = (x) => (x[2] - x[0]) * (x[3] - x[1]), g = (e.g || []).filter(x => x[4] >= 0.7);
+  let fokus = null;
+  if (g.length){
+    const gross = Math.max(...g.map(fl)), wichtig = g.filter(x => fl(x) >= 0.25 * gross);
+    fokus = [Math.min(...wichtig.map(x => x[0])), Math.min(...wichtig.map(x => x[1])), Math.max(...wichtig.map(x => x[2])), Math.max(...wichtig.map(x => x[3]))];
+    fokus.haupt = g.find(x => fl(x) === gross).slice(0, 4);
+  }
+  return { a: e.w / e.h, fokus, eigen };
+}
+/* Platz des Originals (Seitenverhaeltnis a) in der Zelle x,y,w,h: deckend, der Fokus moeglichst mittig. */
+function schaumBildPlatz(x, y, w, h, a, fokus){
+  const W = Math.max(w, h * a), H = W / a;
+  let X = x + (w - W) / 2, Y = y + (h - H) / 2;
+  if (fokus){
+    const f = ((fokus[2] - fokus[0]) * W > w || (fokus[3] - fokus[1]) * H > h) && fokus.haupt ? fokus.haupt : fokus;
+    X = Math.min(x, Math.max(x + w - W, x + w / 2 - (f[0] + f[2]) / 2 * W));
+    Y = Math.min(y, Math.max(y + h - H, y + h / 2 - (f[1] + f[3]) / 2 * H));
+  }
+  return { x: X, y: Y, w: W, h: H };
+}
+/* Die Kachel (600×800, das Original eingepasst und mittig) so legen, dass ihr Bildteil den Platz p fuellt. */
+function schaumKachelPlatz(p, a){
+  if (a >= 0.75){ const H = p.h * a / 0.75; return { x: p.x, y: p.y - (H - p.h) / 2, w: p.w, h: H }; }
+  const W = p.w * 0.75 / a; return { x: p.x - (W - p.w) / 2, y: p.y, w: W, h: p.h };
+}
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');
+  if (art !== 'person') await schaumGesichterLaden();
   const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
   /* KOPFZEILE JE PERSON (Caspar_D, 06.10.2026: „beim Groupieschaum jede Zelle einen Header, in
      dem der Name steht, also einfach ein Stück abschneiden und in den schwarzen Raum den Namen
@@ -9254,6 +9304,14 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
              const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
              const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
+             /* Platz des Bildes: mit Gesichtern gerueckt (schaumFokus); gezeigt wird am Schirm und in der
+                Vorschau meist die Kachel, im PDF das Original (data-p). Ohne Eintrag wie bisher mittig. */
+             const fd = !personen && quelle ? schaumFokus(id) : null;
+             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus) : null;
+             const gezeigt = druck ? (vorschauBilder[+i] || quelle) : quelle;
+             const pBild = !pOrig ? { x, y, w, h } : (!fd.eigen && /kachel\.jpg/.test(gezeigt || '') ? schaumKachelPlatz(pOrig, fd.a) : pOrig);
+             const lage = `x="${pBild.x.toFixed(1)}" y="${pBild.y.toFixed(1)}" width="${pBild.w.toFixed(1)}" height="${pBild.h.toFixed(1)}"`
+               + (druck && pOrig ? ` data-p="${[pOrig.x, pOrig.y, pOrig.w, pOrig.h].map(v => v.toFixed(1)).join(',')}"` : '');
              /* Druck: in der Vorschau die Fassung aus dem Vorrat, fuers PDF die volle (data-voll) */
              const bildAn = !quelle ? '' : druck ? `href="${esc(schaumBildHref(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
                : `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"`;
@@ -9267,7 +9325,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              if (plan){
                kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
                  + `<g clip-path="url(#skz${i})" pointer-events="none">`
-                 + (quelle ? `<image ${bildAn} data-glas="1" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                 + (quelle ? `<image ${bildAn} data-glas="1" ${lage}`
                    + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>` : '')
                  + `<rect class="${milch ? 'milch' : 'rauch'}" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? '0.62' : SCHAUM_RAUCH_VORGABE}"/></g>`;
                if (druck) baender.push(tf ? `<g transform="${tf}">${plan.text}</g>` : plan.text); else koepfe.push(plan.text);
@@ -9275,7 +9333,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              if (nrHier && !plan) baender.push(nummerSchild(pk, x, y, w, h, nrHier, tf));
              kacheln.push({ dd, tf });
              const fertig = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
-               + (quelle ? `<image ${bildAn} x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+               + (quelle ? `<image ${bildAn} ${lage}`
                  + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>` : '')
                /* Reihenfolge (Caspar_D: „erst das Rauchglas auf das Bild und dann die Färbung"): Bild,
                   Rauchglas, Farbstich, Zellfarbe mit Rand - so traegt der Kopf den Ton der Zelle. */
@@ -9345,7 +9403,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.36').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.37').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

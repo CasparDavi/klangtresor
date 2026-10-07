@@ -174,6 +174,22 @@ weitergibt, muß sie unverändert lassen und diese Nennung mitführen.
 Die Programmbibliothek *Essentia* selbst steht unter AGPL-3.0. Sie wird
 hier nicht benutzt — nur die Modelle, über ONNX Runtime.
 
+### YuNet — MIT
+
+Findet Gesichter in den Titelbildern. KlangTresor rückt die Cover im
+Klang­schaum und im Plakat danach so in ihre Zellen, dass Gesichter nicht
+angeschnitten werden.
+
+| Datei |
+|---|
+| `face_detection_yunet_2023mar.onnx` |
+
+> Wei Wu, Hanyang Peng, Shiqi Yu: *YuNet: A Tiny Millisecond-level Face
+> Detector*, Machine Intelligence Research, 2023.
+> Lizenz: [MIT](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE)
+
+[github.com/opencv/opencv_zoo — face_detection_yunet](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet)
+
 ### Depth Anything V2 Large — CC BY-NC-4.0
 
 Schätzt aus einem Standbild, was vorn und was hinten liegt. KlangTresor

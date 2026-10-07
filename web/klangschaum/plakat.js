@@ -292,7 +292,10 @@ async function druckBilder(s, kopie, g){
     standSetzen(`Bilder für den Druck: ${++n} von ${gesamt}`);
   };
   await Promise.all(Array.from({ length: 3 }, async () => { while (liste.length) await eins(liste.shift()); }));
-  kopie.querySelectorAll('image[data-voll]').forEach(im => { const u = im.getAttribute('data-voll'); im.setAttribute('href', neu.get(u) || u); });
+  /* Das Original bekommt seinen eigenen Platz (data-p, schaumBildPlatz im Haus): in der Vorschau steht die Kachel,
+     deren Bildteil genau dort liegt - so zeigt das PDF denselben Ausschnitt wie die Vorschau. */
+  kopie.querySelectorAll('image[data-voll]').forEach(im => { const u = im.getAttribute('data-voll'); im.setAttribute('href', neu.get(u) || u);
+    const p = (im.getAttribute('data-p') || '').split(','); if (p.length === 4){ im.setAttribute('x', p[0]); im.setAttribute('y', p[1]); im.setAttribute('width', p[2]); im.setAttribute('height', p[3]); } });
 }
 
 /* PDF: dieselbe Seite, die Bilder auf 300 dpi ihrer Kachel gerechnet (druckBilder), in einem unsichtbaren
