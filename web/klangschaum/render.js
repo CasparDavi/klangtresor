@@ -78,9 +78,9 @@ function imOderAufRand(poly, p, eps) {
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
-export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false } = {}) {
+export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null } = {}) {
   const [px, py, r] = poleOf(poly), [xa, xb] = chordAt(poly, [px, py]);
-  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink });
+  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize });
   if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink });
   const cx = (Math.max(xa, px - 3 * r) + Math.min(xb, px + 3 * r)) / 2, width = 0.92 * (Math.min(xb, px + 3 * r) - Math.max(xa, px - 3 * r));
   // width of a line in em: measured with the real font where the page offers it (measure), else estimated at 0.56 em a character
@@ -233,8 +233,9 @@ function alleUmbrueche(words, maxLines) {
   return out.filter(umbruchErlaubt);
 }
 function untenSetzen(poly, huelle, text, o) {
-  const { px, maxSize, minSize, maxLines, leading, drop, ink } = o;
-  const alt = placeLabel(poly, text, { maxSize, minSize, maxLines, measure: ink.breite, fit: true, leading, drop, huelle });
+  const { px, maxSize, minSize, maxLines, leading, drop, ink, startSize } = o;
+  // die bisherige Groesse: der Zeilenkasten-Satz - oder vorgegeben (startSize, das Glasfeld des Plakats rechnet sie selbst)
+  const alt = startSize ? { size: startSize } : placeLabel(poly, text, { maxSize, minSize, maxLines, measure: ink.breite, fit: true, leading, drop, huelle });
   if (!alt) return tinteSetzen(poly, huelle, text, o);   // der Zeilenkasten fand keinen Platz - dann so gross, wie die Tinte erlaubt
   const m = TINTE_LUFT_BILD, fassungen = alleUmbrueche(text.split(" ").filter(Boolean), maxLines);
   let y0 = Infinity, y1 = -Infinity, xl = Infinity, xr = -Infinity;

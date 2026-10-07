@@ -9405,9 +9405,29 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     if (fs < 7){ fs = 7; const breit = 0.9 * (v.s[1] - v.s[0]); let n = name.length;
       while (n > 2 && emBreit(name.slice(0, n) + '…') * 7 > breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
     if (!txt) return null;
-    return { bandY: v.oben ? y : v.yd, bh,
+    return { bandY: v.oben ? y : v.yd, bh, fs,
       text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
         + ` fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
+  };
+  /* TITEL IM GLASFELD DES PLAKATS (Caspar_D, 07.10.2026: „mach das auch für den Posterexport in den Milch- und
+     Rauchglasfeldern"): wie die Zellnamen am Schirm (render.js untenSetzen) - so tief wie moeglich, nicht groesser als bisher
+     (die Groesse des bisherigen Glasbands, kopfPlan), ein- bis dreizeilig nach den Umbruchregeln, jede Zeile auf der Sehne
+     ihrer Hoehe, Einzelbuchstaben-Kaesten mit 0,3 em Luft, gemessen in der Druckgroesse. Das Glasfeld waechst mit dem Text:
+     von 2 Punkten ueber der hoechsten Tinte (Caspar_D: „den Namen mit einem Abstand von 2 Punkten zur Headergrenze") bis zum
+     Fuss der Zelle. Findet sich auch dreizeilig bei 7 keine Lage, bleibt es beim alten Band mit Kuerzung. */
+  const druckTinte = druck ? schaumNamenTinte(druck.mmJeEinheit ? druck.mmJeEinheit * 96 / 25.4 : 1) : null;
+  const kopfUnten = (pk, x, y, w, h, name, i) => {
+    const alt = kopfPlan(pk, x, y, w, h, name, i, true), ziel = Math.max(7, alt ? alt.fs : 7);
+    const poly = pk.map(p => [p[0], -p[1]]);                       /* render.js rechnet mit y nach oben */
+    const lab = R.placeLabel(poly, name, { maxSize: ziel, minSize: 7, maxLines: 3, fit: true, leading: schaumZeilenabstand(), drop: 0,
+      huelle: poly, ink: druckTinte, unten: true, startSize: ziel });
+    if (!lab || !lab.xs) return alt;
+    const n = lab.lines.length, grund = j => lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size;
+    const ober = Math.max(0, ...druckTinte.runs(lab.lines[0], lab.size).runs.map(q => q[2]));
+    const bandY = Math.max(y, -(grund(0) + ober * lab.size) - 2);
+    const zeilen = lab.lines.map((t, j) => `<tspan x="${lab.xs[j].toFixed(1)}" y="${(-grund(j)).toFixed(1)}">${esc(t)}</tspan>`).join('');
+    return { bandY, bh: y + h - bandY, fs: lab.size,
+      text: `<text class="kopf" font-size="${lab.size.toFixed(2)}" fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" clip-path="url(#skz${i})" pointer-events="none">${zeilen}</text>` };
   };
   /* Die Nummer des Werkverzeichnisses in einer Zelle ohne Glasband: ein kleines Schild unten in der Zelle (dort,
      wo die Zelle breit genug ist, sonst in ihrer Mitte), Schrift 2,2 bis 5 mm je nach Zellgroesse - lesbar aus der
@@ -9539,10 +9559,10 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              let kopf = '';
              /* Zierzeichen faellt nur bei Personen weg - bei Songtiteln gehoert die Klammer am Ende dazu */
              const roh = (zeilen[res.leaves[+i].row] || {}).titel || '', nrHier = nummern ? nummern.get(+i) : 0;
-             const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : String(roh).trim()) : '';
+             const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : (druck ? zellName(res.leaves[+i]) : String(roh).trim())) : '';
              const name = name0 && nrHier ? nrHier + '\u2002' + name0 : name0;
              const anKante = druck && druck.titel === 'kante';
-             const plan = !anKante && name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i, !!druck) : null;
+             const plan = !anKante && name && h >= 34 && w >= 34 ? (druck ? kopfUnten(pk, x, y, w, h, name, i) : kopfPlan(pk, x, y, w, h, name, i, false)) : null;
              const kante = anKante && name ? kantenTitel(pk, x, y, w, h, name, i) : null;
              const tf = druck && druck.wackeln > 0 ? schaumWackeln(id, x, y, w, h, druck.wackeln) : '';
              if (plan){
