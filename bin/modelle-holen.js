@@ -11,8 +11,12 @@
  *
  *   htdemucs_6s (246 MB)   Stemtrennung. MIT, Copyright (c) Meta
  *                          Platforms; der ONNX-Export MIT, StemSplit.
- *   YuNet (0,2 MB)         Gesichter in den Titelbildern (bin/gesichter.js).
- *                          MIT, OpenCV / Shiqi Yu.
+ *   SCRFD-500M (2,5 MB)    Gesichter in Titelbildern und Avataren
+ *                          (bin/gesichter.js). Aus InsightFaces buffalo_sc
+ *                          (15 MB Zip, ausgepackt wird nur der Erkenner);
+ *                          nur nichtkommerziell.
+ *   PP-OCRv3 (2,4 MB)      Schrift in den Titelbildern (bin/gesichter.js).
+ *                          Apache 2.0, PaddleOCR / OpenCV-Modellzoo.
  *   Discogs-EffNet (18 MB) Merkmalsextraktor, und drei Koepfe fuer
  *   + drei Koepfe          Musikstil, Instrument und Stimmung. Alle vier
  *                          von der Music Technology Group der Universitat
@@ -86,10 +90,15 @@ const DATEIEN = [
   ['model_fp16.onnx_data',
    'https://huggingface.co/onnx-community/depth-anything-v2-large-ONNX/resolve/main/onnx/model_fp16.onnx_data', 600000000],
 
-  /* Gesichter (bin/gesichter.js): YuNet aus dem OpenCV-Modellzoo, MIT. Gewaehlt am 07.10.2026 gegen
-     UltraFace und SCRFD an 40 Covern - Zahlen im Kopf von bin/gesichter.js. */
-  ['face_detection_yunet_2023mar.onnx',
-   'https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx', 200000],
+  /* Gesichter (bin/gesichter.js): SCRFD-500M, gemessen am 07.10.2026 gegen YuNet und UltraFace an 40 Covern
+     (Zahlen im Kopf von bin/gesichter.js). Zuerst lief YuNet (MIT); Caspar_D, 07.10.2026: „nimm ruhig SCRFD,
+     KlangTresor soll nicht kommerziell bleiben". InsightFace gibt den Erkenner nur im Modellpaket buffalo_sc
+     heraus - geholt wird das Zip, ausgepackt nur det_500m.onnx (der vierte Eintrag), das Zip wird nicht behalten. */
+  ['scrfd_500m.onnx',
+   'https://github.com/deepinsight/insightface/releases/download/v0.7/buffalo_sc.zip', 2000000, 'det_500m.onnx'],
+  /* Schrift (bin/gesichter.js): damit die Cover so ruecken, dass ihr eigener Titel nicht in der Zelle steht */
+  ['text_detection_en_ppocrv3_2023may.onnx',
+   'https://github.com/opencv/opencv_zoo/raw/main/models/text_detection_ppocr/text_detection_en_ppocrv3_2023may.onnx', 2000000],
   ['paraphrase-multilingual-mpnet.onnx',
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/onnx/model_quantized.onnx', 200000000],
   ['paraphrase-multilingual-mpnet-tokenizer.json',
@@ -122,6 +131,29 @@ const STILLSTAND = 45000;
 let NAME_JETZT = '';
 
 function mb(n) { return (n / 1048576).toFixed(1) + ' MB'; }
+
+/* EINE DATEI AUS EINEM ZIP - ohne unzip (fehlt unter Windows), mit Nodes zlib: das Verzeichnis am Ende des
+   Zips nennt jeden Eintrag mit Art (0 = gespeichert, 8 = deflate), Groesse und Lage seines Kopfes. */
+function ausZip(zip, name) {
+  let e = zip.length - 22;
+  while (e >= 0 && zip.readUInt32LE(e) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('kein Zip');
+  let p = zip.readUInt32LE(e + 16);
+  for (let i = 0, n = zip.readUInt16LE(e + 10); i < n; i++) {
+    if (zip.readUInt32LE(p) !== 0x02014b50) break;
+    const art = zip.readUInt16LE(p + 10), groesse = zip.readUInt32LE(p + 20), nl = zip.readUInt16LE(p + 28);
+    const el = zip.readUInt16LE(p + 30), kl = zip.readUInt16LE(p + 32), kopf = zip.readUInt32LE(p + 42);
+    const eintrag = zip.toString('utf8', p + 46, p + 46 + nl);
+    if (eintrag === name || eintrag.endsWith('/' + name)) {
+      const ab = kopf + 30 + zip.readUInt16LE(kopf + 26) + zip.readUInt16LE(kopf + 28), roh = zip.subarray(ab, ab + groesse);
+      if (art === 0) return Buffer.from(roh);
+      if (art === 8) return require('node:zlib').inflateRawSync(roh);
+      throw new Error('Zip-Art ' + art);
+    }
+    p += 46 + nl + el + kl;
+  }
+  throw new Error(name + ' fehlt im Zip');
+}
 
 async function perFetch(url, mindestens) {
   let letzter = null;
@@ -198,7 +230,7 @@ function perCurl(url, f, mindestens) {
   fs.mkdirSync(ZIEL, { recursive: true });
   let geholt = 0; const offen = [];
   SOLL_GESAMT = DATEIEN.reduce((s, [, , m]) => s + m, 0);
-  for (const [name, url, mindestens] of DATEIEN) {
+  for (const [name, url, mindestens, zipEintrag] of DATEIEN) {
     NUMMER_JETZT++;
     const f = path.join(ZIEL, name);
     if (fs.existsSync(f) && fs.statSync(f).size >= mindestens) { console.log(`  vorhanden  ${name}`); GEHOLT_VORHER += fs.statSync(f).size; continue; }
@@ -210,9 +242,18 @@ function perCurl(url, f, mindestens) {
     /* Die Fortschrittszeile hat sich selbst ueberschrieben; erst
        loeschen, sonst klebt das Ergebnis hinter halben Prozentzahlen. */
     if (process.stdout.isTTY) process.stdout.write(`\r${' '.repeat(78)}\r  hole       ${name} … `);
-    if (a.buf) { fs.writeFileSync(f, a.buf); geholt++; GEHOLT_VORHER += a.buf.length; console.log(mb(a.buf.length)); continue; }
+    /* Aus einem Zip: das Paket landet erst neben dem Ziel, dann wird der eine Eintrag ausgepackt */
+    const auspacken = (zip) => { try { const d = ausZip(zip, zipEintrag); if (d.length < mindestens) return 'zu klein ausgepackt';
+      fs.writeFileSync(f + '.teil', d); fs.renameSync(f + '.teil', f); return null; } catch (e) { return e.message; } };
+    if (a.buf) {
+      const schief = zipEintrag ? auspacken(a.buf) : (fs.writeFileSync(f, a.buf), null);
+      if (!schief) { geholt++; GEHOLT_VORHER += a.buf.length; console.log(mb(a.buf.length)); continue; }
+      a.fehler = schief;
+    }
     process.stdout.write(`fetch: ${a.fehler} → curl … `);
-    const b = perCurl(url, f, mindestens);
+    const zf = zipEintrag ? f + '.zip' : f;
+    const b = perCurl(url, zf, mindestens);
+    if (b.n && zipEintrag) { b.fehler = auspacken(fs.readFileSync(zf)); try { fs.rmSync(zf); } catch (e) {} if (b.fehler) b.n = 0; }
     if (b.n) { geholt++; GEHOLT_VORHER += b.n; console.log(mb(b.n)); continue; }
     console.log(`FEHLER (${b.fehler})`); offen.push([name, url]); process.exitCode = 1;
   }
@@ -222,7 +263,8 @@ function perCurl(url, f, mindestens) {
   console.log(`  Modelle: ${geholt} geholt, ${da} von ${DATEIEN.length} vorhanden → library/modelle/`);
   if (offen.length) {
     console.log(`\n  ${offen.length} Datei(en) kamen nicht an. Von Hand: im Browser öffnen, "Speichern unter" nach\n    ${ZIEL}\n  mit genau diesem Dateinamen:`);
-    for (const [n, u] of offen) console.log(`    ${n}\n      ${u}`);
+    for (const [n, u] of offen) { const z = (DATEIEN.find(d => d[0] === n) || [])[3];
+      console.log(`    ${n}\n      ${u}` + (z ? `\n      (ein Zip: daraus ${z} auspacken und als ${n} ablegen)` : '')); }
     console.log('  Danach node bin/modelle-holen.js noch einmal - Vorhandenes wird übersprungen.\n  Hinter einem Proxy: HTTPS_PROXY=http://proxy:port setzen (curl liest das), oder die Dateien von Hand holen.');
   }
 })().catch(e => { console.error('  Modelle holen brach ab:', e.message, e.cause ? '/ ' + (e.cause.code || e.cause.message) : ''); process.exit(1); });

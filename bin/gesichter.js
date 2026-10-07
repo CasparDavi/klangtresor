@@ -24,13 +24,24 @@
      UltraFace-320  0,7     20/23          0         1,2 MB   MIT
      SCRFD-500M     0,5     22/23          0         2,5 MB   nur nichtkommerziell (InsightFace)
      Zufallsboden           0,8/23
-   YuNet: fast so gut wie das beste, das kleinste, und seine Lizenz passt zum Paket. Verpasst haben alle
-   drei dasselbe: einen holzschnittartig gezeichneten Koenig im Profil. Rund 70 ms je Bild (Intel-Mac).
+   Verpasst haben alle drei dasselbe: einen holzschnittartig gezeichneten Koenig im Profil. Zuerst (1.0.37) lief
+   YuNet - fast so gut wie das beste, das kleinste, MIT. Dann Caspar_D, 07.10.2026: „nimm ruhig SCRFD, KlangTresor
+   soll nicht kommerziell bleiben" - seither SCRFD-500M, der eine Treffer mehr, ohne Fehlalarm. Seine Gewichte
+   liegen nicht im Paket; bin/modelle-holen.js holt sie aus InsightFaces buffalo_sc (Lizenz: web/fremd/LIZENZEN.md).
+
+   SCHRIFT (Caspar_D, 07.10.2026: „da der Titel ja in die Zelle geschrieben wird, eine Optimierung auf
+   Nicht-Sichtbarkeit des Covertitels"). Dazu sucht ein zweiter kleiner Erkenner die Schrift im Bild: PP-OCRv3 aus
+   dem OpenCV-Modellzoo (2,4 MB, Apache 2.0). Gemessen an denselben 40 Covern: 32 von 35 markierten
+   Schriftbereichen gedeckt; Fehlalarme auf Schneeflocken, Holzschnitt und unscharfen Laternen. Die Boxen stehen
+   als t im Buch; schaumBildPlatz in web/index.html rueckt und zoomt danach (bis 1,4-fach), Gesichter gehen vor.
+
+   AVATARE (Caspar_D: „auch bei den Groupies wäre eine Gesichtserkennung hilfreich"): die Avatare, die
+   bin/avatare.js nach library/avatare/ geholt hat, werden hier mit durchsucht - Schluessel avatar/<datei>.
 
    DAS BUCH. library/gesichter.json traegt den AUSWEIS des Erkenners und je Bild die HERKUNFT (Groesse und
    Zeitstempel der Datei), dazu Breite und Hoehe des Bildes und die Gesichter in Bildanteilen
-   [x0, y0, x1, y1, wertung] ab Wertung 0,6 - die Oberflaeche nimmt ab 0,7 (der gemessene Punkt), die
-   Zahlen darunter bleiben zum Nachsehen. Geschrieben wird nur das Buch, sonst nichts in library/.
+   [x0, y0, x1, y1, wertung] ab Wertung 0,4 - die Oberflaeche nimmt ab 0,5 (der gemessene Punkt; steht als
+   schwelle im Ausweis und kommt so ueber /api/gesichter zur Seite), die Zahlen darunter bleiben zum Nachsehen. Geschrieben wird nur das Buch, sonst nichts in library/.
    ============================================================= */
 'use strict';
 const fs = require('node:fs');
@@ -40,12 +51,18 @@ const melden = require('./melden.js');
 
 const WURZEL = path.join(__dirname, '..');
 const SONGS  = path.join(WURZEL, 'library', 'songs');
-const MODELL = path.join(WURZEL, 'library', 'modelle', 'face_detection_yunet_2023mar.onnx');
+const MODELL = path.join(WURZEL, 'library', 'modelle', 'scrfd_500m.onnx');
+const TEXTMODELL = path.join(WURZEL, 'library', 'modelle', 'text_detection_en_ppocrv3_2023may.onnx');
+const AVATARE = path.join(WURZEL, 'library', 'avatare');
 const BUCH   = path.join(WURZEL, 'library', 'gesichter.json');
 const S = 640;                       /* Eingabe des Erkenners: das Bild eingepasst in 640×640, Rest schwarz */
-const AB = 0.6;                      /* ins Buch ab dieser Wertung; die Oberflaeche nimmt ab 0,7 */
-const AUSWEIS = { modell: 'yunet', fassung: '2023mar (opencv_zoo)', eingabe: S + '×' + S + ' eingepasst', ab: AB, lizenz: 'MIT' };
-const MODELLIDENT = (a) => JSON.stringify([a && a.modell, a && a.fassung, a && a.eingabe, a && a.ab]);
+const AB = 0.4;                      /* ins Buch ab dieser Wertung; die Oberflaeche nimmt ab SCHWELLE */
+const SCHWELLE = 0.5;                /* der gemessene Punkt: 22 von 23 Hauptgesichtern, kein Fehlalarm */
+const TS = 736;                      /* Eingabe des Texterkenners */
+const AUSWEIS = { modell: 'scrfd-500m', fassung: 'buffalo_sc det_500m (InsightFace v0.7)', eingabe: S + '×' + S + ' eingepasst', ab: AB,
+                  schwelle: SCHWELLE, lizenz: 'nur nichtkommerziell (InsightFace)',
+                  schrift: fs.existsSync(TEXTMODELL) ? 'ppocrv3-en 2023may, ' + TS + ', Schwelle 0,3 (Apache 2.0)' : null };
+const MODELLIDENT = (a) => JSON.stringify([a && a.modell, a && a.fassung, a && a.eingabe, a && a.ab, a && a.schrift]);
 
 const NEU  = process.argv.includes('--neu');
 const TEST = (() => { const i = process.argv.indexOf('--test'); return i >= 0 ? Number(process.argv[i + 1]) || 0 : 0; })();
@@ -66,6 +83,16 @@ function bilderVon(id) {
   }
   return aus;
 }
+/* Die geholten Avatare (bin/avatare.js) - je Datei ein Bild. */
+function avatarBilder() {
+  let buch = null; try { buch = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'avatare.json'), 'utf8')); } catch (e) { return []; }
+  const aus = [], gesehen = new Set();
+  for (const e of Object.values((buch && buch.bilder) || {})) {
+    if (!e || !e.datei || gesehen.has(e.datei)) continue; gesehen.add(e.datei);
+    const datei = path.join(AVATARE, e.datei); if (fs.existsSync(datei)) aus.push({ id: 'avatar', schluessel: 'avatar/' + e.datei, datei, art: 'avatar' });
+  }
+  return aus;
+}
 const stempel = (p) => { try { const s = fs.statSync(p); return s.size + ':' + Math.round(s.mtimeMs); } catch (e) { return null; } };
 
 function masse(datei) {
@@ -74,29 +101,49 @@ function masse(datei) {
   return w > 0 && h > 0 ? [w, h] : null;
 }
 /* Das Bild eingepasst in S×S (oben links, Rest schwarz) als RGB-Bytes - ueber ffmpeg, das ohnehin da ist. */
-function pixel(datei) {
-  const e = spawnSync('ffmpeg', ['-v', 'error', '-i', datei, '-vf', `scale=w=${S}:h=${S}:force_original_aspect_ratio=decrease,pad=${S}:${S}:0:0:black`,
+function pixel(datei, feld = S) {
+  const e = spawnSync('ffmpeg', ['-v', 'error', '-i', datei, '-vf', `scale=w=${feld}:h=${feld}:force_original_aspect_ratio=decrease,pad=${feld}:${feld}:0:0:black`,
     '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 64 << 20 });
-  return e.status === 0 && e.stdout && e.stdout.length === S * S * 3 ? e.stdout : null;
+  return e.status === 0 && e.stdout && e.stdout.length === feld * feld * 3 ? e.stdout : null;
 }
-/* YuNet (OpenCV, 2023): BGR 0..255, je Stufe 8/16/32 eine Wertung (Wurzel aus Klasse mal Objekt) und eine
-   Box (Mitte relativ zur Rasterzelle, Breite/Hoehe logarithmisch) - wie FaceDetectorYN in OpenCV. */
+/* PP-OCRv3: Wahrscheinlichkeitskarte fuer Schrift (RGB, ImageNet-Normierung), Schwelle 0,3, zusammenhaengende Gebiete
+   als Boxen, um 0,4 ihrer Hoehe aufgeweitet (die Karte ist schmaler als die Schrift) - Bildanteile [x0,y0,x1,y1]. */
+async function schriftSuchen(ort, sitzung, datei, w, h) {
+  const rgb = pixel(datei, TS); if (!rgb) return null;
+  const k = Math.min(TS / w, TS / h), t = new Float32Array(3 * TS * TS), mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225];
+  for (let i = 0; i < TS * TS; i++) for (let c = 0; c < 3; c++) t[c * TS * TS + i] = (rgb[3 * i + c] / 255 - mean[c]) / std[c];
+  const o = await sitzung.run({ [sitzung.inputNames[0]]: new ort.Tensor('float32', t, [1, 3, TS, TS]) });
+  const p = o[sitzung.outputNames[0]].data, seen = new Uint8Array(TS * TS), boxen = [];
+  for (let i = 0; i < TS * TS; i++) {
+    if (seen[i] || p[i] < 0.3) continue;
+    let x0 = TS, y0 = TS, x1 = 0, y1 = 0, n = 0; const st = [i]; seen[i] = 1;
+    while (st.length) { const j = st.pop(), x = j % TS, y = (j / TS) | 0; n++; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (const q of [j - 1, j + 1, j - TS, j + TS]) if (q >= 0 && q < TS * TS && !seen[q] && p[q] >= 0.3 && Math.abs((q % TS) - x) <= 1) { seen[q] = 1; st.push(q); } }
+    if (n < 30) continue;
+    const ex = (y1 - y0 + 1) * 0.4, q = (v, m) => +Math.min(1, Math.max(0, v / k / m)).toFixed(4);
+    boxen.push([q(x0 - ex, w), q(y0 - ex, h), q(x1 + ex, w), q(y1 + ex, h)]);
+  }
+  return boxen;
+}
+/* SCRFD-500M (InsightFace): RGB (x - 127,5) / 128, das Bild eingepasst in 640×640. Je Stufe 8/16/32 zwei Anker
+   je Rasterpunkt, eine Wertung und vier Abstaende (links, oben, rechts, unten) in Stufen - wie SCRFD.detect in
+   insightface/model_zoo/scrfd.py. Die Ausgaben stehen dort in dieser Reihenfolge: drei Wertungen, drei Boxen,
+   drei Punktsaetze (Augen, Nase, Mund - hier nicht gebraucht). */
 async function suchen(ort, sitzung, datei, w, h) {
   const rgb = pixel(datei); if (!rgb) return null;
   const t = new Float32Array(3 * S * S), k = Math.min(S / w, S / h);
-  for (let i = 0; i < S * S; i++) { t[i] = rgb[3 * i + 2]; t[S * S + i] = rgb[3 * i + 1]; t[2 * S * S + i] = rgb[3 * i]; }
-  const o = await sitzung.run({ input: new ort.Tensor('float32', t, [1, 3, S, S]) });
-  const roh = [];
-  for (const st of [8, 16, 32]) {
-    const cls = o['cls_' + st].data, obj = o['obj_' + st].data, bb = o['bbox_' + st].data, n = S / st;
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
-      const i = r * n + c, s = Math.sqrt(Math.min(1, Math.max(0, cls[i])) * Math.min(1, Math.max(0, obj[i])));
-      if (s < AB) continue;
-      const cx = (c + bb[4 * i]) * st, cy = (r + bb[4 * i + 1]) * st, bw = Math.exp(bb[4 * i + 2]) * st, bh = Math.exp(bb[4 * i + 3]) * st;
+  for (let i = 0; i < S * S; i++) for (let c = 0; c < 3; c++) t[c * S * S + i] = (rgb[3 * i + c] - 127.5) / 128;
+  const o = await sitzung.run({ [sitzung.inputNames[0]]: new ort.Tensor('float32', t, [1, 3, S, S]) });
+  const nm = sitzung.outputNames, roh = [];
+  [8, 16, 32].forEach((st, j) => {
+    const sc = o[nm[j]].data, bb = o[nm[j + 3]].data, n = S / st;
+    for (let i = 0; i < sc.length; i++) {
+      const s = sc[i]; if (s < AB) continue;
+      const stelle = Math.floor(i / 2), cx = (stelle % n) * st, cy = Math.floor(stelle / n) * st;
       const q = (v, m) => Math.min(1, Math.max(0, v / k / m));
-      roh.push({ s, b: [q(cx - bw / 2, w), q(cy - bh / 2, h), q(cx + bw / 2, w), q(cy + bh / 2, h)] });
+      roh.push({ s, b: [q(cx - bb[4 * i] * st, w), q(cy - bb[4 * i + 1] * st, h), q(cx + bb[4 * i + 2] * st, w), q(cy + bb[4 * i + 3] * st, h)] });
     }
-  }
+  });
   /* Ueberlappende Boxen zusammenlegen (NMS 0,3), die staerkste bleibt */
   roh.sort((a, b) => b.s - a.s);
   const iou = (a, b) => { const x0 = Math.max(a[0], b[0]), y0 = Math.max(a[1], b[1]), x1 = Math.min(a[2], b[2]), y1 = Math.min(a[3], b[3]);
@@ -125,6 +172,8 @@ function buchSchreiben(buch) {
   const ort = require('onnxruntime-node');
   /* hoechstens vier Faeden - der Lauf ist klein, der Rechner soll nebenher frei bleiben */
   const sitzung = await ort.InferenceSession.create(MODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 });
+  const textSitzung = fs.existsSync(TEXTMODELL) ? await ort.InferenceSession.create(TEXTMODELL, { intraOpNumThreads: 4, logSeverityLevel: 3 }) : null;
+  if (!textSitzung) console.log('  Ohne Texterkenner (library/modelle/text_detection_en_ppocrv3_2023may.onnx fehlt - node bin/modelle-holen.js).');
   const buch = buchLesen();
   if (MODELLIDENT(buch.ausweis) !== MODELLIDENT(AUSWEIS) && Object.keys(buch.bilder).length) {
     console.log('  Der Erkenner hat gewechselt — alle Bilder werden neu durchsucht.');
@@ -135,7 +184,7 @@ function buchSchreiben(buch) {
   let titel = [];
   try { titel = fs.readdirSync(SONGS).filter((d) => !d.startsWith('.')); } catch (e) {}
   if (NUR) titel = titel.filter((id) => id.startsWith(NUR));
-  const alle = titel.reduce((s, id) => s.concat(bilderVon(id)), []);
+  const alle = titel.reduce((s, id) => s.concat(bilderVon(id)), []).concat(NUR ? [] : avatarBilder());
   let offen = alle.filter((b) => {
     if (NEU || NUR) return true;
     const e = buch.bilder[b.schluessel];
@@ -150,8 +199,10 @@ function buchSchreiben(buch) {
     const m = masse(b.datei);
     const g = m ? await suchen(ort, sitzung, b.datei, m[0], m[1]) : null;
     if (!g) { fehler++; console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${path.basename(b.datei)} nicht lesbar`); continue; }
-    buch.bilder[b.schluessel] = { quelle: stempel(b.datei), art: b.art, w: m[0], h: m[1], g, gerechnet: new Date().toISOString() };
-    if (g.some(x => x[4] >= 0.7)) mitGesicht++;
+    /* Schrift nur auf Covern - bei Avataren steht der Name im Kopf der Zelle, nicht auf dem Bild */
+    const t = textSitzung && b.art !== 'avatar' ? await schriftSuchen(ort, textSitzung, b.datei, m[0], m[1]) : null;
+    buch.bilder[b.schluessel] = { quelle: stempel(b.datei), art: b.art, w: m[0], h: m[1], g, t, gerechnet: new Date().toISOString() };
+    if (g.some(x => x[4] >= SCHWELLE)) mitGesicht++;
     if (n % 25 === 0 || n === offen.length) {
       console.log(`  [${n}/${offen.length}] ${b.id.slice(0, 8)}  ${g.length} Gesicht${g.length === 1 ? '' : 'er'}`);
       buchSchreiben(buch);
@@ -161,6 +212,6 @@ function buchSchreiben(buch) {
   if (offen.length) buchSchreiben(buch);
   melden.ausLauf();
   const ms = offen.length ? Math.round((Date.now() - t0) / offen.length) : 0;
-  console.log(`\n  ${n - fehler} Bilder durchsucht${fehler ? `, ${fehler} nicht lesbar` : ''}, ${mitGesicht} mit Gesicht (ab 0,7) — ${ms} ms je Bild.`);
+  console.log(`\n  ${n - fehler} Bilder durchsucht${fehler ? `, ${fehler} nicht lesbar` : ''}, ${mitGesicht} mit Gesicht (ab ${String(SCHWELLE).replace(".", ",")}) — ${ms} ms je Bild.`);
   console.log(`  Buch: ${path.relative(WURZEL, BUCH)}\n`);
 })().catch((e) => { console.error('  FEHLER:', e.message); process.exit(1); });

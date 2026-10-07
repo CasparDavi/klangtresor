@@ -9126,37 +9126,77 @@ async function schaumVorrechnen(){
    PDF druckt). Die Kachel (kachel.jpg, 3:4, das Original eingepasst auf unscharfem Grund) wird so gelegt, dass
    ihr Bildteil genau auf diesen Platz faellt - Schirm, Vorschau und PDF zeigen denselben Ausschnitt; der
    unscharfe Grund der Kachel liegt ausserhalb der Zelle. */
-let schaumGesichter = null;
+let schaumGesichter = null, schaumAvatare = {}, schaumGesichtSchwelle = 0.7;
 function schaumGesichterLaden(){
   if (schaumGesichter) return Promise.resolve(schaumGesichter);
   return fetch('/api/gesichter', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)
-    .then(d => (schaumGesichter = (d && d.bilder) || {})).catch(() => (schaumGesichter = {}));
+    .then(d => { schaumAvatare = (d && d.avatare) || {}; schaumGesichtSchwelle = (d && d.schwelle) || 0.7; return (schaumGesichter = (d && d.bilder) || {}); }).catch(() => (schaumGesichter = {}));
 }
-function schaumFokus(id){
-  if (!schaumGesichter) return null;
-  const pfad = artworkBild(id).split('?')[0], datei = pfad.slice(pfad.lastIndexOf('/') + 1), eigen = datei.startsWith('eigen');
-  const e = schaumGesichter[eigen ? id + '/' + datei : id];
+/* AVATARE AUS DER EIGENEN KOPIE (Caspar_D, 07.10.2026: „Server holt und speichert", bin/avatare.js): liegt ein
+   Avatar unter library/avatare, nimmt der Schaum ihn von dort; sonst wie bisher von Suno. */
+function schaumAvatarAdresse(url){ const d = url && schaumAvatare[url]; return d ? '/avatar/' + d : url; }
+/* Aus einem Buch-Eintrag den Fokus: Gesichter ab der Schwelle des Erkenners (SCRFD 0,5, steht in seinem Ausweis),
+   davon die mit mindestens einem Viertel der groessten Flaeche; dazu die Schriftboxen. */
+function schaumFokusVon(e){
   if (!e || !(e.w > 0) || !(e.h > 0)) return null;
-  if (!eigen && e.art !== (datei === 'titelbild.jpg' ? 'titelbild' : 'cover')) return null;   /* Buch zu einem anderen Bild */
-  const fl = (x) => (x[2] - x[0]) * (x[3] - x[1]), g = (e.g || []).filter(x => x[4] >= 0.7);
+  const fl = (x) => (x[2] - x[0]) * (x[3] - x[1]), g = (e.g || []).filter(x => x[4] >= schaumGesichtSchwelle);
   let fokus = null;
   if (g.length){
     const gross = Math.max(...g.map(fl)), wichtig = g.filter(x => fl(x) >= 0.25 * gross);
     fokus = [Math.min(...wichtig.map(x => x[0])), Math.min(...wichtig.map(x => x[1])), Math.max(...wichtig.map(x => x[2])), Math.max(...wichtig.map(x => x[3]))];
     fokus.haupt = g.find(x => fl(x) === gross).slice(0, 4);
   }
-  return { a: e.w / e.h, fokus, eigen };
+  /* SCHRIFT ALS MOTIV: deckt die Schrift mehr als 35 % des Bildes (abgetastet auf 24 × 24 Punkten), ist sie das Bild
+     selbst - dann weicht nichts aus, sonst blieben nach dem Zoom nur Streifen. Gemessen an 261 Covern mit Schrift:
+     231 unter 10 %; darueber Sternen-Scan 31 % und ICE 23 % (Ausweichen zeigt Fadenkreuz und Zug), dagegen
+     „Aktion erforderlich" 57 %, „Stille Nacht" 47 %, „Erweckt" 41 % - reine Schriftcover. */
+  let texte = Array.isArray(e.t) ? e.t : [];
+  if (texte.length){ let n = 0;
+    for (let i = 0; i < 24; i++) for (let j = 0; j < 24; j++){ const x = (i + .5) / 24, y = (j + .5) / 24; if (texte.some(b => x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3])) n++; }
+    if (n / 576 > 0.35) texte = []; }
+  return { a: e.w / e.h, fokus, texte };
 }
-/* Platz des Originals (Seitenverhaeltnis a) in der Zelle x,y,w,h: deckend, der Fokus moeglichst mittig. */
-function schaumBildPlatz(x, y, w, h, a, fokus){
-  const W = Math.max(w, h * a), H = W / a;
-  let X = x + (w - W) / 2, Y = y + (h - H) / 2;
-  if (fokus){
-    const f = ((fokus[2] - fokus[0]) * W > w || (fokus[3] - fokus[1]) * H > h) && fokus.haupt ? fokus.haupt : fokus;
-    X = Math.min(x, Math.max(x + w - W, x + w / 2 - (f[0] + f[2]) / 2 * W));
-    Y = Math.min(y, Math.max(y + h - H, y + h / 2 - (f[1] + f[3]) / 2 * H));
+function schaumFokusAvatar(url){ const d = url && schaumAvatare[url]; return d && schaumGesichter ? schaumFokusVon(schaumGesichter['avatar/' + d]) : null; }
+function schaumFokus(id){
+  if (!schaumGesichter) return null;
+  const pfad = artworkBild(id).split('?')[0], datei = pfad.slice(pfad.lastIndexOf('/') + 1), eigen = datei.startsWith('eigen');
+  const e = schaumGesichter[eigen ? id + '/' + datei : id];
+  if (!e || !(e.w > 0) || !(e.h > 0)) return null;
+  if (!eigen && e.art !== (datei === 'titelbild.jpg' ? 'titelbild' : 'cover')) return null;   /* Buch zu einem anderen Bild */
+  const f = schaumFokusVon(e); if (f) f.eigen = eigen;
+  return f;
+}
+/* PLATZ DES ORIGINALS (Seitenverhaeltnis a) in der Zelle x,y,w,h - eine kleine Suche statt einer Formel (Caspar_D,
+   07.10.2026: „Optimierung des Ausschnitts auf das Gesicht … und auf Nicht-Sichtbarkeit des Covertitels"; Zoom bis
+   1,4-fach erlaubt). Probiert werden vier Zoomstufen (1; 1,12; 1,25; 1,4) und je neun mal neun Lagen, dazu die Lage
+   mit dem Gesicht in der Mitte; jede Lage deckt die Zelle. Kosten:
+     50 × Anteil der Gesichter ausserhalb der Zelle   (Gesichter gehen immer vor)
+      6 × sichtbare Coverschrift / Zellflaeche         (der Titel steht ja schon in der Zelle)
+    1,2 × (Zoom − 1)                                   (lieber nicht vergroessern - es kostet Bildpunkte)
+    0,4 × Abstand des Gesichts (sonst der Bildmitte) von der Zellmitte
+   Ohne Gesicht und ohne Schrift gewinnt die mittige Lage ohne Zoom - dann bleibt alles wie vorher. „Sichtbar" heisst:
+   im um 6 % eingerueckten Rechteck der Zelle (die Ecken der Vielecke zeigen ohnehin nichts). */
+function schaumBildPlatz(x, y, w, h, a, fokus, texte = []){
+  const W0 = Math.max(w, h * a), vx0 = x + 0.06 * w, vx1 = x + 0.94 * w, vy0 = y + 0.06 * h, vy1 = y + 0.94 * h;
+  const sicht = Math.max(1e-9, (vx1 - vx0) * (vy1 - vy0)), gr = Math.max(w, h);
+  const schnitt = (b) => Math.max(0, Math.min(b[2], vx1) - Math.max(b[0], vx0)) * Math.max(0, Math.min(b[3], vy1) - Math.max(b[1], vy0));
+  const f = fokus ? (((fokus[2] - fokus[0]) * W0 > w || (fokus[3] - fokus[1]) * W0 / a > h) && fokus.haupt ? fokus.haupt : fokus) : null;
+  let best = null;
+  for (const z of [1, 1.12, 1.25, 1.4]){
+    const W = W0 * z, H = W / a, xs = [], ys = [], zw = (X0, lo, hi) => Math.min(hi, Math.max(lo, X0));
+    for (let k = 0; k <= 8; k++){ xs.push(x + w - W + (W - w) * k / 8); ys.push(y + h - H + (H - h) * k / 8); }
+    if (f){ xs.push(zw(x + w / 2 - (f[0] + f[2]) / 2 * W, x + w - W, x)); ys.push(zw(y + h / 2 - (f[1] + f[3]) / 2 * H, y + h - H, y)); }
+    for (const X of xs) for (const Y of ys){
+      const ab = (b) => [X + b[0] * W, Y + b[1] * H, X + b[2] * W, Y + b[3] * H];
+      let kosten = 1.2 * (z - 1);
+      if (f){ const g = ab(f), fg = Math.max(1e-9, (g[2] - g[0]) * (g[3] - g[1]));
+        kosten += 50 * (1 - schnitt(g) / fg) + 0.4 * Math.hypot((g[0] + g[2]) / 2 - (x + w / 2), (g[1] + g[3]) / 2 - (y + h / 2)) / gr; }
+      else kosten += 0.4 * Math.hypot(X + W / 2 - (x + w / 2), Y + H / 2 - (y + h / 2)) / gr;
+      if (texte.length){ let t = 0; for (const b of texte) t += schnitt(ab(b)); kosten += 6 * t / sicht; }
+      if (!best || kosten < best.k - 1e-9) best = { k: kosten, x: X, y: Y, w: W, h: H };
+    }
   }
-  return { x: X, y: Y, w: W, h: H };
+  return { x: best.x, y: best.y, w: best.w, h: best.h };
 }
 /* Die Kachel (600×800, das Original eingepasst und mittig) so legen, dass ihr Bildteil den Platz p fuellt. */
 function schaumKachelPlatz(p, a){
@@ -9165,7 +9205,7 @@ function schaumKachelPlatz(p, a){
 }
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');
-  if (art !== 'person') await schaumGesichterLaden();
+  await schaumGesichterLaden();
   const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
   /* KOPFZEILE JE PERSON (Caspar_D, 06.10.2026: „beim Groupieschaum jede Zelle einen Header, in
      dem der Name steht, also einfach ein Stück abschneiden und in den schwarzen Raum den Namen
@@ -9316,10 +9356,10 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     }
   }
   /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
-  const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
+  const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (schaumAvatarAdresse(zeilen[k.row].bild) || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
   /* Die Vorschau des Plakats zeigt die Kachelbilder aus dem Vorrat - die vollen Cover (499 x ~2,5 MB) braucht
      nur das PDF, und das holt sie ueber data-voll. Sonst laedt das erste Oeffnen ueber ein Gigabyte. */
-  const vorschauBilder = druck ? res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : artworkKachel(zeilen[k.row].id))) : null) : bilder;
+  const vorschauBilder = druck ? res.leaves.map(k => k.row != null && zeilen[k.row] ? (schaumAvatarAdresse(zeilen[k.row].bild) || (personen ? null : artworkKachel(zeilen[k.row].id))) : null) : bilder;
   /* Bildstufe je Zelle (Bildvorrat): Breite des Feldes in Bildschirmpunkten je Schaum-Einheit mal
      Pixeldichte; ein Cover (3 : 4, „slice") braucht an der langen Seite ein Drittel mehr. */
   const massstab = druck ? druck.massstab : (($('schaumfeld').getBoundingClientRect().width || 1600) / res.width) * (window.devicePixelRatio || 1), faktor = personen ? 1 : 1.34;
@@ -9335,8 +9375,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
              /* Platz des Bildes: mit Gesichtern gerueckt (schaumFokus); gezeigt wird am Schirm und in der
                 Vorschau meist die Kachel, im PDF das Original (data-p). Ohne Eintrag wie bisher mittig. */
-             const fd = !personen && quelle ? schaumFokus(id) : null;
-             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus) : null;
+             const fd = quelle ? (personen ? schaumFokusAvatar((zeilen[res.leaves[+i].row] || {}).bild) : schaumFokus(id)) : null;
+             const pOrig = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte) : null;
              const gezeigt = druck ? (vorschauBilder[+i] || quelle) : quelle;
              const pBild = !pOrig ? { x, y, w, h } : (!fd.eigen && /kachel\.jpg/.test(gezeigt || '') ? schaumKachelPlatz(pOrig, fd.a) : pOrig);
              const lage = `x="${pBild.x.toFixed(1)}" y="${pBild.y.toFixed(1)}" width="${pBild.w.toFixed(1)}" height="${pBild.h.toFixed(1)}"`
@@ -9441,7 +9481,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.43').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.44').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

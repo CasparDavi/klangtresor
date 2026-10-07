@@ -174,21 +174,44 @@ weitergibt, muß sie unverändert lassen und diese Nennung mitführen.
 Die Programmbibliothek *Essentia* selbst steht unter AGPL-3.0. Sie wird
 hier nicht benutzt — nur die Modelle, über ONNX Runtime.
 
-### YuNet — MIT
+### SCRFD-500M — nur nichtkommerziell
 
-Findet Gesichter in den Titelbildern. KlangTresor rückt die Cover im
-Klang­schaum und im Plakat danach so in ihre Zellen, dass Gesichter nicht
-angeschnitten werden.
+Findet Gesichter in den Titelbildern und Avataren. KlangTresor rückt die
+Bilder im Klang­schaum und im Plakat danach so in ihre Zellen, dass
+Gesichter nicht angeschnitten werden.
+
+| Datei | aus |
+|---|---|
+| `scrfd_500m.onnx` | `det_500m.onnx` in InsightFaces Modellpaket `buffalo_sc.zip` (v0.7) |
+
+> Jia Guo, Jiankang Deng, Alexandros Lattas, Stefanos Zafeiriou: *Sample and
+> Computation Redistribution for Efficient Face Detection*, ICLR 2022.
+> Lizenz: Der Programmcode von InsightFace steht unter MIT; die vortrainierten
+> Modelle sind laut InsightFace **nur für nichtkommerzielle Forschungszwecke**
+> freigegeben ([Lizenzhinweis](https://github.com/deepinsight/insightface#license)).
+
+KlangTresor bleibt nichtkommerziell (Caspar_D, 07.10.2026). Das Modell liegt
+nicht im Paket; `bin/modelle-holen.js` holt es bei InsightFace. Wer
+KlangTresor kommerziell nutzen will, braucht dafür eine Lizenz von InsightFace
+oder einen anderen Erkenner – gemessen und tauglich wären YuNet (MIT) und
+UltraFace (MIT), Zahlen im Kopf von `bin/gesichter.js`.
+
+[github.com/deepinsight/insightface — SCRFD](https://github.com/deepinsight/insightface/tree/master/detection/scrfd)
+
+### PP-OCRv3 Texterkennung — Apache 2.0
+
+Findet Schrift in den Titelbildern. KlangTresor rückt die Cover danach so,
+dass ihr eigener Titel möglichst nicht in der Zelle steht – dort steht ja
+schon der Titel aus dem Archiv.
 
 | Datei |
 |---|
-| `face_detection_yunet_2023mar.onnx` |
+| `text_detection_en_ppocrv3_2023may.onnx` |
 
-> Wei Wu, Hanyang Peng, Shiqi Yu: *YuNet: A Tiny Millisecond-level Face
-> Detector*, Machine Intelligence Research, 2023.
-> Lizenz: [MIT](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE)
+> PaddleOCR (PaddlePaddle), PP-OCRv3; ONNX-Fassung aus dem OpenCV-Modellzoo.
+> Lizenz: [Apache 2.0](https://github.com/opencv/opencv_zoo/blob/main/models/text_detection_ppocr/LICENSE)
 
-[github.com/opencv/opencv_zoo — face_detection_yunet](https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet)
+[github.com/opencv/opencv_zoo — text_detection_ppocr](https://github.com/opencv/opencv_zoo/tree/main/models/text_detection_ppocr)
 
 ### Depth Anything V2 Large — CC BY-NC-4.0
 

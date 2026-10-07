@@ -110,7 +110,9 @@ const SCHRITTE = [
      --test wird durchgereicht, damit ein Probelauf nicht 19 Minuten rechnet. */
   ['tiefenkarten.js', [...TEST], 'Tiefenkarten aus den Titelbildern'],
   /* Gesichter in denselben Bildern (bin/gesichter.js) - Schaum und Plakat ruecken die Cover danach in die Zelle. */
-  ['gesichter.js',   [...TEST], 'Gesichter in den Titelbildern finden'],
+  /* Die Avatare der Gemeinschaft einmal holen (bin/avatare.js), damit gesichter.js auch in ihnen sucht */
+  ['avatare.js',     [...TEST], 'Avatare der Gemeinschaft holen'],
+  ['gesichter.js',   [...TEST], 'Gesichter und Schrift in Titelbildern und Avataren finden'],
   ['farben.js',      [],        'Farbpaletten aus den Covern'],
 ];
 

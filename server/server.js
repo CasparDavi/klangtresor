@@ -1247,8 +1247,8 @@ function morgenLosschicken(schritte, art, alle) {
     /* caffeinate gibt es nur auf dem Mac; auf Linux laeuft der Schritt
        direkt (Tarjas Maschine, 21.08.2026). */
     const kind = s.kaffee && process.platform === 'darwin'
-      ? require('node:child_process').spawn('caffeinate', ['-i', process.execPath, ...s.befehl], { cwd: WURZEL })
-      : require('node:child_process').spawn(process.execPath, s.befehl, { cwd: WURZEL });
+      ? require('node:child_process').spawn('caffeinate', ['-i', process.execPath, ...s.befehl], { cwd: WURZEL, env: Object.assign({}, process.env, { KLANGTRESOR_PORT: String(PORT) }) })
+      : require('node:child_process').spawn(process.execPath, s.befehl, { cwd: WURZEL, env: Object.assign({}, process.env, { KLANGTRESOR_PORT: String(PORT) }) });
     /* Zeilen in den Abschnitt (je Schritt gekappt) UND ins flache
        Protokoll (fuer /api/morgen/stand.zeilen, wie bisher). Das
        Kurzergebnis ist die letzte nichtleere stdout-Zeile - stderr
@@ -3574,8 +3574,23 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
 
   /* Die Gesichter je Standbild (bin/gesichter.js): Schaum und Plakat ruecken die Cover danach in ihre Zellen. */
   if (p === '/api/gesichter') {
-    let b = null; try { b = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'gesichter.json'), 'utf8')); } catch (e) {}
-    return jsonAntwort(res, { bilder: (b && b.bilder) || {} });
+    let b = null, a = null;
+    try { b = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'gesichter.json'), 'utf8')); } catch (e) {}
+    try { a = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'avatare.json'), 'utf8')); } catch (e) {}
+    /* avatare: Adresse bei Suno -> eigene Datei (bin/avatare.js), damit Schaum und Plakat die Kopie nehmen */
+    const avatare = {};
+    for (const [url, e] of Object.entries((a && a.bilder) || {})) if (e && e.datei) avatare[url] = e.datei;
+    /* schwelle: ab welcher Wertung ein Gesicht zaehlt - haengt am Erkenner, steht darum in seinem Ausweis */
+    const schwelle = (b && b.ausweis && b.ausweis.schwelle) || 0.7;
+    return jsonAntwort(res, { bilder: (b && b.bilder) || {}, avatare, schwelle });
+  }
+  /* Die geholten Avatare (bin/avatare.js) - Dateiname ist die SHA-1 der Adresse, nichts sonst wird ausgeliefert. */
+  const avatarWeg = p.match(/^\/avatar\/([0-9a-f]{40}\.(jpg|png|webp|gif))$/);
+  if (avatarWeg) {
+    const datei = path.join(WURZEL, 'library', 'avatare', avatarWeg[1]);
+    let daten; try { daten = fs.readFileSync(datei); } catch (e) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[avatarWeg[2]], 'Cache-Control': 'max-age=604800' });
+    return res.end(daten);
   }
 
   if (p === '/api/raeume') {

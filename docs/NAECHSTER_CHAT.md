@@ -8187,3 +8187,38 @@ In deinem Bestand neu: `library/modelle/face_detection_yunet_2023mar.onnx`, `lib
   erst Löser-Arbeit an der Engine (Prophane)? — §62, Bild `_werkstatt_schaum4000/vergleich-700.png`
 - Triptychon: Schild/Legende über die Fugen — stört es? — §67
 - Stufe 5 (Fokus ohne Gesicht, Texterkenner PP-OCRv3 gemessen 32/35) — Verfahren besprechen.
+
+## 69. 07.10.2026 morgens: Avatare, Schrift im Cover, SCRFD (1.0.44)
+
+Caspar_D: „auch bei den Groupies wäre eine Gesichtserkennung hilfreich … und da der Titel ja in die Zelle
+geschrieben wird, eine Optimierung auf Nicht-Sichtbarkeit des Covertitels"; entschieden: Zoom bis 1,4-fach,
+Avatare „Server holt und speichert"; dann „nimm ruhig SCRFD, KlangTresor soll nicht kommerziell bleiben".
+- **`bin/avatare.js`** (neuer Schritt im Morgenlauf vor den Gesichtern): Adressen aus `/api/community` des
+  laufenden Servers (Port kommt als `KLANGTRESOR_PORT` mit — die Schritte erben jetzt den Port), vier zugleich,
+  Art aus den ersten Bytes (Suno schickt webp als `binary/octet-stream`), abgelegt als JPEG ≤ 1024 px in
+  `library/avatare/<sha1>.jpg`, Buch `library/avatare.json` mit Rückstellung 1…30 Tage. Sandkasten: 430 in 27 s,
+  36 MB. Server: `GET /avatar/<sha1>.jpg`, `/api/gesichter` liefert `avatare` (Adresse → Datei) und `schwelle`.
+- **SCRFD-500M statt YuNet** in `bin/gesichter.js` (Ausweis gewechselt → alles neu durchsucht; ab 0,4 ins Buch,
+  Oberfläche ab 0,5 = gemessener Punkt, kommt als `schwelle` zur Seite). `bin/modelle-holen.js` holt
+  `buffalo_sc.zip` und packt nur `det_500m.onnx` als `scrfd_500m.onnx` aus (eigener Zip-Leser mit zlib — kein unzip
+  unter Windows). Lizenz nichtkommerziell, Eintrag in `web/fremd/LIZENZEN.md`. Die alte YuNet-Datei in
+  `library/modelle/` bleibt liegen (Löschen nur auf Wort).
+- **Schrift**: PP-OCRv3 (Apache 2.0) sucht auf Covern (nicht auf Avataren) die Schriftboxen → `t` im Buch.
+- **`schaumBildPlatz`** ist jetzt eine kleine Suche: Zoom 1/1,12/1,25/1,4 × 9×9 Lagen + Gesichtsmitte; Kosten 50 ×
+  angeschnittene Gesichter + 6 × sichtbare Schrift + 1,2 × (Zoom−1) + 0,4 × Abstand zur Mitte; ohne Gesicht und
+  Schrift wie vorher mittig. **Schrift als Motiv**: deckt die Schrift > 35 % des Bildes, weicht nichts aus
+  (sonst bleiben nur Streifen — „Aktion erforderlich" 57 %, „Stille Nacht" 47 %, „Erweckt" 41 %).
+  Gemessen im Sandkasten an 260 Zellen mit Schrift: sichtbare Coverschrift im Mittel 4,4 % → 1,8 % der
+  Zellfläche, 86 Zellen besser, 30 gezoomt (5 × 1,4). Bild: `_werkstatt_gesicht/fotos-1044/schrift-paare.jpg`.
+- Groupieschaum: alle 474 Bilder aus der eigenen Kopie, Gesichter mittig (Foto `fotos-1044/schirm-groupies.png`).
+- Sandkasten SCRFD: 758 Bilder (328 Cover + 430 Avatare), 351 mit Gesicht, 170 ms je Bild → 4500 Avatare ~13 min.
+
+**Groupieschaum 4500 (Werkstatt, Caspar_D: „rechne mit 4500, setze dich über die 2-Minutenregel hinweg"):**
+Pakete 39,5 s, flach nachgebildet 609 s (langsamstes Gefäß 3394 Zellen 519 s), Flächenfehler 0,04 %. Bild
+`_werkstatt_schaum4000/lauf-4500/vergleich-4500.png`. Caspar_D: die Zelle „n weitere" könnte man so auflösen.
+
+**Antworten auf §68:** SCRFD ja (eingebaut) · unscharfe Streifen „passt" · QR: MIT-Bibliothek → qrcode-generator
+2.0.4 (Kazuhiko Arase, MIT, 52 KB ES-Modul, Prüfsumme = npm) liegt in `_werkstatt_qr/` · Triptychon-Legende
+„vielleicht weglassen?" · Stufe 5 „mach Vorschläge". Dazu seine Idee: **eine Ecke vorsehen** — der Schaum füllt
+ein L, Legende und QR sitzen in der ausgesparten Ecke; beim Triptychon nur im rechten Rahmen (Skizze gezeigt,
+Engine nimmt schon heute einen eigenen Umriss: `outline` in `foamtree.js`).
