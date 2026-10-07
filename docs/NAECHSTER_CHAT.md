@@ -8344,3 +8344,19 @@ Kantenlage hinein (links) oder hinaus (oben, rechts) – der Name fiel dann ganz
 1.0.50 0/19, 0/31, 14/19, 12/16, neun große Randzellen ohne Namen; 1.0.51 16/19, 17/31, 19/19, 15/16, keine große ohne Namen.
 Namen gesamt 213 → 250, Tinte außerhalb weiterhin 0. Lehre: die Probe zählte Überlappungen, nicht fehlende Namen – eine
 Prüfung, die nur „nichts falsch" misst, sieht nicht, was wegfällt. Die Probe zählt jetzt Randzellen mit (probe-text5.js, Werkstatt).
+
+## 77. 07.10.2026: Wiedervorlage – wo die Beschriftungstechnik noch hilft (nur gelesen, nichts gebaut)
+
+Caspar_D: „nochmal checken, wo man das noch brauchen könnte – im Treemapper und den Streamgraphs spielt das ja auch eine Rolle".
+Vier Leser und vier Gegenprüfer (KlangTresor, Treemapper, Prophane-Treemaps, Streamgraph); volle Befunde in der Werkstatt:
+`_werkstatt_bilder/beschriftung-befunde-2026-10-07.txt`. Gemessen (Canvas, Mittel über sechs Namen, Breite je em): system-ui
+4–6 px 10,20 · 10 px 9,67 · 20 px 8,76 · 100 px 8,35 → bei 100 px gemessen bis 22 % zu schmal; Helvetica/Arial konstant 8,87.
+Auch die 10-px-Messung der Zellnamen ist für 4–8 px noch 3–5 % zu schmal (heute vom Rand der Prüfung aufgefangen).
+KlangTresor, offen (Entscheidung Caspar_D, Reihenfolge):
+- Groupieschaum-Namenskopf (`kopfPlan`, `emBreit` bei 100 px): Buchstaben am runden Zellende vom Clip angeschnitten; feste
+  SF-Maße 0,94/0,23/1,15 em stimmen unter Windows nicht; Untergrenze 7, Schwelle 34.
+- Plakat: Kantentitel (gemessen 400, gesetzt 600, Zuschlag 1,2), Arealnamen am Rand (1,12), Verzeichnis (1,15), Edition (1,12) –
+  alles Pauschalen auf den 100-px-Fehler; Nummernschild am Eckenmittel ohne Passprüfung (kann in Fuge/Nachbarzelle).
+- Kontrast je Zeile statt je Name (zweizeiliger Name halb schwarz, halb weiß möglich); Triptychon: kein Text kennt die Wandfugen.
+- Nächster Schritt laut §75: Einzelbuchstaben-Kästen; dabei die Prüfung auf Kantenschnitt umstellen (heute 5 bzw. 3 Stichpunkte
+  je Kastenkante – eine konkave Spitze kann dazwischen eindringen) und bei der Setzgröße messen.
