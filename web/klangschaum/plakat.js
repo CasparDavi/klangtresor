@@ -70,7 +70,8 @@ function geometrie(n = 0){
   const kurz = Math.min(w, h), rand = E.rand * kurz;
   const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
   const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
-  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6) : null;
+  /* So viele Arealkoepfe, wie die Legende des Schaums Zeilen hat - vorher pauschal sechs, das liess unter der Liste Platz frei */
+  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6, legendenEintraege().length || 6) : null;
   const unten = Math.max(rand * 1.55, rand * 0.5 + schildH + (verz ? rand * 0.4 + verz.hoehe : 0) + rand * 0.45);
   const karte = { x: BESCHNITT + rand, y: BESCHNITT + rand, w: w - 2 * rand, h: h - rand - unten };
   return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand, unten, T, U, L, karte, schildH, verz, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
