@@ -9422,6 +9422,8 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
            /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
            .replace(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g, (alles, dd, a, i, b) => {
              const id = ids[+i]; if (!id) return alles;
+             /* die Areal-Farbe aus der Legende an den Pfad - fuer den Rahmen der hervorgehobenen Zelle (rahmenFarbe) */
+             { const af = farbeVon((zeilen[res.leaves[+i].row] || {}).gruppe); if (af) alles = alles.replace('<path ', `<path data-farbe="${af}" `); }
              const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
              const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
              const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
@@ -9535,7 +9537,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.46').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.47').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
@@ -9708,6 +9710,13 @@ function schaumEinsetzenJetzt(f, einblenden){
     t.textContent = f.tipps[i] || '';
     p.appendChild(t);
   });
+  /* FARBE DES RAHMENS (Caspar_D, 07.10.2026: „Die Rahmenfarbe im Schaum der gehighlighteten Zelle sollte der Areal-Farbe
+     entsprechen, das weiss ist zu doll"): laufender Titel und Auswahlrahmen nehmen die Farbe des Areals bzw. der Stilgruppe,
+     wie die Legende sie zeigt (data-farbe, gesetzt in schaumSvgBauen). Die Fuellung der Zelle selbst ist absichtlich ein
+     gedaempfter, leicht verschobener Ton davon (Helligkeit 28-49 %) - als Rahmen kaum vom Fugenschwarz zu unterscheiden; sie
+     gilt nur, wo es keine Areal-Farbe gibt („ohne Angabe"), sonst bleibt es weiss. */
+  const rahmenFarbe = (p) => { const a = p && p.getAttribute('data-farbe'); if (a) return a;
+    const c = p && p.getAttribute('fill'); return c && /^(#|rgb|hsl)/i.test(c) ? c : '#ffffff'; };
   /* Der laufende Titel wabert: sein Umriss, weiss und von einem Rauschen verschoben, auf einer
      EIGENEN leichten Ebene ueber dem Schaum. Laege er im Schaum selbst, muesste der Browser mit
      jedem Bild die Kissenbeleuchtung und alle Wasserzeichen neu rechnen. Wer Bewegung abbestellt
@@ -9719,8 +9728,8 @@ function schaumEinsetzenJetzt(f, einblenden){
     ueber.innerHTML = `<defs>${SCHAUM_WABERN}</defs>`;
     const o = document.createElementNS(NS, 'path');
     o.setAttribute('d', laeuft.getAttribute('d'));
-    o.setAttribute('fill', '#ffffff'); o.setAttribute('fill-opacity', '0.08');
-    o.setAttribute('stroke', '#ffffff'); o.setAttribute('stroke-width', '2.4'); o.setAttribute('stroke-linejoin', 'round');
+    o.setAttribute('fill', rahmenFarbe(laeuft)); o.setAttribute('fill-opacity', '0.08');
+    o.setAttribute('stroke', rahmenFarbe(laeuft)); o.setAttribute('stroke-width', '2.4'); o.setAttribute('stroke-linejoin', 'round');
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) o.setAttribute('filter', 'url(#schaumwabern)');
     ueber.appendChild(o); bild.appendChild(ueber);
   }
@@ -9738,7 +9747,7 @@ function schaumEinsetzenJetzt(f, einblenden){
     rp.setAttribute('fill', 'none'); rp.setAttribute('stroke', '#ffffff'); rp.setAttribute('stroke-width', '2.6'); rp.setAttribute('stroke-linejoin', 'round');
     rp.setAttribute('visibility', 'hidden'); r.appendChild(rp); bild.appendChild(r);
     bild.onmouseover = (e) => { const p = e.target.closest && e.target.closest('path[data-id]');
-      if (p){ rp.setAttribute('d', p.getAttribute('d')); rp.setAttribute('visibility', 'visible'); } else rp.setAttribute('visibility', 'hidden'); };
+      if (p){ rp.setAttribute('d', p.getAttribute('d')); rp.setAttribute('stroke', rahmenFarbe(p)); rp.setAttribute('visibility', 'visible'); } else rp.setAttribute('visibility', 'hidden'); };
     bild.onmouseleave = () => rp.setAttribute('visibility', 'hidden');
   }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;

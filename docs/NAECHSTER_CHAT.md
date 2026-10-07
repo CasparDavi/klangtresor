@@ -8273,3 +8273,12 @@ keine grafiken einsetzen, während er rechnet, werden die Bilder geholt … Bild
 - Sandkasten (327 Titel, 430 Avatare): alles da 4 s ohne Zusatzzeile; Klangschaum ohne Buch+Modelle 78 s (Lage nach
   3 s); Groupies 45 s; offline 10 s → Morgenlauf-Satz; Plakat 508 Bilder, keine Konsolenfehler. Bilder
   `_werkstatt_bilder/fotos/`.
+
+## 72. 07.10.2026: Rahmen der hervorgehobenen Zelle in der Areal-Farbe (1.0.47)
+
+Caspar_D: „Die Rahmenfarbe im Schaum der gehighlighteten Zelle sollte der Areal-Farbe entsprechen, das weiss ist zu doll."
+Laufender Titel (wabernder Umriss) und Auswahlrahmen unter der Maus nehmen jetzt die Legendenfarbe des Areals bzw. der
+Stilgruppe (`data-farbe` am Zellpfad, gesetzt in `schaumSvgBauen` über `farbeVon`); die Zellfüllung selbst ist ein gedämpfter,
+leicht verschobener Ton (Helligkeit 28–49 %) und wäre als Rahmen kaum vom Fugenschwarz zu unterscheiden (erste Fassung, verworfen).
+Ohne Areal-Farbe („ohne Angabe") die Zellfarbe, sonst weiß. Sandkasten-Fotos `_werkstatt_bilder/fotos/rahmen-beide.png`.
+Parallel offen: Reißverschluss-Einbau (Arbeitskopie `_werkstatt_gross/wt`, Zweig grossschaum) – Entscheidung Rechenort A/B steht aus.
