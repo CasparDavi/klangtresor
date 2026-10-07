@@ -9439,15 +9439,17 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      ihrer Hoehe, Einzelbuchstaben-Kaesten mit 0,3 em Luft, gemessen in der Druckgroesse. Das Glasfeld waechst mit dem Text:
      von 2 Punkten ueber der hoechsten Tinte (Caspar_D: „den Namen mit einem Abstand von 2 Punkten zur Headergrenze") bis zum
      Fuss der Zelle. Findet sich auch dreizeilig bei 7 keine Lage, bleibt es beim alten Band mit Kuerzung. */
-  const druckTinte = druck ? schaumNamenTinte(druck.mmJeEinheit ? druck.mmJeEinheit * 96 / 25.4 : 1) : null;
+  /* Seit 1.0.54 auch der Namenskopf im Groupieschaum am Schirm (Caspar_D: „G a" - Probe: von 96 Koepfen 49 gekuerzt, jetzt
+     112 Koepfe, 1 gekuerzt, die Gesichter frei); das Band oben ist nur noch Rueckfall. */
+  const kopfTinte = schaumNamenTinte(pxJeE);
   const kopfUnten = (pk, x, y, w, h, name, i) => {
     const alt = kopfPlan(pk, x, y, w, h, name, i, true), ziel = Math.max(7, alt ? alt.fs : 7);
     const poly = pk.map(p => [p[0], -p[1]]);                       /* render.js rechnet mit y nach oben */
     const lab = R.placeLabel(poly, name, { maxSize: ziel, minSize: 7, maxLines: 3, fit: true, leading: schaumZeilenabstand(), drop: 0,
-      huelle: poly, ink: druckTinte, unten: true, startSize: ziel, sperren: waende });
+      huelle: poly, ink: kopfTinte, unten: true, startSize: ziel, sperren: waende });
     if (!lab || !lab.xs) return waende.length ? null : alt;      /* das alte Band kennt die Wandfugen nicht - im Triptychon dann die Nummer */
     const n = lab.lines.length, grund = j => lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size;
-    const ober = Math.max(0, ...druckTinte.runs(lab.lines[0], lab.size).runs.map(q => q[2]));
+    const ober = Math.max(0, ...kopfTinte.runs(lab.lines[0], lab.size).runs.map(q => q[2]));
     const bandY = Math.max(y, -(grund(0) + ober * lab.size) - 2);
     const zeilen = lab.lines.map((t, j) => `<tspan x="${lab.xs[j].toFixed(1)}" y="${(-grund(j)).toFixed(1)}">${esc(t)}</tspan>`).join('');
     return { bandY, bh: y + h - bandY, fs: lab.size,
@@ -9600,7 +9602,7 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
              const name0 = (druck ? druck.titel !== 'ohne' : personen) ? (personen ? zierfrei(roh) : (druck ? zellName(res.leaves[+i]) : String(roh).trim())) : '';
              const name = name0 && nrHier ? nrHier + '\u2002' + name0 : name0;
              const anKante = druck && druck.titel === 'kante';
-             const plan = !anKante && name && h >= 34 && w >= 34 ? (druck ? kopfUnten(pk, x, y, w, h, name, i) : kopfPlan(pk, x, y, w, h, name, i, false)) : null;
+             const plan = !anKante && name && h >= 34 && w >= 34 ? kopfUnten(pk, x, y, w, h, name, i) : null;
              const kante = anKante && name ? kantenTitel(pk, x, y, w, h, name, i) : null;
              const tf = druck && druck.wackeln > 0 ? schaumWackeln(id, x, y, w, h, druck.wackeln) : '';
              if (plan){
@@ -9691,7 +9693,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.53').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.54').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

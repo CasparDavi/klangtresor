@@ -8411,3 +8411,12 @@ Wiedervorlage (Caspar_D entscheidet): Groupieschaum-Namenskopf am Schirm wie im 
 folgt (Hausregel dort). Brainstorm (nicht gebaut): randlose Variante mit fehlender Ecke (Empfehlung: eine Schildzelle im
 Schaum statt rechteckiger Aussparung – die würde harte konkave Ecken erzeugen) und monochrome Bleistiftzeichnung aus den
 echten Umrissen (prozedural, kein Bildmodell).
+
+## 80. 07.10.2026: Groupieschaum-Namenskopf unten im Glasfeld (1.0.54)
+
+Caspar_D: „G a" – der Namenskopf am Schirm läuft jetzt wie der Plakat-Titel über `kopfUnten` (so tief wie möglich, Größe des
+bisherigen Bands, 1–3 Zeilen, Glasfeld von 2 Punkten über der Tinte bis zum Zellfuß); `kopfTinte = schaumNamenTinte(pxJeE)`
+für Schirm und Druck. Das Band oben (`kopfPlan`) bleibt Rückfall und Größenmaß. Probe (Sandkasten, 470 Personen): 96 → 112
+Köpfe, gekürzt 49 → 1, 14 mehrzeilig; Glasplakat unverändert (234 Titel, 4 gekürzt).
+Offen (Caspar_D, „K"): Schrift auf ∪-Kurven an der Oberkante der m-Höhe ausrichten (Kantentitel, Streamgraph) – Vorschlag
+gemacht, wartet auf sein Wort. Treemapper/Prophane: „T a" – B5-Fehler zuerst, dann Engine zusammenführen (B1+B2).
