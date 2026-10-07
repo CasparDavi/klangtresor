@@ -8152,3 +8152,11 @@ Schnittlinien (tiefster Schnitt je Linie), knapp eine Schriftgröße nach innen,
 mit dunklem Saum, 2,2–5,5 mm, mit 1,2 Breitenzuschlag gekürzt (mit 1,06 liefen lange Titel über den Zellrand).
 Nummer des Verzeichnisses vorn; zu kurze Kante → Nummernschild oder nichts. Damit ist Stufe 2 (Werkverzeichnis,
 Areale am Rand, Titel an der Kante) fertig; aus Stufe 3 fehlt nur der QR-Code (Wiedervorlage).
+
+## 66. 07.10.2026 nachts: Bild für soziale Medien (1.0.42)
+
+Formate „Bild 4:5“, „Bild 1:1“, „Story 9:16“ (`bild: true`): statt PDF der Knopf „Als Bild sichern“ (`bildSichern`):
+Seite ohne Beschnitt, jedes Bild auf seine Größe im PNG ×1,5 gerechnet und als data:-Adresse eingebettet (ein als
+Bild gemaltes SVG lädt nichts nach), dann auf eine Leinwand 1080 breit, PNG-Download. Geprüft headless (Download
+abgefangen): Klangschaum 4:5 2,5 MB, Groupieschaum 4:5 2,6 MB — die Suno-Avatare lassen sich einbetten (CORS).
+Offen aus Stufe 4: Triptychon.

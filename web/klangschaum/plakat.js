@@ -16,6 +16,11 @@ const FORMATE = [
   { id: '100x140', name: '100 × 140', w: 1000, h: 1400 },
   { id: 'q50', name: '50 × 50', w: 500, h: 500 }, { id: 'q70', name: '70 × 70', w: 700, h: 700 },
   { id: 'frei', name: 'frei' },
+  /* Bilder fuer soziale Medien (angekreuzt; „gerade der Groupieschaum als Danke an meine Groupies zum Posten"): kein
+     Druck, sondern ein PNG mit 1080 Punkten Breite. Die Masse sind Seiteneinheiten wie beim Druck, nur das Verhaeltnis
+     zaehlt; ohne Beschnitt. */
+  { id: 'b45', name: 'Bild 4:5', w: 216, h: 270, bild: true }, { id: 'b11', name: 'Bild 1:1', w: 216, h: 216, bild: true },
+  { id: 'b916', name: 'Story 9:16', w: 216, h: 384, bild: true },
 ];
 /* Die Vorlagen (Caspar_D hat alle vier angekreuzt). Jede setzt alle Feinheiten; danach ist alles einzeln
    verstellbar. „Bleiglas": breite dunkle Fugen wie Bleiruten, starkes Licht, keine Glasbaender - die Titel
@@ -195,7 +200,9 @@ async function bauen(g){
   /* Rauchglas je Kopf nach Bedarf, wie am Schirm */
   const schaum = blatt.querySelector('svg.ps-schaum');
   if (E.titel === 'rauch' && schaum && typeof schaumRauch === 'function') schaumRauch(schaum);
-  el('ps-mass').textContent = `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
+  const fm = FORMATE.find(x => x.id === E.format) || {};
+  el('ps-mass').textContent = fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
+    : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
 }
 /* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
    (skz0 … Zuschnitt je Zelle, skkissen, hatch). url(#skz0) traefe dann den Zuschnitt der Zelle am
@@ -388,6 +395,46 @@ async function druckBilder(s, kopie, g){
     const p = (im.getAttribute('data-p') || '').split(','); if (p.length === 4){ im.setAttribute('x', p[0]); im.setAttribute('y', p[1]); im.setAttribute('width', p[2]); im.setAttribute('height', p[3]); } });
 }
 
+/* ALS BILD SICHERN (PNG, 1080 Punkte breit). Ein SVG, das als Bild gemalt wird, darf nichts nachladen - darum wird
+   jedes Cover auf die Groesse gerechnet, die es im Bild hat (mal 1,5), und als data:-Adresse eingebettet; dann malt
+   der Browser die Seite auf eine Leinwand. Ohne Beschnitt: der Ausschnitt ist genau das Format. Filter (Glas, Kissen)
+   und weiche Mischung malt der Browser mit. */
+async function bildSichern(){
+  const blatt = el('ps-blatt'), s = blatt && blatt.querySelector('svg.ps-seite'); if (!s) return;
+  const g = geometrie(aktuell ? aktuell.j.zeilen.length : 0), B = 1080, H = Math.round(B * g.h / g.w), k = B / g.w;
+  const kopie = s.cloneNode(true);
+  kopie.querySelectorAll('.ps-beschnitt').forEach(n => n.remove());
+  kopie.setAttribute('viewBox', `${BESCHNITT} ${BESCHNITT} ${g.w} ${g.h}`); kopie.setAttribute('width', B); kopie.setAttribute('height', H); kopie.removeAttribute('style');
+  const bilder = [...kopie.querySelectorAll('image')], echt = [...s.querySelectorAll('image')], seite = s.getBoundingClientRect(), proPunkt = B / seite.width * (g.PW / g.w);
+  let n = 0; const cache = new Map();
+  const daten = async (u, px) => {
+    const schl = u + '|' + px; if (cache.has(schl)) return cache.get(schl);
+    let aus = null;
+    try { const roh = await (await fetch(u)).blob(), b = await createImageBitmap(roh), f = Math.min(1, px / Math.max(b.width, b.height));
+      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(b.width * f)); c.height = Math.max(1, Math.round(b.height * f));
+      c.getContext('2d').drawImage(b, 0, 0, c.width, c.height); if (b.close) b.close(); aus = c.toDataURL('image/jpeg', 0.86); } catch (e) {}
+    cache.set(schl, aus); return aus;
+  };
+  for (let i = 0; i < bilder.length; i++){
+    standSetzen(`Das Bild wird gerechnet … ${++n} von ${bilder.length}`);
+    const r = echt[i] ? echt[i].getBoundingClientRect() : null, px = Math.min(1024, Math.max(32, Math.ceil(r ? Math.max(r.width, r.height) * proPunkt * 1.5 : 256)));
+    const u = bilder[i].getAttribute('href'), d = u ? await daten(u, Math.ceil(px / 32) * 32) : null;
+    if (d) bilder[i].setAttribute('href', d); else bilder[i].remove();
+  }
+  standSetzen('Das Bild wird gemalt …');
+  const text = new XMLSerializer().serializeToString(kopie), url = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }));
+  try {
+    const img = new Image(); await new Promise((ok, nein) => { img.onload = ok; img.onerror = nein; img.src = url; });
+    const c = document.createElement('canvas'); c.width = B; c.height = H; c.getContext('2d').drawImage(img, 0, 0, B, H);
+    const png = await new Promise(ok => c.toBlob(ok, 'image/png'));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(png);
+    a.download = (raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum') + '-' + g.name.replace(/[^\w-]+/g, '') + '.png';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 20000);
+    standSetzen(`Gesichert: ${a.download} (${(png.size / 1048576).toFixed(1)} MB)`);
+  } catch (e) { standSetzen('Das Bild ließ sich nicht malen.'); console.log('Plakat:', e); }
+  finally { URL.revokeObjectURL(url); }
+}
+
 /* PDF: dieselbe Seite, die Bilder auf 300 dpi ihrer Kachel gerechnet (druckBilder), in einem unsichtbaren
    Rahmen, dann das Druckfenster. Ohne Beschnitt-Hilfslinie. */
 async function pdf(){
@@ -428,6 +475,7 @@ function felderSetzen(){
   for (const [id, v] of [['ps-freiw', E.freiW], ['ps-freih', E.freiH], ['ps-rand', Math.round(E.rand * 100)], ['ps-fugen', Math.round(E.fugen * 10)],
     ['ps-wackeln', Math.round(E.wackeln * 100)], ['ps-schatten', Math.round(E.schatten * 100)], ['ps-vignette', Math.round(E.vignette * 100)], ['ps-federmm', E.federMm],
     ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter]]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
+  { const bild = !!(FORMATE.find(x => x.id === E.format) || {}).bild; el('ps-pdf').hidden = bild; el('ps-png').hidden = !bild; }
   el('ps-verz').checked = !!E.verzeichnis;
   el('ps-zeit').checked = !!E.zeitleiste; el('ps-zeit').disabled = raumJetzt === 'groupies'; el('ps-zeit-grund').hidden = raumJetzt !== 'groupies';
   el('ps-edition').checked = !!E.edition; { const a = el('ps-auflage'); if (document.activeElement !== a) a.value = E.auflage || ''; }
@@ -462,7 +510,7 @@ function aufbauen(){
 #ps-frei{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:13px}#ps-frei input{width:70px}
 .ps-knoepfe{display:flex;gap:8px;margin-top:18px}
 .ps-knoepfe button{border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
-#ps-pdf{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
+#ps-pdf,#ps-png{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
 .ps-leise{color:#9aa3ad;font-size:12px;margin:6px 0 0}
 #ps-wand{margin-top:8px;border-radius:7px;overflow:hidden}
 details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
@@ -499,7 +547,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <input class="ps-eingabe" id="ps-auflage" placeholder="Auflage, z. B. 1/1 oder 3/10">
   <h3>An der Wand</h3><div id="ps-wand"></div><p class="ps-leise">Mensch 1,75 m zum Vergleich.</p>
   <p class="ps-leise" id="ps-hinweis" hidden>Nur für den privaten Gebrauch. Vervielfältigung und Weitergabe an Dritte sind nicht erlaubt – die Avatare gehören ihren Leuten.</p>
-  <div class="ps-knoepfe"><button type="button" id="ps-pdf">Als PDF sichern …</button><button type="button" id="ps-zu">Schließen</button></div>
+  <div class="ps-knoepfe"><button type="button" id="ps-pdf">Als PDF sichern …</button><button type="button" id="ps-png" hidden>Als Bild sichern</button><button type="button" id="ps-zu">Schließen</button></div>
   <p class="ps-leise">Das Druckfenster öffnet sich; dort „Als PDF sichern“ wählen. Format und Ränder setzt das Plakat selbst.</p>
 </aside>`;
   document.body.appendChild(studio);
@@ -527,6 +575,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-kopftitel').oninput = (ev) => setze({ kopfTitel: ev.target.value, kopfTitelEigen: !!ev.target.value });
   el('ps-kopfunter').oninput = (ev) => setze({ kopfUnter: ev.target.value, kopfUnterEigen: !!ev.target.value });
   el('ps-pdf').onclick = () => pdf();
+  el('ps-png').onclick = () => bildSichern();
   el('ps-zu').onclick = schliessen;
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && studio && !studio.hidden) schliessen(); });
   window.addEventListener('resize', () => { if (studio && !studio.hidden) einpassen(); });
