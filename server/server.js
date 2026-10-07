@@ -199,28 +199,6 @@ function liefere(req, res, datei) {
   const laenge = stat.size;
   const range  = req.headers.range;
 
-  if (range) {
-    const m = /bytes=(\d*)-(\d*)/.exec(range);
-    if (m) {
-      let von = m[1] ? parseInt(m[1], 10) : 0;
-      let bis = m[2] ? parseInt(m[2], 10) : laenge - 1;
-      if (bis >= laenge) bis = laenge - 1;
-
-      if (von > bis || von >= laenge) {                 // unsinniger Bereich
-        res.writeHead(416, {'Content-Range': `bytes */${laenge}`});
-        return res.end();
-      }
-      res.writeHead(206, {
-        'Content-Type':   typ,
-        'Content-Range':  `bytes ${von}-${bis}/${laenge}`,
-        'Accept-Ranges':  'bytes',
-        'Content-Length': bis - von + 1,
-        'Cache-Control':  'public, max-age=31536000',
-      });
-      return strom(von, bis).pipe(res);
-    }
-  }
-
   /* Programmdateien dürfen nicht ein Jahr im Cache liegen.
 
      Bis zum 18.08.2026 galt max-age=31536000 für alles außer HTML. Für
@@ -263,7 +241,7 @@ function liefere(req, res, datei) {
      nicht in die Rahmen einfügen". Die Dateien auf der Platte waren
      richtig - der Browser zeigte seinen Vorrat von vor drei Wochen, denn
      bei max-age=31536000 ohne Last-Modified fragt er nie wieder nach. */
-  /* eigen*.mp4/jpg/mp3 und das Rezept sind ebenso wandelbar: sie werden ersetzt, geloest und
+  /* eigen*.mp4/jpg/mp3/wav und das Rezept sind ebenso wandelbar: sie werden ersetzt, geloest und
      unter derselben Nummer neu vergeben (nach Loeschen der hoechsten kehrt sie wieder).
 
      UND DIE TIEFENKARTEN (17.09.2026). Seit die Karte an der QUELLE haengt statt am Titel, gibt es
@@ -276,13 +254,40 @@ function liefere(req, res, datei) {
      Effekt, der grundlos danebensitzt. Trockentest der Regel (17.09.2026): die sieben Tiefenformen
      werden wandelbar; cover.jpg, titelbild.jpg, artwork.mp4, audio.mp3, meintiefe.png und
      tiefe.png.bak bleiben fest. */
-  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
+  const abgeleitet = /(^|\/)(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
   /* text/css gehoert seit dem 27.09.2026 zu "programm": das Effektclip-Studio ist jetzt web/tbs.css und
      web/tbs-modul.js; mit dem Jahres-Cache hielte der Browser nach jeder Aenderung ein altes Stylesheet,
      waehrend das Skript schon neu waere - dieselbe Regel wie fuer .js, mit 304 statt max-age. */
   const programm = typ.startsWith('text/html') || typ.startsWith('text/javascript') || typ.startsWith('text/css') || analyse;
   const wandelbar = programm || abgeleitet;
   const stempel  = stat.mtime.toUTCString();
+
+  /* BEREICHE NACH DERSELBEN REGEL (07.10.2026). Der 206-Zweig stand frueher
+     vor der Wandelbar-Pruefung und gab jedem Bereich das Jahr - auch eigen.wav
+     und eigen-2.mp4, die der Player ausschliesslich in Bereichen holt. Wer
+     seine eigene Tonfassung ersetzte, hoerte weiter die alte aus dem Vorrat. */
+  if (range) {
+    const m = /bytes=(\d*)-(\d*)/.exec(range);
+    if (m) {
+      let von = m[1] ? parseInt(m[1], 10) : 0;
+      let bis = m[2] ? parseInt(m[2], 10) : laenge - 1;
+      if (bis >= laenge) bis = laenge - 1;
+
+      if (von > bis || von >= laenge) {                 // unsinniger Bereich
+        res.writeHead(416, {'Content-Range': `bytes */${laenge}`});
+        return res.end();
+      }
+      res.writeHead(206, {
+        'Content-Type':   typ,
+        'Content-Range':  `bytes ${von}-${bis}/${laenge}`,
+        'Accept-Ranges':  'bytes',
+        'Content-Length': bis - von + 1,
+        'Cache-Control':  wandelbar ? 'no-cache' : 'public, max-age=31536000',
+        ...(wandelbar ? { 'Last-Modified': stempel } : {}),
+      });
+      return strom(von, bis).pipe(res);
+    }
+  }
 
   if (wandelbar && req.headers['if-modified-since'] === stempel) {
     res.writeHead(304, { 'Cache-Control': 'no-cache', 'Last-Modified': stempel });
