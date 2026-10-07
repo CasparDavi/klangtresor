@@ -8282,3 +8282,27 @@ Stilgruppe (`data-farbe` am Zellpfad, gesetzt in `schaumSvgBauen` über `farbeVo
 leicht verschobener Ton (Helligkeit 28–49 %) und wäre als Rahmen kaum vom Fugenschwarz zu unterscheiden (erste Fassung, verworfen).
 Ohne Areal-Farbe („ohne Angabe") die Zellfarbe, sonst weiß. Sandkasten-Fotos `_werkstatt_bilder/fotos/rahmen-beide.png`.
 Parallel offen: Reißverschluss-Einbau (Arbeitskopie `_werkstatt_gross/wt`, Zweig grossschaum) – Entscheidung Rechenort A/B steht aus.
+
+## 73. 07.10.2026 abends: Groupieschaum mit allen Einzelnen – Vorentwurf, Pakete, Reißverschluss (1.0.48)
+
+Caspar_D: „das treemap problem lösen wir richtig", „wir haben es bisher nur im Klangtresor gebraucht – wir sollten es dafür
+jetzt anwenden und dort einbauen", gerechnet „im browser" (30 Varianten × Bildschirmformate lassen sich nicht vorrechnen;
+„die gesichts- und Texterkennungen lassen sich vorrechnen, alles andere on the fly").
+- `web/klangschaum/grossschaum.js` (`grossLegen`): wie `layoutTree`, aber für zweistufige Schäume mit einem Areal > 600 Zellen:
+  1. Areale mit der Engine (`maxDepth: 0`); 2. Vorentwurf: Startpunkte der Seite (`groupieSaat`) mit dem Areal verschoben, Kreise
+  mit Sollfläche zusammengeschoben (`kreisePacken`); 3. Pakete ~100 (gewichtetes k-Mittel), Schaum je Paket im Areal
+  (`layoutTreeParallel` mit Helfern, Protokoll des Prophane-Viewers); 4. `reissverschluss.js` über alle Paketnähte (Arealgrenzen
+  bleiben glatt), Kacheln auf die Helfer verteilt. Ergebnis ist derselbe Baum wie von `layoutTree`.
+- `web/klangschaum/reissverschluss.js`: Netz aus den Umrissen, Teillöser mit eingefrorenem Rand (Levenberg-Marquardt, dicht je
+  Kachel), Durchgänge, Nachlese, jede neu gerechnete Wand einmal abgetastet (beide Seiten dieselben Punkte).
+- `web/klangschaum/grossschaum-helfer.js`: Unter-Worker (init/pass/task für Teilbäume, netz/kacheln für den Reißverschluss);
+  `worker.js` ruft `grossLegen` mit halb so vielen Helfern wie Kernen (höchstens 8); ohne Unter-Worker alles der Reihe nach.
+- Haus: „+N weitere" (GROUPIE_EINZELN = 400, seit 1.0.31) entfernt, Begründung im Kommentar; Fußtext ohne „live von Suno"
+  (Avatare liegen seit 1.0.44 lokal); Werkverzeichnis höchstens 400 Nummern (die größten Zellen), Rest „und N weitere" je Areal.
+- Hervorhebung: Areal-Farbe um 40 % zu Weiß aufgehellt (Caspar_D: „die highlightfarbe noch heller").
+- Gemessen: Node, 4500 Zellen (Werkstatt-Daten, Startlagen wie groupieSaat): 1 Kern 149 s, 8 Helfer 71 s; Flächenfehler Median
+  0,005 %, max 0,28 %; kein schlechter Knoten innerhalb der Areale (179 an Arealgrenzen, gewollt). Browser (Sandkasten, 4500
+  erfundene Personen eingespeist): 84 s, 4500 Zellen, keine Konsolenfehler; echter Sandkasten-Bestand (470) 17 s, alle einzeln;
+  Plakat mit 4500 + Verzeichnis: 400 Nummern, „und 3.051/825/224 weitere", 204 s (die Lage wird fürs Plakatformat neu gerechnet,
+  das Verzeichnis ändert das Format noch einmal). Temperatur unter Volllast bis 97 °C.
+- Laborbuch: Treemapper/docs/paper/LABORBUCH-grosse-schaeume.md, Abschnitt 13.

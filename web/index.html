@@ -8718,19 +8718,13 @@ async function groupieZeilen(m, gl){
   if (!schaumLeute){ try { schaumGemeinde = await (await fetch('/api/community', { cache: 'no-store' })).json(); schaumLeute = schaumGemeinde.leute || []; } catch (e) { schaumLeute = []; } }
   const u = groupieUmfeld();
   const alle = schaumLeute.map(l => { const z = groupiePerson(l, u); z.gruppe = gl.klasse(z); z.w = String(m.wert(z)); return z; }).filter(z => z.id && +z.w > 0);
-  /* VIELE LEUTE (Tarja, 4000 Personen: nach 800 s noch kein Schaum). Die Rechenzeit waechst etwa mit dem
-     Quadrat der Zellen je Gefaess - gemessen: 360 Zellen 18 s, 681 Zellen 65 s; 3000 waeren grob 20 Minuten fuer
-     ein einziges Areal. Entscheidung Caspar_D (07.10.2026, A): die 400 Aktivsten nach dem gewaehlten Mass
-     einzeln, alle uebrigen je Areal in einer Blase „+N weitere", flaechengenau - ihre Herzen zaehlen mit. */
-  if (alle.length <= GROUPIE_EINZELN) return alle;
-  alle.sort((a, b) => +b.w - +a.w || String(a.id).localeCompare(String(b.id)));
-  const einzeln = alle.slice(0, GROUPIE_EINZELN), sammel = new Map();
-  for (const z of alle.slice(GROUPIE_EINZELN)){ const s = sammel.get(z.gruppe) || { n: 0, w: 0, h: 0, k: 0 }; s.n++; s.w += +z.w; s.h += z.h; s.k += z.k; sammel.set(z.gruppe, s); }
-  for (const [gruppe, s] of sammel) einzeln.push({ gruppe, genre: '', titel: `+${s.n.toLocaleString('de-DE')} weitere`, id: 'weitere\u0000' + gruppe, bild: '',
-    h: s.h, k: s.k, weitere: s.n, w: String(Math.round(s.w * 1000) / 1000) });
-  return einzeln;
+  /* VIELE LEUTE (Tarja, 4000 Personen: nach 800 s noch kein Schaum). Die Rechenzeit waechst etwa mit dem Quadrat der
+     Zellen je Gefaess. Von 1.0.31 bis 1.0.47 darum: die 400 Aktivsten einzeln, der Rest je Areal als „+N weitere".
+     Seit 1.0.48 alle einzeln (Caspar_D, 07.10.2026: „das treemap problem lösen wir richtig"): grosse Areale legt
+     klangschaum/grossschaum.js - Vorentwurf aus den Startlagen, Pakete, Schaum je Paket in Helfer-Workern, und der
+     Reissverschluss rechnet die Paketnaehte weg (Laborbuch Treemapper/docs/paper/LABORBUCH-grosse-schaeume.md). */
+  return alle;
 }
-const GROUPIE_EINZELN = 400;
 const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
 
 async function schaumZeichnen(){
@@ -8835,15 +8829,15 @@ async function groupieZeichnen(){
   if (raumJetzt !== 'groupies') return;
   const klassen = new Set(zeilen.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, klassen);
   $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small>' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
-    const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.reduce((s, z) => s + (z.weitere || 1), 0);
+    const zs = zeilen.filter(z => z.gruppe === a), summe = zs.reduce((s, z) => s + +z.w, 0), anzahl = zs.length;
     return `<span class="zeile"><i style="background:${farbeVon(a) || GROUPIE_GRAU}"></i><span><b>${esc(a)}</b><br><small>${anzahl.toLocaleString('de-DE')} ${anzahl === 1 ? 'Person' : 'Personen'}`
       + `${zs.length ? ' · ' + m.text(summe) : ''}</small></span></span>`;
   }).join('');
-  const zusammen = zeilen.reduce((s, z) => s + (z.weitere || 0), 0), gezeigt = zeilen.reduce((s, z) => s + (z.weitere || 1), 0);
+  const gezeigt = zeilen.length, grossAreal = [...klassen].some(a => zeilen.filter(z => z.gruppe === a).length > 600);
   fuss.textContent = `Groupieschaum: ${gezeigt.toLocaleString('de-DE')} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
-    + (zusammen ? `Einzeln die ${GROUPIE_EINZELN} Aktivsten; ${zusammen.toLocaleString('de-DE')} weitere sind je Areal in einer Blase zusammengefasst – bei so vielen Leuten bräuchte der Schaum sonst viele Minuten. ` : '')
+    + (grossAreal ? 'Große Areale werden in Paketen gelegt; die Nähte dazwischen rechnet ein Reißverschluss weg – das dauert beim ersten Öffnen eines Maßes etwas, danach ist es gemerkt. ' : '')
     + (schaumLeute.length > gezeigt ? `${(schaumLeute.length - gezeigt).toLocaleString('de-DE')} Personen haben bei ${m.name} null und fehlen. ` : '')
-    + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare, live von Suno. `
+    + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare (einmal von Suno geholt und hier abgelegt). `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Blase zeigt die Spur der Person.`;
   if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = 'Noch keine Herzen oder Kommentare mit Namen — sie kommen mit der Ernte.'; return; }
   const j = await groupieAuftrag(m, schaumVerh(), gl), lage = j.lage, schluessel = lage + '|' + groupiePalette + '|' + klangraumPal().id;
@@ -9075,8 +9069,6 @@ function groupieSaat(zeilen, W, H, gl){
       pos.set(p.id, [cx + 0.42 * breite * r * Math.cos(a), H / 2 + 0.42 * H * r * Math.sin(a)]); });
     x0 += breite;
   }
-  /* die Sammelblase „weitere" je Areal startet am unteren Rand ihres Streifens (y nach oben) */
-  { let x = 0; for (const [a, leute] of streifen){ const b = W * leute.reduce((s, p) => s + p.b, 0) / gesamt; pos.set('weitere\u0000' + a, [x + b / 2, H * 0.1]); x += b; } }
   return schaumSaatSchluessel(zeilen, ['gruppe'], zeilen.map(z => (pos.get(z.id) || [W / 2, H / 2]).slice()));
 }
 /* DIE UEBRIGEN MASSE IM HINTERGRUND: steht eine Ansicht, legt ein zweiter Worker nacheinander die
@@ -9386,8 +9378,9 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      die nummerierte Liste - so ist jeder Titel auffindbar, auch der kleinste. Gezaehlt wird Areal fuer Areal (in
      der Reihenfolge der Legende: das groesste zuerst), darin in Lesereihenfolge - Zeilen von oben nach unten (eine
      Zeile ist 0,7 typische Zellweiten hoch), in der Zeile von links nach rechts. Wer eine Nummer sucht, findet sie
-     dort, wo die Liste sie vermuten laesst. Sammelblasen („+N weitere") bekommen keine Nummer; die Liste nennt
-     sie am Ende ihres Areals. */
+     dort, wo die Liste sie vermuten laesst. HOECHSTENS 400 NUMMERN (seit 1.0.48 sind im Groupieschaum alle einzeln,
+     bei Tarja 4816): die 400 groessten Zellen tragen eine Nummer, die uebrigen nennt die Liste am Ende ihres Areals als
+     „und N weitere" - so sah das Plakat schon vorher aus, und eine winzige Zelle traegt keine lesbare Nummer. */
   let nummern = null, verzeichnis = null;
   if (druck && druck.verzeichnis){
     const H = res.height;
@@ -9398,13 +9391,14 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     const band = 0.7 * Math.sqrt(groessen[groessen.length >> 1] || 1);
     const gruppen = new Map();
     for (const e of alleZ){ const a = R.chainOf(e.k)[0] || null; [e.cx, e.cy] = mitte(e.k.outline); if (!gruppen.has(a)) gruppen.set(a, []); gruppen.get(a).push(e); }
+    const nummerAb = alleZ.length > 400 ? groessen[groessen.length - 400] : 0;
     nummern = new Map(); verzeichnis = []; let nr = 0;
     for (const [a, liste] of [...gruppen.entries()].sort((p, q) => ((q[0] && q[0].count) || 0) - ((p[0] && p[0].count) || 0))){
       liste.sort((p, q) => Math.floor(p.cy / band) - Math.floor(q.cy / band) || p.cx - q.cx);
       const farbe = (!gezoomt && a && farbeVon(a.name)) || schaumFarbe(liste[0].k, R.chainOf, farbeVon, gezoomt);
       const eintraege = [], weitere = [];
       for (const e of liste){ const z = zeilen[e.k.row];
-        if (z.weitere){ weitere.push(z.weitere); continue; }
+        if (flaeche(e.k.outline) < nummerAb){ weitere.push(1); continue; }
         nummern.set(e.i, ++nr); eintraege.push({ nr, titel: personen ? zierfrei(z.titel || '') : String(z.titel || '').trim() }); }
       verzeichnis.push({ name: a ? a.name : '', farbe, eintraege, weitere: weitere.reduce((s, n) => s + n, 0) });
     }
@@ -9537,7 +9531,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.47').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.48').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
@@ -9715,8 +9709,13 @@ function schaumEinsetzenJetzt(f, einblenden){
      wie die Legende sie zeigt (data-farbe, gesetzt in schaumSvgBauen). Die Fuellung der Zelle selbst ist absichtlich ein
      gedaempfter, leicht verschobener Ton davon (Helligkeit 28-49 %) - als Rahmen kaum vom Fugenschwarz zu unterscheiden; sie
      gilt nur, wo es keine Areal-Farbe gibt („ohne Angabe"), sonst bleibt es weiss. */
-  const rahmenFarbe = (p) => { const a = p && p.getAttribute('data-farbe'); if (a) return a;
-    const c = p && p.getAttribute('fill'); return c && /^(#|rgb|hsl)/i.test(c) ? c : '#ffffff'; };
+  /* … und heller (Caspar_D, 07.10.2026: „die highlightfarbe noch heller"): die Areal-Farbe um 40 % zu Weiss hin gemischt */
+  const heller = (c, t = 0.4) => { const k = document.createElement('canvas').getContext('2d'); k.fillStyle = '#000'; k.fillStyle = c;
+    const h = String(k.fillStyle), m = h.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i), r = h.match(/rgba?\(([^)]+)\)/);
+    const v = m ? [1, 2, 3].map(i => parseInt(m[i], 16)) : r ? r[1].split(',').slice(0, 3).map(Number) : null;
+    return v ? '#' + v.map(x => Math.round(x + (255 - x) * t).toString(16).padStart(2, '0')).join('') : c; };
+  const rahmenFarbe = (p) => { const a = p && p.getAttribute('data-farbe'); if (a) return heller(a);
+    const c = p && p.getAttribute('fill'); return c && /^(#|rgb|hsl)/i.test(c) ? heller(c) : '#ffffff'; };
   /* Der laufende Titel wabert: sein Umriss, weiss und von einem Rauschen verschoben, auf einer
      EIGENEN leichten Ebene ueber dem Schaum. Laege er im Schaum selbst, muesste der Browser mit
      jedem Bild die Kissenbeleuchtung und alle Wasserzeichen neu rechnen. Wer Bewegung abbestellt
@@ -9751,7 +9750,7 @@ function schaumEinsetzenJetzt(f, einblenden){
     bild.onmouseleave = () => rp.setAttribute('visibility', 'hidden');
   }
   bild.onclick = (e) => { const p = e.target.closest && e.target.closest('path[data-id]'); if (!p) return;
-    if (f.art === 'person'){ if (!String(p.dataset.id).startsWith('weitere\u0000')) reaktPersonAlleine(p.dataset.id); } else spielenNachId(p.dataset.id); };
+    if (f.art === 'person') reaktPersonAlleine(p.dataset.id); else spielenNachId(p.dataset.id); };
   return bereit;
 }
 /* Das Wabern steht, wenn die Musik steht - dieselbe Quelle wie die Abspielknoepfe. */
