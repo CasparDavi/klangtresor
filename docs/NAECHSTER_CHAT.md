@@ -8534,3 +8534,9 @@ verwischt", „Gouache, trockener Pinsel". Simulationen (Canvas: Papierkorn, Was
 `_werkstatt_bilder/fotos/aquarell.html`, `dunkel.html`.
 Danach: monochromes Plakat mit Federzeichnung per XDoG ohne KI (Caspar_D: „für die monochrome darstellung xdog-blatt.png die zweite
 spalte"); Skript und Parameter `_werkstatt_bilder/feder/` (σ 0,9 px, k 1,6, τ 0,985, φ 260 bei 600 px Breite).
+Nachtrag 1.0.59: Caspar_D: „die Hausregeln erlauben keine checkboxes, glaub ich" – richtig (HAUSREGELN 18: „Pillen statt Checkboxen").
+Das Plakat-Panel hatte seit seinem Bau sieben Checkboxen (Verzeichnis, Areale am Rand, Kissen, Federstrich, Legende, Zeitleiste,
+Edition und Signatur); jetzt Pillen (`.ps-schalt`, an = Akzentrahmen, aus gedimmt, aria-pressed), Ausgrauen wie bisher.
+Geprüft im Sandkasten (`_werkstatt_bilder/probe-pillen.js`): umschalten, zurück, Randlos grau, 0 Checkboxen, keine Konsolenfehler.
+Rand (nächste Baustelle): statt Schalter zwei Regler „Rand vorne" und „Umschlag" (je 0 = aus); Umschlag = Tiefe des Keilrahmens
+plus Tackerzugabe, das Druckformat wächst um ihn, vorne bleibt das gewählte Format.

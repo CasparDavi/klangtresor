@@ -684,11 +684,11 @@ function felderSetzen(){
     ['ps-wackeln', Math.round(E.wackeln * 100)], ['ps-schatten', Math.round(E.schatten * 100)], ['ps-vignette', Math.round(E.vignette * 100)], ['ps-federmm', E.federMm],
     ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter], ['ps-schildname', E.schildName || '']]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
   { const bild = !!(FORMATE.find(x => x.id === E.format) || {}).bild; el('ps-pdf').hidden = bild; el('ps-png').hidden = !bild; }
-  el('ps-verz').checked = !!E.verzeichnis;
-  el('ps-zeit').checked = !!E.zeitleiste; el('ps-zeit').disabled = raumJetzt === 'groupies'; el('ps-zeit-grund').hidden = raumJetzt !== 'groupies';
-  el('ps-edition').checked = !!E.edition; { const a = el('ps-auflage'); if (document.activeElement !== a) a.value = E.auflage || ''; }
-  el('ps-areale').checked = !!E.areale;
-  el('ps-kissen').checked = !!E.kissen; el('ps-feder').checked = !!E.feder; el('ps-legende').checked = !!E.legende;
+  const an = (id, v) => { const b = el(id); b.classList.toggle('an', !!v); b.setAttribute('aria-pressed', v ? 'true' : 'false'); };
+  an('ps-verz', E.verzeichnis); an('ps-zeit', E.zeitleiste); an('ps-edition', E.edition); an('ps-areale', E.areale);
+  an('ps-kissen', E.kissen); an('ps-feder', E.feder); an('ps-legende', E.legende);
+  el('ps-zeit-grund').hidden = raumJetzt !== 'groupies';
+  { const a = el('ps-auflage'); if (document.activeElement !== a) a.value = E.auflage || ''; }
   el('ps-hinweis').hidden = raumJetzt !== 'groupies';
   /* WAS NICHT GILT, WIRD GRAU MIT GRUND (Hausregel 4; Caspar_D, 07.10.2026: „mach alle sachen, die nicht ins rahmenlose design
      passen ausgegraut"): bei Randlos alles, was am Rand haengt; sonst Ecke und Name, die es nur bei Randlos gibt. */
@@ -734,6 +734,7 @@ function aufbauen(){
 .ps-knoepfe button{border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
 #ps-pdf,#ps-png{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
 .ps-leise{color:#9aa3ad;font-size:12px;margin:6px 0 0}
+.ps-pillen button.ps-schalt:not(.an){color:#9aa3ad}
 .ps-grau{opacity:.4}.ps-grau input,.ps-grau button{cursor:not-allowed}
 #ps-wand{margin-top:8px;border-radius:7px;overflow:hidden}
 details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
@@ -752,13 +753,11 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <p class="ps-leise" id="ps-mass"></p>
   <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
   <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="kante">an der Kante</button><button type="button" data-titel="ohne">ohne</button></div>
-  <label class="ps-zeile">Verzeichnis<input type="checkbox" id="ps-verz"><span></span></label>
-  <label class="ps-zeile">Areale am Rand<input type="checkbox" id="ps-areale"><span></span></label>
+  <div class="ps-pillen" style="margin-top:9px"><button type="button" class="ps-schalt" id="ps-verz">Verzeichnis</button><button type="button" class="ps-schalt" id="ps-areale">Areale am Rand</button></div>
   <p class="ps-leise" id="ps-verz-text" style="margin-top:0">Jede Zelle bekommt eine Nummer, unten steht die Liste aller Titel – so findet man auch den kleinsten.</p>
   <details class="ps-fein" open><summary>Feinheiten</summary>
     ${regler('ps-rand', 'Rand', 2, 15, 1)}${regler('ps-fugen', 'Fugen', 3, 40, 1)}${regler('ps-wackeln', 'Wackeln', 0, 100, 1)}${regler('ps-schatten', 'Schatten', 0, 100, 1)}${regler('ps-vignette', 'Vignette', 0, 100, 1)}
-    <label class="ps-zeile">Kissen<input type="checkbox" id="ps-kissen"><span></span></label>
-    <label class="ps-zeile">Federstrich<input type="checkbox" id="ps-feder"><span></span></label>
+    <div class="ps-pillen" style="margin:6px 0"><button type="button" class="ps-schalt" id="ps-kissen">Kissen</button><button type="button" class="ps-schalt" id="ps-feder">Federstrich</button></div>
     ${regler('ps-federmm', 'Strichstärke', 0.1, 1, 0.05)}
   </details>
   <h3>Schild</h3>
@@ -767,10 +766,8 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <input class="ps-eingabe" id="ps-kopftitel" placeholder="Titel">
   <input class="ps-eingabe" id="ps-kopfunter" placeholder="Untertitel">
   <div class="ps-pillen" style="margin:2px 0 4px"><button type="button" id="ps-vorschlag">Vorschlag wiederherstellen</button></div>
-  <label class="ps-zeile">Legende<input type="checkbox" id="ps-legende"><span></span></label>
-  <label class="ps-zeile">Zeitleiste<input type="checkbox" id="ps-zeit"><span></span></label>
+  <div class="ps-pillen" style="margin:6px 0 3px"><button type="button" class="ps-schalt" id="ps-legende">Legende</button><button type="button" class="ps-schalt" id="ps-zeit">Zeitleiste</button><button type="button" class="ps-schalt" id="ps-edition">Edition und Signatur</button></div>
   <p class="ps-leise" id="ps-zeit-grund" style="margin-top:0" hidden>Im Groupieschaum gibt es kein Datum je Person – die Zeitleiste gilt für den Klangschaum.</p>
-  <label class="ps-zeile">Edition und Signatur<input type="checkbox" id="ps-edition"><span></span></label>
   <input class="ps-eingabe" id="ps-auflage" placeholder="Auflage, z. B. 1/1 oder 3/10">
   <h3>An der Wand</h3><div id="ps-wand"></div><p class="ps-leise">Mensch 1,75 m zum Vergleich.</p>
   <p class="ps-leise" id="ps-hinweis" hidden>Nur für den privaten Gebrauch. Vervielfältigung und Weitergabe an Dritte sind nicht erlaubt – die Avatare gehören ihren Leuten.</p>
@@ -791,14 +788,10 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   zahl('ps-schatten', 'schatten', v => v / 100); zahl('ps-vignette', 'vignette', v => v / 100); zahl('ps-federmm', 'federMm', v => v);
   el('ps-freiw').onchange = () => setze({ freiW: Math.max(10, Math.min(300, +el('ps-freiw').value || 80)) });
   el('ps-freih').onchange = () => setze({ freiH: Math.max(10, Math.min(300, +el('ps-freih').value || 120)) });
-  el('ps-kissen').onchange = (ev) => setze({ kissen: ev.target.checked });
-  el('ps-verz').onchange = (ev) => setze({ verzeichnis: ev.target.checked });
-  el('ps-zeit').onchange = (ev) => setze({ zeitleiste: ev.target.checked });
-  el('ps-edition').onchange = (ev) => setze({ edition: ev.target.checked });
+  /* Schalter als Pillen (Hausregel 18: „Pillen statt Checkboxen" - bis 1.0.58 standen hier sieben Checkboxen) */
+  for (const [id, schl] of [['ps-kissen', 'kissen'], ['ps-verz', 'verzeichnis'], ['ps-zeit', 'zeitleiste'], ['ps-edition', 'edition'], ['ps-areale', 'areale'], ['ps-feder', 'feder'], ['ps-legende', 'legende']])
+    el(id).onclick = () => setze({ [schl]: !E[schl] });
   el('ps-auflage').oninput = (ev) => setze({ auflage: ev.target.value }, false, undefined, true); el('ps-auflage').onchange = () => zeichnen();
-  el('ps-areale').onchange = (ev) => setze({ areale: ev.target.checked });
-  el('ps-feder').onchange = (ev) => setze({ feder: ev.target.checked });
-  el('ps-legende').onchange = (ev) => setze({ legende: ev.target.checked });
   /* Ein Feld, das man angefasst hat, gehört einem - auch leer (vorher hieß leer „Vorschlag", und der stand nach einer Sekunde wieder
      auf dem Plakat). Bei Randlos bemisst der Text die Ecke: beim Tippen nur setzen, neu legen beim Verlassen des Feldes oder Enter. */
   const feld = (id, schluessel) => { const f = el(id);
