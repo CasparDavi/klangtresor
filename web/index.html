@@ -9306,19 +9306,28 @@ function schaumNamenTinte(pxJe){
   if (schaumTinteTeiler === undefined) schaumTinteTeiler = typeof Intl !== 'undefined' && Intl.Segmenter ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
   const g = schaumTinteLeinwand, teile = t => schaumTinteTeiler ? [...schaumTinteTeiler.segment(t)].map(s => s.segment) : [...t];
   const stufe = px => { let b = SCHAUM_TINTE_STUFEN[0]; for (const s of SCHAUM_TINTE_STUFEN) if (s <= px) b = s; return b; };
-  const zeichen = (c, b) => {
-    const k = b + '|' + c; let z = schaumTinteZeichen.get(k);
-    if (!z){ g.font = '400 ' + b + 'px ' + SCHAUM_NAMEN_FAMILIE; const q = g.measureText(c);
+  const schrift = (b, kursiv) => (kursiv ? 'italic ' : '') + '400 ' + b + 'px ' + SCHAUM_NAMEN_FAMILIE;
+  const zeichen = (c, b, kursiv) => {
+    const k = (kursiv ? 'i' : '') + b + '|' + c; let z = schaumTinteZeichen.get(k);
+    if (!z){ g.font = schrift(b, kursiv); const q = g.measureText(c);
       z = { v: q.width / b, l: q.actualBoundingBoxLeft / b, r: q.actualBoundingBoxRight / b, a: q.actualBoundingBoxAscent / b, d: q.actualBoundingBoxDescent / b };
       schaumTinteZeichen.set(k, z); }
     return z;
   };
   /* breite: die Breite in em, gemessen bei 10 px wie bis 1.0.51 - fuer die Groesse des bisherigen Zeilenkasten-Satzes */
-  const tinte = { o: m.o, u: m.u, breite: t => tinte.runs(t, 10 / pxJe).w, runs(t, groesse){
-    const b = stufe(groesse * pxJe), k = b + '|' + t; let e = schaumTinteZeilen.get(k);
+  /* Kursiv (Zellen ohne Untergruppe) wird kursiv gemessen - die Tinte reicht 0,08-0,12 em weiter. Schrift von rechts nach links
+     (Hebraeisch, Arabisch): die Zeichen stehen gespiegelt und verbunden, die Kaesten je Zeichen stimmen dann nicht - fuer solche
+     Zeilen gilt der Tintenkasten der ganzen Zeile. */
+  const tinte = { o: m.o, u: m.u, breite: t => tinte.runs(t, 10 / pxJe).w, runs(t, groesse, kursiv = false){
+    const b = stufe(groesse * pxJe), k = (kursiv ? 'i' : '') + b + '|' + t; let e = schaumTinteZeilen.get(k);
     if (e) return e;
-    g.font = '400 ' + b + 'px ' + SCHAUM_NAMEN_FAMILIE;
-    const w = g.measureText(t).width / b, zs = teile(t).map(c => zeichen(c, b)), f = w / (zs.reduce((s, z) => s + z.v, 0) || 1), runs = [];
+    g.font = schrift(b, kursiv);
+    const ganz = g.measureText(t), w = ganz.width / b;
+    if (/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(t)){
+      e = { w, runs: [[-ganz.actualBoundingBoxLeft / b, ganz.actualBoundingBoxRight / b, ganz.actualBoundingBoxAscent / b, ganz.actualBoundingBoxDescent / b]] };
+      schaumTinteZeilen.set(k, e); return e;
+    }
+    const zs = teile(t).map(c => zeichen(c, b, kursiv)), f = w / (zs.reduce((s, z) => s + z.v, 0) || 1), runs = [];
     let x = 0;
     for (const z of zs){
       const x0 = x * f - z.l, x1 = x * f + z.r; x += z.v;
@@ -9331,11 +9340,15 @@ function schaumNamenTinte(pxJe){
   } };
   return tinte;
 }
-/* Bildschirmpixel je Schaum-Einheit: das Bild fuellt #schaumbild (Breite, oder Hoehe, wenn die knapper ist). */
+/* Bildschirmpixel je Schaum-Einheit fuer die Messung der Tintenkaesten: das Bild fuellt #schaumbild (Breite, oder Hoehe, wenn
+   die knapper ist) - aber gemessen wird hoechstens bei 0,6 px je Einheit. Das fertige Bild wird gemerkt und nach einer
+   Groessenaenderung des Fensters wieder gezeigt, ohne neu zu messen, und ein verstecktes Feld hat gar keine Breite (der
+   Schwachstellenagent: gebaut bei 1,2, gezeigt bei 0,8 - die Tinte ragte 0,25 em ueber den Rand). Kleiner gemessen ist in SF nie
+   zu schmal (die Textform wird kleiner breiter), nur etwas vorsichtig. */
 function schaumPxJeEinheit(res){
   const el = document.getElementById('schaumbild'), cw = el ? el.clientWidth : 0, ch = el ? el.clientHeight : 0;
-  if (!cw || !res.width) return 1;
-  return ch > 0 && res.height ? Math.min(cw / res.width, ch / res.height) : cw / res.width;
+  const jetzt = !cw || !res.width ? 0.6 : (ch > 0 && res.height ? Math.min(cw / res.width, ch / res.height) : cw / res.width);
+  return Math.min(0.6, jetzt);
 }
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');

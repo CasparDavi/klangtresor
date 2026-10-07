@@ -8360,3 +8360,31 @@ KlangTresor, offen (Entscheidung Caspar_D, Reihenfolge):
 - Kontrast je Zeile statt je Name (zweizeiliger Name halb schwarz, halb weiß möglich); Triptychon: kein Text kennt die Wandfugen.
 - Nächster Schritt laut §75: Einzelbuchstaben-Kästen; dabei die Prüfung auf Kantenschnitt umstellen (heute 5 bzw. 3 Stichpunkte
   je Kastenkante – eine konkave Spitze kann dazwischen eindringen) und bei der Setzgröße messen.
+
+## 78. 07.10.2026: Zellnamen und Plakat-Titel – Einzelbuchstaben-Kästen, so tief wie möglich (1.0.52)
+
+Caspar_D, Schritt für Schritt: Buchstabenkästen statt Textboxen (§75) – „Ziel war nicht, die Zelle maximal auszufüllen sondern
+mehr Platz zum verrücken zu gewinnen, sodass das visuelle Zentrum des Artworks möglichst wenig verdeckt wird und der Text etwas
+atmen kann" – „lass möglichst viel vom Bild übrig und schieb den TExt so weit wie möglich nach unen und lass ihn trotzdem gut
+lesbar sein" – „ganze Breite at y position" – „horizontal die Zeilen so gegeneinander verschieben, das es auch bei nicht
+symmetrischen Zellen gut passt" – Umbruchregeln, Klammern weg – „mach das auch für den Posterexport in den Milch- und
+Rauchglasfeldern". Und: „merke dir die maximalgroße Beschriftung für die Treemaps ohne Bilder" (Gedächtnis: zwei Modi).
+render.js (Engine-Kopie, Kopfvermerk): `labelInk` (Tintenkästen je Buchstabe, gleich hohe zusammengefasst, Kantenschnitt statt
+Stichpunkte, ein Innen-Test je zusammenhängender Kastengruppe), `labelUnten` (Zellen mit Bild: `untenSetzen` – Größe wie der
+alte Zeilenkasten, nie größer; 0,3 em Luft; von der Unterkante aufwärts, jede Fassung 1–3 Zeilen, gewinnt die tiefste
+OBERKANTE, jede weitere Zeile muss sie um mehr als eine Zeilenhöhe senken; jede Zeile auf der breitesten Sehne ihrer Höhe;
+Rückfall Füllmodus nicht größer), sonst `tinteSetzen` (Füllmodus, 0,1 em, Lage um Pol − 0,12 r). `umbruchErlaubt`: keine Zeile
+nur „…", ein Buchstabe oder eine Zahl, kein Strich am Zeilenanfang; bis 14 Zeichen nie zweizeilig. `labelName` (index.html
+`zellName`: ohne runde/eckige Klammern, außer zwei Zellen hießen dann gleich). Ein Name = ein `<text>` mit `<tspan>` je Zeile
+auf seiner Grundlinie (Kontrast jetzt je Name). index.html: `schaumNamenTinte` (Grapheme, Messstufen, kursiv, RTL als ganze
+Zeile), `schaumPxJeEinheit` (höchstens 0,6 px/Einheit – das Bild wird nach Fenstergrößenwechsel ungemessen wiedergezeigt),
+`schaumNamenBreite` gelöscht. Plakat: `kopfUnten` – Titel wie am Schirm, Größe des alten Bands, Glasfeld von 2 Punkten über der
+Tinte bis zum Zellfuß; findet sich nichts, das alte Band.
+Proben (Sandkasten, gleicher Schaum; probe-text6.js liest jede Zeichenlage aus dem SVG, Gegenprobe ½ em verschoben → 158
+Überstände): 1.0.51 250 Namen, mittel 8,95 – 1.0.52 258 Namen, mittel 9,02, Tinte außerhalb 0, Randzellen 17/19/19/15.
+Plakat Rauch/Milch: 1.0.51 181 Titel, 126 mit „…" – 1.0.52 235 Titel, 102 mehrzeilig, 5 gekürzt (Rückfall). Zeichnen in Node,
+327 Zellen: 0,1 s → ~0,3 s. Schwachstellenagent: 7 Befunde, behoben (Messgröße, Rückschritt, Gruppen statt Pauschale, kursiv,
+RTL, Leerzeichen am Ende); Laufzeit belassen. Alter Fehler, nicht angefasst: `poleOf` hängt bei waagerecht entarteten
+Vielecken minutenlang (Engine, Quelle foam-lab).
+Wiedervorlage (Caspar_D): Treemapper/Prophane – Füllmodus übertragen (foam-lab, nur auf dein Wort); restliche Punkte aus §77
+(Groupieschaum-Namenskopf am Schirm, Plakat-Kantentitel/Arealnamen/Verzeichnis mit Pauschalen, Nummernschild, Triptychon).

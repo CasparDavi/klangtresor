@@ -78,10 +78,10 @@ function imOderAufRand(poly, p, eps) {
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
-export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null } = {}) {
+export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false, startSize = null, kursiv = false } = {}) {
   const [px, py, r] = poleOf(poly), [xa, xb] = chordAt(poly, [px, py]);
-  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize });
-  if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink });
+  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv });
+  if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv });
   const cx = (Math.max(xa, px - 3 * r) + Math.min(xb, px + 3 * r)) / 2, width = 0.92 * (Math.min(xb, px + 3 * r) - Math.max(xa, px - 3 * r));
   // width of a line in em: measured with the real font where the page offers it (measure), else estimated at 0.56 em a character
   const ems = t => measure ? measure(t) : 0.56 * t.length;
@@ -143,26 +143,30 @@ function breitesteMitte(poly, yy, sonst) {
   return best ? (best[0] + best[1]) / 2 : sonst;
 }
 // die Tintenkaesten eines Namensblocks je Zeile, relativ zu (Zeilenmitte x, Blockmitte y), Mathematik (y nach oben)
-function tintenBlock(lines, size, ink, leading, m) {
+function tintenBlock(lines, size, ink, leading, m, kursiv = false) {
   const n = lines.length, zeilen = [];
   let u = Infinity, ob = -Infinity, links0 = Infinity, rechts0 = -Infinity;
   lines.forEach((t, j) => {
-    const l = ink.runs(t, size), mid = ((n - 1) / 2 - j) * leading * size, g = mid - (ink.o - ink.u) / 2 * size, links = -l.w * size / 2, kaesten = [];
+    const l = ink.runs(t, size, kursiv), mid = ((n - 1) / 2 - j) * leading * size, g = mid - (ink.o - ink.u) / 2 * size, links = -l.w * size / 2, kaesten = [];
+    let rechtsBis = -Infinity;
     for (const [a0, a1, o2, un] of l.runs) {
       const k = [links + (a0 - m) * size, g - (un + m) * size, links + (a1 + m) * size, g + (o2 + m) * size];
+      k.neu = k[0] > rechtsBis;            // beginnt eine neue zusammenhaengende Gruppe (keine Ueberlappung mit den Kaesten davor)
+      rechtsBis = Math.max(rechtsBis, k[2]);
       kaesten.push(k); u = Math.min(u, k[1]); ob = Math.max(ob, k[3]); links0 = Math.min(links0, k[0]); rechts0 = Math.max(rechts0, k[2]);
     }
     zeilen.push({ mid, kaesten });
   });
   return { lines, zeilen, u, ob, links: links0, rechts: rechts0, leer: !zeilen.some(z => z.kaesten.length) };
 }
-/* Passt der Block? Keine nahe Kante beruehrt einen Kasten, und die Kaesten liegen innen. Mit reichlich Luft (ab 0,15 em je Seite)
-   ueberlappen die Kaesten einer Zeile auch ueber die Wortabstaende (ein Leerzeichen ist ~0,27 em): beruehrt keine Kante, liegt
-   die Zeile ganz innen oder ganz aussen - dann genuegt ein Innen-Test je Zeile statt je Kasten (der Strahltest kostet alle Ecken). */
-function blockPasst(b, xs, y, poly, nP, huelle, nH, m = 0) {
-  const jeZeile = m >= 0.15;
-  return b.zeilen.every((z, j) => z.kaesten.every(([a, c, e, d], i) => {
-    const x = xs[j], innen = !jeZeile || i === 0;
+/* Passt der Block? Keine nahe Kante beruehrt einen Kasten, und die Kaesten liegen innen. Ueberlappen Kaesten einer Zeile (mit
+   ihrer Luft), bilden sie eine zusammenhaengende Gruppe: beruehrt keine Kante, liegt die Gruppe ganz innen oder ganz aussen -
+   ein Innen-Test je Gruppe genuegt (der Strahltest kostet alle Ecken). Die Gruppen stehen in tintenBlock (k.neu); vorher hiess
+   es pauschal „ab 0,15 em Luft je Zeile einer" - der Schwachstellenagent fand: ein Leerzeichen ist in SF 0,29-0,32 em breit,
+   ein doppeltes oder U+3000 reisst die Zeile auf, und ein Wort jenseits einer Zellwand galt als innen. */
+function blockPasst(b, xs, y, poly, nP, huelle, nH) {
+  return b.zeilen.every((z, j) => z.kaesten.every((k) => {
+    const [a, c, e, d] = k, x = xs[j], innen = k.neu;
     return rechteckFrei(nP, x + a, y + c, x + e, y + d) && (!innen || inside(poly, [x + (a + e) / 2, y + (c + d) / 2]))
       && (!huelle || (rechteckFrei(nH, x + a, y + c, x + e, y + d) && (!innen || inside(huelle, [x + (a + e) / 2, y + (c + d) / 2]))));
   }));
@@ -172,9 +176,9 @@ function rechteckFrei(nahe, x0, y0, x1, y1) {
   return true;
 }
 const gesetzt = (b, xs, y, size, leading, ink) => ({ x: xs[(xs.length - 1) >> 1], xs, y, size, lines: b.lines, leading, tinte: { o: ink.o, u: ink.u } });
-function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink }) {
+function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink, kursiv = false }) {
   const m = TINTE_RAND, x0c = Math.max(xa, px - 3 * r), x1c = Math.min(xb, px + 3 * r), cx = (x0c + x1c) / 2, W = x1c - x0c;
-  const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0).w + 2 * m;
+  const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0, kursiv).w + 2 * m;
   // obere Grenze je Zeilenzahl: Breite der Sehne durch den Pol; ein Block, breiter als hoch, ist hoechstens 2 r hoch
   const bis = (k, laengste) => Math.min(W / laengste, 2 * r / ((k - 1) * leading + ink.o + ink.u + 2 * m), maxSize);
   let lines = [text], size = bis(1, breit(text));
@@ -189,7 +193,7 @@ function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, 
   for (let k = -3; k <= 3; k++) for (let q = -2; q <= 2; q++) lagen.push([q, k, (k > 0 ? 1 : 1.5) * Math.abs(k) + 1.3 * Math.abs(q)]);
   lagen.sort((a, b) => a[2] - b[2]);
   for (let i = 0; i < 40 && size >= minSize; i++, size *= 0.94) {
-    const b = tintenBlock(lines, size, ink, leading, m);
+    const b = tintenBlock(lines, size, ink, leading, m, kursiv);
     if (b.leer) return null;
     const fenster = [xl, ty + b.u - 3 * st, xr, ty + b.ob + 3 * st];
     const nP = naheKanten(poly, fenster), nH = huelle ? naheKanten(huelle, fenster) : null;
@@ -233,7 +237,7 @@ function alleUmbrueche(words, maxLines) {
   return out.filter(umbruchErlaubt);
 }
 function untenSetzen(poly, huelle, text, o) {
-  const { px, maxSize, minSize, maxLines, leading, drop, ink, startSize } = o;
+  const { px, maxSize, minSize, maxLines, leading, drop, ink, startSize, kursiv } = o;
   // die bisherige Groesse: der Zeilenkasten-Satz - oder vorgegeben (startSize, das Glasfeld des Plakats rechnet sie selbst)
   const alt = startSize ? { size: startSize } : placeLabel(poly, text, { maxSize, minSize, maxLines, measure: ink.breite, fit: true, leading, drop, huelle });
   if (!alt) return tinteSetzen(poly, huelle, text, o);   // der Zeilenkasten fand keinen Platz - dann so gross, wie die Tinte erlaubt
@@ -241,7 +245,7 @@ function untenSetzen(poly, huelle, text, o) {
   let y0 = Infinity, y1 = -Infinity, xl = Infinity, xr = -Infinity;
   for (const p of poly) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); xl = Math.min(xl, p[0]); xr = Math.max(xr, p[0]); }
   for (let i = 0, size = alt.size; i < 40 && size >= minSize; i++, size *= 0.94) {
-    const bloecke = fassungen.map(lines => tintenBlock(lines, size, ink, leading, m)).filter(b => !b.leer)
+    const bloecke = fassungen.map(lines => tintenBlock(lines, size, ink, leading, m, kursiv)).filter(b => !b.leer)
       .sort((a, b) => (a.ob - a.u) - (b.ob - b.u) || a.lines.length - b.lines.length);
     if (!bloecke.length) return null;
     const schritt = Math.max(0.01 * (y1 - y0), 0.06 * size), gleich = 0.05 * size, zeile = leading * size;
@@ -253,7 +257,7 @@ function untenSetzen(poly, huelle, text, o) {
       const probe = (y) => {
         const reihe = [xl, y + b.u, xr, y + b.ob], nP = naheKanten(poly, reihe), nH = huelle ? naheKanten(huelle, reihe) : null;
         const je = b.zeilen.map(z => breitesteMitte(poly, y + z.mid, px)), mitte = breitesteMitte(poly, y + (b.u + b.ob) / 2, px);
-        return [je, b.lines.map(() => mitte), b.lines.map(() => px)].find(xs => blockPasst(b, xs, y, poly, nP, huelle, nH, m));
+        return [je, b.lines.map(() => mitte), b.lines.map(() => px)].find(xs => blockPasst(b, xs, y, poly, nP, huelle, nH));
       };
       // grob in vierfachen Schritten aufwaerts, dann fein zurueck: die tiefste Lage auf einen Schritt genau
       const start = y0 - b.u, grob = 4 * schritt;
@@ -268,7 +272,9 @@ function untenSetzen(poly, huelle, text, o) {
     }
     if (best) return gesetzt(best.b, best.xs, best.y, size, leading, ink);
   }
-  return null;
+  /* nirgends Platz mit 0,3 em Luft: wie ohne Bild setzen, aber nicht groesser als bisher - sonst fehlte der Name ganz (der
+     Schwachstellenagent fand „Glas Hydra" mit alter Groesse 4,08 - unter minSize / 0,94 gab es nur einen Versuch) */
+  return tinteSetzen(poly, huelle, text, { ...o, maxSize: Math.min(maxSize, alt.size) });
 }
 // die Kanten eines Vielecks, deren Huellkasten das Fenster [x0, y0, x1, y1] beruehrt
 function naheKanten(P, [x0, y0, x1, y1]) {
@@ -359,7 +365,7 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
          genug wären"). */
       const vis = visible(k), aV = Math.abs(shoelace(vis)), aK = Math.abs(shoelace(k.outline)), eps = 1e-6 * Math.sqrt(aK);
       if (vis !== k.outline && !(aV > 0 && aV < aK && vis.every(p => imOderAufRand(k.outline, p, eps)))) continue;
-      const lab = placeLabel(vis, (labelName ? labelName(k) : k.name).slice(0, 60), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline, ink: labelInk, unten: !!(labelUnten && labelUnten(k)) });
+      const lab = placeLabel(vis, (labelName ? labelName(k) : k.name).slice(0, 60).trim(), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline, ink: labelInk, unten: !!(labelUnten && labelUnten(k)), kursiv: isFilled(k) });
       if (!lab) continue;
       const below = leavesBelow(k).filter(x => x.outline), under = below.find(x => inside(x.outline, [lab.x, lab.y])) || below[0] || k;
       const ink = lightnessOf(colourOf(under)) >= 58 ? "#000000" : "#ffffff";
