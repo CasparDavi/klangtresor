@@ -8031,3 +8031,24 @@ schon — solche MP3s erkennt weder das Einlesen noch der neue Weg; das ist rich
 - Werkzeug: `_werkstatt_plakat/studio/vorlagen-foto.js <port> <ordner>` fotografiert die vier Vorlagen per
   headless Chrome (eigenes Profil, CDP); Sandkasten im Scratchpad, Cover dort je Datei verlinkt.
 - Systemplatte hatte nur 84 GB frei (unter Jörgs 100-GB-Grenze) — dort nichts Großes ablegen.
+
+## 59. 07.10.2026 nachts: Plakat-Studio Stufe 1 ausgeliefert (1.0.35)
+
+- Im Klang- und Groupieschaum der Knopf „Als Plakat (PDF)…“ → Studio (`web/klangschaum/plakat.js`) mit
+  Vorschau und Panel: Vorlagen Galerie/Papier/Bleiglas/Mosaik, Formate A3–A0, 50×70, 70×100, 100×140,
+  Quadrate, frei, hoch/quer; Grund; Titel auf Rauch-/Milchglas oder ohne; Rand, Fugen, Wackeln, Schatten,
+  Vignette, Kissen, Federstrich; Museumsschild mit Titel/Untertitel und Legende; Wand-Vorschau; PDF über
+  das Druckfenster.
+- Haus: `schaumSvgBauen` (gemeinsam für Schirm und Druck), `schaumKissenFilter` + `schaumKissenKacheln`
+  (eine Kissenschicht nur auf den Kacheln für Schirm und Druck), `schaumWackeln`, `schaumLageHolen`.
+- PDF: `druckBilder` rechnet jedes Bild auf 300 dpi seiner Kachel (Cover ×1,34). Sandkasten 70×100:
+  9 s Vorbereitung, PDF 31 s, 37,5 MB (vorher hing der Druck an ~420 MB Originalen). Groupieschaum: 6 s,
+  28 s, 57,7 MB; Suno-Avatare bleiben im Original (kein CORS).
+- Werkzeuge: `_werkstatt_plakat/studio/vorlagen-foto.js`, `schirm-foto.js`, `pdf-probe.js` (headless
+  Chrome, eigenes Profil). Beim Fotografieren gilt: der Bildvorrat tauscht nach — zu frühe Fotos zeigen
+  flache Zellen (kein Fehler, geprüft mit Spätfoto).
+- Abweichung: Bleiglas hat noch KEINE Titel — sie gehören ins Werkverzeichnis (Stufe 2).
+- Nächste Stufe 2: Werkverzeichnis (Nummern in kleinen Zellen, Liste am Rand), Areale am Rand mit
+  Führungslinie, Titel entlang der Kante. Danach 3 Edition/QR/Zeitleiste, 4 Triptychon/Social, 5 Fokus
+  (Empfehlung im Chat 07.10.: Gesicht → Aufmerksamkeitsmodell mit Schrift-Maske → Bildmitte; vorher
+  Messung an der Stichprobe mit Handpunkten und Zufallsboden).

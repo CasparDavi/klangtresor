@@ -4126,6 +4126,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <p class="fussnote" id="schaumwas" style="margin:0"></p>
     <div id="schaumlegende"></div>
     <div id="schaumwerk"></div>
+    <button class="pille" id="plakatknopf" type="button" onclick="plakatOeffnen()" title="Den Schaum als Plakat gestalten und als PDF sichern">Als Plakat (PDF)…</button>
   </div>
   <div id="kartefuss" class="fussnote"></div>
 </div>
@@ -8869,22 +8870,9 @@ async function groupieZeichnen(){
    Groupieschaum gleich - dieselben Werte wie die Vorgabe in klangschaum/render.js. */
 const SCHAUM_STRICHE = [3.2, 2.0, 1.2, 0.7, 0.35];
 function schaumKissen(svg, res, kacheln){
-  const H = res.height;
-  const fl = (o) => { let s = 0; for (let i = 0; i < o.length; i++){ const a = o[i], b = o[(i + 1) % o.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
-  const blaetter = res.leaves.filter(k => k.outline && k.outline.length > 2);
-  if (!blaetter.length || !kacheln.length) return svg;
-  const flaechen = blaetter.map(k => fl(k.outline)).sort((a, b) => a - b), mitte = flaechen[flaechen.length >> 1];
-  const weite = Math.min(24, Math.max(3, 0.14 * Math.sqrt(mitte))), hoehe = weite * 1.5;
-  const kissen = '<filter id="skkissen" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
-    + '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="h"/>'
-    + `<feGaussianBlur in="h" stdDeviation="${weite.toFixed(2)}" result="b"/>`
-    + `<feDiffuseLighting in="b" surfaceScale="${hoehe.toFixed(2)}" diffuseConstant="1" lighting-color="#ffffff" result="l"><feDistantLight azimuth="225" elevation="45"/></feDiffuseLighting>`
-    + '<feComponentTransfer in="l"><feFuncR type="linear" slope="1.6" intercept="-0.631"/><feFuncG type="linear" slope="1.6" intercept="-0.631"/><feFuncB type="linear" slope="1.6" intercept="-0.631"/></feComponentTransfer></filter>';
-  const kachelPfade = kacheln.map(dd => `<path d="${dd}" fill="#fff"/>`).join('');
-  const schicht = '<clipPath id="skkissenclip">' + kachelPfade + '</clipPath>'
-    + '<g class="kissen" clip-path="url(#skkissenclip)" pointer-events="none"><g filter="url(#skkissen)">'
-    + `<rect x="0" y="0" width="${res.width}" height="${H}" fill="#000"/>` + kachelPfade + '</g></g>';
-  svg = svg.replace('<defs>', '<defs>' + kissen);
+  if (!kacheln.length || !res.leaves.some(k => k.outline && k.outline.length > 2)) return svg;
+  svg = svg.replace('<defs>', '<defs>' + schaumKissenFilter(res));
+  const schicht = schaumKissenKacheln(kacheln.map(dd => ({ dd })), res);
   const t = svg.indexOf('<text');
   return t >= 0 ? svg.slice(0, t) + schicht + svg.slice(t) : svg.replace('</svg>', schicht + '</svg>');
 }
@@ -9120,133 +9108,207 @@ async function schaumVorrechnen(){
   }
   schaumHinten = null;
 }
+/* DAS SVG EINES GELEGTEN SCHAUMS - fuer den Schirm (Bilder aus dem Vorrat, beim Einsetzen gesetzt) und fuer
+   das Plakat-Studio (druck: Kacheln mit Luecken statt Fugenlinien, Name/Titel auf Rauch- oder Milchglas unten in
+   der Zelle, Wackeln, Schatten, Kissen nur auf den Kacheln; Bilder in der Vorschau aus dem Vorrat, die volle
+   Fassung in data-voll fuers PDF). Fuer den Schirm unveraendert, was vorher in malen() stand.
+   druck: { titel: 'rauch'|'milch'|'ohne', fugen: Faktor, wackeln: 0..1, schatten: 0..1, vignette: 0..1, kissen, deck, ton, massstab } */
+async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
+  const R = await import('/klangschaum/render.js');
+  const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
+  /* KOPFZEILE JE PERSON (Caspar_D, 06.10.2026: „beim Groupieschaum jede Zelle einen Header, in
+     dem der Name steht, also einfach ein Stück abschneiden und in den schwarzen Raum den Namen
+     schreiben"). Der obere Streifen der Zelle (ein Fuenftel ihrer Hoehe, 11 bis 26 Punkte) wird
+     schwarz und traegt den Namen, so breit, wie die Zelle dort ist; der Avatar sitzt darunter.
+     Passt kein Name mit mindestens 7 Punkten (auch gekuerzt nicht), bleibt die Zelle ganz Bild.
+     Die frei schwebenden Namen der Engine entfallen hier.
+     Nachgebessert (Caspar_D): „den Namen mit einem Abstand von 2 Punkten zur Headergrenze",
+     „Verzierungen generisch abschneiden", „schauen, ob es besser ist, oben oder unten
+     abzuschneiden". Der Name steht 2 Punkte von der Grenze zum Bild; Emoji und Schmuckzeichen
+     am Anfang und Ende fallen weg (alles, was nicht Buchstabe oder Ziffer ist; Emoji auch
+     innen), der Tooltip behaelt den vollen Namen; je Zelle wird oben und unten gemessen, und
+     unten wird nur genommen, wenn der Name dort um mehr als 15 % groesser wird.
+     Und (Caspar_D: „oft überlappen die Namen mit den Nachbarzellen"): die Breite wird nicht mehr
+     nur in der Mitte der Schrift gemessen, sondern an ihrer Ober- und Unterkante und in der
+     Mitte, und es gilt die engste Stelle - an den runden Enden einer Zelle ragten die Buchstaben
+     sonst ueber den Rand. Zur Sicherheit wird jeder Name auf seine Zelle zugeschnitten.
+     GLAS STATT SCHWARZ (Caspar_D: „Abschneiden ist nicht die Lösung, lege ein Blur auf den
+     Abschnitt und lasse das Bild durchscheinen. Das Blur-Glas kann etwas schwärzen, damit der
+     Text immer weiß sein kann"): der Avatar fuellt wieder die ganze Zelle; im Kopfstreifen liegt
+     eine zweite Kopie, weichgezeichnet (Gauss, 3 Punkte) und abgedunkelt - so bleibt weisse
+     Schrift auf jedem Bild lesbar. Erst fest auf 42 % Helligkeit, dann auf 71 % („das Rauchglas
+     weniger stark schwarz, nur die Hälfte"), dann (Caspar_D: „lass das Rauchglas nur dort
+     wirken, wo es nötig ist") je Zelle: schaumRauch() misst die hellsten 20 % des Avatars unter
+     dem Kopf und dunkelt nur so weit ab, wie die weisse Schrift es braucht - auf dunklen Bildern
+     gar nicht. Der Filter macht nur noch weich; das Dunkel ist ein schwarzes Rechteck je Kopf. */
+  const SCHAUM_GLAS = '<filter id="skglas" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">'
+    + '<feGaussianBlur stdDeviation="3" edgeMode="duplicate"/></filter>';
+  const personen = art === 'person', koepfe = [], kacheln = [], baender = [], milch = !!(druck && druck.titel === 'milch');
+  const zierfrei = (s) => { const r = String(s).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '')
+    .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').replace(/\s+/g, ' ').trim(); return r || String(s).trim(); };
+  const sehne = (pk, yy) => { const sx = [];
+    for (let q = 0; q < pk.length; q++){ const p1 = pk[q], p2 = pk[(q + 1) % pk.length];
+      if ((p1[1] - yy) * (p2[1] - yy) < 0) sx.push(p1[0] + (yy - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1])); }
+    sx.sort((u, v) => u - v); return sx.length >= 2 ? [sx[0], sx[sx.length - 1]] : null; };
+  const emBreit = (s) => leinwand.measureText(s).width / 100;          /* Breite in em */
+  const kopfPlan = (pk, x, y, w, h, name, i, nurUnten) => {
+    const bh = Math.min(26, Math.max(11, h * 0.2)), fsMax = (bh - 3) / 1.17;
+    /* Wo die Buchstaben bei Schriftgroesse fs liegen: oben haengt die Schrift mit der Unterkante
+       (text-after-edge) 2 Punkte ueber der Grenze, Grossbuchstaben reichen 0,94 em hoch; unten
+       steht sie mit der Oberkante (text-before-edge) 2 Punkte darunter, Grossbuchstaben ab
+       0,23 em, Unterlaengen bis 1,17 em. An drei Hoehen wird gemessen, die engste zaehlt. */
+    const raum = (oben, yd, fs) => {
+      const hoehen = oben ? [yd - 2 - fs * 0.94, yd - 2 - fs * 0.5, yd - 2 - fs * 0.05] : [yd + 2 + fs * 0.23, yd + 2 + fs * 0.7, yd + 2 + fs * 1.15];
+      const ss = hoehen.map(yy => sehne(pk, yy));
+      if (ss.some(q => !q)) return null;
+      const s = [Math.max(...ss.map(q => q[0])), Math.min(...ss.map(q => q[1]))];
+      return s[1] > s[0] ? s : null;
+    };
+    const breit = emBreit(name);
+    const versuch = (oben) => {
+      const yd = oben ? y + bh : y + h - bh;                         /* Grenze zwischen Kopf und Bild */
+      /* Intervallhalbierung: die groesste Schrift, deren Name in die engste Stelle passt */
+      let lo = 0, hi = fsMax;
+      for (let k = 0; k < 14; k++){ const fs = (lo + hi) / 2, s = raum(oben, yd, fs);
+        if (s && 0.92 * (s[1] - s[0]) >= breit * fs) lo = fs; else hi = fs; }
+      const fs = lo, s = raum(oben, yd, Math.max(fs, 7)) || raum(oben, yd, fs);
+      return s ? { oben, yd, fs, s } : null;
+    };
+    const a = nurUnten ? null : versuch(true), b = versuch(false), v = a && b ? (b.fs > a.fs * 1.15 ? b : a) : (a || b);
+    if (!v) return null;
+    let txt = name, fs = v.fs;
+    if (fs < 7){ fs = 7; const breit = 0.9 * (v.s[1] - v.s[0]); let n = name.length;
+      while (n > 2 && emBreit(name.slice(0, n) + '…') * 7 > breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
+    if (!txt) return null;
+    return { bandY: v.oben ? y : v.yd, bh,
+      text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
+        + ` fill="${milch ? '#141414' : '#f4f4f2'}" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
+  };
+  /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
+  let svg = R.renderSVG(res, { pad: 0, cushion: 0,
+    /* im Druck stehen die Namen auf Glasbaendern */
+    /* Luecken statt Linien auch am Schirm (07.10.2026, siehe 1.0.34): Grund scheint durch, Dark Reader
+       kann nichts umfaerben; im Druck dieselben Breiten mal dem Fugen-Regler. */
+    gutters: druck ? SCHAUM_STRICHE.map(g => g * druck.fugen) : SCHAUM_STRICHE,
+    ...(druck || personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
+    colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
+  const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
+  /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
+  const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
+  /* Die Vorschau des Plakats zeigt die Kachelbilder aus dem Vorrat - die vollen Cover (499 x ~2,5 MB) braucht
+     nur das PDF, und das holt sie ueber data-voll. Sonst laedt das erste Oeffnen ueber ein Gigabyte. */
+  const vorschauBilder = druck ? res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : artworkKachel(zeilen[k.row].id))) : null) : bilder;
+  /* Bildstufe je Zelle (Bildvorrat): Breite des Feldes in Bildschirmpunkten je Schaum-Einheit mal
+     Pixeldichte; ein Cover (3 : 4, „slice") braucht an der langen Seite ein Drittel mehr. */
+  const massstab = druck ? druck.massstab : (($('schaumfeld').getBoundingClientRect().width || 1600) / res.width) * (window.devicePixelRatio || 1), faktor = personen ? 1 : 1.34;
+  svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
+           .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
+           /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
+           .replace(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g, (alles, dd, a, i, b) => {
+             const id = ids[+i]; if (!id) return alles;
+             const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
+             const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
+             const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+             const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
+             const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
+             /* Druck: in der Vorschau die Fassung aus dem Vorrat, fuers PDF die volle (data-voll) */
+             const bildAn = !quelle ? '' : druck ? `href="${esc(schaumBildHref(vorschauBilder[+i] || quelle, stufe))}" data-voll="${esc(quelle)}" data-i="${i}"`
+               : `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"`;
+             let kopf = '';
+             const name = (druck ? druck.titel !== 'ohne' : personen) ? zierfrei((zeilen[res.leaves[+i].row] || {}).titel || '') : '';
+             const plan = name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i, !!druck) : null;
+             const tf = druck && druck.wackeln > 0 ? schaumWackeln(id, x, y, w, h, druck.wackeln) : '';
+             if (plan){
+               kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
+                 + `<g clip-path="url(#skz${i})" pointer-events="none">`
+                 + (quelle ? `<image ${bildAn} data-glas="1" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                   + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>` : '')
+                 + `<rect class="${milch ? 'milch' : 'rauch'}" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="${milch ? '#ffffff' : '#000'}" opacity="${milch ? '0.62' : SCHAUM_RAUCH_VORGABE}"/></g>`;
+               if (druck) baender.push(tf ? `<g transform="${tf}">${plan.text}</g>` : plan.text); else koepfe.push(plan.text);
+             }
+             kacheln.push({ dd, tf });
+             const fertig = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
+               + (quelle ? `<image ${bildAn} x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
+                 + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>` : '')
+               /* Reihenfolge (Caspar_D: „erst das Rauchglas auf das Bild und dann die Färbung"): Bild,
+                  Rauchglas, Farbstich, Zellfarbe mit Rand - so traegt der Kopf den Ton der Zelle. */
+               + kopf
+               + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"${druck ? ` style="mix-blend-mode:soft-light" opacity="${druck.ton}"` : ''}/>`
+               /* Vignette (Caspar_D: „oder ggf. noch einen Vignettierungsrand um das Tile“): ein Verlauf je Zelle, nach ihrem Umriss */
+               + (druck && druck.vignette > 0 ? `<path d="${dd}" fill="url(#skvig)" pointer-events="none"/>` : '')
+               + (quelle ? (druck ? alles.replace('<path ', `<path fill-opacity="${druck.deck}" `) : alles) : alles.replace('<path ', '<path class="ohnebild" '));
+             return tf ? `<g transform="${tf}">${fertig}</g>` : fertig;
+           });
+  if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
+  if (druck){
+    if (druck.schatten > 0){
+      const s = 2 + 10 * druck.schatten, o = 1 + 5 * druck.schatten;
+      svg = svg.replace('<defs>', `<defs><filter id="skschatten" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="${s.toFixed(1)}"/><feOffset dx="${o.toFixed(1)}" dy="${o.toFixed(1)}"/></filter>`)
+               .replace('</defs>', `</defs><g class="schatten" filter="url(#skschatten)" opacity="${(0.25 + 0.45 * druck.schatten).toFixed(2)}">`
+                 + kacheln.map(k => `<path d="${k.dd}" fill="#000"${k.tf ? ` transform="${k.tf}"` : ''}/>`).join('') + '</g>');
+    }
+    if (druck.vignette > 0) svg = svg.replace('<defs>', `<defs><radialGradient id="skvig" cx="0.5" cy="0.5" r="0.62"><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="${(0.8 * druck.vignette).toFixed(2)}"/></radialGradient>`);
+    svg = svg.replace('</svg>', (druck.kissen === false ? '' : schaumKissenKacheln(kacheln, res)) + baender.join('') + '</svg>')
+             .replace('<defs>', '<defs>' + schaumKissenFilter(res));
+  } else svg = schaumKissen(svg, res, kacheln.map(k => k.dd));
+  return { svg, ids, R, personen };
+}
+/* Wackeln der Kacheln im Plakat (Caspar_D: „ggf. etwas chaotisch wackeln und verschieben die Kacheln, aber nicht
+   zu viel"): je Zelle fest aus ihrer Kennung, hoechstens 3 Grad und 4 % ihrer Groesse. */
+function schaumWackeln(id, x, y, w, h, staerke){
+  let a = 0x811c9dc5, b = 0x9e3779b9; const s = String(id);
+  for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); a = Math.imul(a ^ c, 16777619); b = Math.imul(b ^ c, 2246822519); }
+  const u = (a >>> 0) / 4294967296, v = (b >>> 0) / 4294967296, w2 = ((a ^ b) >>> 0) / 4294967296, g = Math.sqrt(w * h);
+  const grad = (u - 0.5) * 6 * staerke, dx = (v - 0.5) * 0.08 * g * staerke, dy = (w2 - 0.5) * 0.08 * g * staerke;
+  return `translate(${dx.toFixed(2)} ${dy.toFixed(2)}) rotate(${grad.toFixed(2)} ${(x + w / 2).toFixed(1)} ${(y + h / 2).toFixed(1)})`;
+}
+/* Kissen fuers Plakat: dieselbe Beleuchtung wie schaumKissen, aber die Hoehenkarte sind die Kacheln selbst
+   (eingerueckt, gewackelt), und das Licht liegt nur auf ihnen - der Grund dazwischen bleibt unberuehrt. */
+function schaumKissenFilter(res){
+  const fl = (o) => { let s = 0; for (let i = 0; i < o.length; i++){ const a = o[i], b = o[(i + 1) % o.length]; s += a[0] * b[1] - b[0] * a[1]; } return Math.abs(s / 2); };
+  const f = res.leaves.filter(k => k.outline && k.outline.length > 2).map(k => fl(k.outline)).sort((a, b) => a - b);
+  const weite = Math.min(24, Math.max(3, 0.14 * Math.sqrt(f[f.length >> 1] || 100))), hoehe = weite * 1.5;
+  return '<filter id="skkissen" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
+    + '<feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="h"/>'
+    + `<feGaussianBlur in="h" stdDeviation="${weite.toFixed(2)}" result="b"/>`
+    + `<feDiffuseLighting in="b" surfaceScale="${hoehe.toFixed(2)}" diffuseConstant="1" lighting-color="#ffffff" result="l"><feDistantLight azimuth="225" elevation="45"/></feDiffuseLighting>`
+    + '<feComponentTransfer in="l"><feFuncR type="linear" slope="1.6" intercept="-0.631"/><feFuncG type="linear" slope="1.6" intercept="-0.631"/><feFuncB type="linear" slope="1.6" intercept="-0.631"/></feComponentTransfer></filter>';
+}
+/* Die Kissenschicht nur auf den Kacheln (Schirm und Druck): Hoehenkarte aus den eingerueckten Zellen, auf ihre
+   Vereinigung zugeschnitten - das Licht hellt die Luecken nicht auf. tf: Wackeln im Druck. */
+function schaumKissenKacheln(kacheln, res){
+  const pfad = (k, fuell) => `<path d="${k.dd}" fill="${fuell}"${k.tf ? ` transform="${k.tf}"` : ''}/>`;
+  return '<clipPath id="skkissenclip">' + kacheln.map(k => pfad(k, '#fff')).join('') + '</clipPath>'
+    + '<g class="kissen" clip-path="url(#skkissenclip)" style="mix-blend-mode:soft-light" pointer-events="none"><g filter="url(#skkissen)">'
+    + `<rect x="0" y="0" width="${res.width}" height="${res.height}" fill="#000"/>` + kacheln.map(k => pfad(k, '#fff')).join('') + '</g></g>';
+}
+/* Nur legen, ohne zu zeichnen (Plakat-Studio): gemerkt oder im Worker; melde(Sekunden) zaehlt mit. */
+async function schaumLageHolen(j, melde){
+  const gemerkt = schaumLagen.get(j.lage) || await lageLesen(j.lage);
+  if (gemerkt) return gemerkt;
+  return new Promise((ok, nein) => {
+    const w = new Worker('/klangschaum/worker.js', { type: 'module' }), t0 = performance.now();
+    const uhr = setInterval(() => { if (melde) melde(Math.round((performance.now() - t0) / 1000)); }, 1000);
+    w.onmessage = (ev) => { if (ev.data.type === 'progress') return; clearInterval(uhr); w.terminate();
+      if (ev.data.type === 'done'){ lageMerken(j.lage, ev.data.res); ok(ev.data.res); } else nein(new Error(ev.data.message)); };
+    w.onerror = (ev) => { clearInterval(uhr); w.terminate(); nein(new Error(ev.message || 'Worker')); };
+    w.postMessage({ rows: j.zeilen, tree: { levels: [...j.ebenen, 'row'], weight: 'w', leafName: 'titel' },
+                    layout: { width: j.W, height: j.H, method: 'foam', minArea: 0, minShare: 0, ...(j.seeds ? { seeds: j.seeds } : {}) } });
+  });
+}
+/* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
+let schaumLetzterAuftrag = null;
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
+  schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };
   const stand = $('schaumstand');
   /* Beim Wechsel zwischen Klang- und Groupieschaum stand sonst bis zum Fertigrechnen das Bild des
      anderen im Feld - Avatare unter der Ueberschrift „Klangschaum". */
   if (schaumBildArt !== art){ $('schaumbild').innerHTML = ''; schaumBildArt = null; }
   const malen = async (res) => {
     try {
-      const R = await import('/klangschaum/render.js');
-      const leinwand = document.createElement('canvas').getContext('2d'); leinwand.font = '100px system-ui, sans-serif';
-      /* KOPFZEILE JE PERSON (Caspar_D, 06.10.2026: „beim Groupieschaum jede Zelle einen Header, in
-         dem der Name steht, also einfach ein Stück abschneiden und in den schwarzen Raum den Namen
-         schreiben"). Der obere Streifen der Zelle (ein Fuenftel ihrer Hoehe, 11 bis 26 Punkte) wird
-         schwarz und traegt den Namen, so breit, wie die Zelle dort ist; der Avatar sitzt darunter.
-         Passt kein Name mit mindestens 7 Punkten (auch gekuerzt nicht), bleibt die Zelle ganz Bild.
-         Die frei schwebenden Namen der Engine entfallen hier.
-         Nachgebessert (Caspar_D): „den Namen mit einem Abstand von 2 Punkten zur Headergrenze",
-         „Verzierungen generisch abschneiden", „schauen, ob es besser ist, oben oder unten
-         abzuschneiden". Der Name steht 2 Punkte von der Grenze zum Bild; Emoji und Schmuckzeichen
-         am Anfang und Ende fallen weg (alles, was nicht Buchstabe oder Ziffer ist; Emoji auch
-         innen), der Tooltip behaelt den vollen Namen; je Zelle wird oben und unten gemessen, und
-         unten wird nur genommen, wenn der Name dort um mehr als 15 % groesser wird.
-         Und (Caspar_D: „oft überlappen die Namen mit den Nachbarzellen"): die Breite wird nicht mehr
-         nur in der Mitte der Schrift gemessen, sondern an ihrer Ober- und Unterkante und in der
-         Mitte, und es gilt die engste Stelle - an den runden Enden einer Zelle ragten die Buchstaben
-         sonst ueber den Rand. Zur Sicherheit wird jeder Name auf seine Zelle zugeschnitten.
-         GLAS STATT SCHWARZ (Caspar_D: „Abschneiden ist nicht die Lösung, lege ein Blur auf den
-         Abschnitt und lasse das Bild durchscheinen. Das Blur-Glas kann etwas schwärzen, damit der
-         Text immer weiß sein kann"): der Avatar fuellt wieder die ganze Zelle; im Kopfstreifen liegt
-         eine zweite Kopie, weichgezeichnet (Gauss, 3 Punkte) und abgedunkelt - so bleibt weisse
-         Schrift auf jedem Bild lesbar. Erst fest auf 42 % Helligkeit, dann auf 71 % („das Rauchglas
-         weniger stark schwarz, nur die Hälfte"), dann (Caspar_D: „lass das Rauchglas nur dort
-         wirken, wo es nötig ist") je Zelle: schaumRauch() misst die hellsten 20 % des Avatars unter
-         dem Kopf und dunkelt nur so weit ab, wie die weisse Schrift es braucht - auf dunklen Bildern
-         gar nicht. Der Filter macht nur noch weich; das Dunkel ist ein schwarzes Rechteck je Kopf. */
-      const SCHAUM_GLAS = '<filter id="skglas" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">'
-        + '<feGaussianBlur stdDeviation="3" edgeMode="duplicate"/></filter>';
-      const personen = art === 'person', koepfe = [], kacheln = [];
-      const zierfrei = (s) => { const r = String(s).replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '')
-        .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').replace(/\s+/g, ' ').trim(); return r || String(s).trim(); };
-      const sehne = (pk, yy) => { const sx = [];
-        for (let q = 0; q < pk.length; q++){ const p1 = pk[q], p2 = pk[(q + 1) % pk.length];
-          if ((p1[1] - yy) * (p2[1] - yy) < 0) sx.push(p1[0] + (yy - p1[1]) * (p2[0] - p1[0]) / (p2[1] - p1[1])); }
-        sx.sort((u, v) => u - v); return sx.length >= 2 ? [sx[0], sx[sx.length - 1]] : null; };
-      const emBreit = (s) => leinwand.measureText(s).width / 100;          /* Breite in em */
-      const kopfPlan = (pk, x, y, w, h, name, i) => {
-        const bh = Math.min(26, Math.max(11, h * 0.2)), fsMax = (bh - 3) / 1.17;
-        /* Wo die Buchstaben bei Schriftgroesse fs liegen: oben haengt die Schrift mit der Unterkante
-           (text-after-edge) 2 Punkte ueber der Grenze, Grossbuchstaben reichen 0,94 em hoch; unten
-           steht sie mit der Oberkante (text-before-edge) 2 Punkte darunter, Grossbuchstaben ab
-           0,23 em, Unterlaengen bis 1,17 em. An drei Hoehen wird gemessen, die engste zaehlt. */
-        const raum = (oben, yd, fs) => {
-          const hoehen = oben ? [yd - 2 - fs * 0.94, yd - 2 - fs * 0.5, yd - 2 - fs * 0.05] : [yd + 2 + fs * 0.23, yd + 2 + fs * 0.7, yd + 2 + fs * 1.15];
-          const ss = hoehen.map(yy => sehne(pk, yy));
-          if (ss.some(q => !q)) return null;
-          const s = [Math.max(...ss.map(q => q[0])), Math.min(...ss.map(q => q[1]))];
-          return s[1] > s[0] ? s : null;
-        };
-        const breit = emBreit(name);
-        const versuch = (oben) => {
-          const yd = oben ? y + bh : y + h - bh;                         /* Grenze zwischen Kopf und Bild */
-          /* Intervallhalbierung: die groesste Schrift, deren Name in die engste Stelle passt */
-          let lo = 0, hi = fsMax;
-          for (let k = 0; k < 14; k++){ const fs = (lo + hi) / 2, s = raum(oben, yd, fs);
-            if (s && 0.92 * (s[1] - s[0]) >= breit * fs) lo = fs; else hi = fs; }
-          const fs = lo, s = raum(oben, yd, Math.max(fs, 7)) || raum(oben, yd, fs);
-          return s ? { oben, yd, fs, s } : null;
-        };
-        const a = versuch(true), b = versuch(false), v = a && b ? (b.fs > a.fs * 1.15 ? b : a) : (a || b);
-        if (!v) return null;
-        let txt = name, fs = v.fs;
-        if (fs < 7){ fs = 7; const breit = 0.9 * (v.s[1] - v.s[0]); let n = name.length;
-          while (n > 2 && emBreit(name.slice(0, n) + '…') * 7 > breit) n--; txt = n > 2 ? name.slice(0, n) + '…' : ''; }
-        if (!txt) return null;
-        return { bandY: v.oben ? y : v.yd, bh,
-          text: `<text class="kopf" x="${((v.s[0] + v.s[1]) / 2).toFixed(1)}" y="${(v.oben ? v.yd - 2 : v.yd + 2).toFixed(1)}" font-size="${fs.toFixed(1)}"`
-            + ` fill="#f4f4f2" text-anchor="middle" dominant-baseline="${v.oben ? 'text-after-edge' : 'text-before-edge'}" clip-path="url(#skz${i})" pointer-events="none">${esc(txt)}</text>` };
-      };
-      /* cushion 0: die Kissen-Beleuchtung der Engine wirkte unter den Bildern nicht mehr (siehe schaumKissen) */
-      /* LUECKEN STATT LINIEN (Caspar_D, 07.10.2026: „ich möchte, dass du gar keine Fugen zeichnest, der
-         Hintergrund soll durchscheinen"): jede Zelle eingerueckt (gutters), der dunkle Grund scheint
-         durch. Gezeichnete Fugen faerbt Dark Reader weiss - eine Luecke kann er nicht umfaerben. Breiten
-         wie frueher im Klangschaum, auch im Groupieschaum (dort 1.0.20/1.0.21 verbreitert, am 07.10.
-         zurueck: „die Borderbreiten wieder auf den alten Standard"). */
-      let svg = R.renderSVG(res, { pad: 0, cushion: 0, gutters: SCHAUM_STRICHE,
-        ...(personen ? { labelLevel: null, labelDepth: -1, leafLabels: false } : { labelLevel: ebenen.length, labelSizes: [9, 22] }),
-        colourOf: k => schaumFarbe(k, R.chainOf, farbeVon, gezoomt), measureText: t => leinwand.measureText(t).width / 100 });
-      const ids = res.leaves.map(k => k.row != null && zeilen[k.row] ? zeilen[k.row].id : null);
-      /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
-      const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] ? (zeilen[k.row].bild || (personen ? null : artworkKachel(zeilen[k.row].id))) : null);
-      /* Bildstufe je Zelle (Bildvorrat): Breite des Feldes in Bildschirmpunkten je Schaum-Einheit mal
-         Pixeldichte; ein Cover (3 : 4, „slice") braucht an der langen Seite ein Drittel mehr. */
-      const massstab = (($('schaumfeld').getBoundingClientRect().width || 1600) / res.width) * (window.devicePixelRatio || 1), faktor = personen ? 1 : 1.34;
-      svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
-               .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
-               /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
-               .replace(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g, (alles, dd, a, i, b) => {
-                 const id = ids[+i]; if (!id) return alles;
-                 const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
-                 const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]);
-                 const x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
-                 const fuell = (a.match(/ fill="([^"]*)"/) || [])[1] || '#555';
-                 const quelle = bilder[+i], stufe = schaumStufe(Math.max(w, h) * faktor * massstab);
-                 kacheln.push(dd);
-                 const bildAn = quelle ? `data-quelle="${esc(quelle)}" data-stufe="${stufe}" data-i="${i}"` : '';
-                 let kopf = '';
-                 const name = personen ? zierfrei((zeilen[res.leaves[+i].row] || {}).titel || '') : '';
-                 const plan = name && h >= 34 && w >= 34 ? kopfPlan(pk, x, y, w, h, name, i) : null;
-                 if (plan){
-                   kopf = `<clipPath id="skb${i}"><rect x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}"/></clipPath>`
-                     + `<g clip-path="url(#skz${i})" pointer-events="none">`
-                     + (quelle ? `<image ${bildAn} data-glas="1" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
-                       + ` preserveAspectRatio="xMidYMid slice" filter="url(#skglas)" clip-path="url(#skb${i})"/>` : '')
-                     + `<rect class="rauch" x="${x.toFixed(1)}" y="${plan.bandY.toFixed(1)}" width="${w.toFixed(1)}" height="${plan.bh.toFixed(1)}" fill="#000" opacity="${SCHAUM_RAUCH_VORGABE}"/></g>`;
-                   koepfe.push(plan.text);
-                 }
-                 return `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
-                   + (quelle ? `<image ${bildAn} x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`
-                     + ` preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" pointer-events="none"/>` : '')
-                   /* Reihenfolge (Caspar_D: „erst das Rauchglas auf das Bild und dann die Färbung"): Bild,
-                      Rauchglas, Farbstich, Zellfarbe mit Rand - so traegt der Kopf den Ton der Zelle. */
-                   + kopf
-                   + `<path d="${dd}" fill="${fuell}" class="skt" pointer-events="none"/>`
-                   + (quelle ? alles : alles.replace('<path ', '<path class="ohnebild" '));
-               });
-      if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
-      svg = schaumKissen(svg, res, kacheln);
+      const { svg, ids, R, personen } = await schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art });
       const tipps = res.leaves.map(k => k.row != null && zeilen[k.row] ? tipp(zeilen[k.row]) : '');
       /* Fuer den Morph: das Netz des Baums (erst bei Bedarf gebaut, dann gemerkt), die Form (Gliederung
          und Zoom - nur innerhalb derselben wird gemorpht) und die Fugen wie im Bild. */

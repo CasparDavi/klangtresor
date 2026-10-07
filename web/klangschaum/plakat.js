@@ -1,0 +1,376 @@
+/* KlangTresor · Copyright (c) 2026 Caspar_D · MIT, siehe LICENSE
+   DAS PLAKAT-STUDIO (Mural). Caspar_D, 06.10.2026: „angenommen, jemand möchte seine Songs als Mural
+   exportieren … wie könnten wir sie unterstützen"; „am liebsten hätte ich gerne eine Preview mit
+   Bedienpanel"; „ich will, dass es absolut toll wird". Entscheidungen in docs/NAECHSTER_CHAT.md §54.
+   Stufe 1: Vorschau mit Bedienfeld, vier Vorlagen (Galerie, Papier, Bleiglas, Mosaik) mit Feinheiten,
+   Titel auf Rauch- oder Milchglas unten in der Zelle, Kopf und Legende im breiteren unteren Rand
+   (Museumsschild), Formate (Liste, Quadrat, frei), Lage, PDF ueber die PDF-Ausgabe des Browsers.
+   Das Bild selbst baut das Haus (schaumSvgBauen mit druck): dieselben Zellen, Farben und Bilder wie am
+   Schirm, im Plakat als Kacheln mit Luecken. Die Vorschau nimmt die Bilder aus dem Vorrat, das PDF die
+   Originale (data-voll). Masse auf der Seite in Millimetern; 3 mm Beschnitt rundum. */
+
+const FORMATE = [
+  { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
+  { id: 'A1', name: 'A1', w: 594, h: 841 }, { id: 'A0', name: 'A0', w: 841, h: 1189 },
+  { id: '50x70', name: '50 × 70', w: 500, h: 700 }, { id: '70x100', name: '70 × 100', w: 700, h: 1000 },
+  { id: '100x140', name: '100 × 140', w: 1000, h: 1400 },
+  { id: 'q50', name: '50 × 50', w: 500, h: 500 }, { id: 'q70', name: '70 × 70', w: 700, h: 700 },
+  { id: 'frei', name: 'frei' },
+];
+/* Die Vorlagen (Caspar_D hat alle vier angekreuzt). Jede setzt alle Feinheiten; danach ist alles einzeln
+   verstellbar. „Bleiglas": breite dunkle Fugen wie Bleiruten, starkes Licht, die Titel kommen mit dem
+   Werkverzeichnis (Stufe 2) - bis dahin ohne. */
+const VORLAGEN = [
+  { id: 'galerie', name: 'Galerie', zeile: 'schwarzer Grund · Rauchglas · Federstrich',
+    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07 } },
+  { id: 'papier', name: 'Papier', zeile: 'warmes Weiß · Milchglas · leiser Schatten',
+    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08 } },
+  { id: 'bleiglas', name: 'Bleiglas', zeile: 'breite dunkle Fugen · starkes Licht',
+    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05 } },
+  { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
+    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07 } },
+];
+const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
+const SPEICHER = 'mysuno-plakat';
+
+let E = (() => { try { return JSON.parse(localStorage.getItem(SPEICHER)) || null; } catch (e) { return null; } })()
+  || { vorlage: 'galerie', format: '70x100', freiW: 80, freiH: 120, lage: 'hoch', kopfTitel: '', kopfUnter: '', legende: true, ...VORLAGEN[0].e };
+let studio = null, aktuell = null, legeLauf = 0, bauLauf = 0, warten = null;
+const merken = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(E)); } catch (e) {} };
+const el = (id) => document.getElementById(id);
+const esc2 = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* Relative Leuchtdichte; daraus die Schriftfarbe auf dem Grund. */
+function leuchte(hex){
+  const k = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+  return 0.2126 * k[0] + 0.7152 * k[1] + 0.0722 * k[2];
+}
+const hellerGrund = () => leuchte(E.grund) > 0.35;
+const schrift = () => hellerGrund() ? '#16171a' : '#f1efe9';
+const schriftLeise = () => hellerGrund() ? '#5c5f66' : '#a3a9b1';
+
+/* Seite: Format, Lage, Raender (unten breiter - die optische Mitte, dort steht das Museumsschild). */
+function geometrie(){
+  const f = FORMATE.find(x => x.id === E.format) || FORMATE[5];
+  let w = f.id === 'frei' ? Math.max(100, Math.min(3000, E.freiW * 10)) : f.w, h = f.id === 'frei' ? Math.max(100, Math.min(3000, E.freiH * 10)) : f.h;
+  if ((E.lage === 'quer') !== (w > h) && w !== h) [w, h] = [h, w];
+  const kurz = Math.min(w, h), rand = E.rand * kurz;
+  const T = 0.026 * kurz, U = 0.0105 * kurz, L = 0.0098 * kurz;
+  const unten = Math.max(rand * 1.55, rand * 0.5 + T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0) + rand * 0.45);
+  const karte = { x: BESCHNITT + rand, y: BESCHNITT + rand, w: w - 2 * rand, h: h - rand - unten };
+  return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand, unten, T, U, L, karte, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
+}
+
+/* Was gerade im Schaum steht - derselbe Auftrag im Seitenverhaeltnis der Karte. */
+async function auftrag(verh){
+  if (raumJetzt === 'groupies'){
+    const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0], gl = groupieGl();
+    return { j: await groupieAuftrag(m, verh, gl), art: 'person', m, gl };
+  }
+  const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
+  const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
+  return { j: schaumKlangAuftrag(m, gl, schaumZoom, verh), art: 'titel', m, gl };
+}
+
+function standSetzen(t){ const s = el('ps-stand'); if (s) s.textContent = t || ''; }
+
+/* Neu zeichnen: ist das Seitenverhaeltnis der Karte ein anderes, wird der Schaum neu gelegt (gemerkt wie
+   jedes Layout), sonst nur das Bild neu gebaut. */
+function zeichnen(sofort){
+  clearTimeout(warten);
+  warten = setTimeout(async () => {
+    const g = geometrie(), verh = Math.round(g.karte.h / g.karte.w * 100) / 100, lauf = ++legeLauf;
+    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt){
+      const a = await auftrag(verh);
+      if (lauf !== legeLauf) return;
+      standSetzen('Der Schaum wird für das Plakat gelegt …');
+      let res;
+      try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }); }
+      catch (e){ standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
+      if (lauf !== legeLauf) return;
+      aktuell = { verh, raum: raumJetzt, res, ...a };
+      if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag();
+      if (!E.kopfUnterEigen) E.kopfUnter = kopfUnterVorschlag();
+      felderSetzen();
+    }
+    standSetzen('');
+    bauen(g);
+  }, sofort ? 0 : 120);
+}
+function kopfTitelVorschlag(){
+  const p = (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
+  return (p.display_name || p.handle || 'Mein Archiv') + ' · ' + (raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum');
+}
+function kopfUnterVorschlag(){
+  if (!aktuell) return '';
+  const n = aktuell.j.zeilen.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  return [`${n} ${aktuell.art === 'person' ? (n === 1 ? 'Person' : 'Personen') : (n === 1 ? 'Titel' : 'Titel')}`, 'Fläche nach ' + aktuell.m.name,
+          'gegliedert nach ' + aktuell.gl.name.replace(/:.*$/, ''), monat].join(' · ');
+}
+
+/* Die Legende des Schaums, wie sie im Panel steht: Farbe und Name je Areal. */
+function legendenEintraege(){
+  return [...document.querySelectorAll('#schaumlegende .zeile')].map(z => {
+    const i = z.querySelector('i'), b = z.querySelector('b');
+    return i && b ? { farbe: i.style.background || '#888', name: b.textContent.trim() } : null;
+  }).filter(Boolean);
+}
+const messen = (() => { const c = document.createElement('canvas').getContext('2d'); return (t, gewicht = 400) => { c.font = `${gewicht} 100px system-ui, sans-serif`; return c.measureText(t).width / 100; }; })();
+
+async function bauen(g){
+  if (!aktuell) return;
+  const lauf = ++bauLauf, blatt = el('ps-blatt'); if (!blatt) return;
+  const s = schaumFarbeAnteil / 100, kv = g.karte;
+  /* Vorschau-Massstab fuer den Bildvorrat: Bildschirmpunkte je Schaum-Einheit */
+  const pxBreite = blatt.clientWidth || 800, massstab = (pxBreite * (kv.w / g.PW)) / aktuell.res.width * (window.devicePixelRatio || 1);
+  const druck = { titel: E.titel, fugen: E.fugen, wackeln: E.wackeln, schatten: E.schatten, vignette: E.vignette, kissen: E.kissen,
+                  deck: (Math.max(0, 2 * s - 1) * 0.65).toFixed(3), ton: Math.min(1, 2 * s).toFixed(3), massstab };
+  const la = schaumLetzterAuftrag && schaumLetzterAuftrag.art === aktuell.art ? schaumLetzterAuftrag : null;
+  if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
+  let { svg } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
+  if (lauf !== bauLauf) return;
+  svg = svg.replace('<rect width="100%" height="100%" fill="#121417"/>', '')
+           .replace('<svg ', `<svg class="ps-schaum" x="${kv.x.toFixed(2)}" y="${kv.y.toFixed(2)}" width="${kv.w.toFixed(2)}" height="${kv.h.toFixed(2)}" `);
+  svg = eigeneIds(svg, 'ps-');
+  const fg = schrift(), leise = schriftLeise();
+  /* Federstrich: eine Haarlinie einige Millimeter um die Karte, auf dem Passepartout */
+  const d = 0.011 * g.kurz;
+  const feder = E.feder ? `<rect x="${(kv.x - d).toFixed(2)}" y="${(kv.y - d).toFixed(2)}" width="${(kv.w + 2 * d).toFixed(2)}" height="${(kv.h + 2 * d).toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.75" stroke-width="${E.federMm}"/>` : '';
+  /* Museumsschild im unteren Rand: links Titel und Untertitel, rechts die Legende in Spalten */
+  const ux = kv.x, uy = kv.y + kv.h + (E.feder ? d : 0) + g.rand * 0.5, rechts = kv.x + kv.w;
+  let kopf = `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T).toFixed(2)}" font-size="${g.T.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(E.kopfTitel || '')}</text>`
+    + `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T * 1.25 + g.U * 1.25).toFixed(2)}" font-size="${g.U.toFixed(2)}" fill="${leise}">${esc2(E.kopfUnter || '')}</text>`;
+  /* Legende rechts im Schild, in Spalten von oben nach unten. Gesetzt wird in zwei Schritten: erst ins Bild,
+     dann die wirkliche Textlaenge gemessen und die Spalten von rechts her ausgerichtet (legendeSetzen) - eine
+     Leinwand misst mit einer anderen Schrift als das SVG (gesehen: 22 % zu schmal, die Spalten ueberlappten). */
+  let legende = null;
+  if (E.legende){
+    const eintraege = legendenEintraege(), L = g.L, q = L * 0.95, zeileH = L * 1.75;
+    const hoehe = Math.max(zeileH, g.h + BESCHNITT - g.rand * 0.6 - uy);
+    const proSpalte = Math.max(1, Math.floor(hoehe / zeileH));
+    legende = { rechts, oben: uy, L, abstand: L * 1.6 };
+    eintraege.forEach((e, i) => {
+      const c = Math.floor(i / proSpalte), r = i % proSpalte, y = uy + r * zeileH;
+      kopf += `<g class="ps-leg" data-s="${c}"><rect x="0" y="${(y + (zeileH - q) / 2 - L * 0.15).toFixed(2)}" width="${q.toFixed(2)}" height="${q.toFixed(2)}" rx="${(q * 0.18).toFixed(2)}" fill="${e.farbe}"/>`
+        + `<text x="${(q + L * 0.5).toFixed(2)}" y="${(y + zeileH * 0.5 + L * 0.35).toFixed(2)}" font-size="${L.toFixed(2)}" fill="${fg}">${esc2(e.name)}</text></g>`;
+    });
+  }
+  const seite = `<svg class="ps-seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${g.PW.toFixed(2)} ${g.PH.toFixed(2)}" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`
+    + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + feder + svg + kopf
+    + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${g.w}" height="${g.h}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/></svg>`;
+  blatt.innerHTML = seite;
+  einpassen();
+  if (legende) legendeSetzen(blatt.querySelector('svg.ps-seite'), legende);
+  /* Rauchglas je Kopf nach Bedarf, wie am Schirm */
+  const schaum = blatt.querySelector('svg.ps-schaum');
+  if (E.titel === 'rauch' && schaum && typeof schaumRauch === 'function') schaumRauch(schaum);
+  el('ps-mass').textContent = `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
+}
+/* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
+   (skz0 … Zuschnitt je Zelle, skkissen, hatch). url(#skz0) traefe dann den Zuschnitt der Zelle am
+   Schirm - die Bilder sassen in fremden Umrissen, die Glasbaender fehlten. Darum bekommt jede ID
+   des Plakats einen eigenen Vorsatz, samt allen Verweisen (url(#…), href="#…"). */
+function eigeneIds(svg, vor){
+  const ids = new Set([...svg.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]));
+  if (!ids.size) return svg;
+  const weg = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const muster = new RegExp('(\\sid="|url\\(#|href="#)(' + [...ids].map(weg).join('|') + ')(?=[")])', 'g');
+  return svg.replace(muster, (_, a, id) => a + vor + id);
+}
+function legendeSetzen(svg, { rechts, oben, abstand }){
+  const gruppen = [...svg.querySelectorAll('g.ps-leg')], spalten = [];
+  for (const g of gruppen){ const s = +g.dataset.s, t = g.querySelector('text'), r = g.querySelector('rect');
+    const breite = (+t.getAttribute('x')) + t.getComputedTextLength(); (spalten[s] = spalten[s] || { breite: 0, g: [] }).g.push(g); spalten[s].breite = Math.max(spalten[s].breite, breite); }
+  const gesamt = spalten.reduce((a, s) => a + s.breite, 0) + (spalten.length - 1) * abstand;
+  /* Platz rechts vom Titel: bei schmalem Rand (Papier) passt nur eine Zeile je Spalte, die Spalten
+     stehen nebeneinander und liefen frueher nach links ueber den Titel. Dann wird die Legende um ihre
+     rechte obere Ecke verkleinert, bis sie neben den Titel passt. */
+  const links = Math.max(0, ...[...svg.querySelectorAll('text.ps-kopf')].map(t => (+t.getAttribute('x')) + t.getComputedTextLength()));
+  const frei = rechts - links - abstand * 1.5;
+  const f = gesamt > frei && frei > 0 ? Math.max(0.45, frei / gesamt) : 1;
+  const um = f < 1 ? `translate(${rechts.toFixed(2)} ${oben.toFixed(2)}) scale(${f.toFixed(3)}) translate(${(-rechts).toFixed(2)} ${(-oben).toFixed(2)}) ` : '';
+  let x = rechts - gesamt;
+  for (const s of spalten){ for (const g of s.g) g.setAttribute('transform', `${um}translate(${x.toFixed(2)} 0)`); x += s.breite + abstand; }
+}
+/* Die Seite in die Buehne einpassen (Bildschirmpunkte), die Wand-Vorschau mitfuehren. */
+function einpassen(){
+  const b = el('ps-buehne'), s = el('ps-blatt') && el('ps-blatt').querySelector('svg.ps-seite'); if (!b || !s) return;
+  const g = geometrie(), bw = b.clientWidth - 48, bh = b.clientHeight - 64, k = Math.min(bw / g.PW, bh / g.PH);
+  s.style.width = (g.PW * k).toFixed(0) + 'px'; s.style.height = (g.PH * k).toFixed(0) + 'px';
+  const wand = el('ps-wand'); if (wand){
+    const M = 1750, H = 2600, sk = 120 / H, pw = g.w * sk, ph = g.h * sk;
+    wand.innerHTML = `<svg viewBox="0 0 ${(H * 1.4 * sk).toFixed(1)} 120" width="100%" height="120"><rect width="100%" height="120" fill="#2b2723"/>`
+      + `<rect x="${(H * 0.35 * sk).toFixed(1)}" y="${(120 - 1450 * sk - ph / 2).toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" fill="${E.grund}" stroke="#111" stroke-width="0.6"/>`
+      + `<rect x="${(H * 0.35 * sk + pw + 300 * sk).toFixed(1)}" y="${(120 - M * sk).toFixed(1)}" width="${(380 * sk).toFixed(1)}" height="${(M * sk).toFixed(1)}" rx="${(190 * sk).toFixed(1)}" fill="#59616b"/></svg>`;
+  }
+}
+
+/* DRUCKBILDER: jedes Bild nur so gross, wie seine Kachel bei 300 dpi braucht. Mit den Originalen (499 Cover,
+   rund 420 MB) hing der Druck; so wird jedes Original einmal verkleinert. Ein Cover fuellt seine Kachel mit
+   „slice", seine lange Seite braucht darum ein Drittel mehr als die laengere Kachelseite (3 : 4). Ist ein
+   Bild schon klein genug, bleibt seine Adresse; ist es nicht zu laden (fremder Avatar ohne CORS), auch. */
+let druckAdressen = [];
+async function druckBilder(s, kopie, g){
+  druckAdressen.forEach(u => URL.revokeObjectURL(u)); druckAdressen = [];
+  const mmProPunkt = g.PW / s.getBoundingClientRect().width, PX_PRO_MM = 300 / 25.4, bedarf = new Map();
+  for (const im of s.querySelectorAll('image[data-voll]')){
+    const r = im.getBoundingClientRect(), u = im.getAttribute('data-voll');
+    bedarf.set(u, Math.max(bedarf.get(u) || 0, Math.ceil(Math.max(r.width, r.height) * mmProPunkt * PX_PRO_MM * 1.34)));
+  }
+  const liste = [...bedarf], gesamt = liste.length, neu = new Map(); let n = 0;
+  const eins = async ([u, lang]) => {
+    try {
+      const roh = await (await fetch(u, { mode: 'cors', credentials: 'omit' })).blob();
+      const b = await createImageBitmap(roh), f = lang / Math.max(b.width, b.height);
+      if (f < 1){
+        const w = Math.max(1, Math.round(b.width * f)), h = Math.max(1, Math.round(b.height * f));
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(b, 0, 0, w, h);
+        const blob = await new Promise(ok => roh.type === 'image/png' ? c.toBlob(ok, 'image/png') : c.toBlob(ok, 'image/jpeg', 0.9));
+        if (blob){ const a = URL.createObjectURL(blob); neu.set(u, a); druckAdressen.push(a); }
+      }
+      if (b.close) b.close();
+    } catch (e) {}
+    standSetzen(`Bilder für den Druck: ${++n} von ${gesamt}`);
+  };
+  await Promise.all(Array.from({ length: 3 }, async () => { while (liste.length) await eins(liste.shift()); }));
+  kopie.querySelectorAll('image[data-voll]').forEach(im => { const u = im.getAttribute('data-voll'); im.setAttribute('href', neu.get(u) || u); });
+}
+
+/* PDF: dieselbe Seite, die Bilder auf 300 dpi ihrer Kachel gerechnet (druckBilder), in einem unsichtbaren
+   Rahmen, dann das Druckfenster. Ohne Beschnitt-Hilfslinie. */
+async function pdf(){
+  const blatt = el('ps-blatt'), s = blatt && blatt.querySelector('svg.ps-seite'); if (!s) return;
+  const g = geometrie(), kopie = s.cloneNode(true);
+  kopie.querySelectorAll('.ps-beschnitt').forEach(n => n.remove());
+  standSetzen('Die Bilder werden für den Druck gerechnet …');
+  await druckBilder(s, kopie, g);
+  kopie.removeAttribute('style');
+  const name = (raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum') + '-' + g.name;
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${esc2(name)}</title><style>@page{size:${g.PW.toFixed(2)}mm ${g.PH.toFixed(2)}mm;margin:0}`
+    + `html,body{margin:0;padding:0;background:${E.grund};-webkit-print-color-adjust:exact;print-color-adjust:exact}`
+    + `svg.ps-seite{display:block;width:${g.PW.toFixed(2)}mm;height:${g.PH.toFixed(2)}mm}</style></head><body>${kopie.outerHTML}</body></html>`;
+  let rahmen = el('ps-druckrahmen');
+  if (rahmen) rahmen.remove();
+  rahmen = document.createElement('iframe'); rahmen.id = 'ps-druckrahmen';
+  rahmen.style.cssText = 'position:fixed;left:-10000px;top:0;width:800px;height:800px;border:0;visibility:hidden';
+  document.body.appendChild(rahmen);
+  await new Promise(ok => { rahmen.onload = ok; rahmen.srcdoc = doc; });
+  const w = rahmen.contentWindow, bilder = [...new Set([...rahmen.contentDocument.querySelectorAll('image')].map(n => n.getAttribute('href')).filter(Boolean))];
+  let fertig = 0;
+  await Promise.race([
+    Promise.all(bilder.map(u => new Promise(ok => { const i = new w.Image(); i.onload = i.onerror = () => { fertig++; standSetzen(`Druckbilder geladen: ${fertig} von ${bilder.length}`); ok(); }; i.src = u; }))),
+    new Promise(ok => setTimeout(ok, 90000)),
+  ]);
+  standSetzen('Im Druckfenster „Als PDF sichern“ wählen.');
+  w.focus(); w.print();
+}
+
+function felderSetzen(){
+  if (!studio) return;
+  studio.querySelectorAll('[data-vorlage]').forEach(b => b.classList.toggle('an', b.dataset.vorlage === E.vorlage));
+  studio.querySelectorAll('[data-format]').forEach(b => b.classList.toggle('an', b.dataset.format === E.format));
+  studio.querySelectorAll('[data-lage]').forEach(b => b.classList.toggle('an', b.dataset.lage === E.lage));
+  studio.querySelectorAll('[data-titel]').forEach(b => b.classList.toggle('an', b.dataset.titel === E.titel));
+  studio.querySelectorAll('[data-grund]').forEach(b => b.classList.toggle('an', b.dataset.grund === grundArt()));
+  el('ps-frei').hidden = E.format !== 'frei';
+  for (const [id, v] of [['ps-freiw', E.freiW], ['ps-freih', E.freiH], ['ps-rand', Math.round(E.rand * 100)], ['ps-fugen', Math.round(E.fugen * 10)],
+    ['ps-wackeln', Math.round(E.wackeln * 100)], ['ps-schatten', Math.round(E.schatten * 100)], ['ps-vignette', Math.round(E.vignette * 100)], ['ps-federmm', E.federMm],
+    ['ps-farbe', E.grund], ['ps-kopftitel', E.kopfTitel], ['ps-kopfunter', E.kopfUnter]]){ const f = el(id); if (f && document.activeElement !== f) f.value = v; }
+  el('ps-kissen').checked = !!E.kissen; el('ps-feder').checked = !!E.feder; el('ps-legende').checked = !!E.legende;
+  el('ps-hinweis').hidden = raumJetzt !== 'groupies';
+}
+const grundArt = () => E.grund.toLowerCase() === '#0c0d10' || E.grund.toLowerCase() === '#08090b' ? 'schwarz' : E.grund.toLowerCase() === '#f3efe6' || E.grund.toLowerCase() === '#ffffff' || E.grund.toLowerCase() === '#ece7dc' ? 'weiss' : 'farbe';
+function setze(teil, neuLegen){ Object.assign(E, teil); merken(); felderSetzen(); if (neuLegen) aktuell = aktuell && { ...aktuell }; zeichnen(); }
+
+function aufbauen(){
+  const css = document.createElement('style'); css.id = 'ps-stil';
+  css.textContent = `
+#plakatstudio{position:fixed;inset:0;z-index:9000;display:grid;grid-template-columns:1fr 360px;background:rgba(8,9,11,.96);color:var(--text,#e8e6e1);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+#plakatstudio[hidden]{display:none}
+#ps-buehne{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#ps-blatt svg.ps-seite{display:block;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+#ps-stand{position:absolute;left:24px;bottom:16px;color:#a3a9b1;font-size:13px}
+#ps-panel{background:var(--flaeche,#15181d);border-left:1px solid var(--rand,#2a3038);padding:16px 18px;overflow:auto}
+#ps-panel h2{font-size:17px;margin:0 0 12px;font-weight:600}
+#ps-panel h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9aa3ad;margin:16px 0 7px;font-weight:600}
+.ps-vorlagen{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ps-vorlagen button{text-align:left;border:1px solid var(--rand,#2a3038);background:var(--flaeche2,#1d2127);color:inherit;border-radius:9px;padding:8px 9px;cursor:pointer;font:inherit}
+.ps-vorlagen button b{display:block;font-size:13.5px}.ps-vorlagen button small{color:#9aa3ad;font-size:11.5px}
+.ps-vorlagen button.an,.ps-pillen button.an{border-color:#e3b43c;box-shadow:inset 0 0 0 1px #e3b43c}
+.ps-pillen{display:flex;flex-wrap:wrap;gap:5px}
+.ps-pillen button{border:1px solid var(--rand,#2a3038);background:var(--flaeche2,#1d2127);color:inherit;border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit;font-size:12.5px}
+.ps-zeile{display:grid;grid-template-columns:110px 1fr 38px;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+.ps-zeile input[type=range]{width:100%}
+.ps-zeile span.wert{color:#9aa3ad;text-align:right;font-variant-numeric:tabular-nums}
+.ps-eingabe{width:100%;box-sizing:border-box;border:1px solid var(--rand,#2a3038);background:var(--flaeche2,#1d2127);color:inherit;border-radius:7px;padding:5px 8px;font:inherit;font-size:13px;margin:3px 0}
+#ps-frei{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:13px}#ps-frei input{width:70px}
+.ps-knoepfe{display:flex;gap:8px;margin-top:18px}
+.ps-knoepfe button{border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+#ps-pdf{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
+.ps-leise{color:#9aa3ad;font-size:12px;margin:6px 0 0}
+#ps-wand{margin-top:8px;border-radius:7px;overflow:hidden}
+details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
+`;
+  document.head.appendChild(css);
+  studio = document.createElement('div'); studio.id = 'plakatstudio';
+  const regler = (id, name, min, max, schritt) => `<label class="ps-zeile">${name}<input type="range" id="${id}" min="${min}" max="${max}" step="${schritt}"><span class="wert" id="${id}-w"></span></label>`;
+  studio.innerHTML = `<div id="ps-buehne"><div id="ps-blatt"></div><div id="ps-stand"></div></div>
+<aside id="ps-panel">
+  <h2>Plakat</h2>
+  <h3>Vorlage</h3><div class="ps-vorlagen">${VORLAGEN.map(v => `<button type="button" data-vorlage="${v.id}"><b>${v.name}</b><small>${v.zeile}</small></button>`).join('')}</div>
+  <h3>Format</h3><div class="ps-pillen">${FORMATE.map(f => `<button type="button" data-format="${f.id}">${f.name}</button>`).join('')}</div>
+  <div id="ps-frei" hidden>Breite <input class="ps-eingabe" id="ps-freiw" type="number" min="10" max="300"> cm · Höhe <input class="ps-eingabe" id="ps-freih" type="number" min="10" max="300"> cm</div>
+  <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">Hoch</button><button type="button" data-lage="quer">Quer</button></div>
+  <p class="ps-leise" id="ps-mass"></p>
+  <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
+  <h3>Titel in der Zelle</h3><div class="ps-pillen"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="ohne">ohne</button></div>
+  <details class="ps-fein" open><summary>Feinheiten</summary>
+    ${regler('ps-rand', 'Rand', 2, 15, 1)}${regler('ps-fugen', 'Fugen', 3, 40, 1)}${regler('ps-wackeln', 'Wackeln', 0, 100, 1)}${regler('ps-schatten', 'Schatten', 0, 100, 1)}${regler('ps-vignette', 'Vignette', 0, 100, 1)}
+    <label class="ps-zeile">Kissen<input type="checkbox" id="ps-kissen"><span></span></label>
+    <label class="ps-zeile">Federstrich<input type="checkbox" id="ps-feder"><span></span></label>
+    ${regler('ps-federmm', 'Strichstärke', 0.1, 1, 0.05)}
+  </details>
+  <h3>Schild</h3>
+  <input class="ps-eingabe" id="ps-kopftitel" placeholder="Titel">
+  <input class="ps-eingabe" id="ps-kopfunter" placeholder="Untertitel">
+  <label class="ps-zeile">Legende<input type="checkbox" id="ps-legende"><span></span></label>
+  <h3>An der Wand</h3><div id="ps-wand"></div><p class="ps-leise">Mensch 1,75 m zum Vergleich.</p>
+  <p class="ps-leise" id="ps-hinweis" hidden>Nur für den privaten Gebrauch. Vervielfältigung und Weitergabe an Dritte sind nicht erlaubt – die Avatare gehören ihren Leuten.</p>
+  <div class="ps-knoepfe"><button type="button" id="ps-pdf">Als PDF sichern …</button><button type="button" id="ps-zu">Schließen</button></div>
+  <p class="ps-leise">Das Druckfenster öffnet sich; dort „Als PDF sichern“ wählen. Format und Ränder setzt das Plakat selbst.</p>
+</aside>`;
+  document.body.appendChild(studio);
+  /* Bedienung */
+  studio.querySelectorAll('[data-vorlage]').forEach(b => b.onclick = () => { const v = VORLAGEN.find(x => x.id === b.dataset.vorlage); setze({ vorlage: v.id, ...v.e }); });
+  studio.querySelectorAll('[data-format]').forEach(b => b.onclick = () => setze({ format: b.dataset.format }));
+  studio.querySelectorAll('[data-lage]').forEach(b => b.onclick = () => setze({ lage: b.dataset.lage }));
+  studio.querySelectorAll('[data-titel]').forEach(b => b.onclick = () => setze({ titel: b.dataset.titel }));
+  studio.querySelectorAll('[data-grund]').forEach(b => b.onclick = (ev) => { if (ev.target.id === 'ps-farbe') return;
+    const g = b.dataset.grund; setze({ grund: g === 'schwarz' ? '#0c0d10' : g === 'weiss' ? '#f3efe6' : (el('ps-farbe').value || '#24324a') }); });
+  el('ps-farbe').oninput = (ev) => setze({ grund: ev.target.value });
+  const zahl = (id, schluessel, f) => { const r = el(id); r.oninput = () => { el(id + '-w').textContent = r.value; setze({ [schluessel]: f(+r.value) }); }; };
+  zahl('ps-rand', 'rand', v => v / 100); zahl('ps-fugen', 'fugen', v => v / 10); zahl('ps-wackeln', 'wackeln', v => v / 100);
+  zahl('ps-schatten', 'schatten', v => v / 100); zahl('ps-vignette', 'vignette', v => v / 100); zahl('ps-federmm', 'federMm', v => v);
+  el('ps-freiw').onchange = () => setze({ freiW: Math.max(10, Math.min(300, +el('ps-freiw').value || 80)) });
+  el('ps-freih').onchange = () => setze({ freiH: Math.max(10, Math.min(300, +el('ps-freih').value || 120)) });
+  el('ps-kissen').onchange = (ev) => setze({ kissen: ev.target.checked });
+  el('ps-feder').onchange = (ev) => setze({ feder: ev.target.checked });
+  el('ps-legende').onchange = (ev) => setze({ legende: ev.target.checked });
+  el('ps-kopftitel').oninput = (ev) => setze({ kopfTitel: ev.target.value, kopfTitelEigen: !!ev.target.value });
+  el('ps-kopfunter').oninput = (ev) => setze({ kopfUnter: ev.target.value, kopfUnterEigen: !!ev.target.value });
+  el('ps-pdf').onclick = () => pdf();
+  el('ps-zu').onclick = schliessen;
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && studio && !studio.hidden) schliessen(); });
+  window.addEventListener('resize', () => { if (studio && !studio.hidden) einpassen(); });
+}
+function schliessen(){ if (studio) studio.hidden = true; document.documentElement.style.overflow = ''; }
+
+export function oeffnen(){
+  if (!studio) aufbauen();
+  studio.hidden = false; document.documentElement.style.overflow = 'hidden';
+  if (aktuell && aktuell.raum !== raumJetzt) aktuell = null;
+  felderSetzen();
+  for (const id of ['ps-rand', 'ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-federmm']){ const r = el(id); el(id + '-w').textContent = r.value; }
+  zeichnen(true);
+}
