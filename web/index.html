@@ -4120,6 +4120,7 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <h3 id="schaumtitel">Klangschaum</h3>
     <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
     <div class="fussnote" id="groupiefarbenzeile" hidden>Farben<div id="groupiefarben" class="farbwahl"></div></div>
+    <div class="fussnote" id="klangschaumfarbenzeile" hidden>Farben<div id="klangschaumfarben" class="farbwahl"></div></div>
     <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
     <label class="fussnote">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
       <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
@@ -7888,6 +7889,7 @@ function klangraumFarbenWaehlen(id){
   if (klangraumPaletteGestalt) return;                       /* Kubus oder Rabe fliegt: die Wahl ist gesperrt */
   klangraumPalette = id; NEBEL = klangraumPal().f;
   try { localStorage.setItem('mysuno-klangraum-farben', id); } catch (e) {}
+  for (const w of ['klangraumfarben', 'klangschaumfarben']) { const el = document.getElementById(w); if (el) el.classList.remove('auf'); }   /* nach der Wahl zu */
   karteZeichnen();
 }
 function klangraumFarbwahlHtml(){
@@ -7896,7 +7898,10 @@ function klangraumFarbwahlHtml(){
   return `<button type="button" class="fw-knopf" onclick="this.parentElement.classList.toggle('auf')">${chips(p)}<span>${p.name}</span><b>▾</b></button>`
     + '<span class="fw-liste">' + KLANGRAUM_PALETTEN.filter(q => !q.gestalt).map(q => `<button type="button" class="fw-wahl${q.id === p.id ? ' an' : ''}" onclick="klangraumFarbenWaehlen('${q.id}')">${chips(q)}<span>${q.name}</span></button>`).join('') + '</span>';
 }
-document.addEventListener('click', (e) => { const el = document.getElementById('klangraumfarben'); if (el && !el.contains(e.target)) el.classList.remove('auf'); });
+/* DIE KLANGRAUM-FARBEN AUCH IM KLANGSCHAUM (Caspar_D, 07.10.2026: „magst du die Farben aus dem Klangraum auch auf dem
+   Klangschaum auswählbar machen?"). Derselbe Waehler, dieselbe Palette: wer hier waehlt, faerbt auch den Klangraum - die
+   Stilgruppen haben in Raum und Schaum dieselbe Farbe. Alle drei Gliederungen des Klangschaums faerben aus ihr. */
+document.addEventListener('click', (e) => { for (const id of ['klangraumfarben', 'klangschaumfarben']) { const el = document.getElementById(id); if (el && !el.contains(e.target)) el.classList.remove('auf'); } });
 /* Korona-Farbe: derselbe Farbton, aber VOLL gesaettigt - die Korona
    ist die Zone maximaler Saettigung am Stern (Caspar_D, 21.08.2026). */
 function koronaFarbe(nr){
@@ -8736,6 +8741,8 @@ async function schaumZeichnen(){
   { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = false; }
   { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
   $('groupiefarbenzeile').hidden = !groupies;
+  $('klangschaumfarbenzeile').hidden = groupies;
+  if (!groupies) $('klangschaumfarben').innerHTML = klangraumFarbwahlHtml();
   if (groupies) return groupieZeichnen();
   if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
@@ -9531,7 +9538,7 @@ async function schaumLageHolen(j, melde){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.48').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.49').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

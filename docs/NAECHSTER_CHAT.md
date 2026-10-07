@@ -8306,3 +8306,11 @@ jetzt anwenden und dort einbauen", gerechnet „im browser" (30 Varianten × Bil
   Plakat mit 4500 + Verzeichnis: 400 Nummern, „und 3.051/825/224 weitere", 204 s (die Lage wird fürs Plakatformat neu gerechnet,
   das Verzeichnis ändert das Format noch einmal). Temperatur unter Volllast bis 97 °C.
 - Laborbuch: Treemapper/docs/paper/LABORBUCH-grosse-schaeume.md, Abschnitt 13.
+
+## 74. 07.10.2026: Klangraum-Farben auch im Klangschaum wählbar (1.0.49)
+
+Caspar_D: „magst du die Farben aus dem Klangraum auch auf dem Klangschaum auswählbar machen?" – derselbe Wähler
+(`klangraumFarbwahlHtml`) im Seitenfeld des Klangschaums (`#klangschaumfarbenzeile`, im Groupieschaum verborgen), dieselbe Palette:
+wer dort wählt, färbt auch den Klangraum (Stilgruppen in Raum und Schaum gleich). Alle drei Gliederungen färben aus ihr (Klang über
+die Stilgruppen, Modell/Zeit direkt); grau nur, wenn Kubus oder Rabe fliegen. Die Liste schließt nach der Wahl (vorher blieb sie im
+Klangschaum offen, weil der Behälter stehen bleibt). Sandkasten: Nebel → Sonnenglut, Legende und Zellen umgefärbt, gemerkt.
