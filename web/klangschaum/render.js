@@ -8,7 +8,11 @@
    in em, Vorgabe 1,1 wie bisher) und labelDrop (Namensblock um diesen Anteil des Innenkreisradius tiefer, Vorgabe 0) -
    Caspar_D: „den Text etwas unter die optische Mitte verschieben und die Zeilen ggf etwas näher zusammenrücken lassen.
    Ein Durchschuß in der Grösse des i/i-Punkt Abstandes war immer ganz gut" und „immer noch drauf achten, dass der Text
-   nichts Feldfremdes überlappt". Ohne die Optionen zeichnet render.js genau wie die Quelle. */
+   nichts Feldfremdes überlappt". Ohne die Optionen zeichnet render.js genau wie die Quelle.
+   DAZU (1.0.52): labelInk – Einzelbuchstaben-Kästen statt Zeilenkasten (Caspar_D: „Eigentlich bin ich kein freund von
+   Textboxen, weil BEreiche ohne Ober oder Unterlängen verschenkter Platz sind"), siehe placeLabel; labelUnten(k) – Zellen
+   mit Bild: der Name so tief wie möglich, nicht groesser als bisher (untenSetzen); labelName(k) – der gezeigte Name (Vorgabe
+   k.name). Ohne die Optionen wie bisher. */
 // SVG for a laid-out tree (foamtree.layoutTree): leaves filled, borders thicker the higher the level, names of the upper
 // levels. Dark ground. Leaves of a level that was filled from the level above (no own name there) are lighter and hatched,
 // with names in italics; members merged into "n small" are grey. Math coordinates (y up) are flipped to the screen.
@@ -74,8 +78,10 @@ function imOderAufRand(poly, p, eps) {
 // A label inside a cell: at the centre of its largest inscribed circle, as large as the horizontal width there and the circle
 // allow (text width estimated at 0.56 em per character), on one or two lines, whichever gives the larger font. In user
 // units of the layout; null if it would be smaller than minSize.
-export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null } = {}) {
+export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLines = 2, measure = null, fit = false, leading = 1.1, drop = 0, huelle = null, ink = null, unten = false } = {}) {
   const [px, py, r] = poleOf(poly), [xa, xb] = chordAt(poly, [px, py]);
+  if (ink && fit && unten) return untenSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink });
+  if (ink && fit) return tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink });
   const cx = (Math.max(xa, px - 3 * r) + Math.min(xb, px + 3 * r)) / 2, width = 0.92 * (Math.min(xb, px + 3 * r) - Math.max(xa, px - 3 * r));
   // width of a line in em: measured with the real font where the page offers it (measure), else estimated at 0.56 em a character
   const ems = t => measure ? measure(t) : 0.56 * t.length;
@@ -111,18 +117,196 @@ export function placeLabel(poly, text, { maxSize = Infinity, minSize = 0, maxLin
   }
   return size >= minSize ? { x: cx, y, size, lines, leading } : null;
 }
+/* EINZELBUCHSTABEN-KAESTEN (labelInk, 07.10.2026; Caspar_D aus der Spotbeschriftung auf 2D-Gelen: „Ist in der Ecke einer
+   Zelle unten noch platz für unterlngen, kann es daneben schon nicht mehr passen. Eigentlich bin ich kein freund von
+   Textboxen, weil BEreiche ohne Ober oder Unterlängen verschenkter Platz sind"). Statt eines Kastens je Zeile (1,46 em hoch)
+   gilt die Tinte: ink.runs(zeile, groesse) liefert die Tintenkaesten der Buchstaben in em, benachbarte gleicher Hoehe schon
+   zusammengefasst ([x0, x1, ueber, unter] ab dem linken Rand der Zeile und der Grundlinie), gemessen von der Seite in der
+   Groesse, in der der Name erscheint. Jeder Kasten bekommt 0,1 em Rand und muss ganz in der eingerueckten Zelle und im echten
+   Umriss liegen - geprueft als Kantenschnitt (keine Zellkante beruehrt den Kasten, seine Mitte liegt innen), nicht mehr an
+   Stichpunkten, zwischen denen eine konkave Spitze eindringen konnte. Zeilenabstand fest (leading, die Studio-Definition),
+   Grundlinien aus Ober- und Unterlaenge der Schrift (ink.o, ink.u). Lage: zuerst drop * r unter dem Pol, dann in Schritten
+   von 0,06 r hoeher (bis ueber den Pol), tiefer und seitlich - erst wenn keine dieser Lagen passt, wird die Schrift kleiner. */
+const TINTE_RAND = 0.1;
+/* JEDE ZEILE AUF IHRE SEHNE (Caspar_D, 07.10.2026: „horizontal die Zeilen so gegeneinander verschieben, das es auch bei nicht
+   symmetrischen Zellen gut passt"): als Lage probiert wird nicht nur eine gemeinsame Mitte, sondern auch je Zeile die Mitte der
+   breitesten waagerechten Strecke durch die Zelle auf der Hoehe dieser Zeile - in einer schiefen Zelle folgen die Zeilen der Form. */
+function breitesteMitte(poly, yy, sonst) {
+  const xs = [];
+  for (let k = 0, j = poly.length - 1; k < poly.length; j = k++) {
+    const a = poly[k], b = poly[j];
+    if ((a[1] > yy) !== (b[1] > yy)) xs.push(a[0] + (yy - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+  }
+  xs.sort((u, v) => u - v);
+  let best = null;
+  for (let i = 0; i + 1 < xs.length; i += 2) if (!best || xs[i + 1] - xs[i] > best[1] - best[0]) best = [xs[i], xs[i + 1]];
+  return best ? (best[0] + best[1]) / 2 : sonst;
+}
+// die Tintenkaesten eines Namensblocks je Zeile, relativ zu (Zeilenmitte x, Blockmitte y), Mathematik (y nach oben)
+function tintenBlock(lines, size, ink, leading, m) {
+  const n = lines.length, zeilen = [];
+  let u = Infinity, ob = -Infinity, links0 = Infinity, rechts0 = -Infinity;
+  lines.forEach((t, j) => {
+    const l = ink.runs(t, size), mid = ((n - 1) / 2 - j) * leading * size, g = mid - (ink.o - ink.u) / 2 * size, links = -l.w * size / 2, kaesten = [];
+    for (const [a0, a1, o2, un] of l.runs) {
+      const k = [links + (a0 - m) * size, g - (un + m) * size, links + (a1 + m) * size, g + (o2 + m) * size];
+      kaesten.push(k); u = Math.min(u, k[1]); ob = Math.max(ob, k[3]); links0 = Math.min(links0, k[0]); rechts0 = Math.max(rechts0, k[2]);
+    }
+    zeilen.push({ mid, kaesten });
+  });
+  return { lines, zeilen, u, ob, links: links0, rechts: rechts0, leer: !zeilen.some(z => z.kaesten.length) };
+}
+/* Passt der Block? Keine nahe Kante beruehrt einen Kasten, und die Kaesten liegen innen. Mit reichlich Luft (ab 0,15 em je Seite)
+   ueberlappen die Kaesten einer Zeile auch ueber die Wortabstaende (ein Leerzeichen ist ~0,27 em): beruehrt keine Kante, liegt
+   die Zeile ganz innen oder ganz aussen - dann genuegt ein Innen-Test je Zeile statt je Kasten (der Strahltest kostet alle Ecken). */
+function blockPasst(b, xs, y, poly, nP, huelle, nH, m = 0) {
+  const jeZeile = m >= 0.15;
+  return b.zeilen.every((z, j) => z.kaesten.every(([a, c, e, d], i) => {
+    const x = xs[j], innen = !jeZeile || i === 0;
+    return rechteckFrei(nP, x + a, y + c, x + e, y + d) && (!innen || inside(poly, [x + (a + e) / 2, y + (c + d) / 2]))
+      && (!huelle || (rechteckFrei(nH, x + a, y + c, x + e, y + d) && (!innen || inside(huelle, [x + (a + e) / 2, y + (c + d) / 2]))));
+  }));
+}
+function rechteckFrei(nahe, x0, y0, x1, y1) {
+  for (const [a, b] of nahe) if (streckeTrifft(a, b, x0, y0, x1, y1)) return false;
+  return true;
+}
+const gesetzt = (b, xs, y, size, leading, ink) => ({ x: xs[(xs.length - 1) >> 1], xs, y, size, lines: b.lines, leading, tinte: { o: ink.o, u: ink.u } });
+function tinteSetzen(poly, huelle, text, { px, py, r, xa, xb, maxSize, minSize, maxLines, leading, drop, ink }) {
+  const m = TINTE_RAND, x0c = Math.max(xa, px - 3 * r), x1c = Math.min(xb, px + 3 * r), cx = (x0c + x1c) / 2, W = x1c - x0c;
+  const s0 = Math.min(maxSize, 2 * r), breit = t => ink.runs(t, s0).w + 2 * m;
+  // obere Grenze je Zeilenzahl: Breite der Sehne durch den Pol; ein Block, breiter als hoch, ist hoechstens 2 r hoch
+  const bis = (k, laengste) => Math.min(W / laengste, 2 * r / ((k - 1) * leading + ink.o + ink.u + 2 * m), maxSize);
+  let lines = [text], size = bis(1, breit(text));
+  const words = text.split(" ");
+  for (let k = 2; k <= Math.min(maxLines, words.length); k++) {
+    if (k === 2 && text.length <= 14) continue;
+    const split = bestSplit(words, k), s = bis(k, Math.max(...split.map(breit)));
+    if (s > size * 1.15) { lines = split; size = s; }
+  }
+  let xl = Infinity, xr = -Infinity; for (const p of poly) { xl = Math.min(xl, p[0]); xr = Math.max(xr, p[0]); }
+  const st = 0.06 * r, tx = cx, ty = py - drop * r, lagen = [];
+  for (let k = -3; k <= 3; k++) for (let q = -2; q <= 2; q++) lagen.push([q, k, (k > 0 ? 1 : 1.5) * Math.abs(k) + 1.3 * Math.abs(q)]);
+  lagen.sort((a, b) => a[2] - b[2]);
+  for (let i = 0; i < 40 && size >= minSize; i++, size *= 0.94) {
+    const b = tintenBlock(lines, size, ink, leading, m);
+    if (b.leer) return null;
+    const fenster = [xl, ty + b.u - 3 * st, xr, ty + b.ob + 3 * st];
+    const nP = naheKanten(poly, fenster), nH = huelle ? naheKanten(huelle, fenster) : null;
+    for (const [q, k] of lagen) {
+      const y = ty + k * st, gemeinsam = lines.map(() => tx + q * st);
+      if (blockPasst(b, gemeinsam, y, poly, nP, huelle, nH)) return gesetzt(b, gemeinsam, y, size, leading, ink);
+      if (q === 0 && lines.length > 1) {
+        const je = b.zeilen.map(z => breitesteMitte(poly, y + z.mid, tx));
+        if (blockPasst(b, je, y, poly, nP, huelle, nH)) return gesetzt(b, je, y, size, leading, ink);
+      }
+    }
+  }
+  return null;
+}
+/* NAMEN UNTER DEM BILD (labelInk mit unten, 07.10.2026). Caspar_D: „Ziel war nicht, die Zelle maximal auszufüllen sondern
+   mehr Platz zum verrücken zu gewinnen, sodass das visuelle Zentrum des Artworks möglichst wenig verdeckt wird und der Text
+   etwas atmen kann" - „lass möglichst viel vom Bild übrig und schieb den TExt so weit wie möglich nach unen und lass ihn
+   trotzdem gut lesbar sein" - „ganze Breite at y position wäre schon gut". Also: die Schrift so gross wie bisher (der
+   Zeilenkasten-Satz, gemessen wie 1.0.51 - nie groesser), die Tintenkaesten mit 0,3 em Luft; gesucht wird von der Unterkante
+   der Zelle aufwaerts, auf jeder Hoehe mittig auf der Sehne dort und zuerst einzeilig, dann zwei-, dann dreizeilig (die ganze
+   Breite der Zelle auf dieser Hoehe); die tiefste Lage, die passt, gewinnt. Passt die Groesse nirgends, wird sie kleiner.
+   Ohne Bild (Treemaps, Zellen ohne Cover) bleibt der Fuellmodus tinteSetzen - Caspar_D: „merke dir die maximalgroße
+   Beschriftung für die Treemaps ohne Bilder, wo ausschliesslich die Grösse der Zellen eine Rolle spielt". */
+const TINTE_LUFT_BILD = 0.3;
+/* Gemessen wird die OBERKANTE des Namens (07.10.2026, erster Versuch: die tiefste Unterkante gewann - ein schmaler Zweizeiler
+   kam in runden Zellen tiefer hinunter als ein breiter Einzeiler, reichte aber hoeher ins Bild): je Fassung (jeder Umbruch in
+   eine, zwei oder drei Zeilen) die tiefste Lage, die passt; es gewinnt die tiefste Oberkante, bei Gleichstand (5 % der Schrift)
+   die mit weniger Zeilen. Flache Fassungen zuerst - eine hoehere wird nur noch probiert, wenn sie die beste Oberkante
+   ueberhaupt unterbieten kann. Zweiter Versuch: dann wurden kurze Namen zweizeilig („Nur Reden", „Time Out" - der schmale
+   Block kam tiefer), gemeint war aber „ganze Breite at y position". Darum: jede weitere Zeile muss die Oberkante um mehr als
+   eine Zeilenhoehe tiefer bringen, und bis 14 Zeichen nie zwei Zeilen (die Hausregel des Fuellmodus; drei bleiben erlaubt -
+   „Wer / hatte / das?" passt in der bisherigen Groesse nur so). */
+function alleUmbrueche(words, maxLines) {
+  const out = [[words.join(" ")]], w = words.length;
+  if (maxLines >= 2 && words.join(" ").length > 14) for (let c = 1; c < w; c++) out.push([words.slice(0, c).join(" "), words.slice(c).join(" ")]);
+  if (maxLines >= 3 && w >= 3) {   // dreizeilig nur die sechs ausgewogensten (kuerzeste laengste Zeile) - sonst bis zu 55 Fassungen
+    const drei = [];
+    for (let c = 1; c < w; c++) for (let d = c + 1; d < w; d++) drei.push([words.slice(0, c).join(" "), words.slice(c, d).join(" "), words.slice(d).join(" ")]);
+    out.push(...drei.filter(umbruchErlaubt).sort((a, b) => Math.max(...a.map(t => t.length)) - Math.max(...b.map(t => t.length))).slice(0, 6));
+  }
+  return out.filter(umbruchErlaubt);
+}
+function untenSetzen(poly, huelle, text, o) {
+  const { px, maxSize, minSize, maxLines, leading, drop, ink } = o;
+  const alt = placeLabel(poly, text, { maxSize, minSize, maxLines, measure: ink.breite, fit: true, leading, drop, huelle });
+  if (!alt) return tinteSetzen(poly, huelle, text, o);   // der Zeilenkasten fand keinen Platz - dann so gross, wie die Tinte erlaubt
+  const m = TINTE_LUFT_BILD, fassungen = alleUmbrueche(text.split(" ").filter(Boolean), maxLines);
+  let y0 = Infinity, y1 = -Infinity, xl = Infinity, xr = -Infinity;
+  for (const p of poly) { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); xl = Math.min(xl, p[0]); xr = Math.max(xr, p[0]); }
+  for (let i = 0, size = alt.size; i < 40 && size >= minSize; i++, size *= 0.94) {
+    const bloecke = fassungen.map(lines => tintenBlock(lines, size, ink, leading, m)).filter(b => !b.leer)
+      .sort((a, b) => (a.ob - a.u) - (b.ob - b.u) || a.lines.length - b.lines.length);
+    if (!bloecke.length) return null;
+    const schritt = Math.max(0.01 * (y1 - y0), 0.06 * size), gleich = 0.05 * size, zeile = leading * size;
+    let best = null;
+    for (const b of bloecke) {
+      const extra = (b.lines.length - 1) * zeile;                          // jede weitere Zeile zaehlt eine Zeilenhoehe
+      const grenze = best ? best.wert - gleich - extra : y1;               // so hoch darf die Oberkante hoechstens liegen
+      if (y0 + (b.ob - b.u) > grenze) continue;                          // kann die beste Fassung nicht schlagen
+      const probe = (y) => {
+        const reihe = [xl, y + b.u, xr, y + b.ob], nP = naheKanten(poly, reihe), nH = huelle ? naheKanten(huelle, reihe) : null;
+        const je = b.zeilen.map(z => breitesteMitte(poly, y + z.mid, px)), mitte = breitesteMitte(poly, y + (b.u + b.ob) / 2, px);
+        return [je, b.lines.map(() => mitte), b.lines.map(() => px)].find(xs => blockPasst(b, xs, y, poly, nP, huelle, nH, m));
+      };
+      // grob in vierfachen Schritten aufwaerts, dann fein zurueck: die tiefste Lage auf einen Schritt genau
+      const start = y0 - b.u, grob = 4 * schritt;
+      for (let y = start; y + b.ob <= grenze + grob; y += grob) {
+        const yy = Math.min(y, grenze - b.ob);
+        if (!probe(yy)) { if (yy < y) break; continue; }
+        let gefunden = { y: yy, xs: probe(yy) };
+        for (let f = Math.max(start, yy - grob + schritt); f < yy - 1e-9; f += schritt) { const xs = probe(f); if (xs) { gefunden = { y: f, xs }; break; } }
+        best = { b, xs: gefunden.xs, y: gefunden.y, wert: gefunden.y + b.ob + extra };
+        break;
+      }
+    }
+    if (best) return gesetzt(best.b, best.xs, best.y, size, leading, ink);
+  }
+  return null;
+}
+// die Kanten eines Vielecks, deren Huellkasten das Fenster [x0, y0, x1, y1] beruehrt
+function naheKanten(P, [x0, y0, x1, y1]) {
+  const out = [];
+  for (let k = 0; k < P.length; k++) {
+    const a = P[k], b = P[(k + 1) % P.length];
+    if (Math.max(a[0], b[0]) >= x0 && Math.min(a[0], b[0]) <= x1 && Math.max(a[1], b[1]) >= y0 && Math.min(a[1], b[1]) <= y1) out.push([a, b]);
+  }
+  return out;
+}
+// beruehrt die Strecke a-b das Rechteck? (Liang-Barsky)
+function streckeTrifft(a, b, x0, y0, x1, y1) {
+  const dx = b[0] - a[0], dy = b[1] - a[1]; let t0 = 0, t1 = 1;
+  const seite = (p, q) => {
+    if (p === 0) return q >= 0;
+    const t = q / p;
+    if (p < 0) { if (t > t1) return false; if (t > t0) t0 = t; } else { if (t < t0) return false; if (t < t1) t1 = t; }
+    return true;
+  };
+  return seite(-dx, a[0] - x0) && seite(dx, x1 - a[0]) && seite(-dy, a[1] - y0) && seite(dy, y1 - a[1]);
+}
+/* UMBRUCHREGELN (Caspar_D, 07.10.2026: „dass "..." einzelbuchstaben oder - Zahlen auf neuer Zeile, bindestriche am
+   zeilenanfang nicht erlaubt sind"): eine zweite oder dritte Zeile ist nie nur „…"/„...", nie nur ein Buchstabe, nie nur eine
+   Zahl (auch „v2", „'25") und beginnt nie mit einem Strich - „Ich erwarte dich – / Track 1" statt „… dich / – Track 1". */
+function umbruchErlaubt(lines) {
+  return lines.every((t, j) => j === 0 || !(/^(\.{2,}|…)$/.test(t) || /^\p{L}$/u.test(t) || /^['’]?v?\d+([.,]\d+)?$/i.test(t) || /^[-–—]/.test(t)));
+}
 // the words in k lines, the longest line as short as possible (every way to cut, words are few)
 function bestSplit(words, k) {
   let best = null, bestLen = Infinity;
   const go = (start, left, acc) => {
-    if (left === 1) { const all = [...acc, words.slice(start).join(" ")], m = Math.max(...all.map(t => t.length)); if (m < bestLen) { bestLen = m; best = all; } return; }
+    if (left === 1) { const all = [...acc, words.slice(start).join(" ")], m = Math.max(...all.map(t => t.length)); if (m < bestLen && umbruchErlaubt(all)) { bestLen = m; best = all; } return; }
     for (let e = start + 1; e <= words.length - left + 1; e++) go(e, left - 1, [...acc, words.slice(start, e).join(" ")]);
   };
   go(0, k, []);
   return best || [words.join(" ")];
 }
 
-export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [], colourOf = defaultColour, labelDepth = 1, strokes = [3.2, 2.0, 1.2, 0.7, 0.35], gutters = null, leafLabels = false, smallLabel = null, cushion = 0, labelLevel = null, labelSizes = [4, 24], measureText = null, labelLeading = 1.1, labelDrop = 0 } = {}) {
+export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [], colourOf = defaultColour, labelDepth = 1, strokes = [3.2, 2.0, 1.2, 0.7, 0.35], gutters = null, leafLabels = false, smallLabel = null, cushion = 0, labelLevel = null, labelSizes = [4, 24], measureText = null, labelLeading = 1.1, labelDrop = 0, labelInk = null, labelUnten = null, labelName = null } = {}) {
   const { width: W, height: H, nodes, leaves } = result;
   if (colourOf === defaultColour && result.root) { const hd = hueDepthOf(result); colourOf = k => defaultColour(k, hd); }
   const top = pad + (title ? 26 : 0);
@@ -149,6 +333,11 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
   const maxDepth = Math.max(0, ...nodes.map(k => k.depth));
   if (!gutters) for (let dd = maxDepth; dd >= 0; dd--) for (const k of nodes) if (k.depth === dd && k.outline && !leaves.includes(k)) body += `<path d="${d(k.outline)}" fill="none" stroke="#121417" stroke-width="${sw(dd)}" stroke-linejoin="round" pointer-events="none"/>`;
   const textAt = (lab, cls, extra) => {   // one or two centred lines
+    if (lab.tinte) {   // Einzelbuchstaben-Kaesten: ein <text> je Name, jede Zeile auf ihrer Grundlinie wie in placeLabel gerechnet
+      const fs = lab.size * scale, x = X([lab.x, 0]), n = lab.lines.length, xj = j => lab.xs ? X([lab.xs[j], 0]) : x;
+      const zeile = (t, j) => `<tspan x="${xj(j)}" y="${(top + (H - (lab.y + ((n - 1) / 2 - j) * lab.leading * lab.size - (lab.tinte.o - lab.tinte.u) / 2 * lab.size)) * scale).toFixed(2)}">${esc(t)}</tspan>`;
+      return `<text${cls ? ` class="${cls}"` : ""} x="${x}" font-size="${fs.toFixed(2)}" text-anchor="middle" pointer-events="none"${extra}>${lab.lines.map(zeile).join("")}</text>`;
+    }
     const fs = lab.size * scale, x = X([lab.x, 0]), lead = lab.leading || 1.1, y0 = top + (H - lab.y) * scale - (lab.lines.length - 1) * fs * lead / 2;
     return lab.lines.map((t, i) => `<text${cls ? ` class="${cls}"` : ""} x="${x}" y="${(y0 + i * fs * lead).toFixed(2)}" font-size="${fs.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" pointer-events="none"${extra}>${esc(t)}</text>`).join("");
   };
@@ -169,7 +358,7 @@ export function renderSVG(result, { scale = 1, pad = 20, title = "", lines = [],
          genug wären"). */
       const vis = visible(k), aV = Math.abs(shoelace(vis)), aK = Math.abs(shoelace(k.outline)), eps = 1e-6 * Math.sqrt(aK);
       if (vis !== k.outline && !(aV > 0 && aV < aK && vis.every(p => imOderAufRand(k.outline, p, eps)))) continue;
-      const lab = placeLabel(vis, k.name.slice(0, 60), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline });
+      const lab = placeLabel(vis, (labelName ? labelName(k) : k.name).slice(0, 60), { maxSize: labelSizes[1] / scale, minSize: labelSizes[0] / scale, maxLines: 3, measure: measureText, fit: true, leading: labelLeading, drop: labelDrop, huelle: k.outline, ink: labelInk, unten: !!(labelUnten && labelUnten(k)) });
       if (!lab) continue;
       const below = leavesBelow(k).filter(x => x.outline), under = below.find(x => inside(x.outline, [lab.x, lab.y])) || below[0] || k;
       const ink = lightnessOf(colourOf(under)) >= 58 ? "#000000" : "#ffffff";
