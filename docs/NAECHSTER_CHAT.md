@@ -8014,3 +8014,20 @@ Befund am Rande: Alte MP3s aus der Direktlink-Zeit tragen KEINE Suno-Kennung (St
 schon — solche MP3s erkennt weder das Einlesen noch der neue Weg; das ist richtig so (Signatur entscheidet).
 
 **Nächste Baustelle (Caspar_D): Plakat-Studio** — Stand und Dateien in §55 (`_werkstatt_plakat/studio/`).
+
+## 58. 07.10.2026 nachts: Plakat-Studio wieder aufgenommen (nicht ausgeliefert)
+
+- `_werkstatt_plakat/studio/index-neu.html` = Dreiwege-Abgleich (git merge-file) aus `index-studio.html`
+  (Studio auf 1.0.31), Basis `da9a982:web/index.html` und Haus 1.0.33 — konfliktfrei, Syntax ok.
+- Drei Studio-Fehler behoben (in index-neu.html / plakat.js; Vorfassungen daneben als *-vor-*.html/js):
+  1. Vorschau lud beim ersten Öffnen die vollen Cover (499 × ~2,5 MB) → Vorschau aus den Kachelbildern
+     (`vorschauBilder`), volle Auflösung nur über `data-voll` fürs PDF.
+  2. Doppelte IDs: Plakat und Klangschaum dahinter teilen skz…/skkissen/hatch → `url(#skz0)` traf den
+     Zuschnitt der Schirm-Zelle (Bilder in fremden Umrissen, Glasbänder fehlten). `eigeneIds(svg,'ps-')`.
+  3. Papier: Legende lief über den Titel → `legendeSetzen` verkleinert sie um ihre rechte obere Ecke.
+- **Offen:** In einigen großen Zellen füllt das Bild die Zelle nicht ganz (im Mosaik flache Flächen, in der
+  Galerie dunkel). Geometrie-Prüfung (Bildrechteck deckt Zuschnitt) besteht — Ursache noch nicht gefunden.
+- Danach: PDF mit je Kachel auf 300 dpi verkleinerten Bildern (§55).
+- Werkzeug: `_werkstatt_plakat/studio/vorlagen-foto.js <port> <ordner>` fotografiert die vier Vorlagen per
+  headless Chrome (eigenes Profil, CDP); Sandkasten im Scratchpad, Cover dort je Datei verlinkt.
+- Systemplatte hatte nur 84 GB frei (unter Jörgs 100-GB-Grenze) — dort nichts Großes ablegen.
