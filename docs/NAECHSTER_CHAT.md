@@ -8889,3 +8889,21 @@ gepusht, Release https://github.com/CasparDavi/klangtresor/releases/tag/v1.0.62 
 Download-Adresse 200. 8788 neu gestartet (PID 88631, 200, /api/feder antwortet; avatare 0 im echten Archiv – die Bildnisse zeichnet
 der Server beim ersten Öffnen des Skizzenbuchs). Sandkasten 8799 und scratchpad bleiben bis zur Leonardo-Vorlage stehen.
 **Weiter:** Reihenfolge wie in §91 „Danach" – zuerst Leonardo-Vorlage + Entleonardisieren (Liste mit Caspar_D abstimmen).
+
+## 93. 08.10.2026 abends: 1.0.63 – Zeigerlinien und Naht im PDF
+- **Zeigerlinien** (Caspar_D: „bei den Labels, die über dem Kreis sind, zeigt die Linie nicht auf das Label"): skizze-blatt.js
+  notizen() – Ende an der Seite der Schrift, von der die Linie kommt (unter/über der Notiz, sonst seitlich an der ersten Zeile).
+  Gemessen mit data-zeiger in 50×70, 70×100 quer, q50.
+- **Naht im PDF** (Caspar_D: „im export sieht man eine Naht in der Papiertönung"): Ursache Kreidetünche = Rechteck mit Maske + feTurbulence
+  → Chrome/Skia rastert sie als seitengroßes Bild mit Alphamaske → Apples PDF-Darstellung (Vorschau, Quick Look, Drucken vom Mac)
+  verliert die Maske in allen Kacheln bis auf eine; poppler zeigte dasselbe PDF richtig. Jetzt radialer Verlauf (Vektor-Schattierung)
+  + Korn als zwei Vektormuster (7/11 mm). Geprüft mit headless printToPDF + `sips` (Apple-Engine): keine Naht, kein Bild mehr dazu.
+  Weitere seitengroße Rasterebenen (ps-pergament, ps-faser, Schaum, Palimpsest) zeichnet Apple richtig – Wiedervorlage: andere
+  Vorlagen (Randlos/Glas, Kissen) einmal mit der Apple-Engine prüfen.
+- Release https://github.com/CasparDavi/klangtresor/releases/tag/v1.0.63.
+- **Geklärt (nicht wieder aufrollen):** „keine Klangtresordaten pushen" heißt: Funktionen rechnen zur Laufzeit aus dem jeweiligen
+  Archiv, nichts Archivspezifisches eingebacken. Kein Datenschutzthema – Suno-Aliases, Playlists, Liedtexte sind öffentlich; Tarja
+  und Casto haben vorher zugestimmt, genannt zu werden. Die Archivdaten-Prüfung vom 08.10. ist damit erledigt. Funktional wirklich
+  archivgebunden sind nur Kleinigkeiten (bin/whisper.js OHNE_PLAYLISTS mit fester Playlist-ID, „325" in Texten von web/tbs-modul.js
+  und eine Fußnote in index.html) – bei Gelegenheit zur Laufzeit rechnen.
+- **Danach:** KlangTresor-Pause, Treemapper (Protokoll in Treemapper/docs/PROTOKOLL-veroeffentlichung.md, Entscheidungen E1–E9 offen).
