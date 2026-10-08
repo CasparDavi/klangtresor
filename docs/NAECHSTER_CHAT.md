@@ -8877,3 +8877,6 @@ Memory skizzenbuch-kreide-holz). (4) Backlog: Suno-Alben vs. Abspiellisten (BACK
 ausblenden" (Memory groupieschaum-perzentil). Wiedervorlagen alt: gesichter.js EXIF, MORGENSCHRITTE-Warnung, Rand im Triptychon.
 **Arbeitsweise neu (Memory):** involviert statt abgeschirmt – Befunde roh zeigen, vorher sagen, was untersucht wird; keine
 Codeänderung während laufender Prüfungen; Agenten nie Nutzerdaten (E-Mail) an fremde Dienste senden lassen.
+- **Ergebnis (a) auf dem letzten Stand:** Formatdurchgang 27/27 (kein Kernausfall, keine Überlappung, nichts über Rand, 9/9 Läufe
+  ohne Fehler); Grenzfälle klein/namen/gross sauber (Widmung „artifici Tarjae dedicatum", kein NaN); Namensprobe: „Tarjas Klangschaum",
+  Tabula „(ohne lesbaren Titel)", „Remix" statt „betpa", „Track ½", „Nguyễn Văn Ánh", keine leeren Anführungen. Offen nur noch (b) Runde 4.
