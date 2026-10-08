@@ -8682,3 +8682,14 @@ angeschnittene Kreis bleibt immer darinnen."
 Nachgerechnet: Kreis im Quadrat 21,5 % frei; um ¼ des Durchmessers hinausgeschoben (Schnitt am Seitenrand, Hüllrechteck 1,5 r × 2 r)
 15,8 % frei. Skizze `_werkstatt_bilder/feder/quadrat-oder-angeschnitten.png` (A Quadrat, B angeschnitten; hoch links, quer unten
 angeschnitten – lange Seite der D-Form längs). Entscheidung A/B steht aus.
+**Entschieden (08.10.2026): B, angeschnittener Kreis – aber mit Spalte.** Caspar_D zu meinem Einwand (der Kreis frisst sonst den Platz
+für Studien, Fragmente, Spiegelschrift): „das fiel mir auch auf, deswegen fragte ich nach … ja – mach es mit spalte". Damit:
+- Kreis um ¼ des Durchmessers über den Seitenrand hinausgeschoben, Schnitt an der Randlinie, der Rest taucht nirgends auf, innen
+  normal geschäumt; der Seitenrand bleibt und darf beschrieben werden, der Kreis bleibt innerhalb.
+- Hochformat: links angeschnitten (lange Seite der D-Form längs); auf der freien Seite eine Spalte von etwa ⅕ der Breite, dazu
+  Streifen oben und unten. Quer: unten angeschnitten, Spalte an einer Seite. Quadratisch: wie hoch (Spalte ≈ ¼).
+- Kreis damit fast doppelt so groß wie in 1.0.61; die Notizen hängen am freien Bogen, die Spalte trägt Gitarre, Cello und
+  Detailausschnitte; oben Kopf, Spiegelzeile, Refrains; unten Legende, Siegel, Rätsel; die Zwickel tragen Notizen/Fragmente.
+- Offen aus §88 (bleibt gültig): Platz füllen (durchscheinendes Altes, Cover-Fragmente, Spiegelschrift-Blöcke aus echten Daten, Hinweis
+  „KlangTresor" in Spiegelschrift, Räderwerk aus den Arealen), größere Instrumentenstudien mit Detailausschnitten, ein weiteres
+  kreideaufgehelltes Element, zweizeilige Titel, Handschrift mit Schwankung. Nächster Schritt: Skizze B mit Spalte zeigen, dann bauen.
