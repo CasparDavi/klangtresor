@@ -8713,3 +8713,8 @@ deinen häufigsten Instrumenten (Cello für Tarja bleibt Widmung), Diagramme: Wa
 **Entschieden (08.10.2026): Würdigung = „die fünf, die bei mir die längsten Kommentare (zusammen) hinterliessen"** – dasselbe Maß wie
 „Kommentarlänge" im Groupieschaum (z.zeichen: alles, was die Person bei dir geschrieben hat, in Schriftzeichen gezählt). Fünf
 Porträtstudien (Avatar durch das Federmodell), Namen darunter, Überschrift „Ispirazione"; Hinweis „nur für den privaten Gebrauch".
+Neu (08.10.2026): „an die Hüllkurve habe ich noch gar nicht gedacht, vielleicht einfach den Steckbrief meines besten Songs mit der
+grössten Resonanz" – eine Studie zum Spitzentitel: Hüllkurve aus `welle` (1572 Punkte) als Tuschekontur mit Schraffur, Schläge aus
+`schlaege` als Tickreihe, Abschnitte/Höhepunkte aus `abschnitte.peak_times`, dazu Federzeichnung des Covers, Herzen/Kommentare/Plays,
+Länge, Datum, der Refrain. Vorbild: der Karten-Steckbrief im Haus. Offen: was „größte Resonanz" heißt (Herzen + Kommentare →
+„Morgen" 61/12; nur Plays → „Spiralen" 304).
