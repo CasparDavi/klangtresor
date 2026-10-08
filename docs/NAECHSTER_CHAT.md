@@ -8646,3 +8646,31 @@ Scratchpad), antwortet. Wiedervorlage (Caspar_D entscheidet / ansehen):
 Nach dem Einsetzen im echten Archiv über das App-Skript gerechnet (`node bin/feder.js`, 08.10. ~02:40): Modell geholt (16,4 MB),
 327 Zeichnungen, 260 mit ausgesparter Schrift, Tinte im Median 5,3 %, 1,8 s je Bild. Neu in library/: nur feder.json,
 modelle/informative-drawings.onnx und 327 × songs/<id>/feder.png. /api/feder: offen 0 – das Skizzenbuch öffnet sofort.
+
+## 88. 08.10.2026 morgens: Skizzenbuch – Rückmeldung von Caspar_D (Brainstorm offen, noch nichts geändert)
+
+Caspar_D: „Das sieht sehr sehr nahe an einem Leonardo aus. Von der Abdeckung ist der Kreis wunderbar. Die Farben kommen super, die
+Skizzen sind wunderschön. Der Gesamteindruck des Klangkreises sagt sofort, Mittelalter. Was ich super chic finde ist, dass der Kreis
+selbst scheinbar selbst mit Kreide aufgehellt wurde. Ggf könnte man auch noch ein anderes Teilelement so aufgehellt darstellen."
+(Das Aufgehellte: Innen ist das Papier flach – die Federbilder sind von Tinte nach Papierfarbe getönt, ohne die Wolken, Flecken und
+den dunklen Altersrand des Pergaments.)
+Was ihm auffällt (seine Worte, gekürzt):
+1. „ausserhalb des Kreises ist viel zu viel white Space, Leonardos Skizzenbögen waren voll, teilweise übervoll."
+2. „der Kreis selbst ist zu klein, mache ihn größer."
+3. „Was machst du, wenn du an Formate mit Aspekt nahe 1 kommst, lässt du dann sukzessive Dinge weg?"
+4. „Leonardo hat auf seine ‚Mensch'-Skizze ein Quadrat um seinen Kreis gezogen – das gäbe dem ganzen mehr Kontakt zu den
+   Posterkanten. Für die Ecken müsste man sich eine Nutzung ausdenken – hat Leonardo Dekomaterial genutzt, meines Wissens nicht.
+   Pergament war teuer und er hat es bis an die Ränder mit Notizen und Aufzeichnungen bedeckt, er hat sogar recycelt und man konnte
+   altes durchscheinen sehen. Oder schneide den Kreis an und tesselliere den angeschnittenen Kreis."
+5. „Die Kachelbeschriftung ist immer einzeilig, obwohl sie manchmal lieber zweizeilig gewesen wäre, weil sonst zu viel Platz im
+   Beschriftungsareal übrig bleibt."
+6. „Alles Geschriebene ist zu sauber, das sieht nicht nach handgeschrieben aus, verzerre es manchmal ein bisschen, lass die
+   Linienführung innerhalb enger Grenzen etwas fluktuieren, auch die Linienabstände hat Leonardo nachweislich nicht immer genau
+   eingehalten."
+7. „der viele white space ausserhalb des Kreises ist total untypisch für ihn – Leonardo hätte fragmentierte Skizzen von Cover
+   Artwork eingefügt, vielleicht sogar einen Hinweis auf den KlangTresor in Spiegelschrift hinterlassen. Die Instrumentenstudien
+   wären grösser und detaillierter mit Detailausschnitten."
+8. „kurz, verschenke keinen Platz und sorge doch dafür, dass der Kreis das Element ist, bei dem man sagt – Wow, sieht das gut aus."
+Auftrag: „schreib alles soweit in die Doku und dann machen wir einen Brainstorm, noch nichts neu anfangen oder ändern" – „wenn ich
+präzisieren muß, dann frage nach".
+Stand des Brainstorms: siehe Chat 08.10.2026; Entscheidungen werden hier nachgetragen, gebaut wird erst nach seinem Wort.
