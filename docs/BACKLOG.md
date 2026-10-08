@@ -58,6 +58,7 @@
 | Effektclip | zu planen | [Was gehört getestet — das Prüfverfahren selbst (21.09.2026)](#was-gehört-getestet-das-prüfverfahren-selbst-21092026) |
 | Effektclip | offen | [Die Linse kostet 10,9 ms je Bild (21.09.2026)](#die-linse-kostet-109-ms-je-bild-21092026) |
 | Effektclip | offen | [Polarlicht auf den Himmel (21.09.2026)](#polarlicht-auf-den-himmel-21092026) |
+| Suno · Haus | zu planen | [Suno-Alben neben den Abspiellisten (08.10.2026)](#suno-alben-neben-den-abspiellisten-08102026) |
 
 **Die Moduldokumente** liegen unter `docs/<modul>/` — siehe [LIESMICH.md](LIESMICH.md).
 
@@ -3186,3 +3187,18 @@ Studios; nichts gebaut.
 [effektclip/KONZEPT-STUDIO-MODUL.md](effektclip/KONZEPT-STUDIO-MODUL.md): Anschluss aus dem Code,
 Ladeweg, Werkzeuge, Server, Schrittplan mit Proben, fünf Fragen an Caspar_D (Go, Anschluss als
 Objekt oder Vertrag, Server-Eingriff, `aus`/`ein`, Reihenfolge Tonstudio und Bühne). Nichts gebaut.
+
+## Suno-Alben neben den Abspiellisten (08.10.2026)
+
+**Zustand: zu planen.** Caspar_D: *„Die neue Albumfunktion von Suno muß unterstützt werden. Die neuen Suno-Alben müssen von
+Klangtresor-Alben (eigentlich Playlists – Abspiellisten) unterscheidbar sein. Ich schlage vor, den Register Alben in Listen und
+Alben umzubenennen mit einer Teilung in Abspiellisten (die Playlists) und Alben (die neuen Suno-Alben)."*
+
+- Register **„Alben" → „Listen und Alben"**, darin zwei Teile: **Abspiellisten** (Sunos Playlists, wie heute im Register „Alben")
+  und **Alben** (Sunos neue Alben).
+- Für die Planung zu klären: Wo und wie liefert Suno die Alben (Endpunkt, Felder, Reihenfolge, Cover, Veröffentlichung)? Weg über
+  das Lesezeichen/den Server wie bei den Playlists (Rohdaten in `library/roh/`, siehe [Playlists](#playlists)) – nichts am
+  KlangTresor vorbei. Das Katalogfeld `albums` je Song ist bisher leer und war für die Playlist-Zuordnung „frei" vorgesehen;
+  im Katalogkopf stehen außerdem `albenStand` und `albenKandidaten` – vor dem Bau nachsehen, was davon schon wofür benutzt wird,
+  damit Suno-Alben und Abspiellisten nicht im selben Feld landen.
+- Nomenklatur: „Album" künftig nur für Sunos Alben, „Abspielliste" für Playlists (auch in Texten, Hinweisen, Handbuch).

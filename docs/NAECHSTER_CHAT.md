@@ -8718,3 +8718,162 @@ grössten Resonanz" – eine Studie zum Spitzentitel: Hüllkurve aus `welle` (15
 `schlaege` als Tickreihe, Abschnitte/Höhepunkte aus `abschnitte.peak_times`, dazu Federzeichnung des Covers, Herzen/Kommentare/Plays,
 Länge, Datum, der Refrain. Vorbild: der Karten-Steckbrief im Haus. Offen: was „größte Resonanz" heißt (Herzen + Kommentare →
 „Morgen" 61/12; nur Plays → „Spiralen" 304).
+
+## 89. 08.10.2026 vormittags: Skizzenbuch „volles Blatt" – Entwurf im Sandkasten (nichts im Repo, nichts ausgeliefert)
+Caspar_D: „ja, leg los, das wird sehr schön". Gebaut NUR im Sandkasten `scratchpad/sandkasten-plakat` (Port 8799, `--eingefroren`,
+PID in `scratchpad/leo/server-8799.pid`), Proben mit `scratchpad/leo/probe-blatt.js <port> <ordner> 50x70,70x100:quer,q50` (gibt die
+Belegung je Block aus, ~35 s je Format). Bilder: `scratchpad/leo/fotos/skizze-*.png`.
+- Neue Module (Sandkasten `web/klangschaum/`): `skizze-blatt.js` (Raster-Belegung 3 mm, Summentabelle, Blöcke nach Rang, jeder sucht die
+  freie Stelle nächst seinem Wunschort und wird stufenweise kleiner; größte Lücke zuerst füllen), `skizze-hand.js` (Agent: Handschrift
+  je Wort gedreht/versetzt, Zeilen wellig, Tinte verblasst bis zum Eintauchen, Klecks, Durchstreichen, Spiegelschrift; `zweiZeilen` nach
+  den Umbruchregeln von render.js), `skizze-studien.js` (Agent: Gitarre, Cello, Schlagzeug mit Leonardos Mensch auf dem Resonanzfell,
+  Synthesizer, Bass, Flügel; Lupen mit Detailausschnitt, DETAILS je Instrument).
+- plakat.js (Sandkasten): Geometrie D-Kreis (Randlinie 5 % der kurzen Seite; hoch/quadratisch links angeschnitten, Spalte ⅕ bzw. ¼; quer
+  unten angeschnitten), `dAuftrag` (Umriss −120…120° bzw. −30…210°, Saaten in die D-Form gestaucht), `blattGrund` (Randlinie, Zirkel nur
+  diesseits des Schnitts, Palimpsest: Rückseitenschrift blass und unscharf), `blattSchmuck` statt `skizzeSchmuck`.
+- Daten im Entwurf aus `web/_skizze/daten.json` (Skript `scratchpad/leo/daten.mjs` liest das Archiv) – im Bau aus Schnittstellen holen.
+  Bildnisse der fünf Kommentatoren als Federzeichnung in `web/_skizze/<handle>.png` (im Bau: Server rechnet Avatare durch das Modell).
+- Blöcke (Rang hoch): Kopf zweizeilig + Spiegelzeile, Siegel, Tabula (Top 5 nach Plays), Steckbrief „Morgen" (Herzen + Kommentare) auf
+  Kreidefleck (Hüllkurve schraffiert, Gipfel, Takte, Minuten, Kennzahlen, Refrain, Cover als Feder im Kreis), Instrumentenpaar, Würdigung
+  „Ispirazione" (Medaillons, Zeichenzahl, Hinweis privater Gebrauch), Randnotizen, Legende, Refrains (ohne den Steckbrief-Titel),
+  Schlagzeug mit Lupe, Diagramme (Crescita, Rosa dei venti, Le ore, Ingranaggi), Synthesizer, Notenrätsel, „Dal KlangTresor di
+  Caspar_D" gespiegelt, dann Füller (Absätze in Spiegelschrift, Coverfetzen mit gerissenem Rand, senkrechte Zeile im Seitenrand).
+- Caspar_D währenddessen: „du hast die Gesichtszentrierung nicht mehr genutzt bzw die Textvermeidung, schalt das mal wieder an" →
+  skizzeZelle (index.html, Sandkasten) legt die Federzeichnung jetzt mit schaumBildPlatz/schaumFokus wie im Schaum. „die beiden
+  instrumente so anordnen, das die resonanzkörper einmal oben und einmal unten sind und die Stiele nebeneinander" → Gitarre steht, Cello
+  hängt kopfüber daneben, Hälse 4 Einheiten nebeneinander, Widmung aufrecht (skizzeStudie hat `{ widmung }`). „die monate auf latein
+  ausschreiben und grösser" → Ianuarius … December, 4,4 mm (Jahre 5,6). „Das I als römische Zahl funktioniert nicht" (Pinyon-I ist ein J,
+  die Pipe dort ein Schrägstrich) → „wir brauchen ja nur X I V … ggf wirklich römische Zahlen selbstgezeichnet simulieren": gezeichnete
+  Ziffern (roemischStriche: Grundstrich kräftig, Haarstrich/Serifen fein, 10° geneigt), Probe `scratchpad/leo/fotos/roem2.png`.
+- Stand: 50 × 70 hoch trägt (Belegung 0,99). Querformat: Steckbrief findet keinen Platz (Spalte vom Paar belegt) – eigene Anordnung
+  nötig. 50 × 50: zu eng, Würdigung/Steckbrief fallen weg. Offen außerdem: zweizeilige Titel IN den Kacheln (skizzeZelle rechnet nur
+  einzeilig; zweiZeilen ist da), Bass/Flügel ungenutzt, Lupe am Cello (la voluta).
+- Caspar_D: „das ist jetzt nahe dran, optimiere zur Auslieferungsfähigkeit" (+ „nimm nochmal einen Agent, der den Siegellook optimiert,
+  das sieht mir noch zu sehr nach Knete aus"). Workflow `skizzenbuch-auslieferung` (Lauf wf_9d357075-30e), fünf Agenten im Sandkasten:
+  Bildnisse (feder.js --avatare + Server-Route + skizze-bildnisse.js, Kopie sandkasten-bildnis/8798), Daten (skizze-daten.js statt
+  daten.json, Ausfälle fremder Archive), Siegel (skizze-siegel.js, Siegellack statt Knete, Kontaktbogen), Kacheltitel zweizeilig
+  (skizzeZelle, Kopie sandkasten-zeilen/8797), Formate + Studien nach Daten + Aufräumen (plakat.js/skizze-blatt.js, 8799). Danach:
+  Einbau durch mich, Fallensuche, alle Formate fotografieren, Caspar_D zeigen, dann 1.0.62 (server.js ändert sich → Server startet neu).
+- Offene Entscheidung Widmung des Cellos: datengetrieben an Platz 1 der Würdigung; Latein ohne Geschlecht („dedicatio: <Name>") oder
+  Textfeld – Frage an Caspar_D gestellt.
+- Bau-Workflow fertig (fünf Berichte, Journal unter subagents/workflows/wf_9d357075-30e). Eingebaut im Sandkasten: skizze-daten.js
+  (blattDatenHolen statt daten.json; /api/klang, /api/community, /api/song – warm 6 ms; refrainAus von dort), skizze-bildnisse.js +
+  bin/feder.js --avatare (library/bildnisse/<sha1>.png, Buchabschnitt avatare) + server.js (Art 'bildnis', Route /bildnis/<sha1>.png),
+  skizze-siegel.js (Fassung B: Fladen, Perlkreis, Bläschen, Fließspuren; Kontaktbogen scratchpad/siegel/kontaktbogen-voll.png, Wahl
+  A–E bei Caspar_D), zweizeilige Kacheltitel (skizzeZelle; 157 statt 87 Titel, 74 zweizeilig), Formate (27 Fälle ohne Kernausfall,
+  Probe scratchpad/leo/probe-formate.js, Kontaktbogen leo/fotos/kontakt-formate.png), Studien nach Daten (Paar = erstes hohes Instrument
+  + Cello kopfüber), alter Kreis-Code gelöscht. Danach Fallensuche-Workflow (wf_5ed01e36-8dc) gestartet.
+- Offen für Caspar_D: Widmung (A/B/C), Siegelfassung (Empfehlung B), Bildnis-Rechenbreite 768 (fein) oder 512 (kräftiger), volle
+  Kachelbeschriftung (mehr Papierstücke) ok?, Zeitleiste quer 190° … −10°.
+- **Entschieden 08.10.2026 (Caspar_D):** „Widmung geschlechtsneutral und adaptiert an platz eins kommentator" → „artifici <Vorname im
+  Dativ> dedicatum" (artifex beiderlei Geschlechts; Dativ nach Endung -a → -ae, -us → -o), Name wie in der Würdigung; WIDMUNG-Konstante
+  gelöscht. „siegel B". „bildnisse ein wenig kräftiger" → Filter ps-bt-bildnis (feMorphology erode 0,07 mm + Tinte). „den ganzen kreis
+  weiss aufhellen, nicht clusterweise" → Kreidetünche unter dem ganzen D (blattGrund, Papier halb zum Weiß = skizzeKreide; die Kacheln
+  malen ihr Weiß darin: druck.skizze.papier = Kreide, Tinte weiter gegen das Blattpapier = tintePapier, damit Legende und Kacheln gleich
+  tinten). „Auftakt steht bspw zu weit unten … eine Oberlänge abstand zum strich, du kannst auch gern eine halbe nehmen" → OBER =
+  0,5 · (l − x). „zeitleiste ist gut so".
+- Fallensuche Runde 1 (wf_5ed01e36-8dc): 16 echte Funde, alle korrigiert – u. a. Semikolon in der Würdigung (Namen/Zeichen fehlten),
+  NaN-Größe der Gitarrenlupe, Tabula bei 0 Abrufen, Monatslücken der Crescita, feste „fünf", eingefrorener Stick zeigte Fotos statt
+  exportierter Bildnisse (bildnisStand({eingefroren})), Export während eines Neubaus (seitenGeometrie + Lagen vor dem Warten), Rennen
+  beim Neubau, alter Bau im neuen Rahmen (++bauLauf beim Neulegen), Bildnis-Hinweise überschrieben, Hüllkurve kurzer Titel als Kamm,
+  Steckbrief-Titel ohne Breitenschranke, „5:60", 62-s-Hänger hinter einem Cover-Lauf, Edition zu breit. Formatdurchgang danach: 27/27
+  sauber (scratchpad/leo/sweep-runde2.txt). Runde 2 läuft (wf_65d2995e-c8a).
+
+## 90. 08.10.2026: Nächste Baustelle nach 1.0.62 – Skizzenbuch dunkel: Kreide auf dunkler Holzwand (nur Idee, nichts gebaut)
+Caspar_D: „könntest du dir auf basis dieses Builds vorstellen eine dunkle Holzwand mit Kreide zu realisieren – Tarjas Wunschfarben" –
+„ja, mach fertig [1.0.62], aber ich rüste dich schonmal aus: das Siegel muß dann weg und die Striche etwas sparsamer und mit Kreide
+statt Feder". Vorlage (Tarjas Plakat „Rabennest · Klangschau", dunkel/gotisch): `_werkstatt_bilder/feder/tarja-wunschfarben.webp`.
+Gemessene Legendenfarben: Elektronik·Pop–energisch #f274c7 · Pop·Folk–fühlich #c08cf6 · Pop·popfolk–fröhlich #c665f9 · Pop·Rock–
+energisch #4c7cf4 · Pop·Reggae–fröhlich #6b2df5 · ohne Stilgruppe grau. Grund fast schwarz mit Violettstich.
+Mein Vorschlag (zugestimmt im Grundsatz, erst skizzieren): gleiche Anordnung/Blöcke; Grund = dunkle Holzwand (Bretter, Maserung,
+Äste) statt Pergament; Federzeichnungen umgekehrt als Kreide mit Korn (Papierweiß durchsichtig), sparsamer; Arealtinten als
+Farbkreiden (7 : 1 umgekehrt, hell gegen Holz); Kreis als verwischter Kreidestaub; Titelstreifen gewischt; Kreidetechnik aus rand.js
+(„Pastellkreide", „Kreide verwischt"); KEIN Siegel. Dunkler Grund schaltet dann auf Kreide statt aufs Pergament zurück – kein Regler.
+- Fallensuche Runde 2 (wf_65d2995e-c8a): 10 echte Funde, korrigiert – Bildnislauf, der selbst wartet (gesehen nur beim Rechnen),
+  ps-bt-bildnis jetzt steilere Tintenkurve statt feMorphology (wirkte am Schirm nicht, im PDF zu stark), Quadrat: Steckbrief vor der
+  Würdigung (+ Rückfall aufs ganze Blatt), Widmung mit Breitenschranke und Namensregeln (Wortgrenzen an _ ., Titel/Artikel DJ/The/Dr
+  überspringen, -us nur bei lateinischen Namen, Versalien), deutsche Einzahl (Herz/Stimme, einmal gehört), ohneKl/ohneKlammernTitel
+  mit Rückfall auf den ganzen Titel, skizze-daten: vorübergehende Abruffehler nicht als „gibt es nicht" gemerkt, Export hält den
+  Randauftrag des Baus fest (randFuer). Veraltete Kommentare berichtigt. Formatdurchgang danach 27/27 sauber (leo/sweep-runde3.txt).
+- Caspar_D: „was passiert bei langen Avatarnamen … gerade Tarja ist ja mit ihrer Deko ein typisches Beispiel" – „oder schmeisst du
+  einfach den Zierrat raus" – „Manche haben auch einen elend langen Suno-Text" – „wie willst du das ohne KI sinnerhaltend machen …
+  du hast keine KI ausser die installierten kleinen Modelle". → schriftTauglich() in skizze-hand.js: NFKC (Zierschriften → Buchstaben),
+  Doppelgänger-Tabelle (Tαɾʝα → Tarja) nur bei Wörtern mit lateinischen Buchstaben/aus lauter Doppelgängern, danach alles
+  Nicht-Lateinische (Emoji, Ornamente) weg; für ALLE Pinyon-Schrift des Blatts und die Kacheltitel (index.html importiert skizze-hand.js
+  im Skizzenbuch). Anzeigename: gereinigter Name, sonst Handle; Versalien-Namen gemischt. Lange Namen unter dem Medaillon zweizeilig
+  (Leerzeichen, sonst Binnen-Großbuchstabe/Ziffer). Profiltext: kein Kürzen nach Sinn – nur der Anfang bis zum letzten Satzende vor
+  ~220 Zeichen (sonst Wortende + „…"), steht ohnehin nur als Spiegelschrift im Füller.
+- „was ist, wenn jemand nur 5 Titel hat oder zu viele" → Agent fotografiert 5 Titel, ~1500 Titel (vervielfältigt) und fünf verzierte/
+  lange Namen (scratchpad/grenz/). Bekannter Haken großer Bestände: erster Federlauf ~1,5–2 s je Cover (419 Titel ≈ 10–14 min).
+- Caspar_D: „ich würde sagen, wir begrenzen alles auf die 700 aktuellsten Titel beim Posterexport … Sonst machen die Bilder keinen Sinn
+  mehr" → meine Empfehlung C (je Format so viele, dass eine Kachel im Mittel ~2 cm bleibt = Schaumfläche / 4 cm², höchstens 700) –
+  „ja, mach es überall" (alle Plakatvorlagen) – „die 700 Titel mit den höchsten Zahlen, egal welche, je nachdem, was angezeigt wird …
+  die 700 mit den meisten Herzen, mit der höchsten Resonanz, mit den meisten Plays" → Auswahl nach dem gezeigten Maß (w), Gleichstand:
+  neuerer Titel / zuletzt aktive Person; Unterzeile „die N mit den meisten <Maß> von M Titeln"; Saaten für die Auswahl neu, lage-Schlüssel
+  mit N. Künstlerblöcke (Tabula, Steckbrief, Würdigung, Crescita) weiter übers ganze Archiv. NOCH NICHT GEBAUT (wartet auf den Grenzfall-
+  Agenten, damit seine Messungen sauber bleiben).
+- Caspar_D: „wie hat man im Mittelalter eigentlich pergament gebleicht … Kreide, Titanweiss oder echter Bleiche … sollte man die
+  Fleckbegrenzung dann eher unscharf machen" → Kalk/Bims/Kreide (Titanweiß erst 20. Jh., Chlorbleiche Ende 18. Jh.); „bau es gleich ein":
+  Kreidetünche mit weichem Auslauf über 10 mm und Korn (Maske), Steckbrief-Fleck ebenso (ps-kreide). „müssen wir noch andere historischen
+  Renaissance Details beachten?" – „Ich will in der Appearance so dicht wie möglich an der Historie bleiben" → Recherche-Workflow
+  leonardo-historie (wf_387e7bc1-c45): Träger/Alterung, Zeichenmittel (Linkshänder-Schraffur ↘), Schrift/Seitenaufbau (Spiegelschrift
+  rechtsbündig, Mercantesca, freie Renaissance-Schriften), Leonardos Instrumente/Notation, Anachronismen (Siegel, Farbtinten, Diagramme);
+  danach Maßnahmenliste zur Abstimmung, erst dann bauen.
+- Begrenzung GEBAUT (plakat.js kachelZahl/begrenzen, alle Vorlagen): N = min(700, max(12, Schaumfläche/400 mm²)), Auswahl nach w, Gleichstand
+  neuer/zuletzt aktiv, neue Saaten, lage + '|staerkste'N, aktuell.kachelN im Neulege-Vergleich (A3/A2 gleiches Verhältnis), Unterzeile
+  „die N stärksten nach <Maß> von M Titeln/Personen". Rauchprobe 1500 Titel: Plakat steht nach 14 s (vorher Abbruch nach >100 s).
+  Außerdem: Namen nach Bindestrich teilbar („Minimalistic- / AI-Sounds"), Säulen-Überschrift der Würdigung ausgewogen umbrochen.
+  Grenzfall-Agent (scratchpad/grenz/): 5 Titel und verzierte Namen sauber; Ergebnis vorläufig (Kreide-Auslauf kam während seines Laufs).
+- **Nächster Schritt danach (1.0.63, Caspar_D: „B"):** Plakat-Panel neu – „Mein Klangplakat oder Klangkunstdruck: (wie würdest du es
+  nennen)" → Vorschlag „Klangplakat" (offen, nicht bestätigt); „das bedienpanel als Accordeon, das pdf speichern und schließen immer
+  sichtbar; am anfang sieht man alle Styles, einer ist schon ausgewählt und sein Ergebnis zu sehen" → Skizze gezeigt: feste Kopfleiste
+  (Name, PDF, Bild, Schließen), Abschnitt „Stil" offen mit allen Vorlagen (zuletzt benutzte gewählt, sonst Galerie), darunter
+  Akkordeon Format/Grund/Titel in der Zelle/Inhalt/Feinheiten, zugeklappt mit Wert rechts. 1.0.62 zuerst ohne neues Panel.
+- Recherche fertig: Lesestoff `_werkstatt_bilder/feder/leonardo-lesestoff.html`, Maßnahmenliste (30 Punkte, je Ist/Befund/Vorschlag/
+  Aufwand/Entscheidung) `_werkstatt_bilder/feder/leonardo-massnahmen.md`. Panne: ein Recherche-Agent schickte einmal Jörgs E-Mail im
+  User-Agent an die Wikimedia-API – Jörg gesagt; Agenten-Aufträge enthalten jetzt ein ausdrückliches Verbot.
+- **Entschieden (Caspar_D):** „wir lassen diese Darstellung als historisierend, wir fügen eine Leonardo Variante separat hinzu, darum
+  können wir jetzt releasen und erarbeiten dann Leonardos Stil" – „vielleicht sollten wir einige Leonardo Spezifika zurückbauen, wie z.B.
+  die Spiegelschrift" → „A": 1.0.62 wie geprüft; im NÄCHSTEN Schritt die Leonardo-Vorlage (Bauplan = Maßnahmenliste) und zugleich die
+  historisierende Fassung entleonardisieren (Spiegelschrift, Notenrätsel, Vitruv auf der Trommel, italienische/lateinische Überschriften
+  ziehen in die Leonardo-Vorlage um – genaue Liste mit Caspar_D abstimmen).
+- Letzte Prüfung vor 1.0.62: Formatdurchgang 27/27 sauber (leo/sweep-final.txt); Fallensuche Runde 3 läuft (wf_5563ca6c-4e5).
+
+## 91. 08.10.2026 nachmittags: STAND VOR DEM RELEASE 1.0.62 (nach Kompression hier weitermachen)
+**Wo der Code liegt:** ALLES im Sandkasten `scratchpad/sandkasten-plakat` (= Repo 1.0.61 + Änderungen), Server 8799 `--eingefroren`
+(PID in `scratchpad/leo/server-8799.pid`, Log `leo/server-8799.log`). Im Repo ist NOCH NICHTS davon. scratchpad =
+`/private/tmp/claude-501/-Volumes-Extreme-SSD-Entwicklung/7b40ece6-5b5f-4105-b900-03e843824aa1/scratchpad`.
+**Ins Repo zu kopieren (genau diese Dateien, Sandkasten → Repo):** `web/index.html`, `web/klangschaum/plakat.js`, neu:
+`web/klangschaum/skizze-blatt.js`, `skizze-hand.js`, `skizze-studien.js`, `skizze-daten.js`, `skizze-bildnisse.js`, `skizze-siegel.js`;
+`bin/feder.js`, `server/server.js`. NICHT: `web/_skizze/` (Werkstatt, persönliche Bilder/Daten), `library/`, `package.json` des
+Sandkastens (dort steht 1.0.59). Vorher `diff -u` je Datei gegen das Repo ansehen (Repo darf seit 1.0.61 unverändert sein – `node
+bin/fremdstand.js` + `git fetch`).
+**Release-Schritte:** Caspar_D ansagen: server.js/feder.js ändern sich → 8788 startet neu (läuft mit Schleife `sh bin/server-start.sh`,
+vorher `ps … | grep server-start` prüfen). Version 1.0.62 in `package.json` und `web/index.html` (`plakat.js?v=1.0.61` → `?v=1.0.62`).
+Übergabe §87–§91 kurz in die Moduldoku? (wie bisher nur Übergabe + Commit-Text). `git add` der Dateien, Commit (Attribution-Zeile),
+`git fetch` + push, `node bin/paket.js` → `../KlangTresor.zip` prüfen (enthält die neuen skizze-*.js?), `gh release create v1.0.62
+../KlangTresor.zip --title "KlangTresor 1.0.62" --notes …` – NIE --clobber. Nach dem Push 8788 prüfen (PID neu, curl 200).
+**Inhalt 1.0.62:** Skizzenbuch „volles Blatt" (historisierend): angeschnittener Kreis mit Spalte, Raster-Anordnung, Daten zur Laufzeit
+(skizze-daten.js), Bildnisse vom Server (feder.js --avatare, /bildnis/), Siegellack (B), Widmung „artifici <Dativ> dedicatum" an Platz 1,
+Kreidetünche mit weichem Auslauf, zweizeilige Kacheltitel mit halber Oberlänge, Ausschnitt nach Gesicht/Schrift, Zierrat-Filter
+(schriftTauglich), lange Namen zweizeilig, Studien nach Daten (Paar Gitarre/Cello kopfüber), Lateinmonate, gezeichnete römische Ziffern,
+alle 27 Formate. Für ALLE Vorlagen: Kachel-Begrenzung (je Format ≤ 700, Schaumfläche/4 cm², nach gezeigtem Maß; Unterzeile „die N
+stärksten nach <Maß> von M Titeln").
+**Prüfungen:** Fallensuchen Runde 1–3 (16 + 10 + ~20 echte Funde, alle korrigiert, Belege in scratchpad/falle*/), danach gezielt
+nachgestellt und behoben: Verzeichnis-Pendel (jetzt Fixpunkt, 286 stabil), Überlauf beim ersten Bau (213,8 < 219 mm), Maßwechsel
+(neu gelegt + Legende gefiltert), Groupie-Gleichstand (letzte + ID-Prüfsumme im Lage-Schlüssel), Randlos-Unterzeile, Genitiv
+(„Tarjas Klangschaum"), nichtlateinische Titel („(ohne lesbaren Titel)", keine leeren „“), „Track ½", Vietnamesisch; neu gefunden und
+behoben: Doppelgänger nur in Wörtern mit lateinischer Schrift („ветра" wurde „betpa"). **Läuft beim Schreiben:** (a) Formatdurchgang +
+Grenzfälle + Namensprobe auf dem letzten Stand (Bash-Hintergrund bc5aaww34, Ergebnis in `leo/sweep-final2.txt` + Ausgabe), (b)
+Fallensuche Runde 4 nur über die Runde-3-Korrekturen (wf_362abc40-83d, Journal unter subagents/workflows/wf_362abc40-83d). Regel
+([[pruefungen-nicht-entwerten]]): während Prüfungen nichts ändern; sind die Ergebnisse sauber (oder echte Funde behoben UND neu
+geprüft), ausliefern. Werkzeuge: `leo/probe-formate.js 8799 <ordner> <fälle>`, `grenz/grenz.mjs klein|gross|namen <fälle> [--sofort]`,
+`falle3-begrenzung-gegen/cdp.js <s10-pendel|s3-ueberlauf|s4-masswechsel|g4-groupie|g5-legende|s9-vorschlag|z-namen>.js`.
+**Danach (Reihenfolge abgestimmt):** (1) Leonardo-Vorlage separat (Bauplan `_werkstatt_bilder/feder/leonardo-massnahmen.md`, Lesestoff
+`leonardo-lesestoff.html`) + historisierende Fassung entleonardisieren (Spiegelschrift, Notenrätsel, Vitruv-Trommel, ital./lat.
+Überschriften ziehen um – Liste mit Caspar_D abstimmen). (2) 1.0.63: Plakat-Panel als Akkordeon „Klangplakat" (Name noch nicht
+bestätigt; feste Kopfleiste PDF/Bild/Schließen, „Stil" offen mit allen Vorlagen). (3) Kreide auf dunkler Holzwand für Tarja (§90,
+Memory skizzenbuch-kreide-holz). (4) Backlog: Suno-Alben vs. Abspiellisten (BACKLOG.md, neu). (5) Groupieschaum-Regler „untere %
+ausblenden" (Memory groupieschaum-perzentil). Wiedervorlagen alt: gesichter.js EXIF, MORGENSCHRITTE-Warnung, Rand im Triptychon.
+**Arbeitsweise neu (Memory):** involviert statt abgeschirmt – Befunde roh zeigen, vorher sagen, was untersucht wird; keine
+Codeänderung während laufender Prüfungen; Agenten nie Nutzerdaten (E-Mail) an fremde Dienste senden lassen.
