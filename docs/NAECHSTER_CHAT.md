@@ -8674,3 +8674,11 @@ Was ihm auffällt (seine Worte, gekürzt):
 Auftrag: „schreib alles soweit in die Doku und dann machen wir einen Brainstorm, noch nichts neu anfangen oder ändern" – „wenn ich
 präzisieren muß, dann frage nach".
 Stand des Brainstorms: siehe Chat 08.10.2026; Entscheidungen werden hier nachgetragen, gebaut wird erst nach seinem Wort.
+Präzisiert (08.10.2026): „das wäre mit dem quadrat nicht vereinbar, also entweder oder" – „der Kreis wäre vielleicht ein Viertel des
+Durchmessers aus dem Bild geschoben, wie ein D mit mehr Bogen. Der Innenraum wäre normal geschäumt. Der Abschnitt des Kreises ausserhalb
+des Bildes taucht nirgendwo auf. Man würde erreichen, dass zwei Ecken nur noch wenig Platz verschenken, aus den 21 % werden vielleicht
+13 %, die doch im Hüllrechteck übrig bleiben. Aber es gibt trotzdem einen Seitenrand, der z. T. auch überschrieben wurde, aber der
+angeschnittene Kreis bleibt immer darinnen."
+Nachgerechnet: Kreis im Quadrat 21,5 % frei; um ¼ des Durchmessers hinausgeschoben (Schnitt am Seitenrand, Hüllrechteck 1,5 r × 2 r)
+15,8 % frei. Skizze `_werkstatt_bilder/feder/quadrat-oder-angeschnitten.png` (A Quadrat, B angeschnitten; hoch links, quer unten
+angeschnitten – lange Seite der D-Form längs). Entscheidung A/B steht aus.
