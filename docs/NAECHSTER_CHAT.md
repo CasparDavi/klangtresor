@@ -8693,3 +8693,8 @@ für Studien, Fragmente, Spiegelschrift): „das fiel mir auch auf, deswegen fra
 - Offen aus §88 (bleibt gültig): Platz füllen (durchscheinendes Altes, Cover-Fragmente, Spiegelschrift-Blöcke aus echten Daten, Hinweis
   „KlangTresor" in Spiegelschrift, Räderwerk aus den Arealen), größere Instrumentenstudien mit Detailausschnitten, ein weiteres
   kreideaufgehelltes Element, zweizeilige Titel, Handschrift mit Schwankung. Nächster Schritt: Skizze B mit Spalte zeigen, dann bauen.
+Skizze B mit Spalte (Engine legt den Schaum in die D-Form; `_werkstatt_bilder/feder/angeschnitten-mit-spalte.png`, Skript
+`spalte.mjs`): Kreisanteil am Blatt 50 × 70 hoch 42 % (1.0.61: 31 %), 50 × 50 51 % (34 %), 70 × 50 quer 49 % (24 %). Im Quadrat
+ohne Streifen oben/unten (mit Streifen wuchs der Kreis dort nicht) – Kopf, Refrains, Studien, Legende/Siegel in der Spalte (¼), Refrain
+und Rätsel in den Zwickeln. Hoch: Streifen oben (Kopf, Refrains) und unten (Legende, Refrain/Rätsel, Siegel), Spalte ⅕ (Gitarre,
+Detail, Cello). Quer: unten angeschnitten, Kopf oben links, Spalte rechts.
