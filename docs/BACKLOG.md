@@ -3202,3 +3202,34 @@ Alben umzubenennen mit einer Teilung in Abspiellisten (die Playlists) und Alben 
   im Katalogkopf stehen außerdem `albenStand` und `albenKandidaten` – vor dem Bau nachsehen, was davon schon wofür benutzt wird,
   damit Suno-Alben und Abspiellisten nicht im selben Feld landen.
 - Nomenklatur: „Album" künftig nur für Sunos Alben, „Abspielliste" für Playlists (auch in Texten, Hinweisen, Handbuch).
+
+## Wiedervorlage: Reste aus dem Scan vom 08.10.2026 und PDF-Prüfung der Vorlagen
+
+**Zustand: Wiedervorlage.** Caspar_D: *„schreib alles ins backlog zur wiedervorlage, jetzt machen wir das nicht"*. Hintergrund:
+„keine Klangtresordaten pushen" heißt, Funktionen rechnen zur Laufzeit aus dem jeweiligen Archiv (Übergabe §93) – übrig bleibt
+nur, was bei einem fremden Archiv falsch liefe, plus Hygiene. Kein Datenschutzthema.
+
+**Läuft bei einem fremden Archiv falsch**
+1. `bin/whisper.js:119–128, 319–320` – fest verdrahtet: die Playlist „Fokus-Wanderung" (`OHNE_PLAYLISTS`, bei anderen wirkungslos)
+   und **jeder Titel auf I–IV** (`INSTRUMENTAL_TITEL`, Caspar_D 20.08.: bei ihm Instrumentals) – bei anderen würde ein gesungenes
+   „Teil II" nie abgeschrieben. Abhilfe: beides durch die vorhandene Instrumental-Erkennung ersetzen. Eingriff in den Datenfluss –
+   vorher ansagen.
+2. `bin/gesundheit.js:93` – fehlt im Katalog das Handle, fällt die Prüfung auf `caspar_d` zurück. Abhilfe: ohne Rückfall.
+3. Texte mit Zahlen dieses Bestands für jeden Nutzer: `web/tbs-modul.js:6298` („über die 325 Tiefenkarten des Bestands") und die
+   Fußnote im Textraum `web/index.html:16518–16522` („Stichprobe vom 28.08.2026, damals 261 Titel … 90 % … 25 von 261"). Abhilfe:
+   als Eichung am Bestand des Entwicklers kennzeichnen oder zur Laufzeit rechnen.
+
+**Hygiene (kein Fehler)**
+4. Laborergebnisse (`labor/nahtpruefung/*.json`, `labor/videonaht/ergebnis.json`, `tabellen.md`, `statistik.md`, rund 3,7 MB
+   unkomprimiert) reisen in jedem Paket mit und nützen anderen nichts – aus dem Paket nehmen (`.gitattributes export-ignore`),
+   im Repo lassen.
+5. `bin/paket.js:22–29` – der Kommentar behauptet eine Kopplung über PREFIX und ein Muster `^geheim/`, die es seit be690f9 nicht
+   mehr gibt (Kommentar deckt Code zu); `.gitignore:17–18` `!library/messungen/` ist wirkungslos (library/ ist ganz ausgeschlossen).
+6. `docs/eichkasten/*.js` und `labor/**` kennen feste Playlist-IDs und absolute Pfade – Werkbank, läuft nur beim Entwickler;
+   so lassen oder kennzeichnen.
+
+**PDF-Darstellung der übrigen Vorlagen**
+7. Nach der Naht im Skizzenbuch (1.0.63, Übergabe §93): Randlos mit Glasfilter, Kissen, gemalter Rand und die übrigen Vorlagen
+   einmal als PDF mit Apples Engine prüfen (headless `Page.printToPDF` + `sips`, `pdfimages -list` zeigt seitengroße Rasterebenen).
+   Gleiche Bauart wie die Tünche: Filter/Masken auf großen Flächen. Vorschlag damals: 1–3 und 5 als kleines Release, 7 als Prüfung
+   mit höchstens 2 min je Vorlage.
