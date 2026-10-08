@@ -8643,3 +8643,6 @@ Scratchpad), antwortet. Wiedervorlage (Caspar_D entscheidet / ansehen):
   kästen bei hochkant fotografierten eigen.jpg; feder.js spart dann lieber nichts aus.
 - Beim Serverstart: „MORGENSCHRITTE.json kennt den Schritt nicht: Medien laden …" – bestand schon vor 1.0.61.
 - Lizenz der Modellgewichte (Informative Drawings) nicht ausdrücklich geklärt – nicht im Paket, KlangTresor bleibt nicht kommerziell.
+Nach dem Einsetzen im echten Archiv über das App-Skript gerechnet (`node bin/feder.js`, 08.10. ~02:40): Modell geholt (16,4 MB),
+327 Zeichnungen, 260 mit ausgesparter Schrift, Tinte im Median 5,3 %, 1,8 s je Bild. Neu in library/: nur feder.json,
+modelle/informative-drawings.onnx und 327 × songs/<id>/feder.png. /api/feder: offen 0 – das Skizzenbuch öffnet sofort.
