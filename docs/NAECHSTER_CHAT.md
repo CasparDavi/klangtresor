@@ -8880,3 +8880,12 @@ Codeänderung während laufender Prüfungen; Agenten nie Nutzerdaten (E-Mail) an
 - **Ergebnis (a) auf dem letzten Stand:** Formatdurchgang 27/27 (kein Kernausfall, keine Überlappung, nichts über Rand, 9/9 Läufe
   ohne Fehler); Grenzfälle klein/namen/gross sauber (Widmung „artifici Tarjae dedicatum", kein NaN); Namensprobe: „Tarjas Klangschaum",
   Tabula „(ohne lesbaren Titel)", „Remix" statt „betpa", „Track ½", „Nguyễn Văn Ánh", keine leeren Anführungen. Offen nur noch (b) Runde 4.
+
+## 92. 08.10.2026 nachmittags: 1.0.62 AUSGELIEFERT
+Runde 4 der Fallensuche war sauber (Verzeichnis jetzt per Bisektion statt Fixpunkt: Galerie A3 quer 190 Kacheln stabil, auch bei 1500
+Titeln; Überlauf 212,4 < 219 mm; Zoom-Legende = Hauslegende). Freigabe Caspar_D („ja, akzeptiert, mach, ich will ausprobieren").
+Die 10 Dateien aus §91 sind im Repo (ein Kommentar in plakat.js verwies auf scratchpad/leo – allgemein formuliert), Commit 1e47b7a,
+gepusht, Release https://github.com/CasparDavi/klangtresor/releases/tag/v1.0.62 (Zip 360 Dateien, enthält die skizze-*.js), feste
+Download-Adresse 200. 8788 neu gestartet (PID 88631, 200, /api/feder antwortet; avatare 0 im echten Archiv – die Bildnisse zeichnet
+der Server beim ersten Öffnen des Skizzenbuchs). Sandkasten 8799 und scratchpad bleiben bis zur Leonardo-Vorlage stehen.
+**Weiter:** Reihenfolge wie in §91 „Danach" – zuerst Leonardo-Vorlage + Entleonardisieren (Liste mit Caspar_D abstimmen).
