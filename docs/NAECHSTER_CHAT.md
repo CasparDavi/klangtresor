@@ -8710,3 +8710,6 @@ mit Name/Avatar), community-profile.json (574 Leute), je Titel zaehlerVerlauf (P
 Vorschläge: Top 5 als „Tabula" (römische Ziffern), Würdigung als Porträtstudien (Avatare durch das Federmodell), Instrumentenstudien nach
 deinen häufigsten Instrumenten (Cello für Tarja bleibt Widmung), Diagramme: Wachstumskurve aus zaehlerVerlauf, Windrose der Stimmungen,
 24-Stunden-Zifferblatt der Entstehungszeiten, Räderwerk der Areale, Spektrogramm-Studie des Spitzentitels. Entscheidung offen.
+**Entschieden (08.10.2026): Würdigung = „die fünf, die bei mir die längsten Kommentare (zusammen) hinterliessen"** – dasselbe Maß wie
+„Kommentarlänge" im Groupieschaum (z.zeichen: alles, was die Person bei dir geschrieben hat, in Schriftzeichen gezählt). Fünf
+Porträtstudien (Avatar durch das Federmodell), Namen darunter, Überschrift „Ispirazione"; Hinweis „nur für den privaten Gebrauch".
