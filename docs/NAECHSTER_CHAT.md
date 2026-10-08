@@ -8907,3 +8907,5 @@ der Server beim ersten Öffnen des Skizzenbuchs). Sandkasten 8799 und scratchpad
   archivgebunden sind nur Kleinigkeiten (bin/whisper.js OHNE_PLAYLISTS mit fester Playlist-ID, „325" in Texten von web/tbs-modul.js
   und eine Fußnote in index.html) – bei Gelegenheit zur Laufzeit rechnen.
 - **Danach:** KlangTresor-Pause, Treemapper (Protokoll in Treemapper/docs/PROTOKOLL-veroeffentlichung.md, Entscheidungen E1–E9 offen).
+
+**Nachtrag 08.10.2026 nachts:** Die Sitzung arbeitet jetzt am Treemapper (hfoam, Prüfstand, Paper). Übergabe dort: `Treemapper/NEXT.md` (oberster Abschnitt) und `~/claude-sicherung/7b40ece6/AUTO-STATUS.md`.
