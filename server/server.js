@@ -1468,35 +1468,46 @@ function sperreLebt(datei, maxAlter = 0) {
    Muster wie beim Klangschaum (Caspar_D, 08.10.2026: „siehe dir dazu den teil zum klangschaum an, da werden
    auch zwei modelle gebraucht"): beide Skripte holen ihr Modell still nach; fehlt es danach noch (kein Netz),
    wird nichts gezeichnet und fehler heisst 'modelle'.
+   'bildnis' (08.10.2026): einzelne Avatare als Federzeichnung fuers Skizzenbuch (bin/feder.js --avatare, siehe dort) -
+   ohne Gesichter-Schritt, denn ein Bildnis spart keine Schrift aus. Welche Avatare, sammelt bildnisWunsch: ein Lauf
+   nimmt alle bis dahin gewuenschten mit; was waehrend des Laufs dazukommt, holt ende() im naechsten nach.
    Laeuft schon ein Lauf der anderen Art, kommt dieser danach dran. */
+const bildnisWunsch = new Set();
 function bilderVorbereiten(art) {
-  art = art === 'person' ? 'person' : art === 'feder' ? 'feder' : 'titel';
+  art = art === 'person' ? 'person' : art === 'feder' ? 'feder' : art === 'bildnis' ? 'bildnis' : 'titel';
+  if (art === 'bildnis' && !bildnisWunsch.size) return;
   if (bilderLauf.laeuft) { if (art !== bilderLauf.art) bilderLauf.danach = art; return; }
   Object.assign(bilderLauf, { laeuft: true, art, danach: null, schritt: null, n: 0, von: 0, seit: Date.now(), fertigAm: null, fehler: null });
-  /* die Federsperre nur fuer den Federlauf - gesichter.js und avatare.js beruehren die Federdateien nicht */
+  /* die Federsperre nur fuer Feder- und Bildnislauf - gesichter.js und avatare.js beruehren die Federdateien nicht */
   const sperren = [path.join(WURZEL, 'library', 'avatare.lauf'), path.join(WURZEL, 'library', 'gesichter.lauf')];
   const federSperre = path.join(WURZEL, 'library', 'feder.lauf');
   const fremd = () => (morgen.laeuft && morgen.folge && morgen.folge[morgen.schritt] && morgen.folge[morgen.schritt].id === 'medien-laden')
-    || sperren.some(d => sperreLebt(d)) || (art === 'feder' && sperreLebt(federSperre, 15 * 60000));
+    || sperren.some(d => sperreLebt(d)) || ((art === 'feder' || art === 'bildnis') && sperreLebt(federSperre, 15 * 60000));
   const ende = () => {
     let st = null; try { st = require('../bin/gesichter.js').stand(); } catch (e) {}
     /* feder: ohne das Zeichenmodell gibt es keine Zeichnung - die Seite zeigt dann den Hinweis, kein halbes Plakat */
     let fst = null; if (art === 'feder') try { fst = require('../bin/feder.js').stand(katalogHolen()); } catch (e) {}
-    /* beim Federlauf zählt nur das Zeichenmodell - ohne die Gesichter-Modelle zeichnet feder.js trotzdem (nur ohne Schriftaussparung) */
-    bilderLauf.fehler = (art === 'feder' ? (fst && !fst.modell) : (st && !st.modelle)) ? 'modelle' : null;    /* kein Netz beim ersten Mal: der naechste Morgenlauf holt sie */
-    const danach = bilderLauf.danach;
+    else if (art === 'bildnis') try { fst = require('../bin/feder.js').bildnisStand(); } catch (e) {}
+    /* beim Feder- und Bildnislauf zählt nur das Zeichenmodell - ohne die Gesichter-Modelle zeichnet feder.js trotzdem (nur ohne Schriftaussparung) */
+    bilderLauf.fehler = ((art === 'feder' || art === 'bildnis') ? (fst && !fst.modell) : (st && !st.modelle)) ? 'modelle' : null;    /* kein Netz beim ersten Mal: der naechste Morgenlauf holt sie */
+    /* waehrend des Laufs gewuenschte Bildnisse kommen danach dran - auch wenn danach schon eine andere Art wartet (die ruft beim
+       eigenen Ende wieder hier vorbei); danach traegt nur eine Art */
+    const danach = bilderLauf.danach || (bildnisWunsch.size ? 'bildnis' : null);
     Object.assign(bilderLauf, { laeuft: false, danach: null, schritt: null, fertigAm: Date.now() });
     bilderLauf.letzte[art] = { fertigAm: bilderLauf.fertigAm, fehler: bilderLauf.fehler };
     if (danach) bilderVorbereiten(danach);
   };
   const warten = (dann) => { const uhr = setInterval(() => { if (!fremd()) { clearInterval(uhr); dann(); } }, 2000); };
+  /* die Wunschliste wird erst beim Start des Schritts genommen (nach dem Warten), damit ein Lauf alles mitnimmt, was bis dahin kam */
+  const bildnisBefehl = () => { const liste = [...bildnisWunsch]; bildnisWunsch.clear(); return ['bin/feder.js', '--avatare', liste.join(',')]; };
   const schritte = art === 'person' ? [['avatare', ['bin/avatare.js']], ['gesichter', ['bin/gesichter.js', '--nur-avatare']]]
                  : art === 'feder'  ? [['gesichter', ['bin/gesichter.js', '--ohne-avatare']], ['feder', ['bin/feder.js']]]
+                 : art === 'bildnis' ? [['bildnis', bildnisBefehl]]
                                     : [['gesichter', ['bin/gesichter.js', '--ohne-avatare']]];
   const weiter = (i) => {
     if (i >= schritte.length) return ende();
     if (fremd()) { bilderLauf.schritt = 'wartet'; return warten(() => weiter(i)); }
-    const [name, befehl] = schritte[i];
+    const [name, b] = schritte[i], befehl = typeof b === 'function' ? b() : b;
     Object.assign(bilderLauf, { schritt: name, n: 0, von: 0 });
     let kind;
     try {
@@ -3695,20 +3706,50 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
   }
   /* Die Federzeichnungen je Titel (bin/feder.js) fuers Plakat „Skizzenbuch": bilder aus library/feder.json (die
      Zeichnung selbst liegt unter /media/<id>/feder.png), dazu wie bei /api/gesichter, ob das Modell da ist und
-     wie viele Titel noch offen sind - die Seite setzt die Zeichnungen erst ein, wenn nichts mehr offen ist, und
-     startet sonst POST /api/bilder/vorbereiten?art=feder. */
+     wie viele Titel noch offen sind - sind welche offen, stößt die Seite POST /api/bilder/vorbereiten?art=feder an und
+     wartet; was fertig ist, setzt sie ein, Fehlendes schraffiert (federBereit in plakat.js).
+     avatare (08.10.2026): die Bildnisse (bin/feder.js --avatare) je Avatar-Datei, jeder Eintrag mit gilt nach den Regeln
+     des Laufs - Zeichnung unter /bildnis/<SHA-1>.png. Gezeichnet wird nur auf Abruf (art=bildnis&avatare=…), darum gibt es
+     hier keine Zahl offener Bildnisse: offen ist, was die Seite braucht und nicht gilt. */
   if (p === '/api/feder') {
     let b = null;
     try { b = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'feder.json'), 'utf8')); } catch (e) {}
-    let st = { modell: false, offen: 0, gesamt: 0 };
+    let st = { modell: false, offen: 0, gesamt: 0 }, bs = { avatare: {} };
     try { st = require('../bin/feder.js').stand(katalogHolen()); } catch (e) {}
-    return jsonAntwort(res, { bilder: (b && b.bilder) || {}, modell: st.modell, offen: st.offen, gesamt: st.gesamt, lauf: bilderStand() });
+    try { bs = require('../bin/feder.js').bildnisStand({ eingefroren: EINGEFROREN }); } catch (e) {}
+    return jsonAntwort(res, { bilder: (b && b.bilder) || {}, avatare: bs.avatare, modell: st.modell, offen: st.offen, gesamt: st.gesamt, lauf: bilderStand() });
   }
   if (p === '/api/bilder/stand') return jsonAntwort(res, bilderStand());
   if (p === '/api/bilder/vorbereiten' && req.method === 'POST') {
     if (!eigeneSeite(req)) return jsonAntwort(res, { ok: false, grund: 'Nur von der eigenen Seite.' }, 403);
+    /* art=bildnis: avatare = Dateinamen aus library/avatare, Komma getrennt. Streng geprueft (Form wie bin/avatare.js sie
+       vergibt, hoechstens 50, die Datei liegt da) - der Name geht als Argument an bin/feder.js. Was nicht passt, wird nicht
+       gezeichnet; angenommen sagt der Seite, auf welche sie warten kann. */
+    if (u.searchParams.get('art') === 'bildnis') {
+      const namen = String(u.searchParams.get('avatare') || '').split(',').map(s => s.trim()).filter(Boolean);
+      let muster = null; try { muster = require('../bin/feder.js').AVATARNAME; } catch (e) {}
+      if (!muster || !namen.length || namen.length > 50 || !namen.every(n => muster.test(n)))
+        return jsonAntwort(res, { ok: false, grund: 'avatare: Dateinamen aus library/avatare (40 Hexzeichen + Endung), Komma getrennt, höchstens 50.' }, 400);
+      const angenommen = namen.filter(n => fs.existsSync(path.join(WURZEL, 'library', 'avatare', n)));
+      for (const n of angenommen) bildnisWunsch.add(n);
+      bilderVorbereiten('bildnis');
+      return jsonAntwort(res, Object.assign(bilderStand(), { angenommen }));
+    }
     bilderVorbereiten(u.searchParams.get('art'));
     return jsonAntwort(res, bilderStand());
+  }
+  /* Die Bildnisse (bin/feder.js --avatare): nur <40 Hexzeichen>.png aus library/bildnisse, kein anderer Name. Abgeleitet wie
+     feder.png - neu gezeichnet, sobald avatare.js ein neues Bild holt oder die Nachbearbeitung eine neue Fassung bekommt -,
+     darum no-cache mit Last-Modified statt der Woche der Avatare. */
+  const bildnisWeg = p.match(/^\/bildnis\/([0-9a-f]{40}\.png)$/);
+  if (bildnisWeg) {
+    const datei = path.join(WURZEL, 'library', 'bildnisse', bildnisWeg[1]);
+    let st; try { st = fs.statSync(datei); } catch (e) { res.writeHead(404); return res.end(); }
+    const stempel = st.mtime.toUTCString();
+    if (req.headers['if-modified-since'] === stempel) { res.writeHead(304, { 'Cache-Control': 'no-cache', 'Last-Modified': stempel }); return res.end(); }
+    let daten; try { daten = fs.readFileSync(datei); } catch (e) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': daten.length, 'Cache-Control': 'no-cache', 'Last-Modified': stempel });
+    return res.end(req.method === 'HEAD' ? undefined : daten);
   }
   /* Die geholten Avatare (bin/avatare.js) - Dateiname ist die SHA-1 der Adresse, nichts sonst wird ausgeliefert. */
   const avatarWeg = p.match(/^\/avatar\/([0-9a-f]{40}\.(jpg|png|webp|gif))$/);

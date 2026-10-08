@@ -9,6 +9,10 @@
    Schirm, im Plakat als Kacheln mit Luecken. Die Vorschau nimmt die Bilder aus dem Vorrat, das PDF die
    Originale (data-voll). Masse auf der Seite in Millimetern; 3 mm Beschnitt rundum. */
 import { blockLage, blockReserve, ECKEN } from './eckblock.js';
+import { blattSchmuck, blattGrund, dAuftrag, anzeigeName } from './skizze-blatt.js';
+import { ohneKlammern } from './skizze-hand.js';
+import { blattDatenHolen, refrainAus } from './skizze-daten.js';
+import { bildnisseBereit } from './skizze-bildnisse.js';
 
 const FORMATE = [
   { id: 'A3', name: 'A3', w: 297, h: 420 }, { id: 'A2', name: 'A2', w: 420, h: 594 },
@@ -46,10 +50,10 @@ const VORLAGEN = [
 VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
   e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, skizze: false, randVorne: 15, umschlag: 0 } });
 /* SKIZZENBUCH (1.0.61; Caspar_D: „ich hab eher an ein neues Layout a la Leonardo da Vinci oder sowas gedacht" – „im Ansatz sieht das
-   super aus" – „ja, wir nehmen das bessere modell"): eine Seite aus einem Skizzenbuch - der Schaum als Kreisstudie mit Konstruktion,
-   die Kacheln als Federzeichnungen in der Tinte ihres Areals (Haus: skizzeZelle), Titel in Pinyon Script, Randnotizen zu den großen
-   Zellen am Kreisrand, die Refrains der drei Titel mit den meisten Herzen (oder der neuesten), die Zeitleiste als Bogen, Kopf in
-   Handschrift mit einer Zeile in Spiegelschrift, die Legende als Notiz, ein Wachssiegel mit dem Avatar. Pergament als Grund. */
+   super aus" – „ja, wir nehmen das bessere modell"): eine Seite aus einem Skizzenbuch - der Schaum in einem angeschnittenen Kreis,
+   die Kacheln als Federzeichnungen in der Tinte ihres Areals (Haus: skizzeZelle), Titel in Pinyon Script; ringsum das volle Blatt
+   (skizze-blatt.js: Kopf, Siegel, Tabula, Steckbrief, Instrumentenstudien, Würdigung, Legende, Randnotizen, Refrains, Diagramme,
+   Zeitleiste als Bogen). Pergament als Grund. */
 VORLAGEN.push({ id: 'skizze', name: 'Skizzenbuch', zeile: 'Federzeichnung auf Pergament, à la Leonardo',
   e: { grund: '#eee2c6', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: false, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: true, schild: false, skizze: true, refrains: 'herzen' } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
@@ -106,17 +110,17 @@ function geometrie(n = 0){
      aus. „Rand vorne" liegt innerhalb des Formats (der Schaum rückt nach innen), „Umschlag" kommt außen dazu (Tiefe des Keilrahmens
      plus Tackerzugabe; das Druckformat wächst, vorne bleibt das gewählte Format). Nicht im Triptychon (jede Tafel bräuchte ihren
      eigenen Rand), Umschlag nicht bei Bildformaten (keine Kante zum Umschlagen). */
-  /* Skizzenbuch: der Schaum ist ein Kreis; die Karte ist das Quadrat um ihn. Hochformat: Mitte bei 47 % der Höhe (oben Kopf und
-     Refrains, unten Zeitleiste, Legende, Siegel), Radius 37 % der Breite, höchstens 33 % der Höhe; quer: 36 % der Höhe, mittig. */
   if (E.skizze){
     /* Triptychon: das Skizzenbuch ist eine Seite - die Tafel (vorher wurde aus 3 × 50 × 70 eine Seite von 156 cm) */
     if (tri){ w = tri.pw; h = tri.ph; kurz = Math.min(w, h); tri = null; }
-    /* Hochformat (h ≥ 1,2 w): oben 144 mm für Kopf und Refrains, unten 184 mm für Zeitleiste, Refrain, Rätsel, Legende und Siegel
-       (auf 50 × 70, mit der kurzen Seite skaliert); quer und quadratisch: Kreis mittig (33 % der Höhe), alles Übrige in den Seitenrändern */
-    const ff = kurz / 500, hoch = h >= 1.2 * w;
-    const RR = hoch ? Math.min(0.372 * w, (h - 328 * ff) / 2) : 0.33 * h, CX = BESCHNITT + w / 2, CY = BESCHNITT + (hoch ? 144 * ff + RR : 0.53 * h);
-    return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand: 0, unten: 0, T, U, L, karte: { x: CX - RR, y: CY - RR, w: 2 * RR, h: 2 * RR },
-      kreis: { cx: CX, cy: CY, r: RR, hoch }, skizze: true, schildH: 0, verz: null, zeitH: 0, tri: null, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
+    /* ANGESCHNITTENER KREIS MIT SPALTE (Entwurf 08.10.2026, Übergabe §88): Randlinie 5 % der kurzen Seite; hoch und quadratisch links
+       angeschnitten (Spalte ⅕ bzw. ¼ der Breite, oben/unten Streifen nur im Hochformat), quer unten angeschnitten (Spalte ⅕ rechts) */
+    const m = 0.05 * kurz, ix = BESCHNITT + m, iy = BESCHNITT + m, iw = w - 2 * m, ih = h - 2 * m, hoch = h >= 0.95 * w, quadr = hoch && h < 1.2 * w;
+    let RR, CX, CY, karte;
+    if (hoch){ const sp = (quadr ? 0.25 : 0.2) * iw; RR = Math.min(quadr ? ih / 2 : ih / 2 - 0.09 * ih, (iw - sp) / 1.5); CX = ix + RR / 2; CY = iy + ih / 2; karte = { x: ix, y: CY - RR, w: 1.5 * RR, h: 2 * RR }; }
+    else { const sp = 0.2 * iw; RR = Math.min((iw - sp) / 2, 0.88 * ih / 1.5); CX = ix + RR; CY = iy + ih - RR / 2; karte = { x: CX - RR, y: CY - RR, w: 2 * RR, h: 1.5 * RR }; }
+    return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand: 0, unten: 0, T, U, L, karte,
+      kreis: { cx: CX, cy: CY, r: RR, quadr, schnitt: hoch ? 'links' : 'unten' }, skizze: true, schildH: 0, verz: null, zeitH: 0, tri: null, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
   }
   if (E.schild){
     /* Rand vorne höchstens so breit, dass die Karte 40 % der kurzen Seite behält (freies Format ab 10 cm, Regler bis 6 cm:
@@ -133,7 +137,7 @@ function geometrie(n = 0){
   const schildH = T * 1.25 + U * 1.8 + (E.legende ? L * 0.6 : 0);
   /* So viele Arealkoepfe, wie die Legende des Schaums Zeilen hat - vorher pauschal sechs, das liess unter der Liste Platz frei */
   const listeStrecken = (x0, breite, fug) => fug.length ? freieStrecken(x0, x0 + breite, fug).map(([a, b]) => [a - x0, b - a]) : null;
-  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6, legendenEintraege().length || 6, undefined,
+  const verz = E.verzeichnis && n ? verzeichnisMass(n, w - 2 * rand, kurz, h / 6, legendenEintraege(true).length || 6, undefined,
     listeStrecken(BESCHNITT + rand, w - 2 * rand, tri ? [1, 2].map(j => { const fx = BESCHNITT + j * tri.pw + (j - 1) * tri.fuge; return [fx, fx + tri.fuge]; }) : [])) : null;
   /* Zeitleiste (nur Klangschaum - Personen haben kein Erscheinungsdatum): ein Band zwischen Karte und Schild */
   const zeitH = E.zeitleiste && raumJetzt !== 'groupies' ? 0.032 * kurz : 0;
@@ -146,6 +150,29 @@ function geometrie(n = 0){
 }
 
 /* Was gerade im Schaum steht - derselbe Auftrag im Seitenverhaeltnis der Karte. */
+/* WIE VIELE KACHELN EIN FORMAT TRÄGT (Caspar_D, 08.10.2026: „wir begrenzen alles auf die 700 … beim Posterexport … Sonst machen die
+   Bilder keinen Sinn mehr" – „ja, mach es überall" – „die 700 Titel mit den höchsten Zahlen, egal welche, je nachdem, was angezeigt
+   wird … die 700 mit den meisten Herzen, mit der höchsten Resonanz, mit den meisten Plays"). Je Format so viele, dass eine Kachel im
+   Mittel etwa 2 cm groß bleibt (Fläche des Schaums / 4 cm²), höchstens 700, mindestens 12; genommen werden die mit den höchsten Werten
+   des gezeigten Maßes, bei Gleichstand der neuere Titel bzw. die zuletzt aktive Person. Die Startpunkte werden für die Auswahl neu
+   gerechnet, der Lage-Schlüssel trägt die Zahl. Was das ganze Archiv beschreibt (Tabula, Steckbrief, Würdigung, Wachstum), bleibt
+   beim ganzen Archiv. Fläche: der angeschnittene Kreis ist πr² minus das abgeschnittene Segment (Sehne bei r/2) = 2,5274 r². */
+const KACHEL_MM2 = 400, KACHELN_HOECHSTENS = 700, KACHELN_MINDESTENS = 12;
+function kachelZahl(g){
+  const flaeche = g.skizze && g.kreis ? 2.5274 * g.kreis.r * g.kreis.r : g.karte.w * g.karte.h;
+  return Math.max(KACHELN_MINDESTENS, Math.min(KACHELN_HOECHSTENS, Math.floor(flaeche / KACHEL_MM2)));
+}
+function begrenzen(a, n){
+  const z = a.j.zeilen; if (z.length <= n) return a;
+  const zeit = (r) => a.art === 'person' ? (r.letzte || 0) : (Date.parse(((typeof song === 'function' && song(r.id)) || {}).erstellt) || 0);   /* zuletzt aktiv bzw. neuer */
+  const bleiben = new Set(z.slice().sort((p, q) => (+q.w || 0) - (+p.w || 0) || zeit(q) - zeit(p)).slice(0, n).map(r => r.id));
+  const zeilen = z.filter(r => bleiben.has(r.id)), { W, H, ebenen } = a.j;
+  const seeds = a.art === 'person' ? (typeof groupieSaat === 'function' ? groupieSaat(zeilen, W, H, a.gl) : null) : (typeof schaumSaat === 'function' ? schaumSaat(zeilen, ebenen, W, H) : null);
+  /* die Auswahl selbst im Lage-Schlüssel (Prüfsumme der IDs): bei Gleichstand kann sie sich ändern, ohne dass sich Werte ändern - eine
+     gemerkte Lage gehörte sonst zu anderen Zeilen (Fallensuche 1.0.62) */
+  let h = 5381; for (const r of zeilen) for (const c of String(r.id)) h = (Math.imul(h, 33) + c.charCodeAt(0)) >>> 0;
+  return { ...a, j: { ...a.j, zeilen, seeds: seeds || a.j.seeds, lage: a.j.lage + '|staerkste' + n + ':' + h.toString(36), gesamt: z.length } };
+}
 async function auftrag(verh){
   if (raumJetzt === 'groupies'){
     const m = GROUPIE_MASSE.find(x => x.id === groupieMass) || GROUPIE_MASSE[0], gl = groupieGl();
@@ -154,17 +181,6 @@ async function auftrag(verh){
   const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
   const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
   return { j: schaumKlangAuftrag(m, gl, schaumZoom, verh), art: 'titel', m, gl };
-}
-/* Skizzenbuch: der Auftrag mit dem Kreis als Umriss (die Engine legt in jedes gegen den Uhrzeigersinn laufende Polygon) und den
-   Startpunkten des Klangraums aus dem Quadrat in die Scheibe gebracht (elliptische Abbildung: die Anordnung bleibt, nichts liegt
-   außerhalb des Kreises - ein Startpunkt draußen ließe die Engine alle verwerfen). */
-function kreisAuftrag(j){
-  const W = j.W, H = j.H, cx = W / 2, cy = H / 2, r = Math.min(W, H) / 2 - 0.5, n = 180;
-  const outline = Array.from({ length: n }, (_, i) => { const a = 2 * Math.PI * i / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; });
-  let seeds = null;
-  if (j.seeds){ seeds = {}; for (const [k, p] of Object.entries(j.seeds)){ const u = Math.max(-1, Math.min(1, (p[0] - cx) / (W / 2))), v = Math.max(-1, Math.min(1, (p[1] - cy) / (H / 2)));
-    seeds[k] = [cx + 0.94 * r * u * Math.sqrt(1 - v * v / 2), cy + 0.94 * r * v * Math.sqrt(1 - u * u / 2)]; } }
-  return { ...j, outline, seeds, lage: j.lage + '|kreis' };
 }
 /* DIE ECKE (Randlos, 1.0.58). Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der
    Avatar in rundem Beschnitt wie in Suno gezeigt; darunter unten- und rechtsbündig Text: <Avatarname>s / Klangschaum / <Datum> /
@@ -379,17 +395,7 @@ async function federBereit(zeilen, melde, abgebrochen = () => false){
     : `${d.offen} Federzeichnungen fehlen noch – sie sind schraffiert; beim nächsten Öffnen geht es weiter.`;
   return { karte: karte(d), hinweis };
 }
-/* Refrain: der erste mit [Chorus], [Refrain] oder [Hook] markierte Abschnitt der Original-Lyrics (Caspar_D: „was der refrain ist,
-   kannst du aus der original lyrics ziehen"), Einwürfe in Klammern weg, höchstens vier Zeilen. */
-function refrainAus(text){
-  const out = []; let drin = false;
-  for (const z of String(text || '').split(/\r?\n/)){
-    const m = z.match(/^\s*\[([^\]]+)\]\s*$/);
-    if (m){ if (drin && out.length) break; drin = /^\s*(chorus|refrain|hook)\b/i.test(m[1]); continue; }   /* nicht [Pre-Chorus], [Post-Chorus] */
-    if (drin){ const t = z.replace(/\s*\([^)]*\)\s*/g, ' ').trim(); if (t) out.push(t); }
-  }
-  return out.slice(0, 4);
-}
+/* Refrain (refrainAus, skizze-daten.js): der erste [Chorus]/[Refrain]/[Hook]-Abschnitt der Original-Lyrics, höchstens vier Zeilen */
 const refrainVorrat = new Map();
 async function refrainsHolen(zeilen, wie){
   if (wie === 'keine') return [];
@@ -397,17 +403,23 @@ async function refrainsHolen(zeilen, wie){
   songs.sort(wie === 'neueste' ? (a, b) => (Date.parse(b.erstellt) || 0) - (Date.parse(a.erstellt) || 0) : (a, b) => (b.likes || 0) - (a.likes || 0));
   const aus = [];
   for (const so of songs.slice(0, 25)){
-    if (!refrainVorrat.has(so.id)){ let r = []; try { const d = await (await fetch('/api/song/' + so.id)).json(); r = refrainAus(d && d.lyrics); } catch (e) {} refrainVorrat.set(so.id, r); }
-    const r = refrainVorrat.get(so.id); if (r.length >= 2) aus.push({ titel: ohneKlammernTitel(so.titel || so.anzeigename || ''), herzen: so.likes || 0, datum: so.erstellt, refrain: r });
+    /* gemerkt wird nur ein Ergebnis oder „gibt es nicht" - ein Aussetzer löschte sonst die Refrains für die ganze Sitzung */
+    if (!refrainVorrat.has(so.id)){ let r = null; try { const a = await fetch('/api/song/' + so.id, { cache: 'no-store' }); if (a.status === 404 || a.status === 400) r = []; else if (a.ok){ const d = await a.json(); r = refrainAus(d && d.lyrics); } } catch (e) {} if (r) refrainVorrat.set(so.id, r); }
+    const r = refrainVorrat.get(so.id) || []; if (r.length >= 2) aus.push({ titel: ohneKlammernTitel(so.titel || so.anzeigename || ''), herzen: so.likes || 0, datum: so.erstellt, refrain: r });
     if (aus.length === 3) break;
   }
   return aus;
 }
-const ohneKlammernTitel = (t) => String(t).replace(/\s*[([{][^)\]}]*[)\]}]\s*/g, ' ').trim();
-const ZAHLWORT = ['', 'eine', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf'];
-/* Der Grund: Pergament (Wolken, Fasern), zwei Flecken, Stockflecken, eine Faltlinie - und die Konstruktion um den Kreis */
+const ohneKlammernTitel = ohneKlammern;   /* wie im Haus (skizze-hand.js): auch verschachtelt, „(Untitled)" bleibt ganz */
+/* Das volle Blatt (skizze-blatt.js): Daten des Archivs (skizze-daten.js, je Bau neu - warm 6 ms) und die Bildnisse der Würdigung als
+   Federzeichnung (skizze-bildnisse.js: url -> { feder, bild }) */
+let blattDaten = null, blattBildnisse = new Map();
+const blattKontext = (g, mehr = {}) => ({ g, E, papier: skizzePapier(), kreide: skizzeKreide(), SEP: SKIZZE_SEPIA, SCHRIFT: SKIZZE_SCHRIFT, B: BESCHNITT, daten: blattDaten,
+  em: (t) => typeof skizzeBreite === 'function' ? skizzeBreite(t) : String(t).length * 0.4,
+  tinte: (farbe) => typeof skizzeTinte === 'function' ? skizzeTinte(farbe || '#888', skizzePapier()) : SKIZZE_SEPIA, ...mehr });
+/* Der Grund: Pergament (Wolken, Fasern), zwei Flecken, Stockflecken, eine Faltlinie; Randlinie, Zirkel und Palimpsest zeichnet blattGrund */
 function skizzeGrund(g){
-  const f = g.kurz / 500, { cx, cy, r } = g.kreis, P = g.PW, H = g.PH, n2 = (v) => v.toFixed(2), kon = (o) => `stroke="${SKIZZE_SEPIA}" stroke-opacity="${o}" stroke-width="${n2(0.25 * f)}" fill="none"`;
+  const f = g.kurz / 500, P = g.PW, H = g.PH, n2 = (v) => v.toFixed(2);
   let s = `<defs><filter id="ps-pergament" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.0084 / f * 100)}e-2" numOctaves="4" seed="3"/><feColorMatrix values="0 0 0 0 0.42  0 0 0 0 0.30  0 0 0 0 0.16  0 0 0 0.55 -0.12"/></filter>`
     + `<filter id="ps-faser" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.26 0.07" numOctaves="2" seed="8"/><feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.12  0 0 0 0.12 0"/></filter>`
     + `<filter id="ps-fleck"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.07 / f)}" numOctaves="3" seed="12" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="${n2(10 * f)}"/></filter>`
@@ -419,226 +431,14 @@ function skizzeGrund(g){
     for (let i = 0; i < 70; i++){ const ux = rnd(), uy = rnd(), nah = Math.min(ux, 1 - ux, uy, 1 - uy), a = rnd(), b = rnd(); if (a > 0.25 + (0.5 - nah) * 1.5) continue;
       s += `<circle cx="${n2(ux * P)}" cy="${n2(uy * H)}" r="${n2((0.6 + 2.8 * b * b) * f)}" fill="#7a4a1c" fill-opacity="${(0.06 + 0.12 * rnd()).toFixed(2)}"/>`; }
     const fy = H * 0.52; s += `<line x1="0" y1="${n2(fy)}" x2="${n2(P)}" y2="${n2(fy)}" stroke="#5a3d1c" stroke-opacity="0.10" stroke-width="${n2(1.2 * f)}"/><line x1="0" y1="${n2(fy + 1.2 * f)}" x2="${n2(P)}" y2="${n2(fy + 1.2 * f)}" stroke="#fff8e8" stroke-opacity="0.25" stroke-width="${n2(0.8 * f)}"/>`; }
-  const q = r + 8 * f;
-  s += `<rect x="${n2(cx - q)}" y="${n2(cy - q)}" width="${n2(2 * q)}" height="${n2(2 * q)}" ${kon(0.45)}/><circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(q)}" ${kon(0.45)}/>`
-    + `<circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(r + 14 * f)}" ${kon(0.45)} stroke-dasharray="${n2(2 * f)} ${n2(3 * f)}"/>`
-    + `<line x1="${n2(cx - r - 30 * f)}" y1="${n2(cy)}" x2="${n2(cx + r + 30 * f)}" y2="${n2(cy)}" ${kon(0.45)}/><line x1="${n2(cx)}" y1="${n2(cy - r - 30 * f)}" x2="${n2(cx)}" y2="${n2(cy + r + 30 * f)}" ${kon(0.45)}/>`
-    + `<line x1="${n2(cx - q)}" y1="${n2(cy - q)}" x2="${n2(cx + q)}" y2="${n2(cy + q)}" ${kon(0.25)}/><line x1="${n2(cx + q)}" y1="${n2(cy - q)}" x2="${n2(cx - q)}" y2="${n2(cy + q)}" ${kon(0.25)}/>`;
-  for (let i = 0; i < 24; i++){ const a = 2 * Math.PI * i / 24, r1 = r + (i % 6 === 0 ? 20 : 13) * f;
-    s += `<line x1="${n2(cx + q * Math.cos(a))}" y1="${n2(cy + q * Math.sin(a))}" x2="${n2(cx + r1 * Math.cos(a))}" y2="${n2(cy + r1 * Math.sin(a))}" ${kon(0.45)}/>`; }
-  /* Buchstaben an den Hauptmarken und den Ecken des Quadrats, wie Leonardo seine Konstruktionen beschriftete */
-  const bu = (x, y, t) => `<text x="${n2(x)}" y="${n2(y)}" font-size="${n2(4.6 * f)}" fill="${SKIZZE_SEPIA}" fill-opacity="0.6" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">${t}</text>`;
-  ['a', 'b', 'c', 'd'].forEach((t, i) => { const a = -Math.PI / 2 + i * Math.PI / 2, rr = r + 25 * f; s += bu(cx + rr * Math.cos(a) + 3 * f, cy + rr * Math.sin(a) + 1.6 * f, t); });
-  /* die Ecken des Quadrats nur im Hochformat - quer und quadratisch liegen unten Legende und Siegel dort */
-  if (g.kreis.hoch) [[-1, -1, 'e'], [1, -1, 'f'], [1, 1, 'g'], [-1, 1, 'h']].forEach(([sx, sy, t]) => { s += bu(cx + sx * (q + 3.5 * f), cy + sy * (q + 3.5 * f) + 1.6 * f, t); });
-  return s;
-}
-/* RANDSTUDIEN (Caspar_D, 08.10.2026 nachts: „du kannst ruhig noch mehr hinzufügen, kannte er schon noten, das wäre noch was, oder
-   die Skizze einer e-Gitarre, die natürlich Leonardo damals schon erfunden hatte ;-)" – „oder ein Cello als Tribute to Tarja"):
-   Federstudien mit Konstruktion (Achse, Zirkelbögen, Maßlinie), Schraffur auf der Schattenseite und Beschriftung in Spiegelschrift.
-   Gezeichnet in eigenen Einheiten (Gitarre 38 × 100, Cello 40 × 110), auf die Lücke skaliert; die Strichstärke bleibt in mm. */
-const STUDIE_MASS = { gitarre: { w: 46, h: 114 }, cello: { w: 41, h: 123 } };   /* eigene Einheiten samt Beschriftungen */
-function skizzeStudie(art, x, y, hoehe, f){
-  const k = hoehe / STUDIE_MASS[art].h, sw = (mm) => (mm * f / k).toFixed(3), n2 = (v) => v.toFixed(2);
-  const strich = (mm, o = 0.85) => `fill="none" stroke="${SKIZZE_SEPIA}" stroke-opacity="${o}" stroke-width="${sw(mm)}" stroke-linecap="round" stroke-linejoin="round"`;
-  const spiegel = (tx, ty, fs, t, o = 0.7) => `<g transform="translate(${n2(2 * tx)},0) scale(-1,1)"><text x="${n2(tx)}" y="${n2(ty)}" font-size="${n2(fs)}" fill="${SKIZZE_SEPIA}" fill-opacity="${o}" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">${esc2(t)}</text></g>`;
-  const id = 'ps-st-' + art, schraff = (x0, x1, y0, y1, d, wink = 45) => { let l = ''; const L = (x1 - x0) + (y1 - y0);
-    for (let t = -L; t < L; t += d) l += `M${n2(x0 + t)},${n2(y1)} L${n2(x0 + t + (y1 - y0) / Math.tan(wink * Math.PI / 180))},${n2(y0)} `; return l; };
-  let g = '';
-  if (art === 'gitarre'){
-    const koerper = 'M16.6,60 C14,58 12,54 10,52 C7,50 5,52 5.5,56 C6,60 4,63 2.5,68 C0,75 0,88 4,94 C8,100 30,100 34,94 C38,88 38,76 35.5,70 C34,66 35,63 34,60 C33.5,57 34,53 32,52.5 C30,52 28,55 26,58 C24,60 22,60 21.4,60 Z';
-    g += `<defs><clipPath id="${id}-k"><path d="${koerper}"/></clipPath></defs>`
-      + `<line x1="19" y1="-4" x2="19" y2="104" ${strich(0.18, 0.4)} stroke-dasharray="${sw(1.6)} ${sw(1.1)}"/>`
-      + `<circle cx="19" cy="83" r="17.5" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/><circle cx="19" cy="61" r="14" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/>`
-      + `<path d="${schraff(22, 40, 50, 100, 1.3)}" ${strich(0.16, 0.55)} clip-path="url(#${id}-k)"/><path d="${schraff(29, 40, 50, 100, 1.5, -45)}" ${strich(0.14, 0.45)} clip-path="url(#${id}-k)"/>`
-      + `<path d="${koerper}" ${strich(0.32)}/>`
-      + `<path d="M17,14 L21,14 L21.6,64 L16.4,64 Z" ${strich(0.28)}/>`
-      + `<path d="M17,14 L16,6 Q16,1 20,1 L23,2 Q26,3 25,6 L22,9 Q21,11 21.5,14" ${strich(0.28)}/>`
-      + Array.from({ length: 6 }, (_, i) => `<circle cx="15.1" cy="${n2(2.6 + 1.85 * i)}" r="0.85" ${strich(0.2)}/>`).join('');
-    for (let n = 1; n <= 21; n++){ const yy = 14 + 74 * (1 - Math.pow(2, -n / 12)); if (yy > 64) break; const t = (yy - 14) / 50; g += `<line x1="${n2(17 - 0.6 * t)}" y1="${n2(yy)}" x2="${n2(21 + 0.6 * t)}" y2="${n2(yy)}" ${strich(0.14, 0.7)}/>`; }
-    for (const yy of [67, 73]) g += `<rect x="15.5" y="${yy}" width="7" height="2" rx="0.8" ${strich(0.22)}/>`;
-    g += `<rect x="15.5" y="78" width="7.5" height="2" rx="0.8" transform="rotate(-6 19 79)" ${strich(0.22)}/><rect x="14.5" y="86" width="9" height="3" rx="0.4" ${strich(0.25)}/>`
-      + [[27, 82], [29, 86], [30.5, 90]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="1.2" ${strich(0.2)}/>`).join('') + `<ellipse cx="33.5" cy="92.5" rx="1" ry="1.6" ${strich(0.2)}/><line x1="26.5" y1="75" x2="29" y2="77.5" ${strich(0.25)}/>`
-      + Array.from({ length: 6 }, (_, i) => `<line x1="${n2(17.6 + 0.56 * i)}" y1="14" x2="${n2(16.2 + 1.15 * i)}" y2="87.5" ${strich(0.1, 0.6)}/>`).join('')
-      + `<path d="M41,1 L41,99 M39.8,1 L42.2,1 M39.8,99 L42.2,99" ${strich(0.18, 0.6)}/>` + `<g transform="rotate(90 43.6 50)">${spiegel(43.6, 50, 3.2, 'strumento elettrico')}</g>`
-      + spiegel(19, 108, 3.4, 'una chitarra che canta senza aria') + `<text x="19" y="113" font-size="2.6" fill="${SKIZZE_SEPIA}" fill-opacity="0.6" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">Gitarre ohne Luft, die doch singt</text>`;
-  } else if (art === 'cello'){
-    const koerper = 'M20,38 C12,38 4,40 3.5,47 C3,53 6,56 9.5,57.5 C8,60 8,64 8.5,66 C9,70 8,72 6.5,73.5 C2,76 0,82 0.5,90 C1,99 9,104 20,104 C31,104 39,99 39.5,90 C40,82 38,76 33.5,73.5 C32,72 31,70 31.5,66 C32,64 32,60 30.5,57.5 C34,56 37,53 36.5,47 C36,40 28,38 20,38 Z';
-    g += `<defs><clipPath id="${id}-k"><path d="${koerper}"/></clipPath></defs>`
-      + `<line x1="20" y1="-3" x2="20" y2="113" ${strich(0.18, 0.4)} stroke-dasharray="${sw(1.6)} ${sw(1.1)}"/>`
-      + `<circle cx="20" cy="47.5" r="16.5" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/><circle cx="20" cy="89" r="19.5" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/>`
-      + `<path d="${schraff(-2, 16, 36, 106, 1.3, -50)}" ${strich(0.16, 0.5)} clip-path="url(#${id}-k)"/><path d="${schraff(-2, 9, 36, 106, 1.5, 40)}" ${strich(0.14, 0.4)} clip-path="url(#${id}-k)"/>`
-      + `<path d="${koerper}" ${strich(0.32)}/><path d="M20,39.6 C12.5,39.6 5.2,41.3 4.8,47 C4.5,52 7.3,55 10.6,56.6" ${strich(0.14, 0.6)}/>`
-      + `<path d="M18.2,16 L21.8,16 L22.4,40 L17.6,40 Z" ${strich(0.28)}/><path d="M18.4,40 L21.6,40 L22.2,62 L17.8,62 Z" ${strich(0.24)}/>`
-      + `<path d="M18.4,16 L18,8.5 M21.6,16 L22,8.5" ${strich(0.26)}/>` + [10.5, 13.5].map(yy => `<path d="M18,${yy} L15.5,${yy - 0.6} M22,${yy + 1} L24.5,${yy + 0.4}" ${strich(0.26)}/><circle cx="15.2" cy="${yy - 0.65}" r="0.7" ${strich(0.2)}/><circle cx="24.8" cy="${yy + 0.35}" r="0.7" ${strich(0.2)}/>`).join('')
-      + `<path d="M20,8.5 C23.5,8.5 24.5,5 22.5,3.2 C20.5,1.4 17,2.5 17.2,5 C17.4,7 20,7.4 20.8,5.8 C21.4,4.6 20.2,3.8 19.4,4.6" ${strich(0.26)}/>`
-      + [13, 27].map(xx => { const s2 = xx < 20 ? 1 : -1; return `<path d="M${xx},64 C${xx + 2.4 * s2},68 ${xx - 2.4 * s2},76 ${xx},80" ${strich(0.24)}/><circle cx="${xx}" cy="63.6" r="0.7" ${strich(0.18)}/><circle cx="${xx}" cy="80.4" r="0.7" ${strich(0.18)}/>`; }).join('')
-      + `<path d="M14,80.5 Q20,77.6 26,80.5 L25.4,81.4 L14.6,81.4 Z" ${strich(0.24)}/><path d="M17.2,85 L22.8,85 L24,98 L16,98 Z" ${strich(0.24)}/><line x1="20" y1="104" x2="20" y2="111" ${strich(0.3)}/>`
-      + Array.from({ length: 4 }, (_, i) => `<line x1="${n2(18.9 + 0.75 * i)}" y1="16" x2="${n2(17.9 + 1.4 * i)}" y2="85" ${strich(0.1, 0.6)}/>`).join('')
-      /* Caspar_D: „ein Cello und dann als Untertitel auf Latein: gewidmet der Meisterin Tarja" */
-      + `<text x="20" y="117.5" font-size="4.4" fill="${SKIZZE_SEPIA}" fill-opacity="0.9" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">Violoncellum</text>`
-      + `<text x="20" y="122" font-size="3" fill="${SKIZZE_SEPIA}" fill-opacity="0.75" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">magistrae Tarjae dedicatum</text>` + spiegel(9, 26, 2.8, 'quattro corde', 0.6);
-  }
-  return `<g transform="translate(${n2(x)} ${n2(y)}) scale(${(k).toFixed(4)})">${g}</g>`;
-}
-/* Leonardos Notenrätsel (Windsor, RL 12697): „amore sol la mi fa remirare" - Noten auf fünf Linien lesen sich als Silben, „nur die
-   Liebe lässt mich erinnern". Breite 110, Höhe 26 in eigenen Einheiten; Semibreven als Rauten wie in der Mensuralnotation. */
-function skizzeNotenraetsel(x, y, breite, f){
-  const k = breite / 110, sw = (mm) => (mm * f / k).toFixed(3), n2 = (v) => v.toFixed(2), st = (mm, o = 0.85) => `stroke="${SKIZZE_SEPIA}" stroke-opacity="${o}" stroke-width="${sw(mm)}"`;
-  const tx = (xx, yy, fs, t, o = 0.8) => `<text x="${n2(xx)}" y="${n2(yy)}" font-size="${n2(fs)}" fill="${SKIZZE_SEPIA}" fill-opacity="${o}" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">${esc2(t)}</text>`;
-  let g = '';
-  for (let i = 0; i < 5; i++) g += `<line x1="22" y1="${4 + 2 * i}" x2="84" y2="${4 + 2 * i}" ${st(0.18, 0.7)}/>`;
-  /* sol la mi fa re mi (G A E F D E), Violinschlüssel durch ein schlichtes G angedeutet: unterste Linie y 12 = E, Schritt 1 */
-  const tonY = { sol: 10, la: 9, mi: 12, fa: 11, re: 13 }, silben = ['sol', 'la', 'mi', 'fa', 're', 'mi'];
-  g += tx(26, 12, 7.5, '𝄞', 0.85);
-  silben.forEach((sb, i) => { const xx = 34 + i * 8.4, yy = tonY[sb];
-    g += `<path d="M${n2(xx - 1.3)},${n2(yy)} L${n2(xx)},${n2(yy - 1)} L${n2(xx + 1.3)},${n2(yy)} L${n2(xx)},${n2(yy + 1)} Z" fill="${SKIZZE_SEPIA}" fill-opacity="0.85"/>`
-      + (yy >= 13 ? `<line x1="${n2(xx - 2)}" y1="14" x2="${n2(xx + 2)}" y2="14" ${st(0.18)}/>` : '') + tx(xx, 19, 2.6, sb, 0.65); });
-  g += tx(10, 11, 4.8, 'amore') + tx(97, 11, 4.8, 'rare') + tx(55, 25, 3, 'amore sol la mi fa remirare – nur die Liebe lässt mich erinnern', 0.6);
-  return `<g transform="translate(${n2(x)} ${n2(y)}) scale(${k.toFixed(4)})">${g}</g>`;
-}
-/* Über dem Schaum: Kopf, Spiegelzeile, Randnotizen, Refrains, Zeitleiste, Legende, Siegel, Edition, Studien, Rätsel, Altersrand.
-   Angeordnet über BELEGUNGSKÄSTEN (Fallensuche 1.0.61: im Quer- und Quadratformat lagen Notizen auf Refrains, das Rätsel auf dem
-   Siegel, der Kopf in der Konstruktion): Refrains, Legende, Siegel und Rätsel melden ihren Kasten zuerst, die Randnotizen weichen
-   ihnen aus, die Studien bekommen nur Lücken, die frei sind. Breiten in Pinyon Script werden gemessen (skizzeBreite, Haus). */
-function skizzeSchmuck(g, refrains, legende){
-  const f = g.kurz / 500, { cx, cy, r, hoch } = g.kreis, P = g.PW, H = g.PH, B = BESCHNITT, n2 = (v) => v.toFixed(2), res = aktuell.res, zeilen = aktuell.j.zeilen;
-  const tinte = (farbe) => typeof skizzeTinte === 'function' ? skizzeTinte(farbe || '#888', skizzePapier()) : SKIZZE_SEPIA;
-  const em = (t) => typeof skizzeBreite === 'function' ? skizzeBreite(t) : String(t).length * 0.4;
-  const txt = (x, y, fs, t, { anker = 'middle', farbe = SKIZZE_SEPIA, deck = 1, extra = '' } = {}) => `<text x="${n2(x)}" y="${n2(y)}" font-size="${n2(fs)}" fill="${farbe}"${deck < 1 ? ` fill-opacity="${deck}"` : ''} text-anchor="${anker}" font-family="${SKIZZE_SCHRIFT}"${extra}>${esc2(t)}</text>`;
-  /* die Seitenränder L0…randL und randR…R0 - Notizen und Studien dürfen in die Konstruktion (Quadrat, Zirkelmarken) hineinragen, nicht in den Kreis */
-  const L0 = B + 10 * f, R0 = B + g.w - 10 * f, randL = cx - r - 6 * f, randR = cx + r + 6 * f;
-  const kaesten = [];                       /* { x0, x1, y0, y1 } in mm */
-  const frei = (k) => !kaesten.some(q => k.x0 < q.x1 && k.x1 > q.x0 && k.y0 < q.y1 && k.y1 > q.y0);
-  let s = '';
-  // Kopf und Spiegelzeile (Leonardo schrieb in Spiegelschrift)
-  const kopfFs = Math.min(24 * f, (g.w - 40 * f) / Math.max(1, em(E.kopfTitel || ''))); s += txt(B + g.w / 2, B + 44 * f, kopfFs, E.kopfTitel || '');
-  const unter = String(E.kopfUnter || '').split('/').map(x => x.trim()).filter(Boolean).join(' · ');
-  if (unter) s += `<g transform="translate(${n2(2 * (B + g.w / 2))},0) scale(-1,1)">${txt(B + g.w / 2, B + 60 * f, Math.min(7 * f, (g.w - 60 * f) / Math.max(1, em(unter))), unter, { deck: 0.7 })}</g>`;
-  kaesten.push({ x0: B, x1: B + g.w, y0: B, y1: B + 66 * f });
-  // Refrains: Hochformat oben links, oben rechts, unten in der Mitte; quer/quadratisch alle in den Seitenrändern
-  const refrainBlock = (rf, x, y, breite, anker, dreh) => {
-    const kopf = `aus „${rf.titel}“` + (E.refrains === 'neueste' ? '' : ` · ${rf.herzen} Herzen`), maxEm = Math.max(em(kopf) * 4.6 / 6.4, ...rf.refrain.map(em));
-    const fs = Math.min(6.4 * f, breite / Math.max(1, maxEm)), hoehe = fs * (1.33 + 1.16 * rf.refrain.length) + 2 * f;
-    const x0 = anker === 'start' ? x : anker === 'end' ? x - breite : x - breite / 2;
-    kaesten.push({ x0, x1: x0 + breite, y0: y - fs, y1: y - fs + hoehe });
-    return `<g transform="rotate(${dreh} ${n2(x)} ${n2(y)})">` + txt(x, y, fs * 0.72, kopf, { anker, deck: 0.65 })
-      + rf.refrain.map((z, i) => txt(x, y + fs * (1.33 + i * 1.16), fs, z, { anker, deck: 0.85 })).join('') + '</g>';
-  };
-  const bR = hoch ? Math.min(g.w / 2 - 50 * f, 230 * f) : randL - L0;
-  if (refrains[0]) s += refrainBlock(refrains[0], L0 + (hoch ? 24 * f : 0), B + 80 * f, bR, 'start', -3);
-  if (refrains[1]) s += refrainBlock(refrains[1], R0 - (hoch ? 24 * f : 0), B + 80 * f, bR, 'end', 3);
-  // Siegel unten rechts (mit Bändern und Edition), Legende unten links
-  const sx = B + g.w - 72 * f, sy = B + g.h - 100 * f;
-  kaesten.push({ x0: sx - 40 * f, x1: sx + 40 * f, y0: sy - 34 * f, y1: B + g.h });
-  let legH = 0, legFs = 6 * f, legZ = 0;
-  if (E.legende && legende.length){
-    legZ = Math.min(legende.length, 14); const platz = (hoch ? Math.min(200 * f, sx - 50 * f - (B + 60 * f)) : randL - L0) - 24 * f;
-    const zeilenH = Math.min(11 * f, 190 * f / (legZ + 1.5)), maxEm = Math.max(1, ...legende.slice(0, legZ).map(e => em(e.name)));
-    legFs = Math.min(6 * f, zeilenH / 1.25, platz / maxEm); const breite = Math.max(legFs * maxEm, 60 * f);
-    legH = (legZ + 1.5) * zeilenH; const lx = hoch ? B + 60 * f : L0, ly = B + g.h - 12 * f - legH + zeilenH;
-    kaesten.push({ x0: lx, x1: lx + 24 * f + breite, y0: ly - 1.8 * zeilenH, y1: B + g.h });
-    const n = legende.length, wort = n <= 12 ? ZAHLWORT[n] : String(n);
-    s += txt(lx, ly - 0.9 * zeilenH, Math.min(7 * f, legFs * 1.15), n === 1 ? 'Die eine Gegend:' : `Die ${wort} Gegenden:`, { anker: 'start' });
-    legende.slice(0, legZ).forEach((e, j) => { const y = ly + j * zeilenH, ink = tinte(e.farbe);
-      s += `<line x1="${n2(lx)}" y1="${n2(y - legFs * 0.33)}" x2="${n2(lx + 18 * f)}" y2="${n2(y - legFs * 0.33)}" stroke="${ink}" stroke-width="${n2(1.2 * f)}"/>` + txt(lx + 24 * f, y, legFs, e.name, { anker: 'start', farbe: ink }); });
-    if (n > legZ) s += txt(lx + 24 * f, ly + legZ * zeilenH, legFs * 0.85, `und ${n - legZ} weitere`, { anker: 'start', deck: 0.7 });
-  }
-  /* dritter Refrain: Hochformat unter dem Kreis, quer/quadratisch im linken Rand - nur wo frei (er stieß sonst auf eine lange
-     Legende); probiert wird von der Wunschlage aus abwechselnd nach oben und unten */
-  if (refrains[2]){ const breite = hoch ? Math.min(g.w - 160 * f, 260 * f) : bR, x = hoch ? B + g.w / 2 : L0, anker = hoch ? 'middle' : 'start', y0 = hoch ? cy + r + 70 * f : cy + 0.15 * r;
-    for (const d of [0, -10, 10, -20, 20, -30, 30, -45, 45, -60, 60]){ const vorher = kaesten.length, teil = refrainBlock(refrains[2], x, y0 + d * f, breite, anker, -1.5), k = kaesten.pop();
-      if (frei(k) && k.y1 < B + g.h - 4 * f){ kaesten.push(k); s += teil; break; } kaesten.length = vorher; } }
-  // Notenrätsel: Hochformat unten in der Mitte, quer im rechten Rand über dem Siegel
-  { const rb = hoch ? 150 * f : Math.min(150 * f, R0 - randR - 10 * f), rh = 26 * rb / 110, versuche = [];
-    if (hoch){ for (let d = 0; d <= 60; d += 6) versuche.push([B + g.w / 2 - rb / 2, cy + r + 104 * f + d * f]); versuche.push([B + 12 * f, cy + r + 104 * f]); }
-    else for (let d = 0; d <= 120; d += 8) versuche.push([R0 - rb, sy - 44 * f - rh - d * f]);
-    for (const [rx, ry] of versuche){ const k = { x0: rx, x1: rx + rb, y0: ry, y1: ry + rh };
-      if (rb > 70 * f && ry + rh < B + g.h - 2 * f && frei(k)){ kaesten.push(k); s += skizzeNotenraetsel(rx, ry, rb, f); break; } } }
-  // Arealfarben und Schaum-Einheiten -> Seite
-  const kv = g.karte, k = kv.w / res.width, X = (x) => kv.x + x * k, Y = (y) => kv.y + (res.height - y) * k, ebene = aktuell.j.ebenen[0];
-  const flaeche = (o) => { let a = 0; for (let i = 0; i < o.length; i++){ const p = o[i], q = o[(i + 1) % o.length]; a += p[0] * q[1] - q[0] * p[1]; } return Math.abs(a / 2); };
-  const mitte = (o) => [o.reduce((a, p) => a + p[0], 0) / o.length, o.reduce((a, p) => a + p[1], 0) / o.length];
-  // Randnotizen: die sieben größten Zellen am Kreisrand; Linie radial bis vor den Kreis, dann waagerecht; weichen den Kästen aus
-  const blaetter = res.leaves.filter(l => l.outline && l.outline.length > 2 && l.row != null && zeilen[l.row] && zeilen[l.row].id !== SCHILD_ID).map(l => {
-    const m = mitte(l.outline), z = zeilen[l.row]; return { l, z, a: flaeche(l.outline), px: X(m[0]), py: Y(m[1]) }; })
-    .filter(e => Math.hypot(e.px - cx, e.py - cy) > 0.62 * r).sort((a, b) => b.a - a.a).slice(0, 7);
-  const umbruch = (t, n) => { const z = ['']; for (const w of t.split(' ')){ if ((z[z.length - 1] + ' ' + w).trim().length > n && z[z.length - 1]) z.push(w); else z[z.length - 1] = (z[z.length - 1] + ' ' + w).trim(); } return z.slice(0, 2); };
-  const notizFs = 5.4 * f, notizB = Math.min(Math.max(randL - L0, 46 * f), cx - r - 2 * f - L0, 60 * f), obenGrenze = B + 70 * f, untenGrenze = B + g.h - 8 * f;
-  for (const seite of ['l', 'r']){
-    const liste = blaetter.filter(e => (e.px < cx) === (seite === 'l')).map(e => ({ ...e, th: Math.atan2(e.py - cy, e.px - cx) })).sort((a, b) => a.py - b.py);
-    for (const e of liste){
-      const zl = umbruch(ohneKlammernTitel(e.z.titel || ''), 17), hoeheN = (8 + 6 * zl.length) * f, x0 = seite === 'l' ? L0 : R0 - notizB;
-      const ex = cx + (r + 16 * f) * Math.cos(e.th), ey = cy + (r + 16 * f) * Math.sin(e.th), kx = seite === 'l' ? Math.min(ex, randL + 8 * f) : Math.max(ex, randR - 8 * f);
-      /* Kasten der Notiz samt Hinweislinie außerhalb des Kreises (der senkrechte und der waagerechte Teil): sonst lief die Linie
-         durch einen Refrain oder eine Studie; gesucht wird von der Wunschlage aus abwechselnd nach unten und oben */
-      const kastenBei = (ny) => ({ x0: Math.min(x0, kx), x1: Math.max(x0 + notizB, kx), y0: Math.min(ny - 8 * f, ey), y1: Math.max(ny + hoeheN, ey) });
-      const wunsch = Math.max(obenGrenze + 8 * f, cy + (r + 16 * f) * Math.sin(e.th)); let ny = null;
-      for (let d = 0; d < 400 * f && ny == null; d += 3 * f) for (const c of [wunsch + d, wunsch - d]) if (c - 8 * f >= obenGrenze && c + hoeheN < untenGrenze && frei(kastenBei(c))){ ny = c; break; }
-      if (ny == null) continue;                            /* kein Platz mehr: diese Notiz entfällt */
-      kaesten.push(kastenBei(ny));
-      const areal = e.z[ebene] || e.z.gruppe, ink = tinte(randArealFarben.get(areal)), rand = seite === 'l' ? L0 : R0, anker = seite === 'l' ? 'start' : 'end';
-      const fs = Math.min(notizFs, notizB / Math.max(1, ...zl.map(em)));
-      s += `<path d="M${n2(e.px)},${n2(e.py)} L${n2(ex)},${n2(ey)} L${n2(kx)},${n2(ny)} L${n2(seite === 'l' ? rand + Math.min(44 * f, notizB) : rand - Math.min(44 * f, notizB))},${n2(ny)}" fill="none" stroke="${SKIZZE_SEPIA}" stroke-opacity="0.55" stroke-width="${n2(0.28 * f)}"/>`
-        + `<circle cx="${n2(e.px)}" cy="${n2(e.py)}" r="${n2(0.9 * f)}" fill="${SKIZZE_SEPIA}"/>`
-        + zl.map((t, j) => txt(rand, ny - 2 * f + j * 6 * f, fs, t, { anker, farbe: ink })).join('')
-        + txt(rand, ny + 4 * f + (zl.length - 1) * 6 * f, Math.min(3.8 * f, notizB / Math.max(1, em(areal || ''))), areal || '', { anker, deck: 0.75 });
-    }
-  }
-  /* Randstudien: Gitarre links, Cello rechts, in die größte freie Lücke ihres Randes, so hoch wie sie erlaubt (höchstens 135 mm auf
-     50 × 70); maßgeblich ist die Größe samt Beschriftung (STUDIE_MASS) */
-  for (const [art, seite] of [['gitarre', 'l'], ['cello', 'r']]){
-    const M = STUDIE_MASS[art], bx0 = seite === 'l' ? L0 : randR, bx1 = seite === 'l' ? randL : R0, breite = bx1 - bx0;
-    if (breite < 25 * f) continue;
-    const ys = [obenGrenze, ...kaesten.filter(q => q.x0 < bx1 && q.x1 > bx0).flatMap(q => [q.y0, q.y1]), untenGrenze].sort((a, b) => a - b);
-    let best = null;
-    for (const y0 of ys) for (const y1 of ys){ if (y1 <= y0 + 40 * f) continue; const hh = Math.min(y1 - y0 - 10 * f, 135 * f, breite * 0.92 / M.w * M.h), bw = hh / M.h * M.w;
-      const kk = { x0: bx0 + (breite - bw) / 2, x1: bx0 + (breite + bw) / 2, y0: y0 + 5 * f, y1: y0 + 5 * f + hh };
-      if (hh >= 45 * f && frei(kk) && (!best || hh > best.hh)) best = { hh, kk }; }
-    if (best){ kaesten.push(best.kk); s += skizzeStudie(art, best.kk.x0, best.kk.y0, best.hh, f); }
-  }
-  // Zeitleiste als Bogen um den Kreis: je Tag ein Strich am Mittel seiner Zeiten (länger bei mehreren Titeln, gedeckelt), Monate/Jahre
-  if (E.zeitleiste){
-    const T = zeilen.map(z => { const so = typeof song === 'function' ? song(z.id) : null; return so && Date.parse(so.erstellt); }).filter(Boolean).sort((a, b) => a - b);
-    if (T.length > 1){
-      const t0 = T[0], t1 = T[T.length - 1], a0 = 200 * Math.PI / 180, a1 = 340 * Math.PI / 180, r0 = r + 22 * f;
-      const ang = (t) => a0 + (a1 - a0) * Math.max(0, Math.min(1, (t - t0) / (t1 - t0 || 1))), pt = (a, rr) => [cx + rr * Math.cos(a), cy - rr * Math.sin(a)], [bx0, by0] = pt(a0, r0), [bx1, by1] = pt(a1, r0);
-      s += `<path d="M${n2(bx0)},${n2(by0)} A${n2(r0)},${n2(r0)} 0 0 0 ${n2(bx1)},${n2(by1)}" fill="none" stroke="${SKIZZE_SEPIA}" stroke-opacity="0.7" stroke-width="${n2(0.35 * f)}"/>`;
-      const proTag = new Map(); for (const t of T){ const d = Math.floor(t / 864e5), e = proTag.get(d) || [0, 0]; proTag.set(d, [e[0] + 1, e[1] + t]); }
-      for (const [, [n, summe]] of proTag){ const a = ang(summe / n), [x0, y0] = pt(a, r0), [x1, y1] = pt(a, r0 + (2 + Math.min(7, 1.8 * Math.sqrt(n))) * f);
-        s += `<line x1="${n2(x0)}" y1="${n2(y0)}" x2="${n2(x1)}" y2="${n2(y1)}" stroke="${SKIZZE_SEPIA}" stroke-opacity="0.75" stroke-width="${n2(0.3 * f)}"/>`; }
-      const MON = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
-      for (let dt = new Date(new Date(t0).getFullYear(), new Date(t0).getMonth() + 1, 1); dt.getTime() <= t1; dt.setMonth(dt.getMonth() + 1)){
-        const a = ang(dt.getTime()), jan = dt.getMonth() === 0, [x0, y0] = pt(a, r0), [x1, y1] = pt(a, r0 - (jan ? 4 : 2.2) * f), [lx, ly] = pt(a, r0 - 6.5 * f);
-        s += `<line x1="${n2(x0)}" y1="${n2(y0)}" x2="${n2(x1)}" y2="${n2(y1)}" stroke="${SKIZZE_SEPIA}" stroke-width="${n2(0.3 * f)}"/>`
-          + txt(lx, ly, (jan ? 4.4 : 3.2) * f, jan ? String(dt.getFullYear()) : MON[dt.getMonth()], { deck: 0.75, extra: ` transform="rotate(${(270 - a * 180 / Math.PI).toFixed(1)} ${n2(lx)} ${n2(ly)})"` }); }
-    }
-  }
-  // Siegel mit Band: Wachsklecks, flach gedrückt (Caspar_D: „zu viel 3d"), der Avatar als Prägung; darunter die Edition
-  if (typeof avatarDa === 'function' && avatarDa()){
-    const ax = sx, ay = sy, R = 30 * f, ri = 19.5 * f, bw = 15 * f, bl = 62 * f, bk = 6 * f;
-    const band = (dreh) => `<g transform="translate(${n2(ax)} ${n2(ay)}) rotate(${dreh})"><path d="M${n2(-bw / 2)},0 L${n2(bw / 2)},0 L${n2(bw / 2)},${n2(bl)} L0,${n2(bl - bk)} L${n2(-bw / 2)},${n2(bl)} Z" fill="url(#ps-band)"/>`
-      + `<path d="M${n2(-bw / 2 + 1.2 * f)},0 L${n2(-bw / 2 + 1.2 * f)},${n2(bl - 1.5 * f)} M${n2(bw / 2 - 1.2 * f)},0 L${n2(bw / 2 - 1.2 * f)},${n2(bl - 1.5 * f)}" stroke="#c9a23e" stroke-opacity="0.7" stroke-width="${n2(0.5 * f)}" fill="none"/></g>`;
-    s += `<defs><linearGradient id="ps-band" x1="0" x2="1"><stop offset="0" stop-color="#4d1418"/><stop offset="0.35" stop-color="#7d2026"/><stop offset="0.55" stop-color="#94303a"/><stop offset="1" stop-color="#561619"/></linearGradient>`
-      + `<filter id="ps-wachsrand" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.05 / f)}" numOctaves="3" seed="21" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="${n2(9 * f)}"/></filter>`
-      + `<radialGradient id="ps-wachs" cx="0.4" cy="0.36" r="0.75"><stop offset="0" stop-color="#b8363a"/><stop offset="0.6" stop-color="#9a2224"/><stop offset="1" stop-color="#6e1416"/></radialGradient>`
-      + `<filter id="ps-wulst" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="${n2(2.6 * f)}" result="h"/>`
-      + `<feSpecularLighting in="h" surfaceScale="${n2(1.1 * f)}" specularConstant="0.35" specularExponent="14" lighting-color="#ffd9c8" result="glanz"><feDistantLight azimuth="225" elevation="50"/></feSpecularLighting>`
-      + `<feComposite in="glanz" in2="SourceAlpha" operator="in" result="g2"/><feComposite in="SourceGraphic" in2="g2" operator="arithmetic" k1="0" k2="1" k3="0.3" k4="0"/></filter>`
-      + `<filter id="ps-praegung" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.33 0.33 0.33 0 0" result="hoehe"/>`
-      + `<feGaussianBlur in="hoehe" stdDeviation="${n2(0.5 * f)}" result="hw"/><feDiffuseLighting in="hw" surfaceScale="${n2(0.9 * f)}" diffuseConstant="1.05" lighting-color="#ffffff" result="licht"><feDistantLight azimuth="225" elevation="55"/></feDiffuseLighting>`
-      + `<feFlood flood-color="#9e2526"/><feComposite in2="licht" operator="arithmetic" k1="1.15" k2="0" k3="0" k4="0"/></filter><clipPath id="ps-siegelinnen"><circle cx="${n2(ax)}" cy="${n2(ay)}" r="${n2(ri)}"/></clipPath></defs>`;
-    s += band(24) + band(-24) + `<g filter="url(#ps-wulst)"><circle cx="${n2(ax)}" cy="${n2(ay)}" r="${n2(R)}" fill="url(#ps-wachs)" filter="url(#ps-wachsrand)"/></g>`
-      + `<circle cx="${n2(ax)}" cy="${n2(ay)}" r="${n2(ri + 2.4 * f)}" fill="none" stroke="#5a0f11" stroke-opacity="0.45" stroke-width="${n2(1 * f)}"/>`
-      + `<image href="/avatar" data-voll="/avatar" x="${n2(ax - ri)}" y="${n2(ay - ri)}" width="${n2(2 * ri)}" height="${n2(2 * ri)}" clip-path="url(#ps-siegelinnen)" filter="url(#ps-praegung)"/>`;
-    if (E.edition) s += txt(ax, Math.min(ay + bl + 9 * f, B + g.h - 3 * f), 4.4 * f, editionText(), { deck: 0.8 });
-  } else if (E.edition) s += txt(sx, B + g.h - 30 * f, 4.4 * f, editionText(), { deck: 0.8 });
-  s += `<rect width="${n2(P)}" height="${n2(H)}" fill="url(#ps-altrand)" pointer-events="none"/>`;
-  return s;
+  return s + blattGrund(blattKontext(g));
 }
 /* Papier des Skizzenbuchs: der Grund, aber nie dunkel - Feder braucht helles Papier (ein dunkler Farbton machte jede Tinte
    schwarz, das Plakat war leer; Fallensuche 1.0.61) */
-const skizzePapier = () => leuchte(E.grund) >= 0.45 ? E.grund : '#eee2c6';
+const skizzePapier = () => leuchte(E.grund) >= 0.45 && /^#[0-9a-f]{6}$/i.test(E.grund) ? E.grund : '#eee2c6';
+/* Der Kreis wie mit Kreide aufgehellt - als Ganzes, nicht je Cluster (Caspar_D, 08.10.2026: „den ganzen kreis weiss aufhellen, nicht
+   clusterweise"): das Papier halb zum Weiß; darauf malen die Kacheln ihr Weiß (Tünche unter dem Schaum: blattGrund) */
+const skizzeKreide = () => '#' + [1, 3, 5].map(j => { const v = parseInt(skizzePapier().slice(j, j + 2), 16); return Math.round(v + (255 - v) * 0.5).toString(16).padStart(2, '0'); }).join('');
 
 /* Genitiv eines Namens ohne Deppenapostroph (Caspar_D: „uhä, ein Deppenapostroph … natürlich ohne Apostroph"): „Caspar_Ds";
    endet der Name auf s, ß, x, z oder ce, nur der Apostroph („Klaus’") - so die Rechtschreibung. */
@@ -655,31 +455,49 @@ function zeichnen(sofort, warteMs, nurSetzen){
   warten = setTimeout(async () => {
     const lauf = ++legeLauf;
     /* Das Verzeichnis braucht Platz unter der Karte - dafuer muss die Zahl der Eintraege vor dem Legen bekannt sein */
-    let n = aktuell && aktuell.raum === raumJetzt ? aktuell.j.zeilen.length : 0;
-    if (!n && E.verzeichnis){ try { n = (await auftrag(1)).j.zeilen.length; } catch (e) { n = 0; } if (lauf !== legeLauf) return; }
+    /* was das Haus zeigt (Maß, Gliederung, Zoom): ändert es sich, ist der Plakatschaum ein anderer - auch die Auswahl der stärksten
+       (vorher blieb nach einem Maßwechsel im Haus die alte Auswahl samt Unterzeile stehen; Fallensuche 1.0.62) */
+    let hausS = '';
+    try { hausS = raumJetzt === 'groupies' ? [groupieMass, groupieGl().id].join('|') : [schaumMass, schaumGliederung, JSON.stringify(schaumZoom ?? null), typeof karteVerf !== 'undefined' ? karteVerf : ''].join('|'); } catch (e) {}
+    const gleichesHaus = !!aktuell && aktuell.raum === raumJetzt && aktuell.hausS === hausS;
+    /* Gesamtzahl der Zeilen (ohne die Ecke von Randlos) - das Verzeichnis braucht sie vor dem Legen */
+    let T = gleichesHaus ? (aktuell.j.gesamt || aktuell.j.zeilen.filter(z => z.id !== SCHILD_ID).length) : 0;
+    if (!T && E.verzeichnis){ try { T = (await auftrag(1)).j.zeilen.length; } catch (e) { T = 0; } if (lauf !== legeLauf) return; }
+    /* MIT VERZEICHNIS hängt die Kachelzahl an der Höhe des Verzeichnisses und diese an der Kachelzahl. Gesucht ist die GRÖSSTE Zahl n,
+       deren Karte (mit einem Verzeichnis für n Einträge) mindestens n Kacheln trägt: f(n) = min(T, kachelZahl(geometrie(n))) fällt mit n,
+       also gibt es genau eine Grenze - per Halbierung (vorher pendelte das Plakat bei jeder Reglerbewegung; der erste Ersatz, eine
+       Fixpunkt-Iteration, nahm bei einem Zyklus den Startwert: 64 statt 189 Kacheln; Fallensuchen 1.0.62) */
+    let n = T;
+    if (E.verzeichnis && T){ const f = (k) => Math.min(T, kachelZahl(geometrie(k))); let lo = 0, hi = T;
+      while (lo < hi){ const mid = Math.ceil((lo + hi) / 2); if (f(mid) >= mid) lo = mid; else hi = mid - 1; }
+      n = Math.max(1, lo); }
     /* Randlos: das Verhältnis auf drei Stellen, sonst reichte der Schaum in breiten Formaten nicht bis in den Beschnitt (3 × 70 × 100
        quer: 28 mm zu kurz an jeder Seite, 100 × 140 quer: 1,4 mm) */
-    const stellen = E.schild ? 1000 : 100, g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * stellen) / stellen;
+    const stellen = E.schild ? 1000 : 100, g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * stellen) / stellen, kachelN = E.verzeichnis && T ? n : kachelZahl(g);
     /* Randlos: Ecke und Block gehoeren zum Auftrag - aendern sie sich (andere Ecke, laengerer Titel), wird neu gelegt */
     const eckS = E.schild ? schildVorgabe(g, 1000, Math.round(1000 * verh)).schluessel : '';
     /* nurSetzen (während des Tippens): die Ecke wird mit dem jetzigen Schaum gesetzt (eckeSetzen verkleinert, falls nötig); neu gelegt
        wird erst beim Verlassen des Feldes oder mit Enter - vorher startete jede Tipppause einen eigenen Lauf */
-    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild || aktuell.skizze !== !!E.skizze || (aktuell.eckS !== eckS && !nurSetzen)){
-      const a = await auftrag(verh);
+    if (!aktuell || !gleichesHaus || aktuell.verh !== verh || aktuell.kachelN !== kachelN || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild || aktuell.skizze !== !!E.skizze || (aktuell.eckS !== eckS && !nurSetzen)){
+      /* der laufende Bau gehört zum alten Schaum: ungültig machen, sonst setzte er seine Seite in den Rahmen des neuen Formats
+         (Fallensuche 1.0.62 - das lange Skizzenbuch-Bauen machte das Fenster groß) */
+      ++bauLauf;
+      const a = begrenzen(await auftrag(verh), kachelN);
       if (lauf !== legeLauf) return;
+      legendeAreale = arealeDer(a.j);   /* die Ecke von Randlos bemisst ihre Legende danach (schildVorgabe → eckTeile) */
       /* die Vorschlaege fuer Titel, Zeile und Name vor dem Legen: nach ihnen wird die Ecke bemessen */
       if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag();
       if (!E.kopfUnterEigen) E.kopfUnter = kopfUnterVorschlag(a);
       if (!E.schildNameEigen) E.schildName = schildNameVorschlag();
       let v = null;
       if (E.schild && typeof schildAuftrag === 'function'){ v = schildVorgabe(g, a.j.W, a.j.H); a.j = schildAuftrag(a.j, v); }
-      if (E.skizze) a.j = kreisAuftrag(a.j);
+      if (E.skizze) a.j = dAuftrag(a.j, g.kreis.schnitt);
       standSetzen('Der Schaum wird für das Plakat gelegt …');
       let res;
       try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }, true); }
       catch (e){ if (lauf !== legeLauf) return; standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
       if (lauf !== legeLauf) return;
-      aktuell = { verh, raum: raumJetzt, schild: !!E.schild, skizze: !!E.skizze, eckS: v ? v.schluessel : '', ecke: v ? v.ecke : null, res, ...a };
+      aktuell = { verh, kachelN, hausS, raum: raumJetzt, schild: !!E.schild, skizze: !!E.skizze, eckS: v ? v.schluessel : '', ecke: v ? v.ecke : null, res, ...a };
       felderSetzen();
     }
     standSetzen('');
@@ -689,7 +507,8 @@ function zeichnen(sofort, warteMs, nurSetzen){
 const profil = () => (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
 function kopfTitelVorschlag(){
   const schaum = raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum', p = profil();
-  if (E.skizze){ const n = p.display_name || p.handle || ''; return n ? genitiv(n) + ' ' + schaum : schaum; }
+  /* Skizzenbuch: erst den Namen schrifttauglich machen (Zierrat weg, sonst Handle), dann das Genitiv-s - vorher „Tarja s Klangschaum" */
+  if (E.skizze){ const n = anzeigeName({ name: p.display_name, handle: p.handle }); return n ? genitiv(n) + ' ' + schaum : schaum; }
   return E.schild ? schaum : (p.display_name || p.handle || 'Mein Archiv') + ' · ' + schaum;    /* Randlos: der Name steht in eigener Zeile darueber */
 }
 function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.handle || ''; return n ? genitiv(n) : ''; }
@@ -697,23 +516,29 @@ function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.hand
    Laenge, das Flaechenmass „Hörzeit (Schätzung)"); „/" bricht in der Ecke die Zeile um. */
 function kopfUnterVorschlag(a = aktuell){
   if (!a) return '';
-  const n = a.j.zeilen.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  const zl = a.j.zeilen.filter(z => z.id !== SCHILD_ID), n = zl.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }), person = a.art === 'person';   /* ohne die Ecke von Randlos */
+  /* begrenzt (kachelZahl): „die 360 stärksten nach Herzen von 1.523 Titeln" */
+  const menge = a.j.gesamt > n ? `die ${n} stärksten nach ${a.m.name} von ${a.j.gesamt.toLocaleString('de-DE')} ${person ? 'Personen' : 'Titeln'}` : '';
   if (E.schild || E.skizze){
     const datum = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
-    if (a.art === 'person') return `${datum} / ${n} ${n === 1 ? 'Person' : 'Personen'}`;
-    const sek = a.j.zeilen.reduce((t, z) => t + (((typeof song === 'function' && song(z.id)) || {}).dauer || 0), 0);
-    return `${datum} / ${n} Titel` + (sek > 0 ? ` · ${dauerText(sek)} Laufzeit` : '');
+    if (person) return `${datum} / ${menge || `${n} ${n === 1 ? 'Person' : 'Personen'}`}`;
+    const sek = zl.reduce((t, z) => t + (((typeof song === 'function' && song(z.id)) || {}).dauer || 0), 0);
+    return `${datum} / ${menge || `${n} Titel`}` + (sek > 0 ? ` · ${dauerText(sek)} Laufzeit` : '');
   }
-  return [`${n} ${a.art === 'person' ? (n === 1 ? 'Person' : 'Personen') : 'Titel'}`, 'Fläche nach ' + a.m.name,
+  return [menge || `${n} ${person ? (n === 1 ? 'Person' : 'Personen') : 'Titel'}`, 'Fläche nach ' + a.m.name,
           'gegliedert nach ' + a.gl.name.replace(/:.*$/, ''), monat].join(' · ');
 }
 
 /* Die Legende des Schaums, wie sie im Panel steht: Farbe und Name je Areal. */
-function legendenEintraege(){
+/* nach der Begrenzung nur die Gegenden, die noch Kacheln haben (Fallensuche 1.0.62) - gesetzt beim Legen, null = alle */
+let legendeAreale = null;
+const arealeDer = (j) => { const eb = j.ebenen && j.ebenen[0]; if (eb === 'genre') return null;   /* gezoomt: nicht filtern (Zoomgruppe, „ohne Angabe") */
+  return new Set(j.zeilen.filter(z => z.id !== SCHILD_ID).map(z => (eb && z[eb]) || z.gruppe)); };
+function legendenEintraege(alle = false){   /* alle: ungefiltert - für die Bemessung des Verzeichnisses, die nicht am vorigen Lauf hängen darf */
   return [...document.querySelectorAll('#schaumlegende .zeile')].map(z => {
     const i = z.querySelector('i'), b = z.querySelector('b');
     return i && b ? { farbe: i.style.background || '#888', name: b.textContent.trim() } : null;
-  }).filter(Boolean);
+  }).filter(Boolean).filter((e, _, liste) => alle || !legendeAreale || legendeAreale.has(e.name) || !liste.some(x => legendeAreale.has(x.name)));   /* passt kein Name, bleibt alles */
 }
 /* Breite in em, gemessen in der Druckgroesse mm (die Seite rechnet in Millimetern; 96/25,4 Punkte je mm) - vorher bei 100 px mit
    Zuschlaegen 1,12 und 1,15: die Systemschrift des Mac wird klein gesetzt breiter (bei 1-2 mm Schrift bis 22 %), die Zuschlaege
@@ -734,6 +559,7 @@ function freieStrecken(a, b, fugen){
 async function bauen(g){
   if (!aktuell) return;
   const lauf = ++bauLauf, blatt = el('ps-blatt'); if (!blatt) return;
+  legendeAreale = arealeDer(aktuell.j);
   const s = schaumFarbeAnteil / 100, kv = g.karte;
   /* Vorschau-Massstab fuer den Bildvorrat: Bildschirmpunkte je Schaum-Einheit */
   const pxBreite = blatt.clientWidth || 800, massstab = (pxBreite * (kv.w / g.PW)) / aktuell.res.width * (window.devicePixelRatio || 1);
@@ -752,9 +578,20 @@ async function bauen(g){
     const [fb] = await Promise.all([federBereit(aktuell.j.zeilen, t => { if (lauf === bauLauf) standSetzen(t); }, () => lauf !== bauLauf), schriftGeladen()]);
     if (lauf !== bauLauf) return;
     refrains = await refrainsHolen(aktuell.j.zeilen, E.refrains || 'herzen'); if (lauf !== bauLauf) return;
-    druck.skizze = { papier: skizzePapier(), feder: fb.karte, mass: SKIZZE_MASS, fsMin: 2.6 * g.kurz / 500, fsMax: 12 * g.kurz / 500, strich: 0.29 * g.kurz / 500, linie: 0.25 * g.kurz / 500 };
+    const melde = t => { if (lauf === bauLauf) standSetzen(t); }, abgebrochen = () => lauf !== bauLauf;
+    /* erst holen, dann prüfen, dann übernehmen: ein abgebrochener Lauf darf die Daten des neuen nicht überschreiben (Fallensuche 1.0.62) */
+    const daten = await blattDatenHolen({ songVonId: typeof songVonId !== 'undefined' ? songVonId : null, katalogInfo: typeof katalogInfo !== 'undefined' ? katalogInfo : null, melde, abgebrochen });
+    if (lauf !== bauLauf) return;
+    /* erst nach den Covern: ein laufender Federlauf hielte den Bildnislauf sonst bis zum Zeitwächter auf; sein letzter Hinweis (Fotos
+       statt Federn, und warum) bleibt stehen */
+    const avatare = ((daten && daten.wuerdigung) || []).map(p => p.avatar).filter(Boolean);
+    let bnHinweis = '';
+    const bn = avatare.length ? await bildnisseBereit(avatare, { melde: t => { bnHinweis = t; melde(t); }, abgebrochen }) : new Map();
+    if (lauf !== bauLauf) return;
+    blattDaten = daten; blattBildnisse = bn;
+    druck.skizze = { papier: skizzeKreide(), tintePapier: skizzePapier(), feder: fb.karte, mass: SKIZZE_MASS, fsMin: 2.6 * g.kurz / 500, fsMax: 12 * g.kurz / 500, strich: 0.29 * g.kurz / 500, linie: 0.25 * g.kurz / 500 };
     Object.assign(druck, { kissen: false, schatten: 0, vignette: 0, wackeln: 0 });
-    skHinweis = fb.hinweis || (skizzePapier() !== E.grund ? 'Feder braucht hellen Grund – das Plakat bleibt auf Pergament.' : '');
+    skHinweis = [fb.hinweis || (skizzePapier() !== E.grund ? 'Feder braucht hellen Grund – das Plakat bleibt auf Pergament.' : ''), bnHinweis].filter(Boolean).join(' · ');
   } else {
   const bereit = await bilderBereit(aktuell.art, aktuell.j.zeilen, t => { if (lauf === bauLauf) standSetzen(t); });
   if (lauf !== bauLauf) return;
@@ -796,7 +633,17 @@ async function bauen(g){
   if (E.areale && !E.schild && !E.skizze && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
   if (E.schild && aktuell.schild && aktuell.ecke === eckeJetzt()) kopf += eckeSetzen(g, fg, leise);
-  if (E.skizze && g.skizze && aktuell.skizze) kopf += skizzeSchmuck(g, refrains, la.gezoomt && areale ? areale.map(a => ({ name: a.name, farbe: a.farbe })) : legendenEintraege());
+  if (E.skizze && g.skizze && aktuell.skizze){
+    const leg = la.gezoomt && areale ? areale.map(a => ({ name: a.name, farbe: a.farbe })) : legendenEintraege();
+    const eb = aktuell.j.ebenen[0], zahl = new Map(); for (const z of aktuell.j.zeilen){ const a = z[eb] || z.gruppe; zahl.set(a, (zahl.get(a) || 0) + 1); }
+    const ctx = blattKontext(g, { legende: leg, refrains, feder: druck.skizze.feder, res: aktuell.res, zeilen: aktuell.j.zeilen, ebene: eb, arealFarbe: (a) => randArealFarben.get(a),
+      avatar: avatarDa(), edition: E.edition ? editionText() : '', song: typeof song === 'function' ? song : null, bildnisse: blattBildnisse,
+      arealZahlen: leg.map(e => ({ ...e, n: zahl.get(e.name) || 0 })).filter(e => e.n) });
+    kopf += blattSchmuck(ctx) + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="url(#ps-altrand)" pointer-events="none"/>`;
+    /* für Formatproben von außen (headless, alle Formate durchgehen): wie voll das beschreibbare Blatt ist (Anteil belegter Rasterzellen) -
+       am Vorschau-Element, nicht im Bild */
+    blatt.dataset.belegung = ctx.voll.toFixed(3);
+  }
   /* Triptychon: die Wandfugen in der Vorschau abgedunkelt, mit Schnittlinien - im PDF fallen sie ohnehin weg */
   if (g.tri) for (let j = 1; j < 3; j++){ const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge;
     kopf += `<rect class="ps-trifuge" x="${fx.toFixed(2)}" y="0" width="${g.tri.fuge.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="#08090b" fill-opacity="0.9"/>`; }
@@ -805,6 +652,7 @@ async function bauen(g){
     + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${(g.PW - 2 * BESCHNITT).toFixed(2)}" height="${(g.PH - 2 * BESCHNITT).toFixed(2)}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/>`
     + (g.randKante && g.randKante.umschlag ? `<rect class="ps-beschnitt ps-falz" x="${g.vorne.x}" y="${g.vorne.y}" width="${g.w}" height="${g.h}" fill="none" stroke="#c9ced6" stroke-opacity="0.7" stroke-width="${(g.kurz / 1200).toFixed(2)}" stroke-dasharray="${(g.kurz / 300).toFixed(2)} ${(g.kurz / 200).toFixed(2)}"/>` : '') + '</svg>';
   blatt.innerHTML = seite;
+  seitenGeometrie.set(blatt.querySelector('svg.ps-seite'), { g, rand: g.randKante && la ? randAuftrag(g, la.farbeVon, 1) : null });
   einpassen();
   if (g.randKante) randSetzen(g, la, lauf);
   if (legende) legendeSetzen(blatt.querySelector('svg.ps-seite'), legende);
@@ -931,7 +779,7 @@ function zeitleisteSetzen(zeilen, farbeVon, x0, x1, y0, hoehe, fg, leise, kurz, 
    Signieren von Hand. Der Name kommt aus dem Profil; die Auflage ist ein Feld (Vorgabe 1/1). */
 function editionText(){
   const p = profil();
-  return [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), p.display_name || p.handle || ''].filter(Boolean).join(' · ');
+  return [E.auflage || '1/1', new Date().toLocaleDateString('de-DE'), E.skizze ? anzeigeName({ name: p.display_name, handle: p.handle }) : (p.display_name || p.handle || '')].filter(Boolean).join(' · ');
 }
 function editionSetzen(g, rechts, y, fg, leise){
   const text = editionText();
@@ -1049,21 +897,28 @@ async function druckBilder(s, kopie, g){
    jedes Cover auf die Groesse gerechnet, die es im Bild hat (mal 1,5), und als data:-Adresse eingebettet; dann malt
    der Browser die Seite auf eine Leinwand. Ohne Beschnitt: der Ausschnitt ist genau das Format. Filter (Glas, Kissen)
    und weiche Mischung malt der Browser mit. */
+/* Geometrie und Randauftrag, mit denen eine Seite gebaut wurde: der Export nimmt sie von der Seite, nicht aus den Reglern - ändert man
+   während des Exports etwas, rechnete er sonst die alte Seite mit der neuen Geometrie und malte den Rand in Farben der neuen Vorlage
+   (Fallensuche 1.0.62). randFuer: der festgehaltene Auftrag in der verlangten Auflösung. */
+const seitenGeometrie = new WeakMap();
+const randFuer = (eintrag, g, px) => eintrag && eintrag.rand ? { ...eintrag.rand, pxJeMm: px } : randAuftrag(g, schaumLetzterAuftrag.farbeVon, px);
 async function bildSichern(){
   const blatt = el('ps-blatt'), s = blatt && blatt.querySelector('svg.ps-seite'); if (!s) return;
-  const g = geometrie(aktuell ? aktuell.j.zeilen.length : 0), B = 1080, H = Math.round(B * g.h / g.w), k = B / g.w;
+  const sg = seitenGeometrie.get(s), g = (sg && sg.g) || geometrie(aktuell ? aktuell.j.zeilen.length : 0), B = 1080, H = Math.round(B * g.h / g.w), k = B / g.w;
   const kopie = s.cloneNode(true);
+  /* die Lagen der Bilder vor dem ersten Warten messen: ersetzt bauen die Seite inzwischen, wären sie 0 (alle Bilder auf 32 px) */
+  const ohneRand = (i) => !i.classList.contains('ps-rand'), lagenVorher = [...s.querySelectorAll('image')].filter(ohneRand).map(i => i.getBoundingClientRect()), seiteVorher = s.getBoundingClientRect();
   kopie.querySelectorAll('.ps-beschnitt').forEach(n => n.remove());
   kopie.setAttribute('viewBox', `${BESCHNITT} ${BESCHNITT} ${g.w} ${g.h}`); kopie.setAttribute('width', B); kopie.setAttribute('height', H); kopie.removeAttribute('style');
   /* der Rand fürs Bild eigens gemalt, in der Auflösung des Bildes (vorher die grobe Vorschau, hochgezogen - Fallensuche 1.0.60) */
   const randZiel = kopie.querySelector('g.ps-randbild');
   if (randZiel && g.randKante && aktuell && schaumLetzterAuftrag){
     standSetzen('Der Rand wird gemalt …');
-    try { const st = await randRechnen(randAuftrag(g, schaumLetzterAuftrag.farbeVon, Math.min(10, Math.ceil(k * 1.5 * 2) / 2)));
+    try { const st = await randRechnen(randFuer(sg, g, Math.min(10, Math.ceil(k * 1.5 * 2) / 2)));
       const daten = await Promise.all(st.map(x => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => ok(null); r.readAsDataURL(x.blob); })));
       randZiel.innerHTML = randBilder(st, daten); } catch (e){ console.log('Plakat, Rand:', e); }
   }
-  const bilder = [...kopie.querySelectorAll('image')].filter(i => !i.classList.contains('ps-rand')), echt = [...s.querySelectorAll('image')].filter(i => !i.classList.contains('ps-rand')), seite = s.getBoundingClientRect(), proPunkt = B / seite.width * (g.PW / g.w);
+  const bilder = [...kopie.querySelectorAll('image')].filter(i => !i.classList.contains('ps-rand')), seite = seiteVorher, proPunkt = B / seite.width * (g.PW / g.w);
   let n = 0; const cache = new Map();
   const daten = async (u, px) => {
     const schl = u + '|' + px; if (cache.has(schl)) return cache.get(schl);
@@ -1075,7 +930,7 @@ async function bildSichern(){
   };
   for (let i = 0; i < bilder.length; i++){
     standSetzen(`Das Bild wird gerechnet … ${++n} von ${bilder.length}`);
-    const r = echt[i] ? echt[i].getBoundingClientRect() : null, px = Math.min(1024, Math.max(32, Math.ceil(r ? Math.max(r.width, r.height) * proPunkt * 1.5 : 256)));
+    const r = lagenVorher[i] || null, px = Math.min(1024, Math.max(32, Math.ceil(r ? Math.max(r.width, r.height) * proPunkt * 1.5 : 256)));
     const u = bilder[i].getAttribute('href'), d = u ? await daten(u, Math.ceil(px / 32) * 32) : null;
     if (d) bilder[i].setAttribute('href', d); else bilder[i].remove();
   }
@@ -1103,8 +958,10 @@ async function pdf(){
   const blatt = el('ps-blatt'), s = blatt && blatt.querySelector('svg.ps-seite'); if (!s) return;
   const knopf = el('ps-pdf'); if (knopf.disabled) return; knopf.disabled = true;
   try {
-  const g = geometrie(), kopie = s.cloneNode(true);
+  const sg = seitenGeometrie.get(s), g = (sg && sg.g) || geometrie(), kopie = s.cloneNode(true);
   kopie.querySelectorAll('.ps-beschnitt').forEach(n => n.remove());
+  /* für den Zuschnitt des Triptychons: Lagen vor dem Warten messen (siehe bildSichern) */
+  const sr = s.getBoundingClientRect(), proEinheit = sr.width / g.PW, lagen = [...s.querySelectorAll('image')].map(i => i.getBoundingClientRect());
   /* erst messen (druckBilder liest die Lage der Bilder in der angezeigten Seite), dann warten: ändert man während des Randmalens
      etwas im Panel, ersetzt bauen die Seite - vorher kamen dann die vollen Originale ins PDF (Fallensuche 1.0.60) */
   standSetzen('Die Bilder werden für den Druck gerechnet …');
@@ -1113,7 +970,7 @@ async function pdf(){
   const randZiel = kopie.querySelector('g.ps-randbild');
   if (randZiel && g.randKante && aktuell && schaumLetzterAuftrag){
     standSetzen('Der Rand wird für den Druck gemalt …');
-    try { const st = await randRechnen(randAuftrag(g, schaumLetzterAuftrag.farbeVon, 8), f => standSetzen(`Der Rand wird für den Druck gemalt … ${Math.round(f * 100)} %`));
+    try { const st = await randRechnen(randFuer(sg, g, 8), f => standSetzen(`Der Rand wird für den Druck gemalt … ${Math.round(f * 100)} %`));
       druckRandAdressen.forEach(u => URL.revokeObjectURL(u)); druckRandAdressen = st.map(x => URL.createObjectURL(x.blob));
       randZiel.innerHTML = randBilder(st, druckRandAdressen); }
     catch (e){ console.log('Plakat, Rand:', e); standSetzen('Der Rand ließ sich nicht fein malen – im PDF steht die Vorschau-Fassung.'); await new Promise(ok => setTimeout(ok, 2500)); }
@@ -1124,7 +981,6 @@ async function pdf(){
   /* Triptychon: dieselbe Seite dreimal, jede auf ihren Rahmen samt Beschnitt zugeschnitten (viewBox), je eine PDF-Seite */
   const SW = g.tri ? g.tri.pw + 2 * BESCHNITT : g.PW, SH = g.PH;
   /* je Seite nur die Bilder, die in ihren Rahmen reichen - sonst traegt jede Seite alle (103 MB statt rund 40) */
-  const sr = s.getBoundingClientRect(), proEinheit = sr.width / g.PW, lagen = [...s.querySelectorAll('image')].map(i => i.getBoundingClientRect());
   const seiten = !g.tri ? kopie.outerHTML : [0, 1, 2].map(j => { const k = kopie.cloneNode(true);
     const a = sr.left + j * (g.tri.pw + g.tri.fuge) * proEinheit, b = a + SW * proEinheit;
     [...k.querySelectorAll('image')].forEach((im, i) => { const r = lagen[i]; if (r && (r.right < a || r.left > b)) im.remove(); });

@@ -8717,7 +8717,7 @@ function groupiePerson(l, u){
   return { art: h && k ? 'Herzen und Kommentare' : h ? 'nur Herzen' : 'nur Kommentare', beziehung,
            ankunft: erste == null ? 'Zeit unbekannt' : String(new Date(erste).getFullYear()),
            lebendig: letzte != null && letzte >= u.jetzt - 28 * TAG ? GROUPIE_LEBENDIG[0] : GROUPIE_LEBENDIG[1], geschmack,
-           genre: '', titel: l.name || l.handle || '—', id: l.handle, bild: l.avatar || '', h, k, aktuell, titelZahl, treue, zeichen };
+           genre: '', titel: l.name || l.handle || '—', id: l.handle, bild: l.avatar || '', h, k, aktuell, titelZahl, treue, zeichen, letzte };   /* letzte: fürs Plakat (Gleichstand: zuletzt aktiv bleibt) */
 }
 async function groupieZeilen(m, gl){
   if (!schaumLeute){ try { schaumGemeinde = await (await fetch('/api/community', { cache: 'no-store' })).json(); schaumLeute = schaumGemeinde.leute || []; } catch (e) { schaumLeute = []; } }
@@ -9352,6 +9352,8 @@ function schaumPxJeEinheit(res){
 }
 async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, druck = null }){
   const R = await import('/klangschaum/render.js');
+  /* Skizzenbuch: Kacheltitel schrifttauglich für Pinyon Script (Emoji, Zierrat weg - skizze-hand.js) */
+  const SH = druck && druck.skizze ? await import('/klangschaum/skizze-hand.js') : null;
   await schaumGesichterLaden();
   /* TEXTBREITE IN DER SETZGROESSE (Wiedervorlage aus §77, 07.10.2026): Namenskopf, Kantentitel und Nummernschild massen bei
      100 px und setzten klein - SF wird kleiner gesetzt breiter (4-6 px: 10,2 em je Name-Mittel gegen 8,35 bei 100 px), die
@@ -9540,8 +9542,17 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      eine oberlänge vom strich entfernt stehen"). Das Cover als Federzeichnung (feder.png, bin/feder.js, Modell Informative Drawings)
      in der Tinte seines Areals: die Arealfarbe im linearen Licht abgedunkelt, bis sie 7 : 1 Kontrast zum Papier hat (skizzeTinte);
      fast leere Zeichnungen (unter 1,2 % Tinte) und fehlende werden in derselben Tinte schraffiert. Unten ein abgetrenntes Stück
-     Papier mit dem Titel in Pinyon Script: die Oberlängen beginnen eine Oberlänge unter dem Strich; die Schnitthöhe wird von unten
+     Papier mit dem Titel in Pinyon Script: die Oberlängen beginnen eine halbe Oberlänge unter dem Strich; die Schnitthöhe wird von unten
      abgetastet, genommen wird der tiefste Schnitt, dessen Schrift mindestens 85 % der größtmöglichen erreicht. */
+  /* ZWEI ZEILEN IN DER KACHEL (Caspar_D, 08.10.2026: „Die Kachelbeschriftung ist immer einzeilig, obwohl sie manchmal lieber
+     zweizeilig gewesen wäre."): die Fassungen wie zweiZeilen in klangschaum/skizze-hand.js - der Titel ganz und jede Teilung an einer
+     Wortgrenze, die die Umbruchregeln von render.js erlauben (die zweite Zeile ist nie nur „…", ein Buchstabe oder eine Zahl und
+     beginnt nie mit einem Strich: „Ich erwarte dich - / Track 1"); bis 14 Zeichen bleibt ein Name einzeilig. Hier nachgebaut, weil
+     index.html ein klassisches Script ist. Die ganze Zeile steht vorn - sie gewinnt jeden Gleichstand. */
+  const skizzeFassungen = (t) => { const w = t.split(' ').filter(Boolean), ganz = w.join(' '), out = [[ganz]];
+    if (ganz.length > 14) for (let c = 1; c < w.length; c++){ const z2 = w.slice(c).join(' ');
+      if (!/^(\.{2,}|…)$/.test(z2) && !/^\p{L}$/u.test(z2) && !/^['’]?v?\d+([.,]\d+)?$/i.test(z2) && !/^[-–—]/.test(z2)) out.push([w.slice(0, c).join(' '), z2]); }
+    return out; };
   const skizzeTinten = new Map(), skizzeArealMerk = new Map();
   const skizzeArealFarbe = (areal, leaf) => { if (!areal) return schaumFarbe(leaf, R.chainOf, farbeVon, gezoomt);
     if (!skizzeArealMerk.has(areal)){ const erstes = res.leaves.find(l => R.chainOf(l)[0] === areal) || leaf; skizzeArealMerk.set(areal, schaumFarbe(erstes, R.chainOf, farbeVon, gezoomt)); }
@@ -9553,28 +9564,72 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
     /* eine Tinte je Areal: gezoomt (oder ohne Farbe) die Farbe seines ersten Blatts - wie die Areale des Plakats und damit die Legende
        (vorher je Titel abgestuft: bis zu 20 Tinten, die zu keinem Legendeneintrag passten; Fallensuche 1.0.61) */
     const areal = R.chainOf(leaf)[0], farbe = (!gezoomt && areal && farbeVon(areal.name)) || skizzeArealFarbe(areal, leaf) || '#888';
-    const ink = skizzeTinte(farbe, S.papier); if (!skizzeTinten.has(ink)) skizzeTinten.set(ink, skizzeTinten.size);
+    const ink = skizzeTinte(farbe, S.tintePapier || S.papier); if (!skizzeTinten.has(ink)) skizzeTinten.set(ink, skizzeTinten.size);   /* wie die Legende */
     const nr = skizzeTinten.get(ink), f = S.feder.get(id), lage = `x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`;
+    /* Ausschnitt wie im Schaum (Caspar_D, 08.10.2026: „du hast die Gesichtszentrierung nicht mehr genutzt bzw die Textvermeidung, schalt
+       das mal wieder an"): die Federzeichnung hat das Seitenverhältnis ihres Originals, also gilt derselbe Platz (schaumBildPlatz) */
+    const fd = f && f.tinte >= 0.012 ? schaumFokus(id) : null, pO = fd ? schaumBildPlatz(x, y, w, h, fd.a, fd.fokus, fd.texte) : null;
+    const lageB = pO ? `x="${pO.x.toFixed(1)}" y="${pO.y.toFixed(1)}" width="${pO.w.toFixed(1)}" height="${pO.h.toFixed(1)}"` : lage;
     let out = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
       + (f && f.tinte >= 0.012
-        ? `<image href="${esc(f.url)}" data-voll="${esc(f.url)}" ${lage} preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" filter="url(#sktinte${nr})" pointer-events="none"/>`
+        ? `<image href="${esc(f.url)}" data-voll="${esc(f.url)}" ${lageB} preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" filter="url(#sktinte${nr})" pointer-events="none"/>`
         : `<rect ${lage} fill="url(#skschraff${nr})" clip-path="url(#skz${i})" pointer-events="none"/>`);
-    const titel = druck.titel !== 'ohne' ? zellName(leaf) : '';
+    let titel = druck.titel !== 'ohne' ? (SH ? SH.schriftTauglich(zellName(leaf)) : zellName(leaf)) : '';
+    /* Personen, deren Name ganz aus Nicht-Lateinischem besteht: ihr Handle in Wörtern statt einer leeren Kachel */
+    if (SH && druck.titel !== 'ohne' && personen && !/\p{L}{2}/u.test(titel)) titel = String(id || '').split(/[_.-]/).filter(Boolean).map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
     if (titel){
-      const M = S.mass, OBER = M.l - M.x, unten = y + h, bw = skizzeBreite(titel), cap = Math.min(0.15 * h, S.fsMax / mm), fsMin = S.fsMin / mm;
-      /* größte Schrift, die bei einem Schnitt auf Höhe yc passt: die Sehnen von der Oberlänge bis zur Unterlänge fassen den Titel */
-      /* senkrecht passt höchstens (unten − yc) / (Oberlänge + Schrift + Unterlänge); dann jedes Mal die Breite prüfen - ohne Bestätigung 0
-         (vorher kam der unterste Schnitt nach sechsmal Schrumpfen ungeprüft durch und der Titel saß in der Zellspitze) */
-      const passt = (yc) => { let fz = Math.min(cap, (unten - yc) / (OBER + M.l + M.unter * 0.8)); for (let k = 0; k < 8 && fz > 0; k++){
-          const hoehen = [yc + fz * OBER, yc + fz * (OBER + M.l - M.x * 0.5), yc + fz * (OBER + M.l), yc + fz * (OBER + M.l + M.unter * 0.8)];
-          let br = Infinity; for (const yy of hoehen){ const c = sehne(pk, yy); br = Math.min(br, c ? c[1] - c[0] : 0); }
-          const f2 = Math.min(fz, br * 0.9 / bw); if (f2 >= fz * 0.999) return fz; fz = f2; } return 0; };
-      const kand = []; for (let yc = unten - 0.06 * h; yc > unten - 0.45 * h; yc -= 0.015 * h) kand.push([yc, passt(yc)]);
-      const fmax = kand.reduce((a, k) => Math.max(a, k[1]), 0), wahl = kand.find(k => k[1] >= 0.85 * fmax);
-      if (wahl && wahl[1] >= fsMin){
-        const fs = wahl[1], yc = wahl[0], base = yc + fs * (OBER + M.l), kante = sehne(pk, yc), mitte = sehne(pk, base - fs * M.x * 0.5);
-        if (kante && mitte) out += `<g clip-path="url(#skz${i})" pointer-events="none"><rect x="${x.toFixed(1)}" y="${yc.toFixed(1)}" width="${w.toFixed(1)}" height="${(unten - yc + 2).toFixed(1)}" fill="${S.papier}" fill-opacity="0.92"/>`
-          + `<text class="skizzetitel" x="${((mitte[0] + mitte[1]) / 2).toFixed(1)}" y="${base.toFixed(1)}" font-size="${fs.toFixed(2)}" fill="${ink}" text-anchor="middle" font-family="'Pinyon Script', cursive">${esc(titel)}</text></g>`
+      /* Abstand Trennstrich → Oberlänge: eine HALBE Oberlänge (Caspar_D, 08.10.2026: „Auftakt steht bspw zu weit unten - ich hatte gesagt,
+         eine Oberlänge abstand zum strich, du kannst auch gern eine halbe nehmen"; vorher die ganze, l − x = 0,445 em) */
+      const M = S.mass, OBER = 0.5 * (M.l - M.x), unten = y + h, cap = Math.min(0.15 * h, S.fsMax / mm), fsMin = S.fsMin / mm;
+      /* Zeilenabstand 1,1 em (Grundlinie zu Grundlinie) wie die Notizen im Blatt (skizze-blatt.js): die Unterlänge der ersten Zeile
+         (0,8 × 0,384) und die Oberlänge der zweiten (0,779) brauchen zusammen 1,09 em - sie berühren sich nicht */
+      const ZA = 1.1, hoeheEm = (n) => OBER + M.l + (n - 1) * ZA + M.unter * 0.8;
+      /* größte Schrift, die bei einem Schnitt auf Höhe yc passt: die Sehnen jeder Zeile von ihrer Oberlänge bis zu ihrer Unterlänge
+         fassen sie. breite(fz): die Schrift, die die Sehnen erlauben, wenn der Block in der Größe fz am Schnitt hängt. */
+      const breite = (yc, z, bw, fz) => { let f2 = fz;
+        for (let j = 0; j < z.length; j++){ const base = yc + fz * (OBER + M.l + j * ZA);
+          let br = Infinity; for (const yy of [base - fz * M.l, base - fz * M.x * 0.5, base, base + fz * M.unter * 0.8]){ const c = sehne(pk, yy); br = Math.min(br, c ? c[1] - c[0] : 0); }
+          f2 = Math.min(f2, br * 0.9 / bw[j]); }
+        return f2; };
+      /* senkrecht passt höchstens (unten − yc) / (Oberlänge + Schrift + Zeilenschritte + Unterlänge); von dort abwärts, bis die Breite
+         bestätigt ist - ohne Bestätigung 0 (vorher kam der unterste Schnitt nach sechsmal Schrumpfen ungeprüft durch und der Titel saß
+         in der Zellspitze). Abwärts in Schritten von höchstens 15 % und zwischen der letzten zu großen und der ersten passenden Größe
+         viermal halbiert: bis hierher sprang die Suche gleich auf breite(fz) - aber das ist die Erlaubnis der Sehnen dort, wo der zu
+         große Block hinabreichte; in einer Zelle, die sich nach unten verengt, liegen sie tief und sind kurz, und die Suche landete weit
+         unter dem Möglichen. Bei einer Zeile kostete das im Median 2 % (in jeder zehnten Zelle über 20 %), bei zweien - die zweite
+         Zeile hängt eine Zeile tiefer - im Median die halbe Schrift („Ich erwarte dich - / Track 1": 5,1 statt 13,3; Probe 50 × 70).
+         Unter 85 % der Mindestschrift wird nicht weiter gesucht - gewählt wird ohnehin nur, was die Mindestschrift erreicht, und der
+         letzte Schritt von dort abwärts wird noch geprüft. */
+      const passt = (yc, z, bw) => { let fz = Math.min(cap, (unten - yc) / hoeheEm(z.length)), zu = fz;
+        for (let k = 0; k < 24 && fz >= 0.85 * fsMin; k++){ const f2 = breite(yc, z, bw, fz);
+          if (f2 >= fz * 0.999){ if (!k) return fz; let lo = fz, hi = zu;
+            for (let b = 0; b < 4; b++){ const m = (lo + hi) / 2; if (breite(yc, z, bw, m) >= m * 0.999) lo = m; else hi = m; }
+            return lo; }
+          zu = fz; fz = Math.max(f2, fz * 0.85); }
+        return 0; };
+      /* je Fassung die größte Schrift über alle Schnitte; es gewinnt die größte - zwei Zeilen nur, wenn sie mehr als 5 % größer
+         werden (der Gleichstand von render.js untenSetzen: „bei Gleichstand (5 % der Schrift) die mit weniger Zeilen"). Eine
+         Fassung, die schon nach ihrer Höhe (Schnitt höchstens 45 % der Zelle über dem Fuß) nicht gewinnen kann, wird nicht abgetastet. */
+      let best = null;
+      for (const z of skizzeFassungen(titel)){
+        const schwelle = best ? best.fmax * (z.length > best.z.length ? 1.05 : 1) : 0;
+        if (best && Math.min(cap, 0.45 * h / hoeheEm(z.length)) <= schwelle) continue;
+        const bw = z.map(skizzeBreite), kand = [];
+        for (let yc = unten - 0.06 * h; yc > unten - 0.45 * h; yc -= 0.015 * h) kand.push([yc, passt(yc, z, bw)]);
+        const fmax = kand.reduce((a, k) => Math.max(a, k[1]), 0);
+        if (!best || fmax > schwelle) best = { z, kand, fmax };
+      }
+      /* der tiefste Schnitt mit 85 % der größten Schrift - und mindestens der Mindestschrift: vorher fiel ein Titel ganz weg, wenn der
+         tiefste Schnitt über 85 % unter der Mindestschrift blieb, obwohl höher eine passende Größe lag („Enzian": größte 7,7, tiefster
+         Schnitt 6,8, Mindestschrift 7,2) */
+      const wahl = best.kand.find(k => k[1] >= Math.max(0.85 * best.fmax, fsMin));
+      if (wahl){
+        /* jede Zeile mittig auf ihrer eigenen Sehne (auf halber x-Höhe) */
+        const fs = wahl[1], yc = wahl[0], kante = sehne(pk, yc);
+        const zeilen = best.z.map((t, j) => { const base = yc + fs * (OBER + M.l + j * ZA), mitte = sehne(pk, base - fs * M.x * 0.5);
+          return mitte && `<tspan x="${((mitte[0] + mitte[1]) / 2).toFixed(1)}" y="${base.toFixed(1)}">${esc(t)}</tspan>`; });
+        if (kante && zeilen.every(Boolean)) out += `<g clip-path="url(#skz${i})" pointer-events="none"><rect x="${x.toFixed(1)}" y="${yc.toFixed(1)}" width="${w.toFixed(1)}" height="${(unten - yc + 2).toFixed(1)}" fill="${S.papier}" fill-opacity="0.92"/>`
+          + `<text class="skizzetitel" font-size="${fs.toFixed(2)}" fill="${ink}" text-anchor="middle" font-family="'Pinyon Script', cursive">${zeilen.join('')}</text></g>`
           + `<line x1="${kante[0].toFixed(1)}" y1="${yc.toFixed(1)}" x2="${kante[1].toFixed(1)}" y2="${yc.toFixed(1)}" stroke="${ink}" stroke-width="${(S.linie / mm).toFixed(2)}" pointer-events="none"/>`;
       }
     }
@@ -9826,7 +9881,7 @@ function schaumLageHolen(j, melde, ueberholbar){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.61').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.62').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

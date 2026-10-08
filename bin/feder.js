@@ -8,6 +8,7 @@
      node bin/feder.js --neu                alles noch einmal
      node bin/feder.js --nur 0ac2e049,baff0ad0   nur diese Titel (Anfang der Kennung genuegt, Komma trennt)
      node bin/feder.js --nur-modell         nur das Modell bereithalten (Morgenlauf), nichts zeichnen
+     node bin/feder.js --avatare 2e06….jpg,91c5….jpg   nur diese Avatare als Bildnis (Dateinamen aus library/avatare/)
 
    WOFUER. Die Plakatvorlage „Skizzenbuch" (web/klangschaum/plakat.js) legt den Schaum als Studie auf eine
    Skizzenbuchseite; jede Zelle zeigt ihr Cover nicht als Foto, sondern als Federzeichnung in der Tinte ihres
@@ -75,6 +76,27 @@
    wann gerechnet wurde. Die Zeichnung selbst liegt als library/songs/<id>/feder.png (PNG, 8 Bit Grau).
    Idempotent: uebersprungen wird, was mit gleichem Ausweis, gleicher Quelle, gleichem quellStand und gleicher
    Maske schon da ist. Zwischenstand alle 20 Bilder, damit ein Abbruch das Fertige behaelt.
+
+   BILDNISSE - die Avatare als Federzeichnung (08.10.2026). Das Skizzenbuch wuerdigt unter „Ispirazione" die fuenf
+   Menschen mit den laengsten Kommentaren in runden Medaillons; neben Federzeichnungen der Cover saehe ihr Foto fremd
+   aus. Gezeichnet wird NUR AUF ABRUF und nur, was das Blatt braucht (--avatare): alle Avatare im Voraus zu rechnen
+   (430 im Ordner am 08.10.2026, gemessen 1,46 s je Bildnis) hiesse elf Minuten fuer fuenf gebrauchte Bilder. Den
+   Abruf stoesst die Seite an (web/klangschaum/skizze-bildnisse.js -> POST /api/bilder/vorbereiten?art=bildnis&
+   avatare=… -> server.js bilderVorbereiten('bildnis')).
+     Quelle     library/avatare/<SHA-1 der Adresse>.<jpg|png|webp|gif> - die Kopie von bin/avatare.js (avatare.json
+                ordnet Adresse -> Datei zu); nur Namen dieser Form, wie die Route /avatar/ in server.js.
+     Rechnung   dieselbe wie bei den Covern (zeichnen() unten, 768 px, Unschaerfemaske, Tonkurve, gleicher Ausweis),
+                nur OHNE Schriftaussparung: der Name steht nicht unter dem Bild doppelt, und Schrift in einem Avatar
+                ist Teil des Bildes (Monogramm, Schriftzug als Logo).
+     Zeichnung  library/bildnisse/<SHA-1>.png - eigener Ordner, nicht neben dem Avatar: library/avatare gehoert
+                bin/avatare.js. Ausgeliefert von server.js unter /bildnis/<SHA-1>.png.
+     Buch       library/feder.json, Abschnitt avatare (je Dateiname: quellStand, w, h, tinte, gerechnet - oder
+                unlesbar). Gilt nach denselben Regeln wie die Titel: gleicher Ausweis, gleicher quellStand (holt
+                avatare.js ein neues Bild, wird neu gezeichnet), Zeichnung da. Wechselt der Ausweis, verfallen beide
+                Abschnitte, gleich welcher Lauf es bemerkt - sonst truege der eine den neuen Ausweis und der andere
+                gaelte mit Zeichnungen des alten Modells weiter.
+   Dieselbe Sperre (feder.lauf), dieselben Teil-Dateien, dasselbe Holen des Modells. Ein Lauf ohne --avatare
+   zeichnet keine Bildnisse.
    ============================================================= */
 'use strict';
 const fs = require('node:fs');
@@ -110,6 +132,13 @@ const MINDESTENS = (() => { try { const e = require('./modelle-holen.js').DATEIE
 const NEU = process.argv.includes('--neu');
 const NUR_MODELL = process.argv.includes('--nur-modell');
 const NUR = (() => { const i = process.argv.indexOf('--nur'); return i >= 0 ? String(process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean) : []; })();
+/* --avatare: null = Lauf ueber die Titel wie bisher; sonst die gewuenschten Avatar-Dateien (Bildnisse, siehe Kopf) */
+const AVATARE_WUNSCH = (() => { const i = process.argv.indexOf('--avatare'); return i >= 0 ? String(process.argv[i + 1] || '').split(',').map(s => s.trim()).filter(Boolean) : null; })();
+const AVATARE = path.join(LIB, 'avatare');
+const BILDNISSE = path.join(LIB, 'bildnisse');
+/* So benennt bin/avatare.js seine Kopien (SHA-1 der Adresse + Endung), und nur so liefert server.js sie unter /avatar/ aus -
+   ein anderer Name kommt nicht aus dem Archiv und wird nicht gelesen (kein ../ aus dem Ordner heraus). */
+const AVATARNAME = /^[0-9a-f]{40}\.(jpg|png|webp|gif)$/;
 
 /* Das Modell gilt nur mit der bekannten Prüfsumme: ein im letzten Prozent abgerissener curl-Download ist groß genug, aber
    unbrauchbar - dann brach jeder Lauf beim Laden ab, ohne Hinweis und ohne neues Holen (Fallensuche 1.0.61). Eine falsche Datei
@@ -207,6 +236,35 @@ function stand(katalog) {
   return { modell: true, offen, gesamt: bilder.length };
 }
 
+/* BILDNISSE (siehe Kopf). Ein Avatar als Auftrag: Quelle, ihr Zeitstempel, Ziel - oder null, wenn der Name nicht passt oder
+   die Datei fehlt. */
+function bildnisVon(datei) {
+  if (!AVATARNAME.test(datei)) return null;
+  const quelle = path.join(AVATARE, datei);
+  let st; try { st = fs.statSync(quelle); } catch (e) { return null; }
+  if (!st.isFile() || !st.size) return null;
+  return { datei, quelle, quellStand: st.mtimeMs, ziel: path.join(BILDNISSE, datei.replace(/\.[a-z]+$/, '.png')) };
+}
+/* wie gueltig() bei den Titeln, ohne Maske: Unlesbares gilt bis zum naechsten neuen Bild, sonst muss die Zeichnung daliegen */
+function bildnisGueltig(e, b) {
+  if (!e || e.quellStand !== b.quellStand) return false;
+  return !!e.unlesbar || fs.existsSync(b.ziel);
+}
+/* Fuer den Server (/api/feder): der Abschnitt avatare des Buchs, je Eintrag gilt nach den Regeln des Laufs - die Seite fragt
+   nur nach ihren fuenf und braucht dafuer nicht den Ausweis nachzurechnen. Ohne Modell gilt nichts (wie stand()) - ausser
+   eingefroren, siehe dort. */
+/* eingefroren (Stick): dort wird nichts gerechnet, also gilt, was exportiert daliegt - wie bei den Cover-Zeichnungen (vorher zeigte
+   der Stick immer die Fotos: ohne Modell gilt kein Ausweis, und der Export setzt neue Dateistempel; Fallensuche 1.0.62) */
+function bildnisStand({ eingefroren = false } = {}) {
+  const modell = modellDa(), buch = buchLesen(), gleich = modell && AUSWEISIDENT(buch.ausweis) === AUSWEISIDENT(ausweis()), avatare = {};
+  for (const [datei, e] of Object.entries(buch.avatare || {})) {
+    const b = bildnisVon(datei);
+    const gilt = eingefroren ? !!(b && (e.unlesbar || fs.existsSync(b.ziel))) : !!(gleich && b && bildnisGueltig(e, b));
+    avatare[datei] = Object.assign({}, e, { gilt });
+  }
+  return { modell, avatare };
+}
+
 /* EIN LAUF ZUR ZEIT: „Bilder vorbereiten" (server.js) und ein Lauf von Hand duerfen nicht gleichzeitig ins
    selbe Buch schreiben. Die Sperre traegt die PID; lebt der Prozess nicht mehr, gilt sie nicht. */
 const SPERRE = path.join(LIB, 'feder.lauf');
@@ -221,7 +279,7 @@ function sperren() {
   return true;
 }
 function entsperren() { try { if (Number(fs.readFileSync(SPERRE, 'utf8')) === process.pid) fs.unlinkSync(SPERRE); } catch (e) {} }
-module.exports = { stand, SPERRE, MODELLNAME };
+module.exports = { stand, bildnisStand, SPERRE, MODELLNAME, AVATARNAME };
 
 /* Umbenennen mit Wiederholung: unter Windows scheitert es mit EPERM/EACCES/EBUSY, solange das Ziel offen ist (der Server liefert
    feder.png aus, liest feder.json) oder ein Virenscanner die neue Datei hält - wie in server.js zehnmal je 200 ms */
@@ -321,6 +379,51 @@ async function zeichnen(ort, sitzung, datei, kaesten, schriftFormat = 0) {
   return { grau, w, h, tinte: +(t / n).toFixed(4) };
 }
 
+/* DER LAUF UEBER DIE BILDNISSE (--avatare, siehe Kopf) - unter der Sperre, mit Modell und gueltigem Ausweis im Buch. Dieselben
+   Fehlerregeln wie bei den Titeln: Werkzeugfehler brechen ab, ohne etwas zu merken; ein Bild, an dem das Netz scheitert, gilt als
+   unlesbar, bis avatare.js ein neues holt. */
+async function bildnisseLauf(buch, wunsch) {
+  const falsch = wunsch.filter(d => !AVATARNAME.test(d));
+  if (falsch.length) console.log(`  übergangen (kein Avatar-Dateiname): ${falsch.join(', ').slice(0, 300)}`);
+  const bilder = [];
+  for (const d of new Set(wunsch.filter(d => AVATARNAME.test(d)))) {
+    const b = bildnisVon(d); if (b) bilder.push(b); else console.log(`  ${d} liegt nicht in library/avatare - übergangen`);
+  }
+  if (!buch.avatare || typeof buch.avatare !== 'object') buch.avatare = {};
+  /* Reste eines hart abgebrochenen Laufs - wir halten die Sperre */
+  try { for (const n of fs.readdirSync(BILDNISSE)) if (/\.png\.\d+\.teil$/.test(n)) fs.unlinkSync(path.join(BILDNISSE, n)); } catch (e) {}
+  try { for (const n of fs.readdirSync(LIB)) if (/^feder\.json\.\d+\.teil$/.test(n)) fs.unlinkSync(path.join(LIB, n)); } catch (e) {}
+  const offen = bilder.filter(b => NEU || !bildnisGueltig(buch.avatare[b.datei], b));
+  console.log(`Feder — ${offen.length} von ${bilder.length} Bildnissen zu zeichnen (${FAEDEN} Fäden)\n`);
+  if (!offen.length) return;
+  fs.mkdirSync(BILDNISSE, { recursive: true });
+  melden.lauf({ was: 'Bildnisse werden mit der Feder gezeichnet', n: 0, von: offen.length, nEinheit: 'Bildnis' });
+  const ort = require('onnxruntime-node');
+  const sitzung = await ort.InferenceSession.create(MODELL, { intraOpNumThreads: FAEDEN, logSeverityLevel: 3 });
+  let n = 0, fehler = 0; const t0 = Date.now();
+  for (const b of offen) {
+    n++;
+    let z = null;
+    try { z = await zeichnen(ort, sitzung, b.quelle, []); if (z) grauSchreiben(z.grau, z.w, z.h, b.ziel); }
+    catch (e) {
+      if (e instanceof Werkzeugfehler || /ENOSPC|EIO|EROFS/.test(e.code || e.message || '')) {
+        console.log(`  [${n}/${offen.length}] ${b.datei.slice(0, 8)}  ${e.message} — Lauf abgebrochen, der nächste versucht es wieder.`);
+        buchSchreiben(buch); melden.ausLauf(); return; }
+      console.log(`  [${n}/${offen.length}] ${b.datei.slice(0, 8)}  ${e.message}`); z = null;
+    }
+    auffrischen();
+    if (!z) { fehler++; buch.avatare[b.datei] = { quellStand: b.quellStand, unlesbar: true, gerechnet: new Date().toISOString() }; }
+    else buch.avatare[b.datei] = { quellStand: b.quellStand, w: z.w, h: z.h, tinte: z.tinte, gerechnet: new Date().toISOString() };
+    console.log(`  [${n}/${offen.length}] ${b.datei.slice(0, 8)}  ${z ? 'Tinte ' + String((z.tinte * 100).toFixed(1)).replace('.', ',') + ' %' : 'nicht lesbar oder nicht zu schreiben'}`);
+    if (n % 20 === 0 || n === offen.length) buchSchreiben(buch);
+    melden.lauf({ was: 'Bildnisse werden mit der Feder gezeichnet', n, von: offen.length, nEinheit: 'Bildnis', jetzt: b.datei.slice(0, 8) });
+  }
+  buchSchreiben(buch);
+  melden.ausLauf();
+  console.log(`\n  ${n - fehler} Bildnisse${fehler ? `, ${fehler} nicht lesbar` : ''} — ${Math.round((Date.now() - t0) / offen.length)} ms je Bild.`);
+  console.log(`  Buch: ${path.relative(WURZEL, BUCH)} (avatare), Zeichnungen: ${path.relative(WURZEL, BILDNISSE)}\n`);
+}
+
 if (require.main === module) (async () => {
   /* Morgenlauf: nur bereithalten. Kein Zeichnen, keine Sperre, nie ein Rueckgabewert ungleich 0. */
   if (NUR_MODELL) {
@@ -328,6 +431,7 @@ if (require.main === module) (async () => {
     else console.log(`Feder — Modell nicht zu holen (${MODELLNAME}); das Skizzenbuch versucht es beim Öffnen wieder.`);
     return;
   }
+  if (AVATARE_WUNSCH && !AVATARE_WUNSCH.length) { console.log('Feder — --avatare ohne Dateinamen, nichts zu tun.\n'); return; }
   if (!sperren()) { console.log('Feder — läuft schon (anderer Lauf), nichts zu tun.\n'); return; }
   process.on('exit', entsperren);
   /* Abgebrochen (Server beendet, Strg+C): Buch schreiben und die Sperre freigeben. Ohne diese Zeilen stirbt Node
@@ -345,11 +449,15 @@ if (require.main === module) (async () => {
     return;
   }
   const aw = ausweis(), buch = buchLesen();
-  if (AUSWEISIDENT(buch.ausweis) !== AUSWEISIDENT(aw) && Object.keys(buch.bilder).length) {
-    console.log('  Modell oder Nachbearbeitung haben gewechselt — alle Bilder werden neu gezeichnet.');
+  /* beide Abschnitte verfallen zusammen (siehe Kopf, Bildnisse); avatare nur anfassen, wo es ihn gibt */
+  if (AUSWEISIDENT(buch.ausweis) !== AUSWEISIDENT(aw)) {
+    if (Object.keys(buch.bilder).length || Object.keys(buch.avatare || {}).length)
+      console.log('  Modell oder Nachbearbeitung haben gewechselt — alle Bilder werden neu gezeichnet.');
     buch.bilder = {};
+    if (buch.avatare) buch.avatare = {};
   }
   buch.ausweis = aw;
+  if (AVATARE_WUNSCH) { imBuch = buch; return bildnisseLauf(buch, AVATARE_WUNSCH); }
   const gesichter = gesichterLesen();
   /* Reste eines hart abgebrochenen Laufs (*.teil) wegräumen - wir halten die Sperre, kein anderer schreibt gerade */
   for (const b of alleBilder()) { try { for (const n of fs.readdirSync(path.dirname(b.ziel))) if (/^feder\.png\.\d+\.teil$/.test(n)) fs.unlinkSync(path.join(path.dirname(b.ziel), n)); } catch (e) {} }
