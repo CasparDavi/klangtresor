@@ -8698,3 +8698,15 @@ Skizze B mit Spalte (Engine legt den Schaum in die D-Form; `_werkstatt_bilder/fe
 ohne Streifen oben/unten (mit Streifen wuchs der Kreis dort nicht) – Kopf, Refrains, Studien, Legende/Siegel in der Spalte (¼), Refrain
 und Rätsel in den Zwickeln. Hoch: Streifen oben (Kopf, Refrains) und unten (Legende, Refrain/Rätsel, Siegel), Spalte ⅕ (Gitarre,
 Detail, Cello). Quer: unten angeschnitten, Kopf oben links, Spalte rechts.
+Inhalt des Drumherums (Brainstorm 08.10.2026): Caspar_D: „bisher haben wir Textfragmente aus dem Dateninhalt geholt, was ich für am
+Besten halte. Unter Leute, bei denen ich oft kommentiert habe, denen ich folge und sie als meine Inspiration würdige … oder ggf eine
+Hitparade meiner Titel als Liste nochmal daneben, die Top 5" – „schau ggf ins persönliche Profil, Leonardo hat ja auch Diagramme
+gezeichnet". Linie: Daten als Inhalt, Leonardo als Form; generisch nur das Gerüst (Konstruktion, Zirkel, Notenrätsel als Hommage).
+Was im Archiv liegt (nachgesehen): Profil (Name, Handle, Beschreibung, Summen: 2351 Likes, 26818 Plays, 375 Follower, 102 gefolgt),
+beobachter.json (102 „following" mit Avatar, gegenseitig ja/nein), reaktionen.ndjson (Kommentare/Likes/Antworten auf deine Titel
+mit Name/Avatar), community-profile.json (574 Leute), je Titel zaehlerVerlauf (Plays/Likes/Kommentare je Tag), klang.json
+(Instrumente/Stimmung/Genre je Titel – häufigste Instrumente: Drums, Synthesizer, Gitarre, Bass, Klavier, E-Gitarre), analyse/
+(Spektrogramme), notizen.json (eigene Notizen je Titel – persönlich), Lyrics. NICHT gefunden: deine Kommentare unter fremden Titeln.
+Vorschläge: Top 5 als „Tabula" (römische Ziffern), Würdigung als Porträtstudien (Avatare durch das Federmodell), Instrumentenstudien nach
+deinen häufigsten Instrumenten (Cello für Tarja bleibt Widmung), Diagramme: Wachstumskurve aus zaehlerVerlauf, Windrose der Stimmungen,
+24-Stunden-Zifferblatt der Entstehungszeiten, Räderwerk der Areale, Spektrogramm-Studie des Spitzentitels. Entscheidung offen.
