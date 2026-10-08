@@ -9534,6 +9534,53 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
      (Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der Avatar in rundem
      Beschnitt wie in Suno gezeigt") bleibt sie leer: keine Kachel, kein Kissen, kein Schatten - Avatar, Legende und Text setzt
      plakat.js auf den Grund der Seite (eckblock.js). */
+  /* DIE KACHEL IM SKIZZENBUCH (Plakat-Vorlage „Skizzenbuch", 1.0.61; Caspar_D: „ich hab eher an ein neues Layout a la Leonardo da
+     Vinci oder sowas gedacht" – „mach mal jedes arial in der farbe, die dafür vergeben ist aber so dunkel, das man noch was erkennen
+     kann" – „kannst du wieder ein stück zelle abschneiden und in einer Federschreibschrift die Titel beschriften" – „sie sollen nur
+     eine oberlänge vom strich entfernt stehen"). Das Cover als Federzeichnung (feder.png, bin/feder.js, Modell Informative Drawings)
+     in der Tinte seines Areals: die Arealfarbe im linearen Licht abgedunkelt, bis sie 7 : 1 Kontrast zum Papier hat (skizzeTinte);
+     fast leere Zeichnungen (unter 1,2 % Tinte) und fehlende werden in derselben Tinte schraffiert. Unten ein abgetrenntes Stück
+     Papier mit dem Titel in Pinyon Script: die Oberlängen beginnen eine Oberlänge unter dem Strich; die Schnitthöhe wird von unten
+     abgetastet, genommen wird der tiefste Schnitt, dessen Schrift mindestens 85 % der größtmöglichen erreicht. */
+  const skizzeTinten = new Map(), skizzeArealMerk = new Map();
+  const skizzeArealFarbe = (areal, leaf) => { if (!areal) return schaumFarbe(leaf, R.chainOf, farbeVon, gezoomt);
+    if (!skizzeArealMerk.has(areal)){ const erstes = res.leaves.find(l => R.chainOf(l)[0] === areal) || leaf; skizzeArealMerk.set(areal, schaumFarbe(erstes, R.chainOf, farbeVon, gezoomt)); }
+    return skizzeArealMerk.get(areal); };
+  const skizzeZelle = (alles, dd, i, id) => {
+    const S = druck.skizze, mm = druck.mmJeEinheit || 1, leaf = res.leaves[i];
+    const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
+    const xs = pk.map(p => p[0]), ys = pk.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+    /* eine Tinte je Areal: gezoomt (oder ohne Farbe) die Farbe seines ersten Blatts - wie die Areale des Plakats und damit die Legende
+       (vorher je Titel abgestuft: bis zu 20 Tinten, die zu keinem Legendeneintrag passten; Fallensuche 1.0.61) */
+    const areal = R.chainOf(leaf)[0], farbe = (!gezoomt && areal && farbeVon(areal.name)) || skizzeArealFarbe(areal, leaf) || '#888';
+    const ink = skizzeTinte(farbe, S.papier); if (!skizzeTinten.has(ink)) skizzeTinten.set(ink, skizzeTinten.size);
+    const nr = skizzeTinten.get(ink), f = S.feder.get(id), lage = `x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}"`;
+    let out = `<clipPath id="skz${i}"><path d="${dd}"/></clipPath>`
+      + (f && f.tinte >= 0.012
+        ? `<image href="${esc(f.url)}" data-voll="${esc(f.url)}" ${lage} preserveAspectRatio="xMidYMid slice" clip-path="url(#skz${i})" filter="url(#sktinte${nr})" pointer-events="none"/>`
+        : `<rect ${lage} fill="url(#skschraff${nr})" clip-path="url(#skz${i})" pointer-events="none"/>`);
+    const titel = druck.titel !== 'ohne' ? zellName(leaf) : '';
+    if (titel){
+      const M = S.mass, OBER = M.l - M.x, unten = y + h, bw = skizzeBreite(titel), cap = Math.min(0.15 * h, S.fsMax / mm), fsMin = S.fsMin / mm;
+      /* größte Schrift, die bei einem Schnitt auf Höhe yc passt: die Sehnen von der Oberlänge bis zur Unterlänge fassen den Titel */
+      /* senkrecht passt höchstens (unten − yc) / (Oberlänge + Schrift + Unterlänge); dann jedes Mal die Breite prüfen - ohne Bestätigung 0
+         (vorher kam der unterste Schnitt nach sechsmal Schrumpfen ungeprüft durch und der Titel saß in der Zellspitze) */
+      const passt = (yc) => { let fz = Math.min(cap, (unten - yc) / (OBER + M.l + M.unter * 0.8)); for (let k = 0; k < 8 && fz > 0; k++){
+          const hoehen = [yc + fz * OBER, yc + fz * (OBER + M.l - M.x * 0.5), yc + fz * (OBER + M.l), yc + fz * (OBER + M.l + M.unter * 0.8)];
+          let br = Infinity; for (const yy of hoehen){ const c = sehne(pk, yy); br = Math.min(br, c ? c[1] - c[0] : 0); }
+          const f2 = Math.min(fz, br * 0.9 / bw); if (f2 >= fz * 0.999) return fz; fz = f2; } return 0; };
+      const kand = []; for (let yc = unten - 0.06 * h; yc > unten - 0.45 * h; yc -= 0.015 * h) kand.push([yc, passt(yc)]);
+      const fmax = kand.reduce((a, k) => Math.max(a, k[1]), 0), wahl = kand.find(k => k[1] >= 0.85 * fmax);
+      if (wahl && wahl[1] >= fsMin){
+        const fs = wahl[1], yc = wahl[0], base = yc + fs * (OBER + M.l), kante = sehne(pk, yc), mitte = sehne(pk, base - fs * M.x * 0.5);
+        if (kante && mitte) out += `<g clip-path="url(#skz${i})" pointer-events="none"><rect x="${x.toFixed(1)}" y="${yc.toFixed(1)}" width="${w.toFixed(1)}" height="${(unten - yc + 2).toFixed(1)}" fill="${S.papier}" fill-opacity="0.92"/>`
+          + `<text class="skizzetitel" x="${((mitte[0] + mitte[1]) / 2).toFixed(1)}" y="${base.toFixed(1)}" font-size="${fs.toFixed(2)}" fill="${ink}" text-anchor="middle" font-family="'Pinyon Script', cursive">${esc(titel)}</text></g>`
+          + `<line x1="${kante[0].toFixed(1)}" y1="${yc.toFixed(1)}" x2="${kante[1].toFixed(1)}" y2="${yc.toFixed(1)}" stroke="${ink}" stroke-width="${(S.linie / mm).toFixed(2)}" pointer-events="none"/>`;
+      }
+    }
+    kacheln.push({ dd, tf: '' });
+    return out + `<path d="${dd}" fill="none" stroke="${ink}" stroke-width="${(S.strich / mm).toFixed(2)}" stroke-linejoin="round" data-i="${i}" pointer-events="none"/>`;
+  };
   /* Personen ohne Avatar: kein Bild (vorher die Kachel-Adresse unter ihrem Handle - ein 404 je Person). */
   const bilder = res.leaves.map(k => k.row != null && zeilen[k.row] && zeilen[k.row].id !== SCHILD_ID ? (schaumAvatarAdresse(zeilen[k.row].bild) || (personen ? null : druck ? artworkBild(zeilen[k.row].id) : artworkKachel(zeilen[k.row].id))) : null);
   /* ZELLNAMEN OHNE KLAMMERN (Caspar_D, 07.10.2026: „alles was in Klammern steht vielleicht weglassen"): was in runden oder
@@ -9597,9 +9644,12 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
   svg = svg.replace(/font-family="[^"]*"/, 'font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"')
            .replace(/ width="\d+" height="\d+"/, ' preserveAspectRatio="xMidYMid meet"')
            /* Das Cover als Wasserzeichen hinter jede Titelzelle: Rahmen aus den Punkten der Zelle. */
+           /* Skizzenbuch: die Schraffur der Engine für Zellen ohne Untergruppe fällt weg - sie lag schwarz über Federzeichnung und Titel */
+           .replace(druck && druck.skizze ? /<path d="M[^"]+" fill="url\(#hatch\)"[^>]*\/>/g : /$^/, '')
            .replace(/<path d="(M[^"]+)"([^>]*?) data-i="(\d+)"([^>]*)\/>/g, (alles, dd, a, i, b) => {
              const id = ids[+i]; if (!id) return alles;
              if (id === SCHILD_ID) return '';
+             if (druck && druck.skizze) return skizzeZelle(alles, dd, +i, id);
              /* die Areal-Farbe aus der Legende an den Pfad - fuer den Rahmen der hervorgehobenen Zelle (rahmenFarbe) */
              { const af = farbeVon((zeilen[res.leaves[+i].row] || {}).gruppe); if (af) alles = alles.replace('<path ', `<path data-farbe="${af}" `); }
              const pk = dd.slice(1).replace(/Z$/, '').split('L').map(p => p.split(',').map(Number));
@@ -9650,6 +9700,15 @@ async function schaumSvgBauen(res, { zeilen, ebenen, farbeVon, gezoomt, art, dru
                + (quelle ? (druck ? alles.replace('<path ', `<path fill-opacity="${druck.deck}" `) : alles) : alles.replace('<path ', '<path class="ohnebild" '));
              return tf ? `<g transform="${tf}">${fertig}</g>` : fertig;
            });
+  if (skizzeTinten.size){
+    const pap = [1, 3, 5].map(j => parseInt(druck.skizze.papier.slice(j, j + 2), 16) / 255), mm = druck.mmJeEinheit || 1, sw = 2.2 / mm;
+    /* Umfärbung mit Knick: Grau unter der Hälfte wird fast volle Tinte - beim Verkleinern (Vorschau, kleine Zellen) mitteln sich die
+       feinen Federstriche zu Grau, ohne den Knick wirkten sie blass (Caspar_D: „nicht knackig genug, ein bisschen schärfer und dunkler") */
+    svg = svg.replace('<defs>', '<defs>' + [...skizzeTinten].map(([ink, nr]) => { const t = [1, 3, 5].map((j, c) => { const a = parseInt(ink.slice(j, j + 2), 16) / 255, b = pap[c], m = (u) => (a + (b - a) * u).toFixed(3);
+        return [m(0), m(0.04), m(0.22), m(0.62), m(1)].join(' '); });
+      return `<filter id="sktinte${nr}" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="table" tableValues="${t[0]}"/><feFuncG type="table" tableValues="${t[1]}"/><feFuncB type="table" tableValues="${t[2]}"/></feComponentTransfer></filter>`
+        + `<pattern id="skschraff${nr}" width="${sw.toFixed(2)}" height="${sw.toFixed(2)}" patternUnits="userSpaceOnUse" patternTransform="rotate(${[35, -35, 60, -60, 20, -20][nr % 6]})"><line x1="0" y1="0" x2="0" y2="${sw.toFixed(2)}" stroke="${ink}" stroke-opacity="0.55" stroke-width="${(0.18 / mm).toFixed(2)}"/></pattern>`; }).join(''));
+  }
   if (koepfe.length) svg = svg.replace('<defs>', '<defs>' + SCHAUM_GLAS).replace('</svg>', koepfe.join('') + '</svg>');
   /* (1.0.57) der Filter auch im Druck: die Glasfelder des Plakats verwiesen auf url(#skglas), definiert wurde er nur fuer die
      Koepfe am Schirm - ein fehlender Filter laesst das Element ungemalt, die weichgezeichnete Bildkopie fehlte im Glas */
@@ -9709,6 +9768,19 @@ function schaumKissenKacheln(kacheln, res){
    mit trim(), ein schmales Leerzeichen fiel dabei weg (Werkstatt) - U+2063 bleibt, und kein echtes Areal heisst so. Der
    Lage-Schluessel traegt Ecke, Block (Breiten gerundet), Rahmen und Tafelgrenzen. */
 const SCHILD_NAME = '\u2063Schild', SCHILD_ID = '__schild';
+/* Skizzenbuch: die Tinte eines Areals - seine Farbe im linearen Licht so weit abgedunkelt, dass sie 7 : 1 Kontrast zum Papier hat
+   (Caspar_D: „so dunkel, das man noch was erkennen kann"; Hausregel Beamer: Kontraste ≥ 7 : 1); der Farbton bleibt. */
+function skizzeTinte(hex, papier){
+  const rgb = (h) => { const c = document.createElement('canvas').getContext('2d'); c.fillStyle = '#888'; c.fillStyle = h; const v = c.fillStyle;
+    return v[0] === '#' ? [1, 3, 5].map(j => parseInt(v.slice(j, j + 2), 16)) : (v.match(/[\d.]+/g) || [136, 136, 136]).slice(0, 3).map(Number); };
+  const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }, srgb = (v) => Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055));
+  const L = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2], c = rgb(hex).map(lin), p = rgb(papier).map(lin);
+  const f = Math.min(1, ((L(p) + 0.05) / 7 - 0.05) / Math.max(1e-4, L(c)));
+  return '#' + c.map(v => Math.max(0, Math.min(255, srgb(v * f))).toString(16).padStart(2, '0')).join('');
+}
+/* Breite in em in Pinyon Script (die Schrift muss geladen sein - plakat.js wartet darauf) */
+const skizzeBreite = (() => { let c = null; const v = new Map(); return (t) => { if (v.has(t)) return v.get(t);
+  c = c || document.createElement('canvas').getContext('2d'); c.font = "100px 'Pinyon Script'"; const b = c.measureText(t).width / 100; v.set(t, b); return b; }; })();
 /* vorgabe aus plakat.js (schildVorgabe): Ecke, Block und Rahmen in Schaum-Einheiten, Luft, Tafelgrenzen, Schluessel. Das Gewicht
    der Zeile ist nur der Start - den Anteil sucht der Worker (schild.js: so klein, dass der Block mit Luft hineinpasst). */
 function schildAuftrag(j, { ecke = 'ur', block, rahmen, luft = 0, xMin = 0, xMax = Infinity, schluessel = '' }){
@@ -9741,7 +9813,7 @@ function schaumLageHolen(j, melde, ueberholbar){
         else nein(new Error(ev.data.message)); };
       w.onerror = (ev) => { ende(); nein(new Error(ev.message || 'Worker')); };
       w.postMessage({ rows: j.zeilen, tree: { levels: [...j.ebenen, 'row'], weight: 'w', leafName: 'titel' },
-                      layout: { width: j.W, height: j.H, method: 'foam', minArea: 0, minShare: 0, ...(j.seeds ? { seeds: j.seeds } : {}) },
+                      layout: { width: j.W, height: j.H, method: 'foam', minArea: 0, minShare: 0, ...(j.seeds ? { seeds: j.seeds } : {}), ...(j.outline ? { outline: j.outline } : {}) },
                       ...(j.schild ? { schild: j.schild } : {}) });
     });
   })();
@@ -9754,7 +9826,7 @@ function schaumLageHolen(j, melde, ueberholbar){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.60').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.61').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

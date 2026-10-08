@@ -256,7 +256,9 @@ function liefere(req, res, datei) {
      tiefe.png.bak bleiben fest. */
   /* (^|[\\/]): unter Windows trennt path.join mit Backslash - mit nur "/" traf die Regel dort nie, und eine ersetzte
      eigene Tonfassung spielte bei Casto ein Jahr lang aus dem Browservorrat weiter (Gegenlesen 1.0.45, 07.10.2026). */
-  const abgeleitet = /(^|[\\/])(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
+  /* feder.png (08.10.2026, bin/feder.js): die Federzeichnung fuers Plakat „Skizzenbuch" ist abgeleitet wie die
+     Tiefenkarte - neu, sobald das Quellbild ersetzt wird oder die Nachbearbeitung eine neue Fassung bekommt. */
+  const abgeleitet = /(^|[\\/])(kachel\.jpg|eigen(-\d+)?\.(mp4|jpg|mp3|wav)|eigen-effekt\.json|artwork\.mp4\.eigen\.json|[a-z0-9-]+\.sprung\.mp4|(tiefe|eigen(-\d+)?\.tiefe)\.png|feder\.png|(artwork|eigen(-\d+)?)\.tiefe\.mp4)$/.test(datei);
   /* text/css gehoert seit dem 27.09.2026 zu "programm": das Effektclip-Studio ist jetzt web/tbs.css und
      web/tbs-modul.js; mit dem Jahres-Cache hielte der Browser nach jeder Aenderung ein altes Stylesheet,
      waehrend das Skript schon neu waere - dieselbe Regel wie fuer .js, mit 304 statt max-age. */
@@ -1449,29 +1451,47 @@ function eigeneSeite(req) {
    Nie doppelt: laeuft der Morgenschritt „Medien laden" gerade, oder haelt ein anderer Lauf die Sperre
    (library/gesichter.lauf, library/avatare.lauf), wird nur gewartet. Der Morgenlauf arbeitet weiter vor -
    dies ist das Netz darunter. */
-const bilderLauf = { laeuft: false, art: null, danach: null, schritt: null, n: 0, von: 0, seit: null, fertigAm: null, fehler: null };
-function bilderStand() { return Object.assign({}, bilderLauf); }
-function sperreLebt(datei) {
-  try { const pid = Number(fs.readFileSync(datei, 'utf8')); if (!pid) return false; process.kill(pid, 0); return true; } catch (e) { return false; }
+/* letzte: das Ende des letzten Laufs JE ART ({ fertigAm, fehler }) - fertigAm allein galt fuer alle Arten, und ein fertiger
+   Cover-Lauf liess die Seite glauben, das Zeichenmodell sei schon vergeblich versucht worden (Fallensuche 1.0.61). */
+const bilderLauf = { laeuft: false, art: null, danach: null, schritt: null, n: 0, von: 0, seit: null, fertigAm: null, fehler: null, letzte: {} };
+function bilderStand() { return Object.assign({}, bilderLauf, { letzte: Object.assign({}, bilderLauf.letzte) }); }
+/* maxAlter: eine Sperre, deren Datei so lange nicht beruehrt wurde, gilt als verwaist (feder.js frischt sie je Bild auf) - eine
+   wiederverwendete PID nach einem harten Abbruch hielt sonst jeden Bilderlauf auf */
+function sperreLebt(datei, maxAlter = 0) {
+  try { const pid = Number(fs.readFileSync(datei, 'utf8')); if (!pid) return false;
+    if (maxAlter && Date.now() - fs.statSync(datei).mtimeMs > maxAlter) return false;
+    process.kill(pid, 0); return true; } catch (e) { return false; }
 }
-/* art 'titel': nur die Cover (Klangschaum, Plakat der Werke); 'person': Avatare holen und nur sie durchsuchen.
+/* art 'titel': nur die Cover (Klangschaum, Plakat der Werke); 'person': Avatare holen und nur sie durchsuchen;
+   'feder' (08.10.2026): die Federzeichnungen fuers Plakat „Skizzenbuch" - erst die Schriftkaesten der Cover
+   (bin/gesichter.js), denn bin/feder.js spart die Schrift danach aus, dann die Zeichnungen selbst. Dasselbe
+   Muster wie beim Klangschaum (Caspar_D, 08.10.2026: „siehe dir dazu den teil zum klangschaum an, da werden
+   auch zwei modelle gebraucht"): beide Skripte holen ihr Modell still nach; fehlt es danach noch (kein Netz),
+   wird nichts gezeichnet und fehler heisst 'modelle'.
    Laeuft schon ein Lauf der anderen Art, kommt dieser danach dran. */
 function bilderVorbereiten(art) {
-  art = art === 'person' ? 'person' : 'titel';
+  art = art === 'person' ? 'person' : art === 'feder' ? 'feder' : 'titel';
   if (bilderLauf.laeuft) { if (art !== bilderLauf.art) bilderLauf.danach = art; return; }
   Object.assign(bilderLauf, { laeuft: true, art, danach: null, schritt: null, n: 0, von: 0, seit: Date.now(), fertigAm: null, fehler: null });
+  /* die Federsperre nur fuer den Federlauf - gesichter.js und avatare.js beruehren die Federdateien nicht */
   const sperren = [path.join(WURZEL, 'library', 'avatare.lauf'), path.join(WURZEL, 'library', 'gesichter.lauf')];
+  const federSperre = path.join(WURZEL, 'library', 'feder.lauf');
   const fremd = () => (morgen.laeuft && morgen.folge && morgen.folge[morgen.schritt] && morgen.folge[morgen.schritt].id === 'medien-laden')
-    || sperren.some(sperreLebt);
+    || sperren.some(d => sperreLebt(d)) || (art === 'feder' && sperreLebt(federSperre, 15 * 60000));
   const ende = () => {
     let st = null; try { st = require('../bin/gesichter.js').stand(); } catch (e) {}
-    bilderLauf.fehler = st && !st.modelle ? 'modelle' : null;    /* kein Netz beim ersten Mal: der naechste Morgenlauf holt sie */
+    /* feder: ohne das Zeichenmodell gibt es keine Zeichnung - die Seite zeigt dann den Hinweis, kein halbes Plakat */
+    let fst = null; if (art === 'feder') try { fst = require('../bin/feder.js').stand(katalogHolen()); } catch (e) {}
+    /* beim Federlauf zählt nur das Zeichenmodell - ohne die Gesichter-Modelle zeichnet feder.js trotzdem (nur ohne Schriftaussparung) */
+    bilderLauf.fehler = (art === 'feder' ? (fst && !fst.modell) : (st && !st.modelle)) ? 'modelle' : null;    /* kein Netz beim ersten Mal: der naechste Morgenlauf holt sie */
     const danach = bilderLauf.danach;
     Object.assign(bilderLauf, { laeuft: false, danach: null, schritt: null, fertigAm: Date.now() });
+    bilderLauf.letzte[art] = { fertigAm: bilderLauf.fertigAm, fehler: bilderLauf.fehler };
     if (danach) bilderVorbereiten(danach);
   };
   const warten = (dann) => { const uhr = setInterval(() => { if (!fremd()) { clearInterval(uhr); dann(); } }, 2000); };
   const schritte = art === 'person' ? [['avatare', ['bin/avatare.js']], ['gesichter', ['bin/gesichter.js', '--nur-avatare']]]
+                 : art === 'feder'  ? [['gesichter', ['bin/gesichter.js', '--ohne-avatare']], ['feder', ['bin/feder.js']]]
                                     : [['gesichter', ['bin/gesichter.js', '--ohne-avatare']]];
   const weiter = (i) => {
     if (i >= schritte.length) return ende();
@@ -3672,6 +3692,17 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
     return jsonAntwort(res, { bilder: (b && b.bilder) || {}, avatare, schwelle, modelle: st.modelle, offen: st.offen,
       offenCover: st.offenCover, offenAvatare: st.offenAvatare,
       avatareFehlt: Object.keys((a && a.fehlt) || {}), vorbereitung: bilderStand() });
+  }
+  /* Die Federzeichnungen je Titel (bin/feder.js) fuers Plakat „Skizzenbuch": bilder aus library/feder.json (die
+     Zeichnung selbst liegt unter /media/<id>/feder.png), dazu wie bei /api/gesichter, ob das Modell da ist und
+     wie viele Titel noch offen sind - die Seite setzt die Zeichnungen erst ein, wenn nichts mehr offen ist, und
+     startet sonst POST /api/bilder/vorbereiten?art=feder. */
+  if (p === '/api/feder') {
+    let b = null;
+    try { b = JSON.parse(fs.readFileSync(path.join(WURZEL, 'library', 'feder.json'), 'utf8')); } catch (e) {}
+    let st = { modell: false, offen: 0, gesamt: 0 };
+    try { st = require('../bin/feder.js').stand(katalogHolen()); } catch (e) {}
+    return jsonAntwort(res, { bilder: (b && b.bilder) || {}, modell: st.modell, offen: st.offen, gesamt: st.gesamt, lauf: bilderStand() });
   }
   if (p === '/api/bilder/stand') return jsonAntwort(res, bilderStand());
   if (p === '/api/bilder/vorbereiten' && req.method === 'POST') {

@@ -17,6 +17,11 @@
  *                          nur nichtkommerziell.
  *   PP-OCRv3 (2,4 MB)      Schrift in den Titelbildern (bin/gesichter.js).
  *                          Apache 2.0, PaddleOCR / OpenCV-Modellzoo.
+ *   Informative Drawings   Federzeichnungen der Cover fuers Plakat
+ *   (17 MB)                „Skizzenbuch" (bin/feder.js). Code MIT
+ *                          (Chan, Durand, Isola, CVPR 2022), ONNX-Export
+ *                          rocca; die Gewichte ohne ausdrueckliche
+ *                          Lizenz - nur nicht kommerziell genutzt.
  *   Discogs-EffNet (18 MB) Merkmalsextraktor, und drei Koepfe fuer
  *   + drei Koepfe          Musikstil, Instrument und Stimmung. Alle vier
  *                          von der Music Technology Group der Universitat
@@ -107,6 +112,16 @@ const DATEIEN = [
   /* Schrift (bin/gesichter.js): damit die Cover so ruecken, dass ihr eigener Titel nicht in der Zelle steht */
   ['text_detection_en_ppocrv3_2023may.onnx',
    'https://github.com/opencv/opencv_zoo/raw/main/models/text_detection_ppocr/text_detection_en_ppocrv3_2023may.onnx', 2000000],
+  /* Federzeichnungen (bin/feder.js) fuers Plakat „Skizzenbuch": jedes Cover als Strichzeichnung in der Tinte seines
+     Areals. Modell „Informative Drawings" (Caroline Chan, Fredo Durand, Phillip Isola, CVPR 2022; Code MIT,
+     github.com/carolineec/informative-drawings), der ONNX-Export von Joseph Rocca (huggingface.co/rocca). Fuer die
+     Gewichte nennt keine der beiden Quellen ausdruecklich eine Lizenz, und die Trainingsdaten sind teils nicht
+     kommerziell - darum liegt das Modell nicht im Paket, sondern wird geholt wie die uebrigen; KlangTresor bleibt
+     nicht kommerziell (Caspar_D, 07.10.2026). 17 193 338 Byte, sha256 1fef40b8...4f498 (steht im Ausweis von
+     library/feder.json). Einzeln holbar mit --nur informative-drawings.onnx - das tut bin/feder.js selbst, wenn
+     es fehlt, und der Morgenlauf ueber feder.js --nur-modell. */
+  ['informative-drawings.onnx',
+   'https://huggingface.co/rocca/informative-drawings-line-art-onnx/resolve/main/model.onnx', 17000000],
   ['paraphrase-multilingual-mpnet.onnx',
    'https://huggingface.co/Xenova/paraphrase-multilingual-mpnet-base-v2/resolve/main/onnx/model_quantized.onnx', 200000000],
   ['paraphrase-multilingual-mpnet-tokenizer.json',

@@ -8573,3 +8573,73 @@ Wiedervorlage: Rand im Triptychon (je Tafel?); Gouache trocken wirkt in der grob
 Nächste Baustellen: Groupieschaum-Regler „untere … % ausblenden" (Gleichstand: zuletzt aktiv bleibt), dann Vorlage „Skizzenbuch"
 (Leonardo; Entwurf in `_werkstatt_bilder/feder/`; Federlinien: Modell Informative Drawings schlägt XDoG bei den Extremen –
 Lizenz der Gewichte unklar, Entscheidung offen).
+
+## 87. 08.10.2026 nachts: Plakat-Vorlage „Skizzenbuch" à la Leonardo (1.0.61)
+
+Caspar_D: „ich hab eher an ein neues Layout a la Leonardo da Vinci oder sowas gedacht" · „mach mal jedes arial in der farbe, die
+dafür vergeben ist aber so dunkel, das man noch was erkennen kann" · „kannst du die Textboxen nehmen, um dort zu maskieren" · „wieder
+ein stück zelle abschneiden und in einer Federschreibschrift die Titel beschriften" · „noch ein paar textfragmente … der refrain der
+3 höchstebewertesten bzw aktuellsten" – „was der refrain ist, kannst du aus der original lyrics ziehen" · „hier könnte tatsächlich die
+Zeitleiste per default draufstehen" · „kannst du den avatar als siegel darstellen? mit band" – „zu viel 3d" · „ja, wir nehmen das
+bessere modell, allerdings sind mir die linien nicht knackig genug" · „sie sollen nur eine oberlänge vom strich entfernt stehen" ·
+„kannte er schon noten … oder die Skizze einer e-Gitarre, die natürlich Leonardo damals schon erfunden hatte ;-)" – „oder ein Cello
+als Tribute to Tarja" – „auf Latein … gewidmet der Meisterin Tarja" · „tob dich aus, du hast die ganze Nacht".
+Modelle: „über die morgenroutine werden nicht vorhandene modelle geholt oder wenn sie gebraucht werden" · „wenn klangtresor das erste
+mal geladen wird, wird jedes Modell mitinstalliert".
+Gebaut:
+- `bin/feder.js` (Bauagent): je Titel das Bild des Plakats (eigen > titelbild > cover) auf 768 px, Modell Informative Drawings
+  (onnxruntime-node, 8 Fäden), Unschärfemaske + Tonkurve smoothstep(0,62…0,95), Textkästen aus gesichter.json ausgespart, schreibt
+  `library/songs/<id>/feder.png` und `library/feder.json` (Ausweis, quellStand, maske, tinte); idempotent, atomar, Sperre feder.lauf,
+  Abbruch sauber; ~1,7–2,3 s je Bild.
+- Modell `informative-drawings.onnx` (17 MB) in `bin/modelle-holen.js` – Ersteinrichtung holt alle; Morgenroutine:
+  `bin/wiederherstellen.js` ruft `feder.js --nur-modell`; bei Bedarf holt feder.js still nach. Lizenz in `web/fremd/LIZENZEN.md`
+  (Code MIT; Gewichte nicht ausdrücklich lizenziert – darum nicht im Paket).
+- `server.js`: `bilderVorbereiten('feder')` (erst gesichter --ohne-avatare, dann feder.js), `GET /api/feder`, feder.png no-cache.
+- Schrift Pinyon Script (OFL) als `web/fonts/pinyon-script-400.ttf` (Maße gemessen: x-Höhe 0,334 em, „l" 0,779 em, Unterlänge
+  0,384 em); im PDF per @font-face im Druckrahmen, im PNG als data:-Adresse eingebettet.
+- Haus `skizzeZelle`: Federbild per feComponentTransfer in Arealtinte (7 : 1 zum Papier), < 1,2 % Tinte → Schraffur, Titel auf
+  abgetrenntem Papier (Schnitthöhe abgetastet), Federstrich als Zellwand. `schaumLageHolen` reicht `outline` an die Engine.
+- `plakat.js`: Vorlage „Skizzenbuch" (Pergament #eee2c6, Zeitleiste und Edition an), Kreis-Geometrie, `kreisAuftrag`
+  (Startpunkte Quadrat → Scheibe), `federBereit` (wartet auf den Server-Lauf, sonst Schraffur + Hinweis), `refrainsHolen`,
+  `skizzeGrund` (Pergament, Flecken, Stockflecken, Faltlinie, Konstruktion mit Buchstaben a–h), `skizzeSchmuck` (Kopf, Zeile in
+  Spiegelschrift, Randnotizen der größten Zellen am Kreisrand, Refrains, Zeitleiste als Bogen, Legende „Die vier Gegenden",
+  Wachssiegel mit Band, Edition), Randstudien `skizzeStudie` (E-Gitarre „strumento elettrico", Violoncellum „magistrae Tarjae
+  dedicatum") in den Lücken der Seitenränder, `skizzeNotenraetsel` (Leonardos „amore sol la mi fa remirare"); Panel: Refrains
+  (meiste Herzen / neueste / keine), Ausgrauen, Vorlage im Groupieschaum und Triptychon gesperrt.
+Fallensuche (4 Blickwinkel, je Fund ein Widerleger): 33 bestätigt (viele doppelt), 3 verworfen; behoben:
+- Seite richtet sich nach dem Stand des Servers (`d.offen` nach feder.js: fehlend, veraltet, neues Cover, neue Schriftmaske, neues
+  Modell; Titel ohne Bild zählen nicht); ein vergeblicher Versuch ist nur ein Federlauf mit fehler 'modelle' (server.js merkt das
+  Ende je Art: `bilderLauf.letzte[art]`); eingefrorenes Archiv (405/403) → Hinweis; Abbruch bei Vorlagenwechsel; 30-min-Grenze.
+- feder.js: Werkzeugfehler (ffmpeg fehlt, Signal, Platte voll, ORT) sind keine Bildfehler – nichts als „unlesbar" merken, Lauf
+  beenden; Höhe aus dem dekodierten Bild (EXIF-Drehung); Modell nur mit bekannter Prüfsumme (sonst `.kaputt`, neu holen);
+  Umbenennen mit Wiederholung (Windows); Zwischendateien auf `.teil-<pid>`; Sperre mit Lebenszeichen, der Server nimmt eine
+  15 min alte als verwaist und prüft sie nur für den Federlauf.
+- Haus: Schraffur der Engine (Zellen ohne Untergruppe) entfällt im Skizzenbuch; Titel: senkrechte Grenze vorab, Breite immer
+  geprüft; gezoomt eine Tinte je Areal (wie die Legende, die dann aus den Arealen des Plakats kommt).
+- Seite: Anordnung über Belegungskästen (Refrains, Legende, Siegel, Rätsel zuerst; Randnotizen weichen aus; Studien nur in freie
+  Lücken), Hochformat nach Resthöhe, quer/quadratisch Kreis mittig und alles in den Seitenrändern; Schriftgrößen nach gemessener
+  Breite; Refrain nur aus [Chorus]/[Refrain]/[Hook], nicht [Pre-Chorus]; Legende bis 14 + „und N weitere"; Zeitleiste geklemmt,
+  Tagesstrich am Mittel der Zeiten; dunkles Papier → Pergament (Feder braucht Licht); Triptychon → Einzeltafel; im Groupieschaum
+  öffnet das Studio mit Galerie.
+- Ausgabe: Bilder in Stufen mit hoher Qualität verkleinert (im PNG zerfielen die Federlinien zu Punkten).
+Geprüft (Sandkasten 8799, `_werkstatt_bilder/probe-skizze.js`, `probe-skizze-export.js`): 50×70, 70×100 quer, 50×50, A3,
+Story 9:16, Bild 1:1, Bild-Export 4:5 – nichts über den Rand, keine Konsolenfehler; alle 327 Federzeichnungen im Sandkasten
+gerechnet (≈ 2 s je Bild).
+Zweite Prüfrunde (Nachprüfen der 33 + Rückschritte): 12 nur teilweise behoben, 14 neue Fallen – behoben: „vergeblich" nur, solange das
+Zeichenmodell wirklich fehlt (der Morgenlauf holt es außerhalb von bilderVorbereiten); ein Anstoß je Stand (kein Lauf bei jeder
+Reglerbewegung, wenn dieselbe Zahl offen bleibt); Werkzeugfehler nur bei Unterbrechung/fehlendem Werkzeug/Platte, Bildfehler werden
+gemerkt und der Lauf geht weiter (ein Problembild stoppte sonst jeden Lauf); zweiter Leseversuch vor „unlesbar"; stand() benennt nie
+um (der Server legte sonst ein noch ladendes Modell beiseite); Sperre in feder.js mit derselben 15-min-Grenze, aufgefrischt ums Holen;
+Zwischendateien `*.<pid>.teil` (der Export übergeht nur `.teil`), Reste werden unter der Sperre weggeräumt; Schriftkästen nur, wenn
+das Seitenverhältnis zu gesichter.json passt; ende() setzt beim Federlauf 'modelle' nur nach dem Zeichenmodell; dritter Refrain nur
+wo frei; Hinweislinien der Notizen im Belegungskasten; Eckbuchstaben e–h nur im Hochformat; Triptychon → Tafelformat beim Wählen;
+Wand-Vorschau mit dem Papier; Hinweis bei zu dunklem Papier.
+Eingesetzt 08.10.2026 ~02:30 (Caspar_D schlief, „tob dich aus"): server.js atomar ersetzt – der 8788-Server lief OHNE die Schleife
+bin/server-start.sh, beendete sich (Exit 75) und kam nicht zurück; neu gestartet mit `sh bin/server-start.sh` (nohup, Log im
+Scratchpad), antwortet. Wiedervorlage (Caspar_D entscheidet / ansehen):
+- Skizzenbuch selbst ansehen: Größe der Studien im Querformat (die Lücken zwischen den Notizen begrenzen sie), Titelanzahl (die
+  strengere Einpassung setzt weniger Titel als die Skizze), Refrain-Auswahl.
+- bin/gesichter.js kennt die EXIF-Drehung eigener Bilder nicht (Kästen aus rohen ffprobe-Maßen) – betrifft Gesichter und Schrift-
+  kästen bei hochkant fotografierten eigen.jpg; feder.js spart dann lieber nichts aus.
+- Beim Serverstart: „MORGENSCHRITTE.json kennt den Schritt nicht: Medien laden …" – bestand schon vor 1.0.61.
+- Lizenz der Modellgewichte (Informative Drawings) nicht ausdrücklich geklärt – nicht im Paket, KlangTresor bleibt nicht kommerziell.

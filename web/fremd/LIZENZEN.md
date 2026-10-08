@@ -73,6 +73,24 @@ statische Schnitte, keine Variable Fonts; Umlaute, ß und die deutschen Anführu
 | `gelasio-400.woff2` | Gelasio Regular | Google Fonts css2-API, Latin-Subset von fonts.gstatic.com | v14 | 19536 | `68e2b704c5624ba84e70d826e33c5fc08d75eb452f834d869abdecc39f3b26ac` |
 | `gelasio-700.woff2` | Gelasio Bold | Google Fonts css2-API, Latin-Subset von fonts.gstatic.com | v14 | 19844 | `dff91a5084db8f15e401e902acdac8768f5ae1746205c5319ad2cf3655517170` |
 
+### Pinyon Script — SIL Open Font License 1.1
+
+Die Schreibschrift des Plakats „Skizzenbuch" (Titel unter den Federzeichnungen, Randnotizen) liegt unter
+`web/fonts/`, aus demselben Grund wie Inter und Gelasio: in der Werkstatt stand dort „Snell Roundhand" bzw.
+„Apple Chancery" — Mac-Schriften, die anderswo fehlen. Entwurf Nicole Fally. Der Lizenztext liegt daneben
+(`web/fonts/LIZENZ-pinyon.txt`), dessen Kopf:
+
+> Copyright 2024 The Pinyon Project Authors (https://github.com/SorkinType/Pinyon)
+> SIL Open Font License, Version 1.1
+
+| Datei | Schnitt | Quelle | Version | Byte | SHA-256 |
+|---|---|---|---|---|---|
+| `pinyon-script-400.ttf` | Pinyon Script Regular | github.com/google/fonts, `ofl/pinyonscript/PinyonScript-Regular.ttf` (bitgleich, geprüft am 08.10.2026) | 1.008 | 151412 | `4aab130a6ed27f8b8117738c84a5602edf9300cdcc0651a9a65bf96f451ac29a` |
+
+Die Namenstabelle in der Schriftdatei selbst nennt noch „Copyright 2022 The PinyonScript Project Authors";
+beide Angaben bleiben erhalten (die Datei unverändert, der Lizenztext daneben), wie die OFL es verlangt.
+Herkunft: [github.com/SorkinType/Pinyon](https://github.com/SorkinType/Pinyon).
+
 ### Eigene Dateien in diesem Ordner
 
 `analyzer.js`, `analyzer-worker.js`, `analyse-ablage.js` und
@@ -165,8 +183,8 @@ Erkennen Musikstil, Instrumente und Stimmung.
 
 [essentia.upf.edu/models](https://essentia.upf.edu/models/)
 
-**Neben Depth Anything (siehe unten) die einzigen Lizenzen hier mit
-Einschränkungen**, und sie sind zu beachten: Namensnennung (BY), keine
+**Neben SCRFD, Depth Anything und Informative Drawings (siehe unten) die
+einzigen Lizenzen hier mit Einschränkungen**, und sie sind zu beachten: Namensnennung (BY), keine
 kommerzielle Nutzung (NC), keine Weitergabe veränderter Fassungen (ND).
 Für ein privates Archiv ist das unproblematisch. Wer die Modelle
 weitergibt, muß sie unverändert lassen und diese Nennung mitführen.
@@ -242,6 +260,34 @@ bekommen sie Relief). Wer die NC-Klausel nicht tragen will, tauscht in
 `bin/modelle-holen.js` die beiden Zeilen gegen
 `onnx-community/depth-anything-v2-small-ONNX` — alles andere bleibt
 gleich.
+
+### Informative Drawings — Code MIT, Gewichte ohne ausdrückliche Lizenz
+
+Zeichnet aus jedem Cover eine Federzeichnung — Umriss, Falte und Schatten als
+Strich, leere Flächen bleiben Papier. Das Plakat „Skizzenbuch" zeigt die Cover
+so, in der Tinte ihres Areals (`bin/feder.js`).
+
+| Datei | aus |
+|---|---|
+| `informative-drawings.onnx` | `model.onnx` in [huggingface.co/rocca/informative-drawings-line-art-onnx](https://huggingface.co/rocca/informative-drawings-line-art-onnx) (17 193 338 Byte, SHA-256 `1fef40b8f7126d827e30fbebccf95ae9b0b391795df926bf9366a821bad4f498`) |
+
+> Caroline Chan, Frédo Durand, Phillip Isola: *Learning to generate line
+> drawings that convey geometry and semantics*, CVPR 2022.
+> Code: Copyright (c) 2022 Caroline Chan — MIT License
+> ([github.com/carolineec/informative-drawings](https://github.com/carolineec/informative-drawings)).
+> ONNX-Export: Joseph Rocca ([image-to-line-art-js](https://github.com/josephrocca/image-to-line-art-js)).
+
+**Zu den Gewichten:** Keine der beiden Quellen nennt für die vortrainierten
+Gewichte ausdrücklich eine Lizenz. Die MIT-Lizenz des Repositoriums gilt dem
+Programmcode; die Demo der Autorin auf Hugging Face
+([carolineec/informativedrawings](https://huggingface.co/spaces/carolineec/informativedrawings))
+trägt zwar „mit", der ONNX-Export trägt gar keine Angabe. Trainiert wurde zum
+Teil auf Bildsammlungen, die nur nichtkommerziell freigegeben sind. Darum
+liegt das Modell nicht im Paket, sondern wird geholt wie die übrigen
+(`bin/modelle-holen.js`, einzeln mit `--nur informative-drawings.onnx`), und
+KlangTresor bleibt nichtkommerziell (Caspar_D, 07.10.2026). Wer KlangTresor
+kommerziell nutzen will, klärt die Gewichte vorher mit den Autoren oder lässt
+das Skizzenbuch weg — alles andere hängt nicht daran.
 
 ### npm-Pakete
 

@@ -31,20 +31,27 @@ const FORMATE = [
    stehen im Werkverzeichnis. */
 const VORLAGEN = [
   { id: 'galerie', name: 'Galerie', zeile: 'schwarzer Grund · Rauchglas · Federstrich',
-    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: true, edition: true, zeitleiste: false, schild: false } },
+    e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: true, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: true, edition: true, zeitleiste: false, schild: false, skizze: false } },
   { id: 'papier', name: 'Papier', zeile: 'warmes Weiß · Milchglas · leiser Schatten',
-    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false, areale: true, edition: true, zeitleiste: true, schild: false } },
+    e: { grund: '#f3efe6', titel: 'milch', fugen: 1.6, wackeln: 0.12, schatten: 0.35, vignette: 0, kissen: true, feder: true, federMm: 0.25, rand: 0.08, verzeichnis: false, areale: true, edition: true, zeitleiste: true, schild: false, skizze: false } },
   { id: 'bleiglas', name: 'Bleiglas', zeile: 'breite dunkle Fugen · starkes Licht',
-    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true, areale: false, edition: false, zeitleiste: false, schild: false } },
+    e: { grund: '#08090b', titel: 'ohne', fugen: 2.8, wackeln: 0, schatten: 0, vignette: 0.35, kissen: true, feder: false, federMm: 0.3, rand: 0.05, verzeichnis: true, areale: false, edition: false, zeitleiste: false, schild: false, skizze: false } },
   { id: 'mosaik', name: 'Mosaik', zeile: 'helle Fugen · Kacheln wackeln · Schatten',
-    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false, edition: false, zeitleiste: true, schild: false } },
+    e: { grund: '#ece7dc', titel: 'milch', fugen: 2.2, wackeln: 0.7, schatten: 0.6, vignette: 0.15, kissen: true, feder: false, federMm: 0.3, rand: 0.07, verzeichnis: false, areale: false, edition: false, zeitleiste: true, schild: false, skizze: false } },
 ];
 /* RANDLOS (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format wie das
    Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout, kein
    Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 ist die Ecke der Grund der Seite; darin Avatar, Legende und Text, bündig
    zur gewählten Ecke (eckeSetzen; Größe und Form sucht schild.js). */
 VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
-  e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, randVorne: 15, umschlag: 0 } });
+  e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, skizze: false, randVorne: 15, umschlag: 0 } });
+/* SKIZZENBUCH (1.0.61; Caspar_D: „ich hab eher an ein neues Layout a la Leonardo da Vinci oder sowas gedacht" – „im Ansatz sieht das
+   super aus" – „ja, wir nehmen das bessere modell"): eine Seite aus einem Skizzenbuch - der Schaum als Kreisstudie mit Konstruktion,
+   die Kacheln als Federzeichnungen in der Tinte ihres Areals (Haus: skizzeZelle), Titel in Pinyon Script, Randnotizen zu den großen
+   Zellen am Kreisrand, die Refrains der drei Titel mit den meisten Herzen (oder der neuesten), die Zeitleiste als Bogen, Kopf in
+   Handschrift mit einer Zeile in Spiegelschrift, die Legende als Notiz, ein Wachssiegel mit dem Avatar. Pergament als Grund. */
+VORLAGEN.push({ id: 'skizze', name: 'Skizzenbuch', zeile: 'Federzeichnung auf Pergament, à la Leonardo',
+  e: { grund: '#eee2c6', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: false, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: true, schild: false, skizze: true, refrains: 'herzen' } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
 const SPEICHER = 'mysuno-plakat';
 
@@ -99,6 +106,18 @@ function geometrie(n = 0){
      aus. „Rand vorne" liegt innerhalb des Formats (der Schaum rückt nach innen), „Umschlag" kommt außen dazu (Tiefe des Keilrahmens
      plus Tackerzugabe; das Druckformat wächst, vorne bleibt das gewählte Format). Nicht im Triptychon (jede Tafel bräuchte ihren
      eigenen Rand), Umschlag nicht bei Bildformaten (keine Kante zum Umschlagen). */
+  /* Skizzenbuch: der Schaum ist ein Kreis; die Karte ist das Quadrat um ihn. Hochformat: Mitte bei 47 % der Höhe (oben Kopf und
+     Refrains, unten Zeitleiste, Legende, Siegel), Radius 37 % der Breite, höchstens 33 % der Höhe; quer: 36 % der Höhe, mittig. */
+  if (E.skizze){
+    /* Triptychon: das Skizzenbuch ist eine Seite - die Tafel (vorher wurde aus 3 × 50 × 70 eine Seite von 156 cm) */
+    if (tri){ w = tri.pw; h = tri.ph; kurz = Math.min(w, h); tri = null; }
+    /* Hochformat (h ≥ 1,2 w): oben 144 mm für Kopf und Refrains, unten 184 mm für Zeitleiste, Refrain, Rätsel, Legende und Siegel
+       (auf 50 × 70, mit der kurzen Seite skaliert); quer und quadratisch: Kreis mittig (33 % der Höhe), alles Übrige in den Seitenrändern */
+    const ff = kurz / 500, hoch = h >= 1.2 * w;
+    const RR = hoch ? Math.min(0.372 * w, (h - 328 * ff) / 2) : 0.33 * h, CX = BESCHNITT + w / 2, CY = BESCHNITT + (hoch ? 144 * ff + RR : 0.53 * h);
+    return { w, h, PW: w + 2 * BESCHNITT, PH: h + 2 * BESCHNITT, kurz, rand: 0, unten: 0, T, U, L, karte: { x: CX - RR, y: CY - RR, w: 2 * RR, h: 2 * RR },
+      kreis: { cx: CX, cy: CY, r: RR, hoch }, skizze: true, schildH: 0, verz: null, zeitH: 0, tri: null, name: f.id === 'frei' ? `${E.freiW}x${E.freiH}` : f.name.replace(/\s/g, '') };
+  }
   if (E.schild){
     /* Rand vorne höchstens so breit, dass die Karte 40 % der kurzen Seite behält (freies Format ab 10 cm, Regler bis 6 cm:
        sonst Karte ≤ 0 und ein unbrauchbares Seitenverhältnis - Fallensuche 1.0.60) */
@@ -135,6 +154,17 @@ async function auftrag(verh){
   const masse = schaumMasse(), m = masse.find(x => x.id === schaumMass) || masse[0];
   const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === schaumGliederung) || glieder[0];
   return { j: schaumKlangAuftrag(m, gl, schaumZoom, verh), art: 'titel', m, gl };
+}
+/* Skizzenbuch: der Auftrag mit dem Kreis als Umriss (die Engine legt in jedes gegen den Uhrzeigersinn laufende Polygon) und den
+   Startpunkten des Klangraums aus dem Quadrat in die Scheibe gebracht (elliptische Abbildung: die Anordnung bleibt, nichts liegt
+   außerhalb des Kreises - ein Startpunkt draußen ließe die Engine alle verwerfen). */
+function kreisAuftrag(j){
+  const W = j.W, H = j.H, cx = W / 2, cy = H / 2, r = Math.min(W, H) / 2 - 0.5, n = 180;
+  const outline = Array.from({ length: n }, (_, i) => { const a = 2 * Math.PI * i / n; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; });
+  let seeds = null;
+  if (j.seeds){ seeds = {}; for (const [k, p] of Object.entries(j.seeds)){ const u = Math.max(-1, Math.min(1, (p[0] - cx) / (W / 2))), v = Math.max(-1, Math.min(1, (p[1] - cy) / (H / 2)));
+    seeds[k] = [cx + 0.94 * r * u * Math.sqrt(1 - v * v / 2), cy + 0.94 * r * v * Math.sqrt(1 - u * u / 2)]; } }
+  return { ...j, outline, seeds, lage: j.lage + '|kreis' };
 }
 /* DIE ECKE (Randlos, 1.0.58). Caspar_D: „die schildecke wird nicht gezeichnet, sie ist der normale Hintergrund; daraus wird oben der
    Avatar in rundem Beschnitt wie in Suno gezeigt; darunter unten- und rechtsbündig Text: <Avatarname>s / Klangschaum / <Datum> /
@@ -309,6 +339,307 @@ async function randSetzen(g, la, lauf){
 }
 let druckRandAdressen = [];
 
+/* === SKIZZENBUCH: Federzeichnungen, Refrains, Seite ========================================================================= */
+const SKIZZE_SEPIA = '#4a3423', SKIZZE_SCHRIFT = "'Pinyon Script', cursive";
+/* Maße von Pinyon Script, im Browser gemessen (08.10.2026): x-Höhe 0,334 em, Oberkante „l" 0,779 em, Unterlänge „g" 0,384 em */
+const SKIZZE_MASS = { x: 0.334, l: 0.779, unter: 0.384 };
+const schriftGeladen = () => (document.fonts && document.fonts.load ? document.fonts.load("20px 'Pinyon Script'").catch(() => null) : Promise.resolve());
+/* Die Federzeichnungen (bin/feder.js, auf dem Server): fehlen welche, stößt die Seite den Lauf an und wartet - wie bei den Gesichtern
+   wird nichts in minderer Qualität gezeichnet; fehlt das Modell (kein Netz beim ersten Mal), kommen schraffierte Kacheln und ein
+   Hinweis. Ergebnis: id -> { url, tinte }. */
+let federAnstoss = null;
+async function federBereit(zeilen, melde, abgebrochen = () => false){
+  const holen = async () => { try { const r = await fetch('/api/feder', { cache: 'no-store' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
+  const karte = (d) => new Map(Object.entries((d && d.bilder) || {}).filter(([, b]) => b && !b.unlesbar).map(([id, b]) => [id, { url: '/media/' + id + '/feder.png?f=' + (Date.parse(b.gerechnet) || 1), tinte: +b.tinte || 0 }]));
+  let d = await holen(); if (!d) return { karte: new Map(), hinweis: 'Die Federzeichnungen gibt es erst mit dem neuen Server – bitte KlangTresor neu starten.' };
+  /* Maßgeblich ist der Stand des SERVERS (d.offen nach den Regeln von feder.js: fehlend, veraltet, neues Cover, neue Schriftmaske,
+     neues Modell; Titel ohne Bild zählen nicht) - die Seite zählte vorher selbst nur fehlende Einträge: Veraltetes blieb für immer,
+     Titel ohne Bild stießen bei jedem Neubau einen Lauf an (Fallensuche 1.0.61). Ein vergeblicher Versuch ist nur ein Federlauf, der
+     „modelle" meldete - dann nicht erneut, der Morgenlauf holt das Modell. */
+  const vergeblich = () => { const v = d.lauf && d.lauf.letzte && d.lauf.letzte.feder; return !!(v && v.fehler === 'modelle') && d.modell === false; };
+  /* höchstens ein Anstoß je Stand: ist seit dem letzten Anstoß ein Federlauf zu Ende gegangen und dieselbe Zahl blieb offen (ffmpeg
+     fehlt, Platte voll, onnxruntime lädt nicht), nicht bei jeder Reglerbewegung neu anstoßen (zweite Fallensuche 1.0.61) */
+  const v0 = d.lauf && d.lauf.letzte && d.lauf.letzte.feder, steckt = federAnstoss && federAnstoss.offen === d.offen && v0 && v0.fertigAm > federAnstoss.zeit;
+  let hinweis = steckt ? `${d.offen} Federzeichnungen ließen sich nicht rechnen – ein Neustart von KlangTresor oder der nächste Morgenlauf versucht es wieder.` : '';
+  if (d.offen > 0 && !vergeblich() && !steckt){
+    federAnstoss = { offen: d.offen, zeit: Date.now() };
+    let antwort = null; try { antwort = await fetch('/api/bilder/vorbereiten?art=feder', { method: 'POST' }); } catch (e) {}
+    if (antwort && (antwort.status === 405 || antwort.status === 403)) return { karte: karte(d), hinweis: 'Dieses Archiv ist nur zum Ansehen – neue Federzeichnungen entstehen im laufenden KlangTresor; was fehlt, ist schraffiert.' };
+    const t0 = Date.now(); let gesehen = false;
+    for (;;){
+      await new Promise(ok => setTimeout(ok, 2000)); if (abgebrochen()) return { karte: karte(d), hinweis: '' };
+      const neu = await holen(); if (!neu){ if (Date.now() - t0 > 30 * 60000) break; continue; }   /* kurzer Aussetzer: den letzten Stand behalten */
+      d = neu; const l = d.lauf || {}, federLaeuft = l.laeuft && l.art === 'feder'; if (federLaeuft) gesehen = true;
+      if (melde) melde(federLaeuft && l.schritt === 'feder' && l.von ? `Die Cover werden mit der Feder gezeichnet … ${l.n} von ${l.von}` : 'Die Federzeichnungen werden vorbereitet …');
+      if (!(d.offen > 0) || (gesehen && !federLaeuft) || (!gesehen && !l.laeuft && Date.now() - t0 > 15000)) break;
+      if (Date.now() - t0 > 30 * 60000){ hinweis = `Die Federzeichnungen laufen noch (${l.n || 0} von ${l.von || '?'}) – fehlende sind schraffiert; beim nächsten Öffnen geht es weiter.`; break; }
+    }
+  }
+  if (!hinweis && d.offen > 0) hinweis = d.modell === false ? 'Das Modell für die Federzeichnungen ließ sich nicht laden (kein Netz?) – der nächste Morgenlauf holt es; bis dahin sind die Kacheln schraffiert.'
+    : `${d.offen} Federzeichnungen fehlen noch – sie sind schraffiert; beim nächsten Öffnen geht es weiter.`;
+  return { karte: karte(d), hinweis };
+}
+/* Refrain: der erste mit [Chorus], [Refrain] oder [Hook] markierte Abschnitt der Original-Lyrics (Caspar_D: „was der refrain ist,
+   kannst du aus der original lyrics ziehen"), Einwürfe in Klammern weg, höchstens vier Zeilen. */
+function refrainAus(text){
+  const out = []; let drin = false;
+  for (const z of String(text || '').split(/\r?\n/)){
+    const m = z.match(/^\s*\[([^\]]+)\]\s*$/);
+    if (m){ if (drin && out.length) break; drin = /^\s*(chorus|refrain|hook)\b/i.test(m[1]); continue; }   /* nicht [Pre-Chorus], [Post-Chorus] */
+    if (drin){ const t = z.replace(/\s*\([^)]*\)\s*/g, ' ').trim(); if (t) out.push(t); }
+  }
+  return out.slice(0, 4);
+}
+const refrainVorrat = new Map();
+async function refrainsHolen(zeilen, wie){
+  if (wie === 'keine') return [];
+  const songs = zeilen.map(z => (typeof song === 'function' && song(z.id)) || null).filter(x => x && x.id && !x.fremd);
+  songs.sort(wie === 'neueste' ? (a, b) => (Date.parse(b.erstellt) || 0) - (Date.parse(a.erstellt) || 0) : (a, b) => (b.likes || 0) - (a.likes || 0));
+  const aus = [];
+  for (const so of songs.slice(0, 25)){
+    if (!refrainVorrat.has(so.id)){ let r = []; try { const d = await (await fetch('/api/song/' + so.id)).json(); r = refrainAus(d && d.lyrics); } catch (e) {} refrainVorrat.set(so.id, r); }
+    const r = refrainVorrat.get(so.id); if (r.length >= 2) aus.push({ titel: ohneKlammernTitel(so.titel || so.anzeigename || ''), herzen: so.likes || 0, datum: so.erstellt, refrain: r });
+    if (aus.length === 3) break;
+  }
+  return aus;
+}
+const ohneKlammernTitel = (t) => String(t).replace(/\s*[([{][^)\]}]*[)\]}]\s*/g, ' ').trim();
+const ZAHLWORT = ['', 'eine', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf'];
+/* Der Grund: Pergament (Wolken, Fasern), zwei Flecken, Stockflecken, eine Faltlinie - und die Konstruktion um den Kreis */
+function skizzeGrund(g){
+  const f = g.kurz / 500, { cx, cy, r } = g.kreis, P = g.PW, H = g.PH, n2 = (v) => v.toFixed(2), kon = (o) => `stroke="${SKIZZE_SEPIA}" stroke-opacity="${o}" stroke-width="${n2(0.25 * f)}" fill="none"`;
+  let s = `<defs><filter id="ps-pergament" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.0084 / f * 100)}e-2" numOctaves="4" seed="3"/><feColorMatrix values="0 0 0 0 0.42  0 0 0 0 0.30  0 0 0 0 0.16  0 0 0 0.55 -0.12"/></filter>`
+    + `<filter id="ps-faser" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.26 0.07" numOctaves="2" seed="8"/><feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.12  0 0 0 0.12 0"/></filter>`
+    + `<filter id="ps-fleck"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.07 / f)}" numOctaves="3" seed="12" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="${n2(10 * f)}"/></filter>`
+    + `<radialGradient id="ps-altrand" cx="0.5" cy="0.48" r="0.75"><stop offset="0.62" stop-color="#5a3d1c" stop-opacity="0"/><stop offset="1" stop-color="#5a3d1c" stop-opacity="0.38"/></radialGradient></defs>`;
+  s += `<rect width="${n2(P)}" height="${n2(H)}" filter="url(#ps-pergament)"/><rect width="${n2(P)}" height="${n2(H)}" filter="url(#ps-faser)"/>`;
+  s += `<g filter="url(#ps-fleck)" fill="none" stroke="#7a5428"><ellipse cx="${n2(P * 0.82)}" cy="${n2(H * 0.17)}" rx="${n2(34 * f)}" ry="${n2(31 * f)}" stroke-width="${n2(2.4 * f)}" stroke-opacity="0.18"/>`
+    + `<ellipse cx="${n2(P * 0.82)}" cy="${n2(H * 0.17)}" rx="${n2(33 * f)}" ry="${n2(30 * f)}" fill="#7a5428" fill-opacity="0.05" stroke="none"/><ellipse cx="${n2(P * 0.14)}" cy="${n2(H * 0.87)}" rx="${n2(22 * f)}" ry="${n2(18 * f)}" stroke-width="${n2(1.6 * f)}" stroke-opacity="0.14"/></g>`;
+  { let z = 99; const rnd = () => (z = (Math.imul(z, 1103515245) + 12345) >>> 0) / 4294967296;
+    for (let i = 0; i < 70; i++){ const ux = rnd(), uy = rnd(), nah = Math.min(ux, 1 - ux, uy, 1 - uy), a = rnd(), b = rnd(); if (a > 0.25 + (0.5 - nah) * 1.5) continue;
+      s += `<circle cx="${n2(ux * P)}" cy="${n2(uy * H)}" r="${n2((0.6 + 2.8 * b * b) * f)}" fill="#7a4a1c" fill-opacity="${(0.06 + 0.12 * rnd()).toFixed(2)}"/>`; }
+    const fy = H * 0.52; s += `<line x1="0" y1="${n2(fy)}" x2="${n2(P)}" y2="${n2(fy)}" stroke="#5a3d1c" stroke-opacity="0.10" stroke-width="${n2(1.2 * f)}"/><line x1="0" y1="${n2(fy + 1.2 * f)}" x2="${n2(P)}" y2="${n2(fy + 1.2 * f)}" stroke="#fff8e8" stroke-opacity="0.25" stroke-width="${n2(0.8 * f)}"/>`; }
+  const q = r + 8 * f;
+  s += `<rect x="${n2(cx - q)}" y="${n2(cy - q)}" width="${n2(2 * q)}" height="${n2(2 * q)}" ${kon(0.45)}/><circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(q)}" ${kon(0.45)}/>`
+    + `<circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(r + 14 * f)}" ${kon(0.45)} stroke-dasharray="${n2(2 * f)} ${n2(3 * f)}"/>`
+    + `<line x1="${n2(cx - r - 30 * f)}" y1="${n2(cy)}" x2="${n2(cx + r + 30 * f)}" y2="${n2(cy)}" ${kon(0.45)}/><line x1="${n2(cx)}" y1="${n2(cy - r - 30 * f)}" x2="${n2(cx)}" y2="${n2(cy + r + 30 * f)}" ${kon(0.45)}/>`
+    + `<line x1="${n2(cx - q)}" y1="${n2(cy - q)}" x2="${n2(cx + q)}" y2="${n2(cy + q)}" ${kon(0.25)}/><line x1="${n2(cx + q)}" y1="${n2(cy - q)}" x2="${n2(cx - q)}" y2="${n2(cy + q)}" ${kon(0.25)}/>`;
+  for (let i = 0; i < 24; i++){ const a = 2 * Math.PI * i / 24, r1 = r + (i % 6 === 0 ? 20 : 13) * f;
+    s += `<line x1="${n2(cx + q * Math.cos(a))}" y1="${n2(cy + q * Math.sin(a))}" x2="${n2(cx + r1 * Math.cos(a))}" y2="${n2(cy + r1 * Math.sin(a))}" ${kon(0.45)}/>`; }
+  /* Buchstaben an den Hauptmarken und den Ecken des Quadrats, wie Leonardo seine Konstruktionen beschriftete */
+  const bu = (x, y, t) => `<text x="${n2(x)}" y="${n2(y)}" font-size="${n2(4.6 * f)}" fill="${SKIZZE_SEPIA}" fill-opacity="0.6" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">${t}</text>`;
+  ['a', 'b', 'c', 'd'].forEach((t, i) => { const a = -Math.PI / 2 + i * Math.PI / 2, rr = r + 25 * f; s += bu(cx + rr * Math.cos(a) + 3 * f, cy + rr * Math.sin(a) + 1.6 * f, t); });
+  /* die Ecken des Quadrats nur im Hochformat - quer und quadratisch liegen unten Legende und Siegel dort */
+  if (g.kreis.hoch) [[-1, -1, 'e'], [1, -1, 'f'], [1, 1, 'g'], [-1, 1, 'h']].forEach(([sx, sy, t]) => { s += bu(cx + sx * (q + 3.5 * f), cy + sy * (q + 3.5 * f) + 1.6 * f, t); });
+  return s;
+}
+/* RANDSTUDIEN (Caspar_D, 08.10.2026 nachts: „du kannst ruhig noch mehr hinzufügen, kannte er schon noten, das wäre noch was, oder
+   die Skizze einer e-Gitarre, die natürlich Leonardo damals schon erfunden hatte ;-)" – „oder ein Cello als Tribute to Tarja"):
+   Federstudien mit Konstruktion (Achse, Zirkelbögen, Maßlinie), Schraffur auf der Schattenseite und Beschriftung in Spiegelschrift.
+   Gezeichnet in eigenen Einheiten (Gitarre 38 × 100, Cello 40 × 110), auf die Lücke skaliert; die Strichstärke bleibt in mm. */
+const STUDIE_MASS = { gitarre: { w: 46, h: 114 }, cello: { w: 41, h: 123 } };   /* eigene Einheiten samt Beschriftungen */
+function skizzeStudie(art, x, y, hoehe, f){
+  const k = hoehe / STUDIE_MASS[art].h, sw = (mm) => (mm * f / k).toFixed(3), n2 = (v) => v.toFixed(2);
+  const strich = (mm, o = 0.85) => `fill="none" stroke="${SKIZZE_SEPIA}" stroke-opacity="${o}" stroke-width="${sw(mm)}" stroke-linecap="round" stroke-linejoin="round"`;
+  const spiegel = (tx, ty, fs, t, o = 0.7) => `<g transform="translate(${n2(2 * tx)},0) scale(-1,1)"><text x="${n2(tx)}" y="${n2(ty)}" font-size="${n2(fs)}" fill="${SKIZZE_SEPIA}" fill-opacity="${o}" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">${esc2(t)}</text></g>`;
+  const id = 'ps-st-' + art, schraff = (x0, x1, y0, y1, d, wink = 45) => { let l = ''; const L = (x1 - x0) + (y1 - y0);
+    for (let t = -L; t < L; t += d) l += `M${n2(x0 + t)},${n2(y1)} L${n2(x0 + t + (y1 - y0) / Math.tan(wink * Math.PI / 180))},${n2(y0)} `; return l; };
+  let g = '';
+  if (art === 'gitarre'){
+    const koerper = 'M16.6,60 C14,58 12,54 10,52 C7,50 5,52 5.5,56 C6,60 4,63 2.5,68 C0,75 0,88 4,94 C8,100 30,100 34,94 C38,88 38,76 35.5,70 C34,66 35,63 34,60 C33.5,57 34,53 32,52.5 C30,52 28,55 26,58 C24,60 22,60 21.4,60 Z';
+    g += `<defs><clipPath id="${id}-k"><path d="${koerper}"/></clipPath></defs>`
+      + `<line x1="19" y1="-4" x2="19" y2="104" ${strich(0.18, 0.4)} stroke-dasharray="${sw(1.6)} ${sw(1.1)}"/>`
+      + `<circle cx="19" cy="83" r="17.5" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/><circle cx="19" cy="61" r="14" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/>`
+      + `<path d="${schraff(22, 40, 50, 100, 1.3)}" ${strich(0.16, 0.55)} clip-path="url(#${id}-k)"/><path d="${schraff(29, 40, 50, 100, 1.5, -45)}" ${strich(0.14, 0.45)} clip-path="url(#${id}-k)"/>`
+      + `<path d="${koerper}" ${strich(0.32)}/>`
+      + `<path d="M17,14 L21,14 L21.6,64 L16.4,64 Z" ${strich(0.28)}/>`
+      + `<path d="M17,14 L16,6 Q16,1 20,1 L23,2 Q26,3 25,6 L22,9 Q21,11 21.5,14" ${strich(0.28)}/>`
+      + Array.from({ length: 6 }, (_, i) => `<circle cx="15.1" cy="${n2(2.6 + 1.85 * i)}" r="0.85" ${strich(0.2)}/>`).join('');
+    for (let n = 1; n <= 21; n++){ const yy = 14 + 74 * (1 - Math.pow(2, -n / 12)); if (yy > 64) break; const t = (yy - 14) / 50; g += `<line x1="${n2(17 - 0.6 * t)}" y1="${n2(yy)}" x2="${n2(21 + 0.6 * t)}" y2="${n2(yy)}" ${strich(0.14, 0.7)}/>`; }
+    for (const yy of [67, 73]) g += `<rect x="15.5" y="${yy}" width="7" height="2" rx="0.8" ${strich(0.22)}/>`;
+    g += `<rect x="15.5" y="78" width="7.5" height="2" rx="0.8" transform="rotate(-6 19 79)" ${strich(0.22)}/><rect x="14.5" y="86" width="9" height="3" rx="0.4" ${strich(0.25)}/>`
+      + [[27, 82], [29, 86], [30.5, 90]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="1.2" ${strich(0.2)}/>`).join('') + `<ellipse cx="33.5" cy="92.5" rx="1" ry="1.6" ${strich(0.2)}/><line x1="26.5" y1="75" x2="29" y2="77.5" ${strich(0.25)}/>`
+      + Array.from({ length: 6 }, (_, i) => `<line x1="${n2(17.6 + 0.56 * i)}" y1="14" x2="${n2(16.2 + 1.15 * i)}" y2="87.5" ${strich(0.1, 0.6)}/>`).join('')
+      + `<path d="M41,1 L41,99 M39.8,1 L42.2,1 M39.8,99 L42.2,99" ${strich(0.18, 0.6)}/>` + `<g transform="rotate(90 43.6 50)">${spiegel(43.6, 50, 3.2, 'strumento elettrico')}</g>`
+      + spiegel(19, 108, 3.4, 'una chitarra che canta senza aria') + `<text x="19" y="113" font-size="2.6" fill="${SKIZZE_SEPIA}" fill-opacity="0.6" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">Gitarre ohne Luft, die doch singt</text>`;
+  } else if (art === 'cello'){
+    const koerper = 'M20,38 C12,38 4,40 3.5,47 C3,53 6,56 9.5,57.5 C8,60 8,64 8.5,66 C9,70 8,72 6.5,73.5 C2,76 0,82 0.5,90 C1,99 9,104 20,104 C31,104 39,99 39.5,90 C40,82 38,76 33.5,73.5 C32,72 31,70 31.5,66 C32,64 32,60 30.5,57.5 C34,56 37,53 36.5,47 C36,40 28,38 20,38 Z';
+    g += `<defs><clipPath id="${id}-k"><path d="${koerper}"/></clipPath></defs>`
+      + `<line x1="20" y1="-3" x2="20" y2="113" ${strich(0.18, 0.4)} stroke-dasharray="${sw(1.6)} ${sw(1.1)}"/>`
+      + `<circle cx="20" cy="47.5" r="16.5" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/><circle cx="20" cy="89" r="19.5" ${strich(0.18, 0.3)} stroke-dasharray="${sw(0.8)} ${sw(1)}"/>`
+      + `<path d="${schraff(-2, 16, 36, 106, 1.3, -50)}" ${strich(0.16, 0.5)} clip-path="url(#${id}-k)"/><path d="${schraff(-2, 9, 36, 106, 1.5, 40)}" ${strich(0.14, 0.4)} clip-path="url(#${id}-k)"/>`
+      + `<path d="${koerper}" ${strich(0.32)}/><path d="M20,39.6 C12.5,39.6 5.2,41.3 4.8,47 C4.5,52 7.3,55 10.6,56.6" ${strich(0.14, 0.6)}/>`
+      + `<path d="M18.2,16 L21.8,16 L22.4,40 L17.6,40 Z" ${strich(0.28)}/><path d="M18.4,40 L21.6,40 L22.2,62 L17.8,62 Z" ${strich(0.24)}/>`
+      + `<path d="M18.4,16 L18,8.5 M21.6,16 L22,8.5" ${strich(0.26)}/>` + [10.5, 13.5].map(yy => `<path d="M18,${yy} L15.5,${yy - 0.6} M22,${yy + 1} L24.5,${yy + 0.4}" ${strich(0.26)}/><circle cx="15.2" cy="${yy - 0.65}" r="0.7" ${strich(0.2)}/><circle cx="24.8" cy="${yy + 0.35}" r="0.7" ${strich(0.2)}/>`).join('')
+      + `<path d="M20,8.5 C23.5,8.5 24.5,5 22.5,3.2 C20.5,1.4 17,2.5 17.2,5 C17.4,7 20,7.4 20.8,5.8 C21.4,4.6 20.2,3.8 19.4,4.6" ${strich(0.26)}/>`
+      + [13, 27].map(xx => { const s2 = xx < 20 ? 1 : -1; return `<path d="M${xx},64 C${xx + 2.4 * s2},68 ${xx - 2.4 * s2},76 ${xx},80" ${strich(0.24)}/><circle cx="${xx}" cy="63.6" r="0.7" ${strich(0.18)}/><circle cx="${xx}" cy="80.4" r="0.7" ${strich(0.18)}/>`; }).join('')
+      + `<path d="M14,80.5 Q20,77.6 26,80.5 L25.4,81.4 L14.6,81.4 Z" ${strich(0.24)}/><path d="M17.2,85 L22.8,85 L24,98 L16,98 Z" ${strich(0.24)}/><line x1="20" y1="104" x2="20" y2="111" ${strich(0.3)}/>`
+      + Array.from({ length: 4 }, (_, i) => `<line x1="${n2(18.9 + 0.75 * i)}" y1="16" x2="${n2(17.9 + 1.4 * i)}" y2="85" ${strich(0.1, 0.6)}/>`).join('')
+      /* Caspar_D: „ein Cello und dann als Untertitel auf Latein: gewidmet der Meisterin Tarja" */
+      + `<text x="20" y="117.5" font-size="4.4" fill="${SKIZZE_SEPIA}" fill-opacity="0.9" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">Violoncellum</text>`
+      + `<text x="20" y="122" font-size="3" fill="${SKIZZE_SEPIA}" fill-opacity="0.75" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">magistrae Tarjae dedicatum</text>` + spiegel(9, 26, 2.8, 'quattro corde', 0.6);
+  }
+  return `<g transform="translate(${n2(x)} ${n2(y)}) scale(${(k).toFixed(4)})">${g}</g>`;
+}
+/* Leonardos Notenrätsel (Windsor, RL 12697): „amore sol la mi fa remirare" - Noten auf fünf Linien lesen sich als Silben, „nur die
+   Liebe lässt mich erinnern". Breite 110, Höhe 26 in eigenen Einheiten; Semibreven als Rauten wie in der Mensuralnotation. */
+function skizzeNotenraetsel(x, y, breite, f){
+  const k = breite / 110, sw = (mm) => (mm * f / k).toFixed(3), n2 = (v) => v.toFixed(2), st = (mm, o = 0.85) => `stroke="${SKIZZE_SEPIA}" stroke-opacity="${o}" stroke-width="${sw(mm)}"`;
+  const tx = (xx, yy, fs, t, o = 0.8) => `<text x="${n2(xx)}" y="${n2(yy)}" font-size="${n2(fs)}" fill="${SKIZZE_SEPIA}" fill-opacity="${o}" text-anchor="middle" font-family="${SKIZZE_SCHRIFT}">${esc2(t)}</text>`;
+  let g = '';
+  for (let i = 0; i < 5; i++) g += `<line x1="22" y1="${4 + 2 * i}" x2="84" y2="${4 + 2 * i}" ${st(0.18, 0.7)}/>`;
+  /* sol la mi fa re mi (G A E F D E), Violinschlüssel durch ein schlichtes G angedeutet: unterste Linie y 12 = E, Schritt 1 */
+  const tonY = { sol: 10, la: 9, mi: 12, fa: 11, re: 13 }, silben = ['sol', 'la', 'mi', 'fa', 're', 'mi'];
+  g += tx(26, 12, 7.5, '𝄞', 0.85);
+  silben.forEach((sb, i) => { const xx = 34 + i * 8.4, yy = tonY[sb];
+    g += `<path d="M${n2(xx - 1.3)},${n2(yy)} L${n2(xx)},${n2(yy - 1)} L${n2(xx + 1.3)},${n2(yy)} L${n2(xx)},${n2(yy + 1)} Z" fill="${SKIZZE_SEPIA}" fill-opacity="0.85"/>`
+      + (yy >= 13 ? `<line x1="${n2(xx - 2)}" y1="14" x2="${n2(xx + 2)}" y2="14" ${st(0.18)}/>` : '') + tx(xx, 19, 2.6, sb, 0.65); });
+  g += tx(10, 11, 4.8, 'amore') + tx(97, 11, 4.8, 'rare') + tx(55, 25, 3, 'amore sol la mi fa remirare – nur die Liebe lässt mich erinnern', 0.6);
+  return `<g transform="translate(${n2(x)} ${n2(y)}) scale(${k.toFixed(4)})">${g}</g>`;
+}
+/* Über dem Schaum: Kopf, Spiegelzeile, Randnotizen, Refrains, Zeitleiste, Legende, Siegel, Edition, Studien, Rätsel, Altersrand.
+   Angeordnet über BELEGUNGSKÄSTEN (Fallensuche 1.0.61: im Quer- und Quadratformat lagen Notizen auf Refrains, das Rätsel auf dem
+   Siegel, der Kopf in der Konstruktion): Refrains, Legende, Siegel und Rätsel melden ihren Kasten zuerst, die Randnotizen weichen
+   ihnen aus, die Studien bekommen nur Lücken, die frei sind. Breiten in Pinyon Script werden gemessen (skizzeBreite, Haus). */
+function skizzeSchmuck(g, refrains, legende){
+  const f = g.kurz / 500, { cx, cy, r, hoch } = g.kreis, P = g.PW, H = g.PH, B = BESCHNITT, n2 = (v) => v.toFixed(2), res = aktuell.res, zeilen = aktuell.j.zeilen;
+  const tinte = (farbe) => typeof skizzeTinte === 'function' ? skizzeTinte(farbe || '#888', skizzePapier()) : SKIZZE_SEPIA;
+  const em = (t) => typeof skizzeBreite === 'function' ? skizzeBreite(t) : String(t).length * 0.4;
+  const txt = (x, y, fs, t, { anker = 'middle', farbe = SKIZZE_SEPIA, deck = 1, extra = '' } = {}) => `<text x="${n2(x)}" y="${n2(y)}" font-size="${n2(fs)}" fill="${farbe}"${deck < 1 ? ` fill-opacity="${deck}"` : ''} text-anchor="${anker}" font-family="${SKIZZE_SCHRIFT}"${extra}>${esc2(t)}</text>`;
+  /* die Seitenränder L0…randL und randR…R0 - Notizen und Studien dürfen in die Konstruktion (Quadrat, Zirkelmarken) hineinragen, nicht in den Kreis */
+  const L0 = B + 10 * f, R0 = B + g.w - 10 * f, randL = cx - r - 6 * f, randR = cx + r + 6 * f;
+  const kaesten = [];                       /* { x0, x1, y0, y1 } in mm */
+  const frei = (k) => !kaesten.some(q => k.x0 < q.x1 && k.x1 > q.x0 && k.y0 < q.y1 && k.y1 > q.y0);
+  let s = '';
+  // Kopf und Spiegelzeile (Leonardo schrieb in Spiegelschrift)
+  const kopfFs = Math.min(24 * f, (g.w - 40 * f) / Math.max(1, em(E.kopfTitel || ''))); s += txt(B + g.w / 2, B + 44 * f, kopfFs, E.kopfTitel || '');
+  const unter = String(E.kopfUnter || '').split('/').map(x => x.trim()).filter(Boolean).join(' · ');
+  if (unter) s += `<g transform="translate(${n2(2 * (B + g.w / 2))},0) scale(-1,1)">${txt(B + g.w / 2, B + 60 * f, Math.min(7 * f, (g.w - 60 * f) / Math.max(1, em(unter))), unter, { deck: 0.7 })}</g>`;
+  kaesten.push({ x0: B, x1: B + g.w, y0: B, y1: B + 66 * f });
+  // Refrains: Hochformat oben links, oben rechts, unten in der Mitte; quer/quadratisch alle in den Seitenrändern
+  const refrainBlock = (rf, x, y, breite, anker, dreh) => {
+    const kopf = `aus „${rf.titel}“` + (E.refrains === 'neueste' ? '' : ` · ${rf.herzen} Herzen`), maxEm = Math.max(em(kopf) * 4.6 / 6.4, ...rf.refrain.map(em));
+    const fs = Math.min(6.4 * f, breite / Math.max(1, maxEm)), hoehe = fs * (1.33 + 1.16 * rf.refrain.length) + 2 * f;
+    const x0 = anker === 'start' ? x : anker === 'end' ? x - breite : x - breite / 2;
+    kaesten.push({ x0, x1: x0 + breite, y0: y - fs, y1: y - fs + hoehe });
+    return `<g transform="rotate(${dreh} ${n2(x)} ${n2(y)})">` + txt(x, y, fs * 0.72, kopf, { anker, deck: 0.65 })
+      + rf.refrain.map((z, i) => txt(x, y + fs * (1.33 + i * 1.16), fs, z, { anker, deck: 0.85 })).join('') + '</g>';
+  };
+  const bR = hoch ? Math.min(g.w / 2 - 50 * f, 230 * f) : randL - L0;
+  if (refrains[0]) s += refrainBlock(refrains[0], L0 + (hoch ? 24 * f : 0), B + 80 * f, bR, 'start', -3);
+  if (refrains[1]) s += refrainBlock(refrains[1], R0 - (hoch ? 24 * f : 0), B + 80 * f, bR, 'end', 3);
+  // Siegel unten rechts (mit Bändern und Edition), Legende unten links
+  const sx = B + g.w - 72 * f, sy = B + g.h - 100 * f;
+  kaesten.push({ x0: sx - 40 * f, x1: sx + 40 * f, y0: sy - 34 * f, y1: B + g.h });
+  let legH = 0, legFs = 6 * f, legZ = 0;
+  if (E.legende && legende.length){
+    legZ = Math.min(legende.length, 14); const platz = (hoch ? Math.min(200 * f, sx - 50 * f - (B + 60 * f)) : randL - L0) - 24 * f;
+    const zeilenH = Math.min(11 * f, 190 * f / (legZ + 1.5)), maxEm = Math.max(1, ...legende.slice(0, legZ).map(e => em(e.name)));
+    legFs = Math.min(6 * f, zeilenH / 1.25, platz / maxEm); const breite = Math.max(legFs * maxEm, 60 * f);
+    legH = (legZ + 1.5) * zeilenH; const lx = hoch ? B + 60 * f : L0, ly = B + g.h - 12 * f - legH + zeilenH;
+    kaesten.push({ x0: lx, x1: lx + 24 * f + breite, y0: ly - 1.8 * zeilenH, y1: B + g.h });
+    const n = legende.length, wort = n <= 12 ? ZAHLWORT[n] : String(n);
+    s += txt(lx, ly - 0.9 * zeilenH, Math.min(7 * f, legFs * 1.15), n === 1 ? 'Die eine Gegend:' : `Die ${wort} Gegenden:`, { anker: 'start' });
+    legende.slice(0, legZ).forEach((e, j) => { const y = ly + j * zeilenH, ink = tinte(e.farbe);
+      s += `<line x1="${n2(lx)}" y1="${n2(y - legFs * 0.33)}" x2="${n2(lx + 18 * f)}" y2="${n2(y - legFs * 0.33)}" stroke="${ink}" stroke-width="${n2(1.2 * f)}"/>` + txt(lx + 24 * f, y, legFs, e.name, { anker: 'start', farbe: ink }); });
+    if (n > legZ) s += txt(lx + 24 * f, ly + legZ * zeilenH, legFs * 0.85, `und ${n - legZ} weitere`, { anker: 'start', deck: 0.7 });
+  }
+  /* dritter Refrain: Hochformat unter dem Kreis, quer/quadratisch im linken Rand - nur wo frei (er stieß sonst auf eine lange
+     Legende); probiert wird von der Wunschlage aus abwechselnd nach oben und unten */
+  if (refrains[2]){ const breite = hoch ? Math.min(g.w - 160 * f, 260 * f) : bR, x = hoch ? B + g.w / 2 : L0, anker = hoch ? 'middle' : 'start', y0 = hoch ? cy + r + 70 * f : cy + 0.15 * r;
+    for (const d of [0, -10, 10, -20, 20, -30, 30, -45, 45, -60, 60]){ const vorher = kaesten.length, teil = refrainBlock(refrains[2], x, y0 + d * f, breite, anker, -1.5), k = kaesten.pop();
+      if (frei(k) && k.y1 < B + g.h - 4 * f){ kaesten.push(k); s += teil; break; } kaesten.length = vorher; } }
+  // Notenrätsel: Hochformat unten in der Mitte, quer im rechten Rand über dem Siegel
+  { const rb = hoch ? 150 * f : Math.min(150 * f, R0 - randR - 10 * f), rh = 26 * rb / 110, versuche = [];
+    if (hoch){ for (let d = 0; d <= 60; d += 6) versuche.push([B + g.w / 2 - rb / 2, cy + r + 104 * f + d * f]); versuche.push([B + 12 * f, cy + r + 104 * f]); }
+    else for (let d = 0; d <= 120; d += 8) versuche.push([R0 - rb, sy - 44 * f - rh - d * f]);
+    for (const [rx, ry] of versuche){ const k = { x0: rx, x1: rx + rb, y0: ry, y1: ry + rh };
+      if (rb > 70 * f && ry + rh < B + g.h - 2 * f && frei(k)){ kaesten.push(k); s += skizzeNotenraetsel(rx, ry, rb, f); break; } } }
+  // Arealfarben und Schaum-Einheiten -> Seite
+  const kv = g.karte, k = kv.w / res.width, X = (x) => kv.x + x * k, Y = (y) => kv.y + (res.height - y) * k, ebene = aktuell.j.ebenen[0];
+  const flaeche = (o) => { let a = 0; for (let i = 0; i < o.length; i++){ const p = o[i], q = o[(i + 1) % o.length]; a += p[0] * q[1] - q[0] * p[1]; } return Math.abs(a / 2); };
+  const mitte = (o) => [o.reduce((a, p) => a + p[0], 0) / o.length, o.reduce((a, p) => a + p[1], 0) / o.length];
+  // Randnotizen: die sieben größten Zellen am Kreisrand; Linie radial bis vor den Kreis, dann waagerecht; weichen den Kästen aus
+  const blaetter = res.leaves.filter(l => l.outline && l.outline.length > 2 && l.row != null && zeilen[l.row] && zeilen[l.row].id !== SCHILD_ID).map(l => {
+    const m = mitte(l.outline), z = zeilen[l.row]; return { l, z, a: flaeche(l.outline), px: X(m[0]), py: Y(m[1]) }; })
+    .filter(e => Math.hypot(e.px - cx, e.py - cy) > 0.62 * r).sort((a, b) => b.a - a.a).slice(0, 7);
+  const umbruch = (t, n) => { const z = ['']; for (const w of t.split(' ')){ if ((z[z.length - 1] + ' ' + w).trim().length > n && z[z.length - 1]) z.push(w); else z[z.length - 1] = (z[z.length - 1] + ' ' + w).trim(); } return z.slice(0, 2); };
+  const notizFs = 5.4 * f, notizB = Math.min(Math.max(randL - L0, 46 * f), cx - r - 2 * f - L0, 60 * f), obenGrenze = B + 70 * f, untenGrenze = B + g.h - 8 * f;
+  for (const seite of ['l', 'r']){
+    const liste = blaetter.filter(e => (e.px < cx) === (seite === 'l')).map(e => ({ ...e, th: Math.atan2(e.py - cy, e.px - cx) })).sort((a, b) => a.py - b.py);
+    for (const e of liste){
+      const zl = umbruch(ohneKlammernTitel(e.z.titel || ''), 17), hoeheN = (8 + 6 * zl.length) * f, x0 = seite === 'l' ? L0 : R0 - notizB;
+      const ex = cx + (r + 16 * f) * Math.cos(e.th), ey = cy + (r + 16 * f) * Math.sin(e.th), kx = seite === 'l' ? Math.min(ex, randL + 8 * f) : Math.max(ex, randR - 8 * f);
+      /* Kasten der Notiz samt Hinweislinie außerhalb des Kreises (der senkrechte und der waagerechte Teil): sonst lief die Linie
+         durch einen Refrain oder eine Studie; gesucht wird von der Wunschlage aus abwechselnd nach unten und oben */
+      const kastenBei = (ny) => ({ x0: Math.min(x0, kx), x1: Math.max(x0 + notizB, kx), y0: Math.min(ny - 8 * f, ey), y1: Math.max(ny + hoeheN, ey) });
+      const wunsch = Math.max(obenGrenze + 8 * f, cy + (r + 16 * f) * Math.sin(e.th)); let ny = null;
+      for (let d = 0; d < 400 * f && ny == null; d += 3 * f) for (const c of [wunsch + d, wunsch - d]) if (c - 8 * f >= obenGrenze && c + hoeheN < untenGrenze && frei(kastenBei(c))){ ny = c; break; }
+      if (ny == null) continue;                            /* kein Platz mehr: diese Notiz entfällt */
+      kaesten.push(kastenBei(ny));
+      const areal = e.z[ebene] || e.z.gruppe, ink = tinte(randArealFarben.get(areal)), rand = seite === 'l' ? L0 : R0, anker = seite === 'l' ? 'start' : 'end';
+      const fs = Math.min(notizFs, notizB / Math.max(1, ...zl.map(em)));
+      s += `<path d="M${n2(e.px)},${n2(e.py)} L${n2(ex)},${n2(ey)} L${n2(kx)},${n2(ny)} L${n2(seite === 'l' ? rand + Math.min(44 * f, notizB) : rand - Math.min(44 * f, notizB))},${n2(ny)}" fill="none" stroke="${SKIZZE_SEPIA}" stroke-opacity="0.55" stroke-width="${n2(0.28 * f)}"/>`
+        + `<circle cx="${n2(e.px)}" cy="${n2(e.py)}" r="${n2(0.9 * f)}" fill="${SKIZZE_SEPIA}"/>`
+        + zl.map((t, j) => txt(rand, ny - 2 * f + j * 6 * f, fs, t, { anker, farbe: ink })).join('')
+        + txt(rand, ny + 4 * f + (zl.length - 1) * 6 * f, Math.min(3.8 * f, notizB / Math.max(1, em(areal || ''))), areal || '', { anker, deck: 0.75 });
+    }
+  }
+  /* Randstudien: Gitarre links, Cello rechts, in die größte freie Lücke ihres Randes, so hoch wie sie erlaubt (höchstens 135 mm auf
+     50 × 70); maßgeblich ist die Größe samt Beschriftung (STUDIE_MASS) */
+  for (const [art, seite] of [['gitarre', 'l'], ['cello', 'r']]){
+    const M = STUDIE_MASS[art], bx0 = seite === 'l' ? L0 : randR, bx1 = seite === 'l' ? randL : R0, breite = bx1 - bx0;
+    if (breite < 25 * f) continue;
+    const ys = [obenGrenze, ...kaesten.filter(q => q.x0 < bx1 && q.x1 > bx0).flatMap(q => [q.y0, q.y1]), untenGrenze].sort((a, b) => a - b);
+    let best = null;
+    for (const y0 of ys) for (const y1 of ys){ if (y1 <= y0 + 40 * f) continue; const hh = Math.min(y1 - y0 - 10 * f, 135 * f, breite * 0.92 / M.w * M.h), bw = hh / M.h * M.w;
+      const kk = { x0: bx0 + (breite - bw) / 2, x1: bx0 + (breite + bw) / 2, y0: y0 + 5 * f, y1: y0 + 5 * f + hh };
+      if (hh >= 45 * f && frei(kk) && (!best || hh > best.hh)) best = { hh, kk }; }
+    if (best){ kaesten.push(best.kk); s += skizzeStudie(art, best.kk.x0, best.kk.y0, best.hh, f); }
+  }
+  // Zeitleiste als Bogen um den Kreis: je Tag ein Strich am Mittel seiner Zeiten (länger bei mehreren Titeln, gedeckelt), Monate/Jahre
+  if (E.zeitleiste){
+    const T = zeilen.map(z => { const so = typeof song === 'function' ? song(z.id) : null; return so && Date.parse(so.erstellt); }).filter(Boolean).sort((a, b) => a - b);
+    if (T.length > 1){
+      const t0 = T[0], t1 = T[T.length - 1], a0 = 200 * Math.PI / 180, a1 = 340 * Math.PI / 180, r0 = r + 22 * f;
+      const ang = (t) => a0 + (a1 - a0) * Math.max(0, Math.min(1, (t - t0) / (t1 - t0 || 1))), pt = (a, rr) => [cx + rr * Math.cos(a), cy - rr * Math.sin(a)], [bx0, by0] = pt(a0, r0), [bx1, by1] = pt(a1, r0);
+      s += `<path d="M${n2(bx0)},${n2(by0)} A${n2(r0)},${n2(r0)} 0 0 0 ${n2(bx1)},${n2(by1)}" fill="none" stroke="${SKIZZE_SEPIA}" stroke-opacity="0.7" stroke-width="${n2(0.35 * f)}"/>`;
+      const proTag = new Map(); for (const t of T){ const d = Math.floor(t / 864e5), e = proTag.get(d) || [0, 0]; proTag.set(d, [e[0] + 1, e[1] + t]); }
+      for (const [, [n, summe]] of proTag){ const a = ang(summe / n), [x0, y0] = pt(a, r0), [x1, y1] = pt(a, r0 + (2 + Math.min(7, 1.8 * Math.sqrt(n))) * f);
+        s += `<line x1="${n2(x0)}" y1="${n2(y0)}" x2="${n2(x1)}" y2="${n2(y1)}" stroke="${SKIZZE_SEPIA}" stroke-opacity="0.75" stroke-width="${n2(0.3 * f)}"/>`; }
+      const MON = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+      for (let dt = new Date(new Date(t0).getFullYear(), new Date(t0).getMonth() + 1, 1); dt.getTime() <= t1; dt.setMonth(dt.getMonth() + 1)){
+        const a = ang(dt.getTime()), jan = dt.getMonth() === 0, [x0, y0] = pt(a, r0), [x1, y1] = pt(a, r0 - (jan ? 4 : 2.2) * f), [lx, ly] = pt(a, r0 - 6.5 * f);
+        s += `<line x1="${n2(x0)}" y1="${n2(y0)}" x2="${n2(x1)}" y2="${n2(y1)}" stroke="${SKIZZE_SEPIA}" stroke-width="${n2(0.3 * f)}"/>`
+          + txt(lx, ly, (jan ? 4.4 : 3.2) * f, jan ? String(dt.getFullYear()) : MON[dt.getMonth()], { deck: 0.75, extra: ` transform="rotate(${(270 - a * 180 / Math.PI).toFixed(1)} ${n2(lx)} ${n2(ly)})"` }); }
+    }
+  }
+  // Siegel mit Band: Wachsklecks, flach gedrückt (Caspar_D: „zu viel 3d"), der Avatar als Prägung; darunter die Edition
+  if (typeof avatarDa === 'function' && avatarDa()){
+    const ax = sx, ay = sy, R = 30 * f, ri = 19.5 * f, bw = 15 * f, bl = 62 * f, bk = 6 * f;
+    const band = (dreh) => `<g transform="translate(${n2(ax)} ${n2(ay)}) rotate(${dreh})"><path d="M${n2(-bw / 2)},0 L${n2(bw / 2)},0 L${n2(bw / 2)},${n2(bl)} L0,${n2(bl - bk)} L${n2(-bw / 2)},${n2(bl)} Z" fill="url(#ps-band)"/>`
+      + `<path d="M${n2(-bw / 2 + 1.2 * f)},0 L${n2(-bw / 2 + 1.2 * f)},${n2(bl - 1.5 * f)} M${n2(bw / 2 - 1.2 * f)},0 L${n2(bw / 2 - 1.2 * f)},${n2(bl - 1.5 * f)}" stroke="#c9a23e" stroke-opacity="0.7" stroke-width="${n2(0.5 * f)}" fill="none"/></g>`;
+    s += `<defs><linearGradient id="ps-band" x1="0" x2="1"><stop offset="0" stop-color="#4d1418"/><stop offset="0.35" stop-color="#7d2026"/><stop offset="0.55" stop-color="#94303a"/><stop offset="1" stop-color="#561619"/></linearGradient>`
+      + `<filter id="ps-wachsrand" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.05 / f)}" numOctaves="3" seed="21" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="${n2(9 * f)}"/></filter>`
+      + `<radialGradient id="ps-wachs" cx="0.4" cy="0.36" r="0.75"><stop offset="0" stop-color="#b8363a"/><stop offset="0.6" stop-color="#9a2224"/><stop offset="1" stop-color="#6e1416"/></radialGradient>`
+      + `<filter id="ps-wulst" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="${n2(2.6 * f)}" result="h"/>`
+      + `<feSpecularLighting in="h" surfaceScale="${n2(1.1 * f)}" specularConstant="0.35" specularExponent="14" lighting-color="#ffd9c8" result="glanz"><feDistantLight azimuth="225" elevation="50"/></feSpecularLighting>`
+      + `<feComposite in="glanz" in2="SourceAlpha" operator="in" result="g2"/><feComposite in="SourceGraphic" in2="g2" operator="arithmetic" k1="0" k2="1" k3="0.3" k4="0"/></filter>`
+      + `<filter id="ps-praegung" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.33 0.33 0.33 0 0" result="hoehe"/>`
+      + `<feGaussianBlur in="hoehe" stdDeviation="${n2(0.5 * f)}" result="hw"/><feDiffuseLighting in="hw" surfaceScale="${n2(0.9 * f)}" diffuseConstant="1.05" lighting-color="#ffffff" result="licht"><feDistantLight azimuth="225" elevation="55"/></feDiffuseLighting>`
+      + `<feFlood flood-color="#9e2526"/><feComposite in2="licht" operator="arithmetic" k1="1.15" k2="0" k3="0" k4="0"/></filter><clipPath id="ps-siegelinnen"><circle cx="${n2(ax)}" cy="${n2(ay)}" r="${n2(ri)}"/></clipPath></defs>`;
+    s += band(24) + band(-24) + `<g filter="url(#ps-wulst)"><circle cx="${n2(ax)}" cy="${n2(ay)}" r="${n2(R)}" fill="url(#ps-wachs)" filter="url(#ps-wachsrand)"/></g>`
+      + `<circle cx="${n2(ax)}" cy="${n2(ay)}" r="${n2(ri + 2.4 * f)}" fill="none" stroke="#5a0f11" stroke-opacity="0.45" stroke-width="${n2(1 * f)}"/>`
+      + `<image href="/avatar" data-voll="/avatar" x="${n2(ax - ri)}" y="${n2(ay - ri)}" width="${n2(2 * ri)}" height="${n2(2 * ri)}" clip-path="url(#ps-siegelinnen)" filter="url(#ps-praegung)"/>`;
+    if (E.edition) s += txt(ax, Math.min(ay + bl + 9 * f, B + g.h - 3 * f), 4.4 * f, editionText(), { deck: 0.8 });
+  } else if (E.edition) s += txt(sx, B + g.h - 30 * f, 4.4 * f, editionText(), { deck: 0.8 });
+  s += `<rect width="${n2(P)}" height="${n2(H)}" fill="url(#ps-altrand)" pointer-events="none"/>`;
+  return s;
+}
+/* Papier des Skizzenbuchs: der Grund, aber nie dunkel - Feder braucht helles Papier (ein dunkler Farbton machte jede Tinte
+   schwarz, das Plakat war leer; Fallensuche 1.0.61) */
+const skizzePapier = () => leuchte(E.grund) >= 0.45 ? E.grund : '#eee2c6';
+
 /* Genitiv eines Namens ohne Deppenapostroph (Caspar_D: „uhä, ein Deppenapostroph … natürlich ohne Apostroph"): „Caspar_Ds";
    endet der Name auf s, ß, x, z oder ce, nur der Apostroph („Klaus’") - so die Rechtschreibung. */
 const genitiv = (n) => /(s|ß|x|z|ce)$/i.test(n) ? n + '\u2019' : n + 's';
@@ -333,7 +664,7 @@ function zeichnen(sofort, warteMs, nurSetzen){
     const eckS = E.schild ? schildVorgabe(g, 1000, Math.round(1000 * verh)).schluessel : '';
     /* nurSetzen (während des Tippens): die Ecke wird mit dem jetzigen Schaum gesetzt (eckeSetzen verkleinert, falls nötig); neu gelegt
        wird erst beim Verlassen des Feldes oder mit Enter - vorher startete jede Tipppause einen eigenen Lauf */
-    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild || (aktuell.eckS !== eckS && !nurSetzen)){
+    if (!aktuell || aktuell.verh !== verh || aktuell.raum !== raumJetzt || aktuell.schild !== !!E.schild || aktuell.skizze !== !!E.skizze || (aktuell.eckS !== eckS && !nurSetzen)){
       const a = await auftrag(verh);
       if (lauf !== legeLauf) return;
       /* die Vorschlaege fuer Titel, Zeile und Name vor dem Legen: nach ihnen wird die Ecke bemessen */
@@ -342,12 +673,13 @@ function zeichnen(sofort, warteMs, nurSetzen){
       if (!E.schildNameEigen) E.schildName = schildNameVorschlag();
       let v = null;
       if (E.schild && typeof schildAuftrag === 'function'){ v = schildVorgabe(g, a.j.W, a.j.H); a.j = schildAuftrag(a.j, v); }
+      if (E.skizze) a.j = kreisAuftrag(a.j);
       standSetzen('Der Schaum wird für das Plakat gelegt …');
       let res;
       try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }, true); }
       catch (e){ if (lauf !== legeLauf) return; standSetzen('Der Schaum ließ sich nicht legen.'); console.log('Plakat:', e); return; }
       if (lauf !== legeLauf) return;
-      aktuell = { verh, raum: raumJetzt, schild: !!E.schild, eckS: v ? v.schluessel : '', ecke: v ? v.ecke : null, res, ...a };
+      aktuell = { verh, raum: raumJetzt, schild: !!E.schild, skizze: !!E.skizze, eckS: v ? v.schluessel : '', ecke: v ? v.ecke : null, res, ...a };
       felderSetzen();
     }
     standSetzen('');
@@ -357,6 +689,7 @@ function zeichnen(sofort, warteMs, nurSetzen){
 const profil = () => (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
 function kopfTitelVorschlag(){
   const schaum = raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum', p = profil();
+  if (E.skizze){ const n = p.display_name || p.handle || ''; return n ? genitiv(n) + ' ' + schaum : schaum; }
   return E.schild ? schaum : (p.display_name || p.handle || 'Mein Archiv') + ' · ' + schaum;    /* Randlos: der Name steht in eigener Zeile darueber */
 }
 function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.handle || ''; return n ? genitiv(n) : ''; }
@@ -365,7 +698,7 @@ function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.hand
 function kopfUnterVorschlag(a = aktuell){
   if (!a) return '';
   const n = a.j.zeilen.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-  if (E.schild){
+  if (E.schild || E.skizze){
     const datum = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
     if (a.art === 'person') return `${datum} / ${n} ${n === 1 ? 'Person' : 'Personen'}`;
     const sek = a.j.zeilen.reduce((t, z) => t + (((typeof song === 'function' && song(z.id)) || {}).dauer || 0), 0);
@@ -413,10 +746,21 @@ async function bauen(g){
   if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
   /* Erst die Bilder, dann das Plakat (Caspar_D, 07.10.2026: keine mindere Qualitaet) - meist schon bereit,
      denn der Schaum war vorher zu sehen; sonst „Bilder werden vorbereitet …" wie im Haus (bilderBereit). */
+  let skHinweis = '', refrains = [];
+  if (E.skizze){
+    /* Skizzenbuch: statt der Cover die Federzeichnungen (auf dem Server gerechnet); die Schrift muss vor dem Messen geladen sein */
+    const [fb] = await Promise.all([federBereit(aktuell.j.zeilen, t => { if (lauf === bauLauf) standSetzen(t); }, () => lauf !== bauLauf), schriftGeladen()]);
+    if (lauf !== bauLauf) return;
+    refrains = await refrainsHolen(aktuell.j.zeilen, E.refrains || 'herzen'); if (lauf !== bauLauf) return;
+    druck.skizze = { papier: skizzePapier(), feder: fb.karte, mass: SKIZZE_MASS, fsMin: 2.6 * g.kurz / 500, fsMax: 12 * g.kurz / 500, strich: 0.29 * g.kurz / 500, linie: 0.25 * g.kurz / 500 };
+    Object.assign(druck, { kissen: false, schatten: 0, vignette: 0, wackeln: 0 });
+    skHinweis = fb.hinweis || (skizzePapier() !== E.grund ? 'Feder braucht hellen Grund – das Plakat bleibt auf Pergament.' : '');
+  } else {
   const bereit = await bilderBereit(aktuell.art, aktuell.j.zeilen, t => { if (lauf === bauLauf) standSetzen(t); });
   if (lauf !== bauLauf) return;
   if (bereit === 'morgenlauf'){ standSetzen('Schaum kommt mit dem nächsten Morgenlauf.'); return; }
-  standSetzen('');
+  }
+  standSetzen(skHinweis);
   let { svg, verzeichnis, areale } = await schaumSvgBauen(aktuell.res, { zeilen: aktuell.j.zeilen, ebenen: aktuell.j.ebenen, farbeVon: la.farbeVon, gezoomt: la.gezoomt, art: aktuell.art, druck });
   if (lauf !== bauLauf) return;
   if (areale) randArealFarben = new Map(areale.map(a => [a.name, a.farbe]));
@@ -429,13 +773,13 @@ async function bauen(g){
   const feder = E.feder && !E.schild ? `<rect x="${(kv.x - d).toFixed(2)}" y="${(kv.y - d).toFixed(2)}" width="${(kv.w + 2 * d).toFixed(2)}" height="${(kv.h + 2 * d).toFixed(2)}" fill="none" stroke="${fg}" stroke-opacity="0.75" stroke-width="${E.federMm}"/>` : '';
   /* Museumsschild im unteren Rand: links Titel und Untertitel, rechts die Legende in Spalten */
   const ux = kv.x, zy = kv.y + kv.h + (E.feder ? d : 0) + g.rand * 0.4, uy = kv.y + kv.h + (E.feder ? d : 0) + g.rand * 0.5 + g.zeitH, rechts = kv.x + kv.w;
-  let kopf = E.schild ? '' : `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T).toFixed(2)}" font-size="${g.T.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(E.kopfTitel || '')}</text>`
+  let kopf = E.schild || E.skizze ? '' : `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T).toFixed(2)}" font-size="${g.T.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(E.kopfTitel || '')}</text>`
     + `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T * 1.25 + g.U * 1.25).toFixed(2)}" font-size="${g.U.toFixed(2)}" fill="${leise}">${esc2(E.kopfUnter || '')}</text>`;
   /* Legende rechts im Schild, in Spalten von oben nach unten. Gesetzt wird in zwei Schritten: erst ins Bild,
      dann die wirkliche Textlaenge gemessen und die Spalten von rechts her ausgerichtet (legendeSetzen) - eine
      Leinwand misst mit einer anderen Schrift als das SVG (gesehen: 22 % zu schmal, die Spalten ueberlappten). */
   let legende = null;
-  if (E.legende && !E.schild){
+  if (E.legende && !E.schild && !E.skizze){
     const eintraege = legendenEintraege(), L = g.L, q = L * 0.95, zeileH = L * 1.75;
     const hoehe = Math.max(zeileH, g.verz ? g.schildH : g.h + BESCHNITT - g.rand * 0.6 - uy);
     const proSpalte = Math.max(1, Math.floor(hoehe / zeileH));
@@ -448,15 +792,16 @@ async function bauen(g){
   }
   if (g.zeitH) kopf += zeitleisteSetzen(aktuell.j.zeilen, la.farbeVon, ux, rechts, zy, g.zeitH * 0.8, fg, leise, g.kurz, wandFugen(g));
   /* Edition im unteren Rand: unter dem Inhalt, aber sicher innerhalb des Beschnitts */
-  if (E.edition && !E.schild) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
-  if (E.areale && !E.schild && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
+  if (E.edition && !E.schild && !E.skizze) kopf += editionSetzen(g, rechts, Math.min(uy + g.schildH + (g.verz ? g.rand * 0.4 + g.verz.hoehe : 0) + g.rand * 0.32, BESCHNITT + g.h - g.rand * 0.22), fg, leise);
+  if (E.areale && !E.schild && !E.skizze && areale && areale.length > 1) kopf += arealeSetzen(areale, g, kv, aktuell.res, E.feder ? d : 0);
   if (g.verz && verzeichnis) kopf += verzeichnisSetzen(verzeichnis, g, ux, uy + g.schildH + g.rand * 0.4, fg, leise);
   if (E.schild && aktuell.schild && aktuell.ecke === eckeJetzt()) kopf += eckeSetzen(g, fg, leise);
+  if (E.skizze && g.skizze && aktuell.skizze) kopf += skizzeSchmuck(g, refrains, la.gezoomt && areale ? areale.map(a => ({ name: a.name, farbe: a.farbe })) : legendenEintraege());
   /* Triptychon: die Wandfugen in der Vorschau abgedunkelt, mit Schnittlinien - im PDF fallen sie ohnehin weg */
   if (g.tri) for (let j = 1; j < 3; j++){ const fx = BESCHNITT + j * g.tri.pw + (j - 1) * g.tri.fuge;
     kopf += `<rect class="ps-trifuge" x="${fx.toFixed(2)}" y="0" width="${g.tri.fuge.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="#08090b" fill-opacity="0.9"/>`; }
   const seite = `<svg class="ps-seite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${g.PW.toFixed(2)} ${g.PH.toFixed(2)}" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">`
-    + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${E.grund}"/>` + (g.randKante ? '<g class="ps-randbild"></g>' : '') + feder + svg + kopf
+    + `<rect width="${g.PW.toFixed(2)}" height="${g.PH.toFixed(2)}" fill="${g.skizze ? skizzePapier() : E.grund}"/>` + (g.randKante ? '<g class="ps-randbild"></g>' : '') + (g.skizze && aktuell.skizze ? skizzeGrund(g) : '') + feder + svg + kopf
     + `<rect class="ps-beschnitt" x="${BESCHNITT}" y="${BESCHNITT}" width="${(g.PW - 2 * BESCHNITT).toFixed(2)}" height="${(g.PH - 2 * BESCHNITT).toFixed(2)}" fill="none" stroke="#8a929c" stroke-width="${(g.kurz / 900).toFixed(2)}" stroke-dasharray="${(g.kurz / 120).toFixed(2)} ${(g.kurz / 160).toFixed(2)}"/>`
     + (g.randKante && g.randKante.umschlag ? `<rect class="ps-beschnitt ps-falz" x="${g.vorne.x}" y="${g.vorne.y}" width="${g.w}" height="${g.h}" fill="none" stroke="#c9ced6" stroke-opacity="0.7" stroke-width="${(g.kurz / 1200).toFixed(2)}" stroke-dasharray="${(g.kurz / 300).toFixed(2)} ${(g.kurz / 200).toFixed(2)}"/>` : '') + '</svg>';
   blatt.innerHTML = seite;
@@ -650,13 +995,22 @@ function einpassen(){
   s.style.width = (g.PW * k).toFixed(0) + 'px'; s.style.height = (g.PH * k).toFixed(0) + 'px';
   const wand = el('ps-wand'); if (wand){
     const M = 1750, H = 2600, sk = 120 / H, pw = g.w * sk, ph = g.h * sk, x0 = H * 0.35 * sk, y0 = 120 - 1450 * sk - ph / 2;
-    const rahmen = g.tri ? [0, 1, 2].map(j => `<rect x="${(x0 + j * (g.tri.pw + g.tri.fuge) * sk).toFixed(1)}" y="${y0.toFixed(1)}" width="${(g.tri.pw * sk).toFixed(1)}" height="${ph.toFixed(1)}" fill="${E.grund}" stroke="#111" stroke-width="0.6"/>`).join('')
-      : `<rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" fill="${E.grund}" stroke="#111" stroke-width="0.6"/>`;
+    const papier = g.skizze ? skizzePapier() : E.grund;
+    const rahmen = g.tri ? [0, 1, 2].map(j => `<rect x="${(x0 + j * (g.tri.pw + g.tri.fuge) * sk).toFixed(1)}" y="${y0.toFixed(1)}" width="${(g.tri.pw * sk).toFixed(1)}" height="${ph.toFixed(1)}" fill="${papier}" stroke="#111" stroke-width="0.6"/>`).join('')
+      : `<rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" fill="${papier}" stroke="#111" stroke-width="0.6"/>`;
     wand.innerHTML = `<svg viewBox="0 0 ${(Math.max(H * 1.4, H * 0.35 + g.w + 900) * sk).toFixed(1)} 120" width="100%" height="120"><rect width="100%" height="120" fill="#2b2723"/>` + rahmen
       + `<rect x="${(H * 0.35 * sk + pw + 300 * sk).toFixed(1)}" y="${(120 - M * sk).toFixed(1)}" width="${(380 * sk).toFixed(1)}" height="${(M * sk).toFixed(1)}" rx="${(190 * sk).toFixed(1)}" fill="#59616b"/></svg>`;
   }
 }
 
+/* VERKLEINERN IN STUFEN mit hoher Qualität: in einem Schritt (ohne imageSmoothingQuality) zerfallen feine Linien - die
+   Federzeichnungen des Skizzenbuchs kamen im Bild-Export als Punktwolken heraus. Halbiert wird, bis höchstens das Doppelte übrig ist. */
+function verkleinert(b, w, h){
+  let quelle = b, qw = b.width, qh = b.height;
+  while (qw > 2 * w && qh > 2 * h){ const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(qw / 2)); c.height = Math.max(1, Math.round(qh / 2));
+    const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(quelle, 0, 0, c.width, c.height); quelle = c; qw = c.width; qh = c.height; }
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(quelle, 0, 0, w, h); return c;
+}
 /* DRUCKBILDER: jedes Bild nur so gross, wie seine Kachel bei 300 dpi braucht. Mit den Originalen (499 Cover,
    rund 420 MB) hing der Druck; so wird jedes Original einmal verkleinert. Ein Cover fuellt seine Kachel mit
    „slice", seine lange Seite braucht darum ein Drittel mehr als die laengere Kachelseite (3 : 4). Ist ein
@@ -676,8 +1030,7 @@ async function druckBilder(s, kopie, g){
       const b = await createImageBitmap(roh), f = lang / Math.max(b.width, b.height);
       if (f < 1){
         const w = Math.max(1, Math.round(b.width * f)), h = Math.max(1, Math.round(b.height * f));
-        const c = document.createElement('canvas'); c.width = w; c.height = h;
-        const x = c.getContext('2d'); x.imageSmoothingQuality = 'high'; x.drawImage(b, 0, 0, w, h);
+        const c = verkleinert(b, w, h);
         const blob = await new Promise(ok => roh.type === 'image/jpeg' ? c.toBlob(ok, 'image/jpeg', 0.9) : c.toBlob(ok, 'image/png'));   /* PNG/WebP/GIF: Transparenz behalten */
         if (blob){ const a = URL.createObjectURL(blob); neu.set(u, a); druckAdressen.push(a); }
       }
@@ -716,8 +1069,7 @@ async function bildSichern(){
     const schl = u + '|' + px; if (cache.has(schl)) return cache.get(schl);
     let aus = null;
     try { const roh = await (await fetch(u)).blob(), b = await createImageBitmap(roh), f = Math.min(1, px / Math.max(b.width, b.height));
-      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(b.width * f)); c.height = Math.max(1, Math.round(b.height * f));
-      c.getContext('2d').drawImage(b, 0, 0, c.width, c.height); if (b.close) b.close();
+      const c = verkleinert(b, Math.max(1, Math.round(b.width * f)), Math.max(1, Math.round(b.height * f))); if (b.close) b.close();
       aus = roh.type === 'image/jpeg' ? c.toDataURL('image/jpeg', 0.86) : c.toDataURL('image/png'); } catch (e) {}   /* Transparenz (Avatar) behalten */
     cache.set(schl, aus); return aus;
   };
@@ -728,6 +1080,10 @@ async function bildSichern(){
     if (d) bilder[i].setAttribute('href', d); else bilder[i].remove();
   }
   standSetzen('Das Bild wird gemalt …');
+  if (kopie.querySelector('[font-family*="Pinyon"]')){
+    try { const b = await (await fetch('/fonts/pinyon-script-400.ttf')).blob(), d = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
+      const st = document.createElementNS('http://www.w3.org/2000/svg', 'style'); st.textContent = `@font-face{font-family:'Pinyon Script';src:url(${d}) format('truetype')}`; kopie.insertBefore(st, kopie.firstChild); } catch (e) {}
+  }
   const text = new XMLSerializer().serializeToString(kopie), url = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' }));
   try {
     const img = new Image(); await new Promise((ok, nein) => { img.onload = ok; img.onerror = nein; img.src = url; });
@@ -773,8 +1129,8 @@ async function pdf(){
     const a = sr.left + j * (g.tri.pw + g.tri.fuge) * proEinheit, b = a + SW * proEinheit;
     [...k.querySelectorAll('image')].forEach((im, i) => { const r = lagen[i]; if (r && (r.right < a || r.left > b)) im.remove(); });
     k.setAttribute('viewBox', `${(j * (g.tri.pw + g.tri.fuge)).toFixed(2)} 0 ${SW.toFixed(2)} ${SH.toFixed(2)}`); return k.outerHTML; }).join('');
-  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${esc2(name)}</title><style>@page{size:${SW.toFixed(2)}mm ${SH.toFixed(2)}mm;margin:0}`
-    + `html,body{margin:0;padding:0;background:${E.grund};-webkit-print-color-adjust:exact;print-color-adjust:exact}`
+  const doc = `<!doctype html><html><head><meta charset="utf-8"><title>${esc2(name)}</title><style>@font-face{font-family:'Pinyon Script';src:url('${location.origin}/fonts/pinyon-script-400.ttf') format('truetype')}@page{size:${SW.toFixed(2)}mm ${SH.toFixed(2)}mm;margin:0}`
+    + `html,body{margin:0;padding:0;background:${E.skizze ? skizzePapier() : E.grund};-webkit-print-color-adjust:exact;print-color-adjust:exact}`
     + `svg.ps-seite{display:block;width:${SW.toFixed(2)}mm;height:${SH.toFixed(2)}mm;break-after:page;page-break-after:always}svg.ps-seite:last-child{break-after:auto;page-break-after:auto}</style></head><body>${seiten}</body></html>`;
   let rahmen = el('ps-druckrahmen');
   if (rahmen) rahmen.remove();
@@ -824,7 +1180,18 @@ function felderSetzen(){
   studio.querySelectorAll('[data-ecke]').forEach(b => b.classList.toggle('an', b.dataset.ecke === eckeJetzt()));
   grau(el('ps-ecken'), !E.schild, 'Nur bei Randlos: dort stehen Avatar und Titel in einer Ecke.');
   grau(el('ps-schildname'), !E.schild, 'Nur bei Randlos: der Name steht in der Ecke über dem Titel.');
-  el('ps-kopfunter').placeholder = E.schild ? 'Zeilen – „/“ bricht um' : 'Untertitel';
+  el('ps-kopfunter').placeholder = E.schild ? 'Zeilen – „/“ bricht um' : E.skizze ? 'Zeile in Spiegelschrift' : 'Untertitel';
+  /* Skizzenbuch: was es dort nicht gibt, grau mit Grund; die Vorlage selbst im Groupieschaum (es zeichnet die Cover deiner Titel) */
+  { const sk = !!E.skizze, ohne = 'Gilt nicht im Skizzenbuch – dort ist alles Feder auf Pergament.';
+    if (sk){ for (const id of ['ps-rand', 'ps-feder', 'ps-federmm', 'ps-verz', 'ps-areale', 'ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), true, ohne);
+      grau(el('ps-verz-text'), true, ohne); grau(zeile('ps-zeit'), raumJetzt === 'groupies', 'Im Groupieschaum gibt es kein Datum je Person.');
+      const sw = studio.querySelector('[data-grund="schwarz"]'); if (sw){ sw.disabled = true; sw.classList.add('ps-grau'); sw.title = 'Feder braucht hellen Grund.'; } }
+    else { for (const id of ['ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), false, '');
+      const sw = studio.querySelector('[data-grund="schwarz"]'); if (sw){ sw.disabled = false; sw.classList.remove('ps-grau'); sw.title = ''; } }
+    grau(el('ps-skizzeteil'), !sk, 'Nur im Skizzenbuch.');
+    studio.querySelectorAll('[data-refrains]').forEach(b => b.classList.toggle('an', b.dataset.refrains === (E.refrains || 'herzen')));
+    const vb = studio.querySelector('[data-vorlage="skizze"]'); if (vb){ const gr = raumJetzt === 'groupies'; vb.disabled = gr; vb.classList.toggle('ps-grau', gr); vb.title = gr ? 'Das Skizzenbuch zeichnet die Cover deiner Titel – im Groupieschaum gibt es sie nicht.' : ''; }
+    studio.querySelectorAll('[data-format]').forEach(b => { const f = FORMATE.find(x => x.id === b.dataset.format) || {}, aus = sk && !!f.tri; b.disabled = aus; b.classList.toggle('ps-grau', aus); b.title = aus ? 'Das Skizzenbuch ist eine Seite.' : ''; }); }
   { const v = E.randVorne ?? 15, u = +E.umschlag || 0, a = el('ps-randvorne'), b = el('ps-umschlag');
     if (document.activeElement !== a) a.value = v; if (document.activeElement !== b) b.value = u;
     el('ps-randvorne-w').textContent = (v / 10).toLocaleString('de-DE'); el('ps-umschlag-w').textContent = (u / 10).toLocaleString('de-DE'); }
@@ -865,7 +1232,8 @@ function aufbauen(){
 #ps-pdf,#ps-png{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
 .ps-leise{color:#9aa3ad;font-size:12px;margin:6px 0 0}
 .ps-pillen button.ps-schalt:not(.an){color:#9aa3ad}
-.ps-grau{opacity:.4}.ps-grau input,.ps-grau button{cursor:not-allowed}
+.ps-grau{opacity:.4}
+@font-face{font-family:'Pinyon Script';font-style:normal;font-weight:400;font-display:block;src:url('/fonts/pinyon-script-400.ttf') format('truetype')}.ps-grau input,.ps-grau button{cursor:not-allowed}
 #ps-wand{margin-top:8px;border-radius:7px;overflow:hidden}
 details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
 `;
@@ -890,6 +1258,9 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
     <div class="ps-pillen" style="margin:6px 0"><button type="button" class="ps-schalt" id="ps-kissen">Kissen</button><button type="button" class="ps-schalt" id="ps-feder">Federstrich</button></div>
     ${regler('ps-federmm', 'Strichstärke', 0.1, 1, 0.05)}
   </details>
+  <h3>Skizzenbuch</h3>
+  <div id="ps-skizzeteil"><div class="ps-pillen" id="ps-refrains">${[['herzen', 'Refrains: meiste Herzen'], ['neueste', 'neueste'], ['keine', 'keine']].map(([w, n]) => `<button type="button" data-refrains="${w}">${n}</button>`).join('')}</div>
+    <p class="ps-leise">Die Refrains stehen als Randnotizen; genommen wird der erste markierte Refrain der Lyrics.</p></div>
   <h3>Rand</h3>
   <div id="ps-randteil">
     ${regler('ps-randvorne', 'Rand vorne (cm)', 0, 60, 5)}${regler('ps-umschlag', 'Umschlag (cm)', 0, 100, 5)}
@@ -913,7 +1284,10 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
 </aside>`;
   document.body.appendChild(studio);
   /* Bedienung */
-  studio.querySelectorAll('[data-vorlage]').forEach(b => b.onclick = () => { const v = VORLAGEN.find(x => x.id === b.dataset.vorlage); setze({ vorlage: v.id, ...v.e }); });
+  studio.querySelectorAll('[data-vorlage]').forEach(b => b.onclick = () => { const v = VORLAGEN.find(x => x.id === b.dataset.vorlage);
+    /* das Skizzenbuch ist eine Seite: aus einem Triptychon wird seine Tafel (Knopf, Dateiname und Maß stimmen dann von selbst) */
+    const tafel = v.e.skizze && E.format === 'tri50' ? { format: '50x70' } : v.e.skizze && E.format === 'tri70' ? { format: '70x100' } : {};
+    setze({ vorlage: v.id, ...v.e, ...tafel }); });
   studio.querySelectorAll('[data-format]').forEach(b => b.onclick = () => setze({ format: b.dataset.format }));
   studio.querySelectorAll('[data-lage]').forEach(b => b.onclick = () => setze({ lage: b.dataset.lage }));
   studio.querySelectorAll('[data-titel]').forEach(b => b.onclick = () => setze({ titel: b.dataset.titel }));
@@ -938,6 +1312,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   el('ps-vorschlag').onclick = () => { setze({ kopfTitelEigen: false, kopfUnterEigen: false, schildNameEigen: false, kopfTitel: kopfTitelVorschlag(),
     kopfUnter: aktuell ? kopfUnterVorschlag(aktuell) : '', schildName: schildNameVorschlag() }); };
   studio.querySelectorAll('[data-ecke]').forEach(b => b.onclick = () => setze({ ecke: b.dataset.ecke }));
+  studio.querySelectorAll('[data-refrains]').forEach(b => b.onclick = () => setze({ refrains: b.dataset.refrains }));
   /* Rand: Zahl beim Ziehen, neu gelegt beim Loslassen (der Schaum rückt nach innen) */
   const cm = (id, schl) => { const r = el(id); r.oninput = () => { el(id + '-w').textContent = (r.value / 10).toLocaleString('de-DE'); }; r.onchange = () => setze({ [schl]: +r.value }); };
   cm('ps-randvorne', 'randVorne'); cm('ps-umschlag', 'umschlag');
@@ -953,6 +1328,9 @@ function schliessen(){ if (studio) studio.hidden = true; document.documentElemen
 
 export function oeffnen(){
   if (!studio) aufbauen();
+  /* Das Skizzenbuch zeichnet die Cover deiner Titel - im Groupieschaum gibt es sie nicht: dort mit Galerie öffnen (vorher blieb die
+     gemerkte Vorlage stehen, und das Plakat wartete auf Federzeichnungen von Personen; Fallensuche 1.0.61) */
+  if (E.skizze && raumJetzt === 'groupies'){ Object.assign(E, { vorlage: 'galerie' }, VORLAGEN[0].e); merken(); }
   studio.hidden = false; document.documentElement.style.overflow = 'hidden';
   if (aktuell && aktuell.raum !== raumJetzt) aktuell = null;
   felderSetzen();

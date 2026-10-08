@@ -113,6 +113,12 @@ const SCHRITTE = [
   /* Die Avatare der Gemeinschaft einmal holen (bin/avatare.js), damit gesichter.js auch in ihnen sucht */
   ['avatare.js',     [...TEST], 'Avatare der Gemeinschaft holen'],
   ['gesichter.js',   [...TEST], 'Gesichter und Schrift in Titelbildern und Avataren finden'],
+  /* Das Zeichenmodell fuers Plakat „Skizzenbuch" bereithalten (bin/feder.js). Caspar_D, 08.10.2026: „über die
+     morgenroutine werden nicht vorhandene modelle geholt oder wenn sie gebraucht werden". Nur das Modell, und nur
+     wenn es fehlt - gezeichnet wird erst, wenn jemand ein Skizzenbuch oeffnet (server.js, bilderVorbereiten
+     'feder'): alle Cover zu zeichnen kostet Minuten, die der Morgen nicht fuer etwas ausgeben soll, das vielleicht
+     nie gebraucht wird. Gibt immer 0 zurueck - ohne Netz bricht der Morgen hier nicht ab. */
+  ['feder.js',       ['--nur-modell'], 'Zeichenmodell für das Skizzenbuch bereithalten'],
   ['farben.js',      [],        'Farbpaletten aus den Covern'],
 ];
 
