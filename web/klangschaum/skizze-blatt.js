@@ -458,8 +458,18 @@ export function blattSchmuck(ctx){
       const ax = cx + (r + ring + nb.w / 2 + 4 * f) * Math.cos(th), ay = cy + (r + ring + nb.h / 2 + 2 * f) * Math.sin(th);
       const p = lege(nb, { ax, ay, ...ganz, weit: 70 * f }, [1, 0.9]);
       if (!p) continue;
-      const nx = p.x + p.w / 2 < ex ? p.x + p.w + 1 * f : p.x - 1 * f, ny = p.y + Math.min(p.h, 6 * f);
-      s += `<path d="M${n2(e.px)},${n2(e.py)} L${n2(ex)},${n2(ey)} L${n2(nx)},${n2(ny)}" ${strich(0.28, 0.55)}/><circle cx="${n2(e.px)}" cy="${n2(e.py)}" r="${n2(0.9 * f)}" fill="${SEP}"/>`;
+      /* das Ende an der Seite der Schrift, von der die Linie kommt (Caspar_D, 08.10.2026: „bei den Labels, die über dem Kreis sind,
+         zeigt die Linie nicht auf das Label" – bis 1.0.62 endete sie immer seitlich auf Höhe der ersten Zeile; stand die Notiz über dem
+         Knick, lief die Linie an ihr hoch und endete neben ihr, im Querformat bis 56 mm lang). Liegt der Knick weiter unter (über) der
+         Schrift als neben ihr, endet sie unter (über) der Schrift in deren mittleren drei Fünfteln; sonst seitlich an der ersten Zeile.
+         Die Schrift steht linksbündig im Block: rechts endet sie 2 mm vor dem Kasten, unten liegt die Unterlänge der Arealzeile. */
+      const k = p.k, sx0 = p.x, sx1 = p.x + (nb.w - 2 * f) * k, sy0 = p.y, sy1 = p.y + p.h - 0.45 * fs2 * k;
+      const dxG = ex < sx0 ? sx0 - ex : ex > sx1 ? ex - sx1 : 0, dyG = ey < sy0 ? sy0 - ey : ey > sy1 ? ey - sy1 : 0;
+      const nx = dyG > dxG ? Math.min(Math.max(ex, sx0 + 0.2 * (sx1 - sx0)), sx1 - 0.2 * (sx1 - sx0))
+               : (sx0 + sx1) / 2 < ex ? p.x + Math.max(...zl.map(em)) * fs * k + 1.2 * f : p.x - 1.2 * f;
+      const ny = dyG > dxG ? (ey > sy1 ? sy1 + 1.2 * f : sy0 - 1.2 * f) : p.y + Math.min(p.h, 6 * f);
+      /* data-zeiger: für Formatproben von außen (Ende der Linie gegen die Schrift ihrer Notiz messen) */
+      s += `<path data-zeiger="1" d="M${n2(e.px)},${n2(e.py)} L${n2(ex)},${n2(ey)} L${n2(nx)},${n2(ny)}" ${strich(0.28, 0.55)}/><circle cx="${n2(e.px)}" cy="${n2(e.py)}" r="${n2(0.9 * f)}" fill="${SEP}"/>`;
     }
   };
 
@@ -624,11 +634,30 @@ export function blattGrund(ctx){
      nach außen mit zunehmendem Korn („und sollte man die Fleckbegrenzung dann eher unscharf machen" – ja: eingeriebene Kreide hat
      keine Kante); an der Schnittlinie glatt abgeschnitten. Die Kacheln malen ihr Weiß in derselben Farbe (druck.skizze.papier). */
   if (ctx.kreide){
-    const ra = r + 10 * f;
-    s += `<defs><radialGradient id="ps-kreideauslauf" gradientUnits="userSpaceOnUse" cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(ra)}"><stop offset="${(r / ra).toFixed(4)}" stop-color="#fff"/><stop offset="${((r + 4 * f) / ra).toFixed(4)}" stop-color="#fff" stop-opacity="0.55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`
-      + `<filter id="ps-kreidekorn" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${n2(0.8 / f)}" numOctaves="2" seed="9" result="k"/><feColorMatrix in="k" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 2.4 -0.6" result="korn"/><feComposite in="SourceGraphic" in2="korn" operator="arithmetic" k1="0.6" k2="0.55" k3="0" k4="0"/></filter>`
-      + `<mask id="ps-kreidemaske" maskUnits="userSpaceOnUse" x="0" y="0" width="${n2(g.PW)}" height="${n2(g.PH)}"><circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(ra)}" fill="url(#ps-kreideauslauf)" filter="url(#ps-kreidekorn)"/><circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(r + 0.5 * f)}" fill="#fff"/></mask></defs>`
-      + `<g clip-path="url(#ps-diesseits)"><rect width="${n2(g.PW)}" height="${n2(g.PH)}" fill="${ctx.kreide}" fill-opacity="0.94" mask="url(#ps-kreidemaske)"/></g>`;
+    /* OHNE MASKE UND FILTER (Caspar_D, 08.10.2026: „im export sieht man eine Naht in der Papiertönung"): bis 1.0.62 war die Tünche ein
+       Rechteck über das ganze Blatt, auf den Kreis maskiert, das Korn ein feTurbulence-Filter in der Maske. Beides kann Chrome nicht
+       als Vektor ins PDF schreiben - es rasterte die Tünche als ein Bild von 5645 × 8338 Punkten (50 × 70 bei 300 dpi) mit Alphamaske,
+       und Apples PDF-Darstellung (Vorschau, Quick Look, Drucken vom Mac) zeichnet so ein Bild in Kacheln und verliert die Maske in
+       allen bis auf eine: die Tünche lag deckend auf dem ganzen Blatt diesseits des Schnitts, nur ein Rechteck oben links stimmte
+       (poppler zeigte dasselbe PDF richtig). Jetzt ein Kreis mit radialem Verlauf in der Kreidefarbe - die Deckung im Verlauf, nicht in
+       einer Maske: das PDF trägt ihn als Vektor-Schattierung.
+       Das KORN darauf: Punkte in der Papierfarbe über dem Auslauf - die Kreide füllt nicht jede Pore. Sie nehmen der Tünche dort, wo
+       sie liegen, gut die Hälfte (wie vorher der Filter: Deckung × 0,55…1,15), sichtbar also, wo der Verlauf noch trägt. Zwei Muster
+       mit teilerfremden Kacheln (7 und 11 mm) überlagert, damit sich nichts sichtbar wiederholt; als Muster aus Kreisen kommt nur eine
+       kleine Kachel ins PDF. */
+    const ra = r + 10 * f, o = 0.94;
+    const korn = (id, w, n, saat) => { let a = saat; const zz = () => (a = (Math.imul(a, 1103515245) + 12345) >>> 0) / 4294967296; let d = '';
+      for (let i = 0; i < n; i++){ const x = zz() * w, y = zz() * w, rr = (0.12 + 0.5 * zz() ** 2) * f;
+        /* über den Kachelrand reichende Punkte auch auf der Gegenseite, sonst sieht man die Kachelkanten */
+        for (const ox of [-w, 0, w]) for (const oy of [-w, 0, w])
+          if (x + ox > -rr && x + ox < w + rr && y + oy > -rr && y + oy < w + rr) d += `<circle cx="${n2(x + ox)}" cy="${n2(y + oy)}" r="${n2(rr)}"/>`; }
+      return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="${n2(w)}" height="${n2(w)}"><g fill="${ctx.papier}">${d}</g></pattern>`; };
+    const ring = `M${n2(cx + ra)},${n2(cy)} A${n2(ra)},${n2(ra)} 0 1 0 ${n2(cx - ra)},${n2(cy)} A${n2(ra)},${n2(ra)} 0 1 0 ${n2(cx + ra)},${n2(cy)} Z `
+      + `M${n2(cx + r)},${n2(cy)} A${n2(r)},${n2(r)} 0 1 1 ${n2(cx - r)},${n2(cy)} A${n2(r)},${n2(r)} 0 1 1 ${n2(cx + r)},${n2(cy)} Z`;
+    s += `<defs><radialGradient id="ps-kreideauslauf" gradientUnits="userSpaceOnUse" cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(ra)}"><stop offset="${(r / ra).toFixed(4)}" stop-color="${ctx.kreide}" stop-opacity="${o}"/><stop offset="${((r + 4 * f) / ra).toFixed(4)}" stop-color="${ctx.kreide}" stop-opacity="${(o * 0.5).toFixed(3)}"/><stop offset="1" stop-color="${ctx.kreide}" stop-opacity="0"/></radialGradient>`
+      + korn('ps-kreidekorn7', 7 * f, 55, 9) + korn('ps-kreidekorn11', 11 * f, 130, 23) + `</defs>`
+      + `<g clip-path="url(#ps-diesseits)"><circle cx="${n2(cx)}" cy="${n2(cy)}" r="${n2(ra)}" fill="url(#ps-kreideauslauf)"/>`
+      + `<path d="${ring}" fill-rule="evenodd" fill="url(#ps-kreidekorn7)" fill-opacity="0.65"/><path d="${ring}" fill-rule="evenodd" fill="url(#ps-kreidekorn11)" fill-opacity="0.65"/></g>`;
   }
   /* Randlinie an der Schnittseite (über die ganze Höhe bzw. Breite), doppelt wie eine gezogene Heftlinie */
   s += links ? `<line x1="${n2(kv.x)}" y1="${n2(B + 6 * f)}" x2="${n2(kv.x)}" y2="${n2(g.PH - B - 6 * f)}" ${kon(0.55)}/><line x1="${n2(kv.x - 1.6 * f)}" y1="${n2(B + 6 * f)}" x2="${n2(kv.x - 1.6 * f)}" y2="${n2(g.PH - B - 6 * f)}" ${kon(0.3)}/>`
