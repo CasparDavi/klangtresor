@@ -132,6 +132,18 @@ dieselbe Platte hängt.
 
 ## Klein und konkret
 
+### Hüllkurve nur noch aus wellenStufen (offen, 11.10.2026)
+Anlass: Tarjas Pull Request 7 (Skizzenbuch zeigte bei ihr keine Tonhüllkurve). Er nimmt `wellenStufen` nur als Rückfall, wenn
+`welle` leer ist. Jörg: den Blick auf die falsche Quelle generell herausnehmen und nur unterstützen, was generisch funktioniert.
+- Befund im eigenen Archiv: `welle` (Energie aus den Liedtext-Zeitmarken, 5 Werte/s) bei 253 von 327 Titeln, bei Tarja bei keinem;
+  `wellenStufen` (Sunos waveform-aggregates, feinste Stufe 23 Werte/s) bei 327 von 327.
+- Leser von `welle`: Plakat „Skizzenbuch“ (`web/klangschaum/skizze-daten.js` liedAuszug, `skizze-blatt.js:293`) und die Übergänge
+  zwischen Titeln (`web/index.html` anschlussHolen / anschlussRaender, ~13300–13440).
+- Plan: eine gemeinsame Funktion „Hüllkurve eines Titels“ aus `wellenStufen` (0..1 normiert, feste Rate); beide Leser nur noch darüber;
+  `welle` bleibt Rohdatum im Katalog. Vorher prüfen: Ränder der Übergänge alt gegen neu für die 253 Titel mit beiden Quellen (nur lesen),
+  Schwellen von anschlussRaender auf den neuen Wertebereich einstellen, Abweichungen Jörg zeigen.
+
+
 ### Weitergabe — erledigt (18.08.2026)
 Das Programm ist generisch. Ein anderes Suno-Konto kann damit sein
 eigenes Archiv bauen, ohne eine Zeile zu ändern:
