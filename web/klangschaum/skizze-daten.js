@@ -4,7 +4,8 @@
    gerechnet wurde (Hausregel: fremde Suno-Bestände laufen ohne Handarbeit durch).
    QUELLEN: katalogInfo (/api/index: profil, spielzeit, zeitraum, eingefroren) und songVonId (die eigenen Titel, schlanke Felder)
    liegen im Browser schon bereit. Nachgeholt werden /api/klang (Genre, Stimmung, Instrumente je Titel), /api/community (wer wie
-   viel geschrieben hat) und /api/song/<id> (Liedtext, Hüllkurve, Schläge, Abschnitte, Zählerverlauf). Ein Titel wiegt dort rund
+   viel geschrieben hat) und /api/song/<id> (Liedtext, Hüllkurve, Schläge, Abschnitte, Zählerverlauf). Die Hüllkurve steht dort
+   als wellenStufen (Sunos waveform-aggregates); die alte Reihe welle aus den Zeitmarken ist in diesem Archiv leer. Ein Titel wiegt dort rund
    450 KB, deshalb sparsam: der Steckbrief-Titel und höchstens LIED_GRENZE Titel für die Fragmente, je Titel nur der Auszug gemerkt.
    Die KARTE (/api/karte) taugt hier nicht, obwohl sie dieselben Etiketten nennt: Sie trägt je Titel nur die drei stärksten, schon
    übersetzt (Schlagzeug statt drums) - das Mittel über alle Titel würde schief, und skizze-blatt.js übersetzt selbst (INSTR_DE,
@@ -65,9 +66,36 @@ export function refrainAus(text){
 const fragmentZeilen = (text) => [...new Set(String(text || '').split(/\r?\n/).map(x => x.replace(/\s*\([^)]*\)\s*/g, ' ').trim())
   .filter(x => x && !/[[\]]/.test(x) && x.split(/\s+/).length >= 3 && x.length < 44))];
 
+/* Sunos Hüllkurve: wellenStufen aus waveform-aggregates, je Zoomstufe Min/Max-Paare (int16) in data[0]/data[1]
+   (zwei Kanäle). Die alte Reihe `welle` (Energie aus aligned-lyrics) ist in diesem Archiv leer; die Stufen
+   liegen für fast jeden Titel. Feinste Stufe (meiste Paare), Amplitude = max(|min|, max) über beide Kanäle. */
+function wellenAusStufen(stufen){
+  let best = null, bestN = 0;
+  for (const s of liste(stufen)){
+    const k = s && liste(s.data).find(x => Array.isArray(x) && x.length >= 4);
+    if (!k) continue;
+    const n = k.length >> 1;
+    if (n > bestN){ best = s; bestN = n; }
+  }
+  if (!best) return [];
+  const kanaele = liste(best.data).filter(k => Array.isArray(k) && k.length >= 4);
+  const n = Math.min(...kanaele.map(k => k.length >> 1));
+  const out = new Array(n);
+  for (let i = 0; i < n; i++){
+    let m = 0;
+    for (const k of kanaele){
+      const a = Number(k[2 * i]) || 0, b = Number(k[2 * i + 1]) || 0;
+      m = Math.max(m, Math.abs(a), Math.abs(b));
+    }
+    out[i] = m;
+  }
+  return out;
+}
+
 /* Der Auszug eines vollen Titels - nur, was das Blatt braucht; der Rest (Wortzeiten, Rohdaten) fällt gleich wieder weg */
 function liedAuszug(d){
-  const w = liste(d && d.welle).map(x => Number(x) || 0);
+  let w = liste(d && d.welle).map(x => Number(x) || 0);
+  if (w.length <= 1) w = wellenAusStufen(d && d.wellenStufen);
   /* je Fenster das Maximum, und jedes Fenster sieht mindestens einen Punkt (kurze Titel haben weniger als WELLE_PUNKTE - leere Fenster
      ergaben 0, die Hüllkurve zerfiel in einen Kamm) */
   const n = w.length, welle = n ? Array.from({ length: WELLE_PUNKTE }, (_, i) => {
