@@ -8948,3 +8948,9 @@ die Lasche trägt den gewählten Namen; der Groupieschaum bleibt allein.
 - **Plakat (einfachst):** Farbwahl „Hintergrund fürs Plakat" + „Als Plakat (PNG)…": gezeigte Hängung, 7000 Punkte lange
   Seite, Originalbilder, Rahmen 38 % in den Grund gemischt. Sandkasten: 7000×6097, 50 MB, 16 s.
   Caspar_D: „ausbauen tun wir es ab Mittwoch" (14.10.) – dann z. B. PDF, Formate, Rand, Schild wie beim Klangschaum-Plakat.
+- **1.0.67, Plakat richtig** (Caspar_D: „der Posterexport muß schon wie beim Schaum funktionieren, also als PDF, Format
+  wählbar, und Hintergrund in weiß oder schwarz, keine Farben"): PNG-Export und Farbwahl ersetzt. Panel: Format (Liste wie
+  plakat.js ohne frei/Triptychon/Bild), hoch/quer, schwarzer (#0c0d10) oder weißer Grund, „Als Plakat (PDF)…". Die Galerie wird
+  im Seitenformat neu gehängt (Rand 7 % der kurzen Seite), Bilder auf 300 dpi (JPEG 0,9), unsichtbarer Rahmen + Druckfenster
+  wie plakat.js. Sandkasten: A2 quer weiß, 327 Bilder, 6,5 s bis zum Druckfenster (Druckfenster im Test unterdrückt, PDF selbst
+  nicht erzeugt – Apple-Engine-Prüfung steht aus). Ausbau ab Mittwoch: Vorschau, Schild/Titel, Triptychon, Bild-Formate.
