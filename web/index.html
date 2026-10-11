@@ -150,6 +150,23 @@ h1{
 #schaumbild path[data-id]{cursor:pointer;fill-opacity:var(--sk-deck,.65)}
 #schaumbild path[data-id].ohnebild{fill-opacity:1}   /* Bild laedt nicht: die Farbe deckt (Bildvorrat, Ausweichweg) */
 #schaumbild svg.schaumrahmen{pointer-events:none}
+/* Die Bilderschau: jedes Cover im Originalformat an seiner Stelle; Rahmen gedaempft in der Gruppenfarbe, voll nur unter
+   der Maus und am laufenden Titel (Caspar_D, 11.10.2026: „die Rahmen sind zu hell … nur beim Highlighting so"). */
+.bilderwand{position:absolute;left:0;top:0;transform-origin:0 0}
+.bilderwand .bw{position:absolute;cursor:pointer}
+.bilderwand .bw img{display:block;width:100%;height:100%;
+  box-shadow:0 0 0 var(--bwr,0px) color-mix(in srgb,var(--bwf) 38%,#121417),0 2px 8px rgba(0,0,0,.55)}
+.bilderwand .bw:hover img{box-shadow:0 0 0 max(var(--bwr,0px),2px) var(--bwf),0 2px 10px rgba(0,0,0,.6)}
+.bilderwand .bw.laeuft img{box-shadow:0 0 0 max(var(--bwr,0px),2.5px) color-mix(in srgb,var(--bwf) 60%,#fff),0 0 18px color-mix(in srgb,var(--bwf) 45%,transparent)}
+.bilderwand .bwschild{position:absolute;left:0;font-size:10.5px;line-height:13px;color:#a9acb3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.bilderwand .bwkopf{position:absolute;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.bilderwand .bwkopf small{color:#8a8d94;font-size:11px}
+#schaumrechts h3 select.schaumart{font:inherit;font-size:inherit;font-weight:inherit;background:transparent;border:1px solid transparent;padding:0 4px;margin-left:-5px;color:var(--text);cursor:pointer}
+#schaumrechts h3 select.schaumart:hover{border-color:var(--rand)}
+#bilderschauzeile{display:flex;flex-direction:column;gap:12px}
+#bilderschauzeile[hidden]{display:none}
+#schaumrechts label.schalter{flex-direction:row;align-items:center;gap:7px}
+#schaumrechts label[hidden],#schaumrechts button[hidden]{display:none}
 #schaumbild{transition:opacity .25s}
 #schaumbild svg{transition:opacity .3s}
 /* Morph: nur die Bilder blenden aus und wieder ein, die Zellen behalten ihre Farbe; langsam (Caspar_D,
@@ -265,13 +282,13 @@ h1{
    darueber, sind aber eine Ebene darunter. */
 /* Vollbildknopf: unaufdringlich in der Ecke, wird erst beim Ueberfahren
    der Karte deutlich - er soll den Sternenhimmel nicht stoeren. */
-#kartevoll{position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
+#kartevoll,#schaumvoll{position:absolute;top:10px;right:10px;z-index:6;width:30px;height:30px;
   border:1px solid var(--rand);border-radius:8px;background:rgba(10,11,14,.55);
   color:var(--schwach);cursor:pointer;opacity:.35;transition:opacity .15s,color .15s;
   display:flex;align-items:center;justify-content:center;padding:0}
-#kartefeld:hover #kartevoll{opacity:.9}
-#kartevoll:hover{color:var(--text);border-color:var(--akzent)}
-#kartevoll svg{width:15px;height:15px;display:block}
+#kartefeld:hover #kartevoll,#schaumfeld:hover #schaumvoll{opacity:.9}
+#kartevoll:hover,#schaumvoll:hover{color:var(--text);border-color:var(--akzent)}
+#kartevoll svg,#schaumvoll svg{width:15px;height:15px;display:block}
 
 /* VOLLBILD HEISST VOLLBILD (Caspar_D, 28.08.2026: "das vollbild bei den
    Räumen muß aber auch wirklich ein vollbild sein, also keine panel,
@@ -293,6 +310,12 @@ h1{
 #karte:-webkit-full-screen > #kartefuss{ display:none }
 #karte:fullscreen #kartefeld,
 #karte:-webkit-full-screen #kartefeld{ border:none;border-radius:0 }
+/* Dasselbe fuer die Schaeume und die Bilderschau (Caspar_D, 11.10.2026: „das Klangschaum- und Bilderschau-Panel
+   einen Vollbildmodus wie der Klangraum"): nur das Feld, ohne Panel und Fussnote. */
+#karte:fullscreen > #schaumrechts,
+#karte:-webkit-full-screen > #schaumrechts{ display:none }
+#karte:fullscreen #schaumfeld,
+#karte:-webkit-full-screen #schaumfeld{ border:none;border-radius:0 }
 
 /* Der laufende Song im Vollbild. Unten rechts, damit er die Sterne
    nicht verdeckt - und mit Datum, weil im Vollbild sonst nichts mehr
@@ -302,15 +325,16 @@ h1{
    aussen, der Text rechtsbuendig davor - so laeuft die Zeile auf das
    Bild zu, statt von ihm wegzulaufen. Ein weicher Schatten am Text
    haelt ihn ueber hellen Sternen lesbar. */
-#karteläuft{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:11px;
+#karteläuft,#schaumläuft{position:absolute;right:16px;bottom:16px;z-index:6;display:flex;gap:11px;
   align-items:center;max-width:min(360px,48vw);pointer-events:none}
-#karteläuft img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex:0 0 auto;
+#karteläuft img,#schaumläuft img{width:52px;height:52px;border-radius:8px;object-fit:cover;flex:0 0 auto;
   box-shadow:0 4px 16px rgba(0,0,0,.6);order:2}
-#karteläuft > div{order:1;text-align:right;min-width:0;
+#karteläuft > div,#schaumläuft > div{order:1;text-align:right;min-width:0;
   text-shadow:0 1px 6px rgba(0,0,0,.9),0 0 16px rgba(0,0,0,.7)}
-#karteläuft .t{font-size:14px;font-weight:600;line-height:1.3;
+#karteläuft .t,#schaumläuft .t{font-size:14px;font-weight:600;line-height:1.3;
   overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-#karteläuft .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
+#karteläuft .d,#schaumläuft .d{font-size:11.5px;color:var(--schwach);margin-top:2px;font-variant-numeric:tabular-nums}
+#schaumläuft[hidden]{display:none}
 
 .unterreg{display:inline-flex;gap:4px;align-items:center;margin-left:10px;padding-left:12px;
   border-left:1px solid var(--rand)}
@@ -4110,7 +4134,9 @@ h3 .infoknopf .ico{width:14px;height:14px}
        der Geschichten-Raum, aber sichtbar). Feld und Seite stehen in denselben Spalten wie der
        Himmel; schaumSichtbar() klappt um. Das Panel des Himmels passt nicht zum Schaum (Caspar_D:
        „das Bedienpanel des Raumes passt aber kaum zum Schaum") - der Schaum hat sein eigenes. -->
-  <div id="schaumfeld" hidden><div id="schaumbild"></div><div id="schaumstand"></div></div>
+  <div id="schaumfeld" hidden><div id="schaumbild"></div><div id="schaumstand"></div>
+    <button id="schaumvoll" title="Vollbild (Esc zurück)" aria-label="Vollbild"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-vollbild"/></svg></button>
+    <div id="schaumläuft" hidden></div></div>
   <div id="karterechts">
     <div id="kartelegende"></div>
     <!-- Steckbrief des Sterns unter der Maus, darunter die Nachbarn -->
@@ -4122,7 +4148,15 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <div class="fussnote" id="groupiefarbenzeile" hidden>Farben<div id="groupiefarben" class="farbwahl"></div></div>
     <div class="fussnote" id="klangschaumfarbenzeile" hidden>Farben<div id="klangschaumfarben" class="farbwahl"></div></div>
     <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
-    <label class="fussnote">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
+    <div id="bilderschauzeile" hidden>
+      <label class="fussnote">Skalentransformation<select id="bildertrafo" onchange="bilderschauWahl('trafo', this.value)"></select></label>
+      <label class="fussnote">Hängung<select id="bilderhaengung" onchange="bilderschauWahl('haengung', this.value)">
+        <option value="salon">Salon – große Bilder zur Mitte</option><option value="dicht">Dicht – von oben nach unten</option></select></label>
+      <label class="fussnote schalter"><input type="checkbox" id="bilderrahmen" onchange="bilderschauWahl('rahmen', this.checked)">Rahmen in der Klangraum-Farbe</label>
+      <label class="fussnote schalter"><input type="checkbox" id="bilderkopf" onchange="bilderschauWahl('kopf', this.checked)">Überschriften der Gruppen</label>
+      <label class="fussnote schalter"><input type="checkbox" id="bilderunter" onchange="bilderschauWahl('unter', this.checked)">Bildunterschriften</label>
+    </div>
+    <label class="fussnote" id="schaumfarbezeile">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
       <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
     <p class="fussnote" id="schaumwas" style="margin:0"></p>
     <div id="schaumlegende"></div>
@@ -7816,7 +7850,7 @@ let karteDaten = null, karteGruppeAn = null;
 const RAUM_NAME = { klang: 'Klang-Raum', geschichten: 'Geschichten-Raum (beta)', schaum: 'Klangschaum', groupies: 'Groupieschaum' };
 /* Die Unterregister (Caspar_D, 06.10.2026: „die Unterpunkte von Räume und Schäume heißen Klangraum,
    Klangschaum"). */
-const raumReiter = (r) => r === 'klang' ? 'Klangraum' : RAUM_NAME[r].replace('-Raum', '');
+const raumReiter = (r) => r === 'klang' ? 'Klangraum' : r === 'schaum' && schaumArt === 'bilder' ? 'Bilderschau' : RAUM_NAME[r].replace('-Raum', '');
 const RAUM_WAS  = {
   klang:       'Nähe heißt: klingt ähnlich. Aus dem Ton gerechnet, der Text spielt keine Rolle.',
   geschichten: 'Nähe heißt: handelt von Ähnlichem. Aus den Liedtexten, der Klang spielt keine Rolle.',
@@ -8314,7 +8348,10 @@ let karteDrawerOffen = false;   // (alt; ersetzt durch karteLaden)
    und dann steht nirgends mehr, was gerade laeuft. Die Anzeige
    erscheint deshalb NUR im Vollbild - darunter waere sie doppelt. */
 function karteLaeuftSetzen(){
-  const el = $('karteläuft'); if (!el) return;
+  /* Im Klangschaum, in der Bilderschau und im Groupieschaum steht das Feld des Himmels verdeckt - dort eine eigene Anzeige */
+  const schaum = raumJetzt === 'schaum' || raumJetzt === 'groupies', anders = $(schaum ? 'karteläuft' : 'schaumläuft');
+  if (anders) anders.hidden = true;
+  const el = $(schaum ? 'schaumläuft' : 'karteläuft'); if (!el) return;
   const voll = document.fullscreenElement === $('karte');
   const s = aktuellId && song(aktuellId);
   if (!voll || !s){ el.hidden = true; return; }
@@ -8376,7 +8413,7 @@ function raumLeisteBauen(){
   const da = Object.keys(RAUM_NAME).filter(r => raumDa && raumDa[r]);
   if (da.length < 2){ el.hidden = true; el.innerHTML = ''; return; }
   el.hidden = register !== 'karte';
-  const soll = da.map(r => r + (r === raumJetzt ? '*' : '')).join('|');
+  const soll = da.map(r => r + (r === raumJetzt ? '*' : '')).join('|') + '|' + schaumArt;
   if (el.dataset.stand === soll) return;      /* nichts geaendert - nicht neu bauen */
   el.dataset.stand = soll;
   el.innerHTML = da.map(r =>
@@ -8512,6 +8549,120 @@ function schaumGliederungWaehlen(id){
   schaumZeichnen();
 }
 function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
+
+/* ---- DIE BILDERSCHAU -------------------------------------------------------------------------------------------
+   Caspar_D, 11.10.2026: „eine Darstellung, die die Coverarts als Vierecke belässt … eine Art Gemäldewand, die Größe
+   der Bilder wieder in Abhängigkeit von den Parametern, wie sie auch im Klangschaum benutzt werden“. Jedes Cover im
+   Originalformat (Titelbild ohne Rand, sonst das Cover - „du nimmst bitte immer das Originalformat“), Flaeche nach
+   dem Mass des Klangschaums, wahlweise skalentransformiert (Vorgabe Wurzel; „Fläche ist das Bezugssystem“). Ein
+   Schaum teilt die Wand in Areale je Gruppe, dicht an dicht; darin haengt eine Salonhaengung ueber die ganze Wand,
+   die grossen Bilder zur Wandmitte, jedes Bild mit seinem Schwerpunkt im Areal seiner Gruppe (bilderschau.js,
+   gerechnet im Worker). Gleiche Masse, Gliederungen, Legende und Zoom wie der Klangschaum; Unterschriften und
+   Ueberschriften gibt es, aber aus („mach mal gar keine Beschriftungen rein, die stören … so kann es rein, genauso
+   auch der Default“). Klick spielt den Titel, der laufende hat einen hellen Rahmen. */
+let schaumArt = (() => { try { return localStorage.getItem('mysuno-schaum-art') === 'bilder' ? 'bilder' : 'klang'; } catch (e) { return 'klang'; } })();
+const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false };
+let bilderWahl = (() => { try { return { ...BILDER_VORGABE, ...JSON.parse(localStorage.getItem('mysuno-bilderschau') || '{}') }; } catch (e) { return { ...BILDER_VORGABE }; } })();
+function schaumArtWaehlen(a){
+  schaumArt = a === 'bilder' ? 'bilder' : 'klang';
+  try { localStorage.setItem('mysuno-schaum-art', schaumArt); } catch (e) {}
+  raumLeisteBauen(); schaumZeichnen();
+}
+function bilderschauWahl(k, v){
+  bilderWahl[k] = v;
+  try { localStorage.setItem('mysuno-bilderschau', JSON.stringify(bilderWahl)); } catch (e) {}
+  schaumZeichnen();
+}
+let bilderModul = null, bilderArbeit = null;
+const bilderFertig = new Map();          /* Schluessel -> Haengung */
+/* Das Seitenverhaeltnis jedes Bildes, einmal gemessen und gemerkt (die Adresse traegt den Kachelstand: neu
+   zugeschnittene Titelbilder werden neu gemessen) */
+const bilderFormate = (() => { try { return new Map(Object.entries(JSON.parse(localStorage.getItem('mysuno-bildformate') || '{}'))); } catch (e) { return new Map(); } })();
+async function bilderFormateHolen(urls, melde){
+  const fehlt = [...new Set(urls)].filter(u => !bilderFormate.has(u)); if (!fehlt.length) return;
+  let n = 0;
+  await Promise.all(fehlt.map(u => new Promise(ok => { const im = new Image();
+    const fertig = () => { melde(++n, fehlt.length); ok(); };
+    im.onload = () => { if (im.naturalWidth && im.naturalHeight) bilderFormate.set(u, +(im.naturalWidth / im.naturalHeight).toFixed(4)); fertig(); };
+    im.onerror = fertig; im.src = u; })));
+  try { localStorage.setItem('mysuno-bildformate', JSON.stringify(Object.fromEntries(bilderFormate))); } catch (e) {}
+}
+async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm }){
+  const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
+  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.65'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
+  const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
+  { const sel = $('bildertrafo'); if (!sel.options.length) sel.innerHTML = T.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); sel.value = t.id; }
+  $('bilderhaengung').value = bilderWahl.haengung; $('bilderrahmen').checked = !!bilderWahl.rahmen;
+  $('bilderkopf').checked = !!bilderWahl.kopf; $('bilderunter').checked = !!bilderWahl.unter;
+  $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
+  fuss.textContent = `Bilderschau: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
+    + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, die großen zur Mitte der Wand. `
+    + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
+    + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
+    + `Die Areale starten an den Sternen im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). Klick auf ein Bild spielt den Titel.`;
+  if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; stand.textContent = `Kein Titel hat bei ${m.name} mehr als null.`; return; }
+  const feld = $('schaumfeld').getBoundingClientRect(), W = Math.round(feld.width), H = Math.round(feld.height);
+  if (W < 50 || H < 50) return;
+  /* Gezoomt: die Untergruppen bekommen die Areale, alle in der Farbe der Gruppe */
+  const ebene = schaumZoom ? 'genre' : 'gruppe', gruppeVon = (z) => schaumZoom ? (z.genre || 'ohne Angabe') : z.gruppe;
+  const farbe = (n) => (schaumZoom ? farbeVon(schaumZoom) : farbeVon(n)) || '#8a8d94';
+  const urls = new Map(zeilen.map(z => [z.id, artworkBild(z.id)]));
+  const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
+    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length].join('|');
+  const fertig = bilderFertig.get(schluessel);
+  if (fertig){ stand.textContent = ''; return bilderEinsetzen(fertig, farbe, m, zeilen); }
+  /* Waehrend neu gehaengt wird (Fenster- oder Vollbildwechsel), bleibt die alte Wand stehen, auf das neue Feld gestreckt */
+  { const alt = bild.querySelector('.bilderwand');
+    if (alt){ const k = Math.min(W / alt.offsetWidth, H / alt.offsetHeight);
+      alt.style.transform = `translate(${(W - alt.offsetWidth * k) / 2}px,${(H - alt.offsetHeight * k) / 2}px) scale(${k})`; }
+    else if (schaumBildArt !== 'bilder'){ bild.innerHTML = ''; schaumBildArt = null; } }
+  if (bilderArbeit && bilderArbeit.schluessel === schluessel) return;
+  if (bilderArbeit) bilderArbeit.worker.terminate();
+  bilderArbeit = { schluessel, worker: null };
+  const meine = bilderArbeit;
+  await bilderFormateHolen([...urls.values()], (n, von) => { if (bilderArbeit === meine) stand.textContent = `Die Bilder werden vermessen … ${n} von ${von}`; });
+  if (bilderArbeit !== meine) return;
+  const G = new Map();
+  for (const z of zeilen){ const g = gruppeVon(z); if (!G.has(g)) G.set(g, []);
+    G.get(g).push({ id: z.id, titel: z.titel, roh: +z.w, wert: t.f(+z.w), verh: +bilderFormate.get(urls.get(z.id)) || 1 }); }
+  const gruppen = [...G].map(([name, bilder]) => ({ name, bilder }));
+  /* Startpunkte der Areale: die Mitte ihrer Sterne im Klangraum (wie im Klangschaum, Mathe-Koordinaten) */
+  const saat = schaumSaat(zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })), ['gruppe'], W, H), seeds = {};
+  for (const g of gruppen) if (saat && saat[g.name]) seeds[g.name] = saat[g.name];
+  const mess = document.createElement('canvas').getContext('2d'); mess.font = '12.5px ' + getComputedStyle(document.body).fontFamily;
+  const kopfBreite = Object.fromEntries(gruppen.map(g => [g.name, mess.measureText(g.name + '  ' + g.bilder.length + ' Titel').width + 4]));
+  stand.textContent = 'Die Galerie wird aufgehängt …';                     /* Caspar_Ds Wortlaut, 11.10.2026 */
+  const t0 = performance.now();
+  const res = await new Promise(ok => {
+    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.65', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
+    meine.worker = w;
+    w.onmessage = (ev) => { w.terminate(); ok(ev.data); };
+    w.onerror = (ev) => { w.terminate(); ok({ fehler: ev.message || 'Worker' }); };
+    w.postMessage({ gruppen, W, H, seeds: Object.keys(seeds).length === gruppen.length ? seeds : null,
+      opt: { salon: bilderWahl.haengung === 'salon', rahmen: !!bilderWahl.rahmen, kopf: bilderWahl.kopf ? 22 : 0, schild: bilderWahl.unter ? 15 : 0 }, kopfBreite });
+  });
+  if (bilderArbeit === meine) bilderArbeit = null;
+  if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = 'Die Bilder passen nicht auf die Wand.'; return; }
+  res.res.ms = Math.round(performance.now() - t0);
+  bilderFertig.set(schluessel, res.res);
+  if (register === 'karte' && raumJetzt === 'schaum' && schaumArt === 'bilder') schaumZeichnen();
+}
+function bilderEinsetzen(r, farbe, m, zeilen){
+  const bild = $('schaumbild'), dpr = window.devicePixelRatio || 1, roh = new Map(zeilen.map(z => [z.id, z]));
+  schaumBildArt = 'bilder'; schaumGezeigt = null; bild.style.opacity = '';
+  let html = `<div class="bilderwand" style="width:${r.W}px;height:${r.H}px">`;
+  for (const a of r.schilder || [])
+    html += `<div class="bwkopf" style="left:${a.x.toFixed(1)}px;top:${a.y.toFixed(1)}px;width:${a.w.toFixed(1)}px;color:${farbe(a.name)}">${esc(a.name)} <small>${r.bilder.filter(b => b.gruppe === a.name).length} Titel</small></div>`;
+  for (const b of r.bilder){
+    const url = artworkBild(b.id), stufe = schaumStufe(Math.max(b.w, b.h) * dpr), z = roh.get(b.id);
+    html += `<div class="bw${b.id === aktuellId ? ' laeuft' : ''}" data-id="${b.id}" style="left:${b.x.toFixed(1)}px;top:${b.y.toFixed(1)}px;width:${b.w.toFixed(1)}px;height:${b.h.toFixed(1)}px;--bwf:${farbe(b.gruppe)};--bwr:${(b.rahmen || 0).toFixed(1)}px"`
+      + ` title="${esc((z && z.titel) || '')} · ${esc(m.text(b.roh))}"><img data-quelle="${esc(url)}" data-stufe="${stufe}" src="${esc(schaumBildHref(url, stufe))}" alt="" decoding="async">`
+      + (b.schild ? `<div class="bwschild" style="top:${(b.h + (b.rahmen || 0) + 2).toFixed(1)}px;width:${b.w.toFixed(1)}px">${esc((z && z.titel) || '')}</div>` : '') + '</div>';
+  }
+  bild.innerHTML = html + '</div>';
+  bild.onmouseover = null; bild.onmouseleave = null;
+  bild.onclick = (e) => { const d = e.target.closest && e.target.closest('.bw[data-id]'); if (d) spielenNachId(d.dataset.id); };
+}
 
 /* STARTPUNKTE AUS DER KLANGRAUM-KARTE (Caspar_D, 06.10.2026: „könntest du die Blasen-Seeds anhand
    der Ordination im Klangraum initialisieren, dann wären ähnliche Songs in Nähe zueinander -
@@ -8737,7 +8888,17 @@ async function schaumZeichnen(){
   raumLeisteBauen();
   await schaumVorratLaden();                  /* die verkleinerten Bilder aus der letzten Sitzung, einmal */
   const groupies = raumJetzt === 'groupies';
-  $('schaumtitel').textContent = RAUM_NAME[raumJetzt] || 'Klangschaum';
+  /* Unter „Klangschaum“ ein Dropdown (Caspar_D, 11.10.2026: „Träume sind Schäume … als Dropdown bei den Schäumen
+     – einmal Klangschaum, einmal Bilderschau“; der Groupieschaum bleibt allein) */
+  { const tt = $('schaumtitel');
+    if (groupies) tt.textContent = RAUM_NAME.groupies;
+    else { if (!tt.querySelector('select')) tt.innerHTML = '<select id="schaumart" class="schaumart" onchange="schaumArtWaehlen(this.value)" title="Klangschaum oder Bilderschau">'
+      + '<option value="klang">Klangschaum</option><option value="bilder">Bilderschau</option></select>';
+      $('schaumart').value = schaumArt; } }
+  { const bilder = !groupies && schaumArt === 'bilder';
+    $('bilderschauzeile').hidden = !bilder; $('schaumfarbezeile').hidden = bilder; $('plakatknopf').hidden = bilder; }
+  { const vb = $('schaumvoll'); if (vb && !vb.onclick) vb.onclick = karteVollbild; }
+  karteLaeuftSetzen();
   { const l = $('schaumgliederung').closest('label'); if (l) l.hidden = false; }
   { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
   $('groupiefarbenzeile').hidden = !groupies;
@@ -8803,6 +8964,7 @@ async function schaumZeichnen(){
     } }
 
   const stamm = katalogInfo && katalogInfo.erstelltAm ? String(katalogInfo.erstelltAm).slice(0, 10) : '';
+  if (schaumArt === 'bilder') return bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm });
   fuss.textContent = `Klangschaum: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, Fläche = ${m.name}, jede Zelle genau ihr Anteil. `
     + `Gegliedert nach ${gl.name.replace('Klang: ', '')}${gl.id === 'klang' ? ' (Stilgruppen aus dem Klang-Raum)' : ''}; schraffiert und kursiv, wo ein Titel keine Untergruppe hat. `
     + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
@@ -9002,6 +9164,8 @@ function schaumVorratTauschen(key, href){
   const i = key.indexOf(' '), stufe = key.slice(0, i), url = key.slice(i + 1), bild = $('schaumbild'); if (!bild) return;
   for (const im of bild.querySelectorAll('image[data-quelle]'))
     if (im.dataset.quelle === url && im.dataset.stufe === stufe && im.getAttribute('href') !== href) im.setAttribute('href', href);
+  for (const im of bild.querySelectorAll('img[data-quelle]'))          /* die Bilderschau */
+    if (im.dataset.quelle === url && im.dataset.stufe === stufe && im.getAttribute('src') !== href) im.setAttribute('src', href);
 }
 /* Beim Einsetzen: jede Zelle bekommt die beste vorhandene Fassung; laedt ein Bild nicht, deckt die
    Zellfarbe voll, und es wird spaeter neu versucht. */

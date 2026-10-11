@@ -8909,3 +8909,30 @@ der Server beim ersten Öffnen des Skizzenbuchs). Sandkasten 8799 und scratchpad
 - **Danach:** KlangTresor-Pause, Treemapper (Protokoll in Treemapper/docs/PROTOKOLL-veroeffentlichung.md, Entscheidungen E1–E9 offen).
 
 **Nachtrag 08.10.2026 nachts:** Die Sitzung arbeitet jetzt am Treemapper (hfoam, Prüfstand, Paper). Übergabe dort: `Treemapper/NEXT.md` (oberster Abschnitt) und `~/claude-sicherung/7b40ece6/AUTO-STATUS.md`.
+
+## 94. 11.10.2026: Bilderschau (1.0.65)
+
+Caspar_D: „eine Darstellung, die die Coverarts als Vierecke belässt … eine Art Gemäldewand, die Größe der Bilder wieder in
+Abhängigkeit von den Parametern, wie sie auch im Klangschaum benutzt werden". Name „Bilderschau" (verworfen: Bildertraum,
+Bildersaum); im Panel des Klangschaums ein Dropdown Klangschaum | Bilderschau (`schaumArt`, localStorage `mysuno-schaum-art`),
+die Lasche trägt den gewählten Namen; der Groupieschaum bleibt allein.
+- **Geometrie** `web/klangschaum/bilderschau.js` (ohne DOM), gerechnet in `bilderschau-worker.js`: Cover im Originalformat
+  (`artworkBild` = Titelbild ohne Rand, sonst Cover; Seitenverhältnis einmal gemessen, `mysuno-bildformate`), Fläche ∝ Maß,
+  Skalentransformation keine/√/∛/log (Vorgabe √). foamtree legt nur die oberste Ebene → Areale je Gruppe (Startpunkte
+  `schaumSaat`, Klangraum); EINE Salonhängung über die ganze Wand, größte zuerst, zur Wandmitte (Caspar_D: „die
+  Bildschirmmitte ist gemeint … nur wenn es nicht anders geht, dann abweichen"), jeder Bildschwerpunkt in seinem Areal
+  (Raster + exakte Prüfung), Kontaktregel (beste von 30 Stellen nach Anliegen) und Verdichten zur Mitte („innen darf kein
+  negativ space erscheinen"). Gemeinsamer Maßstab per Bisektion; Areale bis 6 Runden nachgeteilt (Bedarf, begrenzende
+  Gruppe +25 %). Vorher verworfen: je Gruppe ein Rechteck-Abschnitt mit eigener Salonhängung („4 Ellipsen sehen komisch aus").
+- **Panel:** Maß/Farben/Gliederung/Legende/Zoom wie Klangschaum (gezoomt: Genres als Areale); Transformation, Hängung
+  (Salon | Dicht), Rahmen in Klangraum-Farbe (an; gedämpft 38 %, hell nur unter der Maus und am laufenden Titel),
+  Überschriften und Bildunterschriften (beide aus: „die stören … so kann es rein, genauso auch der Default").
+  `mysuno-bilderschau`. Status „Die Galerie wird aufgehängt …" (Caspar_D schrieb „Gallerie"; Duden: Galerie – ihm gesagt).
+- **Vollbild** auch für Klangschaum/Bilderschau/Groupieschaum (`#schaumvoll`, `#schaumläuft`), Panel weg; Bilderschau
+  streckt die alte Wand bis die neue hängt, Klangschaum skaliert sein SVG und wird nach dem Neulegen ersetzt.
+- **Gemessen** (Node, 1400×860, 327 Titel): √ Salon 51 % belegt, Leerraum innen 7,1 → 4,2 % (Maß: Schließung um die mittlere
+  Bildkante), ~1,5 s; keine Überlappung, kein Schwerpunkt außerhalb. Null Leerraum geht mit festen Formaten nicht.
+- **Nicht geprüft:** Vollbild (braucht echten Klick); Klangschaum im eingefrorenen Sandkasten nicht zeigbar (POST
+  /api/bilder/vorbereiten → 405, auch mit dem alten index.html) – im echten Fenster ansehen.
+- **Wiedervorlage (Caspar_D):** Achsenhängung (waagrechte Mittelachse, Bilder nach oben und unten) als dritte Hängung – nur
+  benannt, nicht bestellt. Plakat/PDF der Bilderschau gibt es noch nicht.
