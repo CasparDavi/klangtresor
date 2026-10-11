@@ -8954,8 +8954,9 @@ die Lasche trägt den gewählten Namen; der Groupieschaum bleibt allein.
   im Seitenformat neu gehängt (Rand 7 % der kurzen Seite), Bilder auf 300 dpi (JPEG 0,9), unsichtbarer Rahmen + Druckfenster
   wie plakat.js. Sandkasten: A2 quer weiß, 327 Bilder, 6,5 s bis zum Druckfenster (Druckfenster im Test unterdrückt, PDF selbst
   nicht erzeugt – Apple-Engine-Prüfung steht aus). Ausbau ab Mittwoch: Vorschau, Schild/Titel, Triptychon, Bild-Formate.
-- **Wunsch für Mittwoch (Caspar_D, 11.10.):** Plakat der Bilderschau mit Werkverzeichnis, Nummerierung, Zeitleiste, Titel
-  „<Name im Genitiv> Bildertraum" (z. B. „Caspar_Ds Bildertraum"); KEINE Bildunterschriften – die Nummer klein in einer Ecke
-  jedes Covers in Kontrastfarbe (schwarz/weiß nach Helligkeit der Ecke). Offen: (1) A Funktionen aus plakat.js exportieren vs.
-  B Bilderschau als dritte Art ins Plakat-Studio (Empfehlung B, ein Weg für alle Plakate, ~1 Tag); (2) Ecke der Nummer
-  (Empfehlung: fest unten rechts).
+- **Auftrag für Mittwoch (Caspar_D, 11.10., entschieden):** Die Bilderschau wird Teil des Plakat-Studios (plakat.js) als dritte
+  Art neben Titel- und Personenschaum (Weg B) – Vorschau, Formate, Rand, Werkverzeichnis, Nummerierung, Zeitleiste, Edition von
+  dort; neu nur die Bildebene (Cover-Rechtecke). Titel „<Name im Genitiv> Bilderschau" (z. B. „Caspar_Ds Bilderschau"; erst
+  „Bildertraum" gesagt, dann: „nein, auf dem Plakat auch Bilderschau"). KEINE Bildunterschriften; die Nummer klein auf jedem
+  Cover in Kontrastfarbe (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist (je Cover die vier Ecken messen, die mit dem
+  höchsten Kontrast nehmen). Der eigene PDF-Weg in index.html (bilderPlakat) fällt dann weg.
