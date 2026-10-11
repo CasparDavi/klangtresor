@@ -66,7 +66,11 @@ function schildPlatz(ps, w, h, mx){
 /* areale: [{ name, poly }] in Bildschirmkoordinaten (y nach unten). o wie bei haengen, dazu
    o.kopfBreite(name) -> Breite des Gruppenschilds in Punkten. */
 export function haengenInArealen(gruppen, W, H, areale, o = {}){
-  const schild = o.schild ?? 15, schildMin = o.schildMin ?? 44, kopf = o.kopf ?? 22, rand = o.rand ?? 8, salon = !!o.salon;
+  /* Haengung: salon (gross zur Wandmitte), dicht (von oben nach unten) oder achse (Achsenhaengung, Caspar_D 11.10.2026:
+     „wo es zentral eine waagerechte Flucht gibt und sich dann nach oben und unten die Bilder ausbreiten" – die grossen
+     mit ihrer Mitte auf der waagrechten Achse durch die Wandmitte, von dort nach oben und unten) */
+  const schild = o.schild ?? 15, schildMin = o.schildMin ?? 44, kopf = o.kopf ?? 22, rand = o.rand ?? 8;
+  const art = o.haengung || (o.salon ? 'salon' : 'dicht');
   const kontakt = o.kontakt ?? 0.15, KONTAKT_N = 30;
   const rahmenBei = (A) => o.rahmen ? Math.max(1.5, Math.min(6, 0.03 * Math.sqrt(A))) : 0;
   const areal = new Map(areale.map(a => [a.name, { poly: a.poly, mitte: mitteVon(a.poly),
@@ -139,19 +143,26 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
         if (x < rand || y < rand || x + w > W - rand || y + h > H - rand) return;
         const cx = x + w / 2, cy = y + r + bh / 2;                                   /* Schwerpunkt des Bildes, ohne Schild */
         if (!imAreal(ar, cx, cy)) return;
-        /* Abstand zur Wandmitte, auf das Wandformat bezogen: waechst als Rechteck mit runden Ecken, die Ecken bleiben nicht leer */
+        /* Abstand zur Wandmitte, auf das Wandformat bezogen und als Rechteck gemessen (Caspar_D, 11.10.2026: „noch mehr auf
+           Rechtecklayout optimieren, wirklich die Ecken ausfüllen"): die Haengung waechst im Format der Wand, eine Spur
+           Kreisabstand entscheidet nur zwischen gleich weiten Stellen. Gemessen (1400 x 860, Wurzel): mit 0,35 Kreisanteil
+           waren die Ecken (je 15 % x 15 % der Wand) zu 25 % belegt, rein rechteckig zu 36 %, innen gleich dicht. */
         const ex = Math.abs(cx - W / 2) / W, ey = Math.abs(cy - H / 2) / H;
         if (k >= kx.length){ const n = k * 2; kx = wachsen(kx, n); ky = wachsen(ky, n); kk = wachsen(kk, n); }
         kx[k] = x; ky[k] = y;
-        kk[k++] = salon ? Math.max(ex, ey) + 0.35 * Math.hypot(ex, ey) : (cy - h / 2) * 4 + (cx - w / 2) * 0.05 + Math.hypot(cx - mx, cy - my) * 0.2;
+        kk[k++] = art === 'salon' ? Math.max(ex, ey) + 0.002 * Math.hypot(ex, ey)
+          : art === 'achse' ? ey + 0.18 * ex                         /* erst entlang der Achse, dann nach oben und unten */
+          : (cy - h / 2) * 4 + (cx - w / 2) * 0.05 + Math.hypot(cx - mx, cy - my) * 0.2;
       };
-      dazu(W / 2 - w / 2, H / 2 - h / 2); dazu(ar.nah[0] - w / 2, ar.nah[1] - h / 2); dazu(mx - w / 2, my - h / 2);
+      dazu(W / 2 - w / 2, H / 2 - r - bh / 2); dazu(ar.nah[0] - w / 2, ar.nah[1] - h / 2); dazu(mx - w / 2, my - h / 2);
+      if (art === 'achse') dazu(ar.nah[0] - w / 2, H / 2 - r - bh / 2);
       for (const p of gelegt){
         if (p.x > bx[2] + luft || p.x + p.w < bx[0] - w - luft || p.y > bx[3] + luft || p.y + p.h < bx[1] - h - luft) continue;   /* zu weit vom Areal */
         const rechts = p.x + p.w + luft, links = p.x - luft - w, unten = p.y + p.h + luft, oben = p.y - luft - h;
         const y1 = p.y, y2 = p.y + p.h - h, y3 = p.y + (p.h - h) / 2, x1 = p.x, x2 = p.x + p.w - w, x3 = p.x + (p.w - w) / 2;
         dazu(rechts, y1); dazu(rechts, y2); dazu(rechts, y3); dazu(links, y1); dazu(links, y2); dazu(links, y3);
         dazu(x1, unten); dazu(x2, unten); dazu(x3, unten); dazu(x1, oben); dazu(x2, oben); dazu(x3, oben);
+        if (art === 'achse'){ const ya = H / 2 - r - bh / 2; dazu(rechts, ya); dazu(links, ya); }   /* Bildmitte genau auf der Achse */
       }
       /* Heap ueber die Indizes, kleinste Kosten oben */
       const hp = heapIdx.length >= k ? heapIdx : (heapIdx = new Uint32Array(k * 2));
@@ -214,8 +225,30 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
       }
       if (!bewegt) break;
     }
+    aufziehen(lage);
     for (const b of lage){ b.x = b.block.x + b.rahmen; b.y = b.block.y + b.rahmen; delete b.block; }
     return lage;
+  };
+  /* AUFZIEHEN: das Verdichten zieht alles zur Mitte, die Form wird rund und die Wand am Rand frei. Danach wird die ganze
+     Haengung um die Wandmitte gleichmaessig vergroessert, bis sie die Wand beruehrt - Bilder, Rahmen und Abstaende mit
+     demselben Faktor, die Flaechen bleiben im selben Verhaeltnis. Jeder Schwerpunkt muss in seinem Areal bleiben; wo
+     das nicht mehr geht, bleibt der groesste Faktor, bei dem es noch geht. */
+  const aufziehen = (lage) => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const b of lage){ const q = b.block; x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x + q.w); y1 = Math.max(y1, q.y + q.h); }
+    for (const sc of schilder){ x0 = Math.min(x0, sc.x); y0 = Math.min(y0, sc.y); x1 = Math.max(x1, sc.x + sc.w); y1 = Math.max(y1, sc.y + sc.h); }
+    const cx = W / 2, cy = H / 2;
+    const kMax = Math.min((cx - rand) / Math.max(1e-6, cx - x0), (W - rand - cx) / Math.max(1e-6, x1 - cx),
+                          (cy - rand) / Math.max(1e-6, cy - y0), (H - rand - cy) / Math.max(1e-6, y1 - cy));
+    if (!(kMax > 1.001)) return;
+    const geht = (k) => lage.every(b => { const q = b.block, r = b.rahmen * k;
+      return drin(areal.get(b.gruppe).poly, cx + (q.x - cx) * k + q.w * k / 2, cy + (q.y - cy) * k + r + b.h * k / 2); });
+    let lo = 1, hi = kMax;
+    if (geht(hi)) lo = hi; else for (let t = 0; t < 14; t++){ const m = (lo + hi) / 2; if (geht(m)) lo = m; else hi = m; }
+    if (lo <= 1.001) return;
+    for (const b of lage){ const q = b.block; q.x = cx + (q.x - cx) * lo; q.y = cy + (q.y - cy) * lo; q.w *= lo; q.h *= lo;
+      b.w *= lo; b.h *= lo; b.rahmen *= lo; if (b.schild) b.schild *= lo; }
+    lage.faktor = lo;
   };
   let unten = o.vorher ? o.vorher / 1.6 : 0.01 * W * H / summe, oben = o.vorher ? o.vorher * 1.6 : 0.9 * W * H / summe, best = null, bestS = unten;
   for (let k = 0; k < 16 && oben / unten > 1.02; k++){
@@ -224,8 +257,8 @@ export function haengenInArealen(gruppen, W, H, areale, o = {}){
   }
   if (!best && o.vorher) return haengenInArealen(gruppen, W, H, areale, { ...o, vorher: null });
   if (!best) return null;
-  if (o.verdichten !== false) verdichten(best); else for (const b of best) delete b.block;
-  return { W, H, massstab: bestS, grenze: grenzeBei, bilder: best, schilder, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
+  if (o.verdichten !== false) verdichten(best); else { aufziehen(best); for (const b of best){ b.x = b.block.x + b.rahmen; b.y = b.block.y + b.rahmen; delete b.block; } }
+  return { W, H, massstab: bestS * (best.faktor || 1) ** 2, grenze: grenzeBei, bilder: best, schilder, areale, belegt: best.reduce((s, b) => s + b.w * b.h, 0) / (W * H) };
 }
 
 /* Areale und Haengung zusammen: legeAreale(gewichte: Map Name -> Gewicht) -> [{ name, poly }]. Erst nach der Summe der

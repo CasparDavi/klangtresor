@@ -4151,10 +4151,12 @@ h3 .infoknopf .ico{width:14px;height:14px}
     <div id="bilderschauzeile" hidden>
       <label class="fussnote">Skalentransformation<select id="bildertrafo" onchange="bilderschauWahl('trafo', this.value)"></select></label>
       <label class="fussnote">Hängung<select id="bilderhaengung" onchange="bilderschauWahl('haengung', this.value)">
-        <option value="salon">Salon – große Bilder zur Mitte</option><option value="dicht">Dicht – von oben nach unten</option></select></label>
+        <option value="salon">Salon – große Bilder zur Mitte</option><option value="achse">Achse – waagrecht durch die Mitte</option><option value="dicht">Dicht – von oben nach unten</option></select></label>
       <label class="fussnote schalter"><input type="checkbox" id="bilderrahmen" onchange="bilderschauWahl('rahmen', this.checked)">Rahmen in der Klangraum-Farbe</label>
       <label class="fussnote schalter"><input type="checkbox" id="bilderkopf" onchange="bilderschauWahl('kopf', this.checked)">Überschriften der Gruppen</label>
       <label class="fussnote schalter"><input type="checkbox" id="bilderunter" onchange="bilderschauWahl('unter', this.checked)">Bildunterschriften</label>
+      <label class="fussnote schalter"><input type="color" id="bildergrund" value="#121417" onchange="bilderschauWahl('grund', this.value)">Hintergrund fürs Plakat</label>
+      <button class="pille" id="bilderplakatknopf" type="button" onclick="bilderPlakat()" title="Die Bilderschau als Bild in Druckauflösung sichern (7000 Punkte an der langen Seite)">Als Plakat (PNG)…</button>
     </div>
     <label class="fussnote" id="schaumfarbezeile">Farbe über den Bildern: <span id="schaumfarbezahl"></span>
       <input type="range" id="schaumfarbe" min="0" max="100" step="1" oninput="schaumFarbeSetzen(this.value)"></label>
@@ -8561,7 +8563,7 @@ function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
    Ueberschriften gibt es, aber aus („mach mal gar keine Beschriftungen rein, die stören … so kann es rein, genauso
    auch der Default“). Klick spielt den Titel, der laufende hat einen hellen Rahmen. */
 let schaumArt = (() => { try { return localStorage.getItem('mysuno-schaum-art') === 'bilder' ? 'bilder' : 'klang'; } catch (e) { return 'klang'; } })();
-const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false };
+const BILDER_VORGABE = { trafo: 'wurzel', haengung: 'salon', rahmen: true, kopf: false, unter: false, grund: '#121417' };
 let bilderWahl = (() => { try { return { ...BILDER_VORGABE, ...JSON.parse(localStorage.getItem('mysuno-bilderschau') || '{}') }; } catch (e) { return { ...BILDER_VORGABE }; } })();
 function schaumArtWaehlen(a){
   schaumArt = a === 'bilder' ? 'bilder' : 'klang';
@@ -8589,14 +8591,15 @@ async function bilderFormateHolen(urls, melde){
 }
 async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm }){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
-  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.65'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
+  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.66'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
   const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
   { const sel = $('bildertrafo'); if (!sel.options.length) sel.innerHTML = T.map(x => `<option value="${x.id}">${x.name}</option>`).join(''); sel.value = t.id; }
   $('bilderhaengung').value = bilderWahl.haengung; $('bilderrahmen').checked = !!bilderWahl.rahmen;
-  $('bilderkopf').checked = !!bilderWahl.kopf; $('bilderunter').checked = !!bilderWahl.unter;
+  $('bilderkopf').checked = !!bilderWahl.kopf; $('bilderunter').checked = !!bilderWahl.unter; $('bildergrund').value = bilderWahl.grund;
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
   fuss.textContent = `Bilderschau: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
-    + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, die großen zur Mitte der Wand. `
+    + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, `
+    + ({ salon: 'die großen zur Mitte der Wand. ', achse: 'die großen auf der waagrechten Achse durch die Mitte, von dort nach oben und unten. ', dicht: 'von oben nach unten. ' }[bilderWahl.haengung] || '')
     + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
     + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
     + `Die Areale starten an den Sternen im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). Klick auf ein Bild spielt den Titel.`;
@@ -8634,12 +8637,12 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   stand.textContent = 'Die Galerie wird aufgehängt …';                     /* Caspar_Ds Wortlaut, 11.10.2026 */
   const t0 = performance.now();
   const res = await new Promise(ok => {
-    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.65', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
+    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.66', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
     meine.worker = w;
     w.onmessage = (ev) => { w.terminate(); ok(ev.data); };
     w.onerror = (ev) => { w.terminate(); ok({ fehler: ev.message || 'Worker' }); };
     w.postMessage({ gruppen, W, H, seeds: Object.keys(seeds).length === gruppen.length ? seeds : null,
-      opt: { salon: bilderWahl.haengung === 'salon', rahmen: !!bilderWahl.rahmen, kopf: bilderWahl.kopf ? 22 : 0, schild: bilderWahl.unter ? 15 : 0 }, kopfBreite });
+      opt: { haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, kopf: bilderWahl.kopf ? 22 : 0, schild: bilderWahl.unter ? 15 : 0 }, kopfBreite });
   });
   if (bilderArbeit === meine) bilderArbeit = null;
   if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = 'Die Bilder passen nicht auf die Wand.'; return; }
@@ -8647,7 +8650,46 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   bilderFertig.set(schluessel, res.res);
   if (register === 'karte' && raumJetzt === 'schaum' && schaumArt === 'bilder') schaumZeichnen();
 }
+/* DAS EINFACHSTE PLAKAT (Caspar_D, 11.10.2026: „bau mal den einfachsten Plakatexport hierfür, erstmal wirklich nur einen
+   mit Hintergrund-Farbwahl … ausbauen tun wir es ab Mittwoch"). Die gezeigte Haengung, auf 7000 Punkte an der langen Seite
+   gerechnet, aus den Originalbildern gemalt, als PNG gesichert. Rahmen wie am Schirm (Gruppenfarbe zu 38 % in den Grund
+   gemischt), Schilder nur, wenn eingeschaltet. */
+let bilderGezeigt = null;
+const bilderMisch = (a, b, t) => { const h = (c) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  if (!/^#[0-9a-f]{6}$/i.test(a) || !/^#[0-9a-f]{6}$/i.test(b)) return a;
+  const x = h(a), y = h(b); return '#' + x.map((v, i) => Math.round(v * t + y[i] * (1 - t)).toString(16).padStart(2, '0')).join(''); };
+async function bilderPlakatMalen(melde = () => {}){
+  const g = bilderGezeigt; if (!g) return null;
+  const { r, farbe, zeilen } = g, k = 7000 / Math.max(r.W, r.H), grund = bilderWahl.grund || '#121417', titel = new Map(zeilen.map(z => [z.id, z.titel || '']));
+  const c = document.createElement('canvas'); c.width = Math.round(r.W * k); c.height = Math.round(r.H * k);
+  const x = c.getContext('2d'); x.fillStyle = grund; x.fillRect(0, 0, c.width, c.height);
+  const hell = (() => { const v = [1, 3, 5].map(i => parseInt(grund.slice(i, i + 2), 16) / 255); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2] > 0.4; })();
+  let n = 0;
+  for (const b of r.bilder){
+    const rr = (b.rahmen || 0) * k, f = farbe(b.gruppe);
+    if (rr > 0){ x.fillStyle = bilderMisch(f, grund, 0.38); x.fillRect((b.x) * k - rr, b.y * k - rr, b.w * k + 2 * rr, b.h * k + 2 * rr); }
+    try { const im = new Image(); im.src = artworkBild(b.id); await im.decode(); x.drawImage(im, b.x * k, b.y * k, b.w * k, b.h * k); }
+    catch (e) { x.fillStyle = f; x.fillRect(b.x * k, b.y * k, b.w * k, b.h * k); }
+    if (b.schild){ x.fillStyle = hell ? '#3a3d42' : '#a9acb3'; x.font = `${10.5 * k}px ${getComputedStyle(document.body).fontFamily}`; x.textBaseline = 'top';
+      x.save(); x.beginPath(); x.rect(b.x * k, 0, b.w * k, c.height); x.clip(); x.fillText(titel.get(b.id) || '', b.x * k, (b.y + b.h + (b.rahmen || 0) + 2) * k); x.restore(); }
+    melde(++n, r.bilder.length);
+  }
+  for (const a of r.schilder || []){ x.fillStyle = farbe(a.name); x.font = `${12.5 * k}px ${getComputedStyle(document.body).fontFamily}`; x.textBaseline = 'top'; x.fillText(a.name, a.x * k, a.y * k); }
+  return await new Promise(ok => c.toBlob(ok, 'image/png'));
+}
+async function bilderPlakat(){
+  const knopf = $('bilderplakatknopf'), stand = $('schaumstand'); if (!bilderGezeigt || knopf.disabled) return;
+  knopf.disabled = true;
+  try {
+    const blob = await bilderPlakatMalen((n, von) => { stand.textContent = `Das Plakat wird gemalt … ${n} von ${von}`; });
+    stand.textContent = '';
+    if (!blob){ stand.textContent = 'Das Plakat ließ sich nicht malen.'; return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Bilderschau.png';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  } finally { knopf.disabled = false; }
+}
 function bilderEinsetzen(r, farbe, m, zeilen){
+  bilderGezeigt = { r, farbe, zeilen };
   const bild = $('schaumbild'), dpr = window.devicePixelRatio || 1, roh = new Map(zeilen.map(z => [z.id, z]));
   schaumBildArt = 'bilder'; schaumGezeigt = null; bild.style.opacity = '';
   let html = `<div class="bilderwand" style="width:${r.W}px;height:${r.H}px">`;

@@ -8936,3 +8936,15 @@ die Lasche trägt den gewählten Namen; der Groupieschaum bleibt allein.
   /api/bilder/vorbereiten → 405, auch mit dem alten index.html) – im echten Fenster ansehen.
 - **Wiedervorlage (Caspar_D):** Achsenhängung (waagrechte Mittelachse, Bilder nach oben und unten) als dritte Hängung – nur
   benannt, nicht bestellt. Plakat/PDF der Bilderschau gibt es noch nicht.
+
+## 95. 11.10.2026: Bilderschau 1.0.66 – Achsenhängung, Rechteck, einfachstes Plakat
+- **Achsenhängung** („Achse – waagrecht durch die Mitte"): Kosten ey + 0,18·ex, zusätzliche Kandidaten mit Bildmitte genau
+  auf der Achse; Fußnote je Hängung.
+- **Rechteck** (Caspar_D: „noch mehr auf Rechtecklayout optimieren, wirklich die Ecken ausfüllen"): Salon misst den
+  Abstand zur Mitte rein rechteckig (vorher + 0,35 Kreisanteil); nach dem Verdichten „Aufziehen" (gleichmäßig vergrößern
+  bis zur Wand, Schwerpunkte im Areal). Ecken (je 15 %×15 %) bei √ Salon 25 → 36 % belegt, innen leer ~4,6–4,9 %.
+  Gemessen: Kontaktstärke 0,4 war einmal besser, einmal schlechter als 0,15 – Ergebnis schwankt, Vorgabe bleibt 0,15.
+  Grenze: die Areale sind ausgewogen (Nachteilen pendelt zwischen den Gruppen), was fehlt, ist Packungsgüte.
+- **Plakat (einfachst):** Farbwahl „Hintergrund fürs Plakat" + „Als Plakat (PNG)…": gezeigte Hängung, 7000 Punkte lange
+  Seite, Originalbilder, Rahmen 38 % in den Grund gemischt. Sandkasten: 7000×6097, 50 MB, 16 s.
+  Caspar_D: „ausbauen tun wir es ab Mittwoch" (14.10.) – dann z. B. PDF, Formate, Rand, Schild wie beim Klangschaum-Plakat.
