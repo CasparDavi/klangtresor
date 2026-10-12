@@ -118,16 +118,22 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     const tan30 = Math.tan(Math.PI / 6);
     const eff = smp.map((q, j) => { const a = smp[Math.max(0, j - 1)], b = smp[Math.min(smp.length - 1, j + 1)], sl = Math.abs((mid[Math.min(smp.length - 1, j + 1)] - mid[Math.max(0, j - 1)]) / ((b.x - a.x) || 1));
       let t = (q.lo - q.hi) / Math.sqrt(1 + sl * sl); if (sl > tan30) t /= 1 + 3 * (sl - tan30) / tan30; return t; });
-    const platz = (text) => { let best = null;
+    /* MITTIG (Caspar_D, 12.10.2026: „sind die in der Mitte der waagerechtesten Stelle oder linksbündig - ich hätte es lieber mittig"):
+       ist ein Band ueber eine lange Strecke gleich flach, sind viele Stellen gleich gut (Steigung bis 0,01 auseinander); vorher gewann
+       davon die erste von links. Jetzt: unter den flachsten die mit der groessten Schrift, davon die mittlere. */
+    const platz = (text) => { const alle = [];
       eff.forEach((e, j) => { if (e < 10) return;
         for (let fs = Math.min(15, Math.floor(e * 0.6)); fs >= 9; fs--){ const w = breiteVon(text, fs);
           let a0 = j, a1 = j; while (a0 > 0 && arc[j] - arc[a0] < w / 2) a0--; while (a1 < arc.length - 1 && arc[a1] - arc[j] < w / 2) a1++;
           if (arc[a1] - arc[a0] < w * 0.98) continue; let mn = Infinity; for (let q = a0; q <= a1; q++) mn = Math.min(mn, eff[q]); if (mn < fs * 1.15) continue;
           let st = 0; for (let q = a0; q < a1; q++) st += Math.abs(Math.atan2(mid[q + 1] - mid[q], (smp[q + 1].x - smp[q].x) || 1e-9)) * (smp[q + 1].x - smp[q].x);
           st /= Math.max(1e-9, smp[a1].x - smp[a0].x);
-          if (!best || st < best.st - 0.01 || (Math.abs(st - best.st) <= 0.01 && fs > best.fs)) best = { fs, a0, a1, st };
+          alle.push({ fs, a0, a1, st, j });
           break; } });
-      return best; };
+      if (!alle.length) return null;
+      const flachst = Math.min(...alle.map(c => c.st)), gleich = alle.filter(c => c.st <= flachst + 0.01);
+      const groesste = Math.max(...gleich.map(c => c.fs)), wahl = gleich.filter(c => c.fs === groesste).sort((x, y) => x.j - y.j);
+      return wahl[wahl.length >> 1]; };
     /* passt der Name nicht, so wenig gekuerzt wie noetig (mindestens vier Zeichen vor dem …) */
     let text = it.titel, best = platz(text);
     for (let k = text.length - 1; !best && k >= 4; k--){ const kurz = it.titel.slice(0, k).trimEnd() + '…'; best = platz(kurz); if (best) text = kurz; }

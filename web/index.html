@@ -15350,7 +15350,7 @@ function profilZahlenFuellen(){
     const feld = document.createElement('div'); feld.className = 'hitstrom'; w.appendChild(feld); g.appendChild(w);
     (async () => {
       try {
-        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.0.68'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
+        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.0.69'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
         const daten = d && M.hitstromDaten(eigene, d.verlauf || {});
         if (!daten){ w.remove(); return; }
         /* Farben: die beiden Akzente als Hex (die Variablen tragen beliebige CSS-Farben) */
