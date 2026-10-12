@@ -118,9 +118,18 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     const tan30 = Math.tan(Math.PI / 6);
     const eff = smp.map((q, j) => { const a = smp[Math.max(0, j - 1)], b = smp[Math.min(smp.length - 1, j + 1)], sl = Math.abs((mid[Math.min(smp.length - 1, j + 1)] - mid[Math.max(0, j - 1)]) / ((b.x - a.x) || 1));
       let t = (q.lo - q.hi) / Math.sqrt(1 + sl * sl); if (sl > tan30) t /= 1 + 3 * (sl - tan30) / tan30; return t; });
-    /* MITTIG (Caspar_D, 12.10.2026: „sind die in der Mitte der waagerechtesten Stelle oder linksbündig - ich hätte es lieber mittig"):
-       ist ein Band ueber eine lange Strecke gleich flach, sind viele Stellen gleich gut (Steigung bis 0,01 auseinander); vorher gewann
-       davon die erste von links. Jetzt: unter den flachsten die mit der groessten Schrift, davon die mittlere. */
+    /* WO DER NAME STEHT - eine Bewertung statt einer Rangfolge (Caspar_D, 12.10.2026: „Noch lachst Du und Halt die Klappe, Willem
+       stehen immer noch zu weit links - wie finden wir einen Platzierungsalgorithmus, der das gut hinbekommt"). Vorher zaehlte nur
+       „moeglichst waagrecht, dann moeglichst gross"; der Name landete am flachen Anfang eines Bandes, auch wenn das Band viel weiter
+       reicht. Nach Imhof (1975, Namen an Linien): auf den ruhigen Teil, aber in die Mitte der Ausdehnung des Objekts. Jede Stelle,
+       an der der Name passt, bekommt einen Wert aus vier Teilen (je 0 bis 1):
+         Groesse  Schrift / groesste, die irgendwo passt                                    Gewicht 1
+         Ruhe     1 - mittlere Neigung auf der Namenslaenge / 30 Grad                        Gewicht 1,5
+         Mitte    1 - Abstand zum dickengewichteten Schwerpunkt des Bandes / halbe Breite    Gewicht 1,5
+         Luft     Mindestdicke / Schrift - 1,15, hoechstens 1                               Gewicht 0,5
+       Die Gewichte hat Caspar_D gewaehlt („ganz klar der mittlere") aus drei Fassungen: Mitte stark (3 / Ruhe 1), ausgewogen (diese),
+       Ruhe stark (3 / Mitte 0,3, etwa die alte Regel). */
+    const schwer = (() => { let a = 0, b = 0; smp.forEach((q, k) => { const t = Math.max(0, q.lo - q.hi); a += q.x * t; b += t; }); return b ? a / b : (X0 + X1) / 2; })();
     const platz = (text) => { const alle = [];
       eff.forEach((e, j) => { if (e < 10) return;
         for (let fs = Math.min(15, Math.floor(e * 0.6)); fs >= 9; fs--){ const w = breiteVon(text, fs);
@@ -128,12 +137,15 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
           if (arc[a1] - arc[a0] < w * 0.98) continue; let mn = Infinity; for (let q = a0; q <= a1; q++) mn = Math.min(mn, eff[q]); if (mn < fs * 1.15) continue;
           let st = 0; for (let q = a0; q < a1; q++) st += Math.abs(Math.atan2(mid[q + 1] - mid[q], (smp[q + 1].x - smp[q].x) || 1e-9)) * (smp[q + 1].x - smp[q].x);
           st /= Math.max(1e-9, smp[a1].x - smp[a0].x);
-          alle.push({ fs, a0, a1, st, j });
+          alle.push({ fs, a0, a1, st, j, mn });
           break; } });
       if (!alle.length) return null;
-      const flachst = Math.min(...alle.map(c => c.st)), gleich = alle.filter(c => c.st <= flachst + 0.01);
-      const groesste = Math.max(...gleich.map(c => c.fs)), wahl = gleich.filter(c => c.fs === groesste).sort((x, y) => x.j - y.j);
-      return wahl[wahl.length >> 1]; };
+      const fsMax = Math.max(...alle.map(c => c.fs)), G = { groesse: 1, ruhe: 1.5, mitte: 1.5, luft: 0.5 };
+      for (const c of alle){
+        const groesse = c.fs / fsMax, ruhe = 1 - Math.min(1, c.st / (Math.PI / 6));
+        const mitte = 1 - Math.min(1, 2 * Math.abs(smp[c.j].x - schwer) / (X1 - X0)), luft = Math.min(1, Math.max(0, c.mn / c.fs - 1.15));
+        c.wert = G.groesse * groesse + G.ruhe * ruhe + G.mitte * mitte + G.luft * luft; }
+      return alle.reduce((b, c) => c.wert > b.wert ? c : b); };
     /* passt der Name nicht, so wenig gekuerzt wie noetig (mindestens vier Zeichen vor dem …) */
     let text = it.titel, best = platz(text);
     for (let k = text.length - 1; !best && k >= 4; k--){ const kurz = it.titel.slice(0, k).trimEnd() + '…'; best = platz(kurz); if (best) text = kurz; }
