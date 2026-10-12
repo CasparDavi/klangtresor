@@ -15343,20 +15343,18 @@ function profilZahlenFuellen(){
      im gespeicherten Katalog. Ein Song ohne Verlauf faellt heraus, statt
      mit Null oben zu stehen. */
   /* DER HITSTROM (Caspar_D, 12.10.2026: „genau das wird die Überschrift für das Diagramm: Hitstrom“ - „über den Hitparaden ist besser“ - „Hitstrom aller Wochen als Überschrift? dann wäre es klar … wir können auch ein Dutzend nehmen“) - der Streamgraph der Hitparade (web/hitstrom.js, dort die Regeln). Nachgeladen: Modul und
-     Zaehlerverlauf kommen, wenn das Profil schon steht. Farben aus Akzent 1 und 2 des laufenden Titels (--titel-a/-b). */
+     Zaehlerverlauf kommen, wenn das Profil schon steht. Farben aus Akzent 1 und 2 des laufenden Titels (--titel-a/-b), live. */
   {
     const w = document.createElement('div'); w.className = 'dia breit';
     w.appendChild(diaTitel('Hitstrom aller Wochen', 'die zwölf bewegtesten seit 17.08., Anteil an ihrer Resonanz je Woche', 'bewegung'));
     const feld = document.createElement('div'); feld.className = 'hitstrom'; w.appendChild(feld); g.appendChild(w);
     (async () => {
       try {
-        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.0.70'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
+        const [M, d] = await Promise.all([import('/hitstrom.js?v=1.0.71'), fetch('/api/zaehlerverlauf', { cache: 'no-store' }).then(r => r.ok ? r.json() : null)]);
         const daten = d && M.hitstromDaten(eigene, d.verlauf || {});
         if (!daten){ w.remove(); return; }
-        /* Farben: die beiden Akzente als Hex (die Variablen tragen beliebige CSS-Farben) */
-        const hex = (c, ersatz) => { const k = document.createElement('canvas').getContext('2d'); k.fillStyle = ersatz; k.fillStyle = (c || '').trim() || ersatz; return /^#[0-9a-f]{6}$/i.test(k.fillStyle) ? k.fillStyle : ersatz; };
-        const st = getComputedStyle(document.documentElement), schrift = getComputedStyle(document.body).fontFamily;
-        const akzente = [hex(st.getPropertyValue('--titel-a'), '#f97b14'), hex(st.getPropertyValue('--titel-b'), '#e31c79')];
+        /* Farben: das Modul schreibt --titel-a/-b selbst ins Bild, so folgt der Strom jedem Titelwechsel (siehe hitstrom.js) */
+        const schrift = getComputedStyle(document.body).fontFamily;
         const leinwand = document.createElement('canvas').getContext('2d');
         const messen = (t, fs) => { leinwand.font = fs + 'px ' + schrift; return leinwand.measureText(t).width; };
         const xh = (() => { leinwand.font = '100px ' + schrift; const v = leinwand.measureText('x').actualBoundingBoxAscent / 100; return v > 0.3 && v < 0.8 ? v : 0.52; })();
@@ -15366,7 +15364,7 @@ function profilZahlenFuellen(){
           const kacheln = [...((g.querySelector('.topreihe') || {}).children || [])].filter(k => k.classList.contains('topk'));
           const links = kacheln.length ? kacheln[0].getBoundingClientRect().left - r0.left : 0;
           const rechts = kacheln.length ? kacheln[kacheln.length - 1].getBoundingClientRect().right - r0.left : breite;
-          feld.innerHTML = M.hitstromSvg(daten, { breite, hoehe: Math.round(Math.min(253, Math.max(173, breite * 0.28))), links, rechts, akzente, messen, schrift, xHoehe: xh }); };
+          feld.innerHTML = M.hitstromSvg(daten, { breite, hoehe: Math.round(Math.min(253, Math.max(173, breite * 0.28))), links, rechts, messen, schrift, xHoehe: xh }); };
         malen();
         feld.onclick = (e) => { const b = e.target.closest && e.target.closest('.hsband'); if (b){ $('detail').classList.remove('auf'); spielenNachId(b.dataset.id); } };
       } catch (e) { console.log('Hitstrom:', e); w.remove(); }

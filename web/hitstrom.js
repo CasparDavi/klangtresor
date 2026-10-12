@@ -31,7 +31,6 @@
 
 const resonanz = (e) => (e.plays || 0) + 2 * (e.likes || 0) + 3 * (e.kommentare || 0);
 const tagVon = (d) => Date.parse(d + 'T00:00:00Z') / 864e5;
-const mischen = (a, b, t) => '#' + [1, 3, 5].map(q => Math.round(parseInt(a.slice(q, q + 2), 16) * (1 - t) + parseInt(b.slice(q, q + 2), 16) * t).toString(16).padStart(2, '0')).join('');
 const kw = (tag) => { const d = new Date(tag * 864e5), dd = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 3)), y0 = new Date(Date.UTC(dd.getUTCFullYear(), 0, 4));
   return 1 + Math.round(((dd - y0) / 864e5 - 3 + ((y0.getUTCDay() + 6) % 7)) / 7); };
 const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -67,8 +66,13 @@ function monotone(xs, ys){
   return out;
 }
 
-/* Das Bild. daten aus hitstromDaten; breite in Punkten; akzente [hex, hex]; messen(text, groesse) -> Breite; schrift: font-family */
-export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, rechts = null, akzente = ['#f97b14', '#e31c79'], messen, schrift = 'system-ui, sans-serif', xHoehe = 0.52 } = {}){
+/* Das Bild. daten aus hitstromDaten; breite in Punkten; akzente: zwei CSS-Farben; messen(text, groesse) -> Breite; schrift: font-family.
+   DIE FARBEN FOLGEN DEM LAUFENDEN TITEL (Caspar_D, 12.10.2026: „ob der Farblistener auch die Farben des aktuellen Titels auf den
+   Streamgraph überträgt" - tat er nicht: die Akzente wurden einmal als Hex gelesen und eingebrannt). Jetzt stehen die Variablen
+   --titel-a/-b selbst im Bild, abgedunkelt und aufgehellt per color-mix; uiFaerben() aendert sie bei jedem Titelwechsel, und der
+   Browser faerbt den Strom mit wie die Balken der anderen Profildiagramme - ohne neu zu zeichnen. Darum als style, nicht als
+   Attribut: Variablen und color-mix gelten nur in CSS-Eigenschaften. */
+export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, rechts = null, akzente = ['var(--titel-a,#f97b14)', 'var(--titel-b,#e31c79)'], messen, schrift = 'system-ui, sans-serif', xHoehe = 0.52 } = {}){
   const items = daten.zehn, m = daten.wochen.length, n = items.length;
   const vals = items.map(it => it.v.map((x, j) => { const t = items.reduce((a, q) => a + q.v[j], 0); return t ? 100 * x / t : 0; }));
   /* von innen nach aussen */
@@ -95,21 +99,21 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
   const yAt = (kk, j, t) => { if (t === 0) return j ? kanten[kk][j - 1][5] : start[kk]; const c = kanten[kk][j], y0 = j ? kanten[kk][j - 1][5] : start[kk], u = 1 - t;
     return u * u * u * y0 + 3 * u * u * t * c[1] + 3 * u * t * t * c[3] + t * t * t * c[5]; };
   /* sechs Farben, nach Rang hell/dunkel, nach Lage im Stapel reihum, nie der Ton des Nachbarn darunter */
-  const toene = [akzente[0], '#cfcac2', akzente[1]], dunkel = toene.map(c => mischen('#000000', c, 0.55)), farbe = [];
+  const toene = [akzente[0], '#cfcac2', akzente[1]], dunkel = toene.map(c => `color-mix(in srgb, ${c} 55%, #000)`), farbe = [];
   { let vorher = -1; const reihum = { h: 0, d: 0 };
     order.forEach((i, kk) => { const hell = i < Math.ceil(n / 2), k = hell ? 'h' : 'd'; let t = reihum[k] % 3; if (t === vorher) t = (t + 1) % 3;
       reihum[k] = t + 1; farbe[kk] = (hell ? toene : dunkel)[t]; vorher = t; }); }
   let defs = '', flaechen = '', toplines = '', namen = '';
   const breiteVon = (text, fs) => (messen ? messen(text, fs) : text.length * fs * 0.56) * 1.08;
   order.forEach((i, kk) => {
-    const it = items[i], dn = kanten[kk], up = kanten[kk + 1], akzent = farbe[kk], topline = mischen(akzent, '#ffffff', 0.25);
+    const it = items[i], dn = kanten[kk], up = kanten[kk + 1], akzent = farbe[kk], topline = `color-mix(in srgb, ${akzent} 75%, #fff)`;
     const obenD = `M${f(px[0])},${f(Y(start[kk + 1]))}` + up.map(c => `C${f(c[0])},${f(Y(c[1]))} ${f(c[2])},${f(Y(c[3]))} ${f(c[4])},${f(Y(c[5]))}`).join('');
     let d = obenD + `L${f(px[m - 1])},${f(Y(dn[m - 2][5]))}`;
     for (let j = m - 2; j >= 0; j--){ const c = dn[j], y0 = j ? dn[j - 1][5] : start[kk]; d += `C${f(c[2])},${f(Y(c[3]))} ${f(c[0])},${f(Y(c[1]))} ${f(px[j])},${f(Y(y0))}`; }
     d += 'Z';
-    defs += `<linearGradient id="hsv${kk}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${akzent}" stop-opacity="0.66"/><stop offset="1" stop-color="${akzent}" stop-opacity="0.22"/></linearGradient>`;
+    defs += `<linearGradient id="hsv${kk}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${akzent};stop-opacity:0.66"/><stop offset="1" style="stop-color:${akzent};stop-opacity:0.22"/></linearGradient>`;
     flaechen += `<path class="hsband" data-id="${esc(it.id)}" d="${d}" fill="url(#hsv${kk})"><title>${esc(it.titel)} · ${it.summe.toLocaleString('de-DE')} Punkte in ${m} Wochen</title></path>`;
-    toplines += `<path d="${obenD}" fill="none" stroke="${topline}" stroke-width="1" pointer-events="none"/>`;
+    toplines += `<path d="${obenD}" fill="none" style="stroke:${topline}" stroke-width="1" pointer-events="none"/>`;
     /* der Name: Raender je Segment neunmal abgetastet, die Mitte dazwischen ungeglaettet */
     const smp = []; for (let j = 0; j < m - 1; j++) for (let q = 0; q < 9; q++){ const t = q / 9; smp.push({ x: px[j] + (px[j + 1] - px[j]) * t, lo: Y(yAt(kk, j, t)), hi: Y(yAt(kk + 1, j, t)) }); }
     smp.push({ x: px[m - 1], lo: Y(yAt(kk, m - 2, 1)), hi: Y(yAt(kk + 1, m - 2, 1)) });
@@ -155,7 +159,7 @@ export function hitstromSvg(daten, { breite = 680, hoehe = 200, links = 0, recht
     const mi = grund[grund.length >> 1][1], enden = (grund[0][1] + grund[grund.length - 1][1]) / 2, senke = mi > enden + 0.05 * fs;
     const bahn = senke ? grund.map(p => [p[0], p[1] - xHoehe * fs]) : grund;
     defs += `<path id="${id}" d="M${bahn.map(p => f(p[0]) + ',' + f(p[1])).join('L')}" fill="none"/>`;
-    namen += `<text fill="${topline}" font-size="${fs}" font-family="${esc(schrift)}" pointer-events="none"><textPath href="#${id}" startOffset="50%" text-anchor="middle">`
+    namen += `<text style="fill:${topline}" font-size="${fs}" font-family="${esc(schrift)}" pointer-events="none"><textPath href="#${id}" startOffset="50%" text-anchor="middle">`
       + `<tspan${senke ? ` dy="${xHoehe}em"` : ''}>${esc(text)}</tspan></textPath></text>`;
   });
   const achse = daten.wochen.map((t, j) => `<text x="${f(px[j])}" y="${hoehe - 6}" font-size="11" text-anchor="${j === 0 ? 'start' : j === m - 1 ? 'end' : 'middle'}" fill="#9aa0a8" font-family="${esc(schrift)}">KW ${kw(t)}</text>`).join('');
