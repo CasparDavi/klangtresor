@@ -8960,3 +8960,16 @@ die Lasche trägt den gewählten Namen; der Groupieschaum bleibt allein.
   „Bildertraum" gesagt, dann: „nein, auf dem Plakat auch Bilderschau"). KEINE Bildunterschriften; die Nummer klein auf jedem
   Cover in Kontrastfarbe (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist (je Cover die vier Ecken messen, die mit dem
   höchsten Kontrast nehmen). Der eigene PDF-Weg in index.html (bilderPlakat) fällt dann weg.
+
+## 96. 12.10.2026: 1.0.68 – Hitstrom, Hitparaden-Ausschnitt, Dropdown-Pfeil
+- **Hitstrom aller Wochen** (Name von Caspar_D) über den Hitparaden im Profil: Streamgraph der zwölf bewegtesten seit 17.08.
+  (`web/hitstrom.js`, alle Regeln im Kopfkommentar; neuer Endpunkt `/api/zaehlerverlauf` in server.js). Prophane-Streamgraph-Form
+  (inside-out, gewichtetes Wiggle + Trend abgezogen, Fritsch-Carlson), Hausregeln der Profildiagramme (schwarzer Grund, Topline),
+  sechs Farben (Akzent 1/2 + gedämpftes Weiß, je hell/dunkel; obere Hälfte hell), Verlauf 0,66→0,22, Namen in Toplinefarbe auf
+  ungeglätteter Mittellinie im waagrechtesten Abschnitt, gekürzt mit „…“; Enden fluchten mit den Coverkanten, Höhe 2/3.
+  Wochenrechnung: ein Wert je Wochengrenze (letzter Stand vor Montag; null bei späterem Erscheinen); laufende Woche fehlt.
+- **Hitparaden-Kacheln:** quadratisch wie immer (Versuch hochkant verworfen), Ausschnitt nach Gesicht (50) und sichtbarer Schrift (6)
+  – `topPlatz`/`topBildHtml`; Ausschnitt-Suche des Klangschaums (Schrift verstecken) bewusst NICHT genommen.
+- **Dropdowns:** eigener Pfeil 12 px vom Rand (`select:not([multiple])`, !important wegen background-Kurzform).
+- Wiedervorlage: Streamgraph-Glättung in Prophane (dort 40 Durchgänge, spannt die Namenslinie gerade) – nur auf Wort ändern;
+  Brushing Band ↔ Cover; 9-pt-Namen grenzwertig.

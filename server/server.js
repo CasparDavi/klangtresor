@@ -2876,6 +2876,15 @@ const server = http.createServer({ requestTimeout: 0 }, (req, res) => {
     return jsonAntwort(res, { katalog: mt(K.KATALOG), gemeinschaft, laeuft: !!(morgen && morgen.laeuft) });
   }
 
+  /* DER ZAEHLERVERLAUF ALLER TITEL auf einmal (fuer den „Hitstrom aller Wochen" im Profil, web/hitstrom.js) - einzeln steht
+     er schon in /api/reaktionen; 327 Einzelabfragen waeren dafuer zu viel. */
+  if (p === '/api/zaehlerverlauf') {
+    const k = katalogHolen();
+    if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
+    const verlauf = {};
+    for (const [id, s] of Object.entries(k.songs || {})) if (!s.fremd && Array.isArray(s.zaehlerVerlauf) && s.zaehlerVerlauf.length) verlauf[id] = s.zaehlerVerlauf;
+    return jsonAntwort(res, { verlauf });
+  }
   if (p === '/api/index') {
     const k = katalogHolen();
     if (!k) { res.writeHead(503); return res.end('Kein Katalog'); }
