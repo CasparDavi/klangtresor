@@ -195,6 +195,42 @@ Dienstes sofort Schluß.
 
 ---
 
+## Neue Fassung einspielen
+
+Der rote Knopf holt Songdaten, nicht den Code. Die Programm-Fassung liegt
+auf [GitHub](https://github.com/CasparDavi/klangtresor). Im Fenster
+„KlangTresor“ (Wer das gebaut hat) fragt **Nach neuer Fassung sehen**
+einmal bei GitHub nach — erst auf den Knopf, nicht beim Seitenaufbau.
+
+Zum Einspielen im **Projektordner** (dort liegen `bin/` und `library/`,
+eine Ebene über `docker/`):
+
+```bash
+./aktualisieren-linux.sh          # Mac: aktualisieren-macos.command
+                                  # Windows: aktualisieren-windows.cmd
+```
+
+Aus einem Unterordner: `npm run aktualisieren` (npm findet `package.json`
+darüber). Nur nachsehen, nichts schreiben:
+
+```bash
+npm run aktualisieren -- --nur-stand
+```
+
+- **Git-Klon:** `git pull --rebase origin/main` (bricht ab bei Schmutz
+  oder anderem Zweig als `main`).
+- **Zip-Installation:** holt `KlangTresor.zip` der jüngsten Release und
+  legt die Programmdaten darüber.
+- **Docker:** danach `compose up --build`. `library/` ist Volume und
+  bleibt. CUDA-Overlay nur, wenn der laufende Container `KLANG_CUDA`
+  schon hat.
+- **Ohne Docker:** bei geändertem `package-lock.json` ein `npm ci`, dann
+  Server über `starten-*` neu starten.
+
+`library/`, `werkzeug/` und `.git/` bleiben unangetastet.
+
+---
+
 ## Wer schon eine Installation hat
 
 Das Programm hieß bis zum 24.08.2026 *MySuno*. Ein `git pull` genügt,
@@ -260,6 +296,7 @@ einrichten-windows.cmd         Einrichten unter Windows (Doppelklick)
 einrichten-macos.command       Einrichten auf dem Mac (Doppelklick)
 einrichten-linux.sh            Einrichten unter Linux
 einrichten-docker-*            dasselbe, ohne Installation - alles im Container
+aktualisieren-*                neue Programm-Fassung von GitHub (Git oder Zip)
 starten-windows.cmd / -macos.command / -linux.sh   nur starten, nicht einrichten
 docker/    Dockerfile, docker-compose.yml, Einstiegsskript des Containers
 bin/       Sammeln, Aufbereiten, Messen, Farben, Wiederherstellen

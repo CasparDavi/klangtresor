@@ -59,6 +59,31 @@ Browser (Chrome, wenn da). Wer sie löscht, nimmt `starten-windows.cmd`,
 `starten-macos.command` oder `starten-linux.sh` aus dem Ordner — die richten
 nichts mehr ein, sie starten nur.
 
+### Neue Fassung einspielen
+
+Der rote Knopf holt neue *Titel* bei Suno. Eine neue *Programm*-Fassung
+kommt von GitHub. Im Fenster „KlangTresor“ (Wer das gebaut hat) gibt es
+**Nach neuer Fassung sehen** — das fragt GitHub einmal, nur auf den Knopf.
+
+Zum Einspielen, im selben Ordner wie die Einrichtung (dort liegen `bin/`
+und `library/`, nicht der Unterordner `docker/`):
+
+| dein System | Datei |
+|---|---|
+| **Windows** | Doppelklick auf `aktualisieren-windows.cmd` |
+| **macOS** | `aktualisieren-macos.command` doppelklicken |
+| **Linux** | `./aktualisieren-linux.sh` |
+
+Git-Klon: es zieht `origin/main`. Zip-Installation: es holt
+`KlangTresor.zip` von der jüngsten Release und legt die Programmdaten
+darüber. **`library/` bleibt** — Titel, Bilder, Ton. Läuft KlangTresor
+in Docker, wird das Image neu gebaut (`compose up --build`); das NVIDIA-
+Overlay bleibt, wenn der Container `KLANG_CUDA` schon nutzt.
+
+Ungesicherte Änderungen und ein anderer Git-Zweig als `main` halten das
+Skript an. Danach die Seite einmal hart neu laden; ohne Docker den Server
+über `starten-*` neu starten.
+
 Unter Windows liegen die PowerShell-Skripte in `bin\` und werden von den
 `.cmd`-Dateien gerufen — **nicht** selbst anklicken: Viele Rechner lehnen
 Skripte ab, und das Fenster schließt sich, bevor man die Meldung lesen
