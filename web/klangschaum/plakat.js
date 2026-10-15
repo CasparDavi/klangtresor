@@ -213,7 +213,7 @@ function bilderAmSchirm(){
   const bg = typeof bilderGezeigt !== 'undefined' ? bilderGezeigt : null, d = bg && bg.r && bg.r.daten;
   if (!d || !d.wahl) return { fehlt: 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.' };
   const w = d.wahl, jetzt = { mass: schaumMass, trafo: bilderWahl.trafo, gliederung: schaumGliederung, zoom: schaumZoom || '', haengung: bilderWahl.haengung,
-    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '' };
+    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', filter: typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : '' };
   if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm noch neu gehängt – das Plakat bitte gleich noch einmal öffnen.' };
   return { bg, d };
 }
@@ -526,13 +526,18 @@ function zeichnen(sofort, warteMs, nurSetzen){
   clearTimeout(warten);
   warten = setTimeout(async () => {
     const lauf = ++legeLauf;
+    /* Lässt der Filter oben keinen Titel übrig, sagt das Studio es mit demselben Satz wie die Ansicht - statt eines leeren Blatts */
+    if (raumJetzt !== 'groupies' && typeof titelAuswahl === 'function'){ const au = titelAuswahl();
+      if (!au.n){ ++bauLauf; aktuell = null; el('ps-blatt').innerHTML = ''; standSetzen(titelLeerSatz(au)); return; } }
     /* Das Verzeichnis braucht Platz unter der Karte - dafuer muss die Zahl der Eintraege vor dem Legen bekannt sein */
     /* was das Haus zeigt (Maß, Gliederung, Zoom): ändert es sich, ist der Plakatschaum ein anderer - auch die Auswahl der stärksten
        (vorher blieb nach einem Maßwechsel im Haus die alte Auswahl samt Unterzeile stehen; Fallensuche 1.0.62) */
     let hausS = '';
     /* im Groupieschaum dazu der Regler „zeigt N von M" (groupieAuswahl): er ändert die Zeilen, ohne dass sich Maß oder Gliederung ändern */
     const zeigtS = raumJetzt === 'groupies' && typeof groupieZeigt !== 'undefined' ? '|zeigt' + groupieZeigt : '';
-    try { hausS = (raumJetzt === 'groupies' ? [groupieMass, groupieGl().id].join('|') : [schaumMass, schaumGliederung, JSON.stringify(schaumZoom ?? null), typeof karteVerf !== 'undefined' ? karteVerf : ''].join('|')) + zeigtS
+    /* Klangschaum und Bilderschau folgen dem Filter oben (index.html titelImFilter, 1.0.80): ein anderer Filter ist ein anderes Haus */
+    try { hausS = (raumJetzt === 'groupies' ? [groupieMass, groupieGl().id].join('|') : [schaumMass, schaumGliederung, JSON.stringify(schaumZoom ?? null), typeof karteVerf !== 'undefined' ? karteVerf : '',
+      typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : ''].join('|')) + zeigtS
       + (bilderschau() ? '|bilder|' + bilderStand() : ''); } catch (e) {}   /* Bilderschau: Transformation, Hängung, Rahmen und die gezeigte Auswahl */
     const gleichesHaus = !!aktuell && aktuell.raum === raumJetzt && aktuell.hausS === hausS;
     /* Gesamtzahl der Zeilen (ohne die Ecke von Randlos) - das Verzeichnis braucht sie vor dem Legen */
@@ -605,6 +610,9 @@ function kopfTitelVorschlag(){
 function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.handle || ''; return n ? genitiv(n) : ''; }
 /* Randlos: „<Datum> / nnn Titel · Laufzeit" - die Laufzeit ist die Summe der Titellaengen (im Haus heisst „Hoerzeit" Plays mal
    Laenge, das Flaechenmass „Hörzeit (Schätzung)"); „/" bricht in der Ecke die Zeile um. */
+const titelAuswahlJetzt = (a) => a && a.art !== 'person' && typeof titelAuswahl === 'function' ? titelAuswahl() : null;
+const titelZusatz = (a) => { const au = titelAuswahlJetzt(a); return au ? au.zusatz : ''; };
+const titelZahl = (n, a) => { const au = titelAuswahlJetzt(a); return au && !a.gezoomt && !(a.j.ebenen && a.j.ebenen[0] === 'genre') && n === au.n ? au.text : `${n} Titel` + (au ? au.zusatz : ''); };
 function kopfUnterVorschlag(a = aktuell){
   if (!a) return '';
   const zl = a.j.zeilen.filter(z => z.id !== SCHILD_ID), n = zl.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }), person = a.art === 'person';   /* ohne die Ecke von Randlos */
@@ -616,10 +624,12 @@ function kopfUnterVorschlag(a = aktuell){
     const datum = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
     if (person) return `${datum} / ${menge || `${n} ${n === 1 ? 'Person' : 'Personen'}`}`;
     const sek = zl.reduce((t, z) => t + (((typeof song === 'function' && song(z.id)) || {}).dauer || 0), 0);
-    return `${datum} / ${menge || `${n} Titel`}` + (sek > 0 ? ` · ${dauerText(sek)} Laufzeit` : '');
+    return `${datum} / ${menge ? menge + titelZusatz(a) : titelZahl(n, a)}` + (sek > 0 ? ` · ${dauerText(sek)} Laufzeit` : '');
   }
-  /* Bilderschau: die Transformation gehört zur Fläche, in der Schreibweise des Panels („Fläche ∝ √Abrufe") */
-  return [menge || `${n} ${person ? (n === 1 ? 'Person' : 'Personen') : 'Titel'}`, a.art === 'bild' && a.t ? a.t.kurz.replace('Wert', a.m.name) : 'Fläche nach ' + a.m.name,
+  /* Bilderschau: die Transformation gehört zur Fläche, in der Schreibweise des Panels („Fläche ∝ √Abrufe"). Titel: die Auswahl des
+     Filters oben wie in der Legende („257 von 330 Titeln · gefiltert: Öffentlich"), solange das Plakat genau sie zeigt; sonst die Zahl
+     auf dem Plakat mit dem Filterteil */
+  return [menge ? menge + titelZusatz(a) : person ? `${n} ${n === 1 ? 'Person' : 'Personen'}` : titelZahl(n, a), a.art === 'bild' && a.t ? a.t.kurz.replace('Wert', a.m.name) : 'Fläche nach ' + a.m.name,
           'gegliedert nach ' + a.gl.name.replace(/:.*$/, ''), monat].join(' · ');
 }
 

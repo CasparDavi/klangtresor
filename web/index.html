@@ -7688,6 +7688,58 @@ function sortierungenAnbieten(){
 // =============================================================
 //  Raster
 // =============================================================
+/* DIE AUSWAHL DES FILTERS OBEN - eine Stelle fuer Werke, Klangraum, Klangschaum und Bilderschau (bis 1.0.79 stand sie
+   nur in zeichnen()). Suche, Filtermarken, Modell, Video, Sichtbarkeit; die Reihenfolge ist die von alle. */
+function titelImFilter(){
+  const q = $('suche').value.trim().toLowerCase(), modell = $('modell').value, video = $('video').value;
+  // Veröffentlichungsstand, Voreinstellung "oeff": Beim Öffnen zeigt
+  // das Archiv das Veröffentlichte. Die 73 privaten Songs sind ein
+  // Zusatz, nicht der Regelfall.
+  const sicht = $('sicht').value;
+  return alle.filter(s=>{
+    if (modell && s.modell !== modell) return false;
+    if (sicht === 'oeff'   && !s.oeffentlich) return false;
+    if (sicht === 'privat' &&  s.oeffentlich) return false;
+    // Gemeint ist das EIGENE Video-Artwork (83 Songs), nicht Sunos
+    // Lyric-Video - das hat fast jeder Song, es würde also nichts
+    // unterscheiden.
+    if (video === 'mit'  && !hatBewegtbild(s)) return false;
+    if (video === 'ohne' &&  hatBewegtbild(s)) return false;
+    if (!q && !filterAktiv.some(f => f.wert !== null)) return true;
+    return sucheTrifft(s, q);
+  });
+}
+/* Was der Filter gerade ausschliesst, in den Woertern der Filterleiste: die gewaehlten Eintraege der Dropdowns (nur die, die
+   etwas ausschliessen - „Beides", „Alle", „Alle Modelle" nicht), die Marken wie in ihrem Feld („Jahr: 2025"), die Suche in
+   Anfuehrungszeichen. Leer heisst: nichts ausgefiltert. */
+function titelFilterWorte(){
+  const text = (id) => { const e = $(id), o = e && e.selectedOptions && e.selectedOptions[0]; return o ? o.textContent.trim() : ''; };
+  const w = [];
+  if ($('sicht').value !== 'beides') w.push(text('sicht'));
+  if ($('video').value) w.push(text('video'));
+  if ($('modell').value) w.push(text('modell'));
+  for (const f of filterAktiv) if (f.wert !== null)
+    w.push(FILTER[f.k].name + ': ' + (FILTER[f.k].zeige ? FILTER[f.k].zeige(f.wert) : (f.k === 'von' && personName.get(f.wert)) || f.wert));
+  const q = $('suche').value.trim(); if (q) w.push('„' + q + '“');
+  return w.filter(Boolean);
+}
+/* Der Stand des Filters als Schluessel: gemerkte Lagen und Plakate gehoeren zu ihm, und ein Wechsel legt den Klangschaum neu. */
+const titelFilterSchluessel = () => JSON.stringify([$('suche').value.trim().toLowerCase(), $('modell').value, $('sicht').value, $('video').value,
+  filterAktiv.filter(f => f.wert !== null).map(f => f.k + '=' + f.wert)]);
+/* DIE AUSWAHL IN WORTEN (Caspar_D, 15.10.2026: Klangschaum und Bilderschau folgen dem Filter oben, die Legende, die Fussnote und
+   die Plakat-Unterzeile nennen sie, etwa „257 von 330 Titeln · gefiltert: Öffentlich"). n: eigene Titel im Filter, M: alle
+   eigenen; text ohne Filter und ohne Luecke nur „330 Titel". zusatz: der Filterteil allein („ · gefiltert: …") fuer Zeilen, die
+   ihre Zahl selbst nennen (Zoom, Plakat). */
+function titelAuswahl(){
+  const eigen = alle.filter(s => !s.fremd), im = titelImFilter().filter(s => !s.fremd), worte = titelFilterWorte(), z = (x) => x.toLocaleString('de-DE');
+  const zusatz = worte.length ? ' · gefiltert: ' + worte.join(', ') : '';
+  return { n: im.length, M: eigen.length, worte, zusatz, ids: new Set(im.map(s => s.id)),
+           text: im.length >= eigen.length && !worte.length ? z(eigen.length) + ' Titel' : z(im.length) + ' von ' + z(eigen.length) + ' Titeln' + zusatz };
+}
+/* Die leere Auswahl: ein Satz statt einer leeren Flaeche */
+const titelLeerSatz = (a) => 'Der Filter oben lässt keinen deiner Titel übrig' + (a.worte.length ? ' (gefiltert: ' + a.worte.join(', ') + ')' : '')
+  + '. Oben die Filter lockern, dann füllt sich die Fläche wieder.';
+
 function zeichnen(){
   /* DER KLANGRAUM FILTERT MIT (Caspar_D, 24.08.2026: "eigentlich muessten
      wir nur den view status in der album view in den klangraum mitnehmen,
@@ -7710,26 +7762,9 @@ function zeichnen(){
     return offenePlaylist ? zeichnePlaylistInhalt() : zeichnePlaylistUebersicht();
 
   const q      = $('suche').value.trim().toLowerCase();
-  const modell = $('modell').value;
   const sort   = $('sortierung').value;
-  // Veröffentlichungsstand, Voreinstellung "oeff": Beim Öffnen zeigt
-  // das Archiv das Veröffentlichte. Die 73 privaten Songs sind ein
-  // Zusatz, nicht der Regelfall.
-  const sicht = $('sicht').value;
-  const video = $('video').value;
 
-  let liste = alle.filter(s=>{
-    if (modell && s.modell !== modell) return false;
-    if (sicht === 'oeff'   && !s.oeffentlich) return false;
-    if (sicht === 'privat' &&  s.oeffentlich) return false;
-    // Gemeint ist das EIGENE Video-Artwork (83 Songs), nicht Sunos
-    // Lyric-Video - das hat fast jeder Song, es würde also nichts
-    // unterscheiden.
-    if (video === 'mit'  && !hatBewegtbild(s)) return false;
-    if (video === 'ohne' &&  hatBewegtbild(s)) return false;
-    if (!q && !filterAktiv.some(f => f.wert !== null)) return true;
-    return sucheTrifft(s, q);
-  });
+  let liste = titelImFilter();
 
   /* Zahl aus der Analyse; Songs ohne Wert ans Ende, nicht nach oben.
      Eine Sortierung, bei der das Unbekannte gewinnt, ist keine. */
@@ -7860,6 +7895,14 @@ function zeichnen(){
       wurmloch = { t0: performance.now(), x: lage.x, y: lage.y, w0: lage.w0 };
     } else if (!verkehrt && wurmloch){
       wurmloch = null;          /* Spanne stimmt wieder - alles wie zuvor */
+    }
+    /* KLANGSCHAUM UND BILDERSCHAU FOLGEN DEM FILTER (Caspar_D, 15.10.2026, Phase 2 „Filter-Anbindung"): schaumZeichnen nimmt
+       dieselbe Auswahl (titelImFilter). Hat sich der Filter geaendert, wird entprellt neu gelegt - beim Tippen in der Suche nicht
+       je Buchstabe ein Lauf. Nur hier, also nur, wenn die Ansicht sichtbar ist; sonst gilt der Filter beim naechsten Zeigen. */
+    if (raumJetzt === 'schaum' && schaumFilterStand !== null && titelFilterSchluessel() !== schaumFilterStand){
+      clearTimeout(schaumFilterUhr);
+      schaumFilterUhr = setTimeout(() => { if (register === 'karte' && raumJetzt === 'schaum') karteZeichnen(); }, 300);
+      return;
     }
     return karteZeichnen();
   }
@@ -8677,6 +8720,7 @@ const schaumOrdnung = (a, b) => {
 let schaumMass = (() => { try { return localStorage.getItem('mysuno-schaum-mass') || 'abrufe'; } catch (e) { return 'abrufe'; } })();
 let schaumGliederung = (() => { try { return localStorage.getItem('mysuno-schaum-gliederung') || 'klang'; } catch (e) { return 'klang'; } })();
 let schaumZoom = null;              /* Name der oberen Gruppe, in die hineingezoomt ist */
+let schaumFilterStand = null, schaumFilterUhr = 0;   /* der Filter, nach dem zuletzt gelegt wurde (titelFilterSchluessel), und die Entprellung */
 const schaumFertig = new Map();     /* Schluessel -> { svg, ids, werte } */
 let schaumArbeit = null;            /* { schluessel, worker } */
 const SCHAUM_WABERN = '<filter id="schaumwabern" x="-25%" y="-25%" width="150%" height="150%">'
@@ -8755,7 +8799,7 @@ function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
    selben Tag dort wieder gelöscht (Caspar_D: „allerdings finde ich diesen Regler redundant – ist das hier der richtige Ort, in der
    Total view gibt es Filter, wenn mir das alles zu viel wird, was ich sehe, könnte ich auch dort filtern, der Klangraum übernimmt
    auch von dort, was ich sehe"). Titel erreicht der Filter oben, Personen nicht - darum bleibt der Regler im Groupieschaum.
-   Klangschaum und Bilderschau nehmen alle eigenen Titel mit Wert; dass sie dem Filter oben folgen, ist geplant, nicht gebaut. */
+   Klangschaum und Bilderschau folgen seit 1.0.80 dem Filter oben (titelImFilter). */
 const GROUPIE_ZEIGT_VORGABE = 350, GROUPIE_ZEIGT_MINDESTENS = 12, GROUPIE_ZEIGT_SPEICHER = 'mysuno-groupie-zeigt';
 let groupieZeigt = (() => { let v = null; try { v = localStorage.getItem(GROUPIE_ZEIGT_SPEICHER); } catch (e) {}
   return v === 'alle' ? 'alle' : +v >= 1 ? Math.round(+v) : GROUPIE_ZEIGT_VORGABE; })();
@@ -8833,7 +8877,7 @@ async function bilderFormateHolen(urls, melde){
     im.onerror = fertig; im.src = u; })));
   try { localStorage.setItem('mysuno-bildformate', JSON.stringify(Object.fromEntries(bilderFormate))); } catch (e) {}
 }
-async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm }){
+async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, auswahl }){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.78'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
   const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
@@ -8842,23 +8886,25 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   wahlSetzen($('bilderhaengung'), 'bilderhaengung', BILDER_HAENGUNGEN, h.id, { titel: 'Wie die Bilder in ihren Arealen hängen' });
   for (const [id, k] of [['bilderrahmen', 'rahmen'], ['bilderkopf', 'kopf'], ['bilderunter', 'unter']]) $(id).classList.toggle('an', !!bilderWahl[k]);
   schaumKurzSetzen([m.name, gl.name.replace('Klang: ', ''), t.name, h.name,
-    ...[['rahmen', 'Rahmen'], ['kopf', 'Überschriften'], ['unter', 'Bildunterschriften']].filter(([k]) => bilderWahl[k]).map(([, n]) => n)]);
+    ...[['rahmen', 'Rahmen'], ['kopf', 'Überschriften'], ['unter', 'Bildunterschriften']].filter(([k]) => bilderWahl[k]).map(([, n]) => n),
+    auswahl.n < auswahl.M ? auswahl.n.toLocaleString('de-DE') + ' von ' + auswahl.M.toLocaleString('de-DE') : null]);
   $('schaumwas').textContent = (m.was || '') + ' ' + t.kurz + '.';
-  fuss.textContent = `Bilderschau: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
+  fuss.textContent = `Bilderschau: ${schaumZoom ? zeilen.length + ' Titel aus „' + schaumZoom + '"' + auswahl.zusatz : auswahl.text}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
     + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, `
     + ({ salon: 'die großen zur Mitte der Wand. ', achse: 'die großen auf der waagrechten Achse durch die Mitte, von dort nach oben und unten. ', dicht: 'von oben nach unten. ' }[bilderWahl.haengung] || '')
     + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
     + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
     + `Die Areale starten an den Sternen im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). Klick auf ein Bild spielt den Titel.`;
-  if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; stand.textContent = `Kein Titel hat bei ${m.name} mehr als null.`; return; }
+  if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; bilderGezeigt = null; stand.textContent = auswahl.n ? `Kein Titel hat bei ${m.name} mehr als null.` : titelLeerSatz(auswahl); return; }
   const feld = $('schaumfeld').getBoundingClientRect(), W = Math.round(feld.width), H = Math.round(feld.height);
   if (W < 50 || H < 50) return;
   /* Gezoomt: die Untergruppen bekommen die Areale, alle in der Farbe der Gruppe */
   const ebene = schaumZoom ? 'genre' : 'gruppe', gruppeVon = (z) => schaumZoom ? (z.genre || 'ohne Angabe') : z.gruppe;
   const farbe = (n) => (schaumZoom ? farbeVon(schaumZoom) : farbeVon(n)) || '#8a8d94';
   const urls = new Map(zeilen.map(z => [z.id, artworkBild(z.id)]));
+  /* die Auswahl selbst im Schluessel (die IDs), nicht nur Zahl und Summe: ein anderer Filter kann beides zufaellig gleich lassen */
   const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
-    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length].join('|');
+    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length, zeilen.map(z => z.id).join(',')].join('|');
   const fertig = bilderFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; return bilderEinsetzen(fertig, farbe, m, zeilen); }
   /* Waehrend neu gehaengt wird (Fenster- oder Vollbildwechsel), bleibt die alte Wand stehen, auf das neue Feld gestreckt */
@@ -8891,7 +8937,8 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm })
   res.res.ms = Math.round(performance.now() - t0);
   /* fuers Plakat (plakat.js): dort wird im Format der Seite neu gehaengt; wahl sagt, zu welchen Einstellungen diese Wand gehoert */
   res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })),
-    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, verf: karteVerf } };
+    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen,
+            kopf: !!bilderWahl.kopf, unter: !!bilderWahl.unter, verf: karteVerf, filter: titelFilterSchluessel() } };
   bilderFertig.set(schluessel, res.res);
   if (register === 'karte' && raumJetzt === 'schaum' && schaumArt === 'bilder') schaumZeichnen();
 }
@@ -9176,9 +9223,10 @@ async function schaumZeichnen(){
   $('schaumwas').textContent = m.was || '';
   { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
 
-  /* Die Zeilen: alle eigenen Titel mit Wert > 0. */
-  const alleZeilen = [], ohneWert = [];
-  for (const s of alle.filter(x => !x.fremd)){
+  /* Die Zeilen: die eigenen Titel im Filter oben (titelImFilter, wie Werke und Klangraum) mit Wert > 0. */
+  const auswahl = titelAuswahl(), alleZeilen = [], ohneWert = [];
+  schaumFilterStand = titelFilterSchluessel();
+  for (const s of alle.filter(x => !x.fremd && auswahl.ids.has(x.id))){
     const w = m.wert(s);
     if (!(w > 0)){ ohneWert.push(s); continue; }
     const [oben, unten] = gl.von(s);
@@ -9189,8 +9237,11 @@ async function schaumZeichnen(){
   const farbeVon = (n) => !n || /^ohne /.test(n) ? null
     : (gl.farbe && gl.farbe(n)) || NEBEL[obenNamen.filter(x => !/^ohne /.test(x)).indexOf(n) % NEBEL.length];
   const zeilen = schaumZoom ? alleZeilen.filter(z => z.gruppe === schaumZoom) : alleZeilen;
-  schaumKurzSetzen([m.name, gl.name.replace('Klang: ', '')]);
-  $('schaumlegkurz').textContent = (schaumZoom ? '„' + schaumZoom + '" · ' : '') + zeilen.length.toLocaleString('de-DE') + ' Titel · '
+  /* Die Auswahl im Kopf der Einstellungen kurz („257 von 330"), in der Legende ganz („257 von 330 Titeln · gefiltert: Öffentlich");
+     gezoomt die Zahl der Gruppe mit dem Filterteil */
+  const auswahlKurz = auswahl.n < auswahl.M ? auswahl.n.toLocaleString('de-DE') + ' von ' + auswahl.M.toLocaleString('de-DE') : null;
+  schaumKurzSetzen([m.name, gl.name.replace('Klang: ', ''), auswahlKurz]);
+  $('schaumlegkurz').textContent = (schaumZoom ? '„' + schaumZoom + '" · ' + zeilen.length.toLocaleString('de-DE') + ' Titel' + auswahl.zusatz : auswahl.text) + ' · '
     + obenNamen.length + ' ' + gl.oben;
 
   /* Legende: oben die Gruppen, ein Klick zoomt hinein; gezoomt die Untergruppen und der Weg zurück. */
@@ -9215,6 +9266,7 @@ async function schaumZeichnen(){
   /* Werk: der laufende Titel mit seinem Wert und Rang. */
   { const w = $('schaumwerk'), s = aktuellId && song(aktuellId);
     if (!s || s.fremd) w.innerHTML = '';
+    else if (!auswahl.ids.has(s.id)) w.innerHTML = `<small>Läuft</small><br><b>${esc(s.titel || '')}</b><br><small>ist oben herausgefiltert</small>`;
     else {
       const z = alleZeilen.find(x => x.id === s.id);
       if (!z) w.innerHTML = `<small>Läuft</small><br><b>${esc(s.titel || '')}</b><br><small>hat bei ${m.name} keine Fläche</small>`;
@@ -9226,15 +9278,15 @@ async function schaumZeichnen(){
     } }
 
   const stamm = katalogInfo && katalogInfo.erstelltAm ? String(katalogInfo.erstelltAm).slice(0, 10) : '';
-  if (schaumArt === 'bilder') return bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm });
-  fuss.textContent = `Klangschaum: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, Fläche = ${m.name}, jede Zelle genau ihr Anteil. `
+  if (schaumArt === 'bilder') return bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, auswahl });
+  fuss.textContent = `Klangschaum: ${schaumZoom ? zeilen.length + ' Titel aus „' + schaumZoom + '"' + auswahl.zusatz : auswahl.text}, Fläche = ${m.name}, jede Zelle genau ihr Anteil. `
     + `Gegliedert nach ${gl.name.replace('Klang: ', '')}${gl.id === 'klang' ? ' (Stilgruppen aus dem Klang-Raum)' : ''}; schraffiert und kursiv, wo ein Titel keine Untergruppe hat. `
     + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
     + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
     + `Ähnlich Klingendes liegt nah beieinander, so gut der Schaum es zulässt: jede Blase startet an ihrem Stern im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). `
     + `Schaum nach Plateau (gebogene Wände, 120° an den Knoten), gelegt mit Caspar_Ds foamtree. Klick auf eine Zelle spielt den Titel.`;
 
-  if (!zeilen.length){ bild.innerHTML = ''; stand.textContent = `Kein Titel hat bei ${m.name} mehr als null.`; return; }
+  if (!zeilen.length){ bild.innerHTML = ''; schaumBildArt = null; stand.textContent = auswahl.n ? `Kein Titel hat bei ${m.name} mehr als null.` : titelLeerSatz(auswahl); return; }
   /* Das Seitenverhaeltnis des Feldes, auf 0,05 gerundet - sonst legte jedes Pixel neu. */
   const j = schaumKlangAuftrag(m, gl, schaumZoom, schaumVerh()), schluessel = j.lage + '|' + klangraumPal().id;   /* Farben der Klangraum-Palette */
   const fertig = schaumFertig.get(schluessel);
@@ -9469,8 +9521,8 @@ const schaumVerh = () => { const rect = $('schaumfeld').getBoundingClientRect();
   return Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20)); };
 /* Was ein Layout braucht - fuer die sichtbare Ansicht und fuer das Vorrechnen dieselbe Rechnung. */
 function schaumKlangAuftrag(m, gl, zoom, verh){
-  const alleZ = [];
-  for (const s of alle.filter(x => !x.fremd)){ const w = m.wert(s); if (!(w > 0)) continue;
+  const alleZ = [], im = new Set(titelImFilter().map(s => s.id));       /* der Filter oben, wie in schaumZeichnen; die IDs stehen im Lage-Schluessel */
+  for (const s of alle.filter(x => !x.fremd && im.has(x.id))){ const w = m.wert(s); if (!(w > 0)) continue;
     const [oben, unten] = gl.von(s); alleZ.push({ gruppe: oben, genre: unten, titel: s.titel || '—', id: s.id, w: String(w) }); }
   const zeilen = zoom ? alleZ.filter(z => z.gruppe === zoom) : alleZ;
   const ebenen = zoom ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
