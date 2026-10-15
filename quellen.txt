@@ -67,3 +67,10 @@ ffmpeg-startseite = https://www.gyan.dev/ffmpeg/builds/
 
 klangtresor-fassung = https://api.github.com/repos/CasparDavi/klangtresor/releases/latest
 klangtresor-zip = https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor.zip
+
+# Fuer Versionen bis 1.0.72, die noch kein Update-Skript haben: aktualisieren.js
+# und die drei Anlasser, flach. Von Hand holen und in den KlangTresor- bzw.
+# MySuno-Ordner kopieren (dort, wo library/ liegt) - kein Skript liest diese
+# Zeile, sie steht hier, damit die Adresse an einer Stelle steht.
+
+klangtresor-update-zip = https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip

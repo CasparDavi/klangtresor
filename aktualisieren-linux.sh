@@ -6,7 +6,9 @@
 #
 # Holt den aktuellen Stand von GitHub (Git-Klon: origin/main, sonst das
 # Release-Zip) und spielt ihn ein. library/ bleibt. Bei Docker wird das
-# Image neu gebaut. Die eigentliche Arbeit steht in bin/aktualisieren.js.
+# Image neu gebaut. Die eigentliche Arbeit steht in bin/aktualisieren.js -
+# oder, bei Versionen bis 1.0.72, die es noch nicht haben, in der Kopie
+# aktualisieren.js aus KlangTresor-Update.zip hier im Hauptordner.
 
 cd "$(dirname "$0")" || exit 1
 NODE=node
@@ -22,11 +24,20 @@ if ! command -v "$NODE" >/dev/null 2>&1; then
   echo
   exit 1
 fi
-if [ ! -f bin/aktualisieren.js ]; then
+# Erst bin/aktualisieren.js (ab 1.0.73 da), sonst die Kopie aus KlangTresor-Update.zip
+# hier daneben - die raeumt sich nach dem ersten Lauf ohne Fehler selbst weg.
+SKRIPT=bin/aktualisieren.js
+[ -f "$SKRIPT" ] || SKRIPT=aktualisieren.js
+if [ ! -f "$SKRIPT" ]; then
   echo
-  echo "  Hier liegt kein KlangTresor. Diese Datei gehoert in den Ordner"
-  echo "  mit bin/ und server/ darin."
+  if [ -f server/server.js ]; then
+    echo "  aktualisieren.js fehlt. Sie liegt im selben Zip wie diese Datei"
+    echo "  (KlangTresor-Update.zip) - kopiere sie mit hierher."
+  else
+    echo "  Hier liegt kein KlangTresor. Diese Datei gehoert in den Ordner"
+    echo "  mit library/ und server/ darin."
+  fi
   echo
   exit 1
 fi
-exec "$NODE" bin/aktualisieren.js "$@"
+exec "$NODE" "$SKRIPT" "$@"

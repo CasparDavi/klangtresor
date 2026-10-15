@@ -52,6 +52,8 @@ nicht signiert, der Quelltext liegt offen daneben.
   klicken. Wer das Häkchen „Vor dem Öffnen dieser Datei immer bestätigen"
   wegnimmt, sieht die Frage für diese Datei nicht wieder.
 - **macOS** sagt „nicht verifizierter Entwickler" — einmal Rechtsklick → Öffnen.
+  Ab macOS 15 gibt es dort kein „Öffnen" mehr: dann Systemeinstellungen →
+  Datenschutz & Sicherheit → **Dennoch öffnen**.
 
 Zum **späteren Starten** legt die Einrichtung eine Verknüpfung „KlangTresor"
 auf den Schreibtisch — mit Symbol; sie startet den Server und öffnet den
@@ -92,6 +94,54 @@ Overlay bleibt, wenn der Container `KLANG_CUDA` schon nutzt.
 Ungesicherte Änderungen und ein anderer Git-Zweig als `main` halten das
 Skript an. Danach die Seite einmal hart neu laden; ohne Docker den Server
 über `starten-*` neu starten.
+
+### Ältere Versionen ohne Update-Skript
+
+Bis Version 1.0.72 — und aus der Zeit, als KlangTresor noch *MySuno* hieß —
+liegt im Ordner noch kein `aktualisieren-*`. Dafür gibt es das Update-Paket,
+immer in der jüngsten Version:
+
+    https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip
+
+Kopiere `aktualisieren.js` und das Skript für dein System in deinen
+KlangTresor- bzw. MySuno-Ordner (dort, wo `library/` liegt) und doppelklicke
+das Skript.
+
+| dein System | diese zwei kopieren | dann |
+|---|---|---|
+| **Windows** | `aktualisieren.js` und `aktualisieren-windows.cmd` | Doppelklick auf `aktualisieren-windows.cmd` |
+| **macOS** | `aktualisieren.js` und `aktualisieren-macos.command` | `aktualisieren-macos.command` doppelklicken |
+| **Linux** | `aktualisieren.js` und `aktualisieren-linux.sh` | `./aktualisieren-linux.sh` |
+
+Nur die Dateien kopieren, keine Ordner ersetzen. Das Paket hat absichtlich
+keinen Unterordner: der Finder ersetzt beim Kopieren einen vorhandenen Ordner
+`bin/`, statt ihn zusammenzuführen — dein altes Programm wäre weg.
+
+Danach läuft das Update wie gewohnt: **`library/` bleibt**, das Programm
+wird erneuert, und hinterher liegen alle `aktualisieren-*` im Ordner. Die
+Kopie `aktualisieren.js` räumt sich nach dem ersten gelungenen Lauf selbst
+weg; beim nächsten Update genügt der Doppelklick. Ab Version 1.0.73 brauchst
+du das Paket nicht — dort liegt das Skript schon bei.
+
+**Beim ersten Start meckert dein System**, wie bei der Einrichtung:
+
+- **Windows**: „Der Herausgeber konnte nicht verifiziert werden" — **Ausführen**.
+- **macOS**: „nicht verifizierter Entwickler" — beim ersten Mal Rechtsklick →
+  **Öffnen**. Ab macOS 15 gibt es dort kein „Öffnen" mehr: dann
+  Systemeinstellungen → Datenschutz & Sicherheit → **Dennoch öffnen**.
+- **Linux**: startet das Skript nicht, fehlt ihm das Ausführungsrecht —
+  `chmod +x aktualisieren-linux.sh`, oder `bash aktualisieren-linux.sh`.
+
+Ein **Git-Klon** zieht wie gewohnt `origin/main`; die hineinkopierten Dateien
+bringt Git dabei selbst mit. Stammt die Git-Geschichte nicht von GitHub (ein
+Klon aus der MySuno-Zeit), kommt stattdessen das Release-Zip — `.git/`
+bleibt, ungesicherte Änderungen liegen vorher im `git stash`.
+
+**Nur Docker, ohne Node auf dem Rechner:** dann hilft das Paket nicht, es
+braucht Node. Den Inhalt des neuen `KlangTresor.zip` in deinen Ordner kopieren
+(Dateien ersetzen, nie den ganzen Ordner — `library/` liegt darin) und
+`einrichten-docker-*` noch einmal starten. Läuft noch ein Container `mysuno`
+aus der MySuno-Zeit, vorher `docker stop mysuno`.
 
 Unter Windows liegen die PowerShell-Skripte in `bin\` und werden von den
 `.cmd`-Dateien gerufen — **nicht** selbst anklicken: Viele Rechner lehnen

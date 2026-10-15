@@ -4524,7 +4524,7 @@ const EXPORT_LAUF = path.join(WURZEL, 'library', 'export-lauf.json');
    erst nach einem Neustart von Hand. */
 const BEOBACHTET = [__filename, path.join(__dirname, '..', 'bin', 'katalog.js'),
                     path.join(__dirname, '..', 'bin', 'behaelter.js'),     /* seit 09.09.2026 mit geladen */
-                    path.join(__dirname, '..', 'bin', 'aktualisieren.js')]; /* seit 1.0.72 (standHolen fuer /api/fassung) */
+                    path.join(__dirname, '..', 'bin', 'aktualisieren.js')]; /* seit 1.0.73 (standHolen fuer /api/fassung) */
 const standVon = (f) => { try { return fs.statSync(f).mtimeMs; } catch (e) { return 0; } };
 let eigeneStand = BEOBACHTET.map(standVon).join('|');
 /* Eingefroren gibt es keine Wache: Auf dem Stick steht keine Schleife

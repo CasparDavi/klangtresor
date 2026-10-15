@@ -226,7 +226,10 @@ npm run aktualisieren -- --nur-stand
 ```
 
 - **Git-Klon:** `git pull --rebase origin main` (bricht ab bei Schmutz
-  oder anderem Zweig als `main`).
+  oder anderem Zweig als `main`). Hineinkopierte Dateien aus dem
+  Update-Paket halten den Zug nicht auf. Ist die Geschichte mit der auf
+  GitHub nicht verwandt (ein Klon aus der MySuno-Zeit), kommt das
+  Release-Zip; ungesicherte Änderungen liegen vorher im `git stash`.
 - **Zip-Installation:** holt `KlangTresor.zip` der jüngsten Release und
   legt die Programmdaten darüber.
 - **Docker:** danach `compose up --build`. `library/` ist Volume und
@@ -239,10 +242,52 @@ npm run aktualisieren -- --nur-stand
 
 ---
 
+## Ältere Versionen ohne Update-Skript
+
+Bis Version 1.0.72 – und aus der Zeit, als das Programm *MySuno* hieß –
+liegt im Ordner noch kein Update-Skript. Dafür hängt an jeder Release das
+Update-Paket, immer in der jüngsten Version:
+
+```
+https://github.com/CasparDavi/klangtresor/releases/latest/download/KlangTresor-Update.zip
+```
+
+Kopiere `aktualisieren.js` und das Skript für dein System in deinen
+KlangTresor- bzw. MySuno-Ordner (dort, wo `library/` liegt) und doppelklicke
+das Skript:
+
+| System | kopieren | starten |
+|---|---|---|
+| Windows | `aktualisieren.js`, `aktualisieren-windows.cmd` | Doppelklick auf `aktualisieren-windows.cmd` |
+| macOS | `aktualisieren.js`, `aktualisieren-macos.command` | `aktualisieren-macos.command` doppelklicken |
+| Linux | `aktualisieren.js`, `aktualisieren-linux.sh` | `./aktualisieren-linux.sh` |
+
+Das Paket ist flach, ohne Unterordner: der Finder ersetzt beim Kopieren
+einen vorhandenen Ordner `bin/`, statt ihn zusammenzuführen. Das Update
+läuft dann wie gewohnt – `library/` bleibt –, danach liegen alle
+`aktualisieren-*` im Ordner, und die Kopie `aktualisieren.js` räumt sich
+selbst weg. Ab Version 1.0.73 ist das Paket nicht nötig.
+
+Beim ersten Start meckert das System, das Paket ist nicht signiert:
+Windows sagt „Der Herausgeber konnte nicht verifiziert werden“ –
+**Ausführen**. macOS sagt „nicht verifizierter Entwickler“ – beim ersten
+Mal Rechtsklick → **Öffnen**; ab macOS 15 gibt es das dort nicht mehr,
+dann Systemeinstellungen → Datenschutz & Sicherheit → **Dennoch öffnen**.
+Linux: fehlt das Ausführungsrecht, `chmod +x aktualisieren-linux.sh`.
+
+Wer KlangTresor nur im Container betreibt, ohne Node auf dem Rechner,
+braucht das Paket nicht: den Inhalt des neuen `KlangTresor.zip` in den
+Ordner kopieren (Dateien ersetzen, nie den ganzen Ordner – `library/`
+liegt darin) und `einrichten-docker-*` noch einmal. Läuft dort noch der
+Container `mysuno` aus der MySuno-Zeit, vorher `docker stop mysuno`.
+
+---
+
 ## Wer schon eine Installation hat
 
-Das Programm hieß bis zum 24.08.2026 *MySuno*. Ein `git pull` genügt,
-es geht nichts verloren:
+Das Programm hieß bis zum 24.08.2026 *MySuno*. Das Update spielt man ein
+wie unter [Ältere Versionen ohne Update-Skript](#ältere-versionen-ohne-update-skript)
+beschrieben, es geht nichts verloren:
 
 - **Einstellungen bleiben.** Equalizer, Lautstärke, Darstellungsart,
   Kartenansicht — alle 52 Speicherschlüssel im Browser heißen weiter wie
