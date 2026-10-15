@@ -9,6 +9,7 @@
    Schirm, im Plakat als Kacheln mit Luecken. Die Vorschau nimmt die Bilder aus dem Vorrat, das PDF die
    Originale (data-voll). Masse auf der Seite in Millimetern; 3 mm Beschnitt rundum. */
 import { blockLage, blockRechteck, blockReserve, ECKEN } from './eckblock.js';
+import { makeContainer, layout, tagEdges, insetOutline, shoelace } from './foamtree.js';
 import { blattSchmuck, blattGrund, dAuftrag, anzeigeName } from './skizze-blatt.js';
 import { ohneKlammern } from './skizze-hand.js';
 import { blattDatenHolen, refrainAus } from './skizze-daten.js';
@@ -46,7 +47,7 @@ const VORLAGEN = [
 ];
 /* RANDLOS (1.0.57; Caspar_D: „ich hätte gern noch eine Randlose Variante mit einer fehlenden Ecke im gleichen Format wie das
    Biold, wo Titel, Legende, Avatar und Name drin stehen"): der Schaum reicht bis an den Beschnitt, kein Passepartout, kein
-   Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 ist die Ecke der Grund der Seite; darin Avatar, Legende und Text, bündig
+   Museumsschild, keine Arealnamen am Rand. Seit 1.0.58 eine eigene Zelle, seit dem 15.10.2026 als Schaum aus grauen Kissen (eckZellen); darin Avatar, Legende und Text, bündig
    zur gewählten Ecke (eckeSetzen; Größe und Form sucht schild.js). */
 VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · Avatar und Titel in der Ecke',
   e: { grund: '#0c0d10', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: true, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: false, schild: true, skizze: false, randVorne: 15, umschlag: 0 } });
@@ -345,7 +346,10 @@ function schildVorgabe(g, W, H, runden = true){
     : { typ: t.typ, w: runden ? Math.ceil(t.w / k / q) * q : t.w / k, h: t.h / k });
   let xMin = 0, xMax = W;
   if (g.tri){ const f = wandFugen(g); if (ecke[1] === 'r') xMin = xu(f[1][1]); else xMax = xu(f[0][0]); }
-  const luft = 0.025 * g.kurz / k;
+  /* Luft zur Wand: 2,5 % der kurzen Seite, mindestens aber ECK_WORTLUFT_EM der größten Schrift im Block plus die halbe Fuge zur
+     Restkarte (dort beginnt die sichtbare Grenze der Eckzelle, seit sie gefüllt ist) - die Suche (schild.js) bemisst die Ecke damit */
+  const fsMax = Math.max(0, ...teile.map(t => t.fs || 0)), halbeFuge = eckFugen()[0] / 2;
+  const luft = Math.max(0.025 * g.kurz / k, ECK_WORTLUFT_EM * fsMax / k + halbeFuge);
   /* der Rahmen samt Luft muss im Schaum liegen: reicht der Schaum nicht bis an den Schnitt (gerundetes Seitenverhältnis), lag er
      sonst draußen, und die Suche fand nie Platz (3 × 70 × 100 quer, Fallensuche 1.0.58) */
   rahmen.x0 = Math.max(rahmen.x0, luft + 0.5); rahmen.x1 = Math.min(rahmen.x1, W - luft - 0.5);
@@ -354,20 +358,84 @@ function schildVorgabe(g, W, H, runden = true){
     ['x0', 'x1', 'y0', 'y1'].map(z => Math.round(rahmen[z])).join(','), Math.round(xMin), Math.round(xMax), Math.round(luft * 10)].join(':');
   return { ecke, block, rahmen, luft, xMin, xMax, schluessel, teile, k, ox, oy };
 }
+/* DIE ECKE ALS SCHAUM (Randlos, 15.10.2026). Caspar_D: „wir zerlegen die Ecke in typische Zellen der Restmap und machen da graue
+   Strukturen rein" – gewählt: „die 2, aber heterogener wie im Restschaum" – an der Probe: „die hellsten Zellen sind gut".
+   Die Eckzelle wird mit foamtree zerlegt wie jedes Gefäß des Schaums (bis ECK_FOAM_BIS Zellen gekrümmte Wände, darüber gerade, power):
+   die Zielflächen sind eine Stichprobe der echten Blattflächen der übrigen Karte (Bilderschau: der Cover), auf die Fläche der Ecke
+   gebracht - so viele Zellen wie Ecke / mittlere Blattfläche, gestreut wie im Rest. Die Saat kommt aus der Lage der Ecke: gleiche
+   Lage, gleiches Bild. Jede Zelle ist ein graues Kissen (ECK_KISSEN: radialer Verlauf, Licht oben links), die Fugen sind die des
+   Schaums dieses Formats (SCHAUM_STRICHE mal Fugen-Regler; zur Restkarte die Ebene der Ecke, innen die des Blatts): der Grund
+   scheint durch wie überall.
+   SCHRIFT: alles in der Ecke in ECK_SCHRIFT (#f1efe9, ohne Deckungsabzug). Hellster Punkt eines Kissens ist die Mitte der hellsten
+   Zelle (t = 1): rgb(64, 64, 67). Kontrast nach WCAG: #f1efe9 (L 0,863) gegen rgb(64, 64, 67) (L 0,052) = 9,0 : 1 (gegen ein reines
+   Grau 67 gerechnet 8,8 : 1; die 7,6 : 1 des Auftrags waren zu knapp gerechnet) - über der Hausregel 7 : 1 (Beamer). */
+const ECK_SCHRIFT = '#f1efe9';
+const ECK_KISSEN = { cx: '42%', cy: '38%', r: '72%',
+  mitte: (t) => { const v = Math.round(30 + 34 * (0.55 + 0.45 * t)); return `rgb(${v},${v},${v + 3})`; },
+  rand: (t) => { const r = Math.round(21 + 6 * t); return `rgb(${r},${r},${r + 2})`; } };
+const ECK_FOAM_BIS = 90;
+/* ABSTAND ZUR ZELLGRENZE (Caspar_D, 15.10.2026: „und da jetzt eine Zelle mit Grenzen da ist, muß ein Abstand zu den Zellgrenzen da
+   sein, der größer als ein Wortabstand ist"): jedes Teil des Blocks hält zur Grenze der Eckzelle mindestens ECK_WORTLUFT_EM der
+   größten Schrift im Block (Wortabstand der Systemschrift etwa 0,25–0,3 em), gemessen ab der sichtbaren Kante (halbe Fuge);
+   schildVorgabe nimmt das in die Luft, die Suche (schild.js) bemisst die Ecke damit. */
+const ECK_WORTLUFT_EM = 0.5;
+const eckFugen = () => (typeof SCHAUM_STRICHE !== 'undefined' ? SCHAUM_STRICHE : [3.2, 2.0, 1.2, 0.7, 0.35]).map(x => x * (E.fugen || 1));
+const eckVorrat = new Map();
+function eckZufall(saat){ let a = saat || 1; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+/* Die Zellen der Ecke in Schaum-Einheiten (y nach oben): [{ o: Umriss nach Abzug der Fugen, t: Helligkeit 0…1 }] */
+function eckZellen(res, knoten){
+  const W = res.width, H = res.height, zl = aktuell.j.zeilen;
+  const blatt = (res.leaves || []).find(k => k.row != null && (zl[k.row] || {}).id === SCHILD_ID && k.outline);
+  let aussen = (blatt || knoten).outline, tags = blatt && blatt.tags, tiefe = blatt ? blatt.depth : 1;
+  /* Bilderschau: die Ecke ist ein Rechteck über den Seitenrand hinaus - Kanten draußen ohne Fuge, innen die der obersten Ebene */
+  if (!tags) tags = aussen.map((p, i) => { const q = aussen[(i + 1) % aussen.length], m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+    return m[0] <= 0 || m[0] >= W || m[1] <= 0 || m[1] >= H ? -1 : 0; });
+  if (shoelace(aussen) < 0){ aussen = aussen.slice().reverse(); tags = tags.slice(0, -1).reverse().concat(tags.slice(-1)); }
+  const fugen = eckFugen(), schl = textHash(aussen.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(';') + '|' + tags.join(',') + '|' + fugen[0].toFixed(3));
+  if (eckVorrat.has(schl)) return eckVorrat.get(schl);
+  const flaechen = res.bilder ? res.bilder.map(b => b.w * b.h)
+    : (res.leaves || []).filter(k => k !== blatt && k.outline && k.outline.length > 2).map(k => Math.abs(shoelace(k.outline)));
+  const rnd = eckZufall(schl), C = makeContainer(aussen), A = C.area;
+  /* Stichprobe mit Zurücklegen, bis die Summe die Ecke erreicht (der letzte Zug bleibt, wenn er näher heranführt), dann auf die Ecke */
+  let ziel = [A];
+  if (flaechen.length){ ziel = []; let s = 0;
+    while (s < A){ const f = flaechen[Math.floor(rnd() * flaechen.length)]; ziel.push(f); s += f; }
+    if (ziel.length > 2 && s - A > A - (s - ziel[ziel.length - 1])) s -= ziel.pop();
+    ziel = ziel.map(f => f * A / s); }
+  let outs = [aussen];
+  try { const r = layout(C, ziel, Math.min(3, Math.max(1e-4, Math.sqrt(A) / 80)), ziel.length > ECK_FOAM_BIS ? 'power' : 'foam');
+    const o = (r.foam || r.power || []).filter(x => x && x.length > 2); if (o.length) outs = o; }
+  catch (e){ console.log('Plakat, Ecke:', e); }
+  const zellen = outs.map(o => { const e = insetOutline(o, tagEdges(o, aussen, tags, tiefe), fugen); return e ? { o: e, t: rnd() } : null; }).filter(Boolean);
+  eckVorrat.set(schl, zellen);
+  return zellen;
+}
+/* Die Kissen als SVG (Seitenmaß mm): je Zelle ein radialer Verlauf nach ECK_KISSEN */
+function eckKissen(zellen, X, Y){
+  let defs = '', pfade = '';
+  zellen.forEach((z, i) => {
+    defs += `<radialGradient id="ps-kissen${i}" cx="${ECK_KISSEN.cx}" cy="${ECK_KISSEN.cy}" r="${ECK_KISSEN.r}"><stop offset="0" stop-color="${ECK_KISSEN.mitte(z.t)}"/><stop offset="1" stop-color="${ECK_KISSEN.rand(z.t)}"/></radialGradient>`;
+    pfade += `<path d="M${z.o.map(p => X(p[0]).toFixed(2) + ',' + Y(p[1]).toFixed(2)).join('L')}Z" fill="url(#ps-kissen${i})"/>`;
+  });
+  return `<g class="ps-eckzellen"><defs>${defs}</defs>${pfade}</g>`;
+}
 /* Setzen: dieselbe Lage, die der Worker geprueft hat (blockLage: jedes Teil zu drei Vierteln zur Schaumgrenze, zu einem Viertel
-   zur Blattkante an einer gemeinsamen Achse - die Viertel-Lösung vom 15.10.2026), auf dem Grund der Seite. Passt der Block nicht mehr (Text nach
+   zur Blattkante an einer gemeinsamen Achse - die Viertel-Lösung vom 15.10.2026), auf den grauen Kissen der Ecke (eckZellen). Passt der Block nicht mehr (Text nach
    dem Legen verlaengert, grosser Schaum anders gelegt), wird er so weit verkleinert, dass er passt - der naechste Lauf legt neu. */
 function eckeSetzen(g, fg, leise){
   const res = aktuell.res, H = res.height;
   const v = schildVorgabe(g, res.width, H, false), { k, ox, oy } = v;
   const knoten = (res.nodes || []).find(n => n.depth === 0 && n.name === SCHILD_NAME && n.outline);
   const r = knoten ? blockReserve(knoten.outline, v.block, v.ecke, v.rahmen, v.luft) : 0;
+  const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
+  /* die Ecke als Schaum aus grauen Kissen (eckZellen), darauf alles in ECK_SCHRIFT */
+  let out = knoten ? eckKissen(eckZellen(res, knoten), X, Y) : '';
+  fg = leise = ECK_SCHRIFT;
   /* passt der Block nicht (mehr), wird er genau so weit verkleinert, dass er passt; unter 0,3 wird er nicht gesetzt, ein Hinweis
      sagt warum - vorher stand er mit mindestens 0,5 über den Zellen (Fallensuche 1.0.58) */
-  if (r < 0.3){ standSetzen('Avatar und Text passen nicht in die Ecke – Titel oder Zeilen kürzen, Legende ausschalten oder eine andere Ecke wählen.'); return ''; }
+  if (r < 0.3){ standSetzen('Avatar und Text passen nicht in die Ecke – Titel oder Zeilen kürzen, Legende ausschalten oder eine andere Ecke wählen.'); return out; }
   const s = Math.min(1, r), rechts = v.ecke[1] === 'r', anker = rechts ? 'end' : 'start';
-  const X = (x) => ox + x * k, Y = (y) => oy + (H - y) * k, f2 = (n) => n.toFixed(2), hell = hellerGrund();
-  let out = '';
   blockLage(v.block, v.ecke, v.rahmen, s).forEach((t, i) => {
     const q = v.teile[i], fs = (q.fs || 0) * s, x = rechts ? X(t.x1) : X(t.x0), basis = Y(t.y0) - fs * 0.3;
     if (q.typ === 'kreis'){
@@ -384,16 +452,16 @@ function eckeSetzen(g, fg, leise){
          linksbündig dahinter; ohne „ — " Punkt, dann der Name */
       const lx = X(t.x0), pu = q.pu * s, sp = q.spalt * s, dx = lx + (q.teile ? q.links * s + sp : 0) + pu, cy = f2(basis - fs * 0.32);
       out += `<circle cx="${f2(dx)}" cy="${cy}" r="${f2(pu)}" fill="${q.farbe}"/>`;
-      if (q.teile && q.teile[0]) out += `<text x="${f2(dx - pu - sp)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8" text-anchor="end">${esc2(q.teile[0])}</text>`;
+      if (q.teile && q.teile[0]) out += `<text x="${f2(dx - pu - sp)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" text-anchor="end">${esc2(q.teile[0])}</text>`;
       const rt = q.teile ? q.teile[1] : q.t;
-      if (rt) out += `<text x="${f2(dx + pu + sp)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}" fill-opacity="0.8">${esc2(rt)}</text>`;
+      if (rt) out += `<text x="${f2(dx + pu + sp)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${fg}">${esc2(rt)}</text>`;
     } else if (q.typ === 'signatur'){
       const tw = q.tw * s, l = q.linie * s, gap = fs * 0.8, l0 = rechts ? x - tw - gap - l : x + tw + gap;
       out += `<text x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" fill="${leise}" text-anchor="${anker}">${esc2(q.t)}</text>`
         + `<line x1="${f2(l0)}" y1="${f2(basis + fs * 0.15)}" x2="${f2(l0 + l)}" y2="${f2(basis + fs * 0.15)}" stroke="${fg}" stroke-opacity="0.7" stroke-width="${f2(g.kurz / 2800)}"/>`;
     } else if (q.typ === 'zeile'){
-      const farbe = q.rolle === 'unter' ? leise : fg, deck = q.rolle === 'name' ? ' fill-opacity="0.85"' : '';
-      out += `<text class="ps-ecke" x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" font-weight="${q.fw}" fill="${farbe}"${deck} text-anchor="${anker}">${esc2(q.t)}</text>`;
+      const farbe = q.rolle === 'unter' ? leise : fg;
+      out += `<text class="ps-ecke" x="${f2(x)}" y="${f2(basis)}" font-size="${f2(fs)}" font-weight="${q.fw}" fill="${farbe}" text-anchor="${anker}">${esc2(q.t)}</text>`;
     }
   });
   return out;
