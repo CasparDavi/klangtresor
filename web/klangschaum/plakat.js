@@ -64,12 +64,14 @@ const SPEICHER = 'mysuno-plakat';
    wird hier auch die Bilderschau zum Plakat - Vorschau, Formate, Rand, Werkverzeichnis, Nummerierung, Zeitleiste, Edition, PDF und
    Bild vom Studio, neu ist nur die Bildebene (bilderEbene): die Cover-Rechtecke im Originalformat, im Seitenformat neu gehängt mit
    Maß, Transformation, Hängung, Gliederung und Rahmen, wie die Bilderschau am Schirm gerade steht. Titel „Caspar_Ds Bilderschau"
-   (erst „Bildertraum" gesagt, dann: „nein, auf dem Plakat auch Bilderschau"). KEINE Bildunterschriften; jedes Cover trägt seine
+   (erst „Bildertraum" gesagt, dann: „nein, auf dem Plakat auch Bilderschau"). Bildunterschriften erst aus (seit 1.0.80 wählbar, siehe unten); jedes Cover trägt seine
    Nummer aus dem Werkverzeichnis (seit 15.10.2026 jedes, auf das sie passt - bilderEbene). Bis 15.10.2026 gehörte das Verzeichnis
    darum immer dazu; seitdem (Caspar_D: „Mach wie in den Treemaps die Nummer ausblendbar") ist der Schalter frei, eigens gemerkt
    (bildNummern, Vorgabe an - die Vorlagen setzen ihn nicht): aus heißt keine Nummern und keine Liste. Was nur den Schaum betrifft
-   (Fugen, Wackeln, Schatten, Vignette, Kissen, Titel in der Zelle), ist grau mit Grund; Randlos und Skizzenbuch auch (das eine hat
-   kein Verzeichnis für die Nummern, das andere zeichnet den Klangschaum mit der Feder). Grund schwarz oder weiß wie die Vorlagen, keine
+   (Fugen, Wackeln, Schatten, Vignette, Kissen, Titel in der Zelle), ist grau mit Grund; das Skizzenbuch auch (es zeichnet den Klangschaum
+   mit der Feder). Randlos war bis 1.0.79 auch grau (kein Verzeichnis für die Nummern); seit 1.0.80 gibt es es, ohne Nummern (bilderEcke).
+   Ebenso seit 1.0.80: Gruppenüberschriften und Bildunterschriften wie am Schirm (E2(a), Vorgabe aus) und ein Abschnitt Bilderschau im
+   Studio, der dieselben Einstellungen wie die Ansicht stellt (bilderteilSetzen). Grund schwarz oder weiß wie die Vorlagen, keine
    freie Farbe (Caspar_D: „Hintergrund in weiß oder schwarz, keine Farben, wie bei den anderen Postern auch"). Bis 1.0.73 hatte die
    Bilderschau einen eigenen Not-Export in index.html (bilderPlakat: Format, Lage, Grund im Panel) - er ist mit diesem Weg gelöscht. */
 const bilderschau = () => raumJetzt !== 'groupies' && typeof schaumArt !== 'undefined' && schaumArt === 'bilder';
@@ -80,11 +82,13 @@ const mitVerzeichnis = () => bilderschau() ? E.bildNummern !== false && !E.schil
 let E = (() => { try { return JSON.parse(localStorage.getItem(SPEICHER)) || null; } catch (e) { return null; } })()
   || { vorlage: 'galerie', format: '70x100', freiW: 80, freiH: 120, lage: 'hoch', kopfTitel: '', kopfUnter: '', legende: true, ...VORLAGEN[0].e };
 let studio = null, aktuell = null, legeLauf = 0, bauLauf = 0, warten = null;
-/* GALERIE NUR FÜR DIE BILDERSCHAU: Randlos und Skizzenbuch gibt es dort nicht, das Studio öffnet sie dann mit Galerie (oeffnen). Bis
+/* GALERIE NUR FÜR DIE BILDERSCHAU: das Skizzenbuch gibt es dort nicht (Randlos bis 1.0.79 auch nicht), das Studio öffnet sie dann mit Galerie (oeffnen). Bis
    15.10.2026 kam das in den gemeinsamen Speicher, und das Plakat des Klangschaums stand danach auf Galerie statt auf Randlos
    (Fallensuche). leihe hält die überdeckten Werte: gespeichert werden sie statt der Galerie, und beim nächsten Öffnen außerhalb der
    Bilderschau gelten sie wieder. Was man in der Bilderschau selbst einstellt, gehört einem und fällt aus der Leihe (setze). */
 let leihe = null;
+/* das Studio wartet darauf, dass die Bilderschau am Schirm neu gehängt ist (bilderAmSchirm, Ereignis „bilderschau-gehaengt") */
+let wandWartet = false;
 const merken = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(leihe ? { ...E, ...leihe } : E)); } catch (e) {} };
 const el = (id) => document.getElementById(id);
 const esc2 = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -213,8 +217,10 @@ function bilderAmSchirm(){
   const bg = typeof bilderGezeigt !== 'undefined' ? bilderGezeigt : null, d = bg && bg.r && bg.r.daten;
   if (!d || !d.wahl) return { fehlt: 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.' };
   const w = d.wahl, jetzt = { mass: schaumMass, trafo: bilderWahl.trafo, gliederung: schaumGliederung, zoom: schaumZoom || '', haengung: bilderWahl.haengung,
-    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', filter: typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : '' };
-  if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm noch neu gehängt – das Plakat bitte gleich noch einmal öffnen.' };
+    rahmen: !!bilderWahl.rahmen, kopf: !!bilderWahl.kopf, unter: !!bilderWahl.unter, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', filter: typeof titelFilterSchluessel === 'function' ? titelFilterSchluessel() : '' };
+  /* hängt sie noch neu, wartet das Studio auf das Ereignis „bilderschau-gehaengt" (index.html bilderEinsetzen) und zeichnet dann von selbst
+     neu (wandWartet) - bis 1.0.79 stand hier „das Plakat bitte gleich noch einmal öffnen", und die Meldung blieb stehen */
+  if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm neu gehängt – das Plakat folgt gleich.', neu: true };
   return { bg, d };
 }
 const bilderStempel = new WeakMap();
@@ -225,9 +231,10 @@ function bilderStand(){
 }
 async function auftrag(verh){
   /* Bilderschau: die Wand im Verhältnis der Karte, 1400 Punkte an der langen Seite (in der Größenordnung des Schirms, für den Rahmen,
-     Luft und Wandrand der Hängung bemessen sind); ohne Gruppenschilder und Bildunterschriften */
+     Luft und Wandrand der Hängung bemessen sind). Gruppenüberschriften und Bildunterschriften wie am Schirm (d.opt.kopf, d.opt.schild;
+     Caspar_D, 15.10.2026, E2(a): „wählbar, Vorgabe wie am Schirm (aus)") - bis 1.0.79 hier immer 0 */
   if (bilderschau()){
-    const { bg, d, fehlt } = bilderAmSchirm(); if (fehlt) throw new Error(fehlt);
+    const { bg, d, fehlt, neu } = bilderAmSchirm(); if (fehlt){ const e = new Error(fehlt); e.neu = !!neu; throw e; }
     const masse = schaumMasse(), m = masse.find(x => x.id === d.wahl.mass) || masse[0];
     const glieder = schaumGliederungen(), gl = glieder.find(x => x.id === d.wahl.gliederung) || glieder[0];
     const t = TRANSFORMATIONEN.find(x => x.id === d.wahl.trafo) || TRANSFORMATIONEN[1];
@@ -237,7 +244,7 @@ async function auftrag(verh){
        gezoomt die Genres (z.gruppe) für die Areale und warf die Zoomgruppe hinaus: auf dem Plakat standen nur graue Kästchen (Grau heißt
        im Haus unsicher), während Rahmen und Verzeichnisköpfe die Farbe der Zoomgruppe trugen (Fallensuche 15.10.2026). Hängen und
        Begrenzen der Bilderschau lesen ebenen nicht; ungezoomt bleibt die Legende, wie sie war. */
-    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh,
+    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh,
                   ebenen: d.wahl.zoom ? ['genre'] : ['gruppe'] },
              art: 'bild', m, gl, t, farbe: bg.farbe, gezoomt: !!d.wahl.zoom };
   }
@@ -569,7 +576,9 @@ function zeichnen(sofort, warteMs, nurSetzen){
       let a;
       try { a = begrenzen(await auftrag(verh), kachelN); }
       catch (e){ if (!bilderschau()) throw e;                         /* Bilderschau nicht (oder noch nicht neu) gehängt: sagen, nichts Altes stehen lassen */
-        if (lauf !== legeLauf) return; aktuell = null; el('ps-blatt').innerHTML = ''; standSetzen(e.message);
+        if (lauf !== legeLauf) return; aktuell = null; standSetzen(e.message);
+        /* hängt sie am Schirm neu (eine Wahl im Studio oder in der Ansicht), bleibt das alte Blatt bis dahin stehen */
+        if (e.neu) wandWartet = true; else el('ps-blatt').innerHTML = '';
         if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag(); if (!E.kopfUnterEigen) E.kopfUnter = ''; felderSetzen(); return; }
       if (lauf !== legeLauf) return;
       legendeAreale = arealeDer(a.j);   /* die Ecke von Randlos bemisst ihre Legende danach (schildVorgabe → eckTeile) */
@@ -577,14 +586,20 @@ function zeichnen(sofort, warteMs, nurSetzen){
       if (!E.kopfTitelEigen) E.kopfTitel = kopfTitelVorschlag();
       if (!E.kopfUnterEigen) E.kopfUnter = kopfUnterVorschlag(a);
       if (!E.schildNameEigen) E.schildName = schildNameVorschlag();
-      let v = null;
-      if (E.schild && typeof schildAuftrag === 'function'){ v = schildVorgabe(g, a.j.W, a.j.H); a.j = schildAuftrag(a.j, v); }
+      let v = null, ecke = null;
+      /* Randlos: der Schaum bekommt die Ecke als eigene Zelle (schildAuftrag), die Bilderschau als gesperrte Wand (bilderEcke) */
+      if (E.schild && a.art === 'bild'){ v = schildVorgabe(g, a.j.W, a.j.H); ecke = bilderEcke(v, a.j.W, a.j.H); a.j = { ...a.j, lage: a.j.lage + '|ecke:' + v.schluessel }; }
+      else if (E.schild && typeof schildAuftrag === 'function'){ v = schildVorgabe(g, a.j.W, a.j.H); a.j = schildAuftrag(a.j, v); }
       if (E.skizze) a.j = dAuftrag(a.j, g.kreis.schnitt);
       let res;
       if (a.art === 'bild'){
         standSetzen('Die Galerie wird fürs Plakat aufgehängt …');                 /* Caspar_Ds Wortlaut für die Bilderschau, 11.10.2026 */
-        try { res = await bilderLageHolen(a.j, bilderSperren(g, a.j.W, a.j.H)); }
+        try { res = await bilderLageHolen(a.j, bilderSperren(g, a.j.W, a.j.H).concat(ecke ? [ecke.sperre] : [])); }
         catch (e){ if (lauf !== legeLauf) return; standSetzen('Die Bilder passen nicht auf das Plakat.'); console.log('Plakat, Bilderschau:', e); return; }
+        /* die Areale als Knoten wie beim Schaum (y nach oben), davor die Ecke als Schild-Knoten: eckeSetzen prüft daran den Block, der Rand
+           nimmt daraus seine Farben (randFarben) - gemerkte Hängungen bleiben unverändert */
+        res = { ...res, nodes: (ecke ? [{ depth: 0, name: SCHILD_NAME, outline: ecke.umriss }] : [])
+          .concat((res.areale || []).map(ar => ({ depth: 0, name: ar.name, outline: ar.poly.map(q => [q[0], res.H - q[1]]) }))) };
       } else {
         standSetzen('Der Schaum wird für das Plakat gelegt …');
         try { res = await schaumLageHolen(a.j, s => { if (lauf === legeLauf) standSetzen(`Der Schaum wird für das Plakat gelegt … ${s} s`); }, true); }
@@ -598,9 +613,11 @@ function zeichnen(sofort, warteMs, nurSetzen){
     bauen(g);
   }, sofort ? 0 : (warteMs || 120));
 }
+/* Die Art des Plakats, wie die Ansicht heißt (Studio-Kopf „Plakat · <Art>", Titelvorschlag; Randlos der Bilderschau: „Bilderschau") */
+const plakatArt = () => raumJetzt === 'groupies' ? 'Groupieschaum' : bilderschau() ? 'Bilderschau' : 'Klangschaum';
 const profil = () => (typeof katalogInfo !== 'undefined' && katalogInfo && katalogInfo.profil) || {};
 function kopfTitelVorschlag(){
-  const schaum = raumJetzt === 'groupies' ? 'Groupieschaum' : 'Klangschaum', p = profil();
+  const schaum = plakatArt(), p = profil();
   /* Skizzenbuch: erst den Namen schrifttauglich machen (Zierrat weg, sonst Handle), dann das Genitiv-s - vorher „Tarja s Klangschaum" */
   if (E.skizze){ const n = anzeigeName({ name: p.display_name, handle: p.handle }); return n ? genitiv(n) + ' ' + schaum : schaum; }
   /* Bilderschau: „<Name im Genitiv> Bilderschau" (Caspar_D, 11.10.2026: „Caspar_Ds Bilderschau") */
@@ -700,6 +717,17 @@ function bilderSperren(g, W, H){
   const f = wandFugen(g); if (!f.length) return [];
   const kv = g.karte, k = Math.min(kv.w / W, kv.h / H), ox = kv.x + (kv.w - W * k) / 2;
   return f.map(([a, b]) => ({ x: +((a - ox) / k).toFixed(2), y: -10, w: +((b - a) / k).toFixed(2), h: H + 20 }));
+}
+/* RANDLOS IN DER BILDERSCHAU (Caspar_D, 15.10.2026, 2a: „freigeben; dort sind die Nummern automatisch aus … Ecke mit Avatar, Titel,
+   Legende wie im Klangschaum-Randlos"). Der Block der Ecke (schildVorgabe, Breiten gerundet) samt Luft wird gesperrte Wand bis an die
+   Kanten der Ecke - dort hängt kein Cover. umriss: dasselbe Rechteck in Schaum-Einheiten (y nach oben) für blockReserve beim Setzen,
+   eine Wandpunkt-Luft größer, damit der ungerundete Block sicher hineinpasst. Nummern gibt es dabei keine (mitVerzeichnis). */
+function bilderEcke(v, W, H){
+  const t = blockLage(v.block, v.ecke, v.rahmen, 1).filter(q => q.typ !== 'luecke' && q.w > 0 && q.h > 0), d = v.luft + 1;
+  let x0 = Math.min(...t.map(q => q.x0)) - d, x1 = Math.max(...t.map(q => q.x1)) + d, y0 = Math.min(...t.map(q => q.y0)) - d, y1 = Math.max(...t.map(q => q.y1)) + d;
+  if (v.ecke[1] === 'r') x1 = W + 10; else x0 = -10;
+  if (v.ecke[0] === 'u') y0 = -10; else y1 = H + 10;
+  return { umriss: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]], sperre: { x: +x0.toFixed(2), y: +(H - y1).toFixed(2), w: +(x1 - x0).toFixed(2), h: +(y1 - y0).toFixed(2) } };
 }
 /* DIE NUMMER AUF DEM COVER (Caspar_D, 11.10.2026: „KEINE Bildunterschriften … die Nummer klein auf jedem Cover in Kontrastfarbe
    (schwarz/weiß), in der Ecke, wo sie am besten lesbar ist"; 15.10.2026: „mach einen Rauchglas Badge unter die Nummer"). Die Ziffern
@@ -1016,6 +1044,20 @@ async function bilderEbene(g, kv, lauf){
       + ` data-id="${esc2(b.id)}" data-ecke="${p.ecke}" data-stufe="${p.stufe}" data-feld="${p.R.map(v => v.toFixed(4)).join(',')}" data-k="${p.k.toFixed(2)}" data-km="${p.km.toFixed(2)}" data-a="${p.a.toFixed(3)}" data-ton="${ba.ton}"`
       + ` style="font-variant-numeric:tabular-nums">${t}</text>`;
   }
+  /* ÜBERSCHRIFTEN UND BILDUNTERSCHRIFTEN (E2(a), Caspar_D 15.10.2026: wählbar, Vorgabe wie am Schirm - aus; die Nummern bleiben). Die
+     Hängung hat beides schon freigehalten (bilderschau.js: Gruppenschilder als gesperrte Wand, je Bild b.schild unter dem Rahmen, nur bei
+     Bildern ab schildMin breit); gesetzt wird wie am Schirm (.bwkopf 12,5 / 11, .bwschild 10,5 Punkte), in Wandpunkten, also mit dem
+     Plakat skaliert. Der Name in der Farbe seines Areals, dahinter leise die Zahl; der Titel auf die Breite seines Bildes gekürzt
+     (gemessen wie gesetzt, messen). */
+  const leiseF = schriftLeise(), kuerzen = (t, fs, breite) => { if (messen(t, 400, fs) * fs <= breite) return t;
+    let a = 0, b = t.length; while (a < b){ const m = (a + b + 1) >> 1; if (messen(t.slice(0, m).trimEnd() + '…', 400, fs) * fs <= breite) a = m; else b = m - 1; }
+    return a ? t.slice(0, a).trimEnd() + '…' : ''; };
+  for (const a of res.schilder || []){ const n = res.bilder.filter(b => b.gruppe === a.name).length;
+    out += `<text class="ps-bwkopf" x="${f2(a.x)}" y="${f2(a.y + 13)}" font-size="12.5" font-weight="600" fill="${farbe(a.name)}">${esc2(a.name)}`
+      + `<tspan font-size="11" font-weight="400" fill="${leiseF}"> ${n} Titel</tspan></text>`; }
+  for (const b of res.bilder){ if (!(b.schild > 0)) continue;
+    const fs = 10.5 * b.schild / 15, t = kuerzen(String((zeile.get(b.id) || {}).titel || '').trim(), fs, b.w); if (!t) continue;
+    out += `<text class="ps-bwschild" x="${f2(b.x)}" y="${f2(b.y + b.h + (b.rahmen || 0) + 2 + fs)}" font-size="${fs.toFixed(2)}" fill="${leiseF}">${esc2(t)}</text>`; }
   standSetzen('');
   return { svg: `<svg class="ps-schaum" x="${f2(kv.x)}" y="${f2(kv.y)}" width="${f2(kv.w)}" height="${f2(kv.h)}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${out}</svg>`,
            verzeichnis: g.verz ? verzeichnis : null, areale: (res.areale || []).map(a => ({ name: a.name, farbe: farbe(a.name), pts: a.poly })), nrStand };
@@ -1535,6 +1577,14 @@ async function pdf(){
 
 function felderSetzen(){
   if (!studio) return;
+  /* Kopf „Plakat · <Art>" und darunter, was aus der Ansicht kommt: ihre Wahlen (schaumKurzTeile, index.html) und - Klangschaum und
+     Bilderschau - die Auswahl des Filters oben („257 von 330 Titeln · gefiltert: Öffentlich") */
+  el('ps-kopf').textContent = 'Plakat · ' + plakatArt();
+  { const teile = (typeof schaumKurzTeile !== 'undefined' ? schaumKurzTeile : []).filter(Boolean);
+    const titel = raumJetzt !== 'groupies' && typeof titelAuswahl === 'function' ? titelAuswahl() : null;
+    const zeile = titel ? [...teile.filter(t => !/^[\d.]+ von [\d.]+$/.test(t)), schaumZoom ? '„' + schaumZoom + '“' : null, titel.text] : teile;
+    el('ps-ausansicht').textContent = 'Aus der Ansicht: ' + zeile.filter(Boolean).join(' · '); }
+  bilderteilSetzen();
   studio.querySelectorAll('[data-vorlage]').forEach(b => b.classList.toggle('an', b.dataset.vorlage === E.vorlage));
   studio.querySelectorAll('[data-format]').forEach(b => b.classList.toggle('an', b.dataset.format === E.format));
   studio.querySelectorAll('[data-lage]').forEach(b => b.classList.toggle('an', b.dataset.lage === E.lage));
@@ -1557,7 +1607,7 @@ function felderSetzen(){
   /* WAS NICHT GILT, WIRD GRAU MIT GRUND (Hausregel 4; Caspar_D, 07.10.2026: „mach alle sachen, die nicht ins rahmenlose design
      passen ausgegraut"): bei Randlos alles, was am Rand haengt; sonst Ecke und Name, die es nur bei Randlos gibt. */
   const grau = (knoten, aus, grund) => { if (!knoten) return; knoten.classList.toggle('ps-grau', aus); knoten.title = aus ? grund : '';
-    (knoten.matches('input,button') ? [knoten] : knoten.querySelectorAll('input,button')).forEach(f => { f.disabled = aus; }); };
+    (knoten.matches('input,button,select') ? [knoten] : knoten.querySelectorAll('input,button,select')).forEach(f => { f.disabled = aus; }); };
   const zeile = (id) => { const f = el(id); return f && (f.closest('label') || f); };
   const ohneRand = 'Gilt nicht bei Randlos – ohne Rand gibt es kein Passepartout.';
   for (const id of ['ps-rand', 'ps-feder', 'ps-federmm', 'ps-verz', 'ps-areale']) grau(zeile(id), !!E.schild, ohneRand);
@@ -1577,19 +1627,18 @@ function felderSetzen(){
       const sw = studio.querySelector('[data-grund="schwarz"]'); if (sw){ sw.disabled = false; sw.classList.remove('ps-grau'); sw.title = ''; } }
     grau(el('ps-skizzeteil'), !sk, 'Nur im Skizzenbuch.');
     studio.querySelectorAll('[data-refrains]').forEach(b => b.classList.toggle('an', b.dataset.refrains === (E.refrains || 'herzen')));
-    /* die Vorlagen, die es hier nicht gibt: das Skizzenbuch im Groupieschaum und in der Bilderschau, Randlos in der Bilderschau */
+    /* die Vorlagen, die es hier nicht gibt: das Skizzenbuch im Groupieschaum und in der Bilderschau. Randlos gibt es in der Bilderschau seit
+       1.0.80 (Caspar_D, 15.10.2026, 2a: „freigeben; dort sind die Nummern automatisch aus") - ohne Verzeichnis, Ecke wie im Klangschaum */
     studio.querySelectorAll('[data-vorlage]').forEach(vb => { const v = vb.dataset.vorlage;
       const warum = v === 'skizze' && raumJetzt === 'groupies' ? 'Das Skizzenbuch zeichnet die Cover deiner Titel – im Groupieschaum gibt es sie nicht.'
-        : v === 'skizze' && bilderschau() ? 'Das Skizzenbuch zeichnet den Klangschaum mit der Feder – die Bilderschau hängt die Cover selbst.'
-        : v === 'randlos' && bilderschau() ? 'Randlos gibt es in der Bilderschau noch nicht – es hat kein Werkverzeichnis für die Nummern auf den Covern.' : '';
+        : v === 'skizze' && bilderschau() ? 'Das Skizzenbuch zeichnet den Klangschaum mit der Feder – die Bilderschau hängt die Cover selbst.' : '';
       vb.disabled = !!warum; vb.classList.toggle('ps-grau', !!warum); vb.title = warum; });
     studio.querySelectorAll('[data-format]').forEach(b => { const f = FORMATE.find(x => x.id === b.dataset.format) || {}, aus = sk && !!f.tri; b.disabled = aus; b.classList.toggle('ps-grau', aus); b.title = aus ? 'Das Skizzenbuch ist eine Seite.' : ''; }); }
   /* BILDERSCHAU: was nur den Schaum betrifft, grau mit Grund (Hausregel 4) - nach dem Skizzenbuch-Block, der die Feinheiten freigibt */
   if (bilderschau()){
     const ohne = 'Gilt nicht in der Bilderschau – die Cover hängen so, wie sie am Schirm hängen.';
     for (const id of ['ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), true, ohne);
-    grau(el('ps-titelwahl'), true, mitVerzeichnis() ? 'In der Bilderschau gibt es keine Bildunterschriften – jedes Cover, auf das sie passt, trägt seine Nummer, die Titel stehen im Werkverzeichnis.'
-      : 'In der Bilderschau gibt es keine Bildunterschriften – mit dem Verzeichnis trägt jedes Cover, auf das sie passt, seine Nummer, und die Titel stehen in der Liste.');
+    grau(el('ps-titelwahl'), true, 'In der Bilderschau stehen die Titel nicht in Zellen – Bildunterschriften wählt der Abschnitt Bilderschau, die Nummern das Verzeichnis.');
     const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, true, 'In der Bilderschau schwarz oder weiß wie die Vorlagen – keine freie Farbe.'); el('ps-farbe').disabled = true;
   } else { grau(el('ps-titelwahl'), false, ''); const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, false, ''); el('ps-farbe').disabled = false; }
   { const v = E.randVorne ?? 15, u = +E.umschlag || 0, a = el('ps-randvorne'), b = el('ps-umschlag');
@@ -1601,6 +1650,19 @@ function felderSetzen(){
     grau(el('ps-randteil'), !!grund, grund);
     if (!grund){ grau(zeile('ps-umschlag'), !!fm.bild, 'Nur für den Druck – ein Bild hat keine Kante zum Umschlagen.');
       grau(el('ps-weisen-hell'), !hellerGrund(), 'Aquarell braucht hellen Grund.'); grau(el('ps-weisen-dunkel'), hellerGrund(), 'Kreide und Gouache sind für dunklen Grund.'); } }
+}
+/* Der Abschnitt Bilderschau: die Wahlen mit den Werten der Ansicht; in Klangschaum und Groupieschaum grau mit Grund (Hausregel 4) */
+function bilderteilSetzen(){
+  const T = TRANSFORMATIONEN, masse = schaumMasse(), glieder = schaumGliederungen();
+  wahlSetzen(el('ps-bmass'), 'ps-bmass', masse.map(x => ({ id: x.id, name: x.name, title: x.was })), schaumMass, { titel: 'Wonach sich die Fläche jedes Bildes richtet' });
+  wahlSetzen(el('ps-btrafo'), 'ps-btrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), bilderWahl.trafo, { titel: 'Wie aus dem Wert die Fläche des Bildes wird' });
+  wahlSetzen(el('ps-bgliederung'), 'ps-bgliederung', glieder.map(x => ({ id: x.id, name: x.name })), schaumGliederung, { titel: 'Wonach die Bilder in Areale geteilt werden' });
+  wahlSetzen(el('ps-bhaengung'), 'ps-bhaengung', BILDER_HAENGUNGEN, bilderWahl.haengung, { titel: 'Wie die Bilder in ihren Arealen hängen' });
+  for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter']]){ const b = el(id); b.classList.toggle('an', !!bilderWahl[k]); b.setAttribute('aria-pressed', bilderWahl[k] ? 'true' : 'false'); }
+  const aus = !bilderschau(), t = el('ps-bilderteil');
+  t.classList.toggle('ps-grau', aus); t.title = aus ? 'Nur in der Bilderschau.' : '';
+  t.querySelectorAll('input,button,select').forEach(f => { f.disabled = aus; });
+  el('ps-bilder-text').textContent = aus ? 'Nur in der Bilderschau.' : 'Dieselben Einstellungen wie in der Ansicht: was hier gewählt wird, gilt auch dort.';
 }
 const grundArt = () => { const gr = grund().toLowerCase(); return gr === '#0c0d10' || gr === '#08090b' ? 'schwarz' : gr === '#f3efe6' || gr === '#ffffff' || gr === '#ece7dc' ? 'weiss' : 'farbe'; };
 function setze(teil, neuLegen, warteMs, nurSetzen){ Object.assign(E, teil);
@@ -1628,7 +1690,7 @@ function aufbauen(){
 .ps-zeile input[type=range]{width:100%}
 .ps-zeile span.wert{color:#9aa3ad;text-align:right;font-variant-numeric:tabular-nums}
 .ps-eingabe{width:100%;box-sizing:border-box;border:1px solid var(--rand,#2a3038);background:var(--flaeche2,#1d2127);color:inherit;border-radius:7px;padding:5px 8px;font:inherit;font-size:13px;margin:3px 0}
-#ps-frei{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:13px}#ps-frei input{width:70px}
+#ps-frei{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:13px}#ps-frei[hidden]{display:none}#ps-frei input{width:70px}
 .ps-knoepfe{display:flex;gap:8px;margin-top:18px}
 .ps-knoepfe button{border:0;border-radius:9px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
 #ps-pdf,#ps-png{background:#e3b43c;color:#111}#ps-zu{background:var(--flaeche2,#1d2127);color:inherit;border:1px solid var(--rand,#2a3038)!important}
@@ -1638,15 +1700,31 @@ function aufbauen(){
 @font-face{font-family:'Pinyon Script';font-style:normal;font-weight:400;font-display:block;src:url('/fonts/pinyon-script-400.ttf') format('truetype')}.ps-grau input,.ps-grau button{cursor:not-allowed}
 #ps-wand{margin-top:8px;border-radius:7px;overflow:hidden}
 details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
+#ps-ausansicht{margin:-6px 0 4px}
+.ps-wzeile{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:8px;margin:5px 0;font-size:13px}
+#ps-panel .wahl .pille{border:1px solid var(--rand,#2a3038);background:var(--flaeche2,#1d2127);color:inherit;border-radius:999px;padding:3px 10px;cursor:pointer;font:inherit;font-size:12.5px}
+#ps-panel .wahl .pille.an{border-color:#e3b43c;box-shadow:inset 0 0 0 1px #e3b43c}
+#ps-panel .wahl .pille:active{transform:scale(.95)}
+#ps-panel .wahl select{font:inherit;font-size:12.5px;max-width:100%;min-width:0;padding:3px 8px;border-radius:999px;border:1px solid #e3b43c;background:var(--flaeche2,#1d2127);color:inherit}
 `;
   document.head.appendChild(css);
   studio = document.createElement('div'); studio.id = 'plakatstudio';
   const regler = (id, name, min, max, schritt) => `<label class="ps-zeile">${name}<input type="range" id="${id}" min="${min}" max="${max}" step="${schritt}"><span class="wert" id="${id}-w"></span></label>`;
   studio.innerHTML = `<div id="ps-buehne"><div id="ps-blatt"></div><div id="ps-stand"></div></div>
 <aside id="ps-panel">
-  <h2>Plakat</h2>
+  <h2 id="ps-kopf">Plakat</h2>
+  <p class="ps-leise" id="ps-ausansicht"></p>
   <h3>Vorlage</h3><div class="ps-vorlagen">${VORLAGEN.map(v => `<button type="button" data-vorlage="${v.id}"><b>${v.name}</b><small>${v.zeile}</small></button>`).join('')}</div>
   <p class="ps-leise" id="ps-randlos-grund" hidden>Ohne Rand gibt es kein Passepartout: Rand, Federstrich, Verzeichnis, Areale am Rand und Zeitleiste sind ausgegraut.</p>
+  <h3>Bilderschau</h3>
+  <div id="ps-bilderteil">
+    <div class="ps-wzeile"><span>Fläche nach</span><span id="ps-bmass"></span></div>
+    <div class="ps-wzeile"><span>Skalen&shy;transformation</span><span id="ps-btrafo"></span></div>
+    <div class="ps-wzeile"><span>Gegliedert nach</span><span id="ps-bgliederung"></span></div>
+    <div class="ps-wzeile"><span>Hängung</span><span id="ps-bhaengung"></span></div>
+    <div class="ps-pillen" style="margin-top:7px"><button type="button" class="ps-schalt" id="ps-brahmen">Rahmen</button><button type="button" class="ps-schalt" id="ps-bkopf">Überschriften der Gruppen</button><button type="button" class="ps-schalt" id="ps-bunter">Bildunterschriften</button></div>
+    <p class="ps-leise" id="ps-bilder-text">Dieselben Einstellungen wie in der Ansicht: was hier gewählt wird, gilt auch dort.</p>
+  </div>
   <h3>Format</h3><div class="ps-pillen">${FORMATE.map(f => `<button type="button" data-format="${f.id}">${f.name}</button>`).join('')}</div>
   <div id="ps-frei" hidden>Breite <input class="ps-eingabe" id="ps-freiw" type="number" min="10" max="300"> cm · Höhe <input class="ps-eingabe" id="ps-freih" type="number" min="10" max="300"> cm</div>
   <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">Hoch</button><button type="button" data-lage="quer">Quer</button></div>
@@ -1723,6 +1801,17 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   cm('ps-randvorne', 'randVorne'); cm('ps-umschlag', 'umschlag');
   studio.querySelectorAll('[data-weise-hell]').forEach(b => b.onclick = () => setze({ weiseHell: b.dataset.weiseHell }));
   studio.querySelectorAll('[data-weise-dunkel]').forEach(b => b.onclick = () => setze({ weiseDunkel: b.dataset.weiseDunkel }));
+  /* DER ABSCHNITT BILDERSCHAU (B5 mit E1(a), Caspar_D 15.10.2026: Studio und Ansicht teilen die Einstellungen): die Wahlen rufen die
+     Setter der Ansicht (index.html), die hängt am Schirm neu und meldet „bilderschau-gehaengt" - dann zeichnet das Studio neu. Die Wahlen
+     sind Pille oder Dropdown nach Hausregel 19 (wahlHtml/wahlSetzen aus index.html, gemessen an der Breite des Studios). */
+  const ansicht = (f) => (v) => { if (!bilderschau()) return; f(v); felderSetzen(); zeichnen(true); };
+  wahlTun['ps-bmass'] = ansicht(v => schaumMassWaehlen(v));
+  wahlTun['ps-btrafo'] = ansicht(v => bilderschauWahl('trafo', v));
+  wahlTun['ps-bgliederung'] = ansicht(v => schaumGliederungWaehlen(v));
+  wahlTun['ps-bhaengung'] = ansicht(v => bilderschauWahl('haengung', v));
+  for (const [id, k] of [['ps-brahmen', 'rahmen'], ['ps-bkopf', 'kopf'], ['ps-bunter', 'unter']]) el(id).onclick = () => ansicht(() => bilderschauWahl(k, !bilderWahl[k]))();
+  document.addEventListener('bilderschau-gehaengt', () => { if (!wandWartet || !studio || studio.hidden || !bilderschau()) return;
+    wandWartet = false; felderSetzen(); zeichnen(true); });
   el('ps-pdf').onclick = () => pdf();
   el('ps-png').onclick = () => bildSichern();
   el('ps-zu').onclick = schliessen;
@@ -1743,8 +1832,9 @@ export function oeffnen(){
   /* Das Skizzenbuch zeichnet die Cover deiner Titel - im Groupieschaum gibt es sie nicht: dort mit Galerie öffnen (vorher blieb die
      gemerkte Vorlage stehen, und das Plakat wartete auf Federzeichnungen von Personen; Fallensuche 1.0.61) */
   if (E.skizze && raumJetzt === 'groupies'){ Object.assign(E, { vorlage: 'galerie' }, VORLAGEN[0].e); merken(); }
-  /* Bilderschau: Skizzenbuch und Randlos gibt es hier nicht (siehe oben) - dann mit Galerie öffnen, nur für die Bilderschau (leihe) */
-  if (bilderschau() && (E.skizze || E.schild)){ const galerie = { vorlage: 'galerie', ...VORLAGEN[0].e };
+  /* Bilderschau: das Skizzenbuch gibt es hier nicht (siehe oben) - dann mit Galerie öffnen, nur für die Bilderschau (leihe). Randlos
+     bleibt seit 1.0.80 Randlos. */
+  if (bilderschau() && E.skizze){ const galerie = { vorlage: 'galerie', ...VORLAGEN[0].e };
     if (!leihe) leihe = Object.fromEntries(Object.keys(galerie).map(k => [k, E[k]]));
     Object.assign(E, galerie); }
   studio.hidden = false; document.documentElement.style.overflow = 'hidden';

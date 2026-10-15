@@ -8974,6 +8974,8 @@ function bilderEinsetzen(r, farbe, m, zeilen){
   }
   bild.innerHTML = html + '</div>';
   bild.onmouseover = null; bild.onmouseleave = null;
+  /* Das Plakat-Studio stellt dieselben Einstellungen (E1(a), 15.10.2026) und wartet nach einer Wahl, bis die Wand hier neu hängt */
+  document.dispatchEvent(new CustomEvent('bilderschau-gehaengt'));
   bild.onclick = (e) => { const d = e.target.closest && e.target.closest('.bw[data-id]'); if (d) spielenNachId(d.dataset.id); };
 }
 
