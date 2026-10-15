@@ -92,8 +92,10 @@ const schriftLeise = () => hellerGrund() ? '#5c5f66' : '#a3a9b1';
 
 /* Wie gross das Werkverzeichnis wird: n Eintraege (geschaetzt mit ein paar Arealkoepfen) in Spalten ueber die
    ganze Breite. Die Schrift so gross wie moeglich (bis 0,45 % der kurzen Seite, auf 70 × 100 gut 3 mm), so klein
-   wie noetig (bis 1,5 mm, aus der Naehe lesbar), damit der Block hoechstens ein Sechstel der Hoehe nimmt. Eine
-   Spalte ist 15 Schriftgroessen breit: Nummer, Titel, Abstand. */
+   wie noetig (bis 1,5 mm, aus der Naehe lesbar; ab 577 mm kurzer Seite bis 0,26 % davon), damit der Block hoechstens
+   ein Sechstel der Hoehe nimmt - reicht auch die kleinste nicht, wird er hoeher. Unter 333 mm kurzer Seite ist schon
+   die groesste Schrift kleiner als 1,5 mm und die einzige (A3: 1,34 mm; beim Setzen notfalls bis 1 mm, verzeichnisSetzen).
+   Eine Spalte ist 15 Schriftgroessen breit: Nummer, Titel, Abstand. */
 function verzeichnisMass(n, breite, kurz, hoeheMax, koepfe = 6, kleinst = Math.max(1.5, 0.0026 * kurz), strecken = null){
   /* je Areal ein Kopf und ein Rest („und N weitere"), je Spalte eine Zeile Reserve (ein Kopf rueckt nie allein an den Fuss) */
   const zeilenZahl = n + 2 * koepfe, kopf = 2.4;
@@ -172,8 +174,12 @@ function geometrie(n = 0){
    des gezeigten Maßes, bei Gleichstand der neuere Titel bzw. die zuletzt aktive Person. Die Startpunkte werden für die Auswahl neu
    gerechnet, der Lage-Schlüssel trägt die Zahl. Was das ganze Archiv beschreibt (Tabula, Steckbrief, Würdigung, Wachstum), bleibt
    beim ganzen Archiv. Fläche: der angeschnittene Kreis ist πr² minus das abgeschnittene Segment (Sehne bei r/2) = 2,5274 r².
-   Vor dieser Grenze wirkt der Regler am Schirm („zeigt N von M", index.html schaumAuswahl, 15.10.2026): das Studio nimmt, was gezeigt
-   ist, und die Unterzeile nennt die Zahl ohne beide Grenzen. */
+   Im Groupieschaum wirkt vor dieser Grenze der Regler am Schirm („zeigt N von M", index.html groupieAuswahl, 15.10.2026): das Studio
+   nimmt, was gezeigt ist, und die Unterzeile nennt die Zahl ohne beide Grenzen.
+   AUSNAHME BILDERSCHAU (Caspar_D, 15.10.2026: „dann kann man selbst entscheiden, wie (un)übersichtlich es wird"): ihr Plakat hängt alle
+   Titel, die die Ansicht zeigt - keine Grenze nach dem Format (zeichnen), nur die 700 gelten (begrenzen). „Mach es überall" vom 08.10.
+   ist damit für die Bilderschau zurückgenommen; Klang- und Groupieschaum behalten die Grenze nach dem Format. Wie viele Nummern dabei
+   kleiner als 1,5 mm werden, steht im Studio unter dem Format (bilderEbene, bauen). */
 const KACHEL_MM2 = 400, KACHELN_HOECHSTENS = 700, KACHELN_MINDESTENS = 12;
 function kachelZahl(g){
   const flaeche = g.skizze && g.kreis ? 2.5274 * g.kreis.r * g.kreis.r : g.karte.w * g.karte.h;
@@ -199,7 +205,7 @@ function bilderAmSchirm(){
   const bg = typeof bilderGezeigt !== 'undefined' ? bilderGezeigt : null, d = bg && bg.r && bg.r.daten;
   if (!d || !d.wahl) return { fehlt: 'Bitte die Bilderschau einmal anzeigen lassen, dann das Plakat öffnen.' };
   const w = d.wahl, jetzt = { mass: schaumMass, trafo: bilderWahl.trafo, gliederung: schaumGliederung, zoom: schaumZoom || '', haengung: bilderWahl.haengung,
-    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '', zeigt: typeof schaumZeigt !== 'undefined' ? String(schaumZeigt.schaum) : '' };
+    rahmen: !!bilderWahl.rahmen, verf: typeof karteVerf !== 'undefined' ? karteVerf : '' };
   if (Object.keys(jetzt).some(k => String(w[k]) !== String(jetzt[k]))) return { fehlt: 'Die Bilderschau wird am Schirm noch neu gehängt – das Plakat bitte gleich noch einmal öffnen.' };
   return { bg, d };
 }
@@ -223,7 +229,7 @@ async function auftrag(verh){
        gezoomt die Genres (z.gruppe) für die Areale und warf die Zoomgruppe hinaus: auf dem Plakat standen nur graue Kästchen (Grau heißt
        im Haus unsicher), während Rahmen und Verzeichnisköpfe die Farbe der Zoomgruppe trugen (Fallensuche 15.10.2026). Hängen und
        Begrenzen der Bilderschau lesen ebenen nicht; ungezoomt bleibt die Legende, wie sie war. */
-    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh, ohneRegler: d.ohneRegler,
+    return { j: { zeilen: d.zeilen, gruppen: d.gruppen, opt: { ...d.opt, kopf: 0, schild: 0 }, kopfBreite: d.kopfBreite, W, H, lage: 'bild|' + bilderStand() + '|' + verh,
                   ebenen: d.wahl.zoom ? ['genre'] : ['gruppe'] },
              art: 'bild', m, gl, t, farbe: bg.farbe, gezoomt: !!d.wahl.zoom };
   }
@@ -513,25 +519,27 @@ function zeichnen(sofort, warteMs, nurSetzen){
     /* was das Haus zeigt (Maß, Gliederung, Zoom): ändert es sich, ist der Plakatschaum ein anderer - auch die Auswahl der stärksten
        (vorher blieb nach einem Maßwechsel im Haus die alte Auswahl samt Unterzeile stehen; Fallensuche 1.0.62) */
     let hausS = '';
-    /* dazu der Regler „zeigt N von M" (schaumAuswahl): er ändert die Zeilen, ohne dass sich Maß oder Gliederung ändern */
-    const zeigtS = typeof schaumZeigt !== 'undefined' ? '|zeigt' + schaumZeigt[raumJetzt === 'groupies' ? 'groupies' : 'schaum'] : '';
+    /* im Groupieschaum dazu der Regler „zeigt N von M" (groupieAuswahl): er ändert die Zeilen, ohne dass sich Maß oder Gliederung ändern */
+    const zeigtS = raumJetzt === 'groupies' && typeof groupieZeigt !== 'undefined' ? '|zeigt' + groupieZeigt : '';
     try { hausS = (raumJetzt === 'groupies' ? [groupieMass, groupieGl().id].join('|') : [schaumMass, schaumGliederung, JSON.stringify(schaumZoom ?? null), typeof karteVerf !== 'undefined' ? karteVerf : ''].join('|')) + zeigtS
       + (bilderschau() ? '|bilder|' + bilderStand() : ''); } catch (e) {}   /* Bilderschau: Transformation, Hängung, Rahmen und die gezeigte Auswahl */
     const gleichesHaus = !!aktuell && aktuell.raum === raumJetzt && aktuell.hausS === hausS;
     /* Gesamtzahl der Zeilen (ohne die Ecke von Randlos) - das Verzeichnis braucht sie vor dem Legen */
     let T = gleichesHaus ? (aktuell.j.gesamt || aktuell.j.zeilen.filter(z => z.id !== SCHILD_ID).length) : 0;
-    if (!T && mitVerzeichnis()){ try { T = (await auftrag(1)).j.zeilen.length; } catch (e) { T = 0; } if (lauf !== legeLauf) return; }
+    const alleGezeigten = bilderschau();                /* Bilderschau: alle, die die Ansicht zeigt, höchstens 700 (Ausnahme bei kachelZahl) */
+    if (!T && (mitVerzeichnis() || alleGezeigten)){ try { T = (await auftrag(1)).j.zeilen.length; } catch (e) { T = 0; } if (lauf !== legeLauf) return; }
     /* MIT VERZEICHNIS hängt die Kachelzahl an der Höhe des Verzeichnisses und diese an der Kachelzahl. Gesucht ist die GRÖSSTE Zahl n,
        deren Karte (mit einem Verzeichnis für n Einträge) mindestens n Kacheln trägt: f(n) = min(T, kachelZahl(geometrie(n))) fällt mit n,
        also gibt es genau eine Grenze - per Halbierung (vorher pendelte das Plakat bei jeder Reglerbewegung; der erste Ersatz, eine
-       Fixpunkt-Iteration, nahm bei einem Zyklus den Startwert: 64 statt 189 Kacheln; Fallensuchen 1.0.62) */
-    let n = T;
-    if (mitVerzeichnis() && T){ const f = (k) => Math.min(T, kachelZahl(geometrie(k))); let lo = 0, hi = T;
+       Fixpunkt-Iteration, nahm bei einem Zyklus den Startwert: 64 statt 189 Kacheln; Fallensuchen 1.0.62). Nicht in der Bilderschau: dort
+       zählt die Ansicht, das Verzeichnis nimmt sich seinen Platz. */
+    let n = alleGezeigten ? Math.min(T, KACHELN_HOECHSTENS) : T;
+    if (mitVerzeichnis() && T && !alleGezeigten){ const f = (k) => Math.min(T, kachelZahl(geometrie(k))); let lo = 0, hi = T;
       while (lo < hi){ const mid = Math.ceil((lo + hi) / 2); if (f(mid) >= mid) lo = mid; else hi = mid - 1; }
       n = Math.max(1, lo); }
     /* Randlos: das Verhältnis auf drei Stellen, sonst reichte der Schaum in breiten Formaten nicht bis in den Beschnitt (3 × 70 × 100
        quer: 28 mm zu kurz an jeder Seite, 100 × 140 quer: 1,4 mm) */
-    const stellen = E.schild ? 1000 : 100, g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * stellen) / stellen, kachelN = mitVerzeichnis() && T ? n : kachelZahl(g);
+    const stellen = E.schild ? 1000 : 100, g = geometrie(n), verh = Math.round(g.karte.h / g.karte.w * stellen) / stellen, kachelN = (mitVerzeichnis() || alleGezeigten) && T ? n : kachelZahl(g);
     /* Randlos: Ecke und Block gehoeren zum Auftrag - aendern sie sich (andere Ecke, laengerer Titel), wird neu gelegt */
     const eckS = E.schild ? schildVorgabe(g, 1000, Math.round(1000 * verh)).schluessel : '';
     /* Bilderschau im Triptychon: die Wandfugen sind gesperrte Wand (kein Cover über einem Schnitt) - ändern sie sich, wird neu gehängt */
@@ -589,8 +597,8 @@ function schildNameVorschlag(){ const p = profil(), n = p.display_name || p.hand
 function kopfUnterVorschlag(a = aktuell){
   if (!a) return '';
   const zl = a.j.zeilen.filter(z => z.id !== SCHILD_ID), n = zl.length, monat = new Date().toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }), person = a.art === 'person';   /* ohne die Ecke von Randlos */
-  /* begrenzt (kachelZahl, oder schon am Schirm vom Regler „zeigt N von M"): „die 360 stärksten nach Herzen von 1.523 Titeln" - genannt wird
-     die Zahl ohne beide Grenzen */
+  /* begrenzt (kachelZahl, im Groupieschaum auch schon am Schirm vom Regler „zeigt N von M"): „die 360 stärksten nach Herzen von 1.523
+     Titeln" - genannt wird die Zahl ohne beide Grenzen */
   const ganz = Math.max(a.j.gesamt || 0, a.j.ohneRegler || 0);
   const menge = ganz > n ? `die ${n} stärksten nach ${a.m.name} von ${ganz.toLocaleString('de-DE')} ${person ? 'Personen' : 'Titeln'}` : '';
   if (E.schild || E.skizze){
@@ -710,9 +718,10 @@ const ziffernHoehe = () => ziffernHoch || (ziffernHoch = (() => { const c = docu
    in der Vorschau aus dem Bildvorrat, fürs PDF das Original (data-voll; druckBilder rechnet es auf 300 dpi seiner Größe) - und die
    Nummer. Nummeriert wird wie im Werkverzeichnis des Schaums: Areal für Areal in der Reihenfolge der Legende, darin in
    Lesereihenfolge (Zeilen von 0,7 mittleren Bildkanten Höhe, in der Zeile von links nach rechts); jedes Cover hat seine Nummer, die
-   Liste unten nennt sie alle. Schriftgröße 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die kleinste Schrift des
-   Verzeichnisses), ein halbes Geviert von den Kanten; passt die Nummer in ein winziges Cover nicht (flächentreu, Wert 1), wird sie
-   kleiner - sie ragt nie über das Cover hinaus. */
+   Liste unten nennt sie alle. Schriftgröße 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die Untergrenze, bis zu der das
+   Verzeichnis schrumpft), ein halbes Geviert von den Kanten; passt die Nummer in ein winziges Cover nicht (flächentreu, Wert 1), wird
+   sie kleiner, bis 0,8 mm - sie ragt nie über das Cover hinaus. Seit das Plakat der Bilderschau alle gezeigten Titel hängt (kachelZahl,
+   15.10.2026), geschieht das auf kleinen Formaten oft; wie oft und wie klein, sagt nrKlein (im Studio unter dem Format). */
 async function bilderEbene(g, kv, lauf){
   const res = aktuell.res, W = res.width, H = res.height, k = Math.min(kv.w / W, kv.h / H);     /* mm je Wandpunkt */
   const zeile = new Map(aktuell.j.zeilen.map(z => [z.id, z])), farbeAmSchirm = aktuell.farbe || (() => null), farbe = (n) => farbeAmSchirm(n) || '#8a8d94';
@@ -734,6 +743,7 @@ async function bilderEbene(g, kv, lauf){
   const misch = (f) => '#' + (farbWert(f) || [138, 141, 148]).map((v, i) => Math.round(v * 0.38 + gr[i] * 0.62).toString(16).padStart(2, '0')).join('');
   const pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW * (window.devicePixelRatio || 1), hoch = ziffernHoehe(), f2 = (v) => v.toFixed(2);
   let out = '';
+  const nrKlein = { n: 0, von: res.bilder.length, min: Infinity };   /* Nummern unter 1,5 mm und die kleinste */
   for (const b of res.bilder){
     const r = b.rahmen || 0, u = artworkBild(b.id), stufe = schaumStufe(Math.max(b.w, b.h) * k * pxJeMm);
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
@@ -745,6 +755,7 @@ async function bilderEbene(g, kv, lauf){
     const t = String(nummer.get(b.id)), bw = b.w * k, bh = b.h * k, em = messen('0'.repeat(t.length), 600, 2);
     let fs = Math.min(3.5, Math.max(1.5, 0.085 * Math.min(bw, bh)));
     fs = Math.max(0.8, Math.min(fs, bw / (em + 1), bh / (hoch + 1)));
+    if (fs < 1.5){ nrKlein.n++; nrKlein.min = Math.min(nrKlein.min, fs); }
     const tw = messen('0'.repeat(t.length), 600, fs / k) * fs, ch = hoch * fs, halo = 0.25 * fs, m = mess.get(b.id);
     /* je Ecke zwei Abstände von den Kanten: ein halbes Geviert, und - nur wenn dort keine Ecke 4,5 : 1 erreicht (WCAG für Text) - anderthalb.
        Viele Cover tragen einen eigenen Rahmen (Holzschnitte: dunkle Linie, helle Bordüre); ein halbes Geviert setzt die Ziffern genau
@@ -768,7 +779,7 @@ async function bilderEbene(g, kv, lauf){
   }
   standSetzen('');
   return { svg: `<svg class="ps-schaum" x="${f2(kv.x)}" y="${f2(kv.y)}" width="${f2(kv.w)}" height="${f2(kv.h)}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${out}</svg>`,
-           verzeichnis: g.verz ? verzeichnis : null, areale: (res.areale || []).map(a => ({ name: a.name, farbe: farbe(a.name), pts: a.poly })) };
+           verzeichnis: g.verz ? verzeichnis : null, areale: (res.areale || []).map(a => ({ name: a.name, farbe: farbe(a.name), pts: a.poly })), nrKlein };
 }
 async function bauen(g){
   if (!aktuell) return;
@@ -788,10 +799,10 @@ async function bauen(g){
   if (!la){ standSetzen('Bitte den Schaum einmal anzeigen lassen, dann das Plakat öffnen.'); return; }
   /* Erst die Bilder, dann das Plakat (Caspar_D, 07.10.2026: keine mindere Qualitaet) - meist schon bereit,
      denn der Schaum war vorher zu sehen; sonst „Bilder werden vorbereitet …" wie im Haus (bilderBereit). */
-  let skHinweis = '', refrains = [], svg, verzeichnis, areale;
+  let skHinweis = '', refrains = [], svg, verzeichnis, areale, nrKlein = null;
   if (aktuell.art === 'bild'){
     const ebene = await bilderEbene(g, kv, lauf); if (!ebene || lauf !== bauLauf) return;
-    ({ svg, verzeichnis, areale } = ebene);
+    ({ svg, verzeichnis, areale, nrKlein } = ebene);
   } else {
   if (E.skizze){
     /* Skizzenbuch: statt der Cover die Federzeichnungen (auf dem Server gerechnet); die Schrift muss vor dem Messen geladen sein */
@@ -885,6 +896,11 @@ async function bauen(g){
   el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
     : g.randKante && g.randKante.umschlag ? `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm + ${(g.randKante.umschlag / 10).toLocaleString('de-DE')} cm Umschlag = ${((g.w + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} × ${((g.h + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
+  /* Bilderschau: wie viele Nummern auf den Covern kleiner als 1,5 mm sind (bilderEbene) - bleibt stehen wie das Maß, standSetzen leert
+     es nicht; bei Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber) */
+  { const h = el('ps-nrklein'), kl = nrKlein && nrKlein.n ? nrKlein : null, pt = fm.bild ? 1080 / g.w : 0;
+    const zahl = (v) => (pt ? v * pt : v).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + (pt ? ' Punkte' : ' mm');
+    h.hidden = !kl; h.textContent = kl ? `Nummern auf den Covern: ${kl.n} von ${kl.von} kleiner als ${zahl(1.5)}, die kleinste ${zahl(kl.min)}.` : ''; }
 }
 /* Das Plakat steht im selben Dokument wie der Klangschaum dahinter, und beide tragen dieselben IDs
    (skz0 … Zuschnitt je Zelle, skkissen, hatch). url(#skz0) traefe dann den Zuschnitt der Zelle am
@@ -1342,6 +1358,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   <div id="ps-frei" hidden>Breite <input class="ps-eingabe" id="ps-freiw" type="number" min="10" max="300"> cm · Höhe <input class="ps-eingabe" id="ps-freih" type="number" min="10" max="300"> cm</div>
   <div class="ps-pillen" style="margin-top:7px"><button type="button" data-lage="hoch">Hoch</button><button type="button" data-lage="quer">Quer</button></div>
   <p class="ps-leise" id="ps-mass"></p>
+  <p class="ps-leise" id="ps-nrklein" hidden></p>
   <h3>Grund</h3><div class="ps-pillen"><button type="button" data-grund="schwarz">Schwarz</button><button type="button" data-grund="weiss">Weiß</button><button type="button" data-grund="farbe">Farbe <input type="color" id="ps-farbe" style="width:22px;height:16px;border:0;padding:0;background:none;vertical-align:middle"></button></div>
   <h3>Titel in der Zelle</h3><div class="ps-pillen" id="ps-titelwahl"><button type="button" data-titel="rauch">Rauchglas</button><button type="button" data-titel="milch">Milchglas</button><button type="button" data-titel="kante">an der Kante</button><button type="button" data-titel="ohne">ohne</button></div>
   <div class="ps-pillen" style="margin-top:9px"><button type="button" class="ps-schalt" id="ps-verz">Verzeichnis</button><button type="button" class="ps-schalt" id="ps-areale">Areale am Rand</button></div>

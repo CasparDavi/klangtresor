@@ -4171,10 +4171,10 @@ h3 .infoknopf .ico{width:14px;height:14px}
   <div id="schaumrechts" hidden>
     <h3 id="schaumtitel">Klangschaum</h3>
     <label class="fussnote">Fläche nach<select id="schaummass" onchange="schaumMassWaehlen(this.value)"></select></label>
-    <!-- Wie viele bleiben (schaumAuswahl): die Zahl beim Ziehen, neu gelegt beim Loslassen -->
-    <label class="fussnote" id="schaumzeigtzeile" hidden title="Blendet aus, wer beim gewählten Maß die kleinsten Werte hat – die Übrigen bekommen deren Fläche und werden größer. Ganz rechts: alle.">
-      <span id="schaumzeigtzahl"></span>
-      <input type="range" id="schaumzeigt" step="1" oninput="schaumZeigtWaehlen(this.value, false)" onchange="schaumZeigtWaehlen(this.value, true)"></label>
+    <!-- Nur im Groupieschaum: wie viele bleiben (groupieAuswahl), die Zahl beim Ziehen, neu gelegt beim Loslassen -->
+    <label class="fussnote" id="groupiezeigtzeile" hidden title="Blendet aus, wer beim gewählten Maß die kleinsten Werte hat – die Übrigen bekommen deren Fläche und werden größer. Ganz rechts: alle.">
+      <span id="groupiezeigtzahl"></span>
+      <input type="range" id="groupiezeigt" step="1" oninput="groupieZeigtWaehlen(this.value, false)" onchange="groupieZeigtWaehlen(this.value, true)"></label>
     <div class="fussnote" id="groupiefarbenzeile" hidden>Farben<div id="groupiefarben" class="farbwahl"></div></div>
     <div class="fussnote" id="klangschaumfarbenzeile" hidden>Farben<div id="klangschaumfarben" class="farbwahl"></div></div>
     <label class="fussnote">Gegliedert nach<select id="schaumgliederung" onchange="schaumGliederungWaehlen(this.value)"></select></label>
@@ -8585,55 +8585,53 @@ function schaumGliederungWaehlen(id){
   schaumZeichnen();
 }
 function schaumZoomen(name){ schaumZoom = name; schaumZeichnen(); }
-/* DER REGLER „ZEIGT N VON M" (Caspar_D, 07.10.2026 zum Groupieschaum: „kannst du … eine Möglichkeit einbauen, untere Perzentile
+/* DER REGLER „ZEIGT N VON M" IM GROUPIESCHAUM (Caspar_D, 07.10.2026: „kannst du … eine Möglichkeit einbauen, untere Perzentile
    auszublenden" - „sie fliegen raus … das dient dazu, auch mal große Bilder zu sehen, wenn man viele follower hat"; 15.10.2026: „der
-   Groupieschaum-Regler wäre einfach, er blendet Quantile der gegenwärtig aktiven Skalierung aus. Er soll auch für Klangschaum gelten."
-   - „per default ist der Regler so eingestellt, dass die 350 höchsten zu sehen sind, man kann den slider dann aber in beide richtungen
-   schieben"). Der Regler zählt, wie viele bleiben: die mit den höchsten Werten des gewählten Maßes unter denen, die die Ansicht sonst
-   zeigte (gezoomt: die Gruppe). Wer darunter liegt, fliegt raus - keine Sammelzelle; die Übrigen teilen sich die ganze Fläche.
-   Gleichstand am Schnitt: im Groupieschaum bleibt, wer zuletzt reagiert hat (Caspar_D: „genau so machen wir das"), im Klangschaum der
-   neuere Titel - dieselbe Regel wie beim Plakat (plakat.js, begrenzen); danach entscheidet die Kennung, damit dieselben Daten immer
-   dieselbe Auswahl geben. Linear in der Zahl, also in Quantilen. Gemerkt wird die Zahl je Raum (Klangschaum und Bilderschau teilen sie
-   wie Maß, Gliederung und Zoom); ganz rechts heißt „alle" und bleibt alle, auch wenn es mehr werden. Nach unten hält der Regler bei 12,
-   der Mindestzahl des Plakats. Die Auswahl steht in den Zeilen selbst, also tragen Lage-Schlüssel (IDs und Werte), gemerkte Lagen,
-   das Vorrechnen der übrigen Maße und das Plakat-Studio sie mit. Die Farben der Areale rechnen weiter aus allen mit Wert, damit
-   ein Areal seine Farbe behält, wenn der Regler ein anderes leert. */
-const SCHAUM_ZEIGT_VORGABE = 350, SCHAUM_ZEIGT_MINDESTENS = 12;
-const SCHAUM_ZEIGT_SPEICHER = { schaum: 'mysuno-schaum-zeigt', groupies: 'mysuno-groupie-zeigt' };
-const schaumZeigt = Object.fromEntries(Object.entries(SCHAUM_ZEIGT_SPEICHER).map(([raum, k]) => {
-  let v = null; try { v = localStorage.getItem(k); } catch (e) {}
-  return [raum, v === 'alle' ? 'alle' : +v >= 1 ? Math.round(+v) : SCHAUM_ZEIGT_VORGABE];
-}));
-const schaumZeigtZahl = (raum, M) => schaumZeigt[raum] === 'alle' ? M : Math.min(M, Math.max(SCHAUM_ZEIGT_MINDESTENS, schaumZeigt[raum]));
-function schaumAuswahl(zeilen, raum){
-  const M = zeilen.length, n = schaumZeigtZahl(raum, M);
+   Groupieschaum-Regler wäre einfach, er blendet Quantile der gegenwärtig aktiven Skalierung aus." - „per default ist der Regler so
+   eingestellt, dass die 350 höchsten zu sehen sind, man kann den slider dann aber in beide richtungen schieben"). Der Regler zählt, wie
+   viele bleiben: die Personen mit den höchsten Werten des gewählten Maßes. Wer darunter liegt, fliegt raus - keine Sammelzelle; die
+   Übrigen teilen sich die ganze Fläche. Gleichstand am Schnitt: es bleibt, wer zuletzt reagiert hat (Caspar_D: „genau so machen wir
+   das") - dieselbe Regel wie beim Plakat (plakat.js, begrenzen); danach entscheidet die Kennung, damit dieselben Daten immer dieselbe
+   Auswahl geben. Linear in der Zahl, also in Quantilen. Gemerkt wird die Zahl (mysuno-groupie-zeigt); ganz rechts heißt „alle" und
+   bleibt alle, auch wenn es mehr werden. Nach unten hält der Regler bei 12, der Mindestzahl des Plakats. Die Auswahl steht in den
+   Zeilen selbst, also tragen Lage-Schlüssel (IDs und Werte), gemerkte Lagen, das Vorrechnen der übrigen Maße und das Plakat-Studio sie
+   mit. Die Farben der Areale rechnen weiter aus allen mit Wert, damit ein Areal seine Farbe behält, wenn der Regler ein anderes leert.
+   NUR HIER: Am 15.10.2026 galt der Regler auch für Klangschaum und Bilderschau („Er soll auch für Klangschaum gelten"); noch am
+   selben Tag dort wieder gelöscht (Caspar_D: „allerdings finde ich diesen Regler redundant – ist das hier der richtige Ort, in der
+   Total view gibt es Filter, wenn mir das alles zu viel wird, was ich sehe, könnte ich auch dort filtern, der Klangraum übernimmt
+   auch von dort, was ich sehe"). Titel erreicht der Filter oben, Personen nicht - darum bleibt der Regler im Groupieschaum.
+   Klangschaum und Bilderschau nehmen alle eigenen Titel mit Wert; dass sie dem Filter oben folgen, ist geplant, nicht gebaut. */
+const GROUPIE_ZEIGT_VORGABE = 350, GROUPIE_ZEIGT_MINDESTENS = 12, GROUPIE_ZEIGT_SPEICHER = 'mysuno-groupie-zeigt';
+let groupieZeigt = (() => { let v = null; try { v = localStorage.getItem(GROUPIE_ZEIGT_SPEICHER); } catch (e) {}
+  return v === 'alle' ? 'alle' : +v >= 1 ? Math.round(+v) : GROUPIE_ZEIGT_VORGABE; })();
+function groupieAuswahl(zeilen){
+  const M = zeilen.length, n = groupieZeigt === 'alle' ? M : Math.min(M, Math.max(GROUPIE_ZEIGT_MINDESTENS, groupieZeigt));
   if (n >= M) return { zeilen, gesamt: M };
-  const zeit = raum === 'groupies' ? (z) => z.letzte || 0 : (z) => Date.parse((song(z.id) || {}).erstellt) || 0;
-  const rang = zeilen.map(z => ({ z, w: +z.w || 0, t: zeit(z), id: String(z.id) }))
+  const rang = zeilen.map(z => ({ z, w: +z.w || 0, t: z.letzte || 0, id: String(z.id) }))
     .sort((a, b) => b.w - a.w || b.t - a.t || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const bleiben = new Set(rang.slice(0, n).map(r => r.z));
   return { zeilen: zeilen.filter(z => bleiben.has(z)), gesamt: M };        /* in der alten Reihenfolge - die Engine legt danach */
 }
-const schaumZeigtText = (raum, n, M) => { const p = raum === 'groupies', z = (x) => x.toLocaleString('de-DE');
-  return n >= M ? `zeigt ${M === 1 ? '' : 'alle '}${z(M)} ${p ? (M === 1 ? 'Person' : 'Personen') : 'Titel'}` : `zeigt ${z(n)} von ${z(M)} ${p ? 'Personen' : 'Titeln'}`; };
+const groupieZeigtText = (n, M) => { const z = (x) => x.toLocaleString('de-DE');
+  return n >= M ? `zeigt ${M === 1 ? '' : 'alle '}${z(M)} ${M === 1 ? 'Person' : 'Personen'}` : `zeigt ${z(n)} von ${z(M)} Personen`; };
 /* Der Satz für die Fußnote - leer, solange niemand ausgeblendet ist */
-const schaumZeigtSatz = (raum, n, M, m) => n >= M ? '' : `Der Regler zeigt die ${n.toLocaleString('de-DE')} mit den höchsten Werten bei ${m.name}; `
-  + `${(M - n).toLocaleString('de-DE')} weitere sind ausgeblendet (bei Gleichstand bleibt${raum === 'groupies' ? ', wer zuletzt reagiert hat' : ' der neuere Titel'}). `;
+const groupieZeigtSatz = (n, M, m) => n >= M ? '' : `Der Regler zeigt die ${n.toLocaleString('de-DE')} mit den höchsten Werten bei ${m.name}; `
+  + `${(M - n).toLocaleString('de-DE')} weitere sind ausgeblendet (bei Gleichstand bleibt, wer zuletzt reagiert hat). `;
 /* Stellt den Regler auf die Ansicht: M ist, was sie ohne ihn zeigte, n, was sie zeigt. Unter 13 gibt es nichts zu wählen. */
-function schaumZeigtSetzen(raum, M, n){
-  const zeile = $('schaumzeigtzeile'), r = $('schaumzeigt'); if (!zeile || !r) return;
-  zeile.hidden = M <= SCHAUM_ZEIGT_MINDESTENS;
-  r.min = String(SCHAUM_ZEIGT_MINDESTENS); r.max = String(Math.max(SCHAUM_ZEIGT_MINDESTENS, M)); r.value = String(n);
-  r.dataset.raum = raum; r.dataset.m = String(M);
-  $('schaumzeigtzahl').textContent = schaumZeigtText(raum, n, M);
+function groupieZeigtSetzen(M, n){
+  const zeile = $('groupiezeigtzeile'), r = $('groupiezeigt'); if (!zeile || !r) return;
+  zeile.hidden = M <= GROUPIE_ZEIGT_MINDESTENS;
+  r.min = String(GROUPIE_ZEIGT_MINDESTENS); r.max = String(Math.max(GROUPIE_ZEIGT_MINDESTENS, M)); r.value = String(n);
+  r.dataset.m = String(M);
+  $('groupiezeigtzahl').textContent = groupieZeigtText(n, M);
 }
 /* Beim Ziehen nur die Zahl, beim Loslassen (oder je Pfeiltaste) merken und neu legen */
-function schaumZeigtWaehlen(v, fertig){
-  const r = $('schaumzeigt'), raum = r.dataset.raum || (raumJetzt === 'groupies' ? 'groupies' : 'schaum'), M = +r.dataset.m || 0, n = Math.min(M, Math.round(+v));
-  $('schaumzeigtzahl').textContent = schaumZeigtText(raum, n, M);
+function groupieZeigtWaehlen(v, fertig){
+  const M = +$('groupiezeigt').dataset.m || 0, n = Math.min(M, Math.round(+v));
+  $('groupiezeigtzahl').textContent = groupieZeigtText(n, M);
   if (!fertig) return;
-  schaumZeigt[raum] = n >= M ? 'alle' : n;
-  try { localStorage.setItem(SCHAUM_ZEIGT_SPEICHER[raum], String(schaumZeigt[raum])); } catch (e) {}
+  groupieZeigt = n >= M ? 'alle' : n;
+  try { localStorage.setItem(GROUPIE_ZEIGT_SPEICHER, String(groupieZeigt)); } catch (e) {}
   schaumZeichnen();
 }
 
@@ -8676,7 +8674,7 @@ async function bilderFormateHolen(urls, melde){
     im.onerror = fertig; im.src = u; })));
   try { localStorage.setItem('mysuno-bildformate', JSON.stringify(Object.fromEntries(bilderFormate))); } catch (e) {}
 }
-async function bilderschauZeichnen({ m, gl, zeilen, ohneRegler, ohneWert, farbeVon, stamm }){
+async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm }){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
   if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.67'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
   const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
@@ -8687,7 +8685,6 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneRegler, ohneWert, farbeV
   fuss.textContent = `Bilderschau: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, jedes Cover im Originalformat, ${t.kurz} (${m.name}). `
     + `Ein Schaum teilt die Wand in Areale je ${schaumZoom ? gl.unten.replace(/e$/, '').replace(/s$/, '') : gl.oben.replace(/n$/, '')}; jedes Bild hängt mit seinem Schwerpunkt im Areal seiner Gruppe, `
     + ({ salon: 'die großen zur Mitte der Wand. ', achse: 'die großen auf der waagrechten Achse durch die Mitte, von dort nach oben und unten. ', dicht: 'von oben nach unten. ' }[bilderWahl.haengung] || '')
-    + schaumZeigtSatz('schaum', zeilen.length, ohneRegler, m)
     + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
     + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
     + `Die Areale starten an den Sternen im Klangraum (${karteVerf === 'umap' ? 'UMAP' : 'NMDS'}). Klick auf ein Bild spielt den Titel.`;
@@ -8698,10 +8695,8 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneRegler, ohneWert, farbeV
   const ebene = schaumZoom ? 'genre' : 'gruppe', gruppeVon = (z) => schaumZoom ? (z.genre || 'ohne Angabe') : z.gruppe;
   const farbe = (n) => (schaumZoom ? farbeVon(schaumZoom) : farbeVon(n)) || '#8a8d94';
   const urls = new Map(zeilen.map(z => [z.id, artworkBild(z.id)]));
-  /* der Stand des Reglers gehört dazu, auch wenn er dieselben Bilder lässt (350 → alle bei 330 Titeln): die Wand trägt ihn in wahl, und das
-     Plakat-Studio hielte sie sonst für veraltet */
-  const zeigt = String(schaumZeigt.schaum), schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
-    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length, zeigt].join('|');
+  const schluessel = [m.id, t.id, gl.id, schaumZoom || '', W, H, bilderWahl.haengung, bilderWahl.rahmen, bilderWahl.kopf, bilderWahl.unter, karteVerf,
+    zeilen.length, zeilen.reduce((a, z) => a + +z.w, 0), [...urls.values()].join('').length].join('|');
   const fertig = bilderFertig.get(schluessel);
   if (fertig){ stand.textContent = ''; return bilderEinsetzen(fertig, farbe, m, zeilen); }
   /* Waehrend neu gehaengt wird (Fenster- oder Vollbildwechsel), bleibt die alte Wand stehen, auf das neue Feld gestreckt */
@@ -8733,8 +8728,8 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneRegler, ohneWert, farbeV
   if (res.fehler || !res.res){ console.log('Bilderschau:', res.fehler || 'passt nicht'); if (bilderArbeit === null) stand.textContent = 'Die Bilder passen nicht auf die Wand.'; return; }
   res.res.ms = Math.round(performance.now() - t0);
   /* fuers Plakat (plakat.js): dort wird im Format der Seite neu gehaengt; wahl sagt, zu welchen Einstellungen diese Wand gehoert */
-  res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })), ohneRegler,
-    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, verf: karteVerf, zeigt } };
+  res.res.daten = { ...daten, zeilen: zeilen.map(z => ({ ...z, gruppe: gruppeVon(z) })),
+    wahl: { mass: m.id, trafo: t.id, gliederung: gl.id, zoom: schaumZoom || '', haengung: bilderWahl.haengung, rahmen: !!bilderWahl.rahmen, verf: karteVerf } };
   bilderFertig.set(schluessel, res.res);
   if (register === 'karte' && raumJetzt === 'schaum' && schaumArt === 'bilder') schaumZeichnen();
 }
@@ -8988,7 +8983,7 @@ async function groupieZeilen(m, gl){
      Seit 1.0.48 alle einzeln (Caspar_D, 07.10.2026: „das treemap problem lösen wir richtig"): grosse Areale legt
      klangschaum/grossschaum.js - Vorentwurf aus den Startlagen, Pakete, Schaum je Paket in Helfer-Workern, und der
      Reissverschluss rechnet die Paketnaehte weg (Laborbuch Treemapper/docs/paper/LABORBUCH-grosse-schaeume.md).
-     Der Regler „zeigt N von M" (schaumAuswahl, 15.10.2026) ist keine Rechenzeit-Grenze: er blendet auf Wunsch aus, ohne Sammelzelle. */
+     Der Regler „zeigt N von M" (groupieAuswahl, 15.10.2026) ist keine Rechenzeit-Grenze: er blendet auf Wunsch aus, ohne Sammelzelle. */
   return alle;
 }
 const groupieText = (z) => [z.h ? `${z.h} ${z.h === 1 ? 'Herz' : 'Herzen'}` : '', z.k ? `${z.k} ${z.k === 1 ? 'Kommentar' : 'Kommentare'}` : ''].filter(Boolean).join(', ');
@@ -9013,6 +9008,7 @@ async function schaumZeichnen(){
   { const l = $('schaummass').closest('label'); if (l) l.hidden = false; }
   $('groupiefarbenzeile').hidden = !groupies;
   $('klangschaumfarbenzeile').hidden = groupies;
+  if (!groupies) $('groupiezeigtzeile').hidden = true;      /* der Regler „zeigt N von M" gehört dem Groupieschaum (groupieZeigtSetzen) */
   if (!groupies) $('klangschaumfarben').innerHTML = klangraumFarbwahlHtml();
   if (groupies) return groupieZeichnen();
   if (!karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
@@ -9039,10 +9035,7 @@ async function schaumZeichnen(){
   if (schaumZoom && !obenNamen.includes(schaumZoom)) schaumZoom = null;
   const farbeVon = (n) => !n || /^ohne /.test(n) ? null
     : (gl.farbe && gl.farbe(n)) || NEBEL[obenNamen.filter(x => !/^ohne /.test(x)).indexOf(n) % NEBEL.length];
-  /* imBlick: was die Ansicht ohne den Regler zeigte; zeilen: was sie zeigt (schaumAuswahl) */
-  const imBlick = schaumZoom ? alleZeilen.filter(z => z.gruppe === schaumZoom) : alleZeilen;
-  const zeilen = schaumAuswahl(imBlick, 'schaum').zeilen;
-  schaumZeigtSetzen('schaum', imBlick.length, zeilen.length);
+  const zeilen = schaumZoom ? alleZeilen.filter(z => z.gruppe === schaumZoom) : alleZeilen;
 
   /* Legende: oben die Gruppen, ein Klick zoomt hinein; gezoomt die Untergruppen und der Weg zurück. */
   const summe = (zs, schl) => { const s = new Map(), n = new Map();
@@ -9050,7 +9043,7 @@ async function schaumZeichnen(){
   const zeileHtml = (name, farbe, n, wert, knopf) => `<${knopf ? 'button type="button"' : 'span'} class="zeile"${knopf ? ` data-zoom="${esc(name)}" title="Nur diese Gruppe zeigen"` : ''}>`
     + `<i style="background:${farbe || '#5d6066'}"></i><span><b>${esc(name)}</b><br><small>${n} Titel · ${m.text(wert)}</small></span></${knopf ? 'button' : 'span'}>`;
   if (!schaumZoom){
-    const [s, n] = summe(zeilen, 'gruppe');
+    const [s, n] = summe(alleZeilen, 'gruppe');
     $('schaumlegende').innerHTML = `<small>${gl.oben} — ein Klick zeigt nur diese</small>`
       + [...s].sort((a, b) => b[1] - a[1]).map(([g, w]) => zeileHtml(g, farbeVon(g), n.get(g), w, true)).join('');
   } else {
@@ -9072,15 +9065,13 @@ async function schaumZeichnen(){
       else {
         const platz = 1 + alleZeilen.filter(x => +x.w > +z.w).length;
         w.innerHTML = `<small>Läuft</small><br><b>${esc(s.titel || '')}</b><br><small>${esc(z.gruppe)}${z.genre ? ' › ' + esc(z.genre) : ''}</small>`
-          + `<br>${m.text(+z.w)} · Platz ${platz} von ${alleZeilen.length}`
-          + (imBlick.includes(z) && !zeilen.includes(z) ? '<br><small>vom Regler ausgeblendet</small>' : '');
+          + `<br>${m.text(+z.w)} · Platz ${platz} von ${alleZeilen.length}`;
       }
     } }
 
   const stamm = katalogInfo && katalogInfo.erstelltAm ? String(katalogInfo.erstelltAm).slice(0, 10) : '';
-  if (schaumArt === 'bilder') return bilderschauZeichnen({ m, gl, zeilen, ohneRegler: imBlick.length, ohneWert, farbeVon, stamm });
+  if (schaumArt === 'bilder') return bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm });
   fuss.textContent = `Klangschaum: ${zeilen.length} Titel${schaumZoom ? ' aus „' + schaumZoom + '"' : ''}, Fläche = ${m.name}, jede Zelle genau ihr Anteil. `
-    + schaumZeigtSatz('schaum', zeilen.length, imBlick.length, m)
     + `Gegliedert nach ${gl.name.replace('Klang: ', '')}${gl.id === 'klang' ? ' (Stilgruppen aus dem Klang-Raum)' : ''}; schraffiert und kursiv, wo ein Titel keine Untergruppe hat. `
     + (ohneWert.length ? `${ohneWert.length} Titel haben bei ${m.name} null und darum keine Fläche. ` : '')
     + (m.ernte && stamm ? `Zahlen: Stand des Katalogs vom ${stamm.slice(8, 10)}.${stamm.slice(5, 7)}.${stamm.slice(0, 4)}. ` : '')
@@ -9111,8 +9102,8 @@ async function groupieZeichnen(){
   { const r = $('schaumfarbe'); if (r && +r.value !== schaumFarbeAnteil) r.value = schaumFarbeAnteil; schaumFarbeSetzen(schaumFarbeAnteil); }
   const mitWert = await groupieZeilen(m, gl);
   if (raumJetzt !== 'groupies') return;
-  const zeilen = schaumAuswahl(mitWert, 'groupies').zeilen;
-  schaumZeigtSetzen('groupies', mitWert.length, zeilen.length);
+  const zeilen = groupieAuswahl(mitWert).zeilen;
+  groupieZeigtSetzen(mitWert.length, zeilen.length);
   /* die Farben aus allen mit Wert (Ankunft zählt die Jahre durch), die Legende nur, was gezeigt ist */
   const klassen = new Set(zeilen.map(z => z.gruppe)), alleKlassen = new Set(mitWert.map(z => z.gruppe)), farbeVon = (n) => gl.farbe(n, alleKlassen);
   $('schaumlegende').innerHTML = '<small>' + esc(gl.name) + '</small>' + gl.ordnung(klassen).filter(a => klassen.has(a)).map(a => {
@@ -9122,7 +9113,7 @@ async function groupieZeichnen(){
   }).join('');
   const gezeigt = zeilen.length, grossAreal = [...klassen].some(a => zeilen.filter(z => z.gruppe === a).length > 600);
   fuss.textContent = `Groupieschaum: ${gezeigt.toLocaleString('de-DE')} Personen, die auf deine Titel reagiert haben, gegliedert nach ${gl.name}; Fläche = ${m.name}, jede Blase genau ihr Anteil. `
-    + schaumZeigtSatz('groupies', gezeigt, mitWert.length, m)
+    + groupieZeigtSatz(gezeigt, mitWert.length, m)
     + (grossAreal ? 'Große Areale werden in Paketen gelegt; die Nähte dazwischen rechnet ein Reißverschluss weg – das dauert beim ersten Öffnen eines Maßes etwas, danach ist es gemerkt. ' : '')
     + (schaumLeute.length > mitWert.length ? `${(schaumLeute.length - mitWert.length).toLocaleString('de-DE')} Personen haben bei ${m.name} null und fehlen. ` : '')
     + `Herzen aus Sunos Liker-Listen, Kommentare aus den Kommentarfäden; deine eigenen sind herausgerechnet. Die Bilder sind die Avatare (einmal von Suno geholt und hier abgelegt). `
@@ -9321,23 +9312,23 @@ function schaumBilderBereit(bild){
 }
 const schaumVerh = () => { const rect = $('schaumfeld').getBoundingClientRect();
   return Math.min(1.2, Math.max(0.4, Math.round(((rect.height || 620) / (rect.width || 1000)) * 20) / 20)); };
-/* Was ein Layout braucht - fuer die sichtbare Ansicht und fuer das Vorrechnen dieselbe Rechnung. Die Zeilen nach dem Regler
-   (schaumAuswahl); ohneRegler: wie viele es ohne ihn waeren - das Plakat nennt beides. */
+/* Was ein Layout braucht - fuer die sichtbare Ansicht und fuer das Vorrechnen dieselbe Rechnung. */
 function schaumKlangAuftrag(m, gl, zoom, verh){
   const alleZ = [];
   for (const s of alle.filter(x => !x.fremd)){ const w = m.wert(s); if (!(w > 0)) continue;
     const [oben, unten] = gl.von(s); alleZ.push({ gruppe: oben, genre: unten, titel: s.titel || '—', id: s.id, w: String(w) }); }
-  const { zeilen, gesamt } = schaumAuswahl(zoom ? alleZ.filter(z => z.gruppe === zoom) : alleZ, 'schaum');
+  const zeilen = zoom ? alleZ.filter(z => z.gruppe === zoom) : alleZ;
   const ebenen = zoom ? ['genre'] : ['gruppe', 'genre'], W = 1000, H = Math.round(1000 * verh);
   return { lage: [m.id, gl.id, zoom || '', verh, karteVerf, zeilen.map(z => z.id + ':' + z.w).join(',')].join('|'),
-           zeilen, ebenen, W, H, seeds: zeilen.length ? schaumSaat(zeilen, ebenen, W, H) : null, ohneRegler: gesamt };
+           zeilen, ebenen, W, H, seeds: zeilen.length ? schaumSaat(zeilen, ebenen, W, H) : null };
 }
 /* Der Layout-Schluessel traegt die Gliederung und je Person ihre Klasse: wechselt jemand die Klasse (wird
-   still, folgt dir neu, die Karte wird neu gebaut), ist es ein neues Layout. */
+   still, folgt dir neu, die Karte wird neu gebaut), ist es ein neues Layout. Die Zeilen nach dem Regler
+   (groupieAuswahl); ohneRegler: wie viele es ohne ihn waeren - das Plakat nennt beides. */
 async function groupieAuftrag(m, verh, gl){
   gl = gl || groupieGl();
   if (gl.id === 'geschmack' && !karteDaten){ try { karteDaten = await (await fetch('/api/karte', { cache: 'no-store' })).json(); } catch (e) {} }
-  const { zeilen, gesamt } = schaumAuswahl(await groupieZeilen(m, gl), 'groupies'), W = 1000, H = Math.round(1000 * verh);
+  const { zeilen, gesamt } = groupieAuswahl(await groupieZeilen(m, gl)), W = 1000, H = Math.round(1000 * verh);
   return { lage: ['groupies', m.id, gl.id, verh, zeilen.map(z => z.id + ':' + z.w + ':' + String(z.gruppe).replace(/[|,:]/g, ' ')).join(',')].join('|'), zeilen, ebenen: ['gruppe'], W, H,
            seeds: zeilen.length ? groupieSaat(zeilen, W, H, gl) : null, ohneRegler: gesamt };
 }
