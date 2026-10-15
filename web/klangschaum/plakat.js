@@ -77,7 +77,12 @@ const mitVerzeichnis = () => !!E.verzeichnis || (bilderschau() && !E.schild && !
 let E = (() => { try { return JSON.parse(localStorage.getItem(SPEICHER)) || null; } catch (e) { return null; } })()
   || { vorlage: 'galerie', format: '70x100', freiW: 80, freiH: 120, lage: 'hoch', kopfTitel: '', kopfUnter: '', legende: true, ...VORLAGEN[0].e };
 let studio = null, aktuell = null, legeLauf = 0, bauLauf = 0, warten = null;
-const merken = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(E)); } catch (e) {} };
+/* GALERIE NUR FÜR DIE BILDERSCHAU: Randlos und Skizzenbuch gibt es dort nicht, das Studio öffnet sie dann mit Galerie (oeffnen). Bis
+   15.10.2026 kam das in den gemeinsamen Speicher, und das Plakat des Klangschaums stand danach auf Galerie statt auf Randlos
+   (Fallensuche). leihe hält die überdeckten Werte: gespeichert werden sie statt der Galerie, und beim nächsten Öffnen außerhalb der
+   Bilderschau gelten sie wieder. Was man in der Bilderschau selbst einstellt, gehört einem und fällt aus der Leihe (setze). */
+let leihe = null;
+const merken = () => { try { localStorage.setItem(SPEICHER, JSON.stringify(leihe ? { ...E, ...leihe } : E)); } catch (e) {} };
 const el = (id) => document.getElementById(id);
 const esc2 = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -1312,7 +1317,9 @@ function felderSetzen(){
       grau(el('ps-weisen-hell'), !hellerGrund(), 'Aquarell braucht hellen Grund.'); grau(el('ps-weisen-dunkel'), hellerGrund(), 'Kreide und Gouache sind für dunklen Grund.'); } }
 }
 const grundArt = () => { const gr = grund().toLowerCase(); return gr === '#0c0d10' || gr === '#08090b' ? 'schwarz' : gr === '#f3efe6' || gr === '#ffffff' || gr === '#ece7dc' ? 'weiss' : 'farbe'; };
-function setze(teil, neuLegen, warteMs, nurSetzen){ Object.assign(E, teil); merken(); felderSetzen(); if (neuLegen) aktuell = aktuell && { ...aktuell }; zeichnen(false, warteMs, nurSetzen); }
+function setze(teil, neuLegen, warteMs, nurSetzen){ Object.assign(E, teil);
+  if (leihe){ for (const k of Object.keys(teil)) delete leihe[k]; if (!Object.keys(leihe).length) leihe = null; }
+  merken(); felderSetzen(); if (neuLegen) aktuell = aktuell && { ...aktuell }; zeichnen(false, warteMs, nurSetzen); }
 
 function aufbauen(){
   const css = document.createElement('style'); css.id = 'ps-stil';
@@ -1438,11 +1445,15 @@ function schliessen(){ if (studio) studio.hidden = true; document.documentElemen
 
 export function oeffnen(){
   if (!studio) aufbauen();
+  /* außerhalb der Bilderschau gilt wieder, was die Galerie dort nur überdeckt hat (leihe) */
+  if (leihe && !bilderschau()){ Object.assign(E, leihe); leihe = null; }
   /* Das Skizzenbuch zeichnet die Cover deiner Titel - im Groupieschaum gibt es sie nicht: dort mit Galerie öffnen (vorher blieb die
      gemerkte Vorlage stehen, und das Plakat wartete auf Federzeichnungen von Personen; Fallensuche 1.0.61) */
   if (E.skizze && raumJetzt === 'groupies'){ Object.assign(E, { vorlage: 'galerie' }, VORLAGEN[0].e); merken(); }
-  /* Bilderschau: Skizzenbuch und Randlos gibt es hier nicht (siehe oben) - dann mit Galerie öffnen */
-  if (bilderschau() && (E.skizze || E.schild)){ Object.assign(E, { vorlage: 'galerie' }, VORLAGEN[0].e); merken(); }
+  /* Bilderschau: Skizzenbuch und Randlos gibt es hier nicht (siehe oben) - dann mit Galerie öffnen, nur für die Bilderschau (leihe) */
+  if (bilderschau() && (E.skizze || E.schild)){ const galerie = { vorlage: 'galerie', ...VORLAGEN[0].e };
+    if (!leihe) leihe = Object.fromEntries(Object.keys(galerie).map(k => [k, E[k]]));
+    Object.assign(E, galerie); }
   studio.hidden = false; document.documentElement.style.overflow = 'hidden';
   if (aktuell && (aktuell.raum !== raumJetzt || (aktuell.art === 'bild') !== bilderschau())) aktuell = null;   /* auch Klangschaum ↔ Bilderschau */
   felderSetzen();
