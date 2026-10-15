@@ -9246,3 +9246,20 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
 ### Backlog
 - ~~Groupieschaum folgt dem Titelfilter (zählt nur Reaktionen auf gefilterte Titel) – Jörg: „3 b ins backlog“.~~
   verworfen 15.10.2026 (Jörg: „neh, nich nötig“).
+
+### Nachtrag: 1.0.81 und 1.0.82 (15.10.2026 abends)
+- **1.0.81** Steckbrief beim Überfahren auch in Klangschaum/Bilderschau, dunkle Nummern nicht unter OKLCH L 0,30, Randlos-Bilderschau
+  mit mindestens einem Bilderabstand zum Rand.
+- **1.0.82** Randlos-Ecke neu (alle drei Schäume): Unterzeile ausgewogen umbrochen, Ecke als eigene Zelle der obersten Ebene mit
+  Startpunkt in der Blattecke (knapp um den Inhalt); Anordnung an einer gemeinsamen Achse, jedes Teil ¾ zur Schaumseite, ¼ zur
+  Blattkante (Jörg: „ich nehme die Viertel-Lösung“); Legende mit Punktspalte (Stil vor, Stimmung hinter dem Punkt) als Block;
+  Abstand Text↔Zellgrenze ≥ 0,5 em; die Ecke wird nicht mehr schwarz: Klangschaum/Groupieschaum graue Kissenzellen in den
+  Größen der Restkarte, Bilderschau graue Platzhalter-Cover in Größen der anderen Ecken; Grautöne an Helligkeit und Streuung
+  des übrigen Bildes angeglichen (vorher ~1/5, jetzt 87–99 %), Schrift #f1efe9 ≥ 7 : 1 unter jeder Zeile.
+- Arbeitsregel des Abends (Erinnerung „minimaler Aufwand“): erst das kleinste Stück isoliert zeigen, dann einbauen.
+
+### Backlog (neu)
+- KlangTresor soll „über kurz oder lang“ den aktuellen **hfoam** (Treemapper/hfoam) statt der foamtree-Kopie vom 06.10. bekommen –
+  „aber nicht jetzt, der ist grade nicht so richtig modulfähig dafür“ (Jörg, 15.10.2026).
+- Rechteckige Areale (räumlich geordnetes Treemap) liegen als Probe auf Zweig rechteck-areale (scratchpad/wt-rechteck), nicht
+  ausgeliefert; bei Randlos flächentreuer, Dichte gleich.
