@@ -54,7 +54,8 @@ VORLAGEN.push({ id: 'randlos', name: 'Randlos', zeile: 'Schaum bis zum Rand · A
    super aus" – „ja, wir nehmen das bessere modell"): eine Seite aus einem Skizzenbuch - der Schaum in einem angeschnittenen Kreis,
    die Kacheln als Federzeichnungen in der Tinte ihres Areals (Haus: skizzeZelle), Titel in Pinyon Script; ringsum das volle Blatt
    (skizze-blatt.js: Kopf, Siegel, Tabula, Steckbrief, Instrumentenstudien, Würdigung, Legende, Randnotizen, Refrains, Diagramme,
-   Zeitleiste als Bogen). Pergament als Grund. */
+   Zeitleiste als Bogen). Pergament als Grund. Das Skizzenbuch ist eine Seite: aus einem Triptychon wird seine Tafel (SKIZZE_TAFEL). */
+const SKIZZE_TAFEL = { tri50: '50x70', tri70: '70x100' };
 VORLAGEN.push({ id: 'skizze', name: 'Skizzenbuch', zeile: 'Federzeichnung auf Pergament, à la Leonardo',
   e: { grund: '#eee2c6', titel: 'rauch', fugen: 1, wackeln: 0, schatten: 0, vignette: 0, kissen: false, feder: false, federMm: 0.3, rand: 0, verzeichnis: false, areale: false, edition: true, zeitleiste: true, schild: false, skizze: true, refrains: 'herzen' } });
 const BESCHNITT = 3;                                      /* mm rundum, ueber den Rand hinaus gedruckt */
@@ -265,7 +266,10 @@ function avatarDa(){ if (avatarStand != null) return avatarStand; const i = docu
    im Glasfeld ueber). Gemessen wird wie gesetzt (messen: bei der Zahl der Schriftgroesse in mm), fuer die Suche, den
    Lage-Schluessel und das Setzen gleich - nie bei der Breite der Vorschau, die hing am Fenster: Oeffnen, Formatwechsel oder
    Fenstergroesse legten den Schaum ungefragt neu (Fallensuche 1.0.58). Bis 15.10.2026 fest bei 6 px, der breitesten Stufe: auf
-   A3 fast gleich (Titel 2 % zu breit), auf grossen Formaten ein zu breiter Block (70 × 100: Titel 12 %). */
+   A3 fast gleich (Titel 2 % zu breit), auf grossen Formaten ein zu breiter Block (70 × 100: Titel 12 %). Das gilt bei voller
+   Groesse: verkleinert eckeSetzen den Block (s < 1, der Text wurde nach dem Legen laenger, etwa beim Tippen im Titelfeld), setzt es
+   die Schrift bei fs·s, und die laeuft breiter als bei fs gemessen (70 × 100 quer, s = 0,32: Titel 13 % = 17 mm in den Schaum,
+   Name 4 %, Zeilen 2 %; vorher ebenso). Beim Verlassen des Feldes legt zeichnen neu, dann ist s = 1 und die Ecke auf 0,1 % genau. */
 function eckTeile(g){
   const T = g.T, U = g.U, L = g.L;
   const breite = (t, fw, fs) => messen(t, fw, fs) * fs;
@@ -635,10 +639,15 @@ function legendenEintraege(alle = false){   /* alle: ungefiltert - für die Beme
    gesetzt breiter (bis 6 px gleich breit, darueber enger); bis 1.0.73 wurde bei mm·96/25,4 px gemessen (davor bei 100 px mit
    Zuschlaegen 1,12 und 1,15, Wiedervorlage §77), und das Verzeichnis lief in die naechste Spalte, Arealnamen stiessen aneinander
    (Caspar_D, 15.10.2026: „Das Textbreitenproblem lösen"). Gemessen auf 70 × 100 quer gegen getComputedTextLength: vorher
-   Arealnamen 15 %, Verzeichnis 7 % (bis 8,7 %), Edition 12 % zu schmal; nachher, auch auf A3, hoechstens 0,15 % daneben (ein
-   Titel mit zwei Leerzeichen 3 % zu breit - das SVG fasst sie zusammen, gekuerzt wird dort etwas zu frueh). Vorschau und PDF
-   setzen gleich breit (auf 0,3 %), auch bei doppelter Pixeldichte und 4400 px breitem Fenster; text-rendering=
-   "geometricPrecision" verschob die Breiten nur (bis 0,9 %, auf A3 dann knapp zu schmal gemessen) und bleibt weg. */
+   Arealnamen 15 %, Verzeichnis 7 % (bis 8,7 %), Edition 12 % zu schmal; nachher in der Vorschau meist -0,2 bis +0,2 % (ein Titel
+   mit zwei Leerzeichen 3 % zu breit - das SVG fasst sie zusammen, gekuerzt wird dort etwas zu frueh). Das ist eine Messung, keine
+   Zusage: die Vorschau setzt Chrome bei ihrer Groesse am Bildschirm, und liegt dieselbe Bildschirmgroesse schon im Schriftcache der
+   Seite, nimmt es deren Breiten (Probe: font-size 3 bei Massstab 4 nach HTML-Text bei 12 px 7,7 % schmaler als gemessen, font-size
+   12 bei Massstab 0,25 nach 3 px 8,4 % breiter). In der App ueber fuenf Fenstergroessen (1280 × 800 bis 3000 × 1800, Klangschaum
+   und Bilderschau): -0,2 bis +0,2 %, einmal ein Verzeichnistitel 2,6 % schmaler. Gedruckt gilt die Groesse in mm, ohne Fenster
+   (PDF gegen SVG -0,04 Schriftgroessen, Gegenpruefung 15.10.2026). text-rendering="geometricPrecision" macht die Vorschau vom
+   Fenster unabhaengig (ueber dieselben fuenf Fenster gleich), misst dann aber bis 0,4 % zu schmal (Verzeichnis A3); es bleibt weg,
+   bis Caspar_D ueber diese Abweichung vom Plan entscheidet. */
 const messen = (() => { const c = document.createElement('canvas').getContext('2d');
   return (t, gewicht = 400, groesse = null) => { const px = groesse ? Math.max(1, groesse) : 100; c.font = `${gewicht} ${px.toFixed(2)}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`; return c.measureText(t).width / px; }; })();
 /* TRIPTYCHON: die beiden Wandfugen in Millimetern der Seite - dort schneidet das PDF jede Tafel zu, was darauf liegt, fehlt im
@@ -690,8 +699,11 @@ function bilderSperren(g, W, H){
    ist das Nummernschild der Zellen (nummerSchild im Haus): Ziffern plus 0,7 Geviert breit, 1,3 Geviert hoch, Ecken zu 0,3 der Höhe
    gerundet, Schrift #f4f4f2 halbfett. Zwei Abweichungen mit Grund: Das Glas bemisst die hellsten 10 % unter dem Schild statt der
    hellsten 20 % - das Schild ist klein, ein heller Fleck darin genügt; mit 20 % blieben in der Simulation an den 330 Covern (4 mm kurze
-   Coverseite) 49 Nummern unter 4,5 : 1, mit 10 % keine. Und weichgezeichnet wird mit einem Viertel Geviert der Ziffern statt mit 3
-   Punkten: die Wand des Plakats hat 1400 Punkte an der langen Seite, 3 Punkte wären auf 70 × 100 dreimal so weich wie auf A3.
+   Coverseite, Kontrast gegen die hellsten 10 % des ungeglätteten Messbilds) 49 Nummern unter 4,5 : 1. Dass mit 10 % keine darunter
+   bleibt, folgt schon aus der Formel (rauchglas gibt bei jeder Leuchtdichte mindestens 4,77 : 1, am knappsten bei 0,15 ohne Glas) -
+   data-k ist also keine Messung. Gemessen am gemalten Schild (A3 hoch, Galerie, Vorschau, Ziffern ausgeblendet, je Schild die inneren
+   60 %, hellste 10 %): kleinster Kontrast 5,6, Median 14,8, keiner unter 4,5 : 1. Und weichgezeichnet wird mit einem Viertel
+   Geviert der Ziffern statt mit 3 Punkten: die Wand des Plakats hat 1400 Punkte an der langen Seite, 3 Punkte wären auf 70 × 100 dreimal so weich wie auf A3.
    Gemessen wird im Messbild: das Original, aus dem auch das Druckbild entsteht, in Stufen (verkleinert) auf 192 Punkte gebracht - die
    Druckbilder (300 dpi) zu messen hieße, jedes Cover bei jeder Vorschau neu zu rechnen; je Bildpunkt die relative Leuchtdichte als
    Wurzel in einem Byte (dunkle Töne fein aufgelöst); einmal je Sitzung und Adresse. Der Kontrast gilt gegen die hellsten 10 % ohne
@@ -735,10 +747,14 @@ const ziffernHoehe = () => ziffernHoch || (ziffernHoch = (() => { const c = docu
 /* WO DIE NUMMER STEHT (Caspar_D, 15.10.2026: Die Nummer meidet die Coverschrift; „Gesichter sollten die Nummern auch meiden"). Eine
    Ecke ist frei, wenn ihr Schild samt einem Viertel Geviert Luft keine Schriftbox und kein Gesicht aus dem Gesichterbuch berührt
    (schaumFokus: alle Boxen, ohne die 35-%-Regel und ab der Schwelle des Erkenners). Das Schild hält ein Viertel Geviert Abstand
-   von den Kanten des Covers. Größe der Ziffern 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die Untergrenze, bis zu der das
-   Verzeichnis schrumpft), so klein, dass das Schild ins Cover passt, aber nicht unter 0,8 mm (auf winzigen Covern, flächentreu mit
-   Wert 1, ragt es dann über den Rand). Ist keine Ecke frei, wird die Nummer schrittweise kleiner (je 10 %) bis 1,0 mm (Bildformate:
-   1,0 Seiteneinheiten, 5 Punkte), bis eine frei ist. Ist auch dann keine frei, gleitet sie in der kleinsten Größe an der Kante entlang
+   von den Kanten des Covers. Größe der Ziffern 1,5 bis 3,5 mm (8,5 % der kurzen Coverseite; 1,5 mm ist die kleinste Schrift des
+   Verzeichnisses ab 333 mm kurzer Seite - auf A3 steht es bei 1,34 mm, verzeichnisMass), so klein, dass das Schild ins Cover passt,
+   aber nicht unter 0,8 mm. Ist das Cover kleiner, ragt das Schild über seinen Rand; der Hinweis unter dem Format zählt das (Bilderschau,
+   330 Titel: frei 10 × 10 cm 134 Schilder, die Ziffern selbst bei 87 um bis zu 1 mm; Bild 1:1 41 Schilder, die Ziffern nicht; A3 und
+   70 × 100 keines). Die 1,0 der nächsten Stufe gilt darum nur, wo die Nummer bei 1,0 ins Cover passt (Bild 4:5 hoch: 45 Nummern
+   darunter, die kleinste 0,82). Ist keine Ecke frei, wird die Nummer schrittweise kleiner (je 10 %) bis 1,0 mm (Bildformate: 1,0
+   Seiteneinheiten - das PNG ist immer 1080 Punkte breit, das sind 5 Punkte hoch und bei 1:1, 4 bei 4:5 quer, 2,8 bei 9:16 quer), bis
+   eine frei ist. Ist auch dann keine frei, gleitet sie in der kleinsten Größe an der Kante entlang
    in die nächste freie Lücke (kürzester Weg von einer Ecke; was bis ein Viertel Geviert weiter liegt, gilt als gleich nah, dort
    entscheidet der Kontrast); gibt es keine, steht sie an der Kante dort, wo das Schild Schrift und Gesichter am wenigsten überdeckt.
    Ohne Eintrag im Buch weicht nichts aus (Hinweis im Studio). An jeder Nummer: data-ecke (die Ecke, 'kante' oder 'min'), data-stufe
@@ -788,8 +804,8 @@ function nummerPlatz(t, bw, bh, k, m, sperre){
    seine Nummer, die Liste unten nennt sie alle. NUMMERN AUSBLENDBAR WIE IN DEN TREEMAPS (Caspar_D, 15.10.2026: „Mach wie in den Treemaps
    die Nummer ausblendbar"): ohne Verzeichnis keine Nummern und keine Liste (mitVerzeichnis). Seit das Plakat der Bilderschau alle
    gezeigten Titel hängt (kachelZahl, 15.10.2026), werden die Nummern auf kleinen Formaten oft kleiner als 1,5 mm; wie oft und wie
-   klein, wie viele an der Kante stehen oder keine freie Stelle fanden und wie viele Cover das Buch noch nicht kennt, sagt nrStand
-   (im Studio unter dem Format). */
+   klein, wie viele über ihr Cover ragen, an der Kante stehen oder keine freie Stelle fanden und wie viele Cover das Buch noch nicht
+   kennt, sagt nrStand (im Studio unter dem Format). */
 async function bilderEbene(g, kv, lauf){
   const res = aktuell.res, W = res.width, H = res.height, k = Math.min(kv.w / W, kv.h / H);     /* mm je Wandpunkt */
   const zeile = new Map(aktuell.j.zeilen.map(z => [z.id, z])), farbeAmSchirm = aktuell.farbe || (() => null), farbe = (n) => farbeAmSchirm(n) || '#8a8d94';
@@ -814,7 +830,10 @@ async function bilderEbene(g, kv, lauf){
   const misch = (f) => '#' + (farbWert(f) || [138, 141, 148]).map((v, i) => Math.round(v * 0.38 + gr[i] * 0.62).toString(16).padStart(2, '0')).join('');
   const pxJeMm = ((el('ps-blatt') || {}).clientWidth || 800) / g.PW * (window.devicePixelRatio || 1), hoch = ziffernHoehe(), f2 = (v) => v.toFixed(2);
   let out = '';
-  const nrStand = mitNummern ? { klein: 0, von: res.bilder.length, kleinste: Infinity, kante: 0, min: 0, ohneBuch: 0 } : null;
+  /* klein heißt unter 1,5 mm, bei Bildformaten unter 7,5 Punkten des PNG - in jeder Lage gleich (das PNG ist immer 1080 Punkte breit,
+     quer ist eine Seiteneinheit weniger Punkte; bis 15.10.2026 galten 1,5 Einheiten, quer also 6 Punkte bei 4:5, Gegenprüfung) */
+  const fm = FORMATE.find(x => x.id === E.format) || {}, kleinAb = fm.bild ? 7.5 * g.w / 1080 : 1.5;
+  const nrStand = mitNummern ? { klein: 0, kleinAb, von: res.bilder.length, kleinste: Infinity, ueber: 0, kante: 0, min: 0, ohneBuch: 0 } : null;
   for (const [i, b] of res.bilder.entries()){
     const r = b.rahmen || 0, u = artworkBild(b.id), href = esc2(schaumBildHref(u, schaumStufe(Math.max(b.w, b.h) * k * pxJeMm)));
     if (r > 0) out += `<rect x="${f2(b.x - r)}" y="${f2(b.y - r)}" width="${f2(b.w + 2 * r)}" height="${f2(b.h + 2 * r)}" fill="${misch(farbe(b.gruppe))}"/>`;
@@ -822,7 +841,8 @@ async function bilderEbene(g, kv, lauf){
     if (!mitNummern) continue;
     const fo = typeof schaumFokus === 'function' ? schaumFokus(b.id) : null; if (!fo) nrStand.ohneBuch++;
     const t = String(nummer.get(b.id)), p = nummerPlatz(t, b.w * k, b.h * k, k, mess.get(b.id), fo ? (fo.schrift || []).concat(fo.gesichter || []) : []);
-    if (p.f < 1.5){ nrStand.klein++; nrStand.kleinste = Math.min(nrStand.kleinste, p.f); }
+    if (p.f < kleinAb){ nrStand.klein++; nrStand.kleinste = Math.min(nrStand.kleinste, p.f); }
+    if (p.R[0] < -1e-9 || p.R[1] < -1e-9 || p.R[2] > 1 + 1e-9 || p.R[3] > 1 + 1e-9) nrStand.ueber++;   /* Cover kleiner als das Schild bei 0,8 */
     if (p.ecke === 'kante') nrStand.kante++; if (p.ecke === 'min') nrStand.min++;
     /* das Schild in Wandpunkten; darunter das Cover weichgezeichnet (Filter nur über dem Schild), darauf Schwarz in der Deckkraft a */
     const sx = b.x + p.R[0] * b.w, sy = b.y + p.R[1] * b.h, sw = (p.R[2] - p.R[0]) * b.w, sh = (p.R[3] - p.R[1]) * b.h, form = `x="${f2(sx)}" y="${f2(sy)}" width="${f2(sw)}" height="${f2(sh)}"`;
@@ -902,8 +922,10 @@ async function bauen(g){
   let kopf = E.schild || E.skizze ? '' : `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T).toFixed(2)}" font-size="${g.T.toFixed(2)}" font-weight="600" fill="${fg}">${esc2(E.kopfTitel || '')}</text>`
     + `<text class="ps-kopf" x="${ux.toFixed(2)}" y="${(uy + g.T * 1.25 + g.U * 1.25).toFixed(2)}" font-size="${g.U.toFixed(2)}" fill="${leise}">${esc2(E.kopfUnter || '')}</text>`;
   /* Legende rechts im Schild, in Spalten von oben nach unten. Gesetzt wird in zwei Schritten: erst ins Bild,
-     dann die wirkliche Textlaenge gemessen und die Spalten von rechts her ausgerichtet (legendeSetzen) - eine
-     Leinwand misst mit einer anderen Schrift als das SVG (gesehen: 22 % zu schmal, die Spalten ueberlappten). */
+     dann die wirkliche Textlaenge gemessen und die Spalten von rechts her ausgerichtet (legendeSetzen) - damals
+     mass die Leinwand bei 100 px, und die Systemschrift laeuft klein gesetzt breiter (gesehen: 22 % zu schmal, die
+     Spalten ueberlappten; die Schrift ist dieselbe). Seit messen bei der gesetzten Groesse misst, waere es fast
+     gleich; das Nachmessen bleibt, weil die Vorschau davon abweichen kann (siehe messen). */
   let legende = null;
   if (E.legende && !E.schild && !E.skizze){
     const eintraege = legendenEintraege(), L = g.L, q = L * 0.95, zeileH = L * 1.75;
@@ -953,12 +975,15 @@ async function bauen(g){
   el('ps-mass').textContent = g.tri ? `drei Rahmen je ${(g.tri.pw / 10).toLocaleString('de-DE')} × ${(g.tri.ph / 10).toLocaleString('de-DE')} cm, Fuge ${(g.tri.fuge / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt` : fm.bild ? `1080 × ${Math.round(1080 * g.h / g.w)} Punkte · PNG`
     : g.randKante && g.randKante.umschlag ? `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm + ${(g.randKante.umschlag / 10).toLocaleString('de-DE')} cm Umschlag = ${((g.w + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} × ${((g.h + 2 * g.randKante.umschlag) / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`
     : `${(g.w / 10).toLocaleString('de-DE')} × ${(g.h / 10).toLocaleString('de-DE')} cm · 3 mm Beschnitt`;
-  /* Bilderschau: wie viele Nummern auf den Covern kleiner als 1,5 mm sind, an der Kante oder auf Schrift und Gesichtern stehen und wie viele
-     Cover das Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz) - bleibt stehen wie das Maß, standSetzen leert es nicht; bei
-     Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber). Einen Lauf des Buchs stößt das Studio nicht an. */
+  /* Bilderschau: wie viele Nummern auf den Covern kleiner als 1,5 mm sind (Bildformate: 7,5 Punkte), über ihr Cover ragen, an der Kante
+     oder auf Schrift und Gesichtern stehen und wie viele Cover das Gesichterbuch noch nicht kennt (bilderEbene, nummerPlatz) - bleibt
+     stehen wie das Maß, standSetzen leert es nicht; bei Bildformaten in Punkten des PNG (1080 breit, wie in der Zeile darüber). Die
+     kleinste abgerundet: gerundet hieß es bei 1,497 mm „kleiner als 1,5 mm, die kleinste 1,5 mm" (Gegenprüfung 15.10.2026). Einen Lauf
+     des Buchs stößt das Studio nicht an. */
   { const h = el('ps-nrklein'), st = nrStand, pt = fm.bild ? 1080 / g.w : 0, teile = [];
-    const zahl = (v) => (pt ? v * pt : v).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + (pt ? ' Punkte' : ' mm');
-    if (st && st.klein) teile.push(`${st.klein} von ${st.von} kleiner als ${zahl(1.5)}, die kleinste ${zahl(st.kleinste)}`);
+    const zahl = (v, ab = false) => { const x = pt ? v * pt : v; return (ab ? Math.floor(x * 10 + 1e-6) / 10 : x).toLocaleString('de-DE', { maximumFractionDigits: 1 }) + (pt ? ' Punkte' : ' mm'); };
+    if (st && st.klein) teile.push(`${st.klein} von ${st.von} kleiner als ${zahl(st.kleinAb)}, die kleinste ${zahl(st.kleinste, true)}`);
+    if (st && st.ueber) teile.push(`${st.ueber} ragen über ihr Cover hinaus – es ist für die Nummer zu klein`);
     if (st && st.kante) teile.push(`${st.kante} an der Kante, weil keine Ecke frei war`);
     if (st && st.min) teile.push(`${st.min} ohne freie Stelle – sie decken Schrift oder Gesicht so wenig wie möglich`);
     const text = (teile.length ? `Nummern auf den Covern: ${teile.join('; ')}.` : '')
@@ -1362,7 +1387,8 @@ function felderSetzen(){
   if (bilderschau()){
     const ohne = 'Gilt nicht in der Bilderschau – die Cover hängen so, wie sie am Schirm hängen.';
     for (const id of ['ps-fugen', 'ps-wackeln', 'ps-schatten', 'ps-vignette', 'ps-kissen']) grau(zeile(id), true, ohne);
-    grau(el('ps-titelwahl'), true, 'In der Bilderschau gibt es keine Bildunterschriften – jedes Cover trägt seine Nummer, die Titel stehen im Werkverzeichnis.');
+    grau(el('ps-titelwahl'), true, mitVerzeichnis() ? 'In der Bilderschau gibt es keine Bildunterschriften – jedes Cover trägt seine Nummer, die Titel stehen im Werkverzeichnis.'
+      : 'In der Bilderschau gibt es keine Bildunterschriften – mit dem Verzeichnis trägt jedes Cover seine Nummer, und die Titel stehen in der Liste.');
     const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, true, 'In der Bilderschau schwarz oder weiß wie die Vorlagen – keine freie Farbe.'); el('ps-farbe').disabled = true;
   } else { grau(el('ps-titelwahl'), false, ''); const fb = studio.querySelector('[data-grund="farbe"]'); grau(fb, false, ''); el('ps-farbe').disabled = false; }
   { const v = E.randVorne ?? 15, u = +E.umschlag || 0, a = el('ps-randvorne'), b = el('ps-umschlag');
@@ -1462,7 +1488,7 @@ details.ps-fein summary{cursor:pointer;color:#cfd4da;margin:14px 0 4px}
   /* Bedienung */
   studio.querySelectorAll('[data-vorlage]').forEach(b => b.onclick = () => { const v = VORLAGEN.find(x => x.id === b.dataset.vorlage);
     /* das Skizzenbuch ist eine Seite: aus einem Triptychon wird seine Tafel (Knopf, Dateiname und Maß stimmen dann von selbst) */
-    const tafel = v.e.skizze && E.format === 'tri50' ? { format: '50x70' } : v.e.skizze && E.format === 'tri70' ? { format: '70x100' } : {};
+    const tafel = v.e.skizze && SKIZZE_TAFEL[E.format] ? { format: SKIZZE_TAFEL[E.format] } : {};
     setze({ vorlage: v.id, ...v.e, ...tafel }); });
   studio.querySelectorAll('[data-format]').forEach(b => b.onclick = () => setze({ format: b.dataset.format }));
   studio.querySelectorAll('[data-lage]').forEach(b => b.onclick = () => setze({ lage: b.dataset.lage }));
@@ -1506,8 +1532,13 @@ function schliessen(){ if (studio) studio.hidden = true; document.documentElemen
 
 export function oeffnen(){
   if (!studio) aufbauen();
-  /* außerhalb der Bilderschau gilt wieder, was die Galerie dort nur überdeckt hat (leihe) */
-  if (leihe && !bilderschau()){ Object.assign(E, leihe); leihe = null; }
+  /* außerhalb der Bilderschau gilt wieder, was die Galerie dort nur überdeckt hat (leihe) - beim Skizzenbuch mit den Grenzen, die sonst
+     der Klick auf die Vorlage und die gesperrten Knöpfe ziehen: eine Seite (aus einem Triptychon der Bilderschau wird seine Tafel) auf
+     hellem Grund (ein dunkler aus der Bilderschau wird wieder Pergament). Bis 15.10.2026 kamen beide mit, Triptychon und Schwarz standen
+     dann gewählt und zugleich gesperrt, der Dateiname hieß „3×50×70" für eine Tafel (Gegenprüfung). */
+  if (leihe && !bilderschau()){ Object.assign(E, leihe); leihe = null;
+    if (E.skizze){ E.format = SKIZZE_TAFEL[E.format] || E.format; E.grund = skizzePapier(); }
+    merken(); }
   /* Das Skizzenbuch zeichnet die Cover deiner Titel - im Groupieschaum gibt es sie nicht: dort mit Galerie öffnen (vorher blieb die
      gemerkte Vorlage stehen, und das Plakat wartete auf Federzeichnungen von Personen; Fallensuche 1.0.61) */
   if (E.skizze && raumJetzt === 'groupies'){ Object.assign(E, { vorlage: 'galerie' }, VORLAGEN[0].e); merken(); }
