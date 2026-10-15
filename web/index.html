@@ -8935,7 +8935,7 @@ async function bilderFormateHolen(urls, melde){
 }
 async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, auswahl }){
   const bild = $('schaumbild'), stand = $('schaumstand'), fuss = $('kartefuss');
-  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.78'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
+  if (!bilderModul){ try { bilderModul = await import('/klangschaum/bilderschau.js?v=1.0.80'); } catch (e) { stand.textContent = 'Die Bilderschau ließ sich nicht laden.'; return; } }
   const T = bilderModul.TRANSFORMATIONEN, t = T.find(x => x.id === bilderWahl.trafo) || T[1];
   wahlSetzen($('bildertrafo'), 'bildertrafo', T.map(x => ({ id: x.id, name: x.name, title: x.kurz })), t.id, { titel: 'Wie aus dem Wert die Fläche des Bildes wird' });
   const h = BILDER_HAENGUNGEN.find(x => x.id === bilderWahl.haengung) || BILDER_HAENGUNGEN[0];
@@ -9000,7 +9000,7 @@ async function bilderschauZeichnen({ m, gl, zeilen, ohneWert, farbeVon, stamm, a
 }
 function bilderImWorker(auftrag, merke = () => {}){
   return new Promise(ok => {
-    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.78', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
+    let w; try { w = new Worker('/klangschaum/bilderschau-worker.js?v=1.0.80', { type: 'module' }); } catch (e) { ok({ fehler: String(e) }); return; }
     merke(w);
     w.onmessage = (ev) => { w.terminate(); ok(ev.data); };
     w.onerror = (ev) => { w.terminate(); ok({ fehler: ev.message || 'Worker' }); };
@@ -10514,7 +10514,7 @@ function schaumLageHolen(j, melde, ueberholbar){
 }
 /* Was zuletzt gezeichnet wurde - das Plakat-Studio legt denselben Schaum im Seitenverhaeltnis des Plakats. */
 let schaumLetzterAuftrag = null;
-function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.78').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
+function plakatOeffnen(){ import('/klangschaum/plakat.js?v=1.0.80').then(m => m.oeffnen()).catch(e => { console.log('Plakat:', e); }); }
 async function schaumLegen({ schluessel, lage, zeilen, ebenen, W, H, seeds, farbeVon, gezoomt, art, tipp, meldung }){
   lage = lage || schluessel;
   schaumLetzterAuftrag = { art, farbeVon, gezoomt, tipp };

@@ -9217,7 +9217,21 @@ die Blasen leer). Server `--eingefroren`, headless Chrome per CDP, 1600×1000. I
   Ansicht; Gruppenüberschriften und Bildunterschriften wählbar (Vorgabe aus); Klangschaum und Bilderschau folgen dem Filter
   oben (Weggefiltertes fällt heraus, Voreinstellung „Öffentlich“ bleibt); Randlos für die Bilderschau (Nummern dort aus).
 
+### Nachtrag: 1.0.79 und 1.0.80 ausgeliefert (15.10.2026 nachmittags/abends)
+- **1.0.79** Panel „Räume und Schäume“ wie oben beschlossen (Unterleiste weg, Pillenreihen Räume/Schäume im Panel,
+  Klangraum-Form, Pille↔Dropdown gemessen, Hausregel 19 ergänzt).
+- **1.0.80** Filter-Anbindung (Klangschaum/Bilderschau = Liste der Filterleiste, Vorgabe „Öffentlich“ → 257 von 330),
+  Plakat-Studio mit Kopf „Plakat · <Art>“ und allen Bilderschau-Optionen (geteilt mit der Ansicht), Überschriften und
+  Bildunterschriften im Plakat, Randlos für die Bilderschau (ohne Nummern), Legende ein-/zweispaltig gemessen (Hausregel 19),
+  Schäume auf schwarzem Grund (#000 wie die Karte), Lade „Werk“ (Steckbrief des laufenden Titels) auch in Klangschaum
+  und Bilderschau. Geprüft: Klangschaum-/Groupieschaum-Plakat Byte für Byte gleich zu 1.0.79.
+- Erklärt, kein Fehler: Mit „Beides + Jahr 2025“ tragen nur 158 von 200 Covern eine Nummer – die 42 ohne sind private Titel
+  mit 1–3 Abrufen, √-Fläche → 5,6 mm breit, zu schmal für eine zwei-/dreistellige Nummer an der DIN-Schwelle (2,245 mm).
+
 ### Wiedervorlage (Caspar_Ds Auge/Entscheidung)
+- Randlos-Bilderschau: Cover halten 8 Wandpunkte Rand, reichen nicht ganz an die Kante – so lassen?
+- Steckbrief beim Überfahren einer Zelle/eines Covers wie beim Stern im Klangraum (bisher nur der laufende Titel).
+- Klangraum: Sind alle Laden zu (schmale Leiste), ist die Ansichtswahl versteckt – ein Klick mehr als früher.
 - Dunkle Nummern haben keine Untergrenze: einzelne wirken fast schwarz (Papier Nr. 249). Untergrenze L?
 - Glas allein wegen der Obergrenze 7 : 1 (Galerie A3: 71 statt 63 Gläser) – Variante ohne liegt in scratchpad/_nummer-polish.
 - Zeigerstrich zu „Pop · Rock — Liebe“ läuft schräg ins Leere (Areal berührt den Rand nicht) – schon vorher so.
